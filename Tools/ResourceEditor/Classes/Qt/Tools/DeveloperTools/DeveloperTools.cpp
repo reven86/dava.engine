@@ -77,8 +77,10 @@ void DeveloperTools::OnDebugFunctionsGridCopy()
                 NMaterial * material = renderObject->GetRenderBatch(0)->GetMaterial();
                 float32 inGlossiness = (float32)x / 9.0;
                 float32 inSpecularity = (float32)y / 9.0;
+#if RHI_COMPLETE_EDITOR
                 material->SetPropertyValue(FastName("inGlossiness"), Shader::UT_FLOAT, 1, &inGlossiness);
                 material->SetPropertyValue(FastName("inSpecularity"), Shader::UT_FLOAT, 1, &inSpecularity);
+#endif // RHI_COMPLETE_EDITOR
 
                 StaticOcclusionSystem *sosystem = currentScene->staticOcclusionSystem;
                 DVASSERT(sosystem);
@@ -93,6 +95,7 @@ void DeveloperTools::OnDebugFunctionsGridCopy()
 
 void DeveloperTools::OnDebugCreateTestSkinnedObject()
 {
+#if RHI_COMPLETE_EDITOR
     SceneEditor2 * currentScene = QtMainWindow::Instance()->GetCurrentScene();
     if(!currentScene) return;
     ScopedPtr<Entity> entity(new Entity());
@@ -163,6 +166,7 @@ void DeveloperTools::OnDebugCreateTestSkinnedObject()
     entity->AddComponent(renderComponent);
 
     currentScene->Exec(new EntityAddCommand(entity, currentScene));
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void DeveloperTools::OnImageSplitterNormals()
@@ -180,10 +184,10 @@ void DeveloperTools::OnSpyWidget()
 void DeveloperTools::OnReplaceTextureMipmap()
 {
     QStringList items = QStringList()
-        << QString(NMaterial::TEXTURE_ALBEDO.c_str())
-        << QString(NMaterial::TEXTURE_LIGHTMAP.c_str())
-        << QString(NMaterial::TEXTURE_DETAIL.c_str())
-        << QString(NMaterial::TEXTURE_NORMAL.c_str())
+        << QString(NMaterialTextureName::TEXTURE_ALBEDO.c_str())
+        << QString(NMaterialTextureName::TEXTURE_LIGHTMAP.c_str())
+        << QString(NMaterialTextureName::TEXTURE_DETAIL.c_str())
+        << QString(NMaterialTextureName::TEXTURE_NORMAL.c_str())
         ;
 
     bool isOk;

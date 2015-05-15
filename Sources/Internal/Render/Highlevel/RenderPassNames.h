@@ -27,72 +27,21 @@
 =====================================================================================*/
 
 
-#include "Render/Highlevel/ShadowVolumeRenderPass.h"
-#include "Render/Highlevel/RenderLayer.h"
-#include "Render/Highlevel/Camera.h"
-#include "Render/Highlevel/ShadowRect.h"
-#include "Render/Highlevel/RenderBatchArray.h"
-#include "Scene3D/Systems/QualitySettingsSystem.h"
-#include "Render/Renderer.h"
+#ifndef __DAVAENGINE_RENDER_FASTNAMES_H__
+#define	__DAVAENGINE_RENDER_FASTNAMES_H__
+
+#include "Base/BaseTypes.h"
+#include "Base/FastName.h"
 
 namespace DAVA
 {
-    
-ShadowVolumeRenderLayer::ShadowVolumeRenderLayer(const FastName & name, uint32 sortingFlags, RenderLayerID id)
-    :   RenderLayer(name, sortingFlags, id), shadowRect(NULL)
-{
-    
-	blendMode = ShadowPassBlendMode::MODE_BLEND_MULTIPLY;
-	
-}
 
-void ShadowVolumeRenderLayer::CreateShadowRect()
-{
-    shadowRect = ShadowRect::Create();
-    
-}
+// GLOBAL PASSES
+static const FastName PASS_FORWARD("ForwardPass");
+static const FastName PASS_DEFERRED("DeferredPass");
+static const FastName PASS_STATIC_OCCLUSION("StaticOcclusionPass");
 
-ShadowVolumeRenderLayer::~ShadowVolumeRenderLayer()
-{
-    SafeRelease(shadowRect);
-}
+} // ns
 
-void ShadowVolumeRenderLayer::SetBlendMode(ShadowPassBlendMode::eBlend _blendMode)
-{
-	blendMode = _blendMode;
-}
+#endif	/* __DAVAENGINE_RENDER_FASTNAMES_H__ */
 
-void ShadowVolumeRenderLayer::Draw(Camera* camera, RenderLayerBatchArray * renderLayerBatchArray, rhi::HPacketList packetList)
-{	
-    if(!QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_STENCIL_SHADOW))
-    {
-        return;
-    }
-
-    if(Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SHADOWVOLUME_DRAW)&&renderLayerBatchArray->GetRenderBatchCount())
-    {
-        if (!shadowRect)
-        {
-            CreateShadowRect();
-        }    	
-		RenderLayer::Draw(camera, renderLayerBatchArray, packetList);
-		shadowRect->Draw(blendMode);
-	}	
-}
-    
-ShadowRect * ShadowVolumeRenderLayer::GetShadowRect()
-{
-    if (!shadowRect)
-    {
-        CreateShadowRect();
-    }
-    return shadowRect;
-}
-
-ShadowPassBlendMode::eBlend ShadowVolumeRenderLayer::GetBlendMode() const
-{
-	return blendMode;
-}
-
-    
-};

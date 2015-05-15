@@ -63,7 +63,7 @@ private:
 #endif RHI_COMPLETE
 	DFFont* dfFont;
 
-    Shader* shader;
+    ShaderDescriptor* shader;
 	static uint16* indexBuffer;
     Vector<DFFont::DFFontVertex> vertexBuffer;
 	

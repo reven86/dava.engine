@@ -32,7 +32,6 @@
 #include "Scene/System/ModifSystem.h"
 
 // framework
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Scene/System/TextDrawSystem.h"
 
@@ -67,16 +66,7 @@ MoveHood::MoveHood() : HoodObject(4.0f)
 	
 	axisYZ2 = CreateLine(DAVA::Vector3(0, 0, c), DAVA::Vector3(0, c, c));
 	axisYZ2->axis = ST_AXIS_YZ;
-	
-    DAVA::RenderStateData hoodStateData;
-    DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND, hoodStateData);
-  	
-	hoodStateData.state =	DAVA::RenderStateData::STATE_BLEND |
-							DAVA::RenderStateData::STATE_COLORMASK_ALL |
-							DAVA::RenderStateData::STATE_DEPTH_WRITE;
-	hoodStateData.sourceFactor = DAVA::BLEND_SRC_ALPHA;
-	hoodStateData.destFactor = DAVA::BLEND_ONE_MINUS_SRC_ALPHA;
-	hoodDrawState = DAVA::RenderManager::Instance()->CreateRenderState(hoodStateData);
+	  
 }
 
 MoveHood::~MoveHood()
@@ -86,6 +76,7 @@ MoveHood::~MoveHood()
 
 void MoveHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem *textDrawSystem)
 {
+#if RHI_COMPLETE_EDITOR
 	DAVA::Color colorSBlend(colorS.r, colorS.g, colorS.b, 0.3f);
 	DAVA::Vector3 curPos = axisX->curPos;
 
@@ -209,6 +200,6 @@ void MoveHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem 
 		textDrawSystem->DrawText(topPos, tmp, DAVA::Color(255, 255, 0, 255));
 	}
 
-	//DAVA::RenderManager::Instance()->SetBlendMode(oldBlendSrc, oldBlendDst);
-	//DAVA::RenderManager::Instance()->SetState(oldState);
+#endif // RHI_COMPLETE_EDITOR
+	
 }

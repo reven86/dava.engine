@@ -33,7 +33,7 @@
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/RenderLayer.h"
-#include "Render/Highlevel/RenderFastNames.h"
+#include "Render/Highlevel/RenderPassNames.h"
 #include "Render/Highlevel/SpeedTreeObject.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Debug/DVAssert.h"

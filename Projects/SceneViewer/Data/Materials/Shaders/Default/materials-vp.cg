@@ -14,10 +14,10 @@ VPROG_OUT_BEGIN
 #endif
 VPROG_OUT_END
 
-property float4x4 worldViewProjMatrix : unique,dynamic : ui_hidden=yes ;
+property float4x4 worldViewProjMatrix : dynamic,instance : ui_hidden=yes ;
 #if defined(MATERIAL_LIGHTMAP)
-property float2 uvOffset : unique,static : ui_hidden=yes ;
-property float2 uvScale : unique,static : ui_hidden=yes ;
+property float2 uvOffset : static,instance : ui_hidden=yes ;
+property float2 uvScale : static,instance : ui_hidden=yes ;
 #endif
 
 VPROG_BEGIN

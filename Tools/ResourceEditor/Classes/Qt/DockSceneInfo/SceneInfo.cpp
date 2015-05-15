@@ -166,7 +166,7 @@ void SceneInfo::Initialize3DDrawSection()
 void SceneInfo::Refresh3DDrawInfo()
 {
     if(!activeScene) return;
-    
+#if RHI_COMPLETE_EDITOR
     QtPropertyData* header = GetInfoHeader("DrawInfo");
     
     const RenderManager::Stats & renderStats = activeScene->GetRenderStats();
@@ -189,6 +189,7 @@ void SceneInfo::Refresh3DDrawInfo()
 
     SetChild("Dynamic Param Bind Count", renderStats.dynamicParamUniformBindCount, header2);
     SetChild("Material Param Bind Count", renderStats.materialParamUniformBindCount, header2);
+#endif // RHI_COMPLETE_EDITOR
 
 }
 
@@ -720,6 +721,7 @@ void SceneInfo::CollectSpeedTreeLeafsSquare(const EntityGroup * forGroup)
 SceneInfo::SpeedTreeInfo SceneInfo::GetSpeedTreeLeafsSquare(DAVA::RenderObject *renderObject)
 {
     SpeedTreeInfo info;
+#if RHI_COMPLETE_EDITOR
     if(renderObject)
     {
         Vector3 bboxSize = renderObject->GetBoundingBox().GetSize();
@@ -758,7 +760,7 @@ SceneInfo::SpeedTreeInfo SceneInfo::GetSpeedTreeLeafsSquare(DAVA::RenderObject *
         info.leafsSquareDivX = info.leafsSquare / (bboxSize.x * bboxSize.z);
         info.leafsSquareDivY = info.leafsSquare / (bboxSize.y * bboxSize.z);
     }
-    
+#endif // RHI_COMPLETE_EDITOR
     return info;
 }
 
@@ -955,6 +957,7 @@ void SceneInfo::InitializeLayersSection()
 
 void SceneInfo::RefreshLayersSection()
 {
+#if RHI_COMPLETE_EDITOR
     if(activeScene)
     {
         float32 viewportSize = RenderManager::Instance()->frameBufferWidth * RenderManager::Instance()->frameBufferHeight;
@@ -978,4 +981,5 @@ void SceneInfo::RefreshLayersSection()
             SetChild(queriesNames[i].c_str(), str.c_str(), header);
         }
     }
+#endif RHI_COMPLETE_EDITOR
 }

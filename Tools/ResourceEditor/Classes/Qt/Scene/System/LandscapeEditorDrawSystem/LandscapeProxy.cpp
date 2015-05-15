@@ -51,24 +51,20 @@ LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
 		texturesToBlend[i] = NULL;
 		texturesEnabled[i] = false;
 	}
-	
-    DAVA::RenderStateData noBlendStateData;
-    DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_2D_BLEND, noBlendStateData);
-    
-	noBlendStateData.sourceFactor = DAVA::BLEND_ONE;
-	noBlendStateData.destFactor = DAVA::BLEND_ZERO;
-	
-	noBlendDrawState = DAVA::RenderManager::Instance()->CreateRenderState(noBlendStateData);
+	    
 
 	customLandscape = new CustomLandscape();
+#if RHI_COMPLETE_EDITOR
     customLandscape->Create();
 	customLandscape->SetTexture(Landscape::TEXTURE_TILE_FULL, baseLandscape->GetTexture(Landscape::TEXTURE_TILE_FULL));
+#endif // RHI_COMPLETE_EDITOR
 	customLandscape->SetAABBox(baseLandscape->GetBoundingBox());
 
     customLandscape->SetReflectionVisible(baseLandscape->GetReflectionVisible());
     customLandscape->SetRefractionVisible(baseLandscape->GetRefractionVisible());
 
-    displayingTexture = Texture::CreateFBO(2048, 2048, FORMAT_RGBA8888, Texture::DEPTH_NONE);
+    displayingTexture = Texture::CreateFBO(2048, 2048, FORMAT_RGBA8888);
+
 }
 
 LandscapeProxy::~LandscapeProxy()
@@ -83,8 +79,7 @@ LandscapeProxy::~LandscapeProxy()
 	SafeRelease(fullTiledTexture);
 
     SafeRelease(cursorTexture);
-
-	RenderManager::Instance()->ReleaseRenderState(noBlendDrawState);
+	
 }
 
 void LandscapeProxy::SetMode(LandscapeProxy::eLandscapeMode mode)
@@ -115,26 +110,34 @@ const AABBox3 & LandscapeProxy::GetLandscapeBoundingBox()
 	return baseLandscape->GetBoundingBox();
 }
 
-Texture* LandscapeProxy::GetLandscapeTexture(Landscape::eTextureLevel level)
+Texture* LandscapeProxy::GetLandscapeTexture(const FastName& level)
 {
-	return baseLandscape->GetTexture(level);
+	return baseLandscape->GetMaterial()->GetEffectiveTexture(level);
 }
 
-Color LandscapeProxy::GetLandscapeTileColor(Landscape::eTextureLevel level)
+Color LandscapeProxy::GetLandscapeTileColor(const FastName& level)
 {
+#if RHI_COMPLETE_EDITOR
 	return baseLandscape->GetTileColor(level);
+#else
+    return Color();
+#endif // RHI_COMPLETE_EDITOR
 }
 
-void LandscapeProxy::SetLandscapeTileColor(Landscape::eTextureLevel level, const Color& color)
+void LandscapeProxy::SetLandscapeTileColor(const FastName& level, const Color& color)
 {
+#if RHI_COMPLETE_EDITOR
 	baseLandscape->SetTileColor(level, color);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void LandscapeProxy::SetTilemaskTexture(Texture* texture)
 {
+#if RHI_COMPLETE_EDITOR
 	FilePath texturePathname = baseLandscape->GetTextureName(Landscape::TEXTURE_TILE_MASK);
 	baseLandscape->SetTexture(Landscape::TEXTURE_TILE_MASK, texture);
 	baseLandscape->SetTextureName(Landscape::TEXTURE_TILE_MASK, texturePathname);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void LandscapeProxy::SetNotPassableTexture(Texture* texture)
@@ -195,6 +198,7 @@ void LandscapeProxy::SetRulerToolTextureEnabled(bool enabled)
 
 void LandscapeProxy::UpdateDisplayedTexture()
 {
+#if RHI_COMPLETE_EDITOR
     RenderHelper::Instance()->Set2DRenderTarget(displayingTexture);
     RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
     RenderManager::Instance()->SetColor(Color::White);
@@ -231,6 +235,7 @@ void LandscapeProxy::UpdateDisplayedTexture()
 
 	customLandscape->SetTexture(Landscape::TEXTURE_TILE_FULL, displayingTexture);
 	customLandscape->UpdateTextureState();
+#endif // RHI_COMPLETE_EDITOR
 }
 
 RenderObject* LandscapeProxy::GetRenderObject()
@@ -267,14 +272,18 @@ void LandscapeProxy::SetHeightmap(DAVA::Heightmap *heightmap)
 
 void LandscapeProxy::CursorEnable()
 {
+#if RHI_COMPLETE_EDITOR
 	customLandscape->CursorEnable();
 	baseLandscape->CursorEnable();
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void LandscapeProxy::CursorDisable()
 {
+#if RHI_COMPLETE_EDITOR
 	customLandscape->CursorDisable();
 	baseLandscape->CursorDisable();
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void LandscapeProxy::SetCursorTexture(Texture* texture)
@@ -285,30 +294,39 @@ void LandscapeProxy::SetCursorTexture(Texture* texture)
         cursorTexture = SafeRetain(texture);
     }
     
+#if RHI_COMPLETE_EDITOR
     customLandscape->GetCursor()->SetCursorTexture(texture);
     baseLandscape->GetCursor()->SetCursorTexture(texture);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void LandscapeProxy::SetBigTextureSize(float32 size)
 {
+#if RHI_COMPLETE_EDITOR
 	customLandscape->GetCursor()->SetBigTextureSize(size);
 	baseLandscape->GetCursor()->SetBigTextureSize(size);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void LandscapeProxy::SetCursorScale(float32 scale)
 {
+#if RHI_COMPLETE_EDITOR
 	customLandscape->GetCursor()->SetScale(scale);
 	baseLandscape->GetCursor()->SetScale(scale);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void LandscapeProxy::SetCursorPosition(const Vector2& position)
 {
+#if RHI_COMPLETE_EDITOR
 	customLandscape->GetCursor()->SetPosition(position);
 	baseLandscape->GetCursor()->SetPosition(position);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void LandscapeProxy::UpdateFullTiledTexture(bool force)
 {
+#if RHI_COMPLETE_EDITOR
 	if (force || mode == MODE_CUSTOM_LANDSCAPE)
 	{
 		SafeRelease(fullTiledTexture);
@@ -325,6 +343,7 @@ void LandscapeProxy::UpdateFullTiledTexture(bool force)
 
 		UpdateDisplayedTexture();
 	}
+#endif // RHI_COMPLETE_EDITOR
 }
 
 Vector3 LandscapeProxy::PlacePoint(const Vector3& point)
@@ -364,10 +383,12 @@ void LandscapeProxy::DecreaseTilemaskChanges()
 
 void LandscapeProxy::InitTilemaskImageCopy()
 {
+#if RHI_COMPLETE_EDITOR
 	SafeRelease(tilemaskImageCopy);
 
     RenderManager::Instance()->SetColor(Color::White);
 	tilemaskImageCopy = baseLandscape->GetTexture(Landscape::TEXTURE_TILE_MASK)->CreateImageFromMemory(noBlendDrawState);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 Image* LandscapeProxy::GetTilemaskImageCopy()
@@ -377,6 +398,7 @@ Image* LandscapeProxy::GetTilemaskImageCopy()
 
 void LandscapeProxy::InitTilemaskSprites()
 {
+#if RHI_COMPLETE_EDITOR
 	if (tilemaskTextures[TILEMASK_SPRITE_SOURCE] == NULL
 		|| tilemaskTextures[TILEMASK_SPRITE_DESTINATION] == NULL)
 	{
@@ -394,6 +416,7 @@ void LandscapeProxy::InitTilemaskSprites()
 
         RenderManager::Instance()->SetRenderTarget(0);
 	}
+#endif // RHI_COMPLETE_EDITOR
 }
 
 Texture * LandscapeProxy::GetTilemaskTexture(int32 number)

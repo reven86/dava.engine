@@ -39,49 +39,10 @@ VegetationRenderData::VegetationRenderData() :
 VegetationRenderData::~VegetationRenderData()
 {
     SafeRelease(material);
-    ReleaseRenderData();
-}
-    
-void VegetationRenderData::CreateRenderData()
-{
-#if RHI_COMPLETE
-    DVASSERT(NULL == vertexRenderDataObject);
-    vertexRenderDataObject = new RenderDataObject();
-#endif RHI_COMPLETE
 }
     
 void VegetationRenderData::ReleaseRenderData()
 {
-#if RHI_COMPLETE
-    size_t indexBufferResolutionCount = indexRenderDataObject.size();
-    for(size_t indexBufferIndex = 0; indexBufferIndex < indexBufferResolutionCount; ++indexBufferIndex)
-    {
-        Vector<Vector<VegetationSortedBufferItem> >& indexBufferArray = indexRenderDataObject[indexBufferIndex];
-        size_t indexObjectCount = indexBufferArray.size();
-        for(size_t i = 0; i < indexObjectCount; ++i)
-        {
-            Vector<VegetationSortedBufferItem>& directionArray = indexBufferArray[i];
-                
-            size_t directionBufferCount = directionArray.size();
-            for(size_t directionIndex = 0; directionIndex < directionBufferCount; ++directionIndex)
-            {
-                if(directionArray[directionIndex].rdo->HasVertexAttachment())
-                {
-                    directionArray[directionIndex].rdo->DetachVertices();
-                }
-            }
-                
-            directionArray.clear();
-        }
-        
-        indexBufferArray.clear();
-    }
-    indexRenderDataObject.clear();
-        
-
-    SafeRelease(vertexRenderDataObject);
-#endif RHI_COMPLETE
-        
     vertexData.clear();
     indexData.clear();
 }

@@ -255,13 +255,15 @@ void TilemaskEditorPanel::SplitImageToChannels(Image* image, Image*& r, Image*& 
 		uint32 height = image->GetHeight();
 
         Texture* t = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(), width, height, false);
-		Texture* fbo = Texture::CreateFBO(width, height, FORMAT_RGBA8888, Texture::DEPTH_NONE);
+		Texture* fbo = Texture::CreateFBO(width, height, FORMAT_RGBA8888/*, Texture::DEPTH_NONE*/);
 
+#if RHI_COMPLETE_EDITOR
         RenderHelper::Instance()->Set2DRenderTarget(fbo);
         RenderHelper::Instance()->DrawTexture(t, RenderState::RENDERSTATE_2D_OPAQUE);
         RenderManager::Instance()->SetRenderTarget(0);
+#endif // RHI_COMPLETE_EDITOR
 
-        image = fbo->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
+        image = fbo->CreateImageFromMemory();
 		image->ResizeCanvas(width, height);
 
         SafeRelease(fbo);
@@ -330,7 +332,7 @@ void TilemaskEditorPanel::UpdateTileTextures()
 	int32 count = (int32)sceneEditor->tilemaskEditorSystem->GetTileTextureCount();
 	Image** images = new Image*[count];
 
-    Image* image = sceneEditor->tilemaskEditorSystem->GetTileTexture(0)->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
+    Image* image = sceneEditor->tilemaskEditorSystem->GetTileTexture(0)->CreateImageFromMemory();
     
     image->ResizeCanvas(iconSize.width(), iconSize.height());
     

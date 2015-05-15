@@ -77,6 +77,7 @@ class RenderVariantInstance
     rhi::HDepthStencilState depthState;
     rhi::HSamplerState samplerState;
     rhi::HTextureSet textureSet;
+    rhi::HTextureSet vertexTextureSet;
     rhi::CullMode cullMode;
 
     Vector<rhi::HConstBuffer> vertexConstBuffers;
@@ -95,6 +96,11 @@ public:
     ~NMaterial();
 
     void Load(KeyedArchive * archive, SerializationContext * serializationContext) override;
+
+    void SetFXName(const FastName & fxName);
+    const FastName & GetFXName();
+
+    inline const FastName& GetMaterialName() const;
 
     /*properties*/
     void AddProperty(const FastName& propName, const float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize = 1);
@@ -123,7 +129,7 @@ public:
 
     inline uint32 GetRenderLayerID() const;
     inline uint32 GetSortingKey() const;
-    inline uint64 GetMaterialKey() const;            
+    inline uint64 GetMaterialKey() const;  
 
     void BindParams(rhi::Packet& target);    
 
@@ -152,9 +158,7 @@ private:
     NMaterialProperty* GetMaterialProperty(const FastName& propName);    
     void CollectMaterialFlags(HashMap<FastName, int32>& target);
     
-    const FastName& GetFXName();
     const FastName& GetQualityGroup();
-
 
     void AddChildMaterial(NMaterial *material);
     void RemoveChildMaterial(NMaterial *material);
@@ -204,7 +208,10 @@ void NMaterialProperty::SetPropertyValue(const float32 *newValue)
     updateSemantic = ++globalPropertyUpdateSemanticCounter;
 }
 
-
+const FastName& NMaterial::GetMaterialName() const
+{
+    return materialName;
+}
 uint32 NMaterial::GetRenderLayerID() const
 {
     if (activeVariantInstance)

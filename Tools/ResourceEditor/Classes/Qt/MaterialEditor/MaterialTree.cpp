@@ -122,7 +122,8 @@ void MaterialTree::SelectEntities(const QList<DAVA::NMaterial *>& materials)
         for (int i = 0; i < materials.size(); i++)
         {
             DAVA::NMaterial * material = materials.at(i);
-            
+
+#if RHI_COMPLETE_EDITOR
 		    if(material->GetMaterialType() == NMaterial::MATERIALTYPE_INSTANCE)
 		    {
 			    DAVA::Entity *entity = curScene->materialSystem->GetEntity(material);
@@ -142,6 +143,7 @@ void MaterialTree::SelectEntities(const QList<DAVA::NMaterial *>& materials)
 				    curScene->selectionSystem->AddSelection(curScene->selectionSystem->GetSelectableEntity(entity));
 			    }
 		    }
+#endif // RHI_COMPLETE_EDITOR
         }
 
         QtMainWindow::Instance()->GetUI()->sceneTree->LookAtSelection();
@@ -190,6 +192,7 @@ void MaterialTree::ShowContextMenu(const QPoint &pos)
         int nMaterials = 0;
         int nInstances = 0;
 
+#if RHI_COMPLETE_EDITOR
         foreach( const QModelIndex& index, selection )
         {
             DAVA::NMaterial *material = treeModel->GetMaterial(index);
@@ -210,6 +213,7 @@ void MaterialTree::ShowContextMenu(const QPoint &pos)
             if ( nMaterials > 0 && nInstances > 0 )
                 break;
         }
+#endif // RHI_COMPLETE_EDITOR
 
         const bool isVisible = nMaterials > 0;
         const bool isEnabled = ( nMaterials == 1 ) && ( nInstances == 0 );

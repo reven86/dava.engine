@@ -196,8 +196,7 @@ private:
 
 	struct BlendPreset
 	{
-		eBlendMode srcFactor;
-		eBlendMode dstFactor;
+        eBlending blending;
 		QString presetName;
 	};
 

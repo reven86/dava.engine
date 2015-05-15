@@ -1189,9 +1189,10 @@ NMaterial * Landscape::GetMaterial()
     return landscapeMaterial;
 }
 
-#if RHI_COMPLETE
+
 Texture * Landscape::CreateLandscapeTexture()
 {
+#if RHI_COMPLETE
     //Set indexes
     Vector<float32> ftVertexes;
     Vector<float32> ftTextureCoords;
@@ -1291,8 +1292,11 @@ Texture * Landscape::CreateLandscapeTexture()
     SafeRelease(tmpLandscapeParent);
     
     return fullTiled;
-}
+#else
+    return nullptr;
 #endif
+}
+
 
 //FilePath Landscape::SaveFullTiledTexture()
 //{

@@ -45,10 +45,9 @@ public:
 	static const FastName PIXELLIT_SPECULARMAP_OPAQUE;
 	static const FastName TEXTURED_ALPHATEST;
 	static const FastName DECAL_OPAQUE;
-	static const FastName SHADOWRECT_ALPHA;
 	static const FastName TEXTURED_OPAQUE;
 	static const FastName DETAIL_ALPHABLEND;
-	static const FastName SHADOWRECT_MULTIPLY;
+	static const FastName SHADOWRECT;
 	static const FastName TILE_MASK;
 	static const FastName DETAIL_ALPHATEST;
 	static const FastName SHADOW_VOLUME;

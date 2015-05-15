@@ -61,7 +61,6 @@ void DAVA::Cursor::ShowSystemCursor(bool show)
 #if defined(__DAVAENGINE_WIN32__) && defined (__DAVAENGINE_DIRECTX9__)
 
 #include "FileSystem/FileSystem.h"
-#include "Render/RenderManager.h"
 #include "Render/D3D9Helpers.h"
 
 

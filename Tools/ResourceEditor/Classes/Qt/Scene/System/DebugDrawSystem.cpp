@@ -53,11 +53,7 @@ DebugDrawSystem::DebugDrawSystem(DAVA::Scene * scene)
 	selSystem = sc->selectionSystem;
 
 	DVASSERT(NULL != collSystem);
-	DVASSERT(NULL != selSystem);
-	
-	debugDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(DAVA::RenderStateData::STATE_BLEND |
-																		  DAVA::RenderStateData::STATE_COLORMASK_ALL |
-																		  DAVA::RenderStateData::STATE_DEPTH_TEST);
+	DVASSERT(NULL != selSystem);		
 }
 
 
@@ -90,8 +86,6 @@ ResourceEditor::eSceneObjectType DebugDrawSystem::GetRequestedObjectType() const
 
 void DebugDrawSystem::Draw()
 {
-	DAVA::RenderManager::Instance()->SetRenderState(debugDrawState);
-	DAVA::RenderManager::Instance()->FlushState();
 	
 	Draw(GetScene());
 }
@@ -154,6 +148,7 @@ void DebugDrawSystem::DrawObjectBoxesByType(DAVA::Entity *entity)
 
 void DebugDrawSystem::DrawUserNode(DAVA::Entity *entity)
 {
+#if RHI_COMPLETE_EDITOR
 	if(NULL != entity->GetComponent(DAVA::Component::USER_COMPONENT))
 	{
         RenderManager::SetDynamicParam(PARAM_WORLD, &entity->GetWorldTransform(), (pointer_size)&entity->GetWorldTransform());
@@ -174,6 +169,7 @@ void DebugDrawSystem::DrawUserNode(DAVA::Entity *entity)
 		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0, 0, 0.7f, 1.0f));
 		DAVA::RenderHelper::Instance()->DrawLine(DAVA::Vector3(0, 0, 0), DAVA::Vector3(0, 0, delta), 1.0f, debugDrawState);
     }
+#endif // RHI_COMPLETE_EDITOR
 }
 
 
@@ -181,6 +177,7 @@ void DebugDrawSystem::DrawUserNode(DAVA::Entity *entity)
 
 void DebugDrawSystem::DrawLightNode(DAVA::Entity *entity)
 {
+#if RHI_COMPLETE_EDITOR
 	DAVA::Light *light = GetLight(entity);
 	if(NULL != light)
 	{
@@ -216,10 +213,12 @@ void DebugDrawSystem::DrawLightNode(DAVA::Entity *entity)
 			DAVA::RenderHelper::Instance()->DrawBox(worldBox, 1.0f, debugDrawState);
 		}
 	}
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void DebugDrawSystem::DrawSoundNode(DAVA::Entity *entity)
 {
+#if RHI_COMPLETE_EDITOR
     SettingsManager * settings = SettingsManager::Instance();
 
     if(!settings->GetValue(Settings::Scene_Sound_SoundObjectDraw).AsBool())
@@ -234,10 +233,12 @@ void DebugDrawSystem::DrawSoundNode(DAVA::Entity *entity)
         DAVA::RenderManager::Instance()->SetColor(settings->GetValue(Settings::Scene_Sound_SoundObjectBoxColor).AsColor());
         DAVA::RenderHelper::Instance()->FillBox(worldBox, debugDrawState);
     }
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void DebugDrawSystem::DrawSelectedSoundNode(DAVA::Entity *entity)
 {
+#if RHI_COMPLETE_EDITOR
     SettingsManager * settings = SettingsManager::Instance();
 
     if(!settings->GetValue(Settings::Scene_Sound_SoundObjectDraw).AsBool())
@@ -274,10 +275,12 @@ void DebugDrawSystem::DrawSelectedSoundNode(DAVA::Entity *entity)
             }
         }
     }
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void DebugDrawSystem::DrawWindNode(DAVA::Entity *entity)
 {
+#if RHI_COMPLETE_EDITOR
 	WindComponent * wind = GetWindComponent(entity);
 	if(wind)
 	{
@@ -288,16 +291,19 @@ void DebugDrawSystem::DrawWindNode(DAVA::Entity *entity)
 		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 0.5f, 0.2f, 1.0f));
 		DAVA::RenderHelper::Instance()->DrawArrow(worldPosition, worldPosition + wind->GetDirection() * 3.f, 10.f, 1.f, debugDrawState);
 	}
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void DebugDrawSystem::DrawEntityBox( DAVA::Entity *entity, const DAVA::Color &color )
 {
+#if RHI_COMPLETE_EDITOR
     RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size) &Matrix4::IDENTITY);
 
     AABBox3 worldBox = selSystem->GetSelectionAABox(entity, entity->GetWorldTransform());
 
 	DAVA::RenderManager::Instance()->SetColor(color);
 	DAVA::RenderHelper::Instance()->DrawBox(worldBox, 1.0f, debugDrawState);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 
@@ -432,6 +438,7 @@ Vector3 DebugDrawSystem::GetLandscapePointAtCoordinates(const Vector2 & centerXY
 
 void DebugDrawSystem::DrawSwitchesWithDifferentLods( DAVA::Entity *entity )
 {
+#if RHI_COMPLETE_EDITOR
     if(!switchesWithDifferentLodsEnabled) return;
 
     if(SceneValidator::IsEntityHasDifferentLODsCount(entity))
@@ -443,4 +450,5 @@ void DebugDrawSystem::DrawSwitchesWithDifferentLods( DAVA::Entity *entity )
         DAVA::RenderManager::Instance()->SetColor(Color(1.0f, 0.f, 0.f, 1.f));
         DAVA::RenderHelper::Instance()->DrawBox(worldBox, 1.0f, debugDrawState);
     }
+#endif // RHI_COMPLETE_EDITOR
 }

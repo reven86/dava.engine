@@ -26,7 +26,7 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#include "Render/Highlevel/Vegetation/VegetationCustomGeometrySerializationData.h"
+#include "Render/Highlevel/Vegetation/VegetationGeometryData.h"
 
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
@@ -50,22 +50,18 @@ static FastName VEGETATION_ENTITY_LAYER_NAMES[] =
     VEGETATION_ENTITY_LAYER_3
 };
 
-
-VegetationCustomGeometrySerializationData::VegetationCustomGeometrySerializationData(Vector<NMaterial*>& materialsData,
-                                                                                     Vector<Vector<Vector<Vector3> > >& positionLods,
-                                                                                     Vector<Vector<Vector<Vector2> > >& texCoordLods,
-                                                                                     Vector<Vector<Vector<Vector3> > >& normalLods,
-                                                                                     Vector<Vector<Vector<VegetationIndex> > >& indexLods)
+VegetationGeometryData::VegetationGeometryData(Vector<NMaterial*>& materialsData, Vector<Vector<Vector<Vector3> > >& positionLods, Vector<Vector<Vector<Vector2> > >& texCoordLods,
+                                                                                  Vector<Vector<Vector<Vector3> > >& normalLods, Vector<Vector<Vector<VegetationIndex> > >& indexLods)
 {
     Load(materialsData, positionLods, texCoordLods, normalLods, indexLods);
 }
 
-VegetationCustomGeometrySerializationData::VegetationCustomGeometrySerializationData(VegetationCustomGeometrySerializationData& src)
+VegetationGeometryData::VegetationGeometryData(VegetationGeometryData& src)
 {
     Load(src.materials, src.positions, src.texCoords, src.normals, src.indices);
 }
 
-VegetationCustomGeometrySerializationData::~VegetationCustomGeometrySerializationData()
+VegetationGeometryData::~VegetationGeometryData()
 {
     size_t materialCount = materials.size();
     for(size_t materialIndex = 0; materialIndex < materialCount; ++materialIndex)
@@ -74,11 +70,8 @@ VegetationCustomGeometrySerializationData::~VegetationCustomGeometrySerializatio
     }
 }
 
-void VegetationCustomGeometrySerializationData::Load(Vector<NMaterial*>& materialsData,
-                                                     Vector<Vector<Vector<Vector3> > >& positionLods,
-                                                     Vector<Vector<Vector<Vector2> > >& texCoordLods,
-                                                     Vector<Vector<Vector<Vector3> > >& normalLods,
-                                                     Vector<Vector<Vector<VegetationIndex> > >& indexLods)
+void VegetationGeometryData::Load(Vector<NMaterial*>& materialsData, Vector<Vector<Vector<Vector3> > >& positionLods, Vector<Vector<Vector<Vector2> > >& texCoordLods,
+                                                                     Vector<Vector<Vector<Vector3> > >& normalLods, Vector<Vector<Vector<VegetationIndex> > >& indexLods)
 {
     size_t materialCount = materialsData.size();
     for(size_t layerIndex = 0; layerIndex < materialCount; ++layerIndex)
@@ -155,44 +148,44 @@ void VegetationCustomGeometrySerializationData::Load(Vector<NMaterial*>& materia
     }
 }
 
-uint32 VegetationCustomGeometrySerializationData::GetLayerCount() const
+uint32 VegetationGeometryData::GetLayerCount() const
 {
     return static_cast<uint32>(materials.size());
 }
 
-uint32 VegetationCustomGeometrySerializationData::GetLodCount(uint32 layerIndex) const
+uint32 VegetationGeometryData::GetLodCount(uint32 layerIndex) const
 {
     return static_cast<uint32>(positions[layerIndex].size());
 }
 
-NMaterial* VegetationCustomGeometrySerializationData::GetMaterial(uint32 layerIndex)
+NMaterial* VegetationGeometryData::GetMaterial(uint32 layerIndex)
 {
     return materials[layerIndex];
 }
 
-Vector<Vector3>& VegetationCustomGeometrySerializationData::GetPositions(uint32 layerIndex, uint32 lodIndex)
+Vector<Vector3>& VegetationGeometryData::GetPositions(uint32 layerIndex, uint32 lodIndex)
 {
     return positions[layerIndex][lodIndex];
 }
 
-Vector<Vector2>& VegetationCustomGeometrySerializationData::GetTextureCoords(uint32 layerIndex, uint32 lodIndex)
+Vector<Vector2>& VegetationGeometryData::GetTextureCoords(uint32 layerIndex, uint32 lodIndex)
 {
     return texCoords[layerIndex][lodIndex];
 }
 
-Vector<Vector3>& VegetationCustomGeometrySerializationData::GetNormals(uint32 layerIndex, uint32 lodIndex)
+Vector<Vector3>& VegetationGeometryData::GetNormals(uint32 layerIndex, uint32 lodIndex)
 {
     return normals[layerIndex][lodIndex];
 }
 
-Vector<VegetationIndex>& VegetationCustomGeometrySerializationData::GetIndices(uint32 layerIndex, uint32 lodIndex)
+Vector<VegetationIndex>& VegetationGeometryData::GetIndices(uint32 layerIndex, uint32 lodIndex)
 {
     return indices[layerIndex][lodIndex];
 }
 
-VegetationCustomGeometrySerializationDataPtr VegetationCustomGeometrySerializationDataReader::ReadScene(const FilePath& scenePath)
+VegetationGeometryDataPtr VegetationGeometryDataReader::ReadScene(const FilePath& scenePath)
 {
-    VegetationCustomGeometrySerializationDataPtr result;
+    VegetationGeometryDataPtr result;
 
     ScopedPtr<Scene> scene(new Scene);
     Entity* sceneRootNode = scene->GetRootNode(scenePath);
@@ -258,10 +251,7 @@ VegetationCustomGeometrySerializationDataPtr VegetationCustomGeometrySerializati
 
         materialsData.push_back(parentMaterial);
 
-
-        for (uint32 resolutionIndex = 0;
-            resolutionIndex < renderBatchCount;
-            resolutionIndex++)
+        for (uint32 resolutionIndex = 0; resolutionIndex < renderBatchCount; resolutionIndex++)
         {
             RenderBatch* rb = ro->GetRenderBatch(resolutionIndex);
             DVASSERT(rb);
@@ -284,9 +274,7 @@ VegetationCustomGeometrySerializationDataPtr VegetationCustomGeometrySerializati
             DVASSERT((vertexFormat & EVF_VERTEX) != 0);
 
             uint32 vertexCount = pg->GetVertexCount();
-            for (uint32 vertexIndex = 0;
-                vertexIndex < vertexCount;
-                ++vertexIndex)
+            for (uint32 vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
             {
                 Vector3 coord;
                 pg->GetCoord(vertexIndex, coord);
@@ -309,9 +297,7 @@ VegetationCustomGeometrySerializationDataPtr VegetationCustomGeometrySerializati
             }
 
             uint32 indexCount = pg->GetIndexCount();
-            for (uint32 indexIndex = 0;
-                indexIndex < indexCount;
-                ++indexIndex)
+            for (uint32 indexIndex = 0; indexIndex < indexCount; ++indexIndex)
             {
                 int32 currentIndex = 0;
                 pg->GetIndex(indexIndex, currentIndex);
@@ -321,12 +307,7 @@ VegetationCustomGeometrySerializationDataPtr VegetationCustomGeometrySerializati
         }
     }
     
-    result.reset(new VegetationCustomGeometrySerializationData(
-        materialsData,
-        positionLods,
-        texCoordLods,
-        normalLods,
-        indexLods));
+    result.reset(new VegetationGeometryData( materialsData, positionLods, texCoordLods, normalLods, indexLods));
     
     return result;
 }

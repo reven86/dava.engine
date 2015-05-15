@@ -135,6 +135,7 @@ void BeastAction::Finish(bool canceled)
     }
 
 	Landscape *land = FindLandscape(workingScene);
+#if RHI_COMPLETE_EDITOR
 	if(land)
 	{
 		FilePath textureName = land->GetTextureName(DAVA::Landscape::TEXTURE_COLOR);
@@ -144,6 +145,7 @@ void BeastAction::Finish(bool canceled)
             FileSystem::Instance()->DeleteFile(textureName);
         }
 	}
+#endif // RHI_COMPLETE_EDITOR
 
     FileSystem::Instance()->DeleteDirectory(FileSystem::Instance()->GetCurrentWorkingDirectory() + "temp_beast/");
     if(beastMode == BeastProxy::MODE_LIGHTMAPS)

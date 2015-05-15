@@ -56,12 +56,13 @@ void MaterialAssignSystem::AssignMaterialToGroup(SceneEditor2 *scene, const Enti
     MaterialSystem *matSystem = scene->GetMaterialSystem();
 
     DAVA::Set<DAVA::NMaterial *> allMaterials;
-
+#if RHI_COMPLETE_EDITOR
     const size_t count = group->Size();
     for(size_t i = 0; i < count; ++i)
     {
         matSystem->BuildMaterialList(group->GetEntity(i), allMaterials);
     }
+#endif // RHI_COMPLETE_EDITOR
 
     AssignMaterial(scene, allMaterials, newMaterialParent);
 }
@@ -69,16 +70,19 @@ void MaterialAssignSystem::AssignMaterialToGroup(SceneEditor2 *scene, const Enti
 
 void MaterialAssignSystem::AssignMaterialToEntity(SceneEditor2 *scene, DAVA::Entity *entity, DAVA::NMaterial *newMaterialParent)
 {
+#if RHI_COMPLETE_EDITOR
     MaterialSystem *matSystem = scene->GetMaterialSystem();
 
     DAVA::Set<DAVA::NMaterial *> allMaterials;
     matSystem->BuildMaterialList(entity, allMaterials);
 
     AssignMaterial(scene, allMaterials, newMaterialParent);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void MaterialAssignSystem::AssignMaterial(SceneEditor2 *scene, const DAVA::Set<DAVA::NMaterial *> & allMaterials, DAVA::NMaterial *newMaterialParent)
 {
+#if RHI_COMPLETE_EDITOR
     DAVA::Set<DAVA::NMaterial *> materials;
     DAVA::Set<DAVA::NMaterial *> instances;
 
@@ -111,6 +115,7 @@ void MaterialAssignSystem::AssignMaterial(SceneEditor2 *scene, const DAVA::Set<D
         
         scene->EndBatch();
     }
+#endif // RHI_COMPLETE_EDITOR
 }
 
 

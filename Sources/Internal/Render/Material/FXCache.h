@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Render/Shader.h"
 #include "Render/RHI/rhi_Type.h"
-#include "Render/Highlevel/RenderFastNames.h"
+#include "Render/Highlevel/RenderLayer.h"
 
 namespace DAVA
 {
@@ -40,7 +40,7 @@ struct RenderPassDescriptor
     FastName passName;
     ShaderDescriptor *shader;
     rhi::DepthStencilState::Descriptor depthStateDescriptor;    
-    eRenderLayerID renderLayer;    
+    RenderLayer::eRenderLayerID renderLayer;
     rhi::CullMode cullMode;
     RenderPassDescriptor();
 };

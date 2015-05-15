@@ -1,6 +1,6 @@
 FPROG_IN_BEGIN
-    FPROG_IN_TEXCOORD0(inTexCoord,2)
-    FPROG_IN_TEXCOORD1(inTexCoordTiled,2)
+    FPROG_IN_TEXCOORD0(texCoord,2)
+    FPROG_IN_TEXCOORD1(texCoordTiled,2)
 FPROG_IN_END
 
 FPROG_OUT_BEGIN
@@ -14,26 +14,26 @@ DECL_FP_SAMPLER2D(tileTexture0)
 DECL_FP_SAMPLER2D(tileMask)
 DECL_FP_SAMPLER2D(colorTexture)
 
-property float4 tileColor0 : shared,static : def_value=1,1,1,1;
-property float4 tileColor1 : shared,static : def_value=1,1,1,1;
-property float4 tileColor2 : shared,static : def_value=1,1,1,1;
-property float4 tileColor3 : shared,static : def_value=1,1,1,1;
+property float4 tileColor0 : static,instance : def_value=1,1,1,1;
+property float4 tileColor1 : static,instance : def_value=1,1,1,1;
+property float4 tileColor2 : static,instance : def_value=1,1,1,1;
+property float4 tileColor3 : static,instance : def_value=1,1,1,1;
 #endif
 
 #if CURSOR
 DECL_FP_SAMPLER2D(cursorTexture)
-property float4 cursorCoordSize : shader,static : def_value=0,0,1,1;
+property float4 cursorCoordSize : static,instance : def_value=0,0,1,1;
 #endif
 
 FPROG_BEGIN
 
 #if FULL_TILED
-    float4 outColor = FP_TEXTURE2D( fullTiledTexture, FP_IN(inTexCoord) );
+    float4 outColor = FP_TEXTURE2D( fullTiledTexture, FP_IN(texCoord) );
     outColor.a = 1.0;
 #else
-    float4 tileColor = FP_TEXTURE2D( tileTexture0, FP_IN(inTexCoordTiled) );
-    float4 mask = FP_TEXTURE2D( tileMask, FP_IN(inTexCoord) );
-    float4 color = FP_TEXTURE2D( colorTexture, FP_IN(inTexCoord) );
+    float4 tileColor = FP_TEXTURE2D( tileTexture0, FP_IN(texCoordTiled) );
+    float4 mask = FP_TEXTURE2D( tileMask, FP_IN(texCoord) );
+    float4 color = FP_TEXTURE2D( colorTexture, FP_IN(texCoord) );
     
     float3 color3 = (tileColor.r * mask.r * tileColor0.rgb + 
                      tileColor.g * mask.g * tileColor1.rgb + 
@@ -43,7 +43,7 @@ FPROG_BEGIN
 #endif    
     
 #if CURSOR
-    float2 cursorCoord = (FP_IN(inTexCoord) + cursorCoordSize.xy) / cursorCoordSize.zw + float2(0.5, 0.5);
+    float2 cursorCoord = (FP_IN(texCoord) + cursorCoordSize.xy) / cursorCoordSize.zw + float2(0.5, 0.5);
     float4 cursorColor = FP_TEXTURE2D( cursorTexture, cursorCoord );
     outColor.rgb *= 1.0 - cursorColor.a;
     outColor.rgb += cursorColor.rgb * cursorColor.a;
@@ -51,4 +51,4 @@ FPROG_BEGIN
     
     FP_OUT_COLOR = outColor;
     
-FPROG_END;
+FPROG_END

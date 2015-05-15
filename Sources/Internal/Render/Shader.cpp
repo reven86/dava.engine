@@ -169,6 +169,7 @@ ShaderDescriptor::ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource
     Vector<BufferPropertyLayout> bufferPropertyLayouts;
     bufferPropertyLayouts.resize(vertexConstBuffersCount + fragmentConstBuffersCount);
     constBuffers.resize(vertexConstBuffersCount + fragmentConstBuffersCount);
+    
     for (auto &prop : vSource->Properties())
     {
         bufferPropertyLayouts[prop.bufferindex].props.push_back(prop);
@@ -181,33 +182,25 @@ ShaderDescriptor::ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource
     {
         if (i < vertexConstBuffersCount)
         {
-            constBuffers[i].type = ConstBufferDescriptor::Type::Vertex;
+            constBuffers[i].type = ConstBufferDescriptor::Type::Vertex;            
             constBuffers[i].targetSlot = i;
+            constBuffers[i].updateType = vSource->ConstBufferStorage(constBuffers[i].targetSlot);
         }
         else
         {
             constBuffers[i].type = ConstBufferDescriptor::Type::Fragment;
             constBuffers[i].targetSlot = i - vertexConstBuffersCount;
+            constBuffers[i].updateType = fSource->ConstBufferStorage(constBuffers[i].targetSlot);
         }
-
-        constBuffers[i].propertyLayoutId = propertyLayoutSet.MakeUnique(bufferPropertyLayouts[i]);
-        constBuffers[i].updateType = ConstBufferDescriptor::UpdateType::Static;
-        for (auto& prop : bufferPropertyLayouts[i].props)
-        {
-
-            if (DynamicBindings::GetShaderSemanticByName(prop.uid) != DynamicBindings::UNKNOWN_SEMANTIC)
-            {
-                constBuffers[i].updateType = ConstBufferDescriptor::UpdateType::Dynamic;
-            }
-        }
-
+        
+        constBuffers[i].propertyLayoutId = propertyLayoutSet.MakeUnique(bufferPropertyLayouts[i]);        
 
     }
 
 
     for (size_t i = 0, sz = constBuffers.size(); i < sz; ++i)
     {
-        if (constBuffers[i].updateType == ConstBufferDescriptor::UpdateType::Dynamic)
+        if (constBuffers[i].updateType == rhi::ShaderProp::STORAGE_DYNAMIC)
         {
             rhi::HConstBuffer dynamicBufferHandle;
             if (constBuffers[i].type == ConstBufferDescriptor::Type::Vertex)
@@ -226,11 +219,12 @@ ShaderDescriptor::ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource
                 binding.regCount = prop.bufferRegCount;
                 binding.updateSemantic = 0;
                 binding.dynamicPropertySemantic = DynamicBindings::GetShaderSemanticByName(prop.uid);
+                DVASSERT(binding.dynamicPropertySemantic != DynamicBindings::UNKNOWN_SEMANTIC); //unknown dynamic property
                 dynamicPropertyBindings.push_back(binding);
             }
         }
     }
-
+    vertexSamplerList = vSource->Samplers();
     fragmentSamplerList = fSource->Samplers();
 }
 }

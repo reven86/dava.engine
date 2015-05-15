@@ -59,7 +59,9 @@ const FastName DYNAMIC_PARAM_NAMES[] =
     FastName("rtSize"),
     FastName("rtPixelSize"),
     FastName("rtHalfPixelSize"),
-    FastName("rtAspectRatio")    
+    FastName("rtAspectRatio"),
+
+    FastName("shadowColor")
 };
 }
 

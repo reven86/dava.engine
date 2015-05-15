@@ -1,0 +1,48 @@
+VPROG_IN_BEGIN
+    VPROG_IN_POSITION
+    VPROG_IN_NORMAL
+VPROG_IN_END
+
+VPROG_OUT_BEGIN
+    VPROG_OUT_POSITION
+VPROG_OUT_END
+
+property float4x4 worldViewProjMatrix : dynamic,instance : ;
+property float4x4 worldViewMatrix : dynamic,instance : ;
+property float4x4 projMatrix : dynamic,instance : ;
+property float4x4 worldViewInvTransposeMatrix : dynamic,instance : ;
+
+property float4 lightPosition0 : dynamic,instance : ;
+
+VPROG_BEGIN
+
+    float3 in_pos      = VP_IN_POSITION;
+    float3 in_normal   = VP_IN_NORMAL;
+    float4 position = float4(in_pos.x, in_pos.y, in_pos.z, 1.0);
+    
+    float3x3 normalMatrix = float3x3(worldViewInvTransposeMatrix[0].xyz, 
+                                     worldViewInvTransposeMatrix[1].xyz, 
+                                     worldViewInvTransposeMatrix[2].xyz);
+    
+    float3 normal = mul( in_normal, normalMatrix );
+    float4 posView = mul( position, worldViewMatrix );
+    float3 lightVecView = posView.xyz * lightPosition0.w - lightPosition0.xyz;
+    
+    if(dot(normal, -lightVecView) < 0.0)
+	{
+		if(posView.z * lightPosition0.w < lightPosition0.z)
+		{
+			posView.xyz -= lightVecView * (1000.0 - 10.0 + posView.z) / lightVecView.z;
+		}
+		else
+		{
+			posView = float4(lightVecView, 0.0);
+		}
+        VP_OUT_POSITION = mul( posView, projMatrix );
+	}
+	else
+	{
+        VP_OUT_POSITION = mul( position, worldViewProjMatrix );
+	}
+    
+VPROG_END

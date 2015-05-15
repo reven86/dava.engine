@@ -30,7 +30,6 @@
 #include "Render/Highlevel/StaticOcclusionRenderPass.h"
 #include "Render/Highlevel/RenderBatchArray.h"
 #include "Render/Highlevel/Camera.h"
-#include "Render/Highlevel/RenderFastNames.h"
 #include "Render/Image/Image.h"
 #include "Utils/StringFormat.h"
 #include "Platform/SystemTimer.h"
@@ -70,8 +69,7 @@ namespace DAVA
                                                    StaticOcclusionData * _currentData,
                                                    eIndexRenew renewIndexEnum)
     {
-        staticOcclusionRenderPass = new StaticOcclusionRenderPass(PASS_FORWARD, this, RENDER_PASS_FORWARD_ID);
-        
+        staticOcclusionRenderPass = new StaticOcclusionRenderPass(PASS_FORWARD, this);
         
         currentData = _currentData;
         occlusionAreaRect = currentData->bbox;

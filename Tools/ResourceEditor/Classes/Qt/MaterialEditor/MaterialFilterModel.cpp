@@ -109,6 +109,7 @@ bool MaterialFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex &
         return false;
 
     bool isMaterial = false;
+#if RHI_COMPLETE_EDITOR
     switch (item->GetMaterial()->GetMaterialType())
     {
     case NMaterial::MATERIALTYPE_MATERIAL:
@@ -119,6 +120,7 @@ bool MaterialFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex &
         isMaterial = false;
         break;
     }
+#endif // RHI_COMPLETE_EDITOR
     const bool isSelected = item->GetFlag( MaterialItem::IS_PART_OF_SELECTION );
 
     switch ( filterType )
@@ -166,7 +168,7 @@ bool MaterialFilteringModel::lessThan(const QModelIndex &left, const QModelIndex
 
     if ( (mLeft == NULL) || (mRight == NULL) )
         return swap;
-
+#if RHI_COMPLETE_EDITOR
     if (mLeft->GetMaterialType() == NMaterial::MATERIALTYPE_GLOBAL)
     {
         swap = (sortOrder() == Qt::AscendingOrder);
@@ -206,6 +208,7 @@ bool MaterialFilteringModel::lessThan(const QModelIndex &left, const QModelIndex
 
         swap = (compResult < 0);
     }
+#endif // RHI_COMPLETE_EDITOR
 
     return swap;
 }

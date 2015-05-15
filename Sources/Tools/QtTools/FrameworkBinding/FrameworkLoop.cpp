@@ -1,7 +1,6 @@
 #include "FrameworkLoop.h"
 
 #include "Platform/Qt5/QtLayer.h"
-#include "Render/RenderManager.h"
 
 #include <QWindow>
 #include <QApplication>
@@ -69,10 +68,11 @@ QOpenGLContext* FrameworkLoop::Context()
         
         openGlFunctions.reset( new QOpenGLFunctions( context ) );
         openGlFunctions->initializeOpenGLFunctions();
-        
+#if RHI_COMPLETE_EDITOR        
     #ifdef Q_OS_WIN
         glewInit();
     #endif
+#endif // RHI_COMPLETE_EDITOR
     }
     else if ( glWidget != nullptr )
     {
@@ -105,10 +105,12 @@ quint64 FrameworkLoop::GetRenderContextId() const
 void FrameworkLoop::ProcessFrame()
 {
     // We need to call makeCurrent, because there is a crash in native OS X open file dialog
+#if RHI_COMPLETE_EDITOR
     if ( glWidget != nullptr && DAVA::RenderManager::Instance()->GetRenderContextId() != GetRenderContextId() )
     {
         context->makeCurrent(glWidget->GetGLWindow());
     }
+#endif // RHI_COMPLETE_EDITOR
     
     DAVA::QtLayer::Instance()->ProcessFrame();
     if ( glWidget != nullptr )
@@ -120,7 +122,9 @@ void FrameworkLoop::ProcessFrame()
 
 void FrameworkLoop::Quit()
 {
+#if RHI_COMPLETE_EDITOR
     DAVA::RenderManager::Instance()->SetRenderContextId( 0 );
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void FrameworkLoop::OnWindowDestroyed()

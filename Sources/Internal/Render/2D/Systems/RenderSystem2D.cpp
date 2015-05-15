@@ -71,19 +71,19 @@ RenderDataStream* spriteTexCoordStream = nullptr;
 FastName RenderSystem2D::FLAT_COLOR_SHADER("~res:/Shaders/renderer2dColor");
 FastName RenderSystem2D::TEXTURE_FLAT_COLOR_SHADER("~res:/Shaders/renderer2dTexture");
 
-Shader * RenderSystem2D::FLAT_COLOR = 0;
-Shader * RenderSystem2D::TEXTURE_MUL_FLAT_COLOR = 0;
-Shader * RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = 0;
-Shader * RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = 0;
-Shader * RenderSystem2D::TEXTURE_ADD_FLAT_COLOR = 0;
-Shader * RenderSystem2D::TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST = 0;
-Shader * RenderSystem2D::TEXTURE_ADD_FLAT_COLOR_IMAGE_A8 = 0;
-Shader * RenderSystem2D::TEXTURE_MUL_COLOR = 0;
-Shader * RenderSystem2D::TEXTURE_MUL_COLOR_ALPHA_TEST = 0;
-Shader * RenderSystem2D::TEXTURE_MUL_COLOR_IMAGE_A8 = 0;
-Shader * RenderSystem2D::TEXTURE_ADD_COLOR = 0;
-Shader * RenderSystem2D::TEXTURE_ADD_COLOR_ALPHA_TEST = 0;
-Shader * RenderSystem2D::TEXTURE_ADD_COLOR_IMAGE_A8 = 0;
+ShaderDescriptor * RenderSystem2D::FLAT_COLOR = 0;
+ShaderDescriptor * RenderSystem2D::TEXTURE_MUL_FLAT_COLOR = 0;
+ShaderDescriptor * RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = 0;
+ShaderDescriptor * RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = 0;
+ShaderDescriptor * RenderSystem2D::TEXTURE_ADD_FLAT_COLOR = 0;
+ShaderDescriptor * RenderSystem2D::TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST = 0;
+ShaderDescriptor * RenderSystem2D::TEXTURE_ADD_FLAT_COLOR_IMAGE_A8 = 0;
+ShaderDescriptor * RenderSystem2D::TEXTURE_MUL_COLOR = 0;
+ShaderDescriptor * RenderSystem2D::TEXTURE_MUL_COLOR_ALPHA_TEST = 0;
+ShaderDescriptor * RenderSystem2D::TEXTURE_MUL_COLOR_IMAGE_A8 = 0;
+ShaderDescriptor * RenderSystem2D::TEXTURE_ADD_COLOR = 0;
+ShaderDescriptor * RenderSystem2D::TEXTURE_ADD_COLOR_ALPHA_TEST = 0;
+ShaderDescriptor * RenderSystem2D::TEXTURE_ADD_COLOR_IMAGE_A8 = 0;
 
 #if USE_BATCHING
 class VboPool
@@ -604,7 +604,7 @@ bool RenderSystem2D::IsPreparedSpriteOnScreen(Sprite::DrawState * drawState)
 
 }
     
-Shader* RenderSystem2D::GetShaderForBatching(Shader* inputShader)
+ShaderDescriptor* RenderSystem2D::GetShaderForBatching(ShaderDescriptor* inputShader)
 {
     if (TEXTURE_MUL_FLAT_COLOR == inputShader)
     {
@@ -708,7 +708,7 @@ void RenderSystem2D::HardResetBatchingBuffers(uint32 verticesCount, uint32 indic
 #endif
 }
 
-void RenderSystem2D::PushBatch(UniqueHandle state, UniqueHandle texture, Shader* shader, Rect const& clip,
+void RenderSystem2D::PushBatch(UniqueHandle state, UniqueHandle texture, ShaderDescriptor* shader, Rect const& clip,
     uint32 vertexCount, const float32* vertexPointer, const float32* texCoordPointer,
     uint32 indexCount, const uint16* indexPointer,
     const Color& color)

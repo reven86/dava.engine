@@ -48,10 +48,9 @@
 #include "Scene3D/SceneFile/SerializationContext.h"
 
 #include "Render/Highlevel/Vegetation/VegetationPropertyNames.h"
-#include "Render/Highlevel/Vegetation/RenderBatchPool.h"
 #include "Render/Highlevel/Vegetation/VegetationRenderData.h"
 #include "Render/Highlevel/Vegetation/VegetationSpatialData.h"
-#include "Render/Highlevel/Vegetation/VegetationCustomGeometrySerializationData.h"
+#include "Render/Highlevel/Vegetation/VegetationGeometryData.h"
 #include "Render/Highlevel/Vegetation/VegetationGeometry.h"
 
 namespace DAVA
@@ -119,9 +118,6 @@ public:
     inline void SetLightmapAndGenerateDensityMap(const FilePath& filePath);
     inline const FilePath& GetLightmapPath() const;
     
-    inline void SetTextureSheet(const FilePath& path);
-    inline const FilePath& GetTextureSheetPath() const;
-    
     inline void SetVegetationTexture(const FilePath& texture);
     inline const FilePath& GetVegetationTexture() const;
     
@@ -179,31 +175,24 @@ public:
     inline const Vector4& GetLayerAnimationDragCoefficient() const;
     
     static bool IsHardwareCapableToRenderVegetation();
+
 private:
-    
+    RenderBatch * CreateRenderBatch();
+
     bool IsValidGeometryData() const;
     bool IsValidSpatialData() const;
     
     Vector2 GetVegetationUnitWorldSize(float32 resolution) const;
     
     void BuildSpatialStructure();
-    void BuildSpatialQuad(AbstractQuadTreeNode<VegetationSpatialData>* node,
-                          AbstractQuadTreeNode<VegetationSpatialData>* firstRenderableParent,
-                          int16 x, int16 y,
-                          uint16 width, uint16 height,
-                          AABBox3& parentBox);
+    void BuildSpatialQuad(AbstractQuadTreeNode<VegetationSpatialData>* node, AbstractQuadTreeNode<VegetationSpatialData>* firstRenderableParent, int16 x, int16 y, uint16 width, uint16 height, AABBox3& parentBox);
     
     Vector<AbstractQuadTreeNode<VegetationSpatialData>*> & BuildVisibleCellList(Camera * forCamera);
     
-    void BuildVisibleCellList(const Vector3& cameraPoint,
-                              Frustum* frustum,
-                              uint8 planeMask,
-                              AbstractQuadTreeNode<VegetationSpatialData>* node,
-                              Vector<AbstractQuadTreeNode<VegetationSpatialData>*>& cellList,
-                              bool evaluateVisibility);
-    inline void AddVisibleCell(AbstractQuadTreeNode<VegetationSpatialData>* node,
-                               float32 refDistance,
-                               Vector<AbstractQuadTreeNode<VegetationSpatialData>*>& cellList);
+    void BuildVisibleCellList(const Vector3& cameraPoint, Frustum* frustum, uint8 planeMask, AbstractQuadTreeNode<VegetationSpatialData>* node,
+        Vector<AbstractQuadTreeNode<VegetationSpatialData>*>& cellList, bool evaluateVisibility);
+
+    inline void AddVisibleCell(AbstractQuadTreeNode<VegetationSpatialData>* node, float32 refDistance, Vector<AbstractQuadTreeNode<VegetationSpatialData>*>& cellList);
     
     static bool CellByDistanceCompareFunction(const AbstractQuadTreeNode<VegetationSpatialData>* a, const AbstractQuadTreeNode<VegetationSpatialData>*  b);
     
@@ -224,30 +213,19 @@ private:
     
     inline uint32 MapToResolution(float32 squareDistance);
     
-    inline bool IsNodeEmpty(AbstractQuadTreeNode<VegetationSpatialData>* node,
-                            const Vector<bool>& map) const;
+    inline bool IsNodeEmpty(AbstractQuadTreeNode<VegetationSpatialData>* node, const Vector<bool>& map) const;
     
     void ClearRenderBatches();
     
-    void InitWithFixedGeometry(FastNameSet& materialFlags);
-    void InitWithCustomGeometry(FastNameSet& materialFlags);
-    
     void SetCustomGeometryPathInternal(const FilePath& path);
-    VegetationCustomGeometrySerializationDataPtr LoadCustomGeometryData(SerializationContext* context, KeyedArchive* srcArchive);
-    void SaveCustomGeometryData(SerializationContext* context, KeyedArchive* dstArchive, const VegetationCustomGeometrySerializationDataPtr& data);
+    VegetationGeometryDataPtr LoadCustomGeometryData(SerializationContext* context, KeyedArchive* srcArchive);
+    void SaveCustomGeometryData(SerializationContext* context, KeyedArchive* dstArchive, const VegetationGeometryDataPtr & data);
     
-    void GenerateDensityMapFromTransparencyMask(FilePath lightmapPath,
-                                           Vector<bool>& densityMapBits);
+    void GenerateDensityMapFromTransparencyMask(FilePath lightmapPath, Vector<bool>& densityMapBits);
     Image* LoadSingleImage(const FilePath& path) const;
-    float32 GetMeanAlpha(uint32 x, uint32 y,
-                        uint32 ratio,
-                        uint32 stride,
-                        Image* src) const;
+    float32 GetMeanAlpha(uint32 x, uint32 y, uint32 ratio, uint32 stride, Image* src) const;
     
     void SetDensityMap(const Vector<bool>& densityBits);
-    
-    void PrepareToRenderMultipleMaterials(Camera *camera);
-    void PrepareToRenderSingleMaterial(Camera *camera);
     
     bool IsDataLoadNeeded();
     
@@ -261,17 +239,14 @@ private:
     uint16 halfWidth;
     uint16 halfHeight;
     
-    RenderBatchPool renderBatchPool;
-    
     //Vector<float32> shaderScaleDensityUniforms;
     
-    Vector<VegetationRenderData*> renderData;
+    VegetationRenderData * renderData;
     
     AbstractQuadTree<VegetationSpatialData> quadTree;
     Vector<AbstractQuadTreeNode<VegetationSpatialData>*> visibleCells;
     
     FilePath heightmapPath;
-    FilePath textureSheetPath;
     FilePath albedoTexturePath;
     FilePath lightmapTexturePath;
     
@@ -291,13 +266,19 @@ private:
     
     Vector<Vector2> resolutionRanges;
     
+    uint32 vertexLayoutUID;
+    rhi::HVertexBuffer vertexBuffer;
+    rhi::HIndexBuffer indexBuffer;
+    uint32 vertexCount;
+    uint32 indexCount;
+
     VegetationGeometry* vegetationGeometry;
     
     Texture* heightmapTexture;
     
     float32 cameraBias;
     
-    VegetationCustomGeometrySerializationDataPtr customGeometryData;
+    VegetationGeometryDataPtr customGeometryData;
     
     Vector4 layersAnimationAmplitude;
     Vector4 layersAnimationSpring;
@@ -307,7 +288,6 @@ private:
     
     Vector<VegetationLayerParams> layerParams;
     
-    
 public:
     
     INTROSPECTION_EXTEND(VegetationRenderObject, RenderObject,
@@ -315,7 +295,6 @@ public:
                          PROPERTY("scaleVariation", "Scale variation", GetScaleVariation, SetScaleVariation, I_SAVE | I_EDIT | I_VIEW)
                          PROPERTY("rotationVariation", "Rotation variation", GetRotationVariation, SetRotationVariation, I_SAVE | I_EDIT | I_VIEW)
                          PROPERTY("lightmap", "Lightmap", GetLightmapPath, SetLightmapAndGenerateDensityMap, I_SAVE | I_EDIT | I_VIEW)
-                         //PROPERTY("textureSheet", "Texture sheet", GetTextureSheetPath, SetTextureSheet, I_SAVE | I_EDIT | I_VIEW)
                          //PROPERTY("vegetationTexture", "Vegetation texture", GetVegetationTexture, SetVegetationTexture, I_SAVE | I_EDIT | I_VIEW)
                          PROPERTY("lodRanges", "Lod ranges", GetLodRange, SetLodRange, I_EDIT | I_VIEW)
                          PROPERTY("visibilityDistance", "Visibility distances", GetVisibilityDistance, SetVisibilityDistance, I_EDIT | I_VIEW)
@@ -427,7 +406,7 @@ inline void VegetationRenderObject::SetLightmap(const FilePath& filePath)
         KeyedArchive* props = new KeyedArchive();
         props->SetString(VegetationPropertyNames::UNIFORM_SAMPLER_VEGETATIONMAP.c_str(), lightmapTexturePath.GetAbsolutePathname());
         
-        vegetationGeometry->OnVegetationPropertiesChanged(renderData, props);
+        vegetationGeometry->OnVegetationPropertiesChanged(renderData->GetMaterial(), props);
         
         SafeRelease(props);
     }
@@ -446,18 +425,6 @@ inline void VegetationRenderObject::SetLightmapAndGenerateDensityMap(const FileP
     UpdateVegetationSetup();
 }
 
-inline void VegetationRenderObject::SetTextureSheet(const FilePath& path)
-{
-    textureSheetPath = path;
-    
-    UpdateVegetationSetup();
-}
-
-inline const FilePath& VegetationRenderObject::GetTextureSheetPath() const
-{
-    return textureSheetPath;
-}
-
 inline void VegetationRenderObject::SetVegetationTexture(const FilePath& texturePath)
 {
     albedoTexturePath = texturePath;
@@ -467,7 +434,7 @@ inline void VegetationRenderObject::SetVegetationTexture(const FilePath& texture
         KeyedArchive* props = new KeyedArchive();
         props->SetString(NMaterialTextureName::TEXTURE_ALBEDO.c_str(), albedoTexturePath.GetAbsolutePathname());
         
-        vegetationGeometry->OnVegetationPropertiesChanged(renderData, props);
+        vegetationGeometry->OnVegetationPropertiesChanged(renderData->GetMaterial(), props);
         
         SafeRelease(props);
     }
@@ -536,9 +503,7 @@ inline const uint32& VegetationRenderObject::GetMaxVisibleQuads() const
     return maxVisibleQuads;
 }
 
-inline void VegetationRenderObject::SetPerturbation(const Vector3& point,
-                                             const Vector3& force,
-                                             float32 distance)
+inline void VegetationRenderObject::SetPerturbation(const Vector3& point, const Vector3& force, float32 distance)
 {
     perturbationForce = force;
     maxPerturbationDistance = distance;
@@ -551,7 +516,7 @@ inline void VegetationRenderObject::SetPerturbation(const Vector3& point,
         props->SetFloat(VegetationPropertyNames::UNIFORM_PERTURBATION_FORCE_DISTANCE.c_str(), maxPerturbationDistance);
         props->SetVector3(VegetationPropertyNames::UNIFORM_PERTURBATION_POINT.c_str(), perturbationPoint);
         
-        vegetationGeometry->OnVegetationPropertiesChanged(renderData, props);
+        vegetationGeometry->OnVegetationPropertiesChanged(renderData->GetMaterial(), props);
         
         SafeRelease(props);
     }
@@ -581,7 +546,7 @@ inline void VegetationRenderObject::SetPerturbationPoint(const Vector3& point)
         KeyedArchive* props = new KeyedArchive();
         props->SetVector3(VegetationPropertyNames::UNIFORM_PERTURBATION_POINT.c_str(), perturbationPoint);
         
-        vegetationGeometry->OnVegetationPropertiesChanged(renderData, props);
+        vegetationGeometry->OnVegetationPropertiesChanged(renderData->GetMaterial(), props);
         
         SafeRelease(props);
     }

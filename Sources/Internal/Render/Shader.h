@@ -42,11 +42,10 @@ using UniquePropertyLayout = UniqueHandle;
 
 struct ConstBufferDescriptor
 {
-    enum class Type{ Vertex, Fragment };
-    enum class UpdateType{ Static, Dynamic };
+    enum class Type{ Vertex, Fragment };    
 
     Type type;
-    UpdateType updateType;
+    rhi::ShaderProp::Storage updateType;
     uint32 targetSlot;
 
     UniquePropertyLayout propertyLayoutId;
@@ -97,7 +96,8 @@ private:
 
     rhi::HPipelineState piplineState;
 
-    rhi::ShaderSamplerList fragmentSamplerList; //no vertex samplers in rhi yet
+    rhi::ShaderSamplerList fragmentSamplerList;
+    rhi::ShaderSamplerList vertexSamplerList;
 
     friend class NMaterial;
 };

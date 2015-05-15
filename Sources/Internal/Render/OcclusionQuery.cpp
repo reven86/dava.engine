@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 #include "Render/OcclusionQuery.h"
-#include "Render/Highlevel/RenderFastNames.h"
 #include "Utils/Utils.h"
 #include "Render/Renderer.h"
 

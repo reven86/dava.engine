@@ -90,7 +90,7 @@ class SetTileColorCommand: public Command2
 {
 public:
 	SetTileColorCommand(LandscapeProxy* landscapeProxy,
-						Landscape::eTextureLevel level,
+						const FastName& level,
 						const Color& color);
 	~SetTileColorCommand();
 
@@ -99,7 +99,7 @@ public:
 	virtual Entity* GetEntity() const;
 
 protected:
-	Landscape::eTextureLevel level;
+	const FastName& level;
 	Color redoColor;
 	Color undoColor;
 	LandscapeProxy* landscapeProxy;

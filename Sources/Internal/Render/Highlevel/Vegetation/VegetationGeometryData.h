@@ -50,17 +50,17 @@ class Entity;
     is loaded both from the saved to scene KeyedArchive and an external .sc2 file.
     The data is passed to the geometry generator implementation then.
  */
-class VegetationCustomGeometrySerializationData
+class VegetationGeometryData
 {
 public:
     
-    VegetationCustomGeometrySerializationData(Vector<NMaterial*>& materialsData,
+    VegetationGeometryData(Vector<NMaterial*>& materialsData,
                                               Vector<Vector<Vector<Vector3> > >& positionLods,
                                               Vector<Vector<Vector<Vector2> > >& texCoordLods,
                                               Vector<Vector<Vector<Vector3> > >& normalLods,
                                               Vector<Vector<Vector<VegetationIndex> > >& indexLods);
-    VegetationCustomGeometrySerializationData(VegetationCustomGeometrySerializationData& src);
-    ~VegetationCustomGeometrySerializationData();
+    VegetationGeometryData(VegetationGeometryData& src);
+    ~VegetationGeometryData();
     
     uint32 GetLayerCount() const;
     uint32 GetLodCount(uint32 layerIndex) const;
@@ -89,12 +89,12 @@ private:
     Vector<Vector<Vector<VegetationIndex> > > indices;
 };
 
-using VegetationCustomGeometrySerializationDataPtr = std::unique_ptr<VegetationCustomGeometrySerializationData>;
+using VegetationGeometryDataPtr = std::unique_ptr<VegetationGeometryData>;
 
-class VegetationCustomGeometrySerializationDataReader
+class VegetationGeometryDataReader
 {
 public:
-    static VegetationCustomGeometrySerializationDataPtr ReadScene(const FilePath& scenePath);
+    static VegetationGeometryDataPtr ReadScene(const FilePath& scenePath);
 };
 
 };

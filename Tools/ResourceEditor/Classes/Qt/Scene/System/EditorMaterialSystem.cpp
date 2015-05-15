@@ -89,6 +89,7 @@ const DAVA::RenderBatch* EditorMaterialSystem::GetRenderBatch(DAVA::NMaterial* m
 
 void EditorMaterialSystem::BuildMaterialsTree(DAVA::Map<DAVA::NMaterial*, DAVA::Set<DAVA::NMaterial *> > &in) const
 {
+#if RHI_COMPLETE_EDITOR
 	// init set with already owned materials
 	DAVA::Set<DAVA::NMaterial *> materials = ownedParents;
     GetScene()->materialSystem->BuildMaterialList(GetScene(), materials, DAVA::NMaterial::MATERIALTYPE_MATERIAL, true);
@@ -103,10 +104,12 @@ void EditorMaterialSystem::BuildMaterialsTree(DAVA::Map<DAVA::NMaterial*, DAVA::
 		// add childs
 		BuildInstancesList(parent, in[parent]);
 	}
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void EditorMaterialSystem::BuildInstancesList(DAVA::NMaterial* parent, DAVA::Set<DAVA::NMaterial *> &in) const
 {
+#if RHI_COMPLETE_EDITOR
 	if(NULL != parent)
 	{
 		// add childs
@@ -119,6 +122,7 @@ void EditorMaterialSystem::BuildInstancesList(DAVA::NMaterial* parent, DAVA::Set
 			}
 		}
 	}
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void EditorMaterialSystem::BuildMaterialsList(DAVA::Set<DAVA::NMaterial *> &in) const
@@ -218,6 +222,7 @@ void EditorMaterialSystem::ApplyViewMode()
 
 void EditorMaterialSystem::ApplyViewMode(DAVA::NMaterial *material)
 {
+#if RHI_COMPLETE_EDITOR
     DAVA::NMaterial::eFlagValue flag;
 
     (curViewMode & LIGHTVIEW_ALBEDO) ? flag = DAVA::NMaterial::FlagOn : flag = DAVA::NMaterial::FlagOff;
@@ -240,6 +245,7 @@ void EditorMaterialSystem::ApplyViewMode(DAVA::NMaterial *material)
 
     (curViewMode & LIGHTVIEW_AMBIENT) ? flag = DAVA::NMaterial::FlagOn : flag = DAVA::NMaterial::FlagOff;
     material->SetFlag(DAVA::NMaterial::FLAG_VIEWAMBIENT, flag);
+#endif // RHI_COMPLETE_EDITOR
 }
 
 
@@ -368,7 +374,11 @@ void EditorMaterialSystem::RemoveMaterial(DAVA::NMaterial *material)
 }
 
 bool EditorMaterialSystem::IsEditable(DAVA::NMaterial *material) const
-{
+{    
+#if RHI_COMPLETE_EDITOR
     return (material->GetNodeGlags() != DAVA::DataNode::NodeRuntimeFlag || 
             material->GetMaterialTemplateName() == DAVA::FastName("~res:/Materials/TileMask.material"));
+#else
+    return true;
+#endif // RHI_COMPLETE_EDITOR
 }

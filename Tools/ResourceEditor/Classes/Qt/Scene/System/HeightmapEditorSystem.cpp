@@ -59,11 +59,8 @@ HeightmapEditorSystem::HeightmapEditorSystem(Scene* scene)
 ,	toolImageIndex(0)
 ,	curHeight(0.f)
 ,	activeDrawingType(drawingType)
-,	textureLevel(Landscape::TEXTURE_TILE_MASK)
 {
-    cursorSize = 30;
-	
-	noBlendDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(DAVA::BLEND_ONE, DAVA::BLEND_ZERO);
+    cursorSize = 30;		
 }
 
 HeightmapEditorSystem::~HeightmapEditorSystem()
@@ -243,16 +240,19 @@ void HeightmapEditorSystem::UpdateToolImage(bool force)
 
 Image* HeightmapEditorSystem::CreateToolImage(int32 sideSize, const FilePath& filePath)
 {
-	Texture *dstTex = Texture::CreateFBO((float32)sideSize, (float32)sideSize, FORMAT_RGBA8888, Texture::DEPTH_NONE);
+
+	Texture *dstTex = Texture::CreateFBO((float32)sideSize, (float32)sideSize, FORMAT_RGBA8888/*, Texture::DEPTH_NONE*/);
 	Texture *srcTex = Texture::CreateFromFile(filePath);
 	
+#if RHI_COMPLETE_EDITOR
     RenderHelper::Instance()->Set2DRenderTarget(dstTex);
     RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 	RenderManager::Instance()->SetColor(Color::White);
     RenderHelper::Instance()->DrawTexture(srcTex, RenderState::RENDERSTATE_2D_BLEND, Rect((dstTex->GetWidth() - sideSize) / 2.f, (dstTex->GetHeight() - sideSize) / 2.f, (float32)sideSize, (float32)sideSize));
     RenderManager::Instance()->SetRenderTarget(0);
+#endif // RHI_COMPLETE_EDITOR
 	
-    Image *retImage = dstTex->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+    Image *retImage = dstTex->CreateImageFromMemory();
 	
 	SafeRelease(srcTex);
     SafeRelease(dstTex);

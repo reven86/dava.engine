@@ -30,19 +30,19 @@
 #ifndef __RHI_TYPE_H__
 #define __RHI_TYPE_H__
 
-    #include "Base/BaseTypes.h"
-    #include "Base/FastName.h"
-    using DAVA::uint8;
-    using DAVA::uint16;
-    using DAVA::uint32;
-    using DAVA::uint64;
-    using DAVA::float32;
-    using DAVA::Size2i;
+#include "Base/BaseTypes.h"
+#include "Base/FastName.h"    
 
 
 
 namespace rhi
 {
+using DAVA::uint8;
+using DAVA::uint16;
+using DAVA::uint32;
+using DAVA::uint64;
+using DAVA::float32;
+using DAVA::Size2i;
 
 typedef uint32 Handle;
 static const uint32 InvalidHandle = 0;

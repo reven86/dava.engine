@@ -70,7 +70,6 @@
 
 #include "Render/Material/NMaterial.h"
 #include "Scene3D/Systems/MaterialSystem.h"
-#include "Render/Highlevel/RenderFastNames.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
@@ -1455,7 +1454,6 @@ void SceneFileV2::ConvertShadowVolumes(Entity * entity, NMaterial * shadowMateri
 
 void SceneFileV2::OptimizeScene(Entity * rootNode)
 {
-#if RHI_COMPLETE
     int32 beforeCount = rootNode->GetChildrenCountRecursive();
     removedNodeCount = 0;
     rootNode->BakeTransforms();
@@ -1465,12 +1463,14 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
 	ReplaceOldNodes(rootNode);
 	RemoveEmptyHierarchy(rootNode);
 
+#if RHI_COMPLETE
     if (header.version < SHADOW_VOLUME_SCENE_VERSION)
     {
         NMaterial * shadowMaterial = NMaterial::CreateMaterial(FastName("Shadow_Material"), NMaterialName::SHADOW_VOLUME, NMaterialQualityName::DEFAULT_QUALITY_NAME);
         ConvertShadowVolumes(rootNode, shadowMaterial);
         shadowMaterial->Release();
     }
+#endif // RHI_COMPLETE
 
     if(header.version < OLD_LODS_SCENE_VERSION)
     {
@@ -1506,8 +1506,6 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
 //    }
     int32 nowCount = rootNode->GetChildrenCountRecursive();
     Logger::FrameworkDebug("nodes removed: %d before: %d, now: %d, diff: %d", removedNodeCount, beforeCount, nowCount, beforeCount - nowCount);
-
-#endif // RHI_COMPLETE
 }
 
 void SceneFileV2::UpdatePolygonGroupRequestedFormatRecursively(Entity *entity)

@@ -32,9 +32,9 @@
 #define __RESOURCEEDITORQT__LANDSCAPEPROXY__
 
 #include "DAVAEngine.h"
-#include "Deprecated/LandscapeRenderer.h"
 
 #include "Render/UniqueStateSet.h"
+#include "Classes/Deprecated/LandscapeRenderer.h"
 
 using namespace DAVA;
 
@@ -69,9 +69,9 @@ public:
 	LandscapeRenderer* GetRenderer();
 
 	const AABBox3 & GetLandscapeBoundingBox();
-	Texture* GetLandscapeTexture(Landscape::eTextureLevel level);
-	Color GetLandscapeTileColor(Landscape::eTextureLevel level);
-	void SetLandscapeTileColor(Landscape::eTextureLevel level, const Color& color);
+	Texture* GetLandscapeTexture(const FastName& level);
+	Color GetLandscapeTileColor(const FastName& level);
+	void SetLandscapeTileColor(const FastName& level, const Color& color);
 
 	void SetTilemaskTexture(Texture* texture);
 	void SetTilemaskTextureEnabled(bool enabled);

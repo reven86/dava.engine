@@ -489,6 +489,7 @@ bool MaterialModel::dropCanBeAccepted(const QMimeData *data, Qt::DropAction acti
     if ( targetMaterial == NULL )
         return false;
 
+#if RHI_COMPLETE_EDITOR
     if( targetMaterial->GetMaterialType() != DAVA::NMaterial::MATERIALTYPE_MATERIAL )
         return false;
 
@@ -497,6 +498,7 @@ bool MaterialModel::dropCanBeAccepted(const QMimeData *data, Qt::DropAction acti
 		if ( materials[i]->GetMaterialType() != DAVA::NMaterial::MATERIALTYPE_INSTANCE )
             return false;
 	}
+#endif // RHI_COMPLETE_EDITOR
 
     return true;
 }

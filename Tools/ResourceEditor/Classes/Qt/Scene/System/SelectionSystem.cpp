@@ -58,22 +58,6 @@ SceneSelectionSystem::SceneSelectionSystem(DAVA::Scene * scene, SceneCollisionSy
 	, selectionHasChanges(false)
 	, curPivotPoint(ST_PIVOT_COMMON_CENTER)
 {
-    DAVA::RenderStateData selectionStateData;
-    DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND, selectionStateData);
-	
-	selectionStateData.state =	DAVA::RenderStateData::STATE_BLEND |
-								DAVA::RenderStateData::STATE_COLORMASK_ALL;
-	selectionStateData.sourceFactor = DAVA::BLEND_SRC_ALPHA;
-	selectionStateData.destFactor = DAVA::BLEND_ONE_MINUS_SRC_ALPHA;
-	
-	selectionNormalDrawState = DAVA::RenderManager::Instance()->CreateRenderState(selectionStateData);
-
-	selectionStateData.state =	DAVA::RenderStateData::STATE_BLEND |
-								DAVA::RenderStateData::STATE_COLORMASK_ALL |
-								DAVA::RenderStateData::STATE_DEPTH_TEST;
-	
-	selectionDepthDrawState = DAVA::RenderManager::Instance()->CreateRenderState(selectionStateData);
-
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
 }
 
@@ -227,6 +211,7 @@ void SceneSelectionSystem::Input(DAVA::UIEvent *event)
 
 void SceneSelectionSystem::Draw()
 {
+#if RHI_COMPLETE_EDITOR
 	if (IsLocked())
 	{
 		return;
@@ -263,6 +248,7 @@ void SceneSelectionSystem::Draw()
 			}
 		}
 	}
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void SceneSelectionSystem::ProcessCommand(const Command2 *command, bool redo)

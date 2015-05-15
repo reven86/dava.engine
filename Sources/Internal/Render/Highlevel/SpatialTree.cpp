@@ -425,7 +425,7 @@ void QuadTree::ObjectUpdated(RenderObject * renderObject)
 	} while (sizeUpdeted&&(currIndex!=INVALID_TREE_NODE_INDEX));	
 }
 
-void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags)
+void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags, Vector<RenderObject *> & visibilityArray)
 {		
 	QuadTreeNode& currNode = nodes[nodeId];	
 	int32 objectsSize = static_cast<int32>(currNode.objects.size());
@@ -449,7 +449,7 @@ void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags)
             uint32 flags = obj->GetFlags();
 			if ((flags & currVisibilityCriteria) == currVisibilityCriteria)
             {
-				visibilityArray->Add(obj);                
+				visibilityArray.push_back(obj);                
             }
 		}
 	}
@@ -464,7 +464,7 @@ void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags)
 				if (    (flags & RenderObject::ALWAYS_CLIPPING_VISIBLE)
                     ||   currFrustum->IsInside(obj->GetWorldBoundingBox(), clippingFlags, obj->startClippingPlane))
                 {
-					visibilityArray->Add(obj);                    
+					visibilityArray.push_back(obj);                    
                 }
 			}
 		}
@@ -476,44 +476,33 @@ void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags)
 		uint16 childNodeId = currNode.children[i];
 		if (childNodeId!=INVALID_TREE_NODE_INDEX)
 		{
-			ProcessNodeClipping(childNodeId, clippingFlags);
+			ProcessNodeClipping(childNodeId, clippingFlags, visibilityArray);
 		}
 	}		
 }
 
-void QuadTree::Clip(Camera * camera, VisibilityArray * _visibilityArray, uint32 visibilityCriteria)
+void QuadTree::Clip(Camera * camera, Vector<RenderObject *> & visibilityArray, uint32 visibilityCriteria)
 {
 	DVASSERT(worldInitialized);
 	currCamera = camera;
 	currVisibilityCriteria = visibilityCriteria;
 	currFrustum = camera->GetFrustum();	
-	visibilityArray = _visibilityArray;
-	ProcessNodeClipping(0, 0x3f); 
-
-	
+	ProcessNodeClipping(0, 0x3f, visibilityArray); 
 }
     
-void QuadTree::GetObjects(uint16 nodeId, uint8 clippingFlags, const AABBox3 & bbox, VisibilityArray * visibilityArray)
+void QuadTree::GetObjects(uint16 nodeId, uint8 clippingFlags, const AABBox3 & bbox, Vector<RenderObject *> & visibilityArray)
 {
     QuadTreeNode& currNode = nodes[nodeId];
     int32 objectsSize = static_cast<int32>(currNode.objects.size());
 
-    
-//    if (!clippingFlags) //node is fully inside frustum - no need to clip anymore
-//	{
     for (int32 i = 0; i < objectsSize; ++i)
     {
         RenderObject * renderObject = currNode.objects[i];
         if (bbox.IntersectsWithBox(renderObject->GetWorldBoundingBox()))
         {
-            visibilityArray->Add(renderObject);
+            visibilityArray.push_back(renderObject);
         }
     }
-//	}else
-//    {
-//        
-//    }
-    
     
     //process children
 	for (int32 i = 0; i < QuadTreeNode::NODE_NONE; ++i)
@@ -527,13 +516,10 @@ void QuadTree::GetObjects(uint16 nodeId, uint8 clippingFlags, const AABBox3 & bb
 }
 
     
-void QuadTree::GetAllObjectsInBBox(const AABBox3 & bbox, VisibilityArray * visibilityArray)
+void QuadTree::GetAllObjectsInBBox(const AABBox3 & bbox, Vector<RenderObject *> & visibilityArray)
 {
     
 }
-
-    
-    
     
 void QuadTree::Update()
 {		

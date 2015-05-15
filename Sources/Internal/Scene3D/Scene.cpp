@@ -817,21 +817,17 @@ void Scene::Draw()
 {
     TIME_PROFILE("Scene::Draw");
 
-		
-#if RHI_COMPLETE    
-    if(NULL != sceneGlobalMaterial)
+    //TODO: remove this crap with shadow color
+    if (sceneGlobalMaterial && sceneGlobalMaterial->HasLocalProperty(NMaterialParamName::PARAM_SHADOW_COLOR))
     {
-        NMaterialProperty* propShadowColor = sceneGlobalMaterial->GetMaterialProperty(NMaterialParamName::PARAM_SHADOW_COLOR);
-        if(NULL != propShadowColor)
-        {
-            DVASSERT(Shader::UT_FLOAT_VEC4 == propShadowColor->type);
-            
-            float32* propDataPtr = (float32*)propShadowColor->data;
-            Color shadowColor(propDataPtr[0], propDataPtr[1], propDataPtr[2], propDataPtr[3]);
-            renderSystem->SetShadowRectColor(shadowColor);
-        }
+        const float32 * propDataPtr = sceneGlobalMaterial->GetLocalPropValue(NMaterialParamName::PARAM_SHADOW_COLOR);
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR, propDataPtr, (pointer_size)sceneGlobalMaterial);
     }
-#endif // RHI_COMPLETE
+    else
+    {
+        Color defShadowColor(1.f, 0.f, 0.f, 1.f);
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR, defShadowColor.color, (pointer_size)this);
+    }
     
     uint64 time = SystemTimer::Instance()->AbsoluteMS();        
     
