@@ -53,46 +53,39 @@ FileList::FileList(const FilePath & filepath)
     
 	path = filepath;
 
-// Windows Store version doesnt exist
-#if defined(__DAVAENGINE_WINDOWS_STORE__)
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
-    return;
+#if defined(__DAVAENGINE_WINDOWS__)
 
-// Windows version
-#elif defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+	struct _finddata_t c_file;
+	intptr_t hFile;
+	FileEntry entry;
 
-	FilePath prevDir = FileSystem::Instance()->GetCurrentWorkingDirectory();
-	BOOL res = SetCurrentDirectoryA(path.GetAbsolutePathname().c_str());
+    String searchPath = path.GetAbsolutePathname();
+    if (searchPath.back() == '\\' || searchPath.back() == '/')
+        searchPath += '*';
+    else
+        searchPath += "/*";
 
-	if (res)
+	if( (hFile = _findfirst(searchPath.c_str(), &c_file)) != -1L )
 	{
-		struct _finddata_t c_file;
-		intptr_t hFile;
-		FileEntry entry;
-
-		if( (hFile = _findfirst( "*", &c_file )) != -1L )
+		do
 		{
-			do
+            //TODO: need to check for Win32
+			entry.path = filepath + c_file.name;
+			entry.name = c_file.name;
+			entry.size = c_file.size;
+			entry.isDirectory = (_A_SUBDIR & c_file.attrib) != 0;
+			if(entry.isDirectory)
 			{
-                //TODO: need to check for Win32
-				entry.path = filepath + c_file.name;
-				entry.name = c_file.name;
-				entry.size = c_file.size;
-				entry.isDirectory = (_A_SUBDIR & c_file.attrib) != 0;
-				if(entry.isDirectory)
-				{
-					entry.path.MakeDirectoryPathname();
-				}
-
-				fileList.push_back(entry);
-				//Logger::FrameworkDebug("filelist: %s %s", filepath.c_str(), entry.name.c_str());
+				entry.path.MakeDirectoryPathname();
 			}
-			while( _findnext( hFile, &c_file ) == 0 );
 
-			_findclose( hFile );
+			fileList.push_back(entry);
+			//Logger::FrameworkDebug("filelist: %s %s", filepath.c_str(), entry.name.c_str());
 		}
+		while( _findnext( hFile, &c_file ) == 0 );
+
+		_findclose( hFile );
 	}
-	FileSystem::Instance()->SetCurrentWorkingDirectory(prevDir);
 
 	//TODO add drives
 	//entry.Name = "E:\\";
