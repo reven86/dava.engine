@@ -113,7 +113,7 @@ DisplayMode CorePlatformWinStore::GetCurrentDisplayMode()
 //------------------------------------------------------------------------------------------------------
 void CorePlatformWinStore::Quit()
 {
-
+    CoreApplication::Exit();
 }
 //------------------------------------------------------------------------------------------------------
 void CorePlatformWinStore::SetIcon(int32 iconId)
@@ -180,17 +180,19 @@ void WinStoreFrame::Initialize(CoreApplicationView^ applicationView)
 // This method is called after Initialize.
 void WinStoreFrame::SetWindow(CoreWindow^ window)
 {
+    uint32 w = window->Bounds.Width;
+    uint32 h = window->Bounds.Height;
+
 	win_store_frame = window;
 	//init angle
 	RenderManager::Create(Core::RENDERER_ANGLE);
 	RenderManager::Instance()->Create(win_store_frame.Get());
-	RenderSystem2D::Instance()->Init();
+    RenderManager::Instance()->Init(w, h);
+    RenderSystem2D::Instance()->Init();
 	FrameworkDidLaunched();
 	//RegisterRawInputDevices(&Rid, 1, sizeof(Rid));
-	//RenderManager::Instance()->ChangeDisplayMode(DisplayMode(800, 600, 16, 0), false);
-	RenderManager::Instance()->Init(800, 600);
-	//VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
-	//VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
+	VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(w, h);
+	VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(w, h);
 
 	// Specify the cursor type as the standard arrow cursor.
 	win_store_frame->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
