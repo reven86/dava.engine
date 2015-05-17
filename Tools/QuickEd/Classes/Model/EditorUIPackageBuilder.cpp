@@ -68,58 +68,34 @@ void EditorUIPackageBuilder::EndPackage()
 bool EditorUIPackageBuilder::ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader)
 {
     PackageControlsNode *importedPackage = packageNode->FindImportedPackage(packagePath);
-    if (importedPackage == nullptr)
+    if (importedPackage)
+        return true;
+    
+    EditorUIPackageBuilder *builder = new EditorUIPackageBuilder();
+    PackageControlsNode *controlsNode = nullptr;
+    if (loader->LoadPackage(packagePath, builder))
     {
-        // store state
-        PackageNode *prevPackageNode = packageNode;
-        PackageNode *prevBasePackage = basePackage;
-        ControlsContainerNode *prevInsertingTarget = insertingTarget;
-        int32 prevInsertingIndex = insertingIndex;
-        DAVA::List<ControlDescr> prevControlsStack = controlsStack;
-        
-        DAVA::BaseObject *prevObj = currentObject;
-        SectionProperty *prevSect = currentSection;
-
-        // clear state
-        packageNode = nullptr;
-        insertingTarget = nullptr;
-        insertingIndex = -1;
-        basePackage = nullptr;
-        controlsStack.clear();
-        currentObject = nullptr;
-        currentSection = nullptr;
-        
-        // load package
-        bool result = loader->LoadPackage(packagePath, this);
-        if (result)
-        {
-            PackageControlsNode *controlsNode = SafeRetain(packageNode->GetPackageControlsNode());
-            controlsNode->SetName(packageNode->GetName());
-            SafeRelease(packageNode);
-            
-            if (prevBasePackage)
-                commandExecutor->AddImportedPackageIntoPackage(controlsNode, prevPackageNode);
-            else
-                prevPackageNode->GetImportedPackagesNode()->Add(controlsNode);
-            SafeRelease(controlsNode);
-        }
-        else
-        {
-            DVASSERT(false);
-        }
-
-        // restore state
-        packageNode = prevPackageNode;
-        basePackage = prevBasePackage;
-        insertingTarget = prevInsertingTarget;
-        insertingIndex = prevInsertingIndex;
-        controlsStack = prevControlsStack;
-        currentObject = prevObj;
-        currentSection = prevSect;
-
-        return result;
+        controlsNode = SafeRetain(builder->packageNode->GetPackageControlsNode());
+        controlsNode->SetName(builder->packageNode->GetName());
     }
-    return true;
+    SafeDelete(builder);
+    
+    if (controlsNode)
+    {
+        if (basePackage)
+            commandExecutor->AddImportedPackageIntoPackage(controlsNode, packageNode);
+        else
+            packageNode->GetImportedPackagesNode()->Add(controlsNode);
+        
+        SafeRelease(controlsNode);
+
+        return true;
+    }
+    else
+    {
+        DVASSERT(false);
+        return false;
+    }
 }
 
 UIControl *EditorUIPackageBuilder::BeginControlWithClass(const String &className)
