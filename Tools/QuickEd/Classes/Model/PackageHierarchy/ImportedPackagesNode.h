@@ -19,11 +19,11 @@ public:
     virtual int GetCount() const override;
     virtual PackageControlsNode *Get(DAVA::int32 index) const override;
     
-    virtual DAVA::String GetName() const;
+    virtual DAVA::String GetName() const override;
+    bool CanInsertImportedPackage() const override;
+
     PackageControlsNode *FindPackageControlsNodeByName(const DAVA::String &name) const;
 
-    virtual int GetFlags() const override;
-    bool CanInsertImportedPackage() const;
     
     void Serialize(PackageSerializer *serializer) const;
     void Serialize(PackageSerializer *serializer, const DAVA::Set<PackageRef*> &packageRefs) const;

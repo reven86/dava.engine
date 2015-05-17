@@ -184,27 +184,6 @@ const Vector<ControlNode*> &ControlNode::GetInstances() const
     return instances;
 }
 
-int ControlNode::GetFlags() const
-{
-    int flag = 0;
-    switch (creationType) {
-        case CREATED_FROM_CLASS:
-            flag |= FLAG_CONTROL_CREATED_FROM_CLASS;
-            break;
-        case CREATED_FROM_PROTOTYPE:
-            flag |= FLAG_CONTROL_CREATED_FROM_PROTOTYPE;
-            break;
-        case CREATED_FROM_PROTOTYPE_CHILD:
-            flag |= FLAG_CONTROL_CREATED_FROM_PROTOTYPE_CHILD;
-            break;
-            
-        default:
-            DVASSERT(false);
-            break;
-    }
-    return IsReadOnly() ? (FLAG_READ_ONLY | flag) : flag ;
-}
-
 bool ControlNode::IsEditingSupported() const
 {
     return !IsReadOnly();

@@ -64,6 +64,11 @@ String ImportedPackagesNode::GetName() const
     return "Imported Packages";
 }
 
+bool ImportedPackagesNode::CanInsertImportedPackage() const
+{
+    return true;
+}
+
 PackageControlsNode *ImportedPackagesNode::FindPackageControlsNodeByName(const DAVA::String &name) const
 {
     for (PackageControlsNode *node : packageControlsNode)
@@ -72,16 +77,6 @@ PackageControlsNode *ImportedPackagesNode::FindPackageControlsNodeByName(const D
             return node;
     }
     return nullptr;
-}
-
-int ImportedPackagesNode::GetFlags() const
-{
-    return FLAG_READ_ONLY;
-}
-
-bool ImportedPackagesNode::CanInsertImportedPackage() const
-{
-    return true;
 }
 
 void ImportedPackagesNode::Serialize(PackageSerializer *serializer) const

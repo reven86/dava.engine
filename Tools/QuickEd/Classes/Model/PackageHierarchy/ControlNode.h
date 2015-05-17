@@ -46,8 +46,6 @@ public:
     ControlPrototype *GetPrototype() const;
     const DAVA::Vector<ControlNode*> &GetInstances() const;
 
-    int GetFlags() const override;
-    
     virtual bool IsEditingSupported() const override;
     virtual bool IsInsertingSupported() const override;
     virtual bool CanInsertControl(ControlNode *node, DAVA::int32 pos) const override;

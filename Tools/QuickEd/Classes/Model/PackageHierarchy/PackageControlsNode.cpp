@@ -83,11 +83,6 @@ PackageRef *PackageControlsNode::GetPackageRef() const
     return packageRef;
 }
 
-int PackageControlsNode::GetFlags() const
-{
-    return IsReadOnly() ? FLAG_READ_ONLY : 0;
-}
-
 bool PackageControlsNode::IsEditingSupported() const
 {
     return false;

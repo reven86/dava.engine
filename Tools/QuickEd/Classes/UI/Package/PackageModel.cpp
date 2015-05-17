@@ -102,44 +102,37 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
+    ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
     
-    int prototypeFlag = PackageBaseNode::FLAG_CONTROL_CREATED_FROM_PROTOTYPE | PackageBaseNode::FLAG_CONTROL_CREATED_FROM_PROTOTYPE_CHILD;
-    int controlFlag = PackageBaseNode::FLAG_CONTROL_CREATED_FROM_CLASS | PackageBaseNode::FLAG_CONTROL_CREATED_FROM_PROTOTYPE | PackageBaseNode::FLAG_CONTROL_CREATED_FROM_PROTOTYPE_CHILD;
-    int flags = node->GetFlags();
     switch(role)
     {
         case Qt::DisplayRole:
             return StringToQString(node->GetName());
             
         case Qt::DecorationRole:
-            if (node->GetControl())
+            if (controlNode)
             {
-                ControlNode *controlNode = DynamicTypeCheck<ControlNode *>(node);
-                if (controlNode)
+                if (controlNode->GetRootProperty()->GetCustomClassProperty()->IsSet())
                 {
-                    if (controlNode->GetRootProperty()->GetCustomClassProperty()->IsSet())
-                    {
-                        return QIcon(IconHelper::GetCustomIconPath());
-                    }
-                    else
-                    {
-                        const String &className = controlNode->GetRootProperty()->GetClassProperty()->GetClassName();
-                        return QIcon(IconHelper::GetIconPathForClassName(QString::fromStdString(className)));
-                    }
+                    return QIcon(IconHelper::GetCustomIconPath());
+                }
+                else
+                {
+                    const String &className = controlNode->GetRootProperty()->GetClassProperty()->GetClassName();
+                    return QIcon(IconHelper::GetIconPathForClassName(QString::fromStdString(className)));
                 }
             }
             return QVariant();
             
         case Qt::CheckStateRole:
-            if (node->GetControl())
-                return node->GetControl()->GetVisibleForUIEditor() ? Qt::Checked : Qt::Unchecked;
+            if (controlNode)
+                return controlNode->GetControl()->GetVisibleForUIEditor() ? Qt::Checked : Qt::Unchecked;
             else
                 return QVariant();
             
         case Qt::ToolTipRole:
-            if (node->GetControl() != nullptr)
+            if (controlNode != nullptr)
             {
-                ControlNode *controlNode = DynamicTypeCheck<ControlNode *>(node);
                 const String &prototype = controlNode->GetRootProperty()->GetPrototypeProperty()->GetPrototypeName();
                 const String &className = controlNode->GetRootProperty()->GetClassProperty()->GetClassName();
                 const String &customClassName = controlNode->GetRootProperty()->GetCustomClassProperty()->GetCustomClassName();
@@ -158,17 +151,18 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
             break;
             
         case Qt::TextColorRole:
-            return (flags & prototypeFlag) != 0 ? QColor(Qt::blue) : QColor(Qt::black);
+            return controlNode != nullptr && controlNode->GetPrototype() != nullptr ? QColor(Qt::blue) : QColor(Qt::black);
             
         case Qt::BackgroundRole:
-            return (flags & controlFlag) == 0 ? QColor(Qt::lightGray) : QColor(Qt::white);
+            return controlNode == nullptr ? QColor(Qt::lightGray) : QColor(Qt::white);
             
         case Qt::FontRole:
         {
             QFont myFont;
-            if ((flags & PackageBaseNode::FLAG_CONTROL_CREATED_FROM_PROTOTYPE) != 0 || (flags & controlFlag) == 0)
+            if (controlNode == nullptr || controlNode->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
                 myFont.setBold(true);
-            if ((flags & PackageBaseNode::FLAG_READ_ONLY) != 0)
+            
+            if (node->IsReadOnly())
                 myFont.setItalic(true);
             
             return myFont;

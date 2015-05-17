@@ -27,9 +27,9 @@ public:
     virtual PackageBaseNode *Get(int index) const override;
 
     virtual DAVA::String GetName() const override;
-    int GetFlags() const override;
     
     virtual PackageRef *GetPackageRef() const override;
+    virtual bool IsReadOnly() const override;
     
     ImportedPackagesNode *GetImportedPackagesNode() const;
     PackageControlsNode *GetPackageControlsNode() const;
@@ -60,9 +60,6 @@ public:
 private:
     void CollectPackages(DAVA::Set<PackageRef*> &packageRefs, ControlNode *node) const;
     void RefreshPropertiesInInstances(ControlNode *node, AbstractProperty *property);
-
-protected:
-    virtual bool IsReadOnly() const override;
     
 private:
     PackageRef *packageRef;

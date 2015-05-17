@@ -49,14 +49,14 @@ String PackageNode::GetName() const
     return packageRef->GetName();
 }
 
-int PackageNode::GetFlags() const
-{
-    return 0;
-}
-
 PackageRef *PackageNode::GetPackageRef() const
 {
     return packageRef;
+}
+
+bool PackageNode::IsReadOnly() const
+{
+    return false;
 }
 
 ImportedPackagesNode *PackageNode::GetImportedPackagesNode() const
@@ -245,9 +245,4 @@ void PackageNode::RefreshPropertiesInInstances(ControlNode *node, AbstractProper
             RefreshProperty(instance, instanceProperty);
         }
     }
-}
-
-bool PackageNode::IsReadOnly() const
-{
-    return false;
 }

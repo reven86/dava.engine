@@ -31,8 +31,6 @@ public:
     
     virtual PackageRef *GetPackageRef() const override;
     
-    int GetFlags() const override;
-
     virtual bool IsEditingSupported() const override;
     virtual bool IsInsertingSupported() const override;
     virtual bool CanInsertControl(ControlNode *node, DAVA::int32 pos) const override;

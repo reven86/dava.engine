@@ -14,15 +14,6 @@ class PackageRef;
 class PackageBaseNode : public DAVA::BaseObject
 {
 public:
-    static const int FLAG_READ_ONLY = 0x01;
-    static const int FLAG_CONTROL_CREATED_FROM_CLASS = 0x02;
-    static const int FLAG_CONTROL_CREATED_FROM_PROTOTYPE = 0x04;
-    static const int FLAG_CONTROL_CREATED_FROM_PROTOTYPE_CHILD = 0x08;
-
-    static const int FLAGS_CONTROL = FLAG_CONTROL_CREATED_FROM_CLASS | FLAG_CONTROL_CREATED_FROM_PROTOTYPE | FLAG_CONTROL_CREATED_FROM_PROTOTYPE_CHILD;
-    static const int FLAGS_INSTANCED_PROTOTYPE = FLAG_CONTROL_CREATED_FROM_PROTOTYPE | FLAG_CONTROL_CREATED_FROM_PROTOTYPE_CHILD;
-
-public:
     PackageBaseNode(PackageBaseNode *parent);
 protected:
     virtual ~PackageBaseNode();
@@ -40,8 +31,6 @@ public:
     
     virtual DAVA::UIControl *GetControl() const;
     
-    virtual int GetFlags() const = 0;
-    
     virtual void debugDump(int depth);
     
     virtual bool IsEditingSupported() const;
@@ -50,8 +39,6 @@ public:
     virtual bool CanInsertImportedPackage() const;
     virtual bool CanRemove() const;
     virtual bool CanCopy() const;
-
-protected:
     virtual bool IsReadOnly() const;
     
 private:

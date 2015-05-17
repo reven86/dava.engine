@@ -220,7 +220,7 @@ void PackageWidget::CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &nodes
         YamlPackageSerializer serializer;
         Document* doc = sharedData->GetDocument();
         PackageNode *pac = doc->GetPackage();
-        pac->Serialize(&serializer, nodes);//TODO - this is deprecated
+        pac->Serialize(&serializer, nodes);
         String str = serializer.WriteToString();
         QMimeData *data = new QMimeData();
         data->setText(QString(str.c_str()));
@@ -338,7 +338,7 @@ void PackageWidget::OnPaste()
         PackageBaseNode *baseNode = static_cast<PackageBaseNode*>(index.internalPointer());
         ControlsContainerNode *node = dynamic_cast<ControlsContainerNode*>(baseNode);
         
-        if (nullptr != node && (node->GetFlags() & PackageBaseNode::FLAG_READ_ONLY) == 0)
+        if (node != nullptr && !node->IsReadOnly())
         {
             String string = clipboard->mimeData()->text().toStdString();
             Document *doc = sharedData->GetDocument();
