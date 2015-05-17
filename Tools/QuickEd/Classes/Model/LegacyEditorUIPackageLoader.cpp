@@ -14,8 +14,8 @@ using namespace DAVA;
 
 LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(LegacyControlData *data)
     : legacyData(SafeRetain(data))
-    , firstControlName("")
-    , storeControlName(false)
+    , storeAggregatorName(false)
+    , aggregatorName("")
 
 {
     // for legacy loading
@@ -75,6 +75,11 @@ bool LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath, Abstr
     const LegacyControlData::Data *data = legacyData ? legacyData->Get(packagePath.GetFrameworkPath()) : NULL;
     if (data)
     {
+        if (storeAggregatorName)
+        {
+            aggregatorName = data->name;
+            storeAggregatorName = false;
+        }
         legacyControl->SetName(data->name);
         builder->ProcessProperty(legacyControl->TypeInfo()->Member("size"), VariantType(data->size));
     }
@@ -113,13 +118,6 @@ bool LegacyEditorUIPackageLoader::LoadControlByName(const DAVA::String &/*name*/
 
 void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const YamlNode *node, DAVA::AbstractUIPackageBuilder *builder)
 {
-    if (storeControlName)
-    {
-        DVASSERT(firstControlName.empty());
-        firstControlName = name;
-        storeControlName = false;
-    }
-    
     UIControl *control = NULL;
     const YamlNode *type = node->Get("type");
     const YamlNode *baseType = node->Get("baseType");
@@ -128,15 +126,15 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
     {
         loadChildren = false;
         const YamlNode *pathNode = node->Get("aggregatorPath");
-        storeControlName = true;
-        firstControlName = "";
+        storeAggregatorName = true;
+        aggregatorName = "";
         bool result = builder->ProcessImportedPackage(pathNode->AsString(), this);
         DVASSERT(result);
-        DVASSERT(storeControlName == false);
-        DVASSERT(!firstControlName.empty());
-        control = builder->BeginControlWithPrototype(FilePath(pathNode->AsString()).GetBasename(), firstControlName, nullptr, this);
-        storeControlName = false;
-        firstControlName = "";
+        DVASSERT(storeAggregatorName == false);
+        DVASSERT(!aggregatorName.empty());
+        control = builder->BeginControlWithPrototype(FilePath(pathNode->AsString()).GetBasename(), aggregatorName, nullptr, this);
+        storeAggregatorName = false;
+        aggregatorName = "";
     }
     else if (baseType)
         control = builder->BeginControlWithCustomClass(type->AsString(), baseType->AsString());

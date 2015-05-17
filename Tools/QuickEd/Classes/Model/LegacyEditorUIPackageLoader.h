@@ -62,11 +62,11 @@ private:
 private:
     DAVA::Map<DAVA::String, DAVA::Map<DAVA::String, DAVA::String> > propertyNamesMap;
     DAVA::Map<DAVA::String, DAVA::String> baseClasses;
-    bool storeControlName;
-    DAVA::String firstControlName;
     
 private:
     LegacyControlData *legacyData;
+    bool storeAggregatorName;
+    DAVA::String aggregatorName;
 };
 
 
