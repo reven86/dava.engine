@@ -3,26 +3,18 @@
 
 #include "Base/BaseObject.h"
 
-namespace DAVA
-{
-    class UIPackage;
-}
-
 class PackageRef : public DAVA::BaseObject
 {
 public:
-    PackageRef(const DAVA::FilePath &path, DAVA::UIPackage *package);
+    PackageRef(const DAVA::FilePath &path);
     virtual ~PackageRef();
 
     DAVA::String GetName() const;
     const DAVA::FilePath &GetPath() const;
-    bool IsPackageLoaded() const;
-    DAVA::UIPackage *GetPackage() const;
     
 private:
     DAVA::String name;
     DAVA::FilePath path;
-    DAVA::UIPackage *package;
 };
 
 #endif // __QUICKED_PACKAGE_REF_H__

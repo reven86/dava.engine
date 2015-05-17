@@ -44,9 +44,6 @@ public:
     void Serialize(PackageSerializer *serializer, const DAVA::Vector<ControlNode*> &nodes) const;
 
 private:
-    DAVA::UIPackage *GetPackage() const;
-
-private:
     DAVA::String name;
     DAVA::Vector<ControlNode*> nodes;
     

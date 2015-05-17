@@ -49,13 +49,11 @@ void EditorUIPackageBuilder::BeginPackage(const FilePath &packagePath)
     
     if (basePackage) // if there is exists base package we skip creating new one
     {
-        RefPtr<UIPackage> package(SafeRetain(basePackage->GetPackageRef()->GetPackage()));
         packageNode = SafeRetain(basePackage);
     }
     else
     {
-        RefPtr<UIPackage> package(new UIPackage());
-        ScopedPtr<PackageRef> ref(new PackageRef(packagePath, package.Get()));
+        ScopedPtr<PackageRef> ref(new PackageRef(packagePath));
         packageNode = new PackageNode(ref);
     }
 }

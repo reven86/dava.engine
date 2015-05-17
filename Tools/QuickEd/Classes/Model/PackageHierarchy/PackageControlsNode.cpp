@@ -31,7 +31,6 @@ void PackageControlsNode::Add(ControlNode *node)
     DVASSERT(node->GetParent() == nullptr);
     node->SetParent(this);
     nodes.push_back(SafeRetain(node));
-    GetPackage()->AddControl(node->GetControl());
 }
 
 void PackageControlsNode::InsertAtIndex(int index, ControlNode *node)
@@ -40,7 +39,6 @@ void PackageControlsNode::InsertAtIndex(int index, ControlNode *node)
     node->SetParent(this);
 
     nodes.insert(nodes.begin() + index, SafeRetain(node));
-    GetPackage()->InsertControlAtIndex(index, node->GetControl());
 }
 
 void PackageControlsNode::Remove(ControlNode *node)
@@ -51,7 +49,6 @@ void PackageControlsNode::Remove(ControlNode *node)
         DVASSERT(node->GetParent() == this);
         node->SetParent(NULL);
 
-        GetPackage()->RemoveControl(node->GetControl());
         nodes.erase(it);
         SafeRelease(node);
     }
@@ -139,9 +136,4 @@ void PackageControlsNode::Serialize(PackageSerializer *serializer, const DAVA::V
         (*it)->Serialize(serializer);
     
     serializer->EndArray();
-}
-
-UIPackage *PackageControlsNode::GetPackage() const
-{
-    return packageRef->GetPackage();
 }
