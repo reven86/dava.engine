@@ -42,12 +42,7 @@ EditorUIPackageBuilder::~EditorUIPackageBuilder()
     insertingTarget = nullptr;
 }
 
-UIPackage * EditorUIPackageBuilder::FindInCache(const String &packagePath) const
-{
-    return nullptr;
-}
-
-RefPtr<UIPackage> EditorUIPackageBuilder::BeginPackage(const FilePath &packagePath)
+void EditorUIPackageBuilder::BeginPackage(const FilePath &packagePath)
 {
     DVASSERT(packageNode == nullptr);
     SafeRelease(packageNode);
@@ -56,14 +51,12 @@ RefPtr<UIPackage> EditorUIPackageBuilder::BeginPackage(const FilePath &packagePa
     {
         RefPtr<UIPackage> package(SafeRetain(basePackage->GetPackageRef()->GetPackage()));
         packageNode = SafeRetain(basePackage);
-        return package;
     }
     else
     {
         RefPtr<UIPackage> package(new UIPackage());
         ScopedPtr<PackageRef> ref(new PackageRef(packagePath, package.Get()));
         packageNode = new PackageNode(ref);
-        return package;
     }
 }
 
@@ -72,7 +65,7 @@ void EditorUIPackageBuilder::EndPackage()
     DVASSERT(packageNode != nullptr);
 }
 
-RefPtr<UIPackage> EditorUIPackageBuilder::ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader)
+bool EditorUIPackageBuilder::ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader)
 {
     PackageControlsNode *importedPackage = packageNode->FindImportedPackage(packagePath);
     if (importedPackage == nullptr)
@@ -97,16 +90,23 @@ RefPtr<UIPackage> EditorUIPackageBuilder::ProcessImportedPackage(const String &p
         currentSection = nullptr;
         
         // load package
-        RefPtr<UIPackage> result(loader->LoadPackage(packagePath));
-        PackageControlsNode *controlsNode = SafeRetain(packageNode->GetPackageControlsNode());
-        controlsNode->SetName(packageNode->GetName());
-        SafeRelease(packageNode);
-        
-        if (prevBasePackage)
-            commandExecutor->AddImportedPackageIntoPackage(controlsNode, prevPackageNode);
+        bool result = loader->LoadPackage(packagePath, this);
+        if (result)
+        {
+            PackageControlsNode *controlsNode = SafeRetain(packageNode->GetPackageControlsNode());
+            controlsNode->SetName(packageNode->GetName());
+            SafeRelease(packageNode);
+            
+            if (prevBasePackage)
+                commandExecutor->AddImportedPackageIntoPackage(controlsNode, prevPackageNode);
+            else
+                prevPackageNode->GetImportedPackagesNode()->Add(controlsNode);
+            SafeRelease(controlsNode);
+        }
         else
-            prevPackageNode->GetImportedPackagesNode()->Add(controlsNode);
-        SafeRelease(controlsNode);
+        {
+            DVASSERT(false);
+        }
 
         // restore state
         packageNode = prevPackageNode;
@@ -119,7 +119,7 @@ RefPtr<UIPackage> EditorUIPackageBuilder::ProcessImportedPackage(const String &p
 
         return result;
     }
-    return RefPtr<UIPackage>(SafeRetain(importedPackage->GetPackageRef()->GetPackage()));
+    return true;
 }
 
 UIControl *EditorUIPackageBuilder::BeginControlWithClass(const String &className)
@@ -163,7 +163,7 @@ UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packa
         prototypeNode = controlsNode->FindControlNodeByName(prototypeName);
         if (prototypeNode == nullptr && packageName.empty())
         {
-            if (loader->LoadControlByName(prototypeName))
+            if (loader->LoadControlByName(prototypeName, this))
                 prototypeNode = controlsNode->FindControlNodeByName(prototypeName);
         }
         

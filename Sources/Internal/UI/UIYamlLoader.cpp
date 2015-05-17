@@ -418,11 +418,11 @@ bool UIYamlLoader::SaveFonts(const FilePath & yamlPathname)
 void UIYamlLoader::Load(UIControl * rootControl, const FilePath & yamlPathname, bool assertIfCustomControlNotFound /* = true */)
 {
     DefaultUIPackageBuilder builder;
-    RefPtr<UIPackage> package(UIPackageLoader(&builder).LoadPackage(yamlPathname));
-    if (package.Valid())
+    UIPackageLoader().LoadPackage(yamlPathname, &builder);
+    if (builder.GetPackage())
     {
-        DVASSERT(package->GetControlsCount() == 1);
-        UIControl *control = package->GetControl(0);
+        DVASSERT(builder.GetPackage()->GetControlsCount() == 1);
+        UIControl *control = builder.GetPackage()->GetControl(0);
         DVASSERT(control);
         while (!control->GetChildren().empty())
         {

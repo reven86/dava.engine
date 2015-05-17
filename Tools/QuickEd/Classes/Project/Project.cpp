@@ -185,17 +185,14 @@ RefPtr<PackageNode> Project::OpenPackage(const QString &packagePath)
     String fwPath = path.GetFrameworkPath();
 
     EditorUIPackageBuilder builder;
-    UIPackage *newPackage = UIPackageLoader(&builder).LoadPackage(path);
-    if (nullptr == newPackage)
-    {
-        newPackage = LegacyEditorUIPackageLoader(&builder, legacyData).LoadPackage(path);
-    }
+    
+    bool packageLoaded = UIPackageLoader().LoadPackage(path, &builder);
+    if (!packageLoaded)
+        packageLoaded = LegacyEditorUIPackageLoader(legacyData).LoadPackage(path, &builder);
 
-    if (nullptr != newPackage)
-    {
-        SafeRelease(newPackage);
+    if (packageLoaded)
         return builder.GetPackageNode();
-    }
+    
     return RefPtr<PackageNode>();
 }
 

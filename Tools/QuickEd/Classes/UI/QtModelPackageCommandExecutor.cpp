@@ -184,9 +184,7 @@ bool QtModelPackageCommandExecutor::Paste(PackageNode *root, ControlsContainerNo
     {
         BeginMacro("Paste");
         EditorUIPackageBuilder builder(root, dest, destIndex, this);
-        UIPackage *newPackage = UIPackageLoader(&builder).LoadPackage(parser->GetRootNode(), "");
-        bool completed = newPackage != nullptr;
-        SafeRelease(newPackage);
+        bool completed = UIPackageLoader().LoadPackage(parser->GetRootNode(), "", &builder);
         EndMacro();
         
         if (completed)

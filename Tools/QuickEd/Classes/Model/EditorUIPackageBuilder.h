@@ -16,12 +16,10 @@ public:
     EditorUIPackageBuilder(PackageNode *basePackage = nullptr, ControlsContainerNode *insertingTarget = nullptr, DAVA::int32 insertingIndx = -1, PackageCommandExecutor *executor = nullptr);
     virtual ~EditorUIPackageBuilder();
 
-    virtual DAVA::UIPackage *FindInCache(const DAVA::String &packagePath) const override;
-
-    virtual DAVA::RefPtr<DAVA::UIPackage> BeginPackage(const DAVA::FilePath &packagePath) override;
+    virtual void BeginPackage(const DAVA::FilePath &packagePath) override;
     virtual void EndPackage() override;
     
-    virtual DAVA::RefPtr<DAVA::UIPackage> ProcessImportedPackage(const DAVA::String &packagePath, DAVA::AbstractUIPackageLoader *loader) override;
+    virtual bool ProcessImportedPackage(const DAVA::String &packagePath, DAVA::AbstractUIPackageLoader *loader) override;
     
     virtual DAVA::UIControl *BeginControlWithClass(const DAVA::String &className) override;
     virtual DAVA::UIControl *BeginControlWithCustomClass(const DAVA::String &customClassName, const DAVA::String &className) override;
