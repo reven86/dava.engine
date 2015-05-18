@@ -66,7 +66,7 @@ public:
 
 class RenderDataObject : public RenderResource //BaseObject
 {
-    ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_RENDERDATAOBJECT)
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_RENDERDATAOBJECT)
 
 protected:
     virtual ~RenderDataObject();

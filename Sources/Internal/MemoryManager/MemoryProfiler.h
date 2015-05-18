@@ -35,19 +35,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "MemoryManager.h"
 
-#define MEMORY_PROFILER_REGISTER_TAG(index, name)           DAVA::MemoryManager::RegisterTagName(index, name)
-#define MEMORY_PROFILER_REGISTER_ALLOC_POOL(index, name)    DAVA::MemoryManager::RegisterAllocPoolName(index, name)
+#define DAVA_MEMORY_PROFILER_UPDATE()                           DAVA::MemoryManager::Instance()->Update()
 
-#define MEMORY_PROFILER_ENTER_TAG(tag)                      DAVA::MemoryManager::Instance()->EnterTagScope(tag)
-#define MEMORY_PROFILER_LEAVE_TAG(tag)                      DAVA::MemoryManager::Instance()->LeaveTagScope(tag)
+#define DAVA_MEMORY_PROFILER_REGISTER_TAG(index, name)          DAVA::MemoryManager::RegisterTagName(index, name)
+#define DAVA_MEMORY_PROFILER_REGISTER_ALLOC_POOL(index, name)   DAVA::MemoryManager::RegisterAllocPoolName(index, name)
 
-#define MEMORY_PROFILER_GPU_ALLOC(id, size, gpuAllocPool)   DAVA::MemoryManager::Instance()->TrackGpuAlloc(id, size, gpuAllocPool)
-#define MEMORY_PROFILER_GPU_DEALLOC(id, gpuAllocPool)       DAVA::MemoryManager::Instance()->TrackGpuDealloc(id, gpuAllocPool)
+#define DAVA_MEMORY_PROFILER_ENTER_TAG(tag)                     DAVA::MemoryManager::Instance()->EnterTagScope(tag)
+#define DAVA_MEMORY_PROFILER_LEAVE_TAG(tag)                     DAVA::MemoryManager::Instance()->LeaveTagScope(tag)
 
-#define MEMORY_PROFILER_ALLOC_SCOPE(allocPool)              DAVA::MemoryManager::AllocPoolScope memory_profiler_alloc_scope(allocPool)
-#define MEMORY_PROFILER_CLASS_ALLOC_SCOPE()                 DAVA::MemoryManager::AllocPoolScope memory_profiler_alloc_scope(this_class_allocation_pool)
+#define DAVA_MEMORY_PROFILER_GPU_ALLOC(id, size, gpuAllocPool)  DAVA::MemoryManager::Instance()->TrackGpuAlloc(id, size, gpuAllocPool)
+#define DAVA_MEMORY_PROFILER_GPU_DEALLOC(id, gpuAllocPool)      DAVA::MemoryManager::Instance()->TrackGpuDealloc(id, gpuAllocPool)
 
-#define ENABLE_CLASS_ALLOCATION_TRACKING(allocPool)                                                                                     \
+#define DAVA_MEMORY_PROFILER_ALLOC_SCOPE(allocPool)             DAVA::MemoryManager::AllocPoolScope memory_profiler_alloc_scope(allocPool)
+#define DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE()                DAVA::MemoryManager::AllocPoolScope memory_profiler_alloc_scope(this_class_allocation_pool)
+
+#define DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(allocPool)                                                                                     \
 private:                                                                                                                                \
     static const DAVA::int32 this_class_allocation_pool = allocPool;                                                                    \
 public:                                                                                                                                 \
@@ -58,19 +60,21 @@ public:                                                                         
 
 #else   // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
-#define MEMORY_PROFILER_REGISTER_TAG(index, name)
-#define MEMORY_PROFILER_REGISTER_ALLOC_POOL(index, name)
+#define DAVA_MEMORY_PROFILER_UPDATE()
 
-#define MEMORY_PROFILER_ENTER_TAG(tag)
-#define MEMORY_PROFILER_LEAVE_TAG(tag)
+#define DAVA_MEMORY_PROFILER_REGISTER_TAG(index, name)
+#define DAVA_MEMORY_PROFILER_REGISTER_ALLOC_POOL(index, name)
 
-#define MEMORY_PROFILER_GPU_ALLOC(id, size, gpuAllocPool)
-#define MEMORY_PROFILER_GPU_DEALLOC(id, gpuAllocPool)
+#define DAVA_MEMORY_PROFILER_ENTER_TAG(tag)
+#define DAVA_MEMORY_PROFILER_LEAVE_TAG(tag)
 
-#define MEMORY_PROFILER_ALLOC_SCOPE(allocPool)
-#define MEMORY_PROFILER_CLASS_ALLOC_SCOPE()
+#define DAVA_MEMORY_PROFILER_GPU_ALLOC(id, size, gpuAllocPool)
+#define DAVA_MEMORY_PROFILER_GPU_DEALLOC(id, gpuAllocPool)
 
-#define ENABLE_CLASS_ALLOCATION_TRACKING(allocPool)
+#define DAVA_MEMORY_PROFILER_ALLOC_SCOPE(allocPool)
+#define DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE()
+
+#define DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(allocPool)
 
 #endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
 

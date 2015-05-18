@@ -60,7 +60,7 @@ class TransformComponent;
  */
 class Entity : public BaseObject
 {
-    ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_ENTITY);
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_ENTITY);
 
 protected:
 	virtual ~Entity();

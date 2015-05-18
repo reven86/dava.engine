@@ -56,7 +56,7 @@ Image::~Image()
 
 Image * Image::Create(uint32 width, uint32 height, PixelFormat format)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
 	Image * image = new Image();
 	image->width = width;
@@ -100,7 +100,7 @@ Image * Image::Create(uint32 width, uint32 height, PixelFormat format)
 
 Image * Image::CreateFromData(uint32 width, uint32 height, PixelFormat format, const uint8 *data)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
 	Image * image = Image::Create(width, height, format);
 	if(!image) return NULL;
@@ -115,7 +115,7 @@ Image * Image::CreateFromData(uint32 width, uint32 height, PixelFormat format, c
 
 Image * Image::CreatePinkPlaceholder(bool checkers)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     Image * image = Image::Create(16, 16, FORMAT_RGBA8888);
     image->MakePink(checkers);
@@ -125,7 +125,7 @@ Image * Image::CreatePinkPlaceholder(bool checkers)
 
 void Image::MakePink(bool checkers)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     if(data == NULL) return;
     
@@ -147,7 +147,7 @@ void Image::MakePink(bool checkers)
 
 void Image::Normalize()
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
     uint8 * newImage0Data = new uint8[width * height * formatSize];
@@ -159,7 +159,7 @@ void Image::Normalize()
     
 Vector<Image *> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     Vector<Image *> imageSet;
 
@@ -209,7 +209,7 @@ Vector<Image *> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
 
 void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
 	uint8 * newData = NULL;
 	int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
@@ -259,7 +259,7 @@ void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
 
 void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     uint8 * newData = NULL;
     uint32 newDataSize = 0;
@@ -324,7 +324,7 @@ Image* Image::CopyImageRegion(const Image* imageToCopy,
 							  uint32 newWidth, uint32 newHeight,
 							  uint32 xOffset, uint32 yOffset)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
 	uint32 oldWidth = imageToCopy->GetWidth();
 	uint32 oldHeight = imageToCopy->GetHeight();
@@ -357,7 +357,7 @@ void Image::InsertImage(const Image* image, uint32 dstX, uint32 dstY,
 						uint32 srcX /* = 0 */, uint32 srcY /* = 0 */,
 						uint32 srcWidth /* = -1 */, uint32 srcHeight /* = -1 */)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
 	if (GetPixelFormat() != image->GetPixelFormat())
 	{
@@ -413,7 +413,7 @@ void Image::InsertImage(const Image* image, const Vector2& dstPos, const Rect& s
 
 bool Image::Save(const FilePath &path) const
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     return ImageSystem::Instance()->Save(path, const_cast<Image*>(this), format) == SUCCESS;
 }
@@ -421,7 +421,7 @@ bool Image::Save(const FilePath &path) const
 
 void Image::FlipHorizontal()
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
 	switch(format)
 	{
@@ -448,7 +448,7 @@ void Image::FlipHorizontal()
 
 void Image::FlipVertical()
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
 	switch(format)
 	{

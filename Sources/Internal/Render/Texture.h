@@ -74,7 +74,7 @@ public:
 
 class Texture : public RenderResource
 {
-    ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_TEXTURE)
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_TEXTURE)
 
 public:
     

@@ -55,7 +55,7 @@ public:
 
 class Image : public BaseObject
 {
-    ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_IMAGE)
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_IMAGE)
 
 protected:
 	virtual ~Image();

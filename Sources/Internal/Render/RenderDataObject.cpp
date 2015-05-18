@@ -117,19 +117,19 @@ void RenderDataObject::DeleteBuffersInternal(uint32 vboBuffer, uint32 indexBuffe
     if(vboBuffer)
     {
         RENDER_VERIFY(RenderManager::Instance()->HWglDeleteBuffers(1, &vboBuffer));
-        MEMORY_PROFILER_GPU_DEALLOC(vboBuffer, ALLOC_GPU_RDO_VERTEX);
+        DAVA_MEMORY_PROFILER_GPU_DEALLOC(vboBuffer, ALLOC_GPU_RDO_VERTEX);
     }
     if(indexBuffer)
     {
         RENDER_VERIFY(RenderManager::Instance()->HWglDeleteBuffers(1, &indexBuffer));
-        MEMORY_PROFILER_GPU_DEALLOC(indexBuffer, ALLOC_GPU_RDO_INDEX);
+        DAVA_MEMORY_PROFILER_GPU_DEALLOC(indexBuffer, ALLOC_GPU_RDO_INDEX);
     }
 #endif
 }
 
 RenderDataStream * RenderDataObject::SetStream(eVertexFormat formatMark, eVertexDataType vertexType, int32 size, int32 stride, const void * pointer)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     DVASSERT(!vertexAttachmentActive);
     
@@ -156,7 +156,7 @@ RenderDataStream * RenderDataObject::SetStream(eVertexFormat formatMark, eVertex
 
 void RenderDataObject::RemoveStream(eVertexFormat formatMark)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     DVASSERT(!vertexAttachmentActive);
     
@@ -187,7 +187,7 @@ uint32 RenderDataObject::GetResultFormat() const
     
 void RenderDataObject::BuildVertexBuffer(int32 vertexCount, eBufferDrawType type, bool synchronously)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
 	DVASSERT(!vertexAttachmentActive);
 
@@ -205,7 +205,7 @@ void RenderDataObject::BuildVertexBuffer(int32 vertexCount, eBufferDrawType type
 
 void RenderDataObject::BuildVertexBufferInternal(int32 vertexCount, eBufferDrawType type)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
 	DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)
@@ -240,7 +240,7 @@ void RenderDataObject::BuildVertexBufferInternal(int32 vertexCount, eBufferDrawT
     savedVertexBufferType = type;
 #endif //#if defined (__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glBufferData(GL_ARRAY_BUFFER, vertexCount * stride, streamArray[0]->pointer, BUFFERDRAWTYPE_MAP[type]));
-    MEMORY_PROFILER_GPU_ALLOC(vboBuffer, static_cast<size_t>(vertexCount * stride), ALLOC_GPU_RDO_VERTEX);
+    DAVA_MEMORY_PROFILER_GPU_ALLOC(vboBuffer, static_cast<size_t>(vertexCount * stride), ALLOC_GPU_RDO_VERTEX);
 
     streamArray[0]->pointer = 0;
     for (uint32 k = 1; k < size; ++k)
@@ -277,7 +277,7 @@ void RenderDataObject::BuildIndexBuffer(eBufferDrawType type, bool synchronously
 
 void RenderDataObject::BuildIndexBufferInternal(eBufferDrawType type)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)
@@ -308,7 +308,7 @@ void RenderDataObject::BuildIndexBufferInternal(eBufferDrawType type)
     RENDER_VERIFY(glGenBuffers(1, &indexBuffer));
     RENDER_VERIFY(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer));
     RENDER_VERIFY(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * INDEX_FORMAT_SIZE[indexFormat], indices, GL_STATIC_DRAW));
-    MEMORY_PROFILER_GPU_ALLOC(indexBuffer, static_cast<size_t>(indexCount * INDEX_FORMAT_SIZE[indexFormat]), ALLOC_GPU_RDO_INDEX);
+    DAVA_MEMORY_PROFILER_GPU_ALLOC(indexBuffer, static_cast<size_t>(indexCount * INDEX_FORMAT_SIZE[indexFormat]), ALLOC_GPU_RDO_INDEX);
 #endif
     
 #if defined(__DAVAENGINE_OPENGL_ARB_VBO__)
@@ -322,7 +322,7 @@ void RenderDataObject::BuildIndexBufferInternal(eBufferDrawType type)
 
 void RenderDataObject::AttachVertices(RenderDataObject* vertexSource)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     DVASSERT(vertexSource);
     DVASSERT(0 == vboBuffer);
@@ -376,7 +376,7 @@ void RenderDataObject::UpdateVertexBuffer(int32 offset, int32 vertexCount, bool 
 
 void RenderDataObject::UpdateVertexBufferInternal(int32 offset, int32 vertexCount)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     DVASSERT(Thread::IsMainThread());
 
@@ -422,7 +422,7 @@ void RenderDataObject::UpdateIndexBuffer(int32 offset, bool synchronously)
 
 void RenderDataObject::UpdateIndexBufferInternal(int32 offset)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)
@@ -448,7 +448,7 @@ void RenderDataObject::Lost()
 
 void RenderDataObject::Invalidate()
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
 //    Logger::FrameworkDebug("[RenderDataObject::Invalidate]");
 

@@ -43,7 +43,7 @@ namespace DAVA
 class Entity;
 class Component : public Serializable, public InspBase
 {
-    ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_COMPONENT);
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_COMPONENT);
 
 public:
     enum eType

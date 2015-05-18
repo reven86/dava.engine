@@ -78,7 +78,7 @@ PolygonGroup::~PolygonGroup()
     
 void PolygonGroup::UpdateDataPointersAndStreams()
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     int32 baseShift = 0;
 	if (vertexFormat & EVF_VERTEX)
@@ -214,7 +214,7 @@ void PolygonGroup::UpdateDataPointersAndStreams()
 
 void PolygonGroup::AllocateData(int32 _meshFormat, int32 _vertexCount, int32 _indexCount)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     vertexCount = _vertexCount;
     indexCount = _indexCount;
@@ -243,7 +243,7 @@ void PolygonGroup::TangentVectors(  const Vector3 &v0,
                                     Vector3 &tdir, 
                                     Vector3 &normal)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     Vector3 dv0 = v1 - v0;
     Vector3 dv1 = v2 - v0;
@@ -260,7 +260,7 @@ void PolygonGroup::TangentVectors(  const Vector3 &v0,
     
 void PolygonGroup::BuildTangentsBinormals(uint32 flagsToAdd)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     if (!(vertexFormat & EVF_TANGENT))
     {
@@ -407,7 +407,7 @@ void PolygonGroup::BuildTangentsBinormals(uint32 flagsToAdd)
     
 void PolygonGroup::CreateBaseVertexArray()
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     SafeDeleteArray(baseVertexArray);
     baseVertexArray = new Vector3[vertexCount];
@@ -420,7 +420,7 @@ void PolygonGroup::CreateBaseVertexArray()
     
 void PolygonGroup::ApplyMatrix(const Matrix4 & matrix)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     aabbox = AABBox3(); // reset bbox
     
@@ -463,7 +463,7 @@ void PolygonGroup::ReleaseData()
 	
 void PolygonGroup::BuildBuffers()
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     UpdateDataPointersAndStreams();
     JobManager::Instance()->CreateMainJob(MakeFunction(PointerWrapper<PolygonGroup>::WrapRetainRelease(this), &PolygonGroup::BuildBuffersInternal));
@@ -471,7 +471,7 @@ void PolygonGroup::BuildBuffers()
     
 void PolygonGroup::BuildBuffersInternal()
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     DVASSERT(Thread::IsMainThread());
     
@@ -484,7 +484,7 @@ void PolygonGroup::BuildBuffersInternal()
     
 void PolygonGroup::Save(KeyedArchive * keyedArchive, SerializationContext * serializationContext)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     DataNode::Save(keyedArchive, serializationContext);
     
@@ -512,7 +512,7 @@ void PolygonGroup::Save(KeyedArchive * keyedArchive, SerializationContext * seri
 
 void PolygonGroup::LoadPolygonData(KeyedArchive * keyedArchive, SerializationContext * serializationContext, int32 requiredFlags)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     vertexFormat = keyedArchive->GetInt32("vertexFormat");
     vertexStride = GetVertexSize(vertexFormat);
@@ -597,7 +597,7 @@ void PolygonGroup::LoadPolygonData(KeyedArchive * keyedArchive, SerializationCon
     
 void PolygonGroup::RecalcAABBox()
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     aabbox = AABBox3(); // reset bbox
 
@@ -612,7 +612,7 @@ void PolygonGroup::RecalcAABBox()
     
 void PolygonGroup::DebugDraw()
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
     for (int k = 0; k < indexCount / 3; ++k)
@@ -653,7 +653,7 @@ public:
 
 void PolygonGroup::CopyData(const uint8 ** meshData, uint8 ** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
 	if (vertexFormat & format)
 	{
@@ -669,7 +669,7 @@ void PolygonGroup::CopyData(const uint8 ** meshData, uint8 ** newMeshData, uint3
 
 bool PolygonGroup::IsFloatDataEqual(const float32 ** meshData, const float32 ** optData, uint32 vertexFormat, uint32 format) const
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
 	if (vertexFormat & format)
 	{
@@ -690,7 +690,7 @@ bool PolygonGroup::IsFloatDataEqual(const float32 ** meshData, const float32 ** 
 
 int32 PolygonGroup::OptimazeVertexes(const uint8 * meshData, Vector<uint8> & optMeshData, uint32 vertexFormat) const
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     uint32 optimizedVertexCount = static_cast<uint32>(optMeshData.size() / GetVertexSize(vertexFormat));
 
@@ -723,7 +723,7 @@ int32 PolygonGroup::OptimazeVertexes(const uint8 * meshData, Vector<uint8> & opt
 
 void PolygonGroup::OptimizeVertices(uint32 newVertexFormat, float32 eplison)
 {
-    MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     int32 newVertexStride = GetVertexSize(newVertexFormat);
     uint8 * newMeshData = new uint8[newVertexStride * vertexCount];
