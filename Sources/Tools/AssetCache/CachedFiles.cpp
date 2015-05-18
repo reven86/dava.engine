@@ -133,7 +133,7 @@ void CachedFiles::Deserialize(KeyedArchive * archieve)
             file = DynamicMemoryFile::Create(data, size, File::OPEN | File::WRITE);
         }
         
-        files[key] = file;
+        files[path] = file;
     }
 }
 
@@ -195,6 +195,12 @@ void CachedFiles::UnloadFiles()
         SafeRelease(f.second);
     }
 }
+    
+const Map<FilePath, File *> & CachedFiles::GetFiles() const
+{
+    return files;
+}
+
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA

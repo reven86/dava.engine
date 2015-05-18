@@ -140,6 +140,7 @@ void ClientCacheEntry::AddFile(const FilePath &pathname)
 {
     files.AddFile(pathname);
 }
+   
     
     
     

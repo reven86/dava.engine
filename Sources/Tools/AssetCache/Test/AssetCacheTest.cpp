@@ -92,7 +92,7 @@ public:
 
             DAVA::Thread::Sleep(200); //to emulate some action, example convertation
             
-            auto addRequestSent = client->AddToCache(key, clientEntry.GetFiles());
+            auto addRequestSent = client->AddToCache(key, files);
             
             files.UnloadFiles();
             

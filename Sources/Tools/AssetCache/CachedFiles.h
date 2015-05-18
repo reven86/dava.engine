@@ -76,11 +76,6 @@ private:
 };
 
 
-const Map<FilePath, File *> & CachedFiles::GetFiles() const
-{
-    return files;
-}
-
 inline bool CachedFiles::IsEmtpy() const
 {
     return (files.size() == 0);
