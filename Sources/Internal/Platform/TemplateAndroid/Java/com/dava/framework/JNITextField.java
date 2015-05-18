@@ -135,6 +135,30 @@ public class JNITextField {
             if(!JNIGLSurfaceView.isPaused())
             {
                 TextFieldUpdateTexture(id, pixels, width, height);
+
+                SafeRunnable action = new SafeRunnable(){
+                    @Override
+                    public void safeRun() {
+                        TextField text = GetTextField(id);
+
+                        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)text.getLayoutParams();
+                        if (text.isRenderToTexture)
+                        {
+                            if (params.leftMargin < JNITextField.TEXT_FIELD_HIDE_FROM_SCREEN_STEP)
+                            {
+                                params.leftMargin += JNITextField.TEXT_FIELD_HIDE_FROM_SCREEN_STEP;
+                            }
+                        } else
+                        {
+                            if (params.leftMargin >= JNITextField.TEXT_FIELD_HIDE_FROM_SCREEN_STEP)
+                            {
+                                params.leftMargin -= JNITextField.TEXT_FIELD_HIDE_FROM_SCREEN_STEP;
+                            }
+                        }
+                        text.setLayoutParams(params);
+                    }
+                };
+                JNIActivity.GetActivity().runOnUiThread(action);
             }
         }
     }
@@ -166,23 +190,6 @@ public class JNITextField {
         public void setRenderToTexture(boolean value)
         {
             isRenderToTexture = value;
-            
-            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)getLayoutParams();
-            if (isRenderToTexture)
-            {
-                if (params.leftMargin < JNITextField.TEXT_FIELD_HIDE_FROM_SCREEN_STEP)
-                {
-                    params.leftMargin += JNITextField.TEXT_FIELD_HIDE_FROM_SCREEN_STEP;
-                }
-            } else
-            {
-                if (params.leftMargin >= JNITextField.TEXT_FIELD_HIDE_FROM_SCREEN_STEP)
-                {
-                    params.leftMargin -= JNITextField.TEXT_FIELD_HIDE_FROM_SCREEN_STEP;
-                }
-            }
-            setLayoutParams(params);
-
             updateStaticTexture();
         }
 
