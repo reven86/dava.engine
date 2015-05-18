@@ -71,8 +71,6 @@ void SoundComponent::RemoveSoundEvent(SoundEvent * event)
             SafeRelease(events[i].soundEvent);
             RemoveExchangingWithLast(events, i);
 
-            GlobalEventSystem::Instance()->Event(this, EventSystem::SOUND_COMPONENT_CHANGED);
-
             return;
         }
     }
@@ -88,8 +86,6 @@ void SoundComponent::RemoveAllEvents()
     }
 
     events.clear();
-
-    GlobalEventSystem::Instance()->Event(this, EventSystem::SOUND_COMPONENT_CHANGED);
 }
 
 void SoundComponent::Trigger()

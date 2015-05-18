@@ -45,10 +45,9 @@ void GlobalEventSystem::Event(Component * component, uint32 event)
 {
     if (component)
     {
-        Scene * scene = component->GetEntity()->GetScene();
-        if (scene)
+        if (component->GetEntity() && component->GetEntity()->GetScene())
         {
-            scene->GetEventSystem()->NotifyAllSystems(component, event);
+            component->GetEntity()->GetScene()->GetEventSystem ()->NotifyAllSystems (component, event);
             return;
         }
         
