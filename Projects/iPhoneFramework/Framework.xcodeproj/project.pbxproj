@@ -960,6 +960,7 @@
 		50194DCD1A52D92600557DAB /* LogConsumer.h in Headers */ = {isa = PBXBuildFile; fileRef = 50194D9B1A52D92600557DAB /* LogConsumer.h */; };
 		50194DCE1A52D92600557DAB /* NetLogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50194D9C1A52D92600557DAB /* NetLogger.cpp */; };
 		50194DCF1A52D92600557DAB /* NetLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 50194D9D1A52D92600557DAB /* NetLogger.h */; };
+		5046BD801B0612DD0005D29F /* ThreadLocalPtr.h in Headers */ = {isa = PBXBuildFile; fileRef = 5046BD7F1B0612DD0005D29F /* ThreadLocalPtr.h */; };
 		505EB41C18250C53009BEA3C /* OcclusionQuery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 505EB41A18250C53009BEA3C /* OcclusionQuery.cpp */; };
 		505EB41D18250C53009BEA3C /* OcclusionQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 505EB41B18250C53009BEA3C /* OcclusionQuery.h */; };
 		50C7D5FC186082B100D8936D /* StaticOcclusionComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50C7D5FA186082B100D8936D /* StaticOcclusionComponent.cpp */; };
@@ -2079,6 +2080,7 @@
 		50194D9C1A52D92600557DAB /* NetLogger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetLogger.cpp; sourceTree = "<group>"; };
 		50194D9D1A52D92600557DAB /* NetLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetLogger.h; sourceTree = "<group>"; };
 		50194DD01A52D94B00557DAB /* libuv_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv_ios.a; path = ../../Libs/libs/libuv_ios.a; sourceTree = "<group>"; };
+		5046BD7F1B0612DD0005D29F /* ThreadLocalPtr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThreadLocalPtr.h; sourceTree = "<group>"; };
 		505EB41A18250C53009BEA3C /* OcclusionQuery.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OcclusionQuery.cpp; sourceTree = "<group>"; };
 		505EB41B18250C53009BEA3C /* OcclusionQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OcclusionQuery.h; sourceTree = "<group>"; };
 		50C7D5F6186082A600D8936D /* StaticOcclusionSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticOcclusionSystem.cpp; sourceTree = "<group>"; };
@@ -4380,6 +4382,7 @@
 		E8C486F4196BD2390082E634 /* Thread */ = {
 			isa = PBXGroup;
 			children = (
+				5046BD7F1B0612DD0005D29F /* ThreadLocalPtr.h */,
 				4F34E1A91A234D86000681BB /* Semaphore.h */,
 				4F34E1AA1A234D86000681BB /* Spinlock.h */,
 				E8C486F5196BD2390082E634 /* LockGuard.h */,
@@ -5280,6 +5283,7 @@
 				E8B3CCCB16B9326E002BD35F /* SwitchSystem.h in Headers */,
 				E8B3CCCD16B9326E002BD35F /* TransformSystem.h in Headers */,
 				E8B3CCD116B9326E002BD35F /* UserNode.h in Headers */,
+				5046BD801B0612DD0005D29F /* ThreadLocalPtr.h in Headers */,
 				E8B3CCE416B9326E002BD35F /* SoundSystem.h in Headers */,
 				E8B3CCE816B9326E002BD35F /* ScrollHelper.h in Headers */,
 				50194DCF1A52D92600557DAB /* NetLogger.h in Headers */,

@@ -1381,12 +1381,8 @@ void PropertyEditor::OnAddComponent(Component::eType type)
 
         for(int i = 0; i < size; ++i)
         {
-            Entity* node = curNodes.at(i);
-            if (node->GetComponentCount(type) == 0)
-            {
-                Component *c = Component::CreateByType(type);
-                curScene->Exec(new AddComponentCommand(curNodes.at(i), c));
-            }
+            Component *c = Component::CreateByType(type);
+            curScene->Exec(new AddComponentCommand(curNodes.at(i), c));
         }
 
         curScene->EndBatch();
