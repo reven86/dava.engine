@@ -26,6 +26,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Platform/PlatformDetection.h"
+#if defined (__DAVAENGINE_WIN32__)
+
 #include <cassert>
 #include <Shlwapi.h>
 
@@ -33,8 +36,6 @@
 #include "FileSystem/Logger.h"
 #include "Utils/UTF8Utils.h"
 #include "Debug/DVAssert.h"
-
-#if defined (__DAVAENGINE_WIN32__)
 
 namespace DAVA
 {
