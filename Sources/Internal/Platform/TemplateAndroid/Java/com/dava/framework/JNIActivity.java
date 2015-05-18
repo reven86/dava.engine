@@ -56,6 +56,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	public abstract JNIGLSurfaceView GetSurfaceView();
     
     private static JNIActivity activity = null;
+    private static long glThreadId = 0;
     protected static SingalStrengthListner singalStrengthListner = null;
     private boolean isPausing = false;
     
@@ -451,6 +452,14 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	{
 		nativeOnAccelerometer(x, y, z);
 	}
+    
+    public void setGLThreadId(long id) {
+        glThreadId = id;
+    }
+    
+    public long getGLThreadId() {
+        return glThreadId;
+    }
 	
 	public void PostEventToGL(Runnable event) {
 		glView.queueEvent(event);

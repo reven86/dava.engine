@@ -107,12 +107,7 @@ public class JNITextField {
 
                 text.setFilters(filters);
                 
-                text.post(new Runnable(){
-                    @Override
-                    public void run() {
-                        text.updateStaticTexture();
-                    }
-                });
+                text.updateStaticTexture();
             }catch(ControlNotFoundException ex)
             {
                 Log.e(TAG, ex.getMessage());
@@ -195,7 +190,11 @@ public class JNITextField {
             // clear static texture
             JNIActivity activity = JNIActivity.GetActivity();
             UpdateTexture task = new UpdateTexture(id, null, 0, 0);
-            activity.PostEventToGL(task);
+            if (activity.getGLThreadId() == Thread.currentThread().getId()){
+                task.run();
+            } else {
+                activity.PostEventToGL(task);
+            }
         }
         
         public boolean isRenderToTexture()
@@ -227,6 +226,9 @@ public class JNITextField {
             // if we do not create bitmap do not recycle it
             boolean destroyBitmap = false;
             
+            // we have to enable and disable cache every time because of
+            // bugs with previous image in some situations
+            setDrawingCacheEnabled(true);
             buildDrawingCache();
             Bitmap bitmap = getDrawingCache(); //renderToBitmap();
             if (bitmap == null) // could be if onDraw not called yet
@@ -265,10 +267,13 @@ public class JNITextField {
             // copy ARGB pixels values into our buffer
             bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
 
+            setDrawingCacheEnabled(false);
+            
             if (destroyBitmap)
             {
                 bitmap.recycle();
             }
+            
             JNIActivity activity = JNIActivity.GetActivity();
             UpdateTexture task = new UpdateTexture(id, pixels, width, height);
             activity.PostEventToGL(task);
@@ -300,7 +305,8 @@ public class JNITextField {
         
         public void updateStaticTexture()
         {
-            if (!JNIActivity.GetActivity().GetIsPausing())
+            JNIActivity activity = JNIActivity.GetActivity();
+            if (!activity.GetIsPausing())
             {
                 // Workaround if text empty but image cache
                 // return previous image and set it back to static
@@ -313,7 +319,18 @@ public class JNITextField {
                 {
                     if (isRenderToTexture)
                     {
-                        renderToTexture();
+                        Runnable action = new Runnable() {
+                            @Override
+                            public void run() {
+                                renderToTexture();
+                            }
+                        };
+                        
+                        if (activity.getGLThreadId() == Thread.currentThread().getId()) {
+                            activity.runOnUiThread(action);
+                        } else {
+                            action.run();
+                        }
                     }
                     else
                     {
@@ -694,6 +711,7 @@ public class JNITextField {
                                 JNITextField.TextFieldShouldReturn(id);
                             }
                         });
+                        text.updateStaticTexture();
                         return true;
                     }
                 });
@@ -847,17 +865,7 @@ public class JNITextField {
 
                     @Override
                     public void afterTextChanged(Editable s) {
-                        Runnable runnable = new Runnable(){
-                            @Override
-                            public void run() {
-                                text.updateStaticTexture();
-                            }
-                        };
-                        // first call update static ASAP
-                        handler.post(runnable);
-                        // second call it with delay for 
-                        // fix some incorrect old text from cache
-                        handler.postDelayed(runnable, JNITextField.TEXT_CHANGE_DELAY_REFRESH);
+                        text.updateStaticTexture();
                     }
                 };
                 text.addTextChangedListener(textWatcher);
