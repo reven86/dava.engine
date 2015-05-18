@@ -5,6 +5,7 @@
 #include "Model/LegacyEditorUIPackageLoader.h"
 #include "Project/EditorFontSystem.h"
 #include "Project/EditorLocalizationSystem.h"
+#include "Project/SpritesPacker.h"
 
 class PackageNode;
 
@@ -24,6 +25,7 @@ public:
     bool SavePackage(PackageNode *package);
     EditorFontSystem *GetEditorFontSystem() const;
     EditorLocalizationSystem *GetEditorLocalizationSystem() const;
+    SpritesPacker *GetSpritesPacker() const;
 signals:
     void ProjectOpened();
 
@@ -34,6 +36,7 @@ private:
     LegacyControlData *legacyData;
     EditorFontSystem *editorFontSystem;
     EditorLocalizationSystem *editorLocalizationSystem;
+    SpritesPacker *spritesPacker;
     //properties
 public:
     bool IsOpen() const;
@@ -53,6 +56,12 @@ inline EditorLocalizationSystem* Project::GetEditorLocalizationSystem() const
 {
     return editorLocalizationSystem;
 }
+
+inline SpritesPacker* Project::GetSpritesPacker() const
+{
+    return spritesPacker;
+}
+
 
 
 

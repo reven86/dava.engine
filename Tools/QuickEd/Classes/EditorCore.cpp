@@ -28,6 +28,7 @@ EditorCore::EditorCore(QObject *parent)
     connect(mainWindow, &MainWindow::OpenPackageFile, this, &EditorCore::OnOpenPackageFile);
     connect(mainWindow, &MainWindow::SaveAllDocuments, this, &EditorCore::SaveAllDocuments);
     connect(mainWindow, &MainWindow::SaveDocument, this, static_cast<void(EditorCore::*)(int)>(&EditorCore::SaveDocument));
+    connect(mainWindow, &MainWindow::ReloadSprites, project->GetSpritesPacker(), &SpritesPacker::ReloadSprites);
 
     connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
 
@@ -41,6 +42,7 @@ EditorCore::EditorCore(QObject *parent)
     connect(documentGroup, &DocumentGroup::SharedDataChanged, mainWindow->previewWidget, &PreviewWidget::OnDataChanged);
     
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
+    
 
     qApp->installEventFilter(this);
 }

@@ -84,6 +84,7 @@ signals:
     void SaveDocument(int index);
     void CurrentTabChanged(int index);
     void CloseRequested();
+    void ReloadSprites(DAVA::eGPUFamily gpu);
 public slots:
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
@@ -93,26 +94,28 @@ private slots:
     void OnOpenFontManager();
     void OnOpenLocalizationManager();
     void OnShowHelp();
-	
+    
     void OnOpenProject();
-	
-	void RebuildRecentMenu();
+    
+    void RebuildRecentMenu();
 
     void SetBackgroundColorMenuTriggered(QAction* action);
+    void OnReloadSprites(QAction *action);
     
     // Pixelization.
     void OnPixelizationStateChanged();
 private:
     void InitLanguageBox();
     void InitConvertBox();
-	void InitMenu();
+    void InitMenu();
     void SetupViewMenu();
     void DisableActions();
-	void UpdateProjectSettings(const QString& filename);
+    void UpdateProjectSettings(const QString& filename);
 
-	// Save/restore positions of DockWidgets and main window geometry
-	void SaveMainWindowState();
-	void RestoreMainWindowState();
+    // Save/restore positions of DockWidgets and main window geometry
+    void SaveMainWindowState();
+    void RestoreMainWindowState();
+    void UpdateReloadTexturesButton(const DAVA::eGPUFamily &gpu);
 
 private:
     // Background Frame Color menu actions.
@@ -120,6 +123,7 @@ private:
     QAction* backgroundFrameUseCustomColorAction;
     QAction* backgroundFrameSelectCustomColorAction;
     LocalizationEditorDialog *localizationEditorDialog;
+    QToolButton *reloadSpritesButton;
 };
 
 Q_DECLARE_METATYPE(MainWindow::TabState*);

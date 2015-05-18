@@ -46,6 +46,7 @@ namespace
     const QString APP_COMPANY = "DAVA";
     const QString APP_GEOMETRY = "geometry";
     const QString APP_STATE = "windowstate";
+    const QString SELECTED_GPU = "selected gpu";
 
     const char* COLOR_PROPERTY_ID = "color";
 }
@@ -76,8 +77,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(actionLocalizationManager, &QAction::triggered, this, &MainWindow::OnOpenLocalizationManager);
 
     connect(fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
-	InitMenu();
-	RestoreMainWindowState();
+    InitMenu();
+    RestoreMainWindowState();
 
     fileSystemDockWidget->setEnabled(false);
 
@@ -87,7 +88,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-	SaveMainWindowState();
+    SaveMainWindowState();
 }
 
 void MainWindow::CreateUndoRedoActions(const QUndoGroup *undoGroup)
@@ -132,23 +133,39 @@ void MainWindow::SetCurrentTab(int index)
 
 void MainWindow::SaveMainWindowState()
 {
-	QSettings settings(APP_COMPANY, APP_NAME);
+    QSettings settings(APP_COMPANY, APP_NAME);
     settings.setValue(APP_GEOMETRY, saveGeometry());
     settings.setValue(APP_STATE, saveState());
 }
 
 void MainWindow::RestoreMainWindowState()
 {
-	QSettings settings(APP_COMPANY, APP_NAME);
-	// Check settings befor applying it
-	if (!settings.value(APP_GEOMETRY).isNull() && settings.value(APP_GEOMETRY).isValid())
-	{
-    	restoreGeometry(settings.value(APP_GEOMETRY).toByteArray());
-	}
-	if (!settings.value(APP_STATE).isNull() && settings.value(APP_STATE).isValid())
-	{
-    	restoreState(settings.value(APP_STATE).toByteArray());
-	}
+    QSettings settings(APP_COMPANY, APP_NAME);
+    // Check settings befor applying it
+    if (!settings.value(APP_GEOMETRY).isNull() && settings.value(APP_GEOMETRY).isValid())
+    {
+        restoreGeometry(settings.value(APP_GEOMETRY).toByteArray());
+    }
+    if (!settings.value(APP_STATE).isNull() && settings.value(APP_STATE).isValid())
+    {
+        restoreState(settings.value(APP_STATE).toByteArray());
+    }
+}
+
+void MainWindow::UpdateReloadTexturesButton(const eGPUFamily &gpu)
+{
+    for (auto &action : reloadSpritesButton->menu()->actions())
+    {
+        if (static_cast<eGPUFamily>(action->data().toInt()) == gpu)
+        {
+            reloadSpritesButton->defaultAction()->setIcon(QIcon());
+            action->setIcon(QIcon(":/Icons/reloadtextures.png"));
+            reloadSpritesButton->setDefaultAction(action);
+
+            QSettings settings(APP_COMPANY, APP_NAME);
+            settings.setValue(SELECTED_GPU, gpu);
+        }
+    }
 }
 
 DavaGLWidget* MainWindow::GetGLWidget() const
@@ -199,9 +216,9 @@ void MainWindow::OnOpenLocalizationManager()
 
 void MainWindow::OnShowHelp()
 {
-	FilePath docsPath = ResourcesManageHelper::GetDocumentationPath().toStdString() + "index.html";
-	QString docsFile = QString::fromStdString("file:///" + docsPath.GetAbsolutePathname());
-	QDesktopServices::openUrl(QUrl(docsFile));
+    FilePath docsPath = ResourcesManageHelper::GetDocumentationPath().toStdString() + "index.html";
+    QString docsFile = QString::fromStdString("file:///" + docsPath.GetAbsolutePathname());
+    QDesktopServices::openUrl(QUrl(docsFile));
 }
 
 void MainWindow::InitLanguageBox()
@@ -225,8 +242,10 @@ void MainWindow::InitLanguageBox()
 
 void MainWindow::InitConvertBox()
 {
-    QAction *actionReloadTextures = new QAction(QIcon(":/Icons/reloadtextures.png"), tr("Reload Textures"), this);
+    QLabel *label = new QLabel(tr("Sprites: "));
+    QAction *actionReloadTextures = new QAction(tr("Select GPU"), this);
     QMenu *menuTexturesForGPU = new QMenu(this);
+    connect(menuTexturesForGPU, &QMenu::triggered, this, &MainWindow::OnReloadSprites);
     const auto &map = GlobalEnumMap<eGPUFamily>::Instance();
     for (size_t i = 0; i < map->GetCount(); ++i)
     {
@@ -235,16 +254,27 @@ void MainWindow::InitConvertBox()
         DVASSERT_MSG(ok, "wrong enum used");
         QAction *action = new QAction(map->ToString(value), this);
         action->setData(value);
-        action->setCheckable(true);
         menuTexturesForGPU->addAction(action);
     }
-    QToolButton *reloadTexturesBtn = new QToolButton();
-    reloadTexturesBtn->setMenu(menuTexturesForGPU);
-    reloadTexturesBtn->setPopupMode(QToolButton::MenuButtonPopup);
-    reloadTexturesBtn->setDefaultAction(actionReloadTextures);
-    reloadTexturesBtn->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    reloadTexturesBtn->setAutoRaise(false);
-    toolBarConvertGPU->addWidget(reloadTexturesBtn);
+    reloadSpritesButton = new QToolButton();
+    reloadSpritesButton->setMenu(menuTexturesForGPU);
+    reloadSpritesButton->setPopupMode(QToolButton::MenuButtonPopup);
+    reloadSpritesButton->setDefaultAction(actionReloadTextures);
+    reloadSpritesButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    reloadSpritesButton->setAutoRaise(false);
+    QWidget *wrapper = new QWidget();
+    QHBoxLayout *layout = new QHBoxLayout(wrapper);
+    layout->setMargin(0);
+    layout->addWidget(label);
+    layout->addWidget(reloadSpritesButton);
+    toolBarConvertGPU->addWidget(wrapper);
+
+    QSettings settings(APP_COMPANY, APP_NAME);
+    const QVariant &value = settings.value(SELECTED_GPU);
+    if (!value.isNull() && value.isValid())
+    {
+        UpdateReloadTexturesButton(static_cast<eGPUFamily>(value.toInt()));
+    }
 }
 
 void MainWindow::InitMenu()
@@ -259,15 +289,15 @@ void MainWindow::InitMenu()
     connect(actionExit, &QAction::triggered, this, &MainWindow::ActionExitTriggered);
     connect(menuRecent, &QMenu::triggered, this, &MainWindow::RecentMenuTriggered);
 
-	// Remap zoom in/out shorcuts for windows platform
+    // Remap zoom in/out shorcuts for windows platform
 #if defined(__DAVAENGINE_WIN32__)
-	QList<QKeySequence> shortcuts;
-	shortcuts.append(QKeySequence(Qt::CTRL + Qt::Key_Equal));
-	shortcuts.append(QKeySequence(Qt::CTRL + Qt::Key_Plus));
-	actionZoomIn->setShortcuts(shortcuts);
+    QList<QKeySequence> shortcuts;
+    shortcuts.append(QKeySequence(Qt::CTRL + Qt::Key_Equal));
+    shortcuts.append(QKeySequence(Qt::CTRL + Qt::Key_Plus));
+    actionZoomIn->setShortcuts(shortcuts);
 #endif
 
-	//Help contents dialog
+    //Help contents dialog
     connect(actionHelp, &QAction::triggered, this, &MainWindow::OnShowHelp);
 
     // Pixelization.
@@ -320,7 +350,7 @@ void MainWindow::SetupViewMenu()
     for (int32 i = 0; i < itemsCount; i ++)
     {
         QAction* colorAction = new QAction(colorsMap[i].colorName, setBackgroundColorMenu);
-		colorAction->setProperty(COLOR_PROPERTY_ID, colorsMap[i].color);
+        colorAction->setProperty(COLOR_PROPERTY_ID, colorsMap[i].color);
         
         Color curColor = QColorToColor(colorsMap[i].color);
         if (curColor == curBackgroundColor)
@@ -332,11 +362,11 @@ void MainWindow::SetupViewMenu()
         colorAction->setChecked(curColor == curBackgroundColor);
         
         backgroundFramePredefinedColorActions.append(colorAction);
-		setBackgroundColorMenu->addAction(colorAction);
-	}
-	
+        setBackgroundColorMenu->addAction(colorAction);
+    }
+    
     backgroundFrameUseCustomColorAction = new QAction("Custom", setBackgroundColorMenu);
-	backgroundFrameUseCustomColorAction->setProperty(COLOR_PROPERTY_ID, ColorToQColor(curBackgroundColor));
+    backgroundFrameUseCustomColorAction->setProperty(COLOR_PROPERTY_ID, ColorToQColor(curBackgroundColor));
     backgroundFrameUseCustomColorAction->setCheckable(true);
     backgroundFrameUseCustomColorAction->setChecked(isCustomColor);
     setBackgroundColorMenu->addAction(backgroundFrameUseCustomColorAction);
@@ -427,7 +457,7 @@ void MainWindow::OnOpenProject()
     if (projectPath.isEmpty())
     {
         return;
-        }
+    }
     projectPath = QDir::toNativeSeparators(projectPath);
         
     emit ActionOpenProjectTriggered(projectPath);
@@ -435,16 +465,16 @@ void MainWindow::OnOpenProject()
 
 void MainWindow::UpdateProjectSettings(const QString& projectPath)
 {
-	// Add file to recent project files list
-	EditorSettings::Instance()->AddLastOpenedFile(projectPath.toStdString());
-	
-	// Save to settings default project directory
-	QFileInfo fileInfo(projectPath);
-	QString projectDir = fileInfo.absoluteDir().absolutePath();
-	EditorSettings::Instance()->SetProjectPath(projectDir.toStdString());
+    // Add file to recent project files list
+    EditorSettings::Instance()->AddLastOpenedFile(projectPath.toStdString());
+    
+    // Save to settings default project directory
+    QFileInfo fileInfo(projectPath);
+    QString projectDir = fileInfo.absoluteDir().absolutePath();
+    EditorSettings::Instance()->SetProjectPath(projectDir.toStdString());
 
-	// Update window title
-	this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(projectPath));
+    // Update window title
+    this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(projectPath));
     
     // Apply the pixelization value.
     Texture::SetPixelization(EditorSettings::Instance()->IsPixelized());
@@ -506,4 +536,11 @@ void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
 
     // In case we don't found current color in predefined ones - select "Custom" menu item.
     backgroundFrameUseCustomColorAction->setChecked(!colorFound);
+}
+
+void MainWindow::OnReloadSprites(QAction *action)
+{
+    auto gpuType = static_cast<DAVA::eGPUFamily>(action->data().toInt());
+    emit ReloadSprites(gpuType);
+    UpdateReloadTexturesButton(gpuType);
 }

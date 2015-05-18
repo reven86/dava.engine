@@ -17,7 +17,6 @@
 #include "Model/PackageHierarchy/ControlPrototype.h"
 #include "Model/PackageHierarchy/ControlsContainerNode.h"
 #include "Model/YamlPackageSerializer.h"
-#include "Model/EditorUIPackageBuilder.h"
 
 #include "PackageMimeData.h"
 
