@@ -56,10 +56,9 @@ const FastName DYNAMIC_PARAM_NAMES[] =
     FastName("jointQuaternions[0]"),
     FastName("jointsCount"),
 
-    FastName("rtSize"),
-    FastName("rtPixelSize"),
-    FastName("rtHalfPixelSize"),
-    FastName("rtAspectRatio"),
+    FastName("viewportSize"),
+    FastName("rcpViewportSize"),
+    FastName("viewportOffset"),
 
     FastName("shadowColor")
 };

@@ -175,6 +175,7 @@ class NMaterialQualityName
 {
 public:
     static const FastName QUALITY_FLAG_NAME;
+    static const FastName QUALITY_GROUP_FLAG_NAME;
     static const FastName DEFAULT_QUALITY_NAME;
 };
 };

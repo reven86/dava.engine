@@ -57,7 +57,7 @@ bool StaticOcclusionRenderPass::CompareFunction(const RenderBatch * a, const Ren
     return a->layerSortingKey < b->layerSortingKey;
 }
     
-void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBuffers)
+void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem)
 {
     Camera *mainCamera = occlusionCamera;
     Camera *drawCamera = occlusionCamera;

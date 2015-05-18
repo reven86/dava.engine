@@ -363,11 +363,11 @@ void RenderSystem::DebugDrawHierarchy(const Matrix4& cameraMatrix)
 		renderHierarchy->DebugDraw(cameraMatrix);
 }
 
-void RenderSystem::Render(uint32 clearBuffers)
+void RenderSystem::Render()
 {
     TIME_PROFILE("RenderSystem::Render");
 
-    mainRenderPass->Draw(this, clearBuffers);
+    mainRenderPass->Draw(this);
 }
 
 };

@@ -49,7 +49,6 @@ namespace DAVA
   */  
     
 class Texture;
-class Material;
 class StaticMesh;
 class AnimatedMesh;
 class SceneNodeAnimationList;
@@ -134,7 +133,7 @@ public:
     };
     
     
-	Scene(uint32 systemsMask = SCENE_SYSTEM_ALL_MASK);
+    Scene(uint32 systemsMask  = SCENE_SYSTEM_ALL_MASK );
 	
     /**
         \brief Function to register entity in scene. This function is called when you add entity to scene.
@@ -273,10 +272,6 @@ public:
     void SetGlobalMaterial(DAVA::NMaterial* globalMaterial);
     
     void OnSceneReady(Entity * rootNode);
-
-    void SetClearBuffers(uint32 buffers);
-    uint32 GetClearBuffers() const;
-
     
     void Input(UIEvent *event);
     
@@ -286,6 +281,8 @@ public:
     virtual void Activate();
     virtual void Deactivate();
 
+    rhi::RenderPassConfig& GetMainPassConfig();
+    void SetMainPassViewport(const Rect& viewport);
     
 protected:
     void UpdateLights();
@@ -302,9 +299,7 @@ protected:
     uint64 drawTime;
     uint32 nodeCounter;
 
-    uint32 systemsMask;
-
-    uint32 clearBuffers;
+    uint32 systemsMask;    
 
 	Vector<AnimatedMesh*> animatedMeshes;
 	Vector<Camera*> cameras;
