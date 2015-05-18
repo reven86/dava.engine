@@ -881,6 +881,7 @@
 		5043DDAB18706828005E3584 /* VisibilityArray.h in Headers */ = {isa = PBXBuildFile; fileRef = 5043DDAA18706828005E3584 /* VisibilityArray.h */; };
 		5043DDAC18706828005E3584 /* VisibilityArray.h in Headers */ = {isa = PBXBuildFile; fileRef = 5043DDAA18706828005E3584 /* VisibilityArray.h */; };
 		5043DDAD18706828005E3584 /* VisibilityArray.h in Headers */ = {isa = PBXBuildFile; fileRef = 5043DDAA18706828005E3584 /* VisibilityArray.h */; };
+		5046BD871B06130C0005D29F /* ThreadLocalPtr.h in Headers */ = {isa = PBXBuildFile; fileRef = 5046BD861B06130C0005D29F /* ThreadLocalPtr.h */; };
 		505EB40E1824CEC5009BEA3C /* OcclusionQuery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 505EB40C1824CEC5009BEA3C /* OcclusionQuery.cpp */; };
 		505EB40F1824CEC5009BEA3C /* OcclusionQuery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 505EB40C1824CEC5009BEA3C /* OcclusionQuery.cpp */; };
 		505EB4101824CEC5009BEA3C /* OcclusionQuery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 505EB40C1824CEC5009BEA3C /* OcclusionQuery.cpp */; };
@@ -2850,6 +2851,7 @@
 		5022951A186DD1BC00F55478 /* RenderPassManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderPassManager.cpp; sourceTree = "<group>"; };
 		5022951B186DD1BC00F55478 /* RenderPassManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderPassManager.h; sourceTree = "<group>"; };
 		5043DDAA18706828005E3584 /* VisibilityArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VisibilityArray.h; sourceTree = "<group>"; };
+		5046BD861B06130C0005D29F /* ThreadLocalPtr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ThreadLocalPtr.h; path = Thread/ThreadLocalPtr.h; sourceTree = "<group>"; };
 		505EB40C1824CEC5009BEA3C /* OcclusionQuery.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OcclusionQuery.cpp; sourceTree = "<group>"; };
 		505EB40D1824CEC5009BEA3C /* OcclusionQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OcclusionQuery.h; sourceTree = "<group>"; };
 		50A3043718575C370082CA8D /* StaticOcclusion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticOcclusion.cpp; sourceTree = "<group>"; };
@@ -5253,6 +5255,7 @@
 		E8C486EA196BC9940082E634 /* Thread */ = {
 			isa = PBXGroup;
 			children = (
+				5046BD861B06130C0005D29F /* ThreadLocalPtr.h */,
 				4F34E1C11A234DF8000681BB /* Semaphore.h */,
 				4F34E1C21A234DF8000681BB /* Spinlock.h */,
 				E8C486EC196BC9AC0082E634 /* LockGuard.h */,
@@ -5823,6 +5826,7 @@
 				CC0D7B371A76055A00309408 /* EdgeComponent.h in Headers */,
 				CC0D7B3B1A76055A00309408 /* PathComponent.h in Headers */,
 				E8989DDD16BD24E500732C04 /* StaticSingleton.h in Headers */,
+				5046BD871B06130C0005D29F /* ThreadLocalPtr.h in Headers */,
 				641A61DD18CDC2F4003359E7 /* FoliageSystem.h in Headers */,
 				E8989DDE16BD24E500732C04 /* TemplateHelpers.h in Headers */,
 				50FB9DAA1A92446700BDB8A2 /* MemoryManagerAllocator.h in Headers */,
