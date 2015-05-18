@@ -348,16 +348,8 @@ void Landscape::BuildLandscape()
 //    Logger::FrameworkDebug("sizeof(QuadTreeNode): %d bytes", sizeof(QuadTreeNode<LandscapeQuad>));
 }
     
-/*
-    level 0 = full landscape
-    level 1 = first set of quads
-    level 2 = 2
-    level 3 = 3
-    level 4 = 4
- */
-    
-//float32 LandscapeNode::BitmapHeightToReal(uint8 height)
-Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height)
+
+Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height) const
 {
     Vector3 res;
     res.x = (bbox.min.x + (float32)x / (float32)(heightmap->Size() - 1) * (bbox.max.x - bbox.min.x));
@@ -1310,15 +1302,15 @@ void Landscape::Draw(Camera * camera)
 }
 
 
-bool Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<int32> & indices)
+bool Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<int32> & indices) const
 {
     if (heightmap->Data() == nullptr)
     {
         return false;
     }
 
-	LandQuadTreeNode<LandscapeQuad> * currentNode = &quadTreeHead;
-	LandscapeQuad * quad = &currentNode->data;
+	const LandQuadTreeNode<LandscapeQuad> * currentNode = &quadTreeHead;
+	const LandscapeQuad * quad = &currentNode->data;
 	
 	landscapeVertices.resize((quad->size + 1) * (quad->size + 1));
 
