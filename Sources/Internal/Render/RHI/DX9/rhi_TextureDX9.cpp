@@ -319,7 +319,7 @@ dx9_Texture_Unmap( Handle tex )
     {
         D3DCUBEMAP_FACES    f;
 
-        switch( self->mappedLevel )
+        switch( self->mappedFace )
         {
             case TEXTURE_FACE_LEFT   : f = D3DCUBEMAP_FACE_NEGATIVE_X ; break;
             case TEXTURE_FACE_RIGHT  : f = D3DCUBEMAP_FACE_POSITIVE_X ; break;

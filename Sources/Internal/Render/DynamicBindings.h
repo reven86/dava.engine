@@ -85,12 +85,11 @@ public:
 
         PARAM_JOINT_POSITIONS,
         PARAM_JOINT_QUATERNIONS,
-        PARAM_JOINTS_COUNT,     //it wil not be bound into shader, but will be used to bind joints
+        PARAM_JOINTS_COUNT,     //it will not be bound into shader, but will be used to bind joints
 
-        PARAM_RT_SIZE,
-        PARAM_RT_PIXEL_SIZE,
-        PARAM_RT_HALF_PIXEL_SIZE,
-        PARAM_RT_ASPECT_RATIO,
+        PARAM_VIEWPORT_SIZE,
+        PARAM_RCP_VIEWPORT_SIZE, // = 1/PARAM_VIEWPORT_SIZE
+        PARAM_VIEWPORT_OFFSET,        
 
         PARAM_SHADOW_COLOR,
 

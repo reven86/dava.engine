@@ -162,5 +162,6 @@ namespace DAVA
 
     //quality
     const FastName NMaterialQualityName::QUALITY_FLAG_NAME = FastName("Quality");
+    const FastName NMaterialQualityName::QUALITY_GROUP_FLAG_NAME = FastName("QualityGroup");
     const FastName NMaterialQualityName::DEFAULT_QUALITY_NAME = FastName("Normal");          
 };

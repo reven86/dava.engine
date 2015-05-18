@@ -206,6 +206,13 @@ enum ePrimitiveType
 	PRIMITIVETYPE_COUNT
 };
 
+enum eDefaultPassPriority
+{
+    PRIORITY_SERVICE_2D = 10,
+    PRIORITY_SERVICE_3D = 20,    
+    PRIORITY_MAIN_3D = 30,
+    PRIORITY_MAIN_2D = 40
+};
     
 // TODO: we have same structs & functions in PolygonGroup -- we should find a right place for them
 enum eVertexFormat
