@@ -237,36 +237,23 @@ static int dev_zero_fd = -1; /* Cached file descriptor for /dev/zero. */
 #else /* WIN32 */
 
 #if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
-
-/* Win32 MMAP via VirtualAlloc */
-static FORCEINLINE void* win32mmap(size_t size) {
-    void* ptr = VirtualAlloc(0, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-    return (ptr != 0) ? ptr : MFAIL;
-}
-
-/* For direct MMAP, use MEM_TOP_DOWN to minimize interference */
-static FORCEINLINE void* win32direct_mmap(size_t size) {
-    void* ptr = VirtualAlloc(0, size, MEM_RESERVE | MEM_COMMIT | MEM_TOP_DOWN,
-                             PAGE_READWRITE);
-    return (ptr != 0) ? ptr : MFAIL;
-}
-
+#define VirtualAllocFunc VirtualAlloc
 #elif defined(__DAVAENGINE_WINDOWS_STORE__)
+#define VirtualAllocFunc VirtualAllocFromApp
+#endif
 
 /* Win32 MMAP via VirtualAlloc */
 static FORCEINLINE void* win32mmap(size_t size) {
-  void* ptr = VirtualAllocFromApp(0, size, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
-  return (ptr != 0)? ptr: MFAIL;
+    void* ptr = VirtualAllocFunc(0, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+    return (ptr != 0) ? ptr : MFAIL;
 }
 
 /* For direct MMAP, use MEM_TOP_DOWN to minimize interference */
 static FORCEINLINE void* win32direct_mmap(size_t size) {
-  void* ptr = VirtualAllocFromApp(0, size, MEM_RESERVE|MEM_COMMIT|MEM_TOP_DOWN,
-                           PAGE_READWRITE);
-  return (ptr != 0)? ptr: MFAIL;
+    void* ptr = VirtualAllocFunc(0, size, MEM_RESERVE | MEM_COMMIT | MEM_TOP_DOWN,
+                                 PAGE_READWRITE);
+    return (ptr != 0) ? ptr : MFAIL;
 }
-
-#endif
 
 /* This function supports releasing coalesed segments */
 static FORCEINLINE int win32munmap(void* ptr, size_t size) {
