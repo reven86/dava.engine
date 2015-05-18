@@ -174,31 +174,31 @@ using UnorderedMap = std::unordered_map<Key, T, Hash, KeyEqual, DefaultSTLAlloca
 #undef max
 #endif
 
-template <typename T1, typename T2>
-DAVA_CONSTEXPR auto Min(const T1 &a, const T2 &b) -> decltype(a < b ? a : b)
+template <class T>
+inline T Min(T a, T b)
 {
-    return a < b ? a : b;
+    return (a < b) ? (a) : (b);
 }
 
-template <typename T1, typename T2>
-DAVA_CONSTEXPR auto Max(const T1 &a, const T2 &b) -> decltype(a > b ? a : b)
+template <class T>
+inline T Max(T a, T b)
 {
-    return a > b ? a : b;
+    return (a > b) ? (a) : (b);
 }
 
-template <typename T>
-DAVA_CONSTEXPR auto Abs(const T &a) -> decltype(a >= 0 ? a : -a)
+template <class T>
+inline T Abs(T a)
 {
-    return a >= 0 ? a : -a;
+    return (a >= 0) ? (a) : (-a);
 }
 
-template <typename T1, typename T2, typename T3>
-DAVA_CONSTEXPR auto Clamp(const T1 &val, const T2 &a, const T3 &b) -> decltype(Min(b, Max(val, a)))
+template <class T>
+inline T Clamp(T val, T a, T b)
 {
     return Min(b, Max(val, a));
 }
 
-#if defined(__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_WIN32__)
 #define Snprintf    _snprintf
 #else
 #define Snprintf    snprintf
