@@ -91,7 +91,6 @@ static_assert(sizeof(int_t)  == sizeof(void*), "Invalid type size!");
 static_assert(sizeof(uint_t) == sizeof(void*), "Invalid type size!");
 static_assert(sizeof(pointer_size) == sizeof(void*), "Invalid type size!");
 static_assert(sizeof(char8)  == 1, "Invalid type size!");
-static_assert(sizeof(char16) == 2, "Invalid type size!");
 static_assert(sizeof(float32) == 4, "Invalid type size!");
 static_assert(sizeof(float64) == 8, "Invalid type size!");
 
