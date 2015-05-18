@@ -478,7 +478,7 @@ uint32 PolygonGroup::ReleaseGeometryData()
         meshData = nullptr;
 
         uint32 ret = vertexStride * vertexCount; //released vertex bytes
-        ret += indexCount * sizeof(uint16); //released index bytes
+        ret += indexCount * INDEX_FORMAT_SIZE[indexFormat]; //released index bytes
 
         return ret;
     }
