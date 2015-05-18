@@ -53,7 +53,7 @@ void FilePath::SetBundleName(const FilePath & newBundlePath)
 
     virtualBundlePath.pathType = PATH_IN_RESOURCES;
 
-    if(resourceFolders.size())
+    if(!resourceFolders.empty())
         resourceFolders.pop_front();
     
     resourceFolders.push_front(virtualBundlePath);
@@ -310,15 +310,14 @@ String FilePath::ResolveResourcesPath() const
 
         if(resourceFolders.size() == 1) // optimization to avoid call path.Exists()
         {
-            path = (*resourceFolders.begin()).absolutePathname + relativePathname;
+            path = resourceFolders.front().absolutePathname + relativePathname;
             return path.absolutePathname;
         }
         else
         {
-            List<FilePath>::reverse_iterator endIt = resourceFolders.rend();
-            for(List<FilePath>::reverse_iterator it = resourceFolders.rbegin(); it != endIt; ++it)
+            for(const auto& x : resourceFolders)
             {
-                path = (*it).absolutePathname + relativePathname;
+                path = x.absolutePathname + relativePathname;
                 if(path.Exists())
                 {
                     return path.absolutePathname;
