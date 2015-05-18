@@ -30,6 +30,9 @@
 
 #include "Tools/QtPosSaver/QtPosSaver.h"
 
+#include <QDebug>
+
+
 #include "QtTools/WidgetHelpers/WidgetStateHelper.h"
 
 
@@ -110,24 +113,27 @@ void QtPosSaver::LoadGeometry(QWidget *widget)
 	if (nullptr != widget && !attachedWidgetName.isEmpty())
 	{
         auto helper = WidgetStateHelper::create( widget );
+        helper->setTrackedEvents( WidgetStateHelper::ScaleOnDisplayChange );
 
         const auto normalKey = QString( "%1-geometry-%2" ).arg( attachedWidgetName ).arg( widget->objectName() );
         const auto isMaximizedKey = QString( "%1-maximized-%2" ).arg( attachedWidgetName ).arg( widget->objectName() );
 
+        const auto geometry = Load( normalKey );
+        widget->restoreGeometry( geometry );
+
         const auto mState = Load( isMaximizedKey );
 		if (!mState.isEmpty() && mState.at(0) != 0)
 		{
-			if(widget->isVisible())
+			if (widget->isVisible())
 			{
 				widget->showMaximized();
 			}
 			else
 			{
-                helper->setTrackedEvents( WidgetStateHelper::MaximizeOnShowOnce );
+                const auto f = helper->getTrackedEvents() | WidgetStateHelper::MaximizeOnShowOnce;
+                helper->setTrackedEvents( f );
 			}
 		}
-
-        widget->restoreGeometry( Load( normalKey ) );
 	}
 }
 

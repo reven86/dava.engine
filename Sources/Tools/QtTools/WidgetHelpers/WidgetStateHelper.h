@@ -6,6 +6,7 @@
 
 
 class QWidget;
+class QScreen;
 
 
 class WidgetStateHelper
@@ -16,8 +17,9 @@ class WidgetStateHelper
 public:
     enum WidgetEvent
     {
-        MaximizeOnShowOnce,
-        ScaleOnDisplayChange,
+        NoFlags                 = 0,
+        MaximizeOnShowOnce      = 1 << 0,
+        ScaleOnDisplayChange    = 1 << 1,
     };
     Q_DECLARE_FLAGS( WidgetEvents, WidgetEvent )
 
@@ -33,12 +35,14 @@ public:
 
 private slots:
     void stopTrack();
+    void onShowEvent();
+    void onScreenChanged( QScreen *screen );
 
 private:
-    void onShowEvent();
-
     QPointer< QWidget > trackedWidget;
     WidgetEvents trackedEvents;
+
+    QPointer< QScreen > prevScreen;
 
 public:
     static WidgetStateHelper *create( QWidget *w );

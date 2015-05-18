@@ -1,7 +1,9 @@
 #include "WidgetStateHelper.h"
 
 #include <QWidget>
-#include <QEvent>
+#include <QWindow>
+#include <QScreen>
+
 #include <QDebug>
 
 
@@ -70,11 +72,44 @@ void WidgetStateHelper::stopTrack()
 
 void WidgetStateHelper::onShowEvent()
 {
+    auto window = trackedWidget->windowHandle();
+    if ( window != nullptr )
+    {
+        disconnect( window, &QWindow::screenChanged, this, &WidgetStateHelper::onScreenChanged );
+        connect( window, &QWindow::screenChanged, this, &WidgetStateHelper::onScreenChanged );
+        prevScreen = window->screen();
+    }
+
     if ( trackedEvents.testFlag( MaximizeOnShowOnce ) )
     {
         trackedWidget->showMaximized();
         trackedEvents &= ~MaximizeOnShowOnce;
     }
+}
+
+void WidgetStateHelper::onScreenChanged( QScreen* screen )
+{
+    if ( !trackedEvents.testFlag( ScaleOnDisplayChange ) )
+        return;
+
+    if ( trackedWidget->isMaximized() )
+        return;
+
+    const auto size = trackedWidget->size();
+
+    if ( prevScreen.isNull() )
+    {
+        prevScreen = screen;
+    }
+
+    const auto dw = qreal( size.width() ) / prevScreen->geometry().width();
+    const auto dh = qreal( size.height() ) / prevScreen->geometry().height();
+    const auto w = screen->geometry().width() * dw / 2;
+    const auto h = screen->geometry().height() * dh / 2;
+
+    // TODO: Doesn't work on windows move
+    // trackedWidget->resize( w, h );  
+    prevScreen = screen;
 }
 
 WidgetStateHelper* WidgetStateHelper::create( QWidget* w )
