@@ -106,7 +106,7 @@ void WaveComponent::Deserialize(KeyedArchive *archive, SerializationContext *ser
 
 void WaveComponent::Trigger()
 {
-    GlobalEventSystem::Instance()->Event(entity, EventSystem::WAVE_TRIGGERED);
+    GlobalEventSystem::Instance()->Event(this, EventSystem::WAVE_TRIGGERED);
 }
 
 };

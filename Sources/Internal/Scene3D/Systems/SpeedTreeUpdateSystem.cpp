@@ -66,21 +66,22 @@ SpeedTreeUpdateSystem::~SpeedTreeUpdateSystem()
     RenderManager::Instance()->GetOptions()->RemoveObserver(this);
 }
 
-void SpeedTreeUpdateSystem::ImmediateEvent(Entity * entity, uint32 event)
+void SpeedTreeUpdateSystem::ImmediateEvent(Component * _component, uint32 event)
 {
+    Entity * entity = _component->GetEntity();
 	if(event == EventSystem::WORLD_TRANSFORM_CHANGED)
 	{
         SpeedTreeComponent * component = GetSpeedTreeComponent(entity);
         if(component)
         {
-            Matrix4 * wtMxPrt = GetTransformComponent(entity)->GetWorldTransformPtr();
+            Matrix4 * wtMxPrt = GetTransformComponent(component->GetEntity())->GetWorldTransformPtr();
             component->wtPosition = wtMxPrt->GetTranslationVector();
             wtMxPrt->GetInverse(component->wtInvMx);
         }
 	}
     if(event == EventSystem::SPEED_TREE_MAX_ANIMATED_LOD_CHANGED)
     {
-        UpdateAnimationFlag(entity);
+        UpdateAnimationFlag(_component->GetEntity());
     }
 }
 

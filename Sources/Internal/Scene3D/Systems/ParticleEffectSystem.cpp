@@ -211,9 +211,9 @@ void ParticleEffectSystem::RemoveComponent(Entity * entity, Component * componen
 		RemoveFromActive(effect);
 }
 
-void ParticleEffectSystem::ImmediateEvent(Entity * entity, uint32 event)
+void ParticleEffectSystem::ImmediateEvent(Component * component, uint32 event)
 {
-	ParticleEffectComponent *effect = GetEffectComponent(entity);
+	ParticleEffectComponent *effect = DynamicTypeCheck<ParticleEffectComponent*>(component);
 	if (!effect) return;
 	if (event == EventSystem::START_PARTICLE_EFFECT)
     {

@@ -98,8 +98,9 @@ void StaticOcclusionBuildSystem::RemoveEntity(Entity * entity)
     entities.erase( std::remove( entities.begin(), entities.end(), entity ), entities.end() );
 }
 
-void StaticOcclusionBuildSystem::ImmediateEvent(Entity * entity, uint32 event)
+void StaticOcclusionBuildSystem::ImmediateEvent(Component * _component, uint32 event)
 {
+    Entity * entity = _component->GetEntity();
     StaticOcclusionComponent *component = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
     DVASSERT(component);
     if (component->GetPlaceOnLandscape()&&((event == EventSystem::WORLD_TRANSFORM_CHANGED)||(event == EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED)))
@@ -749,9 +750,9 @@ void StaticOcclusionDebugDrawSystem::RemoveEntity(Entity * entity)
     GetScene()->GetRenderSystem()->RemoveFromRender(debugDrawComponent->GetRenderObject());
     entity->RemoveComponent(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT);    
 }
-void StaticOcclusionDebugDrawSystem::ImmediateEvent(Entity * entity, uint32 event)
+void StaticOcclusionDebugDrawSystem::ImmediateEvent(Component * component, uint32 event)
 {
-    
+    Entity * entity = component->GetEntity();
     StaticOcclusionDebugDrawComponent *debugDrawComponent = static_cast<StaticOcclusionDebugDrawComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT));
     StaticOcclusionComponent *staticOcclusionComponent = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
     if (event == EventSystem::WORLD_TRANSFORM_CHANGED)
