@@ -104,6 +104,7 @@ private slots:
     void OnPixelizationStateChanged();
 private:
     void InitLanguageBox();
+    void InitConvertBox();
 	void InitMenu();
     void SetupViewMenu();
     void DisableActions();

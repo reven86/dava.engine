@@ -61,7 +61,7 @@ MainWindow::MainWindow(QWidget *parent)
     setupUi(this);
 
     InitLanguageBox();
-
+    InitConvertBox();
     tabBar->setElideMode(Qt::ElideNone);
     setWindowTitle(ResourcesManageHelper::GetProjectTitle());
 
@@ -221,6 +221,30 @@ void MainWindow::InitLanguageBox()
     connect(comboboxLanguage, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), localizationEditorDialog->currentLocaleComboBox, &QComboBox::setCurrentIndex);
     connect(localizationEditorDialog->currentLocaleComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), comboboxLanguage, &QComboBox::setCurrentIndex);
     comboboxLanguage->setCurrentIndex(localizationEditorDialog->currentLocaleComboBox->currentIndex());
+}
+
+void MainWindow::InitConvertBox()
+{
+    QAction *actionReloadTextures = new QAction(QIcon(":/Icons/reloadtextures.png"), tr("Reload Textures"), this);
+    QMenu *menuTexturesForGPU = new QMenu(this);
+    const auto &map = GlobalEnumMap<eGPUFamily>::Instance();
+    for (size_t i = 0; i < map->GetCount(); ++i)
+    {
+        int value;
+        bool ok = map->GetValue(i, value);
+        DVASSERT_MSG(ok, "wrong enum used");
+        QAction *action = new QAction(map->ToString(value), this);
+        action->setData(value);
+        action->setCheckable(true);
+        menuTexturesForGPU->addAction(action);
+    }
+    QToolButton *reloadTexturesBtn = new QToolButton();
+    reloadTexturesBtn->setMenu(menuTexturesForGPU);
+    reloadTexturesBtn->setPopupMode(QToolButton::MenuButtonPopup);
+    reloadTexturesBtn->setDefaultAction(actionReloadTextures);
+    reloadTexturesBtn->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    reloadTexturesBtn->setAutoRaise(false);
+    toolBarConvertGPU->addWidget(reloadTexturesBtn);
 }
 
 void MainWindow::InitMenu()

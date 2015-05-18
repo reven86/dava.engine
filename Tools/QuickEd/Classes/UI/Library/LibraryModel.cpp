@@ -36,7 +36,7 @@ LibraryModel::LibraryModel(PackageNode *node, QObject *parent) : QAbstractListMo
 
     for (int i = 0; i < node->GetImportedPackagesNode()->GetCount(); i++)
     {
-        ImportedPackagesNode *importedPackage = (ImportedPackagesNode*) node->GetImportedPackagesNode()->Get(i);
+        ImportedPackagesNode *importedPackage = dynamic_cast<ImportedPackagesNode*>(node->GetImportedPackagesNode()->Get(i));
         for (int j = 0; j < importedPackage->GetCount(); j++)
         {
             libraryControls.push_back(importedPackage->GetName() + "/" + importedPackage->Get(j)->GetName());
