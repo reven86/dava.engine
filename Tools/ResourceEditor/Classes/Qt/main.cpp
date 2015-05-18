@@ -155,6 +155,7 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
     cmdLine.InitalizeTool();
     if ( !cmdLine.IsToolInitialized() )
     {
+		cmdLine.PrintResults();
         cmdLine.PrintUsageForActiveTool();
     }
     else
