@@ -61,8 +61,6 @@ public:
     MMNetServer();
     virtual ~MMNetServer();
 
-    void Update(float32 timeElapsed);
-
     // Overriden methods from NetService
     void ChannelOpen() override;
     void ChannelClosed(const char8* message) override;
@@ -80,6 +78,9 @@ private:
     void SendParcel(Parcel& parcel);
 
     void GatherDump();
+
+    void OnUpdate();
+    static void OnMemoryProfilerUpdate(void* arg);
 
 private:
     uint32 sessionId;

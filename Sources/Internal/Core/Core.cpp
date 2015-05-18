@@ -60,6 +60,7 @@
 #include "Platform/DeviceInfo.h"
 
 #include "Network/NetCore.h"
+#include "MemoryManager/MemoryProfiler.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -470,6 +471,8 @@ void Core::SystemProcessFrame()
     
     // Poll for network I/O events here, not depending on Core active flag
     Net::NetCore::Instance()->Poll();
+
+    DAVA_MEMORY_PROFILER_UPDATE();
     
 	if (!core) return;
 	if (!isActive)return;

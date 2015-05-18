@@ -40,7 +40,6 @@
 #include "MMNetServer.h"
 
 #include <cstdlib>
-#include <ctime>
 
 namespace DAVA
 {
@@ -52,30 +51,20 @@ MMNetServer::MMNetServer()
     , sessionId(0)
     , commInited(false)
     , timerBegin(0)
-    , statPeriod(250)
+    , statPeriod(10)
     , periodCounter(0)
     , outHeader(reinterpret_cast<MMNetProto::Header*>(outbuf))
     , outData(OffsetPointer<void>(outbuf, sizeof(MMNetProto::Header)))
 {
     sessionId = Random::Instance()->Rand();
     timerBegin = SystemTimer::Instance()->AbsoluteMS();
+
+    MemoryManager::Instance()->SetCallbacks(&OnMemoryProfilerUpdate, nullptr, this);
 }
 
 MMNetServer::~MMNetServer()
 {
 
-}
-
-void MMNetServer::Update(float32 timeElapsed)
-{
-    if (!commInited) return;
-
-    periodCounter += static_cast<size_t>(timeElapsed * 1000.0f);
-    if (periodCounter >= statPeriod)
-    {
-        SendMemoryStat();
-        periodCounter = 0;
-    }
 }
 
 void MMNetServer::ChannelOpen()
@@ -282,6 +271,23 @@ void MMNetServer::GatherDump()
 
         EnqueueParcel(parcel);
     }
+}
+
+void MMNetServer::OnUpdate()
+{
+    if (!commInited) return;
+
+    periodCounter += 1;
+    if (periodCounter >= statPeriod)
+    {
+        SendMemoryStat();
+        periodCounter = 0;
+    }
+}
+
+void MMNetServer::OnMemoryProfilerUpdate(void* arg)
+{
+    static_cast<MMNetServer*>(arg)->OnUpdate();
 }
 
 }   // namespace Net

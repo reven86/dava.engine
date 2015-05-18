@@ -42,8 +42,12 @@
 #include "AllocPools.h"
 #include "MemoryManagerTypes.h"
 
+#define DAVA_MEMORY_MANAGER_NEW_DATASTRUCT
+
 namespace DAVA
 {
+
+class Thread;
 
 /*
  MemoryManager
@@ -77,6 +81,9 @@ public:
 
     static void RegisterAllocPoolName(int32 index, const char8* name);
     static void RegisterTagName(uint32 tagMask, const char8* name);
+
+    void SetCallbacks(void (*onUpdate)(void*), void (*onTag)(uint32, bool, void*), void* arg);
+    void Update();
 
     DAVA_NOINLINE void* Allocate(size_t size, int32 poolIndex);
     DAVA_NOINLINE void* AlignedAllocate(size_t size, size_t align, int32 poolIndex);
@@ -120,7 +127,7 @@ private:
 
     void InsertBacktrace(Backtrace& backtrace);
     void RemoveBacktrace(uint32 hash);
-    
+
     DAVA_NOINLINE void CollectBacktrace(Backtrace* backtrace, size_t nskip);
     void ObtainAllBacktraceSymbols();
     void ObtainBacktraceSymbols(const Backtrace* backtrace);
@@ -142,15 +149,16 @@ private:
 
     using MutexType = Spinlock;
     using LockType = LockGuard<MutexType>;
-    mutable MutexType mutex;
-    mutable MutexType bktraceMutex;
-    mutable MutexType gpuMutex;
+
+    mutable MutexType allocMutex;       // Mutex for managing list of allocated memory blocks
+    //mutable MutexType statMutex;        // Mutex for updating memory statistics
+    mutable MutexType bktraceMutex;     // Mutex for working with backtraces
+    mutable MutexType gpuMutex;         // Mutex for managing GPU allocations
 
     template<typename T>
     using InternalAllocator = MemoryManagerAllocator<T, -1>;
 
     using InternalString = std::basic_string<char8, std::char_traits<char8>, InternalAllocator<char8>>;
-    using SymbolMap = std::unordered_map<void*, InternalString, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, InternalString>>>;
 
     // Function object for using as hash template in BacktraceMap
     // It simply returns backtrace hash without any modification as hash value has been already calculated using DAVA::HashValue_N
@@ -158,6 +166,23 @@ private:
     {
         size_t operator () (const uint32 key) const { return key; }
     };
+
+#if defined(DAVA_MEMORY_MANAGER_NEW_DATASTRUCT)
+    using BacktraceMap = std::unordered_map<uint32, size_t, KeyHash, std::equal_to<uint32>, InternalAllocator<std::pair<const uint32, size_t>>>;
+    using BacktraceStorage = std::deque<Backtrace, InternalAllocator<Backtrace>>;
+
+    using SymbolMap = std::unordered_map<void*, size_t, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, InternalString>>>;
+    using SymbolStorage = std::deque<InternalString, InternalAllocator<InternalString>>;
+
+    BacktraceMap* bktraceMap;
+    BacktraceStorage* bktraceStorage;
+
+    SymbolMap* symbolMap;
+    SymbolStorage* symbolStorage;
+
+#else
+    using SymbolMap = std::unordered_map<void*, InternalString, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, InternalString>>>;
+
     using BacktraceMap = std::unordered_map<uint32, Backtrace, KeyHash, std::equal_to<uint32>, InternalAllocator<std::pair<const uint32, Backtrace>>>;
 
     using GpuBlockList = std::list<MemoryBlock, InternalAllocator<MemoryBlock>>;
@@ -166,6 +191,13 @@ private:
     BacktraceMap* backtraces;
     SymbolMap* symbols;
     GpuBlockMap* gpuBlockMap;
+#endif
+
+    Thread* symbolCollectorThread = nullptr;
+
+    void* callbackArg = nullptr;
+    void (*updateCallback)(void* arg) = nullptr;
+    void (*tagCallback)(uint32 tags, bool entering, void* arg) = nullptr;
 
 private:
     // Make the following data members static to allow initialization of predefined values not in constructor
