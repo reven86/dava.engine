@@ -49,6 +49,8 @@ namespace MeshUtils
     SkinnedMesh * CreateSkinnedMesh(Entity * fromEntity, Vector<SkeletonComponent::JointConfig> & outJoints);
     PolygonGroup * CreateShadowPolygonGroup(PolygonGroup * source);
 
+    uint32 ReleaseGeometryDataRecursive(Entity * forEntity);
+
     struct FaceWork
     {
         int32 indexOrigin[3];
