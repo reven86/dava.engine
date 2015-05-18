@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "GameCore.h"
 
 #include "Platform/DateTime.h"
@@ -59,7 +58,7 @@
 #include "Tests/MemoryManagerTest.h"
 //$UNITTEST_INCLUDE
 
-#define TEMP_UI_TEST
+//#define TEMP_UI_TEST
 
 void GameCore::RunOnlyThisTest()
 {
