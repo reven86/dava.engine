@@ -39,9 +39,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //Compiler features
 #define DAVA_NOINLINE   __declspec(noinline)
 #define DAVA_ALIGNOF(x) __alignof(x)
-#define DAVA_NOEXCEPT   throw()
+
+#if _MSC_VER >= 1900 //msvs 2015 RC or later
 //Constexpr is not supported even in VS2013 (partially supported in 2015 CTP)
-#define DAVA_CONSTEXPR
+    #define DAVA_CONSTEXPR constexpr
+    #define DAVA_NOEXCEPT noexcept
+#else
+    #define DAVA_CONSTEXPR
+    #define DAVA_NOEXCEPT throw()
+#endif
+
 #define DAVA_DEPRECATED(func) __declspec(deprecated) func
 
 //Platform defines
