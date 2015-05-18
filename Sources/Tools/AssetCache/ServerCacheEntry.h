@@ -33,7 +33,7 @@
 #include "Base/BaseTypes.h"
 
 #include "AssetCache/CacheItemKey.h"
-#include "AssetCache/CachedFilesDescriptor.h"
+#include "AssetCache/CachedFiles.h"
 
 
 namespace DAVA
@@ -48,18 +48,20 @@ class ServerCacheEntry
 public:
     
     ServerCacheEntry();
+    explicit ServerCacheEntry(const CachedFiles &files);
     virtual ~ServerCacheEntry() = default;
-
-    void Serialize(KeyedArchive * archieve) const;
-    void Deserialize(KeyedArchive * archieve);
 
     bool operator == (const ServerCacheEntry &right) const;
 
+    void InvalidateAccesToken(uint64 accessID);
+    
+    const CachedFiles & GetFiles() const;
+    
 private:
     
-    CacheItemKey key;
-    CachedFilesDescriptor descriptor;
-
+    CachedFiles files;
+    
+    uint64 accessID = 0;
 };
 
     

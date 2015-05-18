@@ -38,20 +38,23 @@ namespace DAVA
 {
 
 class KeyedArchive;
+class File;
     
 namespace AssetCache
 {
-    
+
 class CachedFiles
 {
+    
 public:
     
     CachedFiles();
+    CachedFiles(const CachedFiles & right);
+    
     virtual ~CachedFiles();
     
     void AddFile(const FilePath &path);
-    const Set<FilePath> & GetFiles() const;
-    const Set<FilePath> & GetFileNames() const;
+    const Map<FilePath, File *> & GetFiles() const;
     
     bool IsEmtpy() const;
     
@@ -59,24 +62,25 @@ public:
     void Deserialize(KeyedArchive * archieve);
     
     bool operator == (const CachedFiles &right) const;
+    CachedFiles & operator=(const CachedFiles &right);
+
+    void LoadFiles();
+    void UnloadFiles();
+    
+    uint64 GetFilesSize() const;
     
 private:
 
-    Set<FilePath> files;
+    Map<FilePath, File *> files;
+    bool filesAreLoaded = false;
 };
 
 
-inline const Set<FilePath> & CachedFiles::GetFiles() const
+const Map<FilePath, File *> & CachedFiles::GetFiles() const
 {
     return files;
 }
 
-inline const Set<FilePath> & CachedFiles::GetFileNames() const
-{
-    return files;
-}
-    
-    
 inline bool CachedFiles::IsEmtpy() const
 {
     return (files.size() == 0);

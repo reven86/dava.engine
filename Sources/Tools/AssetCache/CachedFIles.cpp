@@ -30,6 +30,8 @@
 
 #include "AssetCache/CachedFiles.h"
 #include "FileSystem/KeyedArchive.h"
+#include "FileSystem/DynamicMemoryFile.h"
+#include "FileSystem/File.h"
 #include "FileSystem/FileList.h"
 #include "Debug/DVAssert.h"
 
@@ -40,19 +42,39 @@ namespace AssetCache
 {
     
 CachedFiles::CachedFiles()
+    : filesAreLoaded(false)
 {
+}
+
+CachedFiles::CachedFiles(const CachedFiles & right)
+{
+    filesAreLoaded = right.filesAreLoaded;
+    
+    files = right.files;
+    for(auto & f: files)
+    {
+        SafeRetain(f.second);
+    }
 }
     
 CachedFiles::~CachedFiles()
 {
+    UnloadFiles();
     files.clear();
 }
     
 void CachedFiles::AddFile(const FilePath &path)
 {
     DVASSERT(files.count(path) == 0);
-    
-    files.insert(path);
+
+    if(filesAreLoaded)
+    {
+        files[path] = File::Create(path, File::OPEN | File::READ);
+    }
+    else
+    {
+        files[path] = nullptr;
+    }
 }
 
     
@@ -61,34 +83,118 @@ void CachedFiles::Serialize(KeyedArchive * archieve) const
     DVASSERT(nullptr != archieve);
     
     auto count = files.size();
-    archieve->SetUInt32("count", count);
+    archieve->SetUInt32("files_count", count);
     
     int32 index = 0;
-    for(auto & file : files)
+    Vector<uint8> fileData;
+    for(auto & f : files)
     {
-        archieve->SetString(Format("file_%d", index++), file.GetStringValue());
+        archieve->SetString(Format("path_%d", index++), f.first.GetStringValue());
+
+        if(f.second)
+        {
+            auto file = f.second;
+            
+            auto fSize = file->GetSize();
+            if(fSize > fileData.size())
+            {
+                fileData.resize(fSize);
+            }
+            
+            auto read = file->Read(fileData.data(), fSize);
+            DVVERIFY(read == fSize);
+            
+            archieve->SetByteArray(Format("file_%d", index++), fileData.data(), read);
+        }
     }
 }
+    
 
 void CachedFiles::Deserialize(KeyedArchive * archieve)
 {
     DVASSERT(nullptr != archieve);
     
+    UnloadFiles();
     files.clear();
     
-    auto count = archieve->GetUInt32("count");
+    auto count = archieve->GetUInt32("files_count");
     for(uint32 i = 0; i < count; ++i)
     {
-        files.insert(archieve->GetString(Format("file_%d", i)));
+        FilePath path = archieve->GetString(Format("path_%d", i));
+        File *file = nullptr;
+        
+        auto key = Format("file_%d", i);
+        auto size = archieve->GetByteArraySize(key);
+        if(size)
+        {
+            filesAreLoaded = true;
+            
+            auto data = archieve->GetByteArray(key);
+            file = DynamicMemoryFile::Create(data, size, File::OPEN | File::WRITE);
+        }
+        
+        files[key] = file;
     }
 }
 
 
 bool CachedFiles::operator == (const CachedFiles &right) const
 {
-    return (files == right.files);
+    return (files == right.files) && (filesAreLoaded == right.filesAreLoaded);
 }
 
+CachedFiles & CachedFiles::operator=(const CachedFiles &right)
+{
+    UnloadFiles();
+    
+    filesAreLoaded = right.filesAreLoaded;
+    files = right.files;
+    for(auto & f: files)
+    {
+        SafeRetain(f.second);
+    }
+
+    return (*this);
+}
+
+    
+uint64 CachedFiles::GetFilesSize() const
+{
+    uint64 fileSize = 0;
+    for(auto & f: files)
+    {
+        if(f.second)
+        {
+            fileSize += f.second->GetSize();
+        }
+        else
+        {
+            Logger::Warning("[CachedFiles::%s] File(%s) not loaded ", __FUNCTION__, f.first.GetStringValue().c_str());
+        }
+    }
+    
+    return fileSize;
+}
+
+void CachedFiles::LoadFiles()
+{
+    filesAreLoaded = true;
+    
+    for(auto & f : files)
+    {
+        DVASSERT(f.second == nullptr);
+        f.second = File::Create(f.first, File::OPEN | File::READ);
+    }
+}
+
+void CachedFiles::UnloadFiles()
+{
+    filesAreLoaded = false;
+    for(auto & f : files)
+    {
+        SafeRelease(f.second);
+    }
+}
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA

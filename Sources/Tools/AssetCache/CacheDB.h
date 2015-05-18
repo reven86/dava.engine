@@ -70,6 +70,7 @@ namespace AssetCache
 {
 
 class CacheItemKey;
+class CachedFiles;
 class ServerCacheEntry;
     
 class CacheDB
@@ -84,27 +85,31 @@ public:
     void Save() const;
     void Load();
     
-    void Serialize(KeyedArchive * archieve) const;
-    void Deserialize(KeyedArchive * archieve);
-
-    bool operator == (const CacheDB &right) const;
-    bool operator < (const CacheDB &right) const;
-
-    bool Contains(const CacheItemKey &key) const;
-    ServerCacheEntry Get(const CacheItemKey &key);
+    ServerCacheEntry * Get(const CacheItemKey &key);
 
     void Insert(const CacheItemKey &key, const ServerCacheEntry &entry);
+    void Insert(const CacheItemKey &key, const CachedFiles &files);
+    
     void Remove(const CacheItemKey &key);
     
     const FilePath & GetPath() const;
     const uint64 GetStorageSize() const;
     const uint64 GetAvailableSize() const;
     const uint64 GetUsedSize() const;
+
+    void Dump();
     
 private:
     
+    void IncreaseUsedSize(const CachedFiles &files);
+    
+private:
+    
+    uint64 nextItemID = 0;
+    
     FilePath path;
-    uint64 storageSize = 0;
+    const uint64 storageSize;
+    uint64 usedSize = 0;
     
     UnorderedMap<CacheItemKey, ServerCacheEntry> cache;
 };

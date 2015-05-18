@@ -111,14 +111,14 @@ void ClientCacheEntry::InvalidateSecondaryKey()
     ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
     params.Serialize(archieve);
 
-    auto fileNames = files.GetFileNames();
-    auto count = fileNames.size();
+    auto fileDescriptors = files.GetFiles();
+    auto count = fileDescriptors.size();
     archieve->SetUInt32("count", count);
     
     int32 index = 0;
-    for(auto & file : fileNames)
+    for(auto & file : fileDescriptors)
     {
-        archieve->SetString(Format("file_%d", index++), file.GetStringValue());
+        archieve->SetString(Format("file_%d", index++), file.first.GetStringValue());
     }
     
     auto dataSize = archieve->Serialize(nullptr, 0);

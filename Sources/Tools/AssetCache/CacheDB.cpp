@@ -31,6 +31,7 @@
 #include "AssetCache/CacheDB.h"
 
 #include "AssetCache/CacheItemKey.h"
+#include "AssetCache/CachedFiles.h"
 #include "AssetCache/ServerCacheEntry.h"
 
 #include "FileSystem/File.h"
@@ -74,7 +75,6 @@ void CacheDB::Save() const
     header->SetUInt64("itemsCount", cache.size());
 
     header->Save(file);
-    
 }
 
 void CacheDB::Load()
@@ -100,68 +100,66 @@ void CacheDB::Load()
         Logger::Error("[CacheDB::%s] Wrong version %d", __FUNCTION__, header->GetInt32("version"));
         return;
     }
-    
-}
-
-    
-void CacheDB::Serialize(KeyedArchive * archieve) const
-{
-    DVASSERT(nullptr != archieve);
 }
     
-void CacheDB::Deserialize(KeyedArchive * archieve)
+ServerCacheEntry * CacheDB::Get(const CacheItemKey &key)
 {
-    DVASSERT(nullptr != archieve);
-}
+    //Load files from filesystem
     
-bool CacheDB::operator == (const CacheDB &right) const
-{
-    return true;
-}
-    
-bool CacheDB::operator < (const CacheDB& right) const
-{
-    return false;
-}
-    
-bool CacheDB::Contains(const CacheItemKey &key) const
-{
-    auto found = cache.find(key);
-    
-    if(found != cache.end())
-    {
-        //TODO UpdateTouchTime
-        return true;
-    }
-    
-    return false;
-}
-    
-ServerCacheEntry CacheDB::Get(const CacheItemKey &key)
-{
     auto found = cache.find(key);
     if(found != cache.end())
     {
-        //TODO UpdateTouchTime
-        return found->second;
+        found->second.InvalidateAccesToken(nextItemID++);
+        return &found->second;
     }
     
-    return ServerCacheEntry();
+    return nullptr;
 }
 
 void CacheDB::Insert(const CacheItemKey &key, const ServerCacheEntry &entry)
 {
-    cache[key] = entry;
-    //TODO InitializeTouchTime
+    //TODO: save files to fileSystem
+    
+    auto found = cache.find(key);
+    if(found != cache.end())
+    {
+        IncreaseUsedSize(found->second.GetFiles());
+        
+        found->second = entry;
+        found->second.InvalidateAccesToken(nextItemID++);
+    }
+    else
+    {
+        cache[key] = entry;
+        cache[key].InvalidateAccesToken(nextItemID++);
+    }
+
+    usedSize += entry.GetFiles().GetFilesSize();
 }
+    
+void CacheDB::Insert(const CacheItemKey &key, const CachedFiles &files)
+{
+    ServerCacheEntry entry(files);
+    Insert(key, entry);
+}
+    
 
 void CacheDB::Remove(const CacheItemKey &key)
 {
     auto found = cache.find(key);
     if(found != cache.end())
     {
+        IncreaseUsedSize(found->second.GetFiles());
         cache.erase(found);
     }
+}
+    
+void CacheDB::IncreaseUsedSize(const CachedFiles &files)
+{
+    auto fileSize = files.GetFilesSize();
+    DVASSERT(fileSize <= usedSize);
+    
+    usedSize -= fileSize;
 }
 
     
@@ -177,12 +175,46 @@ const uint64 CacheDB::GetStorageSize() const
 
 const uint64 CacheDB::GetAvailableSize() const
 {
-    return storageSize;
+    DVASSERT(GetStorageSize() > GetUsedSize());
+    return (GetStorageSize() - GetUsedSize());
 }
 
 const uint64 CacheDB::GetUsedSize() const
 {
-    return 0;
+    return usedSize;
+}
+    
+    
+void CacheDB::Dump()
+{
+    Logger::FrameworkDebug("======= [CacheDB::%s] =======", __FUNCTION__);
+
+    Logger::FrameworkDebug(" == General Info ==");
+    Logger::FrameworkDebug("\tstorageSize = %lld", GetStorageSize());
+    Logger::FrameworkDebug("\tusedSize = %lld", GetUsedSize());
+    Logger::FrameworkDebug("\tavailableSize = %lld", GetAvailableSize());
+    
+    Logger::FrameworkDebug(" == Files Info ==");
+    Logger::FrameworkDebug("\tentries count = %d", cache.size());
+    
+    size_t index = 0;
+    for(auto & entry: cache)
+    {
+        auto files = entry.second.GetFiles();
+        auto fileDescriptors = files.GetFiles();
+
+        Logger::FrameworkDebug("\tentry[%d]:", index);
+        Logger::FrameworkDebug("\t\tnames count = %d", fileDescriptors.size());
+        
+        for(auto &f: fileDescriptors)
+        {
+            Logger::FrameworkDebug("\t\tname: %s", f.first.GetStringValue().c_str());
+        }
+
+        ++index;
+    }
+    
+    Logger::FrameworkDebug("======= [CacheDB::%s] =======", __FUNCTION__);
 }
     
     

@@ -31,7 +31,10 @@
 #include "AssetCache/Test/AssetCacheTest.h"
 #include "AssetCache/AssetCache.h"
 
+#include "FileSystem/DynamicMemoryFile.h"
 #include "FileSystem/FileList.h"
+#include "Platform/SystemTimer.h"
+#include "Platform/Thread.h"
 
 
 #include "Network/Base/Endpoint.h"
@@ -50,6 +53,8 @@ public:
     
     DAVA::AssetCache::Client *client = nullptr;
     DAVA::AssetCache::ClientCacheEntry clientEntry;
+    
+    FilePath outFolder;
     
     bool testIsRunning = false;
     
@@ -82,7 +87,15 @@ public:
         }
         else
         {
+            auto files = clientEntry.GetFiles();
+            files.LoadFiles();
+
+            DAVA::Thread::Sleep(200); //to emulate some action, example convertation
+            
             auto addRequestSent = client->AddToCache(key, clientEntry.GetFiles());
+            
+            files.UnloadFiles();
+            
             Logger::FrameworkDebug("\taddRequestSent is %d", addRequestSent);
         }
         
@@ -96,15 +109,30 @@ public:
         bool entriesAreEqual = (key == clientEntry.GetKey());
         Logger::FrameworkDebug("\tentriesAreEqual is %d", entriesAreEqual);
         
-        auto filesSet = files.GetFiles();
-        auto count = files.GetFiles().size();
+        auto fileDescriptors = files.GetFiles();
+        auto count = fileDescriptors.size();
         
         Logger::FrameworkDebug("....Dump of files....");
         Logger::FrameworkDebug("\tfiles count is %d", count);
-        for(auto & f: filesSet)
+        for(auto & f: fileDescriptors)
         {
-            Logger::FrameworkDebug("\t\t %s", f.GetStringValue().c_str());
+            Logger::FrameworkDebug("\t\t %s", f.first.GetStringValue().c_str());
+            
+            if(f.second)
+            {
+                auto savePath = outFolder + f.first.GetFilename();
+
+                auto file = DynamicTypeCheck<DAVA::DynamicMemoryFile *>(f.second);
+                
+                auto savedFile = File::Create(savePath, File::CREATE | File::WRITE);
+                if(savedFile)
+                {
+                    savedFile->Write(file->GetData(), file->GetSize());
+                    savedFile->Release();
+                }
+            }
         }
+        
         Logger::FrameworkDebug("........ Done ........");
         
         testIsRunning = false;
@@ -112,9 +140,12 @@ public:
     }
     
     
-    void Run(const DAVA::AssetCache::ClientCacheEntry &entry)
+    void Run(const DAVA::AssetCache::ClientCacheEntry &entry, const FilePath & _outFolder)
     {
+        auto startTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
+        
         clientEntry = entry;
+        outFolder = _outFolder;
         
         testIsRunning = true;
         client->IsInCache(clientEntry.GetKey());
@@ -123,6 +154,9 @@ public:
         {
             //wait
         }
+
+        auto deltaTime = DAVA::SystemTimer::Instance()->AbsoluteMS() - startTime;
+        Logger::Info("****** Client Test took %lld ms", deltaTime);
     }
 };
 
@@ -147,9 +181,7 @@ public:
         Logger::FrameworkDebug("=====    ServerTest::%s start    =====", __FUNCTION__);
         if(server)
         {
-            DVASSERT(false);
-//            dataBase.Insert(key, files);
-            
+            dataBase.Insert(key, files);
             server->FilesAddedToCache(key, true);
         }
         Logger::FrameworkDebug("=====    ServerTest::%s finish   =====", __FUNCTION__);
@@ -160,7 +192,9 @@ public:
         Logger::FrameworkDebug("=====    ServerTest::%s start    =====", __FUNCTION__);
         if(server)
         {
-            bool inCache = dataBase.Contains(key);
+            auto entry = dataBase.Get(key);
+            bool inCache = (nullptr != entry);
+            
             server->FilesInCache(key, inCache);
         }
         Logger::FrameworkDebug("=====    ServerTest::%s finish   =====", __FUNCTION__);
@@ -172,11 +206,10 @@ public:
         
         if(server)
         {
-            bool inCache = dataBase.Contains(key);
-            if(inCache)
+            auto entry = dataBase.Get(key);
+            if(entry)
             {
-                DVASSERT(false);
-//                server->SendFiles(key, cachedFiles);
+                server->SendFiles(key, entry->GetFiles());
             }
             else
             {
@@ -235,8 +268,9 @@ void RunPackerTest()
     ServerTest serverTest(server);
     ClientTest clientTest(client);
     
-    clientTest.Run(cacheEntry);
-    clientTest.Run(cacheEntry);
+    clientTest.Run(cacheEntry, "/Users/victorkleschenko/Downloads/__AssetCacheTest/TestProject/OutFolder_0/");
+    clientTest.Run(cacheEntry, "/Users/victorkleschenko/Downloads/__AssetCacheTest/TestProject/OutFolder_1/");
+    clientTest.Run(cacheEntry, "/Users/victorkleschenko/Downloads/__AssetCacheTest/TestProject/OutFolder_2/");
     // --- RUNNING TEST ---
     
     Net::NetCore::Instance()->DestroyAllControllersBlocked();

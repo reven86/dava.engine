@@ -32,6 +32,8 @@
 
 
 #include "FileSystem/KeyedArchive.h"
+
+#include "Platform/SystemTimer.H"
 #include "Debug/DVAssert.h"
 
 namespace DAVA
@@ -41,24 +43,33 @@ namespace AssetCache
 {
     
 ServerCacheEntry::ServerCacheEntry()
+    : accessID(0)
 {
 }
-    
-void ServerCacheEntry::Serialize(KeyedArchive * archieve) const
+
+ServerCacheEntry::ServerCacheEntry(const CachedFiles &_files)
+    : files(_files)
+    , accessID(0)
 {
-    DVASSERT(nullptr != archieve);
 }
-    
-void ServerCacheEntry::Deserialize(KeyedArchive * archieve)
-{
-    DVASSERT(nullptr != archieve);
-}
+
     
 bool ServerCacheEntry::operator == (const ServerCacheEntry &right) const
 {
-    return (this == &right);
+    return (accessID == right.accessID) && (files == right.files);
 }
+
+void ServerCacheEntry::InvalidateAccesToken(uint64 newID)
+{
+    accessID = newID;
+}
+
     
+const CachedFiles & ServerCacheEntry::GetFiles() const
+{
+    return files;
+}
+
 
     
     
