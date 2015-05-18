@@ -40,6 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DAVA_CONSTEXPR  constexpr
 #define DAVA_DEPRECATED(func) func __attribute__ ((deprecated))
 
+#include <AvailabilityMacros.h>
 #include <TargetConditionals.h>
 
 #if MAC_OS_X_VERSION_10_6 <= MAC_OS_X_VERSION_MAX_ALLOWED
