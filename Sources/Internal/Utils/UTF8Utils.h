@@ -64,14 +64,6 @@ public:
 	 \returns string in UTF8 format, contained in DAVA::String
 	 */
     static String EncodeToUTF8(const WideString& wstring);
-
-    /**
-	 \brief convert WideString string to UTF8
-     \param[in] wstring pointer to wide null-terminated string
-     \param[in] lenght length of string
-	 \returns string in UTF8 format, contained in DAVA::String
-	 */
-    static String EncodeToUTF8(const wchar_t* wstring, uint_t lenght = -1);
 };
 
 inline WideString UTF8Utils::EncodeToWideString(const String & utf8String)
