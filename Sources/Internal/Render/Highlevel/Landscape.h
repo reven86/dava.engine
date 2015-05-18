@@ -248,7 +248,7 @@ public:
         \param[out] vertices landscape vertices
         \param[out] indices landscape indices
 	 */
-	void GetGeometry(Vector<LandscapeVertex> & vertices, Vector<int32> & indices);
+	bool GetGeometry(Vector<LandscapeVertex> & vertices, Vector<int32> & indices);
     
     /**
         \brief Function to receive pathname of heightmap object

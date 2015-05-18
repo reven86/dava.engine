@@ -1310,8 +1310,13 @@ void Landscape::Draw(Camera * camera)
 }
 
 
-void Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<int32> & indices)
+bool Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<int32> & indices)
 {
+    if (heightmap->Data() == nullptr)
+    {
+        return false;
+    }
+
 	LandQuadTreeNode<LandscapeQuad> * currentNode = &quadTreeHead;
 	LandscapeQuad * quad = &currentNode->data;
 	
@@ -1345,26 +1350,9 @@ void Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<
 			indices[indexIndex++] = x + (y + step) * quadWidth;     
 		}
 	}
-}
 
-//AABBox3 LandscapeNode::GetWTMaximumBoundingBox()
-//{
-////    AABBox3 retBBox = box;
-////    box.GetTransformedBox(GetWorldTransform(), retBBox);
-////
-////    const Vector<SceneNode*>::iterator & itEnd = children.end();
-////    for (Vector<SceneNode*>::iterator it = children.begin(); it != itEnd; ++it)
-////    {
-////        AABBox3 lbox = (*it)->GetWTMaximumBoundingBoxSlow();
-////        if(  (AABBOX_INFINITY != lbox.min.x && AABBOX_INFINITY != lbox.min.y && AABBOX_INFINITY != lbox.min.z)
-////           &&(-AABBOX_INFINITY != lbox.max.x && -AABBOX_INFINITY != lbox.max.y && -AABBOX_INFINITY != lbox.max.z))
-////        {
-////            retBBox.AddAABBox(lbox);
-////        }
-////    }
-//    
-//    return retBBox;
-//}
+    return true;
+}
 
 const FilePath & Landscape::GetHeightmapPathname()
 {
