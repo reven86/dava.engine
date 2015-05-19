@@ -27,25 +27,21 @@
 =====================================================================================*/
 
 
+#ifndef __THREADLOCALTEST_TEST_H__
+#define __THREADLOCALTEST_TEST_H__
 
-#ifndef __UIEditor__WidgetSignalsBlocker__
-#define __UIEditor__WidgetSignalsBlocker__
+#include "DAVAEngine.h"
+#include "Infrastructure/TestTemplate.h"
 
-#include <QWidget>
-namespace DAVA {
-    
-// Helper class to block/unblock signals from the widgets.
-class WidgetSignalsBlocker
+class ThreadLocalTest : public TestTemplate < ThreadLocalTest >
 {
 public:
-    WidgetSignalsBlocker(QWidget* widget);
-    ~WidgetSignalsBlocker();
-    
+    ThreadLocalTest ();
+
+    void ThreadLocalTestFunc(PerfFuncData * data);
+
 private:
-    QWidget* widget;
-    bool signalsWereBlocked;
+    void ThreadFunc(DAVA::BaseObject*, void*, void*);
 };
 
-};
-
-#endif /* defined(__UIEditor__WidgetSignalsBlocker__) */
+#endif //__THREADLOCALTEST_TEST_H__

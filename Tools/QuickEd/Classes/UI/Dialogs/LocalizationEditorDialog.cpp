@@ -28,19 +28,17 @@
 
 
 #include "localizationeditordialog.h"
-#include "Helpers/LocalizationSystemHelper.h"
 #include "FileSystem/LocalizationSystem.h"
-#include "FileSystem/FileSystem.h"
 #include "Helpers/ResourcesManageHelper.h"
-
-#include "EditorFontManager.h"
 
 #include "regexpinputdialog.h"
 
 #include <QMenu>
 #include <QMessageBox>
+#include <QLocale>
 #include "Utils/QtDavaConvertion.h"
 
+#include "EditorCore.h"
 #include "QtTools/FileDialog/FileDialog.h"
 
 
@@ -471,8 +469,9 @@ bool LocalizationFontsTableController::LoadTable()
 {
     const String &locale = LocalizationSystem::Instance()->GetCurrentLocale();
     Logger::Debug("LocalizationFontsTableController::LoadTable locale=%s", locale.c_str());
-	const Map<String, Font*> &localizationFonts = EditorFontManager::Instance()->GetLocalizedFonts(locale);
-	if (localizationFonts.empty())
+    //const Map<String, Font*> &localizationFonts = EditorFontSystem::Instance()->GetLocalizedFonts(locale);
+    return false;
+	/*if (localizationFonts.empty())
 	{
 		return false;
 	}
@@ -487,20 +486,18 @@ bool LocalizationFontsTableController::LoadTable()
         QString keyValue(it->first.c_str());
         if (filterValue.isEmpty() || keyValue.contains(filterValue, Qt::CaseInsensitive))
         {
-            Font* font = it->second;
-            String fontDisplayName = EditorFontManager::Instance()->GetFontDisplayName(font);
-            //QString fontName = QString::fromStdString(EditorFontManager::Instance()->GetFontDisplayName(font));
-            QString fontName = QString("%1 %2").arg(font->GetSize()).arg(fontDisplayName.c_str());
+            //QString fontName = QString::fromStdString(EditorFontSystem::Instance()->GetFontDisplayName(font));
             //QString fontSize = QString("%1").arg(font->GetSize());
             
             QList<QStandardItem *> itemsList;
             itemsList.append(new QStandardItem(keyValue));
-            itemsList.append(new QStandardItem(fontName));
+            //TODO : restore it or remove it
+            itemsList.append(new QStandardItem("not implemented"));
             //itemsList.append(new QStandardItem(fontSize));
             tableModel->appendRow(itemsList);
         }
     }
-    return true;
+    return true;*/
 }
 
 void LocalizationFontsTableController::UpdateUIControls(const QModelIndex &selectedIndex)
@@ -530,14 +527,12 @@ LocalizationEditorDialog::LocalizationEditorDialog(QWidget *parent) :
     QDialog(parent)
 {
     setupUi(this);
-    
     stringsTable = new LocalizationStringsTableController(stringsTableView, this);
     fontsTable = new LocalizationFontsTableController(fontsTableView, this);
     
     stringsTable->SetupTable();
     fontsTable->SetupTable();
     
-    FillLocaleComboBox();
     ConnectToSignals();
     SetLocalizationDirectoryPath();
     
@@ -565,16 +560,31 @@ LocalizationEditorDialog::~LocalizationEditorDialog()
 
 void LocalizationEditorDialog::FillLocaleComboBox()
 {
+    currentLocaleComboBox->blockSignals(true);
+    currentLocaleComboBox->clear();
     // Get count of supported languages
-    int languagesCount = LocalizationSystemHelper::GetSupportedLanguagesCount();
-    QString languageDescription;
-    // Fill combobox with language values
-    for (int i = 0; i < languagesCount; ++i) {
-        languageDescription =  QString::fromStdString(LocalizationSystemHelper::GetSupportedLanguageDesc(i));
-        currentLocaleComboBox->addItem(languageDescription);
+    const auto &locales = GetEditorLocalizationSystem()->GetAvailableLocales();
+    for (const auto &localeName : locales)    // Fill combobox with language values
+    {        
+        QLocale locale(localeName);
+        QString lang;
+        switch (locale.script())
+        {
+        default: 
+            lang = QLocale::languageToString(locale.language());
+        break;
+        case QLocale::SimplifiedChineseScript: 
+            lang = "Chinese simpl.";
+        break;
+        case QLocale::TraditionalChineseScript:
+            lang = "Chinese trad.";
+        break;
+        }
+        currentLocaleComboBox->addItem(lang);
     }
+    currentLocaleComboBox->blockSignals(false);
     // Setup default locale
-    SetDefaultLanguage();
+    UpdateDefaultLanguage();
 }
 
 void LocalizationEditorDialog::ConnectToSignals()
@@ -634,14 +644,13 @@ void LocalizationEditorDialog::SetLocalizationDirectoryPath()
     }
 }
 
-void LocalizationEditorDialog::SetDefaultLanguage()
+void LocalizationEditorDialog::UpdateDefaultLanguage()
 {
     // Get description for current language ID
-    String currentLanguageID = LocalizationSystem::Instance()->GetCurrentLocale();
-    String languageDescription = LocalizationSystemHelper::GetLanguageDescByLanguageID(currentLanguageID);
-
-    // Setup combo box value
-    int index = currentLocaleComboBox->findText(QString::fromStdString(languageDescription));
+    auto id = LocalizationSystem::Instance()->GetCurrentLocale();
+    const auto &locales = GetEditorLocalizationSystem()->GetAvailableLocales();
+    auto it = std::find(locales.begin(), locales.end(), QString::fromStdString(id));
+    auto index = std::distance(locales.begin(), it); // this is works only for arrays and vectors
     currentLocaleComboBox->setCurrentIndex(index);
 }
 
@@ -693,26 +702,22 @@ void LocalizationEditorDialog::ReinitializeLocalizationSystem(const QString& loc
         return;
     }
 
-    String languageId = LocalizationSystemHelper::GetSupportedLanguageID(languageItemID);
-    
+    const auto &locales = GetEditorLocalizationSystem()->GetAvailableLocales();
+    QString locale = locales.at(languageItemID);
     // Re-initialize the Localization System with the new Locale.
-    LocalizationSystem::Instance()->Cleanup();
+    GetEditorLocalizationSystem()->Cleanup();
     
     if (!localizationDirectory.isEmpty())
     {
         FilePath localizationFilePath(localizationDirectory.toStdString());
         localizationFilePath.MakeDirectoryPathname();
 
-        LocalizationSystem::Instance()->SetDirectory(localizationFilePath);
-        Logger::Debug("HierarchyTreeController::ReinitializeLocalizationSystem LocalizationSystem::Instance()->SetCurrentLocale(%s);", languageId.c_str());
-        LocalizationSystem::Instance()->SetCurrentLocale(languageId);
-        LocalizationSystem::Instance()->Init();
+        GetEditorLocalizationSystem()->InitLanguageWithDirectory(localizationFilePath, locale.toStdString());
+        //TODO: move all controller code to EditorLocalizationSystem
     }
     
 	stringsTable->ReloadTable();
-    fontsTable->ReloadTable();
-    emit LanguageChanged();
-    
+    fontsTable->ReloadTable();    
 //    HierarchyTreeController::Instance()->UpdateLocalization(true);
 }
 
