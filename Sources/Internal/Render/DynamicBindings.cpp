@@ -281,17 +281,4 @@ pointer_size DynamicBindings::GetDynamicParamUpdateSemantic(eShaderSemantic shad
     return dynamicParameters[shaderSemantic].updateSemantic;
 }
 
-
-const Color& DynamicBindings::GetColor()
-{
-    return color;
-}
-void DynamicBindings::SetColor(const Color& _color)
-{
-    color = _color;
-}
-void DynamicBindings::SetColor(float32 r, float32 g, float32 b, float32 a)
-{
-    color = Color(r, g, b, a);
-}
 }

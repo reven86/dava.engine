@@ -52,18 +52,17 @@ struct RenderBatch2D
     inline void Reset()
     {
         primitiveType = PRIMITIVETYPE_TRIANGLELIST;
-        renderState = 0;
-        textureHandle = 0;
-        shader = 0;
-        clipRect = Rect(0,0,-1,-1);
+        clipRect = Rect(0, 0, -1, -1);
+        transformedClipRect = Rect(0, 0, -1, -1);
         count = 0;
         indexOffset = 0;
+        material = nullptr;
     }
 
-    UniqueHandle renderState;
-    UniqueHandle textureHandle;
-    ShaderDescriptor* shader;
+    rhi::HTextureSet textureSetHandle;
+    NMaterial * material;
     Rect clipRect;
+    Rect transformedClipRect;
     ePrimitiveType primitiveType;
     uint32 count;
     uint32 indexOffset;
@@ -144,7 +143,7 @@ public:
      */
     void HardResetBatchingBuffers(uint32 verticesCount, uint32 indicesCount, uint8 buffersCount);
 
-    void PushBatch(UniqueHandle state, UniqueHandle texture, ShaderDescriptor * shader, const Rect& clip,
+    void PushBatch(NMaterial * material, rhi::HTextureSet texture, const Rect& clip,
         uint32 vertexCount, const float32* vertexPointer, const float32* texCoordPointer,
         uint32 indexCount, const uint16* indexPointer,
         const Color& color);
@@ -166,7 +165,10 @@ public:
     
 	void PushClip();
 	void PopClip();
-    void UpdateClip();
+
+    inline void SetColor(const Color & color);
+    inline void SetColor(float32 r, float32 g, float32 b, float32 a);
+    inline const Color & GetColor();
 
     void ScreenSizeChanged();
 
@@ -179,6 +181,8 @@ private:
     static ShaderDescriptor* GetShaderForBatching(ShaderDescriptor* inputShader);
     
     void Setup2DProjection();
+
+    Rect TransformClipRect(const Rect & rect);
 
     Matrix4 virtualToPhysicalMatrix;
     Matrix4 projMatrix;
@@ -202,12 +206,13 @@ private:
     Vector<uint16> iboTemp;
 
     bool spriteClipping;
-    bool clipChanged;
     
     Vector<RenderBatch2D> batches;
     RenderBatch2D currentBatch;
     uint32 vertexIndex;
     uint32 indexIndex;
+
+    Color currentColor;
 
     VboPool* pool;
 
@@ -220,6 +225,9 @@ private:
     };
     uint32 highlightControlsVerticesLimit;
 
+    rhi::RenderPassConfig renderPassConfig;
+    rhi::HRenderPass currentPassHandle;
+    rhi::HPacketList currentPacketListHandle;
 };
 
 inline void RenderSystem2D::SetHightlightControlsVerticesLimit(uint32 verticesCount)
@@ -227,6 +235,20 @@ inline void RenderSystem2D::SetHightlightControlsVerticesLimit(uint32 verticesCo
     highlightControlsVerticesLimit = verticesCount;
 }
 
+inline void RenderSystem2D::SetColor(const Color & color)
+{
+    currentColor = color;
+}
+
+void RenderSystem2D::SetColor(float32 r, float32 g, float32 b, float32 a)
+{
+    SetColor(Color(r, g, b, a));
+}
+
+inline const Color & RenderSystem2D::GetColor()
+{
+    return currentColor;
+}
 
 } // ns
 

@@ -38,11 +38,7 @@ VPROG_BEGIN
 		{
 			posView = float4(lightVecView, 0.0);
 		}
-        VP_OUT_POSITION = mul( posView, projMatrix );
 	}
-	else
-	{
-        VP_OUT_POSITION = mul( position, worldViewProjMatrix );
-	}
+    VP_OUT_POSITION = mul( posView, projMatrix );
     
 VPROG_END
