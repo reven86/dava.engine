@@ -208,7 +208,38 @@ void CachedFiles::UnloadFiles()
     }
 }
     
+void CachedFiles::Save(const FilePath & folder) const
+{
+    DVASSERT(folder.IsDirectoryPathname());
+    
+    FileSystem::Instance()->CreateDirectory(folder, true);
+    
+    for(auto & f : files)
+    {
+        if(nullptr == f.second)
+        {
+            Logger::Warning("[CachedFiles::%s] File(%s) not loaded", __FUNCTION__, f.first.GetStringValue().c_str());
+            continue;
+        }
+        
+        auto savedPath = folder + f.first.GetFilename();
+        
+        auto file = File::Create(savedPath, File::CREATE | File::WRITE);
+        if(file)
+        {
+            auto written = file->Write(f.second->GetPtr(), f.second->GetSize());
+            DVVERIFY(written == f.second->GetSize());
+            
+            file->Release();
+        }
+        else
+        {
+            Logger::Error("[CachedFiles::%s] Cannot create file %s", __FUNCTION__, savedPath.GetStringValue().c_str());
+        }
+    }
+}
 
+    
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA

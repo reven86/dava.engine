@@ -45,14 +45,13 @@ namespace AssetCache
 {
     
 const String CacheDB::DB_FILE_NAME = "cache.dat";
-
     
 CacheDB::CacheDB(const FilePath &folderPath, uint64 size)
-    : path(folderPath)
+    : cacheRootFolder(folderPath)
     , storageSize(size)
 {
-    path.MakeDirectoryPathname();
-    path = path + DB_FILE_NAME;
+    cacheRootFolder.MakeDirectoryPathname();
+    cacheSettings = cacheRootFolder + DB_FILE_NAME;
 }
 
 CacheDB::~CacheDB()
@@ -62,10 +61,10 @@ CacheDB::~CacheDB()
     
 void CacheDB::Save() const
 {
-    ScopedPtr<File> file(File::Create(path, File::CREATE | File::WRITE));
+    ScopedPtr<File> file(File::Create(cacheSettings, File::CREATE | File::WRITE));
     if(static_cast<File*>(file) == nullptr)
     {
-        Logger::Error("[CacheDB::%s] Cannot create file %s", __FUNCTION__, path.GetStringValue().c_str());
+        Logger::Error("[CacheDB::%s] Cannot create file %s", __FUNCTION__, cacheSettings.GetStringValue().c_str());
         return;
     }
 
@@ -79,10 +78,10 @@ void CacheDB::Save() const
 
 void CacheDB::Load()
 {
-    ScopedPtr<File> file(File::Create(path, File::OPEN | File::READ));
+    ScopedPtr<File> file(File::Create(cacheSettings, File::OPEN | File::READ));
     if(static_cast<File*>(file) == nullptr)
     {
-        Logger::Error("[CacheDB::%s] Cannot create file %s", __FUNCTION__, path.GetStringValue().c_str());
+        Logger::Error("[CacheDB::%s] Cannot create file %s", __FUNCTION__, cacheSettings.GetStringValue().c_str());
         return;
     }
     
@@ -104,12 +103,11 @@ void CacheDB::Load()
     
 ServerCacheEntry * CacheDB::Get(const CacheItemKey &key)
 {
-    //Load files from filesystem
-    
     auto found = cache.find(key);
     if(found != cache.end())
     {
         found->second.InvalidateAccesToken(nextItemID++);
+        found->second.files.LoadFiles();
         return &found->second;
     }
     
@@ -118,8 +116,6 @@ ServerCacheEntry * CacheDB::Get(const CacheItemKey &key)
 
 void CacheDB::Insert(const CacheItemKey &key, const ServerCacheEntry &entry)
 {
-    //TODO: save files to fileSystem
-    
     auto found = cache.find(key);
     if(found != cache.end())
     {
@@ -133,8 +129,10 @@ void CacheDB::Insert(const CacheItemKey &key, const ServerCacheEntry &entry)
         cache[key] = entry;
         cache[key].InvalidateAccesToken(nextItemID++);
     }
-
     usedSize += entry.GetFiles().GetFilesSize();
+
+    auto savedPath = CreateFolderPath(key);
+    entry.GetFiles().Save(savedPath);
 }
     
 void CacheDB::Insert(const CacheItemKey &key, const CachedFiles &files)
@@ -162,10 +160,23 @@ void CacheDB::IncreaseUsedSize(const CachedFiles &files)
     usedSize -= fileSize;
 }
 
+FilePath CacheDB::CreateFolderPath(const CacheItemKey &key) const
+{
+    constexpr auto HASH_STRING_SIZE = MD5::DIGEST_SIZE * 2 + 1;
+    
+    static std::array<char8, HASH_STRING_SIZE> primaryHashBuffer;
+    static std::array<char8, HASH_STRING_SIZE> secondaryHashBuffer;
+    
+    MD5::HashToChar(key.keyData.hash.primary, primaryHashBuffer.data(), HASH_STRING_SIZE);
+    MD5::HashToChar(key.keyData.hash.secondary, secondaryHashBuffer.data(), HASH_STRING_SIZE);
+    
+    auto folder = std::string(primaryHashBuffer.data(), HASH_STRING_SIZE) + std::string(secondaryHashBuffer.data(), HASH_STRING_SIZE);
+    return (cacheRootFolder + (folder + "/"));
+}
     
 const FilePath & CacheDB::GetPath() const
 {
-    return path;
+    return cacheRootFolder;
 }
 
 const uint64 CacheDB::GetStorageSize() const

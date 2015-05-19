@@ -68,6 +68,8 @@ public:
     void LoadFiles();
     void UnloadFiles();
     
+    void Save(const FilePath & folder) const;
+    
     uint64 GetFilesSize() const;
     
 private:

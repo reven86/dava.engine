@@ -101,13 +101,17 @@ public:
     
 private:
     
+    FilePath CreateFolderPath(const CacheItemKey &key) const;
+    
     void IncreaseUsedSize(const CachedFiles &files);
     
 private:
     
     uint64 nextItemID = 0;
     
-    FilePath path;
+    FilePath cacheRootFolder;
+    FilePath cacheSettings;
+    
     const uint64 storageSize;
     uint64 usedSize = 0;
     

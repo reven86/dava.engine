@@ -58,7 +58,7 @@ public:
     const CachedFiles & GetFiles() const;
     
 private:
-    
+public: //temorary solution
     CachedFiles files;
     
     uint64 accessID = 0;

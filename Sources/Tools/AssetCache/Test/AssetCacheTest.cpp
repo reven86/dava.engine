@@ -108,32 +108,8 @@ public:
         
         bool entriesAreEqual = (key == clientEntry.GetKey());
         Logger::FrameworkDebug("\tentriesAreEqual is %d", entriesAreEqual);
-        
-        auto & fileDescriptors = files.GetFiles();
-        auto count = fileDescriptors.size();
-        
-        Logger::FrameworkDebug("....Dump of files....");
-        Logger::FrameworkDebug("\tfiles count is %d", count);
-        for(auto & f: fileDescriptors)
-        {
-            Logger::FrameworkDebug("\t\t %s", f.first.GetStringValue().c_str());
-            
-            if(f.second)
-            {
-                auto savePath = outFolder + f.first.GetFilename();
 
-                auto fileData = DynamicTypeCheck<DAVA::Data *>(f.second);
-                
-                auto savedFile = File::Create(savePath, File::CREATE | File::WRITE);
-                if(savedFile)
-                {
-                    savedFile->Write(fileData->GetPtr(), fileData->GetSize());
-                    savedFile->Release();
-                }
-            }
-        }
-        
-        Logger::FrameworkDebug("........ Done ........");
+        files.Save(outFolder);
         
         testIsRunning = false;
         Logger::FrameworkDebug("=====    ClientTest::%s finish   =====", __FUNCTION__);
