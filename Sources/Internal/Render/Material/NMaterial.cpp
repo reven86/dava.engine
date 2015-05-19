@@ -386,7 +386,7 @@ void NMaterial::RebuildRenderVariants()
     CollectMaterialFlags(flags);
     
     //RHI_COMPLETE - move quality to numbers, or flags to fastname
-    flags[NMaterialQualityName::QUALITY_FLAG_NAME] = 0;// QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup());
+    flags[NMaterialQualityName::QUALITY_FLAG_NAME] = 0; // QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup());
     
     const FXDescriptor& fxDescr = FXCache::GetFXDescriptor(GetFXName(), flags);
 
@@ -605,8 +605,7 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
 
 
 void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * serializationContext)
-{
-    //RHI_COMPLETE
+{    
     /*the following stuff is for importing old NMaterial stuff*/
     
     if (archive->IsKeyExists("materialName"))

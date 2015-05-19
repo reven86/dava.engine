@@ -49,14 +49,20 @@ public:
     void AddRenderLayer(RenderLayer * layer, RenderLayer::eRenderLayerID afterLayer = RenderLayer::RENDER_LAYER_INVALID_ID);
 	void RemoveRenderLayer(RenderLayer * layer);
 
-    virtual void Draw(RenderSystem * renderSystem, uint32 clearBuffers);
+    virtual void Draw(RenderSystem * renderSystem);
     
     inline uint32 GetRenderLayerCount() const;
     inline RenderLayer * GetRenderLayer(uint32 index) const;
+
+    inline rhi::RenderPassConfig& GetPassConfig();
+    inline void SetViewport(const Rect& viewPort);
     
 protected:
     FastName passName;
     rhi::RenderPassConfig passConfig;
+    Rect viewport;
+
+    Vector2 viewportSize, rcpViewportSize, viewportOffset; //storage fro dynamic bindings
 
     /*convinience*/
     void PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSystem);
@@ -78,6 +84,15 @@ public:
 
 	friend class RenderSystem;
 };
+
+inline rhi::RenderPassConfig& RenderPass::GetPassConfig()
+{
+    return passConfig;
+}
+inline void RenderPass::SetViewport(const Rect& _viewport)
+{
+    viewport = _viewport;
+}
 
 inline const FastName & RenderPass::GetName() const
 {
@@ -108,7 +123,7 @@ class WaterReflectionRenderPass  : public WaterPrePass
 {        
 public:    
     WaterReflectionRenderPass(const FastName & name);
-	virtual void Draw(RenderSystem * renderSystem, uint32 clearBuffers);	
+	virtual void Draw(RenderSystem * renderSystem);	
 private:
     void UpdateCamera(Camera *camera);
 };
@@ -117,7 +132,7 @@ class WaterRefractionRenderPass  : public WaterPrePass
 {       
 public:
     WaterRefractionRenderPass(const FastName & name);
-    virtual void Draw(RenderSystem * renderSystem, uint32 clearBuffers);
+    virtual void Draw(RenderSystem * renderSystem);
 };
 
 class MainForwardRenderPass : public RenderPass
@@ -126,7 +141,7 @@ class MainForwardRenderPass : public RenderPass
 public:
     MainForwardRenderPass(const FastName & name);
 	~MainForwardRenderPass();
-	virtual void Draw(RenderSystem * renderSystem, uint32 clearBuffers);
+	virtual void Draw(RenderSystem * renderSystem);
 
 private:
 	WaterReflectionRenderPass *reflectionPass;

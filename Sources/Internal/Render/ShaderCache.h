@@ -42,6 +42,7 @@ namespace ShaderDescriptorCache
     void Initialize();
     void Uninitialize();
     void Clear();
+    void ClearDynamicBindigs();
     
     ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines);
 

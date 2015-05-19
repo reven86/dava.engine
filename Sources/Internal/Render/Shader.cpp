@@ -144,6 +144,12 @@ void ShaderDescriptor::UpdateDynamicParams()
     }
 }
 
+void ShaderDescriptor::ClearDynamicBindings()
+{
+    for (auto& dynamicBinding : dynamicPropertyBindings)
+        dynamicBinding.updateSemantic = 0;
+}
+
 uint32 ShaderDescriptor::GetVertexConstBuffersCount()
 {
     return vertexConstBuffersCount;

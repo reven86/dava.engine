@@ -82,6 +82,7 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/SceneCache.h"
 #include "UI/UIEvent.h"
+#include "Render/Highlevel/RenderPass.h"
 
 #include "Render/Renderer.h"
 
@@ -112,9 +113,8 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     , foliageSystem(0)
     , windSystem(0)
     , animationSystem(0)
-    , staticOcclusionDebugDrawSystem(0)
+    , staticOcclusionDebugDrawSystem(0)    
     , systemsMask(_systemsMask)
-    , clearBuffers(0)
     , isDefaultGlobalMaterial(true)
     , sceneGlobalMaterial(0)
     , mainCamera(0)
@@ -253,6 +253,16 @@ void Scene::InitGlobalMaterial()
     if (NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_NORMAL_SCALE)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_NORMAL_SCALE, Shader::UT_FLOAT, 1, &defaultFloat10);
 #endif //RHI_COMPLETE
 
+}
+
+rhi::RenderPassConfig& Scene::GetMainPassConfig()
+{
+    return renderSystem->GetMainRenderPass()->GetPassConfig();
+}
+
+void Scene::SetMainPassViewport(const Rect& viewport)
+{
+    renderSystem->GetMainRenderPass()->SetViewport(viewport);
 }
 
 void Scene::CreateSystems()
@@ -831,7 +841,7 @@ void Scene::Draw()
     
     uint64 time = SystemTimer::Instance()->AbsoluteMS();        
     
-    renderSystem->Render(clearBuffers);
+    renderSystem->Render();
     
     //foliageSystem->DebugDrawVegetation();
     
@@ -1084,15 +1094,6 @@ void Scene::ImportShadowColor(Entity * rootNode)
 void Scene::OnSceneReady(Entity * rootNode)
 {
     ImportShadowColor(rootNode);
-}
-
-void Scene::SetClearBuffers(uint32 buffers) 
-{
-    clearBuffers = buffers;
-}
-uint32 Scene::GetClearBuffers() const 
-{
-    return clearBuffers;
 }
 
     

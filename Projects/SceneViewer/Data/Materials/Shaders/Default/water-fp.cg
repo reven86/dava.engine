@@ -1,0 +1,34 @@
+#define BLENDING_NONE 0
+#define BLENDING_ALPHABLEND 1
+#define BLENDING_ADDITIVE 2
+
+
+#if BLENDING == BLENDING_ALPHABLEND
+    blending : src=src_alpha dst=inv_src_alpha
+#endif
+
+FPROG_IN_BEGIN
+FPROG_IN_TEXCOORD0(uv,2)
+#if defined(MATERIAL_LIGHTMAP)
+    FPROG_IN_TEXCOORD1(uv1,2)
+#endif
+FPROG_IN_END
+
+FPROG_OUT_BEGIN
+    FPROG_OUT_COLOR
+FPROG_OUT_END
+
+DECL_FP_SAMPLER2D(albedo)
+
+#if defined(MATERIAL_LIGHTMAP)
+    DECL_FP_SAMPLER2D(lightmap)
+#endif
+
+FPROG_BEGIN
+    float4  resColor = FP_TEXTURE2D( albedo, FP_IN(uv) );
+#if defined(MATERIAL_LIGHTMAP)
+    float4  lmColor = FP_TEXTURE2D( lightmap, FP_IN(uv1) );
+    resColor *= lmColor * 2.0;
+#endif
+    FP_OUT_COLOR = resColor;
+FPROG_END

@@ -107,6 +107,7 @@ void Uninitialize()
 
 void Clear()
 {
+    //RHI_COMPLETE - clear shader descriptors here too?
     DVASSERT(initialized);
     for (auto &it : shaderSourceCodes)
     {        
@@ -115,6 +116,15 @@ void Clear()
     }
     shaderSourceCodes.clear();
 
+}
+
+void ClearDynamicBindigs()
+{
+    DVASSERT(initialized);
+    for (auto &it : shaderDescriptors)
+    {
+        it.second->ClearDynamicBindings();
+    }
 }
 
 void BuildFlagsKey(const FastName& name,const HashMap<FastName, int32>& defines, Vector<int32>& key)
