@@ -35,20 +35,7 @@ Document::Document(PackageNode *_package, QObject *parent)
 {
     InitSharedData();
     connect(sharedData, &SharedData::DataChanged, this, &Document::SharedDataChanged);
-    connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::UpdateFonts);
-}
-
-void Document::InitSharedData()
-{
-    sharedData->SetData("controlDeselected", false);
-    sharedData->SetData("controlsDeselected", false);
-
-    QList<ControlNode*> rootControls;
-    PackageControlsNode *controlsNode = package->GetPackageControlsNode();
-    for (int32 index = 0; index < controlsNode->GetCount(); ++index)
-        rootControls.push_back(controlsNode->Get(index));
-
-    sharedData->SetData("activeRootControls", QVariant::fromValue(rootControls));
+    connect(GetEditorFontSystem(), &EditorFontSystem::UpdateFontPreset, this, &Document::RefreshAllControlProperties);
 }
 
 Document::~Document()
@@ -58,17 +45,25 @@ Document::~Document()
     SafeRelease(commandExecutor);
 }
 
+void Document::InitSharedData()
+{
+    sharedData->SetData("controlDeselected", false);
+    sharedData->SetData("controlsDeselected", false);
+    
+    QList<ControlNode*> rootControls;
+    PackageControlsNode *controlsNode = package->GetPackageControlsNode();
+    for (int32 index = 0; index < controlsNode->GetCount(); ++index)
+        rootControls.push_back(controlsNode->Get(index));
+    
+    sharedData->SetData("activeRootControls", QVariant::fromValue(rootControls));
+}
+
 const DAVA::FilePath &Document::GetPackageFilePath() const
 {
     return package->GetPackageRef()->GetPath();
 }
 
-void Document::UpdateLanguage()
-{
-    package->GetPackageControlsNode()->RefreshControlProperties();
-}
-
-void Document::UpdateFonts()
+void Document::RefreshAllControlProperties()
 {
     package->GetPackageControlsNode()->RefreshControlProperties();
 }

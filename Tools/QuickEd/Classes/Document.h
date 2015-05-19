@@ -33,11 +33,9 @@ public:
 signals:
     void SharedDataChanged(const QByteArray &role);
 public slots:
-    void UpdateLanguage();
-    void UpdateFonts();
+    void RefreshAllControlProperties();
 
 private:
-    void UpdateControlCanvas();
     void InitSharedData();
 
 private:
