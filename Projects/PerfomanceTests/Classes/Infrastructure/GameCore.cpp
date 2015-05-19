@@ -119,7 +119,10 @@ void GameCore::EndFrame()
 
 void GameCore::RegisterTests()
 {
-    testChain.push_back(new AsiaPerformanceTest(130000));
+    BaseTest::TestParams params;
+    params.targetTime = 30000;
+
+    testChain.push_back(new AsiaPerformanceTest(params));
 }
 
 String GameCore::GetDeviceName()
@@ -146,15 +149,67 @@ void GameCore::InitScreenController()
     String deviceName = GetDeviceName();
     Logger::Info(deviceName.c_str());
 
-	bool chooser = CommandLineParser::Instance()->CommandIsFound("chooser");
-	bool screenOut = CommandLineParser::Instance()->CommandIsFound("screen_out");
+	bool chooserFound = CommandLineParser::Instance()->CommandIsFound("-chooser");
+    bool testFound = CommandLineParser::Instance()->CommandIsFound("-test");
+    bool uiStatFound = CommandLineParser::Instance()->CommandIsFound("-ui_stat");
 
-	if (chooser)
+    bool testTimeFound = CommandLineParser::Instance()->CommandIsFound("-test_time");
+    bool testFramesFound = CommandLineParser::Instance()->CommandIsFound("-test_frames");
+    bool frameDeltaFound = CommandLineParser::Instance()->CommandIsFound("-frame_delta");
+
+    bool debugFrameFound = CommandLineParser::Instance()->CommandIsFound("-debug_frame");
+    bool maxDeltaFound = CommandLineParser::Instance()->CommandIsFound("-max_delta");
+
+	if (chooserFound)
 	{
         testFlowController = new SingleTestFlowController();
-		
 	}
-	else if (screenOut)
+    else if (testFound)
+    {
+        BaseTest::TestParams params;
+
+        String testForRun = CommandLineParser::Instance()->GetCommandParamAdditional("-test", 0);
+
+        if (testForRun.empty())
+        {
+            Logger::Error("Incorrect params. Set test for run");
+            Core::Instance()->Quit();
+        }
+
+        if (testTimeFound)
+        {
+            String testTimeParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test_time", 0);
+            params.targetTime = std::stoi(testTimeParam);
+        }
+        else if (testFramesFound && frameDeltaFound)
+        {
+            String testFramesParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test_frames", 0);
+            String frameDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-frame_delta", 0);
+
+            params.targetFramesCount = std::stoi(testFramesParam);
+            params.targetFrameDelta = std::stof(frameDeltaParam);
+        }
+        else
+        {
+            Logger::Error("Incorrect params. Set target time or target frames count with frame delta");
+            Core::Instance()->Quit();
+        }
+
+        if (debugFrameFound)
+        {
+            String debugFrameParam = CommandLineParser::Instance()->GetCommandParamAdditional("-debug_frame", 0);
+            params.frameForDebug = std::stoi(debugFrameParam);
+        }
+        
+        if (maxDeltaFound)
+        {
+            String maxDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-max_delta", 0);
+            params.maxDelta = std::stof(maxDeltaParam);
+        }
+
+        testFlowController = new SingleTestFlowController(testForRun, params);
+    }
+	else if (uiStatFound)
 	{
         testFlowController = new TestChainFlowController(true);
 	} 

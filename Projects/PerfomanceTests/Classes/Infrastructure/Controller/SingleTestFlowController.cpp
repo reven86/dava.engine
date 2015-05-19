@@ -36,12 +36,50 @@ SingleTestFlowController::SingleTestFlowController()
 {
 }
 
+SingleTestFlowController::SingleTestFlowController(const String& _testName, const BaseTest::TestParams& _testParams)
+    :   testForRun(nullptr)
+    ,   testChooserScreen(nullptr)
+    ,   currentScreen(nullptr)
+    ,   testForRunName(_testName)
+    ,   testParams(_testParams)
+
+{
+}
+
 void SingleTestFlowController::Init(const Vector<BaseTest*>& _testChain)
 {
     TestFlowController::Init(_testChain);
     
-    testChooserScreen = new TestChooserScreen(testChain);
-    currentScreen = testChooserScreen;
+    if (testForRunName.empty())
+    {
+        testChooserScreen = new TestChooserScreen(testChain);
+        currentScreen = testChooserScreen;
+    }
+    else
+    {
+        for (BaseTest* test : _testChain)
+        {
+            if (test->GetName() == testForRunName)
+            {
+                testForRun = test;
+                testForRun->SetParams(testParams);
+                
+                if (testParams.frameForDebug > 0 || testParams.targetFrameDelta > 0.001f)
+                {
+                    testForRun->SetDebuggable(true);
+                }
+            }
+        }
+
+        currentScreen = testForRun;
+
+        if (currentScreen == nullptr)
+        {
+            Logger::Error(DAVA::Format("Test with name: %s not found", testForRunName.c_str()).c_str());
+            Core::Instance()->Quit();
+        }
+    }
+    
 }
 
 void SingleTestFlowController::BeginFrame()
@@ -56,20 +94,22 @@ void SingleTestFlowController::BeginFrame()
 }
 
 void SingleTestFlowController::EndFrame()
-{
-    currentScreen->EndFrame();
-    
+{ 
     if (nullptr == testForRun)
     {
         if (testChooserScreen->IsFinished())
         {
             testForRun = testChooserScreen->GetTestForRun();
-            testForRun->SetDebuggable(true);
             currentScreen = testForRun;
         }
     }
     else if (testForRun->IsFinished())
     {
         testForRun->OnFinish();
+
+        Logger::Info("Finish all tests.");
+        Core::Instance()->Quit();
     }
+
+    currentScreen->EndFrame();
 }

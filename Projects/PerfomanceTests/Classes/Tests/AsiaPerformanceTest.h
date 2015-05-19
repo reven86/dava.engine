@@ -36,8 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class AsiaPerformanceTest : public BaseTest
 {
 public:
-    AsiaPerformanceTest(uint32 frames, float32 delta, uint32 targetFrame);
-    AsiaPerformanceTest(uint32 time);
+    AsiaPerformanceTest(const TestParams& params);
 
 protected:
 

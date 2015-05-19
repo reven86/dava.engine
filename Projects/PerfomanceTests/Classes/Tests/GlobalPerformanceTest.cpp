@@ -31,14 +31,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 const String GlobalPerformanceTest::TEST_NAME = "RudnikiPerformanceTest";
 const String GlobalPerformanceTest::CAMERA_PATH = "CameraPath";
 
-GlobalPerformanceTest::GlobalPerformanceTest(uint32 frames, float32 delta, uint32 targetFrame)
-    :   BaseTest(TEST_NAME, frames, delta, targetFrame)
-    ,   camera(nullptr)
-{
-}
-
-GlobalPerformanceTest::GlobalPerformanceTest(uint32 time)
-    :   BaseTest(TEST_NAME, time)
+GlobalPerformanceTest::GlobalPerformanceTest(const TestParams& params)
+    :   BaseTest(TEST_NAME, params)
     ,   camera(nullptr)
 {
 }

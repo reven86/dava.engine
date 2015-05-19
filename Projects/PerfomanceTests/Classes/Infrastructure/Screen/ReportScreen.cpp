@@ -102,22 +102,22 @@ void ReportScreen::CreateReportScreen()
             reportItemCopy->SetPosition(Vector2(0.0f, 0.0f + testNumber * offsetY));
 
             UIStaticText* minDeltaText = static_cast<UIStaticText*>(reportItemCopy->FindByName(MIN_DELTA));
-            minDeltaText->SetText(UTF8Utils::EncodeToWideString(ConverterUtils::NumberToString(minDelta)));
+            minDeltaText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", minDelta)));
 
             UIStaticText* maxDeltaText = static_cast<UIStaticText*>(reportItemCopy->FindByName(MAX_DELTA));
-            maxDeltaText->SetText(UTF8Utils::EncodeToWideString(ConverterUtils::NumberToString(maxDelta)));
+            maxDeltaText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", maxDelta)));
 
             UIStaticText* averageDeltaText = static_cast<UIStaticText*>(reportItemCopy->FindByName(AVERAGE_DELTA));
-            averageDeltaText->SetText(UTF8Utils::EncodeToWideString(ConverterUtils::NumberToString(averageDelta)));
+            averageDeltaText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", averageDelta)));
 
             UIStaticText* testTimeText = static_cast<UIStaticText*>(reportItemCopy->FindByName(TEST_TIME));
-            testTimeText->SetText(UTF8Utils::EncodeToWideString(ConverterUtils::NumberToString(testTime)));
+            testTimeText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", testTime)));
 
             UIStaticText* elapsedTimeText = static_cast<UIStaticText*>(reportItemCopy->FindByName(ELAPSED_TIME));
-            elapsedTimeText->SetText(UTF8Utils::EncodeToWideString(ConverterUtils::NumberToString(elapsedTime)));
+            elapsedTimeText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", elapsedTime)));
 
             UIStaticText* framesRenderedText = static_cast<UIStaticText*>(reportItemCopy->FindByName(FRAMES_RENDERED));
-            framesRenderedText->SetText(UTF8Utils::EncodeToWideString(ConverterUtils::NumberToString(framesCount)));
+            framesRenderedText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%d", framesCount)));
 
             AddControl(reportItemCopy);
             

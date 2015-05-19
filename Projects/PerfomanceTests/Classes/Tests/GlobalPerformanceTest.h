@@ -35,8 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class GlobalPerformanceTest : public BaseTest
 {
 public:
-    GlobalPerformanceTest(uint32 frames, float32 delta, uint32 targetFrame);
-    GlobalPerformanceTest(uint32 time);
+    GlobalPerformanceTest(const TestParams& params);
 
 protected:
 

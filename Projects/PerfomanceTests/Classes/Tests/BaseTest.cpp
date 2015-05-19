@@ -30,30 +30,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 const float32 BaseTest::FRAME_OFFSET = 5;
 
-BaseTest::BaseTest(const String& _testName, uint32 _targetFramesCount, float32 _targetFrameDelta, uint32 _frameForDebug)
-    :   frameNumber(0)
-    ,   targetFrameDelta(_targetFrameDelta)
-    ,   targetFramesCount(_targetFramesCount)
-    ,   targetTestTime(0)
+BaseTest::BaseTest(const String& _testName, const TestParams& testParams)
+    :   testName(_testName)
+    ,   targetFrameDelta(testParams.targetFrameDelta)
+    ,   targetFramesCount(testParams.targetFramesCount)
+    ,   targetTestTime(testParams.targetTime)
+    ,   frameForDebug(testParams.frameForDebug)
+    ,   maxDelta(testParams.maxDelta)
+    ,   frameNumber(0)
     ,   testTime(0.0f)
     ,   startTime(0)
-    ,   testName(_testName)
-    ,   frameForDebug(_frameForDebug)
-    ,   debuggable(false)
-    ,   maxAllocatedMemory(0)
-
-{
-}
-
-BaseTest::BaseTest(const String& _testName, uint32 _targetTestTime)
-    :   frameNumber(0)
-    ,   targetFrameDelta(0.0f)
-    ,   targetFramesCount(0)
-    ,   targetTestTime(_targetTestTime)
-    ,   testTime(0.0f)
-    ,   startTime(0)
-    ,   testName(_testName)
-    ,   frameForDebug(0)
     ,   debuggable(false)
     ,   maxAllocatedMemory(0)
 {
@@ -65,7 +51,13 @@ void BaseTest::LoadResources()
 
     scene = new Scene();
 
-    sceneView = new UI3DView(Rect(0.0f, 0.0f, size.dx, size.dy), true);
+    Rect rect;
+    rect.x = 0.0f;
+    rect.y = 0.0f;
+    rect.dx = size.dx;
+    rect.dy = size.dy;
+
+    sceneView = new UI3DView(rect, true);
     sceneView->SetScene(scene);
 
     AddControl(sceneView);
@@ -133,7 +125,7 @@ void BaseTest::OnFinish()
         Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
             testName, 
             TeamcityTestsOutput::FRAME_DELTA,
-            ConverterUtils::NumberToString(frameInfo.delta)).c_str());
+            DAVA::Format("%f", frameInfo.delta)).c_str());
     }
 
     averageDelta /= framesCount;
@@ -144,47 +136,47 @@ void BaseTest::OnFinish()
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
         testName,
         TeamcityTestsOutput::MIN_DELTA,
-        ConverterUtils::NumberToString(minDelta)).c_str());
+        DAVA::Format("%f", minDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
         testName,
         TeamcityTestsOutput::MAX_DELTA,
-        ConverterUtils::NumberToString(maxDelta)).c_str());
+        DAVA::Format("%f", maxDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
         testName,
         TeamcityTestsOutput::AVERAGE_DELTA,
-        ConverterUtils::NumberToString(averageDelta)).c_str());
+        DAVA::Format("%f", averageDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
         testName,
         TeamcityTestsOutput::MAX_FPS,
-        ConverterUtils::NumberToString(1.0f / minDelta)).c_str());
+        DAVA::Format("%f", 1.0f / minDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
         testName,
         TeamcityTestsOutput::MIN_FPS,
-        ConverterUtils::NumberToString(1.0f / maxDelta)).c_str());
+        DAVA::Format("%f", 1.0f / maxDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
         testName,
         TeamcityTestsOutput::AVERAGE_FPS,
-        ConverterUtils::NumberToString(1.0f / averageDelta)).c_str());
+        DAVA::Format("%f", 1.0f / averageDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
         testName,
         TeamcityTestsOutput::TEST_TIME,
-        ConverterUtils::NumberToString(testTime)).c_str());
+        DAVA::Format("%f", testTime)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
         testName,
         TeamcityTestsOutput::TIME_ELAPSED,
-        ConverterUtils::NumberToString(elapsedTime)).c_str());
+        DAVA::Format("%f", elapsedTime)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
         testName,
         TeamcityTestsOutput::MAX_MEM_USAGE,
-        ConverterUtils::NumberToString(maxAllocatedMemory)).c_str());
+        DAVA::Format("%d", maxAllocatedMemory)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatTestFinished(testName).c_str());
 }
@@ -197,10 +189,22 @@ void BaseTest::SystemUpdate(float32 timeElapsed)
         maxAllocatedMemory = allocatedMem;
     }
 
-    bool frameForDebug = GetFrameNumber() > (GetDebugFrame() + BaseTest::FRAME_OFFSET);
+    bool frameForDebug = GetFrameNumber() >= (GetDebugFrame() + BaseTest::FRAME_OFFSET);
+    bool greaterMaxDelta = maxDelta > 0.0f && maxDelta <= timeElapsed; 
     float32 delta = 0.0f;
-    
-    if (frameNumber > FRAME_OFFSET && !(IsDebuggable() && frameForDebug))
+
+    if (IsDebuggable() && (frameForDebug || greaterMaxDelta))
+    {
+        if (greaterMaxDelta)
+        {
+            Logger::Info(DAVA::Format("Time delta: %f \nMaxDelta: %f \nFrame : %d", timeElapsed, maxDelta, frameNumber).c_str());
+        }
+        if (GetFrameNumber() == (GetDebugFrame() + BaseTest::FRAME_OFFSET))
+        {
+            Logger::Info(DAVA::Format("Frame for debug: %d", frameNumber - BaseTest::FRAME_OFFSET).c_str());
+        }
+    }
+    else if (frameNumber > FRAME_OFFSET)
     {
         delta = targetFrameDelta > 0 ? targetFrameDelta : timeElapsed;
 
@@ -209,13 +213,13 @@ void BaseTest::SystemUpdate(float32 timeElapsed)
 
         PerformTestLogic(delta);
     }
-    
+   
     BaseScreen::SystemUpdate(delta);
 }
 
 void BaseTest::BeginFrame()
 {
-    if (frameNumber > (FRAME_OFFSET - 1) && 0 == startTime)
+    if (frameNumber > (FRAME_OFFSET - 1) && startTime == 0)
     {
         startTime = SystemTimer::Instance()->FrameStampTimeMS();
     }

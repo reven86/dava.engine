@@ -30,7 +30,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __REPORT_SCREEN_H__
 
 #include "BaseScreen.h"
-#include "Infrastructure/Utils/ConverterUtils.h"
 #include "Infrastructure/Utils/ControlHelpers.h"
 #include "Tests/BaseTest.h"
 

@@ -31,7 +31,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Infrastructure/Screen/BaseScreen.h"
 #include "MemoryManager/MemoryProfiler.h"
-#include "Utils/ConverterUtils.h"
 #include "TeamCityTestsOutput.h"
 
 class BaseTest : public BaseScreen
@@ -40,15 +39,36 @@ public:
     
     struct FrameInfo
     {
-        FrameInfo() {}
-        FrameInfo(float32 delta) : delta(delta) {}
+        FrameInfo() : delta(0.0f) {}
+        FrameInfo(float32 _delta) : delta(_delta) {}
 
         float32 delta;
     };
 
-    BaseTest(const String& testName, uint32 targetFramesCount, float32 targetFrameDelta, uint32 frameForDebug);
-    BaseTest(const String& testName, uint32 targetTime);
+    struct TestParams
+    {
+        TestParams() 
+            :   targetTime(0)
+            ,   targetFramesCount(0)
+            ,   targetFrameDelta(0.0f)
+            ,   frameForDebug(0)
+            ,   maxDelta(0.0f)  
+            {} 
+
+        uint32 targetTime;
+
+        uint32 targetFramesCount;
+        float32 targetFrameDelta;
+
+        uint32 frameForDebug;
+
+        // stop test logic when frameDelta greater than maxDelta
+        float32 maxDelta;
+    };
     
+    BaseTest(const String& testName, const TestParams& testParams);
+    
+    void SetParams(const TestParams& testParams);
     void OnStart() override;
     void OnFinish() override;
     
@@ -99,6 +119,7 @@ private:
     uint32 targetTestTime;
     uint32 targetFramesCount;
     float32 targetFrameDelta;
+    float32 maxDelta;
     
     uint32 frameForDebug;
     
@@ -181,6 +202,15 @@ inline float32 BaseTest::GetTargetTestTime() const
     }
 
     return targetFramesCount * targetFrameDelta;
+}
+
+inline void BaseTest::SetParams(const TestParams& testParams)
+{
+    targetFrameDelta = testParams.targetFrameDelta;
+    targetFramesCount = testParams.targetFramesCount;
+    targetTestTime = testParams.targetTime;
+    frameForDebug = testParams.frameForDebug;
+    maxDelta = testParams.maxDelta;
 }
 
 #endif

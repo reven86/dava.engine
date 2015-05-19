@@ -36,6 +36,7 @@ class SingleTestFlowController : public TestFlowController
 {
 public:
     SingleTestFlowController();
+    SingleTestFlowController(const String& testName, const BaseTest::TestParams& testParams);
     
     void Init(const Vector<BaseTest*>& testChain) override;
     
@@ -44,6 +45,9 @@ public:
     
 private:
     
+    String testForRunName;
+    
+    BaseTest::TestParams testParams;
     BaseTest* testForRun;
     TestChooserScreen* testChooserScreen;
     

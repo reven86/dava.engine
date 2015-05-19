@@ -81,30 +81,27 @@ void TestChooserScreen::CreateChooserUI()
     
     for (BaseTest* test : testChain)
     {
-        if (test->GetDebugFrame() > 0)
-        {
-            UIButton* button = new UIButton();
-            
-			button->SetName(test->GetName());
+        UIButton* button = new UIButton();
 
-			button->SetPosition(Vector2(10.0f, 10.0f + testNumber * 60));
-			button->SetSize(Vector2(150.0f, 50.0f));
-			button->SetStateFont(UIControl::STATE_NORMAL, chooserFont);
-			button->SetStateText(UIButton::STATE_NORMAL, UTF8Utils::EncodeToWideString(test->GetName()));
-			button->SetStateTextAlign(UIButton::STATE_NORMAL, ALIGN_HCENTER | ALIGN_VCENTER);
+        button->SetName(test->GetName());
 
-			button->SetStateDrawType(UIControl::STATE_NORMAL, UIControlBackground::DRAW_FILL);
-			button->GetStateBackground(UIControl::STATE_NORMAL)->SetColor(Color(0.5f, 0.6f, 0.5f, 0.5f));
-			button->SetStateDrawType(UIControl::STATE_PRESSED_INSIDE, UIControlBackground::DRAW_FILL);
-			button->GetStateBackground(UIControl::STATE_PRESSED_INSIDE)->SetColor(Color(0.75f, 0.85f, 0.75f, 0.5f));
-			button->SetStateDrawType(UIControl::STATE_DISABLED, UIControlBackground::DRAW_FILL);
-			button->GetStateBackground(UIControl::STATE_DISABLED)->SetColor(Color(0.2f, 0.2f, 0.2f, 0.2f));
+        button->SetPosition(Vector2(10.0f, 10.0f + testNumber * 60));
+        button->SetSize(Vector2(150.0f, 50.0f));
+        button->SetStateFont(UIControl::STATE_NORMAL, chooserFont);
+        button->SetStateText(UIButton::STATE_NORMAL, UTF8Utils::EncodeToWideString(test->GetName()));
+        button->SetStateTextAlign(UIButton::STATE_NORMAL, ALIGN_HCENTER | ALIGN_VCENTER);
 
-			button->SetStateTextColorInheritType(UIControl::STATE_NORMAL, UIControlBackground::COLOR_IGNORE_PARENT);
-			button->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &TestChooserScreen::OnButtonPressed));
+        button->SetStateDrawType(UIControl::STATE_NORMAL, UIControlBackground::DRAW_FILL);
+        button->GetStateBackground(UIControl::STATE_NORMAL)->SetColor(Color(0.5f, 0.6f, 0.5f, 0.5f));
+        button->SetStateDrawType(UIControl::STATE_PRESSED_INSIDE, UIControlBackground::DRAW_FILL);
+        button->GetStateBackground(UIControl::STATE_PRESSED_INSIDE)->SetColor(Color(0.75f, 0.85f, 0.75f, 0.5f));
+        button->SetStateDrawType(UIControl::STATE_DISABLED, UIControlBackground::DRAW_FILL);
+        button->GetStateBackground(UIControl::STATE_DISABLED)->SetColor(Color(0.2f, 0.2f, 0.2f, 0.2f));
 
-			AddControl(button);
-		}
+        button->SetStateTextColorInheritType(UIControl::STATE_NORMAL, UIControlBackground::COLOR_IGNORE_PARENT);
+        button->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &TestChooserScreen::OnButtonPressed));
+
+        AddControl(button);
 
 		testNumber++;
 	}

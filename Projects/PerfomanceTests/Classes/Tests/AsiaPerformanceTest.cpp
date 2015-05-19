@@ -40,15 +40,8 @@ const String AsiaPerformanceTest::T110E5 = "T110E5.sc2";
 
 const float32 AsiaPerformanceTest::TANK_ROTATION_ANGLE = 45.0f;
 
-AsiaPerformanceTest::AsiaPerformanceTest(uint32 frames, float32 delta, uint32 targetFrame)
-    : BaseTest(TEST_NAME, frames, delta, targetFrame)
-    , camera(nullptr)
-    , time(0.0f)
-{
-}
-
-AsiaPerformanceTest::AsiaPerformanceTest(uint32 time)
-    : BaseTest(TEST_NAME, time)
+AsiaPerformanceTest::AsiaPerformanceTest(const TestParams& params)
+    : BaseTest(TEST_NAME, params)
     , camera(nullptr)
     , time(0.0f)
 {
