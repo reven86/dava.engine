@@ -46,6 +46,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <sstream>
+#include <cerrno>
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 #include "MemoryManager/AllocPools.h"

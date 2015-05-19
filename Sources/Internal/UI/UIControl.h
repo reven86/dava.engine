@@ -1339,6 +1339,8 @@ public:
     virtual void SetVisibleForUIEditor(bool value);
 
     void DumpInputs(int32 depthLevel);
+
+    static void DumpControls(bool onlyOrphans);
 private:
     String name;
 protected:

@@ -313,7 +313,14 @@ bool IsGLExtensionSupported(const String &extension)
         return false;
     }
     
-    String extensions((const char8 *)glGetString(GL_EXTENSIONS));
+    auto extString = glGetString(GL_EXTENSIONS);
+    if(nullptr == extString)
+    {
+        DVASSERT(false && "GL not initialized");
+        return false;
+    }
+
+    String extensions((const char8 *)extString);
     String::size_type extPosition = extensions.find(extension);
     return (String::npos != extPosition);
 }
@@ -737,7 +744,7 @@ void RenderManager::AttachRenderData()
     
     attachedRenderData = currentRenderData;
     
-    const int DEBUG = 0;
+    const int isDEBUG = 0;
     
     {
         if(iboChanged)
@@ -775,12 +782,12 @@ void RenderManager::AttachRenderData()
                         normalized = GL_TRUE;
                     }
                     RENDER_VERIFY(glVertexAttribPointer(attribIndex, stream->size, VERTEX_DATA_TYPE_TO_GL[stream->type], normalized, stream->stride, stream->pointer));
-                    if (DEBUG)Logger::FrameworkDebug("shader glVertexAttribPointer: %d", attribIndex);
+                    if(isDEBUG)Logger::FrameworkDebug("shader glVertexAttribPointer: %d", attribIndex);
                     
                     if (!(cachedEnabledStreams & attribIndexBitPos))  // enable only if it was not enabled on previous step
                     {
                         RENDER_VERIFY(glEnableVertexAttribArray(attribIndex));
-                        if (DEBUG)Logger::FrameworkDebug("shader glEnableVertexAttribArray: %d", attribIndex);
+                        if(isDEBUG)Logger::FrameworkDebug("shader glEnableVertexAttribArray: %d", attribIndex);
                     }
                     
                     currentEnabledStreams |= attribIndexBitPos;
@@ -796,7 +803,7 @@ void RenderManager::AttachRenderData()
                 {
                     if(streamsToDisable & 0x1)
                     {
-                        if(DEBUG)Logger::FrameworkDebug("shader glDisableVertexAttribArray: %d", attribIndex);
+                        if(isDEBUG)Logger::FrameworkDebug("shader glDisableVertexAttribArray: %d", attribIndex);
                         RENDER_VERIFY(glDisableVertexAttribArray(attribIndex));
                     }
                     

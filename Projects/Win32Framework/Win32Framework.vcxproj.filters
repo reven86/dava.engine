@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="External">
@@ -186,6 +186,9 @@
     </Filter>
     <Filter Include="Internal\MemoryManager">
       <UniqueIdentifier>{f063e64b-fb58-42b8-a8f6-fc281f9d6404}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Timer">
+      <UniqueIdentifier>{ad6cd690-f1f4-454a-ab5a-65272ae1bf13}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1429,7 +1432,7 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
-  <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelper.h">
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.h">
@@ -1818,6 +1821,15 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Autotesting\dlmalloc.h">
       <Filter>Internal\Autotesting</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\TextLayout.h">
+      <Filter>Internal\Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Timer\RawTimer.h">
+      <Filter>Internal\Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Thread\ThreadLocalPtr.h">
+      <Filter>Internal\Thread</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2917,7 +2929,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
-  <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelper.cpp">
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp">
@@ -3249,6 +3261,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\dlmalloc.c">
       <Filter>Internal\Autotesting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\TextLayout.cpp">
+      <Filter>Internal\Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Timer\RawTimer.cpp">
+      <Filter>Internal\Timer</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

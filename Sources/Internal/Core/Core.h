@@ -200,10 +200,8 @@ public:
 	 */
 	virtual void SetIcon(int32 iconId);
 	
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-	static bool IsAutodetectContentScaleFactor();
-#endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-
+    inline float32 GetScreenScaleFactor() const;
+    
 	virtual Core::eScreenOrientation GetScreenOrientation();
 	
     virtual uint32 GetScreenDPI();
@@ -291,15 +289,20 @@ private:
 	
 	Vector<String> commandLine;
 	bool isConsoleMode;
+
+    float32 screenScaleFactor;
 };
     
 inline bool Core::IsActive()
 {
     return isActive;
 }
+    
+inline float32 Core::GetScreenScaleFactor() const
+{
+    return screenScaleFactor;
+}
 
 };
-
-
 
 #endif // __DAVAENGINE_CORE_H__

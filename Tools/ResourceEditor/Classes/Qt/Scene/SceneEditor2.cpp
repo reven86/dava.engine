@@ -55,6 +55,7 @@
 #include "Scene/System/EditorLODSystem.h"
 
 
+
 const FastName MATERIAL_FOR_REBIND = FastName("Global");
 
 SceneEditor2::SceneEditor2()
@@ -294,7 +295,7 @@ bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
 	return (errorLog.size() == 0);
 }
 
-DAVA::FilePath SceneEditor2::GetScenePath()
+const DAVA::FilePath & SceneEditor2::GetScenePath()
 {
 	return curScenePath;
 }
@@ -730,5 +731,18 @@ void SceneEditor2::Setup3DDrawing()
         drawCamera->SetupDynamicParameters();
     }
 }
+
+void SceneEditor2::Activate()
+{
+    SceneSignals::Instance()->EmitActivated(this);
+    Scene::Activate();
+}
+
+void SceneEditor2::Deactivate()
+{
+    Scene::Deactivate();
+    SceneSignals::Instance()->EmitDeactivated(this);
+}
+
 
 

@@ -48,6 +48,8 @@ QOpenGLContext* FrameworkLoop::Context()
         if ( glWidget != nullptr )
         {
             fmt = glWidget->GetGLWindow()->requestedFormat();
+
+            QObject::connect(context, &QOpenGLContext::aboutToBeDestroyed, this, &FrameworkLoop::ContextWillBeDestroyed);
         }
 
         fmt.setOption( fmt.options() | QSurfaceFormat::DebugContext );
@@ -102,14 +104,12 @@ quint64 FrameworkLoop::GetRenderContextId() const
     return id;
 }
 
-void FrameworkLoop::ProcessFrame()
+void FrameworkLoop::ProcessFrameInternal()
 {
-    // We need to call makeCurrent, because there is a crash in native OS X open file dialog
-    if ( glWidget != nullptr && DAVA::RenderManager::Instance()->GetRenderContextId() != GetRenderContextId() )
+    if (nullptr != context && nullptr != glWidget)
     {
         context->makeCurrent(glWidget->GetGLWindow());
     }
-    
     DAVA::QtLayer::Instance()->ProcessFrame();
     if ( glWidget != nullptr )
     {
@@ -131,4 +131,10 @@ void FrameworkLoop::OnWindowDestroyed()
 void FrameworkLoop::OnWindowInitialized()
 {
     DAVA::QtLayer::Instance()->InitializeGlWindow( GetRenderContextId() );
+    DAVA::QtLayer::Instance()->OnResume();
+}
+
+void FrameworkLoop::ContextWillBeDestroyed()
+{
+    DAVA::Logger::FrameworkDebug("[FrameworkLoop::%s]", __FUNCTION__);
 }

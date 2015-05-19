@@ -30,18 +30,19 @@
 #include "fontmanagerdialog.h"
 #include "ui_fontmanagerdialog.h"
 #include "Helpers/ResourcesManageHelper.h"
-#include "EditorFontManager.h"
 #include "EditorSettings.h"
 #include "TexturePacker/ResourcePacker2D.h"
 #include "Validators/DistanceFontValidator.h"
 
 #include <QMessageBox>
-#include <QFileDialog>
 #include <QStandardItemModel>
 #include <QModelIndexList>
 #include <QStandardItemModel>
 #include <QStringList>
 #include <QTableWidgetItem>
+
+#include "QtTools/FileDialog/FileDialog.h"
+
 
 using namespace DAVA;
 
@@ -150,7 +151,6 @@ void FontManagerDialog::UpdateTableViewContents()
         tableModel->removeRows(0, tableModel->rowCount());
     }
 
-	QString defFontName = EditorFontManager::Instance()->GetDefaultFontName();
     // Get all available fonts in resource folder
     QStringList fontsList = ResourcesManageHelper::GetFontsList();
 
@@ -161,7 +161,7 @@ void FontManagerDialog::UpdateTableViewContents()
         QString fontName = fontsList.at(i);
         if( !fontName.isNull() && !fontName.isEmpty())
         {            
-			QStandardItem* item = CreateFontItem(fontName, fontName, defFontName);
+            QStandardItem* item = new QStandardItem(fontName);
 			// Add font name
             itemsList.append(item);
 			item = NULL;
@@ -169,15 +169,15 @@ void FontManagerDialog::UpdateTableViewContents()
             // Check font type - "*.def" should be a Graphics Font
             if (fontName.contains(".def"))
             {
-                item = CreateFontItem(FONT_TYPE_GRAPHIC, fontName, defFontName);
+                item = new QStandardItem(FONT_TYPE_GRAPHIC);
             }
             else if (fontName.contains(".df"))
 			{
-				item = CreateFontItem(FONT_TYPE_DISTANCE, fontName, defFontName);
+                item = new QStandardItem(FONT_TYPE_DISTANCE);
 			}
 			else
             {
-				item = CreateFontItem(FONT_TYPE_BASIC, fontName, defFontName);
+                item = new QStandardItem(FONT_TYPE_BASIC);
             }						
 			itemsList.append(item);
 			item = NULL;
@@ -242,24 +242,11 @@ void FontManagerDialog::SetDefaultButtonClicked()
         
         if (returnFont)
         {
-			EditorFontManager::Instance()->SetDefaultFont(returnFont);
 			// Update table view to show new default font
 			UpdateTableViewContents();
 			SafeRelease(returnFont);
         }
 	}
-}
-
-QStandardItem* FontManagerDialog::CreateFontItem(QString itemText, QString fontName, QString defaultFontName)
-{
-	QStandardItem *item = new QStandardItem(itemText);
-	if (!defaultFontName.isNull() && !defaultFontName.isEmpty() && defaultFontName.contains(fontName))
-	{
-		QFont itemFont = item->font();
-		itemFont.setBold(true);
-	    item->setFont(itemFont);
-	}
-	return item;
 }
 
 Font* FontManagerDialog::GetSelectedFont(QItemSelectionModel *selectionModel)
@@ -275,7 +262,7 @@ Font* FontManagerDialog::GetSelectedFont(QItemSelectionModel *selectionModel)
     {
 		// Get sprites directory to open
 		QString currentFontSpriteDir = ResourcesManageHelper::GetDefaultFontSpritesPath(currentFontPath);
-    	QString fontSpritePath = QFileDialog::getOpenFileName(this, tr( "Select font sprite" ),
+    	QString fontSpritePath = FileDialog::getOpenFileName(this, tr( "Select font sprite" ),
 																	currentFontSpriteDir,
 																	tr( "Sprites (*.txt)" ));
              

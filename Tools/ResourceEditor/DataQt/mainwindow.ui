@@ -198,13 +198,18 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuRecentProjects">
+     <property name="title">
+      <string>Recent Projects</string>
+     </property>
+    </widget>
     <widget class="QMenu" name="menuExport">
      <property name="title">
       <string>Export</string>
@@ -223,7 +228,15 @@
      </property>
      <addaction name="actionImportSpeedTreeXML"/>
     </widget>
+    <widget class="QMenu" name="menuSave_To_Folder_With_Children">
+     <property name="title">
+      <string>Save To Folder With Children</string>
+     </property>
+     <addaction name="actionOnlyOriginalTextures"/>
+     <addaction name="actionWithCompressedTextures"/>
+    </widget>
     <addaction name="actionOpenProject"/>
+    <addaction name="menuRecentProjects"/>
     <addaction name="actionCloseProject"/>
     <addaction name="separator"/>
     <addaction name="actionNewScene"/>
@@ -231,7 +244,7 @@
     <addaction name="actionSaveScene"/>
     <addaction name="actionSaveSceneAs"/>
     <addaction name="separator"/>
-    <addaction name="actionSaveToFolder"/>
+    <addaction name="menuSave_To_Folder_With_Children"/>
     <addaction name="separator"/>
     <addaction name="menuExport"/>
     <addaction name="menuImport"/>
@@ -432,6 +445,7 @@
     <addaction name="actionCreateTestSkinnedObject"/>
     <addaction name="actionDeviceList"/>
     <addaction name="actionImageSplitterForNormals"/>
+    <addaction name="actionReplaceTextureMipmap"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -669,7 +683,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>82</height>
+          <height>92</height>
          </rect>
         </property>
        </widget>
@@ -776,16 +790,7 @@
    </attribute>
    <widget class="QWidget" name="dockLandscapeEditorControlsContent">
     <layout class="QVBoxLayout" name="verticalLayout_3">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -799,7 +804,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>103</height>
+          <height>92</height>
          </rect>
         </property>
        </widget>
@@ -854,15 +859,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
-   </property>
-  </action>
-  <action name="actionSaveToFolder">
-   <property name="icon">
-    <iconset resource="QtIcons.qrc">
-     <normaloff>:/QtIcons/savescenetofolder.png</normaloff>:/QtIcons/savescenetofolder.png</iconset>
-   </property>
-   <property name="text">
-    <string>Save To Folder With Children</string>
    </property>
   </action>
   <action name="actionOpenProject">
@@ -2120,6 +2116,38 @@
   <action name="actionImageSplitterForNormals">
    <property name="text">
     <string>ImageSplitter for Normals</string>
+   </property>
+  </action>
+  <action name="actionReplaceTextureMipmap">
+   <property name="text">
+    <string>Replace Textures mipmaps</string>
+   </property>
+  </action>
+  <action name="action22">
+   <property name="text">
+    <string>22</string>
+   </property>
+  </action>
+  <action name="actionEnableDisableShadows">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/shadow.png</normaloff>:/QtIcons/shadow.png</iconset>
+   </property>
+   <property name="text">
+    <string>Change Shadows Drawing </string>
+   </property>
+  </action>
+  <action name="actionOnlyOriginalTextures">
+   <property name="text">
+    <string>Only Original Textures</string>
+   </property>
+  </action>
+  <action name="actionWithCompressedTextures">
+   <property name="text">
+    <string>With Compressed Textures</string>
    </property>
   </action>
  </widget>

@@ -68,6 +68,8 @@
 #include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 
+
+
 class SceneCameraSystem;
 class SceneCollisionSystem;
 
@@ -126,14 +128,14 @@ public:
 
 	WayEditSystem *wayEditSystem;
 	PathSystem *pathSystem;
-
+    
 	// save/load
 	bool Load(const DAVA::FilePath &path);
     virtual SceneFileV2::eError Save(const DAVA::FilePath & pathname, bool saveForGame = false);
 	SceneFileV2::eError Save();
 	bool Export(const DAVA::eGPUFamily newGPU);
 
-	DAVA::FilePath GetScenePath();
+	const DAVA::FilePath &GetScenePath();
 	void SetScenePath(const DAVA::FilePath &newScenePath);
 
 	// commands
@@ -181,8 +183,12 @@ public:
 	int32 GetEnabledTools();
 
 	SceneEditor2 *CreateCopyForExport();	//Need to prevent changes of original scene
-    virtual Entity * Clone(Entity *dstNode /* = NULL */);
+    Entity * Clone(Entity *dstNode /* = NULL */) override;
 
+    void Activate() override;
+    void Deactivate() override;
+    
+    
 	DAVA_DEPRECATED(void MarkAsChanged()); // for old material & particle editors
 	
 	INTROSPECTION(SceneEditor2, 

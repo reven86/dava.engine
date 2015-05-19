@@ -721,11 +721,7 @@ namespace DAVA
 
                 if(InputSystem::Instance()->IsCursorPining())
                 {
-                    RECT wndRect;
-                    GetWindowRect(hWnd, &wndRect);
-                    int centerX = (int)((wndRect.left + wndRect.right) >> 1);
-                    int centerY = (int)((wndRect.bottom + wndRect.top) >> 1);
-                    SetCursorPos(centerX, centerY);
+                    SetCursorPosCenterInternal(hWnd);
                 }
                 else
                 {

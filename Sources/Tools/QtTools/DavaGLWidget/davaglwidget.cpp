@@ -128,7 +128,7 @@ bool OpenGLWindow::event(QEvent *event)
 
     // Focus
     case QEvent::FocusOut:
-        controlMapper->ClearAllKeys();
+        controlMapper->releaseKeyboard();
         break;
 
     default:
@@ -209,8 +209,6 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
     container->setMouseTracking(true);
     container->setFocusPolicy(Qt::NoFocus);
 
-    openGlWindow->installEventFilter(this);
-
     layout()->addWidget(container);
 
     focusTracker = new FocusTracker(this);
@@ -230,13 +228,27 @@ bool DavaGLWidget::IsInitialized() const
     return isInitialized;
 }
 
+void DavaGLWidget::MakeInvisible()
+{
+    setWindowFlags( Qt::Window | Qt::FramelessWindowHint | Qt::CustomizeWindowHint | Qt::Tool );    // Remove border
+#ifdef Q_OS_WIN
+   setAttribute( Qt::WA_DontShowOnScreen );             // Under OS X gl widget will be not initialized with this flag
+#endif
+    setAttribute( Qt::WA_TranslucentBackground );       // Transparent background
+    setAttribute( Qt::WA_TransparentForMouseEvents );   // Rethrow mouse events
+    setAttribute( Qt::WA_ShowWithoutActivating );       // Do not get focus
+    setWindowOpacity( 0.0 );
+    setFixedSize( 1, 1 );
+    setEnabled( false );
+    move( 0, 0 );
+}
+
 void DavaGLWidget::OnWindowExposed()
 {
     disconnect( openGlWindow.data(), &OpenGLWindow::Exposed, this, &DavaGLWidget::OnWindowExposed );
 
     const auto contextId = FrameworkLoop::Instance()->GetRenderContextId();
     DAVA::QtLayer::Instance()->InitializeGlWindow( contextId );
-    
     isInitialized = true;
 
     PerformSizeChange();
@@ -252,38 +264,13 @@ void DavaGLWidget::resizeEvent(QResizeEvent *e)
     PerformSizeChange();
 }
 
-bool DavaGLWidget::eventFilter( QObject* watched, QEvent* event )
-{
-    if ( watched == openGlWindow )
-    {
-        switch ( event->type() )
-        {
-        case QEvent::MouseButtonPress:
-            focusTracker->OnClick();
-            break;
-        case QEvent::Enter:
-            focusTracker->OnEnter();
-            break;
-        case QEvent::Leave:
-            focusTracker->OnLeave();
-            break;
-        case QEvent::FocusIn:
-            focusTracker->OnFocusIn();
-            break;
-        case QEvent::FocusOut:
-            focusTracker->OnFocusOut();
-            break;
-
-        default:
-            break;
-        }
-    }
-
-    return QWidget::eventFilter( watched, event );
-}
-
 void DavaGLWidget::PerformSizeChange()
 {
+    if(isInitialized)
+    {   //INFO: this magic helps us with OSX OpenGL Context on File dialog
+        FrameworkLoop::Instance()->Context();
+    }
+    
     currentDPR = openGlWindow->devicePixelRatio();
     if (isInitialized)
     {

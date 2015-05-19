@@ -31,28 +31,6 @@
 
 #include "Platform/PlatformDetection.h"
 
-#if defined(__DAVAENGINE_MACOS__)
-#include <copyfile.h>
-#include <libproc.h>
-#include <libgen.h>
-#include <sys/errno.h>
-#elif defined(__DAVAENGINE_IPHONE__)
-#include <copyfile.h>
-#include <libgen.h>
-#include <sys/sysctl.h>
-#include <sys/errno.h>
-#elif defined(__DAVAENGINE_WIN32__)
-#include <direct.h>
-#include <io.h> 
-#include <process.h>
-#include <Shlobj.h>
-#include <tchar.h>
-#elif defined(__DAVAENGINE_ANDROID__)
-#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include <unistd.h>
-#include <sys/errno.h>
-#endif //PLATFORMS
-
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FileList.h"
 #include "Debug/DVAssert.h"
@@ -61,6 +39,25 @@
 #include "Utils/UTF8Utils.h"
 #include "FileSystem/ResourceArchive.h"
 #include "Core/Core.h"
+
+#if defined(__DAVAENGINE_MACOS__)
+#include <copyfile.h>
+#include <libproc.h>
+#include <libgen.h>
+#elif defined(__DAVAENGINE_IPHONE__)
+#include <copyfile.h>
+#include <libgen.h>
+#include <sys/sysctl.h>
+#elif defined(__DAVAENGINE_WIN32__)
+#include <direct.h>
+#include <io.h> 
+#include <Shlobj.h>
+#include <tchar.h>
+#include <process.h>
+#elif defined(__DAVAENGINE_ANDROID__)
+#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#include <unistd.h>
+#endif //PLATFORMS
 
 namespace DAVA
 {
@@ -216,11 +213,15 @@ bool FileSystem::MoveFile(const FilePath & existingFile, const FilePath & newFil
 {
     DVASSERT(newFile.GetType() != FilePath::PATH_IN_RESOURCES);
 
-#ifdef __DAVAENGINE_WIN32__
+#if defined(__DAVAENGINE_WIN32__)
 
 	DWORD flags = (overwriteExisting) ? MOVEFILE_REPLACE_EXISTING : 0;
+	// Add flag MOVEFILE_COPY_ALLOWED to allow file moving between different volumes
+    // Without this flags MoveFileEx fails and GetLastError return ERROR_NOT_SAME_DEVICE
+    // see https://msdn.microsoft.com/en-us/library/windows/desktop/aa365240%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+    flags |= MOVEFILE_COPY_ALLOWED;
 
-#ifdef __DAVAENGINE_WINDOWS_DESKTOP__
+#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 
     BOOL ret = ::MoveFileExA(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), flags);
 
@@ -232,7 +233,7 @@ bool FileSystem::MoveFile(const FilePath & existingFile, const FilePath & newFil
 
 #endif
 
-	return ret != 0;
+	return	ret != 0;
 
 #elif defined(__DAVAENGINE_ANDROID__)
 	if (!overwriteExisting && access(newFile.GetAbsolutePathname().c_str(), 0) != -1)

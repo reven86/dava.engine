@@ -36,9 +36,9 @@
 #include "Render/Image/ImageSystem.h"
 
 #include "Qt/Settings/SettingsManager.h"
+#include "QtTools/FileDialog/FileDialog.h"
 
 #include <QMessageBox>
-#include <QFileDialog>
 #include <QFileInfo>
 
 ImageSplitterDialog::ImageSplitterDialog(QWidget *parent) :
@@ -187,7 +187,7 @@ void ImageSplitterDialog::OnRestoreClicked()
 
 void ImageSplitterDialog::OnSaveAsClicked(bool saveSplittedImages)
 {
-    DAVA::FilePath retPath = QFileDialog::getSaveFileName(this, "Select png", ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str(),"PNG(*.png)").toStdString();
+    DAVA::FilePath retPath = FileDialog::getSaveFileName(this, "Select png", ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str(),"PNG(*.png)").toStdString();
     if(!retPath.IsEmpty())
     {
         Save(retPath, saveSplittedImages);
@@ -211,18 +211,15 @@ void ImageSplitterDialog::OnSaveChannelsClicked()
     DAVA::FilePath savePath = ui->path->text().toStdString();
     if(!savePath.Exists())
     {
-        QFileDialog dialog;
-        dialog.setFileMode(QFileDialog::Directory);
-        dialog.setOption(QFileDialog::ShowDirsOnly);
-        dialog.setDirectory(ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str());
-        dialog.exec();
-        DAVA::FilePath selectedFolder = dialog.selectedFiles().first().toStdString();
-        selectedFolder.MakeDirectoryPathname();
-        if(!selectedFolder.Exists() || dialog.result() == QDialog::Rejected)
+        auto folder = FileDialog::getExistingDirectory(this, "Select folder to save images", ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str(), FileDialog::ShowDirsOnly);
+        
+        if(folder.isEmpty() || folder.isNull())
         {
             return;
         }
-        savePath = selectedFolder;
+        
+        savePath = folder.toStdString();
+        savePath.MakeDirectoryPathname();
     }
     
     Save(savePath, true);

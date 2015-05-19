@@ -92,36 +92,33 @@ LocalNotificationText *const LocalNotificationController::CreateNotificationText
 bool LocalNotificationController::Remove(LocalNotification *notification)
 {
 	LockGuard<Mutex> guard(notificationsListMutex);
-    if (!notificationsList.empty())
-    {
-        for (List<LocalNotification *>::iterator it = notificationsList.begin(); it != notificationsList.end();)
-        {
-        	if (notification == (*it))
-        	{
-        		it = notificationsList.erase(it);
-        		notification->Release();
-        		return true;
-        	}
-        }
-    }
 
+    auto endIt = end(notificationsList);
+    auto it = find(begin(notificationsList), endIt, notification);
+    if (endIt != it)
+    {
+        (*it)->Release();
+        notificationsList.erase(it);
+        return true;
+    }
     return false;
 }
 
 bool LocalNotificationController::RemoveById(const String &notificationId)
 {
     LockGuard<Mutex> guard(notificationsListMutex);
-    if (!notificationsList.empty())
+
+    auto endIt = end(notificationsList);
+    auto it = find_if(begin(notificationsList), endIt, [&notificationId](LocalNotification* note)->bool
     {
-        for (List<LocalNotification *>::iterator it = notificationsList.begin(); it != notificationsList.end();)
-        {
-            if ((*it)->GetId().compare(notificationId) == 0)
-            {
-                it = notificationsList.erase(it);
-                (*it)->Release();
-                return true;
-            }
-        }
+        return 0 == note->GetId().compare(notificationId);
+    });
+    
+    if (it != endIt)
+    {
+        (*it)->Release();
+        notificationsList.erase(it);
+        return true;
     }
 
     return false;
@@ -130,14 +127,11 @@ bool LocalNotificationController::RemoveById(const String &notificationId)
 void LocalNotificationController::Clear()
 {
     LockGuard<Mutex> guard(notificationsListMutex);
-    if (!notificationsList.empty())
+    for (auto note : notificationsList)
     {
-        for (List<LocalNotification *>::iterator it = notificationsList.begin(); it != notificationsList.end(); ++it)
-        {
-            (*it)->Release();
-            it = notificationsList.erase(it);
-        }
+        note->Release();
     }
+    notificationsList.clear();
 }
     
 void LocalNotificationController::Update()

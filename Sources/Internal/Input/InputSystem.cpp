@@ -100,8 +100,9 @@ void InputSystem::OnAfterUpdate()
 void InputSystem::SetCursorPining(bool isPin)
 {
     pinCursor = isPin;
-#if defined(__DAVAENGINE_WINDOWS_DESKTOP__) || defined(__DAVAENGINE_MACOS__)
-    Cursor::ShowSystemCursor(!isPin);
+
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+    Cursor::SetCursorPinning(isPin);
 #endif
 }
 

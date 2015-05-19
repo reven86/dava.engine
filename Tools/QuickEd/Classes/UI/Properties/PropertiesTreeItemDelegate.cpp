@@ -7,6 +7,7 @@
 #include <QComboBox>
 #include <QEvent>
 #include <QPainter>
+#include <QAction>
 #include <QStylePainter>
 #include <QApplication>
 #include <QToolButton>
@@ -28,6 +29,9 @@
 #include "FloatPropertyDelegate.h"
 #include "BoolPropertyDelegate.h"
 #include "SpritePropertyDelegate.h"
+#include "Vector4PropertyDelegate.h"
+
+#include "FontPropertyDelegate.h"
 
 using namespace DAVA;
 
@@ -37,17 +41,19 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject *parent)
     propertyItemDelegates[BaseProperty::TYPE_ENUM] = new EnumPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_VECTOR2] = new Vector2PropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_STRING] = new StringPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_WIDE_STRING] = new StringPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_FILEPATH] = new FilePathPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_COLOR] = new ColorPropertyDelegate(this);
+    variantTypeItemDelegates[DAVA::VariantType::TYPE_WIDE_STRING] = new StringPropertyDelegate(this);
+    variantTypeItemDelegates[DAVA::VariantType::TYPE_UINT64] = new IntegerPropertyDelegate(this);
+    variantTypeItemDelegates[DAVA::VariantType::TYPE_FILEPATH] = new FilePathPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_INT32] = new IntegerPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_INT64] = new IntegerPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_UINT32] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_UINT64] = new IntegerPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_FLOAT] = new FloatPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_BOOLEAN] = new BoolPropertyDelegate(this);
+    variantTypeItemDelegates[DAVA::VariantType::TYPE_VECTOR4] = new Vector4PropertyDelegate(this);
 
-    propertyNameTypeItemDelegates[QString("Sprite")] = new SpritePropertyDelegate(this);
+    propertyNameTypeItemDelegates["Sprite"] = new SpritePropertyDelegate(this);
+    propertyNameTypeItemDelegates["Font"] = new FontPropertyDelegate(this);
 }
 
 PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()

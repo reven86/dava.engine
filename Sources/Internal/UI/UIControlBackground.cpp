@@ -591,4 +591,15 @@ void UIControlBackground::SetMargins(const UIMargins* uiMargins)
     *margins = *uiMargins;
 }
 
+Vector4 UIControlBackground::GetMarginsAsVector4() const
+{
+    return (margins != nullptr) ? margins->AsVector4() : Vector4();
+}
+
+void UIControlBackground::SetMarginsAsVector4(const Vector4 &m)
+{
+    UIControlBackground::UIMargins newMargins(m);
+    SetMargins(&newMargins);
+}
+
 };
