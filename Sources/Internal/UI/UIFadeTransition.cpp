@@ -78,7 +78,7 @@ void UIFadeTransition::Draw(const UIGeometricData &geometricData)
         drawState.SetPosition(geometricData.position);
         RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState);
 
-		Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, normalizedTime);
+		RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, normalizedTime);
 		renderTargetNextScreen->Reset();
         
         drawState.SetPosition(geometricData.position);
@@ -88,20 +88,20 @@ void UIFadeTransition::Draw(const UIGeometricData &geometricData)
 	{
 		if (normalizedTime <= 0.5f)
 		{
-			Renderer::GetDynamicBindings().SetColor(1.0f - normalizedTime * 2, 1.0f - normalizedTime * 2, 1.0f - normalizedTime * 2, 1.0f);
+			RenderSystem2D::Instance()->SetColor(1.0f - normalizedTime * 2, 1.0f - normalizedTime * 2, 1.0f - normalizedTime * 2, 1.0f);
 			drawState.SetPosition(0, 0);
             
             RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState);
 		}
         else
 		{
-			Renderer::GetDynamicBindings().SetColor((normalizedTime - 0.5f) * 2, (normalizedTime - 0.5f) * 2, (normalizedTime - 0.5f) * 2, 1.0f);
+			RenderSystem2D::Instance()->SetColor((normalizedTime - 0.5f) * 2, (normalizedTime - 0.5f) * 2, (normalizedTime - 0.5f) * 2, 1.0f);
 			drawState.SetPosition(0, 0);
             
             RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState);
 		}
 	}
-	Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+	RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 	
 };

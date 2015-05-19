@@ -112,12 +112,7 @@ public:
     pointer_size GetDynamicParamUpdateSemantic(eShaderSemantic shaderSemantic);
     int32 GetDynamicParamArraySize(eShaderSemantic shaderSemantic, int32 defaultValue);
 
-
-    //color will just use internal storage for dynamic PARAM_COLOR and bind it to dynamic params - it's here only to simplify legacy code moving to new renderer
-    //RHI_COMPETE if 2d rendering will use NMaterial color should be removed from dynamic bindings and used as regular material param instead
-    const Color& GetColor();
-    void SetColor(const Color& color);
-    void SetColor(float32 r, float32 g, float32 b, float32 a);
+    inline const Matrix4& GetDynamicParamMatrix(eShaderSemantic shaderSemantic);
 
 private:
     struct AutobindVariableData
@@ -139,7 +134,6 @@ private:
     Vector3 boundingBoxSize;
     Vector3 worldViewObjectCenter;
     float32 frameGlobalTime;
-    Color color;
     
     void ComputeWorldViewMatrixIfRequired();
     void ComputeWorldScaleIfRequired();
@@ -153,9 +147,6 @@ private:
 
     void ComputeInvWorldMatrixIfRequired();
     void ComputeWorldInvTransposeMatrixIfRequired();
-
-    inline const Matrix4& GetDynamicParamMatrix(eShaderSemantic shaderSemantic);
-    
 };
 
 inline const Matrix4& DynamicBindings::GetDynamicParamMatrix(DynamicBindings::eShaderSemantic shaderSemantic)

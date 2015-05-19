@@ -30,7 +30,6 @@
 
 #include "UI/UIParticles.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Render/2D/Systems/RenderSystem2D.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Systems/ParticleEffectSystem.h"
@@ -233,8 +232,6 @@ void UIParticles::Draw(const UIGeometricData & geometricData)
     effect->SetExtertnalValue("scale", geometricData.scale.x);
     system->Process(updateTime);
     updateTime = 0.0f;
-    
-    RenderSystem2D::Instance()->UpdateClip();
 
     effect->effectRenderObject->PrepareToRender(defaultCamera);
 #if RHI_COMPLETE

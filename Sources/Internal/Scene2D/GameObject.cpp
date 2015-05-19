@@ -308,17 +308,17 @@ void GameObject::Draw()
 
 	if (sprite)
 	{
-		Renderer::GetDynamicBindings().SetColor(color.r, color.g, color.b, color.a);
+		RenderSystem2D::Instance()->SetColor(color.r, color.g, color.b, color.a);
         RenderSystem2D::Instance()->Draw(sprite, &globalDrawState);
 
-//		Renderer::GetDynamicBindings().SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+//		RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
 //		RenderManager::Instance()->FillRect(Rect(globalDrawState.position.x - 1, globalDrawState.position.y - 1, 3, 3));
-//		Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+//		RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 	}else
 	{
-//		Renderer::GetDynamicBindings().SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+//		RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
 //		RenderManager::Instance()->FillRect(Rect(globalDrawState.position.x, globalDrawState.position.y, 10, 10));
-//		Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+//		RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 	
 	if (isDebugDraw && collision)

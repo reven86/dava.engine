@@ -202,6 +202,7 @@ void Core::CreateRenderManager()
 #endif
 
     Renderer::Initialize( renderer );
+    RenderSystem2D::Instance()->Init();
 }
         
 void Core::ReleaseSingletons()

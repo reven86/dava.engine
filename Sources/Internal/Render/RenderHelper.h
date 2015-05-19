@@ -169,13 +169,13 @@ public:
     void DrawPolygon(const Polygon3 & polygon, bool closed, NMaterial* material);
 
     /**
-        \brief Fill convex polygon with color. As all other draw functions this function use global color that can be set with Renderer::GetDynamicBindings().SetColor function. 
+        \brief Fill convex polygon with color. As all other draw functions this function use global color that can be set with RenderSystem2D::Instance()->SetColor function. 
         \param polygon the polygon we want to draw
      */
     void FillPolygon(const Polygon2 & polygon, NMaterial* material);
     
     /**
-        \brief Fill convex polygon with color. As all other draw functions this function use global color that can be set with Renderer::GetDynamicBindings().SetColor function. 
+        \brief Fill convex polygon with color. As all other draw functions this function use global color that can be set with RenderSystem2D::Instance()->SetColor function. 
         \param polygon the polygon we want to draw
      */
     void FillPolygon(const Polygon3 & polygon, NMaterial* material);

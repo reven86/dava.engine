@@ -30,6 +30,7 @@
 #include "Collision/CollisionObject2.h"
 #include "Collision/Collisions.h"
 #include "Render/RenderHelper.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/Renderer.h"
 #include "Core/Core.h"
 
@@ -199,7 +200,7 @@ void CollisionObject2::Update(const Sprite::DrawState & state/*const Vector2 & _
 void CollisionObject2::DebugDraw(NMaterial *material)
 {
 	if (!basePolygon)return;    
-    Renderer::GetDynamicBindings().SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+    RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
     RenderHelper::Instance()->DrawPoint(circle.center, 3, material);
 	
     RenderHelper::Instance()->DrawCircle(circle.center, circle.radius, material);
@@ -209,11 +210,11 @@ void CollisionObject2::DebugDraw(NMaterial *material)
         RenderHelper::Instance()->DrawPolygon(polygon, true, material);
 	}
 	
-    Renderer::GetDynamicBindings().SetColor(0.0f, 0.0f, 1.0f, 1.0f);
+    RenderSystem2D::Instance()->SetColor(0.0f, 0.0f, 1.0f, 1.0f);
 	for (int32 k = 0; k < manifold.count; ++k)
         RenderHelper::Instance()->DrawPoint(manifold.contactPoints[k], 3, material);
 	
-    Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+    RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 	
 	

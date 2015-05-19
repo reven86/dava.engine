@@ -176,8 +176,6 @@ namespace DAVA
 		// fix ugly ATI driver bugs. Thanks to ariaci (Taken from Irrlight).
 		MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
 
-        RenderSystem2D::Instance()->Init();
-
 		FrameworkDidLaunched();
 		KeyedArchive * options = Core::GetOptions();
 

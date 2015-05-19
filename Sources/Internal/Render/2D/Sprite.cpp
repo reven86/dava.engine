@@ -605,7 +605,7 @@ Texture* Sprite::GetTexture(int32 frameNumber) const
 	return textures[frameTextureIndex[frameNumber]];
 }
 	
-UniqueHandle Sprite::GetTextureHandle(int32 frameNumber) const
+rhi::HTextureSet Sprite::GetTextureHandle(int32 frameNumber) const
 {
 	frameNumber = Clamp(frameNumber, 0, frameCount - 1);
 	return textureHandles[frameTextureIndex[frameNumber]];
@@ -962,7 +962,7 @@ void Sprite::UnregisterTextureStates()
 
 	for(int32 i = 0; i < textureCount; ++i)
     {
-		if(textureHandles[i] != InvalidUniqueHandle)
+		if(textureHandles[i] != rhi::InvalidHandle)
 		{
             rhi::ReleaseTextureSet(textureHandles[i]);			
 		}

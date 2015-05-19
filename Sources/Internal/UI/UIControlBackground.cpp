@@ -283,7 +283,7 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
     geometricData.AddGeometricData(parentGeometricData);
     Rect drawRect = geometricData.GetUnrotatedRect();
 
-    Renderer::GetDynamicBindings().SetColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a);
+    RenderSystem2D::Instance()->SetColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a);
 
     RenderSystem2D::Instance()->UpdateClip();
 
@@ -532,7 +532,7 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
 #if defined(LOCALIZATION_DEBUG)
     lastDrawState = drawState;
 #endif
-    Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+    RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 #endif // RHI_COMPLETE
 }
 #if defined(LOCALIZATION_DEBUG)
