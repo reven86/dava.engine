@@ -543,10 +543,13 @@ void NMaterial::RebuildTextureBindings()
         samplerDescr.count = currShader->fragmentSamplerList.size();
         for (size_t i = 0, sz = textureDescr.count; i < sz; ++i)
         {            
-            Texture *tex = GetEffectiveTexture(currShader->fragmentSamplerList[i].uid);
-            DVASSERT(tex);
-            textureDescr.texture[i] = tex->handle;      
-            samplerDescr.sampler[i] = tex->samplerState;
+            Texture *tex = GetEffectiveTexture(currShader->fragmentSamplerList[i].uid);                   
+            //DVASSERT(tex);
+            if (tex)
+            {
+                textureDescr.texture[i] = tex->handle;      
+                samplerDescr.sampler[i] = tex->samplerState;
+            }
         }
         currRenderVariant->textureSet = rhi::AcquireTextureSet(textureDescr);
         currRenderVariant->samplerState = rhi::AcquireSamplerState(samplerDescr);
