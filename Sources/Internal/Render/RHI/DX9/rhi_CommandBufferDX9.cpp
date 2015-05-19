@@ -10,6 +10,7 @@
     #include "rhi_DX9.h"
 
     #include "../rhi_Type.h"
+    #include "../Common/rhi_RingBuffer.h"
     #include "../Common/dbg_StatSet.h"
 
     #include "Debug/DVAssert.h"
@@ -56,6 +57,8 @@ CommandDX9
     DX9__DRAW_PRIMITIVE,
     DX9__DRAW_INDEXED_PRIMITIVE,
 
+    DX9__DEBUG_MARKER,
+
 
     DX9__NOP
 };
@@ -100,6 +103,8 @@ public:
     RenderPassConfig    passCfg;
     uint32              isFirstInPass:1;
     uint32              isLastInPass:1;
+
+    RingBuffer*         text;
 };
 
 
@@ -328,10 +333,33 @@ dx9_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint3
 }
 
 
+//------------------------------------------------------------------------------
+
+static void
+dx9_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
+{
+    CommandBufferDX9_t* cb = CommandBufferPool::Get(cmdBuf);
+
+    if( !cb->text )
+    {
+        cb->text = new RingBuffer();
+        cb->text->Initialize( 64*1024 );
+    }
+    
+    int     len = strlen( text );
+    char*   txt = (char*)cb->text->Alloc( len/sizeof(float)+1 );
+
+    memcpy( txt, text, len );
+    txt[len] = '\0';
+
+    cb->Command( DX9__DEBUG_MARKER, (uint64)(txt) );
+}
+
 
 CommandBufferDX9_t::CommandBufferDX9_t()
   : isFirstInPass(true),
-    isLastInPass(true)
+    isLastInPass(true),
+    text(nullptr)
 {
 }
 
@@ -636,6 +664,14 @@ SCOPED_FUNCTION_TIMING();
                 c += 5;
             }   break;
 
+            case DX9__DEBUG_MARKER :
+            {
+                wchar_t txt[128];
+
+                ::MultiByteToWideChar( CP_ACP, 0, (const char*)(arg[0]), -1, txt, countof(txt));
+                ::D3DPERF_SetMarker( D3DCOLOR_ARGB(0xFF,0x40,0x40,0x80), txt );
+            }   break;
+
             default:
                 DVASSERT("unknown DX9 render-command");
         }
@@ -748,7 +784,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_SetSamplerState        = &dx9_CommandBuffer_SetSamplerState;
     dispatch->impl_CommandBuffer_DrawPrimitive          = &dx9_CommandBuffer_DrawPrimitive;
     dispatch->impl_CommandBuffer_DrawIndexedPrimitive   = &dx9_CommandBuffer_DrawIndexedPrimitive;
-//    dispatch->impl_CommandBuffer_SetMarker              = &dx9_CommandBuffer_SetMarker;
+    dispatch->impl_CommandBuffer_SetMarker              = &dx9_CommandBuffer_SetMarker;
     
     dispatch->impl_Present                              = &dx9_Present;
 }

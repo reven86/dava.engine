@@ -200,6 +200,7 @@ Packet
     HTextureSet         vertexTextureSet;
     PrimitiveType       primitiveType;
     uint32              primitiveCount;
+    const char*         debugMarker;
 
                         Packet()
                           : vertexStreamCount(0),
@@ -212,7 +213,8 @@ Packet
                             cullMode(CULL_CCW),
                             vertexConstCount(0),
                             fragmentConstCount(0),
-                            primitiveCount(0)
+                            primitiveCount(0),
+                            debugMarker(nullptr)
                         {
                         }
 };

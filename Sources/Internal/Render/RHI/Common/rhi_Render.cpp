@@ -671,6 +671,11 @@ AddPackets( HPacketList packetList, const Packet* packet, uint32 packetCount )
                                   ? p->samplerState
                                   : pl->defSamplerState;
 
+        if( p->debugMarker )
+        {
+            rhi::CommandBuffer::SetMarker( cmdBuf, p->debugMarker );
+        }
+        
         if(     p->renderPipelineState != pl->curPipelineState 
             ||  p->vertexLayoutUID != pl->curVertexLayout
           )
