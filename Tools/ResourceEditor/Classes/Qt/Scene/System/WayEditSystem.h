@@ -72,7 +72,6 @@ protected:
     void ProcessCommand(const Command2 *command, bool redo);
 
     DAVA::Entity* CreateWayPoint(DAVA::Entity *parent, DAVA::Vector3 pos);
-    DAVA::Entity* CopyWayPoint(DAVA::Entity* waypoint);
 
     void RemoveEdge(DAVA::Entity* entity, DAVA::EdgeComponent * edgeComponent);
 

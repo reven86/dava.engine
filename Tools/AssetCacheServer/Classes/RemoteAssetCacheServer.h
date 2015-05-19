@@ -27,17 +27,47 @@
 =====================================================================================*/
 
 
-#include "$UNITTEST_CLASSNAME$.h"
+#ifndef REMOTEASSETCACHSERVER_H
+#define REMOTEASSETCACHSERVER_H
 
-using namespace DAVA;
+#include <QWidget>
 
-$UNITTEST_CLASSNAME$::$UNITTEST_CLASSNAME$ ()
-    : TestTemplate<$UNITTEST_CLASSNAME$> ("$UNITTEST_CLASSNAME$")
+struct ServerData
 {
-    RegisterFunction (this, &$UNITTEST_CLASSNAME$::TestFunc, String ("TestFunc"), nullptr);
+    ServerData();
+    ServerData(QString newIp, quint16 newPort);
+
+    QString ip;
+    quint16 port;
+};
+
+namespace Ui
+{
+    class RemoteAssetCacheServer;
 }
 
-void $UNITTEST_CLASSNAME$::TestFunc (PerfFuncData * data)
+class RemoteAssetCacheServer : public QWidget
 {
-    TEST_VERIFY (false);
-}
+    Q_OBJECT
+
+public:
+    explicit RemoteAssetCacheServer(QWidget *parent = nullptr);
+    explicit RemoteAssetCacheServer(ServerData &newServer, QWidget *parent = nullptr);
+    ~RemoteAssetCacheServer() override;
+
+    ServerData GetServerData() const;
+
+    bool IsCorrectData();
+
+signals:
+    void ParametersChanged();
+    void RemoveLater();
+
+private slots:
+    void OnParametersChanged();
+
+private:
+    Ui::RemoteAssetCacheServer *ui;
+};
+
+#endif // REMOTEASSETCACHSERVER_H

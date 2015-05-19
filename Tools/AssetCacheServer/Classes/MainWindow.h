@@ -27,17 +27,74 @@
 =====================================================================================*/
 
 
-#include "$UNITTEST_CLASSNAME$.h"
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
-using namespace DAVA;
+#include <QMainWindow>
+#include <QSystemTrayIcon>
 
-$UNITTEST_CLASSNAME$::$UNITTEST_CLASSNAME$ ()
-    : TestTemplate<$UNITTEST_CLASSNAME$> ("$UNITTEST_CLASSNAME$")
+#include "RemoteAssetCacheServer.h"
+
+class QMenu;
+class QVBoxLayout;
+
+namespace Ui
 {
-    RegisterFunction (this, &$UNITTEST_CLASSNAME$::TestFunc, String ("TestFunc"), nullptr);
+    class MainWindow;
 }
 
-void $UNITTEST_CLASSNAME$::TestFunc (PerfFuncData * data)
+class MainWindow : public QMainWindow
 {
-    TEST_VERIFY (false);
-}
+    Q_OBJECT
+
+public:
+    explicit MainWindow(QWidget *parent = nullptr);
+    ~MainWindow() override;
+
+signals:
+    void FolderChanged(QString &);
+    void FolderSizeChanged(qreal);
+    void FilesCountChanged(quint32);
+    void NewServerAdded(ServerData);
+    void ServerRemoved(ServerData);
+    void ServersChanged(QVector<ServerData>);
+
+protected:
+    void closeEvent(QCloseEvent *e) override;
+
+private slots:
+    void OnAddNewServerWidget();
+    void OnRemoveServerWidget();
+    void OnSelectFolder();
+    void CheckEnableClearButton();
+    void OnTrayIconActivated(QSystemTrayIcon::ActivationReason reason);
+    void OnServerParametersChanged();
+    void OnOpenAction();
+
+    void OnSaveButtonClicked();
+    void OnCancelButtonClicked();
+
+    void SetFolder(QString &folderPath);
+    void SetFolderSize(qreal folderSize);
+    void SetFilesCount(quint32 filesCounts);
+    void AddServers(QVector<ServerData> &newServers);
+    void AddServer(ServerData newServer);
+
+private:
+    void CreateTrayIconActions();
+    void ShowTrayIcon();
+    void ReadSettings();
+    void WriteSettings();
+    void VerifyData();
+
+private:
+    Ui::MainWindow *ui;
+    QSystemTrayIcon *trayIcon;
+    QMenu *trayActionsMenu;
+
+    QList<RemoteAssetCacheServer *> servers;
+
+    QVBoxLayout *boxLayout;
+};
+
+#endif // MAINWINDOW_H

@@ -27,17 +27,31 @@
 =====================================================================================*/
 
 
-#include "$UNITTEST_CLASSNAME$.h"
+#include "SingleApplication.h"
 
-using namespace DAVA;
+#include "DAVAEngine.h"
 
-$UNITTEST_CLASSNAME$::$UNITTEST_CLASSNAME$ ()
-    : TestTemplate<$UNITTEST_CLASSNAME$> ("$UNITTEST_CLASSNAME$")
+#include "MainWindow.h"
+
+void FrameworkWillTerminate()
 {
-    RegisterFunction (this, &$UNITTEST_CLASSNAME$::TestFunc, String ("TestFunc"), nullptr);
 }
 
-void $UNITTEST_CLASSNAME$::TestFunc (PerfFuncData * data)
+void FrameworkDidLaunched()
 {
-    TEST_VERIFY (false);
+}
+
+int main(int argc, char *argv[])
+{
+    DAVA::Core::Run(argc, argv);
+
+    SingleApplication a(argc, argv);
+    if (a.AlreadyExists())
+    {
+        return 0;
+    }
+    MainWindow w;
+    w.show();
+
+    return a.exec();
 }

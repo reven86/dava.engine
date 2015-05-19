@@ -27,17 +27,21 @@
 =====================================================================================*/
 
 
-#include "$UNITTEST_CLASSNAME$.h"
+#ifndef __THREADLOCALTEST_TEST_H__
+#define __THREADLOCALTEST_TEST_H__
 
-using namespace DAVA;
+#include "DAVAEngine.h"
+#include "Infrastructure/TestTemplate.h"
 
-$UNITTEST_CLASSNAME$::$UNITTEST_CLASSNAME$ ()
-    : TestTemplate<$UNITTEST_CLASSNAME$> ("$UNITTEST_CLASSNAME$")
+class ThreadLocalTest : public TestTemplate < ThreadLocalTest >
 {
-    RegisterFunction (this, &$UNITTEST_CLASSNAME$::TestFunc, String ("TestFunc"), nullptr);
-}
+public:
+    ThreadLocalTest ();
 
-void $UNITTEST_CLASSNAME$::TestFunc (PerfFuncData * data)
-{
-    TEST_VERIFY (false);
-}
+    void ThreadLocalTestFunc(PerfFuncData * data);
+
+private:
+    void ThreadFunc(DAVA::BaseObject*, void*, void*);
+};
+
+#endif //__THREADLOCALTEST_TEST_H__
