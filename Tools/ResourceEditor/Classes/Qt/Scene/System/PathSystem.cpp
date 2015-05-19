@@ -140,7 +140,21 @@ void PathSystem::RemoveEntity(DAVA::Entity * entity)
     }
 }
 
+void PathSystem::WillCopied(DAVA::Entity *copiedEntity)
+{
+    if (isEditingEnabled)
+    {
+        CollapsePathEntity(copiedEntity);
+    }
+}
 
+void PathSystem::WasCopied(DAVA::Entity *copiedEntity)
+{
+    if (isEditingEnabled)
+    {
+        ExpandPathEntity(copiedEntity);
+    }
+}
 
 void PathSystem::Draw()
 {
@@ -412,4 +426,3 @@ DAVA::PathComponent* PathSystem::CreatePathComponent()
     pc->SetColor(GetNextPathColor());
     return pc;
 }
-

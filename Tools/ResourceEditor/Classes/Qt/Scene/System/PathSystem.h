@@ -35,16 +35,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Scene/System/SelectionSystem.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"
 
+#include "Scene/System/ModifSystem.h"
+
 static const DAVA::uint32 WAYPOINTS_DRAW_LIFTING = 1;
 
 class SceneEditor2;
-class PathSystem: public DAVA::SceneSystem
+class PathSystem : public DAVA::SceneSystem, EntityModificationSystemDelegate
 {
     friend class SceneEditor2;
 
 public:
     PathSystem(DAVA::Scene * scene);
-    virtual ~PathSystem();
+    ~PathSystem() override;
 
     void EnablePathEdit(bool enable);
     bool IsPathEditEnabled() const;
@@ -60,6 +62,9 @@ public:
     void AddPath(DAVA::Entity* pathEntity);
     
     DAVA::PathComponent* CreatePathComponent();
+
+    void WillCopied(DAVA::Entity *copiedEntity) override;
+    void WasCopied(DAVA::Entity *copiedEntity) override;
 
 protected:
     

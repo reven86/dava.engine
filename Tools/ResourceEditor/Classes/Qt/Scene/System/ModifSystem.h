@@ -45,6 +45,15 @@ class SceneCameraSystem;
 class EntityGroup;
 class HoodSystem;
 
+class EntityModificationSystemDelegate
+{
+public:
+    virtual ~EntityModificationSystemDelegate() {}
+
+    virtual void WillCopied(DAVA::Entity *) = 0;
+    virtual void WasCopied(DAVA::Entity *) = 0;
+};
+
 class EntityModificationSystem : public DAVA::SceneSystem
 {
 	friend class SceneEditor2;
@@ -78,6 +87,8 @@ public:
 	virtual void RemoveEntity(DAVA::Entity * entity);
 	virtual void Process(DAVA::float32 timeElapsed);
     virtual void Input(DAVA::UIEvent *event);
+
+    void SetCopyDelegate(EntityModificationSystemDelegate *delegate);
 
 protected:
 	SceneCollisionSystem *collisionSystem;
@@ -163,6 +174,9 @@ protected:
 
 	DAVA::Matrix4 SnapToLandscape(const DAVA::Vector3 &point, const DAVA::Matrix4 &originalParentTransform) const;
 	bool IsEntityContainRecursive(const DAVA::Entity *entity, const DAVA::Entity *child) const;
+
+private:
+    DAVA::List<EntityModificationSystemDelegate *> delegates;
 };
 
 #endif //__ENTITY_MODIFICATION_SYSTEM_H__

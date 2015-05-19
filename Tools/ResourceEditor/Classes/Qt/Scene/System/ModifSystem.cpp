@@ -311,6 +311,11 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 	}
 }
 
+void EntityModificationSystem::SetCopyDelegate(EntityModificationSystemDelegate *delegate)
+{
+    delegates.push_back(delegate);
+}
+
 void EntityModificationSystem::Draw()
 { }
 
@@ -802,8 +807,21 @@ void EntityModificationSystem::CloneBegin()
         clonedEntities.reserve(modifEntities.size());
 		for(size_t i = 0; i < modifEntities.size(); ++i)
 		{
-			DAVA::Entity *origEntity = modifEntities[i].entity;
+            DAVA::Entity *origEntity = modifEntities[i].entity;
+            
+            for (auto &delegate : delegates)
+            {
+                delegate->WillCopied(origEntity);
+            }
+
 			DAVA::Entity *newEntity = origEntity->Clone();
+
+            for (auto &delegate : delegates)
+            {
+                delegate->WasCopied(origEntity);
+                delegate->WasCopied(newEntity);
+            }
+
             newEntity->SetLocalTransform(modifEntities[i].originalTransform);
 
             Scene *scene = origEntity->GetScene();

@@ -41,11 +41,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 WayEditSystem::WayEditSystem(DAVA::Scene * scene, SceneSelectionSystem *_selectionSystem, SceneCollisionSystem *_collisionSystem)
-: DAVA::SceneSystem(scene)
-, isEnabled(false)
-, selectionSystem(_selectionSystem)
-, collisionSystem(_collisionSystem)
-, underCursorPathEntity(NULL)
+    : DAVA::SceneSystem(scene)
+    , isEnabled(false)
+    , selectionSystem(_selectionSystem)
+    , collisionSystem(_collisionSystem)
+    , underCursorPathEntity(nullptr)
 {
     wayDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(
         DAVA::RenderStateData::STATE_COLORMASK_ALL |
@@ -235,7 +235,6 @@ void WayEditSystem::Process(DAVA::float32 timeElapsed)
     }
 }
 
-
 void WayEditSystem::ResetSelection()
 {
     selectedWaypoints.Clear();
@@ -247,13 +246,13 @@ void WayEditSystem::ResetSelection()
 void WayEditSystem::ProcessSelection()
 {
     const EntityGroup selection = selectionSystem->GetSelection();
-    if(currentSelection != selection)
+    if (currentSelection != selection)
     {
         currentSelection = selection;
         
         prevSelectedWaypoints = selectedWaypoints;
         selectedWaypoints.Clear();
-        
+
         const size_t count = currentSelection.Size();
         for(size_t i = 0; i < count; ++i)
         {
@@ -270,10 +269,9 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
 {
     if (isEnabled)
     {
-
         if((DAVA::UIEvent::BUTTON_1 == event->tid) && (DAVA::UIEvent::PHASE_MOVE == event->phase))
         {
-            underCursorPathEntity = NULL;
+            underCursorPathEntity = nullptr;
             const EntityGroup* collObjects = collisionSystem->ObjectsRayTestFromCamera();
             if (NULL != collObjects && collObjects->Size() > 0)
             {
@@ -367,7 +365,7 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
                     }
                     
                     sceneEditor->EndBatch();
-                    
+
                     newWaypoint->Release();
                 }
             }
@@ -444,7 +442,6 @@ void WayEditSystem::RemoveEdges(const EntityGroup & group, DAVA::Entity *nextEnt
     }
 }
 
-
 DAVA::Entity* WayEditSystem::CreateWayPoint(DAVA::Entity *parent, DAVA::Vector3 pos)
 {
     DAVA::PathComponent *pc = DAVA::GetPathComponent(parent);
@@ -470,11 +467,9 @@ DAVA::Entity* WayEditSystem::CreateWayPoint(DAVA::Entity *parent, DAVA::Vector3 
     DAVA::Matrix4 m;
     m.SetTranslationVector(pos);
     waypoint->SetLocalTransform(m * pm);
-    
+
     return waypoint;
 }
-
-
 
 void WayEditSystem::ProcessCommand(const Command2 *command, bool redo)
 {
@@ -488,7 +483,6 @@ void WayEditSystem::ProcessCommand(const Command2 *command, bool redo)
          EnableWayEdit(!redo);
      }
 }
-
 
 void WayEditSystem::Draw()
 {
@@ -543,7 +537,7 @@ void WayEditSystem::EnableWayEdit(bool enable)
     ResetSelection();
 
     isEnabled = enable;
-	UpdateSelectionMask();
+    UpdateSelectionMask();
 }
 
 bool WayEditSystem::IsWayEditEnabled() const
@@ -553,14 +547,12 @@ bool WayEditSystem::IsWayEditEnabled() const
 
 void WayEditSystem::UpdateSelectionMask()
 {
-	if(isEnabled)
-	{
-		selectionSystem->SetSelectionComponentMask((DAVA::uint64)1 << DAVA::Component::WAYPOINT_COMPONENT | (DAVA::uint64)1 << DAVA::Component::PATH_COMPONENT);
-	}
-	else
-	{
-		selectionSystem->ResetSelectionComponentMask();
-	}
+    if(isEnabled)
+    {
+        selectionSystem->SetSelectionComponentMask((DAVA::uint64)1 << DAVA::Component::WAYPOINT_COMPONENT | (DAVA::uint64)1 << DAVA::Component::PATH_COMPONENT);
+    }
+    else
+    {
+        selectionSystem->ResetSelectionComponentMask();
+    }
 }
-
-
