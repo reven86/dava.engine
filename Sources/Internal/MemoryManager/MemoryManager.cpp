@@ -157,7 +157,7 @@ void MemoryManager::Update()
 {
     if (nullptr == symbolCollectorThread)
     {
-        symbolCollectorThread = Thread::Create();
+        //symbolCollectorThread = Thread::Create();
     }
 
     if (updateCallback != nullptr)
@@ -837,7 +837,11 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     for (size_t i = 0;i < COUNT_OF(backtrace->frames);++i)
     {
+#if defined(DAVA_MEMORY_MANAGER_NEW_DATASTRUCT)
+        if (backtrace->frames[i] != nullptr && symbolMap->find(backtrace->frames[i]) == symbolMap->cend())
+#else
         if (backtrace->frames[i] != nullptr && symbols->find(backtrace->frames[i]) == symbols->cend())
+#endif
         {
             /*
              https://developer.apple.com/library/mac/documentation/Darwin/Reference/ManPages/man3/dladdr.3.html#//apple_ref/doc/man/3/dladdr
@@ -850,10 +854,16 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
                 int status = 0;
                 size_t n = COUNT_OF(nameBuffer);
                 abi::__cxa_demangle(dlinfo.dli_sname, nameBuffer, &n, &status);
+#if defined(DAVA_MEMORY_MANAGER_NEW_DATASTRUCT)
+                const size_t index = symbolStorage->size();
+                symbolStorage->emplace_back(0 == status ? InternalString(nameBuffer) : InternalString(dlinfo.dli_sname));
+                symbolMap->emplace(backtrace->frames[i], index);
+#else
                 if (0 == status)
                     symbols->emplace(backtrace->frames[i], InternalString(nameBuffer));
                 else
                     symbols->emplace(backtrace->frames[i], InternalString(dlinfo.dli_sname));
+#endif
             }
         }
     }

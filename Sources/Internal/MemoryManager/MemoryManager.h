@@ -171,7 +171,7 @@ private:
     using BacktraceMap = std::unordered_map<uint32, size_t, KeyHash, std::equal_to<uint32>, InternalAllocator<std::pair<const uint32, size_t>>>;
     using BacktraceStorage = std::deque<Backtrace, InternalAllocator<Backtrace>>;
 
-    using SymbolMap = std::unordered_map<void*, size_t, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, InternalString>>>;
+    using SymbolMap = std::unordered_map<void*, size_t, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, size_t>>>;
     using SymbolStorage = std::deque<InternalString, InternalAllocator<InternalString>>;
 
     BacktraceMap* bktraceMap;
