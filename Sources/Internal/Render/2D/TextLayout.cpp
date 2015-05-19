@@ -95,20 +95,6 @@ bool TextLayout::IsEndOfText()
     return fromPos >= preparedText.length();
 }
 
-bool TextLayout::Next(const WrapMode wrapMode, const float32 lineWidth)
-{
-    switch (wrapMode)
-    {
-    case WRAP_BY_WORDS:
-        return NextByWords(lineWidth);
-    case WRAP_BY_SYMBOLS:
-        return NextBySymbols(lineWidth);
-    default:
-        DVASSERT_MSG(false, "Use correct WrapMode");
-        return false;
-    }
-}
-
 bool TextLayout::NextByWords(const float32 lineWidth)
 {
     float32 targetWidth = std::floor(lineWidth);

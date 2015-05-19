@@ -517,7 +517,7 @@ void TextBlock::CalculateCacheParams()
     if (isMultilineEnabled)
     {
         // We can wrap by symbols because it's only check that the text placed in a single line
-        textLayout.Next(TextLayout::WRAP_BY_SYMBOLS, drawSize.dx);
+        textLayout.NextBySymbols(drawSize.dx);
         treatMultilineAsSingleLine = textLayout.IsEndOfText();
     }
 
@@ -710,9 +710,9 @@ void TextBlock::CalculateCacheParams()
             textLayout.Seek(0);
             while (!textLayout.IsEndOfText())
             {
-                if(isMultilineBySymbolEnabled || !textLayout.Next(TextLayout::WRAP_BY_WORDS, drawSize.dx))
+                if(isMultilineBySymbolEnabled || !textLayout.NextByWords(drawSize.dx))
                 {
-                    textLayout.Next(TextLayout::WRAP_BY_SYMBOLS, drawSize.dx);
+                    textLayout.NextBySymbols(drawSize.dx);
                 }
                 multilineStrings.push_back(textLayout.GetVisualLine(true));
             }
@@ -801,9 +801,9 @@ void TextBlock::CalculateCacheParams()
                 textLayout.Reset(logicalText, *font);
                 while (!textLayout.IsEndOfText())
                 {
-                    if(isMultilineBySymbolEnabled || !textLayout.Next(TextLayout::WRAP_BY_WORDS, drawSize.dx))
+                    if(isMultilineBySymbolEnabled || !textLayout.NextByWords(drawSize.dx))
                     {
-                        textLayout.Next(TextLayout::WRAP_BY_SYMBOLS, drawSize.dx);
+                        textLayout.NextBySymbols(drawSize.dx);
                     }
                     multilineStrings.push_back(textLayout.GetVisualLine(true));
                 }
@@ -819,9 +819,9 @@ void TextBlock::CalculateCacheParams()
         textLayout.Reset(logicalText, *font);
         while (!textLayout.IsEndOfText())
         {
-            if(isMultilineBySymbolEnabled || !textLayout.Next(TextLayout::WRAP_BY_WORDS, drawSize.dx))
+            if(isMultilineBySymbolEnabled || !textLayout.NextByWords(drawSize.dx))
             {
-                textLayout.Next(TextLayout::WRAP_BY_SYMBOLS, drawSize.dx);
+                textLayout.NextBySymbols(drawSize.dx);
             }
             multilineStrings.push_back(textLayout.GetVisualLine(true));
         }

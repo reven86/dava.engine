@@ -41,14 +41,6 @@ class TextLayout
 {
 public:
     /**
-     * Wrap modes for text splitting
-     */
-    enum WrapMode {
-        WRAP_BY_WORDS = 0, //!< Wrap by words
-        WRAP_BY_SYMBOLS //!<  Wrap by symbols
-    };
-
-    /**
      * \brief Create TextLayout with word wrap and disabled bidi transformations
      */
     TextLayout();
@@ -88,14 +80,20 @@ public:
      * \return false if not all text processed
      */
     bool IsEndOfText();
-
+    
     /**
-     * \brief Process next text block from current cursor to end and get possible line with specified width or less
-     * \param[in] wrapMode current wrap mode
-     * \param[in] lineWidth maximum of line width in pixels
-     * \return true if text can be splited by selected wrap mode. Always return true for WRAP_BY_SYMBOLS mode and set in current line minimum one symbol.
+     * \brief Split text by words from current cursor position with specified width
+     * \param[in] lineWidth maximum line width in pixels
+     * \return true if text can be splited by words
      */
-    bool Next(const WrapMode wrapMode, const float32 lineWidth);
+    bool NextByWords(const float32 lineWidth);
+    
+    /**
+     * \brief Split text by symbols from current cursor position with specified width
+     * \param[in] lineWidth maximum line width in pixels
+     * \return always return true and set in current line minimum one symbol
+     */
+    bool NextBySymbols(const float32 lineWidth);
 
     /**
      * \brief Checks that input text is Right-To-Left
@@ -143,20 +141,6 @@ private:
      * \return string after bidi transformations with reordering and removing non-printable characters
      */
     const WideString BuildVisualString(const WideString& input, const bool trimEnd) const;
-
-    /**
-     * \brief Split text by words from current cursor position with specified width
-     * \param[in] lineWidth maximum line width in pixels
-     * \return true if text can be splited by words
-     */
-    bool NextByWords(const float32 lineWidth);
-
-    /**
-     * \brief Split text by symbols from current cursor position with specified width
-     * \param[in] lineWidth maximum line width in pixels
-     * \return always return true and set in current line minimum one symbol
-     */
-    bool NextBySymbols(const float32 lineWidth);
 
     WideString inputText;
     WideString preparedText;
