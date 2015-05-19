@@ -1,10 +1,13 @@
 // CRAP: remove these when tree/wind working
-#if defined SPEED_TREE_LEAF
-#undef SPEED_TREE_LEAF
-#endif
-#if defined WIND_ANIMATION
-#undef WIND_ANIMATION
-#endif
+//#if defined SPEED_TREE_LEAF
+//#undef SPEED_TREE_LEAF
+//#endif
+//#if defined WIND_ANIMATION
+//#undef WIND_ANIMATION
+//#endif
+//#if #defined CUT_LEAF
+//#undef CUT_LEAF
+//#endif
 
 
 
@@ -91,18 +94,6 @@ FPROG_IN_BEGIN
         FPROG_IN_TEXCOORD4(varVertexColor,4)
     #endif
 
-    #if defined(MATERIAL_GRASS_TRANSFORM)
-
-        #if defined(MATERIAL_GRASS_BLEND)
-        varying float2 varTexCoord2;
-        #endif
-
-        #if defined(MATERIAL_GRASS_OPAQUE) || defined(MATERIAL_GRASS_BLEND)
-        varying lowp float3 varVegetationColor;
-        #endif
-
-    #endif
-
     #if defined(FRAME_BLEND)
         varying lowp float varTime;
     #endif
@@ -163,7 +154,7 @@ FPROG_OUT_END
 #endif
 
 
-#if defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(VERTEX_FOG)
+#if (defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(VERTEX_FOG)) && (!defined(SKYOBJECT))
     property float3 lightAmbientColor0 : dynamic,a : ;
     property float3 lightColor0 : dynamic,a : ;
     property float inGlossiness : static,a : ;
@@ -193,22 +184,6 @@ FresnelShlickVec3( float NdotL, float3 Cspec )
     return Cspec + (1.0 - Cspec) * (pow(1.0 - NdotL, expf));
 }
 
-
-#if defined(MATERIAL_GRASS_TRANSFORM)
-
-    #if defined(VEGETATION_DRAW_LOD_COLOR)
-    property float3 lodColor : dynamic,a ;
-    #endif
-
-    #if defined(MATERIAL_GRASS_BLEND)
-    varying vec2 varTexCoord2;
-    #endif
-
-    #if defined(MATERIAL_GRASS_OPAQUE) || defined(MATERIAL_GRASS_BLEND)
-    varying lowp vec3 varVegetationColor;
-    #endif
-
-#endif
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -583,36 +558,6 @@ FPROG_BEGIN
         #endif
     #endif
     //    gl_FragColor.r += 0.5;
-
-
-
-    #if defined(MATERIAL_GRASS_TRANSFORM)
-        
-        #if defined(MATERIAL_GRASS_OPAQUE)
-            FP_OUT_COLOR.rgb = FP_OUT_COLOR.rgb * varVegetationColor * 2.0;
-        #endif
-            
-        #if defined(MATERIAL_GRASS_BLEND)
-            FP_OUT_COLOR.a = FP_OUT_COLOR.a * varTexCoord2.x;
-            #if defined(FRAMEBUFFER_FETCH)
-                //VI: fog is taken to account here
-                #if defined(VERTEX_FOG)
-                    FP_OUT_COLOR.rgb = lerp(gl_LastFragData[0].rgb, mix(gl_FragColor.rgb * varVegetationColor * 2.0, varFogColor, varFogAmoung), gl_FragColor.a);
-                #else
-                    FP_OUT_COLOR.rgb = lerp(gl_LastFragData[0].rgb, gl_FragColor.rgb * varVegetationColor * 2.0, gl_FragColor.a);
-                #endif
-            #else
-                FP_OUT_COLOR.rgb = FP_OUT_COLOR.rgb * varVegetationColor * 2.0;
-            #endif
-        #endif
-        
-        #if defined(MATERIAL_GRASS_OPAQUE) || defined(MATERIAL_GRASS_BLEND)
-            #if defined(VEGETATION_DRAW_LOD_COLOR)
-                FP_OUT_COLOR.rgb += lodColor;
-            #endif
-        #endif
-
-    #endif
 
     
     

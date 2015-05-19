@@ -1,11 +1,13 @@
 // CRAP: remove these when tree/wind working
-#if defined SPEED_TREE_LEAF
-#undef SPEED_TREE_LEAF
-#endif
-#if defined WIND_ANIMATION
-#undef WIND_ANIMATION
-#endif
-
+//#if defined SPEED_TREE_LEAF
+//#undef SPEED_TREE_LEAF
+//#endif
+//#if defined WIND_ANIMATION
+//#undef WIND_ANIMATION
+//#endif
+//#if #defined CUT_LEAF
+//#undef CUT_LEAF
+//#endif
 
 
 
@@ -21,7 +23,7 @@ VPROG_IN_BEGIN
     
     VPROG_IN_POSITION
     
-    #if defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(MATERIAL_GRASS_TRANSFORM)
+    #if defined(VERTEX_LIT) || defined(PIXEL_LIT)
     VPROG_IN_NORMAL
     #endif
 
@@ -39,7 +41,7 @@ VPROG_IN_BEGIN
     VPROG_IN_COLOR0
     #endif
     
-    #if defined(PIXEL_LIT) || defined(MATERIAL_GRASS_TRANSFORM)
+    #if defined(PIXEL_LIT)
     VPROG_IN_TANGENT
     VPROG_IN_BINORMAL
     #endif
@@ -49,20 +51,20 @@ VPROG_IN_BEGIN
     VPROG_IN_BLENDWEIGHT
     #endif
 
-/*
+
     #if defined(SPEED_TREE_LEAF)
-    attribute vec3 inPivot;
+    VPROG_IN_TEXCOORD3(3)
     #if defined(WIND_ANIMATION)
-    attribute vec2 inAngleSinCos;
+    VPROG_IN_TEXCOORD4(2)
     #endif
-    #endif
-*/
-
-/*    
-    #if defined(WIND_ANIMATION)
-    attribute float inFlexibility;
     #endif
 
+
+    
+    #if defined(WIND_ANIMATION)
+    VPROG_IN_TEXCOORD5(1)
+    #endif
+/*
     #if defined(FRAME_BLEND)
     attribute float inTime;
     #endif
@@ -99,12 +101,12 @@ VPROG_OUT_BEGIN
     
     
     #if defined(VERTEX_LIT)
-        VPROG_OUT_TEXCOORD3(varDiffuseColor,1) // lowp
+        VPROG_OUT_TEXCOORD3(varDiffuseColor,1)
         #if defined(BLINN_PHONG)
-            VPROG_OUT_TEXCOORD4(varSpecularColor,1) // lowp
+            VPROG_OUT_TEXCOORD4(varSpecularColor,1)
             //varying lowp float varSpecularColor;
         #elif defined(NORMALIZED_BLINN_PHONG)
-            VPROG_OUT_TEXCOORD4(varSpecularColor,4) // lowp
+            VPROG_OUT_TEXCOORD4(varSpecularColor,4)
             //varying lowp vec3 varSpecularColor;
             //varying lowp float varNdotH;
         #endif
@@ -157,10 +159,12 @@ VPROG_OUT_END
 ////////////////////////////////////////////////////////////////////////////////
 // properties
 
+#if !defined SPEED_TREE_LEAF
 property float4x4 worldViewProjMatrix : dynamic,a : ;
+#endif
 
 #if defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(VERTEX_FOG) || defined(SPEED_TREE_LEAF) || defined(SPHERICAL_LIT)
-property float4x4 worldViewMatrix : shared,dynamic : ;
+property float4x4 worldViewMatrix : dynamic,a : ;
 #endif
 
 #if defined(VERTEX_LIT) || defined(PIXEL_LIT) || (defined(VERTEX_FOG) && defined(FOG_ATMOSPHERE))
@@ -219,15 +223,15 @@ property float2 trunkOscillationParams : dynamic,a : ;
 #endif
 
 #if defined(SPEED_TREE_LEAF)
-property float3 worldViewTranslate : dynamic,a : ;
+property float3 worldViewTranslate : static,a : ;
 property float3 worldScale : dynamic,a : ;
 property float4x4 projMatrix : dynamic,a : ;
-property float cutDistance : dynamic,a : ;
+property float cutDistance : static,a : ;
 
     #if !defined(SPHERICAL_LIT) //legacy for old tree lighting
-        property float3 treeLeafColorMul : dynamic,a : ;
-        property float treeLeafOcclusionOffset : dynamic,a : ;
-        property float treeLeafOcclusionMul : dynamic,a : ;
+        property float3 treeLeafColorMul : static,a : ;
+        property float treeLeafOcclusionOffset : static,a : ;
+        property float treeLeafOcclusionMul : static,a : ;
     #endif
     
     #if defined(WIND_ANIMATION)
@@ -280,30 +284,6 @@ property float4x4 worldMatrix : dynamic,a : ;
     property float3x3 worldInvTransposeMatrix : dynamic,a : ;
 #endif
 
-/*
-#if defined(MATERIAL_GRASS_TRANSFORM)
-    
-    property float3 tilePos;
-    property float3 worldSize;
-    property float2 lodSwitchScale;
-    property float3 billboardDirection;
-
-//    uniform sampler2D heightmap;
-//    uniform sampler2D vegetationmap;
-//    uniform sampler2D densitymap;
-
-    uniform vec2 heightmapScale;
-
-    #if defined(MATERIAL_GRASS_TRANSFORM_WAVE)
-        uniform float vegWaveOffset[8]; //2 floats (xy) per layer
-    #endif
-
-    #if defined(MATERIAL_GRASS_OPAQUE) || defined(MATERIAL_GRASS_BLEND)
-        varying lowp vec3 varVegetationColor;
-    #endif
-
-#endif
-*/
 
 #if defined(WAVE_ANIMATION)
 property float globalTime : dynamic,a : ;
@@ -380,6 +360,17 @@ VPROG_BEGIN
     float4  weightedVertexQuaternion = jointQuaternions[index];
 #endif
 
+    
+    #if defined(SPEED_TREE_LEAF)
+    float3 inPivot = VP_IN_TEXCOORD3;
+    #if defined(WIND_ANIMATION)
+    float2 inAngleSinCos = VP_IN_TEXCOORD4;
+    #endif
+    #endif
+    #if defined(WIND_ANIMATION)
+    float inFlexibility = VP_IN_TEXCOORD5;
+    #endif
+
 
 #if defined(MATERIAL_SKYBOX)
     
@@ -397,7 +388,7 @@ VPROG_BEGIN
     float4  eyeCoordsPosition4;
 
     #if defined (CUT_LEAF)
-        float4 tangentInCameraSpace = worldViewMatrix * float4(inPivot, 1.0);
+        float4 tangentInCameraSpace = mul( float4(inPivot,1.0), worldViewMatrix );
         if (tangentInCameraSpace.z < -cutDistance)
         {
             VP_OUT_POSITION = mul( float4(inPivot,VP_IN_POSITION.w), worldViewProjMatrix );
@@ -431,7 +422,7 @@ VPROG_BEGIN
             #endif //end of (not WIND_ANIMATION and SPEED_TREE_LEAF)
 
             
-            float4 eyeCoordsPivot = mul( float4(pivot,VP_IN_POSITION.w), worldViewMatrix );
+            float4 eyeCoordsPivot = mul( float4(pivot,1.0), worldViewMatrix );
             eyeCoordsPosition4 = float4(worldScale * offset, 0.0) + eyeCoordsPivot;
             VP_OUT_POSITION = mul(eyeCoordsPosition4,projMatrix);
         
@@ -444,14 +435,14 @@ VPROG_BEGIN
     #if defined(WIND_ANIMATION)
 
         float3 windVectorFlex = float3(trunkOscillationParams * inFlexibility, 0.0);
-        VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz + windVectorFlex, inPosition.w), worldViewProjMatrix );
+        VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz + windVectorFlex, 1.0), worldViewProjMatrix );
         
     #else //!defined(WIND_ANIMATION)
 
         #if defined(WAVE_ANIMATION)
             VP_OUT_POSITION = mul( Wave(globalTime, VP_IN_POSITION, inTexCoord0), worldViewProjMatrix );
         #elif defined(MATERIAL_GRASS_TRANSFORM)
-        
+/*        
             //inTangent.y - cluster type (0...3)
             //inTangent.z - cluster's reference density (0...15)
         
@@ -512,22 +503,6 @@ VPROG_BEGIN
             #if defined(MATERIAL_GRASS_OPAQUE) || defined(MATERIAL_GRASS_BLEND)
             varVegetationColor = vegetationMask.rgb;
         
-            /*if(int(inTangent.y) == 0)
-            {
-               varVegetationColor.r += 0.5;
-            }
-            else if(int(inTangent.y) == 1)
-            {
-               varVegetationColor.g += 0.5;
-            }
-            else if(int(inTangent.y) == 2)
-            {
-                varVegetationColor.rb += vec2(0.75, 0.75);
-            }
-            else
-            {
-                varVegetationColor.rgb += vec3(0.5, 0.5, 0.5);
-            }*/
             #endif
         
             #if defined(MATERIAL_GRASS_TRANSFORM_WAVE)
@@ -543,7 +518,7 @@ VPROG_BEGIN
             pos = lerp( clusterCenter, pos, vegetationMask.a * clusterScale);
         
             VP_OUT_POSITION = mul( pos, worldViewProjMatrix );
-        
+*/        
         #else
             #if defined (SKINNING)
                 float3 tmpVec = 2.0 * cross(weightedVertexQuaternion.xyz, VP_IN_POSITION.xyz);
@@ -566,7 +541,7 @@ VPROG_BEGIN
         float3 eyeCoordsPosition = mul(pos,worldViewMatrix).xyz; // view direction in view space
     #else
         #if defined (SKINNING)
-            float3 eyeCoordsPosition = mul( skinnedPosition, worldViewMatrix ),xyz; // view direction in view space
+            float3 eyeCoordsPosition = mul( skinnedPosition, worldViewMatrix ).xyz; // view direction in view space
         #else
             // view direction in view space
             float3 eyeCoordsPosition = mul( float4(VP_IN_POSITION,1.0), worldViewMatrix ).xyz; 
@@ -812,7 +787,7 @@ VPROG_BEGIN
             sphericalLightFactor += A1 * shMatrix * float3(n.y, n.z, n.x);
         
             #if defined(SPEED_TREE_LEAF)
-                float3 localNormal = invViewMatrix3 * (eyeCoordsPosition - float3(eyeCoordsPivot));
+                float3 localNormal = mul( (eyeCoordsPosition - float3(eyeCoordsPivot)), invViewMatrix3 );
                 float3 ln = normalize(localNormal);
                 localSphericalLightFactor += A1 * shMatrix * float3(ln.y, ln.z, ln.x);
             #endif
@@ -846,7 +821,7 @@ VPROG_BEGIN
 
 #elif defined(SPEED_TREE_LEAF) //legacy for old tree lighting
     
-    VP_OUT(varVertexColor).rgb = VP_OUT(varVertexColor).rgb * treeLeafColorMul * treeLeafOcclusionMul + float3(treeLeafOcclusionOffset);
+    VP_OUT(varVertexColor).rgb = VP_OUT(varVertexColor).rgb * treeLeafColorMul * treeLeafOcclusionMul + float3(treeLeafOcclusionOffset,treeLeafOcclusionOffset,treeLeafOcclusionOffset);
 
 #endif
 
