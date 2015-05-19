@@ -63,8 +63,8 @@ public:
     
     DAVA::PathComponent* CreatePathComponent();
 
-    void WillClone(DAVA::Entity *origEntity);
-    void DidCloned(DAVA::Entity *origEntity, DAVA::Entity *newEntity);
+    void WillClone(DAVA::Entity *originalEntity) override;
+    void DidCloned(DAVA::Entity *originalEntity, DAVA::Entity *newEntity) override;
 
 protected:
     

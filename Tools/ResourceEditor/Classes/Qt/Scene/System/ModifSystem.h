@@ -50,8 +50,8 @@ class EntityModificationSystemDelegate
 public:
     virtual ~EntityModificationSystemDelegate() {}
 
-    virtual void WillClone(DAVA::Entity *origEntity) = 0;
-    virtual void DidCloned(DAVA::Entity *origEntity, DAVA::Entity *newEntity) = 0;
+    virtual void WillClone(DAVA::Entity *originalEntity) = 0;
+    virtual void DidCloned(DAVA::Entity *originalEntity, DAVA::Entity *newEntity) = 0;
 };
 
 class EntityModificationSystem : public DAVA::SceneSystem
@@ -84,11 +84,11 @@ public:
     bool InCloneDoneState() const;
 	bool ModifCanStart(const EntityGroup &selectedEntities) const;
 
-	virtual void RemoveEntity(DAVA::Entity * entity);
-	virtual void Process(DAVA::float32 timeElapsed);
-    virtual void Input(DAVA::UIEvent *event);
+	void RemoveEntity(DAVA::Entity * entity) override;
+	void Process(DAVA::float32 timeElapsed) override;
+    void Input(DAVA::UIEvent *event) override;
 
-    void SetCopyDelegate(EntityModificationSystemDelegate *delegate);
+    void SetDelegate(EntityModificationSystemDelegate *delegate);
 
 protected:
 	SceneCollisionSystem *collisionSystem;

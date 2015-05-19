@@ -311,7 +311,7 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 	}
 }
 
-void EntityModificationSystem::SetCopyDelegate(EntityModificationSystemDelegate *delegate)
+void EntityModificationSystem::SetDelegate(EntityModificationSystemDelegate *delegate)
 {
     delegates.push_back(delegate);
 }

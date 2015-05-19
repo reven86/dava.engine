@@ -154,7 +154,7 @@ SceneEditor2::SceneEditor2()
 
     pathSystem = new PathSystem(this);
     AddSystem(pathSystem, MAKE_COMPONENT_MASK(Component::PATH_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
-    modifSystem->SetCopyDelegate(pathSystem);
+    modifSystem->SetDelegate(pathSystem);
 
     editorLODSystem = new EditorLODSystem(this);
     AddSystem(editorLODSystem, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT));
