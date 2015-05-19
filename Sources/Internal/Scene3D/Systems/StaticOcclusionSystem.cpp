@@ -100,9 +100,8 @@ void StaticOcclusionBuildSystem::RemoveEntity(Entity * entity)
 
 void StaticOcclusionBuildSystem::ImmediateEvent(Component * _component, uint32 event)
 {
-    DVASSERT(_component->GetType() == Component::STATIC_OCCLUSION_COMPONENT);
     Entity * entity = _component->GetEntity();
-    StaticOcclusionComponent *component = static_cast<StaticOcclusionComponent*>(_component);
+    StaticOcclusionComponent *component = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
     if (component->GetPlaceOnLandscape()&&((event == EventSystem::WORLD_TRANSFORM_CHANGED)||(event == EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED)))
     {
         component->cellHeightOffset.clear();
