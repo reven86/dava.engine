@@ -108,6 +108,11 @@ template<> rhi::Pool<T,RT>::Entry*  rhi::Pool<T,RT>::Object      = 0; \
 template<> unsigned                 rhi::Pool<T,RT>::ObjectCount = 1024; \
 template<> DAVA::Spinlock           rhi::Pool<T,RT>::ObjectSync  = DAVA::Spinlock();  \
 
+#define RHI_IMPL_POOL_SIZE(T,RT,sz) \
+template<> rhi::Pool<T,RT>::Entry*  rhi::Pool<T,RT>::Object      = 0; \
+template<> unsigned                 rhi::Pool<T,RT>::ObjectCount = sz; \
+template<> DAVA::Spinlock           rhi::Pool<T,RT>::ObjectSync  = DAVA::Spinlock();  \
+
 
 //------------------------------------------------------------------------------
 
@@ -146,6 +151,8 @@ Pool<T,RT>::Alloc()
     }
     
     ObjectSync.Unlock();
+    
+    DVASSERT(handle != InvalidHandle);
     
     return handle;
 }

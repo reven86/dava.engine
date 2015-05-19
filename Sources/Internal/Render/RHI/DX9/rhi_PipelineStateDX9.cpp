@@ -151,6 +151,7 @@ VDeclDX9::Get( const VertexLayout& layout )
                         case 4 : elem[elemCount].Type = D3DDECLTYPE_FLOAT4; break;
                         case 3 : elem[elemCount].Type = D3DDECLTYPE_FLOAT3; break;
                         case 2 : elem[elemCount].Type = D3DDECLTYPE_FLOAT2; break;
+                        case 1 : elem[elemCount].Type = D3DDECLTYPE_FLOAT1; break;
                     }
                 }   break;
             }
@@ -302,7 +303,7 @@ typedef Pool<PipelineStateDX9_t,RESOURCE_PIPELINE_STATE>            PipelineStat
 typedef Pool<PipelineStateDX9_t::ConstBuf,RESOURCE_CONST_BUFFER>    ConstBufDX9Pool;
 
 RHI_IMPL_POOL(PipelineStateDX9_t,RESOURCE_PIPELINE_STATE);
-RHI_IMPL_POOL(PipelineStateDX9_t::ConstBuf,RESOURCE_CONST_BUFFER);
+RHI_IMPL_POOL_SIZE(PipelineStateDX9_t::ConstBuf,RESOURCE_CONST_BUFFER,8*1024);
 
 
 //------------------------------------------------------------------------------
@@ -335,6 +336,8 @@ void
 PipelineStateDX9_t::ConstBuf::Construct( ProgType ptype, unsigned reg_i, unsigned reg_count )
 {
     DVASSERT(!value);
+    DVASSERT(reg_i != InvalidIndex);
+    DVASSERT(reg_count);
 
     progType = ptype;
     value    = (float*)(malloc( reg_count*4*sizeof(float) ));
@@ -435,10 +438,14 @@ PipelineStateDX9_t::ConstBuf::SetConst( unsigned const_i, unsigned const_sub_i, 
 void
 PipelineStateDX9_t::ConstBuf::SetToRHI( const void* inst_data ) const
 {
+    HRESULT hr;
+
     if( progType == PROG_VERTEX )
-        _D3D9_Device->SetVertexShaderConstantF( reg, (const float*)inst_data, regCount );
+        hr = _D3D9_Device->SetVertexShaderConstantF( reg, (const float*)inst_data, regCount );
     else
-        _D3D9_Device->SetPixelShaderConstantF( reg, (const float*)inst_data, regCount );    
+        hr = _D3D9_Device->SetPixelShaderConstantF( reg, (const float*)inst_data, regCount );    
+    
+    DVASSERT(SUCCEEDED(hr));
 }
 
 
@@ -493,6 +500,24 @@ PipelineStateDX9_t::VertexProgDX9::Construct( const void* bin, unsigned bin_sz, 
                     }
                 }
             }
+            
+            // do some additional sanity checks
+            for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
+            {
+                if( cbufReg[i] == InvalidIndex )
+                {
+                    if( i == 0  &&  cbufReg[i+1] != InvalidIndex )
+                    {
+                        Logger::Warning( "WARNING: vertex-const-buf [%u] is unused (all uniform/variables are unused)", i );
+                    }
+                }
+//                else
+//                {
+//                    if( i )
+//                        DVASSERT(cbufReg[i]>cbufReg[i-1]);
+//                }
+            }
+
 
             vdecl9 = VDeclDX9::Get( vdecl );
             stride = vdecl.Stride();
@@ -643,6 +668,23 @@ PipelineStateDX9_t::FragmentProgDX9::Construct( const void* bin, unsigned bin_sz
                     }
                 }
             }
+            
+            // do some additional sanity checks
+            for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
+            {
+                if( cbufReg[i] == InvalidIndex )
+                {
+                    if( i == 0  &&  cbufReg[i+1] != InvalidIndex )
+                    {
+                        Logger::Warning( "WARNING: fragment-const-buf [%u] is unused (all uniform/variables are unused)", i );
+                    }
+                }
+//                else
+//                {
+//                    if( i )
+//                        DVASSERT(cbufReg[i]>cbufReg[i-1]);
+//                }
+            }
 
             success = true;
         }
@@ -712,6 +754,9 @@ dx9_PipelineState_Create( const PipelineState::Descriptor& desc )
     static std::vector<uint8>   vprog_bin;
     static std::vector<uint8>   fprog_bin;
 
+//Logger::Info("create PS");
+//Logger::Info("  vprog= %s",desc.vprogUid.c_str());
+//Logger::Info("  fprog= %s",desc.vprogUid.c_str());
     rhi::ShaderCache::GetProg( desc.vprogUid, &vprog_bin );
     rhi::ShaderCache::GetProg( desc.fprogUid, &fprog_bin );
 
