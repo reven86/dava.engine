@@ -21,7 +21,7 @@ ColorPicker::ColorPicker(QWidget* parent)
     , confirmed(false)
 {
     ui->setupUi(this);
-    //posSaver->Attach(this); // Bugs with multiply monitors
+    posSaver->Attach(this);
 
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
     setFocusPolicy(Qt::ClickFocus);

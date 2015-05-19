@@ -39,10 +39,8 @@
 #include <QEvent>
 #include <QMouseEvent>
 #include <QMenu>
-#include <QDir>
-#include <QUrl>
-#include <QCursor>
 #include <QToolTip>
+#include <QAbstractItemView>
 
 #include "Main/QtUtils.h"
 

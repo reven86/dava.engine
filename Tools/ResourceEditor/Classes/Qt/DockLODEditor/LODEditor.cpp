@@ -43,6 +43,8 @@
 #include <QWidget>
 #include <QLineEdit>
 #include <QInputDialog>
+#include <QFrame>
+#include <QPushButton>
 
 
 LODEditor::LODEditor(QWidget* parent)

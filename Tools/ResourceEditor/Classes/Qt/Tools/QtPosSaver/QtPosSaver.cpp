@@ -31,6 +31,10 @@
 #include "Tools/QtPosSaver/QtPosSaver.h"
 
 #include <QDebug>
+#include <QWidget>
+#include <QSplitter>
+#include <QMainWindow>
+#include <QEvent>
 
 
 #include "QtTools/WidgetHelpers/WidgetStateHelper.h"
@@ -39,8 +43,8 @@
 bool QtPosSaver::settingsArchiveIsLoaded = false;
 DAVA::RefPtr<DAVA::KeyedArchive> QtPosSaver::settingsArchive( nullptr );
 
-QtPosSaver::QtPosSaver()
-	: attachedWidget(nullptr)
+QtPosSaver::QtPosSaver( QObject *parent )
+    : QObject( parent )
 {
 	if (!settingsArchiveIsLoaded)
 	{
@@ -52,16 +56,27 @@ QtPosSaver::QtPosSaver()
 	{
 		settingsArchive->Retain();
 	}
+
+    auto w = qobject_cast< QWidget * >( parent );
+    if ( w != nullptr )
+    {
+        Attach( w );
+    }
 }
 
 QtPosSaver::~QtPosSaver()
 {
 	if (settingsArchiveIsLoaded)	
 	{
-		if (nullptr != attachedWidget && !attachedWidgetName.isEmpty())
+		if (!attachedWidget.isNull() && !attachedWidgetName.isEmpty() && attachedWidget->isVisible())
 		{
-			SaveGeometry(attachedWidget);
+            OnHide();
 		}
+
+        if ( !attachedWidget.isNull() )
+        {
+            attachedWidget->removeEventFilter( this );
+        }
 
 		if (1 == settingsArchive->GetRetainCount())
 		{
@@ -91,8 +106,52 @@ void QtPosSaver::Attach(QWidget *widget, const QString &name)
 			attachedWidgetName = name;
 		}
 
-		LoadGeometry(attachedWidget);
+        attachedWidget->installEventFilter( this );
+        OnShow();
 	}
+}
+
+void QtPosSaver::OnShow()
+{
+    auto mainWindow = qobject_cast< QMainWindow * >( attachedWidget );
+    if ( mainWindow != nullptr )
+    {
+        LoadState( mainWindow );
+    }
+
+    auto splitter = qobject_cast< QSplitter * >( attachedWidget );
+    if ( splitter != nullptr )
+    {
+        LoadState( splitter );
+    }
+
+    auto widget = qobject_cast< QWidget * >( attachedWidget );
+    if ( widget != nullptr && mainWindow == nullptr )
+    {
+        LoadGeometry( widget );
+        widget->updateGeometry();
+    }
+}
+
+void QtPosSaver::OnHide()
+{
+    auto mainWindow = qobject_cast< QMainWindow * >( attachedWidget );
+    if ( mainWindow != nullptr )
+    {
+        SaveState( mainWindow );
+    }
+
+    auto splitter = qobject_cast< QSplitter * >( attachedWidget );
+    if ( splitter != nullptr )
+    {
+        SaveState( splitter );
+    }
+
+    auto widget = qobject_cast< QWidget * >( attachedWidget );
+    if ( widget != nullptr && mainWindow == nullptr )
+    {
+        SaveGeometry( widget );
+    }
 }
 
 void QtPosSaver::SaveGeometry(QWidget *widget)
@@ -201,6 +260,27 @@ DAVA::VariantType QtPosSaver::LoadValue(const QString &key)
 	}
 
 	return v;
+}
+
+bool QtPosSaver::eventFilter( QObject* obj, QEvent* e )
+{
+    if ( obj == attachedWidget )
+    {
+        switch ( e->type() )
+        {
+        case QEvent::Show:
+            OnShow();
+            break;
+        case QEvent::Hide:
+            OnHide();
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    return QObject::eventFilter( obj, e );
 }
 
 void QtPosSaver::Save(const QString &key, const QByteArray &data)

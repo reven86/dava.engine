@@ -34,6 +34,7 @@
 #include <QWidget>
 #include "Tools/QtPosSaver/QtPosSaver.h"
 
+
 namespace Ui
 {
     class LODEditor;
@@ -46,6 +47,9 @@ class SceneEditor2;
 class EditorLODSystem;
 class EntityGroup;
 class Command2;
+class QPushButton;
+class QFrame;
+
 
 class LODEditor: public QWidget
 {
