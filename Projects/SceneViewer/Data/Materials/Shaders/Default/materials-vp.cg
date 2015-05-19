@@ -9,6 +9,10 @@
 //#undef CUT_LEAF
 //#endif
 
+#if defined PIXEL_LIT
+#undef PIXEL_LIT
+#endif
+
 
 
 

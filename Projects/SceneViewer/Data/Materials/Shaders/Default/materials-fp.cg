@@ -9,6 +9,13 @@
 //#undef CUT_LEAF
 //#endif
 
+#if defined PIXEL_LIT
+#undef PIXEL_LIT
+#endif
+
+#if defined ALPHATESTVALUE
+#undef ALPHATESTVALUE
+#endif
 
 
 #if !defined(VIEW_AMBIENT) && !defined(VIEW_DIFFUSE) && !defined(VIEW_SPECULAR) && !defined(VIEW_ALBEDO)
