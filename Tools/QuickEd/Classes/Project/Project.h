@@ -29,7 +29,7 @@ signals:
 
 private:
     bool OpenInternal(const QString &path);
-    QString projectDir;
+    DAVA::FilePath projectPath;
     
     LegacyControlData *legacyData;
     EditorFontSystem *editorFontSystem;
