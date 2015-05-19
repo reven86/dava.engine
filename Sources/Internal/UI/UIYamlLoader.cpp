@@ -726,13 +726,6 @@ UIControl* UIYamlLoader::CreateControl(const String& type, const String& baseTyp
     UIControl * control = dynamic_cast<UIControl*> (ObjectFactory::Instance()->New<UIControl>(type));
     if (control)
     {
-        // Everything is OK. Just update the custom control type for the control, if any.
-        bool hasCustomType = (!type.empty() && !baseType.empty() && (type != baseType));
-        if (hasCustomType)
-        {
-            control->SetCustomControlClassName(type);
-        }
-
         return control;
     }
 
@@ -748,11 +741,6 @@ UIControl* UIYamlLoader::CreateControl(const String& type, const String& baseTyp
     if (!baseType.empty())
     {
         control = dynamic_cast<UIControl*> (ObjectFactory::Instance()->New<UIControl>(baseType));
-        if (control)
-        {
-            // Even if the control of the base type was created, we have to store its custom type.
-            control->SetCustomControlClassName(type);
-        }
     }
 
     // A NULL might be here too.
