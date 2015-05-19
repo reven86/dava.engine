@@ -398,6 +398,7 @@ static const char* _ShaderDefine_GLES2 =
 "#define VPROG_OUT_TEXCOORD6(name,size)    varying vec##size var_##name;\n"
 "#define VPROG_OUT_TEXCOORD7(name,size)    varying vec##size var_##name;\n"
 "#define VPROG_OUT_COLOR0(name,size)       varying vec##size var_##name;\n"
+"#define VPROG_OUT_COLOR1(name,size)       varying vec##size var_##name;\n"
 "#define VPROG_OUT_END           \n"
 
 "#define DECL_VPROG_BUFFER(idx,sz) uniform vec4 VP_Buffer##idx[sz];\n"
@@ -505,6 +506,7 @@ static const char* _ShaderDefine_DX9 =
 "#define VPROG_OUT_TEXCOORD6(name,size)    float##size name : TEXCOORD6;\n"
 "#define VPROG_OUT_TEXCOORD7(name,size)    float##size name : TEXCOORD7;\n"
 "#define VPROG_OUT_COLOR0(name,size)       float##size name : COLOR0;\n"
+"#define VPROG_OUT_COLOR1(name,size)       float##size name : COLOR1;\n"
 "#define VPROG_OUT_END           };\n"
 
 "#define DECL_VPROG_BUFFER(idx,sz) uniform float4 VP_Buffer##idx[sz];\n"

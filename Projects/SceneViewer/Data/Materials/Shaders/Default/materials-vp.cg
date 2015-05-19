@@ -1,16 +1,3 @@
-// CRAP: remove these when tree/wind working
-//#if defined SPEED_TREE_LEAF
-//#undef SPEED_TREE_LEAF
-//#endif
-//#if defined WIND_ANIMATION
-//#undef WIND_ANIMATION
-//#endif
-//#if #defined CUT_LEAF
-//#undef CUT_LEAF
-//#endif
-
-
-
 
 #define MAX_JOINTS 32
 #define _PI 3.141592654
@@ -101,7 +88,7 @@ VPROG_OUT_BEGIN
     
     
     #if defined(VERTEX_LIT)
-        VPROG_OUT_TEXCOORD3(varDiffuseColor,1)
+        VPROG_OUT_COLOR0(varDiffuseColor,1)
         #if defined(BLINN_PHONG)
             VPROG_OUT_TEXCOORD4(varSpecularColor,1)
             //varying lowp float varSpecularColor;
@@ -128,7 +115,7 @@ kkk
     #endif
     
     #if defined(VERTEX_COLOR) || defined(SPHERICAL_LIT)
-        VPROG_OUT_TEXCOORD4(varVertexColor,4)
+        VPROG_OUT_COLOR1(varVertexColor,4)
     #endif
     
     #if defined(FRAME_BLEND)
@@ -229,9 +216,9 @@ property float4x4 projMatrix : dynamic,a : ;
 property float cutDistance : static,a : ;
 
     #if !defined(SPHERICAL_LIT) //legacy for old tree lighting
-        property float3 treeLeafColorMul : static,a : ;
-        property float treeLeafOcclusionOffset : static,a : ;
-        property float treeLeafOcclusionMul : static,a : ;
+        property float3 treeLeafColorMul : static,a : def_value=0.5,0.5,0.5,0.5 ;
+        property float treeLeafOcclusionOffset : static,a : def_value=0 ;
+        property float treeLeafOcclusionMul : static,a : def_value=0.5 ;
     #endif
     
     #if defined(WIND_ANIMATION)
@@ -371,6 +358,9 @@ VPROG_BEGIN
     float inFlexibility = VP_IN_TEXCOORD5;
     #endif
 
+    #if defined(VERTEX_COLOR)
+    float4 inVertexColor = VP_IN_COLOR0;
+    #endif
 
 #if defined(MATERIAL_SKYBOX)
     
@@ -441,84 +431,6 @@ VPROG_BEGIN
 
         #if defined(WAVE_ANIMATION)
             VP_OUT_POSITION = mul( Wave(globalTime, VP_IN_POSITION, inTexCoord0), worldViewProjMatrix );
-        #elif defined(MATERIAL_GRASS_TRANSFORM)
-/*        
-            //inTangent.y - cluster type (0...3)
-            //inTangent.z - cluster's reference density (0...15)
-        
-            //clusterScaleDensityMap[0] - density
-            //clusterScaleDensityMap[1] - scale
-        
-            float4 clusterCenter = float4(inBinormal.x + tilePos.x,
-                                          inBinormal.y + tilePos.y,
-                                          inBinormal.z,
-                                          VP_IN_POSITION.w);
-        
-            float4 pos = float4(VP_IN_POSITION.x + tilePos.x,
-                                VP_IN_POSITION.y + tilePos.y,
-                                VP_IN_POSITION.z,
-                                VP_IN_POSITION.w);
-        
-            #if defined(MATERIAL_GRASS_BILLBOARD)
-                //1st method of billboards when cameraPosition is point
-                float3 toCamera = normalize(float3(clusterCenter.xyz) - float3(cameraPosition.xy, clusterCenter.z));
-                float3 actualDirection = normalize(cross(inNormal, toCamera));
-            
-            
-                //2nd method of billboards when cameraDirection is vector
-                //vec2 actualDirection = inNormal.z * vec2(billboardDirection);
-                //
-            
-                float2 planeDirection = float2(actualDirection.x, actualDirection.y) * length(float2(VP_IN_POSITION.x - inBinormal.x, VP_IN_POSITION.y - inBinormal.y));
-                pos = clusterCenter + vec4(planeDirection.x, planeDirection.y, VP_IN_POSITION.z, 0.0);
-            #endif
-        
-            float2 hUVheight = float2(clamp(1.0 - (0.5 * worldSize.x - clusterCenter.x) / worldSize.x, 0.0, 1.0),
-                            clamp(1.0 - (0.5 * worldSize.y - clusterCenter.y) / worldSize.y, 0.0, 1.0));
-        
-            hUVheight = float2(clamp(hUVheight.x * heightmapScale.x, 0.0, 1.0),
-                       clamp(hUVheight.y * heightmapScale.y, 0.0, 1.0));
-        
-            float4 heightVec = texture2DLod(heightmap, hUVheight, 0.0);
-            float height = dot(heightVec, float4(0.93751430533303, 0.05859464408331, 0.00366216525521, 0.00022888532845)) * worldSize.z;
-        
-        
-            pos.z += height;
-            clusterCenter.z += height;
-        
-            float clusterScale = tilePos.z;
-            if(int(inTangent.x) == int(lodSwitchScale.x))
-            {
-                clusterScale *= lodSwitchScale.y;
-            }
-        
-            #if defined(MATERIAL_GRASS_BLEND)
-                    varTexCoord2.x = clusterLodScale;
-            #endif
-        
-            float2 hUVcolor = float2(hUVheight.x, 1.0 - hUVheight.y);
-            float4 vegetationMask = texture2DLod(vegetationmap, hUVcolor, 0.0);
-        
-            
-            #if defined(MATERIAL_GRASS_OPAQUE) || defined(MATERIAL_GRASS_BLEND)
-            varVegetationColor = vegetationMask.rgb;
-        
-            #endif
-        
-            #if defined(MATERIAL_GRASS_TRANSFORM_WAVE)
-                
-                int clusterType = int(inTangent.y);
-                int waveIndex = clusterType * 2;
-                
-                pos.x += inTangent.z * vegWaveOffset[waveIndex];
-                pos.y += inTangent.z * vegWaveOffset[waveIndex + 1];
-                
-            #endif
-
-            pos = lerp( clusterCenter, pos, vegetationMask.a * clusterScale);
-        
-            VP_OUT_POSITION = mul( pos, worldViewProjMatrix );
-*/        
         #else
             #if defined (SKINNING)
                 float3 tmpVec = 2.0 * cross(weightedVertexQuaternion.xyz, VP_IN_POSITION.xyz);
@@ -537,15 +449,11 @@ VPROG_BEGIN
 #if defined(SPEED_TREE_LEAF)
     float3 eyeCoordsPosition = eyeCoordsPosition4.xyz;
 #elif defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(VERTEX_FOG) || defined(SPHERICAL_LIT)
-    #if defined(MATERIAL_GRASS_TRANSFORM)
-        float3 eyeCoordsPosition = mul(pos,worldViewMatrix).xyz; // view direction in view space
+    #if defined (SKINNING)
+        float3 eyeCoordsPosition = mul( skinnedPosition, worldViewMatrix ).xyz; // view direction in view space
     #else
-        #if defined (SKINNING)
-            float3 eyeCoordsPosition = mul( skinnedPosition, worldViewMatrix ).xyz; // view direction in view space
-        #else
-            // view direction in view space
-            float3 eyeCoordsPosition = mul( float4(VP_IN_POSITION,1.0), worldViewMatrix ).xyz; 
-        #endif
+        // view direction in view space
+        float3 eyeCoordsPosition = mul( float4(VP_IN_POSITION,1.0), worldViewMatrix ).xyz; 
     #endif
 #endif
 
@@ -697,11 +605,7 @@ VPROG_BEGIN
     
     // calculating view direction in world space, point of view in world space
     #if defined(FOG_HALFSPACE) || defined(FOG_ATMOSPHERE_MAP)
-        #if defined(MATERIAL_GRASS_TRANSFORM)
-            float3 viewPointInWorldSpace = mul(pos,worldMatrix).xyz;
-        #else
-            float3 viewPointInWorldSpace = mul(VP_IN_POSITION,worldMatrix).xyz;
-        #endif
+        float3 viewPointInWorldSpace = mul(VP_IN_POSITION,worldMatrix).xyz;
         float3 viewDirectionInWorldSpace = viewPointInWorldSpace - cameraPosition;
     #endif
     
@@ -753,7 +657,7 @@ VPROG_BEGIN
 
 
 #if defined(VERTEX_COLOR)
-    VP_OUT(varVertexColor) = VP_IN_COLOR;
+    VP_OUT(varVertexColor) = VP_IN_COLOR0;
 #endif
 
 
@@ -821,7 +725,8 @@ VPROG_BEGIN
 
 #elif defined(SPEED_TREE_LEAF) //legacy for old tree lighting
     
-    VP_OUT(varVertexColor).rgb = VP_OUT(varVertexColor).rgb * treeLeafColorMul * treeLeafOcclusionMul + float3(treeLeafOcclusionOffset,treeLeafOcclusionOffset,treeLeafOcclusionOffset);
+    VP_OUT(varVertexColor).xyz = inVertexColor.xyz * treeLeafColorMul * treeLeafOcclusionMul + float3(treeLeafOcclusionOffset,treeLeafOcclusionOffset,treeLeafOcclusionOffset);
+//- VP_OUT(varVertexColor).xyz += inVertexColor.xyz ;
 
 #endif
 

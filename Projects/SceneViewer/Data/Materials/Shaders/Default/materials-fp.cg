@@ -1,16 +1,3 @@
-// CRAP: remove these when tree/wind working
-//#if defined SPEED_TREE_LEAF
-//#undef SPEED_TREE_LEAF
-//#endif
-//#if defined WIND_ANIMATION
-//#undef WIND_ANIMATION
-//#endif
-//#if #defined CUT_LEAF
-//#undef CUT_LEAF
-//#endif
-
-
-
 #if !defined(VIEW_AMBIENT) && !defined(VIEW_DIFFUSE) && !defined(VIEW_SPECULAR) && !defined(VIEW_ALBEDO)
     #define VIEW_AMBIENT
     #define VIEW_DIFFUSE
@@ -54,7 +41,7 @@ FPROG_IN_BEGIN
 
     #if defined(VERTEX_LIT)
 
-        FPROG_IN_TEXCOORD3(varDiffuseColor,1)
+        FPROG_IN_COLOR0(varDiffuseColor,4)
 
         #if defined(BLINN_PHONG)
             //varying lowp float varSpecularColor;
@@ -91,7 +78,7 @@ FPROG_IN_BEGIN
     #endif
     
     #if defined(VERTEX_COLOR) || defined(SPHERICAL_LIT)
-        FPROG_IN_TEXCOORD4(varVertexColor,4)
+        FPROG_IN_COLOR1(varVertexColor,4)
     #endif
 
     #if defined(FRAME_BLEND)
@@ -127,7 +114,7 @@ FPROG_OUT_END
     DECL_FP_SAMPLER2D(alphamask)
 #endif
 
-#if defined(MATERIAL_DETAIL) || defined(MATERIAL_GRASS_BLEND)
+#if defined(MATERIAL_DETAIL)
     DECL_FP_SAMPLER2D(detail)
 #endif
 
@@ -557,7 +544,6 @@ FPROG_BEGIN
             //gl_FragColor.rgb += reflectionColor.rgb * textureColor0.rgb;
         #endif
     #endif
-    //    gl_FragColor.r += 0.5;
 
     
     
@@ -567,5 +553,6 @@ FPROG_BEGIN
             FP_OUT_COLOR.rgb = lerp( FP_OUT_COLOR.rgb, varFogColor, varFogAmoung );
         #endif
     #endif
+
 
 FPROG_END

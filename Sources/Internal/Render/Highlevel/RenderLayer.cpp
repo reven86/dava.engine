@@ -147,7 +147,7 @@ void RenderLayer::Draw(Camera* camera, const RenderBatchArray & batchArray, rhi:
 
             mat->BindParams(packet);
 
-//packet.debugMarker = mat->GetFXName().c_str();
+packet.debugMarker = mat->GetFXName().c_str();
             rhi::AddPacket(packetList, packet);
         }        
 
