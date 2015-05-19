@@ -50,8 +50,8 @@ class EntityModificationSystemDelegate
 public:
     virtual ~EntityModificationSystemDelegate() {}
 
-    virtual void WillCopied(DAVA::Entity *) = 0;
-    virtual void WasCopied(DAVA::Entity *) = 0;
+    virtual void WillClone(DAVA::Entity *origEntity) = 0;
+    virtual void DidCloned(DAVA::Entity *origEntity, DAVA::Entity *newEntity) = 0;
 };
 
 class EntityModificationSystem : public DAVA::SceneSystem

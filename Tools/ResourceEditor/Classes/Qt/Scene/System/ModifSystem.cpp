@@ -811,15 +811,14 @@ void EntityModificationSystem::CloneBegin()
             
             for (auto &delegate : delegates)
             {
-                delegate->WillCopied(origEntity);
+                delegate->WillClone(origEntity);
             }
 
 			DAVA::Entity *newEntity = origEntity->Clone();
 
             for (auto &delegate : delegates)
             {
-                delegate->WasCopied(origEntity);
-                delegate->WasCopied(newEntity);
+                delegate->DidCloned(origEntity, newEntity);
             }
 
             newEntity->SetLocalTransform(modifEntities[i].originalTransform);

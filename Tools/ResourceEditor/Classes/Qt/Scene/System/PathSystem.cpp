@@ -140,19 +140,20 @@ void PathSystem::RemoveEntity(DAVA::Entity * entity)
     }
 }
 
-void PathSystem::WillCopied(DAVA::Entity *copiedEntity)
+void PathSystem::WillClone(DAVA::Entity *origEntity)
 {
     if (isEditingEnabled)
     {
-        CollapsePathEntity(copiedEntity);
+        CollapsePathEntity(origEntity);
     }
 }
 
-void PathSystem::WasCopied(DAVA::Entity *copiedEntity)
+void PathSystem::DidCloned(DAVA::Entity *origEntity, DAVA::Entity *newEntity)
 {
     if (isEditingEnabled)
     {
-        ExpandPathEntity(copiedEntity);
+        ExpandPathEntity(origEntity);
+        ExpandPathEntity(newEntity);
     }
 }
 
