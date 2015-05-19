@@ -446,6 +446,7 @@
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleLayer.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticlePropertyLine.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleRenderObject.h" />
+    <ClInclude Include="..\..\Sources\Internal\Platform\ConditionalVariable.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DateTime.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DeviceInfo.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DPIHelper.h" />
@@ -948,6 +949,7 @@
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleLayer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticlePropertyLine.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleRenderObject.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Platform\ConditionalVariable.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DateTime.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfo.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\MovieViewControlStub.cpp" />

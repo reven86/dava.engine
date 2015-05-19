@@ -59,17 +59,7 @@ namespace DAVA
 	\brief wrapper class to give us level of abstraction on thread implementation in particual OS. Now is supports Win32, MacOS, iPhone platforms.
 */
 
-class ConditionalVariable
-{
-public:
-    ConditionalVariable();
-    ~ConditionalVariable();
-
-private:
-    pthread_cond_t cv;
-
-    friend class Thread;
-};
+class ConditionalVariable;
 
 class Thread : public BaseObject
 {

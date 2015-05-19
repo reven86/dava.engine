@@ -28,6 +28,7 @@
 
 
 #include "Platform/Thread.h"
+#include "Platform/ConditionalVariable.h"
 
 #ifndef __DAVAENGINE_WIN32__
 #include <time.h>
@@ -44,24 +45,6 @@ Mutex Thread::threadListMutex;
 
 Thread::Id Thread::mainThreadId = 0;
 Thread::Id Thread::glThreadId = 0;
-
-ConditionalVariable::ConditionalVariable()
-{
-    int32 ret = pthread_cond_init(&cv, 0);
-    if (0 != ret)
-    {
-        Logger::Error("[ConditionalVariable::ConditionalVariable()]: pthread_cond_init error code %d", ret);
-    }
-}
-
-ConditionalVariable::~ConditionalVariable()
-{
-    int32 ret = pthread_cond_destroy(&cv);
-    if (0 != ret)
-    {
-        Logger::Error("[ConditionalVariable::~ConditionalVariable()]: pthread_cond_destroy error code %d", ret);
-    }
-}
 
 void Thread::InitMainThread()
 {

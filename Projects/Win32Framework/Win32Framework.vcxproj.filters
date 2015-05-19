@@ -1831,6 +1831,9 @@
     <ClInclude Include="..\..\Sources\Internal\Thread\ThreadLocalPtr.h">
       <Filter>Internal\Thread</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\ConditionalVariable.h">
+      <Filter>Internal\Platform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -3264,6 +3267,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Timer\RawTimer.cpp">
       <Filter>Internal\Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\ConditionalVariable.cpp">
+      <Filter>Internal\Platform</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
