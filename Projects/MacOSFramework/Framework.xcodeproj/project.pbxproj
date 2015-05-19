@@ -872,6 +872,9 @@
 		5016206B1A5ED5B100E5A914 /* PeerDesription.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 501620681A5ED5B100E5A914 /* PeerDesription.cpp */; };
 		5016206C1A5ED5B100E5A914 /* PeerDesription.h in Headers */ = {isa = PBXBuildFile; fileRef = 501620691A5ED5B100E5A914 /* PeerDesription.h */; };
 		5016206D1A5ED5B100E5A914 /* PeerDesriptionSerialize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5016206A1A5ED5B100E5A914 /* PeerDesriptionSerialize.cpp */; };
+		501981C01B0B90F800C14292 /* MemoryProfiler.h in Headers */ = {isa = PBXBuildFile; fileRef = 501981BF1B0B90F800C14292 /* MemoryProfiler.h */; };
+		501981C31B0B910400C14292 /* ConditionalVariable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 501981C11B0B910300C14292 /* ConditionalVariable.cpp */; };
+		501981C41B0B910400C14292 /* ConditionalVariable.h in Headers */ = {isa = PBXBuildFile; fileRef = 501981C21B0B910400C14292 /* ConditionalVariable.h */; };
 		5022951C186DD1BC00F55478 /* RenderPassManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5022951A186DD1BC00F55478 /* RenderPassManager.cpp */; };
 		5022951D186DD1BC00F55478 /* RenderPassManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5022951A186DD1BC00F55478 /* RenderPassManager.cpp */; };
 		5022951E186DD1BC00F55478 /* RenderPassManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5022951A186DD1BC00F55478 /* RenderPassManager.cpp */; };
@@ -2848,6 +2851,9 @@
 		501620681A5ED5B100E5A914 /* PeerDesription.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PeerDesription.cpp; sourceTree = "<group>"; };
 		501620691A5ED5B100E5A914 /* PeerDesription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PeerDesription.h; sourceTree = "<group>"; };
 		5016206A1A5ED5B100E5A914 /* PeerDesriptionSerialize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PeerDesriptionSerialize.cpp; sourceTree = "<group>"; };
+		501981BF1B0B90F800C14292 /* MemoryProfiler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryProfiler.h; sourceTree = "<group>"; };
+		501981C11B0B910300C14292 /* ConditionalVariable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ConditionalVariable.cpp; sourceTree = "<group>"; };
+		501981C21B0B910400C14292 /* ConditionalVariable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConditionalVariable.h; sourceTree = "<group>"; };
 		5022951A186DD1BC00F55478 /* RenderPassManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderPassManager.cpp; sourceTree = "<group>"; };
 		5022951B186DD1BC00F55478 /* RenderPassManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderPassManager.h; sourceTree = "<group>"; };
 		5043DDAA18706828005E3584 /* VisibilityArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VisibilityArray.h; sourceTree = "<group>"; };
@@ -4001,6 +4007,7 @@
 		50FB9D981A92446700BDB8A2 /* MemoryManager */ = {
 			isa = PBXGroup;
 			children = (
+				501981BF1B0B90F800C14292 /* MemoryProfiler.h */,
 				50FB9D991A92446700BDB8A2 /* AllocPools.h */,
 				50FB9D9A1A92446700BDB8A2 /* AllocThunk.cpp */,
 				50FB9D9B1A92446700BDB8A2 /* AllocThunk.h */,
@@ -4597,6 +4604,8 @@
 		E8989BD716BD24E400732C04 /* Platform */ = {
 			isa = PBXGroup;
 			children = (
+				501981C11B0B910300C14292 /* ConditionalVariable.cpp */,
+				501981C21B0B910400C14292 /* ConditionalVariable.h */,
 				76C741891A48374B00184019 /* Qt4 */,
 				D751822019BF1D8800BB88E0 /* ThreadPosix.cpp */,
 				6280BAA818D6F909007809B7 /* DateTimeApple.mm */,
@@ -6191,6 +6200,7 @@
 				50C16DA51A52D7B9003C307A /* DeadlineTimer.h in Headers */,
 				CCC7A45D16F1D6170061EA5D /* RenderObject.h in Headers */,
 				CCC7A46116F1D6170061EA5D /* RenderPass.h in Headers */,
+				501981C01B0B90F800C14292 /* MemoryProfiler.h in Headers */,
 				CCC7A46516F1D6170061EA5D /* RenderSystem.h in Headers */,
 				CCC7A46916F1D6170061EA5D /* ShadowRect.h in Headers */,
 				50C16DAC1A52D7B9003C307A /* IOLoop.h in Headers */,
@@ -6258,6 +6268,7 @@
 				A670F2F11847A99E0030E075 /* TextureStateData.h in Headers */,
 				E8F43E27186C3D02006796CB /* MaterialSystem.h in Headers */,
 				50C16DAE1A52D7B9003C307A /* IPAddress.h in Headers */,
+				501981C41B0B910400C14292 /* ConditionalVariable.h in Headers */,
 				9A0114637D598239F4C36EA3 /* GamepadDevice.h in Headers */,
 				50FB9DAB1A92446700BDB8A2 /* MemoryManagerTypes.h in Headers */,
 				D7CC263D19C43C7C00A3B754 /* LocalNotificationNotImplemented.h in Headers */,
@@ -7492,6 +7503,7 @@
 				C172EC0A18C9F1E9004309CF /* DFFont.cpp in Sources */,
 				E8989FD416BD24E500732C04 /* BaseProcessSystem.cpp in Sources */,
 				644C86D019476A7100964F91 /* VegetationCustomGeometrySerializationData.cpp in Sources */,
+				501981C31B0B910400C14292 /* ConditionalVariable.cpp in Sources */,
 				50F706CA1A93C126009506C9 /* MMNetClient.cpp in Sources */,
 				E89EDE721A2E16FA0036E993 /* Polygon2Swig.cpp in Sources */,
 				E8989FD616BD24E500732C04 /* DebugRenderSystem.cpp in Sources */,

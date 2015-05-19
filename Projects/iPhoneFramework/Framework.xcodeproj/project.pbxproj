@@ -960,6 +960,9 @@
 		50194DCD1A52D92600557DAB /* LogConsumer.h in Headers */ = {isa = PBXBuildFile; fileRef = 50194D9B1A52D92600557DAB /* LogConsumer.h */; };
 		50194DCE1A52D92600557DAB /* NetLogger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50194D9C1A52D92600557DAB /* NetLogger.cpp */; };
 		50194DCF1A52D92600557DAB /* NetLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 50194D9D1A52D92600557DAB /* NetLogger.h */; };
+		501981B51B0B908A00C14292 /* MemoryProfiler.h in Headers */ = {isa = PBXBuildFile; fileRef = 501981B41B0B908A00C14292 /* MemoryProfiler.h */; };
+		501981B81B0B909D00C14292 /* ConditionalVariable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 501981B61B0B909D00C14292 /* ConditionalVariable.cpp */; };
+		501981B91B0B909D00C14292 /* ConditionalVariable.h in Headers */ = {isa = PBXBuildFile; fileRef = 501981B71B0B909D00C14292 /* ConditionalVariable.h */; };
 		5046BD801B0612DD0005D29F /* ThreadLocalPtr.h in Headers */ = {isa = PBXBuildFile; fileRef = 5046BD7F1B0612DD0005D29F /* ThreadLocalPtr.h */; };
 		505EB41C18250C53009BEA3C /* OcclusionQuery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 505EB41A18250C53009BEA3C /* OcclusionQuery.cpp */; };
 		505EB41D18250C53009BEA3C /* OcclusionQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 505EB41B18250C53009BEA3C /* OcclusionQuery.h */; };
@@ -2078,6 +2081,9 @@
 		50194D9C1A52D92600557DAB /* NetLogger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetLogger.cpp; sourceTree = "<group>"; };
 		50194D9D1A52D92600557DAB /* NetLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetLogger.h; sourceTree = "<group>"; };
 		50194DD01A52D94B00557DAB /* libuv_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libuv_ios.a; path = ../../Libs/libs/libuv_ios.a; sourceTree = "<group>"; };
+		501981B41B0B908A00C14292 /* MemoryProfiler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryProfiler.h; sourceTree = "<group>"; };
+		501981B61B0B909D00C14292 /* ConditionalVariable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ConditionalVariable.cpp; sourceTree = "<group>"; };
+		501981B71B0B909D00C14292 /* ConditionalVariable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConditionalVariable.h; sourceTree = "<group>"; };
 		5046BD7F1B0612DD0005D29F /* ThreadLocalPtr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThreadLocalPtr.h; sourceTree = "<group>"; };
 		505EB41A18250C53009BEA3C /* OcclusionQuery.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OcclusionQuery.cpp; sourceTree = "<group>"; };
 		505EB41B18250C53009BEA3C /* OcclusionQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OcclusionQuery.h; sourceTree = "<group>"; };
@@ -3147,6 +3153,7 @@
 		50FB9DB01A925A2D00BDB8A2 /* MemoryManager */ = {
 			isa = PBXGroup;
 			children = (
+				501981B41B0B908A00C14292 /* MemoryProfiler.h */,
 				50FB9DB11A925A2D00BDB8A2 /* AllocPools.h */,
 				50FB9DB21A925A2D00BDB8A2 /* AllocThunk.cpp */,
 				50FB9DB31A925A2D00BDB8A2 /* AllocThunk.h */,
@@ -3730,6 +3737,8 @@
 		E8B3C8BB16B9326D002BD35F /* Platform */ = {
 			isa = PBXGroup;
 			children = (
+				501981B61B0B909D00C14292 /* ConditionalVariable.cpp */,
+				501981B71B0B909D00C14292 /* ConditionalVariable.h */,
 				D751821719BF03E400BB88E0 /* ThreadPosix.cpp */,
 				6280BAA418D6F7DC007809B7 /* DateTimeApple.mm */,
 				624C87F018C6160F00E1049D /* DateTime.cpp */,
@@ -5263,6 +5272,7 @@
 				E8B3CCB716B9326E002BD35F /* SwitchNode.h in Headers */,
 				E8B3CCB916B9326E002BD35F /* BaseProcessSystem.h in Headers */,
 				E8B3CCBB16B9326E002BD35F /* DebugRenderSystem.h in Headers */,
+				501981B51B0B908A00C14292 /* MemoryProfiler.h in Headers */,
 				E8B3CCBF16B9326E002BD35F /* EventSystem.h in Headers */,
 				E8B3CCC116B9326E002BD35F /* LightUpdateSystem.h in Headers */,
 				E8B3CCC316B9326E002BD35F /* LodSystem.h in Headers */,
@@ -5393,6 +5403,7 @@
 				E8586C4119F8FEBA004FD709 /* BackgroundView.h in Headers */,
 				A679102A17B3CF2D000AA2F2 /* SkyboxRenderObject.h in Headers */,
 				17D7E5F617A6C06B00861981 /* UIDismissionHandlerAlertView.h in Headers */,
+				501981B91B0B909D00C14292 /* ConditionalVariable.h in Headers */,
 				EA56555417CE00E100426EB8 /* PerformanceSettings.h in Headers */,
 				E8C0A6FB17D5D8B300F8F93C /* UIScrollView.h in Headers */,
 				E8C0A6FF17D5D8EC00F8F93C /* UIScrollViewContainer.h in Headers */,
@@ -6083,6 +6094,7 @@
 				E8B3CBEA16B9326E002BD35F /* LandscapeChunk.cpp in Sources */,
 				D7D3A2C619C8313300CD6B51 /* NSStringUtils.mm in Sources */,
 				E8B3CBEC16B9326E002BD35F /* LandscapeCursor.cpp in Sources */,
+				501981B81B0B909D00C14292 /* ConditionalVariable.cpp in Sources */,
 				E8B3CBF216B9326E002BD35F /* Light.cpp in Sources */,
 				E8B3CBF416B9326E002BD35F /* Mesh.cpp in Sources */,
 				D7FEF15D19864E5C00B2C7AF /* ZLibStream.cpp in Sources */,
