@@ -100,9 +100,9 @@ void StaticOcclusionBuildSystem::RemoveEntity(Entity * entity)
 
 void StaticOcclusionBuildSystem::ImmediateEvent(Component * _component, uint32 event)
 {
+    DVASSERT(_component->GetType() == Component::STATIC_OCCLUSION_COMPONENT);
     Entity * entity = _component->GetEntity();
-    StaticOcclusionComponent *component = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
-    DVASSERT(component);
+    StaticOcclusionComponent *component = static_cast<StaticOcclusionComponent*>(_component);
     if (component->GetPlaceOnLandscape()&&((event == EventSystem::WORLD_TRANSFORM_CHANGED)||(event == EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED)))
     {
         component->cellHeightOffset.clear();
@@ -754,7 +754,8 @@ void StaticOcclusionDebugDrawSystem::ImmediateEvent(Component * component, uint3
 {
     Entity * entity = component->GetEntity();
     StaticOcclusionDebugDrawComponent *debugDrawComponent = static_cast<StaticOcclusionDebugDrawComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT));
-    StaticOcclusionComponent *staticOcclusionComponent = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
+    DVASSERT(component->GetType() == Component::STATIC_OCCLUSION_COMPONENT);
+    StaticOcclusionComponent *staticOcclusionComponent = static_cast<StaticOcclusionComponent*>(component);
     if (event == EventSystem::WORLD_TRANSFORM_CHANGED)
     {
         // Update new transform pointer, and mark that transform is changed
