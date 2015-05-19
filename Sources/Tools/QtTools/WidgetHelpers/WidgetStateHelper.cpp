@@ -104,11 +104,15 @@ void WidgetStateHelper::onScreenChanged( QScreen* screen )
 
     const auto dw = qreal( size.width() ) / prevScreen->geometry().width();
     const auto dh = qreal( size.height() ) / prevScreen->geometry().height();
-    const auto w = screen->geometry().width() * dw / 2;
-    const auto h = screen->geometry().height() * dh / 2;
+    const auto w = screen->geometry().width() * dw;
+    const auto h = screen->geometry().height() * dh;
 
-    // TODO: Doesn't work on windows move
-    // trackedWidget->resize( w, h );  
+    // Resize is not working, while window is moving
+    //trackedWidget->resize( w, h );
+    Q_UNUSED( w );
+    Q_UNUSED( h );
+
+    trackedWidget->setMaximumSize( screen->availableGeometry().size() );
     prevScreen = screen;
 }
 
