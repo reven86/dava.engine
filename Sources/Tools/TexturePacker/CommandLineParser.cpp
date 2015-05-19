@@ -48,9 +48,8 @@ void CommandLineParser::SetArguments(const Vector<String> &arguments)
     Clear();
     
     bool prevIsFlag = false;
-	for (size_t i = 0; i < arguments.size(); ++i)
+	for (auto& arg : arguments)
 	{
-		String arg = arguments[i];
         String::size_type argLen = arg.length();
         
 		if ((argLen >= 1) && (arg[0] == '-'))

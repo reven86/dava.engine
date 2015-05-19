@@ -27,57 +27,31 @@
 =====================================================================================*/
 
 
-#ifndef EDITFONTDIALOG_H
-#define EDITFONTDIALOG_H
+#include "SingleApplication.h"
 
-#include <QDialog>
+#include "DAVAEngine.h"
 
-#include <QSpinBox>
-#include <QPushButton>
-#include <QRadioButton>
-#include <QLineEdit>
-#include <QComboBox>
+#include "MainWindow.h"
 
-#include "Base/BaseTypes.h"
-
-namespace Ui {
-class EditFontDialog;
+void FrameworkWillTerminate()
+{
 }
 
-class EditFontDialog : public QDialog
+void FrameworkDidLaunched()
 {
-    Q_OBJECT
+}
 
-public:
-    explicit EditFontDialog(const DAVA::String & editFontPresetName, QDialog *parent = 0);
-    ~EditFontDialog();
-    
-private:
-    Ui::EditFontDialog *ui;
-    
-    //ChangeFontPropertyCommandData dialogResult;
-    DAVA::String currentLocale;
-    
-    void ConnectToSignals();
-    void DisconnectFromSignals();
-    
-    virtual void ProcessComboBoxValueChanged(QComboBox *senderWidget, const QString& value);
-    virtual void ProcessPushButtonClicked(QPushButton *senderWidget);
-    
-    void UpdateDefaultFontParams();
-    void UpdateLocalizedFontParams();
-    
-    void UpdateLineEditWidgetWithPropertyValue(QLineEdit *lineEditWidget);
-    void UpdatePushButtonWidgetWithPropertyValue(QPushButton *pushButtonWidget);
-    void UpdateSpinBoxWidgetWithPropertyValue(QSpinBox *spinBoxWidget);
-    void UpdateComboBoxWidgetWithPropertyValue(QComboBox *comboBoxWidget);
+int main(int argc, char *argv[])
+{
+    DAVA::Core::Run(argc, argv);
 
-private slots:
-    void OnOkButtonClicked();
-    void OnRadioButtonClicked();
-    void OnPushButtonClicked();
-    void OnSpinBoxValueChanged(int newValue);
-    void OnComboBoxValueChanged(QString value);
-};
+    SingleApplication a(argc, argv);
+    if (a.AlreadyExists())
+    {
+        return 0;
+    }
+    MainWindow w;
+    w.show();
 
-#endif // EDITFONTDIALOG_H
+    return a.exec();
+}

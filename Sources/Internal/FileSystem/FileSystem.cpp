@@ -34,18 +34,15 @@
 #include "Utils/StringFormat.h"
 #include "FileSystem/ResourceArchive.h"
 
-
 #if defined(__DAVAENGINE_MACOS__)
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/errno.h>
 #include <copyfile.h>
 #include <libproc.h>
 #include <libgen.h>
 #elif defined(__DAVAENGINE_IPHONE__)
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/errno.h>
 #include <copyfile.h>
 #include <libgen.h>
 #include <sys/sysctl.h>
@@ -61,8 +58,6 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/errno.h>
-
 #endif //PLATFORMS
 
 namespace DAVA

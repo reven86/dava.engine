@@ -28,34 +28,33 @@
 
 
 
-#ifndef __UIEditor__LocalizationSystemHelper__
-#define __UIEditor__LocalizationSystemHelper__
+#ifndef __EDITOR_LOCALIZATION_SYSTEM_H__
+#define __EDITOR_LOCALIZATION_SYSTEM_H__
 
+#include <QObject>
+#include <QStringList>
 #include "Base/BaseTypes.h"
+#include "FileSystem/FilePath.h"
 
-namespace DAVA {
-    
-class LocalizationSystemHelper
+class EditorLocalizationSystem: public QObject
 {
+    Q_OBJECT
 public:
-    // Helper to work with Localization System.
-    static int GetSupportedLanguagesCount();
-    static String GetSupportedLanguageID(int index);
-    static String GetSupportedLanguageDesc(int index);
-    static String GetLanguageDescByLanguageID(String languageID);
-    
-protected:
-    // Validate the language index.
-    static bool ValidateLanguageIndex(int index);
+    explicit EditorLocalizationSystem(QObject *parent = nullptr);
+    ~EditorLocalizationSystem() = default;
+    const QStringList& GetAvailableLocales() const;
+    void InitLanguageWithDirectory(const DAVA::FilePath &directoryPath, const DAVA::String &locale);
+    void Cleanup();
+signals:
+    void LocaleChanged(const DAVA::String &locale);
+private:
 
-    struct LocalizationSystemHelperData
-    {
-        String languageID;
-        String languageDescription;
-    };
-
-    static const LocalizationSystemHelperData helperData[];
+    QStringList availableLocales;
 };
 
+inline const QStringList& EditorLocalizationSystem::GetAvailableLocales() const
+{
+    return availableLocales;
 }
-#endif /* defined(__UIEditor__LocalizationSystemHelper__) */
+
+#endif //__EDITOR_LOCALIZATION_SYSTEM_H__

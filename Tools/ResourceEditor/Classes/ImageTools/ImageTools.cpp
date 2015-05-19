@@ -38,7 +38,7 @@
 
 using namespace DAVA;
 
-uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, const eGPUFamily forGPU)
+uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, const eGPUFamily forGPU, uint32 baseMipMaps)
 {
 	uint32 size = 0;
 	
@@ -68,7 +68,16 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
         ImageInfo info = ImageSystem::Instance()->GetImageInfo(imagePathname);
         if (!info.isEmpty())
         {
-            size += info.dataSize;
+            const auto formatSizeBits = PixelFormatDescriptor::GetPixelFormatSizeInBits(info.format);
+            
+            auto m = Min(baseMipMaps, info.mipmapsCount - 1);
+            for( ; m < info.mipmapsCount; ++m)
+            {
+                const auto w = (info.width >> m);
+                const auto h = (info.height >> m);
+                
+                size += (w * h * formatSizeBits / 8);
+            }
         }
         else
         {
