@@ -23,14 +23,16 @@ AbstractProperty *FontValueProperty::GetProperty(int index) const
     return nullptr;
 }
 
+void FontValueProperty::Refresh()
+{
+    IntrospectionProperty::Refresh();
+    
+    member->SetValue(GetBaseObject(), VariantType(presetName));
+}
+
 VariantType FontValueProperty::GetValue() const
 {
     return VariantType(presetName);
-}
-
-void FontValueProperty::RefreshFontValue()
-{
-    member->SetValue(GetBaseObject(), VariantType(presetName));
 }
 
 void FontValueProperty::ApplyValue(const DAVA::VariantType &value)

@@ -37,8 +37,6 @@ public slots:
     void UpdateFonts();
 
 private:
-    void UpdateLanguageRecursively(ControlNode *node);
-    void UpdateFontsRecursively(ControlNode *node);
     void UpdateControlCanvas();
     void InitSharedData();
 
