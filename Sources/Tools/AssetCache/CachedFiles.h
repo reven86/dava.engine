@@ -31,6 +31,7 @@
 #define __DAVAENGINE_ASSET_CACHE_CACHED_FILES_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/Data.h"
 #include "FileSystem/FilePath.h"
 #include "Utils/MD5.h"
 
@@ -54,7 +55,7 @@ public:
     virtual ~CachedFiles();
     
     void AddFile(const FilePath &path);
-    const Map<FilePath, File *> & GetFiles() const;
+    const Map<FilePath, Data *> & GetFiles() const;
     
     bool IsEmtpy() const;
     
@@ -71,7 +72,7 @@ public:
     
 private:
 
-    Map<FilePath, File *> files;
+    Map<FilePath, Data *> files;
     bool filesAreLoaded = false;
 };
 
@@ -79,6 +80,11 @@ private:
 inline bool CachedFiles::IsEmtpy() const
 {
     return (files.size() == 0);
+}
+
+inline const Map<FilePath, Data *> & CachedFiles::GetFiles() const
+{
+    return files;
 }
 
     

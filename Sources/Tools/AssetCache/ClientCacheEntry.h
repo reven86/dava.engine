@@ -70,7 +70,7 @@ public:
     void AddFile(const FilePath &pathname);
     
 private:
-    
+public: //to test functionality
     CacheItemKey key;
     CacheItemParams params;
     CachedFiles files;

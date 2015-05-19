@@ -87,14 +87,14 @@ public:
         }
         else
         {
-            auto files = clientEntry.GetFiles();
-            files.LoadFiles();
+            auto & files = clientEntry.GetFiles();
+            clientEntry.files.LoadFiles(); //workaround
 
             DAVA::Thread::Sleep(200); //to emulate some action, example convertation
             
             auto addRequestSent = client->AddToCache(key, files);
             
-            files.UnloadFiles();
+            clientEntry.files.UnloadFiles(); //workaround
             
             Logger::FrameworkDebug("\taddRequestSent is %d", addRequestSent);
         }
@@ -109,7 +109,7 @@ public:
         bool entriesAreEqual = (key == clientEntry.GetKey());
         Logger::FrameworkDebug("\tentriesAreEqual is %d", entriesAreEqual);
         
-        auto fileDescriptors = files.GetFiles();
+        auto & fileDescriptors = files.GetFiles();
         auto count = fileDescriptors.size();
         
         Logger::FrameworkDebug("....Dump of files....");
@@ -122,12 +122,12 @@ public:
             {
                 auto savePath = outFolder + f.first.GetFilename();
 
-                auto file = DynamicTypeCheck<DAVA::DynamicMemoryFile *>(f.second);
+                auto fileData = DynamicTypeCheck<DAVA::Data *>(f.second);
                 
                 auto savedFile = File::Create(savePath, File::CREATE | File::WRITE);
                 if(savedFile)
                 {
-                    savedFile->Write(file->GetData(), file->GetSize());
+                    savedFile->Write(fileData->GetPtr(), fileData->GetSize());
                     savedFile->Release();
                 }
             }
@@ -268,9 +268,15 @@ void RunPackerTest()
     ServerTest serverTest(server);
     ClientTest clientTest(client);
     
+    
     clientTest.Run(cacheEntry, "/Users/victorkleschenko/Downloads/__AssetCacheTest/TestProject/OutFolder_0/");
+    serverTest.dataBase.Dump();
+
     clientTest.Run(cacheEntry, "/Users/victorkleschenko/Downloads/__AssetCacheTest/TestProject/OutFolder_1/");
+    serverTest.dataBase.Dump();
+
     clientTest.Run(cacheEntry, "/Users/victorkleschenko/Downloads/__AssetCacheTest/TestProject/OutFolder_2/");
+    serverTest.dataBase.Dump();
     // --- RUNNING TEST ---
     
     Net::NetCore::Instance()->DestroyAllControllersBlocked();

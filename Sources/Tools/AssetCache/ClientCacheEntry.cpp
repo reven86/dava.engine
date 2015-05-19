@@ -111,7 +111,7 @@ void ClientCacheEntry::InvalidateSecondaryKey()
     ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
     params.Serialize(archieve);
 
-    auto fileDescriptors = files.GetFiles();
+    auto & fileDescriptors = files.GetFiles();
     auto count = fileDescriptors.size();
     archieve->SetUInt32("count", count);
     
@@ -140,8 +140,6 @@ void ClientCacheEntry::AddFile(const FilePath &pathname)
 {
     files.AddFile(pathname);
 }
-   
-    
     
     
 }; // end of namespace AssetCache

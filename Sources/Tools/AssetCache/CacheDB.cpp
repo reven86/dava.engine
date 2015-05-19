@@ -200,8 +200,8 @@ void CacheDB::Dump()
     size_t index = 0;
     for(auto & entry: cache)
     {
-        auto files = entry.second.GetFiles();
-        auto fileDescriptors = files.GetFiles();
+        auto & files = entry.second.GetFiles();
+        auto & fileDescriptors = files.GetFiles();
 
         Logger::FrameworkDebug("\tentry[%d]:", index);
         Logger::FrameworkDebug("\t\tnames count = %d", fileDescriptors.size());

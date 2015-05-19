@@ -66,12 +66,12 @@ private:
 };
     
 // Implementation
-uint8 * Data::GetPtr()
+inline uint8 * Data::GetPtr()
 {
     return data;
 }
 
-uint32 Data::GetSize()
+inline uint32 Data::GetSize()
 {
     return size;
 }
