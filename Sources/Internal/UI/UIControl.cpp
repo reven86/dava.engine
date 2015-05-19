@@ -1130,7 +1130,7 @@ namespace DAVA
         debugDrawEnabled = srcControl->debugDrawEnabled;
 
         SafeRelease(eventDispatcher);
-        if (srcControl->eventDispatcher != nullptr || srcControl->eventDispatcher->GetEventsCount() != 0)
+        if (srcControl->eventDispatcher != nullptr && srcControl->eventDispatcher->GetEventsCount() != 0)
         {
             Logger::FrameworkDebug("[UIControl::CopyDataFrom] Source control \"%s:%s\" have events."
                                    "Event copying is forbidden."
