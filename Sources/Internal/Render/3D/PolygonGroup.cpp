@@ -177,6 +177,7 @@ void PolygonGroup::UpdateDataPointersAndStreams()
         baseShift += GetVertexSize(EVF_CUBETEXCOORD3);
         vLayout.AddElement(rhi::VS_TEXCOORD, 3, rhi::VDT_FLOAT, 3);
     }
+
 #if RHI_COMPLETE
 #error move trees to standrt streams
 #endif
@@ -184,19 +185,19 @@ void PolygonGroup::UpdateDataPointersAndStreams()
     {
         pivotArray = reinterpret_cast<Vector3*>(meshData + baseShift);
         baseShift += GetVertexSize(EVF_PIVOT);
-        vLayout.AddElement(rhi::VS_PAD, 0, rhi::VDT_FLOAT, 3);
+        vLayout.AddElement(rhi::VS_TEXCOORD, 3, rhi::VDT_FLOAT, 3);
     }
     if (vertexFormat & EVF_FLEXIBILITY)
     {
         flexArray = reinterpret_cast<float32*>(meshData + baseShift);
         baseShift += GetVertexSize(EVF_FLEXIBILITY);
-        vLayout.AddElement(rhi::VS_PAD, 1, rhi::VDT_FLOAT, 1);
+        vLayout.AddElement(rhi::VS_TEXCOORD, 5, rhi::VDT_FLOAT, 1);
     }
     if (vertexFormat & EVF_ANGLE_SIN_COS)
     {
         angleArray = reinterpret_cast<Vector2*>(meshData + baseShift);
         baseShift += GetVertexSize(EVF_ANGLE_SIN_COS);
-        vLayout.AddElement(rhi::VS_PAD, 2, rhi::VDT_FLOAT, 2);
+        vLayout.AddElement(rhi::VS_TEXCOORD, 4, rhi::VDT_FLOAT, 2);
     }
 
     vertexLayoutId = rhi::VertexLayout::UniqueId(vLayout);
