@@ -177,7 +177,9 @@ void UIPackageLoader::LoadControl(const YamlNode *node, bool root)
     const YamlNode *prototypeNode = node->Get("prototype");
     const YamlNode *classNode = node->Get("class");
     const YamlNode *nameNode = node->Get("name");
-    DVASSERT(nameNode || pathNode);
+
+    //DVASSERT(nameNode || pathNode);
+    
     if (pathNode)
     {
         control = builder->BeginControlWithPath(pathNode->AsString());

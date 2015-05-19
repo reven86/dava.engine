@@ -56,7 +56,7 @@ QModelIndex PropertiesModel::parent(const QModelIndex &child) const
     AbstractProperty *property = static_cast<AbstractProperty*>(child.internalPointer());
     AbstractProperty *parent = property->GetParent();
     
-    if (parent == NULL || parent == controlNode->GetRootProperty())
+    if (parent == nullptr || parent == controlNode->GetRootProperty())
         return QModelIndex();
 
     if (parent->GetParent())
@@ -88,6 +88,7 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
     
     AbstractProperty *property = static_cast<AbstractProperty*>(index.internalPointer());
     uint32 flags = property->GetFlags();
+    
     switch (role)
     {
         case Qt::CheckStateRole:
@@ -123,14 +124,6 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
                     var.setValue<DAVA::VariantType>(property->GetValue());
                 }
                 return var;
-            }
-            break;
-        case Qt::DecorationRole:
-            {
-                // TODO: fix
-                return QVariant();
-//                if (property->GetType() == VariantType::TYPE_COLOR)
-//                    return ColorToQColor(property->GetValue().AsColor());
             }
             break;
 
@@ -265,13 +258,10 @@ void PropertiesModel::ComponentPropertiesWasRemoved(RootProperty *root, Componen
 QModelIndex PropertiesModel::indexByProperty(AbstractProperty *property, int column)
 {
     AbstractProperty *parent = property->GetParent();
-    if (parent == NULL)
+    if (parent == nullptr)
         return QModelIndex();
     
-    if (parent)
-        return createIndex(parent->GetIndex(property), column, property);
-    else
-        return createIndex(0, column, parent);
+    return createIndex(parent->GetIndex(property), column, property);
 }
 
 QVariant PropertiesModel::makeQVariant(const AbstractProperty *property) const
