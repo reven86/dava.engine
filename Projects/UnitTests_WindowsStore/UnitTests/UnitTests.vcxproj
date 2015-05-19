@@ -137,7 +137,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Link>
-      <AdditionalDependencies>d2d1.lib;d3d11.lib;dxgi.lib;windowscodecs.lib;dwrite.lib;..\_build\DavaFramework\Debug\DavaFramework.lib;..\_build\DavaTools\Debug\DavaTools.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\angle_common.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\fmodexWSA80L_vc.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\fmodexWSA81L_vc.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\fmod_eventWSA80L.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\fmod_eventWSA81L.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\freetype.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\fribidid.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\jpeg_win10.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libANGLE.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libcurl.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libdxtd.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libEGL.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libGLESv2.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libmongodb_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libogg_static.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libtheora10_static.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libvorbis_static.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libxml_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libyaml_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\lua_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\pnglib_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\preprocessor.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\PVRTexLib32.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\translator.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\translator_lib.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\translator_static.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\unibreak.lib;..\..\..\Libs\IMagickHelpLib\IMagickHelper.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d2d1.lib;d3d11.lib;dxgi.lib;windowscodecs.lib;dwrite.lib;Kernel32.lib;..\_build\DavaFramework\Debug\DavaFramework.lib;..\_build\DavaTools\Debug\DavaTools.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\angle_common.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\fmodexWSA80L_vc.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\fmodexWSA81L_vc.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\fmod_eventWSA80L.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\fmod_eventWSA81L.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\freetype.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\fribidid.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\jpeg_win10.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libANGLE.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libcurl.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libdxtd.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libEGL.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libGLESv2.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libmongodb_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libogg_static.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libtheora10_static.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libvorbis_static.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libxml_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libyaml_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\lua_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\pnglib_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\preprocessor.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\PVRTexLib32.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\translator.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\translator_lib.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\translator_static.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\unibreak.lib;..\..\..\Libs\IMagickHelpLib\IMagickHelper.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories); $(VCInstallDir)\lib\store; $(VCInstallDir)\lib</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libcmt.lib;libcmtd.lib;</IgnoreSpecificDefaultLibraries>
     </Link>
@@ -259,6 +259,7 @@
     <ClCompile Include="..\..\UnitTests\Classes\Tests\SplitTest.cpp" />
     <ClCompile Include="..\..\UnitTests\Classes\Tests\StringFormatTest.cpp" />
     <ClCompile Include="..\..\UnitTests\Classes\Tests\TextSizeTest.cpp" />
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\ThreadLocalTest.cpp" />
     <ClCompile Include="..\..\UnitTests\Classes\Tests\ThreadSyncTest.cpp" />
     <ClCompile Include="..\..\UnitTests\Classes\Tests\UnlimitedLogOutputTest.cpp" />
     <ClCompile Include="..\..\UnitTests\Win32Specific\main_desktop.cpp" />
@@ -331,6 +332,7 @@
     <ClInclude Include="..\..\UnitTests\Classes\Tests\SplitTest.h" />
     <ClInclude Include="..\..\UnitTests\Classes\Tests\StringFormatTest.h" />
     <ClInclude Include="..\..\UnitTests\Classes\Tests\TextSizeTest.h" />
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\ThreadLocalTest.h" />
     <ClInclude Include="..\..\UnitTests\Classes\Tests\ThreadSyncTest.h" />
     <ClInclude Include="..\..\UnitTests\Classes\Tests\UnlimitedLogOutputTest.h" />
   </ItemGroup>

@@ -210,6 +210,9 @@
     <ClCompile Include="..\..\UnitTests\Classes\Infrastructure\TextureUtils.cpp">
       <Filter>Classes\Infrastructure</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\ThreadLocalTest.cpp">
+      <Filter>Classes\Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />
@@ -403,6 +406,9 @@
     </ClInclude>
     <ClInclude Include="..\..\UnitTests\Classes\Infrastructure\UITestTemplate.h">
       <Filter>Classes\Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\ThreadLocalTest.h">
+      <Filter>Classes\Tests</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

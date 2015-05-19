@@ -43,7 +43,17 @@
 #include "Utils/Utils.h"
 #include "Utils/CRC32.h"
 
-#include <libatc/TextureConverter.h>
+#if defined(__DAVAENGINE_WINDOWS_STORE__)
+
+    //disabling of warning 
+    #pragma warning(push)
+    #pragma warning(disable : 4091)
+    #include <libatc/TextureConverter.h>
+    #pragma warning(pop)
+
+#else
+    #include <libatc/TextureConverter.h>
+#endif
 
 #define DDS_HEADER_CRC_OFFSET 60  //offset  to 9th element of dwReserved1 array(dds header)
 #define METADATA_CRC_TAG 0x5f435243  // equivalent of 'C''R''C''_'

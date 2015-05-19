@@ -180,8 +180,8 @@ void WinStoreFrame::Initialize(CoreApplicationView^ applicationView)
 // This method is called after Initialize.
 void WinStoreFrame::SetWindow(CoreWindow^ window)
 {
-    uint32 w = window->Bounds.Width;
-    uint32 h = window->Bounds.Height;
+    uint32 w = static_cast<uint32>(window->Bounds.Width);
+    uint32 h = static_cast<uint32>(window->Bounds.Height);
 
 	win_store_frame = window;
 	//init angle
