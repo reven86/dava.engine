@@ -661,6 +661,9 @@ void RenderSystem2D::Flush()
         packet.vertexCount = vertexIndex;
         //packet.clip = clip; //RHI_COMPLETE
 
+        batch.material->BindParams(packet);
+        packet.fragmentTextureSet = batch.textureSetHandle;
+
         rhi::AddPacket(currentPacketListHandle, packet);
     }
 
