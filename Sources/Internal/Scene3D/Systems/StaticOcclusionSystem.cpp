@@ -214,7 +214,7 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion(BaseObject * bo, void * mes
         }
         if (RenderObject::TYPE_LANDSCAPE == renderObject->GetType())
         {
-            landscape = DynamicTypeCheck<Landscape*>(renderObject);
+            landscape = static_cast<Landscape*>(renderObject);
         }
     }
     
@@ -753,8 +753,7 @@ void StaticOcclusionDebugDrawSystem::ImmediateEvent(Component * component, uint3
 {
     Entity * entity = component->GetEntity();
     StaticOcclusionDebugDrawComponent *debugDrawComponent = static_cast<StaticOcclusionDebugDrawComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT));
-    DVASSERT(component->GetType() == Component::STATIC_OCCLUSION_COMPONENT);
-    StaticOcclusionComponent *staticOcclusionComponent = static_cast<StaticOcclusionComponent*>(component);
+    StaticOcclusionComponent *staticOcclusionComponent = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
     if (event == EventSystem::WORLD_TRANSFORM_CHANGED)
     {
         // Update new transform pointer, and mark that transform is changed

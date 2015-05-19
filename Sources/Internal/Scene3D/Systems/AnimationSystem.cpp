@@ -93,8 +93,8 @@ void AnimationSystem::Process(float32 timeElapsed)
 
 void AnimationSystem::ImmediateEvent(Component * component, uint32 event)
 {
-    AnimationComponent * comp = DynamicTypeCheck<AnimationComponent*>(component);
-    if (!comp) return;
+    DVASSERT(component->GetType() == Component::ANIMATION_COMPONENT);
+    AnimationComponent * comp = static_cast<AnimationComponent*>(component);
     if (event == EventSystem::START_ANIMATION)
     {
         if (comp->state == AnimationComponent::STATE_STOPPED)

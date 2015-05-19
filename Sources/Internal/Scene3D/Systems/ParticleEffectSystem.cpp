@@ -213,8 +213,8 @@ void ParticleEffectSystem::RemoveComponent(Entity * entity, Component * componen
 
 void ParticleEffectSystem::ImmediateEvent(Component * component, uint32 event)
 {
-	ParticleEffectComponent *effect = DynamicTypeCheck<ParticleEffectComponent*>(component);
-	if (!effect) return;
+    DVASSERT(component->GetType() == Component::PARTICLE_EFFECT_COMPONENT);
+	ParticleEffectComponent *effect = static_cast<ParticleEffectComponent*>(component);
 	if (event == EventSystem::START_PARTICLE_EFFECT)
     {
 		if (effect->state == ParticleEffectComponent::STATE_STOPPED)

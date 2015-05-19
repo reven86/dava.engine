@@ -108,7 +108,8 @@ void SpeedTreeUpdateSystem::RemoveEntity(Entity * entity)
 
 void SpeedTreeUpdateSystem::UpdateAnimationFlag(Entity * entity)
 {
-    SpeedTreeObject * treeObject = DynamicTypeCheck<SpeedTreeObject*>(GetRenderObject(entity));
+    DVASSERT(GetRenderObject(entity)->GetType() == RenderObject::TYPE_SPEED_TREE);
+    SpeedTreeObject * treeObject = static_cast<SpeedTreeObject*>(GetRenderObject(entity));
     SpeedTreeComponent * component = GetSpeedTreeComponent(entity);
 
     int32 lodIndex = (isAnimationEnabled && isVegetationAnimationEnabled) ? component->GetMaxAnimatedLOD() : -1;
@@ -130,7 +131,8 @@ void SpeedTreeUpdateSystem::Process(float32 timeElapsed)
     for(uint32 i = 0; i < treeCount; ++i)
     {
 		SpeedTreeComponent * component = allTrees[i];
-		SpeedTreeObject * treeObject = DynamicTypeCheck<SpeedTreeObject*>(GetRenderObject(component->GetEntity()));
+        DVASSERT(GetRenderObject(component->GetEntity())->GetType() == RenderObject::TYPE_SPEED_TREE);
+		SpeedTreeObject * treeObject = static_cast<SpeedTreeObject*>(GetRenderObject(component->GetEntity()));
 
         if(component->GetMaxAnimatedLOD() < treeObject->GetLodIndex())
             continue;

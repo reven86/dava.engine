@@ -37,7 +37,6 @@ namespace DAVA
 {
 
 class SceneSystem;
-class Entity;
 class Component;
 class EventSystem
 {
