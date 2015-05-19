@@ -36,7 +36,17 @@
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 #include "QtTools/FrameworkBinding/DavaLoop.h"
 #include "QtTools/FrameworkBinding/FrameworkLoop.h"
+#include "TextureCompression/PVRConverter.h"
 
+void InitPVRTexTool()
+{
+#if defined (__DAVAENGINE_MACOS__)
+    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI";
+#elif defined (__DAVAENGINE_WIN32__)
+    const DAVA::String pvrTexToolPath = "~res:/PVRTexToolCLI.exe";
+#endif
+    DAVA::PVRConverter::Instance()->SetPVRTexTool(pvrTexToolPath);
+}
 
 int main(int argc, char *argv[])
 {
@@ -45,7 +55,7 @@ int main(int argc, char *argv[])
 
     DAVA::Core::Run( argc, argv );
     new DAVA::QtLayer();
-
+    InitPVRTexTool();
     DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
 
     auto loopManager = new DavaLoop();

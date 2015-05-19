@@ -261,7 +261,6 @@ void MainWindow::InitConvertBox()
     reloadSpritesButton->setPopupMode(QToolButton::MenuButtonPopup);
     reloadSpritesButton->setDefaultAction(actionReloadTextures);
     reloadSpritesButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    reloadSpritesButton->setAutoRaise(false);
     QWidget *wrapper = new QWidget();
     QHBoxLayout *layout = new QHBoxLayout(wrapper);
     layout->setMargin(0);
@@ -275,6 +274,7 @@ void MainWindow::InitConvertBox()
     {
         UpdateReloadTexturesButton(static_cast<eGPUFamily>(value.toInt()));
     }
+    reloadSpritesButton->parentWidget()->setEnabled(false);
 }
 
 void MainWindow::InitMenu()
@@ -440,13 +440,15 @@ void MainWindow::OnProjectOpened(Result result, QString projectPath)
 
         RebuildRecentMenu();
         fileSystemDockWidget->SetProjectDir(projectPath);
-        fileSystemDockWidget->setEnabled(true);
         localizationEditorDialog->FillLocaleComboBox();
     }
     else
     {
         QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), result.errors.join('\n'));
+
     }
+    fileSystemDockWidget->setEnabled(result);
+    reloadSpritesButton->parentWidget()->setEnabled(result);
 }
 
 void MainWindow::OnOpenProject()
