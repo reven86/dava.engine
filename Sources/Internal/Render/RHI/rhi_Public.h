@@ -38,8 +38,25 @@ namespace rhi
 ////////////////////////////////////////////////////////////////////////////////
 // base operation
 
-void    Initialize( Api api );
+struct
+InitParam
+{
+    void*   window;
+    uint32  width;
+    uint32  height;
+};
+
+struct
+ResetParam
+{
+    uint32  width;
+    uint32  height;
+};
+
+
+void    Initialize( Api api, const InitParam& param );
 void    Uninitialize();
+void    Reset( const ResetParam& param );
 
 void    Present(); // execute all submitted command-buffers & do flip/present
 
