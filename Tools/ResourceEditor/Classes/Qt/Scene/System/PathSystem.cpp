@@ -142,7 +142,7 @@ void PathSystem::RemoveEntity(DAVA::Entity * entity)
 
 void PathSystem::WillClone(DAVA::Entity *originalEntity)
 {
-    if (isEditingEnabled && originalEntity->GetComponent(Component::PATH_COMPONENT) != nullptr)
+    if (isEditingEnabled && GetPathComponent(originalEntity) != nullptr)
     {
         CollapsePathEntity(originalEntity);
     }
@@ -152,12 +152,12 @@ void PathSystem::DidCloned(DAVA::Entity *originalEntity, DAVA::Entity *newEntity
 {
     if (isEditingEnabled)
     {
-        if (originalEntity->GetComponent(Component::PATH_COMPONENT) != nullptr)
+        if (GetPathComponent(originalEntity) != nullptr)
         {
             ExpandPathEntity(originalEntity);
         }
 
-        if (newEntity->GetComponent(Component::PATH_COMPONENT) != nullptr)
+        if (GetPathComponent(newEntity) != nullptr)
         {
             ExpandPathEntity(newEntity);
         }
