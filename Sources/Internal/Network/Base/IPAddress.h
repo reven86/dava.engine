@@ -29,9 +29,8 @@
 #ifndef __DAVAENGINE_IPADDRESS_H__
 #define __DAVAENGINE_IPADDRESS_H__
 
+#include "Base/BaseTypes.h"
 #include <libuv/uv.h>
-
-#include <Base/BaseTypes.h>
 
 namespace DAVA
 {

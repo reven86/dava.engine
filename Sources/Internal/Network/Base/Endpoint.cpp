@@ -27,9 +27,12 @@
 =====================================================================================*/
 
 #include <cstdio>
-#include "libuv.h"
-#include <Debug/DVAssert.h>
-#include <Network/Base/Endpoint.h>
+
+#include "Base/BaseTypes.h"
+#include <libuv/uv.h>
+
+#include "Debug/DVAssert.h"
+#include "Network/Base/Endpoint.h"
 
 namespace DAVA
 {

@@ -26,9 +26,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "libuv.h"
-#include "Debug/DVAssert.h"
 #include "Base/BaseTypes.h"
+#include <libuv/uv.h>
+
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {

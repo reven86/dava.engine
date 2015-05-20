@@ -56,28 +56,25 @@
 namespace DAVA
 {
 
-typedef uint8_t  uint8;
-typedef uint16_t uint16;
-typedef uint32_t uint32;
-typedef uint64_t uint64;
+using uint8 = uint8_t;
+using uint16 = uint16_t;
+using uint32 = uint32_t;
+using uint64 = uint64_t;
 
-typedef int8_t  int8;
-typedef int16_t int16;
-typedef int32_t int32;
-typedef int64_t int64;
+using int8 = int8_t;
+using int16 = int16_t;
+using int32 = int32_t;
+using int64 = int64_t;
 
 //Platform-independent signed and unsigned integer type
 //Always has a size equal to pointer size (4 bytes in x86, 8 in x64)
-typedef ptrdiff_t int_t;
-typedef size_t    uint_t;
+using pointer_size = uintptr_t;
 
-typedef uint_t pointer_size;
+using char8 = char;
+using char16 = wchar_t;
 
-typedef char        char8;
-typedef wchar_t     char16;
-
-typedef float       float32;
-typedef double      float64;
+using float32 = float;
+using float64 = double;
 
 //Compile-time checks for size of types
 static_assert(sizeof(int8)   == 1, "Invalid type size!");
@@ -88,8 +85,6 @@ static_assert(sizeof(int32)  == 4, "Invalid type size!");
 static_assert(sizeof(uint32) == 4, "Invalid type size!");
 static_assert(sizeof(int64)  == 8, "Invalid type size!");
 static_assert(sizeof(uint64) == 8, "Invalid type size!");
-static_assert(sizeof(int_t)  == sizeof(void*), "Invalid type size!");
-static_assert(sizeof(uint_t) == sizeof(void*), "Invalid type size!");
 static_assert(sizeof(pointer_size) == sizeof(void*), "Invalid type size!");
 static_assert(sizeof(char8)  == 1, "Invalid type size!");
 static_assert(sizeof(float32) == 4, "Invalid type size!");
@@ -255,8 +250,8 @@ enum eAlign
     ALIGN_HJUSTIFY  = 0x40  //!<Used only for the fonts. Stretch font string over all horizontal size of the area.
 };
 
-template <typename T, uint_t N>
-DAVA_CONSTEXPR uint_t COUNT_OF(T(&)[N]) { return N; }
+template <typename T, size_t N>
+DAVA_CONSTEXPR size_t COUNT_OF(T(&)[N]) DAVA_NOEXCEPT { return N; }
     
 #ifndef REMOVE_IN_RELEASE
     #if defined(__DAVAENGINE_DEBUG__)

@@ -29,8 +29,8 @@
 #ifndef __DAVAENGINE_BUFFER_H__
 #define __DAVAENGINE_BUFFER_H__
 
-#include "libuv.h"
 #include "Base/BaseTypes.h"
+#include <libuv/uv.h>
 
 namespace DAVA
 {

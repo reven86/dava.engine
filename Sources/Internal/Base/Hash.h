@@ -252,7 +252,7 @@ class StringHash
 public:
     uint32  hash;
 
-    template <uint_t N>
+    template <size_t N>
     StringHash( const char (&str)[N] ) : hash(HashValue_N(str,N-1)) {}
 };
 

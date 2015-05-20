@@ -395,21 +395,21 @@ const FilePath & FileSystem::GetCurrentWorkingDirectory()
 
 #if defined(__DAVAENGINE_WINDOWS_STORE__)
 
-    wchar_t tempDir[2048] = {};
-    ::GetCurrentDirectoryW(COUNT_OF(tempDir), tempDir);
-    path = UTF8Utils::EncodeToUTF8(tempDir);
+    std::array<wchar_t, 2048> tempDir;
+    ::GetCurrentDirectoryW(tempDir.size(), tempDir.data());
+    path = UTF8Utils::EncodeToUTF8(tempDir.data());
 
 #elif defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 
-    char tempDir[2048] = {};
-    ::GetCurrentDirectoryA(COUNT_OF(tempDir), tempDir);
-    path = tempDir;
+    std::array<char, 2048> tempDir;
+    ::GetCurrentDirectoryA(tempDir.size(), tempDir.data());
+    path = tempDir.data();
 
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
-    char tempDir[2048] = {};
-    getcwd(tempDir, COUNT_OF(tempDir));
-    path = tempDir;
+    std::array<char, 2048> tempDir;
+    getcwd(tempDir.data(), tempDir.size());
+    path = tempDir.data();
 
 #endif //PLATFORMS
 
