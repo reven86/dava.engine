@@ -161,7 +161,7 @@ FPROG_OUT_END
 #endif
 
 
-#if (defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(VERTEX_FOG)) && (!defined(SKYOBJECT))
+#if (defined(VERTEX_LIT) || defined(PIXEL_LIT)) && (!defined(SKYOBJECT))
     property float3 lightAmbientColor0 : dynamic,a : ;
     property float3 lightColor0 : dynamic,a : ;
     property float inGlossiness : static,a : ;
