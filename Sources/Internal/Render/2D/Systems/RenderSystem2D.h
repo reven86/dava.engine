@@ -176,6 +176,9 @@ public:
     
     void SetSpriteClipping(bool clipping);
 
+    void BeginRenderTargetPass(Texture * target);
+    void EndRenderTargetPass();
+
 private:
     bool IsPreparedSpriteOnScreen(Sprite::DrawState * drawState);
     static ShaderDescriptor* GetShaderForBatching(ShaderDescriptor* inputShader);
@@ -225,9 +228,12 @@ private:
     };
     uint32 highlightControlsVerticesLimit;
 
-    rhi::RenderPassConfig renderPassConfig;
-    rhi::HRenderPass currentPassHandle;
-    rhi::HPacketList currentPacketListHandle;
+    rhi::HRenderPass pass2DHandle;
+    rhi::HPacketList packetList2DHandle;
+    rhi::HRenderPass passTargetHandle;
+    rhi::HPacketList packetListTargetHandle;
+
+    bool drawToRendertarget;
 };
 
 inline void RenderSystem2D::SetHightlightControlsVerticesLimit(uint32 verticesCount)

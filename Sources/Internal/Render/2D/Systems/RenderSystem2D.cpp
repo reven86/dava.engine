@@ -293,6 +293,7 @@ RenderSystem2D::RenderSystem2D()
     , prevFrameErrorsFlags(NO_ERRORS)
     , currFrameErrorsFlags(NO_ERRORS)
     , highlightControlsVerticesLimit(0)
+    , drawToRendertarget(false)
 {
 }
 
@@ -381,8 +382,6 @@ void RenderSystem2D::Init()
         TEXTURE_ADD_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
     }
 #endif RHI_COMPLETE
-
-    renderPassConfig.priority = PRIORITY_SERVICE_2D;
 }
 
 RenderSystem2D::~RenderSystem2D()
@@ -430,9 +429,13 @@ void RenderSystem2D::BeginFrame()
 #endif
 #endif
 
-    currentPassHandle = rhi::AllocateRenderPass(renderPassConfig, 1, &currentPacketListHandle);
-    rhi::BeginRenderPass(currentPassHandle);
-    rhi::BeginPacketList(currentPacketListHandle);
+    rhi::RenderPassConfig renderPass2DConfig;
+    renderPass2DConfig.priority = PRIORITY_MAIN_2D;
+    renderPass2DConfig.colorBuffer[0].loadAction = rhi::LOADACTION_NONE;
+    pass2DHandle = rhi::AllocateRenderPass(renderPass2DConfig, 1, &packetList2DHandle);
+
+    rhi::BeginRenderPass(pass2DHandle);
+    rhi::BeginPacketList(packetList2DHandle);
 }
 
 void RenderSystem2D::EndFrame()
@@ -441,8 +444,35 @@ void RenderSystem2D::EndFrame()
     prevFrameErrorsFlags = currFrameErrorsFlags;
     currFrameErrorsFlags = 0;
 
-    rhi::EndPacketList(currentPacketListHandle);
-    rhi::EndRenderPass(currentPassHandle);
+    rhi::EndPacketList(packetList2DHandle);
+    rhi::EndRenderPass(pass2DHandle);
+}
+
+void RenderSystem2D::BeginRenderTargetPass(Texture * target)
+{
+    DVASSERT(!drawToRendertarget);
+
+    Flush();
+
+    //RHI_COMPLETE: set viewport
+    rhi::RenderPassConfig renderTargetPassConfig;
+    renderTargetPassConfig.priority = PRIORITY_SERVICE_2D;
+    passTargetHandle = rhi::AllocateRenderPass(renderTargetPassConfig, 1, &packetListTargetHandle);
+
+    rhi::BeginRenderPass(passTargetHandle);
+    rhi::BeginPacketList(packetListTargetHandle);
+
+    drawToRendertarget = true;
+}
+
+void RenderSystem2D::EndRenderTargetPass()
+{
+    Flush();
+
+    rhi::EndPacketList(packetListTargetHandle);
+    rhi::EndRenderPass(passTargetHandle);
+
+    drawToRendertarget = false;
 }
 
 void RenderSystem2D::Setup2DProjection()
@@ -664,7 +694,7 @@ void RenderSystem2D::Flush()
         batch.material->BindParams(packet);
         packet.fragmentTextureSet = batch.textureSetHandle;
 
-        rhi::AddPacket(currentPacketListHandle, packet);
+        rhi::AddPacket(drawToRendertarget ? packetListTargetHandle : packetList2DHandle, packet);
     }
 
     batches.clear();
