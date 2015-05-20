@@ -71,6 +71,15 @@ struct MemoryManager::MemoryBlock
 };
 static_assert(sizeof(MemoryManager::MemoryBlock) % 16 == 0, "sizeof(MemoryManager::MemoryBlock) % 16 != 0");
 
+struct MemoryManager::InternalMemoryBlock
+{
+    uint32 allocByApp;      // Size requested by application
+    uint32 allocTotal;      // Total allocated size
+    uint32 padding;
+    uint32 mark;            // Mark to distinguish internal memory blocks
+};
+static_assert(sizeof(MemoryManager::InternalMemoryBlock) % 16 == 0, "sizeof(MemoryManager::InternalMemoryBlock) % 16 != 0");
+
 struct MemoryManager::Backtrace
 {
     size_t nref;
@@ -333,8 +342,8 @@ void* MemoryManager::Reallocate(void* ptr, size_t newSize)
         return malloc(newSize);
     }
     
-    MemoryBlock* block = IsTrackedBlock(ptr);
-    if (block != nullptr)
+    MemoryBlock* block = static_cast<MemoryBlock*>(ptr) - 1;
+    if (BLOCK_MARK == block->mark)
     {
         void* newPtr = malloc(newSize);
         if (newPtr != nullptr)
@@ -349,7 +358,7 @@ void* MemoryManager::Reallocate(void* ptr, size_t newSize)
     }
     else
     {
-        return DAVA::MallocHook::Realloc(ptr, newSize);
+        return MallocHook::Realloc(ptr, newSize);
     }
 }
     
@@ -357,46 +366,28 @@ void MemoryManager::Deallocate(void* ptr)
 {
     if (ptr != nullptr)
     {
-        MemoryBlock* block = IsTrackedBlock(ptr);
-        if (block != nullptr)
+        MemoryBlock* block = static_cast<MemoryBlock*>(ptr) - 1;
+        if (BLOCK_MARK == block->mark)
         {
-            if (!IsInternalAllocationPool(block->pool))
             {
-                if (block->realBlockStart != static_cast<void*>(block))
-                {
-                    int bp = 0;
-                    bp += 1;
-                }
-                {
-                    // Lock is required only here:
-                    //  - updating statistics
-                    //  - inserting block into internal list
-                    LockType lock(allocMutex);
-
-                    RemoveBlock(block);
-                    UpdateStatAfterDealloc(block, block->pool);
-                }
-                {
-                    LockType lock(bktraceMutex);
-                    RemoveBacktrace(block->bktraceHash);
-                }
-            }
-            else
-            {
-                // For internal allocation pool lock is required only for updating statistics
+                // Lock is required only here:
+                //  - updating statistics
+                //  - inserting block into internal list
                 LockType lock(allocMutex);
-                statGeneral.allocInternal -= block->allocByApp;
-                statGeneral.allocInternalTotal -= block->allocTotal;
-                statGeneral.internalBlockCount -= 1;
-              
+
+                RemoveBlock(block);
+                UpdateStatAfterDealloc(block, block->pool);
+            }
+            {
+                LockType lock(bktraceMutex);
+                RemoveBacktrace(block->bktraceHash);
             }
             // Tracked memory block consists of header (of type struct MemoryBlock) and data block that returned to app.
             // Tracked memory blocks are distinguished by special mark in header.
             // In some cases, especially on iOS, memory allocations bypass memory manager, but memory freeing goes through
             // memory manager. So I need to erase header to properly free bypassed allocations as system can allocate memory at the same address
-            void* freeMe = block->realBlockStart;
-            Memset(block, 0xEC, sizeof(MemoryBlock));
-            MallocHook::Free(freeMe);
+            block->mark = 0xECECECEC;
+            MallocHook::Free(block->realBlockStart);
         }
         else
         {
@@ -410,6 +401,50 @@ void MemoryManager::Deallocate(void* ptr)
     }
 }
 
+void* MemoryManager::InternalAllocate(size_t size) DAVA_NOEXCEPT
+{
+    const size_t totalSize = sizeof(InternalMemoryBlock) + size;
+    InternalMemoryBlock* block = static_cast<InternalMemoryBlock*>(MallocHook::Malloc(totalSize));
+    if (block != nullptr)
+    {
+        block->mark = INTERNAL_BLOCK_MARK;
+        block->allocByApp = static_cast<uint32>(size);
+        block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block));
+
+        // Update stat
+        //{
+        //LockType lock(allocMutex);
+        //statGeneral.allocInternal += block->allocByApp;
+        //statGeneral.allocInternalTotal += block->allocTotal;
+        //statGeneral.internalBlockCount += 1;
+        //}
+        
+        return static_cast<void*>(block + 1);
+    }
+    return nullptr;
+}
+
+void MemoryManager::InternalDeallocate(void* ptr) DAVA_NOEXCEPT
+{
+    if (ptr != nullptr)
+    {
+        InternalMemoryBlock* block = static_cast<InternalMemoryBlock*>(ptr) - 1;
+        assert(INTERNAL_BLOCK_MARK == block->mark);
+        
+        // Update stat
+        //{
+        //LockType lock(allocMutex);
+        //statGeneral.allocInternal -= block->allocByApp;
+        //statGeneral.allocInternalTotal -= block->allocTotal;
+        //statGeneral.internalBlockCount -= 1;
+        //}
+
+        // Clear mark of deallocated block
+        block->mark = 0xECECECEC;
+        MallocHook::Free(block);        
+    }
+}
+    
 void MemoryManager::EnterTagScope(uint32 tag)
 {
     DVASSERT(tag != 0 && IsPowerOf2(tag));
@@ -574,12 +609,6 @@ void MemoryManager::RemoveBlock(MemoryBlock* block)
         block->next->prev = block->prev;
     if (block == head)
         head = head->next;
-}
-
-MemoryManager::MemoryBlock* MemoryManager::IsTrackedBlock(void* ptr)
-{
-    MemoryBlock* block = static_cast<MemoryBlock*>(ptr) - 1;
-    return BLOCK_MARK == block->mark ? block : nullptr;
 }
 
 void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, int32 poolIndex)

@@ -39,8 +39,9 @@
 #include "Thread/LockGuard.h"
 #include "Thread/ThreadLocalPtr.h"
 
-#include "AllocPools.h"
-#include "MemoryManagerTypes.h"
+#include "MemoryManager/AllocPools.h"
+#include "MemoryManager/MemoryManagerTypes.h"
+#include "MemoryManager/InternalAllocator.h"
 
 #define DAVA_MEMORY_MANAGER_NEW_DATASTRUCT
 
@@ -55,6 +56,7 @@ class Thread;
 class MemoryManager final
 {
     static const uint32 BLOCK_MARK = 0xBA0BAB;
+    static const uint32 INTERNAL_BLOCK_MARK = 0x55AACC11;
     static const size_t BLOCK_ALIGN = 16;
     static const size_t BACKTRACE_DEPTH = 32;
 
@@ -63,6 +65,7 @@ public:
     static const size_t MAX_TAG_COUNT = 32;
 
     struct MemoryBlock;
+    struct InternalMemoryBlock;
     struct Backtrace;
     struct AllocScopeItem;
 
@@ -89,6 +92,9 @@ public:
     DAVA_NOINLINE void* AlignedAllocate(size_t size, size_t align, int32 poolIndex);
     void* Reallocate(void * ptr, size_t size);
     void Deallocate(void* ptr);
+    
+    void* InternalAllocate(size_t size) DAVA_NOEXCEPT;
+    void InternalDeallocate(void* ptr) DAVA_NOEXCEPT;
 
     void EnterTagScope(uint32 tag);
     void LeaveTagScope(uint32 tag);
@@ -116,11 +122,8 @@ private:
     MemoryManager& operator = (MemoryManager&&) = delete;
 
 private:
-    static bool IsInternalAllocationPool(int32 poolIndex);
-
     void InsertBlock(MemoryBlock* block);
     void RemoveBlock(MemoryBlock* block);
-    MemoryBlock* IsTrackedBlock(void* ptr);
 
     void UpdateStatAfterAlloc(MemoryBlock* block, int32 poolIndex);
     void UpdateStatAfterDealloc(MemoryBlock* block, int32 poolIndex);
@@ -154,9 +157,6 @@ private:
     //mutable MutexType statMutex;        // Mutex for updating memory statistics
     mutable MutexType bktraceMutex;     // Mutex for working with backtraces
     mutable MutexType gpuMutex;         // Mutex for managing GPU allocations
-
-    template<typename T>
-    using InternalAllocator = MemoryManagerAllocator<T, -1>;
 
     using InternalString = std::basic_string<char8, std::char_traits<char8>, InternalAllocator<char8>>;
 
@@ -211,11 +211,6 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-inline bool MemoryManager::IsInternalAllocationPool(int32 poolIndex)
-{
-    return poolIndex < 0;
-}
-
 inline size_t MemoryManager::CalcCurStatSize() const
 {
     return sizeof(MMCurStat)

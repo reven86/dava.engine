@@ -36,8 +36,13 @@
 namespace DAVA
 {
 
-void* AllocThunk(size_t size, int poolIndex);
-void DeallocThunk(void* ptr);
+// Freestanding allocation functions that can be used where MemoryManager.h cannot be included (e.g. in allocators)
+
+void* TrackingAlloc(size_t size, int poolIndex);
+void TrackingDealloc(void* ptr);
+
+void* InternalAlloc(size_t size) DAVA_NOEXCEPT;
+void InternalDealloc(void* ptr) DAVA_NOEXCEPT;
 
 }   // namespace DAVA
 

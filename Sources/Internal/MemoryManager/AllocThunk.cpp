@@ -30,19 +30,29 @@
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
-#include "MemoryManager.h"
+#include "MemoryManager/MemoryManager.h"
 
 namespace DAVA
 {
 
-void* AllocThunk(size_t size, int poolIndex)
+void* TrackingAlloc(size_t size, int poolIndex)
 {
     return MemoryManager::Instance()->Allocate(size, poolIndex);
 }
 
-void DeallocThunk(void* ptr)
+void TrackingDealloc(void* ptr)
 {
     MemoryManager::Instance()->Deallocate(ptr);
+}
+
+void* InternalAlloc(size_t size) DAVA_NOEXCEPT
+{
+    return MemoryManager::Instance()->InternalAllocate(size);
+}
+
+void InternalDealloc(void* ptr) DAVA_NOEXCEPT
+{
+    MemoryManager::Instance()->InternalDeallocate(ptr);
 }
 
 }   // namespace DAVA

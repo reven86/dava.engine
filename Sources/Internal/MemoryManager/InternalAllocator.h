@@ -26,11 +26,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_MEMORYMANAGERALLOCATOR_H__
-#define __DAVAENGINE_MEMORYMANAGERALLOCATOR_H__
+#ifndef __DAVAENGINE_INTERNALALLOCATOR_H__
+#define __DAVAENGINE_INTERNALALLOCATOR_H__
 
-// Include Base/BaseTypes.h to check whether DAVA_MEMORY_PROFILING_ENABLE has been defined
-// It's actual for projects created NOT using cmake
 #include "Base/BaseTypes.h"
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -38,15 +36,13 @@
 #include <cstddef>
 #include <limits>
 
-#include "AllocPools.h"
-#include "AllocThunk.h"
+#include "MemoryManager/AllocThunk.h"
 
 namespace DAVA
 {
 
-// DAVA types cannot be used here as this file is included in Base/BaseTypes.h
-template<typename T, int AllocPoolT>
-class MemoryManagerAllocator
+template<typename T>
+class BypassAllocator final
 {
 public:
     typedef T* pointer;
@@ -60,22 +56,22 @@ public:
     template <typename U>
     struct rebind
     {
-        typedef MemoryManagerAllocator<U, AllocPoolT> other;
+        typedef BypassAllocator<U> other;
     };
 
-    MemoryManagerAllocator() = default;
-    MemoryManagerAllocator(const MemoryManagerAllocator&) = default;
-    MemoryManagerAllocator& operator = (const MemoryManagerAllocator&) = delete;
+    BypassAllocator() = default;
+    BypassAllocator(const BypassAllocator&) = default;
+    BypassAllocator& operator = (const BypassAllocator&) = delete;
     template <typename U>
-    MemoryManagerAllocator(const MemoryManagerAllocator<U, AllocPoolT>&) {}
-    ~MemoryManagerAllocator() = default;
+    BypassAllocator(const BypassAllocator<U>&) {}
+    ~BypassAllocator() = default;
 
     T* address(T& ref) const;
     const T* address(const T& cref) const;
     size_t max_size() const;
 
-    bool operator == (const MemoryManagerAllocator& other) const;
-    bool operator != (const MemoryManagerAllocator& other) const;
+    bool operator == (const BypassAllocator& other) const;
+    bool operator != (const BypassAllocator& other) const;
 
     void construct(T* const ptr, const T& obj) const;
     template<typename U, typename... Args>
@@ -91,61 +87,61 @@ public:
 
 //////////////////////////////////////////////////////////////////////////
 
-template<typename T, int AllocPoolT>
-inline T* MemoryManagerAllocator<T, AllocPoolT>::address(T& ref) const
+template<typename T>
+inline T* BypassAllocator<T>::address(T& ref) const
 {
     return &ref;
 }
 
-template<typename T, int AllocPoolT>
-inline const T* MemoryManagerAllocator<T, AllocPoolT>::address(const T& cref) const
+template<typename T>
+inline const T* BypassAllocator<T>::address(const T& cref) const
 {
     return &cref;
 }
 
-template<typename T, int AllocPoolT>
-inline size_t MemoryManagerAllocator<T, AllocPoolT>::max_size() const
+template<typename T>
+inline size_t BypassAllocator<T>::max_size() const
 {
     return std::numeric_limits<size_t>::max() / sizeof(T);
 }
 
-template<typename T, int AllocPoolT>
-inline bool MemoryManagerAllocator<T, AllocPoolT>::operator == (const MemoryManagerAllocator& other) const
+template<typename T>
+inline bool BypassAllocator<T>::operator == (const BypassAllocator& other) const
 {
     return true;
 }
 
-template<typename T, int AllocPoolT>
-inline bool MemoryManagerAllocator<T, AllocPoolT>::operator != (const MemoryManagerAllocator& other) const
+template<typename T>
+inline bool BypassAllocator<T>::operator != (const BypassAllocator& other) const
 {
     return !(*this == other);
 }
 
-template<typename T, int AllocPoolT>
-inline void MemoryManagerAllocator<T, AllocPoolT>::construct(T* const ptr, const T& obj) const
+template<typename T>
+inline void BypassAllocator<T>::construct(T* const ptr, const T& obj) const
 {
     void* const buf = static_cast<void*>(ptr);
     new (buf) T(obj);
 }
 
-template<typename T, int AllocPoolT>
+template<typename T>
 template<typename U, typename... Args>
-inline void MemoryManagerAllocator<T, AllocPoolT>::construct(U* ptr, Args&&... args)
+inline void BypassAllocator<T>::construct(U* ptr, Args&&... args)
 {
     void* buf = static_cast<void*>(ptr);
     new (buf) U(std::forward<Args>(args)...);
 }
 
-template<typename T, int AllocPoolT>
-inline void MemoryManagerAllocator<T, AllocPoolT>::destroy(T* const ptr) const
+template<typename T>
+inline void BypassAllocator<T>::destroy(T* const ptr) const
 {
     ptr->~T();
 }
 
-template<typename T, int AllocPoolT>
-inline T* MemoryManagerAllocator<T, AllocPoolT>::allocate(const size_t n) const
+template<typename T>
+inline T* BypassAllocator<T>::allocate(const size_t n) const
 {
-    void* ptr = AllocThunk(n * sizeof(T), AllocPoolT);
+    void* ptr = InternalAlloc(n * sizeof(T));
     if (nullptr == ptr)
     {
         throw std::bad_alloc();
@@ -153,15 +149,15 @@ inline T* MemoryManagerAllocator<T, AllocPoolT>::allocate(const size_t n) const
     return static_cast<T*>(ptr);
 }
 
-template<typename T, int AllocPoolT>
-inline void MemoryManagerAllocator<T, AllocPoolT>::deallocate(T* const ptr, const size_t n) const
+template<typename T>
+inline void BypassAllocator<T>::deallocate(T* const ptr, const size_t n) const
 {
-    DeallocThunk(ptr);
+    InternalDealloc(ptr);
 }
 
-template<typename T, int AllocPoolT>
+template<typename T>
 template <typename U>
-inline T* MemoryManagerAllocator<T, AllocPoolT>::allocate(const size_t n, const U*) const
+inline T* BypassAllocator<T>::allocate(const size_t n, const U*) const
 {
     return allocate(n);
 }
@@ -170,4 +166,4 @@ inline T* MemoryManagerAllocator<T, AllocPoolT>::allocate(const size_t n, const 
 
 #endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
-#endif  // __DAVAENGINE_MEMORYMANAGERALLOCATOR_H__
+#endif  // __DAVAENGINE_INTERNALALLOCATOR_H__
