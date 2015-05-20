@@ -58,8 +58,8 @@ LODEditor::LODEditor(QWidget* parent)
 
     SetupInternalUI();
     SetupSceneSignals();
-       
-    posSaver.Attach(this);
+      
+    new QtPosSaver( this );
 }
 
 LODEditor::~LODEditor()

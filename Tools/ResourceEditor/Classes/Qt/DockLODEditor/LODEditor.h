@@ -109,7 +109,6 @@ protected:
 
 private:
     Ui::LODEditor *ui;
-    QtPosSaver posSaver;
 
     struct DistanceWidget
     {

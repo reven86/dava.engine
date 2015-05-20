@@ -72,6 +72,8 @@ void WidgetStateHelper::stopTrack()
 
 void WidgetStateHelper::onShowEvent()
 {
+    Q_ASSERT( !trackedWidget.isNull() );
+
     auto window = trackedWidget->windowHandle();
     if ( window != nullptr )
     {
