@@ -79,7 +79,7 @@ void WidgetStateHelper::onShowEvent()
     {
         disconnect( window, &QWindow::screenChanged, this, &WidgetStateHelper::onScreenChanged );
         connect( window, &QWindow::screenChanged, this, &WidgetStateHelper::onScreenChanged );
-        prevScreen = window->screen();
+        currentScreen = window->screen();
     }
 
     if ( trackedEvents.testFlag( MaximizeOnShowOnce ) )
@@ -99,13 +99,13 @@ void WidgetStateHelper::onScreenChanged( QScreen* screen )
 
     const auto size = trackedWidget->size();
 
-    if ( prevScreen.isNull() )
+    if ( currentScreen.isNull() )
     {
-        prevScreen = screen;
+        currentScreen = screen;
     }
 
-    const auto dw = qreal( size.width() ) / prevScreen->geometry().width();
-    const auto dh = qreal( size.height() ) / prevScreen->geometry().height();
+    const auto dw = qreal( size.width() ) / currentScreen->geometry().width();
+    const auto dh = qreal( size.height() ) / currentScreen->geometry().height();
     const auto w = screen->geometry().width() * dw;
     const auto h = screen->geometry().height() * dh;
 
@@ -116,7 +116,7 @@ void WidgetStateHelper::onScreenChanged( QScreen* screen )
 
     // setMaximumSize cause widget to jump on previous monitor
     //trackedWidget->setMaximumSize( screen->availableGeometry().size() );
-    prevScreen = screen;
+    currentScreen = screen;
 }
 
 WidgetStateHelper* WidgetStateHelper::create( QWidget* w )

@@ -56,7 +56,7 @@ class LODEditor: public QWidget
     Q_OBJECT
 
 public:
-    explicit LODEditor(QWidget* parent = 0);
+    explicit LODEditor(QWidget* parent = nullptr);
     ~LODEditor();
 
 protected slots:
