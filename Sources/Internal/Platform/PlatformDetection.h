@@ -34,22 +34,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "DAVAConfig.h"
 
-//Detections of iPhone
-#if defined(TARGET_OS_IPHONE)
-
-#if !defined(__DAVAENGINE_IPHONE__) // for old projects we check if users defined it
-#define __DAVAENGINE_IPHONE__
-#endif
-
-//Detection of MacOS
-#elif defined(__GNUC__) && \
+//Detection of Apple
+#if defined(__GNUC__) && \
        (defined(__APPLE_CPP__) || defined(__APPLE_CC__) || defined(__MACOS_CLASSIC__))
-#define __DAVAENGINE_MACOS__
-#endif
-
-//Detaction of Apple platform
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-
 #define __DAVAENGINE_APPLE__
 #include "PlatformApple.h"
 
