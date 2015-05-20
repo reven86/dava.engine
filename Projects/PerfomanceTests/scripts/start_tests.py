@@ -42,10 +42,46 @@ parser = argparse.ArgumentParser(description='Start tests')
 parser.add_argument('--branch', nargs='?', default = 'development')
 parser.add_argument('--platform', nargs='?', default = 'android')
 
+parser.add_argument('-chooser', nargs='?', const=True)
+parser.add_argument('-test')
+parser.add_argument('-ui_stat', nargs='?', const=True)
+
+parser.add_argument('-test_time')
+parser.add_argument('-test_frames')
+parser.add_argument('-frame_delta')
+
+parser.add_argument('-debug_frame')
+parser.add_argument('-max_delta')
+
 args = vars(parser.parse_args())
+TEST_PARAMS = ""
+
+if(args['chooser']):
+    TEST_PARAMS += "-chooser"
+
+if(args['ui_stat']):
+    TEST_PARAMS += "-ui_stat"
+
+if(args['test']):    
+    TEST_PARAMS += "-test " + args['test']
+
+    if(args['test_time']):
+        TEST_PARAMS += " -test_time " + args['test_time']
+
+    if(args['test_frames']):
+        TEST_PARAMS += " -test_frames " + args['test_frames']
+        TEST_PARAMS += " -frame_delta " + args['frame_delta']   
+
+    if(args['debug_frame']):
+        TEST_PARAMS += " -debug_frame " + args['debug_frame']
+
+    if(args['max_delta']):
+        TEST_PARAMS += " -max_delta " + args['max_delta']
 
 start_on_android = False
 start_on_ios = False
+
+print TEST_PARAMS
 
 if args['platform'] == "android":
     start_on_android = True
@@ -72,13 +108,13 @@ def start_performance_tests_on_android_device():
         stdout=subprocess.PIPE)
     # start unittests on device
     subprocess.Popen(
-        ["adb", "shell", "am", "start", "-n", "com.dava.performancetests/com.dava.performancetests." + PRJ_NAME_BASE])
+        ["adb", "shell", "am", "start", "-es", TEST_PARAMS, "-n", "com.dava.performancetests/com.dava.performancetests." + PRJ_NAME_BASE])
     return sub_process
 
 
 if start_on_ios:
     # ../build/ios-deploy -d --noninteractive -b ../build/UnitTests.app
-    sub_process = subprocess.Popen(["./ios-deploy", "-d", "--noninteractive", "-b", "../build/" +
+    sub_process = subprocess.Popen(["./ios-deploy", "-a", TEST_PARAMS, "-d", "--noninteractive", "-b", "../build/" +
                                     PRJ_NAME_BASE + PRJ_POSTFIX],
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     print("copy " + PRJ_NAME_BASE + PRJ_POSTFIX + " on device and run")

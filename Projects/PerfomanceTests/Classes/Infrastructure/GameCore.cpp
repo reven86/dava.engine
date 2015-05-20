@@ -120,7 +120,7 @@ void GameCore::EndFrame()
 void GameCore::RegisterTests()
 {
     BaseTest::TestParams params;
-    params.targetTime = 30000;
+    params.targetTime = 120000;
 
     testChain.push_back(new AsiaPerformanceTest(params));
 }
@@ -179,15 +179,15 @@ void GameCore::InitScreenController()
         if (testTimeFound)
         {
             String testTimeParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test_time", 0);
-            params.targetTime = std::stoi(testTimeParam);
+            params.targetTime = std::atoi(testTimeParam.c_str());
         }
         else if (testFramesFound && frameDeltaFound)
         {
             String testFramesParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test_frames", 0);
             String frameDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-frame_delta", 0);
 
-            params.targetFramesCount = std::stoi(testFramesParam);
-            params.targetFrameDelta = std::stof(frameDeltaParam);
+            params.targetFramesCount = std::atoi(testFramesParam.c_str());
+            params.targetFrameDelta = std::atof(frameDeltaParam.c_str());
         }
         else
         {
@@ -198,13 +198,13 @@ void GameCore::InitScreenController()
         if (debugFrameFound)
         {
             String debugFrameParam = CommandLineParser::Instance()->GetCommandParamAdditional("-debug_frame", 0);
-            params.frameForDebug = std::stoi(debugFrameParam);
+            params.frameForDebug = std::atoi(debugFrameParam.c_str());
         }
         
         if (maxDeltaFound)
         {
             String maxDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-max_delta", 0);
-            params.maxDelta = std::stof(maxDeltaParam);
+            params.maxDelta = std::atof(maxDeltaParam.c_str());
         }
 
         testFlowController = new SingleTestFlowController(testForRun, params);
