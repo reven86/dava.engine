@@ -9,6 +9,8 @@
 #set( MACOS_DYLIB    )
 #set( MACOS_XIB      )
 #
+#set( WIN32_RESOURCES )
+#
 #set( ANDROID_USE_STANDART_TEMLATE )
 #set( ANDROID_DATA_FOLDER          )
 #set( ANDROID_PACKAGE              )
@@ -89,7 +91,8 @@ elseif( MACOS )
     list( APPEND RESOURCES_LIST  ${MACOS_ICO}   )
 
     list( APPEND LIBRARIES      ${DYLIB_FILES} )
-
+elseif( WIN32 )
+    list( APPEND RESOURCES_LIST  ${WIN32_RESOURCES} )
 endif()
 
 ###
