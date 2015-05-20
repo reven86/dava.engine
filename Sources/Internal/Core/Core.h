@@ -261,13 +261,15 @@ public:
 	
 	void EnableConsoleMode();
     
-    virtual void* NativeWindowHandle() { return nullptr; }
+    void * GetNativeWindowHandle() { return nativeWindowHandle; };
 
 protected:
 	int32 screenOrientation;
 
 	void SetCommandLine(int argc, char *argv[]);
 	void SetCommandLine(const DAVA::String& cmdLine);
+
+    void * nativeWindowHandle;
 
 private:
     KeyedArchive * options;
