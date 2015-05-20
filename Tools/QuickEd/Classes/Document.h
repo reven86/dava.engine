@@ -27,8 +27,6 @@ public:
     PackageNode *GetPackage() const;
 
     SharedData *GetContext() const;
-    PropertiesModel *GetPropertiesModel() const; //TODO: this is deprecated
-    PackageModel* GetPackageModel() const; //TODO: this is deprecated
     QUndoStack *GetUndoStack() const;
     QtModelPackageCommandExecutor *GetCommandExecutor() const;
 
