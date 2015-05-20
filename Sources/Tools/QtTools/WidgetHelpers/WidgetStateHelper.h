@@ -42,7 +42,7 @@ private:
     QPointer< QWidget > trackedWidget;
     WidgetEvents trackedEvents;
 
-    QPointer< QScreen > prevScreen;
+    QPointer< QScreen > currentScreen;
 
 public:
     static WidgetStateHelper *create( QWidget *w );
