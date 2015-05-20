@@ -191,17 +191,19 @@ void Core::CreateRenderManager()
 {
     rhi::Api renderer = (rhi::Api)options->GetInt32("renderer");
     
+    void * externalData = nullptr;
 #if defined(__DAVAENGINE_WIN32__)
     renderer = rhi::RHI_DX9;
 //    renderer = rhi::RHI_GLES2;
+    externalData = NativeWindowHandle();
 #elif defined(__DAVAENGINE_MACOS__)
     renderer = rhi::RHI_GLES2;
 #elif defined(__DAVAENGINE_IPHONE__)
     renderer = rhi::RHI_METAL;
 //    renderer = rhi::RHI_GLES2;
 #endif
-
-    Renderer::Initialize( renderer );
+    
+    Renderer::Initialize(renderer, options->GetInt32("width"), options->GetInt32("height"), externalData);
     RenderSystem2D::Instance()->Init();
 }
         

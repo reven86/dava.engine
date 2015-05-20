@@ -46,8 +46,10 @@ namespace Renderer
 {
 
     //init
-    void Initialize(rhi::Api api);
+    void Initialize(rhi::Api api, int32 framebufferWidth, int32 framebufferHeight, void * externalData);
     void Uninitialize();
+
+    void Reset(int32 framebufferWidth, int32 framebufferHeight);
 
     rhi::Api GetAPI();
 
@@ -64,6 +66,8 @@ namespace Renderer
     const RenderCaps & GetCaps();
 
     //misc
+    int32 GetFramebufferWidth();
+    int32 GetFramebufferHeight();
     void RequestGLScreenShot(ScreenShotCallbackDelegate *screenShotCallback);
 
     //options

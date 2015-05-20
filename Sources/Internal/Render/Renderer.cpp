@@ -47,13 +47,18 @@ namespace //for private variables
     RenderCaps renderCaps;
     DynamicBindings dynamicBindings;
 
+    int32 framebufferWidth;
+    int32 framebufferHeight;
+
     ScreenShotCallbackDelegate * screenshotCallback = nullptr;
 }
 
-void Initialize(rhi::Api _api)
+void Initialize(rhi::Api _api, int32 _framebufferWidth, int32 _framebufferHeight, void * externalData)
 {
     DVASSERT(!ininialized);
     api = _api;
+    framebufferWidth = _framebufferWidth;
+    framebufferHeight = _framebufferHeight;
     rhi::Initialize(api);    
     rhi::ShaderCache::Initialize();
     ShaderDescriptorCache::Initialize();
@@ -72,6 +77,12 @@ void Uninitialize()
     rhi::ShaderCache::Unitialize();
     rhi::Uninitialize();
     ininialized = false;
+}
+
+void Reset(int32 _framebufferWidth, int32 _framebufferHeight)
+{
+    framebufferWidth = _framebufferWidth;
+    framebufferHeight = _framebufferHeight;
 }
 
 bool IsDeviceLost()
@@ -110,6 +121,16 @@ const RenderCaps & GetCaps()
 DynamicBindings& GetDynamicBindings()
 {
     return dynamicBindings;
+}
+
+int32 GetFramebufferWidth()
+{
+    return framebufferWidth;
+}
+
+int32 GetFramebufferHeight()
+{
+    return framebufferHeight;
 }
 
 void RequestGLScreenShot(ScreenShotCallbackDelegate *_screenShotCallback)

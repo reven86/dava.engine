@@ -233,7 +233,8 @@ private:
     rhi::HRenderPass passTargetHandle;
     rhi::HPacketList packetListTargetHandle;
 
-    bool drawToRendertarget;
+    int32 renderTargetWidth;
+    int32 renderTargetHeight;
 };
 
 inline void RenderSystem2D::SetHightlightControlsVerticesLimit(uint32 verticesCount)
