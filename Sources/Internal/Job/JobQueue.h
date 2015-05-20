@@ -33,7 +33,7 @@
 #include "Base/Atomic.h"
 #include "Base/Function.h"
 #include "Platform/Mutex.h"
-#include "Platform/Thread.h"
+#include "Platform/ConditionalVariable.h"
 #include "Thread/Spinlock.h"
 #include "Thread/Semaphore.h"
 
