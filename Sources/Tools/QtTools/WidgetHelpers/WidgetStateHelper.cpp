@@ -112,7 +112,8 @@ void WidgetStateHelper::onScreenChanged( QScreen* screen )
     Q_UNUSED( w );
     Q_UNUSED( h );
 
-    trackedWidget->setMaximumSize( screen->availableGeometry().size() );
+    // setMaximumSize cause widget to jump on previous monitor
+    //trackedWidget->setMaximumSize( screen->availableGeometry().size() );
     prevScreen = screen;
 }
 
