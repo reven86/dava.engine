@@ -1130,9 +1130,13 @@ namespace DAVA
         debugDrawEnabled = srcControl->debugDrawEnabled;
 
         SafeRelease(eventDispatcher);
-        DVASSERT_MSG(!srcControl->eventDispatcher || srcControl->eventDispatcher->GetEventsCount() == 0
-                    , Format("[UIControl::CopyDataFrom] Source control \"%s:%s\" have events. Event copying is forbidden.\nPlease show this message d_belsky or a_strokachuk."
-                    , srcControl->GetClassName().c_str(), srcControl->GetName().c_str()).c_str());
+        if (srcControl->eventDispatcher != nullptr && srcControl->eventDispatcher->GetEventsCount() != 0)
+        {
+            Logger::FrameworkDebug("[UIControl::CopyDataFrom] Source control \"%s:%s\" have events."
+                                   "Event copying is forbidden."
+                                   , srcControl->GetClassName().c_str()
+                                   , srcControl->GetName().c_str());
+        }
 
         RemoveAllControls();
         if (inputEnabled)
