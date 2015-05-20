@@ -75,7 +75,6 @@ private:
     PickerMap pickers;
     PickerMap colorSpaces;
     QEventLoop modalLoop;
-    QScopedPointer<QtPosSaver> posSaver;
     QColor oldColor;
     bool confirmed;
 };
