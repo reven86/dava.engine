@@ -34,6 +34,8 @@
 
 namespace DAVA
 {
+namespace Memory
+{
 
 void* TrackingAlloc(size_t size, int poolIndex)
 {
@@ -55,6 +57,7 @@ void InternalDealloc(void* ptr) DAVA_NOEXCEPT
     MemoryManager::Instance()->InternalDeallocate(ptr);
 }
 
+}   // namespace Memory
 }   // namespace DAVA
 
 #endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)

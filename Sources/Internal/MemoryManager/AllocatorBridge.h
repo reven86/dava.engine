@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_ALLOCTHUNK_H__
-#define __DAVAENGINE_ALLOCTHUNK_H__
+#ifndef __DAVAENGINE_ALLOCATORBRIDGE_H__
+#define __DAVAENGINE_ALLOCATORBRIDGE_H__
 
 #include "Base/BaseTypes.h"
 
@@ -35,16 +35,21 @@
 
 namespace DAVA
 {
+namespace Memory
+{
 
 // Freestanding allocation functions that can be used where MemoryManager.h cannot be included (e.g. in allocators)
 
+// For general use
 void* TrackingAlloc(size_t size, int poolIndex);
 void TrackingDealloc(void* ptr);
 
+// For internal use by MemoryManager
 void* InternalAlloc(size_t size) DAVA_NOEXCEPT;
 void InternalDealloc(void* ptr) DAVA_NOEXCEPT;
 
+}   // namespace Memory
 }   // namespace DAVA
 
 #endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
-#endif  // __DAVAENGINE_ALLOCTHUNK_H__
+#endif  // __DAVAENGINE_ALLOCATORBRIDGE_H__
