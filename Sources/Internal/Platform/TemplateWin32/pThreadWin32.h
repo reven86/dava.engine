@@ -30,7 +30,7 @@
 #ifndef __DAVAENGINE_PTHREAD_WIN32_H__
 #define __DAVAENGINE_PTHREAD_WIN32_H__ 
 
-#include "Platform/PlatformDetection.h"
+#include "Base/PlatformDetection.h"
 
 //mimic to some posix threads api
 //No cancellations!

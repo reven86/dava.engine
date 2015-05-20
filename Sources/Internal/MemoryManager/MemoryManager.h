@@ -76,8 +76,8 @@ public:
 
     static void InstallDumpCallback(DumpRequestCallback callback, void* arg);
 
-    DAVA_NOINLINE void* Allocate(size_t size, size_t poolIndex);
-    DAVA_NOINLINE void* AlignedAllocate(size_t size, size_t align, size_t poolIndex);
+    CC_NOINLINE void* Allocate(size_t size, size_t poolIndex);
+    CC_NOINLINE void* AlignedAllocate(size_t size, size_t align, size_t poolIndex);
     void* Reallocate(void * ptr, size_t size);
     void Deallocate(void* ptr);
 
@@ -120,7 +120,7 @@ private:
     
     size_t GetBlockRange(uint32 rangeBegin, uint32 rangeEnd, MemoryBlock** begin, MemoryBlock** end);
 
-    DAVA_NOINLINE void CollectBacktrace(Backtrace* backtrace, size_t nskip);
+    CC_NOINLINE void CollectBacktrace(Backtrace* backtrace, size_t nskip);
     void ObtainBacktraceSymbols(const Backtrace* backtrace);
     void ObtainAllBacktraceSymbols();
 
@@ -149,8 +149,8 @@ private:
 
     // Room for symbol table map and backtrace set for placement new
     // Use std::aligned_storage<...>::type as std::aligned_storage_t<...> doesn't work on Android
-    std::aligned_storage<sizeof(BacktraceMap), DAVA_ALIGNOF(BacktraceMap)>::type backtraceStorage;
-    std::aligned_storage<sizeof(SymbolMap), DAVA_ALIGNOF(SymbolMap)>::type symbolStorage;
+    std::aligned_storage<sizeof(BacktraceMap), CC_ALIGNOF(BacktraceMap)>::type backtraceStorage;
+    std::aligned_storage<sizeof(SymbolMap), CC_ALIGNOF(SymbolMap)>::type symbolStorage;
     BacktraceMap* backtraces;
     SymbolMap* symbols;
 #if defined(__DAVAENGINE_WIN32__)

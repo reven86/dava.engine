@@ -58,8 +58,8 @@ namespace DAVA
 		static bool CleanupOldTextures(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily forGPU, const DAVA::PixelFormat format);
 		static FilePath GetOutputPath(const TextureDescriptor &descriptor, eGPUFamily gpuFamily);
 		
-		DAVA_DEPRECATED(static void DeleteOldPVRTextureIfPowerVr_IOS(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily gpu));
-		DAVA_DEPRECATED(static void DeleteOldDXTTextureIfTegra(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily gpu));
+		CC_DEPRECATED(static void DeleteOldPVRTextureIfPowerVr_IOS(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily gpu));
+		CC_DEPRECATED(static void DeleteOldDXTTextureIfTegra(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily gpu));
 	};
 }
 

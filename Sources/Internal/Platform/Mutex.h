@@ -30,7 +30,7 @@
 #ifndef __DAVAENGINE_MUTEX_H__
 #define __DAVAENGINE_MUTEX_H__
 
-#include "Platform/PlatformDetection.h"
+#include "Base/PlatformDetection.h"
 #include "Base/Noncopyable.h"
 
 #if defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_ANDROID__)

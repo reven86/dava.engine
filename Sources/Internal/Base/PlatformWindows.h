@@ -26,24 +26,38 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_PLATFORM_ANDROID__
-#define __DAVAENGINE_PLATFORM_ANDROID__
+#ifndef __DAVAENGINE_PLATFORM_WINDOWS__
+#define __DAVAENGINE_PLATFORM_WINDOWS__
 
-#ifndef __DAVAENGINE_ANDROID__
-#error Invalid direct including of this header! Use PlatformDetection.h instead
+#ifndef __DAVAENGINE_WINDOWS__
+#   error Invalid direct including of this header! Use PlatformDetection.h instead
 #endif
 
 //Platform alias
-#define __DAVAENGINE_VEDROID__ __DAVAENGINE_ANDROID__
+#define __DAVAENGINE_WIN32__ __DAVAENGINE_WINDOWS__
 
-//compiler features
-#define DAVA_NOINLINE   __attribute__((noinline))
-#define DAVA_ALIGNOF(x) alignof(x)
-#define DAVA_NOEXCEPT   noexcept
-#define DAVA_CONSTEXPR  constexpr
-#define DAVA_DEPRECATED(func) func __attribute__ ((deprecated))
+//Platform defines
+#define __DAVASOUND_AL__
+#define WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+#   define NOMINMAX        // undef macro min and max from windows headers
+#endif
 
-// TODO: specific includes
-#undef __DAVASOUND_AL__
+#include <Windows.h>
+#include <Windowsx.h>
 
-#endif // __DAVAENGINE_PLATFORM_ANDROID__
+#undef DrawState
+#undef GetCommandLine
+#undef GetClassName
+#undef Yield
+
+//Detection of windows platform type
+#if !defined(WINAPI_FAMILY_PARTITION) || WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#   define __DAVAENGINE_WINDOWS_DESKTOP__
+#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
+#   define __DAVAENGINE_WINDOWS_STORE__
+#   define __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__MARKER__
+#   define __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__ DVASSERT_MSG(false, "Feature has no implementation or partly implemented")
+#endif
+
+#endif // __DAVAENGINE_PLATFORM_WINDOWS__

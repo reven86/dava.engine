@@ -26,36 +26,53 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Base/BaseTypes.h"
+#ifndef __DAVAENGINE_COMPILER_FEATURES__
+#define __DAVAENGINE_COMPILER_FEATURES__
 
-#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+#include "DavaConfig.h"
 
-#include "MemoryManager.h"
+#if defined(__GNUC__)
 
-/*
-* http://en.cppreference.com/w/cpp/memory/new/operator_new
-* The single-object version is called by the standard library implementations of all other versions,
-* so replacing that one function is sufficient to handle all deallocations.	(since C++11)
-*/
+#   define CC_NOINLINE    __attribute__((noinline))
+#   define CC_FORCEINLINE __attribute__((always_inline))
+#   define CC_ALIGNOF(x)  alignof(x)
+#   define CC_NOEXCEPT    noexcept
+#   define CC_CONSTEXPR   constexpr
+#   define CC_DEPRECATED(func) func __attribute__ ((deprecated))
 
-void* operator new(size_t size)
-{
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
-}
+#elif defined(_MSC_VER)
 
-void operator delete(void* ptr) CC_NOEXCEPT
-{
-    DAVA::MemoryManager::Instance()->Deallocate(ptr);
-}
+#   define CC_NOINLINE    __declspec(noinline)
+#   define CC_FORCEINLINE __forceinline
+#   define CC_ALIGNOF(x)  __alignof(x)
 
-void* operator new [](size_t size)
-{
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
-}
+#   if _MSC_VER >= 1900 //msvs 2015 RC or later
+//Constexpr is not supported even in VS2013 (partially supported in 2015 CTP)
+#       define CC_CONSTEXPR constexpr
+#       define CC_NOEXCEPT noexcept
+#   else
+#       define CC_CONSTEXPR
+#       define CC_NOEXCEPT throw()
+#   endif
 
-void operator delete[](void* ptr) CC_NOEXCEPT
-{
-    DAVA::MemoryManager::Instance()->Deallocate(ptr);
-}
+#   define CC_DEPRECATED(func) __declspec(deprecated) func
 
-#endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
+#endif
+
+//detecting of compiler features definitions
+#if !defined(CC_NOINLINE)    || \
+    !defined(CC_FORCEINLINE) || \
+    !defined(CC_ALIGNOF)     || \
+    !defined(CC_NOEXCEPT)    || \
+    !defined(CC_CONSTEXPR)   || \
+    !defined(CC_DEPRECATED)
+#   error Some compiler features is not detected for current platform
+#endif
+
+//suppressing of deprecated functions
+#ifdef DAVAENGINE_HIDE_DEPRECATED
+#   undef  CC_DEPRECATED
+#   define CC_DEPRECATED(func) func
+#endif
+
+#endif  // __DAVAENGINE_COMPILER_FEATURES__

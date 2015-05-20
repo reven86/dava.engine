@@ -26,53 +26,35 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_PLATFORM_WINDOWS__
-#define __DAVAENGINE_PLATFORM_WINDOWS__
+#ifndef __DAVAENGINE_PLATFORM_APPLE__
+#define __DAVAENGINE_PLATFORM_APPLE__
 
-#ifndef __DAVAENGINE_WINDOWS__
-#error Invalid direct including of this header! Use PlatformDetection.h instead
+#ifndef __DAVAENGINE_APPLE__
+#    error Invalid direct including of this header! Use PlatformDetection.h instead
 #endif
 
-//Platform alias
-#define __DAVAENGINE_WIN32__ __DAVAENGINE_WINDOWS__
+#include <AvailabilityMacros.h>
+#include <TargetConditionals.h>
+#include <mach/mach.h>
+#include <mach/mach_time.h>
+#include <unistd.h>
 
-//Compiler features
-#define DAVA_NOINLINE   __declspec(noinline)
-#define DAVA_ALIGNOF(x) __alignof(x)
+//Detections of iPhone
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
 
-#if _MSC_VER >= 1900 //msvs 2015 RC or later
-//Constexpr is not supported even in VS2013 (partially supported in 2015 CTP)
-    #define DAVA_CONSTEXPR constexpr
-    #define DAVA_NOEXCEPT noexcept
+#   if !defined(__DAVAENGINE_IPHONE__) // for old projects we check if users defined it
+#       define __DAVAENGINE_IPHONE__
+#   endif
+
+//Detection of MacOS
 #else
-    #define DAVA_CONSTEXPR
-    #define DAVA_NOEXCEPT throw()
+#   define __DAVAENGINE_MACOS__
 #endif
 
-#define DAVA_DEPRECATED(func) __declspec(deprecated) func
+#if MAC_OS_X_VERSION_10_6 <= MAC_OS_X_VERSION_MAX_ALLOWED
+#   define __DAVAENGINE_MACOS_VERSION_10_6__
+#endif
 
-//Platform defines
 #define __DAVASOUND_AL__
-#define WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX        // undef macro min and max from windows headers
-#endif
 
-#include <Windows.h>
-#include <Windowsx.h>
-
-#undef DrawState
-#undef GetCommandLine
-#undef GetClassName
-#undef Yield
-
-//Detection of windows platform type
-#if !defined(WINAPI_FAMILY_PARTITION) || WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-#define __DAVAENGINE_WINDOWS_DESKTOP__
-#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
-#define __DAVAENGINE_WINDOWS_STORE__
-#define __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__ DVASSERT_MSG(false, "Feature has no implementation or partly implemented")
-#define __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__MARKER__
-#endif
-
-#endif // __DAVAENGINE_PLATFORM_WINDOWS__
+#endif // __DAVAENGINE_PLATFORM_APPLE__

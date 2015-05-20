@@ -180,7 +180,7 @@ FilePath::FilePath(const FilePath &path)
     absolutePathname = path.absolutePathname;
 }
 
-FilePath::FilePath(FilePath&& path) DAVA_NOEXCEPT
+FilePath::FilePath(FilePath&& path) CC_NOEXCEPT
     : pathType(path.pathType),
     absolutePathname(std::move(path.absolutePathname))
 {
@@ -338,7 +338,7 @@ FilePath& FilePath::operator=(const FilePath &path)
     return *this;
 }
 
-FilePath& FilePath::operator=(FilePath&& path) DAVA_NOEXCEPT
+FilePath& FilePath::operator=(FilePath&& path) CC_NOEXCEPT
 {
     absolutePathname = std::move(path.absolutePathname);
     pathType = path.pathType;

@@ -26,43 +26,17 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_PLATFORM_APPLE__
-#define __DAVAENGINE_PLATFORM_APPLE__
+#ifndef __DAVAENGINE_PLATFORM_ANDROID__
+#define __DAVAENGINE_PLATFORM_ANDROID__
 
-#ifndef __DAVAENGINE_APPLE__
-#error Invalid direct including of this header! Use PlatformDetection.h instead
+#ifndef __DAVAENGINE_ANDROID__
+#   error Invalid direct including of this header! Use PlatformDetection.h instead
 #endif
 
-//?ompiler features
-#define DAVA_NOINLINE   __attribute__((noinline))
-#define DAVA_ALIGNOF(x) alignof(x)
-#define DAVA_NOEXCEPT   noexcept
-#define DAVA_CONSTEXPR  constexpr
-#define DAVA_DEPRECATED(func) func __attribute__ ((deprecated))
+//Platform alias
+#define __DAVAENGINE_VEDROID__ __DAVAENGINE_ANDROID__
 
-#include <AvailabilityMacros.h>
-#include <TargetConditionals.h>
+// TODO: specific includes
+#undef __DAVASOUND_AL__
 
-//Detections of iPhone
-#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
-    #if !defined(__DAVAENGINE_IPHONE__) // for old projects we check if users defined it
-        #define __DAVAENGINE_IPHONE__
-        #error IPHONE
-    #endif
-
-//Detection of MacOS
-#else
-    #define __DAVAENGINE_MACOS__
-#endif
-
-#if MAC_OS_X_VERSION_10_6 <= MAC_OS_X_VERSION_MAX_ALLOWED
-#define __DAVAENGINE_MACOS_VERSION_10_6__
-#endif
-
-#define __DAVASOUND_AL__
-
-#include <mach/mach.h>
-#include <mach/mach_time.h>
-#include <unistd.h>
-
-#endif // __DAVAENGINE_PLATFORM_APPLE__
+#endif // __DAVAENGINE_PLATFORM_ANDROID__

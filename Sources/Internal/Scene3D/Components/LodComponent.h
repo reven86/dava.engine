@@ -103,14 +103,14 @@ public:
 
 	static float32 GetDefaultDistance(int32 layer);
 
-	DAVA_DEPRECATED(inline int32 GetLodLayersCount() const);
+	CC_DEPRECATED(inline int32 GetLodLayersCount() const);
 	inline float32 GetLodLayerDistance(int32 layerNum) const;
 	inline float32 GetLodLayerNear(int32 layerNum) const;
 	inline float32 GetLodLayerFar(int32 layerNum) const;
 	inline float32 GetLodLayerNearSquare(int32 layerNum) const;
 	inline float32 GetLodLayerFarSquare(int32 layerNum) const;
 
-	DAVA_DEPRECATED(void GetLodData(Vector<LodData*> &retLodLayers));
+	CC_DEPRECATED(void GetLodData(Vector<LodData*> &retLodLayers));
 
 	int32 currentLod;
 	Vector<LodData> lodLayers;

@@ -32,7 +32,7 @@
 
 #include "DAVAVersion.h"
 #include "DAVAConfig.h"
-#include "Platform/PlatformDetection.h"
+#include "Base/PlatformDetection.h"
 #include "Debug/Stats.h"
 #include "MemoryManager/MemoryProfiler.h"
 

@@ -30,7 +30,8 @@
 #ifndef __DAVAENGINE_TYPES_H__
 #define __DAVAENGINE_TYPES_H__
 
-#include "Platform/PlatformDetection.h"
+#include "Base/CompilerFeatures.h"
+#include "Base/PlatformDetection.h"
 #include "Base/TemplateHelpers.h"
 
 #include <memory>
@@ -49,8 +50,8 @@
 #include <cerrno>
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
-#include "MemoryManager/AllocPools.h"
-#include "MemoryManager/MemoryManagerAllocator.h"
+#   include "MemoryManager/AllocPools.h"
+#   include "MemoryManager/MemoryManagerAllocator.h"
 #endif
 
 namespace DAVA
@@ -251,7 +252,7 @@ enum eAlign
 };
 
 template <typename T, size_t N>
-DAVA_CONSTEXPR size_t COUNT_OF(T(&)[N]) DAVA_NOEXCEPT { return N; }
+CC_CONSTEXPR size_t COUNT_OF(T(&)[N]) CC_NOEXCEPT { return N; }
     
 #ifndef REMOVE_IN_RELEASE
     #if defined(__DAVAENGINE_DEBUG__)

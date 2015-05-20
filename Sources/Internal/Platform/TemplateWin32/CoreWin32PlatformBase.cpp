@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Platform/PlatformDetection.h"
+#include "Base/PlatformDetection.h"
 #if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 
 #include "Platform/TemplateWin32/CorePlatformWin32.h"

@@ -60,7 +60,7 @@ public:
 
 	FilePath();
     FilePath(const FilePath & path);
-    FilePath(FilePath&& path) DAVA_NOEXCEPT;
+    FilePath(FilePath&& path) CC_NOEXCEPT;
     FilePath(const String & sourcePath);
     FilePath(const char * sourcePath);
     FilePath(const FilePath & directory, const String & filename);
@@ -79,7 +79,7 @@ public:
 
 
     FilePath& operator=(const FilePath & path);
-    FilePath& operator=(FilePath&& path) DAVA_NOEXCEPT;
+    FilePath& operator=(FilePath&& path) CC_NOEXCEPT;
     FilePath operator+(const String & path) const;
     FilePath& operator+=(const String & path);
 

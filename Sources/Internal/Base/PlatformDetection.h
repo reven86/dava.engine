@@ -26,9 +26,6 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-/*
-*/
-
 #ifndef __DAVAENGINE_PLATFORM_DETECTION__
 #define __DAVAENGINE_PLATFORM_DETECTION__
 
@@ -37,38 +34,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //Detection of Apple
 #if defined(__GNUC__) && \
        (defined(__APPLE_CPP__) || defined(__APPLE_CC__) || defined(__MACOS_CLASSIC__))
-#define __DAVAENGINE_APPLE__
-#include "PlatformApple.h"
+
+#   define __DAVAENGINE_APPLE__
+#   include "PlatformApple.h"
 
 //Detection of Windows
 #elif defined(_WIN32)
 
-#define __DAVAENGINE_WINDOWS__
-#include "PlatformWindows.h"
+#   define __DAVAENGINE_WINDOWS__
+#   include "PlatformWindows.h"
 
 //Detection of Android
 #elif defined(__ANDROID__) || defined(ANDROID)
 
-#define __DAVAENGINE_ANDROID__
-#include "PlatformAndroid.h"
+#   define __DAVAENGINE_ANDROID__
+#   include "PlatformAndroid.h"
 
 #else
-#error Unsupported platform detected
-#endif
-
-//detecting of compiler features definitions
-#if !defined(DAVA_NOINLINE)  || \
-    !defined(DAVA_ALIGNOF)   || \
-    !defined(DAVA_NOEXCEPT)  || \
-    !defined(DAVA_CONSTEXPR) || \
-    !defined(DAVA_DEPRECATED)
-#error Some compiler features is not detected for current platform
-#endif
-
-//suppressing of deprecated functions
-#ifdef DAVAENGINE_HIDE_DEPRECATED
-#undef  DAVA_DEPRECATED
-#define DAVA_DEPRECATED(func) func
+#   error Unsupported platform detected
 #endif
 
 #endif // __DAVAENGINE_PLATFORM_DETECTION__

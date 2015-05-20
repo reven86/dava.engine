@@ -2,7 +2,7 @@
 
 /*------------------------------ internal #includes ---------------------- */
 
-#include "Platform/PlatformDetection.h"
+#include "Base/PlatformDetection.h"
 
 #ifdef _MSC_VER
 #pragma warning( disable : 4146 ) /* no "unsigned" warnings */
