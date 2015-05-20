@@ -1,16 +1,16 @@
 #ifndef __UI_EDITOR_FONT_VALUE_PROPERTY__
 #define __UI_EDITOR_FONT_VALUE_PROPERTY__
 
-#include "ValueProperty.h"
+#include "IntrospectionProperty.h"
 
-class FontValueProperty : public ValueProperty
+class FontValueProperty : public IntrospectionProperty
 {
 public:
-    FontValueProperty(DAVA::BaseObject *object, const DAVA::InspMember *member, ValueProperty *sourceProperty, eCopyType copyType);
+    FontValueProperty(DAVA::BaseObject *object, const DAVA::InspMember *member, FontValueProperty *sourceProperty, eCloneType copyType);
     virtual ~FontValueProperty();
     
     int GetCount() const override;
-    BaseProperty *GetProperty(int index) const override;
+    AbstractProperty *GetProperty(int index) const override;
 
     DAVA::VariantType GetValue() const override;
     void RefreshFontValue();

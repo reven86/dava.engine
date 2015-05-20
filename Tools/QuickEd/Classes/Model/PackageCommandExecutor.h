@@ -6,8 +6,9 @@
 class ControlNode;
 class PackageControlsNode;
 class PackageNode;
-class BaseProperty;
+class AbstractProperty;
 class ControlsContainerNode;
+class ComponentPropertiesSection;
 
 class PackageCommandExecutor : public DAVA::BaseObject
 {
@@ -16,8 +17,10 @@ public:
     virtual ~PackageCommandExecutor();
     
     virtual void AddImportedPackageIntoPackage(PackageControlsNode *importedPackageControls, PackageNode *package) = 0;
-    virtual void ChangeProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &value) = 0;
-    virtual void ResetProperty(ControlNode *node, BaseProperty *property) = 0;
+    virtual void ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value) = 0;
+    virtual void ResetProperty(ControlNode *node, AbstractProperty *property) = 0;
+    virtual void AddComponent(ControlNode *node, DAVA::uint32 componentType) = 0;
+    virtual void RemoveComponent(ControlNode *node, DAVA::uint32 componentType, DAVA::uint32 componentIndex) = 0;
 
     virtual void InsertControl(ControlNode *control, ControlsContainerNode *package, DAVA::int32 destIndex) = 0;
     virtual void CopyControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex) = 0;
@@ -32,8 +35,10 @@ public:
     virtual ~DefaultPackageCommandExecutor();
 
     void AddImportedPackageIntoPackage(PackageControlsNode *importedPackageControls, PackageNode *package) override;
-    void ChangeProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &value) override;
-    void ResetProperty(ControlNode *node, BaseProperty *property) override;
+    void ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value) override;
+    void ResetProperty(ControlNode *node, AbstractProperty *property) override;
+    void AddComponent(ControlNode *node, DAVA::uint32 componentType) override;
+    void RemoveComponent(ControlNode *node, DAVA::uint32 componentType, DAVA::uint32 componentIndex) override;
     
     void InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex) override;
     void CopyControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex) override;

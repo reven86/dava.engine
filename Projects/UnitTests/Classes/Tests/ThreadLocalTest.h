@@ -41,7 +41,7 @@ public:
     void ThreadLocalTestFunc(PerfFuncData * data);
 
 private:
-    void ThreadFunc(BaseObject*, void*, void*);
+    void ThreadFunc(DAVA::BaseObject*, void*, void*);
 };
 
 #endif //__THREADLOCALTEST_TEST_H__

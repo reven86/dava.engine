@@ -7,13 +7,17 @@
 #include "UI/Commands/InsertControlCommand.h"
 #include "UI/Commands/RemoveControlCommand.h"
 #include "UI/Commands/InsertImportedPackageCommand.h"
-
-#include "UI/Package/PackageModel.h"
+#include "UI/Commands/AddComponentCommand.h"
+#include "UI/Commands/RemoveComponentCommand.h"
 
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/ImportedPackagesNode.h"
+
+#include "Model/ControlProperties/ComponentPropertiesSection.h"
+#include "Model/ControlProperties/RootProperty.h"
+
 #include "Model/YamlPackageSerializer.h"
 #include "Model/EditorUIPackageBuilder.h"
 
@@ -32,46 +36,49 @@ QtModelPackageCommandExecutor::~QtModelPackageCommandExecutor()
 
 void QtModelPackageCommandExecutor::AddImportedPackageIntoPackage(PackageControlsNode *importedPackageControls, PackageNode *package)
 {
-    PackageModel *model = document->GetPackageModel();
-    PushCommand(new InsertImportedPackageCommand(model, importedPackageControls, package, package->GetImportedPackagesNode()->GetCount()));
+    PushCommand(new InsertImportedPackageCommand(package, importedPackageControls, package->GetImportedPackagesNode()->GetCount()));
 }
 
-void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &value)
+void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value)
 {
     if (!property->IsReadOnly())
     {
-        BeginMacro("Change Property");
-        PushCommand(new ChangePropertyValueCommand(document, node, property, value));
-        ChangeDefaultProperties(node->GetInstances(), property, value);
+        PushCommand(new ChangePropertyValueCommand(document->GetPackage(), node, property, value));
+    }
+}
+
+void QtModelPackageCommandExecutor::ResetProperty(ControlNode *node, AbstractProperty *property)
+{
+    if (!property->IsReadOnly())
+    {
+        PushCommand(new ChangePropertyValueCommand(document->GetPackage(), node, property));
+    }
+}
+
+void QtModelPackageCommandExecutor::AddComponent(ControlNode *node, uint32 componentType)
+{
+    if (node->GetRootProperty()->CanAddComponent(componentType))
+    {
+        BeginMacro("Add Component");
+        UIComponent::eType type = static_cast<UIComponent::eType>(componentType);
+        int32 index = node->GetControl()->GetComponentCount(componentType);
+        ComponentPropertiesSection *section = new ComponentPropertiesSection(node->GetControl(), type, index, nullptr, AbstractProperty::CT_COPY);
+        AddComponentImpl(node, section);
+        SafeRelease(section);
         EndMacro();
     }
 }
 
-void QtModelPackageCommandExecutor::ResetProperty(ControlNode *node, BaseProperty *property)
+void QtModelPackageCommandExecutor::RemoveComponent(ControlNode *node, uint32 componentType, DAVA::uint32 componentIndex)
 {
-    if (!property->IsReadOnly())
+    if (node->GetRootProperty()->CanRemoveComponent(componentType))
     {
-        BeginMacro("Reset Property");
-        PushCommand(new ChangePropertyValueCommand(document, node, property));
-        ChangeDefaultProperties(node->GetInstances(), property, property->GetDefaultValue());
-        EndMacro();
-    }
-}
-
-void QtModelPackageCommandExecutor::ChangeDefaultProperties(const DAVA::Vector<ControlNode *> &instances, BaseProperty *property, const DAVA::VariantType &value)
-{
-    for (ControlNode *instance : instances)
-    {
-        Vector<String> path = property->GetPath();
-        BaseProperty *nodeProperty = instance->GetPropertyByPath(path);
-        if (nodeProperty)
+        ComponentPropertiesSection *section = node->GetRootProperty()->FindComponentPropertiesSection(componentType, componentIndex);
+        if (section)
         {
-            PushCommand(new ChangeDefaultValueCommand(document, instance, nodeProperty, value));
-            ChangeDefaultProperties(instance->GetInstances(), nodeProperty, nodeProperty->GetValue());
-        }
-        else
-        {
-            DVASSERT(false);
+            BeginMacro("Remove Component");
+            RemoveComponentImpl(node, section);
+            EndMacro();
         }
     }
 }
@@ -190,10 +197,8 @@ bool QtModelPackageCommandExecutor::Paste(PackageNode *root, ControlsContainerNo
 
 void QtModelPackageCommandExecutor::InsertControlImpl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex)
 {
-    PackageModel *model = document->GetPackageModel();
+    PushCommand(new InsertControlCommand(document->GetPackage(), control, dest, destIndex));
     
-    PushCommand(new InsertControlCommand(model, control, dest, destIndex));
-
     ControlNode *destControl = dynamic_cast<ControlNode*>(dest);
     if (destControl)
     {
@@ -209,14 +214,12 @@ void QtModelPackageCommandExecutor::InsertControlImpl(ControlNode *control, Cont
 
 void QtModelPackageCommandExecutor::RemoveControlImpl(ControlNode* node)
 {
-    PackageModel *model = document->GetPackageModel();
-    
     ControlsContainerNode *src = dynamic_cast<ControlsContainerNode*>(node->GetParent());
     if (src)
     {
         int32 srcIndex = src->GetIndex(node);
         node->Retain();
-        PushCommand(new RemoveControlCommand(model, node, src, srcIndex));
+        PushCommand(new RemoveControlCommand(document->GetPackage(), node, src, srcIndex));
         
         Vector<ControlNode*> instances = node->GetInstances();
         for (ControlNode *instance : instances)
@@ -229,6 +232,31 @@ void QtModelPackageCommandExecutor::RemoveControlImpl(ControlNode* node)
         DVASSERT(false);
     }
     
+}
+
+void QtModelPackageCommandExecutor::AddComponentImpl(ControlNode *node, ComponentPropertiesSection *section)
+{
+    PushCommand(new AddComponentCommand(document->GetPackage(), node, section));
+    Vector<ControlNode*> instances = node->GetInstances();
+    for (ControlNode *instance : instances)
+    {
+        UIComponent::eType type = static_cast<UIComponent::eType>(section->GetComponentType());
+        int32 index = section->GetComponentIndex();
+        ComponentPropertiesSection *instanceSection = new ComponentPropertiesSection(instance->GetControl(), type, index, section, AbstractProperty::CT_INHERIT);
+        AddComponentImpl(instance, instanceSection);
+        SafeRelease(instanceSection);
+    }
+}
+
+void QtModelPackageCommandExecutor::RemoveComponentImpl(ControlNode *node, ComponentPropertiesSection *section)
+{
+    PushCommand(new RemoveComponentCommand(document->GetPackage(), node, section));
+    Vector<ControlNode*> instances = node->GetInstances();
+    for (ControlNode *instance : instances)
+    {
+        ComponentPropertiesSection *instanceSection = instance->GetRootProperty()->FindComponentPropertiesSection(section->GetComponentType(), section->GetComponentIndex());
+        RemoveComponentImpl(instance, instanceSection);
+    }
 }
 
 bool QtModelPackageCommandExecutor::IsNodeInHierarchy(const PackageBaseNode *node) const

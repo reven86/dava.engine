@@ -168,7 +168,7 @@ void UIControlBackground::SetSprite(Sprite* drawSprite, int32 drawFrame)
 }
 void UIControlBackground::SetFrame(int32 drawFrame)
 {
-    DVASSERT(spr);
+    DVASSERT(spr != nullptr || drawFrame == 0);
     int32 maxFrame = (spr != nullptr) ? (spr->GetFrameCount() - 1) : (0);
     frame = Clamp(drawFrame, 0, maxFrame);
 }
