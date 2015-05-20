@@ -48,7 +48,7 @@ class HoodSystem;
 class EntityModificationSystemDelegate
 {
 public:
-    virtual ~EntityModificationSystemDelegate() {}
+    virtual ~EntityModificationSystemDelegate() = default;
 
     virtual void WillClone(DAVA::Entity *originalEntity) = 0;
     virtual void DidCloned(DAVA::Entity *originalEntity, DAVA::Entity *newEntity) = 0;
