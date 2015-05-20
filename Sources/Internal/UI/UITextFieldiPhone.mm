@@ -239,15 +239,30 @@ namespace DAVA
 		[center addObserver:textFieldHolder selector:@selector(keyboardFrameDidChange:)
 					   name:UIKeyboardDidChangeFrameNotification object:nil];
 
-        auto func = [](CFNotificationCenterRef center, void *observer,
+        auto funcHide = [](CFNotificationCenterRef center, void *observer,
                        CFStringRef name, const void *object, CFDictionaryRef userInfo)
         {
-            (static_cast<UITextFieldiPhone *>(observer))->UpdateStaticTexture();
+            UITextFieldiPhone* tf = (static_cast<UITextFieldiPhone *>(observer));
+            tf->deltaMoveControl = MOVE_TO_OFFSCREEN_STEP;
+            tf->UpdateStaticTexture();
+        };
+        
+        auto funcShow = [](CFNotificationCenterRef center, void *observer,
+                           CFStringRef name, const void *object, CFDictionaryRef userInfo)
+        {
+            UITextFieldiPhone* tf = (static_cast<UITextFieldiPhone *>(observer));
+            tf->deltaMoveControl = 0;
+            tf->UpdateStaticTexture();
         };
         
         CFNotificationCenterAddObserver(CFNotificationCenterGetLocalCenter(), this,
-            func,
+            funcHide,
             (__bridge CFStringRef) UIKeyboardDidHideNotification, nil,
+            CFNotificationSuspensionBehaviorDeliverImmediately);
+        
+        CFNotificationCenterAddObserver(CFNotificationCenterGetLocalCenter(), this,
+            funcShow,
+            (__bridge CFStringRef) UIKeyboardWillShowNotification, nil,
             CFNotificationSuspensionBehaviorDeliverImmediately);
     }
     
@@ -263,7 +278,10 @@ namespace DAVA
         [center removeObserver:textFieldHolder name:UIKeyboardDidChangeFrameNotification object:nil];
         
         CFNotificationCenterRemoveObserver(CFNotificationCenterGetLocalCenter(), this,
-            (__bridge CFStringRef) UIKeyboardDidHideNotification, nil);
+           (__bridge CFStringRef) UIKeyboardDidHideNotification, nil);
+        
+        CFNotificationCenterRemoveObserver(CFNotificationCenterGetLocalCenter(), this,
+           (__bridge CFStringRef) UIKeyboardWillShowNotification, nil);
     }
     
     void UITextFieldiPhone::UpdateNativeRect(const Rect & virtualRect, int xOffset)
@@ -285,17 +303,10 @@ namespace DAVA
     
     void UITextFieldiPhone::UpdateRect(const Rect & rect)
     {
-        if(renderToTexture)
+        UpdateNativeRect(rect, deltaMoveControl);
+        if (rect.dx != prevRect.dx || rect.dy != prevRect.dy)
         {
-            UpdateNativeRect(rect, MOVE_TO_OFFSCREEN_STEP);
-            if (rect.dx != prevRect.dx || rect.dy != prevRect.dy)
-            {
-                UpdateStaticTexture();
-            }
-        }
-        else
-        {
-            UpdateNativeRect(rect, 0);
+            UpdateStaticTexture();
         }
         prevRect = rect;
     }
@@ -450,7 +461,7 @@ namespace DAVA
     
     void UITextFieldiPhone::UpdateStaticTexture()
     {
-        if (renderToTexture)
+        if (renderToTexture && deltaMoveControl != 0)
         {
             UITextFieldHolder * textFieldHolder = static_cast<UITextFieldHolder*>(objcClassPtr);
             DVASSERT(textFieldHolder);
@@ -474,7 +485,6 @@ namespace DAVA
     void UITextFieldiPhone::SetRenderToTexture(bool value)
     {
         renderToTexture = value;
-        UpdateStaticTexture();
     }
     
     bool UITextFieldiPhone::IsRenderToTexture() const

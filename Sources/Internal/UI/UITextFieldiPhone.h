@@ -93,6 +93,7 @@ private:
     UITextField& davaTextField;
 	void * objcClassPtr;
     bool renderToTexture;
+    int deltaMoveControl = 0;
 };
 };
 
