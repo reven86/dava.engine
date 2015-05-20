@@ -177,7 +177,7 @@ void MemoryManager::Update()
 
 DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, int32 poolIndex)
 {
-    assert(IsInternalAllocationPool(poolIndex) || (ALLOC_POOL_TOTAL < poolIndex && poolIndex < MAX_ALLOC_POOL_COUNT));
+    assert(ALLOC_POOL_TOTAL < poolIndex && poolIndex < MAX_ALLOC_POOL_COUNT);
 
     // On zero-sized allocation request allocate 1 byte to return unique memory block
     if (0 == size)
@@ -199,7 +199,7 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, int32 poolIndex)
         block->realBlockStart = static_cast<void*>(block);
         block->allocByApp = static_cast<uint32>(size);
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
-        if (!IsInternalAllocationPool(poolIndex))
+        if (true) //(!IsInternalAllocationPool(poolIndex))
         {
             /*if (tlsAllocScopeStack.IsCreated())
             {
@@ -253,7 +253,7 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, in
 {
     // TODO: check whether size is integral multiple of align
     assert(align > 0 && 0 == (align & (align - 1)));    // Check whether align is power of 2
-    assert(IsInternalAllocationPool(poolIndex) || (ALLOC_POOL_TOTAL < poolIndex && poolIndex < MAX_ALLOC_POOL_COUNT));
+    assert(ALLOC_POOL_TOTAL < poolIndex && poolIndex < MAX_ALLOC_POOL_COUNT);
 
     // On zero-sized allocation request allocate 1 byte to return unique memory block
     if (0 == size)
@@ -285,7 +285,7 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, in
         block->realBlockStart = realPtr;
         block->allocByApp = static_cast<uint32>(size);
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
-        if (!IsInternalAllocationPool(poolIndex))
+        if (true)   //(!IsInternalAllocationPool(poolIndex))
         {
             /*if (tlsAllocScopeStack.IsCreated())
             {

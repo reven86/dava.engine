@@ -38,12 +38,44 @@
 #include <cstddef>
 #include <limits>
 
-#include "AllocPools.h"
-#include "AllocThunk.h"
+#include "MemoryManager/AllocatorBridge.h"
 
 namespace DAVA
 {
 
+template<typename T, int AllocPoolT>
+class MemoryManagerAllocator : public std::allocator<T>
+{
+public:
+    template<typename U>
+    struct rebind
+    {
+        typedef MemoryManagerAllocator<U, AllocPoolT> other;
+    };
+
+    MemoryManagerAllocator() = default;
+    MemoryManagerAllocator(const MemoryManagerAllocator&) = default;
+    MemoryManagerAllocator& operator = (const MemoryManagerAllocator&) = delete;
+    template <typename U>
+    MemoryManagerAllocator(const MemoryManagerAllocator<U, AllocPoolT>&) {}
+    ~MemoryManagerAllocator() = default;
+
+    T* allocate(const size_t n) const
+    {
+        void* ptr = Memory::TrackingAlloc(n * sizeof(T), AllocPoolT);
+        if (ptr != nullptr)
+        {
+            return static_cast<T*>(ptr);
+        }
+        throw std::bad_alloc();
+    }
+    void deallocate(T* const ptr, const size_t /*n*/) const
+    {
+        Memory::TrackingDealloc(ptr);
+    }
+};
+
+#if 0
 // DAVA types cannot be used here as this file is included in Base/BaseTypes.h
 template<typename T, int AllocPoolT>
 class MemoryManagerAllocator
@@ -165,6 +197,7 @@ inline T* MemoryManagerAllocator<T, AllocPoolT>::allocate(const size_t n, const 
 {
     return allocate(n);
 }
+#endif
 
 }   // namespace DAVA
 

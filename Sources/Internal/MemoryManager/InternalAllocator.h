@@ -36,13 +36,48 @@
 #include <cstddef>
 #include <limits>
 
-#include "MemoryManager/AllocThunk.h"
+#include "MemoryManager/AllocatorBridge.h"
 
 namespace DAVA
 {
 
 template<typename T>
-class BypassAllocator final
+class InternalAllocator final : public std::allocator<T>
+{
+public:
+    typedef T value_type;
+
+    template<typename U> struct rebind { typedef InternalAllocator<U> other; };
+
+    InternalAllocator() {}
+    InternalAllocator(const InternalAllocator<T>&) = default;
+    template <typename U>
+    InternalAllocator(const InternalAllocator<U>&) {}
+
+    InternalAllocator<T>& operator = (const InternalAllocator<T>&) = default;
+    template <typename Other>
+    InternalAllocator<T>& operator = (const InternalAllocator<Other>&) DAVA_NOEXCEPT {return *this;};
+    
+    ~InternalAllocator() = default;
+
+    T* allocate(size_t n)
+    {
+        void* ptr = Memory::InternalAlloc(n * sizeof(T));
+        if (ptr != nullptr)
+        {
+            return static_cast<T*>(ptr);
+        }
+        throw std::bad_alloc();
+    }
+    void deallocate(void* ptr, size_t)
+    {
+        Memory::InternalDealloc(ptr);
+    }
+};
+
+#if 0
+template<typename T>
+class InternalAllocator final
 {
 public:
     typedef T* pointer;
@@ -56,22 +91,22 @@ public:
     template <typename U>
     struct rebind
     {
-        typedef BypassAllocator<U> other;
+        typedef InternalAllocator<U> other;
     };
 
-    BypassAllocator() = default;
-    BypassAllocator(const BypassAllocator&) = default;
-    BypassAllocator& operator = (const BypassAllocator&) = delete;
+    InternalAllocator() = default;
+    InternalAllocator(const InternalAllocator&) = default;
+    InternalAllocator& operator = (const InternalAllocator&) = delete;
     template <typename U>
-    BypassAllocator(const BypassAllocator<U>&) {}
-    ~BypassAllocator() = default;
+    InternalAllocator(const InternalAllocator<U>&) {}
+    ~InternalAllocator() = default;
 
     T* address(T& ref) const;
     const T* address(const T& cref) const;
     size_t max_size() const;
 
-    bool operator == (const BypassAllocator& other) const;
-    bool operator != (const BypassAllocator& other) const;
+    bool operator == (const InternalAllocator& other) const;
+    bool operator != (const InternalAllocator& other) const;
 
     void construct(T* const ptr, const T& obj) const;
     template<typename U, typename... Args>
@@ -88,37 +123,37 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 template<typename T>
-inline T* BypassAllocator<T>::address(T& ref) const
+inline T* InternalAllocator<T>::address(T& ref) const
 {
     return &ref;
 }
 
 template<typename T>
-inline const T* BypassAllocator<T>::address(const T& cref) const
+inline const T* InternalAllocator<T>::address(const T& cref) const
 {
     return &cref;
 }
 
 template<typename T>
-inline size_t BypassAllocator<T>::max_size() const
+inline size_t InternalAllocator<T>::max_size() const
 {
     return std::numeric_limits<size_t>::max() / sizeof(T);
 }
 
 template<typename T>
-inline bool BypassAllocator<T>::operator == (const BypassAllocator& other) const
+inline bool InternalAllocator<T>::operator == (const InternalAllocator& other) const
 {
     return true;
 }
 
 template<typename T>
-inline bool BypassAllocator<T>::operator != (const BypassAllocator& other) const
+inline bool InternalAllocator<T>::operator != (const InternalAllocator& other) const
 {
     return !(*this == other);
 }
 
 template<typename T>
-inline void BypassAllocator<T>::construct(T* const ptr, const T& obj) const
+inline void InternalAllocator<T>::construct(T* const ptr, const T& obj) const
 {
     void* const buf = static_cast<void*>(ptr);
     new (buf) T(obj);
@@ -126,20 +161,20 @@ inline void BypassAllocator<T>::construct(T* const ptr, const T& obj) const
 
 template<typename T>
 template<typename U, typename... Args>
-inline void BypassAllocator<T>::construct(U* ptr, Args&&... args)
+inline void InternalAllocator<T>::construct(U* ptr, Args&&... args)
 {
     void* buf = static_cast<void*>(ptr);
     new (buf) U(std::forward<Args>(args)...);
 }
 
 template<typename T>
-inline void BypassAllocator<T>::destroy(T* const ptr) const
+inline void InternalAllocator<T>::destroy(T* const ptr) const
 {
     ptr->~T();
 }
 
 template<typename T>
-inline T* BypassAllocator<T>::allocate(const size_t n) const
+inline T* InternalAllocator<T>::allocate(const size_t n) const
 {
     void* ptr = InternalAlloc(n * sizeof(T));
     if (nullptr == ptr)
@@ -150,17 +185,18 @@ inline T* BypassAllocator<T>::allocate(const size_t n) const
 }
 
 template<typename T>
-inline void BypassAllocator<T>::deallocate(T* const ptr, const size_t n) const
+inline void InternalAllocator<T>::deallocate(T* const ptr, const size_t n) const
 {
     InternalDealloc(ptr);
 }
 
 template<typename T>
 template <typename U>
-inline T* BypassAllocator<T>::allocate(const size_t n, const U*) const
+inline T* InternalAllocator<T>::allocate(const size_t n, const U*) const
 {
     return allocate(n);
 }
+#endif
 
 }   // namespace DAVA
 
