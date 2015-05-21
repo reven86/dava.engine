@@ -111,6 +111,8 @@ public:
      */
 	String GetPathID(Entity * root);
 
+    uint32 GetID() const;
+
 	/**
         \brief Get Node by pathID, generated in prev function.
         \returns result Entity.
@@ -378,15 +380,20 @@ protected:
     String RecursiveBuildFullName(Entity * node, Entity * endNode);
 
 	void SetParent(Entity * node);
+    void ResolveId();
 
 	Scene * scene;
 	Entity * parent;
 	FastName name;
 	int32 tag;
     uint32 flags;
+    uint32 id;
     
+    bool HasValidID() const;
+    void InvalidateID();
+    void SetID(uint32 id) {} // empty function to be added into introspection
+
 private:
-        
 	Vector<Component *> components;
     EntityFamily * family;
     void DetachComponent(Vector<Component *>::iterator & it);
@@ -398,8 +405,8 @@ public:
 	INTROSPECTION_EXTEND(Entity, BaseObject,
 		MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
         MEMBER(tag, "Tag", I_SAVE | I_VIEW | I_EDIT)
-        MEMBER( flags, "Flags", I_SAVE | I_VIEW | I_EDIT )
-
+        MEMBER(flags, "Flags", I_SAVE | I_VIEW | I_EDIT )
+        PROPERTY("id", "id", GetID, SetID, I_VIEW | I_SAVE)
         PROPERTY("visible", "Visible", GetVisible, SetVisible, I_VIEW | I_EDIT)
     );
 };
@@ -585,6 +592,20 @@ inline uint32 Entity::GetComponentCount (uint32 componentType) const
     return family->GetComponentsCount (componentType);
 }
 
+inline uint32 Entity::GetID() const
+{
+    return (id & 0x7FFFFFFF);
+}
+
+inline bool Entity::HasValidID() const
+{
+    return ((0 != id) && !(id & 0x80000000));
+}
+
+inline void Entity::InvalidateID()
+{
+    id |= 0x80000000;
+}
 
 };
 

@@ -50,6 +50,7 @@
 #include "Scene3D/Components/SwitchComponent.h"
 #include "Utils/Random.h"
 #include "Scene3D/Components/ComponentHelpers.h"
+#include <functional>
 
 #define USE_VECTOR(x) ((((uint64)1 << (uint64)x) & vectorComponentsMask) != (uint64)0)
 
@@ -71,6 +72,7 @@ Entity::Entity()
     , parent(nullptr)
     , tag(0)
     , family(nullptr)
+    , id(0)
 {
 	flags = NODE_VISIBLE | NODE_UPDATABLE | NODE_LOCAL_MATRIX_IDENTITY;
     UpdateFamily();
@@ -171,6 +173,8 @@ void Entity::SetParent(Entity * _parent)
 {
 	parent = _parent;
 	((TransformComponent*)GetComponent(Component::TRANSFORM_COMPONENT))->SetParent(parent);
+
+    GetScene();
 }
 	
 void Entity::AddNode(Entity * node)
@@ -564,6 +568,8 @@ Entity* Entity::Clone(Entity *dstNode)
 		
 	dstNode->name = name;
 	dstNode->tag = tag;
+    dstNode->id = id;
+    dstNode->InvalidateID();
     
     //flags are intentionally not cloned
 	//dstNode->flags = flags;
@@ -716,6 +722,7 @@ void Entity::Save(KeyedArchive * archive, SerializationContext * serializationCo
 
 	archive->SetString("name", String(name.c_str()));
 	archive->SetInt32("tag", tag);
+    archive->SetUInt32("id", id);
 	archive->SetByteArrayAsType("localTransform", GetLocalTransform());
 		
 	archive->SetUInt32("flags", flags);
@@ -756,11 +763,12 @@ void Entity::Load(KeyedArchive * archive, SerializationContext * serializationCo
         
 	name = FastName(archive->GetString("name", "").c_str());
 	tag = archive->GetInt32("tag", 0);
+    id = archive->GetUInt32("id", 0);
 		
 	flags = archive->GetUInt32("flags", NODE_VISIBLE);
 	flags |= NODE_UPDATABLE;
 	flags &= ~TRANSFORM_DIRTY;
-		
+
 	const Matrix4 & localTransform = archive->GetByteArrayAsType("localTransform", GetLocalTransform());
 	SetLocalTransform(localTransform);
 		
@@ -1158,6 +1166,91 @@ uint32 Entity::CountChildEntitiesWithComponent(Component::eType type, bool recur
     }
     return count;
 }
+
+void Entity::ResolveId()
+{
+    Scene *scene = GetScene();
+    if(nullptr != scene)
+    {
+        Vector<bool> entityIds;
+        Vector<Entity *> entityNeedId;
+
+        // retrieve current maximal id from scene
+        uint32 maxId = scene->id;
+
+        if(maxId > 0)
+        {
+            // we can use scene id from entities, because scene will have
+            // a new one, when resolveId function will be finished
+            maxId--;
+        }
+
+        std::function<void(Entity *)> doResolveIds = [&](Entity *entity)
+        {
+            bool canTakeOriginalId = false;
+            uint32 entityId = entity->GetID();
+
+            // check if entity has some ID
+            if(0 != entityId)
+            {
+                // to be able to store what id was already take we shout 
+                // care about out bit field size by resizing it, if required 
+                if(entityIds.size() <= entityId)
+                {
+                    // increase the size to the multiple of 16 
+                    entityIds.resize((entityId | 0xF) + 1);
+                }
+
+                // check if entity has valid id, or invalid id it has still 
+                // can be taken by this entity (id will become valid)
+                if(entity->HasValidID() || !entityIds[entityId])
+                {
+                    canTakeOriginalId = true;
+                }
+
+                // keep finding maxId
+                if(maxId < entityId)
+                {
+                    maxId = entityId;
+                }
+            }
+
+            if(canTakeOriginalId)
+            {
+                // mark taken id and assign it to entity
+                entityIds[entityId] = true;
+                entity->id = entity->GetID();
+            }
+            else
+            {
+                if(entity != entity->GetScene())
+                {
+                    // this entity need new id assignment, so remember it
+                    entityNeedId.push_back(entity);
+                }
+            }
+
+            // also go through entity children
+            for(auto children : entity->children)
+            {
+                doResolveIds(children);
+            }
+        };
+
+        // collect entities that need new id assignment
+        doResolveIds(this);
+
+        // assign new id to all entities, that require it
+        for(auto entity : entityNeedId)
+        {
+            entity->id = ++maxId;
+        }
+
+        // scene will have maximum id
+        scene->id = ++maxId;
+    }
+}
+
 	
 	
 };
