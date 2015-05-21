@@ -103,6 +103,7 @@ Core::Core()
     options = new KeyedArchive();
     screenScaleFactor = 1.f;
 
+    nativeWindowHandle = nullptr;
 }
 
 Core::~Core()

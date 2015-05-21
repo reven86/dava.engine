@@ -99,7 +99,9 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 	UIWindow *wnd = application.keyWindow;
 	wnd.frame = [::UIScreen mainScreen].bounds;
 	
-	glController = [[EAGLViewController alloc] init];
+    glController = [[EAGLViewController alloc] init];
+    DAVA::Core::Instance()->SetNativeWindowHandle([[glController view] layer]);
+    
 	DAVA::UIScreenManager::Instance()->RegisterController(CONTROLLER_GL, glController);
 	DAVA::UIScreenManager::Instance()->SetGLControllerId(CONTROLLER_GL);
     
