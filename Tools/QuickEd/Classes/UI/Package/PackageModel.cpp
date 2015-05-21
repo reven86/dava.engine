@@ -46,23 +46,20 @@ PackageModel::~PackageModel()
 QModelIndex PackageModel::indexByNode(PackageBaseNode *node) const
 {
     PackageBaseNode *parent = node->GetParent();
-    if (parent == nullptr)
-        return QModelIndex();
-    
-    if (parent)
-        return createIndex(parent->GetIndex(node), 0, node);
-    else
-        return createIndex(0, 0, parent);
+    return nullptr == parent ? QModelIndex() 
+        : createIndex(parent->GetIndex(node), 0, node);
 }
 
 QModelIndex PackageModel::index(int row, int column, const QModelIndex &parent) const
 {
     if (!hasIndex(row, column, parent))
+    {
         return QModelIndex();
-
+    }
     if (!parent.isValid())
+    {
         return createIndex(row, column, root->Get(row));
-
+    }
     PackageBaseNode *node = static_cast<PackageBaseNode*>(parent.internalPointer());
     return createIndex(row, column, node->Get(row));
 }
@@ -70,24 +67,31 @@ QModelIndex PackageModel::index(int row, int column, const QModelIndex &parent) 
 QModelIndex PackageModel::parent(const QModelIndex &child) const
 {
     if (!child.isValid())
+    {
         return QModelIndex();
-
+    }
     PackageBaseNode *node = static_cast<PackageBaseNode*>(child.internalPointer());
     PackageBaseNode *parent = node->GetParent();
     if (nullptr == parent || parent == root)
+    {
         return QModelIndex();
-    
+    }
     if (parent->GetParent())
+    {
         return createIndex(parent->GetParent()->GetIndex(parent), 0, parent);
+    }
     else
+    {
         return createIndex(0, 0, parent);
+    }
 }
 
 int PackageModel::rowCount(const QModelIndex &parent) const
 {
     if (!parent.isValid())
-        return root ? root->GetCount() : 0;
-    
+    {
+        return nullptr != root ? root->GetCount() : 0;
+    }
     return static_cast<PackageBaseNode*>(parent.internalPointer())->GetCount();
 }
 
@@ -99,8 +103,9 @@ int PackageModel::columnCount(const QModelIndex &/*parent*/) const
 QVariant PackageModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
+    {
         return QVariant();
-
+    }
     PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
     
     int prototypeFlag = PackageBaseNode::FLAG_CONTROL_CREATED_FROM_PROTOTYPE | PackageBaseNode::FLAG_CONTROL_CREATED_FROM_PROTOTYPE_CHILD;
