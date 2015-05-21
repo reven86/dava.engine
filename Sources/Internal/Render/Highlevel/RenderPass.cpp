@@ -191,11 +191,8 @@ void RenderPass::ClearLayersArrays()
 }
 
 MainForwardRenderPass::MainForwardRenderPass(const FastName & name) : RenderPass(name),
-    reflectionPass(NULL),
-    refractionPass(NULL),
-    reflectionTexture(NULL),
-    refractionTexture(NULL),
-    needWaterPrepass(false)
+    reflectionPass(nullptr),
+    refractionPass(nullptr)
 {
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_OPAQUE_ID, RenderLayer::LAYER_SORTING_FLAGS_OPAQUE));
     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_OPAQUE_ID, RenderLayer::LAYER_SORTING_FLAGS_AFTER_OPAQUE));
@@ -210,6 +207,30 @@ MainForwardRenderPass::MainForwardRenderPass(const FastName & name) : RenderPass
     passConfig.priority = PRIORITY_MAIN_3D;
 }
 
+void MainForwardRenderPass::InitReflectionRefraction()
+{
+    
+
+    DVASSERT(!reflectionPass);
+    
+    
+    reflectionPass = new WaterReflectionRenderPass(PASS_FORWARD);
+    reflectionPass->GetPassConfig().colorBuffer[0].texture = Renderer::GetDynamicBindings().GetDynamicTexture(DynamicBindings::TEXTURE_DYNAMIC_REFLECTION);
+    reflectionPass->GetPassConfig().colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+    reflectionPass->GetPassConfig().colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
+    reflectionPass->GetPassConfig().depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
+    reflectionPass->GetPassConfig().depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+    reflectionPass->SetViewport(Rect(0, 0, (float32)DynamicBindings::REFLECTION_TEX_SIZE, (float32)DynamicBindings::REFLECTION_TEX_SIZE));
+    
+    refractionPass = new WaterRefractionRenderPass(PASS_FORWARD);
+    refractionPass->GetPassConfig().colorBuffer[0].texture = Renderer::GetDynamicBindings().GetDynamicTexture(DynamicBindings::TEXTURE_DYNAMIC_REFRACTION);
+    refractionPass->GetPassConfig().colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+    refractionPass->GetPassConfig().colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
+    refractionPass->GetPassConfig().depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
+    refractionPass->GetPassConfig().depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+    refractionPass->SetViewport(Rect(0, 0, (float32)DynamicBindings::REFRACTION_TEX_SIZE, (float32)DynamicBindings::REFRACTION_TEX_SIZE));
+    
+}
 
 void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * renderSystem)
 {
@@ -217,59 +238,31 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::WATER_REFLECTION_REFRACTION_DRAW))
         return;
 
-    const static int32 REFLECTION_TEX_SIZE = 512;
-    const static int32 REFRACTION_TEX_SIZE = 512;
     if (!reflectionPass)
-    {                     
-        reflectionTexture = Texture::CreateFBO(REFLECTION_TEX_SIZE, REFLECTION_TEX_SIZE, FORMAT_RGB565);
-        reflectionPass = new WaterReflectionRenderPass(PASS_FORWARD);
-        reflectionPass->GetPassConfig().colorBuffer[0].texture = reflectionTexture->handle;
-        reflectionPass->GetPassConfig().colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
-        reflectionPass->GetPassConfig().colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-        reflectionPass->GetPassConfig().depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
-        reflectionPass->GetPassConfig().depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
-        reflectionPass->SetViewport(Rect(0, 0, (float32)REFLECTION_TEX_SIZE, (float32)REFLECTION_TEX_SIZE));
-                            
-        refractionTexture = Texture::CreateFBO(REFRACTION_TEX_SIZE, REFRACTION_TEX_SIZE, FORMAT_RGB565);
-        refractionPass = new WaterRefractionRenderPass(PASS_FORWARD);
-        refractionPass->GetPassConfig().colorBuffer[0].texture = refractionTexture->handle;
-        refractionPass->GetPassConfig().colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
-        refractionPass->GetPassConfig().colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-        refractionPass->GetPassConfig().depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
-        refractionPass->GetPassConfig().depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
-        refractionPass->SetViewport(Rect(0, 0, (float32)REFRACTION_TEX_SIZE, (float32)REFRACTION_TEX_SIZE));
-    }   
+        InitReflectionRefraction();
 
-    
+    const RenderBatchArray & waterLayerBatches = layersBatchArrays[RenderLayer::RENDER_LAYER_WATER_ID];
+    uint32 waterBatchesCount = waterLayerBatches.GetRenderBatchCount();
+    if (waterBatchesCount)
+    {
+        waterBox.Empty();
+        for (uint32 i = 0; i < waterBatchesCount; ++i)
+        {
+            RenderBatch *batch = waterLayerBatches.Get(i);
+            waterBox.AddAABBox(batch->GetRenderObject()->GetWorldBoundingBox());
+
+        }
+    }
 
     
     reflectionPass->SetWaterLevel(waterBox.max.z);
     reflectionPass->Draw(renderSystem);
 
     refractionPass->SetWaterLevel(waterBox.min.z);
-    refractionPass->Draw(renderSystem);
-
-    
-    /*Rect viewportSave = RenderManager::Instance()->GetViewport();
-    Texture * renderTargetSave = RenderManager::Instance()->GetRenderTarget();
-
-    RenderManager::Instance()->SetRenderTarget(reflectionTexture);
-    RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)REFLECTION_TEX_SIZE, (float32)REFLECTION_TEX_SIZE));
-    //DRAW REFLECTION    
-    RenderManager::Instance()->DiscardFramebufferHW(RenderManager::DEPTH_ATTACHMENT|RenderManager::STENCIL_ATTACHMENT);
-        
-        
-    RenderManager::Instance()->SetRenderTarget(refractionTexture);        
-    RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)REFLECTION_TEX_SIZE, (float32)REFLECTION_TEX_SIZE));    
-    //DRAW REFRACTION
-    RenderManager::Instance()->DiscardFramebufferHW(RenderManager::DEPTH_ATTACHMENT|RenderManager::STENCIL_ATTACHMENT);
-
-    RenderManager::Instance()->SetRenderTarget(renderTargetSave);
-    RenderManager::Instance()->SetViewport(viewportSave);*/
+    refractionPass->Draw(renderSystem);    
 
     renderSystem->GetDrawCamera()->SetupDynamicParameters();    		
         
-
 }
 
 void MainForwardRenderPass::Draw(RenderSystem * renderSystem)
@@ -281,64 +274,18 @@ void MainForwardRenderPass::Draw(RenderSystem * renderSystem)
     drawCamera->SetupDynamicParameters();            
     if (mainCamera!=drawCamera)    
         mainCamera->PrepareDynamicParameters();
-
-    if (needWaterPrepass)
-    {
-        /*water presence is cached from previous frame in optimization purpose*/
-        /*if on previous frame there was water - reflection and refraction textures are rendered first (it helps to avoid excessive renderPassBatchArray->PrepareVisibilityArray)*/
-        /* if there was no water on previous frame, and it appears on this frame - reflection and refractions textures are still to be rendered*/
-        PrepareReflectionRefractionTextures(renderSystem);
-    }
-    
-	//important: FoliageSystem also using main camera for cliping vegetation cells
-    PrepareVisibilityArrays(mainCamera, renderSystem);
 	
-    const RenderBatchArray & waterLayerBatches = layersBatchArrays[RenderLayer::RENDER_LAYER_WATER_ID];
-    uint32 waterBatchesCount = waterLayerBatches.GetRenderBatchCount();
-	if (waterBatchesCount)
-	{        
-        waterBox.Empty();
-		for (uint32 i=0; i<waterBatchesCount; ++i)
-		{
-            RenderBatch *batch = waterLayerBatches.Get(i);
-			waterBox.AddAABBox(batch->GetRenderObject()->GetWorldBoundingBox());
-			
-		}
-	}    
-    
-	if (!needWaterPrepass&&waterBatchesCount)
-	{
-        PrepareReflectionRefractionTextures(renderSystem); 
-        /*as PrepareReflectionRefractionTextures builds render batches according to reflection/refraction camera - render batches in main pass list are not valid anymore*/
-        /*to avoid this happening every frame water visibility is cached from previous frame (needWaterPrepass)*/
-        /*however if there was no water on previous frame and there is water on this frame visibilityArray should be re-prepared*/
-        ClearLayersArrays();
-        PrepareLayersArrays(visibilityArray, mainCamera);
-	}	
-    needWaterPrepass = (waterBatchesCount!=0); //for next frame;    
-    
-   
-    for (uint32 i = 0; i < waterBatchesCount; ++i)
-    {
-        NMaterial *mat = waterLayerBatches.Get(i)->GetMaterial();        
-        mat->AddTexture(NMaterialTextureName::TEXTURE_DYNAMIC_REFLECTION, reflectionTexture);
-        mat->AddTexture(NMaterialTextureName::TEXTURE_DYNAMIC_REFRACTION, refractionTexture);
-    }    
+    PrepareVisibilityArrays(mainCamera, renderSystem);        
 
-	DrawLayers(mainCamera);   
+    DrawLayers(mainCamera);    
 
-    for (uint32 i = 0; i < waterBatchesCount; ++i)
-    {
-        NMaterial *mat = waterLayerBatches.Get(i)->GetMaterial();
-        mat->RemoveTexture(NMaterialTextureName::TEXTURE_DYNAMIC_REFLECTION);
-        mat->RemoveTexture(NMaterialTextureName::TEXTURE_DYNAMIC_REFRACTION);
-    }
+    if (layersBatchArrays[RenderLayer::RENDER_LAYER_WATER_ID].GetRenderBatchCount() != 0)
+        PrepareReflectionRefractionTextures(renderSystem);
+    	
 }
 
 MainForwardRenderPass::~MainForwardRenderPass()
-{	
-	SafeRelease(reflectionTexture);
-	SafeRelease(refractionTexture);
+{		
 	SafeDelete(reflectionPass);
 	SafeDelete(refractionPass);
 }
@@ -389,7 +336,7 @@ void WaterReflectionRenderPass::Draw(RenderSystem * renderSystem)
     passMainCamera->CopyMathOnly(*mainCamera);        
     UpdateCamera(passMainCamera);
 
-    Vector4 clipPlane(0,0,1, -(waterLevel-0.1f));
+    Vector4 clipPlane(0,0,-1, waterLevel-0.1f);
 
     Camera* currMainCamera = passMainCamera;
     Camera* currDrawCamera;
@@ -438,7 +385,7 @@ void WaterRefractionRenderPass::Draw(RenderSystem * renderSystem)
 
     passMainCamera->CopyMathOnly(*mainCamera);                    
 
-    Vector4 clipPlane(0,0,-1, waterLevel+0.1f);
+    Vector4 clipPlane(0,0,1, -waterLevel-0.1f);
 
     Camera* currMainCamera = passMainCamera;
     Camera* currDrawCamera;
