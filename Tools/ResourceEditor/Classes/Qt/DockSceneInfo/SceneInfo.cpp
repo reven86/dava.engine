@@ -301,7 +301,12 @@ uint32 SceneInfo::CalculateTextureSize(const TexturesMap &textures)
         FilePath pathname = it->first;
         Texture *tex = it->second;
         DVASSERT(tex);
-        
+
+		if (tex->IsPinkPlaceholder())
+		{
+			continue;
+		}
+
         if(String::npos == pathname.GetAbsolutePathname().find(projectPath))
         {
             Logger::Warning("[SceneInfo::CalculateTextureSize] Path (%s) doesn't belong to project.", pathname.GetAbsolutePathname().c_str());
