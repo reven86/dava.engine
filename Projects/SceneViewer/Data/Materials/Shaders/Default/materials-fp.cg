@@ -114,7 +114,7 @@ FPROG_OUT_END
     DECL_FP_SAMPLER2D(alphamask)
 #endif
 
-#if defined(MATERIAL_DETAIL)
+#if defined(MATERIAL_DETAIL) || defined(MATERIAL_GRASS_BLEND)
     DECL_FP_SAMPLER2D(detail)
 #endif
 
