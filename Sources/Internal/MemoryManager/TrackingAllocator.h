@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_INTERNALALLOCATOR_H__
-#define __DAVAENGINE_INTERNALALLOCATOR_H__
+#ifndef __DAVAENGINE_MEMORYMANAGERALLOCATOR_H__
+#define __DAVAENGINE_MEMORYMANAGERALLOCATOR_H__
 
 #include "Base/BaseTypes.h"
 
@@ -41,9 +41,14 @@
 namespace DAVA
 {
 
-// Allocator for internal data MemoryManager's structures
-template<typename T>
-class InternalAllocator final
+// C++11 introduced std::allocator_traits which helps in defining custom allocators
+// But it doesn't works in MSVC on some data structures:
+//  using mystr = std::basic_string<char, std::char_traits<char>, my_allocator<char>>;
+//  std::vector<mystr, my_allocator<mystr>> v;
+
+// Allocator for application memory allocations, parameter AllocPoolT specifies memory pool allocated memory belongs to
+template<typename T, unsigned int AllocPoolT>
+class TrackingAllocator final
 {
 public:
     using value_type = T;
@@ -57,14 +62,14 @@ public:
     template <typename U>
     struct rebind
     {
-        typedef InternalAllocator<U> other;
+        typedef TrackingAllocator<U, AllocPoolT> other;
     };
 
-    InternalAllocator() = default;
-    InternalAllocator(const InternalAllocator&) = default;
-    template <typename U>
-    InternalAllocator(const InternalAllocator<U>&) DAVA_NOEXCEPT {}
-    ~InternalAllocator() = default;
+    TrackingAllocator() = default;
+    TrackingAllocator(const TrackingAllocator&) = default;
+    template <typename U, unsigned int AllocPoolU>
+    TrackingAllocator(const TrackingAllocator<U, AllocPoolU>&) DAVA_NOEXCEPT{}
+    ~TrackingAllocator() = default;
 
     size_type max_size() const DAVA_NOEXCEPT
     {
@@ -83,7 +88,7 @@ public:
 
     pointer allocate(size_type n, std::allocator<void>::const_pointer hint = 0)
     {
-        void* ptr = InternalAlloc(n * sizeof(T));
+        void* ptr = TrackingAlloc(n * sizeof(T), AllocPoolT);
         if (ptr != nullptr)
         {
             return static_cast<pointer>(ptr);
@@ -93,7 +98,7 @@ public:
 
     void deallocate(pointer ptr, size_type n)
     {
-        InternalDealloc(ptr);
+        TrackingDealloc(ptr);
     }
 
     void construct(pointer ptr, const_reference value)
@@ -120,14 +125,14 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////
-template<typename T1, typename T2>
-inline bool operator == (const InternalAllocator<T1>&, const InternalAllocator<T2>&)
+template<typename T1, unsigned int AllocPoolT1, typename T2, unsigned int AllocPoolT2>
+inline bool operator == (const TrackingAllocator<T1, AllocPoolT1>&, const TrackingAllocator<T2, AllocPoolT2>&)
 {
-    return true;    // InternalAllocator is stateless so two allocators are always equal
+    return true;    // TrackingAllocator is stateless so two allocators are always equal
 }
 
-template<typename T1, typename T2>
-inline bool operator != (const InternalAllocator<T1>&, const InternalAllocator<T2>&)
+template<typename T1, unsigned int AllocPoolT1, typename T2, unsigned int AllocPoolT2>
+inline bool operator != (const TrackingAllocator<T1, AllocPoolT1>&, const TrackingAllocator<T2, AllocPoolT2>&)
 {
     return false;
 }
@@ -136,4 +141,4 @@ inline bool operator != (const InternalAllocator<T1>&, const InternalAllocator<T
 
 #endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
-#endif  // __DAVAENGINE_INTERNALALLOCATOR_H__
+#endif  // __DAVAENGINE_MEMORYMANAGERALLOCATOR_H__
