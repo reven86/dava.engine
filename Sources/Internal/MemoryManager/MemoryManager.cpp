@@ -166,10 +166,10 @@ void MemoryManager::SetCallbacks(void (*onUpdate)(void*), void (*onTag)(uint32, 
 
 void MemoryManager::Update()
 {
-    if (nullptr == symbolCollectorThread)
-    {
-        //symbolCollectorThread = Thread::Create();
-    }
+    //if (nullptr == symbolCollectorThread)
+    //{
+    //    //symbolCollectorThread = Thread::Create();
+    //}
 
     if (updateCallback != nullptr)
     {
@@ -660,31 +660,25 @@ void MemoryManager::InsertBacktrace(Backtrace& backtrace)
     if (nullptr == bktraceMap)
     {
         static uint8 bufferForMap[sizeof(BacktraceMap)];
-        static uint8 bufferForStorage[sizeof(BacktraceStorage)];
 
         bktraceMap = new (bufferForMap) BacktraceMap;
-        bktraceStorage = new (bufferForStorage) BacktraceStorage;
+        bktraceMap->rehash(10000);
     }
 
     auto i = bktraceMap->find(backtrace.hash);
     if (i == bktraceMap->end())
     {
-        const size_t index = bktraceStorage->size();
+        backtrace.nref = 1;
+        backtrace.symbolsCollected = false;
 
-        Backtrace* p = new(InternalAllocate(sizeof(Backtrace))) Backtrace(backtrace);
-        bktraceStorage->emplace_back(p);
-        //bktraceStorage->emplace_back(backtrace);
-        bktraceMap->emplace(backtrace.hash, index);
+        ObtainBacktraceSymbols(&backtrace);
+        backtrace.symbolsCollected = true;
+
+        bktraceMap->emplace(backtrace.hash, backtrace);
     }
     else
     {
-        const size_t index = i->second;
-        Backtrace* p = (*bktraceStorage)[index];
-        if (p == nullptr)
-        {
-            Backtrace* p = new(InternalAllocate(sizeof(Backtrace))) Backtrace(backtrace);
-            (*bktraceStorage)[index] = p;
-        }
+        i->second.nref += 1;
     }
 #endif
 }
@@ -692,14 +686,12 @@ void MemoryManager::InsertBacktrace(Backtrace& backtrace)
 void MemoryManager::RemoveBacktrace(uint32 hash)
 {
 #if defined(DAVA_MEMORY_MANAGER_COLLECT_BACKTRACES)
-    // do nothing
     auto i = bktraceMap->find(hash);
-    const size_t index = i->second;
-
-    Backtrace* p = (*bktraceStorage)[index];
-    (*bktraceStorage)[index] = nullptr;
-
-    InternalDeallocate(p);
+    i->second.nref -= 1;
+    if (i->second.nref == 0)
+    {
+        bktraceMap->erase(i);
+    }
 #endif
 }
 
@@ -759,14 +751,14 @@ DAVA_NOINLINE void MemoryManager::CollectBacktrace(Backtrace* backtrace, size_t 
 
 void MemoryManager::ObtainAllBacktraceSymbols()
 {
-    for (auto& x : *bktraceStorage)
-    {
-        //if (!x.symbolsCollected)
-        //{
-        //    ObtainBacktraceSymbols(&x);
-        //    x.symbolsCollected = true;
-        //}
-    }
+    //for (auto& x : *bktraceStorage)
+    //{
+    //    //if (!x.symbolsCollected)
+    //    //{
+    //    //    ObtainBacktraceSymbols(&x);
+    //    //    x.symbolsCollected = true;
+    //    //}
+    //}
 }
 
 void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
@@ -774,10 +766,7 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
     if (nullptr == symbolMap)
     {
         static uint8 bufferFoMap[sizeof(SymbolMap)];
-        static uint8 bufferForStorage[sizeof(SymbolStorage)];
-
         symbolMap = new (bufferFoMap) SymbolMap;
-        symbolStorage = new (bufferForStorage) SymbolStorage;
     }
 
     const size_t NAME_BUFFER_SIZE = 4 * 1024;
@@ -803,9 +792,7 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
         {
             if (SymFromAddr(hprocess, reinterpret_cast<DWORD64>(backtrace->frames[i]), 0, symInfo))
             {
-                const size_t index = symbolStorage->size();
-                symbolStorage->emplace_back(InternalString(symInfo->Name));
-                symbolMap->emplace(backtrace->frames[i], index);
+                symbolMap->emplace(backtrace->frames[i], InternalString(symInfo->Name));
             }
         }
     }

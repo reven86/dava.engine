@@ -38,6 +38,7 @@
 #include "Thread/Spinlock.h"
 #include "Thread/LockGuard.h"
 #include "Thread/ThreadLocalPtr.h"
+#include "Platform/ConditionalVariable.h"
 
 #include "MemoryManager/MemoryManagerConfig.h"
 #include "MemoryManager/AllocPools.h"
@@ -170,24 +171,19 @@ private:
         size_t operator () (const uint32 key) const { return key; }
     };
 
-    using BacktraceMap = std::unordered_map<uint32, size_t, KeyHash, std::equal_to<uint32>, InternalAllocator<std::pair<const uint32, size_t>>>;
-    using BacktraceStorage = std::deque<Backtrace*, InternalAllocator<Backtrace*>>;
-
-    using SymbolMap = std::unordered_map<void*, size_t, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, size_t>>>;
-    using SymbolStorage = std::deque<InternalString, InternalAllocator<InternalString>>;
+    using BacktraceMap = std::unordered_map<uint32, Backtrace, KeyHash, std::equal_to<uint32>, InternalAllocator<std::pair<const uint32, Backtrace>>>;
+    using SymbolMap = std::unordered_map<void*, InternalString, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, InternalString>>>;
 
     BacktraceMap* bktraceMap;
-    BacktraceStorage* bktraceStorage;
-
     SymbolMap* symbolMap;
-    SymbolStorage* symbolStorage;
 
     using GpuBlockList = std::list<MemoryBlock, InternalAllocator<MemoryBlock>>;
     using GpuBlockMap = std::unordered_map<int32, GpuBlockList, std::hash<int32>, std::equal_to<int32>, InternalAllocator<std::pair<const int32, GpuBlockList>>>;
 
     GpuBlockMap* gpuBlockMap;
 
-    Thread* symbolCollectorThread = nullptr;
+    //Thread* symbolCollectorThread = nullptr;
+    //ConditionalVariable symbolCollectorCondVar;
 
     void* callbackArg = nullptr;
     void (*updateCallback)(void* arg) = nullptr;
