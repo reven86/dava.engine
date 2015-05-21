@@ -124,18 +124,25 @@ dx9_Uninitialize()
 
 //------------------------------------------------------------------------------
 
+static void
+dx9_Reset( const ResetParam& param )
+{
+}
+
+
+//------------------------------------------------------------------------------
+
 void
-dx9_Initialize()
+dx9_Initialize( const InitParam& param )
 {
     _D3D9 = Direct3DCreate9( D3D_SDK_VERSION );
 
     if( _D3D9 )
     {
         HRESULT                 hr;
-        HWND                    wnd     = (HWND)DAVA::Core::Instance()->NativeWindowHandle();
-        RECT                    bound;  ::GetClientRect( wnd, &bound );
-        unsigned                backbuf_width       = bound.right - bound.left;
-        unsigned                backbuf_height      = bound.bottom - bound.top;
+        HWND                    wnd                 = (HWND)param.window;
+        unsigned                backbuf_width       = param.width;
+        unsigned                backbuf_height      = param.height;
         bool                    use_vsync           = true;//(vsync)  ? (bool)(*vsync)  : false;
         D3DADAPTER_IDENTIFIER9  info                = {0};
         D3DCAPS9                caps;
@@ -317,6 +324,7 @@ dx9_Initialize()
         CommandBufferDX9::SetupDispatch( &DispatchDX9 );
 
         DispatchDX9.impl_Uninitialize           = &dx9_Uninitialize;
+        DispatchDX9.impl_Reset                  = &dx9_Reset;
         DispatchDX9.impl_HostApi                = &dx9_HostApi;
         DispatchDX9.impl_TextureFormatSupported = &dx9_TextureFormatSupported;
 

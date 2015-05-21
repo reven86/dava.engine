@@ -2,10 +2,10 @@
     #include "../Common/rhi_Private.h"
     #include "../Common/rhi_Pool.h"
     #include "../Common/dbg_StatSet.h"
+    #include "../rhi_Public.h"
     #include "rhi_Metal.h"
 
     #include "Platform/TemplateiOS/EAGLView.h"
-    #include <QuartzCore/CAMetalLayer.h>
 
     #include "_metal.h"
 
@@ -16,6 +16,7 @@
     id<MTLTexture>                  _Metal_DefFrameBuf              = nil;
     id<MTLTexture>                  _Metal_DefDepthBuf              = nil;
     id<MTLDepthStencilState>        _Metal_DefDepthState            = nil;
+    CAMetalLayer*                   _Metal_Layer                    = nil;
 
 
 namespace rhi
@@ -66,24 +67,32 @@ metal_Uninitialize()
 
 //------------------------------------------------------------------------------
 
-void
-metal_Initialize()
+static void
+metal_Reset( const ResetParam& param )
 {
-    CAMetalLayer* layer = (CAMetalLayer*)(GetAppViewLayer());
+}
 
-    layer.device            = MTLCreateSystemDefaultDevice();
-    layer.pixelFormat       = MTLPixelFormatBGRA8Unorm;
-    layer.framebufferOnly   = YES;
-    layer.drawableSize      = layer.bounds.size;
 
-    _Metal_Device       = layer.device;
+//------------------------------------------------------------------------------
+
+void
+metal_Initialize( const InitParam& param )
+{
+    _Metal_Layer = (CAMetalLayer*)param.window;
+
+    _Metal_Layer.device            = MTLCreateSystemDefaultDevice();
+    _Metal_Layer.pixelFormat       = MTLPixelFormatBGRA8Unorm;
+    _Metal_Layer.framebufferOnly   = YES;
+    _Metal_Layer.drawableSize      = CGSizeMake((float)param.width, (float)param.height);
+
+    _Metal_Device       = _Metal_Layer.device;
     _Metal_DefCmdQueue  = [_Metal_Device newCommandQueue];
 
 
     // create frame-buffer
 
-    int     w = layer.bounds.size.width;
-    int     h = layer.bounds.size.height;
+    int     w = (int)param.width;
+    int     h = (int)param.height;
 
     MTLTextureDescriptor*   colorDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm width:w height:h mipmapped:NO];
     MTLTextureDescriptor*   depthDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float width:w height:h mipmapped:NO];
@@ -138,6 +147,7 @@ metal_Initialize()
     RenderPassMetal::SetupDispatch( &DispatchMetal );
     CommandBufferMetal::SetupDispatch( &DispatchMetal );
     
+    DispatchMetal.impl_Reset                    = &metal_Reset;
     DispatchMetal.impl_Uninitialize             = &metal_Uninitialize;
     DispatchMetal.impl_HostApi                  = &metal_HostApi;
     DispatchMetal.impl_TextureFormatSupported   = &metal_TextureFormatSupported;

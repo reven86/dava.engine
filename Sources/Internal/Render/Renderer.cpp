@@ -47,14 +47,26 @@ namespace //for private variables
     RenderCaps renderCaps;
     DynamicBindings dynamicBindings;
 
+    int32 framebufferWidth;
+    int32 framebufferHeight;
+
     ScreenShotCallbackDelegate * screenshotCallback = nullptr;
 }
 
-void Initialize(rhi::Api _api)
+void Initialize(rhi::Api _api, int32 _framebufferWidth, int32 _framebufferHeight, void * externalData)
 {
     DVASSERT(!ininialized);
+
     api = _api;
-    rhi::Initialize(api);    
+    framebufferWidth = _framebufferWidth;
+    framebufferHeight = _framebufferHeight;
+    
+    rhi::InitParam param;
+    param.width = framebufferWidth;
+    param.height = framebufferHeight;
+    param.window = externalData;
+    
+    rhi::Initialize(api, param);
     rhi::ShaderCache::Initialize();
     ShaderDescriptorCache::Initialize();
     FXCache::Initialize();
@@ -72,6 +84,12 @@ void Uninitialize()
     rhi::ShaderCache::Unitialize();
     rhi::Uninitialize();
     ininialized = false;
+}
+
+void Reset(int32 _framebufferWidth, int32 _framebufferHeight)
+{
+    framebufferWidth = _framebufferWidth;
+    framebufferHeight = _framebufferHeight;
 }
 
 bool IsDeviceLost()
@@ -110,6 +128,16 @@ const RenderCaps & GetCaps()
 DynamicBindings& GetDynamicBindings()
 {
     return dynamicBindings;
+}
+
+int32 GetFramebufferWidth()
+{
+    return framebufferWidth;
+}
+
+int32 GetFramebufferHeight()
+{
+    return framebufferHeight;
 }
 
 void RequestGLScreenShot(ScreenShotCallbackDelegate *_screenShotCallback)

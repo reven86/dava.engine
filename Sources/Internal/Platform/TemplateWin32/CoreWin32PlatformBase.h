@@ -50,7 +50,6 @@ public:
     HWND GetWindow() const;
 
 
-    virtual void* NativeWindowHandle() { return (void*)hWindow; }
     void SetCursorPositionCenter();
     void SetCursorPosition(Point2i position);
     Point2i GetCursorPosition();

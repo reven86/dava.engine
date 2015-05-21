@@ -63,8 +63,7 @@ VPROG_BEGIN
     VP_OUT(vegetationColor) = vegetationMask.rgb;
     
     //wave transform
-    int clusterType = int(inTexCoord1.y);
-    int waveIndex = clusterType * 2;
+    int waveIndex = int(inTexCoord1.y);
     
     pos.x += inTexCoord1.z * vegWaveOffsetx[waveIndex];
     pos.y += inTexCoord1.z * vegWaveOffsety[waveIndex];

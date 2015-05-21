@@ -34,13 +34,13 @@ SetDispatchTable( const Dispatch& dispatch )
 }
 
 void
-Initialize( Api api )
+Initialize( Api api, const InitParam& param )
 {
     switch( api )
     {
 #if defined(__DAVAENGINE_WIN32__)
         case RHI_DX9 :
-            dx9_Initialize();
+            dx9_Initialize( param );
             break;
 
         case RHI_DX11 :
@@ -50,13 +50,13 @@ Initialize( Api api )
             
 //#if defined(__DAVAENGINE_WIN32__)  ||  defined(__DAVAENGINE_MACOS__)
         case RHI_GLES2 :
-            gles2_Initialize();
+            gles2_Initialize( param );
             break;
 //#endif
 
 #if defined(__DAVAENGINE_IPHONE__)
         case RHI_METAL :
-            metal_Initialize();
+            metal_Initialize( param );
             break;
 #endif
 
@@ -65,6 +65,12 @@ Initialize( Api api )
             // error 'unsupported' here
         }
     }
+}
+
+void
+Reset( const ResetParam& param )
+{
+    (*_Impl.impl_Reset)( param );
 }
 
 void

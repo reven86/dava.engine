@@ -37,7 +37,9 @@
 namespace rhi
 {
 
-void        gles2_Initialize();
+struct InitParam;
+
+void        gles2_Initialize( const InitParam& param );
 
 
 namespace VertexBufferGLES2

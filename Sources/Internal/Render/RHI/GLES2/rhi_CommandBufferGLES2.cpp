@@ -9,7 +9,6 @@
     #include "Debug/DVAssert.h"
     #include "FileSystem/Logger.h"
     using DAVA::Logger;
-    #include "Core/Core.h"
     #include "Platform/Thread.h"
     #include "Thread/Semaphore.h"
     #include "Debug/Profiler.h"
@@ -915,7 +914,7 @@ _ExecuteQueuedCommands()
 
 #if defined(__DAVAENGINE_WIN32__)
     
-    HWND    wnd = (HWND)DAVA::Core::Instance()->NativeWindowHandle();
+    HWND    wnd = (HWND)_NativeWindowHandle;
     HDC     dc  = ::GetDC( wnd );
 
     SwapBuffers( dc );

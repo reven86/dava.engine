@@ -1,13 +1,14 @@
 
     #include "rhi_GLES2.h"
 
+    #include "../rhi_Public.h"
+
     #include "../Common/rhi_Private.h"
     #include "../Common/rhi_Pool.h"
     #include "../Common/dbg_StatSet.h"
 
     #include "Debug/DVAssert.h"
     #include "FileSystem/Logger.h"
-    #include "Core/Core.h"
     using DAVA::Logger;
 
     #include "_gl.h"
@@ -15,6 +16,7 @@
 
 GLuint      _GLES2_FrameBuffer  = 0;
 GLint       _GLES2_Viewport[4];
+void*       _NativeWindowHandle = 0;
 
 
 namespace rhi
@@ -171,14 +173,25 @@ gles2_Uninitialize()
 }
 
 
+
+//------------------------------------------------------------------------------
+
+static void
+gles2_Reset( const ResetParam& param )
+{
+}
+
+
 //------------------------------------------------------------------------------
 
 #if defined(__DAVAENGINE_WIN32__)
 void
-gles2_Initialize()
+gles2_Initialize( const InitParam& param )
 {
+    _NativeWindowHandle = param.window;
+    
     bool            success = false;
-    HWND            wnd     = (HWND)DAVA::Core::Instance()->NativeWindowHandle();
+    HWND            wnd     = (HWND)_NativeWindowHandle;
     HDC             dc      = ::GetDC( wnd );
 
     DVASSERT(!_Inited);
@@ -260,6 +273,7 @@ gles2_Initialize()
             RenderPassGLES2::SetupDispatch( &DispatchGLES2 );
             CommandBufferGLES2::SetupDispatch( &DispatchGLES2 );
 
+            DispatchGLES2.impl_Reset                    = &gles2_Reset;
             DispatchGLES2.impl_Uninitialize             = &gles2_Uninitialize;
             DispatchGLES2.impl_HostApi                  = &gles2_HostApi;
             DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
@@ -328,7 +342,7 @@ gles2_Initialize()
 #elif defined(__DAVAENGINE_MACOS__)
 
 void
-gles2_Initialize()
+gles2_Initialize( const InitParam& param )
 {
     ConstBufferGLES2::InitializeRingBuffer( 4*1024*1024 ); // CRAP: hardcoded default const ring-buf size
     
@@ -350,6 +364,7 @@ gles2_Initialize()
     RenderPassGLES2::SetupDispatch( &DispatchGLES2 );
     CommandBufferGLES2::SetupDispatch( &DispatchGLES2 );
     
+    DispatchGLES2.impl_Reset        = &gles2_Reset;
     DispatchGLES2.impl_Uninitialize = &gles2_Uninitialize;
     DispatchGLES2.impl_HostApi      = &gles2_HostApi;
     
@@ -373,9 +388,9 @@ gles2_Initialize()
 #elif defined(__DAVAENGINE_IPHONE__)
     
 void
-gles2_Initialize()
+gles2_Initialize( const InitParam& param )
 {
-    ios_GL_init();
+    ios_GL_init(param.window);
 
     ConstBufferGLES2::InitializeRingBuffer( 4*1024*1024 ); // CRAP: hardcoded default const ring-buf size
         
@@ -397,6 +412,7 @@ gles2_Initialize()
     RenderPassGLES2::SetupDispatch( &DispatchGLES2 );
     CommandBufferGLES2::SetupDispatch( &DispatchGLES2 );
     
+    DispatchGLES2.impl_Reset        = &gles2_Reset;
     DispatchGLES2.impl_Uninitialize = &gles2_Uninitialize;
     DispatchGLES2.impl_HostApi      = &gles2_HostApi;
     
