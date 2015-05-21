@@ -90,6 +90,7 @@ public:
     bool GetTotal(const uint32 &taskId, uint64 &total);
     bool GetProgress(const uint32 &taskId, uint64 &progress);
     bool GetError(const uint32 &taskId, DownloadError &error);
+    bool GetFileErrno(const uint32 &taskId, int32 &fileErrno);
     DownloadStatistics GetStatistics();
     void SetDownloadSpeedLimit(const uint64 limit);
 

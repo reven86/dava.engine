@@ -36,6 +36,7 @@ DownloadTaskDescription::DownloadTaskDescription(const String &srcUrl, const Fil
     : id(0)
     , url(srcUrl)
     , storePath(storeToFilePath)
+    , fileErrno(0)
     , timeout(_timeout)
     , retriesCount(_retriesCount)
     , retriesLeft(retriesCount)

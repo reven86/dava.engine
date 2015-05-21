@@ -57,6 +57,7 @@
 #include "Tests/SpinLockTest.h"
 #include "Tests/ThreadSyncTest.h"
 #include "Tests/MemoryManagerTest.h"
+#include "Tests/ThreadLocalTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -99,6 +100,7 @@ void GameCore::RegisterTests()
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
     new MemoryManagerTest();
 #endif  // DAVA_MEMORY_PROFILING_ENABLE
+    new ThreadLocalTest();
 //  $UNITTEST_CTOR
 }
 

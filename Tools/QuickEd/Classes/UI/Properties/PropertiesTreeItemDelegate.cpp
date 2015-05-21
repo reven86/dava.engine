@@ -17,7 +17,7 @@
 
 #include "DAVAEngine.h"
 #include "QtControls/Vector2DEdit.h"
-#include "Model/ControlProperties/BaseProperty.h"
+#include "Model/ControlProperties/AbstractProperty.h"
 #include "Utils/QtDavaConvertion.h"
 #include "Vector2PropertyDelegate.h"
 #include "EnumPropertyDelegate.h"
@@ -38,7 +38,7 @@ using namespace DAVA;
 PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject *parent)
     : QStyledItemDelegate(parent)
 {
-    propertyItemDelegates[BaseProperty::TYPE_ENUM] = new EnumPropertyDelegate(this);
+    propertyItemDelegates[AbstractProperty::TYPE_ENUM] = new EnumPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_VECTOR2] = new Vector2PropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_STRING] = new StringPropertyDelegate(this);
     variantTypeItemDelegates[DAVA::VariantType::TYPE_COLOR] = new ColorPropertyDelegate(this);
@@ -174,7 +174,7 @@ bool PropertiesTreeItemDelegate::editorEvent(QEvent *event, QAbstractItemModel *
 
 AbstractPropertyDelegate * PropertiesTreeItemDelegate::GetCustomItemDelegateForIndex( const QModelIndex & index ) const
 {
-    BaseProperty *property = static_cast<BaseProperty *>(index.internalPointer());
+    AbstractProperty *property = static_cast<AbstractProperty *>(index.internalPointer());
     if (property)
     {
         auto prop_iter = propertyItemDelegates.find(property->GetType());

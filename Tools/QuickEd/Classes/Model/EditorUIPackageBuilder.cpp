@@ -4,9 +4,12 @@
 #include "PackageHierarchy/ImportedPackagesNode.h"
 #include "PackageHierarchy/PackageControlsNode.h"
 #include "Model/ControlProperties/ControlPropertiesSection.h"
+#include "Model/ControlProperties/ComponentPropertiesSection.h"
 #include "Model/ControlProperties/BackgroundPropertiesSection.h"
 #include "Model/ControlProperties/InternalControlPropertiesSection.h"
 #include "Model/ControlProperties/ValueProperty.h"
+#include "Model/ControlProperties/CustomClassProperty.h"
+#include "Model/ControlProperties/RootProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/ControlPrototype.h"
 #include "Model/PackageHierarchy/PackageRef.h"
@@ -82,7 +85,7 @@ RefPtr<UIPackage> EditorUIPackageBuilder::ProcessImportedPackage(const String &p
         DAVA::List<ControlDescr> prevControlsStack = controlsStack;
         
         DAVA::BaseObject *prevObj = currentObject;
-        PropertiesSection *prevSect = currentSection;
+        SectionProperty *prevSect = currentSection;
 
         // clear state
         packageNode = nullptr;
@@ -134,17 +137,19 @@ UIControl *EditorUIPackageBuilder::BeginControlWithClass(const String &className
 UIControl *EditorUIPackageBuilder::BeginControlWithCustomClass(const String &customClassName, const String &className)
 {
     UIControl *control = ObjectFactory::Instance()->New<UIControl>(className);
-    control->SetCustomControlClassName(customClassName);
+
     if (control && className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST)//TODO: fix internal staticText for Win\Mac
     {
         control->RemoveAllControls();
     }
 
-    controlsStack.push_back(ControlDescr(ControlNode::CreateFromControl(control), true));
+    ControlNode *node = ControlNode::CreateFromControl(control);
+    node->GetRootProperty()->GetCustomClassProperty()->SetValue(VariantType(customClassName));
+    controlsStack.push_back(ControlDescr(node, true));
     return control;
 }
 
-UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String &customClassName, AbstractUIPackageLoader *loader)
+UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String *customClassName, AbstractUIPackageLoader *loader)
 {
     PackageControlsNode *controlsNode = nullptr;
     if (packageName.empty())
@@ -166,7 +171,8 @@ UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packa
     
     DVASSERT(prototypeNode);
     ControlNode *node = ControlNode::CreateFromPrototype(prototypeNode, controlsNode->GetPackageRef());
-    node->GetControl()->SetCustomControlClassName(customClassName);
+    if (customClassName)
+        node->GetRootProperty()->GetCustomClassProperty()->SetValue(VariantType(*customClassName));
     controlsStack.push_back(ControlDescr(node, true));
 
     return node->GetControl();
@@ -174,7 +180,7 @@ UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packa
 
 UIControl *EditorUIPackageBuilder::BeginControlWithPath(const String &pathName)
 {
-    ControlNode *control = NULL;
+    ControlNode *control = nullptr;
     if (!controlsStack.empty())
     {
         control = controlsStack.back().node;
@@ -191,7 +197,7 @@ UIControl *EditorUIPackageBuilder::BeginControlWithPath(const String &pathName)
     controlsStack.push_back(ControlDescr(SafeRetain(control), false));
 
     if (!control)
-        return NULL;
+        return nullptr;
 
     return control->GetControl();
 }
@@ -199,7 +205,7 @@ UIControl *EditorUIPackageBuilder::BeginControlWithPath(const String &pathName)
 UIControl *EditorUIPackageBuilder::BeginUnknownControl(const YamlNode *node)
 {
     DVASSERT(false);
-    return NULL;
+    return nullptr;
 }
 
 void EditorUIPackageBuilder::EndControl(bool isRoot)
@@ -240,23 +246,41 @@ void EditorUIPackageBuilder::EndControl(bool isRoot)
 
 void EditorUIPackageBuilder::BeginControlPropertiesSection(const String &name)
 {
-    currentSection = controlsStack.back().node->GetPropertiesRoot()->GetControlPropertiesSection(name);
+    currentSection = controlsStack.back().node->GetRootProperty()->GetControlPropertiesSection(name);
     currentObject = controlsStack.back().node->GetControl();
 }
 
 void EditorUIPackageBuilder::EndControlPropertiesSection()
 {
-    currentSection = NULL;
-    currentObject = NULL;
+    currentSection = nullptr;
+    currentObject = nullptr;
+}
+
+UIComponent *EditorUIPackageBuilder::BeginComponentPropertiesSection(uint32 componentType, DAVA::uint32 componentIndex)
+{
+    ControlNode *node = controlsStack.back().node;
+    ComponentPropertiesSection * section;
+    section = node->GetRootProperty()->FindComponentPropertiesSection(componentType, componentIndex);
+    if (section == nullptr)
+        section = node->GetRootProperty()->AddComponentPropertiesSection(componentType);
+    currentObject = section->GetComponent();
+    currentSection = section;
+    return section->GetComponent();
+}
+
+void EditorUIPackageBuilder::EndComponentPropertiesSection()
+{
+    currentSection = nullptr;
+    currentObject = nullptr;
 }
 
 UIControlBackground *EditorUIPackageBuilder::BeginBgPropertiesSection(int index, bool sectionHasProperties)
 {
     ControlNode *node = controlsStack.back().node;
-    BackgroundPropertiesSection *section = node->GetPropertiesRoot()->GetBackgroundPropertiesSection(index);
+    BackgroundPropertiesSection *section = node->GetRootProperty()->GetBackgroundPropertiesSection(index);
     if (section && sectionHasProperties)
     {
-        if (section->GetBg() == NULL)
+        if (section->GetBg() == nullptr)
             section->CreateControlBackground();
 
         if (section->GetBg())
@@ -267,22 +291,22 @@ UIControlBackground *EditorUIPackageBuilder::BeginBgPropertiesSection(int index,
         }
     }
     
-    return NULL;
+    return nullptr;
 }
 
 void EditorUIPackageBuilder::EndBgPropertiesSection()
 {
-    currentSection = NULL;
-    currentObject = NULL;
+    currentSection = nullptr;
+    currentObject = nullptr;
 }
 
 UIControl *EditorUIPackageBuilder::BeginInternalControlSection(int index, bool sectionHasProperties)
 {
     ControlNode *node = controlsStack.back().node;
-    InternalControlPropertiesSection *section = node->GetPropertiesRoot()->GetInternalControlPropertiesSection(index);
+    InternalControlPropertiesSection *section = node->GetRootProperty()->GetInternalControlPropertiesSection(index);
     if (section && sectionHasProperties)
     {
-        if (section->GetInternalControl() == NULL)
+        if (section->GetInternalControl() == nullptr)
             section->CreateInternalControl();
         
         if (section->GetInternalControl())
@@ -293,13 +317,13 @@ UIControl *EditorUIPackageBuilder::BeginInternalControlSection(int index, bool s
         }
     }
     
-    return NULL;
+    return nullptr;
 }
 
 void EditorUIPackageBuilder::EndInternalControlSection()
 {
-    currentSection = NULL;
-    currentObject = NULL;
+    currentSection = nullptr;
+    currentObject = nullptr;
 }
 
 void EditorUIPackageBuilder::ProcessProperty(const InspMember *member, const VariantType &value)
@@ -320,7 +344,7 @@ RefPtr<PackageNode> EditorUIPackageBuilder::GetPackageNode() const
 ////////////////////////////////////////////////////////////////////////////////
 // ControlDescr
 ////////////////////////////////////////////////////////////////////////////////
-EditorUIPackageBuilder::ControlDescr::ControlDescr() : node(NULL), addToParent(false)
+EditorUIPackageBuilder::ControlDescr::ControlDescr() : node(nullptr), addToParent(false)
 {
 }
 
