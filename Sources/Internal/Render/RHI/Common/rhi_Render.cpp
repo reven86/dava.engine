@@ -687,12 +687,12 @@ AddPackets( HPacketList packetList, const Packet* packet, uint32 packetCount )
 
         if( dsState != pl->curDepthStencilState )
         {
-            rhi::CommandBuffer::SetDepthStencilState( cmdBuf, p->depthStencilState );
+            rhi::CommandBuffer::SetDepthStencilState( cmdBuf, dsState );
             pl->curDepthStencilState = p->depthStencilState;
         }
         if( sState != pl->curSamplerState )
         {
-            rhi::CommandBuffer::SetSamplerState( cmdBuf, p->samplerState );
+            rhi::CommandBuffer::SetSamplerState( cmdBuf, sState );
             pl->curSamplerState = p->samplerState;
         }
         if( p->cullMode !=  pl->curCullMode )

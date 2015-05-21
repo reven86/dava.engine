@@ -56,6 +56,9 @@ namespace //for private variables
 void Initialize(rhi::Api _api, int32 _framebufferWidth, int32 _framebufferHeight, void * externalData)
 {
     DVASSERT(!ininialized);
+
+    rhi::InitParam  param;
+
     api = _api;
     framebufferWidth = _framebufferWidth;
     framebufferHeight = _framebufferHeight;

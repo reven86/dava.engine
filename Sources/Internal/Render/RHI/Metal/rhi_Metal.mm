@@ -66,8 +66,16 @@ metal_Uninitialize()
 
 //------------------------------------------------------------------------------
 
+static void
+metal_Reset( const ResetParam& param )
+{
+}
+
+
+//------------------------------------------------------------------------------
+
 void
-metal_Initialize()
+metal_Initialize( const InitParam& param )
 {
     CAMetalLayer* layer = (CAMetalLayer*)(GetAppViewLayer());
 
@@ -138,6 +146,7 @@ metal_Initialize()
     RenderPassMetal::SetupDispatch( &DispatchMetal );
     CommandBufferMetal::SetupDispatch( &DispatchMetal );
     
+    DispatchMetal.impl_Reset                    = &metal_Reset;
     DispatchMetal.impl_Uninitialize             = &metal_Uninitialize;
     DispatchMetal.impl_HostApi                  = &metal_HostApi;
     DispatchMetal.impl_TextureFormatSupported   = &metal_TextureFormatSupported;
