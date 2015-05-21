@@ -79,16 +79,5 @@
 
 #define REBUILD_TANGENT_SPACE_ON_IMPORT
 
-// add define for "override" key word if std < c++11
-#if __cplusplus <= 199711L
-#   if defined(_MSC_VER)
-#       if _MSC_VER < 1600 // before 2010 msvc
-#           define override
-#       endif
-#   else
-#       define override
-#   endif // _MSC_VER
-#endif
-
 #endif // __DAVAENGINE_CONFIG_H__
 
