@@ -37,8 +37,7 @@
 #include "Render/Highlevel/RenderBatch.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
-#include "MemoryManager/MemoryManagerAllocator.h"
-#include "MemoryManager/AllocPools.h"
+
 namespace DAVA
 {
 
