@@ -75,4 +75,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #   define CC_DEPRECATED(func) func
 #endif
 
+//Temporary client build fix
+#define DAVA_DEPRECATED CC_DEPRECATED
+
 #endif  // __DAVAENGINE_COMPILER_FEATURES__
