@@ -21,9 +21,65 @@ namespace rhi
 //==============================================================================
 
 typedef Pool<ProgGLES2::ConstBuf,RESOURCE_CONST_BUFFER>   ConstBufGLES2Pool;
-RHI_IMPL_POOL(ProgGLES2::ConstBuf,RESOURCE_CONST_BUFFER);
+RHI_IMPL_POOL_SIZE(ProgGLES2::ConstBuf,RESOURCE_CONST_BUFFER,8*1024);
 
 static RingBuffer   DefaultConstRingBuffer;
+
+//==============================================================================
+
+static void
+DumpShaderText( const char* code, unsigned code_sz )
+{
+    char        src[64*1024];
+    char*       src_line[1024];
+    unsigned    line_cnt        = 0;
+    
+    if( code_sz < sizeof(src) )
+    {
+        memcpy( src, code, code_sz );
+        src[code_sz] = '\0';
+        memset( src_line, 0, sizeof(src_line) );
+
+        src_line[line_cnt++] = src;
+        for( char* s=src; *s; )
+        {
+            if( *s == '\n' )
+            {
+                *s = 0;                
+                ++s;
+
+                while( *s  &&  (/**s == '\n'  ||  */*s == '\r') )
+                {
+                    *s = 0;
+                    ++s;
+                }
+
+                if( !(*s) )
+                    break;            
+                
+                src_line[line_cnt] = s;
+                ++line_cnt;
+            }
+            else if( *s == '\r' )
+            {
+                *s = ' ';
+            }
+            else
+            {
+                ++s;
+            }
+        }
+    
+        for( unsigned i=0; i!=line_cnt; ++i )
+        {
+            Logger::Info( "%4u |  %s", 1+i, src_line[i] );
+        }
+    }
+    else
+    {
+        Logger::Info( code );
+    }
+}
 
 
 //==============================================================================
@@ -83,6 +139,7 @@ ProgGLES2::Construct( const char* srcCode )
         {
             Logger::Error( "%sprog-compile failed:", (type==PROG_VERTEX) ? "v" : "f" );
             Logger::Info( info );
+            DumpShaderText( srcCode, strlen(srcCode) );
         }
     }
     
