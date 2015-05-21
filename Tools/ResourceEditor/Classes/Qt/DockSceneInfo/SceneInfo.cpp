@@ -295,6 +295,8 @@ uint32 SceneInfo::CalculateTextureSize(const TexturesMap &textures)
 	String projectPath = ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname();
     uint32 textureSize = 0;
     
+	eGPUFamily requestedGPU = static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
+
     TexturesMap::const_iterator endIt = textures.end();
     for(TexturesMap::const_iterator it = textures.begin(); it != endIt; ++it)
     {
@@ -314,7 +316,10 @@ uint32 SceneInfo::CalculateTextureSize(const TexturesMap &textures)
         }
         
         auto baseMipmap = tex->GetBaseMipMap();
-        textureSize += ImageTools::GetTexturePhysicalSize(tex->GetDescriptor(), (eGPUFamily) SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32(), baseMipmap);
+
+		auto descriptor = tex->GetDescriptor();
+		eGPUFamily gpu = descriptor->IsCompressedFile() ? static_cast<eGPUFamily>(descriptor->exportedAsGpuFamily) : requestedGPU;
+        textureSize += ImageTools::GetTexturePhysicalSize(tex->GetDescriptor(), gpu, baseMipmap);
     }
 
     return textureSize;
