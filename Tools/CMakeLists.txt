@@ -15,7 +15,6 @@ project               ( Megasolution  )
 
 set                   ( DAVA_USE_QT_WIDGETS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../Sources/CMake/Modules/" ) 
-add_definitions       ( -DDAVA_MEMORY_PROFILING_ENABLE )
 
 include               ( CMake-common )
 
@@ -40,8 +39,4 @@ add_subdirectory      ( "${DAVA_ROOT_DIR}/Projects/UnitTests"   ${CMAKE_CURRENT_
 
 set_deploy_dir        ( SceneViewer )
 add_subdirectory      ( "${DAVA_ROOT_DIR}/Projects/SceneViewer"   ${CMAKE_CURRENT_BINARY_DIR}/SceneViewer )
-
-#set_deploy_dir        ( UIEditor )
-#add_subdirectory      ( "${DAVA_ROOT_DIR}/Tools/UIEditor"       ${CMAKE_CURRENT_BINARY_DIR}/UIEditor )
-
 
