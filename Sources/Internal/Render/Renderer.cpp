@@ -57,12 +57,16 @@ void Initialize(rhi::Api _api, int32 _framebufferWidth, int32 _framebufferHeight
 {
     DVASSERT(!ininialized);
 
-    rhi::InitParam  param;
-
     api = _api;
     framebufferWidth = _framebufferWidth;
     framebufferHeight = _framebufferHeight;
-    rhi::Initialize(api);    
+    
+    rhi::InitParam param;
+    param.width = framebufferWidth;
+    param.height = framebufferHeight;
+    param.window = externalData;
+    
+    rhi::Initialize(api, param);
     rhi::ShaderCache::Initialize();
     ShaderDescriptorCache::Initialize();
     FXCache::Initialize();
