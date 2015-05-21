@@ -162,7 +162,7 @@
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 #include "MemoryManager/AllocPools.h"
-#include "MemoryManager/MemoryManagerAllocator.h"
+#include "MemoryManager/TrackingAllocator.h"
 #endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
 
 namespace DAVA
@@ -202,10 +202,10 @@ typedef float       float32;
 typedef double      float64;
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
-// FIX: replace DefaultSTLAllocator with MemoryManagerAllocator after fixing framework and game codebases
+// FIX: replace DefaultSTLAllocator with TrackingAllocator after fixing framework and game codebases
 template<typename T>
 using DefaultSTLAllocator = std::allocator<T>;
-//using DefaultSTLAllocator = MemoryManagerAllocator<T, ALLOC_POOL_APP>;
+//using DefaultSTLAllocator = TrackingAllocator<T, ALLOC_POOL_DEFAULT>;
 #else
 template<typename T>
 using DefaultSTLAllocator = std::allocator<T>;

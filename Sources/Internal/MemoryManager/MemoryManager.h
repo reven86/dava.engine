@@ -39,6 +39,7 @@
 #include "Thread/LockGuard.h"
 #include "Thread/ThreadLocalPtr.h"
 
+#include "MemoryManager/MemoryManagerConfig.h"
 #include "MemoryManager/AllocPools.h"
 #include "MemoryManager/MemoryManagerTypes.h"
 #include "MemoryManager/InternalAllocator.h"
@@ -58,10 +59,10 @@ class MemoryManager final
     static const uint32 BLOCK_MARK = 0xBA0BAB;
     static const uint32 INTERNAL_BLOCK_MARK = 0x55AACC11;
     static const size_t BLOCK_ALIGN = 16;
-    static const size_t BACKTRACE_DEPTH = 32;
+    static const size_t BACKTRACE_DEPTH = DAVA_MEMORY_MANAGER_BACKTRACE_DEPTH;
 
 public:
-    static const int32 MAX_ALLOC_POOL_COUNT = 24;
+    static const uint32 MAX_ALLOC_POOL_COUNT = 24;
     static const size_t MAX_TAG_COUNT = 32;
 
     struct MemoryBlock;
@@ -82,15 +83,15 @@ public:
 public:
     static MemoryManager* Instance();
 
-    static void RegisterAllocPoolName(int32 index, const char8* name);
+    static void RegisterAllocPoolName(uint32 index, const char8* name);
     static void RegisterTagName(uint32 tagMask, const char8* name);
 
     void SetCallbacks(void (*onUpdate)(void*), void (*onTag)(uint32, bool, void*), void* arg);
     void Update();
 
-    DAVA_NOINLINE void* Allocate(size_t size, int32 poolIndex);
-    DAVA_NOINLINE void* AlignedAllocate(size_t size, size_t align, int32 poolIndex);
-    void* Reallocate(void * ptr, size_t size);
+    DAVA_NOINLINE void* Allocate(size_t size, uint32 poolIndex);
+    DAVA_NOINLINE void* AlignedAllocate(size_t size, size_t align, uint32 poolIndex);
+    void* Reallocate(void* ptr, size_t newSize);
     void Deallocate(void* ptr);
     
     void* InternalAllocate(size_t size) DAVA_NOEXCEPT;
@@ -99,11 +100,11 @@ public:
     void EnterTagScope(uint32 tag);
     void LeaveTagScope(uint32 tag);
 
-    void EnterAllocScope(int32 allocPool);
-    void LeaveAllocScope(int32 allocPool);
+    void EnterAllocScope(uint32 allocPool);
+    void LeaveAllocScope(uint32 allocPool);
 
-    void TrackGpuAlloc(uint32 id, size_t size, int32 gpuPoolIndex);
-    void TrackGpuDealloc(uint32 id, int32 gpuPoolIndex);
+    void TrackGpuAlloc(uint32 id, size_t size, uint32 gpuPoolIndex);
+    void TrackGpuDealloc(uint32 id, uint32 gpuPoolIndex);
 
     MMStatConfig* GetStatConfig() const;
     MMCurStat* GetCurStat() const;
@@ -125,8 +126,8 @@ private:
     void InsertBlock(MemoryBlock* block);
     void RemoveBlock(MemoryBlock* block);
 
-    void UpdateStatAfterAlloc(MemoryBlock* block, int32 poolIndex);
-    void UpdateStatAfterDealloc(MemoryBlock* block, int32 poolIndex);
+    void UpdateStatAfterAlloc(MemoryBlock* block);
+    void UpdateStatAfterDealloc(MemoryBlock* block);
 
     void InsertBacktrace(Backtrace& backtrace);
     void RemoveBacktrace(uint32 hash);
@@ -154,9 +155,13 @@ private:
     using LockType = LockGuard<MutexType>;
 
     mutable MutexType allocMutex;       // Mutex for managing list of allocated memory blocks
-    //mutable MutexType statMutex;        // Mutex for updating memory statistics
+    mutable MutexType statMutex;        // Mutex for updating memory statistics
+#if defined(DAVA_MEMORY_MANAGER_COLLECT_BACKTRACES)
     mutable MutexType bktraceMutex;     // Mutex for working with backtraces
+#endif
+#if defined(DAVA_MEMORY_MANAGER_TRACK_GPU)
     mutable MutexType gpuMutex;         // Mutex for managing GPU allocations
+#endif
 
     using InternalString = std::basic_string<char8, std::char_traits<char8>, InternalAllocator<char8>>;
 
@@ -206,8 +211,10 @@ private:
 
     static MMItemName tagNames[MAX_TAG_COUNT];                // Names of tags
     static MMItemName allocPoolNames[MAX_ALLOC_POOL_COUNT];   // Names of allocation pools
-    
+
+#if defined(DAVA_MEMORY_MANAGER_COLLECT_BACKTRACES)
     static ThreadLocalPtr<AllocScopeItem> tlsAllocScopeStack;
+#endif
 };
 
 //////////////////////////////////////////////////////////////////////////

@@ -48,8 +48,8 @@
 #include "Debug/DVAssert.h"
 #include "Platform/Thread.h"
 
-#include "MallocHook.h"
-#include "MemoryManager.h"
+#include "MemoryManager/MallocHook.h"
+#include "MemoryManager/MemoryManager.h"
 
 namespace DAVA
 {
@@ -65,7 +65,7 @@ struct MemoryManager::MemoryBlock
     uint32 allocByApp;      // Size requested by application
     uint32 allocTotal;      // Total allocated size
     uint32 bktraceHash;     // Unique hash number to identify block backtrace
-    int32 pool;             // Allocation pool block belongs to
+    uint32 pool;            // Allocation pool block belongs to
     uint32 tags;            // Tags block belongs to
     uint32 mark;            // Mark to distinguish tracked memory blocks
 };
@@ -119,9 +119,11 @@ MMItemName MemoryManager::allocPoolNames[MAX_ALLOC_POOL_COUNT] = {
 size_t MemoryManager::registeredTagCount = 0;
 size_t MemoryManager::registeredAllocPoolCount = PREDEF_POOL_COUNT;
 
+#if defined(DAVA_MEMORY_MANAGER_COLLECT_BACKTRACES)
 ThreadLocalPtr<MemoryManager::AllocScopeItem> MemoryManager::tlsAllocScopeStack;
+#endif
 
-void MemoryManager::RegisterAllocPoolName(int32 index, const char8* name)
+void MemoryManager::RegisterAllocPoolName(uint32 index, const char8* name)
 {
     DVASSERT(name != nullptr && 0 < strlen(name) && strlen(name) < MMItemName::MAX_NAME_LENGTH);
     DVASSERT(FIRST_CUSTOM_ALLOC_POOL <= index && index < MAX_ALLOC_POOL_COUNT);
@@ -175,17 +177,12 @@ void MemoryManager::Update()
     }
 }
 
-DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, int32 poolIndex)
+DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
 {
     assert(ALLOC_POOL_TOTAL < poolIndex && poolIndex < MAX_ALLOC_POOL_COUNT);
 
     // On zero-sized allocation request allocate 1 byte to return unique memory block
-    if (0 == size)
-    {
-        size = 1;
-    }
-
-    size_t totalSize = sizeof(MemoryBlock) + size;
+    size_t totalSize = sizeof(MemoryBlock) + (size != 0 ? size : 1);
     if (totalSize & (BLOCK_ALIGN - 1))
     {
         totalSize += (BLOCK_ALIGN - (totalSize & (BLOCK_ALIGN - 1)));
@@ -194,72 +191,60 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, int32 poolIndex)
     MemoryBlock* block = static_cast<MemoryBlock*>(MallocHook::Malloc(totalSize));
     if (block != nullptr)
     {
+#if defined(DAVA_MEMORY_MANAGER_USE_ALLOC_SCOPE)
+        if (tlsAllocScopeStack.IsCreated())
+        {
+            AllocScopeItem* scopeItem = tlsAllocScopeStack.Get();
+            if (scopeItem != nullptr)
+            {
+                block->pool = scopeItem->allocPool;
+            }
+        }
+#endif
+
+#if defined(DAVA_MEMORY_MANAGER_COLLECT_BACKTRACES)
+        Backtrace backtrace;
+        CollectBacktrace(&backtrace, 1);
+#endif
+
         block->mark = BLOCK_MARK;
         block->pool = poolIndex;
         block->realBlockStart = static_cast<void*>(block);
         block->allocByApp = static_cast<uint32>(size);
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
-        if (true) //(!IsInternalAllocationPool(poolIndex))
+#if defined(DAVA_MEMORY_MANAGER_COLLECT_BACKTRACES)
+        block->bktraceHash = backtrace.hash;
+#else
+        block->bktraceHash = 0;
+#endif
+
         {
-            /*if (tlsAllocScopeStack.IsCreated())
-            {
-                AllocScopeItem* scopeItem = tlsAllocScopeStack.Get();
-                if (scopeItem != nullptr)
-                {
-                    block->pool = scopeItem->allocPool;
-                }
-            }*/
-
-            Backtrace backtrace;
-            {
-                // Lock is required only here:
-                //  - collecting backtrace
-                //  - updating statistics
-                //  - inserting block into internal list
-                LockType lock(allocMutex);
-
-                CollectBacktrace(&backtrace, 1);
-                block->tags = statGeneral.activeTags;
-                block->orderNo = statGeneral.nextBlockNo++;
-                block->bktraceHash = backtrace.hash;
-
-                InsertBlock(block);
-                UpdateStatAfterAlloc(block, block->pool);
-            }
-            {
-                LockType lock(bktraceMutex);
-                InsertBacktrace(backtrace);
-            }
+            LockType lock(allocMutex);
+            block->tags = statGeneral.activeTags;
+            block->orderNo = statGeneral.nextBlockNo++;
+            InsertBlock(block);
         }
-        else
         {
-            block->next = nullptr;
-            block->prev = nullptr;
-            block->orderNo = 0;
-
-            {   // For internal allocation pool lock is required only for updating statistics
-                LockType lock(allocMutex);
-                statGeneral.allocInternal += block->allocByApp;
-                statGeneral.allocInternalTotal += block->allocTotal;
-                statGeneral.internalBlockCount += 1;
-            }
+            LockType lock(statMutex);
+            UpdateStatAfterAlloc(block);
         }
+#if defined(DAVA_MEMORY_MANAGER_COLLECT_BACKTRACES)
+        {
+            LockType lock(bktraceMutex);
+            InsertBacktrace(backtrace);
+        }
+#endif
         return static_cast<void*>(block + 1);
     }
     return nullptr;
 }
 
-DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, int32 poolIndex)
+DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, uint32 poolIndex)
 {
     // TODO: check whether size is integral multiple of align
+    assert(size > 0);
     assert(align > 0 && 0 == (align & (align - 1)));    // Check whether align is power of 2
     assert(ALLOC_POOL_TOTAL < poolIndex && poolIndex < MAX_ALLOC_POOL_COUNT);
-
-    // On zero-sized allocation request allocate 1 byte to return unique memory block
-    if (0 == size)
-    {
-        size = 1;
-    }
 
     if (align < BLOCK_ALIGN)
     {
@@ -275,9 +260,25 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, in
     void* realPtr = MallocHook::Malloc(totalSize);
     if (realPtr != nullptr)
     {
+#if defined(DAVA_MEMORY_MANAGER_USE_ALLOC_SCOPE)
+        if (tlsAllocScopeStack.IsCreated())
+        {
+            AllocScopeItem* scopeItem = tlsAllocScopeStack.Get();
+            if (scopeItem != nullptr)
+            {
+                block->pool = scopeItem->allocPool;
+            }
+        }
+#endif
+
         // Some pointer arithmetics
         uintptr_t aligned = uintptr_t(realPtr) + sizeof(MemoryBlock);
         aligned += align - (aligned & (align - 1));
+
+#if defined(DAVA_MEMORY_MANAGER_COLLECT_BACKTRACES)
+        Backtrace backtrace;
+        CollectBacktrace(&backtrace, 1);
+#endif
 
         MemoryBlock* block = reinterpret_cast<MemoryBlock*>(aligned - sizeof(MemoryBlock));
         block->mark = BLOCK_MARK;
@@ -285,51 +286,28 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, in
         block->realBlockStart = realPtr;
         block->allocByApp = static_cast<uint32>(size);
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block->realBlockStart));
-        if (true)   //(!IsInternalAllocationPool(poolIndex))
+#if defined(DAVA_MEMORY_MANAGER_COLLECT_BACKTRACES)
+        block->bktraceHash = backtrace.hash;
+#else
+        block->bktraceHash = 0;
+#endif
+
         {
-            /*if (tlsAllocScopeStack.IsCreated())
-            {
-                AllocScopeItem* scopeItem = tlsAllocScopeStack.Get();
-                if (scopeItem != nullptr)
-                {
-                    block->pool = scopeItem->allocPool;
-                }
-            }*/
-
-            Backtrace backtrace;
-            {
-                // Lock is required only here:
-                //  - collecting backtrace
-                //  - updating statistics
-                //  - inserting block into internal list
-                LockType lock(allocMutex);
-
-                CollectBacktrace(&backtrace, 1);
-                block->tags = statGeneral.activeTags;
-                block->orderNo = statGeneral.nextBlockNo++;
-                block->bktraceHash = backtrace.hash;
-
-                InsertBlock(block);
-                UpdateStatAfterAlloc(block, block->pool);
-            }
-            {
-                LockType lock(bktraceMutex);
-                InsertBacktrace(backtrace);
-            }
+            LockType lock(allocMutex);
+            block->tags = statGeneral.activeTags;
+            block->orderNo = statGeneral.nextBlockNo++;
+            InsertBlock(block);
         }
-        else
         {
-            block->next = nullptr;
-            block->prev = nullptr;
-            block->orderNo = 0;
-
-            {   // For internal allocation pool lock is required only for updating statistics
-                LockType lock(allocMutex);
-                statGeneral.allocInternal += block->allocByApp;
-                statGeneral.allocInternalTotal += block->allocTotal;
-                statGeneral.internalBlockCount += 1;
-            }
+            LockType lock(statMutex);
+            UpdateStatAfterAlloc(block);
         }
+#if defined(DAVA_MEMORY_MANAGER_COLLECT_BACKTRACES)
+        {
+            LockType lock(bktraceMutex);
+            InsertBacktrace(backtrace);
+        }
+#endif
         return reinterpret_cast<void*>(aligned);
     }
     return nullptr;
@@ -366,38 +344,39 @@ void MemoryManager::Deallocate(void* ptr)
 {
     if (ptr != nullptr)
     {
+        void* ptrToFree = nullptr;
         MemoryBlock* block = static_cast<MemoryBlock*>(ptr) - 1;
         if (BLOCK_MARK == block->mark)
         {
             {
-                // Lock is required only here:
-                //  - updating statistics
-                //  - inserting block into internal list
                 LockType lock(allocMutex);
-
                 RemoveBlock(block);
-                UpdateStatAfterDealloc(block, block->pool);
             }
+            {
+                LockType lock(statMutex);
+                UpdateStatAfterDealloc(block);
+            }
+#if defined(DAVA_MEMORY_MANAGER_COLLECT_BACKTRACES)
             {
                 LockType lock(bktraceMutex);
                 RemoveBacktrace(block->bktraceHash);
             }
+#endif
             // Tracked memory block consists of header (of type struct MemoryBlock) and data block that returned to app.
             // Tracked memory blocks are distinguished by special mark in header.
             // In some cases, especially on iOS, memory allocations bypass memory manager, but memory freeing goes through
             // memory manager. So I need to erase header to properly free bypassed allocations as system can allocate memory at the same address
             block->mark = 0xECECECEC;
-            MallocHook::Free(block->realBlockStart);
+            ptrToFree = block->realBlockStart;
         }
         else
         {
-            {
-                LockType lock(allocMutex);
-                statGeneral.ghostBlockCount += 1;
-                statGeneral.ghostSize += MallocHook::MallocSize(ptr);
-            }
-            MallocHook::Free(ptr);
+            LockType lock(statMutex);
+            statGeneral.ghostBlockCount += 1;
+            statGeneral.ghostSize += MallocHook::MallocSize(ptr);
+            ptrToFree = ptr;
         }
+        MallocHook::Free(ptrToFree);
     }
 }
 
@@ -412,13 +391,12 @@ void* MemoryManager::InternalAllocate(size_t size) DAVA_NOEXCEPT
         block->allocTotal = static_cast<uint32>(MallocHook::MallocSize(block));
 
         // Update stat
-        //{
-        //LockType lock(allocMutex);
-        //statGeneral.allocInternal += block->allocByApp;
-        //statGeneral.allocInternalTotal += block->allocTotal;
-        //statGeneral.internalBlockCount += 1;
-        //}
-        
+        {
+            LockType lock(statMutex);
+            statGeneral.allocInternal += block->allocByApp;
+            statGeneral.allocInternalTotal += block->allocTotal;
+            statGeneral.internalBlockCount += 1;
+        }
         return static_cast<void*>(block + 1);
     }
     return nullptr;
@@ -432,24 +410,23 @@ void MemoryManager::InternalDeallocate(void* ptr) DAVA_NOEXCEPT
         assert(INTERNAL_BLOCK_MARK == block->mark);
         
         // Update stat
-        //{
-        //LockType lock(allocMutex);
-        //statGeneral.allocInternal -= block->allocByApp;
-        //statGeneral.allocInternalTotal -= block->allocTotal;
-        //statGeneral.internalBlockCount -= 1;
-        //}
+        {
+            LockType lock(statMutex);
+            statGeneral.allocInternal -= block->allocByApp;
+            statGeneral.allocInternalTotal -= block->allocTotal;
+            statGeneral.internalBlockCount -= 1;
+        }
 
         // Clear mark of deallocated block
         block->mark = 0xECECECEC;
-        MallocHook::Free(block);        
+        MallocHook::Free(block);
     }
 }
-    
+
 void MemoryManager::EnterTagScope(uint32 tag)
 {
     DVASSERT(tag != 0 && IsPowerOf2(tag));
-    DVASSERT((statGeneral.activeTags & tag) == 0);
-    DVASSERT(statGeneral.activeTagCount < MAX_TAG_COUNT);
+    DVASSERT((statGeneral.activeTags & tag) == 0);  // Tag shouldn't be set earlier
 
     {
         LockType lock(allocMutex);
@@ -465,8 +442,7 @@ void MemoryManager::EnterTagScope(uint32 tag)
 void MemoryManager::LeaveTagScope(uint32 tag)
 {
     DVASSERT(tag != 0 && IsPowerOf2(tag));
-    DVASSERT((statGeneral.activeTags & tag) == tag);
-    DVASSERT(statGeneral.activeTagCount > 0);
+    DVASSERT((statGeneral.activeTags & tag) == tag);    // Tag should be set earlier
 
     {
         LockType lock(allocMutex);
@@ -479,28 +455,33 @@ void MemoryManager::LeaveTagScope(uint32 tag)
     }
 }
 
-void MemoryManager::EnterAllocScope(int32 allocPool)
+void MemoryManager::EnterAllocScope(uint32 allocPool)
 {
+#if defined(DAVA_MEMORY_MANAGER_USE_ALLOC_SCOPE)
     AllocScopeItem* newItem = new AllocScopeItem;
     newItem->next = tlsAllocScopeStack.Release();
     newItem->allocPool = allocPool;
 
     tlsAllocScopeStack.Reset(newItem);
+#endif
 }
 
-void MemoryManager::LeaveAllocScope(int32 allocPool)
+void MemoryManager::LeaveAllocScope(uint32 allocPool)
 {
+#if defined(DAVA_MEMORY_MANAGER_USE_ALLOC_SCOPE)
     AllocScopeItem* topItem = tlsAllocScopeStack.Release();
     assert(topItem != nullptr);
     assert(topItem->allocPool == allocPool);
 
     tlsAllocScopeStack.Reset(topItem->next);
     delete topItem;
+#endif
 }
 
-void MemoryManager::TrackGpuAlloc(uint32 id, size_t size, int32 gpuPoolIndex)
+void MemoryManager::TrackGpuAlloc(uint32 id, size_t size, uint32 gpuPoolIndex)
 {
-    /*LockType lock(gpuMutex);
+#if defined(DAVA_MEMORY_MANAGER_TRACK_GPU)
+    LockType lock(gpuMutex);
 
     if (nullptr == gpuBlockMap)
     {
@@ -551,12 +532,14 @@ void MemoryManager::TrackGpuAlloc(uint32 id, size_t size, int32 gpuPoolIndex)
             if (block.allocByApp > statAllocPool[gpuPoolIndex].maxBlockSize)
                 statAllocPool[gpuPoolIndex].maxBlockSize = block.allocByApp;
         }
-    }*/
+    }
+#endif
 }
 
-void MemoryManager::TrackGpuDealloc(uint32 id, int32 gpuPoolIndex)
+void MemoryManager::TrackGpuDealloc(uint32 id, uint32 gpuPoolIndex)
 {
-    /*LockType lock(gpuMutex);
+#if defined(DAVA_MEMORY_MANAGER_TRACK_GPU)
+    LockType lock(gpuMutex);
 
     auto iterToList = gpuBlockMap->find(gpuPoolIndex);
     DVASSERT(iterToList != gpuBlockMap->end());
@@ -581,7 +564,8 @@ void MemoryManager::TrackGpuDealloc(uint32 id, int32 gpuPoolIndex)
         }
     }
 
-    blockList.erase(iterToBlock);*/
+    blockList.erase(iterToBlock);
+#endif
 }
 
 void MemoryManager::InsertBlock(MemoryBlock* block)
@@ -611,7 +595,7 @@ void MemoryManager::RemoveBlock(MemoryBlock* block)
         head = head->next;
 }
 
-void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, int32 poolIndex)
+void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block)
 {
     {   // Update total statistics
         statAllocPool[ALLOC_POOL_TOTAL].allocByApp += block->allocByApp;
@@ -622,6 +606,7 @@ void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, int32 poolIndex)
             statAllocPool[ALLOC_POOL_TOTAL].maxBlockSize = block->allocByApp;
     }
     {   // Update pool statistics
+        const uint32 poolIndex = block->pool;
         statAllocPool[poolIndex].allocByApp += block->allocByApp;
         statAllocPool[poolIndex].allocTotal += block->allocTotal;
         statAllocPool[poolIndex].blockCount += 1;
@@ -643,7 +628,7 @@ void MemoryManager::UpdateStatAfterAlloc(MemoryBlock* block, int32 poolIndex)
     }
 }
 
-void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block, int32 poolIndex)
+void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block)
 {
     {   // Update total statistics
         statAllocPool[ALLOC_POOL_TOTAL].allocByApp -= block->allocByApp;
@@ -651,6 +636,7 @@ void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block, int32 poolIndex)
         statAllocPool[ALLOC_POOL_TOTAL].blockCount -= 1;
     }
     {   // Update pool statistics
+        const uint32 poolIndex = block->pool;
         statAllocPool[poolIndex].allocByApp -= block->allocByApp;
         statAllocPool[poolIndex].allocTotal -= block->allocTotal;
         statAllocPool[poolIndex].blockCount -= 1;
@@ -670,6 +656,7 @@ void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block, int32 poolIndex)
 
 void MemoryManager::InsertBacktrace(Backtrace& backtrace)
 {
+#if defined(DAVA_MEMORY_MANAGER_COLLECT_BACKTRACES)
 #if defined(DAVA_MEMORY_MANAGER_NEW_DATASTRUCT)
     if (nullptr == bktraceMap)
     {
@@ -709,10 +696,12 @@ void MemoryManager::InsertBacktrace(Backtrace& backtrace)
         backtraces->emplace(backtrace.hash, backtrace);
     }
 #endif
+#endif
 }
 
 void MemoryManager::RemoveBacktrace(uint32 hash)
 {
+#if defined(DAVA_MEMORY_MANAGER_COLLECT_BACKTRACES)
 #if defined(DAVA_MEMORY_MANAGER_NEW_DATASTRUCT)
     // do nothing
 #else
@@ -727,6 +716,7 @@ void MemoryManager::RemoveBacktrace(uint32 hash)
     {
         backtraces->erase(hash);
     }
+#endif
 #endif
 }
 

@@ -49,11 +49,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DAVA_MEMORY_PROFILER_ALLOC_SCOPE(allocPool)             DAVA::MemoryManager::AllocPoolScope memory_profiler_alloc_scope(allocPool)
 #define DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE()                DAVA::MemoryManager::AllocPoolScope memory_profiler_alloc_scope(this_class_allocation_pool)
 
-#define DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(allocPool)                                                                                     \
+#define DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(allocPool)                                                                                \
 private:                                                                                                                                \
-    static const DAVA::int32 this_class_allocation_pool = allocPool;                                                                    \
+    static const DAVA::uint32 this_class_allocation_pool = allocPool;                                                                   \
 public:                                                                                                                                 \
-    static void* operator new (size_t size){return DAVA::MemoryManager::Instance()->Allocate(size, this_class_allocation_pool);}        \
+    static void* operator new (size_t size){return DAVA::MemoryManager::Instance()->Allocate(size, this_class_allocation_pool); }       \
     static void* operator new [](size_t size) { return DAVA::MemoryManager::Instance()->Allocate(size, this_class_allocation_pool); }   \
     static void operator delete (void* ptr) DAVA_NOEXCEPT { DAVA::MemoryManager::Instance()->Deallocate(ptr); }                         \
     static void operator delete [](void* ptr) DAVA_NOEXCEPT { DAVA::MemoryManager::Instance()->Deallocate(ptr); }

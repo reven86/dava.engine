@@ -122,7 +122,7 @@ struct MMBlock
     uint32 allocByApp;      // Size requested by application
     uint32 allocTotal;      // Total allocated size
     uint32 bktraceHash;     // Unique hash number to identify block backtrace
-    int32  pool;            // Allocation pool block belongs to
+    uint32 pool;            // Allocation pool block belongs to
     uint32 tags;            // Tags block belongs to
     uint32 type;
     uint32 padding;
