@@ -34,6 +34,7 @@
 #include "Base/ObjectFactory.h"
 #include "UI/UIControl.h"
 #include "UI/UIControlHelpers.h"
+#include "UI/Components/UIComponent.h"
 #include "FileSystem/LocalizationSystem.h"
 #include "UIPackagesCache.h"
 
@@ -231,20 +232,13 @@ UIControl *DefaultUIPackageBuilder::BeginControlWithCustomClass(const String &cu
         control->RemoveAllControls();
     }
     
-    if (control.Valid())
-    {
-        control->SetCustomControlClassName(customClassName);
-    }
-    else
-    {
-        DVASSERT(false);
-    }
+    DVASSERT(control.Valid());
     
     controlsStack.push_back(new ControlDescr(control.Get(), true));
     return control.Get();
 }
 
-UIControl *DefaultUIPackageBuilder::BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String &customClassName, AbstractUIPackageLoader *loader)
+UIControl *DefaultUIPackageBuilder::BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String *customClassName, AbstractUIPackageLoader *loader)
 {
     UIControl *prototype = nullptr;
     UIPackage *package = packagesStack.back()->GetPackage();
@@ -268,9 +262,9 @@ UIControl *DefaultUIPackageBuilder::BeginControlWithPrototype(const String &pack
     DVASSERT(prototype != nullptr);
     
     RefPtr<UIControl> control;
-    if (!customClassName.empty())
+    if (customClassName)
     {
-        control.Set(ObjectFactory::Instance()->New<UIControl>(customClassName));
+        control.Set(ObjectFactory::Instance()->New<UIControl>(*customClassName));
         control->RemoveAllControls();
         
         control->CopyDataFrom(prototype);
@@ -333,7 +327,22 @@ void DefaultUIPackageBuilder::EndControlPropertiesSection()
 {
     currentObject = nullptr;
 }
-
+    
+UIComponent *DefaultUIPackageBuilder::BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex)
+{
+    UIComponent *component = UIComponent::CreateByType(componentType);
+    UIControl *control = controlsStack.back()->control.Get();
+    control->AddComponent(component);
+    component->Release();
+    currentObject = component;
+    return component;
+}
+    
+void DefaultUIPackageBuilder::EndComponentPropertiesSection()
+{
+    currentObject = nullptr;
+}
+    
 UIControlBackground *DefaultUIPackageBuilder::BeginBgPropertiesSection(int32 index, bool sectionHasProperties)
 {
     if (sectionHasProperties)

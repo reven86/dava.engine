@@ -29,26 +29,11 @@
 
 #include "IconHelper.h"
 
-using namespace DAVA;
-
 QString IconHelper::GetIconPathForClassName(const QString &className)
 {
 	QString s = ":/Icons/QtControlIcons/" + className.toLower() + ".png";
 
 	return s;
-}
-
-QString IconHelper::GetIconPathForUIControl(DAVA::UIControl *uiControl)
-{
-    if(!uiControl->GetCustomControlClassName().empty())
-    {
-        return GetCustomIconPath();
-    }
-    else
-    {
-        QString className = QString::fromStdString(uiControl->GetControlClassName());
-        return GetIconPathForClassName(className);
-    }
 }
 
 QString IconHelper::GetCustomIconPath()
