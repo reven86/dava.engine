@@ -326,7 +326,7 @@ void LODEditor::ViewLODButtonReleased()
     InvertFrameVisibility(ui->frameViewLOD, ui->viewLODButton);
     
     frameViewVisible = ui->frameViewLOD->isVisible();
-    if (ui->frameViewLOD->isVisible() == false)
+    if (!frameViewVisible)
     {
         GetCurrentEditorLODSystem()->SetForceDistance(DAVA::LodComponent::INVALID_DISTANCE);
         GetCurrentEditorLODSystem()->SetForceLayer(DAVA::LodComponent::INVALID_LOD_LAYER);
