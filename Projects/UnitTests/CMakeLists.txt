@@ -1,26 +1,24 @@
 cmake_minimum_required (VERSION 3.0)
 
-if( ANDROID )
-    project ( UnitTestsLib )
-else()
-    project ( UnitTests )
-endif()
-
-# add DAVA_MEMORY_PROFILING_ENABLE to enable MemoryManagerTest in UnitTests
-# this macro should be defined in all dependant projects (dava framework, etc)
-if ( NOT WINDOWS_STORE AND NOT WINDOWS_PHONE )
-    add_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
-else()
-    message(WARNING "Windows Store platform detected. Memory profiling is disabled")
-endif()
-
 set          ( WARNINGS_AS_ERRORS true )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
-include      ( CMake-common  )
+
+# Enable MemoryManagerTest in UnitTests
+# this variable should be defined in all dependant projects (dava framework, etc)
+set ( DAVA_MEMORY_PROFILER 1 )
 
 find_package( DavaFramework REQUIRED )
 find_package( DavaTools     REQUIRED )
 
+if( ANDROID )
+    project ( UnitTestsLib )
+
+else()
+    project ( UnitTests )
+
+endif()
+
+include      ( CMake-common )
 include_directories   ( "Classes" )
 include_directories   ( "Classes/Infrastructure" )
 

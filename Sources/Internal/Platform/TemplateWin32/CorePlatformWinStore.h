@@ -30,7 +30,7 @@
 #ifndef __DAVAENGINE_CORE_PLATFORM_WINSTORE_H__
 #define __DAVAENGINE_CORE_PLATFORM_WINSTORE_H__
 
-#include "Platform/PlatformDetection.h"
+#include "Base/PlatformDetection.h"
 #if defined(__DAVAENGINE_WINDOWS_STORE__)
 
 #include "DAVAEngine.h"

@@ -2,6 +2,8 @@
 
 if( APPLE AND NOT IOS AND NOT ANDROID )
 	set( MACOS 1 )
+elseif ( WINDOWS_STORE OR WINDOWS_PHONE )
+    set ( WINDOWS_UAP 1 )
 endif ()
 
 if( TEAMCITY_DEPLOY )

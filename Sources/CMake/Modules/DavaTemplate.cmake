@@ -90,14 +90,12 @@ elseif( MACOS )
 
     list( APPEND LIBRARIES      ${DYLIB_FILES} )
 
-elseif (WINDOWS_PHONE OR WINDOWS_STORE)
+elseif ( WINDOWS_UAP )
 
 	if(MSVC_VERSION GREATER 1899)
 		set(COMPILER_VERSION "14")
 	elseif(MSVC_VERSION GREATER 1700)
 		set(COMPILER_VERSION "12")
-	elseif(MSVC_VERSION GREATER 1600)
-		set(COMPILER_VERSION "11")
 	endif()
 	
 	set (APP_MANIFEST_NAME Package.appxmanifest)
@@ -241,10 +239,6 @@ else()
         ${PROJECT_SOURCE_FILES} 
         ${RESOURCES_LIST}
     )
-	
-	if (WINDOWS_PHONE OR WINDOWS_STORE)
-		set_property(TARGET ${PROJECT_NAME} PROPERTY VS_WINRT_COMPONENT TRUE)
-	endif()
 
 endif()
 
@@ -423,6 +417,10 @@ elseif ( MSVC )
             set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG}  ${OUTPUT_DIR} )
         endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
      endif()
+	 
+	if ( WINDOWS_UAP )
+		set_property(TARGET ${PROJECT_NAME} PROPERTY VS_WINRT_COMPONENT TRUE)
+	endif()
 
 endif()
 

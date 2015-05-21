@@ -121,7 +121,7 @@ elseif( IOS )
     file ( GLOB RESOURCE "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/*.a" )
     list ( APPEND LIST_SHARED_LIBRARIES ${RESOURCE}  )    
 
-elseif ( WINDOWS_STORE OR WINDOWS_PHONE )
+elseif ( WINDOWS_UAP )
 
     set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}" 
 	                                    "${DAVA_THIRD_PARTY_ROOT_PATH}/angle-ms-master/include" )
