@@ -372,7 +372,23 @@ gles2_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uin
 static void
 gles2_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
 {
-    CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_MARKER, uint64(text) );
+/*
+    CommandBufferGLES2_t*   cb = CommandBufferPool::Get(cmdBuf);
+
+    if( !cb->text )
+    {
+        cb->text = new RingBuffer();
+        cb->text->Initialize( 64*1024 );
+    }
+    
+    int     len = strlen( text );
+    char*   txt = (char*)cb->text->Alloc( len/sizeof(float)+1 );
+
+    memcpy( txt, text, len );
+    txt[len] = '\0';
+
+    cb->Command( GLES2__SET_MARKER, (uint64)(txt) );
+*/
 }
 
 
@@ -1281,7 +1297,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_SetSamplerState        = &gles2_CommandBuffer_SetSamplerState;
     dispatch->impl_CommandBuffer_DrawPrimitive          = &gles2_CommandBuffer_DrawPrimitive;
     dispatch->impl_CommandBuffer_DrawIndexedPrimitive   = &gles2_CommandBuffer_DrawIndexedPrimitive;
-//    dispatch->impl_CommandBuffer_SetMarker              = &dx9_CommandBuffer_SetMarker;
+    dispatch->impl_CommandBuffer_SetMarker              = &gles2_CommandBuffer_SetMarker;
     
     dispatch->impl_Present                              = &gles2_Present;
 }

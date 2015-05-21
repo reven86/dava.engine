@@ -53,8 +53,11 @@ namespace //for private variables
 void Initialize(rhi::Api _api)
 {
     DVASSERT(!ininialized);
+
+    rhi::InitParam  param;
+
     api = _api;
-    rhi::Initialize(api);    
+    rhi::Initialize( api, param );    
     rhi::ShaderCache::Initialize();
     ShaderDescriptorCache::Initialize();
     FXCache::Initialize();

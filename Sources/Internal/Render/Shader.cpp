@@ -224,7 +224,7 @@ ShaderDescriptor::ShaderDescriptor(rhi::ShaderSource *vSource, rhi::ShaderSource
                 binding.reg = prop.bufferReg;
                 binding.regCount = prop.bufferRegCount;
                 binding.updateSemantic = 0;
-                binding.dynamicPropertySemantic = DynamicBindings::GetShaderSemanticByName(prop.uid);
+                binding.dynamicPropertySemantic = DynamicBindings::GetUniformSemanticByName(prop.uid);
                 DVASSERT(binding.dynamicPropertySemantic != DynamicBindings::UNKNOWN_SEMANTIC); //unknown dynamic property
                 dynamicPropertyBindings.push_back(binding);
             }

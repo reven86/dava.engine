@@ -37,10 +37,13 @@
 namespace rhi
 {
 
+struct ResetParam;
+
 struct
 Dispatch
 {
 //    void    (*impl_Initialize)();
+    void    (*impl_Reset)( const ResetParam& );
     void    (*impl_Uninitialize)();
     void    (*impl_Present)();
     Api     (*impl_HostApi)();

@@ -39,7 +39,9 @@
 namespace rhi
 {
 
-void        metal_Initialize();
+struct InitParam;
+
+void        metal_Initialize( const InitParam& param );
 
 
 #if defined __OBJC__

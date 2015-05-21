@@ -17,9 +17,9 @@ FPROG_OUT_BEGIN
     FPROG_OUT_COLOR
 FPROG_OUT_END
 
-DECL_FP_SAMPLER2D(normalmap)
 DECL_FP_SAMPLER2D(dynamicReflection)
 DECL_FP_SAMPLER2D(dynamicRefraction)
+
 
 FPROG_BEGIN    
     float4 resColor = FP_TEXTURE2D( dynamicReflection, FP_IN(uv) );    

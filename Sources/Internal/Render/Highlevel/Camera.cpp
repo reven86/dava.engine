@@ -455,7 +455,7 @@ void Camera::PrepareDynamicParameters(Vector4 *externalClipPlane)
         {
             clipPlane = -clipPlane;
         }
-#endif RHI_COMPLETE
+#endif RHI_COMPLETE        
         Matrix4 m;
         
         viewMatrix.GetInverse(m);

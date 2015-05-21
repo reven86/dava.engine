@@ -1,3 +1,20 @@
+// CRAP: remove these when tree/wind working
+//#if defined SPEED_TREE_LEAF
+//#undef SPEED_TREE_LEAF
+//#endif
+//#if defined WIND_ANIMATION
+//#undef WIND_ANIMATION
+//#endif
+//#if #defined CUT_LEAF
+//#undef CUT_LEAF
+//#endif
+
+#if defined PIXEL_LIT
+#undef PIXEL_LIT
+#endif
+
+
+
 
 #define MAX_JOINTS 32
 #define _PI 3.141592654
@@ -726,7 +743,6 @@ VPROG_BEGIN
 #elif defined(SPEED_TREE_LEAF) //legacy for old tree lighting
     
     VP_OUT(varVertexColor).xyz = inVertexColor.xyz * treeLeafColorMul * treeLeafOcclusionMul + float3(treeLeafOcclusionOffset,treeLeafOcclusionOffset,treeLeafOcclusionOffset);
-//- VP_OUT(varVertexColor).xyz += inVertexColor.xyz ;
 
 #endif
 
