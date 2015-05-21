@@ -99,13 +99,13 @@ void UIHoleTransition::Draw(const UIGeometricData &geometricData)
     Sprite::DrawState drawState;
     drawState.SetMaterial(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
     
-	Renderer::GetDynamicBindings().SetColor(0.0f, 0.0f, 0.0f, 1.0f);
+	RenderSystem2D::Instance()->SetColor(0.0f, 0.0f, 0.0f, 1.0f);
 	RenderHelper::Instance()->FillRect(Rect(0.0f, 0.0f,
                                             (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx,
                                             (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy),
                                        drawState.GetMaterial());
     
-	Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+	RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 	
     drawState.SetPosition(geometricData.position);
     
@@ -153,7 +153,7 @@ void UIHoleTransition::Draw(const UIGeometricData &geometricData)
 	
 	renderTargetNextScreen->SetPosition(xNextPosition, yNextPosition);
 	renderTargetNextScreen->Draw(); */
-	Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+	RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 	
 };

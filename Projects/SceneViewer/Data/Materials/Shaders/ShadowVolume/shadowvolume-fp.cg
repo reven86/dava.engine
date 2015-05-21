@@ -1,3 +1,5 @@
+color_mask : none
+
 FPROG_IN_BEGIN
 
 FPROG_IN_END

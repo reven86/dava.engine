@@ -243,6 +243,7 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
                         }
                         else if (state == "STATE_STENCIL_TEST")
                         {                            
+                            passDescriptor.depthStateDescriptor.stencilEnabled = 1;
                             passDescriptor.depthStateDescriptor.stencilTwoSided = 1;
 
                             const YamlNode * stencilNode = renderStateNode->Get("stencil");

@@ -240,7 +240,7 @@ void RenderHelper::DrawGrid(const Rect & rect, const Vector2& gridSize, const Co
 
     vertexStream->Set(TYPE_FLOAT, 2, 0, gridVertices.data());
 
-    Renderer::GetDynamicBindings().SetColor(color.r, color.g, color.b, color.a);
+    RenderSystem2D::Instance()->SetColor(color.r, color.g, color.b, color.a);
 
     RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(renderDataObject);

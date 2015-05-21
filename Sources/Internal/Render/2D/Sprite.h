@@ -175,7 +175,7 @@ public:
 	Texture* GetTexture() const;
 	Texture* GetTexture(int32 frameNumber) const;
 
-	UniqueHandle GetTextureHandle(int32 frameNumber) const;
+	rhi::HTextureSet GetTextureHandle(int32 frameNumber) const;
 
 	int32 GetFrameCount() const;
 

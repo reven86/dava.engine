@@ -145,12 +145,11 @@ public:
 
 private:
 	WaterReflectionRenderPass *reflectionPass;
-    WaterRefractionRenderPass *refractionPass;
-    Texture *reflectionTexture, *refractionTexture;    
-    
-    bool needWaterPrepass;
+    WaterRefractionRenderPass *refractionPass;    
+        
     AABBox3 waterBox;
 
+    void InitReflectionRefraction();
     void PrepareReflectionRefractionTextures(RenderSystem * renderSystem);
 };
 

@@ -1030,7 +1030,7 @@ void VegetationRenderObject::DebugDrawVisibleNodes()
         AbstractQuadTreeNode<VegetationSpatialData>* treeNode = visibleCells[i];
         uint32 resolutionIndex = MapCellSquareToResolutionIndex(treeNode->data.width * treeNode->data.height);
         
-        Renderer::GetDynamicBindings().SetColor(RESOLUTION_COLOR[resolutionIndex]);
+        RenderSystem2D::Instance()->SetColor(RESOLUTION_COLOR[resolutionIndex]);
         RenderHelper::Instance()->DrawBox(treeNode->data.bbox, 1.0f, RenderState::RENDERSTATE_3D_OPAQUE);
     }
 #endif // RHI_COMPLETE

@@ -815,7 +815,7 @@ void Landscape::GenLods(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 cli
 
 //    if (frustum->IsFullyInside(currentNode->data.bbox))
 //    {
-//        Renderer::GetDynamicBindings().SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+//        RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
 //        RenderHelper::Instance()->DrawBox(currentNode->data.bbox);
 //    }
     
@@ -825,14 +825,14 @@ void Landscape::GenLods(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 cli
         //Logger::FrameworkDebug("lod: %d depth: %d pos(%d, %d)", minLod, currentNode->data.lod, currentNode->data.x, currentNode->data.y);
         
 //        if (currentNode->data.size <= (1 << maxLod))
-//            Renderer::GetDynamicBindings().SetColor(0.0f, 1.0f, 0.0f, 1.0f);
+//            RenderSystem2D::Instance()->SetColor(0.0f, 1.0f, 0.0f, 1.0f);
 //        if (frustum->IsFullyInside(currentNode->data.bbox))
-//            Renderer::GetDynamicBindings().SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+//            RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
         //if (frustum->IsFullyInside(currentNode->data.bbox) && (currentNode->data.size <= (1 << maxLod)))
-        //    Renderer::GetDynamicBindings().SetColor(1.0f, 1.0f, 0.0f, 1.0f);
+        //    RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 0.0f, 1.0f);
 
             
-        //Renderer::GetDynamicBindings().SetColor(0.0f, 1.0f, 0.0f, 1.0f);
+        //RenderSystem2D::Instance()->SetColor(0.0f, 1.0f, 0.0f, 1.0f);
 #if defined (DRAW_OLD_STYLE)        
         GenQuad(currentNode, maxLod);
 #else //#if defined (DRAW_OLD_STYLE)        
@@ -847,7 +847,7 @@ void Landscape::GenLods(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 cli
         }
 #endif //#if defined (DRAW_OLD_STYLE)
         
-        //Renderer::GetDynamicBindings().SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+        //RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
         //RenderHelper::Instance()->DrawBox(currentNode->data.bbox);
 
         return;
@@ -856,9 +856,9 @@ void Landscape::GenLods(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 cli
     
     if ((minLod != maxLod) && (currentNode->data.size <= (1 << maxLod) + 1))
     {
-//        Renderer::GetDynamicBindings().SetColor(0.0f, 0.0f, 1.0f, 1.0f);
+//        RenderSystem2D::Instance()->SetColor(0.0f, 0.0f, 1.0f, 1.0f);
         //DrawQuad(currentNode, minLod);
-        //Renderer::GetDynamicBindings().SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+        //RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
         //RenderHelper::Instance()->DrawBox(currentNode->data.bbox);
         fans.push_back(currentNode);
         return;

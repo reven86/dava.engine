@@ -542,11 +542,24 @@ void NMaterial::RebuildTextureBindings()
         textureDescr.count = currShader->fragmentSamplerList.size();       
         samplerDescr.count = currShader->fragmentSamplerList.size();
         for (size_t i = 0, sz = textureDescr.count; i < sz; ++i)
-        {            
-            Texture *tex = GetEffectiveTexture(currShader->fragmentSamplerList[i].uid);
-            DVASSERT(tex);
-            textureDescr.texture[i] = tex->handle;      
-            samplerDescr.sampler[i] = tex->samplerState;
+        {       
+            DynamicBindings::eTextureSemantic textureSemantic = DynamicBindings::GetTextureSemanticByName(currShader->fragmentSamplerList[i].uid);
+            if (textureSemantic == DynamicBindings::TEXTURE_STATIC)
+            {
+                Texture *tex = GetEffectiveTexture(currShader->fragmentSamplerList[i].uid);
+                //RHI_COMPLETE kostyl
+                if (!tex)
+                    tex = Texture::CreatePink(rhi::TEXTURE_TYPE_2D);
+                DVASSERT(tex);
+                textureDescr.texture[i] = tex->handle;
+                samplerDescr.sampler[i] = tex->samplerState;                
+            }
+            else
+            {
+                textureDescr.texture[i] = Renderer::GetDynamicBindings().GetDynamicTexture(textureSemantic);
+                samplerDescr.sampler[i] = Renderer::GetDynamicBindings().GetDynamicTextureSamplerState(textureSemantic);
+            }
+            DVASSERT(textureDescr.texture[i].IsValid());                        
         }
         currRenderVariant->textureSet = rhi::AcquireTextureSet(textureDescr);
         currRenderVariant->samplerState = rhi::AcquireSamplerState(samplerDescr);

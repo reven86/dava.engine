@@ -602,6 +602,8 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, rhi::Textur
     
     const PixelFormatDescriptor & formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(format);
     rhi::Texture::Descriptor descriptor;
+    descriptor.width = dx;
+    descriptor.height = dy;
     descriptor.autoGenMipmaps = false;
     descriptor.isRenderTarget = true;
     descriptor.type = requestedType;
