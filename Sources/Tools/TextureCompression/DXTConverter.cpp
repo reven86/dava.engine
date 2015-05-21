@@ -44,24 +44,32 @@ FilePath DXTConverter::ConvertToDxt(const TextureDescriptor &descriptor, eGPUFam
     FilePath fileToConvert = descriptor.GetSourceTexturePathname();
     
     Vector<Image*> inputImages;
-    ImageSystem::Instance()->Load(fileToConvert, inputImages, 0);
-    if(inputImages.size() == 1 )
+    auto loadResult = ImageSystem::Instance()->Load(fileToConvert, inputImages, 0);
+
+    if (loadResult != SUCCESS || inputImages.empty())
+    {
+        Logger::Error("[DXTConverter::ConvertToDxt] can't open %s", fileToConvert.GetAbsolutePathname().c_str());
+        return FilePath();
+    }
+
+    Vector<Image*> imagesToSave;
+
+    FilePath outputName = GetDXTOutput(descriptor, gpuFamily);
+        
+    DVASSERT(descriptor.compression);
+    const TextureDescriptor::Compression * compression = &descriptor.compression[gpuFamily];
+
+    if (inputImages.size() == 1)
     {
         Image* image = inputImages[0];
-        
-        FilePath outputName = GetDXTOutput(descriptor, gpuFamily);
-        
-		DVASSERT(descriptor.compression);
-		const TextureDescriptor::Compression * compression = &descriptor.compression[gpuFamily];
 
-        if((compression->compressToWidth != 0) && (compression->compressToHeight != 0))
+        if ((compression->compressToWidth != 0) && (compression->compressToHeight != 0))
         {
             Logger::Warning("[DXTConverter::ConvertToDxt] convert to compression size");
             image->ResizeImage(compression->compressToWidth, compression->compressToHeight);
         }
-        
-        Vector<Image*> imagesToSave;
-        if(descriptor.dataSettings.GetGenerateMipMaps())
+
+        if (descriptor.dataSettings.GetGenerateMipMaps())
         {
             imagesToSave = image->CreateMipMapsImages();
         }
@@ -69,106 +77,198 @@ FilePath DXTConverter::ConvertToDxt(const TextureDescriptor &descriptor, eGPUFam
         {
             imagesToSave.push_back(SafeRetain(image));
         }
-        eErrorCode retCode = ImageSystem::Instance()->Save(outputName, imagesToSave, (PixelFormat) descriptor.compression[gpuFamily].format);
-        for_each(inputImages.begin(), inputImages.end(), SafeRelease<Image>);
-        for_each(imagesToSave.begin(), imagesToSave.end(), SafeRelease<Image>);
-        if(SUCCESS == retCode)
+    }
+    else
+    {
+        DVASSERT(inputImages[0]->mipmapLevel == 0 && "first mipmap image has not a level 0");
+        uint32 firstImageIndex = 0;
+
+        if ((compression->compressToWidth != 0) && (compression->compressToHeight != 0))
         {
-            LibDdsHelper helper;
-			helper.AddCRCIntoMetaData(outputName);
-            return outputName;
+            Logger::Warning("[DXTConverter::ConvertToDxt] downscale to compression size");
+
+            uint32 i = 0;
+            for (; i < inputImages.size(); ++i)
+            {
+                if (inputImages[i]->GetWidth() == compression->compressToWidth &&
+                    inputImages[i]->GetHeight() == compression->compressToHeight)
+                {
+                    break;
+                }
+            }
+
+            DVASSERT(i < inputImages.size() && "new compressed size is not found in mipmaps");
+            firstImageIndex = i;
+        }
+
+
+        if (descriptor.dataSettings.GetGenerateMipMaps())
+        {
+            auto mipmapCounter = 0;
+            for (auto i = firstImageIndex; i < inputImages.size(); ++i, ++mipmapCounter)
+            {
+                imagesToSave.push_back(SafeRetain(inputImages[i]));
+                imagesToSave.back()->mipmapLevel = mipmapCounter;
+            }
+        }
+        else
+        {
+            imagesToSave.push_back(SafeRetain(inputImages[firstImageIndex]));
+            imagesToSave.back()->mipmapLevel = -1;
         }
     }
-    
-    Logger::Error("[DXTConverter::ConvertToDxt] can't convert %s to DXT", fileToConvert.GetAbsolutePathname().c_str());
-    return FilePath();
+
+        
+    eErrorCode retCode = ImageSystem::Instance()->Save(outputName, imagesToSave, (PixelFormat) compression->format);
+    for_each(inputImages.begin(), inputImages.end(), SafeRelease<Image>);
+    for_each(imagesToSave.begin(), imagesToSave.end(), SafeRelease<Image>);
+    if(SUCCESS == retCode)
+    {
+        LibDdsHelper helper;
+        helper.AddCRCIntoMetaData(outputName);
+        return outputName;
+    }
+    else
+    {
+        Logger::Error("[DXTConverter::ConvertToDxt] can't save %s", outputName.GetAbsolutePathname().c_str());
+        return FilePath();
+    }
 }
 	
 FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor &descriptor, eGPUFamily gpuFamily)
 {
 	FilePath fileToConvert = descriptor.GetSourceTexturePathname();
+    FilePath outputName = GetDXTOutput(descriptor, gpuFamily);
 	
-	Vector<Image*> inputImages;
 	Vector<FilePath> faceNames;
 	descriptor.GetFacePathnames(faceNames);
-	for(auto& faceName : faceNames)
-	{
-        if (faceName.IsEmpty())
-            continue;
 
-        Vector<Image*> tempImages;
-        ImageSystem::Instance()->Load(faceName, tempImages);
-		if(tempImages.size() == 1)
-		{
-			inputImages.push_back(tempImages[0]);
-		}
-		
-		if(tempImages.size() != 1 ||
-		   ((inputImages.size() > 0 && tempImages.size() > 0) &&
-			(inputImages[0]->width != tempImages[0]->width || inputImages[0]->height != tempImages[0]->height)))
-		{
-			for_each(inputImages.begin(), inputImages.end(), SafeRelease<Image>);
-			for_each(tempImages.begin(), tempImages.end(), SafeRelease<Image>);
-			
-			Logger::Error("[DXTConverter::ConvertCubemapToDxt] can't convert %s to cubemap DXT", fileToConvert.GetAbsolutePathname().c_str());
-			return FilePath();
-		}
-	}
-    
-    
-    if(inputImages.size() == DAVA::Texture::CUBE_FACE_COUNT)
+    if (faceNames.size() != DAVA::Texture::CUBE_FACE_COUNT)
     {
-        FilePath outputName = GetDXTOutput(descriptor, gpuFamily);
-        
-		DVASSERT(descriptor.compression);
-		const TextureDescriptor::Compression * compression = &descriptor.compression[gpuFamily];
+        Logger::Error("[DXTConverter::ConvertCubemapToDxt] %s has %d cubemap faces", fileToConvert.GetAbsolutePathname().c_str(), faceNames.size());
+        return FilePath();
+    }
 
+    bool hasErrors = false;
+    Vector<Vector<Image*>> imageSets(DAVA::Texture::CUBE_FACE_COUNT);
 
-        if((compression->compressToWidth != 0) && (compression->compressToHeight != 0))
+    for (uint32 i = 0; i < DAVA::Texture::CUBE_FACE_COUNT; ++i)
+	{
+        if (faceNames[i].IsEmpty() || 
+            ImageSystem::Instance()->Load(faceNames[i], imageSets[i]) != DAVA::SUCCESS ||
+            imageSets[i].empty())
         {
-            Logger::Warning("[DXTConverter::ConvertCubemapToDxt] convert to compression size");
-			
-			for(size_t i = 0; i < inputImages.size(); ++i)
-			{
-				inputImages[i]->ResizeImage(compression->compressToWidth, compression->compressToHeight);
-			}
+            Logger::Error("[DXTConverter::ConvertCubemapToDxt] can't load %s", fileToConvert.GetAbsolutePathname().c_str());
+            hasErrors = true;
+            break;
         }
-        
-        //generate mipmaps for every face
-        Vector<Vector<Image *> > cubeFaceImages;
-        cubeFaceImages.resize(DAVA::Texture::CUBE_FACE_COUNT);
-        for(uint32 i = 0; i < DAVA::Texture::CUBE_FACE_COUNT; ++i)
+
+		if(i > 0) 
         {
-            if(descriptor.dataSettings.GetGenerateMipMaps())
+            if (imageSets[i].size() != imageSets[0].size())
             {
-                cubeFaceImages[i] = inputImages[i]->CreateMipMapsImages();
+                Logger::Error("[DXTConverter::ConvertCubemapToDxt] mipmap count is not equal for cubemaps of %s", fileToConvert.GetAbsolutePathname().c_str());
+                hasErrors = true;
+                break;
+            }
+
+            if (imageSets[0][0]->width != imageSets[i][0]->width || imageSets[0][0]->height != imageSets[i][0]->height)
+            {
+                Logger::Error("[DXTConverter::ConvertCubemapToDxt] cubemap sizes are not equal for %s", fileToConvert.GetAbsolutePathname().c_str());
+                hasErrors = true;
+                break;
+            }
+        }
+	}
+
+    if (!hasErrors)
+    {
+        DVASSERT(descriptor.compression);
+        const TextureDescriptor::Compression * compression = &descriptor.compression[gpuFamily];
+
+        if (imageSets[0].size() == 1)
+        {
+            if ((compression->compressToWidth != 0) && (compression->compressToHeight != 0))
+            {
+                Logger::Warning("[DXTConverter::ConvertCubemapToDxt] convert to compression size");
+
+                for (auto& imageSet : imageSets)
+                {
+                    imageSet[0]->ResizeImage(compression->compressToWidth, compression->compressToHeight);
+                }
+            }
+
+            //generate mipmaps for every face
+            if (descriptor.dataSettings.GetGenerateMipMaps())
+            {
+                for (auto& imageSet : imageSets)
+                {
+                    Image* image = imageSet[0];
+                    imageSet = image->CreateMipMapsImages();
+                    SafeRelease(image);
+                }
+            }
+        }
+        else
+        {
+            auto firstImageIndex = 0;
+            if ((compression->compressToWidth != 0) && (compression->compressToHeight != 0))
+            {
+                Logger::Warning("[DXTConverter::ConvertCubemapToDxt] downscale to compression size");
+
+                uint32 i = 0;
+                for (; i < imageSets[0].size(); ++i)
+                {
+                    if (imageSets[0][i]->GetWidth() == compression->compressToWidth &&
+                        imageSets[0][i]->GetHeight() == compression->compressToHeight)
+                    {
+                        break;
+                    }
+                }
+
+                DVASSERT(i < imageSets[0].size() && "new compressed size is not found in mipmaps");
+                firstImageIndex = i;
+            }
+
+            if (descriptor.dataSettings.GetGenerateMipMaps())
+            {
+                auto mipmapCounter = 0;
+                for (auto& imageSet : imageSets)
+                {
+                    std::rotate(imageSet.begin(), imageSet.begin() + firstImageIndex, imageSet.end());
+                    for_each(imageSet.rbegin(), imageSet.rbegin() + firstImageIndex, SafeRelease<Image>);
+                    imageSet.resize(imageSet.size() - firstImageIndex);
+                }
             }
             else
             {
-                cubeFaceImages[i].push_back(SafeRetain(inputImages[i]));
+                for (auto& imageSet : imageSets)
+                {
+                    imageSet.resize(1);
+                    imageSet[0]->mipmapLevel = -1;
+                    for_each(imageSet.begin() + 1, imageSet.end(), SafeRelease<Image>);
+                }
             }
         }
-		
-        eErrorCode retCode = ImageSystem::Instance()->SaveAsCubeMap(outputName, cubeFaceImages, (PixelFormat) descriptor.compression[gpuFamily].format);
-        
-        for(uint32 i = 0; i < DAVA::Texture::CUBE_FACE_COUNT; ++i)
-        {
-            for_each(cubeFaceImages[i].begin(), cubeFaceImages[i].end(), SafeRelease<Image>);
-        }
 
-        if(SUCCESS == retCode)
+        auto saveResult = ImageSystem::Instance()->SaveAsCubeMap(outputName, imageSets, (PixelFormat)compression->format);
+        if (saveResult == SUCCESS)
         {
-            for_each(inputImages.begin(), inputImages.end(), SafeRelease<Image>);
             LibDdsHelper helper;
             helper.AddCRCIntoMetaData(outputName);
-            return outputName;
+        }
+        else
+        {
+            hasErrors = true;
         }
     }
-    
-    Logger::Error("[DXTConverter::ConvertCubemapToDxt] can't convert %s to cubemap DXT", fileToConvert.GetAbsolutePathname().c_str());
-    
-    for_each(inputImages.begin(), inputImages.end(), SafeRelease<Image>);
-    return FilePath();	
+
+    for (auto& imagesSet : imageSets)
+    {
+        for_each(imagesSet.begin(), imagesSet.end(), SafeRelease<Image>);
+    }
+
+    return (hasErrors ? FilePath() : outputName);
 }
 
 FilePath DXTConverter::GetDXTOutput(const TextureDescriptor &descriptor, eGPUFamily gpuFamily)
