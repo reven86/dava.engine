@@ -124,8 +124,16 @@ dx9_Uninitialize()
 
 //------------------------------------------------------------------------------
 
+static void
+dx9_Reset( const ResetParam& param )
+{
+}
+
+
+//------------------------------------------------------------------------------
+
 void
-dx9_Initialize()
+dx9_Initialize( const InitParam& param )
 {
     _D3D9 = Direct3DCreate9( D3D_SDK_VERSION );
 
@@ -317,6 +325,7 @@ dx9_Initialize()
         CommandBufferDX9::SetupDispatch( &DispatchDX9 );
 
         DispatchDX9.impl_Uninitialize           = &dx9_Uninitialize;
+        DispatchDX9.impl_Reset                  = &dx9_Reset;
         DispatchDX9.impl_HostApi                = &dx9_HostApi;
         DispatchDX9.impl_TextureFormatSupported = &dx9_TextureFormatSupported;
 

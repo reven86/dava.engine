@@ -30,6 +30,7 @@
 #ifndef __RHI_DX9_H__
 #define __RHI_DX9_H__
 
+#include "../rhi_Public.h"
 #include "../Common/rhi_Private.h"
 #include "../Common/rhi_Impl.h"
 
@@ -37,7 +38,7 @@
 namespace rhi
 {
 
-void        dx9_Initialize();
+void        dx9_Initialize( const InitParam& param );
 
 
 namespace VertexBufferDX9
