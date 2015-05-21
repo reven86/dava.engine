@@ -13,8 +13,8 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageRef.h"
 
-#include "Model/ControlProperties/PropertiesRoot.h"
-#include "Model/ControlProperties/PropertiesSection.h"
+#include "Model/ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/SectionProperty.h"
 #include "Model/ControlProperties/ValueProperty.h"
 #include "Model/ControlProperties/LocalizedTextValueProperty.h"
 #include "Model/ControlProperties/FontValueProperty.h"
@@ -63,16 +63,6 @@ const DAVA::FilePath &Document::GetPackageFilePath() const
     return package->GetPackageRef()->GetPath();
 }
 
-PropertiesModel *Document::GetPropertiesModel() const
-{
-    return reinterpret_cast<PropertiesModel*>(sharedData->GetData("propertiesModel").value<QAbstractItemModel*>()); //TODO this is ugly
-}
-
-PackageModel* Document::GetPackageModel() const
-{
-    return sharedData->GetData("packageModel").value<PackageModel*>();
-}
-
 void Document::UpdateLanguage()
 {
     PackageControlsNode *controlsNode = package->GetPackageControlsNode();
@@ -89,18 +79,18 @@ void Document::UpdateFonts()
 
 void Document::UpdateLanguageRecursively(ControlNode *node)
 {
-    PropertiesRoot *propertiesRoot = node->GetPropertiesRoot();
+    RootProperty *propertiesRoot = node->GetRootProperty();
     int propertiesCount = propertiesRoot->GetCount();
     for (int index = 0; index < propertiesCount; ++index)
     {
-        PropertiesSection *section = dynamic_cast<PropertiesSection*>(propertiesRoot->GetProperty(index));
-        if (nullptr != section)
+        SectionProperty *section = dynamic_cast<SectionProperty*>(propertiesRoot->GetProperty(index));
+        if (section)
         {
             int sectionCount = section->GetCount();
             for (int prop = 0; prop < sectionCount; ++prop)
             {
                 ValueProperty *valueProperty = dynamic_cast<ValueProperty*>(section->GetProperty(prop));
-                if (nullptr != valueProperty && strcmp(valueProperty->GetMember()->Name(), "text") == 0)
+                if (valueProperty && valueProperty->GetName() == "text")
                 {
                     LocalizedTextValueProperty *textValueProperty = dynamic_cast<LocalizedTextValueProperty*>(valueProperty);
                     if (nullptr != textValueProperty)
@@ -119,18 +109,18 @@ void Document::UpdateLanguageRecursively(ControlNode *node)
 
 void Document::UpdateFontsRecursively(ControlNode *node)
 {
-    PropertiesRoot *propertiesRoot = node->GetPropertiesRoot();
+    RootProperty *propertiesRoot = node->GetRootProperty();
     int propertiesCount = propertiesRoot->GetCount();
     for (int index = 0; index < propertiesCount; ++index)
     {
-        PropertiesSection *section = dynamic_cast<PropertiesSection*>(propertiesRoot->GetProperty(index));
-        if (nullptr != section)
+        SectionProperty *section = dynamic_cast<SectionProperty*>(propertiesRoot->GetProperty(index));
+        if (section)
         {
             int sectionCount = section->GetCount();
             for (int prop = 0; prop < sectionCount; ++prop)
             {
                 ValueProperty *valueProperty = dynamic_cast<ValueProperty*>(section->GetProperty(prop));
-                if (nullptr != valueProperty && strcmp(valueProperty->GetMember()->Name(), "font") == 0)
+                if (nullptr != valueProperty && valueProperty->GetName() == "font")
                 {
                     FontValueProperty *fontValueProperty = dynamic_cast<FontValueProperty*>(valueProperty);
                     if (nullptr != fontValueProperty)
