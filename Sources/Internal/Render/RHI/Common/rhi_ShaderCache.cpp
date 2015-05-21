@@ -357,6 +357,7 @@ static const char* _ShaderHeader_GLES2 =
 "#define float4                 vec4\n"
 "#define float4x4               mat4\n"
 "#define float3x3               mat3\n"
+"#define vec1                   float\n"
 
 "vec4 mul( vec4 v, mat4 m ) { return m*v; }\n"
 "vec4 mul( mat4 m, vec4 v ) { return v*m; }\n"
@@ -429,7 +430,7 @@ static const char* _ShaderDefine_GLES2 =
 "#define VP_OUT_POSITION         gl_Position\n"
 "#define VP_OUT(name)            var_##name\n"
 
-"#define VP_TEXTURE2D(unit,uv)   texture2DLod( Texture##unit, uv, 0.0 );\n"
+"#define VP_TEXTURE2D(unit,uv)   texture2DLod( VertexTexture##unit, uv, 0.0 )\n"
 
 
 "#define FPROG_IN_BEGIN          \n"
@@ -453,10 +454,9 @@ static const char* _ShaderDefine_GLES2 =
 "#define DECL_FP_SAMPLERCUBE(unit)  uniform samplerCube FragmentTexture##unit;\n"
 "#define DECL_VP_SAMPLER2D(unit)    uniform sampler2D VertexTexture##unit;\n"
         
-"#define VP_TEXTURE2D(unit,uv)   texture2D( VertexTexture##unit, uv );\n"
 
-"#define FP_TEXTURE2D(unit,uv)   texture2D( FragmentTexture##unit, uv );\n"
-"#define FP_TEXTURECUBE(unit,uv) textureCube( FragmentTexture##unit, uv );\n"
+"#define FP_TEXTURE2D(unit,uv)   texture2D( FragmentTexture##unit, uv )\n"
+"#define FP_TEXTURECUBE(unit,uv) textureCube( FragmentTexture##unit, uv )\n"
 "#define FP_IN(name)             var_##name\n"
 
 "#define FP_OUT_COLOR            gl_FragColor\n"
