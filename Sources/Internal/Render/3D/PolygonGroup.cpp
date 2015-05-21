@@ -180,10 +180,6 @@ void PolygonGroup::UpdateDataPointersAndStreams()
         baseShift += GetVertexSize(EVF_CUBETEXCOORD3);
         vLayout.AddElement(rhi::VS_TEXCOORD, 3, rhi::VDT_FLOAT, 3);
     }
-
-#if RHI_COMPLETE
-#error move trees to standrt streams
-#endif
     if (vertexFormat & EVF_PIVOT)
     {
         pivotArray = reinterpret_cast<Vector3*>(meshData + baseShift);

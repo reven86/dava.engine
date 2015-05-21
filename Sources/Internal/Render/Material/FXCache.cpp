@@ -216,7 +216,7 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
                     {
                         if (state == "STATE_BLEND")
                         {
-                            shaderDefines[FastName("BLENDING")] = BLENDING_ALPHABLEND;
+                            shaderDefines[NMaterialFlagName::FLAG_BLENDING] = BLENDING_ALPHABLEND;
                         }
                         else if (state == "STATE_CULL")
                         {
