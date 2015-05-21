@@ -74,7 +74,10 @@ PolygonGroup::PolygonGroup()
 PolygonGroup::~PolygonGroup()
 {
 	ReleaseData();
-    //RHI_COMPLETE - release handles
+    if (vertexBuffer.IsValid())
+        rhi::DeleteVertexBuffer(vertexBuffer);    
+    if (indexBuffer.IsValid())
+        rhi::DeleteIndexBuffer(indexBuffer);
 }
     
 void PolygonGroup::UpdateDataPointersAndStreams()

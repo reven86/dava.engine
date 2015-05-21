@@ -547,7 +547,7 @@ void NMaterial::RebuildTextureBindings()
             if (textureSemantic == DynamicBindings::TEXTURE_STATIC)
             {
                 Texture *tex = GetEffectiveTexture(currShader->fragmentSamplerList[i].uid);
-                //RHI_COMPLETE kostyl
+                //RHI_COMPLETE kostyl - on some maps there are objects with incomplete texture set - later think how to init with default texture (anyway would be required by RE)
                 if (!tex)
                     tex = Texture::CreatePink(rhi::TEXTURE_TYPE_2D);
                 DVASSERT(tex);
