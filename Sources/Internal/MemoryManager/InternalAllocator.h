@@ -43,7 +43,7 @@ namespace DAVA
 
 // Allocator for internal data MemoryManager's structures
 template<typename T>
-class InternalAllocator final
+class InternalAllocator
 {
 public:
     using value_type = T;
@@ -78,7 +78,7 @@ public:
 
     const_pointer address(const_reference cref) const DAVA_NOEXCEPT
     {
-        return std::addressof(ref);
+        return std::addressof(cref);
     }
 
     pointer allocate(size_type n, std::allocator<void>::const_pointer hint = 0)

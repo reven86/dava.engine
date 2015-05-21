@@ -812,16 +812,14 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
                 int status = 0;
                 size_t n = COUNT_OF(nameBuffer);
                 abi::__cxa_demangle(dlinfo.dli_sname, nameBuffer, &n, &status);
-                const size_t index = symbolStorage->size();
-                symbolStorage->emplace_back(0 == status ? InternalString(nameBuffer) : InternalString(dlinfo.dli_sname));
-                symbolMap->emplace(backtrace->frames[i], index);
+                symbolMap->emplace(backtrace->frames[i], 0 == status ? InternalString(nameBuffer) : InternalString(dlinfo.dli_sname));
             }
         }
     }
 #endif
 }
 
-MMStatConfig* MemoryManager::GetStatConfig() const
+MMStatConfig* MemoryManager::GetStatConfig()
 {
     LockType lock(allocMutex);
 
@@ -829,7 +827,7 @@ MMStatConfig* MemoryManager::GetStatConfig() const
                       + sizeof(MMItemName) * registeredAllocPoolCount
                       + sizeof(MMItemName) * registeredTagCount;
 
-    MMStatConfig* config = static_cast<MMStatConfig*>(MallocHook::Malloc(size));
+    MMStatConfig* config = static_cast<MMStatConfig*>(InternalAllocate(size));
     if (config != nullptr)
     {
         config->size = static_cast<uint32>(size);
@@ -850,32 +848,24 @@ MMStatConfig* MemoryManager::GetStatConfig() const
     return config;
 }
 
-MMCurStat* MemoryManager::GetCurStat() const
+MMCurStat* MemoryManager::GetCurStat()
 {
     LockType lock(allocMutex);
 
     const size_t size = CalcCurStatSize();
-    void* buffer = MallocHook::Malloc(size);
+    void* buffer = InternalAllocate(size);
     return FillCurStat(buffer, size);
 }
 
 MMDump* MemoryManager::GetMemoryDump()
 {
-    return nullptr;
-#if 0
-    ObtainAllBacktraceSymbols();
+    //ObtainAllBacktraceSymbols();
 
     LockType lock(allocMutex);
 
-#if defined(DAVA_MEMORY_MANAGER_NEW_DATASTRUCT)
     const size_t blockCount = statAllocPool[ALLOC_POOL_TOTAL].blockCount;
-    const size_t symbolCount = symbolStorage->size();
-    const size_t bktraceCount = bktraceStorage->size();
-#else
-    const size_t blockCount = statAllocPool[ALLOC_POOL_TOTAL].blockCount;
-    const size_t symbolCount = symbols->size();
-    const size_t bktraceCount = backtraces->size();
-#endif
+    const size_t symbolCount = symbolMap->size();
+    const size_t bktraceCount = bktraceMap->size();
 
     const size_t statSize = CalcCurStatSize();
     const size_t bktraceSize = sizeof(MMBacktrace) + sizeof(uint64) * BACKTRACE_DEPTH;
@@ -885,7 +875,7 @@ MMDump* MemoryManager::GetMemoryDump()
                       + sizeof(MMSymbol) * symbolCount
                       + bktraceSize * bktraceCount;
 
-    MMDump* dump = static_cast<MMDump*>(MallocHook::Malloc(size));
+    MMDump* dump = static_cast<MMDump*>(InternalAllocate(size));
     if (dump != nullptr)
     {
         dump->timestamp = 0;
@@ -915,20 +905,7 @@ MMDump* MemoryManager::GetMemoryDump()
         }
 
         MMSymbol* symbol = OffsetPointer<MMSymbol>(blocks, sizeof(MMBlock) * blockCount);
-#if defined(DAVA_MEMORY_MANAGER_NEW_DATASTRUCT)
         for (auto& pair : *symbolMap)
-        {
-            void* addr = pair.first;
-            auto& name = (*symbolStorage)[pair.second];
-
-            symbol->addr = reinterpret_cast<uint64>(addr);
-            strncpy(symbol->name, name.c_str(), MMSymbol::NAME_LENGTH);
-            symbol->name[MMSymbol::NAME_LENGTH - 1] = '\0';
-
-            symbol += 1;
-        }
-#else
-        for (auto& pair : *symbols)
         {
             void* addr = pair.first;
             auto& name = pair.second;
@@ -939,22 +916,9 @@ MMDump* MemoryManager::GetMemoryDump()
 
             symbol += 1;
         }
-#endif
 
         MMBacktrace* bktrace = reinterpret_cast<MMBacktrace*>(symbol);
-#if defined(DAVA_MEMORY_MANAGER_NEW_DATASTRUCT)
-        for (auto& curBktrace : *bktraceStorage)
-        {
-            bktrace->hash = curBktrace.hash;
-            uint64* frames = OffsetPointer<uint64>(bktrace, sizeof(MMBacktrace));
-            for (size_t i = 0;i < BACKTRACE_DEPTH;++i)
-            {
-                frames[i] = reinterpret_cast<uint64>(curBktrace.frames[i]);
-            }
-            bktrace = OffsetPointer<MMBacktrace>(bktrace, bktraceSize);
-        }
-#else
-        for (auto& pair : *backtraces)
+        for (auto& pair : *bktraceMap)
         {
             auto& o = pair.second;
 
@@ -966,15 +930,13 @@ MMDump* MemoryManager::GetMemoryDump()
             }
             bktrace = OffsetPointer<MMBacktrace>(bktrace, bktraceSize);
         }
-#endif
     }
     return dump;
-#endif
 }
 
-void MemoryManager::FreeStatMemory(void* ptr) const
+void MemoryManager::FreeStatMemory(void* ptr)
 {
-    MallocHook::Free(ptr);
+    InternalDeallocate(ptr);
 }
 
 MMCurStat* MemoryManager::FillCurStat(void* buffer, size_t size) const

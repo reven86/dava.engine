@@ -1801,9 +1801,6 @@
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocPools.h">
       <Filter>Internal\MemoryManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerAllocator.h">
-      <Filter>Internal\MemoryManager</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetProto.h">
       <Filter>Internal\Network\Services</Filter>
     </ClInclude>
@@ -1835,6 +1832,12 @@
       <Filter>Internal\MemoryManager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerConfig.h">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\InternalAllocator.h">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\TrackingAllocator.h">
       <Filter>Internal\MemoryManager</Filter>
     </ClInclude>
   </ItemGroup>

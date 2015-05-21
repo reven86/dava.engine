@@ -48,7 +48,7 @@ namespace DAVA
 
 // Allocator for application memory allocations, parameter AllocPoolT specifies memory pool allocated memory belongs to
 template<typename T, unsigned int AllocPoolT>
-class TrackingAllocator final
+class TrackingAllocator
 {
 public:
     using value_type = T;
@@ -83,7 +83,7 @@ public:
 
     const_pointer address(const_reference cref) const DAVA_NOEXCEPT
     {
-        return std::addressof(ref);
+        return std::addressof(cref);
     }
 
     pointer allocate(size_type n, std::allocator<void>::const_pointer hint = 0)

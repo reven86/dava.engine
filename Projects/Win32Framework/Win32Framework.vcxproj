@@ -390,12 +390,13 @@
     <ClInclude Include="..\..\Sources\Internal\Math\Vector.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocatorBridge.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocPools.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\InternalAllocator.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MallocHook.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManager.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerConfig.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerTypes.h" />
-    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerAllocator.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryProfiler.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\TrackingAllocator.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\Buffer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimerTemplate.h" />

@@ -105,11 +105,11 @@ public:
     void TrackGpuAlloc(uint32 id, size_t size, uint32 gpuPoolIndex);
     void TrackGpuDealloc(uint32 id, uint32 gpuPoolIndex);
 
-    MMStatConfig* GetStatConfig() const;
-    MMCurStat* GetCurStat() const;
+    MMStatConfig* GetStatConfig();
+    MMCurStat* GetCurStat();
     MMDump* GetMemoryDump();
 
-    void FreeStatMemory(void* ptr) const;
+    void FreeStatMemory(void* ptr);
 
 private:
     // Make construtor and destructor private to disallow external creation of MemoryManager
