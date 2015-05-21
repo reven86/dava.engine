@@ -267,6 +267,7 @@ void ModificationWidget::ApplyMoveValues(ST_Axis axis)
 	if(NULL != curScene)
 	{
 		EntityGroup selection = curScene->selectionSystem->GetSelection();
+        const auto isSnappedToLandscape = curScene->modifSystem->GetLandscapeSnap();
 
 		if(selection.Size() > 1)
 		{
@@ -291,7 +292,10 @@ void ModificationWidget::ApplyMoveValues(ST_Axis axis)
 					newPos.y = y;
 					break;
 				case ST_AXIS_Z:
-					newPos.z = z;
+                    if ( !isSnappedToLandscape )
+                    {
+                        newPos.z = z;
+                    }
 					break;
 				default:
 					break;
@@ -308,7 +312,10 @@ void ModificationWidget::ApplyMoveValues(ST_Axis axis)
 					newPos.y += y;
 					break;
 				case ST_AXIS_Z:
-					newPos.z += z;
+                    if ( !isSnappedToLandscape )
+                    {
+                        newPos.z += z;
+                    }
 					break;
 				default:
 					break;
