@@ -5,7 +5,7 @@
 #include <QVector2D>
 #include <QLineEdit>
 #include <QStyledItemDelegate>
-#include "Model/ControlProperties/BaseProperty.h"
+#include "Model/ControlProperties/AbstractProperty.h"
 #include "FileSystem/VariantType.h"
 class AbstractPropertyDelegate;
 class QToolButton;
@@ -32,7 +32,7 @@ public:
 
 private:
     QMap<QVariant::Type, AbstractPropertyDelegate *> qvariantItemDelegates;
-    QMap<BaseProperty::ePropertyType, AbstractPropertyDelegate *> propertyItemDelegates;
+    QMap<AbstractProperty::ePropertyType, AbstractPropertyDelegate *> propertyItemDelegates;
     QMap<DAVA::VariantType::eVariantType, AbstractPropertyDelegate *> variantTypeItemDelegates;
     QMap<QString, AbstractPropertyDelegate *> propertyNameTypeItemDelegates;
 };

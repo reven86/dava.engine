@@ -5,7 +5,8 @@ set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}
 
 # Enable MemoryManagerTest in UnitTests
 # this variable should be defined in all dependant projects (dava framework, etc)
-set ( DAVA_MEMORY_PROFILER 1 )
+if( NOT DAVA_MEGASOLUTION )
+    set ( DAVA_MEMORY_PROFILER 1 )
 
 find_package( DavaFramework REQUIRED )
 find_package( DavaTools     REQUIRED )
