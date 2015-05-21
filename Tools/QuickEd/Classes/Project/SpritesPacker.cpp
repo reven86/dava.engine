@@ -39,14 +39,9 @@
 
 using namespace DAVA;
 
-SpritesPacker::SpritesPacker(QObject* parent)
-{
-    
-}
-
 void SpritesPacker::ReloadSprites(const DAVA::eGPUFamily gpu)
 {
-    qApp->setOverrideCursor(Qt::WaitCursor);
+    QApplication::setOverrideCursor(Qt::WaitCursor);
     QString currentProjectPath = ResourcesManageHelper::GetProjectPath();
     QDir inputDir(currentProjectPath + "/DataSource");
     QDirIterator it(inputDir);
@@ -78,5 +73,5 @@ void SpritesPacker::ReloadSprites(const DAVA::eGPUFamily gpu)
     }
     QtLayer::Instance()->ReleaseAutoreleasePool(pool);
     Sprite::ReloadSprites();
-    qApp->restoreOverrideCursor();
+    QApplication::restoreOverrideCursor();
 }

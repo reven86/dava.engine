@@ -101,6 +101,7 @@ private slots:
 
     void SetBackgroundColorMenuTriggered(QAction* action);
     void OnReloadSprites(QAction *action);
+    void OnUpdateSprites();
     
     // Pixelization.
     void OnPixelizationStateChanged();

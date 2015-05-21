@@ -31,19 +31,10 @@
 #ifndef __SPRITES_PACKER_H__
 #define __SPRITES_PACKER_H__
 
-#include <QObject>
+#include "Render/RenderBase.h"
 
-namespace DAVA{
-    enum eGPUFamily;
-}
-
-class SpritesPacker : public QObject
+namespace SpritesPacker
 {
-    Q_OBJECT
-public:
-    SpritesPacker(QObject *parent = nullptr);
-    ~SpritesPacker() = default;
-public slots:
     void ReloadSprites(const DAVA::eGPUFamily  gpu);
 };
 

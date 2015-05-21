@@ -39,6 +39,7 @@
 #include "Utils/QtDavaConvertion.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
+#include "Project/SpritesPacker.h"
 
 namespace
 {
@@ -136,20 +137,26 @@ void MainWindow::SaveMainWindowState()
     QSettings settings(APP_COMPANY, APP_NAME);
     settings.setValue(APP_GEOMETRY, saveGeometry());
     settings.setValue(APP_STATE, saveState());
+    settings.setValue(SELECTED_GPU, reloadSpritesButton->defaultAction()->data());
 }
 
 void MainWindow::RestoreMainWindowState()
 {
     QSettings settings(APP_COMPANY, APP_NAME);
     // Check settings befor applying it
-    if (!settings.value(APP_GEOMETRY).isNull() && settings.value(APP_GEOMETRY).isValid())
+    if (settings.value(APP_GEOMETRY).isValid())
     {
         restoreGeometry(settings.value(APP_GEOMETRY).toByteArray());
     }
-    if (!settings.value(APP_STATE).isNull() && settings.value(APP_STATE).isValid())
+    if (settings.value(APP_STATE).isValid())
     {
         restoreState(settings.value(APP_STATE).toByteArray());
     }
+    if (settings.value(SELECTED_GPU).isValid())
+    {
+        UpdateReloadTexturesButton(static_cast<eGPUFamily>(settings.value(SELECTED_GPU).toInt()));
+    }
+
 }
 
 void MainWindow::UpdateReloadTexturesButton(const eGPUFamily &gpu)
@@ -158,12 +165,10 @@ void MainWindow::UpdateReloadTexturesButton(const eGPUFamily &gpu)
     {
         if (static_cast<eGPUFamily>(action->data().toInt()) == gpu)
         {
-            reloadSpritesButton->defaultAction()->setIcon(QIcon());
-            action->setIcon(QIcon(":/Icons/reloadtextures.png"));
-            reloadSpritesButton->setDefaultAction(action);
-
-            QSettings settings(APP_COMPANY, APP_NAME);
-            settings.setValue(SELECTED_GPU, gpu);
+            reloadSpritesButton->defaultAction()->setText(action->text());
+            reloadSpritesButton->defaultAction()->setData(action->data());
+            action->setChecked(true);
+            return;
         }
     }
 }
@@ -243,16 +248,22 @@ void MainWindow::InitLanguageBox()
 void MainWindow::InitConvertBox()
 {
     QLabel *label = new QLabel(tr("Sprites: "));
-    QAction *actionReloadTextures = new QAction(tr("Select GPU"), this);
+    QAction *actionReloadTextures = new QAction(QIcon(":/Icons/reloadtextures.png"), tr("Select GPU"), this);
+    connect(actionReloadTextures, &QAction::triggered, this, &MainWindow::OnUpdateSprites);
     QMenu *menuTexturesForGPU = new QMenu(this);
+
     connect(menuTexturesForGPU, &QMenu::triggered, this, &MainWindow::OnReloadSprites);
     const auto &map = GlobalEnumMap<eGPUFamily>::Instance();
+    QActionGroup *actionGroup = new QActionGroup(this);
+
     for (size_t i = 0; i < map->GetCount(); ++i)
     {
         int value;
         bool ok = map->GetValue(i, value);
         DVASSERT_MSG(ok, "wrong enum used");
         QAction *action = new QAction(map->ToString(value), this);
+        action->setCheckable(true);
+        actionGroup->addAction(action);
         action->setData(value);
         menuTexturesForGPU->addAction(action);
     }
@@ -267,13 +278,6 @@ void MainWindow::InitConvertBox()
     layout->addWidget(label);
     layout->addWidget(reloadSpritesButton);
     toolBarConvertGPU->addWidget(wrapper);
-
-    QSettings settings(APP_COMPANY, APP_NAME);
-    const QVariant &value = settings.value(SELECTED_GPU);
-    if (!value.isNull() && value.isValid())
-    {
-        UpdateReloadTexturesButton(static_cast<eGPUFamily>(value.toInt()));
-    }
     reloadSpritesButton->parentWidget()->setEnabled(false);
 }
 
@@ -543,6 +547,18 @@ void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
 void MainWindow::OnReloadSprites(QAction *action)
 {
     auto gpuType = static_cast<DAVA::eGPUFamily>(action->data().toInt());
-    emit ReloadSprites(gpuType);
+    SpritesPacker::ReloadSprites(gpuType);
+    UpdateReloadTexturesButton(gpuType);
+}
+
+void MainWindow::OnUpdateSprites()
+{
+    QVariant data = reloadSpritesButton->defaultAction()->data();
+    if (!data.isValid())
+    {
+        return;
+    }
+    auto gpuType = static_cast<DAVA::eGPUFamily>(data.toInt()); 
+    SpritesPacker::ReloadSprites(gpuType);// there must be function UpdateSprites
     UpdateReloadTexturesButton(gpuType);
 }
