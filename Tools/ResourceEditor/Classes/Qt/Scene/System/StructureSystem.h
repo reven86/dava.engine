@@ -44,6 +44,15 @@
 #include "UI/UIEvent.h"
 #include "Render/Highlevel/Landscape.h"
 
+class StructureSystemDelegate
+{
+public:
+    virtual ~StructureSystemDelegate() = default;
+
+    virtual void WillRemove(DAVA::Entity *removedEntity) = 0;
+    virtual void DidRemoved(DAVA::Entity *removedEntity) = 0;
+};
+
 class StructureSystem : public DAVA::SceneSystem
 {
 	friend class SceneEditor2;
@@ -70,6 +79,8 @@ public:
 
 	DAVA::Entity* Load(const DAVA::FilePath& sc2path, bool optimize);
 
+    void SetDelegate(StructureSystemDelegate *delegate);
+
 protected:
 	bool structureChanged;
 
@@ -95,6 +106,9 @@ protected:
 	void SearchEntityByRef(DAVA::Entity *parent, const DAVA::FilePath &refToOwner, DAVA::Set<DAVA::Entity *> &result);
     
     void ProcessAutoSelection(const Command2 *command, bool redo) const;
+
+private:
+    DAVA::List<StructureSystemDelegate *> delegates;
 };
 
 #endif // __SCENE_STRUCTURE_SYSTEM_H__

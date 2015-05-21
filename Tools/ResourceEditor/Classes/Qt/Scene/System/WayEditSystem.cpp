@@ -104,12 +104,21 @@ void WayEditSystem::RemoveEntity(DAVA::Entity * removedPoint)
     }
 }
 
-void WayEditSystem::RemoveWayPoint(DAVA::Entity* removedPoint)
+void WayEditSystem::WillRemove(DAVA::Entity *removedEntity)
 {
-    DAVA::Entity* startPoint = mapStartPoints[removedPoint->GetParent()];
-    DVASSERT(startPoint);
+    if (IsWayEditEnabled() && GetWaypointComponent(removedEntity))
+    {
+        startPointForRemove = mapStartPoints[removedEntity->GetParent()];
+        DVASSERT(startPointForRemove);
+    }
+}
 
-    sceneEditor->Exec(new EntityRemoveCommand(removedPoint));
+void WayEditSystem::DidRemoved(DAVA::Entity *removedEntity)
+{
+    if (!IsWayEditEnabled() || !GetWaypointComponent(removedEntity))
+    {
+        return;
+    }
 
     DAVA::EdgeComponent* edge;
 
@@ -117,7 +126,7 @@ void WayEditSystem::RemoveWayPoint(DAVA::Entity* removedPoint)
     DAVA::List<DAVA::Entity*> srcPoints;
     for (auto waypoint : waypointEntities)
     {
-        edge = FindEdgeComponent(waypoint, removedPoint);
+        edge = FindEdgeComponent(waypoint, removedEntity);
         if (edge)
         {
             sceneEditor->Exec(new RemoveComponentCommand(waypoint, edge));
@@ -127,25 +136,24 @@ void WayEditSystem::RemoveWayPoint(DAVA::Entity* removedPoint)
     // get points aimed by removed point, remove edges
     DAVA::List<DAVA::Entity*> breachPoints;
     DAVA::Entity* dest;
-    uint32 count = removedPoint->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
+    uint32 count = removedEntity->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
     for (uint32 i = 0; i < count; ++i)
     {
-        edge = static_cast<EdgeComponent*>(removedPoint->GetComponent(DAVA::Component::EDGE_COMPONENT, i));
+        edge = static_cast<EdgeComponent*>(removedEntity->GetComponent(DAVA::Component::EDGE_COMPONENT, i));
         DVASSERT(edge);
 
         dest = edge->GetNextEntity();
-        if(dest)
+        if (dest)
         {
             breachPoints.push_back(dest);
         }
-
     }
 
     // detect really breached points
     for (auto breachPoint = breachPoints.begin(); breachPoint != breachPoints.end();)
     {
         DAVA::Set<DAVA::Entity*> passedPoints;
-        if (IsAccessible(startPoint, *breachPoint, removedPoint, nullptr/*no excluding edge*/, passedPoints))
+        if (IsAccessible(startPointForRemove, *breachPoint, removedEntity, nullptr/*no excluding edge*/, passedPoints))
         {
             auto delPoint = breachPoint++;
             breachPoints.erase(delPoint);
@@ -153,6 +161,7 @@ void WayEditSystem::RemoveWayPoint(DAVA::Entity* removedPoint)
         else
             ++breachPoint;
     }
+    startPointForRemove = nullptr;
 
     // link source points and breached points
     for (auto breachPoint : breachPoints)
@@ -162,10 +171,10 @@ void WayEditSystem::RemoveWayPoint(DAVA::Entity* removedPoint)
             if (srcPoint == breachPoint)
                 continue;
 
-            DAVA::EdgeComponent *edge = new DAVA::EdgeComponent();
-            edge->SetNextEntity(breachPoint);
+            DAVA::EdgeComponent *newEdge = new DAVA::EdgeComponent();
+            newEdge->SetNextEntity(breachPoint);
 
-            sceneEditor->Exec(new AddComponentCommand(srcPoint, edge));
+            sceneEditor->Exec(new AddComponentCommand(srcPoint, newEdge));
         }
     }
 }
@@ -562,5 +571,3 @@ void WayEditSystem::UpdateSelectionMask()
 		selectionSystem->ResetSelectionComponentMask();
 	}
 }
-
-
