@@ -158,7 +158,7 @@ void Heightmap::Save(const FilePath &filePathname)
 {
     if (0 == size)
     {
-        Logger::Error("Heightmap::Save: size is empty");
+        Logger::Error("Heightmap::Save: heightmap is empty");
         return;
     }
 
