@@ -176,7 +176,7 @@ BOOL isGL30Created = NO;
         DAVA::Size2i physicalScreen = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
 //        DAVA::RenderManager::Instance()->Init(physicalScreen.dx, physicalScreen.dy);
 //        DAVA::RenderManager::Instance()->DetectRenderingCapabilities();
-        DAVA::RenderSystem2D::Instance()->Init();
+//        DAVA::RenderSystem2D::Instance()->Init();
         
 
         self.multipleTouchEnabled = (DAVA::InputSystem::Instance()->GetMultitouchEnabled()) ? YES : NO;
