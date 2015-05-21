@@ -52,6 +52,8 @@
 #if defined(__arm__)
 #include <link.h>
 #include <signal.h>
+
+#if __clang_minor__ <= 5
 ///------------------------------------------------------------------------
 ///--- ucontext is not proided in NDK-10
 ///--- begin stab from <sys/ucontext.h>
@@ -100,7 +102,7 @@ typedef struct ucontext {
 ///------------------------------------------------------------------------
 ///--- end stab from <sys/ucontext.h>
 ///------------------------------------------------------------------------
-
+#endif // if __clang_minor <= 5
 ///------------------------------------------------------------------------
 ///--- libunwind.h is not provided in NDK-10 as of yet, so we have to stab
 ///--- begin stab from libunwind-arm.h

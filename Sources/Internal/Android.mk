@@ -5,11 +5,6 @@
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := iconv_android-prebuilt
-LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libiconv_android.so
-include $(PREBUILT_SHARED_LIBRARY)
-
-include $(CLEAR_VARS)
 LOCAL_MODULE := fmodex-prebuild
 LOCAL_SRC_FILES := ../../Libs/fmod/lib/android/$(TARGET_ARCH_ABI)/libfmodex.so
 include $(PREBUILT_SHARED_LIBRARY)
@@ -182,6 +177,13 @@ DV_LOCAL_CPPFLAGS += -Wno-mismatched-tags
 DV_LOCAL_CPPFLAGS += -Wno-missing-noreturn
 DV_LOCAL_CPPFLAGS += -Wno-consumed
 DV_LOCAL_CPPFLAGS += -Wno-sometimes-uninitialized
+DV_LOCAL_CPPFLAGS += -Wno-reserved-id-macro
+DV_LOCAL_CPPFLAGS += -Wno-old-style-cast
+DV_LOCAL_CPPFLAGS += -Wno-inconsistent-missing-override
+DV_LOCAL_CPPFLAGS += -Wno-null-conversion
+DV_LOCAL_CPPFLAGS += -Wno-unused-local-typedef
+DV_LOCAL_CPPFLAGS += -Wno-unreachable-code-return
+DV_LOCAL_CPPFLAGS += -Wno-unreachable-code-break
 
 DV_LOCAL_CPP_FEATURES += exceptions
 
@@ -211,7 +213,6 @@ DV_LOCAL_STATIC_LIBRARIES += android-ndk-profiler
 endif
 endif
 
-DV_LOCAL_SHARED_LIBRARIES += iconv_android-prebuilt
 DV_LOCAL_SHARED_LIBRARIES += fmodex-prebuild
 DV_LOCAL_SHARED_LIBRARIES += fmodevent-prebuild
 
