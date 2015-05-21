@@ -34,6 +34,7 @@
 #include <Classes/Helpers/ResourcesManageHelper.h>
 #include <QDirIterator>
 #include <QApplication>
+#include <QWidget>
 #include "Platform/Qt5/QtLayer.h"
 #include "Render/2D/Sprite.h"
 
@@ -42,6 +43,7 @@ using namespace DAVA;
 void SpritesPacker::ReloadSprites(const DAVA::eGPUFamily gpu)
 {
     QApplication::setOverrideCursor(Qt::WaitCursor);
+    QApplication::activeWindow()->setEnabled(false);
     QString currentProjectPath = ResourcesManageHelper::GetProjectPath();
     QDir inputDir(currentProjectPath + "/DataSource");
     QDirIterator it(inputDir);
@@ -73,5 +75,6 @@ void SpritesPacker::ReloadSprites(const DAVA::eGPUFamily gpu)
     }
     QtLayer::Instance()->ReleaseAutoreleasePool(pool);
     Sprite::ReloadSprites();
+    QApplication::activeWindow()->setEnabled(true);
     QApplication::restoreOverrideCursor();
 }
