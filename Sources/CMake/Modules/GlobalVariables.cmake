@@ -2,8 +2,6 @@
 
 if( APPLE AND NOT IOS AND NOT ANDROID )
 	set( MACOS 1 )
-elseif ( WINDOWS_STORE OR WINDOWS_PHONE )
-    set ( WINDOWS_UAP 1 )
 endif ()
 
 if( TEAMCITY_DEPLOY )
@@ -39,7 +37,7 @@ set( DAVA_SPEEDTREE_ROOT_DIR            "${DAVA_ROOT_DIR}/../dava.speedtree" )
 set( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR "${DAVA_ROOT_DIR}/../dava.resourceeditor.beast" ) 
 
 #turning on ANGLE lib on Windows Store
-if (WINDOWS_STORE OR WINDOWS_PHONE)
+if ( WINDOWS_UAP )
     set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}" 
 	                                    "${DAVA_THIRD_PARTY_ROOT_PATH}/angle-ms-master/include" )
 endif()
