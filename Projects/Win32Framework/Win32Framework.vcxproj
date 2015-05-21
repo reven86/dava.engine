@@ -388,10 +388,11 @@
     <ClInclude Include="..\..\Sources\Internal\Math\Sphere.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Spline.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Vector.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocatorBridge.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocPools.h" />
-    <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocThunk.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MallocHook.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManager.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerConfig.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerTypes.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerAllocator.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryProfiler.h" />
@@ -907,7 +908,7 @@
     <ClCompile Include="..\..\Sources\Internal\Math\RectPacker.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Spline.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Vector.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AllocThunk.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AllocatorBridge.cpp" />
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\MallocHook.cpp" />
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\MemoryManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\OperatorNewHook.cpp" />

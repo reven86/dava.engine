@@ -657,66 +657,49 @@ void MemoryManager::UpdateStatAfterDealloc(MemoryBlock* block)
 void MemoryManager::InsertBacktrace(Backtrace& backtrace)
 {
 #if defined(DAVA_MEMORY_MANAGER_COLLECT_BACKTRACES)
-#if defined(DAVA_MEMORY_MANAGER_NEW_DATASTRUCT)
     if (nullptr == bktraceMap)
     {
         static uint8 bufferForMap[sizeof(BacktraceMap)];
         static uint8 bufferForStorage[sizeof(BacktraceStorage)];
 
-        bktraceMap = new (bufferForMap)BacktraceMap;
-        bktraceStorage = new (bufferForStorage)BacktraceStorage;
+        bktraceMap = new (bufferForMap) BacktraceMap;
+        bktraceStorage = new (bufferForStorage) BacktraceStorage;
     }
 
     auto i = bktraceMap->find(backtrace.hash);
     if (i == bktraceMap->end())
     {
         const size_t index = bktraceStorage->size();
-        bktraceStorage->emplace_back(backtrace);
+
+        Backtrace* p = new(InternalAllocate(sizeof(Backtrace))) Backtrace(backtrace);
+        bktraceStorage->emplace_back(p);
+        //bktraceStorage->emplace_back(backtrace);
         bktraceMap->emplace(backtrace.hash, index);
-    }
-
-#else
-    if (nullptr == backtraces)
-    {
-        // We need placement new here instead of 'static BacktraceMap x' as dtor of x can be called before last use of it
-        // And memory consumed by backtraces will be reclaimed on app exit
-        static unsigned char buf[sizeof(BacktraceMap)];
-        backtraces = new (buf) BacktraceMap;
-    }
-
-    auto i = backtraces->find(backtrace.hash);
-    if (i != backtraces->end())
-    {
-        // Backtrace already present, so increment reference count
-        i->second.nref += 1;
     }
     else
     {
-        // New backtrace, add to list
-        backtraces->emplace(backtrace.hash, backtrace);
+        const size_t index = i->second;
+        Backtrace* p = (*bktraceStorage)[index];
+        if (p == nullptr)
+        {
+            Backtrace* p = new(InternalAllocate(sizeof(Backtrace))) Backtrace(backtrace);
+            (*bktraceStorage)[index] = p;
+        }
     }
-#endif
 #endif
 }
 
 void MemoryManager::RemoveBacktrace(uint32 hash)
 {
 #if defined(DAVA_MEMORY_MANAGER_COLLECT_BACKTRACES)
-#if defined(DAVA_MEMORY_MANAGER_NEW_DATASTRUCT)
     // do nothing
-#else
-    assert(backtraces != nullptr);
+    auto i = bktraceMap->find(hash);
+    const size_t index = i->second;
 
-    auto i = backtraces->find(hash);
-    assert(i != backtraces->end());
+    Backtrace* p = (*bktraceStorage)[index];
+    (*bktraceStorage)[index] = nullptr;
 
-    Backtrace& backtrace = i->second;
-    backtrace.nref -= 1;
-    if (0 == backtrace.nref)
-    {
-        backtraces->erase(hash);
-    }
-#endif
+    InternalDeallocate(p);
 #endif
 }
 
@@ -776,30 +759,18 @@ DAVA_NOINLINE void MemoryManager::CollectBacktrace(Backtrace* backtrace, size_t 
 
 void MemoryManager::ObtainAllBacktraceSymbols()
 {
-#if defined(DAVA_MEMORY_MANAGER_NEW_DATASTRUCT)
     for (auto& x : *bktraceStorage)
     {
-        if (!x.symbolsCollected)
-        {
-            ObtainBacktraceSymbols(&x);
-            x.symbolsCollected = true;
-        }
+        //if (!x.symbolsCollected)
+        //{
+        //    ObtainBacktraceSymbols(&x);
+        //    x.symbolsCollected = true;
+        //}
     }
-#else
-    for (auto& x : *backtraces)
-    {
-        if (!x.second.symbolsCollected)
-        {
-            ObtainBacktraceSymbols(&x.second);
-            x.second.symbolsCollected = true;
-        }
-    }
-#endif
 }
 
 void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
 {
-#if defined(DAVA_MEMORY_MANAGER_NEW_DATASTRUCT)
     if (nullptr == symbolMap)
     {
         static uint8 bufferFoMap[sizeof(SymbolMap)];
@@ -808,13 +779,6 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
         symbolMap = new (bufferFoMap) SymbolMap;
         symbolStorage = new (bufferForStorage) SymbolStorage;
     }
-#else
-    if (nullptr == symbols)
-    {
-        static SymbolMap object;
-        symbols = &object;
-    }
-#endif
 
     const size_t NAME_BUFFER_SIZE = 4 * 1024;
     static char8 nameBuffer[NAME_BUFFER_SIZE];
@@ -835,7 +799,6 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
 
     for (size_t i = 0;i < COUNT_OF(backtrace->frames);++i)
     {
-#if defined(DAVA_MEMORY_MANAGER_NEW_DATASTRUCT)
         if (backtrace->frames[i] != nullptr && symbolMap->find(backtrace->frames[i]) == symbolMap->cend())
         {
             if (SymFromAddr(hprocess, reinterpret_cast<DWORD64>(backtrace->frames[i]), 0, symInfo))
@@ -845,22 +808,11 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
                 symbolMap->emplace(backtrace->frames[i], index);
             }
         }
-#else
-        if (backtrace->frames[i] != nullptr && symbols->find(backtrace->frames[i]) == symbols->cend())
-        {
-            if (SymFromAddr(hprocess, reinterpret_cast<DWORD64>(backtrace->frames[i]), 0, symInfo))
-                symbols->emplace(backtrace->frames[i], InternalString(symInfo->Name));
-        }
-#endif
     }
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     for (size_t i = 0;i < COUNT_OF(backtrace->frames);++i)
     {
-#if defined(DAVA_MEMORY_MANAGER_NEW_DATASTRUCT)
         if (backtrace->frames[i] != nullptr && symbolMap->find(backtrace->frames[i]) == symbolMap->cend())
-#else
-        if (backtrace->frames[i] != nullptr && symbols->find(backtrace->frames[i]) == symbols->cend())
-#endif
         {
             /*
              https://developer.apple.com/library/mac/documentation/Darwin/Reference/ManPages/man3/dladdr.3.html#//apple_ref/doc/man/3/dladdr
@@ -873,16 +825,9 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
                 int status = 0;
                 size_t n = COUNT_OF(nameBuffer);
                 abi::__cxa_demangle(dlinfo.dli_sname, nameBuffer, &n, &status);
-#if defined(DAVA_MEMORY_MANAGER_NEW_DATASTRUCT)
                 const size_t index = symbolStorage->size();
                 symbolStorage->emplace_back(0 == status ? InternalString(nameBuffer) : InternalString(dlinfo.dli_sname));
                 symbolMap->emplace(backtrace->frames[i], index);
-#else
-                if (0 == status)
-                    symbols->emplace(backtrace->frames[i], InternalString(nameBuffer));
-                else
-                    symbols->emplace(backtrace->frames[i], InternalString(dlinfo.dli_sname));
-#endif
             }
         }
     }
@@ -929,6 +874,8 @@ MMCurStat* MemoryManager::GetCurStat() const
 
 MMDump* MemoryManager::GetMemoryDump()
 {
+    return nullptr;
+#if 0
     ObtainAllBacktraceSymbols();
 
     LockType lock(allocMutex);
@@ -1035,6 +982,7 @@ MMDump* MemoryManager::GetMemoryDump()
 #endif
     }
     return dump;
+#endif
 }
 
 void MemoryManager::FreeStatMemory(void* ptr) const

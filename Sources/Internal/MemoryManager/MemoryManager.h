@@ -44,8 +44,6 @@
 #include "MemoryManager/MemoryManagerTypes.h"
 #include "MemoryManager/InternalAllocator.h"
 
-#define DAVA_MEMORY_MANAGER_NEW_DATASTRUCT
-
 namespace DAVA
 {
 
@@ -172,9 +170,8 @@ private:
         size_t operator () (const uint32 key) const { return key; }
     };
 
-#if defined(DAVA_MEMORY_MANAGER_NEW_DATASTRUCT)
     using BacktraceMap = std::unordered_map<uint32, size_t, KeyHash, std::equal_to<uint32>, InternalAllocator<std::pair<const uint32, size_t>>>;
-    using BacktraceStorage = std::deque<Backtrace, InternalAllocator<Backtrace>>;
+    using BacktraceStorage = std::deque<Backtrace*, InternalAllocator<Backtrace*>>;
 
     using SymbolMap = std::unordered_map<void*, size_t, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, size_t>>>;
     using SymbolStorage = std::deque<InternalString, InternalAllocator<InternalString>>;
@@ -185,18 +182,10 @@ private:
     SymbolMap* symbolMap;
     SymbolStorage* symbolStorage;
 
-#else
-    using SymbolMap = std::unordered_map<void*, InternalString, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, InternalString>>>;
-
-    using BacktraceMap = std::unordered_map<uint32, Backtrace, KeyHash, std::equal_to<uint32>, InternalAllocator<std::pair<const uint32, Backtrace>>>;
-
     using GpuBlockList = std::list<MemoryBlock, InternalAllocator<MemoryBlock>>;
     using GpuBlockMap = std::unordered_map<int32, GpuBlockList, std::hash<int32>, std::equal_to<int32>, InternalAllocator<std::pair<const int32, GpuBlockList>>>;
 
-    BacktraceMap* backtraces;
-    SymbolMap* symbols;
     GpuBlockMap* gpuBlockMap;
-#endif
 
     Thread* symbolCollectorThread = nullptr;
 

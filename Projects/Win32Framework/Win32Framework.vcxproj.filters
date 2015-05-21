@@ -1795,9 +1795,6 @@
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManager.h">
       <Filter>Internal\MemoryManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocThunk.h">
-      <Filter>Internal\MemoryManager</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerTypes.h">
       <Filter>Internal\MemoryManager</Filter>
     </ClInclude>
@@ -1833,6 +1830,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Platform\ConditionalVariable.h">
       <Filter>Internal\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocatorBridge.h">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerConfig.h">
+      <Filter>Internal\MemoryManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3250,9 +3253,6 @@
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\OperatorNewHook.cpp">
       <Filter>Internal\MemoryManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AllocThunk.cpp">
-      <Filter>Internal\MemoryManager</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetServer.cpp">
       <Filter>Internal\Network\Services</Filter>
     </ClCompile>
@@ -3270,6 +3270,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Platform\ConditionalVariable.cpp">
       <Filter>Internal\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AllocatorBridge.cpp">
+      <Filter>Internal\MemoryManager</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
