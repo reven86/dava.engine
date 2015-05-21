@@ -262,6 +262,7 @@ public:
 	void EnableConsoleMode();
     
     void * GetNativeWindowHandle() { return nativeWindowHandle; };
+    void SetNativeWindowHandle(void * handle) { nativeWindowHandle = handle; };
 
 protected:
 	int32 screenOrientation;

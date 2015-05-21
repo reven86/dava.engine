@@ -54,10 +54,6 @@
 #include <Metal/Metal.h>
 #endif
 
-
-static CALayer* _ViewLayer = nil;
-
-CALayer* GetAppViewLayer() { return _ViewLayer; }
 static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
 
 
@@ -202,9 +198,6 @@ BOOL isGL30Created = NO;
         
         DAVA::Logger::Debug("OpenGL ES View Created successfully. displayLink: %d", (int)displayLinkSupported);
     }
-    
-
-    _ViewLayer = self.layer;
 
     return self;
 }
