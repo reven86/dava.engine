@@ -296,7 +296,7 @@ bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
 	return (errorLog.size() == 0);
 }
 
-DAVA::FilePath SceneEditor2::GetScenePath()
+const DAVA::FilePath & SceneEditor2::GetScenePath()
 {
 	return curScenePath;
 }

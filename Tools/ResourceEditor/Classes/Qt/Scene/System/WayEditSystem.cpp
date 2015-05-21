@@ -76,7 +76,7 @@ void WayEditSystem::AddEntity(DAVA::Entity * newWaypoint)
 
         EntityGroup entitiesToAddEdge;
         EntityGroup entitiesToRemoveEdge;
-        DefineAddOrRemoveEdges(prevSelectedWaypoints, newWaypoint, entitiesToAddEdge, entitiesToRemoveEdge);
+        DefineAddOrRemoveEdges(selectedWaypoints, newWaypoint, entitiesToAddEdge, entitiesToRemoveEdge);
         const size_t countToAdd = entitiesToAddEdge.Size();
         const size_t countToRemove = entitiesToRemoveEdge.Size();
 
@@ -249,8 +249,8 @@ void WayEditSystem::ProcessSelection()
     if (currentSelection != selection)
     {
         currentSelection = selection;
-        
         prevSelectedWaypoints = selectedWaypoints;
+
         selectedWaypoints.Clear();
 
         const size_t count = currentSelection.Size();

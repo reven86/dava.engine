@@ -49,6 +49,7 @@ BeastAction::BeastAction(SceneEditor2 *scene, const DAVA::FilePath& _outputPath,
     , outputPath(_outputPath)
     , beastMode(mode)
 {
+    outputPath.MakeDirectoryPathname();
 	beastManager = BeastProxy::Instance()->CreateManager();
     BeastProxy::Instance()->SetMode(beastManager, mode);
 }
