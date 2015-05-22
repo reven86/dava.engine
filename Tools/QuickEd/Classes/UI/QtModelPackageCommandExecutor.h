@@ -19,12 +19,13 @@ public:
     void AddImportedPackageIntoPackage(PackageControlsNode *importedPackageControls, PackageNode *package) override;
     
 public:
-    void ChangeProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &value) override;
-    void ResetProperty(ControlNode *node, BaseProperty *property) override;
-private:
-    void ChangeDefaultProperties(const DAVA::Vector<ControlNode *> &node, BaseProperty *property, const DAVA::VariantType &value);
+    void ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value) override;
+    void ResetProperty(ControlNode *node, AbstractProperty *property) override;
 
 public:
+    void AddComponent(ControlNode *node, DAVA::uint32 componentType) override;
+    void RemoveComponent(ControlNode *node, DAVA::uint32 componentType, DAVA::uint32 componentIndex) override;
+
     void InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex) override;
     void CopyControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex) override;
     void MoveControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex) override;
@@ -35,6 +36,8 @@ public:
 private:
     void InsertControlImpl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex);
     void RemoveControlImpl(ControlNode *node);
+    void AddComponentImpl(ControlNode *node, ComponentPropertiesSection *section);
+    void RemoveComponentImpl(ControlNode *node, ComponentPropertiesSection *section);
     bool IsNodeInHierarchy(const PackageBaseNode *node) const;
     
 private:
@@ -42,6 +45,8 @@ private:
     void PushCommand(QUndoCommand *cmd);
     void BeginMacro(const QString &name);
     void EndMacro();
+    
+    DAVA::String FormatControlNames(const DAVA::Vector<ControlNode*> &nodes);
     
 private:
     Document *document;

@@ -41,11 +41,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 WayEditSystem::WayEditSystem(DAVA::Scene * scene, SceneSelectionSystem *_selectionSystem, SceneCollisionSystem *_collisionSystem)
-: DAVA::SceneSystem(scene)
-, isEnabled(false)
-, selectionSystem(_selectionSystem)
-, collisionSystem(_collisionSystem)
-, underCursorPathEntity(NULL)
+    : DAVA::SceneSystem(scene)
+    , isEnabled(false)
+    , selectionSystem(_selectionSystem)
+    , collisionSystem(_collisionSystem)
+    , underCursorPathEntity(nullptr)
 {
     wayDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(
         DAVA::RenderStateData::STATE_COLORMASK_ALL |
@@ -76,7 +76,7 @@ void WayEditSystem::AddEntity(DAVA::Entity * newWaypoint)
 
         EntityGroup entitiesToAddEdge;
         EntityGroup entitiesToRemoveEdge;
-        DefineAddOrRemoveEdges(prevSelectedWaypoints, newWaypoint, entitiesToAddEdge, entitiesToRemoveEdge);
+        DefineAddOrRemoveEdges(selectedWaypoints, newWaypoint, entitiesToAddEdge, entitiesToRemoveEdge);
         const size_t countToAdd = entitiesToAddEdge.Size();
         const size_t countToRemove = entitiesToRemoveEdge.Size();
 
@@ -247,11 +247,11 @@ void WayEditSystem::ResetSelection()
 void WayEditSystem::ProcessSelection()
 {
     const EntityGroup selection = selectionSystem->GetSelection();
-    if(currentSelection != selection)
+    if (currentSelection != selection)
     {
         currentSelection = selection;
-        
         prevSelectedWaypoints = selectedWaypoints;
+
         selectedWaypoints.Clear();
         
         const size_t count = currentSelection.Size();

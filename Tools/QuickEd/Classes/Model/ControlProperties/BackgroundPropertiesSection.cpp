@@ -1,16 +1,18 @@
 #include "BackgroundPropertiesSection.h"
 
-#include "ValueProperty.h"
+#include "IntrospectionProperty.h"
 
 #include "UI/UIControl.h"
-#include "../PackageSerializer.h"
+#include "Model/PackageSerializer.h"
 
 using namespace DAVA;
 
-BackgroundPropertiesSection::BackgroundPropertiesSection(UIControl *control, int bgNum, const BackgroundPropertiesSection *sourceSection, eCopyType copyType) : control(NULL), bg(NULL), bgNum(bgNum)
+BackgroundPropertiesSection::BackgroundPropertiesSection(UIControl *aControl, int aBgNum, const BackgroundPropertiesSection *sourceSection, eCloneType cloneType)
+    : SectionProperty(aControl->GetBackgroundComponentName(aBgNum))
+    , control(SafeRetain(aControl))
+    , bg(nullptr)
+    , bgNum(aBgNum)
 {
-    this->control = SafeRetain(control);
-    
     bg = SafeRetain(control->GetBackgroundComponent(bgNum));
     if (bg == NULL && sourceSection != NULL && sourceSection->GetBg() != NULL)
     {
@@ -21,12 +23,13 @@ BackgroundPropertiesSection::BackgroundPropertiesSection(UIControl *control, int
     if (bg)
     {
         const InspInfo *insp = bg->GetTypeInfo();
+
         for (int j = 0; j < insp->MembersCount(); j++)
         {
             const InspMember *member = insp->Member(j);
             
             ValueProperty *sourceProp = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
-            ValueProperty *prop = new ValueProperty(bg, member, sourceProp, copyType);
+            ValueProperty *prop = new IntrospectionProperty(bg, member, dynamic_cast<IntrospectionProperty*>(sourceProp), cloneType);
             AddProperty(prop);
             SafeRelease(prop);
         }
@@ -55,21 +58,15 @@ void BackgroundPropertiesSection::CreateControlBackground()
         for (int j = 0; j < insp->MembersCount(); j++)
         {
             const InspMember *member = insp->Member(j);
-            ValueProperty *prop = new ValueProperty(bg, member, NULL, COPY_VALUES);
+            IntrospectionProperty *prop = new IntrospectionProperty(bg, member, nullptr, CT_COPY);
             AddProperty(prop);
             SafeRelease(prop);
         }
     }
 }
-
-DAVA::String BackgroundPropertiesSection::GetName() const
-{
-    return control->GetBackgroundComponentName(bgNum);
-}
-
 bool BackgroundPropertiesSection::HasChanges() const
 {
-    return bg && PropertiesSection::HasChanges();
+    return bg && SectionProperty::HasChanges();
 }
 
 void BackgroundPropertiesSection::Serialize(PackageSerializer *serializer) const

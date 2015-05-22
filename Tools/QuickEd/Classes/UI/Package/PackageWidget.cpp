@@ -15,7 +15,7 @@
 #include "Model/YamlPackageSerializer.h"
 #include "Model/EditorUIPackageBuilder.h"
 
-#include "Project.h"
+#include "Project/Project.h"
 #include "Utils/QtDavaConvertion.h"
 
 #include "SharedData.h"
@@ -120,16 +120,14 @@ void PackageWidget::LoadContext()
         if (nullptr == context)
         {
             context = new PackageContext(qobject_cast<Document*>(sharedData->parent()));
-            connect(packageModel, &PackageModel::rowsInserted, this, &PackageWidget::OnRowsInserted);
-            connect(packageModel, &PackageModel::rowsAboutToBeRemoved, this, &PackageWidget::OnRowsAboutToBeRemoved);
+            connect(context->packageModel, &PackageModel::rowsInserted, this, &PackageWidget::OnRowsInserted);
+            connect(context->packageModel, &PackageModel::rowsAboutToBeRemoved, this, &PackageWidget::OnRowsAboutToBeRemoved);
             sharedData->SetContext(this, context);
         }
         //store model to work with indexes
         packageModel = context->packageModel;
         filteredPackageModel = context->filteredPackageModel;
 
-        //remove it in future
-        sharedData->SetData("packageModel", QVariant::fromValue<QAbstractItemModel*>(context->packageModel)); //TODO: bad architecture
         //restore model
         treeView->setModel(context->filteredPackageModel);
         treeView->expandToDepth(0);

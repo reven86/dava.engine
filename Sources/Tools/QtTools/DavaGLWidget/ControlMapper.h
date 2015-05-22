@@ -33,6 +33,8 @@
 
 #include <QObject>
 #include <QPointer>
+#include <QWindow>
+
 
 #include "UI/UIEvent.h"
 

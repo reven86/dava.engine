@@ -228,6 +228,13 @@
      </property>
      <addaction name="actionImportSpeedTreeXML"/>
     </widget>
+    <widget class="QMenu" name="menuSave_To_Folder_With_Children">
+     <property name="title">
+      <string>Save To Folder With Children</string>
+     </property>
+     <addaction name="actionOnlyOriginalTextures"/>
+     <addaction name="actionWithCompressedTextures"/>
+    </widget>
     <addaction name="actionOpenProject"/>
     <addaction name="menuRecentProjects"/>
     <addaction name="actionCloseProject"/>
@@ -237,7 +244,7 @@
     <addaction name="actionSaveScene"/>
     <addaction name="actionSaveSceneAs"/>
     <addaction name="separator"/>
-    <addaction name="actionSaveToFolder"/>
+    <addaction name="menuSave_To_Folder_With_Children"/>
     <addaction name="separator"/>
     <addaction name="menuExport"/>
     <addaction name="menuImport"/>
@@ -854,15 +861,6 @@
     <string>Ctrl+S</string>
    </property>
   </action>
-  <action name="actionSaveToFolder">
-   <property name="icon">
-    <iconset resource="QtIcons.qrc">
-     <normaloff>:/QtIcons/savescenetofolder.png</normaloff>:/QtIcons/savescenetofolder.png</iconset>
-   </property>
-   <property name="text">
-    <string>Save To Folder With Children</string>
-   </property>
-  </action>
   <action name="actionOpenProject">
    <property name="icon">
     <iconset resource="QtIcons.qrc">
@@ -1330,7 +1328,7 @@
   </action>
   <action name="actionExportPNG">
    <property name="text">
-    <string>PNG</string>
+    <string>Original</string>
    </property>
   </action>
   <action name="actionReloadPNG">
@@ -1338,7 +1336,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>PNG</string>
+    <string>Original</string>
    </property>
   </action>
   <action name="actionEnableCameraLight">
@@ -1471,7 +1469,7 @@
   </action>
   <action name="actionSaveHeightmapToPNG">
    <property name="text">
-    <string>Save Heightmap to PNG</string>
+    <string>Save Heightmap as Image</string>
    </property>
   </action>
   <action name="actionSaveTiledTexture">
@@ -1728,7 +1726,7 @@
      <normaloff>:/QtIconsTextureDialog/convert.png</normaloff>:/QtIconsTextureDialog/convert.png</iconset>
    </property>
    <property name="text">
-    <string>Convert Modified texture's PNGs</string>
+    <string>Convert modified textures sources</string>
    </property>
   </action>
   <action name="actionAlbedo">
@@ -2128,6 +2126,28 @@
   <action name="action22">
    <property name="text">
     <string>22</string>
+   </property>
+  </action>
+  <action name="actionEnableDisableShadows">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/shadow.png</normaloff>:/QtIcons/shadow.png</iconset>
+   </property>
+   <property name="text">
+    <string>Change Shadows Drawing </string>
+   </property>
+  </action>
+  <action name="actionOnlyOriginalTextures">
+   <property name="text">
+    <string>Only Original Textures</string>
+   </property>
+  </action>
+  <action name="actionWithCompressedTextures">
+   <property name="text">
+    <string>With Compressed Textures</string>
    </property>
   </action>
  </widget>

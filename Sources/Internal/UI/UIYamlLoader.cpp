@@ -387,24 +387,22 @@ bool UIYamlLoader::SaveFonts(const FilePath & yamlPathname)
     bool res = false;
 
     //save used fonts
-    const FontManager::TRACKED_FONTS& usedFonts = FontManager::Instance()->GetTrackedFont();
+    const auto& usedFonts = FontManager::Instance()->GetFontMap();
     ScopedPtr<YamlNode> fontsNode( new YamlNode(YamlNode::TYPE_MAP) );
-    for (FontManager::TRACKED_FONTS::const_iterator iter = usedFonts.begin();
+    for (auto iter = usedFonts.begin();
          iter != usedFonts.end();
          ++iter)
     {
-        Font* font = (*iter);
+        Font* font = iter->second;
         if (!font)
             continue;
 
         // The font should be stored once only.
         String fontName = FontManager::Instance()->GetFontName(font);
-        Logger::FrameworkDebug("UIYamlLoader::SaveFonts fontName=%s for font=%p", fontName.c_str(), font);
 
         font = FontManager::Instance()->GetFont(fontName);
         if (!font)
             continue;
-        Logger::FrameworkDebug("UIYamlLoader::SaveFonts font=%p for fontName=%s", font, fontName.c_str());
 
         if (fontsNode->AsMap().find(fontName) == fontsNode->AsMap().end())
         {
@@ -728,13 +726,6 @@ UIControl* UIYamlLoader::CreateControl(const String& type, const String& baseTyp
     UIControl * control = dynamic_cast<UIControl*> (ObjectFactory::Instance()->New<UIControl>(type));
     if (control)
     {
-        // Everything is OK. Just update the custom control type for the control, if any.
-        bool hasCustomType = (!type.empty() && !baseType.empty() && (type != baseType));
-        if (hasCustomType)
-        {
-            control->SetCustomControlClassName(type);
-        }
-
         return control;
     }
 
@@ -750,11 +741,6 @@ UIControl* UIYamlLoader::CreateControl(const String& type, const String& baseTyp
     if (!baseType.empty())
     {
         control = dynamic_cast<UIControl*> (ObjectFactory::Instance()->New<UIControl>(baseType));
-        if (control)
-        {
-            // Even if the control of the base type was created, we have to store its custom type.
-            control->SetCustomControlClassName(type);
-        }
     }
 
     // A NULL might be here too.

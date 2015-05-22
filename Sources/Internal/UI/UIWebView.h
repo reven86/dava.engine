@@ -87,6 +87,8 @@ public:
 
     UIControl* Clone() override;
     void CopyDataFrom(UIControl *srcControl) override;
+    
+    void SystemDraw(const UIGeometricData &geometricData) override;
 
 protected:
     void WillBecomeVisible() override;

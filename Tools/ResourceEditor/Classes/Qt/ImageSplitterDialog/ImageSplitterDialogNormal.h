@@ -73,7 +73,7 @@ private:
 private:
 
     QScopedPointer<Ui::ImageSplitterNormal> ui;
-    std::array<ImageArea *, CHANNELS_COUNT> imageArreas;
+    DAVA::Array<ImageArea *, CHANNELS_COUNT> imageArreas;
 };
 
 #endif // __IMAGESPLITTER_DIALOG_NORMAL_H__

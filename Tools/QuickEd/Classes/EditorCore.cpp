@@ -1,6 +1,5 @@
 #include "Platform/Qt5/QtLayer.h"
 
-#include "Project.h"
 #include "UI/mainwindow.h"
 #include "DocumentGroup.h"
 #include "Document.h"
@@ -8,12 +7,16 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "SharedData.h"
 
+using namespace DAVA;
+
 EditorCore::EditorCore(QObject *parent)
     : QObject(parent)
+    , Singleton<EditorCore>()
+    , project(new Project(this))
     , documentGroup(new DocumentGroup(this))
     , mainWindow(new MainWindow())
-    , project(new Project(this))
 {
+    mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
      
     connect(mainWindow, &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
@@ -37,6 +40,8 @@ EditorCore::EditorCore(QObject *parent)
 
     connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->previewWidget, &PreviewWidget::OnDocumentChanged);
     connect(documentGroup, &DocumentGroup::SharedDataChanged, mainWindow->previewWidget, &PreviewWidget::OnDataChanged);
+    
+    connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
 
     qApp->installEventFilter(this);
 }
@@ -49,11 +54,6 @@ EditorCore::~EditorCore()
 void EditorCore::Start()
 {
     mainWindow->show();
-}
-
-MainWindow* EditorCore::GetMainWindow() const
-{
-    return const_cast<MainWindow*>( mainWindow );
 }
 
 void EditorCore::OnCleanChanged(bool clean)
@@ -101,13 +101,13 @@ bool EditorCore::CloseOneDocument(int index)
             QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
             QMessageBox::Save
             );
-        if (ret == QMessageBox::Cancel)
-        {
-            return false;
-        }
-        else if (ret == QMessageBox::Save)
+        if (ret == QMessageBox::Save)
         {
             SaveDocument(index);
+        }
+        else if (ret == QMessageBox::Cancel)
+        {
+            return false;
         }
     }
     CloseDocument(index);
@@ -152,6 +152,15 @@ void EditorCore::RecentMenu(QAction *recentProjectAction)
 void EditorCore::OnCurrentTabChanged(int index)
 {
     documentGroup->SetActiveDocument(index == -1 ? nullptr : documents.at(index));
+}
+
+void EditorCore::UpdateLanguage()
+{
+    project->GetEditorFontSystem()->RegisterCurrentLocaleFonts();
+    for(auto &document : documents)
+    {
+        document->RefreshAllControlProperties();
+    }
 }
 
 void EditorCore::OpenProject(const QString &path)
@@ -226,7 +235,6 @@ void EditorCore::CloseDocument(int index)
 int EditorCore::CreateDocument(PackageNode *package)
 {
     Document *document = new Document(package, this);
-    connect(mainWindow, &MainWindow::LanguageChanged, document, &Document::UpdateLanguage);
     connect(document->GetUndoStack(), &QUndoStack::cleanChanged, this, &EditorCore::OnCleanChanged);
     documents.push_back(document);
     documentGroup->AddDocument(document);
