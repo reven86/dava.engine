@@ -265,6 +265,7 @@ public:
         std::vector<vdecl_t>            altVdecl9;
         unsigned                        cbufReg[MAX_CONST_BUFFER_COUNT];
         unsigned                        cbufCount[MAX_CONST_BUFFER_COUNT];
+        DAVA::FastName                  uid;
     };
 
     struct
@@ -288,6 +289,7 @@ public:
         IDirect3DPixelShader9*  ps9;
         unsigned                cbufReg[MAX_CONST_BUFFER_COUNT];
         unsigned                cbufCount[MAX_CONST_BUFFER_COUNT];
+        DAVA::FastName          uid;
     };
 
     VertexProgDX9       vprog;
@@ -762,6 +764,9 @@ dx9_PipelineState_Create( const PipelineState::Descriptor& desc )
 
     vprog_valid = ps->vprog.Construct( (const char*)(&vprog_bin[0]), vprog_bin.size(), desc.vertexLayout ); 
     fprog_valid = ps->fprog.Construct( (const char*)(&fprog_bin[0]), fprog_bin.size() ); 
+
+    ps->vprog.uid = desc.vprogUid;
+    ps->fprog.uid = desc.fprogUid;
     
     if( vprog_valid  &&  fprog_valid )
     {
