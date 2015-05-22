@@ -1457,7 +1457,7 @@ public:
     {
         return DynamicTypeCheck<T*>(GetOrCreateComponent(T::C_TYPE, index));
     }
-    template<class T> inline uint32 GetComonentCount() const
+    template<class T> inline uint32 GetComponentCount() const
     {
         return GetComponentCount(T::C_TYPE);
     }
