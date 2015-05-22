@@ -64,7 +64,6 @@
 #include "Scene3D/Systems/SwitchSystem.h"
 #include "Scene3D/Systems/SoundUpdateSystem.h"
 #include "Scene3D/Systems/ActionUpdateSystem.h"
-#include "Scene3D/Systems/SkyboxSystem.h"
 #include "Scene3D/Systems/WindSystem.h"
 #include "Scene3D/Systems/WaveSystem.h"
 #include "Scene3D/Systems/SkeletonSystem.h"
@@ -102,7 +101,6 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     , switchSystem(0)
     , soundSystem(0)
     , actionSystem(0)
-    , skyboxSystem(0)
     , staticOcclusionSystem(0)
 	, materialSystem(0)
     , foliageSystem(0)
@@ -225,12 +223,7 @@ void Scene::CreateSystems()
         actionSystem = new ActionUpdateSystem(this);
         AddSystem(actionSystem, MAKE_COMPONENT_MASK(Component::ACTION_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
-
-    if(SCENE_SYSTEM_SKYBOX_FLAG & systemsMask)
-    {
-        skyboxSystem = new SkyboxSystem(this);
-        AddSystem(skyboxSystem, MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
-    }
+    
 
     if(SCENE_SYSTEM_MATERIAL_FLAG & systemsMask)
     {
@@ -319,7 +312,6 @@ Scene::~Scene()
     switchSystem = 0;
     soundSystem = 0;
     actionSystem = 0;
-    skyboxSystem = 0;
     staticOcclusionSystem = 0;
     materialSystem = 0;
     speedTreeUpdateSystem = 0;

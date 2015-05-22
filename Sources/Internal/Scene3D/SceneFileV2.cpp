@@ -1511,7 +1511,7 @@ void SceneFileV2::UpdatePolygonGroupRequestedFormatRecursively(Entity *entity)
 #ifdef RHI_COMPLETE
     RenderObject *ro = GetRenderObject(entity);
 
-    if (ro && ro->GetType()!=RenderObject::TYPE_SKYBOX)
+    if (ro)
     {
         for (int32 i=0, sz=ro->GetRenderBatchCount(); i<sz; ++i)
         {

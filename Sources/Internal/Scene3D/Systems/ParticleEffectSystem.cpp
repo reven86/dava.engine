@@ -50,80 +50,69 @@ namespace DAVA
 
 NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, bool enableFrameBlend, eBlending blending)
 {
-#if RHI_COMPLETE
+
 	if (!texture) //for superemmiter particles eg
 		return NULL;
 
-	uint32 materialKey = blending;
+	uint64 materialKey = blending;
 	if (enableFog)
-		materialKey+=1<<8;
+		materialKey+=1<<4;
 	if (enableFrameBlend)
-		materialKey+=1<<9;
-	materialKey+=texture->id<<10;
+		materialKey+=1<<5;
+	materialKey+=(uint32)texture->handle<<6;
 
-	Map<uint32, NMaterial *>::iterator it = materialMap.find(materialKey);
+    Map<uint64, NMaterial *>::iterator it = materialMap.find(materialKey);
 	if (it!=materialMap.end()) //return existing
 	{
 		return (*it).second;  
 	}
 	else //create new
-	{
-		NMaterial *material = NMaterial::CreateMaterialInstance();
-		if (enableFrameBlend)
-			material->SetParent(particleFrameBlendMaterial);
-		else
-			material->SetParent(particleRegularMaterial);		
+	{    
+		NMaterial *material = new NMaterial();
+        material->SetParent(particleBaseMaterial);
+		
+        if (enableFrameBlend)
+			material->AddFlag(NMaterialFlagName::FLAG_FRAME_BLEND, 1);		
+
+        if (!enableFog)  //inverse logic to suspend vertex fog inherited from global material
+            material->AddFlag(NMaterialFlagName::FLAG_VERTEXFOG, 0);        
+			
 		material->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, texture);
-        if (forceDisableDepthTest)
-            NMaterialHelper::DisableStateFlags(PASS_FORWARD, material, RenderStateData::STATE_DEPTH_TEST);
-		NMaterialHelper::SetBlendMode(PASS_FORWARD, material, srcFactor, dstFactor);
+        material->SetFlag(NMaterialFlagName::FLAG_BLENDING, blending);
+		
 		materialMap[materialKey] = material;
 
-        // if fog is disabled for this material - we also shouldn't inherit fog from global material
-        // so force set fog flag to OFF in this instance
-        if(!enableFog)
-        {
-            material->SetFlag(NMaterialFlagName::FLAG_VERTEXFOG, NMaterial::FlagOff);
-        }
+        
+        
 
 		return material;
 	}
-#else
-    return NULL;
-#endif // RHI_COMPLETE
 }
 
 
-ParticleEffectSystem::ParticleEffectSystem(Scene * scene, bool _forceDisableDepthTest) :	SceneSystem(scene), forceDisableDepthTest(_forceDisableDepthTest), allowLodDegrade(false)	
+ParticleEffectSystem::ParticleEffectSystem(Scene * scene) :	SceneSystem(scene), allowLodDegrade(false)	
 {	
     if (scene) //for 2d particles there would be no scene
     {
 	    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::START_PARTICLE_EFFECT);
         scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STOP_PARTICLE_EFFECT);
     }
-#if RHI_COMPLETE
-	particleRegularMaterial = NMaterial::CreateMaterial(FastName("Particle_Material"),  NMaterialName::PARTICLES, NMaterialQualityName::DEFAULT_QUALITY_NAME);		
-	particleFrameBlendMaterial = NMaterial::CreateMaterial(FastName("Particle_Frameblend_Material"),  NMaterialName::PARTICLES_FRAMEBLEND, NMaterialQualityName::DEFAULT_QUALITY_NAME);	
-#endif // RHI_COMPLETE
+
+    particleBaseMaterial = new NMaterial();
+    particleBaseMaterial->SetFXName(NMaterialName::PARTICLES);        	
 }
 ParticleEffectSystem::~ParticleEffectSystem()
 {
-#if RHI_COMPLETE
-	for (Map<uint32, NMaterial *>::iterator it = materialMap.begin(), e = materialMap.end(); it!=e; ++it)
+	for (Map<uint64, NMaterial *>::iterator it = materialMap.begin(), e = materialMap.end(); it!=e; ++it)
 	{
 		SafeRelease(it->second);
 	}
-	SafeRelease(particleRegularMaterial);
-	SafeRelease(particleFrameBlendMaterial);
-#endif // RHI_COMPLETE
+    SafeRelease(particleBaseMaterial);	
 }
 
 void ParticleEffectSystem::SetGlobalMaterial(NMaterial *material)
 {
-#if RHI_COMPLETE
-    particleRegularMaterial->SetParent(material, false);
-    particleFrameBlendMaterial->SetParent(material, false);
-#endif // RHI_COMPLETE
+    particleBaseMaterial->SetParent(material);    
 }
 
 void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleEmitter *emitter, const Vector3& spawnPosition, int32 positionSource)

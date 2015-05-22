@@ -202,12 +202,13 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     //not found - create new shader
     Vector<String> progDefines;
     progDefines.reserve(defines.size() * 2);
-    String resName;
+    String resName(name.c_str());
+    resName += "  defines: ";
     for (auto& it : defines)
     {
         progDefines.push_back(String(it.first.c_str()));
         progDefines.push_back(DAVA::Format("%d", it.second));        
-        resName += Format("#define %s %d\n", it.first.c_str(), it.second);
+        resName += Format("%s = %d   ", it.first.c_str(), it.second);
     }
 
 

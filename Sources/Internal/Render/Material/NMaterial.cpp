@@ -180,6 +180,8 @@ void NMaterial::AddProperty(const FastName& propName, const float32 *propData, r
     prop->data.reset(new float[ShaderDescriptor::CalculateDataSize(type, arraySize)]);
     prop->SetPropertyValue(propData);
     localProperties[propName] = prop;
+    
+    InvalidateBufferBindings();
 }
 
 void NMaterial::RemoveProperty(const FastName& propName)
@@ -353,6 +355,8 @@ void NMaterial::ClearLocalBuffers()
         rhi::DeleteConstBuffer(buffer.second->constBuffer);        
         SafeDelete(buffer.second);
     }
+    for (auto& variant : renderVariants)
+        variant.second->materialBufferBindings.clear();
     localConstBuffers.clear();
 }
 
@@ -547,7 +551,7 @@ void NMaterial::RebuildTextureBindings()
             if (textureSemantic == DynamicBindings::TEXTURE_STATIC)
             {
                 Texture *tex = GetEffectiveTexture(currShader->fragmentSamplerList[i].uid);
-                //RHI_COMPLETE kostyl
+                //RHI_COMPLETE kostyl - on some maps there are objects with incomplete texture set - later think how to init with default texture (anyway would be required by RE)
                 if (!tex)
                     tex = Texture::CreatePink(rhi::TEXTURE_TYPE_2D);
                 DVASSERT(tex);

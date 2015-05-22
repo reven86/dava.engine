@@ -49,9 +49,9 @@ RenderPass::RenderPass(const FastName & _name) : passName(_name)
     
     passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     passConfig.colorBuffer[0].storeAction = rhi::STOREACTION_NONE;
-    passConfig.colorBuffer[0].clearColor[0] = 0.25f;
-    passConfig.colorBuffer[0].clearColor[1] = 0.25f;
-    passConfig.colorBuffer[0].clearColor[2] = 0.35f;
+    passConfig.colorBuffer[0].clearColor[0] = 0.0f;
+    passConfig.colorBuffer[0].clearColor[1] = 0.0f;
+    passConfig.colorBuffer[0].clearColor[2] = 0.0f;
     passConfig.colorBuffer[0].clearColor[3] = 1.0f;
     passConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     passConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
@@ -385,7 +385,8 @@ void WaterRefractionRenderPass::Draw(RenderSystem * renderSystem)
 
     passMainCamera->CopyMathOnly(*mainCamera);                    
 
-    Vector4 clipPlane(0,0,1, -waterLevel-0.1f);
+    //-0.1f ?
+    Vector4 clipPlane(0,0,1, -waterLevel+0.1f);
 
     Camera* currMainCamera = passMainCamera;
     Camera* currDrawCamera;

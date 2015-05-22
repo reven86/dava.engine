@@ -43,6 +43,51 @@ const ParticleLayer::LayerTypeNamesInfo ParticleLayer::layerTypeNamesInfoMap[] =
 	{ TYPE_SUPEREMITTER_PARTICLES, "superEmitter" }
 };
 
+/*the following code is legacy compatibility to load original particle blending nodes*/
+enum eBlendMode
+{
+    BLEND_NONE = 0,				
+    BLEND_ZERO,
+    BLEND_ONE,
+    BLEND_DST_COLOR,
+    BLEND_ONE_MINUS_DST_COLOR,
+    BLEND_SRC_ALPHA,
+    BLEND_ONE_MINUS_SRC_ALPHA,
+    BLEND_DST_ALPHA,
+    BLEND_ONE_MINUS_DST_ALPHA,
+    BLEND_SRC_ALPHA_SATURATE,
+    BLEND_SRC_COLOR,
+    BLEND_ONE_MINUS_SRC_COLOR,
+
+    BLEND_MODE_COUNT,
+};
+const String BLEND_MODE_NAMES[BLEND_MODE_COUNT] =
+{
+    "BLEND_NONE",
+    "BLEND_ZERO",
+    "BLEND_ONE",
+    "BLEND_DST_COLOR",
+    "BLEND_ONE_MINUS_DST_COLOR",
+    "BLEND_SRC_ALPHA",
+    "BLEND_ONE_MINUS_SRC_ALPHA",
+    "BLEND_DST_ALPHA",
+    "BLEND_ONE_MINUS_DST_ALPHA",
+    "BLEND_SRC_ALPHA_SATURATE",
+    "BLEND_SRC_COLOR",
+    "BLEND_ONE_MINUS_SRC_COLOR"
+};
+
+eBlendMode GetBlendModeByName(const String & blendStr)
+{
+    for (uint32 i = 0; i < BLEND_MODE_COUNT; i++)
+        if (blendStr == BLEND_MODE_NAMES[i])
+            return (eBlendMode)i;
+
+    return BLEND_MODE_COUNT;
+}
+
+/*end of legacy compatibility code*/
+
 ParticleLayer::ParticleLayer() 	
 	: sprite(0)
 	, innerEmitter(NULL)
@@ -555,30 +600,32 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 		randomSpinDirection = randomSpinDirectionNode->AsBool();
 	}	
 
-	//read blend node for backward compatibility with old effect files
-	const YamlNode * blend = node->Get("blend");
-	if (blend)
-	{
-		if (blend->AsString() == "alpha")
-		{
-            blending = BLENDING_ALPHABLEND;
-		}
-		if (blend->AsString() == "add")
-		{
-            blending = BLENDING_ADDITIVE;
-		}			
-	}
 	
-	//or set blending factors directly
+    blending = BLENDING_ALPHABLEND; //default
+	
+    //read blending factors directly for backward compatibility with old legacy effect files
 	const YamlNode * blendSrcNode = node->Get("srcBlendFactor");
 	const YamlNode * blendDestNode = node->Get("dstBlendFactor");
-#if RHI_COMPLETE
     if(blendSrcNode && blendDestNode)
 	{
-		srcBlendFactor = GetBlendModeByName(blendSrcNode->AsString());
-		dstBlendFactor = GetBlendModeByName(blendDestNode->AsString());	
+		eBlendMode srcBlendFactor = GetBlendModeByName(blendSrcNode->AsString());
+        eBlendMode dstBlendFactor = GetBlendModeByName(blendDestNode->AsString());
+        if ((srcBlendFactor == BLEND_ONE) && (dstBlendFactor == BLEND_ONE))
+            blending = BLENDING_ADDITIVE;
+        else if ((srcBlendFactor == BLEND_SRC_ALPHA) && (dstBlendFactor == BLEND_ONE))
+            blending = BLENDING_ALPHA_ADDITIVE;
+        else if ((srcBlendFactor == BLEND_ONE_MINUS_DST_COLOR) && (dstBlendFactor == BLEND_ONE))
+            blending = BLENDING_SOFT_ADDITIVE;
+        else if ((srcBlendFactor == BLEND_DST_COLOR) && (dstBlendFactor == BLEND_ZERO))
+            blending = BLENDING_MULTIPLICATIVE;
+        else if ((srcBlendFactor == BLEND_DST_COLOR) && (dstBlendFactor == BLEND_SRC_COLOR))
+            blending = BLENDING_STRONG_MULTIPLICATIVE;                
 	}
-#endif // RHI_COMPLETE
+    //end of legacy
+
+    const YamlNode * blendingNode = node->Get("blending");
+    if (blendingNode)
+        blending = (eBlending)blendingNode->AsInt();
 	const YamlNode * fogNode = node->Get("enableFog");
 	if (fogNode)
 	{
@@ -715,10 +762,8 @@ void ParticleLayer::SaveToYamlNode(const FilePath & configPath, YamlNode* parent
 	    PropertyLineYamlWriter::WritePropertyValueToYamlNode<String>(layerNode, "sprite", relativePath);
     }
 
-#if RHI_COMPLETE
-	layerNode->Add("srcBlendFactor", BLEND_MODE_NAMES[(int32)srcBlendFactor]);
-	layerNode->Add("dstBlendFactor", BLEND_MODE_NAMES[(int32)dstBlendFactor]);
-#endif RHI_COMPLETE
+    layerNode->Add("blending", blending);
+
 
 	layerNode->Add("enableFog", enableFog);	
 	layerNode->Add("enableFrameBlend", enableFrameBlend);	
