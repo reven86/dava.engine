@@ -91,7 +91,7 @@ struct MemoryManager::Backtrace
 struct MemoryManager::AllocScopeItem
 {
     AllocScopeItem* next;
-    int32 allocPool;
+    uint32 allocPool;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -164,11 +164,10 @@ MemoryManager* MemoryManager::Instance()
     return &mm;
 }
 
-void MemoryManager::SetCallbacks(void (*onUpdate)(void*), void (*onTag)(uint32, bool, void*), void* arg)
+void MemoryManager::SetCallbacks(Function<void()> updateCallback_, Function<void(uint32, bool)> tagCallback_)
 {
-    updateCallback = onUpdate;
-    tagCallback = onTag;
-    callbackArg = arg;
+    updateCallback = updateCallback_;
+    tagCallback = tagCallback_;
 }
 
 void MemoryManager::Update()
@@ -179,9 +178,9 @@ void MemoryManager::Update()
         symbolCollectorThread->Start();
     }
 
-    if (updateCallback != nullptr)
+    if (updateCallback != 0)
     {
-        updateCallback(callbackArg);
+        updateCallback();
     }
 }
 
@@ -439,9 +438,9 @@ void MemoryManager::EnterTagScope(uint32 tag)
         statGeneral.activeTags |= tag;
         statGeneral.activeTagCount += 1;
     }
-    if (tagCallback != nullptr)
+    if (tagCallback != 0)
     {
-        tagCallback(tag, true, callbackArg);
+        tagCallback(tag, true);
     }
 }
 
@@ -455,33 +454,29 @@ void MemoryManager::LeaveTagScope(uint32 tag)
         statGeneral.activeTags &= ~tag;
         statGeneral.activeTagCount -= 1;
     }
-    if (tagCallback != nullptr)
+    if (tagCallback != 0)
     {
-        tagCallback(tag, false, callbackArg);
+        tagCallback(tag, false);
     }
 }
 
 void MemoryManager::EnterAllocScope(uint32 allocPool)
 {
-#if defined(DAVA_MEMORY_MANAGER_USE_ALLOC_SCOPE)
     AllocScopeItem* newItem = new (InternalAllocate(sizeof(AllocScopeItem))) AllocScopeItem;
     newItem->next = tlsAllocScopeStack.Release();
     newItem->allocPool = allocPool;
 
     tlsAllocScopeStack.Reset(newItem);
-#endif
 }
 
 void MemoryManager::LeaveAllocScope(uint32 allocPool)
 {
-#if defined(DAVA_MEMORY_MANAGER_USE_ALLOC_SCOPE)
     AllocScopeItem* topItem = tlsAllocScopeStack.Release();
     assert(topItem != nullptr);
     assert(topItem->allocPool == allocPool);
 
     tlsAllocScopeStack.Reset(topItem->next);
     InternalDeallocate(topItem);
-#endif
 }
 
 void MemoryManager::TrackGpuAlloc(uint32 id, size_t size, uint32 gpuPoolIndex)
@@ -831,6 +826,68 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
 #endif
 }
 
+size_t MemoryManager::CalcStatConfigSize() const
+{
+    return sizeof(MMStatConfig)
+        + sizeof(MMItemName) * registeredAllocPoolCount
+        + sizeof(MMItemName) * registeredTagCount;
+}
+
+void MemoryManager::GetStatConfig(void* buffer, size_t bufSize) const
+{
+    const size_t requiredSize = CalcStatConfigSize();
+    DVASSERT(requiredSize <= bufSize);
+
+    MMStatConfig* config = static_cast<MMStatConfig*>(buffer);
+    config->size = static_cast<uint32>(requiredSize);
+    config->allocPoolCount = static_cast<uint32>(registeredAllocPoolCount);
+    config->tagCount = static_cast<uint32>(registeredTagCount);
+    config->bktraceDepth = BACKTRACE_DEPTH;
+
+    MMItemName* names = OffsetPointer<MMItemName>(config, sizeof(MMStatConfig));
+    for (size_t i = 0;i < registeredAllocPoolCount;++i, ++names)
+    {
+        *names = allocPoolNames[i];
+    }
+    for (size_t i = 0;i < registeredTagCount;++i, ++names)
+    {
+        *names = tagNames[i];
+    }
+}
+
+size_t MemoryManager::CalcCurStatSize() const
+{
+    return sizeof(MMCurStat)
+        + sizeof(AllocPoolStat) * registeredAllocPoolCount
+        + sizeof(TagAllocStat) * registeredTagCount;
+}
+
+void MemoryManager::GetCurStat(void* buffer, size_t bufSize) const
+{
+    const size_t requiredSize = CalcCurStatSize();
+    DVASSERT(requiredSize <= bufSize);
+
+    LockType lockAlloc(allocMutex);
+    LockType lockStat(statMutex);
+
+    MMCurStat* curStat = static_cast<MMCurStat*>(buffer);
+    curStat->timestamp = 0;
+    curStat->size = static_cast<uint32>(requiredSize);
+    curStat->statGeneral = statGeneral;
+
+    AllocPoolStat* pools = OffsetPointer<AllocPoolStat>(curStat, sizeof(MMCurStat));
+    for (size_t i = 0;i < registeredAllocPoolCount;++i)
+    {
+        pools[i] = statAllocPool[i];
+    }
+
+    TagAllocStat* tags = OffsetPointer<TagAllocStat>(pools, sizeof(AllocPoolStat) * registeredAllocPoolCount);
+    for (size_t i = 0;i < registeredTagCount;++i)
+    {
+        tags[i] = statTag[i];
+    }
+}
+
 MMStatConfig* MemoryManager::GetStatConfig()
 {
     LockType lock(allocMutex);
@@ -952,6 +1009,11 @@ bool MemoryManager::GetMemoryDump(FILE* file, size_t& dumpSize)
     void* buffer = InternalAllocate(BUF_SIZE);
 
     {
+        {
+            int c = 1;
+            fwrite(&c, sizeof(int), 1, file);
+            fseek(file, -(int)sizeof(int), SEEK_CUR);
+        }
         LockType lock(allocMutex);
 
         const size_t blockCount = statAllocPool[ALLOC_POOL_TOTAL].blockCount;

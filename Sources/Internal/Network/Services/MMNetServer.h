@@ -45,6 +45,38 @@ namespace Net
 
 class MMNetServer : public NetService
 {
+    struct ParcelEx
+    {
+        ParcelEx()
+            : bufferSize(0)
+            , buffer(nullptr)
+            , header(nullptr)
+            , data(nullptr)
+        {}
+        ParcelEx(size_t dataSize)
+            : bufferSize(sizeof(MMNetProto::Header) + dataSize)
+            , buffer(::operator new(bufferSize))
+            , header(static_cast<MMNetProto::Header*>(buffer))
+            , data(static_cast<void*>(header + 1))
+        {}
+        ParcelEx(void* buf, size_t dataSize)
+            : bufferSize(sizeof(MMNetProto::Header) + dataSize)
+            , buffer(buf)
+            , header(static_cast<MMNetProto::Header*>(buffer))
+            , data(static_cast<void*>(header + 1))
+        {}
+
+        template<typename T>
+        T* Header() const
+        {
+            return reinterpret_cast<T*>(header);
+        }
+
+        size_t bufferSize;
+        void* buffer;
+        MMNetProto::Header* header;
+        void* data;
+    };
     struct Parcel
     {
         Parcel() : header(), data(nullptr), dataSize(0), dataSent(0), chunkSize(0) {}
@@ -80,7 +112,9 @@ private:
     void GatherDump();
 
     void OnUpdate();
-    static void OnMemoryProfilerUpdate(void* arg);
+    void OnTag(uint32 tag, bool entering);
+
+    void GetDump(uint64 timestamp);
 
 private:
     uint32 sessionId;
@@ -95,7 +129,9 @@ private:
     MMNetProto::Header* outHeader;
     void* outData;
 
+    List<ParcelEx> queueEx;
     List<Parcel> queue;
+    List<String> readyDumps;
 };
 
 }   // namespace Net

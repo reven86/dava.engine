@@ -35,6 +35,7 @@
 
 #include <type_traits>
 
+#include "Base/Function.h"
 #include "Thread/Spinlock.h"
 #include "Thread/LockGuard.h"
 #include "Thread/ThreadLocalPtr.h"
@@ -87,7 +88,7 @@ public:
     static void RegisterAllocPoolName(uint32 index, const char8* name);
     static void RegisterTagName(uint32 tagMask, const char8* name);
 
-    void SetCallbacks(void (*onUpdate)(void*), void (*onTag)(uint32, bool, void*), void* arg);
+    void SetCallbacks(Function<void()> updateCallback, Function<void(uint32, bool)> tagCallback);
     void Update();
 
     DAVA_NOINLINE void* Allocate(size_t size, uint32 poolIndex);
@@ -108,6 +109,12 @@ public:
     void TrackGpuDealloc(uint32 id, uint32 gpuPoolIndex);
 
     std::pair<size_t, size_t> BktraceStat() const;
+
+    size_t CalcStatConfigSize() const;
+    void GetStatConfig(void* buffer, size_t bufSize) const;
+
+    size_t CalcCurStatSize() const;
+    void GetCurStat(void* buffer, size_t bufSize) const;
 
     MMStatConfig* GetStatConfig();
     MMCurStat* GetCurStat();
@@ -141,7 +148,6 @@ private:
     void ObtainAllBacktraceSymbols();
     void ObtainBacktraceSymbols(const Backtrace* backtrace);
 
-    size_t CalcCurStatSize() const;
     MMCurStat* FillCurStat(void* buffer, size_t size) const;
 
     template<typename T>
@@ -195,9 +201,8 @@ private:
     Mutex symbolCollectorMutex;
     size_t bktraceGrowDelta = 0;
 
-    void* callbackArg = nullptr;
-    void (*updateCallback)(void* arg) = nullptr;
-    void (*tagCallback)(uint32 tags, bool entering, void* arg) = nullptr;
+    Function<void()> updateCallback;
+    Function<void(uint32, bool)> tagCallback;
 
 private:
     // Make the following data members static to allow initialization of predefined values not in constructor
@@ -213,13 +218,6 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-inline size_t MemoryManager::CalcCurStatSize() const
-{
-    return sizeof(MMCurStat)
-         + sizeof(AllocPoolStat) * registeredAllocPoolCount
-         + sizeof(TagAllocStat) * registeredTagCount;
-}
-
 template<typename T>
 inline size_t MemoryManager::BitIndex(T value)
 {

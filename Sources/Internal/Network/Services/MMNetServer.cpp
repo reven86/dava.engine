@@ -30,6 +30,7 @@
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
+#include "Base/FunctionTraits.h"
 #include "Debug/DVAssert.h"
 #include "DLC/Patcher/ZLibStream.h"
 #include "Platform/SystemTimer.h"
@@ -62,7 +63,8 @@ MMNetServer::MMNetServer()
     sessionId = Random::Instance()->Rand();
     timerBegin = SystemTimer::Instance()->AbsoluteMS();
 
-    MemoryManager::Instance()->SetCallbacks(&OnMemoryProfilerUpdate, nullptr, this);
+    MemoryManager::Instance()->SetCallbacks(MakeFunction(this, &MMNetServer::OnUpdate),
+                                            MakeFunction(this, &MMNetServer::OnTag));
 }
 
 MMNetServer::~MMNetServer()
@@ -136,10 +138,29 @@ void MMNetServer::ProcessTypeInit(const MMNetProto::HeaderInit* header, const vo
 {
     DVASSERT(false == commInited);
 
-    uint32 status = MMNetProto::STATUS_OK;
+    ParcelEx parcel;
+    size_t configSize = MemoryManager::Instance()->CalcStatConfigSize();
+    if (header->sessionId != sessionId)
+    {
+        parcel = ParcelEx(configSize);
+        MemoryManager::Instance()->GetStatConfig(parcel.data, configSize);
+    }
+    else
+        parcel = ParcelEx(0);
 
+    MMNetProto::HeaderInit* outHeader = parcel.Header<MMNetProto::HeaderInit>();
+    outHeader->type = MMNetProto::TYPE_INIT;
+    outHeader->status = MMNetProto::STATUS_OK;
+    outHeader->length = 0;
+    outHeader->totalLength = configSize;
+    outHeader->sessionId = sessionId;
+
+#if 0
     uint32 configSize = 0;
     MMStatConfig* config = nullptr;
+
+    uint32 status = MMNetProto::STATUS_OK;
+
     if (header->sessionId != sessionId)
     {
         config = MemoryManager::Instance()->GetStatConfig();
@@ -158,6 +179,7 @@ void MMNetServer::ProcessTypeInit(const MMNetProto::HeaderInit* header, const vo
     outHeader->sessionId = sessionId;
 
     EnqueueParcel(parcel);
+#endif
 }
 
 void MMNetServer::ProcessTypeDump(const MMNetProto::HeaderDump* header, const void* packetData, size_t dataLength)
@@ -167,24 +189,7 @@ void MMNetServer::ProcessTypeDump(const MMNetProto::HeaderDump* header, const vo
     std::pair<size_t, size_t> p = MemoryManager::Instance()->BktraceStat();
     Logger::Debug("**** bktrace stat: %u/%u", (uint32)p.first, (uint32)p.second);
 
-    String fp = FilePath("~doc:dump.bin").GetAbsolutePathname();
-    const char* filename = fp.c_str();
-
-    FILE* file = fopen(filename, "wb");
-    if (file != nullptr)
-    {
-        size_t size = 0;
-        uint64 s = SystemTimer::Instance()->AbsoluteMS();
-        MemoryManager::Instance()->GetMemoryDump(file, size);
-        uint32 diff = uint32(SystemTimer::Instance()->AbsoluteMS() - s);
-
-        long pos = ftell(file);
-
-        fclose(file);
-        Logger::Info("Dump created: dump_size=%u, file_size=%u, time=%u", (uint32)size, (uint32)pos, diff);
-    }
-    else
-        Logger::Error("Failed to create dump file: %s", filename);
+    GetDump(SystemTimer::Instance()->AbsoluteMS());
 
     //GatherDump();
 }
@@ -311,9 +316,34 @@ void MMNetServer::OnUpdate()
     }
 }
 
-void MMNetServer::OnMemoryProfilerUpdate(void* arg)
+void MMNetServer::OnTag(uint32 tag, bool entering)
 {
-    static_cast<MMNetServer*>(arg)->OnUpdate();
+    if (!commInited) return;
+
+    GetDump(SystemTimer::Instance()->AbsoluteMS());
+}
+
+void MMNetServer::GetDump(uint64 timestamp)
+{
+    FilePath fp("~doc:");
+    fp += Format("dump_%u.bin", static_cast<uint32>(timestamp / 1000));
+
+    Logger::Info("Getting dump into %s", fp.GetAbsolutePathname().c_str());
+    FILE* file = fopen(fp.GetAbsolutePathname().c_str(), "wb");
+    if (file != nullptr)
+    {
+        size_t size = 0;
+        uint64 s = SystemTimer::Instance()->AbsoluteMS();
+        MemoryManager::Instance()->GetMemoryDump(file, size);
+        uint32 diff = uint32(SystemTimer::Instance()->AbsoluteMS() - s);
+
+        long pos = ftell(file);
+
+        fclose(file);
+        Logger::Info("Dump created: dump_size=%u, file_size=%u, time=%u", (uint32)size, (uint32)pos, diff);
+    }
+    else
+        Logger::Error("Failed to open file");
 }
 
 }   // namespace Net
