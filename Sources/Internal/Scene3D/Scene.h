@@ -304,14 +304,7 @@ protected:
 	Vector<AnimatedMesh*> animatedMeshes;
 	Vector<Camera*> cameras;
     
-    static Texture* stubTexture2d;
-    static Texture* stubTextureCube;
-    static Texture* stubTexture2dLightmap; //this texture should be all-pink without checkers
-    
-    bool isDefaultGlobalMaterial;
     NMaterial* sceneGlobalMaterial;
-    //TODO: think about data-driven initialization. Need to set default properties from outside and save/load per scene
-    void InitGlobalMaterial();
     void ImportShadowColor(Entity * rootNode);
     
 #if defined (USE_FILEPATH_IN_MAP)

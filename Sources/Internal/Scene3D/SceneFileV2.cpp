@@ -88,7 +88,7 @@ namespace DAVA
 {
 
 SceneFileV2::SceneFileV2()
-    : scene(NULL)
+    : scene(nullptr)
 {
     isDebugLogEnabled = false;
     isSaveForGame = false;
@@ -185,7 +185,7 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     header.version = VersionInfo::Instance()->GetCurrentVersion().version;
     header.nodeCount = _scene->GetChildrenCount();
 
-    if(NULL != scene->GetGlobalMaterial())
+    if(_scene->GetGlobalMaterial())
     {
         header.nodeCount++;
     }
@@ -243,9 +243,6 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
 		_scene->OptimizeBeforeExport();
     _scene->GetDataNodes(nodes);
 
-    if(NULL != _scene->GetGlobalMaterial())
-        nodes.push_front(_scene->GetGlobalMaterial());
-
     uint32 dataNodesCount = GetSerializableDataNodesCount(nodes);
     file->Write(&dataNodesCount, sizeof(uint32));
 
@@ -268,9 +265,8 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     if(isDebugLogEnabled)
         Logger::FrameworkDebug("+ save hierarchy");
 
-#if RHI_COMPLETE
     // save global material settings
-    if(NULL != _scene->GetGlobalMaterial())
+    if(_scene->GetGlobalMaterial())
     {
         KeyedArchive * archive = new KeyedArchive();
         uint64 globalMaterialId = _scene->GetGlobalMaterial()->GetMaterialKey();
@@ -281,8 +277,6 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     
         SafeRelease(archive);
     }
-#endif // RHI_COMPLETE
-
 
     for (int ci = 0; ci < _scene->GetChildrenCount(); ++ci)
     {
@@ -482,7 +476,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
     if(isDebugLogEnabled)
         Logger::FrameworkDebug("+ load hierarchy");
 
-    NMaterial *globalMaterial = NULL;
+    NMaterial *globalMaterial = nullptr;
     Entity * rootNode = new Entity();
     rootNode->SetName(rootNodePathName.GetFilename().c_str());
 	rootNode->SetScene(0);
@@ -493,7 +487,9 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
         LoadHierarchy(0, &globalMaterial, rootNode, file, 1);
     }
 
-    if(NULL != globalMaterial)
+    globalMaterial->RemoveFlag(NMaterialFlagName::FLAG_VERTEXFOG);
+
+    if(nullptr != globalMaterial)
     {
         scene->SetGlobalMaterial(globalMaterial);
     }
@@ -523,7 +519,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
 
 SceneArchive *SceneFileV2::LoadSceneArchive(const FilePath & filename)
 {
-    SceneArchive *res = NULL;
+    SceneArchive *res = nullptr;
     File * file = File::Create(filename, File::OPEN | File::READ);
     if (!file)
     {
@@ -770,14 +766,16 @@ void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entit
     bool removeChildren = false;
     bool skipNode = false;
     
-    Entity * node = NULL;
+    Entity * node = nullptr;
     if (name == "LandscapeNode")
     {
         node = LoadLandscape(scene, archive);
-    }else if (name == "Camera")
+    }
+    else if (name == "Camera")
     {
         node = LoadCamera(scene, archive);
-    }else if ((name == "LightNode"))// || (name == "EditorLightNode"))
+    }
+    else if ((name == "LightNode"))// || (name == "EditorLightNode"))
     {
         node = LoadLight(scene, archive);
         removeChildren = true;
@@ -788,7 +786,7 @@ void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entit
 	}
     else if(name == "GlobalMaterial")
     {
-        if(NULL != globalMaterial)
+        if(nullptr != globalMaterial)
         {
             uint64 globalMaterialId = archive->GetUInt64("globalMaterialId");
             *globalMaterial = static_cast<NMaterial*>(serializationContext.GetDataBlock(globalMaterialId));
@@ -812,7 +810,7 @@ void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entit
         }
     }
 
-    if(NULL != node)
+    if(nullptr != node)
     {
         if(isDebugLogEnabled)
         {
@@ -988,12 +986,12 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity * currentNode)
     if(currentNode->GetChildrenCount() == 1)
     {
 		uint32 allowed_comp_count = 0;
-		if(NULL != currentNode->GetComponent(Component::TRANSFORM_COMPONENT))
+		if(nullptr != currentNode->GetComponent(Component::TRANSFORM_COMPONENT))
 		{
 			allowed_comp_count++;
 		}
 
-		if(NULL != currentNode->GetComponent(Component::CUSTOM_PROPERTIES_COMPONENT))
+		if(nullptr != currentNode->GetComponent(Component::CUSTOM_PROPERTIES_COMPONENT))
 		{
 			allowed_comp_count++;
 		}
@@ -1551,7 +1549,7 @@ SceneArchive::~SceneArchive()
     }
 }
 
-SceneArchive::SceneArchiveHierarchyNode::SceneArchiveHierarchyNode():archive(NULL)
+SceneArchive::SceneArchiveHierarchyNode::SceneArchiveHierarchyNode():archive(nullptr)
 {
 }
 

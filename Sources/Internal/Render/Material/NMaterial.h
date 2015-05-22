@@ -100,6 +100,7 @@ public:
     void SetFXName(const FastName & fxName);
     const FastName & GetFXName();
 
+    inline void SetMaterialName(const FastName & name);
     inline const FastName& GetMaterialName() const;
 
     /*properties*/
@@ -208,6 +209,10 @@ void NMaterialProperty::SetPropertyValue(const float32 *newValue)
     updateSemantic = ++globalPropertyUpdateSemanticCounter;
 }
 
+void NMaterial::SetMaterialName(const FastName & name)
+{
+    materialName = name;
+}
 const FastName& NMaterial::GetMaterialName() const
 {
     return materialName;
