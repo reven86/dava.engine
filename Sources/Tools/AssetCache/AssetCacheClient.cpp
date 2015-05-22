@@ -91,7 +91,7 @@ bool Client::AddToCache(const CacheItemKey &key, const CachedFiles &files)
         archieve->SetArchive("key", keyArchieve);
         
         ScopedPtr<KeyedArchive> filesArchieve(new KeyedArchive());
-        files.Serialize(filesArchieve);
+        files.Serialize(filesArchieve, true);
         archieve->SetArchive("files", filesArchieve);
         
         return SendArchieve(archieve);

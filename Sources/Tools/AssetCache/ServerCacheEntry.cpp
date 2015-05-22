@@ -59,6 +59,30 @@ bool ServerCacheEntry::operator == (const ServerCacheEntry &right) const
     return (accessID == right.accessID) && (files == right.files);
 }
 
+void ServerCacheEntry::Serialize(KeyedArchive * archieve) const
+{
+    DVASSERT(nullptr != archieve);
+    
+    archieve->SetUInt64("accessID", accessID);
+    
+    ScopedPtr<KeyedArchive> filesArchieve(new KeyedArchive());
+    files.Serialize(filesArchieve, false);
+    archieve->SetArchive("files", filesArchieve);
+}
+
+void ServerCacheEntry::Deserialize(KeyedArchive * archieve)
+{
+    DVASSERT(nullptr != archieve);
+    
+    accessID = archieve->GetUInt32("accessID");
+    
+    KeyedArchive *filesArchieve = archieve->GetArchive("files");
+    DVASSERT(filesArchieve);
+    files.Deserialize(filesArchieve);
+}
+    
+    
+    
 void ServerCacheEntry::InvalidateAccesToken(uint64 newID)
 {
     accessID = newID;

@@ -77,9 +77,12 @@ class CacheDB
 {
     static const String DB_FILE_NAME;
     
+    using CACHE = UnorderedMap<CacheItemKey, ServerCacheEntry>;
+    using FASTCACHE = UnorderedMap<CacheItemKey, ServerCacheEntry *>;
+    
 public:
     
-    CacheDB(const FilePath &folderPath, uint64 size);
+    CacheDB(const FilePath &folderPath, uint64 size, uint32 itemsInMemory);
     virtual ~CacheDB();
 
     void Save() const;
@@ -107,15 +110,17 @@ private:
     
 private:
     
-    uint64 nextItemID = 0;
+    FilePath cacheRootFolder;           //path to folder with settings and cache of files
+    FilePath cacheSettings;             //path to settings
+
+    const uint64 storageSize;           //maximum cache size
+    const uint32 itemsInMemory;         //count of items in memory, to use for fast access
+
+    uint64 usedSize = 0;                //used by files
+    uint64 nextItemID = 0;              //item counter, used as last access time token
     
-    FilePath cacheRootFolder;
-    FilePath cacheSettings;
-    
-    const uint64 storageSize;
-    uint64 usedSize = 0;
-    
-    UnorderedMap<CacheItemKey, ServerCacheEntry> cache;
+    FASTCACHE fastCache;                //runtime, week storage
+    CACHE fullCache;                    //stored on disk, strong storage
 };
     
 }; // end of namespace AssetCache

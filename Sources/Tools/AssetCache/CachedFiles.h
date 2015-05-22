@@ -59,7 +59,7 @@ public:
     
     bool IsEmtpy() const;
     
-    void Serialize(KeyedArchive * archieve) const;
+    void Serialize(KeyedArchive * archieve, bool serializeData) const;
     void Deserialize(KeyedArchive * archieve);
     
     bool operator == (const CachedFiles &right) const;

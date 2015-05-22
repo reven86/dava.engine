@@ -88,7 +88,7 @@ void CachedFiles::AddFile(const FilePath &path)
 }
 
     
-void CachedFiles::Serialize(KeyedArchive * archieve) const
+void CachedFiles::Serialize(KeyedArchive * archieve, bool serializeData) const
 {
     DVASSERT(nullptr != archieve);
     
@@ -100,7 +100,7 @@ void CachedFiles::Serialize(KeyedArchive * archieve) const
     {
         archieve->SetString(Format("path_%d", index), f.first.GetStringValue());
 
-        if(f.second)
+        if(f.second && serializeData)
         {
             auto fileData = f.second;
             archieve->SetByteArray(Format("file_%d", index), fileData->GetPtr(), fileData->GetSize());
@@ -114,6 +114,7 @@ void CachedFiles::Serialize(KeyedArchive * archieve) const
 void CachedFiles::Deserialize(KeyedArchive * archieve)
 {
     DVASSERT(nullptr != archieve);
+    DVASSERT(files.size() == 0);
     
     UnloadFiles();
     files.clear();

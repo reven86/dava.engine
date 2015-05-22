@@ -53,17 +53,31 @@ public:
 
     bool operator == (const ServerCacheEntry &right) const;
 
+    void Serialize(KeyedArchive * archieve) const;
+    void Deserialize(KeyedArchive * archieve);
+
+    
     void InvalidateAccesToken(uint64 accessID);
     
     const CachedFiles & GetFiles() const;
+    
+    const uint64 GetAccesID() const;
     
 private:
 public: //temorary solution
     CachedFiles files;
     
+private:
     uint64 accessID = 0;
 };
 
+inline const uint64 ServerCacheEntry::GetAccesID() const
+{
+    return accessID;
+}
+
+    
+    
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA

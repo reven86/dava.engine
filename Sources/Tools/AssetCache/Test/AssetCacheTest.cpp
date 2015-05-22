@@ -147,7 +147,7 @@ public:
     
     ServerTest(DAVA::AssetCache::Server *_server)
     :   server(_server)
-    ,   dataBase("/Users/victorkleschenko/Downloads/__AssetCacheTest/CacheFolder", 1 * 1024 * 1024)
+    ,   dataBase("/Users/victorkleschenko/Downloads/__AssetCacheTest/CacheFolder", 10 * 1024 * 1024, 2)
     {
         server->SetDelegate(this);
     }
@@ -243,13 +243,18 @@ void RunPackerTest()
     // --- RUNNING TEST ---
     ServerTest serverTest(server);
     ClientTest clientTest(client);
-    
+
+    serverTest.dataBase.Dump();
+
     
     clientTest.Run(cacheEntry, "/Users/victorkleschenko/Downloads/__AssetCacheTest/TestProject/OutFolder_0/");
     serverTest.dataBase.Dump();
-
+    
     clientTest.Run(cacheEntry, "/Users/victorkleschenko/Downloads/__AssetCacheTest/TestProject/OutFolder_1/");
     serverTest.dataBase.Dump();
+
+    cacheEntry.AddParam("NewTest");
+    cacheEntry.InvalidateSecondaryKey();
 
     clientTest.Run(cacheEntry, "/Users/victorkleschenko/Downloads/__AssetCacheTest/TestProject/OutFolder_2/");
     serverTest.dataBase.Dump();

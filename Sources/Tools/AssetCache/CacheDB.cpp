@@ -46,16 +46,30 @@ namespace AssetCache
     
 const String CacheDB::DB_FILE_NAME = "cache.dat";
     
-CacheDB::CacheDB(const FilePath &folderPath, uint64 size)
+CacheDB::CacheDB(const FilePath &folderPath, uint64 size, uint32 _itemsInMemory)
     : cacheRootFolder(folderPath)
     , storageSize(size)
+    , itemsInMemory(_itemsInMemory)
 {
     cacheRootFolder.MakeDirectoryPathname();
     cacheSettings = cacheRootFolder + DB_FILE_NAME;
+    
+    fastCache.reserve(itemsInMemory);
+    
+    Load();
 }
 
 CacheDB::~CacheDB()
 {
+    Save();
+    
+    fastCache.clear();
+    
+    for( auto & entry: fullCache)
+    {
+        entry.second.files.UnloadFiles();
+    }
+    fullCache.clear();
 }
  
     
@@ -71,13 +85,29 @@ void CacheDB::Save() const
     ScopedPtr<KeyedArchive> header(new KeyedArchive());
     header->SetString("signature", "cache");
     header->SetInt32("version", 1);
-    header->SetUInt64("itemsCount", cache.size());
-
+    header->SetUInt64("usedSize", usedSize);
+    header->SetUInt64("itemsCount", fullCache.size());
     header->Save(file);
+    
+    
+    ScopedPtr<KeyedArchive> cache(new KeyedArchive());
+    uint64 index = 0;
+    for (auto & item: fullCache)
+    {
+        ScopedPtr<KeyedArchive> itemArchieve(new KeyedArchive());
+        item.first.Serialize(itemArchieve);
+        item.second.GetFiles().Serialize(itemArchieve, false);
+        
+        cache->SetArchive(Format("item_%d", index++), itemArchieve);
+    }
+    cache->Save(file);
 }
 
 void CacheDB::Load()
 {
+    DVASSERT(fastCache.size() == 0);
+    DVASSERT(fullCache.size() == 0);
+    
     ScopedPtr<File> file(File::Create(cacheSettings, File::OPEN | File::READ));
     if(static_cast<File*>(file) == nullptr)
     {
@@ -99,25 +129,70 @@ void CacheDB::Load()
         Logger::Error("[CacheDB::%s] Wrong version %d", __FUNCTION__, header->GetInt32("version"));
         return;
     }
+    
+    usedSize = header->GetUInt64("usedSize");
+    auto cacheSize = header->GetUInt64("itemsCount");
+    fullCache.reserve(cacheSize);
+
+    ScopedPtr<KeyedArchive> cache(new KeyedArchive());
+    cache->Load(file);
+    
+    for(uint64 index = 0; index < cacheSize; ++index)
+    {
+        KeyedArchive *itemArchieve = cache->GetArchive(Format("item_%d", index));
+        DVASSERT(nullptr != itemArchieve);
+        
+        CacheItemKey key;
+        key.Deserialize(itemArchieve);
+
+        ServerCacheEntry entry;
+        entry.files.Deserialize(itemArchieve);
+        
+        fullCache[key] = entry;
+    }
 }
     
 ServerCacheEntry * CacheDB::Get(const CacheItemKey &key)
 {
-    auto found = cache.find(key);
-    if(found != cache.end())
-    {
-        found->second.InvalidateAccesToken(nextItemID++);
-        found->second.files.LoadFiles();
-        return &found->second;
+    ServerCacheEntry * entry = nullptr;
+
+    {   //find in fast cache
+        auto found = fastCache.find(key);
+        if(found != fastCache.end())
+        {
+            entry = found->second;
+        }
     }
     
-    return nullptr;
+    if(nullptr == entry)
+    {   // find in full cache
+        auto found = fullCache.find(key);
+        if(found != fullCache.end())
+        {
+            entry = &found->second;
+        }
+    }
+    
+    if(nullptr != entry)
+    {   // update access token
+        entry->InvalidateAccesToken(nextItemID++);
+    }
+    
+    return entry;
 }
 
+void CacheDB::Insert(const CacheItemKey &key, const CachedFiles &files)
+{
+    ServerCacheEntry entry(files);
+    Insert(key, entry);
+}
+    
 void CacheDB::Insert(const CacheItemKey &key, const ServerCacheEntry &entry)
 {
-    auto found = cache.find(key);
-    if(found != cache.end())
+    //TODO: insert in fast cache
+    
+    auto found = fullCache.find(key);
+    if(found != fullCache.end())
     {
         IncreaseUsedSize(found->second.GetFiles());
         
@@ -126,29 +201,28 @@ void CacheDB::Insert(const CacheItemKey &key, const ServerCacheEntry &entry)
     }
     else
     {
-        cache[key] = entry;
-        cache[key].InvalidateAccesToken(nextItemID++);
+        fullCache[key] = entry;
+        fullCache[key].InvalidateAccesToken(nextItemID++);
     }
     usedSize += entry.GetFiles().GetFilesSize();
 
     auto savedPath = CreateFolderPath(key);
     entry.GetFiles().Save(savedPath);
 }
-    
-void CacheDB::Insert(const CacheItemKey &key, const CachedFiles &files)
-{
-    ServerCacheEntry entry(files);
-    Insert(key, entry);
-}
-    
 
 void CacheDB::Remove(const CacheItemKey &key)
 {
-    auto found = cache.find(key);
-    if(found != cache.end())
+    fastCache.erase(key); //remove from fast cache
+
+    auto found = fullCache.find(key);   //remove from full cache
+    if(found != fullCache.end())
     {
         IncreaseUsedSize(found->second.GetFiles());
-        cache.erase(found);
+        fullCache.erase(found);
+    }
+    else
+    {
+        Logger::Error("[CacheDB::%s] Cannot find item in cache");
     }
 }
     
@@ -206,10 +280,30 @@ void CacheDB::Dump()
     Logger::FrameworkDebug("\tavailableSize = %lld", GetAvailableSize());
     
     Logger::FrameworkDebug(" == Files Info ==");
-    Logger::FrameworkDebug("\tentries count = %d", cache.size());
-    
+    Logger::FrameworkDebug(" FAST:");
+
+    Logger::FrameworkDebug("\tentries count = %d", fastCache.size());
     size_t index = 0;
-    for(auto & entry: cache)
+    for(auto & entry: fastCache)
+    {
+        auto & files = entry.second->GetFiles();
+        auto & fileDescriptors = files.GetFiles();
+        
+        Logger::FrameworkDebug("\tentry[%d]:", index);
+        Logger::FrameworkDebug("\t\tnames count = %d", fileDescriptors.size());
+        
+        for(auto &f: fileDescriptors)
+        {
+            Logger::FrameworkDebug("\t\tname: %s", f.first.GetStringValue().c_str());
+        }
+        
+        ++index;
+    }
+    
+    Logger::FrameworkDebug(" FULL:");
+    Logger::FrameworkDebug("\tentries count = %d", fullCache.size());
+    index = 0;
+    for(auto & entry: fullCache)
     {
         auto & files = entry.second.GetFiles();
         auto & fileDescriptors = files.GetFiles();
@@ -227,6 +321,7 @@ void CacheDB::Dump()
     
     Logger::FrameworkDebug("======= [CacheDB::%s] =======", __FUNCTION__);
 }
+    
     
     
     

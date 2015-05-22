@@ -44,7 +44,7 @@ ClientCacheEntry::ClientCacheEntry()
 {
 }
     
-void ClientCacheEntry::Serialize(KeyedArchive * archieve) const
+void ClientCacheEntry::Serialize(KeyedArchive * archieve, bool serializeData) const
 {
     DVASSERT(nullptr != archieve);
     
@@ -57,7 +57,7 @@ void ClientCacheEntry::Serialize(KeyedArchive * archieve) const
     archieve->SetArchive("params", paramsArchieve);
 
     ScopedPtr<KeyedArchive> filesArchieve(new KeyedArchive());
-    files.Serialize(filesArchieve);
+    files.Serialize(filesArchieve, serializeData);
     archieve->SetArchive("files", filesArchieve);
 }
     
@@ -89,7 +89,7 @@ bool ClientCacheEntry::operator == (const ClientCacheEntry &right) const
 void ClientCacheEntry::InvalidatePrimaryKey()
 {
     ScopedPtr<KeyedArchive> filesArchieve(new KeyedArchive());
-    files.Serialize(filesArchieve);
+    files.Serialize(filesArchieve, false);
     
     auto dataSize = filesArchieve->Serialize(nullptr, 0);
     auto data = new uint8[dataSize];

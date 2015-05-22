@@ -52,7 +52,7 @@ public:
     ClientCacheEntry();
     virtual ~ClientCacheEntry() = default;
 
-    void Serialize(KeyedArchive * archieve) const;
+    void Serialize(KeyedArchive * archieve, bool serializeData) const;
     void Deserialize(KeyedArchive * archieve);
 
     bool operator == (const ClientCacheEntry &right) const;
