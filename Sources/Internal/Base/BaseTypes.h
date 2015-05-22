@@ -92,11 +92,11 @@ static_assert(sizeof(float32) == 4, "Invalid type size!");
 static_assert(sizeof(float64) == 8, "Invalid type size!");
 
 #ifndef TRUE
-#define TRUE    1
+#   define TRUE    1
 #endif
 
 #ifndef FALSE
-#define FALSE   0
+#   define FALSE   0
 #endif
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -164,10 +164,10 @@ template<typename Key,
 using UnorderedMap = std::unordered_map<Key, T, Hash, KeyEqual, DefaultSTLAllocator<std::pair<const Key, T>>>;
 
 #ifdef min
-#undef min
+#   undef min
 #endif
 #ifdef max
-#undef max
+#   undef max
 #endif
 
 template <class T>
@@ -195,9 +195,9 @@ inline T Clamp(T val, T a, T b)
 }
 
 #if defined(__DAVAENGINE_WIN32__)
-#define Snprintf    _snprintf
+#   define Snprintf    _snprintf
 #else
-#define Snprintf    snprintf
+#   define Snprintf    snprintf
 #endif
 
 #define Memcmp memcmp
@@ -226,15 +226,15 @@ void SafeDeleteArray(TYPE * & d)
 }
 
 #ifndef SAFE_DELETE // for compatibility with FCollada
-#define SAFE_DELETE(x) if (x) { delete x; x = nullptr; };
+#   define SAFE_DELETE(x) if (x) { delete x; x = nullptr; };
 #endif 
 
 #ifndef SAFE_DELETE_ARRAY // for compatibility with FCollada
-#define SAFE_DELETE_ARRAY(x) if (x) { delete [] x; x = nullptr; };
+#   define SAFE_DELETE_ARRAY(x) if (x) { delete [] x; x = nullptr; };
 #endif
 
 #ifndef OBJC_SAFE_RELEASE
-#define OBJC_SAFE_RELEASE(x) [x release];x = nil;
+#   define OBJC_SAFE_RELEASE(x) [x release];x = nil;
 #endif 
 
 /**
@@ -255,11 +255,11 @@ template <typename T, size_t N>
 CC_CONSTEXPR size_t COUNT_OF(T(&)[N]) CC_NOEXCEPT { return N; }
     
 #ifndef REMOVE_IN_RELEASE
-    #if defined(__DAVAENGINE_DEBUG__)
-        #define REMOVE_IN_RELEASE (x) x
-    #else
-        #define REMOVE_IN_RELEASE (x) 
-    #endif
+#   if defined(__DAVAENGINE_DEBUG__)
+#       define REMOVE_IN_RELEASE (x) x
+#   else
+#       define REMOVE_IN_RELEASE (x) 
+#   endif
 #endif
 
 enum eErrorCode

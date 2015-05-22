@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "DavaConfig.h"
 
+//GCC && Clang
 #if defined(__GNUC__)
 
 #   define CC_NOINLINE    __attribute__((noinline))
@@ -40,6 +41,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #   define CC_CONSTEXPR   constexpr
 #   define CC_DEPRECATED(func) func __attribute__ ((deprecated))
 
+//Microsoft Visual C++
 #elif defined(_MSC_VER)
 
 #   define CC_NOINLINE    __declspec(noinline)

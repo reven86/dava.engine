@@ -36,10 +36,10 @@
 #define __DAVAENGINE_CONFIG_H__
 
 #ifndef __DAVAENGINE_AUTOTESTING__
-#define __DAVAENGINE_AUTOTESTING__
+#   define __DAVAENGINE_AUTOTESTING__
 #endif
 #ifndef AUTOTESTING_LUA
-#define AUTOTESTING_LUA
+#   define AUTOTESTING_LUA
 #endif
 
 //#define ENABLE_BASE_OBJECT_CHECKS // separate thing to check if you release BaseObjects properly. Need to be disabled for release configurations 
@@ -61,20 +61,20 @@
 // Switch on/off message box in assertion situation. In case this flag is
 // enabled the assertion message will be displayed even in release builds.
 #if defined(__DAVAENGINE_DEBUG__)   //always enable full DVASSERT service for debug configurations
-    #define ENABLE_ASSERT_LOGGING
-    #define ENABLE_ASSERT_MESSAGE
-    #define ENABLE_ASSERT_BREAK
+#   define ENABLE_ASSERT_LOGGING
+#   define ENABLE_ASSERT_MESSAGE
+#   define ENABLE_ASSERT_BREAK
 #else //not defined __DAVAENGINE_DEBUG__    // can disable or select any dvassert service
-    #define ENABLE_ASSERT_LOGGING
-    #define ENABLE_ASSERT_MESSAGE
+#   define ENABLE_ASSERT_LOGGING
+#   define ENABLE_ASSERT_MESSAGE
 //    #define ENABLE_ASSERT_BREAK
 #endif //
 
 #define USE_FILEPATH_IN_MAP
 #ifdef USE_FILEPATH_IN_MAP
-	#define FILEPATH_MAP_KEY(key) key
+#   define FILEPATH_MAP_KEY(key) key
 #else //#ifdef USE_FILEPATH_IN_MAP
-	#define FILEPATH_MAP_KEY(key) key.GetAbsolutePathname()
+#   define FILEPATH_MAP_KEY(key) key.GetAbsolutePathname()
 #endif //#ifdef USE_FILEPATH_IN_MAP
 
 #define REBUILD_TANGENT_SPACE_ON_IMPORT
