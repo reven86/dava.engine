@@ -531,20 +531,6 @@ FPROG_BEGIN
 
 
 
-    #if defined(REFLECTION)
-        #if defined(VERTEX_LIT)
-            float4 reflectionColor = FP_TEXTURE2D( cubemap, FP_IN(reflectionDirectionInWorldSpace) ); //float3(reflectedDirection.x, reflectedDirection.y, reflectedDirection.z));
-            FP_OUT_COLOR = reflectionColor * 0.9;
-        #elif defined(PIXEL_LIT)
-            //float3 fresnelRefl = FresnelShlickVec3(NdotV, metalFresnelReflectance);
-
-            float3 reflectionVectorInTangentSpace = reflect(cameraToPointInTangentSpace, normal);
-            float3 reflectionVectorInWorldSpace = worldInvTransposeMatrix * (tbnToWorldMatrix * reflectionVectorInTangentSpace);
-            float4 reflectionColor = textureCube(cubemap, reflectionVectorInWorldSpace, (1.0 - glossiness) * 7.0); //float3(reflectedDirection.x, reflectedDirection.y, reflectedDirection.z));
-            FP_OUT_COLOR.rgb += fresnelOut * reflectionColor.rgb * specularity;//* textureColor0.rgb;
-            //gl_FragColor.rgb += reflectionColor.rgb * textureColor0.rgb;
-        #endif
-    #endif
 
     
     
