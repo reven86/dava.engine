@@ -180,6 +180,8 @@ void NMaterial::AddProperty(const FastName& propName, const float32 *propData, r
     prop->data.reset(new float[ShaderDescriptor::CalculateDataSize(type, arraySize)]);
     prop->SetPropertyValue(propData);
     localProperties[propName] = prop;
+    
+    InvalidateBufferBindings();
 }
 
 void NMaterial::RemoveProperty(const FastName& propName)
@@ -353,6 +355,8 @@ void NMaterial::ClearLocalBuffers()
         rhi::DeleteConstBuffer(buffer.second->constBuffer);        
         SafeDelete(buffer.second);
     }
+    for (auto& variant : renderVariants)
+        variant.second->materialBufferBindings.clear();
     localConstBuffers.clear();
 }
 
