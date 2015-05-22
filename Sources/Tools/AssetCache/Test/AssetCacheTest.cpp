@@ -46,96 +46,15 @@ namespace DAVA
     
 namespace AssetCache
 {
-    
-class ClientTest: public DAVA::AssetCache::ClientDelegate
+ 
+struct TestEntryDescriptor
 {
-public:
-    
-    DAVA::AssetCache::Client *client = nullptr;
-    DAVA::AssetCache::ClientCacheEntry clientEntry;
-    
+    FilePath project;
     FilePath outFolder;
-    
-    bool testIsRunning = false;
-    
-public:
-    
-    ClientTest(DAVA::AssetCache::Client *_client)
-    : client(_client)
-    {
-        client->SetDelegate(this);
-    }
-    
-    void OnAddedToCache(const DAVA::AssetCache::CacheItemKey &key, bool added) override
-    {
-        Logger::FrameworkDebug("=====    ClientTest::%s start    =====", __FUNCTION__);
-        Logger::FrameworkDebug("\tadded is %d", added);
-        testIsRunning = false;
-        Logger::FrameworkDebug("=====    ClientTest::%s finish   =====", __FUNCTION__);
-    }
-    
-    void OnIsInCache(const DAVA::AssetCache::CacheItemKey &key, bool isInCache) override
-    {
-        Logger::FrameworkDebug("=====    ClientTest::%s start    =====", __FUNCTION__);
-        
-        Logger::FrameworkDebug("\tisInCache is %d", isInCache);
-        
-        if(isInCache)
-        {
-            auto getRequestSent = client->GetFromCache(key);
-            Logger::FrameworkDebug("\tgetRequestSent is %d", getRequestSent);
-        }
-        else
-        {
-            auto & files = clientEntry.GetFiles();
-            clientEntry.files.LoadFiles(); //workaround
-
-            DAVA::Thread::Sleep(200); //to emulate some action, example convertation
-            
-            auto addRequestSent = client->AddToCache(key, files);
-            
-            clientEntry.files.UnloadFiles(); //workaround
-            
-            Logger::FrameworkDebug("\taddRequestSent is %d", addRequestSent);
-        }
-        
-        Logger::FrameworkDebug("=====    ClientTest::%s finish   =====", __FUNCTION__);
-    }
-    
-    void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files) override
-    {
-        Logger::FrameworkDebug("=====    ClientTest::%s start    =====", __FUNCTION__);
-        
-        bool entriesAreEqual = (key == clientEntry.GetKey());
-        Logger::FrameworkDebug("\tentriesAreEqual is %d", entriesAreEqual);
-
-        files.Save(outFolder);
-        
-        testIsRunning = false;
-        Logger::FrameworkDebug("=====    ClientTest::%s finish   =====", __FUNCTION__);
-    }
-    
-    
-    void Run(const DAVA::AssetCache::ClientCacheEntry &entry, const FilePath & _outFolder)
-    {
-        auto startTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
-        
-        clientEntry = entry;
-        outFolder = _outFolder;
-        
-        testIsRunning = true;
-        client->IsInCache(clientEntry.GetKey());
-        
-        while(testIsRunning)
-        {
-            //wait
-        }
-
-        auto deltaTime = DAVA::SystemTimer::Instance()->AbsoluteMS() - startTime;
-        Logger::Info("****** Client Test took %lld ms", deltaTime);
-    }
+    ClientCacheEntry entry;
 };
-
+ 
+    
 class ServerTest: public DAVA::AssetCache::ServerDelegate
 {
 public:
@@ -147,25 +66,22 @@ public:
     
     ServerTest(DAVA::AssetCache::Server *_server)
     :   server(_server)
-    ,   dataBase("/Users/victorkleschenko/Downloads/__AssetCacheTest/CacheFolder", 10 * 1024 * 1024, 2)
+    ,   dataBase("/Users/victorkleschenko/Downloads/__AssetCacheTest/CacheFolder", 10 * 1024 * 1024, 1)
     {
         server->SetDelegate(this);
     }
     
     void OnAddedToCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files) override
     {
-        Logger::FrameworkDebug("=====    ServerTest::%s start    =====", __FUNCTION__);
         if(server)
         {
             dataBase.Insert(key, files);
             server->FilesAddedToCache(key, true);
         }
-        Logger::FrameworkDebug("=====    ServerTest::%s finish   =====", __FUNCTION__);
     }
     
     void OnIsInCache(const DAVA::AssetCache::CacheItemKey &key) override
     {
-        Logger::FrameworkDebug("=====    ServerTest::%s start    =====", __FUNCTION__);
         if(server)
         {
             auto entry = dataBase.Get(key);
@@ -173,13 +89,10 @@ public:
             
             server->FilesInCache(key, inCache);
         }
-        Logger::FrameworkDebug("=====    ServerTest::%s finish   =====", __FUNCTION__);
     }
     
     void OnRequestedFromCache(const DAVA::AssetCache::CacheItemKey &key) override
     {
-        Logger::FrameworkDebug("=====    ServerTest::%s start    =====", __FUNCTION__);
-        
         if(server)
         {
             auto entry = dataBase.Get(key);
@@ -192,11 +105,64 @@ public:
                 server->SendFiles(key, DAVA::AssetCache::CachedFiles());
             }
         }
-        
-        Logger::FrameworkDebug("=====    ServerTest::%s finish   =====", __FUNCTION__);
     }
 };
+
     
+class ClientTest: public DAVA::AssetCache::ClientDelegate
+{
+    bool testIsRunning = false;
+    
+    DAVA::AssetCache::Client *client = nullptr;
+    
+    TestEntryDescriptor entry;
+    
+public:
+    
+    ClientTest(DAVA::AssetCache::Client * _client)
+        :   client(_client)
+    {
+        client->SetDelegate(this);
+    }
+    
+    void OnAddedToCache(const DAVA::AssetCache::CacheItemKey &key, bool added) override
+    {
+        testIsRunning = false;
+    }
+    
+    void OnIsInCache(const DAVA::AssetCache::CacheItemKey &key, bool isInCache) override
+    {
+    }
+    
+    void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files) override
+    {
+        if(files.IsEmtpy())
+        {
+            client->AddToCache(entry.entry.GetKey(), entry.entry.GetFiles());
+        }
+        else
+        {
+            files.Save(entry.outFolder);
+            testIsRunning = false;
+        }
+    }
+    
+    
+    void Run(const TestEntryDescriptor & _entry)
+    {
+        testIsRunning = true;
+        entry = _entry;
+        
+        client->GetFromCache(entry.entry.GetKey());
+        
+        while (testIsRunning)
+        {
+            //wait;
+        }
+    }
+};
+
+
 void RunPackerTest()
 {
 // --- INITIALIZATION OF NETWORK ---
@@ -216,48 +182,72 @@ void RunPackerTest()
 // --- INITIALIZATION OF NETWORK ---
     
     
-// --- INITIALIZATION OF FOLDER TEST ---
-    const FilePath inputFolder("/Users/victorkleschenko/Downloads/__AssetCacheTest/TestProject/InFolder/");
-    DAVA::AssetCache::ClientCacheEntry cacheEntry;
-    cacheEntry.AddParam("Resource Packer 1.0");
-    cacheEntry.AddParam("RGBA8888");
-    cacheEntry.AddParam("split");
-
-    const FilePath processFolder("/Users/victorkleschenko/Downloads/__AssetCacheTest/TestProject/$process/");
-    ScopedPtr<FileList> flist(new FileList(processFolder));
-    auto count = flist->GetCount();
-    for(auto i = 0; i < count; ++i)
+// --- INITIALIZATION OF TEST DATA ---
+    
+    auto CreateEntryForProject = [] (const String &project, const String &outFolder)
     {
-        if(!flist->IsDirectory(i))
+        TestEntryDescriptor entryDescriptor;
+        entryDescriptor.project = String("/Users/victorkleschenko/Downloads/__AssetCacheTest/") + project;
+        entryDescriptor.project.MakeDirectoryPathname();
+        
+        entryDescriptor.outFolder = entryDescriptor.project + outFolder;
+        entryDescriptor.outFolder.MakeDirectoryPathname();
+        
+        const FilePath inputFolder = entryDescriptor.project + "InFolder/";
+        const FilePath processFolder = entryDescriptor.project + "$process/";
+
+        entryDescriptor.entry.AddParam("Resource Packer 1.0");
+        entryDescriptor.entry.AddParam("RGBA8888");
+        entryDescriptor.entry.AddParam("split");
+        
+        ScopedPtr<FileList> flist(new FileList(processFolder));
+        auto count = flist->GetCount();
+        for(auto i = 0; i < count; ++i)
         {
-            cacheEntry.AddFile(flist->GetPathname(i));
+            if(!flist->IsDirectory(i))
+            {
+                entryDescriptor.entry.AddFile(flist->GetPathname(i));
+            }
         }
-    }
+        
+        uint8 digest[MD5::DIGEST_SIZE];
+        MD5::ForDirectory(inputFolder, digest, false, false);
+        entryDescriptor.entry.InvalidatePrimaryKey(digest);
+        entryDescriptor.entry.InvalidateSecondaryKey();
+        
+        return entryDescriptor;
+    };
+
     
-    uint8 digest[MD5::DIGEST_SIZE];
-    MD5::ForDirectory(inputFolder, digest, false, false);
-    cacheEntry.InvalidatePrimaryKey(digest);
-    cacheEntry.InvalidateSecondaryKey();
-// --- INITIALIZATION OF FOLDER TEST ---
+    TestEntryDescriptor cacheEntry1 = CreateEntryForProject("TestProject1", "OutFolder_0");
+    TestEntryDescriptor cacheEntry2 = CreateEntryForProject("TestProject2", "OutFolder_0");
     
-    // --- RUNNING TEST ---
+// --- INITIALIZATION OF TEST DATA ---
+    
+// --- RUNNING TEST ---
     ServerTest serverTest(server);
+    serverTest.dataBase.Dump();
+    
+    
     ClientTest clientTest(client);
 
-    serverTest.dataBase.Dump();
-
+    auto TestFunc = [] (ClientTest & test, TestEntryDescriptor & entry)
+    {
+        entry.entry.files.LoadFiles();
+        test.Run(entry);
+        
+        entry.entry.files.UnloadFiles();
+        test.Run(entry);
+    };
     
-    clientTest.Run(cacheEntry, "/Users/victorkleschenko/Downloads/__AssetCacheTest/TestProject/OutFolder_0/");
+    
+
+    TestFunc(clientTest, cacheEntry1);
     serverTest.dataBase.Dump();
     
-    clientTest.Run(cacheEntry, "/Users/victorkleschenko/Downloads/__AssetCacheTest/TestProject/OutFolder_1/");
+    TestFunc(clientTest, cacheEntry2);
     serverTest.dataBase.Dump();
-
-    cacheEntry.AddParam("NewTest");
-    cacheEntry.InvalidateSecondaryKey();
-
-    clientTest.Run(cacheEntry, "/Users/victorkleschenko/Downloads/__AssetCacheTest/TestProject/OutFolder_2/");
-    serverTest.dataBase.Dump();
+    
     // --- RUNNING TEST ---
     
     Net::NetCore::Instance()->DestroyAllControllersBlocked();

@@ -74,7 +74,7 @@ void ServerCacheEntry::Deserialize(KeyedArchive * archieve)
 {
     DVASSERT(nullptr != archieve);
     
-    accessID = archieve->GetUInt32("accessID");
+    accessID = archieve->GetUInt64("accessID");
     
     KeyedArchive *filesArchieve = archieve->GetArchive("files");
     DVASSERT(filesArchieve);

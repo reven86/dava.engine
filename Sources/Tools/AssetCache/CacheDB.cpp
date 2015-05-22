@@ -96,7 +96,7 @@ void CacheDB::Save() const
     {
         ScopedPtr<KeyedArchive> itemArchieve(new KeyedArchive());
         item.first.Serialize(itemArchieve);
-        item.second.GetFiles().Serialize(itemArchieve, false);
+        item.second.Serialize(itemArchieve);
         
         cache->SetArchive(Format("item_%d", index++), itemArchieve);
     }
@@ -111,7 +111,6 @@ void CacheDB::Load()
     ScopedPtr<File> file(File::Create(cacheSettings, File::OPEN | File::READ));
     if(static_cast<File*>(file) == nullptr)
     {
-        Logger::Error("[CacheDB::%s] Cannot create file %s", __FUNCTION__, cacheSettings.GetStringValue().c_str());
         return;
     }
     
@@ -146,7 +145,7 @@ void CacheDB::Load()
         key.Deserialize(itemArchieve);
 
         ServerCacheEntry entry;
-        entry.files.Deserialize(itemArchieve);
+        entry.Deserialize(itemArchieve);
         
         fullCache[key] = entry;
     }
@@ -206,15 +205,38 @@ void CacheDB::Insert(const CacheItemKey &key, const ServerCacheEntry &entry)
     }
     
     entryForFastCache->InvalidateAccesToken(nextItemID++);
-
-    //TODO: insert in fast cache
-    
+    InsertInFastCache(key, entryForFastCache);
     
     usedSize += entryForFastCache->GetFiles().GetFilesSize();
 
     auto savedPath = CreateFolderPath(key);
     entry.GetFiles().Save(savedPath);
 }
+
+void CacheDB::InsertInFastCache(const CacheItemKey &key, ServerCacheEntry * entry)
+{
+    if (itemsInMemory == fastCache.size() && itemsInMemory > 0)
+    {
+        auto found = fastCache.begin();
+        auto accessID = nextItemID;
+        for (auto it = fastCache.begin(), endIt = fastCache.end(); it != endIt; ++it)
+        {
+            if(it->second->GetAccesID() < accessID)
+            {
+                found = it;
+                accessID = it->second->GetAccesID();
+            }
+        }
+        
+        if(found != fastCache.end())
+        {
+            fastCache.erase(found);
+        }
+    }
+
+    fastCache[key] = entry;
+}
+    
 
 void CacheDB::Remove(const CacheItemKey &key)
 {

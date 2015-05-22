@@ -108,6 +108,8 @@ private:
     
     void IncreaseUsedSize(const CachedFiles &files);
     
+    void InsertInFastCache(const CacheItemKey &key, ServerCacheEntry * entry);
+    
 private:
     
     FilePath cacheRootFolder;           //path to folder with settings and cache of files
