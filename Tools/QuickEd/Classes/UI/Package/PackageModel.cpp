@@ -76,7 +76,7 @@ QModelIndex PackageModel::parent(const QModelIndex &child) const
     {
         return QModelIndex();
     }
-    if (parent->GetParent())
+    if (nullptr != parent->GetParent())
     {
         return createIndex(parent->GetParent()->GetIndex(parent), 0, parent);
     }

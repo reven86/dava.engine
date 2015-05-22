@@ -1,37 +1,30 @@
 #ifndef __UI_EDITOR_LIBRARY_MODEL_H__
 #define __UI_EDITOR_LIBRARY_MODEL_H__
 
-#include <QAbstractItemModel>
+#include <QStandardItemModel>
 #include "Base/BaseTypes.h"
 #include "Model/PackageHierarchy/PackageListener.h"
 
 class PackageNode;
 class PackageBaseNode;
 
-class LibraryModel : public QAbstractItemModel, private PackageListener
+class LibraryModel : public QStandardItemModel, private PackageListener
 {
     Q_OBJECT
     
 public:
     LibraryModel(PackageNode *root, QObject *parent = nullptr);
     virtual ~LibraryModel();
-    
-    QModelIndex indexByNode(PackageBaseNode *node) const;
-    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
-    QModelIndex parent(const QModelIndex &child) const override;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const  override;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-
+    QModelIndex indexByNode(const void *node, const QStandardItem *item) const;
+    void BuildModel();
+   
     Qt::ItemFlags flags(const QModelIndex &index) const override;
     QStringList mimeTypes() const override;
     QMimeData *mimeData(const QModelIndexList &indexes) const override;
 
 private:
-    bool IsDefault(int row) const;
     PackageNode *root;
-    QList<QString> defaultControls;
-
+    QStringList defaultControls;
 private: // PackageListener
     void ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property) override;
 
