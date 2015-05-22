@@ -35,6 +35,9 @@
 #include "Platform/SystemTimer.h"
 #include "Utils/Random.h"
 
+#include "FileSystem/FilePath.h"
+#include "FileSystem/Logger.h"
+
 #include "MemoryManager/MemoryManager.h"
 
 #include "MMNetServer.h"
@@ -164,7 +167,26 @@ void MMNetServer::ProcessTypeDump(const MMNetProto::HeaderDump* header, const vo
     std::pair<size_t, size_t> p = MemoryManager::Instance()->BktraceStat();
     Logger::Debug("**** bktrace stat: %u/%u", (uint32)p.first, (uint32)p.second);
 
-    GatherDump();
+    String fp = FilePath("~doc:dump.bin").GetAbsolutePathname();
+    const char* filename = fp.c_str();
+
+    FILE* file = fopen(filename, "wb");
+    if (file != nullptr)
+    {
+        size_t size = 0;
+        uint64 s = SystemTimer::Instance()->AbsoluteMS();
+        MemoryManager::Instance()->GetMemoryDump(file, size);
+        uint32 diff = uint32(SystemTimer::Instance()->AbsoluteMS() - s);
+
+        long pos = ftell(file);
+
+        fclose(file);
+        Logger::Info("Dump created: dump_size=%u, file_size=%u, time=%u", (uint32)size, (uint32)pos, diff);
+    }
+    else
+        Logger::Error("Failed to create dump file: %s", filename);
+
+    //GatherDump();
 }
 
 void MMNetServer::SendMemoryStat()

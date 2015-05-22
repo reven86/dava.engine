@@ -113,6 +113,8 @@ public:
     MMCurStat* GetCurStat();
     MMDump* GetMemoryDump();
 
+    bool GetMemoryDump(FILE* file, size_t& dumpSize);
+
     void FreeStatMemory(void* ptr);
 
 private:

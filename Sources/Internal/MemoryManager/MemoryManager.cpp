@@ -946,6 +946,111 @@ MMDump* MemoryManager::GetMemoryDump()
     return dump;
 }
 
+bool MemoryManager::GetMemoryDump(FILE* file, size_t& dumpSize)
+{
+    const size_t BUF_SIZE = 64 * 1024;
+    void* buffer = InternalAllocate(BUF_SIZE);
+
+    {
+        LockType lock(allocMutex);
+
+        const size_t blockCount = statAllocPool[ALLOC_POOL_TOTAL].blockCount;
+        const size_t symbolCount = symbolMap->size();
+        const size_t bktraceCount = bktraceMap->size();
+
+        const size_t statSize = CalcCurStatSize();
+        const size_t bktraceSize = sizeof(MMBacktrace) + sizeof(uint64) * BACKTRACE_DEPTH;
+        const size_t size = sizeof(MMDump)
+            + statSize
+            + sizeof(MMBlock) * blockCount
+            + sizeof(MMSymbol) * symbolCount
+            + bktraceSize * bktraceCount;
+        dumpSize = size;
+
+        MMDump dump{};
+        dump.timestamp = 0;
+        dump.collectTime = 0;
+        dump.packTime = 0;
+        dump.size = static_cast<uint32>(size);
+        dump.blockCount = static_cast<uint32>(blockCount);
+        dump.bktraceCount = static_cast<uint32>(bktraceCount);
+        dump.symbolCount = static_cast<uint32>(symbolCount);
+        dump.bktraceDepth = BACKTRACE_DEPTH;
+
+        fwrite(&dump, sizeof(MMDump), 1, file);
+
+        FillCurStat(buffer, statSize);
+        fwrite(buffer, 1, statSize, file);
+
+        {
+            const size_t BLOCKS_IN_BUF = BUF_SIZE / sizeof(MMBlock);
+            MMBlock* blocks = static_cast<MMBlock*>(buffer);
+
+            MemoryBlock* curBlock = head;
+            for (size_t i = 0, n = blockCount;i < n;)
+            {
+                size_t k = 0;
+                for (;k < BLOCKS_IN_BUF && i < n;++k, ++i)
+                {
+                    blocks[k].orderNo = curBlock->orderNo;
+                    blocks[k].allocByApp = curBlock->allocByApp;
+                    blocks[k].allocTotal = curBlock->allocTotal;
+                    blocks[k].bktraceHash = curBlock->bktraceHash;
+                    blocks[k].pool = curBlock->pool;
+                    blocks[k].tags = curBlock->tags;
+                }
+                fwrite(buffer, sizeof(MMBlock), k, file);
+
+                curBlock = curBlock->next;
+            }
+        }
+        {
+            const size_t SYMBOLS_IN_BUF = BUF_SIZE / sizeof(MMSymbol);
+            MMSymbol* symbols = static_cast<MMSymbol*>(buffer);
+
+            for (auto i = symbolMap->begin(), e = symbolMap->end();i != e;)
+            {
+                size_t k = 0;
+                for (;k < SYMBOLS_IN_BUF && i != e;++k, ++i)
+                {
+                    void* addr = i->first;
+                    auto& name = i->second;
+
+                    symbols[k].addr = reinterpret_cast<uint64>(addr);
+                    strncpy(symbols[k].name, name.c_str(), MMSymbol::NAME_LENGTH);
+                    symbols[k].name[MMSymbol::NAME_LENGTH - 1] = '\0';
+                }
+                fwrite(buffer, sizeof(MMSymbol), k, file);
+            }
+        }
+        {
+            const size_t BKTRACE_IN_BUF = BUF_SIZE / bktraceSize;
+            MMBacktrace* bktrace = static_cast<MMBacktrace*>(buffer);
+
+            for (auto i = bktraceMap->begin(), e = bktraceMap->end();i != e;)
+            {
+                size_t k = 0;
+                for (;k < BKTRACE_IN_BUF && i != e;++k, ++i)
+                {
+                    auto& o = i->second;
+
+                    bktrace->hash = o.hash;
+                    uint64* frames = OffsetPointer<uint64>(bktrace, sizeof(MMBacktrace));
+                    for (size_t i = 0;i < BACKTRACE_DEPTH;++i)
+                    {
+                        frames[i] = reinterpret_cast<uint64>(o.frames[i]);
+                    }
+                    bktrace = OffsetPointer<MMBacktrace>(bktrace, bktraceSize);
+                }
+                fwrite(buffer, 1, bktraceSize * k, file);
+                bktrace = static_cast<MMBacktrace*>(buffer);
+            }
+        }
+    }
+    InternalDeallocate(buffer);
+    return true;
+}
+
 void MemoryManager::FreeStatMemory(void* ptr)
 {
     InternalDeallocate(ptr);
