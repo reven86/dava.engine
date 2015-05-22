@@ -57,7 +57,7 @@ public:
     
     virtual void AddEntity(Entity * entity);
     virtual void RemoveEntity(Entity * entity);
-    virtual void ImmediateEvent(Entity * entity, uint32 event);
+    void ImmediateEvent(Component * component, uint32 event) override;
 private:
     HashMap<Entity*, Light*> entityObjectMap;
 };
