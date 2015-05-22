@@ -85,6 +85,7 @@ void WidgetStateHelper::onShowEvent()
     if ( trackedEvents.testFlag( MaximizeOnShowOnce ) )
     {
         trackedWidget->showMaximized();
+        trackedWidget->updateGeometry();
         trackedEvents &= ~MaximizeOnShowOnce;
     }
 }

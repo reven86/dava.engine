@@ -126,10 +126,14 @@ void QtPosSaver::OnShow()
     }
 
     auto widget = qobject_cast< QWidget * >( attachedWidget );
-    if ( widget != nullptr && mainWindow == nullptr )
+    if ( widget != nullptr && mainWindow == nullptr && splitter == nullptr )
     {
         LoadGeometry( widget );
-        widget->updateGeometry();
+    }
+
+    if ( !attachedWidget.isNull() )
+    {
+        attachedWidget->updateGeometry();
     }
 }
 
@@ -148,7 +152,7 @@ void QtPosSaver::OnHide()
     }
 
     auto widget = qobject_cast< QWidget * >( attachedWidget );
-    if ( widget != nullptr && mainWindow == nullptr )
+    if ( widget != nullptr && mainWindow == nullptr && splitter == nullptr )
     {
         SaveGeometry( widget );
     }
@@ -176,12 +180,9 @@ void QtPosSaver::LoadGeometry(QWidget *widget)
 
         const auto normalKey = QString( "%1-geometry-%2" ).arg( attachedWidgetName ).arg( widget->objectName() );
         const auto isMaximizedKey = QString( "%1-maximized-%2" ).arg( attachedWidgetName ).arg( widget->objectName() );
-
-        const auto geometry = Load( normalKey );
-        widget->restoreGeometry( geometry );
-
         const auto mState = Load( isMaximizedKey );
-		if (!mState.isEmpty() && mState.at(0) != 0)
+
+        if (!mState.isEmpty() && mState.at(0) != 0)
 		{
 			if (widget->isVisible())
 			{
@@ -191,8 +192,13 @@ void QtPosSaver::LoadGeometry(QWidget *widget)
 			{
                 const auto f = helper->getTrackedEvents() | WidgetStateHelper::MaximizeOnShowOnce;
                 helper->setTrackedEvents( f );
-			}
+            }
 		}
+        else
+        {
+            const auto geometry = Load( normalKey );
+            widget->restoreGeometry( geometry );
+        }
 	}
 }
 
@@ -216,24 +222,24 @@ void QtPosSaver::LoadState(QSplitter *splitter)
 
 void QtPosSaver::SaveState(QMainWindow *mainwindow)
 {
+    SaveGeometry( mainwindow );
+
     if (nullptr != mainwindow && !attachedWidgetName.isEmpty())
 	{
         const auto mainWindowKey = QString( "%1-mainwindow-%2" ).arg( attachedWidgetName ).arg( mainwindow->objectName() );
         Save( mainWindowKey, mainwindow->saveState() );
 	}
-
-    SaveGeometry( mainwindow );
 }
 
 void QtPosSaver::LoadState(QMainWindow *mainwindow)
 {
-	if (nullptr != mainwindow && !attachedWidgetName.isEmpty())
+    LoadGeometry( mainwindow );
+
+    if (nullptr != mainwindow && !attachedWidgetName.isEmpty())
 	{
         const auto mainWindowKey = QString( "%1-mainwindow-%2" ).arg( attachedWidgetName ).arg( mainwindow->objectName() );
         mainwindow->restoreState( Load( mainWindowKey ) );
 	}
-
-    LoadGeometry( mainwindow );
 }
 
 void QtPosSaver::SaveValue(const QString &key, const DAVA::VariantType &value)
