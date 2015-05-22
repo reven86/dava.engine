@@ -32,7 +32,6 @@
 
 #include "Qt/Main/mainwindow.h"
 #include "Qt/Main/QtUtils.h"
-#include "Tools/PathDescriptor/PathDescriptor.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
 
@@ -83,7 +82,7 @@ void PlaneLODDialog::OnOk()
 
 void PlaneLODDialog::OnTextureSelect()
 {
-    QString selectedPath = FileDialog::getSaveFileName(this, QString("Save texture"), texturePath, PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
+    QString selectedPath = FileDialog::getSaveFileName(this, QString("Save texture"), texturePath, QString("PNG image (*.png)"));
     if(selectedPath.isEmpty())
         return;
 

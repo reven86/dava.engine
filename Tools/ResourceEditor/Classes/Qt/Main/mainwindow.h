@@ -173,7 +173,7 @@ public slots:
 	void OnShadowBlendModeAlpha();
 	void OnShadowBlendModeMultiply();
 
-	void OnSaveHeightmapToImage();
+	void OnSaveHeightmapToPNG();
 	void OnSaveTiledTexture();
 
 	void OnConvertModifiedTextures();

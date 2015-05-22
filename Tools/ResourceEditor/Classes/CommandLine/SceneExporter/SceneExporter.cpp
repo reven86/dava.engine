@@ -45,7 +45,7 @@ using namespace DAVA;
 
 SceneExporter::SceneExporter()
 {
-    exportForGPU = GPU_ORIGIN;
+    exportForGPU = GPU_PNG;
 	quality = TextureConverter::ECQ_DEFAULT;
 	optimizeOnExport = true;
 }
@@ -65,6 +65,10 @@ void SceneExporter::SetOutFolder(const FilePath &folderPathname)
     sceneUtils.SetOutFolder(folderPathname);
 }
 
+void SceneExporter::SetGPUForExporting(const String &newGPU)
+{
+    SetGPUForExporting(GPUFamilyDescriptor::GetGPUByName(newGPU));
+}
 
 void SceneExporter::SetGPUForExporting(const eGPUFamily newGPU)
 {
@@ -368,7 +372,7 @@ bool SceneExporter::ExportTextureDescriptor(const FilePath &pathname, Set<String
     }
     
     descriptor->exportedAsGpuFamily = exportForGPU;
-    descriptor->format = descriptor->GetPixelFormatForGPU(exportForGPU);
+    descriptor->format = descriptor->GetPixelFormatForCompression(exportForGPU);
 
     eGPUFamily gpu = GPUFamilyDescriptor::ConvertValueToGPU(descriptor->exportedAsGpuFamily);
     if(GPUFamilyDescriptor::IsGPUForDevice(gpu) && (descriptor->format == FORMAT_INVALID))
@@ -405,24 +409,25 @@ bool SceneExporter::ExportTexture(const TextureDescriptor * descriptor, Set<Stri
 		if(descriptor->IsCubeMap())
 		{
 			Vector<FilePath> faceNames;
-			descriptor->GetFacePathnames(faceNames);
-			for(auto& faceName : faceNames)
+			Texture::GenerateCubeFaceNames(descriptor->pathname.GetAbsolutePathname().c_str(), faceNames);
+			for(Vector<FilePath>::iterator it = faceNames.begin();
+				it != faceNames.end();
+				++it)
 			{
-                if (faceName.IsEmpty())
-                    continue;
-				bool result = sceneUtils.CopyFile(faceName, errorLog);
+				bool result = sceneUtils.CopyFile(*it, errorLog);
 				copyResult = copyResult && result;
 			}
 		}
 		else
 		{
-			copyResult = sceneUtils.CopyFile(descriptor->GetSourceTexturePathname(), errorLog);
+			FilePath sourceTexturePathname =  FilePath::CreateWithNewExtension(descriptor->pathname, ".png");
+			copyResult = sceneUtils.CopyFile(sourceTexturePathname, errorLog);
 		}
 		
 		return copyResult;
     }
 
-    FilePath compressedTexureName = descriptor->CreatePathnameForGPU((eGPUFamily)descriptor->exportedAsGpuFamily);
+    FilePath compressedTexureName = GPUFamilyDescriptor::CreatePathnameForGPU(descriptor, (eGPUFamily)descriptor->exportedAsGpuFamily);
     return sceneUtils.CopyFile(compressedTexureName, errorLog);
 }
 
@@ -466,7 +471,8 @@ void SceneExporter::CompressTextureIfNeed(const TextureDescriptor * descriptor, 
         return;
     
     
-    FilePath compressedTexureName = descriptor->CreatePathnameForGPU((eGPUFamily)descriptor->exportedAsGpuFamily);
+    FilePath compressedTexureName = GPUFamilyDescriptor::CreatePathnameForGPU(descriptor, (eGPUFamily)descriptor->exportedAsGpuFamily);
+    FilePath sourceTexturePathname =  FilePath::CreateWithNewExtension(descriptor->pathname, ".png");
 
     bool fileExcists = FileSystem::Instance()->IsFile(compressedTexureName);
     bool needToConvert = SceneValidator::IsTextureChanged(descriptor, (eGPUFamily)descriptor->exportedAsGpuFamily);

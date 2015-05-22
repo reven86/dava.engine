@@ -74,7 +74,7 @@ TextureUtils::CompareResult TextureUtils::CompareSprites(Sprite *first, Sprite *
     return compareResult;
 }
 
-TextureUtils::CompareResult TextureUtils::CompareImages(const Image *first, const Image *second, PixelFormat format)
+TextureUtils::CompareResult TextureUtils::CompareImages(Image *first, Image *second, PixelFormat format)
 {
     CompareResult compareResult = {0};
 

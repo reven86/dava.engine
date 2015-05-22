@@ -98,16 +98,16 @@ static int32 CUBE_FACE_MAPPING[] =
 	Texture::CUBE_FACE_NEGATIVE_Z
 };
 
-Array<String, Texture::CUBE_FACE_COUNT> Texture::FACE_NAME_SUFFIX =
-{{
-    String("_px"),
-    String("_nx"),
-    String("_py"),
-    String("_ny"),
-    String("_pz"),
-    String("_nz")
-}};
-
+static DAVA::String FACE_NAME_SUFFIX[] =
+{
+    DAVA::String("_px"),
+    DAVA::String("_nx"),
+    DAVA::String("_py"),
+    DAVA::String("_ny"),
+    DAVA::String("_pz"),
+    DAVA::String("_nz")
+};
+	
 class TextureMemoryUsageInfo
 {
 public:
@@ -154,7 +154,7 @@ public:
 	int	fboMemoryUsed;
 };
 
-eGPUFamily Texture::defaultGPU = GPU_ORIGIN;
+eGPUFamily Texture::defaultGPU = GPU_PNG;
     
 static TextureMemoryUsageInfo texMemoryUsageInfo;
 	
@@ -200,7 +200,7 @@ Texture::Texture()
 :	id(0)
 ,	width(0)
 ,	height(0)
-,	loadedAsFile(GPU_ORIGIN)
+,	loadedAsFile(GPU_PNG)
 ,	state(STATE_INVALID)
 ,	textureType(Texture::TEXTURE_2D)
 ,	depthFormat(DEPTH_NONE)
@@ -589,67 +589,49 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
         return false;
     }
 	
-    const int32 baseMipMap = GetBaseMipMap();
+    int32 baseMipMap = GetBaseMipMap();
+    
 	if(texDescriptor->IsCubeMap() && (!GPUFamilyDescriptor::IsGPUForDevice(gpu)))
 	{
-        Vector<FilePath> facePathes;
-        texDescriptor->GetFacePathnames(facePathes);
-        
-        PixelFormat imagesFormat = FORMAT_INVALID;
-		for(auto i = 0; i < CUBE_FACE_COUNT; ++i)
-		{
-            auto & currentfacePath = facePathes[i];
-            if (currentfacePath.IsEmpty())
-                continue;
+		Vector<FilePath> faceNames;
+		GenerateCubeFaceNames(texDescriptor->GetSourceTexturePathname(), faceNames);
 
-            Vector<Image *> faceImage;
-            ImageSystem::Instance()->Load(currentfacePath, faceImage, baseMipMap);
-            if(faceImage.size() == 0)
+		for(size_t i = 0; i < faceNames.size(); ++i)
+		{
+            Vector<Image *> imageFace;
+            ImageSystem::Instance()->Load(faceNames[i], imageFace,baseMipMap);
+            if(imageFace.size() == 0)
 			{
-                Logger::Error("[Texture::LoadImages] Cannot open file %s", currentfacePath.GetAbsolutePathname().c_str());
+				Logger::Error("[Texture::LoadImages] Cannot open file %s", faceNames[i].GetAbsolutePathname().c_str());
 
 				ReleaseImages(images);
 				return false;
 			}
-            
-			DVASSERT(faceImage.size() == 1);
 
-			faceImage[0]->cubeFaceID = CUBE_FACE_MAPPING[i];
-			faceImage[0]->mipmapLevel = 0;
+			DVASSERT(imageFace.size() == 1);
 
-            //cubemap formats validation
-            if(FORMAT_INVALID == imagesFormat)
-            {
-                imagesFormat = faceImage[0]->format;
-            }
-            else if(imagesFormat != faceImage[0]->format)
-            {
-                Logger::Error("[Texture::LoadImages] Face(%s) has different pixel format(%s)", currentfacePath.GetAbsolutePathname().c_str(), PixelFormatDescriptor::GetPixelFormatString(faceImage[0]->format));
-                
-                ReleaseImages(images);
-                return false;
-            }
-            //end of cubemap formats validation
-            
+			imageFace[0]->cubeFaceID = CUBE_FACE_MAPPING[i];
+			imageFace[0]->mipmapLevel = 0;
+
             if(texDescriptor->GetGenerateMipMaps())
             {
-                Vector<Image *> mipmapsImages = faceImage[0]->CreateMipMapsImages();
+                Vector<Image *> mipmapsImages = imageFace[0]->CreateMipMapsImages();
                 images->insert(images->end(), mipmapsImages.begin(), mipmapsImages.end());
-                SafeRelease(faceImage[0]);
+                SafeRelease(imageFace[0]);
             }
             else
             {
-			    images->push_back(faceImage[0]);
+			    images->push_back(imageFace[0]);
             }
 		}
 	}
 	else
 	{
-		FilePath imagePathname = texDescriptor->CreatePathnameForGPU(gpu);
+		FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(texDescriptor, gpu);
 
         ImageSystem::Instance()->Load(imagePathname, *images, baseMipMap);
         ImageSystem::Instance()->EnsurePowerOf2Images(*images);
-        if(images->size() == 1 && gpu == GPU_ORIGIN && texDescriptor->GetGenerateMipMaps())
+        if(images->size() == 1 && gpu == GPU_PNG && texDescriptor->GetGenerateMipMaps())
         {
             Image * img = *images->begin();
             *images = img->CreateMipMapsImages(texDescriptor->dataSettings.GetIsNormalMap());
@@ -1190,7 +1172,7 @@ Texture * Texture::CreatePink(TextureType requestedType, bool checkers)
 	if(Texture::TEXTURE_CUBE == requestedType)
 	{
 		tex->texDescriptor->Initialize(WRAP_CLAMP_TO_EDGE, true);
-		tex->texDescriptor->dataSettings.cubefaceFlags = 0x000000FF;
+		tex->texDescriptor->dataSettings.faceDescription = 0x000000FF;
 	}
 	else
 	{
@@ -1207,7 +1189,7 @@ void Texture::MakePink(bool checkers)
     Vector<Image *> *images = new Vector<Image *> ();
 	if(texDescriptor->IsCubeMap())
 	{
-		for(uint32 i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
+		for(uint32 i = 0; i < Texture::CUBE_FACE_MAX_COUNT; ++i)
 		{
             Image *img = Image::CreatePinkPlaceholder(checkers);
 			img->cubeFaceID = i;
@@ -1272,6 +1254,41 @@ void Texture::SetInvalidater(TextureInvalidater* invalidater)
     if(invalidater != NULL)
     {
         invalidater->AddTexture(this);
+    }
+}
+
+void Texture::GenerateCubeFaceNames(const FilePath & baseName, Vector<FilePath>& faceNames)
+{
+	static Vector<String> defaultSuffixes;
+	if(defaultSuffixes.empty())
+	{
+		for(uint32 i = 0; i < Texture::CUBE_FACE_MAX_COUNT; ++i)
+		{
+			defaultSuffixes.push_back(FACE_NAME_SUFFIX[i]);
+		}
+	}
+	
+	GenerateCubeFaceNames(baseName, defaultSuffixes, faceNames);
+}
+
+void Texture::GenerateCubeFaceNames(const FilePath & filePath, const Vector<String>& faceNameSuffixes, Vector<FilePath>& faceNames)
+{
+    faceNames.clear();
+
+    String fileNameWithoutExtension = filePath.GetBasename();
+    String extension = filePath.GetExtension();
+
+    for(size_t i = 0; i < faceNameSuffixes.size(); ++i)
+    {
+        DAVA::FilePath faceFilePath = filePath;
+        DAVA::String ext = GPUFamilyDescriptor::GetFilenamePostfix(GPU_INVALID, FORMAT_INVALID);
+
+        if(ext.empty())
+        {
+            ext = ".png";
+        }
+        faceFilePath.ReplaceFilename(fileNameWithoutExtension + faceNameSuffixes[i] + ext);
+        faceNames.push_back(faceFilePath);
     }
 }
 

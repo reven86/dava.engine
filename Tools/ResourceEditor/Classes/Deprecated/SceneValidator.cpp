@@ -574,7 +574,8 @@ bool SceneValidator::ValidateTexturePathname(const FilePath &pathForValidation, 
 	if (pathIsCorrect)
 	{
 		String textureExtension = pathForValidation.GetExtension();
-		if (!TextureDescriptor::IsSupportedTextureExtension(textureExtension))
+		String::size_type extPosition = TextureDescriptor::GetSupportedTextureExtensions().find(textureExtension);
+		if (String::npos == extPosition)
 		{
 			errorsLog.insert(Format("Path %s has incorrect extension. Scene: %s", pathForValidation.GetAbsolutePathname().c_str(), sceneName.c_str()));
 			return false;
@@ -595,30 +596,22 @@ bool SceneValidator::ValidateHeightmapPathname(const FilePath &pathForValidation
 	bool pathIsCorrect = IsPathCorrectForProject(pathForValidation);
 	if (pathIsCorrect)
 	{
-        auto extension = pathForValidation.GetExtension();
+		String::size_type posPng = pathForValidation.GetAbsolutePathname().find(".png");
+		String::size_type posHeightmap = pathForValidation.GetAbsolutePathname().find(Heightmap::FileExtension());
 
-        bool isSourceTexture = false;
-        bool isHeightmap = false;
-        if (!extension.empty())
-        {
-            if (TextureDescriptor::IsSourceTextureExtension(extension))
-                isSourceTexture = true;
-            else if (CompareCaseInsensitive(extension, Heightmap::FileExtension()) == 0)
-                isHeightmap = true;
-        }
-
-        pathIsCorrect = isSourceTexture || isHeightmap;
+        pathIsCorrect = ((String::npos != posPng) || (String::npos != posHeightmap));
         if (!pathIsCorrect)
         {
             errorsLog.insert(Format("Heightmap path %s is wrong. Scene: %s", pathForValidation.GetAbsolutePathname().c_str(), sceneName.c_str()));
             return false;
         }
 
-        ScopedPtr<Heightmap> heightmap(new Heightmap());
-        if (isSourceTexture)
+        Heightmap *heightmap = new Heightmap();
+        if (String::npos != posPng)
         {
-            ScopedPtr<Image> image(CreateTopLevelImage(pathForValidation));
+            Image *image = CreateTopLevelImage(pathForValidation);
             pathIsCorrect = heightmap->BuildFromImage(image);
+            SafeRelease(image);
         }
         else
         {
@@ -627,6 +620,7 @@ bool SceneValidator::ValidateHeightmapPathname(const FilePath &pathForValidation
 
         if (!pathIsCorrect)
         {
+            SafeRelease(heightmap);
             errorsLog.insert(Format("Can't load Heightmap from path %s. Scene: %s", pathForValidation.GetAbsolutePathname().c_str(), sceneName.c_str()));
             return false;
         }
@@ -637,6 +631,7 @@ bool SceneValidator::ValidateHeightmapPathname(const FilePath &pathForValidation
             errorsLog.insert(Format("Heightmap %s has wrong size. Scene: %s", pathForValidation.GetAbsolutePathname().c_str(), sceneName.c_str()));
         }
 
+        SafeRelease(heightmap);
 		return pathIsCorrect;
 	}
 	else
@@ -731,10 +726,9 @@ void SceneValidator::ValidateCustomColorsTexture(Entity *landscapeEntity, Set<St
 	{
 		String currentSaveName = customProps->GetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
 		FilePath path = "/" + currentSaveName;
-        
-        if(!TextureDescriptor::IsSourceTextureExtension(path.GetExtension()))
+		if (!path.IsEqualToExtension(".png"))
 		{
-			errorsLog.insert(Format("Custom colors texture has to have .png, .jpeg or .tga extension. Scene: %s", sceneName.c_str()));
+			errorsLog.insert(Format("Custom colors texture has to have .png extension. Scene: %s", sceneName.c_str()));
 		}
 
         String::size_type foundPos = currentSaveName.find("DataSource/3d/");

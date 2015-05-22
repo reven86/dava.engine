@@ -10,10 +10,6 @@
 #include "Project/ProjectManager.h"
 #include "Commands2/PaintHeightDeltaAction.h"
 
-#include "Tools/PathDescriptor/PathDescriptor.h"
-#include "Render/Image/ImageSystem.h"
-#include "Render/Image/ImageFormatInterface.h"
-
 #include "QtTools/FileDialog/FileDialog.h"
 
 
@@ -54,7 +50,7 @@ void HeightDeltaTool::SetOutputTemplate( QString const& prefix, QString const& s
 
 void HeightDeltaTool::OnBrowse()
 {
-    const QString path = FileDialog::getOpenFileName( this, QString(), defaultDir, PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
+    const QString path = FileDialog::getOpenFileName( this, QString(), defaultDir, "Png images (*.png)" );
     
     if ( path != NULL )
     {
@@ -75,7 +71,6 @@ double HeightDeltaTool::GetThresholdInMeters(double unitSize)
     return delta;
 }
 
-
 void HeightDeltaTool::OnRun()
 {
     const bool sourceExists = QFileInfo(inPath).exists();
@@ -91,18 +86,16 @@ void HeightDeltaTool::OnRun()
         Landscape* landscapeRO = FindLandscape(scene);
         if (landscapeRO != NULL)
         {
+            QtMainWindow::Instance()->WaitStart("Generating color height mask...", outPath);
+
+            QImageReader imageReader(inPath);
             const DAVA::AABBox3& bbox = landscapeRO->GetBoundingBox();
             DAVA::Heightmap* heightmap = landscapeRO->GetHeightmap();
             
             if (heightmap != NULL)
             {
                 const double unitSize = (bbox.max.x - bbox.min.x) / heightmap->Size();
-                
-                auto inputPathname = FilePath(inPath.toStdString());
-                auto imInterface = DAVA::ImageSystem::Instance()->GetImageFormatInterface(inputPathname);
-                DVASSERT(imInterface);
-                auto imageInfo = imInterface->GetImageInfo(inputPathname);
-                
+                const QSize imageSize = imageReader.size();
                 const double threshold = GetThresholdInMeters(unitSize);
 
                 DAVA::Vector<DAVA::Color> colors;
@@ -114,14 +107,16 @@ void HeightDeltaTool::OnRun()
                         outPath.toStdString(),
                         (DAVA::float32)threshold,
                         heightmap,
-                        imageInfo.width,
-                        imageInfo.height,
+                        imageSize.width(),
+                        imageSize.height(),
                         bbox.max.z - bbox.min.z,
                         colors);
         
                 action->Redo();
                 DAVA::SafeDelete(action);
             }
+
+            QtMainWindow::Instance()->WaitStop();
 
             if (heightmap != NULL)
             {

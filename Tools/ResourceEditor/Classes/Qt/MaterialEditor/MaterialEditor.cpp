@@ -55,8 +55,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
-#include "Tools/PathDescriptor/PathDescriptor.h"
-
 
 #include "QtTools/FileDialog/FileDialog.h"
 
@@ -527,8 +525,7 @@ void MaterialEditor::ApplyTextureValidator(QtPropertyDataInspDynamic *data)
 
     // create validator
     data->SetDefaultOpenDialogPath(defaultPath);
-    
-    data->SetOpenDialogFilter(PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_TEXTURE).fileFilter);
+    data->SetOpenDialogFilter("All (*.tex *.png);;PNG (*.png);;TEX (*.tex)");
     QStringList path;
     path.append(dataSourcePath.GetAbsolutePathname().c_str());
     data->SetValidator(new TexturePathValidator(path));

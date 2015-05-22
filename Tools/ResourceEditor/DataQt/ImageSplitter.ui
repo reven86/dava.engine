@@ -61,14 +61,14 @@
         </size>
        </property>
        <property name="text">
-        <string>Select image:</string>
+        <string>Select PNG:</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="FilePathBrowser" name="path">
        <property name="placeholderText">
-        <string>Select image...</string>
+        <string>Select PNG image...</string>
        </property>
       </widget>
      </item>
@@ -440,7 +440,7 @@
        <item>
         <widget class="QPushButton" name="reload">
          <property name="toolTip">
-          <string>Realod image</string>
+          <string>Realod PNG</string>
          </property>
          <property name="text">
           <string>Reload</string>

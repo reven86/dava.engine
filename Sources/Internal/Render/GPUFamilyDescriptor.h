@@ -45,28 +45,36 @@ public:
     
     struct GPUData
     {
+        void SetName(const String & newName);
+        
         String name;
         String prefix;
         
-        Map<PixelFormat, ImageFormat> availableFormats;
+        Map<PixelFormat, String> availableFormats;
     };
     
 public:
 
     static void SetupGPUParameters();
-    static const Map<PixelFormat, ImageFormat> & GetAvailableFormatsForGpu(eGPUFamily gpuFamily);
-
-    static const String & GetGPUName(const eGPUFamily gpuFamily);
-    static const String& GetGPUPrefix(const eGPUFamily gpuFamily);
-    static ImageFormat GetCompressedFileFormat(const eGPUFamily gpuFamily, const PixelFormat pixelFormat);
+    static const Map<PixelFormat, String> & GetAvailableFormatsForGpu(eGPUFamily gpuFamily);
 
     static eGPUFamily GetGPUForPathname(const FilePath &pathname);
+    static FilePath CreatePathnameForGPU(const TextureDescriptor *descriptor, const eGPUFamily gpuFamily);
+    static FilePath CreatePathnameForGPU(const FilePath & pathname, const eGPUFamily gpuFamily, const PixelFormat pixelFormat);
+    
+    
+    static String GetFilenamePostfix(const eGPUFamily gpuFamily, const PixelFormat pixelFormat);
+
+    static const String & GetGPUName(const eGPUFamily gpuFamily);
+    static const String & GetCompressedFileExtension(const eGPUFamily gpuFamily, const PixelFormat pixelFormat);
+    
     static eGPUFamily GetGPUByName(const String & name);
+	
+	static bool IsFormatSupported(const eGPUFamily gpu, const PixelFormat format);
+    
     static eGPUFamily ConvertValueToGPU(const int32 value);
-
     static bool IsGPUForDevice(const eGPUFamily gpu);
-    static bool IsFormatSupported(const eGPUFamily gpu, const PixelFormat format);
-
+    
 protected:
 
     static void SetupGPUFormats();

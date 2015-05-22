@@ -129,6 +129,7 @@ private:
 
 	bool onlySquareTextures;
     bool NeedSquareTextureForCompression(eGPUFamily forGPU);
+	bool IsFormatSupportedForGPU(PixelFormat format, eGPUFamily forGPU);
 	
     TextureConverter::eConvertQuality quality;
 

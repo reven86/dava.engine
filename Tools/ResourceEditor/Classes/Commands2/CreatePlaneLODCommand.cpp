@@ -117,7 +117,7 @@ void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camer
     DAVA::TexturesMap::const_iterator it = textures.begin();
     DAVA::TexturesMap::const_iterator end = textures.end();
     for(; it != end; ++it)
-        it->second->ReloadAs(GPU_ORIGIN);
+        it->second->ReloadAs(GPU_PNG);
 
     Rect oldViewport = RenderManager::Instance()->GetViewport();
     Texture * oldRenderTarget = RenderManager::Instance()->GetRenderTarget();

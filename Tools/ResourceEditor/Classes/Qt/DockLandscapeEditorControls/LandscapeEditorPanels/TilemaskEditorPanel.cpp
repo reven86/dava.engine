@@ -6,8 +6,6 @@
 #include "Constants.h"
 #include "../LandscapeEditorShortcutManager.h"
 
-#include "ImageTools/ImageTools.h"
-
 #include "Render/PixelFormatDescriptor.h"
 
 #include <QLayout>
@@ -229,19 +227,24 @@ void TilemaskEditorPanel::InitBrushImages()
 	comboBrushImage->setIconSize(iconSize);
 
 	FilePath toolsPath(ResourceEditor::TILEMASK_EDITOR_TOOLS_PATH);
-    
-    ScopedPtr<FileList> fileList(new FileList(toolsPath));
+	FileList *fileList = new FileList(toolsPath);
 	for(int32 iFile = 0; iFile < fileList->GetCount(); ++iFile)
 	{
-        auto pathname = fileList->GetPathname(iFile);
-		if(TextureDescriptor::IsSourceTextureExtension(pathname.GetExtension()))
+		String filename = fileList->GetFilename(iFile);
+		if(fileList->GetPathname(iFile).IsEqualToExtension(".png"))
 		{
-			QIcon toolIcon(QPixmap::fromImage(ImageTools::FromDavaImage(pathname)));
-            
-            auto fullname = pathname.GetAbsolutePathname();
-            comboBrushImage->addItem(toolIcon, pathname.GetBasename().c_str(), QVariant(QString::fromStdString(fullname)));
+			String fullname = fileList->GetPathname(iFile).GetAbsolutePathname();
+
+			FilePath f = fileList->GetPathname(iFile);
+			f.ReplaceExtension("");
+
+			QString qFullname = QString::fromStdString(fullname);
+			QIcon toolIcon(qFullname);
+			comboBrushImage->addItem(toolIcon, f.GetFilename().c_str(), QVariant(qFullname));
 		}
 	}
+
+	SafeRelease(fileList);
 }
 
 void TilemaskEditorPanel::SplitImageToChannels(Image* image, Image*& r, Image*& g, Image*& b, Image*& a)

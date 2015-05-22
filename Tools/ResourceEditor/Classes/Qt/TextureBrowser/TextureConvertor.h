@@ -34,6 +34,7 @@
 #include "Base/BaseTypes.h"
 
 #include <QObject>
+#include <QImage>
 #include <QFutureWatcher>
 #include <QProgressDialog>
 
@@ -56,6 +57,8 @@ class TextureConvertor : public QObject, public DAVA::Singleton<TextureConvertor
 public:
 	TextureConvertor();
 	~TextureConvertor();
+
+	static QImage FromDavaImage(DAVA::Image *image);
 
 	static DAVA::Vector<DAVA::Image*> ConvertFormat(DAVA::TextureDescriptor *descriptor, DAVA::eGPUFamily gpu,
                                                     eTextureConvertMode convertMode);

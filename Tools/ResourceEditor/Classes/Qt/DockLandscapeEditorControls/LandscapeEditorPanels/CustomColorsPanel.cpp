@@ -6,9 +6,10 @@
 #include "Project/ProjectManager.h"
 #include "Constants.h"
 #include "Main/QtUtils.h"
-#include "Qt/DockLandscapeEditorControls/LandscapeEditorShortcutManager.h"
+#include "../LandscapeEditorShortcutManager.h"
+
 #include "QtTools/FileDialog/FileDialog.h"
-#include "Tools/PathDescriptor/PathDescriptor.h"
+
 
 #include <QLayout>
 #include <QComboBox>
@@ -209,7 +210,7 @@ bool CustomColorsPanel::SaveTexture()
     {
         filePath = FileDialog::getSaveFileName( NULL, QString( ResourceEditor::CUSTOM_COLORS_SAVE_CAPTION.c_str() ),
             QString( selectedPathname.GetAbsolutePathname().c_str() ),
-            PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
+            QString( ResourceEditor::CUSTOM_COLORS_FILE_FILTER.c_str() ) );
 
         if ( filePath.isEmpty() )
         {
@@ -246,7 +247,7 @@ void CustomColorsPanel::LoadTexture()
 	
 	FilePath selectedPathname = GetOpenFileName(ResourceEditor::CUSTOM_COLORS_LOAD_CAPTION,
 												currentPath,
-												PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter.toStdString());
+												ResourceEditor::CUSTOM_COLORS_FILE_FILTER);
 	if(!selectedPathname.IsEmpty())
 	{
 		sceneEditor->customColorsSystem->LoadTexture(selectedPathname);

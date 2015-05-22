@@ -39,7 +39,6 @@
 #include "Render/Image/LibDdsHelper.h"
 #include "Render/Image/LibPngHelper.h"
 #include "Render/Image/LibPVRHelper.h"
-#include "Render/Image/LibTgaHelper.h"
 
 #include "Base/ScopedPtr.h"
 
@@ -48,18 +47,17 @@ namespace DAVA
 
 ImageSystem::ImageSystem()
 {
-    wrappers[IMAGE_FORMAT_PNG] = new LibPngHelper();
-    wrappers[IMAGE_FORMAT_DDS] = new LibDdsHelper();
-    wrappers[IMAGE_FORMAT_PVR] = new LibPVRHelper();
-    wrappers[IMAGE_FORMAT_JPEG] = new LibJpegHelper();
-	wrappers[IMAGE_FORMAT_TGA] = new LibTgaHelper();
+    wrappers[FILE_FORMAT_PNG] = new LibPngHelper();
+    wrappers[FILE_FORMAT_DDS] = new LibDdsHelper();
+    wrappers[FILE_FORMAT_PVR] = new LibPVRHelper();
+    wrappers[FILE_FORMAT_JPEG] = new LibJpegHelper();
 }
 
 ImageSystem::~ImageSystem()
 {
-    for(auto wrapper : wrappers)
+    for (size_t i = 0; i < FILE_FORMAT_COUNT; ++i)
     {
-        delete wrapper;
+        delete wrappers[i];
     }
 }
 
@@ -87,7 +85,7 @@ eErrorCode ImageSystem::Load(File *file, Vector<Image *> & imageSet, int32 baseM
         properWrapper = GetImageFormatInterface(file);
     }
 
-    if (nullptr == properWrapper || !properWrapper->IsMyImage(file))
+    if (nullptr == properWrapper || !properWrapper->IsImage(file))
     {
         return ERROR_FILE_FORMAT_INCORRECT;
     }
@@ -162,11 +160,11 @@ eErrorCode ImageSystem::Save(const FilePath & fileName, Image *image, PixelForma
 ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath & pathName) const
 {
     String extension = pathName.GetExtension();
-    for(auto wrapper : wrappers)
+    for (int32 i = 0; i < FILE_FORMAT_COUNT; ++i)
     {
-        if (wrapper->IsFileExtensionSupported(extension))
+        if (wrappers[i]->IsFileExtensionSupported(extension))
         {
-            return wrapper;
+            return wrappers[i];
         }
     }
 
@@ -175,36 +173,18 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath & path
 
 ImageFormatInterface* ImageSystem::GetImageFormatInterface(File *file) const
 {
-    for(auto wrapper : wrappers)
+    for (int32 i = 0; i < FILE_FORMAT_COUNT; ++i)
     {
-        if (wrapper->IsMyImage(file))
+        if (wrappers[i]->IsImage(file))
         {
-            return wrapper;
+            return  wrappers[i];
         }
     }
     DVASSERT(0);
 
     return nullptr;
 }
-    
-    
-ImageFormat ImageSystem::GetImageFormatForExtension(const FilePath &pathname) const
-{
-    return GetImageFormatForExtension(pathname.GetExtension());
-}
 
-    
-ImageFormat ImageSystem::GetImageFormatForExtension(const String &extension) const
-{
-    for(auto wrapper : wrappers)
-    {
-        if (wrapper->IsFileExtensionSupported(extension))
-            return wrapper->GetImageFormat();
-    }
-
-    return IMAGE_FORMAT_UNKNOWN;
-}
-    
 ImageInfo ImageSystem::GetImageInfo(const FilePath & pathName) const
 {
     ImageFormatInterface* properWrapper = GetImageFormatInterface(pathName);
@@ -234,11 +214,12 @@ ImageInfo ImageSystem::GetImageInfo(File *infile) const
 
     ImageFormatInterface* properWrapper = GetImageFormatInterface(infile->GetFilename());
 
-    if (nullptr == properWrapper || !properWrapper->IsMyImage(infile))
+    if (nullptr == properWrapper || !properWrapper->IsImage(infile))
     {
         return ImageInfo();
     }
 
     return properWrapper->GetImageInfo(infile);
-}    
+}
+
 };
