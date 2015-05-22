@@ -72,7 +72,7 @@ protected:
     DAVA::FilePath outFolder;
     DAVA::FilePath qualityConfigPath;
 
-	DAVA::eGPUFamily requestedGPU;
+    DAVA::String gpu;
 	bool optimizeOnExport;
 
 	DAVA::TextureConverter::eConvertQuality quality;

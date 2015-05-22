@@ -35,8 +35,6 @@
 #include "Main/QtUtils.h"
 #include "Render/Image/ImageSystem.h"
 
-#include "Tools/PathDescriptor/PathDescriptor.h"
-
 #include "Qt/Settings/SettingsManager.h"
 #include "QtTools/FileDialog/FileDialog.h"
 
@@ -51,9 +49,8 @@ ImageSplitterDialog::ImageSplitterDialog(QWidget *parent) :
     ui->setupUi(this);
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-    
-    ui->path->SetFilter(PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
-        
+    ui->path->SetFilter("PNG (*.png)");
+
     DAVA::FilePath defaultPath = SettingsManager::Instance()->GetValue(Settings::Internal_ImageSplitterPath).AsString();
     if (defaultPath.IsEmpty())
     {
@@ -190,8 +187,7 @@ void ImageSplitterDialog::OnRestoreClicked()
 
 void ImageSplitterDialog::OnSaveAsClicked(bool saveSplittedImages)
 {
-    DAVA::FilePath retPath = FileDialog::getSaveFileName(this, "Select image", ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str(),
-                                                          PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter).toStdString();
+    DAVA::FilePath retPath = FileDialog::getSaveFileName(this, "Select png", ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str(),"PNG(*.png)").toStdString();
     if(!retPath.IsEmpty())
     {
         Save(retPath, saveSplittedImages);
@@ -315,8 +311,7 @@ void ImageSplitterDialog::SetAcceptableImageSize(const DAVA::Vector2& newSize)
 
 void ImageSplitterDialog::Save(const DAVA::FilePath& filePath, bool saveSplittedImagesSeparately)
 {
-    if(     !DAVA::TextureDescriptor::IsSourceTextureExtension(filePath.GetExtension())
-       &&   !saveSplittedImagesSeparately)
+    if(!filePath.IsEqualToExtension(".png") && !saveSplittedImagesSeparately)
     {
         QMessageBox::warning(this, "Save error", "Wrong file name.", QMessageBox::Ok);
         return;

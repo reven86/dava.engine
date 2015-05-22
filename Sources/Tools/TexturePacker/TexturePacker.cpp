@@ -704,7 +704,7 @@ TextureDescriptor * TexturePacker::CreateDescriptor(eGPUFamily forGPU)
 		PixelFormat format = PixelFormatDescriptor::GetPixelFormatByName(FastName(formatName.c_str()));
 
 		// Additional check whether this format type is accepted for this GPU.
-        if (GPUFamilyDescriptor::IsFormatSupported(forGPU, format))
+		if (IsFormatSupportedForGPU(format, forGPU))
 		{
 			descriptor->format = format;
 
@@ -717,14 +717,14 @@ TextureDescriptor * TexturePacker::CreateDescriptor(eGPUFamily forGPU)
 									formatName.c_str(),
 									GPUFamilyDescriptor::GetGPUName(forGPU).c_str()));
 			
-			descriptor->exportedAsGpuFamily = GPU_ORIGIN;
+			descriptor->exportedAsGpuFamily = GPU_PNG;
 		}
     }
     else
     {
         Logger::Warning("params for GPU %s were not set.\n", gpuNameFlag.c_str());
         
-        descriptor->exportedAsGpuFamily = GPU_ORIGIN;
+        descriptor->exportedAsGpuFamily = GPU_PNG;
     }
     
     return descriptor;
@@ -805,6 +805,19 @@ bool TexturePacker::NeedSquareTextureForCompression(eGPUFamily forGPU)
     return false;
 }
 
+bool TexturePacker::IsFormatSupportedForGPU(PixelFormat format, eGPUFamily forGPU)
+{
+	if (format == FORMAT_INVALID)
+	{
+		return false;
+	}
+
+	Map<PixelFormat, String> supportedFormats = GPUFamilyDescriptor::GetAvailableFormatsForGpu(forGPU);
+	Map<PixelFormat, String>::iterator curFormatIter = supportedFormats.find(format);
+
+	return (curFormatIter != supportedFormats.end());
+}
+    
 bool TexturePacker::CheckFrameSize(const Size2i &spriteSize, const Size2i &frameSize)
 {
     bool isSizeCorrect = ((frameSize.dx <= spriteSize.dx) && (frameSize.dy <= spriteSize.dy));

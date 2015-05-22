@@ -47,7 +47,7 @@ void SceneExporterTool::PrintUsage()
     printf("\t-outdir - path for Poject/Data/3d/ folder\n");
     printf("\t-processdir - foldername from DataSource/3d/ for exporting\n");
     printf("\t-processfile - filename from DataSource/3d/ for exporting\n");
-    printf("\t-gpu - PoverVR_iOS, PoverVR_Android, tegra, mali, adreno, origin\n");
+    printf("\t-gpu - PoverVR_iOS, PoverVR_Android, tegra, mali, adreno\n");
 	printf("\t-saveNormals - disable removing of normals from vertexes\n");
 	printf("\t-quality [0-4] - quality of pvr/etc compression. default is 4 - the best quality\n");
     printf("\t-qualitycfgpath - path for quality.yaml file\n");
@@ -92,6 +92,8 @@ bool SceneExporterTool::InitializeFromCommandLine()
 		quality = Clamp((DAVA::TextureConverter::eConvertQuality)atoi(qualityName.c_str()), DAVA::TextureConverter::ECQ_FASTEST, DAVA::TextureConverter::ECQ_VERY_HIGH);
 	}
 	
+	gpu = CommandLineParser::GetCommandParam(String("-gpu"));
+    
     filename = CommandLineParser::GetCommandParam(String("-processfile"));
     foldername = CommandLineParser::GetCommandParam(String("-processdir"));
     qualityConfigPath = CommandLineParser::GetCommandParam(String("-qualitycfgpath"));
@@ -119,14 +121,6 @@ bool SceneExporterTool::InitializeFromCommandLine()
         commandObject = OBJECT_TEXTURE;
     }
     
-	String gpu = CommandLineParser::GetCommandParam(String("-gpu"));
-	requestedGPU = GPUFamilyDescriptor::GetGPUByName(gpu);
-	if (GPU_INVALID == requestedGPU)
-	{
-		errors.insert(Format("[SceneExporterTool] wrong gpu parameter (%s)", gpu.c_str()));
-		return false;
-	}
-
 	optimizeOnExport = (CommandLineParser::CommandIsFound(String("-saveNormals")) == false);
 
     return true;
@@ -134,7 +128,7 @@ bool SceneExporterTool::InitializeFromCommandLine()
 
 void SceneExporterTool::DumpParams()
 {
-    Logger::Info("Export started with params:\n\tIn folder: %s\n\tOut folder: %s\n\tQuality: %d\n\tGPU: %d\n\tFilename: %s\n\tFoldername: %s", inFolder.GetStringValue().c_str(), outFolder.GetStringValue().c_str(), quality, requestedGPU, filename.c_str(), foldername.c_str());
+    Logger::Info("Export started with params:\n\tIn folder: %s\n\tOut folder: %s\n\tQuality: %d\n\tGPU: %s\n\tFilename: %s\n\tFoldername: %s", inFolder.GetStringValue().c_str(), outFolder.GetStringValue().c_str(), quality, gpu.c_str(), filename.c_str(), foldername.c_str());
 }
 
 void SceneExporterTool::Process()
@@ -143,7 +137,7 @@ void SceneExporterTool::Process()
 
     exporter.SetOutFolder(outFolder);
     exporter.SetInFolder(inFolder);
-	exporter.SetGPUForExporting(requestedGPU);
+    exporter.SetGPUForExporting(gpu);
 	exporter.EnableOptimizations(optimizeOnExport);
 	exporter.SetCompressionQuality(quality);
     

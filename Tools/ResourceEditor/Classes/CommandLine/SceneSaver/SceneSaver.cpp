@@ -238,16 +238,18 @@ void SceneSaver::CopyTexture(const FilePath &texturePathname)
 	{
 		Vector<FilePath> faceNames;
 
-		desc->GetFacePathnames(faceNames);
-		for(auto& faceName : faceNames)
+		Texture::GenerateCubeFaceNames(descriptorPathname.GetAbsolutePathname().c_str(), faceNames);
+		for(Vector<FilePath>::iterator it = faceNames.begin();
+			it != faceNames.end();
+			++it)
 		{
-            if (!faceName.IsEmpty())
-			    sceneUtils.AddFile(faceName);
+			sceneUtils.AddFile(*it);
 		}
 	}
 	else
 	{
-        sceneUtils.AddFile(desc->GetSourceTexturePathname());
+		FilePath pngPathname = GPUFamilyDescriptor::CreatePathnameForGPU(texturePathname, GPU_PNG, FORMAT_RGBA8888);
+		sceneUtils.AddFile(pngPathname);
 	}
 	
 
@@ -258,13 +260,13 @@ void SceneSaver::CopyTexture(const FilePath &texturePathname)
         {
             eGPUFamily gpu = (eGPUFamily)i;
             
-            PixelFormat format = desc->GetPixelFormatForGPU(gpu);
+            PixelFormat format = desc->GetPixelFormatForCompression(gpu);
             if(format == FORMAT_INVALID)
             {
                 continue;
             }
             
-            FilePath imagePathname = desc->CreatePathnameForGPU(gpu);
+            FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(desc, gpu);
             sceneUtils.AddFile(imagePathname);
         }
     }

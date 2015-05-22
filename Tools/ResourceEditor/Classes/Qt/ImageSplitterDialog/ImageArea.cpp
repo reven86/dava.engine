@@ -35,9 +35,6 @@
 #include "Main/QtUtils.h"
 #include "Settings/SettingsManager.h"
 
-#include "Tools/PathDescriptor/PathDescriptor.h"
-#include "ImageTools/ImageTools.h"
-
 #include "QtTools/FileDialog/FileDialog.h"
 
 #include <QDragEnterEvent>
@@ -111,10 +108,7 @@ void ImageArea::mousePressEvent (QMouseEvent * ev)
             }
         }
 
-		DAVA::String retString = FileDialog::getOpenFileName(this, "Select image",
-                                                              defaultPath.GetAbsolutePathname().c_str(),
-                                                              PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter
-                                                              ).toStdString();
+		DAVA::String retString = FileDialog::getOpenFileName(this, "Select png", defaultPath.GetAbsolutePathname().c_str(),"PNG(*.png)").toStdString();
         if(!retString.empty())
         {
             SetImage(retString);
@@ -160,7 +154,7 @@ void ImageArea::SetImage(const DAVA::FilePath& filePath)
     }
     else
     {
-        QMessageBox::warning(this, "Format error", QString("Selected image must be in %1 format.").arg(DAVA::PixelFormatDescriptor::GetPixelFormatString(requestedFormat)), QMessageBox::Ok);
+        QMessageBox::warning(this, "Format error", "Selected image must be in A8 format.", QMessageBox::Ok);
     }
     DAVA::SafeRelease(selectedImage);
 }
@@ -182,7 +176,7 @@ void ImageArea::UpdatePreviewPicture()
     }
     DAVA::Image* scaledImage = DAVA::Image::CopyImageRegion(image, image->GetWidth(), image->GetHeight());
     scaledImage->ResizeImage(this->width(), this->height());
-    QPixmap scaledPixmap = QPixmap::fromImage(ImageTools::FromDavaImage(scaledImage));
+    QPixmap scaledPixmap = QPixmap::fromImage(TextureConvertor::FromDavaImage(scaledImage));
     DAVA::SafeRelease(scaledImage);
     setPixmap(scaledPixmap);
 }

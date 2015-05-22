@@ -47,8 +47,8 @@ public:
 	PVRConverter();
 	virtual ~PVRConverter();
 
-    FilePath ConvertToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, bool addCRC = true);
-    FilePath ConvertNormalMapToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality);
+    FilePath ConvertPngToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, bool addCRC = true);
+    FilePath ConvertNormalMapPngToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality);
 
 	void SetPVRTexTool(const FilePath &textToolPathname);
 
@@ -58,6 +58,7 @@ protected:
 	
 	FilePath PrepareCubeMapForPvrConvert(const TextureDescriptor& descriptor);
 	void CleanupCubemapAfterConversion(const TextureDescriptor& descriptor);
+	void InitFileSuffixes();
 	
 	void GetToolCommandLine(const TextureDescriptor &descriptor, const FilePath & fileToConvert, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, Vector<String>& args);
 

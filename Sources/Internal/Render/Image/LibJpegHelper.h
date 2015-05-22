@@ -43,9 +43,7 @@ class LibJpegHelper: public ImageFormatInterface
 public:
     LibJpegHelper();
 
-    ImageFormat GetImageFormat() const override;
-
-    bool IsMyImage(File *file) const override;
+    bool IsImage(File *file) const override;
 
     eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const override;
 
@@ -57,11 +55,6 @@ public:
 
     ImageInfo GetImageInfo(File *infile) const override;
 };
-
-inline ImageFormat LibJpegHelper::GetImageFormat() const
-{
-    return IMAGE_FORMAT_JPEG;
-}
 
 };
 

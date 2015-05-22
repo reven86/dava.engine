@@ -181,7 +181,7 @@ QColor TextureScrollArea::getPixelColor(QPoint pos)
 	{
 		int tileWidth = currentCompositeImages[0].width();
 		int tileHeight = currentCompositeImages[0].height();
-		for(int i = 0; i < DAVA::Texture::CUBE_FACE_COUNT; ++i)
+		for(int i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
 		{
 			if((compositeImagesFlags & (1 << i)) != 0)
 			{
@@ -523,7 +523,7 @@ void TextureScrollArea::applyCurrentCompositeImagesToScenePixmap()
 	QMatrix rotation;
 	//rotation.rotate(-90);
 	int currentIndex = 0;
-	for(int i = 0; i < DAVA::Texture::CUBE_FACE_COUNT; ++i)
+	for(int i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
 	{
 		if((compositeImagesFlags & (1 << i)) != 0)
 		{

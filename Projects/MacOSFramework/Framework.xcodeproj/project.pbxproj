@@ -2687,8 +2687,6 @@
 		FE578C601327927C0081BDE9 /* libogg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5D1327927C0081BDE9 /* libogg_macos.a */; };
 		FE578C611327927C0081BDE9 /* libvorbis_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5E1327927C0081BDE9 /* libvorbis_macos.a */; };
 		FE578C621327927C0081BDE9 /* libvorbisfile_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE578C5F1327927C0081BDE9 /* libvorbisfile_macos.a */; };
-		FEA1D3CE1ADF9B88006B981A /* LibTgaHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEA1D3CC1ADF9B88006B981A /* LibTgaHelper.cpp */; };
-		FEA1D3CF1ADF9B88006B981A /* LibTgaHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = FEA1D3CD1ADF9B88006B981A /* LibTgaHelper.h */; };
 		FEF4E23212CD3C1F004B850E /* libBox2D_MacOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF4E22C12CD3BED004B850E /* libBox2D_MacOS.a */; };
 /* End PBXBuildFile section */
 
@@ -3739,8 +3737,6 @@
 		FE578C5D1327927C0081BDE9 /* libogg_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libogg_macos.a; path = ../../Libs/oggvorbis/lib/libogg_macos.a; sourceTree = SOURCE_ROOT; };
 		FE578C5E1327927C0081BDE9 /* libvorbis_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvorbis_macos.a; path = ../../Libs/oggvorbis/lib/libvorbis_macos.a; sourceTree = SOURCE_ROOT; };
 		FE578C5F1327927C0081BDE9 /* libvorbisfile_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvorbisfile_macos.a; path = ../../Libs/oggvorbis/lib/libvorbisfile_macos.a; sourceTree = SOURCE_ROOT; };
-		FEA1D3CC1ADF9B88006B981A /* LibTgaHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LibTgaHelper.cpp; path = Image/LibTgaHelper.cpp; sourceTree = "<group>"; };
-		FEA1D3CD1ADF9B88006B981A /* LibTgaHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LibTgaHelper.h; path = Image/LibTgaHelper.h; sourceTree = "<group>"; };
 		FEF4E22712CD3BED004B850E /* Box2D_MacOS.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Box2D_MacOS.xcodeproj; path = ../../Libs/Box2D/Projects/Box2D_MacOS/Box2D_MacOS.xcodeproj; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -4099,8 +4095,6 @@
 		84CB66EB191FC8420086483D /* Image */ = {
 			isa = PBXGroup;
 			children = (
-				FEA1D3CC1ADF9B88006B981A /* LibTgaHelper.cpp */,
-				FEA1D3CD1ADF9B88006B981A /* LibTgaHelper.h */,
 				62D1C35D1922624A00B8143B /* CRCAdditionInterface.h */,
 				84CB670A191FC8850086483D /* Image.cpp */,
 				84CB670B191FC8850086483D /* Image.h */,
@@ -5812,7 +5806,6 @@
 				E8989DBE16BD24E500732C04 /* DynamicObjectCache.h in Headers */,
 				E8989DC016BD24E500732C04 /* EventDispatcher.h in Headers */,
 				E8989DC116BD24E500732C04 /* Exception.h in Headers */,
-				FEA1D3CF1ADF9B88006B981A /* LibTgaHelper.h in Headers */,
 				E8989DC316BD24E500732C04 /* FastName.h in Headers */,
 				02FD826F192A3861007762C0 /* WaveComponent.h in Headers */,
 				644C86D919476A7100964F91 /* VegetationCustomSLGeometry.h in Headers */,
@@ -7323,7 +7316,6 @@
 				E8989E3216BD24E500732C04 /* FileList.cpp in Sources */,
 				E8989E3416BD24E500732C04 /* FilePath.cpp in Sources */,
 				50C16DC41A52D7B9003C307A /* NetController.cpp in Sources */,
-				FEA1D3CE1ADF9B88006B981A /* LibTgaHelper.cpp in Sources */,
 				E8989E3616BD24E500732C04 /* FileSystem.cpp in Sources */,
 				50C16DB71A52D7B9003C307A /* UDPSocket.cpp in Sources */,
 				E8989E3816BD24E500732C04 /* FileSystemObjective.mm in Sources */,

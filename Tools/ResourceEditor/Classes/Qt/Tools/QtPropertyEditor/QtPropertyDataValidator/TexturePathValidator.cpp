@@ -52,32 +52,24 @@ void TexturePathValidator::FixupInternal(QVariant& v) const
 {
     if (v.type() == QVariant::String)
     {
-        auto filePath = DAVA::FilePath(v.toString().toStdString());
+        DAVA::String file = v.toString().toStdString();
+        DAVA::FilePath filePath = DAVA::FilePath(file);
         if (!filePath.IsEmpty() && filePath.Exists())
         {
-            auto extension = filePath.GetExtension();
-            auto imageFormat = DAVA::ImageSystem::Instance()->GetImageFormatForExtension(extension);
-
-            if (DAVA::IMAGE_FORMAT_UNKNOWN != imageFormat)
+            if (filePath.GetExtension() == ".png")
             {
 				DAVA::FilePath texFile = DAVA::TextureDescriptor::GetDescriptorPathname(filePath);
 				bool wasCreated = TextureDescriptorUtils::CreateDescriptorIfNeed(texFile);
-                
-                auto texDescriptor = DAVA::TextureDescriptor::CreateFromFile(texFile);
-                if(texDescriptor)
-                {
-                    texDescriptor->dataSettings.sourceFileFormat = imageFormat;
-                    texDescriptor->dataSettings.sourceFileExtension = extension;
-                    texDescriptor->Save();
-                    
-                    DAVA::SafeDelete(texDescriptor);
-                }
+				if(wasCreated)
+				{	// we need to reload textures in case we change path on existing on disk
+					DAVA::TexturesMap texturesMap = DAVA::Texture::GetTextureMap();
 
-				auto& texturesMap = DAVA::Texture::GetTextureMap();
-				auto found = texturesMap.find(FILEPATH_MAP_KEY(texFile));
-				if(found != texturesMap.end())
-				{
-                    found->second->Reload();
+					DAVA::TexturesMap::iterator found = texturesMap.find(FILEPATH_MAP_KEY(texFile));
+					if(found != texturesMap.end())
+					{
+						DAVA::Texture *tex = found->second;
+						tex->Reload();
+					}
 				}
 
                 v = QVariant(QString::fromStdString(texFile.GetAbsolutePathname()));

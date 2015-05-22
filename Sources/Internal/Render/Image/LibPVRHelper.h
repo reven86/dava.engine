@@ -141,9 +141,7 @@ class LibPVRHelper: public ImageFormatInterface, public CRCAdditionInterface
 public:
     LibPVRHelper();
 
-    ImageFormat GetImageFormat() const override;
-
-    bool IsMyImage(File *file) const override;
+    bool IsImage(File *file) const override;
 
     eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 fromMipmap = 0) const override;
 
@@ -197,11 +195,6 @@ protected:
     static bool CopyToImage(Image *image, uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3 &header, const uint8 *pvrData);
     static bool AllocateImageData(Image *image, uint32 mipMapLevel, const PVRHeaderV3 &header);
 };
-
-inline ImageFormat LibPVRHelper::GetImageFormat() const
-{
-    return IMAGE_FORMAT_PVR;
-}
 
 };
 

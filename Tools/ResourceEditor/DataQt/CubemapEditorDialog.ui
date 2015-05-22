@@ -192,7 +192,7 @@
     </font>
    </property>
    <property name="text">
-    <string>Face texture requirements: square, size is power of 2, all faces have same size and format.</string>
+    <string>Face texture requirements: square, size is power of 2, all faces have same size.</string>
    </property>
    <property name="wordWrap">
     <bool>true</bool>

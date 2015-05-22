@@ -277,8 +277,7 @@ void Landscape::BuildLandscapeFromHeightmapImage(const FilePath & heightmapPathn
 bool Landscape::BuildHeightmap()
 {
     bool retValue = false;
-
-    if(DAVA::TextureDescriptor::IsSourceTextureExtension(heightmapPath.GetExtension()))
+    if(heightmapPath.IsEqualToExtension(".png"))
     {
         Vector<Image *> imageSet;
         ImageSystem::Instance()->Load(heightmapPath, imageSet);

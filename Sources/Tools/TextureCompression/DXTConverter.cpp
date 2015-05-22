@@ -39,13 +39,13 @@
 namespace DAVA
 {
     
-FilePath DXTConverter::ConvertToDxt(const TextureDescriptor &descriptor, eGPUFamily gpuFamily)
+FilePath DXTConverter::ConvertPngToDxt(const TextureDescriptor &descriptor, eGPUFamily gpuFamily)
 {
-    FilePath fileToConvert = descriptor.GetSourceTexturePathname();
+    FilePath fileToConvert = FilePath::CreateWithNewExtension(descriptor.pathname, ".png");
     
     Vector<Image*> inputImages;
     ImageSystem::Instance()->Load(fileToConvert, inputImages, 0);
-    if(inputImages.size() == 1 )
+    if(inputImages.size() ==1 )
     {
         Image* image = inputImages[0];
         
@@ -56,7 +56,7 @@ FilePath DXTConverter::ConvertToDxt(const TextureDescriptor &descriptor, eGPUFam
 
         if((compression->compressToWidth != 0) && (compression->compressToHeight != 0))
         {
-            Logger::Warning("[DXTConverter::ConvertToDxt] convert to compression size");
+            Logger::Warning("[DXTConverter::ConvertPngToDxt] convert to compression size");
             image->ResizeImage(compression->compressToWidth, compression->compressToHeight);
         }
         
@@ -80,24 +80,21 @@ FilePath DXTConverter::ConvertToDxt(const TextureDescriptor &descriptor, eGPUFam
         }
     }
     
-    Logger::Error("[DXTConverter::ConvertToDxt] can't convert %s to DXT", fileToConvert.GetAbsolutePathname().c_str());
+    Logger::Error("[DXTConverter::ConvertPngToDxt] can't convert %s to DXT", fileToConvert.GetAbsolutePathname().c_str());
     return FilePath();
 }
 	
-FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor &descriptor, eGPUFamily gpuFamily)
+FilePath DXTConverter::ConvertCubemapPngToDxt(const TextureDescriptor &descriptor, eGPUFamily gpuFamily)
 {
-	FilePath fileToConvert = descriptor.GetSourceTexturePathname();
+	FilePath fileToConvert = FilePath::CreateWithNewExtension(descriptor.pathname, ".png");
 	
 	Vector<Image*> inputImages;
 	Vector<FilePath> faceNames;
-	descriptor.GetFacePathnames(faceNames);
-	for(auto& faceName : faceNames)
+	Texture::GenerateCubeFaceNames(descriptor.pathname, faceNames);
+	for(size_t i = 0; i < faceNames.size(); ++i)
 	{
-        if (faceName.IsEmpty())
-            continue;
-
         Vector<Image*> tempImages;
-        ImageSystem::Instance()->Load(faceName, tempImages);
+        ImageSystem::Instance()->Load(faceNames[i], tempImages);
 		if(tempImages.size() == 1)
 		{
 			inputImages.push_back(tempImages[0]);
@@ -110,13 +107,13 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor &descriptor, 
 			for_each(inputImages.begin(), inputImages.end(), SafeRelease<Image>);
 			for_each(tempImages.begin(), tempImages.end(), SafeRelease<Image>);
 			
-			Logger::Error("[DXTConverter::ConvertCubemapToDxt] can't convert %s to cubemap DXT", fileToConvert.GetAbsolutePathname().c_str());
+			Logger::Error("[DXTConverter::ConvertCubemapPngToDxt] can't convert %s to cubemap DXT", fileToConvert.GetAbsolutePathname().c_str());
 			return FilePath();
 		}
 	}
     
     
-    if(inputImages.size() == DAVA::Texture::CUBE_FACE_COUNT)
+    if(inputImages.size() == DAVA::Texture::CUBE_FACE_MAX_COUNT)
     {
         FilePath outputName = GetDXTOutput(descriptor, gpuFamily);
         
@@ -126,7 +123,7 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor &descriptor, 
 
         if((compression->compressToWidth != 0) && (compression->compressToHeight != 0))
         {
-            Logger::Warning("[DXTConverter::ConvertCubemapToDxt] convert to compression size");
+            Logger::Warning("[DXTConverter::ConvertPngToDxt] convert to compression size");
 			
 			for(size_t i = 0; i < inputImages.size(); ++i)
 			{
@@ -136,8 +133,8 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor &descriptor, 
         
         //generate mipmaps for every face
         Vector<Vector<Image *> > cubeFaceImages;
-        cubeFaceImages.resize(DAVA::Texture::CUBE_FACE_COUNT);
-        for(uint32 i = 0; i < DAVA::Texture::CUBE_FACE_COUNT; ++i)
+        cubeFaceImages.resize(DAVA::Texture::CUBE_FACE_MAX_COUNT);
+        for(uint32 i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
         {
             if(descriptor.dataSettings.GetGenerateMipMaps())
             {
@@ -151,7 +148,7 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor &descriptor, 
 		
         eErrorCode retCode = ImageSystem::Instance()->SaveAsCubeMap(outputName, cubeFaceImages, (PixelFormat) descriptor.compression[gpuFamily].format);
         
-        for(uint32 i = 0; i < DAVA::Texture::CUBE_FACE_COUNT; ++i)
+        for(uint32 i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
         {
             for_each(cubeFaceImages[i].begin(), cubeFaceImages[i].end(), SafeRelease<Image>);
         }
@@ -165,7 +162,7 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor &descriptor, 
         }
     }
     
-    Logger::Error("[DXTConverter::ConvertCubemapToDxt] can't convert %s to cubemap DXT", fileToConvert.GetAbsolutePathname().c_str());
+    Logger::Error("[DXTConverter::ConvertCubemapPngToDxt] can't convert %s to cubemap DXT", fileToConvert.GetAbsolutePathname().c_str());
     
     for_each(inputImages.begin(), inputImages.end(), SafeRelease<Image>);
     return FilePath();	
@@ -173,7 +170,7 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor &descriptor, 
 
 FilePath DXTConverter::GetDXTOutput(const TextureDescriptor &descriptor, eGPUFamily gpuFamily)
 {
-    return descriptor.CreatePathnameForGPU(gpuFamily);
+    return GPUFamilyDescriptor::CreatePathnameForGPU(&descriptor, gpuFamily);
 }
 
 };

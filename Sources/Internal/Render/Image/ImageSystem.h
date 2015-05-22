@@ -43,6 +43,15 @@ class Image;
 class ImageSystem: public Singleton<ImageSystem>
 {
 public:
+    enum eSupportedImageFileFormats
+    {
+        FILE_FORMAT_PNG = 0,
+        FILE_FORMAT_DDS,
+        FILE_FORMAT_PVR,
+        FILE_FORMAT_JPEG,
+        FILE_FORMAT_COUNT
+    };
+
     ImageSystem();
     virtual ~ImageSystem();
 
@@ -56,35 +65,22 @@ public:
     eErrorCode SaveAsCubeMap(const FilePath &fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat = FORMAT_RGBA8888) const;
     eErrorCode Save(const FilePath &fileName, Image *image, PixelFormat compressionFormat = FORMAT_RGBA8888) const;
 
-    inline ImageFormatInterface* GetImageFormatInterface(ImageFormat fileFormat) const;
+    inline ImageFormatInterface* GetImageFormatInterface(eSupportedImageFileFormats fileFormat) const;
     ImageFormatInterface* GetImageFormatInterface(const FilePath &pathName) const;
     ImageFormatInterface* GetImageFormatInterface(File *file) const;
 
     ImageInfo GetImageInfo(const FilePath &pathName) const;
     ImageInfo GetImageInfo(File *infile) const;
 
-    inline const Vector<String>& GetExtensionsFor(ImageFormat format) const;
-    
-    ImageFormat GetImageFormatForExtension(const String &extension) const;
-    ImageFormat GetImageFormatForExtension(const FilePath &pathname) const;
-    
 protected:
-    ImageFormatInterface* wrappers[IMAGE_FORMAT_COUNT];
+    ImageFormatInterface* wrappers[FILE_FORMAT_COUNT];
 };
 
-inline ImageFormatInterface* ImageSystem::GetImageFormatInterface(ImageFormat fileFormat) const
+};
+
+inline DAVA::ImageFormatInterface* DAVA::ImageSystem::GetImageFormatInterface(ImageSystem::eSupportedImageFileFormats fileFormat) const
 {
-    DVASSERT(fileFormat >= 0 && fileFormat < IMAGE_FORMAT_COUNT);
     return wrappers[fileFormat];
 }
-
-inline const Vector<String>& ImageSystem::GetExtensionsFor(ImageFormat format) const
-{
-    return GetImageFormatInterface(format)->Extensions();
-}
-
-};
-
-
 
 #endif // __DAVAENGINE_IMAGE_SYSTEM_H__
