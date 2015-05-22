@@ -232,21 +232,22 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor &descriptor, 
 
             if (descriptor.dataSettings.GetGenerateMipMaps())
             {
-                auto mipmapCounter = 0;
                 for (auto& imageSet : imageSets)
                 {
                     std::rotate(imageSet.begin(), imageSet.begin() + firstImageIndex, imageSet.end());
                     for_each(imageSet.rbegin(), imageSet.rbegin() + firstImageIndex, SafeRelease<Image>);
                     imageSet.resize(imageSet.size() - firstImageIndex);
+                    auto mipmapCounter = 0;
+                    for (auto& image : imageSet) { image->mipmapLevel = mipmapCounter++; }
                 }
             }
             else
             {
                 for (auto& imageSet : imageSets)
                 {
+                    for_each(imageSet.begin() + 1, imageSet.end(), SafeRelease<Image>);
                     imageSet.resize(1);
                     imageSet[0]->mipmapLevel = -1;
-                    for_each(imageSet.begin() + 1, imageSet.end(), SafeRelease<Image>);
                 }
             }
         }
