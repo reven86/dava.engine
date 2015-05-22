@@ -333,7 +333,8 @@ bool EditorLODSystem::CanCreatePlaneLOD() const
             return false;
         }
     }
-    return (GetLodLayersCount(selectedLODs.front()->GetEntity()) < LodComponent::MAX_LOD_LAYERS);
+
+    return (GetLodLayersCount(GetCurrentLODs().front()->GetEntity()) < LodComponent::MAX_LOD_LAYERS);
 }
 
 bool EditorLODSystem::CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSize, const DAVA::FilePath & texturePath)

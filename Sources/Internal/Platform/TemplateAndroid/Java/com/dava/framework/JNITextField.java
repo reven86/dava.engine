@@ -600,6 +600,14 @@ public class JNITextField {
                     public CharSequence filter(CharSequence source,
                             final int start, final int end, Spanned dest,
                             final int dstart, final int dend) {
+                        // Workaround on lost focus filter called once more
+                        // so if in this moment we are loading/creating 
+                        // new TextField synchronously we will get deadlock
+                        // so if no changes to content just return
+                        if (start == 0 && end == 0 && dstart == dend) {
+                            return null; // accept - no changes
+                        }
+                        
                         // Avoiding the line breaks in the single-line text
                         // fields. Line breaks should be replaced with spaces.
                         TextField textField = text;

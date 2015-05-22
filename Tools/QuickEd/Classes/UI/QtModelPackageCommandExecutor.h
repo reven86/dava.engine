@@ -46,6 +46,8 @@ private:
     void BeginMacro(const QString &name);
     void EndMacro();
     
+    DAVA::String FormatControlNames(const DAVA::Vector<ControlNode*> &nodes);
+    
 private:
     Document *document;
 };

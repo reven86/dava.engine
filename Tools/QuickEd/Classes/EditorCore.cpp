@@ -159,7 +159,7 @@ void EditorCore::UpdateLanguage()
     project->GetEditorFontSystem()->RegisterCurrentLocaleFonts();
     for(auto &document : documents)
     {
-        document->UpdateLanguage();
+        document->RefreshAllControlProperties();
     }
 }
 
