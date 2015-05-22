@@ -119,7 +119,7 @@ MMItemName MemoryManager::allocPoolNames[MAX_ALLOC_POOL_COUNT] = {
 size_t MemoryManager::registeredTagCount = 0;
 size_t MemoryManager::registeredAllocPoolCount = PREDEF_POOL_COUNT;
 
-#if defined(DAVA_MEMORY_MANAGER_COLLECT_BACKTRACES)
+#if defined(DAVA_MEMORY_MANAGER_USE_ALLOC_SCOPE)
 ThreadLocalPtr<MemoryManager::AllocScopeItem> MemoryManager::tlsAllocScopeStack;
 #endif
 
@@ -150,6 +150,13 @@ void MemoryManager::RegisterTagName(uint32 tagMask, const char8* name)
 
 //////////////////////////////////////////////////////////////////////////
 
+MemoryManager::MemoryManager()
+{
+    //symbolCollectorBusy.clear();
+
+    //Memset(&statGeneral, 0, sizeof(statGeneral));
+}
+
 MemoryManager* MemoryManager::Instance()
 {
     static MallocHook hook;
@@ -166,10 +173,11 @@ void MemoryManager::SetCallbacks(void (*onUpdate)(void*), void (*onTag)(uint32, 
 
 void MemoryManager::Update()
 {
-    //if (nullptr == symbolCollectorThread)
-    //{
-    //    //symbolCollectorThread = Thread::Create();
-    //}
+    if (nullptr == symbolCollectorThread)
+    {
+        symbolCollectorThread = Thread::Create(Message(this, &MemoryManager::SymbolCollectorThread));
+        symbolCollectorThread->Start();
+    }
 
     if (updateCallback != nullptr)
     {
@@ -191,17 +199,6 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
     MemoryBlock* block = static_cast<MemoryBlock*>(MallocHook::Malloc(totalSize));
     if (block != nullptr)
     {
-#if defined(DAVA_MEMORY_MANAGER_USE_ALLOC_SCOPE)
-        if (tlsAllocScopeStack.IsCreated())
-        {
-            AllocScopeItem* scopeItem = tlsAllocScopeStack.Get();
-            if (scopeItem != nullptr)
-            {
-                block->pool = scopeItem->allocPool;
-            }
-        }
-#endif
-
 #if defined(DAVA_MEMORY_MANAGER_COLLECT_BACKTRACES)
         Backtrace backtrace;
         CollectBacktrace(&backtrace, 1);
@@ -218,6 +215,16 @@ DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, uint32 poolIndex)
         block->bktraceHash = 0;
 #endif
 
+#if defined(DAVA_MEMORY_MANAGER_USE_ALLOC_SCOPE)
+        if (tlsAllocScopeStack.IsCreated())
+        {
+            AllocScopeItem* scopeItem = tlsAllocScopeStack.Get();
+            if (scopeItem != nullptr)
+            {
+                block->pool = scopeItem->allocPool;
+            }
+        }
+#endif
         {
             LockType lock(allocMutex);
             block->tags = statGeneral.activeTags;
@@ -260,17 +267,6 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, ui
     void* realPtr = MallocHook::Malloc(totalSize);
     if (realPtr != nullptr)
     {
-#if defined(DAVA_MEMORY_MANAGER_USE_ALLOC_SCOPE)
-        if (tlsAllocScopeStack.IsCreated())
-        {
-            AllocScopeItem* scopeItem = tlsAllocScopeStack.Get();
-            if (scopeItem != nullptr)
-            {
-                block->pool = scopeItem->allocPool;
-            }
-        }
-#endif
-
         // Some pointer arithmetics
         uintptr_t aligned = uintptr_t(realPtr) + sizeof(MemoryBlock);
         aligned += align - (aligned & (align - 1));
@@ -292,6 +288,16 @@ DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, ui
         block->bktraceHash = 0;
 #endif
 
+#if defined(DAVA_MEMORY_MANAGER_USE_ALLOC_SCOPE)
+        if (tlsAllocScopeStack.IsCreated())
+        {
+            AllocScopeItem* scopeItem = tlsAllocScopeStack.Get();
+            if (scopeItem != nullptr)
+            {
+                block->pool = scopeItem->allocPool;
+            }
+        }
+#endif
         {
             LockType lock(allocMutex);
             block->tags = statGeneral.activeTags;
@@ -458,7 +464,7 @@ void MemoryManager::LeaveTagScope(uint32 tag)
 void MemoryManager::EnterAllocScope(uint32 allocPool)
 {
 #if defined(DAVA_MEMORY_MANAGER_USE_ALLOC_SCOPE)
-    AllocScopeItem* newItem = new AllocScopeItem;
+    AllocScopeItem* newItem = new (InternalAllocate(sizeof(AllocScopeItem))) AllocScopeItem;
     newItem->next = tlsAllocScopeStack.Release();
     newItem->allocPool = allocPool;
 
@@ -474,7 +480,7 @@ void MemoryManager::LeaveAllocScope(uint32 allocPool)
     assert(topItem->allocPool == allocPool);
 
     tlsAllocScopeStack.Reset(topItem->next);
-    delete topItem;
+    InternalDeallocate(topItem);
 #endif
 }
 
@@ -671,8 +677,14 @@ void MemoryManager::InsertBacktrace(Backtrace& backtrace)
         backtrace.nref = 1;
         backtrace.symbolsCollected = false;
 
-        ObtainBacktraceSymbols(&backtrace);
-        backtrace.symbolsCollected = true;
+        bktraceGrowDelta += 1;
+        if (bktraceGrowDelta >= 100)
+        {
+            bktraceGrowDelta -= 100;
+            Thread::Signal(&symbolCollectorCondVar);
+        }
+        //ObtainBacktraceSymbols(&backtrace);
+        //backtrace.symbolsCollected = true;
 
         bktraceMap->emplace(backtrace.hash, backtrace);
     }
@@ -958,6 +970,66 @@ MMCurStat* MemoryManager::FillCurStat(void* buffer, size_t size) const
         tags[i] = statTag[i];
     }
     return curStat;
+}
+
+void MemoryManager::SymbolCollectorThread(BaseObject*, void*, void*)
+{
+    const size_t BUF_CAPACITY = 1000;
+    Backtrace* bktraceBuf = new Backtrace[BUF_CAPACITY];
+
+    for (;;)
+    {
+        {
+            LockGuard<Mutex> lock(symbolCollectorMutex);
+            Thread::Wait(&symbolCollectorCondVar, &symbolCollectorMutex);
+        }
+        
+
+        size_t nplaced = 0;
+        {
+            LockType lock(bktraceMutex);
+
+            for (auto i = bktraceMap->begin(), e = bktraceMap->end();i != e && nplaced < BUF_CAPACITY;++i)
+            {
+                const Backtrace& bktrace = i->second;
+                if (!bktrace.symbolsCollected)
+                {
+                    bktraceBuf[nplaced] = bktrace;
+                    nplaced += 1;
+                }
+            }
+        }
+
+        for (size_t i = 0;i < nplaced;++i)
+        {
+            ObtainBacktraceSymbols(&bktraceBuf[i]);
+
+            LockType lock(bktraceMutex);
+            auto ibktrace = bktraceMap->find(bktraceBuf[i].hash);
+            if (ibktrace != bktraceMap->end())
+            {
+                ibktrace->second.symbolsCollected = true;
+            }
+        }
+    }
+}
+
+std::pair<size_t, size_t> MemoryManager::BktraceStat() const
+{
+    size_t n = 0;
+    size_t ncollected = 0;
+    {
+        LockType lock(bktraceMutex);
+        n = bktraceMap->size();
+        for (auto& x : *bktraceMap)
+        {
+            if (x.second.symbolsCollected)
+            {
+                ncollected += 1;
+            }
+        }
+    }
+    return std::make_pair(n, ncollected);
 }
 
 }   // namespace DAVA

@@ -160,6 +160,10 @@ void MMNetServer::ProcessTypeInit(const MMNetProto::HeaderInit* header, const vo
 void MMNetServer::ProcessTypeDump(const MMNetProto::HeaderDump* header, const void* packetData, size_t dataLength)
 {
     DVASSERT(true == commInited);
+
+    std::pair<size_t, size_t> p = MemoryManager::Instance()->BktraceStat();
+    Logger::Debug("**** bktrace stat: %u/%u", (uint32)p.first, (uint32)p.second);
+
     GatherDump();
 }
 

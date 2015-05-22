@@ -39,6 +39,7 @@
 #include "Thread/LockGuard.h"
 #include "Thread/ThreadLocalPtr.h"
 #include "Platform/ConditionalVariable.h"
+#include "Platform/Mutex.h"
 
 #include "MemoryManager/MemoryManagerConfig.h"
 #include "MemoryManager/AllocPools.h"
@@ -49,6 +50,7 @@ namespace DAVA
 {
 
 class Thread;
+class BaseObject;
 
 /*
  MemoryManager
@@ -105,6 +107,8 @@ public:
     void TrackGpuAlloc(uint32 id, size_t size, uint32 gpuPoolIndex);
     void TrackGpuDealloc(uint32 id, uint32 gpuPoolIndex);
 
+    std::pair<size_t, size_t> BktraceStat() const;
+
     MMStatConfig* GetStatConfig();
     MMCurStat* GetCurStat();
     MMDump* GetMemoryDump();
@@ -113,7 +117,7 @@ public:
 
 private:
     // Make construtor and destructor private to disallow external creation of MemoryManager
-    MemoryManager() = default;
+    MemoryManager();
     ~MemoryManager() = default;
 
     MemoryManager(const MemoryManager&) = delete;
@@ -143,8 +147,10 @@ private:
     template<typename T>
     static bool IsPowerOf2(T value);
 
+    void SymbolCollectorThread(BaseObject*, void*, void*);
+
 private:
-    MemoryBlock* head;              // Linked list of tracked memory blocks
+    MemoryBlock* head = nullptr;                        // Linked list of tracked memory blocks
 
     GeneralAllocStat statGeneral;                       // General statistics
     AllocPoolStat statAllocPool[MAX_ALLOC_POOL_COUNT];  // Statistics by allocation pools
@@ -174,16 +180,18 @@ private:
     using BacktraceMap = std::unordered_map<uint32, Backtrace, KeyHash, std::equal_to<uint32>, InternalAllocator<std::pair<const uint32, Backtrace>>>;
     using SymbolMap = std::unordered_map<void*, InternalString, std::hash<void*>, std::equal_to<void*>, InternalAllocator<std::pair<void* const, InternalString>>>;
 
-    BacktraceMap* bktraceMap;
-    SymbolMap* symbolMap;
+    BacktraceMap* bktraceMap = nullptr;
+    SymbolMap* symbolMap = nullptr;
 
     using GpuBlockList = std::list<MemoryBlock, InternalAllocator<MemoryBlock>>;
     using GpuBlockMap = std::unordered_map<int32, GpuBlockList, std::hash<int32>, std::equal_to<int32>, InternalAllocator<std::pair<const int32, GpuBlockList>>>;
 
-    GpuBlockMap* gpuBlockMap;
+    GpuBlockMap* gpuBlockMap = nullptr;
 
-    //Thread* symbolCollectorThread = nullptr;
-    //ConditionalVariable symbolCollectorCondVar;
+    Thread* symbolCollectorThread = nullptr;
+    ConditionalVariable symbolCollectorCondVar;
+    Mutex symbolCollectorMutex;
+    size_t bktraceGrowDelta = 0;
 
     void* callbackArg = nullptr;
     void (*updateCallback)(void* arg) = nullptr;
@@ -197,7 +205,7 @@ private:
     static MMItemName tagNames[MAX_TAG_COUNT];                // Names of tags
     static MMItemName allocPoolNames[MAX_ALLOC_POOL_COUNT];   // Names of allocation pools
 
-#if defined(DAVA_MEMORY_MANAGER_COLLECT_BACKTRACES)
+#if defined(DAVA_MEMORY_MANAGER_USE_ALLOC_SCOPE)
     static ThreadLocalPtr<AllocScopeItem> tlsAllocScopeStack;
 #endif
 };
