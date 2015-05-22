@@ -184,7 +184,6 @@ namespace DAVA
 #if RHI_COMPLETE
     RenderManager::Instance()->DetectRenderingCapabilities();
 #endif
-    RenderSystem2D::Instance()->Init();
 
 	// start animation
 #if RHI_COMPLETE
