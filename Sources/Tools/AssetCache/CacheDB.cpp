@@ -189,7 +189,7 @@ void CacheDB::Insert(const CacheItemKey &key, const CachedFiles &files)
     
 void CacheDB::Insert(const CacheItemKey &key, const ServerCacheEntry &entry)
 {
-    //TODO: insert in fast cache
+    ServerCacheEntry *entryForFastCache = nullptr;
     
     auto found = fullCache.find(key);
     if(found != fullCache.end())
@@ -197,14 +197,20 @@ void CacheDB::Insert(const CacheItemKey &key, const ServerCacheEntry &entry)
         IncreaseUsedSize(found->second.GetFiles());
         
         found->second = entry;
-        found->second.InvalidateAccesToken(nextItemID++);
+        entryForFastCache = &found->second;
     }
     else
     {
         fullCache[key] = entry;
-        fullCache[key].InvalidateAccesToken(nextItemID++);
+        entryForFastCache = &fullCache[key];
     }
-    usedSize += entry.GetFiles().GetFilesSize();
+    
+    entryForFastCache->InvalidateAccesToken(nextItemID++);
+
+    //TODO: insert in fast cache
+    
+    
+    usedSize += entryForFastCache->GetFiles().GetFilesSize();
 
     auto savedPath = CreateFolderPath(key);
     entry.GetFiles().Save(savedPath);
@@ -290,6 +296,7 @@ void CacheDB::Dump()
         auto & fileDescriptors = files.GetFiles();
         
         Logger::FrameworkDebug("\tentry[%d]:", index);
+        Logger::FrameworkDebug("\t\taccessID = %d", entry.second->GetAccesID());
         Logger::FrameworkDebug("\t\tnames count = %d", fileDescriptors.size());
         
         for(auto &f: fileDescriptors)
@@ -309,6 +316,7 @@ void CacheDB::Dump()
         auto & fileDescriptors = files.GetFiles();
 
         Logger::FrameworkDebug("\tentry[%d]:", index);
+        Logger::FrameworkDebug("\t\taccessID = %d", entry.second.GetAccesID());
         Logger::FrameworkDebug("\t\tnames count = %d", fileDescriptors.size());
         
         for(auto &f: fileDescriptors)
