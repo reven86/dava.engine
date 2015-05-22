@@ -713,7 +713,7 @@ void SceneInfo::CollectSpeedTreeLeafsSquare(const EntityGroup * forGroup)
     for(int32 i = 0; i < entitiesCount; i++)
     {
         RenderObject * ro = GetRenderObject(forGroup->GetEntity(i));
-        if(ro)
+        if(ro && ro->GetType() == RenderObject::TYPE_SPEED_TREE)
             speedTreeLeafInfo.push_back(GetSpeedTreeLeafsSquare(ro));
     }
 }
@@ -723,6 +723,8 @@ SceneInfo::SpeedTreeInfo SceneInfo::GetSpeedTreeLeafsSquare(DAVA::RenderObject *
     SpeedTreeInfo info;
     if(renderObject)
     {
+        bool hasLeafsGeometry = false;
+
         Vector3 bboxSize = renderObject->GetBoundingBox().GetSize();
         int32 rbCount = renderObject->GetRenderBatchCount();
         for(int32 i = 0; i < rbCount; ++i)
@@ -753,11 +755,16 @@ SceneInfo::SpeedTreeInfo SceneInfo::GetSpeedTreeLeafsSquare(DAVA::RenderObject *
                     float32 len = vec.Length() / 2;
 
                     info.leafsSquare += len;
+                    hasLeafsGeometry = true;
                 }
             }
         }
-        info.leafsSquareDivX = info.leafsSquare / (bboxSize.x * bboxSize.z);
-        info.leafsSquareDivY = info.leafsSquare / (bboxSize.y * bboxSize.z);
+
+        if (hasLeafsGeometry)
+        {
+            info.leafsSquareDivX = info.leafsSquare / (bboxSize.x * bboxSize.z);
+            info.leafsSquareDivY = info.leafsSquare / (bboxSize.y * bboxSize.z);
+        }
     }
     
     return info;
