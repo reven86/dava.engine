@@ -160,15 +160,11 @@ public:
     bool DebugLogEnabled();
     void EnableSaveForGame(bool _isSaveForGame);
     
-    const FilePath GetScenePath();
-    
     //Material * GetMaterial(int32 index);
     //StaticMesh * GetStaticMesh(int32 index);
     
     //DataNode * GetNodeByPointer(uint64 pointer);
     
-    void SetVersion(const VersionInfo::SceneVersion& version);
-    const VersionInfo::SceneVersion& GetVersion() const;
     void SetError(eError error);
     eError GetError();
     
@@ -182,9 +178,6 @@ public:
     int32 removedNodeCount;
     	    
     void UpdatePolygonGroupRequestedFormatRecursively(Entity *entity);
-
-	Scene* GetScene() {return scene;}
-
     SceneArchive *LoadSceneArchive(const FilePath & filename); //purely load data
 	
 private:
@@ -206,7 +199,7 @@ private:
     bool SaveDataHierarchy(DataNode * node, File * file, int32 level);
     void LoadDataHierarchy(Scene * scene, DataNode * node, File * file, int32 level);
     bool SaveDataNode(DataNode * node, File * file);
-    void LoadDataNode(DataNode * parent, File * file);
+    void LoadDataNode(Scene *scene, DataNode * parent, File * file);
 	
 	inline bool IsDataNodeSerializable(DataNode* node)
 	{
@@ -234,8 +227,6 @@ private:
 	
     bool isDebugLogEnabled;
     bool isSaveForGame;
-    FilePath rootNodePathName;
-    Scene * scene;
     eError lastError;
 	
 	SerializationContext serializationContext;

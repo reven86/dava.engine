@@ -95,9 +95,23 @@ class UIEvent;
     To visualize any 3d scene you'll need to create Scene object. 
     Scene have visible hierarchy and invisible root nodes. You can add as many root nodes as you want, and do not visualize them.
     For example you can have multiple scenes, load them to one scene, and show each scene when it will be required. 
- 
- 
  */
+
+class EntityCache
+{
+public:
+    ~EntityCache();
+
+    void Preload(const FilePath &path);
+    void Clear(const FilePath &path);
+    void ClearAll();
+
+    Entity* Get(const FilePath &path);
+
+protected:
+    Map<FilePath, Entity*> cachedEntities;
+};
+
 class Scene : public Entity, Observer
 {
 protected:
@@ -200,7 +214,8 @@ public:
 	inline int32	GetAnimatedMeshCount();
 
     virtual void HandleEvent(Observable * observable); //Handle RenderOptions
-    
+
+#if ROOT_NODE
     /**
         \brief Function to add root node.
         \param[in] node node you want to addstop
@@ -231,6 +246,7 @@ public:
         \param[in] nodeToRelease root node pointer you want to release.
      */
     void ReleaseRootNode(Entity *nodeToRelease);
+#endif
 
 	
 	//virtual void StopAllAnimations(bool recursive = true);
@@ -272,6 +288,7 @@ public:
     MaterialSystem * GetMaterialSystem() const;
     AnimationSystem * GetAnimationSystem() const;
 
+    SceneFileV2::eError LoadScene(const DAVA::FilePath & pathname);
 	SceneFileV2::eError SaveScene(const DAVA::FilePath & pathname, bool saveForGame = false);
 
     virtual void OptimizeBeforeExport();
@@ -293,6 +310,7 @@ public:
     virtual void Activate();
     virtual void Deactivate();
 
+    EntityCache cache;
     
 protected:
     void UpdateLights();
@@ -325,7 +343,8 @@ protected:
     //TODO: think about data-driven initialization. Need to set default properties from outside and save/load per scene
     void InitGlobalMaterial();
     void ImportShadowColor(Entity * rootNode);
-    
+
+#if ROOT_NODE
 #if defined (USE_FILEPATH_IN_MAP)
     typedef Map<FilePath, ProxyNode*> ProxyNodeMap;
 #else //#if defined (USE_FILEPATH_IN_MAP)
@@ -333,6 +352,7 @@ protected:
 #endif //#if defined (USE_FILEPATH_IN_MAP)
 
 	ProxyNodeMap rootNodes;
+#endif
 
     Camera * mainCamera;
     Camera * drawCamera;

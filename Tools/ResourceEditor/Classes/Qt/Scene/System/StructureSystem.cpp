@@ -57,37 +57,13 @@ StructureSystem::~StructureSystem()
 
 bool StructureSystem::Init(const DAVA::FilePath & path)
 {
-	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
-	if(NULL == sceneEditor)
-	{
-		return false;
-	}
+    SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
+    if(NULL == sceneEditor)
+    {
+        return false;
+    }
 
-	Entity* entity = Load(path, false);
-	if(NULL == entity)
-	{
-		return false;
-	}
-
-	DAVA::Vector<DAVA::Entity*> tmpEntities;
-	int entitiesCount = entity->GetChildrenCount();
-
-	// remember all child pointers, but don't add them to scene in this cycle
-	// because when entity is adding it is automatically removing from its old hierarchy
-	tmpEntities.reserve(entitiesCount);
-	for (DAVA::int32 i = 0; i < entitiesCount; ++i)
-	{
-		tmpEntities.push_back(entity->GetChild(i));
-	}
-
-	// now we can safely add entities into our hierarchy
-	for (DAVA::int32 i = 0; i < (DAVA::int32) tmpEntities.size(); ++i)
-	{
-		sceneEditor->AddNode(tmpEntities[i]);
-	}
-
-	entity->Release();
-	return true;
+    return (SceneFileV2::ERROR_NO_ERROR == sceneEditor->LoadScene(path));
 }
 
 void StructureSystem::Move(const EntityGroup &entityGroup, DAVA::Entity *newParent, DAVA::Entity *newBefore)
@@ -556,6 +532,28 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
 	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
 	if(NULL != sceneEditor && sc2path.IsEqualToExtension(".sc2") && sc2path.Exists())
 	{
+        if(clearCache)
+        {
+            sceneEditor->cache.Clear(sc2path);
+        }
+
+        loadedEntity = sceneEditor->cache.Get(sc2path);
+
+        if(optimize)
+        {
+            ScopedPtr<SceneFileV2> sceneFile(new SceneFileV2());
+            sceneFile->OptimizeScene(loadedEntity);
+        }
+
+        if(loadedEntity->GetChildrenCount() > 0)
+        {
+            KeyedArchive *props = GetOrCreateCustomProperties(loadedEntity)->GetArchive();
+            props->SetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, sc2path.GetAbsolutePathname());
+
+            CheckAndMarkSolid(loadedEntity);
+        }
+
+#if 0
 		if(clearCache)
 		{
 			// if there is already entity for such file, we should release it
@@ -595,6 +593,7 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
 			// release loaded entity
 			SafeRelease(parentForOptimize);
 		}
+#endif
 	}
     else
     {

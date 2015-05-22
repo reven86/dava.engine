@@ -389,8 +389,6 @@ protected:
     uint32 flags;
     uint32 id;
     
-    bool HasValidID() const;
-    void InvalidateID();
     void SetID(uint32 id) {} // empty function to be added into introspection
 
 private:
@@ -594,18 +592,9 @@ inline uint32 Entity::GetComponentCount (uint32 componentType) const
 
 inline uint32 Entity::GetID() const
 {
-    return (id & 0x7FFFFFFF);
+    return id;
 }
 
-inline bool Entity::HasValidID() const
-{
-    return ((0 != id) && !(id & 0x80000000));
-}
-
-inline void Entity::InvalidateID()
-{
-    id |= 0x80000000;
-}
 
 };
 

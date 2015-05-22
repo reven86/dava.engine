@@ -92,8 +92,77 @@ namespace DAVA
 Texture* Scene::stubTexture2d = NULL;
 Texture* Scene::stubTextureCube = NULL;
 Texture* Scene::stubTexture2dLightmap = NULL; //this texture should be all-pink without checkers
-    
-    
+
+EntityCache::~EntityCache()
+{
+    ClearAll();
+}
+
+void EntityCache::Preload(const FilePath &path)
+{
+    Scene *scene = new Scene();
+    if(SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(path))
+    {
+        auto count = scene->GetChildrenCount();
+
+        Vector<Entity*> tempV;
+        tempV.reserve((count));
+        for(auto i = 0; i < count; ++i)
+        {
+            tempV.push_back(scene->GetChild(i));
+        }
+
+        Entity *rootEntity = new Entity();
+        for(auto i = 0; i < count; ++i)
+        {
+            rootEntity->AddNode(tempV[i]);
+        }
+
+        rootEntity->SetName(scene->GetName());
+        cachedEntities[path] = rootEntity;
+    }
+
+    SafeRelease(scene);
+}
+
+Entity* EntityCache::Get(const FilePath &path)
+{
+    Entity *ret = nullptr;
+
+    if(cachedEntities.find(path) == cachedEntities.end())
+    {
+        Preload(path);
+    }
+
+    auto i = cachedEntities.find(path);
+    if(i != cachedEntities.end())
+    {
+        ret = i->second->Clone();
+    }
+
+    return ret;
+}
+
+void EntityCache::Clear(const FilePath &path)
+{
+    auto i = cachedEntities.find(path);
+    if(i != cachedEntities.end())
+    {
+        SafeRelease(i->second);
+        cachedEntities.erase(i);
+    }
+}
+
+void EntityCache::ClearAll()
+{
+    for(auto i : cachedEntities)
+    {
+        SafeRelease(i.second);
+    }
+
+    cachedEntities.clear();
+}
+
 Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
 	: Entity()
     , transformSystem(0)
@@ -394,12 +463,14 @@ Scene::~Scene()
     
     SafeRelease(mainCamera);
     SafeRelease(drawCamera);
-    
+
+#if ROOT_NODE
     for (ProxyNodeMap::iterator it = rootNodes.begin(); it != rootNodes.end(); ++it)
     {
         SafeRelease(it->second);
     }
     rootNodes.clear();
+#endif
 
     // Children should be removed first because they should unregister themselves in managers
 	RemoveAllChildren();
@@ -434,6 +505,7 @@ Scene::~Scene()
 
     systemsToProcess.clear();
     systemsToInput.clear();
+    cache.ClearAll();
 
 	SafeDelete(eventSystem);
 	SafeDelete(renderSystem);
@@ -632,7 +704,7 @@ Camera * Scene::GetCamera(int32 n)
 	return NULL;
 }
 
-
+#if ROOT_NODE
 void Scene::AddRootNode(Entity *node, const FilePath &rootNodePath)
 {
     ProxyNode * proxyNode = new ProxyNode();
@@ -709,6 +781,8 @@ void Scene::ReleaseRootNode(Entity *nodeToRelease)
 //        }
 //	}
 }
+
+#endif
     
 void Scene::SetupTestLighting()
 {
@@ -1075,6 +1149,29 @@ void Scene::Load(KeyedArchive * archive)
     Entity::Load(archive);
 }*/
     
+
+SceneFileV2::eError Scene::LoadScene(const DAVA::FilePath & pathname)
+{
+    SceneFileV2::eError ret = SceneFileV2::ERROR_VERSION_TAGS_INVALID;
+
+    if(pathname.IsEqualToExtension(".sce"))
+    {
+        ScopedPtr<SceneFile> file(new SceneFile());
+        file->SetDebugLog(true);
+        if(file->LoadScene(pathname, this))
+        {
+            ret = SceneFileV2::ERROR_NO_ERROR;
+        }
+    }
+    else if(pathname.IsEqualToExtension(".sc2"))
+    {
+        ScopedPtr<SceneFileV2> file(new SceneFileV2());
+        file->EnableDebugLog(false);
+        ret = file->LoadScene(pathname, this);
+    }
+
+    return ret;
+}
 
 SceneFileV2::eError Scene::SaveScene(const DAVA::FilePath & pathname, bool saveForGame /*= false*/)
 {

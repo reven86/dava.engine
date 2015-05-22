@@ -120,29 +120,16 @@ void SceneExporter::ExportSceneFile(const String &fileName, Set<String> &errorLo
     
     FilePath filePath = sceneUtils.dataSourceFolder + fileName;
     
-    //Load scene with *.sc2
+    //Load scene from *.sc2
     Scene *scene = new Scene();
-    Entity *rootNode = scene->GetRootNode(filePath);
-    if(rootNode)
+    if(SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(filePath))
     {
-        int32 count = rootNode->GetChildrenCount();
-		Vector<Entity*> tempV;
-		tempV.reserve((count));
-        for(int32 i = 0; i < count; ++i)
-        {
-			tempV.push_back(rootNode->GetChild(i));
-        }
-		for(int32 i = 0; i < count; ++i)
-		{
-			scene->AddNode(tempV[i]);
-		}
-		
-		ExportScene(scene, filePath, errorLog);
+        ExportScene(scene, filePath, errorLog);
     }
-	else
-	{
-		errorLog.insert(Format("[SceneExporter::ExportFile] Can't open file %s", filePath.GetAbsolutePathname().c_str()));
-	}
+    else
+    {
+        errorLog.insert(Format("[SceneExporter::ExportFile] Can't open file %s", filePath.GetAbsolutePathname().c_str()));
+    }
 
     SafeRelease(scene);
 }

@@ -568,8 +568,7 @@ Entity* Entity::Clone(Entity *dstNode)
 		
 	dstNode->name = name;
 	dstNode->tag = tag;
-    dstNode->id = id;
-    dstNode->InvalidateID();
+    dstNode->id = 0;
     
     //flags are intentionally not cloned
 	//dstNode->flags = flags;
@@ -1203,7 +1202,7 @@ void Entity::ResolveId()
 
                 // check if entity has valid id, or invalid id it has still 
                 // can be taken by this entity (id will become valid)
-                if(entity->HasValidID() || !entityIds[entityId])
+                if(0 != entity->id || !entityIds[entityId])
                 {
                     canTakeOriginalId = true;
                 }
