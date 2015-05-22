@@ -55,14 +55,11 @@ public:
 		
     virtual void AddEntity(Entity * entity);
     
-#if RHI_COMPLETE
-	void BuildMaterialList(Entity *forEntity, Set<NMaterial*>& materialList, NMaterial::eMaterialType materialType = NMaterial::MATERIALTYPE_NONE, bool includeRuntime = true) const;
-#endif //RHI_COMPLETE
+	void BuildMaterialList(Set<NMaterial*>& materialList, bool includeGlobalMaterial = true, bool includeRuntime = true) const;
 	
 	void SetDefaultMaterialQuality(const FastName& qualityLevelName);
 	const FastName& GetDefaultMaterialQuality() const;
 	const FastName& GetCurrentMaterialQuality() const;
-	void SwitchMaterialQuality(const FastName& qualityLevelName, bool force = false);
 			
 private:
 	FastName currentMaterialQuality;

@@ -160,22 +160,20 @@ void RenderSystem::UnregisterBatch(RenderBatch * batch)
     
 void RenderSystem::RegisterMaterial(NMaterial * material)
 {
-#if RHI_COMPLETE
-    NMaterial * topParent = NULL;
+    NMaterial * topParent = nullptr;
 
     // search for top material that isn't global
-    while(NULL != material && material->GetMaterialType() != NMaterial::MATERIALTYPE_GLOBAL)
+    while (nullptr != material && material != globalMaterial)
     {
         topParent = material;
         material = material->GetParent();
     }
 
     // set globalMaterial to be parent for top material
-    if(NULL != topParent)
+    if (nullptr != topParent)
     {
-        topParent->SetParent(globalMaterial, false);
+        topParent->SetParent(globalMaterial);
     }
-#endif //RHI_COMPLETE
 }
     
 void RenderSystem::UnregisterMaterial(NMaterial * material)

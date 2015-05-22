@@ -169,6 +169,8 @@ namespace DAVA
 		// create window
 		hWindow = CreateWindow( className, L"", style, windowLeft, windowTop, 
 			realWidth, realHeight,	NULL, NULL, hInstance, NULL);
+        
+        nativeWindowHandle = (void *)hWindow;
 
 		ShowWindow(hWindow, SW_SHOW);
 		UpdateWindow(hWindow);

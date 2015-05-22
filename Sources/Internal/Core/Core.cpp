@@ -103,6 +103,7 @@ Core::Core()
     options = new KeyedArchive();
     screenScaleFactor = 1.f;
 
+    nativeWindowHandle = nullptr;
 }
 
 Core::~Core()
@@ -200,8 +201,8 @@ void Core::CreateRenderManager()
     renderer = rhi::RHI_METAL;
 //    renderer = rhi::RHI_GLES2;
 #endif
-
-    Renderer::Initialize( renderer );
+    
+    Renderer::Initialize(renderer, options->GetInt32("width"), options->GetInt32("height"), GetNativeWindowHandle());
     RenderSystem2D::Instance()->Init();
 }
         

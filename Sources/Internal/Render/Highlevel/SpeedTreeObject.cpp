@@ -207,13 +207,13 @@ AABBox3 SpeedTreeObject::CalcBBoxForSpeedTreeGeometry(RenderBatch * rb)
 
 bool SpeedTreeObject::IsTreeLeafBatch(RenderBatch * batch)
 {
-#if RHI_COMPLETE
+
     if(batch && batch->GetMaterial())
     {
-        const NMaterialTemplate * material = batch->GetMaterial()->GetMaterialTemplate();
-        return (material->name == NMaterialName::SPEEDTREE_LEAF) || (material->name == NMaterialName::SPHERICLIT_SPEEDTREE_LEAF);
+        const FastName& materialFXName = batch->GetMaterial()->GetFXName();
+        return (materialFXName == NMaterialName::SPEEDTREE_LEAF) || (materialFXName == NMaterialName::SPHERICLIT_SPEEDTREE_LEAF);
     }
-#endif //RHI_COMPLETE
+
     return false;
 }
 

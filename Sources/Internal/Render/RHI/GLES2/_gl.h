@@ -48,5 +48,6 @@
 
 extern GLuint   _GLES2_FrameBuffer;
 extern GLint    _GLES2_Viewport[4];
+extern void*    _NativeWindowHandle;
 
 bool            GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type );

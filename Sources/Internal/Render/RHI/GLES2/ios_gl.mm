@@ -1,5 +1,3 @@
-#if defined(__DAVAENGINE_IPHONE__)
-
 
     #include "ios_gl.h"
     #include "Platform/TemplateiOS/EAGLView.h"
@@ -11,6 +9,7 @@
 
     #include "Debug/Profiler.h"
 
+#if defined(__DAVAENGINE_IPHONE__)
 
 static EAGLContext* _Context            = 0;
 static GLuint       defaultFramebuffer  = -1;
@@ -44,7 +43,7 @@ ios_GL_resize_from_layer( CAEAGLLayer* layer )
 }
 
 void
-ios_GL_init()
+ios_GL_init(void * nativeLayer)
 {
     _Context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
     [EAGLContext setCurrentContext:_Context];
@@ -55,7 +54,7 @@ ios_GL_init()
     glBindRenderbuffer( GL_RENDERBUFFER, colorRenderbuffer );
     glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbuffer );
 
-    ios_GL_resize_from_layer( GetAppViewLayer() );
+    ios_GL_resize_from_layer( (CAEAGLLayer*)nativeLayer);
 
     [EAGLContext setCurrentContext:_Context];
 }

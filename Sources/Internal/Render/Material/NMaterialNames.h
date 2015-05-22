@@ -137,6 +137,8 @@ public:
 class NMaterialFlagName
 {
 public:
+    static const FastName FLAG_BLENDING;
+
     static const FastName FLAG_VERTEXFOG;
     static const FastName FLAG_FOG_LINEAR;
     static const FastName FLAG_FOG_HALFSPACE;
@@ -169,6 +171,8 @@ public:
     static const FastName FLAG_VIEWAMBIENT;
     static const FastName FLAG_VIEWDIFFUSE;
     static const FastName FLAG_VIEWSPECULAR;
+
+    static const FastName FLAG_FRAME_BLEND;    
 };
 
 class NMaterialQualityName

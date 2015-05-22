@@ -57,28 +57,26 @@ MaterialSystem::~MaterialSystem()
 void MaterialSystem::AddEntity(Entity * entity)
 {
 }
-#if RHI_COMPLETE
-void MaterialSystem::BuildMaterialList(Entity *forEntity, Set<NMaterial*>& materialList, NMaterial::eMaterialType materialType, bool includeRuntime) const
-{
 
-    if(!forEntity) return;
-    
+void MaterialSystem::BuildMaterialList(Set<NMaterial*>& materialList, bool includeGlobalMaterial, bool includeRuntime) const
+{
+    Scene * scene = GetScene();
+
+    if(!scene) return;
+
     List<NMaterial*> materials;
-    forEntity->GetDataNodes(materials);
+    scene->GetDataNodes(materials);
     
     List<NMaterial *>::const_iterator endIt = materials.end();
-    for(List<NMaterial *>::const_iterator it = materials.begin(); it != endIt; ++it)
+    for (List<NMaterial *>::const_iterator it = materials.begin(); it != endIt; ++it)
     {
-        if( (materialType == NMaterial::MATERIALTYPE_NONE || materialType == (*it)->GetMaterialType()) && // filter by material type
+        if ((includeGlobalMaterial || (*it) != scene->GetGlobalMaterial()) && // filter globalMaterial
 			(includeRuntime || !((*it)->GetNodeGlags() & DataNode::NodeRuntimeFlag)))
         {
             materialList.insert(*it);
         }
     }
-
 }
-
-#endif //RHI_COMPLETE
 
 void MaterialSystem::SetDefaultMaterialQuality(const FastName& qualityLevelName)
 {
@@ -93,23 +91,6 @@ const FastName& MaterialSystem::GetDefaultMaterialQuality() const
 const FastName& MaterialSystem::GetCurrentMaterialQuality() const
 {
     return currentMaterialQuality;
-}
-
-void MaterialSystem::SwitchMaterialQuality(const FastName& qualityLevelName, bool force)
-{
-#if RHI_COMPLETE
-    Set<NMaterial*> materials;
-    BuildMaterialList(GetScene(), materials, NMaterial::MATERIALTYPE_MATERIAL);
-    
-    Set<NMaterial *>::const_iterator endIt = materials.end();
-    for(Set<NMaterial *>::const_iterator it = materials.begin(); it != endIt; ++it)
-    {
-		NMaterial* material = *it;
-		
-		material->SetQuality(qualityLevelName);
-        material->ReloadQuality(force);
-    }
-#endif //RHI_COMPLETE
 }
     
 };
