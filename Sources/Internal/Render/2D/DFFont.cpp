@@ -147,7 +147,7 @@ bool DFFontInternalData::InitFromConfig(const DAVA::FilePath &path)
         const MultiMap<String, YamlNode*> kerningMap = kerningNode->AsMap();
         for (auto iter = kerningMap.begin(); iter != kerningMap.end(); ++iter)
         {
-            int32 charId = std::stoi(iter->first);
+            int32 charId = atoi(iter->first.c_str());
             CharsMap::iterator charIter = chars.find(charId);
             if (charIter == chars.end())
                 continue;
@@ -155,7 +155,7 @@ bool DFFontInternalData::InitFromConfig(const DAVA::FilePath &path)
             const MultiMap<String, YamlNode*> charKerningMap = iter->second->AsMap();
             for (auto i = charKerningMap.begin(); i != charKerningMap.end(); ++i)
             {
-                int32 secondCharId = std::stoi(i->first);
+                int32 secondCharId = atoi(i->first.c_str());
                 float32 kerning = iter->second->AsFloat();
                 charIter->second.kerning[secondCharId] = kerning;
             }
