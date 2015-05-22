@@ -53,7 +53,7 @@ public:
 
     virtual void Process(float32 timeElapsed);
 
-    virtual void ImmediateEvent(Entity * entity, uint32 event);
+    void ImmediateEvent(Component * component, uint32 event) override;
     
 private:
     Vector<AnimationComponent*> activeComponents;

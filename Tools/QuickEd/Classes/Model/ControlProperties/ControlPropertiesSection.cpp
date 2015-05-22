@@ -7,10 +7,10 @@
 
 using namespace DAVA;
 
-ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const ControlPropertiesSection *sourceSection, eCopyType copyType) : control(SafeRetain(control))
+ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *aControl, const DAVA::InspInfo *typeInfo, const ControlPropertiesSection *sourceSection, eCloneType cloneType)
+    : SectionProperty(typeInfo->Name())
+    , control(SafeRetain(aControl))
 {
-    name = typeInfo->Name();
-    
     for (int i = 0; i < typeInfo->MembersCount(); i++)
     {
         const InspMember *member = typeInfo->Member(i);
@@ -19,20 +19,22 @@ ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *control, con
             String memberName = member->Name();
             
             ValueProperty *sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindProperty(member);
+
             ValueProperty *prop = nullptr;
             //TODO: move it to fabric class
             if (strcmp(member->Name(), "text") == 0)
             {
-                prop = new LocalizedTextValueProperty(control, member, sourceProperty, copyType);
+                prop = new LocalizedTextValueProperty(control, member, dynamic_cast<LocalizedTextValueProperty*>(sourceProperty), cloneType);
             }
             else if (strcmp(member->Name(), "font") == 0)
             {
-                prop = new FontValueProperty(control, member, sourceProperty, copyType);
+                prop = new FontValueProperty(control, member, dynamic_cast<FontValueProperty*>(sourceProperty), cloneType);
             }
             else
             {
-                prop = new ValueProperty(control, member, sourceProperty, copyType);
+                prop = new IntrospectionProperty(control, member, dynamic_cast<IntrospectionProperty *>(sourceProperty), cloneType);
             }
+
             AddProperty(prop);
             SafeRelease(prop);
         }
@@ -42,9 +44,4 @@ ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *control, con
 ControlPropertiesSection::~ControlPropertiesSection()
 {
     SafeRelease(control);
-}
-
-DAVA::String ControlPropertiesSection::GetName() const
-{
-    return name;
 }

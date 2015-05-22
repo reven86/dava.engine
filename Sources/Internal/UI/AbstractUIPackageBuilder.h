@@ -39,6 +39,7 @@ namespace DAVA
     
 class UIPackage;
 class UIControl;
+class UIComponent;
 class UIControlBackground;
 class YamlNode;
 
@@ -65,13 +66,16 @@ public:
     
     virtual UIControl *BeginControlWithClass(const String &className) = 0;
     virtual UIControl *BeginControlWithCustomClass(const String &customClassName, const String &className) = 0;
-    virtual UIControl *BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String &customClassName, AbstractUIPackageLoader *loader) = 0;
+    virtual UIControl *BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String *customClassName, AbstractUIPackageLoader *loader) = 0;
     virtual UIControl *BeginControlWithPath(const String &pathName) = 0;
     virtual UIControl *BeginUnknownControl(const YamlNode *node) = 0;
     virtual void EndControl(bool isRoot) = 0;
     
     virtual void BeginControlPropertiesSection(const String &name) = 0;
     virtual void EndControlPropertiesSection() = 0;
+    
+    virtual UIComponent *BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex) = 0;
+    virtual void EndComponentPropertiesSection() = 0;
     
     virtual UIControlBackground *BeginBgPropertiesSection(int32 index, bool sectionHasProperties) = 0;
     virtual void EndBgPropertiesSection() = 0;

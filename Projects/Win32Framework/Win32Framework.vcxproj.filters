@@ -1828,6 +1828,12 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\ConditionalVariable.h">
       <Filter>Internal\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeComponent.h">
+      <Filter>Internal\UI\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.h">
+      <Filter>Internal\UI\Components</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocatorBridge.h">
       <Filter>Internal\MemoryManager</Filter>
     </ClInclude>
@@ -3270,6 +3276,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Timer\RawTimer.cpp">
       <Filter>Internal\Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeComponent.cpp">
+      <Filter>Internal\UI\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.cpp">
+      <Filter>Internal\UI\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Platform\ConditionalVariable.cpp">
       <Filter>Internal\Platform</Filter>

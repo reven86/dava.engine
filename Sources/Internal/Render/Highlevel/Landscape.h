@@ -252,7 +252,7 @@ public:
         \param[out] vertices landscape vertices
         \param[out] indices landscape indices
 	 */
-	void GetGeometry(Vector<LandscapeVertex> & vertices, Vector<int32> & indices);
+    bool GetGeometry(Vector<LandscapeVertex> & vertices, Vector<int32> & indices) const;
     
     /**
         \brief Function to receive pathname of heightmap object
@@ -279,7 +279,7 @@ public:
     
     // TODO: Need comment here
 	bool PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * normal = 0) const;
-	Vector3 GetPoint(int16 x, int16 y, uint16 height);
+	Vector3 GetPoint(int16 x, int16 y, uint16 height) const;
 
 	void CursorEnable();
 	void CursorDisable();

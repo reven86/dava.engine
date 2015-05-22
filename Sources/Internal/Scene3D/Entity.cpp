@@ -80,7 +80,6 @@ Entity::Entity()
 	
 Entity::~Entity()
 {
-    GlobalEventSystem::Instance()->RemoveAllEvents(this);
 	RemoveAllChildren();	
 	RemoveAllComponents();	
 	SetScene(nullptr);
@@ -157,7 +156,10 @@ void Entity::SetScene(Scene * _scene)
 	if (scene)
 	{
 		scene->RegisterEntity(this);
-		GlobalEventSystem::Instance()->PerformAllEventsFromCache(this);
+        for(auto & it : components)
+        {
+            GlobalEventSystem::Instance()->PerformAllEventsFromCache(it);
+        }
 	}
 
 	const Vector<Entity*>::iterator & childrenEnd = children.end();
@@ -1157,6 +1159,17 @@ uint32 Entity::CountChildEntitiesWithComponent(Component::eType type, bool recur
         }
     }
     return count;
+}
+
+inline void Entity::RemoveComponent (Vector<Component *>::iterator & it)
+{
+    if (it != components.end ())
+    {
+        Component * c = *it;
+        GlobalEventSystem::Instance()->RemoveAllEvents(c);
+        DetachComponent (it);
+        SafeDelete (c);
+    }
 }
 
 };

@@ -1301,6 +1301,10 @@
 		D7FEF15F19864E5C00B2C7AF /* ZLibStream.h in Headers */ = {isa = PBXBuildFile; fileRef = D7FEF13A19864E5C00B2C7AF /* ZLibStream.h */; };
 		D7FEF16019864E5C00B2C7AF /* ZLibStream.h in Headers */ = {isa = PBXBuildFile; fileRef = D7FEF13A19864E5C00B2C7AF /* ZLibStream.h */; };
 		E81F2B0516BFF65700C4545E /* libcurl_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E81F2B0416BFF65700C4545E /* libcurl_ios.a */; };
+		E8263D2D1B0C808200409C91 /* UIFakeComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8263D291B0C808200409C91 /* UIFakeComponent.cpp */; };
+		E8263D2E1B0C808200409C91 /* UIFakeComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = E8263D2A1B0C808200409C91 /* UIFakeComponent.h */; };
+		E8263D2F1B0C808200409C91 /* UIFakeMultiComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8263D2B1B0C808200409C91 /* UIFakeMultiComponent.cpp */; };
+		E8263D301B0C808200409C91 /* UIFakeMultiComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = E8263D2C1B0C808200409C91 /* UIFakeMultiComponent.h */; };
 		E8373BD817268CD9001A9770 /* UIAggregatorControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8373BD617268CD9001A9770 /* UIAggregatorControl.cpp */; };
 		E8373BD917268CD9001A9770 /* UIAggregatorControl.h in Headers */ = {isa = PBXBuildFile; fileRef = E8373BD717268CD9001A9770 /* UIAggregatorControl.h */; };
 		E845D4E61732B7C9000DA8E7 /* FilePathObjective.mm in Sources */ = {isa = PBXBuildFile; fileRef = E845D4E51732B7C9000DA8E7 /* FilePathObjective.mm */; };
@@ -2339,6 +2343,10 @@
 		D7FEF13A19864E5C00B2C7AF /* ZLibStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZLibStream.h; sourceTree = "<group>"; };
 		E80D2FB2164D51A100C13D70 /* libbz2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.dylib; path = usr/lib/libbz2.dylib; sourceTree = SDKROOT; };
 		E81F2B0416BFF65700C4545E /* libcurl_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcurl_ios.a; path = ../../Libs/libs/libcurl_ios.a; sourceTree = "<group>"; };
+		E8263D291B0C808200409C91 /* UIFakeComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIFakeComponent.cpp; sourceTree = "<group>"; };
+		E8263D2A1B0C808200409C91 /* UIFakeComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIFakeComponent.h; sourceTree = "<group>"; };
+		E8263D2B1B0C808200409C91 /* UIFakeMultiComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIFakeMultiComponent.cpp; sourceTree = "<group>"; };
+		E8263D2C1B0C808200409C91 /* UIFakeMultiComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIFakeMultiComponent.h; sourceTree = "<group>"; };
 		E8373BD617268CD9001A9770 /* UIAggregatorControl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIAggregatorControl.cpp; sourceTree = "<group>"; };
 		E8373BD717268CD9001A9770 /* UIAggregatorControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIAggregatorControl.h; sourceTree = "<group>"; };
 		E845D4E51732B7C9000DA8E7 /* FilePathObjective.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = FilePathObjective.mm; sourceTree = "<group>"; };
@@ -3240,6 +3248,10 @@
 		B72364A11A8D01D6009940BE /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				E8263D291B0C808200409C91 /* UIFakeComponent.cpp */,
+				E8263D2A1B0C808200409C91 /* UIFakeComponent.h */,
+				E8263D2B1B0C808200409C91 /* UIFakeMultiComponent.cpp */,
+				E8263D2C1B0C808200409C91 /* UIFakeMultiComponent.h */,
 				327343D01ACD3CDB0003F2A8 /* UIControlFamily.cpp */,
 				327343D11ACD3CDC0003F2A8 /* UIControlFamily.h */,
 				B72364A21A8D01D6009940BE /* UIComponent.cpp */,
@@ -5030,6 +5042,7 @@
 				E8B3CB1916B9326E002BD35F /* FilePath.h in Headers */,
 				E8B3CB1B16B9326E002BD35F /* FileSystem.h in Headers */,
 				E8B3CB1E16B9326E002BD35F /* KeyedArchive.h in Headers */,
+				E8263D301B0C808200409C91 /* UIFakeMultiComponent.h in Headers */,
 				E8B3CB2016B9326E002BD35F /* KeyedArchiver.h in Headers */,
 				50194DB41A52D92600557DAB /* UDPSocketTemplate.h in Headers */,
 				E8B3CB2216B9326E002BD35F /* KeyedUnarchiver.h in Headers */,
@@ -5295,6 +5308,7 @@
 				E8B3CCCB16B9326E002BD35F /* SwitchSystem.h in Headers */,
 				E8B3CCCD16B9326E002BD35F /* TransformSystem.h in Headers */,
 				E8B3CCD116B9326E002BD35F /* UserNode.h in Headers */,
+				E8263D2E1B0C808200409C91 /* UIFakeComponent.h in Headers */,
 				5046BD801B0612DD0005D29F /* ThreadLocalPtr.h in Headers */,
 				E8B3CCE416B9326E002BD35F /* SoundSystem.h in Headers */,
 				E8B3CCE816B9326E002BD35F /* ScrollHelper.h in Headers */,
@@ -6068,6 +6082,7 @@
 				E8B3CBAA16B9326E002BD35F /* HelperAppDelegate.mm in Sources */,
 				C172EC2E18C9F9D4004309CF /* TextBlockRender.cpp in Sources */,
 				E8B3CBB816B9326E002BD35F /* Thread.cpp in Sources */,
+				E8263D2F1B0C808200409C91 /* UIFakeMultiComponent.cpp in Sources */,
 				E8B3CBBD16B9326E002BD35F /* Font.cpp in Sources */,
 				E8B3CBBF16B9326E002BD35F /* FontManager.cpp in Sources */,
 				E8B3CBC116B9326E002BD35F /* FTFont.cpp in Sources */,
@@ -6306,6 +6321,7 @@
 				840ED3C916D506F900D2BA6C /* DPIHelperiOS.mm in Sources */,
 				CC247FF116D69F1700183D40 /* DVAssertMessage.cpp in Sources */,
 				E8525D1C1A30910400FDF76E /* WASDControllerComponent.cpp in Sources */,
+				E8263D2D1B0C808200409C91 /* UIFakeComponent.cpp in Sources */,
 				114B553A1AB9D2EE003EC488 /* dlmalloc.c in Sources */,
 				D7CC266919C517E500A3B754 /* LocalNotificationIOS.cpp in Sources */,
 				CC247FF316D69F1700183D40 /* DVAssertMessageApple.mm in Sources */,

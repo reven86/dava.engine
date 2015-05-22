@@ -134,7 +134,7 @@ void SceneSystem::SceneDidLoaded()
     
 }
 
-void SceneSystem::ImmediateEvent(Entity * entity, uint32 event)
+void SceneSystem::ImmediateEvent(Component * component, uint32 event)
 {
 
 }

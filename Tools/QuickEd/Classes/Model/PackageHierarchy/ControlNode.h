@@ -4,12 +4,11 @@
 #include "PackageBaseNode.h"
 #include "ControlsContainerNode.h"
 
-#include "Model/ControlProperties/PropertiesRoot.h"
-
 class PackageSerializer;
 class PackageNode;
 class ControlPrototype;
 class PackageRef;
+class RootProperty;
 
 class ControlNode : public ControlsContainerNode
 {
@@ -22,17 +21,15 @@ public:
     };
     
 private:
-    ControlNode(DAVA::UIControl *control, PropertiesRoot *propertiesRoot, eCreationType creationType);
+    ControlNode(DAVA::UIControl *control);
+    ControlNode(ControlNode *node);
+    ControlNode(ControlPrototype *prototype, eCreationType creationType);
     virtual ~ControlNode();
 
 public:
     static ControlNode *CreateFromControl(DAVA::UIControl *control);
-    
     static ControlNode *CreateFromPrototype(ControlNode *sourceNode, PackageRef *nodePackage);
     static ControlNode *CreateFromPrototypeChild(ControlNode *sourceNode, PackageRef *nodePackage);
-    
-private:
-    static ControlNode *CreateFromPrototypeImpl(ControlNode *sourceNode, PackageRef *nodePackage, bool root);
 
 public:
     ControlNode *Clone();
@@ -50,7 +47,6 @@ public:
     const DAVA::Vector<ControlNode*> &GetInstances() const;
 
     int GetFlags() const override;
-    void SetReadOnly();
     
     virtual bool IsEditingSupported() const override;
     virtual bool IsInsertingSupported() const override;
@@ -60,14 +56,14 @@ public:
 
     eCreationType GetCreationType() const { return creationType; }
 
-    PropertiesRoot *GetPropertiesRoot() const {return propertiesRoot; }
-    BaseProperty *GetPropertyByPath(const DAVA::Vector<DAVA::String> &path);
-
+    RootProperty *GetRootProperty() const {return rootProperty; }
+    void RefreshProperties();
 
     void MarkAsRemoved();
     void MarkAsAlive();
 
-    void Serialize(PackageSerializer *serializer, PackageRef *currentPackage) const;
+    void Serialize(PackageSerializer *serializer) const;
+    DAVA::String GetPathToPrototypeChild(bool withRootPrototypeName = false) const;
 
 private:
     void CollectPrototypeChildrenWithChanges(DAVA::Vector<ControlNode*> &out) const;
@@ -80,16 +76,13 @@ private:
 
 private:
     DAVA::UIControl *control;
-    PropertiesRoot *propertiesRoot;
+    RootProperty *rootProperty;
     DAVA::Vector<ControlNode*> nodes;
     
     ControlPrototype *prototype;
-    DAVA::Vector<ControlNode*> instances; // week
+    DAVA::Vector<ControlNode*> instances; // weak
 
     eCreationType creationType;
-    
-    bool readOnly;
-    
 };
 
 
