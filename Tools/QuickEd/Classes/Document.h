@@ -27,21 +27,15 @@ public:
     PackageNode *GetPackage() const;
 
     SharedData *GetContext() const;
-    PropertiesModel *GetPropertiesModel() const; //TODO: this is deprecated
-    PackageModel* GetPackageModel() const; //TODO: this is deprecated
     QUndoStack *GetUndoStack() const;
     QtModelPackageCommandExecutor *GetCommandExecutor() const;
 
 signals:
     void SharedDataChanged(const QByteArray &role);
 public slots:
-    void UpdateLanguage();
-    void UpdateFonts();
+    void RefreshAllControlProperties();
 
 private:
-    void UpdateLanguageRecursively(ControlNode *node);
-    void UpdateFontsRecursively(ControlNode *node);
-    void UpdateControlCanvas();
     void InitSharedData();
 
 private:

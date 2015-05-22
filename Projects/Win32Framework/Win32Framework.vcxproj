@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugQt|Win32">
@@ -698,6 +698,8 @@
     <ClInclude Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIControlFamily.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\TheoraPlayer.h" />
@@ -1188,6 +1190,8 @@
     <ClCompile Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIControlFamily.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\ScrollHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\TheoraPlayer.cpp" />

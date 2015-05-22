@@ -44,8 +44,8 @@
 
 #include "DAVAEngine.h"
 #include <QProcess>
-using namespace DAVA;
 
+using namespace DAVA;
 
 DAVA::FilePath PathnameToDAVAStyle(const QString &convertedPathname)
 {
@@ -55,25 +55,18 @@ DAVA::FilePath PathnameToDAVAStyle(const QString &convertedPathname)
 
 DAVA::FilePath GetOpenFileName(const DAVA::String &title, const DAVA::FilePath &pathname, const DAVA::String &filter)
 {
-    QString filePath = FileDialog::getOpenFileName(NULL, QString(title.c_str()), QString(pathname.GetAbsolutePathname().c_str()),
-                                                    QString(filter.c_str()));
-    
+    QString filePath = FileDialog::getOpenFileName(nullptr, QString(title.c_str()), QString(pathname.GetAbsolutePathname().c_str()),
+                                                   QString(filter.c_str()));
+
+
     FilePath openedPathname = PathnameToDAVAStyle(filePath);
-    if(!openedPathname.IsEmpty() && !SceneValidator::Instance()->IsPathCorrectForProject(openedPathname))
+    if (!openedPathname.IsEmpty() && !SceneValidator::Instance()->IsPathCorrectForProject(openedPathname))
     {
         //Need to Show Error
-		ShowErrorDialog(String(Format("File(%s) was selected from incorect project.", openedPathname.GetAbsolutePathname().c_str())));
+        ShowErrorDialog(String(Format("File(%s) was selected from incorect project.", openedPathname.GetAbsolutePathname().c_str())));
         openedPathname = FilePath();
     }
-    
-    if (DAVA::TextureDescriptor::IsSourceTextureExtension(openedPathname.GetExtension()))
-    {
-		DVASSERT(false); // todo to detect using of this code
 
-        //VK: create descriptor only for source images without paired *.tex
-        TextureDescriptorUtils::CreateDescriptorIfNeed(openedPathname);
-    }
-    
     return openedPathname;
 }
 
