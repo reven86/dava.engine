@@ -302,7 +302,7 @@ void TextureBrowser::updateConvertedImageAndInfo(const QList<QImage> &images, DA
 	}
 	else
 	{
-		ui->textureAreaConverted->setImage(images, descriptor.dataSettings.faceDescription);
+		ui->textureAreaConverted->setImage(images, descriptor.dataSettings.cubefaceFlags);
 	}
 	
 	ui->textureAreaConverted->setEnabled(true);
@@ -696,7 +696,7 @@ void TextureBrowser::texturePropertyChanged(int type)
 	else
 	{
 		// new texture can be applied to scene immediately
-		reloadTextureToScene(curTexture, ui->textureProperties->getTextureDescriptor(), DAVA::GPU_PNG);
+		reloadTextureToScene(curTexture, ui->textureProperties->getTextureDescriptor(), DAVA::GPU_ORIGIN);
 	}
 
 	// update warning message
@@ -711,7 +711,7 @@ void TextureBrowser::textureReadyOriginal(const DAVA::TextureDescriptor *descrip
 		{
 			if(descriptor->IsCubeMap())
 			{
-				ui->textureAreaOriginal->setImage(images.images, descriptor->dataSettings.faceDescription);
+				ui->textureAreaOriginal->setImage(images.images, descriptor->dataSettings.cubefaceFlags);
 			}
 			else
 			{

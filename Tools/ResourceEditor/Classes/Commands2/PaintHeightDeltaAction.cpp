@@ -104,7 +104,7 @@ DAVA::Image* PaintHeightDeltaAction::CropHeightmapToPow2(DAVA::Heightmap* srcHei
 DAVA::Image* PaintHeightDeltaAction::CreateHeightDeltaImage(DAVA::uint32 width, DAVA::uint32 height)
 {
     DAVA::Image* targetImage = DAVA::Image::Create(width, height, DAVA::FORMAT_RGBA8888);
-    memset(targetImage->data, 0, sizeof(DAVA::uint32) * targetImage->width * targetImage->height);
+    memset(targetImage->data, 0, targetImage->dataSize);
     return targetImage;
 }
 
