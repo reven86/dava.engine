@@ -12,8 +12,9 @@ public:
     int GetCount() const override;
     AbstractProperty *GetProperty(int index) const override;
 
+    void Refresh() override;
+
     DAVA::VariantType GetValue() const override;
-    void RefreshFontValue();
 protected:
     void ApplyValue(const DAVA::VariantType &value) override;
     

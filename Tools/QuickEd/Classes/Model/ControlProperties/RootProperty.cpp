@@ -194,27 +194,6 @@ void RootProperty::AddComponentPropertiesSection(ComponentPropertiesSection *sec
         section->SetParent(this);
         section->InstallComponent();
 
-        // TODO REMOVE Check code
-        ComponentPropertiesSection *prev = nullptr;
-        for (ComponentPropertiesSection * section : componentProperties)
-        {
-            if (prev != nullptr)
-            {
-                if (prev->GetComponentType() == section->GetComponentType())
-                {
-                    DVASSERT(prev->GetComponentIndex() < section->GetComponentIndex());
-                }
-                else
-                {
-                    DVASSERT(prev->GetComponentType() < section->GetComponentType());
-                }
-            }
-        }
-//        std::stable_sort(componentProperties.begin(), componentProperties.end(), [](ComponentPropertiesSection * left, ComponentPropertiesSection * right) {
-//            return left->GetComponent()->GetType() < right->GetComponent()->GetType();
-//        });
-        // #END TODO
-
         for (PropertyListener *listener : listeners)
             listener->ComponentPropertiesWasAdded(this, section, globalIndex);
         

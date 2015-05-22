@@ -63,7 +63,7 @@ Font* EditorFontSystem::GetFont(const String &presetName, const String &locale) 
 
 void EditorFontSystem::SetFont(const String &presetName, const String &locale, Font *font)
 {
-    if (nullptr != font)
+    if (nullptr == font)
     {
         DVASSERT_MSG(false, "wrong argument: font = nullptr");
         return;
@@ -77,7 +77,7 @@ void EditorFontSystem::SetFont(const String &presetName, const String &locale, F
     auto &fonts = fonstIt->second;
     auto it = fonts.find(presetName);
 
-    if(it != fonts.end())
+    if(it == fonts.end())
     {
         DVASSERT_MSG(false, Format("wrong argument: presetName = %s passed to this function not found for locale %s", presetName.c_str(), locale.c_str()).c_str());
         return;
