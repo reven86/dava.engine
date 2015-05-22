@@ -55,6 +55,7 @@ public:
     eCreationType GetCreationType() const { return creationType; }
 
     RootProperty *GetRootProperty() const {return rootProperty; }
+    void RefreshProperties();
 
     void MarkAsRemoved();
     void MarkAsAlive();

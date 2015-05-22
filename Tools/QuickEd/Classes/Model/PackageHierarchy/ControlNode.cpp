@@ -218,6 +218,13 @@ bool ControlNode::CanCopy() const
     return creationType != CREATED_FROM_PROTOTYPE_CHILD;
 }
 
+void ControlNode::RefreshProperties()
+{
+    rootProperty->Refresh();
+    for (ControlNode *node : nodes)
+        node->RefreshProperties();
+}
+
 void ControlNode::MarkAsRemoved()
 {
     if (prototype)

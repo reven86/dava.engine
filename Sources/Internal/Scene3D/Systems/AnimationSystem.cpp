@@ -87,14 +87,14 @@ void AnimationSystem::Process(float32 timeElapsed)
         Matrix4 animTransform;
         comp->animation->Interpolate(comp->time, comp->frameIndex).GetMatrix(animTransform);
         comp->animationTransform = comp->animation->invPose * animTransform;
-        GlobalEventSystem::Instance()->Event(comp->GetEntity(), EventSystem::ANIMATION_TRANSFORM_CHANGED);
+        GlobalEventSystem::Instance()->Event(comp, EventSystem::ANIMATION_TRANSFORM_CHANGED);
     }
 }
 
-void AnimationSystem::ImmediateEvent(Entity * entity, uint32 event)
+void AnimationSystem::ImmediateEvent(Component * component, uint32 event)
 {
-    AnimationComponent *comp = GetAnimationComponent(entity);
-    if (!comp) return;
+    DVASSERT(component->GetType() == Component::ANIMATION_COMPONENT);
+    AnimationComponent * comp = static_cast<AnimationComponent*>(component);
     if (event == EventSystem::START_ANIMATION)
     {
         if (comp->state == AnimationComponent::STATE_STOPPED)

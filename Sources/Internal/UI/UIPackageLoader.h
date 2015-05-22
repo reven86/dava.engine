@@ -60,8 +60,8 @@ private:
     struct ComponentNode
     {
         const YamlNode *node;
-        DAVA::uint32 type;
-        DAVA::uint32 index;
+        uint32 type;
+        uint32 index;
     };
     
 private:
@@ -91,7 +91,7 @@ private:
         int32 status;
     };
     
-    DAVA::Vector<QueueItem> loadingQueue;
+    Vector<QueueItem> loadingQueue;
 };
 
 };
