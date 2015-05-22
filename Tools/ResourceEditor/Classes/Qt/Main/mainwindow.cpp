@@ -474,8 +474,9 @@ void QtMainWindow::SetupToolBars()
 	redoBtn->setPopupMode(QToolButton::MenuButtonPopup);
 
 	// modification widget
-	modificationWidget = new ModificationWidget(NULL);
+	modificationWidget = new ModificationWidget(nullptr);
 	ui->modificationToolBar->insertWidget(ui->actionModifyReset, modificationWidget);
+    connect( ui->actionModifySnapToLandscape, &QAction::triggered, modificationWidget, &ModificationWidget::OnSnapToLandscapeChanged );
 
 	// adding reload textures actions
 	{
