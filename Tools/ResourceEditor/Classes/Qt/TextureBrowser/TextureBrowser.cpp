@@ -136,6 +136,8 @@ void TextureBrowser::Close()
 
 	// clear cache
 	TextureCache::Instance()->clearInsteadThumbnails();
+
+    ui->textureAreaConverted->warningSetText("");
 }
 
 void TextureBrowser::Update()

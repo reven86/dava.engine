@@ -110,6 +110,9 @@ protected:
 private:
     Ui::LODEditor *ui;
 
+    bool frameViewVisible;
+    bool frameEditVisible;
+
     struct DistanceWidget
     {
         QLabel *name;
