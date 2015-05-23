@@ -351,10 +351,6 @@ VersionInfo::SceneVersion SceneFileV2::LoadSceneVersion(const FilePath & filenam
     
 SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * scene)
 {
-    // clear scene
-    scene->RemoveAllChildren();
-    scene->SetName(filename.GetFilename().c_str());
-
     File * file = File::Create(filename, File::OPEN | File::READ);
     if (!file)
     {

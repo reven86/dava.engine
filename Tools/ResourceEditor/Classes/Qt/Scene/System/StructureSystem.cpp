@@ -537,20 +537,22 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
             sceneEditor->cache.Clear(sc2path);
         }
 
-        loadedEntity = sceneEditor->cache.Get(sc2path);
-
-        if(optimize)
+        loadedEntity = sceneEditor->cache.GetClone(sc2path);
+        if(nullptr != loadedEntity)
         {
-            ScopedPtr<SceneFileV2> sceneFile(new SceneFileV2());
-            sceneFile->OptimizeScene(loadedEntity);
-        }
+            if(optimize)
+            {
+                ScopedPtr<SceneFileV2> sceneFile(new SceneFileV2());
+                sceneFile->OptimizeScene(loadedEntity);
+            }
 
-        if(loadedEntity->GetChildrenCount() > 0)
-        {
-            KeyedArchive *props = GetOrCreateCustomProperties(loadedEntity)->GetArchive();
-            props->SetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, sc2path.GetAbsolutePathname());
+            if(loadedEntity->GetChildrenCount() > 0)
+            {
+                KeyedArchive *props = GetOrCreateCustomProperties(loadedEntity)->GetArchive();
+                props->SetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, sc2path.GetAbsolutePathname());
 
-            CheckAndMarkSolid(loadedEntity);
+                CheckAndMarkSolid(loadedEntity);
+            }
         }
 
 #if 0

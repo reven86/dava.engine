@@ -84,6 +84,7 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/SceneCache.h"
 #include "UI/UIEvent.h"
+#include <functional>
 
 
 namespace DAVA 
@@ -118,6 +119,16 @@ void EntityCache::Preload(const FilePath &path)
             rootEntity->AddNode(tempV[i]);
         }
 
+        std::function<void (Entity *)> clearID = [&clearID](Entity *entity) 
+        {
+            entity->ResetID();
+            for(auto child : entity->children)
+            {
+                clearID(child);
+            }
+        };
+
+        clearID(rootEntity);
         rootEntity->SetName(scene->GetName());
         cachedEntities[path] = rootEntity;
     }
@@ -125,7 +136,7 @@ void EntityCache::Preload(const FilePath &path)
     SafeRelease(scene);
 }
 
-Entity* EntityCache::Get(const FilePath &path)
+Entity* EntityCache::GetOriginal(const FilePath &path)
 {
     Entity *ret = nullptr;
 
@@ -137,7 +148,20 @@ Entity* EntityCache::Get(const FilePath &path)
     auto i = cachedEntities.find(path);
     if(i != cachedEntities.end())
     {
-        ret = i->second->Clone();
+        ret = i->second;
+    }
+
+    return ret;
+}
+
+Entity* EntityCache::GetClone(const FilePath &path)
+{
+    Entity* ret = nullptr;
+
+    Entity* orig = GetOriginal(path);
+    if(nullptr != orig)
+    {
+        ret = orig->Clone();
     }
 
     return ret;
@@ -704,6 +728,11 @@ Camera * Scene::GetCamera(int32 n)
 	return NULL;
 }
 
+Entity* Scene::GetRootNode(const FilePath &rootNodePath)
+{
+    return cache.GetOriginal(rootNodePath);
+}
+
 #if ROOT_NODE
 void Scene::AddRootNode(Entity *node, const FilePath &rootNodePath)
 {
@@ -1154,6 +1183,10 @@ SceneFileV2::eError Scene::LoadScene(const DAVA::FilePath & pathname)
 {
     SceneFileV2::eError ret = SceneFileV2::ERROR_VERSION_TAGS_INVALID;
 
+    // clear scene
+    RemoveAllChildren();
+    SetName(pathname.GetFilename().c_str());
+
     if(pathname.IsEqualToExtension(".sce"))
     {
         ScopedPtr<SceneFile> file(new SceneFile());
@@ -1176,7 +1209,6 @@ SceneFileV2::eError Scene::LoadScene(const DAVA::FilePath & pathname)
 SceneFileV2::eError Scene::SaveScene(const DAVA::FilePath & pathname, bool saveForGame /*= false*/)
 {
     ScopedPtr<SceneFileV2> file(new SceneFileV2());
-    ResolveId();
     file->EnableDebugLog(false);
 	file->EnableSaveForGame(saveForGame);
 	return file->SaveScene(pathname, this);

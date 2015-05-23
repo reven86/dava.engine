@@ -112,6 +112,7 @@ public:
 	String GetPathID(Entity * root);
 
     uint32 GetID() const;
+    void ResetID();
 
 	/**
         \brief Get Node by pathID, generated in prev function.
@@ -380,7 +381,6 @@ protected:
     String RecursiveBuildFullName(Entity * node, Entity * endNode);
 
 	void SetParent(Entity * node);
-    void ResolveId();
 
 	Scene * scene;
 	Entity * parent;
@@ -593,6 +593,11 @@ inline uint32 Entity::GetComponentCount (uint32 componentType) const
 inline uint32 Entity::GetID() const
 {
     return id;
+}
+
+inline void Entity::ResetID()
+{
+    id = 0;
 }
 
 

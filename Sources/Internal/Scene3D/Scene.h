@@ -106,7 +106,8 @@ public:
     void Clear(const FilePath &path);
     void ClearAll();
 
-    Entity* Get(const FilePath &path);
+    Entity* GetOriginal(const FilePath &path);
+    Entity* GetClone(const FilePath &path);
 
 protected:
     Map<FilePath, Entity*> cachedEntities;
@@ -247,6 +248,8 @@ public:
      */
     void ReleaseRootNode(Entity *nodeToRelease);
 #endif
+
+    Entity *GetRootNode(const FilePath &rootNodePath);
 
 	
 	//virtual void StopAllAnimations(bool recursive = true);
