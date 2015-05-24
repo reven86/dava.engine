@@ -19,40 +19,34 @@ ControlNode::ControlNode(UIControl *control)
     rootProperty = new RootProperty(this, nullptr, AbstractProperty::CT_COPY);
 }
 
-ControlNode::ControlNode(ControlNode *node)
+ControlNode::ControlNode(ControlNode *node, eCreationType _creationType)
     : ControlsContainerNode(nullptr)
     , control(nullptr)
     , rootProperty(nullptr)
-    , prototype(SafeRetain(node->prototype))
-    , creationType(node->creationType)
-{
-    control = ObjectFactory::Instance()->New<UIControl>(node->control->GetClassName());
-    
-    rootProperty = new RootProperty(this, node->rootProperty, RootProperty::CT_COPY);
-    
-    for (ControlNode *sourceChild : nodes)
-    {
-        RefPtr<ControlNode> childNode(sourceChild->Clone());
-        Add(childNode.Get());
-    }
-}
-
-ControlNode::ControlNode(ControlNode *_prototype, eCreationType _creationType)
-    : ControlsContainerNode(nullptr)
-    , control(nullptr)
-    , rootProperty(nullptr)
-    , prototype(SafeRetain(_prototype))
+    , prototype(nullptr)
     , creationType(_creationType)
 {
-    control = ObjectFactory::Instance()->New<UIControl>(prototype->GetControl()->GetClassName());
-
-    rootProperty = new RootProperty(this, prototype->GetRootProperty(), RootProperty::CT_INHERIT);
+    control = ObjectFactory::Instance()->New<UIControl>(node->GetControl()->GetClassName());
     
-    prototype->AddControlToInstances(this);
-
-    for (ControlNode *sourceChild : prototype->nodes)
+    eCreationType childCreationType;
+    if (creationType == CREATED_FROM_CLASS)
     {
-        ScopedPtr<ControlNode> childNode(new ControlNode(sourceChild, CREATED_FROM_PROTOTYPE_CHILD));
+        prototype = SafeRetain(node->prototype);
+        rootProperty = new RootProperty(this, node->GetRootProperty(), RootProperty::CT_COPY);
+        childCreationType = CREATED_FROM_CLASS;
+    }
+    else
+    {
+        prototype = SafeRetain(node);
+        prototype->AddControlToInstances(this);
+        rootProperty = new RootProperty(this, node->GetRootProperty(), RootProperty::CT_INHERIT);
+        childCreationType = CREATED_FROM_PROTOTYPE_CHILD;
+    }
+    
+
+    for (ControlNode *sourceChild : node->nodes)
+    {
+        ScopedPtr<ControlNode> childNode(new ControlNode(sourceChild, childCreationType));
         Add(childNode);
     }
 }
@@ -78,19 +72,19 @@ ControlNode *ControlNode::CreateFromControl(DAVA::UIControl *control)
     return new ControlNode(control);
 }
 
-ControlNode *ControlNode::CreateFromPrototype(ControlNode *sourceNode, PackageRef *nodePackage)
+ControlNode *ControlNode::CreateFromPrototype(ControlNode *sourceNode)
 {
     return new ControlNode(sourceNode, CREATED_FROM_PROTOTYPE);
 }
 
-ControlNode *ControlNode::CreateFromPrototypeChild(ControlNode *sourceNode, PackageRef *nodePackage)
+ControlNode *ControlNode::CreateFromPrototypeChild(ControlNode *sourceNode)
 {
     return new ControlNode(sourceNode, CREATED_FROM_PROTOTYPE_CHILD);
 }
 
 ControlNode *ControlNode::Clone()
 {
-    return new ControlNode(this);
+    return new ControlNode(this, CREATED_FROM_CLASS);
 }
 
 void ControlNode::Add(ControlNode *node)
@@ -162,6 +156,17 @@ ControlNode *ControlNode::FindByName(const DAVA::String &name) const
 String ControlNode::GetName() const
 {
     return control->GetName();
+}
+
+String ControlNode::GetQualifiedName() const
+{
+    const PackageNode *package = GetPackage();
+    if (package && package->IsImported())
+    {
+        return package->GetName() + "/" + GetName();
+    }
+    
+    return GetName();
 }
 
 UIControl *ControlNode::GetControl() const
@@ -286,12 +291,7 @@ String ControlNode::GetPathToPrototypeChild(bool withRootPrototypeName) const
             ControlNode *c = static_cast<ControlNode*>(p);
             if (c->GetPrototype())
             {
-                String rootName = "";
-                if (c->GetPrototype()->GetPackage()->IsImported())
-                    rootName += c->GetPrototype()->GetPackage()->GetName() + "/";
-                
-                rootName += c->GetPrototype()->GetName() + "/";
-                path = rootName + path;
+                path = c->GetPrototype()->GetQualifiedName() + "/" + path;
             }
         }
         

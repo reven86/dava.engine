@@ -139,7 +139,7 @@ UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packa
     }
     
     DVASSERT(prototypeNode);
-    ControlNode *node = ControlNode::CreateFromPrototype(prototypeNode, controlsNode->GetPackageRef());
+    ControlNode *node = ControlNode::CreateFromPrototype(prototypeNode);
     if (customClassName)
         node->GetRootProperty()->GetCustomClassProperty()->SetValue(VariantType(*customClassName));
     controlsStack.push_back(ControlDescr(node, true));

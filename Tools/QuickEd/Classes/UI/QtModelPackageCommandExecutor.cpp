@@ -206,7 +206,7 @@ void QtModelPackageCommandExecutor::InsertControlImpl(ControlNode *control, Cont
         const Vector<ControlNode*> &instances = destControl->GetInstances();
         for (ControlNode *instance : instances)
         {
-            ControlNode *copy = ControlNode::CreateFromPrototypeChild(control, document->GetPackage()->GetPackageRef());
+            ControlNode *copy = ControlNode::CreateFromPrototypeChild(control);
             InsertControlImpl(copy, instance, destIndex);
             SafeRelease(copy);
         }

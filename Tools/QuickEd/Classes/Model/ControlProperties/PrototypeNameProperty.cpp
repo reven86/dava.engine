@@ -21,11 +21,7 @@ void PrototypeNameProperty::Serialize(PackageSerializer *serializer) const
 {
     if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
     {
-        String name = "";
-        if (node->GetPrototype()->GetPackage()->IsImported())
-            name += node->GetPrototype()->GetPackage()->GetName() + "/";
-        name += node->GetPrototype()->GetName();
-        serializer->PutValue("prototype", name);
+        serializer->PutValue("prototype", node->GetPrototype()->GetQualifiedName());
     }
 }
 
@@ -51,13 +47,7 @@ String PrototypeNameProperty::GetPrototypeName() const
         if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE_CHILD)
             return node->GetPathToPrototypeChild(true);
         else
-        {
-            String name = "";
-            if (node->GetPrototype()->GetPackage()->IsImported())
-                name += node->GetPrototype()->GetPackage()->GetName() + "/";
-            name += node->GetPrototype()->GetName();
-            return name;
-        }
+            return node->GetPrototype()->GetQualifiedName();
     }
     
     return String("");

@@ -314,7 +314,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
                     ControlNode *prototypeControl = importedPackage->GetPackageControlsNode()->FindControlNodeByName(controlName);
                     if (prototypeControl)
                     {
-                        node = ControlNode::CreateFromPrototype(prototypeControl, importedPackage->GetPackageRef());
+                        node = ControlNode::CreateFromPrototype(prototypeControl);
                     }
                 }
             }
@@ -331,7 +331,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
                     ControlNode *prototypeControl = root->GetPackageControlsNode()->FindControlNodeByName(controlName);
                     if (prototypeControl)
                     {
-                        node = ControlNode::CreateFromPrototype(prototypeControl, root->GetPackageControlsNode()->GetPackageRef());
+                        node = ControlNode::CreateFromPrototype(prototypeControl);
                     }
                 }
             }

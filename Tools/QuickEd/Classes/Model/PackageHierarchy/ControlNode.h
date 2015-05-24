@@ -21,14 +21,13 @@ public:
     
 private:
     ControlNode(DAVA::UIControl *control);
-    ControlNode(ControlNode *node);
-    ControlNode(ControlNode *prototype, eCreationType creationType);
+    ControlNode(ControlNode *node, eCreationType creationType);
     virtual ~ControlNode();
 
 public:
     static ControlNode *CreateFromControl(DAVA::UIControl *control);
-    static ControlNode *CreateFromPrototype(ControlNode *sourceNode, PackageRef *nodePackage);
-    static ControlNode *CreateFromPrototypeChild(ControlNode *sourceNode, PackageRef *nodePackage);
+    static ControlNode *CreateFromPrototype(ControlNode *sourceNode);
+    static ControlNode *CreateFromPrototypeChild(ControlNode *sourceNode);
 
 public:
     ControlNode *Clone();
@@ -40,7 +39,9 @@ public:
     ControlNode *Get(int index) const override;
     ControlNode *FindByName(const DAVA::String &name) const;
     
-    virtual DAVA::String GetName() const;
+    virtual DAVA::String GetName() const override;
+    DAVA::String GetQualifiedName() const;
+    
     DAVA::UIControl *GetControl() const;
     ControlNode *GetPrototype() const;
     const DAVA::Vector<ControlNode*> &GetInstances() const;
