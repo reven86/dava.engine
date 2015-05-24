@@ -36,10 +36,11 @@ LibraryModel::LibraryModel(PackageNode *node, QObject *parent) : QAbstractListMo
 
     for (int i = 0; i < node->GetImportedPackagesNode()->GetCount(); i++)
     {
-        ImportedPackagesNode *importedPackage = (ImportedPackagesNode*) node->GetImportedPackagesNode()->Get(i);
-        for (int j = 0; j < importedPackage->GetCount(); j++)
+        PackageNode *importedPackage = node->GetImportedPackagesNode()->GetImportedPackage(i);
+        PackageControlsNode *controls = importedPackage->GetPackageControlsNode();
+        for (int j = 0; j < controls->GetCount(); j++)
         {
-            libraryControls.push_back(importedPackage->GetName() + "/" + importedPackage->Get(j)->GetName());
+            libraryControls.push_back(importedPackage->GetName() + "/" + controls->Get(j)->GetName());
         }
     }
 }

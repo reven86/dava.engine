@@ -9,6 +9,7 @@ namespace DAVA
 }
 
 class ControlNode;
+class PackageNode;
 class PackageRef;
 
 class PackageBaseNode : public DAVA::BaseObject
@@ -28,6 +29,8 @@ public:
     
     virtual DAVA::String GetName() const;
     virtual PackageRef *GetPackageRef() const;
+    virtual PackageNode *GetPackage();
+    virtual const PackageNode *GetPackage() const;
     
     virtual DAVA::UIControl *GetControl() const;
     

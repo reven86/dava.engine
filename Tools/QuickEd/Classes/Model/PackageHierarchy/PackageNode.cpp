@@ -2,7 +2,6 @@
 
 #include "PackageControlsNode.h"
 #include "ImportedPackagesNode.h"
-#include "ControlPrototype.h"
 #include "PackageListener.h"
 #include "PackageRef.h"
 #include "../PackageSerializer.h"
@@ -54,9 +53,24 @@ PackageRef *PackageNode::GetPackageRef() const
     return packageRef;
 }
 
+PackageNode *PackageNode::GetPackage()
+{
+    return this;
+}
+
+const PackageNode *PackageNode::GetPackage() const
+{
+    return this;
+}
+
+bool PackageNode::IsImported() const
+{
+    return GetParent() != nullptr;
+}
+
 bool PackageNode::IsReadOnly() const
 {
-    return false;
+    return GetParent() != nullptr ? GetParent()->IsReadOnly() : false;
 }
 
 ImportedPackagesNode *PackageNode::GetImportedPackagesNode() const
@@ -69,12 +83,12 @@ PackageControlsNode *PackageNode::GetPackageControlsNode() const
     return packageControlsNode;
 }
 
-PackageControlsNode *PackageNode::FindImportedPackage(const DAVA::FilePath &path)
+PackageNode *PackageNode::FindImportedPackage(const DAVA::FilePath &path)
 {
     for (int32 index = 0; index < importedPackagesNode->GetCount(); index++)
     {
         if (importedPackagesNode->Get(index)->GetPackageRef()->GetPath() == path)
-            return importedPackagesNode->Get(index);
+            return importedPackagesNode->GetImportedPackage(index);
     }
     return nullptr;
 }
@@ -171,7 +185,7 @@ void PackageNode::RemoveControl(ControlNode *node, ControlsContainerNode *from)
         listener->ControlWasRemoved(node, from);
 }
 
-void PackageNode::InsertImportedPackage(PackageControlsNode *node, DAVA::int32 index)
+void PackageNode::InsertImportedPackage(PackageNode *node, DAVA::int32 index)
 {
     for (PackageListener *listener : listeners)
         listener->ImportedPackageWillBeAdded(node, this, index);
@@ -182,7 +196,7 @@ void PackageNode::InsertImportedPackage(PackageControlsNode *node, DAVA::int32 i
         listener->ImportedPackageWasAdded(node, this, index);
 }
 
-void PackageNode::RemoveImportedPackage(PackageControlsNode *node)
+void PackageNode::RemoveImportedPackage(PackageNode *node)
 {
     for (PackageListener *listener : listeners)
         listener->ImportedPackageWillBeRemoved(node, this);
@@ -221,11 +235,11 @@ void PackageNode::CollectPackages(Set<PackageRef*> &packageRefs, ControlNode *no
 {
     if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
     {
-        ControlPrototype *prototype = node->GetPrototype();
+        ControlNode *prototype = node->GetPrototype();
         if (prototype)
         {
-            if (packageRefs.find(prototype->GetPackageRef()) == packageRefs.end())
-                packageRefs.insert(prototype->GetPackageRef());
+            if (packageRefs.find(prototype->GetPackage()->GetPackageRef()) == packageRefs.end())
+                packageRefs.insert(prototype->GetPackage()->GetPackageRef());
         }
     }
     

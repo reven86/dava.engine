@@ -27,7 +27,6 @@ public:
     ControlNode *Get(int index) const override;
 
     DAVA::String GetName() const override;
-    void SetName(const DAVA::String &name);
     
     virtual PackageRef *GetPackageRef() const override;
     
@@ -44,7 +43,6 @@ public:
     void Serialize(PackageSerializer *serializer, const DAVA::Vector<ControlNode*> &nodes) const;
 
 private:
-    DAVA::String name;
     DAVA::Vector<ControlNode*> nodes;
     
     PackageRef *packageRef;

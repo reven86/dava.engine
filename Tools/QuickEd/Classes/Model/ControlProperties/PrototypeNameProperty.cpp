@@ -1,7 +1,7 @@
 #include "PrototypeNameProperty.h"
 
 #include "../PackageHierarchy/ControlNode.h"
-#include "../PackageHierarchy/ControlPrototype.h"
+#include "../PackageHierarchy/PackageNode.h"
 #include "../PackageSerializer.h"
 
 using namespace DAVA;
@@ -21,8 +21,11 @@ void PrototypeNameProperty::Serialize(PackageSerializer *serializer) const
 {
     if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
     {
-        bool includePackageName = node->GetPackageRef() != node->GetPrototype()->GetPackageRef();
-        serializer->PutValue("prototype", node->GetPrototype()->GetName(includePackageName));
+        String name = "";
+        if (node->GetPrototype()->GetPackage()->IsImported())
+            name += node->GetPrototype()->GetPackage()->GetName() + "/";
+        name += node->GetPrototype()->GetName();
+        serializer->PutValue("prototype", name);
     }
 }
 
@@ -48,7 +51,13 @@ String PrototypeNameProperty::GetPrototypeName() const
         if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE_CHILD)
             return node->GetPathToPrototypeChild(true);
         else
-            return node->GetPrototype()->GetName(true);
+        {
+            String name = "";
+            if (node->GetPrototype()->GetPackage()->IsImported())
+                name += node->GetPrototype()->GetPackage()->GetName() + "/";
+            name += node->GetPrototype()->GetName();
+            return name;
+        }
     }
     
     return String("");

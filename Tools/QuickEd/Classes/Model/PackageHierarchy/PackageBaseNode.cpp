@@ -42,6 +42,16 @@ PackageRef *PackageBaseNode::GetPackageRef() const
     return parent == nullptr ? nullptr : parent->GetPackageRef();
 }
 
+PackageNode *PackageBaseNode::GetPackage()
+{
+    return parent ? parent->GetPackage() : nullptr;
+}
+
+const PackageNode *PackageBaseNode::GetPackage() const
+{
+    return parent ? parent->GetPackage() : nullptr;
+}
+
 UIControl *PackageBaseNode::GetControl() const
 {
     return NULL;

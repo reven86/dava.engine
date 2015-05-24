@@ -12,7 +12,6 @@ using namespace DAVA;
 
 PackageControlsNode::PackageControlsNode(PackageNode *_parent, PackageRef *_packageRef)
     : ControlsContainerNode(_parent)
-    , name("Controls")
     , packageRef(SafeRetain(_packageRef))
 {
 }
@@ -70,12 +69,7 @@ ControlNode *PackageControlsNode::Get(int index) const
 
 String PackageControlsNode::GetName() const
 {
-    return name;
-}
-
-void PackageControlsNode::SetName(const DAVA::String &name)
-{
-    this->name = name;
+    return "Controls";
 }
 
 PackageRef *PackageControlsNode::GetPackageRef() const

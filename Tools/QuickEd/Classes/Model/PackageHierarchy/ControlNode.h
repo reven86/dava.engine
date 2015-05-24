@@ -6,7 +6,6 @@
 
 class PackageSerializer;
 class PackageNode;
-class ControlPrototype;
 class PackageRef;
 class RootProperty;
 
@@ -23,7 +22,7 @@ public:
 private:
     ControlNode(DAVA::UIControl *control);
     ControlNode(ControlNode *node);
-    ControlNode(ControlPrototype *prototype, eCreationType creationType);
+    ControlNode(ControlNode *prototype, eCreationType creationType);
     virtual ~ControlNode();
 
 public:
@@ -43,7 +42,7 @@ public:
     
     virtual DAVA::String GetName() const;
     DAVA::UIControl *GetControl() const;
-    ControlPrototype *GetPrototype() const;
+    ControlNode *GetPrototype() const;
     const DAVA::Vector<ControlNode*> &GetInstances() const;
 
     virtual bool IsEditingSupported() const override;
@@ -66,7 +65,7 @@ public:
 private:
     void CollectPrototypeChildrenWithChanges(DAVA::Vector<ControlNode*> &out) const;
     bool HasNonPrototypeChildren() const;
-    bool IsInstancedFrom(const ControlNode *prototypeControl) const;
+    bool IsInstancedFrom(const ControlNode *prototype) const;
     
 private:
     void AddControlToInstances(ControlNode *control);
@@ -77,7 +76,7 @@ private:
     RootProperty *rootProperty;
     DAVA::Vector<ControlNode*> nodes;
     
-    ControlPrototype *prototype;
+    ControlNode *prototype;
     DAVA::Vector<ControlNode*> instances; // weak
 
     eCreationType creationType;

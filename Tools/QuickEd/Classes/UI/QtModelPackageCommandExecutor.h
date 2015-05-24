@@ -16,7 +16,7 @@ public:
     QtModelPackageCommandExecutor(Document *_document);
     virtual ~QtModelPackageCommandExecutor();
     
-    void AddImportedPackageIntoPackage(PackageControlsNode *importedPackageControls, PackageNode *package) override;
+    void AddImportedPackageIntoPackage(PackageNode *importedPackage, PackageNode *package) override;
     
 public:
     void ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value) override;

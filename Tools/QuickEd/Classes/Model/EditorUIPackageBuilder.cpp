@@ -11,7 +11,6 @@
 #include "Model/ControlProperties/CustomClassProperty.h"
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
-#include "Model/PackageHierarchy/ControlPrototype.h"
 #include "Model/PackageHierarchy/PackageRef.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageCommandExecutor.h"
@@ -65,27 +64,25 @@ void EditorUIPackageBuilder::EndPackage()
 
 bool EditorUIPackageBuilder::ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader)
 {
-    PackageControlsNode *importedPackage = packageNode->FindImportedPackage(packagePath);
+    PackageNode *importedPackage = packageNode->FindImportedPackage(packagePath);
     if (importedPackage)
         return true;
     
     EditorUIPackageBuilder *builder = new EditorUIPackageBuilder();
-    PackageControlsNode *controlsNode = nullptr;
     if (loader->LoadPackage(packagePath, builder))
     {
-        controlsNode = SafeRetain(builder->packageNode->GetPackageControlsNode());
-        controlsNode->SetName(builder->packageNode->GetName());
+        importedPackage = SafeRetain(builder->packageNode);
     }
     SafeDelete(builder);
     
-    if (controlsNode)
+    if (importedPackage)
     {
         if (basePackage)
-            commandExecutor->AddImportedPackageIntoPackage(controlsNode, packageNode);
+            commandExecutor->AddImportedPackageIntoPackage(importedPackage, packageNode);
         else
-            packageNode->GetImportedPackagesNode()->Add(controlsNode);
+            packageNode->GetImportedPackagesNode()->Add(importedPackage);
         
-        SafeRelease(controlsNode);
+        SafeRelease(importedPackage);
 
         return true;
     }
@@ -126,10 +123,8 @@ UIControl *EditorUIPackageBuilder::BeginControlWithCustomClass(const String &cus
 UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String *customClassName, AbstractUIPackageLoader *loader)
 {
     PackageControlsNode *controlsNode = nullptr;
-    if (packageName.empty())
-        controlsNode = packageNode->GetPackageControlsNode();
-    else
-        controlsNode = packageNode->GetImportedPackagesNode()->FindPackageControlsNodeByName(packageName);
+    PackageNode *package = packageName.empty() ? packageNode : packageNode->GetImportedPackagesNode()->FindPackageByName(packageName);
+    controlsNode = package->GetPackageControlsNode();
 
     ControlNode *prototypeNode = nullptr;
     if (controlsNode)
