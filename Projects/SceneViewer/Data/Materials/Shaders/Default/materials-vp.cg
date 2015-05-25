@@ -1,5 +1,21 @@
 #define MAX_JOINTS 32
 #define _PI 3.141592654
+/*
+#if defined FOG_ATMOSPHERE
+    #if !defined DISTANCE_ATTENUATION
+    #define DISTANCE_ATTENUATION
+    #endif
+#endif
+*/
+
+#if defined WIND_ANIMATION  &&  WIND_ANIMATION == 0
+    #undef WIND_ANIMATION
+#endif
+
+#if defined FOG_LINEAR  &&  FOG_LINEAR == 0
+    #undef FOG_LINEAR
+#endif
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -147,7 +163,9 @@ property float4x4 worldViewMatrix : dynamic,a : ;
 #if defined(VERTEX_LIT) || defined(PIXEL_LIT) || (defined(VERTEX_FOG) && defined(FOG_ATMOSPHERE))
 property float4x4 worldViewInvTransposeMatrix : dynamic,a : ;
 property float4 lightPosition0 : dynamic,a : ;
-property float lightIntensity0 : dynamic,a : ; 
+#if defined DISTANCE_ATTENUATION
+property float lightIntensity0 : static,a : ; 
+#endif
 #endif
 
 #if defined(VERTEX_LIT)
@@ -177,9 +195,9 @@ property float4 jointQuaternions[MAX_JOINTS] : dynamic,a : ;
         #if defined(FOG_ATMOSPHERE_MAP)
             DECL_SAMPLERCUBE(atmospheremap) : static,b : ;
         #else
-            property float3 fogAtmosphereColorSun : dynamic,b : ;
-            property float3 fogAtmosphereColorSky : dynamic,b : ;
-            property float fogAtmosphereScattering : dynamic,b : ;
+            property float3 fogAtmosphereColorSun : static,b : ;
+            property float3 fogAtmosphereColorSky : static,b : ;
+            property float fogAtmosphereScattering : static,b : ;
         #endif
     #endif
     #if defined(FOG_HALFSPACE)
@@ -206,7 +224,7 @@ property float4x4 projMatrix : dynamic,a : ;
 property float cutDistance : static,a : ;
 
     #if !defined(SPHERICAL_LIT) //legacy for old tree lighting
-        property float3 treeLeafColorMul : static,a : def_value=0.5,0.5,0.5,0.5 ;
+        property float4 treeLeafColorMul : static,a : def_value=0.5,0.5,0.5,0.5 ;
         property float treeLeafOcclusionOffset : static,a : def_value=0 ;
         property float treeLeafOcclusionMul : static,a : def_value=0.5 ;
     #endif
