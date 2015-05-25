@@ -43,6 +43,27 @@ namespace Net
 
 class MMNetClient : public NetService
 {
+    struct ParcelEx
+    {
+        ParcelEx()
+        : bufferSize(0)
+        , buffer(nullptr)
+        , header(nullptr)
+        , data(nullptr)
+        {}
+        ParcelEx(size_t dataSize)
+        : bufferSize(sizeof(MMNetProto::PacketHeader) + dataSize)
+        , buffer(::operator new(bufferSize))
+        , header(static_cast<MMNetProto::PacketHeader*>(buffer))
+        , data(static_cast<void*>(header + 1))
+        {}
+        
+        size_t bufferSize;
+        void* buffer;
+        MMNetProto::PacketHeader* header;
+        void* data;
+    };
+    
 public:
     typedef Function<void(const MMStatConfig*)> ChOpenCallback;
     typedef Function<void (const char8*)> ChClosedCallback;
@@ -64,25 +85,27 @@ public:
     void PacketDelivered() override;
 
 private:
-    void ProcessTypeInit(const MMNetProto::HeaderInit* header, const void* packetData, size_t dataLength);
-    void ProcessTypeStat(const MMNetProto::HeaderStat* header, const void* packetData, size_t dataLength);
-    void ProcessTypeDump(const MMNetProto::HeaderDump* header, const void* packetData, size_t dataLength);
-
-    void ProcessCurrentStatistics(const MMProtoHeader* hdr, const void* packet, size_t length);
-
-    void SendTypeInit();
-    void SendTypeDump();
+    void ProcessReplyToken(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength);
+    void ProcessReplyDump(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength);
+    void ProcessAutoReplyStat(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength);
+    void ProcessAutoReplyDump(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength);
+    
+    void FastRequest(uint16 type);
+    
+    void EnqueueParcel(const ParcelEx& parcel);
+    void SendParcel(ParcelEx& parcel);
+    
+    void Cleanup();
 
 private:
-    uint32 sessionId;
-    bool commInited;
+    uint32 connToken = 0;
+    bool tokenRequested = false;
+    
+    List<ParcelEx> queue;
 
-    uint8 outbuf[128];
-    bool outbufBusy;
-
-    bool gettingDump;
-    size_t dumpTotalSize;
-    size_t dumpRecvSize;
+    bool canRequestDump = true;
+    size_t dumpTotalSize = 0;
+    size_t dumpRecvSize = 0;
     std::vector<uint8> dumpData;
 
     ChOpenCallback openCallback;

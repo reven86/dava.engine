@@ -41,19 +41,51 @@ namespace MMNetProto
 
 enum ePacketType
 {
-    TYPE_INIT = 0,
-    TYPE_STAT,
-    TYPE_DUMP
+    TYPE_REQUEST_TOKEN = 0,
+    TYPE_REQUEST_DUMP,
+    TYPE_REQUEST_CANCEL,
+    
+    TYPE_REPLY_TOKEN = 100,
+    TYPE_REPLY_DUMP,
+    TYPE_REPLY_CANCEL,
+    
+    TYPE_AUTO_STAT = 200,
+    TYPE_AUTO_DUMP,
+    
+    TYPE_TOKEN = 0,         // Request connection token
+    TYPE_DUMP,              // Request to make memory dump or memory dump auto send
+    TYPE_STAT               // Memory usage auto send
 };
 
 enum eStatus
 {
-    STATUS_OK = 0,
-    STATUS_DENY,
-    STATUS_ERROR,
-    //STATUS_DISABLED
+    STATUS_SUCCESS = 0,     // Everything is ok
+    STATUS_ERROR,           // Some kind of error has occured
+    STATUS_TOKEN,           // Request TYPE_REQUEST_TOKEN has not been performed
+    STATUS_BUSY             // Object is busy and cannot fulfil the request
 };
 
+struct PacketHeader
+{
+    uint32 length;          // Total length of packet including header
+    uint16 type;            // Type of command/reply encoded in packet
+    uint16 status;          // Result of executing command
+    uint16 itemCount;       // Number of data items in packet if applied
+    uint16 flags;
+    uint32 token;           // Connection token
+};
+static_assert(sizeof(PacketHeader) == 16, "sizeof(MMNetProto::PacketHeader) != 16");
+
+struct PacketParamDump
+{
+    uint32 flags;           // Flags: 0 - dump unpacked, 1 - dump packed
+    uint32 dumpSize;        // Total size of unpacked dump
+    uint32 chunkOffset;     // Chunk byte offset in unpacked dump
+    uint32 chunkSize;       // Chunk size in unpacked dump
+};
+static_assert(sizeof(PacketParamDump) == 16, "sizeof(MMNetProto::PacketParamDump) != 16");
+
+////////////////////////////////////////////////
 struct Header
 {
     uint32 type;

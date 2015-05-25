@@ -1003,17 +1003,14 @@ MMDump* MemoryManager::GetMemoryDump()
     return dump;
 }
 
-bool MemoryManager::GetMemoryDump(FILE* file, size_t& dumpSize)
+bool MemoryManager::GetMemoryDump(FILE* file, uint64 curTimestamp, size_t* dumpSize)
 {
+    assert(file != nullptr && dumpSize != nullptr);
+    
     const size_t BUF_SIZE = 64 * 1024;
     void* buffer = InternalAllocate(BUF_SIZE);
 
     {
-        {
-            int c = 1;
-            fwrite(&c, sizeof(int), 1, file);
-            fseek(file, -(int)sizeof(int), SEEK_CUR);
-        }
         LockType lock(allocMutex);
 
         const size_t blockCount = statAllocPool[ALLOC_POOL_TOTAL].blockCount;
@@ -1027,10 +1024,10 @@ bool MemoryManager::GetMemoryDump(FILE* file, size_t& dumpSize)
             + sizeof(MMBlock) * blockCount
             + sizeof(MMSymbol) * symbolCount
             + bktraceSize * bktraceCount;
-        dumpSize = size;
+        *dumpSize = size;
 
         MMDump dump{};
-        dump.timestamp = 0;
+        dump.timestamp = curTimestamp;
         dump.collectTime = 0;
         dump.packTime = 0;
         dump.size = static_cast<uint32>(size);

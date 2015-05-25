@@ -120,7 +120,7 @@ public:
     MMCurStat* GetCurStat();
     MMDump* GetMemoryDump();
 
-    bool GetMemoryDump(FILE* file, size_t& dumpSize);
+    bool GetMemoryDump(FILE* file, uint64 curTimestamp, size_t* dumpSize);
 
     void FreeStatMemory(void* ptr);
 

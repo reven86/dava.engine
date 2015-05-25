@@ -33,6 +33,8 @@
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
+#include "Thread/Spinlock.h"
+
 #include "Network/NetService.h"
 #include "MemoryManager/MemoryManagerTypes.h"
 #include "MMNetProto.h"
@@ -54,40 +56,46 @@ class MMNetServer : public NetService
             , data(nullptr)
         {}
         ParcelEx(size_t dataSize)
-            : bufferSize(sizeof(MMNetProto::Header) + dataSize)
+            : bufferSize(sizeof(MMNetProto::PacketHeader) + dataSize)
             , buffer(::operator new(bufferSize))
-            , header(static_cast<MMNetProto::Header*>(buffer))
+            , header(static_cast<MMNetProto::PacketHeader*>(buffer))
             , data(static_cast<void*>(header + 1))
         {}
-        ParcelEx(void* buf, size_t dataSize)
-            : bufferSize(sizeof(MMNetProto::Header) + dataSize)
-            , buffer(buf)
-            , header(static_cast<MMNetProto::Header*>(buffer))
-            , data(static_cast<void*>(header + 1))
-        {}
-
-        template<typename T>
-        T* Header() const
-        {
-            return reinterpret_cast<T*>(header);
-        }
 
         size_t bufferSize;
         void* buffer;
-        MMNetProto::Header* header;
+        MMNetProto::PacketHeader* header;
         void* data;
     };
-    struct Parcel
+    
+    struct DumpInfo
     {
-        Parcel() : header(), data(nullptr), dataSize(0), dataSent(0), chunkSize(0) {}
-        Parcel(void* dataBuf, size_t size) : header(), data(dataBuf), dataSize(size), dataSent(0), chunkSize(0) {}
-
-        MMNetProto::Header header;
-        void* data;
-        size_t dataSize;
-        size_t dataSent;
-        size_t chunkSize;
+        DumpInfo() {}
+        DumpInfo(const String& fname)
+            : filename(fname)
+        {}
+        //DumpInfo(const DumpInfo&) = default;
+        //DumpInfo& operator = (const DumpInfo&) = default;
+        DumpInfo(DumpInfo&& other)
+            : filename(std::move(other.filename))
+            , fileSize(other.fileSize)
+            , bytesTransferred(other.bytesTransferred)
+        {}
+        DumpInfo& operator = (DumpInfo&& other)
+        {
+            filename = std::move(other.filename);
+            fileSize = other.fileSize;
+            bytesTransferred = other.bytesTransferred;
+            return *this;
+        }
+        
+        String filename;
+        size_t fileSize = 0;
+        size_t bytesTransferred = 0;
     };
+    
+    static const size_t STATITEM_BUFSIZE = 32 * 1024;
+    static const size_t DUMPCHUNK_SIZE = 63 * 1024;
 
 public:
     MMNetServer();
@@ -100,38 +108,47 @@ public:
     void PacketDelivered() override;
     
 private:
-    void ProcessTypeInit(const MMNetProto::HeaderInit* header, const void* packetData, size_t dataLength);
-    void ProcessTypeDump(const MMNetProto::HeaderDump* header, const void* packetData, size_t dataLength);
-
-    void SendMemoryStat();
-
-    void DeleteParcelData(Parcel& parcel);
-    void EnqueueParcel(const Parcel& parcel);
-    void SendParcel(Parcel& parcel);
-
-    void GatherDump();
-
     void OnUpdate();
     void OnTag(uint32 tag, bool entering);
+    
+    void ProcessRequestToken(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength);
+    void ProcessRequestDump(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength);
+    
+    void AutoReplyStat(uint64 curTimestamp);
+    void FastReply(uint16 type, uint16 status);
 
-    void GetDump(uint64 timestamp);
+    void PrepareStatItemParcel();
+    void EnqueueParcel(const ParcelEx& parcel);
+    void SendParcel(ParcelEx& parcel);
+    
+    void Cleanup();
+    void CleanupDump(bool erase);
+
+    void UpdateDumpProgress();
+    void CheckAndTransferDump();
+    void ContinueDumpTransfer();
+    void BeginNextDumpTransfer();
+    bool GetAndSaveDump(uint64 curTimestamp);
 
 private:
-    uint32 sessionId;
-    bool commInited;
+    uint32 connToken = 0;
+    bool tokenRequested = false;
     uint64 timerBegin;
-    size_t statPeriod;
-    size_t periodCounter;
 
-    static const size_t OUTBUF_SIZE = 60 * 1024;
-    static const size_t OUTBUF_USEFUL_SIZE = OUTBUF_SIZE - sizeof(MMNetProto::Header);
-    uint8 outbuf[OUTBUF_SIZE];
-    MMNetProto::Header* outHeader;
-    void* outData;
-
-    List<ParcelEx> queueEx;
-    List<Parcel> queue;
-    List<String> readyDumps;
+    List<ParcelEx> queue;
+    
+    size_t statItemSize = 0;
+    size_t statItemInParcel = 0;
+    ParcelEx statItemParcel;
+    
+    Spinlock dumpMutex;
+    List<DumpInfo> readyDumps;
+    ParcelEx dumpParcel;
+    DumpInfo* curDumpInfo = nullptr;
+    FILE* dumpFileHandle = nullptr;
+    
+    uint32 curDumpIndex = 0;
+    uint64 lastManualDumpTimestamp = 0;
 };
 
 }   // namespace Net

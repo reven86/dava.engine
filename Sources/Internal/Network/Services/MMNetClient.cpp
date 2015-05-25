@@ -43,10 +43,6 @@ namespace Net
 
 MMNetClient::MMNetClient()
     : NetService()
-    , sessionId(0)
-    , commInited(false)
-    , outbufBusy(false)
-    , gettingDump(false)
     , dumpTotalSize(0)
     , dumpRecvSize(0)
 {
@@ -68,138 +64,165 @@ void MMNetClient::SetCallbacks(ChOpenCallback onOpen, ChClosedCallback onClosed,
 
 void MMNetClient::RequestDump()
 {
-    if (commInited && !outbufBusy && !gettingDump)
+    if (tokenRequested && canRequestDump)
     {
-        SendTypeDump();
+        canRequestDump = false;
+        FastRequest(MMNetProto::TYPE_REQUEST_DUMP);
     }
 }
 
 void MMNetClient::ChannelOpen()
 {
-    SendTypeInit();
+    FastRequest(MMNetProto::TYPE_REQUEST_TOKEN);
 }
 
 void MMNetClient::ChannelClosed(const char8* message)
 {
-    commInited = false;
-    outbufBusy = false;
-    gettingDump = false;
-
+    tokenRequested = false;
+    canRequestDump = true;
+    
+    Cleanup();
     closeCallback(message);
 }
 
 void MMNetClient::PacketReceived(const void* packet, size_t length)
 {
-    DVASSERT(length >= sizeof(MMNetProto::Header));
-
-    const MMNetProto::Header* header = static_cast<const MMNetProto::Header*>(packet);
-    const void* packetData = OffsetPointer<void>(packet, sizeof(MMNetProto::Header));
-    size_t packetDataSize = length - sizeof(MMNetProto::Header);
-
-    DVASSERT(packetDataSize == header->length);
-    switch (header->type)
+    const size_t dataLength = length - sizeof(MMNetProto::PacketHeader);
+    const MMNetProto::PacketHeader* header = static_cast<const MMNetProto::PacketHeader*>(packet);
+    if (length >= sizeof(MMNetProto::PacketHeader) && header->length == length)
     {
-    case MMNetProto::TYPE_INIT:
-        ProcessTypeInit(reinterpret_cast<const MMNetProto::HeaderInit*>(header), packetData, packetDataSize);
-        break;
-    case MMNetProto::TYPE_STAT:
-        ProcessTypeStat(reinterpret_cast<const MMNetProto::HeaderStat*>(header), packetData, packetDataSize);
-        break;
-    case MMNetProto::TYPE_DUMP:
-        ProcessTypeDump(reinterpret_cast<const MMNetProto::HeaderDump*>(header), packetData, packetDataSize);
-        break;
-    default:
-        break;
+        switch (header->type)
+        {
+            case MMNetProto::TYPE_REPLY_TOKEN:
+                ProcessReplyToken(header, static_cast<const void*>(header + 1), dataLength);
+                break;
+            case MMNetProto::TYPE_REPLY_DUMP:
+                ProcessReplyDump(header, static_cast<const void*>(header + 1), dataLength);
+                break;
+            case MMNetProto::TYPE_AUTO_STAT:
+                ProcessAutoReplyStat(header, static_cast<const void*>(header + 1), dataLength);
+                break;
+            case MMNetProto::TYPE_AUTO_DUMP:
+                ProcessAutoReplyDump(header, static_cast<const void*>(header + 1), dataLength);
+                break;
+            default:
+                break;
+        }
     }
+}
+
+void MMNetClient::ProcessReplyToken(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
+{
+    const MMStatConfig* config = nullptr;
+    if (dataLength > 0)
+    {
+        connToken = inHeader->token;
+        config = static_cast<const MMStatConfig*>(packetData);
+        DVASSERT(config->size == dataLength);
+    }
+    tokenRequested = true;
+    openCallback(config);
+}
+
+void MMNetClient::ProcessReplyDump(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
+{
+    canRequestDump = true;
+}
+
+void MMNetClient::ProcessAutoReplyStat(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
+{
+    const MMCurStat* stat = static_cast<const MMCurStat*>(packetData);
+    size_t itemSize = stat->size;
+    for (uint32 i = 0;i < inHeader->itemCount;++i)
+    {
+        //statCallback(stat);
+        stat = OffsetPointer<const MMCurStat>(stat, itemSize);
+    }
+}
+
+void MMNetClient::ProcessAutoReplyDump(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
+{
+    if (inHeader->status == MMNetProto::STATUS_SUCCESS)
+    {
+        const MMNetProto::PacketParamDump* param = static_cast<const MMNetProto::PacketParamDump*>(packetData);
+        const void* data = static_cast<const void*>(param + 1);
+        
+        if (0 == dumpTotalSize)
+        {
+            dumpTotalSize = param->dumpSize;
+            dumpData.resize(dumpTotalSize);
+        }
+        
+        Memcpy(&*dumpData.begin() + dumpRecvSize, data, param->chunkSize);
+        dumpRecvSize += param->chunkSize;
+        
+        if (dumpRecvSize < dumpTotalSize)
+        {
+            dumpCallback(dumpTotalSize, dumpRecvSize, nullptr);
+        }
+        else
+        {
+            dumpCallback(dumpTotalSize, dumpRecvSize, &dumpData);
+            dumpTotalSize = 0;
+            dumpRecvSize = 0;
+            dumpData.clear();
+        }
+    }
+    else
+    {
+        dumpCallback(0, 0, nullptr);
+    }
+}
+    
+void MMNetClient::FastRequest(uint16 type)
+{
+    ParcelEx parcel(0);
+    parcel.header->length = uint32(sizeof(MMNetProto::PacketHeader));
+    parcel.header->type = type;
+    parcel.header->status = MMNetProto::STATUS_SUCCESS;
+    parcel.header->itemCount = 0;
+    parcel.header->token = connToken;
+    
+    EnqueueParcel(parcel);
+}
+
+void MMNetClient::EnqueueParcel(const ParcelEx& parcel)
+{
+    bool wasEmpty = queue.empty();
+    queue.push_back(parcel);
+    if (wasEmpty)
+    {
+        SendParcel(queue.front());
+    }
+}
+
+void MMNetClient::SendParcel(ParcelEx& parcel)
+{
+    Send(parcel.buffer, parcel.header->length);
+}
+
+void MMNetClient::Cleanup()
+{
+    for (auto& parcel : queue)
+    {
+        ::operator delete(parcel.buffer);
+    }
+    queue.clear();
 }
 
 void MMNetClient::PacketDelivered()
 {
-    outbufBusy = false;
-}
-
-void MMNetClient::ProcessTypeInit(const MMNetProto::HeaderInit* header, const void* packetData, size_t dataLength)
-{
-    DVASSERT(header->status == MMNetProto::STATUS_OK);
-    const MMStatConfig* config = nullptr;
-    if (header->totalLength > 0)
+    DVASSERT(!queue.empty());
+    
+    ParcelEx& parcel = queue.front();
+    queue.pop_front();
+    
+    ::operator delete(parcel.buffer);
+    
+    if (!queue.empty())
     {
-        sessionId = header->sessionId;
-        config = static_cast<const MMStatConfig*>(packetData);
+        SendParcel(queue.front());
     }
-    commInited = true;
-    openCallback(config);
-}
-
-void MMNetClient::ProcessTypeStat(const MMNetProto::HeaderStat* header, const void* packetData, size_t dataLength)
-{
-    DVASSERT(header->status == MMNetProto::STATUS_OK);
-    const MMCurStat* stat = static_cast<const MMCurStat*>(packetData);
-    statCallback(stat);
-}
-
-void MMNetClient::ProcessTypeDump(const MMNetProto::HeaderDump* header, const void* packetData, size_t dataLength)
-{
-    DVASSERT(header->status == MMNetProto::STATUS_OK);
-    if (!gettingDump)
-    {
-        dumpTotalSize = header->totalLength;
-        dumpRecvSize = 0;
-        dumpData.resize(dumpTotalSize);
-        gettingDump = true;
-    }
-    Memcpy(&*dumpData.begin() + dumpRecvSize, packetData, dataLength);
-    dumpRecvSize += dataLength;
-
-    DVASSERT(dumpRecvSize <= dumpTotalSize);
-    if (dumpRecvSize < dumpTotalSize)
-    {
-        dumpCallback(dumpTotalSize, dumpRecvSize, nullptr);
-    }
-    else
-    {
-        dumpCallback(dumpTotalSize, dumpRecvSize, &dumpData);
-        gettingDump = false;
-    }
-}
-
-/*void MMNetClient::UnpackDump()
-{
-    Vector<uint8> v(unpackedDumpSize, 0);
-    DynamicMemoryFile* zipFile = DynamicMemoryFile::Create(dumpV.data() + sizeof(MMDump), uint32(dumpV.size() - sizeof(MMDump)), File::CREATE | File::READ);
-    ZLibIStream zipStream(zipFile);
-    zipStream.Read((char8*)(v.data() + sizeof(MMDump)), uint32(unpackedDumpSize - sizeof(MMDump)));
-    Memcpy(v.data(), dumpV.data(), sizeof(MMDump));
-
-    MMDump* dump = reinterpret_cast<MMDump*>(v.data());
-    dumpDoneCallback(dump, dumpSize, v);
-    gettingDump = false;
-}*/
-
-void MMNetClient::SendTypeInit()
-{
-    MMNetProto::HeaderInit* header = reinterpret_cast<MMNetProto::HeaderInit*>(outbuf);
-    header->type = MMNetProto::TYPE_INIT;
-    header->status = MMNetProto::STATUS_OK;
-    header->length = 0;
-    header->totalLength = 0;
-    header->sessionId = sessionId;
-
-    outbufBusy = true;
-    Send(header);
-}
-
-void MMNetClient::SendTypeDump()
-{
-    MMNetProto::HeaderDump* header = reinterpret_cast<MMNetProto::HeaderDump*>(outbuf);
-    header->type = MMNetProto::TYPE_DUMP;
-    header->status = MMNetProto::STATUS_OK;
-    header->length = 0;
-    header->totalLength = 0;
-    header->isPacked = 0;
-
-    outbufBusy = true;
-    Send(header);
 }
 
 }   // namespace Net
