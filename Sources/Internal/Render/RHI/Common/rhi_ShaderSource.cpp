@@ -99,7 +99,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
         std::regex  blend_re(".*BLEND_MODE\\s*\\(\\s*(.*)\\s*\\).*");
         std::regex  blending2_re(".*blending\\s*\\:\\s*src=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color)\\s+dst=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color).*");
         std::regex  colormask_re(".*color_mask\\s*\\:\\s*(all|none|rgb|a).*");
-        std::regex  comment_re("\\s*//.*");
+        std::regex  comment_re("^\\s*//.*");
 
         _Reset();
 
