@@ -115,7 +115,7 @@ public:
 	inline void		SetColor(float32 r, float32 g, float32 b, float32 a);
 	inline void		SetColor(const Color & _color);
 	inline Color&	GetColor(); 
-    inline void		SetBlendMode(eBlendMode	_srcOp, eBlendMode _destOp);
+    inline void		SetBlendMode(eBlendMode	srcOp, eBlendMode destOp);
 	
     inline bool GetVisible() const;
 	inline void SetVisible(bool isVisible,  bool hierarchic = true);
@@ -166,9 +166,9 @@ public:
 	Animation *		MoveBySplineAnimation(BezierSpline2 * spline, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
 	Animation *		ScaleAnimation(const Vector2 & scale, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
 	Animation *		FrameInterpolateAnimation(int32 startFrame, int32 endFrame, float32 time, int32 track = 0);
-	Animation *		ColorAnimation(const Color & _color, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
+	Animation *		ColorAnimation(const Color & color, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
 	Animation *		RotateAnimation(float32 newAngle, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
-	Animation *		VisibleAnimation(bool _visible, int32 track = 0);
+	Animation *		VisibleAnimation(bool visible, int32 track = 0);
     
 	Animation *			RemoveFromManagerAnimation(int32 track = 0);
 	
@@ -270,7 +270,7 @@ protected:
 	
 	// callbacks for the visible & remove animations
     void VisibleAnimationCallback(BaseObject * caller, void * param, void *callerData);
-	void RemoveFromManagerAnimation(BaseObject * animation, void * _userData, void *callerData);
+	void RemoveFromManagerAnimation(BaseObject * animation, void * userData, void *callerData);
 
 	friend class GameObjectManager;	
 };

@@ -78,7 +78,7 @@ public:
     void SetStartDelay(float32 value);
 
     //external
-    void SetExtertnalValue(const String& _name, float32 value);
+    void SetExtertnalValue(const String& name, float32 value);
 
 protected:
     void LoadEffect(const FilePath& path);

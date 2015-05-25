@@ -326,7 +326,7 @@ private:
 		GLuint vertexShader;
 		GLuint fragmentShader;
 	};
-	void DeleteShadersInternal(GLuint _program, GLuint _vertexShader, GLuint _fragmentShader);
+	void DeleteShadersInternal(GLuint program, GLuint vertexShader, GLuint fragmentShader);
 
     eShaderSemantic GetShaderSemanticByName(const FastName &name);
     int32 GetAttributeIndexByName(const FastName &name);

@@ -239,10 +239,10 @@ protected:
     
     void RecalcHierarchy();
     int32 RecalcNode(UIHierarchyNode *node);
-    void CorrectOpenedInParent(UIHierarchyNode *_parent, int32 nodesDelta);
+    void CorrectOpenedInParent(UIHierarchyNode *parent, int32 nodesDelta);
 
     
-    void AddCellAtPos(UIHierarchyCell *cell, int32 pos, int32 _size, UIHierarchyNode *node);
+    void AddCellAtPos(UIHierarchyCell *cell, int32 pos, int32 size, UIHierarchyNode *node);
     Vector<UIHierarchyCell*> *GetStoreVector(const String &cellIdentifier);
     
 

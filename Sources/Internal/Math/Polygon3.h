@@ -92,7 +92,7 @@ public:
 	void InterpolatePositionFromDistanceReverse(float32 distance, int startSegment, Vector3 & resultPosition, int & resultSegmentIndex) const;
 
 	//! Clip poly by plane (TODO: not tested)
-	void ClipByPlane(const Plane & pln);
+	void ClipByPlane(const Plane & plane);
 	
 	//! Check if point lays inside polygon (polygon must be in one plane)
 	bool IsPointInside(const Vector3 & pt);
