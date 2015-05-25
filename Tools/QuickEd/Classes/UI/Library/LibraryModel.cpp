@@ -196,7 +196,7 @@ void LibraryModel::ImportedPackageWillBeAdded(PackageControlsNode *node, Package
 void LibraryModel::ImportedPackageWasAdded(PackageControlsNode *node, PackageNode *to, int index)
 {
     //TODO: check that the parent is "imported controls"
-    const QModelIndex destIndex = indexByNode(node, importedPackageRootItem()); //check that we already do not have this item 
+    const QModelIndex destIndex = indexByNode(node, importedPackageRootItem); //check that we already do not have this item 
     if (!destIndex.isValid())
     {
         //TODO: we must add control to subsection
