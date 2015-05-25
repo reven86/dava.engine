@@ -197,19 +197,26 @@ void MMNetServer::PacketDelivered()
         tokenRequested = true;
         ::operator delete(parcel.buffer);
     }
+    else if (parcel.header->type == MMNetProto::TYPE_REPLY_DUMP)
+    {
+        ::operator delete(parcel.buffer);
+    }
     else if (parcel.header->type == MMNetProto::TYPE_AUTO_STAT)
     {
         ::operator delete(parcel.buffer);
     }
     else if (parcel.header->type == MMNetProto::TYPE_AUTO_DUMP)
     {
-        UpdateDumpProgress();
+        UpdateDumpProgress(parcel);
     }
-    CheckAndTransferDump();
-    
+
     if (!queue.empty())
     {
         SendParcel(queue.front());
+    }
+    if (!waitDumpAck)
+    {
+        CheckAndTransferDump();
     }
 }
 
@@ -260,12 +267,12 @@ void MMNetServer::CleanupDump(bool erase)
     }
 }
 
-void MMNetServer::UpdateDumpProgress()
+void MMNetServer::UpdateDumpProgress(const ParcelEx& parcel)
 {
     bool transferDone = true;
-    if (dumpParcel.header->status == MMNetProto::STATUS_SUCCESS)
+    if (parcel.header->status == MMNetProto::STATUS_SUCCESS)
     {
-        MMNetProto::PacketParamDump* param = static_cast<MMNetProto::PacketParamDump*>(dumpParcel.data);
+        const MMNetProto::PacketParamDump* param = static_cast<const MMNetProto::PacketParamDump*>(dumpParcel.data);
         curDumpInfo->bytesTransferred += param->chunkSize;
         
         transferDone = curDumpInfo->bytesTransferred == curDumpInfo->fileSize;
@@ -275,6 +282,7 @@ void MMNetServer::UpdateDumpProgress()
     {
         CleanupDump(true);
     }
+    waitDumpAck = false;
 }
 
 void MMNetServer::CheckAndTransferDump()
@@ -312,6 +320,8 @@ void MMNetServer::BeginNextDumpTransfer()
             dumpParcel.header->status = MMNetProto::STATUS_SUCCESS;
             dumpParcel.header->itemCount = 0;
             dumpParcel.header->token = connToken;
+
+            ContinueDumpTransfer();
         }
         else
         {
@@ -346,6 +356,7 @@ void MMNetServer::ContinueDumpTransfer()
     {
         FastReply(MMNetProto::TYPE_AUTO_DUMP, MMNetProto::STATUS_ERROR);
     }
+    waitDumpAck = true;
 }
 
 bool MMNetServer::GetAndSaveDump(uint64 curTimestamp)

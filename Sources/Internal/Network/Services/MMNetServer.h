@@ -120,7 +120,7 @@ private:
     void Cleanup();
     void CleanupDump(bool erase);
 
-    void UpdateDumpProgress();
+    void UpdateDumpProgress(const ParcelEx& parcel);
     void CheckAndTransferDump();
     void ContinueDumpTransfer();
     void BeginNextDumpTransfer();
@@ -131,7 +131,7 @@ private:
     bool tokenRequested = false;
     uint64 timerBegin;
     uint64 lastStatTimestamp = 0;
-    uint64 statPeriod = 100;
+    uint64 statPeriod = 250;
 
     List<ParcelEx> queue;
     
@@ -142,6 +142,7 @@ private:
     ParcelEx dumpParcel;
     DumpInfo* curDumpInfo = nullptr;
     FILE* dumpFileHandle = nullptr;
+    bool waitDumpAck = false;
     
     uint32 curDumpIndex = 0;
     uint64 lastManualDumpTimestamp = 0;

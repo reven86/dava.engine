@@ -91,13 +91,13 @@ void MemProfController::OnCurrentStat(const DAVA::MMCurStat* stat)
 
 void MemProfController::OnDump(size_t total, size_t recv, Vector<uint8>* v)
 {
-    if (total == recv)
+    if (total == recv && total > 0)
     {
         DVASSERT(v != nullptr);
 
         const MMDump* dump = reinterpret_cast<const MMDump*>(v->data());
-        const MMCurStat* stat = OffsetPointer<MMCurStat>(dump, sizeof(MMDump));
-        OnCurrentStat(stat);
+        //const MMCurStat* stat = OffsetPointer<MMCurStat>(dump, sizeof(MMDump));
+        //OnCurrentStat(stat);
 
         profilingSession->AddDump(dump);
     }

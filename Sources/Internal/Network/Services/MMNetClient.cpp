@@ -149,13 +149,14 @@ void MMNetClient::ProcessAutoReplyDump(const MMNetProto::PacketHeader* inHeader,
         
         if (0 == dumpTotalSize)
         {
+            dumpRecvSize = 0;
             dumpTotalSize = param->dumpSize;
             dumpData.resize(dumpTotalSize);
         }
         
         Memcpy(&*dumpData.begin() + dumpRecvSize, data, param->chunkSize);
         dumpRecvSize += param->chunkSize;
-        
+
         if (dumpRecvSize < dumpTotalSize)
         {
             dumpCallback(dumpTotalSize, dumpRecvSize, nullptr);
@@ -170,6 +171,9 @@ void MMNetClient::ProcessAutoReplyDump(const MMNetProto::PacketHeader* inHeader,
     }
     else
     {
+        dumpRecvSize = 0;
+        dumpTotalSize = 0;
+        dumpData.clear();
         dumpCallback(0, 0, nullptr);
     }
 }
