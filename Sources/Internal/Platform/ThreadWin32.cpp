@@ -126,10 +126,10 @@ void Thread::Join()
 
 void Thread::KillNative()
 {
-#if defined(__DAVA_ENGINE_WINDOWS_DESKTOP__)
+#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
     TerminateThread(handle, 0);
-#elif defined(__DAVA_ENGINE_WINDOWS_STORE__)
-    DAVA::Logger::Error("Thread::KillNative() is not implemented for Windows Store platform");
+#elif defined(__DAVAENGINE_WINDOWS_STORE__)
+    DAVA::Logger::Warning("Thread::KillNative() is not implemented for Windows Store platform");
 #endif
 }
 

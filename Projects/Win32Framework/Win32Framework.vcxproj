@@ -258,7 +258,6 @@
     <ClInclude Include="..\..\Sources\Internal\Base\AllocatorFactory.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Atomic.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Bind.h" />
-    <ClInclude Include="..\..\Sources\Internal\Base\CompilerFeatures.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Data.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\EnumMap.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\FastName.h" />
@@ -277,10 +276,7 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Meta.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Observable.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Observer.h" />
-    <ClInclude Include="..\..\Sources\Internal\Base\PlatformAndroid.h" />
-    <ClInclude Include="..\..\Sources\Internal\Base\PlatformApple.h" />
-    <ClInclude Include="..\..\Sources\Internal\Base\PlatformDetection.h" />
-    <ClInclude Include="..\..\Sources\Internal\Base\PlatformWindows.h" />
+    <ClInclude Include="..\..\Sources\Internal\Base\Platform.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Radix\Radix.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\ScopedPtr.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Serializable.h" />

@@ -30,7 +30,7 @@
 // recursive on all control paths, function will cause runtime stack overflow
 // and only then include DAVA includes because of free, malloc redefine error
 
-#include "Base/PlatformDetection.h"
+#include "Base/Platform.h"
 
 #if defined __DAVAENGINE_WINDOWS_DESKTOP__
 

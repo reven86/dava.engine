@@ -30,7 +30,7 @@
 #ifndef __DAVAENGINE_PTHREAD_WIN32_H__
 #define __DAVAENGINE_PTHREAD_WIN32_H__ 
 
-#include "Base/PlatformDetection.h"
+#include "Base/Platform.h"
 
 //mimic to some posix threads api
 //No cancellations!
@@ -40,10 +40,10 @@
 namespace DAVA
 {
 
-typedef void pthread_condattr_t;
-typedef CRITICAL_SECTION pthread_mutex_t;
-typedef void pthread_mutexattr_t;
-typedef CONDITION_VARIABLE pthread_cond_t;
+using pthread_condattr_t = void;
+using pthread_mutex_t = CRITICAL_SECTION;
+using pthread_mutexattr_t = void;
+using pthread_cond_t = CONDITION_VARIABLE;
 
 #define PTHREAD_COND_INITIALIZER {0}
 

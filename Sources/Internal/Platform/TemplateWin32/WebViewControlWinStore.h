@@ -29,7 +29,7 @@
 #ifndef __WEBVIEWCONTROL_WINSTORE_H__
 #define __WEBVIEWCONTROL_WINSTORE_H__
 
-#include "Base/PlatformDetection.h"
+#include "Base/Platform.h"
 #if defined(__DAVAENGINE_WINDOWS_STORE__)
 
 #include "UI/IWebViewControl.h"

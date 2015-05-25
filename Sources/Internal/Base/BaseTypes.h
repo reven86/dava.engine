@@ -30,8 +30,7 @@
 #ifndef __DAVAENGINE_TYPES_H__
 #define __DAVAENGINE_TYPES_H__
 
-#include "Base/CompilerFeatures.h"
-#include "Base/PlatformDetection.h"
+#include "Base/Platform.h"
 #include "Base/TemplateHelpers.h"
 
 #include <memory>
@@ -90,14 +89,6 @@ static_assert(sizeof(pointer_size) == sizeof(void*), "Invalid type size!");
 static_assert(sizeof(char8)  == 1, "Invalid type size!");
 static_assert(sizeof(float32) == 4, "Invalid type size!");
 static_assert(sizeof(float64) == 8, "Invalid type size!");
-
-#ifndef TRUE
-#   define TRUE    1
-#endif
-
-#ifndef FALSE
-#   define FALSE   0
-#endif
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 // FIX: replace DefaultSTLAllocator with MemoryManagerAllocator after fixing framework and game codebases

@@ -30,7 +30,7 @@
 #ifndef __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
 #define __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
 
-#include "Base/PlatformDetection.h"
+#include "Base/Platform.h"
 #if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 
 #include "DAVAEngine.h"

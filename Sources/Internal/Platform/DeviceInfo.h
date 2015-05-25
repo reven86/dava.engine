@@ -70,7 +70,8 @@ public:
 		PLATFORM_IOS_SIMULATOR,
 		PLATFORM_ANDROID,
 		PLATFORM_WIN32,
-		PLATFORM_UNKNOWN,
+        PLATFORM_WIN_UAP,
+        PLATFORM_UNKNOWN,
 		PLATFORMS_COUNT
 	};
 
@@ -162,9 +163,8 @@ private:
     static ScreenInfo screenInfo;
 
 #if defined (__DAVAENGINE_WINDOWS_STORE__)
-	static void ComputeDisplayRotation();
+	static void UpdateScreenInfo();
 #endif //  (__DAVAENGINE_WINDOWS_STORE__)
-
 };
 
 };

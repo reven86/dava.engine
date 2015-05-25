@@ -123,33 +123,18 @@ DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
 
 void DeviceInfo::InitializeScreenInfo()
 {
-	DeviceInfo::ComputeDisplayRotation();
+	UpdateScreenInfo();
 }
-//to::do add in public
-void DeviceInfo::ComputeDisplayRotation()
+
+//TODO: dopilit'
+void DeviceInfo::UpdateScreenInfo()
 {
 	CoreWindow^ window = CoreWindow::GetForCurrentThread();
 	if (nullptr == window)
-	{
 		return;
-	}
-	Size localVal = Size(window->Bounds.Width, window->Bounds.Height);
-	screenInfo.width = static_cast<int32>(localVal.Width);
-	screenInfo.height = static_cast<int32>(localVal.Width);
-	DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
-	if (nullptr == currentDisplayInformation)
-	{
-		return;
-	}
-	DisplayOrientations currentOrientation = currentDisplayInformation->CurrentOrientation;
-	switch (currentOrientation)
-	{
-	case DisplayOrientations::Landscape:
-		screenInfo.scale = 1;
-		break;
-	case DisplayOrientations::Portrait:
-		screenInfo.scale = 0;
-	}
+
+	screenInfo.width = static_cast<int32>(window->Bounds.Width);
+	screenInfo.height = static_cast<int32>(window->Bounds.Height);
 }
 
 }

@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Base/PlatformDetection.h"
+#include "Base/Platform.h"
 #if defined(__DAVAENGINE_WINDOWS_STORE__)
 
 #include "CorePlatformWinStore.h"

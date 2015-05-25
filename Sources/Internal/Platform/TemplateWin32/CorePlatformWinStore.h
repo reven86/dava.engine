@@ -30,20 +30,23 @@
 #ifndef __DAVAENGINE_CORE_PLATFORM_WINSTORE_H__
 #define __DAVAENGINE_CORE_PLATFORM_WINSTORE_H__
 
-#include "Base/PlatformDetection.h"
+#include "Base/Platform.h"
 #if defined(__DAVAENGINE_WINDOWS_STORE__)
 
+#include <agile.h>
 #include "DAVAEngine.h"
-#include "agile.h"
 
 namespace DAVA
 {
 //=============================================================================================
-class CorePlatformWinStore : public Core, Noncopyable
+class CorePlatformWinStore : public Core
 {
 public:
 	CorePlatformWinStore();
 	virtual ~CorePlatformWinStore();
+
+    CorePlatformWinStore(const CorePlatformWinStore&) = delete;
+    CorePlatformWinStore& operator=(const CorePlatformWinStore&) = delete;
 
 	void Run();
 	void InitArgs(); // if need

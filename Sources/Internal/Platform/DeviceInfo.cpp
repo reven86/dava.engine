@@ -55,7 +55,10 @@ DeviceInfo::ePlatform DeviceInfo::GetPlatform()
 #elif defined(__DAVAENGINE_ANDROID__)
 	platform = PLATFORM_ANDROID;
 
-#elif defined(__DAVAENGINE_WIN32__)
+#elif defined(__DAVAENGINE_WINDOWS_STORE__)
+    platform = PLATFORM_WIN_UAP;
+
+#elif defined(__DAVAENGINE_WINDOWS_DESKTOP__)
 	platform = PLATFORM_WIN32;
 #endif
 

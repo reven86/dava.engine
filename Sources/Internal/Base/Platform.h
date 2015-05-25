@@ -26,11 +26,14 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_COMPILER_FEATURES__
-#define __DAVAENGINE_COMPILER_FEATURES__
+#ifndef __DAVAENGINE_PLATFORM__
+#define __DAVAENGINE_PLATFORM__
 
 #include "DavaConfig.h"
 
+//-------------------------------------------------------------------------------------
+//Compiler features
+//-------------------------------------------------------------------------------------
 //GCC && Clang
 #if defined(__GNUC__)
 
@@ -68,7 +71,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     !defined(CC_NOEXCEPT)    || \
     !defined(CC_CONSTEXPR)   || \
     !defined(CC_DEPRECATED)
-#   error Some compiler features is not detected for current platform
+#   error Some compiler features is not defined for current platform
 #endif
 
 //suppressing of deprecated functions
@@ -77,7 +80,79 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #   define CC_DEPRECATED(func) func
 #endif
 
-//Temporary client build fix
 #define DAVA_DEPRECATED CC_DEPRECATED
 
-#endif  // __DAVAENGINE_COMPILER_FEATURES__
+//-------------------------------------------------------------------------------------
+//Platform detection
+//-------------------------------------------------------------------------------------
+//Detection of Apple
+#if defined(__GNUC__) && \
+       (defined(__APPLE_CPP__) || defined(__APPLE_CC__) || defined(__MACOS_CLASSIC__))
+
+#   define __DAVAENGINE_APPLE__
+
+#   include <AvailabilityMacros.h>
+#   include <TargetConditionals.h>
+#   include <mach/mach.h>
+#   include <mach/mach_time.h>
+#   include <unistd.h>
+
+//Detection of iPhone
+#   if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+
+#       if !defined(__DAVAENGINE_IPHONE__) // for old projects we check if users defined it
+#           define __DAVAENGINE_IPHONE__
+#       endif
+
+//Detection of MacOS
+#   else
+#       define __DAVAENGINE_MACOS__
+#   endif
+
+#   if MAC_OS_X_VERSION_10_6 <= MAC_OS_X_VERSION_MAX_ALLOWED
+#       define __DAVAENGINE_MACOS_VERSION_10_6__
+#   endif
+
+#   define __DAVASOUND_AL__
+
+//Detection of Windows
+#elif defined(_WIN32) || defined(_WIN64)
+
+#   define __DAVAENGINE_WINDOWS__
+
+//Platform alias
+#   define __DAVAENGINE_WIN32__ __DAVAENGINE_WINDOWS__
+
+//Platform defines
+#   define __DAVASOUND_AL__
+#   define WIN32_LEAN_AND_MEAN
+#   ifndef NOMINMAX
+#       define NOMINMAX        // undef macro min and max from windows headers
+#   endif
+
+#   include <Windows.h>
+#   include <Windowsx.h>
+
+#   undef DrawState
+#   undef GetCommandLine
+#   undef GetClassName
+#   undef Yield
+
+//Detection of windows platform type
+#   if !defined(WINAPI_FAMILY_PARTITION) || WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#       define __DAVAENGINE_WINDOWS_DESKTOP__
+#   elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
+#       define __DAVAENGINE_WINDOWS_STORE__
+#       define __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__MARKER__
+#       define __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__ DVASSERT_MSG(false, "Feature has no implementation or partly implemented")
+#   endif
+
+//Detection of Android
+#elif defined(__ANDROID__) || defined(ANDROID)
+
+#   define __DAVAENGINE_ANDROID__
+#   undef __DAVASOUND_AL__
+
+#endif
+
+#endif  // __DAVAENGINE_PLATFORM__

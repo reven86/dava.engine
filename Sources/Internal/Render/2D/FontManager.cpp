@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "Base/PlatformDetection.h"
+#include "Base/Platform.h"
 
 #ifdef __DAVAENGINE_WINDOWS_STORE__
 #define generic GenericFromFreeTypeLibrary

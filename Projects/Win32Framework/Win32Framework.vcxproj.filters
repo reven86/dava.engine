@@ -1837,19 +1837,7 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.h">
       <Filter>Internal\UI\Components</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Base\CompilerFeatures.h">
-      <Filter>Internal\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Base\PlatformAndroid.h">
-      <Filter>Internal\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Base\PlatformApple.h">
-      <Filter>Internal\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Base\PlatformDetection.h">
-      <Filter>Internal\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Base\PlatformWindows.h">
+    <ClInclude Include="..\..\Sources\Internal\Base\Platform.h">
       <Filter>Internal\Base</Filter>
     </ClInclude>
   </ItemGroup>

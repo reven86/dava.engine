@@ -29,7 +29,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "Base/PlatformDetection.h"
+#include "Base/Platform.h"
 
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FileList.h"

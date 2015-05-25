@@ -30,13 +30,12 @@
 #ifndef __DAVAENGINE_MUTEX_H__
 #define __DAVAENGINE_MUTEX_H__
 
-#include "Base/PlatformDetection.h"
-#include "Base/Noncopyable.h"
+#include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_ANDROID__)
-#include <pthread.h>
+#   include <pthread.h>
 #elif defined(__DAVAENGINE_WINDOWS__)
-#include "Platform/TemplateWin32/pThreadWin32.h"
+#   include "Platform/TemplateWin32/pThreadWin32.h"
 #endif
 
 namespace DAVA
@@ -49,11 +48,14 @@ namespace DAVA
 	Main difference that on Win32 it allows recursive locks from one thread. On Unix it doesn't because of it's mutex implementation.
 	So be careful and try to avoid recursive locks because in this case code will not be portable. 
 */
-class Mutex : Noncopyable
+class Mutex
 {
 public:
 	Mutex();
 	~Mutex();
+
+    Mutex(const Mutex&) = delete;
+    Mutex& opetator(const Mutex&) = delete;
 
 	/**
 		\brief lock the execution thread of this mutex object

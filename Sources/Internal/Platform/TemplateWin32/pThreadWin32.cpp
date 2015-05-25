@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 
+#include "Debug/DVAssert.h"
 #include "Platform/TemplateWin32/pThreadWin32.h"
 
 #ifdef __DAVAENGINE_WIN32__
@@ -69,6 +70,14 @@ int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *)
 int pthread_mutex_lock(pthread_mutex_t *mutex)
 {
     EnterCriticalSection(mutex);
+
+    //deadlock
+    if (mutex->RecursionCount > 1)
+    {
+        DVASSERT_MSG(false, "Thread in deadlocked");
+        while (mutex->RecursionCount > 1) {}
+    }
+
     return 0;
 }
 
