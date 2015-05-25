@@ -30,76 +30,77 @@
 #include "ApplicationSettings.h"
 
 #include "FileSystem/FileSystem.h"
+#include "FileSystem/KeyedArchive.h"
 
-void ApplicationSettings::Save()
+
+void ApplicationSettings::Save() const
 {
-    DAVA::FileSystem::Instance()->CreateDirectory("~doc:/AssetServer", true);
-
     static DAVA::FilePath path("~doc:/AssetServer/ACS_settings.dat");
-    
+
+    DAVA::FileSystem::Instance()->CreateDirectory(path.GetDirectory(), true);
+
     DAVA::ScopedPtr<DAVA::File> file(DAVA::File::Create(path, DAVA::File::CREATE | DAVA::File::WRITE));
-    
-    if(static_cast<DAVA::File *>(file))
-    
-    
-    DAVA::File *f =
-    if (f == nullptr)
+    if(static_cast<DAVA::File *>(file) ==nullptr)
     {
-        DAVA::Logger::Error("File not open. %s. %s", DAVA::String("MainWindow::ReadSettings").c_str(), path.GetAbsolutePathname().c_str());
+        DAVA::Logger::Error("[ApplicationSettings::%s] Cannot create file %s", __FUNCTION__, path.GetStringValue().c_str());
         return;
     }
     
-    DAVA::KeyedArchive *arch = new DAVA::KeyedArchive();
-    
-    arch->SetString(DAVA::String("FolderPath"), DAVA::String(ui->cachFolderLineEdit->text().toStdString()));
-    arch->SetFloat(DAVA::String("FolderSize"), static_cast<DAVA::float32>(ui->cachSizeSpinBox->value()));
-    arch->SetUInt32(DAVA::String("NumberOfFiles"), static_cast<DAVA::uint32>(ui->numberOfFilesSpinBox->value()));
-    //    arch->SetUInt32(DAVA::String("Port"), static_cast<DAVA::uint32>(ui->portSpinBox->value()));
-    
-    auto size = servers.size();
-    arch->SetUInt32("ServersSize", size);
-    
-    for (int i = 0; i < size; ++i)
-    {
-        auto sData = servers.at(i)->GetServerData();
-        //        arch->SetString(DAVA::Format("Server_%d_ip", i), DAVA::String(sData.ip.toStdString()));
-        arch->SetUInt32(DAVA::Format("Server_%d_port", i), static_cast<DAVA::uint32>(sData.port));
-    }
-    
-    arch->Save(f);
-    f->Release();
-    arch->Release();
-
+    DAVA::ScopedPtr<DAVA::KeyedArchive> archieve(new DAVA::KeyedArchive());
+    Serialize(archieve);
+    archieve->Save(file);
 }
 
 void ApplicationSettings::Load()
 {
+    static DAVA::FilePath path("~doc:/AssetServer/ACS_settings.dat");
     
+    DAVA::ScopedPtr<DAVA::File> file(DAVA::File::Create(path, DAVA::File::OPEN | DAVA::File::READ));
+    if(static_cast<DAVA::File *>(file) ==nullptr)
+    {
+        DAVA::Logger::Error("[ApplicationSettings::%s] Cannot open file %s", __FUNCTION__, path.GetStringValue().c_str());
+        return;
+    }
+    
+    DAVA::ScopedPtr<DAVA::KeyedArchive> archieve(new DAVA::KeyedArchive());
+    archieve->Load(static_cast<DAVA::File *>(file));
+    Deserialize(archieve);
 }
 
 void ApplicationSettings::Serialize(DAVA::KeyedArchive * archieve) const
 {
     DVASSERT(nullptr != archieve);
     
-    arch->SetString("FolderPath", folder.GetStringValue());
-    arch->SetFloat6(DAVA::String("FolderSize"), static_cast<DAVA::float32>(ui->cachSizeSpinBox->value()));
-    arch->SetUInt32(DAVA::String("NumberOfFiles"), static_cast<DAVA::uint32>(ui->numberOfFilesSpinBox->value()));
-    //    arch->SetUInt32(DAVA::String("Port"), static_cast<DAVA::uint32>(ui->portSpinBox->value()));
+    archieve->SetString("FolderPath", folder.GetStringValue());
+    archieve->SetFloat64("FolderSize", cacheSize);
+    archieve->SetUInt32("NumberOfFiles", filesCount);
     
     auto size = servers.size();
-    arch->SetUInt32("ServersSize", size);
-    
-    for (int i = 0; i < size; ++i)
-    {
-        auto sData = servers.at(i)->GetServerData();
-        //        arch->SetString(DAVA::Format("Server_%d_ip", i), DAVA::String(sData.ip.toStdString()));
-        arch->SetUInt32(DAVA::Format("Server_%d_port", i), static_cast<DAVA::uint32>(sData.port));
-    }
+    archieve->SetUInt32("ServersSize", size);
 
+    DAVA::uint32 index = 0;
+    for(auto & sd: servers)
+    {
+        archieve->SetString(DAVA::Format("Server_%d_ip", index), sd.ip);
+        ++index;
+    }
 }
 
 void ApplicationSettings::Deserialize(DAVA::KeyedArchive * archieve)
 {
     DVASSERT(nullptr != archieve);
+    
+    DVASSERT(servers.size() == 0);
+    
+    folder = archieve->GetString("FolderPath");
+    cacheSize = archieve->GetFloat64("FolderSize");
+    filesCount = archieve->GetUInt32("NumberOfFiles");
+
+    auto count = archieve->GetUInt32("ServersSize");
+    for(DAVA::uint32 i = 0; i < count; ++i)
+    {
+        ServerData sd;
+        sd.ip = archieve->GetString(DAVA::Format("Server_%d_ip", i));
+    }
 }
 

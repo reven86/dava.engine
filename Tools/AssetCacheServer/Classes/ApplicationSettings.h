@@ -33,8 +33,15 @@
 #include "AssetCache/AssetCacheConstants.h"
 #include "FileSystem/FilePath.h"
 
+namespace DAVA
+{
+    class KeyedArchive;
+};
+
+
 struct ServerData
 {
+    ServerData() = default;
     ServerData(DAVA::String _ip, DAVA::uint16 _port) : ip(_ip), port(_port) {};
     
     DAVA::String ip = "127.0.0.1";
@@ -46,7 +53,7 @@ class ApplicationSettings
 
 public:
     
-    void Save();
+    void Save() const;
     void Load();
 
 private:
@@ -59,7 +66,7 @@ public:
 
     DAVA::FilePath folder;
     DAVA::float64 cacheSize;
-    DAVA::int32 filesCount;
+    DAVA::uint32 filesCount;
 
     DAVA::List<ServerData> servers;
 };
