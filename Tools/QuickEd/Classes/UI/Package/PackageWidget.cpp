@@ -129,8 +129,6 @@ void PackageWidget::LoadContext()
         packageModel = context->packageModel;
         filteredPackageModel = context->filteredPackageModel;
 
-        //remove it in future
-        sharedData->SetData("packageModel", QVariant::fromValue<QAbstractItemModel*>(context->packageModel)); //TODO: bad architecture
         //restore model
         treeView->setModel(context->filteredPackageModel);
         treeView->expandToDepth(0);

@@ -1,73 +1,23 @@
 #include "ValueProperty.h"
 
 #include "SubValueProperty.h"
-#include "../PackageSerializer.h"
-#include "Base/BaseMath.h"
+#include "Model/PackageSerializer.h"
+#include <Base/BaseMath.h>
 
 using namespace DAVA;
 
-ValueProperty::ValueProperty(BaseObject *object, const InspMember *member, ValueProperty *sourceProperty, eCopyType copyType)
-    : object(NULL), member(member), replaced(false)
+ValueProperty::ValueProperty(const DAVA::String &propName)
+    : name(propName)
+    , replaced(false)
 {
-    this->object = SafeRetain(object);
-    
-    if (sourceProperty)
-    {
-        if (sourceProperty->GetValue() != member->Value(object))
-            member->SetValue(object, sourceProperty->GetValue());
-        
-        if (copyType == BaseProperty::COPY_FULL)
-        {
-            defaultValue = sourceProperty->defaultValue;
-            replaced = sourceProperty->replaced;
-        }
-        else
-        {
-            defaultValue = member->Value(object);
-        }
-    }
-    else
-    {
-        defaultValue = member->Value(object);
-    }
-    
-    if (defaultValue.GetType() == VariantType::TYPE_VECTOR2)
-    {
-        children.push_back(new SubValueProperty(0));
-        children.push_back(new SubValueProperty(1));
-    }
-    else if (defaultValue.GetType() == VariantType::TYPE_COLOR)
-    {
-        children.push_back(new SubValueProperty(0));
-        children.push_back(new SubValueProperty(1));
-        children.push_back(new SubValueProperty(2));
-        children.push_back(new SubValueProperty(3));
-    }
-    else if (defaultValue.GetType() == VariantType::TYPE_VECTOR4)
-    {
-        children.push_back(new SubValueProperty(0));
-        children.push_back(new SubValueProperty(1));
-        children.push_back(new SubValueProperty(2));
-        children.push_back(new SubValueProperty(3));
-    }
-    else if (defaultValue.GetType() == VariantType::TYPE_INT32 && member->Desc().type == InspDesc::T_FLAGS)
-    {
-        const EnumMap *map = member->Desc().enumMap;
-        for (int32 i = 0; i < (int32) map->GetCount(); i++)
-            children.push_back(new SubValueProperty(i));
-    }
-    
-    for (auto it = children.begin(); it != children.end(); ++it)
-        (*it)->SetParent(this);
+
 }
 
 ValueProperty::~ValueProperty()
 {
-    for (auto it = children.begin(); it != children.end(); ++it)
-        (*it)->Release();
+    for (auto child : children)
+        child->Release();
     children.clear();
-    
-    SafeRelease(object);
 }
 
 int ValueProperty::GetCount() const
@@ -75,9 +25,15 @@ int ValueProperty::GetCount() const
     return (int) children.size();
 }
 
-BaseProperty *ValueProperty::GetProperty(int index) const
+AbstractProperty *ValueProperty::GetProperty(int index) const
 {
     return children[index];
+}
+
+void ValueProperty::Refresh()
+{
+    for (SubValueProperty *prop : children)
+        prop->Refresh();
 }
 
 bool ValueProperty::HasChanges() const
@@ -87,52 +43,21 @@ bool ValueProperty::HasChanges() const
 
 void ValueProperty::Serialize(PackageSerializer *serializer) const
 {
-    if (replaced)
-    {
-        VariantType value = GetValue();
-
-        if (value.GetType() == VariantType::TYPE_INT32 && member->Desc().type == InspDesc::T_FLAGS)
-        {
-            Vector<String> values;
-            int val = value.AsInt32();
-            int p = 1;
-            while (val > 0)
-            {
-                if ((val & 0x01) != 0)
-                    values.push_back(member->Desc().enumMap->ToString(p));
-                val >>= 1;
-                p <<= 1;
-            }
-            serializer->PutValue(member->Name(), values);
-        }
-        else if (value.GetType() == VariantType::TYPE_INT32 && member->Desc().type == InspDesc::T_ENUM)
-        {
-            serializer->PutValue(member->Name(), member->Desc().enumMap->ToString(value.AsInt32()));
-        }
-        else
-        {
-            serializer->PutValue(member->Name(), value);
-        }
-    }
 }
 
-String ValueProperty::GetName() const
+const DAVA::String &ValueProperty::GetName() const
 {
-    return member->Desc().text;
+    return name;
 }
 
 ValueProperty::ePropertyType ValueProperty::GetType() const
 {
-    if (member->Desc().type == InspDesc::T_ENUM)
-        return TYPE_ENUM;
-    else if (member->Desc().type == InspDesc::T_FLAGS)
-        return TYPE_FLAGS;
     return TYPE_VARIANT;
 }
 
 VariantType ValueProperty::GetValue() const
 {
-    return member->Value(object);
+    return VariantType();
 }
 
 void ValueProperty::SetValue(const DAVA::VariantType &newValue)
@@ -155,10 +80,6 @@ void ValueProperty::SetDefaultValue(const DAVA::VariantType &newValue)
 
 const EnumMap *ValueProperty::GetEnumMap() const
 {
-    if (member->Desc().type == InspDesc::T_ENUM)
-        return member->Desc().enumMap;
-    else if (member->Desc().type == InspDesc::T_FLAGS)
-        return member->Desc().enumMap;
     return NULL;
 }
 
@@ -171,59 +92,6 @@ void ValueProperty::ResetValue()
 bool ValueProperty::IsReplaced() const
 {
     return replaced;
-}
-
-String ValueProperty::GetSubValueName(int index) const
-{
-    static std::vector<String> colorComponents = {"Red", "Green", "Blue", "Alpha"};
-    static std::vector<String> marginComponents = {"Left", "Top", "Right", "Bottom"};
-    static std::vector<String> vector2Components = {"X", "Y"};
-    
-    std::vector<String> *components = nullptr;
-    
-    switch (defaultValue.GetType())
-    {
-        case VariantType::TYPE_VECTOR2:
-            components = &vector2Components;
-            break;
-
-        case VariantType::TYPE_COLOR:
-            components = &colorComponents;
-            break;
-
-        case VariantType::TYPE_VECTOR4:
-            components = &marginComponents;
-            break;
-
-        case VariantType::TYPE_INT32:
-            if (member->Desc().type == InspDesc::T_FLAGS)
-            {
-                const EnumMap *map = member->Desc().enumMap;
-                int val = 0;
-                map->GetValue(index, val);
-                return map->ToString(val);
-            }
-            break;
-            
-        default:
-            break;
-    }
-    
-    if (components != nullptr)
-    {
-        if (0 <= index && index < components->size())
-            return components->at(index);
-        else
-        {
-            DVASSERT(false);
-            return "???";
-        }
-    }
-    else
-    {
-        DVASSERT(false);
-        return "???";
-    }
 }
 
 VariantType ValueProperty::GetSubValue(int index) const
@@ -248,7 +116,6 @@ void ValueProperty::SetDefaultSubValue(int index, const DAVA::VariantType &newVa
 
 void ValueProperty::ApplyValue(const DAVA::VariantType &value)
 {
-    member->SetValue(object, value);
 }
 
 VariantType ValueProperty::ChangeValueComponent(const VariantType &value, const VariantType &component, int32 index) const
@@ -296,9 +163,9 @@ VariantType ValueProperty::ChangeValueComponent(const VariantType &value, const 
         }
             
         case VariantType::TYPE_INT32:
-            if (member->Desc().type == InspDesc::T_FLAGS)
+            if (GetType() == TYPE_FLAGS)
             {
-                const EnumMap *map = member->Desc().enumMap;
+                const EnumMap *map = GetEnumMap();
                 int32 intValue = value.AsInt32();
                 
                 int val = 0;
@@ -344,9 +211,9 @@ DAVA::VariantType ValueProperty::GetValueComponent(const DAVA::VariantType &valu
         }
             
         case VariantType::TYPE_INT32:
-            if (member->Desc().type == InspDesc::T_FLAGS)
+            if (GetType() == TYPE_FLAGS)
             {
-                const EnumMap *map = member->Desc().enumMap;
+                const EnumMap *map = GetEnumMap();
                 int val = 0;
                 map->GetValue(index, val);
                 return VariantType((value.AsInt32() & val) != 0);

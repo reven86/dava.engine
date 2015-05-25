@@ -16,6 +16,7 @@ EditorCore::EditorCore(QObject *parent)
     , documentGroup(new DocumentGroup(this))
     , mainWindow(new MainWindow())
 {
+    mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
      
     connect(mainWindow, &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
@@ -158,7 +159,7 @@ void EditorCore::UpdateLanguage()
     project->GetEditorFontSystem()->RegisterCurrentLocaleFonts();
     for(auto &document : documents)
     {
-        document->UpdateLanguage();
+        document->RefreshAllControlProperties();
     }
 }
 

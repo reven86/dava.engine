@@ -21,7 +21,6 @@ void ImportedPackagesNode::Add(PackageControlsNode *node)
 {
     DVASSERT(node->GetParent() == NULL);
     node->SetParent(this);
-    node->SetReadOnly();
     packageControlsNode.push_back(SafeRetain(node));
 }
 
@@ -29,7 +28,6 @@ void ImportedPackagesNode::InsertAtIndex(DAVA::int32 index, PackageControlsNode 
 {
     DVASSERT(node->GetParent() == NULL);
     node->SetParent(this);
-    node->SetReadOnly();
     
     packageControlsNode.insert(packageControlsNode.begin() + index, SafeRetain(node));
 }
@@ -108,4 +106,9 @@ void ImportedPackagesNode::Serialize(PackageSerializer *serializer, const DAVA::
     }
     
     serializer->EndArray();
+}
+
+bool ImportedPackagesNode::IsReadOnly() const
+{
+    return true;
 }

@@ -343,6 +343,10 @@ void TextureScrollArea::applyCurrentImageToScenePixmap()
 		prepareImageWithColormask(currentTextureImage, tmpImage);
 		
 		QPixmap pixmap = QPixmap::fromImage(tmpImage);
+        if (pixmap.isNull())
+        {
+            return;
+        }
 		textureScene->setSceneRect(pixmap.rect());
 		texturePixmap->setPixmap(pixmap);
 	}

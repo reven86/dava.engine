@@ -31,17 +31,11 @@
 #define __UIEDITOR__ICONHELPER__
 
 #include <QString>
-#include "DAVAEngine.h"
 
-namespace DAVA {
-    class UIControl;
-}
 class IconHelper
 {
 public:
 	static QString GetIconPathForClassName(const QString& className);
-	static QString GetIconPathForUIControl(DAVA::UIControl* uiControl);
-
     static QString GetCustomIconPath();
 };
 

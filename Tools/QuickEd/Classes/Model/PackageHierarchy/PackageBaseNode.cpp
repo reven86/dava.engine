@@ -37,6 +37,11 @@ String PackageBaseNode::GetName() const
     return "Unknown";
 }
 
+PackageRef *PackageBaseNode::GetPackageRef() const
+{
+    return parent == nullptr ? nullptr : parent->GetPackageRef();
+}
+
 UIControl *PackageBaseNode::GetControl() const
 {
     return NULL;
@@ -80,4 +85,9 @@ bool PackageBaseNode::CanRemove() const
 bool PackageBaseNode::CanCopy() const
 {
     return false;
+}
+
+bool PackageBaseNode::IsReadOnly() const
+{
+    return parent ? parent->IsReadOnly() : true;
 }

@@ -70,10 +70,10 @@ void SkeletonSystem::RemoveEntity(Entity * entity)
     DVASSERT(0);
 }
 
-void SkeletonSystem::ImmediateEvent(Entity * entity, uint32 event)
+void SkeletonSystem::ImmediateEvent(Component * component, uint32 event)
 {    
     if (event == EventSystem::SKELETON_CONFIG_CHANGED)    
-        RebuildSkeleton(entity);                
+        RebuildSkeleton(component->GetEntity());
         
 }
 
