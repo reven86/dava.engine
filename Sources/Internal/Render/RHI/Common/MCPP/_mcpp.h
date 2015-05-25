@@ -23,6 +23,7 @@
 
 extern const char* MCPP_Text;
 
+void    mcpp__set_cur_file( const char* filename );
 
 FILE*   mcpp__fopen( const char* filename, const char* mode );
 int     mcpp__fclose( FILE* file );
@@ -31,6 +32,7 @@ char*   mcpp__fgets( char* buf, int max_size, FILE* file );
 int     mcpp__stat( const char* path, stat_t* buffer );
 
 void    mcpp__set_input( const void* data, unsigned data_sz );
+void    mcpp__cleanup();
 
 
 #endif // ___MCPP_H__

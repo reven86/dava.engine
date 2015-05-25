@@ -16,7 +16,8 @@ namespace rhi
 {
 //==============================================================================
 
-ShaderSource::ShaderSource()
+ShaderSource::ShaderSource( const char* filename )
+  : fileName(filename)
 {
 }
 
@@ -79,6 +80,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
     }
     for( unsigned i=0; i!=def.size(); ++i )
         argv[argc++] = def[i].c_str();
+    SetPreprocessCurFile( fileName.c_str() );
     PreProcessText( srcText, argv, argc, &src );
 
     
