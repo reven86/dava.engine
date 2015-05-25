@@ -281,9 +281,33 @@ public class JNITextField {
                 bitmap.recycle();
             }
             
-            JNIActivity activity = JNIActivity.GetActivity();
-            UpdateTexture task = new UpdateTexture(id, pixels, width, height);
-            activity.PostEventToGL(task);
+            // Workaround! if all pixels is transparent and text length > 0
+            // we have to re-render one more time with delay
+            boolean isTransparent = true;
+            for(int pixel : pixels)
+            {
+                if (pixel != 0)
+                {
+                    isTransparent = false;
+                    break;
+                }
+            }
+
+            if (isTransparent && getText().length() > 0)
+            {
+                postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        renderToTexture();
+                    }
+                }, 1); // 1 - milliseconds tested on different values
+                // stay with 1
+            } else
+            {
+                JNIActivity activity = JNIActivity.GetActivity();
+                UpdateTexture task = new UpdateTexture(id, pixels, width, height);
+                activity.PostEventToGL(task);
+            }
         }
         
         public void setVisible(boolean value) {
