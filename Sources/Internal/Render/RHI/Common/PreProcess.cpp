@@ -117,7 +117,8 @@ PreProcessText( const char* text, std::string* result )
     { 
         "<mcpp>",   // we just need first arg
         "-P",       // do not output #line directives 
-        "-C",       // keep comments
+// it doesn't work as desired with '//' style comments (commented block inserted BEFORE non-commented text)
+//        "-C",       // keep comments
         MCPP_Text
     };
 
@@ -143,7 +144,8 @@ PreProcessText( const char* text, const char** arg, unsigned argCount, std::stri
 
         argv[argc++] = "<mcpp>";// we just need first arg
         argv[argc++] = "-P";    // do not output #line directives
-        argv[argc++] = "-C";    // keep comments
+// it doesn't work as desired with '//' style comments (commented block inserted BEFORE non-commented text)
+//        argv[argc++] = "-C";    // keep comments
         for( const char** a=arg,**a_end=arg+argCount; a!=a_end; ++a )
             argv[argc++] = *a;
         argv[argc++] = MCPP_Text;
