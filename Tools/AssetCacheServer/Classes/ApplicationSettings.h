@@ -27,61 +27,41 @@
 =====================================================================================*/
 
 
-#include "RemoteAssetCacheServer.h"
-#include "ui_RemoteAssetCacheServer.h"
+#ifndef __APPLICATION_SETTINGS_H__
+#define __APPLICATION_SETTINGS_H__
 
-#include <QValidator>
+#include "AssetCache/AssetCacheConstants.h"
+#include "FileSystem/FilePath.h"
 
-
-RemoteAssetCacheServer::RemoteAssetCacheServer(QWidget *parent)
-    : QWidget(parent)
-    , ui(new Ui::RemoteAssetCacheServer)
+struct ServerData
 {
-    ui->setupUi(this);
-
-    QRegExp ipRegExp("(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[.]){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])");
-    QRegExpValidator *ipValidator = new QRegExpValidator(ipRegExp);
-    ui->ipLineEdit->setValidator(ipValidator);
-    ui->ipLineEdit->setText("127.0.0.1");
+    ServerData(DAVA::String _ip, DAVA::uint16 _port) : ip(_ip), port(_port) {};
     
-    connect(ui->removeServerButton, &QPushButton::clicked,
-            this, &RemoteAssetCacheServer::RemoveLater);
-    connect(ui->ipLineEdit, &QLineEdit::textChanged,
-            this, &RemoteAssetCacheServer::OnParametersChanged);
-    connect(ui->portSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnParametersChanged()));
-}
+    DAVA::String ip = "127.0.0.1";
+    DAVA::uint16 port = DAVA::AssetCache::ASSET_SERVER_PORT;
+};
 
-RemoteAssetCacheServer::RemoteAssetCacheServer(ServerData &newServer, QWidget *parent)
-    : RemoteAssetCacheServer(parent)
+class ApplicationSettings
 {
-    ui->ipLineEdit->setText(newServer.ip);
-    ui->portSpinBox->setValue(newServer.port);
-    ui->portSpinBox->setEnabled(false);
-}
 
-RemoteAssetCacheServer::~RemoteAssetCacheServer()
-{
-    delete ui;
-}
+public:
+    
+    void Save();
+    void Load();
 
-ServerData RemoteAssetCacheServer::GetServerData() const
-{
-    return ServerData(ui->ipLineEdit->text(), ui->portSpinBox->value());
-}
+private:
 
-bool RemoteAssetCacheServer::IsCorrectData()
-{
-    QString ip(ui->ipLineEdit->text());
-    QStringList ipList = ip.split(".", QString::SkipEmptyParts);
-    if (ipList.count() != 4)
-    {
-        return false;
-    }
+    void Serialize(DAVA::KeyedArchive * archieve) const;
+    void Deserialize(DAVA::KeyedArchive * archieve);
+    
+    
+public:
 
-    return true;
-}
+    DAVA::FilePath folder;
+    DAVA::float64 cacheSize;
+    DAVA::int32 filesCount;
 
-void RemoteAssetCacheServer::OnParametersChanged()
-{
-    emit ParametersChanged();
-}
+    DAVA::List<ServerData> servers;
+};
+
+#endif // __APPLICATION_SETTINGS_H__

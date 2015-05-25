@@ -244,6 +244,13 @@ void VariantType::SetFloat(float32 value)
 	floatValue = value;
 }
 
+void VariantType::SetFloat64(float64 value)
+{
+    ReleasePointer();
+    type = TYPE_FLOAT64;
+    float64Value = value;
+}
+
 void VariantType::SetString(const String & value)
 {
     ReleasePointer();
@@ -391,6 +398,11 @@ void VariantType::SetVariant(const VariantType& var)
 			SetFloat(var.floatValue);
 		}
 		break;	
+    case TYPE_FLOAT64:
+        {
+            SetFloat64(var.float64Value);
+        }
+        break;
 	case TYPE_STRING:
 		{
 			SetString(var.AsString());
@@ -502,6 +514,12 @@ float32  VariantType::AsFloat() const
 {
 	DVASSERT(type == TYPE_FLOAT);
 	return floatValue;
+}
+
+float64 VariantType::AsFloat64() const
+{
+    DVASSERT(type == TYPE_FLOAT64);
+    return float64Value;
 }
 
 const String &  VariantType::AsString() const
@@ -645,6 +663,12 @@ bool VariantType::Write(File * fp) const
 			if (written != 4)return false;
 		}
 		break;	
+    case TYPE_FLOAT64:
+        {
+            written = fp->Write(&float64Value, sizeof(float64));
+            if (written != sizeof(float64))return false;
+        }
+        break;	
 	case TYPE_STRING:
 		{
 			int32 len = (int32)stringValue->length();
@@ -806,6 +830,12 @@ bool VariantType::Read(File * fp)
 			if (read != 4)return false;
 		}
         break;	
+        case TYPE_FLOAT64:
+            {
+                read = fp->Read(&float64Value, sizeof(float64));
+                if (read != sizeof(float64))return false;
+            }
+            break;	
 		case TYPE_STRING:
 		{
 			int32 len;
@@ -1254,6 +1284,9 @@ void* VariantType::MetaObject()
 	case TYPE_FLOAT:
 		ret = &floatValue;
 		break;	
+    case TYPE_FLOAT64:
+        ret = &float64Value;
+        break;	
 	case TYPE_STRING:
 		ret = stringValue;
 		break;	

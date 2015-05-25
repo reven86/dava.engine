@@ -36,11 +36,15 @@
 #include "FileSystem/Logger.h"
 #include "QtTools/FileDialog/FileDialog.h"
 
+#include "AssetCache/AssetCacheConstants.h"
+
 #include <QFileDialog>
 #include <QMenu>
 #include <QCloseEvent>
 #include <QSettings>
 #include <QCheckBox>
+#include <QDoubleSpinBox>
+#include <QSpinBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -55,6 +59,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->cachFolderLineEdit, &QLineEdit::textChanged, this, &MainWindow::CheckEnableClearButton);
 
+    connect(ui->cachSizeSpinBox, &QDoubleSpinBox::valueChanged, this, &MainWindow::OnCacheSizeChanged);
+    connect(ui->numberOfFilesSpinBox, &QSpinBox::valueChanged, this, &MainWindow::OnNumberOfFilesChanged);
+    
     connect(ui->saveButton, &QPushButton::clicked, this, &MainWindow::OnSaveButtonClicked);
     connect(ui->cancelButton, &QPushButton::clicked, this, &MainWindow::OnCancelButtonClicked);
 
@@ -62,7 +69,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->scrollAreaWidgetContents_2->setLayout(boxLayout);
     ui->scrollAreaWidgetContents_2->layout()->addItem(new QSpacerItem(0, 0, QSizePolicy::Fixed, QSizePolicy::Expanding));
 
+    ui->portSpinBox->setValue(DAVA::AssetCache::ASSET_SERVER_PORT);
+    ui->portSpinBox->setEnabled(false);
+    
+    bool b = this->blockSignals(true);
     ReadSettings();
+    this->blockSignals(b);
 
     ShowTrayIcon();
 
@@ -104,6 +116,18 @@ void MainWindow::OnSelectFolder()
     emit FolderChanged(directory);
     VerifyData();
 }
+
+void MainWindow::OnCacheSizeChanged(double value)
+{
+    emit FolderSizeChanged(value);
+}
+
+void MainWindow::OnNumberOfFilesChanged(int value)
+{
+    emit FilesCountChanged(value);
+}
+
+
 
 void MainWindow::CheckEnableClearButton()
 {
@@ -255,15 +279,16 @@ void MainWindow::ReadSettings()
     DAVA::uint32 numberOfFiles = arch->GetUInt32(String("NumberOfFiles"));
     ui->numberOfFilesSpinBox->setValue(numberOfFiles);
 
-    DAVA::uint32 port = arch->GetUInt32(String("Port"));
-    ui->portSpinBox->setValue(port);
+//    DAVA::uint32 port = arch->GetUInt32(String("Port"));
+//    ui->portSpinBox->setValue(port);
 
     auto size = arch->GetUInt32("ServersSize");
     for (int i = 0; i < size; ++i)
     {
         String ip = arch->GetString(Format("Server_%d_ip", i));
-        DAVA::uint32 port = arch->GetUInt32(Format("Server_%d_port", i));
-        ServerData sData(QString(ip.c_str()), static_cast<quint16>(port));
+//        DAVA::uint32 port = arch->GetUInt32(Format("Server_%d_port", i));
+//        ServerData sData(QString(ip.c_str()), static_cast<quint16>(port));
+        ServerData sData(QString(ip.c_str()), static_cast<quint16>(DAVA::AssetCache::ASSET_SERVER_PORT));
         AddServer(sData);
     }
 
@@ -273,23 +298,21 @@ void MainWindow::ReadSettings()
 
 void MainWindow::WriteSettings()
 {
-    using namespace DAVA;
-
-    FileSystem::Instance()->CreateDirectory("~doc:/AssetServer", true);
-    FilePath path("~doc:/AssetServer/ACS_settings.dat");
-    File *f = File::Create(path, File::CREATE | File::WRITE);
+    DAVA::FileSystem::Instance()->CreateDirectory("~doc:/AssetServer", true);
+    DAVA::FilePath path("~doc:/AssetServer/ACS_settings.dat");
+    DAVA::File *f = DAVA::File::Create(path, DAVA::File::CREATE | DAVA::File::WRITE);
     if (f == nullptr)
     {
-        Logger::Error("File not open. %s. %s", String("MainWindow::ReadSettings").c_str(), path.GetAbsolutePathname().c_str());
+        DAVA::Logger::Error("File not open. %s. %s", DAVA::String("MainWindow::ReadSettings").c_str(), path.GetAbsolutePathname().c_str());
         return;
     }
 
-    KeyedArchive *arch = new KeyedArchive();
+    DAVA::KeyedArchive *arch = new DAVA::KeyedArchive();
 
-    arch->SetString(String("FolderPath"), String(ui->cachFolderLineEdit->text().toStdString()));
-    arch->SetFloat(String("FolderSize"), static_cast<DAVA::float32>(ui->cachSizeSpinBox->value()));
-    arch->SetUInt32(String("NumberOfFiles"), static_cast<DAVA::uint32>(ui->numberOfFilesSpinBox->value()));
-    arch->SetUInt32(String("Port"), static_cast<DAVA::uint32>(ui->portSpinBox->value()));
+    arch->SetString(DAVA::String("FolderPath"), DAVA::String(ui->cachFolderLineEdit->text().toStdString()));
+    arch->SetFloat(DAVA::String("FolderSize"), static_cast<DAVA::float32>(ui->cachSizeSpinBox->value()));
+    arch->SetUInt32(DAVA::String("NumberOfFiles"), static_cast<DAVA::uint32>(ui->numberOfFilesSpinBox->value()));
+//    arch->SetUInt32(DAVA::String("Port"), static_cast<DAVA::uint32>(ui->portSpinBox->value()));
 
     auto size = servers.size();
     arch->SetUInt32("ServersSize", size);
@@ -297,8 +320,8 @@ void MainWindow::WriteSettings()
     for (int i = 0; i < size; ++i)
     {
         auto sData = servers.at(i)->GetServerData();
-        arch->SetString(Format("Server_%d_ip", i), String(sData.ip.toStdString()));
-        arch->SetUInt32(Format("Server_%d_port", i), static_cast<DAVA::uint32>(sData.port));
+//        arch->SetString(DAVA::Format("Server_%d_ip", i), DAVA::String(sData.ip.toStdString()));
+        arch->SetUInt32(DAVA::Format("Server_%d_port", i), static_cast<DAVA::uint32>(sData.port));
     }
 
     arch->Save(f);

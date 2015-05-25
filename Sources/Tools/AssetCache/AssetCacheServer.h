@@ -49,6 +49,8 @@ class ServerDelegate
 {
 public:
     
+    virtual ~ServerDelegate() = default;
+    
     virtual void OnAddedToCache(const CacheItemKey &key, const CachedFiles &files) = 0;
     virtual void OnIsInCache(const CacheItemKey &key) = 0;
     virtual void OnRequestedFromCache(const CacheItemKey &key) = 0;

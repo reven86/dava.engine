@@ -234,6 +234,14 @@ void KeyedArchive::SetFloat(const String & key, float32 value)
 	objectMap[key] = variantValue;
 }
 
+void KeyedArchive::SetFloat64(const String & key, float64 value)
+{
+    DeleteKey(key);
+    VariantType *variantValue = new VariantType();
+    variantValue->SetFloat64(value);
+    objectMap[key] = variantValue;
+}
+
 void KeyedArchive::SetString(const String & key, const String & value)
 {
     DeleteKey(key);
@@ -401,6 +409,13 @@ float32 KeyedArchive::GetFloat(const String & key, float32 defaultValue)
 	if (IsKeyExists(key))
 		return objectMap[key]->AsFloat();
 	return defaultValue;
+}
+
+float64 KeyedArchive::GetFloat64(const String & key, float64 defaultValue)
+{
+    if (IsKeyExists(key))
+        return objectMap[key]->AsFloat64();
+    return defaultValue;
 }
 
 String KeyedArchive::GetString(const String & key, const String & defaultValue)

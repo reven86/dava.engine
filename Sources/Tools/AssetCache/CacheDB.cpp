@@ -46,11 +46,14 @@ namespace AssetCache
     
 const String CacheDB::DB_FILE_NAME = "cache.dat";
     
-CacheDB::CacheDB(const FilePath &folderPath, uint64 size, uint32 _itemsInMemory)
-    : cacheRootFolder(folderPath)
-    , storageSize(size)
-    , itemsInMemory(_itemsInMemory)
+void CacheDB::Initialize(const DAVA::FilePath &folderPath, uint64 size, uint32 _itemsInMemory)
 {
+    DVASSERT(fastCache.size() == 0 && fullCache.size() == 0);
+    
+    cacheRootFolder = folderPath;
+    storageSize = size;
+    itemsInMemory = _itemsInMemory;
+    
     cacheRootFolder.MakeDirectoryPathname();
     cacheSettings = cacheRootFolder + DB_FILE_NAME;
     

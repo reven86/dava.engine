@@ -30,12 +30,15 @@
 #ifndef __DAVAENGINE_ASSET_CACHE_CONSTANTS_H__
 #define __DAVAENGINE_ASSET_CACHE_CONSTANTS_H__
 
+#include "Base/BaseTypes.h"
+
 namespace DAVA
 {
 namespace AssetCache
 {
 
 static const uint32 NET_SERVICE_ID = 0xACCA;
+static const uint16 ASSET_SERVER_PORT = 0xACCA;
 
 enum ePacketID: uint8
 {

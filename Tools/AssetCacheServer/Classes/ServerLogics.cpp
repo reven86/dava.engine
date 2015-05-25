@@ -27,61 +27,47 @@
 =====================================================================================*/
 
 
-#include "RemoteAssetCacheServer.h"
-#include "ui_RemoteAssetCacheServer.h"
+#include "ServerLogics.h"
 
-#include <QValidator>
-
-
-RemoteAssetCacheServer::RemoteAssetCacheServer(QWidget *parent)
-    : QWidget(parent)
-    , ui(new Ui::RemoteAssetCacheServer)
+void ServerLogics::Init(DAVA::AssetCache::Server *_server, DAVA::AssetCache::CacheDB *_dataBase)
 {
-    ui->setupUi(this);
-
-    QRegExp ipRegExp("(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[.]){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])");
-    QRegExpValidator *ipValidator = new QRegExpValidator(ipRegExp);
-    ui->ipLineEdit->setValidator(ipValidator);
-    ui->ipLineEdit->setText("127.0.0.1");
-    
-    connect(ui->removeServerButton, &QPushButton::clicked,
-            this, &RemoteAssetCacheServer::RemoveLater);
-    connect(ui->ipLineEdit, &QLineEdit::textChanged,
-            this, &RemoteAssetCacheServer::OnParametersChanged);
-    connect(ui->portSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnParametersChanged()));
+    server = _server;
+    dataBase = _dataBase;
 }
 
-RemoteAssetCacheServer::RemoteAssetCacheServer(ServerData &newServer, QWidget *parent)
-    : RemoteAssetCacheServer(parent)
+void ServerLogics::OnAddedToCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files)
 {
-    ui->ipLineEdit->setText(newServer.ip);
-    ui->portSpinBox->setValue(newServer.port);
-    ui->portSpinBox->setEnabled(false);
-}
-
-RemoteAssetCacheServer::~RemoteAssetCacheServer()
-{
-    delete ui;
-}
-
-ServerData RemoteAssetCacheServer::GetServerData() const
-{
-    return ServerData(ui->ipLineEdit->text(), ui->portSpinBox->value());
-}
-
-bool RemoteAssetCacheServer::IsCorrectData()
-{
-    QString ip(ui->ipLineEdit->text());
-    QStringList ipList = ip.split(".", QString::SkipEmptyParts);
-    if (ipList.count() != 4)
+    if(server)
     {
-        return false;
+        dataBase->Insert(key, files);
+        server->FilesAddedToCache(key, true);
     }
-
-    return true;
 }
 
-void RemoteAssetCacheServer::OnParametersChanged()
+void ServerLogics::OnIsInCache(const DAVA::AssetCache::CacheItemKey &key)
 {
-    emit ParametersChanged();
+    if(server && dataBase)
+    {
+        auto entry = dataBase->Get(key);
+        bool inCache = (nullptr != entry);
+        
+        server->FilesInCache(key, inCache);
+    }
 }
+
+void ServerLogics::OnRequestedFromCache(const DAVA::AssetCache::CacheItemKey &key)
+{
+    if(server && dataBase)
+    {
+        auto entry = dataBase->Get(key);
+        if(entry)
+        {
+            server->SendFiles(key, entry->GetFiles());
+        }
+        else
+        {
+            server->SendFiles(key, DAVA::AssetCache::CachedFiles());
+        }
+    }
+}
+

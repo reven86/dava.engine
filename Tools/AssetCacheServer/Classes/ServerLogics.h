@@ -27,61 +27,27 @@
 =====================================================================================*/
 
 
-#include "RemoteAssetCacheServer.h"
-#include "ui_RemoteAssetCacheServer.h"
+#ifndef __SERVER_LOGICS_H__
+#define __SERVER_LOGICS_H__
 
-#include <QValidator>
+#include "AssetCache/AssetCache.h"
 
-
-RemoteAssetCacheServer::RemoteAssetCacheServer(QWidget *parent)
-    : QWidget(parent)
-    , ui(new Ui::RemoteAssetCacheServer)
+class ServerLogics: public DAVA::AssetCache::ServerDelegate
 {
-    ui->setupUi(this);
-
-    QRegExp ipRegExp("(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[.]){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])");
-    QRegExpValidator *ipValidator = new QRegExpValidator(ipRegExp);
-    ui->ipLineEdit->setValidator(ipValidator);
-    ui->ipLineEdit->setText("127.0.0.1");
+public:
+    void Init(DAVA::AssetCache::Server *server, DAVA::AssetCache::CacheDB *dataBase);
     
-    connect(ui->removeServerButton, &QPushButton::clicked,
-            this, &RemoteAssetCacheServer::RemoveLater);
-    connect(ui->ipLineEdit, &QLineEdit::textChanged,
-            this, &RemoteAssetCacheServer::OnParametersChanged);
-    connect(ui->portSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnParametersChanged()));
-}
+    void OnAddedToCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files) override;
+    void OnIsInCache(const DAVA::AssetCache::CacheItemKey &key) override;   // Do we need this method
+    void OnRequestedFromCache(const DAVA::AssetCache::CacheItemKey &key) override;
+    
+private:
+    
+    DAVA::AssetCache::Server *server = nullptr;
+    DAVA::AssetCache::CacheDB *dataBase = nullptr;
+};
 
-RemoteAssetCacheServer::RemoteAssetCacheServer(ServerData &newServer, QWidget *parent)
-    : RemoteAssetCacheServer(parent)
-{
-    ui->ipLineEdit->setText(newServer.ip);
-    ui->portSpinBox->setValue(newServer.port);
-    ui->portSpinBox->setEnabled(false);
-}
 
-RemoteAssetCacheServer::~RemoteAssetCacheServer()
-{
-    delete ui;
-}
 
-ServerData RemoteAssetCacheServer::GetServerData() const
-{
-    return ServerData(ui->ipLineEdit->text(), ui->portSpinBox->value());
-}
 
-bool RemoteAssetCacheServer::IsCorrectData()
-{
-    QString ip(ui->ipLineEdit->text());
-    QStringList ipList = ip.split(".", QString::SkipEmptyParts);
-    if (ipList.count() != 4)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-void RemoteAssetCacheServer::OnParametersChanged()
-{
-    emit ParametersChanged();
-}
+#endif // __SERVER_LOGICS_H__

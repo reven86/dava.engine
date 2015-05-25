@@ -27,61 +27,58 @@
 =====================================================================================*/
 
 
-#include "RemoteAssetCacheServer.h"
-#include "ui_RemoteAssetCacheServer.h"
-
-#include <QValidator>
+#include "ServerCore.h"
 
 
-RemoteAssetCacheServer::RemoteAssetCacheServer(QWidget *parent)
-    : QWidget(parent)
-    , ui(new Ui::RemoteAssetCacheServer)
+#include <QTimer>
+
+ServerCore::~ServerCore()
 {
-    ui->setupUi(this);
+    server.Disconnect();
+}
 
-    QRegExp ipRegExp("(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[.]){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])");
-    QRegExpValidator *ipValidator = new QRegExpValidator(ipRegExp);
-    ui->ipLineEdit->setValidator(ipValidator);
-    ui->ipLineEdit->setText("127.0.0.1");
+
+void ServerCore::Start()
+{
+    server.Listen(DAVA::AssetCache::ASSET_SERVER_PORT);
+//    dataBase.Initialize(<#const DAVA::FilePath &folderPath#>, <#uint64 size#>, <#uint32 itemsInMemory#>)
+  
+    logics.Init(&server, &dataBase);
+
     
-    connect(ui->removeServerButton, &QPushButton::clicked,
-            this, &RemoteAssetCacheServer::RemoveLater);
-    connect(ui->ipLineEdit, &QLineEdit::textChanged,
-            this, &RemoteAssetCacheServer::OnParametersChanged);
-    connect(ui->portSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnParametersChanged()));
+    
+    QTimer::singleShot(UPDATE_TIMEOUT, this, &ServerCore::UpdateByTimer);
 }
 
-RemoteAssetCacheServer::RemoteAssetCacheServer(ServerData &newServer, QWidget *parent)
-    : RemoteAssetCacheServer(parent)
+void ServerCore::Update()
 {
-    ui->ipLineEdit->setText(newServer.ip);
-    ui->portSpinBox->setValue(newServer.port);
-    ui->portSpinBox->setEnabled(false);
-}
-
-RemoteAssetCacheServer::~RemoteAssetCacheServer()
-{
-    delete ui;
-}
-
-ServerData RemoteAssetCacheServer::GetServerData() const
-{
-    return ServerData(ui->ipLineEdit->text(), ui->portSpinBox->value());
-}
-
-bool RemoteAssetCacheServer::IsCorrectData()
-{
-    QString ip(ui->ipLineEdit->text());
-    QStringList ipList = ip.split(".", QString::SkipEmptyParts);
-    if (ipList.count() != 4)
+    auto netSystem = DAVA::Net::NetCore::Instance();
+    if(netSystem)
     {
-        return false;
+        netSystem->Poll();
     }
-
-    return true;
 }
 
-void RemoteAssetCacheServer::OnParametersChanged()
+void ServerCore::UpdateByTimer()
 {
-    emit ParametersChanged();
+    Update();
+    QTimer::singleShot(UPDATE_TIMEOUT, this, &ServerCore::UpdateByTimer);
 }
+
+void ServerCore::FolderChanged(QString &path)
+{
+    int a  = 0;
+ 
+}
+
+void ServerCore::FolderSizeChanged(qreal size)
+{
+    int a  = 0;
+   
+}
+
+void ServerCore::FilesCountChanged(quint32 count)
+{
+    int a  = 0;
+}
+

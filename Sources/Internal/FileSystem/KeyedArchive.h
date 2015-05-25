@@ -99,6 +99,13 @@ public:
 		\returns value of variable or defaultValue if key isn't available
 	 */
 	float32 GetFloat(const String & key, float32 defaultValue = 0.0f);
+    /**
+         \brief Function to get variable from archive.
+         \param[in] key string key
+         \param[in] defaultValue this is value that is used if variable with this key do not exists in archive
+         \returns value of variable or defaultValue if key isn't available
+     */
+    float64 GetFloat64(const String & key, float64 defaultValue = 0.0f);
 	/**
 		\brief Functions to get variable from archive.
 		\param[in] key string key
@@ -267,6 +274,15 @@ public:
 		\param[in] value we want to set for this key
 	 */
 	void SetFloat(const String & key, float32 value);
+    
+    /**
+     \brief Function to set variable in archive.
+     \param[in] key string key
+     \param[in] value we want to set for this key
+     */
+    void SetFloat64(const String & key, float64 value);
+
+    
 	/**
 		\brief function to set variable in archive
 		\param[in] key string key

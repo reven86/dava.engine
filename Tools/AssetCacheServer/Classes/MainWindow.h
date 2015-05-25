@@ -53,8 +53,8 @@ public:
 
 signals:
     void FolderChanged(QString &);
-    void FolderSizeChanged(qreal);
-    void FilesCountChanged(quint32);
+    void FolderSizeChanged(double);
+    void FilesCountChanged(int);
     void NewServerAdded(ServerData);
     void ServerRemoved(ServerData);
     void ServersChanged(QVector<ServerData>);
@@ -65,7 +65,11 @@ protected:
 private slots:
     void OnAddNewServerWidget();
     void OnRemoveServerWidget();
+    
     void OnSelectFolder();
+    void OnCacheSizeChanged(double value);
+    void OnNumberOfFilesChanged(int value);
+
     void CheckEnableClearButton();
     void OnTrayIconActivated(QSystemTrayIcon::ActivationReason reason);
     void OnServerParametersChanged();
@@ -79,6 +83,9 @@ private slots:
     void SetFilesCount(quint32 filesCounts);
     void AddServers(QVector<ServerData> &newServers);
     void AddServer(ServerData newServer);
+    
+    
+
 
 private:
     void CreateTrayIconActions();

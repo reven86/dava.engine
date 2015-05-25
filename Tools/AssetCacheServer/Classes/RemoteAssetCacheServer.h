@@ -32,14 +32,6 @@
 
 #include <QWidget>
 
-struct ServerData
-{
-    ServerData();
-    ServerData(QString newIp, quint16 newPort);
-
-    QString ip;
-    quint16 port;
-};
 
 namespace Ui
 {

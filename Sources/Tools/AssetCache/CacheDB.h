@@ -79,12 +79,14 @@ class CacheDB
     
     using CACHE = UnorderedMap<CacheItemKey, ServerCacheEntry>;
     using FASTCACHE = UnorderedMap<CacheItemKey, ServerCacheEntry *>;
-    
+
 public:
     
-    CacheDB(const FilePath &folderPath, uint64 size, uint32 itemsInMemory);
+    CacheDB() = default;
     virtual ~CacheDB();
 
+    void Initialize(const FilePath &folderPath, uint64 size, uint32 itemsInMemory);
+    
     void Save() const;
     void Load();
     
@@ -115,8 +117,8 @@ private:
     FilePath cacheRootFolder;           //path to folder with settings and cache of files
     FilePath cacheSettings;             //path to settings
 
-    const uint64 storageSize;           //maximum cache size
-    const uint32 itemsInMemory;         //count of items in memory, to use for fast access
+    uint64 storageSize = 0;             //maximum cache size
+    uint32 itemsInMemory = 0;           //count of items in memory, to use for fast access
 
     uint64 usedSize = 0;                //used by files
     uint64 nextItemID = 0;              //item counter, used as last access time token
