@@ -132,7 +132,7 @@ void BuildFlagsKey(const FastName& name,const HashMap<FastName, int32>& defines,
     key.clear();
     key.reserve(defines.size() * 2 + 1);
     for (auto& define : defines)
-    {
+    {       
         key.push_back(define.first.Index());
         key.push_back(define.second);
     }
@@ -207,8 +207,8 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     for (auto& it : defines)
     {
         progDefines.push_back(String(it.first.c_str()));
-        progDefines.push_back(DAVA::Format("%d", it.second));        
-        resName += Format("%s = %d   ", it.first.c_str(), it.second);
+        progDefines.push_back(DAVA::Format("%d", it.second));                
+        resName += Format("%s = %d, ", it.first.c_str(), it.second);
     }
 
 
@@ -227,7 +227,7 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
 
     rhi::ShaderSource vSource, fSource;
     vSource.Construct(rhi::PROG_VERTEX, sourceCode.vProgText, progDefines);
-    fSource.Construct(rhi::PROG_FRAGMENT, sourceCode.fProgText, progDefines);
+    fSource.Construct(rhi::PROG_FRAGMENT, sourceCode.fProgText, progDefines);    
 //    vSource.Dump();
 //    fSource.Dump();    
     
@@ -245,7 +245,9 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     psDesc.blending = fSource.Blending();
     rhi::HPipelineState piplineState = rhi::AcquireRenderPipelineState(psDesc);
     
-    ShaderDescriptor *res = new ShaderDescriptor(&vSource, &fSource, piplineState);
+    ShaderDescriptor *res = new ShaderDescriptor(&vSource, &fSource, piplineState);    
+    res->sourceName = name;
+    res->defines = defines;
     shaderDescriptors[key] = res;
 
     return res;

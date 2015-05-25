@@ -159,7 +159,7 @@ void RenderSystem::UnregisterBatch(RenderBatch * batch)
 }
     
 void RenderSystem::RegisterMaterial(NMaterial * material)
-{
+{     
     NMaterial * topParent = nullptr;
 
     // search for top material that isn't global

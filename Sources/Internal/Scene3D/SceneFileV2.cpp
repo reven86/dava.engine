@@ -485,12 +485,10 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
     for (int ci = 0; ci < header.nodeCount; ++ci)
     {
         LoadHierarchy(0, &globalMaterial, rootNode, file, 1);
-    }
-
-    globalMaterial->RemoveFlag(NMaterialFlagName::FLAG_VERTEXFOG);
+    }    
 
     if(nullptr != globalMaterial)
-    {
+    {        
         scene->SetGlobalMaterial(globalMaterial);
     }
 		    
@@ -1337,8 +1335,7 @@ void SceneFileV2::ReplaceOldNodes(Entity * currentNode)
 }
 
 void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity * node)
-{
-#if RHI_COMPLETE
+{      
     RenderObject * ro = GetRenderObject(node);
     if (ro)
     {
@@ -1354,18 +1351,13 @@ void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity * node)
 
             while (material)
             {
-                flagValue = material->GetFlagValue(FLAG_FOG_EXP);
-                if ((flagValue & NMaterial::FlagInherited) == 0)
-                {
-                    material->ResetFlag(FLAG_FOG_EXP);
-                }
+                /*if (material->HasLocalFlag(FLAG_FOG_EXP))
+                    material->RemoveFlag(FLAG_FOG_EXP);                */
 
-                flagValue = material->GetFlagValue(FLAG_TILED_DECAL);
-                if ((flagValue & NMaterial::FlagInherited) == 0)
+                if (material->HasLocalFlag(FLAG_TILED_DECAL))
                 {
-                    NMaterial::eFlagValue flag = ((flagValue & NMaterial::FlagOn) == NMaterial::FlagOn) ? NMaterial::FlagOn : NMaterial::FlagOff;
-                    material->SetFlag(NMaterialFlagName::FLAG_TILED_DECAL_MASK, flag);
-                    material->ResetFlag(FLAG_TILED_DECAL);
+                    material->AddFlag(NMaterialFlagName::FLAG_TILED_DECAL_MASK, material->GetLocalFlagValue(FLAG_TILED_DECAL));
+                    material->RemoveFlag(FLAG_TILED_DECAL);
                 }
 
                 material = material->GetParent();
@@ -1379,7 +1371,6 @@ void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity * node)
         Entity * child = node->GetChild(i);
         RemoveDeprecatedMaterialFlags(child);
     }
-#endif //RHI_COMPLETE
 }
 
 void SceneFileV2::RebuildTangentSpace(Entity *entity)
@@ -1408,7 +1399,7 @@ void SceneFileV2::RebuildTangentSpace(Entity *entity)
 
 void SceneFileV2::ConvertShadowVolumes(Entity * entity, NMaterial * shadowMaterialParent)
 {
-#ifdef RHI_COMPLETE
+
     RenderObject * ro = GetRenderObject(entity);
     if(ro)
     {
@@ -1430,7 +1421,7 @@ void SceneFileV2::ConvertShadowVolumes(Entity * entity, NMaterial * shadowMateri
                     shadowPg->Release();
                 }
 
-                NMaterial* shadowMaterial = NMaterial::CreateMaterialInstance();
+                NMaterial* shadowMaterial = new NMaterial();
                 shadowMaterial->SetParent(shadowMaterialParent);
                 shadowBatch->SetMaterial(shadowMaterial);
                 shadowMaterial->Release();
@@ -1447,7 +1438,7 @@ void SceneFileV2::ConvertShadowVolumes(Entity * entity, NMaterial * shadowMateri
         Entity * child = entity->GetChild(i);
         ConvertShadowVolumes(child, shadowMaterialParent);
     }
-#endif // RHI_COMPLETE
+
 }
 
 void SceneFileV2::OptimizeScene(Entity * rootNode)

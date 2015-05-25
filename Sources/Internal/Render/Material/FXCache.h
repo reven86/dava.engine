@@ -48,6 +48,10 @@ struct RenderPassDescriptor
 struct FXDescriptor
 {
     Vector<RenderPassDescriptor> renderPassDescriptors;
+
+//for storing and further debug simplification    
+    FastName fxName;
+    HashMap<FastName, int32> defines;
 };
 
 namespace FXCache

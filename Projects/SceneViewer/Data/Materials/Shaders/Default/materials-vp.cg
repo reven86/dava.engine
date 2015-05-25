@@ -13,6 +13,10 @@
 #undef PIXEL_LIT
 #endif
 
+#if defined VERTEX_FOG
+#undef VERTEX_FOG
+#endif
+
 
 
 

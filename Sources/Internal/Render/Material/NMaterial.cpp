@@ -277,6 +277,13 @@ void NMaterial::SetFlag(const FastName& flagName, int32 value)
     InvalidateRenderVariants();
 }
 
+
+int32 NMaterial::GetLocalFlagValue(const FastName& flagName)
+{
+    DVASSERT(localFlags.find(flagName) != localFlags.end());
+    return localFlags[flagName];
+}
+
 bool NMaterial::HasLocalFlag(const FastName& flagName)
 {
     return localFlags.find(flagName) != localFlags.end();
@@ -326,8 +333,7 @@ void NMaterial::AddChildMaterial(NMaterial *material)
 {    
     DVASSERT(material);
     children.push_back(material);
-    material->InvalidateBufferBindings();
-    material->InvalidateTextureBindings();
+    material->InvalidateRenderVariants();    
 }
 
 void NMaterial::RemoveChildMaterial(NMaterial *material)
@@ -390,9 +396,15 @@ void NMaterial::RebuildRenderVariants()
     CollectMaterialFlags(flags);
     
     //RHI_COMPLETE - move quality to numbers, or flags to fastname
-    flags[NMaterialQualityName::QUALITY_FLAG_NAME] = 0; // QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup());
-    
+    flags[NMaterialQualityName::QUALITY_FLAG_NAME] = 0; // QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup());        
+
     const FXDescriptor& fxDescr = FXCache::GetFXDescriptor(GetFXName(), flags);
+    
+    for (auto &sampler : fxDescr.renderPassDescriptors[0].shader->fragmentSamplerList)
+    {
+        if (sampler.uid == FastName("decal"))
+            int ttt = 3;
+    }
 
     /*at least in theory flag changes can lead to changes in number of render pa*/
     activeVariantInstance = nullptr;
@@ -553,7 +565,11 @@ void NMaterial::RebuildTextureBindings()
                 Texture *tex = GetEffectiveTexture(currShader->fragmentSamplerList[i].uid);
                 //RHI_COMPLETE kostyl - on some maps there are objects with incomplete texture set - later think how to init with default texture (anyway would be required by RE)
                 if (!tex)
-                    tex = Texture::CreatePink(rhi::TEXTURE_TYPE_2D);
+                {
+                    Logger::Debug(" no texture for slot : %s", currShader->fragmentSamplerList[i].uid.c_str());
+                    tex = Texture::CreatePink(rhi::TEXTURE_TYPE_2D, false);                    
+                }
+                    
                 DVASSERT(tex);
                 textureDescr.texture[i] = tex->handle;
                 samplerDescr.sampler[i] = tex->samplerState;                

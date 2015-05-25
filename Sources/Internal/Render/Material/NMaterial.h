@@ -123,7 +123,8 @@ public:
     void AddFlag(const FastName& flagName, int32 value);
     void RemoveFlag(const FastName& flagName);
     void SetFlag(const FastName& flagName, int32 value);
-    bool HasLocalFlag(const FastName& flagName);    
+    int32 GetLocalFlagValue(const FastName& flagName);
+    bool HasLocalFlag(const FastName& flagName);        
 
     void SetParent(NMaterial *parent);
     NMaterial* GetParent();       

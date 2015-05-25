@@ -992,12 +992,12 @@ void Scene::HandleEvent(Observable * observable)
 {
 
     RenderOptions * options = dynamic_cast<RenderOptions *>(observable);
-#if RHI_COMPLETE
+
     if (options->IsOptionEnabled(RenderOptions::REPLACE_LIGHTMAP_MIPMAPS))
-        MipMapReplacer::ReplaceMipMaps(this, NMaterial::TEXTURE_LIGHTMAP);
+        MipMapReplacer::ReplaceMipMaps(this, NMaterialTextureName::TEXTURE_LIGHTMAP);
     if (options->IsOptionEnabled(RenderOptions::REPLACE_ALBEDO_MIPMAPS))
-        MipMapReplacer::ReplaceMipMaps(this, NMaterial::TEXTURE_ALBEDO);
-#endif // RHI_COMPLETE
+        MipMapReplacer::ReplaceMipMaps(this, NMaterialTextureName::TEXTURE_ALBEDO);
+
 
     if (options->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && !staticOcclusionDebugDrawSystem)
     {
