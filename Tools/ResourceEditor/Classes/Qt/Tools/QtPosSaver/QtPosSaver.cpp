@@ -68,15 +68,15 @@ QtPosSaver::~QtPosSaver()
 {
 	if (settingsArchiveIsLoaded)	
 	{
-		//if (!attachedWidget.isNull() && !attachedWidgetName.isEmpty() && attachedWidget->isVisible())
-		//{
-  //          OnHide();
-		//}
+        if ( !attachedWidget.isNull() && !attachedWidgetName.isEmpty() && attachedWidget->isVisible() )
+        {
+            OnHide();
+        }
 
-  //      if ( !attachedWidget.isNull() )
-  //      {
-  //          attachedWidget->removeEventFilter( this );
-  //      }
+        if ( !attachedWidget.isNull() )
+        {
+            attachedWidget->removeEventFilter( this );
+        }
 
 		if (1 == settingsArchive->GetRetainCount())
 		{
