@@ -68,15 +68,15 @@ QtPosSaver::~QtPosSaver()
 {
 	if (settingsArchiveIsLoaded)	
 	{
-		if (!attachedWidget.isNull() && !attachedWidgetName.isEmpty() && attachedWidget->isVisible())
-		{
-            OnHide();
-		}
+		//if (!attachedWidget.isNull() && !attachedWidgetName.isEmpty() && attachedWidget->isVisible())
+		//{
+  //          OnHide();
+		//}
 
-        if ( !attachedWidget.isNull() )
-        {
-            attachedWidget->removeEventFilter( this );
-        }
+  //      if ( !attachedWidget.isNull() )
+  //      {
+  //          attachedWidget->removeEventFilter( this );
+  //      }
 
 		if (1 == settingsArchive->GetRetainCount())
 		{
@@ -182,23 +182,14 @@ void QtPosSaver::LoadGeometry(QWidget *widget)
         const auto isMaximizedKey = QString( "%1-maximized-%2" ).arg( attachedWidgetName ).arg( widget->objectName() );
         const auto mState = Load( isMaximizedKey );
 
+        const auto geometry = Load( normalKey );
+        widget->restoreGeometry( geometry );
+
         if (!mState.isEmpty() && mState.at(0) != 0)
 		{
-			if (widget->isVisible())
-			{
-				widget->showMaximized();
-			}
-			else
-			{
-                const auto f = helper->getTrackedEvents() | WidgetStateHelper::MaximizeOnShowOnce;
-                helper->setTrackedEvents( f );
-            }
+            const auto f = helper->getTrackedEvents() | WidgetStateHelper::MaximizeOnShowOnce;
+            helper->setTrackedEvents( f );
 		}
-        else
-        {
-            const auto geometry = Load( normalKey );
-            widget->restoreGeometry( geometry );
-        }
 	}
 }
 

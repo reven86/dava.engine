@@ -1508,7 +1508,7 @@ void QtMainWindow::OnZeroPivotPoint()
 
 void QtMainWindow::OnMaterialEditor()
 { 
-	MaterialEditor::Instance()->showNormal();
+	MaterialEditor::Instance()->show();
 }
 
 void QtMainWindow::OnTextureBrowser()
@@ -1521,7 +1521,7 @@ void QtMainWindow::OnTextureBrowser()
 		selectedEntities = sceneEditor->selectionSystem->GetSelection();
 	}
 
-	TextureBrowser::Instance()->showNormal();
+	TextureBrowser::Instance()->show();
 	TextureBrowser::Instance()->sceneActivated(sceneEditor);
 	TextureBrowser::Instance()->sceneSelectionChanged(sceneEditor, &selectedEntities, NULL); 
 }

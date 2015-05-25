@@ -44,6 +44,8 @@ class QSplitter;
 class QtPosSaver
     : public QObject
 {
+    Q_OBJECT
+
 public:
 	explicit QtPosSaver( QObject *parent = nullptr );
 	~QtPosSaver();

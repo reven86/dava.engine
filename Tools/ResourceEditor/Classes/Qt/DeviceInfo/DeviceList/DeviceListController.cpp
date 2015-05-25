@@ -55,10 +55,10 @@ void DeviceListController::SetView(DeviceListWidget* _view)
 
 void DeviceListController::ShowView()
 {
-    if (view)
+    if (!view.isNull())
     {
         // Here code to show view if hidden or restore view if minimized or hidden by main window
-        view->showNormal();
+        view->show();
         view->activateWindow();
         view->raise();
     }

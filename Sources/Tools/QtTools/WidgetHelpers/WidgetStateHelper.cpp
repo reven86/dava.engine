@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QWindow>
 #include <QScreen>
+#include <QTimer>
 
 #include <QDebug>
 
@@ -85,7 +86,6 @@ void WidgetStateHelper::onShowEvent()
     if ( trackedEvents.testFlag( MaximizeOnShowOnce ) )
     {
         trackedWidget->showMaximized();
-        trackedWidget->updateGeometry();
         trackedEvents &= ~MaximizeOnShowOnce;
     }
 }
