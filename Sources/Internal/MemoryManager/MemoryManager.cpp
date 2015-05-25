@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cassert>
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 #include <dbghelp.h>
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <execinfo.h>
@@ -652,7 +652,7 @@ size_t MemoryManager::GetBlockRange(uint32 rangeBegin, uint32 rangeEnd, MemoryBl
 CC_NOINLINE void MemoryManager::CollectBacktrace(Backtrace* backtrace, size_t nskip)
 {
     Memset(backtrace, 0, sizeof(Backtrace));
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
     backtrace->depth = CaptureStackBackTrace(nskip + 1, COUNT_OF(backtrace->frames), backtrace->frames, nullptr);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     backtrace->depth = ::backtrace(backtrace->frames, COUNT_OF(backtrace->frames));
@@ -671,7 +671,7 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
         symbols = new (&symbolStorage) SymbolMap;
     }
     
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
     HANDLE hprocess = GetCurrentProcess();
     if (!symInited)
     {

@@ -38,8 +38,8 @@ namespace Net
 
 const char8* ErrorToString(int32 error)
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return "";
 #else
     return uv_strerror(error);

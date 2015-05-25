@@ -162,9 +162,9 @@ public:
 private:
     static ScreenInfo screenInfo;
 
-#if defined (__DAVAENGINE_WINDOWS_STORE__)
+#if defined (__DAVAENGINE_WIN_UAP__)
 	static void UpdateScreenInfo();
-#endif //  (__DAVAENGINE_WINDOWS_STORE__)
+#endif //  (__DAVAENGINE_WIN_UAP__)
 };
 
 };

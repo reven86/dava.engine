@@ -36,7 +36,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
-#elif defined(__DAVAENGINE_WIN32__)
+#elif defined(__DAVAENGINE_WINDOWS__)
 #include <stdlib.h>
 #include <stdio.h>
 #include <io.h>

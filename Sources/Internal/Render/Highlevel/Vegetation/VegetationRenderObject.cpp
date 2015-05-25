@@ -434,7 +434,7 @@ bool VegetationRenderObject::IsDataLoadNeeded()
     
     RenderManager::Instance()->GetOptions()->SetOption(RenderOptions::VEGETATION_DRAW, shouldLoadData);
     
-#if defined(__DAVAENGINE_MACOS__)  || defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_MACOS__)  || defined(__DAVAENGINE_WINDOWS__)
     shouldLoadData = true;
 #endif
 
@@ -1130,7 +1130,7 @@ bool VegetationRenderObject::ReadyToRender()
 {
     bool renderFlag = IsHardwareCapableToRenderVegetation() && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::VEGETATION_DRAW);
     
-#if defined(__DAVAENGINE_MACOS__)  || defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_MACOS__)  || defined(__DAVAENGINE_WINDOWS__)
     //VI: case when vegetation was turned off and then qualit changed from low t high is not a real-world scenario
     //VI: real-world scenario is in resource editor when quality has been changed.
     FastName currentQuality = QualitySettingsSystem::Instance()->GetCurMaterialQuality(VegetationPropertyNames::VEGETATION_QUALITY_GROUP_NAME);

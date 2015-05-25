@@ -27,19 +27,6 @@
 =====================================================================================*/
 
 #include "Base/Platform.h"
-#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+#if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "DAVAEngine.h"
-
-int APIENTRY WinMain(HINSTANCE hInstance,
-                    HINSTANCE hPrevInstance,
-                    LPSTR    lpCmdLine,
-                    int       nCmdShow)
-{
-    UNREFERENCED_PARAMETER(hPrevInstance);
-    UNREFERENCED_PARAMETER(lpCmdLine);
-
-    return DAVA::Core::Run(0, 0, hInstance);
-}
-
-#endif // defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+#endif // defined(__DAVAENGINE_WIN_UAP__)

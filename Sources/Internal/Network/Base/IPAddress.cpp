@@ -44,8 +44,8 @@ IPAddress::IPAddress(const char8* address) : addr(0)
 
 bool IPAddress::ToString(char8* buffer, size_t size) const
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return false;
 #else
     DVASSERT(buffer != NULL && size > 0);
@@ -62,8 +62,8 @@ String IPAddress::ToString() const
 
 IPAddress IPAddress::FromString(const char8* addr)
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return IPAddress();
 #else
     DVASSERT(addr != NULL);

@@ -236,9 +236,9 @@ static int dev_zero_fd = -1; /* Cached file descriptor for /dev/zero. */
 
 #else /* WIN32 */
 
-#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+#if defined(__DAVAENGINE_WIN32__)
 #define VirtualAllocFunc VirtualAlloc
-#elif defined(__DAVAENGINE_WINDOWS_STORE__)
+#elif defined(__DAVAENGINE_WIN_UAP__)
 #define VirtualAllocFunc VirtualAllocFromApp
 #endif
 

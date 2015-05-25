@@ -32,7 +32,7 @@
 
 #include "Base/Platform.h"
 
-#if defined __DAVAENGINE_WINDOWS_DESKTOP__
+#if defined __DAVAENGINE_WIN32__
 
 #pragma warning(push)
 #pragma warning(disable: 4717)
@@ -1171,4 +1171,4 @@ void WebViewControl::CleanData()
 
 } // end namespace DAVA
 
-#endif //__DAVAENGINE_WINDOWS_DESKTOP__
+#endif //__DAVAENGINE_WIN32__

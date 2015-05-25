@@ -65,7 +65,7 @@
 
 	#include <OpenGL/OpenGL.h>
 	//	#include <GLUT/glut.h>
-#elif defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+#elif defined(__DAVAENGINE_WIN32__)
  	#if defined(__DAVAENGINE_RENDER_AUTOCONFIG__)
  	#define __DAVAENGINE_DIRECTX9__
 //	#define __DAVAENGINE_OPENGL__
@@ -85,7 +85,7 @@
     #endif
 
 
-#elif defined(__DAVAENGINE_WINDOWS_STORE__)
+#elif defined(__DAVAENGINE_WIN_UAP__)
 
 #define GL_GLEXT_PROTOTYPES
 #include <EGL/egl.h>
@@ -350,7 +350,7 @@ enum eFillMode
 
 extern const String FILL_MODE_NAMES[FILLMODE_COUNT];
 
-#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__))
+#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__))
 extern const GLint FILLMODE_MAP[FILLMODE_COUNT];
 #elif defined(__DAVAENGINE_DIRECTX9__) 
 extern const int32 FILLMODE_MAP[FILLMODE_COUNT];

@@ -118,9 +118,9 @@ void FormatsTest::TestPvr(PerfFuncData *data)
 
         TestImageInfo(compressedPathname, requestedFormat, data);
 
-#if !(defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
+#if !(defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__))
         continue;
-#endif //#if !(defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
+#endif //#if !(defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__))
 
         const DAVA::PixelFormatDescriptor & descriptor = DAVA::PixelFormatDescriptor::GetPixelFormatDescriptor(requestedFormat);
         if (descriptor.isHardwareSupported)
@@ -178,9 +178,9 @@ void FormatsTest::TestDds(PerfFuncData *data)
 
         TestImageInfo(compressedPathname, requestedFormat, data);
 
-#if !(defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
+#if !(defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__))
         continue;
-#endif //#if !(defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
+#endif //#if !(defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__))
 
 #if defined(__DAVAENGINE_MACOS__) && (requestedFormat == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
         continue;

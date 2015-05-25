@@ -31,7 +31,7 @@
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
 
 #include "Notification/LocalNotificationImpl.h"
 #include "Base/Message.h"

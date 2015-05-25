@@ -45,7 +45,7 @@
 namespace DAVA
 {
 
-#if defined(__DAVAENGINE_WINDOWS_STORE__)
+#if defined(__DAVAENGINE_WIN_UAP__)
 using namespace Platform;
 using namespace Windows::Foundation::Collections;
 
@@ -230,7 +230,7 @@ void RenderManager::Release()
 	}
 }
 
-#elif defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+#elif defined(__DAVAENGINE_WIN32__)
 
 static HDC hDC = nullptr;
 static HGLRC hRC = nullptr;
@@ -284,7 +284,7 @@ bool RenderManager::ChangeDisplayMode(DisplayMode mode, bool isFullscreen)
 	return true;
 }	
 	
-#else //#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+#else //#if defined(__DAVAENGINE_WIN32__)
 
 bool RenderManager::Create()
 {
@@ -296,7 +296,7 @@ void RenderManager::Release()
 	
 }
 
-#endif //#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+#endif //#if defined(__DAVAENGINE_WIN32__)
 
 #if defined(__DAVAENGINE_ANDROID__)
 typedef void (GL_APIENTRYP PFNGLDISCARDFRAMEBUFFEREXTPROC) (GLenum target, GLsizei numAttachments, const GLenum *attachments);
@@ -365,7 +365,7 @@ void RenderManager::DetectRenderingCapabilities()
     InitFakeOcclusion();
 #   endif
 
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
 
 	caps.isPVRTCSupported = false;
 
@@ -419,11 +419,11 @@ void RenderManager::BeginFrame()
 void RenderManager::EndFrame()
 {
 	isInsideDraw = false;
-#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+#if defined(__DAVAENGINE_WIN32__)
 	::SwapBuffers(hDC);
-#elif defined(__DAVAENGINE_WINDOWS_STORE__)
+#elif defined(__DAVAENGINE_WIN_UAP__)
     eglSwapBuffers(mEglDisplay, mEglSurface);
-#endif //#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+#endif //#if defined(__DAVAENGINE_WIN32__)
 	
 	RENDER_VERIFY(;);	// verify at the end of the frame
     
@@ -605,7 +605,7 @@ void RenderManager::ClearDepthBuffer(float32 depth)
 {
 #if defined(__DAVAENGINE_IPHONE__) || \
     defined (__DAVAENGINE_ANDROID__) || \
-    defined (__DAVAENGINE_WINDOWS_STORE__)
+    defined (__DAVAENGINE_WIN_UAP__)
     RENDER_VERIFY(glClearDepthf(depth));
 #else //#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glClearDepth(depth));
@@ -624,7 +624,7 @@ void RenderManager::Clear(const Color & color, float32 depth, int32 stencil)
     RENDER_VERIFY(glClearColor(color.r, color.g, color.b, color.a));
 #if defined(__DAVAENGINE_IPHONE__) || \
     defined (__DAVAENGINE_ANDROID__) || \
-    defined (__DAVAENGINE_WINDOWS_STORE__)
+    defined (__DAVAENGINE_WIN_UAP__)
     RENDER_VERIFY(glClearDepthf(depth));
 #else //#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glClearDepth(depth));

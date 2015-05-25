@@ -126,8 +126,8 @@ int32 TCPSocketTemplate<T>::LocalEndpoint(Endpoint& endpoint)
 template <typename T>
 int32 TCPSocketTemplate<T>::RemoteEndpoint(Endpoint& endpoint)
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return -1;
 #else
     DVASSERT(true == isOpen && false == isClosing);
@@ -157,8 +157,8 @@ bool TCPSocketTemplate<T>::IsClosing() const
 template <typename T>
 int32 TCPSocketTemplate<T>::DoOpen()
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return -1;
 #else
     DVASSERT(false == isOpen && false == isClosing);
@@ -178,8 +178,8 @@ int32 TCPSocketTemplate<T>::DoOpen()
 template <typename T>
 int32 TCPSocketTemplate<T>::DoConnect(const Endpoint& endpoint)
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return -1;
 #else
     DVASSERT(false == isClosing);
@@ -195,8 +195,8 @@ int32 TCPSocketTemplate<T>::DoConnect(const Endpoint& endpoint)
 template <typename T>
 int32 TCPSocketTemplate<T>::DoStartRead()
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return -1;
 #else
     DVASSERT(true == isOpen && false == isClosing);
@@ -207,8 +207,8 @@ int32 TCPSocketTemplate<T>::DoStartRead()
 template <typename T>
 int32 TCPSocketTemplate<T>::DoWrite(const Buffer* buffers, size_t bufferCount)
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return -1;
 #else
     DVASSERT(true == isOpen && false == isClosing);
@@ -229,8 +229,8 @@ int32 TCPSocketTemplate<T>::DoWrite(const Buffer* buffers, size_t bufferCount)
 template <typename T>
 int32 TCPSocketTemplate<T>::DoShutdown()
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return -1;
 #else
     DVASSERT(true == isOpen && false == isClosing);
@@ -241,8 +241,8 @@ int32 TCPSocketTemplate<T>::DoShutdown()
 template <typename T>
 void TCPSocketTemplate<T>::DoClose()
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 #else
     DVASSERT(true == isOpen && false == isClosing);
     isOpen = false;

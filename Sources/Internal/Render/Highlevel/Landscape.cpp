@@ -1132,7 +1132,7 @@ void Landscape::Draw(Camera * camera)
 		return;
 	}
 	
-#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
+#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__))
 //    if (debugFlags & DEBUG_DRAW_GRID)
 //    {
 //        RenderManager::Instance()->SetColor(1.0f, 0.f, 0.f, 1.f);
@@ -1146,7 +1146,7 @@ void Landscape::Draw(Camera * camera)
     
     //SceneNode::Draw();
 
-#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
+#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__))
 //    if (!(debugFlags & DEBUG_DRAW_GRID))
 //    {
 //        RenderManager::Instance()->ResetColor();

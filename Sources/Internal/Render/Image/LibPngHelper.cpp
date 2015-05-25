@@ -44,9 +44,9 @@
 
 #include <libpng/png.h>
 
-#if !defined(__DAVAENGINE_WIN32__)
+#if !defined(__DAVAENGINE_WINDOWS__)
 #include <unistd.h>
-#endif //#if !defined(__DAVAENGINE_WIN32__)
+#endif //#if !defined(__DAVAENGINE_WINDOWS__)
 
 using namespace DAVA;
 

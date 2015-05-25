@@ -34,7 +34,7 @@
 
 #endif
 
-#if defined(__DAVAENGINE_WINDOWS_DESKTOP__) || defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
 
 #if defined(__DAVAENGINE_MACOS__)
 #include <sys/wait.h>
@@ -55,7 +55,7 @@ namespace DAVA
 		runArgs = args;
 		running = false;
 		
-#if defined (__DAVAENGINE_WIN32__)
+#if defined (__DAVAENGINE_WINDOWS__)
 		childProcIn[0] = childProcIn[1] = 0;
 		childProcOut[0] = childProcOut[1] = 0;
 #else
@@ -88,7 +88,7 @@ namespace DAVA
 		return runArgs;
 	}
 
-#if defined (__DAVAENGINE_WINDOWS_DESKTOP__)
+#if defined (__DAVAENGINE_WIN32__)
 	
 	void Process::CleanupHandles()
 	{

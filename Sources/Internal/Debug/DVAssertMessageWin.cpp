@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 #include "Base/Platform.h"
-#if defined (__DAVAENGINE_WIN32__)
+#if defined (__DAVAENGINE_WINDOWS__)
 
 #include <cassert>
 #include <Shlwapi.h>
@@ -40,7 +40,7 @@
 namespace DAVA
 {
 
-#if defined (__DAVAENGINE_WINDOWS_DESKTOP__)
+#if defined (__DAVAENGINE_WIN32__)
 
 bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
 {
@@ -61,11 +61,11 @@ bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
     }
 }
 
-#elif defined (__DAVAENGINE_WINDOWS_STORE__)
+#elif defined (__DAVAENGINE_WIN_UAP__)
 
 bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
 {
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__MARKER__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
     using namespace Windows::UI::Popups;
     
     WideString contentStr = UTF8Utils::EncodeToWideString(content);
@@ -94,8 +94,8 @@ bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
     return false;
 }
 
-#endif // defined (__DAVAENGINE_WINDOWS_STORE__)
+#endif // defined (__DAVAENGINE_WIN_UAP__)
 
 } // namespace DAVA
 
-#endif //#if defined (__DAVAENGINE_WIN32__)
+#endif //#if defined (__DAVAENGINE_WINDOWS__)

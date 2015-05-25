@@ -105,7 +105,7 @@ const List<FilePath> FilePath::GetResourcesFolders()
 }
 
     
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 void FilePath::InitializeBundleName()
 {
 	FilePath execDirectory = FileSystem::Instance()->GetCurrentExecutableDirectory();
@@ -116,7 +116,7 @@ void FilePath::InitializeBundleName()
 		AddResourcesFolder(workingDirectory);
 	}
 }
-#endif //#if defined(__DAVAENGINE_WIN32__)
+#endif //#if defined(__DAVAENGINE_WINDOWS__)
 
 
 #if defined(__DAVAENGINE_ANDROID__)

@@ -43,7 +43,7 @@
 #include "Utils/Utils.h"
 #include "Utils/CRC32.h"
 
-#if defined(__DAVAENGINE_WINDOWS_STORE__)
+#if defined(__DAVAENGINE_WIN_UAP__)
 
     //disabling of warning 
     #pragma warning(push)
@@ -576,11 +576,11 @@ bool NvttHelper::DecompressDxt(const nvtt::Decompressor & dec, DDSInfo info, Vec
 
 bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, PixelFormat format, Vector<Image*> &imageSet, int32 baseMipMap)
 {
-#if defined(__DAVAENGINE_WINDOWS_STORE__)
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#if defined(__DAVAENGINE_WIN_UAP__)
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return false;
 
-#elif defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS_DESKTOP__)
+#elif defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
 #if defined(__DAVAENGINE_MACOS__)
     if (format == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
     {
@@ -676,7 +676,7 @@ bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, Pix
     return res;
 #else
     return false;
-#endif //defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
+#endif //defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__)
 }
 
 
@@ -1107,8 +1107,8 @@ bool LibDdsHelper::WriteDxtFile(const FilePath & fileNameOriginal, const Vector<
 
 bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<Image *> &imageSet, PixelFormat compressionFormat)
 {
-#if defined(__DAVAENGINE_WINDOWS_STORE__)
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#if defined(__DAVAENGINE_WIN_UAP__)
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return false;
 
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
@@ -1317,8 +1317,8 @@ bool LibDdsHelper::WriteDxtFileAsCubemap(const DAVA::FilePath &fileNameOriginal,
 
 bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath &fileNameOriginal, const Vector<Vector<DAVA::Image *> > &imageSet, DAVA::PixelFormat compressionFormat)
 {
-#if defined(__DAVAENGINE_WINDOWS_STORE__)
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#if defined(__DAVAENGINE_WIN_UAP__)
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return false;
 
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)

@@ -34,7 +34,7 @@
 #include "Base/Message.h"
 #include "Base/BaseObject.h"
 
-#if defined(__DAVAENGINE_WINDOWS_DESKTOP__) || defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
 
 namespace DAVA
 {
@@ -57,7 +57,7 @@ namespace DAVA
 		
 		void CleanupHandles();
 
-#if defined (__DAVAENGINE_WINDOWS_DESKTOP__) && defined(UNICODE)
+#if defined (__DAVAENGINE_WIN32__) && defined(UNICODE)
 		
 		void ConvertToWideChar(const String& str, wchar_t** outStr, size_t* outLength); 
 
@@ -71,7 +71,7 @@ namespace DAVA
 		Vector<String> runArgs;
 		bool running;
 		
-#if defined (__DAVAENGINE_WINDOWS_DESKTOP__)
+#if defined (__DAVAENGINE_WIN32__)
 		HANDLE childProcIn[2];
 		HANDLE childProcOut[2];
 #else

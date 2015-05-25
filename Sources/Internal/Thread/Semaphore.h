@@ -55,7 +55,7 @@ public:
 
 protected:
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 	HANDLE semaphore;
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
     dispatch_semaphore_t semaphore;
@@ -65,7 +65,7 @@ protected:
 
 };
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 
 // ##########################################################################################################
 // Windows implementation

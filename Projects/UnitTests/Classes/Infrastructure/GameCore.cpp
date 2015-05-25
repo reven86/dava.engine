@@ -99,11 +99,11 @@ void GameCore::RegisterTests()
     new JobManagerTest();
     new Cpp14Test();
 
-#if !defined(__DAVAENGINE_WINDOWS_STORE__)
+#if !defined(__DAVAENGINE_WIN_UAP__)
     new NetworkTest();
     new FormatsTest();
 #else
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__MARKER__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
 #endif
 
     new UnlimitedLogOutputTest();

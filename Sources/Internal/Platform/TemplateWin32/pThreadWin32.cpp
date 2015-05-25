@@ -30,7 +30,7 @@
 #include "Debug/DVAssert.h"
 #include "Platform/TemplateWin32/pThreadWin32.h"
 
-#ifdef __DAVAENGINE_WIN32__
+#ifdef __DAVAENGINE_WINDOWS__
 namespace DAVA
 {
 
@@ -94,4 +94,4 @@ int pthread_mutex_destroy(pthread_mutex_t *mutex)
 }
 
 };
-#endif //__DAVAENGINE_WIN32__
+#endif //__DAVAENGINE_WINDOWS__

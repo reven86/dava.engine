@@ -504,10 +504,10 @@ void Core::SystemProcessFrame()
 		JobManager::Instance()->Update();
 
         // Poll for network I/O events here
-#ifndef __DAVAENGINE_WINDOWS_STORE__
+#ifndef __DAVAENGINE_WIN_UAP__
         Net::NetCore::Instance()->Poll();
 #else
-        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__MARKER__
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
 #endif
 
 		core->Update(frameDelta);
@@ -603,12 +603,12 @@ void Core::SetIsActive(bool _isActive)
 	isActive = _isActive;
 }
 
-#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)    
+#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__)    
 Core::eDeviceFamily Core::GetDeviceFamily()
 {
     return DEVICE_DESKTOP;
 }
-#endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
+#endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__)
     
 uint32 Core::GetScreenDPI()
 {

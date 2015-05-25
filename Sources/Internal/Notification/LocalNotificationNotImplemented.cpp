@@ -28,7 +28,7 @@
 
 #include "Notification/LocalNotificationNotImplemented.h"
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
 
 namespace DAVA
 {

@@ -43,7 +43,7 @@ String GenerateGUID()
 
 #endif //  __DAVAENGINE_WINDOWS__
 
-#if defined (__DAVAENGINE_WINDOWS_STORE__)
+#if defined (__DAVAENGINE_WIN_UAP__)
 #include <ppltasks.h>
 
 namespace DAVA {
@@ -57,7 +57,7 @@ void OpenURL(const String& url)
 }
 };
 
-#elif defined (__DAVAENGINE_WINDOWS_DESKTOP__)
+#elif defined (__DAVAENGINE_WIN32__)
 
 #include <Windows.h>
 #include <ShellAPI.h>
@@ -71,4 +71,4 @@ void OpenURL(const String& url)
 }
 };
 
-#endif //  __DAVAENGINE_WINDOWS_STORE__ | __DAVAENGINE_WINDOWS_DESKTOP__
+#endif //  __DAVAENGINE_WIN_UAP__ | __DAVAENGINE_WIN32__

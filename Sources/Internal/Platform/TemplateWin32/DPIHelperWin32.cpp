@@ -34,7 +34,7 @@
 namespace DAVA
 {
 
-#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+#if defined(__DAVAENGINE_WIN32__)
 
     uint32 DPIHelper::GetScreenDPI()
 	{
@@ -63,7 +63,7 @@ namespace DAVA
         return screenSize;
     }
 
-#elif defined(__DAVAENGINE_WINDOWS_STORE__)
+#elif defined(__DAVAENGINE_WIN_UAP__)
 
     uint32 DPIHelper::GetScreenDPI()
     {
@@ -73,7 +73,7 @@ namespace DAVA
 
     float64 DPIHelper::GetDpiScaleFactor(int32 /*screenId*/)
     {
-        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 
         using namespace Windows::Graphics::Display;
         ResolutionScale scale = DisplayInformation::GetForCurrentView()->ResolutionScale;
@@ -95,7 +95,7 @@ namespace DAVA
 
     Size2i DPIHelper::GetScreenSize()
     {
-        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 
         auto winBounds = Windows::UI::Core::CoreWindow::GetForCurrentThread()->Bounds;
         return Size2i(uint32(winBounds.X), uint32(winBounds.Y));

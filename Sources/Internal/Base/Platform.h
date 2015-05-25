@@ -120,9 +120,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #   define __DAVAENGINE_WINDOWS__
 
-//Platform alias
-#   define __DAVAENGINE_WIN32__ __DAVAENGINE_WINDOWS__
-
 //Platform defines
 #   define __DAVASOUND_AL__
 #   define WIN32_LEAN_AND_MEAN
@@ -140,11 +137,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //Detection of windows platform type
 #   if !defined(WINAPI_FAMILY_PARTITION) || WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-#       define __DAVAENGINE_WINDOWS_DESKTOP__
+#       define __DAVAENGINE_WIN32__
 #   elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
-#       define __DAVAENGINE_WINDOWS_STORE__
-#       define __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__MARKER__
-#       define __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__ DVASSERT_MSG(false, "Feature has no implementation or partly implemented")
+#       define __DAVAENGINE_WIN_UAP__
+#       define __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
+#       define __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__ DVASSERT_MSG(false, "Feature has no implementation or partly implemented")
 #   endif
 
 //Detection of Android

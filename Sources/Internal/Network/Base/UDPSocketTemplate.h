@@ -112,8 +112,8 @@ UDPSocketTemplate<T>::~UDPSocketTemplate()
 template <typename T>
 int32 UDPSocketTemplate<T>::LocalEndpoint(Endpoint& endpoint)
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return -1;
 #else
     DVASSERT(true == isOpen && false == isClosing);
@@ -125,8 +125,8 @@ int32 UDPSocketTemplate<T>::LocalEndpoint(Endpoint& endpoint)
 template <typename T>
 int32 UDPSocketTemplate<T>::JoinMulticastGroup(const char8* multicastAddr, const char8* interfaceAddr)
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return -1;
 #else
     DVASSERT(true == isOpen && false == isClosing && multicastAddr != NULL);
@@ -137,8 +137,8 @@ int32 UDPSocketTemplate<T>::JoinMulticastGroup(const char8* multicastAddr, const
 template <typename T>
 int32 UDPSocketTemplate<T>::LeaveMulticastGroup(const char8* multicastAddr, const char8* interfaceAddr)
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return -1;
 #else
     DVASSERT(true == isOpen && false == isClosing && multicastAddr != NULL);
@@ -149,8 +149,8 @@ int32 UDPSocketTemplate<T>::LeaveMulticastGroup(const char8* multicastAddr, cons
 template <typename T>
 int32 UDPSocketTemplate<T>::Bind(const Endpoint& endpoint, bool reuseAddrOption)
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return -1;
 #else
     DVASSERT(false == isClosing);
@@ -178,8 +178,8 @@ bool UDPSocketTemplate<T>::IsClosing() const
 template <typename T>
 int32 UDPSocketTemplate<T>::DoOpen()
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return -1;
 #else
     DVASSERT(false == isOpen && false == isClosing);
@@ -197,8 +197,8 @@ int32 UDPSocketTemplate<T>::DoOpen()
 template <typename T>
 int32 UDPSocketTemplate<T>::DoStartReceive()
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return -1;
 #else
     DVASSERT(false == isClosing);
@@ -214,8 +214,8 @@ int32 UDPSocketTemplate<T>::DoStartReceive()
 template <typename T>
 int32 UDPSocketTemplate<T>::DoSend(const Buffer* buffers, size_t bufferCount, const Endpoint& endpoint)
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return -1;
 #else
     DVASSERT(true == isOpen && false == isClosing);
@@ -236,8 +236,8 @@ int32 UDPSocketTemplate<T>::DoSend(const Buffer* buffers, size_t bufferCount, co
 template <typename T>
 void UDPSocketTemplate<T>::DoClose()
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 #else
     DVASSERT(true == isOpen && false == isClosing);
     isOpen = false;

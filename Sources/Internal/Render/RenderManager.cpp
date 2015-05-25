@@ -175,7 +175,7 @@ void RenderManager::Init(int32 _frameBufferWidth, int32 _frameBufferHeight)
     hardwareState.Reset(true);
 
 #if defined(__DAVAENGINE_OPENGL__)
-#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_WINDOWS_STORE__)
+#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_WIN_UAP__)
     //Dizz: glDisableClientState functions are not supported by GL ES 2.0
     RENDER_VERIFY(glDisableClientState(GL_VERTEX_ARRAY));
     RENDER_VERIFY(glDisableClientState(GL_NORMAL_ARRAY));
@@ -335,7 +335,7 @@ int32 RenderManager::GetFPS()
 
 void RenderManager::SetCursor(Cursor * _cursor)
 {
-#if defined(__DAVAENGINE_MACOS__) || (defined(__DAVAENGINE_WIN32__) && defined(__DAVAENGINE_DIRECTX9__))
+#if defined(__DAVAENGINE_MACOS__) || (defined(__DAVAENGINE_WINDOWS__) && defined(__DAVAENGINE_DIRECTX9__))
 	SafeRelease(cursor);
 	cursor = SafeRetain(_cursor);
 	if (cursor)cursor->HardwareSet();
@@ -440,9 +440,9 @@ uint64 RenderManager::GetRenderContextId()
 void RenderManager::VerifyRenderContext()
 {
 	
-#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_WINDOWS_DESKTOP__) || defined(__DAVAENGINE_MACOS__))
+#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
 	
-#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+#if defined(__DAVAENGINE_WIN32__)
 	uint64 curRenderContext = (uint64)wglGetCurrentContext();
 #elif defined(__DAVAENGINE_MACOS__)
 	uint64 curRenderContext = (uint64)CGLGetCurrentContext();

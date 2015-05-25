@@ -31,7 +31,7 @@
 #define __DAVAENGINE_CORE_PLATFORM_WINSTORE_H__
 
 #include "Base/Platform.h"
-#if defined(__DAVAENGINE_WINDOWS_STORE__)
+#if defined(__DAVAENGINE_WIN_UAP__)
 
 #include <agile.h>
 #include "DAVAEngine.h"
@@ -118,5 +118,5 @@ private:
 
 } // namespace DAVA
 
-#endif // #if defined(__DAVAENGINE_WINDOWS_STORE__)
+#endif // #if defined(__DAVAENGINE_WIN_UAP__)
 #endif // __DAVAENGINE_CORE_PLATFORM_WINSTORE_H__

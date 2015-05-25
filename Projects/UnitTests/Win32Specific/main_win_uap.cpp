@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 #include "Base/Platform.h"
-#if defined(__DAVAENGINE_WINDOWS_STORE__)
+#if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "DAVAEngine.h"
 
@@ -37,4 +37,4 @@ int main(Platform::Array<Platform::String^>^ args)
     return DAVA::Core::Run(0, 0, 0);
 }
 
-#endif // defined(__DAVAENGINE_WINDOWS_STORE__)
+#endif // defined(__DAVAENGINE_WIN_UAP__)

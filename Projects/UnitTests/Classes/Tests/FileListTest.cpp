@@ -330,7 +330,7 @@ void FileListTest::HiddenFileTest(PerfFuncData* data)
     Logger::Debug(__FUNCTION__);
 
     //You can't set the Hidden attribute to file or folders on Windows Store platform
-#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+#if defined(__DAVAENGINE_WIN32__)
     
     FilePath file1 = FilePath("~res:/TestData/FileListTest/Folder1/file1");
     auto file1str = file1.GetAbsolutePathname();
@@ -378,7 +378,7 @@ void FileListTest::HiddenDirTest(PerfFuncData* data)
     Logger::Debug(__FUNCTION__);
  
     //You can't set the Hidden attribute to file or folders on Windows Store platform
-#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+#if defined(__DAVAENGINE_WIN32__)
     
     FilePath dir1 = FilePath("~res:/TestData/FileListTest/Folder1/");
     auto dir1str = dir1.GetAbsolutePathname();

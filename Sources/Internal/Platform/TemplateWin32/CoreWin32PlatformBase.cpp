@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 #include "Base/Platform.h"
-#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+#if defined(__DAVAENGINE_WIN32__)
 
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 #include "Platform/Thread.h"
@@ -92,4 +92,4 @@ Point2i CoreWin32PlatformBase::GetCursorPosition()
 
 }
 
-#endif // #if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+#endif // #if defined(__DAVAENGINE_WIN32__)

@@ -41,7 +41,7 @@
 #include "FileSystem/FilePath.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#ifdef __DAVAENGINE_WINDOWS_STORE__
+#ifdef __DAVAENGINE_WIN_UAP__
 #define generic GenericFromFreeTypeLibrary
 #endif
 
@@ -49,7 +49,7 @@
 #include <freetype/ftglyph.h>
 #include FT_FREETYPE_H
 
-#ifdef __DAVAENGINE_WINDOWS_STORE__
+#ifdef __DAVAENGINE_WIN_UAP__
 #undef generic
 #endif
 

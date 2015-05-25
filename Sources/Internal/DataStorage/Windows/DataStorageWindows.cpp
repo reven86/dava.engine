@@ -32,7 +32,7 @@
 namespace DAVA
 {
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 
 IDataStorage *DataStorage::Create()
 {

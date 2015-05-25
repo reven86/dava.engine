@@ -28,7 +28,7 @@
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+#if defined(__DAVAENGINE_WIN32__)
 
 #include "Render/Cursor.h"
 #include "Platform/TemplateWin32/CoreWin32PlatformBase.h"
@@ -58,7 +58,7 @@ void DAVA::Cursor::ShowSystemCursor(bool show)
 
 #endif
 
-#if defined(__DAVAENGINE_WIN32__) && defined (__DAVAENGINE_DIRECTX9__)
+#if defined(__DAVAENGINE_WINDOWS__) && defined (__DAVAENGINE_DIRECTX9__)
 
 #include "FileSystem/FileSystem.h"
 #include "Render/RenderManager.h"

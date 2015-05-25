@@ -42,8 +42,8 @@ IOLoop::IOLoop(bool useDefaultIOLoop) : uvloop()
                                       , quitFlag(false)
                                       , uvasync()
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 #else
     if (useDefaultIOLoop)
     {
@@ -63,8 +63,8 @@ IOLoop::IOLoop(bool useDefaultIOLoop) : uvloop()
 
 IOLoop::~IOLoop()
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 #else
     // We can close default loop too
     DVVERIFY(0 == uv_loop_close(actualLoop));
@@ -73,8 +73,8 @@ IOLoop::~IOLoop()
 
 int32 IOLoop::Run(eRunMode runMode)
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return 0;
 #else
     static const uv_run_mode modes[] = {
@@ -89,8 +89,8 @@ int32 IOLoop::Run(eRunMode runMode)
 
 void IOLoop::Post(UserHandlerType handler)
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 #else
     {
         LockGuard<Mutex> lock(mutex);
@@ -103,8 +103,8 @@ void IOLoop::Post(UserHandlerType handler)
 
 void IOLoop::PostQuit()
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 #else
     if (false == quitFlag)
     {
@@ -116,8 +116,8 @@ void IOLoop::PostQuit()
 
 void IOLoop::HandleAsync()
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 #else
     {
         // Steal queued handlers for execution and release mutex

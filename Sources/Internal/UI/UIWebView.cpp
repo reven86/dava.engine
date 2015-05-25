@@ -38,10 +38,10 @@
 #include "../Platform/TemplateMacOS/WebViewControlMacOS.h"
 #elif defined(__DAVAENGINE_IPHONE__)
 #include "../Platform/TemplateiOS/WebViewControliOS.h"
-#elif defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+#elif defined(__DAVAENGINE_WIN32__)
 #include "../Platform/TemplateWin32/WebViewControlWin32.h"
-#elif defined(__DAVAENGINE_WINDOWS_STORE__)
-#include "../Platform/TemplateWin32/WebViewControlWinStore.h"
+#elif defined(__DAVAENGINE_WIN_UAP__)
+#include "../Platform/TemplateWin32/WebViewControlWinUAP.h"
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/WebViewControlAndroid.h"
 #else

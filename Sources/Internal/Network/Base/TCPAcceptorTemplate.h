@@ -95,8 +95,8 @@ TCPAcceptorTemplate<T>::~TCPAcceptorTemplate()
 template <typename T>
 int32 TCPAcceptorTemplate<T>::Bind(const Endpoint& endpoint)
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return -1;
 #else
     DVASSERT(false == isClosing);
@@ -124,8 +124,8 @@ bool TCPAcceptorTemplate<T>::IsClosing() const
 template <typename T>
 int32 TCPAcceptorTemplate<T>::DoOpen()
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return -1;
 #else
     DVASSERT(false == isOpen && false == isClosing);
@@ -142,8 +142,8 @@ int32 TCPAcceptorTemplate<T>::DoOpen()
 template <typename T>
 int32 TCPAcceptorTemplate<T>::DoAccept(uv_tcp_t* client)
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return -1;
 #else
     DVASSERT(true == isOpen && false == isClosing && client != NULL);
@@ -154,8 +154,8 @@ int32 TCPAcceptorTemplate<T>::DoAccept(uv_tcp_t* client)
 template <typename T>
 int32 TCPAcceptorTemplate<T>::DoStartListen(int32 backlog)
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return -1;
 #else
     // Acceptor should be bound first
@@ -167,8 +167,8 @@ int32 TCPAcceptorTemplate<T>::DoStartListen(int32 backlog)
 template <typename T>
 void TCPAcceptorTemplate<T>::DoClose()
 {
-#ifdef __DAVAENGINE_WINDOWS_STORE__
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 #else
     DVASSERT(true == isOpen && false == isClosing);
     isOpen = false;

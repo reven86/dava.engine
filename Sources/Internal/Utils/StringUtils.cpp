@@ -40,7 +40,7 @@ namespace DAVA
 void StringUtils::GetLineBreaks(const WideString& string, Vector<uint8>& breaks, const char8* locale)
 {
     breaks.resize(string.length(), LB_NOBREAK); // By default all characters not breakable
-#if defined(__DAVAENGINE_WIN32__) // sizeof(wchar_t) == 2
+#if defined(__DAVAENGINE_WINDOWS__) // sizeof(wchar_t) == 2
     set_linebreaks_utf16(reinterpret_cast<const utf16_t*>(string.c_str()), string.length(), locale, reinterpret_cast<char*>(&breaks.front()));
 #else
     set_linebreaks_utf32(reinterpret_cast<const utf32_t*>(string.c_str()), string.length(), locale, reinterpret_cast<char*>(&breaks.front()));

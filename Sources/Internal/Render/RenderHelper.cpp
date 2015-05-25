@@ -1330,7 +1330,7 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
         RenderManager::Instance()->ReleaseTextureState(textureState);
     }
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
 	void RenderHelper::GetLineWidthRange(int32& rangeMin, int32& rangeMax)
 	{
 		int32 lineWidthMin = 1;
@@ -1341,7 +1341,7 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
         GLenum pname;
 #if defined (__DAVAENGINE_OPENGL_ES__)
         pname = GL_ALIASED_LINE_WIDTH_RANGE;
-        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 #else
         pname = GL_LINE_WIDTH_RANGE;
 #endif

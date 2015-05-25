@@ -185,7 +185,7 @@ inline T Clamp(T val, T a, T b)
     return Min(b, Max(val, a));
 }
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 #   define Snprintf    _snprintf
 #else
 #   define Snprintf    snprintf

@@ -30,7 +30,7 @@
 #define __WEBVIEWCONTROL_WINSTORE_H__
 
 #include "Base/Platform.h"
-#if defined(__DAVAENGINE_WINDOWS_STORE__)
+#if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "UI/IWebViewControl.h"
 
@@ -42,91 +42,91 @@ class WebViewControl : public IWebViewControl
 public:
 	WebViewControl(UIWebView& uiWebView) 
     {
-        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     }
 	virtual ~WebViewControl()
     {
-        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     }
 
 	// Initialize the control.
 	void Initialize(const Rect& rect) override
     {
-        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     }
 	
 	// Open the URL requested.
 	void OpenURL(const String& urlToOpen) override
     {
-        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     }
 
 	// Load html page from string
 	void LoadHtmlString(const WideString& htmlString) override
     {
-        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     }
 
 	// Delete all cookies associated with target URL
 	void DeleteCookies(const String& targetUrl) override
     {
-        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     }
 
 	// Get cookie for specific domain and name
 	String GetCookie(const String& url, const String& name) const override
     {
-        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
         return String();
     }
 
 	// Get the list of cookies for specific domain
 	Map<String, String> GetCookies(const String& url) const override
     {
-        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
         return Map<String, String>();
     }
 
 	// Execute javascript string in webview
 	void ExecuteJScript(const String& scriptString) override
     {
-        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     }
 	
     void OpenFromBuffer(const String& string, const FilePath& basePath) override
     {
-        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     }
 
     // Size/pos/visibility changes.
 	void SetRect(const Rect& rect) override
     {
-        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     }
 
 	void SetVisible(bool isVisible, bool hierarchic) override
     {
-        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     }
 
 	void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView) override
     {
-        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     }
 
     void SetRenderToTexture(bool value) override
     {
-        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     }
 
     bool IsRenderToTexture() const override
     {
-        __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
         return false;
     }
 };
 
 };
 
-#endif // defined(__DAVAENGINE_WINDOWS_STORE__)
+#endif // defined(__DAVAENGINE_WIN_UAP__)
 #endif //__WEBVIEWCONTROL_WINSTORE_H__

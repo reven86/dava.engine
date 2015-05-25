@@ -27,9 +27,9 @@
 =====================================================================================*/
 
 #include "Base/Platform.h"
-#if defined(__DAVAENGINE_WINDOWS_STORE__)
+#if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "CorePlatformWinStore.h"
+#include "CorePlatformWinUAP.h"
 #include <angle_windowsstore.h>
 
 extern void FrameworkDidLaunched();
@@ -302,4 +302,4 @@ void WinStoreFrame::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEve
 
 } // namespace DAVA
 
-#endif // #if defined(__DAVAENGINE_WINDOWS_STORE__)
+#endif // #if defined(__DAVAENGINE_WIN_UAP__)

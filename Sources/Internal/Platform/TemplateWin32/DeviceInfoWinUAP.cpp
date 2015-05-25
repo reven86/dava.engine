@@ -34,7 +34,7 @@
 #include "Utils/Utils.h"
 #include "Debug/DVAssert.h"
 
-#if defined(__DAVAENGINE_WINDOWS_STORE__)
+#if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "winsock2.h"
 #include "Iphlpapi.h"
@@ -48,37 +48,37 @@ namespace DAVA
 
 String DeviceInfo::GetVersion()
 {
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 	return "Not yet implemented";
 }
 
 String DeviceInfo::GetManufacturer()
 {
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 	return "Not yet implemented";
 }
 
 String DeviceInfo::GetModel()
 {
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 	return "Not yet implemented";
 }
 
 String DeviceInfo::GetLocale()
 {
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 	return "Not yet implemented";
 }
 
 String DeviceInfo::GetRegion()
 {
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 	return "Not yet implemented";
 }
 
 String DeviceInfo::GetTimeZone()
 {
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 	return "Not yet implemented";
 }
 String DeviceInfo::GetHTTPProxyHost()
@@ -88,25 +88,25 @@ String DeviceInfo::GetHTTPProxyHost()
 
 String DeviceInfo::GetHTTPNonProxyHosts()
 {
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 	return "Not yet implemented";
 }
 
 int DeviceInfo::GetHTTPProxyPort()
 {
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
 	return 0;
 }
 
 String DeviceInfo::GetUDID()
 {
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
         return "Not yet implemented";
 }
 
 WideString DeviceInfo::GetName()
 {
-    __DAVAENGINE_WINDOWS_STORE_INCOMPLETE_IMPLEMENTATION__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return L"Not yet implemented";
 }
 
@@ -139,4 +139,4 @@ void DeviceInfo::UpdateScreenInfo()
 
 }
 
-#endif // defined(__DAVAENGINE_WINDOWS_STORE__)
+#endif // defined(__DAVAENGINE_WIN_UAP__)

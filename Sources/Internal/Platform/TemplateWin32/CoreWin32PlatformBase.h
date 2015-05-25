@@ -31,7 +31,7 @@
 #define __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
 
 #include "Base/Platform.h"
-#if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+#if defined(__DAVAENGINE_WIN32__)
 
 #include "DAVAEngine.h"
 
@@ -62,5 +62,5 @@ protected:
 
 };
 
-#endif // #if defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+#endif // #if defined(__DAVAENGINE_WIN32__)
 #endif // __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__

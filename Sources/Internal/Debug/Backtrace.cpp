@@ -35,7 +35,7 @@
 #include <execinfo.h>
 #include <cxxabi.h>
 #include <stdlib.h>
-#elif defined(__DAVAENGINE_WIN32__)
+#elif defined(__DAVAENGINE_WINDOWS__)
 #include <DbgHelp.h>
 #pragma comment(lib, "Dbghelp.lib")
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -144,7 +144,7 @@ void GetBacktrace(Backtrace * bt)
 {
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     bt->size = backtrace(bt->array, MAX_BACKTRACE_DEPTH);
-#elif defined(__DAVAENGINE_WIN32__)
+#elif defined(__DAVAENGINE_WINDOWS__)
     bt->size = CaptureStackBackTrace(0, MAX_BACKTRACE_DEPTH, bt->array, nullptr);
 #endif
     pointer_size hash = 0;
@@ -216,7 +216,7 @@ void CreateBacktraceLogApple(Backtrace * backtrace, BacktraceLog * log)
     free(strings);
 }
 
-#elif defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+#elif defined(__DAVAENGINE_WIN32__)
 
 void CreateBacktraceLogWinDesktop(Backtrace * backtrace, BacktraceLog * log)
 {
@@ -251,7 +251,7 @@ void CreateBacktraceLog(Backtrace * backtrace, BacktraceLog * log)
 
 #if defined(__DAVAENGINE_APPLE__)
     CreateBacktraceLogApple(backtrace, log);
-#elif defined(__DAVAENGINE_WINDOWS_DESKTOP__)
+#elif defined(__DAVAENGINE_WIN32__)
     CreateBacktraceLogWinDesktop(backtrace, log);
 #endif
 }
@@ -296,7 +296,7 @@ void PrintBackTraceToLog(Logger::eLogLevel logLevel )
         Logger::Instance()->Log(logLevel,"%p : %s\n", array[i], strings[i]);
     }
     free(strings);
-#elif defined(__DAVAENGINE_WIN32__)
+#elif defined(__DAVAENGINE_WINDOWS__)
 // Check out this function http://msdn.microsoft.com/en-us/library/windows/desktop/bb204633(v=vs.85).aspx
 /* Should be able to do the same stuff on windows. 
         USHORT WINAPI CaptureStackBackTrace(
