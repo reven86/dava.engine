@@ -892,7 +892,6 @@
 		5041C3671B0E272C00BC0BE3 /* AllocatorBridge.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5041C3621B0E272C00BC0BE3 /* AllocatorBridge.cpp */; };
 		5041C3681B0E272C00BC0BE3 /* AllocatorBridge.h in Headers */ = {isa = PBXBuildFile; fileRef = 5041C3631B0E272C00BC0BE3 /* AllocatorBridge.h */; };
 		5041C3691B0E272C00BC0BE3 /* InternalAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 5041C3641B0E272C00BC0BE3 /* InternalAllocator.h */; };
-		5041C36A1B0E272C00BC0BE3 /* MemoryManagerConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 5041C3651B0E272C00BC0BE3 /* MemoryManagerConfig.h */; };
 		5041C36B1B0E272C00BC0BE3 /* TrackingAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 5041C3661B0E272C00BC0BE3 /* TrackingAllocator.h */; };
 		5043DDAB18706828005E3584 /* VisibilityArray.h in Headers */ = {isa = PBXBuildFile; fileRef = 5043DDAA18706828005E3584 /* VisibilityArray.h */; };
 		5043DDAC18706828005E3584 /* VisibilityArray.h in Headers */ = {isa = PBXBuildFile; fileRef = 5043DDAA18706828005E3584 /* VisibilityArray.h */; };
@@ -2873,7 +2872,6 @@
 		5041C3621B0E272C00BC0BE3 /* AllocatorBridge.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AllocatorBridge.cpp; sourceTree = "<group>"; };
 		5041C3631B0E272C00BC0BE3 /* AllocatorBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllocatorBridge.h; sourceTree = "<group>"; };
 		5041C3641B0E272C00BC0BE3 /* InternalAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InternalAllocator.h; sourceTree = "<group>"; };
-		5041C3651B0E272C00BC0BE3 /* MemoryManagerConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryManagerConfig.h; sourceTree = "<group>"; };
 		5041C3661B0E272C00BC0BE3 /* TrackingAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TrackingAllocator.h; sourceTree = "<group>"; };
 		5043DDAA18706828005E3584 /* VisibilityArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VisibilityArray.h; sourceTree = "<group>"; };
 		5046BD861B06130C0005D29F /* ThreadLocalPtr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ThreadLocalPtr.h; path = Thread/ThreadLocalPtr.h; sourceTree = "<group>"; };
@@ -4026,7 +4024,6 @@
 				5041C3621B0E272C00BC0BE3 /* AllocatorBridge.cpp */,
 				5041C3631B0E272C00BC0BE3 /* AllocatorBridge.h */,
 				5041C3641B0E272C00BC0BE3 /* InternalAllocator.h */,
-				5041C3651B0E272C00BC0BE3 /* MemoryManagerConfig.h */,
 				5041C3661B0E272C00BC0BE3 /* TrackingAllocator.h */,
 				501981BF1B0B90F800C14292 /* MemoryProfiler.h */,
 				50FB9D991A92446700BDB8A2 /* AllocPools.h */,
@@ -6031,7 +6028,6 @@
 				E8989F6316BD24E500732C04 /* Texture.h in Headers */,
 				B4C29D42199B592D001B83FE /* SceneCache.h in Headers */,
 				50F706CE1A93C126009506C9 /* MMNetServer.h in Headers */,
-				5041C36A1B0E272C00BC0BE3 /* MemoryManagerConfig.h in Headers */,
 				E8ADAEBC18CA1226000B251C /* PixelFormatDescriptor.h in Headers */,
 				B723648E1A8CEEF0009940BE /* UIComponent.h in Headers */,
 				B79724001A1260E9009421F3 /* BiDiHelper.h in Headers */,

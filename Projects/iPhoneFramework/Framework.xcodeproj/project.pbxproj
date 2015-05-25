@@ -966,7 +966,6 @@
 		5041C3581B0E1A9000BC0BE3 /* AllocatorBridge.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5041C3531B0E1A9000BC0BE3 /* AllocatorBridge.cpp */; };
 		5041C3591B0E1A9000BC0BE3 /* AllocatorBridge.h in Headers */ = {isa = PBXBuildFile; fileRef = 5041C3541B0E1A9000BC0BE3 /* AllocatorBridge.h */; };
 		5041C35A1B0E1A9000BC0BE3 /* InternalAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 5041C3551B0E1A9000BC0BE3 /* InternalAllocator.h */; };
-		5041C35B1B0E1A9000BC0BE3 /* MemoryManagerConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 5041C3561B0E1A9000BC0BE3 /* MemoryManagerConfig.h */; };
 		5041C35C1B0E1A9000BC0BE3 /* TrackingAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 5041C3571B0E1A9000BC0BE3 /* TrackingAllocator.h */; };
 		5046BD801B0612DD0005D29F /* ThreadLocalPtr.h in Headers */ = {isa = PBXBuildFile; fileRef = 5046BD7F1B0612DD0005D29F /* ThreadLocalPtr.h */; };
 		505EB41C18250C53009BEA3C /* OcclusionQuery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 505EB41A18250C53009BEA3C /* OcclusionQuery.cpp */; };
@@ -2093,7 +2092,6 @@
 		5041C3531B0E1A9000BC0BE3 /* AllocatorBridge.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AllocatorBridge.cpp; sourceTree = "<group>"; };
 		5041C3541B0E1A9000BC0BE3 /* AllocatorBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllocatorBridge.h; sourceTree = "<group>"; };
 		5041C3551B0E1A9000BC0BE3 /* InternalAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InternalAllocator.h; sourceTree = "<group>"; };
-		5041C3561B0E1A9000BC0BE3 /* MemoryManagerConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryManagerConfig.h; sourceTree = "<group>"; };
 		5041C3571B0E1A9000BC0BE3 /* TrackingAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TrackingAllocator.h; sourceTree = "<group>"; };
 		5046BD7F1B0612DD0005D29F /* ThreadLocalPtr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThreadLocalPtr.h; sourceTree = "<group>"; };
 		505EB41A18250C53009BEA3C /* OcclusionQuery.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OcclusionQuery.cpp; sourceTree = "<group>"; };
@@ -3168,7 +3166,6 @@
 				5041C3531B0E1A9000BC0BE3 /* AllocatorBridge.cpp */,
 				5041C3541B0E1A9000BC0BE3 /* AllocatorBridge.h */,
 				5041C3551B0E1A9000BC0BE3 /* InternalAllocator.h */,
-				5041C3561B0E1A9000BC0BE3 /* MemoryManagerConfig.h */,
 				5041C3571B0E1A9000BC0BE3 /* TrackingAllocator.h */,
 				501981B41B0B908A00C14292 /* MemoryProfiler.h */,
 				50FB9DB11A925A2D00BDB8A2 /* AllocPools.h */,
@@ -5190,7 +5187,6 @@
 				150353931A02D5AA00C90B4F /* DefaultUIPackageBuilder.h in Headers */,
 				1146E10919D00649009E5FAB /* AnimationSystem.h in Headers */,
 				E8B3CC1916B9326E002BD35F /* MaterialGraph.h in Headers */,
-				5041C35B1B0E1A9000BC0BE3 /* MemoryManagerConfig.h in Headers */,
 				E8B3CC1B16B9326E002BD35F /* MaterialGraphNode.h in Headers */,
 				E8B3CC1D16B9326E002BD35F /* NMaterial.h in Headers */,
 				E8B3CC1E16B9326E002BD35F /* NMaterialConsts.h in Headers */,
