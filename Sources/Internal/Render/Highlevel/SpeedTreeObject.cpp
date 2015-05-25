@@ -31,6 +31,7 @@
 #include "Render/Material/NMaterialNames.h"
 #include "Utils/Utils.h"
 #include "Render/Renderer.h"
+#include "Render/Highlevel/RenderPassNames.h"
 
 namespace DAVA 
 {
@@ -155,6 +156,7 @@ void SpeedTreeObject::Load(KeyedArchive *archive, SerializationContext *serializ
 
     lightSmoothing = archive->GetFloat("sto.lightSmoothing", lightSmoothing);
     
+    //RHI_COMPLETE TODO: Remove setting WIND_ANIMATION flag. We need to add/set flag manualy (and save it) to reduce material prebuild count
     uint32 size = (uint32)renderBatchArray.size();
     for (uint32 k = 0; k < size; ++k)
     {
@@ -163,6 +165,8 @@ void SpeedTreeObject::Load(KeyedArchive *archive, SerializationContext *serializ
             material->AddFlag(FLAG_WIND_ANIMATION, 1);
         else
             material->SetFlag(FLAG_WIND_ANIMATION, 1);
+
+        material->PreBuildMaterial(PASS_FORWARD);
     }
 }
 

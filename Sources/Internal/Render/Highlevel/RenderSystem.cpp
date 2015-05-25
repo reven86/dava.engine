@@ -159,15 +159,14 @@ void RenderSystem::RegisterMaterial(NMaterial * material)
 {
     NMaterial * topParent = nullptr;
 
-    // search for top material that isn't global
-    while (nullptr != material && material != globalMaterial)
+    while (nullptr != material)
     {
         topParent = material;
         material = material->GetParent();
     }
 
     // set globalMaterial to be parent for top material
-    if (nullptr != topParent)
+    if (nullptr != topParent && topParent != globalMaterial)
     {
         topParent->SetParent(globalMaterial);
     }
@@ -175,24 +174,42 @@ void RenderSystem::RegisterMaterial(NMaterial * material)
     
 void RenderSystem::UnregisterMaterial(NMaterial * material)
 {
-    
+    if (!material) return;
+
+    while (material->GetParent() && material->GetParent() != globalMaterial)
+    {
+        material = material->GetParent();
+    }
+
+    if (material->GetParent())
+    {
+        material->SetParent(nullptr);
+    }
 }
     
-void RenderSystem::SetGlobalMaterial(NMaterial *material)
+void RenderSystem::SetGlobalMaterial(NMaterial * newGlobalMaterial)
 {
-    SafeRelease(globalMaterial);
-    globalMaterial = SafeRetain(material);
-
     uint32 count = static_cast<uint32>(renderObjectArray.size());
-    for(uint32 i = 0; i < count; ++i)
+    for (uint32 i = 0; i < count; ++i)
     {
         RenderObject *obj = renderObjectArray[i];
         uint32 countBatch = obj->GetRenderBatchCount();
-        for(uint32 j = 0; j < countBatch; ++j)
+        for (uint32 j = 0; j < countBatch; ++j)
         {
-            RegisterMaterial(obj->GetRenderBatch(j)->GetMaterial());
+            NMaterial * batchMaterial = obj->GetRenderBatch(j)->GetMaterial();
+            if (batchMaterial)
+            {
+                while (batchMaterial->GetParent() && batchMaterial->GetParent() != globalMaterial)
+                {
+                    batchMaterial = batchMaterial->GetParent();
+                }
+                batchMaterial->SetParent(newGlobalMaterial);
+            }
         }
     }
+
+    SafeRelease(globalMaterial);
+    globalMaterial = SafeRetain(newGlobalMaterial);
 }
 
 NMaterial* RenderSystem::GetGlobalMaterial() const
