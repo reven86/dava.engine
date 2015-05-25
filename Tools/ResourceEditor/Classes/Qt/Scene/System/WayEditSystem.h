@@ -49,7 +49,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class SceneEditor2;
 
-class WayEditSystem : public DAVA::SceneSystem, EntityModificationSystemDelegate
+class WayEditSystem : public DAVA::SceneSystem, public EntityModificationSystemDelegate
 {
     friend class SceneEditor2;
 

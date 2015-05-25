@@ -311,9 +311,14 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 	}
 }
 
-void EntityModificationSystem::SetDelegate(EntityModificationSystemDelegate *delegate)
+void EntityModificationSystem::AddDelegate(EntityModificationSystemDelegate *delegate)
 {
     delegates.push_back(delegate);
+}
+
+void EntityModificationSystem::RemoveDelegate(EntityModificationSystemDelegate *delegate)
+{
+    delegates.remove(delegate);
 }
 
 void EntityModificationSystem::Draw()

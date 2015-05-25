@@ -88,7 +88,8 @@ public:
 	void Process(DAVA::float32 timeElapsed) override;
     void Input(DAVA::UIEvent *event) override;
 
-    void SetDelegate(EntityModificationSystemDelegate *delegate);
+    void AddDelegate(EntityModificationSystemDelegate *delegate);
+    void RemoveDelegate(EntityModificationSystemDelegate *delegate);
 
 protected:
 	SceneCollisionSystem *collisionSystem;

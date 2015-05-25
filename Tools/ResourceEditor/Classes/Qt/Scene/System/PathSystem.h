@@ -40,7 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 static const DAVA::uint32 WAYPOINTS_DRAW_LIFTING = 1;
 
 class SceneEditor2;
-class PathSystem : public DAVA::SceneSystem, EntityModificationSystemDelegate
+class PathSystem : public DAVA::SceneSystem, public EntityModificationSystemDelegate
 {
     friend class SceneEditor2;
 
@@ -50,10 +50,10 @@ public:
 
     void EnablePathEdit(bool enable);
     bool IsPathEditEnabled() const;
-    
+
     void AddEntity(DAVA::Entity * entity) override;
     void RemoveEntity(DAVA::Entity * entity) override;
-    
+
     void Process(DAVA::float32 timeElapsed) override;
 
     DAVA::Entity * GetCurrrentPath() const;
@@ -67,13 +67,11 @@ public:
     void DidCloned(DAVA::Entity *originalEntity, DAVA::Entity *newEntity) override;
 
 protected:
-    
     void Draw();
     void DrawInEditableMode();
     void DrawInViewOnlyMode();
     void DrawArrow(const DAVA::Vector3 & start, const DAVA::Vector3 & finish);
-    
-    
+
     void ProcessCommand(const Command2 *command, bool redo);
 
     DAVA::FastName GeneratePathName() const;
@@ -108,6 +106,5 @@ inline bool PathSystem::IsPathEditEnabled() const
 {
     return isEditingEnabled;
 }
-
 
 #endif // __PATH_SYSTEM_H__
