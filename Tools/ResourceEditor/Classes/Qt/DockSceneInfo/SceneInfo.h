@@ -184,7 +184,7 @@ protected:
     LODInfo lodInfoSelection;
     LODInfo lodInfoInFrame;
 
-    DAVA::VisibilityArray visibilityArray;
+    DAVA::Vector<DAVA::RenderObject *> visibilityArray;
     DAVA::Set<DAVA::RenderObject *> selectedRenderObjects;
 
 	bool isUpToDate;

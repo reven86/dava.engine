@@ -35,7 +35,6 @@
 #include "UI/UIEvent.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/StaticOcclusionSystem.h"
-#include "Render/Highlevel/ShadowVolumeRenderPass.h"
 #include "Base/StaticSingleton.h"
 
 #include "Main/Request.h"
@@ -172,9 +171,6 @@ public:
 
 	//Insert entity to begin of scene hierarchy to display editor entities at one place on top og scene tree
 	void AddEditorEntity(Entity *editorEntity);
-
-	void SetShadowBlendMode(DAVA::ShadowPassBlendMode::eBlend blend);
-	DAVA::ShadowPassBlendMode::eBlend GetShadowBlendMode() const;
 
 #if RHI_COMPLETE_EDITOR
     const RenderManager::Stats & GetRenderStats() const;

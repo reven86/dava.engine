@@ -89,6 +89,9 @@
 namespace DAVA 
 {
 
+//RHI_COMPLETE TODO: remove this crap with shadow color
+static const FastName DEPRECATED_SHADOW_COLOR_PARAM("shadowColor");
+
 Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
 	: Entity()
     , transformSystem(0)
@@ -709,10 +712,10 @@ void Scene::Draw()
 {
     TIME_PROFILE("Scene::Draw");
 
-    //TODO: remove this crap with shadow color
-    if (sceneGlobalMaterial && sceneGlobalMaterial->HasLocalProperty(NMaterialParamName::PARAM_SHADOW_COLOR))
+    //RHI_COMPLETE TODO: remove this crap with shadow color
+    if (sceneGlobalMaterial && sceneGlobalMaterial->HasLocalProperty(DEPRECATED_SHADOW_COLOR_PARAM))
     {
-        const float32 * propDataPtr = sceneGlobalMaterial->GetLocalPropValue(NMaterialParamName::PARAM_SHADOW_COLOR);
+        const float32 * propDataPtr = sceneGlobalMaterial->GetLocalPropValue(DEPRECATED_SHADOW_COLOR_PARAM);
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR, propDataPtr, (pointer_size)sceneGlobalMaterial);
     }
     else
@@ -961,11 +964,12 @@ void Scene::ImportShadowColor(Entity * rootNode)
 			KeyedArchive * props = GetCustomPropertiesArchieve(landscapeNode);
 			if (props->IsKeyExists("ShadowColor"))
 			{
-                if (sceneGlobalMaterial->HasLocalProperty(NMaterialParamName::PARAM_SHADOW_COLOR))
-                    sceneGlobalMaterial->RemoveProperty(NMaterialParamName::PARAM_SHADOW_COLOR);
+                //RHI_COMPLETE TODO: check if shadow color from landscape is used, fix it and remove this crap
+                if (sceneGlobalMaterial->HasLocalProperty(DEPRECATED_SHADOW_COLOR_PARAM))
+                    sceneGlobalMaterial->RemoveProperty(DEPRECATED_SHADOW_COLOR_PARAM);
 
 				Color shadowColor = props->GetVariant("ShadowColor")->AsColor();
-                sceneGlobalMaterial->AddProperty(NMaterialParamName::PARAM_SHADOW_COLOR, shadowColor.color, rhi::ShaderProp::TYPE_FLOAT4);					
+                sceneGlobalMaterial->AddProperty(DEPRECATED_SHADOW_COLOR_PARAM, shadowColor.color, rhi::ShaderProp::TYPE_FLOAT4);
 				props->DeleteKey("ShadowColor");
 			}
 		}

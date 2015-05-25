@@ -32,7 +32,6 @@
 #include "Render/Highlevel/RenderLayer.h"
 #include "Render/Highlevel/RenderBatchArray.h"
 #include "Render/Highlevel/RenderPass.h"
-#include "Render/Highlevel/ShadowVolumeRenderLayer.h"
 #include "Render/Highlevel/RenderBatch.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
@@ -55,9 +54,7 @@ RenderSystem::RenderSystem()
     ,   drawCamera(0)
     ,   globalMaterial(NULL)
 {
-    //mainRenderPass = GetRenderPassManager()->GetRenderPass(PASS_FORWARD);
     mainRenderPass = new MainForwardRenderPass(PASS_FORWARD);
-    //renderPassOrder.push_back(GetRenderPassManager()->GetRenderPass(PASS_SHADOW_VOLUME));
 
     renderHierarchy = new QuadTree(10);
 	hierarchyInitialized = false;   

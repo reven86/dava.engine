@@ -131,10 +131,9 @@ void DebugDrawSystem::DrawObjectBoxesByType(DAVA::Entity *entity)
         else if ( objectType == ResourceEditor::ESOT_UNDEFINED_COLLISION && entity->GetParent() == GetScene() )
         {
             const bool skip =
-                GetLight( entity ) == NULL &&
-                GetCamera( entity ) == NULL &&
-                GetLandscape( entity ) == NULL &&
-                GetSkybox( entity ) == NULL;
+                GetLight(entity) == NULL &&
+                GetCamera(entity) == NULL &&
+                GetLandscape(entity) == NULL;
 
             drawBox = skip;
         }
@@ -314,7 +313,7 @@ void DebugDrawSystem::DrawHangingObjects( DAVA::Entity *entity )
         return;
     }
     //skyBox should not be marked as hanging object
-	if (entity->GetParent() != GetScene() || NULL != GetSkybox(entity))
+	if (entity->GetParent() != GetScene())
     {
 		return;
     }

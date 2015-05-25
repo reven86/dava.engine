@@ -113,7 +113,6 @@ namespace DAVA
     const FastName NMaterialParamName::PARAM_UV_OFFSET("uvOffset");
     const FastName NMaterialParamName::PARAM_UV_SCALE("uvScale");
     const FastName NMaterialParamName::PARAM_LIGHTMAP_SIZE("lightmapSize");
-    const FastName NMaterialParamName::PARAM_SHADOW_COLOR("shadowColor");
     const FastName NMaterialParamName::PARAM_DECAL_TILE_SCALE("decalTileCoordScale");
     const FastName NMaterialParamName::PARAM_DECAL_TILE_COLOR("decalTileColor");
     const FastName NMaterialParamName::PARAM_DETAIL_TILE_SCALE("detailTileCoordScale");
