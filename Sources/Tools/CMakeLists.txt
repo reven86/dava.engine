@@ -2,9 +2,6 @@ cmake_minimum_required( VERSION 3.0 )
                    
 project( DavaTools )
 
-set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../CMake/Modules/" ) 
-include( CMake-common )
-
 add_definitions       ( 
 -D_CRT_SECURE_NO_DEPRECATE
 -DSTATIC_MAGICK 

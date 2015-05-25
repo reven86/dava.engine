@@ -101,6 +101,8 @@ elseif ( WINDOWS_UAP )
 	endif()
 	
 	set (APP_MANIFEST_NAME Package.appxmanifest)
+	set (APP_TEMPKEY_NAME "${PROJECT_NAME}_TemporaryKey.pfx" )
+	
 	if("${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsPhone")
 		set(PLATFORM WP)
 		add_definitions("-DPHONE")
@@ -117,53 +119,44 @@ elseif ( WINDOWS_UAP )
 	
 	set(SHORT_NAME ${PROJECT_NAME})
 	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-	set(PACKAGE_GUID "6514377e-dfd4-4cdb-80df-4e0366346efc")
+	set(PACKAGE_GUID "${WINDOWS_UAP_APPLICATION_GUID}")
+	
+	set ( WIN_UAP_CONF_DIR      "${CMAKE_MODULE_PATH}../ConfigureFiles/WindowsStore" )
+	set ( WIN_UAP_MANIFESTS_DIR "${WIN_UAP_CONF_DIR}/Manifests" )
+	set ( WIN_UAP_ASSETS_DIR    "${WIN_UAP_CONF_DIR}/Assets" )
+	file( GLOB ASSET_FILES      "${WIN_UAP_ASSETS_DIR}/*.png" )
 	
 	if (NOT "${PLATFORM}" STREQUAL "DESKTOP")
 		configure_file(
-			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Manifests/Package_vc${COMPILER_VERSION}.${PLATFORM}.appxmanifest.in
+			${WIN_UAP_MANIFESTS_DIR}/Package_vc${COMPILER_VERSION}.${PLATFORM}.appxmanifest.in
 			${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME}
+			@ONLY)
+			
+		configure_file(
+			${WIN_UAP_CONF_DIR}/TemporaryKey.pfx
+			${CMAKE_CURRENT_BINARY_DIR}/${APP_TEMPKEY_NAME}
 			@ONLY)
 	endif()
 	
 	if (WINDOWS_PHONE8)
-		set(CONTENT_FILES ${CONTENT_FILES}
-			${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME}
-			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/Tiles/FlipCycleTileLarge.png
-			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/Tiles/FlipCycleTileMedium.png
-			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/Tiles/FlipCycleTileSmall.png
-			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/Tiles/IconicTileMediumLarge.png
-			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/Tiles/IconicTileSmall.png
-			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/ApplicationIcon.png
-		)
-	  # Windows Phone 8.0 needs to copy all the images.
-	  # It doesn't know to use relative paths.
-	  file(COPY
-			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/Tiles/FlipCycleTileLarge.png
-			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/Tiles/FlipCycleTileMedium.png
-			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/Tiles/FlipCycleTileSmall.png
-			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/Tiles/IconicTileMediumLarge.png
-			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/Tiles/IconicTileSmall.png
-			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/ApplicationIcon.png
-			DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-		)
+	    file( GLOB PHONE_RESOURCES "${WIN_UAP_ASSETS_DIR}/Tiles/*.png" )
+		set( PHONE_RESOURCES "${PHONE_RESOURCES} ${ASSET_FILES}" )
+		
+		# Windows Phone 8.0 needs to copy all the images.
+	    # It doesn't know to use relative paths.
+		file( COPY ${PHONE_RESOURCES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+		
+		set ( PHONE_RESOURCES "${PHONE_RESOURCES} ${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME}" )
+		set ( CONTENT_FILES "${CONTENT_FILES} ${PHONE_RESOURCES}" )
 
 	elseif (NOT "${PLATFORM}" STREQUAL "DESKTOP")
-	  set(CONTENT_FILES ${CONTENT_FILES}
-		${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME}
-		)
-
-		set(ASSET_FILES ${ASSET_FILES}
-			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/Logo.png
-			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/SmallLogo.png
-			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/SplashScreen.png
-			${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/Assets/StoreLogo.png
+	    set(CONTENT_FILES ${CONTENT_FILES}
+		    ${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME} 
 		)
 	endif()
 	
 	set(RESOURCE_FILES
-		${CONTENT_FILES} ${DEBUG_CONTENT_FILES} ${RELEASE_CONTENT_FILES} ${ASSET_FILES} ${STRING_FILES}
-		${DAVA_PLATFORM_SRC}/TemplateWin32/WindowsStore/UnitTests_TemporaryKey.pfx)
+		${CONTENT_FILES} ${DEBUG_CONTENT_FILES} ${RELEASE_CONTENT_FILES} ${ASSET_FILES} ${STRING_FILES} )
 	
 	list( APPEND RESOURCES_LIST ${RESOURCE_FILES} )
 
