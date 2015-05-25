@@ -74,7 +74,6 @@ OcclusionQuery::~OcclusionQuery()
 void OcclusionQuery::BeginQuery()
 {
 // Temporarly written, should be refactored and moved to RenderBase.h defines
-// Temporarly, bu-ga-ga!
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glBeginQuery(GL_SAMPLES_PASSED, id));
 #else

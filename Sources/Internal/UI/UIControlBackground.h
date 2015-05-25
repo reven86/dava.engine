@@ -438,7 +438,7 @@ int UIControlBackground::GetBgDrawType() const
 
 void UIControlBackground::SetBgDrawType(int type)
 { // TODO: FIXME: type
-    SetDrawType(UIControlBackground::eDrawType(type));
+    SetDrawType((UIControlBackground::eDrawType) type);
 }
 
 FilePath UIControlBackground::GetBgSpritePath() const
@@ -464,9 +464,9 @@ int32 UIControlBackground::GetBgColorInherit() const
     return GetColorInheritType();
 }
 
-void UIControlBackground::SetBgColorInherit(int32 _type)
+void UIControlBackground::SetBgColorInherit(int32 type)
 {
-    SetColorInheritType(UIControlBackground::eColorInheritType(_type));
+    SetColorInheritType((UIControlBackground::eColorInheritType) type);
 }
 
 int32 UIControlBackground::GetBgPerPixelAccuracy() const
@@ -474,9 +474,9 @@ int32 UIControlBackground::GetBgPerPixelAccuracy() const
     return GetPerPixelAccuracyType();
 }
 
-void UIControlBackground::SetBgPerPixelAccuracy(int32 _type)
+void UIControlBackground::SetBgPerPixelAccuracy(int32 type)
 {
-    SetPerPixelAccuracyType(UIControlBackground::ePerPixelAccuracyType(_type));
+    SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType) type);
 }
 
 
