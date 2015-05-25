@@ -109,6 +109,7 @@ void LibraryModel::BuildModel()
     if (packageControls->GetCount())
     {
         controlsRootItem = new QStandardItem(tr("Package controls"));
+        controlsRootItem->setData(QVariant::fromValue(static_cast<void*>(packageControls)));
         controlsRootItem->setBackground(QBrush(Qt::lightGray));
         invisibleRootItem()->appendRow(controlsRootItem);
         for (int i = 0; i < packageControls->GetCount(); i++)
@@ -126,13 +127,15 @@ void LibraryModel::BuildModel()
     if (importedControls->GetCount())
     {
         importedPackageRootItem = new QStandardItem(tr("Importred controls"));
+        importedPackageRootItem->setData(QVariant::fromValue(static_cast<void*>(importedControls)));
         importedPackageRootItem->setBackground(QBrush(Qt::lightGray));
         invisibleRootItem()->appendRow(importedPackageRootItem);
         for (int i = 0; i < importedControls->GetCount(); ++i)
         {
             const auto importedPackage = importedControls->Get(i);
             auto importedPackageItem = new QStandardItem(QString::fromStdString(importedPackage->GetName()));
-            importedPackageItem->appendRow(importedPackageItem);
+            importedPackageItem->setData(QVariant::fromValue(static_cast<void*>(importedPackage)));
+            importedPackageRootItem->appendRow(importedPackageItem);
             for (int j = 0; j < importedPackage->GetCount(); ++j)
             {
                 const auto node = importedPackage->Get(j);
@@ -162,16 +165,18 @@ void LibraryModel::ControlWillBeAdded(ControlNode *node, ControlsContainerNode *
 
 void LibraryModel::ControlWasAdded(ControlNode *node, ControlsContainerNode *destination, int row)
 {
-    //TODO: check that the parent is "controls"
-    const QModelIndex destIndex = indexByNode(node, controlsRootItem); //check that we already do not have this item 
-    if (!destIndex.isValid())
+    if (controlsRootItem->data().value<void*>() == node->GetParent())
     {
-        auto item = new QStandardItem(
-            QIcon(IconHelper::GetCustomIconPath()),
-            QString::fromStdString(node->GetName())
-            );
-        item->setData(QVariant::fromValue(static_cast<void*>(node)));
-        controlsRootItem->appendRow(item);
+        const QModelIndex destIndex = indexByNode(node, controlsRootItem); //check that we already do not have this item 
+        if (!destIndex.isValid())
+        {
+            auto item = new QStandardItem(
+                QIcon(IconHelper::GetCustomIconPath()),
+                QString::fromStdString(node->GetName())
+                );
+            item->setData(QVariant::fromValue(static_cast<void*>(node)));
+            controlsRootItem->appendRow(item);
+        }
     }
 }
 
@@ -195,17 +200,25 @@ void LibraryModel::ImportedPackageWillBeAdded(PackageControlsNode *node, Package
 
 void LibraryModel::ImportedPackageWasAdded(PackageControlsNode *node, PackageNode *to, int index)
 {
-    //TODO: check that the parent is "imported controls"
-    const QModelIndex destIndex = indexByNode(node, importedPackageRootItem); //check that we already do not have this item 
-    if (!destIndex.isValid())
+    if (importedPackageRootItem->data().value<void*>() == node->GetParent())
     {
-        //TODO: we must add control to subsection
-        auto item = new QStandardItem(
-            QIcon(IconHelper::GetCustomIconPath()),
-            QString::fromStdString(node->GetName())
-            );
-        item->setData(QVariant::fromValue(static_cast<void*>(node)));
-        controlsRootItem->appendRow(item);
+        const QModelIndex destIndex = indexByNode(node, importedPackageRootItem); //check that we already do not have this item 
+        if (!destIndex.isValid())
+        {
+            auto importedPackageItem = new QStandardItem(QString::fromStdString(node->GetName()));
+            importedPackageItem->setData(QVariant::fromValue(static_cast<void*>(node)));
+            importedPackageRootItem->appendRow(importedPackageItem);
+            for (int j = 0; j < node->GetCount(); ++j)
+            {
+                const auto subNode = node->Get(j);
+                auto item = new QStandardItem(
+                    QIcon(IconHelper::GetCustomIconPath()),
+                    QString::fromStdString(subNode->GetName())
+                    );
+                item->setData(QVariant::fromValue(static_cast<void*>(subNode)));
+                importedPackageItem->appendRow(item);
+            }
+        }
     }
 }
 
