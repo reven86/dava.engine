@@ -107,7 +107,8 @@ public:
     void TrackGpuAlloc(uint32 id, size_t size, uint32 gpuPoolIndex);
     void TrackGpuDealloc(uint32 id, uint32 gpuPoolIndex);
 
-    uint32 GetSystemMemoryUsage();
+    uint32 GetSystemMemoryUsage() const;
+    uint32 GetTrackedMemoryUsage() const;
 
     size_t CalcStatConfigSize() const;
     void GetStatConfig(void* buffer, size_t bufSize) const;

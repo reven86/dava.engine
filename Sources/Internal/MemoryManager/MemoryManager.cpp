@@ -402,7 +402,7 @@ void MemoryManager::InternalDeallocate(void* ptr) DAVA_NOEXCEPT
     }
 }
 
-uint32 MemoryManager::GetSystemMemoryUsage()
+uint32 MemoryManager::GetSystemMemoryUsage() const
 {
 #if defined(__DAVAENGINE_WIN32__)
     //PROCESS_MEMORY_COUNTERS counters;
@@ -420,6 +420,11 @@ uint32 MemoryManager::GetSystemMemoryUsage()
 #elif defined(__DAVAENGINE_ANDROID__)
 #endif
     return 0;
+}
+
+uint32 MemoryManager::GetTrackedMemoryUsage() const
+{
+    return statAllocPool[ALLOC_POOL_TOTAL].allocByApp;
 }
 
 void MemoryManager::EnterTagScope(uint32 tag)
@@ -895,7 +900,7 @@ bool MemoryManager::GetMemoryDump(FILE* file, uint64 curTimestamp, size_t* dumpS
         {
             MMCurStat* curStat = static_cast<MMCurStat*>(buffer);
             Memset(curStat, 0, statSize);
-            curStat->size = statSize;
+            curStat->size = static_cast<uint32>(statSize);
             fwrite(buffer, 1, statSize, file);
         }
         {

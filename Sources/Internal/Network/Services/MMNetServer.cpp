@@ -82,8 +82,8 @@ void MMNetServer::OnUpdate()
 
 void MMNetServer::OnTag(uint32 tag, bool entering)
 {
-    uint64 curTimestamp = SystemTimer::Instance()->AbsoluteMS();
-    GetAndSaveDump(curTimestamp - timerBegin);
+    //uint64 curTimestamp = SystemTimer::Instance()->AbsoluteMS();
+    //GetAndSaveDump(curTimestamp - timerBegin);
 }
     
 void MMNetServer::ChannelOpen()

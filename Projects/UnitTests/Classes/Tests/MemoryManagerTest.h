@@ -43,16 +43,16 @@ public:
 
     void TestZeroAlloc(PerfFuncData* data);
     void TestAlignedAlloc(PerfFuncData* data);
-
+    void TestGPUTracking(PerfFuncData* data);
+    void TestAllocScope(PerfFuncData* data);
     void TestCallback(PerfFuncData* data);
 
 private:
-    static void DumpRequestCallback(void* arg, int32 type, uint32 tagOrCheckpoint, uint32 blockBegin, uint32 blockEnd);
-    void OnDumpRequest(int32 type, uint32 tagOrCheckpoint, uint32 blockBegin, uint32 blockEnd);
+    void TagCallback(uint32 tag, bool entering);
 
 private:
-    volatile uint32 capturedTag;
-    volatile uint32 capturedCheckpoint;
+    volatile uint32 enteredTag = 0;
+    volatile uint32 leftTag = 0;
 };
 
 #endif  // DAVA_MEMORY_PROFILING_ENABLE

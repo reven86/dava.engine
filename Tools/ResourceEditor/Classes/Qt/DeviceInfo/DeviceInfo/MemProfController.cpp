@@ -94,9 +94,6 @@ void MemProfController::OnDump(size_t total, size_t recv, Vector<uint8>* v)
         DVASSERT(v != nullptr);
 
         const MMDump* dump = reinterpret_cast<const MMDump*>(v->data());
-        //const MMCurStat* stat = OffsetPointer<MMCurStat>(dump, sizeof(MMDump));
-        //OnCurrentStat(stat);
-
         profilingSession->AddDump(dump);
     }
     emit DumpArrived(total, recv);

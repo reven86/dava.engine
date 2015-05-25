@@ -36,31 +36,25 @@ using namespace DAVA;
 
 MemoryManagerTest::MemoryManagerTest()
     : TestTemplate<MemoryManagerTest>("MemoryManagerTest")
-    , capturedTag(0)
-    , capturedCheckpoint(0)
 {
-    RegisterFunction(this, &MemoryManagerTest::TestZeroAlloc, "TestZeroAlloc", NULL);
-    RegisterFunction(this, &MemoryManagerTest::TestAlignedAlloc, "TestAlignedAlloc", NULL);
-    RegisterFunction(this, &MemoryManagerTest::TestCallback, "TestCallback", NULL);
+    RegisterFunction(this, &MemoryManagerTest::TestZeroAlloc, "TestZeroAlloc", nullptr);
+    RegisterFunction(this, &MemoryManagerTest::TestAlignedAlloc, "TestAlignedAlloc", nullptr);
+    RegisterFunction(this, &MemoryManagerTest::TestGPUTracking, "TestGPUTracking", nullptr);
+    RegisterFunction(this, &MemoryManagerTest::TestAllocScope, "TestAllocScope", nullptr);
+    RegisterFunction(this, &MemoryManagerTest::TestCallback, "TestCallback", nullptr);
 }
 
 void MemoryManagerTest::TestZeroAlloc(PerfFuncData* data)
 {
-    void* ptr1 = MemoryManager::Instance()->Allocate(0, ALLOC_POOL_APP);
-    void* ptr2 = MemoryManager::Instance()->Allocate(0, ALLOC_POOL_APP);
-    void* ptr3 = MemoryManager::Instance()->AlignedAllocate(0, 16, ALLOC_POOL_APP);
-    void* ptr4 = MemoryManager::Instance()->AlignedAllocate(0, 16, ALLOC_POOL_APP);
+    void* ptr1 = MemoryManager::Instance()->Allocate(0, ALLOC_POOL_DEFAULT);
+    void* ptr2 = MemoryManager::Instance()->Allocate(0, ALLOC_POOL_DEFAULT);
 
     // When allocating zero bytes MemoryManager returns unique pointer which can be safely deallocated
     TEST_VERIFY(ptr1 != nullptr);
     TEST_VERIFY(ptr1 != ptr2);
-    TEST_VERIFY(ptr2 != ptr3);
-    TEST_VERIFY(ptr3 != ptr4);
 
     MemoryManager::Instance()->Deallocate(ptr1);
     MemoryManager::Instance()->Deallocate(ptr2);
-    MemoryManager::Instance()->Deallocate(ptr3);
-    MemoryManager::Instance()->Deallocate(ptr4);
 }
 
 void MemoryManagerTest::TestAlignedAlloc(PerfFuncData* data)
@@ -71,49 +65,79 @@ void MemoryManagerTest::TestAlignedAlloc(PerfFuncData* data)
     };
     for (auto x : align)
     {
-        void* ptr = MemoryManager::Instance()->AlignedAllocate(128, x, ALLOC_POOL_APP);
-        // On many platforms std::size_t can safely store the value of any non-member pointer, in which case it is synonymous with std::uintptr_t.
-        size_t addr = reinterpret_cast<size_t>(ptr);
+        void* ptr = MemoryManager::Instance()->AlignedAllocate(128, x, ALLOC_POOL_DEFAULT);
+        uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
         TEST_VERIFY(addr % x == 0);
         MemoryManager::Instance()->Deallocate(ptr);
     }
 }
 
+void MemoryManagerTest::TestGPUTracking(PerfFuncData* data)
+{
+    const size_t statSize = MemoryManager::Instance()->CalcCurStatSize();
+    void* buffer = ::operator new(statSize);
+    MMCurStat* stat = static_cast<MMCurStat*>(buffer);
+    AllocPoolStat* poolStat = OffsetPointer<AllocPoolStat>(buffer, sizeof(MMCurStat));
+
+    DAVA_MEMORY_PROFILER_GPU_ALLOC(1, 100, ALLOC_GPU_TEXTURE);
+    DAVA_MEMORY_PROFILER_GPU_ALLOC(1, 200, ALLOC_GPU_TEXTURE);
+
+    MemoryManager::Instance()->GetCurStat(buffer, statSize);
+    TEST_VERIFY(300 == poolStat[ALLOC_GPU_TEXTURE].allocByApp);
+    TEST_VERIFY(2 == poolStat[ALLOC_GPU_TEXTURE].blockCount);
+
+    DAVA_MEMORY_PROFILER_GPU_DEALLOC(1, ALLOC_GPU_TEXTURE);
+    MemoryManager::Instance()->GetCurStat(buffer, statSize);
+
+    TEST_VERIFY(0 == poolStat[ALLOC_GPU_TEXTURE].allocByApp);
+    TEST_VERIFY(0 == poolStat[ALLOC_GPU_TEXTURE].blockCount);
+
+    ::operator delete(buffer);
+}
+
+void MemoryManagerTest::TestAllocScope(PerfFuncData* data)
+{
+    const size_t statSize = MemoryManager::Instance()->CalcCurStatSize();
+    void* buffer = ::operator new(statSize);
+    MMCurStat* stat = static_cast<MMCurStat*>(buffer);
+    AllocPoolStat* poolStat = OffsetPointer<AllocPoolStat>(buffer, sizeof(MMCurStat));
+
+    {
+        DAVA_MEMORY_PROFILER_ALLOC_SCOPE(ALLOC_POOL_BULLET);
+
+        void* ptr = malloc(222);
+
+        MemoryManager::Instance()->GetCurStat(buffer, statSize);
+        TEST_VERIFY(222 == poolStat[ALLOC_POOL_BULLET].allocByApp);
+
+        free(ptr);
+
+        MemoryManager::Instance()->GetCurStat(buffer, statSize);
+        TEST_VERIFY(0 == poolStat[ALLOC_POOL_BULLET].allocByApp);
+    }
+
+    ::operator delete(buffer);
+}
+
 void MemoryManagerTest::TestCallback(PerfFuncData* data)
 {
-    /*const size_t TAG = 1;
-    const size_t CHECKPOINT = 100;
+    const uint32 TAG = 1;
 
-    MemoryManager::InstallDumpCallback(&DumpRequestCallback, this);
+    MemoryManager::Instance()->SetCallbacks(0, MakeFunction(this, &MemoryManagerTest::TagCallback));
 
-    MEMORY_PROFILER_ENTER_TAG(TAG);
-    MEMORY_PROFILER_LEAVE_TAG(TAG);
+    DAVA_MEMORY_PROFILER_ENTER_TAG(TAG);
+    DAVA_MEMORY_PROFILER_LEAVE_TAG(TAG);
 
-    MEMORY_PROFILER_CHECKPOINT(CHECKPOINT);
-
-    TEST_VERIFY(capturedTag == TAG);
-    TEST_VERIFY(capturedCheckpoint == CHECKPOINT);
-
-    MemoryManager::InstallDumpCallback(nullptr, nullptr);
-    */
+    TEST_VERIFY(enteredTag == TAG);
+    TEST_VERIFY(leftTag == TAG);
 }
 
-void MemoryManagerTest::DumpRequestCallback(void* arg, int32 type, uint32 tagOrCheckpoint, uint32 blockBegin, uint32 blockEnd)
+void MemoryManagerTest::TagCallback(uint32 tag, bool entering)
 {
-    MemoryManagerTest* self = static_cast<MemoryManagerTest*>(arg);
-    self->OnDumpRequest(type, tagOrCheckpoint, blockBegin, blockEnd);
-}
-
-void MemoryManagerTest::OnDumpRequest(int32 type, uint32 tagOrCheckpoint, uint32 blockBegin, uint32 blockEnd)
-{
-    /*if (MMConst::DUMP_REQUEST_TAG == type)
-    {
-        capturedTag = tagOrCheckpoint;
-    }
-    else if (MMConst::DUMP_REQUEST_CHECKPOINT == type)
-    {
-        capturedCheckpoint = tagOrCheckpoint;
-    }*/
+    if (entering)
+        enteredTag = tag;
+    else
+        leftTag = tag;
 }
 
 #endif  // DAVA_MEMORY_PROFILING_ENABLE
