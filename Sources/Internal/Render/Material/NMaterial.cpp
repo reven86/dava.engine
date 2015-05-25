@@ -301,8 +301,8 @@ void NMaterial::SetParent(NMaterial *_parent)
 
     if (parent)
     {
-        SafeRelease(parent);
         parent->RemoveChildMaterial(this);
+        SafeRelease(parent);
     }
         
 
@@ -636,11 +636,12 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
         pointer = materialKey;
     }
 
+    uint64 parentKey(0);
     if (archive->IsKeyExists("parentMaterialKey"))
     {
-        uint64 parentKey = archive->GetUInt64("parentMaterialKey");
-        serializationContext->AddBinding(parentKey, this);
+        parentKey = archive->GetUInt64("parentMaterialKey");
     }
+    serializationContext->AddBinding(parentKey, this); //parentKey == 0 is global material if it exists, or no-parent otherwise
 
     if (archive->IsKeyExists("materialGroup"))
     {
