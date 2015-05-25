@@ -54,8 +54,6 @@ void MemProfController::ShowView()
         connect(this, &MemProfController::DumpArrived, view, &MemProfWidget::DumpArrived);
 
         connect(view, SIGNAL(OnDumpButton()), this, SLOT(OnDumpPressed()));
-        connect(view, SIGNAL(OnViewDumpButton()), this, SLOT(OnViewDump()));
-        connect(view, SIGNAL(OnViewFileDumpButton()), this, SLOT(OnViewFileDump()));
         connect(this, &QObject::destroyed, view, &QObject::deleteLater);
     }
     view->showNormal();

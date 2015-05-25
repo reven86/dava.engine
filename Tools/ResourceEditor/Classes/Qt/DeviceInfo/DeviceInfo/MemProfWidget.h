@@ -38,8 +38,6 @@ class MemProfWidget : public QWidget
 
 signals:
     void OnDumpButton();
-    void OnViewDumpButton();
-    void OnViewFileDumpButton();
     
 public:
     explicit MemProfWidget(QWidget *parent = nullptr);
