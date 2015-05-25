@@ -1,27 +1,26 @@
-// CRAP: remove these when tree/wind working
-//#if defined SPEED_TREE_LEAF
-//#undef SPEED_TREE_LEAF
-//#endif
-//#if defined WIND_ANIMATION
-//#undef WIND_ANIMATION
-//#endif
-//#if #defined CUT_LEAF
-//#undef CUT_LEAF
-//#endif
-
-#if defined PIXEL_LIT
-#undef PIXEL_LIT
+#define MAX_JOINTS 32
+#define _PI 3.141592654
+/*
+#if defined FOG_ATMOSPHERE
+    #if !defined DISTANCE_ATTENUATION
+    #define DISTANCE_ATTENUATION
+    #endif
 #endif
+*/
+
 
 #if defined VERTEX_FOG
 #undef VERTEX_FOG
 #endif
 
+#if defined WIND_ANIMATION  &&  WIND_ANIMATION == 0
+    #undef WIND_ANIMATION
+#endif
 
+#if defined FOG_LINEAR  &&  FOG_LINEAR == 0
+    #undef FOG_LINEAR
+#endif
 
-
-#define MAX_JOINTS 32
-#define _PI 3.141592654
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -149,15 +148,6 @@ kkk
 //        varying lowp vec3 varFogColor;
     #endif
 
-    #if defined(REFLECTION) // works now only with VERTEX_LIT
-uuu        
-        #if defined(VERTEX_LIT)
-            varying mediump vec3 reflectionDirectionInWorldSpace;
-        #elif defined(PIXEL_LIT)
-            varying mediump vec3 cameraToPointInTangentSpace;
-            varying mediump mat3 tbnToWorldMatrix;
-        #endif
-    #endif
 
 
 VPROG_OUT_END
@@ -178,7 +168,9 @@ property float4x4 worldViewMatrix : dynamic,a : ;
 #if defined(VERTEX_LIT) || defined(PIXEL_LIT) || (defined(VERTEX_FOG) && defined(FOG_ATMOSPHERE))
 property float4x4 worldViewInvTransposeMatrix : dynamic,a : ;
 property float4 lightPosition0 : dynamic,a : ;
-property float lightIntensity0 : dynamic,a : ; 
+#if defined DISTANCE_ATTENUATION
+property float lightIntensity0 : static,a : ; 
+#endif
 #endif
 
 #if defined(VERTEX_LIT)
@@ -208,9 +200,9 @@ property float4 jointQuaternions[MAX_JOINTS] : dynamic,a : ;
         #if defined(FOG_ATMOSPHERE_MAP)
             DECL_SAMPLERCUBE(atmospheremap) : static,b : ;
         #else
-            property float3 fogAtmosphereColorSun : dynamic,b : ;
-            property float3 fogAtmosphereColorSky : dynamic,b : ;
-            property float fogAtmosphereScattering : dynamic,b : ;
+            property float3 fogAtmosphereColorSun : static,b : ;
+            property float3 fogAtmosphereColorSky : static,b : ;
+            property float fogAtmosphereScattering : static,b : ;
         #endif
     #endif
     #if defined(FOG_HALFSPACE)
@@ -237,7 +229,7 @@ property float4x4 projMatrix : dynamic,a : ;
 property float cutDistance : static,a : ;
 
     #if !defined(SPHERICAL_LIT) //legacy for old tree lighting
-        property float3 treeLeafColorMul : static,a : def_value=0.5,0.5,0.5,0.5 ;
+        property float4 treeLeafColorMul : static,a : def_value=0.5,0.5,0.5,0.5 ;
         property float treeLeafOcclusionOffset : static,a : def_value=0 ;
         property float treeLeafOcclusionMul : static,a : def_value=0.5 ;
     #endif
@@ -288,9 +280,6 @@ property float4x4 worldMatrix : dynamic,a : ;
 
 
 
-#if defined(REFLECTION) // works now only with VERTEX_LIT
-    property float3x3 worldInvTransposeMatrix : dynamic,a : ;
-#endif
 
 
 #if defined(WAVE_ANIMATION)
@@ -496,11 +485,6 @@ VPROG_BEGIN
     
     toLightDir = normalize(toLightDir);
     
-    #if defined(REFLECTION)
-        float3 viewDirectionInWorldSpace = float3( mul(VP_IN_POSITION,worldMatrix)) - cameraPosition;
-        float3 normalDirectionInWorldSpace = normalize(float3(mul(inNormal,worldInvTransposeMatrix)));
-        reflectionDirectionInWorldSpace = reflect(viewDirectionInWorldSpace, normalDirectionInWorldSpace);
-    #endif
     
     #if defined(BLINN_PHONG)
         
@@ -597,18 +581,6 @@ VPROG_BEGIN
 //    varLightPosition.y = dot (lightPosition0.xyz, b);
 //    varLightPosition.z = dot (lightPosition0.xyz, n);
     
-    #if defined(REFLECTION)
-        v.x = dot (eyeCoordsPosition, t);
-        v.y = dot (eyeCoordsPosition, b);
-        v.z = dot (eyeCoordsPosition, n);
-        cameraToPointInTangentSpace = normalize (v);
-        
-        float3 binormTS = cross(inNormal, inTangent);
-    //    tbnToWorldMatrix = mat3(vec3(inTangent.x, binormTS.x, inNormal.x),
-    //                            vec3(inTangent.y, binormTS.y, inNormal.y),
-    //                            vec3(inTangent.z, binormTS.z, inNormal.z));
-        tbnToWorldMatrix = float3x3(inTangent, binormTS, inNormal);
-    #endif
 
 #endif // defined(PIXEL_LIT)
 

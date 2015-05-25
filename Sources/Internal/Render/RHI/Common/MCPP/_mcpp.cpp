@@ -2,16 +2,41 @@
 
     #include "_mcpp.h"
 
+    #include "FileSystem/FileSystem.h"
     #include "FileSystem/DynamicMemoryFile.h"
     #include "Base/BaseTypes.h"
     using DAVA::uint8;
+    #include "Scene3D/PathManip.h"
+
 
     #include <stdio.h>
 
-static DAVA::DynamicMemoryFile* _Input          = 0;
-static int                      _InputEOF       = 0;
-static FILE* const              _DefaultInput   = (FILE*)(0xDEADBABE);
+
+struct
+FileEntry
+{
+    std::string file_name;
+    FILE*       handle;
+    int         eof;
+    DAVA::File* file;
+};
+
 const char*                     MCPP_Text       = "<input>";
+std::vector<std::string>        IncludeSearchPath;
+static std::vector<FileEntry>   _FileEntry;
+static FILE* const              _HandleBase     = (FILE*)(0x1000);
+static std::string              _CurDir         = "Data/Materials/Shaders/Default";
+
+
+//------------------------------------------------------------------------------
+
+void
+mcpp__set_cur_file( const char* filename )
+{
+    DAVA::PathManip   path(filename);
+
+    _CurDir = path.GetPath();
+}
 
 
 //------------------------------------------------------------------------------
@@ -19,8 +44,30 @@ const char*                     MCPP_Text       = "<input>";
 void
 mcpp__set_input( const void* data, unsigned data_sz )
 {
-    _Input    = DAVA::DynamicMemoryFile::Create( (const uint8*)data, data_sz, DAVA::File::READ );
-    _InputEOF = 0;
+    mcpp__cleanup();
+
+    FileEntry   entry;
+
+    entry.file      = DAVA::DynamicMemoryFile::Create( (const uint8*)data, data_sz, DAVA::File::READ );
+    entry.file_name = MCPP_Text;
+    entry.eof       = 0;
+    entry.handle    = _HandleBase + 0;
+    
+    _FileEntry.push_back( entry );
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+mcpp__cleanup()
+{
+    for( unsigned i=0; i!=_FileEntry.size(); ++i )
+    {
+        _FileEntry[i].file->Release();
+    }
+
+    _FileEntry.clear();
 }
 
 
@@ -29,10 +76,34 @@ mcpp__set_input( const void* data, unsigned data_sz )
 FILE* 
 mcpp__fopen( const char* filename, const char* mode )
 {
-    if( !strcmp( filename, MCPP_Text ) )
-        return _DefaultInput;
+    FILE*   file = NULL;
+
+    if(     (!strcmp( filename, MCPP_Text ))
+        ||  ( filename[0]=='/'  &&  strcmp( filename+1, MCPP_Text ) == 0)
+      )
+    {
+        file = _FileEntry[0].handle;
+    }
     else
-        return NULL;
+    {
+        std::string name = _CurDir + filename;
+
+        if( DAVA::FileSystem::Instance()->IsFile( name.c_str() ) )
+        {
+            FileEntry   entry;
+
+            entry.file      = DAVA::File::Create( name, DAVA::File::OPEN|DAVA::File::READ );
+            entry.file_name = filename;
+            entry.eof       = 0;
+            entry.handle    = _HandleBase + _FileEntry.size();
+            
+            _FileEntry.push_back( entry );
+            file = entry.handle;
+        }
+    }
+    
+//DAVA::Logger::Info("mcpp-open \"%s\" %p",filename,file);
+    return file;
 };
 
 
@@ -41,11 +112,21 @@ mcpp__fopen( const char* filename, const char* mode )
 int
 mcpp__fclose( FILE* file )
 {
-    if( !file )
-        return -1;
+//DAVA::Logger::Info("mcpp-close %p",file);
+    int retval = -1;
 
-    DVASSERT(file == _DefaultInput);
-    return 0;
+    for( unsigned i=0; i!=_FileEntry.size(); ++i )
+    {
+        if( _FileEntry[i].handle == file )
+        {
+            _FileEntry[i].file->Release();
+            _FileEntry.erase( _FileEntry.begin()+i );
+            retval = 0;
+            break;
+        }
+    }
+
+    return retval;
 }
 
 
@@ -54,8 +135,19 @@ mcpp__fclose( FILE* file )
 int
 mcpp__ferror( FILE* file )
 {
-    DVASSERT(file == _DefaultInput);
-    return _InputEOF;
+    int eof = 0;
+
+    for( std::vector<FileEntry>::const_iterator f=_FileEntry.begin(),f_end=_FileEntry.end(); f!=f_end; ++f )
+    {
+        if( f->handle == file )
+        {
+            eof = f->eof;
+//DAVA::Logger::Info("mcpp-ferror %p = %i",file,eof);
+            break;
+        }
+    }
+
+    return eof;
 }
 
 
@@ -64,22 +156,29 @@ mcpp__ferror( FILE* file )
 char*
 mcpp__fgets( char* buf, int max_size, FILE* file )
 {
-    DVASSERT(file == _DefaultInput);
-    
-    if( _Input->IsEof() )
+    for( std::vector<FileEntry>::iterator f=_FileEntry.begin(),f_end=_FileEntry.end(); f!=f_end; ++f )
     {
-        buf[0]      = 0;
-        _InputEOF   = 1;
-    }
-    else
-    {
-        _Input->ReadLine( (void*)buf, max_size );
-
-        // workaround to prevent MCPP from ignoring line
-        if( !buf[0] )
+        if( f->handle == file )
         {
-            buf[0] = ' ';
-            buf[1] = 0;
+            if( f->file->IsEof() )
+            {
+                buf[0]  = 0;
+                f->eof  = 0;
+            }
+            else
+            {
+                f->file->ReadLine( (void*)buf, max_size );
+
+                // workaround to prevent MCPP from ignoring line
+                if( !buf[0] )
+                {
+                    buf[0] = ' ';
+                    buf[1] = 0;
+                }
+            }
+
+//DAVA::Logger::Info("mcpp-read %p  \"%s\"",f->handle,buf);
+            break;
         }
     }
 
