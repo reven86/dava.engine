@@ -926,6 +926,10 @@ void EmitterLayerWidget::Update(bool updateMinimized)
         SafeRelease(image);
         SafeRelease(renderTexture);
     }
+    else
+    {
+        spriteLabel->setPixmap( QPixmap() );
+    }
 
     QString spriteName = "<none>";
     if (sprite)
