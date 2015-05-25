@@ -393,7 +393,6 @@
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\InternalAllocator.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MallocHook.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManager.h" />
-    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerConfig.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerTypes.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryProfiler.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\TrackingAllocator.h" />

@@ -1837,9 +1837,6 @@
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocatorBridge.h">
       <Filter>Internal\MemoryManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerConfig.h">
-      <Filter>Internal\MemoryManager</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\InternalAllocator.h">
       <Filter>Internal\MemoryManager</Filter>
     </ClInclude>
