@@ -674,10 +674,10 @@ SceneEditor2 * SceneEditor2::CreateCopyForExport()
 {
 	SceneEditor2 *clonedScene = new SceneEditor2();
 	clonedScene->RemoveSystems();
-
     clonedScene->SetGlobalMaterial(GetGlobalMaterial());
+    CopyScene(clonedScene);
 
-	return (SceneEditor2 *)Clone(clonedScene);
+	return (SceneEditor2 *) clonedScene;
 }
 
 void SceneEditor2::RemoveSystems()

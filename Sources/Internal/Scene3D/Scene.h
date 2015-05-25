@@ -250,7 +250,7 @@ public:
 #endif
 
     Entity *GetRootNode(const FilePath &rootNodePath);
-
+    void ReleaseRootNode(const FilePath &rootNodePath);
 	
 	//virtual void StopAllAnimations(bool recursive = true);
 	
@@ -313,6 +313,8 @@ public:
     virtual void Activate();
     virtual void Deactivate();
 
+    void CopyScene(Scene *dst);
+
     EntityCache cache;
     
 protected:
@@ -331,6 +333,7 @@ protected:
     uint32 nodeCounter;
 
     uint32 systemsMask;
+    uint32 entityIdCounter;
 
     uint32 clearBuffers;
 

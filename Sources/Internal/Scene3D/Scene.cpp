@@ -213,6 +213,7 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     , mainCamera(0)
     , drawCamera(0)
     , imposterManager(0)
+    , entityIdCounter(0)
 {
 	CreateComponents();
 	CreateSystems();
@@ -733,6 +734,11 @@ Entity* Scene::GetRootNode(const FilePath &rootNodePath)
     return cache.GetOriginal(rootNodePath);
 }
 
+void Scene::ReleaseRootNode(const FilePath &rootNodePath)
+{
+    cache.Clear(rootNodePath);
+}
+
 #if ROOT_NODE
 void Scene::AddRootNode(Entity *node, const FilePath &rootNodePath)
 {
@@ -957,6 +963,16 @@ void Scene::Draw()
     
 void Scene::SceneDidLoaded()
 {
+    entityIdCounter = 0;
+
+    std::function<void(Entity *)> findMaxId = [&](Entity *entity)
+    {
+        if(entityIdCounter < entity->id) entityIdCounter = entity->id;
+        for (auto child : entity->children) findMaxId(child);
+    };
+
+    findMaxId(this);
+
     uint32 systemsCount = static_cast<uint32>(systems.size());
     for (uint32 k = 0; k < systemsCount; ++k)
     {
@@ -1183,8 +1199,6 @@ SceneFileV2::eError Scene::LoadScene(const DAVA::FilePath & pathname)
 {
     SceneFileV2::eError ret = SceneFileV2::ERROR_VERSION_TAGS_INVALID;
 
-    // clear scene
-    RemoveAllChildren();
     SetName(pathname.GetFilename().c_str());
 
     if(pathname.IsEqualToExtension(".sce"))
@@ -1208,6 +1222,14 @@ SceneFileV2::eError Scene::LoadScene(const DAVA::FilePath & pathname)
 
 SceneFileV2::eError Scene::SaveScene(const DAVA::FilePath & pathname, bool saveForGame /*= false*/)
 {
+    std::function<void(Entity *)> resolveId = [&](Entity *entity)
+    {
+        if(0 == entity->id) entity->id = ++entityIdCounter;
+        for(auto child : entity->children) resolveId(child);
+    };
+
+    resolveId(this);
+
     ScopedPtr<SceneFileV2> file(new SceneFileV2());
     file->EnableDebugLog(false);
 	file->EnableSaveForGame(saveForGame);
@@ -1310,6 +1332,11 @@ void Scene::Deactivate()
     {
         system->Deactivate();
     }
+}
+
+void Scene::CopyScene(Scene* dst)
+{
+    CloneIntenal(dst, true);
 }
 
 };

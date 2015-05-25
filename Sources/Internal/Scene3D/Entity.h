@@ -375,6 +375,7 @@ protected:
     void RemoveAllComponents();
     void LoadComponentsV6(KeyedArchive *compsArch, SerializationContext * serializationContext);
     void LoadComponentsV7(KeyedArchive *compsArch, SerializationContext * serializationContext);
+    Entity* CloneIntenal(Entity *dstNode, bool copyID);
    
 protected:
 
