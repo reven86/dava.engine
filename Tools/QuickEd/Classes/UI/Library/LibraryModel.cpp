@@ -22,7 +22,7 @@ LibraryModel::LibraryModel(PackageNode *_root, QObject *parent)
     , root(SafeRetain(_root))
 {
     root->AddListener(this);
-    defaultControls << "UIControl"
+    defaultControls
         << "UIControl"
         << "UIButton"
         << "UIStaticText"
@@ -42,6 +42,35 @@ LibraryModel::~LibraryModel()
 {
     root->RemoveListener(this);
     SafeRelease(root);
+}
+
+Qt::ItemFlags LibraryModel::flags(const QModelIndex &index) const
+{
+    if (!index.isValid())
+    {
+        return Qt::NoItemFlags;
+    }
+
+    return QAbstractItemModel::flags(index) | Qt::ItemIsUserCheckable | Qt::ItemIsDragEnabled;
+}
+
+QStringList LibraryModel::mimeTypes() const
+{
+    return QStringList() << "text/plain";
+}
+
+QMimeData *LibraryModel::mimeData(const QModelIndexList &indexes) const
+{
+    foreach (QModelIndex index, indexes)
+    {
+        if (index.isValid())
+        {
+            QMimeData *data = new QMimeData();
+            data->setText(defaultControls.at(index.row()));
+            return data;
+        }
+    }
+    return nullptr;
 }
 
 QModelIndex LibraryModel::indexByNode(const void *node, const QStandardItem *item) const
@@ -79,9 +108,9 @@ void LibraryModel::BuildModel()
     const auto packageControls = root->GetPackageControlsNode();
     if (packageControls->GetCount())
     {
-        auto packageControlsRoot = new QStandardItem(tr("Package controls"));
-        packageControlsRoot->setBackground(QBrush(Qt::lightGray));
-        invisibleRootItem()->appendRow(packageControlsRoot);
+        controlsRootItem = new QStandardItem(tr("Package controls"));
+        controlsRootItem->setBackground(QBrush(Qt::lightGray));
+        invisibleRootItem()->appendRow(controlsRootItem);
         for (int i = 0; i < packageControls->GetCount(); i++)
         {
             const auto node = packageControls->Get(i);
@@ -90,20 +119,20 @@ void LibraryModel::BuildModel()
                 QString::fromStdString(node->GetName())
                 );
             item->setData(QVariant::fromValue(static_cast<void*>(node)));
-            packageControlsRoot->appendRow(item);
+            controlsRootItem->appendRow(item);
         }
     }
     const auto importedControls = root->GetImportedPackagesNode();
     if (importedControls->GetCount())
     {
-        auto importedControlsRootItem = new QStandardItem(tr("Importred controls"));
-        importedControlsRootItem->setBackground(QBrush(Qt::lightGray));
-        invisibleRootItem()->appendRow(importedControlsRootItem);
+        importedPackageRootItem = new QStandardItem(tr("Importred controls"));
+        importedPackageRootItem->setBackground(QBrush(Qt::lightGray));
+        invisibleRootItem()->appendRow(importedPackageRootItem);
         for (int i = 0; i < importedControls->GetCount(); ++i)
         {
             const auto importedPackage = importedControls->Get(i);
             auto importedPackageItem = new QStandardItem(QString::fromStdString(importedPackage->GetName()));
-            importedControlsRootItem->appendRow(importedPackageItem);
+            importedPackageItem->appendRow(importedPackageItem);
             for (int j = 0; j < importedPackage->GetCount(); ++j)
             {
                 const auto node = importedPackage->Get(j);
@@ -118,35 +147,6 @@ void LibraryModel::BuildModel()
     }
 }
 
-Qt::ItemFlags LibraryModel::flags(const QModelIndex &index) const
-{
-    if (!index.isValid())
-    {
-        return Qt::NoItemFlags;
-    }
-
-    return QAbstractItemModel::flags(index) | Qt::ItemIsUserCheckable | Qt::ItemIsDragEnabled;
-}
-
-QStringList LibraryModel::mimeTypes() const
-{
-    return QStringList() << "text/plain";
-}
-
-QMimeData *LibraryModel::mimeData(const QModelIndexList &indexes) const
-{
-    foreach (QModelIndex index, indexes)
-    {
-        if (index.isValid())
-        {
-            QMimeData *data = new QMimeData();
-            data->setText(defaultControls.at(index.row()));
-            return data;
-        }
-    }
-    return nullptr;
-}
-
 void LibraryModel::ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property)
 {
     QModelIndex index = indexByNode(node, invisibleRootItem());
@@ -158,29 +158,35 @@ void LibraryModel::ControlPropertyWasChanged(ControlNode *node, AbstractProperty
 
 void LibraryModel::ControlWillBeAdded(ControlNode *node, ControlsContainerNode *destination, int row)
 {
-    const QModelIndex destIndex = indexByNode(destination, invisibleRootItem());
 }
 
 void LibraryModel::ControlWasAdded(ControlNode *node, ControlsContainerNode *destination, int row)
 {
-    const QModelIndex destIndex = indexByNode(destination, invisibleRootItem());
-    if (destIndex.isValid())
+    //TODO: check that the parent is "controls"
+    const QModelIndex destIndex = indexByNode(node, controlsRootItem); //check that we already do not have this item 
+    if (!destIndex.isValid())
     {
-        insertRow(destIndex.row(), destIndex.parent());
+        auto item = new QStandardItem(
+            QIcon(IconHelper::GetCustomIconPath()),
+            QString::fromStdString(node->GetName())
+            );
+        item->setData(QVariant::fromValue(static_cast<void*>(node)));
+        controlsRootItem->appendRow(item);
     }
 }
 
 void LibraryModel::ControlWillBeRemoved(ControlNode *node, ControlsContainerNode *from)
 {
-}
-
-void LibraryModel::ControlWasRemoved(ControlNode *node, ControlsContainerNode *from)
-{
-    QModelIndex index = indexByNode(node, invisibleRootItem());
+    QModelIndex index = indexByNode(node, controlsRootItem);
     if (index.isValid())
     {
         removeRow(index.row(), index.parent());
     }
+}
+
+void LibraryModel::ControlWasRemoved(ControlNode *node, ControlsContainerNode *from)
+{
+
 }
 
 void LibraryModel::ImportedPackageWillBeAdded(PackageControlsNode *node, PackageNode *to, int index)
@@ -189,22 +195,30 @@ void LibraryModel::ImportedPackageWillBeAdded(PackageControlsNode *node, Package
 
 void LibraryModel::ImportedPackageWasAdded(PackageControlsNode *node, PackageNode *to, int index)
 {
-    QModelIndex destIndex = indexByNode(node, invisibleRootItem());
-    if (destIndex.isValid())
+    //TODO: check that the parent is "imported controls"
+    const QModelIndex destIndex = indexByNode(node, importedPackageRootItem()); //check that we already do not have this item 
+    if (!destIndex.isValid())
     {
-        insertRow(destIndex.row(), destIndex.parent());
+        //TODO: we must add control to subsection
+        auto item = new QStandardItem(
+            QIcon(IconHelper::GetCustomIconPath()),
+            QString::fromStdString(node->GetName())
+            );
+        item->setData(QVariant::fromValue(static_cast<void*>(node)));
+        controlsRootItem->appendRow(item);
     }
 }
 
 void LibraryModel::ImportedPackageWillBeRemoved(PackageControlsNode *node, PackageNode *from)
 {
-}
-
-void LibraryModel::ImportedPackageWasRemoved(PackageControlsNode *node, PackageNode *from)
-{
-    QModelIndex parentIndex = indexByNode(node, invisibleRootItem());
+    QModelIndex parentIndex = indexByNode(node, importedPackageRootItem);
     if (parentIndex.isValid())
     {
         removeRow(parentIndex.row(), parentIndex.parent());
     }
+}
+
+void LibraryModel::ImportedPackageWasRemoved(PackageControlsNode *node, PackageNode *from)
+{
+
 }

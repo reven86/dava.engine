@@ -15,15 +15,17 @@ class LibraryModel : public QStandardItemModel, private PackageListener
 public:
     LibraryModel(PackageNode *root, QObject *parent = nullptr);
     virtual ~LibraryModel();
-    QModelIndex indexByNode(const void *node, const QStandardItem *item) const;
-    void BuildModel();
    
     Qt::ItemFlags flags(const QModelIndex &index) const override;
     QStringList mimeTypes() const override;
     QMimeData *mimeData(const QModelIndexList &indexes) const override;
+private:
+    QModelIndex indexByNode(const void *node, const QStandardItem *item) const;
+    void BuildModel();
 
 private:
     PackageNode *root;
+    QStandardItem *controlsRootItem, *importedPackageRootItem;
     QStringList defaultControls;
 private: // PackageListener
     void ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property) override;
