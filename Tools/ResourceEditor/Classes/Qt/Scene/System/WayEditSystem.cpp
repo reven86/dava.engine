@@ -67,25 +67,6 @@ void WayEditSystem::AddEntity(DAVA::Entity * newWaypoint)
     {
         mapStartPoints[newWaypoint->GetParent()] = newWaypoint;
     }
-
-    if (sceneEditor->modifSystem->InCloneDoneState())
-    {
-        ProcessSelection();
-
-        newWaypoint->SetNotRemovable(false); // cloned waypoint can't be nonremovable
-
-        EntityGroup entitiesToAddEdge;
-        EntityGroup entitiesToRemoveEdge;
-        DefineAddOrRemoveEdges(selectedWaypoints, newWaypoint, entitiesToAddEdge, entitiesToRemoveEdge);
-        const size_t countToAdd = entitiesToAddEdge.Size();
-        const size_t countToRemove = entitiesToRemoveEdge.Size();
-
-        if ((countToAdd + countToRemove) > 0)
-        {
-            AddEdges(entitiesToAddEdge, newWaypoint);
-            RemoveEdges(entitiesToRemoveEdge, newWaypoint);
-        }
-    }
 }
 void WayEditSystem::RemoveEntity(DAVA::Entity * removedPoint)
 {
@@ -554,5 +535,20 @@ void WayEditSystem::UpdateSelectionMask()
     else
     {
         selectionSystem->ResetSelectionComponentMask();
+    }
+}
+
+void WayEditSystem::WillClone(DAVA::Entity *originalEntity)
+{
+}
+
+void WayEditSystem::DidCloned(DAVA::Entity *originalEntity, DAVA::Entity *newEntity)
+{
+    if (isEnabled && GetWaypointComponent(originalEntity) != nullptr)
+    {
+        DAVA::EdgeComponent *edge = new DAVA::EdgeComponent();
+        edge->SetNextEntity(newEntity);
+
+        sceneEditor->Exec(new AddComponentCommand(originalEntity, edge));
     }
 }

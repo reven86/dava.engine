@@ -45,9 +45,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Scene/System/SelectionSystem.h"
 #include "Scene/System/CollisionSystem.h"
 
+#include "Scene/System/ModifSystem.h"
+
 class SceneEditor2;
 
-class WayEditSystem : public DAVA::SceneSystem
+class WayEditSystem : public DAVA::SceneSystem, EntityModificationSystemDelegate
 {
     friend class SceneEditor2;
 
@@ -65,6 +67,9 @@ public:
 
     void AddEntity(DAVA::Entity * entity) override;
     void RemoveEntity(DAVA::Entity * entity) override;
+
+    void WillClone(DAVA::Entity *originalEntity) override;
+    void DidCloned(DAVA::Entity *originalEntity, DAVA::Entity *newEntity) override;
 
 protected:
     void Draw();
