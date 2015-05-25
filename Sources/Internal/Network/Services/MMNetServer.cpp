@@ -72,7 +72,11 @@ void MMNetServer::OnUpdate()
     if (tokenRequested)
     {
         uint64 curTimestamp = SystemTimer::Instance()->AbsoluteMS();
-        AutoReplyStat(curTimestamp - timerBegin);
+        if (curTimestamp - lastStatTimestamp >= statPeriod)
+        {
+            AutoReplyStat(curTimestamp - timerBegin);
+            lastStatTimestamp = curTimestamp;
+        }
     }
 }
 
@@ -133,7 +137,6 @@ void MMNetServer::ProcessRequestToken(const MMNetProto::PacketHeader* inHeader, 
     {
         FastReply(MMNetProto::TYPE_REPLY_TOKEN, MMNetProto::STATUS_SUCCESS);
     }
-    PrepareStatItemParcel();
 }
 
 void MMNetServer::ProcessRequestDump(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
@@ -155,24 +158,19 @@ void MMNetServer::ProcessRequestDump(const MMNetProto::PacketHeader* inHeader, c
 
 void MMNetServer::AutoReplyStat(uint64 curTimestamp)
 {
-    void* buf = OffsetPointer<void>(statItemParcel.data, statItemSize * statItemInParcel);
-    MemoryManager::Instance()->GetCurStat(buf, statItemSize);
-    
-    MMCurStat* stat = static_cast<MMCurStat*>(buf);
+    ParcelEx parcel(statItemSize);
+    MemoryManager::Instance()->GetCurStat(parcel.data, statItemSize);
+
+    MMCurStat* stat = static_cast<MMCurStat*>(parcel.data);
     stat->timestamp = curTimestamp;
-    
-    statItemInParcel += 1;
-    
-    uintptr_t bufEnd = reinterpret_cast<uintptr_t>(OffsetPointer<void>(statItemParcel.buffer, statItemParcel.bufferSize));
-    uintptr_t dataEnd = reinterpret_cast<uintptr_t>(OffsetPointer<void>(statItemParcel.data, statItemSize * statItemInParcel));
-    if (size_t(bufEnd - dataEnd) < statItemSize)
-    {
-        statItemParcel.header->length += static_cast<uint32>(statItemSize * statItemInParcel);
-        statItemParcel.header->itemCount = static_cast<uint16>(statItemInParcel);
-        EnqueueParcel(statItemParcel);
-        
-        PrepareStatItemParcel();
-    }
+
+    parcel.header->length = uint32(sizeof(MMNetProto::PacketHeader) + statItemSize);
+    parcel.header->type = MMNetProto::TYPE_AUTO_STAT;
+    parcel.header->status = MMNetProto::STATUS_SUCCESS;
+    parcel.header->itemCount = 1;
+    parcel.header->token = connToken;
+
+    EnqueueParcel(parcel);
 }
 
 void MMNetServer::FastReply(uint16 type, uint16 status)
@@ -187,23 +185,11 @@ void MMNetServer::FastReply(uint16 type, uint16 status)
     EnqueueParcel(parcel);
 }
 
-void MMNetServer::PrepareStatItemParcel()
-{
-    statItemInParcel = 0;
-    statItemParcel = ParcelEx(STATITEM_BUFSIZE);
-
-    statItemParcel.header->length = uint32(sizeof(MMNetProto::PacketHeader));
-    statItemParcel.header->type = MMNetProto::TYPE_AUTO_STAT;
-    statItemParcel.header->status = MMNetProto::STATUS_SUCCESS;
-    statItemParcel.header->itemCount = 0;
-    statItemParcel.header->token = connToken;
-}
-
 void MMNetServer::PacketDelivered()
 {
     DVASSERT(!queue.empty());
 
-    ParcelEx& parcel = queue.front();
+    ParcelEx parcel = queue.front();
     queue.pop_front();
     
     if (parcel.header->type == MMNetProto::TYPE_REPLY_TOKEN)
@@ -252,10 +238,6 @@ void MMNetServer::Cleanup()
         }
     }
     queue.clear();
-    
-    ::operator delete(statItemParcel.buffer);
-    statItemInParcel = 0;
-    
     CleanupDump(false);
 }
 
@@ -382,7 +364,7 @@ bool MMNetServer::GetAndSaveDump(uint64 curTimestamp)
     {
 #if defined(__DAVAENGINE_WIN32__)
         // Dirty hack on Win32
-        uint8 dummy[1] = 0;
+        uint8 dummy[1] = {0};
         fwrite(dummy, 1, 1, file);
         fseek(file, -1, SEEK_CUR);
 #endif

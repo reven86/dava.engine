@@ -74,8 +74,6 @@ class MMNetServer : public NetService
         DumpInfo(const String& fname)
             : filename(fname)
         {}
-        //DumpInfo(const DumpInfo&) = default;
-        //DumpInfo& operator = (const DumpInfo&) = default;
         DumpInfo(DumpInfo&& other)
             : filename(std::move(other.filename))
             , fileSize(other.fileSize)
@@ -94,7 +92,6 @@ class MMNetServer : public NetService
         size_t bytesTransferred = 0;
     };
     
-    static const size_t STATITEM_BUFSIZE = 32 * 1024;
     static const size_t DUMPCHUNK_SIZE = 63 * 1024;
 
 public:
@@ -117,7 +114,6 @@ private:
     void AutoReplyStat(uint64 curTimestamp);
     void FastReply(uint16 type, uint16 status);
 
-    void PrepareStatItemParcel();
     void EnqueueParcel(const ParcelEx& parcel);
     void SendParcel(ParcelEx& parcel);
     
@@ -134,12 +130,12 @@ private:
     uint32 connToken = 0;
     bool tokenRequested = false;
     uint64 timerBegin;
+    uint64 lastStatTimestamp = 0;
+    uint64 statPeriod = 100;
 
     List<ParcelEx> queue;
     
     size_t statItemSize = 0;
-    size_t statItemInParcel = 0;
-    ParcelEx statItemParcel;
     
     Spinlock dumpMutex;
     List<DumpInfo> readyDumps;

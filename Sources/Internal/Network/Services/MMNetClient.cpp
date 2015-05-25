@@ -135,7 +135,7 @@ void MMNetClient::ProcessAutoReplyStat(const MMNetProto::PacketHeader* inHeader,
     size_t itemSize = stat->size;
     for (uint32 i = 0;i < inHeader->itemCount;++i)
     {
-        //statCallback(stat);
+        statCallback(stat);
         stat = OffsetPointer<const MMCurStat>(stat, itemSize);
     }
 }
@@ -214,7 +214,7 @@ void MMNetClient::PacketDelivered()
 {
     DVASSERT(!queue.empty());
     
-    ParcelEx& parcel = queue.front();
+    ParcelEx parcel = queue.front();
     queue.pop_front();
     
     ::operator delete(parcel.buffer);
