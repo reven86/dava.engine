@@ -1,11 +1,3 @@
-//
-//  HelperAppDelegate.m
-//  MahJongQuest
-//
-//  Created by Vitaliy  Borodovsky on 11/5/09.
-//  Copyright 2009 __MyCompanyName__. All rights reserved.
-//
-
 #import "HelperAppDelegate.h"
 #include "UIScreenManager.h"
 #include "ApplicationCore.h"
