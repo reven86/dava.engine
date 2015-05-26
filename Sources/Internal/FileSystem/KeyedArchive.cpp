@@ -75,6 +75,7 @@ bool KeyedArchive::Load(File *archive)
     if (wasRead != 2)
     {
         Logger::Error("[KeyedArchive] error loading keyed archive from file: %s, filesize: %d", archive->GetFilename().GetAbsolutePathname().c_str(), archive->GetSize());
+		return false;
     }
     else if ((header[0] != 'K') || (header[1] != 'A'))
     {

@@ -59,95 +59,95 @@
 const FastName MATERIAL_FOR_REBIND = FastName("Global");
 
 SceneEditor2::SceneEditor2()
-	: Scene()
-	, wasdSystem(nullptr)
-	, rotationSystem(nullptr)
-	, snapToLandscapeSystem(nullptr)
-	, isLoaded(false)
-	, isHUDVisible(true)
+    : Scene()
+    , wasdSystem(nullptr)
+    , rotationSystem(nullptr)
+    , snapToLandscapeSystem(nullptr)
+    , isLoaded(false)
+    , isHUDVisible(true)
 {
     SetClearBuffers(RenderManager::DEPTH_BUFFER | RenderManager::STENCIL_BUFFER);
 
-	renderStats.Clear();
+    renderStats.Clear();
 
-	EditorCommandNotify *notify = new EditorCommandNotify(this);
-	commandStack.SetNotify(notify);
-	SafeRelease(notify);
+    EditorCommandNotify *notify = new EditorCommandNotify(this);
+    commandStack.SetNotify(notify);
+    SafeRelease(notify);
 
-	gridSystem = new SceneGridSystem(this);
-	AddSystem(gridSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
+    gridSystem = new SceneGridSystem(this);
+    AddSystem(gridSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
     cameraSystem = new SceneCameraSystem(this);
     AddSystem(cameraSystem, MAKE_COMPONENT_MASK(DAVA::Component::CAMERA_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, transformSystem);
 
     rotationSystem = new RotationControllerSystem(this);
     AddSystem(rotationSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::ROTATION_CONTROLLER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT);
-    
+
     snapToLandscapeSystem = new SnapToLandscapeControllerSystem(this);
     AddSystem(snapToLandscapeSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
-    
+
     wasdSystem = new WASDControllerSystem(this);
     AddSystem(wasdSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::WASD_CONTROLLER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
-    
-	collisionSystem = new SceneCollisionSystem(this);
-	AddSystem(collisionSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
-	hoodSystem = new HoodSystem(this, cameraSystem);
-	AddSystem(hoodSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
+    collisionSystem = new SceneCollisionSystem(this);
+    AddSystem(collisionSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
-	selectionSystem = new SceneSelectionSystem(this, collisionSystem, hoodSystem);
-	AddSystem(selectionSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
+    hoodSystem = new HoodSystem(this, cameraSystem);
+    AddSystem(hoodSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
-	modifSystem = new EntityModificationSystem(this, collisionSystem, cameraSystem, hoodSystem);
-	AddSystem(modifSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
+    selectionSystem = new SceneSelectionSystem(this, collisionSystem, hoodSystem);
+    AddSystem(selectionSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
-	landscapeEditorDrawSystem = new LandscapeEditorDrawSystem(this);
-	AddSystem(landscapeEditorDrawSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
+    modifSystem = new EntityModificationSystem(this, collisionSystem, cameraSystem, hoodSystem);
+    AddSystem(modifSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
-	heightmapEditorSystem = new HeightmapEditorSystem(this);
-	AddSystem(heightmapEditorSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
+    landscapeEditorDrawSystem = new LandscapeEditorDrawSystem(this);
+    AddSystem(landscapeEditorDrawSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
-	tilemaskEditorSystem = new TilemaskEditorSystem(this);
-	AddSystem(tilemaskEditorSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
+    heightmapEditorSystem = new HeightmapEditorSystem(this);
+    AddSystem(heightmapEditorSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
-	customColorsSystem = new CustomColorsSystem(this);
-	AddSystem(customColorsSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
+    tilemaskEditorSystem = new TilemaskEditorSystem(this);
+    AddSystem(tilemaskEditorSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
-	visibilityToolSystem = new VisibilityToolSystem(this);
-	AddSystem(visibilityToolSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
+    customColorsSystem = new CustomColorsSystem(this);
+    AddSystem(customColorsSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
+
+    visibilityToolSystem = new VisibilityToolSystem(this);
+    AddSystem(visibilityToolSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
     grassEditorSystem = new GrassEditorSystem(this);
     AddSystem(grassEditorSystem, 0, SCENE_SYSTEM_REQUIRE_INPUT);
 
-	rulerToolSystem = new RulerToolSystem(this);
-	AddSystem(rulerToolSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
+    rulerToolSystem = new RulerToolSystem(this);
+    AddSystem(rulerToolSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
-	structureSystem = new StructureSystem(this);
-	AddSystem(structureSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
+    structureSystem = new StructureSystem(this);
+    AddSystem(structureSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
     particlesSystem = new EditorParticlesSystem(this);
     AddSystem(particlesSystem, MAKE_COMPONENT_MASK(DAVA::Component::PARTICLE_EFFECT_COMPONENT), 0, renderUpdateSystem);
 
-	textDrawSystem = new TextDrawSystem(this, cameraSystem);
+    textDrawSystem = new TextDrawSystem(this, cameraSystem);
     AddSystem(textDrawSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
     editorLightSystem = new EditorLightSystem(this);
     AddSystem(editorLightSystem, MAKE_COMPONENT_MASK(Component::LIGHT_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
-	debugDrawSystem = new DebugDrawSystem(this);
-	AddSystem(debugDrawSystem, 0);
-	
-	beastSystem = new BeastSystem(this);
-	AddSystem(beastSystem, 0);
-	
-	ownersSignatureSystem = new OwnersSignatureSystem(this);
-	AddSystem(ownersSignatureSystem, 0);
-    
+    debugDrawSystem = new DebugDrawSystem(this);
+    AddSystem(debugDrawSystem, 0);
+
+    beastSystem = new BeastSystem(this);
+    AddSystem(beastSystem, 0);
+
+    ownersSignatureSystem = new OwnersSignatureSystem(this);
+    AddSystem(ownersSignatureSystem, 0);
+
     staticOcclusionBuildSystem = new StaticOcclusionBuildSystem(this);
     AddSystem(staticOcclusionBuildSystem, MAKE_COMPONENT_MASK(Component::STATIC_OCCLUSION_COMPONENT) | MAKE_COMPONENT_MASK(Component::TRANSFORM_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
-	materialSystem = new EditorMaterialSystem(this);
-	AddSystem(materialSystem, MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
+    materialSystem = new EditorMaterialSystem(this);
+    AddSystem(materialSystem, MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
     wayEditSystem = new WayEditSystem(this, selectionSystem, collisionSystem);
     AddSystem(wayEditSystem, MAKE_COMPONENT_MASK(Component::WAYPOINT_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT);
@@ -155,16 +155,18 @@ SceneEditor2::SceneEditor2()
 
     pathSystem = new PathSystem(this);
     AddSystem(pathSystem, MAKE_COMPONENT_MASK(Component::PATH_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
-    
-	editorLODSystem = new EditorLODSystem(this);
-	AddSystem(editorLODSystem, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT));
+    modifSystem->AddDelegate(pathSystem);
+    modifSystem->AddDelegate(wayEditSystem);
 
-	SetShadowBlendMode(ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
+    editorLODSystem = new EditorLODSystem(this);
+    AddSystem(editorLODSystem, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT));
 
-	SceneSignals::Instance()->EmitOpened(this);
+    SetShadowBlendMode(ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
 
-	wasChanged = false;
-    
+    SceneSignals::Instance()->EmitOpened(this);
+
+    wasChanged = false;
+
     //RenderTechnique * technique1 = RenderTechniqueSingleton::Instance()->RetainRenderTechniqueByName(FastName("~res:/Materials/Legacy/PixelLit.Opaque.material"));
     //FastNameSet set;
     //technique1->GetPassByIndex(technique1->GetIndexByName(FastName("ForwardPass")))->RecompileShader(set);
@@ -174,7 +176,7 @@ SceneEditor2::SceneEditor2()
 
     //RenderTechnique * technique3 = RenderTechniqueSingleton::Instance()->RetainRenderTechniqueByName(FastName("~res:/Materials/Legacy/Textured.Opaque.material"));
     //technique3->GetPassByIndex(technique3->GetIndexByName(FastName("ForwardPass")))->RecompileShader(set);
-    
+
     //RenderTechnique * technique4 = RenderTechniqueSingleton::Instance()->RetainRenderTechniqueByName(FastName("~res:/Materials/Legacy/Textured.Alphatest.material"));
     //technique4->GetPassByIndex(technique4->GetIndexByName(FastName("ForwardPass")))->RecompileShader(set);
 

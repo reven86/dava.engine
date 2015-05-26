@@ -107,6 +107,9 @@ private:
     Ui::LODEditor *ui;
     QtPosSaver posSaver;
 
+    bool frameViewVisible;
+    bool frameEditVisible;
+
     struct DistanceWidget
     {
         QLabel *name;
