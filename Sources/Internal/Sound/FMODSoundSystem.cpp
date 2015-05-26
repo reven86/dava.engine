@@ -468,10 +468,6 @@ void SoundSystem::SetListenerPosition(const Vector3 & position)
     {
         FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, (FMOD_VECTOR*)(&position), 0, 0, 0));
     }
-    else
-    {
-        Logger::Error("[SoundSystem::%s] fmodEventSystem is nullptr", __FUNCTION__);
-    }
 }
 
 void SoundSystem::SetListenerOrientation(const Vector3 & forward, const Vector3 & left)
@@ -488,10 +484,6 @@ void SoundSystem::SetListenerOrientation(const Vector3 & forward, const Vector3 
         DVASSERT(left.SquareLength() > EPSILON);
 
         FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, 0, 0, (FMOD_VECTOR*)&forwardNorm, (FMOD_VECTOR*)&upNorm));
-    }
-    else
-    {
-        Logger::Error("[SoundSystem::%s] fmodEventSystem is nullptr", __FUNCTION__);
     }
 }
 
