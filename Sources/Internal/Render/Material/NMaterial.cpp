@@ -667,6 +667,8 @@ NMaterial* NMaterial::Clone()
     for (auto flag : localFlags)
         clonedMaterial->AddFlag(flag.first, flag.second);
 
+    clonedMaterial->SetParent(parent);
+
     //DataNode properties
     clonedMaterial->pointer = pointer;
     clonedMaterial->scene = scene;
