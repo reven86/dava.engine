@@ -39,6 +39,7 @@
 #include "Render/Image/LibDdsHelper.h"
 #include "Render/Image/LibPngHelper.h"
 #include "Render/Image/LibPVRHelper.h"
+#include "Render/Image/LibWebPHelper.h"
 
 #include "Base/ScopedPtr.h"
 
@@ -51,6 +52,7 @@ ImageSystem::ImageSystem()
     wrappers[FILE_FORMAT_DDS] = new LibDdsHelper();
     wrappers[FILE_FORMAT_PVR] = new LibPVRHelper();
     wrappers[FILE_FORMAT_JPEG] = new LibJpegHelper();
+    wrappers[FILE_FORMAT_WEBP] = new LibWebPHelper();
 }
 
 ImageSystem::~ImageSystem()
