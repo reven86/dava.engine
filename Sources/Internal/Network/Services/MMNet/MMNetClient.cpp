@@ -51,15 +51,14 @@ MMNetClient::MMNetClient()
 
 MMNetClient::~MMNetClient()
 {
-
 }
 
-void MMNetClient::SetCallbacks(ChOpenCallback onOpen, ChClosedCallback onClosed, StatCallback onStat, DumpCallback onDump)
+void MMNetClient::InstallCallbacks(ConnEstablishedCallback connEstablishedCallback_, ConnLostCallback connLostCallback_, StatCallback statCallback_, DumpCallback dumpCallback_)
 {
-    openCallback = onOpen;
-    closeCallback = onClosed;
-    statCallback = onStat;
-    dumpCallback = onDump;
+    connEstablishedCallback = connEstablishedCallback_;
+    connLostCallback = connLostCallback_;
+    statCallback = statCallback_;
+    dumpCallback = dumpCallback_;
 }
 
 void MMNetClient::RequestDump()
@@ -82,7 +81,7 @@ void MMNetClient::ChannelClosed(const char8* message)
     canRequestDump = true;
     
     Cleanup();
-    closeCallback(message);
+    connLostCallback(message);
 }
 
 void MMNetClient::PacketReceived(const void* packet, size_t length)
@@ -113,15 +112,18 @@ void MMNetClient::PacketReceived(const void* packet, size_t length)
 
 void MMNetClient::ProcessReplyToken(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
 {
-    const MMStatConfig* config = nullptr;
-    if (dataLength > 0)
+    if (dataLength > 0)     // Config has come, new profiling session
     {
         connToken = inHeader->token;
-        config = static_cast<const MMStatConfig*>(packetData);
+        const MMStatConfig* config = static_cast<const MMStatConfig*>(packetData);
         DVASSERT(config->size == dataLength);
+        connEstablishedCallback(false, config);
+    }
+    else    // Resume previous profiling session
+    {
+        connEstablishedCallback(true, nullptr);
     }
     tokenRequested = true;
-    openCallback(config);
 }
 
 void MMNetClient::ProcessReplyDump(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
@@ -131,13 +133,7 @@ void MMNetClient::ProcessReplyDump(const MMNetProto::PacketHeader* inHeader, con
 
 void MMNetClient::ProcessAutoReplyStat(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
 {
-    const MMCurStat* stat = static_cast<const MMCurStat*>(packetData);
-    size_t itemSize = stat->size;
-    for (uint32 i = 0;i < inHeader->itemCount;++i)
-    {
-        statCallback(stat);
-        stat = OffsetPointer<const MMCurStat>(stat, itemSize);
-    }
+    statCallback(static_cast<const MMCurStat*>(packetData), inHeader->itemCount);
 }
 
 void MMNetClient::ProcessAutoReplyDump(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
@@ -152,29 +148,33 @@ void MMNetClient::ProcessAutoReplyDump(const MMNetProto::PacketHeader* inHeader,
             dumpRecvSize = 0;
             dumpTotalSize = param->dumpSize;
             dumpData.resize(dumpTotalSize);
+
+            dumpCallback(DUMP_STAGE_STARTED, dumpTotalSize, 0, nullptr);
         }
         
         Memcpy(&*dumpData.begin() + dumpRecvSize, data, param->chunkSize);
         dumpRecvSize += param->chunkSize;
 
-        if (dumpRecvSize < dumpTotalSize)
+        if (dumpRecvSize == dumpTotalSize)
         {
-            dumpCallback(dumpTotalSize, dumpRecvSize, nullptr);
-        }
-        else
-        {
-            dumpCallback(dumpTotalSize, dumpRecvSize, &dumpData);
+            dumpCallback(DUMP_STAGE_FINISHED, dumpTotalSize, dumpRecvSize, static_cast<const void*>(dumpData.data()));
+
             dumpTotalSize = 0;
             dumpRecvSize = 0;
             dumpData.clear();
         }
+        else
+        {
+            dumpCallback(DUMP_STAGE_PROGRESS, dumpTotalSize, dumpRecvSize, nullptr);
+        }
     }
     else
     {
-        dumpRecvSize = 0;
+        dumpCallback(DUMP_STAGE_ERROR, 0, 0, nullptr);
+
         dumpTotalSize = 0;
+        dumpRecvSize = 0;
         dumpData.clear();
-        dumpCallback(0, 0, nullptr);
     }
 }
     

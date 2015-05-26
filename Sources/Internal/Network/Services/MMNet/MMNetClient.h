@@ -46,16 +46,16 @@ class MMNetClient : public NetService
     struct ParcelEx
     {
         ParcelEx()
-        : bufferSize(0)
-        , buffer(nullptr)
-        , header(nullptr)
-        , data(nullptr)
+            : bufferSize(0)
+            , buffer(nullptr)
+            , header(nullptr)
+            , data(nullptr)
         {}
         ParcelEx(size_t dataSize)
-        : bufferSize(sizeof(MMNetProto::PacketHeader) + dataSize)
-        , buffer(::operator new(bufferSize))
-        , header(static_cast<MMNetProto::PacketHeader*>(buffer))
-        , data(static_cast<void*>(header + 1))
+            : bufferSize(sizeof(MMNetProto::PacketHeader) + dataSize)
+            , buffer(::operator new(bufferSize))
+            , header(static_cast<MMNetProto::PacketHeader*>(buffer))
+            , data(static_cast<void*>(header + 1))
         {}
         
         size_t bufferSize;
@@ -65,16 +65,23 @@ class MMNetClient : public NetService
     };
     
 public:
-    typedef Function<void(const MMStatConfig*)> ChOpenCallback;
-    typedef Function<void (const char8*)> ChClosedCallback;
-    typedef Function<void(const MMCurStat*)> StatCallback;
-    typedef Function<void(size_t, size_t, Vector<uint8>*)> DumpCallback;
+    enum {
+        DUMP_STAGE_STARTED = 0,
+        DUMP_STAGE_PROGRESS,
+        DUMP_STAGE_FINISHED,
+        DUMP_STAGE_ERROR
+    };
+
+    using ConnEstablishedCallback = Function<void (bool, const MMStatConfig*)>;
+    using ConnLostCallback = Function<void (const char8*)>;
+    using StatCallback = Function<void (const MMCurStat*, size_t)>;
+    using DumpCallback = Function<void (int, size_t, size_t, const void*)>;
 
 public:
     MMNetClient();
     virtual ~MMNetClient();
 
-    void SetCallbacks(ChOpenCallback onOpen, ChClosedCallback onClosed, StatCallback onStat, DumpCallback onDump);
+    void InstallCallbacks(ConnEstablishedCallback connEstablishedCallback, ConnLostCallback connLostCallback, StatCallback statCallback, DumpCallback dumpCallback);
 
     void RequestDump();
 
@@ -108,8 +115,8 @@ private:
     size_t dumpRecvSize = 0;
     std::vector<uint8> dumpData;
 
-    ChOpenCallback openCallback;
-    ChClosedCallback closeCallback;
+    ConnEstablishedCallback connEstablishedCallback;
+    ConnLostCallback connLostCallback;
     StatCallback statCallback;
     DumpCallback dumpCallback;
 };
