@@ -100,7 +100,10 @@ void EditorLightSystem::UpdateCameraLightPosition()
 		if(!camera) return;
 
 		Matrix4 m = Matrix4::MakeTranslation(camera->GetPosition() + camera->GetLeft() * 20.f + camera->GetUp() * 20.f);
-		cameraLight->SetLocalTransform(m);
+        if(m != cameraLight->GetLocalTransform())
+        {
+            cameraLight->SetLocalTransform(m);
+        }
 	}
 }
 
