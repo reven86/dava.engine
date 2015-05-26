@@ -919,10 +919,10 @@ bool MemoryManager::GetMemoryDump(FILE* file, uint64 curTimestamp, size_t* dumpS
                     blocks[k].bktraceHash = curBlock->bktraceHash;
                     blocks[k].pool = curBlock->pool;
                     blocks[k].tags = curBlock->tags;
+
+                    curBlock = curBlock->next;
                 }
                 fwrite(buffer, sizeof(MMBlock), k, file);
-
-                curBlock = curBlock->next;
             }
         }
         {
