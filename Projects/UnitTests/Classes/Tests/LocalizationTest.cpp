@@ -100,13 +100,12 @@ void LocalizationTest::TestFunction(TestTemplate<LocalizationTest>::PerfFuncData
 
 void LocalizationTest::BiDiTest(TestTemplate<LocalizationTest>::PerfFuncData * data)
 {
-    BiDiHelper helper;
     TextLayout layout(true);
 
-    Font* font = FTFont::Create("~res:/Fonts/korinna.ttf");
+    auto font = FTFont::Create("~res:/Fonts/korinna.ttf");
 
     FilePath filePath("~res:/TestData/LocalizationTest/bidi_test.yaml");
-    YamlParser* parser = YamlParser::Create(filePath);
+    auto parser = YamlParser::Create(filePath);
     SCOPE_EXIT
     { 
         SafeRelease(parser); 
@@ -120,26 +119,26 @@ void LocalizationTest::BiDiTest(TestTemplate<LocalizationTest>::PerfFuncData * d
         return;
     }
 
-    YamlNode * rootNode = parser->GetRootNode();
+    auto rootNode = parser->GetRootNode();
     if (!rootNode)
     {
         Logger::Error("yaml file: %s is empty", filePath.GetAbsolutePathname().c_str());
         TEST_VERIFY(false);
         return;
     }
-    
-    uint32 cnt = rootNode->GetCount();
-    for (auto k = 0; k < cnt; ++k)
+
+    auto cnt = rootNode->GetCount();
+    for (auto k = 0U; k < cnt; ++k)
     {
-        const YamlNode* node = rootNode->Get(k);
-        const YamlNode* inputNode = node->Get("input");
-        const YamlNode* visualNode = node->Get("visual");
+        auto node = rootNode->Get(k);
+        auto inputNode = node->Get("input");
+        auto visualNode = node->Get("visual");
 
         DVASSERT_MSG(inputNode, "input node is empty");
         DVASSERT_MSG(visualNode, "visual node is empty");
 
-        WideString input = inputNode->AsWString();
-        WideString visual = visualNode->AsWString();
+        auto input = inputNode->AsWString();
+        auto visual = visualNode->AsWString();
         WideString visual_work;
 
         layout.Reset(input, *font);
@@ -154,7 +153,7 @@ void LocalizationTest::BiDiTest(TestTemplate<LocalizationTest>::PerfFuncData * d
             }
         }
 
-        bool res = visual == visual_work;
+        auto res = visual == visual_work;
 
         data->testData.message = Format("Localization::BiDi test %d: %s", k, (res ? "passed" : "fail"));
         Logger::Debug(data->testData.message.c_str());
