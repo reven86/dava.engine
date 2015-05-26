@@ -57,7 +57,7 @@ public:
     WaveSystem(Scene * scene);
     virtual ~WaveSystem();
 
-    virtual void ImmediateEvent(Entity * entity, uint32 event);
+    void ImmediateEvent(Component * component, uint32 event) override;
     virtual void Process(float32 timeElapsed);
 
     Vector3 GetWaveDisturbance(const Vector3 & inPosition) const;

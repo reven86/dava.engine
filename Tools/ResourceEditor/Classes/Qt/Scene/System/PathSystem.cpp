@@ -136,11 +136,33 @@ void PathSystem::RemoveEntity(DAVA::Entity * entity)
     }
     else
     {
-        currentPath = NULL;
+        currentPath = nullptr;
     }
 }
 
+void PathSystem::WillClone(DAVA::Entity *originalEntity)
+{
+    if (isEditingEnabled && GetPathComponent(originalEntity) != nullptr)
+    {
+        CollapsePathEntity(originalEntity);
+    }
+}
 
+void PathSystem::DidCloned(DAVA::Entity *originalEntity, DAVA::Entity *newEntity)
+{
+    if (isEditingEnabled)
+    {
+        if (GetPathComponent(originalEntity) != nullptr)
+        {
+            ExpandPathEntity(originalEntity);
+        }
+
+        if (GetPathComponent(newEntity) != nullptr)
+        {
+            ExpandPathEntity(newEntity);
+        }
+    }
+}
 
 void PathSystem::Draw()
 {
@@ -412,4 +434,3 @@ DAVA::PathComponent* PathSystem::CreatePathComponent()
     pc->SetColor(GetNextPathColor());
     return pc;
 }
-
