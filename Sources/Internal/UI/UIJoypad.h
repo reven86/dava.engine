@@ -51,7 +51,7 @@ class UIJoypad : public UIControl
 protected:
     virtual ~UIJoypad();
 public:
-	UIJoypad(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = FALSE);
+	UIJoypad(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 	
 	const Vector2 & GetDigitalPosition();
 	const Vector2 & GetAnalogPosition();

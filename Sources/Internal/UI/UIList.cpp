@@ -73,7 +73,7 @@ void UIList::InitAfterYaml()
 {
     SetInputEnabled(true, false);
     SetFocusEnabled(false);
-    clipContents = TRUE;
+    clipContents = true;
     Rect r = GetRect();
     r.x = 0;
     r.y = 0;
@@ -96,9 +96,9 @@ void UIList::InitAfterYaml()
 
     touchHoldSize = 15;
 
-    lockTouch = FALSE;
+    lockTouch = false;
 
-    needRefresh = FALSE;
+    needRefresh = false;
 
     if (scroll == NULL)
     {
@@ -230,7 +230,7 @@ void UIList::FullRefresh()
         return;
     }
 
-    needRefresh = FALSE;
+    needRefresh = false;
 
     addPos = 0.0f;
     float32 scrollAdd;
@@ -295,7 +295,7 @@ void UIList::FullRefresh()
 
 void UIList::Refresh()
 {
-    needRefresh = TRUE;
+    needRefresh = true;
 }
 
 void UIList::Update(float32 timeElapsed)
@@ -484,7 +484,7 @@ void UIList::Input(UIEvent *currentInput)
     {
         case UIEvent::PHASE_BEGAN:
         {
-            lockTouch = TRUE;
+            lockTouch = true;
             oldPos = newPos;
             mainTouch = currentInput->tid;
         }
@@ -495,7 +495,7 @@ void UIList::Input(UIEvent *currentInput)
             break;
         case UIEvent::PHASE_ENDED:
         {
-            lockTouch = FALSE;
+            lockTouch = false;
             mainTouch = -1;
         }
             break;
@@ -529,7 +529,7 @@ bool UIList::SystemInput(UIEvent *currentInput)
                 {
                     UIControlSystem::Instance()->SwitchInputToControl(mainTouch, this);
                     newPos = currentInput->point.x;
-                    return TRUE;
+                    return true;
                 }
             }
             else
@@ -538,7 +538,7 @@ bool UIList::SystemInput(UIEvent *currentInput)
                 {
                     UIControlSystem::Instance()->SwitchInputToControl(mainTouch, this);
                     newPos = currentInput->point.y;
-                    return TRUE;
+                    return true;
                 }
             }
         }
