@@ -226,10 +226,6 @@ void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<Stri
     sceneWasExportedCorrectly &= ExportLandscape(scene, errorLog);
     uint64 landscapeTime = SystemTimer::Instance()->AbsoluteMS() - landscapeStart;
 
-    uint64 vegetationStart = SystemTimer::Instance()->AbsoluteMS();
-    sceneWasExportedCorrectly &= ExportVegetation(scene, errorLog);
-    uint64 vegetationTime = SystemTimer::Instance()->AbsoluteMS() - vegetationStart;
-
     //save scene to new place
     uint64 saveStart = SystemTimer::Instance()->AbsoluteMS();
     FilePath tempSceneName = FilePath::CreateWithNewExtension(sceneUtils.dataSourceFolder + relativeFilename, ".exported.sc2");
@@ -256,7 +252,7 @@ void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<Stri
     
     uint64 exportTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
     Logger::Info("Export Status\n\tScene: %s\n\tExport time: %ldms\n\tRemove editor nodes time: %ldms\n\tRemove custom properties: %ldms\n\tExport descriptors: %ldms\n\tValidation time: %ldms\n\tLandscape time: %ldms\n\tVegetation time: %ldms\n\tSave time: %ldms\n\tMove time: %ldms\n\tErrors occured: %d",
-                 fileName.GetStringValue().c_str(), exportTime, removeEditorNodesTime, removeEditorCPTime, exportDescriptorsTime, validationTime, landscapeTime, vegetationTime, saveTime, moveTime, !sceneWasExportedCorrectly
+                 fileName.GetStringValue().c_str(), exportTime, removeEditorNodesTime, removeEditorCPTime, exportDescriptorsTime, validationTime, landscapeTime, saveTime, moveTime, !sceneWasExportedCorrectly
                  );
     
     return;
@@ -443,25 +439,6 @@ bool SceneExporter::ExportLandscape(Scene *scene, Set<String> &errorLog)
     }
     
     return true;
-}
-
-bool SceneExporter::ExportVegetation(Scene *scene, Set<String> &errorLog)
-{
-    DVASSERT(scene);
-    
-    bool wasExported = true;
-    
-    VegetationRenderObject *vegetation = FindVegetation(scene);
-    if (vegetation)
-    {
-        const FilePath& textureSheetPath = vegetation->GetTextureSheetPath();
-        if(textureSheetPath.Exists())
-        {
-            wasExported |= sceneUtils.CopyFile(vegetation->GetTextureSheetPath(), errorLog);
-        }
-    }
-    
-    return wasExported;
 }
 
 void SceneExporter::CompressTextureIfNeed(const TextureDescriptor * descriptor, Set<String> &errorLog)

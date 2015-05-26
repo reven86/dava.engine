@@ -73,7 +73,6 @@ protected:
     void CompressTextureIfNeed(const TextureDescriptor * descriptor, Set<String> &errorLog);
 
     bool ExportLandscape(Scene *scene, Set<String> &errorLog);
-    bool ExportVegetation(Scene *scene, Set<String> &errorLog);
     
 protected:
     

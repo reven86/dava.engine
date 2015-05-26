@@ -260,10 +260,6 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
 			SaveDataNode(*it, file);
 		}
 	}
-    
-    // save hierarchy
-    if(isDebugLogEnabled)
-        Logger::FrameworkDebug("+ save hierarchy");
 
     // save global material settings
     if(_scene->GetGlobalMaterial())
@@ -277,6 +273,10 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     
         SafeRelease(archive);
     }
+
+    // save hierarchy
+    if(isDebugLogEnabled)
+        Logger::FrameworkDebug("+ save hierarchy");
 
     for (int ci = 0; ci < _scene->GetChildrenCount(); ++ci)
     {
@@ -470,13 +470,37 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
             LoadDataNode(0, file);
 		}
 		
+        // load global material
+        {
+            uint32 filePos = file->GetPos();
+            KeyedArchive * archive = new KeyedArchive();
+            archive->Load(file);
+
+            String name = archive->GetString("##name");
+            if (name == "GlobalMaterial")
+            {
+                uint64 globalMaterialId = archive->GetUInt64("globalMaterialId");
+                NMaterial * globalMaterial = static_cast<NMaterial*>(serializationContext.GetDataBlock(globalMaterialId));
+
+                globalMaterial->RemoveFlag(NMaterialFlagName::FLAG_VERTEXFOG);
+
+                scene->SetGlobalMaterial(globalMaterial);
+                serializationContext.SetGlobalMaterialKey(globalMaterialId);
+            }
+            else
+            {
+                file->Seek(filePos, File::SEEK_FROM_START);
+            }
+
+            SafeRelease(archive);
+        }
+
 		serializationContext.ResolveMaterialBindings();
     }
     
     if(isDebugLogEnabled)
         Logger::FrameworkDebug("+ load hierarchy");
 
-    NMaterial *globalMaterial = nullptr;
     Entity * rootNode = new Entity();
     rootNode->SetName(rootNodePathName.GetFilename().c_str());
 	rootNode->SetScene(0);
@@ -484,12 +508,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
     rootNode->children.reserve(header.nodeCount);
     for (int ci = 0; ci < header.nodeCount; ++ci)
     {
-        LoadHierarchy(0, &globalMaterial, rootNode, file, 1);
-    }    
-
-    if(nullptr != globalMaterial)
-    {        
-        scene->SetGlobalMaterial(globalMaterial);
+        LoadHierarchy(0, rootNode, file, 1);
     }
 		    
     //as we are going to take information about required attribute streams from shader - we are to wait for shader compilation
@@ -753,7 +772,7 @@ bool SceneFileV2::SaveHierarchy(Entity * node, File * file, int32 level)
     return true;
 }
 
-void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entity * parent, File * file, int32 level)
+void SceneFileV2::LoadHierarchy(Scene * scene, Entity * parent, File * file, int32 level)
 {
     bool keepUnusedQualityEntities = QualitySettingsSystem::Instance()->GetKeepUnusedEntities();
     KeyedArchive * archive = new KeyedArchive();
@@ -782,14 +801,6 @@ void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entit
 	{
 		node = LoadEntity(scene, archive);
 	}
-    else if(name == "GlobalMaterial")
-    {
-        if(nullptr != globalMaterial)
-        {
-            uint64 globalMaterialId = archive->GetUInt64("globalMaterialId");
-            *globalMaterial = static_cast<NMaterial*>(serializationContext.GetDataBlock(globalMaterialId));
-        }
-    }
 	else
     {
         BaseObject *obj = ObjectFactory::Instance()->New<BaseObject>(name);
@@ -825,7 +836,7 @@ void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entit
         node->children.reserve(childrenCount);
         for(int ci = 0; ci < childrenCount; ++ci)
         {
-            LoadHierarchy(scene, globalMaterial, node, file, level + 1);
+            LoadHierarchy(scene, node, file, level + 1);
         }
 
         if(removeChildren && childrenCount)

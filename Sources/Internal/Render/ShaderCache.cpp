@@ -28,60 +28,17 @@
 #include "Render/RHI/rhi_ShaderCache.h"
 #include "FileSystem/FileSystem.h"
 
-/*namespace
-{
-const char* vProgText =
-"VPROG_IN_BEGIN\n"
-"    VPROG_IN_POSITION\n"
-"    VPROG_IN_TEXCOORD\n"
-"VPROG_IN_END\n"
-"\n"
-"VPROG_OUT_BEGIN\n"
-"    VPROG_OUT_POSITION\n"
-"    VPROG_OUT_TEXCOORD0(uv,2)\n"
-"VPROG_OUT_END\n"
-"\n"
-"property float4x4 worldViewProjMatrix : unique,dynamic : ui_hidden=yes ;\n"
-"\n"
-"VPROG_BEGIN\n"
-"\n"
-"    float3 in_pos      = VP_IN_POSITION;\n"
-"    float2 in_texcoord = VP_IN_TEXCOORD;\n"
-"    VP_OUT(uv) =  in_texcoord;\n"
-"    VP_OUT_POSITION   = mul( float4(in_pos.x,in_pos.y,in_pos.z,1.0), worldViewProjMatrix );\n"
-"\n"
-"VPROG_END\n";
-
-
-const char* fProgText =
-"FPROG_IN_BEGIN\n"
-"FPROG_IN_TEXCOORD0(uv,2)\n"
-"FPROG_IN_END\n"
-"\n"
-"FPROG_OUT_BEGIN\n"
-"    FPROG_OUT_COLOR\n"
-"FPROG_OUT_END\n"
-"\n"
-"\n"
-"DECL_FP_SAMPLER2D(albedo)\n"
-"\n"
-"FPROG_BEGIN\n"
-"\n"
-"float4  texColor = FP_TEXTURE2D( albedo, FP_IN(uv) );\n"
-"\n"
-"    texColor.a = 1.0;\n"
-"    FP_OUT_COLOR = texColor;\n"
-"FPROG_END\n";
-}*/
 namespace DAVA
 {
 namespace ShaderDescriptorCache
 {
 struct ShaderSourceCode
 {
-    char8* vProgText;
-    char8* fProgText;
-    ShaderSourceCode() : vProgText(nullptr), fProgText(nullptr){};
+    char8* vertexProgText;
+    char8* fragmentProgText;    
+
+    FilePath vertexProgSourcePath;
+    FilePath fragmentProgSourcePath;
 };
     
 namespace
@@ -111,8 +68,8 @@ void Clear()
     DVASSERT(initialized);
     for (auto &it : shaderSourceCodes)
     {        
-        SafeDelete(it.second.vProgText);
-        SafeDelete(it.second.fProgText);
+        SafeDelete(it.second.vertexProgText);
+        SafeDelete(it.second.fragmentProgText);
     }
     shaderSourceCodes.clear();
 
@@ -142,46 +99,46 @@ void BuildFlagsKey(const FastName& name,const HashMap<FastName, int32>& defines,
 ShaderSourceCode LoadFromSource(const String& source)
 {
     ShaderSourceCode sourceCode;
-    FilePath vertexShaderPath = FilePath(source + "-vp.cg");
-    FilePath fragmentShaderPath = FilePath(source + "-fp.cg");
+    sourceCode.vertexProgSourcePath = FilePath(source + "-vp.cg");
+    sourceCode.fragmentProgSourcePath = FilePath(source + "-fp.cg");
     
     //later move it into FileSystem
 
     //vertex
-    File * fp = File::Create(vertexShaderPath, File::OPEN | File::READ);
+    File * fp = File::Create(sourceCode.vertexProgSourcePath, File::OPEN | File::READ);
     if (fp)
     {
         uint32 fileSize = fp->GetSize();
-        sourceCode.vProgText = new char8[fileSize + 1];
-        sourceCode.vProgText[fileSize] = 0;
-        uint32 dataRead = fp->Read((uint8*)sourceCode.vProgText, fileSize);
+        sourceCode.vertexProgText = new char8[fileSize + 1];
+        sourceCode.vertexProgText[fileSize] = 0;
+        uint32 dataRead = fp->Read((uint8*)sourceCode.vertexProgText, fileSize);
         if (dataRead != fileSize)
         {
-            Logger::Error("Failed to open vertex shader source file: %s", vertexShaderPath.GetAbsolutePathname().c_str());
+            Logger::Error("Failed to open vertex shader source file: %s", sourceCode.vertexProgSourcePath.GetAbsolutePathname().c_str());
         }
     }
     else
     {
-        Logger::Error("Failed to open vertex shader source file: %s", vertexShaderPath.GetAbsolutePathname().c_str());
+        Logger::Error("Failed to open vertex shader source file: %s", sourceCode.vertexProgSourcePath.GetAbsolutePathname().c_str());
     }
     SafeRelease(fp);
 
     //fragment
-    fp = File::Create(fragmentShaderPath, File::OPEN | File::READ);
+    fp = File::Create(sourceCode.fragmentProgSourcePath, File::OPEN | File::READ);
     if (fp)
     {
         uint32 fileSize = fp->GetSize();
-        sourceCode.fProgText = new char8[fileSize + 1];
-        sourceCode.fProgText[fileSize] = 0;
-        uint32 dataRead = fp->Read((uint8*)sourceCode.fProgText, fileSize);
+        sourceCode.fragmentProgText = new char8[fileSize + 1];
+        sourceCode.fragmentProgText[fileSize] = 0;
+        uint32 dataRead = fp->Read((uint8*)sourceCode.fragmentProgText, fileSize);
         if (dataRead != fileSize)
         {
-            Logger::Error("Failed to open fragment shader source file: %s", fragmentShaderPath.GetAbsolutePathname().c_str());
+            Logger::Error("Failed to open fragment shader source file: %s", sourceCode.fragmentProgSourcePath.GetAbsolutePathname().c_str());
         }
     }
     else
     {
-        Logger::Error("Failed to open fragment shader source file: %s", fragmentShaderPath.GetAbsolutePathname().c_str());
+        Logger::Error("Failed to open fragment shader source file: %s", sourceCode.fragmentProgSourcePath.GetAbsolutePathname().c_str());
     }
     SafeRelease(fp);
 
@@ -225,9 +182,10 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
         shaderSourceCodes[name] = sourceCode;
     }
 
-    rhi::ShaderSource vSource, fSource;
-    vSource.Construct(rhi::PROG_VERTEX, sourceCode.vProgText, progDefines);
-    fSource.Construct(rhi::PROG_FRAGMENT, sourceCode.fProgText, progDefines);    
+    rhi::ShaderSource vSource(sourceCode.vertexProgSourcePath.GetAbsolutePathname().c_str());
+    rhi::ShaderSource fSource(sourceCode.fragmentProgSourcePath.GetAbsolutePathname().c_str());
+    vSource.Construct(rhi::PROG_VERTEX, sourceCode.vertexProgText, progDefines);
+    fSource.Construct(rhi::PROG_FRAGMENT, sourceCode.fragmentProgText, progDefines);    
 //    vSource.Dump();
 //    fSource.Dump();    
     

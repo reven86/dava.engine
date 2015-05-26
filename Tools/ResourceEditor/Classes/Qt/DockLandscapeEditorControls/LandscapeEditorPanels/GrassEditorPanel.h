@@ -48,7 +48,9 @@ protected slots:
     void OnHightAffectToggled(bool checked);
     void OnHightAddToggled(bool checked);
 
+#if RHI_COMPLETE_EDITOR
     DAVA::Rect2i MapTexCoord(const DAVA::TextureSheetCell &cell, DAVA::uint32 w, DAVA::uint32 h) const;
+#endif
 
 private:
     QTableWidget *layersList;

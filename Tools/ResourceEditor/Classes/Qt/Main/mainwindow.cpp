@@ -57,7 +57,6 @@
 
 #include "../CubemapEditor/CubemapUtils.h"
 #include "../CubemapEditor/CubemapTextureBrowser.h"
-#include "../Tools/AddSkyboxDialog/AddSkyboxDialog.h"
 #include "../ImageSplitterDialog/ImageSplitterDialog.h"
 
 #include "Tools/BaseAddEntityDialog/BaseAddEntityDialog.h"
@@ -76,8 +75,6 @@
 
 #include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/CommandLine/CommandLineManager.h"
-
-#include "Render/Highlevel/ShadowVolumeRenderPass.h"
 
 #include "Classes/Commands2/LandscapeEditorDrawSystemActions.h"
 
@@ -102,7 +99,6 @@
 
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"
-#include "Scene3D/Systems/SkyboxSystem.h"
 #include "Scene3D/Systems/MaterialSystem.h"
 
 #include "Classes/Constants.h"
@@ -1610,6 +1606,7 @@ void QtMainWindow::OnAddLandscape()
 
 void QtMainWindow::OnAddSkybox()
 {
+#if RHI_COMPLETE_EDITOR
     SceneEditor2* sceneEditor = GetCurrentScene();
     if(!sceneEditor)
     {
@@ -1621,6 +1618,7 @@ void QtMainWindow::OnAddSkybox()
     skyboxEntity->GetParent()->RemoveNode(skyboxEntity);
     sceneEditor->Exec(new EntityAddCommand(skyboxEntity, sceneEditor));
     skyboxEntity->Release();
+#endif
 }
 
 void QtMainWindow::OnAddVegetation()
@@ -1872,6 +1870,7 @@ void QtMainWindow::LoadEditorLightState(SceneEditor2 *scene)
 
 void QtMainWindow::LoadShadowBlendModeState(SceneEditor2* scene)
 {
+#if RHI_COMPLETE_EDITOR
 	if(NULL != scene)
 	{
 		const ShadowPassBlendMode::eBlend blend = scene->GetShadowBlendMode();
@@ -1879,6 +1878,7 @@ void QtMainWindow::LoadShadowBlendModeState(SceneEditor2* scene)
 		ui->actionDynamicBlendModeAlpha->setChecked(blend == ShadowPassBlendMode::MODE_BLEND_ALPHA);
 		ui->actionDynamicBlendModeMultiply->setChecked(blend == ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
 	}
+#endif
 }
 
 
@@ -1935,7 +1935,7 @@ void QtMainWindow::OnShadowBlendModeAlpha()
 		return;
 	}
 	
-	scene->Exec(new ChangeDynamicShadowModeCommand(scene, ShadowPassBlendMode::MODE_BLEND_ALPHA));
+    scene->Exec(new ChangeDynamicShadowModeCommand(scene));
 }
 
 void QtMainWindow::OnShadowBlendModeMultiply()
@@ -1948,7 +1948,7 @@ void QtMainWindow::OnShadowBlendModeMultiply()
 		return;
 	}
 	
-	scene->Exec(new ChangeDynamicShadowModeCommand(scene, ShadowPassBlendMode::MODE_BLEND_MULTIPLY));
+	scene->Exec(new ChangeDynamicShadowModeCommand(scene));
 }
 
 void QtMainWindow::OnSaveHeightmapToPNG()

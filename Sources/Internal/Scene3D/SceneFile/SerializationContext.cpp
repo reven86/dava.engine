@@ -226,7 +226,8 @@ namespace DAVA
         
 	};
 
-	SerializationContext::SerializationContext()
+    SerializationContext::SerializationContext() :
+        globalMaterialKey(0)
 	{ }
 
 	SerializationContext::~SerializationContext()
@@ -255,12 +256,16 @@ namespace DAVA
 		for(size_t i = 0; i < instanceCount; ++i)
 		{
 			MaterialBinding& binding = materialBindings[i];
-			NMaterial* parentMat = static_cast<NMaterial*>(GetDataBlock(binding.parentKey));
+            uint64 parentKey = (binding.parentKey) ? binding.parentKey : globalMaterialKey;
+            if (!parentKey)
+                continue;
+
+            NMaterial* parentMat = static_cast<NMaterial*>(GetDataBlock(parentKey));
 			
 			DVASSERT(parentMat);
-			if(parentMat)
+			if(parentMat != binding.childMaterial) //global material case
 			{
-				binding.instanceMaterial->SetParent(parentMat);
+				binding.childMaterial->SetParent(parentMat);
 			}
 		}
 		

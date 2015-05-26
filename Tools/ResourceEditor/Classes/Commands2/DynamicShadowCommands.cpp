@@ -34,22 +34,30 @@
 using namespace DAVA;
 
 
-ChangeDynamicShadowModeCommand::ChangeDynamicShadowModeCommand(SceneEditor2 *_scene, DAVA::ShadowPassBlendMode::eBlend mode)
+ChangeDynamicShadowModeCommand::ChangeDynamicShadowModeCommand(SceneEditor2 *_scene)
 	: Command2(CMDID_DYNAMIC_SHADOW_CHANGE_MODE, "Change Dynamic Shadow Mode")
-	, scene(_scene)
+    , scene(_scene)
+#if RHI_COMPLETE_EDITOR
 	, newMode(mode)
+#endif
 {
+#if RHI_COMPLETE_EDITOR
 	oldMode = scene->GetShadowBlendMode();
+#endif
 }
 
 void ChangeDynamicShadowModeCommand::Redo()
 {
+#if RHI_COMPLETE_EDITOR
 	scene->SetShadowBlendMode(newMode);
+#endif
 }
 
 void ChangeDynamicShadowModeCommand::Undo()
 {
+#if RHI_COMPLETE_EDITOR
 	scene->SetShadowBlendMode(oldMode);
+#endif
 }
 
 
