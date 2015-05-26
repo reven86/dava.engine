@@ -174,9 +174,6 @@ namespace DAVA
 
 
 
-// NOTE: 'str' expected to be immutable const static string
-#define DV_HASH(str) DAVA::StringHash(str).hash
-
 inline DAVA::uint32 HashValue_N( const char* key, unsigned length )
 {
     using DAVA::uint32;

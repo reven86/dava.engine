@@ -395,19 +395,19 @@ const FilePath & FileSystem::GetCurrentWorkingDirectory()
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-    std::array<wchar_t, 2048> tempDir;
+    std::array<wchar_t, MAX_PATH> tempDir;
     ::GetCurrentDirectoryW(tempDir.size(), tempDir.data());
     path = UTF8Utils::EncodeToUTF8(tempDir.data());
 
 #elif defined(__DAVAENGINE_WIN32__)
 
-    std::array<char, 2048> tempDir;
+    std::array<char, MAX_PATH> tempDir;
     ::GetCurrentDirectoryA(tempDir.size(), tempDir.data());
     path = tempDir.data();
 
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
-    std::array<char, 2048> tempDir;
+    std::array<char, PATH_MAX> tempDir;
     getcwd(tempDir.data(), tempDir.size());
     path = tempDir.data();
 
@@ -422,11 +422,11 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
     FilePath currentExecuteDirectory;
 
 #if defined(__DAVAENGINE_WIN32__)
-    std::array<char, 2048> tempDir;
+    std::array<char, MAX_PATH> tempDir;
     ::GetModuleFileNameA( NULL, tempDir.data(), tempDir.size() );
     currentExecuteDirectory = FilePath(tempDir.data()).GetDirectory();
 #elif defined(__DAVAENGINE_MACOS__)
-    std::array<char, 2048> tempDir;
+    std::array<char, PATH_MAX> tempDir;
     proc_pidpath(getpid(), tempDir.data(), tempDir.size());
     currentExecuteDirectory = FilePath(dirname(tempDir.data()));
 #else
