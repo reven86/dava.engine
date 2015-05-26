@@ -67,7 +67,7 @@ QVariant DumpBriefModel::data(const QModelIndex& index, int role) const
     {
         int row = index.row();
         int clm = index.column();
-        const DumpBrief& dumpBrief = profileSession->Dump(row);
+        const MemorySnapshot& dumpBrief = profileSession->Snapshot(row);
         if (Qt::DisplayRole == role)
         {
             String filename = dumpBrief.FileName().GetFilename();
@@ -77,7 +77,7 @@ QVariant DumpBriefModel::data(const QModelIndex& index, int role) const
         }
         else if (Qt::BackgroundRole == role)
         {
-            //if (dumpBrief.Dump() != nullptr)
+            //if (dumpBrief.Snapshot() != nullptr)
             //    return Qt::green;
         }
     }

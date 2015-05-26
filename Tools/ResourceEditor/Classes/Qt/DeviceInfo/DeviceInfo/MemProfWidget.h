@@ -29,7 +29,7 @@ class AllocPoolModel;
 class TagModel;
 class GeneralStatModel;
 class DumpBriefModel;
-class StatItem;
+class MemoryStatItem;
 class ProfilingSession;
 
 class MemProfWidget : public QWidget
@@ -59,7 +59,7 @@ public slots:
 private:
     void Init();
     void ReinitPlot();
-    void UpdatePlot(const StatItem& stat);
+    void UpdatePlot(const MemoryStatItem& stat);
     void SetPlotData();
 
 private:

@@ -1,12 +1,11 @@
 #include <QMessageBox>
 #include <QFileDialog>
 
-#include <unordered_map>
-
 #include <Utils/UTF8Utils.h>
 
 #include "Base/FunctionTraits.h"
 #include "FileSystem/FileSystem.h"
+#include "Network/Services/MMNet/MMNetClient.h"
 
 #include "MemProfWidget.h"
 #include "MemProfController.h"
@@ -19,30 +18,32 @@ using namespace DAVA::Net;
 MemProfController::MemProfController(const DAVA::Net::PeerDescription& peerDescr, QWidget *_parentWidget, QObject* parent)
     : QObject(parent)
     , parentWidget(_parentWidget)
-    , peer(peerDescr)
+    , profiledPeer(peerDescr)
+    , netClient(new MMNetClient)
+    , profilingSession(new ProfilingSession)
 {
     ShowView();
-    netClient.SetCallbacks(MakeFunction(this, &MemProfController::OnChannelOpen),
-                           MakeFunction(this, &MemProfController::OnChannelClosed),
-                           MakeFunction(this, &MemProfController::OnCurrentStat),
-                           MakeFunction(this, &MemProfController::OnDump));
+    netClient->InstallCallbacks(MakeFunction(this, &MemProfController::NetConnEstablished),
+                                MakeFunction(this, &MemProfController::NetConnLost),
+                                MakeFunction(this, &MemProfController::NetStatRecieved),
+                                MakeFunction(this, &MemProfController::NetDumpRecieved));
 }
 
 MemProfController::~MemProfController() {}
 
 void MemProfController::OnDumpPressed()
 {
-    netClient.RequestDump();
+    netClient->RequestDump();
 }
 
 void MemProfController::ShowView()
 {
-    if (NULL == view)
+    if (nullptr == view)
     {
         const QString title = QString("%1 (%2 %3)")
-            .arg(peer.GetName().c_str())
-            .arg(peer.GetPlatformString().c_str())
-            .arg(peer.GetVersion().c_str());
+            .arg(profiledPeer.GetName().c_str())
+            .arg(profiledPeer.GetPlatformString().c_str())
+            .arg(profiledPeer.GetVersion().c_str());
 
         view = new MemProfWidget(parentWidget);
         view->setWindowFlags(Qt::Window);
@@ -61,18 +62,21 @@ void MemProfController::ShowView()
     view->raise();
 }
 
-void MemProfController::OnChannelOpen(const DAVA::MMStatConfig* config)
+DAVA::Net::IChannelListener* MemProfController::NetObject() const
 {
-    bool newConnection = false;
-    if (config != nullptr)
-    {
-        newConnection = true;
-        profilingSession = std::make_unique<ProfilingSession>(config, peer);
-    }
-    emit ConnectionEstablished(newConnection, profilingSession.get());
+    return netClient.get();
 }
 
-void MemProfController::OnChannelClosed(const char8* message)
+void MemProfController::NetConnEstablished(bool resumed, const DAVA::MMStatConfig* config)
+{
+    if (!resumed)
+    {
+        profilingSession->StartNew(config, profiledPeer, FilePath("d:\\temp\\memory"));
+    }
+    emit ConnectionEstablished(!resumed, profilingSession.get());
+}
+
+void MemProfController::NetConnLost(const DAVA::char8* message)
 {
     if (profilingSession)
     {
@@ -81,20 +85,30 @@ void MemProfController::OnChannelClosed(const char8* message)
     }
 }
 
-void MemProfController::OnCurrentStat(const DAVA::MMCurStat* stat)
+void MemProfController::NetStatRecieved(const DAVA::MMCurStat* stat, size_t count)
 {
-    profilingSession->AddStatItem(stat);
+    profilingSession->AppendStatItems(stat, count);
     emit StatArrived();
 }
 
-void MemProfController::OnDump(size_t total, size_t recv, Vector<uint8>* v)
+void MemProfController::NetDumpRecieved(int stage, size_t totalSize, size_t recvSize, const void* data)
 {
-    if (total == recv && total > 0)
+    switch (stage)
     {
-        DVASSERT(v != nullptr);
-
-        const MMDump* dump = reinterpret_cast<const MMDump*>(v->data());
-        profilingSession->AddDump(dump);
+    case MMNetClient::DUMP_STAGE_STARTED:
+        emit DumpArrived(totalSize, 0);
+        break;
+    case MMNetClient::DUMP_STAGE_PROGRESS:
+        emit DumpArrived(totalSize, recvSize);
+        break;
+    case MMNetClient::DUMP_STAGE_FINISHED:
+        profilingSession->AppendSnapshot(static_cast<const MMDump*>(data));
+        emit DumpArrived(totalSize, recvSize);
+        break;
+    case MMNetClient::DUMP_STAGE_ERROR:
+        emit DumpArrived(0, 0);
+        break;
+    default:
+        break;
     }
-    emit DumpArrived(total, recv);
 }

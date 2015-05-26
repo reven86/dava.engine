@@ -32,7 +32,7 @@
 
 using namespace DAVA;
 
-MemoryDump::MemoryDump(const DumpBrief& brief, const BacktraceSymbolTable& symTable, DAVA::Vector<DAVA::MMBlock>&& mblocks)
+MemoryDump::MemoryDump(const MemorySnapshot& brief, const BacktraceSymbolTable& symTable, DAVA::Vector<DAVA::MMBlock>&& mblocks)
     : dumpBrief(brief)
     , symbolTable(symTable)
     , memoryBlocks(std::move(mblocks))

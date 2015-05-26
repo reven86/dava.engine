@@ -17,14 +17,14 @@ class BranchTreeModel;
 class BlockListModel;
 
 class MemoryDump;
-class DumpBrief;
+class MemorySnapshot;
 
 class DumpViewerWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    DumpViewerWidget(const DumpBrief& brief, QWidget* parent = nullptr);
+    DumpViewerWidget(const MemorySnapshot& brief, QWidget* parent = nullptr);
     virtual ~DumpViewerWidget();
 
 public slots:
@@ -41,7 +41,7 @@ private:
     DAVA::Vector<const char*> GetSelectedSymbols();
 
 private:
-    const DumpBrief& dumpBrief;
+    const MemorySnapshot& dumpBrief;
     MemoryDump* memoryDump;
 
     SymbolsTreeModel* symbolsTreeModel = nullptr;

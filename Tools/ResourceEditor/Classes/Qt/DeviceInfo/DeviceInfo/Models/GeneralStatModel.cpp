@@ -115,7 +115,7 @@ void GeneralStatModel::BeginNewProfileSession(ProfilingSession* profSession)
     endResetModel();
 }
 
-void GeneralStatModel::SetCurrentValues(const StatItem& item)
+void GeneralStatModel::SetCurrentValues(const MemoryStatItem& item)
 {
     timestamp = item.Timestamp();
     curValues = item.GeneralStat();

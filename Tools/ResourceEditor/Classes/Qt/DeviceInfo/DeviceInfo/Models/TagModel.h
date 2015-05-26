@@ -36,7 +36,7 @@
 #include "MemoryManager/MemoryManagerTypes.h"
 
 class ProfilingSession;
-class StatItem;
+class MemoryStatItem;
 
 class TagModel : public QAbstractTableModel
 {
@@ -60,7 +60,7 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
     void BeginNewProfileSession(ProfilingSession* profSession);
-    void SetCurrentValues(const StatItem& item);
+    void SetCurrentValues(const MemoryStatItem& item);
     void SetTagColors(QColor colorActive, QColor colorInactive);
 
 private:

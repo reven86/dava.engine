@@ -17,14 +17,14 @@ class BranchDiffTreeModel;
 class BlockListModel;
 
 class MemoryDump;
-class DumpBrief;
+class MemorySnapshot;
 
 class DiffViewerWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    DiffViewerWidget(const DumpBrief& brief1, const DumpBrief& brief2, QWidget* parent = nullptr);
+    DiffViewerWidget(const MemorySnapshot& brief1, const MemorySnapshot& brief2, QWidget* parent = nullptr);
     virtual ~DiffViewerWidget();
 
 public slots:
@@ -41,8 +41,8 @@ private:
     DAVA::Vector<const char*> GetSelectedSymbols();
 
 private:
-    const DumpBrief& dumpBrief1;
-    const DumpBrief& dumpBrief2;
+    const MemorySnapshot& dumpBrief1;
+    const MemorySnapshot& dumpBrief2;
     MemoryDump* memoryDump1;
     MemoryDump* memoryDump2;
 

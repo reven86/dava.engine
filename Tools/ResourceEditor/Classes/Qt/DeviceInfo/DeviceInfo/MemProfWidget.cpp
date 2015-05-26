@@ -58,7 +58,7 @@ MemProfWidget::MemProfWidget(ProfilingSession* profSession, QWidget *parent)
 
 MemProfWidget::~MemProfWidget() 
 {
-    if (profileSession != nullptr && profileSession->IsFileLog())
+    if (profileSession != nullptr && profileSession->IsFileMode())
     {
         delete profileSession;
     }
@@ -66,7 +66,7 @@ MemProfWidget::~MemProfWidget()
 
 void MemProfWidget::ConnectionEstablished(bool newConnection, ProfilingSession* profSession)
 {
-    DVASSERT(!profSession->IsFileLog());
+    DVASSERT(!profSession->IsFileMode());
 
     profileSession = profSession;
     allocPoolModel->BeginNewProfileSession(profSession);
@@ -96,7 +96,7 @@ void MemProfWidget::StatArrived()
 {
     if (realtime)
     {
-        const StatItem& stat = profileSession->LastStat();
+        const MemoryStatItem& stat = profileSession->LastStat();
 
         allocPoolModel->SetCurrentValues(stat);
         tagModel->SetCurrentValues(stat);
@@ -118,7 +118,7 @@ void MemProfWidget::DumpArrived(size_t sizeTotal, size_t sizeRecv)
 void MemProfWidget::RealtimeToggled(bool checked)
 {
     realtime = checked;
-    if (profileSession != nullptr && !profileSession->IsFileLog())
+    if (profileSession != nullptr && !profileSession->IsFileMode())
     {
         QCustomPlot* plot = ui->plot;
         size_t ngraph = profileSession->AllocPoolCount();
@@ -144,7 +144,7 @@ void MemProfWidget::PlotClicked(QMouseEvent* ev)
         size_t index = profileSession->ClosestStatItem(timestamp);
         if (index != size_t(-1))
         {
-            const StatItem& stat = profileSession->Stat(index);
+            const MemoryStatItem& stat = profileSession->Stat(index);
 
             allocPoolModel->SetCurrentValues(stat);
             tagModel->SetCurrentValues(stat);
@@ -175,8 +175,8 @@ void MemProfWidget::DiffClicked()
     int index2 = selected[1];
     if (profileSession->LoadDump(index1) && profileSession->LoadDump(index2))
     {
-        const DumpBrief& d0 = profileSession->Dump(index1);
-        const DumpBrief& d1 = profileSession->Dump(index2);
+        const MemorySnapshot& d0 = profileSession->Snapshot(index1);
+        const MemorySnapshot& d1 = profileSession->Snapshot(index2);
 
         DiffViewerWidget* w = new DiffViewerWidget(d0, d1, this);
         w->resize(800, 600);
@@ -189,14 +189,14 @@ void MemProfWidget::DumpBriefList_OnDoubleClicked(const QModelIndex& index)
     int row = index.row();
     if (profileSession->LoadDump(row))
     {
-        const DumpBrief& brief = profileSession->Dump(row);
+        const MemorySnapshot& brief = profileSession->Snapshot(row);
         DumpViewerWidget* w = new DumpViewerWidget(brief, this);
         w->resize(800, 600);
         w->show();
     }
 }
 
-void MemProfWidget::UpdatePlot(const StatItem& stat)
+void MemProfWidget::UpdatePlot(const MemoryStatItem& stat)
 {
     QCustomPlot* plot = ui->plot;
     size_t ngraph = profileSession->AllocPoolCount();
@@ -229,7 +229,7 @@ void MemProfWidget::SetPlotData()
     }
     for (size_t i = 0;i < nstat;++i)
     {
-        const StatItem& item = profileSession->Stat(i);
+        const MemoryStatItem& item = profileSession->Stat(i);
         const Vector<AllocPoolStat>& vstat = item.PoolStat();
         double key = static_cast<double>(item.Timestamp() / 1000.0);
         for (size_t j = 0;j < ntrends;++j)

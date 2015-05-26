@@ -5,7 +5,14 @@
 #include <QPointer>
 
 #include "Network/PeerDesription.h"
-#include "Network/Services/MMNetClient.h"
+#include "MemoryManager/MemoryManagerTypes.h"
+
+namespace DAVA { namespace Net {
+
+struct IChannelListener;
+class MMNetClient;
+
+}}
 
 class MemProfWidget;
 class ProfilingSession;
@@ -15,17 +22,17 @@ class MemProfController : public QObject
     Q_OBJECT
     
 public:
-    explicit MemProfController(const DAVA::Net::PeerDescription& peerDescr, QWidget *parentWidget, QObject *parent = NULL);
+    MemProfController(const DAVA::Net::PeerDescription& peerDescr, QWidget *parentWidget, QObject *parent = nullptr);
     ~MemProfController();
 
     void ShowView();
 
-    void OnChannelOpen(const DAVA::MMStatConfig* config);
-    void OnChannelClosed(const DAVA::char8* message);
-    void OnCurrentStat(const DAVA::MMCurStat* stat);
-    void OnDump(size_t total, size_t recv, DAVA::Vector<DAVA::uint8>* v);
+    DAVA::Net::IChannelListener* NetObject() const;
 
-    DAVA::Net::IChannelListener* NetObject() { return &netClient; }
+    void NetConnEstablished(bool resumed, const DAVA::MMStatConfig* config);
+    void NetConnLost(const DAVA::char8* message);
+    void NetStatRecieved(const DAVA::MMCurStat* stat, size_t count);
+    void NetDumpRecieved(int stage, size_t totalSize, size_t recvSize, const void* data);
 
 signals:
     void ConnectionEstablished(bool newConnection, ProfilingSession* profSession);
@@ -39,11 +46,9 @@ public slots:
 private:
     QPointer<MemProfWidget> view;
     QPointer<QWidget> parentWidget;
-    DAVA::Net::PeerDescription peer;
-    DAVA::Net::MMNetClient netClient;
 
-    DAVA::Vector<DAVA::uint8> dumpData;
-
+    DAVA::Net::PeerDescription profiledPeer;
+    std::unique_ptr<DAVA::Net::MMNetClient> netClient;
     std::unique_ptr<ProfilingSession> profilingSession;
 };
 

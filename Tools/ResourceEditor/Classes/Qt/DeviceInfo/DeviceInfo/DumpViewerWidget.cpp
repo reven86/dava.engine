@@ -26,7 +26,7 @@
 
 using namespace DAVA;
 
-DumpViewerWidget::DumpViewerWidget(const DumpBrief& brief, QWidget* parent)
+DumpViewerWidget::DumpViewerWidget(const MemorySnapshot& brief, QWidget* parent)
     : QWidget(parent, Qt::Window)
     , dumpBrief(brief)
     , memoryDump(brief.Dump())

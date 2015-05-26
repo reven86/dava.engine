@@ -32,16 +32,16 @@
 #include "MemoryManager/MemoryManagerTypes.h"
 
 struct Branch;
-class DumpBrief;
+class MemorySnapshot;
 class BacktraceSymbolTable;
 
 class MemoryDump final
 {
 public:
-    MemoryDump(const DumpBrief& brief, const BacktraceSymbolTable& symTable, DAVA::Vector<DAVA::MMBlock>&& mblocks);
+    MemoryDump(const MemorySnapshot& brief, const BacktraceSymbolTable& symTable, DAVA::Vector<DAVA::MMBlock>&& mblocks);
     ~MemoryDump();
 
-    const DumpBrief& Brief() const { return dumpBrief; }
+    const MemorySnapshot& Brief() const { return dumpBrief; }
     const BacktraceSymbolTable& SymbolTable() const { return symbolTable; }
 
     // Get list of all memory blocks in dump
@@ -56,7 +56,7 @@ private:
     void BuildBlockMap();
 
 private:
-    const DumpBrief& dumpBrief;
+    const MemorySnapshot& dumpBrief;
     const BacktraceSymbolTable& symbolTable;
     DAVA::Vector<DAVA::MMBlock> memoryBlocks;
     DAVA::Map<DAVA::uint32, DAVA::Vector<const DAVA::MMBlock*>> blockMap;   // key - backtrace hash,

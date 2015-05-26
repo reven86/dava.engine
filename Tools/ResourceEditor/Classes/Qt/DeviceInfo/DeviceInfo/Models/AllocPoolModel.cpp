@@ -127,7 +127,7 @@ void AllocPoolModel::BeginNewProfileSession(ProfilingSession* profSession)
     endResetModel();
 }
 
-void AllocPoolModel::SetCurrentValues(const StatItem& item)
+void AllocPoolModel::SetCurrentValues(const MemoryStatItem& item)
 {
     Q_ASSERT(curValues.size() == item.PoolStat().size());
     timestamp = item.Timestamp();

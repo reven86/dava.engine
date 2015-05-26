@@ -10,9 +10,10 @@
 #include <QTabWidget>
 
 #include "FileSystem/FilePath.h"
+#include "FileSystem/File.h"
 
-#include "../DeviceInfo/ProfilingSession.h"
-#include "../DeviceInfo/MemProfWidget.h"
+#include "Classes/Qt/DeviceInfo/DeviceInfo/ProfilingSession.h"
+#include "Classes/Qt/DeviceInfo/DeviceInfo/MemProfWidget.h"
 
 DeviceListWidget::DeviceListWidget( QWidget *parent )
     : QWidget( parent, Qt::Window )
@@ -45,10 +46,10 @@ void DeviceListWidget::OnViewDump()
     {
         std::string s = filename.toStdString();
         // ProfilingSession will be deleted on MemProfWidget destruction
-        ProfilingSession* profilingSession = new ProfilingSession(DAVA::FilePath(s));
-        MemProfWidget* w = new MemProfWidget(profilingSession, this);
-        w->setAttribute(Qt::WA_DeleteOnClose);
-        w->resize(800, 600);
-        w->show();
+        //ProfilingSession* profilingSession = new ProfilingSession(DAVA::FilePath(s));
+        //MemProfWidget* w = new MemProfWidget(profilingSession, this);
+        //w->setAttribute(Qt::WA_DeleteOnClose);
+        //w->resize(800, 600);
+        //w->show();
     }
 }

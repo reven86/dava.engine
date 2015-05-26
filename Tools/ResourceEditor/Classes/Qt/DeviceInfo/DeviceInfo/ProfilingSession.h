@@ -37,177 +37,145 @@
 #include "MemoryManager/MemoryManagerTypes.h"
 
 #include "BacktraceSymbolTable.h"
+#include "MemoryStatItem.h"
+#include "MemorySnapshot.h"
 
 namespace DAVA
 {
 class File;
-namespace Net
-{
-class PeerDescription;
-}
 }
 
 struct Branch;
 struct BranchDiff;
 class MemoryDump;
-class ProfilingSession;
-
-class StatItem final
-{
-public:
-    StatItem(DAVA::uint64 aTimestamp) : timestamp(aTimestamp) {}
-    StatItem(const DAVA::MMCurStat* rawStat, size_t poolCount, size_t tagCount)
-    {
-        Init(rawStat, poolCount, tagCount);
-    }
-    // TODO: implement move semantic
-
-    DAVA::uint64 Timestamp() const { return timestamp; }
-    const DAVA::GeneralAllocStat& GeneralStat() const { return statGeneral; }
-    const DAVA::Vector<DAVA::AllocPoolStat>& PoolStat() const { return statPools; }
-    const DAVA::Vector<DAVA::TagAllocStat>& TagStat() const { return statTags; }
-
-    // Total memory consumption
-    const DAVA::AllocPoolStat& TotalStat() const { return statPools[0]; }
-
-private:
-    void Init(const DAVA::MMCurStat* rawStat, size_t poolCount, size_t tagCount);
-
-private:
-    DAVA::uint64 timestamp;
-    DAVA::GeneralAllocStat statGeneral;
-    DAVA::Vector<DAVA::AllocPoolStat> statPools;
-    DAVA::Vector<DAVA::TagAllocStat> statTags;
-};
-
-class DumpBrief final
-{
-    friend class ProfilingSession;
-
-public:
-    DumpBrief(const DAVA::FilePath& filename, const DAVA::MMDump* rawDump)
-        : dumpFileName(filename)
-    {
-        Init(rawDump);
-    }
-    ~DumpBrief()
-    {
-        ReleaseDump();
-    }
-
-    const DAVA::FilePath& FileName() const { return dumpFileName; }
-    DAVA::uint64 Timestamp() const { return timestamp; }
-    DAVA::uint32 CollectTime() const { return collectTime; }
-    DAVA::uint32 PackTime() const { return packTime; }
-    DAVA::uint32 BlockCount() const { return blockCount; }
-    DAVA::uint32 SymbolCount() const { return symbolCount; }
-    DAVA::uint32 BktraceCount() const { return bktraceCount; }
-    DAVA::uint32 TotalSize() const { return totalSize; }
-
-    // Get memory dump or null if not loaded
-    MemoryDump* Dump() const { return memoryDump; }
-    void ReleaseDump();
-
-private:
-    void Init(const DAVA::MMDump* rawDump);
-
-private:
-    DAVA::FilePath dumpFileName;
-    DAVA::uint64 timestamp;
-    DAVA::uint32 collectTime;
-    DAVA::uint32 packTime;
-    DAVA::uint32 blockCount;
-    DAVA::uint32 symbolCount;
-    DAVA::uint32 bktraceCount;
-    DAVA::uint32 totalSize;
-
-    MemoryDump* memoryDump = nullptr;
-};
 
 class ProfilingSession
 {
 public:
-    // Init ProfilingSession for working with realtime data (realtime mode)
-    ProfilingSession(const DAVA::MMStatConfig* config, const DAVA::Net::PeerDescription& devInfo);
-    // Init ProfilingSession for working with saved data (file mode)
-    ProfilingSession(const DAVA::FilePath& filename);
+    ProfilingSession();
     ~ProfilingSession();
     // TODO: implement move semantic
 
-    // Returns true if ProfilingSession has been restored from saved file, i.e. works in file mode
-    bool IsFileLog() const { return isFileLog; }
+    bool StartNew(const DAVA::MMStatConfig* config, const DAVA::Net::PeerDescription& deviceInfo, const DAVA::FilePath& destDir);
+    bool LoadFromFile(const DAVA::FilePath& srcDir);
 
-    // Add statistics item for memory consumption trends (realtime mode)
-    void AddStatItem(const DAVA::MMCurStat* rawStat);
-    // Add memory dump retrieved from profiled device (realtime mode)
-    void AddDump(const DAVA::MMDump* rawDump);
-    // Flush file buffers to storage (realtime mode)
+    // Returns true if ProfilingSession has been restored from saved file, i.e. works in file mode
+    bool IsFileMode() const;
+    bool IsValid() const;
+
+    // Add statistics items for memory consumption trends
+    void AppendStatItems(const DAVA::MMCurStat* statBuf, size_t itemCount);
+    // Add memory dump retrieved from profiled device
+    void AppendSnapshot(const DAVA::MMDump* rawDump);
+    // Flush file buffers to storage
     void Flush();
 
     // Number of registered allocation pools
-    size_t AllocPoolCount() const { return allocPoolCount; }
+    size_t AllocPoolCount() const;
     // Number of registered memory block tags
-    size_t TagCount() const { return tagCount; }
+    size_t TagCount() const;
     // Number of collected statistics items for trends
-    size_t StatCount() const { return stat.size(); }
+    size_t StatCount() const;
     // Number of collected memory dumps
-    size_t DumpCount() const { return dump.size(); }
+    size_t DumpCount() const;
     // Profiled device description
-    const DAVA::Net::PeerDescription& DeviceInfo() const { return deviceInfo; }
+    const DAVA::Net::PeerDescription& DeviceInfo() const;
     // Symbol and backtrace table for
-    const BacktraceSymbolTable& SymbolTable() const { return symbolTable; }
+    const BacktraceSymbolTable& SymbolTable() const;
 
     const DAVA::String& AllocPoolName(size_t index) const;
     const DAVA::String& TagName(size_t index) const;
     // Get stat item by index, items are sorted by timestamp
-    const StatItem& Stat(size_t index) const;
-    const StatItem& LastStat() const;
+    const MemoryStatItem& Stat(size_t index) const;
+    const MemoryStatItem& LastStat() const;
     // Get memory dump brief description by index, dumps are sorted by timestamp
-    const DumpBrief& Dump(size_t index) const;
-    const DumpBrief& LastDump() const;
+    const MemorySnapshot& Snapshot(size_t index) const;
+    const MemorySnapshot& LastSnapshot() const;
 
     // Get index of the closest stat unit or -1 if not found
     size_t ClosestStatItem(DAVA::uint64 timestamp) const;
 
-    // Load memory dump
-    bool LoadDump(size_t index);
+    // Load memory snapshot
+    bool LoadSnapshot(size_t index);
 
 private:
-    void Init(const DAVA::MMStatConfig* config);
-    void InitFileSystem();
-    void InitFileSystemWhenLoaded(const DAVA::FilePath& filename);
-
-    void SaveDumpAsText(const DAVA::MMDump* rawDump, const char* filename);
-
-private:
-    void SaveLogHeader(const DAVA::MMStatConfig* config);
+    bool CreateLogFile(const DAVA::MMStatConfig* config);
+    bool SaveLogHeader(const DAVA::MMStatConfig* config);
     void UpdateFileHeader(bool finalize);
 
-    void LoadLogFile();
-    void LoadStatItems(size_t count, DAVA::uint32 itemSize);
-    void LookForDumps();
-    void LoadDumpBrief(const DAVA::FilePath& path);
-    bool LoadFullDump(const DumpBrief& brief, DAVA::Vector<DAVA::MMBlock>& mblocks);
+    bool LoadLogFile();
+    bool LoadLogHeader(size_t* itemCount, size_t* itemSize);
+    bool LoadStatItems(size_t count, size_t itemSize);
+
+    void ApplyConfig(const DAVA::MMStatConfig* config);
+    void FlushAndReset(bool eraseFiles);
+
+    void LookForShapshots();
+    void LoadShapshotDescriptor(const DAVA::FilePath& path);
+    bool LoadFullDump(const MemorySnapshot& brief, DAVA::Vector<DAVA::MMBlock>& mblocks);
 
 private:
-    bool isFileLog;
+    bool isValid = false;
+    bool isFileMode = false;
     size_t allocPoolCount = 0;
     size_t tagCount = 0;
-    int dumpNo = 1;
+    int snapshotSeqNo = 1;
     DAVA::Net::PeerDescription deviceInfo;
     DAVA::Vector<DAVA::String> allocPoolNames;
     DAVA::Vector<DAVA::String> tagNames;
-    DAVA::Vector<StatItem> stat;
-    DAVA::Vector<DumpBrief> dump;
+    DAVA::Vector<MemoryStatItem> stat;
+    DAVA::Vector<MemorySnapshot> snapshots;
 
     DAVA::FilePath storageDir;
-    DAVA::FilePath statFileName;
-    DAVA::RefPtr<DAVA::File> statFile;
+    DAVA::FilePath logFileName;
+    DAVA::RefPtr<DAVA::File> logFile;
+    size_t statItemFlushed = 0;
+    size_t statItemFlushThreshold = 1000;
 
     BacktraceSymbolTable symbolTable;
 };
 
 //////////////////////////////////////////////////////////////////////////
+inline bool ProfilingSession::IsFileMode() const
+{
+    return isFileMode;
+}
+
+inline bool ProfilingSession::IsValid() const
+{
+    return isValid;
+}
+
+inline size_t ProfilingSession::AllocPoolCount() const
+{
+    return allocPoolCount;
+}
+
+inline size_t ProfilingSession::TagCount() const
+{
+    return tagCount;
+}
+
+inline size_t ProfilingSession::StatCount() const
+{
+    return stat.size();
+}
+
+inline size_t ProfilingSession::DumpCount() const
+{
+    return snapshots.size();
+}
+
+inline const DAVA::Net::PeerDescription& ProfilingSession::DeviceInfo() const
+{
+    return deviceInfo;
+}
+
+inline const BacktraceSymbolTable& ProfilingSession::SymbolTable() const
+{
+    return symbolTable;
+}
+
 inline const DAVA::String& ProfilingSession::AllocPoolName(size_t index) const
 {
     DVASSERT(0 <= index && index < allocPoolCount);
@@ -220,28 +188,28 @@ inline const DAVA::String& ProfilingSession::TagName(size_t index) const
     return tagNames[index];
 }
 
-inline const StatItem& ProfilingSession::Stat(size_t index) const
+inline const MemoryStatItem& ProfilingSession::Stat(size_t index) const
 {
     DVASSERT(0 <= index && index < stat.size());
     return stat[index];
 }
 
-inline const StatItem& ProfilingSession::LastStat() const
+inline const MemoryStatItem& ProfilingSession::LastStat() const
 {
     DVASSERT(!stat.empty());
     return stat.back();
 }
 
-inline const DumpBrief& ProfilingSession::Dump(size_t index) const
+inline const MemorySnapshot& ProfilingSession::Snapshot(size_t index) const
 {
-    DVASSERT(0 <= index && index < dump.size());
-    return dump[index];
+    DVASSERT(0 <= index && index < snapshots.size());
+    return snapshots[index];
 }
 
-inline const DumpBrief& ProfilingSession::LastDump() const
+inline const MemorySnapshot& ProfilingSession::LastSnapshot() const
 {
-    DVASSERT(!dump.empty());
-    return dump.back();
+    DVASSERT(!snapshots.empty());
+    return snapshots.back();
 }
 
 #endif  // __PROFILINGSESSION_H__

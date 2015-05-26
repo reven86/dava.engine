@@ -28,7 +28,7 @@
 
 using namespace DAVA;
 
-DiffViewerWidget::DiffViewerWidget(const DumpBrief& brief1, const DumpBrief& brief2, QWidget* parent)
+DiffViewerWidget::DiffViewerWidget(const MemorySnapshot& brief1, const MemorySnapshot& brief2, QWidget* parent)
     : QWidget(parent, Qt::Window)
     , dumpBrief1(brief1)
     , dumpBrief2(brief2)

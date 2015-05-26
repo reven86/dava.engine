@@ -115,7 +115,7 @@ void TagModel::BeginNewProfileSession(ProfilingSession* profSession)
     endResetModel();
 }
 
-void TagModel::SetCurrentValues(const StatItem& item)
+void TagModel::SetCurrentValues(const MemoryStatItem& item)
 {
     Q_ASSERT(curValues.size() == item.TagStat().size());
     timestamp = item.Timestamp();

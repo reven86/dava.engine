@@ -35,7 +35,7 @@
 #include "MemoryManager/MemoryManagerTypes.h"
 
 class ProfilingSession;
-class StatItem;
+class MemoryStatItem;
 
 class GeneralStatModel : public QAbstractTableModel
 {
@@ -63,7 +63,7 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
     void BeginNewProfileSession(ProfilingSession* profSession);
-    void SetCurrentValues(const StatItem& item);
+    void SetCurrentValues(const MemoryStatItem& item);
 
 private:
     ProfilingSession* profileSession;
