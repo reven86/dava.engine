@@ -58,13 +58,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->addNewServerButton, &QPushButton::clicked, this, &MainWindow::OnAddNewServerWidget);
     connect(ui->selectFolderButton, &QPushButton::clicked, this, &MainWindow::OnSelectFolder);
-    connect(ui->clearDirectoryButton, &QPushButton::clicked, ui->cachFolderLineEdit, &QLineEdit::clear);
+    connect(ui->clearDirectoryButton, &QPushButton::clicked, ui->cacheFolderLineEdit, &QLineEdit::clear);
 
-    connect(ui->cachFolderLineEdit, &QLineEdit::textChanged, this, &MainWindow::CheckEnableClearButton);
+    connect(ui->cacheFolderLineEdit, &QLineEdit::textChanged, this, &MainWindow::CheckEnableClearButton);
 
-    connect(ui->cachSizeSpinBox, &QDoubleSpinBox::valueChanged, this, &MainWindow::OnCacheSizeChanged);
-    connect(ui->numberOfFilesSpinBox, &QSpinBox::valueChanged, this, &MainWindow::OnNumberOfFilesChanged);
-    
     connect(ui->saveButton, &QPushButton::clicked, this, &MainWindow::OnSaveButtonClicked);
     connect(ui->cancelButton, &QPushButton::clicked, this, &MainWindow::OnCancelButtonClicked);
 
@@ -102,9 +99,6 @@ void MainWindow::OnRemoveServerWidget()
     RemoteAssetCacheServer *w = qobject_cast<RemoteAssetCacheServer *>(sender());
     servers.removeOne(w);
     
-    settings->RemoveServer(w->GetServerData());
-    
-    emit ServerRemoved(w->GetServerData());
     w->deleteLater();
     VerifyData();
 }
@@ -113,28 +107,15 @@ void MainWindow::OnSelectFolder()
 {
     QString directory = FileDialog::getExistingDirectory(this, "Choose directory", QDir::currentPath(),
                                                          QFileDialog::ShowDirsOnly);
-    ui->cachFolderLineEdit->setText(directory);
-    
-    settings->SetFolder(directory.toStdString());
+    ui->cacheFolderLineEdit->setText(directory);
     
     VerifyData();
 }
 
-void MainWindow::OnCacheSizeChanged(double value)
-{
-    settings->SetCacheSize(value);
-}
-
-void MainWindow::OnNumberOfFilesChanged(int value)
-{
-    settings->SetFilesCount(value);
-}
-
-
 void MainWindow::CheckEnableClearButton()
 {
-    ui->clearDirectoryButton->setEnabled(!ui->cachFolderLineEdit->text().isEmpty());
-    ui->cachFolderLineEdit->setFocus();
+    ui->clearDirectoryButton->setEnabled(!ui->cacheFolderLineEdit->text().isEmpty());
+    ui->cacheFolderLineEdit->setFocus();
 }
 
 void MainWindow::OnTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
@@ -161,7 +142,6 @@ void MainWindow::OnServerParametersChanged()
     {
         serversData << server->GetServerData();
     }
-    emit ServersChanged(serversData);
 
     VerifyData();
 }
@@ -174,12 +154,6 @@ void MainWindow::OnOpenAction()
     trayIcon->show();
 }
 
-void MainWindow::OnSaveButtonClicked()
-{
-    settings->Save();
-    
-    this->hide();
-}
 
 void MainWindow::OnCancelButtonClicked()
 {
@@ -188,15 +162,15 @@ void MainWindow::OnCancelButtonClicked()
 
 void MainWindow::SetFolder(QString &folderPath)
 {
-    if (QString::compare(folderPath, ui->cachFolderLineEdit->text(), Qt::CaseInsensitive) != 0)
+    if (QString::compare(folderPath, ui->cacheFolderLineEdit->text(), Qt::CaseInsensitive) != 0)
     {
-        ui->cachFolderLineEdit->setText(folderPath);
+        ui->cacheFolderLineEdit->setText(folderPath);
     }
 }
 
 void MainWindow::SetFolderSize(qreal folderSize)
 {
-    ui->cachSizeSpinBox->setValue(folderSize);
+    ui->cacheSizeSpinBox->setValue(folderSize);
 }
 
 void MainWindow::SetFilesCount(quint32 filesCounts)
@@ -215,7 +189,7 @@ void MainWindow::AddServers(QVector<ServerData> &newServers)
     }
 }
 
-void MainWindow::AddServer(ServerData newServer)
+void MainWindow::AddServer(const ServerData & newServer)
 {
     RemoteAssetCacheServer *server = new RemoteAssetCacheServer(newServer, this);
     servers << server;
@@ -225,7 +199,6 @@ void MainWindow::AddServer(ServerData newServer)
 
     boxLayout->insertWidget(boxLayout->count() - 1, server);
 
-    emit NewServerAdded(server->GetServerData());
     VerifyData();
 }
 
@@ -259,82 +232,6 @@ void MainWindow::ShowTrayIcon()
     trayIcon->show();
 }
 
-void MainWindow::ReadSettings()
-{
-    using namespace DAVA;
-
-    FilePath path("~doc:/AssetServer/ACS_settings.dat");
-    File *f = File::Create(path, File::OPEN | File::READ);
-    if (f == nullptr)
-    {
-        Logger::Error("File not open. %s. %s", String("MainWindow::ReadSettings").c_str(), path.GetAbsolutePathname().c_str());
-        return;
-    }
-
-    KeyedArchive *arch = new KeyedArchive();
-    arch->Load(f);
-
-    String folderPath = arch->GetString(String("FolderPath"));
-    ui->cachFolderLineEdit->setText(folderPath.c_str());
-
-    DAVA::float32 folderSize = arch->GetFloat(String("FolderSize"));
-    ui->cachSizeSpinBox->setValue(folderSize);
-
-    DAVA::uint32 numberOfFiles = arch->GetUInt32(String("NumberOfFiles"));
-    ui->numberOfFilesSpinBox->setValue(numberOfFiles);
-
-//    DAVA::uint32 port = arch->GetUInt32(String("Port"));
-//    ui->portSpinBox->setValue(port);
-
-    auto size = arch->GetUInt32("ServersSize");
-    for (int i = 0; i < size; ++i)
-    {
-        String ip = arch->GetString(Format("Server_%d_ip", i));
-//        DAVA::uint32 port = arch->GetUInt32(Format("Server_%d_port", i));
-//        ServerData sData(QString(ip.c_str()), static_cast<quint16>(port));
-        ServerData sData(QString(ip.c_str()), static_cast<quint16>(DAVA::AssetCache::ASSET_SERVER_PORT));
-        AddServer(sData);
-    }
-
-    f->Release();
-    arch->Release();
-}
-
-void MainWindow::WriteSettings()
-{
-    DAVA::FileSystem::Instance()->CreateDirectory("~doc:/AssetServer", true);
-    DAVA::FilePath path("~doc:/AssetServer/ACS_settings.dat");
-    DAVA::File *f = DAVA::File::Create(path, DAVA::File::CREATE | DAVA::File::WRITE);
-    if (f == nullptr)
-    {
-        DAVA::Logger::Error("File not open. %s. %s", DAVA::String("MainWindow::ReadSettings").c_str(), path.GetAbsolutePathname().c_str());
-        return;
-    }
-
-    DAVA::KeyedArchive *arch = new DAVA::KeyedArchive();
-
-    arch->SetString(DAVA::String("FolderPath"), DAVA::String(ui->cachFolderLineEdit->text().toStdString()));
-    arch->SetFloat(DAVA::String("FolderSize"), static_cast<DAVA::float32>(ui->cachSizeSpinBox->value()));
-    arch->SetUInt32(DAVA::String("NumberOfFiles"), static_cast<DAVA::uint32>(ui->numberOfFilesSpinBox->value()));
-//    arch->SetUInt32(DAVA::String("Port"), static_cast<DAVA::uint32>(ui->portSpinBox->value()));
-
-    auto size = servers.size();
-    arch->SetUInt32("ServersSize", size);
-
-    for (int i = 0; i < size; ++i)
-    {
-        auto sData = servers.at(i)->GetServerData();
-//        arch->SetString(DAVA::Format("Server_%d_ip", i), DAVA::String(sData.ip.toStdString()));
-        arch->SetUInt32(DAVA::Format("Server_%d_port", i), static_cast<DAVA::uint32>(sData.port));
-    }
-
-    arch->Save(f);
-    f->Release();
-    arch->Release();
-
-    ui->saveButton->setEnabled(false);
-}
-
 void MainWindow::VerifyData()
 {
     bool isCorrect = true;
@@ -349,6 +246,24 @@ void MainWindow::VerifyData()
     ui->saveButton->setEnabled(isCorrect);
 }
 
+void MainWindow::OnSaveButtonClicked()
+{
+    //get settings from UI
+    settings->SetFolder(ui->cacheFolderLineEdit->text().toStdString());
+    settings->SetCacheSize(ui->cacheSizeSpinBox->value());
+    settings->SetFilesCount(ui->numberOfFilesSpinBox->value());
+    
+    settings->ResetServers();
+    for (auto &server : servers)
+    {
+        settings->AddServer(server->GetServerData());
+    }
+    
+    settings->Save();
+    
+    this->hide();
+}
+
 void MainWindow::SetSettings(ApplicationSettings *_settings)
 {
     settings = _settings;
@@ -357,8 +272,8 @@ void MainWindow::SetSettings(ApplicationSettings *_settings)
     
     bool blocked = this->blockSignals(true);
 
-    ui->cachFolderLineEdit->setText(settings->GetFolder().GetAbsolutePathname().c_str());
-    ui->cachSizeSpinBox->setValue(settings->GetCacheSize());
+    ui->cacheFolderLineEdit->setText(settings->GetFolder().GetAbsolutePathname().c_str());
+    ui->cacheSizeSpinBox->setValue(settings->GetCacheSize());
     ui->numberOfFilesSpinBox->setValue(settings->GetFilesCount());
     
     auto & servers = settings->GetServers();

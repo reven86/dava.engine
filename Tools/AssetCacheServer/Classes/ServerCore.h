@@ -47,7 +47,7 @@ public:
     ServerCore();
     ~ServerCore() override;
     
-    const ApplicationSettings * GetSettings() const;
+    ApplicationSettings * GetSettings() const;
     
     void Start();
 
@@ -57,9 +57,7 @@ private:
     
 public slots:
     
-    void OnFolderChanged(const DAVA::FilePath & folder);
-    void OnCacheSizeChanged(const DAVA::float64 cacheSize);
-    void OnFilesCountChanged(const DAVA::uint32 filesCount);
+    void OnSettingsUpdated(const ApplicationSettings * settings);
     
 private slots:
     
@@ -71,7 +69,7 @@ private:
     DAVA::AssetCache::CacheDB dataBase;
     
     ServerLogics logics;
-    ApplicationSettings settings;
+    ApplicationSettings * settings;
 };
 
 

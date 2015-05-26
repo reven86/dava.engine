@@ -34,16 +34,17 @@
 
 ServerCore::ServerCore()
 {
-    QObject::connect(&settings, &ApplicationSettings::FolderChanged, this, &ServerCore::OnFolderChanged);
-    QObject::connect(&settings, &ApplicationSettings::CacheSizeChanged, this, &ServerCore::OnCacheSizeChanged);
-    QObject::connect(&settings, &ApplicationSettings::FilesCountChanged, this, &ServerCore::OnFilesCountChanged);
+    settings = new ApplicationSettings();
+
+    QObject::connect(settings, &ApplicationSettings::SettingsUpdated, this, &ServerCore::OnSettingsUpdated);
     
-    settings.Load();
+    settings->Load();
 }
 
 ServerCore::~ServerCore()
 {
-    settings.Save();
+    settings->Save();
+    delete settings;
     
     server.Disconnect();
 }
@@ -52,11 +53,7 @@ ServerCore::~ServerCore()
 void ServerCore::Start()
 {
     server.Listen(DAVA::AssetCache::ASSET_SERVER_PORT);
-//    dataBase.Initialize(<#const DAVA::FilePath &folderPath#>, <#uint64 size#>, <#uint32 itemsInMemory#>)
-  
     logics.Init(&server, &dataBase);
-
-    
     
     QTimer::singleShot(UPDATE_TIMEOUT, this, &ServerCore::UpdateByTimer);
 }
@@ -76,23 +73,29 @@ void ServerCore::UpdateByTimer()
     QTimer::singleShot(UPDATE_TIMEOUT, this, &ServerCore::UpdateByTimer);
 }
 
-void ServerCore::OnFolderChanged(const DAVA::FilePath & folder)
+
+void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
 {
-    int a = 0;
+    if(settings == _settings)
+    {
+        auto & folder = settings->GetFolder();
+        auto size = settings->GetCacheSize();
+        auto count = settings->GetFilesCount();
+        
+        if(size && !folder.IsEmpty())
+        {
+            dataBase.UpdateSettings(folder, size, count);
+        }
+    }
+    else
+    {
+        DAVA::Logger::Error("[ServerCore::%s] Wrong settings", __FUNCTION__);
+    }
 }
 
-void ServerCore::OnCacheSizeChanged(const DAVA::float64 cacheSize)
-{
-    int a = 0;
-}
 
-void ServerCore::OnFilesCountChanged(const DAVA::uint32 filesCount)
+ApplicationSettings * ServerCore::GetSettings() const
 {
-    int a = 0;
-}
-
-const ApplicationSettings * ServerCore::GetSettings() const
-{
-    return &settings;
+    return settings;
 }
 

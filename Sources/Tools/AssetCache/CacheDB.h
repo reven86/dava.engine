@@ -85,7 +85,7 @@ public:
     CacheDB() = default;
     virtual ~CacheDB();
 
-    void Initialize(const FilePath &folderPath, uint64 size, uint32 itemsInMemory);
+    void UpdateSettings(const FilePath &folderPath, uint64 size, uint32 itemsInMemory);
     
     void Save() const;
     void Load();
@@ -107,6 +107,8 @@ public:
 private:
     
     FilePath CreateFolderPath(const CacheItemKey &key) const;
+    
+    void Unload();
     
     void IncreaseUsedSize(const CachedFiles &files);
     

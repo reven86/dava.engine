@@ -46,6 +46,20 @@ struct ServerData
     ServerData() = default;
     ServerData(DAVA::String _ip, DAVA::uint16 _port) : ip(_ip), port(_port) {};
     
+    bool operator == (const ServerData & right) const
+    {
+        return (ip == right.ip) && (port == right.port);
+    }
+
+    bool operator < (const ServerData & right) const
+    {
+        if(ip == right.ip)
+        {
+            return port < right.port;
+        }
+        return ip < right.ip;
+    }
+    
     DAVA::String ip = "127.0.0.1";
     DAVA::uint16 port = DAVA::AssetCache::ASSET_SERVER_PORT;
 };
@@ -69,6 +83,7 @@ public:
     void SetFilesCount(const DAVA::uint32 count);
 
     const DAVA::List<ServerData> & GetServers() const;
+    void ResetServers();
     void AddServer(const ServerData & server);
     void RemoveServer(const ServerData & server);
     
@@ -79,6 +94,8 @@ signals:
     void FilesCountChanged(const DAVA::uint32 filesCount);
     
     void ServersListChanged(const DAVA::List<ServerData> &);
+    
+    void SettingsUpdated(const ApplicationSettings * settings) const;
     
 private:
 

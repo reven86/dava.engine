@@ -33,6 +33,7 @@
 #include <QMainWindow>
 #include <QSystemTrayIcon>
 
+#include "ApplicationSettings.h"
 #include "RemoteAssetCacheServer.h"
 
 class QMenu;
@@ -43,7 +44,6 @@ namespace Ui
     class MainWindow;
 }
 
-class ApplicationSettings;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -56,14 +56,13 @@ public:
 
 protected:
     void closeEvent(QCloseEvent *e) override;
+    void SaveSettings();
 
 private slots:
     void OnAddNewServerWidget();
     void OnRemoveServerWidget();
     
     void OnSelectFolder();
-    void OnCacheSizeChanged(double value);
-    void OnNumberOfFilesChanged(int value);
 
     void CheckEnableClearButton();
     void OnTrayIconActivated(QSystemTrayIcon::ActivationReason reason);
@@ -77,11 +76,8 @@ private slots:
     void SetFolderSize(qreal folderSize);
     void SetFilesCount(quint32 filesCounts);
     void AddServers(QVector<ServerData> &newServers);
-    void AddServer(ServerData newServer);
+    void AddServer(const ServerData & newServer);
     
-    
-
-
 private:
     void CreateTrayIconActions();
     void ShowTrayIcon();

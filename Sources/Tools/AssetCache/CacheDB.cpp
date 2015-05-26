@@ -46,33 +46,41 @@ namespace AssetCache
     
 const String CacheDB::DB_FILE_NAME = "cache.dat";
     
-void CacheDB::Initialize(const DAVA::FilePath &folderPath, uint64 size, uint32 _itemsInMemory)
+void CacheDB::UpdateSettings(const DAVA::FilePath &folderPath, uint64 size, uint32 _itemsInMemory)
 {
-    DVASSERT(fastCache.size() == 0 && fullCache.size() == 0);
+    if(cacheRootFolder != folderPath)
+    {
+        if(!cacheRootFolder.IsEmpty())
+        {
+            Unload();
+        }
+
+        cacheRootFolder = folderPath;
+        cacheRootFolder.MakeDirectoryPathname();
+        cacheSettings = cacheRootFolder + DB_FILE_NAME;
+        
+        Load();
+    }
     
-    cacheRootFolder = folderPath;
-    storageSize = size;
-    itemsInMemory = _itemsInMemory;
+    if(itemsInMemory != _itemsInMemory)
+    {
+        //reduce fast cache
+        
+        itemsInMemory = _itemsInMemory;
+        fastCache.reserve(itemsInMemory);
+    }
     
-    cacheRootFolder.MakeDirectoryPathname();
-    cacheSettings = cacheRootFolder + DB_FILE_NAME;
-    
-    fastCache.reserve(itemsInMemory);
-    
-    Load();
+    if(storageSize != size)
+    {
+        //reduce full cache
+        
+        storageSize = size;
+    }
 }
 
 CacheDB::~CacheDB()
 {
-    Save();
-    
-    fastCache.clear();
-    
-    for( auto & entry: fullCache)
-    {
-        entry.second.files.UnloadFiles();
-    }
-    fullCache.clear();
+    Unload();
 }
  
     
@@ -152,6 +160,19 @@ void CacheDB::Load()
         
         fullCache[key] = entry;
     }
+}
+    
+void CacheDB::Unload()
+{
+    Save();
+    
+    fastCache.clear();
+    
+    for(auto & entry: fullCache)
+    {
+        entry.second.files.UnloadFiles();
+    }
+    fullCache.clear();
 }
     
 ServerCacheEntry * CacheDB::Get(const CacheItemKey &key)

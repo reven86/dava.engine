@@ -51,10 +51,10 @@ RemoteAssetCacheServer::RemoteAssetCacheServer(QWidget *parent)
     connect(ui->portSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnParametersChanged()));
 }
 
-RemoteAssetCacheServer::RemoteAssetCacheServer(ServerData &newServer, QWidget *parent)
+RemoteAssetCacheServer::RemoteAssetCacheServer(const ServerData &newServer, QWidget *parent)
     : RemoteAssetCacheServer(parent)
 {
-    ui->ipLineEdit->setText(newServer.ip);
+    ui->ipLineEdit->setText(newServer.ip.c_str());
     ui->portSpinBox->setValue(newServer.port);
     ui->portSpinBox->setEnabled(false);
 }
@@ -66,7 +66,7 @@ RemoteAssetCacheServer::~RemoteAssetCacheServer()
 
 ServerData RemoteAssetCacheServer::GetServerData() const
 {
-    return ServerData(ui->ipLineEdit->text(), ui->portSpinBox->value());
+    return ServerData(ui->ipLineEdit->text().toStdString(), ui->portSpinBox->value());
 }
 
 bool RemoteAssetCacheServer::IsCorrectData()

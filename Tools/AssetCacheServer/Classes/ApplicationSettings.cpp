@@ -49,6 +49,8 @@ void ApplicationSettings::Save() const
     DAVA::ScopedPtr<DAVA::KeyedArchive> archieve(new DAVA::KeyedArchive());
     Serialize(archieve);
     archieve->Save(file);
+    
+    emit SettingsUpdated(this);
 }
 
 void ApplicationSettings::Load()
@@ -65,6 +67,8 @@ void ApplicationSettings::Load()
     DAVA::ScopedPtr<DAVA::KeyedArchive> archieve(new DAVA::KeyedArchive());
     archieve->Load(static_cast<DAVA::File *>(file));
     Deserialize(archieve);
+
+    emit SettingsUpdated(this);
 }
 
 void ApplicationSettings::Serialize(DAVA::KeyedArchive * archieve) const
@@ -101,6 +105,8 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive * archieve)
     {
         ServerData sd;
         sd.ip = archieve->GetString(DAVA::Format("Server_%d_ip", i));
+
+        servers.push_back(sd);
     }
 }
 
@@ -144,6 +150,12 @@ void ApplicationSettings::SetFilesCount(const DAVA::uint32 count)
 const DAVA::List<ServerData> & ApplicationSettings::GetServers() const
 {
     return servers;
+}
+
+void ApplicationSettings::ResetServers()
+{
+    servers.clear();
+    emit ServersListChanged(servers);
 }
 
 void ApplicationSettings::AddServer(const ServerData & server)

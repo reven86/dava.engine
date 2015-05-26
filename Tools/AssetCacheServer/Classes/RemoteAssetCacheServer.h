@@ -27,11 +27,11 @@
 =====================================================================================*/
 
 
-#ifndef REMOTEASSETCACHSERVER_H
-#define REMOTEASSETCACHSERVER_H
+#ifndef __REMOTE_ASSET_CACHE_SERVER_H__
+#define __REMOTE_ASSET_CACHE_SERVER_H__
 
 #include <QWidget>
-
+#include "ApplicationSettings.h"
 
 namespace Ui
 {
@@ -44,7 +44,7 @@ class RemoteAssetCacheServer : public QWidget
 
 public:
     explicit RemoteAssetCacheServer(QWidget *parent = nullptr);
-    explicit RemoteAssetCacheServer(ServerData &newServer, QWidget *parent = nullptr);
+    explicit RemoteAssetCacheServer(const ServerData &newServer, QWidget *parent = nullptr);
     ~RemoteAssetCacheServer() override;
 
     ServerData GetServerData() const;
@@ -62,4 +62,4 @@ private:
     Ui::RemoteAssetCacheServer *ui;
 };
 
-#endif // REMOTEASSETCACHSERVER_H
+#endif // __REMOTE_ASSET_CACHE_SERVER_H__
