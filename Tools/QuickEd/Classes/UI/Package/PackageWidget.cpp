@@ -52,28 +52,28 @@ PackageWidget::PackageWidget(QWidget *parent)
     connect(filterLine, &QLineEdit::textChanged, this, &PackageWidget::filterTextChanged);
 
     importPackageAction = new QAction(tr("Import package"), this);
-    importPackageAction->setShortcut(QKeySequence(QKeySequence::New));
+    importPackageAction->setShortcut(QKeySequence::New);
     importPackageAction->setShortcutContext(Qt::WidgetShortcut);
     connect(importPackageAction, &QAction::triggered, this, &PackageWidget::OnImport);
 
 
     cutAction = new QAction(tr("Cut"), this);
-    cutAction->setShortcut(QKeySequence(QKeySequence::Cut));
+    cutAction->setShortcut(QKeySequence::Cut);
     cutAction->setShortcutContext(Qt::WidgetShortcut);
     connect(cutAction, &QAction::triggered, this, &PackageWidget::OnCut);
 
     copyAction = new QAction(tr("Copy"), this);
-    copyAction->setShortcut(QKeySequence(QKeySequence::Copy));
+    copyAction->setShortcut(QKeySequence::Copy);
     copyAction->setShortcutContext(Qt::WidgetShortcut);
     connect(copyAction, &QAction::triggered, this, &PackageWidget::OnCopy);
 
     pasteAction = new QAction(tr("Paste"), this);
-    pasteAction->setShortcut(QKeySequence(QKeySequence::Paste));
+    pasteAction->setShortcut(QKeySequence::Paste);
     pasteAction->setShortcutContext(Qt::WidgetShortcut);
     connect(pasteAction, &QAction::triggered, this, &PackageWidget::OnPaste);
 
     delAction = new QAction(tr("Delete"), this);
-    delAction->setShortcut(QKeySequence(QKeySequence::Delete));
+    delAction->setShortcut(QKeySequence::Delete);
     delAction->setShortcutContext(Qt::WidgetShortcut);
     connect(delAction, &QAction::triggered, this, &PackageWidget::OnDelete);
 
