@@ -73,6 +73,9 @@ public:
     void WillClone(DAVA::Entity *originalEntity) override;
     void DidCloned(DAVA::Entity *originalEntity, DAVA::Entity *newEntity) override;
 
+    void WillRemove(DAVA::Entity *removedEntity) override;
+    void DidRemoved(DAVA::Entity *removedEntity) override;
+
 protected:
     void Draw();
 

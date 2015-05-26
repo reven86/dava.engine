@@ -435,9 +435,14 @@ void StructureSystem::EmitChanged()
 	structureChanged = true;
 }
 
-void StructureSystem::SetDelegate(StructureSystemDelegate *delegate)
+void StructureSystem::AddDelegate(StructureSystemDelegate *delegate)
 {
     delegates.push_back(delegate);
+}
+
+void StructureSystem::RemoveDelegate(StructureSystemDelegate *delegate)
+{
+    delegates.remove(delegate);
 }
 
 void StructureSystem::Process(DAVA::float32 timeElapsed)

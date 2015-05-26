@@ -151,7 +151,7 @@ SceneEditor2::SceneEditor2()
 
     wayEditSystem = new WayEditSystem(this, selectionSystem, collisionSystem);
     AddSystem(wayEditSystem, MAKE_COMPONENT_MASK(Component::WAYPOINT_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT);
-    structureSystem->SetDelegate(wayEditSystem);
+    structureSystem->AddDelegate(wayEditSystem);
 
     pathSystem = new PathSystem(this);
     AddSystem(pathSystem, MAKE_COMPONENT_MASK(Component::PATH_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);

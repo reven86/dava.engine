@@ -79,7 +79,8 @@ public:
 
 	DAVA::Entity* Load(const DAVA::FilePath& sc2path, bool optimize);
 
-    void SetDelegate(StructureSystemDelegate *delegate);
+    void AddDelegate(StructureSystemDelegate *delegate);
+    void RemoveDelegate(StructureSystemDelegate *delegate);
 
 protected:
 	bool structureChanged;
