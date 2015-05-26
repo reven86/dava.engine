@@ -28,7 +28,8 @@
 
 
 #include "LocalizationTest.h"
-#include "Render\2D\TextLayout.h"
+
+#include "Render/2D/TextLayout.h"
 
 static const String files[] = {
 	"weird_characters",
