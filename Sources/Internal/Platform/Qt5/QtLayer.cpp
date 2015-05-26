@@ -76,8 +76,7 @@ void QtLayer::SetDelegate(QtLayerDelegate *delegate)
     
 void QtLayer::AppStarted()
 {
-    Core::Instance()->SystemAppStarted();        
-    Renderer::Initialize(rhi::RHI_GLES2);
+    Core::Instance()->SystemAppStarted();
     FrameworkDidLaunched();
 }
 

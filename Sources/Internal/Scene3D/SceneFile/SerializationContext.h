@@ -63,12 +63,12 @@ namespace DAVA
 		struct MaterialBinding
 		{
 			uint64 parentKey;
-			NMaterial* instanceMaterial;
+			NMaterial* childMaterial;
 			
 			MaterialBinding()
 			{
 				parentKey = 0;
-				instanceMaterial = NULL;
+				childMaterial = nullptr;
 			}
 		};
 		
@@ -82,6 +82,7 @@ namespace DAVA
 		Map<uint64, DataNode*> dataBlocks;
 		Map<uint64, NMaterial*> importedMaterials;
 		Vector<MaterialBinding> materialBindings;
+        uint64 globalMaterialKey;
 
         Map<PolygonGroup*, PolygonGroupLoadInfo> loadedPolygonGroups;
 	
@@ -167,12 +168,22 @@ namespace DAVA
 		inline void AddBinding(uint64 parentKey, NMaterial* material)
 		{
 			MaterialBinding binding;
-			binding.instanceMaterial = material;
+			binding.childMaterial = material;
 			binding.parentKey = parentKey;
 			
 			materialBindings.push_back(binding);
 		}
 		
+        inline void SetGlobalMaterialKey(uint64 materialKey)
+        {
+            globalMaterialKey = materialKey;
+        }
+
+        inline uint64 GetGlobalMaterialKey()
+        {
+            return globalMaterialKey;
+        }
+
 		inline void SetLastError(uint32 error)
 		{
 			lastError = error;

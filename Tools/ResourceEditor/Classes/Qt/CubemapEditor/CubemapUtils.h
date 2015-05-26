@@ -32,7 +32,6 @@
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
-#include "Render/Highlevel/SkyboxRenderObject.h"
 
 #define CUBEMAPEDITOR_FACE_PX 0
 #define CUBEMAPEDITOR_FACE_NX 1

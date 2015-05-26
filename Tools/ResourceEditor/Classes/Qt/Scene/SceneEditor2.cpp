@@ -44,7 +44,6 @@
 
 // framework
 #include "Scene3D/SceneFileV2.h"
-#include "Render/Highlevel/ShadowVolumeRenderPass.h"
 #include "Scene3D/Systems/RenderUpdateSystem.h"
 #include "Render/Highlevel/RenderBatchArray.h"
 
@@ -159,7 +158,9 @@ SceneEditor2::SceneEditor2()
 	editorLODSystem = new EditorLODSystem(this);
 	AddSystem(editorLODSystem, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT));
 
+#if RHI_COMPLETE_EDITOR
 	SetShadowBlendMode(ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
+#endif
 
 	SceneSignals::Instance()->EmitOpened(this);
 
@@ -514,24 +515,6 @@ void SceneEditor2::EditorCommandNotify::CleanChanged(bool clean)
 	}
 }
 
-
-void SceneEditor2::SetShadowBlendMode(DAVA::ShadowPassBlendMode::eBlend blend)
-{
-	if(GetRenderSystem())
-	{
-		GetRenderSystem()->SetShadowBlendMode(blend);
-	}
-}
-
-DAVA::ShadowPassBlendMode::eBlend SceneEditor2::GetShadowBlendMode() const
-{
-	if(GetRenderSystem())
-	{
-		return GetRenderSystem()->GetShadowBlendMode();
-	}
-
-	return DAVA::ShadowPassBlendMode::MODE_BLEND_COUNT;
-}
 #if RHI_COMPLETE_EDITOR
 const RenderManager::Stats & SceneEditor2::GetRenderStats() const
 {

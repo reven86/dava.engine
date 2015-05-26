@@ -1,6 +1,8 @@
 
+#include "Base/BaseTypes.h"
+
+#if defined(__DAVAENGINE_IPHONE__)
     #include "ios_gl.h"
-    #include "Platform/TemplateiOS/EAGLView.h"
 
 //    #include <OpenGLES/ES3/gl.h>
 //    #include <OpenGLES/ES3/glext.h>
@@ -9,7 +11,6 @@
 
     #include "Debug/Profiler.h"
 
-#if defined(__DAVAENGINE_IPHONE__)
 
 static EAGLContext* _Context            = 0;
 static GLuint       defaultFramebuffer  = -1;

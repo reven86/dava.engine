@@ -126,7 +126,6 @@ public:
     static const FastName PARAM_UV_OFFSET;
     static const FastName PARAM_UV_SCALE;
     static const FastName PARAM_LIGHTMAP_SIZE;
-    static const FastName PARAM_SHADOW_COLOR;
     static const FastName PARAM_DECAL_TILE_SCALE;
     static const FastName PARAM_DECAL_TILE_COLOR;
     static const FastName PARAM_DETAIL_TILE_SCALE;
