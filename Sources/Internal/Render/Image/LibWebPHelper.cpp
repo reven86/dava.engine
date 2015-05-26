@@ -98,7 +98,7 @@ LibWebPHelper::LibWebPHelper()
     supportedExtensions.push_back(".webp");
 }
 
-bool LibWebPHelper::IsImage(File *infile) const
+bool LibWebPHelper::IsMyImage(File *infile) const
 {
     return GetImageInfo(infile).dataSize != 0;
 }

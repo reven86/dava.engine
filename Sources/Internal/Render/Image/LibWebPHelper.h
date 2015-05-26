@@ -43,7 +43,7 @@ class LibWebPHelper: public ImageFormatInterface
 public:
     LibWebPHelper();
 
-    bool IsImage(File *file) const override;
+    bool IsMyImage(File *file) const override;
 
     eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const override;
 
