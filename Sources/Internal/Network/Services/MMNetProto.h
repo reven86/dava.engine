@@ -50,11 +50,7 @@ enum ePacketType
     TYPE_REPLY_CANCEL,
     
     TYPE_AUTO_STAT = 200,
-    TYPE_AUTO_DUMP,
-    
-    TYPE_TOKEN = 0,         // Request connection token
-    TYPE_DUMP,              // Request to make memory dump or memory dump auto send
-    TYPE_STAT               // Memory usage auto send
+    TYPE_AUTO_DUMP
 };
 
 enum eStatus
