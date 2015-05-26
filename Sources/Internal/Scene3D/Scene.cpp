@@ -119,16 +119,7 @@ void EntityCache::Preload(const FilePath &path)
             rootEntity->AddNode(tempV[i]);
         }
 
-        std::function<void (Entity *)> clearID = [&clearID](Entity *entity) 
-        {
-            entity->ResetID();
-            for(auto child : entity->children)
-            {
-                clearID(child);
-            }
-        };
-
-        clearID(rootEntity);
+        rootEntity->ResetID();
         rootEntity->SetName(scene->GetName());
         cachedEntities[path] = rootEntity;
     }
