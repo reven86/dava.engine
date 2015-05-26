@@ -85,13 +85,13 @@ public:
 protected:
 	bool structureChanged;
 
-	virtual void Process(DAVA::float32 timeElapsed);
+	void Process(DAVA::float32 timeElapsed) override;
 	void Draw();
 
 	void ProcessCommand(const Command2 *command, bool redo);
 
-	virtual void AddEntity(DAVA::Entity * entity);
-	virtual void RemoveEntity(DAVA::Entity * entity);
+	void AddEntity(DAVA::Entity * entity) override;
+	void RemoveEntity(DAVA::Entity * entity) override;
 
 	void ReloadInternal(DAVA::Set<DAVA::Entity *> &entitiesToReload, const DAVA::FilePath &newModelPath, bool saveLightmapSettings);
 	DAVA::Entity* LoadInternal(const DAVA::FilePath& sc2path, bool optimize, bool clearCached);

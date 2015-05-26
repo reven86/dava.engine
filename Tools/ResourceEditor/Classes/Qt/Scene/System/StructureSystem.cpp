@@ -117,7 +117,7 @@ void StructureSystem::Move(const EntityGroup &entityGroup, DAVA::Entity *newPare
 void StructureSystem::Remove(const EntityGroup &entityGroup)
 {
 	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
-	if(NULL != sceneEditor && entityGroup.Size() > 0)
+	if(nullptr != sceneEditor && entityGroup.Size() > 0)
 	{
         sceneEditor->BeginBatch("Remove entities");
 
@@ -126,14 +126,14 @@ void StructureSystem::Remove(const EntityGroup &entityGroup)
             DAVA::Entity *entity = entityGroup.GetEntity(i);
             if (entity->GetNotRemovable() == false)
             {
-                for (auto &delegate : delegates)
+                for (auto delegate : delegates)
                 {
                     delegate->WillRemove(entity);
                 }
 
                 sceneEditor->Exec(new EntityRemoveCommand(entity));
 
-                for (auto &delegate : delegates)
+                for (auto delegate : delegates)
                 {
                     delegate->DidRemoved(entity);
                 }
