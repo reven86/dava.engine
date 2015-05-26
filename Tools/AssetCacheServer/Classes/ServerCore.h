@@ -32,6 +32,7 @@
 
 #include "AssetCache/AssetCache.h"
 #include "ServerLogics.h"
+#include "ApplicationSettings.h"
 
 #include <QObject>
 
@@ -43,8 +44,10 @@ class ServerCore: public QObject
     
 public:
     
-    ServerCore() = default;
+    ServerCore();
     ~ServerCore() override;
+    
+    const ApplicationSettings * GetSettings() const;
     
     void Start();
 
@@ -54,9 +57,9 @@ private:
     
 public slots:
     
-    void FolderChanged(QString &);
-    void FolderSizeChanged(qreal);
-    void FilesCountChanged(quint32);
+    void OnFolderChanged(const DAVA::FilePath & folder);
+    void OnCacheSizeChanged(const DAVA::float64 cacheSize);
+    void OnFilesCountChanged(const DAVA::uint32 filesCount);
     
 private slots:
     
@@ -68,6 +71,7 @@ private:
     DAVA::AssetCache::CacheDB dataBase;
     
     ServerLogics logics;
+    ApplicationSettings settings;
 };
 
 

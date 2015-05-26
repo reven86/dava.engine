@@ -43,6 +43,7 @@ namespace Ui
     class MainWindow;
 }
 
+class ApplicationSettings;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -51,13 +52,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
 
-signals:
-    void FolderChanged(QString &);
-    void FolderSizeChanged(double);
-    void FilesCountChanged(int);
-    void NewServerAdded(ServerData);
-    void ServerRemoved(ServerData);
-    void ServersChanged(QVector<ServerData>);
+    void SetSettings(ApplicationSettings *settings);
 
 protected:
     void closeEvent(QCloseEvent *e) override;
@@ -90,8 +85,6 @@ private slots:
 private:
     void CreateTrayIconActions();
     void ShowTrayIcon();
-    void ReadSettings();
-    void WriteSettings();
     void VerifyData();
 
 private:
@@ -102,6 +95,8 @@ private:
     QList<RemoteAssetCacheServer *> servers;
 
     QVBoxLayout *boxLayout;
+    
+    ApplicationSettings *settings;
 };
 
 #endif // MAINWINDOW_H

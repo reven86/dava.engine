@@ -104,3 +104,60 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive * archieve)
     }
 }
 
+
+const DAVA::FilePath & ApplicationSettings::GetFolder() const
+{
+    return folder;
+}
+
+void ApplicationSettings::SetFolder(const DAVA::FilePath & _folder)
+{
+    folder = _folder;
+    
+    emit FolderChanged(folder);
+}
+
+const DAVA::float64 ApplicationSettings::GetCacheSize() const
+{
+    return cacheSize;
+}
+
+void ApplicationSettings::SetCacheSize(const DAVA::float64 size)
+{
+    cacheSize = size;
+    
+    emit CacheSizeChanged(cacheSize);
+}
+
+const DAVA::uint32 ApplicationSettings::GetFilesCount() const
+{
+    return filesCount;
+}
+
+void ApplicationSettings::SetFilesCount(const DAVA::uint32 count)
+{
+    filesCount = count;
+    
+    emit FilesCountChanged(filesCount);
+}
+
+const DAVA::List<ServerData> & ApplicationSettings::GetServers() const
+{
+    return servers;
+}
+
+void ApplicationSettings::AddServer(const ServerData & server)
+{
+    servers.push_back(server);
+
+    emit ServersListChanged(servers);
+}
+
+void ApplicationSettings::RemoveServer(const ServerData & server)
+{
+    servers.remove(server);
+    
+    emit ServersListChanged(servers);
+}
+
+

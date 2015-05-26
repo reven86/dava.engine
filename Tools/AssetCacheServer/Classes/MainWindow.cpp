@@ -30,6 +30,8 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
+#include "ApplicationSettings.h"
+
 #include "RemoteAssetCacheServer.h"
 #include <FileSystem/KeyedArchive.h>
 #include "FileSystem/FileSystem.h"
@@ -50,6 +52,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , trayIcon(nullptr)
+    , settings(nullptr)
 {
     ui->setupUi(this);
 
@@ -72,10 +75,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->portSpinBox->setValue(DAVA::AssetCache::ASSET_SERVER_PORT);
     ui->portSpinBox->setEnabled(false);
     
-    bool b = this->blockSignals(true);
-    ReadSettings();
-    this->blockSignals(b);
-
     ShowTrayIcon();
 
     ui->saveButton->setEnabled(false);
@@ -83,7 +82,6 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    WriteSettings();
     delete ui;
 }
 
@@ -103,6 +101,9 @@ void MainWindow::OnRemoveServerWidget()
 {
     RemoteAssetCacheServer *w = qobject_cast<RemoteAssetCacheServer *>(sender());
     servers.removeOne(w);
+    
+    settings->RemoveServer(w->GetServerData());
+    
     emit ServerRemoved(w->GetServerData());
     w->deleteLater();
     VerifyData();
@@ -113,20 +114,21 @@ void MainWindow::OnSelectFolder()
     QString directory = FileDialog::getExistingDirectory(this, "Choose directory", QDir::currentPath(),
                                                          QFileDialog::ShowDirsOnly);
     ui->cachFolderLineEdit->setText(directory);
-    emit FolderChanged(directory);
+    
+    settings->SetFolder(directory.toStdString());
+    
     VerifyData();
 }
 
 void MainWindow::OnCacheSizeChanged(double value)
 {
-    emit FolderSizeChanged(value);
+    settings->SetCacheSize(value);
 }
 
 void MainWindow::OnNumberOfFilesChanged(int value)
 {
-    emit FilesCountChanged(value);
+    settings->SetFilesCount(value);
 }
-
 
 
 void MainWindow::CheckEnableClearButton()
@@ -160,6 +162,7 @@ void MainWindow::OnServerParametersChanged()
         serversData << server->GetServerData();
     }
     emit ServersChanged(serversData);
+
     VerifyData();
 }
 
@@ -173,7 +176,8 @@ void MainWindow::OnOpenAction()
 
 void MainWindow::OnSaveButtonClicked()
 {
-    WriteSettings();
+    settings->Save();
+    
     this->hide();
 }
 
@@ -343,4 +347,25 @@ void MainWindow::VerifyData()
         }
     }
     ui->saveButton->setEnabled(isCorrect);
+}
+
+void MainWindow::SetSettings(ApplicationSettings *_settings)
+{
+    settings = _settings;
+    if(settings == nullptr)
+        return;
+    
+    bool blocked = this->blockSignals(true);
+
+    ui->cachFolderLineEdit->setText(settings->GetFolder().GetAbsolutePathname().c_str());
+    ui->cachSizeSpinBox->setValue(settings->GetCacheSize());
+    ui->numberOfFilesSpinBox->setValue(settings->GetFilesCount());
+    
+    auto & servers = settings->GetServers();
+    for (auto & sd: servers)
+    {
+        AddServer(sd);
+    }
+    
+    this->blockSignals(blocked);
 }

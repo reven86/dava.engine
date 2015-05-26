@@ -56,12 +56,8 @@ int main(int argc, char *argv[])
     MainWindow w;
     ServerCore server;
 
-    QObject::connect(&w, &MainWindow::FolderChanged, &server, &ServerCore::FolderChanged);
-    QObject::connect(&w, &MainWindow::FolderSizeChanged, &server, &ServerCore::FolderSizeChanged);
-    QObject::connect(&w, &MainWindow::FilesCountChanged, &server, &ServerCore::FilesCountChanged);
+    w.SetSettings(server.GetSettings());
     
-    w.ReadSettings();
-
     w.show();
     server.Start();
 

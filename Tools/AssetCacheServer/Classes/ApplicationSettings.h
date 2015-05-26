@@ -33,6 +33,8 @@
 #include "AssetCache/AssetCacheConstants.h"
 #include "FileSystem/FilePath.h"
 
+#include <QObject>
+
 namespace DAVA
 {
     class KeyedArchive;
@@ -48,14 +50,36 @@ struct ServerData
     DAVA::uint16 port = DAVA::AssetCache::ASSET_SERVER_PORT;
 };
 
-class ApplicationSettings
+class ApplicationSettings: public QObject
 {
-
+    Q_OBJECT
+    
 public:
     
     void Save() const;
     void Load();
 
+    const DAVA::FilePath & GetFolder() const;
+    void SetFolder(const DAVA::FilePath & folder);
+
+    const DAVA::float64 GetCacheSize() const;
+    void SetCacheSize(const DAVA::float64 size);
+
+    const DAVA::uint32 GetFilesCount() const;
+    void SetFilesCount(const DAVA::uint32 count);
+
+    const DAVA::List<ServerData> & GetServers() const;
+    void AddServer(const ServerData & server);
+    void RemoveServer(const ServerData & server);
+    
+signals:
+    
+    void FolderChanged(const DAVA::FilePath & folder);
+    void CacheSizeChanged(const DAVA::float64 cacheSize);
+    void FilesCountChanged(const DAVA::uint32 filesCount);
+    
+    void ServersListChanged(const DAVA::List<ServerData> &);
+    
 private:
 
     void Serialize(DAVA::KeyedArchive * archieve) const;

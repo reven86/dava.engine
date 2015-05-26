@@ -32,8 +32,19 @@
 
 #include <QTimer>
 
+ServerCore::ServerCore()
+{
+    QObject::connect(&settings, &ApplicationSettings::FolderChanged, this, &ServerCore::OnFolderChanged);
+    QObject::connect(&settings, &ApplicationSettings::CacheSizeChanged, this, &ServerCore::OnCacheSizeChanged);
+    QObject::connect(&settings, &ApplicationSettings::FilesCountChanged, this, &ServerCore::OnFilesCountChanged);
+    
+    settings.Load();
+}
+
 ServerCore::~ServerCore()
 {
+    settings.Save();
+    
     server.Disconnect();
 }
 
@@ -65,20 +76,23 @@ void ServerCore::UpdateByTimer()
     QTimer::singleShot(UPDATE_TIMEOUT, this, &ServerCore::UpdateByTimer);
 }
 
-void ServerCore::FolderChanged(QString &path)
+void ServerCore::OnFolderChanged(const DAVA::FilePath & folder)
 {
-    int a  = 0;
- 
+    int a = 0;
 }
 
-void ServerCore::FolderSizeChanged(qreal size)
+void ServerCore::OnCacheSizeChanged(const DAVA::float64 cacheSize)
 {
-    int a  = 0;
-   
+    int a = 0;
 }
 
-void ServerCore::FilesCountChanged(quint32 count)
+void ServerCore::OnFilesCountChanged(const DAVA::uint32 filesCount)
 {
-    int a  = 0;
+    int a = 0;
+}
+
+const ApplicationSettings * ServerCore::GetSettings() const
+{
+    return &settings;
 }
 
