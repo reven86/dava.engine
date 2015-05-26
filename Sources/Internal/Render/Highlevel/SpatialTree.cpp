@@ -277,9 +277,9 @@ void QuadTree::RemoveRenderObject(RenderObject * renderObject)
 
 	if (renderObject->GetFlags()&RenderObject::TREE_NODE_NEED_UPDATE)
 	{		
-		List<RenderObject *>::iterator iter = std::find(dirtyObjects.begin(), dirtyObjects.end(), renderObject);
-		DVASSERT(iter != dirtyObjects.end());
-		dirtyObjects.erase(iter);
+		List<RenderObject *>::iterator it = std::find(dirtyObjects.begin(), dirtyObjects.end(), renderObject);
+		DVASSERT(it!=dirtyObjects.end());
+		dirtyObjects.erase(it);
 		renderObject->RemoveFlag(RenderObject::TREE_NODE_NEED_UPDATE);
 	}
 	

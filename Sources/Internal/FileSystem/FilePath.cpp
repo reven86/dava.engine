@@ -181,8 +181,8 @@ FilePath::FilePath(const FilePath &path)
 }
 
 FilePath::FilePath(FilePath&& path) CC_NOEXCEPT
-    : pathType(path.pathType),
-    absolutePathname(std::move(path.absolutePathname))
+    : pathType(path.pathType)
+    , absolutePathname(std::move(path.absolutePathname))
 {
     path.pathType = PATH_EMPTY;
 }

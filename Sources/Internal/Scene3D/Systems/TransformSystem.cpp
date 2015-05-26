@@ -97,7 +97,7 @@ void TransformSystem::FindNodeThatRequireUpdate(Entity * entity)
     
     while(stackPosition > 0)
     {
-        entity = stack[--stackPosition];
+        Entity * entity = stack[--stackPosition];
         
         if (entity->GetFlags() & Entity::TRANSFORM_NEED_UPDATE)
         {

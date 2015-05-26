@@ -66,7 +66,10 @@ bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
 bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
 {
     __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-    using namespace Windows::UI::Popups;
+    DAVA::Logger::Instance()->Warning("DVAssertMessage::InnerShow for Windows UAP is not implemented");
+    return false;
+
+    /*using namespace Windows::UI::Popups;
     
     WideString contentStr = UTF8Utils::EncodeToWideString(content);
     Platform::String^ lbl = ref new Platform::String(contentStr.c_str());
@@ -91,7 +94,7 @@ bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
 	//msg->ShowAsync();
     //assert(false);
 
-    return false;
+    return false;*/
 }
 
 #endif // defined (__DAVAENGINE_WIN_UAP__)

@@ -1247,7 +1247,8 @@ void Landscape::Draw(Camera * camera)
 			BindMaterial(nearLodIndex, camera);
 		}
         
-        for(size_t i = 0; i < lod0quads.size(); ++i)
+        size_t count0 = lod0quads.size();
+        for (size_t i = 0; i < count0; ++i)
         {
             DrawQuad(lod0quads[i], 0);
         }
@@ -1258,8 +1259,8 @@ void Landscape::Draw(Camera * camera)
 			BindMaterial(farLodIndex, camera);
 		}
         
-        
-        for(size_t i = 0; i < lodNot0quads.size(); ++i)
+        count0 = lod0quads.size();
+        for (size_t i = 0; i < count0; ++i)
         {
             DrawQuad(lodNot0quads[i], lodNot0quads[i]->data.lod);
         }

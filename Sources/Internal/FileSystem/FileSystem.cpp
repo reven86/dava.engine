@@ -647,7 +647,7 @@ const FilePath FileSystem::GetUserDocumentsPath()
 {
 #if defined(__DAVAENGINE_WIN32__)
 
-    char szPath[MAX_PATH + 2];
+    char szPath[MAX_PATH + 1];
     SHGetFolderPathA(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, szPath);
     int32 n = strlen(szPath);
     szPath[n] = '\\';
@@ -670,7 +670,7 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 {
 #if defined(__DAVAENGINE_WIN32__)
 
-    char szPath[MAX_PATH + 2];
+    char szPath[MAX_PATH + 1];
     SHGetFolderPathA(NULL, CSIDL_COMMON_DOCUMENTS, NULL, SHGFP_TYPE_CURRENT, szPath);
     int32 n = strlen(szPath);
     szPath[n] = '\\';

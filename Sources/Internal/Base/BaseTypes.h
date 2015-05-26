@@ -243,7 +243,7 @@ enum eAlign
 };
 
 template <typename T, size_t N>
-CC_CONSTEXPR size_t COUNT_OF(T(&)[N]) CC_NOEXCEPT { return N; }
+CC_CONSTEXPR size_t COUNT_OF(T(&)[N]) CC_NOEXCEPT{ return N; }
     
 #ifndef REMOVE_IN_RELEASE
 #   if defined(__DAVAENGINE_DEBUG__)

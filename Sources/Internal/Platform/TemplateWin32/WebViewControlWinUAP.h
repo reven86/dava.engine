@@ -34,7 +34,8 @@
 
 #include "UI/IWebViewControl.h"
 
-namespace DAVA {
+namespace DAVA 
+{
 
 // Web View Control for Win32.
 class WebViewControl : public IWebViewControl
