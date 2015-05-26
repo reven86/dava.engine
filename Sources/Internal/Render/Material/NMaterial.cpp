@@ -48,6 +48,18 @@ namespace DAVA
 
 uint32 NMaterialProperty::globalPropertyUpdateSemanticCounter = 0;
 
+RenderVariantInstance::RenderVariantInstance() :shader(nullptr)
+{
+}
+
+RenderVariantInstance::~RenderVariantInstance()
+{    
+    rhi::ReleaseDepthStencilState(depthState);
+    rhi::ReleaseTextureSet(textureSet);
+    rhi::ReleaseTextureSet(vertexTextureSet);
+    rhi::ReleaseSamplerState(samplerState);    
+}
+
 NMaterial::NMaterial()
     : parent(nullptr)
     , localProperties(16, nullptr)
@@ -63,7 +75,20 @@ NMaterial::NMaterial()
 
 NMaterial::~NMaterial()
 {
-    //RHI_COMPLETE
+    SetParent(nullptr);
+    DVASSERT(children.size() == 0); //as children refernce parent in our material scheme, this should not be released while it has children
+    for (auto& prop : localProperties)
+        SafeDelete(prop.second);
+    for (auto& tex : localTextures)
+        SafeRelease(tex.second);
+       
+    for (auto& buffer : localConstBuffers)
+    {
+        rhi::DeleteConstBuffer(buffer.second->constBuffer);
+        SafeDelete(buffer.second);
+    }
+    for (auto& variant : renderVariants)
+        delete variant.second;
 }
 
 void NMaterial::BindParams(rhi::Packet& target)
@@ -411,7 +436,7 @@ void NMaterial::RebuildRenderVariants()
     activeVariantName = FastName();
     for (auto& variant : renderVariants)
     {
-        SafeDelete(variant.second);
+        delete variant.second;
     }
     renderVariants.clear();
 
@@ -544,11 +569,11 @@ void NMaterial::RebuildTextureBindings()
     {
         RenderVariantInstance* currRenderVariant = variant.second;
         
-        //release existing
-        if (currRenderVariant->textureSet.IsValid())
-            rhi::ReleaseTextureSet(currRenderVariant->textureSet);
-        if (currRenderVariant->samplerState.IsValid())
-            rhi::ReleaseSamplerState(currRenderVariant->samplerState);
+        //release existing        
+        rhi::ReleaseTextureSet(currRenderVariant->textureSet);        
+        rhi::ReleaseTextureSet(currRenderVariant->vertexTextureSet);
+        rhi::ReleaseSamplerState(currRenderVariant->samplerState);
+        
 
         ShaderDescriptor *currShader = currRenderVariant->shader;
         if (!currShader) //cant build for empty shader
@@ -627,6 +652,28 @@ bool NMaterial::PreBuildMaterial(const FastName& passName)
         
     }
     return res;
+}
+
+NMaterial* NMaterial::Clone()
+{
+    NMaterial *clonedMaterial = new NMaterial();
+    clonedMaterial->materialName = materialName;
+    clonedMaterial->fxName = fxName;
+
+    for (auto prop : localProperties)
+        clonedMaterial->AddProperty(prop.first, prop.second->data.get(), prop.second->type, prop.second->arraySize);
+    for (auto tex : localTextures)
+        clonedMaterial->AddTexture(tex.first, tex.second);
+    for (auto flag : localFlags)
+        clonedMaterial->AddFlag(flag.first, flag.second);
+
+    //DataNode properties
+    clonedMaterial->pointer = pointer;
+    clonedMaterial->scene = scene;
+    clonedMaterial->index = index;
+    clonedMaterial->nodeFlags = nodeFlags;
+
+    return clonedMaterial;
 }
 
 void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializationContext)
