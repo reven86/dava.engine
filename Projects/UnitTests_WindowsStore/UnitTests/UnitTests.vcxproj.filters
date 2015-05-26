@@ -34,8 +34,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\UnitTests\Win32Specific\main_desktop.cpp" />
-    <ClCompile Include="..\..\UnitTests\Win32Specific\main_store.cpp" />
     <ClCompile Include="..\..\UnitTests\Classes\Tests\ComponentsTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
@@ -213,6 +211,8 @@
     <ClCompile Include="..\..\UnitTests\Classes\Tests\ThreadLocalTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\UnitTests\Win32Specific\main_win_uap.cpp" />
+    <ClCompile Include="..\..\UnitTests\Win32Specific\main_win32.cpp" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />

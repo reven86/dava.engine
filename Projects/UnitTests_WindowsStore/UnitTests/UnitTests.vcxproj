@@ -262,8 +262,8 @@
     <ClCompile Include="..\..\UnitTests\Classes\Tests\ThreadLocalTest.cpp" />
     <ClCompile Include="..\..\UnitTests\Classes\Tests\ThreadSyncTest.cpp" />
     <ClCompile Include="..\..\UnitTests\Classes\Tests\UnlimitedLogOutputTest.cpp" />
-    <ClCompile Include="..\..\UnitTests\Win32Specific\main_desktop.cpp" />
-    <ClCompile Include="..\..\UnitTests\Win32Specific\main_store.cpp" />
+    <ClCompile Include="..\..\UnitTests\Win32Specific\main_win32.cpp" />
+    <ClCompile Include="..\..\UnitTests\Win32Specific\main_win_uap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
