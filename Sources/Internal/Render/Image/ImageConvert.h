@@ -56,7 +56,23 @@ struct BGRA8888
     uint8 a;
 };
 
-struct ConverBGRA8888toRGBA8888
+struct RGBA16161616
+{
+    uint16 r;
+    uint16 g;
+    uint16 b;
+    uint16 a;
+};
+
+struct RGBA32323232
+{
+    uint32 r;
+    uint32 g;
+    uint32 b;
+    uint32 a;
+};
+
+struct ConvertBGRA8888toRGBA8888
 {
     // input and output is the same memory
     inline void operator()(const BGRA8888* input, uint32* output)
@@ -88,13 +104,46 @@ struct ConvertRGB888toRGBA8888
     }
 };
 
+struct ConvertBGR888toRGBA8888
+{
+    inline void operator()(const BGR888 *input, uint32 * output)
+    {
+        *output = ((0xFF) << 24) | (input->b << 16) | (input->g << 8) | input->r;
+    }
+};
+
+struct ConvertRGBA16161616toRGBA8888
+{
+    inline void operator()(const RGBA16161616 * input, uint32 *output)
+    {
+        uint8 r = (input->r >> 8) & 0xFF;
+        uint8 g = (input->g >> 8) & 0xFF;
+        uint8 b = (input->b >> 8) & 0xFF;
+        uint8 a = (input->a >> 8) & 0xFF;
+        *output = (a << 24) | (b << 16) | (g << 8) | r;
+    }
+};
+
+struct ConvertRGBA32323232toRGBA8888
+{
+    inline void operator()(const RGBA32323232 * input, uint32 *output)
+    {
+        uint8 r = (input->r >> 24) & 0xFF;
+        uint8 g = (input->g >> 24) & 0xFF;
+        uint8 b = (input->b >> 24) & 0xFF;
+        uint8 a = (input->a >> 24) & 0xFF;
+        *output = (a << 24) | (b << 16) | (g << 8) | r;
+    }
+};
+
 struct ConvertBGR888toRGB888
 {
     inline void operator()(const BGR888 *input, RGB888* output)
     {
-        output->r = input->r;
-        output->g = input->g;
-        output->b = input->b;
+        BGR888 tmp = *input;
+        output->r = tmp.r;
+        output->g = tmp.g;
+        output->b = tmp.b;
     }
 };
     
@@ -122,10 +171,10 @@ struct ConvertRGBA8888toRGBA4444
 	{
 		uint32 pixel = *input;
 		uint32 a = ((pixel >> 24) & 0xFF) >> 4;
-		uint32 r = ((pixel >> 16) & 0xFF) >> 4;
+		uint32 b = ((pixel >> 16) & 0xFF) >> 4;
 		uint32 g = ((pixel >> 8) & 0xFF) >> 4;
-		uint32 b = (pixel & 0xFF) >> 4;
-		*output = ((b) << 12) | (g << 8) | (r << 4) | a;
+		uint32 r = (pixel & 0xFF) >> 4;
+		*output = ((r) << 12) | (g << 8) | (b << 4) | a;
 	}
 };
 
@@ -143,7 +192,7 @@ struct ConvertRGBA5551toRGBA8888
 	}
 };
 
-struct ConvertRGBA4444toRGBA888
+struct ConvertRGBA4444toRGBA8888
 {
 	inline void operator()(const uint16 * input, uint32 *output)
 	{
@@ -177,8 +226,67 @@ struct ConvertA8toRGBA8888
 	inline void operator()(const uint8 * input, uint32 *output)
 	{
 		uint32 pixel = *input;
-		*output = ((pixel) << 24) | (pixel << 16) | (pixel << 8) | pixel;
+		*output = (0xFF << 24) | (pixel << 16) | (pixel << 8) | pixel;
 	}
+};
+
+struct ConvertA16toRGBA8888
+{
+    inline void operator()(const uint16 * input, uint32 *output)
+    {
+        uint32 pixel = *input;
+        *output = (0xFF << 24) | (pixel << 16) | (pixel << 8) | pixel;
+    }
+};
+
+struct ConvertBGRA4444toRGBA4444
+{
+    inline void operator()(const uint16 * input, uint16 *output)
+    {
+        //bbbb gggg rrrr aaaa --> rrrr gggg bbbb aaaa
+        const uint16 in = *input;
+        uint16 greenAlpha = in & 0x0F0F;
+        uint16 blue = (in >> 8) & 0x00F0;
+        uint16  red = (in & 0x00F0) << 8;
+        *output = red | greenAlpha | blue;
+    }
+};
+
+struct ConvertBGR565toRGB565
+{
+    inline void operator()(const uint16* input, uint16* output)
+    {
+        // bbbb bggg gggr rrrr --> rrrr rggg gggb bbbb
+        uint16 in = *input;
+        uint16 blue = (in >> 11) & 0x1F;
+        uint16  red = (in & 0x1F) << 11;
+        uint16 green = in & 0x07E0;
+        *output = red | green | blue;
+    }
+};
+
+struct ConvertBGRA16161616toRGBA16161616
+{
+    inline void operator()(const RGBA16161616* input, RGBA16161616* output)
+    {
+        RGBA16161616 out = *input;
+        uint16 tmp = out.r;
+        out.r = out.b;
+        out.b = tmp;
+        *output = out;
+    }
+};
+
+struct ConvertBGRA32323232toRGBA32323232
+{
+    inline void operator()(const RGBA32323232* input, RGBA32323232* output)
+    {
+        RGBA32323232 out = *input;
+        uint32 tmp = out.r;
+        out.r = out.b;
+        out.b = tmp;
+        *output = out;
+    }
 };
 
 struct UnpackRGBA8888
@@ -238,6 +346,51 @@ struct PackA8
     }
 };
 
+    
+struct UnpackRGB888
+{
+    inline void operator()(const RGB888 * input, uint32 & r, uint32 & g, uint32 & b, uint32 & a)
+    {
+        r = input->r;
+        g = input->g;
+        b = input->b;
+        a = 0xFF;
+    }
+};
+
+struct PackRGB888
+{
+    inline void operator()(uint32 r, uint32 g, uint32 b, uint32 a, RGB888 * output)
+    {
+        output->r = r;
+        output->g = g;
+        output->b = b;
+    }
+};
+
+struct UnpackRGBA5551
+{
+    inline void operator()(const uint16 * input, uint32 & r, uint32 & g, uint32 & b, uint32 & a)
+    {
+        auto & in = *input;
+        
+        r = (in >> 11) & 0x001F;
+        g = (in >> 6) & 0x001F;
+        b = (in >> 1) & 0x001F;
+        a = (in) & 0x0001;
+    }
+};
+
+struct PackRGBA5551
+{
+    inline void operator()(uint32 r, uint32 g, uint32 b, uint32 a, uint16 * output)
+    {
+        *output = (r << 11) | (g << 6) | (b << 1) | a;
+    }
+};
+    
+    
+    
 struct PackNormalizedRGBA8888
 {
     void operator()(uint32 r, uint32 g, uint32 b, uint32 a, uint32 * output)
@@ -267,16 +420,17 @@ struct NormalizeRGBA8888
     }
 };
 
+    
 template<class TYPE_IN, class TYPE_OUT, typename CONVERT_FUNC>
 class ConvertDirect
 {
 public:
     void operator()(const void * inData, uint32 width, uint32 height, uint32 pitch, void * outData)
     {
-		CONVERT_FUNC func;
+        CONVERT_FUNC func;
         const uint8 * readPtr = reinterpret_cast<const uint8*>(inData);
         uint8 * writePtr = reinterpret_cast<uint8*>(outData);
-        
+
         for (uint32 y = 0; y < height; ++y)
         {
             const TYPE_IN * readPtrLine = reinterpret_cast<const TYPE_IN*>(readPtr);
@@ -287,18 +441,35 @@ public:
                 readPtrLine++;
                 writePtrLine++;
             }
-            readPtr += pitch; 
+            readPtr += pitch;
             writePtr += pitch;
         }
     };
-    
-    void operator()(const void * inData, uint32 inWidth, uint32 inHeight, uint32 inPitch,
+
+    void operator()(void* data, uint32 width, uint32 height, uint32 pitch)
+    {
+        CONVERT_FUNC func;
+        const uint8 * ptrToLine = reinterpret_cast<const uint8*>(data);
+
+        for (uint32 y = 0; y < height; ++y)
+        {
+            const TYPE_IN * ptr = reinterpret_cast<const TYPE_IN*>(ptrToLine);
+            for (uint32 x = 0; x < width; ++x)
+            {
+                func(ptr, ptr);
+                ptr++;
+            }
+            ptrToLine += pitch;
+        }
+    };
+
+    void operator()(const void * inData, uint32 inWidth, uint32 inHeight, uint32 inPitch, 
                     void * outData, uint32 outWidth, uint32 outHeight, uint32 outPitch)
     {
-		CONVERT_FUNC func;
+        CONVERT_FUNC func;
         const uint8 * readPtr = reinterpret_cast<const uint8*>(inData);
         uint8 * writePtr = reinterpret_cast<uint8*>(outData);
-        
+
         for (uint32 y = 0; y < inHeight; ++y)
         {
             const TYPE_IN * readPtrLine = reinterpret_cast<const TYPE_IN*>(readPtr);
@@ -366,61 +537,87 @@ class ImageConvert
 {
 public:
 
-    static void Normalize(PixelFormat format, const void * inData, uint32 width, uint32 height, uint32 pitch, void * outData)
+    static bool Normalize(PixelFormat format, const void * inData, uint32 width, uint32 height, uint32 pitch, void * outData)
     {
-        if(format == FORMAT_RGBA8888)
+        if (format == FORMAT_RGBA8888)
         {
             ConvertDirect<uint32, uint32, NormalizeRGBA8888> convert;
             convert(inData, width, height, pitch, outData, width, height, pitch);
+            
+            return true;
         }
-        else
-        {
-            Logger::Debug("Normalize function not implemented for %s", PixelFormatDescriptor::GetPixelFormatString(format));
-        }
+        
+        Logger::Error("Normalize function not implemented for %s", PixelFormatDescriptor::GetPixelFormatString(format));
+        return false;
     }
 
-	static void ConvertImageDirect(const Image *scrImage, Image *dstImage)
-	{
-		ConvertImageDirect(scrImage->format, dstImage->format, scrImage->data, scrImage->width, scrImage->height, scrImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(scrImage->format), 
-			dstImage->data, dstImage->width, dstImage->height, dstImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(dstImage->format));
-	}
+    static void ConvertImageDirect(const Image *srcImage, Image *dstImage)
+    {
+        ConvertImageDirect(srcImage->format, dstImage->format, srcImage->data, srcImage->width, srcImage->height, srcImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(srcImage->format),
+            dstImage->data, dstImage->width, dstImage->height, dstImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(dstImage->format));
+    }
 
-
-	static void ConvertImageDirect(PixelFormat inFormat, PixelFormat outFormat, const void * inData, uint32 inWidth, uint32 inHeight, uint32 inPitch, void * outData, uint32 outWidth, uint32 outHeight, uint32 outPitch)
-	{
-		if(inFormat == FORMAT_RGBA5551 && outFormat == FORMAT_RGBA8888)
-		{
-			ConvertDirect<uint16, uint32, ConvertRGBA5551toRGBA8888> convert;
-			convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
-		}
-		else if(inFormat == FORMAT_RGBA4444 && outFormat == FORMAT_RGBA8888)
-		{
-			ConvertDirect<uint16, uint32, ConvertRGBA4444toRGBA888> convert;
-			convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
-		}
-		else if(inFormat == FORMAT_RGB888 && outFormat == FORMAT_RGBA8888)
-		{
- 			ConvertDirect<RGB888, uint32, ConvertRGB888toRGBA8888> convert;
- 			convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
-		}
-		else if(inFormat == FORMAT_RGB565 && outFormat == FORMAT_RGBA8888)
-		{
-			ConvertDirect<uint16, uint32, ConvertRGB565toRGBA8888> convert;
-			convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
-		}
-		else if(inFormat == FORMAT_A8 && outFormat == FORMAT_RGBA8888)
-		{
-			ConvertDirect<uint8, uint32, ConvertA8toRGBA8888> convert;
-			convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
-		}
-        else if(inFormat == FORMAT_BGR888 && outFormat == FORMAT_RGB888)
+    static void ConvertImageDirect(PixelFormat inFormat, PixelFormat outFormat, const void * inData, uint32 inWidth, uint32 inHeight, uint32 inPitch, 
+                                   void * outData, uint32 outWidth, uint32 outHeight, uint32 outPitch)
+    {
+        if (inFormat == FORMAT_RGBA5551 && outFormat == FORMAT_RGBA8888)
+        {
+            ConvertDirect<uint16, uint32, ConvertRGBA5551toRGBA8888> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else if (inFormat == FORMAT_RGBA4444 && outFormat == FORMAT_RGBA8888)
+        {
+            ConvertDirect<uint16, uint32, ConvertRGBA4444toRGBA8888> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else if (inFormat == FORMAT_RGB888 && outFormat == FORMAT_RGBA8888)
+        {
+            ConvertDirect<RGB888, uint32, ConvertRGB888toRGBA8888> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else if (inFormat == FORMAT_RGB565 && outFormat == FORMAT_RGBA8888)
+        {
+            ConvertDirect<uint16, uint32, ConvertRGB565toRGBA8888> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else if (inFormat == FORMAT_A8 && outFormat == FORMAT_RGBA8888)
+        {
+            ConvertDirect<uint8, uint32, ConvertA8toRGBA8888> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else if (inFormat == FORMAT_A16 && outFormat == FORMAT_RGBA8888)
+        {
+            ConvertDirect<uint16, uint32, ConvertA16toRGBA8888> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else if (inFormat == FORMAT_BGR888 && outFormat == FORMAT_RGB888)
         {
             ConvertDirect<BGR888, RGB888, ConvertBGR888toRGB888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
         }
-        else if(inFormat == FORMAT_BGRA8888 && outFormat == FORMAT_RGBA8888)
+        else if (inFormat == FORMAT_BGR888 && outFormat == FORMAT_RGBA8888)
         {
-            ConvertDirect<BGRA8888, uint32, ConverBGRA8888toRGBA8888> convert;
+            ConvertDirect<BGR888, uint32, ConvertBGR888toRGBA8888> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else if (inFormat == FORMAT_BGRA8888 && outFormat == FORMAT_RGBA8888)
+        {
+            ConvertDirect<BGRA8888, uint32, ConvertBGRA8888toRGBA8888> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else if (inFormat == FORMAT_RGBA8888 && outFormat == FORMAT_RGB888)
+        {
+            ConvertDirect<uint32, RGB888, ConvertRGBA8888toRGB888> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else if (inFormat == FORMAT_RGBA16161616 && outFormat == FORMAT_RGBA8888)
+        {
+            ConvertDirect<RGBA16161616, uint32, ConvertRGBA16161616toRGBA8888> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else if (inFormat == FORMAT_RGBA32323232 && outFormat == FORMAT_RGBA8888)
+        {
+            ConvertDirect<RGBA32323232, uint32, ConvertRGBA32323232toRGBA8888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
         }
         else
@@ -428,7 +625,69 @@ public:
             Logger::FrameworkDebug("Unsupported image conversion from format %d to %d", inFormat, outFormat);
             DVASSERT(false);
         }
-	}
+    }
+
+    static void SwapRedBlueChannels(const Image *srcImage)
+    {
+        DVASSERT(srcImage);
+        SwapRedBlueChannels(srcImage->format, srcImage->data, srcImage->width, srcImage->height, srcImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(srcImage->format));
+    }
+    
+    static void SwapRedBlueChannels(PixelFormat format, void* srcData, uint32 width, uint32 height, uint32 pitch, void* dstData = nullptr)
+    {
+        if (!dstData) 
+            dstData = srcData;
+
+        switch (format)
+        {
+        case FORMAT_RGB888:
+        {
+            ConvertDirect<BGR888, RGB888, ConvertBGR888toRGB888> swap;
+            swap(srcData, width, height, pitch, dstData);
+            return;
+        }
+        case FORMAT_RGBA8888:
+        {
+            ConvertDirect<BGRA8888, uint32, ConvertBGRA8888toRGBA8888> swap;
+            swap(srcData, width, height, pitch, dstData);
+            return;
+        }
+        case FORMAT_RGBA4444:
+        {
+            ConvertDirect<uint16, uint16, ConvertBGRA4444toRGBA4444> swap;
+            swap(srcData, width, height, pitch, dstData);
+            return;
+        }
+        case FORMAT_RGB565:
+        {
+            ConvertDirect<uint16, uint16, ConvertBGR565toRGB565> swap;
+            swap(srcData, width, height, pitch, dstData);
+            return;
+        }
+        case FORMAT_RGBA16161616:
+        {
+            ConvertDirect<RGBA16161616, RGBA16161616, ConvertBGRA16161616toRGBA16161616> swap;
+            swap(srcData, width, height, pitch, dstData);
+            return;
+        }
+        case FORMAT_RGBA32323232:
+        {
+            ConvertDirect<RGBA32323232, RGBA32323232, ConvertBGRA32323232toRGBA32323232> swap;
+            swap(srcData, width, height, pitch, dstData);
+            return;
+        }
+        case FORMAT_A8: case FORMAT_A16:
+        {
+            // do nothing for grayscale images
+            return;
+        }
+        default:
+        {
+            Logger::Error("Image color exchanging is not supported for format %d", format);
+            return;
+        }
+        }
+    }
 
 	static void DownscaleTwiceBillinear(	PixelFormat inFormat,
 												PixelFormat outFormat,
@@ -461,6 +720,16 @@ public:
         else if ((inFormat == FORMAT_A8) && (outFormat == FORMAT_A8))
         {
             ConvertDownscaleTwiceBillinear<uint8, uint8, UnpackA8, PackA8> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else if ((inFormat == FORMAT_RGB888) && (outFormat == FORMAT_RGB888))
+        {
+            ConvertDownscaleTwiceBillinear<RGB888, RGB888, UnpackRGB888, PackRGB888> convert;
+            convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+        }
+        else if ((inFormat == FORMAT_RGBA5551) && (outFormat == FORMAT_RGBA5551))
+        {
+            ConvertDownscaleTwiceBillinear<uint16, uint16, UnpackRGBA5551, PackRGBA5551> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
         }
         else

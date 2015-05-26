@@ -1875,6 +1875,8 @@
 		EAAC98BF1937354800549BAD /* MeshUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = EAAC98BB1937354800549BAD /* MeshUtils.h */; };
 		EAADA0051892A48E001E1AA2 /* UIParticles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EAADA0031892A48E001E1AA2 /* UIParticles.cpp */; };
 		EAADA0061892A48E001E1AA2 /* UIParticles.h in Headers */ = {isa = PBXBuildFile; fileRef = EAADA0041892A48E001E1AA2 /* UIParticles.h */; };
+		FEA1D3D41ADF9CB5006B981A /* LibTgaHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEA1D3D21ADF9CB5006B981A /* LibTgaHelper.cpp */; };
+		FEA1D3D51ADF9CB5006B981A /* LibTgaHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = FEA1D3D31ADF9CB5006B981A /* LibTgaHelper.h */; };
 		FEF4D44812C92F57004B850E /* libBox2D_iPhone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF4D38612C91A3A004B850E /* libBox2D_iPhone.a */; };
 /* End PBXBuildFile section */
 
@@ -2895,6 +2897,8 @@
 		EAAC98BB1937354800549BAD /* MeshUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeshUtils.h; sourceTree = "<group>"; };
 		EAADA0031892A48E001E1AA2 /* UIParticles.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIParticles.cpp; sourceTree = "<group>"; };
 		EAADA0041892A48E001E1AA2 /* UIParticles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIParticles.h; sourceTree = "<group>"; };
+		FEA1D3D21ADF9CB5006B981A /* LibTgaHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LibTgaHelper.cpp; path = Image/LibTgaHelper.cpp; sourceTree = "<group>"; };
+		FEA1D3D31ADF9CB5006B981A /* LibTgaHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LibTgaHelper.h; path = Image/LibTgaHelper.h; sourceTree = "<group>"; };
 		FEF4D38112C91A3A004B850E /* Box2D_iPhone.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Box2D_iPhone.xcodeproj; path = ../../Libs/Box2D/Projects/Box2D_iPhone/Box2D_iPhone.xcodeproj; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -3201,6 +3205,8 @@
 		84D18BEB19201BDA009E3E90 /* Image */ = {
 			isa = PBXGroup;
 			children = (
+				FEA1D3D21ADF9CB5006B981A /* LibTgaHelper.cpp */,
+				FEA1D3D31ADF9CB5006B981A /* LibTgaHelper.h */,
 				6272153D192265C7007B7DE9 /* CRCAdditionInterface.h */,
 				84D18BEC19201BEF009E3E90 /* Image.cpp */,
 				84D18BED19201BEF009E3E90 /* Image.h */,
@@ -4932,6 +4938,7 @@
 				E8B3CA8716B9326E002BD35F /* Interpolation.h in Headers */,
 				4F25831019BDC94000C28926 /* Bind.h in Headers */,
 				E8B3CA8916B9326E002BD35F /* KeyframeAnimation.h in Headers */,
+				FEA1D3D51ADF9CB5006B981A /* LibTgaHelper.h in Headers */,
 				B786014F1A08EB140041F817 /* StringUtils.h in Headers */,
 				E8B3CA8B16B9326E002BD35F /* LinearAnimation.h in Headers */,
 				E8B3CA8C16B9326E002BD35F /* NamedAnimationsList.h in Headers */,
@@ -5969,6 +5976,7 @@
 				50194DAA1A52D92600557DAB /* NetworkUtils.cpp in Sources */,
 				EAAC98BC1937354800549BAD /* MeshUtils.cpp in Sources */,
 				E8B3CAA116B9326E002BD35F /* DynamicObjectCache.cpp in Sources */,
+				FEA1D3D41ADF9CB5006B981A /* LibTgaHelper.cpp in Sources */,
 				84D18C0819201BEF009E3E90 /* LibPVRHelper.cpp in Sources */,
 				E8B3CAA316B9326E002BD35F /* EventDispatcher.cpp in Sources */,
 				B786014D1A08EB140041F817 /* StringUtils.cpp in Sources */,

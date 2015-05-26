@@ -36,6 +36,7 @@
 #include "Tests/MathTest.h"
 #include "Tests/FunctionBindSingalTest.h"
 #include "Tests/SaveImageTest.h"
+#include "Tests/LoadImageTest.h"
 #include "Tests/StringFormatTest.h"
 #include "Tests/ComponentsTest.h"
 #include "Tests/FileListTest.h"
@@ -79,6 +80,7 @@ void GameCore::RegisterTests()
 #endif
     new MathTest();
     new FunctionBindSignalTest();
+    new LoadImageTest();
     new SaveImageTest();
     new StringFormatTest();
     new ComponentsTest();

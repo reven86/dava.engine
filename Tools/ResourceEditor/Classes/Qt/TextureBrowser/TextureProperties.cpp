@@ -37,7 +37,7 @@
 TextureProperties::TextureProperties( QWidget *parent /*= 0*/ )
 	: QtPropertyEditor(parent)
 	, curTextureDescriptor(NULL)
-	, curGPU(DAVA::GPU_PNG)
+	, curGPU(DAVA::GPU_ORIGIN)
 	, skipPropSizeChanged(false)
 {
 	SetEditTracking(true);
@@ -221,12 +221,10 @@ void TextureProperties::ReloadEnumFormats()
 
 	enumFormats.UnregistelAll();
 
-	const DAVA::Map<DAVA::PixelFormat, DAVA::String> &availableFormats = DAVA::GPUFamilyDescriptor::GetAvailableFormatsForGpu(curGPU);
-	DAVA::Map<DAVA::PixelFormat, DAVA::String>::const_iterator begin = availableFormats.begin();
-	DAVA::Map<DAVA::PixelFormat, DAVA::String>::const_iterator end = availableFormats.end();
-	for(; begin != end; ++begin)
+	const auto& availableFormats = DAVA::GPUFamilyDescriptor::GetAvailableFormatsForGpu(curGPU);
+	for(auto nextFormat : availableFormats)
 	{
-		enumFormats.Register(begin->first, globalFormats->ToString(begin->first));
+		enumFormats.Register(nextFormat.first, globalFormats->ToString(nextFormat.first));
 	}
 }
 
