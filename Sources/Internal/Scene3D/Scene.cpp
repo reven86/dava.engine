@@ -1336,7 +1336,23 @@ void Scene::Deactivate()
 
 void Scene::CopyScene(Scene* dst)
 {
-    CloneIntenal(dst, true);
+    std::function<void(Entity *, Entity *)> copyID = [&copyID](Entity *src, Entity *dst)
+    {
+        DVASSERT(src->children.size() == dst->children.size());
+
+        dst->id = src->id;
+        for(auto i = 0; i < src->children.size(); ++i)
+        {
+            copyID(src->children[i], dst->children[i]);
+        }
+    };
+
+    for(auto child : children)
+    {
+        Entity *clone = child->Clone();
+        copyID(child, clone);
+        dst->AddNode(clone);
+    }
 }
 
 };

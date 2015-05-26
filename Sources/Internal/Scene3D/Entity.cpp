@@ -553,53 +553,39 @@ void Entity::SceneDidLoaded()
     
 Entity* Entity::Clone(Entity *dstNode)
 {
-    return CloneIntenal(dstNode, false);
-}
-
-Entity* Entity::CloneIntenal(Entity *dstNode, bool copyID)
-{
-    if(!dstNode)
-    {
-        DVASSERT_MSG(IsPointerToExactClass<Entity>(this), "Can clone only Entity");
-        dstNode = new Entity();
-    }
-
-    dstNode->RemoveAllComponents();
+	if (!dstNode)
+	{
+		DVASSERT_MSG(IsPointerToExactClass<Entity>(this), "Can clone only Entity");
+		dstNode = new Entity();
+	}
+		
+	dstNode->RemoveAllComponents();
     size_t size = components.size();
-    for(size_t k = 0; k < size; ++k)
-    {
+	for (size_t k = 0; k < size;++k)
+	{
         dstNode->AddComponent(components[k]->Clone(dstNode));
-    }
-
-    dstNode->name = name;
-    dstNode->tag = tag;
-
-    if(copyID)
-    {
-        dstNode->id = id;
-    }
-    else
-    {
-        dstNode->id = 0;
-    }
-
+	}
+		
+	dstNode->name = name;
+	dstNode->tag = tag;
+    dstNode->id = 0;
+    
     //flags are intentionally not cloned
-    //dstNode->flags = flags;
-
-    dstNode->RemoveAllChildren();
+	//dstNode->flags = flags;
+		
+	dstNode->RemoveAllChildren();
     dstNode->children.reserve(children.size());
-    Vector<Entity*>::iterator it = children.begin();
-    const Vector<Entity*>::iterator & childsEnd = children.end();
-    for(; it != childsEnd; it++)
-    {
-        Entity *n = (*it)->CloneIntenal(nullptr, copyID);
-        dstNode->AddNode(n);
-        n->Release();
-    }
-
-    return dstNode;
+	Vector<Entity*>::iterator it = children.begin();
+	const Vector<Entity*>::iterator & childsEnd = children.end();
+	for(; it != childsEnd; it++)
+	{
+		Entity *n = (*it)->Clone();
+		dstNode->AddNode(n);
+		n->Release();
+	}
+		
+	return dstNode;
 }
-
 	
 void Entity::SetDebugFlags(uint32 debugFlags, bool isRecursive)
 {

@@ -375,7 +375,6 @@ protected:
     void RemoveAllComponents();
     void LoadComponentsV6(KeyedArchive *compsArch, SerializationContext * serializationContext);
     void LoadComponentsV7(KeyedArchive *compsArch, SerializationContext * serializationContext);
-    Entity* CloneIntenal(Entity *dstNode, bool copyID);
    
 protected:
 
@@ -599,6 +598,10 @@ inline uint32 Entity::GetID() const
 inline void Entity::ResetID()
 {
     id = 0;
+    for(auto child : children)
+    {
+        child->ResetID();
+    }
 }
 
 
