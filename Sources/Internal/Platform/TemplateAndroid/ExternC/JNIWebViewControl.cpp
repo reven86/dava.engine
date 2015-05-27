@@ -60,12 +60,8 @@ extern "C"
 			DVASSERT(height);
 			DVASSERT(env->GetArrayLength(pixels) == width * height); // ARGB
 
-			DAVA::uint32 pitch = width * 4; // 4 byte per pixel
-
-			// covert on the same memory
-			DAVA::ImageConvert::ConvertImageDirect(DAVA::FORMAT_BGRA8888,
-                DAVA::FORMAT_RGBA8888, rawData, width, height, pitch, rawData,
-                width, height, pitch);
+            DAVA::uint32 pitch = width * DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBytes(DAVA::FORMAT_RGBA8888);
+            DAVA::ImageConvert::SwapRedBlueChannels(DAVA::FORMAT_RGBA8888, rawData, width, height, pitch);
 
 			DAVA::JniWebView::PageLoaded(id, rawData, width, height);
 
