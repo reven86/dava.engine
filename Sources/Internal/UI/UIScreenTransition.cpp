@@ -200,7 +200,7 @@ void UIScreenTransition::Draw(const UIGeometricData &geometricData)
     RenderSystem2D::Instance()->Setup2DMatrices();
 
     Sprite::DrawState drawState;
-    drawState.SetMaterial(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+    drawState.SetMaterial(RenderHelper::DEFAULT_2D_TEXTURE_MATERIAL);
 
     drawState.SetScale(0.5f, 1.0f);
     drawState.SetPosition(0, 0);

@@ -59,7 +59,7 @@ UIControlBackground::UIControlBackground()
 ,   stretchData(NULL)
 ,   margins(NULL)
 ,   drawColor(Color::White)
-,   material(RenderHelper::DEFAULT_2D_BLEND_MATERIAL)
+,   material(SafeRetain(RenderHelper::DEFAULT_2D_TEXTURE_MATERIAL))
 {
 }
 
@@ -271,7 +271,7 @@ void UIControlBackground::SetParentColor(const Color &parentColor)
 
 void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
 {
-#if RHI_COMPLETE
+#if !RHI_COMPLETE
     UIGeometricData geometricData;
     geometricData.size = parentGeometricData.size;
     if (margins)
@@ -285,13 +285,16 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
 
     RenderSystem2D::Instance()->SetColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a);
 
-    RenderSystem2D::Instance()->UpdateClip();
+#if RHI_COMPLETE
+	RenderSystem2D::Instance()->UpdateClip();
+#endif
 
     Sprite::DrawState drawState;
-    drawState.SetRenderState(renderState);
+
+    drawState.SetMaterial(material);
     if (spr)
     {
-        drawState.SetShader(shader);
+        //drawState.SetShader(shader);
         drawState.frame = frame;
         if (spriteModification)
         {
@@ -504,16 +507,16 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
         break;
 
         case DRAW_FILL:
-            RenderManager::Instance()->SetTextureState(RenderState::TEXTURESTATE_EMPTY);
+            //RenderManager::Instance()->SetTextureState(RenderState::TEXTURESTATE_EMPTY);
             if (geometricData.angle != 0.0f)
             {
                 Polygon2 poly;
                 geometricData.GetPolygon(poly);
-                RenderHelper::Instance()->FillPolygon(poly, drawState.GetRenderState());
+                RenderHelper::Instance()->FillPolygon(poly, drawState.GetMaterial());
             }
             else
             {
-                RenderHelper::Instance()->FillRect(geometricData.GetUnrotatedRect(), drawState.GetRenderState());
+                RenderHelper::Instance()->FillRect(geometricData.GetUnrotatedRect(), drawState.GetMaterial());
             }
         break;
 

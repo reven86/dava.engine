@@ -287,10 +287,10 @@ namespace DAVA
 			for (Map<int32, UIEvent>::iterator it = touches.begin(); it != touches.end(); ++it)
 			{
 				Vector2 point = it->second.point;
-				RenderHelper::Instance()->DrawCircle(point, 25.0f, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+				RenderHelper::Instance()->DrawCircle(point, 25.0f, RenderHelper::DEFAULT_2D_COLOR_MATERIAL);
 			}
 		}
-		RenderHelper::Instance()->DrawCircle(GetMousePosition(), 15.0f, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+		RenderHelper::Instance()->DrawCircle(GetMousePosition(), 15.0f, RenderHelper::DEFAULT_2D_COLOR_MATERIAL);
 	}
 
 	void AutotestingSystem::OnTestStarted()

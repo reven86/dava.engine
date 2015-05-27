@@ -97,7 +97,7 @@ void UIHoleTransition::Draw(const UIGeometricData &geometricData)
 	 */
 	
     Sprite::DrawState drawState;
-    drawState.SetMaterial(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+    drawState.SetMaterial(RenderHelper::DEFAULT_2D_TEXTURE_MATERIAL);
     
 	RenderSystem2D::Instance()->SetColor(0.0f, 0.0f, 0.0f, 1.0f);
 	RenderHelper::Instance()->FillRect(Rect(0.0f, 0.0f,

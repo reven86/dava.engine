@@ -175,7 +175,7 @@ VboPool::VboPool(uint32 verticesCount, uint32 format, uint32 indicesCount, uint8
     rhi::VertexLayout vLayout;
     vLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
     vLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
-    vLayout.AddElement(rhi::VS_COLOR, 0, rhi::VDT_UINT8, 4);
+    vLayout.AddElement(rhi::VS_COLOR, 0, rhi::VDT_UINT8N, 4);
     vertexLayoutID = rhi::VertexLayout::UniqueId(vLayout);
 
     HardReset(verticesCount, indicesCount, buffersCount);
@@ -382,6 +382,19 @@ void RenderSystem2D::Init()
     }
 #endif RHI_COMPLETE
 
+    RenderHelper::DEFAULT_2D_COLOR_MATERIAL = new NMaterial();
+    RenderHelper::DEFAULT_2D_COLOR_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Color.material"));
+    RenderHelper::DEFAULT_2D_COLOR_MATERIAL->PreBuildMaterial(FastName("2d"));
+
+    RenderHelper::DEFAULT_2D_TEXTURE_MATERIAL = new NMaterial();
+    RenderHelper::DEFAULT_2D_TEXTURE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.material"));
+    RenderHelper::DEFAULT_2D_TEXTURE_MATERIAL->PreBuildMaterial(FastName("2d"));
+
+    RenderHelper::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL = new NMaterial();
+    RenderHelper::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.material"));
+    RenderHelper::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL->AddFlag(FastName("IMAGE_A8"), 1);
+    RenderHelper::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL->PreBuildMaterial(FastName("2d"));
+
     renderPassConfig.priority = PRIORITY_SERVICE_2D;
 }
 
@@ -405,6 +418,10 @@ RenderSystem2D::~RenderSystem2D()
     SafeRelease(TEXTURE_ADD_COLOR_ALPHA_TEST);
     SafeRelease(TEXTURE_ADD_COLOR_IMAGE_A8);
 #endif // RHI_COMPLETE
+
+    SafeRelease(RenderHelper::DEFAULT_2D_COLOR_MATERIAL);
+    SafeRelease(RenderHelper::DEFAULT_2D_TEXTURE_MATERIAL);
+    SafeRelease(RenderHelper::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL);
 }
 
 void RenderSystem2D::BeginFrame()
@@ -417,7 +434,7 @@ void RenderSystem2D::BeginFrame()
     Setup2DMatrices();
 
     defaultSpriteDrawState.Reset();
-    defaultSpriteDrawState.material = RenderHelper::DEFAULT_2D_BLEND_MATERIAL;    
+    defaultSpriteDrawState.material = RenderHelper::DEFAULT_2D_COLOR_MATERIAL;    
 
 #if USE_BATCHING
     batches.clear();
@@ -465,6 +482,10 @@ void RenderSystem2D::Setup2DProjection()
     projMatrix = virtualToPhysicalMatrix * projMatrix;
     Renderer::GetDynamicBindings().SetDynamicParam(PARAM_PROJ, &projMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 #endif //RHI_COMPLETE
+
+    projMatrix.glOrtho(0.0f, (float32)1024, (float32)768, 0.0f, -1.0f, 1.0f);
+    projMatrix = virtualToPhysicalMatrix * projMatrix;
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 }
 
 void RenderSystem2D::Setup2DMatrices()
@@ -655,11 +676,25 @@ void RenderSystem2D::Flush()
         packet.vertexStreamCount = 1;
         packet.vertexStream[0] = pool->GetVertexBuffer();
         packet.indexBuffer = pool->GetIndexBuffer();
-        packet.primitiveType = rhi::PRIMITIVE_LINELIST;
-        packet.primitiveCount = indexIndex / 3;
+        packet.startIndex = batch.indexOffset;
+        packet.primitiveType = batch.primitiveType;
         packet.vertexLayoutUID = pool->GetVertexLayoutID();
         packet.vertexCount = vertexIndex;
         //packet.clip = clip; //RHI_COMPLETE
+
+        switch (packet.primitiveType)
+        {
+        case rhi::PRIMITIVE_LINELIST:
+            packet.primitiveCount = batch.count / 2;
+            break;
+        case rhi::PRIMITIVE_TRIANGLEFAN:
+            DVASSERT(batch.count > 2);
+            packet.primitiveCount = batch.count - 2;
+            break;
+        case rhi::PRIMITIVE_TRIANGLELIST:
+            packet.primitiveCount = batch.count / 3;
+            break;
+        }
 
         batch.material->BindParams(packet);
         packet.fragmentTextureSet = batch.textureSetHandle;
@@ -689,9 +724,8 @@ void RenderSystem2D::HardResetBatchingBuffers(uint32 verticesCount, uint32 indic
 void RenderSystem2D::PushBatch(NMaterial * material, rhi::HTextureSet texture, Rect const& clip,
     uint32 vertexCount, const float32* vertexPointer, const float32* texCoordPointer,
     uint32 indexCount, const uint16* indexPointer,
-    const Color& color)
+    const Color& color, const rhi::PrimitiveType primitiveType)
 {
-
 #if USE_BATCHING
     if ((vertexIndex + vertexCount > pool->GetVerticesLimit()) || (indexIndex + indexCount > pool->GetIndicesLimit()))
     {
@@ -754,8 +788,8 @@ void RenderSystem2D::PushBatch(NMaterial * material, rhi::HTextureSet texture, R
         vboTemp[vi++] = vertexPointer[i * 2];
         vboTemp[vi++] = vertexPointer[i * 2 + 1];
         vboTemp[vi++] = 0.f; // axe Z, empty but need for EVF_VERTEX format
-        vboTemp[vi++] = texCoordPointer[i * 2];
-        vboTemp[vi++] = texCoordPointer[i * 2 + 1];
+        vboTemp[vi++] = texCoordPointer ? texCoordPointer[i * 2] : 0.f;
+        vboTemp[vi++] = texCoordPointer ? texCoordPointer[i * 2 + 1] : 0.f;
         *(uint32*)(&vboTemp[vi++]) = useColor.GetRGBA();
     }
     for (uint32 i = 0; i < indexCount; ++i)
@@ -765,7 +799,8 @@ void RenderSystem2D::PushBatch(NMaterial * material, rhi::HTextureSet texture, R
     
     if (currentBatch.textureSetHandle != texture
         || currentBatch.material != material
-        || currentBatch.clipRect != clip)
+        || currentBatch.clipRect != clip
+        || currentBatch.primitiveType != primitiveType)
     {
         if (currentBatch.count > 0)
         {
@@ -773,6 +808,7 @@ void RenderSystem2D::PushBatch(NMaterial * material, rhi::HTextureSet texture, R
         }
         currentBatch.Reset();
 
+        currentBatch.primitiveType = primitiveType;
         currentBatch.textureSetHandle = texture;
         currentBatch.material = material;
         currentBatch.clipRect = clip;

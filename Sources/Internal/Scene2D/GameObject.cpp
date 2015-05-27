@@ -323,7 +323,7 @@ void GameObject::Draw()
 	
 	if (isDebugDraw && collision)
 	{
-		collision->DebugDraw(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+		collision->DebugDraw(RenderHelper::DEFAULT_2D_COLOR_MATERIAL);
 	}
 //	if (align == ALIGN_LEFTTOP)
 //	{

@@ -64,7 +64,7 @@ Sprite::DrawState::DrawState()
 {
     Reset();
     
-    material = RenderHelper::DEFAULT_2D_BLEND_MATERIAL;    
+    material = RenderHelper::DEFAULT_2D_TEXTURE_MATERIAL;    
 }
 
 Sprite::Sprite()

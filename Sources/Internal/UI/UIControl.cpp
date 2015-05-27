@@ -1405,11 +1405,11 @@ namespace DAVA
             Polygon2 poly;
             gd.GetPolygon( poly );
 
-            RenderHelper::Instance()->DrawPolygon( poly, true, RenderHelper::DEFAULT_2D_BLEND_MATERIAL );
+            RenderHelper::Instance()->DrawPolygon( poly, true, RenderHelper::DEFAULT_2D_COLOR_MATERIAL );
         }
         else
         {
-            RenderHelper::Instance()->DrawRect( gd.GetUnrotatedRect(), RenderHelper::DEFAULT_2D_BLEND_MATERIAL );
+            RenderHelper::Instance()->DrawRect( gd.GetUnrotatedRect(), RenderHelper::DEFAULT_2D_COLOR_MATERIAL );
         }
 
         RenderSystem2D::Instance()->PopClip();
@@ -1436,20 +1436,20 @@ namespace DAVA
         RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
 
         Vector2 pivotPointCenter = drawRect.GetPosition() + GetPivotPoint();
-        RenderHelper::Instance()->DrawCircle(pivotPointCenter, PIVOT_POINT_MARK_RADIUS, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+        RenderHelper::Instance()->DrawCircle(pivotPointCenter, PIVOT_POINT_MARK_RADIUS, RenderHelper::DEFAULT_2D_COLOR_MATERIAL);
 
         // Draw the cross mark.
         Vector2 lineStartPoint = pivotPointCenter;
         Vector2 lineEndPoint = pivotPointCenter;
         lineStartPoint.y -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
         lineEndPoint.y += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
-        RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+        RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderHelper::DEFAULT_2D_COLOR_MATERIAL);
 
         lineStartPoint = pivotPointCenter;
         lineEndPoint = pivotPointCenter;
         lineStartPoint.x -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
         lineEndPoint.x += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
-        RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+        RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderHelper::DEFAULT_2D_COLOR_MATERIAL);
 
         RenderSystem2D::Instance()->PopClip();
         RenderSystem2D::Instance()->SetColor(oldColor);

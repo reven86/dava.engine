@@ -201,7 +201,9 @@ void CollisionObject2::DebugDraw(NMaterial *material)
 {
 	if (!basePolygon)return;    
     RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+#if RHI_COMPLETE
     RenderHelper::Instance()->DrawPoint(circle.center, 3, material);
+#endif
 	
     RenderHelper::Instance()->DrawCircle(circle.center, circle.radius, material);
 
@@ -212,7 +214,10 @@ void CollisionObject2::DebugDraw(NMaterial *material)
 	
     RenderSystem2D::Instance()->SetColor(0.0f, 0.0f, 1.0f, 1.0f);
 	for (int32 k = 0; k < manifold.count; ++k)
-        RenderHelper::Instance()->DrawPoint(manifold.contactPoints[k], 3, material);
+#if RHI_COMPLETE
+        RenderHelper::Instance()->DrawPoint(manifold.contactPoints[k], 3, material)
+#endif
+        ;
 	
     RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 }

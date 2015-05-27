@@ -177,7 +177,7 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 #if RHI_COMPLETE
 	Renderer::GetDynamicBindings().SetDynamicParam(PARAM_WORLD, &offsetMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 
-	RenderManager::Instance()->SetRenderState(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+	RenderManager::Instance()->SetRenderState(RenderHelper::DEFAULT_2D_COLOR_MATERIAL);
     RenderManager::Instance()->SetTextureState(dfFont->GetTextureHandler());
 	RenderManager::Instance()->SetShader(shader);
     RenderManager::Instance()->SetRenderData(renderObject);

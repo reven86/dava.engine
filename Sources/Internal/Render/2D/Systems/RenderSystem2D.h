@@ -51,7 +51,7 @@ struct RenderBatch2D
     explicit RenderBatch2D() { Reset(); }
     inline void Reset()
     {
-        primitiveType = PRIMITIVETYPE_TRIANGLELIST;
+        primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
         clipRect = Rect(0, 0, -1, -1);
         transformedClipRect = Rect(0, 0, -1, -1);
         count = 0;
@@ -63,7 +63,7 @@ struct RenderBatch2D
     NMaterial * material;
     Rect clipRect;
     Rect transformedClipRect;
-    ePrimitiveType primitiveType;
+    rhi::PrimitiveType primitiveType;
     uint32 count;
     uint32 indexOffset;
 };
@@ -146,7 +146,7 @@ public:
     void PushBatch(NMaterial * material, rhi::HTextureSet texture, const Rect& clip,
         uint32 vertexCount, const float32* vertexPointer, const float32* texCoordPointer,
         uint32 indexCount, const uint16* indexPointer,
-        const Color& color);
+        const Color& color, const rhi::PrimitiveType primitiveType = rhi::PRIMITIVE_TRIANGLELIST);
     
     /*!
      * Highlight controls which has vertices count bigger than verticesCount.
@@ -228,6 +228,7 @@ private:
     rhi::RenderPassConfig renderPassConfig;
     rhi::HRenderPass currentPassHandle;
     rhi::HPacketList currentPacketListHandle;
+
 };
 
 inline void RenderSystem2D::SetHightlightControlsVerticesLimit(uint32 verticesCount)

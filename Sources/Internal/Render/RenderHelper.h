@@ -56,7 +56,10 @@ public:
     ~RenderHelper();
     
 
-    static NMaterial* DEFAULT_2D_BLEND_MATERIAL;
+    static NMaterial* DEFAULT_2D_COLOR_MATERIAL;
+    static NMaterial* DEFAULT_2D_TEXTURE_MATERIAL;
+    static NMaterial* DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL;
+
     /**
         \brief Draws line from pt1 to pt2
         \param pt1 starting point 
@@ -109,18 +112,6 @@ public:
 	// point helpers
     
     /**
-        \brief Draws given point in 2D space
-        \param pt given point 
-	 */
-    void DrawPoint(const Vector2 & pt, float32 ptSize /*= 1.0f*/, NMaterial* material);
-    
-    /**
-        \brief Draws given point in 3D space
-        \param pt given point 
-	 */
-    void DrawPoint(const Vector3 & pt, float32 ptSize /*= 1.0f*/, NMaterial* material);
-    
-    /**
         \brief Draws circle in 2D space
         \param center center of the circle
         \param radius radius of the circle
@@ -161,6 +152,7 @@ public:
         \param closed you should set this flag to true if you want to connect last point of polygon with first point
      */
     void DrawPolygon(const Polygon2 & polygon, bool closed, NMaterial* material);
+
     /**
         \brief Draws all concecutive lines from given polygon
         \param polygon the polygon we want to draw
@@ -188,12 +180,6 @@ public:
      */
     void DrawPolygonTransformed(const Polygon2 & polygon, bool closed, const Matrix3 & transform, NMaterial* material);
     
-    /**
-        \brief Draws all points from given polygon
-        \param polygon the polygon we want to draw
-     */
-    void DrawPolygonPoints(const Polygon2 & polygon, NMaterial* material);
-
     /**
         \brief Draws all points from given polygon
         \param polygon the polygon we want to draw
