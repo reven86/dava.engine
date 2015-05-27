@@ -342,7 +342,7 @@ void PackageWidget::OnPaste()
         {
             String string = clipboard->mimeData()->text().toStdString();
             Document *doc = sharedData->GetDocument();
-            doc->GetCommandExecutor()->Paste(doc->GetPackage(), node, -1, string);
+            doc->GetCommandExecutor()->Paste(doc->GetPackage(), node, node->GetCount(), string);
         }
     }
 }

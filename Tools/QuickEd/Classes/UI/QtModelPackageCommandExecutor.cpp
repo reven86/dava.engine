@@ -185,13 +185,48 @@ bool QtModelPackageCommandExecutor::Paste(PackageNode *root, ControlsContainerNo
     RefPtr<YamlParser> parser(YamlParser::CreateAndParseString(data));
     if (parser.Valid() && parser->GetRootNode())
     {
-        BeginMacro("Paste");
-        EditorUIPackageBuilder builder(root, dest, destIndex, this);
-        bool completed = UIPackageLoader().LoadPackage(parser->GetRootNode(), "", &builder);
-        EndMacro();
+        EditorUIPackageBuilder builder;
         
-        if (completed)
-            return true;
+        builder.AddImportedPackage(root);
+        for (int32 i = 0; i < root->GetImportedPackagesNode()->GetCount(); i++)
+        {
+            builder.AddImportedPackage(root->GetImportedPackagesNode()->GetImportedPackage(i));
+        }
+        
+        if (UIPackageLoader().LoadPackage(parser->GetRootNode(), "", &builder))
+        {
+            const Vector<PackageNode*> &importedPackages = builder.GetImportedPackages();
+            const Vector<ControlNode*> &controls = builder.GetRootControls();
+            Vector<ControlNode*> acceptedControls;
+
+            for (ControlNode *control : controls)
+            {
+                if (dest->CanInsertControl(control, destIndex))
+                    acceptedControls.push_back(control);
+            }
+
+            if (!acceptedControls.empty())
+            {
+                BeginMacro("Paste");
+                for (PackageNode *importedPackage : importedPackages)
+                {
+                    if (importedPackage == root || importedPackage->GetParent() == root->GetImportedPackagesNode())
+                        continue;
+                    AddImportedPackageIntoPackage(importedPackage, root);
+                }
+                
+                int32 index = destIndex;
+                for (ControlNode *control : acceptedControls)
+                {
+                    InsertControl(control, dest, index);
+                    index++;
+                }
+                
+                EndMacro();
+            }
+        }
+        
+        return true;
     }
     return false;
 }

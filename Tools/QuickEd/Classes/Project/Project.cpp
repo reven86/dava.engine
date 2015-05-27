@@ -187,7 +187,7 @@ RefPtr<PackageNode> Project::OpenPackage(const QString &packagePath)
         packageLoaded = LegacyEditorUIPackageLoader(legacyData).LoadPackage(path, &builder);
 
     if (packageLoaded)
-        return builder.GetPackageNode();
+        return builder.BuildPackage();
     
     return RefPtr<PackageNode>();
 }

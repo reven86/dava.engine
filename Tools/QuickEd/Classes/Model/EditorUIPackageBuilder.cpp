@@ -21,76 +21,51 @@ using namespace DAVA;
 const String EXCEPTION_CLASS_UI_TEXT_FIELD = "UITextField";
 const String EXCEPTION_CLASS_UI_LIST = "UIList";
 
-EditorUIPackageBuilder::EditorUIPackageBuilder(PackageNode *_basePackage, ControlsContainerNode *_insertingTarget, int32 _insertingIndex, PackageCommandExecutor *_commandExecutor)
-    : packageNode(nullptr)
-    , basePackage(_basePackage)
-    , insertingTarget(_insertingTarget)
-    , insertingIndex(_insertingIndex)
-    , currentObject(nullptr)
-    , commandExecutor(SafeRetain(_commandExecutor))
+EditorUIPackageBuilder::EditorUIPackageBuilder()
+    : currentObject(nullptr)
+    , currentSection(nullptr)
 {
-    if (!commandExecutor)
-        commandExecutor = new DefaultPackageCommandExecutor();
 }
 
 EditorUIPackageBuilder::~EditorUIPackageBuilder()
 {
-    SafeRelease(commandExecutor);
-    SafeRelease(packageNode);
-    basePackage = nullptr;
-    insertingTarget = nullptr;
+    for (PackageNode *importedPackage : importedPackages)
+        importedPackage->Release();
+    importedPackages.clear();
+    
+    for (ControlNode *control : rootControls)
+        control->Release();
+    rootControls.clear();
 }
 
-void EditorUIPackageBuilder::BeginPackage(const FilePath &packagePath)
+void EditorUIPackageBuilder::BeginPackage(const FilePath &aPackagePath)
 {
-    DVASSERT(packageNode == nullptr);
-    SafeRelease(packageNode);
-    
-    if (basePackage) // if there is exists base package we skip creating new one
-    {
-        packageNode = SafeRetain(basePackage);
-    }
-    else
-    {
-        ScopedPtr<PackageRef> ref(new PackageRef(packagePath));
-        packageNode = new PackageNode(ref);
-    }
+    DVASSERT(packagePath.IsEmpty());
+    packagePath = aPackagePath;
 }
 
 void EditorUIPackageBuilder::EndPackage()
 {
-    DVASSERT(packageNode != nullptr);
 }
 
-bool EditorUIPackageBuilder::ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader)
+bool EditorUIPackageBuilder::ProcessImportedPackage(const String &packagePathStr, AbstractUIPackageLoader *loader)
 {
-    PackageNode *importedPackage = packageNode->FindImportedPackage(packagePath);
-    if (importedPackage)
-        return true;
-    
-    EditorUIPackageBuilder *builder = new EditorUIPackageBuilder();
-    if (loader->LoadPackage(packagePath, builder))
+    FilePath packagePath(packagePathStr);
+    for (PackageNode *package : importedPackages)
     {
-        importedPackage = SafeRetain(builder->packageNode);
+        if (package->GetPackageRef()->GetPath() == packagePath)
+            return true;
     }
-    SafeDelete(builder);
     
-    if (importedPackage)
+    EditorUIPackageBuilder builder;
+    if (loader->LoadPackage(packagePath, &builder))
     {
-        if (basePackage)
-            commandExecutor->AddImportedPackageIntoPackage(importedPackage, packageNode);
-        else
-            packageNode->GetImportedPackagesNode()->Add(importedPackage);
-        
-        SafeRelease(importedPackage);
-
+        RefPtr<PackageNode> importedPackage = builder.BuildPackage();
+        importedPackages.push_back(SafeRetain(importedPackage.Get()));
         return true;
     }
-    else
-    {
-        DVASSERT(false);
-        return false;
-    }
+    
+    return false;
 }
 
 UIControl *EditorUIPackageBuilder::BeginControlWithClass(const String &className)
@@ -122,20 +97,26 @@ UIControl *EditorUIPackageBuilder::BeginControlWithCustomClass(const String &cus
 
 UIControl *EditorUIPackageBuilder::BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String *customClassName, AbstractUIPackageLoader *loader)
 {
-    PackageControlsNode *controlsNode = nullptr;
-    PackageNode *package = packageName.empty() ? packageNode : packageNode->GetImportedPackagesNode()->FindPackageByName(packageName);
-    controlsNode = package->GetPackageControlsNode();
-
     ControlNode *prototypeNode = nullptr;
-    if (controlsNode)
+    if (packageName.empty())
     {
-        prototypeNode = controlsNode->FindControlNodeByName(prototypeName);
-        if (prototypeNode == nullptr && packageName.empty())
+        prototypeNode = FindRootControl(prototypeName);
+        if (prototypeNode == nullptr)
         {
             if (loader->LoadControlByName(prototypeName, this))
-                prototypeNode = controlsNode->FindControlNodeByName(prototypeName);
+                prototypeNode = FindRootControl(prototypeName);
         }
-        
+    }
+    else
+    {
+        for (PackageNode *importedPackage : importedPackages)
+        {
+            if (importedPackage->GetName() == packageName)
+            {
+                prototypeNode = importedPackage->GetPackageControlsNode()->FindControlNodeByName(prototypeName);
+                break;
+            }
+        }
     }
     
     DVASSERT(prototypeNode);
@@ -186,29 +167,9 @@ void EditorUIPackageBuilder::EndControl(bool isRoot)
     if (addToParent)
     {
         if (controlsStack.empty() || isRoot)
-        {
-            if (basePackage)
-            {
-                ControlsContainerNode *container;
-                if (insertingTarget)
-                    container = insertingTarget;
-                else
-                    container = packageNode->GetPackageControlsNode();
-                
-                int32 index = insertingIndex;
-                if (index == -1)
-                    index = container->GetCount();
-                commandExecutor->InsertControl(lastControl, container, index);
-            }
-            else
-            {
-                packageNode->GetPackageControlsNode()->Add(lastControl);
-            }
-        }
+            rootControls.push_back(SafeRetain(lastControl));
         else
-        {
             controlsStack.back().node->Add(lastControl);
-        }
     }
     SafeRelease(lastControl);
 }
@@ -305,9 +266,48 @@ void EditorUIPackageBuilder::ProcessProperty(const InspMember *member, const Var
     }
 }
 
-RefPtr<PackageNode> EditorUIPackageBuilder::GetPackageNode() const
+RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
 {
-    return DAVA::RefPtr<PackageNode>(SafeRetain(packageNode));
+    DVASSERT(!packagePath.IsEmpty());
+    RefPtr<PackageRef> ref(new PackageRef(packagePath));
+    RefPtr<PackageNode> package(new PackageNode(ref.Get()));
+    
+    for (PackageNode *importedPackage : importedPackages)
+    {
+        package->GetImportedPackagesNode()->Add(importedPackage);
+    }
+    
+    for (ControlNode *control : rootControls)
+    {
+        package->GetPackageControlsNode()->Add(control);
+    }
+    
+    return package;
+}
+
+const Vector<ControlNode*> &EditorUIPackageBuilder::GetRootControls() const
+{
+    return rootControls;
+}
+
+const Vector<PackageNode*> &EditorUIPackageBuilder::GetImportedPackages() const
+{
+    return importedPackages;
+}
+
+void EditorUIPackageBuilder::AddImportedPackage(PackageNode *node)
+{
+    importedPackages.push_back(SafeRetain(node));
+}
+
+ControlNode *EditorUIPackageBuilder::FindRootControl(const DAVA::String &name) const
+{
+    for (ControlNode *control : rootControls)
+    {
+        if (control->GetName() == name)
+            return control;
+    }
+    return nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
