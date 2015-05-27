@@ -53,7 +53,7 @@
 #include <link.h>
 #include <signal.h>
 
-#if __clang_minor__ <= 5
+#if __clang_minor__ < 5
 ///------------------------------------------------------------------------
 ///--- ucontext is not proided in NDK-10
 ///--- begin stab from <sys/ucontext.h>
@@ -454,6 +454,7 @@ extern t_unw_get_proc_name unw_get_proc_name ;
 bool DynLoadLibunwind();
 #else
 typedef uint32_t  kernel_sigmask_t[2];
+#if __clang_minor__ < 5
 typedef struct ucontext {
     uint32_t uc_flags;
     struct ucontext* uc_link;
@@ -461,6 +462,7 @@ typedef struct ucontext {
     sigcontext uc_mcontext;
     kernel_sigmask_t uc_sigmask;
 } ucontext_t;
+#endif // __clang_minor__ < 5
 #endif //#if defined(__arm__)
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 #endif /* #ifndef __DAVAENGINE_LIBUNWIND_STAB_H__ */

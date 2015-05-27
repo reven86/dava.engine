@@ -215,7 +215,7 @@ namespace DAVA
 				if (found!=std::string::npos && found > 0)
 				{
 					char cv = ver.at(found-1);
-					int major = atoi(&cv);
+					int major = cv - '0';
 					if(major >= 3)
 					{
 						RenderManager::Create(Core::RENDERER_OPENGL_ES_3_0);
