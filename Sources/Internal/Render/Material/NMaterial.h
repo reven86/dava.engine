@@ -86,6 +86,10 @@ class RenderVariantInstance
     Vector<MaterialBufferBinding *> materialBufferBindings;
     
     uint32 renderLayer;
+
+    RenderVariantInstance();
+    RenderVariantInstance(const RenderVariantInstance&) = delete;
+    ~RenderVariantInstance();
 };
 
 class NMaterial : public DataNode
@@ -96,6 +100,7 @@ public:
     ~NMaterial();
 
     void Load(KeyedArchive * archive, SerializationContext * serializationContext) override;
+    NMaterial* Clone();
 
     void SetFXName(const FastName & fxName);
     const FastName & GetFXName();
@@ -163,7 +168,7 @@ private:
     const FastName& GetQualityGroup();
 
     void AddChildMaterial(NMaterial *material);
-    void RemoveChildMaterial(NMaterial *material);
+    void RemoveChildMaterial(NMaterial *material);    
 
 private:
     //config time
