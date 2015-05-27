@@ -52,6 +52,7 @@ public:
     
 #endif
 
+    
 
 class Image : public BaseObject
 {
@@ -85,7 +86,7 @@ public:
 
     Vector<Image *> CreateMipMapsImages(bool isNormalMap = false);
 
-    void Normalize();
+    bool Normalize();
 
     // changes size of image canvas to required size, if new size is bigger, sets 0 to all new pixels
     void ResizeCanvas(uint32 newWidth, uint32 newHeight);
@@ -106,25 +107,11 @@ public:
 
     // changes size of image canvas to square
     void ResizeToSquare();
-
-	/*
-     //	void ConvertToFormat(PixelFormat format);
-        \todo extract all image format conversion functions to separate functions to allow to use them in different places, like textures.
-        enum eAlphaAction
-        {  
-            ALPHA_ACTION_NONE,
-            ALPHA_ACTION_REMOVE_PREMULTIPLICATION,
-            ALPHA_ACTION_ADD_PREMULTIPLICATION, 
-        };
-        static void ConvertFromRGBA8888toRGB565(const uint8 * sourceData, int32 width, int32 height, uint8 * destData, eAlphaAction action = ALPHA_ACTION_NONE);
-        static void ConvertFromRGBA8888toRGBA4444(const uint8 * sourceData, int32 width, int32 height, uint8 * destData, eAlphaAction action = ALPHA_ACTION_NONE);
-        static void ConvertFromRGBA8888toA8(const uint8 * sourceData, int32 width, int32 height, uint8 * destData, eAlphaAction action = ALPHA_ACTION_NONE);
-        
-     */
-    
-    
     void FlipVertical();
     void FlipHorizontal();
+    void RotateDeg(int degree);
+    void Rotate90Right();
+    void Rotate90Left();
 
 private:
 
@@ -134,6 +121,11 @@ private:
 	template<class Type>
 	void FlipHorizontal(Type *buffer, uint32 width, uint32 height);
 
+    template<class Type>
+    void Rotate90Right(Type *srcBuffer, Type *dstBuffer, uint32 sideLen);
+
+    template<class Type>
+    void Rotate90Left(Type *srcBuffer, Type *dstBuffer, uint32 sideLen);
 
 public:
     uint32 dataSize;
@@ -176,6 +168,30 @@ void Image::FlipHorizontal(Type *buffer, uint32 width, uint32 height)
 			Swap(buffer[y + x], buffer[y + width - x - 1]);
 		}
 	}
+}
+
+template<class Type>
+void Image::Rotate90Right(Type *src, Type *dst, uint32 sideLen)
+{
+    for (uint32 y = 0; y < sideLen; ++y)
+    {
+        for (uint32 x = 0; x < sideLen; ++x)
+        {
+            dst[(sideLen - y - 1) + (x * sideLen)] = src[x + y * sideLen];
+        }
+    }
+}
+
+template<class Type>
+void Image::Rotate90Left(Type *src, Type *dst, uint32 sideLen)
+{
+    for (uint32 y = 0; y < sideLen; ++y)
+    {
+        for (uint32 x = 0; x < sideLen; ++x)
+        {
+            dst[x + y * sideLen] = src[(sideLen - y - 1) + (x * sideLen)];
+        }
+    }
 }
 
 

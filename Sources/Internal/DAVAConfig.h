@@ -52,6 +52,8 @@
 
 //#define SHOW_FRAME_TIME	// shows milliseconds per fame
 
+//#define LOCALIZATION_DEBUG // enable graphic debugging info for displaying of text 
+
 //#define __DAVAENGINE_RENDER_AUTOCONFIG__	// it will use DAVANENGINE_OPENGL for MacOS / iPhone, and 
 //#define __DAVAENGINE_DIRECTX9__
 #define __DAVAENGINE_OPENGL__

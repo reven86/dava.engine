@@ -289,7 +289,8 @@ bool Landscape::BuildHeightmap()
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     bool retValue = false;
-    if(heightmapPath.IsEqualToExtension(".png"))
+
+    if(DAVA::TextureDescriptor::IsSourceTextureExtension(heightmapPath.GetExtension()))
     {
         Vector<Image *> imageSet;
         ImageSystem::Instance()->Load(heightmapPath, imageSet);
