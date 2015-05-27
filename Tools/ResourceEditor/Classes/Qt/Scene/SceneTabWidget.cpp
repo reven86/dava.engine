@@ -95,6 +95,16 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
 	QObject::connect(SceneSignals::Instance(), SIGNAL(ModifyStatusChanged(SceneEditor2 *, bool)), this, SLOT(SceneModifyStatusChanged(SceneEditor2 *, bool)));
 
 	SetCurrentTab(0);
+
+    auto mouseWheelHandler = [&]( int ofs )
+    {
+        if ( curScene == nullptr )
+            return;
+
+        curScene->cameraSystem->MoveToStep( ofs );
+    };
+
+    connect( davaWidget->GetGLWindow(), &OpenGLWindow::mouseScrolled, mouseWheelHandler );
 }
 
 SceneTabWidget::~SceneTabWidget()

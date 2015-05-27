@@ -56,6 +56,7 @@ class OpenGLWindow
     
 signals:
     void mousePressed();
+    void mouseScrolled( int ofs );
     
 public:
     OpenGLWindow();

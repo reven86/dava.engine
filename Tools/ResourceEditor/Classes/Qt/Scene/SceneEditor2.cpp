@@ -55,8 +55,14 @@
 #include "Scene/System/EditorLODSystem.h"
 
 
+#include <QShortcut>
 
-const FastName MATERIAL_FOR_REBIND = FastName("Global");
+
+namespace
+{
+    const FastName MATERIAL_FOR_REBIND = FastName( "Global" );
+}
+
 
 SceneEditor2::SceneEditor2()
     : Scene()
@@ -165,22 +171,6 @@ SceneEditor2::SceneEditor2()
     SceneSignals::Instance()->EmitOpened(this);
 
     wasChanged = false;
-
-    //RenderTechnique * technique1 = RenderTechniqueSingleton::Instance()->RetainRenderTechniqueByName(FastName("~res:/Materials/Legacy/PixelLit.Opaque.material"));
-    //FastNameSet set;
-    //technique1->GetPassByIndex(technique1->GetIndexByName(FastName("ForwardPass")))->RecompileShader(set);
-
-    //RenderTechnique * technique2 = RenderTechniqueSingleton::Instance()->RetainRenderTechniqueByName(FastName("~res:/Materials/Legacy/PixelLit.Alphatest.material"));
-    //technique2->GetPassByIndex(technique2->GetIndexByName(FastName("ForwardPass")))->RecompileShader(set);
-
-    //RenderTechnique * technique3 = RenderTechniqueSingleton::Instance()->RetainRenderTechniqueByName(FastName("~res:/Materials/Legacy/Textured.Opaque.material"));
-    //technique3->GetPassByIndex(technique3->GetIndexByName(FastName("ForwardPass")))->RecompileShader(set);
-
-    //RenderTechnique * technique4 = RenderTechniqueSingleton::Instance()->RetainRenderTechniqueByName(FastName("~res:/Materials/Legacy/Textured.Alphatest.material"));
-    //technique4->GetPassByIndex(technique4->GetIndexByName(FastName("ForwardPass")))->RecompileShader(set);
-
-    //RenderTechnique * technique5 = RenderTechniqueSingleton::Instance()->RetainRenderTechniqueByName(FastName("~res:/Materials/Legacy/Textured.Alphablend.material"));
-    //technique5->GetPassByIndex(technique5->GetIndexByName(FastName("ForwardPass")))->RecompileShader(set);
 }
 
 SceneEditor2::~SceneEditor2()
@@ -745,6 +735,3 @@ void SceneEditor2::Deactivate()
     Scene::Deactivate();
     SceneSignals::Instance()->EmitDeactivated(this);
 }
-
-
-

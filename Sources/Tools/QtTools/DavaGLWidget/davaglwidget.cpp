@@ -172,6 +172,7 @@ void OpenGLWindow::mouseDoubleClickEvent(QMouseEvent *e)
 void OpenGLWindow::wheelEvent(QWheelEvent *e)
 {
     controlMapper->wheelEvent(e);
+    emit mouseScrolled( e->delta() );
 }
 
 void OpenGLWindow::handleDragMoveEvent(QDragMoveEvent* e)

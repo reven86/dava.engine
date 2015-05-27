@@ -14,6 +14,7 @@ FocusTracker::FocusTracker( DavaGLWidget* _glWidget )
     , glWindow( _glWidget->GetGLWindow() )
     , isFocused( false )
 {
+    glWidget->installEventFilter( this );
     glWindow->installEventFilter( this );
 }
 
@@ -36,6 +37,17 @@ bool FocusTracker::eventFilter( QObject* watched, QEvent* event )
             OnFocusOut();
             break;
 
+        default:
+            break;
+        }
+    }
+    if ( watched == glWidget )
+    {
+        switch ( event->type() )
+        {
+        case QEvent::FocusOut:
+            OnFocusOut();
+            break;
         default:
             break;
         }
