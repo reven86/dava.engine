@@ -153,8 +153,8 @@ RenderBatch * RenderBatch::Clone(RenderBatch * destination)
     SafeRelease(rb->dataSource);
 	rb->dataSource = SafeRetain(dataSource);    
 	
-    SafeRelease(rb->material);
 #if RHI_COMPLETE
+    SafeRelease(rb->material);
 	if(material)
 	{
 		NMaterial *mat = material->Clone();
@@ -163,6 +163,8 @@ RenderBatch * RenderBatch::Clone(RenderBatch * destination)
 
  		//rb->material->SetMaterialSystem(NULL);
 	}
+#else
+    rb->SetMaterial(material);
 #endif RHI_COMPLETE
 
     rb->vertexBuffer = vertexBuffer;

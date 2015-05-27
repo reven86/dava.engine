@@ -718,7 +718,7 @@ VPROG_BEGIN
 
 #elif defined(SPEED_TREE_LEAF) //legacy for old tree lighting
     
-    VP_OUT(varVertexColor).xyz = inVertexColor.xyz * treeLeafColorMul * treeLeafOcclusionMul + float3(treeLeafOcclusionOffset,treeLeafOcclusionOffset,treeLeafOcclusionOffset);
+    VP_OUT(varVertexColor).xyz = inVertexColor.xyz * treeLeafColorMul.xyz * treeLeafOcclusionMul + float3(treeLeafOcclusionOffset,treeLeafOcclusionOffset,treeLeafOcclusionOffset);
 
 #endif
 

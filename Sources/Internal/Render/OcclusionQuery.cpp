@@ -122,7 +122,7 @@ bool OcclusionQuery::IsResultAvailable()
     return (available != 0);
 #endif
 #endif // RHI_COMPLETE
-	return false;
+	return true;
 }
     
 void OcclusionQuery::GetQuery(uint32 * resultValue)
