@@ -921,6 +921,8 @@ _ExecuteQueuedCommands()
     _CmdQueueSync.Lock();
     _CurRenderQueueSize = 0;
     _CmdQueueSync.Unlock();
+    
+    _End_Frame();
 }
 
 
@@ -949,8 +951,6 @@ gles2_Present()
 #else
     _ExecuteQueuedCommands(); 
 #endif
-
-    _End_Frame();
 
     ProgGLES2::InvalidateAllConstBufferInstances();
 }
