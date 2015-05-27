@@ -3,14 +3,14 @@
 
 #include "DumpViewerWidget.h"
 
-#include "Models/SymbolsTreeModel.h"
-#include "Models/SymbolsFilterModel.h"
-#include "Models/BranchTreeModel.h"
-#include "Models/BlockListModel.h"
+#include "Classes/Qt/DeviceInfo/DeviceInfo/Models/SymbolsTreeModel.h"
+#include "Classes/Qt/DeviceInfo/DeviceInfo/Models/SymbolsFilterModel.h"
+#include "Classes/Qt/DeviceInfo/DeviceInfo/Models/BranchTreeModel.h"
+#include "Classes/Qt/DeviceInfo/DeviceInfo/Models/BlockListModel.h"
 
-#include "ProfilingSession.h"
-#include "Branch.h"
-#include "MemoryDump.h"
+#include "Classes/Qt/DeviceInfo/DeviceInfo/Branch.h"
+#include "Classes/Qt/DeviceInfo/DeviceInfo/ProfilingSession.h"
+#include "Classes/Qt/DeviceInfo/DeviceInfo/MemorySnapshot.h"
 
 #include <QDebug>
 #include <QFileDialog>
@@ -26,12 +26,11 @@
 
 using namespace DAVA;
 
-DumpViewerWidget::DumpViewerWidget(const MemorySnapshot& brief, QWidget* parent)
+DumpViewerWidget::DumpViewerWidget(const MemorySnapshot* snapshot_, QWidget* parent)
     : QWidget(parent, Qt::Window)
-    , dumpBrief(brief)
-    , memoryDump(brief.Dump())
+    , snapshot(snapshot_)
 {
-    DVASSERT(memoryDump != nullptr);
+    DVASSERT(snapshot != nullptr && snapshot->IsLoaded());
     Init();
 }
 
@@ -57,7 +56,7 @@ void DumpViewerWidget::Init()
 
 void DumpViewerWidget::InitSymbolsView()
 {
-    symbolsTreeModel = new SymbolsTreeModel(memoryDump->SymbolTable());
+    symbolsTreeModel = new SymbolsTreeModel(*snapshot->SymbolTable());
     symbolsFilterModel = new SymbolsFilterModel;
     symbolsFilterModel->setSourceModel(symbolsTreeModel);
     symbolsFilterModel->sort(0);
@@ -88,7 +87,7 @@ void DumpViewerWidget::InitSymbolsView()
 
 void DumpViewerWidget::InitBranchView()
 {
-    branchTreeModel = new BranchTreeModel(memoryDump);
+    branchTreeModel = new BranchTreeModel(snapshot);
     blockListModel = new BlockListModel;
 
     branchTree = new QTreeView;
@@ -125,9 +124,9 @@ void DumpViewerWidget::SymbolView_OnBuldTree()
 void DumpViewerWidget::BranchView_SelectionChanged(const QModelIndex& current, const QModelIndex& previous)
 {
     Branch* branch = static_cast<Branch*>(current.internalPointer());
-    Vector<const MMBlock*> blocks = branch->GetMemoryBlocks();
+    Vector<MMBlock> blocks = branch->GetMemoryBlocks();
 
-    blockListModel->PrepareModel(blocks);
+    blockListModel->PrepareModel(std::forward<Vector<MMBlock>>(blocks));
 }
 
 void DumpViewerWidget::BranchBlockView_DoubleClicked(const QModelIndex& current)

@@ -14,6 +14,9 @@
 
 #include "Classes/Qt/DeviceInfo/DeviceInfo/ProfilingSession.h"
 #include "Classes/Qt/DeviceInfo/DeviceInfo/MemProfWidget.h"
+#include "Classes/Qt/DeviceInfo/DeviceInfo/MemProfController.h"
+
+using namespace DAVA;
 
 DeviceListWidget::DeviceListWidget( QWidget *parent )
     : QWidget( parent, Qt::Window )
@@ -39,12 +42,17 @@ QTreeView* DeviceListWidget::ItemView()
 
 void DeviceListWidget::OnViewDump()
 {
-    DAVA::FilePath dumpDir("~doc:/memdumps");
-    //QString filename = QFileDialog::getOpenFileName(this, "Select dump file", "d:\\share\\dumps\\test", "Dumps (*.bin)");
-    QString filename = QFileDialog::getOpenFileName(this, "Select dump file", dumpDir.GetAbsolutePathname().c_str(), "Dumps (*.bin)");
-    if (!filename.isEmpty())
+    //DAVA::FilePath dumpDir("~doc:/memdumps/memory_dumps/2015-04-26 130711 win32-game-dumps");
+    DAVA::FilePath dumpDir("/Users/max/projects/wot/xxx");
+    //QString filename = QFileDialog::getOpenFileName(this, "Select dump file", dumpDir.GetAbsolutePathname().c_str(), "Snapshots (*.bin)");
+    //if (!filename.isEmpty())
     {
-        std::string s = filename.toStdString();
+        //std::string s = filename.toStdString();
+        //FilePath srcDir(s);
+        //new MemProfController(srcDir.GetDirectory(), this);
+        new MemProfController(dumpDir, this);
+
+        
         // ProfilingSession will be deleted on MemProfWidget destruction
         //ProfilingSession* profilingSession = new ProfilingSession(DAVA::FilePath(s));
         //MemProfWidget* w = new MemProfWidget(profilingSession, this);

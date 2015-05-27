@@ -14,7 +14,7 @@ BlockListModel::BlockListModel(QObject* parent)
 BlockListModel::~BlockListModel()
 {}
 
-void BlockListModel::PrepareModel(Vector<const MMBlock*>& blocks)
+void BlockListModel::PrepareModel(Vector<MMBlock>&& blocks)
 {
     beginResetModel();
     mblocks = std::move(blocks);
@@ -34,7 +34,7 @@ const MMBlock* BlockListModel::GetBlock(const QModelIndex& index) const
     {
         int row = index.row();
         DVASSERT(static_cast<size_t>(row) < mblocks.size());
-        return mblocks[row];
+        return &mblocks[row];
     }
     return nullptr;
 }
@@ -51,12 +51,12 @@ QVariant BlockListModel::data(const QModelIndex& index, int role) const
         int row = index.row();
         if (Qt::DisplayRole == role)
         {
-            const MMBlock* block = mblocks[row];
+            const MMBlock& block = mblocks[row];
             return QString("order=%1, alloc=%2, tags=%3, hash=%4")
-                .arg(block->orderNo, 10)
-                .arg(FormatNumberWithDigitGroups(block->allocByApp).c_str(), 12)
-                .arg(block->tags, 8, 16)
-                .arg(block->bktraceHash, 10);
+                .arg(block.orderNo, 10)
+                .arg(FormatNumberWithDigitGroups(block.allocByApp).c_str(), 12)
+                .arg(block.tags, 8, 16)
+                .arg(block.bktraceHash, 10);
         }
     }
     return QVariant();

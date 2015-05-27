@@ -1,12 +1,12 @@
 #ifndef __BRANCHTREEMODEL_H__
 #define __BRANCHTREEMODEL_H__
 
-#include <QAbstractItemModel>
-
 #include "Base/BaseTypes.h"
 
+#include <QAbstractItemModel>
+
 struct Branch;
-class MemoryDump;
+class MemorySnapshot;
 
 class BranchTreeModel : public QAbstractItemModel
 {
@@ -18,7 +18,7 @@ public:
     };
 
 public:
-    BranchTreeModel(MemoryDump* mdump, QObject* parent = nullptr);
+    BranchTreeModel(const MemorySnapshot* snapshot, QObject* parent = nullptr);
     virtual ~BranchTreeModel();
 
     void PrepareModel(const DAVA::Vector<const char*>& names);
@@ -34,7 +34,7 @@ public:
     QModelIndex parent(const QModelIndex& index) const override;
 
 private:
-    MemoryDump* memoryDump = nullptr;
+    const MemorySnapshot* snapshot = nullptr;
     Branch* rootBranch = nullptr;
 };
 

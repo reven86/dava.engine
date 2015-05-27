@@ -3,18 +3,18 @@
 #include "BranchTreeModel.h"
 #include "DataFormat.h"
 
-#include "../MemoryDump.h"
-#include "../Branch.h"
+#include "Classes/Qt/DeviceInfo/DeviceInfo/Branch.h"
+#include "Classes/Qt/DeviceInfo/DeviceInfo/MemorySnapshot.h"
 
 #include <QColor>
 
 using namespace DAVA;
 
-BranchTreeModel::BranchTreeModel(MemoryDump* mdump, QObject* parent)
+BranchTreeModel::BranchTreeModel(const MemorySnapshot* snapshot_, QObject* parent)
     : QAbstractItemModel(parent)
-    , memoryDump(mdump)
+    , snapshot(snapshot_)
 {
-    DVASSERT(memoryDump != nullptr);
+    DVASSERT(snapshot != nullptr && snapshot->IsLoaded());
 }
 
 BranchTreeModel::~BranchTreeModel()
@@ -28,7 +28,7 @@ void BranchTreeModel::PrepareModel(const DAVA::Vector<const char*>& names)
 
     beginResetModel();
     SafeDelete(rootBranch);
-    rootBranch = memoryDump->CreateBranch(names);
+    rootBranch = snapshot->CreateBranch(names);
     endResetModel();
 }
 

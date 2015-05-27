@@ -15,9 +15,9 @@
 using namespace DAVA;
 using namespace DAVA::Net;
 
-MemProfController::MemProfController(const DAVA::Net::PeerDescription& peerDescr, QWidget *_parentWidget, QObject* parent)
+MemProfController::MemProfController(const DAVA::Net::PeerDescription& peerDescr, QWidget* parentWidget_, QObject* parent)
     : QObject(parent)
-    , parentWidget(_parentWidget)
+    , parentWidget(parentWidget_)
     , profiledPeer(peerDescr)
     , netClient(new MMNetClient)
     , profilingSession(new ProfilingSession)
@@ -27,6 +27,18 @@ MemProfController::MemProfController(const DAVA::Net::PeerDescription& peerDescr
                                 MakeFunction(this, &MemProfController::NetConnLost),
                                 MakeFunction(this, &MemProfController::NetStatRecieved),
                                 MakeFunction(this, &MemProfController::NetDumpRecieved));
+}
+
+MemProfController::MemProfController(const DAVA::FilePath& srcDir, QWidget* parentWidget_, QObject *parent)
+    : QObject(parent)
+    , parentWidget(parentWidget_)
+    , netClient(new MMNetClient)
+    , profilingSession(new ProfilingSession)
+{
+    if (profilingSession->LoadFromFile(srcDir))
+    {
+        ShowView();
+    }
 }
 
 MemProfController::~MemProfController() {}

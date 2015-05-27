@@ -7,7 +7,7 @@
 
 struct Branch;
 struct BranchDiff;
-class MemoryDump;
+class MemorySnapshot;
 
 class BranchDiffTreeModel : public QAbstractItemModel
 {
@@ -20,7 +20,7 @@ public:
     };
 
 public:
-    BranchDiffTreeModel(MemoryDump* mdump1, MemoryDump* mdump2, QObject* parent = nullptr);
+    BranchDiffTreeModel(const MemorySnapshot* snapshot1, const MemorySnapshot* snapshot2, QObject* parent = nullptr);
     virtual ~BranchDiffTreeModel();
 
     void PrepareModel(const DAVA::Vector<const char*>& names);
@@ -36,8 +36,8 @@ public:
     QModelIndex parent(const QModelIndex& index) const override;
 
 private:
-    MemoryDump* memoryDump1;
-    MemoryDump* memoryDump2;
+    const MemorySnapshot* snapshot1;
+    const MemorySnapshot* snapshot2;
     BranchDiff* rootDiff = nullptr;
     Branch* rootLeft = nullptr;
     Branch* rootRight = nullptr;

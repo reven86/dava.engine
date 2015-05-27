@@ -33,14 +33,16 @@
 #include "FileSystem/FilePath.h"
 #include "MemoryManager/MemoryManagerTypes.h"
 
-class MemoryDump;
+struct Branch;
 class BacktraceSymbolTable;
 
 class MemorySnapshot final
 {
 public:
     MemorySnapshot(const DAVA::FilePath& filename, const DAVA::MMDump* rawDump);
-    ~MemorySnapshot();
+    //MemorySnapshot(const MemorySnapshot&) = delete;
+    //MemorySnapshot& operator = (const MemorySnapshot&) = delete;
+    ~MemorySnapshot() = default;
 
     const DAVA::FilePath& FileName() const;
     DAVA::uint64 Timestamp() const;
@@ -54,15 +56,17 @@ public:
     void Unload();
 
     const BacktraceSymbolTable* SymbolTable() const;
-
-    // Get memory dump or null if not loaded
-    MemoryDump* Dump() const { return nullptr; }
-    void ReleaseDump() {}
+    
+    // Create call tree branch starting from given names
+    Branch* CreateBranch(const DAVA::Vector<const char*>& startNames) const;
 
 private:
     void Init(const DAVA::MMDump* rawDump);
     bool LoadFile();
     void BuildBlockMap();
+    
+    Branch* BuildPath(Branch* parent, int startFrame, const DAVA::Vector<const char*>& frames) const;
+    int FindNamesInBacktrace(const DAVA::Vector<const char*>& names, const DAVA::Vector<const char*>& frames) const;
 
 private:
     DAVA::FilePath fileName;
@@ -74,7 +78,7 @@ private:
 
     BacktraceSymbolTable* symbolTable = nullptr;
     DAVA::Vector<DAVA::MMBlock> mblocks;
-    DAVA::Map<DAVA::uint32, DAVA::Vector<const DAVA::MMBlock*>> blockMap;
+    DAVA::Map<DAVA::uint32, DAVA::Vector<DAVA::MMBlock>> blockMap;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -82,11 +86,6 @@ inline MemorySnapshot::MemorySnapshot(const DAVA::FilePath& filename, const DAVA
     : fileName(filename)
 {
     Init(rawDump);
-}
-
-inline MemorySnapshot::~MemorySnapshot()
-{
-    ReleaseDump();
 }
 
 inline const DAVA::FilePath& MemorySnapshot::FileName() const

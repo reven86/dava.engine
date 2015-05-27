@@ -34,7 +34,6 @@
 #include "Debug/DVAssert.h"
 
 #include "BacktraceSymbolTable.h"
-#include "MemoryDump.h"
 
 #include "ProfilingSession.h"
 
@@ -168,9 +167,9 @@ bool ProfilingSession::LoadSnapshot(size_t index)
 size_t ProfilingSession::ClosestStatItem(DAVA::uint64 timestamp) const
 {
     MemoryStatItem dummy(timestamp);
-    auto iter = std::lower_bound(stat.begin(), stat.end(), dummy, [](const MemoryStatItem& l, const MemoryStatItem& r) -> bool {
-        return l.Timestamp() < r.Timestamp();
-    });
+    auto less = [](const MemoryStatItem& l, const MemoryStatItem& r) -> bool { return l.Timestamp() < r.Timestamp(); };
+    
+    auto iter = std::lower_bound(stat.begin(), stat.end(), dummy, less);
     if (iter != stat.end())
     {
         return std::distance(stat.begin(), iter);
@@ -233,7 +232,6 @@ bool ProfilingSession::SaveLogHeader(const DAVA::MMStatConfig* config)
 
 void ProfilingSession::UpdateFileHeader(bool finalize)
 {
-    uint32 curPos = logFile->GetPos();
     logFile->Seek(0, File::SEEK_FROM_START);
 
     FileHeader header{};
@@ -317,10 +315,11 @@ bool ProfilingSession::LoadStatItems(size_t count, size_t itemSize)
     stat.reserve(count);
     while (nloaded < count && result)
     {
-        size_t nread = logFile->Read(&*buf.begin(), itemSize * BUF_CAPACITY);
-        DVASSERT(itemSize * BUF_CAPACITY == nread);
+        size_t toread = Min(BUF_CAPACITY * itemSize, (count - nloaded) * itemSize);
+        size_t nread = logFile->Read(&*buf.begin(), toread);
+        DVASSERT(toread == nread);
         DVASSERT(0 == nread % itemSize);
-        result = itemSize * BUF_CAPACITY == nread && 0 == nread % itemSize;
+        result = toread == nread && 0 == nread % itemSize;
         if (result)
         {
             const MMCurStat* rawStat = reinterpret_cast<const MMCurStat*>(buf.data());

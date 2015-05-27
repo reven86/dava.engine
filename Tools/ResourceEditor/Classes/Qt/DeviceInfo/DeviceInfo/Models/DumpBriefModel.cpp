@@ -66,7 +66,6 @@ QVariant DumpBriefModel::data(const QModelIndex& index, int role) const
     if (index.isValid() && profileSession != nullptr)
     {
         int row = index.row();
-        int clm = index.column();
         const MemorySnapshot& dumpBrief = profileSession->Snapshot(row);
         if (Qt::DisplayRole == role)
         {
@@ -77,8 +76,7 @@ QVariant DumpBriefModel::data(const QModelIndex& index, int role) const
         }
         else if (Qt::BackgroundRole == role)
         {
-            //if (dumpBrief.Snapshot() != nullptr)
-            //    return Qt::green;
+            // TODO: maybe colorize loaded snapshots
         }
     }
     return QVariant();

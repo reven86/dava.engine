@@ -11,7 +11,7 @@ public:
     BlockListModel(QObject* parent = nullptr);
     virtual ~BlockListModel();
 
-    void PrepareModel(DAVA::Vector<const DAVA::MMBlock*>& blocks);
+    void PrepareModel(DAVA::Vector<DAVA::MMBlock>&& blocks);
     void ResetModel();
 
     const DAVA::MMBlock* GetBlock(const QModelIndex& index) const;
@@ -20,5 +20,5 @@ public:
     QVariant data(const QModelIndex& index, int role) const override;
 
 private:
-    DAVA::Vector<const DAVA::MMBlock*> mblocks;
+    DAVA::Vector<DAVA::MMBlock> mblocks;
 };

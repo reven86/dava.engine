@@ -3,7 +3,7 @@
 #include "BranchDiffTreeModel.h"
 #include "DataFormat.h"
 
-#include "../MemoryDump.h"
+#include "Classes/Qt/DeviceInfo/DeviceInfo/MemorySnapshot.h"
 #include "../Branch.h"
 #include "../BranchDiff.h"
 
@@ -11,13 +11,13 @@
 
 using namespace DAVA;
 
-BranchDiffTreeModel::BranchDiffTreeModel(MemoryDump* mdump1, MemoryDump* mdump2, QObject* parent)
+BranchDiffTreeModel::BranchDiffTreeModel(const MemorySnapshot* snapshot1_, const MemorySnapshot* snapshot2_, QObject* parent)
     : QAbstractItemModel(parent)
-    , memoryDump1(mdump1)
-    , memoryDump2(mdump2)
+    , snapshot1(snapshot1_)
+    , snapshot2(snapshot2_)
 {
-    DVASSERT(memoryDump1 != nullptr);
-    DVASSERT(memoryDump2 != nullptr);
+    DVASSERT(snapshot1 != nullptr && snapshot1->IsLoaded());
+    DVASSERT(snapshot2 != nullptr && snapshot2->IsLoaded());
 }
 
 BranchDiffTreeModel::~BranchDiffTreeModel()
@@ -36,8 +36,8 @@ void BranchDiffTreeModel::PrepareModel(const DAVA::Vector<const char*>& names)
     SafeDelete(rootLeft);
     SafeDelete(rootRight);
 
-    rootLeft = memoryDump1->CreateBranch(names);
-    rootRight = memoryDump2->CreateBranch(names);
+    rootLeft = snapshot1->CreateBranch(names);
+    rootRight = snapshot2->CreateBranch(names);
     rootDiff = BranchDiff::Create(rootLeft, rootRight);
     endResetModel();
 }

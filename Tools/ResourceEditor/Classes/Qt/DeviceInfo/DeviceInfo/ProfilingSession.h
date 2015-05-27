@@ -53,8 +53,12 @@ class ProfilingSession
 {
 public:
     ProfilingSession();
-    ~ProfilingSession();
+    ProfilingSession(const ProfilingSession&) = delete;
+    ProfilingSession& operator = (const ProfilingSession&) = delete;
     // TODO: implement move semantic
+    //ProfilingSession(ProfilingSession&& other);
+    //ProfilingSession& operator = (ProfilingSession&& other);
+    ~ProfilingSession();
 
     bool StartNew(const DAVA::MMStatConfig* config, const DAVA::Net::PeerDescription& deviceInfo, const DAVA::FilePath& destDir);
     bool LoadFromFile(const DAVA::FilePath& srcDir);
@@ -70,6 +74,12 @@ public:
     // Flush file buffers to storage
     void Flush();
 
+    // Get index of the closest stat item or -1 if not found
+    size_t ClosestStatItem(DAVA::uint64 timestamp) const;
+    
+    // Load memory snapshot
+    bool LoadSnapshot(size_t index);
+    
     // Number of registered allocation pools
     size_t AllocPoolCount() const;
     // Number of registered memory block tags
@@ -91,12 +101,6 @@ public:
     // Get memory dump brief description by index, dumps are sorted by timestamp
     const MemorySnapshot& Snapshot(size_t index) const;
     const MemorySnapshot& LastSnapshot() const;
-
-    // Get index of the closest stat unit or -1 if not found
-    size_t ClosestStatItem(DAVA::uint64 timestamp) const;
-
-    // Load memory snapshot
-    bool LoadSnapshot(size_t index);
 
 private:
     bool CreateLogFile(const DAVA::MMStatConfig* config);

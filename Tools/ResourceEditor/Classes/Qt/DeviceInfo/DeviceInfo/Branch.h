@@ -37,14 +37,14 @@ struct Branch final
     Branch(const char* aName);
     ~Branch();
 
-    Branch* FindInChildren(const char* aName) const;
+    Branch* FindInChildren(const char* name) const;
     int ChildIndex(Branch* child) const;
 
     void AppendChild(Branch* child);
     void UpdateStat(DAVA::uint32 allocSize, DAVA::uint32 blockCount);
 
     // Get memory blocks from all children
-    DAVA::Vector<const DAVA::MMBlock*> GetMemoryBlocks() const;
+    DAVA::Vector<DAVA::MMBlock> GetMemoryBlocks() const;
 
     template<typename F>
     void SortChildren(F fn);
@@ -54,12 +54,12 @@ struct Branch final
     Branch* parent = nullptr;
     DAVA::Vector<Branch*> children;
 
-    DAVA::uint32 allocByApp = 0;        // Total allocated size in branch including children
-    DAVA::uint32 nblocks = 0;           // Total block count in branch including children
-    DAVA::Vector<const DAVA::MMBlock*> mblocks;     // Memory blocks belonging to leaf branch
+    DAVA::uint32 allocByApp = 0;            // Total allocated size in branch including children
+    DAVA::uint32 nblocks = 0;               // Total block count in branch including children
+    DAVA::Vector<DAVA::MMBlock> mblocks;    // Memory blocks belonging to leaf branch
 
 private:
-    static void CollectBlocks(const Branch* branch, DAVA::Vector<const DAVA::MMBlock*>& target);
+    static void CollectBlocks(const Branch* branch, DAVA::Vector<DAVA::MMBlock>& target);
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -67,7 +67,7 @@ template<typename F>
 inline void Branch::SortChildren(F fn)
 {
     std::sort(children.begin(), children.end(), fn);
-    for (auto child : children)
+    for (Branch* child : children)
     {
         child->SortChildren(fn);
     }

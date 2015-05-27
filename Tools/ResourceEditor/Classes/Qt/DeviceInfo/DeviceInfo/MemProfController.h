@@ -7,11 +7,11 @@
 #include "Network/PeerDesription.h"
 #include "MemoryManager/MemoryManagerTypes.h"
 
-namespace DAVA { namespace Net {
-
+namespace DAVA {
+class FilePath;
+namespace Net {
 struct IChannelListener;
 class MMNetClient;
-
 }}
 
 class MemProfWidget;
@@ -23,6 +23,7 @@ class MemProfController : public QObject
     
 public:
     MemProfController(const DAVA::Net::PeerDescription& peerDescr, QWidget *parentWidget, QObject *parent = nullptr);
+    MemProfController(const DAVA::FilePath& srcDir, QWidget *parentWidget, QObject *parent = nullptr);
     ~MemProfController();
 
     void ShowView();

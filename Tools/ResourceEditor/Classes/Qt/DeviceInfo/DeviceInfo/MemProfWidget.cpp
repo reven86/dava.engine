@@ -20,7 +20,6 @@
 
 #include "BranchDiff.h"
 #include "Branch.h"
-#include "MemoryDump.h"
 
 #include "MemProfWidget.h"
 #include "ui_MemProfWidget.h"
@@ -173,12 +172,12 @@ void MemProfWidget::DiffClicked()
 
     int index1 = selected[0];
     int index2 = selected[1];
-    if (profileSession->LoadDump(index1) && profileSession->LoadDump(index2))
+    if (profileSession->LoadSnapshot(index1) && profileSession->LoadSnapshot(index2))
     {
-        const MemorySnapshot& d0 = profileSession->Snapshot(index1);
-        const MemorySnapshot& d1 = profileSession->Snapshot(index2);
+        const MemorySnapshot& snapshot1 = profileSession->Snapshot(index1);
+        const MemorySnapshot& snapshot2 = profileSession->Snapshot(index2);
 
-        DiffViewerWidget* w = new DiffViewerWidget(d0, d1, this);
+        DiffViewerWidget* w = new DiffViewerWidget(&snapshot1, &snapshot2, this);
         w->resize(800, 600);
         w->show();
     }
@@ -187,10 +186,10 @@ void MemProfWidget::DiffClicked()
 void MemProfWidget::DumpBriefList_OnDoubleClicked(const QModelIndex& index)
 {
     int row = index.row();
-    if (profileSession->LoadDump(row))
+    if (profileSession->LoadSnapshot(row))
     {
-        const MemorySnapshot& brief = profileSession->Snapshot(row);
-        DumpViewerWidget* w = new DumpViewerWidget(brief, this);
+        const MemorySnapshot& snapshot = profileSession->Snapshot(row);
+        DumpViewerWidget* w = new DumpViewerWidget(&snapshot, this);
         w->resize(800, 600);
         w->show();
     }

@@ -30,6 +30,7 @@
 #include "Debug/DVAssert.h"
 #include "FileSystem/File.h"
 
+#include "Branch.h"
 #include "BacktraceSymbolTable.h"
 #include "MemorySnapshot.h"
 
@@ -42,7 +43,8 @@ bool MemorySnapshot::Load(BacktraceSymbolTable* symbolTable_)
 
     if (LoadFile())
     {
-
+        BuildBlockMap();
+        return true;
     }
     return false;
 }
@@ -53,6 +55,70 @@ void MemorySnapshot::Unload()
     blockMap.clear();
     mblocks.clear();
     mblocks.shrink_to_fit();
+}
+
+Branch* MemorySnapshot::CreateBranch(const DAVA::Vector<const char*>& startNames) const
+{
+    DVASSERT(IsLoaded());
+    
+    Branch* root = new Branch(nullptr);
+    for (auto& pair : blockMap)
+    {
+        auto& frames = symbolTable->GetFrames(pair.first);
+        auto& blocks = pair.second;
+        
+        if (!blocks.empty() && !frames.empty())
+        {
+            int startFrame = FindNamesInBacktrace(startNames, frames);
+            if (startFrame >= 0)
+            {
+                Branch* leaf = BuildPath(root, startFrame, frames);
+                
+                // Append memory blocks to leaf
+                uint32 allocByApp = 0;
+                leaf->mblocks.reserve(leaf->mblocks.size() + blocks.size());
+                for (auto& x : blocks)
+                {
+                    allocByApp += x.allocByApp;
+                    leaf->mblocks.emplace_back(x);
+                }
+                leaf->UpdateStat(allocByApp, static_cast<uint32>(blocks.size()));
+            }
+        }
+    }
+    // Sort children by symbol name
+    root->SortChildren([](const Branch* l, const Branch* r) -> bool {
+        return strcmp(l->name, r->name) < 0;
+    });
+    return root;
+}
+
+Branch* MemorySnapshot::BuildPath(Branch* parent, int startFrame, const DAVA::Vector<const char*>& frames) const
+{
+    do {
+        const char* curName = frames[startFrame];
+        Branch* branch = parent->FindInChildren(curName);
+        if (nullptr == branch)
+        {
+            branch = new Branch(curName);
+            parent->AppendChild(branch);
+        }
+        parent = branch;
+    } while (startFrame --> 0);
+    return parent;
+}
+
+int MemorySnapshot::FindNamesInBacktrace(const DAVA::Vector<const char*>& names, const DAVA::Vector<const char*>& frames) const
+{
+    int index = static_cast<int>(frames.size() - 1);
+    do {
+        auto iterFind = std::find(names.begin(), names.end(), frames[index]);
+        if (iterFind != names.end())
+        {
+            return index;
+        }
+    } while (index --> 0);
+    return -1;
 }
 
 bool MemorySnapshot::LoadFile()
@@ -120,13 +186,15 @@ bool MemorySnapshot::LoadFile()
 
 void MemorySnapshot::BuildBlockMap()
 {
+    DAVA::Map<DAVA::uint32, DAVA::Vector<DAVA::MMBlock>> map;
     for (MMBlock& curBlock : mblocks)
     {
-        auto iterAt = blockMap.find(curBlock.bktraceHash);
-        if (iterAt == blockMap.end())
+        auto iterAt = map.find(curBlock.bktraceHash);
+        if (iterAt == map.end())
         {
-            iterAt = blockMap.emplace(curBlock.bktraceHash, DAVA::Vector<const DAVA::MMBlock*>()).first;
+            iterAt = map.emplace(curBlock.bktraceHash, DAVA::Vector<DAVA::MMBlock>()).first;
         }
-        iterAt->second.push_back(&curBlock);
+        iterAt->second.emplace_back(curBlock);
     }
+    blockMap.swap(map);
 }

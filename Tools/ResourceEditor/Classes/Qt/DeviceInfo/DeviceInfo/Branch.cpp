@@ -44,11 +44,11 @@ Branch::~Branch()
     }
 }
 
-Branch* Branch::FindInChildren(const char* aName) const
+Branch* Branch::FindInChildren(const char* name_) const
 {
     for (auto child : children)
     {
-        if (child->name == aName)
+        if (child->name == name_)
         {
             return child;
         }
@@ -92,26 +92,26 @@ void Branch::UpdateStat(DAVA::uint32 allocSize, DAVA::uint32 blockCount)
     }
 }
 
-Vector<const MMBlock*> Branch::GetMemoryBlocks() const
+Vector<MMBlock> Branch::GetMemoryBlocks() const
 {
-    Vector<const MMBlock*> result;
+    Vector<MMBlock> result;
     if (nblocks > 0)
     {
         result.reserve(nblocks);
         CollectBlocks(this, result);
 
-        std::sort(result.begin(), result.end(), [](const MMBlock* l, const MMBlock* r) -> bool {
-            return l->orderNo < r->orderNo;
+        std::sort(result.begin(), result.end(), [](const MMBlock& l, const MMBlock& r) -> bool {
+            return l.orderNo < r.orderNo;
         });
     }
     return result;
 }
 
-void Branch::CollectBlocks(const Branch* branch, Vector<const MMBlock*>& target)
+void Branch::CollectBlocks(const Branch* branch, Vector<MMBlock>& target)
 {
-    for (auto block : branch->mblocks)
+    for (auto& block : branch->mblocks)
     {
-        target.push_back(block);
+        target.emplace_back(block);
     }
     for (auto child : branch->children)
     {

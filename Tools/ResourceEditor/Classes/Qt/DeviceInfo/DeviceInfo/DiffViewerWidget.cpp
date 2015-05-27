@@ -8,10 +8,10 @@
 #include "Models/BranchDiffTreeModel.h"
 #include "Models/BlockListModel.h"
 
-#include "ProfilingSession.h"
-#include "Branch.h"
-#include "BranchDiff.h"
-#include "MemoryDump.h"
+#include "Classes/Qt/DeviceInfo/DeviceInfo/Branch.h"
+#include "Classes/Qt/DeviceInfo/DeviceInfo/BranchDiff.h"
+#include "Classes/Qt/DeviceInfo/DeviceInfo/ProfilingSession.h"
+#include "Classes/Qt/DeviceInfo/DeviceInfo/MemorySnapshot.h"
 
 #include <QDebug>
 #include <QFileDialog>
@@ -28,15 +28,13 @@
 
 using namespace DAVA;
 
-DiffViewerWidget::DiffViewerWidget(const MemorySnapshot& brief1, const MemorySnapshot& brief2, QWidget* parent)
+DiffViewerWidget::DiffViewerWidget(const MemorySnapshot* snapshot1_, const MemorySnapshot* snapshot2_, QWidget* parent)
     : QWidget(parent, Qt::Window)
-    , dumpBrief1(brief1)
-    , dumpBrief2(brief2)
-    , memoryDump1(brief1.Dump())
-    , memoryDump2(brief2.Dump())
+    , snapshot1(snapshot1_)
+    , snapshot2(snapshot2_)
 {
-    DVASSERT(memoryDump1 != nullptr);
-    DVASSERT(memoryDump2 != nullptr);
+    DVASSERT(snapshot1 != nullptr && snapshot1->IsLoaded());
+    DVASSERT(snapshot2 != nullptr && snapshot2->IsLoaded());
     Init();
 }
 
@@ -63,7 +61,7 @@ void DiffViewerWidget::Init()
 
 void DiffViewerWidget::InitSymbolsView()
 {
-    symbolsTreeModel = new SymbolsTreeModel(memoryDump1->SymbolTable());
+    symbolsTreeModel = new SymbolsTreeModel(*snapshot1->SymbolTable());
     symbolsFilterModel = new SymbolsFilterModel;
     symbolsFilterModel->setSourceModel(symbolsTreeModel);
     symbolsFilterModel->sort(0);
@@ -94,7 +92,7 @@ void DiffViewerWidget::InitSymbolsView()
 
 void DiffViewerWidget::InitBranchView()
 {
-    branchTreeModel = new BranchDiffTreeModel(memoryDump1, memoryDump2);
+    branchTreeModel = new BranchDiffTreeModel(snapshot1, snapshot2);
     blockListModel1 = new BlockListModel;
     blockListModel2 = new BlockListModel;
 
@@ -143,16 +141,16 @@ void DiffViewerWidget::BranchView_SelectionChanged(const QModelIndex& current, c
 
     if (branchDiff->left)
     {
-        Vector<const MMBlock*> blocks = branchDiff->left->GetMemoryBlocks();
-        blockListModel1->PrepareModel(blocks);
+        Vector<MMBlock> blocks = branchDiff->left->GetMemoryBlocks();
+        blockListModel1->PrepareModel(std::forward<Vector<MMBlock>>(blocks));
     }
     else
         blockListModel1->ResetModel();
 
     if (branchDiff->right)
     {
-        Vector<const MMBlock*> blocks = branchDiff->right->GetMemoryBlocks();
-        blockListModel2->PrepareModel(blocks);
+        Vector<MMBlock> blocks = branchDiff->right->GetMemoryBlocks();
+        blockListModel2->PrepareModel(std::forward<Vector<MMBlock>>(blocks));
     }
     else
         blockListModel2->ResetModel();
