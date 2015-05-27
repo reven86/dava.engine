@@ -73,6 +73,7 @@ Entity::Entity()
     , tag(0)
     , family(nullptr)
     , id(0)
+    , sceneId(0)
 {
 	flags = NODE_VISIBLE | NODE_UPDATABLE | NODE_LOCAL_MATRIX_IDENTITY;
     UpdateFamily();
@@ -568,6 +569,7 @@ Entity* Entity::Clone(Entity *dstNode)
 		
 	dstNode->name = name;
 	dstNode->tag = tag;
+    dstNode->sceneId = sceneId;
     dstNode->id = 0;
     
     //flags are intentionally not cloned
@@ -762,7 +764,12 @@ void Entity::Load(KeyedArchive * archive, SerializationContext * serializationCo
         
 	name = FastName(archive->GetString("name", "").c_str());
 	tag = archive->GetInt32("tag", 0);
+
     id = archive->GetUInt32("id", 0);
+    if(nullptr != serializationContext->GetScene())
+    {
+        sceneId = serializationContext->GetScene()->GetSceneID();
+    }
 		
 	flags = archive->GetUInt32("flags", NODE_VISIBLE);
 	flags |= NODE_UPDATABLE;

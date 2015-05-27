@@ -54,15 +54,12 @@ EditorLightSystem::EditorLightSystem(DAVA::Scene * scene)
 	SetRequiredComponents(MAKE_COMPONENT_MASK(Component::LIGHT_COMPONENT));
 
 	isEnabled = true;
-	AddCameraLightOnScene();
 }
 
 EditorLightSystem::~EditorLightSystem()
 {
 	SafeRelease(cameraLight);
 }
-
-
 
 void EditorLightSystem::ProcessCommand( const Command2 *command, bool redo )
 {
@@ -193,6 +190,7 @@ void EditorLightSystem::Process(float32 timeElapsed)
 {
 	if(isEnabled)
 	{
-		UpdateCameraLightPosition();
+        AddCameraLightOnScene();
+        UpdateCameraLightPosition();
 	}
 }

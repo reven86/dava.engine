@@ -138,10 +138,10 @@ protected:
 public: 
     enum eError{
         ERROR_NO_ERROR = 0,
-        ERROR_VERSION_IS_TOO_OLD = 1,
-        ERROR_FAILED_TO_CREATE_FILE = 2,
-        ERROR_FILE_WRITE_ERROR = 3,
-        ERROR_VERSION_TAGS_INVALID = 4,
+        ERROR_VERSION_IS_TOO_OLD,
+        ERROR_FAILED_TO_CREATE_FILE,
+        ERROR_FILE_WRITE_ERROR,
+        ERROR_VERSION_TAGS_INVALID,
     };
 
 	enum eFileType

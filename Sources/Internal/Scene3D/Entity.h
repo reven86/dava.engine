@@ -111,7 +111,11 @@ public:
      */
 	String GetPathID(Entity * root);
 
+    void SetID(uint32 id);
     uint32 GetID() const;
+    void SetSceneID(uint32 sceneId);
+    uint32 GetSceneID() const;
+
     void ResetID();
 
 	/**
@@ -388,8 +392,7 @@ protected:
 	int32 tag;
     uint32 flags;
     uint32 id;
-    
-    void SetID(uint32 id) {} // empty function to be added into introspection
+    uint32 sceneId;
 
 private:
 	Vector<Component *> components;
@@ -595,9 +598,25 @@ inline uint32 Entity::GetID() const
     return id;
 }
 
+inline void Entity::SetID(uint32 id_)
+{
+    id = id_;
+}
+
+inline uint32 Entity::GetSceneID() const
+{
+    return sceneId;
+}
+
+inline void Entity::SetSceneID(uint32 sceneId_)
+{
+    sceneId = sceneId_;
+}
+
 inline void Entity::ResetID()
 {
     id = 0;
+    sceneId = 0;
     for(auto child : children)
     {
         child->ResetID();

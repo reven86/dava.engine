@@ -956,6 +956,7 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity * currentNode)
         if (currentNode->GetLocalTransform() == Matrix4::IDENTITY)
         {
             Entity * parent  = currentNode->GetParent();
+            uint32 curNodeID = currentNode->GetID();
 
             if (parent)
             {
@@ -992,8 +993,9 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity * currentNode)
 				
 				//VI: remove node after copying its properties since properties become invalid after node removal
 				parent->RemoveNode(currentNode);
-				
+
                 removedNodeCount++;
+                childNode->SetID(curNodeID);
                 SafeRelease(childNode);
 				
                 return true;

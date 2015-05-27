@@ -323,6 +323,8 @@ void StructureSystem::ReloadInternal(DAVA::Set<DAVA::Entity *> &entitiesToReload
 						DAVA::Entity *before = origEntity->GetParent()->GetNextChild(origEntity);
 
 						newEntityInstance->SetLocalTransform(origEntity->GetLocalTransform());
+                        newEntityInstance->SetID(origEntity->GetID());
+                        newEntityInstance->SetSceneID(origEntity->GetSceneID());
 
 						if(saveLightmapSettings)
 						{
@@ -332,7 +334,7 @@ void StructureSystem::ReloadInternal(DAVA::Set<DAVA::Entity *> &entitiesToReload
 						sceneEditor->Exec(new EntityParentChangeCommand(newEntityInstance, origEntity->GetParent(), before));
 						sceneEditor->Exec(new EntityRemoveCommand(origEntity));
 
-						newEntityInstance->Release();
+                        newEntityInstance->Release();
 					}
 				}
 
@@ -537,7 +539,7 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
             sceneEditor->cache.Clear(sc2path);
         }
 
-        loadedEntity = sceneEditor->cache.GetClone(sc2path);
+        Entity *loadedEntity = sceneEditor->cache.GetClone(sc2path);
         if(nullptr != loadedEntity)
         {
             if(optimize)

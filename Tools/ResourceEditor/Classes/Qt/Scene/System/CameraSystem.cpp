@@ -450,7 +450,14 @@ void SceneCameraSystem::CreateDebugCameras()
 		topCameraEntity->AddComponent(new DAVA::CameraComponent(topCamera));
         topCameraEntity->AddComponent(new DAVA::WASDControllerComponent());
         topCameraEntity->AddComponent(new DAVA::RotationControllerComponent());
-		scene->InsertBeforeNode(topCameraEntity, scene->GetChild(0));
+        if(scene->GetChildrenCount() > 0)
+        {
+            scene->InsertBeforeNode(topCameraEntity, scene->GetChild(0));
+        }
+        else
+        {
+            scene->AddNode(topCameraEntity);
+        }
 
 		// set current default camera
 		if(nullptr == scene->GetCurrentCamera())

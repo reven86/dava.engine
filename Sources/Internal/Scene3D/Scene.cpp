@@ -206,6 +206,9 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     , imposterManager(0)
     , entityIdCounter(0)
 {
+    static uint32 idCounter = 0;
+    sceneId = ++idCounter;
+
 	CreateComponents();
 	CreateSystems();
 
@@ -529,6 +532,14 @@ Scene::~Scene()
     
 void Scene::RegisterEntity(Entity * entity)
 {
+    if( entity->GetID() == 0 || 
+        entity->GetSceneID() == 0 ||
+        entity->GetSceneID() != sceneId)
+    {
+        entity->SetID(++entityIdCounter);
+        entity->SetSceneID(sceneId);
+    }
+
     for(auto& system : systems)
     {
         system->RegisterEntity(entity);
@@ -1188,8 +1199,9 @@ void Scene::Load(KeyedArchive * archive)
 
 SceneFileV2::eError Scene::LoadScene(const DAVA::FilePath & pathname)
 {
-    SceneFileV2::eError ret = SceneFileV2::ERROR_VERSION_TAGS_INVALID;
+    SceneFileV2::eError ret = SceneFileV2::ERROR_FAILED_TO_CREATE_FILE;
 
+    RemoveAllChildren();
     SetName(pathname.GetFilename().c_str());
 
     if(pathname.IsEqualToExtension(".sce"))
@@ -1341,8 +1353,8 @@ void Scene::CopyScene(Scene* dst)
     for(auto child : children)
     {
         Entity *clone = child->Clone();
-        copyID(child, clone);
         dst->AddNode(clone);
+        copyID(child, clone);
     }
 }
 
