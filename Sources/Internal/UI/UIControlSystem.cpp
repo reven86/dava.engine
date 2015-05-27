@@ -189,6 +189,12 @@ void UIControlSystem::ProcessScreenLogic()
         UIScreen* nextScreenProcessed = 0;
         UIScreenTransition* transitionProcessed = 0;
         
+        UIScreen* prevNextScreen = nullptr;
+        do {
+            prevNextScreen = nextScreen;
+            NotifyListenersWillSwitch(nextScreen);
+        } while (nextScreen != prevNextScreen);
+        
         nextScreenProcessed = nextScreen;
         transitionProcessed = nextScreenTransition;
         nextScreen = 0; // functions called by this method can request another screen switch (for example, LoadResources)
@@ -197,8 +203,6 @@ void UIControlSystem::ProcessScreenLogic()
 		LockInput();
 		
 		CancelAllInputs();
-		
-        NotifyListenersWillSwitch(nextScreenProcessed);
 
 		// If we have transition set
 		if (transitionProcessed)
