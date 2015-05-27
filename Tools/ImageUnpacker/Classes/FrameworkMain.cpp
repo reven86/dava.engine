@@ -41,8 +41,13 @@ void PrintUsage()
     printf("Usage:\n");
 
     printf("\t-usage or --help to display this help\n");
-	printf("\t-file - pvr or dds file to unpack as png");
-	printf("\t-folder - folder with pvr or dds files to unpack as png");
+	printf("\t-file - pvr or dds file to unpack as png\n");
+	printf("\t-folder - folder with pvr or dds files to unpack as png\n");
+    printf("\t-saveas -ext -folder - will open png files from folder and save as ext parameter mean\n");
+    
+    printf("Example:\n");
+    printf("\t-saveas -ext .tga -folder /Users/nickname/test/");
+
 }
 
 
@@ -76,13 +81,12 @@ void SaveSingleImage(const FilePath & newImagePath, Image *image)
         ImageSystem::Instance()->Save(newImagePath, savedImage);
         savedImage->Release();
     }
-
 }
 
 void SaveCubemap(const FilePath & newImagePath, const Vector<Image *> &images)
 {
     Vector<FilePath> faceNames;
-    Texture::GenerateCubeFaceNames(newImagePath, faceNames);
+    TextureDescriptor::GenerateFacePathnames(newImagePath, faceNames, ".png");
 
     for (auto image: images)
     {
@@ -123,7 +127,7 @@ void UnpackFile(const FilePath & sourceImagePath)
 
 void UnpackFolder(const FilePath & folderPath)
 {
-    FileList * fileList = new FileList(folderPath);
+    ScopedPtr<FileList> fileList(new FileList(folderPath));
 	for (int fi = 0; fi < fileList->GetCount(); ++fi)
 	{
         const FilePath & pathname = fileList->GetPathname(fi);
@@ -139,8 +143,33 @@ void UnpackFolder(const FilePath & folderPath)
             }
         }
 	}
+}
+
+void ResavePNG(const FilePath & folderPath, const String & extension)
+{
+    ScopedPtr<FileList> fileList(new FileList(folderPath));
     
-    fileList->Release();
+    for (int fi = 0; fi < fileList->GetCount(); ++fi)
+    {
+        const FilePath & pathname = fileList->GetPathname(fi);
+        if (fileList->IsDirectory(fi) && !fileList->IsNavigationDirectory(fi))
+        {
+            ResavePNG(pathname, extension);
+        }
+        else
+        {
+            if(pathname.IsEqualToExtension(".png"))
+            {
+                Vector<Image *> images;
+                ImageSystem::Instance()->Load(pathname, images);
+                
+                FilePath tgaPathname = FilePath::CreateWithNewExtension(pathname, extension);
+                ImageSystem::Instance()->Save(tgaPathname, images);
+
+                for_each(images.begin(), images.end(), SafeRelease<Image>);
+            }
+        }
+    }
 }
 
 
@@ -152,16 +181,36 @@ void ProcessImageUnpacker()
     FilePath sourceFolderPath = CommandLineParser::GetCommandParam(String("-folder"));
     FilePath sourceFilePath = CommandLineParser::GetCommandParam(String("-file"));
     
-    if(sourceFolderPath.IsEmpty() == false)
+    bool needShowUsage = true;
+    if(CommandLineParser::CommandIsFound("-saveas") && sourceFolderPath.IsEmpty() == false)
+    {
+        String ext = CommandLineParser::GetCommandParam(String("-ext"));
+        if(!ext.empty())
+        {
+            if(ext[0] != '.')
+            {
+                ext = "." + ext;
+            }
+            
+            sourceFolderPath.MakeDirectoryPathname();
+            ResavePNG(sourceFolderPath, ext);
+            
+            needShowUsage = false;
+        }
+    }
+    else if(sourceFolderPath.IsEmpty() == false)
     {
         sourceFolderPath.MakeDirectoryPathname();
         UnpackFolder(sourceFolderPath);
+        needShowUsage = false;
     }
     else if (sourceFilePath.IsEmpty() == false)
     {
         UnpackFile(sourceFilePath);
+        needShowUsage = false;
     }
-    else
+
+    if(needShowUsage)
     {
         PrintUsage();
     }
