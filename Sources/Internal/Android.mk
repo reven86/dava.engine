@@ -299,6 +299,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Network/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Network/Base/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Network/Services/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Network/Services/MMNet/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Network/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Particles/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/*.cpp) \
