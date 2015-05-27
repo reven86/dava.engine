@@ -14,9 +14,6 @@
     #include "Debug/Profiler.h"
 
     #include "_gl.h"
-    #if defined(__DAVAENGINE_MACOS__)
-    #include "Platform/TemplateMacOS/macos_gl.h"
-    #endif
 
     #define USE_RENDER_THREAD 0
 
