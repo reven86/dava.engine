@@ -113,7 +113,7 @@ public:
         \param[in] entity entity fired an event.
         \param[in] event event id for this event.
      */
-    virtual void ImmediateEvent(Entity * entity, uint32 event);
+    virtual void ImmediateEvent(Component * component, uint32 event);
     /**
         \brief This function should be overloaded and perform all processing for this system.
         \param[in] timeElapsed time elapsed from previous frame.

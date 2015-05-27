@@ -35,7 +35,11 @@ int SectionProperty::GetCount() const
 
 AbstractProperty *SectionProperty::GetProperty(int index) const
 {
-    return children[index];
+    if (0 <= index && index < children.size())
+        return children[index];
+
+    DVASSERT(false);
+    return nullptr;
 }
 
 void SectionProperty::Refresh()

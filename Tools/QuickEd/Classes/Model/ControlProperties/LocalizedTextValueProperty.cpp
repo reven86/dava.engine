@@ -25,14 +25,16 @@ AbstractProperty *LocalizedTextValueProperty::GetProperty(int index) const
     return NULL;
 }
 
+void LocalizedTextValueProperty::Refresh()
+{
+    IntrospectionProperty::Refresh();
+
+    member->SetValue(GetBaseObject(), VariantType(LocalizedString(text)));
+}
+
 VariantType LocalizedTextValueProperty::GetValue() const
 {
     return VariantType(text);
-}
-
-void LocalizedTextValueProperty::RefreshLocalizedValue()
-{
-    member->SetValue(GetBaseObject(), VariantType(LocalizedString(text)));
 }
 
 void LocalizedTextValueProperty::ApplyValue(const DAVA::VariantType &value)

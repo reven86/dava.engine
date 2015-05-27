@@ -57,7 +57,7 @@ void SoundComponent::AddSoundEvent(SoundEvent * _event, uint32 flags /*= 0*/, co
     SafeRetain(_event);
     events.push_back(SoundComponentElement(_event, flags, direction));
 
-    GlobalEventSystem::Instance()->Event(entity, EventSystem::SOUND_COMPONENT_CHANGED);
+    GlobalEventSystem::Instance()->Event(this, EventSystem::SOUND_COMPONENT_CHANGED);
 }
 
 void SoundComponent::RemoveSoundEvent(SoundEvent * event)
@@ -70,8 +70,6 @@ void SoundComponent::RemoveSoundEvent(SoundEvent * event)
             events[i].soundEvent->Stop(true);
             SafeRelease(events[i].soundEvent);
             RemoveExchangingWithLast(events, i);
-
-            GlobalEventSystem::Instance()->Event(entity, EventSystem::SOUND_COMPONENT_CHANGED);
 
             return;
         }
@@ -88,8 +86,6 @@ void SoundComponent::RemoveAllEvents()
     }
 
     events.clear();
-
-    GlobalEventSystem::Instance()->Event(entity, EventSystem::SOUND_COMPONENT_CHANGED);
 }
 
 void SoundComponent::Trigger()
@@ -141,7 +137,7 @@ void SoundComponent::SetSoundEventFlags(uint32 index, uint32 flags)
         Stop(index);
         events[index].flags = flags;
 
-        GlobalEventSystem::Instance()->Event(entity, EventSystem::SOUND_COMPONENT_CHANGED);
+        GlobalEventSystem::Instance()->Event(this, EventSystem::SOUND_COMPONENT_CHANGED);
     }
 }
 

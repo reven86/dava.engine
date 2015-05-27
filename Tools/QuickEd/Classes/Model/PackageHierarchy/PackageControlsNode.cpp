@@ -116,6 +116,12 @@ bool PackageControlsNode::CanCopy() const
     return false;
 }
 
+void PackageControlsNode::RefreshControlProperties()
+{
+    for (ControlNode *node : nodes)
+        node->RefreshProperties();
+}
+
 ControlNode *PackageControlsNode::FindControlNodeByName(const DAVA::String &name) const
 {
     for (auto it = nodes.begin(); it != nodes.end(); ++it)

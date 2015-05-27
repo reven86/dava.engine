@@ -76,11 +76,11 @@ void SwitchSystem::Process(float32 timeElapsed)
 	updatableEntities.clear();
 }
 
-void SwitchSystem::ImmediateEvent(Entity * entity, uint32 event)
+void SwitchSystem::ImmediateEvent(Component * component, uint32 event)
 {
 	if(EventSystem::SWITCH_CHANGED == event)
 	{
-		updatableEntities.insert(entity);
+		updatableEntities.insert(component->GetEntity());
 	}
 }
 
