@@ -114,6 +114,9 @@ private:
     
     void InsertInFastCache(const CacheItemKey &key, ServerCacheEntry * entry);
     
+    void ReduceFastCacheByCount(uint32 toCount);
+    void ReduceFullCacheBySize(uint64 toSize);
+    
 private:
     
     FilePath cacheRootFolder;           //path to folder with settings and cache of files

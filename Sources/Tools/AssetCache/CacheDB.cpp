@@ -65,6 +65,7 @@ void CacheDB::UpdateSettings(const DAVA::FilePath &folderPath, uint64 size, uint
     if(itemsInMemory != _itemsInMemory)
     {
         //reduce fast cache
+        ReduceFastCacheByCount(_itemsInMemory);
         
         itemsInMemory = _itemsInMemory;
         fastCache.reserve(itemsInMemory);
@@ -73,6 +74,7 @@ void CacheDB::UpdateSettings(const DAVA::FilePath &folderPath, uint64 size, uint
     if(storageSize != size)
     {
         //reduce full cache
+        ReduceFullCacheBySize(size);
         
         storageSize = size;
     }
@@ -377,7 +379,43 @@ void CacheDB::Dump()
 }
     
     
+void CacheDB::ReduceFastCacheByCount(uint32 toCount)
+{
+    if(toCount < fastCache.size())
+    {
+        std::sort(fastCache.begin(), fastCache.end(), [](const FASTCACHE::value_type &left, const FASTCACHE::value_type &right)
+        {
+            return left.second->GetAccesID() < right.second->GetAccesID();
+        });
+        
+        while(toCount < fastCache.size())
+        {
+            fastCache.erase(fastCache.begin());
+        }
+    }
+}
     
+    
+void CacheDB::ReduceFullCacheBySize(uint64 toSize)
+{
+    if(usedSize > toSize)
+    {
+        std::sort(fullCache.begin(), fullCache.end(), [](const CACHE::value_type &left, const CACHE::value_type &right)
+              {
+                  return left.second.GetAccesID() < right.second.GetAccesID();
+              });
+        
+        while (usedSize > toSize && fullCache.size())
+        {
+            const auto & firstItem = fullCache.begin();
+            
+            //TODO needTOsave and use files size as runtime info
+            IncreaseUsedSize(firstItem->second.GetFiles());
+            fullCache.erase(firstItem);
+        }
+    }
+}
+
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA
