@@ -71,7 +71,7 @@ FontManagerDialog::FontManagerDialog(bool okButtonEnable, const QString& graphic
 	if (!inDir.empty() && !outDir.empty())
 	{
 		resPacker->InitFolders(inDir, outDir);
-		resPacker->PackResources(GPU_PNG);
+		resPacker->PackResources(GPU_ORIGIN);
 	}
 
     ui->setDefaultButton->setVisible(false);
