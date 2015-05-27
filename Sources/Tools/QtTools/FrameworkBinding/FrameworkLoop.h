@@ -36,6 +36,8 @@ public:
     // QtLayerDelegate
     void Quit() override;
 
+    void EndFrame();
+
 private slots:
     void OnWindowDestroyed();
     void OnWindowInitialized();

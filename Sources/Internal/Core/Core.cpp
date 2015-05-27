@@ -103,7 +103,7 @@ Core::Core()
     options = new KeyedArchive();
     screenScaleFactor = 1.f;
 
-    nativeWindowHandle = nullptr;
+    memset(&rendererParams, 0, sizeof(rhi::InitParam));
 }
 
 Core::~Core()
@@ -188,9 +188,9 @@ void Core::CreateSingletons()
 }
 
 // We do not create RenderManager until we know which version of render manager we want to create
-void Core::CreateRenderManager()
+void Core::CreateRenderer()
 {
-    rhi::Api renderer = (rhi::Api)options->GetInt32("renderer");
+    rhi::Api renderer;
     
 #if defined(__DAVAENGINE_WIN32__)
     renderer = rhi::RHI_DX9;
@@ -202,7 +202,12 @@ void Core::CreateRenderManager()
 //    renderer = rhi::RHI_GLES2;
 #endif
     
-    Renderer::Initialize(renderer, options->GetInt32("width"), options->GetInt32("height"), GetNativeWindowHandle());
+    renderer = (rhi::Api)options->GetInt32("renderer", renderer);
+
+    rendererParams.width = options->GetInt32("width");
+    rendererParams.height = options->GetInt32("height");
+
+    Renderer::Initialize(renderer, rendererParams);
     RenderSystem2D::Instance()->Init();
 }
         
@@ -461,7 +466,7 @@ Logger::Info("Core::SystemAppStarted");
 
     if (core != nullptr)
     {
-        Core::Instance()->CreateRenderManager();
+        Core::Instance()->CreateRenderer();
         core->OnAppStarted();
     }
 }

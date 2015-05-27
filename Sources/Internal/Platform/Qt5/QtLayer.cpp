@@ -52,7 +52,6 @@ QtLayer::QtLayer()
     :   delegate(NULL)
     ,   isDAVAEngineEnabled(true)
 {
-    AppStarted();
 }
     
 QtLayer::~QtLayer()
@@ -76,8 +75,8 @@ void QtLayer::SetDelegate(QtLayerDelegate *delegate)
     
 void QtLayer::AppStarted()
 {
-    Core::Instance()->SystemAppStarted();
     FrameworkDidLaunched();
+    Core::Instance()->SystemAppStarted();
 }
 
 void QtLayer::AppFinished()
@@ -133,8 +132,9 @@ void QtLayer::Resize(int32 width, int32 height)
 #if RHI_COMPLETE_EDITOR
     RenderManager::Instance()->Init(width, height);
 #endif // RHI_COMPLETE_EDITOR
-    RenderSystem2D::Instance()->Init();
     
+    Renderer::Reset(width, height);
+
     VirtualCoordinatesSystem *vcs = VirtualCoordinatesSystem::Instance();
     if(vcs)
     {

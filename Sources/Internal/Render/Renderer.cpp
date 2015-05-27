@@ -53,20 +53,15 @@ namespace //for private variables
     ScreenShotCallbackDelegate * screenshotCallback = nullptr;
 }
 
-void Initialize(rhi::Api _api, int32 _framebufferWidth, int32 _framebufferHeight, void * externalData)
+void Initialize(rhi::Api _api, const rhi::InitParam & params)
 {
     DVASSERT(!ininialized);
 
     api = _api;
-    framebufferWidth = _framebufferWidth;
-    framebufferHeight = _framebufferHeight;
+    framebufferWidth = params.width;
+    framebufferHeight = params.height;
     
-    rhi::InitParam param;
-    param.width = framebufferWidth;
-    param.height = framebufferHeight;
-    param.window = externalData;
-    
-    rhi::Initialize(api, param);
+    rhi::Initialize(api, params);
     rhi::ShaderCache::Initialize();
     ShaderDescriptorCache::Initialize();
     FXCache::Initialize();
@@ -88,8 +83,16 @@ void Uninitialize()
 
 void Reset(int32 _framebufferWidth, int32 _framebufferHeight)
 {
-    framebufferWidth = _framebufferWidth;
-    framebufferHeight = _framebufferHeight;
+    if (ininialized)
+    {
+        framebufferWidth = _framebufferWidth;
+        framebufferHeight = _framebufferHeight;
+
+        rhi::ResetParam params;
+        params.width = framebufferWidth;
+        params.height = framebufferHeight;
+        rhi::Reset(params);
+    }
 }
 
 bool IsDeviceLost()

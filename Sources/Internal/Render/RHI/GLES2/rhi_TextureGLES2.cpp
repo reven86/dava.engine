@@ -475,14 +475,9 @@ SetAsRenderTarget( Handle tex )
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get( tex );
 
-    if( !_GLES2_FrameBuffer )
-    {
-        glGetIntegerv( GL_VIEWPORT, _GLES2_Viewport );
-    }
-
     glBindFramebuffer( GL_FRAMEBUFFER, self->fbo );
     glViewport( 0, 0, self->width, self->height ); 
-    _GLES2_FrameBuffer = self->fbo;
+    _GLES2_Binded_FrameBuffer = self->fbo;
 }
 
 

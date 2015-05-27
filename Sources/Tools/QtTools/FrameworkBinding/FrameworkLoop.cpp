@@ -1,6 +1,9 @@
 #include "FrameworkLoop.h"
 
 #include "Platform/Qt5/QtLayer.h"
+#include "Core/Core.h"
+
+#include "Render/RenderBase.h"
 
 #include <QWindow>
 #include <QApplication>
@@ -68,11 +71,9 @@ QOpenGLContext* FrameworkLoop::Context()
         
         openGlFunctions.reset( new QOpenGLFunctions( context ) );
         openGlFunctions->initializeOpenGLFunctions();
-#if RHI_COMPLETE_EDITOR        
     #ifdef Q_OS_WIN
         glewInit();
     #endif
-#endif // RHI_COMPLETE_EDITOR
     }
     else if ( glWidget != nullptr )
     {
@@ -113,11 +114,6 @@ void FrameworkLoop::ProcessFrame()
 #endif // RHI_COMPLETE_EDITOR
     
     DAVA::QtLayer::Instance()->ProcessFrame();
-    if ( glWidget != nullptr )
-    {
-        QEvent updateEvent( QEvent::UpdateRequest );
-        QApplication::sendEvent( glWidget->GetGLWindow(), &updateEvent );
-    }
 }
 
 void FrameworkLoop::Quit()
@@ -127,13 +123,37 @@ void FrameworkLoop::Quit()
 #endif // RHI_COMPLETE_EDITOR
 }
 
+void FrameworkLoop::EndFrame()
+{
+    if (glWidget != nullptr)
+    {
+        QEvent updateEvent(QEvent::UpdateRequest);
+        QApplication::sendEvent(glWidget->GetGLWindow(), &updateEvent);
+    }
+}
+
 void FrameworkLoop::OnWindowDestroyed()
 {
     context->makeCurrent( nullptr );
 }
 
+void MakeCurrentGL()
+{
+    FrameworkLoop::Instance()->Context();
+}
+
+void EndFrameGL()
+{
+    FrameworkLoop::Instance()->EndFrame();
+}
+
 void FrameworkLoop::OnWindowInitialized()
 {
+    DAVA::Core::Instance()->rendererParams.makeCurrentFunc = &MakeCurrentGL;
+    DAVA::Core::Instance()->rendererParams.endFrameFunc = &EndFrameGL;
+
+    DAVA::QtLayer::Instance()->AppStarted();
+
     DAVA::QtLayer::Instance()->InitializeGlWindow( GetRenderContextId() );
     DAVA::QtLayer::Instance()->OnResume();
 }
