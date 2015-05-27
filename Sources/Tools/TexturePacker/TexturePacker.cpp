@@ -218,10 +218,12 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 			}
 
         Logger::FrameworkDebug("");
-        
+
+        String fileBasename = defFile->filename.GetBasename() + "_";
+
 		if (packWasSuccessfull)
 		{
-            String fileBasename = defFile->filename.GetBasename();
+            fileBasename.append("0");
             FilePath textureName = outputPath + fileBasename;
             Logger::FrameworkDebug("* Writing final texture (%d x %d): %s", bestXResolution, bestYResolution , textureName.GetAbsolutePathname().c_str());
 			
@@ -259,8 +261,12 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
             textureName.ReplaceExtension(".png");
             ExportImage(&finalImage, FilePath(textureName), forGPU);
 		}
-		else
-			AddError(Format("* ERROR: Failed to pack '%s' to separate output texture", defFile->filename.GetFilename().c_str()));
+        else
+        {
+            Logger::FrameworkDebug("Can't pack to separate output texture");
+            List<DefinitionFile*> defList = {defFile};
+            PackToMultipleTextures(excludeFolder, outputPath, fileBasename.c_str(), defList, forGPU);
+        }
 	}
 }
 
@@ -361,18 +367,13 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 	}else
 	{
 		Logger::FrameworkDebug("Can't pack to single output texture");
-		PackToMultipleTextures(excludeFolder, outputPath, defsList, forGPU);
+		PackToMultipleTextures(excludeFolder, outputPath, "texture", defsList, forGPU);
 	}
 }
 
-void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const FilePath & outputPath, List<DefinitionFile*> & defList, eGPUFamily forGPU)
+void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const FilePath & outputPath, const char* basename, List<DefinitionFile*> & defList, eGPUFamily forGPU)
 {
 	Logger::FrameworkDebug("Packing to multiple output textures");
-
-	if (defList.size() == 1)
-	{
-		Logger::Warning("Failed to pack single texture for path '%s'. Trying to pack as multiple texture", outputPath.GetAbsolutePathname().c_str());
-	}
 
 	for (int i = 0; i < (int)sortVector.size(); ++i)
 	{
@@ -480,7 +481,7 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 	for (int image = 0; image < (int)packers.size(); ++image)
 	{
 		char temp[256];
-		sprintf(temp, "texture%d.png", image);
+		sprintf(temp, "%s%d.png", basename, image);
 		FilePath textureName = outputPath + temp;
         ExportImage(finalImages[image], textureName, forGPU);
 	}
@@ -491,7 +492,7 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 		String fileName = defFile->filename.GetFilename();
 		FilePath textureName = outputPath + "texture";
 		
-		if (!WriteMultipleDefinition(excludeFolder, outputPath, "texture", defFile))
+		if (!WriteMultipleDefinition(excludeFolder, outputPath, basename, defFile))
 		{
 			AddError(Format("* ERROR: Failed to write definition - %s.", fileName.c_str()));
 		}

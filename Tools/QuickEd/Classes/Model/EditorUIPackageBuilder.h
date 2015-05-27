@@ -6,7 +6,7 @@
 
 class PackageNode;
 class ControlNode;
-class PropertiesSection;
+class SectionProperty;
 class PackageCommandExecutor;
 class ControlsContainerNode;
 
@@ -25,13 +25,16 @@ public:
     
     virtual DAVA::UIControl *BeginControlWithClass(const DAVA::String &className) override;
     virtual DAVA::UIControl *BeginControlWithCustomClass(const DAVA::String &customClassName, const DAVA::String &className) override;
-    virtual DAVA::UIControl *BeginControlWithPrototype(const DAVA::String &packageName, const DAVA::String &prototypeName, const DAVA::String &customClassName, DAVA::AbstractUIPackageLoader *loader) override;
+    virtual DAVA::UIControl *BeginControlWithPrototype(const DAVA::String &packageName, const DAVA::String &prototypeName, const DAVA::String *customClassName, DAVA::AbstractUIPackageLoader *loader) override;
     virtual DAVA::UIControl *BeginControlWithPath(const DAVA::String &pathName) override;
     virtual DAVA::UIControl *BeginUnknownControl(const DAVA::YamlNode *node) override;
     virtual void EndControl(bool isRoot) override;
     
     virtual void BeginControlPropertiesSection(const DAVA::String &name) override;
     virtual void EndControlPropertiesSection() override;
+    
+    virtual DAVA::UIComponent *BeginComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex) override;
+    virtual void EndComponentPropertiesSection() override;
     
     virtual DAVA::UIControlBackground *BeginBgPropertiesSection(int index, bool sectionHasProperties) override;
     virtual void EndBgPropertiesSection() override;
@@ -63,7 +66,7 @@ private:
     
     DAVA::List<ControlDescr> controlsStack;
     DAVA::BaseObject *currentObject;
-    PropertiesSection *currentSection;
+    SectionProperty *currentSection;
     
     PackageCommandExecutor *commandExecutor;
 };

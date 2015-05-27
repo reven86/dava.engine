@@ -5,6 +5,8 @@
 #include "PackageHierarchy/PackageControlsNode.h"
 #include "PackageHierarchy/PackageNode.h"
 #include "PackageHierarchy/ImportedPackagesNode.h"
+#include "ControlProperties/AbstractProperty.h"
+#include "ControlProperties/RootProperty.h"
 
 using namespace DAVA;
 
@@ -35,14 +37,24 @@ void DefaultPackageCommandExecutor::AddImportedPackageIntoPackage(PackageControl
     package->GetImportedPackagesNode()->Add(importedPackageControls);
 }
 
-void DefaultPackageCommandExecutor::ChangeProperty(ControlNode *node, BaseProperty *property, const DAVA::VariantType &value)
+void DefaultPackageCommandExecutor::ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value)
 {
     property->SetValue(value);
 }
 
-void DefaultPackageCommandExecutor::ResetProperty(ControlNode *node, BaseProperty *property)
+void DefaultPackageCommandExecutor::ResetProperty(ControlNode *node, AbstractProperty *property)
 {
     property->ResetValue();
+}
+
+void DefaultPackageCommandExecutor::AddComponent(ControlNode *node, DAVA::uint32 componentType)
+{
+    node->GetRootProperty()->AddComponentPropertiesSection(componentType);
+}
+
+void DefaultPackageCommandExecutor::RemoveComponent(ControlNode *node, DAVA::uint32 componentType, DAVA::uint32 componentIndex)
+{
+    node->GetRootProperty()->RemoveComponentPropertiesSection(componentType, componentIndex);
 }
 
 void DefaultPackageCommandExecutor::InsertControl(ControlNode *control, ControlsContainerNode *dest, int32 destIndex)

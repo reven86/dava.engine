@@ -101,7 +101,7 @@ void ParticleEffectComponent::SetSortingOffset(uint32 offset)
 void ParticleEffectComponent::Start()
 {
 	isPaused = false;
-	GlobalEventSystem::Instance()->Event(GetEntity(), EventSystem::START_PARTICLE_EFFECT);	
+	GlobalEventSystem::Instance()->Event(this, EventSystem::START_PARTICLE_EFFECT);
 }
 
 void ParticleEffectComponent::Stop(bool isDeleteAllParticles)
@@ -111,7 +111,7 @@ void ParticleEffectComponent::Stop(bool isDeleteAllParticles)
 	{
 		ClearCurrentGroups();		
 		effectData.infoSources.resize(1);
-		GlobalEventSystem::Instance()->Event(GetEntity(), EventSystem::STOP_PARTICLE_EFFECT);		
+		GlobalEventSystem::Instance()->Event(this, EventSystem::STOP_PARTICLE_EFFECT);
 	}
 	else
 	{
@@ -146,7 +146,7 @@ void ParticleEffectComponent::Restart(bool isDeleteAllParticles)
 	if (isDeleteAllParticles)
 		ClearCurrentGroups();
 	currRepeatsCont = 0;
-	GlobalEventSystem::Instance()->Event(GetEntity(), EventSystem::START_PARTICLE_EFFECT);		
+	GlobalEventSystem::Instance()->Event(this, EventSystem::START_PARTICLE_EFFECT);		
 }
 
 void ParticleEffectComponent::StopAfterNRepeats(int32 numberOfRepeats)
