@@ -1,5 +1,5 @@
-#ifndef __DUMPVIEWERWIDGET_H__
-#define __DUMPVIEWERWIDGET_H__
+#ifndef __SNAPSHOTVIEWERWIDGET_H__
+#define __SNAPSHOTVIEWERWIDGET_H__
 
 #include "Base/BaseTypes.h"
 #include "MemoryManager/MemoryManagerTypes.h"
@@ -18,13 +18,13 @@ class BlockListModel;
 
 class MemorySnapshot;
 
-class DumpViewerWidget : public QWidget
+class SnapshotViewerWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    DumpViewerWidget(const MemorySnapshot* snapshot, QWidget* parent = nullptr);
-    virtual ~DumpViewerWidget();
+    SnapshotViewerWidget(const MemorySnapshot* snapshot, QWidget* parent = nullptr);
+    virtual ~SnapshotViewerWidget();
 
 public slots:
     void SymbolView_OnBuldTree();
@@ -54,4 +54,4 @@ private:
     QListView* blockList = nullptr;
 };
 
-#endif  // __DUMPVIEWERWIDGET_H__
+#endif  // __SNAPSHOTVIEWERWIDGET_H__

@@ -28,7 +28,7 @@ namespace DAVA
 class AllocPoolModel;
 class TagModel;
 class GeneralStatModel;
-class DumpBriefModel;
+class SnapshotListModel;
 class MemoryStatItem;
 class ProfilingSession;
 
@@ -37,27 +37,26 @@ class MemProfWidget : public QWidget
     Q_OBJECT
 
 signals:
-    void OnDumpButton();
+    void OnSnapshotButton();
     
 public:
-    explicit MemProfWidget(QWidget *parent = nullptr);
-    explicit MemProfWidget(ProfilingSession* profSession, QWidget *parent = nullptr);
-    ~MemProfWidget();
+    MemProfWidget(ProfilingSession* profSession, QWidget *parent = nullptr);
+    virtual ~MemProfWidget();
 
 public slots:
-    void ConnectionEstablished(bool newConnection, ProfilingSession* profSession);
+    void ConnectionEstablished(bool newConnection);
     void ConnectionLost(const DAVA::char8* message);
-    void StatArrived();
-    void DumpArrived(size_t sizeTotal, size_t sizeRecv);
+    void StatArrived(size_t itemCount);
+    void SnapshotArrived(size_t sizeTotal, size_t sizeRecv);
 
     void RealtimeToggled(bool checked);
     void DiffClicked();
     void PlotClicked(QMouseEvent* ev);
 
-    void DumpBriefList_OnDoubleClicked(const QModelIndex& index);
+    void SnapshotList_OnDoubleClicked(const QModelIndex& index);
 
 private:
-    void Init();
+    void InitUI();
     void ReinitPlot();
     void UpdatePlot(const MemoryStatItem& stat);
     void SetPlotData();
@@ -65,14 +64,14 @@ private:
 private:
     QScopedPointer<Ui::MemProfWidget> ui;
 
-    bool realtime;
     ProfilingSession* profileSession = nullptr;
     QPointer<AllocPoolModel> allocPoolModel;
     QPointer<TagModel> tagModel;
     QPointer<GeneralStatModel> generalStatModel;
-    QPointer<DumpBriefModel> dumpBriefModel;
+    QPointer<SnapshotListModel> snapshotModel;
 
     DAVA::Vector<QColor> poolColors;
+    bool realtimeMode;
 };
 
 #endif // __DEVICELOGWIDGET_H__

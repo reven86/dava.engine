@@ -22,6 +22,7 @@ public:
 
 public:
     void AddSymbol(DAVA::uint64 frameAddr, const DAVA::String& name);
+    void AddSymbol(DAVA::uint64 frameAddr);
     void AddBacktrace(DAVA::uint32 hash, const DAVA::uint64* frames, size_t maxFrameDepth);
 
     const DAVA::String& GetSymbol(DAVA::uint64 frameAddr) const;

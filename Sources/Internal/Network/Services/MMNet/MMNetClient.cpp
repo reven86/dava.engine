@@ -43,8 +43,8 @@ namespace Net
 
 MMNetClient::MMNetClient()
     : NetService()
-    , dumpTotalSize(0)
-    , dumpRecvSize(0)
+    , snapshotTotalSize(0)
+    , snapshotRecvSize(0)
 {
 
 }
@@ -53,20 +53,20 @@ MMNetClient::~MMNetClient()
 {
 }
 
-void MMNetClient::InstallCallbacks(ConnEstablishedCallback connEstablishedCallback_, ConnLostCallback connLostCallback_, StatCallback statCallback_, DumpCallback dumpCallback_)
+void MMNetClient::InstallCallbacks(ConnEstablishedCallback connEstablishedCallback_, ConnLostCallback connLostCallback_, StatCallback statCallback_, SnapshotCallback snapshotCallback_)
 {
     connEstablishedCallback = connEstablishedCallback_;
     connLostCallback = connLostCallback_;
     statCallback = statCallback_;
-    dumpCallback = dumpCallback_;
+    snapshotCallback = snapshotCallback_;
 }
 
-void MMNetClient::RequestDump()
+void MMNetClient::RequestSnapshot()
 {
-    if (tokenRequested && canRequestDump)
+    if (tokenRequested && canRequestSnapshot)
     {
-        canRequestDump = false;
-        FastRequest(MMNetProto::TYPE_REQUEST_DUMP);
+        canRequestSnapshot = false;
+        FastRequest(MMNetProto::TYPE_REQUEST_SNAPSHOT);
     }
 }
 
@@ -78,7 +78,7 @@ void MMNetClient::ChannelOpen()
 void MMNetClient::ChannelClosed(const char8* message)
 {
     tokenRequested = false;
-    canRequestDump = true;
+    canRequestSnapshot = true;
     
     Cleanup();
     connLostCallback(message);
@@ -95,14 +95,14 @@ void MMNetClient::PacketReceived(const void* packet, size_t length)
             case MMNetProto::TYPE_REPLY_TOKEN:
                 ProcessReplyToken(header, static_cast<const void*>(header + 1), dataLength);
                 break;
-            case MMNetProto::TYPE_REPLY_DUMP:
-                ProcessReplyDump(header, static_cast<const void*>(header + 1), dataLength);
+            case MMNetProto::TYPE_REPLY_SNAPSHOT:
+                ProcessReplySnapshot(header, static_cast<const void*>(header + 1), dataLength);
                 break;
             case MMNetProto::TYPE_AUTO_STAT:
                 ProcessAutoReplyStat(header, static_cast<const void*>(header + 1), dataLength);
                 break;
-            case MMNetProto::TYPE_AUTO_DUMP:
-                ProcessAutoReplyDump(header, static_cast<const void*>(header + 1), dataLength);
+            case MMNetProto::TYPE_AUTO_SNAPSHOT:
+                ProcessAutoReplySnapshot(header, static_cast<const void*>(header + 1), dataLength);
                 break;
             default:
                 break;
@@ -126,9 +126,9 @@ void MMNetClient::ProcessReplyToken(const MMNetProto::PacketHeader* inHeader, co
     tokenRequested = true;
 }
 
-void MMNetClient::ProcessReplyDump(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
+void MMNetClient::ProcessReplySnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
 {
-    canRequestDump = true;
+    canRequestSnapshot = true;
 }
 
 void MMNetClient::ProcessAutoReplyStat(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
@@ -136,45 +136,45 @@ void MMNetClient::ProcessAutoReplyStat(const MMNetProto::PacketHeader* inHeader,
     statCallback(static_cast<const MMCurStat*>(packetData), inHeader->itemCount);
 }
 
-void MMNetClient::ProcessAutoReplyDump(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
+void MMNetClient::ProcessAutoReplySnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
 {
     if (inHeader->status == MMNetProto::STATUS_SUCCESS)
     {
-        const MMNetProto::PacketParamDump* param = static_cast<const MMNetProto::PacketParamDump*>(packetData);
+        const MMNetProto::PacketParamSnapshot* param = static_cast<const MMNetProto::PacketParamSnapshot*>(packetData);
         const void* data = static_cast<const void*>(param + 1);
         
-        if (0 == dumpTotalSize)
+        if (0 == snapshotTotalSize)
         {
-            dumpRecvSize = 0;
-            dumpTotalSize = param->dumpSize;
-            dumpData.resize(dumpTotalSize);
+            snapshotRecvSize = 0;
+            snapshotTotalSize = param->snapshotSize;
+            snapshotData.resize(snapshotTotalSize);
 
-            dumpCallback(DUMP_STAGE_STARTED, dumpTotalSize, 0, nullptr);
+            snapshotCallback(SNAPSHOT_STAGE_STARTED, snapshotTotalSize, 0, nullptr);
         }
         
-        Memcpy(&*dumpData.begin() + dumpRecvSize, data, param->chunkSize);
-        dumpRecvSize += param->chunkSize;
+        Memcpy(&*snapshotData.begin() + snapshotRecvSize, data, param->chunkSize);
+        snapshotRecvSize += param->chunkSize;
 
-        if (dumpRecvSize == dumpTotalSize)
+        if (snapshotRecvSize == snapshotTotalSize)
         {
-            dumpCallback(DUMP_STAGE_FINISHED, dumpTotalSize, dumpRecvSize, static_cast<const void*>(dumpData.data()));
+            snapshotCallback(SNAPSHOT_STAGE_FINISHED, snapshotTotalSize, snapshotRecvSize, static_cast<const void*>(snapshotData.data()));
 
-            dumpTotalSize = 0;
-            dumpRecvSize = 0;
-            dumpData.clear();
+            snapshotTotalSize = 0;
+            snapshotRecvSize = 0;
+            snapshotData.clear();
         }
         else
         {
-            dumpCallback(DUMP_STAGE_PROGRESS, dumpTotalSize, dumpRecvSize, nullptr);
+            snapshotCallback(SNAPSHOT_STAGE_PROGRESS, snapshotTotalSize, snapshotRecvSize, nullptr);
         }
     }
     else
     {
-        dumpCallback(DUMP_STAGE_ERROR, 0, 0, nullptr);
+        snapshotCallback(SNAPSHOT_STAGE_ERROR, 0, 0, nullptr);
 
-        dumpTotalSize = 0;
-        dumpRecvSize = 0;
-        dumpData.clear();
+        snapshotTotalSize = 0;
+        snapshotRecvSize = 0;
+        snapshotData.clear();
     }
 }
     

@@ -5,7 +5,7 @@
 #include "Models/AllocPoolModel.h"
 #include "Models/TagModel.h"
 #include "Models/GeneralStatModel.h"
-#include "Models/DumpBriefModel.h"
+#include "Models/SnapshotListModel.h"
 
 #include <QLabel>
 #include <QFrame>
@@ -15,8 +15,8 @@
 #include <QMessageBox>
 #include "qcustomplot.h"
 
-#include "DumpViewerWidget.h"
-#include "DiffViewerWidget.h"
+#include "SnapshotViewerWidget.h"
+#include "SnapshotDiffViewerWidget.h"
 
 #include "BranchDiff.h"
 #include "Branch.h"
@@ -26,52 +26,43 @@
 
 using namespace DAVA;
 
-MemProfWidget::MemProfWidget(QWidget *parent)
-    : QWidget(parent, Qt::Window)
-    , ui(new Ui::MemProfWidget())
-    , realtime(true)
-{
-    Init();
-}
-
 MemProfWidget::MemProfWidget(ProfilingSession* profSession, QWidget *parent)
     : QWidget(parent, Qt::Window)
     , ui(new Ui::MemProfWidget())
-    , realtime(false)
     , profileSession(profSession)
+    , realtimeMode(!profileSession->IsFileMode())
 {
-    Init();
+    DVASSERT(profileSession != nullptr);
+
+    InitUI();
+    if (profileSession->IsFileMode())
+    {
+        ui->labelStatus->setText(profileSession->MemoryLogFile().GetAbsolutePathname().c_str());
+
+        allocPoolModel->BeginNewProfileSession(profileSession);
+        tagModel->BeginNewProfileSession(profileSession);
+        generalStatModel->BeginNewProfileSession(profileSession);
+        snapshotModel->BeginNewProfileSession(profileSession);
+
+        ui->allocPoolTable->resizeRowsToContents();
+        ui->tagTable->resizeRowsToContents();
+        ui->generalStatTable->resizeRowsToContents();
+
+        ReinitPlot();
+        SetPlotData();
+    }
+}
+
+MemProfWidget::~MemProfWidget() {}
+
+void MemProfWidget::ConnectionEstablished(bool newConnection)
+{
+    DVASSERT(!profileSession->IsFileMode());
 
     allocPoolModel->BeginNewProfileSession(profileSession);
     tagModel->BeginNewProfileSession(profileSession);
     generalStatModel->BeginNewProfileSession(profileSession);
-    dumpBriefModel->BeginNewProfileSession(profileSession);
-
-    ui->allocPoolTable->resizeRowsToContents();
-    ui->tagTable->resizeRowsToContents();
-    ui->generalStatTable->resizeRowsToContents();
-
-    ReinitPlot();
-    SetPlotData();
-}
-
-MemProfWidget::~MemProfWidget() 
-{
-    if (profileSession != nullptr && profileSession->IsFileMode())
-    {
-        delete profileSession;
-    }
-}
-
-void MemProfWidget::ConnectionEstablished(bool newConnection, ProfilingSession* profSession)
-{
-    DVASSERT(!profSession->IsFileMode());
-
-    profileSession = profSession;
-    allocPoolModel->BeginNewProfileSession(profSession);
-    tagModel->BeginNewProfileSession(profSession);
-    generalStatModel->BeginNewProfileSession(profSession);
-    dumpBriefModel->BeginNewProfileSession(profileSession);
+    snapshotModel->BeginNewProfileSession(profileSession);
 
     ui->labelStatus->setText("Connection established");
     if (newConnection)
@@ -85,39 +76,48 @@ void MemProfWidget::ConnectionEstablished(bool newConnection, ProfilingSession* 
 
 void MemProfWidget::ConnectionLost(const char8* message)
 {
-    ui->dumpProgress->setValue(0);
+    ui->snapshotProgress->setValue(0);
     ui->labelStatus->setText(message != nullptr ? QString("Connection lost: %1").arg(message)
                                                 : QString("Connection lost"));
-    profileSession = nullptr;
 }
 
-void MemProfWidget::StatArrived()
+void MemProfWidget::StatArrived(size_t /*itemCount*/)
 {
-    if (realtime)
+    const MemoryStatItem& stat = profileSession->LastStat();
+    if (realtimeMode)
     {
-        const MemoryStatItem& stat = profileSession->LastStat();
-
         allocPoolModel->SetCurrentValues(stat);
         tagModel->SetCurrentValues(stat);
         generalStatModel->SetCurrentValues(stat);
-        UpdatePlot(stat);
     }
+    UpdatePlot(stat);
 }
 
-void MemProfWidget::DumpArrived(size_t sizeTotal, size_t sizeRecv)
+void MemProfWidget::SnapshotArrived(size_t sizeTotal, size_t sizeRecv)
 {
-    int v = static_cast<int>(double(sizeRecv) / double(sizeTotal) * 100.0);
-    ui->dumpProgress->setValue(v);
-    if (v >= 100)
+    if (sizeTotal > 0 && sizeRecv > 0)
     {
-        dumpBriefModel->NewDumpArrived();
+        if (sizeRecv < sizeTotal)
+        {
+            int percent = static_cast<int>(double(sizeRecv) / double(sizeTotal) * 100.0);
+            ui->snapshotProgress->setValue(percent);
+        }
+        else
+        {
+            ui->snapshotProgress->setValue(100);
+            snapshotModel->NewSnapshotArrived();
+        }
+    }
+    else
+    {
+        ui->snapshotProgress->setValue(0);
     }
 }
 
 void MemProfWidget::RealtimeToggled(bool checked)
 {
-    realtime = checked;
-    if (profileSession != nullptr && !profileSession->IsFileMode())
+    realtimeMode = checked;
+    if (!profileSession->IsFileMode() && realtimeMode)
     {
         QCustomPlot* plot = ui->plot;
         size_t ngraph = profileSession->AllocPoolCount();
@@ -134,7 +134,7 @@ void MemProfWidget::RealtimeToggled(bool checked)
 void MemProfWidget::PlotClicked(QMouseEvent* ev)
 {
     QCustomPlot* plot = ui->plot;
-    if (!realtime && profileSession != nullptr)
+    if (!realtimeMode)
     {
         QCPAxis* xAxis = plot->xAxis;
         double value = xAxis->pixelToCoord(static_cast<double>(ev->pos().x()));
@@ -155,7 +155,7 @@ void MemProfWidget::PlotClicked(QMouseEvent* ev)
 void MemProfWidget::DiffClicked()
 {
     Vector<int> selected;
-    QItemSelectionModel* selModel = ui->dumpBriefList->selectionModel();
+    QItemSelectionModel* selModel = ui->snapshotList->selectionModel();
     if (selModel->hasSelection())
     {
         QModelIndexList list = selModel->selectedRows(0);
@@ -166,7 +166,7 @@ void MemProfWidget::DiffClicked()
     }
     if (selected.size() != 2)
     {
-        QMessageBox::warning(this, "Achtung", "Select only two dumps");
+        QMessageBox::warning(this, "Achtung", "Select only two snapshots");
         return;
     }
 
@@ -177,19 +177,19 @@ void MemProfWidget::DiffClicked()
         const MemorySnapshot& snapshot1 = profileSession->Snapshot(index1);
         const MemorySnapshot& snapshot2 = profileSession->Snapshot(index2);
 
-        DiffViewerWidget* w = new DiffViewerWidget(&snapshot1, &snapshot2, this);
+        SnapshotDiffViewerWidget* w = new SnapshotDiffViewerWidget(&snapshot1, &snapshot2, this);
         w->resize(800, 600);
         w->show();
     }
 }
 
-void MemProfWidget::DumpBriefList_OnDoubleClicked(const QModelIndex& index)
+void MemProfWidget::SnapshotList_OnDoubleClicked(const QModelIndex& index)
 {
     int row = index.row();
     if (profileSession->LoadSnapshot(row))
     {
         const MemorySnapshot& snapshot = profileSession->Snapshot(row);
-        DumpViewerWidget* w = new DumpViewerWidget(&snapshot, this);
+        SnapshotViewerWidget* w = new SnapshotViewerWidget(&snapshot, this);
         w->resize(800, 600);
         w->show();
     }
@@ -208,12 +208,16 @@ void MemProfWidget::UpdatePlot(const MemoryStatItem& stat)
         double val = static_cast<double>(stat.PoolStat()[i].allocByApp) / 1024.0 / 1024.0;
         graph->addData(key, val);
 
-        if (realtime)
+        if (realtimeMode)
+        {
             graph->rescaleAxes(i > 0);
+        }
     }
 
-    if (realtime)
+    if (realtimeMode)
+    {
         plot->replot();
+    }
 }
 
 void MemProfWidget::SetPlotData()
@@ -277,20 +281,22 @@ void MemProfWidget::ReinitPlot()
     connect(plot->yAxis, SIGNAL(rangeChanged(QCPRange)), plot->yAxis2, SLOT(setRange(QCPRange)));
 }
 
-void MemProfWidget::Init()
+void MemProfWidget::InitUI()
 {
     ui->setupUi(this);
 
     QToolBar* toolbar = new QToolBar;
     {
-        QAction* actionDump = toolbar->addAction("Memory dump");
-        connect(actionDump, SIGNAL(triggered()), this, SIGNAL(OnDumpButton()));
+        QAction* actionSnapshot = toolbar->addAction("Memory snapshot");
+        connect(actionSnapshot, SIGNAL(triggered()), this, SIGNAL(OnSnapshotButton()));
 
-        QAction* actionToggleRealtime = toolbar->addAction("Realtime");
-        actionToggleRealtime->setCheckable(true);
-        if (realtime)
+        if (!profileSession->IsFileMode())
+        {
+            QAction* actionToggleRealtime = toolbar->addAction("Realtime");
+            actionToggleRealtime->setCheckable(true);
             actionToggleRealtime->toggle();
-        connect(actionToggleRealtime, &QAction::toggled, this, &MemProfWidget::RealtimeToggled);
+            connect(actionToggleRealtime, &QAction::toggled, this, &MemProfWidget::RealtimeToggled);
+        }
 
         QAction* actionDiff = toolbar->addAction("Diff");
         connect(actionDiff, &QAction::triggered, this, &MemProfWidget::DiffClicked);
@@ -316,14 +322,14 @@ void MemProfWidget::Init()
         allocPoolModel->SetPoolColors(poolColors);
 
         generalStatModel = new GeneralStatModel;
-        dumpBriefModel = new DumpBriefModel;
+        snapshotModel = new SnapshotListModel;
 
         ui->allocPoolTable->setModel(allocPoolModel);
         ui->tagTable->setModel(tagModel);
         ui->generalStatTable->setModel(generalStatModel);
-        ui->dumpBriefList->setModel(dumpBriefModel);
+        ui->snapshotList->setModel(snapshotModel);
 
-        connect(ui->dumpBriefList, &QListView::doubleClicked, this, &MemProfWidget::DumpBriefList_OnDoubleClicked);
+        connect(ui->snapshotList, &QListView::doubleClicked, this, &MemProfWidget::SnapshotList_OnDoubleClicked);
     }
 
     QCustomPlot* plot = ui->plot;

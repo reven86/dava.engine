@@ -31,9 +31,7 @@ DeviceListWidget::DeviceListWidget( QWidget *parent )
     connect(ui->viewDump, &QPushButton::clicked, this, &DeviceListWidget::OnViewDump);
 }
 
-DeviceListWidget::~DeviceListWidget()
-{
-}
+DeviceListWidget::~DeviceListWidget() {}
 
 QTreeView* DeviceListWidget::ItemView()
 {
@@ -42,22 +40,15 @@ QTreeView* DeviceListWidget::ItemView()
 
 void DeviceListWidget::OnViewDump()
 {
-    //DAVA::FilePath dumpDir("~doc:/memdumps/memory_dumps/2015-04-26 130711 win32-game-dumps");
-    DAVA::FilePath dumpDir("/Users/max/projects/wot/xxx");
-    //QString filename = QFileDialog::getOpenFileName(this, "Select dump file", dumpDir.GetAbsolutePathname().c_str(), "Snapshots (*.bin)");
-    //if (!filename.isEmpty())
+    DAVA::FilePath snapshotDir("~doc:/memory-profiling");
+    QString filename = QFileDialog::getOpenFileName(this, "Select dump file", snapshotDir.GetAbsolutePathname().c_str(), "Memory logs (*.mlog)");
+    if (!filename.isEmpty())
     {
-        //std::string s = filename.toStdString();
-        //FilePath srcDir(s);
-        //new MemProfController(srcDir.GetDirectory(), this);
-        new MemProfController(dumpDir, this);
-
-        
-        // ProfilingSession will be deleted on MemProfWidget destruction
-        //ProfilingSession* profilingSession = new ProfilingSession(DAVA::FilePath(s));
-        //MemProfWidget* w = new MemProfWidget(profilingSession, this);
-        //w->setAttribute(Qt::WA_DeleteOnClose);
-        //w->resize(800, 600);
-        //w->show();
+        std::string s = filename.toStdString();
+        MemProfController* obj = new MemProfController(FilePath(s), this);
+        if (!obj->IsFileLoaded())
+        {
+            delete obj;
+        }
     }
 }

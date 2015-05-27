@@ -82,8 +82,7 @@ void MMNetServer::OnUpdate()
 
 void MMNetServer::OnTag(uint32 tag, bool entering)
 {
-    //uint64 curTimestamp = SystemTimer::Instance()->AbsoluteMS();
-    //GetAndSaveDump(curTimestamp - timerBegin);
+    // Here, we can automatically make memory snapshot
 }
     
 void MMNetServer::ChannelOpen()
@@ -108,8 +107,8 @@ void MMNetServer::PacketReceived(const void* packet, size_t length)
         case MMNetProto::TYPE_REQUEST_TOKEN:
             ProcessRequestToken(header, static_cast<const void*>(header + 1), dataLength);
             break;
-        case MMNetProto::TYPE_REQUEST_DUMP:
-            ProcessRequestDump(header, static_cast<const void*>(header + 1), dataLength);
+        case MMNetProto::TYPE_REQUEST_SNAPSHOT:
+            ProcessRequestSnapshot(header, static_cast<const void*>(header + 1), dataLength);
             break;
         default:
             break;
@@ -139,21 +138,21 @@ void MMNetServer::ProcessRequestToken(const MMNetProto::PacketHeader* inHeader, 
     }
 }
 
-void MMNetServer::ProcessRequestDump(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
+void MMNetServer::ProcessRequestSnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
 {
     uint16 status = MMNetProto::STATUS_TOKEN;
     if (tokenRequested)
     {
         status = MMNetProto::STATUS_BUSY;
         uint64 curTimestamp = SystemTimer::Instance()->AbsoluteMS();
-        if (curTimestamp - lastManualDumpTimestamp >= 5000)
+        if (curTimestamp - lastManualSnapshotTimestamp >= 5000)
         {
-            lastManualDumpTimestamp = curTimestamp;
-            status = GetAndSaveDump(curTimestamp - timerBegin) ? MMNetProto::STATUS_SUCCESS
+            lastManualSnapshotTimestamp = curTimestamp;
+            status = GetAndSaveSnapshot(curTimestamp - timerBegin) ? MMNetProto::STATUS_SUCCESS
                                                                : MMNetProto::STATUS_BUSY;
         }
     }
-    FastReply(MMNetProto::TYPE_REPLY_DUMP, status);
+    FastReply(MMNetProto::TYPE_REPLY_SNAPSHOT, status);
 }
 
 void MMNetServer::AutoReplyStat(uint64 curTimestamp)
@@ -197,7 +196,7 @@ void MMNetServer::PacketDelivered()
         tokenRequested = true;
         ::operator delete(parcel.buffer);
     }
-    else if (parcel.header->type == MMNetProto::TYPE_REPLY_DUMP)
+    else if (parcel.header->type == MMNetProto::TYPE_REPLY_SNAPSHOT)
     {
         ::operator delete(parcel.buffer);
     }
@@ -205,18 +204,18 @@ void MMNetServer::PacketDelivered()
     {
         ::operator delete(parcel.buffer);
     }
-    else if (parcel.header->type == MMNetProto::TYPE_AUTO_DUMP)
+    else if (parcel.header->type == MMNetProto::TYPE_AUTO_SNAPSHOT)
     {
-        UpdateDumpProgress(parcel);
+        UpdateSnapshotProgress(parcel);
     }
 
     if (!queue.empty())
     {
         SendParcel(queue.front());
     }
-    if (!waitDumpAck)
+    if (!waitSnapshotAck)
     {
-        CheckAndTransferDump();
+        CheckAndTransferSnapshot();
     }
 }
 
@@ -239,138 +238,138 @@ void MMNetServer::Cleanup()
 {
     for (auto& parcel : queue)
     {
-        if (parcel.header->type != MMNetProto::TYPE_AUTO_DUMP)
+        if (parcel.header->type != MMNetProto::TYPE_AUTO_SNAPSHOT)
         {
             ::operator delete(parcel.buffer);
         }
     }
     queue.clear();
-    CleanupDump(false);
+    CleanupSnapshot(false);
 }
 
-void MMNetServer::CleanupDump(bool erase)
+void MMNetServer::CleanupSnapshot(bool erase)
 {
-    if (dumpFileHandle != nullptr)
+    if (snapshotFileHandle != nullptr)
     {
-        fclose(dumpFileHandle);
-        dumpFileHandle = nullptr;
+        fclose(snapshotFileHandle);
+        snapshotFileHandle = nullptr;
         
         if (erase)
         {
-            remove(curDumpInfo->filename.c_str());
-            curDumpInfo = nullptr;
+            remove(curSnapshotInfo->filename.c_str());
+            curSnapshotInfo = nullptr;
             {
-                LockGuard<Spinlock> lock(dumpMutex);
-                readyDumps.pop_front();
+                LockGuard<Spinlock> lock(snapshotMutex);
+                readySnapshots.pop_front();
             }
         }
     }
 }
 
-void MMNetServer::UpdateDumpProgress(const ParcelEx& parcel)
+void MMNetServer::UpdateSnapshotProgress(const ParcelEx& parcel)
 {
     bool transferDone = true;
     if (parcel.header->status == MMNetProto::STATUS_SUCCESS)
     {
-        const MMNetProto::PacketParamDump* param = static_cast<const MMNetProto::PacketParamDump*>(dumpParcel.data);
-        curDumpInfo->bytesTransferred += param->chunkSize;
+        const MMNetProto::PacketParamSnapshot* param = static_cast<const MMNetProto::PacketParamSnapshot*>(snapshotParcel.data);
+        curSnapshotInfo->bytesTransferred += param->chunkSize;
         
-        transferDone = curDumpInfo->bytesTransferred == curDumpInfo->fileSize;
+        transferDone = curSnapshotInfo->bytesTransferred == curSnapshotInfo->fileSize;
     }
     
     if (transferDone)
     {
-        CleanupDump(true);
+        CleanupSnapshot(true);
     }
-    waitDumpAck = false;
+    waitSnapshotAck = false;
 }
 
-void MMNetServer::CheckAndTransferDump()
+void MMNetServer::CheckAndTransferSnapshot()
 {
-    if (dumpFileHandle != nullptr)
+    if (snapshotFileHandle != nullptr)
     {
-        ContinueDumpTransfer();
+        ContinueSnapshotTransfer();
     }
     else
     {
-        BeginNextDumpTransfer();
+        BeginNextSnapshotTransfer();
     }
 }
 
-void MMNetServer::BeginNextDumpTransfer()
+void MMNetServer::BeginNextSnapshotTransfer()
 {
     {
-        LockGuard<Spinlock> lock(dumpMutex);
-        if (!readyDumps.empty())
+        LockGuard<Spinlock> lock(snapshotMutex);
+        if (!readySnapshots.empty())
         {
-            curDumpInfo = &readyDumps.front();
+            curSnapshotInfo = &readySnapshots.front();
         }
     }
-    if (curDumpInfo != nullptr)
+    if (curSnapshotInfo != nullptr)
     {
-        dumpFileHandle = fopen(curDumpInfo->filename.c_str(), "rb");
-        if (dumpFileHandle != nullptr)
+        snapshotFileHandle = fopen(curSnapshotInfo->filename.c_str(), "rb");
+        if (snapshotFileHandle != nullptr)
         {
-            if (nullptr == dumpParcel.buffer)
+            if (nullptr == snapshotParcel.buffer)
             {
-                dumpParcel = ParcelEx(sizeof(MMNetProto::PacketParamDump) + DUMPCHUNK_SIZE);
+                snapshotParcel = ParcelEx(sizeof(MMNetProto::PacketParamSnapshot) + SNAPSHOT_CHUNK_SIZE);
             }
-            dumpParcel.header->length = 0;
-            dumpParcel.header->type = MMNetProto::TYPE_AUTO_DUMP;
-            dumpParcel.header->status = MMNetProto::STATUS_SUCCESS;
-            dumpParcel.header->itemCount = 0;
-            dumpParcel.header->token = connToken;
+            snapshotParcel.header->length = 0;
+            snapshotParcel.header->type = MMNetProto::TYPE_AUTO_SNAPSHOT;
+            snapshotParcel.header->status = MMNetProto::STATUS_SUCCESS;
+            snapshotParcel.header->itemCount = 0;
+            snapshotParcel.header->token = connToken;
 
-            ContinueDumpTransfer();
+            ContinueSnapshotTransfer();
         }
         else
         {
-            remove(curDumpInfo->filename.c_str());
-            curDumpInfo = nullptr;
+            remove(curSnapshotInfo->filename.c_str());
+            curSnapshotInfo = nullptr;
             {
-                LockGuard<Spinlock> lock(dumpMutex);
-                readyDumps.pop_front();
+                LockGuard<Spinlock> lock(snapshotMutex);
+                readySnapshots.pop_front();
             }
         }
     }
 }
 
-void MMNetServer::ContinueDumpTransfer()
+void MMNetServer::ContinueSnapshotTransfer()
 {
-    MMNetProto::PacketParamDump* param = static_cast<MMNetProto::PacketParamDump*>(dumpParcel.data);
+    MMNetProto::PacketParamSnapshot* param = static_cast<MMNetProto::PacketParamSnapshot*>(snapshotParcel.data);
     void* readBuf = static_cast<void*>(param + 1);
     
-    size_t chunkSize = Min(curDumpInfo->fileSize - curDumpInfo->bytesTransferred, DUMPCHUNK_SIZE);
-    size_t nread = fread(readBuf, 1, chunkSize, dumpFileHandle);
+    size_t chunkSize = Min(curSnapshotInfo->fileSize - curSnapshotInfo->bytesTransferred, SNAPSHOT_CHUNK_SIZE);
+    size_t nread = fread(readBuf, 1, chunkSize, snapshotFileHandle);
     if (nread == chunkSize)
     {
         param->flags = 0;
-        param->dumpSize = static_cast<uint32>(curDumpInfo->fileSize);
+        param->snapshotSize = static_cast<uint32>(curSnapshotInfo->fileSize);
         param->chunkSize = static_cast<uint32>(chunkSize);
-        param->chunkOffset = static_cast<uint32>(curDumpInfo->bytesTransferred);
+        param->chunkOffset = static_cast<uint32>(curSnapshotInfo->bytesTransferred);
         
-        dumpParcel.header->length = uint32(sizeof(MMNetProto::PacketHeader) + sizeof(MMNetProto::PacketParamDump) + chunkSize);
-        EnqueueParcel(dumpParcel);
+        snapshotParcel.header->length = uint32(sizeof(MMNetProto::PacketHeader) + sizeof(MMNetProto::PacketParamSnapshot) + chunkSize);
+        EnqueueParcel(snapshotParcel);
     }
     else
     {
-        FastReply(MMNetProto::TYPE_AUTO_DUMP, MMNetProto::STATUS_ERROR);
+        FastReply(MMNetProto::TYPE_AUTO_SNAPSHOT, MMNetProto::STATUS_ERROR);
     }
-    waitDumpAck = true;
+    waitSnapshotAck = true;
 }
 
-bool MMNetServer::GetAndSaveDump(uint64 curTimestamp)
+bool MMNetServer::GetAndSaveSnapshot(uint64 curTimestamp)
 {
     bool result = false;
     
-    LockGuard<Spinlock> lock(dumpMutex);
+    LockGuard<Spinlock> lock(snapshotMutex);
 
     FilePath filePath("~doc:");
-    filePath += Format("mdump_%u.bin", curDumpIndex++);
+    filePath += Format("msnap_%u.bin", curSnapshotIndex++);
     
-    DumpInfo dumpInfo(filePath.GetAbsolutePathname());
+    SnapshotInfo snapshotInfo(filePath.GetAbsolutePathname());
 
-    FILE* file = fopen(dumpInfo.filename.c_str(), "wb");
+    FILE* file = fopen(snapshotInfo.filename.c_str(), "wb");
     if (file != nullptr)
     {
 #if defined(__DAVAENGINE_WIN32__)
@@ -379,9 +378,9 @@ bool MMNetServer::GetAndSaveDump(uint64 curTimestamp)
         fwrite(dummy, 1, 1, file);
         fseek(file, -1, SEEK_CUR);
 #endif
-        if (MemoryManager::Instance()->GetMemoryDump(file, curTimestamp, &dumpInfo.fileSize))
+        if (MemoryManager::Instance()->GetMemorySnapshot(file, curTimestamp, &snapshotInfo.fileSize))
         {
-            readyDumps.emplace_back(std::forward<DumpInfo>(dumpInfo));
+            readySnapshots.emplace_back(std::forward<SnapshotInfo>(snapshotInfo));
             result = true;
         }
         fclose(file);

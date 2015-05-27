@@ -72,11 +72,12 @@ bool ProfilingSession::StartNew(const DAVA::MMStatConfig* config, const DAVA::Ne
 
     FlushAndReset(false);
 
+    isFileMode = false;
     deviceInfo = deviceInfo_;
     storageDir = destDir;
     logFileName = storageDir;
     logFileName += "/";
-    logFileName += "memory.log";
+    logFileName += "memory.mlog";
 
     ApplyConfig(config);
 
@@ -88,19 +89,22 @@ bool ProfilingSession::StartNew(const DAVA::MMStatConfig* config, const DAVA::Ne
     return isValid;
 }
 
-bool ProfilingSession::LoadFromFile(const DAVA::FilePath& srcDir)
+bool ProfilingSession::LoadFromFile(const DAVA::FilePath& srcFile)
 {
-    DVASSERT(!srcDir.IsEmpty());
+    DVASSERT(!srcFile.IsEmpty());
 
     FlushAndReset(false);
 
-    storageDir = srcDir;
-    logFileName = storageDir;
-    logFileName += "/";
-    logFileName += "memory.log";
+    isFileMode = true;
+    storageDir = srcFile.GetDirectory();
+    logFileName = srcFile;
 
     isValid = LoadLogFile();
-    if (!isValid)
+    if (isValid)
+    {
+        LookForShapshots();
+    }
+    else
     {
         FlushAndReset(false);
     }
@@ -113,10 +117,11 @@ void ProfilingSession::AppendStatItems(const DAVA::MMCurStat* statBuf, size_t it
 
     const size_t itemSize = statBuf->size;
     stat.reserve(stat.size() + itemCount);
+    const DAVA::MMCurStat* statPtr = statBuf;
     for (size_t i = 0;i < itemCount;++i)
     {
         stat.emplace_back(statBuf, allocPoolCount, tagCount);
-        statBuf = OffsetPointer<const DAVA::MMCurStat>(statBuf, itemSize);
+        statPtr = OffsetPointer<const DAVA::MMCurStat>(statPtr, itemSize);
     }
 
     if (logFile.Valid())
@@ -130,16 +135,23 @@ void ProfilingSession::AppendStatItems(const DAVA::MMCurStat* statBuf, size_t it
     }
 }
 
-void ProfilingSession::AppendSnapshot(const DAVA::MMDump* rawDump)
+void ProfilingSession::AppendSnapshot(const DAVA::MMSnapshot* msnapshot)
 {
     FilePath filename = storageDir;
-    filename += Format("%02d_at_%d.snapshot", snapshotSeqNo, uint32(rawDump->timestamp / 1000));
+    filename += Format("%02d_at_%d.snapshot", snapshotSeqNo, uint32(msnapshot->timestamp / 1000));
 
     RefPtr<File> file(File::Create(filename, File::CREATE | File::WRITE));
     if (file.Valid())
     {
-        file->Write(rawDump, rawDump->size);
-        snapshots.emplace_back(filename, rawDump);
+        file->Write(msnapshot, msnapshot->size);
+        snapshots.emplace_back(filename, msnapshot);
+
+        if (msnapshot->symbolCount > 0)
+        {
+            uint32 symOffset = sizeof(MMSnapshot) + msnapshot->statItemSize + msnapshot->blockCount * sizeof(MMBlock);
+            const MMSymbol* symbols = OffsetPointer<const MMSymbol>(msnapshot, symOffset);
+            LoadSymbols(symbols, msnapshot->symbolCount);
+        }
     }
     snapshotSeqNo += 1;
 }
@@ -274,7 +286,7 @@ bool ProfilingSession::LoadLogHeader(size_t* itemCount, size_t* itemSize)
         DVASSERT(header.statConfigSize > sizeof(MMStatConfig));
         DVASSERT(header.statItemSize > sizeof(MMCurStat));
         if (FILE_SIGNATURE == header.signature && header.devInfoSize > 0 &&
-            header.statConfigSize > sizeof(MMStatConfig) && header.statItemSize > sizeof(MMCurStat))
+                              header.statConfigSize > sizeof(MMStatConfig) && header.statItemSize > sizeof(MMCurStat))
         {
             Vector<uint8> tempBuf;
 
@@ -405,14 +417,42 @@ void ProfilingSession::LoadShapshotDescriptor(const DAVA::FilePath& path)
     RefPtr<File> file(File::Create(path, File::OPEN | File::READ));
     if (file.Valid())
     {
-        MMDump rawDump;
-        size_t nread = file->Read(&rawDump);
-        if (sizeof(MMDump) == nread && file->GetSize() == rawDump.size)
+        MMSnapshot msnapshot;
+        size_t nread = file->Read(&msnapshot);
+        if (sizeof(MMSnapshot) == nread && file->GetSize() == msnapshot.size)
         {
-            if (rawDump.blockCount > 0 && rawDump.bktraceDepth > 0)
+            if (msnapshot.blockCount > 0 && msnapshot.bktraceDepth > 0)
             {
-                snapshots.emplace_back(path, &rawDump);
+                snapshots.emplace_back(path, &msnapshot);
+
+                if (msnapshot.symbolCount > 0)
+                {
+                    uint32 symOffset = msnapshot.statItemSize + msnapshot.blockCount * sizeof(MMBlock);
+                    file->Seek(symOffset, File::SEEK_FROM_CURRENT);
+
+                    Vector<MMSymbol> symbols(msnapshot.symbolCount, MMSymbol());
+                    nread = file->Read(&*symbols.begin(), msnapshot.symbolCount * sizeof(MMSymbol));
+                    if (msnapshot.symbolCount * sizeof(MMSymbol) == nread)
+                    {
+                        LoadSymbols(&*symbols.begin(), msnapshot.symbolCount);
+                    }
+                }
             }
+        }
+    }
+}
+
+void ProfilingSession::LoadSymbols(const DAVA::MMSymbol* symbols, size_t count)
+{
+    for (size_t i = 0;i < count;++i)
+    {
+        if (symbols[i].name[0] != '\0')
+        {
+            symbolTable.AddSymbol(symbols[i].addr, symbols[i].name);
+        }
+        else
+        {
+            symbolTable.AddSymbol(symbols[i].addr);
         }
     }
 }

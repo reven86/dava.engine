@@ -68,18 +68,16 @@ class MMNetServer : public NetService
         void* data;
     };
     
-    struct DumpInfo
+    struct SnapshotInfo
     {
-        DumpInfo() {}
-        DumpInfo(const String& fname)
-            : filename(fname)
-        {}
-        DumpInfo(DumpInfo&& other)
+        SnapshotInfo() {}
+        SnapshotInfo(const String& fname) : filename(fname) {}
+        SnapshotInfo(SnapshotInfo&& other)
             : filename(std::move(other.filename))
             , fileSize(other.fileSize)
             , bytesTransferred(other.bytesTransferred)
         {}
-        DumpInfo& operator = (DumpInfo&& other)
+        SnapshotInfo& operator = (SnapshotInfo&& other)
         {
             filename = std::move(other.filename);
             fileSize = other.fileSize;
@@ -92,7 +90,7 @@ class MMNetServer : public NetService
         size_t bytesTransferred = 0;
     };
     
-    static const size_t DUMPCHUNK_SIZE = 63 * 1024;
+    static const size_t SNAPSHOT_CHUNK_SIZE = 63 * 1024;
 
 public:
     MMNetServer();
@@ -109,7 +107,7 @@ private:
     void OnTag(uint32 tag, bool entering);
     
     void ProcessRequestToken(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength);
-    void ProcessRequestDump(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength);
+    void ProcessRequestSnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength);
     
     void AutoReplyStat(uint64 curTimestamp);
     void FastReply(uint16 type, uint16 status);
@@ -118,13 +116,13 @@ private:
     void SendParcel(ParcelEx& parcel);
     
     void Cleanup();
-    void CleanupDump(bool erase);
+    void CleanupSnapshot(bool erase);
 
-    void UpdateDumpProgress(const ParcelEx& parcel);
-    void CheckAndTransferDump();
-    void ContinueDumpTransfer();
-    void BeginNextDumpTransfer();
-    bool GetAndSaveDump(uint64 curTimestamp);
+    void UpdateSnapshotProgress(const ParcelEx& parcel);
+    void CheckAndTransferSnapshot();
+    void ContinueSnapshotTransfer();
+    void BeginNextSnapshotTransfer();
+    bool GetAndSaveSnapshot(uint64 curTimestamp);
 
 private:
     uint32 connToken = 0;
@@ -137,15 +135,15 @@ private:
     
     size_t statItemSize = 0;
     
-    Spinlock dumpMutex;
-    List<DumpInfo> readyDumps;
-    ParcelEx dumpParcel;
-    DumpInfo* curDumpInfo = nullptr;
-    FILE* dumpFileHandle = nullptr;
-    bool waitDumpAck = false;
+    Spinlock snapshotMutex;
+    List<SnapshotInfo> readySnapshots;
+    ParcelEx snapshotParcel;
+    SnapshotInfo* curSnapshotInfo = nullptr;
+    FILE* snapshotFileHandle = nullptr;
+    bool waitSnapshotAck = false;
     
-    uint32 curDumpIndex = 0;
-    uint64 lastManualDumpTimestamp = 0;
+    uint32 curSnapshotIndex = 0;
+    uint64 lastManualSnapshotTimestamp = 0;
 };
 
 }   // namespace Net

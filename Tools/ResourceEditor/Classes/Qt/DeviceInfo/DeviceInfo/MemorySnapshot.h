@@ -39,7 +39,7 @@ class BacktraceSymbolTable;
 class MemorySnapshot final
 {
 public:
-    MemorySnapshot(const DAVA::FilePath& filename, const DAVA::MMDump* rawDump);
+    MemorySnapshot(const DAVA::FilePath& filename, const DAVA::MMSnapshot* msnapshot);
     //MemorySnapshot(const MemorySnapshot&) = delete;
     //MemorySnapshot& operator = (const MemorySnapshot&) = delete;
     ~MemorySnapshot() = default;
@@ -61,7 +61,7 @@ public:
     Branch* CreateBranch(const DAVA::Vector<const char*>& startNames) const;
 
 private:
-    void Init(const DAVA::MMDump* rawDump);
+    void Init(const DAVA::MMSnapshot* msnapshot);
     bool LoadFile();
     void BuildBlockMap();
     
@@ -82,10 +82,10 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-inline MemorySnapshot::MemorySnapshot(const DAVA::FilePath& filename, const DAVA::MMDump* rawDump)
+inline MemorySnapshot::MemorySnapshot(const DAVA::FilePath& filename, const DAVA::MMSnapshot* msnapshot)
     : fileName(filename)
 {
-    Init(rawDump);
+    Init(msnapshot);
 }
 
 inline const DAVA::FilePath& MemorySnapshot::FileName() const
@@ -128,13 +128,13 @@ inline const BacktraceSymbolTable* MemorySnapshot::SymbolTable() const
     return symbolTable;
 }
 
-inline void MemorySnapshot::Init(const DAVA::MMDump* rawDump)
+inline void MemorySnapshot::Init(const DAVA::MMSnapshot* msnapshot)
 {
-    timestamp = rawDump->timestamp;
-    blockCount = rawDump->blockCount;
-    symbolCount = rawDump->symbolCount;
-    bktraceCount = rawDump->bktraceCount;
-    totalSize = rawDump->size;
+    timestamp = msnapshot->timestamp;
+    blockCount = msnapshot->blockCount;
+    symbolCount = msnapshot->symbolCount;
+    bktraceCount = msnapshot->bktraceCount;
+    totalSize = msnapshot->size;
 }
 
 #endif  // __MEMORYSNAPSHOT_H__

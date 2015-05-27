@@ -190,6 +190,9 @@
     <Filter Include="Internal\Timer">
       <UniqueIdentifier>{ad6cd690-f1f4-454a-ab5a-65272ae1bf13}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\Network\Services\MMNet">
+      <UniqueIdentifier>{d0f16e2c-89a6-4e92-a990-9a10aa9bfe40}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -1801,15 +1804,6 @@
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocPools.h">
       <Filter>Internal\MemoryManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetProto.h">
-      <Filter>Internal\Network\Services</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetServer.h">
-      <Filter>Internal\Network\Services</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetClient.h">
-      <Filter>Internal\Network\Services</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryProfiler.h">
       <Filter>Internal\MemoryManager</Filter>
     </ClInclude>
@@ -1842,6 +1836,15 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\TrackingAllocator.h">
       <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetClient.h">
+      <Filter>Internal\Network\Services\MMNet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetProto.h">
+      <Filter>Internal\Network\Services\MMNet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetServer.h">
+      <Filter>Internal\Network\Services\MMNet</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3259,12 +3262,6 @@
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\OperatorNewHook.cpp">
       <Filter>Internal\MemoryManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetServer.cpp">
-      <Filter>Internal\Network\Services</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetClient.cpp">
-      <Filter>Internal\Network\Services</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\dlmalloc.c">
       <Filter>Internal\Autotesting</Filter>
     </ClCompile>
@@ -3285,6 +3282,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\AllocatorBridge.cpp">
       <Filter>Internal\MemoryManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetClient.cpp">
+      <Filter>Internal\Network\Services\MMNet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetServer.cpp">
+      <Filter>Internal\Network\Services\MMNet</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

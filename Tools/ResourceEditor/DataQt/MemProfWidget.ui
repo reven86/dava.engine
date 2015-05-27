@@ -40,7 +40,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QProgressBar" name="dumpProgress">
+      <widget class="QProgressBar" name="snapshotProgress">
        <property name="value">
         <number>0</number>
        </property>
@@ -76,7 +76,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QListView" name="dumpBriefList">
+        <widget class="QListView" name="snapshotList">
          <property name="selectionMode">
           <enum>QAbstractItemView::MultiSelection</enum>
          </property>

@@ -42,15 +42,13 @@ namespace MMNetProto
 enum ePacketType
 {
     TYPE_REQUEST_TOKEN = 0,
-    TYPE_REQUEST_DUMP,
-    TYPE_REQUEST_CANCEL,
+    TYPE_REQUEST_SNAPSHOT,
     
     TYPE_REPLY_TOKEN = 100,
-    TYPE_REPLY_DUMP,
-    TYPE_REPLY_CANCEL,
+    TYPE_REPLY_SNAPSHOT,
     
     TYPE_AUTO_STAT = 200,
-    TYPE_AUTO_DUMP
+    TYPE_AUTO_SNAPSHOT
 };
 
 enum eStatus
@@ -72,89 +70,16 @@ struct PacketHeader
 };
 static_assert(sizeof(PacketHeader) == 16, "sizeof(MMNetProto::PacketHeader) != 16");
 
-struct PacketParamDump
+struct PacketParamSnapshot
 {
-    uint32 flags;           // Flags: 0 - dump unpacked, 1 - dump packed
-    uint32 dumpSize;        // Total size of unpacked dump
-    uint32 chunkOffset;     // Chunk byte offset in unpacked dump
-    uint32 chunkSize;       // Chunk size in unpacked dump
+    uint32 flags;           // Flags: 0 - snapshot unpacked, 1 - snapshot packed
+    uint32 snapshotSize;    // Total size of unpacked memory snapshot
+    uint32 chunkOffset;     // Chunk byte offset in unpacked snapshot
+    uint32 chunkSize;       // Chunk size in unpacked snapshot
 };
-static_assert(sizeof(PacketParamDump) == 16, "sizeof(MMNetProto::PacketParamDump) != 16");
-
-////////////////////////////////////////////////
-struct Header
-{
-    uint32 type;
-    uint32 status;
-    uint32 length;          // Size of data sending with header
-    uint32 totalLength;     // Total size of data
-    uint32 itemCount;       // Number of items
-    uint32 specific[3];
-};
-static_assert(sizeof(Header) == 32, "sizeof(Header) != 32");
-
-struct HeaderInit
-{
-    uint32 type;
-    uint32 status;
-    uint32 length;
-    uint32 totalLength;
-    uint32 itemCount;
-    uint32 sessionId;
-    uint32 unused[2];
-};
-static_assert(sizeof(HeaderInit) == sizeof(Header), "sizeof(HeaderInit) != sizeof(Header)");
-
-struct HeaderStat
-{
-    uint32 type;
-    uint32 status;
-    uint32 length;
-    uint32 totalLength;
-    uint32 itemCount;
-    uint32 unused[3];
-};
-static_assert(sizeof(HeaderStat) == sizeof(Header), "sizeof(HeaderStat) != sizeof(Header)");
-
-struct HeaderDump
-{
-    uint32 type;
-    uint32 status;
-    uint32 length;
-    uint32 totalLength;
-    uint32 itemCount;
-    uint32 isPacked;            // 0 - dump not packed, 1 - dump - packed
-    uint32 unused[2];
-};
-static_assert(sizeof(HeaderDump) == sizeof(Header), "sizeof(HeaderDump) != sizeof(Header)");
+static_assert(sizeof(PacketParamSnapshot) == 16, "sizeof(MMNetProto::PacketParamSnapshot) != 16");
 
 }   // namespace MMNetProto
-
-enum class eMMProtoCmd
-{
-    INIT_COMM,
-    CUR_STAT,
-    DUMP,
-    DUMP_BEGIN,
-    DUMP_CHUNK,
-    DUMP_END
-};
-
-enum class eMMProtoStatus
-{
-    ACK,
-    DENY,
-};
-
-struct MMProtoHeader
-{
-    uint32 sessionId;
-    uint32 cmd;             // Command
-    uint32 status;          // 
-    uint32 length;          // Length of data attached to command, or zero if no data
-};
-
-static_assert(sizeof(MMProtoHeader) == 16, "sizeof(MMProtoHeader) == 16");
 
 }   // namespace Net
 }   // namespace DAVA

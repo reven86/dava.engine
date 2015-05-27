@@ -66,24 +66,24 @@ class MMNetClient : public NetService
     
 public:
     enum {
-        DUMP_STAGE_STARTED = 0,
-        DUMP_STAGE_PROGRESS,
-        DUMP_STAGE_FINISHED,
-        DUMP_STAGE_ERROR
+        SNAPSHOT_STAGE_STARTED = 0,
+        SNAPSHOT_STAGE_PROGRESS,
+        SNAPSHOT_STAGE_FINISHED,
+        SNAPSHOT_STAGE_ERROR
     };
 
     using ConnEstablishedCallback = Function<void (bool, const MMStatConfig*)>;
     using ConnLostCallback = Function<void (const char8*)>;
     using StatCallback = Function<void (const MMCurStat*, size_t)>;
-    using DumpCallback = Function<void (int, size_t, size_t, const void*)>;
+    using SnapshotCallback = Function<void (int, size_t, size_t, const void*)>;
 
 public:
     MMNetClient();
     virtual ~MMNetClient();
 
-    void InstallCallbacks(ConnEstablishedCallback connEstablishedCallback, ConnLostCallback connLostCallback, StatCallback statCallback, DumpCallback dumpCallback);
+    void InstallCallbacks(ConnEstablishedCallback connEstablishedCallback, ConnLostCallback connLostCallback, StatCallback statCallback, SnapshotCallback snapshotCallback);
 
-    void RequestDump();
+    void RequestSnapshot();
 
     // Overriden methods from NetService
     void ChannelOpen() override;
@@ -93,9 +93,9 @@ public:
 
 private:
     void ProcessReplyToken(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength);
-    void ProcessReplyDump(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength);
+    void ProcessReplySnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength);
     void ProcessAutoReplyStat(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength);
-    void ProcessAutoReplyDump(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength);
+    void ProcessAutoReplySnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength);
     
     void FastRequest(uint16 type);
     
@@ -110,15 +110,15 @@ private:
     
     List<ParcelEx> queue;
 
-    bool canRequestDump = true;
-    size_t dumpTotalSize = 0;
-    size_t dumpRecvSize = 0;
-    std::vector<uint8> dumpData;
+    bool canRequestSnapshot = true;
+    size_t snapshotTotalSize = 0;
+    size_t snapshotRecvSize = 0;
+    std::vector<uint8> snapshotData;
 
     ConnEstablishedCallback connEstablishedCallback;
     ConnLostCallback connLostCallback;
     StatCallback statCallback;
-    DumpCallback dumpCallback;
+    SnapshotCallback snapshotCallback;
 };
 
 }   // namespace Net

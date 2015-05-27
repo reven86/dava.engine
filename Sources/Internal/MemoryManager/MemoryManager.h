@@ -116,7 +116,7 @@ public:
     size_t CalcCurStatSize() const;
     void GetCurStat(void* buffer, size_t bufSize) const;
 
-    bool GetMemoryDump(FILE* file, uint64 curTimestamp, size_t* dumpSize);
+    bool GetMemorySnapshot(FILE* file, uint64 curTimestamp, size_t* snapshotSize);
 
 private:
     // Make construtor and destructor private to disallow external creation of MemoryManager

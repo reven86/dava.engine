@@ -166,7 +166,7 @@ struct MMCurStat
 static_assert(sizeof(MMCurStat) % 16 == 0, "sizeof(MMCurStat) % 16 == 0");
 
 /*
- MMDump represents memory dump
+ MMSnapshot represents memory snapshot
  Layout after this header:
     MMCurStat statCur                 - current memory allocation statistics with its layout
     MMBlock blocks[blockCount]        - memory blocks
@@ -175,22 +175,21 @@ static_assert(sizeof(MMCurStat) % 16 == 0, "sizeof(MMCurStat) % 16 == 0");
  Backtrace array size calculation formula:
     size = (sizeof(MMBacktrace) + bktraceDepth * sizeof(uint64)) * bktraceCount;
 */
-struct MMDump
+struct MMSnapshot
 {
-    uint64 timestamp;           // Room for timestamp, not filled by memory manager
-    uint16 collectTime;         // Room for measured dump collecting time, not filled by memory manager
-    uint16 packTime;            // Room for measured dump packing time, not filled by memory manager
-    uint32 size;                // Total size of memory dump
-    uint32 blockCount;          // Number of blocks in dump
-    uint32 bktraceCount;        // Number of backtraces in dump
-    uint32 symbolCount;         // Number of symbols in dump
+    uint64 timestamp;           // Room for timestamp
+    uint32 size;                // Total size of memory snapshot
+    uint32 statItemSize;        // Size of stat item
+    uint32 blockCount;          // Number of blocks in snapshot
+    uint32 bktraceCount;        // Number of backtraces in snapshot
+    uint32 symbolCount;         // Number of symbols in snapshot
     uint32 bktraceDepth;        // Depth of collected backtrace
     // MMCurStat statCur;
     // MMBlock blocks[];
     // MMSymbol symbols[];
     // MMBacktrace bktrace[];
 };
-static_assert(sizeof(MMDump) % 16 == 0, "sizeof(MMDump) % 16 == 0");
+static_assert(sizeof(MMSnapshot) % 16 == 0, "sizeof(MMSnapshot) % 16 == 0");
 
 }   // namespace DAVA
 

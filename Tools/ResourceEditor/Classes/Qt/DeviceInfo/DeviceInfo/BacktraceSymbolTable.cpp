@@ -16,17 +16,25 @@ void BacktraceSymbolTable::AddSymbol(DAVA::uint64 frameAddr, const DAVA::String&
         {
             uniqueNames.emplace(nameHash, name);
         }
-        else
-        {
-            // TODO: remove debug check
-            DVASSERT(name == iterName->second);
-        }
         addrToNameMap.emplace(frameAddr, nameHash);
     }
-    else
+}
+
+void BacktraceSymbolTable::AddSymbol(DAVA::uint64 frameAddr)
+{
+    auto iterAddr = addrToNameMap.find(frameAddr);
+    if (iterAddr == addrToNameMap.end())
     {
-        // TODO: remove debug check
-        DVASSERT(GetSymbol(frameAddr) == name);
+        char name[32];
+        Snprintf(name, COUNT_OF(name), "%08llX", frameAddr);
+
+        uint32 nameHash = HashValue_N(name, strlen(name));
+        auto iterName = uniqueNames.find(nameHash);
+        if (iterName == uniqueNames.end())
+        {
+            uniqueNames.emplace(nameHash, name);
+        }
+        addrToNameMap.emplace(frameAddr, nameHash);
     }
 }
 

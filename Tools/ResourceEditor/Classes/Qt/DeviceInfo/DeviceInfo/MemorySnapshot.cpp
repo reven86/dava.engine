@@ -87,9 +87,7 @@ Branch* MemorySnapshot::CreateBranch(const DAVA::Vector<const char*>& startNames
         }
     }
     // Sort children by symbol name
-    root->SortChildren([](const Branch* l, const Branch* r) -> bool {
-        return strcmp(l->name, r->name) < 0;
-    });
+    root->SortChildren([](const Branch* l, const Branch* r) -> bool { return strcmp(l->name, r->name) < 0; });
     return root;
 }
 
@@ -127,55 +125,41 @@ bool MemorySnapshot::LoadFile()
     if (file.Valid())
     {
         // Load and check file header
-        MMDump rawDump;
-        size_t nread = file->Read(&rawDump);
-        if (sizeof(MMDump) == nread || file->GetSize() == rawDump.size)
+        MMSnapshot msnapshot;
+        size_t nread = file->Read(&msnapshot);
+        if (sizeof(MMSnapshot) == nread || file->GetSize() == msnapshot.size)
         {
-            // Load and skip statistics
-            MMCurStat curStat;
-            nread = file->Read(&curStat, sizeof(curStat));
-            if (sizeof(MMCurStat) == nread)
+            // Skip statistics
+            file->Seek(msnapshot.statItemSize, File::SEEK_FROM_CURRENT);
+
+            const uint32 bktraceSize = sizeof(MMBacktrace) + msnapshot.bktraceDepth * sizeof(uint64);
+            Vector<MMBlock> blocks(msnapshot.blockCount, MMBlock());
+            Vector<MMSymbol> symbols(msnapshot.symbolCount, MMSymbol());
+            Vector<uint8> bktrace(bktraceSize * msnapshot.bktraceCount, 0);
+
+            // Read memory blocks
+            nread = file->Read(&*blocks.begin(), msnapshot.blockCount * sizeof(MMBlock));
+            if (msnapshot.blockCount * sizeof(MMBlock) == nread)
             {
-                file->Seek(curStat.size - sizeof(MMCurStat), File::SEEK_FROM_CURRENT);
-
-                const uint32 bktraceSize = sizeof(MMBacktrace) + rawDump.bktraceDepth * sizeof(uint64);
-                Vector<MMBlock> blocks(rawDump.blockCount, MMBlock());
-                Vector<MMSymbol> symbols(rawDump.symbolCount, MMSymbol());
-                Vector<uint8> bktrace(bktraceSize * rawDump.bktraceCount, 0);
-
-                // Read memory blocks
-                nread = file->Read(&*blocks.begin(), rawDump.blockCount * sizeof(MMBlock));
-                if (rawDump.blockCount * sizeof(MMBlock) == nread)
+                // Read symbols
+                nread = file->Read(&*symbols.begin(), msnapshot.symbolCount * sizeof(MMSymbol));
+                if (msnapshot.symbolCount * sizeof(MMSymbol) == nread)
                 {
-                    // Read symbols
-                    nread = file->Read(&*symbols.begin(), rawDump.symbolCount * sizeof(MMSymbol));
-                    if (rawDump.symbolCount * sizeof(MMSymbol) == nread)
+                    // Read backtraces
+                    nread = file->Read(&*bktrace.begin(), bktraceSize * msnapshot.bktraceCount);
+                    if (bktraceSize * msnapshot.bktraceCount == nread)
                     {
-                        // Read backtraces
-                        nread = file->Read(&*bktrace.begin(), bktraceSize * rawDump.bktraceCount);
-                        if (bktraceSize * rawDump.bktraceCount == nread)
+                        const uint8* curOffset = bktrace.data();
+                        for (size_t i = 0, n = msnapshot.bktraceCount;i < n;++i)
                         {
-                            for (auto& sym : symbols)
-                            {
-                                if (sym.name[0] == '\0')
-                                {
-                                    Snprintf(sym.name, COUNT_OF(sym.name), "%08llX", sym.addr);
-                                }
-                                symbolTable->AddSymbol(sym.addr, sym.name);
-                            }
-
-                            const uint8* curOffset = bktrace.data();
-                            for (size_t i = 0, n = rawDump.bktraceCount;i < n;++i)
-                            {
-                                const MMBacktrace* curBktrace = reinterpret_cast<const MMBacktrace*>(curOffset);
-                                const uint64* frames = OffsetPointer<uint64>(curBktrace, sizeof(MMBacktrace));
-                                symbolTable->AddBacktrace(curBktrace->hash, frames, rawDump.bktraceDepth);
-                                curOffset += bktraceSize;
-                            }
-
-                            mblocks.swap(blocks);
-                            return true;
+                            const MMBacktrace* curBktrace = reinterpret_cast<const MMBacktrace*>(curOffset);
+                            const uint64* frames = OffsetPointer<uint64>(curBktrace, sizeof(MMBacktrace));
+                            symbolTable->AddBacktrace(curBktrace->hash, frames, msnapshot.bktraceDepth);
+                            curOffset += bktraceSize;
                         }
+
+                        mblocks.swap(blocks);
+                        return true;
                     }
                 }
             }

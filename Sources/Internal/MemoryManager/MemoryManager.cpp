@@ -862,9 +862,9 @@ void MemoryManager::GetCurStat(void* buffer, size_t bufSize) const
     }
 }
 
-bool MemoryManager::GetMemoryDump(FILE* file, uint64 curTimestamp, size_t* dumpSize)
+bool MemoryManager::GetMemorySnapshot(FILE* file, uint64 curTimestamp, size_t* snapshotSize)
 {
-    assert(file != nullptr && dumpSize != nullptr);
+    assert(file != nullptr && snapshotSize != nullptr);
     
     const size_t BUF_SIZE = 64 * 1024;
     void* buffer = InternalAllocate(BUF_SIZE);
@@ -878,24 +878,23 @@ bool MemoryManager::GetMemoryDump(FILE* file, uint64 curTimestamp, size_t* dumpS
 
         const size_t statSize = CalcCurStatSize();
         const size_t bktraceSize = sizeof(MMBacktrace) + sizeof(uint64) * BACKTRACE_DEPTH;
-        const size_t size = sizeof(MMDump)
-            + statSize
-            + sizeof(MMBlock) * blockCount
-            + sizeof(MMSymbol) * symbolCount
-            + bktraceSize * bktraceCount;
-        *dumpSize = size;
+        const size_t size = sizeof(MMSnapshot)
+                          + statSize
+                          + sizeof(MMBlock) * blockCount
+                          + sizeof(MMSymbol) * symbolCount
+                          + bktraceSize * bktraceCount;
+        *snapshotSize = size;
 
-        MMDump dump{};
-        dump.timestamp = curTimestamp;
-        dump.collectTime = 0;
-        dump.packTime = 0;
-        dump.size = static_cast<uint32>(size);
-        dump.blockCount = static_cast<uint32>(blockCount);
-        dump.bktraceCount = static_cast<uint32>(bktraceCount);
-        dump.symbolCount = static_cast<uint32>(symbolCount);
-        dump.bktraceDepth = BACKTRACE_DEPTH;
+        MMSnapshot snapshot{};
+        snapshot.timestamp = curTimestamp;
+        snapshot.size = static_cast<uint32>(size);
+        snapshot.statItemSize = static_cast<uint32>(statSize);
+        snapshot.blockCount = static_cast<uint32>(blockCount);
+        snapshot.bktraceCount = static_cast<uint32>(bktraceCount);
+        snapshot.symbolCount = static_cast<uint32>(symbolCount);
+        snapshot.bktraceDepth = BACKTRACE_DEPTH;
 
-        fwrite(&dump, sizeof(MMDump), 1, file);
+        fwrite(&snapshot, sizeof(MMSnapshot), 1, file);
 
         {
             MMCurStat* curStat = static_cast<MMCurStat*>(buffer);

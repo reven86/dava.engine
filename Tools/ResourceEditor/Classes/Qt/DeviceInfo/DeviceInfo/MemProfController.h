@@ -22,6 +22,14 @@ class MemProfController : public QObject
     Q_OBJECT
     
 public:
+    enum eMode
+    {
+        MODE_NETWORK = 0,
+        MODE_FILE,
+        MODE_SELFPROFILING
+    };
+
+public:
     MemProfController(const DAVA::Net::PeerDescription& peerDescr, QWidget *parentWidget, QObject *parent = nullptr);
     MemProfController(const DAVA::FilePath& srcDir, QWidget *parentWidget, QObject *parent = nullptr);
     ~MemProfController();
@@ -30,21 +38,28 @@ public:
 
     DAVA::Net::IChannelListener* NetObject() const;
 
+    int Mode() const;
+    bool IsFileLoaded() const;
+
     void NetConnEstablished(bool resumed, const DAVA::MMStatConfig* config);
     void NetConnLost(const DAVA::char8* message);
     void NetStatRecieved(const DAVA::MMCurStat* stat, size_t count);
-    void NetDumpRecieved(int stage, size_t totalSize, size_t recvSize, const void* data);
+    void NetSnapshotRecieved(int stage, size_t totalSize, size_t recvSize, const void* data);
 
 signals:
-    void ConnectionEstablished(bool newConnection, ProfilingSession* profSession);
+    void ConnectionEstablished(bool newConnection);
     void ConnectionLost(const DAVA::char8* message);
-    void StatArrived();
-    void DumpArrived(size_t sizeTotal, size_t sizeRecv);
+    void StatArrived(size_t itemCount);
+    void SnapshotArrived(size_t sizeTotal, size_t sizeRecv);
 
 public slots:
-    void OnDumpPressed();
+    void OnSnapshotPressed();
     
 private:
+    void ComposeFilePath(DAVA::FilePath& result);
+
+private:
+    int mode;
     QPointer<MemProfWidget> view;
     QPointer<QWidget> parentWidget;
 
@@ -52,5 +67,11 @@ private:
     std::unique_ptr<DAVA::Net::MMNetClient> netClient;
     std::unique_ptr<ProfilingSession> profilingSession;
 };
+
+//////////////////////////////////////////////////////////////////////////
+inline int MemProfController::Mode() const
+{
+    return mode;
+}
 
 #endif // __MEMPROFCONTROLLER_H__

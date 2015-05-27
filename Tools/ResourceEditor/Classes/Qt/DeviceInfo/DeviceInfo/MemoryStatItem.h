@@ -129,7 +129,7 @@ inline void MemoryStatItem::Init(const DAVA::MMCurStat* stat, size_t poolCount, 
     {
         statPools.emplace_back(pools[i]);
     }
-    const TagAllocStat* tags = reinterpret_cast<const TagAllocStat*>(pools);
+    const TagAllocStat* tags = OffsetPointer<const TagAllocStat>(pools, sizeof(AllocPoolStat) * poolCount);
     for (size_t i = 0;i < tagCount;++i)
     {
         statTags.emplace_back(tags[i]);

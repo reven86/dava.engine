@@ -1,5 +1,5 @@
-#ifndef __DIFFVIEWERWIDGET_H__
-#define __DIFFVIEWERWIDGET_H__
+#ifndef __SNAPSHOTDIFFVIEWERWIDGET_H__
+#define __SNAPSHOTDIFFVIEWERWIDGET_H__
 
 #include "Base/BaseTypes.h"
 #include "MemoryManager/MemoryManagerTypes.h"
@@ -18,13 +18,13 @@ class BlockListModel;
 
 class MemorySnapshot;
 
-class DiffViewerWidget : public QWidget
+class SnapshotDiffViewerWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    DiffViewerWidget(const MemorySnapshot* snapshot1, const MemorySnapshot* snapshot2, QWidget* parent = nullptr);
-    virtual ~DiffViewerWidget();
+    SnapshotDiffViewerWidget(const MemorySnapshot* snapshot1, const MemorySnapshot* snapshot2, QWidget* parent = nullptr);
+    virtual ~SnapshotDiffViewerWidget();
 
 public slots:
     void SymbolView_OnBuldTree();
@@ -57,4 +57,4 @@ private:
     QListView* blockList2 = nullptr;
 };
 
-#endif  // __DIFFVIEWERWIDGET_H__
+#endif  // __SNAPSHOTDIFFVIEWERWIDGET_H__

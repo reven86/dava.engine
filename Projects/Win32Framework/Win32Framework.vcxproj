@@ -427,9 +427,9 @@
     <ClInclude Include="..\..\Sources\Internal\Network\Private\TCPClientTransport.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Private\TCPServerTransport.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\ServiceRegistrar.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetClient.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetProto.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetServer.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetClient.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetProto.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetServer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Services\SimpleEchoServer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Services\LogConsumer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Services\NetLogger.h" />
@@ -937,8 +937,8 @@
     <ClCompile Include="..\..\Sources\Internal\Network\Private\TCPServerTransport.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\ServiceRegistrar.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Services\LogConsumer.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetClient.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetServer.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetClient.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetServer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Services\NetLogger.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotification.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationController.cpp" />

@@ -1,7 +1,7 @@
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
 
-#include "DiffViewerWidget.h"
+#include "SnapshotDiffViewerWidget.h"
 
 #include "Models/SymbolsTreeModel.h"
 #include "Models/SymbolsFilterModel.h"
@@ -28,7 +28,7 @@
 
 using namespace DAVA;
 
-DiffViewerWidget::DiffViewerWidget(const MemorySnapshot* snapshot1_, const MemorySnapshot* snapshot2_, QWidget* parent)
+SnapshotDiffViewerWidget::SnapshotDiffViewerWidget(const MemorySnapshot* snapshot1_, const MemorySnapshot* snapshot2_, QWidget* parent)
     : QWidget(parent, Qt::Window)
     , snapshot1(snapshot1_)
     , snapshot2(snapshot2_)
@@ -38,7 +38,7 @@ DiffViewerWidget::DiffViewerWidget(const MemorySnapshot* snapshot1_, const Memor
     Init();
 }
 
-DiffViewerWidget::~DiffViewerWidget()
+SnapshotDiffViewerWidget::~SnapshotDiffViewerWidget()
 {
     delete symbolsFilterModel;
     delete symbolsTreeModel;
@@ -47,7 +47,7 @@ DiffViewerWidget::~DiffViewerWidget()
     delete blockListModel2;
 }
 
-void DiffViewerWidget::Init()
+void SnapshotDiffViewerWidget::Init()
 {
     tab = new QTabWidget;
 
@@ -59,7 +59,7 @@ void DiffViewerWidget::Init()
     setLayout(mainLayout);
 }
 
-void DiffViewerWidget::InitSymbolsView()
+void SnapshotDiffViewerWidget::InitSymbolsView()
 {
     symbolsTreeModel = new SymbolsTreeModel(*snapshot1->SymbolTable());
     symbolsFilterModel = new SymbolsFilterModel;
@@ -77,7 +77,7 @@ void DiffViewerWidget::InitSymbolsView()
 
     connect(filter, &QLineEdit::textChanged, symbolsFilterModel, &SymbolsFilterModel::SetFilterString);
     connect(toggleStd, &QPushButton::clicked, symbolsFilterModel, &SymbolsFilterModel::ToggleStd);
-    connect(buildTree, &QPushButton::clicked, this, &DiffViewerWidget::SymbolView_OnBuldTree);
+    connect(buildTree, &QPushButton::clicked, this, &SnapshotDiffViewerWidget::SymbolView_OnBuldTree);
 
     QVBoxLayout* layout = new QVBoxLayout;
     layout->addWidget(filter);
@@ -90,7 +90,7 @@ void DiffViewerWidget::InitSymbolsView()
     tab->addTab(frame, "Symbols");
 }
 
-void DiffViewerWidget::InitBranchView()
+void SnapshotDiffViewerWidget::InitBranchView()
 {
     branchTreeModel = new BranchDiffTreeModel(snapshot1, snapshot2);
     blockListModel1 = new BlockListModel;
@@ -109,8 +109,8 @@ void DiffViewerWidget::InitBranchView()
     blockList2->setModel(blockListModel2);
 
     QItemSelectionModel* selModel = branchTree->selectionModel();
-    connect(selModel, &QItemSelectionModel::currentChanged, this, &DiffViewerWidget::BranchView_SelectionChanged);
-    //connect(blockList, &QTreeView::doubleClicked, this, &DiffViewerWidget::BranchBlockView_DoubleClicked);
+    connect(selModel, &QItemSelectionModel::currentChanged, this, &SnapshotDiffViewerWidget::BranchView_SelectionChanged);
+    //connect(blockList, &QTreeView::doubleClicked, this, &SnapshotDiffViewerWidget::BranchBlockView_DoubleClicked);
 
     QHBoxLayout* hlayout = new QHBoxLayout;
     hlayout->addWidget(blockList1);
@@ -126,7 +126,7 @@ void DiffViewerWidget::InitBranchView()
     tab->addTab(frame, "Branches");
 }
 
-void DiffViewerWidget::SymbolView_OnBuldTree()
+void SnapshotDiffViewerWidget::SymbolView_OnBuldTree()
 {
     Vector<const char*> selection = GetSelectedSymbols();
     if (!selection.empty())
@@ -135,7 +135,7 @@ void DiffViewerWidget::SymbolView_OnBuldTree()
     }
 }
 
-void DiffViewerWidget::BranchView_SelectionChanged(const QModelIndex& current, const QModelIndex& previous)
+void SnapshotDiffViewerWidget::BranchView_SelectionChanged(const QModelIndex& current, const QModelIndex& previous)
 {
     BranchDiff* branchDiff = static_cast<BranchDiff*>(current.internalPointer());
 
@@ -156,12 +156,12 @@ void DiffViewerWidget::BranchView_SelectionChanged(const QModelIndex& current, c
         blockListModel2->ResetModel();
 }
 
-void DiffViewerWidget::BranchBlockView_DoubleClicked(const QModelIndex& current)
+void SnapshotDiffViewerWidget::BranchBlockView_DoubleClicked(const QModelIndex& current)
 {
     
 }
 
-Vector<const char*> DiffViewerWidget::GetSelectedSymbols()
+Vector<const char*> SnapshotDiffViewerWidget::GetSelectedSymbols()
 {
     Vector<const char*> result;
     QItemSelectionModel* selModel = symbolsTree->selectionModel();

@@ -26,71 +26,30 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "DumpBriefModel.h"
+#ifndef __SNAPSHOTLISTMODEL_H__
+#define __SNAPSHOTLISTMODEL_H__
 
-#include "../ProfilingSession.h"
+#include "Base/BaseTypes.h"
 
-using namespace DAVA;
+#include <QAbstractListModel>
 
-DumpBriefModel::DumpBriefModel(QObject* parent)
-    : QAbstractListModel(parent)
-{}
+class ProfilingSession;
 
-DumpBriefModel::~DumpBriefModel()
-{}
-
-int DumpBriefModel::rowCount(const QModelIndex& parent) const
+class SnapshotListModel : public QAbstractListModel
 {
-    return profileSession != nullptr ? static_cast<int>(profileSession->DumpCount())
-                                     : 0;
-}
+public:
+    SnapshotListModel(QObject* parent = nullptr);
+    virtual ~SnapshotListModel();
 
-QVariant DumpBriefModel::headerData(int section, Qt::Orientation orientation, int role) const
-{
-    if (Qt::DisplayRole == role)
-    {
-        if (Qt::Horizontal == orientation)
-        {
-            return QVariant("Memory dumps");
-        }
-        else
-        {
-            return QVariant(section + 1);
-        }
-    }
-    return QVariant();
-}
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-QVariant DumpBriefModel::data(const QModelIndex& index, int role) const
-{
-    if (index.isValid() && profileSession != nullptr)
-    {
-        int row = index.row();
-        const MemorySnapshot& dumpBrief = profileSession->Snapshot(row);
-        if (Qt::DisplayRole == role)
-        {
-            String filename = dumpBrief.FileName().GetFilename();
-            return QString("%1 - %2")
-                .arg(dumpBrief.Timestamp() / 1000)
-                .arg(filename.c_str());
-        }
-        else if (Qt::BackgroundRole == role)
-        {
-            // TODO: maybe colorize loaded snapshots
-        }
-    }
-    return QVariant();
-}
+    void BeginNewProfileSession(ProfilingSession* profSession);
+    void NewSnapshotArrived();
 
-void DumpBriefModel::BeginNewProfileSession(ProfilingSession* profSession)
-{
-    beginResetModel();
-    profileSession = profSession;
-    endResetModel();
-}
+private:
+    ProfilingSession* profileSession = nullptr;
+};
 
-void DumpBriefModel::NewDumpArrived()
-{
-    beginResetModel();
-    endResetModel();
-}
+#endif  // __SNAPSHOTLISTMODEL_H__

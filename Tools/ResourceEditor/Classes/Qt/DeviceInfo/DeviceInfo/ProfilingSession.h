@@ -47,7 +47,6 @@ class File;
 
 struct Branch;
 struct BranchDiff;
-class MemoryDump;
 
 class ProfilingSession
 {
@@ -61,7 +60,7 @@ public:
     ~ProfilingSession();
 
     bool StartNew(const DAVA::MMStatConfig* config, const DAVA::Net::PeerDescription& deviceInfo, const DAVA::FilePath& destDir);
-    bool LoadFromFile(const DAVA::FilePath& srcDir);
+    bool LoadFromFile(const DAVA::FilePath& srcFile);
 
     // Returns true if ProfilingSession has been restored from saved file, i.e. works in file mode
     bool IsFileMode() const;
@@ -69,8 +68,8 @@ public:
 
     // Add statistics items for memory consumption trends
     void AppendStatItems(const DAVA::MMCurStat* statBuf, size_t itemCount);
-    // Add memory dump retrieved from profiled device
-    void AppendSnapshot(const DAVA::MMDump* rawDump);
+    // Add memory snapshot retrieved from profiled device
+    void AppendSnapshot(const DAVA::MMSnapshot* msnapshot);
     // Flush file buffers to storage
     void Flush();
 
@@ -86,8 +85,8 @@ public:
     size_t TagCount() const;
     // Number of collected statistics items for trends
     size_t StatCount() const;
-    // Number of collected memory dumps
-    size_t DumpCount() const;
+    // Number of collected memory snapshotss
+    size_t SnapshotCount() const;
     // Profiled device description
     const DAVA::Net::PeerDescription& DeviceInfo() const;
     // Symbol and backtrace table for
@@ -98,9 +97,11 @@ public:
     // Get stat item by index, items are sorted by timestamp
     const MemoryStatItem& Stat(size_t index) const;
     const MemoryStatItem& LastStat() const;
-    // Get memory dump brief description by index, dumps are sorted by timestamp
+    // Get memory snapshot by index, snapshots are sorted by timestamp
     const MemorySnapshot& Snapshot(size_t index) const;
     const MemorySnapshot& LastSnapshot() const;
+
+    const DAVA::FilePath& MemoryLogFile() const;
 
 private:
     bool CreateLogFile(const DAVA::MMStatConfig* config);
@@ -116,7 +117,8 @@ private:
 
     void LookForShapshots();
     void LoadShapshotDescriptor(const DAVA::FilePath& path);
-    bool LoadFullDump(const MemorySnapshot& brief, DAVA::Vector<DAVA::MMBlock>& mblocks);
+
+    void LoadSymbols(const DAVA::MMSymbol* symbols, size_t count);
 
 private:
     bool isValid = false;
@@ -165,7 +167,7 @@ inline size_t ProfilingSession::StatCount() const
     return stat.size();
 }
 
-inline size_t ProfilingSession::DumpCount() const
+inline size_t ProfilingSession::SnapshotCount() const
 {
     return snapshots.size();
 }
@@ -214,6 +216,11 @@ inline const MemorySnapshot& ProfilingSession::LastSnapshot() const
 {
     DVASSERT(!snapshots.empty());
     return snapshots.back();
+}
+
+inline const DAVA::FilePath& ProfilingSession::MemoryLogFile() const
+{
+    return logFileName;
 }
 
 #endif  // __PROFILINGSESSION_H__
