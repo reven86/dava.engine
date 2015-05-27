@@ -39,6 +39,8 @@
 #include "QtTools/FileDialog/FileDialog.h"
 
 #include "AssetCache/AssetCacheConstants.h"
+#include "AssetCache/Test/AssetCacheTest.h"
+#include "Job/JobManager.h"
 
 #include <QFileDialog>
 #include <QMenu>
@@ -75,6 +77,8 @@ MainWindow::MainWindow(QWidget *parent)
     ShowTrayIcon();
 
     ui->saveButton->setEnabled(false);
+    
+    DAVA::JobManager::Instance()->CreateWorkerJob(&DAVA::AssetCache::RunPackerTest);
 }
 
 MainWindow::~MainWindow()
@@ -250,7 +254,7 @@ void MainWindow::OnSaveButtonClicked()
 {
     //get settings from UI
     settings->SetFolder(ui->cacheFolderLineEdit->text().toStdString());
-    settings->SetCacheSize(ui->cacheSizeSpinBox->value());
+    settings->SetCacheSize(ui->cacheSizeSpinBox->value() * 1024 * 1024 * 1024);
     settings->SetFilesCount(ui->numberOfFilesSpinBox->value());
     
     settings->ResetServers();
@@ -273,7 +277,7 @@ void MainWindow::SetSettings(ApplicationSettings *_settings)
     bool blocked = this->blockSignals(true);
 
     ui->cacheFolderLineEdit->setText(settings->GetFolder().GetAbsolutePathname().c_str());
-    ui->cacheSizeSpinBox->setValue(settings->GetCacheSize());
+    ui->cacheSizeSpinBox->setValue(settings->GetCacheSize() / (1 * 1024 * 1024 * 1024));
     ui->numberOfFilesSpinBox->setValue(settings->GetFilesCount());
     
     auto & servers = settings->GetServers();
@@ -283,4 +287,6 @@ void MainWindow::SetSettings(ApplicationSettings *_settings)
     }
     
     this->blockSignals(blocked);
+    
+    VerifyData();
 }

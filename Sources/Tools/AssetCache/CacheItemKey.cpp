@@ -71,6 +71,11 @@ bool CacheItemKey::operator < (const CacheItemKey& right) const
 {
     return (Memcmp(keyData.internalData, right.keyData.internalData, INTERNAL_DATA_SIZE) < 0);
 }
+
+bool CacheItemKey::operator() (const CacheItemKey &left, const CacheItemKey &right) const
+{
+    return (Memcmp(keyData.internalData, right.keyData.internalData, INTERNAL_DATA_SIZE) < 0);
+}
     
     
 }; // end of namespace AssetCache

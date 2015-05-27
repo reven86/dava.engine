@@ -43,13 +43,15 @@ namespace AssetCache
 {
     
 CachedFiles::CachedFiles()
-    : filesAreLoaded(false)
+    : filesSize(0)
+    , filesAreLoaded(false)
 {
 }
 
 CachedFiles::CachedFiles(const CachedFiles & right)
 {
     filesAreLoaded = right.filesAreLoaded;
+    filesSize = right.filesSize;
     
     files = right.files;
     for(auto & f: files)
@@ -60,8 +62,13 @@ CachedFiles::CachedFiles(const CachedFiles & right)
     
 CachedFiles::~CachedFiles()
 {
-    UnloadFiles();
+    if(filesAreLoaded)
+    {
+        UnloadFiles();
+    }
+    
     files.clear();
+    filesSize = 0;
 }
     
 void CachedFiles::AddFile(const FilePath &path)
@@ -71,17 +78,7 @@ void CachedFiles::AddFile(const FilePath &path)
     Data *fileData = nullptr;
     if(filesAreLoaded)
     {
-        auto file = File::Create(path, File::OPEN | File::READ);
-        if(file)
-        {
-            auto dataSize = file->GetSize();
-            fileData = new Data(dataSize);
-            
-            auto read = file->Read(fileData->GetPtr(), dataSize);
-            DVVERIFY(read == dataSize);
-            
-            file->Release();
-        }
+        fileData = LoadFile(path);
     }
 
     files[path] = fileData;
@@ -91,7 +88,9 @@ void CachedFiles::AddFile(const FilePath &path)
 void CachedFiles::Serialize(KeyedArchive * archieve, bool serializeData) const
 {
     DVASSERT(nullptr != archieve);
-    
+
+    archieve->SetUInt64("files_size", filesSize);
+
     auto count = files.size();
     archieve->SetUInt32("files_count", count);
     
@@ -116,8 +115,14 @@ void CachedFiles::Deserialize(KeyedArchive * archieve)
     DVASSERT(nullptr != archieve);
     DVASSERT(files.size() == 0);
     
-    UnloadFiles();
+    if(filesAreLoaded)
+    {
+        UnloadFiles();
+    }
+    
     files.clear();
+    
+    filesSize = archieve->GetUInt64("files_size");
     
     auto count = archieve->GetUInt32("files_count");
     for(uint32 i = 0; i < count; ++i)
@@ -142,14 +147,17 @@ void CachedFiles::Deserialize(KeyedArchive * archieve)
 
 bool CachedFiles::operator == (const CachedFiles &right) const
 {
-    return (files == right.files) && (filesAreLoaded == right.filesAreLoaded);
+    return (files == right.files) && (filesAreLoaded == right.filesAreLoaded) && (filesSize == right.filesSize);
 }
 
 CachedFiles & CachedFiles::operator=(const CachedFiles &right)
 {
-    UnloadFiles();
+    if(filesAreLoaded)
+        UnloadFiles();
     
     filesAreLoaded = right.filesAreLoaded;
+    filesSize = right.filesSize;
+    
     files = right.files;
     for(auto & f: files)
     {
@@ -162,49 +170,31 @@ CachedFiles & CachedFiles::operator=(const CachedFiles &right)
     
 uint64 CachedFiles::GetFilesSize() const
 {
-    uint64 fileSize = 0;
-    for(auto & f: files)
-    {
-        if(f.second)
-        {
-            fileSize += f.second->GetSize();
-        }
-        else
-        {
-            Logger::Warning("[CachedFiles::%s] File(%s) not loaded ", __FUNCTION__, f.first.GetStringValue().c_str());
-        }
-    }
-    
-    return fileSize;
+    DVASSERT((files.size() == 0 && filesSize == 0) || (files.size() > 0 && filesSize > 0));
+    return filesSize;
 }
 
 void CachedFiles::LoadFiles()
 {
+    DVASSERT(filesAreLoaded == false);
+    
     filesAreLoaded = true;
     
     for(auto & f : files)
     {
         DVASSERT(f.second == nullptr);
-        
-        auto file = File::Create(f.first, File::OPEN | File::READ);
-        if(file)
-        {
-            auto dataSize = file->GetSize();
-            f.second = new Data(dataSize);
-            
-            auto read = file->Read(f.second->GetPtr(), dataSize);
-            DVVERIFY(read == dataSize);
-            
-            file->Release();
-        }
+        f.second = LoadFile(f.first);
     }
 }
 
 void CachedFiles::UnloadFiles()
 {
+    DVASSERT(filesAreLoaded == true);
+
     filesAreLoaded = false;
     for(auto & f : files)
     {
+        DVASSERT(f.second != nullptr);
         SafeRelease(f.second);
     }
 }
@@ -225,13 +215,11 @@ void CachedFiles::Save(const FilePath & folder) const
         
         auto savedPath = folder + f.first.GetFilename();
         
-        auto file = File::Create(savedPath, File::CREATE | File::WRITE);
-        if(file)
+        ScopedPtr<File> file(File::Create(savedPath, File::CREATE | File::WRITE));
+        if(static_cast<File *>(file) != nullptr)
         {
             auto written = file->Write(f.second->GetPtr(), f.second->GetSize());
             DVVERIFY(written == f.second->GetSize());
-            
-            file->Release();
         }
         else
         {
@@ -239,7 +227,58 @@ void CachedFiles::Save(const FilePath & folder) const
         }
     }
 }
+    
+Data * CachedFiles::LoadFile(const FilePath & pathname)
+{
+    Data * fileData = nullptr;
+    
+    ScopedPtr<File> file(File::Create(pathname, File::OPEN | File::READ));
+    if(static_cast<File *>(file) != nullptr)
+    {
+        auto dataSize = file->GetSize();
+        fileData = new Data(dataSize);
+        
+        auto read = file->Read(fileData->GetPtr(), dataSize);
+        DVVERIFY(read == dataSize);
+    }
+    else
+    {
+        Logger::Error("[CachedFiles::%s] Cannot read file %s", __FUNCTION__, pathname.GetStringValue().c_str());
+    }
+    
+    return fileData;
+}
 
+void CachedFiles::InvalidateFileSize()
+{
+    filesSize = 0;
+    
+    if(filesAreLoaded)
+    {
+        for(auto & f : files)
+        {
+            DVASSERT(f.second != nullptr);
+            filesSize += f.second->GetSize();
+        }
+    }
+    else
+    {
+        for(auto & f : files)
+        {
+            DVASSERT(f.second == nullptr);
+            
+            ScopedPtr<File> file(File::Create(f.first, File::OPEN | File::READ));
+            if(static_cast<File *>(file) != nullptr)
+            {
+                filesSize += file->GetSize();
+            }
+            else
+            {
+                Logger::Error("[CachedFiles::%s] Cannot read file %s", __FUNCTION__, f.first.GetStringValue().c_str());
+            }
+        }
+    }
+}
     
     
 }; // end of namespace AssetCache

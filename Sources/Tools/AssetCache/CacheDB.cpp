@@ -35,7 +35,9 @@
 #include "AssetCache/ServerCacheEntry.h"
 
 #include "FileSystem/File.h"
+#include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
+
 #include "Debug/DVAssert.h"
 
 namespace DAVA
@@ -46,6 +48,11 @@ namespace AssetCache
     
 const String CacheDB::DB_FILE_NAME = "cache.dat";
     
+CacheDB::~CacheDB()
+{
+    Unload();
+}
+
 void CacheDB::UpdateSettings(const DAVA::FilePath &folderPath, uint64 size, uint32 _itemsInMemory)
 {
     if(cacheRootFolder != folderPath)
@@ -62,59 +69,24 @@ void CacheDB::UpdateSettings(const DAVA::FilePath &folderPath, uint64 size, uint
         Load();
     }
     
+    if(storageSize != size)
+    {
+        ReduceFullCacheBySize(size);
+        
+        storageSize = size;
+    }
+
     if(itemsInMemory != _itemsInMemory)
     {
-        //reduce fast cache
         ReduceFastCacheByCount(_itemsInMemory);
         
         itemsInMemory = _itemsInMemory;
         fastCache.reserve(itemsInMemory);
     }
     
-    if(storageSize != size)
-    {
-        //reduce full cache
-        ReduceFullCacheBySize(size);
-        
-        storageSize = size;
-    }
+    Save();
 }
 
-CacheDB::~CacheDB()
-{
-    Unload();
-}
- 
-    
-void CacheDB::Save() const
-{
-    ScopedPtr<File> file(File::Create(cacheSettings, File::CREATE | File::WRITE));
-    if(static_cast<File*>(file) == nullptr)
-    {
-        Logger::Error("[CacheDB::%s] Cannot create file %s", __FUNCTION__, cacheSettings.GetStringValue().c_str());
-        return;
-    }
-
-    ScopedPtr<KeyedArchive> header(new KeyedArchive());
-    header->SetString("signature", "cache");
-    header->SetInt32("version", 1);
-    header->SetUInt64("usedSize", usedSize);
-    header->SetUInt64("itemsCount", fullCache.size());
-    header->Save(file);
-    
-    
-    ScopedPtr<KeyedArchive> cache(new KeyedArchive());
-    uint64 index = 0;
-    for (auto & item: fullCache)
-    {
-        ScopedPtr<KeyedArchive> itemArchieve(new KeyedArchive());
-        item.first.Serialize(itemArchieve);
-        item.second.Serialize(itemArchieve);
-        
-        cache->SetArchive(Format("item_%d", index++), itemArchieve);
-    }
-    cache->Save(file);
-}
 
 void CacheDB::Load()
 {
@@ -168,14 +140,85 @@ void CacheDB::Unload()
 {
     Save();
     
-    fastCache.clear();
-    
-    for(auto & entry: fullCache)
+    for(auto & entry: fastCache)
     {
-        entry.second.files.UnloadFiles();
+        entry.second->files.UnloadFiles();
     }
+    
+    fastCache.clear();
     fullCache.clear();
 }
+
+    
+void CacheDB::Save() const
+{
+    FileSystem::Instance()->CreateDirectory(cacheRootFolder, true);
+    
+    ScopedPtr<File> file(File::Create(cacheSettings, File::CREATE | File::WRITE));
+    if(static_cast<File*>(file) == nullptr)
+    {
+        Logger::Error("[CacheDB::%s] Cannot create file %s", __FUNCTION__, cacheSettings.GetStringValue().c_str());
+        return;
+    }
+    
+    ScopedPtr<KeyedArchive> header(new KeyedArchive());
+    header->SetString("signature", "cache");
+    header->SetInt32("version", 1);
+    header->SetUInt64("usedSize", usedSize);
+    header->SetUInt64("itemsCount", fullCache.size());
+    header->Save(file);
+    
+    
+    ScopedPtr<KeyedArchive> cache(new KeyedArchive());
+    uint64 index = 0;
+    for (auto & item: fullCache)
+    {
+        ScopedPtr<KeyedArchive> itemArchieve(new KeyedArchive());
+        item.first.Serialize(itemArchieve);
+        item.second.Serialize(itemArchieve);
+        
+        cache->SetArchive(Format("item_%d", index++), itemArchieve);
+    }
+    cache->Save(file);
+}
+    
+    
+void CacheDB::ReduceFastCacheByCount(uint32 toCount)
+{
+    while(toCount < fastCache.size())
+    {
+        RemoveOldestFromFastCache();
+    }
+}
+
+
+void CacheDB::ReduceFullCacheBySize(uint64 toSize)
+{
+    while (usedSize > toSize)
+    {
+        const auto & found = std::min_element(fullCache.begin(), fullCache.end(), [] (const CACHE::value_type &left, const CACHE::value_type & right) -> bool
+                                              {
+                                                  return left.second.GetAccesID() < right.second.GetAccesID();
+                                              });
+        if(found != fullCache.end())
+        {
+            RemoveFromFullCache(found);
+        }
+    }
+}
+
+void CacheDB::RemoveOldestFromFastCache()
+{
+    const auto & found = std::min_element(fastCache.begin(), fastCache.end(), [] (const FASTCACHE::value_type &left, const FASTCACHE::value_type & right) -> bool
+                                          {
+                                              return left.second->GetAccesID() < right.second->GetAccesID();
+                                          });
+    if(found != fastCache.end())
+    {
+        RemoveFromFastCache(found);
+    }
+}
+    
     
 ServerCacheEntry * CacheDB::Get(const CacheItemKey &key)
 {
@@ -233,32 +276,26 @@ void CacheDB::Insert(const CacheItemKey &key, const ServerCacheEntry &entry)
     entryForFastCache->InvalidateAccesToken(nextItemID++);
     InsertInFastCache(key, entryForFastCache);
     
-    usedSize += entryForFastCache->GetFiles().GetFilesSize();
-
+    auto newFilesSize = entryForFastCache->GetFiles().GetFilesSize();
+    if(usedSize + newFilesSize > storageSize)
+    {
+        DVASSERT(storageSize > newFilesSize);
+        ReduceFullCacheBySize((usedSize > newFilesSize) ? (usedSize - newFilesSize) : 0);
+    }
+    
     auto savedPath = CreateFolderPath(key);
     entry.GetFiles().Save(savedPath);
+    usedSize += newFilesSize;
 }
 
 void CacheDB::InsertInFastCache(const CacheItemKey &key, ServerCacheEntry * entry)
 {
     if (itemsInMemory == fastCache.size() && itemsInMemory > 0)
     {
-        auto found = fastCache.begin();
-        auto accessID = nextItemID;
-        for (auto it = fastCache.begin(), endIt = fastCache.end(); it != endIt; ++it)
-        {
-            if(it->second->GetAccesID() < accessID)
-            {
-                found = it;
-                accessID = it->second->GetAccesID();
-            }
-        }
-        
-        if(found != fastCache.end())
-        {
-            fastCache.erase(found);
-        }
+        RemoveOldestFromFastCache();
     }
+    
+    DVASSERT(entry->GetFiles().FilesAreLoaded() == true);
 
     fastCache[key] = entry;
 }
@@ -266,19 +303,41 @@ void CacheDB::InsertInFastCache(const CacheItemKey &key, ServerCacheEntry * entr
 
 void CacheDB::Remove(const CacheItemKey &key)
 {
-    fastCache.erase(key); //remove from fast cache
-
-    auto found = fullCache.find(key);   //remove from full cache
+    auto found = fullCache.find(key);
     if(found != fullCache.end())
     {
-        IncreaseUsedSize(found->second.GetFiles());
-        fullCache.erase(found);
+        RemoveFromFullCache(found);
     }
     else
     {
         Logger::Error("[CacheDB::%s] Cannot find item in cache");
     }
 }
+    
+void CacheDB::RemoveFromFullCache(const CACHE::iterator &it)
+{
+    DVASSERT(it != fullCache.end());
+
+    auto found = fastCache.find(it->first);
+    if(found != fastCache.end())
+    {
+        RemoveFromFastCache(found);
+    }
+    
+    IncreaseUsedSize(it->second.GetFiles());
+    fullCache.erase(it);
+}
+    
+    
+void CacheDB::RemoveFromFastCache(const FASTCACHE::iterator &it)
+{
+    DVASSERT(it != fastCache.end());
+
+    DVASSERT(it->second->GetFiles().FilesAreLoaded() == true);
+    it->second->files.UnloadFiles();
+    fastCache.erase(it);
+}
+
     
 void CacheDB::IncreaseUsedSize(const CachedFiles &files)
 {
@@ -379,42 +438,6 @@ void CacheDB::Dump()
 }
     
     
-void CacheDB::ReduceFastCacheByCount(uint32 toCount)
-{
-    if(toCount < fastCache.size())
-    {
-        std::sort(fastCache.begin(), fastCache.end(), [](const FASTCACHE::value_type &left, const FASTCACHE::value_type &right)
-        {
-            return left.second->GetAccesID() < right.second->GetAccesID();
-        });
-        
-        while(toCount < fastCache.size())
-        {
-            fastCache.erase(fastCache.begin());
-        }
-    }
-}
-    
-    
-void CacheDB::ReduceFullCacheBySize(uint64 toSize)
-{
-    if(usedSize > toSize)
-    {
-        std::sort(fullCache.begin(), fullCache.end(), [](const CACHE::value_type &left, const CACHE::value_type &right)
-              {
-                  return left.second.GetAccesID() < right.second.GetAccesID();
-              });
-        
-        while (usedSize > toSize && fullCache.size())
-        {
-            const auto & firstItem = fullCache.begin();
-            
-            //TODO needTOsave and use files size as runtime info
-            IncreaseUsedSize(firstItem->second.GetFiles());
-            fullCache.erase(firstItem);
-        }
-    }
-}
 
     
 }; // end of namespace AssetCache

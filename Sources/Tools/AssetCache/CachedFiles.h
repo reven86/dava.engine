@@ -58,7 +58,8 @@ public:
     const Map<FilePath, Data *> & GetFiles() const;
     
     bool IsEmtpy() const;
-    
+    bool FilesAreLoaded() const;
+
     void Serialize(KeyedArchive * archieve, bool serializeData) const;
     void Deserialize(KeyedArchive * archieve);
     
@@ -70,11 +71,18 @@ public:
     
     void Save(const FilePath & folder) const;
     
+    void InvalidateFileSize();
     uint64 GetFilesSize() const;
+    
+private:
+    
+    Data * LoadFile(const FilePath & pathname);
     
 private:
 
     Map<FilePath, Data *> files;
+
+    uint64 filesSize = 0;
     bool filesAreLoaded = false;
 };
 
@@ -84,6 +92,12 @@ inline bool CachedFiles::IsEmtpy() const
     return (files.size() == 0);
 }
 
+inline bool CachedFiles::FilesAreLoaded() const
+{
+    return filesAreLoaded;
+}
+
+    
 inline const Map<FilePath, Data *> & CachedFiles::GetFiles() const
 {
     return files;

@@ -60,6 +60,9 @@ public:
     bool operator == (const CacheItemKey &right) const;
     bool operator < (const CacheItemKey &right) const;
 
+    bool operator() (const CacheItemKey &left, const CacheItemKey &right) const;
+    
+
 public:
     
     union InternalData

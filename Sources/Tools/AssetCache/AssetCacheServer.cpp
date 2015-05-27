@@ -207,6 +207,10 @@ void Server::OnAddToCache(KeyedArchive * archieve)
         
         delegate->OnAddedToCache(key, files);
     }
+    else
+    {
+        Logger::Error("[Server::%s] delegate not installed", __FUNCTION__);
+    }
 }
     
 void Server::OnIsInCache(KeyedArchive * archieve)
@@ -221,17 +225,28 @@ void Server::OnIsInCache(KeyedArchive * archieve)
         
         delegate->OnIsInCache(key);
     }
+    else
+    {
+        Logger::Error("[Server::%s] delegate not installed", __FUNCTION__);
+    }
 }
     
 void Server::OnGetFromCache(KeyedArchive * archieve)
 {
-    KeyedArchive *keyArchieve = archieve->GetArchive("key");
-    DVASSERT(keyArchieve);
-    
-    CacheItemKey key;
-    key.Deserialize(keyArchieve);
-    
-    delegate->OnRequestedFromCache(key);
+    if(delegate)
+    {
+        KeyedArchive *keyArchieve = archieve->GetArchive("key");
+        DVASSERT(keyArchieve);
+        
+        CacheItemKey key;
+        key.Deserialize(keyArchieve);
+        
+        delegate->OnRequestedFromCache(key);
+    }
+    else
+    {
+        Logger::Error("[Server::%s] delegate not installed", __FUNCTION__);
+    }
 }
     
 bool Server::SendArchieve(KeyedArchive * archieve)

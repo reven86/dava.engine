@@ -39,6 +39,8 @@ ServerCore::ServerCore()
     QObject::connect(settings, &ApplicationSettings::SettingsUpdated, this, &ServerCore::OnSettingsUpdated);
     
     settings->Load();
+    
+    server.SetDelegate(&logics);
 }
 
 ServerCore::~ServerCore()
@@ -85,6 +87,10 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
         if(size && !folder.IsEmpty())
         {
             dataBase.UpdateSettings(folder, size, count);
+        }
+        else
+        {
+            DAVA::Logger::Warning("[ServerCore::%s] Empty settings", __FUNCTION__);
         }
     }
     else

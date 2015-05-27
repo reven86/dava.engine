@@ -80,6 +80,7 @@ class CacheDB
     using CACHE = UnorderedMap<CacheItemKey, ServerCacheEntry>;
     using FASTCACHE = UnorderedMap<CacheItemKey, ServerCacheEntry *>;
 
+    
 public:
     
     CacheDB() = default;
@@ -116,6 +117,11 @@ private:
     
     void ReduceFastCacheByCount(uint32 toCount);
     void ReduceFullCacheBySize(uint64 toSize);
+    void RemoveOldestFromFastCache();
+    
+    void RemoveFromFastCache(const FASTCACHE::iterator &it);
+    void RemoveFromFullCache(const CACHE::iterator &it);
+
     
 private:
     
