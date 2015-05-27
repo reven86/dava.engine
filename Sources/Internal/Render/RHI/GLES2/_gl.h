@@ -47,7 +47,6 @@
 
 extern GLint    _GLES2_Binded_FrameBuffer;
 extern GLint    _GLES2_Default_FrameBuffer;
-extern GLint    _GLES2_Viewport[4];
 extern void     (*_Make_Current)();
 extern void     (*_End_Frame)();
 

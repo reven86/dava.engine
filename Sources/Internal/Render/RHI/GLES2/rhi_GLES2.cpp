@@ -16,7 +16,6 @@
 
 GLint       _GLES2_Binded_FrameBuffer  = 0;
 GLint       _GLES2_Default_FrameBuffer  = 0;
-GLint       _GLES2_Viewport[4];
 void        (*_Make_Current)() = nullptr;
 void        (*_End_Frame)() = nullptr;
 
@@ -179,8 +178,6 @@ gles2_Uninitialize()
 static void
 gles2_Reset( const ResetParam& param )
 {
-    _GLES2_Viewport[2] = param.width;
-    _GLES2_Viewport[3] = param.height;
 }
 
 
@@ -192,10 +189,7 @@ gles2_Initialize( const InitParam& param )
     _Make_Current = param.makeCurrentFunc;
     _End_Frame = param.endFrameFunc;
 
-    _GLES2_Viewport[0] = 0;
-    _GLES2_Viewport[1] = 0;
-    _GLES2_Viewport[2] = param.width;
-    _GLES2_Viewport[3] = param.height;
+    DVASSERT(_End_Frame);
 
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_GLES2_Default_FrameBuffer);
     _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;

@@ -92,6 +92,10 @@ inline rhi::RenderPassConfig& RenderPass::GetPassConfig()
 inline void RenderPass::SetViewport(const Rect& _viewport)
 {
     viewport = _viewport;
+    passConfig.viewport[0] = (int32)viewport.x;
+    passConfig.viewport[1] = (int32)viewport.y;
+    passConfig.viewport[2] = (int32)viewport.dx;
+    passConfig.viewport[3] = (int32)viewport.dy;
 }
 
 inline const FastName & RenderPass::GetName() const

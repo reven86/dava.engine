@@ -83,16 +83,8 @@ void Uninitialize()
 
 void Reset(int32 _framebufferWidth, int32 _framebufferHeight)
 {
-    if (ininialized)
-    {
-        framebufferWidth = _framebufferWidth;
-        framebufferHeight = _framebufferHeight;
-
-        rhi::ResetParam params;
-        params.width = framebufferWidth;
-        params.height = framebufferHeight;
-        rhi::Reset(params);
-    }
+    framebufferWidth = _framebufferWidth;
+    framebufferHeight = _framebufferHeight;
 }
 
 bool IsDeviceLost()

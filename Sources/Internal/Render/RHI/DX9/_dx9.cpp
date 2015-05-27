@@ -19,8 +19,12 @@
 
 namespace rhi
 {
+
 IDirect3DDevice9*   _D3D9_Device    = nullptr;
 IDirect3DSurface9*  _D3D9_BackBuf   = nullptr;
+
+void(*_End_Frame)() = nullptr;
+
 }
 
 

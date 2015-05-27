@@ -83,7 +83,10 @@ void
 dx9_Initialize( const InitParam& param )
 {
     _D3D9_Device = (IDirect3DDevice9 *)param.context;
+    _End_Frame = param.endFrameFunc;
+
     DVASSERT(_D3D9_Device);
+    DVASSERT(_End_Frame);
 
     VertexBufferDX9::SetupDispatch( &DispatchDX9 );
     IndexBufferDX9::SetupDispatch( &DispatchDX9 );

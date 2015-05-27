@@ -476,7 +476,6 @@ SetAsRenderTarget( Handle tex )
     TextureGLES2_t* self = TextureGLES2Pool::Get( tex );
 
     glBindFramebuffer( GL_FRAMEBUFFER, self->fbo );
-    glViewport( 0, 0, self->width, self->height ); 
     _GLES2_Binded_FrameBuffer = self->fbo;
 }
 

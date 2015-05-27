@@ -20,6 +20,7 @@ namespace rhi
 extern IDirect3DDevice9*    _D3D9_Device;
 extern IDirect3DSurface9*   _D3D9_BackBuf;
 
+extern void(*_End_Frame)();
 
 D3DFORMAT          DX9_TextureFormat( TextureFormat format );
 

@@ -583,8 +583,6 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                 GL_CALL(glDepthFunc( GL_LEQUAL ));
                 GL_CALL(glDepthMask( GL_TRUE ));
 
-                GL_CALL(glViewport(_GLES2_Viewport[0], _GLES2_Viewport[1], _GLES2_Viewport[2], _GLES2_Viewport[3]));
-
                 if( isFirstInPass )
                 {
                     GLuint  flags = 0;
@@ -614,6 +612,9 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
 
                     glClear( flags );
                 }
+
+                GL_CALL(glViewport(passCfg.viewport[0], passCfg.viewport[1], passCfg.viewport[2], passCfg.viewport[3]));
+
             }   break;
             
             case GLES2__END :
@@ -626,7 +627,6 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                     {
                         glBindFramebuffer( GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer );
                         _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;
-                        glViewport( _GLES2_Viewport[0], _GLES2_Viewport[1], _GLES2_Viewport[2], _GLES2_Viewport[3] );
                     }
                 }
             }   break;
@@ -924,9 +924,6 @@ _ExecuteQueuedCommands()
     _CmdQueueSync.Lock();
     _CurRenderQueueSize = 0;
     _CmdQueueSync.Unlock();
-
-    if (_End_Frame)
-        _End_Frame();
 }
 
 
@@ -956,6 +953,8 @@ gles2_Present()
     _ExecuteQueuedCommands(); 
 #endif
 
+    _End_Frame();
+
     ProgGLES2::InvalidateAllConstBufferInstances();
 }
 
@@ -965,8 +964,9 @@ gles2_Present()
 static void
 _RenderFunc( DAVA::BaseObject* obj, void*, void* )
 {
-    if (_Make_Current)
-        _Make_Current();
+    DVASSERT(_Make_Current);
+
+    _Make_Current();
 
     _RenderThredStartedSync.Post();
     Logger::Info( "RHI render-thread started" );

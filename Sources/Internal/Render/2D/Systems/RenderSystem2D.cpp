@@ -433,6 +433,10 @@ void RenderSystem2D::BeginFrame()
     rhi::RenderPassConfig renderPass2DConfig;
     renderPass2DConfig.priority = PRIORITY_MAIN_2D;
     renderPass2DConfig.colorBuffer[0].loadAction = rhi::LOADACTION_NONE;
+    renderPass2DConfig.viewport[0] = renderPass2DConfig.viewport[1] = 0;
+    renderPass2DConfig.viewport[2] = Renderer::GetFramebufferWidth();
+    renderPass2DConfig.viewport[3] = Renderer::GetFramebufferHeight();
+
     pass2DHandle = rhi::AllocateRenderPass(renderPass2DConfig, 1, &packetList2DHandle);
 
     rhi::BeginRenderPass(pass2DHandle);

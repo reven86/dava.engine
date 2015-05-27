@@ -50,6 +50,8 @@ HDC deviceContext = 0;
 HGLRC glRenderContext = 0;
 
 D3DPRESENT_PARAMETERS d3dPresentParams;
+IDirect3DDevice9 * d3d9Device = nullptr;
+bool d3d9DeviceLost = false;
 
 //------------------------------------------------------------------------------
 
@@ -287,6 +289,35 @@ namespace DAVA
 		return true;
 	}
 
+    void EndFrameDX9()
+    {
+        HRESULT hr;
+
+        if (d3d9DeviceLost)
+        {
+            hr = d3d9Device->TestCooperativeLevel();
+
+            if (hr == D3DERR_DEVICENOTRESET)
+            {
+                d3d9DeviceLost = false;
+            }
+            else
+            {
+                ::Sleep(100);
+            }
+        }
+        else
+        {
+            hr = d3d9Device->Present(NULL, NULL, NULL, NULL);
+
+            if (FAILED(hr))
+                Logger::Error("present() failed:\n%s\n", D3D9ErrorText(hr));
+
+            if (hr == D3DERR_DEVICELOST)
+                d3d9DeviceLost = true;
+        }
+    }
+
     void CoreWin32Platform::CreateDirect3DDevice()
     {
         IDirect3D9 * _D3D9 = Direct3DCreate9(D3D_SDK_VERSION);
@@ -438,8 +469,6 @@ namespace DAVA
 
             // create device
 
-            IDirect3DDevice9 * d3d9Device = nullptr;
-
             if (SUCCEEDED(hr = _D3D9->CreateDevice(adapter,
                 device,
                 hWindow,
@@ -468,6 +497,7 @@ namespace DAVA
             }
 
             rendererParams.context = d3d9Device;
+            rendererParams.endFrameFunc = &EndFrameDX9;
         }
         else
         {
