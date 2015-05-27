@@ -3,25 +3,24 @@
 #include "PackageControlsNode.h"
 #include "ImportedPackagesNode.h"
 #include "PackageListener.h"
-#include "PackageRef.h"
 #include "../PackageSerializer.h"
 #include "../ControlProperties/RootProperty.h"
 
 using namespace DAVA;
 
-PackageNode::PackageNode(PackageRef *_packageRef)
+PackageNode::PackageNode(const FilePath &aPath)
     : PackageBaseNode(nullptr)
-    , packageRef(SafeRetain(_packageRef))
+    , path(aPath)
     , importedPackagesNode(nullptr)
     , packageControlsNode(nullptr)
 {
     importedPackagesNode = new ImportedPackagesNode(this);
-    packageControlsNode = new PackageControlsNode(this, packageRef);
+    packageControlsNode = new PackageControlsNode(this);
+    name = path.GetBasename();
 }
 
 PackageNode::~PackageNode()
 {
-    SafeRelease(packageRef);
     importedPackagesNode->SetParent(nullptr);
     SafeRelease(importedPackagesNode);
     packageControlsNode->SetParent(nullptr);
@@ -45,17 +44,17 @@ PackageBaseNode *PackageNode::Get(int index) const
 
 String PackageNode::GetName() const
 {
-    return packageRef->GetName();
-}
-
-PackageRef *PackageNode::GetPackageRef() const
-{
-    return packageRef;
+    return name;
 }
 
 PackageNode *PackageNode::GetPackage()
 {
     return this;
+}
+
+const FilePath &PackageNode::GetPath() const
+{
+    return path;
 }
 
 const PackageNode *PackageNode::GetPackage() const
@@ -87,7 +86,7 @@ PackageNode *PackageNode::FindImportedPackage(const DAVA::FilePath &path)
 {
     for (int32 index = 0; index < importedPackagesNode->GetCount(); index++)
     {
-        if (importedPackagesNode->Get(index)->GetPackageRef()->GetPath() == path)
+        if (importedPackagesNode->GetImportedPackage(index)->GetPath() == path)
             return importedPackagesNode->GetImportedPackage(index);
     }
     return nullptr;
@@ -223,7 +222,7 @@ void PackageNode::Serialize(PackageSerializer *serializer, const DAVA::Vector<Co
     serializer->PutValue("version", String("0"));
     serializer->EndMap();
     
-    Set<PackageRef*> usedImportedPackages;
+    Set<PackageNode*> usedImportedPackages;
     for (ControlNode *node : nodes)
         CollectPackages(usedImportedPackages, node);
 
@@ -231,20 +230,19 @@ void PackageNode::Serialize(PackageSerializer *serializer, const DAVA::Vector<Co
     packageControlsNode->Serialize(serializer, nodes);
 }
 
-void PackageNode::CollectPackages(Set<PackageRef*> &packageRefs, ControlNode *node) const
+void PackageNode::CollectPackages(Set<PackageNode*> &packages, ControlNode *node) const
 {
     if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
     {
         ControlNode *prototype = node->GetPrototype();
         if (prototype)
         {
-            if (packageRefs.find(prototype->GetPackage()->GetPackageRef()) == packageRefs.end())
-                packageRefs.insert(prototype->GetPackage()->GetPackageRef());
+            packages.insert(prototype->GetPackage());
         }
     }
     
     for (int32 index = 0; index < node->GetCount(); index++)
-        CollectPackages(packageRefs, node->Get(index));
+        CollectPackages(packages, node->Get(index));
 }
 
 void PackageNode::RefreshPropertiesInInstances(ControlNode *node, AbstractProperty *property)

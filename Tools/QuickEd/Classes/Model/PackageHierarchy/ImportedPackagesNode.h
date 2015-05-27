@@ -26,7 +26,7 @@ public:
     PackageNode *FindPackageByName(const DAVA::String &name) const;
     
     void Serialize(PackageSerializer *serializer) const;
-    void Serialize(PackageSerializer *serializer, const DAVA::Set<PackageRef*> &packageRefs) const;
+    void Serialize(PackageSerializer *serializer, const DAVA::Set<PackageNode*> &serializationPackages) const;
 
 protected:
     virtual bool IsReadOnly() const override;

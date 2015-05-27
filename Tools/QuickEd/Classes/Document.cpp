@@ -11,7 +11,6 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
-#include "Model/PackageHierarchy/PackageRef.h"
 
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/SectionProperty.h"
@@ -60,7 +59,7 @@ void Document::InitSharedData()
 
 const DAVA::FilePath &Document::GetPackageFilePath() const
 {
-    return package->GetPackageRef()->GetPath();
+    return package->GetPath();
 }
 
 void Document::RefreshAllControlProperties()

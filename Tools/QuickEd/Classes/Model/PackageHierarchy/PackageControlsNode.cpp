@@ -4,15 +4,13 @@
 
 #include "../PackageSerializer.h"
 #include "PackageNode.h"
-#include "PackageRef.h"
 #include "UI/UIPackage.h"
 #include "UI/UIControl.h"
 
 using namespace DAVA;
 
-PackageControlsNode::PackageControlsNode(PackageNode *_parent, PackageRef *_packageRef)
+PackageControlsNode::PackageControlsNode(PackageNode *_parent)
     : ControlsContainerNode(_parent)
-    , packageRef(SafeRetain(_packageRef))
 {
 }
 
@@ -21,8 +19,6 @@ PackageControlsNode::~PackageControlsNode()
     for (ControlNode *node : nodes)
         node->Release();
     nodes.clear();
-    
-    SafeRelease(packageRef);
 }
 
 void PackageControlsNode::Add(ControlNode *node)
@@ -70,11 +66,6 @@ ControlNode *PackageControlsNode::Get(int index) const
 String PackageControlsNode::GetName() const
 {
     return "Controls";
-}
-
-PackageRef *PackageControlsNode::GetPackageRef() const
-{
-    return packageRef;
 }
 
 bool PackageControlsNode::IsEditingSupported() const

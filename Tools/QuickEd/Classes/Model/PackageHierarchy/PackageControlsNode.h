@@ -12,12 +12,11 @@ namespace DAVA
 
 class PackageSerializer;
 class PackageNode;
-class PackageRef;
 
 class PackageControlsNode : public ControlsContainerNode
 {
 public:
-    PackageControlsNode(PackageNode *parent, PackageRef *packageRef);
+    PackageControlsNode(PackageNode *parent);
     virtual ~PackageControlsNode();
     
     void Add(ControlNode *node) override;
@@ -27,8 +26,6 @@ public:
     ControlNode *Get(int index) const override;
 
     DAVA::String GetName() const override;
-    
-    virtual PackageRef *GetPackageRef() const override;
     
     virtual bool IsEditingSupported() const override;
     virtual bool IsInsertingSupported() const override;
@@ -44,8 +41,6 @@ public:
 
 private:
     DAVA::Vector<ControlNode*> nodes;
-    
-    PackageRef *packageRef;
 };
 
 #endif // __UI_EDITOR_PACKAGE_CONTROLS_NODE_H__

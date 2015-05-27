@@ -11,7 +11,6 @@
 #include "Model/ControlProperties/CustomClassProperty.h"
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
-#include "Model/PackageHierarchy/PackageRef.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageCommandExecutor.h"
 #include "UI/UIPackage.h"
@@ -53,7 +52,7 @@ bool EditorUIPackageBuilder::ProcessImportedPackage(const String &packagePathStr
     FilePath packagePath(packagePathStr);
     for (PackageNode *package : importedPackages)
     {
-        if (package->GetPackageRef()->GetPath() == packagePath)
+        if (package->GetPath() == packagePath)
             return true;
     }
     
@@ -269,8 +268,7 @@ void EditorUIPackageBuilder::ProcessProperty(const InspMember *member, const Var
 RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
 {
     DVASSERT(!packagePath.IsEmpty());
-    RefPtr<PackageRef> ref(new PackageRef(packagePath));
-    RefPtr<PackageNode> package(new PackageNode(ref.Get()));
+    RefPtr<PackageNode> package(new PackageNode(packagePath));
     
     for (PackageNode *importedPackage : importedPackages)
     {

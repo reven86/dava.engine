@@ -37,11 +37,6 @@ String PackageBaseNode::GetName() const
     return "Unknown";
 }
 
-PackageRef *PackageBaseNode::GetPackageRef() const
-{
-    return parent == nullptr ? nullptr : parent->GetPackageRef();
-}
-
 PackageNode *PackageBaseNode::GetPackage()
 {
     return parent ? parent->GetPackage() : nullptr;

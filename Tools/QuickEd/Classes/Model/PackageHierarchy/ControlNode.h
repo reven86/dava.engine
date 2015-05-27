@@ -6,7 +6,6 @@
 
 class PackageSerializer;
 class PackageNode;
-class PackageRef;
 class RootProperty;
 
 class ControlNode : public ControlsContainerNode

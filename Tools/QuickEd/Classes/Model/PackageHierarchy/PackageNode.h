@@ -10,7 +10,6 @@ class PackageControlsNode;
 class ControlsContainerNode;
 class PackageSerializer;
 class ControlNode;
-class PackageRef;
 class PackageListener;
 class AbstractProperty;
 class ComponentPropertiesSection;
@@ -18,7 +17,7 @@ class ComponentPropertiesSection;
 class PackageNode : public PackageBaseNode
 {
 public:
-    PackageNode(PackageRef *_packageRef);
+    PackageNode(const DAVA::FilePath &path);
 private:
     virtual ~PackageNode();
     
@@ -28,9 +27,9 @@ public:
 
     DAVA::String GetName() const override;
     
-    PackageRef *GetPackageRef() const override;
     PackageNode *GetPackage() override;
     const PackageNode *GetPackage() const override;
+    const DAVA::FilePath &GetPath() const;
     bool IsImported() const;
 
     virtual bool IsReadOnly() const override;
@@ -62,11 +61,12 @@ public:
     
     
 private:
-    void CollectPackages(DAVA::Set<PackageRef*> &packageRefs, ControlNode *node) const;
+    void CollectPackages(DAVA::Set<PackageNode*> &packages, ControlNode *node) const;
     void RefreshPropertiesInInstances(ControlNode *node, AbstractProperty *property);
     
 private:
-    PackageRef *packageRef;
+    DAVA::FilePath path;
+    DAVA::String name;
     
     ImportedPackagesNode *importedPackagesNode;
     PackageControlsNode *packageControlsNode;

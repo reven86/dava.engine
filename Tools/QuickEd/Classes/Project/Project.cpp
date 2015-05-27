@@ -11,7 +11,6 @@
 #include "Model/LegacyEditorUIPackageLoader.h"
 #include "Model/YamlPackageSerializer.h"
 #include "Model/PackageHierarchy/PackageNode.h"
-#include "Model/PackageHierarchy/PackageRef.h"
 #include "Helpers/ResourcesManageHelper.h"
 
 using namespace DAVA;
@@ -196,7 +195,7 @@ bool Project::SavePackage(PackageNode *package)
 {
     YamlPackageSerializer serializer;
     package->Serialize(&serializer);
-    serializer.WriteToFile(package->GetPackageRef()->GetPath());
+    serializer.WriteToFile(package->GetPath());
     return true;
 }
 

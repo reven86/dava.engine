@@ -10,7 +10,6 @@ namespace DAVA
 
 class ControlNode;
 class PackageNode;
-class PackageRef;
 
 class PackageBaseNode : public DAVA::BaseObject
 {
@@ -28,7 +27,6 @@ public:
     void SetParent(PackageBaseNode *parent);
     
     virtual DAVA::String GetName() const;
-    virtual PackageRef *GetPackageRef() const;
     virtual PackageNode *GetPackage();
     virtual const PackageNode *GetPackage() const;
     

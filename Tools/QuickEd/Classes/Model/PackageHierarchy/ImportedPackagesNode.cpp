@@ -3,7 +3,6 @@
 #include "PackageControlsNode.h"
 #include "PackageNode.h"
 #include "../PackageSerializer.h"
-#include "PackageRef.h"
 
 using namespace DAVA;
 
@@ -90,20 +89,19 @@ void ImportedPackagesNode::Serialize(PackageSerializer *serializer) const
     serializer->BeginArray("ImportedPackages");
     
     for (PackageNode *package : packages)
-        serializer->PutValue(package->GetPackageRef()->GetPath().GetFrameworkPath());
+        serializer->PutValue(package->GetPath().GetFrameworkPath());
     
     serializer->EndArray();
 }
 
-void ImportedPackagesNode::Serialize(PackageSerializer *serializer, const DAVA::Set<PackageRef*> &packageRefs) const
+void ImportedPackagesNode::Serialize(PackageSerializer *serializer, const DAVA::Set<PackageNode*> &serializationPackages) const
 {
     serializer->BeginArray("ImportedPackages");
     
-    for (PackageNode *package : packages)
+    for (PackageNode *package : serializationPackages)
     {
-        PackageRef *ref = package->GetPackageRef();
-        if (packageRefs.find(ref) != packageRefs.end())
-            serializer->PutValue(ref->GetPath().GetFrameworkPath());
+        DVASSERT(package->GetParent() == this);
+        serializer->PutValue(package->GetPath().GetFrameworkPath());
     }
     
     serializer->EndArray();
