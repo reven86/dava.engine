@@ -44,6 +44,7 @@
 #include <QResizeEvent>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QShortcut>
 #include <QDebug>
 
 
@@ -100,11 +101,18 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
     {
         if ( curScene == nullptr )
             return;
-
         curScene->cameraSystem->MoveToStep( ofs );
     };
-
     connect( davaWidget->GetGLWindow(), &OpenGLWindow::mouseScrolled, mouseWheelHandler );
+
+    auto moveToSelectionHandler = [&]
+    {
+        if ( curScene == nullptr )
+            return;
+        curScene->cameraSystem->MoveToSelection();
+    };
+    auto moveToSelectionHandlerHotkey = new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_X ), this );
+    connect( moveToSelectionHandlerHotkey, &QShortcut::activated, moveToSelectionHandler );
 }
 
 SceneTabWidget::~SceneTabWidget()
