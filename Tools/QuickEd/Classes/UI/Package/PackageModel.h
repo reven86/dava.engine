@@ -49,11 +49,11 @@ private: // PackageListener
     void ControlWillBeRemoved(ControlNode *node, ControlsContainerNode *from) override;
     void ControlWasRemoved(ControlNode *node, ControlsContainerNode *from) override;
 
-    void ImportedPackageWillBeAdded(PackageNode *node, PackageNode *to, int index) override;
-    void ImportedPackageWasAdded(PackageNode *node, PackageNode *to, int index) override;
+    void ImportedPackageWillBeAdded(PackageNode *node, ImportedPackagesNode *to, int index) override;
+    void ImportedPackageWasAdded(PackageNode *node, ImportedPackagesNode *to, int index) override;
     
-    void ImportedPackageWillBeRemoved(PackageNode *node, PackageNode *from) override;
-    void ImportedPackageWasRemoved(PackageNode *node, PackageNode *from) override;
+    void ImportedPackageWillBeRemoved(PackageNode *node, ImportedPackagesNode *from) override;
+    void ImportedPackageWasRemoved(PackageNode *node, ImportedPackagesNode *from) override;
     
 private:
     PackageNode *root;

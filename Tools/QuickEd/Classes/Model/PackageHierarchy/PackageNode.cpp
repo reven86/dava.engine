@@ -187,23 +187,23 @@ void PackageNode::RemoveControl(ControlNode *node, ControlsContainerNode *from)
 void PackageNode::InsertImportedPackage(PackageNode *node, DAVA::int32 index)
 {
     for (PackageListener *listener : listeners)
-        listener->ImportedPackageWillBeAdded(node, this, index);
+        listener->ImportedPackageWillBeAdded(node, importedPackagesNode, index);
     
     importedPackagesNode->InsertAtIndex(index, node);
     
     for (PackageListener *listener : listeners)
-        listener->ImportedPackageWasAdded(node, this, index);
+        listener->ImportedPackageWasAdded(node, importedPackagesNode, index);
 }
 
 void PackageNode::RemoveImportedPackage(PackageNode *node)
 {
     for (PackageListener *listener : listeners)
-        listener->ImportedPackageWillBeRemoved(node, this);
+        listener->ImportedPackageWillBeRemoved(node, importedPackagesNode);
     
     importedPackagesNode->Remove(node);
     
     for (PackageListener *listener : listeners)
-        listener->ImportedPackageWasRemoved(node, this);
+        listener->ImportedPackageWasRemoved(node, importedPackagesNode);
 }
 
 void PackageNode::Serialize(PackageSerializer *serializer) const

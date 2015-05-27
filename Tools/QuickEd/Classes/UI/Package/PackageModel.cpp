@@ -377,25 +377,25 @@ void PackageModel::ControlWasRemoved(ControlNode *node, ControlsContainerNode *f
     endRemoveRows();
 }
 
-void PackageModel::ImportedPackageWillBeAdded(PackageNode *node, PackageNode *to, int index)
+void PackageModel::ImportedPackageWillBeAdded(PackageNode *node, ImportedPackagesNode *to, int index)
 {
     QModelIndex destIndex = indexByNode(to);
     beginInsertRows(destIndex, index, index);
 }
 
-void PackageModel::ImportedPackageWasAdded(PackageNode *node, PackageNode *to, int index)
+void PackageModel::ImportedPackageWasAdded(PackageNode *node, ImportedPackagesNode *to, int index)
 {
     endInsertRows();
 }
 
-void PackageModel::ImportedPackageWillBeRemoved(PackageNode *node, PackageNode *from)
+void PackageModel::ImportedPackageWillBeRemoved(PackageNode *node, ImportedPackagesNode *from)
 {
     QModelIndex parentIndex = indexByNode(from);
     int index = from->GetIndex(node);
     beginRemoveRows(parentIndex, index, index);
 }
 
-void PackageModel::ImportedPackageWasRemoved(PackageNode *node, PackageNode *from)
+void PackageModel::ImportedPackageWasRemoved(PackageNode *node, ImportedPackagesNode *from)
 {
     endRemoveRows();
 }
