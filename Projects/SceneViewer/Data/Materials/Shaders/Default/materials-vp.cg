@@ -165,32 +165,7 @@ property float4 jointPositions[MAX_JOINTS] : dynamic,a : ; // (x, y, z, scale)
 property float4 jointQuaternions[MAX_JOINTS] : dynamic,a : ;
 #endif
 
-#if VERTEX_FOG
-    property float3 fogColor : static,b : def_value=0.7,0.7,1 ;
-    property float fogLimit : static,b : def_value=1 ;
-    #if FOG_LINEAR
-    property float fogStart : static,b : def_value=10 ;
-    property float fogEnd : static,b : def_value=100 ;
-    #else
-    property float fogDensity : static,b : def_value=1 ;
-    #endif
-    #if FOG_ATMOSPHERE
-        property float fogAtmosphereDistance : static,b : ;
-        #if FOG_ATMOSPHERE_MAP
-            DECL_SAMPLERCUBE(atmospheremap) : static,b : ;
-        #else
-            property float3 fogAtmosphereColorSun : static,b : ;
-            property float3 fogAtmosphereColorSky : static,b : ;
-            property float fogAtmosphereScattering : static,b : ;
-        #endif
-    #endif
-    #if FOG_HALFSPACE
-        property float fogHalfspaceHeight : static,b : ;
-        property float fogHalfspaceFalloff : static,b : ;
-        property float fogHalfspaceDensity : static,b : ;
-        property float fogHalfspaceLimit : static,b : ;
-    #endif
-#endif
+#include "vp-fog-props.cgh"
 
 #if MATERIAL_LIGHTMAP
 property float2 uvOffset : static,a : ;
@@ -566,65 +541,40 @@ VPROG_BEGIN
 
 #if VERTEX_FOG
 
-    float fogDistance = length(eyeCoordsPosition);
-    
-    // calculating fog amoung, depending on distance 
+    FogParam    fog_param;
+
+    fog_param.color     = fogColor;
+    fog_param.limit     = fogLimit;
     #if FOG_LINEAR
-        VP_OUT(varFog).w = (fogDistance - fogStart) / (fogEnd - fogStart);
+    fog_param.start     = fogStart;
+    fog_param.end       = fogEnd;
     #else
-        VP_OUT(varFog).w = 1.0 - exp(-fogDensity * fogDistance);
+    fog_param.density   = fogDensity;
     #endif
-    
-    // calculating view direction in world space, point of view in world space
-    #if FOG_HALFSPACE || FOG_ATMOSPHERE_MAP
-        float3 viewPointInWorldSpace = mul(VP_IN_POSITION,worldMatrix).xyz;
-        float3 viewDirectionInWorldSpace = viewPointInWorldSpace - cameraPosition;
-    #endif
-    
-    // calculating halfSpaceFog amoung
     #if FOG_HALFSPACE
-        #if FOG_HALFSPACE_LINEAR
-            // view http://www.terathon.com/lengyel/Lengyel-UnifiedFog.pdf
-            // to get more clear understanding about this calculations
-            float fogK = step(cameraPosition.z, fogHalfspaceHeight);
-            float fogFdotP = viewPointInWorldSpace.z - fogHalfspaceHeight;
-            float fogFdotC = cameraPosition.z - fogHalfspaceHeight;
-            
-            float fogC1 = fogK * (fogFdotP + fogFdotC);
-            float fogC2 = (1.0 - 2.0 * fogK) * fogFdotP;
-            float fogG = min(fogC2, 0.0);
-            fogG = -length(viewDirectionInWorldSpace) * fogHalfspaceDensity * (fogC1 - fogG * fogG / abs(viewDirectionInWorldSpace.z));
-            
-            float halfSpaceFogAmoung = 1.0 - exp2(-fogG);
-        #else
-            float fogK = viewDirectionInWorldSpace.z / fogDistance;
-            float fogB = cameraPosition.z - fogHalfspaceHeight;
-            
-            float halfSpaceFogAmoung = fogHalfspaceDensity * exp(-fogHalfspaceFalloff * fogB) * (1.0 - exp(-fogHalfspaceFalloff * fogK * fogDistance)) / fogK;
-        #endif
-        VP_OUT(varFog).w = VP_OUT(varFog).a + clamp(halfSpaceFogAmoung, 0.0, fogHalfspaceLimit);
+    fog_param.halfspace_height  = fogHalfspaceHeight;
+    fog_param.halfspace_falloff = fogHalfspaceFalloff;
+    fog_param.halfspace_density = fogHalfspaceDensity;
+    fog_param.halfspace_limit   = fogHalfspaceLimit;
     #endif
 
-    // limit fog amoung
-    VP_OUT(varFog).w = clamp(VP_OUT(varFog).w, 0.0, fogLimit);
-    
-    // calculating fog color
     #if FOG_ATMOSPHERE
-        float3 atmosphereColor;
-        #if FOG_ATMOSPHERE_MAP
-            float3 viewDirection = normalize(float3(mul(VP_IN_POSITION,worldMatrix)) - cameraPosition);
-            viewDirection.z = clamp(viewDirection.z, 0.01, 1.0);
-            atmosphereColor = textureCube(atmospheremap, viewDirection).xyz;
-        #else
-            float atmospheteAngleFactor = dot(normalize(eyeCoordsPosition), normalize(toLightDir)) * 0.5 + 0.5;
-            atmosphereColor = lerp(fogAtmosphereColorSky, fogAtmosphereColorSun, pow(atmospheteAngleFactor, fogAtmosphereScattering));
-        #endif
-        float fogAtmosphereAttenuation = clamp(fogDistance / fogAtmosphereDistance, 0.0, 1.0);
-        VP_OUT(varFog).xyz = lerp(fogColor, atmosphereColor, fogAtmosphereAttenuation);
-    #else
-        VP_OUT(varFog).xyz = fogColor;
-    #endif
+    fog_param.tolight_dir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
 
+    fog_param.atmosphere_distance = fogAtmosphereDistance;
+    #if !FOG_ATMOSPHERE_MAP
+    fog_param.atmosphere_sun_color  = fogAtmosphereColorSun;
+    fog_param.atmosphere_sky_color  = fogAtmosphereColorSky;
+    fog_param.atmosphere_scattering = fogAtmosphereScattering;
+    #endif
+    
+    #endif
+    
+    fog_param.view_position  = eyeCoordsPosition;
+    fog_param.world_position = mul(VP_IN_POSITION,worldMatrix).xyz;
+    fog_param.eye_position   = cameraPosition;
+    
+    VP_OUT(varFog) = CalculateVertexFog( fog_param );
 #endif // VERTEX_FOG
 
 

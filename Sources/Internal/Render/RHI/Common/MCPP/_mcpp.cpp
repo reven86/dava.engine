@@ -25,7 +25,6 @@ const char*                     MCPP_Text       = "<input>";
 std::vector<std::string>        IncludeSearchPath;
 static std::vector<FileEntry>   _FileEntry;
 static FILE* const              _HandleBase     = (FILE*)(0x1000);
-static std::string              _CurDir         = "Data/Materials/Shaders/Default";
 
 
 //------------------------------------------------------------------------------
@@ -35,7 +34,9 @@ mcpp__set_cur_file( const char* filename )
 {
     DAVA::PathManip   path(filename);
 
-    _CurDir = path.GetPath();
+    IncludeSearchPath.clear();
+    IncludeSearchPath.push_back( path.GetPath() );
+    IncludeSearchPath.push_back( DAVA::FilePath("~res:/Materials/Shaders").GetAbsolutePathname() );
 }
 
 
@@ -86,20 +87,31 @@ mcpp__fopen( const char* filename, const char* mode )
     }
     else
     {
-        std::string name = _CurDir + filename;
-
-        if( DAVA::FileSystem::Instance()->IsFile( name.c_str() ) )
+        for( std::vector<std::string>::const_iterator p=IncludeSearchPath.begin(),p_end=IncludeSearchPath.end(); p!=p_end; ++p )
         {
-            FileEntry   entry;
+            std::string name = *p + filename;
 
-            entry.file      = DAVA::File::Create( name, DAVA::File::OPEN|DAVA::File::READ );
-            entry.file_name = filename;
-            entry.eof       = 0;
-            entry.handle    = _HandleBase + _FileEntry.size();
+            if( DAVA::FileSystem::Instance()->IsFile( name.c_str() ) )
+            {
+                FileEntry   entry;
+
+                entry.file      = DAVA::File::Create( name, DAVA::File::OPEN|DAVA::File::READ );
+                entry.file_name = filename;
+                entry.eof       = 0;
+                entry.handle    = _HandleBase + _FileEntry.size();
             
-            _FileEntry.push_back( entry );
-            file = entry.handle;
+                _FileEntry.push_back( entry );
+                file = entry.handle;
+                
+                break;
+            }
         }
+/*
+else
+{
+DAVA::Logger::Error("can't open \"%s\"",filename);
+}
+*/
     }
     
 //DAVA::Logger::Info("mcpp-open \"%s\" %p",filename,file);
