@@ -99,12 +99,12 @@ struct MemoryManager::AllocScopeItem
 MMItemName MemoryManager::tagNames[MAX_TAG_COUNT];
 
 MMItemName MemoryManager::allocPoolNames[MAX_ALLOC_POOL_COUNT] = {
-    { "system"         },
     { "total"          },
     { "default"        },
     { "gpu texture"    },
     { "gpu rdo vertex" },
     { "gpu rdo index"  },
+    { "system"         },
     { "fmod"           },
     { "bullet"         },
     { "base object"    },
