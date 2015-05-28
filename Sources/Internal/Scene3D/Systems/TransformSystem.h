@@ -51,7 +51,7 @@ public:
 
     Transform * CreateTransform();
 
-	virtual void ImmediateEvent(Entity * entity, uint32 event);
+    void ImmediateEvent(Component * component, uint32 event) override;
 	virtual void AddEntity(Entity * entity);
 	virtual void RemoveEntity(Entity * entity);
     //virtual void SetParent(Entity * entity, Entity * parent);
@@ -69,7 +69,7 @@ private:
     void SortAndThreadSplit();
     
 	Vector<Entity*> updatableEntities;
-    Vector<Entity*> sendEvent;
+    Vector<Component*> sendEvent;
     
 	void EntityNeedUpdate(Entity * entity);
 	void HierahicAddToUpdate(Entity * entity);

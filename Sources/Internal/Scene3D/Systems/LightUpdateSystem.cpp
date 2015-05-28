@@ -55,10 +55,11 @@ LightUpdateSystem::~LightUpdateSystem()
 {
 }
 
-void LightUpdateSystem::ImmediateEvent(Entity * entity, uint32 event)
+void LightUpdateSystem::ImmediateEvent(Component * component, uint32 event)
 {
     if (event == EventSystem::WORLD_TRANSFORM_CHANGED)
     {
+        Entity * entity = component->GetEntity();
         // Update new transform pointer, and mark that transform is changed
         Matrix4 * worldTransformPointer = ((TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
 		Light * light = ((LightComponent*)entity->GetComponent(Component::LIGHT_COMPONENT))->GetLightObject();

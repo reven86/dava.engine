@@ -236,6 +236,8 @@ void ModificationWidget::ReloadValues()
 			zAxisModify->clear();
 		}
 	}
+
+    OnSnapToLandscapeChanged();
 }
 
 void ModificationWidget::ApplyValues(ST_Axis axis)
@@ -267,6 +269,7 @@ void ModificationWidget::ApplyMoveValues(ST_Axis axis)
 	if(NULL != curScene)
 	{
 		EntityGroup selection = curScene->selectionSystem->GetSelection();
+        const auto isSnappedToLandscape = curScene->modifSystem->GetLandscapeSnap();
 
 		if(selection.Size() > 1)
 		{
@@ -291,7 +294,10 @@ void ModificationWidget::ApplyMoveValues(ST_Axis axis)
 					newPos.y = y;
 					break;
 				case ST_AXIS_Z:
-					newPos.z = z;
+                    if ( !isSnappedToLandscape )
+                    {
+                        newPos.z = z;
+                    }
 					break;
 				default:
 					break;
@@ -308,7 +314,10 @@ void ModificationWidget::ApplyMoveValues(ST_Axis axis)
 					newPos.y += y;
 					break;
 				case ST_AXIS_Z:
-					newPos.z += z;
+                    if ( !isSnappedToLandscape )
+                    {
+                        newPos.z += z;
+                    }
 					break;
 				default:
 					break;
@@ -509,6 +518,20 @@ void ModificationWidget::OnYChanged()
 void ModificationWidget::OnZChanged()
 {
 	ApplyValues(ST_AXIS_Z);
+}
+
+void ModificationWidget::OnSnapToLandscapeChanged()
+{
+    if ( curScene == nullptr )
+        return;
+
+    auto selection = curScene->selectionSystem->GetSelection();
+    if ( selection.Size() == 0 )
+        return;
+
+    const auto isSnappedToLandscape = curScene->modifSystem->GetLandscapeSnap();
+    const auto isMoveMode = ( modifMode == ST_MODIF_MOVE );
+    zAxisModify->setReadOnly( isSnappedToLandscape && isMoveMode );
 }
 
 void ModificationWidget::OnSceneActivated(SceneEditor2 *scene)

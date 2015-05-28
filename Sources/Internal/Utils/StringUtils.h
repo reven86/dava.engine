@@ -83,7 +83,7 @@ WideString TrimLeft(const WideString& string);
 WideString TrimRight(const WideString& string);
 
 /**
-* \brief Remove from line non-pritable characters and replace 
+* \brief Remove from line non-printable characters and replace 
 *        unicode spaces into ASCII space.
 * \param [in] string The string.
 * \param [in] tabRule The kind of process \t symbol: -1 - keep tab symbol, 0..n - replace tab with 0..n spaces.
