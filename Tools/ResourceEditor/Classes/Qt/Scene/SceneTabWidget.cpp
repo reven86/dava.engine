@@ -101,6 +101,8 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
     {
         if ( curScene == nullptr )
             return;
+        const auto reverse = SettingsManager::GetValue( Settings::General_Mouse_InvertWheel ).AsBool() ? -1 : 1;
+        ofs *= reverse;
         curScene->cameraSystem->MoveToStep( ofs );
     };
     connect( davaWidget->GetGLWindow(), &OpenGLWindow::mouseScrolled, mouseWheelHandler );
