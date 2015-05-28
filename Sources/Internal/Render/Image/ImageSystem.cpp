@@ -49,12 +49,12 @@ namespace DAVA
 
 ImageSystem::ImageSystem()
 {
+    wrappers[IMAGE_FORMAT_WEBP] = new LibWebPHelper();
     wrappers[IMAGE_FORMAT_PNG] = new LibPngHelper();
     wrappers[IMAGE_FORMAT_DDS] = new LibDdsHelper();
     wrappers[IMAGE_FORMAT_PVR] = new LibPVRHelper();
     wrappers[IMAGE_FORMAT_JPEG] = new LibJpegHelper();
     wrappers[IMAGE_FORMAT_TGA] = new LibTgaHelper();
-    wrappers[IMAGE_FORMAT_WEBP] = new LibWebPHelper();
 }
 
 ImageSystem::~ImageSystem()
