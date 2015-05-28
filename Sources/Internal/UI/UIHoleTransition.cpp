@@ -97,27 +97,23 @@ void UIHoleTransition::Draw(const UIGeometricData &geometricData)
 	 */
 	
     Sprite::DrawState drawState;
-    drawState.SetMaterial(RenderHelper::DEFAULT_2D_TEXTURE_MATERIAL);
+    drawState.SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
     
-	RenderSystem2D::Instance()->SetColor(0.0f, 0.0f, 0.0f, 1.0f);
-	RenderHelper::Instance()->FillRect(Rect(0.0f, 0.0f,
-                                            (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx,
-                                            (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy),
-                                       drawState.GetMaterial());
-    
-	RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+    auto rect = Rect(0.0f, 0.0f, (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx, (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
+
+    RenderSystem2D::Instance()->FillRect(rect, drawState.GetMaterial(), Color::Black);
 	
     drawState.SetPosition(geometricData.position);
     
     if (normalizedTime < 0.5f)
     {
         renderTargetPrevScreen->SetClipPolygon(&realPoly);
-        RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState);
+        RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState, Color::White);
     }
     else
     {
         renderTargetNextScreen->SetClipPolygon(&realPoly);
-        RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState);
+        RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState, Color::White);
     }
     
 	/*Texture * tx = renderTargetPrevScreen->GetTexture();
@@ -153,7 +149,6 @@ void UIHoleTransition::Draw(const UIGeometricData &geometricData)
 	
 	renderTargetNextScreen->SetPosition(xNextPosition, yNextPosition);
 	renderTargetNextScreen->Draw(); */
-	RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 	
 };

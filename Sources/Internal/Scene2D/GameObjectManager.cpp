@@ -286,8 +286,6 @@ void GameObjectManager::Draw()
         else
 		    object->Draw();
 	}
-
-    RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void GameObjectManager::SetCameraPosition(float32 _cameraPositionX, float32 _cameraPositionY)

@@ -54,71 +54,16 @@ class RenderHelper : public Singleton<RenderHelper>
 public:
 	RenderHelper();
     ~RenderHelper();
-    
-
-    static NMaterial* DEFAULT_2D_COLOR_MATERIAL;
-    static NMaterial* DEFAULT_2D_TEXTURE_MATERIAL;
-    static NMaterial* DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL;
 
     /**
-        \brief Draws line from pt1 to pt2
-        \param pt1 starting point 
-        \param pt2 ending point
-	 */
-    void DrawLine(const Vector2 & pt1, const Vector2 & pt2, NMaterial* material);
-	
-	
-    /**
-	 \brief Draws line from pt1 to pt2
-	 \param pt1 starting point
-	 \param pt2 ending point
-	 */
-    void DrawLine(const Vector2 &start, const Vector2 &end, float32 lineWidth, NMaterial* material);
-    
-	/**
         \brief Draws line in 3D from pt1 to pt2
         \param pt1 starting point 
         \param pt2 ending point
 	 */
     void DrawLine(const Vector3 & pt1, const Vector3 & pt2, float32 lineWidth /*= 1.f*/, NMaterial* material);
-    /**
-	 \brief Draws multiple lines.
-	 \param linePoints list of points in the format (startX, startY, endX, endY), (startX, startY, endX, endY)...
-	 */
-    void DrawLines(const Vector<float32>& linePoints, NMaterial* material);
-    
-    /**
-        \brief Draws given rect in 2D space
-        \param pt1 starting point 
-        \param pt2 ending point
-	 */    
-    void DrawRect(const Rect & rect, NMaterial* material);
-    
-    /**
-        \brief Fills given rect in 2D space
-        \param pt1 starting point 
-        \param pt2 ending point
-	 */ 
-    void FillRect(const Rect & rect, NMaterial* material);
 
     /**
-     \brief Draws grid in the given rect
-     \param rect rect to fill grid with
-     \param gridSize distance between grid lines
-     \param color grid color
-	 */
-    void DrawGrid(const Rect & rect, const Vector2& gridSize, const Color& color, NMaterial* material);
 
-	// point helpers
-    
-    /**
-        \brief Draws circle in 2D space
-        \param center center of the circle
-        \param radius radius of the circle
-     */
-    void DrawCircle(const Vector2 & center, float32 radius, NMaterial* material);
-    
-    
     /**
         \brief Draws circle in 3D space on XY plane
         \param center center of the circle
@@ -132,7 +77,6 @@ public:
 		\param emVector direction vector of the circle
         \param radius radius of the circle
 		\param useFilling flag that indicates if figure have to be filled with current color
-		
      */	 
     void DrawCircle3D(const Vector3 & center, const Vector3 &directionVector, float32 radius, bool useFilling /*= false*/, NMaterial* material);
 
@@ -151,34 +95,13 @@ public:
         \param polygon the polygon we want to draw
         \param closed you should set this flag to true if you want to connect last point of polygon with first point
      */
-    void DrawPolygon(const Polygon2 & polygon, bool closed, NMaterial* material);
-
-    /**
-        \brief Draws all concecutive lines from given polygon
-        \param polygon the polygon we want to draw
-        \param closed you should set this flag to true if you want to connect last point of polygon with first point
-     */
     void DrawPolygon(const Polygon3 & polygon, bool closed, NMaterial* material);
 
     /**
         \brief Fill convex polygon with color. As all other draw functions this function use global color that can be set with RenderSystem2D::Instance()->SetColor function. 
         \param polygon the polygon we want to draw
      */
-    void FillPolygon(const Polygon2 & polygon, NMaterial* material);
-    
-    /**
-        \brief Fill convex polygon with color. As all other draw functions this function use global color that can be set with RenderSystem2D::Instance()->SetColor function. 
-        \param polygon the polygon we want to draw
-     */
     void FillPolygon(const Polygon3 & polygon, NMaterial* material);
-    
-    /**
-        \brief Draws all concecutive lines from given polygon after transformation
-        \param polygon the polygon we want to draw
-        \param closed you should set this flag to true if you want to connect last point of polygon with first point
-        \param transform transform that will be applied to polygon before it will be drawn
-     */
-    void DrawPolygonTransformed(const Polygon2 & polygon, bool closed, const Matrix3 & transform, NMaterial* material);
     
     /**
         \brief Draws all points from given polygon
@@ -226,7 +149,6 @@ public:
 	//static void DrawStrippedLine(Polygon2 & polygon, float lineLen, float spaceLen, float halfWidth, Texture * texture, float initialPos);
 
     void Set2DRenderTarget(Texture * renderTarget);
-    void DrawTexture(Texture * texture, NMaterial* material, const Rect & dstRect = Rect(0.f, 0.f, -1.f, -1.f), const Rect & srcRect = Rect(0.f, 0.f, -1.f, -1.f));
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 	void GetLineWidthRange(int32& rangeMin, int32& rangeMax);

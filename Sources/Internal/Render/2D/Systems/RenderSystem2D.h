@@ -108,6 +108,7 @@ struct StretchDrawData
 class RenderSystem2D : public Singleton<RenderSystem2D>
 {
 public:
+#if RHI_COMPLETE
     static FastName FLAT_COLOR_SHADER;
     static FastName TEXTURE_FLAT_COLOR_SHADER;
 
@@ -123,17 +124,21 @@ public:
     static ShaderDescriptor * TEXTURE_MUL_COLOR_IMAGE_A8;
     static ShaderDescriptor * TEXTURE_ADD_COLOR;
     static ShaderDescriptor * TEXTURE_ADD_COLOR_ALPHA_TEST;
-    static ShaderDescriptor * TEXTURE_ADD_COLOR_IMAGE_A8;
+    static ShaderDescriptor * TEXTURE_ADD_COLOR_IMAGE_A8;  
+#endif // RHI_COMPLETE
 
+    static NMaterial* DEFAULT_2D_COLOR_MATERIAL;
+    static NMaterial* DEFAULT_2D_TEXTURE_MATERIAL;
+    static NMaterial* DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL;
 
     RenderSystem2D();
     virtual ~RenderSystem2D();
     
     void Init();
 
-    void Draw(Sprite * sprite, Sprite::DrawState * drawState = 0);
-    void DrawStretched(Sprite * sprite, Sprite::DrawState * drawState, Vector2 streatchCap, UIControlBackground::eDrawType type, const UIGeometricData &gd, StretchDrawData ** pStreachData);
-    void DrawTiled(Sprite * sprite, Sprite::DrawState * drawState, const Vector2& streatchCap, const UIGeometricData &gd, TiledDrawData ** pTiledData);
+    void Draw(Sprite * sprite, Sprite::DrawState * drawState, const Color& color);
+    void DrawStretched(Sprite * sprite, Sprite::DrawState * drawState, Vector2 streatchCap, UIControlBackground::eDrawType type, const UIGeometricData &gd, StretchDrawData ** pStreachData, const Color& color);
+    void DrawTiled(Sprite * sprite, Sprite::DrawState * drawState, const Vector2& streatchCap, const UIGeometricData &gd, TiledDrawData ** pTiledData, const Color& color);
 
     /**
      * Destroy current buffers and create new.
@@ -166,9 +171,11 @@ public:
 	void PushClip();
 	void PopClip();
 
+#if RHI_COMPLETE
     inline void SetColor(const Color & color);
     inline void SetColor(float32 r, float32 g, float32 b, float32 a);
     inline const Color & GetColor();
+#endif
 
     void ScreenSizeChanged();
 
@@ -176,9 +183,86 @@ public:
     
     void SetSpriteClipping(bool clipping);
 
+    /* 2D DRAW HELPERS */
+
+    /**
+    \brief Draws line from pt1 to pt2
+    \param pt1 starting point
+    \param pt2 ending point
+    */
+    void DrawLine(const Vector2 & pt1, const Vector2 & pt2, NMaterial* material, const Color& color);
+
+    /**
+    \brief Draws line from pt1 to pt2
+    \param pt1 starting point
+    \param pt2 ending point
+    */
+    void DrawLine(const Vector2 &start, const Vector2 &end, float32 lineWidth, NMaterial* material, const Color& color);
+
+    /**
+    \brief Draws multiple lines.
+    \param linePoints list of points in the format (startX, startY, endX, endY), (startX, startY, endX, endY)...
+    */
+    void DrawLines(const Vector<float32>& linePoints, NMaterial* material, const Color& color);
+
+    /**
+    \brief Draws given rect in 2D space
+    \param pt1 starting point
+    \param pt2 ending point
+    */
+    void DrawRect(const Rect & rect, NMaterial* material, const Color& color);
+
+    /**
+    \brief Fills given rect in 2D space
+    \param pt1 starting point
+    \param pt2 ending point
+    */
+    void FillRect(const Rect & rect, NMaterial* material, const Color& color);
+
+    /**
+    \brief Draws grid in the given rect
+    \param rect rect to fill grid with
+    \param gridSize distance between grid lines
+    \param color grid color
+    */
+    void DrawGrid(const Rect & rect, const Vector2& gridSize, const Color& color, NMaterial* material);
+
+    /**
+    \brief Draws circle in 2D space
+    \param center center of the circle
+    \param radius radius of the circle
+    */
+    void DrawCircle(const Vector2 & center, float32 radius, NMaterial* material, const Color& color);
+
+    /**
+    \brief Draws all concecutive lines from given polygon
+    \param polygon the polygon we want to draw
+    \param closed you should set this flag to true if you want to connect last point of polygon with first point
+    */
+    void DrawPolygon(const Polygon2 & polygon, bool closed, NMaterial* material, const Color& color);
+
+    /**
+    \brief Fill convex polygon with color. As all other draw functions this function use global color that can be set with RenderSystem2D::Instance()->SetColor function.
+    \param polygon the polygon we want to draw
+    */
+    void FillPolygon(const Polygon2 & polygon, NMaterial* material, const Color& color);
+
+    /**
+    \brief Draws all concecutive lines from given polygon after transformation
+    \param polygon the polygon we want to draw
+    \param closed you should set this flag to true if you want to connect last point of polygon with first point
+    \param transform transform that will be applied to polygon before it will be drawn
+    */
+    void DrawPolygonTransformed(const Polygon2 & polygon, bool closed, const Matrix3 & transform, NMaterial* material, const Color& color);
+
+    void DrawTexture(Texture * texture, NMaterial* material, const Rect & dstRect = Rect(0.f, 0.f, -1.f, -1.f), const Rect & srcRect = Rect(0.f, 0.f, -1.f, -1.f));
+
 private:
     bool IsPreparedSpriteOnScreen(Sprite::DrawState * drawState);
+
+#if RHI_COMPLETE
     static ShaderDescriptor* GetShaderForBatching(ShaderDescriptor* inputShader);
+#endif
     
     void Setup2DProjection();
 
@@ -212,7 +296,9 @@ private:
     uint32 vertexIndex;
     uint32 indexIndex;
 
+#if RHI_COMPLETE
     Color currentColor;
+#endif
 
     VboPool* pool;
 
@@ -236,6 +322,7 @@ inline void RenderSystem2D::SetHightlightControlsVerticesLimit(uint32 verticesCo
     highlightControlsVerticesLimit = verticesCount;
 }
 
+#if RHI_COMPLETE
 inline void RenderSystem2D::SetColor(const Color & color)
 {
     currentColor = color;
@@ -250,6 +337,8 @@ inline const Color & RenderSystem2D::GetColor()
 {
     return currentColor;
 }
+
+#endif // RHI_COMPLETE
 
 } // ns
 

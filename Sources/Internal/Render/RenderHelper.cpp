@@ -34,10 +34,6 @@
 
 namespace DAVA
 {
-    NMaterial* RenderHelper::DEFAULT_2D_COLOR_MATERIAL = nullptr;
-    NMaterial* RenderHelper::DEFAULT_2D_TEXTURE_MATERIAL = nullptr;
-    NMaterial* RenderHelper::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL = nullptr;
-
 	/*
 	static Vector3 DodecVertexes[20] = {
 		Vector3( 0.607f,  0.000f,  0.795f),
@@ -146,99 +142,6 @@ RenderHelper::~RenderHelper()
 
 }
     
-void RenderHelper::FillRect(const Rect & rect, NMaterial *material)
-{
-    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
-    {
-        return;
-    }
-
-    static uint16 indices[6] = { 0, 1, 2, 1, 3, 2 };
-    vertices[0] = rect.x;
-    vertices[1] = rect.y;
-    vertices[2] = rect.x + rect.dx;
-    vertices[3] = rect.y;
-    vertices[4] = rect.x;
-    vertices[5] = rect.y + rect.dy;
-    vertices[6] = rect.x + rect.dx;
-    vertices[7] = rect.y + rect.dy;
-
-    RenderSystem2D::Instance()->PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), Rect(), 4, vertices, nullptr, 6, indices, RenderSystem2D::Instance()->GetColor());
-}
-
-void RenderHelper::DrawRect(const Rect & rect, NMaterial *material)
-{
-    static uint16 indices[8] = { 0, 1, 1, 2, 2, 3, 3, 0 };
-    vertices[0] = rect.x;
-    vertices[1] = rect.y;
-    vertices[2] = rect.x + rect.dx;
-    vertices[3] = rect.y;
-    vertices[4] = rect.x + rect.dx;
-    vertices[5] = rect.y + rect.dy;
-    vertices[6] = rect.x;
-    vertices[7] = rect.y + rect.dy;
-
-    RenderSystem2D::Instance()->PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), Rect(), 4, vertices, nullptr, 8, indices, RenderSystem2D::Instance()->GetColor(), rhi::PRIMITIVE_LINELIST);
-}
-
-void RenderHelper::DrawGrid(const Rect & rect, const Vector2& gridSize, const Color& color, NMaterial *material)
-{
-    // TODO! review with Ivan/Victor whether it is not performance problem!
-    Vector<float32> gridVertices;
-    int32 verLinesCount = (int32)ceilf(rect.dx / gridSize.x);
-    int32 horLinesCount = (int32)ceilf(rect.dy / gridSize.y);
-    gridVertices.resize((horLinesCount + verLinesCount) * 4);
-    
-    float32 curPos = 0;
-    int32 curVertexIndex = 0;
-    for (int i = 0; i < horLinesCount; i++)
-    {
-        gridVertices[curVertexIndex++] = rect.x;
-        gridVertices[curVertexIndex++] = rect.y + curPos;
-        gridVertices[curVertexIndex++] = rect.x + rect.dx;
-        gridVertices[curVertexIndex++] = rect.y + curPos;
-    }
-
-    curPos = 0.0f;
-    for (int i = 0; i < verLinesCount; i++)
-    {
-        gridVertices[curVertexIndex++] = rect.x + curPos;
-        gridVertices[curVertexIndex++] = rect.y;
-        gridVertices[curVertexIndex++] = rect.x + curPos;
-        gridVertices[curVertexIndex++] = rect.y + rect.dy;
-    }
-
-    Vector<uint16> indices;
-    for (int i = 0; i < curVertexIndex; ++i)
-    {
-        indices.push_back(i);
-    }
-
-    RenderSystem2D::Instance()->PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), Rect(), curVertexIndex / 2, gridVertices.data(), nullptr, curVertexIndex, indices.data(), RenderSystem2D::Instance()->GetColor(), rhi::PRIMITIVE_LINELIST);
-}
-
-void RenderHelper::DrawLine(const Vector2 &start, const Vector2 &end, NMaterial *material)
-{
-    static uint16 indices[2] = { 0, 1 };
-    vertices[0] = start.x;						
-    vertices[1] = start.y;
-    vertices[2] = end.x;
-    vertices[3] = end.y;
-    RenderSystem2D::Instance()->PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), Rect(), 2, vertices, nullptr, 2, indices, RenderSystem2D::Instance()->GetColor(), rhi::PRIMITIVE_LINELIST);
-}
-
-void RenderHelper::DrawLine(const Vector2 &start, const Vector2 &end, float32 lineWidth, NMaterial *material)
-{
-    // TODO: Create list of lines for emulating line with width >1px
-
-    static uint16 indices[2] = { 0, 1 };
-    vertices[0] = start.x;
-    vertices[1] = start.y;
-    vertices[2] = end.x;
-    vertices[3] = end.y;
-    RenderSystem2D::Instance()->PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), Rect(), 2, vertices, nullptr, 2, indices, RenderSystem2D::Instance()->GetColor(), rhi::PRIMITIVE_LINELIST);
-}
-    
 void RenderHelper::DrawLine(const Vector3 & start, const Vector3 & end, float32 lineWidth, NMaterial *material)
 {
     #ifdef RHI_COMPLETE
@@ -269,38 +172,6 @@ RenderSystem2D::Instance()->Flush();
 	glLineWidth(1.f);
 #endif
 #endif // RHI_COMPLETE
-}
-
-void RenderHelper::DrawLines(const Vector<float32>& linePoints, NMaterial *material)
-{
-    auto ptCount = linePoints.size() / 2;
-    Vector<uint16> indices;
-    for (auto i = 0U; i < ptCount - 1; ++i)
-    {
-        indices.push_back(i);
-        indices.push_back(i + 1);
-    }
-    RenderSystem2D::Instance()->PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), Rect(), ptCount, linePoints.data(), nullptr, 2, indices.data(), RenderSystem2D::Instance()->GetColor(), rhi::PRIMITIVE_LINELIST);
-}
-
-void RenderHelper::DrawCircle(const Vector2 & center, float32 radius, NMaterial *material)
-{
-	Polygon2 pts;
-    float32 angle = Min(PI/6.0f, SEGMENT_LENGTH / radius);// maximum angle 30 degrees
-	int ptsCount = (int)(2 * PI / angle) + 1;
-	
-    pts.points.reserve(ptsCount);
-	for (int k = 0; k < ptsCount; ++k)
-	{
-		float32 angle = ((float)k / (ptsCount - 1)) * 2 * PI;
-		float32 sinA = sinf(angle);
-		float32 cosA = cosf(angle);
-		Vector2 pos = center - Vector2(sinA * radius, cosA * radius);
-		
-		pts.AddPoint(pos);
-	}
-	
-    DrawPolygon(pts, false, material);
 }
 
 void RenderHelper::DrawCircle(const Vector3 & center, float32 radius, NMaterial *material)
@@ -431,45 +302,6 @@ void RenderHelper::DrawCylinder(const Vector3 & center, float32 radius, bool use
 #endif // RHI_COMPLETE
 }
 
-void RenderHelper::DrawPolygon( const Polygon2 & polygon, bool closed, NMaterial *material)
-{
-    auto ptCount = polygon.GetPointCount();
-	if (ptCount >= 2)
-	{
-        Vector<uint16> indices;
-	    auto i = 0U;
-        for (; i < ptCount - 1; ++i)
-        {
-            indices.push_back(i);
-            indices.push_back(i + 1);
-        }
-        if (closed)
-        {
-            indices.push_back(i);
-            indices.push_back(0);
-        }
-        auto pointsPtr = static_cast<const float32*>(static_cast<const void*>(polygon.GetPoints()));
-        RenderSystem2D::Instance()->PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), Rect(), ptCount, pointsPtr, nullptr, indices.size(), &indices[0], RenderSystem2D::Instance()->GetColor(), rhi::PRIMITIVE_LINELIST);
-	}
-}
-    
-void RenderHelper::FillPolygon(const Polygon2 & polygon, NMaterial *material)
-{
-    auto ptCount = polygon.GetPointCount();
-    if (ptCount >= 3)
-    {
-        Vector<uint16> indices;
-        for (auto i = 1U; i < ptCount - 1; ++i)
-        {
-            indices.push_back(0);
-            indices.push_back(i);
-            indices.push_back(i + 1);
-        }
-        auto pointsPtr = static_cast<const float32*>(static_cast<const void*>(polygon.GetPoints()));
-        RenderSystem2D::Instance()->PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), Rect(), ptCount, pointsPtr, nullptr, indices.size(), &indices[0], RenderSystem2D::Instance()->GetColor());
-    }
-}
-
 void RenderHelper::DrawPolygonPoints(const Polygon3 & polygon, NMaterial *material)
 {
 #if RHI_COMPLETE
@@ -538,13 +370,6 @@ void RenderHelper::FillPolygon(const Polygon3 & polygon, NMaterial *material)
 		RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_TRIANGLEFAN, 0, ptCount);
     }
 #endif // RHI_COMPLETE
-}
-
-void RenderHelper::DrawPolygonTransformed(const Polygon2 & polygon, bool closed, const Matrix3 & transform, NMaterial *material)
-{
-	Polygon2 copyPoly = polygon;
-	copyPoly.Transform(transform);
-	RenderHelper::Instance()->DrawPolygon(copyPoly, closed, material);
 }
 
 void RenderHelper::DrawBSpline(BezierSpline3 * bSpline, int segments, float ts, float te, NMaterial *material)
@@ -1053,67 +878,6 @@ void RenderHelper::Set2DRenderTarget(Texture * renderTarget)
 
     tempProjectionMatrix.glOrtho(0.0f, (float32)renderTarget->GetWidth(),  0.0f, (float32)renderTarget->GetHeight(), -1.0f, 1.0f);
     Renderer::GetDynamicBindings().SetDynamicParam(PARAM_PROJ, &tempProjectionMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
-#endif // RHI_COMPLETE
-}
-
-void RenderHelper::DrawTexture(Texture * texture, NMaterial *material, const Rect & _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect & _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)
-{
-#ifdef RHI_COMPLETE
-    if (!texture)
-        return;
-
-    RenderSystem2D::Instance()->Flush();
-    RenderSystem2D::Instance()->UpdateClip();
-
-    Rect destRect(_dstRect);
-    if (destRect.dx < 0.f || destRect.dy < 0.f)
-    {
-        Size2i targetSize;
-        Texture * currentRenderTarget = RenderManager::Instance()->GetRenderTarget();
-        if (currentRenderTarget)
-        {
-            targetSize = Size2i(currentRenderTarget->GetWidth(), currentRenderTarget->GetHeight());
-        }
-        else
-        {
-            targetSize = RenderManager::Instance()->GetFramebufferSize();
-        }
-        destRect.dx = (float32)targetSize.dx;
-        destRect.dy = (float32)targetSize.dy;
-    }
-
-    vertices[0] = vertices[4] = destRect.x;//x1
-    vertices[5] = vertices[7] = destRect.y;//y2
-    vertices[1] = vertices[3] = destRect.y + destRect.dy;//y1
-    vertices[2] = vertices[6] = destRect.x + destRect.dx;//x2
-
-    Vector2 textureSize = Vector2((float32)texture->GetWidth(), (float32)texture->GetHeight());
-
-    Rect relativeSrcRect;
-    relativeSrcRect.x = _srcRect.x / textureSize.dx;
-    relativeSrcRect.y = _srcRect.y / textureSize.dy;
-    relativeSrcRect.dx = (_srcRect.dx < 0.f) ? 1.f : _srcRect.dx / textureSize.dx;
-    relativeSrcRect.dy = (_srcRect.dy < 0.f) ? 1.f : _srcRect.dy / textureSize.dy;
-
-    texCoords[0] = texCoords[4] = relativeSrcRect.x;//x1
-    texCoords[5] = texCoords[7] = relativeSrcRect.y;//y2
-    texCoords[1] = texCoords[3] = relativeSrcRect.y + relativeSrcRect.dy;//y1
-    texCoords[2] = texCoords[6] = relativeSrcRect.x + relativeSrcRect.dx;//x2
-
-    vertexStream->Set(TYPE_FLOAT, 2, 0, vertices);
-    texCoordStream->Set(TYPE_FLOAT, 2, 0, texCoords);
-
-    TextureStateData textureStateData;
-    textureStateData.SetTexture(0, texture);
-    UniqueHandle textureState = RenderManager::Instance()->CreateTextureState(textureStateData);
-
-    RenderManager::Instance()->SetRenderEffect(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
-    RenderManager::Instance()->SetRenderState(renderState);
-    RenderManager::Instance()->SetTextureState(textureState);
-    RenderManager::Instance()->SetRenderData(renderDataObject);
-    RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
-
-    RenderManager::Instance()->ReleaseTextureState(textureState);
 #endif // RHI_COMPLETE
 }
 
