@@ -263,8 +263,6 @@ eErrorCode LibJpegHelper::WriteFile(const FilePath & fileName, const Vector<Imag
    
 DAVA::ImageInfo LibJpegHelper::GetImageInfo(File *infile) const
 {
-    ImageInfo info;
-
     jpeg_decompress_struct cinfo;
     jpegErrorManager jerr;
 
@@ -280,8 +278,7 @@ DAVA::ImageInfo LibJpegHelper::GetImageInfo(File *infile) const
         jpeg_destroy_decompress(&cinfo);
         SafeDeleteArray(fileBuffer);
         infile->Seek(0, File::SEEK_FROM_START);
-        Logger::Error("[LibJpegHelper::GetImageInfo] File %s has wrong jpeg header", infile->GetFilename().GetAbsolutePathname().c_str());
-        return info;
+        return ImageInfo();
     }
 
     jpeg_create_decompress(&cinfo);
@@ -289,6 +286,7 @@ DAVA::ImageInfo LibJpegHelper::GetImageInfo(File *infile) const
     jpeg_read_header(&cinfo, true);
     infile->Seek(0, File::SEEK_FROM_START);
 
+    ImageInfo info;
     info.width = cinfo.image_width;
     info.height = cinfo.image_height;
     switch (cinfo.out_color_space)
@@ -310,5 +308,5 @@ DAVA::ImageInfo LibJpegHelper::GetImageInfo(File *infile) const
 
     return info;
 }
-    
+
 };

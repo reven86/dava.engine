@@ -65,6 +65,10 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     infile->Seek(0, File::SEEK_FROM_START);
     size_t data_size = infile->GetSize();
     uint8_t *data = new uint8_t[data_size];
+    SCOPE_EXIT
+    {
+        SafeDeleteArray(data);
+    };
     infile->Read(data, data_size);
     infile->Seek(0, File::SEEK_FROM_START);
 
@@ -77,7 +81,6 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     auto bsStatus = WebPGetFeatures(data, data_size, bitstream);
     if (bsStatus != VP8_STATUS_OK)
     {
-        SafeDeleteArray(data);
         Logger::Error("[LibWebPHelper::ReadFile] File %s has wrong WebP header", infile->GetFilename().GetAbsolutePathname().c_str());
         return ERROR_FILE_FORMAT_INCORRECT;
     }
@@ -87,7 +90,6 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     auto getInfoStatus = WebPGetInfo(data, data_size, &width, &height);
     if (0 == getInfoStatus)
     {
-        SafeDeleteArray(data);
         Logger::Error("[LibWebPHelper::ReadFile] Error in WebGetInfo. File %s", infile->GetFilename().GetAbsolutePathname().c_str());
         return ERROR_FILE_FORMAT_INCORRECT;
     }
@@ -103,7 +105,6 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     }
     if (nullptr == newData)
     {
-        SafeDeleteArray(data);
         Logger::Error("[LibWebPHelper::ReadFile] Error during decompression of file %s into WebP.", infile->GetFilename().GetAbsolutePathname().c_str());
         return ERROR_FILE_FORMAT_INCORRECT;
     }
@@ -123,8 +124,6 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     image->data = newData;
 
     imageSet.push_back(SafeRetain(image.get()));
-
-    SafeDeleteArray(data);
 
     return SUCCESS;
 }
@@ -189,8 +188,6 @@ eErrorCode LibWebPHelper::WriteFileAsCubeMap(const FilePath &fileName, const Vec
 
 DAVA::ImageInfo LibWebPHelper::GetImageInfo(File *infile) const
 {
-    ImageInfo info;
-
     WebPDecoderConfig config;
     WebPInitDecoderConfig(&config);
     WebPBitstreamFeatures* const bitstream = &config.input;
@@ -198,14 +195,17 @@ DAVA::ImageInfo LibWebPHelper::GetImageInfo(File *infile) const
     infile->Seek(0, File::SEEK_FROM_START);
     size_t data_size = infile->GetSize();
     uint8_t *data = new uint8_t[data_size];
+    SCOPE_EXIT
+    {
+        SafeDeleteArray(data);
+    };
     infile->Read(data, data_size);
     infile->Seek(0, File::SEEK_FROM_START);
 
     auto bsStatus = WebPGetFeatures(data, data_size, bitstream);
     if (bsStatus != VP8_STATUS_OK)
     {
-        SafeDeleteArray(data);
-        Logger::Error("[LibWebPHelper::GetInfo] File %s has wrong WebP header", infile->GetFilename().GetAbsolutePathname().c_str());
+        return ImageInfo();
     }
 
     int width;
@@ -214,10 +214,10 @@ DAVA::ImageInfo LibWebPHelper::GetImageInfo(File *infile) const
     auto giStatus = WebPGetInfo(data, data_size, &width, &height);
     if (0 == giStatus)
     {
-        SafeDeleteArray(data);
-        Logger::Error("[LibWebPHelper::GetInfo] File %s has wrong WebP header", infile->GetFilename().GetAbsolutePathname().c_str());
+        return ImageInfo();
     }
 
+    ImageInfo info;
     info.height = height;
     info.width = width;
     info.dataSize = data_size;
