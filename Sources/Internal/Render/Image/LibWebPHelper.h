@@ -30,10 +30,10 @@
 #ifndef __DAVAENGINE_WEB_P_HELPER_H__
 #define __DAVAENGINE_WEB_P_HELPER_H__
 
-#include "Base/BaseTypes.h"
-#include "Render/RenderBase.h"
-#include "FileSystem/FilePath.h"
 #include "Render/Image/ImageFormatInterface.h"
+
+#include "Base/BaseTypes.h"
+#include "FileSystem/FilePath.h"
 
 namespace DAVA 
 {
@@ -43,18 +43,25 @@ class LibWebPHelper: public ImageFormatInterface
 public:
     LibWebPHelper();
 
+    ImageFormat GetImageFormat() const override;
+
     bool IsMyImage(File *file) const override;
 
     eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const override;
 
-    //only RGB888 or A8
+    //only RGBA8888 or RGB888
     eErrorCode WriteFile(const FilePath &fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const override;
 
-    //only RGB888 or A8
+    //only RGBA8888 or RGB888
     eErrorCode WriteFileAsCubeMap(const FilePath &fileName, const Vector<Vector<Image *>> &imageSet, PixelFormat compressionFormat) const override;
 
     ImageInfo GetImageInfo(File *infile) const override;
 };
+
+inline ImageFormat LibWebPHelper::GetImageFormat() const
+{
+    return IMAGE_FORMAT_WEBP;
+}
 
 };
 

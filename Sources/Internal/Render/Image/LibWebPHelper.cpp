@@ -30,68 +30,16 @@
 #include "Render/Image/LibWebPHelper.h"
 
 #include "Render/Image/Image.h"
-#include "Render/Image/ImageConvert.h"
-
-#include "Render/Texture.h"
-#include "Render/RenderManager.h"
 
 #include "FileSystem/File.h"
-#include "FileSystem/FileSystem.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-
-#include "libjpeg/jpeglib.h"
 #include "webp/decode.h"
 #include "webp/encode.h"
-#include "webp/types.h"
-#include <setjmp.h>
 
 #define QUALITY 100 //0..100
-#include <io.h>
 
 namespace DAVA
 {
-    // Output types
-    typedef enum
-    {
-        PNG = 0,
-        PAM,
-        PPM,
-        PGM,
-        BMP,
-        TIFF,
-        YUV,
-        ALPHA_PLANE_ONLY  // this is for experimenting only
-    } OutputFileFormat;
-
-// 
-// struct jpegErrorManager
-// {
-//     // "public" fields 
-//     struct jpeg_error_mgr pub;
-// 
-//     // for return to caller 
-//     jmp_buf setjmp_buffer;
-// };
-// 
-// char jpegLastErrorMsg[JMSG_LENGTH_MAX];
-// 
-// void jpegErrorExit (j_common_ptr cinfo)
-// {
-//     // cinfo->err actually points to a jpegErrorManager struct
-//     jpegErrorManager* myerr = (jpegErrorManager*) cinfo->err;
-//     // note : *(cinfo->err) is now equivalent to myerr->pub
-// 
-//     // output_message is a method to print an error message
-//     //(* (cinfo->err->output_message) ) (cinfo);
-// 
-//     // Create the message
-//     ( *(cinfo->err->format_message) ) (cinfo, jpegLastErrorMsg);
-// 
-//     // Jump to the setjmp point
-//     longjmp(myerr->setjmp_buffer, 1);
-// }
 
 LibWebPHelper::LibWebPHelper()
 {
@@ -105,186 +53,172 @@ bool LibWebPHelper::IsMyImage(File *infile) const
 
 eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap) const
 {
+    WebPDecoderConfig config;
+    WebPBitstreamFeatures* bitstream = &config.input;
+    auto initCStatus = WebPInitDecoderConfig(&config);
+    if (0 == initCStatus)
+    {
+        Logger::Error("[LibWebPHelper::ReadFile] Error in WebPInitDecpderConfig. File %s", infile->GetFilename().GetAbsolutePathname().c_str());
+        return ERROR_READ_FAIL;
+    }
+
+    infile->Seek(0, File::SEEK_FROM_START);
+    size_t data_size = infile->GetSize();
+    uint8_t *data = new uint8_t[data_size];
+    infile->Read(data, data_size);
+    infile->Seek(0, File::SEEK_FROM_START);
+
+    WebPBitstreamFeatures local_features;
+    if (nullptr == bitstream)
+    {
+        bitstream = &local_features;
+    }
+    
+    auto bsStatus = WebPGetFeatures(data, data_size, bitstream);
+    if (bsStatus != VP8_STATUS_OK)
+    {
+        Logger::Error("[LibWebPHelper::ReadFile] File %s has wrong WebP header", infile->GetFilename().GetAbsolutePathname().c_str());
+        return ERROR_FILE_FORMAT_INCORRECT;
+    }
+
+    int width;
+    int height;
+    auto getInfoStatus = WebPGetInfo(data, data_size, &width, &height);
+    if (0 == getInfoStatus)
+    {
+        Logger::Error("[LibWebPHelper::ReadFile] Error in WebGetInfo. File %s", infile->GetFilename().GetAbsolutePathname().c_str());
+        return ERROR_FILE_FORMAT_INCORRECT;
+    }
+
+    uint8_t *newData;
+    if (bitstream->has_alpha)
+    {
+        newData = WebPDecodeRGBA(data, data_size, &width, &height);
+    }
+    else
+    {
+        newData = WebPDecodeRGB(data, data_size, &width, &height);
+    }
+    if (nullptr == newData)
+    {
+        Logger::Error("[LibWebPHelper::ReadFile] Error during decompression of file %s into WebP.", infile->GetFilename().GetAbsolutePathname().c_str());
+        return ERROR_FILE_FORMAT_INCORRECT;
+    }
+
+    ScopedPtr<Image> image(new Image());
+
+    if (bitstream->has_alpha)
+    {
+        image->format = FORMAT_RGBA8888;
+    }
+    else
+    {
+        image->format = FORMAT_RGB888;
+    }
+    image->width = bitstream->width;
+    image->height = bitstream->height;
+    image->data = newData;
+
+    imageSet.push_back(SafeRetain(image.get()));
+
+    SafeDeleteArray(data);
+
     return SUCCESS;
 }
 
 eErrorCode LibWebPHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
 {
+    DVASSERT(imageSet.size());
+    const Image* original = imageSet[0];
+    int32 width = original->width;
+    int32 height = original->height;
+    uint8_t* imageData = original->data;
+    PixelFormat format = original->format;
+
+    if (!(FORMAT_RGBA8888 == format || format == FORMAT_RGB888))
+    {
+        Logger::Error("[LibWebPHelper::WriteFile] Not supported format");
+        return ERROR_FILE_FORMAT_INCORRECT;
+    }
+
+    uint8_t *outData;
+    size_t outSize;
+    uint8 channelCount;
+    int stride = width * sizeof(*imageData);
+    if (FORMAT_RGB888 == format)
+    {
+        channelCount = 3;
+        outSize = WebPEncodeRGB(imageData, width, height, stride * channelCount, QUALITY, &outData);
+    }
+    else
+    {
+        channelCount = 4;
+        outSize = WebPEncodeRGBA(imageData, width, height, stride * channelCount, QUALITY, &outData);
+    }
+
+    if (nullptr == outData)
+    {
+        Logger::Error("[LibWebPHelper::WriteFile] Error during compression of jpeg into file %s.", fileName.GetAbsolutePathname().c_str());
+        return ERROR_FILE_FORMAT_INCORRECT;
+    }
+
+    File *outFile = File::Create(fileName, File::CREATE | File::WRITE);
+    if (nullptr == outFile)
+    {
+        Logger::Error("[LibWebPHelper::WriteFile] File %s could not be opened for writing", fileName.GetAbsolutePathname().c_str());
+        return ERROR_WRITE_FAIL;
+    }
+    outFile->Write(outData, outSize);
+    outFile->Release();
+    free(outData);
+
     return SUCCESS;
 }
 
-eErrorCode LibWebPHelper::WriteFileAsCubeMap(const FilePath &fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
+eErrorCode LibWebPHelper::WriteFileAsCubeMap(const FilePath &fileName, const Vector<Vector<Image *>> &imageSet, PixelFormat compressionFormat) const
 {
-    Logger::Error("[LibJpegHelper::WriteFileAsCubeMap] For jpeg cubeMaps are not supported");
+    Logger::Error("[LibWebPHelper::WriteFileAsCubeMap] For WebP cubeMaps are not supported");
     return ERROR_WRITE_FAIL;
 }
 
-
-
-// FILE* ExUtilSetBinaryMode(FILE* file)
-// {
-// #if defined(_WIN32)
-//     if (_setmode(_fileno(file), _O_BINARY) == -1)
-//     {
-//         fprintf(stderr, "Failed to reopen file in O_BINARY mode.\n");
-//         return NULL;
-//     }
-// #endif
-//     return file;
-// }
-// 
-// int ExUtilReadFromStdin(const uint8_t** data, size_t* data_size)
-// {
-//     static const size_t kBlockSize = 16384;  // default initial size
-//     size_t max_size = 0;
-//     size_t size = 0;
-//     uint8_t* input = NULL;
-// 
-//     if (data == NULL || data_size == NULL) return 0;
-//     *data = NULL;
-//     *data_size = 0;
-// 
-//     //if (!ExUtilSetBinaryMode(stdin)) return 0;
-// 
-//     while (!feof(stdin))
-//     {
-//         // We double the buffer size each time and read as much as possible.
-//         const size_t extra_size = (max_size == 0) ? kBlockSize : max_size;
-//         void* const new_data = realloc(input, max_size + extra_size);
-//         if (new_data == NULL) goto Error;
-//         input = (uint8_t*)new_data;
-//         max_size += extra_size;
-//         size += fread(input + size, 1, extra_size, stdin);
-//         if (size < max_size) break;
-//     }
-//     if (ferror(stdin)) goto Error;
-//     *data = input;
-//     *data_size = size;
-//     return 1;
-// 
-// Error:
-//     free(input);
-//     fprintf(stderr, "Could not read from stdin\n");
-//     return 0;
-// }
-// 
-// int ExUtilReadFile(const char* const file_name,
-//                    const uint8_t** data, size_t* data_size)
-// {
-//     int ok;
-//     void* file_data;
-//     size_t file_size;
-//     FILE* in;
-//     const int from_stdin = (file_name == NULL) || !strcmp(file_name, "-");
-// 
-//     if (from_stdin) return ExUtilReadFromStdin(data, data_size);
-// 
-//     if (data == NULL || data_size == NULL) return 0;
-//     *data = NULL;
-//     *data_size = 0;
-// 
-//     in = fopen(file_name, "rb");
-//     if (in == NULL)
-//     {
-//         fprintf(stderr, "cannot open input file '%s'\n", file_name);
-//         return 0;
-//     }
-//     fseek(in, 0, SEEK_END);
-//     file_size = ftell(in);
-//     fseek(in, 0, SEEK_SET);
-//     file_data = malloc(file_size);
-//     if (file_data == NULL) return 0;
-//     ok = (fread(file_data, file_size, 1, in) == 1);
-//     fclose(in);
-// 
-//     if (!ok)
-//     {
-//         fprintf(stderr, "Could not read %d bytes of data from file %s\n",
-//                 (int)file_size, file_name);
-//         free(file_data);
-//         return 0;
-//     }
-//     *data = (uint8_t*)file_data;
-//     *data_size = file_size;
-//     return 1;
-// }
-// 
-// static const char* const kStatusMessages[VP8_STATUS_NOT_ENOUGH_DATA + 1] = {
-//     "OK", "OUT_OF_MEMORY", "INVALID_PARAM", "BITSTREAM_ERROR",
-//     "UNSUPPORTED_FEATURE", "SUSPENDED", "USER_ABORT", "NOT_ENOUGH_DATA"
-// };
-// 
-// void ExUtilPrintWebPError(const char* const in_file, int status)
-// {
-//     fprintf(stderr, "Decoding of %s failed.\n", in_file);
-//     fprintf(stderr, "Status: %d", status);
-//     if (status >= VP8_STATUS_OK && status <= VP8_STATUS_NOT_ENOUGH_DATA)
-//     {
-//         fprintf(stderr, "(%s)", kStatusMessages[status]);
-//     }
-//     fprintf(stderr, "\n");
-// }
-// 
-// int ExUtilLoadWebP(const char* const in_file,
-//                    const uint8_t** data, size_t* data_size,
-//                    WebPBitstreamFeatures* bitstream)
-// {
-//     VP8StatusCode status;
-//     WebPBitstreamFeatures local_features;
-//     if (!ExUtilReadFile(in_file, data, data_size)) return 0;
-// 
-//     if (bitstream == NULL)
-//     {
-//         bitstream = &local_features;
-//     }
-// 
-//     status = WebPGetFeatures(*data, *data_size, bitstream);
-//     if (status != VP8_STATUS_OK)
-//     {
-//         free((void*)*data);
-//         *data = NULL;
-//         *data_size = 0;
-//         ExUtilPrintWebPError(in_file, status);
-//         return 0;
-//     }
-//     return 1;
-// }
-
 DAVA::ImageInfo LibWebPHelper::GetImageInfo(File *infile) const
 {
-    VP8StatusCode status = VP8_STATUS_OK;
-    
     WebPDecoderConfig config;
-    WebPDecBuffer* const output_buffer = &config.output;
+    WebPInitDecoderConfig(&config);
     WebPBitstreamFeatures* const bitstream = &config.input;
-    OutputFileFormat format = PNG;
-    config.options.dithering_strength = 0;
-    config.options.use_threads = 1;
-    int incremental = 0;
 
+    infile->Seek(0, File::SEEK_FROM_START);
     size_t data_size = infile->GetSize();
     uint8_t *data = new uint8_t[data_size];
-    uint8 *d = new uint8[data_size];
     infile->Read(data, data_size);
-    infile->Read(d, data_size);
+    infile->Seek(0, File::SEEK_FROM_START);
 
-    int *width = new int;
-    int *height = new int;
+    int bsStatus = WebPGetFeatures(data, data_size, bitstream);
+    DVASSERT(bsStatus == VP8_STATUS_OK);
+
+    int width;
+    int height;
     
-    int output = WebPGetInfo(data, data_size, width, height);
+    int giStatus = WebPGetInfo(data, data_size, &width, &height);
+    DVASSERT(giStatus != 0);
 
-//     if (!ExUtilLoadWebP(infile->GetFilename(), &data, &data_size, bitstream))
-//     {
-//         return -1;
-//     }
+    ImageInfo info;
+    info.height = height;
+    info.width = width;
+    info.dataSize = data_size;
+    if (bitstream->has_alpha)
+    {
+        info.format = FORMAT_RGBA8888;
+    }
+    else
+    {
+        info.format = FORMAT_RGB888;
+    }
+    info.mipmapsCount = 1;
 
-//     const uint8_t *data = nullptr;
-//     size_t *data_size = new size_t;
-//     int *width = new int;
-//     int *height = new int;
-//     int WebPGetInfo(data, data_size, width, height);
+    SafeDeleteArray(data);
 
-    return ImageInfo();
+    return info;
 }
 
 };

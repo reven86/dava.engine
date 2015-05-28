@@ -37,6 +37,7 @@ public:
     LoadImageTest();
     
     void TgaTest(PerfFuncData * data);
+    void WebPTest(PerfFuncData * data);
 };
 
 #endif //__LOAD_IMAGE_TEST_H__

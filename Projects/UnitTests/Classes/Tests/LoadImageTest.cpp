@@ -5,9 +5,10 @@
 using namespace DAVA;
 
 LoadImageTest::LoadImageTest()
-: TestTemplate<LoadImageTest>("LoadImageTest")
+    : TestTemplate<LoadImageTest>("LoadImageTest")
 {
-    RegisterFunction(this, &LoadImageTest::TgaTest, "TgaTest", NULL);
+    RegisterFunction(this, &LoadImageTest::TgaTest, "TgaTest", nullptr);
+    RegisterFunction(this, &LoadImageTest::WebPTest, "WebPTest", nullptr);
 }
 
 void LoadImageTest::TgaTest(PerfFuncData * data)
@@ -57,5 +58,30 @@ void LoadImageTest::TgaTest(PerfFuncData * data)
     TEST_VERIFY(imgSet[0]->GetPixelFormat() == PixelFormat::FORMAT_RGBA8888);
     TEST_VERIFY(imgSet[0]->dataSize == 4 * 10 * 10);
     TEST_VERIFY(Memcmp(imgSet[0]->data, &tga10x10data, tga10x10data.size()) == 0);
+    ClearImgSet();
+}
+
+void LoadImageTest::WebPTest(PerfFuncData * data)
+{
+    DAVA::Vector<DAVA::Image*> imgSet;
+    auto ClearImgSet = [&]()
+    {
+        for (auto image : imgSet)
+        {
+            image->Release();
+        }
+        imgSet.clear();
+    };
+
+    TEST_VERIFY(DAVA::ImageSystem::Instance()->Load("~res:/TestData/LoadImageTest/rgb888.webp", imgSet) == DAVA::SUCCESS);
+    // TODO
+    //DAVA::ImageSystem::Instance()->Save("d:/rgb888.webp", imgSet);
+    //DAVA::ImageSystem::Instance()->Save("d:/rgb888.png", imgSet);
+    ClearImgSet();
+
+    TEST_VERIFY(DAVA::ImageSystem::Instance()->Load("~res:/TestData/LoadImageTest/rgba8888.webp", imgSet) == DAVA::SUCCESS);
+    // TODO
+    //DAVA::ImageSystem::Instance()->Save("d:/rgba8888.webp", imgSet);
+    //DAVA::ImageSystem::Instance()->Save("d:/rgba8888.png", imgSet);
     ClearImgSet();
 }
