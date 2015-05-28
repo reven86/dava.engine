@@ -82,14 +82,17 @@ void Server::Disconnect()
     
 void Server::ChannelOpen()
 {
+    Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
 }
 
 void Server::ChannelClosed(const char8* message)
 {
+    Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
 }
 
 void Server::PacketReceived(const void* packet, size_t length)
 {
+    Logger::FrameworkDebug("[AssetCache::Server::%s] length = %d", __FUNCTION__, length);
     if(length)
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
@@ -123,14 +126,18 @@ void Server::PacketReceived(const void* packet, size_t length)
 
 void Server::PacketSent()
 {
+    Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
 }
 
 void Server::PacketDelivered()
 {
+    Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
 }
     
 bool Server::FilesAddedToCache(const CacheItemKey &key, bool added)
 {
+    Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
+    
     if(IsConnected())
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
@@ -150,6 +157,7 @@ bool Server::FilesAddedToCache(const CacheItemKey &key, bool added)
     
 bool Server::FilesInCache(const CacheItemKey &key, bool isInCache)
 {
+    Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
     if(IsConnected())
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
@@ -169,6 +177,7 @@ bool Server::FilesInCache(const CacheItemKey &key, bool isInCache)
     
 bool Server::SendFiles(const CacheItemKey &key, const CachedFiles &files)
 {
+    Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
     if(IsConnected())
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
@@ -191,6 +200,7 @@ bool Server::SendFiles(const CacheItemKey &key, const CachedFiles &files)
 
 void Server::OnAddToCache(KeyedArchive * archieve)
 {
+    Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
     if(delegate)
     {
         KeyedArchive *keyArchieve = archieve->GetArchive("key");
@@ -215,6 +225,7 @@ void Server::OnAddToCache(KeyedArchive * archieve)
     
 void Server::OnIsInCache(KeyedArchive * archieve)
 {
+    Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
     if(delegate)
     {
         KeyedArchive *keyArchieve = archieve->GetArchive("key");
@@ -233,6 +244,7 @@ void Server::OnIsInCache(KeyedArchive * archieve)
     
 void Server::OnGetFromCache(KeyedArchive * archieve)
 {
+    Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
     if(delegate)
     {
         KeyedArchive *keyArchieve = archieve->GetArchive("key");

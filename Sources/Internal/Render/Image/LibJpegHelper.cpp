@@ -281,7 +281,7 @@ DAVA::ImageInfo LibJpegHelper::GetImageInfo(File *infile) const
         SafeDeleteArray(fileBuffer);
         infile->Seek(0, File::SEEK_FROM_START);
         Logger::Error("[LibJpegHelper::GetImageInfo] File %s has wrong jpeg header", infile->GetFilename().GetAbsolutePathname().c_str());
-        return info;
+        return ImageInfo();
     }
 
     jpeg_create_decompress(&cinfo);

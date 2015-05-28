@@ -31,12 +31,15 @@
 
 void ServerLogics::Init(DAVA::AssetCache::Server *_server, DAVA::AssetCache::CacheDB *_dataBase)
 {
+    DAVA::Logger::FrameworkDebug("[ServerLogics::%s]", __FUNCTION__);
+    
     server = _server;
     dataBase = _dataBase;
 }
 
 void ServerLogics::OnAddedToCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files)
 {
+    DAVA::Logger::FrameworkDebug("[ServerLogics::%s]", __FUNCTION__);
     if(server)
     {
         dataBase->Insert(key, files);
@@ -46,6 +49,7 @@ void ServerLogics::OnAddedToCache(const DAVA::AssetCache::CacheItemKey &key, con
 
 void ServerLogics::OnIsInCache(const DAVA::AssetCache::CacheItemKey &key)
 {
+    DAVA::Logger::FrameworkDebug("[ServerLogics::%s]", __FUNCTION__);
     if(server && dataBase)
     {
         auto entry = dataBase->Get(key);
@@ -57,6 +61,7 @@ void ServerLogics::OnIsInCache(const DAVA::AssetCache::CacheItemKey &key)
 
 void ServerLogics::OnRequestedFromCache(const DAVA::AssetCache::CacheItemKey &key)
 {
+    DAVA::Logger::FrameworkDebug("[ServerLogics::%s]", __FUNCTION__);
     if(server && dataBase)
     {
         auto entry = dataBase->Get(key);

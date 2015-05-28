@@ -77,8 +77,6 @@ MainWindow::MainWindow(QWidget *parent)
     ShowTrayIcon();
 
     ui->saveButton->setEnabled(false);
-    
-    DAVA::JobManager::Instance()->CreateWorkerJob(&DAVA::AssetCache::RunPackerTest);
 }
 
 MainWindow::~MainWindow()

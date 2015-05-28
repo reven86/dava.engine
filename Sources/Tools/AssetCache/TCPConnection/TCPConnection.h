@@ -93,6 +93,7 @@ protected:
 
 inline void TCPConnection::SetDelegate(TCPConnectionDelegate * _delegate)
 {
+    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
     delegate = _delegate;
 }
 

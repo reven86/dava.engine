@@ -116,7 +116,6 @@ void RunPackerTest()
     auto client = new DAVA::AssetCache::Client();
     client->Connect("127.0.0.1", DAVA::AssetCache::ASSET_SERVER_PORT);
     
-    Net::NetCore::Instance()->RestartAllControllers();
     while(client->IsConnected() == false)
     {
         sleep(10);
@@ -124,64 +123,80 @@ void RunPackerTest()
 // --- INITIALIZATION OF NETWORK ---
     
     
+    ClientCacheEntry entry;
+    entry.AddFile("/Users/victorkleschenko/Downloads/log_copy.log");
+    entry.AddParam("test1");
+    entry.AddParam("test2");
+    entry.AddParam("test3");
+    
+    entry.files.LoadFiles();
+    entry.InvalidatePrimaryKey();
+    entry.InvalidateSecondaryKey();
+    
+    client->AddToCache(entry.GetKey(), entry.GetFiles());
+    
+    entry.files.UnloadFiles();
     
 // --- RUNNING TEST ---
-    auto FullTestFunc = [] (ClientTest & clientTest, const String & project, int testCount)
-    {
-        auto CreateEntryForProject = [] (const String &project, const String &outFolder)
-        {
-            TestEntryDescriptor entryDescriptor;
-            entryDescriptor.project = String("/Users/victorkleschenko/Downloads/__AssetCacheTest/") + project;
-            entryDescriptor.project.MakeDirectoryPathname();
-            
-            entryDescriptor.outFolder = entryDescriptor.project + outFolder;
-            entryDescriptor.outFolder.MakeDirectoryPathname();
-            
-            const FilePath inputFolder = entryDescriptor.project + "InFolder/";
-            const FilePath processFolder = entryDescriptor.project + "$process/";
-            
-            entryDescriptor.entry.AddParam("Resource Packer 1.0");
-            entryDescriptor.entry.AddParam("RGBA8888");
-            entryDescriptor.entry.AddParam("split");
-            
-            ScopedPtr<FileList> flist(new FileList(processFolder));
-            auto count = flist->GetCount();
-            for(auto i = 0; i < count; ++i)
-            {
-                if(!flist->IsDirectory(i))
-                {
-                    entryDescriptor.entry.AddFile(flist->GetPathname(i));
-                }
-            }
-            
-            uint8 digest[MD5::DIGEST_SIZE];
-            MD5::ForDirectory(inputFolder, digest, false, false);
-            entryDescriptor.entry.InvalidatePrimaryKey(digest);
-            entryDescriptor.entry.InvalidateSecondaryKey();
-            
-            return entryDescriptor;
-        };
-        
-        auto TestFunc = [] (ClientTest & test, TestEntryDescriptor & entry)
-        {
-            entry.entry.files.LoadFiles();
-            entry.entry.files.InvalidateFileSize();
-            test.Run(entry);
-            
-            entry.entry.files.UnloadFiles();
-            test.Run(entry);
-        };
-        
-        for(int i = 0; i < testCount; ++i)
-        {
-            TestEntryDescriptor cacheEntry1 = CreateEntryForProject(project, Format("OutFolder_%d", i));
-            TestFunc(clientTest, cacheEntry1);
-        }
-    };
+//    auto FullTestFunc = [] (ClientTest & clientTest, const String & project, int testCount)
+//    {
+//        auto CreateEntryForProject = [] (const String &project, const String &outFolder)
+//        {
+//            TestEntryDescriptor entryDescriptor;
+//            entryDescriptor.project = String("/Users/victorkleschenko/Downloads/__AssetCacheTest/") + project;
+//            entryDescriptor.project.MakeDirectoryPathname();
+//            
+//            entryDescriptor.outFolder = entryDescriptor.project + outFolder;
+//            entryDescriptor.outFolder.MakeDirectoryPathname();
+//            
+//            const FilePath inputFolder = entryDescriptor.project + "InFolder/";
+//            const FilePath processFolder = entryDescriptor.project + "$process/";
+//            
+//            entryDescriptor.entry.AddParam("Resource Packer 1.0");
+//            entryDescriptor.entry.AddParam("RGBA8888");
+//            entryDescriptor.entry.AddParam("split");
+//            
+//            ScopedPtr<FileList> flist(new FileList(processFolder));
+//            auto count = flist->GetCount();
+//            for(auto i = 0; i < count; ++i)
+//            {
+//                if(!flist->IsDirectory(i))
+//                {
+//                    entryDescriptor.entry.AddFile(flist->GetPathname(i));
+//                }
+//            }
+//            
+//            uint8 digest[MD5::DIGEST_SIZE];
+//            MD5::ForDirectory(inputFolder, digest, false, false);
+//            entryDescriptor.entry.InvalidatePrimaryKey(digest);
+//            entryDescriptor.entry.InvalidateSecondaryKey();
+//            
+//            return entryDescriptor;
+//        };
+//        
+//        auto TestFunc = [] (ClientTest & test, TestEntryDescriptor & entry)
+//        {
+//            entry.entry.files.LoadFiles();
+//            entry.entry.files.InvalidateFileSize();
+//            test.Run(entry);
+//            
+//            entry.entry.files.UnloadFiles();
+//            test.Run(entry);
+//        };
+//        
+//        for(int i = 0; i < testCount; ++i)
+//        {
+//            TestEntryDescriptor cacheEntry1 = CreateEntryForProject(project, Format("OutFolder_%d", i));
+//            TestFunc(clientTest, cacheEntry1);
+//        }
+//    };
+//
+//    ClientTest clientTest(client);
+//    FullTestFunc(clientTest, "TestProject1", 5);
+//    FullTestFunc(clientTest, "TestProject2", 2);
 
-    ClientTest clientTest(client);
-    FullTestFunc(clientTest, "TestProject1", 5);
-    FullTestFunc(clientTest, "TestProject2", 2);
+    
+    
     
     // --- RUNNING TEST ---
     

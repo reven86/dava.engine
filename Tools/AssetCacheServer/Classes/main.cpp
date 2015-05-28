@@ -52,6 +52,8 @@ int main(int argc, char *argv[])
         return 0;
     }
     
+    DAVA::Logger::Instance()->SetLogFilename("AssetCacheServer.txt");
+    DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_FRAMEWORK);
     
     MainWindow w;
     ServerCore server;

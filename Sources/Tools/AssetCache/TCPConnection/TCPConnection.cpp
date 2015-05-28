@@ -73,6 +73,7 @@ TCPConnection::TCPConnection(Net::eNetworkRole _role, uint32 _service, const Net
     
 TCPConnection::~TCPConnection()
 {
+    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
     if(Net::NetCore::INVALID_TRACK_ID != controllerId && Net::NetCore::Instance())
     {
         Net::NetCore::Instance()->DestroyController(controllerId);
@@ -83,6 +84,8 @@ TCPConnection::~TCPConnection()
     
 bool TCPConnection::RegisterService(uint32 service)
 {
+    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
+
     LockGuard<Mutex> guard(serviceMutex);
     
     auto registered = registeredServices.count(service) > 0;
@@ -104,16 +107,19 @@ bool TCPConnection::RegisterService(uint32 service)
     
 Net::IChannelListener * TCPConnection::Create(uint32 serviceId, void* context)
 {
+    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
     return reinterpret_cast<Net::IChannelListener *>(context);
 }
 
 void TCPConnection::Delete(Net::IChannelListener* obj, void* context)
 {
+    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
     //not need do anything - called from descructor of TCPClient
 }
 
 uint32 TCPConnection::SendData(const uint8 * data, const size_t dataSize)
 {
+    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
     uint32 packetID = 0;
     bool sent = Send(data, dataSize, &packetID);
     if(sent)
@@ -127,6 +133,7 @@ uint32 TCPConnection::SendData(const uint8 * data, const size_t dataSize)
     
 void TCPConnection::ChannelOpen()
 {
+    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
     if(delegate)
     {
         delegate->ChannelOpen();
@@ -136,6 +143,7 @@ void TCPConnection::ChannelOpen()
 
 void TCPConnection::ChannelClosed(const char8* message)
 {
+    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
     if(delegate)
     {
         delegate->ChannelClosed(message);
@@ -146,6 +154,7 @@ void TCPConnection::ChannelClosed(const char8* message)
 
 void TCPConnection::PacketReceived(const void* packet, size_t length)
 {
+    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
     if(delegate)
     {
         delegate->PacketReceived(packet, length);
@@ -158,6 +167,7 @@ void TCPConnection::PacketReceived(const void* packet, size_t length)
 
 void TCPConnection::PacketSent()
 {
+    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
     if(delegate)
     {
         delegate->PacketSent();
@@ -168,6 +178,7 @@ void TCPConnection::PacketSent()
 
 void TCPConnection::PacketDelivered()
 {
+    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
     if(delegate)
     {
         delegate->PacketDelivered();
