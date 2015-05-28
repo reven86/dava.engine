@@ -38,6 +38,15 @@ namespace DAVA
 namespace AssetCache
 {
     
+CacheItemKey::CacheItemKey(const String &hashString)
+{
+    DVASSERT(hashString.size() == INTERNAL_DATA_SIZE * 2);
+    
+    auto stringBuffer = hashString.c_str();
+    MD5::CharToHash(stringBuffer, keyData.hash.primary);
+    MD5::CharToHash(stringBuffer + INTERNAL_DATA_SIZE, keyData.hash.secondary);
+}
+    
 CacheItemKey::CacheItemKey()
 {
     Memset(keyData.internalData, 0, INTERNAL_DATA_SIZE);

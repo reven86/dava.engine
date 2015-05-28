@@ -52,6 +52,8 @@ public:
 public:
     
     CacheItemKey();
+    CacheItemKey(const String &hashString);
+    
     virtual ~CacheItemKey() = default;
 
     void Serialize(KeyedArchive * archieve) const;

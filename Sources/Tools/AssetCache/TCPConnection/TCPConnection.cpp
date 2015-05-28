@@ -73,7 +73,7 @@ TCPConnection::TCPConnection(Net::eNetworkRole _role, uint32 _service, const Net
     
 TCPConnection::~TCPConnection()
 {
-    if(Net::NetCore::INVALID_TRACK_ID != controllerId)
+    if(Net::NetCore::INVALID_TRACK_ID != controllerId && Net::NetCore::Instance())
     {
         Net::NetCore::Instance()->DestroyController(controllerId);
         controllerId = Net::NetCore::INVALID_TRACK_ID;

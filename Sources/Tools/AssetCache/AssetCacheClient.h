@@ -48,9 +48,9 @@ class ClientDelegate
 {
 public:
     
-    virtual void OnAddedToCache(const CacheItemKey &key, bool added) = 0;
-    virtual void OnIsInCache(const CacheItemKey &key, bool isInCache) = 0;
-    virtual void OnReceivedFromCache(const CacheItemKey &key, const CachedFiles &files) = 0;
+    virtual void OnAddedToCache(const CacheItemKey &key, bool added) {};
+    virtual void OnIsInCache(const CacheItemKey &key, bool isInCache) {};
+    virtual void OnReceivedFromCache(const CacheItemKey &key, const CachedFiles &files) {};
 };
 
 class Client: public TCPConnectionDelegate
