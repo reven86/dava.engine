@@ -3,7 +3,7 @@
 
 #if defined(__DAVAENGINE_IPHONE__)
     #include "ios_gl.h"
-
+    #include "Platform/TemplateiOS/EAGLView.h"
 //    #include <OpenGLES/ES3/gl.h>
 //    #include <OpenGLES/ES3/glext.h>
     #include <OpenGLES/ES2/gl.h>
