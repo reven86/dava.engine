@@ -215,42 +215,6 @@ public:
 	inline int32	GetAnimatedMeshCount();
 
     virtual void HandleEvent(Observable * observable); //Handle RenderOptions
-
-#if ROOT_NODE
-    /**
-        \brief Function to add root node.
-        \param[in] node node you want to addstop
-        \param[in] rootNodePath path of this root node
-     */
-
-    void AddRootNode(Entity *node, const FilePath &rootNodePath);
-
-	/**
-        \brief Get root node by path.
-        This function can be used when you want to get a node and add it to real scene.  
-        \code
-        Entity * node = scene->GetRootNode("~res:/Scenes/level0.sce");
-        scene->AddNode(node);
-        \endcode
-     */
-    
-    Entity *GetRootNode(const FilePath &rootNodePath);
-    
-    /**
-        \brief Release root node by name.
-        \param[in] rootNodePath root node path you want to release.
-     */
-    void ReleaseRootNode(const FilePath &rootNodePath);
-    
-    /**
-        \brief Release root node by pointer to this node.
-        \param[in] nodeToRelease root node pointer you want to release.
-     */
-    void ReleaseRootNode(Entity *nodeToRelease);
-#endif
-
-    Entity *GetRootNode(const FilePath &rootNodePath);
-    void ReleaseRootNode(const FilePath &rootNodePath);
 	
 	//virtual void StopAllAnimations(bool recursive = true);
 	
@@ -308,11 +272,14 @@ public:
     void Input(UIEvent *event);
     
     /**
-        \brief This functions activate and deactivate scene sustems
+        \brief This functions activate and deactivate scene systems
      */
     virtual void Activate();
     virtual void Deactivate();
 
+    /**
+        \brief This will make copy of scene, including entities ID-s.
+    */
     void CopyScene(Scene *dst);
 
     EntityCache cache;

@@ -536,6 +536,8 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
 	{
         if(clearCache)
         {
+            // if there is already entity for such file, we should release it
+            // to be sure that latest version will be loaded 
             sceneEditor->cache.Clear(sc2path);
         }
 

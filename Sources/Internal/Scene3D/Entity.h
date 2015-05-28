@@ -105,24 +105,40 @@ public:
     
 	virtual bool FindNodesByNamePart(const String & namePart, List<Entity *> &outNodeList);
     
-	/**
-        \brief Get string with path by indexes in scenegraph from root node to current node.
-        \returns result string.
-     */
-	String GetPathID(Entity * root);
+    /**
+        \brief Function sets entity unique ID. WARNING: Almost all time this function shouldn't be used by user, because IDs are
+        generated automatically. However, it can be used in some exceptional cases, when the user exactly knows what he is doing,
+        for example in the ResourceEditor during ReloadModel operation.
 
+        Entity ID is automatically modified in this cases:
+         - when entity with ID = 0 is added into scene, new ID will be generated
+         - when entity with ID != 0 is added from one scene into another scene, new ID will be generated
+         - cloned entity will always have ID = 0
+    */
     void SetID(uint32 id);
-    uint32 GetID() const;
-    void SetSceneID(uint32 sceneId);
-    uint32 GetSceneID() const;
 
+    /**
+        \brief Function return an entity ID, that is unique within scene. This ID is automatically generated, when entity (with empty ID = 0)
+        is added into scene. Generated entity ID will be relative to the scene in which that entity was added. 
+    */
+    uint32 GetID() const;
+
+    /**
+        \brief Function reset entity ID, and IDs in all child entities. ID should be reset only for entities that aren't part of the scene.
+    */
     void ResetID();
 
-	/**
+    /**
+    \brief Get string with path by indexes in scenegraph from root node to current node.
+    \returns result string.
+    */
+    DAVA_DEPRECATED(String GetPathID(Entity * root));
+
+    /**
         \brief Get Node by pathID, generated in prev function.
         \returns result Entity.
      */
-	static Entity * GetNodeByPathID(Entity * root, String pathID);
+    DAVA_DEPRECATED(static Entity * GetNodeByPathID(Entity * root, String pathID));
 
 	/**
         \brief Find node by it's name inside this scene node.
@@ -251,7 +267,9 @@ public:
     void RemoveFlagRecursive(int32 flagToRemove);
     inline uint32 GetIndexInParent() { return (flags >> ENTITY_INDEX_POSITION) & ENTITY_INDEX_MASK; };
     inline void SetIndexInParent(uint32 index) { flags |= (index & ENTITY_INDEX_MASK) << ENTITY_INDEX_POSITION; };
-    
+    void SetSceneID(uint32 sceneId);
+    uint32 GetSceneID() const;
+
 	// animations 
 // 	void ExecuteAnimation(SceneNodeAnimation * animation);	
 // 	void DetachAnimation(SceneNodeAnimation * animation);
@@ -605,6 +623,8 @@ inline void Entity::SetSceneID(uint32 sceneId_)
 
 inline void Entity::ResetID()
 {
+    DVASSERT(nullptr == GetScene() && "ID can safely be reset in entities that aren't part of scene");
+
     id = 0;
     sceneId = 0;
     for(auto child : children)

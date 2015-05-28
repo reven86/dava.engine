@@ -59,6 +59,7 @@
 #include "Tests/ThreadSyncTest.h"
 #include "Tests/MemoryManagerTest.h"
 #include "Tests/ThreadLocalTest.h"
+#include "Tests/SceneIdTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -103,6 +104,7 @@ void GameCore::RegisterTests()
     new MemoryManagerTest();
 #endif  // DAVA_MEMORY_PROFILING_ENABLE
     new ThreadLocalTest();
+    new SceneIdTest();
 //  $UNITTEST_CTOR
 }
 

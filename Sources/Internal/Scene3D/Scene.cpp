@@ -483,14 +483,6 @@ Scene::~Scene()
     SafeRelease(mainCamera);
     SafeRelease(drawCamera);
 
-#if ROOT_NODE
-    for (ProxyNodeMap::iterator it = rootNodes.begin(); it != rootNodes.end(); ++it)
-    {
-        SafeRelease(it->second);
-    }
-    rootNodes.clear();
-#endif
-
     // Children should be removed first because they should unregister themselves in managers
 	RemoveAllChildren();
     
@@ -730,96 +722,6 @@ Camera * Scene::GetCamera(int32 n)
 	
 	return NULL;
 }
-
-Entity* Scene::GetRootNode(const FilePath &rootNodePath)
-{
-    return cache.GetOriginal(rootNodePath);
-}
-
-void Scene::ReleaseRootNode(const FilePath &rootNodePath)
-{
-    cache.Clear(rootNodePath);
-}
-
-#if ROOT_NODE
-void Scene::AddRootNode(Entity *node, const FilePath &rootNodePath)
-{
-    ProxyNode * proxyNode = new ProxyNode();
-    proxyNode->SetNode(node);
-    
-	rootNodes[FILEPATH_MAP_KEY(rootNodePath)] = proxyNode;
-
-	//proxyNode->SetName(rootNodePath.GetAbsolutePathname());
-}
-
-Entity *Scene::GetRootNode(const FilePath &rootNodePath)
-{
-	ProxyNodeMap::const_iterator it = rootNodes.find(FILEPATH_MAP_KEY(rootNodePath));
-	if (it != rootNodes.end())
-	{
-        ProxyNode * node = it->second;
-		return node->GetNode();
-	}
-    
-    if(rootNodePath.IsEqualToExtension(".sce"))
-    {
-        SceneFile *file = new SceneFile();
-        file->SetDebugLog(true);
-        file->LoadScene(rootNodePath, this);
-        SafeRelease(file);
-    }
-    else if(rootNodePath.IsEqualToExtension(".sc2"))
-    {
-        uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
-        SceneFileV2 *file = new SceneFileV2();
-        file->EnableDebugLog(false);
-        SceneFileV2::eError loadResult = file->LoadScene(rootNodePath, this);
-        SafeRelease(file);
-				
-        uint64 deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
-        Logger::FrameworkDebug("[GETROOTNODE TIME] %dms (%ld)", deltaTime, deltaTime);
-
-        if (loadResult != SceneFileV2::ERROR_NO_ERROR)
-        {
-            return 0;
-        }
-    }
-    
-	it = rootNodes.find(FILEPATH_MAP_KEY(rootNodePath));
-	if (it != rootNodes.end())
-	{
-        ProxyNode * node = it->second;
-        //int32 nowCount = node->GetNode()->GetChildrenCountRecursive();
-		return node->GetNode();
-	}
-    return 0;
-}
-
-void Scene::ReleaseRootNode(const FilePath &rootNodePath)
-{
-	ProxyNodeMap::iterator it = rootNodes.find(FILEPATH_MAP_KEY(rootNodePath));
-	if (it != rootNodes.end())
-	{
-        it->second->Release();
-        rootNodes.erase(it);
-	}
-}
-    
-void Scene::ReleaseRootNode(Entity *nodeToRelease)
-{
-//	for (Map<String, Entity*>::iterator it = rootNodes.begin(); it != rootNodes.end(); ++it)
-//	{
-//        if (nodeToRelease == it->second) 
-//        {
-//            Entity * obj = it->second;
-//            obj->Release();
-//            rootNodes.erase(it);
-//            return;
-//        }
-//	}
-}
-
-#endif
     
 void Scene::SetupTestLighting()
 {
@@ -1344,7 +1246,8 @@ void Scene::CopyScene(Scene* dst)
         DVASSERT(src->children.size() == dst->children.size());
 
         dst->id = src->id;
-        for(auto i = 0; i < src->children.size(); ++i)
+        auto n = src->children.size();
+        for(decltype(n) i = 0; i < n; ++i)
         {
             copyID(src->children[i], dst->children[i]);
         }
