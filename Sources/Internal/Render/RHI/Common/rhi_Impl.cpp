@@ -696,5 +696,35 @@ TextureSize( TextureFormat format, uint32 width, uint32 height, uint32 level )
 }
 
 
+//------------------------------------------------------------------------------
+
+uint32
+NativeColorRGBA( float red, float green, float blue, float alpha )
+{
+    uint32  color   = 0;
+    int     r       = int(red*255.0f);
+    int     g       = int(green*255.0f);
+    int     b       = int(blue*255.0f);
+    int     a       = int(alpha*255.0f);
+
+    switch( HostApi() )
+    {
+        case RHI_DX9 :
+        case RHI_DX11 :
+            color = ((uint32)((((a)&0xFF)<<24)|(((r)&0xFF)<<16)|(((g)&0xFF)<<8)|((b)&0xFF)));
+            break;
+
+        case RHI_GLES2 :
+            color = ((uint32)((((a)&0xFF)<<24)|(((b)&0xFF)<<16)|(((g)&0xFF)<<8)|((r)&0xFF)));
+            break;
+        
+        case RHI_METAL :
+            color = ((uint32)((((a)&0xFF)<<24)|(((r)&0xFF)<<16)|(((g)&0xFF)<<8)|((b)&0xFF)));
+            break;
+    }
+
+    return color;
+}
+
 
 } //namespace rhi
