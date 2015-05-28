@@ -78,7 +78,7 @@ metal_Reset( const ResetParam& param )
 void
 metal_Initialize( const InitParam& param )
 {
-    _Metal_Layer = (CAMetalLayer*)param.window;
+    _Metal_Layer = (CAMetalLayer*)param.context;
 
     _Metal_Layer.device            = MTLCreateSystemDefaultDevice();
     _Metal_Layer.pixelFormat       = MTLPixelFormatBGRA8Unorm;

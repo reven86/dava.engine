@@ -38,6 +38,7 @@
 extern  void FrameworkWillTerminate();
 extern  void FrameworkDidLaunched();
 
+static EAGLView * glView = nil;
 
 int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 {
@@ -83,7 +84,15 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
     return DAVA::Core::DEVICE_HANDSET;
 }
 
+void iOSMakeCurrent()
+{
+    [glView setCurrentContext];
+}
 
+void iOSEndFrame()
+{
+    [glView endRendering];
+}
 
 @implementation HelperAppDelegate
 
@@ -100,7 +109,13 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 	wnd.frame = [::UIScreen mainScreen].bounds;
 	
     glController = [[EAGLViewController alloc] init];
-    DAVA::Core::Instance()->SetNativeWindowHandle([[glController view] layer]);
+    glView = [glController getGLView];
+#if USE_METAL
+    DAVA::Core::Instance()->rendererParams.context = [[glController view] layer];
+#else
+    DAVA::Core::Instance()->rendererParams.endFrameFunc = &iOSEndFrame;
+    DAVA::Core::Instance()->rendererParams.makeCurrentFunc = &iOSMakeCurrent;
+#endif
     
 	DAVA::UIScreenManager::Instance()->RegisterController(CONTROLLER_GL, glController);
 	DAVA::UIScreenManager::Instance()->SetGLControllerId(CONTROLLER_GL);

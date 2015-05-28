@@ -87,6 +87,7 @@
 - (void) drawView:(id)sender;
 
 - (void) setCurrentContext;
+- (void) endRendering;
 
 // Yuri Coder, 2013/02/06. This method is introduced to block rendering
 // when assertion happened.

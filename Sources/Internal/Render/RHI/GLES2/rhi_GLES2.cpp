@@ -190,7 +190,10 @@ gles2_Initialize( const InitParam& param )
     _End_Frame = param.endFrameFunc;
 
     DVASSERT(_End_Frame);
+    DVASSERT(_Make_Current);
 
+    _Make_Current();
+    
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_GLES2_Default_FrameBuffer);
     _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;
 

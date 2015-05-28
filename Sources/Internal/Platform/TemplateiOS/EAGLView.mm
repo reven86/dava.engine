@@ -47,7 +47,7 @@
 #include "Utils/Utils.h"
 
 
-#define USE_METAL 1
+#define USE_METAL 0
 
 #if USE_METAL
 #include <QuartzCore/CAMetalLayer.h>
@@ -452,6 +452,11 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
 - (void) setCurrentContext
 {
     [renderer setCurrentContext];
+}
+
+- (void) endRendering
+{
+    [renderer endRendering];
 }
 
 - (void) blockDrawing

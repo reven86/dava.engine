@@ -45,6 +45,7 @@
 }
 
 @property (nonatomic, readonly, getter = getBackgroundView) BackgroundView* backgroundView;
+@property (nonatomic, readonly, getter = getGLView) EAGLView* glView;
 
 - (void) createGLView;
 
