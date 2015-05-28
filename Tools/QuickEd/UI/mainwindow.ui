@@ -101,6 +101,7 @@
     </property>
     <addaction name="actionFontManager"/>
     <addaction name="actionLocalizationManager"/>
+    <addaction name="actionReloadSprites"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="contextMenuPolicy">
@@ -487,6 +488,11 @@
   <action name="menuTexturesForGPU">
    <property name="text">
     <string>GPU</string>
+   </property>
+  </action>
+  <action name="actionReloadSprites">
+   <property name="text">
+    <string>Reload Sprites</string>
    </property>
   </action>
  </widget>
