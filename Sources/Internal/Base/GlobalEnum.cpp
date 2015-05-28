@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Base/GlobalEnum.h"
 #include "Render/Texture.h"
 #include "Render/Highlevel/Light.h"

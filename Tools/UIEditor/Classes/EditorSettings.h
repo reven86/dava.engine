@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef UIEditor_EditorSettings_h
 #define UIEditor_EditorSettings_h
 

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "DDSExtractorTool.h"
 
 #include "TexturePacker/CommandLineParser.h"

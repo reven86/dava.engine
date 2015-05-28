@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Scene3D/Components/QualitySettingsComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"

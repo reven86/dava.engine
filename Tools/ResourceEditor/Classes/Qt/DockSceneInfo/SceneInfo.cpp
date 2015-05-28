@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "DAVAEngine.h"
 #include "DockSceneInfo/SceneInfo.h"
 #include "../Qt/Settings/SettingsManager.h"

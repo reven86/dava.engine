@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #include "MovieViewControlMacOS.h"
 
 #import <AVFoundation/AVFoundation.h>

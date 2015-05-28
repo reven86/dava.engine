@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "CreatePlaneLODCommand.h"
 #include "Qt/Scene/SceneHelper.h"
 #include "Qt/Settings/SettingsManager.h"

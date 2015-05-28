@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__RULERTOOLSYSTEM__
 #define __RESOURCEEDITORQT__RULERTOOLSYSTEM__
 

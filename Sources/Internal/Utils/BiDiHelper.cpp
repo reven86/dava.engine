@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "BiDiHelper.h"
 #include "Thread/LockGuard.h"
 #include "Utils/StringUtils.h"

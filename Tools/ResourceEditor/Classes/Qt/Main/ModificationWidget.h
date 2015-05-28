@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__MODIFICATIONWIDGET__
 #define __RESOURCEEDITORQT__MODIFICATIONWIDGET__
 

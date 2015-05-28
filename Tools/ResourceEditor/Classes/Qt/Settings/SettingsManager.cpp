@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "SettingsManager.h"
 #include "Scene/System/EditorMaterialSystem.h"
 #include "TextureCompression/TextureConverter.h"

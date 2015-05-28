@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __UIEditor__LibraryController__
 #define __UIEditor__LibraryController__
 

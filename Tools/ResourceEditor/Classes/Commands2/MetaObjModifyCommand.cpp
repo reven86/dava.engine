@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Commands2/MetaObjModifyCommand.h"
 
 MetaObjModifyCommand::MetaObjModifyCommand(const DAVA::MetaInfo *_info, void *_object, const DAVA::VariantType &_newValue)

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __QT_SCENE_TREE_DELEGATE_H__
 #define __QT_SCENE_TREE_DELEGATE_H__
 

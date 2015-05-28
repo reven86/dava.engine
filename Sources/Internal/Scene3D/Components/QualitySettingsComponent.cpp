@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene3D/Components/QualitySettingsComponent.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 

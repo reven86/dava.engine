@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ParticleEmitterPropertiesWidget.h"
 #include "Commands2/ParticleEditorCommands.h"
 

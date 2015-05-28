@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "TextureDescriptorUtils.h"
 
 #include "ImageTools/ImageTools.h"

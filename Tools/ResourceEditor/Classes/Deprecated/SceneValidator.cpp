@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "SceneValidator.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"

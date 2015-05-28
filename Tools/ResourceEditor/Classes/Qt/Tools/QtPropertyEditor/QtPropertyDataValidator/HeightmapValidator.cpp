@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "HeightMapValidator.h"
 #include "Utils/StringFormat.h"
 #include <QMessageBox>

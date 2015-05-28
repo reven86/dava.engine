@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "SoundComponentEditor.h"
 #include "FMODSoundBrowser.h"
 #include "ui_soundcomponenteditor.h"

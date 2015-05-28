@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #include "PropertyNames.h"
 namespace DAVA {
 // Property Names for different Properties.

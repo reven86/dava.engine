@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__HEIGHTMAPPROXY__
 #define __RESOURCEEDITORQT__HEIGHTMAPPROXY__
 
