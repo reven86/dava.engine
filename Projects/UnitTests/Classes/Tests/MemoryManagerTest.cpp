@@ -79,18 +79,22 @@ void MemoryManagerTest::TestGPUTracking(PerfFuncData* data)
     MMCurStat* stat = static_cast<MMCurStat*>(buffer);
     AllocPoolStat* poolStat = OffsetPointer<AllocPoolStat>(buffer, sizeof(MMCurStat));
 
-    DAVA_MEMORY_PROFILER_GPU_ALLOC(1, 100, ALLOC_GPU_TEXTURE);
-    DAVA_MEMORY_PROFILER_GPU_ALLOC(1, 200, ALLOC_GPU_TEXTURE);
+    MemoryManager::Instance()->GetCurStat(buffer, statSize);
+    uint32 oldAllocByApp = poolStat[ALLOC_GPU_TEXTURE].allocByApp;
+    uint32 oldBlockCount = poolStat[ALLOC_GPU_TEXTURE].blockCount;
+
+    DAVA_MEMORY_PROFILER_GPU_ALLOC(101, 100, ALLOC_GPU_TEXTURE);
+    DAVA_MEMORY_PROFILER_GPU_ALLOC(101, 200, ALLOC_GPU_TEXTURE);
 
     MemoryManager::Instance()->GetCurStat(buffer, statSize);
-    TEST_VERIFY(300 == poolStat[ALLOC_GPU_TEXTURE].allocByApp);
-    TEST_VERIFY(2 == poolStat[ALLOC_GPU_TEXTURE].blockCount);
+    TEST_VERIFY(oldAllocByApp + 300 == poolStat[ALLOC_GPU_TEXTURE].allocByApp);
+    TEST_VERIFY(oldBlockCount + 2 == poolStat[ALLOC_GPU_TEXTURE].blockCount);
 
-    DAVA_MEMORY_PROFILER_GPU_DEALLOC(1, ALLOC_GPU_TEXTURE);
+    DAVA_MEMORY_PROFILER_GPU_DEALLOC(101, ALLOC_GPU_TEXTURE);
     MemoryManager::Instance()->GetCurStat(buffer, statSize);
 
-    TEST_VERIFY(0 == poolStat[ALLOC_GPU_TEXTURE].allocByApp);
-    TEST_VERIFY(0 == poolStat[ALLOC_GPU_TEXTURE].blockCount);
+    TEST_VERIFY(oldAllocByApp == poolStat[ALLOC_GPU_TEXTURE].allocByApp);
+    TEST_VERIFY(oldBlockCount == poolStat[ALLOC_GPU_TEXTURE].blockCount);
 
     ::operator delete(buffer);
 }
@@ -103,17 +107,23 @@ void MemoryManagerTest::TestAllocScope(PerfFuncData* data)
     AllocPoolStat* poolStat = OffsetPointer<AllocPoolStat>(buffer, sizeof(MMCurStat));
 
     {
+        MemoryManager::Instance()->GetCurStat(buffer, statSize);
+        uint32 oldAllocByApp = poolStat[ALLOC_POOL_BULLET].allocByApp;
+        uint32 oldBlockCount = poolStat[ALLOC_POOL_BULLET].blockCount;
+
         DAVA_MEMORY_PROFILER_ALLOC_SCOPE(ALLOC_POOL_BULLET);
 
         void* ptr = malloc(222);
 
         MemoryManager::Instance()->GetCurStat(buffer, statSize);
-        TEST_VERIFY(222 == poolStat[ALLOC_POOL_BULLET].allocByApp);
+        TEST_VERIFY(oldAllocByApp + 222 == poolStat[ALLOC_POOL_BULLET].allocByApp);
+        TEST_VERIFY(oldBlockCount + 1 == poolStat[ALLOC_POOL_BULLET].blockCount);
 
         free(ptr);
 
         MemoryManager::Instance()->GetCurStat(buffer, statSize);
-        TEST_VERIFY(0 == poolStat[ALLOC_POOL_BULLET].allocByApp);
+        TEST_VERIFY(oldAllocByApp == poolStat[ALLOC_POOL_BULLET].allocByApp);
+        TEST_VERIFY(oldBlockCount == poolStat[ALLOC_POOL_BULLET].blockCount);
     }
 
     ::operator delete(buffer);
