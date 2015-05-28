@@ -62,7 +62,7 @@ def process_contents(content):
 		content = re.compile('^\s*').sub('', content);
 		return replaceString + "\n\n" + content;
 	else:
-		re.compile('^s*').sub('', content);
+		content = re.compile('^s*').sub('', content);
 		if(content.startswith('#')):
 			return replaceString + "\n\n" + content;
 		else:
