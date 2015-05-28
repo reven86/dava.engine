@@ -21,7 +21,7 @@ void PrototypeNameProperty::Serialize(PackageSerializer *serializer) const
 {
     if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
     {
-        serializer->PutValue("prototype", node->GetPrototype()->GetQualifiedName());
+        serializer->PutValue("prototype", node->GetPrototype()->GetQualifiedName(serializer->IsForceQualifiedName()));
     }
 }
 

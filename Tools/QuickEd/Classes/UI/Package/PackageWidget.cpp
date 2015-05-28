@@ -217,6 +217,8 @@ void PackageWidget::CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &nodes
     if (!nodes.empty())
     {
         YamlPackageSerializer serializer;
+        serializer.SetForceQualifiedName(true);
+        
         Document* doc = sharedData->GetDocument();
         PackageNode *pac = doc->GetPackage();
         pac->Serialize(&serializer, nodes);

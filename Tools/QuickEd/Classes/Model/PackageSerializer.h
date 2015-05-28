@@ -21,6 +21,12 @@ public:
     virtual void BeginArray(const DAVA::String &name) = 0;
     virtual void BeginArray() = 0;
     virtual void EndArray() = 0;
+
+    bool IsForceQualifiedName() const;
+    void SetForceQualifiedName(bool qualifiedName);
+    
+private:
+    bool forceQualifiedName;
 };
 
 #endif // __QUICKED_PACKAGE_SERIALIZER_H__

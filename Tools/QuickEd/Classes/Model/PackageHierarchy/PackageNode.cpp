@@ -222,7 +222,7 @@ void PackageNode::Serialize(PackageSerializer *serializer, const DAVA::Vector<Co
     serializer->PutValue("version", String("0"));
     serializer->EndMap();
     
-    Set<PackageNode*> usedImportedPackages;
+    Vector<PackageNode*> usedImportedPackages;
     for (ControlNode *node : nodes)
         CollectPackages(usedImportedPackages, node);
 
@@ -230,15 +230,13 @@ void PackageNode::Serialize(PackageSerializer *serializer, const DAVA::Vector<Co
     packageControlsNode->Serialize(serializer, nodes);
 }
 
-void PackageNode::CollectPackages(Set<PackageNode*> &packages, ControlNode *node) const
+void PackageNode::CollectPackages(Vector<PackageNode*> &packages, ControlNode *node) const
 {
     if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
     {
         ControlNode *prototype = node->GetPrototype();
-        if (prototype)
-        {
-            packages.insert(prototype->GetPackage());
-        }
+        if (prototype && std::find(packages.begin(), packages.end(), prototype->GetPackage()) == packages.end())
+            packages.push_back(prototype->GetPackage());
     }
     
     for (int32 index = 0; index < node->GetCount(); index++)

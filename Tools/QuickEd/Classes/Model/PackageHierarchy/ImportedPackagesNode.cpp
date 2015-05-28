@@ -86,23 +86,15 @@ PackageNode *ImportedPackagesNode::FindPackageByName(const DAVA::String &name) c
 
 void ImportedPackagesNode::Serialize(PackageSerializer *serializer) const
 {
-    serializer->BeginArray("ImportedPackages");
-    
-    for (PackageNode *package : packages)
-        serializer->PutValue(package->GetPath().GetFrameworkPath());
-    
-    serializer->EndArray();
+    Serialize(serializer, packages);
 }
 
-void ImportedPackagesNode::Serialize(PackageSerializer *serializer, const DAVA::Set<PackageNode*> &serializationPackages) const
+void ImportedPackagesNode::Serialize(PackageSerializer *serializer, const DAVA::Vector<PackageNode*> &serializationPackages) const
 {
     serializer->BeginArray("ImportedPackages");
     
     for (PackageNode *package : serializationPackages)
-    {
-        DVASSERT(package->GetParent() == this);
         serializer->PutValue(package->GetPath().GetFrameworkPath());
-    }
     
     serializer->EndArray();
 }

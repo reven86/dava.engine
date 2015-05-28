@@ -61,7 +61,7 @@ public:
     
     
 private:
-    void CollectPackages(DAVA::Set<PackageNode*> &packages, ControlNode *node) const;
+    void CollectPackages(DAVA::Vector<PackageNode*> &packages, ControlNode *node) const;
     void RefreshPropertiesInInstances(ControlNode *node, AbstractProperty *property);
     
 private:

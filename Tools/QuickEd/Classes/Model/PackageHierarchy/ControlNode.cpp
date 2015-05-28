@@ -158,10 +158,10 @@ String ControlNode::GetName() const
     return control->GetName();
 }
 
-String ControlNode::GetQualifiedName() const
+String ControlNode::GetQualifiedName(bool forceQualifiedName) const
 {
     const PackageNode *package = GetPackage();
-    if (package && package->IsImported())
+    if (package && (forceQualifiedName || package->IsImported()))
     {
         return package->GetName() + "/" + GetName();
     }

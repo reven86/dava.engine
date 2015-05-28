@@ -39,7 +39,7 @@ public:
     ControlNode *FindByName(const DAVA::String &name) const;
     
     virtual DAVA::String GetName() const override;
-    DAVA::String GetQualifiedName() const;
+    DAVA::String GetQualifiedName(bool forceQualifiedName = false) const;
     
     DAVA::UIControl *GetControl() const;
     ControlNode *GetPrototype() const;
