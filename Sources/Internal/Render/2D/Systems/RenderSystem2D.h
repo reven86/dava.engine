@@ -108,25 +108,6 @@ struct StretchDrawData
 class RenderSystem2D : public Singleton<RenderSystem2D>
 {
 public:
-#if RHI_COMPLETE
-    static FastName FLAT_COLOR_SHADER;
-    static FastName TEXTURE_FLAT_COLOR_SHADER;
-
-    static ShaderDescriptor * FLAT_COLOR;
-    static ShaderDescriptor * TEXTURE_MUL_FLAT_COLOR;
-    static ShaderDescriptor * TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST;
-    static ShaderDescriptor * TEXTURE_MUL_FLAT_COLOR_IMAGE_A8;
-    static ShaderDescriptor * TEXTURE_ADD_FLAT_COLOR;
-    static ShaderDescriptor * TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST;
-    static ShaderDescriptor * TEXTURE_ADD_FLAT_COLOR_IMAGE_A8;
-    static ShaderDescriptor * TEXTURE_MUL_COLOR;
-    static ShaderDescriptor * TEXTURE_MUL_COLOR_ALPHA_TEST;
-    static ShaderDescriptor * TEXTURE_MUL_COLOR_IMAGE_A8;
-    static ShaderDescriptor * TEXTURE_ADD_COLOR;
-    static ShaderDescriptor * TEXTURE_ADD_COLOR_ALPHA_TEST;
-    static ShaderDescriptor * TEXTURE_ADD_COLOR_IMAGE_A8;  
-#endif // RHI_COMPLETE
-
     static NMaterial* DEFAULT_2D_COLOR_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL;
@@ -170,12 +151,6 @@ public:
     
 	void PushClip();
 	void PopClip();
-
-#if RHI_COMPLETE
-    inline void SetColor(const Color & color);
-    inline void SetColor(float32 r, float32 g, float32 b, float32 a);
-    inline const Color & GetColor();
-#endif
 
     void ScreenSizeChanged();
 
@@ -262,11 +237,6 @@ public:
 
 private:
     bool IsPreparedSpriteOnScreen(Sprite::DrawState * drawState);
-
-#if RHI_COMPLETE
-    static ShaderDescriptor* GetShaderForBatching(ShaderDescriptor* inputShader);
-#endif
-    
     void Setup2DProjection();
 
     Rect TransformClipRect(const Rect & rect);
@@ -275,10 +245,6 @@ private:
     Matrix4 projMatrix;
 	std::stack<Rect> clipStack;
 	Rect currentClip;
-
-#if RHI_COMPLETE
-    RenderDataObject * spriteRenderObject;
-#endif RHI_COMPLETE
 
     float32 spriteTempVertices[8];
     Vector<Vector2> spriteClippedTexCoords;
@@ -298,10 +264,6 @@ private:
     RenderBatch2D currentBatch;
     uint32 vertexIndex;
     uint32 indexIndex;
-
-#if RHI_COMPLETE
-    Color currentColor;
-#endif
 
     VboPool* pool;
 
@@ -327,24 +289,6 @@ inline void RenderSystem2D::SetHightlightControlsVerticesLimit(uint32 verticesCo
 {
     highlightControlsVerticesLimit = verticesCount;
 }
-
-#if RHI_COMPLETE
-inline void RenderSystem2D::SetColor(const Color & color)
-{
-    currentColor = color;
-}
-
-void RenderSystem2D::SetColor(float32 r, float32 g, float32 b, float32 a)
-{
-    SetColor(Color(r, g, b, a));
-}
-
-inline const Color & RenderSystem2D::GetColor()
-{
-    return currentColor;
-}
-
-#endif // RHI_COMPLETE
 
 } // ns
 
