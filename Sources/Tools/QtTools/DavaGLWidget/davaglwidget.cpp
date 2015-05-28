@@ -170,7 +170,11 @@ void OpenGLWindow::mouseDoubleClickEvent(QMouseEvent *e)
 
 void OpenGLWindow::wheelEvent(QWheelEvent *e)
 {
+    if ( e->phase() != Qt::ScrollUpdate )
+        return;
+
     controlMapper->wheelEvent(e);
+    emit mouseScrolled( e->delta() );
 }
 
 void OpenGLWindow::handleDragMoveEvent(QDragMoveEvent* e)

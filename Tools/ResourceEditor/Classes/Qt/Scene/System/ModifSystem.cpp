@@ -813,14 +813,14 @@ void EntityModificationSystem::CloneBegin()
 		{
             DAVA::Entity *origEntity = modifEntities[i].entity;
             
-            for (auto &delegate : delegates)
+            for (auto delegate : delegates)
             {
                 delegate->WillClone(origEntity);
             }
 
 			DAVA::Entity *newEntity = origEntity->Clone();
 
-            for (auto &delegate : delegates)
+            for (auto delegate : delegates)
             {
                 delegate->DidCloned(origEntity, newEntity);
             }

@@ -43,7 +43,7 @@ class BiDiWrapper
 {
 public:
     bool Prepare(const WideString& logicalStr, WideString& preparedStr, bool* isRTL);
-    bool Reorder(WideString& string, const bool forceRtl);
+    bool Reorder(const WideString& preparedStr, WideString& reorderedStr, const bool forceRtl);
 private:
     Mutex mutex;
     Vector<FriBidiChar> logicalBuffer;
@@ -84,7 +84,11 @@ bool BiDiWrapper::Prepare(WideString const& logicalStr, WideString& preparedStr,
     fribidi_join_arabic(&bidiTypes[0], fribidi_len, &bidiLevels[0], &arabicProps[0]);
     fribidi_shape(flags, &bidiLevels[0], fribidi_len, &arabicProps[0], &visualBuffer[0]);
 
-    preparedStr.assign(&visualBuffer[0], &visualBuffer[0] + fribidi_len);
+    /* Remove FRIBIDI_CHAR_FILL aka 'ZERO WIDTH NO-BREAK SPACE' (U+FEFF) after joining and shaping */
+    auto lastIt = std::remove_if(visualBuffer.begin(), visualBuffer.end(), [](FriBidiChar ch){ return ch == FRIBIDI_CHAR_FILL; });
+    visualBuffer.erase(lastIt, visualBuffer.end());
+
+    preparedStr.assign(visualBuffer.begin(), visualBuffer.end());
     if (isRTL)
     {
         *isRTL = FRIBIDI_IS_RTL(base_dir);
@@ -93,20 +97,20 @@ bool BiDiWrapper::Prepare(WideString const& logicalStr, WideString& preparedStr,
     return true;
 }
 
-bool BiDiWrapper::Reorder(WideString& string, bool const forceRtl)
+bool BiDiWrapper::Reorder(const WideString& preparedStr, WideString& reorderedStr, bool const forceRtl)
 {
     LockGuard<Mutex> guard(mutex);
 
     static FriBidiFlags flags = FRIBIDI_FLAGS_DEFAULT | FRIBIDI_FLAGS_ARABIC;
 
     FriBidiParType base_dir = forceRtl ? (FRIBIDI_PAR_RTL) : (FRIBIDI_PAR_ON);
-    uint32 fribidi_len = static_cast<uint32>(string.length());
+    uint32 fribidi_len = static_cast<uint32>(preparedStr.length());
 
-    logicalBuffer.assign(string.begin(), string.end());
+    logicalBuffer.assign(preparedStr.begin(), preparedStr.end());
     bidiTypes.resize(fribidi_len);
     bidiLevels.resize(fribidi_len);
     visualBuffer.resize(fribidi_len);
-    
+
     fribidi_get_bidi_types(&logicalBuffer[0], fribidi_len, &bidiTypes[0]);
 
     FriBidiLevel max_level = fribidi_get_par_embedding_levels(&bidiTypes[0], fribidi_len, &base_dir, &bidiLevels[0]) - 1;
@@ -125,7 +129,7 @@ bool BiDiWrapper::Reorder(WideString& string, bool const forceRtl)
 
     fribidi_len = fribidi_remove_bidi_marks(&visualBuffer[0], fribidi_len, NULL, NULL, NULL);
 
-    string.assign(&visualBuffer[0], &visualBuffer[0] + fribidi_len);
+    reorderedStr.assign(&visualBuffer[0], &visualBuffer[0] + fribidi_len);
 
     return true;
 }
@@ -145,9 +149,9 @@ bool BiDiHelper::PrepareString(const WideString& logicalStr, WideString& prepare
     return wrapper->Prepare(logicalStr, preparedStr, isRTL);
 }
 
-bool BiDiHelper::ReorderString(WideString& string, const bool forceRtl) const
+bool BiDiHelper::ReorderString(const WideString& preparedStr, WideString& reorderedStr, const bool forceRtl) const
 {
-    return wrapper->Reorder(string, forceRtl);
+    return wrapper->Reorder(preparedStr, reorderedStr, forceRtl);
 }
 
 bool BiDiHelper::IsBiDiSpecialCharacter(uint32 character) const

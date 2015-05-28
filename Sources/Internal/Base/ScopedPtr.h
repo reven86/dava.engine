@@ -45,6 +45,8 @@ public:
 	BASE_OBJECT & operator*() const;
 	BASE_OBJECT * operator->() const;
 	operator BASE_OBJECT*() const;
+    BASE_OBJECT* get() const;
+    explicit operator bool() const;
 	
 	//protection from 'delete ScopedObject'
 	operator void*() const;
@@ -120,6 +122,18 @@ template<typename BASE_OBJECT>
 ScopedPtr<BASE_OBJECT>::operator BASE_OBJECT*() const
 {
 	return object;
+}
+
+template<typename BASE_OBJECT>
+BASE_OBJECT* ScopedPtr<BASE_OBJECT>::get() const
+{
+    return object;
+}
+
+template<typename BASE_OBJECT>
+ScopedPtr<BASE_OBJECT>::operator bool() const
+{
+    return object != nullptr;
 }
 
 template<typename BASE_OBJECT>

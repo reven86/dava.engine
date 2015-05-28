@@ -105,7 +105,6 @@ namespace ResourceEditor
 	static const String CUSTOM_COLORS_PROPERTY_DESCRIPTION	= "LandscapeCustomColorsDescription";
 	static const String CUSTOM_COLORS_SAVE_CAPTION			= "Save texture";
 	static const String CUSTOM_COLORS_LOAD_CAPTION			= "Load texture";
-	static const String CUSTOM_COLORS_FILE_FILTER			= "PNG image (*.png)";
 	static const String CUSTOM_COLORS_ENABLE_ERROR			= "Error enabling Custom Colors editor. Make sure there is valid landscape at the scene.";
 	static const String CUSTOM_COLORS_DISABLE_ERROR			= "Error disabling Custom Colors editor.";
 
@@ -115,7 +114,6 @@ namespace ResourceEditor
 	static const String VISIBILITY_TOOL_ENABLE_ERROR		= "Error enabling Visibility Check Tool. Make sure there is valid landscape at the scene.";
 	static const String VISIBILITY_TOOL_DISABLE_ERROR		= "Error disabling Visibility Check Tool";
 	static const String VISIBILITY_TOOL_SAVE_CAPTION		= "Save visibility tool texture";
-	static const String VISIBILITY_TOOL_FILE_FILTER			= "PNG image (*.png)";
 	static const String VISIBILITY_TOOL_SET_AREA_CAPTION	= "Set Visibility Area";
 	static const String VISIBILITY_TOOL_SET_POINT_CAPTION	= "Set Visibility Point";
 	static const String VISIBILITY_TOOL_SAVE_TEXTURE_CAPTION= "Save Texture";

@@ -39,6 +39,7 @@
 #include "Deprecated/LandscapeRenderer.h"
 
 #include "Commands2/InspMemberModifyCommand.h"
+#include "Commands2/InspDynamicModifyCommand.h"
 
 #include "Scene3D/Systems/RenderUpdateSystem.h"
 
@@ -46,17 +47,18 @@
 
 LandscapeEditorDrawSystem::LandscapeEditorDrawSystem(Scene* scene)
 :	SceneSystem(scene)
+,	landscapeNode(nullptr)
+,	baseLandscape(nullptr)
+,	landscapeProxy(nullptr)
+,	heightmapProxy(nullptr)
+,	notPassableTerrainProxy(nullptr)
+,	customColorsProxy(nullptr)
+,	visibilityToolProxy(nullptr)
+,	rulerToolProxy(nullptr)
+,   grassEditorProxy(nullptr)
 ,	customDrawRequestCount(0)
-,	landscapeProxy(NULL)
-,	heightmapProxy(NULL)
-,	landscapeNode(NULL)
-,	baseLandscape(NULL)
-,	cursorTexture(NULL)
-,	notPassableTerrainProxy(NULL)
-,	customColorsProxy(NULL)
-,	visibilityToolProxy(NULL)
-,	rulerToolProxy(NULL)
-,   grassEditorProxy(NULL)
+,	cursorTexture(nullptr)
+,   sourceTilemaskPath("")
 {
 	const DAVA::RenderStateData default3dState = DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND);
 	DAVA::RenderStateData noBlendStateData;
@@ -523,6 +525,9 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::InitLandscape(E
 
 	landscapeNode = landscapeEntity;
 	baseLandscape = SafeRetain(landscape);
+    
+    UpdateTilemaskPathname();
+    
 	landscapeProxy = new LandscapeProxy(baseLandscape, landscapeNode);
 
 	return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
@@ -589,38 +594,22 @@ void LandscapeEditorDrawSystem::SaveTileMaskTexture()
 		return;
 	}
 
-	if (!GetLandscapeProxy()->IsTilemaskChanged())
-	{
-		return;
-	}
+ 	if (!GetLandscapeProxy()->IsTilemaskChanged())
+ 	{
+ 		return;
+ 	}
 
 	Texture* texture = baseLandscape->GetTexture(Landscape::TEXTURE_TILE_MASK);
 
 	if (texture)
 	{
-		FilePath texturePathname = baseLandscape->GetTextureName(Landscape::TEXTURE_TILE_MASK);
-
-		if (texturePathname.IsEmpty())
-		{
-			return;
-		}
-
-		texturePathname.ReplaceExtension(".png");
-
-		//eBlendMode srcBlend = RenderManager::Instance()->GetSrcBlend();
-		//eBlendMode dstBlend = RenderManager::Instance()->GetDestBlend();
-		//RenderManager::Instance()->SetBlendMode(BLEND_ONE, BLEND_ZERO);
-		
 		Image *image = texture->CreateImageFromMemory(noBlendDrawState);
-		//RenderManager::Instance()->SetBlendMode(srcBlend, dstBlend);
 
 		if(image)
 		{
-            ImageSystem::Instance()->Save(texturePathname, image);
+            ImageSystem::Instance()->Save(sourceTilemaskPath, image);
 			SafeRelease(image);
 		}
-
-		TextureDescriptorUtils::CreateDescriptorIfNeed(texturePathname);
 
 		GetLandscapeProxy()->ResetTilemaskChanged();
 	}
@@ -744,8 +733,32 @@ void LandscapeEditorDrawSystem::ProcessCommand(const Command2 *command, bool red
             }
             break;
         }
+        case CMDID_INSP_DYNAMIC_MODIFY:
+        {
+            const InspDynamicModifyCommand* cmd = static_cast<const InspDynamicModifyCommand*>(command);
+            if (DAVA::FastName("tileMask") == cmd->key)
+            {
+                UpdateTilemaskPathname();
+            }
+            break;
+        }
 
         default:
             break;
     }
+}
+
+bool LandscapeEditorDrawSystem::UpdateTilemaskPathname()
+{
+    if(nullptr != baseLandscape)
+    {
+        auto texture = baseLandscape->GetTexture(Landscape::TEXTURE_TILE_MASK);
+        if(nullptr != texture)
+        {
+            sourceTilemaskPath = texture->GetDescriptor()->GetSourceTexturePathname();
+            return true;
+        }
+    }
+    
+    return false;
 }

@@ -35,6 +35,9 @@
 #include "Qt/Scene/System/LandscapeEditorDrawSystem/HeightmapProxy.h"
 #include "../LandscapeEditorShortcutManager.h"
 
+#include "ImageTools/ImageTools.h"
+
+
 #include <QLayout>
 #include <QLabel>
 #include <QComboBox>
@@ -294,29 +297,26 @@ void HeightmapEditorPanel::RestoreState()
 
 void HeightmapEditorPanel::InitBrushImages()
 {
-	QSize iconSize = comboBrushImage->iconSize();
-	iconSize = iconSize.expandedTo(QSize(32, 32));
-	comboBrushImage->setIconSize(iconSize);
-
-	FilePath toolsPath(ResourceEditor::HEIGHTMAP_EDITOR_TOOLS_PATH.c_str());
-	FileList *fileList = new FileList(toolsPath);
-	for(int32 iFile = 0; iFile < fileList->GetCount(); ++iFile)
-	{
-		String filename = fileList->GetFilename(iFile);
-		if(fileList->GetPathname(iFile).IsEqualToExtension(".png"))
-		{
-			String fullname = fileList->GetPathname(iFile).GetAbsolutePathname();
-
-			FilePath f = fileList->GetPathname(iFile);
-			f.ReplaceExtension("");
-
-			QString qFullname = QString::fromStdString(fullname);
-			QIcon toolIcon(qFullname);
-			comboBrushImage->addItem(toolIcon, f.GetFilename().c_str(), QVariant(qFullname));
-		}
-	}
-
-	SafeRelease(fileList);
+    comboBrushImage->clear();
+    
+    QSize iconSize = comboBrushImage->iconSize();
+    iconSize = iconSize.expandedTo(QSize(32, 32));
+    comboBrushImage->setIconSize(iconSize);
+    
+    FilePath toolsPath(ResourceEditor::HEIGHTMAP_EDITOR_TOOLS_PATH);
+    
+    ScopedPtr<FileList> fileList(new FileList(toolsPath));
+    for(int32 iFile = 0; iFile < fileList->GetCount(); ++iFile)
+    {
+        auto pathname = fileList->GetPathname(iFile);
+        if(TextureDescriptor::IsSourceTextureExtension(pathname.GetExtension()))
+        {
+            QIcon toolIcon(QPixmap::fromImage(ImageTools::FromDavaImage(pathname)));
+            
+            auto fullname = pathname.GetAbsolutePathname();
+            comboBrushImage->addItem(toolIcon, pathname.GetBasename().c_str(), QVariant(QString::fromStdString(fullname)));
+        }
+    }
 }
 
 

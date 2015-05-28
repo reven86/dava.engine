@@ -34,6 +34,7 @@
 #include <QLabel>
 #include <QFileInfo>
 #include <QtConcurrent>
+#include <QImage>
 
 #include "Main/mainwindow.h"
 #include "TextureBrowser/TextureConvertor.h"
@@ -314,7 +315,7 @@ void TextureConvertor::jobRunNextConvert()
 
 			convertJobQueueSize = 0;
 
-			emit ConvertStatusImg("", DAVA::GPU_PNG);
+			emit ConvertStatusImg("", DAVA::GPU_ORIGIN);
 			emit ConvertStatusQueue(0, 0);
 
 			if(NULL != waitDialog)
@@ -403,29 +404,26 @@ TextureInfo TextureConvertor::GetThumbnailThread(JobItem *item)
 		if(descriptor->IsCubeMap())
 		{
 			DAVA::Vector<DAVA::FilePath> cubeFaceNames;
-			DAVA::Texture::GenerateCubeFaceNames(descriptor->GetSourceTexturePathname(), cubeFaceNames);
+			descriptor->GetFacePathnames(cubeFaceNames);
 
-			for(int i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
+			for(auto& faceName : cubeFaceNames)
 			{
-				if((descriptor->dataSettings.faceDescription & (1 << i)) != 0)
-				{
-					QImage img;
-					img = QImage(cubeFaceNames[i].GetAbsolutePathname().c_str());
-					result.images.push_back(img);
-				}
+                if(faceName.IsEmpty())
+                    continue;
 
-				fileSize += QFileInfo(cubeFaceNames[i].GetAbsolutePathname().c_str()).size();
+                QImage img = ImageTools::FromDavaImage(faceName);
+                result.images.push_back(img);
+                fileSize += QFileInfo(faceName.GetAbsolutePathname().c_str()).size();
 			}
 		}
 		else
 		{
-			QImage img;
-			img = QImage(descriptor->GetSourceTexturePathname().GetAbsolutePathname().c_str());
+            QImage img = ImageTools::FromDavaImage(descriptor->GetSourceTexturePathname());
 			result.images.push_back(img);
 			fileSize = QFileInfo(descriptor->GetSourceTexturePathname().GetAbsolutePathname().c_str()).size();
 		}
 
-		result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, DAVA::GPU_PNG);
+		result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, DAVA::GPU_ORIGIN);
 		result.fileSize = fileSize;
 	}
 
@@ -448,29 +446,27 @@ TextureInfo TextureConvertor::GetOriginalThread(JobItem *item)
 		if(descriptor->IsCubeMap())
 		{
 			DAVA::Vector<DAVA::FilePath> cubeFaceNames;
-			DAVA::Texture::GenerateCubeFaceNames(descriptor->GetSourceTexturePathname(), cubeFaceNames);
+			descriptor->GetFacePathnames(cubeFaceNames);
 			
-			for(int i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
+			for(auto& faceName : cubeFaceNames)
 			{
-				if((descriptor->dataSettings.faceDescription & (1 << i)) != 0)
-				{
-					QImage img;
-					img = QImage(cubeFaceNames[i].GetAbsolutePathname().c_str());
-					result.images.push_back(img);
-				}
+				if(faceName.IsEmpty())
+                    continue;
 
-				fileSize += QFileInfo(cubeFaceNames[i].GetAbsolutePathname().c_str()).size();
+                QImage img = ImageTools::FromDavaImage(faceName);
+                result.images.push_back(img);
+
+                fileSize += QFileInfo(faceName.GetAbsolutePathname().c_str()).size();
 			}
 		}
 		else
 		{
-			QImage img;
-			img = QImage(descriptor->GetSourceTexturePathname().GetAbsolutePathname().c_str());
+			QImage img = ImageTools::FromDavaImage(descriptor->GetSourceTexturePathname());
 			result.images.push_back(img);
 			fileSize = QFileInfo(descriptor->GetSourceTexturePathname().GetAbsolutePathname().c_str()).size();
 		}
 
-		result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, DAVA::GPU_PNG);
+		result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, DAVA::GPU_ORIGIN);
 		result.fileSize = fileSize;
 
 		if(result.images.size())
@@ -502,20 +498,16 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem *item)
 			gpu >= 0 && gpu < DAVA::GPU_FAMILY_COUNT && 
 			descriptor->compression[gpu].format > DAVA::FORMAT_INVALID && descriptor->compression[gpu].format < DAVA::FORMAT_COUNT)
 		{
-			DAVA::FilePath compressedTexturePath = DAVA::GPUFamilyDescriptor::CreatePathnameForGPU(descriptor, gpu);
+			DAVA::FilePath compressedTexturePath = descriptor->CreatePathnameForGPU(gpu);
 
-			const String& outExtension = GPUFamilyDescriptor::GetCompressedFileExtension(gpu, (DAVA::PixelFormat) descriptor->compression[gpu].format);
-			if(outExtension == ".pvr")
+			ImageFormat compressedFormat = GPUFamilyDescriptor::GetCompressedFileFormat(gpu, (DAVA::PixelFormat) descriptor->compression[gpu].format);
+            if (compressedFormat == IMAGE_FORMAT_PVR || compressedFormat == IMAGE_FORMAT_DDS)
 			{
-				DAVA::Logger::FrameworkDebug("Starting PVR conversion (%s), id %d..., (%s)",
-					GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(descriptor->compression[gpu].format), item->id, descriptor->pathname.GetAbsolutePathname().c_str());
-				convertedImages = ConvertFormat(descriptor, gpu, item->convertMode);
-				DAVA::Logger::FrameworkDebug("Done, id %d", item->id);
-			}
-			else if(outExtension == ".dds")
-			{
-				DAVA::Logger::FrameworkDebug("Starting DXT conversion (%s), id %d..., (%s)",
-					GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(descriptor->compression[gpu].format), item->id, descriptor->pathname.GetAbsolutePathname().c_str());
+				DAVA::Logger::FrameworkDebug("Starting %s conversion (%s), id %d..., (%s)",
+                    (compressedFormat == IMAGE_FORMAT_PVR ? "PVR" : "DDS"),
+					GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(descriptor->compression[gpu].format), 
+                    item->id, 
+                    descriptor->pathname.GetAbsolutePathname().c_str());
 				convertedImages = ConvertFormat(descriptor, gpu, item->convertMode);
 				DAVA::Logger::FrameworkDebug("Done, id %d", item->id);
 			}
@@ -537,7 +529,14 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem *item)
 		}
 		else
 		{
-			DAVA::Logger::Error("NULL descriptor or wrong GPU type", item->id);
+            if(descriptor)
+            {
+                DAVA::Logger::FrameworkDebug("%s has no converted image for %s", descriptor->pathname.GetStringValue().c_str(), DAVA::GPUFamilyDescriptor::GetGPUName(gpu).c_str());
+            }
+            else
+            {
+                DAVA::Logger::Error("[TextureConvertor::GetConvertedThread] NULL descriptor for job(%d)", item->id);
+            }
 		}
 
 	}
@@ -548,7 +547,7 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem *item)
 		{
 			if(convertedImages[i] != NULL)
 			{
-				QImage img = FromDavaImage(convertedImages[i]);
+                QImage img = ImageTools::FromDavaImage(convertedImages[i]);
 				result.images.push_back(img);
 			
 				convertedImages[i]->Release();
@@ -562,7 +561,7 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem *item)
 	}
 	else
 	{
-		int stubImageCount = Texture::CUBE_FACE_MAX_COUNT;
+		int stubImageCount = Texture::CUBE_FACE_COUNT;
 		if(NULL != item)
 		{
 			DAVA::TextureDescriptor *descriptor = (DAVA::TextureDescriptor*) item->descriptor;
@@ -646,9 +645,9 @@ DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertFormat(DAVA::TextureDescript
 					}
 				}
 				
-				if(resultImages.size() < Texture::CUBE_FACE_MAX_COUNT)
+				if(resultImages.size() < Texture::CUBE_FACE_COUNT)
 				{
-					int imagesToAdd = Texture::CUBE_FACE_MAX_COUNT - resultImages.size();
+					int imagesToAdd = Texture::CUBE_FACE_COUNT - resultImages.size();
 					for(int i = 0; i < imagesToAdd; ++i)
 					{
 						resultImages.push_back(NULL);
@@ -660,7 +659,7 @@ DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertFormat(DAVA::TextureDescript
 		}
 		else
 		{
-			int stubImageCount = (descriptor->IsCubeMap()) ? Texture::CUBE_FACE_MAX_COUNT : 1;
+			int stubImageCount = (descriptor->IsCubeMap()) ? Texture::CUBE_FACE_COUNT : 1;
 			for(int i = 0; i < stubImageCount; ++i)
 			{
 				resultImages.push_back(NULL);
@@ -671,196 +670,4 @@ DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertFormat(DAVA::TextureDescript
 	return resultImages;
 }
 
-QImage TextureConvertor::FromDavaImage(DAVA::Image *image)
-{
-	QImage qtImage;
-
-	if(NULL != image)
-	{
-		QRgb *line;
-
-		switch(image->format)
-		{
-		case DAVA::FORMAT_DXT1:
-		case DAVA::FORMAT_DXT1A:
-		case DAVA::FORMAT_DXT3:
-		case DAVA::FORMAT_DXT5:
-		case DAVA::FORMAT_DXT5NM:
-		{
-			Vector<Image* > vec;
-			LibDdsHelper::DecompressImageToRGBA(*image, vec, true);
-			if(vec.size() == 1)
-			{
-				qtImage = TextureConvertor::FromDavaImage(vec.front());
-			}
-			else
-			{
-				DAVA::Logger::Error("Error during conversion from DDS to QImage.");
-			}
-			break;
-		}
-		case DAVA::FORMAT_PVR4:
-		case DAVA::FORMAT_PVR2:
-		case DAVA::FORMAT_RGBA8888:
-			{
-				DAVA::uint32 *data = (DAVA::uint32 *) image->data;
-				DAVA::uint32 c;
-
-				qtImage = QImage(image->width, image->height, QImage::Format_ARGB32);
-
-				// convert DAVA:RGBA8888 into Qt ARGB8888
-				for (int y = 0; y < (int)image->height; y++) 
-				{
-					line = (QRgb *) qtImage.scanLine(y);
-					for (int x = 0; x < (int)image->width; x++) 
-					{
-						c = data[y * image->width + x];
-						line[x] = (c & 0xFF00FF00) | ((c & 0x00FF0000) >> 16) | ((c & 0x000000FF) << 16);
-					}
-				}
-			}
-			break;
-
-		case DAVA::FORMAT_RGBA5551:
-			{
-				DAVA::uint16 *data = (DAVA::uint16 *) image->data;
-				DAVA::uint32 c;
-
-				qtImage = QImage(image->width, image->height, QImage::Format_ARGB32);
-
-				// convert DAVA:RGBA5551 into Qt ARGB8888
-				for (int y = 0; y < (int)image->height; y++) 
-				{
-					line = (QRgb *) qtImage.scanLine(y);
-					for (int x = 0; x < (int)image->width; x++) 
-					{
-						DAVA::uint32 a;
-						DAVA::uint32 r;
-						DAVA::uint32 g;
-						DAVA::uint32 b;
-
-						c = data[y * image->width + x];
-						r = (c >> 11) & 0x1f;
-						g = (c >> 6) & 0x1f;
-						b = (c >> 1) & 0x1f;
-						a = (c & 0x1) ? 0xff000000 : 0x0;
-
-						line[x] = (a | (r << (16 + 3)) | (g << (8 + 3)) | (b << 3));
-					}
-				}
-			}
-			break;
-
-		case DAVA::FORMAT_RGBA4444:
-			{
-				DAVA::uint16 *data = (DAVA::uint16 *) image->data;
-				DAVA::uint32 c;
-
-				qtImage = QImage(image->width, image->height, QImage::Format_ARGB32);
-
-				// convert DAVA:RGBA4444 into Qt ARGB8888
-				for (int y = 0; y < (int)image->height; y++) 
-				{
-					line = (QRgb *) qtImage.scanLine(y);
-					for (int x = 0; x < (int)image->width; x++) 
-					{
-						DAVA::uint32 a;
-						DAVA::uint32 r;
-						DAVA::uint32 g;
-						DAVA::uint32 b;
-
-						c = data[y * image->width + x];
-						r = (c >> 12) & 0xf;
-						g = (c >> 8) & 0xf;
-						b = (c >> 4) & 0xf;
-						a = (c & 0xf);
-
-						line[x] = ((a << (24 + 4)) | (r << (16 + 4)) | (g << (8+4)) | (b << 4));
-					}
-				}
-			}
-			break;
-
-		case DAVA::FORMAT_RGB565:
-			{
-				DAVA::uint16 *data = (DAVA::uint16 *) image->data;
-				DAVA::uint32 c;
-
-				qtImage = QImage(image->width, image->height, QImage::Format_ARGB32);
-
-				// convert DAVA:RGBA565 into Qt ARGB8888
-				for (int y = 0; y < (int)image->height; y++) 
-				{
-					line = (QRgb *) qtImage.scanLine(y);
-					for (int x = 0; x < (int)image->width; x++) 
-					{
-						DAVA::uint32 a;
-						DAVA::uint32 r;
-						DAVA::uint32 g;
-						DAVA::uint32 b;
-
-						c = data[y * image->width + x];
-						a = 0xff;
-						r = (c >> 11) & 0x1f;
-						g = (c >> 5) & 0x3f;
-						b = c & 0x1f;
-
-						line[x] = ((a << 24) | (r << (16 + 3)) | (g << (8 + 2)) | (b << 3));
-					}
-				}
-			}
-			break;
-
-		case DAVA::FORMAT_A8:
-			{
-				DAVA::uint8 *data = (DAVA::uint8 *) image->data;
-				DAVA::uint32 c;
-
-				qtImage = QImage(image->width, image->height, QImage::Format_ARGB32);
-
-				// convert DAVA:RGBA565 into Qt ARGB8888
-				for (int y = 0; y < (int)image->height; y++) 
-				{
-					line = (QRgb *) qtImage.scanLine(y);
-					for (int x = 0; x < (int)image->width; x++) 
-					{
-						c = data[y * image->width + x];
-						line[x] = ((0xff << 24) | (c << 16) | (c << 8) | c);
-					}
-				}
-			}
-			break;
-
-		case DAVA::FORMAT_RGB888:
-			{
-				DAVA::uint8 *data = (DAVA::uint8 *) image->data;
-
-				qtImage = QImage(image->width, image->height, QImage::Format_ARGB32);
-
-				// convert DAVA:RGB888 into Qt ARGB8888
-				int32 imagewidth = image->width * 3;
-				for (int y = 0; y < (int)image->height; y++) 
-				{
-					line = (QRgb *) qtImage.scanLine(y);
-					for (int x = 0, i = 0; x < imagewidth; x += 3, i++) 
-					{
-						DAVA::uint32 a = 0xff000000;
-						DAVA::uint32 r = data[y * imagewidth + x];
-						DAVA::uint32 g = data[y * imagewidth + x + 1];
-						DAVA::uint32 b = data[y * imagewidth + x + 2];
-
- 						line[i] = (a) | (r << 16) | (g << 8) | (b);
-					}
-				}
-			}
-			break;
-
-
-		default:
-			break;
-		}
-	}
-
-	return qtImage;
-}
 

@@ -30,9 +30,12 @@
 #ifndef __LIBRARY_WIDGET_H__
 #define __LIBRARY_WIDGET_H__
 
+#include "Render/RenderBase.h"
+
 #include <QWidget>
 #include <QTreeView>
 #include <QItemSelection>
+#include <QStringList>
 
 class QVBoxLayout;
 class QToolBar;
@@ -94,9 +97,6 @@ protected slots:
     void ShowContextMenu(const QPoint & point);
     void fileDoubleClicked(const QModelIndex & index);
     
-//     void SetFilter();
-//     void ResetFilter();
-    
     void OnFilesTypeChanged(int typeIndex);
     
     void OnAddModel();
@@ -105,8 +105,6 @@ protected slots:
     void OnEditTextureDescriptor();
     void OnRevealAtFolder();
 
-//    void OnModelLoaded();
-    
     void OnTreeDragStarted();
 private:
     
@@ -120,8 +118,7 @@ private:
     void HidePreview() const;
     void ShowPreview(const QString & pathname) const;
     
-//	bool ExpandUntilFilterAccepted(const QModelIndex &proxyIndex);
-//	void SwitchTreeAndLabel();
+    QStringList GetExtensions(DAVA::ImageFormat imageFormat) const;
     
 private:
 
@@ -130,10 +127,6 @@ private:
     QToolBar *toolbar;
     QTreeView *filesView;
     
-//disabled for future
-//	QLineEdit *searchFilter;
-//	QWidget *waitBar;
-//	QLabel * notFoundMessage;
 	QComboBox *filesTypeFilter;
     
     QAction *actionViewAsList;
@@ -142,7 +135,6 @@ private:
     
     QString rootPathname;
     LibraryFileSystemModel *filesModel;
-//    LibraryFilteringModel *proxyModel;
     
     eViewMode viewMode;
 	int curTypeIndex;

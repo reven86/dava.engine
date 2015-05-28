@@ -31,6 +31,7 @@
 #include "TextureBrowser/TextureConvertor.h"
 #include "../../Main/QtUtils.h"
 #include "StringConstants.h"
+#include "ImageTools/ImageTools.h"
 
 #include "TileTexturePreviewWidgetItemDelegate.h"
 #include "Tools/ColorPicker/ColorPicker.h"
@@ -194,7 +195,7 @@ void TileTexturePreviewWidget::UpdateImage(int32 number)
 		image = SafeRetain(images[number]);
 	}
 
-	QImage qimg = TextureConvertor::FromDavaImage(image);
+	QImage qimg = ImageTools::FromDavaImage(image);
 	SafeRelease(image);
 
 	QSize size = QSize(TEXTURE_PREVIEW_WIDTH, TEXTURE_PREVIEW_HEIGHT);

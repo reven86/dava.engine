@@ -31,8 +31,6 @@
 #include "StringUtils.h"
 #include "Utils/UTF8Utils.h"
 
-#include "fribidi/fribidi.h"
-#include "fribidi/fribidi-bidi-types.h"
 #include "unibreak/linebreak.h"
 
 namespace DAVA

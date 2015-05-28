@@ -267,7 +267,7 @@ int EditorCore::CreateDocument(PackageNode *package)
     connect(document->GetUndoStack(), &QUndoStack::cleanChanged, this, &EditorCore::OnCleanChanged);
     documents.push_back(document);
     documentGroup->AddDocument(document);
-    int index = mainWindow->AddTab(document->GetPackageFilePath().GetBasename().c_str());
+    int index = mainWindow->AddTab(document->GetPackageFilePath());
     OnCurrentTabChanged(index);
     return index;
 }

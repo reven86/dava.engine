@@ -37,11 +37,20 @@ class SaveImageTest: public TestTemplate<SaveImageTest>
 {
 public:
     SaveImageTest();
+    ~SaveImageTest();
     
     void PngTest(PerfFuncData * data);
     void JpegTest(PerfFuncData * data);
+    void TgaTest(PerfFuncData * data);
 private:
-    Image* GetImage() const;
+    void SaveLoadCheck(PerfFuncData* data, const Image* img, const String& filename, float32 diffThreshold);
+    Image* Create888Image() const;
+    Image* Create8888Image() const;
+    Image* CreateA8Image() const;
+
+    Image* imageRGBA8888;
+    Image* imageRGB888;
+    Image* imageA8;
 };
 
 #endif //__SAVE_IMAGE_TEST_H__

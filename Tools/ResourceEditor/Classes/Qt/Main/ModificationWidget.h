@@ -58,6 +58,9 @@ public:
 	void SetPivotMode(PivotMode pivotMode);
 	void SetModifMode(ST_ModifMode modifMode);
 
+public slots:
+    void OnSnapToLandscapeChanged();
+
 private slots:
 	void OnSceneActivated(SceneEditor2 *scene);
 	void OnSceneDeactivated(SceneEditor2 *scene);

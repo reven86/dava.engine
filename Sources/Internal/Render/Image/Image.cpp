@@ -138,14 +138,20 @@ void Image::MakePink(bool checkers)
     }
 }
 
-void Image::Normalize()
+bool Image::Normalize()
 {
-    int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
-    uint8 * newImage0Data = new uint8[width * height * formatSize];
-    memset(newImage0Data, 0, width * height * formatSize);
-    ImageConvert::Normalize(format, data, width, height, width * formatSize, newImage0Data);
+    const int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
+    const uint32 pitch = width * formatSize;
+    const uint32 dataSize = height * pitch;
+    
+    uint8 * newImage0Data = new uint8[dataSize];
+    Memset(newImage0Data, 0, dataSize);
+    bool normalized = ImageConvert::Normalize(format, data, width, height, pitch, newImage0Data);
+    
     SafeDeleteArray(data);
     data = newImage0Data;
+    
+    return normalized;
 }
     
 Vector<Image *> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
@@ -173,7 +179,7 @@ Vector<Image *> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
         if(newWidth > 1) newWidth >>= 1;
         if(newHeight > 1) newHeight >>= 1;
         uint8 * newData = new uint8[newWidth * newHeight * formatSize];
-        memset(newData, 0, newWidth * newHeight * formatSize);
+        Memset(newData, 0, newWidth * newHeight * formatSize);
 
         ImageConvert::DownscaleTwiceBillinear(format, format,
             image0->data, imageWidth, imageHeight, imageWidth * formatSize,
@@ -203,8 +209,9 @@ void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
 
 	if(formatSize>0)
 	{
-		newData = new uint8[newWidth * newHeight * formatSize];
-		memset(newData, 0, newWidth * newHeight * formatSize);
+        const uint32 newDataSize = newWidth * newHeight * formatSize;
+		newData = new uint8[newDataSize];
+		Memset(newData, 0, newDataSize);
 
 		float32 kx = (float32)width / (float32)newWidth;
 		float32 ky = (float32)height / (float32)newHeight;
@@ -227,7 +234,7 @@ void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
 
 
 				offsetOld = (posY * width + posX) * formatSize;
-				memcpy(newData + offset, data + offsetOld, formatSize);
+				Memcpy(newData + offset, data + offsetOld, formatSize);
 
 				xx += kx;
 				offset += formatSize;
@@ -239,8 +246,10 @@ void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
 		// resized data
 		width = newWidth;
 		height = newHeight;
+        
 		SafeDeleteArray(data);
 		data = newData;
+        dataSize = newDataSize;
 	}
 }
 
@@ -254,7 +263,7 @@ void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)
     {
         newDataSize = newWidth * newHeight * formatSize;
         newData = new uint8[newDataSize];
-        memset(newData, 0, newDataSize);
+        Memset(newData, 0, newDataSize);
             
         uint32 currentLine = 0;
         uint32 indexOnLine = 0;
@@ -323,7 +332,7 @@ Image* Image::CopyImageRegion(const Image* imageToCopy,
 
 	for (uint32 i = 0; i < newHeight; ++i)
 	{
-		memcpy((newData + newWidth * i * formatSize),
+		Memcpy((newData + newWidth * i * formatSize),
 			   (oldData + (oldWidth * (yOffset + i) + xOffset) * formatSize),
 			   formatSize * newWidth);
 	}
@@ -380,7 +389,7 @@ void Image::InsertImage(const Image* image, uint32 dstX, uint32 dstY,
 
 	for (uint32 i = 0; i < insertHeight; ++i)
 	{
-		memcpy(dstData + (width * (dstY + i) + dstX) * formatSize,
+		Memcpy(dstData + (width * (dstY + i) + dstX) * formatSize,
 			   srcData + (image->GetWidth() * (srcY + i) + srcX) * formatSize,
 			   formatSize * insertWidth);
 	}
@@ -417,6 +426,10 @@ void Image::FlipHorizontal()
 		FlipHorizontal((uint32 *)data, width, height);
 		break;
 
+    case FORMAT_RGB888:
+        FlipHorizontal((RGB888 *)data, width, height);
+        break;
+
 	default:
 		DVASSERT(false && "Not implemented");
 		break;
@@ -441,11 +454,117 @@ void Image::FlipVertical()
 	case FORMAT_RGBA8888:
 		FlipVertical((uint32 *)data, width, height);
 		break;
+            
+    case FORMAT_RGB888:
+        FlipVertical((RGB888 *)data, width, height);
+        break;
+            
 
 	default:
 		DVASSERT(false && "Not implemented");
 		break;
 	}
+}
+
+void Image::RotateDeg(int degree)
+{
+    degree %= 360;
+
+    switch(degree)
+    {
+    case 0:
+        return;
+    case 90:
+    case -270:
+        Rotate90Right();
+        return;
+    case 180:
+    case -180:
+        FlipHorizontal();
+        FlipVertical();
+        return;
+    case 270:
+    case -90:
+        Rotate90Left();
+        return;
+    default:
+        DVASSERT(false && "unsupported rotate degree");
+        return;
+    }
+}
+
+void Image::Rotate90Right()
+{
+    DVASSERT((width == height) && "image should be square to rotate");
+    DVASSERT(dataSize && "image is empty or dataSize is not set");
+
+    uint8* newData = new uint8[dataSize];
+
+    switch (format)
+    {
+    case FORMAT_A8:
+        Rotate90Right((uint8 *)data, (uint8 *)newData, height);
+        break;
+
+    case FORMAT_A16:
+    case FORMAT_RGBA5551:
+    case FORMAT_RGBA4444:
+    case FORMAT_RGB565:
+        Rotate90Right((uint16 *)data, (uint16 *)newData, height);
+        break;
+
+    case FORMAT_RGBA8888:
+        Rotate90Right((uint32 *)data, (uint32 *)newData, height);
+        break;
+
+    case FORMAT_RGB888:
+        Rotate90Right((RGB888 *)data, (RGB888 *)newData, height);
+        break;
+
+    default:
+        DVASSERT(false && "Not implemented");
+        break;
+    }
+
+    SafeDeleteArray(data);
+    data = newData;
+}
+
+void Image::Rotate90Left()
+{
+    DVASSERT((width == height) && "image should be square to rotate");
+    DVASSERT(dataSize && "image is empty or dataSize is not set");
+
+    uint8* newData = new uint8[dataSize];
+
+    switch (format)
+    {
+    case FORMAT_A8:
+        Rotate90Left((uint8 *)data, (uint8 *)newData, height);
+        break;
+
+    case FORMAT_A16:
+    case FORMAT_RGBA5551:
+    case FORMAT_RGBA4444:
+    case FORMAT_RGB565:
+        Rotate90Left((uint16 *)data, (uint16 *)newData, height);
+        break;
+
+    case FORMAT_RGBA8888:
+        Rotate90Left((uint32 *)data, (uint32 *)newData, height);
+        break;
+
+    case FORMAT_RGB888:
+        Rotate90Left((RGB888 *)data, (RGB888 *)newData, height);
+        break;
+
+    default:
+        DVASSERT(false && "Not implemented");
+        break;
+    }
+
+    SafeDeleteArray(data);
+    data = newData;
 }
 
     

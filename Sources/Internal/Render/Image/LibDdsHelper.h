@@ -46,7 +46,9 @@ class LibDdsHelper: public ImageFormatInterface, public CRCAdditionInterface
 public:
     LibDdsHelper();
 
-    bool IsImage(File *infile) const override;
+    ImageFormat GetImageFormat() const override;
+    
+    bool IsMyImage(File *infile) const override;
 
     eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const override;
 
@@ -85,6 +87,10 @@ private:
     static bool WriteAtcFileAsCubemap(const FilePath & fileNameOriginal, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat);
 };
 
+inline ImageFormat LibDdsHelper::GetImageFormat() const
+{
+    return IMAGE_FORMAT_DDS;
+}
 };
 
 #endif // __DAVAENGINE_DXT_HELPER_H__

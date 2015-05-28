@@ -164,7 +164,7 @@ void BeastAction::PackLightmaps()
 	packer.SetInputDir(inputDir);
 
 	packer.SetOutputDir(outputDir);
-	packer.PackLightmaps(DAVA::GPU_PNG);
+	packer.PackLightmaps(DAVA::GPU_ORIGIN);
 	packer.CreateDescriptors();
 	packer.ParseSpriteDescriptors();
 
