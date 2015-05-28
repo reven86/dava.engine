@@ -176,8 +176,6 @@ void Entity::SetParent(Entity * _parent)
 {
 	parent = _parent;
 	((TransformComponent*)GetComponent(Component::TRANSFORM_COMPONENT))->SetParent(parent);
-
-    GetScene();
 }
 	
 void Entity::AddNode(Entity * node)
