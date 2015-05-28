@@ -12,7 +12,7 @@ import platform;
 import re;
 import codecs;
   
-excludeDirs = ["Box2D", "Freetype", "Yaml", "ColladaConverter", "ThirdPartyLibs", "Libs", "yaml-cpp", "PSDTool", "IMagickHelperLib", "bullet", "libuv" ]
+excludeDirs = ["Box2D", "Freetype", "Yaml", "ColladaConverter", "ThirdPartyLibs", "Libs", "yaml-cpp", "PSDTool", "IMagickHelperLib", "bullet", "libuv", "freetype", "ThirdParty"]
 includePaths = {}
 
 replaceString = "\
@@ -74,13 +74,11 @@ def process_files(arg, dirname, names):
 		return;
 	if (string.find(dirname, ".svn") != -1):
 		return;
-	relPath = os.path.relpath(dirname)
+	relPath = os.path.relpath(dirname); 
 	for exDir in excludeDirs:	
 		if (string.find(relPath, exDir) != -1):
 			excludeLogFile.write("exclude: " + relPath + "\n");
-			#print relPath
 			return;
-	#print "include dir: " + relPath
 	includeLogFile.write("include: " + relPath + "\n");
 
 	(dirhead, dirtail) = os.path.split(dirname);
@@ -94,7 +92,6 @@ def process_files(arg, dirname, names):
 			or fullname[0] == '$'
 			):
 			continue;
-		
 		(name, ext) = os.path.splitext(fullname); 
 		if ext in supported_exts:
 			with open(pathname, 'rt') as file:
