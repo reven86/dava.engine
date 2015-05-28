@@ -45,19 +45,17 @@ FPROG_IN_BEGIN
             //varying lowp float varNdotH;
         #endif
 
-    #endif
-
-    #if PIXEL_LIT
+    #elif PIXEL_LIT
         
-        varying float3 varToLightVec;
-
         #if FAST_NORMALIZATION
-        varying float3 varHalfVec;
+        FPROG_IN_COLOR0(varHalfVec,3)
         #endif
-
-        varying float3 varToCameraVec;
-        varying float varPerPixelAttenuation;
-
+        FPROG_IN_COLOR1(varToLightVec,3)
+        #if DISTANCE_ATTENUATION
+        FPROG_IN_TEXCOORD6(varPerPixelAttenuation,1)
+        #endif
+        FPROG_IN_TEXCOORD7(varToCameraVec,3) 
+        
     #endif
     
     #if VERTEX_FOG
@@ -118,12 +116,12 @@ FPROG_OUT_END
 
 #if PIXEL_LIT
     DECL_FP_SAMPLER2D(normalmap)
-    property float materialSpecularShininess : dynamic,a : ;
-    property float lightIntensity0 : dynamic,a : ;
-    property float inSpecularity : dynamic,a : ;
-    property float physicalFresnelReflectance : dynamic,a : ;
-    property float3 metalFresnelReflectance : dynamic,a : ;
-    property float normalScale : dynamic,a : ;
+    property float  materialSpecularShininess   : static,a : ;
+    property float  lightIntensity0             : static,a : ;
+    property float  inSpecularity               : static,a : ;
+    property float  physicalFresnelReflectance  : static,a : ;
+    property float3 metalFresnelReflectance     : static,a : ;
+    property float  normalScale                 : static,a : ;
 #endif
 
 
@@ -353,12 +351,12 @@ FPROG_BEGIN
         float attenuation = lightIntensity0;
         
         #if DISTANCE_ATTENUATION
-            attenuation /= (varPerPixelAttenuation * varPerPixelAttenuation);
+            attenuation /= (FP_IN(varPerPixelAttenuation) * FP_IN(varPerPixelAttenuation));
         #endif
     
         #if !FAST_NORMALIZATION
-            float3 toLightNormalized = normalize(varToLightVec);
-            float3 toCameraNormalized = normalize(varToCameraVec);
+            float3 toLightNormalized = normalize(FP_IN(varToLightVec).xyz);
+            float3 toCameraNormalized = normalize(FP_IN(varToCameraVec));
             float3 H = toCameraNormalized + toLightNormalized;
             H = normalize(H);
 
@@ -370,12 +368,12 @@ FPROG_BEGIN
         #else
             // Kwasi normalization :-)
             // compute diffuse lighting
-            float3 normalizedHalf = normalize(varHalfVec);
+            float3 normalizedHalf = normalize(FP_IN(varHalfVec.xyz));
             
-            float NdotL = max (dot (normal, varToLightVec), 0.0);
+            float NdotL = max (dot (normal, FP_IN(varToLightVec).xyz), 0.0);
             float NdotH = max (dot (normal, normalizedHalf), 0.0);
-            float LdotH = max (dot (varToLightVec, normalizedHalf), 0.0);
-            float NdotV = max (dot (normal, varToCameraVec), 0.0);
+            float LdotH = max (dot (FP_IN(varToLightVec).xyz, normalizedHalf), 0.0);
+            float NdotV = max (dot (normal, FP_IN(varToCameraVec)), 0.0);
         #endif
     
         #if NORMALIZED_BLINN_PHONG

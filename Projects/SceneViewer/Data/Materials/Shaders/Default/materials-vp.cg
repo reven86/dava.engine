@@ -99,12 +99,15 @@ VPROG_OUT_BEGIN
     #endif
 
     #if PIXEL_LIT
-zzz        
-        varying vec3 varLightPosition;
-        varying vec3 varToLightVec;
-        varying vec3 varHalfVec;
-        varying vec3 varToCameraVec;
-        varying float varPerPixelAttenuation;
+//        VPROG_OUT_TEXCOORD4(varLightPosition,3)
+        #if FAST_NORMALIZATION
+        VPROG_OUT_COLOR0(varHalfVec,3)
+        #endif
+        VPROG_OUT_COLOR1(varToLightVec,3)
+        #if DISTANCE_ATTENUATION
+        VPROG_OUT_TEXCOORD6(varPerPixelAttenuation,1)
+        #endif
+        VPROG_OUT_TEXCOORD7(varToCameraVec,3) 
     #endif
 
     #if SETUP_LIGHTMAP
@@ -429,6 +432,8 @@ VPROG_BEGIN
 
 #if VERTEX_LIT
     
+    float3  inNormal = VP_IN_NORMAL;
+    
     float3 normal = normalize(worldViewInvTransposeMatrix * inNormal); // normal in eye coordinates
    
     #if DISTANCE_ATTENUATION
@@ -479,18 +484,22 @@ VPROG_BEGIN
 
 #if PIXEL_LIT
 
+    float3  inNormal    = VP_IN_NORMAL;
+    float3  inTangent   = VP_IN_TANGENT;
+    float3  inBinormal  = VP_IN_BINORMAL;
+    
     #if SKINNING
-        float3 n = normalize (worldViewInvTransposeMatrix * JointTransformTangent(inNormal, weightedVertexQuaternion));
-        float3 t = normalize (worldViewInvTransposeMatrix * JointTransformTangent(inTangent, weightedVertexQuaternion));
-        float3 b = normalize (worldViewInvTransposeMatrix * JointTransformTangent(inBinormal, weightedVertexQuaternion));
+        float3 n = normalize( mul( JointTransformTangent(inNormal, weightedVertexQuaternion), worldViewInvTransposeMatrix ) );
+        float3 t = normalize( mul( JointTransformTangent(inTangent, weightedVertexQuaternion), worldViewInvTransposeMatrix ) );
+        float3 b = normalize( mul( JointTransformTangent(inBinormal, weightedVertexQuaternion), worldViewInvTransposeMatrix ) );
     #else
-        float3 n = normalize (worldViewInvTransposeMatrix * inNormal);
-        float3 t = normalize (worldViewInvTransposeMatrix * inTangent);
-        float3 b = normalize (worldViewInvTransposeMatrix * inBinormal);
+        float3 n = normalize( mul( float4(inNormal,1.0), worldViewInvTransposeMatrix ).xyz );
+        float3 t = normalize( mul( float4(inTangent,1.0), worldViewInvTransposeMatrix ).xyz );
+        float3 b = normalize( mul( float4(inBinormal,1.0), worldViewInvTransposeMatrix ).xyz );
     #endif
     
     #if DISTANCE_ATTENUATION
-        varPerPixelAttenuation = length(toLightDir);
+        VP_OUT(varPerPixelAttenuation) = length(toLightDir);
     #endif
     //lightDir = normalize(lightDir);
     
@@ -501,9 +510,9 @@ VPROG_BEGIN
     v.z = dot (toLightDir, n);
     
     #if !FAST_NORMALIZATION
-        varToLightVec = v;
+        VP_OUT(varToLightVec) = v;
     #else
-        varToLightVec = normalize(v);
+        VP_OUT(varToLightVec) = normalize(v);
     #endif
 
     float3 toCameraDir = -eyeCoordsPosition;
@@ -513,9 +522,9 @@ VPROG_BEGIN
     v.z = dot (toCameraDir, n);
     
     #if !FAST_NORMALIZATION
-        varToCameraVec = v;
+        VP_OUT(varToCameraVec) = v;
     #else
-        varToCameraVec = normalize(v);
+        VP_OUT(varToCameraVec) = normalize(v);
     #endif
     
     /* Normalize the halfVector to pass it to the fragment shader */
@@ -528,7 +537,7 @@ VPROG_BEGIN
         v.z = dot (halfVector, n);
         
         // No need to normalize, t,b,n and halfVector are normal vectors.
-        varHalfVec = v;
+        VP_OUT(varHalfVec) = v;
     #endif
 
 //    varLightPosition.x = dot (lightPosition0.xyz, t);
