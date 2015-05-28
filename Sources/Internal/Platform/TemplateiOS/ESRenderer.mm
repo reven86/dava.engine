@@ -30,8 +30,7 @@
 #include "Base/BaseTypes.h"
 #if defined(__DAVAENGINE_IPHONE__)
 
-#import "Platform/TemplateiOS/ES2Renderer.h"
-//#include "Render/RenderManager.h"
+#import "Platform/TemplateiOS/ESRenderer.h"
 #include "Platform/Thread.h"
 #include "FileSystem/Logger.h"
 
@@ -39,9 +38,8 @@
 
 using namespace DAVA;
 
-@implementation ES2Renderer
+@implementation ESRenderer
 
-// Create an ES 2.0 context
 - (id) init
 {
 	if (self = [super init])
@@ -87,16 +85,6 @@ using namespace DAVA;
     [EAGLContext setCurrentContext:context];
 }
 
-- (void) startRendering
-{
-    
-	// This application only creates a single default framebuffer which is already bound at this point.
-	// This call is redundant, but needed if dealing with multiple framebuffers.
-    
-    glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer);
-    glViewport(0, 0, backingWidth, backingHeight);
-    
-}
 - (void) endRendering
 {
 	// This application only creates a single color renderbuffer which is already bound at this point.
@@ -107,8 +95,6 @@ using namespace DAVA;
     
     glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer);
     [context presentRenderbuffer:GL_RENDERBUFFER];
-    
-    
 }
 
 - (BOOL) resizeFromLayer:(CAEAGLLayer *)layer

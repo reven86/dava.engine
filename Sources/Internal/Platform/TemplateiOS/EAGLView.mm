@@ -38,9 +38,7 @@
 
 #import "Platform/TemplateiOS/EAGLView.h"
 
-#import "Platform/TemplateiOS/ES1Renderer.h"
-#import "Platform/TemplateiOS/ES2Renderer.h"
-#import "Platform/TemplateiOS/ES3Renderer.h"
+#import "Platform/TemplateiOS/ESRenderer.h"
 
 #include "DAVAEngine.h"
 
@@ -101,7 +99,6 @@ static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
         #endif
             
         DAVA::KeyedArchive * options = DAVA::Core::Instance()->GetOptions();
-//        DAVA::Core::eRenderer rendererRequested = (DAVA::Core::eRenderer)options->GetInt32("renderer", DAVA::Core::RENDERER_OPENGL_ES_1_0);
 
         switch ((DAVA::Core::eScreenOrientation)options->GetInt32("orientation", DAVA::Core::SCREEN_ORIENTATION_PORTRAIT)) 
         {
@@ -130,54 +127,13 @@ static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
                 break;
         }
         
-//        DAVA::Core::eRenderer rendererCreated = DAVA::Core::RENDERER_OPENGL_ES_1_0;
-/*
-        if (rendererRequested == DAVA::Core::RENDERER_OPENGL_ES_3_0)
-        {
-            renderer = [[ES3Renderer alloc] init];
-            if(renderer != nil)
-            {
-                rendererCreated = DAVA::Core::RENDERER_OPENGL_ES_3_0;
-                DAVA::RenderManager::Create(DAVA::Core::RENDERER_OPENGL_ES_3_0);
-                DAVA::RenderManager::Instance()->InitFBO([renderer getColorRenderbuffer], [renderer getDefaultFramebuffer]);
-            }
-            else
-            {
-                rendererRequested =DAVA::Core::RENDERER_OPENGL_ES_2_0;
-            }
-        }
-*/
-//        if (rendererRequested == DAVA::Core::RENDERER_OPENGL_ES_2_0)
-        {
-            ES2Renderer* es2Renderer =  [[ES2Renderer alloc] init];
-            renderer = es2Renderer;
-//            BOOL isGL30Created = [es2Renderer getIsGL30];
-//            rendererCreated = (NO == isGL30Created) ? DAVA::Core::RENDERER_OPENGL_ES_2_0 : DAVA::Core::RENDERER_OPENGL_ES_3_0;
-BOOL isGL30Created = NO;
-//            DAVA::RenderManager::Create(rendererCreated);
-//            DAVA::RenderManager::Instance()->InitFBO([renderer getColorRenderbuffer], [renderer getDefaultFramebuffer]);
-        }
- /*
-        if (!renderer)
-        {
-            renderer = [[ES1Renderer alloc] init];
-            rendererCreated = DAVA::Core::RENDERER_OPENGL_ES_1_0;
-            DAVA::RenderManager::Create(DAVA::Core::RENDERER_OPENGL_ES_1_0);
-            DAVA::RenderManager::Instance()->InitFBO([renderer getColorRenderbuffer], [renderer getDefaultFramebuffer]);
+        renderer = [[ESRenderer alloc] init];
 
-            if (!renderer)
-            {
-                [self release];
-                return nil;
-            }
-        }
-*/
 //        DAVA::RenderManager::Instance()->SetRenderContextId(DAVA::EglGetCurrentContext());
         DAVA::Size2i physicalScreen = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
 //        DAVA::RenderManager::Instance()->Init(physicalScreen.dx, physicalScreen.dy);
 //        DAVA::RenderManager::Instance()->DetectRenderingCapabilities();
 //        DAVA::RenderSystem2D::Instance()->Init();
-        
 
         self.multipleTouchEnabled = (DAVA::InputSystem::Instance()->GetMultitouchEnabled()) ? YES : NO;
         animating = FALSE;
@@ -217,26 +173,16 @@ BOOL isGL30Created = NO;
 
     
 //    DAVA::uint64 renderManagerContextId = DAVA::RenderManager::Instance()->GetRenderContextId();
-    DAVA::uint64 currentContextId = DAVA::EglGetCurrentContext();
+//    DAVA::uint64 currentContextId = DAVA::EglGetCurrentContext();
 //    if (renderManagerContextId!=currentContextId)
 //    {
 //        EAGLContext * context =  (EAGLContext *)renderManagerContextId;
 //        [EAGLContext setCurrentContext:context];
 //    }
-    
-//    if(DAVA::Core::Instance()->IsActive())
-//    {
-//        [renderer startRendering];
-//    }
         
     DAVA::Core::Instance()->SystemProcessFrame();
-    
-//    if(DAVA::Core::Instance()->IsActive())
-//    {
-//        [renderer endRendering];
-//    }
 
-currFPS = 60;
+    currFPS = 60;
 //    DAVA::RenderManager::Instance()->Unlock();
     
 //    if(currFPS != DAVA::RenderManager::Instance()->GetFPS())
@@ -263,7 +209,7 @@ currFPS = 60;
     {
         targetFPS = DAVA::RenderManager::Instance()->GetFPS();
     }
-#endif RHI_COMPLETE
+#endif //RHI_COMPLETE
     
 	if(currFPS != targetFPS)
 	{
