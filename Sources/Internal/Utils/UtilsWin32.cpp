@@ -75,7 +75,8 @@ void OpenURL(const String& url)
 	ShellExecute(NULL, L"open", urlWide.c_str(), NULL, NULL, SW_SHOWNORMAL);
 }
 
+#   endif //  __DAVAENGINE_WIN32__
+
 } //  namespace DAVA
 
-#   endif //  __DAVAENGINE_WIN32__
 #endif //  __DAVAENGINE_WINDOWS__
