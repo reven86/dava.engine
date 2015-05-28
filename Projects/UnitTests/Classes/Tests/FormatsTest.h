@@ -51,6 +51,7 @@ private:
     void TestPng(PerfFuncData *data);
     void TestPvr(PerfFuncData *data);
     void TestDds(PerfFuncData *data);
+    void TestWebP(PerfFuncData *data);
 
     void TestImageInfo(const DAVA::FilePath &fileName, DAVA::PixelFormat &requestedFormat, PerfFuncData *data);
 

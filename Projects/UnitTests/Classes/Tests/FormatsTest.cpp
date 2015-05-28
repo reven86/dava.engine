@@ -55,6 +55,7 @@ void FormatsTest::TestFunction(PerfFuncData * data)
     TestPng(data);
     TestPvr(data);
     TestDds(data);
+    TestWebP(data);
 }
 
 void FormatsTest::TestJpeg(PerfFuncData *data)
@@ -216,6 +217,24 @@ void FormatsTest::TestDds(PerfFuncData *data)
 
             TEST_VERIFY(differencePersentage <= FormatsTest::MAX_DIFFERENCE);
         }
+    }
+}
+
+void FormatsTest::TestWebP(PerfFuncData *data)
+{
+    Vector<PixelFormat> suportedFormats;
+    suportedFormats.push_back(FORMAT_RGB888);
+    suportedFormats.push_back(FORMAT_RGBA8888);
+
+    for (PixelFormat requestedFormat : suportedFormats)
+    {
+        const String formatName = GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(requestedFormat);
+
+        data->testData.message = Format("\nFormatsTest_WEBP: \n\tformat = %s\n", formatName.c_str());
+
+        const DAVA::FilePath compressedPathname(DAVA::Format("~res:/TestData/FormatsTest/webp/%s.dat", formatName.c_str()));
+
+        TestImageInfo(compressedPathname, requestedFormat, data);
     }
 }
 
