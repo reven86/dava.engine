@@ -116,7 +116,7 @@ void MemoryManager::InstallDumpCallback(DumpRequestCallback callback, void* arg)
     mm->callbackArg = arg;
 }
 
-CC_NOINLINE void* MemoryManager::Allocate(size_t size, size_t poolIndex)
+DAVA_NOINLINE void* MemoryManager::Allocate(size_t size, size_t poolIndex)
 {
     assert(IsInternalAllocationPool(poolIndex) || poolIndex < MMConst::MAX_ALLOC_POOL_COUNT);
 
@@ -180,7 +180,7 @@ CC_NOINLINE void* MemoryManager::Allocate(size_t size, size_t poolIndex)
     return nullptr;
 }
 
-CC_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, size_t poolIndex)
+DAVA_NOINLINE void* MemoryManager::AlignedAllocate(size_t size, size_t align, size_t poolIndex)
 {
     // TODO: check whether size is integral multiple of align
     assert(align > 0 && 0 == (align & (align - 1)));    // Check whether align is power of 2
@@ -649,7 +649,7 @@ size_t MemoryManager::GetBlockRange(uint32 rangeBegin, uint32 rangeEnd, MemoryBl
     return nblocks;
 }
 
-CC_NOINLINE void MemoryManager::CollectBacktrace(Backtrace* backtrace, size_t nskip)
+DAVA_NOINLINE void MemoryManager::CollectBacktrace(Backtrace* backtrace, size_t nskip)
 {
     Memset(backtrace, 0, sizeof(Backtrace));
 #if defined(__DAVAENGINE_WINDOWS__)

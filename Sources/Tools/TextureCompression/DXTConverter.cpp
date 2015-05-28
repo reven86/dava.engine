@@ -72,7 +72,7 @@ FilePath DXTConverter::ConvertPngToDxt(const TextureDescriptor &descriptor, eGPU
         eErrorCode retCode = ImageSystem::Instance()->Save(outputName, imagesToSave, (PixelFormat) descriptor.compression[gpuFamily].format);
         for_each(inputImages.begin(), inputImages.end(), SafeRelease<Image>);
         for_each(imagesToSave.begin(), imagesToSave.end(), SafeRelease<Image>);
-        if(SUCCESS == retCode)
+        if (eErrorCode::SUCCESS == retCode)
         {
             LibDdsHelper helper;
 			helper.AddCRCIntoMetaData(outputName);
@@ -153,7 +153,7 @@ FilePath DXTConverter::ConvertCubemapPngToDxt(const TextureDescriptor &descripto
             for_each(cubeFaceImages[i].begin(), cubeFaceImages[i].end(), SafeRelease<Image>);
         }
 
-        if(SUCCESS == retCode)
+        if (eErrorCode::SUCCESS == retCode)
         {
             for_each(inputImages.begin(), inputImages.end(), SafeRelease<Image>);
             LibDdsHelper helper;

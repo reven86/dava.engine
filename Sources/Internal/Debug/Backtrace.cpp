@@ -29,18 +29,18 @@
 
 
 #include "Debug/Backtrace.h"
-#include "Base/Bind.h"
-#include "FileSystem/Logger.h"
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
-#include <execinfo.h>
-#include <cxxabi.h>
-#include <stdlib.h>
+#   include "Base/Bind.h"
+#   include "FileSystem/Logger.h"
+#if defined(__DAVAENGINE_APPLE__)
+#   include <execinfo.h>
+#   include <cxxabi.h>
+#   include <stdlib.h>
 #elif defined(__DAVAENGINE_WINDOWS__)
-#include <DbgHelp.h>
-#pragma comment(lib, "Dbghelp.lib")
+#   include <DbgHelp.h>
+#   pragma comment(lib, "Dbghelp.lib")
 #elif defined(__DAVAENGINE_ANDROID__)
-#include "../Platform/TemplateAndroid/BacktraceAndroid/AndroidBacktraceChooser.h"
-#include <cxxabi.h>
+#   include "Platform/TemplateAndroid/BacktraceAndroid/AndroidBacktraceChooser.h"
+#   include <cxxabi.h>
 #endif
 
 #include <cstdlib>
@@ -142,10 +142,13 @@ Backtrace * CreateBacktrace()
 
 void GetBacktrace(Backtrace * bt)
 {
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_APPLE__)
     bt->size = backtrace(bt->array, MAX_BACKTRACE_DEPTH);
 #elif defined(__DAVAENGINE_WINDOWS__)
     bt->size = CaptureStackBackTrace(0, MAX_BACKTRACE_DEPTH, bt->array, nullptr);
+#else
+	bt->size = 0;
+    Logger::Instance()->Log(Logger::LEVEL_WARNING, "GetBacktrace is not supported for current platform");
 #endif
     pointer_size hash = 0;
     for (uint32 k = 0; k < bt->size; ++k)
@@ -240,6 +243,7 @@ void CreateBacktraceLogWinDesktop(Backtrace * backtrace, BacktraceLog * log)
     }
 
     free(symbol);
+    SymCleanup(process);
 }
 
 #endif
@@ -253,6 +257,8 @@ void CreateBacktraceLog(Backtrace * backtrace, BacktraceLog * log)
     CreateBacktraceLogApple(backtrace, log);
 #elif defined(__DAVAENGINE_WIN32__)
     CreateBacktraceLogWinDesktop(backtrace, log);
+#else
+    Logger::Instance()->Log(Logger::LEVEL_WARNING, "CreateBacktraceLog is not supported for current platform");
 #endif
 }
     
@@ -262,6 +268,7 @@ void ReleaseBacktraceLog(BacktraceLog * log)
         free(log->strings[k]);
     free(log->strings);
 }
+
 #if defined(__DAVAENGINE_ANDROID__)
 void OnStackFrame(Logger::eLogLevel logLevel,pointer_size addr,const char * functName)
 {
@@ -281,6 +288,7 @@ void OnStackFrame(Logger::eLogLevel logLevel,pointer_size addr,const char * func
          
 }
 #endif
+
 void PrintBackTraceToLog(Logger::eLogLevel logLevel )
 {
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
@@ -296,6 +304,7 @@ void PrintBackTraceToLog(Logger::eLogLevel logLevel )
         Logger::Instance()->Log(logLevel,"%p : %s\n", array[i], strings[i]);
     }
     free(strings);
+
 #elif defined(__DAVAENGINE_WINDOWS__)
 // Check out this function http://msdn.microsoft.com/en-us/library/windows/desktop/bb204633(v=vs.85).aspx
 /* Should be able to do the same stuff on windows. 

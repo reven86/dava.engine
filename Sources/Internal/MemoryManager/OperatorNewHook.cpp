@@ -43,7 +43,7 @@ void* operator new(size_t size)
     return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
 }
 
-void operator delete(void* ptr) CC_NOEXCEPT
+void operator delete(void* ptr) DAVA_NOEXCEPT
 {
     DAVA::MemoryManager::Instance()->Deallocate(ptr);
 }
@@ -53,7 +53,7 @@ void* operator new [](size_t size)
     return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
 }
 
-void operator delete[](void* ptr) CC_NOEXCEPT
+void operator delete[](void* ptr) DAVA_NOEXCEPT
 {
     DAVA::MemoryManager::Instance()->Deallocate(ptr);
 }

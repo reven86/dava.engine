@@ -33,6 +33,7 @@
 #include "Base/Platform.h"
 #include "Base/TemplateHelpers.h"
 
+#include <array>
 #include <memory>
 #include <string>
 #include <list>
@@ -56,6 +57,7 @@
 namespace DAVA
 {
 
+//Platform-independent signed and unsigned integer type
 using uint8 = uint8_t;
 using uint16 = uint16_t;
 using uint32 = uint32_t;
@@ -66,7 +68,6 @@ using int16 = int16_t;
 using int32 = int32_t;
 using int64 = int64_t;
 
-//Platform-independent signed and unsigned integer type
 //Always has a size equal to pointer size (4 bytes in x86, 8 in x64)
 using pointer_size = uintptr_t;
 
@@ -99,6 +100,9 @@ using DefaultSTLAllocator = std::allocator<T>;
 template<typename T>
 using DefaultSTLAllocator = std::allocator<T>;
 #endif
+
+template <typename T, size_t N>
+using Array = std::array<T, N>;
 
 template<typename CharT>
 using BasicString = std::basic_string<CharT, std::char_traits<CharT>, DefaultSTLAllocator<CharT>>;
@@ -243,7 +247,7 @@ enum eAlign
 };
 
 template <typename T, size_t N>
-CC_CONSTEXPR size_t COUNT_OF(T(&)[N]) CC_NOEXCEPT{ return N; }
+DAVA_CONSTEXPR size_t COUNT_OF(T(&)[N]) DAVA_NOEXCEPT{ return N; }
     
 #ifndef REMOVE_IN_RELEASE
 #   if defined(__DAVAENGINE_DEBUG__)
@@ -253,7 +257,7 @@ CC_CONSTEXPR size_t COUNT_OF(T(&)[N]) CC_NOEXCEPT{ return N; }
 #   endif
 #endif
 
-enum eErrorCode
+enum class eErrorCode
 {
     SUCCESS,
     ERROR_FILE_FORMAT_INCORRECT,

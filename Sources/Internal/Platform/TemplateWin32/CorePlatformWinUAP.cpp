@@ -73,7 +73,7 @@ CorePlatformWinStore::~CorePlatformWinStore()
 //------------------------------------------------------------------------------------------------------
 void CorePlatformWinStore::InitArgs()
 {
-	SetCommandLine(UTF8Utils::EncodeToUTF8(::GetCommandLineW()));
+    SetCommandLine(WStringToString(::GetCommandLineW()));
 }
 //------------------------------------------------------------------------------------------------------
 void CorePlatformWinStore::Run()

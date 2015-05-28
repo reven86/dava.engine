@@ -120,24 +120,24 @@ eErrorCode LibPVRHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32
 
         if (loaded)
         {
-            return SUCCESS;
+            return eErrorCode::SUCCESS;
         }
     }
-    return ERROR_READ_FAIL;
+    return eErrorCode::ERROR_READ_FAIL;
 }
 
 eErrorCode LibPVRHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
 {
     //not implemented due to external tool
     DVASSERT(0);
-    return ERROR_WRITE_FAIL;
+    return eErrorCode::ERROR_WRITE_FAIL;
 }
 
 eErrorCode LibPVRHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
 {
     //not implemented due to external tool
     DVASSERT(0);
-    return ERROR_WRITE_FAIL;
+    return eErrorCode::ERROR_WRITE_FAIL;
 }
 
 DAVA::ImageInfo LibPVRHelper::GetImageInfo(File *infile) const

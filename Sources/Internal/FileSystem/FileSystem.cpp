@@ -36,27 +36,26 @@
 #include "Debug/DVAssert.h"
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
-#include "Utils/UTF8Utils.h"
 #include "FileSystem/ResourceArchive.h"
 #include "Core/Core.h"
 
 #if defined(__DAVAENGINE_MACOS__)
-#include <copyfile.h>
-#include <libproc.h>
-#include <libgen.h>
+#   include <copyfile.h>
+#   include <libproc.h>
+#   include <libgen.h>
 #elif defined(__DAVAENGINE_IPHONE__)
-#include <copyfile.h>
-#include <libgen.h>
-#include <sys/sysctl.h>
+#   include <copyfile.h>
+#   include <libgen.h>
+#   include <sys/sysctl.h>
 #elif defined(__DAVAENGINE_WINDOWS__)
-#include <direct.h>
-#include <io.h> 
-#include <Shlobj.h>
-#include <tchar.h>
-#include <process.h>
+#   include <direct.h>
+#   include <io.h> 
+#   include <Shlobj.h>
+#   include <tchar.h>
+#   include <process.h>
 #elif defined(__DAVAENGINE_ANDROID__)
-#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include <unistd.h>
+#   include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#   include <unistd.h>
 #endif //PLATFORMS
 
 namespace DAVA
@@ -153,10 +152,13 @@ bool FileSystem::CopyFile(const FilePath & existingFile, const FilePath & newFil
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
-    WideString existingFilePath = UTF8Utils::EncodeToWideString(existingFile.GetAbsolutePathname());
-    WideString newFilePath = UTF8Utils::EncodeToWideString(newFile.GetAbsolutePathname());
-    COPYFILE2_EXTENDED_PARAMETERS params = { sizeof(COPYFILE2_EXTENDED_PARAMETERS), 
-                                             overwriteExisting ? DWORD(0) : COPY_FILE_FAIL_IF_EXISTS };
+    WideString existingFilePath = StringToWString(existingFile.GetAbsolutePathname());
+    WideString newFilePath = StringToWString(newFile.GetAbsolutePathname());
+    COPYFILE2_EXTENDED_PARAMETERS params = 
+    { 
+        /* dwSize */      sizeof(COPYFILE2_EXTENDED_PARAMETERS), 
+        /* dwCopyFlags */ overwriteExisting ? DWORD(0) : COPY_FILE_FAIL_IF_EXISTS 
+    };
 
     return ::CopyFile2(existingFilePath.c_str(), newFilePath.c_str(), &params) == S_OK;
 
@@ -227,8 +229,8 @@ bool FileSystem::MoveFile(const FilePath & existingFile, const FilePath & newFil
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
-    WideString existingFileWide = UTF8Utils::EncodeToWideString(existingFile.GetAbsolutePathname());
-    WideString newFileWide = UTF8Utils::EncodeToWideString(newFile.GetAbsolutePathname());
+    WideString existingFileWide = StringToWString(existingFile.GetAbsolutePathname());
+    WideString newFileWide = StringToWString(newFile.GetAbsolutePathname());
     BOOL ret = ::MoveFileExW(existingFileWide.c_str(), newFileWide.c_str(), flags);
 
 #endif
@@ -395,19 +397,19 @@ const FilePath & FileSystem::GetCurrentWorkingDirectory()
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-    std::array<wchar_t, MAX_PATH> tempDir;
+    Array<wchar_t, MAX_PATH> tempDir;
     ::GetCurrentDirectoryW(tempDir.size(), tempDir.data());
-    path = UTF8Utils::EncodeToUTF8(tempDir.data());
+    path = WStringToString(tempDir.data());
 
 #elif defined(__DAVAENGINE_WIN32__)
 
-    std::array<char, MAX_PATH> tempDir;
+    Array<char, MAX_PATH> tempDir;
     ::GetCurrentDirectoryA(tempDir.size(), tempDir.data());
     path = tempDir.data();
 
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
-    std::array<char, PATH_MAX> tempDir;
+    Array<char, PATH_MAX> tempDir;
     getcwd(tempDir.data(), tempDir.size());
     path = tempDir.data();
 
@@ -442,7 +444,7 @@ bool FileSystem::SetCurrentWorkingDirectory(const FilePath & newWorkingDirectory
     DVASSERT(newWorkingDirectory.IsDirectoryPathname());
     
 #if defined(__DAVAENGINE_WIN_UAP__)
-    WideString path = UTF8Utils::EncodeToWideString(newWorkingDirectory.GetAbsolutePathname());
+    WideString path = StringToWString(newWorkingDirectory.GetAbsolutePathname());
     BOOL res = ::SetCurrentDirectoryW(path.c_str());
     return (res != 0);
 #elif defined(__DAVAENGINE_WIN32__)
@@ -500,15 +502,17 @@ bool FileSystem::IsDirectory(const FilePath & pathToCheck)
 }
 
 #if defined (__DAVAENGINE_WINDOWS__)
-HANDLE CreateFileWin(const String& path)
+HANDLE CreateFileWin(const String& path, bool shareRead = false)
 {
+    int share = shareRead ? FILE_SHARE_READ : 0;
+
 #if defined (__DAVAENGINE_WIN32__)
 
-    HANDLE hFile = CreateFileA(path.c_str(), GENERIC_READ, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    HANDLE hFile = CreateFileA(path.c_str(), GENERIC_READ, share, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
-    WideString pathWide = UTF8Utils::EncodeToWideString(path);
+    WideString pathWide = StringToWString(path);
     CREATEFILE2_EXTENDED_PARAMETERS params = { sizeof(CREATEFILE2_EXTENDED_PARAMETERS) };
     params.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
     params.dwFileFlags = 0;
@@ -516,7 +520,7 @@ HANDLE CreateFileWin(const String& path)
     params.lpSecurityAttributes = NULL;
     params.hTemplateFile = NULL;
 
-    HANDLE hFile = CreateFile2(pathWide.c_str(), GENERIC_READ, FILE_SHARE_READ, OPEN_ALWAYS, &params);
+    HANDLE hFile = CreateFile2(pathWide.c_str(), GENERIC_READ, share, OPEN_ALWAYS, &params);
 
 #endif
 
@@ -541,7 +545,7 @@ bool FileSystem::LockFile(const FilePath & filePath, bool isLock)
 #if defined (__DAVAENGINE_WINDOWS__)
     if (isLock)
     {
-        HANDLE hFile = CreateFileWin(path);
+        HANDLE hFile = CreateFileWin(path, true);
         if (hFile != INVALID_HANDLE_VALUE)
         {
             lockedFileHandles[path] = hFile;
@@ -661,7 +665,7 @@ const FilePath FileSystem::GetUserDocumentsPath()
     //take roaming folder as user documents folder
     using namespace Windows::Storage;
     WideString roamingFolder = ApplicationData::Current->RoamingFolder->Path->Data();
-    return FilePath(UTF8Utils::EncodeToUTF8(roamingFolder)).MakeDirectoryPathname();
+    return FilePath(WStringToString(roamingFolder)).MakeDirectoryPathname();
 
 #endif
 }
@@ -684,7 +688,7 @@ const FilePath FileSystem::GetPublicDocumentsPath()
     //take roaming folder as user documents folder
     using namespace Windows::Storage;
     WideString localFolder = ApplicationData::Current->LocalFolder->Path->Data();
-    return FilePath(UTF8Utils::EncodeToUTF8(localFolder)).MakeDirectoryPathname();
+    return FilePath(WStringToString(localFolder)).MakeDirectoryPathname();
 
 #endif
 }

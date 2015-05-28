@@ -704,23 +704,23 @@ eErrorCode LibDdsHelper::WriteFile(const FilePath &fileName, const Vector<Image 
     if (imageSet[0]->format != FORMAT_RGBA8888)
     {
         Logger::Error("[LibDdsHelper::WriteFile] Wrong input format.");
-        return ERROR_WRITE_FAIL;
+        return eErrorCode::ERROR_WRITE_FAIL;
     }
 
     //creating tmp dds file, nvtt accept only filename.dds as input, because of this the last letter befor "." should be changed to "_".
     if (!fileName.IsEqualToExtension(".dds"))
     {
         Logger::Error("[LibDdsHelper::WriteFile] Wrong input file name (%s).", fileName.GetAbsolutePathname().c_str());
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     if (compressionFormat == FORMAT_ATC_RGB ||
         compressionFormat == FORMAT_ATC_RGBA_EXPLICIT_ALPHA ||
         compressionFormat == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
     {
-        return WriteAtcFile(fileName, imageSet, compressionFormat) ? SUCCESS : ERROR_WRITE_FAIL;
+        return WriteAtcFile(fileName, imageSet, compressionFormat) ? eErrorCode::SUCCESS : eErrorCode::ERROR_WRITE_FAIL;
     }
-    return WriteDxtFile(fileName, imageSet, compressionFormat) ? SUCCESS : ERROR_WRITE_FAIL;
+    return WriteDxtFile(fileName, imageSet, compressionFormat) ? eErrorCode::SUCCESS : eErrorCode::ERROR_WRITE_FAIL;
 }
 
 eErrorCode LibDdsHelper::WriteFileAsCubeMap(const FilePath &fileName, const Vector<Vector<Image *>> &imageSet, PixelFormat compressionFormat) const
@@ -728,29 +728,29 @@ eErrorCode LibDdsHelper::WriteFileAsCubeMap(const FilePath &fileName, const Vect
     if (imageSet[0][0]->format != FORMAT_RGBA8888)
     {
         Logger::Error("[LibDdsHelper::WriteFile] Wrong input format.");
-        return ERROR_WRITE_FAIL;
+        return eErrorCode::ERROR_WRITE_FAIL;
     }
 
     if (imageSet.size() != Texture::CUBE_FACE_MAX_COUNT)
     {
         Logger::Error("[LibDdsHelper::WriteFile] Wrong input image set.");
-        return ERROR_WRITE_FAIL;
+        return eErrorCode::ERROR_WRITE_FAIL;
     }
 
     //creating tmp dds file, nvtt accept only filename.dds as input, because of this the last letter befor "." should be changed to "_".
     if (!fileName.IsEqualToExtension(".dds"))
     {
         Logger::Error("[LibDdsHelper::WriteFile] Wrong input file name (%s).", fileName.GetAbsolutePathname().c_str());
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     if (compressionFormat == FORMAT_ATC_RGB ||
         compressionFormat == FORMAT_ATC_RGBA_EXPLICIT_ALPHA ||
         compressionFormat == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
     {
-        return WriteAtcFileAsCubemap(fileName, imageSet, compressionFormat) ? SUCCESS : ERROR_WRITE_FAIL;
+        return WriteAtcFileAsCubemap(fileName, imageSet, compressionFormat) ? eErrorCode::SUCCESS : eErrorCode::ERROR_WRITE_FAIL;
     }
-    return WriteDxtFileAsCubemap(fileName, imageSet, compressionFormat) ? SUCCESS : ERROR_WRITE_FAIL;
+    return WriteDxtFileAsCubemap(fileName, imageSet, compressionFormat) ? eErrorCode::SUCCESS : eErrorCode::ERROR_WRITE_FAIL;
 }
 
 ImageInfo LibDdsHelper::GetImageInfo(File *infile) const
@@ -860,16 +860,16 @@ eErrorCode LibDdsHelper::ReadFile(File * file, Vector<Image*> &imageSet, int32 b
 {
     if (nullptr == file)
     {
-        return ERROR_FILE_NOTFOUND;
+        return eErrorCode::ERROR_FILE_NOTFOUND;
     }
     nvtt::Decompressor dec;
 
     if (!NvttHelper::InitDecompressor(dec, file))
     {
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
-    return NvttHelper::ReadDxtFile(dec, imageSet, baseMipMap, forceSoftwareConvertation) ? SUCCESS : ERROR_READ_FAIL;
+    return NvttHelper::ReadDxtFile(dec, imageSet, baseMipMap, forceSoftwareConvertation) ? eErrorCode::SUCCESS : eErrorCode::ERROR_READ_FAIL;
 }
 
 bool LibDdsHelper::DecompressImageToRGBA(const Image & image, Vector<Image*> &imageSet, bool forceSoftwareConvertation)

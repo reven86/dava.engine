@@ -37,50 +37,48 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //GCC && Clang
 #if defined(__GNUC__)
 
-#   define CC_NOINLINE    __attribute__((noinline))
-#   define CC_FORCEINLINE __attribute__((always_inline))
-#   define CC_ALIGNOF(x)  alignof(x)
-#   define CC_NOEXCEPT    noexcept
-#   define CC_CONSTEXPR   constexpr
-#   define CC_DEPRECATED(func) func __attribute__ ((deprecated))
+#   define DAVA_NOINLINE    __attribute__((noinline))
+#   define DAVA_FORCEINLINE __attribute__((always_inline))
+#   define DAVA_ALIGNOF(x)  alignof(x)
+#   define DAVA_NOEXCEPT    noexcept
+#   define DAVA_CONSTEXPR   constexpr
+#   define DAVA_DEPRECATED(func) func __attribute__ ((deprecated))
 
 //Microsoft Visual C++
 #elif defined(_MSC_VER)
 
-#   define CC_NOINLINE    __declspec(noinline)
-#   define CC_FORCEINLINE __forceinline
-#   define CC_ALIGNOF(x)  __alignof(x)
+#   define DAVA_NOINLINE    __declspec(noinline)
+#   define DAVA_FORCEINLINE __forceinline
+#   define DAVA_ALIGNOF(x)  __alignof(x)
 
 #   if _MSC_VER >= 1900 //msvs 2015 RC or later
 //Constexpr is not supported even in VS2013 (partially supported in 2015 CTP)
-#       define CC_CONSTEXPR constexpr
-#       define CC_NOEXCEPT noexcept
+#       define DAVA_CONSTEXPR constexpr
+#       define DAVA_NOEXCEPT noexcept
 #   else
-#       define CC_CONSTEXPR
-#       define CC_NOEXCEPT throw()
+#       define DAVA_CONSTEXPR
+#       define DAVA_NOEXCEPT throw()
 #   endif
 
-#   define CC_DEPRECATED(func) __declspec(deprecated) func
+#   define DAVA_DEPRECATED(func) __declspec(deprecated) func
 
 #endif
 
 //detecting of compiler features definitions
-#if !defined(CC_NOINLINE)    || \
-    !defined(CC_FORCEINLINE) || \
-    !defined(CC_ALIGNOF)     || \
-    !defined(CC_NOEXCEPT)    || \
-    !defined(CC_CONSTEXPR)   || \
-    !defined(CC_DEPRECATED)
+#if !defined(DAVA_NOINLINE)    || \
+    !defined(DAVA_FORCEINLINE) || \
+    !defined(DAVA_ALIGNOF)     || \
+    !defined(DAVA_NOEXCEPT)    || \
+    !defined(DAVA_CONSTEXPR)   || \
+    !defined(DAVA_DEPRECATED)
 #   error Some compiler features is not defined for current platform
 #endif
 
 //suppressing of deprecated functions
 #ifdef DAVAENGINE_HIDE_DEPRECATED
-#   undef  CC_DEPRECATED
+#   undef  DAVA_DEPRECATED
 #   define CC_DEPRECATED(func) func
 #endif
-
-#define DAVA_DEPRECATED CC_DEPRECATED
 
 //-------------------------------------------------------------------------------------
 //Platform detection

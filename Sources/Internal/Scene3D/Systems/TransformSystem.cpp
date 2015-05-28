@@ -135,7 +135,7 @@ void TransformSystem::TransformAllChildEntities(Entity * entity)
     
     while(stackPosition > 0)
     {
-        entity = stack[--stackPosition];
+        Entity * entity = stack[--stackPosition];
         
         TransformComponent * transform = (TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT);
         if(transform->parentMatrix)

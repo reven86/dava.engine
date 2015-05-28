@@ -180,7 +180,7 @@ float32 SystemTimer::ElapsedSec()
 	}
 	else
 	{
-		float32 currentTime = (float32)(GetTickCount64() / 1000.0f);
+		float32 currentTime = GetTickCount64() / 1000.0f;
 		Logger::FrameworkDebug("delta %f", currentTime - t0);
 		return currentTime - t0;
 	}
