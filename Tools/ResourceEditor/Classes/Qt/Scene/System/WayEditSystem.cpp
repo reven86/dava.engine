@@ -85,12 +85,21 @@ void WayEditSystem::RemoveEntity(DAVA::Entity * removedPoint)
     }
 }
 
-void WayEditSystem::RemoveWayPoint(DAVA::Entity* removedPoint)
+void WayEditSystem::WillRemove(DAVA::Entity *removedPoint)
 {
-    DAVA::Entity* startPoint = mapStartPoints[removedPoint->GetParent()];
-    DVASSERT(startPoint);
+    if (IsWayEditEnabled() && GetWaypointComponent(removedPoint))
+    {
+        startPointForRemove = mapStartPoints[removedPoint->GetParent()];
+        DVASSERT(startPointForRemove);
+    }
+}
 
-    sceneEditor->Exec(new EntityRemoveCommand(removedPoint));
+void WayEditSystem::DidRemoved(DAVA::Entity *removedPoint)
+{
+    if (!IsWayEditEnabled() || !GetWaypointComponent(removedPoint))
+    {
+        return;
+    }
 
     DAVA::EdgeComponent* edge;
 
@@ -115,18 +124,17 @@ void WayEditSystem::RemoveWayPoint(DAVA::Entity* removedPoint)
         DVASSERT(edge);
 
         dest = edge->GetNextEntity();
-        if(dest)
+        if (dest)
         {
             breachPoints.push_back(dest);
         }
-
     }
 
     // detect really breached points
     for (auto breachPoint = breachPoints.begin(); breachPoint != breachPoints.end();)
     {
         DAVA::Set<DAVA::Entity*> passedPoints;
-        if (IsAccessible(startPoint, *breachPoint, removedPoint, nullptr/*no excluding edge*/, passedPoints))
+        if (IsAccessible(startPointForRemove, *breachPoint, removedPoint, nullptr/*no excluding edge*/, passedPoints))
         {
             auto delPoint = breachPoint++;
             breachPoints.erase(delPoint);
@@ -134,6 +142,7 @@ void WayEditSystem::RemoveWayPoint(DAVA::Entity* removedPoint)
         else
             ++breachPoint;
     }
+    startPointForRemove = nullptr;
 
     // link source points and breached points
     for (auto breachPoint : breachPoints)
@@ -143,10 +152,10 @@ void WayEditSystem::RemoveWayPoint(DAVA::Entity* removedPoint)
             if (srcPoint == breachPoint)
                 continue;
 
-            DAVA::EdgeComponent *edge = new DAVA::EdgeComponent();
-            edge->SetNextEntity(breachPoint);
+            DAVA::EdgeComponent *newEdge = new DAVA::EdgeComponent();
+            newEdge->SetNextEntity(breachPoint);
 
-            sceneEditor->Exec(new AddComponentCommand(srcPoint, edge));
+            sceneEditor->Exec(new AddComponentCommand(srcPoint, newEdge));
         }
     }
 }
