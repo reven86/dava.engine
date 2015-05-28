@@ -9,7 +9,6 @@
     #include "Debug/DVAssert.h"
     #include "FileSystem/Logger.h"
     using DAVA::Logger;
-    #include "Core/Core.h"
     #include "Platform/Thread.h"
     #include "Thread/Semaphore.h"
     #include "Debug/Profiler.h"
@@ -334,9 +333,10 @@ gles2_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 cou
             v_cnt = count*3;
             mode  = GL_TRIANGLES;
             break;
-        case PRIMITIVE_LINELIST:
+        
+        case PRIMITIVE_LINELIST :
             v_cnt = count*2;
-            mode = GL_LINES;
+            mode  = GL_LINES;
             break;
             
         default: {}
@@ -362,9 +362,10 @@ gles2_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uin
             v_cnt = count*3;
             mode  = GL_TRIANGLES;
             break;
-        case PRIMITIVE_LINELIST:
+        
+        case PRIMITIVE_LINELIST :
             v_cnt = count*2;
-            mode = GL_LINES;
+            mode  = GL_LINES;
             break;
         
         default: {}
@@ -939,7 +940,7 @@ _ExecuteQueuedCommands()
 
 #if defined(__DAVAENGINE_WIN32__)
     
-    HWND    wnd = (HWND)DAVA::Core::Instance()->NativeWindowHandle();
+    HWND    wnd = (HWND)_NativeWindowHandle;
     HDC     dc  = ::GetDC( wnd );
 
     SwapBuffers( dc );

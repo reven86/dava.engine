@@ -44,7 +44,7 @@ class ParticleEffectSystem : public SceneSystem
 	friend class ParticleEffectComponent;
     friend class UIParticles;    
 public:
-	ParticleEffectSystem(Scene * scene, bool forceDisableDepthTest = false);
+	ParticleEffectSystem(Scene * scene);
 
 	~ParticleEffectSystem();
 	virtual void Process(float32 timeElapsed);		
@@ -61,7 +61,7 @@ public:
     inline void SetAllowLodDegrade(bool allowDegrade);
     inline bool GetAllowLodDegrade() const;
 	
-    inline const Map<uint32, NMaterial *> & GetMaterialInstances() const;
+    inline const Map<uint64, NMaterial *> & GetMaterialInstances() const;
     
 protected:
 	void RunEffect(ParticleEffectComponent *effect);	
@@ -85,14 +85,14 @@ private:
 
 
 private: //materials stuff
-	NMaterial *particleRegularMaterial, *particleFrameBlendMaterial;
-	Map<uint32, NMaterial *> materialMap;
+	NMaterial *particleBaseMaterial;
+    Map<uint64, NMaterial *> materialMap;
 	NMaterial *GetMaterial(Texture *texture, bool enableFog, bool enableFrameBlend, eBlending blending);
-    bool forceDisableDepthTest;
+    
     bool allowLodDegrade;
 };
 
-inline const Map<uint32, NMaterial *> & ParticleEffectSystem::GetMaterialInstances() const
+inline const Map<uint64, NMaterial *> & ParticleEffectSystem::GetMaterialInstances() const
 {
     return materialMap;
 }

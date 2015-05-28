@@ -56,7 +56,7 @@ RenderPassDescriptor::RenderPassDescriptor()
 namespace FXCache
 {
 rhi::DepthStencilState::Descriptor LoadDepthStencilState(const YamlNode* stateNode);
-const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastName, int32>& defines, Vector<int32>& key);
+const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastName, int32>& defines, const Vector<int32>& key);
 
 void Initialize()
 {
@@ -89,6 +89,7 @@ const FXDescriptor& GetFXDescriptor(const FastName &fxName, HashMap<FastName, in
     DVASSERT(initialized);
     Vector<int32> key;
     ShaderDescriptorCache::BuildFlagsKey(fxName, defines, key);
+    Map<Vector<int32>, FXDescriptor>& localFx = fxDescriptors;
     auto it = fxDescriptors.find(key);
     if (it != fxDescriptors.end())
         return it->second;
@@ -97,7 +98,7 @@ const FXDescriptor& GetFXDescriptor(const FastName &fxName, HashMap<FastName, in
 }
     
 
-const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastName, int32>& defines, Vector<int32>& key)
+const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastName, int32>& defines, const Vector<int32>& key)
 {
     //the stuff below is old old legacy carried from RenderTechnique and NMaterialTemplate
 
@@ -154,6 +155,8 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
     }
 
     FXDescriptor target;
+    target.fxName = fxName;
+    target.defines = defines;
     RenderLayer::eRenderLayerID renderLayer = RenderLayer::RENDER_LAYER_OPAQUE_ID;
 
     const YamlNode * layersNode = stateNode->Get("Layers");
@@ -216,7 +219,7 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
                     {
                         if (state == "STATE_BLEND")
                         {
-                            shaderDefines[FastName("BLENDING")] = BLENDING_ALPHABLEND;
+                            shaderDefines[NMaterialFlagName::FLAG_BLENDING] = BLENDING_ALPHABLEND;
                         }
                         else if (state == "STATE_CULL")
                         {

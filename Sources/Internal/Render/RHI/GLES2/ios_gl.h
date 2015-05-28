@@ -8,7 +8,7 @@
 BOOL    ios_GL_resize_from_layer( CAEAGLLayer* layer ); 
 #endif
 */
-void    ios_GL_init();
+void    ios_GL_init(void * nativeLayer);
 void    ios_GL_begin_frame();
 void    ios_GL_end_frame();
 

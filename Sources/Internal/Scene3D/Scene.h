@@ -73,7 +73,6 @@ class LightUpdateSystem;
 class SwitchSystem;
 class SoundUpdateSystem;
 class ActionUpdateSystem;
-class SkyboxSystem;
 class MaterialSystem;
 class StaticOcclusionSystem;
 class StaticOcclusionDebugDrawSystem;
@@ -112,7 +111,7 @@ public:
         SCENE_SYSTEM_SWITCH_FLAG            = 1 << 7,
         SCENE_SYSTEM_SOUND_UPDATE_FLAG      = 1 << 8,
         SCENE_SYSTEM_ACTION_UPDATE_FLAG     = 1 << 9,
-        SCENE_SYSTEM_SKYBOX_FLAG            = 1 << 10,
+        
         SCENE_SYSTEM_STATIC_OCCLUSION_FLAG  = 1 << 11,
         SCENE_SYSTEM_MATERIAL_FLAG          = 1 << 12,
         SCENE_SYSTEM_FOLIAGE_FLAG           = 1 << 13,
@@ -173,8 +172,7 @@ public:
 	SwitchSystem * switchSystem;
 	RenderSystem * renderSystem;
 	SoundUpdateSystem * soundSystem;
-	ActionUpdateSystem* actionSystem;
-	SkyboxSystem* skyboxSystem;
+	ActionUpdateSystem* actionSystem;	
 	StaticOcclusionSystem * staticOcclusionSystem;
     MaterialSystem *materialSystem;
     SpeedTreeUpdateSystem* speedTreeUpdateSystem;
@@ -304,14 +302,7 @@ protected:
 	Vector<AnimatedMesh*> animatedMeshes;
 	Vector<Camera*> cameras;
     
-    static Texture* stubTexture2d;
-    static Texture* stubTextureCube;
-    static Texture* stubTexture2dLightmap; //this texture should be all-pink without checkers
-    
-    bool isDefaultGlobalMaterial;
     NMaterial* sceneGlobalMaterial;
-    //TODO: think about data-driven initialization. Need to set default properties from outside and save/load per scene
-    void InitGlobalMaterial();
     void ImportShadowColor(Entity * rootNode);
     
 #if defined (USE_FILEPATH_IN_MAP)

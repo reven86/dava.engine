@@ -126,7 +126,6 @@ public:
     static const FastName PARAM_UV_OFFSET;
     static const FastName PARAM_UV_SCALE;
     static const FastName PARAM_LIGHTMAP_SIZE;
-    static const FastName PARAM_SHADOW_COLOR;
     static const FastName PARAM_DECAL_TILE_SCALE;
     static const FastName PARAM_DECAL_TILE_COLOR;
     static const FastName PARAM_DETAIL_TILE_SCALE;
@@ -137,6 +136,8 @@ public:
 class NMaterialFlagName
 {
 public:
+    static const FastName FLAG_BLENDING;
+
     static const FastName FLAG_VERTEXFOG;
     static const FastName FLAG_FOG_LINEAR;
     static const FastName FLAG_FOG_HALFSPACE;
@@ -169,6 +170,8 @@ public:
     static const FastName FLAG_VIEWAMBIENT;
     static const FastName FLAG_VIEWDIFFUSE;
     static const FastName FLAG_VIEWSPECULAR;
+
+    static const FastName FLAG_FRAME_BLEND;    
 };
 
 class NMaterialQualityName

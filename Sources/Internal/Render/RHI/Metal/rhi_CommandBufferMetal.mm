@@ -13,8 +13,6 @@
     #include "Debug/Profiler.h"
 
     #include "_metal.h"
-    #include <QuartzCore/CAMetalLayer.h>
-    #include "Platform/TemplateiOS/EAGLView.h"
 
 
 namespace rhi
@@ -56,14 +54,13 @@ metal_RenderPass_Allocate( const RenderPassConfig& passConf, uint32 cmdBufCount,
 
     Handle                      pass_h = RenderPassPool::Alloc();
     RenderPassMetal_t*          pass   = RenderPassPool::Get( pass_h );
-    CAMetalLayer*               layer  = (CAMetalLayer*)(GetAppViewLayer());
     MTLRenderPassDescriptor*    desc   = [MTLRenderPassDescriptor renderPassDescriptor];
 
     
     if( !_CurDrawable )
     {
 SCOPED_NAMED_TIMING("rhi.mtl-vsync");
-        _CurDrawable = [layer nextDrawable];
+        _CurDrawable = [_Metal_Layer nextDrawable];
     }
 
     desc.colorAttachments[0].texture = _CurDrawable.texture;
@@ -337,6 +334,11 @@ metal_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 cou
             ptype = MTLPrimitiveTypeTriangle;
             v_cnt = count * 3;
             break;
+        
+        case PRIMITIVE_LINELIST :
+            ptype = MTLPrimitiveTypeLine;
+            v_cnt = count * 2;
+            break;
     }    
 
     [cb->encoder drawPrimitives:ptype vertexStart:0 vertexCount:v_cnt];
@@ -359,6 +361,11 @@ metal_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uin
         case PRIMITIVE_TRIANGLELIST :
             ptype = MTLPrimitiveTypeTriangle;
             i_cnt = count * 3;
+            break;
+        
+        case PRIMITIVE_LINELIST :
+            ptype = MTLPrimitiveTypeLine;
+            v_cnt = count * 2;
             break;
     }    
 

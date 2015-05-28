@@ -46,8 +46,7 @@ namespace DAVA
     const FastName NMaterialName::VERTEXCOLOR_ALPHABLEND = FastName("~res:/Materials/VertexColor.Alphablend.material");
     const FastName NMaterialName::DETAIL_OPAQUE = FastName("~res:/Materials/Detail.Opaque.material");
     const FastName NMaterialName::SILHOUETTE = FastName("~res:/Materials/Silhouette.material");
-    const FastName NMaterialName::VERTEXCOLOR_FRAMEBLEND_ALPHABLEND = FastName("~res:/Materials/VertexColor.FrameBlend.Alphablend.material");
-    const FastName NMaterialName::SKYBOX = FastName("~res:/Materials/Skybox.material");
+    const FastName NMaterialName::VERTEXCOLOR_FRAMEBLEND_ALPHABLEND = FastName("~res:/Materials/VertexColor.FrameBlend.Alphablend.material");    
     const FastName NMaterialName::SKYOBJECT = FastName("~res:/Materials/Skyobject.material");
     const FastName NMaterialName::VERTEXCOLOR_FRAMEBLEND_OPAQUE = FastName("~res:/Materials/VertexColor.FrameBlend.Opaque.material");
     const FastName NMaterialName::PIXELLIT_ALPHATEST = FastName("~res:/Materials/PixelLit.Alphatest.material");
@@ -64,8 +63,7 @@ namespace DAVA
     const FastName NMaterialName::TEXTURE_LIGHTMAP_OPAQUE = FastName("~res:/Materials/TextureLightmap.Opaque.material");
     const FastName NMaterialName::GRASS = FastName("~res:/Materials/Grass.material");;
     
-    const FastName NMaterialName::PARTICLES = FastName("~res:/Materials/Particles/Particles.material");
-    const FastName NMaterialName::PARTICLES_FRAMEBLEND = FastName("~res:/Materials/Particles/ParticlesFrameBlend.material");
+    const FastName NMaterialName::PARTICLES = FastName("~res:/Materials/Particles/Particles.material");    
 
     const FastName NMaterialName::DEBUG_DRAW_OPAQUE = FastName("~res:/Materials/DebugDraw/Debug.Opaque.material");
     const FastName NMaterialName::DEBUG_DRAW_ALPHABLEND = FastName("~res:/Materials/DebugDraw/Debug.Alphablend.material");
@@ -115,7 +113,6 @@ namespace DAVA
     const FastName NMaterialParamName::PARAM_UV_OFFSET("uvOffset");
     const FastName NMaterialParamName::PARAM_UV_SCALE("uvScale");
     const FastName NMaterialParamName::PARAM_LIGHTMAP_SIZE("lightmapSize");
-    const FastName NMaterialParamName::PARAM_SHADOW_COLOR("shadowColor");
     const FastName NMaterialParamName::PARAM_DECAL_TILE_SCALE("decalTileCoordScale");
     const FastName NMaterialParamName::PARAM_DECAL_TILE_COLOR("decalTileColor");
     const FastName NMaterialParamName::PARAM_DETAIL_TILE_SCALE("detailTileCoordScale");
@@ -123,7 +120,8 @@ namespace DAVA
     const FastName NMaterialParamName::PARAM_SCREEN_OFFSET("screenOffset");
 
 
-    //flags
+    //flags    
+    const FastName NMaterialFlagName::FLAG_BLENDING = FastName("BLENDING");
 
     const FastName NMaterialFlagName::FLAG_VERTEXFOG = FastName("VERTEX_FOG");
     const FastName NMaterialFlagName::FLAG_FOG_LINEAR = FastName("FOG_LINEAR");
@@ -158,6 +156,9 @@ namespace DAVA
     const FastName NMaterialFlagName::FLAG_VIEWAMBIENT = FastName("VIEW_AMBIENT");
     const FastName NMaterialFlagName::FLAG_VIEWDIFFUSE = FastName("VIEW_DIFFUSE");
     const FastName NMaterialFlagName::FLAG_VIEWSPECULAR = FastName("VIEW_SPECULAR");
+
+    const FastName NMaterialFlagName::FLAG_FRAME_BLEND = FastName("FRAME_BLEND");
+    
 
 
     //quality

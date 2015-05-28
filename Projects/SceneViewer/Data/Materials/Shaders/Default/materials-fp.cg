@@ -1,11 +1,4 @@
-#if !defined(VIEW_AMBIENT) && !defined(VIEW_DIFFUSE) && !defined(VIEW_SPECULAR) && !defined(VIEW_ALBEDO)
-    #define VIEW_AMBIENT
-    #define VIEW_DIFFUSE
-    #define VIEW_SPECULAR
-    #define VIEW_ALBEDO
-#endif
-
-#define _PI 3.141592654
+#include "common.cgh"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -13,75 +6,73 @@
 
 FPROG_IN_BEGIN
     
-    #if defined(MATERIAL_TEXTURE)
+    #if MATERIAL_TEXTURE
         
-        #if defined(TEXTURE0_ANIMATION_SHIFT)
+        #if TEXTURE0_ANIMATION_SHIFT
         FPROG_IN_TEXCOORD0(varTexCoord0,2) // highp
         #else
         FPROG_IN_TEXCOORD0(varTexCoord0,2) // mediump
         #endif
 
-    #elif defined(MATERIAL_SKYBOX)
+    #elif MATERIAL_SKYBOX
         
         FPROG_IN_TEXCOORD0(varTexCoord0,3) // mediump
 
     #endif
 
-    #if defined(MATERIAL_DECAL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)
+    #if MATERIAL_DECAL || MATERIAL_LIGHTMAP || FRAME_BLEND || ALPHA_MASK
         FPROG_IN_TEXCOORD1(varTexCoord1,2)
     #endif
 
-    #if defined(MATERIAL_DETAIL)
+    #if MATERIAL_DETAIL
         FPROG_IN_TEXCOORD1(varTexCoord1,2) // mediump
     #endif
 
-    #if defined(TILED_DECAL_MASK)
+    #if TILED_DECAL_MASK
          FPROG_IN_TEXCOORD2(varDecalTileTexCoord,2)
     #endif
 
-    #if defined(VERTEX_LIT)
+    #if VERTEX_LIT
 
         FPROG_IN_COLOR0(varDiffuseColor,4)
 
-        #if defined(BLINN_PHONG)
+        #if BLINN_PHONG
             //varying lowp float varSpecularColor;
             FPROG_IN_TEXCOORD4(varSpecularColor,1) // lowp
-        #elif defined(NORMALIZED_BLINN_PHONG)
+        #elif NORMALIZED_BLINN_PHONG
             FPROG_IN_TEXCOORD4(varSpecularColor,4) // lowp
             //varying lowp float3 varSpecularColor;
             //varying lowp float varNdotH;
         #endif
 
-    #endif
-
-    #if defined(PIXEL_LIT)
+    #elif PIXEL_LIT
         
-        varying float3 varToLightVec;
-
-        #if defined(FAST_NORMALIZATION)
-        varying float3 varHalfVec;
+        #if FAST_NORMALIZATION
+        FPROG_IN_COLOR0(varHalfVec,3)
         #endif
-
-        varying float3 varToCameraVec;
-        varying float varPerPixelAttenuation;
-
+        FPROG_IN_COLOR1(varToLightVec,3)
+        #if DISTANCE_ATTENUATION
+        FPROG_IN_TEXCOORD6(varPerPixelAttenuation,1)
+        #endif
+        FPROG_IN_TEXCOORD7(varToCameraVec,3) 
+        
     #endif
     
-    #if defined(VERTEX_FOG)
+    #if VERTEX_FOG
         FPROG_IN_TEXCOORD5(varFog,4)
 //        varying lowp float varFogAmoung;
 //        varying lowp float3 varFogColor;
     #endif
     
-    #if defined(SETUP_LIGHTMAP)
+    #if SETUP_LIGHTMAP
         varying lowp float varLightmapSize;
     #endif
     
-    #if defined(VERTEX_COLOR) || defined(SPHERICAL_LIT)
+    #if VERTEX_COLOR || SPHERICAL_LIT
         FPROG_IN_COLOR1(varVertexColor,4)
     #endif
 
-    #if defined(FRAME_BLEND)
+    #if FRAME_BLEND
         varying lowp float varTime;
     #endif
 
@@ -100,61 +91,60 @@ FPROG_OUT_END
 
 
 
-#if defined(MATERIAL_TEXTURE)
+#if MATERIAL_TEXTURE
     DECL_FP_SAMPLER2D(albedo)
-#elif defined(MATERIAL_SKYBOX)
+#elif MATERIAL_SKYBOX
     DECL_FP_SAMPLERCUBE(cubemap)
 #endif
 
-#if defined(MATERIAL_DECAL)
+#if MATERIAL_DECAL
     DECL_FP_SAMPLER2D(decal)
 #endif
 
-#if defined(ALPHA_MASK)
+#if ALPHA_MASK
     DECL_FP_SAMPLER2D(alphamask)
 #endif
 
-#if defined(MATERIAL_DETAIL) || defined(MATERIAL_GRASS_BLEND)
+#if MATERIAL_DETAIL
     DECL_FP_SAMPLER2D(detail)
 #endif
 
-#if defined(MATERIAL_LIGHTMAP)
+#if MATERIAL_LIGHTMAP
     DECL_FP_SAMPLER2D(lightmap)
 #endif
 
 
-#if defined(PIXEL_LIT)
+#if PIXEL_LIT
     DECL_FP_SAMPLER2D(normalmap)
-    property float materialSpecularShininess : dynamic,a : ;
-    property float lightIntensity0 : dynamic,a : ;
-    property float inSpecularity : dynamic,a : ;
-    property float physicalFresnelReflectance : dynamic,a : ;
-    property float3 metalFresnelReflectance : dynamic,a : ;
-    property float normalScale : dynamic,a : ;
+    property float  materialSpecularShininess   : static,a : ;
+    property float  lightIntensity0             : static,a : ;
+    property float  inSpecularity               : static,a : ;
+    property float  physicalFresnelReflectance  : static,a : ;
+    property float3 metalFresnelReflectance     : static,a : ;
+    property float  normalScale                 : static,a : ;
 #endif
 
 
-#if defined(TILED_DECAL_MASK)
+#if TILED_DECAL_MASK
     DECL_FP_SAMPLER2D(decalmask)
     DECL_FP_SAMPLER2D(decaltexture)
     property /*lowp*/ float4 decalTileColor : dynamic,a : ;
 #endif
 
 
-//#if (defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(VERTEX_FOG)) && (!defined(SKYOBJECT))
-#if (defined(VERTEX_LIT) || defined(PIXEL_LIT) ) && (!defined(SKYOBJECT))
+#if (VERTEX_LIT || PIXEL_LIT ) && (!SKYOBJECT)
     property float3 lightAmbientColor0 : dynamic,a : ;
     property float3 lightColor0 : dynamic,a : ;
     property float inGlossiness : static,a : ;
 #endif
 
 
-#if defined(PIXEL_LIT)
+#if PIXEL_LIT
     property float4 lightPosition0 : dynamic,a : ;
 #endif
 
 
-#if defined(FLATCOLOR)
+#if FLATCOLOR
     property float4 flatColor : dynamic,a : ;
 #endif
 
@@ -179,70 +169,70 @@ FresnelShlickVec3( float NdotL, float3 Cspec )
 
 FPROG_BEGIN
 
-    #if defined(VERTEX_FOG)
+    #if VERTEX_FOG
         float   varFogAmoung = FP_IN(varFog).a;
         float3  varFogColor  = FP_IN(varFog).rgb;
     #endif
     
     // FETCH PHASE
-    #if defined(MATERIAL_TEXTURE)
+    #if MATERIAL_TEXTURE
     
-        #if defined(PIXEL_LIT) || defined(ALPHATEST) || defined(ALPHABLEND) || defined(VERTEX_LIT)
+        #if PIXEL_LIT || ALPHATEST || ALPHABLEND || VERTEX_LIT
             float4 textureColor0 = FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) );
-            #if defined (ALPHA_MASK)        
+            #if ALPHA_MASK 
                 textureColor0.a *= FP_TEXTURE2D( alphamask, FP_IN(varTexCoord1) ).a;
             #endif
         #else
             float3 textureColor0 = FP_TEXTURE2D( albedo, FP_IN(varTexCoord0) ).rgb;
         #endif
             
-        #if defined(FRAME_BLEND)
+        #if FRAME_BLEND
             float4 blendFrameColor = FP_TEXTURE2D( albedo, FP_IN(varTexCoord1) );
             textureColor0 = lerp( textureColor0, blendFrameColor, varTime );
         #endif
     
-    #elif defined(MATERIAL_SKYBOX)
+    #elif MATERIAL_SKYBOX
     
         float4 textureColor0 = FP_TEXTURECUBE( cubemap, FP_IN(varTexCoord0) );
     
     #endif
 
 
-    #if defined(MATERIAL_TEXTURE)
-        #if defined(ALPHATEST)
+    #if MATERIAL_TEXTURE
+        #if ALPHATEST
             float alpha = textureColor0.a;
-            #if defined(VERTEX_COLOR)
+            #if VERTEX_COLOR
                 alpha *= FP_IN(varVertexColor).a;
             #endif
-            if (alpha < 0.5)discard;
+            if( alpha < 0.5 ) discard;
         #endif
-        #if defined(ALPHATESTVALUE)
+        #if ALPHATESTVALUE
             float alpha = textureColor0.a;
-            #if defined(VERTEX_COLOR)
-                alpha *= FPROG_IN_TEXCOORD5(varVertexColor).a;
+            #if VERTEX_COLOR
+                alpha *= FPROG_IN(varVertexColor).a;
             #endif
-            if (alpha < ALPHATESTVALUE)discard;
+            if( alpha < ALPHATESTVALUE ) discard;
         #endif
     #endif
 
     
-    #if defined(MATERIAL_DECAL)
+    #if MATERIAL_DECAL
         float3 textureColor1 = FP_TEXTURE2D( decal, FP_IN(varTexCoord1) ).rgb;
     #endif
     
     
-    #if defined(MATERIAL_LIGHTMAP)
+    #if MATERIAL_LIGHTMAP
         float3 textureColor1 = FP_TEXTURE2D( lightmap, FP_IN(varTexCoord1) ).rgb;
     #endif
     
     
-    #if defined(MATERIAL_DETAIL)
+    #if MATERIAL_DETAIL
         float3 detailTextureColor = FP_TEXTURE2D( detail, varDetailTexCoord ).rgb;
     #endif
 
 
-    #if defined(MATERIAL_DECAL) || defined(MATERIAL_LIGHTMAP)
-        #if defined(SETUP_LIGHTMAP)
+    #if MATERIAL_DECAL || MATERIAL_LIGHTMAP
+        #if SETUP_LIGHTMAP
             float3 lightGray = float3(0.75,0.75,0.75);
             float3 darkGray = float3(0.25,0.25,0.25);
     
@@ -281,21 +271,21 @@ FPROG_BEGIN
 
     // DRAW PHASE
 
-    #if defined(VERTEX_LIT)
+    #if VERTEX_LIT
     
-        #if defined(BLINN_PHONG)
+        #if BLINN_PHONG
             
             float3 color = float3(0.0,0.0,0.0);
-            #if defined(VIEW_AMBIENT)
+            #if VIEW_AMBIENT
                 color += lightAmbientColor0;
             #endif
 
-            #if defined(VIEW_DIFFUSE)
+            #if VIEW_DIFFUSE
                 color += varDiffuseColor;
             #endif
 
-            #if defined(VIEW_ALBEDO)
-                #if defined(TILED_DECAL_MASK)
+            #if VIEW_ALBEDO
+                #if TILED_DECAL_MASK
                     float maskSample = FP_TEXTURE2D( decalmask, FP_IN(varTexCoord0) ).a;
                     float4 tileColor = FP_TEXTURE2D( decaltexture, FP_IN(varDecalTileTexCoord) ).rgba * decalTileColor;
                     color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
@@ -304,28 +294,28 @@ FPROG_BEGIN
                 #endif
             #endif
 
-            #if defined(VIEW_SPECULAR)
+            #if VIEW_SPECULAR
                 color += (varSpecularColor * textureColor0.a) * lightColor0;
             #endif
     
-        #elif defined(NORMALIZED_BLINN_PHONG)
+        #elif NORMALIZED_BLINN_PHONG
    
             float3 color = float3(0.0,0.0,0.0);
             
-            #if defined(VIEW_AMBIENT) && !defined(MATERIAL_LIGHTMAP)
+            #if VIEW_AMBIENT && !MATERIAL_LIGHTMAP
                 color += lightAmbientColor0;
             #endif
         
-            #if defined(VIEW_DIFFUSE)
-                #if defined(MATERIAL_LIGHTMAP)
+            #if VIEW_DIFFUSE
+                #if MATERIAL_LIGHTMAP
                     color = textureColor1.rgb * 2.0;
                 #else
                     color += varDiffuseColor * lightColor0;
                 #endif
             #endif
         
-            #if defined(VIEW_ALBEDO)
-                #if defined(TILED_DECAL_MASK)
+            #if VIEW_ALBEDO
+                #if TILED_DECAL_MASK
                     float maskSample = FP_TEXTURE2D( decalmask, FP_IN(varTexCoord0) ).a;
                     float4 tileColor = FP_TEXTURE2D( decaltexture, FP_IN(varDecalTileTexCoord) ).rgba * decalTileColor;
                     color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
@@ -334,12 +324,12 @@ FPROG_BEGIN
                 #endif
             #endif
     
-            #if defined(VIEW_SPECULAR)
+            #if VIEW_SPECULAR
                 float glossiness = pow(5000.0, inGlossiness * textureColor0.a);
                 float specularNorm = (glossiness + 2.0) / 8.0;
                 float3 spec = varSpecularColor * pow(/*varNdotH*/varSpecularColor.w, glossiness) * specularNorm;
                                                      
-                #if defined(MATERIAL_LIGHTMAP)
+                #if MATERIAL_LIGHTMAP
                     color += spec * textureColor1.rgb / 2.0 * lightColor0;
                 #else
                     color += spec * lightColor0;
@@ -349,7 +339,7 @@ FPROG_BEGIN
         #endif
 
 
-    #elif defined(PIXEL_LIT)
+    #elif PIXEL_LIT
         
         // lookup normal from normal map, move from [0, 1] to  [-1, 1] range, normalize
         float3 normal = 2.0 * FP_TEXTURE2D( normalmap, FP_IN(varTexCoord0) ).rgb - 1.0;
@@ -360,13 +350,13 @@ FPROG_BEGIN
     
         float attenuation = lightIntensity0;
         
-        #if defined(DISTANCE_ATTENUATION)
-            attenuation /= (varPerPixelAttenuation * varPerPixelAttenuation);
+        #if DISTANCE_ATTENUATION
+            attenuation /= (FP_IN(varPerPixelAttenuation) * FP_IN(varPerPixelAttenuation));
         #endif
     
-        #if !defined(FAST_NORMALIZATION)
-            float3 toLightNormalized = normalize(varToLightVec);
-            float3 toCameraNormalized = normalize(varToCameraVec);
+        #if !FAST_NORMALIZATION
+            float3 toLightNormalized = normalize(FP_IN(varToLightVec).xyz);
+            float3 toCameraNormalized = normalize(FP_IN(varToCameraVec));
             float3 H = toCameraNormalized + toLightNormalized;
             H = normalize(H);
 
@@ -378,21 +368,21 @@ FPROG_BEGIN
         #else
             // Kwasi normalization :-)
             // compute diffuse lighting
-            float3 normalizedHalf = normalize(varHalfVec);
+            float3 normalizedHalf = normalize(FP_IN(varHalfVec.xyz));
             
-            float NdotL = max (dot (normal, varToLightVec), 0.0);
+            float NdotL = max (dot (normal, FP_IN(varToLightVec).xyz), 0.0);
             float NdotH = max (dot (normal, normalizedHalf), 0.0);
-            float LdotH = max (dot (varToLightVec, normalizedHalf), 0.0);
-            float NdotV = max (dot (normal, varToCameraVec), 0.0);
+            float LdotH = max (dot (FP_IN(varToLightVec).xyz, normalizedHalf), 0.0);
+            float NdotV = max (dot (normal, FP_IN(varToCameraVec)), 0.0);
         #endif
     
-        #if defined(NORMALIZED_BLINN_PHONG)
+        #if NORMALIZED_BLINN_PHONG
     
-            #if defined(DIELECTRIC)
+            #if DIELECTRIC
                 #define ColorType float
                 float fresnelOut = FresnelShlick( NdotV, dielectricFresnelReflectance );
             #else
-                #if defined(FAST_METAL)
+                #if FAST_METAL
                     #define ColorType float
                     float fresnelOut = FresnelShlick( NdotV, (metalFresnelReflectance.r + metalFresnelReflectance.g + metalFresnelReflectance.b) / 3.0 );
                 #else
@@ -409,14 +399,14 @@ FPROG_BEGIN
             //glossiness = 200.0 * glossiness / (1.0 - glossiness);
             //#define GOTANDA
             
-            #if defined(GOTANDA)
+            #if GOTANDA
                 float3 fresnelIn = FresnelShlickVec3(NdotL, metalFresnelReflectance);
                 float3 diffuse = NdotL / _PI * (1.0 - fresnelIn * specularity);
             #else
                 float diffuse = NdotL / _PI;// * (1.0 - fresnelIn * specularity);
             #endif
     
-            #if defined(GOTANDA)
+            #if GOTANDA
                 float specCutoff = 1.0 - NdotL;
                 specCutoff *= specCutoff;
                 specCutoff *= specCutoff;
@@ -426,7 +416,7 @@ FPROG_BEGIN
                 float specCutoff = NdotL;
             #endif
     
-            #if defined(GOTANDA)
+            #if GOTANDA
                 float specularNorm = (glossPower + 2.0) * (glossPower + 4.0) / (8.0 * _PI * (pow(2.0, -glossPower / 2.0) + glossPower));
             #else
                 float specularNorm = (glossPower + 2.0) / 8.0;
@@ -434,7 +424,7 @@ FPROG_BEGIN
 
             float specularNormalized = specularNorm * pow(NdotH, glossPower) * specCutoff * specularity;
 
-            #if defined(FAST_METAL)
+            #if FAST_METAL
                 float geometricFactor = 1.0;
             #else
                 float geometricFactor = 1.0 / LdotH * LdotH;
@@ -446,20 +436,20 @@ FPROG_BEGIN
     
         float3 color = float3(0.0,0.0,0.0);
     
-        #if defined(VIEW_AMBIENT) && !defined(MATERIAL_LIGHTMAP)
+        #if VIEW_AMBIENT && !MATERIAL_LIGHTMAP
             color += lightAmbientColor0;
         #endif
     
-        #if defined(VIEW_DIFFUSE)
-            #if defined(MATERIAL_LIGHTMAP)
+        #if VIEW_DIFFUSE
+            #if MATERIAL_LIGHTMAP
                 color = textureColor1.rgb * 2.0;
             #else
                 color += diffuse * lightColor0;
             #endif
         #endif
     
-        #if defined(VIEW_ALBEDO)
-            #if defined(TILED_DECAL_MASK)
+        #if VIEW_ALBEDO
+            #if TILED_DECAL_MASK
                 float maskSample = FP_TEXTURE2D( decalmask, FP_IN(varTexCoord0) ).a;
                 float4 tileColor = FP_TEXTURE2D( decaltexture, FP_IN(varDecalTileTexCoord) ).rgba * decalTileColor;
                 color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
@@ -468,33 +458,33 @@ FPROG_BEGIN
             #endif
         #endif
     
-        #if defined(VIEW_SPECULAR)
-            #if defined(MATERIAL_LIGHTMAP)
+        #if VIEW_SPECULAR
+            #if MATERIAL_LIGHTMAP
                 color += specular * textureColor1.rgb * lightColor0;
             #else
                 color += specular * lightColor0;
             #endif
         #endif
 
-    #elif defined(MATERIAL_DECAL) || defined(MATERIAL_LIGHTMAP)
+    #elif MATERIAL_DECAL || MATERIAL_LIGHTMAP
         
         float3 color = float3(0.0,0.0,0.0);
 
-        #if defined(VIEW_ALBEDO)
+        #if VIEW_ALBEDO
             color = textureColor0.rgb;
         #else
             color = float3(1.0,1.0,1.0);
         #endif
 
-        #if defined(VIEW_DIFFUSE)
+        #if VIEW_DIFFUSE
             color *= textureColor1.rgb * 2.0;
         #endif
 
-    #elif defined(MATERIAL_TEXTURE)
+    #elif MATERIAL_TEXTURE
 
         float3 color = textureColor0.rgb;
     
-    #elif defined(MATERIAL_SKYBOX)
+    #elif MATERIAL_SKYBOX
         
         float4 color = textureColor0;
     
@@ -506,50 +496,36 @@ FPROG_BEGIN
 
 
 
-    #if defined(MATERIAL_DETAIL)
+    #if MATERIAL_DETAIL
         color *= detailTextureColor.rgb * 2.0;
     #endif
 
 
 
-    #if defined(ALPHABLEND) && defined(MATERIAL_TEXTURE)
+    #if ALPHABLEND && MATERIAL_TEXTURE
         FP_OUT_COLOR = float4( color, textureColor0.a );
-    #elif defined(MATERIAL_SKYBOX)
+    #elif MATERIAL_SKYBOX
         FP_OUT_COLOR = color;
     #else
         FP_OUT_COLOR = float4( color, 1.0 );
     #endif
 
     
-    #if defined(VERTEX_COLOR) || defined(SPEED_TREE_LEAF) || defined(SPHERICAL_LIT)
+    #if VERTEX_COLOR || SPEED_TREE_LEAF || SPHERICAL_LIT
         FP_OUT_COLOR *= FP_IN(varVertexColor);
     #endif
         
-    #if defined(FLATCOLOR)
+    #if FLATCOLOR
         FP_OUT_COLOR *= flatColor;
     #endif
 
 
 
-    #if defined(REFLECTION)
-        #if defined(VERTEX_LIT)
-            float4 reflectionColor = FP_TEXTURE2D( cubemap, FP_IN(reflectionDirectionInWorldSpace) ); //float3(reflectedDirection.x, reflectedDirection.y, reflectedDirection.z));
-            FP_OUT_COLOR = reflectionColor * 0.9;
-        #elif defined(PIXEL_LIT)
-            //float3 fresnelRefl = FresnelShlickVec3(NdotV, metalFresnelReflectance);
-
-            float3 reflectionVectorInTangentSpace = reflect(cameraToPointInTangentSpace, normal);
-            float3 reflectionVectorInWorldSpace = worldInvTransposeMatrix * (tbnToWorldMatrix * reflectionVectorInTangentSpace);
-            float4 reflectionColor = textureCube(cubemap, reflectionVectorInWorldSpace, (1.0 - glossiness) * 7.0); //float3(reflectedDirection.x, reflectedDirection.y, reflectedDirection.z));
-            FP_OUT_COLOR.rgb += fresnelOut * reflectionColor.rgb * specularity;//* textureColor0.rgb;
-            //gl_FragColor.rgb += reflectionColor.rgb * textureColor0.rgb;
-        #endif
-    #endif
 
     
     
-    #if defined(VERTEX_FOG)
-        #if !defined(FRAMEBUFFER_FETCH)
+    #if VERTEX_FOG
+        #if !FRAMEBUFFER_FETCH
             //VI: fog equation is inside of color equation for framebuffer fetch
             FP_OUT_COLOR.rgb = lerp( FP_OUT_COLOR.rgb, varFogColor, varFogAmoung );
         #endif

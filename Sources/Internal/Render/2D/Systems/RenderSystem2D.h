@@ -183,6 +183,9 @@ public:
     
     void SetSpriteClipping(bool clipping);
 
+    void BeginRenderTargetPass(Texture * target);
+    void EndRenderTargetPass();
+
     /* 2D DRAW HELPERS */
 
     /**
@@ -311,10 +314,13 @@ private:
     };
     uint32 highlightControlsVerticesLimit;
 
-    rhi::RenderPassConfig renderPassConfig;
-    rhi::HRenderPass currentPassHandle;
-    rhi::HPacketList currentPacketListHandle;
+    rhi::HRenderPass pass2DHandle;
+    rhi::HPacketList packetList2DHandle;
+    rhi::HRenderPass passTargetHandle;
+    rhi::HPacketList packetListTargetHandle;
 
+    int32 renderTargetWidth;
+    int32 renderTargetHeight;
 };
 
 inline void RenderSystem2D::SetHightlightControlsVerticesLimit(uint32 verticesCount)

@@ -32,7 +32,6 @@
 #include "Render/Highlevel/RenderLayer.h"
 #include "Render/Highlevel/RenderBatchArray.h"
 #include "Render/Highlevel/RenderPass.h"
-#include "Render/Highlevel/ShadowVolumeRenderLayer.h"
 #include "Render/Highlevel/RenderBatch.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
@@ -55,9 +54,7 @@ RenderSystem::RenderSystem()
     ,   drawCamera(0)
     ,   globalMaterial(NULL)
 {
-    //mainRenderPass = GetRenderPassManager()->GetRenderPass(PASS_FORWARD);
     mainRenderPass = new MainForwardRenderPass(PASS_FORWARD);
-    //renderPassOrder.push_back(GetRenderPassManager()->GetRenderPass(PASS_SHADOW_VOLUME));
 
     renderHierarchy = new QuadTree(10);
 	hierarchyInitialized = false;   
@@ -159,45 +156,60 @@ void RenderSystem::UnregisterBatch(RenderBatch * batch)
 }
     
 void RenderSystem::RegisterMaterial(NMaterial * material)
-{
-#if RHI_COMPLETE
-    NMaterial * topParent = NULL;
+{     
+    NMaterial * topParent = nullptr;
 
-    // search for top material that isn't global
-    while(NULL != material && material->GetMaterialType() != NMaterial::MATERIALTYPE_GLOBAL)
+    while (nullptr != material)
     {
         topParent = material;
         material = material->GetParent();
     }
 
     // set globalMaterial to be parent for top material
-    if(NULL != topParent)
+    if (nullptr != topParent && topParent != globalMaterial)
     {
-        topParent->SetParent(globalMaterial, false);
+        topParent->SetParent(globalMaterial);
     }
-#endif //RHI_COMPLETE
 }
     
 void RenderSystem::UnregisterMaterial(NMaterial * material)
 {
-    
+    if (!material) return;
+
+    while (material->GetParent() && material->GetParent() != globalMaterial)
+    {
+        material = material->GetParent();
+    }
+
+    if (material->GetParent())
+    {
+        material->SetParent(nullptr);
+    }
 }
     
-void RenderSystem::SetGlobalMaterial(NMaterial *material)
+void RenderSystem::SetGlobalMaterial(NMaterial * newGlobalMaterial)
 {
-    SafeRelease(globalMaterial);
-    globalMaterial = SafeRetain(material);
-
     uint32 count = static_cast<uint32>(renderObjectArray.size());
-    for(uint32 i = 0; i < count; ++i)
+    for (uint32 i = 0; i < count; ++i)
     {
         RenderObject *obj = renderObjectArray[i];
         uint32 countBatch = obj->GetRenderBatchCount();
-        for(uint32 j = 0; j < countBatch; ++j)
+        for (uint32 j = 0; j < countBatch; ++j)
         {
-            RegisterMaterial(obj->GetRenderBatch(j)->GetMaterial());
+            NMaterial * batchMaterial = obj->GetRenderBatch(j)->GetMaterial();
+            if (batchMaterial)
+            {
+                while (batchMaterial->GetParent() && batchMaterial->GetParent() != globalMaterial)
+                {
+                    batchMaterial = batchMaterial->GetParent();
+                }
+                batchMaterial->SetParent(newGlobalMaterial);
+            }
         }
     }
+
+    SafeRelease(globalMaterial);
+    globalMaterial = SafeRetain(newGlobalMaterial);
 }
 
 NMaterial* RenderSystem::GetGlobalMaterial() const

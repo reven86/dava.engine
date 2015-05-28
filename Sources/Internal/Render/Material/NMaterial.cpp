@@ -48,6 +48,18 @@ namespace DAVA
 
 uint32 NMaterialProperty::globalPropertyUpdateSemanticCounter = 0;
 
+RenderVariantInstance::RenderVariantInstance() :shader(nullptr)
+{
+}
+
+RenderVariantInstance::~RenderVariantInstance()
+{    
+    rhi::ReleaseDepthStencilState(depthState);
+    rhi::ReleaseTextureSet(textureSet);
+    rhi::ReleaseTextureSet(vertexTextureSet);
+    rhi::ReleaseSamplerState(samplerState);    
+}
+
 NMaterial::NMaterial()
     : parent(nullptr)
     , localProperties(16, nullptr)
@@ -63,7 +75,20 @@ NMaterial::NMaterial()
 
 NMaterial::~NMaterial()
 {
-    //RHI_COMPLETE
+    SetParent(nullptr);
+    DVASSERT(children.size() == 0); //as children refernce parent in our material scheme, this should not be released while it has children
+    for (auto& prop : localProperties)
+        SafeDelete(prop.second);
+    for (auto& tex : localTextures)
+        SafeRelease(tex.second);
+       
+    for (auto& buffer : localConstBuffers)
+    {
+        rhi::DeleteConstBuffer(buffer.second->constBuffer);
+        SafeDelete(buffer.second);
+    }
+    for (auto& variant : renderVariants)
+        delete variant.second;
 }
 
 void NMaterial::BindParams(rhi::Packet& target)
@@ -180,6 +205,8 @@ void NMaterial::AddProperty(const FastName& propName, const float32 *propData, r
     prop->data.reset(new float[ShaderDescriptor::CalculateDataSize(type, arraySize)]);
     prop->SetPropertyValue(propData);
     localProperties[propName] = prop;
+    
+    InvalidateBufferBindings();
 }
 
 void NMaterial::RemoveProperty(const FastName& propName)
@@ -275,6 +302,13 @@ void NMaterial::SetFlag(const FastName& flagName, int32 value)
     InvalidateRenderVariants();
 }
 
+
+int32 NMaterial::GetLocalFlagValue(const FastName& flagName)
+{
+    DVASSERT(localFlags.find(flagName) != localFlags.end());
+    return localFlags[flagName];
+}
+
 bool NMaterial::HasLocalFlag(const FastName& flagName)
 {
     return localFlags.find(flagName) != localFlags.end();
@@ -299,8 +333,8 @@ void NMaterial::SetParent(NMaterial *_parent)
 
     if (parent)
     {
-        SafeRelease(parent);
         parent->RemoveChildMaterial(this);
+        SafeRelease(parent);
     }
         
 
@@ -324,8 +358,7 @@ void NMaterial::AddChildMaterial(NMaterial *material)
 {    
     DVASSERT(material);
     children.push_back(material);
-    material->InvalidateBufferBindings();
-    material->InvalidateTextureBindings();
+    material->InvalidateRenderVariants();    
 }
 
 void NMaterial::RemoveChildMaterial(NMaterial *material)
@@ -353,6 +386,8 @@ void NMaterial::ClearLocalBuffers()
         rhi::DeleteConstBuffer(buffer.second->constBuffer);        
         SafeDelete(buffer.second);
     }
+    for (auto& variant : renderVariants)
+        variant.second->materialBufferBindings.clear();
     localConstBuffers.clear();
 }
 
@@ -386,16 +421,22 @@ void NMaterial::RebuildRenderVariants()
     CollectMaterialFlags(flags);
     
     //RHI_COMPLETE - move quality to numbers, or flags to fastname
-    flags[NMaterialQualityName::QUALITY_FLAG_NAME] = 0; // QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup());
-    
+    flags[NMaterialQualityName::QUALITY_FLAG_NAME] = 0; // QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup());        
+
     const FXDescriptor& fxDescr = FXCache::GetFXDescriptor(GetFXName(), flags);
+    
+    for (auto &sampler : fxDescr.renderPassDescriptors[0].shader->fragmentSamplerList)
+    {
+        if (sampler.uid == FastName("decal"))
+            int ttt = 3;
+    }
 
     /*at least in theory flag changes can lead to changes in number of render pa*/
     activeVariantInstance = nullptr;
     activeVariantName = FastName();
     for (auto& variant : renderVariants)
     {
-        SafeDelete(variant.second);
+        delete variant.second;
     }
     renderVariants.clear();
 
@@ -528,11 +569,11 @@ void NMaterial::RebuildTextureBindings()
     {
         RenderVariantInstance* currRenderVariant = variant.second;
         
-        //release existing
-        if (currRenderVariant->textureSet.IsValid())
-            rhi::ReleaseTextureSet(currRenderVariant->textureSet);
-        if (currRenderVariant->samplerState.IsValid())
-            rhi::ReleaseSamplerState(currRenderVariant->samplerState);
+        //release existing        
+        rhi::ReleaseTextureSet(currRenderVariant->textureSet);        
+        rhi::ReleaseTextureSet(currRenderVariant->vertexTextureSet);
+        rhi::ReleaseSamplerState(currRenderVariant->samplerState);
+        
 
         ShaderDescriptor *currShader = currRenderVariant->shader;
         if (!currShader) //cant build for empty shader
@@ -547,9 +588,13 @@ void NMaterial::RebuildTextureBindings()
             if (textureSemantic == DynamicBindings::TEXTURE_STATIC)
             {
                 Texture *tex = GetEffectiveTexture(currShader->fragmentSamplerList[i].uid);
-                //RHI_COMPLETE kostyl
+                //RHI_COMPLETE kostyl - on some maps there are objects with incomplete texture set - later think how to init with default texture (anyway would be required by RE)
                 if (!tex)
-                    tex = Texture::CreatePink(rhi::TEXTURE_TYPE_2D);
+                {
+                    Logger::Debug(" no texture for slot : %s", currShader->fragmentSamplerList[i].uid.c_str());
+                    tex = Texture::CreatePink(rhi::TEXTURE_TYPE_2D, false);                    
+                }
+                    
                 DVASSERT(tex);
                 textureDescr.texture[i] = tex->handle;
                 samplerDescr.sampler[i] = tex->samplerState;                
@@ -609,6 +654,30 @@ bool NMaterial::PreBuildMaterial(const FastName& passName)
     return res;
 }
 
+NMaterial* NMaterial::Clone()
+{
+    NMaterial *clonedMaterial = new NMaterial();
+    clonedMaterial->materialName = materialName;
+    clonedMaterial->fxName = fxName;
+
+    for (auto prop : localProperties)
+        clonedMaterial->AddProperty(prop.first, prop.second->data.get(), prop.second->type, prop.second->arraySize);
+    for (auto tex : localTextures)
+        clonedMaterial->AddTexture(tex.first, tex.second);
+    for (auto flag : localFlags)
+        clonedMaterial->AddFlag(flag.first, flag.second);
+
+    clonedMaterial->SetParent(parent);
+
+    //DataNode properties
+    clonedMaterial->pointer = pointer;
+    clonedMaterial->scene = scene;
+    clonedMaterial->index = index;
+    clonedMaterial->nodeFlags = nodeFlags;
+
+    return clonedMaterial;
+}
+
 void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
     //RHI_COMPLETE - increment version and save/load to new format
@@ -632,11 +701,12 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
         pointer = materialKey;
     }
 
+    uint64 parentKey(0);
     if (archive->IsKeyExists("parentMaterialKey"))
     {
-        uint64 parentKey = archive->GetUInt64("parentMaterialKey");
-        serializationContext->AddBinding(parentKey, this);
+        parentKey = archive->GetUInt64("parentMaterialKey");
     }
+    serializationContext->AddBinding(parentKey, this); //parentKey == 0 is global material if it exists, or no-parent otherwise
 
     if (archive->IsKeyExists("materialGroup"))
     {

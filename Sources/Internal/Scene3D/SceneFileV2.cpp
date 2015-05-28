@@ -88,7 +88,7 @@ namespace DAVA
 {
 
 SceneFileV2::SceneFileV2()
-    : scene(NULL)
+    : scene(nullptr)
 {
     isDebugLogEnabled = false;
     isSaveForGame = false;
@@ -185,7 +185,7 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     header.version = VersionInfo::Instance()->GetCurrentVersion().version;
     header.nodeCount = _scene->GetChildrenCount();
 
-    if(NULL != scene->GetGlobalMaterial())
+    if(_scene->GetGlobalMaterial())
     {
         header.nodeCount++;
     }
@@ -243,9 +243,6 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
 		_scene->OptimizeBeforeExport();
     _scene->GetDataNodes(nodes);
 
-    if(NULL != _scene->GetGlobalMaterial())
-        nodes.push_front(_scene->GetGlobalMaterial());
-
     uint32 dataNodesCount = GetSerializableDataNodesCount(nodes);
     file->Write(&dataNodesCount, sizeof(uint32));
 
@@ -263,14 +260,9 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
 			SaveDataNode(*it, file);
 		}
 	}
-    
-    // save hierarchy
-    if(isDebugLogEnabled)
-        Logger::FrameworkDebug("+ save hierarchy");
 
-#if RHI_COMPLETE
     // save global material settings
-    if(NULL != _scene->GetGlobalMaterial())
+    if(_scene->GetGlobalMaterial())
     {
         KeyedArchive * archive = new KeyedArchive();
         uint64 globalMaterialId = _scene->GetGlobalMaterial()->GetMaterialKey();
@@ -281,8 +273,10 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     
         SafeRelease(archive);
     }
-#endif // RHI_COMPLETE
 
+    // save hierarchy
+    if(isDebugLogEnabled)
+        Logger::FrameworkDebug("+ save hierarchy");
 
     for (int ci = 0; ci < _scene->GetChildrenCount(); ++ci)
     {
@@ -476,13 +470,35 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
             LoadDataNode(0, file);
 		}
 		
+        // load global material
+        {
+            uint32 filePos = file->GetPos();
+            KeyedArchive * archive = new KeyedArchive();
+            archive->Load(file);
+
+            String name = archive->GetString("##name");
+            if (name == "GlobalMaterial")
+            {
+                uint64 globalMaterialId = archive->GetUInt64("globalMaterialId");
+                NMaterial * globalMaterial = static_cast<NMaterial*>(serializationContext.GetDataBlock(globalMaterialId));                
+
+                scene->SetGlobalMaterial(globalMaterial);
+                serializationContext.SetGlobalMaterialKey(globalMaterialId);
+            }
+            else
+            {
+                file->Seek(filePos, File::SEEK_FROM_START);
+            }
+
+            SafeRelease(archive);
+        }
+
 		serializationContext.ResolveMaterialBindings();
     }
     
     if(isDebugLogEnabled)
         Logger::FrameworkDebug("+ load hierarchy");
 
-    NMaterial *globalMaterial = NULL;
     Entity * rootNode = new Entity();
     rootNode->SetName(rootNodePathName.GetFilename().c_str());
 	rootNode->SetScene(0);
@@ -490,12 +506,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
     rootNode->children.reserve(header.nodeCount);
     for (int ci = 0; ci < header.nodeCount; ++ci)
     {
-        LoadHierarchy(0, &globalMaterial, rootNode, file, 1);
-    }
-
-    if(NULL != globalMaterial)
-    {
-        scene->SetGlobalMaterial(globalMaterial);
+        LoadHierarchy(0, rootNode, file, 1);
     }
 		    
     //as we are going to take information about required attribute streams from shader - we are to wait for shader compilation
@@ -510,7 +521,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
     
     if (GetError() == ERROR_NO_ERROR)
     {
-        // TODO: Check do we need to releae root node here
+        // TODO: Check do we need to release root node here
         _scene->AddRootNode(rootNode, rootNodePathName);
     }
     
@@ -523,7 +534,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
 
 SceneArchive *SceneFileV2::LoadSceneArchive(const FilePath & filename)
 {
-    SceneArchive *res = NULL;
+    SceneArchive *res = nullptr;
     File * file = File::Create(filename, File::OPEN | File::READ);
     if (!file)
     {
@@ -759,7 +770,7 @@ bool SceneFileV2::SaveHierarchy(Entity * node, File * file, int32 level)
     return true;
 }
 
-void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entity * parent, File * file, int32 level)
+void SceneFileV2::LoadHierarchy(Scene * scene, Entity * parent, File * file, int32 level)
 {
     bool keepUnusedQualityEntities = QualitySettingsSystem::Instance()->GetKeepUnusedEntities();
     KeyedArchive * archive = new KeyedArchive();
@@ -770,14 +781,16 @@ void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entit
     bool removeChildren = false;
     bool skipNode = false;
     
-    Entity * node = NULL;
+    Entity * node = nullptr;
     if (name == "LandscapeNode")
     {
         node = LoadLandscape(scene, archive);
-    }else if (name == "Camera")
+    }
+    else if (name == "Camera")
     {
         node = LoadCamera(scene, archive);
-    }else if ((name == "LightNode"))// || (name == "EditorLightNode"))
+    }
+    else if ((name == "LightNode"))// || (name == "EditorLightNode"))
     {
         node = LoadLight(scene, archive);
         removeChildren = true;
@@ -786,14 +799,6 @@ void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entit
 	{
 		node = LoadEntity(scene, archive);
 	}
-    else if(name == "GlobalMaterial")
-    {
-        if(NULL != globalMaterial)
-        {
-            uint64 globalMaterialId = archive->GetUInt64("globalMaterialId");
-            *globalMaterial = static_cast<NMaterial*>(serializationContext.GetDataBlock(globalMaterialId));
-        }
-    }
 	else
     {
         BaseObject *obj = ObjectFactory::Instance()->New<BaseObject>(name);
@@ -812,7 +817,7 @@ void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entit
         }
     }
 
-    if(NULL != node)
+    if(nullptr != node)
     {
         if(isDebugLogEnabled)
         {
@@ -829,7 +834,7 @@ void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entit
         node->children.reserve(childrenCount);
         for(int ci = 0; ci < childrenCount; ++ci)
         {
-            LoadHierarchy(scene, globalMaterial, node, file, level + 1);
+            LoadHierarchy(scene, node, file, level + 1);
         }
 
         if(removeChildren && childrenCount)
@@ -988,12 +993,12 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity * currentNode)
     if(currentNode->GetChildrenCount() == 1)
     {
 		uint32 allowed_comp_count = 0;
-		if(NULL != currentNode->GetComponent(Component::TRANSFORM_COMPONENT))
+		if(nullptr != currentNode->GetComponent(Component::TRANSFORM_COMPONENT))
 		{
 			allowed_comp_count++;
 		}
 
-		if(NULL != currentNode->GetComponent(Component::CUSTOM_PROPERTIES_COMPONENT))
+		if(nullptr != currentNode->GetComponent(Component::CUSTOM_PROPERTIES_COMPONENT))
 		{
 			allowed_comp_count++;
 		}
@@ -1339,8 +1344,7 @@ void SceneFileV2::ReplaceOldNodes(Entity * currentNode)
 }
 
 void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity * node)
-{
-#if RHI_COMPLETE
+{      
     RenderObject * ro = GetRenderObject(node);
     if (ro)
     {
@@ -1356,18 +1360,13 @@ void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity * node)
 
             while (material)
             {
-                flagValue = material->GetFlagValue(FLAG_FOG_EXP);
-                if ((flagValue & NMaterial::FlagInherited) == 0)
-                {
-                    material->ResetFlag(FLAG_FOG_EXP);
-                }
+                /*if (material->HasLocalFlag(FLAG_FOG_EXP))
+                    material->RemoveFlag(FLAG_FOG_EXP);                */
 
-                flagValue = material->GetFlagValue(FLAG_TILED_DECAL);
-                if ((flagValue & NMaterial::FlagInherited) == 0)
+                if (material->HasLocalFlag(FLAG_TILED_DECAL))
                 {
-                    NMaterial::eFlagValue flag = ((flagValue & NMaterial::FlagOn) == NMaterial::FlagOn) ? NMaterial::FlagOn : NMaterial::FlagOff;
-                    material->SetFlag(NMaterialFlagName::FLAG_TILED_DECAL_MASK, flag);
-                    material->ResetFlag(FLAG_TILED_DECAL);
+                    material->AddFlag(NMaterialFlagName::FLAG_TILED_DECAL_MASK, material->GetLocalFlagValue(FLAG_TILED_DECAL));
+                    material->RemoveFlag(FLAG_TILED_DECAL);
                 }
 
                 material = material->GetParent();
@@ -1381,7 +1380,6 @@ void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity * node)
         Entity * child = node->GetChild(i);
         RemoveDeprecatedMaterialFlags(child);
     }
-#endif //RHI_COMPLETE
 }
 
 void SceneFileV2::RebuildTangentSpace(Entity *entity)
@@ -1410,7 +1408,7 @@ void SceneFileV2::RebuildTangentSpace(Entity *entity)
 
 void SceneFileV2::ConvertShadowVolumes(Entity * entity, NMaterial * shadowMaterialParent)
 {
-#ifdef RHI_COMPLETE
+
     RenderObject * ro = GetRenderObject(entity);
     if(ro)
     {
@@ -1432,7 +1430,7 @@ void SceneFileV2::ConvertShadowVolumes(Entity * entity, NMaterial * shadowMateri
                     shadowPg->Release();
                 }
 
-                NMaterial* shadowMaterial = NMaterial::CreateMaterialInstance();
+                NMaterial* shadowMaterial = new NMaterial();
                 shadowMaterial->SetParent(shadowMaterialParent);
                 shadowBatch->SetMaterial(shadowMaterial);
                 shadowMaterial->Release();
@@ -1449,7 +1447,7 @@ void SceneFileV2::ConvertShadowVolumes(Entity * entity, NMaterial * shadowMateri
         Entity * child = entity->GetChild(i);
         ConvertShadowVolumes(child, shadowMaterialParent);
     }
-#endif // RHI_COMPLETE
+
 }
 
 void SceneFileV2::OptimizeScene(Entity * rootNode)
@@ -1513,7 +1511,7 @@ void SceneFileV2::UpdatePolygonGroupRequestedFormatRecursively(Entity *entity)
 #ifdef RHI_COMPLETE
     RenderObject *ro = GetRenderObject(entity);
 
-    if (ro && ro->GetType()!=RenderObject::TYPE_SKYBOX)
+    if (ro)
     {
         for (int32 i=0, sz=ro->GetRenderBatchCount(); i<sz; ++i)
         {
@@ -1551,7 +1549,7 @@ SceneArchive::~SceneArchive()
     }
 }
 
-SceneArchive::SceneArchiveHierarchyNode::SceneArchiveHierarchyNode():archive(NULL)
+SceneArchive::SceneArchiveHierarchyNode::SceneArchiveHierarchyNode():archive(nullptr)
 {
 }
 

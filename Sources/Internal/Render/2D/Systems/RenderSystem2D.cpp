@@ -29,14 +29,11 @@
 
 #include "RenderSystem2D.h"
 #include "VirtualCoordinatesSystem.h"
-#include "Render/RenderHelper.h"
 
 #include "UI/UIControl.h"
 #include "UI/UIControlBackground.h"
 
 #include "Render/Renderer.h"
-#include "Render/TextureStateData.h"
-
 
 namespace DAVA
 {
@@ -301,6 +298,8 @@ RenderSystem2D::RenderSystem2D()
     , prevFrameErrorsFlags(NO_ERRORS)
     , currFrameErrorsFlags(NO_ERRORS)
     , highlightControlsVerticesLimit(0)
+    , renderTargetWidth(0)
+    , renderTargetHeight(0)
 {
 }
 
@@ -389,7 +388,6 @@ void RenderSystem2D::Init()
         TEXTURE_ADD_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
     }
 #endif RHI_COMPLETE
-
     DEFAULT_2D_COLOR_MATERIAL = new NMaterial();
     DEFAULT_2D_COLOR_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Color.material"));
     DEFAULT_2D_COLOR_MATERIAL->PreBuildMaterial(FastName("2d"));
@@ -403,7 +401,6 @@ void RenderSystem2D::Init()
     DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL->AddFlag(FastName("IMAGE_A8"), 1);
     DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL->PreBuildMaterial(FastName("2d"));
 
-    renderPassConfig.priority = PRIORITY_SERVICE_2D;
 }
 
 RenderSystem2D::~RenderSystem2D()
@@ -455,9 +452,13 @@ void RenderSystem2D::BeginFrame()
 #endif
 #endif
 
-    currentPassHandle = rhi::AllocateRenderPass(renderPassConfig, 1, &currentPacketListHandle);
-    rhi::BeginRenderPass(currentPassHandle);
-    rhi::BeginPacketList(currentPacketListHandle);
+    rhi::RenderPassConfig renderPass2DConfig;
+    renderPass2DConfig.priority = PRIORITY_MAIN_2D;
+    renderPass2DConfig.colorBuffer[0].loadAction = rhi::LOADACTION_NONE;
+    pass2DHandle = rhi::AllocateRenderPass(renderPass2DConfig, 1, &packetList2DHandle);
+
+    rhi::BeginRenderPass(pass2DHandle);
+    rhi::BeginPacketList(packetList2DHandle);
 }
 
 void RenderSystem2D::EndFrame()
@@ -466,30 +467,56 @@ void RenderSystem2D::EndFrame()
     prevFrameErrorsFlags = currFrameErrorsFlags;
     currFrameErrorsFlags = 0;
 
-    rhi::EndPacketList(currentPacketListHandle);
-    rhi::EndRenderPass(currentPassHandle);
+    rhi::EndPacketList(packetList2DHandle);
+    rhi::EndRenderPass(pass2DHandle);
+}
+
+void RenderSystem2D::BeginRenderTargetPass(Texture * target)
+{
+    DVASSERT(!renderTargetWidth);
+    DVASSERT(target);
+    DVASSERT(target->GetWidth() && target->GetHeight())
+
+    Flush();
+
+    //RHI_COMPLETE: set viewport
+    rhi::RenderPassConfig renderTargetPassConfig;
+    renderTargetPassConfig.priority = PRIORITY_SERVICE_2D;
+    passTargetHandle = rhi::AllocateRenderPass(renderTargetPassConfig, 1, &packetListTargetHandle);
+
+    rhi::BeginRenderPass(passTargetHandle);
+    rhi::BeginPacketList(packetListTargetHandle);
+
+    renderTargetWidth = target->GetWidth();
+    renderTargetHeight = target->GetHeight();
+}
+
+void RenderSystem2D::EndRenderTargetPass()
+{
+    Flush();
+
+    rhi::EndPacketList(packetListTargetHandle);
+    rhi::EndRenderPass(passTargetHandle);
+
+    renderTargetWidth = 0;
+    renderTargetHeight = 0;
 }
 
 void RenderSystem2D::Setup2DProjection()
 {
-#if RHI_COMPLETE //ppc - framebuffer size and RT magic
-    Texture * currentRenderTarget = RenderManager::Instance()->GetRenderTarget();
-    if (currentRenderTarget)
+    if (renderTargetWidth)
     {
-        projMatrix.glOrtho(0.0f, (float32)currentRenderTarget->GetWidth(),
-                        0.0f, (float32)currentRenderTarget->GetHeight(),
-                       -1.0f, 1.0f);
+        projMatrix.glOrtho(0.0f, (float32)renderTargetWidth,
+                           0.0f, (float32)renderTargetHeight,
+                          -1.0f, 1.0f);
     }
     else
-
     {
-        Size2i framebufferSize = RenderManager::Instance()->GetFramebufferSize();
-        projMatrix.glOrtho(0.0f, (float32)framebufferSize.dx, (float32)framebufferSize.dy, 0.0f, -1.0f, 1.0f);
+        projMatrix.glOrtho(0.0f, (float32)Renderer::GetFramebufferWidth(), (float32)Renderer::GetFramebufferHeight(), 0.0f, -1.0f, 1.0f);
     }
 
     projMatrix = virtualToPhysicalMatrix * projMatrix;
-    Renderer::GetDynamicBindings().SetDynamicParam(PARAM_PROJ, &projMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
-#endif //RHI_COMPLETE
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 
     projMatrix.glOrtho(0.0f, (float32)1024, (float32)768, 0.0f, -1.0f, 1.0f);
     projMatrix = virtualToPhysicalMatrix * projMatrix;
@@ -713,7 +740,7 @@ void RenderSystem2D::Flush()
         batch.material->BindParams(packet);
         packet.fragmentTextureSet = batch.textureSetHandle;
 
-        rhi::AddPacket(currentPacketListHandle, packet);
+        rhi::AddPacket(renderTargetWidth ? packetListTargetHandle : packetList2DHandle, packet);
     }
 
     batches.clear();

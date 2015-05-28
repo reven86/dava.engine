@@ -501,6 +501,14 @@ PipelineStateDX9_t::VertexProgDX9::Construct( const void* bin, unsigned bin_sz, 
                         cbufCount[i] = desc.Elements;
                     }
                 }
+                else
+                {
+                    if( strstr( (const char*)bin, name ) )
+                    {
+                        Logger::Warning( "shader has \"%s\", but no variables actually use it in code:\n", name );
+                        DumpShaderText( (const char*)bin, bin_sz );
+                    }
+                }
             }
             
             // do some additional sanity checks
@@ -534,11 +542,12 @@ PipelineStateDX9_t::VertexProgDX9::Construct( const void* bin, unsigned bin_sz, 
     }
     else
     {
-        Logger::Error( "FAILED to compile vertex-shader:\n" );
+        Logger::Error( "FAILED to compile vertex-shader:" );
         if( err )
         {
             Logger::Info( (const char*)(err->GetBufferPointer()) );
         }
+        Logger::Error( "shader-uid : %s", uid.c_str() );
         Logger::Error( "vertex-shader text:\n" );
         DumpShaderText( (const char*)bin, bin_sz );
     }
@@ -669,6 +678,14 @@ PipelineStateDX9_t::FragmentProgDX9::Construct( const void* bin, unsigned bin_sz
                         cbufCount[i] = desc.Elements;
                     }
                 }
+                else
+                {
+                    if( strstr( (const char*)bin, name ) )
+                    {
+                        Logger::Warning( "shader has \"%s\", but no variables actually use it in code:\n", name );
+                        DumpShaderText( (const char*)bin, bin_sz );
+                    }
+                }
             }
             
             // do some additional sanity checks
@@ -762,11 +779,11 @@ dx9_PipelineState_Create( const PipelineState::Descriptor& desc )
     rhi::ShaderCache::GetProg( desc.vprogUid, &vprog_bin );
     rhi::ShaderCache::GetProg( desc.fprogUid, &fprog_bin );
 
-    vprog_valid = ps->vprog.Construct( (const char*)(&vprog_bin[0]), vprog_bin.size(), desc.vertexLayout ); 
-    fprog_valid = ps->fprog.Construct( (const char*)(&fprog_bin[0]), fprog_bin.size() ); 
-
     ps->vprog.uid = desc.vprogUid;
     ps->fprog.uid = desc.fprogUid;
+
+    vprog_valid = ps->vprog.Construct( (const char*)(&vprog_bin[0]), vprog_bin.size(), desc.vertexLayout ); 
+    fprog_valid = ps->fprog.Construct( (const char*)(&fprog_bin[0]), fprog_bin.size() ); 
     
     if( vprog_valid  &&  fprog_valid )
     {

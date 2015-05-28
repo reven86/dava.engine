@@ -64,7 +64,6 @@
 #include "Scene3D/Systems/SwitchSystem.h"
 #include "Scene3D/Systems/SoundUpdateSystem.h"
 #include "Scene3D/Systems/ActionUpdateSystem.h"
-#include "Scene3D/Systems/SkyboxSystem.h"
 #include "Scene3D/Systems/WindSystem.h"
 #include "Scene3D/Systems/WaveSystem.h"
 #include "Scene3D/Systems/SkeletonSystem.h"
@@ -90,11 +89,9 @@
 namespace DAVA 
 {
 
-Texture* Scene::stubTexture2d = NULL;
-Texture* Scene::stubTextureCube = NULL;
-Texture* Scene::stubTexture2dLightmap = NULL; //this texture should be all-pink without checkers
-    
-    
+//RHI_COMPLETE TODO: remove this crap with shadow color
+static const FastName DEPRECATED_SHADOW_COLOR_PARAM("shadowColor");
+
 Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
 	: Entity()
     , transformSystem(0)
@@ -107,7 +104,6 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     , switchSystem(0)
     , soundSystem(0)
     , actionSystem(0)
-    , skyboxSystem(0)
     , staticOcclusionSystem(0)
 	, materialSystem(0)
     , foliageSystem(0)
@@ -115,7 +111,6 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     , animationSystem(0)
     , staticOcclusionDebugDrawSystem(0)    
     , systemsMask(_systemsMask)
-    , isDefaultGlobalMaterial(true)
     , sceneGlobalMaterial(0)
     , mainCamera(0)
     , drawCamera(0)
@@ -124,7 +119,7 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
 	CreateSystems();
 
     // this will force scene to create hidden global material
-    SetGlobalMaterial(NULL);
+    SetGlobalMaterial(nullptr);
     
     SceneCache::Instance()->InsertScene(this);
 
@@ -137,122 +132,18 @@ void Scene::CreateComponents()
 
 NMaterial* Scene::GetGlobalMaterial() const
 {
-    NMaterial *ret = NULL;
-
-    // default global material is for internal use only
-    // so all external object should assume, that scene hasn't any global material
-    if(!isDefaultGlobalMaterial)
-    {
-        ret = sceneGlobalMaterial;
-    }
-
-    return ret;
+    return sceneGlobalMaterial;
 }
 
 void Scene::SetGlobalMaterial(NMaterial *globalMaterial)
 {
-#if RHI_COMPLETE
     SafeRelease(sceneGlobalMaterial);
-
-    if(NULL != globalMaterial)
-    {
-        DVASSERT(globalMaterial->GetMaterialType() == NMaterial::MATERIALTYPE_GLOBAL);
-
-        isDefaultGlobalMaterial = false;
-        sceneGlobalMaterial = SafeRetain(globalMaterial);
-    }
-    else
-    {
-        isDefaultGlobalMaterial = true;
-        sceneGlobalMaterial = NMaterial::CreateGlobalMaterial(FastName("Scene_Global_Material"));
-    }
-
-    InitGlobalMaterial();
+    sceneGlobalMaterial = SafeRetain(globalMaterial);
 
     renderSystem->SetGlobalMaterial(sceneGlobalMaterial);
     particleEffectSystem->SetGlobalMaterial(sceneGlobalMaterial);
     
     ImportShadowColor(this);
-#endif //RHI_COMPLETE
-}
-
-void Scene::InitGlobalMaterial()
-{
-#if RHI_COMPLETE
-    if(NULL == stubTexture2d)
-    {
-        stubTexture2d = Texture::CreatePink(rhi::TEXTURE_TYPE_2D);
-    }
-
-    if(NULL == stubTextureCube)
-    {
-        stubTextureCube = Texture::CreatePink(rhi::TEXTURE_TYPE_CUBE);
-    }
-
-    if(NULL == stubTexture2dLightmap)
-    {
-        stubTexture2dLightmap = Texture::CreatePink(rhi::TEXTURE_TYPE_2D, false);
-    }
-
-    Vector3 defaultVec3;
-    Color defaultColor(1.0f, 0.0f, 0.0f, 1.0f);
-    //float32 defaultFloat0 = 0.0f;
-    float32 defaultFloat05 = 0.5f;
-    float32 defaultFloat10 = 1.0f;
-    Vector2 defaultVec2;
-    Vector2 defaultVec2I(1.f, 1.f);
-    float32 defaultLightmapSize = 16.0f;
-    float32 defaultFogStart = 0.0f;
-    float32 defaultFogEnd = 500.0f;
-    float32 defaultFogHeight = 50.0f;
-    float32 defaultFogDensity = 0.005f;
-
-
-    if(sceneGlobalMaterial->GetTexturePath(NMaterialTextureName::TEXTURE_ALBEDO).IsEmpty()) sceneGlobalMaterial->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, stubTexture2d);
-    if(sceneGlobalMaterial->GetTexturePath(NMaterialTextureName::TEXTURE_NORMAL).IsEmpty()) sceneGlobalMaterial->SetTexture(NMaterialTextureName::TEXTURE_NORMAL, stubTexture2d);
-    if(sceneGlobalMaterial->GetTexturePath(NMaterialTextureName::TEXTURE_DETAIL).IsEmpty()) sceneGlobalMaterial->SetTexture(NMaterialTextureName::TEXTURE_DETAIL, stubTexture2d);
-    if(sceneGlobalMaterial->GetTexturePath(NMaterialTextureName::TEXTURE_LIGHTMAP).IsEmpty()) sceneGlobalMaterial->SetTexture(NMaterialTextureName::TEXTURE_LIGHTMAP, stubTexture2dLightmap);
-    if(sceneGlobalMaterial->GetTexturePath(NMaterialTextureName::TEXTURE_DECAL).IsEmpty()) sceneGlobalMaterial->SetTexture(NMaterialTextureName::TEXTURE_DECAL, stubTexture2d);
-    if(sceneGlobalMaterial->GetTexturePath(NMaterialTextureName::TEXTURE_CUBEMAP).IsEmpty()) sceneGlobalMaterial->SetTexture(NMaterialTextureName::TEXTURE_CUBEMAP, stubTextureCube);
-    if(sceneGlobalMaterial->GetTexturePath(NMaterialTextureName::TEXTURE_DECALMASK).IsEmpty()) sceneGlobalMaterial->SetTexture(NMaterialTextureName::TEXTURE_DECALMASK, stubTexture2d);
-    if(sceneGlobalMaterial->GetTexturePath(NMaterialTextureName::TEXTURE_DECALTEXTURE).IsEmpty()) sceneGlobalMaterial->SetTexture(NMaterialTextureName::TEXTURE_DECALTEXTURE, stubTexture2d);
-
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_LIGHT_POSITION0)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_LIGHT_POSITION0, Shader::UT_FLOAT_VEC3, 1, defaultVec3.data);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_PROP_AMBIENT_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_PROP_AMBIENT_COLOR, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_PROP_DIFFUSE_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_PROP_DIFFUSE_COLOR, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_PROP_SPECULAR_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_PROP_SPECULAR_COLOR, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_LIGHT_AMBIENT_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_LIGHT_AMBIENT_COLOR, Shader::UT_FLOAT_VEC3, 1, &defaultColor);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_LIGHT_DIFFUSE_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_LIGHT_DIFFUSE_COLOR, Shader::UT_FLOAT_VEC3, 1, &defaultColor);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_LIGHT_SPECULAR_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_LIGHT_SPECULAR_COLOR, Shader::UT_FLOAT_VEC3, 1, &defaultColor);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_LIGHT_INTENSITY0)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_LIGHT_INTENSITY0, Shader::UT_FLOAT, 1, &defaultFloat05);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_MATERIAL_SPECULAR_SHININESS)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_MATERIAL_SPECULAR_SHININESS, Shader::UT_FLOAT, 1, &defaultFloat05);
-    
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_FOG_LIMIT)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_FOG_LIMIT, Shader::UT_FLOAT, 1, &defaultFloat10);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_FOG_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_FOG_COLOR, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_FOG_DENSITY)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_FOG_DENSITY, Shader::UT_FLOAT, 1, &defaultFogDensity);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_FOG_START)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_FOG_START, Shader::UT_FLOAT, 1, &defaultFogStart);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_FOG_END)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_FOG_END, Shader::UT_FLOAT, 1, &defaultFogEnd);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_FOG_HALFSPACE_DENSITY)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_FOG_HALFSPACE_DENSITY, Shader::UT_FLOAT, 1, &defaultFogDensity);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_FOG_HALFSPACE_FALLOFF)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_FOG_HALFSPACE_FALLOFF, Shader::UT_FLOAT, 1, &defaultFogDensity);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_FOG_HALFSPACE_HEIGHT)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_FOG_HALFSPACE_HEIGHT, Shader::UT_FLOAT, 1, &defaultFogHeight);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_FOG_HALFSPACE_LIMIT)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_FOG_HALFSPACE_LIMIT, Shader::UT_FLOAT, 1, &defaultFloat10);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SUN)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SUN, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SKY)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SKY, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_FOG_ATMOSPHERE_SCATTERING)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_FOG_ATMOSPHERE_SCATTERING, Shader::UT_FLOAT, 1, &defaultFloat10);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_FOG_ATMOSPHERE_DISTANCE)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_FOG_ATMOSPHERE_DISTANCE, Shader::UT_FLOAT, 1, &defaultFogEnd);
-
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_FLAT_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_FLAT_COLOR, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_TEXTURE0_SHIFT)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_TEXTURE0_SHIFT, Shader::UT_FLOAT_VEC2, 1, defaultVec2.data);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_UV_OFFSET)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_UV_OFFSET, Shader::UT_FLOAT_VEC2, 1, defaultVec2.data);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_UV_SCALE)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_UV_SCALE, Shader::UT_FLOAT_VEC2, 1, defaultVec2.data);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_LIGHTMAP_SIZE)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_LIGHTMAP_SIZE, Shader::UT_FLOAT, 1, &defaultLightmapSize);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_DECAL_TILE_SCALE)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_DECAL_TILE_SCALE, Shader::UT_FLOAT_VEC2, 1, &defaultVec2);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_DECAL_TILE_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_DECAL_TILE_COLOR, Shader::UT_FLOAT_VEC4, 1, &Color::White);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_DETAIL_TILE_SCALE)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_DETAIL_TILE_SCALE, Shader::UT_FLOAT_VEC2, 1, &defaultVec2);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterialParamName::PARAM_SHADOW_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterialParamName::PARAM_SHADOW_COLOR, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
-    if (NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_NORMAL_SCALE)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_NORMAL_SCALE, Shader::UT_FLOAT, 1, &defaultFloat10);
-#endif //RHI_COMPLETE
-
 }
 
 rhi::RenderPassConfig& Scene::GetMainPassConfig()
@@ -335,12 +226,7 @@ void Scene::CreateSystems()
         actionSystem = new ActionUpdateSystem(this);
         AddSystem(actionSystem, MAKE_COMPONENT_MASK(Component::ACTION_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
-
-    if(SCENE_SYSTEM_SKYBOX_FLAG & systemsMask)
-    {
-        skyboxSystem = new SkyboxSystem(this);
-        AddSystem(skyboxSystem, MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
-    }
+    
 
     if(SCENE_SYSTEM_MATERIAL_FLAG & systemsMask)
     {
@@ -429,7 +315,6 @@ Scene::~Scene()
     switchSystem = 0;
     soundSystem = 0;
     actionSystem = 0;
-    skyboxSystem = 0;
     staticOcclusionSystem = 0;
     materialSystem = 0;
     speedTreeUpdateSystem = 0;
@@ -827,10 +712,10 @@ void Scene::Draw()
 {
     TIME_PROFILE("Scene::Draw");
 
-    //TODO: remove this crap with shadow color
-    if (sceneGlobalMaterial && sceneGlobalMaterial->HasLocalProperty(NMaterialParamName::PARAM_SHADOW_COLOR))
+    //RHI_COMPLETE TODO: remove this crap with shadow color
+    if (sceneGlobalMaterial && sceneGlobalMaterial->HasLocalProperty(DEPRECATED_SHADOW_COLOR_PARAM))
     {
-        const float32 * propDataPtr = sceneGlobalMaterial->GetLocalPropValue(NMaterialParamName::PARAM_SHADOW_COLOR);
+        const float32 * propDataPtr = sceneGlobalMaterial->GetLocalPropValue(DEPRECATED_SHADOW_COLOR_PARAM);
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR, propDataPtr, (pointer_size)sceneGlobalMaterial);
     }
     else
@@ -1056,17 +941,16 @@ void Scene::OptimizeBeforeExport()
 {
 #if RHI_COMPLETE
     Set<NMaterial*> materials;
-    materialSystem->BuildMaterialList(this, materials);
+    materialSystem->BuildMaterialList(materials);
     
-    ImportShadowColor(this);
-
     Set<NMaterial *>::const_iterator endIt = materials.end();
     for(Set<NMaterial *>::const_iterator it = materials.begin(); it != endIt; ++it)
         (*it)->ReleaseIlluminationParams();
+#endif  // RHI_COMPLETE
 
+    ImportShadowColor(this);
 
     Entity::OptimizeBeforeExport();
-#endif  // RHI_COMPLETE
 }
 
 void Scene::ImportShadowColor(Entity * rootNode)
@@ -1080,11 +964,12 @@ void Scene::ImportShadowColor(Entity * rootNode)
 			KeyedArchive * props = GetCustomPropertiesArchieve(landscapeNode);
 			if (props->IsKeyExists("ShadowColor"))
 			{
-                if (sceneGlobalMaterial->HasLocalProperty(NMaterialParamName::PARAM_SHADOW_COLOR))
-                    sceneGlobalMaterial->RemoveProperty(NMaterialParamName::PARAM_SHADOW_COLOR);
+                //RHI_COMPLETE TODO: check if shadow color from landscape is used, fix it and remove this crap
+                if (sceneGlobalMaterial->HasLocalProperty(DEPRECATED_SHADOW_COLOR_PARAM))
+                    sceneGlobalMaterial->RemoveProperty(DEPRECATED_SHADOW_COLOR_PARAM);
 
 				Color shadowColor = props->GetVariant("ShadowColor")->AsColor();
-                sceneGlobalMaterial->AddProperty(NMaterialParamName::PARAM_SHADOW_COLOR, shadowColor.color, rhi::ShaderProp::TYPE_FLOAT4);					
+                sceneGlobalMaterial->AddProperty(DEPRECATED_SHADOW_COLOR_PARAM, shadowColor.color, rhi::ShaderProp::TYPE_FLOAT4);
 				props->DeleteKey("ShadowColor");
 			}
 		}
@@ -1111,12 +996,12 @@ void Scene::HandleEvent(Observable * observable)
 {
 
     RenderOptions * options = dynamic_cast<RenderOptions *>(observable);
-#if RHI_COMPLETE
+
     if (options->IsOptionEnabled(RenderOptions::REPLACE_LIGHTMAP_MIPMAPS))
-        MipMapReplacer::ReplaceMipMaps(this, NMaterial::TEXTURE_LIGHTMAP);
+        MipMapReplacer::ReplaceMipMaps(this, NMaterialTextureName::TEXTURE_LIGHTMAP);
     if (options->IsOptionEnabled(RenderOptions::REPLACE_ALBEDO_MIPMAPS))
-        MipMapReplacer::ReplaceMipMaps(this, NMaterial::TEXTURE_ALBEDO);
-#endif // RHI_COMPLETE
+        MipMapReplacer::ReplaceMipMaps(this, NMaterialTextureName::TEXTURE_ALBEDO);
+
 
     if (options->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && !staticOcclusionDebugDrawSystem)
     {

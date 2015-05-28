@@ -86,6 +86,10 @@ class RenderVariantInstance
     Vector<MaterialBufferBinding *> materialBufferBindings;
     
     uint32 renderLayer;
+
+    RenderVariantInstance();
+    RenderVariantInstance(const RenderVariantInstance&) = delete;
+    ~RenderVariantInstance();
 };
 
 class NMaterial : public DataNode
@@ -96,10 +100,12 @@ public:
     ~NMaterial();
 
     void Load(KeyedArchive * archive, SerializationContext * serializationContext) override;
+    NMaterial* Clone();
 
     void SetFXName(const FastName & fxName);
     const FastName & GetFXName();
 
+    inline void SetMaterialName(const FastName & name);
     inline const FastName& GetMaterialName() const;
 
     /*properties*/
@@ -122,7 +128,8 @@ public:
     void AddFlag(const FastName& flagName, int32 value);
     void RemoveFlag(const FastName& flagName);
     void SetFlag(const FastName& flagName, int32 value);
-    bool HasLocalFlag(const FastName& flagName);    
+    int32 GetLocalFlagValue(const FastName& flagName);
+    bool HasLocalFlag(const FastName& flagName);        
 
     void SetParent(NMaterial *parent);
     NMaterial* GetParent();       
@@ -161,7 +168,7 @@ private:
     const FastName& GetQualityGroup();
 
     void AddChildMaterial(NMaterial *material);
-    void RemoveChildMaterial(NMaterial *material);
+    void RemoveChildMaterial(NMaterial *material);    
 
 private:
     //config time
@@ -208,6 +215,10 @@ void NMaterialProperty::SetPropertyValue(const float32 *newValue)
     updateSemantic = ++globalPropertyUpdateSemanticCounter;
 }
 
+void NMaterial::SetMaterialName(const FastName & name)
+{
+    materialName = name;
+}
 const FastName& NMaterial::GetMaterialName() const
 {
     return materialName;

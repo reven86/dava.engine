@@ -117,7 +117,8 @@ PreProcessText( const char* text, std::string* result )
     { 
         "<mcpp>",   // we just need first arg
         "-P",       // do not output #line directives 
-        "-C",       // keep comments
+// it doesn't work as desired with '//' style comments (commented block inserted BEFORE non-commented text)
+//        "-C",       // keep comments
         MCPP_Text
     };
 
@@ -127,6 +128,7 @@ PreProcessText( const char* text, std::string* result )
     mcpp_set_out_func( &_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf );
     mcpp_lib_main( countof(argv), (char**)argv );
     _PreprocessedText = nullptr;
+    mcpp__cleanup();
 }
 
 
@@ -143,7 +145,8 @@ PreProcessText( const char* text, const char** arg, unsigned argCount, std::stri
 
         argv[argc++] = "<mcpp>";// we just need first arg
         argv[argc++] = "-P";    // do not output #line directives
-        argv[argc++] = "-C";    // keep comments
+// it doesn't work as desired with '//' style comments (commented block inserted BEFORE non-commented text)
+//        argv[argc++] = "-C";    // keep comments
         for( const char** a=arg,**a_end=arg+argCount; a!=a_end; ++a )
             argv[argc++] = *a;
         argv[argc++] = MCPP_Text;
@@ -154,9 +157,19 @@ PreProcessText( const char* text, const char** arg, unsigned argCount, std::stri
         mcpp_set_out_func( &_mcpp__fputc, &_mcpp__fputs, &_mcpp__fprintf );
         mcpp_lib_main( argc, (char**)argv );
         _PreprocessedText = nullptr;
+        mcpp__cleanup();
     }
     else
     {
         *result = "";
     }
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+SetPreprocessCurFile( const char* filename )
+{
+    mcpp__set_cur_file( filename );
 }

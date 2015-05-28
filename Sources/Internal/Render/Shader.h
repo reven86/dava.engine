@@ -35,6 +35,7 @@
 #include "Render/RHI/rhi_ShaderSource.h"
 #include "Render/UniqueStateSet.h"
 #include "Render/DynamicBindings.h"
+#include "Base/FastNameMap.h"
 
 namespace DAVA
 {
@@ -63,10 +64,16 @@ struct DynamicPropertyBinding
     DynamicBindings::eUniformSemantic dynamicPropertySemantic;
 };
 
+//forward declarations for friending
+class ShaderDescriptor;
+namespace ShaderDescriptorCache{
+ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines);
+}
+
 
 
 class ShaderDescriptor
-{
+{    
 public://utility    
     static const rhi::ShaderPropList& GetProps(UniquePropertyLayout layout);
     static uint32 CalculateRegsCount(rhi::ShaderProp::Type type, uint32 arraySize);  //return in registers  
@@ -83,8 +90,7 @@ public:
 
     rhi::HConstBuffer GetDynamicBuffer(ConstBufferDescriptor::Type type, uint32 index);
     inline rhi::HPipelineState GetPiplineState(){ return piplineState; }
-    
-
+        
 private:
     Vector<ConstBufferDescriptor> constBuffers;
 
@@ -97,9 +103,14 @@ private:
     rhi::HPipelineState piplineState;
 
     rhi::ShaderSamplerList fragmentSamplerList;
-    rhi::ShaderSamplerList vertexSamplerList;
+    rhi::ShaderSamplerList vertexSamplerList;    
 
-    friend class NMaterial;
+//for storing and further debug simplification    
+    FastName sourceName;
+    HashMap<FastName, int32> defines;
+
+    friend class NMaterial;        
+    friend ShaderDescriptor* ShaderDescriptorCache::GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines);
 };
 
 };

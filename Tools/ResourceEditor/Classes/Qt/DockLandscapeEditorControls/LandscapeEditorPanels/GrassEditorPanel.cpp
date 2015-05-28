@@ -189,8 +189,6 @@ void GrassEditorPanel::RestoreState()
         if(NULL != vegetationRObj)
         {
             QPixmap txpix;
-            DAVA::TextureSheet sheet;
-            sheet.Load(vegetationRObj->GetTextureSheetPath());
 
             DAVA::FilePath texturePath = vegetationRObj->GetVegetationTexture();
             texturePath.ReplaceExtension(".png");
@@ -220,6 +218,7 @@ void GrassEditorPanel::RestoreState()
                 {
                     if(NULL != item)
                     {
+#if RHI_COMPLETE_EDITOR
                         DAVA::Rect2i r = MapTexCoord(sheet.cells[i], txpix.width(), txpix.height());
 
                         QPixmap pix(24, 24);
@@ -231,6 +230,8 @@ void GrassEditorPanel::RestoreState()
                         painter.drawPixmap(1, 1, pix.width() - 2, pix.height() - 2, txpix, r.x, r.y, r.dx, r.dy);
 
                         item->setIcon(QIcon(pix));
+#endif
+
                         ok = true;
                     }
                 }
@@ -381,7 +382,7 @@ void GrassEditorPanel::OnHightAddToggled(bool checked)
         sceneEditor->grassEditorSystem->SetBrushMode(cur);
     }
 }
-
+#if RHI_COMPLETE_EDITOR
 DAVA::Rect2i GrassEditorPanel::MapTexCoord(const DAVA::TextureSheetCell &cell, DAVA::uint32 w, DAVA::uint32 h) const
 {
     DAVA::AABBox2 area;
@@ -399,3 +400,4 @@ DAVA::Rect2i GrassEditorPanel::MapTexCoord(const DAVA::TextureSheetCell &cell, D
 
     return GrassEditorSystem::GetAffectedImageRect(area);
 }
+#endif

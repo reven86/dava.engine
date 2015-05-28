@@ -140,10 +140,9 @@ dx9_Initialize( const InitParam& param )
     if( _D3D9 )
     {
         HRESULT                 hr;
-        HWND                    wnd     = (HWND)DAVA::Core::Instance()->NativeWindowHandle();
-        RECT                    bound;  ::GetClientRect( wnd, &bound );
-        unsigned                backbuf_width       = bound.right - bound.left;
-        unsigned                backbuf_height      = bound.bottom - bound.top;
+        HWND                    wnd                 = (HWND)param.window;
+        unsigned                backbuf_width       = param.width;
+        unsigned                backbuf_height      = param.height;
         bool                    use_vsync           = true;//(vsync)  ? (bool)(*vsync)  : false;
         D3DADAPTER_IDENTIFIER9  info                = {0};
         D3DCAPS9                caps;

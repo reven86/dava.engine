@@ -32,13 +32,12 @@
 #define __DYNAMIC_SHADOW_COMMANDS_H__
 
 #include "Commands2/Command2.h"
-#include "Render/Highlevel/ShadowVolumeRenderPass.h"
 
 class SceneEditor2;
 class ChangeDynamicShadowModeCommand : public Command2
 {
 public:
-	ChangeDynamicShadowModeCommand(SceneEditor2 *scene, DAVA::ShadowPassBlendMode::eBlend mode);
+    ChangeDynamicShadowModeCommand(SceneEditor2 *scene);
 
 	virtual void Undo();
 	virtual void Redo();
@@ -47,8 +46,10 @@ public:
 
 private:
 
+#if RHI_COMPLETE_EDITOR
 	DAVA::ShadowPassBlendMode::eBlend oldMode;
 	DAVA::ShadowPassBlendMode::eBlend newMode;
+#endif
 	SceneEditor2 *scene;
 };
 

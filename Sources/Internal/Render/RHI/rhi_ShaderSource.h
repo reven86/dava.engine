@@ -74,7 +74,7 @@ class
 ShaderSource
 {
 public:
-                            ShaderSource();
+                            ShaderSource( const char* filename="" );
                             ~ShaderSource();
 
     bool                    Construct( ProgType progType, const char* srcText, const std::vector<std::string>& defines );
@@ -108,6 +108,7 @@ private:
         std::vector<int>    avlRegIndex;
     };
 
+    std::string                 fileName;
 
     ProgType                    type;
     std::string                 code;
