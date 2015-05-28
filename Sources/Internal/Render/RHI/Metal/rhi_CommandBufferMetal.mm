@@ -334,6 +334,11 @@ metal_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 cou
             ptype = MTLPrimitiveTypeTriangle;
             v_cnt = count * 3;
             break;
+        
+        case PRIMITIVE_LINELIST :
+            ptype = MTLPrimitiveTypeLine;
+            v_cnt = count * 2;
+            break;
     }    
 
     [cb->encoder drawPrimitives:ptype vertexStart:0 vertexCount:v_cnt];
@@ -356,6 +361,11 @@ metal_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uin
         case PRIMITIVE_TRIANGLELIST :
             ptype = MTLPrimitiveTypeTriangle;
             i_cnt = count * 3;
+            break;
+        
+        case PRIMITIVE_LINELIST :
+            ptype = MTLPrimitiveTypeLine;
+            v_cnt = count * 2;
             break;
     }    
 
