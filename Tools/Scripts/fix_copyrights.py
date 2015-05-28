@@ -61,7 +61,12 @@ def process_contents(content):
 		content = pattern.sub('', content);
 		content = re.compile('^\s*').sub('', content);
 		return replaceString + "\n\n" + content;
-	return content;
+	else:
+		re.compile('^s*').sub('', content);
+		if(content.startswith('#')):
+			return replaceString + "\n\n" + content;
+		else:
+			return content;
 	
 def process_files(arg, dirname, names):
 	global excludeDirs, includePaths
