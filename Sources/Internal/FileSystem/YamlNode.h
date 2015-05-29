@@ -170,13 +170,13 @@ public:
     inline void     AddNodeToArray(YamlNode* value);
 
     // Add the values to the current node of type Array.
-    CC_DEPRECATED(inline void    AddValueToArray(int32 value));
-    CC_DEPRECATED(inline void    AddValueToArray(float32 value));
-    CC_DEPRECATED(inline void    AddValueToArray(const String& value));
-    CC_DEPRECATED(inline void    AddValueToArray(const Vector2& value));
-    CC_DEPRECATED(inline void    AddValueToArray(const Vector3& value));
-    CC_DEPRECATED(inline void    AddValueToArray(const Vector4& value));
-    CC_DEPRECATED(inline void    AddValueToArray(VariantType* value));
+    DAVA_DEPRECATED(inline void    AddValueToArray(int32 value));
+    DAVA_DEPRECATED(inline void    AddValueToArray(float32 value));
+    DAVA_DEPRECATED(inline void    AddValueToArray(const String& value));
+    DAVA_DEPRECATED(inline void    AddValueToArray(const Vector2& value));
+    DAVA_DEPRECATED(inline void    AddValueToArray(const Vector3& value));
+    DAVA_DEPRECATED(inline void    AddValueToArray(const Vector4& value));
+    DAVA_DEPRECATED(inline void    AddValueToArray(VariantType* value));
 
     // Remove node value from map
     void            RemoveNodeFromMap(const String & name);

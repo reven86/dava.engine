@@ -77,7 +77,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //suppressing of deprecated functions
 #ifdef DAVAENGINE_HIDE_DEPRECATED
 #   undef  DAVA_DEPRECATED
-#   define CC_DEPRECATED(func) func
+#   define DAVA_DEPRECATED(func) func
 #endif
 
 //-------------------------------------------------------------------------------------

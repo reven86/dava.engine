@@ -57,7 +57,7 @@ protected:
 
 #if defined(__DAVAENGINE_WINDOWS__)
 	HANDLE semaphore;
-#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+#elif defined(__DAVAENGINE_APPLE__)
     dispatch_semaphore_t semaphore;
 #elif defined(__DAVAENGINE_ANDROID__)
 	sem_t semaphore;
@@ -73,7 +73,11 @@ protected:
 
 inline Semaphore::Semaphore(uint32 value)
 {
+#ifdef __DAVAENGINE_WIN32__
+    semaphore = CreateSemaphore(NULL, value, 0x0FFFFFFF, NULL);
+#else
 	semaphore = CreateSemaphoreEx(NULL, value, 0x0FFFFFFF, NULL, 0, SEMAPHORE_ALL_ACCESS);
+#endif
 	DVASSERT(NULL != semaphore);
 }
 
