@@ -36,10 +36,6 @@
 #include "Infrastructure/NewTestFramework.h"
 #include "Infrastructure/GameCore.h"
 
-#include "Tests/Cpp14.h"
-#include "Tests/UnlimitedLogOutputTest.h"
-//$UNITTEST_INCLUDE
-
 using namespace DAVA;
 
 void GameCore::RunOnlyThisTest()
@@ -75,6 +71,35 @@ void GameCore::OnAppFinished()
     DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
 }
 
+void GameCore::OnSuspend()
+{
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+    ApplicationCore::OnSuspend();
+#endif
+}
+
+void GameCore::OnResume()
+{
+    ApplicationCore::OnResume();
+}
+
+#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+void GameCore::OnBackground()
+{
+}
+
+void GameCore::OnForeground()
+{
+    ApplicationCore::OnForeground();
+}
+
+void GameCore::OnDeviceLocked()
+{
+
+}
+
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+
 void GameCore::CreateDocumentsFolder()
 {
     FilePath documentsPath = FileSystem::Instance()->GetUserDocumentsPath() + "UnitTests/";
@@ -93,7 +118,7 @@ File * GameCore::CreateDocumentsFile(const String &filePathname)
 
 void GameCore::Update(float32 timeElapsed)
 {
-    ProcessTests();
+    ProcessTests(timeElapsed);
     ApplicationCore::Update(timeElapsed);
 }
 
@@ -112,7 +137,7 @@ void GameCore::LogMessage(const String &message)
     DAVA::Logger::Error(message.c_str());
 }
 
-void GameCore::ProcessTests()
+void GameCore::ProcessTests(float32 timeElapsed)
 {
     if (nullptr == curTestClass)
     {
@@ -128,6 +153,10 @@ void GameCore::ProcessTests()
         if (curTestClass->TestComplete())
         {
             curTestIndex += 1;
+        }
+        else
+        {
+            curTestClass->Update(timeElapsed);
         }
     }
     else

@@ -26,15 +26,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __UNLIMITEDLOGOUTPUTTEST_TEST_H__
-#define __UNLIMITEDLOGOUTPUTTEST_TEST_H__
+#include "DAVAEngine.h"
 
+#include "Infrastructure/GameCore.h"
 #include "Infrastructure/NewTestFramework.h"
 
 using namespace DAVA;
-
-namespace UnlimitedLogOutputTestNs
-{
 
 namespace
 {
@@ -79,9 +76,9 @@ public:
     size_t currentMessageRawSize = 0;
 };
 
-DEFINE_TESTCLASS(UnlimitedLogOutputTest)
+DAVA_TESTCLASS(UnlimitedLogOutputTest)
 {
-    DEFINE_TEST(CompileTest)
+    DAVA_TEST(CompileTest)
     {
         TestLoggerOutput testOutput;
         Logger::AddCustomOutput(&testOutput);
@@ -110,7 +107,3 @@ DEFINE_TESTCLASS(UnlimitedLogOutputTest)
         TEST_VERIFY(errorMessage.empty());
     }
 };
-
-}
-
-#endif //__UNLIMITEDLOGOUTPUTTEST_TEST_H__

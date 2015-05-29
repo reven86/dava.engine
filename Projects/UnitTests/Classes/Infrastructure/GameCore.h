@@ -59,14 +59,23 @@ public:
     
     void OnAppStarted() override;
     void OnAppFinished() override;
+
+    void OnSuspend() override;
+    void OnResume() override;
     
+#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+    void OnBackground() override;
+    void OnForeground() override;
+    void OnDeviceLocked() override;
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+
     void Update(DAVA::float32 update) override;
 
     void RegisterError(const String &command, const String &fileName, int32 line);
     void LogMessage(const String &message);
 
 protected:
-    void ProcessTests();
+    void ProcessTests(float32 timeElapsed);
     void FinishTests();
 
     String CreateOutputLogFile();

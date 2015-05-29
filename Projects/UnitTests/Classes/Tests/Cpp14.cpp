@@ -26,15 +26,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __CPP14_TEST_H__
-#define __CPP14_TEST_H__
+#include "DAVAEngine.h"
 
+#include "Infrastructure/GameCore.h"
 #include "Infrastructure/NewTestFramework.h"
 
 using namespace DAVA;
-
-namespace Cpp14TestNs
-{
 
 auto f() -> int;
 
@@ -43,14 +40,14 @@ auto f() -> int
     return 42;
 }
 
-DEFINE_TESTCLASS(Cpp14Test)
+DAVA_TESTCLASS(Cpp14Test)
 {
-    DEFINE_TEST(CompileTest)
+    DAVA_TEST(CompileTest)
     {
-        TEST_VERIFY(f() == 42);
+        TEST_VERIFY(f() == 43);
     }
 
-    DEFINE_TEST(ScopeExit)
+    DAVA_TEST(ScopeExit)
     {
         int32 i = 0;
         {
@@ -60,7 +57,3 @@ DEFINE_TESTCLASS(Cpp14Test)
         TEST_VERIFY(1 == i);
     }
 };
-
-}
-
-#endif //__CPP14_TEST_H__
