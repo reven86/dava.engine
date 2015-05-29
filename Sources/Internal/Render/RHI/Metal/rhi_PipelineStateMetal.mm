@@ -563,16 +563,17 @@ metal_PipelineState_Create( const PipelineState::Descriptor& desc )
             }
         }
 
+
         rp_desc.colorAttachments[0].writeMask = MTLColorWriteMaskNone;
         
         if( desc.blending.rtBlend[0].writeMask & COLORMASK_R )
-            rp_desc.colorAttachments[0].writeMask = MTLColorWriteMaskRed;
+            rp_desc.colorAttachments[0].writeMask |= MTLColorWriteMaskRed;
         if( desc.blending.rtBlend[0].writeMask & COLORMASK_G )
-            rp_desc.colorAttachments[0].writeMask = MTLColorWriteMaskGreen;
+            rp_desc.colorAttachments[0].writeMask |= MTLColorWriteMaskGreen;
         if( desc.blending.rtBlend[0].writeMask & COLORMASK_B )
-            rp_desc.colorAttachments[0].writeMask = MTLColorWriteMaskBlue;
+            rp_desc.colorAttachments[0].writeMask |= MTLColorWriteMaskBlue;
         if( desc.blending.rtBlend[0].writeMask & COLORMASK_A )
-            rp_desc.colorAttachments[0].writeMask = MTLColorWriteMaskAlpha;
+            rp_desc.colorAttachments[0].writeMask |= MTLColorWriteMaskAlpha;
 
         for( unsigned i=0; i!=VATTR_COUNT; ++i )
         {

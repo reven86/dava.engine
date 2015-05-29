@@ -330,6 +330,11 @@ gles2_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 cou
             v_cnt = count*3;
             mode  = GL_TRIANGLES;
             break;
+        
+        case PRIMITIVE_LINELIST :
+            v_cnt = count*2;
+            mode  = GL_LINES;
+            break;
             
         default: {}
     }
@@ -353,6 +358,11 @@ gles2_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uin
         case PRIMITIVE_TRIANGLELIST :
             v_cnt = count*3;
             mode  = GL_TRIANGLES;
+            break;
+        
+        case PRIMITIVE_LINELIST :
+            v_cnt = count*2;
+            mode  = GL_LINES;
             break;
         
         default: {}

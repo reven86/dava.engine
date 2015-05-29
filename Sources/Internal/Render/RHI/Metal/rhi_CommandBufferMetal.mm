@@ -25,6 +25,7 @@ RenderPassMetal_t
     id<MTLCommandBuffer>                buf;
     id<MTLParallelRenderCommandEncoder> encoder;
     std::vector<Handle>                 cmdBuf;
+    int                                 priority;
 };
 
 
@@ -84,6 +85,7 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
     desc.depthAttachment.clearDepth         = passConf.depthStencilBuffer.clearDepth;
     
     pass->cmdBuf.resize( cmdBufCount );
+    pass->priority = passConf.priority;
 
     if( cmdBufCount == 1 )
     {
@@ -335,6 +337,11 @@ metal_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 cou
             ptype = MTLPrimitiveTypeTriangle;
             v_cnt = count * 3;
             break;
+        
+        case PRIMITIVE_LINELIST :
+            ptype = MTLPrimitiveTypeLine;
+            v_cnt = count * 2;
+            break;
     }    
 
     [cb->encoder drawPrimitives:ptype vertexStart:0 vertexCount:v_cnt];
@@ -358,12 +365,28 @@ metal_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uin
             ptype = MTLPrimitiveTypeTriangle;
             i_cnt = count * 3;
             break;
+        
+        case PRIMITIVE_LINELIST :
+            ptype = MTLPrimitiveTypeLine;
+            i_cnt = count * 2;
+            break;
     }    
 
     [cb->encoder drawIndexedPrimitives:ptype indexCount:i_cnt indexType:MTLIndexTypeUInt16 indexBuffer:ib indexBufferOffset:startIndex*sizeof(uint16) ];
     StatSet::IncStat( stat_DIP, 1 );
 }
 
+
+//------------------------------------------------------------------------------
+
+static void
+metal_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
+{
+    CommandBufferMetal_t*   cb  = CommandBufferPool::Get( cmdBuf );
+    NSString*               txt = [[NSString alloc] initWithUTF8String:text];
+
+    [cb->encoder insertDebugSignpost:txt];
+}
 
 
 //------------------------------------------------------------------------------
@@ -372,10 +395,37 @@ static void
 metal_Present()
 {
 SCOPED_NAMED_TIMING("rhi.draw-present");
-    for( unsigned p=0; p!=_CmdQueue.size(); ++p )
-    {
-        RenderPassMetal_t*  pass = RenderPassPool::Get( _CmdQueue[p] );
 
+    static std::vector<RenderPassMetal_t*>    pass;
+
+    // sort cmd-lists by priority
+
+    pass.clear();
+    for( unsigned i=0; i!=_CmdQueue.size(); ++i )
+    {
+        RenderPassMetal_t*  rp     = RenderPassPool::Get( _CmdQueue[i] );
+        bool                do_add = true;
+        
+        for( std::vector<RenderPassMetal_t*>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
+        {
+            if( rp->priority > (*p)->priority )
+            {
+                pass.insert( p, 1, rp );
+                do_add = false;
+                break;
+            }
+        }
+
+        if( do_add )
+            pass.push_back( rp );
+    }
+
+
+//-    for( unsigned p=0; p!=_CmdQueue.size(); ++p )
+    for( std::vector<RenderPassMetal_t*>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
+    {
+        RenderPassMetal_t*  pass = *p;
+        \
         for( unsigned b=0; b!=pass->cmdBuf.size(); ++b )
         {
             Handle                  cb_h = pass->cmdBuf[b];
@@ -392,11 +442,12 @@ SCOPED_NAMED_TIMING("rhi.draw-present");
         if( pass->cmdBuf.size() > 1 )
         {
         }
-        
-        RenderPassPool::Free( _CmdQueue[p] );
     }
 
+    for( unsigned i=0; i!=_CmdQueue.size(); ++i )
+        RenderPassPool::Free( _CmdQueue[i] );
     _CmdQueue.clear();
+
     _CurDrawable = nil;
 
     ConstBufferMetal::InvalidateAllInstances();
@@ -421,7 +472,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_SetSamplerState        = &metal_CommandBuffer_SetSamplerState;
     dispatch->impl_CommandBuffer_DrawPrimitive          = &metal_CommandBuffer_DrawPrimitive;
     dispatch->impl_CommandBuffer_DrawIndexedPrimitive   = &metal_CommandBuffer_DrawIndexedPrimitive;
-//    dispatch->impl_CommandBuffer_SetMarker              = &dx9_CommandBuffer_SetMarker;
+    dispatch->impl_CommandBuffer_SetMarker              = &metal_CommandBuffer_SetMarker;
     
     dispatch->impl_Present                              = &metal_Present;
 }

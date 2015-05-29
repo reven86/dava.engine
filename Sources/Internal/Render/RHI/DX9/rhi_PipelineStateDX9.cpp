@@ -542,11 +542,12 @@ PipelineStateDX9_t::VertexProgDX9::Construct( const void* bin, unsigned bin_sz, 
     }
     else
     {
-        Logger::Error( "FAILED to compile vertex-shader:\n" );
+        Logger::Error( "FAILED to compile vertex-shader:" );
         if( err )
         {
             Logger::Info( (const char*)(err->GetBufferPointer()) );
         }
+        Logger::Error( "shader-uid : %s", uid.c_str() );
         Logger::Error( "vertex-shader text:\n" );
         DumpShaderText( (const char*)bin, bin_sz );
     }

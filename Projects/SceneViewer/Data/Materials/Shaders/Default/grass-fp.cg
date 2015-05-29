@@ -1,6 +1,11 @@
+#include "common.cgh"
+
 FPROG_IN_BEGIN
     FPROG_IN_TEXCOORD0(texCoord,2)
     FPROG_IN_COLOR0(vegetationColor,3)
+    #if VERTEX_FOG
+        FPROG_IN_TEXCOORD5(varFog,4)
+    #endif
 FPROG_IN_END
 
 FPROG_OUT_BEGIN
@@ -23,5 +28,16 @@ FPROG_BEGIN
 #endif
         
     FP_OUT_COLOR = float4(color, 1.0);
+
+    #if VERTEX_FOG
+        
+        float   varFogAmoung = FP_IN(varFog).a;
+        float3  varFogColor  = FP_IN(varFog).rgb;
+        
+        #if !FRAMEBUFFER_FETCH
+            //VI: fog equation is inside of color equation for framebuffer fetch
+            FP_OUT_COLOR.rgb = lerp( FP_OUT_COLOR.rgb, varFogColor, varFogAmoung );
+        #endif
+    #endif
 
 FPROG_END
