@@ -1,5 +1,5 @@
 RenderTechnique:
-    Layers: ["TransclucentRenderLayer"]
+    Layers: ["AfterTransclucentRenderLayer"]
     RenderPass:
         Name: "ForwardPass"
         Shader: "~res:/Materials/Shaders/Silhouette/silhouette"
@@ -18,7 +18,7 @@ RenderTechnique:
                 failFront: "STENCILOP_KEEP"
                 funcBack: "CMP_NOTEQUAL"
                 funcFront: "CMP_NOTEQUAL"
-                mask: 240
+                mask: 64
                 passBack: "STENCILOP_KEEP"
                 passFront: "STENCILOP_KEEP"
                 ref: 64

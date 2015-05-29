@@ -47,10 +47,6 @@ using namespace DAVA;
 GameCore::GameCore()
     : cursor(nullptr)
 {
-    // Editor Settings might be used by any singleton below during initialization, so
-    // initialize it before any other one.
-    new EditorSettings();
-
 	new EditorFontManager();
 
     new GridVisualizer();
@@ -78,7 +74,7 @@ GameCore::~GameCore()
 void GameCore::OnAppStarted()
 {
     cursor = nullptr;
-	RenderManager::Instance()->SetFPS(60);
+	Renderer::SetDesiredFPS(60);
 }
 
 void GameCore::OnAppFinished()
@@ -104,7 +100,6 @@ void GameCore::OnBackground()
 void GameCore::BeginFrame()
 {
 	ApplicationCore::BeginFrame();
-    RenderManager::Instance()->ClearWithColor(0, 0, 0, 0);
 }
 
 void GameCore::Update(float32 timeElapsed)
