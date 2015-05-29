@@ -39,8 +39,6 @@
 
 #include "ImageTools/ImageTools.h"
 
-#include "CubemapEditor/MaterialHelper.h"
-
 #include "Scene/SceneSignals.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneHelper.h"
