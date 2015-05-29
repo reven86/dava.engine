@@ -149,10 +149,13 @@ void SceneIdTest::TestFunc (PerfFuncData * data)
 
 Entity* SceneIdTest::CreateFakeEntity()
 {
+    char tmp[16];
     Entity *entity = new Entity();
 
     uint32 index = Random::Instance()->Rand();
-    entity->SetName(FastName(std::to_string(index)));
+    sprintf(tmp, "%u", index);
+
+    entity->SetName(tmp);
     entity->AddComponent(new UserComponent());
 
     return entity;
