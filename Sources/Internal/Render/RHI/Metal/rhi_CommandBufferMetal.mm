@@ -365,7 +365,7 @@ metal_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uin
         
         case PRIMITIVE_LINELIST :
             ptype = MTLPrimitiveTypeLine;
-            v_cnt = count * 2;
+            i_cnt = count * 2;
             break;
     }    
 
