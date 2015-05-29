@@ -49,10 +49,11 @@ static Vector3 basisVectors[7*2] = {Vector3(), Vector3(),
 
 ParticleRenderObject::ParticleRenderObject(ParticleEffectData *effect): effectData(effect), sortingOffset(15), vertexSize(3), vertexStride(0)
 {
-	AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
-        
+    AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
+
     //may be this is good place to determine 2d mode?
-    rhi::VertexLayout layout;    
+    
+    rhi::VertexLayout layout;
     layout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
     layout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
     layout.AddElement(rhi::VS_COLOR, 0, rhi::VDT_UINT8N, 4);
@@ -60,7 +61,7 @@ ParticleRenderObject::ParticleRenderObject(ParticleEffectData *effect): effectDa
     layout.AddElement(rhi::VS_TEXCOORD, 1, rhi::VDT_FLOAT, 2);
     layout.AddElement(rhi::VS_TEXCOORD, 2, rhi::VDT_FLOAT, 1);
     frameBlendVertexLayoutId = rhi::VertexLayout::UniqueId(layout);
-
+        
     uint16 indices[6 * 1000];
     
     for (int i = 0; i < 1000; ++i)
@@ -248,9 +249,11 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
     if (begin->layer->enableFrameBlend)
         vertexStride += (2 + 1) * sizeof(float); //texcoord2 * 2 + time * 1;
 
-    uint32 particleStride = vertexStride * 4;
     
-    DynamicBufferAllocator::AllocResult target = DynamicBufferAllocator::AllocateVertexBuffer(vertexStride, particlesCount * 4);
+    
+    DynamicBufferAllocator::AllocResult target = DynamicBufferAllocator::AllocateVertexBuffer(vertexStride, particlesCount * 4);    
+    
+    uint32 particleStride = vertexStride * 4;
     uint8* currpos = target.data;    
 
     for (auto it = begin; it != end; ++it)
@@ -287,9 +290,8 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
             if (group.layer->colorOverLife)
                 currColor = group.layer->colorOverLife->GetValue(current->life / current->lifeTime);
             if (group.layer->alphaOverLife)
-                currColor.a = group.layer->alphaOverLife->GetValue(current->life / current->lifeTime);
-            uint32 color = (((uint32)(currColor.a*255.f)) << 24) | (((uint32)(currColor.b*255.f)) << 16) |
-                (((uint32)(currColor.g*255.f)) << 8) | ((uint32)(currColor.r*255.f));
+                currColor.a = group.layer->alphaOverLife->GetValue(current->life / current->lifeTime);            
+            uint32 color = rhi::NativeColorRGBA(currColor.r, currColor.g, currColor.b, currColor.a);
             float32 sin_angle;
             float32 cos_angle;
             SinCosFast(-current->angle, sin_angle, cos_angle); //- is because artists consider positive rotation to be clockwise
@@ -334,7 +336,7 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
                     verts[i]->color = color;
                 }                
 
-                if (it->layer->enableFrameBlend)
+                if (begin->layer->enableFrameBlend)
                 {
                     int32 nextFrame = current->frame + 1;
                     if (nextFrame >= group.layer->sprite->GetFrameCount())
@@ -382,6 +384,7 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
     targetBatch->startIndex = 0;
     targetBatch->vertexLayoutId = begin->layer->enableFrameBlend ? frameBlendVertexLayoutId : regularVertexLayoutId;
     activeRenderBatchArray.push_back(targetBatch);
+    currRenderBatchId++;
 }
 
 void ParticleRenderObject::BindDynamicParameters(Camera * camera)

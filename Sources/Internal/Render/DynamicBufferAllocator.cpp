@@ -70,7 +70,7 @@ AllocResult AllocateVertexBuffer(uint32 vertexSize, uint32 vertexCount)
             res.buffer = currentlyMappedBuffer->buffer;
             res.data = currentlyMappedData + offset;
             res.baseVertex = baseV;
-            res.allocatedVertices = vertexCount;
+            res.allocatedVertices = vertexCount;            
             return res;
         }
         else // cant fit - finish it! :)
@@ -97,15 +97,15 @@ AllocResult AllocateVertexBuffer(uint32 vertexSize, uint32 vertexCount)
         currentlyMappedBuffer->shouldBeEvicted = false;        
     }
 
-    currentlyMappedData = (uint8*) rhi::MapVertexBuffer(currentlyMappedBuffer->buffer, 0, currentlyMappedBuffer->allocatedSize);
+    
+    currentlyMappedData = (uint8*) rhi::MapVertexBuffer(currentlyMappedBuffer->buffer, 0, currentlyMappedBuffer->allocatedSize);            
+    
     currentlyUsedSize = requiredSize;
-
     AllocResult res;
     res.buffer = currentlyMappedBuffer->buffer;
     res.data = currentlyMappedData;
     res.baseVertex = 0;
-    res.allocatedVertices = vertexCount;
-
+    res.allocatedVertices = vertexCount;    
     return res;
     
 }
@@ -138,7 +138,7 @@ void BeginFrame()
 }
 
 void EndFrame()
-{
+{    
     if (currentlyMappedBuffer)
     {
         rhi::UnmapVertexBuffer(currentlyMappedBuffer->buffer);
