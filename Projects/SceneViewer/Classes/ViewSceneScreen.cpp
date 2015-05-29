@@ -117,6 +117,7 @@ void ViewSceneScreen::LoadResources()
     
     moveJoyPAD = new UIJoypad(Rect(0, screenRect.dy - 200.f, 200.f, 200.f));
     moveJoyPAD->SetDebugDraw(true);
+    moveJoyPAD->SetStickDebugDraw(true);
     AddControl(moveJoyPAD);
     moveJoyPAD->Release();
 }
