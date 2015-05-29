@@ -129,10 +129,6 @@ void QtLayer::InitializeGlWindow(uint64 glContextId)
 
 void QtLayer::Resize(int32 width, int32 height)
 {
-#if RHI_COMPLETE_EDITOR
-    RenderManager::Instance()->Init(width, height);
-#endif // RHI_COMPLETE_EDITOR
-    
     Renderer::Reset(width, height);
 
     VirtualCoordinatesSystem *vcs = VirtualCoordinatesSystem::Instance();

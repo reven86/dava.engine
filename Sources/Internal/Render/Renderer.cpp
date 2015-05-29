@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Render/RHI/rhi_ShaderCache.h"
 #include "Render/ShaderCache.h"
 #include "Render/Material/FXCache.h"
+#include "Render/GPUFamilyDescriptor.h"
 
 namespace DAVA
 {
@@ -67,7 +68,7 @@ void Initialize(rhi::Api _api, const rhi::InitParam & params, int32 width, int32
     ShaderDescriptorCache::Initialize();
     FXCache::Initialize();
     PixelFormatDescriptor::InitializePixelFormatDescriptors();
-
+    GPUFamilyDescriptor::SetupGPUParameters();
     
     ininialized = true;
 }
