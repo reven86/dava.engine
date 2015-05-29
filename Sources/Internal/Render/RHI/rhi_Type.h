@@ -391,6 +391,7 @@ Descriptor
     uint32          width;
     uint32          height;
     TextureFormat   format;
+    uint32          mipCount;
     uint32          isRenderTarget:1;
     uint32          autoGenMipmaps:1;
     
@@ -399,6 +400,7 @@ Descriptor
                         width(w),
                         height(h),
                         format(fmt),
+                        mipCount(0),
                         isRenderTarget(false),
                         autoGenMipmaps(false)
                     {}

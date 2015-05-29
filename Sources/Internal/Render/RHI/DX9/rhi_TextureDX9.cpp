@@ -99,7 +99,7 @@ dx9_Texture_Create( const Texture::Descriptor& desc )
     D3DPOOL             pool        = (desc.isRenderTarget/*  ||  options&TEXTURE_OPT_DYNAMIC*/)  ? D3DPOOL_DEFAULT  : D3DPOOL_MANAGED;
     HRESULT             hr          = E_FAIL;
     bool                auto_mip    = (desc.autoGenMipmaps)  ? true  : false;
-    unsigned            mip_count   = 0;
+    unsigned            mip_count   = desc.mipCount;
 
 
 //    if( options&TEXTURE_OPT_DYNAMIC )
