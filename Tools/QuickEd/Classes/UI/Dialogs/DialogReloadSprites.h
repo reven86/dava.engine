@@ -43,6 +43,11 @@ class DialogReloadSprites : public QDialog, public Ui::DialogReloadSprites
 public:
     explicit DialogReloadSprites(QWidget *parent = nullptr);
     ~DialogReloadSprites() = default; 
+private slots:
+    void OnStartClicked();
+private:
+    void LoadSettings();
+    void SaveSettings() const;
 };
 
 #endif // __DIALOG_RELOAD_SPRITES_H__

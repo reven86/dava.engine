@@ -43,12 +43,8 @@
 
 namespace
 {
-    const QString APP_NAME = "QuickEd";
-    const QString APP_COMPANY = "DAVA";
     const QString APP_GEOMETRY = "geometry";
     const QString APP_STATE = "windowstate";
-    const QString SELECTED_GPU = "selected gpu";
-
     const char* COLOR_PROPERTY_ID = "color";
 }
 
@@ -63,7 +59,6 @@ MainWindow::MainWindow(QWidget *parent)
     setupUi(this);
 
     InitLanguageBox();
-    InitConvertBox();
     tabBar->setElideMode(Qt::ElideNone);
     setWindowTitle(ResourcesManageHelper::GetProjectTitle());
 
@@ -134,15 +129,14 @@ void MainWindow::SetCurrentTab(int index)
 
 void MainWindow::SaveMainWindowState()
 {
-    QSettings settings(APP_COMPANY, APP_NAME);
+    QSettings settings(QApplication::organizationName(), QApplication::applicationName());
     settings.setValue(APP_GEOMETRY, saveGeometry());
     settings.setValue(APP_STATE, saveState());
-    settings.setValue(SELECTED_GPU, reloadSpritesButton->defaultAction()->data());
 }
 
 void MainWindow::RestoreMainWindowState()
 {
-    QSettings settings(APP_COMPANY, APP_NAME);
+    QSettings settings(QApplication::organizationName(), QApplication::applicationName());
     // Check settings befor applying it
     if (settings.value(APP_GEOMETRY).isValid())
     {
@@ -152,11 +146,6 @@ void MainWindow::RestoreMainWindowState()
     {
         restoreState(settings.value(APP_STATE).toByteArray());
     }
-    if (settings.value(SELECTED_GPU).isValid())
-    {
-        UpdateReloadTexturesButton(static_cast<eGPUFamily>(settings.value(SELECTED_GPU).toInt()));
-    }
-
 }
 
 void MainWindow::UpdateReloadTexturesButton(const eGPUFamily &gpu)
@@ -243,42 +232,6 @@ void MainWindow::InitLanguageBox()
     connect(comboboxLanguage, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), localizationEditorDialog->currentLocaleComboBox, &QComboBox::setCurrentIndex);
     connect(localizationEditorDialog->currentLocaleComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), comboboxLanguage, &QComboBox::setCurrentIndex);
     comboboxLanguage->setCurrentIndex(localizationEditorDialog->currentLocaleComboBox->currentIndex());
-}
-
-void MainWindow::InitConvertBox()
-{
-    QLabel *label = new QLabel(tr("Sprites: "));
-    QAction *actionReloadTextures = new QAction(QIcon(":/Icons/reloadtextures.png"), tr("Select GPU"), this);
-    connect(actionReloadTextures, &QAction::triggered, this, &MainWindow::OnUpdateSprites);
-    QMenu *menuTexturesForGPU = new QMenu(this);
-
-    connect(menuTexturesForGPU, &QMenu::triggered, this, &MainWindow::OnReloadSprites);
-    const auto &map = GlobalEnumMap<eGPUFamily>::Instance();
-    QActionGroup *actionGroup = new QActionGroup(this);
-
-    for (size_t i = 0; i < map->GetCount(); ++i)
-    {
-        int value;
-        bool ok = map->GetValue(i, value);
-        DVASSERT_MSG(ok, "wrong enum used");
-        QAction *action = new QAction(map->ToString(value), this);
-        action->setCheckable(true);
-        actionGroup->addAction(action);
-        action->setData(value);
-        menuTexturesForGPU->addAction(action);
-    }
-    reloadSpritesButton = new QToolButton();
-    reloadSpritesButton->setMenu(menuTexturesForGPU);
-    reloadSpritesButton->setPopupMode(QToolButton::MenuButtonPopup);
-    reloadSpritesButton->setDefaultAction(actionReloadTextures);
-    reloadSpritesButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    QWidget *wrapper = new QWidget();
-    QHBoxLayout *layout = new QHBoxLayout(wrapper);
-    layout->setMargin(0);
-    layout->addWidget(label);
-    layout->addWidget(reloadSpritesButton);
-    toolBarConvertGPU->addWidget(wrapper);
-    reloadSpritesButton->parentWidget()->setEnabled(false);
 }
 
 void MainWindow::InitMenu()
@@ -542,23 +495,4 @@ void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
 
     // In case we don't found current color in predefined ones - select "Custom" menu item.
     backgroundFrameUseCustomColorAction->setChecked(!colorFound);
-}
-
-void MainWindow::OnReloadSprites(QAction *action)
-{
-    auto gpuType = static_cast<DAVA::eGPUFamily>(action->data().toInt());
-    SpritesPacker::ReloadSprites(gpuType);
-    UpdateReloadTexturesButton(gpuType);
-}
-
-void MainWindow::OnUpdateSprites()
-{
-    QVariant data = reloadSpritesButton->defaultAction()->data();
-    if (!data.isValid())
-    {
-        return;
-    }
-    auto gpuType = static_cast<DAVA::eGPUFamily>(data.toInt()); 
-    SpritesPacker::ReloadSprites(gpuType);// there must be function UpdateSprites
-    UpdateReloadTexturesButton(gpuType);
 }

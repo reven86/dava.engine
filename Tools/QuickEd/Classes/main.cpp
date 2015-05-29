@@ -51,6 +51,8 @@ void InitPVRTexTool()
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    a.setOrganizationName("DAVA");
+    a.setApplicationName("QuickEd");
     QApplication::setQuitOnLastWindowClosed(false);
 
     DAVA::Core::Run( argc, argv );

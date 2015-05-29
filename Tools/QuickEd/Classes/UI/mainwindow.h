@@ -100,14 +100,11 @@ private slots:
     void RebuildRecentMenu();
 
     void SetBackgroundColorMenuTriggered(QAction* action);
-    void OnReloadSprites(QAction *action);
-    void OnUpdateSprites();
-    
+
     // Pixelization.
     void OnPixelizationStateChanged();
 private:
     void InitLanguageBox();
-    void InitConvertBox();
     void InitMenu();
     void SetupViewMenu();
     void DisableActions();
