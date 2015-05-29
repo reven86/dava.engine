@@ -30,96 +30,74 @@
 #ifndef __GAMECORE_H__
 #define __GAMECORE_H__
 
-#include "DAVAEngine.h"
-#include "TeamCityTestsOutput.h"
+#include "Base/BaseTypes.h"
+#include "Core/Core.h"
+
+#include "Infrastructure/TeamCityTestsOutput.h"
 
 #include <fstream>
 
+namespace Testing
+{
+    class TestClass;
+}
+
 using namespace DAVA;
 
-class TestData;
-class BaseScreen;
 class GameCore : public ApplicationCore
 {
-    struct ErrorData
-    {
-        int32 line;
-        String command;
-        String filename;
-        String testName;
-        String testMessage;
-    };
-
 protected:
-    virtual ~GameCore();
+    virtual ~GameCore() = default;
+
 public:    
-    GameCore();
+    GameCore() = default;
 
-    static GameCore * Instance() 
+    static GameCore* Instance()
     { 
-        return (GameCore*) DAVA::Core::GetApplicationCore();
+        return static_cast<GameCore*>(DAVA::Core::GetApplicationCore());
     };
     
-    virtual void OnAppStarted() override;
-    virtual void OnAppFinished() override;
+    void OnAppStarted() override;
+    void OnAppFinished() override;
     
-    virtual void OnSuspend() override;
-    virtual void OnResume() override;
+    void Update(DAVA::float32 update) override;
 
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-    virtual void OnBackground();
-    virtual void OnForeground();
-    virtual void OnDeviceLocked();
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-
-    virtual void BeginFrame() override;
-    virtual void Update(DAVA::float32 update) override;
-    virtual void Draw() override;
-
-    void RegisterScreen(BaseScreen *screen);
-    
-    void RegisterError(const String &command, const String &fileName, int32 line, TestData *testData);
-
+    void RegisterError(const String &command, const String &fileName, int32 line);
     void LogMessage(const String &message);
-    
+
 protected:
-    
-    void RegisterTests();
-    void RunTests();
     void ProcessTests();
     void FinishTests();
 
     String CreateOutputLogFile();
     String ReadLogFile();
 
-
-    int32 TestCount();
-    
     void CreateDocumentsFolder();
-    File * CreateDocumentsFile(const String &filePathname);
+    File* CreateDocumentsFile(const String &filePathname);
     
 private:
     void InitLogging();
 
     void RunOnlyThisTest();
     void OnError();
-    bool IsNeedSkipTest(const BaseScreen& screen) const;
 
     String runOnlyThisTest;
 
     String logFilePath;
     std::ofstream logFile;
 
-    BaseScreen *currentScreen;
-
-    int32 currentScreenIndex;
-    Vector<BaseScreen *> screens;
-    
-    int32 currentTestIndex;
-
     TeamcityTestsOutput teamCityOutput;
+
+    Testing::TestClass* curTestClass = nullptr;
+    String curTestClassName;
+    size_t curTestClassIndex = 0;
+    size_t curTestIndex = 0;
 };
 
-
+#define TEST_VERIFY(condition)                                                          \
+    if (!(condition))                                                                   \
+    {                                                                                   \
+        GameCore::Instance()->RegisterError(String(#condition), __FILE__, __LINE__);    \
+    }
 
 #endif // __GAMECORE_H__
