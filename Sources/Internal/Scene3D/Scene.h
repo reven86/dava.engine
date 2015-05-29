@@ -55,7 +55,6 @@ class AnimatedMesh;
 class SceneNodeAnimationList;
 class DataNode;
 class ShadowVolumeNode;
-class ProxyNode;
 class Light;
 class ShadowRect;
 class QuadTree;
@@ -300,7 +299,7 @@ protected:
     uint32 nodeCounter;
 
     uint32 systemsMask;
-    uint32 entityIdCounter;
+    uint32 maxIDCounter;
 
     uint32 clearBuffers;
 

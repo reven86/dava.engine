@@ -203,7 +203,7 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     , mainCamera(0)
     , drawCamera(0)
     , imposterManager(0)
-    , entityIdCounter(0)
+    , maxIDCounter(0)
 {
     static uint32 idCounter = 0;
     sceneId = ++idCounter;
@@ -527,7 +527,7 @@ void Scene::RegisterEntity(Entity * entity)
         entity->GetSceneID() == 0 ||
         entity->GetSceneID() != sceneId)
     {
-        entity->SetID(++entityIdCounter);
+        entity->SetID(++maxIDCounter);
         entity->SetSceneID(sceneId);
     }
 
@@ -866,11 +866,11 @@ void Scene::Draw()
     
 void Scene::SceneDidLoaded()
 {
-    entityIdCounter = 0;
+    maxIDCounter = 0;
 
     std::function<void(Entity *)> findMaxId = [&](Entity *entity)
     {
-        if(entityIdCounter < entity->id) entityIdCounter = entity->id;
+        if(maxIDCounter < entity->id) maxIDCounter = entity->id;
         for (auto child : entity->children) findMaxId(child);
     };
 
@@ -1128,7 +1128,7 @@ SceneFileV2::eError Scene::SaveScene(const DAVA::FilePath & pathname, bool saveF
 {
     std::function<void(Entity *)> resolveId = [&](Entity *entity)
     {
-        if(0 == entity->id) entity->id = ++entityIdCounter;
+        if(0 == entity->id) entity->id = ++maxIDCounter;
         for(auto child : entity->children) resolveId(child);
     };
 
