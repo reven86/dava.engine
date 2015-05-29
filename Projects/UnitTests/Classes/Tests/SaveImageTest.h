@@ -37,11 +37,14 @@ public:
     SaveImageTest();
     ~SaveImageTest();
     
-    void PngTest(PerfFuncData * data);
-    void JpegTest(PerfFuncData * data);
-    void TgaTest(PerfFuncData * data);
+    void PngTest(PerfFuncData* data);
+    void JpegTest(PerfFuncData* data);
+    void TgaTest(PerfFuncData* data);
+    void WebPTest(PerfFuncData* data);
+
 private:
     void SaveLoadCheck(PerfFuncData* data, const Image* img, const String& filename, float32 diffThreshold);
+
     Image* Create888Image() const;
     Image* Create8888Image() const;
     Image* CreateA8Image() const;

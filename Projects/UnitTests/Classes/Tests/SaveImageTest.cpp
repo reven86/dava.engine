@@ -5,14 +5,15 @@
 using namespace DAVA;
 
 SaveImageTest::SaveImageTest()
-: TestTemplate<SaveImageTest>("SaveImageTest")
+    : TestTemplate<SaveImageTest>("SaveImageTest")
 {
     imageRGBA8888 = Create8888Image();
     imageRGB888 = Create888Image();
     imageA8 = CreateA8Image();
-    RegisterFunction(this, &SaveImageTest::PngTest, "PngTest", NULL);
-    RegisterFunction(this, &SaveImageTest::JpegTest, "JpegTest", NULL);
-    RegisterFunction(this, &SaveImageTest::TgaTest, "TgaTest", NULL);
+
+    RegisterFunction(this, &SaveImageTest::PngTest, "PngTest", nullptr);
+    RegisterFunction(this, &SaveImageTest::JpegTest, "JpegTest", nullptr);
+    RegisterFunction(this, &SaveImageTest::TgaTest, "TgaTest", nullptr);
 }
 
 SaveImageTest::~SaveImageTest()
@@ -46,24 +47,29 @@ void SaveImageTest::TgaTest(PerfFuncData * data)
     SaveLoadCheck(data, imageA8, "testA8.tga", LOSSELESS_ALLOWED_DIFF);
 }
 
+void SaveImageTest::WebPTest(PerfFuncData* data)
+{
+    SaveLoadCheck(data, imageRGBA8888, "testRGBA8888.webp", LOSSELESS_ALLOWED_DIFF);
+    SaveLoadCheck(data, imageRGB888, "testRGB888.webp", LOSSELESS_ALLOWED_DIFF);
+}
+
 void SaveImageTest::SaveLoadCheck(PerfFuncData* data, const Image* img, const String& filename, float32 diffThreshold)
 {
     FilePath path = FilePath::FilepathInDocuments(filename);
 
-    DAVA::Vector<DAVA::Image*> imgSet;
-
     TEST_VERIFY(img->Save(path));
 
+    DAVA::Vector<DAVA::Image*> imgSet;
     TEST_VERIFY(DAVA::ImageSystem::Instance()->Load(path, imgSet) == DAVA::SUCCESS);
     TEST_VERIFY(imgSet[0]->dataSize == img->dataSize);
 
     const TextureUtils::CompareResult cmpRes = TextureUtils::CompareImages(img, imgSet[0], img->format);
-    float32 differencePersentage = ((float32)cmpRes.difference / ((float32)cmpRes.bytesCount * 256.f)) * 100.f;
+    float32 differencePersentage = (static_cast<float32>(cmpRes.difference) / (static_cast<float32>(cmpRes.bytesCount) * 256.f)) * 100.f;
     TEST_VERIFY(differencePersentage <= diffThreshold);
 
-    for (auto img : imgSet)
+    for (auto im : imgSet)
     {
-        img->Release();
+        im->Release();
     }
 }
 
