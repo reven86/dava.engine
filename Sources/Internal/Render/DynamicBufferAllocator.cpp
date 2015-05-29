@@ -27,3 +27,144 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #include "DynamicBufferAllocator.h"
+
+namespace DAVA
+{
+namespace DynamicBufferAllocator
+{
+namespace //for private members
+{
+uint32 defaultPageSize = 0x0000ffff;
+
+struct BufferInfo
+{
+    rhi::HVertexBuffer buffer;
+    uint32 allocatedSize;
+    uint32 dirtyTimeout;
+    bool shouldBeEvicted;
+};
+
+BufferInfo* currentlyMappedBuffer = nullptr;
+uint8* currentlyMappedData = nullptr;
+uint32 currentlyUsedSize = 0;
+
+List<BufferInfo*> freeBuffers;
+List<BufferInfo*> usedBuffers;
+
+}
+
+AllocResult AllocateVertexBuffer(uint32 vertexSize, uint32 vertexCount)
+{
+    DVASSERT(vertexSize);
+    DVASSERT((vertexSize * vertexCount) <= defaultPageSize); //assert for now - later allocate as much as possible and return inclomplete buffer
+    uint32 requiredSize = vertexSize * vertexCount;
+
+    if (currentlyMappedBuffer) //try to fit in existing
+    {
+        uint32 baseV = ((currentlyUsedSize + vertexSize - 1) / vertexSize);
+        uint32 offset = baseV * vertexSize;
+        if ((offset + requiredSize) < currentlyMappedBuffer->allocatedSize)
+        {
+            currentlyUsedSize = offset + requiredSize;
+            AllocResult res;
+            res.buffer = currentlyMappedBuffer->buffer;
+            res.data = currentlyMappedData + offset;
+            res.baseVertex = baseV;
+            res.allocatedVertices = vertexCount;
+            return res;
+        }
+        else // cant fit - finish it! :)
+        {
+            rhi::UnmapVertexBuffer(currentlyMappedBuffer->buffer);
+            usedBuffers.push_back(currentlyMappedBuffer);
+            currentlyMappedBuffer->dirtyTimeout = 3;            
+            currentlyMappedData = nullptr;
+            currentlyMappedBuffer = nullptr;
+            currentlyUsedSize = 0;
+        }
+    }
+
+    if (freeBuffers.size())
+    {
+        currentlyMappedBuffer = *freeBuffers.begin();
+        freeBuffers.pop_front();
+    }
+    else
+    {
+        currentlyMappedBuffer = new BufferInfo();
+        currentlyMappedBuffer->allocatedSize = defaultPageSize;
+        currentlyMappedBuffer->buffer = rhi::CreateVertexBuffer(defaultPageSize);
+        currentlyMappedBuffer->shouldBeEvicted = false;        
+    }
+
+    currentlyMappedData = (uint8*) rhi::MapVertexBuffer(currentlyMappedBuffer->buffer, 0, currentlyMappedBuffer->allocatedSize);
+    currentlyUsedSize = requiredSize;
+
+    AllocResult res;
+    res.buffer = currentlyMappedBuffer->buffer;
+    res.data = currentlyMappedData;
+    res.baseVertex = 0;
+    res.allocatedVertices = vertexCount;
+
+    return res;
+    
+}
+
+void BeginFrame()
+{
+    //update used buffers ttl
+    auto it = usedBuffers.begin();
+    while (it!=usedBuffers.end())
+    {
+        (*it)->dirtyTimeout--;
+        if ((*it)->dirtyTimeout == 0)
+        {
+            if ((*it)->shouldBeEvicted)
+            {
+                rhi::DeleteVertexBuffer((*it)->buffer);
+                SafeDelete(*it);
+            }
+            else
+            {
+                freeBuffers.push_back(*it);
+            }
+            it = usedBuffers.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+}
+
+void EndFrame()
+{
+    if (currentlyMappedBuffer)
+    {
+        rhi::UnmapVertexBuffer(currentlyMappedBuffer->buffer);
+        usedBuffers.push_back(currentlyMappedBuffer);
+        currentlyMappedBuffer->dirtyTimeout = 3;
+        currentlyMappedData = nullptr;
+        currentlyMappedBuffer = nullptr;
+        currentlyUsedSize = 0;
+    }
+}
+
+void Clear()
+{
+    for (auto b : freeBuffers)
+    {
+        rhi::DeleteVertexBuffer(b->buffer);
+        SafeDelete(b);
+    }
+    for (auto b : usedBuffers)
+        b->shouldBeEvicted = true;
+}
+void SetDefaultPageSize(uint32 size)
+{
+    defaultPageSize = size;
+}
+
+
+}
+}

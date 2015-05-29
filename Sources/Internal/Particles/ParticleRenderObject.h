@@ -30,38 +30,26 @@
 #define __DAVAENGINE_PARTICLE_RENDER_OBJECT_H_
 
 #include "ParticleGroup.h"
+#include "Render/Highlevel/RenderObject.h"
 
 namespace DAVA
 {
 
-struct ParticleRenderGroup
-{
-	RenderBatch *renderBatch;	
-	
-	Vector<float> vertices;
-	Vector<float> texcoords;
-	Vector<uint32> colors;
 
-	Vector<float> texcoords2;
-	Vector<float> times;	
-
-	uint16 currParticlesCount;
-	bool enableFrameBlend;
-
-	void ClearArrays();
-	void ResizeArrays(uint32 particlesCount);
-	void UpdateRenderBatch(uint32 vertexSize, uint32 vertexStride);
-};
 
 class ParticleRenderObject : public RenderObject
 {
 	ParticleEffectData *effectData;
-	Vector<ParticleRenderGroup*> renderGroupCache;
+	//Vector<ParticleRenderGroup*> renderGroupCache;
+    Vector<RenderBatch *> renderBatchCache;
 
-	void AppendParticleGroup(const ParticleGroup &group, ParticleRenderGroup *renderGroup, const Vector3& cameraDirection);	
+	//void AppendParticleGroup(const ParticleGroup &group, ParticleRenderGroup *renderGroup, const Vector3& cameraDirection);	
+    void AppendParticleGroup(List<ParticleGroup>::iterator begin, List<ParticleGroup>::iterator end, uint32 particlesCount);
 	void PrepareRenderData(Camera * camera);    
 	Vector<uint16> indices;
     uint32 sortingOffset;
+    
+    uint32 currRenderBatchId;
 
     uint32 vertexSize, vertexStride;
 public:
@@ -79,6 +67,13 @@ public:
 	virtual void RecalcBoundingBox(){}
 	virtual void RecalculateWorldBoundingBox(){
 		worldBBox = bbox;}
+
+private:
+    int32 CalculateParticleCount(const ParticleGroup& group);
+
+    uint32 regularVertexLayoutId, frameBlendVertexLayoutId;
+    
+    rhi::HIndexBuffer indexBuffer; //RHI_COMPLETE - temporary here!!!
 	
 };
 

@@ -636,6 +636,7 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 	if (frameBlendNode)
 	{
 		enableFrameBlend = frameBlendNode->AsBool();
+        enableFrameBlend = false;
 	}		
 
 	startTime = 0.0f;
