@@ -30,7 +30,6 @@
 
 #include "QtUtils.h"
 #include "Deprecated/SceneValidator.h"
-#include "Tools/QtFileDialog/QtFileDialog.h"
 
 #include <QMessageBox>
 #include <QToolButton>
@@ -41,10 +40,12 @@
 #include "TexturePacker/CommandLineParser.h"
 #include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
+#include "QtTools/FileDialog/FileDialog.h"
+
 #include "DAVAEngine.h"
 #include <QProcess>
-using namespace DAVA;
 
+using namespace DAVA;
 
 DAVA::FilePath PathnameToDAVAStyle(const QString &convertedPathname)
 {
@@ -54,26 +55,18 @@ DAVA::FilePath PathnameToDAVAStyle(const QString &convertedPathname)
 
 DAVA::FilePath GetOpenFileName(const DAVA::String &title, const DAVA::FilePath &pathname, const DAVA::String &filter)
 {
-    QString filePath = QtFileDialog::getOpenFileName(NULL, QString(title.c_str()), QString(pathname.GetAbsolutePathname().c_str()),
-                                                    QString(filter.c_str()));
-    
-	// TODO: mainwindow
-    //QtMainWindowHandler::Instance()->RestoreDefaultFocus();
+    QString filePath = FileDialog::getOpenFileName(nullptr, QString(title.c_str()), QString(pathname.GetAbsolutePathname().c_str()),
+                                                   QString(filter.c_str()));
+
 
     FilePath openedPathname = PathnameToDAVAStyle(filePath);
-    if(!openedPathname.IsEmpty() && !SceneValidator::Instance()->IsPathCorrectForProject(openedPathname))
+    if (!openedPathname.IsEmpty() && !SceneValidator::Instance()->IsPathCorrectForProject(openedPathname))
     {
         //Need to Show Error
-		ShowErrorDialog(String(Format("File(%s) was selected from incorect project.", openedPathname.GetAbsolutePathname().c_str())));
+        ShowErrorDialog(String(Format("File(%s) was selected from incorect project.", openedPathname.GetAbsolutePathname().c_str())));
         openedPathname = FilePath();
     }
-    
-    if(openedPathname.IsEqualToExtension(".png"))
-    {
-        //VK: create descriptor only for *.png without paired *.tex
-        TextureDescriptorUtils::CreateDescriptorIfNeed(openedPathname);
-    }
-    
+
     return openedPathname;
 }
 

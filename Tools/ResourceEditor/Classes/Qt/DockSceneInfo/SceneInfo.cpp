@@ -295,20 +295,31 @@ uint32 SceneInfo::CalculateTextureSize(const TexturesMap &textures)
 	String projectPath = ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname();
     uint32 textureSize = 0;
     
+	eGPUFamily requestedGPU = static_cast<eGPUFamily>(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
+
     TexturesMap::const_iterator endIt = textures.end();
     for(TexturesMap::const_iterator it = textures.begin(); it != endIt; ++it)
     {
         FilePath pathname = it->first;
         Texture *tex = it->second;
         DVASSERT(tex);
-        
+
+		if (tex->IsPinkPlaceholder())
+		{
+			continue;
+		}
+
         if(String::npos == pathname.GetAbsolutePathname().find(projectPath))
         {
             Logger::Warning("[SceneInfo::CalculateTextureSize] Path (%s) doesn't belong to project.", pathname.GetAbsolutePathname().c_str());
             continue;
         }
         
-        textureSize += ImageTools::GetTexturePhysicalSize(tex->GetDescriptor(), (eGPUFamily) SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
+        auto baseMipmap = tex->GetBaseMipMap();
+
+		auto descriptor = tex->GetDescriptor();
+		eGPUFamily gpu = descriptor->IsCompressedFile() ? static_cast<eGPUFamily>(descriptor->exportedAsGpuFamily) : requestedGPU;
+        textureSize += ImageTools::GetTexturePhysicalSize(tex->GetDescriptor(), gpu, baseMipmap);
     }
 
     return textureSize;
@@ -712,7 +723,7 @@ void SceneInfo::CollectSpeedTreeLeafsSquare(const EntityGroup * forGroup)
     for(int32 i = 0; i < entitiesCount; i++)
     {
         RenderObject * ro = GetRenderObject(forGroup->GetEntity(i));
-        if(ro)
+        if(ro && ro->GetType() == RenderObject::TYPE_SPEED_TREE)
             speedTreeLeafInfo.push_back(GetSpeedTreeLeafsSquare(ro));
     }
 }
@@ -722,6 +733,8 @@ SceneInfo::SpeedTreeInfo SceneInfo::GetSpeedTreeLeafsSquare(DAVA::RenderObject *
     SpeedTreeInfo info;
     if(renderObject)
     {
+        bool hasLeafsGeometry = false;
+
         Vector3 bboxSize = renderObject->GetBoundingBox().GetSize();
         int32 rbCount = renderObject->GetRenderBatchCount();
         for(int32 i = 0; i < rbCount; ++i)
@@ -752,11 +765,16 @@ SceneInfo::SpeedTreeInfo SceneInfo::GetSpeedTreeLeafsSquare(DAVA::RenderObject *
                     float32 len = vec.Length() / 2;
 
                     info.leafsSquare += len;
+                    hasLeafsGeometry = true;
                 }
             }
         }
-        info.leafsSquareDivX = info.leafsSquare / (bboxSize.x * bboxSize.z);
-        info.leafsSquareDivY = info.leafsSquare / (bboxSize.y * bboxSize.z);
+
+        if (hasLeafsGeometry)
+        {
+            info.leafsSquareDivX = info.leafsSquare / (bboxSize.x * bboxSize.z);
+            info.leafsSquareDivY = info.leafsSquare / (bboxSize.y * bboxSize.z);
+        }
     }
     
     return info;
@@ -779,6 +797,11 @@ void SceneInfo::SpritesReloaded()
     particleTexturesSize = CalculateTextureSize(particleTextures);
     
     RefreshSceneGeneralInfo();
+}
+
+void SceneInfo::OnQualityChanged()
+{
+    RefreshAllData(activeScene);
 }
 
 void SceneInfo::InitializeVegetationInfoSection()

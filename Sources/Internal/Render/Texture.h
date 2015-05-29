@@ -98,7 +98,7 @@ public:
 	};
 	
 	//VI: each face is optional
-	enum CubemapFace
+	enum CubemapFace : uint32
 	{
 		CUBE_FACE_POSITIVE_X = 0,
 		CUBE_FACE_NEGATIVE_X = 1,
@@ -106,9 +106,11 @@ public:
 		CUBE_FACE_NEGATIVE_Y = 3,
 		CUBE_FACE_POSITIVE_Z = 4,
 		CUBE_FACE_NEGATIVE_Z = 5,
-		CUBE_FACE_MAX_COUNT = 6,
+		CUBE_FACE_COUNT = 6,
 		CUBE_FACE_INVALID = 0xFFFFFFFF
 	};
+
+    static Array<String, CUBE_FACE_COUNT> FACE_NAME_SUFFIX;
 	
 	enum TextureType
 	{
@@ -123,7 +125,7 @@ public:
 		STATE_DATA_LOADED,
 		STATE_VALID
 	};
-	
+
 	// Main constructors
     /**
         \brief Create texture from data arrray
@@ -226,9 +228,6 @@ public:
     Image * CreateImageFromMemory(UniqueHandle renderState);
 
 	bool IsPinkPlaceholder();
-    
-	static void GenerateCubeFaceNames(const FilePath & baseName, Vector<FilePath>& faceNames);
-	static void GenerateCubeFaceNames(const FilePath & baseName, const Vector<String>& faceNameSuffixes, Vector<FilePath>& faceNames);
 
     void Reload();
     void ReloadAs(eGPUFamily gpuFamily);
@@ -267,6 +266,9 @@ public:
 	PixelFormat GetFormat() const;
 
     static void SetPixelization(bool value);
+    
+    int32 GetBaseMipMap() const;
+
 protected:
     
     void ReleaseTextureData();
@@ -302,7 +304,6 @@ protected:
 #endif //#if defined(__DAVAENGINE_OPENGL__)
     
     bool IsLoadAvailable(const eGPUFamily gpuFamily) const;
-	int32 GetBaseMipMap() const;
 
 	static eGPUFamily GetGPUForLoading(const eGPUFamily requestedGPU, const TextureDescriptor *descriptor);
 

@@ -62,14 +62,14 @@ SoundUpdateSystem::~SoundUpdateSystem()
     pausedEvents.clear();
 }
 
-void SoundUpdateSystem::ImmediateEvent(Entity * entity, uint32 event)
+void SoundUpdateSystem::ImmediateEvent(Component * component, uint32 event)
 {
 	if (event == EventSystem::WORLD_TRANSFORM_CHANGED || event == EventSystem::SOUND_COMPONENT_CHANGED)
 	{
-		const Matrix4 & worldTransform = GetTransformComponent(entity)->GetWorldTransform();
+		const Matrix4 & worldTransform = GetTransformComponent(component->GetEntity())->GetWorldTransform();
 		Vector3 translation = worldTransform.GetTranslationVector();
 
-        SoundComponent * sc = GetSoundComponent(entity);
+        SoundComponent * sc = GetSoundComponent(component->GetEntity());
         DVASSERT(sc);
 
         uint32 eventsCount = sc->GetEventsCount();
@@ -187,7 +187,7 @@ void SoundUpdateSystem::Deactivate()
         DVASSERT(sound);
         
         auto eventCount = sound->GetEventsCount();
-        for(auto i = 0; i < eventCount; ++i)
+        for(size_t i = 0; i < eventCount; ++i)
         {
             auto soundEvent = sound->GetSoundEvent(i);
             if(soundEvent->IsActive())

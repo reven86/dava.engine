@@ -1,16 +1,21 @@
 #ifndef __UI_EDITOR_LOCALIZED_TEXT_VALUE_PROPERTY__
 #define __UI_EDITOR_LOCALIZED_TEXT_VALUE_PROPERTY__
 
-#include "ValueProperty.h"
+#include "IntrospectionProperty.h"
 
-class LocalizedTextValueProperty : public ValueProperty
+class LocalizedTextValueProperty : public IntrospectionProperty
 {
 public:
-    LocalizedTextValueProperty(DAVA::BaseObject *object, const DAVA::InspMember *member, ValueProperty *sourceProperty, eCopyType copyType);
+    LocalizedTextValueProperty(DAVA::BaseObject *object, const DAVA::InspMember *member, const LocalizedTextValueProperty *sourceProperty, eCloneType cloneType);
+
+protected:
     virtual ~LocalizedTextValueProperty();
     
+public:
     int GetCount() const override;
-    BaseProperty *GetProperty(int index) const override;
+    AbstractProperty *GetProperty(int index) const override;
+
+    void Refresh() override;
 
     DAVA::VariantType GetValue() const override;
 protected:

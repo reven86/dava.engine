@@ -98,7 +98,7 @@ LibPngHelper::LibPngHelper()
     supportedExtensions.push_back(".png");
 }
 
-bool LibPngHelper::IsImage(File *infile) const
+bool LibPngHelper::IsMyImage(File *infile) const
 {
     if (nullptr == infile)
     {
@@ -376,9 +376,28 @@ ImageInfo LibPngHelper::GetImageInfo(File *infile) const
             break;
     }
 
+//==== temporary solution for legasy png loading =====
+    
+    switch (info.format)
+    {
+        case FORMAT_INVALID:
+        case FORMAT_A8:
+        case FORMAT_A16:
+            //do nothing
+            break;
+            
+        default:
+            info.format = FORMAT_RGBA8888;
+            break;
+    }
+    
+//==== temporary solution for legasy png loading =====
+    
     // Clean up
     png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 
+    info.dataSize = width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(info.format);
+    info.mipmapsCount = 1;
     return info;
 }
 
@@ -479,30 +498,23 @@ eErrorCode LibPngHelper::ReadPngFile(File *infile, Image * image, PixelFormat ta
 
     png_read_update_info(png_ptr, info_ptr);
 
-    unsigned int rowbytes;
-    rowbytes = static_cast<uint32>(png_get_rowbytes(png_ptr, info_ptr));
-
-    uint8 *image_data = new uint8[rowbytes * height];
-    if (nullptr == image_data)
-    {
-        png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
-        return ERROR_READ_FAIL;
-    }
-
+    unsigned int rowbytes = static_cast<uint32>(png_get_rowbytes(png_ptr, info_ptr));
+    image->dataSize = rowbytes * height;
+    SafeDeleteArray(image->data);
+    image->data = new uint8[image->dataSize];
+    
     png_bytepp row_pointers = nullptr;
     row_pointers = (png_bytepp)malloc(height*sizeof(png_bytep));
     if (nullptr == row_pointers)
     {
         png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
-        delete[](image_data);
-        image_data = nullptr;
         return ERROR_READ_FAIL;
     }
 
     // set the individual row_pointers to point at the correct offsets
 
     for (int i = 0; i < static_cast<int>(height); ++i)
-        row_pointers[i] = image_data + i * rowbytes;
+        row_pointers[i] = image->data + i * rowbytes;
 
     // now we can go ahead and just read the whole image
     png_read_image(png_ptr, row_pointers);
@@ -515,8 +527,6 @@ eErrorCode LibPngHelper::ReadPngFile(File *infile, Image * image, PixelFormat ta
 
     // Clean up
     png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
-
-    image->data = image_data;
 
     return SUCCESS;
 }

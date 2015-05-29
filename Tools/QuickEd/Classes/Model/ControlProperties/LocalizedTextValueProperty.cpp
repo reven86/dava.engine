@@ -4,8 +4,8 @@
 
 using namespace DAVA;
 
-LocalizedTextValueProperty::LocalizedTextValueProperty(DAVA::BaseObject *object, const DAVA::InspMember *member, ValueProperty *sourceProperty, eCopyType copyType)
-    : ValueProperty(object, member, sourceProperty, copyType)
+LocalizedTextValueProperty::LocalizedTextValueProperty(DAVA::BaseObject *anObject, const DAVA::InspMember *aMmember, const LocalizedTextValueProperty *sourceProperty, eCloneType cloneType)
+    : IntrospectionProperty(anObject, aMmember, sourceProperty, cloneType)
 {
     ApplyValue(member->Value(object));
 }
@@ -20,9 +20,16 @@ int LocalizedTextValueProperty::GetCount() const
     return 0;
 }
 
-BaseProperty *LocalizedTextValueProperty::GetProperty(int index) const
+AbstractProperty *LocalizedTextValueProperty::GetProperty(int index) const
 {
     return NULL;
+}
+
+void LocalizedTextValueProperty::Refresh()
+{
+    IntrospectionProperty::Refresh();
+
+    member->SetValue(GetBaseObject(), VariantType(LocalizedString(text)));
 }
 
 VariantType LocalizedTextValueProperty::GetValue() const
@@ -33,5 +40,5 @@ VariantType LocalizedTextValueProperty::GetValue() const
 void LocalizedTextValueProperty::ApplyValue(const DAVA::VariantType &value)
 {
     text = value.AsWideString();
-    GetMember()->SetValue(GetBaseObject(), VariantType(LocalizedString(text)));
+    member->SetValue(GetBaseObject(), VariantType(LocalizedString(text)));
 }

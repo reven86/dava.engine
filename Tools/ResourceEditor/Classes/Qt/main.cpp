@@ -155,6 +155,7 @@ void RunConsole( int argc, char *argv[], CommandLineManager& cmdLine )
     cmdLine.InitalizeTool();
     if ( !cmdLine.IsToolInitialized() )
     {
+		cmdLine.PrintResults();
         cmdLine.PrintUsageForActiveTool();
     }
     else
@@ -185,6 +186,7 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
 #ifdef Q_OS_MAC
     // Must be called before creating QApplication instance
     FixOSXFonts();
+    DAVA::QtLayer::MakeAppForeground(false);
 #endif
  
     QApplication a( argc, argv );
@@ -203,21 +205,21 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
     new SceneValidator();
     new TextureCache();
 
-    LocalizationSystem::Instance()->SetCurrentLocale( "en" );
     LocalizationSystem::Instance()->InitWithDirectory( "~res:/Strings/" );
+    LocalizationSystem::Instance()->SetCurrentLocale( "en" );
 
     DAVA::Texture::SetDefaultGPU( static_cast<eGPUFamily>(SettingsManager::GetValue( Settings::Internal_TextureViewGPU ).AsInt32()) );
 
     // check and unpack help documents
     UnpackHelpDoc();
 
-    new DavaLoop();
-    new FrameworkLoop();
-    
 #ifdef Q_OS_MAC
     QTimer::singleShot(0, []{ DAVA::QtLayer::MakeAppForeground();    } );
     QTimer::singleShot(0, []{ DAVA::QtLayer::RestoreMenuBar();       } );
 #endif
+    
+    new DavaLoop();
+    new FrameworkLoop();
     
     DavaGLWidget *glWidget = nullptr;
     QtMainWindow *mainWindow = nullptr;
@@ -242,6 +244,7 @@ void RunGui( int argc, char *argv[], CommandLineManager& cmdLine )
         
         DavaLoop::Instance()->StartLoop( FrameworkLoop::Instance() );
     } );
+    
     
     // start app
     QApplication::exec();

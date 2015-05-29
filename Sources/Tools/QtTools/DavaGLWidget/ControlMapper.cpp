@@ -125,9 +125,18 @@ void ControlMapper::mouseDoubleClickEvent(QMouseEvent *event)
 
 void ControlMapper::wheelEvent(QWheelEvent *event)
 {
-    Q_UNUSED( event );
+    // In future, OS X may support extended scroll event handling
+    //if ( event->phase() != QScrollEvent::ScrollUpdated )
+    //    return;
 
-    // TODO: add feature - mouse move on wheel
+    const auto currentDPR = static_cast<int>( window->devicePixelRatio() );
+
+    DAVA::UIEvent davaEvent;
+    davaEvent.point = DAVA::Vector2( event->pixelDelta().x(), event->pixelDelta().y() );
+    davaEvent.timestamp = 0;
+    davaEvent.phase = DAVA::UIEvent::PHASE_WHEEL;
+
+    DAVA::QtLayer::Instance()->MouseEvent( davaEvent );
 }
 
 void ControlMapper::dragMoveEvent(QDragMoveEvent * event)
@@ -145,12 +154,12 @@ void ControlMapper::dragMoveEvent(QDragMoveEvent * event)
     DAVA::QtLayer::Instance()->MouseEvent( davaEvent );
 }
 
-void ControlMapper::ClearAllKeys()
+void ControlMapper::releaseKeyboard()
 {
     DAVA::InputSystem::Instance()->GetKeyboard().ClearAllKeys();
 }
 
-DAVA::UIEvent ControlMapper::MapMouseEventToDAVA( const QPoint& pos, const Qt::MouseButton button, ulong timestamp ) const
+DAVA::UIEvent ControlMapper::MapMouseEventToDAVA( const QPoint& pos, const Qt::MouseButton button, ulong timestamp )
 {
     DAVA::UIEvent davaEvent;
     auto davaButton = MapQtButtonToDAVA( button );

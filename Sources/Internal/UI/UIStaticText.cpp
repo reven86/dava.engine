@@ -670,6 +670,19 @@ void UIStaticText::SetMultilineType(int32 multilineType)
             break;
     }
 }
+
+DAVA::Vector4 UIStaticText::GetMarginsAsVector4() const
+{
+    auto *margins = GetMargins();
+    return (margins != nullptr) ? margins->AsVector4() : Vector4();
+}
+
+void UIStaticText::SetMarginsAsVector4(const Vector4 &vMargins)
+{
+    UIControlBackground::UIMargins newMargins(vMargins);
+    SetMargins(&newMargins);
+}
+
 #if defined(LOCALIZATION_DEBUG)
 void  UIStaticText::DrawLocalizationErrors(const UIGeometricData & geometricData, const UIGeometricData & elementGeomData) const
 {
@@ -785,8 +798,7 @@ void UIStaticText::RecalculateDebugColoring()
         
         if (!text.empty())
         {
-            WideString textNoSpaces(text);
-            TextBlock::CleanLine(textNoSpaces);
+            WideString textNoSpaces = StringUtils::RemoveNonPrintable(text, 1);
             auto res = remove_if(textNoSpaces.begin(), textNoSpaces.end(), StringUtils::IsWhitespace);
             textNoSpaces.erase(res, textNoSpaces.end());
 

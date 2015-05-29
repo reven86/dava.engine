@@ -30,8 +30,14 @@
 #ifndef __IMAGE_TOOLS_H__
 #define __IMAGE_TOOLS_H__
 
+#include "Render/Image/Image.h"
+#include "FileSystem/FilePath.h"
+#include "Render/TextureDescriptor.h"
+
 #include "TextureCompression/TextureConverter.h"
-#include "DAVAEngine.h"
+
+
+#include <QImage>
 
 struct Channels
 {
@@ -81,7 +87,7 @@ public:
          COLOR_ALPHA,
      };
     
-    static DAVA::uint32 GetTexturePhysicalSize(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily forGPU);
+    static DAVA::uint32 GetTexturePhysicalSize(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily forGPU, DAVA::uint32 baseMipMaps = 0);
 	static void ConvertImage(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily forGPU, const DAVA::PixelFormat format, DAVA::TextureConverter::eConvertQuality quality);
     
     static bool SplitImage(const DAVA::FilePath &pathname, DAVA::Set<DAVA::String> &errorLog);
@@ -93,6 +99,10 @@ public:
     static DAVA::Image* CreateMergedImage(const Channels& channes);
     
     static void SetChannel(DAVA::Image* image, eComponentsRGBA channel,  DAVA::uint8 value);
+    
+    
+    static QImage FromDavaImage(const DAVA::FilePath & pathname);
+    static QImage FromDavaImage(DAVA::Image *image);
 
 private:
     

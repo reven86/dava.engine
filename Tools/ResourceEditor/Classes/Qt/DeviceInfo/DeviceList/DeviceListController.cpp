@@ -167,8 +167,18 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
             item->setData(QVariant(static_cast<qulonglong>(trackId)), ROLE_CONNECTION_ID);
             {
                 DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
-                services.log = new DeviceLogController(peer, view, this);
-                services.memprof = new MemProfController(peer, view, this);
+                // Check whether remote device has corresponding services
+                const Vector<uint32>& servIds = config.Services();
+                auto iterService = std::find(servIds.begin(), servIds.end(), SERVICE_LOG);
+                if (iterService != servIds.end())
+                {
+                    services.log = new DeviceLogController(peer, view, this);
+                }
+                iterService = std::find(servIds.begin(), servIds.end(), SERVICE_MEMPROF);
+                if (iterService != servIds.end())
+                {
+                    services.memprof = new MemProfController(peer, view, this);
+                }
 
                 QVariant v;
                 v.setValue(services);
@@ -243,8 +253,14 @@ void DeviceListController::OnShowLogButtonPressed()
         if (trackId != NetCore::INVALID_TRACK_ID)
         {
             DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
-            services.log->ShowView();
-            services.memprof->ShowView();
+            if (services.log != nullptr)
+            {
+                services.log->ShowView();
+            }
+            if (services.memprof != nullptr)
+            {
+                services.memprof->ShowView();
+            }
         }
     }
 }

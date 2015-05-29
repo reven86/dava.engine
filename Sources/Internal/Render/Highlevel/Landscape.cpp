@@ -234,8 +234,10 @@ int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
         landscapeRDO->SetStream(EVF_TANGENT, TYPE_FLOAT, 3, vertexSize, &startStreamPtr[0].tangent);
     }
         
-    landscapeRDO->BuildVertexBuffer((quad->size + 1) * (quad->size + 1));
-//    SafeDeleteArray(landscapeVertices);
+    landscapeRDO->BuildVertexBuffer((quad->size + 1) * (quad->size + 1), BDT_STATIC_DRAW, true);
+#if defined(__DAVAENGINE_IPHONE__)
+    SafeDeleteArray(landscapeVertices);
+#endif
     
     landscapeVerticesArray.push_back(landscapeVertices);
     landscapeRDOArray.push_back(landscapeRDO);
@@ -263,7 +265,8 @@ void Landscape::BuildLandscapeFromHeightmapImage(const FilePath & heightmapPathn
 bool Landscape::BuildHeightmap()
 {
     bool retValue = false;
-    if(heightmapPath.IsEqualToExtension(".png"))
+
+    if(DAVA::TextureDescriptor::IsSourceTextureExtension(heightmapPath.GetExtension()))
     {
         Vector<Image *> imageSet;
         ImageSystem::Instance()->Load(heightmapPath, imageSet);
@@ -646,6 +649,7 @@ void Landscape::DrawPatch(uint32 level, uint32 xx, uint32 yy,
     DVASSERT(queueRenderCount < INDEX_ARRAY_COUNT);
 }
     
+<<<<<<< HEAD
 void Landscape::ReleaseLandscape()
 {
     SafeDeleteArray(indices);
@@ -726,6 +730,10 @@ void Landscape::ReallocateLandscape()
     
 //float32 LandscapeNode::BitmapHeightToReal(uint8 height)
 Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height)
+=======
+
+Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height) const
+>>>>>>> development
 {
     Vector3 res;
     res.x = (bbox.min.x + (float32)x / (float32)(heightmap->Size() - 1) * (bbox.max.x - bbox.min.x));
@@ -1001,9 +1009,19 @@ void Landscape::Draw(Camera * drawCamera)
 }
 
 
-void Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<int32> & indices)
+bool Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<int32> & indices) const
 {
+<<<<<<< HEAD
     int32 quadCount = heightmap->Size() - 1;
+=======
+    if (heightmap->Data() == nullptr)
+    {
+        return false;
+    }
+
+	const LandQuadTreeNode<LandscapeQuad> * currentNode = &quadTreeHead;
+	const LandscapeQuad * quad = &currentNode->data;
+>>>>>>> development
 	
 	landscapeVertices.resize((quadCount + 1) * (quadCount + 1));
 
@@ -1036,26 +1054,9 @@ void Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<
 			indices[indexIndex++] = x + (y + step) * vertexCount;
 		}
 	}
-}
 
-//AABBox3 LandscapeNode::GetWTMaximumBoundingBox()
-//{
-////    AABBox3 retBBox = box;
-////    box.GetTransformedBox(GetWorldTransform(), retBBox);
-////
-////    const Vector<SceneNode*>::iterator & itEnd = children.end();
-////    for (Vector<SceneNode*>::iterator it = children.begin(); it != itEnd; ++it)
-////    {
-////        AABBox3 lbox = (*it)->GetWTMaximumBoundingBoxSlow();
-////        if(  (AABBOX_INFINITY != lbox.min.x && AABBOX_INFINITY != lbox.min.y && AABBOX_INFINITY != lbox.min.z)
-////           &&(-AABBOX_INFINITY != lbox.max.x && -AABBOX_INFINITY != lbox.max.y && -AABBOX_INFINITY != lbox.max.z))
-////        {
-////            retBBox.AddAABBox(lbox);
-////        }
-////    }
-//    
-//    return retBBox;
-//}
+    return true;
+}
 
 const FilePath & Landscape::GetHeightmapPathname()
 {

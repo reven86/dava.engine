@@ -62,10 +62,10 @@ bool KeyedArchive::Load(const FilePath & pathName)
 	File * archive = File::Create(pathName, File::OPEN|File::READ);
 	if (!archive)return false;
 
-	Load(archive);
-
+	bool ret = Load(archive);
 	SafeRelease(archive);
-	return true;
+
+	return ret;
 }
 	
 bool KeyedArchive::Load(File *archive)
@@ -75,6 +75,7 @@ bool KeyedArchive::Load(File *archive)
     if (wasRead != 2)
     {
         Logger::Error("[KeyedArchive] error loading keyed archive from file: %s, filesize: %d", archive->GetFilename().GetAbsolutePathname().c_str(), archive->GetSize());
+		return false;
     }
     else if ((header[0] != 'K') || (header[1] != 'A'))
     {
@@ -118,10 +119,10 @@ bool KeyedArchive::Save(const FilePath & pathName)
 	File * archive = File::Create(pathName, File::CREATE|File::WRITE);
 	if (!archive)return false;
 
-	Save(archive);
-
+	bool ret = Save(archive);
 	SafeRelease(archive);
-	return true;
+
+	return ret;
 }
 
 bool KeyedArchive::Save(File *archive)

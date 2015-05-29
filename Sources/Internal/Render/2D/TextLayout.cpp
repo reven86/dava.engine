@@ -35,15 +35,14 @@ namespace DAVA
 {
 
 TextLayout::TextLayout()
-    : TextLayout(WRAP_BY_WORDS, false)
+    : TextLayout(false)
 {
 }
 
-TextLayout::TextLayout(const WrapMode _wrapMode, const bool _useBiDi)
+TextLayout::TextLayout(const bool _useBiDi)
     : useBiDi(_useBiDi)
     , isRtl(false)
     , fromPos(0)
-    , wrapMode(_wrapMode)
 {
 }
 
@@ -62,12 +61,8 @@ void TextLayout::Reset(const WideString& _input, const Font& _font)
         {
             bidiHelper.PrepareString(inputText, preparedText, &isRtl);
         }
-
-        if(wrapMode == WRAP_BY_WORDS)
-        {
-            StringUtils::GetLineBreaks(preparedText, breaks);
-            DVASSERT_MSG(breaks.size() == preparedText.length(), "Incorrect breaks information");    
-        }
+        StringUtils::GetLineBreaks(preparedText, breaks);
+        DVASSERT_MSG(breaks.size() == preparedText.length(), "Incorrect breaks information");
     }
     
     // Update characters sizes from font
@@ -95,47 +90,17 @@ void TextLayout::Seek(const uint32 _position)
     preparedLine.clear();
 }
 
-void TextLayout::SetWrapMode(const WrapMode mode)
+bool TextLayout::IsEndOfText()
 {
-    if (wrapMode != mode)
-    {
-        wrapMode = mode;
-        if (wrapMode == WRAP_BY_WORDS)
-        {
-            StringUtils::GetLineBreaks(preparedText, breaks);
-            DVASSERT_MSG(breaks.size() == preparedText.length(), "Incorrect breaks information");
-        }
-    }
+    return fromPos >= preparedText.length();
 }
 
-bool TextLayout::HasNext()
-{
-    return fromPos < preparedText.length();
-}
-
-void TextLayout::Next(const float32 lineWidth)
-{
-    switch (wrapMode)
-    {
-    case WRAP_BY_WORDS:
-        NextByWords(lineWidth);
-        break;
-    case WRAP_BY_SYMBOLS:
-        NextBySymbols(lineWidth);
-        break;
-    default:
-        DVASSERT_MSG(false, "Use correct WrapMode");
-    }
-}
-
-void TextLayout::NextByWords(const float32 lineWidth)
+bool TextLayout::NextByWords(const float32 lineWidth)
 {
     float32 targetWidth = std::floor(lineWidth);
     float32 currentWidth = 0;
     uint32 textLength = (uint32)preparedText.length();
     uint32 lastPossibleBreak = 0;
-
-    DVASSERT_MSG(textLength == breaks.size(), "Reset with wrong wrap mode");
 
     for (uint32 pos = fromPos; pos < textLength; ++pos)
     {
@@ -146,7 +111,7 @@ void TextLayout::NextByWords(const float32 lineWidth)
 
         // Check that targetWidth defined and currentWidth less than targetWidth.
         // If symbol is whitespace skip it and go to next (add all whitespace to current line)
-        if (targetWidth == 0.f || currentWidth <= targetWidth || StringUtils::IsWhitespace(ch))
+        if (currentWidth <= targetWidth || StringUtils::IsWhitespace(ch))
         {
             if (canBreak == StringUtils::LB_MUSTBREAK) // If symbol is line breaker then split string
             {
@@ -155,8 +120,7 @@ void TextLayout::NextByWords(const float32 lineWidth)
                 currentWidth = 0.f;
                 lastPossibleBreak = 0;
                 fromPos = pos + 1;
-
-                return;
+                return true;
             }
             else if (canBreak == StringUtils::LB_ALLOWBREAK) // Store breakable symbol position
             {
@@ -168,47 +132,36 @@ void TextLayout::NextByWords(const float32 lineWidth)
         if (lastPossibleBreak > 0) // If we have any breakable symbol in current substring then split by it
         {
             pos = lastPossibleBreak;
-        }
-        else // If not then split by previous symbol
-        {
-            pos--;
+            
+            preparedLine = preparedText.substr(fromPos, pos - fromPos + 1);
+            currentWidth = 0.f;
+            lastPossibleBreak = 0;
+            fromPos = pos + 1;
+            return true;
         }
 
-        preparedLine = preparedText.substr(fromPos, pos - fromPos + 1);
-        
-        currentWidth = 0.f;
-        lastPossibleBreak = 0;
-        fromPos = pos + 1;
-
-        return;
+        return false;
     }
 
     DVASSERT_MSG(fromPos == textLength, "Incorrect line split");
+    return false;
 }
 
-void TextLayout::NextBySymbols(const float32 lineWidth)
+bool TextLayout::NextBySymbols(const float32 lineWidth)
 {
     float32 targetWidth = std::floor(lineWidth);
     float32 currentLineDx = 0;
-    int32 totalSize = preparedText.length();
-    int32 currentLineEnd = 0;
+    int32 totalSize = (int32)preparedText.length();
+    int32 pos = 0;
 
-    for (int pos = fromPos; pos < totalSize; pos++)
+    for (pos = fromPos; pos < totalSize; pos++)
     {
         char16 t = preparedText[pos];
-        char16 tNext = 0;
-        if (pos + 1 < totalSize)
-        {
-            tNext = preparedText[pos + 1];
-        }
-
-        currentLineEnd = pos;
-
         if (t == L'\n')
         {
-            preparedLine = preparedText.substr(fromPos, currentLineEnd - fromPos);
+            preparedLine = preparedText.substr(fromPos, pos - fromPos);
             fromPos = pos + 1;
-            return;
+            return true;
         }
 
         float32 characterSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtualX(characterSizes[pos]);
@@ -219,16 +172,17 @@ void TextLayout::NextBySymbols(const float32 lineWidth)
         // before entering this condition, so currentLineDx > 0.
         if ((currentLineDx > 0) && ((currentLineDx + characterSize) > targetWidth))
         {
-            preparedLine = preparedText.substr(fromPos, currentLineEnd - fromPos);
+            preparedLine = preparedText.substr(fromPos, pos - fromPos);
             fromPos = pos;
-            return;
+            return true;
         }
         
         currentLineDx += characterSize;
     }
 
-    preparedLine = preparedText.substr(fromPos, currentLineEnd - fromPos + 1);
+    preparedLine = preparedText.substr(fromPos, pos - fromPos + 1);
     fromPos = totalSize;
+    return true;
 }
 
 const WideString TextLayout::GetVisualText(const bool trimEnd) const
@@ -246,7 +200,7 @@ const WideString TextLayout::BuildVisualString(const WideString& _input, const b
     WideString output = _input;
     if (useBiDi)
     {
-        bidiHelper.ReorderString(output, isRtl);
+        bidiHelper.ReorderString(output, output, isRtl);
     }
     output = StringUtils::RemoveNonPrintable(output, 1);
     if (trimEnd)

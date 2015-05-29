@@ -1,7 +1,7 @@
 #include "EnumPropertyDelegate.h"
 #include <QComboBox>
 #include <QLayout>
-#include "Model/ControlProperties/BaseProperty.h"
+#include "Model/ControlProperties/AbstractProperty.h"
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
 #include "PropertiesModel.h"
@@ -21,7 +21,7 @@ QWidget * EnumPropertyDelegate::createEditor( QWidget * parent, const QStyleOpti
     comboBox->setObjectName(QString::fromUtf8("comboBox"));
     connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentIndexChanged()));
 
-    BaseProperty *property = static_cast<BaseProperty *>(index.internalPointer());
+    AbstractProperty *property = static_cast<AbstractProperty *>(index.internalPointer());
     const EnumMap *enumMap = property->GetEnumMap();
     DVASSERT(enumMap);
 

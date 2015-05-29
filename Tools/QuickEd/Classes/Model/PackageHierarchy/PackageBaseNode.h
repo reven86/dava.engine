@@ -9,6 +9,7 @@ namespace DAVA
 }
 
 class ControlNode;
+class PackageRef;
 
 class PackageBaseNode : public DAVA::BaseObject
 {
@@ -35,6 +36,8 @@ public:
     void SetParent(PackageBaseNode *parent);
     
     virtual DAVA::String GetName() const;
+    virtual PackageRef *GetPackageRef() const;
+    
     virtual DAVA::UIControl *GetControl() const;
     
     virtual int GetFlags() const = 0;
@@ -47,6 +50,9 @@ public:
     virtual bool CanInsertImportedPackage() const;
     virtual bool CanRemove() const;
     virtual bool CanCopy() const;
+
+protected:
+    virtual bool IsReadOnly() const;
     
 private:
     PackageBaseNode *parent;
