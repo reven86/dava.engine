@@ -50,3 +50,10 @@ Projects/UnitTests/android/assets
 Projects/UnitTests/android/.settings/*
 .vs
 AppPackages
+
+!/Libs/lib_CMake/win10/x86/Debug
+!/Libs/lib_CMake/win10/x86/Relese
+!/Libs/lib_CMake/win10/x64/Debug
+!/Libs/lib_CMake/win10/x64/Relese
+!/Libs/lib_CMake/win10/arm/Debug
+!/Libs/lib_CMake/win10/arm/Relese
