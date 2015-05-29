@@ -121,7 +121,7 @@ elseif ( WINDOWS_UAP )
 	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 	set(PACKAGE_GUID "${WINDOWS_UAP_APPLICATION_GUID}")
 	
-	set ( WIN_UAP_CONF_DIR      "${CMAKE_MODULE_PATH}../ConfigureFiles/WindowsStore" )
+	set ( WIN_UAP_CONF_DIR      "${CMAKE_MODULE_PATH}../Resources/WindowsStore" )
 	set ( WIN_UAP_MANIFESTS_DIR "${WIN_UAP_CONF_DIR}/Manifests" )
 	set ( WIN_UAP_ASSETS_DIR    "${WIN_UAP_CONF_DIR}/Assets" )
 	file( GLOB ASSET_FILES      "${WIN_UAP_ASSETS_DIR}/*.png" )
