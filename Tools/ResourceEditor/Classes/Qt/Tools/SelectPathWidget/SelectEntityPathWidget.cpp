@@ -131,7 +131,7 @@ void SelectEntityPathWidget::ConvertQMimeDataFromFilePath(const QMimeData* mimeD
 			continue;
 		}
 		
-		DAVA::Entity * entity = sceneEditor->structureSystem->Load(filePath,true);
+		DAVA::Entity * entity = sceneEditor->structureSystem->Load(filePath);
 		
 		if(NULL != entity)
 		{

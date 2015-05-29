@@ -849,9 +849,6 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\DataNode.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\ProxyNode.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Input\InputSystem.h">
       <Filter>Internal\Input</Filter>
     </ClInclude>
@@ -1824,8 +1821,8 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibTgaHelper.h">
       <Filter>Internal\Render\Image</Filter>
-	</ClInclude>
-	<ClInclude Include="..\..\Sources\Internal\Render\2D\TextLayout.h">
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\TextLayout.h">
       <Filter>Internal\Render\2D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Timer\RawTimer.h">
@@ -2395,9 +2392,6 @@
       <Filter>Internal\Base</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\DataNode.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\ProxyNode.cpp">
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Input\InputSystem.cpp">
@@ -3274,7 +3268,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibTgaHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
-	<ClCompile Include="..\..\Sources\Internal\Render\2D\TextLayout.cpp">
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\TextLayout.cpp">
       <Filter>Internal\Render\2D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Timer\RawTimer.cpp">

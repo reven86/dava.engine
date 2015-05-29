@@ -348,7 +348,6 @@
 		176DE9D0174B5561007A983B /* ParticleEmitterNode.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CF116BD24E500732C04 /* ParticleEmitterNode.h */; };
 		176DE9D1174B5561007A983B /* PathManip.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CF316BD24E500732C04 /* PathManip.h */; };
 		176DE9D2174B5561007A983B /* PolygonGroupInstance.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CF516BD24E500732C04 /* PolygonGroupInstance.h */; };
-		176DE9D3174B5561007A983B /* ProxyNode.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CF716BD24E500732C04 /* ProxyNode.h */; };
 		176DE9D4174B5561007A983B /* Scene.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CFF16BD24E500732C04 /* Scene.h */; };
 		176DE9D5174B5561007A983B /* SceneAnimationMixer.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D0116BD24E500732C04 /* SceneAnimationMixer.h */; };
 		176DE9D6174B5561007A983B /* SceneFile.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D0316BD24E500732C04 /* SceneFile.h */; };
@@ -594,7 +593,6 @@
 		176DEAED174B5561007A983B /* ParticleEmitterNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CF016BD24E500732C04 /* ParticleEmitterNode.cpp */; };
 		176DEAEE174B5561007A983B /* PathManip.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CF216BD24E500732C04 /* PathManip.cpp */; };
 		176DEAEF174B5561007A983B /* PolygonGroupInstance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CF416BD24E500732C04 /* PolygonGroupInstance.cpp */; };
-		176DEAF0174B5561007A983B /* ProxyNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CF616BD24E500732C04 /* ProxyNode.cpp */; };
 		176DEAF1174B5561007A983B /* Scene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CFE16BD24E500732C04 /* Scene.cpp */; };
 		176DEAF2174B5561007A983B /* SceneAnimationMixer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D0016BD24E500732C04 /* SceneAnimationMixer.cpp */; };
 		176DEAF3174B5561007A983B /* SceneFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D0216BD24E500732C04 /* SceneFile.cpp */; };
@@ -1909,8 +1907,6 @@
 		E8989FAE16BD24E500732C04 /* PathManip.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CF316BD24E500732C04 /* PathManip.h */; };
 		E8989FAF16BD24E500732C04 /* PolygonGroupInstance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CF416BD24E500732C04 /* PolygonGroupInstance.cpp */; };
 		E8989FB016BD24E500732C04 /* PolygonGroupInstance.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CF516BD24E500732C04 /* PolygonGroupInstance.h */; };
-		E8989FB116BD24E500732C04 /* ProxyNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CF616BD24E500732C04 /* ProxyNode.cpp */; };
-		E8989FB216BD24E500732C04 /* ProxyNode.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CF716BD24E500732C04 /* ProxyNode.h */; };
 		E8989FB916BD24E500732C04 /* Scene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CFE16BD24E500732C04 /* Scene.cpp */; };
 		E8989FBA16BD24E500732C04 /* Scene.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CFF16BD24E500732C04 /* Scene.h */; };
 		E8989FBB16BD24E500732C04 /* SceneAnimationMixer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D0016BD24E500732C04 /* SceneAnimationMixer.cpp */; };
@@ -2205,7 +2201,6 @@
 		E898A14B16BD265400732C04 /* ParticleEmitterNode.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CF116BD24E500732C04 /* ParticleEmitterNode.h */; };
 		E898A14C16BD265400732C04 /* PathManip.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CF316BD24E500732C04 /* PathManip.h */; };
 		E898A14D16BD265400732C04 /* PolygonGroupInstance.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CF516BD24E500732C04 /* PolygonGroupInstance.h */; };
-		E898A14E16BD265400732C04 /* ProxyNode.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CF716BD24E500732C04 /* ProxyNode.h */; };
 		E898A15216BD265400732C04 /* Scene.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989CFF16BD24E500732C04 /* Scene.h */; };
 		E898A15316BD265400732C04 /* SceneAnimationMixer.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D0116BD24E500732C04 /* SceneAnimationMixer.h */; };
 		E898A15416BD265400732C04 /* SceneFile.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989D0316BD24E500732C04 /* SceneFile.h */; };
@@ -2404,7 +2399,6 @@
 		E898A26416BD265400732C04 /* ParticleEmitterNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CF016BD24E500732C04 /* ParticleEmitterNode.cpp */; };
 		E898A26516BD265400732C04 /* PathManip.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CF216BD24E500732C04 /* PathManip.cpp */; };
 		E898A26616BD265400732C04 /* PolygonGroupInstance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CF416BD24E500732C04 /* PolygonGroupInstance.cpp */; };
-		E898A26716BD265400732C04 /* ProxyNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CF616BD24E500732C04 /* ProxyNode.cpp */; };
 		E898A26B16BD265400732C04 /* Scene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989CFE16BD24E500732C04 /* Scene.cpp */; };
 		E898A26C16BD265400732C04 /* SceneAnimationMixer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D0016BD24E500732C04 /* SceneAnimationMixer.cpp */; };
 		E898A26D16BD265400732C04 /* SceneFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989D0216BD24E500732C04 /* SceneFile.cpp */; };
@@ -3550,8 +3544,6 @@
 		E8989CF316BD24E500732C04 /* PathManip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PathManip.h; sourceTree = "<group>"; };
 		E8989CF416BD24E500732C04 /* PolygonGroupInstance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PolygonGroupInstance.cpp; sourceTree = "<group>"; };
 		E8989CF516BD24E500732C04 /* PolygonGroupInstance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PolygonGroupInstance.h; sourceTree = "<group>"; };
-		E8989CF616BD24E500732C04 /* ProxyNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ProxyNode.cpp; sourceTree = "<group>"; };
-		E8989CF716BD24E500732C04 /* ProxyNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProxyNode.h; sourceTree = "<group>"; };
 		E8989CFE16BD24E500732C04 /* Scene.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Scene.cpp; sourceTree = "<group>"; };
 		E8989CFF16BD24E500732C04 /* Scene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Scene.h; sourceTree = "<group>"; };
 		E8989D0016BD24E500732C04 /* SceneAnimationMixer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SceneAnimationMixer.cpp; sourceTree = "<group>"; };
@@ -4974,8 +4966,6 @@
 				E8989CF316BD24E500732C04 /* PathManip.h */,
 				E8989CF416BD24E500732C04 /* PolygonGroupInstance.cpp */,
 				E8989CF516BD24E500732C04 /* PolygonGroupInstance.h */,
-				E8989CF616BD24E500732C04 /* ProxyNode.cpp */,
-				E8989CF716BD24E500732C04 /* ProxyNode.h */,
 				E8989CFE16BD24E500732C04 /* Scene.cpp */,
 				E8989CFF16BD24E500732C04 /* Scene.h */,
 				B4C29D3D199B592D001B83FE /* SceneCache.cpp */,
@@ -5609,7 +5599,6 @@
 				176DE9D1174B5561007A983B /* PathManip.h in Headers */,
 				50A3044318575C370082CA8D /* StaticOcclusionRenderPass.h in Headers */,
 				176DE9D2174B5561007A983B /* PolygonGroupInstance.h in Headers */,
-				176DE9D3174B5561007A983B /* ProxyNode.h in Headers */,
 				176DE9D4174B5561007A983B /* Scene.h in Headers */,
 				176DE9D5174B5561007A983B /* SceneAnimationMixer.h in Headers */,
 				CC84B02118211A9000934482 /* JobManager.h in Headers */,
@@ -6079,7 +6068,6 @@
 				02FD7EE619237DA2007762C0 /* SpeedTreeComponent.h in Headers */,
 				E8989FB016BD24E500732C04 /* PolygonGroupInstance.h in Headers */,
 				50ED334D1858B5A200A917D5 /* StaticOcclusionComponent.h in Headers */,
-				E8989FB216BD24E500732C04 /* ProxyNode.h in Headers */,
 				50B06923186D4C4C00B44A39 /* RenderLayerManager.h in Headers */,
 				026A1DD319DAF1B700813AEF /* SkinnedMesh.h in Headers */,
 				D7E6C5A9198255BF00B96D1A /* CurlDownloader.h in Headers */,
@@ -6563,7 +6551,6 @@
 				E898A14B16BD265400732C04 /* ParticleEmitterNode.h in Headers */,
 				E898A14C16BD265400732C04 /* PathManip.h in Headers */,
 				E898A14D16BD265400732C04 /* PolygonGroupInstance.h in Headers */,
-				E898A14E16BD265400732C04 /* ProxyNode.h in Headers */,
 				4F53ED2B19A23BE700D3869D /* Downloader.h in Headers */,
 				E898A15216BD265400732C04 /* Scene.h in Headers */,
 				E898A15316BD265400732C04 /* SceneAnimationMixer.h in Headers */,
@@ -7069,7 +7056,6 @@
 				641A61DC18CDC2F4003359E7 /* FoliageSystem.cpp in Sources */,
 				322FFD4619C042880000ED71 /* UIControlHelpers.cpp in Sources */,
 				176DEAEF174B5561007A983B /* PolygonGroupInstance.cpp in Sources */,
-				176DEAF0174B5561007A983B /* ProxyNode.cpp in Sources */,
 				EAAC988C1937333E00549BAD /* MeshUtils.cpp in Sources */,
 				176DEAF1174B5561007A983B /* Scene.cpp in Sources */,
 				644C86D819476A7100964F91 /* VegetationCustomSLGeometry.cpp in Sources */,
@@ -7498,7 +7484,6 @@
 				E8989FAD16BD24E500732C04 /* PathManip.cpp in Sources */,
 				E8989FAF16BD24E500732C04 /* PolygonGroupInstance.cpp in Sources */,
 				026A1DC019DAF09700813AEF /* SkeletonComponent.cpp in Sources */,
-				E8989FB116BD24E500732C04 /* ProxyNode.cpp in Sources */,
 				E8989FB916BD24E500732C04 /* Scene.cpp in Sources */,
 				E8989FBB16BD24E500732C04 /* SceneAnimationMixer.cpp in Sources */,
 				E8989FBD16BD24E500732C04 /* SceneFile.cpp in Sources */,
@@ -7941,7 +7926,6 @@
 				E898A26516BD265400732C04 /* PathManip.cpp in Sources */,
 				E898A26616BD265400732C04 /* PolygonGroupInstance.cpp in Sources */,
 				B786013A1A08B6170041F817 /* StringUtils.cpp in Sources */,
-				E898A26716BD265400732C04 /* ProxyNode.cpp in Sources */,
 				84E975C9191FCE100054CCF9 /* LibJpegHelper.cpp in Sources */,
 				E8990B551A288C8F00FF71A1 /* WASDControllerSystem.cpp in Sources */,
 				E898A26B16BD265400732C04 /* Scene.cpp in Sources */,

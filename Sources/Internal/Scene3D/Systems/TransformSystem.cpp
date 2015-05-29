@@ -260,7 +260,7 @@ void TransformSystem::RemoveEntity(Entity * entity)
 		{
 			updatableEntities[i] = updatableEntities[size-1];
 			updatableEntities.pop_back();
-			return;
+            break;
 		}
 	}
 

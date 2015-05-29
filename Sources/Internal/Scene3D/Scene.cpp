@@ -45,7 +45,6 @@
 #include "Scene3D/SceneFile.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/DataNode.h"
-#include "Scene3D/ProxyNode.h"
 #include "Scene3D/ShadowVolumeNode.h"
 #include "Render/Highlevel/Light.h"
 #include "Scene3D/MeshInstanceNode.h"

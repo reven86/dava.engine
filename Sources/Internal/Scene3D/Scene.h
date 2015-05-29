@@ -317,16 +317,6 @@ protected:
     void InitGlobalMaterial();
     void ImportShadowColor(Entity * rootNode);
 
-#if ROOT_NODE
-#if defined (USE_FILEPATH_IN_MAP)
-    typedef Map<FilePath, ProxyNode*> ProxyNodeMap;
-#else //#if defined (USE_FILEPATH_IN_MAP)
-	typedef Map<String, ProxyNode*> ProxyNodeMap;
-#endif //#if defined (USE_FILEPATH_IN_MAP)
-
-	ProxyNodeMap rootNodes;
-#endif
-
     Camera * mainCamera;
     Camera * drawCamera;
 

@@ -304,7 +304,7 @@ void StructureSystem::ReloadInternal(DAVA::Set<DAVA::Entity *> &entitiesToReload
 		if(entitiesToReload.size() > 0)
 		{
 			// try to load new model
-			DAVA::Entity *loadedEntity = LoadInternal(newModelPath, true, true);
+			DAVA::Entity *loadedEntity = LoadInternal(newModelPath, true);
 
 			if(NULL != loadedEntity)
 			{
@@ -350,7 +350,7 @@ void StructureSystem::Add(const DAVA::FilePath &newModelPath, const DAVA::Vector
 	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
 	if(nullptr != sceneEditor)
 	{
-        ScopedPtr<Entity> loadedEntity(Load(newModelPath, true));
+        ScopedPtr<Entity> loadedEntity(Load(newModelPath));
         if (static_cast<DAVA::Entity *>(loadedEntity) != nullptr)
 		{
 			DAVA::Vector3 entityPos = pos;
@@ -522,17 +522,17 @@ void StructureSystem::CheckAndMarkSolid(DAVA::Entity *entity)
 	}
 }
 
-DAVA::Entity* StructureSystem::Load(const DAVA::FilePath& sc2path, bool optimize)
+DAVA::Entity* StructureSystem::Load(const DAVA::FilePath& sc2path)
 {
-	return LoadInternal(sc2path, optimize, false);
+	return LoadInternal(sc2path, false);
 }
 
-DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool optimize, bool clearCache)
+DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool clearCache)
 {
-	DAVA::Entity* loadedEntity = NULL;
+	DAVA::Entity* loadedEntity = nullptr;
 
 	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
-	if(NULL != sceneEditor && sc2path.IsEqualToExtension(".sc2") && sc2path.Exists())
+    if(nullptr != sceneEditor && sc2path.IsEqualToExtension(".sc2") && sc2path.Exists())
 	{
         if(clearCache)
         {
@@ -541,15 +541,9 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
             sceneEditor->cache.Clear(sc2path);
         }
 
-        Entity *loadedEntity = sceneEditor->cache.GetClone(sc2path);
+        loadedEntity = sceneEditor->cache.GetClone(sc2path);
         if(nullptr != loadedEntity)
         {
-            if(optimize)
-            {
-                ScopedPtr<SceneFileV2> sceneFile(new SceneFileV2());
-                sceneFile->OptimizeScene(loadedEntity);
-            }
-
             if(loadedEntity->GetChildrenCount() > 0)
             {
                 KeyedArchive *props = GetOrCreateCustomProperties(loadedEntity)->GetArchive();
@@ -558,48 +552,6 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
                 CheckAndMarkSolid(loadedEntity);
             }
         }
-
-#if 0
-		if(clearCache)
-		{
-			// if there is already entity for such file, we should release it
-			// to be sure that latest version will be loaded 
-			sceneEditor->ReleaseRootNode(sc2path);
-		}
-
-		// load entity from file
-		Entity *rootNode = sceneEditor->GetRootNode(sc2path);
-        if(rootNode)
-        {
-            Entity *parentForOptimize = new Entity();
-
-			Entity *nodeForOptimize = rootNode->Clone();
-			parentForOptimize->AddNode(nodeForOptimize);
-			nodeForOptimize->Release();
-
-			if(optimize)
-			{
-				ScopedPtr<SceneFileV2> sceneFile(new SceneFileV2());
-				sceneFile->SetVersion(VersionInfo::Instance()->GetCurrentVersion());
-				sceneFile->OptimizeScene(parentForOptimize);
-			}
-
-			if(parentForOptimize->GetChildrenCount())
-			{
-				loadedEntity = parentForOptimize->GetChild(0);
-				loadedEntity->SetSolid(true);
-				loadedEntity->Retain();
-
-                KeyedArchive *props = GetOrCreateCustomProperties(loadedEntity)->GetArchive();
-				props->SetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, sc2path.GetAbsolutePathname());
-                
-                CheckAndMarkSolid(loadedEntity);
-			}
-
-			// release loaded entity
-			SafeRelease(parentForOptimize);
-		}
-#endif
 	}
     else
     {
