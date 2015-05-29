@@ -125,24 +125,25 @@ namespace DAVA
 	{
 		if(renderIsActive)
 		{
-			uint64 startTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
+			//  Control FPS
+			{
+				static uint64 startTime = 0;
+				int32 elapsedTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
+				int32 fps = RenderManager::Instance()->GetFPS();
+				if(fps > 0)
+				{
+					int32 sleepMs = (1000 / fps) - elapsedTime;
+					if(sleepMs > 0)
+					{
+						Thread::Sleep(sleepMs);
+					}
+				}
+				startTime = SystemTimer::Instance()->AbsoluteMS();
+			}
 		
 			DAVA::RenderManager::Instance()->Lock();
 			Core::SystemProcessFrame();
 			DAVA::RenderManager::Instance()->Unlock();
-
-			uint32 elapsedTime = (uint32) (SystemTimer::Instance()->AbsoluteMS() - startTime);
-            int32 sleepMs = 1;
-
-            int32 fps = RenderManager::Instance()->GetFPS();
-            if(fps > 0)
-            {
-                sleepMs = (1000 / fps) - elapsedTime;
-                if(sleepMs > 0)
-                {
-                	Thread::Sleep(sleepMs);
-                }
-            }
 		}
 	}
 
