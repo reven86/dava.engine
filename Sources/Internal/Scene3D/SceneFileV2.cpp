@@ -480,9 +480,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
             if (name == "GlobalMaterial")
             {
                 uint64 globalMaterialId = archive->GetUInt64("globalMaterialId");
-                NMaterial * globalMaterial = static_cast<NMaterial*>(serializationContext.GetDataBlock(globalMaterialId));
-
-                globalMaterial->RemoveFlag(NMaterialFlagName::FLAG_VERTEXFOG);
+                NMaterial * globalMaterial = static_cast<NMaterial*>(serializationContext.GetDataBlock(globalMaterialId));                
 
                 scene->SetGlobalMaterial(globalMaterial);
                 serializationContext.SetGlobalMaterialKey(globalMaterialId);
@@ -523,7 +521,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
     
     if (GetError() == ERROR_NO_ERROR)
     {
-        // TODO: Check do we need to releae root node here
+        // TODO: Check do we need to release root node here
         _scene->AddRootNode(rootNode, rootNodePathName);
     }
     
