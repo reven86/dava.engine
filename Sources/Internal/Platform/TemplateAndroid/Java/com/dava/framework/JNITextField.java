@@ -169,6 +169,9 @@ public class JNITextField {
         private boolean logicVisible = false; 
         
         private volatile boolean isRenderToTexture = false;
+        // we have to make next field static because all TextField
+        // affected if we filtering and send data to c++ thread
+        private static volatile boolean isFilteringOnText = false;
         
         private int pixels[] = null;
         private int width = 0;
@@ -236,7 +239,7 @@ public class JNITextField {
             // we have to enable and disable cache every time because of
             // bugs with previous image in some situations
             setDrawingCacheEnabled(true);
-            buildDrawingCache();
+            //buildDrawingCache();
             Bitmap bitmap = getDrawingCache(); //renderToBitmap();
             if (bitmap == null) // could be if onDraw not called yet
             {
@@ -259,6 +262,10 @@ public class JNITextField {
                 bitmap = Bitmap.createBitmap(measuredWidth, measuredHeight, Bitmap.Config.ARGB_8888);
                 Canvas c = new Canvas(bitmap);
                 layout(0, 0, measuredWidth, measuredHeight);
+                if (measuredWidth != viewWidth || measuredHeight != viewHeight)
+                {
+                    Log.d(TAG, "WARNING! width || height diff! orig:" + viewWidth + " " + viewHeight + " new: " + measuredWidth + " " + measuredHeight);
+                }
                 draw(c);
 
                 destroyBitmap = true;
@@ -274,7 +281,7 @@ public class JNITextField {
             // copy ARGB pixels values into our buffer
             bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
 
-            setDrawingCacheEnabled(false);
+            //setDrawingCacheEnabled(false);
             
             if (destroyBitmap)
             {
@@ -284,6 +291,7 @@ public class JNITextField {
             // Workaround! if all pixels is transparent and text length > 0
             // we have to re-render one more time with delay
             boolean isTransparent = true;
+
             for(int pixel : pixels)
             {
                 if (pixel != 0)
@@ -295,12 +303,13 @@ public class JNITextField {
 
             if (isTransparent && getText().length() > 0)
             {
+                Log.d(TAG, "WARNING render second one more time to texture");
                 postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         renderToTexture();
                     }
-                }, 1); // 1 - milliseconds tested on different values
+                }, 100); // 100 - milliseconds tested on different values
                 // stay with 1
             } else
             {
@@ -718,10 +727,12 @@ public class JNITextField {
                                 return new String(retBytes, "UTF-8");
                             }
                         });
-                        JNIActivity.GetActivity().PostEventToGL(t);
 
                         try {
+                            TextField.isFilteringOnText = true;
+                            JNIActivity.GetActivity().PostEventToGL(t);
                             String s = t.get();
+                            TextField.isFilteringOnText = false;
                             if (s.equals(origSource))
                             {
                                 result = null;
@@ -974,14 +985,24 @@ public class JNITextField {
     
 
     public static void SetText(final int id, final String string) {
-        JNIActivity.GetActivity().runOnUiThread(new SafeRunnableNoFilters(id) {
+        SafeRunnableNoFilters action = new SafeRunnableNoFilters(id) {
             @Override
             public void safeRun() {
                 text.setText(string);
                 // set cursor to the end of text
                 text.setSelection(text.getText().length());
             }
-        });
+        };
+        // Workaround semi-render to texture so if we can block current function
+        // to work synchronously - block it. If it have to return to c++ because
+        // of filtering on text - post event to prevent deadlock
+        if (TextField.isFilteringOnText)
+        {
+            JNIActivity.GetActivity().runOnUiThread(action);
+        } else {
+            RunOnUIThreadAndWaitUntilDone run = new RunOnUIThreadAndWaitUntilDone(action);
+            run.RunAndWait();
+        }
     }
 
     public static void SetTextColor(final int id, final float r, final float g,
