@@ -109,18 +109,15 @@ void UIMovieView::SystemDraw(const UIGeometricData &geometricData)
 	UIControl::SystemDraw(geometricData);
 
 #ifdef DRAW_PLACEHOLDER_FOR_STUB_UIMOVIEVIEW
-	Color curDebugDrawColor = GetDebugDrawColor();
+    static Color drawColor(Color(1.0f, 0.4f, 0.8f, 1.0f));
 
 	Rect absRect = GetRect(true);
-	RenderSystem2D::Instance()->SetColor(Color(1.0f, 0.4f, 0.8f, 1.0f));
-	RenderHelper::Instance()->DrawRect(absRect, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+    RenderSystem2D::Instance()->DrawRect(absRect, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
 
 	float32 minRadius = Min(GetSize().x, GetSize().y);
-	RenderHelper::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 2, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
-	RenderHelper::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 3, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
-	RenderHelper::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 4, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
-
-	SetDebugDrawColor(curDebugDrawColor);
+    RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 2, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
+    RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 3, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
+    RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 4, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
 #endif
 }
 

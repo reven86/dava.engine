@@ -29,29 +29,20 @@
 
 #include "RenderSystem2D.h"
 #include "VirtualCoordinatesSystem.h"
-#include "Render/ShaderCache.h"
-#include <Render/RenderHelper.h>
 
 #include "UI/UIControl.h"
 #include "UI/UIControlBackground.h"
 
 #include "Render/Renderer.h"
 
-
 namespace DAVA
 {
-
-#ifndef USE_BATCHING
-// Enable batching for 2D render
-#define USE_BATCHING 1
-#endif
 
 #ifndef BATCHING_DEBUG
 // Enable buffer checks (reuse VBO which already used in triple buffer)
 #define BATCHING_DEBUG 0
 #endif
 
-#if USE_BATCHING
 static const uint32 MAX_VERTICES = 1024;
 static const uint32 MAX_INDECES = MAX_VERTICES * 2;
 static const uint32 VBO_POOL_SIZE = 40;
@@ -60,32 +51,12 @@ static const uint32 VBO_FORMAT = EVF_VERTEX | EVF_TEXCOORD0 | EVF_COLOR;
 #if BATCHING_DEBUG
 static const uint32 VBO_USING_FRAME_LIFE = 3; // "triple buffer"
 #endif
-#else
-// Support render with disabled batching
-// Global variables for pointers to render data streams
-// Use ONLY for testing and debugging because they has been removed from the class declaration
-RenderDataStream* spriteVertexStream = nullptr;
-RenderDataStream* spriteTexCoordStream = nullptr;
-#endif
+static const float32 SEGMENT_LENGTH = 15.0f;
 
-FastName RenderSystem2D::FLAT_COLOR_SHADER("~res:/Shaders/renderer2dColor");
-FastName RenderSystem2D::TEXTURE_FLAT_COLOR_SHADER("~res:/Shaders/renderer2dTexture");
+NMaterial* RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL = nullptr;
+NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL = nullptr;
+NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL = nullptr;
 
-ShaderDescriptor * RenderSystem2D::FLAT_COLOR = 0;
-ShaderDescriptor * RenderSystem2D::TEXTURE_MUL_FLAT_COLOR = 0;
-ShaderDescriptor * RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = 0;
-ShaderDescriptor * RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = 0;
-ShaderDescriptor * RenderSystem2D::TEXTURE_ADD_FLAT_COLOR = 0;
-ShaderDescriptor * RenderSystem2D::TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST = 0;
-ShaderDescriptor * RenderSystem2D::TEXTURE_ADD_FLAT_COLOR_IMAGE_A8 = 0;
-ShaderDescriptor * RenderSystem2D::TEXTURE_MUL_COLOR = 0;
-ShaderDescriptor * RenderSystem2D::TEXTURE_MUL_COLOR_ALPHA_TEST = 0;
-ShaderDescriptor * RenderSystem2D::TEXTURE_MUL_COLOR_IMAGE_A8 = 0;
-ShaderDescriptor * RenderSystem2D::TEXTURE_ADD_COLOR = 0;
-ShaderDescriptor * RenderSystem2D::TEXTURE_ADD_COLOR_ALPHA_TEST = 0;
-ShaderDescriptor * RenderSystem2D::TEXTURE_ADD_COLOR_IMAGE_A8 = 0;
-
-#if USE_BATCHING
 class VboPool
 {
 public:
@@ -175,7 +146,7 @@ VboPool::VboPool(uint32 verticesCount, uint32 format, uint32 indicesCount, uint8
     rhi::VertexLayout vLayout;
     vLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
     vLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
-    vLayout.AddElement(rhi::VS_COLOR, 0, rhi::VDT_UINT8, 4);
+    vLayout.AddElement(rhi::VS_COLOR, 0, rhi::VDT_UINT8N, 4);
     vertexLayoutID = rhi::VertexLayout::UniqueId(vLayout);
 
     HardReset(verticesCount, indicesCount, buffersCount);
@@ -275,12 +246,7 @@ void VboPool::NextFrame()
 }
 #endif //BATCHING_DEBUG
 
-#endif //USE_BATCHING
-
 RenderSystem2D::RenderSystem2D() 
-#if RHI_COMPLETE
-    : spriteRenderObject(0)
-#endif //RHI_COMPLETE
     : vboTemp(NULL)
     , iboTemp(NULL)
     , spriteClipping(true)
@@ -300,7 +266,6 @@ RenderSystem2D::RenderSystem2D()
 
 void RenderSystem2D::Init()
 {
-#if USE_BATCHING
     if(!pool)
     {
         pool = new VboPool(MAX_VERTICES, VBO_FORMAT, MAX_INDECES, VBO_POOL_SIZE);
@@ -310,101 +275,30 @@ void RenderSystem2D::Init()
         vboTemp.resize(MAX_VERTICES * GetVertexSize(VBO_FORMAT));
         iboTemp.resize(MAX_INDECES);
         // Render data object for drawing big batches
-#if RHI_COMPLETE
-        spriteRenderObject = new RenderDataObject();
-#endif // RHI_COMPLETE
     }
-#else
-    if (!spriteRenderObject) //used as flag 'isInited'
-    {
-        spriteRenderObject = new RenderDataObject();
-        spriteVertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
-        spriteTexCoordStream = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
-    }
-#endif //USE_BATCHING
-#if RHI_COMPLETE
-    if(FLAT_COLOR == NULL)
-    {
-        FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(FLAT_COLOR_SHADER, FastNameSet()));
 
-        TEXTURE_MUL_FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, FastNameSet()));
+    DEFAULT_2D_COLOR_MATERIAL = new NMaterial();
+    DEFAULT_2D_COLOR_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Color.material"));
+    DEFAULT_2D_COLOR_MATERIAL->PreBuildMaterial(FastName("2d"));
 
-        FastNameSet set;
-        set.Insert(FastName("ALPHA_TEST_ENABLED"));
-        TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
+    DEFAULT_2D_TEXTURE_MATERIAL = new NMaterial();
+    DEFAULT_2D_TEXTURE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.material"));
+    DEFAULT_2D_TEXTURE_MATERIAL->PreBuildMaterial(FastName("2d"));
 
-        set.clear();
-        set.Insert(FastName("IMAGE_A8"));
-        TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
+    DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL = new NMaterial();
+    DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.material"));
+    DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL->AddFlag(FastName("IMAGE_A8"), 1);
+    DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL->PreBuildMaterial(FastName("2d"));
 
-        set.clear();
-        set.Insert(FastName("ADD_COLOR"));
-        TEXTURE_ADD_FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
-
-        set.clear();
-        set.Insert(FastName("ADD_COLOR"));
-        set.Insert(FastName("ALPHA_TEST_ENABLED"));
-        TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
-
-        set.clear();
-        set.Insert(FastName("ADD_COLOR"));
-        set.Insert(FastName("IMAGE_A8"));
-        TEXTURE_ADD_FLAT_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
-
-        set.clear();
-        set.Insert(FastName("VERTEX_COLOR"));
-        TEXTURE_MUL_COLOR = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
-
-        set.clear();
-        set.Insert(FastName("VERTEX_COLOR"));
-        set.Insert(FastName("ALPHA_TEST_ENABLED"));
-        TEXTURE_MUL_COLOR_ALPHA_TEST = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
-
-        set.clear();
-        set.Insert(FastName("VERTEX_COLOR"));
-        set.Insert(FastName("IMAGE_A8"));
-        TEXTURE_MUL_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
-
-        set.clear();
-        set.Insert(FastName("VERTEX_COLOR"));
-        set.Insert(FastName("ADD_COLOR"));
-        TEXTURE_ADD_COLOR = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
-
-        set.clear();
-        set.Insert(FastName("VERTEX_COLOR"));
-        set.Insert(FastName("ADD_COLOR"));
-        set.Insert(FastName("ALPHA_TEST_ENABLED"));
-        TEXTURE_ADD_COLOR_ALPHA_TEST = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
-
-        set.clear();
-        set.Insert(FastName("VERTEX_COLOR"));
-        set.Insert(FastName("ADD_COLOR"));
-        set.Insert(FastName("IMAGE_A8"));
-        TEXTURE_ADD_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_FLAT_COLOR_SHADER, set));
-    }
-#endif RHI_COMPLETE
 }
 
 RenderSystem2D::~RenderSystem2D()
 {
     SafeDelete(pool);
     
-#if RHI_COMPLETE
-    SafeRelease(spriteRenderObject);
-    SafeRelease(FLAT_COLOR);
-    SafeRelease(TEXTURE_MUL_FLAT_COLOR);
-    SafeRelease(TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST);
-    SafeRelease(TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
-    SafeRelease(TEXTURE_ADD_FLAT_COLOR);
-    SafeRelease(TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST);
-    SafeRelease(TEXTURE_ADD_FLAT_COLOR_IMAGE_A8);
-    SafeRelease(TEXTURE_MUL_COLOR);
-    SafeRelease(TEXTURE_MUL_COLOR_ALPHA_TEST);
-    SafeRelease(TEXTURE_MUL_COLOR_IMAGE_A8);
-    SafeRelease(TEXTURE_ADD_COLOR);
-    SafeRelease(TEXTURE_ADD_COLOR_ALPHA_TEST);
-    SafeRelease(TEXTURE_ADD_COLOR_IMAGE_A8);
-#endif // RHI_COMPLETE
+    SafeRelease(DEFAULT_2D_COLOR_MATERIAL);
+    SafeRelease(DEFAULT_2D_TEXTURE_MATERIAL);
+    SafeRelease(DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL);
 }
 
 void RenderSystem2D::BeginFrame()
@@ -417,9 +311,8 @@ void RenderSystem2D::BeginFrame()
     Setup2DMatrices();
 
     defaultSpriteDrawState.Reset();
-    defaultSpriteDrawState.material = RenderHelper::DEFAULT_2D_BLEND_MATERIAL;    
+    defaultSpriteDrawState.material = DEFAULT_2D_COLOR_MATERIAL;    
 
-#if USE_BATCHING
     batches.clear();
     batches.reserve(RESERVED_BATCHES);
     currentBatch.Reset();
@@ -427,7 +320,6 @@ void RenderSystem2D::BeginFrame()
     indexIndex = 0;
 #if BATCHING_DEBUG
     pool->NextFrame();
-#endif
 #endif
 
     rhi::RenderPassConfig renderPass2DConfig;
@@ -497,6 +389,10 @@ void RenderSystem2D::Setup2DProjection()
         projMatrix.glOrtho(0.0f, (float32)Renderer::GetFramebufferWidth(), (float32)Renderer::GetFramebufferHeight(), 0.0f, -1.0f, 1.0f);
     }
 
+    projMatrix = virtualToPhysicalMatrix * projMatrix;
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
+
+    projMatrix.glOrtho(0.0f, (float32)1024, (float32)768, 0.0f, -1.0f, 1.0f);
     projMatrix = virtualToPhysicalMatrix * projMatrix;
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 }
@@ -615,43 +511,13 @@ bool RenderSystem2D::IsPreparedSpriteOnScreen(Sprite::DrawState * drawState)
     const Rect spriteRect(left, top, right - left, bottom - top);
     return clipRect.RectIntersects(spriteRect);
 }
-    
-ShaderDescriptor* RenderSystem2D::GetShaderForBatching(ShaderDescriptor* inputShader)
-{
-    if (TEXTURE_MUL_FLAT_COLOR == inputShader)
-    {
-        return TEXTURE_MUL_COLOR;
-    }
-    else if (TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST == inputShader)
-    {
-        return TEXTURE_MUL_COLOR_ALPHA_TEST;
-    }
-    else if (TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 == inputShader)
-    {
-        return TEXTURE_MUL_COLOR_IMAGE_A8;
-    }
-    else if (TEXTURE_ADD_FLAT_COLOR == inputShader)
-    {
-        return TEXTURE_ADD_COLOR;
-    }
-    else if (TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST == inputShader)
-    {
-        return TEXTURE_ADD_COLOR_ALPHA_TEST;
-    }
-    else if (TEXTURE_ADD_FLAT_COLOR_IMAGE_A8 == inputShader)
-    {
-        return TEXTURE_ADD_COLOR_IMAGE_A8;
-    }
-    return inputShader;
-}
-
+  
 void RenderSystem2D::Flush()
 {
     /*
     Called on each EndFrame, particle draw, screen transitions preparing, screen borders draw
     */
 
-#if USE_BATCHING
     if (vertexIndex == 0 && indexIndex == 0)
     {
         return;
@@ -680,20 +546,37 @@ void RenderSystem2D::Flush()
     {
         const RenderBatch2D& batch = *it;
 
-        Rect2i clip = Rect2i((int32)batch.transformedClipRect.x,
-                             (int32)batch.transformedClipRect.y,
-                             (int32)ceilf(batch.transformedClipRect.dx),
-                             (int32)ceilf(batch.transformedClipRect.dy));
-        
         rhi::Packet packet;
         packet.vertexStreamCount = 1;
         packet.vertexStream[0] = pool->GetVertexBuffer();
         packet.indexBuffer = pool->GetIndexBuffer();
-        packet.primitiveType = rhi::PRIMITIVE_LINELIST;
-        packet.primitiveCount = indexIndex / 3;
+        packet.startIndex = batch.indexOffset;
+        packet.primitiveType = batch.primitiveType;
         packet.vertexLayoutUID = pool->GetVertexLayoutID();
         packet.vertexCount = vertexIndex;
-        //packet.clip = clip; //RHI_COMPLETE
+
+#if RHI_COMPLETE
+        packet.clip = clip;
+        Rect2i clip = Rect2i((int32)batch.transformedClipRect.x,
+            (int32)batch.transformedClipRect.y,
+            (int32)ceilf(batch.transformedClipRect.dx),
+            (int32)ceilf(batch.transformedClipRect.dy));
+
+#endif // RHI_COMPLETE
+
+        switch (packet.primitiveType)
+        {
+        case rhi::PRIMITIVE_LINELIST:
+            packet.primitiveCount = batch.count / 2;
+            break;
+        case rhi::PRIMITIVE_TRIANGLEFAN:
+            DVASSERT(batch.count > 2);
+            packet.primitiveCount = batch.count - 2;
+            break;
+        case rhi::PRIMITIVE_TRIANGLELIST:
+            packet.primitiveCount = batch.count / 3;
+            break;
+        }
 
         batch.material->BindParams(packet);
         packet.fragmentTextureSet = batch.textureSetHandle;
@@ -707,31 +590,26 @@ void RenderSystem2D::Flush()
     indexIndex = 0;
     pool->Next();
 
-#endif
-
 }
 
 void RenderSystem2D::HardResetBatchingBuffers(uint32 verticesCount, uint32 indicesCount, uint8 buffersCount)
 {
-#if USE_BATCHING
     vboTemp.resize(verticesCount * GetVertexSize(VBO_FORMAT));
     iboTemp.resize(indicesCount);
     pool->HardReset(verticesCount, indicesCount, buffersCount);
-#endif
 }
 
 void RenderSystem2D::PushBatch(NMaterial * material, rhi::HTextureSet texture, Rect const& clip,
     uint32 vertexCount, const float32* vertexPointer, const float32* texCoordPointer,
     uint32 indexCount, const uint16* indexPointer,
-    const Color& color)
+    const Color& color, const rhi::PrimitiveType primitiveType)
 {
-
-#if USE_BATCHING
     if ((vertexIndex + vertexCount > pool->GetVerticesLimit()) || (indexIndex + indexCount > pool->GetIndicesLimit()))
     {
         // Buffer overflow. Switch to next VBO.
         Flush();
 
+        // TODO: Make draw for big buffers (bigger than buffers in pool)
 #if RHI_COMPLETE
         // Draw immediately if batch is too big to buffer
         if(vertexCount > pool->GetVerticesLimit() || indexCount > pool->GetIndicesLimit())
@@ -788,8 +666,8 @@ void RenderSystem2D::PushBatch(NMaterial * material, rhi::HTextureSet texture, R
         vboTemp[vi++] = vertexPointer[i * 2];
         vboTemp[vi++] = vertexPointer[i * 2 + 1];
         vboTemp[vi++] = 0.f; // axe Z, empty but need for EVF_VERTEX format
-        vboTemp[vi++] = texCoordPointer[i * 2];
-        vboTemp[vi++] = texCoordPointer[i * 2 + 1];
+        vboTemp[vi++] = texCoordPointer ? texCoordPointer[i * 2] : 0.f;
+        vboTemp[vi++] = texCoordPointer ? texCoordPointer[i * 2 + 1] : 0.f;
         *(uint32*)(&vboTemp[vi++]) = useColor.GetRGBA();
     }
     for (uint32 i = 0; i < indexCount; ++i)
@@ -799,7 +677,8 @@ void RenderSystem2D::PushBatch(NMaterial * material, rhi::HTextureSet texture, R
     
     if (currentBatch.textureSetHandle != texture
         || currentBatch.material != material
-        || currentBatch.clipRect != clip)
+        || currentBatch.clipRect != clip
+        || currentBatch.primitiveType != primitiveType)
     {
         if (currentBatch.count > 0)
         {
@@ -807,6 +686,7 @@ void RenderSystem2D::PushBatch(NMaterial * material, rhi::HTextureSet texture, R
         }
         currentBatch.Reset();
 
+        currentBatch.primitiveType = primitiveType;
         currentBatch.textureSetHandle = texture;
         currentBatch.material = material;
         currentBatch.clipRect = clip;
@@ -817,21 +697,18 @@ void RenderSystem2D::PushBatch(NMaterial * material, rhi::HTextureSet texture, R
     currentBatch.count += indexCount;
     indexIndex += indexCount;
     vertexIndex += vertexCount;
-#endif
 }
 
 
-void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 */)
+void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState, const Color& color)
 {
     if(!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
 	{
 		return;
 	}
 
-#if USE_BATCHING
     static uint16 spriteIndeces[] = { 0, 1, 2, 1, 3, 2 };
     Vector<uint16> spriteClippedIndecex;
-#endif
 
     Sprite::DrawState * state = drawState;
     if (!state)
@@ -1067,21 +944,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
         }
 
         spriteVertexCount = 4;
-
-#if USE_BATCHING
-
         spriteIndexCount = 6;
-
-#else //USE_BATCHING
-       
-        spriteVertexStream->Set(TYPE_FLOAT, 2, 0, spriteTempVertices);
-        spriteTexCoordStream->Set(TYPE_FLOAT, 2, 0, sprite->texCoords[frame]);
-        spritePrimitiveToDraw = PRIMITIVETYPE_TRIANGLESTRIP;
-        DVASSERT(spriteVertexStream->pointer != 0);
-        DVASSERT(spriteTexCoordStream->pointer != 0);
-        
-#endif //USE_BATCHING
-
     }
     else
     {
@@ -1130,8 +993,6 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
             spriteClippedTexCoords.push_back(Vector2(sprite->texCoords[frame][0] + texCoord.x, sprite->texCoords[frame][1] + texCoord.y));
         }
 
-#if USE_BATCHING
-
         spriteVertexCount = sprite->clipPolygon->GetPointCount();
         DVASSERT(spriteVertexCount >= 2);
         spriteIndexCount = (spriteVertexCount - 2) * 3;
@@ -1145,17 +1006,6 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
             spriteClippedIndecex.push_back(i - 1);
             spriteClippedIndecex.push_back(i);
         }
-
-#else //USE_BATCHING
-    
-        spriteVertexStream->Set(TYPE_FLOAT, 2, 0, &spriteClippedVertices.front());
-        spriteTexCoordStream->Set(TYPE_FLOAT, 2, 0, &spriteClippedTexCoords.front());
-        spritePrimitiveToDraw = PRIMITIVETYPE_TRIANGLEFAN;
-        spriteVertexCount = sprite->clipPolygon->pointCount;
-        DVASSERT(spriteVertexStream->pointer != 0);
-        DVASSERT(spriteTexCoordStream->pointer != 0);
-        
-#endif //USE_BATCHING
     }
     
     if(sprite->clipPolygon)
@@ -1183,36 +1033,20 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
         IntersectClipRect(clipRect);
     }
 
-#if USE_BATCHING
-
     if (!sprite->clipPolygon)
     {
         PushBatch(state->GetMaterial(), sprite->GetTextureHandle(state->frame), currentClip,
             spriteVertexCount, spriteTempVertices, sprite->texCoords[frame], 
             spriteIndexCount, spriteIndeces,
-            currentColor);
+            color);
     }
     else
     {
         PushBatch(state->GetMaterial(), sprite->GetTextureHandle(state->frame), currentClip,
             spriteVertexCount, (float32*)&spriteClippedVertices.front(), (float32*)&spriteClippedTexCoords.front(),
             spriteIndexCount, spriteIndexCount ? &spriteClippedIndecex.front() : NULL,
-            currentColor);
+            color);
     }
-    
-#else //USE_BATCHING
-
-    UpdateClip();    
-    
-    RENDERER_UPDATE_STATS(spriteDrawCount++);
-
-    RenderManager::Instance()->SetRenderState(state->renderState);
-    RenderManager::Instance()->SetTextureState(sprite->GetTextureHandle(state->frame));
-    RenderManager::Instance()->SetRenderData(spriteRenderObject);
-    RenderManager::Instance()->SetRenderEffect(state->shader);
-    RenderManager::Instance()->DrawArrays(spritePrimitiveToDraw, 0, spriteVertexCount);
-
-#endif //USE_BATCHING
 
     if (sprite->clipPolygon)
     {
@@ -1221,7 +1055,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState /* = 0 
 
 }
 
-void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, Vector2 stretchCapVector, UIControlBackground::eDrawType type, const UIGeometricData &gd, StretchDrawData ** pStreachData)
+void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, Vector2 stretchCapVector, UIControlBackground::eDrawType type, const UIGeometricData &gd, StretchDrawData ** pStreachData, const Color& color)
 {
     if (!sprite)return;
 	if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
@@ -1288,8 +1122,6 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
         sd.GenerateTransformData();
     }
 
-#if USE_BATCHING
-	
     spriteVertexCount = (int32)sd.transformedVertices.size();
     spriteIndexCount = sd.GetVertexInTrianglesCount();
 
@@ -1297,29 +1129,15 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
     PushBatch(state->GetMaterial(), textureHandle, currentClip,
         spriteVertexCount, (float32*)&sd.transformedVertices.front(), (float32*)&sd.texCoords.front(),
         spriteIndexCount, sd.indeces,
-        currentColor);
+        color);
 	
-#else //USE_BATCHING
-	
-    RENDERER_UPDATE_STATS(spriteDrawCount++);
-
-    spriteVertexStream->Set(TYPE_FLOAT, 2, 0, &sd.transformedVertices[0]);
-    spriteTexCoordStream->Set(TYPE_FLOAT, 2, 0, &sd.texCoords[0]);
-    RenderManager::Instance()->SetTextureState(textureHandle);
-    RenderManager::Instance()->SetRenderState(state->renderState);
-    RenderManager::Instance()->SetRenderEffect(TEXTURE_MUL_FLAT_COLOR);
-    RenderManager::Instance()->SetRenderData(spriteRenderObject);
-    RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, sd.GetVertexInTrianglesCount(), EIF_16, (void*)sd.indeces);
-    
-#endif //USE_BATCHING
-
     if (!pStreachData)
     {
         SafeDelete(stretchData);
     }
 }
 
-void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const Vector2& stretchCapVector, const UIGeometricData &gd, TiledDrawData ** pTiledData)
+void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const Vector2& stretchCapVector, const UIGeometricData &gd, TiledDrawData ** pTiledData, const Color& color)
 {
     if (!sprite)return;
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
@@ -1389,8 +1207,6 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
         td.GenerateTransformData();
     }
 
-#if USE_BATCHING
-	
     spriteVertexCount = (int32)td.transformedVertices.size();
     spriteIndexCount = (int32)td.indeces.size();
 
@@ -1398,28 +1214,241 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
     PushBatch(state->GetMaterial(), textureHandle, currentClip,
         spriteVertexCount, (float32*)&td.transformedVertices.front(), (float32*)&td.texCoords.front(),
         spriteIndexCount, &td.indeces.front(),
-        currentColor);
-
-#else //USE_BATCHING
-
-    RENDERER_UPDATE_STATS(spriteDrawCount++);
-
-    spriteVertexStream->Set(TYPE_FLOAT, 2, 0, &td.transformedVertices[0]);
-    spriteTexCoordStream->Set(TYPE_FLOAT, 2, 0, &td.texCoords[0]);
-
-    RenderManager::Instance()->SetTextureState(textureHandle);
-    RenderManager::Instance()->SetRenderState(state->renderState);
-    RenderManager::Instance()->SetRenderEffect(TEXTURE_MUL_FLAT_COLOR);
-    RenderManager::Instance()->SetRenderData(spriteRenderObject);
-    RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, td.indeces.size(), EIF_16, &td.indeces[0]);
-	
-#endif //USE_BATCHING
+        color);
 
     if (!pTiledData)
     {
         SafeDelete(tiledData);
     }
 }
+
+/* RenderSyste2D Draw Helper Functions */
+
+void RenderSystem2D::FillRect(const Rect & rect, NMaterial *material, const Color& color)
+{
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
+    {
+        return;
+    }
+
+    static uint16 indices[6] = { 0, 1, 2, 1, 3, 2 };
+    spriteTempVertices[0] = rect.x;
+    spriteTempVertices[1] = rect.y;
+    spriteTempVertices[2] = rect.x + rect.dx;
+    spriteTempVertices[3] = rect.y;
+    spriteTempVertices[4] = rect.x;
+    spriteTempVertices[5] = rect.y + rect.dy;
+    spriteTempVertices[6] = rect.x + rect.dx;
+    spriteTempVertices[7] = rect.y + rect.dy;
+
+    PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), Rect(), 4, spriteTempVertices, nullptr, 6, indices, color);
+}
+
+void RenderSystem2D::DrawRect(const Rect & rect, NMaterial *material, const Color& color)
+{
+    static uint16 indices[8] = { 0, 1, 1, 2, 2, 3, 3, 0 };
+    spriteTempVertices[0] = rect.x;
+    spriteTempVertices[1] = rect.y;
+    spriteTempVertices[2] = rect.x + rect.dx;
+    spriteTempVertices[3] = rect.y;
+    spriteTempVertices[4] = rect.x + rect.dx;
+    spriteTempVertices[5] = rect.y + rect.dy;
+    spriteTempVertices[6] = rect.x;
+    spriteTempVertices[7] = rect.y + rect.dy;
+
+    PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), Rect(), 4, spriteTempVertices, nullptr, 8, indices, color, rhi::PRIMITIVE_LINELIST);
+}
+
+void RenderSystem2D::DrawGrid(const Rect & rect, const Vector2& gridSize, const Color& color, NMaterial *material)
+{
+    // TODO! review with Ivan/Victor whether it is not performance problem!
+    Vector<float32> gridVertices;
+    int32 verLinesCount = (int32)ceilf(rect.dx / gridSize.x);
+    int32 horLinesCount = (int32)ceilf(rect.dy / gridSize.y);
+    gridVertices.resize((horLinesCount + verLinesCount) * 4);
+
+    float32 curPos = 0;
+    int32 curVertexIndex = 0;
+    for (int i = 0; i < horLinesCount; i++)
+    {
+        gridVertices[curVertexIndex++] = rect.x;
+        gridVertices[curVertexIndex++] = rect.y + curPos;
+        gridVertices[curVertexIndex++] = rect.x + rect.dx;
+        gridVertices[curVertexIndex++] = rect.y + curPos;
+    }
+
+    curPos = 0.0f;
+    for (int i = 0; i < verLinesCount; i++)
+    {
+        gridVertices[curVertexIndex++] = rect.x + curPos;
+        gridVertices[curVertexIndex++] = rect.y;
+        gridVertices[curVertexIndex++] = rect.x + curPos;
+        gridVertices[curVertexIndex++] = rect.y + rect.dy;
+    }
+
+    Vector<uint16> indices;
+    for (int i = 0; i < curVertexIndex; ++i)
+    {
+        indices.push_back(i);
+    }
+
+    PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), Rect(), curVertexIndex / 2, gridVertices.data(), nullptr, curVertexIndex, indices.data(), color, rhi::PRIMITIVE_LINELIST);
+}
+
+void RenderSystem2D::DrawLine(const Vector2 &start, const Vector2 &end, NMaterial *materia, const Color& color)
+{
+    static uint16 indices[2] = { 0, 1 };
+    spriteTempVertices[0] = start.x;
+    spriteTempVertices[1] = start.y;
+    spriteTempVertices[2] = end.x;
+    spriteTempVertices[3] = end.y;
+    PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), Rect(), 2, spriteTempVertices, nullptr, 2, indices, color, rhi::PRIMITIVE_LINELIST);
+}
+
+void RenderSystem2D::DrawLine(const Vector2 &start, const Vector2 &end, float32 lineWidth, NMaterial *material, const Color& color)
+{
+    // TODO: Create list of lines for emulating line with width >1px
+    static uint16 indices[2] = { 0, 1 };
+    spriteTempVertices[0] = start.x;
+    spriteTempVertices[1] = start.y;
+    spriteTempVertices[2] = end.x;
+    spriteTempVertices[3] = end.y;
+    PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), Rect(), 2, spriteTempVertices, nullptr, 2, indices, color, rhi::PRIMITIVE_LINELIST);
+}
+
+void RenderSystem2D::DrawLines(const Vector<float32>& linePoints, NMaterial *material, const Color& color)
+{
+    auto ptCount = linePoints.size() / 2;
+    Vector<uint16> indices;
+    for (auto i = 0U; i < ptCount - 1; ++i)
+    {
+        indices.push_back(i);
+        indices.push_back(i + 1);
+    }
+    RenderSystem2D::Instance()->PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), Rect(), ptCount, linePoints.data(), nullptr, 2, indices.data(), color, rhi::PRIMITIVE_LINELIST);
+}
+
+void RenderSystem2D::DrawCircle(const Vector2 & center, float32 radius, NMaterial *material, const Color& color)
+{
+    Polygon2 pts;
+    float32 angle = Min(PI / 6.0f, SEGMENT_LENGTH / radius);// maximum angle 30 degrees
+    int ptsCount = (int)(2 * PI / angle) + 1;
+
+    pts.points.reserve(ptsCount);
+    for (int k = 0; k < ptsCount; ++k)
+    {
+        float32 angle = ((float)k / (ptsCount - 1)) * 2 * PI;
+        float32 sinA = sinf(angle);
+        float32 cosA = cosf(angle);
+        Vector2 pos = center - Vector2(sinA * radius, cosA * radius);
+
+        pts.AddPoint(pos);
+    }
+
+    DrawPolygon(pts, false, material, color);
+}
+
+void RenderSystem2D::DrawPolygon(const Polygon2 & polygon, bool closed, NMaterial *material, const Color& color)
+{
+    auto ptCount = polygon.GetPointCount();
+    if (ptCount >= 2)
+    {
+        Vector<uint16> indices;
+        auto i = 0U;
+        for (; i < ptCount - 1; ++i)
+        {
+            indices.push_back(i);
+            indices.push_back(i + 1);
+        }
+        if (closed)
+        {
+            indices.push_back(i);
+            indices.push_back(0);
+        }
+        auto pointsPtr = static_cast<const float32*>(static_cast<const void*>(polygon.GetPoints()));
+        PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), Rect(), ptCount, pointsPtr, nullptr, indices.size(), &indices[0], color, rhi::PRIMITIVE_LINELIST);
+    }
+}
+
+void RenderSystem2D::FillPolygon(const Polygon2 & polygon, NMaterial *material, const Color& color)
+{
+    auto ptCount = polygon.GetPointCount();
+    if (ptCount >= 3)
+    {
+        Vector<uint16> indices;
+        for (auto i = 1U; i < ptCount - 1; ++i)
+        {
+            indices.push_back(0);
+            indices.push_back(i);
+            indices.push_back(i + 1);
+        }
+        auto pointsPtr = static_cast<const float32*>(static_cast<const void*>(polygon.GetPoints()));
+        PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), Rect(), ptCount, pointsPtr, nullptr, indices.size(), &indices[0], color);
+    }
+}
+
+void RenderSystem2D::DrawPolygonTransformed(const Polygon2 & polygon, bool closed, const Matrix3 & transform, NMaterial *material, const Color& color)
+{
+    Polygon2 copyPoly = polygon;
+    copyPoly.Transform(transform);
+    DrawPolygon(copyPoly, closed, material, color);
+}
+
+void RenderSystem2D::DrawTexture(Texture * texture, NMaterial *material, const Rect & _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect & _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)
+{
+    if (!texture)
+        return;
+
+    Rect destRect(_dstRect);
+#if RHI_COMPLETE
+    if (destRect.dx < 0.f || destRect.dy < 0.f)
+    {
+        Size2i targetSize;
+        Texture * currentRenderTarget = RenderManager::Instance()->GetRenderTarget();
+        if (currentRenderTarget)
+        {
+            targetSize = Size2i(currentRenderTarget->GetWidth(), currentRenderTarget->GetHeight());
+        }
+        else
+        {
+            targetSize = RenderManager::Instance()->GetFramebufferSize();
+        }
+        destRect.dx = (float32)targetSize.dx;
+        destRect.dy = (float32)targetSize.dy;
+    }
+#endif
+
+    spriteTempVertices[0] = spriteTempVertices[4] = destRect.x;//x1
+    spriteTempVertices[5] = spriteTempVertices[7] = destRect.y;//y2
+    spriteTempVertices[1] = spriteTempVertices[3] = destRect.y + destRect.dy;//y1
+    spriteTempVertices[2] = spriteTempVertices[6] = destRect.x + destRect.dx;//x2
+
+    Vector2 textureSize = Vector2((float32)texture->GetWidth(), (float32)texture->GetHeight());
+
+    Rect relativeSrcRect;
+    relativeSrcRect.x = _srcRect.x / textureSize.dx;
+    relativeSrcRect.y = _srcRect.y / textureSize.dy;
+    relativeSrcRect.dx = (_srcRect.dx < 0.f) ? 1.f : _srcRect.dx / textureSize.dx;
+    relativeSrcRect.dy = (_srcRect.dy < 0.f) ? 1.f : _srcRect.dy / textureSize.dy;
+
+    float32 texCoords[8];
+    texCoords[0] = texCoords[4] = relativeSrcRect.x;//x1
+    texCoords[5] = texCoords[7] = relativeSrcRect.y;//y2
+    texCoords[1] = texCoords[3] = relativeSrcRect.y + relativeSrcRect.dy;//y1
+    texCoords[2] = texCoords[6] = relativeSrcRect.x + relativeSrcRect.dx;//x2
+
+    rhi::HTextureSet htexture;
+#if RHI_COMPLETE
+    TextureStateData textureStateData;
+    textureStateData.SetTexture(0, texture);
+    UniqueHandle textureState = RenderManager::Instance()->CreateTextureState(textureStateData);
+#endif
+
+    static uint16 indices[6] = { 0, 1, 2, 1, 3, 2 };
+    PushBatch(DEFAULT_2D_COLOR_MATERIAL, htexture, Rect(), 4, spriteTempVertices, texCoords, 6, indices, Color::White, rhi::PRIMITIVE_LINELIST);
+}
+
+/* TiledDrawData Implementation */
 
 void TiledDrawData::GenerateTileData()
 {
