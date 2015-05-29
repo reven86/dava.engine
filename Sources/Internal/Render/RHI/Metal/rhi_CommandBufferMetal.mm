@@ -374,6 +374,17 @@ metal_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uin
 }
 
 
+//------------------------------------------------------------------------------
+
+static void
+metal_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
+{
+    CommandBufferMetal_t*   cb  = CommandBufferPool::Get( cmdBuf );
+    NSString*               txt = [[NSString alloc] initWithUTF8String:text];
+
+    [cb->encoder insertDebugSignpost:txt];
+}
+
 
 //------------------------------------------------------------------------------
 
@@ -430,7 +441,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_SetSamplerState        = &metal_CommandBuffer_SetSamplerState;
     dispatch->impl_CommandBuffer_DrawPrimitive          = &metal_CommandBuffer_DrawPrimitive;
     dispatch->impl_CommandBuffer_DrawIndexedPrimitive   = &metal_CommandBuffer_DrawIndexedPrimitive;
-//    dispatch->impl_CommandBuffer_SetMarker              = &dx9_CommandBuffer_SetMarker;
+    dispatch->impl_CommandBuffer_SetMarker              = &metal_CommandBuffer_SetMarker;
     
     dispatch->impl_Present                              = &metal_Present;
 }
