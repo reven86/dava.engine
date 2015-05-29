@@ -1,3 +1,5 @@
+#include "common.cgh"
+
 VPROG_IN_BEGIN
     VPROG_IN_POSITION
     VPROG_IN_TEXCOORD0(2)
@@ -13,7 +15,7 @@ VPROG_OUT_END
 property float4 lightPosition0 : dynamic,instance : ;
 property float4x4 worldViewProjMatrix : dynamic,instance : ui_hidden=yes ;
 
-#if defined(MATERIAL_LIGHTMAP)
+#if MATERIAL_LIGHTMAP
 property float2 uvOffset : static,instance : ui_hidden=yes ;
 property float2 uvScale : static,instance : ui_hidden=yes ;
 #endif
@@ -23,5 +25,4 @@ VPROG_BEGIN
     VP_OUT(uv) =  VP_IN_TEXCOORD;
     VP_OUT(uv1) = VP_IN_TEXCOORD1;
     VP_OUT_POSITION   = mul( float4(in_pos.x,in_pos.y,in_pos.z,1.0), worldViewProjMatrix );
-#endif
 VPROG_END
