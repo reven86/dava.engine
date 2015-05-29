@@ -344,7 +344,7 @@ void PackageWidget::OnImport()
 
     PackageBaseNode *baseNode = static_cast<PackageBaseNode*>(index.internalPointer());
     ControlsContainerNode *node = dynamic_cast<ControlsContainerNode*>(baseNode);
-    DVASSERT(nullptr != node && (node->GetFlags() & PackageBaseNode::FLAG_READ_ONLY) == 0);
+    DVASSERT(node && !node->IsReadOnly());
 
     for (const auto &fileName : fileNames)
     {
