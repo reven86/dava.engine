@@ -114,6 +114,11 @@ void ViewSceneScreen::LoadResources()
     info->SetTextAlign(ALIGN_VCENTER | ALIGN_RIGHT);
     
     AddControl(info);
+    
+    moveJoyPAD = new UIJoypad(Rect(0, screenRect.dy - 200.f, 200.f, 200.f));
+    moveJoyPAD->SetDebugDraw(true);
+    AddControl(moveJoyPAD);
+    moveJoyPAD->Release();
 }
 
 void ViewSceneScreen::UnloadResources()
@@ -174,8 +179,13 @@ void ViewSceneScreen::Update(float32 timeElapsed)
         wasdSystem->SetMoveSpeed(30.f);
     else
         wasdSystem->SetMoveSpeed(10.f);
-
-
+    
+    Camera * camera = scene->GetDrawCamera();
+    Vector2 joypadPos = moveJoyPAD->GetDigitalPosition();
+    Vector3 cameraMoveOffset = (joypadPos.x * camera->GetLeft() - joypadPos.y * camera->GetDirection()) * timeElapsed * 20.f;
+    
+    camera->SetPosition(camera->GetPosition() + cameraMoveOffset);
+    camera->SetTarget(camera->GetTarget() + cameraMoveOffset);
 }
 
 static const float32 INFO_UPDATE_TIME = 1.0f;
