@@ -43,14 +43,6 @@
 
 #include "Scene3D/SceneFile/SerializationContext.h"
 
-#define LANDSCAPE_SPECULAR_LIT 1
-
-#define PATCH_VERTEX_COUNT 17
-#define PATCH_QUAD_COUNT (PATCH_VERTEX_COUNT - 1)
-#define MAX_LANDSCAPE_SUBDIV_LEVELS 9
-#define MAX_QUAD_COUNT_IN_VBO 128
-
-
 namespace DAVA
 {
 
@@ -86,12 +78,18 @@ public:
      */
     void SetLods(const Vector4 & lods);
     
+    static const int32 PATCH_VERTEX_COUNT = 17;
+    static const int32 PATCH_QUAD_COUNT = (PATCH_VERTEX_COUNT - 1);
+    static const int32 MAX_LANDSCAPE_SUBDIV_LEVELS = 9;
+    static const int32 MAX_QUAD_COUNT_IN_VBO = 128;
+    static const int32 RENDER_QUAD_WIDTH = 129;
+    static const int32 RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2;
+    static const int32 INDEX_ARRAY_COUNT = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH * 6 * 2;
     
     const static FastName PARAM_TILE_COLOR0;
 	const static FastName PARAM_TILE_COLOR1;
 	const static FastName PARAM_TILE_COLOR2;
 	const static FastName PARAM_TILE_COLOR3;
-
     
     /**
         \brief Builds landscape from heightmap image and bounding box of this landscape block
@@ -116,19 +114,15 @@ public:
         TEXTURE_COUNT
     };
 
-	//TODO: think about how to switch normal generation for landscape on/off
-	//ideally it should be runtime option and normal generaiton should happen when material that requires landscape has been set
 	class LandscapeVertex
 	{
 	public:
 		Vector3 position;
 		Vector2 texCoord;
-#ifdef LANDSCAPE_SPECULAR_LIT
-		Vector3 normal;
+        Vector3 normal;
         Vector3 tangent;
-#endif
 	};
-    
+        
     // TODO: Remove functions to work with texture through landscape
     
     /**
@@ -320,13 +314,11 @@ protected:
     void AddPatchToRenderNoInstancing(uint32 level, uint32 x, uint32 y);
     void DrawNoInstancing();
     void DrawLandscape();
-    uint16 GetXYIndex(uint16 x, uint16 y);
+    
+    inline uint16 GetVertexIndex(uint16 x, uint16 y);
 
-    
-    
-    uint8 testMatrix[32][32];
+    //uint8 testMatrix[32][32];
 
-    
     class LandscapeQuad
     {
     public:
@@ -349,10 +341,7 @@ protected:
     };
     
     LandscapeQuad * rdoArray;
-    
-    static const int32 RENDER_QUAD_WIDTH = 129;
-    static const int32 RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2;
-    static const int32 INDEX_ARRAY_COUNT = RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH * 6 * 2;
+
     
     void BindMaterial(Camera* camera);
     //Texture * CreateTexture(eTextureLevel level, const FilePath & textureName);
@@ -374,7 +363,7 @@ protected:
     
     void SetLandscapeSize(const Vector3 & newSize);
 	
-    Vector<LandscapeVertex *> landscapeVerticesArray;
+    Vector<uint8 *> landscapeVerticesArray;
     Vector<RenderDataObject *> landscapeRDOArray;
     
     uint16 * indices;
@@ -426,6 +415,10 @@ protected:
     float32 fovAbsHeightError;
     
     bool    isDebugDraw;
+    
+    FastName landscapeQuality;
+    FastName LANDSCAPE_QUALITY_NAME;
+    FastName LANDSCAPE_QUALITY_VALUE_HIGH;
 public:
    
     INTROSPECTION_EXTEND(Landscape, RenderObject,
@@ -442,6 +435,13 @@ public:
         MEMBER(isDebugDraw, "isDebugDraw", I_VIEW | I_EDIT)
 		);
 };
+    
+// Inline functions
+inline uint16 Landscape::GetVertexIndex(uint16 x, uint16 y)
+{
+    return x + y * RENDER_QUAD_WIDTH;
+}
+
 
 };
 

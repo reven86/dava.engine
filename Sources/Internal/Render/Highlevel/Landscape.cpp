@@ -48,6 +48,7 @@
 #include "Scene3D/Systems/MaterialSystem.h"
 #include "Scene3D/Systems/FoliageSystem.h"
 #include "Render/Material/NMaterialNames.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace DAVA
 {
@@ -110,6 +111,8 @@ Landscape::Landscape()
     , camera(nullptr)
     , tileMaskMaterial(nullptr)
     , foliageSystem(nullptr)
+    , LANDSCAPE_QUALITY_NAME("Landscape")
+    , LANDSCAPE_QUALITY_VALUE_HIGH("HIGH")
 {
 	drawIndices = 0;
 
@@ -146,46 +149,55 @@ int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
 {
 //    Logger::FrameworkDebug("AllocateRDOQuad: %d %d size: %d", quad->x, quad->y, quad->size);
     DVASSERT(quad->size <= RENDER_QUAD_WIDTH - 1);
-    LandscapeVertex * landscapeVertices = new LandscapeVertex[(quad->size + 1) * (quad->size + 1)];
+    
+    uint32 vertexSize = sizeof(LandscapeVertex);
+    if (landscapeQuality != LANDSCAPE_QUALITY_VALUE_HIGH)
+    {
+        vertexSize -= sizeof(LandscapeVertex::normal);
+        vertexSize -= sizeof(LandscapeVertex::tangent);
+    }
+    uint8 * landscapeVertices = new uint8[(quad->size + 1) * (quad->size + 1) * vertexSize];
     
     int32 index = 0;
     for (int32 y = quad->y; y < quad->y + quad->size + 1; ++y)
         for (int32 x = quad->x; x < quad->x + quad->size + 1; ++x)
         {
-            landscapeVertices[index].position = GetPoint(x, y, heightmap->Data()[y * heightmap->Size() + x]);
-            Vector2 texCoord = Vector2((float32)(x) / (float32)(heightmap->Size() - 1), 1.0f - (float32)(y) / (float32)(heightmap->Size() - 1));
+            LandscapeVertex * vertex = reinterpret_cast<LandscapeVertex *>(&landscapeVertices[index * vertexSize]);
+            
+            vertex->position = GetPoint(x, y, heightmap->Data()[y * heightmap->Size() + x]);
 
-            landscapeVertices[index].texCoord = texCoord;
-            //landscapeVertices[index].texCoord -= Vector2(0.5f, 0.5f);
-//            Logger::FrameworkDebug("AllocateRDOQuad: %d pos(%f, %f)", index, landscapeVertices[index].texCoord.x, landscapeVertices[index].texCoord.y);
+            Vector2 texCoord = Vector2((float32)(x) / (float32)(heightmap->Size() - 1), 1.0f - (float32)(y) / (float32)(heightmap->Size() - 1));
+            vertex->texCoord = texCoord;
 			
-			
-#ifdef LANDSCAPE_SPECULAR_LIT
-			//VI: calculate normal for the point.
-			uint32 xx = 0;
-			uint32 yy = 0;
-			
-			xx = (x < heightmap->Size() - 1) ? x + 1 : x;
-			Vector3 right = GetPoint(xx, y, heightmap->Data()[y * heightmap->Size() + xx]);
-			
-			xx = (x > 0) ? x - 1 : x;
-			Vector3 left = GetPoint(xx, y, heightmap->Data()[y * heightmap->Size() + xx]);
-			
-			yy = (y < heightmap->Size() - 1) ? y + 1 : y;
-			Vector3 bottom = GetPoint(x, yy, heightmap->Data()[yy * heightmap->Size() + x]);
-			yy = (y > 0) ? y - 1 : y;
-			Vector3 top = GetPoint(x, yy, heightmap->Data()[yy * heightmap->Size() + x]);
-			
-			Vector3 position = landscapeVertices[index].position;
-			Vector3 normal0 = (top != position && right != position) ? CrossProduct(top - position, right - position) : Vector3(0, 0, 0);
-			Vector3 normal1 = (right != position && bottom != position) ? CrossProduct(right - position, bottom - position) : Vector3(0, 0, 0);
-			Vector3 normal2 = (bottom != position && left != position) ? CrossProduct(bottom - position, left - position) : Vector3(0, 0, 0);
-			Vector3 normal3 = (left != position && top != position) ? CrossProduct(left - position, top - position) : Vector3(0, 0, 0);
-						
-			Vector3 normalAverage = normal0 + normal1 + normal2 + normal3;
-			normalAverage.Normalize();
-			landscapeVertices[index].normal = normalAverage;
-            landscapeVertices[index].tangent = Normalize(right - position);
+            if (landscapeQuality == LANDSCAPE_QUALITY_VALUE_HIGH)
+            {
+                //VI: calculate normal for the point.
+                uint32 xx = 0;
+                uint32 yy = 0;
+                
+                xx = (x < heightmap->Size() - 1) ? x + 1 : x;
+                Vector3 right = GetPoint(xx, y, heightmap->Data()[y * heightmap->Size() + xx]);
+                
+                xx = (x > 0) ? x - 1 : x;
+                Vector3 left = GetPoint(xx, y, heightmap->Data()[y * heightmap->Size() + xx]);
+                
+                yy = (y < heightmap->Size() - 1) ? y + 1 : y;
+                Vector3 bottom = GetPoint(x, yy, heightmap->Data()[yy * heightmap->Size() + x]);
+                yy = (y > 0) ? y - 1 : y;
+                Vector3 top = GetPoint(x, yy, heightmap->Data()[yy * heightmap->Size() + x]);
+                
+                Vector3 position = vertex->position;
+                Vector3 normal0 = (top != position && right != position) ? CrossProduct(top - position, right - position) : Vector3(0, 0, 0);
+                Vector3 normal1 = (right != position && bottom != position) ? CrossProduct(right - position, bottom - position) : Vector3(0, 0, 0);
+                Vector3 normal2 = (bottom != position && left != position) ? CrossProduct(bottom - position, left - position) : Vector3(0, 0, 0);
+                Vector3 normal3 = (left != position && top != position) ? CrossProduct(left - position, top - position) : Vector3(0, 0, 0);
+                            
+                Vector3 normalAverage = normal0 + normal1 + normal2 + normal3;
+                normalAverage.Normalize();
+            
+                vertex->normal = normalAverage;
+                vertex->tangent = Normalize(right - position);
+            }
             
             /*
                 VS: Algorithm
@@ -205,22 +217,23 @@ int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
                  N.z = 2.0;
                  N = normalize(N);
              */
-            
-#endif
-			
             index++;
         }
     
     // setup a base RDO
     RenderDataObject * landscapeRDO = new RenderDataObject();
-    landscapeRDO->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, sizeof(LandscapeVertex), &landscapeVertices[0].position);
-    landscapeRDO->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, sizeof(LandscapeVertex), &landscapeVertices[0].texCoord);
+
+    LandscapeVertex * startStreamPtr = (LandscapeVertex *)landscapeVertices;
+    landscapeRDO->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, vertexSize, &startStreamPtr[0].position);
+    landscapeRDO->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexSize, &startStreamPtr[0].texCoord);
 	
-#ifdef LANDSCAPE_SPECULAR_LIT
-	landscapeRDO->SetStream(EVF_NORMAL, TYPE_FLOAT, 3, sizeof(LandscapeVertex), &landscapeVertices[0].normal);
-    landscapeRDO->SetStream(EVF_TANGENT, TYPE_FLOAT, 3, sizeof(LandscapeVertex), &landscapeVertices[0].tangent);
-#endif
-	
+    // TODO: Objects should be notified about quality change, and should be able to react
+    if (landscapeQuality == LANDSCAPE_QUALITY_VALUE_HIGH)
+    {
+        landscapeRDO->SetStream(EVF_NORMAL, TYPE_FLOAT, 3, vertexSize, &startStreamPtr[0].normal);
+        landscapeRDO->SetStream(EVF_TANGENT, TYPE_FLOAT, 3, vertexSize, &startStreamPtr[0].tangent);
+    }
+        
     landscapeRDO->BuildVertexBuffer((quad->size + 1) * (quad->size + 1));
 //    SafeDeleteArray(landscapeVertices);
     
@@ -303,9 +316,7 @@ void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
     SubdivisionLevelInfo & levelInfo = subdivLevelInfoArray[level];
     PatchQuadInfo * patch = &patchQuadArray[levelInfo.offset + levelInfo.size * y + x];
     
-    
     // Calculate patch bounding box
-    
     uint32 realQuadCountInPatch = (heightmap->Size() - 1) / levelInfo.size;
     uint32 heightMapStartX = x * realQuadCountInPatch;
     uint32 heightMapStartY = y * realQuadCountInPatch;
@@ -409,8 +420,9 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
     }
     
     SubdivisionLevelInfo & levelInfo = subdivLevelInfoArray[level];
-    PatchQuadInfo * patch = &patchQuadArray[levelInfo.offset + levelInfo.size * y + x];
-    SubdivisionPatchInfo * subdivPatchInfo = &subdivPatchArray[levelInfo.offset + levelInfo.size * y + x];
+    uint32 offset = levelInfo.offset + levelInfo.size * y + x;
+    PatchQuadInfo * patch = &patchQuadArray[offset];
+    SubdivisionPatchInfo * subdivPatchInfo = &subdivPatchArray[offset];
     
     // Calculate patch bounding box
     Frustum::eFrustumResult frustumRes = Frustum::EFR_INSIDE;
@@ -496,7 +508,6 @@ void Landscape::AddPatchToRenderNoInstancing(uint32 level, uint32 x, uint32 y)
     SubdivisionLevelInfo & levelInfo = subdivLevelInfoArray[level];
     
     // TODO: optimise all offset calculations in all places
-    PatchQuadInfo * patch = &patchQuadArray[levelInfo.offset + levelInfo.size * y + x];
     SubdivisionPatchInfo * subdivPatchInfo = &subdivPatchArray[levelInfo.offset + levelInfo.size * y + x];
 
     uint32 state = subdivPatchInfo->subdivisionState;
@@ -537,51 +548,20 @@ void Landscape::DrawNoInstancing()
 {
     AddPatchToRenderNoInstancing(0, 0, 0);
 }
-    
 
-uint16 Landscape::GetXYIndex(uint16 x, uint16 y)
-{
-    return x + y * RENDER_QUAD_WIDTH;
-}
-    
 void Landscape::DrawPatch(uint32 level, uint32 xx, uint32 yy,
                           uint32 xNegSize, uint32 xPosSize, uint32 yNegSize, uint32 yPosSize)
 {
     SubdivisionLevelInfo & levelInfo = subdivLevelInfoArray[level];
     PatchQuadInfo * patch = &patchQuadArray[levelInfo.offset + levelInfo.size * yy + xx];
-//    SubdivisionPatchInfo * subdivPatchInfo = &subdivPatchArray[levelInfo.offset + levelInfo.size * yy + xx];
     
     if ((patch->rdoQuad != queueRdoQuad) && (queueRdoQuad != -1))
     {
         FlushQueue();
     }
     
-    
     queueRdoQuad = patch->rdoQuad;
     
-//  Original Patch Drawing Code
-/*  uint32 realVertexCountInPatch = (heightmap->Size() - 1) / levelInfo.size;
-    uint32 step = realVertexCountInPatch / PATCH_QUAD_COUNT;
-    uint32 heightMapStartX = xx * realVertexCountInPatch;
-    uint32 heightMapStartY = yy * realVertexCountInPatch;
-
-    testMatrix[heightMapStartX / 16][heightMapStartY / 16]++;
-    
-    for (uint16 y = (heightMapStartY & RENDER_QUAD_AND); y < (heightMapStartY & RENDER_QUAD_AND) + realVertexCountInPatch; y += step)
-        for (uint16 x = (heightMapStartX & RENDER_QUAD_AND); x < (heightMapStartX & RENDER_QUAD_AND) + realVertexCountInPatch; x += step)
-        {
-            *queueDrawIndices++ = x + y * RENDER_QUAD_WIDTH;
-            *queueDrawIndices++ = (x + step) + y * RENDER_QUAD_WIDTH;
-            *queueDrawIndices++ = x + (y + step) * RENDER_QUAD_WIDTH;
-            
-            *queueDrawIndices++ = (x + step) + y * RENDER_QUAD_WIDTH;
-            *queueDrawIndices++ = (x + step) + (y + step) * RENDER_QUAD_WIDTH;
-            *queueDrawIndices++ = x + (y + step) * RENDER_QUAD_WIDTH;
-            
-            queueRenderCount += 6;
-        }
- */
- 
     // Draw Middle
     uint32 realVertexCountInPatch = (heightmap->Size() - 1) / levelInfo.size;
     uint32 step = realVertexCountInPatch / PATCH_QUAD_COUNT;
@@ -651,34 +631,17 @@ void Landscape::DrawPatch(uint32 level, uint32 xx, uint32 yy,
                 }
             
                 
-                *queueDrawIndices++ = GetXYIndex(x0aligned, y0aligned);
-                *queueDrawIndices++ = GetXYIndex(x1aligned, y0aligned2);
-                *queueDrawIndices++ = GetXYIndex(x0aligned2, y1aligned);
+                *queueDrawIndices++ = GetVertexIndex(x0aligned, y0aligned);
+                *queueDrawIndices++ = GetVertexIndex(x1aligned, y0aligned2);
+                *queueDrawIndices++ = GetVertexIndex(x0aligned2, y1aligned);
                 
-                *queueDrawIndices++ = GetXYIndex(x1aligned, y0aligned2);
-                *queueDrawIndices++ = GetXYIndex(x1aligned2, y1aligned2);
-                *queueDrawIndices++ = GetXYIndex(x0aligned2, y1aligned);
+                *queueDrawIndices++ = GetVertexIndex(x1aligned, y0aligned2);
+                *queueDrawIndices++ = GetVertexIndex(x1aligned2, y1aligned2);
+                *queueDrawIndices++ = GetVertexIndex(x0aligned2, y1aligned);
                 
                 queueRenderCount += 6;
             }
     }
-    
-//    // Draw top hz line
-//    {
-//        uint16 y = heightMapStartY & RENDER_QUAD_AND;
-//        for (uint16 x = (heightMapStartX & RENDER_QUAD_AND); x < (heightMapStartX & RENDER_QUAD_AND) + realVertexCountInPatch; x += step)
-//        {
-//            *queueDrawIndices++ = GetXYIndex(x / (2 * step) * (2 * step), y);
-//            *queueDrawIndices++ = GetXYIndex((x + step) / (2 * step) * (2 * step), y);
-//            *queueDrawIndices++ = GetXYIndex(x, y + step);
-//            
-//            *queueDrawIndices++ = GetXYIndex((x + step) / (2 * step) * (2 * step), y);
-//            *queueDrawIndices++ = GetXYIndex((x + step), y + step);
-//            *queueDrawIndices++ = GetXYIndex(x, y + step);
-//            
-//            queueRenderCount += 6;
-//        }
-//    }
    
     DVASSERT(queueRenderCount < INDEX_ARRAY_COUNT);
 }
@@ -702,6 +665,9 @@ void Landscape::ReleaseLandscape()
 void Landscape::ReallocateLandscape()
 {
     ReleaseLandscape();
+ 
+    landscapeQuality = QualitySettingsSystem::Instance()->GetCurMaterialQuality(LANDSCAPE_QUALITY_NAME);
+
     
     uint32 heightmapSizeMinus1 = heightmap->Size() - 1;
     uint32 maxLevels = FastLog2(heightmapSizeMinus1 / PATCH_QUAD_COUNT) + 1;
@@ -966,6 +932,14 @@ void Landscape::DrawLandscape()
     
 void Landscape::Draw(Camera * drawCamera)
 {
+    FastName newLandscapeQuality = QualitySettingsSystem::Instance()->GetCurMaterialQuality(LANDSCAPE_QUALITY_NAME);
+    if (newLandscapeQuality != landscapeQuality)
+    {
+        // If landscape quality is changed we need to reallocate landscape.
+        // It's required only for editor
+        ReallocateLandscape();
+    }
+    
     TIME_PROFILE("LandscapeNode.Draw");
 	
 	drawIndices = 0;
@@ -993,7 +967,7 @@ void Landscape::Draw(Camera * drawCamera)
     frustum = camera->GetFrustum();
     cameraPos = camera->GetPosition();
 
-    memset(testMatrix, sizeof(testMatrix), 0);
+//    memset(testMatrix, sizeof(testMatrix), 0);
 
     float32 fovLerp = Clamp((camera->GetFOV() - 6.5f) /  (70.0f - 6.5f), 0.0f, 1.0f);
     fovSolidAngleError = zoomSolidAngleError + (solidAngleError - zoomSolidAngleError) * fovLerp;
@@ -1440,7 +1414,7 @@ LandscapeCursor * Landscape::GetCursor()
     return cursor;
 }
 
-	//TODO: review landscape cloning
+//TODO: review landscape cloning
 RenderObject * Landscape::Clone( RenderObject *newObject )
 {
 	if(!newObject)
@@ -1452,6 +1426,15 @@ RenderObject * Landscape::Clone( RenderObject *newObject )
     Landscape *newLandscape = static_cast<Landscape *>(newObject);
     newLandscape->Create(tileMaskMaterial);
 
+    newLandscape->defaultFov = defaultFov;
+    
+    newLandscape->solidAngleError = solidAngleError;
+    newLandscape->geometryAngleError = geometryAngleError;
+    newLandscape->absHeightError = absHeightError;
+    
+    newLandscape->zoomSolidAngleError = zoomSolidAngleError;
+    newLandscape->zoomGeometryAngleError = zoomGeometryAngleError;
+    newLandscape->zoomAbsHeightError = zoomAbsHeightError;
     newLandscape->flags = flags;
     newLandscape->BuildLandscapeFromHeightmapImage(heightmapPath, bbox);
 	newLandscape->SetupMaterialProperties();
