@@ -36,9 +36,9 @@ using namespace DAVA;
 namespace Cpp14TestNs
 {
 
-auto Cpp14Test_f() -> int;
+auto f() -> int;
 
-auto Cpp14Test_f() -> int
+auto f() -> int
 {
     return 42;
 }
@@ -47,7 +47,7 @@ DEFINE_TESTCLASS(Cpp14Test)
 {
     DEFINE_TEST(CompileTest)
     {
-        TEST_VERIFY(Cpp14Test_f() == 42);
+        TEST_VERIFY(f() == 42);
     }
 
     DEFINE_TEST(ScopeExit)
