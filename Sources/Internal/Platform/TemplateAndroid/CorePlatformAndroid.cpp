@@ -127,7 +127,7 @@ namespace DAVA
 		{
 			//  Control FPS
 			{
-				static uint64 startTime = 0;
+				static uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
 				int32 elapsedTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
 				int32 fps = RenderManager::Instance()->GetFPS();
 				if(fps > 0)
