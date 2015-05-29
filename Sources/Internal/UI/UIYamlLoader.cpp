@@ -384,35 +384,16 @@ void UIYamlLoader::LoadFonts(const FilePath & yamlPathname)
 
 bool UIYamlLoader::SaveFonts(const FilePath & yamlPathname)
 {
-    bool res = false;
-
-    //save used fonts
-    const auto& usedFonts = FontManager::Instance()->GetFontMap();
+    const auto& fontMap = FontManager::Instance()->GetFontMap();
     ScopedPtr<YamlNode> fontsNode( new YamlNode(YamlNode::TYPE_MAP) );
-    for (auto iter = usedFonts.begin();
-         iter != usedFonts.end();
-         ++iter)
+    for (const auto &pair : fontMap)
     {
-        Font* font = iter->second;
-        if (!font)
+        Font* font = pair.second;
+        if (nullptr == font)
             continue;
-
-        // The font should be stored once only.
-        String fontName = FontManager::Instance()->GetFontName(font);
-
-        font = FontManager::Instance()->GetFont(fontName);
-        if (!font)
-            continue;
-
-        if (fontsNode->AsMap().find(fontName) == fontsNode->AsMap().end())
-        {
-            fontsNode->AddNodeToMap( fontName, font->SaveToYamlNode() );
-        }
+        fontsNode->AddNodeToMap(pair.first, font->SaveToYamlNode());
     }
-
-    res = YamlEmitter::SaveToYamlFile(yamlPathname, fontsNode, File::CREATE | File::WRITE);
-
-    return res;
+    return YamlEmitter::SaveToYamlFile(yamlPathname, fontsNode, File::CREATE | File::WRITE);
 }
 
 void UIYamlLoader::Load(UIControl * rootControl, const FilePath & yamlPathname, bool assertIfCustomControlNotFound /* = true */)

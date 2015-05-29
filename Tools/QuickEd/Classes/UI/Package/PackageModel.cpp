@@ -202,6 +202,7 @@ Qt::ItemFlags PackageModel::flags(const QModelIndex &index) const
         flags |= Qt::ItemIsDragEnabled;
     if (node->IsInsertingSupported())
         flags |= Qt::ItemIsDropEnabled;
+    //TODO: DF-6265, add insert import packages here
     
     return flags;
 }
@@ -290,6 +291,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
                 FilePath path(url.toLocalFile().toStdString());
                 if (root->FindImportedPackage(path) == nullptr)
                 {
+                    //TODO: DF-6265, implement here
                 }
             }
         }
