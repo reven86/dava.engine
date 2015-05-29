@@ -276,7 +276,7 @@ static const char* _ShaderDefine_Metal =
 "#define VP_IN_BLENDWEIGHT       (float3(IN.blendweight))\n"
 "#define VP_IN_BLENDINDEX        (float3(IN.blendindex))\n"
 
-"#define VP_TEXTURE2D(unit,uv)   tex##unit.sample( tex##unit##_sampler, uv, level(0) );\n"
+"#define VP_TEXTURE2D(unit,uv)   tex##unit.sample( tex##unit##_sampler, uv, level(0) )\n"
 
 "#define VP_OUT_POSITION         OUT.position\n"
 "#define VP_OUT(name)            OUT.name\n"
@@ -304,11 +304,11 @@ static const char* _ShaderDefine_Metal =
 
 "#define DECL_VP_SAMPLER2D(unit)    \n"
 
-"#define FP_TEXTURE2D(unit,uv)   fp_tex##unit.sample( fp_tex##unit##_sampler, uv );\n"
-"#define FP_TEXTURECUBE(unit,uv) fp_tex##unit.sample( fp_tex##unit##_sampler, uv );\n"
+"#define FP_TEXTURE2D(unit,uv)   fp_tex##unit.sample( fp_tex##unit##_sampler, uv )\n"
+"#define FP_TEXTURECUBE(unit,uv) fp_tex##unit.sample( fp_tex##unit##_sampler, uv )\n"
 "#define FP_IN(name)             IN.##name\n"
 
-"#define VP_TEXTURE2D(unit,uv)   vp_tex##unit.sample( vp_tex##unit##_sampler, uv );\n"
+"#define VP_TEXTURE2D(unit,uv)   vp_tex##unit.sample( vp_tex##unit##_sampler, uv )\n"
 
 "#define FP_OUT_COLOR            OUT.color\n"
 
