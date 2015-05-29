@@ -202,12 +202,12 @@ void Core::CreateRenderer()
 //    renderer = rhi::RHI_GLES2;
 #endif
     
+    DVASSERT(options->IsKeyExists("renderer"));
+    
     renderer = (rhi::Api)options->GetInt32("renderer", renderer);
-
-    rendererParams.width = options->GetInt32("width");
-    rendererParams.height = options->GetInt32("height");
-
-    Renderer::Initialize(renderer, rendererParams);
+    Size2i bufferSize = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+    
+    Renderer::Initialize(renderer, rendererParams, bufferSize.dx, bufferSize.dy);
     RenderSystem2D::Instance()->Init();
 }
         

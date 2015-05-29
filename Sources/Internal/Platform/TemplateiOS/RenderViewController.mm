@@ -33,11 +33,12 @@
 
 #if defined(__DAVAENGINE_IPHONE__)
 
-#import "Platform/TemplateiOS/EAGLViewController.h"
+#import "Platform/TemplateiOS/RenderViewController.h"
 
-@implementation EAGLViewController
+@implementation RenderViewController
 
 @synthesize backgroundView;
+@synthesize renderView;
 
 /*
  // The designated initializer.  Override if you create the controller programmatically and want to perform customization that is not appropriate for viewDidLoad.
@@ -52,30 +53,43 @@
 {
     if (self = [super init])
     {
-        glView = nil;
+        renderView = nil;
         backgroundView = nil;
-        [self createGLView];
     }
     return self;
 }
 
-- (void) createGLView
+- (GLRenderView *) createGLView
 {
-    if (!glView)
+    if (!renderView)
     {
-       glView = [[EAGLView alloc] initWithFrame:[[::UIScreen mainScreen] bounds]];
-    }    
+       renderView = [[GLRenderView alloc] initWithFrame:[[::UIScreen mainScreen] bounds]];
+    }
+    else
+    {
+        NSLog(@"*** FAILED to create GLRenderView, cause RenderView already created!");
+    }
+    return (GLRenderView *)renderView;
+}
+
+- (MetalRenderView *) createMetalView
+{
+    if (!renderView)
+    {
+        renderView = [[MetalRenderView alloc] initWithFrame:[[::UIScreen mainScreen] bounds]];
+    }
+    else
+    {
+        NSLog(@"*** FAILED to create GLRenderView, cause RenderView already created!");
+    }
+    return (MetalRenderView *)renderView;
 }
 
 // Implement loadView to create a view hierarchy programmatically, without using a nib.
 - (void)loadView 
 {
-	// To Hottych: Here should be proper initialization code ??? I mean, size of this view for iPhone / iPhone 4 / iPad
-	// Check please what should be here
-	[self createGLView];
-
     // Add the background view needed to place native iOS components on it.
-    backgroundView = [[BackgroundView alloc] initWithFrame:[glView frame]];
+    backgroundView = [[BackgroundView alloc] initWithFrame:[renderView frame]];
     [backgroundView setBackgroundColor:[UIColor clearColor]];
     [backgroundView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
     
@@ -83,20 +97,10 @@
     BOOL isMultipleTouchEnabled = (DAVA::InputSystem::Instance()->GetMultitouchEnabled()) ? YES : NO;
     [backgroundView setMultipleTouchEnabled:isMultipleTouchEnabled]; // to pass touches to framework
 
-    [glView addSubview:backgroundView];
+    [renderView addSubview:backgroundView];
     [backgroundView release];
 
-    self.view = glView;
-}
-
--(BackgroundView *) getBackgroundView
-{
-    return backgroundView;
-}
-
--(EAGLView *) getGLView
-{
-    return glView;
+    self.view = renderView;
 }
 
 /*
@@ -170,8 +174,6 @@
 
 }
 
-
-
 - (void)didReceiveMemoryWarning 
 {
 	// Releases the view if it doesn't have a superview.
@@ -188,22 +190,22 @@
 
 - (void)dealloc 
 {
-    [glView release];
-    glView = nil;
+    [renderView release];
+    renderView = nil;
     [super dealloc];
 }
 
 - (void) viewWillAppear: (BOOL)animating
 {
-	NSLog(@"EAGLViewController viewWillAppear (startAnimation)");
-	[glView setCurrentContext];
-	[glView startAnimation];
+	NSLog(@"RenderViewController viewWillAppear (startAnimation)");
+	[renderView setCurrentContext];
+	[renderView startAnimation];
 }
 
 - (void) viewDidDisappear: (BOOL)animating
 {
-	NSLog(@"EAGLViewController viewDidDisappear (stopAnimation)");
-	[glView stopAnimation];
+	NSLog(@"RenderViewController viewDidDisappear (stopAnimation)");
+	[renderView stopAnimation];
 }
 
 

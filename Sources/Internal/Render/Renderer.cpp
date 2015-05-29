@@ -53,13 +53,14 @@ namespace //for private variables
     ScreenShotCallbackDelegate * screenshotCallback = nullptr;
 }
 
-void Initialize(rhi::Api _api, const rhi::InitParam & params)
+void Initialize(rhi::Api _api, const rhi::InitParam & params, int32 width, int32 height)
 {
     DVASSERT(!ininialized);
 
     api = _api;
-    framebufferWidth = params.width;
-    framebufferHeight = params.height;
+    
+    framebufferWidth = width;
+    framebufferHeight = height;
     
     rhi::Initialize(api, params);
     rhi::ShaderCache::Initialize();

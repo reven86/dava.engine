@@ -38,7 +38,7 @@
 extern  void FrameworkWillTerminate();
 extern  void FrameworkDidLaunched();
 
-static EAGLView * glView = nil;
+static RenderView * renderView = nil;
 
 int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 {
@@ -86,17 +86,17 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 
 void iOSMakeCurrent()
 {
-    [glView setCurrentContext];
+    [renderView setCurrentContext];
 }
 
 void iOSEndFrame()
 {
-    [glView endRendering];
+    [renderView endRendering];
 }
 
 @implementation HelperAppDelegate
 
-@synthesize glController;
+@synthesize renderViewController;
 
 #include "Core/Core.h"
 #include "Core/ApplicationCore.h"
@@ -108,19 +108,26 @@ void iOSEndFrame()
 	UIWindow *wnd = application.keyWindow;
 	wnd.frame = [::UIScreen mainScreen].bounds;
 	
-    glController = [[EAGLViewController alloc] init];
-    glView = [glController getGLView];
-#if USE_METAL
-    DAVA::Core::Instance()->rendererParams.context = [[glController view] layer];
-#else
-    DAVA::Core::Instance()->rendererParams.endFrameFunc = &iOSEndFrame;
-    DAVA::Core::Instance()->rendererParams.makeCurrentFunc = &iOSMakeCurrent;
-#endif
+    renderViewController = [[RenderViewController alloc] init];
     
-	DAVA::UIScreenManager::Instance()->RegisterController(CONTROLLER_GL, glController);
+    rhi::Api rhiRenderer = (rhi::Api)DAVA::Core::Instance()->GetOptions()->GetInt32("renderer", (DAVA::int32)rhi::RHI_GLES2);
+    if(rhiRenderer == rhi::RHI_GLES2)
+    {
+        renderView = [renderViewController createGLView];
+
+        DAVA::Core::Instance()->rendererParams.endFrameFunc = &iOSEndFrame;
+        DAVA::Core::Instance()->rendererParams.makeCurrentFunc = &iOSMakeCurrent;
+    }
+    else if(rhiRenderer == rhi::RHI_METAL)
+    {
+        renderView = [renderViewController createMetalView];
+        DAVA::Core::Instance()->rendererParams.context = [renderView layer];
+    }
+    
+	DAVA::UIScreenManager::Instance()->RegisterController(CONTROLLER_GL, renderViewController);
 	DAVA::UIScreenManager::Instance()->SetGLControllerId(CONTROLLER_GL);
     
-    [application.keyWindow setRootViewController:glController];
+    [application.keyWindow setRootViewController: renderViewController];
 	
 	DAVA::Core::Instance()->SystemAppStarted();
     
@@ -156,7 +163,7 @@ void iOSEndFrame()
     //    https://developer.apple.com/library/ios/documentation/3ddrawing/conceptual/opengles_programmingguide/ImplementingaMultitasking-awareOpenGLESApplication/ImplementingaMultitasking-awareOpenGLESApplication.html#//apple_ref/doc/uid/TP40008793-CH5-SW5
     //  see Background Apps May Not Execute Commands on the Graphics Hardware
     
-    glFinish();
+    // glFinish();
 #endif
 }
 
@@ -179,7 +186,7 @@ void iOSEndFrame()
     //    https://developer.apple.com/library/ios/documentation/3ddrawing/conceptual/opengles_programmingguide/ImplementingaMultitasking-awareOpenGLESApplication/ImplementingaMultitasking-awareOpenGLESApplication.html#//apple_ref/doc/uid/TP40008793-CH5-SW5
     //  see Background Apps May Not Execute Commands on the Graphics Hardware
     
-    glFinish();
+    // glFinish();
 #endif
 }
 

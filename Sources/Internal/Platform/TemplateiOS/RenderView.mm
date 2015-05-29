@@ -36,39 +36,20 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 
-#import "Platform/TemplateiOS/EAGLView.h"
-
+#import "Platform/TemplateiOS/RenderView.h"
 #import "Platform/TemplateiOS/ESRenderer.h"
 
 #include "DAVAEngine.h"
-
 #include "Utils/Utils.h"
 
-
-#define USE_METAL 0
-
-#if USE_METAL
-#include <QuartzCore/CAMetalLayer.h>
-#include <Metal/Metal.h>
-#endif
+#include "DVMetalLayer.h"
 
 static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
 
-
-@implementation EAGLView
+@implementation RenderView
 
 @synthesize animating;
 @dynamic animationFrameInterval;
-
-// You must implement this method
-+ (Class) layerClass
-{
-    #if USE_METAL
-        return [CAMetalLayer class];
-    #else
-    return [CAEAGLLayer class];
-    #endif
-}
 
 //The GL view is stored in the nib file. When it's unarchived it's sent -initWithCoder:
 //- (id) initWithCoder: (NSCoder *)aDecoder
@@ -76,27 +57,13 @@ static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
 {    
     if ((self = [super initWithFrame:aRect]))
     {
-        // Get the layer
-
         float scf = DAVA::Core::Instance()->GetScreenScaleFactor();
         [self setContentScaleFactor: scf];
 
 		// Subscribe to "keyboard change frame" notifications to block GL while keyboard change is performed (see please DF-2012 for details).
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidFrameChanged:) name:UIKeyboardDidChangeFrameNotification object:nil];
 
-        #if USE_METAL 
-        CAMetalLayer*   layer = (CAMetalLayer*)self.layer;
-        #else
-        CAEAGLLayer*    layer = (CAEAGLLayer*)self.layer;
-        #endif
-        
-        layer.opaque = TRUE;
-        
-        #if USE_METAL
-        #else
-        layer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
-                                        [NSNumber numberWithBool:FALSE], kEAGLDrawablePropertyRetainedBacking, kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, nil];
-        #endif
+        self.layer.opaque = TRUE;
             
         DAVA::KeyedArchive * options = DAVA::Core::Instance()->GetOptions();
 
@@ -126,8 +93,6 @@ static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
             default:
                 break;
         }
-        
-        renderer = [[ESRenderer alloc] init];
 
 //        DAVA::RenderManager::Instance()->SetRenderContextId(DAVA::EglGetCurrentContext());
         DAVA::Size2i physicalScreen = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
@@ -158,8 +123,6 @@ static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
     return self;
 }
 
-
-
 - (void) drawView:(id)sender
 {
     if (blockDrawView)
@@ -167,27 +130,14 @@ static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
         // Yuri Coder, 2013/02/06. In case we are displaying ASSERT dialog we need to block rendering because RenderManager might be already locked here.
         return;
     }
-
-
-//    DAVA::RenderManager::Instance()->Lock();
-
     
-//    DAVA::uint64 renderManagerContextId = DAVA::RenderManager::Instance()->GetRenderContextId();
-//    DAVA::uint64 currentContextId = DAVA::EglGetCurrentContext();
-//    if (renderManagerContextId!=currentContextId)
-//    {
-//        EAGLContext * context =  (EAGLContext *)renderManagerContextId;
-//        [EAGLContext setCurrentContext:context];
-//    }
-        
     DAVA::Core::Instance()->SystemProcessFrame();
 
     currFPS = 60;
-//    DAVA::RenderManager::Instance()->Unlock();
-    
-//    if(currFPS != DAVA::RenderManager::Instance()->GetFPS())
+
+//  if(currFPS != DAVA::RenderManager::Instance()->GetFPS())
     {
-//        currFPS = DAVA::RenderManager::Instance()->GetFPS();
+//      currFPS = DAVA::RenderManager::Instance()->GetFPS();
         float interval = 60.0f / currFPS;
         if(interval < 1.0f)
         {
@@ -195,9 +145,6 @@ static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
         }
         [self setAnimationFrameInterval:(int)interval];
     }
-
-    
-	//DAVA::RenderManager::Instance()->Unlock();
 	
     DAVA::int32 targetFPS = 60;
     if (limitKeyboardFps)
@@ -221,16 +168,6 @@ static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
 		}
 		[self setAnimationFrameInterval:(int)interval];
 	}
-
-}
-
-
-- (void) layoutSubviews
-{
-    [renderer resizeFromLayer:(CAEAGLLayer*)self.layer];
-    
-    // Yuri Coder, 2013/11/28. The line below is commented out because of DF-2799.
-    // [self drawView:nil];
 }
 
 - (NSInteger) animationFrameInterval
@@ -305,7 +242,7 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
     {
         DAVA::UIEvent newTouch;
         newTouch.tid = (DAVA::int32)(DAVA::pointer_size)curTouch;
-//      newTouch.buttonId = DAVA::UIEvent::BUTTON_1;
+
         CGPoint p = [curTouch locationInView: curTouch.view ];
         newTouch.physPoint.x = p.x;
         newTouch.physPoint.y = p.y;
@@ -348,7 +285,6 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
     }
 }
 
-
 -(void)process:(int) touchType touch:(NSArray*)active withEvent: (NSArray*)total
 {
     MoveTouchsToVector(active, &activeTouches);
@@ -367,25 +303,117 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    //  LogDebug("TOUCH BEGAN");
     [self process:DAVA::UIEvent::PHASE_BEGAN touch:[touches allObjects] withEvent:[[event allTouches] allObjects]];
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    //  LogDebug("TOUCH MOVED");
     [self process:DAVA::UIEvent::PHASE_DRAG touch:[touches allObjects] withEvent:[[event allTouches] allObjects]];
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    //  LogDebug("TOUCH ENDED");
     [self process:DAVA::UIEvent::PHASE_ENDED touch:[touches allObjects] withEvent:[[event allTouches] allObjects]];
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
 {
     [self process:DAVA::UIEvent::PHASE_CANCELLED touch:[touches allObjects] withEvent:[[event allTouches] allObjects]];
+}
+
+- (void) blockDrawing
+{
+    blockDrawView = true;
+}
+
+- (void) unblockDrawing
+{
+    blockDrawView = false;
+}
+
+- (void) setCurrentContext
+{
+}
+
+- (void) endRendering
+{
+}
+
+- (void)keyboardDidFrameChanged:(NSNotification *)notification
+{
+    CGRect keyboardEndFrame = [[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    CGRect screenRect = [[UIScreen mainScreen] bounds];
+    if (CGRectIntersectsRect(keyboardEndFrame, screenRect))
+    {
+        // Keyboard did show or move
+        limitKeyboardFps = true;
+    }
+    else
+    {
+        // Keyboard did hide
+        limitKeyboardFps = false;
+    }
+}
+@end
+
+///////////////////////////////////////////////////////////////////////
+//////Metal View
+
+@implementation MetalRenderView
++ (Class)layerClass
+{
+    return [DVMetalLayer class];
+}
+
+- (id)initWithFrame:(CGRect)aRect
+{
+    if ((self = [super initWithFrame:aRect]))
+    {
+        DVMetalLayer * layer = (DVMetalLayer *)self.layer;
+        
+        layer.device            = MTLCreateSystemDefaultDevice();
+        layer.pixelFormat       = MTLPixelFormatBGRA8Unorm;
+        layer.framebufferOnly   = YES;
+        
+        CGSize layerSize = CGSizeMake(aRect.size.width * self.contentScaleFactor,
+                                      aRect.size.height * self.contentScaleFactor);
+        [layer resize: layerSize];
+    }
+    return self;
+}
+
+- (void) layoutSubviews
+{
+    DVMetalLayer * layer = (DVMetalLayer *)self.layer;
+    CGSize layerSize = CGSizeMake(self.bounds.size.width * self.contentScaleFactor,
+                                  self.bounds.size.height * self.contentScaleFactor);
+    [layer resize: layerSize];
+}
+
+@end
+
+///////////////////////////////////////////////////////////////////////
+//////OpenGL View
+
+@implementation GLRenderView
++ (Class)layerClass
+{
+    return [CAEAGLLayer class];
+}
+
+- (id)initWithFrame:(CGRect)aRect
+{
+    if ((self = [super initWithFrame:aRect]))
+    {
+        renderer = [[ESRenderer alloc] init];
+        
+        CAEAGLLayer * layer = (CAEAGLLayer*)self.layer;
+        layer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
+                                    [NSNumber numberWithBool:FALSE],
+                                    kEAGLDrawablePropertyRetainedBacking, kEAGLColorFormatRGBA8,
+                                    kEAGLDrawablePropertyColorFormat, nil];
+    }
+    return self;
 }
 
 - (void) dealloc
@@ -405,34 +433,11 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
     [renderer endRendering];
 }
 
-- (void) blockDrawing
+- (void) layoutSubviews
 {
-    blockDrawView = true;
+    [renderer resizeFromLayer:(CAEAGLLayer*)self.layer];
 }
-
-- (void) unblockDrawing
-{
-    blockDrawView = false;
-}
-
-- (void)keyboardDidFrameChanged:(NSNotification *)notification
-{
-    CGRect keyboardEndFrame = [[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
-    CGRect screenRect = [[UIScreen mainScreen] bounds];
-    if (CGRectIntersectsRect(keyboardEndFrame, screenRect))
-    {
-        // Keyboard did show or move
-        limitKeyboardFps = true;
-    }
-    else
-    {
-        // Keyboard did hide
-        limitKeyboardFps = false;
-    }
-}
-
 
 @end
 
 #endif // #if defined(__DAVAENGINE_IPHONE__)
-

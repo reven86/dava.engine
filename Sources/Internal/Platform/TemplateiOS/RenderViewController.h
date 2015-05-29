@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_EAGLVIEWCONTROLLER_H__
-#define __DAVAENGINE_EAGLVIEWCONTROLLER_H__
+#ifndef __DAVAENGINE_RENDERVIEWCONTROLLER_H__
+#define __DAVAENGINE_RENDERVIEWCONTROLLER_H__
 
 
 #include "Base/BaseTypes.h"
@@ -36,22 +36,23 @@
 #import "Platform/TemplateiOS/BackgroundView.h"
 
 #import <UIKit/UIKit.h>
-#import "Platform/TemplateiOS/EAGLView.h"
+#import "Platform/TemplateiOS/RenderView.h"
 
-@interface EAGLViewController : UIViewController 
+@interface RenderViewController : UIViewController
 {
-	EAGLView * glView;
+	RenderView * renderView;
     BackgroundView* backgroundView;
 }
 
-@property (nonatomic, readonly, getter = getBackgroundView) BackgroundView* backgroundView;
-@property (nonatomic, readonly, getter = getGLView) EAGLView* glView;
+@property (nonatomic, readonly) BackgroundView * backgroundView;
+@property (nonatomic, readonly) RenderView * renderView;
 
-- (void) createGLView;
+- (GLRenderView *) createGLView;
+- (MetalRenderView *) createMetalView;
 
 @end
 #endif // #if defined(__DAVAENGINE_IPHONE__)
 
-#endif //__DAVAENGINE_EAGLVIEWCONTROLLER_H__
+#endif //__DAVAENGINE_RENDERVIEWCONTROLLER_H__
 
  

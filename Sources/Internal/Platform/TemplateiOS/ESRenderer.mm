@@ -31,10 +31,6 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #import "Platform/TemplateiOS/ESRenderer.h"
-#include "Platform/Thread.h"
-#include "FileSystem/Logger.h"
-
-#define RENDER_VERIFY(expr) expr
 
 using namespace DAVA;
 
@@ -91,7 +87,7 @@ using namespace DAVA;
 	// This call is redundant, but needed if dealing with multiple renderbuffers.
     glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer);
     const GLenum discards[]  = {GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT};
-    RENDER_VERIFY(glDiscardFramebufferEXT(GL_FRAMEBUFFER,2,discards));
+    glDiscardFramebufferEXT(GL_FRAMEBUFFER,2,discards);
     
     glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbuffer);
     [context presentRenderbuffer:GL_RENDERBUFFER];

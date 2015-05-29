@@ -26,76 +26,27 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_DVMETALLAYER_H__
+#define __DAVAENGINE_DVMETALLAYER_H__
 
+#include "Base/BaseTypes.h"
+#if defined(__DAVAENGINE_IPHONE__)
 
-#ifndef __DAVAENGINE_IPHONEAPP_SCREENMANAGER_C_H__
-#define __DAVAENGINE_IPHONEAPP_SCREENMANAGER_C_H__
+#include <QuartzCore/CAMetalLayer.h>
+#include <Metal/Metal.h>
 
-#include "DAVAEngine.h"
-
-namespace DAVA 
+@interface DVMetalLayer : CAMetalLayer
 {
-class UIScreenManager : public Singleton<UIScreenManager>
-{
-public:
-	UIScreenManager();
-	virtual ~UIScreenManager();
-	
-	void RegisterController(int controllerId, void * controller);
-	void RegisterScreen(int screenId, UIScreen * screen);
+id<MTLTexture> depthBuffer;
+id<MTLTexture> stencilBuffer;
+}
 
-	void SetGLControllerId(int glController);
+@property (nonatomic, readonly) id<MTLTexture> depthBuffer;
+@property (nonatomic, readonly) id<MTLTexture> stencilBuffer;
 
-	void SetFirst(int screenId);
-	void SetScreen(int screenId, UIScreenTransition * transition = 0);
+- (void) resize : (CGSize) size;
 
-	UIScreen *GetScreen(int screenId);
-	UIScreen *GetScreen();
-	int GetScreenId();
-	
-	void *GetController(int controllerId);
-	void *GetController();
-	int GetControllerId();
-	
-    void ScreenSizeChanged();
+@end
+#endif // #if defined(__DAVAENGINE_IPHONE__)
 
-
-	// GetScreen, GetController
-	// Stack of the screens
-	// void SetScreen(int screen);
-	void StopGLAnimation();
-	void StartGLAnimation();
-
-	// Yuri Coder, 2013/02/06. Temporary method exist for iOS implementation only.
-	// It blocks drawing of the RenderView, introduced for displaying assert messages.
-	void BlockDrawing();
-    void UnblockDrawing();
-private:
-	
-	void ActivateGLController();
-	
-	struct Screen
-	{
-		enum eType 
-		{
-			TYPE_NULL = 0,
-			TYPE_CONTROLLER,
-			TYPE_SCREEN,
-		};
-		Screen(eType _type = TYPE_NULL, void * _value  = 0) 
-		{
-			type = _type;
-			value = _value;
-		}
-		eType	type;
-		void *	value;
-	};
-	
-	Map<int, Screen>		screens;
-	int						glControllerId;
-	int						activeControllerId;
-	int						activeScreenId;
-};
-};
-
-#endif // __DAVAENGINE_IPHONEAPP_SCREENMANAGER_C_H__
+#endif //__DAVAENGINE_DVMETALLAYER_H__
