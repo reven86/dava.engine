@@ -484,6 +484,8 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
 
                 scene->SetGlobalMaterial(globalMaterial);
                 serializationContext.SetGlobalMaterialKey(globalMaterialId);
+                
+                --header.nodeCount;
             }
             else
             {
