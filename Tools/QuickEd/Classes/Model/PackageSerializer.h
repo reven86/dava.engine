@@ -40,6 +40,7 @@ private: // PackageVisitor
 private:
     void AcceptChildren(PackageBaseNode *node);
     void CollectPackages(DAVA::Vector<PackageNode*> &packages, ControlNode *node) const;
+    bool IsControlInSerializationList(ControlNode *control) const;
     void CollectPrototypeChildrenWithChanges(ControlNode *node, DAVA::Vector<ControlNode*> &out) const;
     bool HasNonPrototypeChildren(ControlNode *node) const;
 

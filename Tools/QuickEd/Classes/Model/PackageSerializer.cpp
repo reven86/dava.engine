@@ -52,9 +52,13 @@ void PackageSerializer::SerializePackageNodes(PackageNode *package, const DAVA::
 {
     for (ControlNode *control : serializationControls)
     {
-        CollectPackages(importedPackages, control);
         if (control->CanCopy())
             controls.push_back(control);
+    }
+
+    for (ControlNode *control : controls)
+    {
+        CollectPackages(importedPackages, control);
     }
 
     package->Accept(this);
@@ -138,14 +142,23 @@ void PackageSerializer::CollectPackages(Vector<PackageNode*> &packages, ControlN
     if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
     {
         ControlNode *prototype = node->GetPrototype();
-        if (prototype && std::find(packages.begin(), packages.end(), prototype->GetPackage()) == packages.end())
-            packages.push_back(prototype->GetPackage());
+        if (!IsControlInSerializationList(prototype))
+        {
+            if (prototype && std::find(packages.begin(), packages.end(), prototype->GetPackage()) == packages.end())
+            {
+                packages.push_back(prototype->GetPackage());
+            }
+        }
     }
     
     for (int32 index = 0; index < node->GetCount(); index++)
         CollectPackages(packages, node->Get(index));
 }
 
+bool PackageSerializer::IsControlInSerializationList(ControlNode *control) const
+{
+    return std::find(controls.begin(), controls.end(), control) != controls.end();
+}
 
 void PackageSerializer::CollectPrototypeChildrenWithChanges(ControlNode *node, Vector<ControlNode*> &out) const
 {
@@ -171,6 +184,8 @@ bool PackageSerializer::HasNonPrototypeChildren(ControlNode *node) const
     }
     return false;
 }
+
+// --- 
 
 void PackageSerializer::VisitRootProperty(RootProperty *property)
 {
@@ -300,18 +315,18 @@ void PackageSerializer::VisitPrototypeNameProperty(PrototypeNameProperty *proper
     {
         ControlNode *prototype = property->GetControl()->GetPrototype();
         
-        bool withPackage = true;
-        for (ControlNode *control : controls)
-        {
-            if (control == prototype)
-                withPackage = false;
-        }
-        
         String name = "";
         PackageNode *prototypePackage = prototype->GetPackage();
-        if (withPackage && prototypePackage != nullptr)
+        if (!IsControlInSerializationList(prototype))
         {
-            name = prototypePackage->GetName() + "/";
+            if (prototypePackage != nullptr)
+            {
+                name = prototypePackage->GetName() + "/";
+            }
+            else
+            {
+                DVASSERT(false);
+            }
         }
         name += prototype->GetName();
         
