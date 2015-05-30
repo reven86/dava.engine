@@ -59,12 +59,13 @@ public:
     void ResetProperty(AbstractProperty *property);
     void RefreshProperty(AbstractProperty *property);
 
-    virtual void Refresh() override;
-    virtual void Serialize(PackageSerializer *serializer) const override;
-    virtual bool IsReadOnly() const override;
+    void Refresh() override;
+    void Serialize(PackageSerializer *serializer) const override;
+    void Accept(PropertyVisitor *visitor) override;
+    bool IsReadOnly() const override;
 
-    virtual const DAVA::String &GetName() const;
-    virtual ePropertyType GetType() const;
+    const DAVA::String &GetName() const override;
+    ePropertyType GetType() const override;
 
 private:
     void AddBaseProperties(DAVA::UIControl *control, const RootProperty *sourceProperties, eCloneType cloneType);

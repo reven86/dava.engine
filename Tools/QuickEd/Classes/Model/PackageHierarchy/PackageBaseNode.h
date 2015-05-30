@@ -10,6 +10,7 @@ namespace DAVA
 
 class ControlNode;
 class PackageNode;
+class PackageVisitor;
 
 class PackageBaseNode : public DAVA::BaseObject
 {
@@ -25,6 +26,8 @@ public:
     
     PackageBaseNode *GetParent() const;
     void SetParent(PackageBaseNode *parent);
+    
+    virtual void Accept(PackageVisitor *visitor) = 0;
     
     virtual DAVA::String GetName() const;
     virtual PackageNode *GetPackage();

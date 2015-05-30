@@ -15,6 +15,9 @@ public:
 
 protected:
     virtual ~ControlPropertiesSection();
+    
+public:
+    void Accept(PropertyVisitor *visitor) override;
 
 private:
     DAVA::UIControl *control;

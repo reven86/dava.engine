@@ -1,6 +1,7 @@
 #include "BackgroundPropertiesSection.h"
 
 #include "IntrospectionProperty.h"
+#include "PropertyVisitor.h"
 
 #include "UI/UIControl.h"
 #include "Model/PackageSerializer.h"
@@ -80,4 +81,9 @@ void BackgroundPropertiesSection::Serialize(PackageSerializer *serializer) const
 
         serializer->EndMap();
     }
+}
+
+void BackgroundPropertiesSection::Accept(PropertyVisitor *visitor)
+{
+    visitor->VisitBackgroundSection(this);
 }

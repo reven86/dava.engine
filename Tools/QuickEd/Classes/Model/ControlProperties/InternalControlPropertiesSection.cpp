@@ -1,10 +1,12 @@
 #include "InternalControlPropertiesSection.h"
 
+#include "PropertyVisitor.h"
 #include "ValueProperty.h"
-#include "UI/UIControl.h"
 #include "Model/PackageSerializer.h"
 #include "LocalizedTextValueProperty.h"
 #include "FontValueProperty.h"
+
+#include "UI/UIControl.h"
 
 using namespace DAVA;
 
@@ -112,4 +114,9 @@ void InternalControlPropertiesSection::Serialize(PackageSerializer *serializer) 
         
         serializer->EndMap();
     }
+}
+
+void InternalControlPropertiesSection::Accept(PropertyVisitor *visitor)
+{
+    visitor->VisitInternalControlSection(this);
 }

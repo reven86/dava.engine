@@ -14,11 +14,13 @@ protected:
     virtual ~ClassProperty();
     
 public:
-    virtual void Serialize(PackageSerializer *serializer) const override;
-    virtual bool IsReadOnly() const override;
+    void Serialize(PackageSerializer *serializer) const override;
+    void Accept(PropertyVisitor *visitor) override;
     
-    virtual ePropertyType GetType() const override;
-    virtual DAVA::VariantType GetValue() const override;
+    bool IsReadOnly() const override;
+    
+    ePropertyType GetType() const override;
+    DAVA::VariantType GetValue() const override;
     const DAVA::String &GetClassName() const;
     
 protected:

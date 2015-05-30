@@ -1,9 +1,11 @@
 #include "ControlPropertiesSection.h"
 
-#include "UI/UIControl.h"
+#include "PropertyVisitor.h"
 #include "ValueProperty.h"
 #include "LocalizedTextValueProperty.h"
 #include "FontValueProperty.h"
+
+#include "UI/UIControl.h"
 
 using namespace DAVA;
 
@@ -44,4 +46,9 @@ ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *aControl, co
 ControlPropertiesSection::~ControlPropertiesSection()
 {
     SafeRelease(control);
+}
+
+void ControlPropertiesSection::Accept(PropertyVisitor *visitor)
+{
+    visitor->VisitControlSection(this);
 }

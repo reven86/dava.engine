@@ -4,6 +4,7 @@
 #include "Base/ObjectFactory.h"
 
 #include "PackageNode.h"
+#include "PackageVisitor.h"
 #include "../PackageSerializer.h"
 #include "../ControlProperties/RootProperty.h"
 
@@ -141,6 +142,11 @@ int ControlNode::GetCount() const
 ControlNode *ControlNode::Get(int index) const
 {
     return nodes[index];
+}
+
+void ControlNode::Accept(PackageVisitor *visitor)
+{
+    visitor->VisitControl(this);
 }
 
 ControlNode *ControlNode::FindByName(const DAVA::String &name) const

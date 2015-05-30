@@ -2,6 +2,7 @@
 
 #include "PackageControlsNode.h"
 #include "PackageNode.h"
+#include "PackageVisitor.h"
 #include "../PackageSerializer.h"
 
 using namespace DAVA;
@@ -62,6 +63,11 @@ int ImportedPackagesNode::GetCount() const
 PackageBaseNode *ImportedPackagesNode::Get(int index) const
 {
     return packages[index];
+}
+
+void ImportedPackagesNode::Accept(PackageVisitor *visitor)
+{
+    visitor->VisitImportedPackages(this);
 }
 
 String ImportedPackagesNode::GetName() const

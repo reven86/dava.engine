@@ -1,5 +1,6 @@
 #include "PackageNode.h"
 
+#include "PackageVisitor.h"
 #include "PackageControlsNode.h"
 #include "ImportedPackagesNode.h"
 #include "PackageListener.h"
@@ -40,6 +41,11 @@ PackageBaseNode *PackageNode::Get(int index) const
         return packageControlsNode;
     else
         return nullptr;
+}
+
+void PackageNode::Accept(PackageVisitor *visitor)
+{
+    visitor->VisitPackage(this);
 }
 
 String PackageNode::GetName() const

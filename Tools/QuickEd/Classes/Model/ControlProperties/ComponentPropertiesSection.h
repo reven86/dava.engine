@@ -20,8 +20,8 @@ public:
     DAVA::UIComponent *GetComponent() const;
     DAVA::uint32 GetComponentType() const;
     
-    virtual bool HasChanges() const override;
-    virtual DAVA::uint32 GetFlags() const override;
+    bool HasChanges() const override;
+    DAVA::uint32 GetFlags() const override;
     
     void InstallComponent();
     void UninstallComponent();
@@ -29,7 +29,8 @@ public:
     DAVA::int32 GetComponentIndex() const;
     void RefreshIndex();
 
-    virtual void Serialize(PackageSerializer *serializer) const override;
+    void Serialize(PackageSerializer *serializer) const override;
+    void Accept(PropertyVisitor *visitor) override;
 
 private:
     DAVA::String GetComponentName() const;

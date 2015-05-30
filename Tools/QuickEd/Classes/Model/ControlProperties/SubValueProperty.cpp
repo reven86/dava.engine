@@ -26,6 +26,16 @@ AbstractProperty *SubValueProperty::GetProperty(int index) const
     return NULL;
 }
 
+void SubValueProperty::Serialize(PackageSerializer *serializer) const
+{
+    DVASSERT(false);
+}
+
+void SubValueProperty::Accept(PropertyVisitor *visitor)
+{
+    DVASSERT(false);
+}
+
 const DAVA::String &SubValueProperty::GetName() const
 {
     return name;

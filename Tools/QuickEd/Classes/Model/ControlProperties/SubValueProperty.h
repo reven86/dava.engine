@@ -16,17 +16,19 @@ protected:
     virtual ~SubValueProperty();
 
 public:
-    virtual int GetCount() const override;
-    virtual AbstractProperty *GetProperty(int index) const override;
-    virtual void Serialize(PackageSerializer *serializer) const override {};
-    virtual const DAVA::String &GetName() const;
-    virtual ePropertyType GetType() const;
-    virtual DAVA::VariantType GetValue() const;
-    virtual void SetValue(const DAVA::VariantType &newValue);
-    virtual DAVA::VariantType GetDefaultValue() const;
-    virtual void SetDefaultValue(const DAVA::VariantType &newValue) override;
-    virtual void ResetValue() override;
-    virtual bool IsReplaced() const;
+    int GetCount() const override;
+    AbstractProperty *GetProperty(int index) const override;
+    void Serialize(PackageSerializer *serializer) const override;
+    void Accept(PropertyVisitor *visitor) override;
+    
+    const DAVA::String &GetName() const override;
+    ePropertyType GetType() const override;
+    DAVA::VariantType GetValue() const override;
+    void SetValue(const DAVA::VariantType &newValue) override;
+    DAVA::VariantType GetDefaultValue() const override;
+    void SetDefaultValue(const DAVA::VariantType &newValue) override;
+    void ResetValue() override;
+    bool IsReplaced() const override;
 
 private:
     ValueProperty *GetValueProperty() const;

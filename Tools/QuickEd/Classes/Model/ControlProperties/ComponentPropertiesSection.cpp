@@ -1,6 +1,7 @@
 #include "ComponentPropertiesSection.h"
 
 #include "IntrospectionProperty.h"
+#include "PropertyVisitor.h"
 
 #include "UI/UIControl.h"
 #include "../PackageSerializer.h"
@@ -123,6 +124,11 @@ void ComponentPropertiesSection::Serialize(PackageSerializer *serializer) const
         
         serializer->EndMap();
     }
+}
+
+void ComponentPropertiesSection::Accept(PropertyVisitor *visitor)
+{
+    visitor->VisitComponentSection(this);
 }
 
 String ComponentPropertiesSection::GetComponentName() const

@@ -1,6 +1,7 @@
 #include "PackageControlsNode.h"
 
 #include "ControlNode.h"
+#include "PackageVisitor.h"
 
 #include "../PackageSerializer.h"
 #include "PackageNode.h"
@@ -61,6 +62,11 @@ int PackageControlsNode::GetCount() const
 ControlNode *PackageControlsNode::Get(int index) const
 {
     return nodes[index];
+}
+
+void PackageControlsNode::Accept(PackageVisitor *visitor)
+{
+    visitor->VisitControls(this);
 }
 
 String PackageControlsNode::GetName() const

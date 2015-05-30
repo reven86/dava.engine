@@ -1,5 +1,6 @@
 #include "PrototypeNameProperty.h"
 
+#include "PropertyVisitor.h"
 #include "../PackageHierarchy/ControlNode.h"
 #include "../PackageHierarchy/PackageNode.h"
 #include "../PackageSerializer.h"
@@ -23,6 +24,11 @@ void PrototypeNameProperty::Serialize(PackageSerializer *serializer) const
     {
         serializer->PutValue("prototype", node->GetPrototype()->GetQualifiedName(serializer->IsForceQualifiedName()));
     }
+}
+
+void PrototypeNameProperty::Accept(PropertyVisitor *visitor)
+{
+    visitor->VisitPrototypeNameProperty(this);
 }
 
 AbstractProperty::ePropertyType PrototypeNameProperty::GetType() const

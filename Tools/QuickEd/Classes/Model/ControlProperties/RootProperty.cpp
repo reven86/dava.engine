@@ -1,5 +1,7 @@
 #include "RootProperty.h"
 
+#include "PropertyVisitor.h"
+
 #include "ControlPropertiesSection.h"
 #include "ComponentPropertiesSection.h"
 
@@ -377,6 +379,11 @@ void RootProperty::Serialize(PackageSerializer *serializer) const
         
         serializer->EndArray();
     }
+}
+
+void RootProperty::Accept(PropertyVisitor *visitor)
+{
+    visitor->VisitRootProperty(this);
 }
 
 bool RootProperty::IsReadOnly() const

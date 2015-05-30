@@ -2,6 +2,8 @@
 #define __UI_EDITOR_PACKAGE_CONTROLS_NODE_H__
 
 #include "PackageBaseNode.h"
+
+#include "PackageVisitor.h"
 #include "PackageControlsNode.h"
 #include "ControlNode.h"
 
@@ -24,6 +26,8 @@ public:
     void Remove(ControlNode *node) override;
     int GetCount() const override;
     ControlNode *Get(int index) const override;
+
+    void Accept(PackageVisitor *visitor) override;
 
     DAVA::String GetName() const override;
     

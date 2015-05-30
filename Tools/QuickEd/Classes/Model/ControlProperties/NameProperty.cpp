@@ -1,5 +1,6 @@
 #include "NameProperty.h"
 
+#include "PropertyVisitor.h"
 #include "../PackageHierarchy/ControlNode.h"
 #include "../PackageSerializer.h"
 
@@ -60,6 +61,11 @@ void NameProperty::Serialize(PackageSerializer *serializer) const
         default:
             DVASSERT(false);
     }
+}
+
+void NameProperty::Accept(PropertyVisitor *visitor)
+{
+    visitor->VisitNameProperty(this);
 }
 
 bool NameProperty::IsReadOnly() const

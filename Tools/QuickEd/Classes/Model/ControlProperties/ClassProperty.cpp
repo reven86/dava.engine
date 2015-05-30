@@ -1,5 +1,6 @@
 #include "ClassProperty.h"
 
+#include "PropertyVisitor.h"
 #include "../PackageHierarchy/ControlNode.h"
 #include "../PackageSerializer.h"
 
@@ -25,6 +26,11 @@ void ClassProperty::Serialize(PackageSerializer *serializer) const
     {
         serializer->PutValue("class", control->GetControl()->GetClassName());
     }
+}
+
+void ClassProperty::Accept(PropertyVisitor *visitor)
+{
+    visitor->VisitClassProperty(this);
 }
 
 bool ClassProperty::IsReadOnly() const

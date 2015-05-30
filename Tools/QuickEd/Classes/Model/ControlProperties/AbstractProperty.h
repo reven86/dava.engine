@@ -4,6 +4,7 @@
 #include "Base/BaseObject.h"
 
 class PackageSerializer;
+class PropertyVisitor;
 
 class AbstractProperty : public DAVA::BaseObject
 {
@@ -49,6 +50,7 @@ public:
     virtual AbstractProperty *FindPropertyByPrototype(AbstractProperty *prototype);
     virtual bool HasChanges() const;
     virtual void Serialize(PackageSerializer *serializer) const = 0;
+    virtual void Accept(PropertyVisitor *visitor) = 0;
 
     virtual const DAVA::String &GetName() const = 0;
     virtual ePropertyType GetType() const = 0;

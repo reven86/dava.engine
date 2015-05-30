@@ -36,6 +36,8 @@ public:
     void Remove(ControlNode *node) override;
     int GetCount() const override;
     ControlNode *Get(int index) const override;
+    void Accept(PackageVisitor *visitor) override;
+    
     ControlNode *FindByName(const DAVA::String &name) const;
     
     virtual DAVA::String GetName() const override;

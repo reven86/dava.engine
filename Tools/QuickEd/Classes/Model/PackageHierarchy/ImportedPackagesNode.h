@@ -19,7 +19,8 @@ public:
     PackageNode *GetImportedPackage(DAVA::int32 index) const;
     int GetCount() const override;
     PackageBaseNode *Get(DAVA::int32 index) const override;
-    
+    void Accept(PackageVisitor *visitor) override;
+
     virtual DAVA::String GetName() const override;
     bool CanInsertImportedPackage() const override;
 

@@ -25,6 +25,8 @@ public:
     int GetCount() const override;
     PackageBaseNode *Get(int index) const override;
 
+    void Accept(PackageVisitor *visitor) override;
+
     DAVA::String GetName() const override;
     
     PackageNode *GetPackage() override;
@@ -32,7 +34,7 @@ public:
     const DAVA::FilePath &GetPath() const;
     bool IsImported() const;
 
-    virtual bool IsReadOnly() const override;
+    bool IsReadOnly() const override;
     
     ImportedPackagesNode *GetImportedPackagesNode() const;
     PackageControlsNode *GetPackageControlsNode() const;

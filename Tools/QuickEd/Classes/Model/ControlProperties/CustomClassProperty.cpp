@@ -1,5 +1,6 @@
 #include "CustomClassProperty.h"
 
+#include "PropertyVisitor.h"
 #include "../PackageHierarchy/ControlNode.h"
 #include "../PackageSerializer.h"
 
@@ -56,6 +57,11 @@ void CustomClassProperty::Serialize(PackageSerializer *serializer) const
     {
         serializer->PutValue("customClass", customClass);
     }
+}
+
+void CustomClassProperty::Accept(PropertyVisitor *visitor)
+{
+    visitor->VisitCustomClassProperty(this);
 }
 
 bool CustomClassProperty::IsReadOnly() const

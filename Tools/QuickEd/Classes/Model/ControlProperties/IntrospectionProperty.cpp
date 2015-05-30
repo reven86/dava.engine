@@ -1,5 +1,6 @@
 #include "IntrospectionProperty.h"
 
+#include "PropertyVisitor.h"
 #include "SubValueProperty.h"
 #include "Model/PackageSerializer.h"
 #include <Base/BaseMath.h>
@@ -126,6 +127,11 @@ void IntrospectionProperty::Serialize(PackageSerializer *serializer) const
             serializer->PutValue(key, value);
         }
     }
+}
+
+void IntrospectionProperty::Accept(PropertyVisitor *visitor)
+{
+    visitor->VisitIntrospectionProperty(this);
 }
 
 IntrospectionProperty::ePropertyType IntrospectionProperty::GetType() const
