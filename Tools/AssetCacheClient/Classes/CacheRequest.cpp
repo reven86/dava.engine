@@ -41,7 +41,7 @@ CacheRequest::CacheRequest(const String & commandLineOptionName)
 //    options.AddOption("-p", VariantType(0), "Set port of Asset Cache Server.");
     options.AddOption("-h", VariantType(String("")), "Hash string of requested data");
     options.AddOption("-v", VariantType(false), "Verbose output.");
-    options.AddOption("-t", VariantType(static_cast<uint64>(500)), "Connection timeout seconds.");
+    options.AddOption("-t", VariantType(static_cast<uint64>(50)), "Connection timeout seconds.");
     
     client.SetDelegate(this);
 }

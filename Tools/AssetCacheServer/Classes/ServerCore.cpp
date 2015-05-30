@@ -54,14 +54,23 @@ ServerCore::~ServerCore()
 
 void ServerCore::Start()
 {
+    DAVA::Logger::FrameworkDebug("[ServerCore::%s]", __FUNCTION__);
+    
     server.Listen(DAVA::AssetCache::ASSET_SERVER_PORT);
     logics.Init(&server, &dataBase);
     
     QTimer::singleShot(UPDATE_TIMEOUT, this, &ServerCore::UpdateByTimer);
 }
 
+static bool connectedState = true;
 void ServerCore::Update()
 {
+    if(connectedState != server.IsConnected())
+    {
+        connectedState = server.IsConnected();
+        DAVA::Logger::FrameworkDebug("[ServerCore::%s] isConnected = %d", __FUNCTION__, connectedState);
+    }
+
     auto netSystem = DAVA::Net::NetCore::Instance();
     if(netSystem)
     {

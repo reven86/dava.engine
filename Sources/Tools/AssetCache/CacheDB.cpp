@@ -238,6 +238,8 @@ ServerCacheEntry * CacheDB::Get(const CacheItemKey &key)
         if(found != fullCache.end())
         {
             entry = &found->second;
+            entry->files.LoadFiles();
+            InsertInFastCache(key, entry);
         }
     }
     

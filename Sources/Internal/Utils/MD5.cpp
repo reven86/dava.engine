@@ -172,7 +172,7 @@ void MD5::HashToChar(const uint8 * hash, char8 *buffer, uint32 bufferSize)
 void MD5::CharToHash(const char8 *buffer, uint8 * hash)
 {
     int32 bufferSize = static_cast<int32>(strlen(buffer));
-    if((MD5::DIGEST_SIZE * 2) != bufferSize)
+    if((MD5::DIGEST_SIZE * 2) > bufferSize)
     {
         Logger::Error("[MD5::CharToHash] char string has wrong size (%d). Must be 32 characters", bufferSize);
         return;

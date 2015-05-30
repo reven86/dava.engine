@@ -47,165 +47,166 @@ namespace DAVA
 namespace AssetCache
 {
  
-struct TestEntryDescriptor
+class AssetClientAddRequest: public ClientDelegate
 {
-    FilePath project;
-    FilePath outFolder;
-    ClientCacheEntry entry;
+public:
+    Client *client = nullptr;
+    bool testFinished = false;
+
+public:
+
+    AssetClientAddRequest(const String & hash, const FilePath & pathname)
+    {
+        client = new Client();
+        client->SetDelegate(this);
+        
+        Connect();
+        
+        CacheItemKey key(hash);
+        CachedFiles files;
+        
+        files.AddFile(pathname);
+        files.LoadFiles();
+        files.InvalidateFileSize();
+        
+        auto added = client->AddToCache(key, files);
+        Logger::Debug("[AssetClientAddRequest::%s] Add request sent with result %d", __FUNCTION__, added);
+        
+        auto startTime = SystemTimer::Instance()->AbsoluteMS();
+        while(testFinished == false)
+        {
+            sleep(10);
+        }
+        auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
+        Logger::Debug("[AssetClientAddRequest::%s] Wait of adding time = %lld", __FUNCTION__, deltaTime);
+
+//        client.Disconnect();
+    }
+    
+    bool Connect()
+    {
+        bool connected = client->Connect("127.0.0.1", AssetCache::ASSET_SERVER_PORT);
+        Logger::Debug("[AssetClientAddRequest::%s] Connect request sent with result %d", __FUNCTION__, connected);
+        if(connected)
+        {
+            auto startTime = SystemTimer::Instance()->AbsoluteMS();
+            while(client->IsConnected() == false)
+            {
+                sleep(10);
+            }
+            auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
+            Logger::Debug("[AssetClientAddRequest::%s] Connection time = %lld", __FUNCTION__, deltaTime);
+        }
+
+        return connected;
+    }
+    
+    
+    void OnAddedToCache(const CacheItemKey &key, bool added) override
+    {
+        Logger::Debug("[AssetClientAddRequest::%s] files added = %d", __FUNCTION__, added);
+        testFinished = true;
+    }
 };
- 
     
     
-class ClientTest: public DAVA::AssetCache::ClientDelegate
+   
+//=============================
+class AssetClientGetRequest: public ClientDelegate
 {
-    bool testIsRunning = false;
+public:
+    Client *client = nullptr;
+    bool testFinished = false;
     
-    DAVA::AssetCache::Client *client = nullptr;
-    
-    TestEntryDescriptor entry;
+    FilePath folder;
     
 public:
     
-    ClientTest(DAVA::AssetCache::Client * _client)
-        :   client(_client)
+    AssetClientGetRequest(const String & hash, const FilePath & _folder) : folder(_folder)
     {
+        client = new Client();
         client->SetDelegate(this);
+        
+        Connect();
+        
+        CacheItemKey key(hash);
+        
+        auto get = client->GetFromCache(key);
+        Logger::Debug("[AssetClientGetRequest::%s] Get request sent with result %d", __FUNCTION__, get);
+        
+        auto startTime = SystemTimer::Instance()->AbsoluteMS();
+        while(testFinished == false)
+        {
+            sleep(10);
+        }
+        auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
+        Logger::Debug("[AssetClientGetRequest::%s] Wait of adding time = %lld", __FUNCTION__, deltaTime);
+        
+//        client.Disconnect();
     }
     
-    void OnAddedToCache(const DAVA::AssetCache::CacheItemKey &key, bool added) override
+    bool Connect()
     {
-        testIsRunning = false;
+        bool connected = client->Connect("127.0.0.1", AssetCache::ASSET_SERVER_PORT);
+        Logger::Debug("[AssetClientGetRequest::%s] Connect request sent with result %d", __FUNCTION__, connected);
+        if(connected)
+        {
+            auto startTime = SystemTimer::Instance()->AbsoluteMS();
+            while(client->IsConnected() == false)
+            {
+                sleep(10);
+            }
+            auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
+            Logger::Debug("[AssetClientGetRequest::%s] Connection time = %lld", __FUNCTION__, deltaTime);
+        }
+        
+        return connected;
     }
     
-    void OnIsInCache(const DAVA::AssetCache::CacheItemKey &key, bool isInCache) override
+    void OnReceivedFromCache(const CacheItemKey &key, const CachedFiles &files) override
     {
-    }
-    
-    void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files) override
-    {
+        Logger::Debug("[AssetClientGetRequest::%s]", __FUNCTION__);
+        testFinished = true;
+        
         if(files.IsEmtpy())
         {
-            client->AddToCache(entry.entry.GetKey(), entry.entry.GetFiles());
+            Logger::Debug("[AssetClientGetRequest::%s] there are no files in cache", __FUNCTION__);
         }
         else
         {
-            files.Save(entry.outFolder);
-            testIsRunning = false;
-        }
-    }
-    
-    
-    void Run(const TestEntryDescriptor & _entry)
-    {
-        testIsRunning = true;
-        entry = _entry;
-        
-        client->GetFromCache(entry.entry.GetKey());
-        
-        while (testIsRunning)
-        {
-            //wait;
+            files.Save(folder);
         }
     }
 };
 
+    
+///=================================
 
-void RunPackerTest()
+void AssetClientTestAdd()
 {
-// --- INITIALIZATION OF NETWORK ---
-    auto client = new DAVA::AssetCache::Client();
-    client->Connect("127.0.0.1", DAVA::AssetCache::ASSET_SERVER_PORT);
+    auto count = 3;
     
-    while(client->IsConnected() == false)
+    for(decltype(count) i = 0; i < count; ++i)
     {
-        sleep(10);
+        AssetClientAddRequest test(String(64, '0' + i), Format("/Users/victorkleschenko/Downloads/log_copy%d.log", i));
     }
-// --- INITIALIZATION OF NETWORK ---
-    
-    
-    ClientCacheEntry entry;
-    entry.AddFile("/Users/victorkleschenko/Downloads/log_copy.log");
-    entry.AddParam("test1");
-    entry.AddParam("test2");
-    entry.AddParam("test3");
-    
-    entry.files.LoadFiles();
-    entry.InvalidatePrimaryKey();
-    entry.InvalidateSecondaryKey();
-    
-    client->AddToCache(entry.GetKey(), entry.GetFiles());
-    
-    entry.files.UnloadFiles();
-    
-// --- RUNNING TEST ---
-//    auto FullTestFunc = [] (ClientTest & clientTest, const String & project, int testCount)
-//    {
-//        auto CreateEntryForProject = [] (const String &project, const String &outFolder)
-//        {
-//            TestEntryDescriptor entryDescriptor;
-//            entryDescriptor.project = String("/Users/victorkleschenko/Downloads/__AssetCacheTest/") + project;
-//            entryDescriptor.project.MakeDirectoryPathname();
-//            
-//            entryDescriptor.outFolder = entryDescriptor.project + outFolder;
-//            entryDescriptor.outFolder.MakeDirectoryPathname();
-//            
-//            const FilePath inputFolder = entryDescriptor.project + "InFolder/";
-//            const FilePath processFolder = entryDescriptor.project + "$process/";
-//            
-//            entryDescriptor.entry.AddParam("Resource Packer 1.0");
-//            entryDescriptor.entry.AddParam("RGBA8888");
-//            entryDescriptor.entry.AddParam("split");
-//            
-//            ScopedPtr<FileList> flist(new FileList(processFolder));
-//            auto count = flist->GetCount();
-//            for(auto i = 0; i < count; ++i)
-//            {
-//                if(!flist->IsDirectory(i))
-//                {
-//                    entryDescriptor.entry.AddFile(flist->GetPathname(i));
-//                }
-//            }
-//            
-//            uint8 digest[MD5::DIGEST_SIZE];
-//            MD5::ForDirectory(inputFolder, digest, false, false);
-//            entryDescriptor.entry.InvalidatePrimaryKey(digest);
-//            entryDescriptor.entry.InvalidateSecondaryKey();
-//            
-//            return entryDescriptor;
-//        };
-//        
-//        auto TestFunc = [] (ClientTest & test, TestEntryDescriptor & entry)
-//        {
-//            entry.entry.files.LoadFiles();
-//            entry.entry.files.InvalidateFileSize();
-//            test.Run(entry);
-//            
-//            entry.entry.files.UnloadFiles();
-//            test.Run(entry);
-//        };
-//        
-//        for(int i = 0; i < testCount; ++i)
-//        {
-//            TestEntryDescriptor cacheEntry1 = CreateEntryForProject(project, Format("OutFolder_%d", i));
-//            TestFunc(clientTest, cacheEntry1);
-//        }
-//    };
-//
-//    ClientTest clientTest(client);
-//    FullTestFunc(clientTest, "TestProject1", 5);
-//    FullTestFunc(clientTest, "TestProject2", 2);
+}
 
     
+void AssetClientTestGet()
+{
+    auto count = 3;
     
-    
-    // --- RUNNING TEST ---
-    
-    Net::NetCore::Instance()->DestroyAllControllersBlocked();
-    Net::NetCore::Instance()->UnregisterAllServices();
-    
-    SafeDelete(client);
+    for(decltype(count) i = 0; i < count; ++i)
+    {
+        AssetClientGetRequest test0(String(64, '0' + i), Format("/Users/victorkleschenko/Downloads/Test/%d/", i));
+    }
 }
     
+    
+    
+
+
 }; // end of namespace AssetCache
 }; // end of namespace DAVA
 

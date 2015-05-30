@@ -39,7 +39,6 @@
 #include "QtTools/FileDialog/FileDialog.h"
 
 #include "AssetCache/AssetCacheConstants.h"
-#include "AssetCache/Test/AssetCacheTest.h"
 #include "Job/JobManager.h"
 
 #include <QFileDialog>
@@ -49,6 +48,7 @@
 #include <QCheckBox>
 #include <QDoubleSpinBox>
 #include <QSpinBox>
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)

@@ -34,6 +34,9 @@
 #include "ServerCore.h"
 #include "MainWindow.h"
 
+#include "AssetCache/Test/AssetCacheTest.h"
+
+
 void FrameworkWillTerminate()
 {
 }
@@ -47,10 +50,10 @@ int main(int argc, char *argv[])
     DAVA::Core::Run(argc, argv);
 
     SingleApplication a(argc, argv);
-    if (a.AlreadyExists())
-    {
-        return 0;
-    }
+//    if (a.AlreadyExists())
+//    {
+//        return 0;
+//    }
     
     DAVA::Logger::Instance()->SetLogFilename("AssetCacheServer.txt");
     DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_FRAMEWORK);
@@ -62,6 +65,10 @@ int main(int argc, char *argv[])
     
     w.show();
     server.Start();
+    
+//    DAVA::JobManager::Instance()->CreateWorkerJob(&DAVA::AssetCache::AssetClientTestAdd);
+    DAVA::JobManager::Instance()->CreateWorkerJob(&DAVA::AssetCache::AssetClientTestGet);
+
 
     return a.exec();
 }
