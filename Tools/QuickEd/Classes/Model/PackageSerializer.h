@@ -4,10 +4,12 @@
 #include "Base/BaseObject.h"
 
 #include "PackageHierarchy/PackageVisitor.h"
+#include "ControlProperties/PropertyVisitor.h"
 
 class PackageBaseNode;
+class AbstractProperty;
 
-class PackageSerializer : private PackageVisitor
+class PackageSerializer : private PackageVisitor, private PropertyVisitor
 {
 public:
     PackageSerializer();
@@ -38,12 +40,29 @@ private: // PackageVisitor
     void VisitControls(PackageControlsNode *node) override;
     void VisitControl(ControlNode *node) override;
 
-
 private:
     void AcceptChildren(PackageBaseNode *node);
     void CollectPrototypeChildrenWithChanges(ControlNode *node, DAVA::Vector<ControlNode*> &out) const;
     bool HasNonPrototypeChildren(ControlNode *node) const;
+
+private: // PropertyVisitor
+    void VisitRootProperty(RootProperty *property) override;
     
+    void VisitControlSection(ControlPropertiesSection *property) override;
+    void VisitComponentSection(ComponentPropertiesSection *property) override;
+    void VisitBackgroundSection(BackgroundPropertiesSection *property) override;
+    void VisitInternalControlSection(InternalControlPropertiesSection *property) override;
+
+    void VisitNameProperty(NameProperty *property) override;
+    void VisitPrototypeNameProperty(PrototypeNameProperty *property) override;
+    void VisitClassProperty(ClassProperty *property) override;
+    void VisitCustomClassProperty(CustomClassProperty *property) override;
+    
+    void VisitIntrospectionProperty(IntrospectionProperty *property) override;
+
+private:
+    void AcceptChildren(AbstractProperty *property);
+
 private:
     bool forceQualifiedName;
 };

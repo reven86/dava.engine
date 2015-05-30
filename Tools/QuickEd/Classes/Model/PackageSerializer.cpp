@@ -4,7 +4,19 @@
 #include "PackageHierarchy/ImportedPackagesNode.h"
 #include "PackageHierarchy/PackageControlsNode.h"
 #include "PackageHierarchy/ControlNode.h"
+
 #include "ControlProperties/RootProperty.h"
+#include "ControlProperties/BackgroundPropertiesSection.h"
+#include "ControlProperties/ClassProperty.h"
+#include "ControlProperties/ComponentPropertiesSection.h"
+#include "ControlProperties/ControlPropertiesSection.h"
+#include "ControlProperties/CustomClassProperty.h"
+#include "ControlProperties/FontValueProperty.h"
+#include "ControlProperties/InternalControlPropertiesSection.h"
+#include "ControlProperties/IntrospectionProperty.h"
+#include "ControlProperties/LocalizedTextValueProperty.h"
+#include "ControlProperties/NameProperty.h"
+#include "ControlProperties/PrototypeNameProperty.h"
 
 using namespace DAVA;
 
@@ -71,7 +83,7 @@ void PackageSerializer::VisitControl(ControlNode *node)
 {
     BeginMap();
     
-    node->GetRootProperty()->Serialize(this);
+    node->GetRootProperty()->Accept(this);
     
     if (node->GetCount() > 0)
     {
@@ -135,3 +147,188 @@ bool PackageSerializer::HasNonPrototypeChildren(ControlNode *node) const
     return false;
 }
 
+void PackageSerializer::VisitRootProperty(RootProperty *property)
+{
+    property->GetPrototypeProperty()->Accept(this);
+    property->GetClassProperty()->Accept(this);
+    property->GetCustomClassProperty()->Accept(this);
+    property->GetNameProperty()->Accept(this);
+    
+    for (int32 i = 0; i < property->GetControlPropertiesSectionsCount(); i++)
+        property->GetControlPropertiesSection(i)->Accept(this);
+    
+    bool hasChanges = false;
+    
+    for (const ComponentPropertiesSection *section : property->GetComponents())
+    {
+        if (section->HasChanges() || (section->GetFlags() & AbstractProperty::EF_INHERITED) == 0)
+        {
+            hasChanges = true;
+            break;
+        }
+    }
+    
+    if (!hasChanges)
+    {
+        for (const auto section : property->GetBackgroundProperties())
+        {
+            if (section->HasChanges())
+            {
+                hasChanges = true;
+                break;
+            }
+        }
+    }
+    
+    if (!hasChanges)
+    {
+        for (const auto section : property->GetInternalControlProperties())
+        {
+            if (section->HasChanges())
+            {
+                hasChanges = true;
+                break;
+            }
+        }
+    }
+    
+    
+    if (hasChanges)
+    {
+        BeginMap("components");
+        
+        for (const auto section : property->GetComponents())
+            section->Accept(this);
+        
+        for (const auto section : property->GetBackgroundProperties())
+            section->Accept(this);
+        
+        for (const auto section : property->GetInternalControlProperties())
+            section->Accept(this);
+        
+        EndArray();
+    }
+
+}
+
+void PackageSerializer::VisitControlSection(ControlPropertiesSection *property)
+{
+    AcceptChildren(property);
+}
+
+void PackageSerializer::VisitComponentSection(ComponentPropertiesSection *property)
+{
+    if (property->HasChanges() || (property->GetFlags() & AbstractProperty::EF_INHERITED) == 0)
+    {
+        String name = property->GetComponentName();
+        if (UIComponent::IsMultiple(property->GetComponentType()))
+            name += Format("%d", index);
+        
+        BeginMap(name);
+        AcceptChildren(property);
+        EndMap();
+    }
+}
+
+void PackageSerializer::VisitBackgroundSection(BackgroundPropertiesSection *property)
+{
+    if (property->HasChanges())
+    {
+        BeginMap(property->GetName());
+        AcceptChildren(property);
+        EndMap();
+    }
+}
+
+void PackageSerializer::VisitInternalControlSection(InternalControlPropertiesSection *property)
+{
+    if (property->HasChanges())
+    {
+        BeginMap(property->GetName());
+        AcceptChildren(property);
+        EndMap();
+    }
+}
+
+void PackageSerializer::VisitNameProperty(NameProperty *property)
+{
+    switch (property->GetControlNode()->GetCreationType())
+    {
+        case ControlNode::CREATED_FROM_PROTOTYPE:
+        case ControlNode::CREATED_FROM_CLASS:
+            PutValue("name", property->GetControlNode()->GetName());
+            break;
+            
+        case ControlNode::CREATED_FROM_PROTOTYPE_CHILD:
+            PutValue("path", property->GetControlNode()->GetPathToPrototypeChild(false));
+            break;
+            
+        default:
+            DVASSERT(false);
+    }
+
+}
+
+void PackageSerializer::VisitPrototypeNameProperty(PrototypeNameProperty *property)
+{
+    if (property->GetControl()->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
+    {
+        PutValue("prototype", property->GetControl()->GetPrototype()->GetQualifiedName(forceQualifiedName));
+    }
+}
+
+void PackageSerializer::VisitClassProperty(ClassProperty *property)
+{
+    if (property->GetControlNode()->GetCreationType() == ControlNode::CREATED_FROM_CLASS)
+    {
+        PutValue("class", property->GetClassName());
+    }
+}
+
+void PackageSerializer::VisitCustomClassProperty(CustomClassProperty *property)
+{
+    if (property->IsReplaced())
+    {
+        PutValue("customClass", property->GetCustomClassName());
+    }
+}
+
+void PackageSerializer::VisitIntrospectionProperty(IntrospectionProperty *property)
+{
+    if (property->IsReplaced())
+    {
+        VariantType value = property->GetValue();
+        String key = property->GetMember()->Name();
+        
+        if (value.GetType() == VariantType::TYPE_INT32 && property->GetType() == AbstractProperty::TYPE_FLAGS)
+        {
+            Vector<String> values;
+            const EnumMap *enumMap = property->GetEnumMap();
+            int val = value.AsInt32();
+            int p = 1;
+            while (val > 0)
+            {
+                if ((val & 0x01) != 0)
+                    values.push_back(enumMap->ToString(p));
+                val >>= 1;
+                p <<= 1;
+            }
+            PutValue(key, values);
+        }
+        else if (value.GetType() == VariantType::TYPE_INT32 && property->GetType() == AbstractProperty::TYPE_ENUM)
+        {
+            const EnumMap *enumMap = property->GetEnumMap();
+            PutValue(key, enumMap->ToString(value.AsInt32()));
+        }
+        else
+        {
+            PutValue(key, value);
+        }
+    }
+}
+
+void PackageSerializer::AcceptChildren(AbstractProperty *property)
+{
+    for (int32 i = 0; i < property->GetCount(); i++)
+        property->GetProperty(i)->Accept(this);
+}

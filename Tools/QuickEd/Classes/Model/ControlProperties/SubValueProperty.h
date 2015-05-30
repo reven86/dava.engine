@@ -18,7 +18,6 @@ protected:
 public:
     int GetCount() const override;
     AbstractProperty *GetProperty(int index) const override;
-    void Serialize(PackageSerializer *serializer) const override;
     void Accept(PropertyVisitor *visitor) override;
     
     const DAVA::String &GetName() const override;

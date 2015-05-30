@@ -16,7 +16,6 @@ protected:
 public:
     void Refresh() override;
     AbstractProperty *FindPropertyByPrototype(AbstractProperty *prototype) override;
-    void Serialize(PackageSerializer *serializer) const override;
     void Accept(PropertyVisitor *visitor) override;
     
     bool IsReadOnly() const override;

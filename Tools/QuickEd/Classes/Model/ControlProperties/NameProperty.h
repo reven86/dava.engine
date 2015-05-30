@@ -16,7 +16,6 @@ protected:
 public:
     void Refresh() override;
     AbstractProperty *FindPropertyByPrototype(AbstractProperty *prototype) override;
-    void Serialize(PackageSerializer *serializer) const override;
     void Accept(PropertyVisitor *visitor) override;
     
     bool IsReadOnly() const override;
@@ -25,6 +24,8 @@ public:
     DAVA::VariantType GetValue() const override;
 
     bool IsReplaced() const override;
+    
+    ControlNode *GetControlNode() const;
 
 protected:
     void ApplyValue(const DAVA::VariantType &value) override;

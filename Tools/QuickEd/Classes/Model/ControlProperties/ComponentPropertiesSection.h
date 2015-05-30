@@ -29,11 +29,11 @@ public:
     DAVA::int32 GetComponentIndex() const;
     void RefreshIndex();
 
-    void Serialize(PackageSerializer *serializer) const override;
     void Accept(PropertyVisitor *visitor) override;
 
-private:
     DAVA::String GetComponentName() const;
+
+private:
     void RefreshName();
     
 private:

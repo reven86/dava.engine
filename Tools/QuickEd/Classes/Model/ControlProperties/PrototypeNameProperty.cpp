@@ -3,7 +3,6 @@
 #include "PropertyVisitor.h"
 #include "../PackageHierarchy/ControlNode.h"
 #include "../PackageHierarchy/PackageNode.h"
-#include "../PackageSerializer.h"
 
 using namespace DAVA;
 
@@ -16,14 +15,6 @@ PrototypeNameProperty::PrototypeNameProperty(ControlNode *aNode, const Prototype
 PrototypeNameProperty::~PrototypeNameProperty()
 {
     node = nullptr; // weak
-}
-
-void PrototypeNameProperty::Serialize(PackageSerializer *serializer) const
-{
-    if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
-    {
-        serializer->PutValue("prototype", node->GetPrototype()->GetQualifiedName(serializer->IsForceQualifiedName()));
-    }
 }
 
 void PrototypeNameProperty::Accept(PropertyVisitor *visitor)
@@ -57,6 +48,11 @@ String PrototypeNameProperty::GetPrototypeName() const
     }
     
     return String("");
+}
+
+ControlNode *PrototypeNameProperty::GetControl() const
+{
+    return node;
 }
 
 void PrototypeNameProperty::ApplyValue(const DAVA::VariantType &value)

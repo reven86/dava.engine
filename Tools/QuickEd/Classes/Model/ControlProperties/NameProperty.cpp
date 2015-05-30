@@ -2,7 +2,6 @@
 
 #include "PropertyVisitor.h"
 #include "../PackageHierarchy/ControlNode.h"
-#include "../PackageSerializer.h"
 
 #include "UI/UIControl.h"
 
@@ -45,24 +44,6 @@ AbstractProperty *NameProperty::FindPropertyByPrototype(AbstractProperty *protot
     return prototypeProperty == prototype ? this : nullptr;
 }
 
-void NameProperty::Serialize(PackageSerializer *serializer) const
-{
-    switch (control->GetCreationType())
-    {
-        case ControlNode::CREATED_FROM_PROTOTYPE:
-        case ControlNode::CREATED_FROM_CLASS:
-            serializer->PutValue("name", control->GetName());
-            break;
-
-        case ControlNode::CREATED_FROM_PROTOTYPE_CHILD:
-            serializer->PutValue("path", control->GetPathToPrototypeChild(false));
-            break;
-            
-        default:
-            DVASSERT(false);
-    }
-}
-
 void NameProperty::Accept(PropertyVisitor *visitor)
 {
     visitor->VisitNameProperty(this);
@@ -86,6 +67,11 @@ VariantType NameProperty::GetValue() const
 bool NameProperty::IsReplaced() const
 {
     return control->GetCreationType() != ControlNode::CREATED_FROM_PROTOTYPE_CHILD;
+}
+
+ControlNode *NameProperty::GetControlNode() const
+{
+    return control;
 }
 
 void NameProperty::ApplyValue(const DAVA::VariantType &value)

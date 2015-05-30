@@ -14,7 +14,6 @@ protected:
     virtual ~ClassProperty();
     
 public:
-    void Serialize(PackageSerializer *serializer) const override;
     void Accept(PropertyVisitor *visitor) override;
     
     bool IsReadOnly() const override;
@@ -22,6 +21,7 @@ public:
     ePropertyType GetType() const override;
     DAVA::VariantType GetValue() const override;
     const DAVA::String &GetClassName() const;
+    ControlNode *GetControlNode() const;
     
 protected:
     ControlNode *control; // weak

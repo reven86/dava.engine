@@ -20,7 +20,6 @@ public:
     void CreateControlBackground();
 
     bool HasChanges() const override;
-    void Serialize(PackageSerializer *serializer) const override;
     void Accept(PropertyVisitor *visitor) override;
 
 private:

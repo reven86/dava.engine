@@ -2,7 +2,6 @@
 
 #include "PropertyVisitor.h"
 #include "ValueProperty.h"
-#include "Model/PackageSerializer.h"
 #include "LocalizedTextValueProperty.h"
 #include "FontValueProperty.h"
 
@@ -101,19 +100,6 @@ void InternalControlPropertiesSection::CreateInternalControl()
 bool InternalControlPropertiesSection::HasChanges() const
 {
     return internalControl && SectionProperty::HasChanges();
-}
-
-void InternalControlPropertiesSection::Serialize(PackageSerializer *serializer) const
-{
-    if (HasChanges())
-    {
-        serializer->BeginMap(GetName());
-        
-        for (const auto child : children)
-            child->Serialize(serializer);
-        
-        serializer->EndMap();
-    }
 }
 
 void InternalControlPropertiesSection::Accept(PropertyVisitor *visitor)

@@ -15,13 +15,14 @@ protected:
     virtual ~PrototypeNameProperty();
     
 public:
-    void Serialize(PackageSerializer *serializer) const override;
     void Accept(PropertyVisitor *visitor) override;
 
     ePropertyType GetType() const override;
     DAVA::VariantType GetValue() const override;
     bool IsReadOnly() const override;
     DAVA::String GetPrototypeName() const;
+    
+    ControlNode *GetControl() const;
 
 protected:
     virtual void ApplyValue(const DAVA::VariantType &value);

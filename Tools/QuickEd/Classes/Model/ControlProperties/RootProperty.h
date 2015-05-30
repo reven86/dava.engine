@@ -7,7 +7,6 @@ class ControlPropertiesSection;
 class ComponentPropertiesSection;
 class BackgroundPropertiesSection;
 class InternalControlPropertiesSection;
-class PackageSerializer;
 class PropertyListener;
 class ValueProperty;
 class NameProperty;
@@ -37,10 +36,13 @@ public:
     PrototypeNameProperty *GetPrototypeProperty() const { return prototypeProperty; }
     NameProperty *GetNameProperty() const { return nameProperty; }
     
+    DAVA::int32 GetControlPropertiesSectionsCount() const;
+    ControlPropertiesSection *GetControlPropertiesSection(DAVA::int32 index) const;
     ControlPropertiesSection *GetControlPropertiesSection(const DAVA::String &name) const;
 
     bool CanAddComponent(DAVA::uint32 componentType) const;
     bool CanRemoveComponent(DAVA::uint32 componentType) const;
+    const DAVA::Vector<ComponentPropertiesSection*> &GetComponents() const;
     DAVA::int32 GetIndexOfCompoentPropertiesSection(ComponentPropertiesSection *section) const;
     ComponentPropertiesSection *FindComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 index) const;
     ComponentPropertiesSection *AddComponentPropertiesSection(DAVA::uint32 componentType);
@@ -48,7 +50,10 @@ public:
     void RemoveComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex);
     void RemoveComponentPropertiesSection(ComponentPropertiesSection *section);
 
+    const DAVA::Vector<BackgroundPropertiesSection*> &GetBackgroundProperties() const;
     BackgroundPropertiesSection *GetBackgroundPropertiesSection(int num) const;
+
+    const DAVA::Vector<InternalControlPropertiesSection*> &GetInternalControlProperties() const;
     InternalControlPropertiesSection *GetInternalControlPropertiesSection(int num) const;
     
     void AddListener(PropertyListener *listener);
@@ -60,7 +65,6 @@ public:
     void RefreshProperty(AbstractProperty *property);
 
     void Refresh() override;
-    void Serialize(PackageSerializer *serializer) const override;
     void Accept(PropertyVisitor *visitor) override;
     bool IsReadOnly() const override;
 

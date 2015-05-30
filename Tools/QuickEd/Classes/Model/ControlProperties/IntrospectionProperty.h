@@ -16,7 +16,6 @@ protected:
 public:
     void Refresh();
     AbstractProperty *FindPropertyByPrototype(AbstractProperty *prototype) override;
-    void Serialize(PackageSerializer *serializer) const override;
     void Accept(PropertyVisitor *visitor) override;
     
 
@@ -36,6 +35,8 @@ public:
     {
         return (aMember == member);
     }
+    
+    const DAVA::InspMember *GetMember() const;
 
 protected:
     virtual void ApplyValue(const DAVA::VariantType &value);

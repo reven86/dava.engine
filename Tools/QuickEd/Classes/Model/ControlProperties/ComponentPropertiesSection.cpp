@@ -4,7 +4,6 @@
 #include "PropertyVisitor.h"
 
 #include "UI/UIControl.h"
-#include "../PackageSerializer.h"
 
 using namespace DAVA;
 
@@ -106,23 +105,6 @@ void ComponentPropertiesSection::RefreshIndex()
         Logger::Debug("Refresh %s, %d, %d", control->GetName().c_str(), component->GetType(), index);
 
         RefreshName();
-    }
-}
-
-void ComponentPropertiesSection::Serialize(PackageSerializer *serializer) const
-{
-    if (HasChanges() || (GetFlags() & AbstractProperty::EF_INHERITED) == 0)
-    {
-        String name = GetComponentName();
-        if (UIComponent::IsMultiple(component->GetType()))
-            name += Format("%d", index);
-        
-        serializer->BeginMap(name);
-        
-        for (const auto child : children)
-            child->Serialize(serializer);
-        
-        serializer->EndMap();
     }
 }
 

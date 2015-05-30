@@ -1,7 +1,6 @@
 #include "ValueProperty.h"
 
 #include "SubValueProperty.h"
-#include "Model/PackageSerializer.h"
 #include <Base/BaseMath.h>
 
 using namespace DAVA;
@@ -39,10 +38,6 @@ void ValueProperty::Refresh()
 bool ValueProperty::HasChanges() const
 {
     return replaced;
-}
-
-void ValueProperty::Serialize(PackageSerializer *serializer) const
-{
 }
 
 const DAVA::String &ValueProperty::GetName() const

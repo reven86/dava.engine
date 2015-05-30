@@ -2,7 +2,6 @@
 
 #include "PropertyVisitor.h"
 #include "../PackageHierarchy/ControlNode.h"
-#include "../PackageSerializer.h"
 
 #include "UI/UIControl.h"
 
@@ -49,14 +48,6 @@ void CustomClassProperty::Refresh()
 AbstractProperty *CustomClassProperty::FindPropertyByPrototype(AbstractProperty *prototype)
 {
     return prototypeProperty == prototype ? this : nullptr;
-}
-
-void CustomClassProperty::Serialize(PackageSerializer *serializer) const
-{
-    if (IsReplaced())
-    {
-        serializer->PutValue("customClass", customClass);
-    }
 }
 
 void CustomClassProperty::Accept(PropertyVisitor *visitor)
