@@ -61,15 +61,10 @@ public:
     void MarkAsRemoved();
     void MarkAsAlive();
 
-    void Serialize(PackageSerializer *serializer) const;
     DAVA::String GetPathToPrototypeChild(bool withRootPrototypeName = false) const;
 
 private:
-    void CollectPrototypeChildrenWithChanges(DAVA::Vector<ControlNode*> &out) const;
-    bool HasNonPrototypeChildren() const;
     bool IsInstancedFrom(const ControlNode *prototype) const;
-    
-private:
     void AddControlToInstances(ControlNode *control);
     void RemoveControlFromInstances(ControlNode *control);
 

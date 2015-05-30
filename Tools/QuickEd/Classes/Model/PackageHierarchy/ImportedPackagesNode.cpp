@@ -90,21 +90,6 @@ PackageNode *ImportedPackagesNode::FindPackageByName(const DAVA::String &name) c
     return nullptr;
 }
 
-void ImportedPackagesNode::Serialize(PackageSerializer *serializer) const
-{
-    Serialize(serializer, packages);
-}
-
-void ImportedPackagesNode::Serialize(PackageSerializer *serializer, const DAVA::Vector<PackageNode*> &serializationPackages) const
-{
-    serializer->BeginArray("ImportedPackages");
-    
-    for (PackageNode *package : serializationPackages)
-        serializer->PutValue(package->GetPath().GetFrameworkPath());
-    
-    serializer->EndArray();
-}
-
 bool ImportedPackagesNode::IsReadOnly() const
 {
     return true;

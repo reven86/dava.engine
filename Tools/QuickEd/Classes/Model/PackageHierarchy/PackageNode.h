@@ -58,10 +58,6 @@ public:
     void InsertImportedPackage(PackageNode *node, DAVA::int32 index);
     void RemoveImportedPackage(PackageNode *node);
 
-    void Serialize(PackageSerializer *serializer) const;
-    void Serialize(PackageSerializer *serializer, const DAVA::Vector<ControlNode*> &nodes) const;
-    
-    
 private:
     void CollectPackages(DAVA::Vector<PackageNode*> &packages, ControlNode *node) const;
     void RefreshPropertiesInInstances(ControlNode *node, AbstractProperty *property);

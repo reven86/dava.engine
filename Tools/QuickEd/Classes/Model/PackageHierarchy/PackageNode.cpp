@@ -212,30 +212,6 @@ void PackageNode::RemoveImportedPackage(PackageNode *node)
         listener->ImportedPackageWasRemoved(node, importedPackagesNode);
 }
 
-void PackageNode::Serialize(PackageSerializer *serializer) const
-{
-    serializer->BeginMap("Header");
-    serializer->PutValue("version", String("0"));
-    serializer->EndMap();
-    
-    importedPackagesNode->Serialize(serializer);
-    packageControlsNode->Serialize(serializer);
-}
-
-void PackageNode::Serialize(PackageSerializer *serializer, const DAVA::Vector<ControlNode*> &nodes) const
-{
-    serializer->BeginMap("Header");
-    serializer->PutValue("version", String("0"));
-    serializer->EndMap();
-    
-    Vector<PackageNode*> usedImportedPackages;
-    for (ControlNode *node : nodes)
-        CollectPackages(usedImportedPackages, node);
-
-    importedPackagesNode->Serialize(serializer, usedImportedPackages);
-    packageControlsNode->Serialize(serializer, nodes);
-}
-
 void PackageNode::CollectPackages(Vector<PackageNode*> &packages, ControlNode *node) const
 {
     if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)

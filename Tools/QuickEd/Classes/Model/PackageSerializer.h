@@ -3,11 +3,18 @@
 
 #include "Base/BaseObject.h"
 
-class PackageSerializer
+#include "PackageHierarchy/PackageVisitor.h"
+
+class PackageBaseNode;
+
+class PackageSerializer : private PackageVisitor
 {
 public:
     PackageSerializer();
     virtual ~PackageSerializer();
+    
+    void SerializePackage(PackageNode *node);
+    void SerializePackageNodes(PackageNode *node, const DAVA::Vector<ControlNode*> &nodes);
     
     virtual void PutValue(const DAVA::String &name, const DAVA::VariantType &value) = 0;
     virtual void PutValue(const DAVA::String &name, const DAVA::String &value) = 0;
@@ -24,6 +31,18 @@ public:
 
     bool IsForceQualifiedName() const;
     void SetForceQualifiedName(bool qualifiedName);
+    
+private: // PackageVisitor
+    void VisitPackage(PackageNode *node) override;
+    void VisitImportedPackages(ImportedPackagesNode *node) override;
+    void VisitControls(PackageControlsNode *node) override;
+    void VisitControl(ControlNode *node) override;
+
+
+private:
+    void AcceptChildren(PackageBaseNode *node);
+    void CollectPrototypeChildrenWithChanges(ControlNode *node, DAVA::Vector<ControlNode*> &out) const;
+    bool HasNonPrototypeChildren(ControlNode *node) const;
     
 private:
     bool forceQualifiedName;

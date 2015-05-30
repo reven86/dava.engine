@@ -194,7 +194,7 @@ RefPtr<PackageNode> Project::OpenPackage(const QString &packagePath)
 bool Project::SavePackage(PackageNode *package)
 {
     YamlPackageSerializer serializer;
-    package->Serialize(&serializer);
+    serializer.SerializePackage(package);
     serializer.WriteToFile(package->GetPath());
     return true;
 }

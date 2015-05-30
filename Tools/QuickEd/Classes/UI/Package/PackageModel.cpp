@@ -239,7 +239,7 @@ QMimeData *PackageModel::mimeData(const QModelIndexList &indices) const
     }
     
     YamlPackageSerializer serializer;
-    root->Serialize(&serializer, mimeData->GetControlNodes());
+    serializer.SerializePackageNodes(root, mimeData->GetControlNodes());
     String str = serializer.WriteToString();
     mimeData->setText(QString::fromStdString(str));
 

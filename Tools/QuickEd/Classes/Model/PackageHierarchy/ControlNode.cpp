@@ -5,7 +5,6 @@
 
 #include "PackageNode.h"
 #include "PackageVisitor.h"
-#include "../PackageSerializer.h"
 #include "../ControlProperties/RootProperty.h"
 
 using namespace DAVA;
@@ -243,43 +242,6 @@ void ControlNode::MarkAsAlive()
         prototype->AddControlToInstances(this);
 }
 
-void ControlNode::Serialize(PackageSerializer *serializer) const
-{
-    serializer->BeginMap();
-    
-    rootProperty->Serialize(serializer);
-    
-    if (!nodes.empty())
-    {
-        bool shouldProcessChildren = true;
-        Vector<ControlNode*> prototypeChildrenWithChanges;
-
-        if (creationType == CREATED_FROM_PROTOTYPE)
-        {
-            CollectPrototypeChildrenWithChanges(prototypeChildrenWithChanges);
-            shouldProcessChildren = !prototypeChildrenWithChanges.empty() || HasNonPrototypeChildren();
-        }
-        
-        if (shouldProcessChildren)
-        {
-            serializer->BeginArray("children");
-
-            for (const auto &child : prototypeChildrenWithChanges)
-                child->Serialize(serializer);
-
-            for (const auto &child : nodes)
-            {
-                if (child->GetCreationType() != CREATED_FROM_PROTOTYPE_CHILD)
-                    child->Serialize(serializer);
-            }
-            
-            serializer->EndArray();
-        }
-    }
-    
-    serializer->EndMap();
-}
-
 String ControlNode::GetPathToPrototypeChild(bool withRootPrototypeName) const
 {
     if (creationType == CREATED_FROM_PROTOTYPE_CHILD)
@@ -304,30 +266,6 @@ String ControlNode::GetPathToPrototypeChild(bool withRootPrototypeName) const
         return path;
     }
     return "";
-}
-
-void ControlNode::CollectPrototypeChildrenWithChanges(Vector<ControlNode*> &out) const
-{
-    for (auto child : nodes)
-    {
-        if (child->GetCreationType() == CREATED_FROM_PROTOTYPE_CHILD)
-        {
-            if (child->HasNonPrototypeChildren() || child->rootProperty->HasChanges())
-                out.push_back(child);
-            
-            child->CollectPrototypeChildrenWithChanges(out);
-        }
-    }
-}
-
-bool ControlNode::HasNonPrototypeChildren() const
-{
-    for (const auto &child : nodes)
-    {
-        if (child->GetCreationType() != CREATED_FROM_PROTOTYPE_CHILD)
-            return true;
-    }
-    return false;
 }
 
 bool ControlNode::IsInstancedFrom(const ControlNode *prototype) const
