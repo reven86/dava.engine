@@ -39,12 +39,25 @@ bool PrototypeNameProperty::IsReadOnly() const
 
 String PrototypeNameProperty::GetPrototypeName() const
 {
-    if (node->GetPrototype())
+    ControlNode *prototype = node->GetPrototype();
+    if (prototype)
     {
+        String path = "";
         if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE_CHILD)
-            return node->GetPathToPrototypeChild(true);
+        {
+            path = String("/") + node->GetPathToPrototypeChild();
+        }
+        
+        
+        const PackageNode *package = prototype->GetPackage();
+        if (package && package->IsImported())
+        {
+            return package->GetName() + "/" + prototype->GetName() + path;
+        }
         else
-            return node->GetPrototype()->GetQualifiedName();
+        {
+            return prototype->GetName() + path;
+        }
     }
     
     return String("");

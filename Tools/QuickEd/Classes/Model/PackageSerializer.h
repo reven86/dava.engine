@@ -15,8 +15,8 @@ public:
     PackageSerializer();
     virtual ~PackageSerializer();
     
-    void SerializePackage(PackageNode *node);
-    void SerializePackageNodes(PackageNode *node, const DAVA::Vector<ControlNode*> &nodes);
+    void SerializePackage(PackageNode *package);
+    void SerializePackageNodes(PackageNode *package, const DAVA::Vector<ControlNode*> &controls);
     
     virtual void PutValue(const DAVA::String &name, const DAVA::VariantType &value) = 0;
     virtual void PutValue(const DAVA::String &name, const DAVA::String &value) = 0;
@@ -31,9 +31,6 @@ public:
     virtual void BeginArray() = 0;
     virtual void EndArray() = 0;
 
-    bool IsForceQualifiedName() const;
-    void SetForceQualifiedName(bool qualifiedName);
-    
 private: // PackageVisitor
     void VisitPackage(PackageNode *node) override;
     void VisitImportedPackages(ImportedPackagesNode *node) override;
@@ -42,6 +39,7 @@ private: // PackageVisitor
 
 private:
     void AcceptChildren(PackageBaseNode *node);
+    void CollectPackages(DAVA::Vector<PackageNode*> &packages, ControlNode *node) const;
     void CollectPrototypeChildrenWithChanges(ControlNode *node, DAVA::Vector<ControlNode*> &out) const;
     bool HasNonPrototypeChildren(ControlNode *node) const;
 
@@ -64,7 +62,8 @@ private:
     void AcceptChildren(AbstractProperty *property);
 
 private:
-    bool forceQualifiedName;
+    DAVA::Vector<PackageNode*> importedPackages;
+    DAVA::Vector<ControlNode*> controls;
 };
 
 #endif // __QUICKED_PACKAGE_SERIALIZER_H__

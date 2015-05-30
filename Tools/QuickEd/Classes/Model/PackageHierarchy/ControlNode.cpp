@@ -163,17 +163,6 @@ String ControlNode::GetName() const
     return control->GetName();
 }
 
-String ControlNode::GetQualifiedName(bool forceQualifiedName) const
-{
-    const PackageNode *package = GetPackage();
-    if (package && (forceQualifiedName || package->IsImported()))
-    {
-        return package->GetName() + "/" + GetName();
-    }
-    
-    return GetName();
-}
-
 UIControl *ControlNode::GetControl() const
 {
     return control;
@@ -242,7 +231,7 @@ void ControlNode::MarkAsAlive()
         prototype->AddControlToInstances(this);
 }
 
-String ControlNode::GetPathToPrototypeChild(bool withRootPrototypeName) const
+String ControlNode::GetPathToPrototypeChild() const
 {
     if (creationType == CREATED_FROM_PROTOTYPE_CHILD)
     {
@@ -252,15 +241,6 @@ String ControlNode::GetPathToPrototypeChild(bool withRootPrototypeName) const
         {
             path = p->GetName() + "/" + path;
             p = p->GetParent();
-        }
-        
-        if (withRootPrototypeName && p != nullptr && p->GetControl() != nullptr && static_cast<ControlNode*>(p)->GetCreationType() == CREATED_FROM_PROTOTYPE)
-        {
-            ControlNode *c = static_cast<ControlNode*>(p);
-            if (c->GetPrototype())
-            {
-                path = c->GetPrototype()->GetQualifiedName() + "/" + path;
-            }
         }
         
         return path;

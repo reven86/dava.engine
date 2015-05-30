@@ -40,7 +40,6 @@ public:
     ControlNode *FindByName(const DAVA::String &name) const;
     
     virtual DAVA::String GetName() const override;
-    DAVA::String GetQualifiedName(bool forceQualifiedName = false) const;
     
     DAVA::UIControl *GetControl() const;
     ControlNode *GetPrototype() const;
@@ -60,7 +59,7 @@ public:
     void MarkAsRemoved();
     void MarkAsAlive();
 
-    DAVA::String GetPathToPrototypeChild(bool withRootPrototypeName = false) const;
+    DAVA::String GetPathToPrototypeChild() const;
 
 private:
     bool IsInstancedFrom(const ControlNode *prototype) const;

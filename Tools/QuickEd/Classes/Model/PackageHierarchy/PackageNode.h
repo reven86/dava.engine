@@ -58,7 +58,6 @@ public:
     void RemoveImportedPackage(PackageNode *node);
 
 private:
-    void CollectPackages(DAVA::Vector<PackageNode*> &packages, ControlNode *node) const;
     void RefreshPropertiesInInstances(ControlNode *node, AbstractProperty *property);
     
 private:

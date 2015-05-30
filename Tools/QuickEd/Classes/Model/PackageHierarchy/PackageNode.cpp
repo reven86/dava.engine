@@ -211,19 +211,6 @@ void PackageNode::RemoveImportedPackage(PackageNode *node)
         listener->ImportedPackageWasRemoved(node, importedPackagesNode);
 }
 
-void PackageNode::CollectPackages(Vector<PackageNode*> &packages, ControlNode *node) const
-{
-    if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
-    {
-        ControlNode *prototype = node->GetPrototype();
-        if (prototype && std::find(packages.begin(), packages.end(), prototype->GetPackage()) == packages.end())
-            packages.push_back(prototype->GetPackage());
-    }
-    
-    for (int32 index = 0; index < node->GetCount(); index++)
-        CollectPackages(packages, node->Get(index));
-}
-
 void PackageNode::RefreshPropertiesInInstances(ControlNode *node, AbstractProperty *property)
 {
     for (ControlNode *instance : node->GetInstances())

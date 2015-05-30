@@ -21,7 +21,6 @@
 using namespace DAVA;
 
 PackageSerializer::PackageSerializer()
-    : forceQualifiedName(false)
 {
     
 }
@@ -32,24 +31,36 @@ PackageSerializer::~PackageSerializer()
     
 }
 
-void PackageSerializer::SerializePackage(PackageNode *node)
+void PackageSerializer::SerializePackage(PackageNode *package)
 {
-    node->Accept(this);
+    for (int32 i = 0; i < package->GetImportedPackagesNode()->GetCount(); i++)
+    {
+        importedPackages.push_back(package->GetImportedPackagesNode()->GetImportedPackage(i));
+    }
+    
+    for (int32 i = 0; i < package->GetPackageControlsNode()->GetCount(); i++)
+    {
+        controls.push_back(package->GetPackageControlsNode()->Get(i));
+    }
+    
+    package->Accept(this);
+    importedPackages.clear();
+    controls.clear();
 }
 
-void PackageSerializer::SerializePackageNodes(PackageNode *node, const DAVA::Vector<ControlNode*> &nodes)
+void PackageSerializer::SerializePackageNodes(PackageNode *package, const DAVA::Vector<ControlNode*> &serializationControls)
 {
-    node->Accept(this);
-}
+    for (ControlNode *control : serializationControls)
+    {
+        CollectPackages(importedPackages, control);
+        if (control->CanCopy())
+            controls.push_back(control);
+    }
 
-bool PackageSerializer::IsForceQualifiedName() const
-{
-    return forceQualifiedName;
-}
+    package->Accept(this);
 
-void PackageSerializer::SetForceQualifiedName(bool qualifiedName)
-{
-    forceQualifiedName = qualifiedName;
+    importedPackages.clear();
+    controls.clear();
 }
 
 void PackageSerializer::VisitPackage(PackageNode *node)
@@ -58,25 +69,25 @@ void PackageSerializer::VisitPackage(PackageNode *node)
     PutValue("version", String("0"));
     EndMap();
     
-    AcceptChildren(node);
+    BeginArray("ImportedPackages");
+    for (PackageNode *package : importedPackages)
+        PutValue(package->GetPath().GetFrameworkPath());
+    EndArray();
+
+    BeginArray("Controls");
+    for (ControlNode *control : controls)
+        control->Accept(this);
+    EndArray();
 }
 
 void PackageSerializer::VisitImportedPackages(ImportedPackagesNode *node)
 {
-    BeginArray("ImportedPackages");
-    
-    for (int32 i = 0; i < node->GetCount(); i++)
-        PutValue(node->GetImportedPackage(i)->GetPath().GetFrameworkPath());
-    
-    EndArray();
+    // do nothing
 }
 
 void PackageSerializer::VisitControls(PackageControlsNode *node)
 {
-    BeginArray("Controls");
-    AcceptChildren(node);
-    EndArray();
-
+    // do nothing
 }
 
 void PackageSerializer::VisitControl(ControlNode *node)
@@ -121,6 +132,20 @@ void PackageSerializer::AcceptChildren(PackageBaseNode *node)
     for (int32 i = 0; i < node->GetCount(); i++)
         node->Get(i)->Accept(this);
 }
+
+void PackageSerializer::CollectPackages(Vector<PackageNode*> &packages, ControlNode *node) const
+{
+    if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
+    {
+        ControlNode *prototype = node->GetPrototype();
+        if (prototype && std::find(packages.begin(), packages.end(), prototype->GetPackage()) == packages.end())
+            packages.push_back(prototype->GetPackage());
+    }
+    
+    for (int32 index = 0; index < node->GetCount(); index++)
+        CollectPackages(packages, node->Get(index));
+}
+
 
 void PackageSerializer::CollectPrototypeChildrenWithChanges(ControlNode *node, Vector<ControlNode*> &out) const
 {
@@ -260,7 +285,7 @@ void PackageSerializer::VisitNameProperty(NameProperty *property)
             break;
             
         case ControlNode::CREATED_FROM_PROTOTYPE_CHILD:
-            PutValue("path", property->GetControlNode()->GetPathToPrototypeChild(false));
+            PutValue("path", property->GetControlNode()->GetPathToPrototypeChild());
             break;
             
         default:
@@ -273,7 +298,24 @@ void PackageSerializer::VisitPrototypeNameProperty(PrototypeNameProperty *proper
 {
     if (property->GetControl()->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
     {
-        PutValue("prototype", property->GetControl()->GetPrototype()->GetQualifiedName(forceQualifiedName));
+        ControlNode *prototype = property->GetControl()->GetPrototype();
+        
+        bool withPackage = true;
+        for (ControlNode *control : controls)
+        {
+            if (control == prototype)
+                withPackage = false;
+        }
+        
+        String name = "";
+        PackageNode *prototypePackage = prototype->GetPackage();
+        if (withPackage && prototypePackage != nullptr)
+        {
+            name = prototypePackage->GetName() + "/";
+        }
+        name += prototype->GetName();
+        
+        PutValue("prototype", name);
     }
 }
 
