@@ -3,7 +3,6 @@
 #include "PackageControlsNode.h"
 #include "PackageNode.h"
 #include "PackageVisitor.h"
-#include "../PackageSerializer.h"
 
 using namespace DAVA;
 

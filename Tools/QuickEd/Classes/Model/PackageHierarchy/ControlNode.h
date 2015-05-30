@@ -4,7 +4,6 @@
 #include "PackageBaseNode.h"
 #include "ControlsContainerNode.h"
 
-class PackageSerializer;
 class PackageNode;
 class RootProperty;
 

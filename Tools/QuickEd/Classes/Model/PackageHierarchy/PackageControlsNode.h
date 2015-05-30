@@ -12,7 +12,6 @@ namespace DAVA
     class UIPackage;
 }
 
-class PackageSerializer;
 class PackageNode;
 
 class PackageControlsNode : public ControlsContainerNode

@@ -8,7 +8,6 @@
 class ImportedPackagesNode;
 class PackageControlsNode;
 class ControlsContainerNode;
-class PackageSerializer;
 class ControlNode;
 class PackageListener;
 class AbstractProperty;

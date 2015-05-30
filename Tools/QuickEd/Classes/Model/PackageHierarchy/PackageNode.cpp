@@ -4,7 +4,6 @@
 #include "PackageControlsNode.h"
 #include "ImportedPackagesNode.h"
 #include "PackageListener.h"
-#include "../PackageSerializer.h"
 #include "../ControlProperties/RootProperty.h"
 
 using namespace DAVA;

@@ -3,7 +3,6 @@
 #include "ControlNode.h"
 #include "PackageVisitor.h"
 
-#include "../PackageSerializer.h"
 #include "PackageNode.h"
 #include "UI/UIPackage.h"
 #include "UI/UIControl.h"

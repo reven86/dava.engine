@@ -4,7 +4,6 @@
 #include "PackageBaseNode.h"
 
 class PackageNode;
-class PackageSerializer;
 class PackageControlsNode;
 
 class ImportedPackagesNode : public PackageBaseNode
