@@ -224,9 +224,9 @@ bool QtModelPackageCommandExecutor::Paste(PackageNode *root, ControlsContainerNo
                 
                 EndMacro();
             }
+            return true;
         }
         
-        return true;
     }
     return false;
 }

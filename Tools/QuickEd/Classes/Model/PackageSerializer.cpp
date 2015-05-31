@@ -53,12 +53,10 @@ void PackageSerializer::SerializePackageNodes(PackageNode *package, const DAVA::
     for (ControlNode *control : serializationControls)
     {
         if (control->CanCopy())
+        {
             controls.push_back(control);
-    }
-
-    for (ControlNode *control : controls)
-    {
-        CollectPackages(importedPackages, control);
+            CollectPackages(importedPackages, control);
+        }
     }
 
     package->Accept(this);
@@ -142,12 +140,9 @@ void PackageSerializer::CollectPackages(Vector<PackageNode*> &packages, ControlN
     if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
     {
         ControlNode *prototype = node->GetPrototype();
-        if (!IsControlInSerializationList(prototype))
+        if (prototype && std::find(packages.begin(), packages.end(), prototype->GetPackage()) == packages.end())
         {
-            if (prototype && std::find(packages.begin(), packages.end(), prototype->GetPackage()) == packages.end())
-            {
-                packages.push_back(prototype->GetPackage());
-            }
+            packages.push_back(prototype->GetPackage());
         }
     }
     
@@ -317,16 +312,9 @@ void PackageSerializer::VisitPrototypeNameProperty(PrototypeNameProperty *proper
         
         String name = "";
         PackageNode *prototypePackage = prototype->GetPackage();
-        if (!IsControlInSerializationList(prototype))
+        if (std::find(importedPackages.begin(), importedPackages.end(), prototypePackage) != importedPackages.end())
         {
-            if (prototypePackage != nullptr)
-            {
-                name = prototypePackage->GetName() + "/";
-            }
-            else
-            {
-                DVASSERT(false);
-            }
+            name = prototypePackage->GetName() + "/";
         }
         name += prototype->GetName();
         

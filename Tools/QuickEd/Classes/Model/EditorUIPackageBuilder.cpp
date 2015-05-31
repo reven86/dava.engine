@@ -52,7 +52,7 @@ bool EditorUIPackageBuilder::ProcessImportedPackage(const String &packagePathStr
     FilePath packagePath(packagePathStr);
     for (PackageNode *package : importedPackages)
     {
-        if (package->GetPath() == packagePath)
+        if (package->GetPath().GetFrameworkPath() == packagePath.GetFrameworkPath())
             return true;
     }
     
