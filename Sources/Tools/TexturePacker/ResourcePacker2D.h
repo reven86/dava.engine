@@ -53,7 +53,7 @@ public:
     
 	void RecursiveTreeWalk(const FilePath & inputPath,const FilePath & outputPath, const Vector<String> & flags = Vector<String>());
     bool IsMD5ChangedDir(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName, bool isRecursive) const;
-	bool IsMD5ChangedFile(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName);
+	bool IsMD5ChangedFile(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName) const;
 	
     DefinitionFile * ProcessPSD(const FilePath & processDirectoryPath, const FilePath & psdPathname, const String & psdName, bool twoSideMargin, uint32 texturesMargin);
 	Vector<String> FetchFlags(const FilePath & flagsPathname);
@@ -74,7 +74,7 @@ public:
  	FILESMAP spriteFiles;
 
 	const Set<String>& GetErrors() const;
-    bool running; //we do not declare this as "atomic", because in bed case we will convert one extra file
+    bool running; //we do not declare this as "atomic", because in bad case we will convert one extra file
 protected:
 	Set<String> errors;
 

@@ -176,7 +176,7 @@ bool ResourcePacker2D::IsMD5ChangedDir(const FilePath & processDirectoryPath, co
 }
 
 
-bool ResourcePacker2D::IsMD5ChangedFile(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName)
+bool ResourcePacker2D::IsMD5ChangedFile(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName) const
 {
     DVASSERT(processDirectoryPath.IsDirectoryPathname());
 
