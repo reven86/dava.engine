@@ -20,6 +20,7 @@ Project::Project(QObject *parent)
     : QObject(parent)
     , editorFontSystem(new EditorFontSystem(this))
     , editorLocalizationSystem(new EditorLocalizationSystem(this))
+    , spritesPacker(new SpritesPacker(this))
     , isOpen(false)
 {
     legacyData = new LegacyControlData();

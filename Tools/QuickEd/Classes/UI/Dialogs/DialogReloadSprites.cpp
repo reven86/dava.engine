@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Render/GPUFamilyDescriptor.h"
 #include "Project/SpritesPacker.h"
 #include "TextureCompression/TextureConverter.h"
+#include "EditorCore.h"
 #include <QSettings>
 
 using namespace DAVA;
@@ -40,10 +41,18 @@ namespace
     const QString QUALITY = "quality";
     const QString CLEAR_ON_START = "clear on start";
 }
+
 DialogReloadSprites::DialogReloadSprites(QWidget* parent)
     : QDialog(parent)
+    , spritesPacker(EditorCore::Instance()->GetProject()->GetSpritesPacker())
 {
     setupUi(this);
+    pushButton_cancel->setEnabled(spritesPacker->running());
+    pushButton_start->setDisabled(spritesPacker->running());
+    connect(spritesPacker, &SpritesPacker::runningChanged, pushButton_cancel, &QPushButton::setEnabled);
+    connect(spritesPacker, &SpritesPacker::runningChanged, pushButton_start, &QPushButton::setDisabled);
+    connect(pushButton_cancel, &QPushButton::clicked, spritesPacker, &SpritesPacker::stop);
+    connect(pushButton_start, &QPushButton::clicked, this, &DialogReloadSprites::OnStartClicked);
 
     const auto &gpuMap = GlobalEnumMap<eGPUFamily>::Instance();
     for (size_t i = 0; i < gpuMap->GetCount(); ++i)
@@ -81,7 +90,7 @@ void DialogReloadSprites::OnStartClicked()
         return;
     }
     auto gpuType = static_cast<DAVA::eGPUFamily>(data.toInt());
-    SpritesPacker::ReloadSprites(gpuType);// there must be function UpdateSprites
+    spritesPacker->ReloadSprites(checkBox_clean->isChecked(), gpuType);
 }
 
 void DialogReloadSprites::LoadSettings()

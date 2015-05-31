@@ -33,6 +33,7 @@
 #include "fontmanagerdialog.h"
 #include "Helpers/ResourcesManageHelper.h"
 #include "Dialogs/LocalizationEditorDialog.h"
+#include "Dialogs/DialogReloadSprites.h"
 //////////////////////////////////////////////////////////////////////////
 
 #include "UI/FileSystemView/FileSystemDockWidget.h"
@@ -55,9 +56,11 @@ MainWindow::MainWindow(QWidget *parent)
     , backgroundFrameUseCustomColorAction(nullptr)
     , backgroundFrameSelectCustomColorAction(nullptr)
     , localizationEditorDialog(new LocalizationEditorDialog(this))
+    , dialogReloadSprites(new DialogReloadSprites(this))
 {
     setupUi(this);
-
+    actionReloadSprites->setEnabled(false);
+    actionLocalizationManager->setEnabled(false);
     InitLanguageBox();
     tabBar->setElideMode(Qt::ElideNone);
     setWindowTitle(ResourcesManageHelper::GetProjectTitle());
@@ -70,7 +73,8 @@ MainWindow::MainWindow(QWidget *parent)
     setUnifiedTitleAndToolBarOnMac(true);
 
     connect(actionFontManager, &QAction::triggered, this, &MainWindow::OnOpenFontManager);
-    connect(actionLocalizationManager, &QAction::triggered, this, &MainWindow::OnOpenLocalizationManager);
+    connect(actionLocalizationManager, &QAction::triggered, localizationEditorDialog, &LocalizationEditorDialog::exec);
+    connect(actionReloadSprites, &QAction::triggered, dialogReloadSprites, &DialogReloadSprites::exec);
 
     connect(fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
     InitMenu();
@@ -148,20 +152,6 @@ void MainWindow::RestoreMainWindowState()
     }
 }
 
-void MainWindow::UpdateReloadTexturesButton(const eGPUFamily &gpu)
-{
-    for (auto &action : reloadSpritesButton->menu()->actions())
-    {
-        if (static_cast<eGPUFamily>(action->data().toInt()) == gpu)
-        {
-            reloadSpritesButton->defaultAction()->setText(action->text());
-            reloadSpritesButton->defaultAction()->setData(action->data());
-            action->setChecked(true);
-            return;
-        }
-    }
-}
-
 DavaGLWidget* MainWindow::GetGLWidget() const
 {
     return previewWidget->GetDavaGLWidget();
@@ -201,11 +191,6 @@ void MainWindow::OnOpenFontManager()
 {
     FontManagerDialog fontManagerDialog(false, QString(), this);
     fontManagerDialog.exec();
-}
-
-void MainWindow::OnOpenLocalizationManager()
-{
-    localizationEditorDialog->exec();
 }
 
 void MainWindow::OnShowHelp()
@@ -391,6 +376,8 @@ void MainWindow::closeEvent(QCloseEvent *ev)
 
 void MainWindow::OnProjectOpened(Result result, QString projectPath)
 {
+    actionReloadSprites->setEnabled(result);
+    actionLocalizationManager->setEnabled(result);
     if (result)
     {
         UpdateProjectSettings(projectPath);
@@ -405,7 +392,6 @@ void MainWindow::OnProjectOpened(Result result, QString projectPath)
 
     }
     fileSystemDockWidget->setEnabled(result);
-    reloadSpritesButton->parentWidget()->setEnabled(result);
 }
 
 void MainWindow::OnOpenProject()

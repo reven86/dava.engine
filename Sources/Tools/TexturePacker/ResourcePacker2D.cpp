@@ -39,7 +39,6 @@
 #include "Utils/StringFormat.h"
 
 #include "Render/GPUFamilyDescriptor.h"
-#include "FramePathHelper.h"
 
 #include "IMagickHelper.h"
 
@@ -52,6 +51,12 @@ ResourcePacker2D::ResourcePacker2D()
 {
 	isLightmapsPacking = false;
 	clearProcessDirectory = false;
+}
+
+void ResourcePacker2D::Stop()
+{
+    running = false;
+    Logger::FrameworkDebug("ResourcePacker2D was stopped");
 }
 
 String ResourcePacker2D::GetProcessFolderName()
@@ -95,9 +100,11 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
 
 	if (IsMD5ChangedDir(processDirectoryPath, outputGfxDirectory, gfxDirName + ".md5", true))
 	{
-		if (Core::Instance()->IsConsoleMode())
-			Logger::FrameworkDebug("[Gfx not available or changed - performing full repack]");
-		isGfxModified = true;
+        if (Core::Instance()->IsConsoleMode())
+        {
+            Logger::FrameworkDebug("[Gfx not available or changed - performing full repack]");
+        }
+        isGfxModified = true;
 	
 		// Remove whole output directory
 		bool result = FileSystem::Instance()->DeleteDirectory(outputGfxDirectory);
@@ -111,7 +118,7 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
 									outputGfxDirectory.GetAbsolutePathname().c_str()));
 		}
 	}
-
+    running = true;
 	RecursiveTreeWalk(inputGfxDirectory, outputGfxDirectory);
 
 	// Put latest md5 after convertation
@@ -130,45 +137,42 @@ void ResourcePacker2D::RecalculateMD5ForOutputDir()
 }
 
 
-bool ResourcePacker2D::IsMD5ChangedDir(const FilePath & processDirectoryPath, const FilePath & pathname, const String & name, bool isRecursive)
+bool ResourcePacker2D::IsMD5ChangedDir(const FilePath & processDirectoryPath, const FilePath & pathname, const String & name, bool isRecursive) const
 {
     DVASSERT(processDirectoryPath.IsDirectoryPathname());
 
 	FilePath md5FileName = FilePath::CreateWithNewExtension(processDirectoryPath + name, ".md5");
 
-    
-	uint8 oldMD5Digest[16];
-	uint8 newMD5Digest[16];
+    std::array<uint8, 16> oldMD5Digest;
+    std::array<uint8, 16> newMD5Digest;
 	bool isChanged = false;
 	File * file = File::Create(md5FileName, File::OPEN | File::READ);
-	if (!file)
+	if (nullptr == file)
 	{
 		isChanged = true;		
-	}else
+	}
+    else
 	{
-		int32 bytes = file->Read(oldMD5Digest, 16);
+		int32 bytes = file->Read(oldMD5Digest.data(), 16);
 		DVASSERT(bytes == 16 && "We should always read 16 bytes from md5 file");
 	}
 	SafeRelease(file);
 
-    MD5::ForDirectory(pathname, newMD5Digest, isRecursive, /*includeHidden=*/false);
+    MD5::ForDirectory(pathname, newMD5Digest.data(), isRecursive, /*includeHidden=*/false);
 
 	file = File::Create(md5FileName, File::CREATE | File::WRITE);
     DVASSERT(file);
     
-	int32 bytes = file->Write(newMD5Digest, 16);
+	int32 bytes = file->Write(newMD5Digest.data(), 16);
 	DVASSERT(bytes == 16 && "16 bytes should be always written for md5 file");
 	SafeRelease(file);
 
 	// if already changed return without compare
-	if (isChanged)
-		return true;
-
-	for (int32 k = 0; k < 16; ++k)
-		if (oldMD5Digest[k] != newMD5Digest[k])
-			isChanged = true;
-
-	return isChanged;
+    if (isChanged)
+    {
+        return true;
+    }
+    return equal(oldMD5Digest.begin(), oldMD5Digest.end(), newMD5Digest.begin());
 }
 
 
@@ -178,35 +182,30 @@ bool ResourcePacker2D::IsMD5ChangedFile(const FilePath & processDirectoryPath, c
 
 	FilePath md5FileName = FilePath::CreateWithNewExtension(processDirectoryPath + psdName, ".md5");
 
-	uint8 oldMD5Digest[16];
-	uint8 newMD5Digest[16];
+    std::array<uint8, 16> oldMD5Digest;
+    std::array<uint8, 16> newMD5Digest;
 	bool isChanged = false;
 	File * file = File::Create(md5FileName, File::OPEN | File::READ);
-	if (!file)
+	if (nullptr == file)
 	{
 		isChanged = true;		
 	}else
 	{
-		int32 bytes = file->Read(oldMD5Digest, 16);
+		int32 bytes = file->Read(oldMD5Digest.data(), 16);
 		DVASSERT(bytes == 16 && "We should always read 16 bytes from md5 file");
 	}
 	SafeRelease(file);
 
 		
-	MD5::ForFile(pathname, newMD5Digest);
+	MD5::ForFile(pathname, newMD5Digest.data());
 	
 	file = File::Create(md5FileName, File::CREATE | File::WRITE);
-	int32 bytes = file->Write(newMD5Digest, 16);
+	int32 bytes = file->Write(newMD5Digest.data(), 16);
 	DVASSERT(bytes == 16 && "16 bytes should be always written for md5 file");
 	SafeRelease(file);
 
 	// file->Write()
-
-	for (int32 k = 0; k < 16; ++k)
-		if (oldMD5Digest[k] != newMD5Digest[k])
-			isChanged = true;
-	
-	return isChanged;
+    return equal(oldMD5Digest.begin(), oldMD5Digest.end(), newMD5Digest.begin());
 }
 
 DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryPath, const FilePath & psdPathname, const String & psdName, bool twoSideMargin, uint32 texturesMargin)
@@ -228,7 +227,7 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 	if ( cropped_data.layers_array_size == 0 )
 	{
 		AddError(Format("Number of layers is too low: %s", psdPathname.GetAbsolutePathname().c_str()));
-		return 0;
+		return nullptr;
 	}
 		
 	//Logger::FrameworkDebug("psd file: %s wext: %s", psdPathname.c_str(), psdNameWithoutExtension.c_str());
@@ -241,10 +240,10 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 
 	defFile->spriteWidth = width;
 	defFile->spriteHeight = height;
-	defFile->frameCount = (int)cropped_data.layers_array_size -1;
+	defFile->frameCount = static_cast<int>(cropped_data.layers_array_size) - 1;
 	defFile->frameRects = new Rect2i[defFile->frameCount];
 
-	for(int k = 1; k < (int)cropped_data.layers_array_size; ++k)
+	for(int k = 1; k < static_cast<int>(cropped_data.layers_array_size); ++k)
 	{
 		//save layer names
         String layerName;
@@ -302,9 +301,10 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 				}
 			}
 		}
-		else
-			defFile->frameRects[k - 1] = Rect2i(cropped_data.layers_array[k].x, cropped_data.layers_array[k].y, width, height);
-
+        else
+        {
+            defFile->frameRects[k - 1] = Rect2i(cropped_data.layers_array[k].x, cropped_data.layers_array[k].y, width, height);
+        }
 		// add borders
 		if (!twoSideMargin )
 		{
@@ -322,7 +322,7 @@ Vector<String> ResourcePacker2D::FetchFlags(const FilePath & flagsPathname)
     Vector<String> tokens;
 
 	File * file = File::Create(flagsPathname, File::READ | File::OPEN);
-	if (!file)
+	if (nullptr == file)
 	{
 		AddError(Format("Failed to open file: %s", flagsPathname.GetAbsolutePathname().c_str()));
 		
@@ -342,24 +342,13 @@ Vector<String> ResourcePacker2D::FetchFlags(const FilePath & flagsPathname)
 	return tokens;
 }
 
-
-bool ResourcePacker2D::isRecursiveFlagSet(const Vector<String> & flags)
-{
-	for (uint32 k = 0; k < flags.size(); ++k)
-	{
-		if (flags[k] == FLAG_RECURSIVE)
-		{
-			return true;
-		}
-	}
-	
-	return false;
-}
-
 void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FilePath & outputPath, const Vector<String> & passedFlags)
 {
     DVASSERT(inputPath.IsDirectoryPathname() && outputPath.IsDirectoryPathname());
-
+    if (!running)
+    {
+        return;
+    }
 	uint64 packTime = SystemTimer::Instance()->AbsoluteMS();
 
 	String inputRelativePath = inputPath.GetRelativePathname(excludeDirectory);
@@ -409,16 +398,24 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 	// read textures margins settings
 	bool useTwoSideMargin = CommandLineParser::Instance()->IsFlagSet("--add2sidepixel");
 	uint32 marginInPixels = TexturePacker::DEFAULT_MARGIN;
-	if (!useTwoSideMargin)
-	{
-		if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
-			marginInPixels = 0;
-		else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
-			marginInPixels = 1;
-		else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
-			marginInPixels = 2;
-		else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
-			marginInPixels = 4;
+    if (!useTwoSideMargin)
+    {
+        if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
+        {
+            marginInPixels = 0;
+        }
+        else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
+        {
+            marginInPixels = 1;
+        }
+        else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
+        {
+            marginInPixels = 2;
+        }
+        else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
+        {
+            marginInPixels = 4;
+        }
 	}
 
 	bool needPackResourcesInThisDir = true;
@@ -533,7 +530,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                     FilePath output = outputPath + filename;
                     output.MakeDirectoryPathname();
 					
-					if (isRecursiveFlagSet(currentCommandFlags))
+                    if (find(currentCommandFlags.begin(), currentCommandFlags.end(), FLAG_RECURSIVE) != currentCommandFlags.end())
 					{
 						RecursiveTreeWalk(input, output, currentCommandFlags);
 					}

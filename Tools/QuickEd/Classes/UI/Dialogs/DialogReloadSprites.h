@@ -31,6 +31,7 @@
 #define __DIALOG_RELOAD_SPRITES_H__
 
 #include "ui_DialogReloadSprites.h"
+#include "Project/SpritesPacker.h"
 
 namespace DAVA {
     class Font;
@@ -48,6 +49,7 @@ private slots:
 private:
     void LoadSettings();
     void SaveSettings() const;
+    SpritesPacker *spritesPacker;
 };
 
 #endif // __DIALOG_RELOAD_SPRITES_H__

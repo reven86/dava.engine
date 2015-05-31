@@ -45,24 +45,20 @@ class ResourcePacker2D
 public:
 	typedef std::map<String, String> FILESMAP;
 	ResourcePacker2D();
-
+    void Stop();
 	// Packing of resources section
 	void InitFolders(const FilePath & inputPath,const FilePath & outputPath);
 	void PackResources(eGPUFamily forGPU);
     void RecalculateMD5ForOutputDir();
     
 	void RecursiveTreeWalk(const FilePath & inputPath,const FilePath & outputPath, const Vector<String> & flags = Vector<String>());
-	bool IsModifyDateChagedDir(const FilePath & processDirectoryPath, const FilePath & pathname);
-	bool IsMD5ChangedDir(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName, bool isRecursive);
+    bool IsMD5ChangedDir(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName, bool isRecursive) const;
 	bool IsMD5ChangedFile(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName);
 	
     DefinitionFile * ProcessPSD(const FilePath & processDirectoryPath, const FilePath & psdPathname, const String & psdName, bool twoSideMargin, uint32 texturesMargin);
 	Vector<String> FetchFlags(const FilePath & flagsPathname);
 
 	static String GetProcessFolderName();
-	bool SaveFileListToYaml(const FilePath & yamlFilePath);
-	bool CheckSpriteFilesDates(YamlNode *rootNode);
-	void FillSpriteFilesMap(const FilePath & inputPathName);
 public:
     
 	FilePath inputGfxDirectory;
@@ -78,9 +74,8 @@ public:
  	FILESMAP spriteFiles;
 
 	const Set<String>& GetErrors() const;
-	
+    bool running; //we do not declare this as "atomic", because in bed case we will convert one extra file
 protected:
-	bool isRecursiveFlagSet(const Vector<String> & flags);
 	Set<String> errors;
 
 	void AddError(const String& errorMsg);

@@ -31,24 +31,36 @@
 #include "SpritesPacker.h"
 #include "TexturePacker/ResourcePacker2D.h"
 #include <TexturePacker/CommandLineParser.h>
-#include <Classes/Helpers/ResourcesManageHelper.h>
-#include <QDirIterator>
-#include <QApplication>
-#include <QWidget>
+#include "Classes/Helpers/ResourcesManageHelper.h"
 #include "Platform/Qt5/QtLayer.h"
 #include "Render/2D/Sprite.h"
+#include <QDirIterator>
+#include <QApplication>
+#include <QtConcurrent>
 
 using namespace DAVA;
 
-void SpritesPacker::ReloadSprites(const DAVA::eGPUFamily gpu)
+SpritesPacker::SpritesPacker(QObject* parent)
+    : QObject(parent)
+    , m_running(false)
 {
-    QApplication::setOverrideCursor(Qt::WaitCursor);
-    QApplication::activeWindow()->setEnabled(false);
+    resourcePacker2D = new ResourcePacker2D();
+    resourcePacker2D->isLightmapsPacking = true;
+}
+
+void SpritesPacker::ReloadSprites(bool clearDirs, const DAVA::eGPUFamily gpu)
+{
+    process = QtConcurrent::run(this, &SpritesPacker::ReloadSprites_, clearDirs, gpu);// there must be function UpdateSprites
+}
+
+void SpritesPacker::ReloadSprites_(bool clearDirs, const DAVA::eGPUFamily gpu)
+{
+    setRunning(true);
     QString currentProjectPath = ResourcesManageHelper::GetProjectPath();
     QDir inputDir(currentProjectPath + "/DataSource");
     QDirIterator it(inputDir);
     void *pool = QtLayer::Instance()->CreateAutoreleasePool();
-    while (it.hasNext())
+    while (it.hasNext() && running())
     {
         const QFileInfo &fileInfo = it.fileInfo();
         if (fileInfo.isDir() && fileInfo.absoluteFilePath().contains("gfx", Qt::CaseInsensitive))
@@ -61,20 +73,46 @@ void SpritesPacker::ReloadSprites(const DAVA::eGPUFamily gpu)
                 outputDir.mkdir(".");
             }
 
-            ResourcePacker2D * resourcePacker = new ResourcePacker2D();
-            FilePath inputFilePath = FilePath(QDir::toNativeSeparators(fileInfo.absoluteFilePath()).toStdString()).MakeDirectoryPathname();
+            const FilePath inputFilePath = FilePath(QDir::toNativeSeparators(fileInfo.absoluteFilePath()).toStdString()).MakeDirectoryPathname();
+            const FilePath outputFilePath = FilePath(QDir::toNativeSeparators(outputDir.absolutePath()).toStdString()).MakeDirectoryPathname();
             CommandLineParser::Instance()->Clear(); //CommandLineParser is used in ResourcePackerScreen
-            resourcePacker->clearProcessDirectory = true;
-            resourcePacker->inputGfxDirectory = inputFilePath;
-            resourcePacker->outputGfxDirectory = FilePath(QDir::toNativeSeparators(outputDir.absolutePath()).toStdString()).MakeDirectoryPathname();
-            resourcePacker->excludeDirectory = resourcePacker->inputGfxDirectory + "../";
-            resourcePacker->isLightmapsPacking = true;
-            resourcePacker->PackResources(gpu);
+            resourcePacker2D->clearProcessDirectory = clearDirs;
+            resourcePacker2D->InitFolders(inputFilePath, outputFilePath);
+            resourcePacker2D->PackResources(gpu);
         }
         it.next();
     }
     QtLayer::Instance()->ReleaseAutoreleasePool(pool);
     Sprite::ReloadSprites();
-    QApplication::activeWindow()->setEnabled(true);
-    QApplication::restoreOverrideCursor();
+    setRunning(false);
+}
+
+void SpritesPacker::stop()
+{
+    setRunning(false);
+}
+
+bool SpritesPacker::running() const
+{
+    return m_running;
+}
+
+void SpritesPacker::setRunning(bool arg)
+{
+    if (arg != m_running)
+    {
+        m_running = arg;
+        if (!arg)
+        {
+            resourcePacker2D->Stop();
+            QApplication::processEvents();
+            process.waitForFinished();
+            QApplication::restoreOverrideCursor();
+        }
+        else
+        {
+            QApplication::setOverrideCursor(Qt::WaitCursor);
+        }
+        emit runningChanged(arg);
+    }
 }

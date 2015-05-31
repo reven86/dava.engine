@@ -44,6 +44,7 @@ class LibraryWidget;
 class PreviewWidget;
 
 class LocalizationEditorDialog;
+class DialogReloadSprites;
 class DavaGLWidget;
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
@@ -92,7 +93,6 @@ private slots:
     void OnCurrentIndexChanged(int arg);
     void OnSaveDocument();
     void OnOpenFontManager();
-    void OnOpenLocalizationManager();
     void OnShowHelp();
     
     void OnOpenProject();
@@ -113,15 +113,13 @@ private:
     // Save/restore positions of DockWidgets and main window geometry
     void SaveMainWindowState();
     void RestoreMainWindowState();
-    void UpdateReloadTexturesButton(const DAVA::eGPUFamily &gpu);
-
 private:
     // Background Frame Color menu actions.
     QList<QAction*> backgroundFramePredefinedColorActions;
     QAction* backgroundFrameUseCustomColorAction;
     QAction* backgroundFrameSelectCustomColorAction;
     LocalizationEditorDialog *localizationEditorDialog;
-    QToolButton *reloadSpritesButton;
+    DialogReloadSprites *dialogReloadSprites;
 };
 
 Q_DECLARE_METATYPE(MainWindow::TabState*);

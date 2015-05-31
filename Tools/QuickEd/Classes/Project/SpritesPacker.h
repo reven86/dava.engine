@@ -32,10 +32,37 @@
 #define __SPRITES_PACKER_H__
 
 #include "Render/RenderBase.h"
+#include <QObject>
+#include <QFuture>
 
-namespace SpritesPacker
+namespace DAVA {
+    class ResourcePacker2D;
+}
+
+class SpritesPacker : public QObject
 {
-    void ReloadSprites(const DAVA::eGPUFamily  gpu);
+    Q_OBJECT
+    //Q_PROPERTY(bool running READ running SET setRunning NOTIFY runningChanged);
+public:
+    SpritesPacker(QObject *parent = nullptr);
+    ~SpritesPacker() = default;
+    void ReloadSprites(bool clearDirs, const DAVA::eGPUFamily gpu);
+public slots:
+    void stop();
+private:
+    void ReloadSprites_(bool clearDirs, const DAVA::eGPUFamily gpu);
+    DAVA::ResourcePacker2D *resourcePacker2D;
+    QFuture<void> process;
+
+    //properties section
+public:
+    bool running() const;
+public slots:
+    void setRunning(bool arg);
+signals:
+    void runningChanged(bool arg);
+private:
+    bool m_running;
 };
 
 #endif //__SPRITES_PACKER_H__

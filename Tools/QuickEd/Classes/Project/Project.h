@@ -5,6 +5,7 @@
 #include "Model/LegacyEditorUIPackageLoader.h"
 #include "Project/EditorFontSystem.h"
 #include "Project/EditorLocalizationSystem.h"
+#include "Project/SpritesPacker.h"
 
 class PackageNode;
 
@@ -14,8 +15,9 @@ class Project : public QObject
     Q_PROPERTY(bool isOpen READ IsOpen NOTIFY IsOpenChanged)
 
 public:
-    Project(QObject *parent = nullptr);
+    explicit Project(QObject *parent = nullptr);
     virtual ~Project();
+    QString GetProjectDir() const;
     bool Open(const QString &path);
     bool CheckAndUnlockProject(const QString& projectPath);
 
@@ -24,6 +26,7 @@ public:
     bool SavePackage(PackageNode *package);
     EditorFontSystem *GetEditorFontSystem() const;
     EditorLocalizationSystem *GetEditorLocalizationSystem() const;
+    SpritesPacker *GetSpritesPacker() const;
 signals:
     void ProjectOpened();
 
@@ -34,6 +37,7 @@ private:
     LegacyControlData *legacyData;
     EditorFontSystem *editorFontSystem;
     EditorLocalizationSystem *editorLocalizationSystem;
+    SpritesPacker *spritesPacker;
     //properties
 public:
     bool IsOpen() const;
@@ -44,6 +48,11 @@ private:
     bool isOpen;
 };
 
+inline QString Project::GetProjectDir() const
+{
+    return projectDir;
+}
+
 inline EditorFontSystem* Project::GetEditorFontSystem() const
 {
     return editorFontSystem;
@@ -52,6 +61,11 @@ inline EditorFontSystem* Project::GetEditorFontSystem() const
 inline EditorLocalizationSystem* Project::GetEditorLocalizationSystem() const
 {
     return editorLocalizationSystem;
+}
+
+inline SpritesPacker *Project::GetSpritesPacker() const
+{
+    return spritesPacker;
 }
 
 #endif // QUICKED__PROJECT_H__
