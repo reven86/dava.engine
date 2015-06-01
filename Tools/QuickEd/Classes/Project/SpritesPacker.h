@@ -45,12 +45,12 @@ class SpritesPacker : public QObject
     //Q_PROPERTY(bool running READ running SET setRunning NOTIFY runningChanged);
 public:
     SpritesPacker(QObject *parent = nullptr);
-    ~SpritesPacker() = default;
+    ~SpritesPacker();
     void ReloadSprites(bool clearDirs, const DAVA::eGPUFamily gpu);
 public slots:
     void stop();
 private:
-    void ReloadSprites_(bool clearDirs, const DAVA::eGPUFamily gpu);
+    void ReloadSpritePrivate(bool clearDirs, const DAVA::eGPUFamily gpu);
     DAVA::ResourcePacker2D *resourcePacker2D;
     QFuture<void> process;
 

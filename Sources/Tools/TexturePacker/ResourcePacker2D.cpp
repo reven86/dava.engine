@@ -172,7 +172,7 @@ bool ResourcePacker2D::IsMD5ChangedDir(const FilePath & processDirectoryPath, co
     {
         return true;
     }
-    return equal(oldMD5Digest.begin(), oldMD5Digest.end(), newMD5Digest.begin());
+    return std::equal(oldMD5Digest.begin(), oldMD5Digest.end(), newMD5Digest.begin());
 }
 
 
@@ -204,8 +204,7 @@ bool ResourcePacker2D::IsMD5ChangedFile(const FilePath & processDirectoryPath, c
 	DVASSERT(bytes == 16 && "16 bytes should be always written for md5 file");
 	SafeRelease(file);
 
-	// file->Write()
-    return equal(oldMD5Digest.begin(), oldMD5Digest.end(), newMD5Digest.begin());
+    return std::equal(oldMD5Digest.begin(), oldMD5Digest.end(), newMD5Digest.begin());
 }
 
 DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryPath, const FilePath & psdPathname, const String & psdName, bool twoSideMargin, uint32 texturesMargin)

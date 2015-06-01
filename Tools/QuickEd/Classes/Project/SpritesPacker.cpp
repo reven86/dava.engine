@@ -48,12 +48,17 @@ SpritesPacker::SpritesPacker(QObject* parent)
     resourcePacker2D->isLightmapsPacking = true;
 }
 
-void SpritesPacker::ReloadSprites(bool clearDirs, const DAVA::eGPUFamily gpu)
+SpritesPacker::~SpritesPacker()
 {
-    process = QtConcurrent::run(this, &SpritesPacker::ReloadSprites_, clearDirs, gpu);// there must be function UpdateSprites
+    delete resourcePacker2D;
 }
 
-void SpritesPacker::ReloadSprites_(bool clearDirs, const DAVA::eGPUFamily gpu)
+void SpritesPacker::ReloadSprites(bool clearDirs, const DAVA::eGPUFamily gpu)
+{
+    process = QtConcurrent::run(this, &SpritesPacker::ReloadSpritePrivate, clearDirs, gpu);// there must be function UpdateSprites
+}
+
+void SpritesPacker::ReloadSpritePrivate(bool clearDirs, const DAVA::eGPUFamily gpu)
 {
     setRunning(true);
     QString currentProjectPath = ResourcesManageHelper::GetProjectPath();

@@ -40,7 +40,7 @@ EditorCore::EditorCore(QObject *parent)
     connect(documentGroup, &DocumentGroup::SharedDataChanged, mainWindow->previewWidget, &PreviewWidget::OnDataChanged);
     
     connect(project->GetEditorLocalizationSystem(), &EditorLocalizationSystem::LocaleChanged, this, &EditorCore::UpdateLanguage);
-    
+
     qApp->installEventFilter(this);
 }
     

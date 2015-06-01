@@ -28,11 +28,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "UI/Dialogs/DialogReloadSprites.h"
-#include "Render/GPUFamilyDescriptor.h"
 #include "Project/SpritesPacker.h"
 #include "TextureCompression/TextureConverter.h"
 #include "EditorCore.h"
-#include <QSettings>
 
 using namespace DAVA;
 namespace

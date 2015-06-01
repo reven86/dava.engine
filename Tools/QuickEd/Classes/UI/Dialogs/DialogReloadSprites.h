@@ -31,7 +31,8 @@
 #define __DIALOG_RELOAD_SPRITES_H__
 
 #include "ui_DialogReloadSprites.h"
-#include "Project/SpritesPacker.h"
+
+class SpritesPacker;
 
 namespace DAVA {
     class Font;
