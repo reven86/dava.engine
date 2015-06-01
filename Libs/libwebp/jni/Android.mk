@@ -110,11 +110,12 @@ utils_enc_srcs := \
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES := \
-    $(dsp_enc_srcs) \
+    $(dec_srcs) \
+    $(dsp_dec_srcs) \
+    $(utils_dec_srcs) \
     $(enc_srcs) \
+    $(dsp_enc_srcs) \
     $(utils_enc_srcs) \
-	$(utils_dec_srcs) \
-	$(dec_srcs) \
 
 LOCAL_CFLAGS := $(WEBP_CFLAGS)
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/src
