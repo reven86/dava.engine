@@ -351,8 +351,6 @@ gles2_CommandBuffer_DrawPrimitive( Handle cmdBuf, PrimitiveType type, uint32 cou
 static void
 gles2_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uint32 count, uint32 /*vertexCount*/, uint32 firstVertex, uint32 startIndex )
 {
-    DVASSERT(firstVertex == 0); // not supported yet
-
     unsigned    v_cnt   = 0;
     int         mode    = GL_TRIANGLES;
 
@@ -797,6 +795,7 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                     if( fp_const[i] != InvalidHandle )
                         ConstBufferGLES2::SetToRHI( fp_const[i], fp_const_data[i] );
                 }
+
                 
                 GL_CALL(glDrawArrays( mode, 0, v_cnt ));
                 StatSet::IncStat( stat_DP, 1 );
@@ -828,6 +827,11 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                 {
                     if( fp_const[i] != InvalidHandle )
                         ConstBufferGLES2::SetToRHI( fp_const[i], fp_const_data[i] );
+                }
+
+                if( firstVertex )
+                {
+                    PipelineStateGLES2::SetVertexDeclToRHI( cur_ps, cur_vdecl, firstVertex );
                 }
 
                 GL_CALL(glDrawElements( mode, v_cnt, GL_UNSIGNED_SHORT, (void*)(startIndex*sizeof(uint16)) ));
