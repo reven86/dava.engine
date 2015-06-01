@@ -40,7 +40,7 @@ using namespace DAVA;
 
 void GameCore::RunOnlyThisTest()
 {
-    //runOnlyThisTest = "NetworkTest";
+    runOnlyThisTest = "";
 }
 
 void GameCore::OnError()
