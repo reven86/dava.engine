@@ -68,8 +68,8 @@ int main(int argc, char *argv[])
     w.show();
     server.Start();
     
-    DAVA::JobManager::Instance()->CreateWorkerJob(&DAVA::AssetCache::AssetClientTestAdd);
-    DAVA::JobManager::Instance()->CreateWorkerJob(&DAVA::AssetCache::AssetClientTestGet);
+//    DAVA::JobManager::Instance()->CreateWorkerJob(&DAVA::AssetCache::AssetClientTestAdd);
+//    DAVA::JobManager::Instance()->CreateWorkerJob(&DAVA::AssetCache::AssetClientTestGet);
 
 
     return a.exec();

@@ -30,8 +30,8 @@
 #ifndef __DAVAENGINE_TCP_H__
 #define __DAVAENGINE_TCP_H__
 
-#include "AssetCache/TCPConnection/TCPClient.h"
-#include "AssetCache/TCPConnection/TCPServer.h"
+#include "AssetCache/TCPConnection/TCPChannel.h"
+#include "AssetCache/TCPConnection/TCPConnection.h"
 
 #endif // __DAVAENGINE_TCP_H__
 

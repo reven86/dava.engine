@@ -37,9 +37,9 @@ class ServerLogics: public DAVA::AssetCache::ServerDelegate
 public:
     void Init(DAVA::AssetCache::Server *server, DAVA::AssetCache::CacheDB *dataBase);
     
-    void OnAddedToCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files) override;
-    void OnIsInCache(const DAVA::AssetCache::CacheItemKey &key) override;   // Do we need this method
-    void OnRequestedFromCache(const DAVA::AssetCache::CacheItemKey &key) override;
+    void OnAddedToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files) override;
+    void OnIsInCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key) override;   // Do we need this method
+    void OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key) override;
     
 private:
     

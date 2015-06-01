@@ -37,41 +37,41 @@ void ServerLogics::Init(DAVA::AssetCache::Server *_server, DAVA::AssetCache::Cac
     dataBase = _dataBase;
 }
 
-void ServerLogics::OnAddedToCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files)
+void ServerLogics::OnAddedToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files)
 {
     DAVA::Logger::FrameworkDebug("[ServerLogics::%s]", __FUNCTION__);
-    if(server)
+    if(server && tcpChannel)
     {
         dataBase->Insert(key, files);
-        server->FilesAddedToCache(key, true);
+        server->FilesAddedToCache(tcpChannel, key, true);
     }
 }
 
-void ServerLogics::OnIsInCache(const DAVA::AssetCache::CacheItemKey &key)
+void ServerLogics::OnIsInCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key)
 {
     DAVA::Logger::FrameworkDebug("[ServerLogics::%s]", __FUNCTION__);
-    if(server && dataBase)
+    if(server && dataBase && tcpChannel)
     {
         auto entry = dataBase->Get(key);
         bool inCache = (nullptr != entry);
         
-        server->FilesInCache(key, inCache);
+        server->FilesInCache(tcpChannel, key, inCache);
     }
 }
 
-void ServerLogics::OnRequestedFromCache(const DAVA::AssetCache::CacheItemKey &key)
+void ServerLogics::OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key)
 {
     DAVA::Logger::FrameworkDebug("[ServerLogics::%s]", __FUNCTION__);
-    if(server && dataBase)
+    if(server && dataBase && tcpChannel)
     {
         auto entry = dataBase->Get(key);
         if(entry)
         {
-            server->SendFiles(key, entry->GetFiles());
+            server->SendFiles(tcpChannel, key, entry->GetFiles());
         }
         else
         {
-            server->SendFiles(key, DAVA::AssetCache::CachedFiles());
+            server->SendFiles(tcpChannel, key, DAVA::AssetCache::CachedFiles());
         }
     }
 }

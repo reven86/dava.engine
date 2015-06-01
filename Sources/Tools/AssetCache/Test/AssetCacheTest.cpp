@@ -204,7 +204,7 @@ void AssetClientTestGet()
     
     for(decltype(count) i = 0; i < count; ++i)
     {
-        AssetClientGetRequest test0(String(64, '0' + i), Format("/Users/victorkleschenko/Downloads/Test/%d/", i));
+        AssetClientGetRequest test0(String(64, '0' + i), Format("/Users/victorkleschenko/Downloads/_AssetCacheClientTest/%d/", i));
     }
 }
     

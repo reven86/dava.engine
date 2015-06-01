@@ -53,7 +53,7 @@ public:
     virtual void OnReceivedFromCache(const CacheItemKey &key, const CachedFiles &files) {};
 };
 
-class Client: public TCPConnectionDelegate
+class Client: public DAVA::TCPChannelDelegate
 {
     
 public:
@@ -73,29 +73,32 @@ public:
     
     
     //TCPConnectionDelegate
-    void ChannelOpen() override;
-    void ChannelClosed(const char8* message) override;
-    void PacketReceived(const void* packet, size_t length) override;
-    void PacketSent() override;
-    void PacketDelivered() override;
+    void ChannelOpen(TCPChannel *tcpChannel) override;
+    void ChannelClosed(TCPChannel *tcpChannel, const char8* message) override;
+    void PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, size_t length) override;
     //END of TCPConnectionDelegate
     
-private:
+    TCPChannel * GetChannel() const;
     
-    bool SendArchieve(KeyedArchive * archieve);
+private:
     
     void OnAddToCache(KeyedArchive * archieve);
     void OnIsInCache(KeyedArchive * archieve);
     void OnGetFromCache(KeyedArchive * archieve);
     
     
-    TCPClient * netClient = nullptr;
+    TCPConnection * netClient = nullptr;
+    TCPChannel * openedChannel = nullptr;
+    
     ClientDelegate * delegate = nullptr;
 };
 
 inline void Client::SetDelegate(ClientDelegate * _delegate)
 {
-    delegate = _delegate;
+    if(delegate != _delegate)
+    {
+        delegate = _delegate;
+    }
 }
 
     

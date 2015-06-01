@@ -50,6 +50,7 @@ int AddRequest::SendRequest()
     AssetCache::CachedFiles files;
     files.AddFile(filepath);
     files.LoadFiles();
+    files.InvalidateFileSize();
     
     auto requestSent = client.AddToCache(key, files);
     if (!requestSent)
@@ -77,6 +78,7 @@ int AddRequest::CheckOptionsInternal() const
 
 void AddRequest::OnAddedToCache(const AssetCache::CacheItemKey &key, bool added)
 {
+    Logger::FrameworkDebug("[AddRequest::%s]", __FUNCTION__);
     requestResult.recieved = true;
     requestResult.succeed = added;
 }

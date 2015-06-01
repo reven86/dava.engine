@@ -31,6 +31,7 @@
 
 #include "AssetCache/AssetCache.h"
 #include "Platform/SystemTimer.h"
+#include "Platform/Thread.h"
 
 using namespace DAVA;
 
@@ -144,8 +145,5 @@ int CacheRequest::WaitRequest()
 int CacheRequest::Disconnect()
 {
     client.Disconnect();
-    //    Net::NetCore::Instance()->DestroyAllControllersBlocked();
-    //    Net::NetCore::Instance()->UnregisterAllServices();
-    
     return AssetCacheClientConstants::EXIT_OK;
 }

@@ -30,38 +30,36 @@
 #ifndef __DAVAENGINE_TCP_CHANNEL_H__
 #define __DAVAENGINE_TCP_CHANNEL_H__
 
-#include "Network/Base/Endpoint.h"
+#include "Base/BaseTypes.h"
 #include "Network/NetService.h"
-#include "Network/NetCore.h"
 
 namespace DAVA
 {
+class KeyedArchive;
     
+    
+class TCPChannel;
 class TCPChannelDelegate
 {
 public:
     
-    virtual void ChannelOpen() = 0;
-    virtual void ChannelClosed(const char8* message) = 0;
-    virtual void PacketReceived(const void* packet, size_t length) = 0;
-    virtual void PacketSent() = 0;
-    virtual void PacketDelivered() = 0;
+    virtual void ChannelOpen(TCPChannel *tcpChannel) {};
+    virtual void ChannelClosed(TCPChannel *tcpChannel, const char8* message) {};
+    virtual void PacketReceived(TCPChannel *tcpChannel, const void* packet, size_t length) = 0;
+    virtual void PacketSent(TCPChannel *tcpChannel) {};
+    virtual void PacketDelivered(TCPChannel *tcpChannel) {};
 };
 
 class TCPChannel: public Net::NetService
 {
 public:
 
+    TCPChannel();
     ~TCPChannel() override;
 
     
-    bool Connect();
-    void Disconnect();
-    
-    
     uint32 SendData(const uint8 * data, const size_t dataSize);
-
-    void SetDelegate(TCPConnectionDelegate * delegate);
+    void SetDelegate(TCPChannelDelegate * delegate);
     
     //Net::NetService
     void ChannelOpen() override;
@@ -72,37 +70,20 @@ public:
     
     bool IsConnected() const;
     
-protected:
+    bool SendArchieve(KeyedArchive * archieve);
 
-    TCPConnection(Net::eNetworkRole role, uint32 service, const Net::Endpoint & endpoint);
-    
-    static Net::IChannelListener * Create(uint32 serviceId, void* context);
-    static void Delete(Net::IChannelListener* obj, void* context);
-
-    static bool RegisterService(uint32 service);
-    
-    
 protected:
     
-    uint32 service;
-    Net::eNetworkRole role;
-    Net::Endpoint endpoint;
-    Net::NetCore::TrackId controllerId;
-
-    static Set<uint32> registeredServices;
-    static Mutex serviceMutex;
-    
-    TCPConnectionDelegate * delegate = nullptr;
+    TCPChannelDelegate *delegate = nullptr;
 };
 
 
-inline void TCPConnection::SetDelegate(TCPConnectionDelegate * _delegate)
+inline void TCPChannel::SetDelegate(TCPChannelDelegate * _delegate)
 {
-    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
     delegate = _delegate;
 }
 
-inline bool TCPConnection::IsConnected() const
+inline bool TCPChannel::IsConnected() const
 {
     return IsChannelOpen();
 }

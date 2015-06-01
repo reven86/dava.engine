@@ -32,9 +32,9 @@
 #include "AssetCache/AssetCacheConstants.h"
 #include "AssetCache/CachedFiles.h"
 #include "AssetCache/CacheItemKey.h"
-#include "AssetCache/TCPConnection/TCPServer.h"
-#include "FileSystem/KeyedArchive.h"
+#include "AssetCache/TCPConnection/TCPConnection.h"
 #include "Debug/DVAssert.h"
+#include "FileSystem/KeyedArchive.h"
 
 namespace DAVA
 {
@@ -57,7 +57,7 @@ bool Server::Listen(uint16 port)
 {
     DVASSERT(nullptr == netServer);
     
-    netServer = TCPServer::Create(NET_SERVICE_ID, Net::Endpoint(port));
+    netServer = TCPConnection::CreateServer(NET_SERVICE_ID, Net::Endpoint(port));
     netServer->SetDelegate(this);
 
     return (nullptr != netServer);
@@ -81,24 +81,14 @@ void Server::Disconnect()
     {
         netServer->Disconnect();
         netServer->SetDelegate(nullptr);
-        netServer = nullptr;
+        
+        SafeDelete(netServer);
     }
 }
     
-    
-void Server::ChannelOpen()
+void Server::PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, size_t length)
 {
-    Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
-}
-
-void Server::ChannelClosed(const char8* message)
-{
-    Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
-}
-
-void Server::PacketReceived(const void* packet, size_t length)
-{
-    Logger::FrameworkDebug("[AssetCache::Server::%s] length = %d", __FUNCTION__, length);
+    Logger::FrameworkDebug("[AssetCache::Server::%s] tcpChannel = 0x%p", __FUNCTION__, tcpChannel);
     if(length)
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
@@ -111,15 +101,15 @@ void Server::PacketReceived(const void* packet, size_t length)
         switch (packetID)
         {
             case PACKET_ADD_FILES_REQUEST:
-                OnAddToCache(archieve);
+                OnAddToCache(tcpChannel, archieve);
                 break;
                 
             case PACKET_CHECK_FILE_IN_CACHE_REQUEST:
-                OnIsInCache(archieve);
+                OnIsInCache(tcpChannel, archieve);
                 break;
                 
             case PACKET_GET_FILES_REQUEST:
-                OnGetFromCache(archieve);
+                OnGetFromCache(tcpChannel, archieve);
                 break;
                 
             default:
@@ -129,22 +119,12 @@ void Server::PacketReceived(const void* packet, size_t length)
         
     }
 }
-
-void Server::PacketSent()
-{
-    Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
-}
-
-void Server::PacketDelivered()
-{
-    Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
-}
     
-bool Server::FilesAddedToCache(const CacheItemKey &key, bool added)
+bool Server::FilesAddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, bool added)
 {
-    Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
+    Logger::FrameworkDebug("[AssetCache::Server::%s] tcpChannel = 0x%p", __FUNCTION__, tcpChannel);
     
-    if(IsConnected())
+    if(tcpChannel)
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
         archieve->SetUInt32("PacketID", PACKET_ADD_FILES_RESPONCE);
@@ -155,16 +135,16 @@ bool Server::FilesAddedToCache(const CacheItemKey &key, bool added)
        
         archieve->SetBool("added", added);
         
-        return SendArchieve(archieve);
+        return tcpChannel->SendArchieve(archieve);
     }
     
     return false;
 }
     
-bool Server::FilesInCache(const CacheItemKey &key, bool isInCache)
+bool Server::FilesInCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, bool isInCache)
 {
-    Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
-    if(IsConnected())
+    Logger::FrameworkDebug("[AssetCache::Server::%s] tcpChannel = 0x%p", __FUNCTION__, tcpChannel);
+    if(tcpChannel)
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
         archieve->SetUInt32("PacketID", PACKET_CHECK_FILE_IN_CACHE_RESPONCE);
@@ -175,16 +155,16 @@ bool Server::FilesInCache(const CacheItemKey &key, bool isInCache)
 
         archieve->SetBool("isInCache", isInCache);
         
-        return SendArchieve(archieve);
+        return tcpChannel->SendArchieve(archieve);
     }
     
     return false;
 }
     
-bool Server::SendFiles(const CacheItemKey &key, const CachedFiles &files)
+bool Server::SendFiles(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, const CachedFiles &files)
 {
     Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
-    if(IsConnected())
+    if(tcpChannel)
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
         archieve->SetUInt32("PacketID", PACKET_GET_FILES_RESPONCE);
@@ -197,14 +177,14 @@ bool Server::SendFiles(const CacheItemKey &key, const CachedFiles &files)
         files.Serialize(filesArchieve, true);
         archieve->SetArchive("files", filesArchieve);
         
-        return SendArchieve(archieve);
+        return tcpChannel->SendArchieve(archieve);
     }
     
     return false;
 }
 
 
-void Server::OnAddToCache(KeyedArchive * archieve)
+void Server::OnAddToCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve)
 {
     Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
     if(delegate)
@@ -221,7 +201,7 @@ void Server::OnAddToCache(KeyedArchive * archieve)
         CachedFiles files;
         files.Deserialize(filesArchieve);
         
-        delegate->OnAddedToCache(key, files);
+        delegate->OnAddedToCache(tcpChannel, key, files);
     }
     else
     {
@@ -229,7 +209,7 @@ void Server::OnAddToCache(KeyedArchive * archieve)
     }
 }
     
-void Server::OnIsInCache(KeyedArchive * archieve)
+void Server::OnIsInCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve)
 {
     Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
     if(delegate)
@@ -240,7 +220,7 @@ void Server::OnIsInCache(KeyedArchive * archieve)
         CacheItemKey key;
         key.Deserialize(keyArchieve);
         
-        delegate->OnIsInCache(key);
+        delegate->OnIsInCache(tcpChannel, key);
     }
     else
     {
@@ -248,7 +228,7 @@ void Server::OnIsInCache(KeyedArchive * archieve)
     }
 }
     
-void Server::OnGetFromCache(KeyedArchive * archieve)
+void Server::OnGetFromCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve)
 {
     Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
     if(delegate)
@@ -259,27 +239,13 @@ void Server::OnGetFromCache(KeyedArchive * archieve)
         CacheItemKey key;
         key.Deserialize(keyArchieve);
         
-        delegate->OnRequestedFromCache(key);
+        delegate->OnRequestedFromCache(tcpChannel, key);
     }
     else
     {
         Logger::Error("[Server::%s] delegate not installed", __FUNCTION__);
     }
 }
-    
-bool Server::SendArchieve(KeyedArchive * archieve)
-{
-    DVASSERT(archieve);
-    
-    auto packedSize = archieve->Serialize(nullptr, 0);
-    uint8 *packedData = new uint8[packedSize];
-    
-    DVVERIFY(packedSize == archieve->Serialize(packedData, packedSize));
-    
-    auto packedId = netServer->SendData(packedData, packedSize);
-    return (packedId != 0);
-}
-
     
 
 }; // end of namespace AssetCache

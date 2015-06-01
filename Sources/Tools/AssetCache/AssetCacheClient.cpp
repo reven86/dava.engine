@@ -32,7 +32,7 @@
 #include "AssetCache/AssetCacheConstants.h"
 #include "AssetCache/CachedFiles.h"
 #include "AssetCache/CacheItemKey.h"
-#include "AssetCache/TCPConnection/TCPClient.h"
+#include "AssetCache/TCPConnection/TCPConnection.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Debug/DVAssert.h"
 
@@ -56,8 +56,9 @@ Client::~Client()
 bool Client::Connect(const String &ip, uint16 port)
 {
     DVASSERT(nullptr == netClient);
+    DVASSERT(nullptr == openedChannel);
     
-    netClient = TCPClient::Connect(NET_SERVICE_ID, Net::Endpoint(ip.c_str(), port));
+    netClient = TCPConnection::CreateClient(NET_SERVICE_ID, Net::Endpoint(ip.c_str(), port));
     netClient->SetDelegate(this);
     
     return (nullptr != netClient);
@@ -77,17 +78,12 @@ void Client::Disconnect()
     
 bool Client::IsConnected()
 {
-    if(netClient)
-    {
-        return netClient->IsConnected();
-    }
-
-    return false;
+    return (openedChannel != nullptr);
 }
     
 bool Client::AddToCache(const CacheItemKey &key, const CachedFiles &files)
 {
-    if(IsConnected())
+    if(openedChannel)
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
         archieve->SetUInt32("PacketID", PACKET_ADD_FILES_REQUEST);
@@ -100,7 +96,7 @@ bool Client::AddToCache(const CacheItemKey &key, const CachedFiles &files)
         files.Serialize(filesArchieve, true);
         archieve->SetArchive("files", filesArchieve);
         
-        return SendArchieve(archieve);
+        return openedChannel->SendArchieve(archieve);
     }
     
     return false;
@@ -124,7 +120,7 @@ void Client::OnAddToCache(KeyedArchive * archieve)
 
 bool Client::IsInCache(const CacheItemKey &key)
 {
-    if(IsConnected())
+    if(openedChannel)
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
         archieve->SetUInt32("PacketID", PACKET_CHECK_FILE_IN_CACHE_REQUEST);
@@ -133,7 +129,7 @@ bool Client::IsInCache(const CacheItemKey &key)
         key.Serialize(keyArchieve);
         archieve->SetArchive("key", keyArchieve);
         
-        return SendArchieve(archieve);
+        return openedChannel->SendArchieve(archieve);
     }
     
     return false;
@@ -156,7 +152,7 @@ void Client::OnIsInCache(KeyedArchive * archieve)
 
 bool Client::GetFromCache(const CacheItemKey &key)
 {
-    if(IsConnected())
+    if(openedChannel)
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
         archieve->SetUInt32("PacketID", PACKET_GET_FILES_REQUEST);
@@ -165,7 +161,7 @@ bool Client::GetFromCache(const CacheItemKey &key)
         key.Serialize(keyArchieve);
         archieve->SetArchive("key", keyArchieve);
         
-        return SendArchieve(archieve);
+        return openedChannel->SendArchieve(archieve);
     }
     
     return false;
@@ -189,32 +185,26 @@ void Client::OnGetFromCache(KeyedArchive * archieve)
     }
 }
 
-    
-bool Client::SendArchieve(KeyedArchive * archieve)
+void Client::ChannelOpen(TCPChannel *tcpChannel)
 {
-    DVASSERT(archieve);
-    
-    auto packedSize = archieve->Serialize(nullptr, 0);
-    uint8 *packedData = new uint8[packedSize];
-    
-    DVVERIFY(packedSize == archieve->Serialize(packedData, packedSize));
-    
-    auto packedId = netClient->SendData(packedData, packedSize);
-    return (packedId != 0);
+    Logger::FrameworkDebug("[TCPConnection::%s] 0x%p, 0x%p", __FUNCTION__, tcpChannel, netClient);
+
+    DVASSERT(openedChannel == nullptr);
+    openedChannel = tcpChannel;
 }
 
-    
-void Client::ChannelOpen()
+void Client::ChannelClosed(TCPChannel *tcpChannel, const char8* message)
 {
+    Logger::FrameworkDebug("[TCPConnection::%s] 0x%p, 0x%p", __FUNCTION__, tcpChannel, netClient);
+
+    DVASSERT(openedChannel == tcpChannel);
+    openedChannel = nullptr;
 }
 
-void Client::ChannelClosed(const char8* message)
+void Client::PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, size_t length)
 {
-}
-
-void Client::PacketReceived(const void* packet, size_t length)
-{
-    if(length)
+    DVASSERT(openedChannel == tcpChannel);
+    if(length && openedChannel == tcpChannel)
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
 
@@ -242,16 +232,7 @@ void Client::PacketReceived(const void* packet, size_t length)
                 Logger::Error("[Client::%s] Cannot parce packet (%d)", __FUNCTION__, packetID);
                 break;
         }
-        
     }
-}
-
-void Client::PacketSent()
-{
-}
-
-void Client::PacketDelivered()
-{
 }
     
 }; // end of namespace AssetCache

@@ -28,9 +28,11 @@
 
 
 
-#include "AssetCache/TCPConnection/TCPConnection.h"
+#include "AssetCache/TCPConnection/TCPChannel.h"
 
 #include "Base/FunctionTraits.h"
+
+#include "FileSystem/KeyedArchive.h"
 
 #include "Network/NetworkCommon.h"
 #include "Network/NetConfig.h"
@@ -41,120 +43,37 @@
 namespace DAVA
 {
     
-Set<uint32> TCPConnection::registeredServices;
-Mutex TCPConnection::serviceMutex;
-
-    
-
-TCPConnection::TCPConnection(Net::eNetworkRole _role, uint32 _service, const Net::Endpoint & _endpoint)
+TCPChannel::TCPChannel()
     : Net::NetService()
-    , service(_service)
-    , role(_role)
-    , endpoint(_endpoint)
-    , controllerId(Net::NetCore::INVALID_TRACK_ID)
+    , delegate(nullptr)
 {
-    Connect();
 }
     
     
-TCPConnection::~TCPConnection()
+TCPChannel::~TCPChannel()
 {
-    Logger::FrameworkDebug("[TCPConnection::%s] role = %d", __FUNCTION__, role);
-    if(Net::NetCore::INVALID_TRACK_ID != controllerId && Net::NetCore::Instance())
-    {
-        Disconnect();
-        //need wait for diconnecting
-    }
-    
+    Logger::FrameworkDebug("[TCPChannel::%s]", __FUNCTION__);
     delegate = nullptr;
 }
     
-    
-bool TCPConnection::Connect()
+
+bool TCPChannel::SendArchieve(KeyedArchive * archieve)
 {
-    Logger::FrameworkDebug("[TCPConnection::%s] role = %d", __FUNCTION__, role);
-
-    bool registered = RegisterService(service);
-    if(registered)
-    {
-        Net::NetConfig config(role);
-        config.AddTransport(Net::TRANSPORT_TCP, endpoint);
-        config.AddService(service);
-        
-        controllerId = Net::NetCore::Instance()->CreateController(config, this);
-        if(Net::NetCore::INVALID_TRACK_ID == controllerId)
-        {
-            Logger::Error("[TCPConnection::%s] Cannot create controller", __FUNCTION__);
-        }
-        
-        return (Net::NetCore::INVALID_TRACK_ID != controllerId);
-    }
-    else
-    {
-        Logger::Error("[TCPConnection::%s] Cannot register service(%d)", __FUNCTION__, service);
-    }
-
-    return false;
+    DVASSERT(archieve);
+    
+    auto packedSize = archieve->Serialize(nullptr, 0);
+    uint8 *packedData = new uint8[packedSize];
+    
+    DVVERIFY(packedSize == archieve->Serialize(packedData, packedSize));
+    
+    auto packedId = SendData(packedData, packedSize);
+    return (packedId != 0);
 }
     
-void TCPConnection::Disconnect()
+uint32 TCPChannel::SendData(const uint8 * data, const size_t dataSize)
 {
-    Logger::FrameworkDebug("[TCPConnection::%s] role = %d", __FUNCTION__, role);
-    
-    DVASSERT(Net::NetCore::INVALID_TRACK_ID != controllerId);
-    DVASSERT(Net::NetCore::Instance() != nullptr);
+    Logger::FrameworkDebug("[TCPChannel::%s]", __FUNCTION__);
 
-    auto contrId = controllerId;
-    controllerId = Net::NetCore::INVALID_TRACK_ID;
-    Net::NetCore::Instance()->DestroyController(contrId);
-}
-    
-    
-    
-bool TCPConnection::RegisterService(uint32 service)
-{
-    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
-
-    LockGuard<Mutex> guard(serviceMutex);
-    
-    auto registered = registeredServices.count(service) > 0;
-    if(!registered)
-    {
-        registered = Net::NetCore::Instance()->RegisterService(service,
-                                                               MakeFunction(&TCPConnection::Create),
-                                                               MakeFunction(&TCPConnection::Delete));
-
-        if(registered)
-        {
-            registeredServices.insert(service);
-        }
-    }
-    
-    return registered;
-}
-    
-    
-Net::IChannelListener * TCPConnection::Create(uint32 serviceId, void* context)
-{
-    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
-//    auto object = reinterpret_cast<Net::IChannelListener *>(context);
-    return reinterpret_cast<Net::IChannelListener *>(context);
-}
-
-void TCPConnection::Delete(Net::IChannelListener* obj, void* context)
-{
-    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
-
-    auto object = static_cast<TCPConnection *>(context);
-    if(object->controllerId == Net::NetCore::INVALID_TRACK_ID)
-    {
-        delete object;
-    }
-}
-
-uint32 TCPConnection::SendData(const uint8 * data, const size_t dataSize)
-{
-    Logger::FrameworkDebug("[TCPConnection::%s] role = %d", __FUNCTION__, role);
     uint32 packetID = 0;
     bool sent = Send(data, dataSize, &packetID);
     if(sent)
@@ -166,55 +85,55 @@ uint32 TCPConnection::SendData(const uint8 * data, const size_t dataSize)
 }
     
     
-void TCPConnection::ChannelOpen()
+void TCPChannel::ChannelOpen()
 {
-    Logger::FrameworkDebug("[TCPConnection::%s] role = %d", __FUNCTION__, role);
+    Logger::FrameworkDebug("[TCPChannel::%s] delegate = 0x%p", __FUNCTION__, delegate);
     if(delegate)
     {
-        delegate->ChannelOpen();
+        delegate->ChannelOpen(this);
     }
     Net::NetService::ChannelOpen();
 }
 
-void TCPConnection::ChannelClosed(const char8* message)
+void TCPChannel::ChannelClosed(const char8* message)
 {
-    Logger::FrameworkDebug("[TCPConnection::%s] role = %d", __FUNCTION__, role);
+    Logger::FrameworkDebug("[TCPChannel::%s] %s", __FUNCTION__, message);
     if(delegate)
     {
-        delegate->ChannelClosed(message);
+        delegate->ChannelClosed(this, message);
     }
     
     Net::NetService::ChannelClosed(message);
 }
 
-void TCPConnection::PacketReceived(const void* packet, size_t length)
+void TCPChannel::PacketReceived(const void* packet, size_t length)
 {
-    Logger::FrameworkDebug("[TCPConnection::%s] role = %d", __FUNCTION__, role);
+    Logger::FrameworkDebug("[TCPChannel::%s]", __FUNCTION__);
     if(delegate)
     {
-        delegate->PacketReceived(packet, length);
+        delegate->PacketReceived(this, packet, length);
     }
     
     Net::NetService::PacketReceived(packet, length);
 }
 
-void TCPConnection::PacketSent()
+void TCPChannel::PacketSent()
 {
-    Logger::FrameworkDebug("[TCPConnection::%s] role = %d", __FUNCTION__, role);
+    Logger::FrameworkDebug("[TCPChannel::%s]", __FUNCTION__);
     if(delegate)
     {
-        delegate->PacketSent();
+        delegate->PacketSent(this);
     }
     
     Net::NetService::PacketSent();
 }
 
-void TCPConnection::PacketDelivered()
+void TCPChannel::PacketDelivered()
 {
-    Logger::FrameworkDebug("[TCPConnection::%s] role = %d", __FUNCTION__, role);
+    Logger::FrameworkDebug("[TCPChannel::%s]", __FUNCTION__);
     if(delegate)
     {
-        delegate->PacketDelivered();
+        delegate->PacketDelivered(this);
     }
     
     Net::NetService::PacketDelivered();

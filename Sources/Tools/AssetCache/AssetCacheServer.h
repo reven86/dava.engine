@@ -51,13 +51,13 @@ public:
     
     virtual ~ServerDelegate() = default;
     
-    virtual void OnAddedToCache(const CacheItemKey &key, const CachedFiles &files) = 0;
-    virtual void OnIsInCache(const CacheItemKey &key) = 0;
-    virtual void OnRequestedFromCache(const CacheItemKey &key) = 0;
+    virtual void OnAddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, const CachedFiles &files) = 0;
+    virtual void OnIsInCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key) = 0;
+    virtual void OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key) = 0;
 };
     
     
-class Server: public TCPConnectionDelegate
+class Server: public DAVA::TCPChannelDelegate
 {
 public:
     
@@ -72,29 +72,24 @@ public:
     void Disconnect();
     
     
-    //TCPConnectionDelegate
-    void ChannelOpen() override;
-    void ChannelClosed(const char8* message) override;
-    void PacketReceived(const void* packet, size_t length) override;
-    void PacketSent() override;
-    void PacketDelivered() override;
-    //END of TCPConnectionDelegate
+    //TCPChannelDelegate
+    void PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, size_t length) override;
+    //END of TCPChannelDelegate
     
-    bool FilesAddedToCache(const CacheItemKey &key, bool added);
-    bool FilesInCache(const CacheItemKey &key, bool isInCache);
-    bool SendFiles(const CacheItemKey &key, const CachedFiles &files);
+    bool FilesAddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, bool added);
+    bool FilesInCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, bool isInCache);
+    bool SendFiles(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, const CachedFiles &files);
     
 private:
     
-    bool SendArchieve(KeyedArchive * archieve);
 
-    void OnAddToCache(KeyedArchive * archieve);
-    void OnIsInCache(KeyedArchive * archieve);
-    void OnGetFromCache(KeyedArchive * archieve);
+    void OnAddToCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve);
+    void OnIsInCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve);
+    void OnGetFromCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve);
     
 private:
     
-    TCPServer * netServer = nullptr;
+    TCPConnection * netServer = nullptr;
     ServerDelegate *delegate = nullptr;
 };
 

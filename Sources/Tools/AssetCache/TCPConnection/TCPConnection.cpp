@@ -45,10 +45,6 @@ namespace DAVA
 Set<uint32> TCPConnection::registeredServices;
 Mutex TCPConnection::serviceMutex;
     
-List<TCPChannel *> TCPConnection::channels;
-Mutex TCPConnection::channelMutex;
-
-    
 TCPConnection * TCPConnection::CreateClient(uint32 service, const Net::Endpoint & endpoint)
 {
     Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
@@ -156,16 +152,18 @@ void TCPConnection::Delete(Net::IChannelListener* obj, void* context)
 {
     Logger::FrameworkDebug("[TCPConnection::%s] 0x%p", __FUNCTION__, context);
     auto connection = static_cast<TCPConnection *>(context);
-    return connection->DestroyChannel(nullptr);
+    auto channel = DynamicTypeCheck<TCPChannel *>(obj);
+    return connection->DestroyChannel(channel);
 }
 
 TCPChannel * TCPConnection::CreateChannel()
 {
-    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
+    Logger::FrameworkDebug("[TCPConnection::%s] role = %d", __FUNCTION__, role);
 
     LockGuard<Mutex> guard(channelMutex);
 
     auto newChannel = new TCPChannel();
+    newChannel->SetDelegate(delegate);
 
     channels.push_back(newChannel);
     return newChannel;
@@ -185,6 +183,18 @@ void TCPConnection::DestroyChannel(TCPChannel *channel)
     delete channel;
 }
 
+void TCPConnection::SetDelegate(TCPChannelDelegate * _delegate)
+{
+    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
+
+    delegate = _delegate;
+    
+    LockGuard<Mutex> guard(channelMutex);
+    for(auto ch: channels)
+    {
+        ch->SetDelegate(delegate);
+    }
+}
 
 
 }; // end of namespace DAVA

@@ -34,10 +34,12 @@
 #include "Network/NetworkCommon.h"
 #include "Network/NetCore.h"
 
+#include "AssetCache/TCPConnection/TCPChannel.h"
+
+
 namespace DAVA
 {
     
-class TCPChannel;
 class TCPConnection
 {
 public:
@@ -49,6 +51,12 @@ public:
 
     bool Connect();
     void Disconnect();
+
+    //TODO
+    bool IsConnected() {return false; };
+    //ENDOF TODO
+    void SetDelegate(TCPChannelDelegate * delegate);
+    
     
 protected:
     TCPConnection(Net::eNetworkRole role, uint32 service, const Net::Endpoint & endpoint);
@@ -72,8 +80,10 @@ protected:
     static Set<uint32> registeredServices;
     static Mutex serviceMutex;
     
-    static List<TCPChannel *> channels;
-    static Mutex channelMutex;
+    List<TCPChannel *> channels;
+    Mutex channelMutex;
+    
+    TCPChannelDelegate *delegate;
 };
 
 
