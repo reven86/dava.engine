@@ -45,26 +45,36 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Scene/System/SelectionSystem.h"
 #include "Scene/System/CollisionSystem.h"
 
+// delegate
+#include "Scene/System/StructureSystem.h"
+#include "Scene/System/ModifSystem.h"
+
 class SceneEditor2;
 
 class WayEditSystem : public DAVA::SceneSystem
+        , public EntityModificationSystemDelegate
+        , public StructureSystemDelegate
 {
     friend class SceneEditor2;
 
 public:
     WayEditSystem(DAVA::Scene * scene, SceneSelectionSystem *selectionSystem, SceneCollisionSystem *collisionSystem);
-    virtual ~WayEditSystem();
+    ~WayEditSystem() override;
 
     void EnableWayEdit(bool enable);
     bool IsWayEditEnabled() const;
-
-    void RemoveWayPoint(DAVA::Entity* entity);
 
     void Process(DAVA::float32 timeElapsed) override;
     void Input(DAVA::UIEvent *event) override;
 
     void AddEntity(DAVA::Entity * entity) override;
     void RemoveEntity(DAVA::Entity * entity) override;
+
+    void WillClone(DAVA::Entity *originalEntity) override;
+    void DidCloned(DAVA::Entity *originalEntity, DAVA::Entity *newEntity) override;
+
+    void WillRemove(DAVA::Entity *removedEntity) override;
+    void DidRemoved(DAVA::Entity *removedEntity) override;
 
 protected:
     void Draw();
@@ -91,18 +101,20 @@ protected:
     EntityGroup currentSelection;
     EntityGroup selectedWaypoints;
     EntityGroup prevSelectedWaypoints;
-    
+
     SceneEditor2 *sceneEditor;
     SceneSelectionSystem *selectionSystem;
     SceneCollisionSystem *collisionSystem;
 
     DAVA::UniqueHandle wayDrawState;
-    
+
     DAVA::Vector<DAVA::Entity *> waypointEntities;
     DAVA::Map<DAVA::Entity*, DAVA::Entity*> mapStartPoints; // mapping [path parent -> path start point]
-    
+
     DAVA::Entity * underCursorPathEntity;
     bool inCloneState = false;
+
+    DAVA::Entity *startPointForRemove;
 };
 
 #endif // __SCENE_WAYEDIT_SYSTEM_H__

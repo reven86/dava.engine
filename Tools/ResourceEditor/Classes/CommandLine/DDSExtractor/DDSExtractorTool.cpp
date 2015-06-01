@@ -102,7 +102,7 @@ void DDSExtractorTool::ExtractImagesFromFile(const DAVA::FilePath& pathToDDS)
 	//extracted images should have rgba format, but not DX1..DX5, even in case of dxt supporting systems(like windows)
     DAVA::File* file = DAVA::File::Create(pathToDDS, DAVA::File::OPEN | DAVA::File::READ);
     DAVA::int32 mipMapsCount = DAVA::LibDdsHelper::GetMipMapLevelsCount(file);
-    DAVA::LibDdsHelper* helper = static_cast<DAVA::LibDdsHelper* >(DAVA::ImageSystem::Instance()->GetImageFormatInterface(DAVA::ImageSystem::FILE_FORMAT_DDS));
+    DAVA::LibDdsHelper* helper = static_cast<DAVA::LibDdsHelper* >(DAVA::ImageSystem::Instance()->GetImageFormatInterface(DAVA::IMAGE_FORMAT_DDS));
 
     helper->ReadFile(file, imageSet, mipMapsCount, true);
 	SafeRelease(file);
