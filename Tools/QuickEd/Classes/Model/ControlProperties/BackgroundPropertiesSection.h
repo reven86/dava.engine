@@ -1,7 +1,7 @@
 #ifndef __UI_EDITOR_BACKGROUND_PROPERTIES_SECTION_H__
 #define __UI_EDITOR_BACKGROUND_PROPERTIES_SECTION_H__
 
-#include "PropertiesSection.h"
+#include "SectionProperty.h"
 
 namespace DAVA
 {
@@ -9,17 +9,16 @@ namespace DAVA
     class UIControlBackground;
 }
 
-class BackgroundPropertiesSection : public PropertiesSection
+class BackgroundPropertiesSection : public SectionProperty
 {
 public:
-    BackgroundPropertiesSection(DAVA::UIControl *control, int bgNum, const BackgroundPropertiesSection *sourceSection, eCopyType copyType);
+    BackgroundPropertiesSection(DAVA::UIControl *control, int bgNum, const BackgroundPropertiesSection *sourceSection, eCloneType copyType);
+protected:
     virtual ~BackgroundPropertiesSection();
-    
+public:
     DAVA::UIControlBackground *GetBg() const;
     void CreateControlBackground();
 
-    DAVA::String GetName() const;
-    
     virtual bool HasChanges() const override;
     virtual void Serialize(PackageSerializer *serializer) const override;
 

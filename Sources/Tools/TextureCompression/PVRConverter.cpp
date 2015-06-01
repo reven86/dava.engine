@@ -37,39 +37,24 @@
 #include "Render/Image/LibPVRHelper.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/Image.h"
+#include "Render/Image/LibTgaHelper.h"
 
 #include "Base/GlobalEnum.h"
 
 namespace DAVA
 {
 static String CUBEMAP_TMP_DIR = "~doc:/ResourceEditor_Cubemap_Tmp/";
-	
-static String PVRTOOL_INPUT_NAMES[] =
+
+static Array<String, Texture::CUBE_FACE_COUNT> PVRTOOL_FACE_SUFFIXES =
 {
-	String("1"), //pz
-	String("2"), //nz
-	String("3"), //px
-	String("4"), //nx
-	String("5"), //pz
-	String("6"), //nz
+    String("1"), //pz
+    String("2"), //nz
+    String("3"), //px
+    String("4"), //nx
+    String("5"), //pz
+    String("6"), //nz
 };
-	
-static DAVA::String PVRTOOL_MAP_NAMES[] =
-{
-// 	String("_pz"), //1
-// 	String("_nz"), //2
-// 	String("_px"), //3
-// 	String("_nx"), //4
-// 	String("_ny"), //5
-// 	String("_py"), //6
-	String("_px"), //1
-	String("_nx"), //2
-	String("_py"), //3
-	String("_ny"), //4
-	String("_pz"), //5
-	String("_nz"), //6
-};
-    
+
 static DAVA::String PVR_QUALITY_SETTING[] =
 {
     "pvrtcfastest",
@@ -113,8 +98,6 @@ PVRConverter::PVRConverter()
 	pixelFormatToPVRFormat[FORMAT_ETC2_RGB] = "ETC2_RGB";
 	pixelFormatToPVRFormat[FORMAT_ETC2_RGBA] = "ETC2_RGBA";
 	pixelFormatToPVRFormat[FORMAT_ETC2_RGB_A1] = "ETC2_RGB_A1";
-
-	InitFileSuffixes();
 }
 
 PVRConverter::~PVRConverter()
@@ -122,9 +105,9 @@ PVRConverter::~PVRConverter()
 
 }
 
-FilePath PVRConverter::ConvertPngToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, bool addCRC /* = true */)
+FilePath PVRConverter::ConvertToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, bool addCRC /* = true */)
 {
-	FilePath outputName = (descriptor.IsCubeMap()) ? PrepareCubeMapForPvrConvert(descriptor) : FilePath::CreateWithNewExtension(descriptor.pathname, ".png");
+	FilePath outputName = (descriptor.IsCubeMap()) ? PrepareCubeMapForPvrConvert(descriptor) : descriptor.GetSourceTexturePathname();
 
 	Vector<String> args;
 	GetToolCommandLine(descriptor, outputName, gpuFamily, quality, args);
@@ -160,20 +143,29 @@ FilePath PVRConverter::ConvertPngToPvr(const TextureDescriptor &descriptor, eGPU
 	return outputName;
 }
 
-FilePath PVRConverter::ConvertNormalMapPngToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality)
+FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality)
 {
-    FilePath filePath = FilePath::CreateWithNewExtension(descriptor.pathname, ".png");
+    FilePath filePath = descriptor.GetSourceTexturePathname();
 
     Vector<Image *> images;
     ImageSystem::Instance()->Load(filePath, images);
 
     if(!images.size())
+    {
         return FilePath();
+    }
 
     DVASSERT(images.size() == 1);
 
     Image * originalImage = images[0];
-    originalImage->Normalize();
+    bool normalized = originalImage->Normalize();
+    if(!normalized)
+    {
+        Logger::Error("[PVRConverter::ConvertNormalMapToPvr] Cannot normalize image %s", filePath.GetStringValue().c_str());
+        SafeRelease(originalImage);
+        return FilePath();
+    }
+    
     if(descriptor.GetGenerateMipMaps())
     {
         images = originalImage->CreateMipMapsImages(true);
@@ -189,14 +181,17 @@ FilePath PVRConverter::ConvertNormalMapPngToPvr(const TextureDescriptor &descrip
     int32 imgCount = (int32)images.size();
     for(int32 i = 0; i < imgCount; ++i)
     {
-        FilePath imgPath = dirPath + Format("mip%d.png", i);
-        ImageSystem::Instance()->Save(imgPath, images[i]);
-
+        ImageFormat targetFormat = IMAGE_FORMAT_PNG;
+        
         TextureDescriptor desc;
         desc.Initialize(&descriptor);
         desc.SetGenerateMipmaps(false);
-        desc.pathname = imgPath;
-        FilePath convertedImgPath = ConvertPngToPvr(desc, gpuFamily, quality, false);
+        desc.dataSettings.sourceFileFormat = targetFormat;
+        desc.dataSettings.sourceFileExtension = ImageSystem::Instance()->GetExtensionsFor(targetFormat)[0];
+        desc.pathname = dirPath + Format("mip%d%s", i,  desc.dataSettings.sourceFileExtension.c_str());;
+
+        ImageSystem::Instance()->Save(desc.pathname, images[i]);
+        FilePath convertedImgPath = ConvertToPvr(desc, gpuFamily, quality, false);
 
         convertedPVRs.push_back(convertedImgPath);
     }
@@ -243,6 +238,43 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor, const
 	args.push_back(String("\"") + outputFile.GetAbsolutePathname() + String("\""));
 #endif //MAC-WIN
 
+    // flip for some TGA files
+    // PVR converter seems to have a bug:
+    // if source file is a top-left TGA, then the resulting file will be flipped vertically.
+    // to fix this, -flip param will be passed for such files
+    if (descriptor.dataSettings.sourceFileFormat == IMAGE_FORMAT_TGA)
+    {
+        LibTgaHelper tgaHelper;
+        LibTgaHelper::TgaInfo tgaInfo;
+        auto readRes = tgaHelper.ReadTgaHeader(inputName, tgaInfo);
+        if (readRes == DAVA::SUCCESS)
+        {
+            switch (tgaInfo.origin_corner)
+            {
+            case LibTgaHelper::TgaInfo::BOTTOM_LEFT:
+                break;
+            case LibTgaHelper::TgaInfo::BOTTOM_RIGHT:
+                args.push_back("-flip");
+                args.push_back("x");
+                break;
+            case LibTgaHelper::TgaInfo::TOP_LEFT:
+                args.push_back("-flip");
+                args.push_back("y");
+                break;
+            case LibTgaHelper::TgaInfo::TOP_RIGHT:
+                args.push_back("-flip");
+                args.push_back("x");
+                args.push_back("-flip");
+                args.push_back("y");
+                break;
+            }
+        }
+        else
+        {
+            Logger::Error("Failed to read %s: error %d", inputName.c_str(), readRes);
+        }
+    }
+
 	//quality
 	args.push_back("-q");
 	if(FORMAT_ETC1 == descriptor.compression[gpuFamily].format)
@@ -282,7 +314,7 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor, const
 
 FilePath PVRConverter::GetPVRToolOutput(const TextureDescriptor &descriptor, eGPUFamily gpuFamily)
 {
-    return GPUFamilyDescriptor::CreatePathnameForGPU(&descriptor, gpuFamily);
+    return descriptor.CreatePathnameForGPU(gpuFamily);
 }
 
 void PVRConverter::SetPVRTexTool(const FilePath &textToolPathname)
@@ -300,10 +332,8 @@ FilePath PVRConverter::PrepareCubeMapForPvrConvert(const TextureDescriptor& desc
 {
 	DAVA::Vector<DAVA::FilePath> pvrToolFaceNames;
 	DAVA::Vector<DAVA::FilePath> cubemapFaceNames;
-	DAVA::Texture::GenerateCubeFaceNames(CUBEMAP_TMP_DIR, pvrToolSuffixes, pvrToolFaceNames);
-	DAVA::Texture::GenerateCubeFaceNames(descriptor.pathname, cubemapSuffixes, cubemapFaceNames);
-		
-	DVASSERT(pvrToolSuffixes.size() == cubemapSuffixes.size());
+	descriptor.GenerateFacePathnames(CUBEMAP_TMP_DIR, PVRTOOL_FACE_SUFFIXES, pvrToolFaceNames);
+	descriptor.GetFacePathnames(cubemapFaceNames);
 		
 	if(!FileSystem::Instance()->IsDirectory(CUBEMAP_TMP_DIR))
 	{
@@ -337,35 +367,24 @@ FilePath PVRConverter::PrepareCubeMapForPvrConvert(const TextureDescriptor& desc
 void PVRConverter::CleanupCubemapAfterConversion(const TextureDescriptor& descriptor)
 {
 	Vector<FilePath> pvrToolFaceNames;
-	Texture::GenerateCubeFaceNames(CUBEMAP_TMP_DIR, pvrToolSuffixes, pvrToolFaceNames);
+	descriptor.GenerateFacePathnames(CUBEMAP_TMP_DIR, PVRTOOL_FACE_SUFFIXES, pvrToolFaceNames);
 		
-	for(size_t i = 0; i < pvrToolFaceNames.size(); ++i)
+	for(auto& faceName : pvrToolFaceNames)
 	{
-		if(FileSystem::Instance()->IsFile(pvrToolFaceNames[i]))
+		if(FileSystem::Instance()->IsFile(faceName))
 		{
-			FileSystem::Instance()->DeleteFile(pvrToolFaceNames[i]);
+			FileSystem::Instance()->DeleteFile(faceName);
 		}
 	}
 }
-	
-void PVRConverter::InitFileSuffixes()
-{
-	if(pvrToolSuffixes.empty())
-	{
-		for(int i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
-		{
-			pvrToolSuffixes.push_back(PVRTOOL_INPUT_NAMES[i]);
-			cubemapSuffixes.push_back(PVRTOOL_MAP_NAMES[i]);
-		}
-	}
-}	
+
 
 DAVA::String PVRConverter::GenerateInputName( const TextureDescriptor& descriptor, const FilePath & fileToConvert)
 {
 	if(descriptor.IsCubeMap())
 	{
 		Vector<FilePath> pvrToolFaceNames;
-		Texture::GenerateCubeFaceNames(CUBEMAP_TMP_DIR, pvrToolSuffixes, pvrToolFaceNames);
+		descriptor.GenerateFacePathnames(CUBEMAP_TMP_DIR, PVRTOOL_FACE_SUFFIXES, pvrToolFaceNames);
 
 		String retNames;
 		for(size_t i = 0; i < pvrToolFaceNames.size(); ++i)

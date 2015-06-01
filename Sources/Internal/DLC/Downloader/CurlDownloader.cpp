@@ -395,9 +395,11 @@ void CurlDownloader::SaveChunkHandler(BaseObject * caller, void * callerData, vo
             SafeRelease(chunk);
             if (!isWritten)
             {
-                Logger::Error("[CurlDownloader::CurlDataRecvHandler] Couldn't save downloaded data chunk");
                 saveResult = DLE_FILE_ERROR; // this case means that not all data which we wants to save is saved. So we produce file system error.
-                return;
+                fileErrno = errno;
+                Logger::Error("[CurlDownloader::CurlDataRecvHandler] Couldn't save downloaded data chunk (errno=%d)", errno);
+                //break - to clear chunksToSave list to prevent hang up in Download() method.
+                break;
             }
             
             saveResult = DLE_NO_ERROR;
@@ -455,6 +457,7 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
     storePath = savePath;
     downloadUrl = url;
     currentDownloadPartsCount = partsCount;
+    fileErrno = 0;
     DownloadError retCode = GetSize(downloadUrl, remoteFileSize, operationTimeout);
 
     if (DLE_NO_ERROR != retCode)
@@ -474,6 +477,7 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
         dstFile = File::Create(storePath, File::CREATE | File::WRITE);
         if (NULL == dstFile)
         {
+            fileErrno = errno;
             return DLE_FILE_ERROR;
         }
     }
@@ -530,7 +534,8 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
                     chunksMutex.Lock();
                     chunksInList = static_cast<uint32>(chunksToSave.size());
                     chunksMutex.Unlock();
-                } while(allowedBuffersInMemory <= chunksInList && DLE_NO_ERROR != saveResult);
+                // iterate until overbuffers save. Break if we have save error.
+                } while(allowedBuffersInMemory < chunksInList && DLE_NO_ERROR == saveResult);
                 
                 if (DLE_NO_ERROR != saveResult)
                 {
@@ -563,8 +568,8 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
         chunksMutex.Lock();
         chunksInList = static_cast<uint32>(chunksToSave.size());
         chunksMutex.Unlock();
-        
-    } while (0 < chunksInList);
+        // break if we have save error. chunks clears in saveHandler.
+    } while (0 < chunksInList && DLE_NO_ERROR == saveResult);
     
     saveThread->Cancel();
     saveThread->Join();

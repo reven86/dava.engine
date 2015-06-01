@@ -1822,11 +1822,23 @@
     <ClInclude Include="..\..\Sources\Internal\Autotesting\dlmalloc.h">
       <Filter>Internal\Autotesting</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\2D\TextLayout.h">
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibTgaHelper.h">
+      <Filter>Internal\Render\Image</Filter>
+	</ClInclude>
+	<ClInclude Include="..\..\Sources\Internal\Render\2D\TextLayout.h">
       <Filter>Internal\Render\2D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Timer\RawTimer.h">
       <Filter>Internal\Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Thread\ThreadLocalPtr.h">
+      <Filter>Internal\Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeComponent.h">
+      <Filter>Internal\UI\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.h">
+      <Filter>Internal\UI\Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3259,11 +3271,20 @@
     <ClCompile Include="..\..\Sources\Internal\Autotesting\dlmalloc.c">
       <Filter>Internal\Autotesting</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\2D\TextLayout.cpp">
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibTgaHelper.cpp">
+      <Filter>Internal\Render\Image</Filter>
+    </ClCompile>
+	<ClCompile Include="..\..\Sources\Internal\Render\2D\TextLayout.cpp">
       <Filter>Internal\Render\2D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Timer\RawTimer.cpp">
       <Filter>Internal\Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeComponent.cpp">
+      <Filter>Internal\UI\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.cpp">
+      <Filter>Internal\UI\Components</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

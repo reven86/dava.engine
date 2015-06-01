@@ -44,6 +44,7 @@
 #include <QResizeEvent>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QShortcut>
 #include <QDebug>
 
 
@@ -95,6 +96,25 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
 	QObject::connect(SceneSignals::Instance(), SIGNAL(ModifyStatusChanged(SceneEditor2 *, bool)), this, SLOT(SceneModifyStatusChanged(SceneEditor2 *, bool)));
 
 	SetCurrentTab(0);
+
+    auto mouseWheelHandler = [&]( int ofs )
+    {
+        if ( curScene == nullptr )
+            return;
+        const auto reverse = SettingsManager::GetValue( Settings::General_Mouse_InvertWheel ).AsBool() ? -1 : 1;
+        ofs *= reverse;
+        curScene->cameraSystem->MoveToStep( ofs );
+    };
+    connect( davaWidget->GetGLWindow(), &OpenGLWindow::mouseScrolled, mouseWheelHandler );
+
+    auto moveToSelectionHandler = [&]
+    {
+        if ( curScene == nullptr )
+            return;
+        curScene->cameraSystem->MoveToSelection();
+    };
+    auto moveToSelectionHandlerHotkey = new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_X ), this );
+    connect( moveToSelectionHandlerHotkey, &QShortcut::activated, moveToSelectionHandler );
 }
 
 SceneTabWidget::~SceneTabWidget()

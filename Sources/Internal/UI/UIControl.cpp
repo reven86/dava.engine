@@ -1123,17 +1123,18 @@ namespace DAVA
         inputEnabled = srcControl->inputEnabled;
         clipContents = srcControl->clipContents;
 
-        customClassName = srcControl->GetCustomControlClassName();
         initialState = srcControl->GetInitialState();
         drawPivotPointMode = srcControl->drawPivotPointMode;
         debugDrawColor = srcControl->debugDrawColor;
         debugDrawEnabled = srcControl->debugDrawEnabled;
 
         SafeRelease(eventDispatcher);
-        if(srcControl->eventDispatcher)
+        if (srcControl->eventDispatcher != nullptr && srcControl->eventDispatcher->GetEventsCount() != 0)
         {
-            eventDispatcher = new EventDispatcher();
-            eventDispatcher->CopyDataFrom(srcControl->eventDispatcher);
+            Logger::FrameworkDebug("[UIControl::CopyDataFrom] Source control \"%s:%s\" have events."
+                                   "Event copying is forbidden."
+                                   , srcControl->GetClassName().c_str()
+                                   , srcControl->GetName().c_str());
         }
 
         RemoveAllControls();
@@ -1893,7 +1894,7 @@ namespace DAVA
         ScopedPtr<UIControl> baseControl(new UIControl());
 
         // Control name
-        SetPreferredNodeType(node, GetControlClassName());
+        SetPreferredNodeType(node, GetClassName());
 
         // Transform data
         // Position
@@ -2602,36 +2603,9 @@ namespace DAVA
         UpdateChildrenLayout();
     }
 
-    const String & UIControl::GetControlClassName() const
-    {
-        return GetClassName();
-    }
-
-    const String &UIControl::GetCustomControlClassName() const
-    {
-        return customClassName;
-    }
-
-    void UIControl::SetCustomControlClassName(const String& value)
-    {
-        customClassName = value;
-    }
-
     void UIControl::SetPreferredNodeType(YamlNode* node, const String& nodeTypeName)
     {
-        // Do we have Custom Control name? If yes, use it as type and passed one
-        // as the "Base Type"
-        bool hasCustomControl = !GetCustomControlClassName().empty();
-        if (hasCustomControl)
-        {
-            node->Set("type", GetCustomControlClassName());
-            node->Set("baseType", nodeTypeName);
-        }
-        else
-        {
-            // The type coincides with the node type name passed, no base type exists.
-            node->Set("type", nodeTypeName);
-        }
+        node->Set("type", nodeTypeName);
     }
 
     int32 UIControl::GetInitialState() const
@@ -2809,12 +2783,32 @@ namespace DAVA
 
     void UIControl::AddComponent(UIComponent * component)
     {
-        DynamicTypeCheck<UIComponent*>(component)->SetControl(this);
+        DVASSERT(component->GetControl() == nullptr);
+        component->SetControl(this);
         components.push_back(SafeRetain(component));
         std::stable_sort(components.begin(), components.end(), [](UIComponent * left, UIComponent * right) {
             return left->GetType() < right->GetType();
         });
         UpdateFamily();
+    }
+    
+    void UIControl::InsertComponentAt(UIComponent * component, uint32 index)
+    {
+        uint32 count = family->GetComponentsCount(component->GetType());
+        if (count == 0 || index >= count)
+        {
+            AddComponent(component);
+        }
+        else
+        {
+            DVASSERT(component->GetControl() == nullptr);
+            component->SetControl(this);
+            
+            uint32 insertIndex = family->GetComponentIndex(component->GetType(), index);
+            components.insert(components.begin() + insertIndex, SafeRetain(component));
+            
+            UpdateFamily();
+        }
     }
 
     UIComponent * UIControl::GetComponent(uint32 componentType, uint32 index) const
@@ -2826,12 +2820,25 @@ namespace DAVA
         }
         return nullptr;
     }
+    
+    int32 UIControl::GetComponentIndex(const UIComponent *component) const
+    {
+        uint32 count = family->GetComponentsCount(component->GetType());
+        uint32 index = family->GetComponentIndex(component->GetType(), 0);
+        for (uint32 i = 0; i < count; i++)
+        {
+            if (components[index + i] == component)
+                return i;
+        }
+        return -1;
+    }
 
     UIComponent * UIControl::GetOrCreateComponent(uint32 componentType, uint32 index)
     {
         UIComponent * ret = GetComponent(componentType, index);
         if (!ret)
         {
+            DVASSERT(index == 0);
             ret = UIComponent::CreateByType(componentType);
             if (ret)
             {
@@ -2843,13 +2850,13 @@ namespace DAVA
         return ret;
     }
 
-    inline void UIControl::UpdateFamily()
+    void UIControl::UpdateFamily()
     {
         UIControlFamily::Release(family);
         family = UIControlFamily::GetOrCreate(components);
     }
 
-    inline void UIControl::RemoveAllComponents()
+    void UIControl::RemoveAllComponents()
     {
         while (!components.empty())
         {
@@ -2885,17 +2892,17 @@ namespace DAVA
         RemoveComponent(it);
     }
 
-    inline uint32 UIControl::GetComponentCount() const
+    uint32 UIControl::GetComponentCount() const
     {
         return static_cast<uint32>(components.size());
     }
     
-    inline uint32 UIControl::GetComponentCount(uint32 componentType) const
+    uint32 UIControl::GetComponentCount(uint32 componentType) const
     {
         return family->GetComponentsCount(componentType);
     }
     
-    inline uint64 UIControl::GetAvailableComponentFlags() const
+    uint64 UIControl::GetAvailableComponentFlags() const
     {
         return family->GetComponentsFlags();
     }

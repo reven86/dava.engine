@@ -55,7 +55,7 @@ public:
 	FontManager();
 	virtual ~FontManager();
 	
-	FT_Library		GetFTLibrary() { return library; }
+	FT_Library GetFTLibrary() { return library; }
 	
 	/**
 	 \brief Register font.
@@ -68,7 +68,7 @@ public:
     /**
 	 \brief Register all fonts.
 	 */
-    void RegisterFonts(const Map<Font*, String>& _registeredFonts, const Map<String, Font*> &fonts);
+    void RegisterFonts(const Map<String, Font*> &fonts);
     /**
 	 \brief Unregister all fonts.
 	 */
@@ -82,23 +82,12 @@ public:
 	/**
 	 \brief Get traked font name. Add font to track list.
 	 */
-	String GetFontName(Font *font);
+	String GetFontName(Font *font) const;
     
     /**
 	 \brief Get font by name.
 	 */
-	Font* GetFont(const String &name);
-	
-	/**
-	 \brief Reset tracked fonts added by GetFontName().
-	 */
-	void PrepareToSaveFonts(bool saveAllFonts = false);
-    
-    typedef Set<Font*> TRACKED_FONTS;
-	/**
-	 \brief Get tracked fonts added by GetFontName().
-	 */
-	const TRACKED_FONTS& GetTrackedFont() const;
+    Font* GetFont(const String &name) const;
 	
     /**
 	 \brief Get registered fonts.
@@ -112,24 +101,10 @@ public:
 	
     
 private:
-	void Clear();
-	String GetFontHashName(Font* font);
+    String GetFontHashName(Font* font) const;
 
 private:
-	typedef Map<Font*, String> REGISTERED_FONTS;
-	REGISTERED_FONTS registeredFonts;
-
-	struct FONT_NAME
-	{
-		String name;
-		TRACKED_FONTS fonts;
-	};
-	typedef Set<FONT_NAME*> FONTS_NAME;
-	FONTS_NAME fontsName;
-	
-	TRACKED_FONTS trackedFonts;
-	
-    //TODO: remove this extra map (UIYamlLoader legacy)
+    Map<Font*, String> registeredFonts;
     Map<String, Font*> fontMap;
 };
 	

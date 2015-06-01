@@ -1,10 +1,13 @@
 #include "VisibilityToolPanel.h"
-#include "../../Scene/SceneSignals.h"
-#include "../../Scene/SceneEditor2.h"
+#include "Scene/SceneSignals.h"
+#include "Scene/SceneEditor2.h"
 #include "Tools/SliderWidget/SliderWidget.h"
 #include "Constants.h"
 #include "Main/QtUtils.h"
-#include "../LandscapeEditorShortcutManager.h"
+#include "Qt/DockLandscapeEditorControls/LandscapeEditorShortcutManager.h"
+
+#include "Tools/PathDescriptor/PathDescriptor.h"
+
 
 #include "QtTools/FileDialog/FileDialog.h"
 
@@ -201,7 +204,7 @@ void VisibilityToolPanel::SaveTexture()
 	QString filePath = FileDialog::getSaveFileName(NULL,
 													QString(ResourceEditor::VISIBILITY_TOOL_SAVE_CAPTION.c_str()),
 													QString(currentPath.GetAbsolutePathname().c_str()),
-													QString(ResourceEditor::VISIBILITY_TOOL_FILE_FILTER.c_str()));
+													PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 
 	FilePath selectedPathname = PathnameToDAVAStyle(filePath);
 
