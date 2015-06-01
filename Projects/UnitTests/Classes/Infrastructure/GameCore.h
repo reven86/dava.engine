@@ -71,7 +71,7 @@ public:
 
     void Update(DAVA::float32 update) override;
 
-    void RegisterError(const String &command, const String &fileName, int32 line);
+    void RegisterError(const String &command, const String &fileName, int32 line, const String& userMessage);
     void LogMessage(const String &message);
 
 protected:
@@ -99,14 +99,21 @@ private:
 
     Testing::TestClass* curTestClass = nullptr;
     String curTestClassName;
+    String curTestName;
     size_t curTestClassIndex = 0;
     size_t curTestIndex = 0;
 };
 
-#define TEST_VERIFY(condition)                                                          \
-    if (!(condition))                                                                   \
-    {                                                                                   \
-        GameCore::Instance()->RegisterError(String(#condition), __FILE__, __LINE__);    \
+#define TEST_VERIFY(condition)                                                                          \
+    if (!(condition))                                                                                   \
+    {                                                                                                   \
+        GameCore::Instance()->RegisterError(String(#condition), __FILE__, __LINE__, DAVA::String());    \
+    }
+
+#define TEST_VERIFY_WITH_MESSAGE(condition, message)                                                        \
+    if (!(condition))                                                                                       \
+    {                                                                                                       \
+        GameCore::Instance()->RegisterError(String(#condition), __FILE__, __LINE__, DAVA::String(message)); \
     }
 
 #endif // __GAMECORE_H__

@@ -82,10 +82,10 @@ class TestClass
 public:
     virtual ~TestClass() {}
 
-    virtual void SetUp() {}
-    virtual void TearDown() {}
-    virtual void Update(float32 timeElapsed) {}
-    virtual bool TestComplete() const { return true; }
+    virtual void SetUp(const String& testName) {}
+    virtual void TearDown(const String& testName) {}
+    virtual void Update(float32 timeElapsed, const String& testName) {}
+    virtual bool TestComplete(const String& testName) const { return true; }
 
     void RegisterTest(const char* name, void (*testFunc)(TestClass*))
     {
@@ -169,8 +169,8 @@ private:
 
 }   // namespace Testing
 
-#define DAVA_TESTCLASS(classname)                                                                                                 \
-    class classname;                                                                                                                \
+#define DAVA_TESTCLASS(classname)                                                                                                   \
+    struct classname;                                                                                                               \
     static struct testclass_ ## classname ## _registrar                                                                             \
     {                                                                                                                               \
         testclass_ ## classname ## _registrar()                                                                                     \
@@ -178,9 +178,9 @@ private:
             Testing::TestClassCollection::Instance()->RegisterTestClass(#classname, new Testing::TestClassFactoryImpl<classname>);  \
         }                                                                                                                           \
     } testclass_ ## classname ## _registrar_instance;                                                                               \
-    class classname : public Testing::TestClass, public Testing::TestClassTypeKeeper<classname>
+    struct classname : public Testing::TestClass, public Testing::TestClassTypeKeeper<classname>
 
-#define DAVA_TEST(testname)                                                                                           \
+#define DAVA_TEST(testname)                                                                                             \
     struct test_ ## testname ## _registrar {                                                                            \
         test_ ## testname ## _registrar(Testing::TestClass* testClass)                                                  \
         {                                                                                                               \

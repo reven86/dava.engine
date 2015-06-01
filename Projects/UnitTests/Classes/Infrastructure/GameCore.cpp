@@ -122,13 +122,21 @@ void GameCore::Update(float32 timeElapsed)
     ApplicationCore::Update(timeElapsed);
 }
 
-void GameCore::RegisterError(const String &command, const String &fileName, int32 line)
+void GameCore::RegisterError(const String &command, const String &fileName, int32 line, const String& userMessage)
 {
     OnError();
 
     const String& testClassName = Testing::TestClassCollection::Instance()->TestClassName(curTestClassIndex);
     const String& testName = curTestClass->TestName(curTestIndex);
-    String errorString = Format("%s:%d: %s", fileName.c_str(), line, testName.c_str());
+    String errorString;
+    if (userMessage.empty())
+    {
+        errorString = Format("%s:%d: %s", fileName.c_str(), line, testName.c_str());
+    }
+    else
+    {
+        errorString = Format("%s:%d: %s (%s)", fileName.c_str(), line, testName.c_str(), userMessage.c_str());
+    }
     LogMessage(TeamcityTestsOutput::FormatTestFailed(testClassName, command, errorString));
 }
 
@@ -143,20 +151,23 @@ void GameCore::ProcessTests(float32 timeElapsed)
     {
         curTestClass = Testing::TestClassCollection::Instance()->CreateTestClass(curTestClassIndex);
         curTestClassName = Testing::TestClassCollection::Instance()->TestClassName(curTestClassIndex);
+        curTestName = curTestClass->TestName(0);
 
         Logger::Info(TeamcityTestsOutput::FormatTestStarted(curTestClassName).c_str());
+        curTestClass->SetUp(curTestName);
     }
 
     if (curTestIndex < curTestClass->TestCount())
     {
         curTestClass->RunTest(curTestIndex);
-        if (curTestClass->TestComplete())
+        if (curTestClass->TestComplete(curTestName))
         {
+            curTestClass->TearDown(curTestName);
             curTestIndex += 1;
         }
         else
         {
-            curTestClass->Update(timeElapsed);
+            curTestClass->Update(timeElapsed, curTestName);
         }
     }
     else
