@@ -53,19 +53,20 @@ SpritesPacker::~SpritesPacker()
     delete resourcePacker2D;
 }
 
-void SpritesPacker::ReloadSprites(bool clearDirs, const DAVA::eGPUFamily gpu, const TextureConverter::eConvertQuality quality)
+void SpritesPacker::ReloadSprites(bool clearDirs, const eGPUFamily gpu, const TextureConverter::eConvertQuality quality)
 {
     process = QtConcurrent::run(this, &SpritesPacker::ReloadSpritePrivate, clearDirs, gpu, quality);// there must be function UpdateSprites
 }
 
-void SpritesPacker::ReloadSpritePrivate(bool clearDirs, const DAVA::eGPUFamily gpu, const TextureConverter::eConvertQuality quality)
+void SpritesPacker::ReloadSpritePrivate(bool clearDirs, const eGPUFamily gpu, const TextureConverter::eConvertQuality quality)
 {
     setRunning(true);
     QString currentProjectPath = ResourcesManageHelper::GetProjectPath();
     QDir inputDir(currentProjectPath + "/DataSource");
     QDirIterator it(inputDir);
     void *pool = QtLayer::Instance()->CreateAutoreleasePool();
-    while (it.hasNext() && isRunning())
+    resourcePacker2D->SetRunning(true);
+    while (it.hasNext() && resourcePacker2D->IsRunning())
     {
         const QFileInfo &fileInfo = it.fileInfo();
         if (fileInfo.isDir() && fileInfo.absoluteFilePath().contains("gfx", Qt::CaseInsensitive))
@@ -95,7 +96,14 @@ void SpritesPacker::ReloadSpritePrivate(bool clearDirs, const DAVA::eGPUFamily g
 
 void SpritesPacker::stop()
 {
-    setRunning(false);
+    resourcePacker2D->SetRunning(false);
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    while (!process.isFinished())
+    {
+        QApplication::processEvents();
+    }
+    QApplication::restoreOverrideCursor();
+
 }
 
 bool SpritesPacker::isRunning() const
@@ -108,17 +116,6 @@ void SpritesPacker::setRunning(bool arg)
     if (arg != m_running)
     {
         m_running = arg;
-        if (!arg)
-        {
-            resourcePacker2D->Stop();
-            QApplication::processEvents();
-            process.waitForFinished();
-            QApplication::restoreOverrideCursor();
-        }
-        else
-        {
-            QApplication::setOverrideCursor(Qt::WaitCursor);
-        }
         emit runningStateChanged(arg);
     }
 }

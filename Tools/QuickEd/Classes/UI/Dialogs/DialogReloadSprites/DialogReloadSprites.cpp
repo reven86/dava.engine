@@ -47,8 +47,12 @@ DialogReloadSprites::DialogReloadSprites(QWidget* parent)
     setupUi(this);
     pushButton_cancel->setEnabled(spritesPacker->isRunning());
     pushButton_start->setDisabled(spritesPacker->isRunning());
+    comboBox_targetGPU->setDisabled(spritesPacker->isRunning());
+    comboBox_quality->setDisabled(spritesPacker->isRunning());
     connect(spritesPacker, &SpritesPacker::runningStateChanged, pushButton_cancel, &QPushButton::setEnabled);
     connect(spritesPacker, &SpritesPacker::runningStateChanged, pushButton_start, &QPushButton::setDisabled);
+    connect(spritesPacker, &SpritesPacker::runningStateChanged, comboBox_targetGPU, &QComboBox::setDisabled);
+    connect(spritesPacker, &SpritesPacker::runningStateChanged, comboBox_quality, &QComboBox::setDisabled);
     connect(pushButton_cancel, &QPushButton::clicked, spritesPacker, &SpritesPacker::stop);
     connect(pushButton_start, &QPushButton::clicked, this, &DialogReloadSprites::OnStartClicked);
 
@@ -77,7 +81,13 @@ DialogReloadSprites::DialogReloadSprites(QWidget* parent)
         }
         comboBox_quality->addItem(qualityMap->ToString(value), value);
     }
-    comboBox_quality->setCurrentText(qualityMap->ToString(TextureConverter::ECQ_DEFAULT));  
+    comboBox_quality->setCurrentText(qualityMap->ToString(TextureConverter::ECQ_DEFAULT));
+    LoadSettings();
+}
+
+DialogReloadSprites::~DialogReloadSprites()
+{
+    SaveSettings();
 }
 
 void DialogReloadSprites::OnStartClicked()

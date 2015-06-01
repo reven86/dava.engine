@@ -54,12 +54,6 @@ ResourcePacker2D::ResourcePacker2D()
     quality = TextureConverter::ECQ_VERY_HIGH;
 }
 
-void ResourcePacker2D::Stop()
-{
-    running = false;
-    Logger::FrameworkDebug("ResourcePacker2D was stopped");
-}
-
 String ResourcePacker2D::GetProcessFolderName()
 {
     return "$process/";
@@ -70,6 +64,11 @@ void ResourcePacker2D::SetConvertQuality(const TextureConverter::eConvertQuality
     quality = arg;
 }
 
+void ResourcePacker2D::SetRunning(bool arg)
+{
+    running = arg;
+    Logger::FrameworkDebug(arg ? "ResourcePacker2D was started" : "ResourcePacker2D was stopped");
+}
 void ResourcePacker2D::InitFolders(const FilePath & inputPath,const FilePath & outputPath)
 {
     DVASSERT(inputPath.IsDirectoryPathname() && outputPath.IsDirectoryPathname());
@@ -81,6 +80,10 @@ void ResourcePacker2D::InitFolders(const FilePath & inputPath,const FilePath & o
     
 void ResourcePacker2D::PackResources(eGPUFamily forGPU)
 {
+    if (!running)
+    {
+        return;
+    }
     Logger::FrameworkDebug("\nInput: %s \nOutput: %s \nExclude: %s",
                   inputGfxDirectory.GetAbsolutePathname().c_str(),
                   outputGfxDirectory.GetAbsolutePathname().c_str(),
@@ -124,7 +127,6 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
     								outputGfxDirectory.GetAbsolutePathname().c_str()));
     	}
     }
-    running = true;
     RecursiveTreeWalk(inputGfxDirectory, outputGfxDirectory);
 
     // Put latest md5 after convertation
@@ -428,7 +430,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     {
     	FileSystem::Instance()->DeleteDirectoryFiles(outputPath, false);
     	
-    	for (int fi = 0; fi < fileList->GetCount(); ++fi)
+    	for (int fi = 0; fi < fileList->GetCount() && running; ++fi)
     	{
     		if (!fileList->IsDirectory(fi))
     		{

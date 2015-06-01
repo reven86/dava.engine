@@ -46,7 +46,6 @@ class ResourcePacker2D
 public:
     typedef std::map<String, String> FILESMAP;
     ResourcePacker2D();
-    void Stop();
     // Packing of resources section
     void InitFolders(const FilePath & inputPath,const FilePath & outputPath);
     void PackResources(eGPUFamily forGPU);
@@ -60,6 +59,8 @@ public:
 
     static String GetProcessFolderName();
     void SetConvertQuality(const TextureConverter::eConvertQuality quality);
+    void SetRunning(bool arg);
+    bool IsRunning() const;
 public:
     
     FilePath inputGfxDirectory;
@@ -82,6 +83,12 @@ protected:
 
     void AddError(const String& errorMsg);
 };
+
+inline bool ResourcePacker2D::IsRunning() const
+{
+    return running;
+}
+
 };
 
 
