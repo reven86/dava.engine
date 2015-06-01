@@ -58,7 +58,6 @@ public class JNITextField {
     private static Handler handler = new Handler();
     private static int lastSelectedImeMode = 0;
     private static int lastSelectedInputType = 0;
-    private static final InputFilter[] emptyFilterArray = new InputFilter[0];
     
     static class ControlNotFoundException extends RuntimeException
     {
@@ -238,8 +237,9 @@ public class JNITextField {
             
             // we have to enable and disable cache every time because of
             // bugs with previous image in some situations
+            // example: search user dialog
             setDrawingCacheEnabled(true);
-            //buildDrawingCache();
+            buildDrawingCache();
             Bitmap bitmap = getDrawingCache(); //renderToBitmap();
             if (bitmap == null) // could be if onDraw not called yet
             {
@@ -262,10 +262,6 @@ public class JNITextField {
                 bitmap = Bitmap.createBitmap(measuredWidth, measuredHeight, Bitmap.Config.ARGB_8888);
                 Canvas c = new Canvas(bitmap);
                 layout(0, 0, measuredWidth, measuredHeight);
-                if (measuredWidth != viewWidth || measuredHeight != viewHeight)
-                {
-                    Log.d(TAG, "WARNING! width || height diff! orig:" + viewWidth + " " + viewHeight + " new: " + measuredWidth + " " + measuredHeight);
-                }
                 draw(c);
 
                 destroyBitmap = true;
@@ -281,7 +277,7 @@ public class JNITextField {
             // copy ARGB pixels values into our buffer
             bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
 
-            //setDrawingCacheEnabled(false);
+            setDrawingCacheEnabled(false);
             
             if (destroyBitmap)
             {
@@ -309,7 +305,7 @@ public class JNITextField {
                     public void run() {
                         renderToTexture();
                     }
-                }, 100); // 100 - milliseconds tested on different values
+                }, 1); // 1 - milliseconds tested on different values
                 // stay with 1
             } else
             {
