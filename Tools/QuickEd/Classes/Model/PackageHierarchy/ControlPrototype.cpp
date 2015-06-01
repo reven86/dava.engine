@@ -25,10 +25,12 @@ ControlNode *ControlPrototype::GetControlNode() const
 
 String ControlPrototype::GetName(bool withPackage) const
 {
+    String controlName = controlNode->GetName();
+    
     if (withPackage)
-        return packageRef->GetName() + "/" + controlNode->GetName();
+        return packageRef->GetName() + "/" + controlName;
     else
-        return controlNode->GetName();
+        return  controlName;
 }
 
 PackageRef *ControlPrototype::GetPackageRef() const

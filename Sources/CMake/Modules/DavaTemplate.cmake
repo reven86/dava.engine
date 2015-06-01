@@ -9,6 +9,8 @@
 #set( MACOS_DYLIB    )
 #set( MACOS_XIB      )
 #
+#set( WIN32_RESOURCES )
+#
 #set( ANDROID_USE_STANDART_TEMLATE )
 #set( ANDROID_DATA_FOLDER          )
 #set( ANDROID_PACKAGE              )
@@ -89,7 +91,8 @@ elseif( MACOS )
     list( APPEND RESOURCES_LIST  ${MACOS_ICO}   )
 
     list( APPEND LIBRARIES      ${DYLIB_FILES} )
-
+elseif( WIN32 )
+    list( APPEND RESOURCES_LIST  ${WIN32_RESOURCES} )
 endif()
 
 ###
@@ -379,11 +382,11 @@ if( DEPLOY )
                COMMAND ${CMAKE_COMMAND} -E remove  ${DEPLOY_DIR}/${PROJECT_NAME}.ilk
             )
 
-            foreach ( ITEM fmodex.dll fmod_event.dll IMagickHelper.dll glew32.dll TextureConverter.dll )
-                execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
-            endforeach ()
-
         endif()
+
+        foreach ( ITEM fmodex.dll fmod_event.dll IMagickHelper.dll glew32.dll TextureConverter.dll )
+            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
+        endforeach ()
 
         set( OUTPUT_DIR "${DEPLOY_DIR}" )
         foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
