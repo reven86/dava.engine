@@ -185,6 +185,8 @@ DV_LOCAL_CPPFLAGS += -Wno-unused-local-typedef
 DV_LOCAL_CPPFLAGS += -Wno-unreachable-code-return
 DV_LOCAL_CPPFLAGS += -Wno-unreachable-code-break
 DV_LOCAL_CPPFLAGS += -Wno-unknown-warning-option
+DV_LOCAL_CPPFLAGS += -Wno-pedantic
+DV_LOCAL_CPPFLAGS += -Wno-extern-c-compat
 
 DV_LOCAL_CPP_FEATURES += exceptions
 

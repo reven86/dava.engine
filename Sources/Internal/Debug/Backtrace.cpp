@@ -41,6 +41,27 @@
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "../Platform/TemplateAndroid/BacktraceAndroid/AndroidBacktraceChooser.h"
 #include <cxxabi.h>
+// workaround bug: https://code.google.com/p/android/issues/detail?id=79483
+#if defined(__i386__) && defined(__clang__) && defined(_LIBCPP_VERSION)
+namespace __cxxabiv1
+{
+extern "C"
+{
+// 3.4 Demangler API
+// https://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-4.3/a01696.html
+extern char* __cxa_demangle(const char* mangled_name,
+                            char*       output_buffer,
+                            size_t*     length,
+                            int*        status)
+{
+#pragma message("warning: not implemented __cxa_demangle on android x86")
+	return nullptr;
+}
+
+} // extern "C"
+} // namespace __cxxabiv1
+namespace abi = __cxxabiv1;
+#endif //i386
 #endif
 
 #include <cstdlib>
@@ -249,8 +270,10 @@ public:
 
         //returns allocated string with malloc
         realname = abi::__cxa_demangle(functName, 0, 0, &status);
-         
-        Logger::Instance()->Log(logLevel,"DAVA BACKTRACE:%p : %s (%s)\n", relAddres, libName,realname);
+        if (realname)
+        {
+            Logger::Instance()->Log(logLevel,"DAVA BACKTRACE:%p : %s (%s)\n", relAddres, libName,realname);
+        }
         free(realname);
          
 	}
