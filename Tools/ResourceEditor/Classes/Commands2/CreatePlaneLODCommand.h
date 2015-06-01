@@ -1,6 +1,5 @@
 /*==================================================================================
-
-Copyright (c) 2008, binaryzebra
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -26,7 +25,6 @@ Copyright (c) 2008, binaryzebra
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-
 
 
 #ifndef __CREATE_PLANE_LOD_COOMAND_H__

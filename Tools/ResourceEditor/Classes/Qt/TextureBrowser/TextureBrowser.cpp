@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "TextureBrowser/TextureBrowser.h"
 #include "TextureBrowser/TextureListModel.h"
 #include "TextureBrowser/TextureListDelegate.h"

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_SPRITE_RENDER_BATCH_H__
 #define __DAVAENGINE_SPRITE_RENDER_BATCH_H__
 

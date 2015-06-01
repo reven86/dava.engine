@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Platform/DeviceInfo.h"
 #include "Utils/StringFormat.h"
 #include "Utils/MD5.h"

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __FRAMEWORK__DPIHELPERANDROID__
 #define __FRAMEWORK__DPIHELPERANDROID__
 

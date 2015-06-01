@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_UI_FADE_TRANSITION_H__
 #define __DAVAENGINE_UI_FADE_TRANSITION_H__
 

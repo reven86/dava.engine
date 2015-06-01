@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Base/BaseTypes.h"
 #include "TextureListDelegate.h"
 #include "TextureListModel.h"

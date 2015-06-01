@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneSignals.h"
 

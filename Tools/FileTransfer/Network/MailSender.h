@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_MAILSENDER_H__
 #define __DAVAENGINE_MAILSENDER_H__
 

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "CommandLineManager.h"
 #include "CommandLineTool.h"
 

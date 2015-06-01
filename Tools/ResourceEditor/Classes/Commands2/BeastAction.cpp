@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "BeastAction.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Main/mainwindow.h"
