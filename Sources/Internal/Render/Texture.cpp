@@ -446,6 +446,7 @@ void Texture::FlushDataToRenderer(Vector<Image *> * images)
 
     DVASSERT(descriptor.format != -1);//unsupported format
     handle = rhi::CreateTexture(descriptor);
+    DVASSERT(handle != rhi::InvalidHandle);
 
     for (uint32 i = 0; i < (uint32)images->size(); ++i)
     {

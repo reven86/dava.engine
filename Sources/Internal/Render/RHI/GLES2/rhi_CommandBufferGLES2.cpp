@@ -642,9 +642,9 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
             {
                 Handle  vb = (Handle)(arg[0]);
 
-                VertexBufferGLES2::SetToRHI( vb );
                 if( cur_vb != vb )
                 {
+                    VertexBufferGLES2::SetToRHI( vb );
                     PipelineStateGLES2::SetVertexDeclToRHI( cur_ps, cur_vdecl );
                     cur_vb = vb;
                 }
