@@ -371,7 +371,7 @@ DAVA_TESTCLASS(FileSystemTest)
         FileSystem::Instance()->DeleteFile(textFilePath2);
     }
 
-    bool FileSystemTest::RecursiveCopy(const DAVA::FilePath &src, const DAVA::FilePath &dst)
+    bool RecursiveCopy(const DAVA::FilePath &src, const DAVA::FilePath &dst)
     {
         DVASSERT(src.IsDirectoryPathname() && dst.IsDirectoryPathname());
 

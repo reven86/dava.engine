@@ -254,7 +254,7 @@ DAVA_TESTCLASS(NetworkTest)
         ECHO_CLIENT_CONTEXT
     };
 
-    static const uint16 ECHO_PORT = 9999;
+    static const uint16 ECHO_PORT = 55101;
 
     bool echoTestDone = false;
     TestEchoServer echoServer;

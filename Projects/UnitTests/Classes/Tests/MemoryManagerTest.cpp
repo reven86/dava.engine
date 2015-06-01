@@ -95,13 +95,13 @@ DAVA_TESTCLASS(MemoryManagerTest)
         MemoryManager::InstallDumpCallback(nullptr, nullptr);
     }
 
-    static void MemoryManagerTest::DumpRequestCallback(void* arg, int32 type, uint32 tagOrCheckpoint, uint32 blockBegin, uint32 blockEnd)
+    static void DumpRequestCallback(void* arg, int32 type, uint32 tagOrCheckpoint, uint32 blockBegin, uint32 blockEnd)
     {
         MemoryManagerTest* self = static_cast<MemoryManagerTest*>(arg);
         self->OnDumpRequest(type, tagOrCheckpoint, blockBegin, blockEnd);
     }
 
-    void MemoryManagerTest::OnDumpRequest(int32 type, uint32 tagOrCheckpoint, uint32 blockBegin, uint32 blockEnd)
+    void OnDumpRequest(int32 type, uint32 tagOrCheckpoint, uint32 blockBegin, uint32 blockEnd)
     {
         if (MMConst::DUMP_REQUEST_TAG == type)
         {

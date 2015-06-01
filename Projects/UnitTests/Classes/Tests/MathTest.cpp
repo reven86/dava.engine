@@ -63,7 +63,7 @@ DAVA_TESTCLASS(MathTest)
             Matrix4::MakeScale(Vector3(3.0f, 3.0f, 3.0f))) < 0.0001f);
     }
 
-    float32 MathTest::TestMatrixDecomposition(const Matrix4& mat)
+    float32 TestMatrixDecomposition(const Matrix4& mat)
     {
         Vector3 position, scale;
         Quaternion rotation;
