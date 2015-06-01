@@ -44,7 +44,7 @@ class ParticleRenderObject : public RenderObject
     Vector<RenderBatch *> renderBatchCache;
 
 	//void AppendParticleGroup(const ParticleGroup &group, ParticleRenderGroup *renderGroup, const Vector3& cameraDirection);	
-    void AppendParticleGroup(List<ParticleGroup>::iterator begin, List<ParticleGroup>::iterator end, uint32 particlesCount);
+    void AppendParticleGroup(List<ParticleGroup>::iterator begin, List<ParticleGroup>::iterator end, uint32 particlesCount, const Vector3& cameraDirection);
 	void PrepareRenderData(Camera * camera);    
 	Vector<uint16> indices;
     uint32 sortingOffset;

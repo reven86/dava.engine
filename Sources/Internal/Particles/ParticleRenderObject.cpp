@@ -176,14 +176,14 @@ void ParticleRenderObject::PrepareRenderData(Camera * camera)
 			currRenderGroup->enableFrameBlend = currGroup.layer->enableFrameBlend;
 			currRenderGroup->renderBatch->SetMaterial(currMaterial);*/
 
-            AppendParticleGroup(itGroupStart, itGroupCurr, particlesInGroup);
+            AppendParticleGroup(itGroupStart, itGroupCurr, particlesInGroup, currCamDirection);
             itGroupStart = itGroupCurr;
             particlesInGroup = 0;
 		}                    
         particlesInGroup += CalculateParticleCount(*itGroupCurr);
 	}	
     if (itGroupStart != effectData->groups.end())
-        AppendParticleGroup(itGroupStart, effectData->groups.end(), particlesInGroup);
+        AppendParticleGroup(itGroupStart, effectData->groups.end(), particlesInGroup, currCamDirection);
 	
     /*
 	int32 currParticleIndices = static_cast<int32>(indices.size()/INDICES_PER_PARTICLE);
@@ -239,7 +239,7 @@ struct ParticleVertex
 };
 
 //void ParticleRenderObject::AppendParticleGroup(const ParticleGroup &group, ParticleRenderGroup *renderGroup, const Vector3& cameraDirection)
-void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator begin, List<ParticleGroup>::iterator end, uint32 particlesCount)
+void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator begin, List<ParticleGroup>::iterator end, uint32 particlesCount, const Vector3& cameraDirection)
 {
     
     if (!particlesCount)
@@ -305,7 +305,7 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
                 {
                     ey = current->speed;
                     float32 vel = ey.Length();
-                    ex = ey.CrossProduct(basisVectors[2]); //we place camera ey there
+                    ex = ey.CrossProduct(cameraDirection);
                     ex.Normalize();
                     ey *= (group.layer->scaleVelocityBase / vel + group.layer->scaleVelocityFactor); //optimized ex=(svBase+svFactor*vel)/vel
                 }

@@ -215,11 +215,14 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
                     passDescriptor.depthStateDescriptor.depthTestEnabled = false;
                     passDescriptor.depthStateDescriptor.depthWriteEnabled = false;
                     passDescriptor.cullMode = rhi::CULL_NONE;
+                    bool hasBlend = false;
                     for (auto& state : states)
                     {
                         if (state == "STATE_BLEND")
                         {
-                            shaderDefines[NMaterialFlagName::FLAG_BLENDING] = BLENDING_ALPHABLEND;
+                            hasBlend = true;
+                            if (shaderDefines.find(NMaterialFlagName::FLAG_BLENDING) == shaderDefines.end())
+                                shaderDefines[NMaterialFlagName::FLAG_BLENDING] = BLENDING_ALPHABLEND;
                         }
                         else if (state == "STATE_CULL")
                         {
@@ -320,7 +323,10 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
                             }
                         }
 
-                    }                        
+                    }  
+                    //it's temporary solution to allow runtime blend-mode configuration and still prevent blending for materials without corresponding state
+                    if (!hasBlend)
+                        shaderDefines.erase(NMaterialFlagName::FLAG_BLENDING); 
                 }                
             }
 

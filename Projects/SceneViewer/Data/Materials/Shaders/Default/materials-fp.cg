@@ -74,7 +74,7 @@ FPROG_IN_BEGIN
     #endif
 
     #if FRAME_BLEND
-        varying lowp float varTime;
+        FPROG_IN_TEXCOORD3(varTime, 1)
     #endif
 
 
@@ -189,7 +189,7 @@ FPROG_BEGIN
             
         #if FRAME_BLEND
             float4 blendFrameColor = FP_TEXTURE2D( albedo, FP_IN(varTexCoord1) );
-            textureColor0 = lerp( textureColor0, blendFrameColor, varTime );
+            textureColor0 = lerp( textureColor0, blendFrameColor, FP_IN(varTime) );
         #endif
     
     #elif MATERIAL_SKYBOX
