@@ -52,6 +52,17 @@
 
 namespace DAVA
 {
+    
+/*
+    TODO (for next iteration of landscape rendering)
+    - Error metric computation using GPU, now it takes about 1 second on CPU
+    - Instancing version for high end devices
+    - Vertex morphing for high end devices
+    - Remove old functions like SetTexture and etc
+    - Optimise SubdividePatch function (can be executed, not every render, we can calc 1/4 or 1/16 per frame)
+    - Change cursor rendering shader (can be done in landscape shader, instead of using of texture)
+    - Incremental update of index-buffer for low-end devices, instead of per-frame update. Only changed patches can be replaced.
+ */
 
 const FastName Landscape::PARAM_CAMERA_POSITION("cameraPosition");
 const FastName Landscape::PARAM_TEXTURE0_TILING("texture0Tiling");
@@ -335,8 +346,8 @@ void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
         
         int16 patchMod = realQuadCountInPatch / PATCH_QUAD_COUNT;
         
-        for (int16 xx = heightMapStartX; xx <= heightMapStartX + realQuadCountInPatch; ++xx)
-            for (int16 yy = heightMapStartY; yy <= heightMapStartY + realQuadCountInPatch; ++yy)
+        for (uint16 xx = heightMapStartX; xx <= heightMapStartX + realQuadCountInPatch; ++xx)
+            for (uint16 yy = heightMapStartY; yy <= heightMapStartY + realQuadCountInPatch; ++yy)
             {
                 uint16 value = data[heightmap->Size() * yy + xx];
                 Vector3 pos = GetPoint(xx, yy, value);
