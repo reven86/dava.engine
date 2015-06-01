@@ -34,6 +34,7 @@
 #include "Render/RenderBase.h"
 #include "FileSystem/FilePath.h"
 #include "TextureCompression/TextureConverter.h"
+#include <atomic>
 
 namespace DAVA
 {
@@ -77,7 +78,7 @@ public:
     FILESMAP spriteFiles;
 
     const Set<String>& GetErrors() const;
-    volatile bool running; //we do not declare this as "atomic", because in bad case we will convert one extra file
+    std::atomic_bool running; //we do not declare this as "atomic", because in bad case we will convert one extra file
 protected:
     Set<String> errors;
 
