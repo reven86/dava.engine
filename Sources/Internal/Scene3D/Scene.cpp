@@ -106,7 +106,7 @@ void EntityCache::Preload(const FilePath &path)
         auto count = scene->GetChildrenCount();
 
         Vector<Entity*> tempV;
-        tempV.reserve((count));
+        tempV.reserve(count);
         for(auto i = 0; i < count; ++i)
         {
             tempV.push_back(scene->GetChild(i));
@@ -1257,6 +1257,7 @@ void Scene::CopyScene(Scene* dst)
         Entity *clone = child->Clone();
         dst->AddNode(clone);
         copyID(child, clone);
+        clone->Release();
     }
 }
 
