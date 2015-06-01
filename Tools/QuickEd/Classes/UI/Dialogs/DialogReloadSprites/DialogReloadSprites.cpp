@@ -82,13 +82,15 @@ DialogReloadSprites::DialogReloadSprites(QWidget* parent)
 
 void DialogReloadSprites::OnStartClicked()
 {
-    QVariant data = comboBox_targetGPU->currentData();
-    if (!data.isValid())
+    const auto gpuData = comboBox_targetGPU->currentData();
+    const auto qualityData = comboBox_quality->currentData();
+    if (!gpuData.isValid() || !qualityData.isValid())
     {
         return;
     }
-    auto gpuType = static_cast<DAVA::eGPUFamily>(data.toInt());
-    spritesPacker->ReloadSprites(checkBox_clean->isChecked(), gpuType);
+    auto gpuType = static_cast<DAVA::eGPUFamily>(gpuData.toInt());
+    auto quality = static_cast<TextureConverter::eConvertQuality>(qualityData.toInt());
+    spritesPacker->ReloadSprites(checkBox_clean->isChecked(), gpuType, quality);
 }
 
 void DialogReloadSprites::LoadSettings()

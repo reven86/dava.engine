@@ -49,8 +49,9 @@ static const String FLAG_RECURSIVE = "--recursive";
 
 ResourcePacker2D::ResourcePacker2D()
 {
-	isLightmapsPacking = false;
-	clearProcessDirectory = false;
+    isLightmapsPacking = false;
+    clearProcessDirectory = false;
+    quality = TextureConverter::ECQ_VERY_HIGH;
 }
 
 void ResourcePacker2D::Stop()
@@ -61,21 +62,26 @@ void ResourcePacker2D::Stop()
 
 String ResourcePacker2D::GetProcessFolderName()
 {
-	return "$process/";
+    return "$process/";
+}
+
+void ResourcePacker2D::SetConvertQuality(const TextureConverter::eConvertQuality arg)
+{
+    quality = arg;
 }
 
 void ResourcePacker2D::InitFolders(const FilePath & inputPath,const FilePath & outputPath)
 {
     DVASSERT(inputPath.IsDirectoryPathname() && outputPath.IsDirectoryPathname());
     
-	inputGfxDirectory = inputPath;
-	outputGfxDirectory = outputPath;
-	excludeDirectory = inputPath + "../";
+    inputGfxDirectory = inputPath;
+    outputGfxDirectory = outputPath;
+    excludeDirectory = inputPath + "../";
 }
     
 void ResourcePacker2D::PackResources(eGPUFamily forGPU)
 {
-	Logger::FrameworkDebug("\nInput: %s \nOutput: %s \nExclude: %s",
+    Logger::FrameworkDebug("\nInput: %s \nOutput: %s \nExclude: %s",
                   inputGfxDirectory.GetAbsolutePathname().c_str(),
                   outputGfxDirectory.GetAbsolutePathname().c_str(),
                   excludeDirectory.GetAbsolutePathname().c_str());
@@ -83,46 +89,46 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
     Logger::FrameworkDebug("For GPU: %s", (GPU_INVALID != forGPU) ? GPUFamilyDescriptor::GetGPUName(forGPU).c_str() : "Unknown");
 
     
-	requestedGPUFamily = forGPU;
+    requestedGPUFamily = forGPU;
     
-	isGfxModified = false;
+    isGfxModified = false;
 
     gfxDirName = inputGfxDirectory.GetLastDirectoryName();
-	std::transform(gfxDirName.begin(), gfxDirName.end(), gfxDirName.begin(), ::tolower);
+    std::transform(gfxDirName.begin(), gfxDirName.end(), gfxDirName.begin(), ::tolower);
 
 
-	FilePath processDirectoryPath = excludeDirectory + GetProcessFolderName();
-	if (FileSystem::Instance()->CreateDirectory(processDirectoryPath, true) == FileSystem::DIRECTORY_CANT_CREATE)
-	{
-		//Logger::Error("Can't create directory: %s", processDirectoryPath.c_str());
-	}
+    FilePath processDirectoryPath = excludeDirectory + GetProcessFolderName();
+    if (FileSystem::Instance()->CreateDirectory(processDirectoryPath, true) == FileSystem::DIRECTORY_CANT_CREATE)
+    {
+    	//Logger::Error("Can't create directory: %s", processDirectoryPath.c_str());
+    }
 
 
-	if (IsMD5ChangedDir(processDirectoryPath, outputGfxDirectory, gfxDirName + ".md5", true))
-	{
+    if (IsMD5ChangedDir(processDirectoryPath, outputGfxDirectory, gfxDirName + ".md5", true))
+    {
         if (Core::Instance()->IsConsoleMode())
         {
             Logger::FrameworkDebug("[Gfx not available or changed - performing full repack]");
         }
         isGfxModified = true;
-	
-		// Remove whole output directory
-		bool result = FileSystem::Instance()->DeleteDirectory(outputGfxDirectory);
-		if (result)
-		{
-			Logger::FrameworkDebug("Removed output directory: %s", outputGfxDirectory.GetAbsolutePathname().c_str());
-		}
-		if (!result && Core::Instance()->IsConsoleMode() && CommandLineParser::Instance()->GetVerbose())
-		{
-			AddError(Format("[ERROR: Can't delete directory %s]",
-									outputGfxDirectory.GetAbsolutePathname().c_str()));
-		}
-	}
+    
+    	// Remove whole output directory
+    	bool result = FileSystem::Instance()->DeleteDirectory(outputGfxDirectory);
+    	if (result)
+    	{
+    		Logger::FrameworkDebug("Removed output directory: %s", outputGfxDirectory.GetAbsolutePathname().c_str());
+    	}
+    	if (!result && Core::Instance()->IsConsoleMode() && CommandLineParser::Instance()->GetVerbose())
+    	{
+    		AddError(Format("[ERROR: Can't delete directory %s]",
+    								outputGfxDirectory.GetAbsolutePathname().c_str()));
+    	}
+    }
     running = true;
-	RecursiveTreeWalk(inputGfxDirectory, outputGfxDirectory);
+    RecursiveTreeWalk(inputGfxDirectory, outputGfxDirectory);
 
-	// Put latest md5 after convertation
-	IsMD5ChangedDir(processDirectoryPath, outputGfxDirectory, gfxDirName + ".md5", true);
+    // Put latest md5 after convertation
+    IsMD5ChangedDir(processDirectoryPath, outputGfxDirectory, gfxDirName + ".md5", true);
 }
 
 void ResourcePacker2D::RecalculateMD5ForOutputDir()
@@ -141,33 +147,33 @@ bool ResourcePacker2D::IsMD5ChangedDir(const FilePath & processDirectoryPath, co
 {
     DVASSERT(processDirectoryPath.IsDirectoryPathname());
 
-	FilePath md5FileName = FilePath::CreateWithNewExtension(processDirectoryPath + name, ".md5");
+    FilePath md5FileName = FilePath::CreateWithNewExtension(processDirectoryPath + name, ".md5");
 
     std::array<uint8, 16> oldMD5Digest;
     std::array<uint8, 16> newMD5Digest;
-	bool isChanged = false;
-	File * file = File::Create(md5FileName, File::OPEN | File::READ);
-	if (nullptr == file)
-	{
-		isChanged = true;		
-	}
+    bool isChanged = false;
+    File * file = File::Create(md5FileName, File::OPEN | File::READ);
+    if (nullptr == file)
+    {
+    	isChanged = true;		
+    }
     else
-	{
-		int32 bytes = file->Read(oldMD5Digest.data(), 16);
-		DVASSERT(bytes == 16 && "We should always read 16 bytes from md5 file");
-	}
-	SafeRelease(file);
+    {
+    	int32 bytes = file->Read(oldMD5Digest.data(), 16);
+    	DVASSERT(bytes == 16 && "We should always read 16 bytes from md5 file");
+    }
+    SafeRelease(file);
 
     MD5::ForDirectory(pathname, newMD5Digest.data(), isRecursive, /*includeHidden=*/false);
 
-	file = File::Create(md5FileName, File::CREATE | File::WRITE);
+    file = File::Create(md5FileName, File::CREATE | File::WRITE);
     DVASSERT(file);
     
-	int32 bytes = file->Write(newMD5Digest.data(), 16);
-	DVASSERT(bytes == 16 && "16 bytes should be always written for md5 file");
-	SafeRelease(file);
+    int32 bytes = file->Write(newMD5Digest.data(), 16);
+    DVASSERT(bytes == 16 && "16 bytes should be always written for md5 file");
+    SafeRelease(file);
 
-	// if already changed return without compare
+    // if already changed return without compare
     if (isChanged)
     {
         return true;
@@ -180,29 +186,29 @@ bool ResourcePacker2D::IsMD5ChangedFile(const FilePath & processDirectoryPath, c
 {
     DVASSERT(processDirectoryPath.IsDirectoryPathname());
 
-	FilePath md5FileName = FilePath::CreateWithNewExtension(processDirectoryPath + psdName, ".md5");
+    FilePath md5FileName = FilePath::CreateWithNewExtension(processDirectoryPath + psdName, ".md5");
 
     std::array<uint8, 16> oldMD5Digest;
     std::array<uint8, 16> newMD5Digest;
-	bool isChanged = false;
-	File * file = File::Create(md5FileName, File::OPEN | File::READ);
-	if (nullptr == file)
-	{
-		isChanged = true;		
-	}else
-	{
-		int32 bytes = file->Read(oldMD5Digest.data(), 16);
-		DVASSERT(bytes == 16 && "We should always read 16 bytes from md5 file");
-	}
-	SafeRelease(file);
+    bool isChanged = false;
+    File * file = File::Create(md5FileName, File::OPEN | File::READ);
+    if (nullptr == file)
+    {
+    	isChanged = true;		
+    }else
+    {
+    	int32 bytes = file->Read(oldMD5Digest.data(), 16);
+    	DVASSERT(bytes == 16 && "We should always read 16 bytes from md5 file");
+    }
+    SafeRelease(file);
 
-		
-	MD5::ForFile(pathname, newMD5Digest.data());
-	
-	file = File::Create(md5FileName, File::CREATE | File::WRITE);
-	int32 bytes = file->Write(newMD5Digest.data(), 16);
-	DVASSERT(bytes == 16 && "16 bytes should be always written for md5 file");
-	SafeRelease(file);
+    	
+    MD5::ForFile(pathname, newMD5Digest.data());
+    
+    file = File::Create(md5FileName, File::CREATE | File::WRITE);
+    int32 bytes = file->Write(newMD5Digest.data(), 16);
+    DVASSERT(bytes == 16 && "16 bytes should be always written for md5 file");
+    SafeRelease(file);
 
     return std::equal(oldMD5Digest.begin(), oldMD5Digest.end(), newMD5Digest.begin());
 }
@@ -211,40 +217,40 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 {
     DVASSERT(processDirectoryPath.IsDirectoryPathname());
     
-	uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? TexturePacker::TSIZE_4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
+    uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? TexturePacker::TSIZE_4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
 
-	bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
+    bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
     bool useLayerNames = CommandLineParser::Instance()->IsFlagSet("--useLayerNames");
-	
+    
     FilePath psdNameWithoutExtension(processDirectoryPath + psdName);
     psdNameWithoutExtension.TruncateExtension();
-	
+    
     IMagickHelper::CroppedData cropped_data;
     
     IMagickHelper::ConvertToPNGCroppedGeometry( psdPathname.GetAbsolutePathname().c_str(), processDirectoryPath.GetAbsolutePathname().c_str() , &cropped_data, true );
-		
-	if ( cropped_data.layers_array_size == 0 )
-	{
-		AddError(Format("Number of layers is too low: %s", psdPathname.GetAbsolutePathname().c_str()));
-		return nullptr;
-	}
-		
-	//Logger::FrameworkDebug("psd file: %s wext: %s", psdPathname.c_str(), psdNameWithoutExtension.c_str());
-		
-	int width  = cropped_data.layer_width;
-	int height = cropped_data.layer_height;
-		
-	DefinitionFile * defFile = new DefinitionFile;
-	defFile->filename = psdNameWithoutExtension + ".txt";
+    	
+    if ( cropped_data.layers_array_size == 0 )
+    {
+    	AddError(Format("Number of layers is too low: %s", psdPathname.GetAbsolutePathname().c_str()));
+    	return nullptr;
+    }
+    	
+    //Logger::FrameworkDebug("psd file: %s wext: %s", psdPathname.c_str(), psdNameWithoutExtension.c_str());
+    	
+    int width  = cropped_data.layer_width;
+    int height = cropped_data.layer_height;
+    	
+    DefinitionFile * defFile = new DefinitionFile;
+    defFile->filename = psdNameWithoutExtension + ".txt";
 
-	defFile->spriteWidth = width;
-	defFile->spriteHeight = height;
-	defFile->frameCount = static_cast<int>(cropped_data.layers_array_size) - 1;
-	defFile->frameRects = new Rect2i[defFile->frameCount];
+    defFile->spriteWidth = width;
+    defFile->spriteHeight = height;
+    defFile->frameCount = static_cast<int>(cropped_data.layers_array_size) - 1;
+    defFile->frameRects = new Rect2i[defFile->frameCount];
 
-	for(int k = 1; k < static_cast<int>(cropped_data.layers_array_size); ++k)
-	{
-		//save layer names
+    for(int k = 1; k < static_cast<int>(cropped_data.layers_array_size); ++k)
+    {
+    	//save layer names
         String layerName;
         
         if (useLayerNames)
@@ -267,52 +273,52 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
             layerName.append(std::to_string(k - 1));
         }
         
-		defFile->frameNames.push_back(layerName);
+    	defFile->frameNames.push_back(layerName);
 
 
-		//save layer rects
-		if ( !withAlpha )
-		{
-			defFile->frameRects[k - 1] = Rect2i(cropped_data.layers_array[k].x, cropped_data.layers_array[k].y, cropped_data.layers_array[k].dx, cropped_data.layers_array[k].dy) ;
+    	//save layer rects
+    	if ( !withAlpha )
+    	{
+    		defFile->frameRects[k - 1] = Rect2i(cropped_data.layers_array[k].x, cropped_data.layers_array[k].y, cropped_data.layers_array[k].dx, cropped_data.layers_array[k].dy) ;
 
-			//printf("Percent: %d Aspect: %d Greater: %d Less: %d\n", (int)bbox.percent(), (int)bbox.aspect(), (int)bbox.greater(), (int)bbox.less());
+    		//printf("Percent: %d Aspect: %d Greater: %d Less: %d\n", (int)bbox.percent(), (int)bbox.aspect(), (int)bbox.greater(), (int)bbox.less());
 
-			if ((defFile->frameRects[k - 1].dx > (int32)maxTextureSize) || (defFile->frameRects[k - 1].dy > (int32)maxTextureSize))
-			{
-				Logger::Warning("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!", psdName.c_str(), k - 1, maxTextureSize
-					, defFile->frameRects[k - 1].dx, defFile->frameRects[k - 1].dy, width, height);
+    		if ((defFile->frameRects[k - 1].dx > (int32)maxTextureSize) || (defFile->frameRects[k - 1].dy > (int32)maxTextureSize))
+    		{
+    			Logger::Warning("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!", psdName.c_str(), k - 1, maxTextureSize
+    				, defFile->frameRects[k - 1].dx, defFile->frameRects[k - 1].dy, width, height);
 
-				defFile->frameRects[k - 1].dx = width;
-				defFile->frameRects[k - 1].dy = height;
-			}
-			else
-			{
-				if ((defFile->frameRects[k - 1].dx > width))
-				{
-					Logger::Warning("For texture %s, layer %d width is bigger than sprite width: %d > %d. Layer width will be reduced to the sprite value", psdName.c_str(), k - 1, defFile->frameRects[k - 1].dx, width);
-					defFile->frameRects[k - 1].dx = width;
-				}
+    			defFile->frameRects[k - 1].dx = width;
+    			defFile->frameRects[k - 1].dy = height;
+    		}
+    		else
+    		{
+    			if ((defFile->frameRects[k - 1].dx > width))
+    			{
+    				Logger::Warning("For texture %s, layer %d width is bigger than sprite width: %d > %d. Layer width will be reduced to the sprite value", psdName.c_str(), k - 1, defFile->frameRects[k - 1].dx, width);
+    				defFile->frameRects[k - 1].dx = width;
+    			}
 
-				if ((defFile->frameRects[k - 1].dy > height))
-				{
-					Logger::Warning("For texture %s, layer %d height is bigger than sprite height: %d > %d. Layer height will be reduced to the sprite value", psdName.c_str(), k - 1, defFile->frameRects[k - 1].dy, height);
-					defFile->frameRects[k - 1].dy = height;
-				}
-			}
-		}
+    			if ((defFile->frameRects[k - 1].dy > height))
+    			{
+    				Logger::Warning("For texture %s, layer %d height is bigger than sprite height: %d > %d. Layer height will be reduced to the sprite value", psdName.c_str(), k - 1, defFile->frameRects[k - 1].dy, height);
+    				defFile->frameRects[k - 1].dy = height;
+    			}
+    		}
+    	}
         else
         {
             defFile->frameRects[k - 1] = Rect2i(cropped_data.layers_array[k].x, cropped_data.layers_array[k].y, width, height);
         }
-		// add borders
-		if (!twoSideMargin )
-		{
-			defFile->frameRects[k - 1].dx += texturesMargin;
-			defFile->frameRects[k - 1].dy += texturesMargin;
-		}
-	}
-		
-	return defFile;
+    	// add borders
+    	if (!twoSideMargin )
+    	{
+    		defFile->frameRects[k - 1].dx += texturesMargin;
+    		defFile->frameRects[k - 1].dy += texturesMargin;
+    	}
+    }
+    	
+    return defFile;
 
 }
 
@@ -320,15 +326,15 @@ Vector<String> ResourcePacker2D::FetchFlags(const FilePath & flagsPathname)
 {
     Vector<String> tokens;
 
-	File * file = File::Create(flagsPathname, File::READ | File::OPEN);
-	if (nullptr == file)
-	{
-		AddError(Format("Failed to open file: %s", flagsPathname.GetAbsolutePathname().c_str()));
-		
+    File * file = File::Create(flagsPathname, File::READ | File::OPEN);
+    if (nullptr == file)
+    {
+    	AddError(Format("Failed to open file: %s", flagsPathname.GetAbsolutePathname().c_str()));
+    	
         return tokens;
-	}
+    }
 
-	String tokenString = file->ReadLine();
+    String tokenString = file->ReadLine();
     Split(tokenString, " ", tokens, false);
 
     for (auto& token : tokens)
@@ -336,9 +342,9 @@ Vector<String> ResourcePacker2D::FetchFlags(const FilePath & flagsPathname)
         Logger::FrameworkDebug("Token: %s", token.c_str());
     }
 
-	SafeRelease(file);
-	
-	return tokens;
+    SafeRelease(file);
+    
+    return tokens;
 }
 
 void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FilePath & outputPath, const Vector<String> & passedFlags)
@@ -348,45 +354,45 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     {
         return;
     }
-	uint64 packTime = SystemTimer::Instance()->AbsoluteMS();
+    uint64 packTime = SystemTimer::Instance()->AbsoluteMS();
 
-	String inputRelativePath = inputPath.GetRelativePathname(excludeDirectory);
-	FilePath processDirectoryPath = excludeDirectory  + GetProcessFolderName() + inputRelativePath;
+    String inputRelativePath = inputPath.GetRelativePathname(excludeDirectory);
+    FilePath processDirectoryPath = excludeDirectory  + GetProcessFolderName() + inputRelativePath;
     FileSystem::Instance()->CreateDirectory(processDirectoryPath, true);
 
-	if(clearProcessDirectory)
-	{
-		FileSystem::Instance()->DeleteDirectoryFiles(processDirectoryPath, false);
-	}
+    if(clearProcessDirectory)
+    {
+    	FileSystem::Instance()->DeleteDirectoryFiles(processDirectoryPath, false);
+    }
 
     FileSystem::Instance()->CreateDirectory(outputPath);
-	
+    
     Vector<String> currentCommandFlags;
     List<DefinitionFile *> definitionFileList;
 
     ScopedPtr<FileList> fileList(new FileList(inputPath));
     fileList->Sort();
 
-	bool flagsFileFound = false;
-	for (int fi = 0; fi < fileList->GetCount(); ++fi)
-	{
-		if (fileList->GetFilename(fi) == "flags.txt")
-		{
-			currentCommandFlags = FetchFlags(fileList->GetPathname(fi));
-			flagsFileFound = true;
-			break;
-		}
-	}
-	if (!flagsFileFound)
+    bool flagsFileFound = false;
+    for (int fi = 0; fi < fileList->GetCount(); ++fi)
+    {
+    	if (fileList->GetFilename(fi) == "flags.txt")
+    	{
+    		currentCommandFlags = FetchFlags(fileList->GetPathname(fi));
+    		flagsFileFound = true;
+    		break;
+    	}
+    }
+    if (!flagsFileFound)
     {
         currentCommandFlags = passedFlags;
     }
 
     CommandLineParser::Instance()->SetArguments(currentCommandFlags);
 
-	
-	bool modified = isGfxModified;
-	// Process all psd / png files
+    
+    bool modified = isGfxModified;
+    // Process all psd / png files
 
     if (IsMD5ChangedDir(processDirectoryPath, inputPath, "dir.md5", false) || 
         CommandLineParser::CommandIsFound(String("-forceModify")))
@@ -394,9 +400,9 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
         modified = true;
     }
 
-	// read textures margins settings
-	bool useTwoSideMargin = CommandLineParser::Instance()->IsFlagSet("--add2sidepixel");
-	uint32 marginInPixels = TexturePacker::DEFAULT_MARGIN;
+    // read textures margins settings
+    bool useTwoSideMargin = CommandLineParser::Instance()->IsFlagSet("--add2sidepixel");
+    uint32 marginInPixels = TexturePacker::DEFAULT_MARGIN;
     if (!useTwoSideMargin)
     {
         if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
@@ -415,143 +421,144 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
         {
             marginInPixels = 4;
         }
-	}
+    }
 
-	bool needPackResourcesInThisDir = true;
-	if (modified)
-	{
-		FileSystem::Instance()->DeleteDirectoryFiles(outputPath, false);
-		
-		for (int fi = 0; fi < fileList->GetCount(); ++fi)
-		{
-			if (!fileList->IsDirectory(fi))
-			{
-				FilePath fullname = fileList->GetPathname(fi);
-				if (fullname.IsEqualToExtension(".psd"))
-				{
+    bool needPackResourcesInThisDir = true;
+    if (modified)
+    {
+    	FileSystem::Instance()->DeleteDirectoryFiles(outputPath, false);
+    	
+    	for (int fi = 0; fi < fileList->GetCount(); ++fi)
+    	{
+    		if (!fileList->IsDirectory(fi))
+    		{
+    			FilePath fullname = fileList->GetPathname(fi);
+    			if (fullname.IsEqualToExtension(".psd"))
+    			{
                     //TODO: check if we need filename or pathname
-					DefinitionFile * defFile = ProcessPSD(processDirectoryPath, fullname, fullname.GetFilename(), useTwoSideMargin, marginInPixels);
-					if (!defFile)
-					{
-						// An error occured while converting this PSD file - cancel converting in this directory.
-						needPackResourcesInThisDir = false;
-						break;
-					}
+    				DefinitionFile * defFile = ProcessPSD(processDirectoryPath, fullname, fullname.GetFilename(), useTwoSideMargin, marginInPixels);
+    				if (!defFile)
+    				{
+    					// An error occured while converting this PSD file - cancel converting in this directory.
+    					needPackResourcesInThisDir = false;
+    					break;
+    				}
 
-					definitionFileList.push_back(defFile);
-				}
-				else if(isLightmapsPacking && fullname.IsEqualToExtension(".png"))
-				{
-					DefinitionFile * defFile = new DefinitionFile();
-					defFile->LoadPNG(fullname, processDirectoryPath);
-					definitionFileList.push_back(defFile);
-				}
-				else if (fullname.IsEqualToExtension(".pngdef"))
-				{
-					DefinitionFile * defFile = new DefinitionFile();
-					if (defFile->LoadPNGDef(fullname, processDirectoryPath, useTwoSideMargin, marginInPixels))
-					{
-						definitionFileList.push_back(defFile);
-					}
-					else 
-					{
-						SafeDelete(defFile);
-					}
-				}
-			}
-		}
+    				definitionFileList.push_back(defFile);
+    			}
+    			else if(isLightmapsPacking && fullname.IsEqualToExtension(".png"))
+    			{
+    				DefinitionFile * defFile = new DefinitionFile();
+    				defFile->LoadPNG(fullname, processDirectoryPath);
+    				definitionFileList.push_back(defFile);
+    			}
+    			else if (fullname.IsEqualToExtension(".pngdef"))
+    			{
+    				DefinitionFile * defFile = new DefinitionFile();
+    				if (defFile->LoadPNGDef(fullname, processDirectoryPath, useTwoSideMargin, marginInPixels))
+    				{
+    					definitionFileList.push_back(defFile);
+    				}
+    				else 
+    				{
+    					SafeDelete(defFile);
+    				}
+    			}
+    		}
+    	}
 
         if (modified && !definitionFileList.empty())
-		{
-			TexturePacker packer;
-			if(isLightmapsPacking)
-			{
-				packer.UseOnlySquareTextures();
-				packer.SetMaxTextureSize(2048);
-			}
+    	{
+    		TexturePacker packer;
+            packer.SetConvertQuality(quality);
+    		if(isLightmapsPacking)
+    		{
+    			packer.UseOnlySquareTextures();
+    			packer.SetMaxTextureSize(2048);
+    		}
             else if(CommandLineParser::Instance()->IsFlagSet("--tsize4096"))
             {
                 packer.SetMaxTextureSize(TexturePacker::TSIZE_4096);
             }
 
-			packer.SetTwoSideMargin(useTwoSideMargin);
-			packer.SetTexturesMargin(marginInPixels);
+    		packer.SetTwoSideMargin(useTwoSideMargin);
+    		packer.SetTexturesMargin(marginInPixels);
 
-			if (CommandLineParser::Instance()->IsFlagSet("--split"))
-			{
-				packer.PackToTexturesSeparate(excludeDirectory, outputPath, definitionFileList, requestedGPUFamily);
-			}
-			else
-			{
-				packer.PackToTextures(excludeDirectory, outputPath, definitionFileList, requestedGPUFamily);
-			}
-			
-			Set<String> currentErrors = packer.GetErrors();
-			if (!currentErrors.empty())
-			{
-				errors.insert(currentErrors.begin(), currentErrors.end());
-			}
-		}
-	}	
+    		if (CommandLineParser::Instance()->IsFlagSet("--split"))
+    		{
+    			packer.PackToTexturesSeparate(excludeDirectory, outputPath, definitionFileList, requestedGPUFamily);
+    		}
+    		else
+    		{
+    			packer.PackToTextures(excludeDirectory, outputPath, definitionFileList, requestedGPUFamily);
+    		}
+    		
+    		Set<String> currentErrors = packer.GetErrors();
+    		if (!currentErrors.empty())
+    		{
+    			errors.insert(currentErrors.begin(), currentErrors.end());
+    		}
+    	}
+    }	
 
-	packTime = SystemTimer::Instance()->AbsoluteMS() - packTime;
+    packTime = SystemTimer::Instance()->AbsoluteMS() - packTime;
 
-	if (Core::Instance()->IsConsoleMode())
-	{
+    if (Core::Instance()->IsConsoleMode())
+    {
         String flagsString;
         Merge(currentCommandFlags, ' ', flagsString);
         Logger::Info("[%d files packed with flags: %s]", (int)definitionFileList.size(), flagsString.c_str());
-	
+    
         const char* result = (modified && !definitionFileList.empty()) ? "[REPACKED]" : "[unchanged]";
-		Logger::Info("[%s - %.2lf secs] - %s", inputPath.GetAbsolutePathname().c_str(), (float64)packTime / 1000.0f, result);
-	}
+    	Logger::Info("[%s - %.2lf secs] - %s", inputPath.GetAbsolutePathname().c_str(), (float64)packTime / 1000.0f, result);
+    }
 
-	
-	for (List<DefinitionFile*>::iterator it = definitionFileList.begin(); it != definitionFileList.end(); ++it)
-	{
-		DefinitionFile * file = *it;
-		SafeDelete(file);
-	}
-	definitionFileList.clear();
-	
-	for (int fi = 0; fi < fileList->GetCount(); ++fi)
-	{
-		if (fileList->IsDirectory(fi))
-		{
-			String filename = fileList->GetFilename(fi);
-			if (!fileList->IsNavigationDirectory(fi) && (filename != "$process") && (filename != ".svn"))
-			{
-				if ((filename.size() > 0) && (filename[0] != '.'))
+    
+    for (List<DefinitionFile*>::iterator it = definitionFileList.begin(); it != definitionFileList.end(); ++it)
+    {
+    	DefinitionFile * file = *it;
+    	SafeDelete(file);
+    }
+    definitionFileList.clear();
+    
+    for (int fi = 0; fi < fileList->GetCount(); ++fi)
+    {
+    	if (fileList->IsDirectory(fi))
+    	{
+    		String filename = fileList->GetFilename(fi);
+    		if (!fileList->IsNavigationDirectory(fi) && (filename != "$process") && (filename != ".svn"))
+    		{
+    			if ((filename.size() > 0) && (filename[0] != '.'))
                 {
                     FilePath input = inputPath + filename;
                     input.MakeDirectoryPathname();
                     
                     FilePath output = outputPath + filename;
                     output.MakeDirectoryPathname();
-					
+    				
                     if (find(currentCommandFlags.begin(), currentCommandFlags.end(), FLAG_RECURSIVE) != currentCommandFlags.end())
-					{
-						RecursiveTreeWalk(input, output, currentCommandFlags);
-					}
-					else
-					{
-						RecursiveTreeWalk(input, output);
-					}
+    				{
+    					RecursiveTreeWalk(input, output, currentCommandFlags);
+    				}
+    				else
+    				{
+    					RecursiveTreeWalk(input, output);
+    				}
                 }
-			}
-		}
-	}
+    		}
+    	}
+    }
 }
 
 const Set<String>& ResourcePacker2D::GetErrors() const
 {
-	return errors;
+    return errors;
 }
 
 void ResourcePacker2D::AddError(const String& errorMsg)
 {
-	Logger::Error(errorMsg.c_str());
-	errors.insert(errorMsg);
+    Logger::Error(errorMsg.c_str());
+    errors.insert(errorMsg);
 }
 
 };

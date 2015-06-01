@@ -33,6 +33,7 @@
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
 #include "FileSystem/FilePath.h"
+#include "TextureCompression/TextureConverter.h"
 
 namespace DAVA
 {
@@ -43,42 +44,43 @@ class YamlNode;
 class ResourcePacker2D
 {
 public:
-	typedef std::map<String, String> FILESMAP;
-	ResourcePacker2D();
+    typedef std::map<String, String> FILESMAP;
+    ResourcePacker2D();
     void Stop();
-	// Packing of resources section
-	void InitFolders(const FilePath & inputPath,const FilePath & outputPath);
-	void PackResources(eGPUFamily forGPU);
+    // Packing of resources section
+    void InitFolders(const FilePath & inputPath,const FilePath & outputPath);
+    void PackResources(eGPUFamily forGPU);
     void RecalculateMD5ForOutputDir();
-    
-	void RecursiveTreeWalk(const FilePath & inputPath,const FilePath & outputPath, const Vector<String> & flags = Vector<String>());
+    void RecursiveTreeWalk(const FilePath & inputPath, const FilePath & outputPath, const Vector<String> & flags = Vector<String>());
     bool IsMD5ChangedDir(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName, bool isRecursive) const;
-	bool IsMD5ChangedFile(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName) const;
-	
+    bool IsMD5ChangedFile(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName) const;
+    
     DefinitionFile * ProcessPSD(const FilePath & processDirectoryPath, const FilePath & psdPathname, const String & psdName, bool twoSideMargin, uint32 texturesMargin);
-	Vector<String> FetchFlags(const FilePath & flagsPathname);
+    Vector<String> FetchFlags(const FilePath & flagsPathname);
 
-	static String GetProcessFolderName();
+    static String GetProcessFolderName();
+    void SetConvertQuality(const TextureConverter::eConvertQuality quality);
 public:
     
-	FilePath inputGfxDirectory;
-	FilePath outputGfxDirectory;
-	FilePath excludeDirectory;
-	String gfxDirName;
+    FilePath inputGfxDirectory;
+    FilePath outputGfxDirectory;
+    FilePath excludeDirectory;
+    String gfxDirName;
     
-	bool isGfxModified;
+    bool isGfxModified;
     
-	bool isLightmapsPacking;
-	bool clearProcessDirectory;
+    bool isLightmapsPacking;
+    bool clearProcessDirectory;
     eGPUFamily requestedGPUFamily;
- 	FILESMAP spriteFiles;
+    TextureConverter::eConvertQuality quality;
+    FILESMAP spriteFiles;
 
-	const Set<String>& GetErrors() const;
+    const Set<String>& GetErrors() const;
     volatile bool running; //we do not declare this as "atomic", because in bad case we will convert one extra file
 protected:
-	Set<String> errors;
+    Set<String> errors;
 
-	void AddError(const String& errorMsg);
+    void AddError(const String& errorMsg);
 };
 };
 

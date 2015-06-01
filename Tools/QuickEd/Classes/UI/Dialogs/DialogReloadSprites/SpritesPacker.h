@@ -34,6 +34,7 @@
 #include "Render/RenderBase.h"
 #include <QObject>
 #include <QFuture>
+#include "TextureCompression/TextureConverter.h"
 
 namespace DAVA {
     class ResourcePacker2D;
@@ -46,11 +47,11 @@ class SpritesPacker : public QObject
 public:
     SpritesPacker(QObject *parent = nullptr);
     ~SpritesPacker();
-    void ReloadSprites(bool clearDirs, const DAVA::eGPUFamily gpu);
+    void ReloadSprites(bool clearDirs, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
 public slots:
     void stop();
 private:
-    void ReloadSpritePrivate(bool clearDirs, const DAVA::eGPUFamily gpu);
+    void ReloadSpritePrivate(bool clearDirs, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
     DAVA::ResourcePacker2D *resourcePacker2D;
     QFuture<void> process;
 

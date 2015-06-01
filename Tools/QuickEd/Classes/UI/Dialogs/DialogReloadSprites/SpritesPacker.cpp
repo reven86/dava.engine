@@ -53,12 +53,12 @@ SpritesPacker::~SpritesPacker()
     delete resourcePacker2D;
 }
 
-void SpritesPacker::ReloadSprites(bool clearDirs, const DAVA::eGPUFamily gpu)
+void SpritesPacker::ReloadSprites(bool clearDirs, const DAVA::eGPUFamily gpu, const TextureConverter::eConvertQuality quality)
 {
-    process = QtConcurrent::run(this, &SpritesPacker::ReloadSpritePrivate, clearDirs, gpu);// there must be function UpdateSprites
+    process = QtConcurrent::run(this, &SpritesPacker::ReloadSpritePrivate, clearDirs, gpu, quality);// there must be function UpdateSprites
 }
 
-void SpritesPacker::ReloadSpritePrivate(bool clearDirs, const DAVA::eGPUFamily gpu)
+void SpritesPacker::ReloadSpritePrivate(bool clearDirs, const DAVA::eGPUFamily gpu, const TextureConverter::eConvertQuality quality)
 {
     setRunning(true);
     QString currentProjectPath = ResourcesManageHelper::GetProjectPath();
@@ -82,6 +82,7 @@ void SpritesPacker::ReloadSpritePrivate(bool clearDirs, const DAVA::eGPUFamily g
             const FilePath outputFilePath = FilePath(QDir::toNativeSeparators(outputDir.absolutePath()).toStdString()).MakeDirectoryPathname();
             CommandLineParser::Instance()->Clear(); //CommandLineParser is used in ResourcePackerScreen
             resourcePacker2D->clearProcessDirectory = clearDirs;
+            resourcePacker2D->SetConvertQuality(quality);
             resourcePacker2D->InitFolders(inputFilePath, outputFilePath);
             resourcePacker2D->PackResources(gpu);
         }
