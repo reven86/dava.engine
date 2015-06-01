@@ -119,6 +119,8 @@ void GameCore::EndFrame()
     pass_desc.depthStencilBuffer.loadAction  = rhi::LOADACTION_NONE;
     pass_desc.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     pass_desc.priority                       = -10000;
+    pass_desc.viewport[2]                    = Renderer::GetFramebufferWidth();
+    pass_desc.viewport[3]                    = Renderer::GetFramebufferHeight();
 
     rhi::HPacketList pl;
     rhi::HRenderPass pass = rhi::AllocateRenderPass( pass_desc, 1, &pl );
@@ -139,7 +141,7 @@ void GameCore::EndFrame()
     const uint32 color1  = rhi::NativeColorRGBA(0.9f,0.9f,1.0f,1);
     const uint32 color2  = rhi::NativeColorRGBA(0.8f,0.8f,0.8f,1);
     const int    x0      = 10;
-    const int    y0      = 10;
+    const int    y0      = 40;
 
     switch( rhi::HostApi() )
     {
