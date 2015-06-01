@@ -42,9 +42,9 @@ using namespace DAVA;
 
 SpritesPacker::SpritesPacker(QObject* parent)
     : QObject(parent)
+    , resourcePacker2D(new ResourcePacker2D())
     , m_running(false)
 {
-    resourcePacker2D = new ResourcePacker2D();
     resourcePacker2D->isLightmapsPacking = true;
 }
 
