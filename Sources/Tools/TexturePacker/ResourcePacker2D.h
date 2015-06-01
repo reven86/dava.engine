@@ -74,7 +74,7 @@ public:
  	FILESMAP spriteFiles;
 
 	const Set<String>& GetErrors() const;
-    bool running; //we do not declare this as "atomic", because in bad case we will convert one extra file
+    volatile bool running; //we do not declare this as "atomic", because in bad case we will convert one extra file
 protected:
 	Set<String> errors;
 

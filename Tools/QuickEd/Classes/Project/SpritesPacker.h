@@ -62,7 +62,7 @@ public slots:
 signals:
     void runningChanged(bool arg);
 private:
-    bool m_running;
+    volatile bool m_running;
 };
 
 #endif //__SPRITES_PACKER_H__
