@@ -33,14 +33,13 @@
 #include "fontmanagerdialog.h"
 #include "Helpers/ResourcesManageHelper.h"
 #include "Dialogs/LocalizationEditorDialog.h"
-#include "Dialogs/DialogReloadSprites.h"
+#include "Ui/Dialogs/DialogReloadSprites/DialogReloadSprites.h"
 //////////////////////////////////////////////////////////////////////////
 
 #include "UI/FileSystemView/FileSystemDockWidget.h"
 #include "Utils/QtDavaConvertion.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
-#include "Project/SpritesPacker.h"
 
 namespace
 {

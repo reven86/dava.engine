@@ -27,8 +27,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 
-#include "UI/Dialogs/DialogReloadSprites.h"
-#include "Project/SpritesPacker.h"
+#include "UI/Dialogs/DialogReloadSprites/DialogReloadSprites.h"
+#include "UI/Dialogs/DialogReloadSprites/SpritesPacker.h"
 #include "TextureCompression/TextureConverter.h"
 #include "EditorCore.h"
 
@@ -42,7 +42,7 @@ namespace
 
 DialogReloadSprites::DialogReloadSprites(QWidget* parent)
     : QDialog(parent)
-    , spritesPacker(EditorCore::Instance()->GetProject()->GetSpritesPacker())
+    , spritesPacker(new SpritesPacker(this))
 {
     setupUi(this);
     pushButton_cancel->setEnabled(spritesPacker->isRunning());
