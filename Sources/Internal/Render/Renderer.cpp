@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Render/RHI/rhi_ShaderCache.h"
 #include "Render/ShaderCache.h"
 #include "Render/Material/FXCache.h"
+#include "Render/DynamicBufferAllocator.h"
 #include "Render/GPUFamilyDescriptor.h"
 
 namespace DAVA
@@ -140,14 +141,16 @@ int32 GetFramebufferHeight()
 void RequestGLScreenShot(ScreenShotCallbackDelegate *_screenShotCallback)
 {
     screenshotCallback = _screenShotCallback;
+    //RHI_COMPLETE
 }
 
 void BeginFrame()
 {
-
+    DynamicBufferAllocator::BeginFrame();
 }
 void EndFrame()
 {
+    DynamicBufferAllocator::EndFrame();
     rhi::Present();
 }
 

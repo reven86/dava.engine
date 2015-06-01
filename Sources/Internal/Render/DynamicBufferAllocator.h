@@ -29,13 +29,28 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __DAVAENGINE_DYNAMIC_BUFFER_ALLOCATOR_H_
 #define __DAVAENGINE_DYNAMIC_BUFFER_ALLOCATOR_H_
 
+#include "Render/RHI/rhi_Public.h"
+#include "Base/BaseTypes.h"
+
 namespace DAVA
 {
 namespace DynamicBufferAllocator
 {
+    struct AllocResult
+    {
+        rhi::HVertexBuffer buffer;
+        uint8 *data;
+        uint32 baseVertex;
+        uint32 allocatedVertices;
+    };
 
-    void Present();
+    AllocResult AllocateVertexBuffer(uint32 vertexSize, uint32 vertexCount);
+    
+    void BeginFrame();
+    void EndFrame();
     void Clear();
+
+    void SetDefaultPageSize(uint32 size);
 }
 }
 

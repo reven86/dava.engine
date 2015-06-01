@@ -50,7 +50,7 @@ RenderPass::RenderPass(const FastName & _name) : passName(_name)
     passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     passConfig.colorBuffer[0].storeAction = rhi::STOREACTION_NONE;
     passConfig.colorBuffer[0].clearColor[0] = 0.0f;
-    passConfig.colorBuffer[0].clearColor[1] = 0.0f;
+    passConfig.colorBuffer[0].clearColor[1] = 0.3f;
     passConfig.colorBuffer[0].clearColor[2] = 0.0f;
     passConfig.colorBuffer[0].clearColor[3] = 1.0f;
     passConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
