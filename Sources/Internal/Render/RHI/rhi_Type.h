@@ -409,6 +409,7 @@ Descriptor
                         width(0),
                         height(0),
                         format(TEXTURE_FORMAT_A8R8G8B8),
+                        mipCount(0),
                         isRenderTarget(false),
                         autoGenMipmaps(false)
                     {}
