@@ -47,14 +47,13 @@ namespace __cxxabiv1
 {
 extern "C"
 {
-// 3.4 Demangler API
 // https://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-4.3/a01696.html
 extern char* __cxa_demangle(const char* mangled_name,
                             char*       output_buffer,
                             size_t*     length,
                             int*        status)
 {
-#pragma message("warning: not implemented __cxa_demangle on android x86")
+#pragma message("not implemented __cxa_demangle on android x86")
 	return nullptr;
 }
 
