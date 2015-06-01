@@ -50,6 +50,7 @@ void GameCore::OnAppStarted()
     selectSceneScreen = new SelectSceneScreen();
     viewSceneScreen = new ViewSceneScreen();
     
+    //SetScenePath("~doc:/effect.sc2");
     SetScenePath("~doc:/karelia/karelia.sc2");
     //SetScenePath("~doc:/amigosville/amigosville.sc2");
 //    SetScenePath("~doc:/karelia/karelia_landscape.sc2");

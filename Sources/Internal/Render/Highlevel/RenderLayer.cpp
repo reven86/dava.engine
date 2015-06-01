@@ -136,11 +136,12 @@ void RenderLayer::Draw(Camera* camera, const RenderBatchArray & batchArray, rhi:
             {
                 packet.vertexStreamCount = 1;
                 packet.vertexStream[0] = batch->vertexBuffer;
+                packet.baseVertex = batch->vertexBase;
+                packet.vertexCount = batch->vertexCount;
                 packet.indexBuffer = batch->indexBuffer;
                 packet.primitiveType = batch->primitiveType;
                 packet.primitiveCount = batch->indexCount / 3;
-                packet.vertexLayoutUID = batch->vertexLayoutId;
-                packet.vertexCount = batch->vertexCount;
+                packet.vertexLayoutUID = batch->vertexLayoutId;                
                 packet.startIndex = batch->startIndex;
                 DVASSERT(packet.primitiveCount);
             }

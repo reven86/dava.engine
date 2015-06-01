@@ -42,6 +42,7 @@
 #include "Particles/ParticleRenderObject.h"
 #include "Debug/Stats.h"
 #include "Render/Renderer.h"
+#include "Render/Highlevel/RenderPassNames.h"
 
 
 namespace DAVA
@@ -51,7 +52,7 @@ namespace DAVA
 NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, bool enableFrameBlend, eBlending blending)
 {
 
-	if (!texture) //for superemmiter particles eg
+	if (!texture) //for superemitter particles eg
 		return NULL;
 
 	uint64 materialKey = blending;
@@ -69,20 +70,20 @@ NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, b
 	else //create new
 	{    
 		NMaterial *material = new NMaterial();
-        material->SetParent(particleBaseMaterial);
+        material->SetParent(particleBaseMaterial);        
 		
-        if (enableFrameBlend)
-			material->AddFlag(NMaterialFlagName::FLAG_FRAME_BLEND, 1);		
+        /*if (enableFrameBlend)
+			material->AddFlag(NMaterialFlagName::FLAG_FRAME_BLEND, 1);		*/
 
         if (!enableFog)  //inverse logic to suspend vertex fog inherited from global material
             material->AddFlag(NMaterialFlagName::FLAG_VERTEXFOG, 0);        
 			
-		material->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, texture);
-        material->SetFlag(NMaterialFlagName::FLAG_BLENDING, blending);
+		material->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, texture);
+        material->AddFlag(NMaterialFlagName::FLAG_BLENDING, blending);
 		
 		materialMap[materialKey] = material;
 
-        
+        material->PreBuildMaterial(PASS_FORWARD);
         
 
 		return material;
