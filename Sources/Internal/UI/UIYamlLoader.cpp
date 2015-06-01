@@ -556,48 +556,22 @@ Font* UIYamlLoader::CreateFontFromYamlNode(const YamlNode* node)
         return nullptr;
 
     const String & type = typeNode->AsString();
+    Font* font = nullptr;
+
     if (type == "FTFont")
     {
-        // parse font
         const YamlNode * fontNameNode = node->Get("name");
         if (!fontNameNode)
             return nullptr;
 
-        float32 fontSize = 10.0f;
-        const YamlNode * fontSizeNode = node->Get("size");
-        if (fontSizeNode)fontSize = fontSizeNode->AsFloat();
-
-        FTFont * font = FTFont::Create(fontNameNode->AsString());
+        font = FTFont::Create(fontNameNode->AsString());
         if (!font)
         {
             return nullptr;
         }
-
-        font->SetSize(fontSize);
-
-        const YamlNode * fontVerticalSpacingNode = node->Get("verticalSpacing");
-        if (fontVerticalSpacingNode)
-        {
-            font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt32());
-        }
-
-        const YamlNode * fontFontAscendNode = node->Get("ascendScale");
-        if (fontFontAscendNode)
-        {
-            font->SetAscendScale(fontFontAscendNode->AsFloat());
-        }
-
-        const YamlNode * fontFontDescendNode = node->Get("descendScale");
-        if (fontFontDescendNode)
-        {
-            font->SetDescendScale(fontFontDescendNode->AsFloat());
-        }
-
-        return font;
     }
     else if (type == "GraphicsFont")
     {
-        // parse font
         const YamlNode * fontNameNode = node->Get("sprite");
         if (!fontNameNode)
             return nullptr;
@@ -606,85 +580,59 @@ Font* UIYamlLoader::CreateFontFromYamlNode(const YamlNode* node)
         if (!definitionNode)
             return nullptr;
 
-        GraphicsFont * font = GraphicsFont::Create(definitionNode->AsString(), fontNameNode->AsString());
+        GraphicsFont* graphicsFont = GraphicsFont::Create(definitionNode->AsString(), fontNameNode->AsString());
+        font = graphicsFont;
+
         if (!font)
         {
             return nullptr;
-        }
-
-        const YamlNode * fontSizeNode = node->Get("size");
-        if (fontSizeNode)
-        {
-            font->SetSize(fontSizeNode->AsFloat());
-        }
-
-        const YamlNode * fontVerticalSpacingNode = node->Get("verticalSpacing");
-        if (fontVerticalSpacingNode)
-        {
-            font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt32());
-        }
-
-        const YamlNode * fontFontAscendNode = node->Get("ascendScale");
-        if (fontFontAscendNode)
-        {
-            font->SetAscendScale(fontFontAscendNode->AsFloat());
-        }
-
-        const YamlNode * fontFontDescendNode = node->Get("descendScale");
-        if (fontFontDescendNode)
-        {
-            font->SetDescendScale(fontFontDescendNode->AsFloat());
         }
 
         const YamlNode * fontHorizontalSpacingNode = node->Get("horizontalSpacing");
         if (fontHorizontalSpacingNode)
         {
-            font->SetHorizontalSpacing(fontHorizontalSpacingNode->AsInt32());
+            graphicsFont->SetHorizontalSpacing(fontHorizontalSpacingNode->AsInt32());
         }
-
-        return font;
     }
     else if (type == "DFFont")
     {
-        // parse font
         const YamlNode * fontNameNode = node->Get("name");
         if (!fontNameNode)
             return nullptr;
 
-        float32 fontSize = 10.0f;
-        const YamlNode * fontSizeNode = node->Get("size");
-        if (fontSizeNode)fontSize = fontSizeNode->AsFloat();
-
-        DFFont * font = DFFont::Create(fontNameNode->AsString());
+        font = DFFont::Create(fontNameNode->AsString());
         if (!font)
         {
             return nullptr;
         }
-
-        font->SetSize(fontSize);
-
-        const YamlNode * fontVerticalSpacingNode = node->Get("verticalSpacing");
-        if (fontVerticalSpacingNode)
-        {
-            font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt());
-        }
-
-        const YamlNode * fontFontAscendNode = node->Get("ascendScale");
-        if (fontFontAscendNode)
-        {
-            font->SetAscendScale(fontFontAscendNode->AsFloat());
-        }
-
-        const YamlNode * fontFontDescendNode = node->Get("descendScale");
-        if (fontFontDescendNode)
-        {
-            font->SetDescendScale(fontFontDescendNode->AsFloat());
-        }
-
-        return font;
     }
 
-    return nullptr;
+    float32 fontSize = 10.0f;
+    const YamlNode * fontSizeNode = node->Get("size");
+    if (fontSizeNode)
+        fontSize = fontSizeNode->AsFloat();
+
+    font->SetSize(fontSize);
+    
+    const YamlNode * fontVerticalSpacingNode = node->Get("verticalSpacing");
+    if (fontVerticalSpacingNode)
+    {
+        font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt32());
+    }
+
+    const YamlNode * fontFontAscendNode = node->Get("ascendScale");
+    if (fontFontAscendNode)
+    {
+        font->SetAscendScale(fontFontAscendNode->AsFloat());
+    }
+
+    const YamlNode * fontFontDescendNode = node->Get("descendScale");
+    if (fontFontDescendNode)
+    {
+        font->SetDescendScale(fontFontDescendNode->AsFloat());
+    }
+
+    return font;
 }
 
 void UIYamlLoader::LoadFromNode(UIControl * parentControl, const YamlNode * rootNode, bool needParentCallback)
