@@ -26,18 +26,17 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "DAVAEngine.h"
 
-#include "$UNITTEST_CLASSNAME$.h"
+#include "Infrastructure/GameCore.h"
+#include "Infrastructure/NewTestFramework.h"
 
 using namespace DAVA;
 
-$UNITTEST_CLASSNAME$::$UNITTEST_CLASSNAME$ ()
-    : TestTemplate<$UNITTEST_CLASSNAME$> ("$UNITTEST_CLASSNAME$")
+DAVA_TESTCLASS($UNITTEST_CLASSNAME$)
 {
-    RegisterFunction (this, &$UNITTEST_CLASSNAME$::TestFunc, String ("TestFunc"), nullptr);
-}
-
-void $UNITTEST_CLASSNAME$::TestFunc (PerfFuncData * data)
-{
-    TEST_VERIFY (false);
-}
+    DAVA_TEST(TestFunction)
+    {
+        TEST_VERIFY(false);
+    }
+};
