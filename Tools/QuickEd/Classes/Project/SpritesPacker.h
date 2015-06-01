@@ -42,7 +42,7 @@ namespace DAVA {
 class SpritesPacker : public QObject
 {
     Q_OBJECT
-    //Q_PROPERTY(bool running READ running SET setRunning NOTIFY runningChanged);
+    Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningStateChanged);
 public:
     SpritesPacker(QObject *parent = nullptr);
     ~SpritesPacker();
@@ -56,11 +56,11 @@ private:
 
     //properties section
 public:
-    bool running() const;
+    bool isRunning() const;
 public slots:
     void setRunning(bool arg);
 signals:
-    void runningChanged(bool arg);
+    void runningStateChanged(bool arg);
 private:
     volatile bool m_running;
 };

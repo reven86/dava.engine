@@ -45,10 +45,10 @@ DialogReloadSprites::DialogReloadSprites(QWidget* parent)
     , spritesPacker(EditorCore::Instance()->GetProject()->GetSpritesPacker())
 {
     setupUi(this);
-    pushButton_cancel->setEnabled(spritesPacker->running());
-    pushButton_start->setDisabled(spritesPacker->running());
-    connect(spritesPacker, &SpritesPacker::runningChanged, pushButton_cancel, &QPushButton::setEnabled);
-    connect(spritesPacker, &SpritesPacker::runningChanged, pushButton_start, &QPushButton::setDisabled);
+    pushButton_cancel->setEnabled(spritesPacker->isRunning());
+    pushButton_start->setDisabled(spritesPacker->isRunning());
+    connect(spritesPacker, &SpritesPacker::runningStateChanged, pushButton_cancel, &QPushButton::setEnabled);
+    connect(spritesPacker, &SpritesPacker::runningStateChanged, pushButton_start, &QPushButton::setDisabled);
     connect(pushButton_cancel, &QPushButton::clicked, spritesPacker, &SpritesPacker::stop);
     connect(pushButton_start, &QPushButton::clicked, this, &DialogReloadSprites::OnStartClicked);
 

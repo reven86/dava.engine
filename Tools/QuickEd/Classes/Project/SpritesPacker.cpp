@@ -65,7 +65,7 @@ void SpritesPacker::ReloadSpritePrivate(bool clearDirs, const DAVA::eGPUFamily g
     QDir inputDir(currentProjectPath + "/DataSource");
     QDirIterator it(inputDir);
     void *pool = QtLayer::Instance()->CreateAutoreleasePool();
-    while (it.hasNext() && running())
+    while (it.hasNext() && isRunning())
     {
         const QFileInfo &fileInfo = it.fileInfo();
         if (fileInfo.isDir() && fileInfo.absoluteFilePath().contains("gfx", Qt::CaseInsensitive))
@@ -97,7 +97,7 @@ void SpritesPacker::stop()
     setRunning(false);
 }
 
-bool SpritesPacker::running() const
+bool SpritesPacker::isRunning() const
 {
     return m_running;
 }
@@ -118,6 +118,6 @@ void SpritesPacker::setRunning(bool arg)
         {
             QApplication::setOverrideCursor(Qt::WaitCursor);
         }
-        emit runningChanged(arg);
+        emit runningStateChanged(arg);
     }
 }
