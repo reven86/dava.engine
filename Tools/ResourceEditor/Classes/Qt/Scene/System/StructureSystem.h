@@ -44,6 +44,15 @@
 #include "UI/UIEvent.h"
 #include "Render/Highlevel/Landscape.h"
 
+class StructureSystemDelegate
+{
+public:
+    virtual ~StructureSystemDelegate() = default;
+
+    virtual void WillRemove(DAVA::Entity *removedEntity) = 0;
+    virtual void DidRemoved(DAVA::Entity *removedEntity) = 0;
+};
+
 class StructureSystem : public DAVA::SceneSystem
 {
 	friend class SceneEditor2;
@@ -70,16 +79,19 @@ public:
 
 	DAVA::Entity* Load(const DAVA::FilePath& sc2path, bool optimize);
 
+    void AddDelegate(StructureSystemDelegate *delegate);
+    void RemoveDelegate(StructureSystemDelegate *delegate);
+
 protected:
 	bool structureChanged;
 
-	virtual void Process(DAVA::float32 timeElapsed);
+	void Process(DAVA::float32 timeElapsed) override;
 	void Draw();
 
 	void ProcessCommand(const Command2 *command, bool redo);
 
-	virtual void AddEntity(DAVA::Entity * entity);
-	virtual void RemoveEntity(DAVA::Entity * entity);
+	void AddEntity(DAVA::Entity * entity) override;
+	void RemoveEntity(DAVA::Entity * entity) override;
 
 	void ReloadInternal(DAVA::Set<DAVA::Entity *> &entitiesToReload, const DAVA::FilePath &newModelPath, bool saveLightmapSettings);
 	DAVA::Entity* LoadInternal(const DAVA::FilePath& sc2path, bool optimize, bool clearCached);
@@ -95,6 +107,9 @@ protected:
 	void SearchEntityByRef(DAVA::Entity *parent, const DAVA::FilePath &refToOwner, DAVA::Set<DAVA::Entity *> &result);
     
     void ProcessAutoSelection(const Command2 *command, bool redo) const;
+
+private:
+    DAVA::List<StructureSystemDelegate *> delegates;
 };
 
 #endif // __SCENE_STRUCTURE_SYSTEM_H__
