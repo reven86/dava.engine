@@ -344,7 +344,7 @@ void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
         
         uint16 * data = heightmap->Data();
         
-        int16 patchMod = realQuadCountInPatch / PATCH_QUAD_COUNT;
+        uint16 patchMod = realQuadCountInPatch / PATCH_QUAD_COUNT;
         
         for (uint16 xx = heightMapStartX; xx <= heightMapStartX + realQuadCountInPatch; ++xx)
             for (uint16 yy = heightMapStartY; yy <= heightMapStartY + realQuadCountInPatch; ++yy)
@@ -361,11 +361,11 @@ void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
                 if ((yy % patchMod) == 0)continue;
                 
                 {
-                    int16 x0 = (xx / (patchMod)) * patchMod;
-                    int16 y0 = (yy / (patchMod)) * patchMod;
+                    uint16 x0 = (xx / (patchMod)) * patchMod;
+                    uint16 y0 = (yy / (patchMod)) * patchMod;
                     
-                    int16 x1 = x0 + (realQuadCountInPatch / PATCH_QUAD_COUNT);
-                    int16 y1 = y0 + (realQuadCountInPatch / PATCH_QUAD_COUNT);
+                    uint16 x1 = x0 + (realQuadCountInPatch / PATCH_QUAD_COUNT);
+                    uint16 y1 = y0 + (realQuadCountInPatch / PATCH_QUAD_COUNT);
                     
                     DVASSERT(x0 >= heightMapStartX && x0 <= heightMapStartX + realQuadCountInPatch);
                     DVASSERT(x1 >= heightMapStartX && x1 <= heightMapStartX + realQuadCountInPatch);
