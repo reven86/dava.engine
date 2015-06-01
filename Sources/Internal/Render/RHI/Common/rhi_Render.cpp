@@ -703,7 +703,7 @@ AddPackets( HPacketList packetList, const Packet* packet, uint32 packetCount )
 
         for( unsigned i=0; i!=p->vertexStreamCount; ++i )
         {
-            if( p->vertexStream[i] != pl->curVertexStream[i] )
+//-            if( p->vertexStream[i] != pl->curVertexStream[i] )
             {
                 rhi::CommandBuffer::SetVertexData( cmdBuf, p->vertexStream[i] );
                 pl->curVertexStream[i] = p->vertexStream[i];
