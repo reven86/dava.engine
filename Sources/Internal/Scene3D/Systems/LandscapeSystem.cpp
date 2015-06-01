@@ -55,7 +55,7 @@ LandscapeSystem::~LandscapeSystem()
 {
 }
 
-void LandscapeSystem::ImmediateEvent(Entity * entity, uint32 event)
+void LandscapeSystem::ImmediateEvent(Component * component, uint32 event)
 {
 //    if (event == EventSystem::WORLD_TRANSFORM_CHANGED)
 //    {

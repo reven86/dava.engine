@@ -649,7 +649,6 @@ void Landscape::DrawPatch(uint32 level, uint32 xx, uint32 yy,
     DVASSERT(queueRenderCount < INDEX_ARRAY_COUNT);
 }
     
-<<<<<<< HEAD
 void Landscape::ReleaseLandscape()
 {
     SafeDeleteArray(indices);
@@ -729,11 +728,7 @@ void Landscape::ReallocateLandscape()
  */
     
 //float32 LandscapeNode::BitmapHeightToReal(uint8 height)
-Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height)
-=======
-
 Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height) const
->>>>>>> development
 {
     Vector3 res;
     res.x = (bbox.min.x + (float32)x / (float32)(heightmap->Size() - 1) * (bbox.max.x - bbox.min.x));
@@ -1011,18 +1006,12 @@ void Landscape::Draw(Camera * drawCamera)
 
 bool Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<int32> & indices) const
 {
-<<<<<<< HEAD
-    int32 quadCount = heightmap->Size() - 1;
-=======
     if (heightmap->Data() == nullptr)
     {
         return false;
     }
 
-	const LandQuadTreeNode<LandscapeQuad> * currentNode = &quadTreeHead;
-	const LandscapeQuad * quad = &currentNode->data;
->>>>>>> development
-	
+    int32 quadCount = heightmap->Size() - 1;	
 	landscapeVertices.resize((quadCount + 1) * (quadCount + 1));
 
 	int32 index = 0;

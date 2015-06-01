@@ -55,7 +55,7 @@ GeoDecalSystem::~GeoDecalSystem()
 {
 }
 
-void GeoDecalSystem::ImmediateEvent(Entity * entity, uint32 event)
+void GeoDecalSystem::ImmediateEvent(Component * component, uint32 event)
 {
 //    if (event == EventSystem::WORLD_TRANSFORM_CHANGED)
 //    {
@@ -96,8 +96,8 @@ void GeoDecalSystem::RemoveEntity(Entity * entity)
     
 void GeoDecalSystem::ExtractGeoDecal(GeoDecalComponent * component)
 {
-    Entity * parentEntity = component->GetEntity();
-    Scene * entityScene = parentEntity->GetScene();
+//    Entity * parentEntity = component->GetEntity();
+//    Scene * entityScene = parentEntity->GetScene();
 //    RenderSystem * renderSystem = entityScene->GetRenderSystem();
     
 //    TransformComponent * transformComponent = parentEntity->GetComponent(Component::TRANSFORM_COMPONENT);

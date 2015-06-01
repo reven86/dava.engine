@@ -72,7 +72,7 @@ void LandscapeComponent::Deserialize(KeyedArchive *archive, SerializationContext
 {
 	if(NULL != archive)
 	{
-		KeyedArchive *lightArch = archive->GetArchive("lc.light");
+//		KeyedArchive *lightArch = archive->GetArchive("lc.light");
 //		if(NULL != lightArch)
 //		{
 //			Light* l = new Light();

@@ -124,7 +124,6 @@ public:
 	};
         
     // TODO: Remove functions to work with texture through landscape
-    
     /**
         \brief Set texture for the specific texture level
         
