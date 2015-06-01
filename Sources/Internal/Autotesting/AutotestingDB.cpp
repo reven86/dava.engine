@@ -198,7 +198,7 @@ namespace DAVA
 		va_start(vl, text);
 		char tmp[4096] = { 0 };
 		vsnprintf(tmp, sizeof(tmp) - 2, text, vl);
-		file->Write(text, sizeof(char) *strlen(tmp));
+		file->Write(text, static_cast<uint32>(sizeof(char)*strlen(tmp)));
 		file->Release();
 		va_end(vl);
 	}
