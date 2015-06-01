@@ -633,7 +633,6 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Converters\SwitchToRenerObjectConverter.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Converters\TreeToAnimatedTreeConverter.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\DataNode.h" />
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\EntityCache.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\EntityFamily.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\ImposterManager.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\ImposterNode.h" />
@@ -1131,7 +1130,6 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Converters\SwitchToRenerObjectConverter.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Converters\TreeToAnimatedTreeConverter.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\DataNode.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\EntityCache.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\EntityFamily.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\ImposterManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\ImposterNode.cpp" />
