@@ -153,8 +153,8 @@ int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
     uint32 vertexSize = sizeof(LandscapeVertex);
     if (landscapeQuality != LANDSCAPE_QUALITY_VALUE_HIGH)
     {
-        vertexSize -= sizeof(LandscapeVertex::normal);
-        vertexSize -= sizeof(LandscapeVertex::tangent);
+        vertexSize -= sizeof(Vector3); // (LandscapeVertex::normal);
+        vertexSize -= sizeof(Vector3); // (LandscapeVertex::tangent);
     }
     uint8 * landscapeVertices = new uint8[(quad->size + 1) * (quad->size + 1) * vertexSize];
     
