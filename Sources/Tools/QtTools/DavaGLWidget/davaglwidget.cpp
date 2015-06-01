@@ -171,7 +171,11 @@ void OpenGLWindow::mouseDoubleClickEvent(QMouseEvent *e)
 
 void OpenGLWindow::wheelEvent(QWheelEvent *e)
 {
+    if ( e->phase() != Qt::ScrollUpdate )
+        return;
+
     controlMapper->wheelEvent(e);
+    emit mouseScrolled( e->delta() );
 }
 
 void OpenGLWindow::handleDragMoveEvent(QDragMoveEvent* e)
@@ -249,7 +253,6 @@ void DavaGLWidget::OnWindowExposed()
 
     const auto contextId = FrameworkLoop::Instance()->GetRenderContextId();
     DAVA::QtLayer::Instance()->InitializeGlWindow( contextId );
-    
     isInitialized = true;
 
     PerformSizeChange();
@@ -267,6 +270,11 @@ void DavaGLWidget::resizeEvent(QResizeEvent *e)
 
 void DavaGLWidget::PerformSizeChange()
 {
+    if(isInitialized)
+    {   //INFO: this magic helps us with OSX OpenGL Context on File dialog
+        FrameworkLoop::Instance()->Context();
+    }
+    
     currentDPR = openGlWindow->devicePixelRatio();
     if (isInitialized)
     {

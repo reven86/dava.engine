@@ -2,7 +2,9 @@
 #define __QUICKED_PROPERTIES_MODEL_H__
 
 #include <QAbstractItemModel>
-#include "DAVAEngine.h"
+
+#include "FileSystem/VariantType.h"
+#include "Model/ControlProperties/PropertyListener.h"
 
 namespace DAVA {
     class InspInfo;
@@ -12,20 +14,20 @@ namespace DAVA {
     };
 }
 
-class BaseProperty;
+class AbstractProperty;
 class ControlNode;
+class QtModelPackageCommandExecutor;
+class ComponentPropertiesSection;
 
-class PropertiesModel : public QAbstractItemModel
+class PropertiesModel : public QAbstractItemModel, private PropertyListener
 {
     Q_OBJECT
     
 public:
-    PropertiesModel(ControlNode *controlNode, QObject *parent = nullptr);
+    PropertiesModel(ControlNode *controlNode, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent = nullptr);
     virtual ~PropertiesModel();
     
     ControlNode *GetControlNode() const {return controlNode; }
-    void emitPropertyChanged(BaseProperty *property);
-    QModelIndex indexByProperty(BaseProperty *property, int column = 0);
     
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
     virtual QModelIndex parent(const QModelIndex &child) const override;
@@ -38,13 +40,23 @@ public:
     virtual QVariant headerData(int section, Qt::Orientation orientation,
                                 int role = Qt::DisplayRole) const override;
 
+private: // PropertyListener
+    virtual void PropertyChanged(AbstractProperty *property) override;
+
+    virtual void ComponentPropertiesWillBeAdded(RootProperty *root, ComponentPropertiesSection *section, int index) override;
+    virtual void ComponentPropertiesWasAdded(RootProperty *root, ComponentPropertiesSection *section, int index) override;
     
+    virtual void ComponentPropertiesWillBeRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) override;
+    virtual void ComponentPropertiesWasRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) override;
+
 private:
-    QVariant makeQVariant(const BaseProperty *property) const;
+    QModelIndex indexByProperty(AbstractProperty *property, int column = 0);
+    QVariant makeQVariant(const AbstractProperty *property) const;
     void initVariantType(DAVA::VariantType &var, const QVariant &val) const;
     
 private:
     ControlNode *controlNode;
+    QtModelPackageCommandExecutor *commandExecutor;
 };
 
 #endif // __QUICKED_PROPERTIES_MODEL_H__

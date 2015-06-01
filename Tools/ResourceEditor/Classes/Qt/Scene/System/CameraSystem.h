@@ -79,10 +79,13 @@ public:
     bool SnapEditorCameraToLandscape(bool snap);
     bool IsEditorCameraSnappedToLandscape() const;
 
+    void MoveToSelection();
+    void MoveToStep( int ofs );
     
 protected:
-	void Draw();
+    void OnKeyboardInput( DAVA::UIEvent *event );
 
+	void Draw();
 	void ProcessCommand(const Command2 *command, bool redo);
 
 	void AddEntity(DAVA::Entity * entity) override;
@@ -95,7 +98,6 @@ protected:
 	DAVA::Entity* GetEntityFromCamera(DAVA::Camera *camera) const;
     DAVA::Entity* GetEntityWithEditorCamera() const;
 
-protected:
 	DAVA::Rect viewportRect;
 	bool debugCamerasCreated;
 

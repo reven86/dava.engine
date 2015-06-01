@@ -33,13 +33,15 @@
 #include "Qt/Main/QtUtils.h"
 #include "ui_CubeMapTextureBrowser.h"
 #include "../../StringConstants.h"
-#include "Tools/QtFileDialog/QtFileDialog.h"
 #include "Project/ProjectManager.h"
+#include "ImageTools/ImageTools.h"
 
-#include <QFileDialog>
 #include <QScrollBar>
 
 #include "Qt/Settings/SettingsManager.h"
+#include "QtTools/FileDialog/FileDialog.h"
+
+
 #include <qdir>
 
 const int FACE_IMAGE_SIZE = 64;
@@ -186,7 +188,7 @@ void CubeMapTextureBrowser::RestoreListSelection(int currentRow)
 
 void CubeMapTextureBrowser::OnChooseDirectoryClicked()
 {
-	QString newDir = QtFileDialog::getExistingDirectory(this, tr("Open Directory"),
+	QString newDir = FileDialog::getExistingDirectory(this, tr("Open Directory"),
 													   ui->textRootPath->text());
 	if(!newDir.isNull())
 	{
@@ -203,7 +205,7 @@ void CubeMapTextureBrowser::OnReloadClicked()
 
 void CubeMapTextureBrowser::OnCreateCubemapClicked()
 {
-	QString fileName = QtFileDialog::getSaveFileName(this,
+	QString fileName = FileDialog::getSaveFileName(this,
 													tr("Create Cubemap Texture"),
 													ui->textRootPath->text(),
 													tr("Tex File (*.tex)"));
@@ -307,18 +309,21 @@ void CubeMapTextureBrowser::OnDeleteSelectedItemsClicked()
 				FilePath fp = item->data(CUBELIST_DELEGATE_ITEMFULLPATH).toString().toStdString();
 				if(fp.Exists())
 				{
-					DAVA::Vector<DAVA::String> faceNames;
+					DAVA::Vector<DAVA::FilePath> faceNames;
 					CubemapUtils::GenerateFaceNames(fp.GetAbsolutePathname(), faceNames);
 					for(size_t faceIndex = 0; faceIndex < faceNames.size(); ++faceIndex)
 					{
+                        if (faceNames[faceIndex].IsEmpty())
+                            continue;
+
 						FilePath hackTex = faceNames[faceIndex];
 						hackTex.ReplaceExtension(".tex");
 						
 						QFile::remove(hackTex.GetAbsolutePathname().c_str());
-						bool removeResult = QFile::remove(faceNames[faceIndex].c_str());
+						bool removeResult = QFile::remove(faceNames[faceIndex].GetAbsolutePathname().c_str());
 						if(!removeResult)
 						{
-							failedToRemove.push_back(faceNames[faceIndex]);
+                            failedToRemove.push_back(faceNames[faceIndex].GetAbsolutePathname().c_str());
 						}
 					}
 					
@@ -361,12 +366,15 @@ bool CubeMapTextureBrowser::ValidateTextureAndFillThumbnails(DAVA::FilePath& fp,
 	
 	int width = 0;
 	int height = 0;
-	DAVA::Vector<DAVA::String> faceNames;
+	DAVA::Vector<DAVA::FilePath> faceNames;
 	CubemapUtils::GenerateFaceNames(fp.GetAbsolutePathname(), faceNames);
 	for(size_t i = 0; i < faceNames.size(); ++i)
 	{
-		QImage faceImage;
-		if(!faceImage.load(faceNames[i].c_str())) //file must be present
+        if (faceNames[i].IsEmpty())
+            continue;
+
+		QImage faceImage = ImageTools::FromDavaImage(faceNames[i]);
+		if(faceImage.isNull()) //file must be present
 		{
 			result = false;
 		}

@@ -48,6 +48,8 @@
 LODEditor::LODEditor(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::LODEditor)
+    , frameViewVisible(true)
+    , frameEditVisible(true)
 {
     ui->setupUi(this);
 
@@ -323,7 +325,8 @@ void LODEditor::ViewLODButtonReleased()
 {
     InvertFrameVisibility(ui->frameViewLOD, ui->viewLODButton);
     
-    if(ui->frameViewLOD->isVisible() == false)
+    frameViewVisible = ui->frameViewLOD->isVisible();
+    if (!frameViewVisible)
     {
         GetCurrentEditorLODSystem()->SetForceDistance(DAVA::LodComponent::INVALID_DISTANCE);
         GetCurrentEditorLODSystem()->SetForceLayer(DAVA::LodComponent::INVALID_LOD_LAYER);
@@ -336,6 +339,7 @@ void LODEditor::ViewLODButtonReleased()
 void LODEditor::EditLODButtonReleased()
 {
     InvertFrameVisibility(ui->frameEditLOD, ui->editLODButton);
+    frameEditVisible = ui->frameEditLOD->isVisible();
 }
 
 void LODEditor::InvertFrameVisibility(QFrame *frame, QPushButton *frameButton)
@@ -352,9 +356,23 @@ void LODEditor::UpdateWidgetVisibility(const EditorLODSystem *editorLODSystem)
     bool visible = nullptr != editorLODSystem && (editorLODSystem->GetCurrentLodsLayersCount() != 0);
     
     ui->viewLODButton->setVisible(visible);
-    ui->frameViewLOD->setVisible(visible);
     ui->editLODButton->setVisible(visible);
-    ui->frameEditLOD->setVisible(visible);
+    
+    if (!visible)
+    {
+        ui->frameViewLOD->setVisible(visible);
+        ui->frameEditLOD->setVisible(visible);
+    }
+    else
+    {
+        QIcon viewIcon = (frameViewVisible) ? QIcon(":/QtIcons/advanced.png") : QIcon(":/QtIcons/play.png");
+        ui->viewLODButton->setIcon(viewIcon);
+        ui->frameViewLOD->setVisible(frameViewVisible);
+
+        QIcon editIcon = (frameEditVisible) ? QIcon(":/QtIcons/advanced.png") : QIcon(":/QtIcons/play.png");
+        ui->editLODButton->setIcon(editIcon);
+        ui->frameEditLOD->setVisible(frameEditVisible);
+    }
 }
 
 //TODO: refactor this function

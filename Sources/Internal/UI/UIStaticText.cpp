@@ -799,8 +799,7 @@ void UIStaticText::RecalculateDebugColoring()
         
         if (!text.empty())
         {
-            WideString textNoSpaces(text);
-            TextBlock::CleanLine(textNoSpaces);
+            WideString textNoSpaces = StringUtils::RemoveNonPrintable(text, 1);
             auto res = remove_if(textNoSpaces.begin(), textNoSpaces.end(), StringUtils::IsWhitespace);
             textNoSpaces.erase(res, textNoSpaces.end());
 

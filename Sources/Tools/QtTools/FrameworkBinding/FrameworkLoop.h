@@ -30,17 +30,21 @@ public:
     QOpenGLContext * Context();
     quint64 GetRenderContextId() const;
 
-    // LoopItem
-    void ProcessFrame() override;
 
     // QtLayerDelegate
     void Quit() override;
 
     void EndFrame();
 
+protected:
+    // LoopItem
+    void ProcessFrameInternal() override;
+    
 private slots:
     void OnWindowDestroyed();
     void OnWindowInitialized();
+    
+    void ContextWillBeDestroyed();
 
 private:
     QPointer< QOpenGLContext > context;

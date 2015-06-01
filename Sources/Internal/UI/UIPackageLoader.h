@@ -57,9 +57,21 @@ public:
     virtual bool LoadControlByName(const String &name) override;
 
 private:
+    struct ComponentNode
+    {
+        const YamlNode *node;
+        uint32 type;
+        uint32 index;
+    };
+    
+private:
     void LoadControl(const YamlNode *node, bool root);
 
     void LoadControlPropertiesFromYamlNode(UIControl *control, const InspInfo *typeInfo, const YamlNode *node);
+    
+    void LoadComponentPropertiesFromYamlNode(UIControl *control, const YamlNode *node);
+    Vector<ComponentNode> ExtractComponentNodes(const YamlNode *node);
+    
     void LoadBgPropertiesFromYamlNode(UIControl *control, const YamlNode *node);
     void LoadInternalControlPropertiesFromYamlNode(UIControl *control, const YamlNode *node);
     virtual VariantType ReadVariantTypeFromYamlNode(const InspMember *member, const YamlNode *node);
@@ -78,6 +90,7 @@ private:
         const YamlNode *node;
         int32 status;
     };
+    
     Vector<QueueItem> loadingQueue;
     AbstractUIPackageBuilder *builder;
 };

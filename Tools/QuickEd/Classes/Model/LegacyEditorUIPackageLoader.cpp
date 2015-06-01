@@ -72,12 +72,12 @@ UIPackage *LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath)
     const LegacyControlData::Data *data = legacyData ? legacyData->Get(packagePath.GetFrameworkPath()) : NULL;
     if (data)
     {
-        builder->ProcessProperty(legacyControl->TypeInfo()->Member("name"), VariantType(data->name));
+        legacyControl->SetName(data->name);
         builder->ProcessProperty(legacyControl->TypeInfo()->Member("size"), VariantType(data->size));
     }
     else
     {
-        builder->ProcessProperty(legacyControl->TypeInfo()->Member("name"), VariantType(String("LegacyControl")));
+        legacyControl->SetName("LegacyControl");
     }
     builder->EndControlPropertiesSection();
 
@@ -120,7 +120,7 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
         const YamlNode *pathNode = node->Get("aggregatorPath");
         RefPtr<UIPackage> importedPackage = builder->ProcessImportedPackage(pathNode->AsString(), this);
         DVASSERT(importedPackage.Get());
-        control = builder->BeginControlWithPrototype(FilePath(pathNode->AsString()).GetBasename(), importedPackage->GetControl(0)->GetName(), "", this);
+        control = builder->BeginControlWithPrototype(FilePath(pathNode->AsString()).GetBasename(), importedPackage->GetControl(0)->GetName(), nullptr, this);
     }
     else if (baseType)
         control = builder->BeginControlWithCustomClass(type->AsString(), baseType->AsString());
@@ -154,7 +154,6 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
         
         control->LoadFromYamlNodeCompleted();
         control->ApplyAlignSettingsForChildren();
-        // yamlLoader->PostLoad(control);
     }
     builder->EndControl(false);
 }
@@ -167,7 +166,7 @@ void LegacyEditorUIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *c
     
     builder->BeginControlPropertiesSection(typeInfo->Name());
 
-    String className = control->GetControlClassName();
+    String className = control->GetClassName();
     for (int32 i = 0; i < typeInfo->MembersCount(); i++)
     {
         const InspMember *member = typeInfo->Member(i);
@@ -176,9 +175,7 @@ void LegacyEditorUIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *c
         memberName = GetOldPropertyName(className, memberName);
         
         VariantType res;
-        if (memberName == "name")
-            res = VariantType(control->GetName());
-        else if (node)
+        if (node)
             res = ReadVariantTypeFromYamlNode(member, node, -1, memberName);
         
         builder->ProcessProperty(member, res);
@@ -198,7 +195,7 @@ void LegacyEditorUIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *c
 
 void LegacyEditorUIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *control, const YamlNode *node)
 {
-    String className = control->GetControlClassName();
+    String className = control->GetClassName();
     for (int32 i = 0; i < control->GetBackgroundComponentsCount(); i++)
     {
         UIControlBackground *bg = builder->BeginBgPropertiesSection(i, true);
@@ -251,7 +248,7 @@ void LegacyEditorUIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *contro
 
 void LegacyEditorUIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *control, const YamlNode *node)
 {
-    String className = control->GetControlClassName();
+    String className = control->GetClassName();
     for (int32 i = 0; i < control->GetInternalControlsCount(); i++)
     {
         UIControl *internalControl = builder->BeginInternalControlSection(i, true);

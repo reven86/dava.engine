@@ -1,27 +1,27 @@
 #ifndef __QUICKED_CHANGE_PROPERTY_VALUE_COMMAND_H__
 #define __QUICKED_CHANGE_PROPERTY_VALUE_COMMAND_H__
 
-#include <QUndoStack>
+#include <QUndoCommand>
 #include "FileSystem/VariantType.h"
 
-class BaseProperty;
-class Document;
+class PackageNode;
 class ControlNode;
+class AbstractProperty;
 
 class ChangePropertyValueCommand: public QUndoCommand
 {
 public:
-    explicit ChangePropertyValueCommand(Document *document, ControlNode *node, BaseProperty *property, const DAVA::VariantType &newValue, QUndoCommand *parent = 0);
-    explicit ChangePropertyValueCommand(Document *document, ControlNode *node, BaseProperty *property, QUndoCommand *parent = 0);
+    ChangePropertyValueCommand(PackageNode *_root, ControlNode *_node, AbstractProperty *_property, const DAVA::VariantType &newValue, QUndoCommand *parent = 0);
+    ChangePropertyValueCommand(PackageNode *_root, ControlNode *_node, AbstractProperty *_property, QUndoCommand *parent = 0);
     virtual ~ChangePropertyValueCommand();
 
-    virtual void undo();
     virtual void redo();
+    virtual void undo();
     
 private:
-    Document *document;
+    PackageNode *root;
     ControlNode *node;
-    BaseProperty *property;
+    AbstractProperty *property;
     DAVA::VariantType oldValue;
     DAVA::VariantType newValue;
 };

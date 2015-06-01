@@ -13,7 +13,6 @@ using namespace DAVA;
 PackageControlsNode::PackageControlsNode(PackageNode *_parent, PackageRef *_packageRef)
     : ControlsContainerNode(_parent)
     , name("Controls")
-    , readOnly(false)
     , packageRef(SafeRetain(_packageRef))
 {
 }
@@ -89,16 +88,7 @@ PackageRef *PackageControlsNode::GetPackageRef() const
 
 int PackageControlsNode::GetFlags() const
 {
-    return readOnly ? FLAG_READ_ONLY : 0;
-}
-
-void PackageControlsNode::SetReadOnly()
-{
-    readOnly = true;
-    for (auto it = nodes.begin(); it != nodes.end(); ++it)
-    {
-        (*it)->SetReadOnly();
-    }
+    return IsReadOnly() ? FLAG_READ_ONLY : 0;
 }
 
 bool PackageControlsNode::IsEditingSupported() const
@@ -108,12 +98,12 @@ bool PackageControlsNode::IsEditingSupported() const
 
 bool PackageControlsNode::IsInsertingSupported() const
 {
-    return !readOnly;
+    return !IsReadOnly();
 }
 
 bool PackageControlsNode::CanInsertControl(ControlNode *node, DAVA::int32 pos) const
 {
-    return !readOnly;
+    return !IsReadOnly();
 }
 
 bool PackageControlsNode::CanRemove() const
@@ -124,6 +114,12 @@ bool PackageControlsNode::CanRemove() const
 bool PackageControlsNode::CanCopy() const
 {
     return false;
+}
+
+void PackageControlsNode::RefreshControlProperties()
+{
+    for (ControlNode *node : nodes)
+        node->RefreshProperties();
 }
 
 ControlNode *PackageControlsNode::FindControlNodeByName(const DAVA::String &name) const
@@ -146,7 +142,7 @@ void PackageControlsNode::Serialize(PackageSerializer *serializer, const DAVA::V
     serializer->BeginArray("Controls");
     
     for (auto it = nodes.begin(); it != nodes.end(); ++it)
-        (*it)->Serialize(serializer, packageRef);
+        (*it)->Serialize(serializer);
     
     serializer->EndArray();
 }

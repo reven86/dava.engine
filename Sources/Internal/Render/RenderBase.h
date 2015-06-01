@@ -117,6 +117,17 @@ enum eBlending
     BLENDING_STRONG_MULTIPLICATIVE
 };
 
+enum ImageFormat : uint8
+{
+    IMAGE_FORMAT_PNG = 0,
+    IMAGE_FORMAT_DDS,
+    IMAGE_FORMAT_PVR,
+    IMAGE_FORMAT_JPEG,
+    IMAGE_FORMAT_TGA,
+    IMAGE_FORMAT_COUNT,
+    IMAGE_FORMAT_UNKNOWN = 127
+};
+
 enum PixelFormat
 {
     FORMAT_INVALID = 0,
@@ -171,10 +182,10 @@ enum eGPUFamily
     GPU_TEGRA,
     GPU_MALI,
     GPU_ADRENO,
-    GPU_PNG,
+    GPU_ORIGIN,
     GPU_FAMILY_COUNT,
     
-    GPU_DEVICE_COUNT = GPU_PNG,
+    GPU_DEVICE_COUNT = GPU_ORIGIN,
     GPU_INVALID = 0x07
 };
       

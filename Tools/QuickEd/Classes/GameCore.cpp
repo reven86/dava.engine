@@ -33,8 +33,6 @@
 #include "Grid/GridVisualizer.h"
 #include "Ruler/RulerController.h"
 
-
-#include "EditorFontManager.h"
 //#include "ScreenManager.h"
 #include "EditorSettings.h"
 #include "Helpers/ResourcesManageHelper.h"
@@ -47,8 +45,6 @@ using namespace DAVA;
 GameCore::GameCore()
     : cursor(nullptr)
 {
-	new EditorFontManager();
-
     new GridVisualizer();
     new RulerController();
     new AutotestingSystem();
@@ -66,8 +62,7 @@ GameCore::~GameCore()
     GridVisualizer::Instance()->Release();
 
     EditorSettings::Instance()->Release();
-    EditorFontManager::Instance()->Release();
-    
+        
     AutotestingSystem::Instance()->Release();
 }
 
