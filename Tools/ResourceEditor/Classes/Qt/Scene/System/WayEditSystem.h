@@ -45,11 +45,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Scene/System/SelectionSystem.h"
 #include "Scene/System/CollisionSystem.h"
 
+// delegate
+#include "Scene/System/StructureSystem.h"
 #include "Scene/System/ModifSystem.h"
 
 class SceneEditor2;
 
-class WayEditSystem : public DAVA::SceneSystem, public EntityModificationSystemDelegate
+class WayEditSystem : public DAVA::SceneSystem
+        , public EntityModificationSystemDelegate
+        , public StructureSystemDelegate
 {
     friend class SceneEditor2;
 
@@ -60,8 +64,6 @@ public:
     void EnableWayEdit(bool enable);
     bool IsWayEditEnabled() const;
 
-    void RemoveWayPoint(DAVA::Entity* entity);
-
     void Process(DAVA::float32 timeElapsed) override;
     void Input(DAVA::UIEvent *event) override;
 
@@ -70,6 +72,9 @@ public:
 
     void WillClone(DAVA::Entity *originalEntity) override;
     void DidCloned(DAVA::Entity *originalEntity, DAVA::Entity *newEntity) override;
+
+    void WillRemove(DAVA::Entity *removedEntity) override;
+    void DidRemoved(DAVA::Entity *removedEntity) override;
 
 protected:
     void Draw();
@@ -108,6 +113,8 @@ protected:
 
     DAVA::Entity * underCursorPathEntity;
     bool inCloneState = false;
+
+    DAVA::Entity *startPointForRemove;
 };
 
 #endif // __SCENE_WAYEDIT_SYSTEM_H__
