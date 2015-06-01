@@ -101,9 +101,11 @@ metal_Texture_Create( const Texture::Descriptor& texDesc )
     Handle                  handle = InvalidHandle;
     MTLPixelFormat          pf     = MetalTextureFormat( texDesc.format );
     MTLTextureDescriptor*   desc   = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:pf width:texDesc.width height:texDesc.height mipmapped:NO];
-    desc.textureType = (texDesc.type == TEXTURE_TYPE_CUBE)  ? MTLTextureTypeCube : MTLTextureType2D;
-//    desc.mipmapLevelCount = texDesc.mipLevelCount;
-    id<MTLTexture>          uid  = [_Metal_Device newTextureWithDescriptor:desc];
+    
+    desc.textureType      = (texDesc.type == TEXTURE_TYPE_CUBE)  ? MTLTextureTypeCube : MTLTextureType2D;
+    desc.mipmapLevelCount = 1 + texDesc.mipCount;
+    
+    id<MTLTexture>  uid = [_Metal_Device newTextureWithDescriptor:desc];
 
     if( uid != nil )
     {

@@ -6,6 +6,8 @@
 
 //    #include <OpenGLES/ES3/gl.h>
 //    #include <OpenGLES/ES3/glext.h>
+    #include "Platform/TemplateiOS/EAGLView.h"
+
     #include <OpenGLES/ES2/gl.h>
     #include <OpenGLES/ES2/glext.h>
 
@@ -36,7 +38,7 @@ ios_GL_resize_from_layer( CAEAGLLayer* layer )
     
     if( glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE )
     {
-        NSLog( @"Failed to make complete framebuffer object %x", glCheckFramebufferStatus(GL_FRAMEBUFFER) );
+        NSLog( @"FAILED to make complete framebuffer object %x", glCheckFramebufferStatus(GL_FRAMEBUFFER) );
         return NO;
     }
     

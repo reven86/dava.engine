@@ -281,7 +281,7 @@ currFPS = 60;
 
 - (void) layoutSubviews
 {
-    [renderer resizeFromLayer:(CAEAGLLayer*)self.layer];
+///    [renderer resizeFromLayer:(CAEAGLLayer*)self.layer];
     
     // Yuri Coder, 2013/11/28. The line below is commented out because of DF-2799.
     // [self drawView:nil];
