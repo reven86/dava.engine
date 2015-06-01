@@ -40,7 +40,7 @@ using namespace DAVA;
 
 void GameCore::RunOnlyThisTest()
 {
-    //runOnlyThisTest = "StaticTextFieldTest";
+    //runOnlyThisTest = "NetworkTest";
 }
 
 void GameCore::OnError()
@@ -151,17 +151,23 @@ void GameCore::ProcessTests(float32 timeElapsed)
     {
         curTestClass = Testing::TestClassCollection::Instance()->CreateTestClass(curTestClassIndex);
         curTestClassName = Testing::TestClassCollection::Instance()->TestClassName(curTestClassIndex);
-        curTestName = curTestClass->TestName(0);
 
         Logger::Info(TeamcityTestsOutput::FormatTestStarted(curTestClassName).c_str());
-        curTestClass->SetUp(curTestName);
     }
 
     if (curTestIndex < curTestClass->TestCount())
     {
+        if (!testSetUpInvoked)
+        {
+            curTestName = curTestClass->TestName(curTestIndex);
+            curTestClass->SetUp(curTestName);
+            testSetUpInvoked = true;
+        }
+
         curTestClass->RunTest(curTestIndex);
         if (curTestClass->TestComplete(curTestName))
         {
+            testSetUpInvoked = false;
             curTestClass->TearDown(curTestName);
             curTestIndex += 1;
         }

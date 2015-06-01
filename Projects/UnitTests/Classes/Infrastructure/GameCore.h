@@ -102,6 +102,7 @@ private:
     String curTestName;
     size_t curTestClassIndex = 0;
     size_t curTestIndex = 0;
+    bool testSetUpInvoked = false;
 };
 
 #define TEST_VERIFY(condition)                                                                          \
