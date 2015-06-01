@@ -104,6 +104,9 @@ utils_enc_srcs := \
     ../libwebp-0.4.3/src/utils/huffman_encode.c \
     ../libwebp-0.4.3/src/utils/quant_levels.c \
 
+cpu-features := \
+    ../cpu-features/cpu-features.c \
+
 ################################################################################
 # libwebp
 
@@ -116,11 +119,12 @@ LOCAL_SRC_FILES := \
     $(enc_srcs) \
     $(dsp_enc_srcs) \
     $(utils_enc_srcs) \
+    $(cpu-features) \
 
 LOCAL_CFLAGS := $(WEBP_CFLAGS)
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/src
 
-LOCAL_STATIC_LIBRARIES := cpufeatures
+#LOCAL_STATIC_LIBRARIES := cpufeatures
 
 # prefer arm over thumb mode for performance gains
 LOCAL_ARM_MODE := arm
@@ -131,4 +135,4 @@ include $(BUILD_STATIC_LIBRARY)
 
 ################################################################################
 
-$(call import-module,android/cpufeatures)
+#$(call import-module,android/cpufeatures)
