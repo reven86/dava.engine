@@ -76,7 +76,13 @@ bool Server::IsConnected() const
 void Server::Disconnect()
 {
     DVASSERT(nullptr != netServer);
-    SafeDelete(netServer);
+    
+    if(netServer)
+    {
+        netServer->Disconnect();
+        netServer->SetDelegate(nullptr);
+        netServer = nullptr;
+    }
 }
     
     

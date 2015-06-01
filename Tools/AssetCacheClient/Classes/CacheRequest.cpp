@@ -99,7 +99,7 @@ int CacheRequest::Connect()
     while(client.IsConnected() == false)
     {
         Net::NetCore::Instance()->Poll();
-        sleep(10);
+        Thread::Sleep(10);
         
         auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
         if(((connectionTimeout > 0) && (deltaTime > connectionTimeout)) && (client.IsConnected() == false))
@@ -120,7 +120,7 @@ int CacheRequest::WaitRequest()
     while(requestResult.recieved == false)
     {
         Net::NetCore::Instance()->Poll();
-        sleep(10);
+        Thread::Sleep(10);
         
         auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
         if(((connectionTimeout > 0) && (deltaTime > connectionTimeout)) && (requestResult.recieved == false))

@@ -29,7 +29,6 @@
 
 
 #include "AssetCache/TCPConnection/TCPConnection.h"
-#include "AssetCache/TCPConnection/TCPChannel.h"
 
 #include "Base/FunctionTraits.h"
 
@@ -44,26 +43,12 @@ namespace DAVA
     
 Set<uint32> TCPConnection::registeredServices;
 Mutex TCPConnection::serviceMutex;
-    
-List<TCPChannel *> TCPConnection::channels;
-Mutex TCPConnection::channelMutex;
 
     
-TCPConnection * TCPConnection::CreateClient(uint32 service, const Net::Endpoint & endpoint)
-{
-    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
-    return new TCPConnection(Net::CLIENT_ROLE, service, endpoint);
-}
 
-TCPConnection * TCPConnection::CreateServer(uint32 service, const Net::Endpoint & endpoint)
-{
-    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
-    return new TCPConnection(Net::SERVER_ROLE, service, endpoint);
-}
-    
-    
 TCPConnection::TCPConnection(Net::eNetworkRole _role, uint32 _service, const Net::Endpoint & _endpoint)
-    : service(_service)
+    : Net::NetService()
+    , service(_service)
     , role(_role)
     , endpoint(_endpoint)
     , controllerId(Net::NetCore::INVALID_TRACK_ID)
@@ -80,6 +65,8 @@ TCPConnection::~TCPConnection()
         Disconnect();
         //need wait for diconnecting
     }
+    
+    delegate = nullptr;
 }
     
     
@@ -117,9 +104,12 @@ void TCPConnection::Disconnect()
     DVASSERT(Net::NetCore::INVALID_TRACK_ID != controllerId);
     DVASSERT(Net::NetCore::Instance() != nullptr);
 
-    Net::NetCore::Instance()->DestroyController(controllerId);
+    auto contrId = controllerId;
     controllerId = Net::NetCore::INVALID_TRACK_ID;
+    Net::NetCore::Instance()->DestroyController(contrId);
 }
+    
+    
     
 bool TCPConnection::RegisterService(uint32 service)
 {
@@ -146,45 +136,90 @@ bool TCPConnection::RegisterService(uint32 service)
     
 Net::IChannelListener * TCPConnection::Create(uint32 serviceId, void* context)
 {
-    Logger::FrameworkDebug("[TCPConnection::%s] 0x%p", __FUNCTION__, context);
-
-    auto connection = static_cast<TCPConnection *>(context);
-    return connection->CreateChannel();
+    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
+//    auto object = reinterpret_cast<Net::IChannelListener *>(context);
+    return reinterpret_cast<Net::IChannelListener *>(context);
 }
 
 void TCPConnection::Delete(Net::IChannelListener* obj, void* context)
 {
-    Logger::FrameworkDebug("[TCPConnection::%s] 0x%p", __FUNCTION__, context);
-    auto connection = static_cast<TCPConnection *>(context);
-    return connection->DestroyChannel(nullptr);
-}
-
-TCPChannel * TCPConnection::CreateChannel()
-{
     Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
 
-    LockGuard<Mutex> guard(channelMutex);
-
-    auto newChannel = new TCPChannel();
-
-    channels.push_back(newChannel);
-    return newChannel;
-}
-
-void TCPConnection::DestroyChannel(TCPChannel *channel)
-{
-    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
-    LockGuard<Mutex> guard(channelMutex);
-
-    auto found = std::find(channels.cbegin(), channels.cend(), channel);
-    if(found != channels.cend())
+    auto object = static_cast<TCPConnection *>(context);
+    if(object->controllerId == Net::NetCore::INVALID_TRACK_ID)
     {
-        channels.erase(found);
+        delete object;
+    }
+}
+
+uint32 TCPConnection::SendData(const uint8 * data, const size_t dataSize)
+{
+    Logger::FrameworkDebug("[TCPConnection::%s] role = %d", __FUNCTION__, role);
+    uint32 packetID = 0;
+    bool sent = Send(data, dataSize, &packetID);
+    if(sent)
+    {
+        return packetID;
     }
     
-    delete channel;
+    return 0;
+}
+    
+    
+void TCPConnection::ChannelOpen()
+{
+    Logger::FrameworkDebug("[TCPConnection::%s] role = %d", __FUNCTION__, role);
+    if(delegate)
+    {
+        delegate->ChannelOpen();
+    }
+    Net::NetService::ChannelOpen();
 }
 
+void TCPConnection::ChannelClosed(const char8* message)
+{
+    Logger::FrameworkDebug("[TCPConnection::%s] role = %d", __FUNCTION__, role);
+    if(delegate)
+    {
+        delegate->ChannelClosed(message);
+    }
+    
+    Net::NetService::ChannelClosed(message);
+}
+
+void TCPConnection::PacketReceived(const void* packet, size_t length)
+{
+    Logger::FrameworkDebug("[TCPConnection::%s] role = %d", __FUNCTION__, role);
+    if(delegate)
+    {
+        delegate->PacketReceived(packet, length);
+    }
+    
+    Net::NetService::PacketReceived(packet, length);
+}
+
+void TCPConnection::PacketSent()
+{
+    Logger::FrameworkDebug("[TCPConnection::%s] role = %d", __FUNCTION__, role);
+    if(delegate)
+    {
+        delegate->PacketSent();
+    }
+    
+    Net::NetService::PacketSent();
+}
+
+void TCPConnection::PacketDelivered()
+{
+    Logger::FrameworkDebug("[TCPConnection::%s] role = %d", __FUNCTION__, role);
+    if(delegate)
+    {
+        delegate->PacketDelivered();
+    }
+    
+    Net::NetService::PacketDelivered();
+}
+    
 
 
 }; // end of namespace DAVA

@@ -66,7 +66,13 @@ bool Client::Connect(const String &ip, uint16 port)
 void Client::Disconnect()
 {
     DVASSERT(nullptr != netClient);
-    SafeDelete(netClient);
+    
+    if(netClient)
+    {
+        netClient->Disconnect();
+        netClient->SetDelegate(nullptr);
+        netClient = nullptr;
+    }
 }
     
 bool Client::IsConnected()

@@ -27,39 +27,59 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_TCP_CONNECTION_H__
-#define __DAVAENGINE_TCP_CONNECTION_H__
+#ifndef __DAVAENGINE_TCP_CHANNEL_H__
+#define __DAVAENGINE_TCP_CHANNEL_H__
 
 #include "Network/Base/Endpoint.h"
-#include "Network/NetworkCommon.h"
+#include "Network/NetService.h"
 #include "Network/NetCore.h"
 
 namespace DAVA
 {
     
-class TCPChannel;
-class TCPConnection
+class TCPChannelDelegate
+{
+public:
+    
+    virtual void ChannelOpen() = 0;
+    virtual void ChannelClosed(const char8* message) = 0;
+    virtual void PacketReceived(const void* packet, size_t length) = 0;
+    virtual void PacketSent() = 0;
+    virtual void PacketDelivered() = 0;
+};
+
+class TCPChannel: public Net::NetService
 {
 public:
 
-    static TCPConnection * CreateClient(uint32 service, const Net::Endpoint & endpoint);
-    static TCPConnection * CreateServer(uint32 service, const Net::Endpoint & endpoint);
-    
-    virtual ~TCPConnection();
+    ~TCPChannel() override;
 
+    
     bool Connect();
     void Disconnect();
     
+    
+    uint32 SendData(const uint8 * data, const size_t dataSize);
+
+    void SetDelegate(TCPConnectionDelegate * delegate);
+    
+    //Net::NetService
+    void ChannelOpen() override;
+    void ChannelClosed(const char8* message) override;
+    void PacketReceived(const void* packet, size_t length) override;
+    void PacketSent() override;
+    void PacketDelivered() override;
+    
+    bool IsConnected() const;
+    
 protected:
+
     TCPConnection(Net::eNetworkRole role, uint32 service, const Net::Endpoint & endpoint);
     
     static Net::IChannelListener * Create(uint32 serviceId, void* context);
     static void Delete(Net::IChannelListener* obj, void* context);
 
     static bool RegisterService(uint32 service);
-    
-    TCPChannel * CreateChannel();
-    void DestroyChannel(TCPChannel *channel);
     
     
 protected:
@@ -72,12 +92,22 @@ protected:
     static Set<uint32> registeredServices;
     static Mutex serviceMutex;
     
-    static List<TCPChannel *> channels;
-    static Mutex channelMutex;
+    TCPConnectionDelegate * delegate = nullptr;
 };
 
 
+inline void TCPConnection::SetDelegate(TCPConnectionDelegate * _delegate)
+{
+    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
+    delegate = _delegate;
+}
+
+inline bool TCPConnection::IsConnected() const
+{
+    return IsChannelOpen();
+}
+    
 };
 
-#endif // __DAVAENGINE_TCP_CONNECTION_H__
+#endif // __DAVAENGINE_TCP_CHANNEL_H__
 

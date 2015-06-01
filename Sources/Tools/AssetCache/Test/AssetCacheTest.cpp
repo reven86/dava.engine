@@ -50,15 +50,14 @@ namespace AssetCache
 class AssetClientAddRequest: public ClientDelegate
 {
 public:
-    Client *client = nullptr;
+    Client client;
     bool testFinished = false;
 
 public:
 
     AssetClientAddRequest(const String & hash, const FilePath & pathname)
     {
-        client = new Client();
-        client->SetDelegate(this);
+        client.SetDelegate(this);
         
         Connect();
         
@@ -69,42 +68,45 @@ public:
         files.LoadFiles();
         files.InvalidateFileSize();
         
-        auto added = client->AddToCache(key, files);
-        Logger::Debug("[AssetClientAddRequest::%s] Add request sent with result %d", __FUNCTION__, added);
+        auto added = client.AddToCache(key, files);
+        Logger::FrameworkDebug("[AssetClientAddRequest::%s] Add request sent with result %d", __FUNCTION__, added);
         
         auto startTime = SystemTimer::Instance()->AbsoluteMS();
         while(testFinished == false)
         {
-            sleep(10);
+            Thread::Sleep(10);
         }
         auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
-        Logger::Debug("[AssetClientAddRequest::%s] Wait of adding time = %lld", __FUNCTION__, deltaTime);
-
-//        client.Disconnect();
+        Logger::FrameworkDebug("[AssetClientAddRequest::%s] Wait of adding time = %lld", __FUNCTION__, deltaTime);
+    }
+    
+    ~AssetClientAddRequest()
+    {
+        client.Disconnect();
     }
     
     bool Connect()
     {
-        bool connected = client->Connect("127.0.0.1", AssetCache::ASSET_SERVER_PORT);
-        Logger::Debug("[AssetClientAddRequest::%s] Connect request sent with result %d", __FUNCTION__, connected);
+        auto startTime = SystemTimer::Instance()->AbsoluteMS();
+        bool connected = client.Connect("127.0.0.1", AssetCache::ASSET_SERVER_PORT);
+        Logger::FrameworkDebug("[AssetClientAddRequest::%s] Connect request sent with result %d", __FUNCTION__, connected);
         if(connected)
         {
-            auto startTime = SystemTimer::Instance()->AbsoluteMS();
-            while(client->IsConnected() == false)
+            while(client.IsConnected() == false)
             {
-                sleep(10);
+                Thread::Sleep(10);
             }
-            auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
-            Logger::Debug("[AssetClientAddRequest::%s] Connection time = %lld", __FUNCTION__, deltaTime);
         }
 
+        auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
+        Logger::FrameworkDebug("[AssetClientAddRequest::%s] Connection time = %lld", __FUNCTION__, deltaTime);
         return connected;
     }
     
     
     void OnAddedToCache(const CacheItemKey &key, bool added) override
     {
-        Logger::Debug("[AssetClientAddRequest::%s] files added = %d", __FUNCTION__, added);
+        Logger::FrameworkDebug("[AssetClientAddRequest::%s] files added = %d", __FUNCTION__, added);
         testFinished = true;
     }
 };
@@ -115,7 +117,7 @@ public:
 class AssetClientGetRequest: public ClientDelegate
 {
 public:
-    Client *client = nullptr;
+    Client client;
     bool testFinished = false;
     
     FilePath folder;
@@ -124,42 +126,45 @@ public:
     
     AssetClientGetRequest(const String & hash, const FilePath & _folder) : folder(_folder)
     {
-        client = new Client();
-        client->SetDelegate(this);
+        client.SetDelegate(this);
         
         Connect();
         
         CacheItemKey key(hash);
         
-        auto get = client->GetFromCache(key);
+        auto get = client.GetFromCache(key);
         Logger::Debug("[AssetClientGetRequest::%s] Get request sent with result %d", __FUNCTION__, get);
         
         auto startTime = SystemTimer::Instance()->AbsoluteMS();
         while(testFinished == false)
         {
-            sleep(10);
+            Thread::Sleep(10);
         }
         auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
         Logger::Debug("[AssetClientGetRequest::%s] Wait of adding time = %lld", __FUNCTION__, deltaTime);
         
-//        client.Disconnect();
+    }
+    
+    ~AssetClientGetRequest()
+    {
+        client.Disconnect();
     }
     
     bool Connect()
     {
-        bool connected = client->Connect("127.0.0.1", AssetCache::ASSET_SERVER_PORT);
+        auto startTime = SystemTimer::Instance()->AbsoluteMS();
+        bool connected = client.Connect("127.0.0.1", AssetCache::ASSET_SERVER_PORT);
         Logger::Debug("[AssetClientGetRequest::%s] Connect request sent with result %d", __FUNCTION__, connected);
         if(connected)
         {
-            auto startTime = SystemTimer::Instance()->AbsoluteMS();
-            while(client->IsConnected() == false)
+            while(client.IsConnected() == false)
             {
-                sleep(10);
+                Thread::Sleep(10);
             }
-            auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
-            Logger::Debug("[AssetClientGetRequest::%s] Connection time = %lld", __FUNCTION__, deltaTime);
         }
         
+        auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
+        Logger::Debug("[AssetClientGetRequest::%s] Connection time = %lld", __FUNCTION__, deltaTime);
         return connected;
     }
     
