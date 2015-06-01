@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Base/GlobalEnum.h"
 #include "Render/Texture.h"
 #include "Render/Highlevel/Light.h"
@@ -50,7 +49,7 @@ ENUM_DECLARE(eGPUFamily)
 	ENUM_ADD_DESCR(GPU_TEGRA, "tegra");
 	ENUM_ADD_DESCR(GPU_MALI, "mali");
 	ENUM_ADD_DESCR(GPU_ADRENO, "adreno");
-	ENUM_ADD_DESCR(GPU_PNG, "PNG");
+	ENUM_ADD_DESCR(GPU_ORIGIN, "origin");
 }
 
 ENUM_DECLARE(Texture::TextureWrap)

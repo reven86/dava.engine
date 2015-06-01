@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "SceneSaver.h"
 #include "Deprecated/SceneValidator.h"
 
@@ -238,18 +237,16 @@ void SceneSaver::CopyTexture(const FilePath &texturePathname)
 	{
 		Vector<FilePath> faceNames;
 
-		Texture::GenerateCubeFaceNames(descriptorPathname.GetAbsolutePathname().c_str(), faceNames);
-		for(Vector<FilePath>::iterator it = faceNames.begin();
-			it != faceNames.end();
-			++it)
+		desc->GetFacePathnames(faceNames);
+		for(auto& faceName : faceNames)
 		{
-			sceneUtils.AddFile(*it);
+            if (!faceName.IsEmpty())
+			    sceneUtils.AddFile(faceName);
 		}
 	}
 	else
 	{
-		FilePath pngPathname = GPUFamilyDescriptor::CreatePathnameForGPU(texturePathname, GPU_PNG, FORMAT_RGBA8888);
-		sceneUtils.AddFile(pngPathname);
+        sceneUtils.AddFile(desc->GetSourceTexturePathname());
 	}
 	
 
@@ -260,13 +257,13 @@ void SceneSaver::CopyTexture(const FilePath &texturePathname)
         {
             eGPUFamily gpu = (eGPUFamily)i;
             
-            PixelFormat format = desc->GetPixelFormatForCompression(gpu);
+            PixelFormat format = desc->GetPixelFormatForGPU(gpu);
             if(format == FORMAT_INVALID)
             {
                 continue;
             }
             
-            FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(desc, gpu);
+            FilePath imagePathname = desc->CreatePathnameForGPU(gpu);
             sceneUtils.AddFile(imagePathname);
         }
     }

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "LibraryController.h"
 #include "HierarchyTreeControlNode.h"
 #include "MetadataFactory.h"

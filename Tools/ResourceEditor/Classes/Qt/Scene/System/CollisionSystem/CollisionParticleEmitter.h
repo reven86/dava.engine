@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __SCENE_COLLISION_PARTICLE_EMITTER_H__
 #define __SCENE_COLLISION_PARTICLE_EMITTER_H__
 

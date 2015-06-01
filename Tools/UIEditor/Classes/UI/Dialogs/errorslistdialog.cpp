@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "errorslistdialog.h"
 #include "ui_errorslistdialog.h"
 #include "ScreenWrapper.h"

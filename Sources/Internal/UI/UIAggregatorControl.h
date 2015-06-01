@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_UI_AGGREGATOR_CONTROL_H__
 #define __DAVAENGINE_UI_AGGREGATOR_CONTROL_H__
 

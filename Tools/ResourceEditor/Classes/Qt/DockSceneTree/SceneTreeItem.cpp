@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include <QSet>
 #include "DockSceneTree/SceneTreeItem.h"
 #include "Commands2/ConvertToShadowCommand.h"

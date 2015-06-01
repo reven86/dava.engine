@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __SCENE_EXPORTER_H__
 #define __SCENE_EXPORTER_H__
 
@@ -44,7 +43,6 @@ public:
 	SceneExporter();
 	virtual ~SceneExporter();
     
-    void SetGPUForExporting(const String &newGPU);
     void SetGPUForExporting(const eGPUFamily newGPU);
     
 	void SetCompressionQuality(TextureConverter::eConvertQuality quality);

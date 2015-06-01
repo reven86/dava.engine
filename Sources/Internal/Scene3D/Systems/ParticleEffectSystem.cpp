@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene3D/Systems/ParticleEffectSystem.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
@@ -211,10 +210,10 @@ void ParticleEffectSystem::RemoveComponent(Entity * entity, Component * componen
 		RemoveFromActive(effect);
 }
 
-void ParticleEffectSystem::ImmediateEvent(Entity * entity, uint32 event)
+void ParticleEffectSystem::ImmediateEvent(Component * component, uint32 event)
 {
-	ParticleEffectComponent *effect = GetEffectComponent(entity);
-	if (!effect) return;
+    DVASSERT(component->GetType() == Component::PARTICLE_EFFECT_COMPONENT);
+	ParticleEffectComponent *effect = static_cast<ParticleEffectComponent*>(component);
 	if (event == EventSystem::START_PARTICLE_EFFECT)
     {
 		if (effect->state == ParticleEffectComponent::STATE_STOPPED)

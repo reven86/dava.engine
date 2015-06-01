@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __TEXTURE_CONVERTOR_WORK_H__
 #define __TEXTURE_CONVERTOR_WORK_H__
 

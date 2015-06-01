@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Commands2/ParticleEmitterMoveCommands.h"
 
 ParticleEmitterMoveCommand::ParticleEmitterMoveCommand(DAVA::ParticleEffectComponent *_oldEffect, DAVA::ParticleEmitter* _emitter, DAVA::ParticleEffectComponent *_newEffect, int _newIndex)

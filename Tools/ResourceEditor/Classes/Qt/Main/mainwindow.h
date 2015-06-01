@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -173,7 +172,7 @@ public slots:
 	void OnShadowBlendModeAlpha();
 	void OnShadowBlendModeMultiply();
 
-	void OnSaveHeightmapToPNG();
+	void OnSaveHeightmapToImage();
 	void OnSaveTiledTexture();
 
 	void OnConvertModifiedTextures();

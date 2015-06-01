@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene3D/Components/CameraComponent.h"
 #include "Render/Highlevel/Camera.h"
 #include "Scene3D/Entity.h"

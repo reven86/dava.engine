@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "AlignTest.h"
 #include "TextureUtils.h"
 #include "Render/RenderManager.h"

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 /*
 	__DAVAENGINE_IPHONE__ this define must be set in preprocessor macros for all projects that compiled using DAVAEngine for iPhone
  */
@@ -47,6 +46,8 @@
 //#define ENABLE_CONTROL_EDIT //allows to drug'n'drop controls for position editing
 
 //#define SHOW_FRAME_TIME	// shows milliseconds per fame
+
+//#define LOCALIZATION_DEBUG // enable graphic debugging info for displaying of text 
 
 //#define __DAVAENGINE_RENDER_AUTOCONFIG__	// it will use DAVANENGINE_OPENGL for MacOS / iPhone, and 
 //#define __DAVAENGINE_DIRECTX9__

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "GrassEditorProxy.h"
 
 GrassEditorProxy::GrassEditorProxy(GrassMap *map)

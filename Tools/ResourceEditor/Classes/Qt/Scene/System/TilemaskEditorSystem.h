@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__TILEMASKEDITORSYSTEM__
 #define __RESOURCEEDITORQT__TILEMASKEDITORSYSTEM__
 
@@ -57,9 +56,9 @@ public:
 	
 	LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
 	bool DisableLandscapeEdititing();
-	
-	virtual void Process(DAVA::float32 timeElapsed);
-	virtual void Input(DAVA::UIEvent *event);
+
+	void Process(DAVA::float32 timeElapsed) override;
+	void Input(DAVA::UIEvent *event) override;
 	void Draw();
 	
 	void SetBrushSize(int32 brushSize);
@@ -80,6 +79,7 @@ public:
 	eTilemaskDrawType GetDrawingType();
 
 protected:
+    
 	uint32 curToolSize;
 	Image* toolImage;
 	Texture * toolImageTexture;
@@ -112,7 +112,7 @@ protected:
     RenderDataObject * spriteRenderObject;
     RenderDataStream * spriteVertexStream;
     RenderDataStream * spriteTexCoordStream;
-
+    
 	bool needCreateUndo;
 
 	Landscape::eTextureLevel textureLevel;
@@ -134,8 +134,7 @@ protected:
 
 	void FinishEditing();
 
-	MetaObjModifyCommand* CreateTileColorCommand(Landscape::eTextureLevel level,
-												 const Color& color);
+	MetaObjModifyCommand* CreateTileColorCommand(Landscape::eTextureLevel level, const Color& color);
 };
 
 #endif /* defined(__RESOURCEEDITORQT__TILEMASKEDITORSYSTEM__) */

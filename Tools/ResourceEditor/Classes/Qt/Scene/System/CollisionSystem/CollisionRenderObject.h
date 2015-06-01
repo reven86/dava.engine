@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __SCENE_COLLISION_RENDER_OBJECT_H__
 #define __SCENE_COLLISION_RENDER_OBJECT_H__
 

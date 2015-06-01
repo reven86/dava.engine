@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__SELECTPATHWIDGET__
 #define __RESOURCEEDITORQT__SELECTPATHWIDGET__
 
