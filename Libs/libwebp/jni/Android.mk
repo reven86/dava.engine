@@ -113,6 +113,7 @@ LOCAL_SRC_FILES := \
     $(dsp_enc_srcs) \
     $(enc_srcs) \
     $(utils_enc_srcs) \
+	$(utils_dec_srcs) \
 	$(dec_srcs) \
 
 LOCAL_CFLAGS := $(WEBP_CFLAGS)
