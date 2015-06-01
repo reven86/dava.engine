@@ -745,6 +745,7 @@ void LandscapeEditorDrawSystem::ProcessCommand(const Command2 *command, bool red
 
 bool LandscapeEditorDrawSystem::UpdateTilemaskPathname()
 {
+#if RHI_COMPLETE_EDITOR
     if(nullptr != baseLandscape)
     {
         auto texture = baseLandscape->GetTexture(Landscape::TEXTURE_TILE_MASK);
@@ -754,6 +755,7 @@ bool LandscapeEditorDrawSystem::UpdateTilemaskPathname()
             return true;
         }
     }
+#endif
     
     return false;
 }

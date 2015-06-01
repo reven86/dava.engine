@@ -87,6 +87,7 @@ public:
     const static uint32 CUBE_FACE_COUNT = 6;
 	
     static Array<String, CUBE_FACE_COUNT> FACE_NAME_SUFFIX;
+
 	// Main constructors
     /**
         \brief Create texture from data arrray

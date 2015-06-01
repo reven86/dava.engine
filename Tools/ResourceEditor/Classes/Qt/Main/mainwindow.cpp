@@ -1334,7 +1334,7 @@ void QtMainWindow::OnShowStaticOcclusionToggle(bool show)
 
 void QtMainWindow::OnEnableDisableShadows(bool enable)
 {
-    RenderManager::Instance()->GetOptions()->SetOption(RenderOptions::SHADOWVOLUME_DRAW, enable);
+    Renderer::GetOptions()->SetOption(RenderOptions::SHADOWVOLUME_DRAW, enable);
 }
 
 void QtMainWindow::OnReloadTextures()
@@ -1819,7 +1819,7 @@ void QtMainWindow::LoadViewState(SceneEditor2 *scene)
         bool viewLMCanvas = SettingsManager::GetValue(Settings::Internal_MaterialsShowLightmapCanvas).AsBool();
         ui->actionLightmapCanvas->setChecked(viewLMCanvas);
         
-        auto options = RenderManager::Instance()->GetOptions();
+        auto options = Renderer::GetOptions();
         ui->actionEnableDisableShadows->setChecked(options->IsOptionEnabled(RenderOptions::SHADOWVOLUME_DRAW));
 	}
 }
