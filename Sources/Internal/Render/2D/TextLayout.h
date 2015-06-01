@@ -151,7 +151,7 @@ private:
     Vector<float32> characterSizes;
     Vector<uint8> breaks;
     BiDiHelper bidiHelper;
-    uint32 fromPos;
+    size_t fromPos;
 };
 
 inline const WideString& TextLayout::GetPreparedLine() const
@@ -176,7 +176,7 @@ inline const bool TextLayout::IsRtlText() const
 
 inline const uint32 TextLayout::Tell() const
 {
-    return fromPos;
+    return static_cast<uint32>(fromPos);
 }
 
 

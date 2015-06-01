@@ -100,9 +100,9 @@ bool TextLayout::NextByWords(const float32 lineWidth)
     float32 targetWidth = std::floor(lineWidth);
     float32 currentWidth = 0;
     uint32 textLength = (uint32)preparedText.length();
-    uint32 lastPossibleBreak = 0;
+    size_t lastPossibleBreak = 0;
 
-    for (uint32 pos = fromPos; pos < textLength; ++pos)
+    for (size_t pos = fromPos; pos < textLength; ++pos)
     {
         char16 ch = preparedText[pos];
         uint8 canBreak = breaks[pos];
