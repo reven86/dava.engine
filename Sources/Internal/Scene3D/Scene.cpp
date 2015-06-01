@@ -81,6 +81,7 @@
 #include "Scene3D/Systems/MaterialSystem.h"
 
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/SceneCache.h"
 #include "UI/UIEvent.h"
 #include <functional>
@@ -103,24 +104,42 @@ void EntityCache::Preload(const FilePath &path)
     Scene *scene = new Scene();
     if(SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(path))
     {
-        auto count = scene->GetChildrenCount();
+        Entity *srcRootEntity = scene;
+
+        // try to perform little optimization:
+        // if scene has single node with identity transform
+        // we can skip this entity and move only its children
+        if(1 == srcRootEntity->GetChildrenCount())
+        {
+            Entity *child = srcRootEntity->GetChild(0);
+            if(1 == child->GetComponentCount())
+            {
+                TransformComponent * tr = (TransformComponent *)srcRootEntity->GetComponent(Component::TRANSFORM_COMPONENT);
+                if(nullptr != tr && tr->GetLocalTransform() == Matrix4::IDENTITY)
+                {
+                    srcRootEntity = child;
+                }
+            }
+        }
+
+        auto count = srcRootEntity->GetChildrenCount();
 
         Vector<Entity*> tempV;
         tempV.reserve(count);
         for(auto i = 0; i < count; ++i)
         {
-            tempV.push_back(scene->GetChild(i));
+            tempV.push_back(srcRootEntity->GetChild(i));
         }
 
-        Entity *rootEntity = new Entity();
+        Entity *dstRootEntity = new Entity();
         for(auto i = 0; i < count; ++i)
         {
-            rootEntity->AddNode(tempV[i]);
+            dstRootEntity->AddNode(tempV[i]);
         }
 
-        rootEntity->ResetID();
-        rootEntity->SetName(scene->GetName());
-        cachedEntities[path] = rootEntity;
+        dstRootEntity->ResetID();
+        dstRootEntity->SetName(scene->GetName());
+        cachedEntities[path] = dstRootEntity;
     }
 
     SafeRelease(scene);
