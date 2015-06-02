@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "CenterPivotPointCommand.h"
 
 CenterPivotPointCommand::CenterPivotPointCommand(BaseMetadata* baseMetadata, const QMetaProperty& alignProperty) :

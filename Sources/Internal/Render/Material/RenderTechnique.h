@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __DAVAENGINE_RENDER_TECHNIQUE_H__
 #define __DAVAENGINE_RENDER_TECHNIQUE_H__
 

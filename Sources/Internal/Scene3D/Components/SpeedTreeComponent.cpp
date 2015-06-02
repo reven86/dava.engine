@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene3D/Components/SpeedTreeComponent.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Scene3D/Systems/EventSystem.h"
@@ -100,7 +99,7 @@ void SpeedTreeComponent::Deserialize(KeyedArchive *archive, SerializationContext
 void SpeedTreeComponent::SetMaxAnimatedLOD(const int32 & lodIndex)
 {
     maxAnimatedLOD = lodIndex;
-    GlobalEventSystem::Instance()->Event(entity, EventSystem::SPEED_TREE_MAX_ANIMATED_LOD_CHANGED);
+    GlobalEventSystem::Instance()->Event(this, EventSystem::SPEED_TREE_MAX_ANIMATED_LOD_CHANGED);
 }
 
 };

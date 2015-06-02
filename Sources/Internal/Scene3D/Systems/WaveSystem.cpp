@@ -75,14 +75,15 @@ WaveSystem::~WaveSystem()
     ClearWaves();
 }
 
-void WaveSystem::ImmediateEvent(Entity * entity, uint32 event)
+void WaveSystem::ImmediateEvent(Component * component, uint32 event)
 {
     if(event == EventSystem::WAVE_TRIGGERED)
     {
         if(!isWavesEnabled || !isVegetationAnimationEnabled)
             return;
 
-        waves.push_back(new WaveInfo(GetWaveComponent(entity)));
+        WaveComponent * waveComponent = DynamicTypeCheck<WaveComponent*>(component);
+        waves.push_back(new WaveInfo(waveComponent));
     }
 }
 

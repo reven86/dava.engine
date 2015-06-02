@@ -1,3 +1,32 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
+
 #include "DAVAEngine.h"
 
 #include <QDir>
@@ -41,61 +70,57 @@ bool Project::OpenInternal(const QString &path)
 {
     // Attempt to create a project
     YamlParser* parser = YamlParser::Create(path.toStdString());
-    if (!parser)
+    if (nullptr == parser)
         return false;
-    
+
     QDir dir(path);
     dir.cdUp();
-    projectDir = dir.absolutePath();
-    
+
     YamlNode* projectRoot = parser->GetRootNode();
-    if (!projectRoot)
+    if (nullptr == projectRoot)
     {
         SafeRelease(parser);
         return false;
     }
-    
-    // Build the list of file names to be locked.
-    List<QString> fileNames;
-    fileNames.push_back(path);
-    
+
+    FilePath::RemoveResourcesFolder(projectPath);
     editorLocalizationSystem->Cleanup();
-    
-    FilePath bundleName(projectDir.toStdString());
-    bundleName.MakeDirectoryPathname();
-    
-    List<FilePath> resFolders = FilePath::GetResourcesFolders();
-    List<FilePath>::const_iterator searchIt = find(resFolders.begin(), resFolders.end(), bundleName);
-    
-    if(searchIt == resFolders.end())
+
+    projectPath = dir.absolutePath().toStdString();
+    projectPath.MakeDirectoryPathname();
+
+    const auto &resFolders = FilePath::GetResourcesFolders();
+    const auto &searchIt = find(resFolders.begin(), resFolders.end(), projectPath);
+
+    if (searchIt == resFolders.end())
     {
-        FilePath::AddResourcesFolder(bundleName);
+        FilePath::AddResourcesFolder(projectPath);
     }
-      
+
     const YamlNode *fontNode = projectRoot->Get("font");
-    
+
     // Get font node
     if (nullptr != fontNode)
     {
         // Get default font node
         const YamlNode *defaultFontPath = fontNode->Get("DefaultFontsPath");
         if (nullptr != defaultFontPath)
-        {        
+        {
             FilePath localizationFontsPath(defaultFontPath->AsString());
-            if(localizationFontsPath.Exists())
+            if (localizationFontsPath.Exists())
             {
                 editorFontSystem->SetDefaultFontsPath(localizationFontsPath.GetDirectory());
             }
         }
     }
-    
-    if(editorFontSystem->GetDefaultFontsPath().IsEmpty())
+
+    if (editorFontSystem->GetDefaultFontsPath().IsEmpty())
     {
-        editorFontSystem->SetDefaultFontsPath(FilePath(bundleName.GetAbsolutePathname() + "Data/UI/Fonts/"));
+        editorFontSystem->SetDefaultFontsPath(FilePath(projectPath.GetAbsolutePathname() + "Data/UI/Fonts/"));
     }
 
     editorFontSystem->LoadLocalizedFonts();
-    
+
     const YamlNode* platforms = projectRoot->Get("platforms");
     for (uint32 i = 0; i < platforms->GetCount(); i++)
     {
@@ -105,9 +130,9 @@ bool Project::OpenInternal(const QString &path)
         const YamlNode *platform = platforms->Get(platformName);
         float platformWidth = platform->Get("width")->AsFloat();
         float platformHeight = platform->Get("height")->AsFloat();
-        
+
         const YamlNode *screens = platform->Get("screens");
-        for (int j = 0; j < (int32) screens->GetCount(); j++)
+        for (int j = 0; j < (int32)screens->GetCount(); j++)
         {
             const String &screenName = screens->Get(j)->AsString();
             LegacyControlData::Data data;
@@ -117,9 +142,9 @@ bool Project::OpenInternal(const QString &path)
             String key = "~res:/UI/" + platformName + "/" + screenName + ".yaml";
             legacyData->Put(key, data);
         }
-        
+
         const YamlNode *aggregators = platform->Get("aggregators");
-        for (int j = 0; j < (int32) aggregators->GetCount(); j++)
+        for (int j = 0; j < (int32)aggregators->GetCount(); j++)
         {
             String aggregatorName = aggregators->GetItemKeyName(j);
             const YamlNode *aggregator = aggregators->Get(j);
@@ -133,7 +158,7 @@ bool Project::OpenInternal(const QString &path)
             String key = "~res:/UI/" + platformName + "/" + aggregatorName + ".yaml";
             legacyData->Put(key, data);
         }
-        
+
         if (i == 0)
         {
             const YamlNode *localizationPathNode = platform->Get("LocalizationPath");
@@ -144,9 +169,9 @@ bool Project::OpenInternal(const QString &path)
             }
         }
     }
-    
+
     SafeRelease(parser);
-    
+
     return true;
 }
 
@@ -216,12 +241,12 @@ void Project::SetIsOpen(bool arg)
 {
     if (isOpen == arg)
     {
-        return;
+        //return; //TODO: implement this after we create CloseProject function
     }
     isOpen = arg;
     if (arg)
     {
-        ResourcesManageHelper::SetProjectPath(projectDir);
+        ResourcesManageHelper::SetProjectPath(QString::fromStdString(projectPath.GetAbsolutePathname()));
     }
     emit IsOpenChanged(arg);
 }

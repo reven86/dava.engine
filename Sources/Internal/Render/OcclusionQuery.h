@@ -25,6 +25,8 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #ifndef __DAVAENGINE_OCCLUSION_QUERY__
 #define __DAVAENGINE_OCCLUSION_QUERY__
 

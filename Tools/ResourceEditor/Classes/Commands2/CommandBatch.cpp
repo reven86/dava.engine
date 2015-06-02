@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Commands2/CommandBatch.h"
 
 CommandBatch::CommandBatch()

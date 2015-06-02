@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Render/Highlevel/Heightmap.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
@@ -156,6 +155,12 @@ void Heightmap::SetTileSize(int32 newSize)
 
 void Heightmap::Save(const FilePath &filePathname)
 {
+    if (0 == size)
+    {
+        Logger::Error("Heightmap::Save: heightmap is empty");
+        return;
+    }
+
     if(!filePathname.IsEqualToExtension(FileExtension()))
     {
         Logger::Error("Heightmap::Save wrong extension: %s", filePathname.GetAbsolutePathname().c_str());

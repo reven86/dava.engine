@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Base/GlobalEnum.h"
 #include "Render/Texture.h"
 #include "Render/Highlevel/Light.h"
@@ -39,6 +38,7 @@
 #include "Render/2D/TextBlock.h"
 #include "UI/UIList.h"
 #include "UI/UITextField.h"
+#include "UI/Components/UIComponent.h"
 
 using namespace DAVA;
 
@@ -49,7 +49,7 @@ ENUM_DECLARE(eGPUFamily)
 	ENUM_ADD_DESCR(GPU_TEGRA, "tegra");
 	ENUM_ADD_DESCR(GPU_MALI, "mali");
 	ENUM_ADD_DESCR(GPU_ADRENO, "adreno");
-	ENUM_ADD_DESCR(GPU_PNG, "PNG");
+	ENUM_ADD_DESCR(GPU_ORIGIN, "origin");
 }
 
 ENUM_DECLARE(Texture::TextureWrap)
@@ -277,6 +277,12 @@ ENUM_DECLARE(UITextField::eReturnKeyType)
     ENUM_ADD_DESCR(UITextField::RETURN_KEY_YAHOO         , "RETURN_KEY_YAHOO"         );
     ENUM_ADD_DESCR(UITextField::RETURN_KEY_DONE          , "RETURN_KEY_DONE"          );
     ENUM_ADD_DESCR(UITextField::RETURN_KEY_EMERGENCY_CALL, "RETURN_KEY_EMERGENCY_CALL");
+};
+
+ENUM_DECLARE(UIComponent::eType)
+{
+    ENUM_ADD_DESCR(UIComponent::FAKE_COMPONENT       , "Fake"       );
+    ENUM_ADD_DESCR(UIComponent::FAKE_MULTI_COMPONENT       , "FakeMultiple"       );
 };
 
 /*
