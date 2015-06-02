@@ -26,149 +26,69 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_NEWTESTFRAMEWORK_H__
-#define __DAVAENGINE_NEWTESTFRAMEWORK_H__
+#ifndef __DAVAENGINE_UNITTESTS_H__
+#define __DAVAENGINE_UNITTESTS_H__
 
-#include "Base/BaseTypes.h"
+#include "UnitTests/TestClassFactory.h"
+#include "UnitTests/TestClass.h"
+#include "UnitTests/TestCore.h"
 
-namespace Testing
-{
+/******************************************************************************************
+ New unit test framework
+ Features:
+  - automatic test registration in test framework
+  - unit test are placed in separate cpp file
 
-class TestClass;
-class TestClassFactoryBase;
-
-class TestClassFactoryBase
-{
-public:
-    virtual ~TestClassFactoryBase() {}
-    virtual TestClass* CreateTestClass() = 0;
-
-protected:
-    TestClassFactoryBase() = default;
-};
-
-template<typename T>
-class TestClassFactoryImpl : public TestClassFactoryBase
-{
-public:
-    TestClass* CreateTestClass() override { return new T; }
-};
-
-struct TestInfo
-{
-    TestInfo(const char* name_, void (*testFunction_)(TestClass*))
-        : name(name_)
-        , testFunction(testFunction_)
-    {}
-    DAVA::String name;
-    void (*testFunction)(TestClass*);
-};
-
-struct TestClassInfo
-{
-    TestClassInfo(const char* name_, TestClassFactoryBase* factory_)
-        : name(name_)
-        , factory(factory_)
-    {}
-    TestClassInfo(TestClassInfo&& other)
-        : name(std::move(other.name))
-        , factory(std::move(other.factory))
-    {}
-    DAVA::String name;
-    std::unique_ptr<TestClassFactoryBase> factory;
-};
-
-class TestClass
-{
-public:
-    virtual ~TestClass() {}
-
-    virtual void SetUp(const DAVA::String& testName) {}
-    virtual void TearDown(const DAVA::String& testName) {}
-    virtual void Update(DAVA::float32 timeElapsed, const DAVA::String& testName) {}
-    virtual bool TestComplete(const DAVA::String& testName) const { return true; }
-
-    void RegisterTest(const char* name, void (*testFunc)(TestClass*))
+ How to use
+    DAVA_TESTCLASS(my_unittest)
     {
-        tests.emplace_back(name, testFunc);
-    }
+        my_unittest();
+        ~my_unittest();
 
-    size_t TestCount() const
-    {
-        return tests.size();
-    }
+        void SetUp(const String& testName) override;
+        void TearDown(const String& testName) override;
+        void Update(float32 timeElapsed, const String& testName) override;
+        bool TestComplete(const String& testName) const override;
 
-    const DAVA::String& TestName(size_t index) const
-    {
-        return tests[index].name;
-    }
-
-    void RunTest(size_t index)
-    {
-        tests[index].testFunction(this);
-    }
-
-private:
-    DAVA::Vector<TestInfo> tests;
-};
-
-template<typename T>
-struct TestClassTypeKeeper
-{
-    using TestClassType = T;
-};
-
-class TestClassCollection
-{
-public:
-    static const size_t npos = size_t(-1);
-
-    static TestClassCollection* Instance()
-    {
-        static TestClassCollection instance;
-        return &instance;
-    }
-
-    TestClassCollection() {}
-    ~TestClassCollection() {}
-
-    size_t TestClassCount() const
-    {
-        return testClasses.size();
-    }
-
-    const DAVA::String& TestClassName(size_t index) const
-    {
-        return testClasses[index].name;
-    }
-
-    TestClass* CreateTestClass(size_t index)
-    {
-        return testClasses[index].factory->CreateTestClass();
-    }
-
-    size_t IsTestClassRegistered(const DAVA::String& name) const
-    {
-        auto iter = std::find_if(testClasses.begin(), testClasses.end(), [&name](const TestClassInfo& info) -> bool {
-            return info.name == name;
-        });
-        if (iter != testClasses.end())
+        DAVA_TEST(test1)
         {
-            return std::distance(testClasses.begin(), iter);
+            TEST_VERIFY(0);
         }
-        return npos;
-    }
+        DAVA_TEST(test2)
+        {
+            TEST_VERIFY_WITH_MESSAGE(0, "my message");
+        }
+    };
+ 
+ DAVA_TESTCLASS defines unit test class with name 'my_unittest'. This class has two tests: test1 and test2.
+ Tests test1 and test2 will be executed by test framework in order of declaration. Inside tests you can
+ verify assertions with TEST_VERIFY or TEST_VERIFY_WITH_MESSAGE. TEST_VERIFY_WITH_MESSAGE allows append user
+ message to output when assertion fails. TEST_VERIFY and TEST_VERIFY_WITH_MESSAGE also can be invoked from 
+ functions that are called from tests.
 
-    void RegisterTestClass(const char* name, TestClassFactoryBase* factory)
-    {
-        testClasses.emplace_back(name, factory);
-    }
+ As DAVA_TESTCLASS declares C++ class you can define you own data and function members.
 
-private:
-    DAVA::Vector<TestClassInfo> testClasses;
-};
+ You can define optional constructor and destructor for test class. Constructor should be defined with no
+ parameters or only with default parameters.
+ Also you are allowed to define optional member functions SetUp(), TearDown(), Update() and TestComplete().
+ They take as argument current executing test name (test1 or test2 in example).
 
-}   // namespace Testing
+ SetUp() is invoked before running test, TearDown() is called after test has finished.
+ You can override TestComplete() method to control test completion youself. Method Update() is invoked each frame
+ while TestComplete() returns false.
+
+ Lifetime of unittest and function order:
+    my_unittest* unittest = new my_unittest;
+    unittest->SetUp("test1");
+    while (!unittest->TestComplete("test1"))
+       unittest->Update(timeElapsed, "test1");
+    unittest->TearDown("test1");
+
+    same sequence for test2
+
+    delete unittest;
+
+******************************************************************************************/
 
 #define DAVA_TESTCLASS(classname)                                                                                                               \
     struct classname;                                                                                                                           \
@@ -176,23 +96,35 @@ private:
     {                                                                                                                                           \
         testclass_ ## classname ## _registrar()                                                                                                 \
         {                                                                                                                                       \
-            Testing::TestClassCollection::Instance()->RegisterTestClass(#classname, new Testing::TestClassFactoryImpl<classname>);  \
+            DAVA::UnitTests::TestCore::Instance()->RegisterTestClass(#classname, new DAVA::UnitTests::TestClassFactoryImpl<classname>);  \
         }                                                                                                                                       \
     } testclass_ ## classname ## _registrar_instance;                                                                                           \
-    struct classname : public Testing::TestClass, public Testing::TestClassTypeKeeper<classname>
+    struct classname : public DAVA::UnitTests::TestClass, public DAVA::UnitTests::TestClassTypeKeeper<classname>
 
 #define DAVA_TEST(testname)                                                                                             \
     struct test_ ## testname ## _registrar {                                                                            \
-        test_ ## testname ## _registrar(Testing::TestClass* testClass)                                                  \
+        test_ ## testname ## _registrar(DAVA::UnitTests::TestClass* testClass)                                          \
         {                                                                                                               \
             testClass->RegisterTest(#testname, &test_ ## testname ## _call);                                            \
         }                                                                                                               \
     };                                                                                                                  \
     test_ ## testname ## _registrar test_ ## testname ## _registrar_instance = test_ ## testname ## _registrar(this);   \
-    static void test_ ## testname ## _call(TestClass* testClass)                                                        \
+    static void test_ ## testname ## _call(DAVA::UnitTests::TestClass* testClass)                                       \
     {                                                                                                                   \
         static_cast<TestClassType*>(testClass)->testname();                                                             \
     }                                                                                                                   \
     void testname()
 
-#endif  // __DAVAENGINE_NEWTESTFRAMEWORK_H__
+#define TEST_VERIFY(condition)                                                                                              \
+    if (!(condition))                                                                                                       \
+    {                                                                                                                       \
+        DAVA::UnitTests::TestCore::Instance()->TestFailed(DAVA::String(#condition), __FILE__, __LINE__, DAVA::String());    \
+    }
+
+#define TEST_VERIFY_WITH_MESSAGE(condition, message)                                                                            \
+    if (!(condition))                                                                                                           \
+    {                                                                                                                           \
+        DAVA::UnitTests::TestCore::Instance()->TestFailed(DAVA::String(#condition), __FILE__, __LINE__, DAVA::String(message)); \
+    }
+
+#endif  // __DAVAENGINE_UNITTESTS_H__
