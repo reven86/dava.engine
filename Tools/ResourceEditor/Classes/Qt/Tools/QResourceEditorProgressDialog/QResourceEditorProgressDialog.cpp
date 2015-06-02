@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "QResourceEditorProgressDialog.h"
 #include <qprogressbar.h>
 

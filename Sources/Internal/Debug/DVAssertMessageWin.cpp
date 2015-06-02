@@ -29,9 +29,6 @@
 #include "Base/Platform.h"
 #if defined (__DAVAENGINE_WINDOWS__)
 
-#include <cassert>
-#include <Shlwapi.h>
-
 #include "Debug/DVAssertMessage.h"
 #include "FileSystem/Logger.h"
 #include "Utils/UTF8Utils.h"
@@ -42,10 +39,11 @@ namespace DAVA
 
 #if defined (__DAVAENGINE_WIN32__)
 
-bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
+bool DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 {
 	// Modal Type is ignored by Win32.
-	int buttonId = MessageBoxA(HWND_DESKTOP, content, "Assert", MB_OKCANCEL | MB_ICONEXCLAMATION);
+    const int flags = MB_OKCANCEL | MB_ICONEXCLAMATION | MB_SETFOREGROUND | MB_TOPMOST | (modalType == TRY_NONMODAL ? MB_APPLMODAL : MB_TASKMODAL);
+    int buttonId = ::MessageBoxA(HWND_DESKTOP, content, "Assert", flags);
     switch (buttonId)
     {
     case IDCANCEL:

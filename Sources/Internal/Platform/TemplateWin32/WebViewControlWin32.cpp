@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 // WARN first include win32 headers'ATL::CCRTAllocator::free' : 
 // recursive on all control paths, function will cause runtime stack overflow
 // and only then include DAVA includes because of free, malloc redefine error

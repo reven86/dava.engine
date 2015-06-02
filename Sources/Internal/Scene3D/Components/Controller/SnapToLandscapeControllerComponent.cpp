@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "SnapToLandscapeControllerComponent.h"
 #include "FileSystem/KeyedArchive.h"
 
@@ -56,7 +57,7 @@ Component * SnapToLandscapeControllerComponent::Clone(Entity * toEntity)
 void SnapToLandscapeControllerComponent::SetHeightOnLandscape(float32 height)
 {
     heightOnLandscape = height;
-    GlobalEventSystem::Instance()->Event(entity, EventSystem::SNAP_TO_LANDSCAPE_HEIGHT_CHANGED);
+    GlobalEventSystem::Instance()->Event(this, EventSystem::SNAP_TO_LANDSCAPE_HEIGHT_CHANGED);
 }
 
     

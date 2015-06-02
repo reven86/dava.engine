@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__MODIFICATIONWIDGET__
 #define __RESOURCEEDITORQT__MODIFICATIONWIDGET__
 
@@ -58,6 +57,9 @@ public:
 
 	void SetPivotMode(PivotMode pivotMode);
 	void SetModifMode(ST_ModifMode modifMode);
+
+public slots:
+    void OnSnapToLandscapeChanged();
 
 private slots:
 	void OnSceneActivated(SceneEditor2 *scene);

@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "BSDiff.h"
 #include "ZLibStream.h"
 #include "FileSystem/File.h"

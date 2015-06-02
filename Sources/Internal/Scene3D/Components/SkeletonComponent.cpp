@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene3D/Components/SkeletonComponent.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Components/ComponentHelpers.h"
@@ -82,7 +81,7 @@ void SkeletonComponent::SetConfigJoints(const Vector<JointConfig>& config)
 
 void SkeletonComponent::RebuildFromConfig()
 {
-    GlobalEventSystem::Instance()->Event(GetEntity(), EventSystem::SKELETON_CONFIG_CHANGED);	
+    GlobalEventSystem::Instance()->Event(this, EventSystem::SKELETON_CONFIG_CHANGED);	
 }
 
 Component * SkeletonComponent::Clone(Entity * toEntity)

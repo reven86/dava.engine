@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "QtPropertyDataMetaObject.h"
 
 QtPropertyDataMetaObject::QtPropertyDataMetaObject(void *_object, const DAVA::MetaInfo *_meta)

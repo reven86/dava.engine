@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ParticleEditorWidget.h"
 #include "EmitterLayerWidget.h"
 #include "LayerForceWidget.h"

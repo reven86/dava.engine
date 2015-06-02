@@ -112,9 +112,6 @@ public class InternalViewClientV14 extends WebViewClient {
             super.onPageFinished(view, url);
             
             WebViewWrapper wrap = (WebViewWrapper)view;
-            // mark web view loaded content so on lock/unlock do not call
-            // reload
-            wrap.isLoadingData = false;
             
             JNIActivity activity = JNIActivity.GetActivity();
             if (null == activity || activity.GetIsPausing()) {

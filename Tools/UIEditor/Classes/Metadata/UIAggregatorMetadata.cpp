@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "UIAggregatorMetadata.h"
 #include "HierarchyTreeController.h"
 #include "HierarchyTreeAggregatorControlNode.h"

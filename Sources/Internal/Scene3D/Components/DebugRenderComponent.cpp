@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene3D/Components/DebugRenderComponent.h"
 
 namespace DAVA 

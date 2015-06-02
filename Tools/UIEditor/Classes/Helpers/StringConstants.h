@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #ifndef __UIEditor__StringConstants_h__
 #define __UIEditor__StringConstants_h__
 

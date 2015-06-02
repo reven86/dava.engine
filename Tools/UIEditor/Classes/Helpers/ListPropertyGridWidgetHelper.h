@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __LIST_PROPERTY_GRID_WIDGET_HELPER__
 #define __LIST_PROPERTY_GRID_WIDGET_HELPER__
 

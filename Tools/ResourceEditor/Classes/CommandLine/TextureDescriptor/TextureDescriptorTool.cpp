@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "TextureDescriptorTool.h"
 #include "TextureDescriptorUtils.h"
 
