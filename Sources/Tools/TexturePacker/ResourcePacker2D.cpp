@@ -80,10 +80,7 @@ void ResourcePacker2D::InitFolders(const FilePath & inputPath,const FilePath & o
     
 void ResourcePacker2D::PackResources(eGPUFamily forGPU)
 {
-    if (!running)
-    {
-        return;
-    }
+    SetRunning(true);
     Logger::FrameworkDebug("\nInput: %s \nOutput: %s \nExclude: %s",
                   inputGfxDirectory.GetAbsolutePathname().c_str(),
                   outputGfxDirectory.GetAbsolutePathname().c_str(),

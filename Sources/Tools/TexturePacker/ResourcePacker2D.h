@@ -51,7 +51,6 @@ public:
     void InitFolders(const FilePath & inputPath,const FilePath & outputPath);
     void PackResources(eGPUFamily forGPU);
     void RecalculateMD5ForOutputDir();
-    void RecursiveTreeWalk(const FilePath & inputPath, const FilePath & outputPath, const Vector<String> & flags = Vector<String>());
     bool IsMD5ChangedDir(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName, bool isRecursive) const;
     bool IsMD5ChangedFile(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName) const;
     
@@ -83,6 +82,7 @@ protected:
     Set<String> errors;
 
     void AddError(const String& errorMsg);
+    void RecursiveTreeWalk(const FilePath & inputPath, const FilePath & outputPath, const Vector<String> & flags = Vector<String>());
 };
 
 inline bool ResourcePacker2D::IsRunning() const
