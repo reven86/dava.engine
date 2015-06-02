@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include <QMessageBox>
 #include "SpeedTreeImport/SpeedTreeImportDialog.h"
 #include "SpeedTreeImporter.h"

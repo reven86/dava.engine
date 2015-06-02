@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ScreenWrapper.h"
 #include "HierarchyTreeController.h"
 #include "mainwindow.h"

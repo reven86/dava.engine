@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Qt/Scene/System/ModifSystem.h"
 #include "Qt/Scene/System/HoodSystem.h"
 #include "Qt/Scene/System/CameraSystem.h"

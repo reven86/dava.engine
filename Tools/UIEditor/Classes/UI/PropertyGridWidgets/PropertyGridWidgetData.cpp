@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "PropertyGridWidgetData.h"
 
 using namespace DAVA;

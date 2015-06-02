@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_MATH_DEFINES_H__
 #define __DAVAENGINE_MATH_DEFINES_H__
 

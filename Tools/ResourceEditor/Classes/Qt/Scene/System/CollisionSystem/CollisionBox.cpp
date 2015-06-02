@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene/System/CollisionSystem/CollisionBox.h"
 
 CollisionBox::CollisionBox(DAVA::Entity *entity, btCollisionWorld *word,  DAVA::Vector3 position, DAVA::float32 boxSize)

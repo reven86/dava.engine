@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __ResourceEditorQt__EmitterLayerWidget__
 #define __ResourceEditorQt__EmitterLayerWidget__
 

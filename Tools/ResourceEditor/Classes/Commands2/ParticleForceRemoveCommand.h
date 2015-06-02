@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __PARTICLE_FORCE_REMOVE_COMMAND_H__
 #define __PARTICLE_FORCE_REMOVE_COMMAND_H__
 

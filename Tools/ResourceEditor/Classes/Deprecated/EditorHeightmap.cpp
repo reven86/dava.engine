@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "EditorHeightmap.h"
 #include "Render/PixelFormatDescriptor.h"
 

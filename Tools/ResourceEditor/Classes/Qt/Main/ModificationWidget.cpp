@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ModificationWidget.h"
 #include "Commands2/TransformCommand.h"
 #include "Math/MathHelpers.h"

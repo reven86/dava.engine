@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __UIEditor__ScreenMetadata__
 #define __UIEditor__ScreenMetadata__
 

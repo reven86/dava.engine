@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __UIEditor__HierarchyTreePlatformNode__
 #define __UIEditor__HierarchyTreePlatformNode__
 

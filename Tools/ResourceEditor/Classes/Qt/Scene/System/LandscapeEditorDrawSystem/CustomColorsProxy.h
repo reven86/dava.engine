@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__CUSTOMCOLORSPROXY__
 #define __RESOURCEEDITORQT__CUSTOMCOLORSPROXY__
 
