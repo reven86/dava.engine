@@ -35,13 +35,13 @@
 #include "Render/3D/AnimatedMesh.h"
 #include "Render/Image/Image.h"
 #include "Render/Highlevel/RenderSystem.h"
-
+#include "Render/RenderOptions.h"
+#include "Render/MipmapReplacer.h"
 
 #include "Platform/SystemTimer.h"
 #include "FileSystem/FileSystem.h"
 #include "Debug/Stats.h"
 
-#include "Scene3D/SceneNodeAnimationList.h"
 #include "Scene3D/SceneFile.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/DataNode.h"
@@ -69,6 +69,8 @@
 #include "Scene3D/Systems/SkyboxSystem.h"
 #include "Scene3D/Systems/WindSystem.h"
 #include "Scene3D/Systems/WaveSystem.h"
+#include "Scene3D/Systems/SkeletonSystem.h"
+#include "Scene3D/Systems/AnimationSystem.h"
 
 #include "Sound/SoundSystem.h"
 
@@ -81,14 +83,8 @@
 
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/SceneCache.h"
+#include "UI/UIEvent.h"
 
-//#include "Entity/Entity.h"
-//#include "Entity/EntityManager.h"
-//#include "Entity/Components.h"
-//
-//#include "Entity/VisibilityAABBoxSystem.h"
-//#include "Entity/MeshInstanceDrawSystem.h"
-//#include "Entity/LandscapeGeometrySystem.h"
 
 namespace DAVA 
 {
@@ -100,10 +96,6 @@ Texture* Scene::stubTexture2dLightmap = NULL; //this texture should be all-pink 
     
 Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
 	: Entity()
-    , mainCamera(0)
-    , drawCamera(0)
-	, imposterManager(0)
-    , systemsMask(_systemsMask)
     , transformSystem(0)
     , renderUpdateSystem(0)
     , lodSystem(0)
@@ -119,11 +111,16 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
 	, materialSystem(0)
     , foliageSystem(0)
     , windSystem(0)
+    , animationSystem(0)
     , staticOcclusionDebugDrawSystem(0)
-	, sceneGlobalMaterial(0)
-    , isDefaultGlobalMaterial(true)
+    , systemsMask(_systemsMask)
     , clearBuffers(RenderManager::ALL_BUFFERS)
-{   
+    , isDefaultGlobalMaterial(true)
+    , sceneGlobalMaterial(0)
+    , mainCamera(0)
+    , drawCamera(0)
+    , imposterManager(0)
+{
 	CreateComponents();
 	CreateSystems();
 
@@ -131,6 +128,9 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     SetGlobalMaterial(NULL);
     
     SceneCache::Instance()->InsertScene(this);
+
+    RenderOptions * options = RenderManager::Instance()->GetOptions();
+    options->AddObserver(this);
 }
 
 void Scene::CreateComponents()
@@ -243,9 +243,12 @@ void Scene::InitGlobalMaterial()
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_UV_OFFSET)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_UV_OFFSET, Shader::UT_FLOAT_VEC2, 1, defaultVec2.data);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_UV_SCALE)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_UV_SCALE, Shader::UT_FLOAT_VEC2, 1, defaultVec2.data);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_LIGHTMAP_SIZE)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_LIGHTMAP_SIZE, Shader::UT_FLOAT, 1, &defaultLightmapSize);
-    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_DECAL_TILE_SCALE)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_DECAL_TILE_SCALE, Shader::UT_FLOAT_VEC2, 1, &defaultVec2I);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_DECAL_TILE_SCALE)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_DECAL_TILE_SCALE, Shader::UT_FLOAT_VEC2, 1, &defaultVec2);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_DECAL_TILE_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_DECAL_TILE_COLOR, Shader::UT_FLOAT_VEC4, 1, &Color::White);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_DETAIL_TILE_SCALE)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_DETAIL_TILE_SCALE, Shader::UT_FLOAT_VEC2, 1, &defaultVec2);
     if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_SHADOW_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_SHADOW_COLOR, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
+
+    if (NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_NORMAL_SCALE)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_NORMAL_SCALE, Shader::UT_FLOAT, 1, &defaultFloat10);
 
 }
 
@@ -257,108 +260,122 @@ void Scene::CreateSystems()
     if(SCENE_SYSTEM_STATIC_OCCLUSION_FLAG & systemsMask)
     {
         staticOcclusionSystem = new StaticOcclusionSystem(this);
-        AddSystem(staticOcclusionSystem, (1 << Component::STATIC_OCCLUSION_DATA_COMPONENT), true);
+        AddSystem(staticOcclusionSystem, MAKE_COMPONENT_MASK(Component::STATIC_OCCLUSION_DATA_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+    }
+
+    if(SCENE_SYSTEM_ANIMATION_FLAG & systemsMask)
+    {
+        animationSystem = new AnimationSystem(this);
+        AddSystem(animationSystem, MAKE_COMPONENT_MASK(Component::ANIMATION_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_TRANSFORM_FLAG & systemsMask)
     {
         transformSystem = new TransformSystem(this);
-        AddSystem(transformSystem, (1 << Component::TRANSFORM_COMPONENT), true);
+        AddSystem(transformSystem, MAKE_COMPONENT_MASK(Component::TRANSFORM_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_LOD_FLAG & systemsMask)
     {
         lodSystem = new LodSystem(this);
-        AddSystem(lodSystem, (1 << Component::LOD_COMPONENT), true);
+        AddSystem(lodSystem, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_SWITCH_FLAG & systemsMask)
     {
         switchSystem = new SwitchSystem(this);
-        AddSystem(switchSystem, (1 << Component::SWITCH_COMPONENT), true);
+        AddSystem(switchSystem, MAKE_COMPONENT_MASK(Component::SWITCH_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_PARTICLE_EFFECT_FLAG & systemsMask)
     {
         particleEffectSystem = new ParticleEffectSystem(this);
-        AddSystem(particleEffectSystem, (1 << Component::PARTICLE_EFFECT_COMPONENT), true);
+        AddSystem(particleEffectSystem, MAKE_COMPONENT_MASK(Component::PARTICLE_EFFECT_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_SOUND_UPDATE_FLAG & systemsMask)
     {
         soundSystem = new SoundUpdateSystem(this);
-        AddSystem(soundSystem, (1 << Component::TRANSFORM_COMPONENT) | (1 << Component::SOUND_COMPONENT), true);
+        AddSystem(soundSystem, MAKE_COMPONENT_MASK(Component::TRANSFORM_COMPONENT) | MAKE_COMPONENT_MASK(Component::SOUND_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_RENDER_UPDATE_FLAG & systemsMask)
     {
         renderUpdateSystem = new RenderUpdateSystem(this);
-        AddSystem(renderUpdateSystem, (1 << Component::TRANSFORM_COMPONENT) | (1 << Component::RENDER_COMPONENT), true);
+        AddSystem(renderUpdateSystem, MAKE_COMPONENT_MASK(Component::TRANSFORM_COMPONENT) | MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_UPDATEBLE_FLAG & systemsMask)
     {
         updatableSystem = new UpdateSystem(this);
-        AddSystem(updatableSystem, (1 << Component::UPDATABLE_COMPONENT));
+        AddSystem(updatableSystem, MAKE_COMPONENT_MASK(Component::UPDATABLE_COMPONENT));
     }
 
     if(SCENE_SYSTEM_LIGHT_UPDATE_FLAG & systemsMask)
     {
         lightUpdateSystem = new LightUpdateSystem(this);
-        AddSystem(lightUpdateSystem, (1 << Component::TRANSFORM_COMPONENT) | (1 << Component::LIGHT_COMPONENT));
+        AddSystem(lightUpdateSystem, MAKE_COMPONENT_MASK(Component::TRANSFORM_COMPONENT) | MAKE_COMPONENT_MASK(Component::LIGHT_COMPONENT));
     }
 
     if(SCENE_SYSTEM_ACTION_UPDATE_FLAG & systemsMask)
     {
         actionSystem = new ActionUpdateSystem(this);
-        AddSystem(actionSystem, (1 << Component::ACTION_COMPONENT), true);
+        AddSystem(actionSystem, MAKE_COMPONENT_MASK(Component::ACTION_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_SKYBOX_FLAG & systemsMask)
     {
         skyboxSystem = new SkyboxSystem(this);
-        AddSystem(skyboxSystem, (1 << Component::RENDER_COMPONENT), true);
+        AddSystem(skyboxSystem, MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_MATERIAL_FLAG & systemsMask)
     {
         materialSystem = new MaterialSystem(this);
-        AddSystem(materialSystem, (1 << Component::RENDER_COMPONENT));
+        AddSystem(materialSystem, MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT));
     }
 
     if(SCENE_SYSTEM_DEBUG_RENDER_FLAG & systemsMask)
     {
         debugRenderSystem = new DebugRenderSystem(this);
-        AddSystem(debugRenderSystem, (1 << Component::DEBUG_RENDER_COMPONENT), true);
+        AddSystem(debugRenderSystem, MAKE_COMPONENT_MASK(Component::DEBUG_RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
     
     if(SCENE_SYSTEM_FOLIAGE_FLAG & systemsMask)
     {
         foliageSystem = new FoliageSystem(this);
-        AddSystem(foliageSystem, (1 << Component::RENDER_COMPONENT), true);
+        AddSystem(foliageSystem, MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_SPEEDTREE_UPDATE_FLAG & systemsMask)
     {
         speedTreeUpdateSystem = new SpeedTreeUpdateSystem(this);
-        AddSystem(speedTreeUpdateSystem, (1 << Component::SPEEDTREE_COMPONENT), true);
+        AddSystem(speedTreeUpdateSystem, MAKE_COMPONENT_MASK(Component::SPEEDTREE_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_WIND_UPDATE_FLAG & systemsMask)
     {
         windSystem = new WindSystem(this);
-        AddSystem(windSystem, (1 << Component::WIND_COMPONENT), true);
+        AddSystem(windSystem, MAKE_COMPONENT_MASK(Component::WIND_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if(SCENE_SYSTEM_WAVE_UPDATE_FLAG & systemsMask)
     {
         waveSystem = new WaveSystem(this);
-        AddSystem(waveSystem, (1 << Component::WAVE_COMPONENT), true);
+        AddSystem(waveSystem, MAKE_COMPONENT_MASK(Component::WAVE_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+    }
+
+    if(SCENE_SYSTEM_SKELETON_UPDATE_FLAG & systemsMask)
+    {
+        skeletonSystem = new SkeletonSystem(this);
+        AddSystem(skeletonSystem, MAKE_COMPONENT_MASK(Component::SKELETON_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 }
 
 Scene::~Scene()
 {
+    RenderManager::Instance()->GetOptions()->RemoveObserver(this);
+
     SceneCache::Instance()->RemoveScene(this);
     
 	for (Vector<AnimatedMesh*>::iterator t = animatedMeshes.begin(); t != animatedMeshes.end(); ++t)
@@ -408,6 +425,7 @@ Scene::~Scene()
     foliageSystem = 0;
     windSystem = 0;
     waveSystem = 0;
+    animationSystem = 0;
     
     uint32 size = (uint32)systems.size();
     for (uint32 k = 0; k < size; ++k)
@@ -415,6 +433,7 @@ Scene::~Scene()
     systems.clear();
 
     systemsToProcess.clear();
+    systemsToInput.clear();
 
 	SafeDelete(eventSystem);
 	SafeDelete(renderSystem);
@@ -422,19 +441,17 @@ Scene::~Scene()
     
 void Scene::RegisterEntity(Entity * entity)
 {
-    uint32 systemsCount = systems.size();
-    for (uint32 k = 0; k < systemsCount; ++k)
+    for(auto& system : systems)
     {
-        systems[k]->RegisterEntity(entity);
+        system->RegisterEntity(entity);
     }
 }
 
 void Scene::UnregisterEntity(Entity * entity)
 {
-    uint32 systemsCount = systems.size();
-    for (uint32 k = 0; k < systemsCount; ++k)
+    for(auto& system : systems)
     {
-        systems[k]->UnregisterEntity(entity);
+        system->UnregisterEntity(entity);
     }
 }
 
@@ -454,7 +471,7 @@ void Scene::UnregisterEntitiesInSystemRecursively(SceneSystem *system, Entity * 
 void Scene::RegisterComponent(Entity * entity, Component * component)
 {
     DVASSERT(entity && component);
-    uint32 systemsCount = systems.size();
+    uint32 systemsCount = static_cast<uint32>(systems.size());
     for (uint32 k = 0; k < systemsCount; ++k)
     {
         systems[k]->RegisterComponent(entity, component);
@@ -464,7 +481,7 @@ void Scene::RegisterComponent(Entity * entity, Component * component)
 void Scene::UnregisterComponent(Entity * entity, Component * component)
 {
     DVASSERT(entity && component);
-    uint32 systemsCount = systems.size();
+    uint32 systemsCount = static_cast<uint32>(systems.size());
     for (uint32 k = 0; k < systemsCount; ++k)
     {
         systems[k]->UnregisterComponent(entity, component);
@@ -472,17 +489,18 @@ void Scene::UnregisterComponent(Entity * entity, Component * component)
     
 }
 
+
 #if 0 // Removed temporarly if everything will work with events can be removed fully.
 void Scene::ImmediateEvent(Entity * entity, uint32 componentType, uint32 event)
 {
 #if 1
     uint32 systemsCount = systems.size();
-    uint32 updatedComponentFlag = 1 << componentType;
-    uint32 componentsInEntity = entity->GetAvailableComponentFlags();
+    uint64 updatedComponentFlag = MAKE_COMPONENT_MASK(componentType);
+    uint64 componentsInEntity = entity->GetAvailableComponentFlags();
 
     for (uint32 k = 0; k < systemsCount; ++k)
     {
-        uint32 requiredComponentFlags = systems[k]->GetRequiredComponents();
+        uint64 requiredComponentFlags = systems[k]->GetRequiredComponents();
         
         if (((requiredComponentFlags & updatedComponentFlag) != 0) && ((requiredComponentFlags & componentsInEntity) == requiredComponentFlags))
         {
@@ -490,13 +508,13 @@ void Scene::ImmediateEvent(Entity * entity, uint32 componentType, uint32 event)
         }
     }
 #else
-    uint32 componentsInEntity = entity->GetAvailableComponentFlags();
+    uint64 componentsInEntity = entity->GetAvailableComponentFlags();
     Set<SceneSystem*> & systemSetForType = componentTypeMapping.GetValue(componentsInEntity);
     
     for (Set<SceneSystem*>::iterator it = systemSetForType.begin(); it != systemSetForType.end(); ++it)
     {
         SceneSystem * system = *it;
-        uint32 requiredComponentFlags = system->GetRequiredComponents();
+        uint64 requiredComponentFlags = system->GetRequiredComponents();
         if ((requiredComponentFlags & componentsInEntity) == requiredComponentFlags)
             eventSystem->NotifySystem(system, entity, event);
     }
@@ -504,16 +522,16 @@ void Scene::ImmediateEvent(Entity * entity, uint32 componentType, uint32 event)
 }
 #endif
     
-void Scene::AddSystem(SceneSystem * sceneSystem, uint32 componentFlags, bool needProcess /* = false */, SceneSystem * insertBeforeSceneForProcess /* = NULL */)
+void Scene::AddSystem(SceneSystem * sceneSystem, uint64 componentFlags, uint32 processFlags /*= 0*/, SceneSystem * insertBeforeSceneForProcess /* = NULL */)
 {
     sceneSystem->SetRequiredComponents(componentFlags);
     //Set<SceneSystem*> & systemSetForType = componentTypeMapping.GetValue(componentFlags);
     //systemSetForType.insert(sceneSystem);
     systems.push_back(sceneSystem);
 
-    bool wasInsertedForUpdate = false;
-    if(needProcess)
+    if(processFlags & SCENE_SYSTEM_REQUIRE_PROCESS)
     {
+        bool wasInsertedForUpdate = false;
         if(insertBeforeSceneForProcess)
         {
             Vector<SceneSystem*>::iterator itEnd = systemsToProcess.end();
@@ -532,37 +550,45 @@ void Scene::AddSystem(SceneSystem * sceneSystem, uint32 componentFlags, bool nee
             systemsToProcess.push_back(sceneSystem);
             wasInsertedForUpdate = true;
         }
+        DVASSERT(wasInsertedForUpdate);
     }
-    DVASSERT(needProcess == wasInsertedForUpdate);
+    
+    if(processFlags & SCENE_SYSTEM_REQUIRE_INPUT)
+    {
+        systemsToInput.push_back(sceneSystem);
+    }
+    
     RegisterEntitiesInSystemRecursively(sceneSystem, this);
 }
     
 void Scene::RemoveSystem(SceneSystem * sceneSystem)
 {
     UnregisterEntitiesInSystemRecursively(sceneSystem, this);
-    Vector<SceneSystem*>::iterator endIt = systemsToProcess.end();
-    for(Vector<SceneSystem*>::iterator it = systemsToProcess.begin(); it != endIt; ++it)
-    {
-        if(*it == sceneSystem)
-        {
-            systemsToProcess.erase(it);
-            break;;
-        }
-    }
+    
+    RemoveSystem(systemsToProcess, sceneSystem);
+    RemoveSystem(systemsToInput, sceneSystem);
 
-    endIt = systems.end();
-    for(Vector<SceneSystem*>::iterator it = systems.begin(); it != endIt; ++it)
-    {
-        if(*it == sceneSystem)
-        {
-            systems.erase(it);
-            return;
-        }
-    }
-
-    DVASSERT_MSG(false, "System must be at systems array");
+    DVVERIFY(RemoveSystem(systems, sceneSystem));
 }
 
+    
+bool Scene::RemoveSystem(Vector<SceneSystem*> &storage, SceneSystem *system)
+{
+    Vector<SceneSystem*>::iterator endIt = storage.end();
+    for(Vector<SceneSystem*>::iterator it = storage.begin(); it != endIt; ++it)
+    {
+        if(*it == system)
+        {
+            storage.erase(it);
+            return true;
+        }
+    }
+    
+    return false;
+}
+    
+    
+    
 Scene * Scene::GetScene()
 {
     return this;
@@ -585,32 +611,6 @@ void Scene::RemoveAnimatedMesh(AnimatedMesh * mesh)
 AnimatedMesh * Scene::GetAnimatedMesh(int32 index)
 {
 	return animatedMeshes[index];
-}
-	
-void Scene::AddAnimation(SceneNodeAnimationList * animation)
-{
-	if (animation)
-	{
-		animation->Retain();
-		animations.push_back(animation);
-	}
-}
-
-SceneNodeAnimationList * Scene::GetAnimation(int32 index)
-{
-	return animations[index];
-}
-	
-SceneNodeAnimationList * Scene::GetAnimation(const FastName & name)
-{
-	int32 size = (int32)animations.size();
-	for (int32 k = 0; k < size; ++k)
-	{
-		SceneNodeAnimationList * node = animations[k];
-		if (node->GetName() == name)
-			return node;
-	}
-	return 0;
 }
 	
 	
@@ -767,17 +767,6 @@ void Scene::Update(float timeElapsed)
     
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
 
-    bool needShowStaticOcclusion = RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION);
-    if (needShowStaticOcclusion&&!staticOcclusionDebugDrawSystem)
-    {
-        staticOcclusionDebugDrawSystem = new StaticOcclusionDebugDrawSystem(this);
-        AddSystem(staticOcclusionDebugDrawSystem, (1 << Component::STATIC_OCCLUSION_COMPONENT), false, renderUpdateSystem);
-    }else if (!needShowStaticOcclusion&&staticOcclusionDebugDrawSystem)
-    {
-        RemoveSystem(staticOcclusionDebugDrawSystem);
-        SafeDelete(staticOcclusionDebugDrawSystem);
-    }
-
     uint32 size = (uint32)systemsToProcess.size();
     for (uint32 k = 0; k < size; ++k)
     {
@@ -865,7 +854,7 @@ void Scene::Draw()
     
 void Scene::SceneDidLoaded()
 {
-    uint32 systemsCount = systems.size();
+    uint32 systemsCount = static_cast<uint32>(systems.size());
     for (uint32 k = 0; k < systemsCount; ++k)
     {
         systems[k]->SceneDidLoaded();
@@ -1065,6 +1054,10 @@ MaterialSystem * Scene::GetMaterialSystem() const
     return materialSystem;
 }
 
+AnimationSystem * Scene::GetAnimationSystem() const
+{
+    return animationSystem;
+}
 
 /*void Scene::Save(KeyedArchive * archive)
 {
@@ -1083,7 +1076,7 @@ void Scene::Load(KeyedArchive * archive)
 }*/
     
 
-SceneFileV2::eError Scene::Save(const DAVA::FilePath & pathname, bool saveForGame /*= false*/)
+SceneFileV2::eError Scene::SaveScene(const DAVA::FilePath & pathname, bool saveForGame /*= false*/)
 {
     ScopedPtr<SceneFileV2> file(new SceneFileV2());
 	file->EnableDebugLog(false);
@@ -1140,6 +1133,53 @@ void Scene::SetClearBuffers(uint32 buffers)
 uint32 Scene::GetClearBuffers() const 
 {
     return clearBuffers;
+}
+
+    
+void Scene::Input(DAVA::UIEvent *event)
+{
+    uint32 size = (uint32)systemsToInput.size();
+    for (uint32 k = 0; k < size; ++k)
+    {
+        SceneSystem * system = systemsToInput[k];
+        system->Input(event);
+    }
+}
+
+void Scene::HandleEvent(Observable * observable)
+{
+    RenderOptions * options = dynamic_cast<RenderOptions *>(observable);
+    if (options->IsOptionEnabled(RenderOptions::REPLACE_LIGHTMAP_MIPMAPS))
+        MipMapReplacer::ReplaceMipMaps(this, NMaterial::TEXTURE_LIGHTMAP);
+    if (options->IsOptionEnabled(RenderOptions::REPLACE_ALBEDO_MIPMAPS))
+        MipMapReplacer::ReplaceMipMaps(this, NMaterial::TEXTURE_ALBEDO);
+
+    if (options->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && !staticOcclusionDebugDrawSystem)
+    {
+        staticOcclusionDebugDrawSystem = new StaticOcclusionDebugDrawSystem(this);
+        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
+    }
+    else if (!options->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && staticOcclusionDebugDrawSystem)
+    {
+        RemoveSystem(staticOcclusionDebugDrawSystem);
+        SafeDelete(staticOcclusionDebugDrawSystem);
+    }
+}
+    
+void Scene::Activate()
+{
+    for(auto system : systems)
+    {
+        system->Activate();
+    }
+}
+
+void Scene::Deactivate()
+{
+    for(auto system : systems)
+    {
+        system->Deactivate();
+    }
 }
 
 };

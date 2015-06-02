@@ -45,8 +45,7 @@ class EditorListDelegate : public UIControl, public UIListDelegate
 protected:
 	virtual ~EditorListDelegate();
 public:
-	EditorListDelegate(const Rect &rect = Rect(), UIList::eListOrientation orientation =  UIList::ORIENTATION_VERTICAL,
-																				 bool rectInAbsoluteCoordinates = false);
+	EditorListDelegate(UIList* list, bool rectInAbsoluteCoordinates = false);
 
 	// UIListDelegate
     virtual int32 ElementsCount(UIList *forList);
@@ -69,6 +68,7 @@ private:
 	void SetCellSize(const Vector2 &size);
 	void UpdateCellSize(UIList *forList);
 	UIControl *GetCurrentAggregatorControl();
+    UIList* currentList;
 };
 
 };

@@ -34,7 +34,6 @@
 
 class QtLibraryTreeWidgetItem : public QTreeWidgetItem
 {
-	Q_OBJECT
 
 public:
 	QtLibraryTreeWidgetItem(QTreeWidgetItem * parent);

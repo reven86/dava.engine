@@ -270,7 +270,7 @@ void SpriteNode::Draw()
 //    }
     
     RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, meshFinalMatrix);
-    RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+    RenderManager::Instance()->SetRenderEffect(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
 
 	//eBlendMode sblend = RenderManager::Instance()->GetSrcBlend();
 	//eBlendMode dblend = RenderManager::Instance()->GetDestBlend();

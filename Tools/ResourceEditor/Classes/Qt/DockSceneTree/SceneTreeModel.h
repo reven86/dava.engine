@@ -42,7 +42,8 @@
 // framework
 #include "Scene3D/Scene.h"
 
-class SceneTreeModel : public QStandardItemModel
+class SceneTreeModel
+	: public QStandardItemModel
 {
 	Q_OBJECT
 
@@ -89,49 +90,54 @@ public:
 	int GetCustomFlags(const QModelIndex &index) const;
 
 	// drag and drop support
-	Qt::DropActions supportedDropActions() const;
-	QMimeData *	mimeData(const QModelIndexList & indexes) const;
-	QStringList	mimeTypes() const;
-	bool dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent);
+	Qt::DropActions supportedDropActions() const override;
+	QMimeData *	mimeData(const QModelIndexList & indexes) const override;
+	QStringList	mimeTypes() const override;
+	bool dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
 	bool DropCanBeAccepted(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) const;
 	bool DropAccepted() const;
 	int GetDropType(const QMimeData *data) const;
 
 	void ResyncStructure(QStandardItem *item, DAVA::Entity *entity);
-	void ResetFilterAcceptFlag();
 
-protected:
-	SceneEditor2 * curScene;
+    void SetFilter(const QString& text);
+    void ReloadFilter();
+    bool IsFilterSet() const;
+
+    Qt::ItemFlags flags ( const QModelIndex & index ) const override;
+    QVariant data(const QModelIndex &index, int role) const override;
+    
+private slots:
+	void ItemChanged(QStandardItem * item);
+
+private:
+    void RebuildIndexesCache();
+	void AddIndexesCache(SceneTreeItem *item);
+	bool AreSameType(const QModelIndexList & indexes) const;
+    void SetFilterInternal(const QModelIndex& parent, const QString& text);
+    void ResetFilter(const QModelIndex& parent = QModelIndex());
+
+    Qt::DropActions supportedDragActions() const;
+
+    SceneEditor2 * curScene;
 	bool dropAccepted;
+    QString filterText;
 
 	QMap<DAVA::Entity*, QModelIndex> indexesCacheEntities;
     QMap<DAVA::ParticleEmitter*, QModelIndex> indexesCacheEmitters;
 	QMap<DAVA::ParticleLayer*, QModelIndex> indexesCacheLayers;
 	QMap<DAVA::ParticleForce*, QModelIndex> indexesCacheForces;
-
-	void RebuildIndexesCache();
-	void AddIndexesCache(SceneTreeItem *item);
-	void ResetFilterAcceptFlagInternal(SceneTreeItem *item);
-
-	bool AreSameType(const QModelIndexList & indexes) const;
-    
-    //void DropMaterial(SceneTreeItem *parentItem, const QMimeData *mimeData) const;
-
-protected slots:
-	void ItemChanged(QStandardItem * item);
 };
 
 class SceneTreeFilteringModel : public QSortFilterProxyModel
 {
 public:
 	SceneTreeFilteringModel(SceneTreeModel *treeModel, QObject *parent = NULL);
-	bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const;
+	bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+    QVariant data(const QModelIndex& index, int role) const override;
 
 protected:
 	SceneTreeModel *treeModel;
-
-	bool selfAcceptRow(int sourceRow, const QModelIndex &sourceParent) const;
-	bool childrenAcceptRow(int sourceRow, const QModelIndex &sourceParent) const;
 };
 
 #endif // __QT_SCENE_TREE_MODEL_H__

@@ -33,6 +33,7 @@
 // framework
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 #include "Utils/Utils.h"
 
 TextDrawSystem::TextDrawSystem(DAVA::Scene * scene, SceneCameraSystem *_cameraSystem)
@@ -72,8 +73,7 @@ void TextDrawSystem::Draw()
 
 		if(NULL != font)
 		{
-            DAVA::RenderManager::Instance()->Setup2DMatrices();
-			DAVA::RenderManager::Instance()->SetRenderOrientation(DAVA::Core::SCREEN_ORIENTATION_PORTRAIT);
+            DAVA::RenderSystem2D::Instance()->Setup2DMatrices();
             DAVA::RenderManager::Instance()->SetRenderState(DAVA::RenderState::RENDERSTATE_2D_BLEND);
             DAVA::RenderManager::Instance()->FlushState();
             

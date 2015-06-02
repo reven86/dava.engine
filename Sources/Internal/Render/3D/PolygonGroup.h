@@ -96,7 +96,7 @@ public:
 	inline void	SetCubeTexcoord(int32 ti, int32 i, const Vector3 & v);
 	inline void	SetJointIndex(int32 vIndex, int32 jointIndex, int32 boneIndexValue);
 	inline void SetJointCount(int32 vIndex, int32 jointCount);
-	inline void	SetWeight(int32 vIndex, int32 jointIndex, float32 boneWeightValue);
+	inline void	SetJointWeight(int32 vIndex, int32 jointIndex, float32 boneWeightValue);
 	
 	inline void	SetIndex(int32 i, int16 index);
 	
@@ -128,17 +128,17 @@ public:
 	Vector3		*normalArray;
 	Vector3		*tangentArray;
 	Vector3		*binormalArray;
-	int32		*jointIdxArray;
-	float32		*weightArray;
+	uint32		*jointIdxArray;
+	uint32		*jointWeightArray;
 	Vector3		**cubeTextureCoordArray;
 
 	int32		*jointCountArray;
 	
     Vector3     *pivotArray;
     float32     *flexArray;
-    Vector2      *angleArray;
+    Vector2     *angleArray;
 
-	uint32	*colorArray;
+	uint32	    *colorArray;
 	int16		*indexArray; // Boroda: why int16? should be uint16? 
 	uint8		*meshData;
 	
@@ -155,6 +155,7 @@ public:
 	void	ReleaseData();
     void    RecalcAABBox();
     
+    uint32  ReleaseGeometryData();
     
     /*
         Apply matrix to polygon group. If polygon group is used with vertex buffers 
@@ -206,7 +207,7 @@ private:
 	bool	IsFloatDataEqual(const float32 ** meshData, const float32 ** optData, uint32 vertexFormat, uint32 format) const;
  	int32	OptimazeVertexes(const uint8 * meshData, Vector<uint8> & optMeshData, uint32 vertexFormat)	const;
 
-    void BuildBuffersInternal(BaseObject * caller, void * param, void *callerData);
+    void BuildBuffersInternal();
 
     
     
@@ -293,21 +294,22 @@ inline void PolygonGroup::SetAngle(int32 i, const Vector2 & _v)
 
 inline void	PolygonGroup::SetJointIndex(int32 vIndex, int32 jointIndex, int32 boneIndexValue)
 {
-	int32 * t = (int32*)((uint8*)jointIdxArray + vIndex * vertexStride);  
+    DVASSERT(jointIndex >= 0 && jointIndex < 4);
+	uint8 * t = ((uint8*)jointIdxArray) + vIndex * vertexStride;
 	t[jointIndex] = boneIndexValue;
 }
 	
-inline void	PolygonGroup::SetWeight(int32 vIndex, int32 jointIndex, float32 boneWeightValue)
+inline void	PolygonGroup::SetJointWeight(int32 vIndex, int32 jointIndex, float32 boneWeightValue)
 {
-	float32 * t = (float32*)((uint8*)weightArray + vIndex * vertexStride);  
-	t[jointIndex] = boneWeightValue;
+    DVASSERT(jointIndex >= 0 && jointIndex < 4);
+    uint8 * t = ((uint8*)jointWeightArray) + vIndex * vertexStride;
+	t[jointIndex] = (uint8)(255 * boneWeightValue);
 }
 	
 inline void PolygonGroup::SetJointCount(int32 vIndex, int32 jointCount)
 {
 	jointCountArray[vIndex] = jointCount;
 }
-
 
 inline void	PolygonGroup::SetIndex(int32 i, int16 index)
 {

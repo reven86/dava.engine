@@ -124,36 +124,33 @@ protected:
  */
 class UISpinner : public UIControl, SpinnerAdapter::SelectionObserver
 {
+public:
+    UISpinner(const Rect &rect = Rect());
 protected:
     virtual ~UISpinner();
-public:
-    UISpinner(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 
-    SpinnerAdapter * GetAdater() {return adapter;}
+public:
+    UISpinner *Clone() override;
+    void CopyDataFrom(UIControl *srcControl) override;
+
+    void AddControl(UIControl *control) override;
+    void RemoveControl(UIControl *control) override;
+
+    void Input(UIEvent *currentInput) override;
+    void Update(float32 timeElapsed) override;
+
+    void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader) override;
+    void LoadFromYamlNodeCompleted() override;
+    YamlNode * SaveToYamlNode(UIYamlLoader * loader) override;
+
+    List<UIControl* > GetSubcontrols() override;
+
+    SpinnerAdapter * GetAdater() const { return adapter; }
     void SetAdapter(SpinnerAdapter * adapter);
 
-    virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
-    virtual void LoadFromYamlNodeCompleted();
-    virtual void CopyDataFrom(UIControl *srcControl);
-    virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
-
-    UIButton * GetButtonNext() {return buttonNext;}
-    UIButton * GetButtonPrevious() {return buttonPrevious;}
-    
-    UIControl * GetContent() {return content;}
-    
-    /*
-     * You have to call it if you change 'content' from code.
-     */
-    void ContentChanged();
-    
-    virtual List<UIControl* > GetSubcontrols();
-
-    virtual UIControl *Clone();
-	virtual void AddControl(UIControl *control);
-    virtual void Input(UIEvent *currentInput);
-    virtual void Update(float32 timeElapsed);
-    
+    UIButton * GetButtonNext() const     { return buttonNext.Get(); }
+    UIButton * GetButtonPrevious() const { return buttonPrevious.Get(); }
+    UIControl * GetContent() const       { return content.Get(); }
 protected:
     
     struct Move
@@ -164,13 +161,14 @@ protected:
     
     SpinnerAdapter * adapter;
 
-    UIButton * buttonNext;
-    UIButton * buttonPrevious;
+    RefPtr<UIButton> buttonNext;
+    RefPtr<UIButton> buttonPrevious;
     
     //we need these 'content' controls to scroll items with slide
-    UIControl * content;
-    UIControl * nextContent;
-    UIControl * contentViewport; //area that clips items when we scroll them
+    RefPtr<UIControl> content;
+    //internal controls, need only for animation
+    RefPtr<UIControl> nextContent;
+    RefPtr<UIControl> contentViewport; //area that clips items when we scroll them
     
     float32 dragAnchorX;
     
@@ -187,11 +185,8 @@ protected:
     
     virtual void OnSelectedChanged(bool isSelectedFirst, bool isSelectedLast, bool isSelectedChanged);
 
-    void InitButtons();
-    void ReleaseButtons();
-    void FindRequiredControls();
     void OnSelectWithSlide(bool isPrevious);
-    
+    void SetupInternalControls();
 };
 
 }

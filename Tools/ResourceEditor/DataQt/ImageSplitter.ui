@@ -66,12 +66,9 @@
       </widget>
      </item>
      <item>
-      <widget class="SelectPathWidgetBase" name="selectPathWidget" native="true">
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>30</height>
-        </size>
+      <widget class="FilePathBrowser" name="path">
+       <property name="placeholderText">
+        <string>Select PNG image...</string>
        </property>
       </widget>
      </item>
@@ -441,6 +438,34 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_13">
        <item>
+        <widget class="QPushButton" name="reload">
+         <property name="toolTip">
+          <string>Realod PNG</string>
+         </property>
+         <property name="text">
+          <string>Reload</string>
+         </property>
+         <property name="icon">
+          <iconset resource="QtIcons.qrc">
+           <normaloff>:/QtIcons/reloadtextures.png</normaloff>:/QtIcons/reloadtextures.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="reloadSpecular">
+         <property name="toolTip">
+          <string>Reload Specular Map</string>
+         </property>
+         <property name="text">
+          <string>Reload SM</string>
+         </property>
+         <property name="icon">
+          <iconset resource="QtIcons.qrc">
+           <normaloff>:/QtIcons/refresh.png</normaloff>:/QtIcons/refresh.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -500,17 +525,32 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>SelectPathWidgetBase</class>
-   <extends>QWidget</extends>
-   <header>classes/Qt/Tools/SelectPathWidget/selectpathwidgetbase.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>ImageArea</class>
    <extends>QLabel</extends>
    <header>classes/Qt/ImageSplitterDialog/ImageArea.h</header>
   </customwidget>
+  <customwidget>
+   <class>FilePathBrowser</class>
+   <extends>QLineEdit</extends>
+   <header>Tools/Widgets/FilePathBrowser.h</header>
+  </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>redSpinBox</tabstop>
+  <tabstop>redFillBtn</tabstop>
+  <tabstop>greenSpinBox</tabstop>
+  <tabstop>greenFillBtn</tabstop>
+  <tabstop>blueSpinBox</tabstop>
+  <tabstop>blueFillBtn</tabstop>
+  <tabstop>alphaSpinBox</tabstop>
+  <tabstop>alphaFillBtn</tabstop>
+  <tabstop>restoreBtn</tabstop>
+  <tabstop>reload</tabstop>
+  <tabstop>reloadSpecular</tabstop>
+  <tabstop>saveChannelsBtn</tabstop>
+  <tabstop>saveAsBtn</tabstop>
+  <tabstop>saveBtn</tabstop>
+ </tabstops>
  <resources>
   <include location="QtIcons.qrc"/>
  </resources>

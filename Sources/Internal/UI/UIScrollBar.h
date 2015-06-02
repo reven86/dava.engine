@@ -48,6 +48,7 @@ public:
     virtual float32 TotalAreaSize(UIScrollBar *forScrollBar) = 0;
     virtual float32 ViewPosition(UIScrollBar *forScrollBar) = 0;
     virtual void OnViewPositionChanged(UIScrollBar *byScrollBar, float32 newPosition) = 0;
+    virtual const String GetDelegateControlPath(const UIControl *rootControl) const {return String(); }; // TODO!! TEMP SOLUTION, CHECK WITH AUTHOR!
 };
 
 
@@ -67,10 +68,12 @@ public:
 				bool rectInAbsoluteCoordinates = false);
 
     void SetDelegate(UIScrollBarDelegate *newDelegate);
+    const String GetDelegatePath(const UIControl *rootControl) const;
     UIControl *GetSlider();
     
     virtual void Draw(const UIGeometricData &geometricData);
 	virtual void AddControl(UIControl *control);
+    virtual void RemoveControl(UIControl *control);
 	virtual UIControl *Clone();
 	virtual void CopyDataFrom(UIControl *srcControl);
 	
@@ -82,8 +85,8 @@ public:
 	
     void Input(UIEvent *currentInput);
 
-	eScrollOrientation GetOrientation() const;
-	void SetOrientation(eScrollOrientation value);
+	int32 GetOrientation() const;
+	void SetOrientation(int32 value);
 
 protected:
 	// Calculate the start offset based on the initial click point.
@@ -91,7 +94,7 @@ protected:
 	void InitControls(const Rect &rect = Rect());
 
 private:
-    int32 orientation;
+    eScrollOrientation orientation;
     UIScrollBarDelegate *delegate;
     
     UIControl *slider;
@@ -102,6 +105,10 @@ private:
 	Vector2 startOffset;
 	
 	float32 GetValidSliderSize(float32 size);
+public:
+    INTROSPECTION_EXTEND(UIScrollBar, UIControl,
+        PROPERTY("orientation",  InspDesc("Bar orientation", GlobalEnumMap<UIScrollBar::eScrollOrientation>::Instance()), GetOrientation, SetOrientation, I_SAVE | I_VIEW | I_EDIT)
+    );
 };
 
 

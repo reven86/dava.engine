@@ -404,11 +404,11 @@ void UIHierarchy::DragInput(UIEvent *input)
             lockTouch = true;
             mainTouch = input->tid;
 
-            if(InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_CTRL))
+            if(InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL))
             {
                 dragMode = DRAG_CHANGE_PARENT;
             }
-            if(InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_SHIFT))
+            if(InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
             {
                 dragMode = DRAG_CHANGE_ORDER;
             }
@@ -506,8 +506,8 @@ void UIHierarchy::DragInput(UIEvent *input)
 
 void UIHierarchy::Input(UIEvent *currentInput)
 {
-    bool isCommandPressed =     InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_CTRL) 
-                            ||  InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_SHIFT);
+    bool isCommandPressed =     InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL) 
+                            ||  InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT);
     if(isCommandPressed || draggedData)
     {
         DragInput(currentInput);
@@ -559,11 +559,11 @@ bool UIHierarchy::SystemInput(UIEvent *currentInput)
         }
         else if(currentInput->tid == mainTouch && currentInput->phase == UIEvent::PHASE_DRAG)
         {
-            bool isCommandPressed =     InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_CTRL) 
-                                    ||  InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_SHIFT);
+            bool isCommandPressed =     InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL) 
+                                    ||  InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT);
             if(!isCommandPressed)
             {
-                if(abs(currentInput->point.y - newPos) > touchHoldSize)
+                if(Abs(currentInput->point.y - newPos) > touchHoldSize)
                 {
                     UIControlSystem::Instance()->SwitchInputToControl(mainTouch, this);
                     newPos = currentInput->point.y;

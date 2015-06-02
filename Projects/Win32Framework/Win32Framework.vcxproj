@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugQt|Win32">
       <Configuration>DebugQt</Configuration>
@@ -32,29 +32,29 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v100</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseAutotesting|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v100</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v100</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v100</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v100</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -106,30 +106,30 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)../../Sources/Internal;$(ProjectDir)/../../Sources/External;$(ProjectDir)/../../Sources/External/Freetype;$(ProjectDir)/../../Sources/External/Yaml;$(ProjectDir)/../../Libs/include;$(ProjectDir)/../../Libs/glew/include;$(ProjectDir)/../../Libs/freetype/include;$(DXSDK_DIR)/include;$(ProjectDir)/../../Libs/fmod/include;$(ProjectDir)/../../Libs/lua/include;%(AdditionalIncludeDirectories);$(ProjectDir)../../Sources/Tools</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;DAVA_DEBUG;CURL_STATICLIB;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./../../Libs/lua/include;$(ProjectDir)../../Sources/Internal;$(ProjectDir)/../../Sources/External;$(ProjectDir)/../../Sources/External/Freetype;$(ProjectDir)/../../Sources/External/Yaml;$(ProjectDir)/../../Libs/include;$(ProjectDir)/../../Libs/glew/include;$(ProjectDir)/../../Libs/freetype/include;$(DXSDK_DIR)/include;$(ProjectDir)/../../Libs/fmod/include;$(ProjectDir)/../../Libs/lua/include;$(ProjectDir)../../Sources/Tools;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;__DAVAENGINE_DEBUG__;CURL_STATICLIB;DAVA_FMOD;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Lib>
       <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>freetype246MT_D.lib;opengl32.lib;glew32.lib;libogg_static_d.lib;libvorbis_static_d.lib;libvorbisfile_static_d.lib;libyaml_wind.lib;libxml_wind.lib;pnglib_wind.lib;libmongodb_wind.lib;libtheora_win.lib;PVRTexLib32.lib;libdxtd.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;lua_wind.lib;TextureConverterD.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpegd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua_wind.lib;unibreak_wind.lib;fribidid.lib;freetype246MT_D.lib;opengl32.lib;glew32.lib;libogg_static_d.lib;libvorbis_static_d.lib;libvorbisfile_static_d.lib;libyaml_wind.lib;libxml_wind.lib;pnglib_wind.lib;libmongodb_wind.lib;libtheora_win.lib;PVRTexLib32.lib;libdxtd.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpegd.lib;WinInet.lib;libeay32.lib;ssleay32.lib;TextureConverterD.lib;libuvd.lib;psapi.lib;detours.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
-      <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;./../../Tools/Bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir)/../../Libs/fmod/include;$(ProjectDir)../../Sources/Internal;$(ProjectDir)/../../Sources/External;$(ProjectDir)/../../Sources/External/Freetype;$(ProjectDir)/../../Sources/External/Yaml;$(ProjectDir)/../../Libs/include;$(ProjectDir)/../../Libs/glew/include;$(ProjectDir)/../../Libs/freetype/include;$(DXSDK_DIR)/include;..\..\Sources\Internal\Platform\Qt;..\..\Sources\Internal\Platform\Qt\Win32;%(AdditionalIncludeDirectories);$(ProjectDir)../../Sources/Tools</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;CURL_STATICLIB;DAVA_DEBUG;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)/../../Libs/lua/include;$(ProjectDir)/../../Libs/fmod/include;$(ProjectDir)../../Sources/Internal;$(ProjectDir)/../../Sources/External;$(ProjectDir)/../../Sources/External/Freetype;$(ProjectDir)/../../Sources/External/Yaml;$(ProjectDir)/../../Libs/include;$(ProjectDir)/../../Libs/glew/include;$(ProjectDir)/../../Libs/freetype/include;$(DXSDK_DIR)/include;..\..\Sources\Internal\Platform\Qt;..\..\Sources\Internal\Platform\Qt\Win32;%(AdditionalIncludeDirectories);$(ProjectDir)../../Sources/Tools</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;CURL_STATICLIB;__DAVAENGINE_DEBUG__;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -138,18 +138,39 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Lib>
       <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>freetype246MT_D.lib;opengl32.lib;glew32.lib;libogg_static_d.lib;libvorbis_static_d.lib;libvorbisfile_static_d.lib;libyaml_wind.lib;libxml_wind.lib;pnglib_wind.lib;libmongodb_wind.lib;libtheora_win.lib;PVRTexLib32.lib;libdxtd.lib;TextureConverterD.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpegd.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua_wind.lib;unibreak_wind.lib;fribidid.lib;freetype246MT_D.lib;opengl32.lib;glew32.lib;libogg_static_d.lib;libvorbis_static_d.lib;libvorbisfile_static_d.lib;libyaml_wind.lib;libxml_wind.lib;pnglib_wind.lib;libmongodb_wind.lib;libtheora_win.lib;PVRTexLib32.lib;libdxtd.lib;TextureConverterD.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpegd.lib;libcurl.lib;WinInet.lib;libeay32.lib;ssleay32.lib;libuvd.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)/../../Libs/fmod/include;./../../Sources/Internal;./../../Sources/External;./../../Sources/External/Freetype;./../../Sources/External/Yaml;./../../Libs/include;./../../Libs/glew/include;$(DXSDK_DIR)/include;./../../Libs/freetype/include;$(ProjectDir)/../../Libs/lua/include;%(AdditionalIncludeDirectories);$(ProjectDir)../../Sources/Tools</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./../../Libs/lua/include;$(ProjectDir)/../../Libs/fmod/include;./../../Sources/Internal;./../../Sources/External;./../../Sources/External/Freetype;./../../Sources/External/Yaml;./../../Libs/include;./../../Libs/glew/include;$(DXSDK_DIR)/include;./../../Libs/freetype/include;$(ProjectDir)/../../Libs/lua/include;%(AdditionalIncludeDirectories);$(ProjectDir)../../Sources/Tools</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;FT_BUILD_LIBRARY;CODE_INLINE;CURL_STATICLIB;DAVA_FMOD;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+    </ClCompile>
+    <Lib>
+      <AdditionalDependencies>lua_win.lib;unibreak_win.lib;fribidi.lib;freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;WinInet.lib;libeay32.lib;ssleay32.lib;libuv.lib;psapi.lib;detours.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
+      <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
+      <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseAutotesting|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>./../../Libs/lua/include;$(ProjectDir)/../../Libs/fmod/include;./../../Sources/Internal;./../../Sources/External;./../../Sources/External/Freetype;./../../Sources/External/Yaml;./../../Libs/include;./../../Libs/glew/include;$(DXSDK_DIR)/include;./../../Libs/freetype/include;$(ProjectDir)/../../Libs/lua/include;%(AdditionalIncludeDirectories);$(ProjectDir)../../Sources/Tools</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;FT_BUILD_LIBRARY;CODE_INLINE;CURL_STATICLIB;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
@@ -157,28 +178,9 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;lua_win.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
-      <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
-    </Lib>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseAutotesting|Win32'">
-    <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)/../../Libs/fmod/include;./../../Sources/Internal;./../../Sources/External;./../../Sources/External/Freetype;./../../Sources/External/Yaml;./../../Libs/include;./../../Libs/glew/include;$(DXSDK_DIR)/include;./../../Libs/freetype/include;$(ProjectDir)/../../Libs/lua/include;%(AdditionalIncludeDirectories);$(ProjectDir)../../Sources/Tools</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;FT_BUILD_LIBRARY;CODE_INLINE;CURL_STATICLIB;DAVA_FMOD;%(PreprocessorDefinitions)__DAVAENGINE_AUTOTESTING__;AUTOTESTING_LUA;</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-    </ClCompile>
-    <Lib>
-      <AdditionalDependencies>freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;lua_win.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua_win.lib;unibreak_win.lib;fribidi.lib;freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;WinInet.lib;libeay32.lib;ssleay32.lib;libuv.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
@@ -186,7 +188,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)/../../Libs/fmod/include;./../../Sources/Internal;./../../Sources/External;./../../Sources/External/Freetype;./../../Sources/External/Yaml;./../../Libs/include;./../../Libs/glew/include;$(DXSDK_DIR)/include;./../../Libs/freetype/include;..\..\Sources\Internal\Platform\Qt;..\..\Sources\Internal\Platform\Qt\Win32;%(AdditionalIncludeDirectories);$(ProjectDir)../../Sources/Tools</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)/../../Libs/lua/include;$(ProjectDir)/../../Libs/fmod/include;./../../Sources/Internal;./../../Sources/External;./../../Sources/External/Freetype;./../../Sources/External/Yaml;./../../Libs/include;./../../Libs/glew/include;$(DXSDK_DIR)/include;./../../Libs/freetype/include;..\..\Sources\Internal\Platform\Qt;..\..\Sources\Internal\Platform\Qt\Win32;%(AdditionalIncludeDirectories);$(ProjectDir)../../Sources/Tools</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;FT_BUILD_LIBRARY;CODE_INLINE;_WINDOWS;WIN32;NDEBUG;CURL_STATICLIB;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
@@ -194,10 +196,10 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua_win.lib;unibreak_win.lib;fribidi.lib;freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;libcurl.lib;WinInet.lib;libeay32.lib;ssleay32.lib;libuv.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)\$(Configuration)\$(ProjectName).lib</OutputFile>
       <AdditionalLibraryDirectories>./../../Libs/freetype/lib;./../../Libs/libs;./../../Libs/glew/lib;$(DXSDK_DIR)/lib/x86;./../../Libs/oggvorbis/lib/;./../../Libs/fmod/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
@@ -250,6 +252,7 @@
     <ClInclude Include="..\..\Sources\Internal\Autotesting\AutotestingDB.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\AutotestingSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\AutotestingSystemLua.h" />
+    <ClInclude Include="..\..\Sources\Internal\Autotesting\dlmalloc.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\GameAPI.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\MongodbUpdateObject.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\AllocatorFactory.h" />
@@ -261,7 +264,6 @@
     <ClInclude Include="..\..\Sources\Internal\Base\FastNameMap.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\FixedSizePoolAllocator.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Function.h" />
-    <ClInclude Include="..\..\Sources\Internal\Base\Functor.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\GlobalEnum.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Hash.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\HashMap.h" />
@@ -271,7 +273,6 @@
     <ClInclude Include="..\..\Sources\Internal\Base\IntrospectionDynamic.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\IntrospectionFlags.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\IntrospectionProperty.h" />
-    <ClInclude Include="..\..\Sources\Internal\Base\Mallocator.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Meta.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Observable.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Observer.h" />
@@ -282,11 +283,14 @@
     <ClInclude Include="..\..\Sources\Internal\Core\PerformanceSettings.h" />
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbClient.h" />
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbObject.h" />
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.h" />
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\DataStorage.h" />
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\iOS\ICloudKeyValue.h" />
+    <ClInclude Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.h" />
     <ClInclude Include="..\..\Sources\Internal\DAVAClassRegistrator.h" />
     <ClInclude Include="..\..\Sources\Internal\DAVAConfig.h" />
     <ClInclude Include="..\..\Sources\Internal\DAVAEngine.h" />
     <ClInclude Include="..\..\Sources\Internal\DAVAVersion.h" />
-    <ClInclude Include="..\..\Sources\Internal\Debug\Backtrace.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\DVAssertMessage.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\Stats.h" />
     <ClInclude Include="..\..\Sources\Internal\Animation\AnimatedObject.h" />
@@ -321,7 +325,6 @@
     <ClInclude Include="..\..\Sources\Internal\Debug\DVAssert.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\List.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\ListAllocator.h" />
-    <ClInclude Include="..\..\Sources\Internal\Debug\MemoryManager.h" />
     <ClInclude Include="..\..\Sources\Internal\Debug\Replay.h" />
     <ClInclude Include="..\..\Sources\Internal\DLC\DLC.h" />
     <ClInclude Include="..\..\Sources\Internal\DLC\Downloader\CurlDownloader.h" />
@@ -332,6 +335,7 @@
     <ClInclude Include="..\..\Sources\Internal\DLC\Patcher\bsdiff\bs_common.h" />
     <ClInclude Include="..\..\Sources\Internal\DLC\Patcher\PatchFile.h" />
     <ClInclude Include="..\..\Sources\Internal\DLC\Patcher\ZLibStream.h" />
+    <ClInclude Include="..\..\Sources\Internal\Entity\BaseFamily.h" />
     <ClInclude Include="..\..\Sources\Internal\Entity\Component.h" />
     <ClInclude Include="..\..\Sources\Internal\Entity\SceneSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\Bitstream.h" />
@@ -354,16 +358,13 @@
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlNode.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlParser.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\Accelerometer.h" />
-    <ClInclude Include="..\..\Sources\Internal\Input\AccelerometeriPhone.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\GamepadDevice.h" />
-    <ClInclude Include="..\..\Sources\Internal\Input\GamepadManager.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\InputCallback.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\InputSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\KeyboardDevice.h" />
-    <ClInclude Include="..\..\Sources\Internal\Job\Job.h" />
     <ClInclude Include="..\..\Sources\Internal\Job\JobManager.h" />
     <ClInclude Include="..\..\Sources\Internal\Job\JobQueue.h" />
-    <ClInclude Include="..\..\Sources\Internal\Job\JobWaiter.h" />
+    <ClInclude Include="..\..\Sources\Internal\Job\JobThread.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\AABBox2.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\AABBox3.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\BezierSpline.h" />
@@ -387,15 +388,57 @@
     <ClInclude Include="..\..\Sources\Internal\Math\Sphere.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Spline.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Vector.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\BaseNetworkConnection.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\BTNetworkConnection.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\MailSender.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\NetworkConnection.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\NetworkConnectionIPhone.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\NetworkDelegate.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\NetworkPacket.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\TCPServer.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\WFNetworkConnection.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocPools.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocThunk.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MallocHook.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManager.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerTypes.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerAllocator.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryProfiler.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\Buffer.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimer.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimerTemplate.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\Endpoint.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\IfAddress.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\IOLoop.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\IPAddress.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\NetworkUtils.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\TCPAcceptor.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\TCPAcceptorTemplate.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\TCPSocket.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\TCPSocketTemplate.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\UDPSocket.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Base\UDPSocketTemplate.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\IChannel.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\IController.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\NetConfig.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\NetCore.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\NetService.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\NetworkCommon.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\PeerDesription.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\Announcer.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\Discoverer.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\ITransport.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\NetController.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\ProtoDecoder.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\ProtoDriver.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\ProtoTypes.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\TCPClientTransport.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Private\TCPServerTransport.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\ServiceRegistrar.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetClient.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetProto.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetServer.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\SimpleEchoServer.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\LogConsumer.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\NetLogger.h" />
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotification.h" />
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationController.h" />
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationDelayed.h" />
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationImpl.h" />
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationNotImplemented.h" />
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationProgress.h" />
+    <ClInclude Include="..\..\Sources\Internal\Notification\LocalNotificationText.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\Particle.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleEmitter.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleForce.h" />
@@ -408,25 +451,10 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\DPIHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\MovieViewControlStub.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Mutex.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\Notification.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\NotificationAndroid.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\NotificationNotImplemented.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Process.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\Qt\QtLayer.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseAutotesting|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\Qt\Win32\CorePlatformWin32Qt.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseAutotesting|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\Qt\Win32\QtLayerWin32.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseAutotesting|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\QtLayer.h" />
+    <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\Win32\CorePlatformWin32Qt.h" />
+    <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\Win32\QtLayerWin32.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\SystemTimer.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\CorePlatformWin32.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">true</ExcludedFromBuild>
@@ -438,10 +466,13 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WindowsSpecifics.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Thread.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\DFFont.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\Systems\RenderSystem2D.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\Systems\VirtualCoordinatesSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockDistanceRender.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockGraphicsRender.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockRender.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockSoftwareRender.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\TextLayout.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\3D\EdgeAdjacency.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\3D\MeshUtils.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Cursor.h" />
@@ -476,6 +507,7 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\ShadowRect.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\ShadowVolume.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\ShadowVolumeRenderPass.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SkinnedMesh.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SkyboxRenderObject.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SpatialTree.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SpeedTreeObject.h" />
@@ -503,7 +535,7 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Image\ImageSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.h" />
-    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelpers.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\IndexBuffer.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Material.h" />
@@ -565,12 +597,17 @@
     <ClInclude Include="..\..\Sources\Internal\Scene2D\GameObjectAnimations.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene2D\GameObjectManager.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene2D\TextGameObject.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\AnimationData.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\BillboardNode.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\BoneNode.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\ActionComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\AnimationComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\BulletComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\CameraComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\ComponentHelpers.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Controller\RotationControllerComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Controller\SnapToLandscapeControllerComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Controller\WASDControllerComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\CustomPropertiesComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\DebugRenderComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\LightComponent.h" />
@@ -578,6 +615,7 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\ParticleEffectComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\QualitySettingsComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\RenderComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\SkeletonComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\SoundComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\SpeedTreeComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\StaticOcclusionComponent.h" />
@@ -586,11 +624,15 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\UpdatableComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\UserComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\WaveComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\EdgeComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\PathComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\WaypointComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\WindComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Converters\LodToLod2Converter.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Converters\SwitchToRenerObjectConverter.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Converters\TreeToAnimatedTreeConverter.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\DataNode.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\EntityFamily.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\ImposterManager.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\ImposterNode.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\LodNode.h" />
@@ -616,7 +658,11 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SpriteNode.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SwitchNode.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\ActionUpdateSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\AnimationSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\BaseProcessSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\Controller\RotationControllerSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\Controller\SnapToLandscapeControllerSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\DebugRenderSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\EventSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\FoliageSystem.h" />
@@ -627,6 +673,7 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\ParticleEffectSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\QualitySettingsSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\RenderUpdateSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\SkeletonSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\SkyboxSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\SoundUpdateSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\SpeedTreeUpdateSystem.h" />
@@ -643,6 +690,13 @@
     <ClInclude Include="..\..\Sources\Internal\Sound\SoundEvent.h" />
     <ClInclude Include="..\..\Sources\Internal\Sound\SoundSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Thread\LockGuard.h" />
+    <ClInclude Include="..\..\Sources\Internal\Thread\Semaphore.h" />
+    <ClInclude Include="..\..\Sources\Internal\Thread\Spinlock.h" />
+    <ClInclude Include="..\..\Sources\Internal\Timer\RawTimer.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIControlFamily.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\TheoraPlayer.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UI3DView.h" />
@@ -650,6 +704,7 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIButton.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIControl.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIControlBackground.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\UIControlHelpers.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIControlSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIEvent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIFadeTransition.h" />
@@ -664,6 +719,9 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UILoadingTransition.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIMoveInTransition.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIMovieView.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\UIPackage.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\UIPackageLoader.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\UIPackagesCache.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIParticles.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIPopup.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIScreen.h" />
@@ -684,14 +742,15 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIWebView.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIYamlLoader.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\VectorSpinnerAdapter.h" />
+    <ClInclude Include="..\..\Sources\Internal\Utils\BiDiHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\CRC32.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\HTTPDownloader.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\MD5.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\Random.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\StringFormat.h" />
+    <ClInclude Include="..\..\Sources\Internal\Utils\StringUtils.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\UTF8Utils.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\Utils.h" />
-    <ClInclude Include="..\..\Sources\Internal\Utils\VirtualToPhysicalHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp" />
@@ -740,9 +799,11 @@
     <ClCompile Include="..\..\Sources\Internal\Autotesting\AutotestingSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\AutotestingSystemLua.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\AutotestingSystemSwig.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Autotesting\dlmalloc.c" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\GameAPI.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\KeyedArchiveSwig.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\MongodbUpdateObject.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Autotesting\Polygon2Swig.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\RectSwig.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\UIControlSwig.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\VectorSwig.cpp" />
@@ -761,6 +822,9 @@
     <ClCompile Include="..\..\Sources\Internal\Core\PerformanceSettings.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Database\MongodbClient.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Database\MongodbObject.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\DataStorage\Android\SharedPreferences.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\DataStorage\iOS\ICloudKeyValue.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\DataStorage\Windows\DataStorageWindows.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DAVAClassRegistrator.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DAVAEngine.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Animation\AnimatedObject.cpp" />
@@ -784,13 +848,11 @@
     <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS_CarbonWindow.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Core\CoreMacOS_OpenGL.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Debug\Backtrace.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\DVAssertMessage.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\DVAssertMessageWin.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Debug\MemoryManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\Replay.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Debug\Stats.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DLC\DLC.cpp" />
@@ -803,6 +865,7 @@
     <ClCompile Include="..\..\Sources\Internal\DLC\Patcher\bsdiff\bs_patch.c" />
     <ClCompile Include="..\..\Sources\Internal\DLC\Patcher\PatchFile.cpp" />
     <ClCompile Include="..\..\Sources\Internal\DLC\Patcher\ZLibStream.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Entity\BaseFamily.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Entity\Component.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Entity\SceneSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\Bitstream.cpp" />
@@ -826,13 +889,11 @@
     <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlParser.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\Accelerometer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\GamepadDevice.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Input\GamepadManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\InputSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\KeyboardDevice.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Job\Job.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Job\JobManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Job\JobQueue.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Job\JobWaiter.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Job\JobThread.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\AABBox2.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\AABBox3.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\BezierSpline.cpp" />
@@ -844,10 +905,43 @@
     <ClCompile Include="..\..\Sources\Internal\Math\RectPacker.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Spline.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Vector.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Network\MailSender.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Network\NetworkConnection.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Network\NetworkDelegate.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Network\NetworkPacket.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AllocThunk.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AndroidMallocSize.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\MallocHook.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\MemoryManager.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\OperatorNewHook.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\DeadlineTimer.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\Endpoint.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\IfAddress.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\IOLoop.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\IPAddress.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\NetworkUtils.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\TCPAcceptor.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\TCPSocket.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Base\UDPSocket.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\NetConfig.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\NetCore.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\NetService.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\PeerDesription.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\PeerDesriptionSerialize.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\Announcer.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\Discoverer.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\NetController.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\ProtoDecoder.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\ProtoDriver.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\TCPClientTransport.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Private\TCPServerTransport.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\ServiceRegistrar.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\LogConsumer.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetClient.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetServer.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\NetLogger.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotification.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationController.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationDelayed.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationNotImplemented.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationProgress.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationText.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\Particle.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleEmitter.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleForce.cpp" />
@@ -858,25 +952,10 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfo.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\MovieViewControlStub.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Mutex.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\Notification.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\NotificationAndroid.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\NotificationNotImplemented.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Process.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\Qt\QtLayer.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseAutotesting|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\Qt\Win32\CorePlatformWin32Qt.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseAutotesting|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\Qt\Win32\QtLayerWin32.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseAutotesting|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\QtLayer.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\Win32\CorePlatformWin32Qt.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\Win32\QtLayerWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\SystemTimer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\CorePlatformWin32.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">true</ExcludedFromBuild>
@@ -891,10 +970,13 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\Thread.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\ThreadWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\DFFont.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\Systems\RenderSystem2D.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\Systems\VirtualCoordinatesSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockDistanceRender.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockGraphicsRender.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockRender.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockSoftwareRender.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\TextLayout.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\3D\EdgeAdjacency.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\3D\MeshUtils.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\CursorWin32.cpp" />
@@ -927,6 +1009,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\ShadowRect.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\ShadowVolume.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\ShadowVolumeRenderPass.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SkinnedMesh.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SkyboxRenderObject.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SpatialTree.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SpeedTreeObject.cpp" />
@@ -945,11 +1028,10 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderData.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderObject.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\Image.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageFormatInterface.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelpers.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material\MaterialCompiler.cpp" />
@@ -1009,12 +1091,17 @@
     <ClCompile Include="..\..\Sources\Internal\Scene2D\GameObjectAnimations.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene2D\GameObjectManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene2D\TextGameObject.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\AnimationData.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\BillboardNode.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\BoneNode.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\ActionComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\AnimationComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\BulletComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\CameraComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\ComponentHelpers.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Controller\RotationControllerComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Controller\SnapToLandscapeControllerComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Controller\WASDControllerComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\CustomPropertiesComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\DebugRenderComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\LightComponent.cpp" />
@@ -1022,6 +1109,7 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\ParticleEffectComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\QualitySettingsComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\RenderComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\SkeletonComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\SoundComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\SpeedTreeComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\StaticOcclusionComponent.cpp" />
@@ -1030,11 +1118,15 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\UpdatableComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\UserComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\WaveComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\EdgeComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\PathComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\Waypoint\WaypointComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\WindComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Converters\LodToLod2Converter.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Converters\SwitchToRenerObjectConverter.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Converters\TreeToAnimatedTreeConverter.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\DataNode.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\EntityFamily.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\ImposterManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\ImposterNode.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\LodNode.cpp" />
@@ -1060,7 +1152,11 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SpriteNode.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SwitchNode.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\ActionUpdateSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\AnimationSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\BaseProcessSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\Controller\RotationControllerSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\Controller\SnapToLandscapeControllerSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\Controller\WASDControllerSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\DebugRenderSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\EventSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\FoliageSystem.cpp" />
@@ -1071,6 +1167,7 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\ParticleEffectSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\QualitySettingsSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\RenderUpdateSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\SkeletonSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\SkyboxSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\SoundUpdateSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\SpeedTreeUpdateSystem.cpp" />
@@ -1084,6 +1181,11 @@
     <ClCompile Include="..\..\Sources\Internal\Sound\FMODFileSoundEvent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Sound\FMODSoundEvent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Sound\FMODSoundSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Timer\RawTimer.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIControlFamily.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\ScrollHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\TheoraPlayer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UI3DView.cpp" />
@@ -1091,6 +1193,7 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UIButton.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIControl.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIControlBackground.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\UIControlHelpers.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIControlSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIEvent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIFadeTransition.cpp" />
@@ -1105,6 +1208,9 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UILoadingTransition.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIMoveInTransition.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIMovieView.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\UIPackage.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\UIPackageLoader.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\UIPackagesCache.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIParticles.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIPopup.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIScreen.cpp" />
@@ -1120,13 +1226,14 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UITextField.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIWebView.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIYamlLoader.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Utils\BiDiHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\CRC32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\MD5.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\StringFormat.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Utils\StringUtils.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\UTF8UtilsWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\Utils.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\UtilsWin32.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Utils\VirtualToPhysicalHelper.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

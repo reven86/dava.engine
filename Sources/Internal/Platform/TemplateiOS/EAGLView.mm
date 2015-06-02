@@ -1,22 +1,37 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "Base/BaseTypes.h"
 #include "Core/Core.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIEvent.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 
@@ -30,6 +45,8 @@
 #include "DAVAEngine.h"
 
 #include "Utils/Utils.h"
+
+static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
 
 @implementation EAGLView
 
@@ -49,32 +66,11 @@
     if ((self = [super initWithFrame:aRect]))
 	{
         // Get the layer
-		if (DAVA::Core::IsAutodetectContentScaleFactor()) 
-		{
-			if ([UIScreen instancesRespondToSelector: @selector(scale) ]
-				&& [UIView instancesRespondToSelector: @selector(contentScaleFactor) ]) 
-			{
-				float scf = (int)[[UIScreen mainScreen] scale];
-				[self setContentScaleFactor: scf];
-			}
-		}
-//		if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
-//		{
-////			[self setFrame:CGRectMake(0, 768, 1024, 768)];
-//			[self setFrame:CGRectMake(0, 0, 768, 1024)];
-//
-////			DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(768, 1024);
-//			
-//		}
-//		else
-//		{
-//			// The device is an iPhone or iPod touch.
-////			DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(320, 480);
-//		}
+        float scf = DAVA::Core::Instance()->GetScreenScaleFactor();
+        [self setContentScaleFactor: scf];
 
 		// Subscribe to "keyboard change frame" notifications to block GL while keyboard change is performed (see please DF-2012 for details).
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillChangeFrame:) name:UIKeyboardWillChangeFrameNotification object:nil];
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidChangeFrame:) name:UIKeyboardDidChangeFrameNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidFrameChanged:) name:UIKeyboardDidChangeFrameNotification object:nil];
 
         CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
         
@@ -154,10 +150,12 @@
 		}
         
 		DAVA::RenderManager::Instance()->SetRenderContextId(DAVA::EglGetCurrentContext());
-        DAVA::RenderManager::Instance()->Init(DAVA::Core::Instance()->GetPhysicalScreenWidth(), DAVA::Core::Instance()->GetPhysicalScreenHeight());
+        DAVA::Size2i physicalScreen = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+        DAVA::RenderManager::Instance()->Init(physicalScreen.dx, physicalScreen.dy);
         DAVA::RenderManager::Instance()->DetectRenderingCapabilities();
+        DAVA::RenderSystem2D::Instance()->Init();
         
-		self.multipleTouchEnabled = YES;
+		self.multipleTouchEnabled = (DAVA::InputSystem::Instance()->GetMultitouchEnabled()) ? YES : NO;
 		animating = FALSE;
 		displayLinkSupported = FALSE;
 		animationFrameInterval = 1;
@@ -165,6 +163,7 @@
 		displayLink = nil;
 		animationTimer = nil;
 		blockDrawView = false;
+        limitKeyboardFps = false;
 		
         // A system version of 3.1 or greater is required to use CADisplayLink. The NSTimer
         // class is used as fallback when it isn't available.
@@ -183,12 +182,12 @@
 
 - (void) drawView:(id)sender
 {
-	if (blockDrawView)
-	{
-		// Yuri Coder, 2013/02/06. In case we are displaying ASSERT dialog we need to block rendering because RenderManager might be already locked here.
-		return;
-	}
-
+    if (blockDrawView)
+    {
+        // Yuri Coder, 2013/02/06. In case we are displaying ASSERT dialog we need to block rendering because RenderManager might be already locked here.
+        return;
+    }
+    
 	DAVA::RenderManager::Instance()->Lock();
     
     DAVA::uint64 renderManagerContextId = DAVA::RenderManager::Instance()->GetRenderContextId();
@@ -213,9 +212,19 @@
     
 	DAVA::RenderManager::Instance()->Unlock();
 	
-	if(currFPS != DAVA::RenderManager::Instance()->GetFPS())
+    DAVA::int32 targetFPS = 0;
+    if (limitKeyboardFps)
+    {
+        targetFPS = KEYBOARD_FPS_LIMIT;
+    }
+    else
+    {
+        targetFPS = DAVA::RenderManager::Instance()->GetFPS();
+    }
+    
+	if(currFPS != targetFPS)
 	{
-		currFPS = DAVA::RenderManager::Instance()->GetFPS();
+		currFPS = targetFPS;
 		float interval = 60.0f / currFPS;
 		if(interval < 1.0f)
 		{
@@ -326,7 +335,7 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
 //			newTouch.point.y = p.y;
 //		}
 		newTouch.timestamp = curTouch.timestamp;
-		newTouch.tapCount = curTouch.tapCount;
+        newTouch.tapCount = static_cast<DAVA::int32>(curTouch.tapCount);
 		
 		switch(curTouch.phase)
 		{
@@ -353,8 +362,15 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
 -(void)process:(int) touchType touch:(NSArray*)active withEvent: (NSArray*)total
 {
 	MoveTouchsToVector(active, &activeTouches);
-	MoveTouchsToVector(total, &totalTouches);
-	DAVA::UIControlSystem::Instance()->OnInput(touchType, activeTouches, totalTouches);
+    if(DAVA::InputSystem::Instance()->GetMultitouchEnabled())
+    {
+        MoveTouchsToVector(total, &totalTouches);
+        DAVA::UIControlSystem::Instance()->OnInput(touchType, activeTouches, totalTouches);
+    }
+    else
+    {
+        DAVA::UIControlSystem::Instance()->OnInput(touchType, activeTouches, activeTouches);
+    }
 	activeTouches.clear();
 	totalTouches.clear();
 }
@@ -399,15 +415,27 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
 	blockDrawView = true;
 }
 
-- (void)keyboardWillChangeFrame:(NSNotification *)notification
+- (void) unblockDrawing
 {
-	blockDrawView = true;
+    blockDrawView = false;
 }
 
-- (void)keyboardDidChangeFrame:(NSNotification *)notification
+- (void)keyboardDidFrameChanged:(NSNotification *)notification
 {
-	blockDrawView = false;
+    CGRect keyboardEndFrame = [[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    CGRect screenRect = [[UIScreen mainScreen] bounds];
+    if (CGRectIntersectsRect(keyboardEndFrame, screenRect))
+    {
+        // Keyboard did show or move
+        limitKeyboardFps = true;
+    }
+    else
+    {
+        // Keyboard did hide
+        limitKeyboardFps = false;
+    }
 }
+
 
 @end
 

@@ -242,10 +242,6 @@ void EditorMaterialSystem::ApplyViewMode(DAVA::NMaterial *material)
     material->SetFlag(DAVA::NMaterial::FLAG_VIEWAMBIENT, flag);
 }
 
-void EditorMaterialSystem::Process(DAVA::float32 timeElapsed)
-{
-	
-}
 
 void EditorMaterialSystem::Draw()
 {
@@ -328,11 +324,6 @@ void EditorMaterialSystem::ProcessCommand(const Command2 *command, bool redo)
             }
         }
     }
-}
-
-void EditorMaterialSystem::ProcessUIEvent(DAVA::UIEvent *event)
-{
-
 }
 
 void EditorMaterialSystem::AddMaterial(DAVA::NMaterial *material, DAVA::Entity *entity, const DAVA::RenderBatch *rb)

@@ -34,7 +34,6 @@
 #include "Base/BaseMath.h"
 #include "Base/Observer.h"
 #include "Entity/SceneSystem.h"
-#include "Scene3D/Components/WindComponent.h"
 
 namespace DAVA
 {

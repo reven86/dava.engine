@@ -55,6 +55,8 @@ namespace DAVA
 	\brief Class to work with 4 x 4 matrices.
  */
 	
+class Quaternion;
+
 struct Matrix4
 {
 	union
@@ -110,6 +112,7 @@ struct Matrix4
 	inline bool	Inverse();
 	inline bool GetInverse(Matrix4 & out) const;
 	inline bool Decomposition(Vector3& position, Vector3& scale, Vector3& orientation) const;
+	void Decomposition(Vector3& position, Vector3& scale, Quaternion& orientation) const;
 
     //! 
     inline static Matrix4 MakeTranslation(const Vector3 & translationVector);

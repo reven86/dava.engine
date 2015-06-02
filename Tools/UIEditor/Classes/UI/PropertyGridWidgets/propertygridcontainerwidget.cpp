@@ -30,6 +30,8 @@
 #include "propertygridcontainerwidget.h"
 #include "ui_propertygridcontainerwidget.h"
 
+#include "statepropertygridwidget.h"
+
 #include "MetadataFactory.h"
 #include "EditorSettings.h"
 
@@ -48,6 +50,10 @@ PropertyGridContainerWidget::PropertyGridContainerWidget(QWidget *parent) :
 
 PropertyGridContainerWidget::~PropertyGridContainerWidget()
 {
+    disconnect(PropertiesGridController::Instance(), SIGNAL(PropertiesGridUpdated()),
+    this, SLOT(OnPropertiesGridUpdated()));
+    disconnect(PropertiesGridController::Instance(), SIGNAL(UIControlsDeselected()),
+    this, SLOT(OnUIControlsDeselected()));
     delete ui;
 }
 

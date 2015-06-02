@@ -30,7 +30,6 @@
 
 #include "Project/ProjectManager.h"
 #include "Main/QtUtils.h"
-#include "Tools/QtFileDialog/QtFileDialog.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
 #include "Deprecated/EditorConfig.h"
@@ -41,17 +40,22 @@
 #include "FileSystem/YamlParser.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
+#include "QtTools/FileDialog/FileDialog.h"
+
+#include <QDebug>
+
+
 ProjectManager::ProjectManager()
 	: curProjectPath()
 	, curProjectPathDataSource()
     , curProjectPathParticles()
+    , useDelayInitialization(true)
+    , isParticleSpritesUpdated(false)
 {
-
 }
 
 ProjectManager::~ProjectManager()
 {
-
 }
 
 bool ProjectManager::IsOpened() const
@@ -59,17 +63,17 @@ bool ProjectManager::IsOpened() const
 	return (!curProjectPath.IsEmpty());
 }
 
-FilePath ProjectManager::CurProjectPath() const
+const FilePath & ProjectManager::CurProjectPath() const
 {
 	return curProjectPath;
 }
 
-FilePath ProjectManager::CurProjectDataSourcePath() const
+const FilePath & ProjectManager::CurProjectDataSourcePath() const
 {
 	return curProjectPathDataSource;
 }
 
-FilePath ProjectManager::CurProjectDataParticles() const
+const FilePath & ProjectManager::CurProjectDataParticles() const
 {
     return curProjectPathParticles;
 }
@@ -88,7 +92,7 @@ FilePath ProjectManager::ProjectOpenDialog()
 {
     FilePath ret;
 
-    QString newPathStr = QtFileDialog::getExistingDirectory(NULL, QString("Open Project Folder"), QString("/"));
+    QString newPathStr = FileDialog::getExistingDirectory(NULL, QString("Open Project Folder"), QString("/"));
     if(!newPathStr.isEmpty())
     {
         ret = FilePath(PathnameToDAVAStyle(newPathStr));
@@ -125,7 +129,10 @@ void ProjectManager::ProjectOpen(const FilePath & incomePath)
 			EditorConfig::Instance()->ParseConfig(curProjectPath + "EditorConfig.yaml");
 
 			SceneValidator::Instance()->SetPathForChecking(curProjectPath);
-            SpritePackerHelper::Instance()->UpdateParticleSprites((eGPUFamily) SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
+            if (!useDelayInitialization)
+            {
+                UpdateParticleSprites();
+            }
 
             DAVA::FilePath::AddTopResourcesFolder(curProjectPath);
 
@@ -137,6 +144,16 @@ void ProjectManager::ProjectOpen(const FilePath & incomePath)
             emit ProjectOpened(curProjectPath.GetAbsolutePathname().c_str());
         }
 	}
+}
+
+void ProjectManager::UpdateParticleSprites()
+{
+    useDelayInitialization = false;
+    if (!isParticleSpritesUpdated)
+    {
+        SpritePackerHelper::Instance()->UpdateParticleSprites( static_cast<eGPUFamily>(SettingsManager::GetValue( Settings::Internal_TextureViewGPU ).AsInt32()) );
+        isParticleSpritesUpdated = true;
+    }
 }
 
 void ProjectManager::ProjectOpenLast()
@@ -152,13 +169,22 @@ void ProjectManager::ProjectClose()
 {
 	if(!curProjectPath.IsEmpty())
 	{
+        isParticleSpritesUpdated = false;
 		DAVA::FilePath::RemoveResourcesFolder(curProjectPath);
         curProjectPath = "";
         curProjectPathDataSource = "";
         curProjectPathParticles = "";
         SettingsManager::ResetPerProjectSettings();
+        
+        SettingsManager::SetValue(Settings::Internal_LastProjectPath, VariantType(DAVA::FilePath())); // reset last project path
+        
         emit ProjectClosed();
 	}
+}
+
+void ProjectManager::OnSceneViewInitialized()
+{
+    useDelayInitialization = false;
 }
 
 void ProjectManager::LoadProjectSettings()
@@ -184,7 +210,7 @@ void ProjectManager::LoadMaterialsSettings()
         {
             DAVA::FilePath materialsListDir = materialsListPath.GetDirectory();
 
-            for(int i = 0; i < rootNode->GetCount(); ++i)
+            for(uint32 i = 0; i < rootNode->GetCount(); ++i)
             {
                 const DAVA::YamlNode *templateNode = rootNode->Get(i);
                 if(NULL != templateNode)

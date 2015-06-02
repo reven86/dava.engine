@@ -227,8 +227,8 @@ MaterialGraphNodeConnector * MaterialGraphNode::GetInputConnector(const String &
 
 String MaterialGraphNode::GetResultFormat(const String & s1, const String & s2)
 {
-    uint32 s1Len = s1.length();
-    uint32 s2Len = s2.length();
+    uint32 s1Len = static_cast<uint32>(s1.length());
+    uint32 s2Len = static_cast<uint32>(s2.length());
     if ((s1Len == 1) || (s2Len == 1))
     {
         uint32 formatBytes = Max(s1Len, s2Len);
@@ -254,20 +254,20 @@ void MaterialGraphNode::SetName(const String & _name)
 
 MaterialGraphNode::TypeUsageStruct MaterialGraphNode::types[] =
 {
-    "TYPE_NONE", MaterialGraphNode::USE_BOTH,
-    "TYPE_FORWARD_MATERIAL", MaterialGraphNode::USE_PIXEL,
-    "TYPE_DEFERRED_MATERIAL", MaterialGraphNode::USE_PIXEL,
-    "TYPE_SAMPLE_2D", MaterialGraphNode::USE_PIXEL,
-    "TYPE_MUL", MaterialGraphNode::USE_BOTH,
-    "TYPE_ADD", MaterialGraphNode::USE_BOTH,
-    "TYPE_LERP", MaterialGraphNode::USE_BOTH,
-    "TYPE_TIME", MaterialGraphNode::USE_BOTH,
-    "TYPE_SIN", MaterialGraphNode::USE_BOTH,
-    "TYPE_COS", MaterialGraphNode::USE_BOTH,
-    "TYPE_CONST", MaterialGraphNode::USE_BOTH,
-    "TYPE_ROTATOR", MaterialGraphNode::USE_BOTH,
-    "TYPE_SHIFTER", MaterialGraphNode::USE_BOTH,
-    "TYPE_TEX_COORD_INPUT", MaterialGraphNode::USE_VERTEX,
+    {"TYPE_NONE", MaterialGraphNode::USE_BOTH},
+    {"TYPE_FORWARD_MATERIAL", MaterialGraphNode::USE_PIXEL},
+    {"TYPE_DEFERRED_MATERIAL", MaterialGraphNode::USE_PIXEL},
+    {"TYPE_SAMPLE_2D", MaterialGraphNode::USE_PIXEL},
+    {"TYPE_MUL", MaterialGraphNode::USE_BOTH},
+    {"TYPE_ADD", MaterialGraphNode::USE_BOTH},
+    {"TYPE_LERP", MaterialGraphNode::USE_BOTH},
+    {"TYPE_TIME", MaterialGraphNode::USE_BOTH},
+    {"TYPE_SIN", MaterialGraphNode::USE_BOTH},
+    {"TYPE_COS", MaterialGraphNode::USE_BOTH},
+    {"TYPE_CONST", MaterialGraphNode::USE_BOTH},
+    {"TYPE_ROTATOR", MaterialGraphNode::USE_BOTH},
+    {"TYPE_SHIFTER", MaterialGraphNode::USE_BOTH},
+    {"TYPE_TEX_COORD_INPUT", MaterialGraphNode::USE_VERTEX},
 };
     
 void MaterialGraphNode::SetType(const String & _type)

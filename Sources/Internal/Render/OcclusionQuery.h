@@ -34,12 +34,15 @@
 #include "Base/BaseMath.h"
 #include "Render/RenderBase.h"
 #include "Render/Texture.h"
+#include "Base/Observer.h"
 
 #if defined(__DAVAENGINE_OPENGL__)
 
 namespace DAVA
 {
 
+class ApplicationCore;
+    
 class OcclusionQuery
 {
 public:
@@ -77,19 +80,19 @@ public:
     uint32 salt: M;
 };
     
-typedef SmartHandle<32, 32> OcclusionQueryManagerHandle;
+typedef SmartHandle<32, 32> OcclusionQueryPoolHandle;
     
-class OcclusionQueryManager
+class OcclusionQueryPool
 {
 public:
     static const uint32 INVALID_INDEX = 0xFFFFFFFF;
     
-    OcclusionQueryManager(uint32 occlusionQueryCount);
-    ~OcclusionQueryManager();
+    OcclusionQueryPool(uint32 occlusionQueryCount);
+    ~OcclusionQueryPool();
     
-    OcclusionQueryManagerHandle CreateQueryObject();
-    OcclusionQuery & Get(OcclusionQueryManagerHandle handle);
-    void ReleaseQueryObject(OcclusionQueryManagerHandle handle);
+    OcclusionQueryPoolHandle CreateQueryObject();
+    OcclusionQuery & Get(OcclusionQueryPoolHandle handle);
+    void ReleaseQueryObject(OcclusionQueryPoolHandle handle);
     
 private:
     uint32 createdCounter;
@@ -104,11 +107,63 @@ private:
     Vector<OcclusionQueryItem> queries;
 };
     
-inline OcclusionQuery & OcclusionQueryManager::Get(OcclusionQueryManagerHandle handle)
+inline OcclusionQuery & OcclusionQueryPool::Get(OcclusionQueryPoolHandle handle)
 {
     return queries[handle.index].query;
 }
 
+#define FRAME_QUERY_POOL_SIZE 20
+
+class FrameOcclusionQueryManager : public Singleton<FrameOcclusionQueryManager>
+{
+    struct FrameQuery
+    {
+        OcclusionQueryPool queryPool;
+        Vector<OcclusionQueryPoolHandle> activeQueries;
+        uint32 drawedFrameStats;
+        FastName queryName;
+        bool isQueryOpen;
+
+        FrameQuery(const FastName & name) : 
+            queryPool(FRAME_QUERY_POOL_SIZE),
+            drawedFrameStats(0),
+            queryName(name),
+            isQueryOpen(false)
+            {}
+    };
+
+public:
+
+    enum eRetrieveBehavior
+    {
+        BEHAVIOR_WAIT,
+        BEHAVIOR_SKIP,
+        BEHAVIOR_RETRIEVE_ON_NEXT_FRAME
+    };
+
+    FrameOcclusionQueryManager();
+    virtual ~FrameOcclusionQueryManager();
+
+    void BeginQuery(const FastName & queryName);
+    void EndQuery(const FastName & queryName);
+	bool IsQueryOpen(const FastName & queryName);
+    uint32 GetFrameStats(const FastName & queryName) const;
+    void GetQueriesNames(Vector<FastName> & names) const;
+
+    void SetRetrieveBehavior(eRetrieveBehavior _behavior) { behavior = _behavior; };
+
+private:
+    void ResetFrameStats();
+    void ProccesRenderedFrame();
+    FrameOcclusionQueryManager::FrameQuery * GetQuery(const FastName & queryName) const;
+
+    Vector<FrameQuery *> frameQueries;
+
+    eRetrieveBehavior behavior;
+    bool frameBegan;
+
+friend class ApplicationCore;
+};
     
 /*
     id queryId = occlusionQuery->CreateQueryObject();

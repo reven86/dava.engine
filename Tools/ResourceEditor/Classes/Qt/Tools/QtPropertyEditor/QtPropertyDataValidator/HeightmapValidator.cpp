@@ -41,7 +41,7 @@ void HeightMapValidator::ErrorNotifyInternal(const QVariant &v) const
     QMessageBox::warning(NULL, "Wrong file selected", notifyMessage.c_str(), QMessageBox::Ok);
 }
 
-bool HeightMapValidator::ValidateInternal(QVariant &v)
+bool HeightMapValidator::ValidateInternal(const QVariant &v)
 {
     if(!PathValidator::ValidateInternal(v))
     {
@@ -57,7 +57,9 @@ bool HeightMapValidator::ValidateInternal(QVariant &v)
     else if(path.IsEqualToExtension(".png"))
     {
         DAVA::ImageFormatInterface *pngImageSystem = DAVA::ImageSystem::Instance()->GetImageFormatInterface(DAVA::ImageSystem::FILE_FORMAT_PNG);
-        DAVA::Size2i size = pngImageSystem->GetImageSize(path);
+        DAVA::File *infile = DAVA::File::Create(path, DAVA::File::OPEN | DAVA::File::READ);
+        DAVA::Size2i size = pngImageSystem->GetImageInfo(infile).GetImageSize();
+        SafeRelease(infile);
         if(size.dx != size.dy)
         {
             notifyMessage = DAVA::Format("\"%s\" has wrong size: landscape requires square heightmap.",

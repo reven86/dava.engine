@@ -81,8 +81,6 @@ public:
 	virtual UIControl *Clone();
 	virtual void CopyDataFrom(UIControl *srcControl);
 
-	virtual void SetVisibleForUIEditor(bool value, bool hierarchic = true);
-
     // Synchronize thumb size/position according to the thumb sprite.
     void SyncThumbWithSprite();
 
@@ -113,14 +111,31 @@ protected:
 	void InitInactiveParts(Sprite* spr);
 
     // Load/save the background.
-    void LoadBackgound(const char* prefix, UIControlBackground* background, const YamlNode* rootNodem, UIYamlLoader* loader);
-    void SaveBackground(const char* prefix, UIControlBackground* background, YamlNode* rootNode, UIYamlLoader * loader);
+    void LoadBackgound(const char* prefix, UIControlBackground* background, const YamlNode* rootNodem, const UIYamlLoader* loader);
+    void SaveBackground(const char* prefix, UIControlBackground* background, YamlNode* rootNode, const UIYamlLoader * loader);
 
     void CopyBackgroundAndRemoveControl(UIControl* from, UIControlBackground*& to);
 
 private:
     // Whether the sprites are embedded into control YAML (new storage format)?
     bool spritesEmbedded;
+    
+public:
+    
+    virtual int32 GetBackgroundComponentsCount() const;
+    virtual UIControlBackground *GetBackgroundComponent(int32 index) const;
+    virtual UIControlBackground *CreateBackgroundComponent(int32 index) const;
+    virtual void SetBackgroundComponent(int32 index, UIControlBackground *bg);
+    virtual String GetBackgroundComponentName(int32 index) const;
+
+    INTROSPECTION_EXTEND(UISlider, UIControl,
+                         PROPERTY("minValue", "Min Value", GetMinValue, SetMinValue, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("maxValue", "Max Value", GetMaxValue, SetMaxValue, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("value", "Value", GetValue, SetValue, I_SAVE | I_VIEW | I_EDIT)
+                         );
+private:
+    static const int32 BACKGROUND_COMPONENTS_COUNT = 3;
+
 };
     
     

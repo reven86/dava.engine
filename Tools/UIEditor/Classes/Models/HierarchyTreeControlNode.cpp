@@ -36,8 +36,8 @@
 HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 												   UIControl* uiObject,
 												   const QString& name) :
-	HierarchyTreeNode(name),
-    listDelegate(NULL)
+	HierarchyTreeNode(name)
+    , listDelegate(NULL)
 {
 	this->parent = parent;
 	
@@ -50,7 +50,7 @@ HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 	UIList *list = dynamic_cast<UIList*>(uiObject);
 	if (list)
 	{
-		listDelegate = new EditorListDelegate(list->GetRect(), list->GetOrientation());
+		listDelegate = new EditorListDelegate(list);
 		list->SetDelegate(listDelegate);
 	}
 
@@ -59,8 +59,8 @@ HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 
 HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 												   const HierarchyTreeControlNode* node):
-	HierarchyTreeNode(node),
-    listDelegate(NULL)
+	HierarchyTreeNode(node)
+    , listDelegate(NULL)
 {
 	this->parent = parent;
 	this->uiObject = node->GetUIObject()->Clone();
@@ -72,7 +72,7 @@ HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 	UIList *srcList = dynamic_cast<UIList*>(node->GetUIObject());
 	if (list)
 	{
-		listDelegate = new EditorListDelegate(list->GetRect(), list->GetOrientation());
+		listDelegate = new EditorListDelegate(list);
 		EditorListDelegate *srcListDelegate = dynamic_cast<EditorListDelegate*>(srcList->GetDelegate());
 		if (srcListDelegate)
 		{
@@ -146,8 +146,6 @@ HierarchyTreeControlNode::~HierarchyTreeControlNode()
 		SafeRelease(uiObject);
 		SafeRelease(parentUIObject);
 	}
-
-    SafeRelease(listDelegate);
 }
 
 HierarchyTreeScreenNode* HierarchyTreeControlNode::GetScreenNode() const
@@ -274,36 +272,9 @@ void HierarchyTreeControlNode::RemoveTreeNodeFromScene()
 	{
 		return;
 	}
-
-    // Don't touch the subcontrol nodes - they are controlled by the parent control itself.
-    List<UIControl*> subControlNodes = uiObject->GetSubcontrols();
-	for (HIERARCHYTREENODESLIST::iterator iter = childNodes.begin(); iter != childNodes.end(); ++iter)
-	{
-		HierarchyTreeControlNode* control = dynamic_cast<HierarchyTreeControlNode*>(*iter);
-		if (!control || std::find(subControlNodes.begin(), subControlNodes.end(), control->GetUIObject())
-            != subControlNodes.end())
-        {
-			continue;
-        }
-
-		control->RemoveTreeNodeFromScene();
-	}
 	
 	this->parentUIObject = uiObject->GetParent();
 	SafeRetain(this->parentUIObject);
-
-	// Determine the "child above" to return node to scene to the correct position.
-	this->childUIObjectAbove = NULL;
-	for (List<UIControl*>::const_iterator iter = parentUIObject->GetChildren().begin();
-		 iter != parentUIObject->GetChildren().end(); iter ++)
-	{
-		if (((*iter) == uiObject) && (iter != parentUIObject->GetChildren().begin()))
-		{
-			iter --;
-			this->childUIObjectAbove = (*iter);
-			break;
-		}
-	}
 
 	SafeRetain(uiObject);
 	this->parentUIObject->RemoveControl(uiObject);
@@ -324,7 +295,11 @@ void HierarchyTreeControlNode::ReturnTreeNodeToScene()
 	this->redoParentNode->AddTreeNode(this, redoPreviousNode);
 
 	// Return the object back to the proper position.
-	if (childUIObjectAbove == NULL)
+    UIControl* childUIObjectAbove = NULL;
+    HierarchyTreeControlNode* controlRedoPreviousNode = dynamic_cast<HierarchyTreeControlNode*>(redoPreviousNode);
+    if (controlRedoPreviousNode)
+        childUIObjectAbove = controlRedoPreviousNode->GetUIObject();
+    if (childUIObjectAbove == NULL)
 	{
 		// Set it to the top.
 		int childCount = parentUIObject->GetChildren().size();
@@ -334,7 +309,7 @@ void HierarchyTreeControlNode::ReturnTreeNodeToScene()
 		}
 		else
 		{
-			parentUIObject->InsertChildAbove(uiObject, parentUIObject->GetChildren().front());
+			parentUIObject->InsertChildBelow(uiObject, parentUIObject->GetChildren().front());
 		}
 	}
 	else
@@ -349,7 +324,7 @@ void HierarchyTreeControlNode::ReturnTreeNodeToScene()
 	this->needReleaseUIObjects = false;
 }
 
-Rect HierarchyTreeControlNode::GetRect() const
+Rect HierarchyTreeControlNode::GetRect(bool checkAngle/*=false*/) const
 {
 	Rect rect;
     
@@ -362,7 +337,16 @@ Rect HierarchyTreeControlNode::GetRect() const
     }
 
 	if (uiObject)
-		rect = uiObject->GetRect(true);
+    {
+        if(!checkAngle)
+        {
+            rect = uiObject->GetRect(true);
+        }
+        else
+        {
+            rect = uiObject->GetGeometricData().GetAABBox();
+        }
+    }
 
 	const HIERARCHYTREENODESLIST& childs = GetChildNodes();
 	for (HIERARCHYTREENODESLIST::const_iterator iter = childs.begin(); iter != childs.end(); ++iter)
@@ -382,7 +366,7 @@ void HierarchyTreeControlNode::SetVisibleFlag(bool value)
 {
 	if (uiObject)
 	{
-		uiObject->SetVisibleForUIEditor(value);
+        uiObject->SetVisibleForUIEditor(value);
 	}
 }
 
@@ -390,7 +374,7 @@ bool HierarchyTreeControlNode::GetVisibleFlag() const
 {
 	if (uiObject)
 	{
-		return uiObject->GetVisibleForUIEditor();
+        return uiObject->GetVisibleForUIEditor();
 	}
 
 	return false;

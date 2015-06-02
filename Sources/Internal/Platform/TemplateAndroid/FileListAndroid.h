@@ -34,11 +34,11 @@
 #include "Base/BaseTypes.h"
 #if defined(__DAVAENGINE_ANDROID__)
 
-#include "JniExtensions.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA {
 
-class JniFileList: public JniExtension
+class JniFileList
 {
 public:
 	struct JniFileListEntry
@@ -47,15 +47,12 @@ public:
 		uint32 size;
 		bool isDirectory;
 	};
+	JniFileList();
 	Vector<JniFileListEntry> GetFileList(const String& path);
 
-protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
-
-public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
+private:
+	JNI::JavaClass jniFileList;
+	Function<jstringArray (jstring)> getFileList;
 };
 
 };

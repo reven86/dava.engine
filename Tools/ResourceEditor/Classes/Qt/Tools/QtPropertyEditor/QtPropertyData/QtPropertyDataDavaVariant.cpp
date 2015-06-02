@@ -30,10 +30,13 @@
 #include "Debug/DVAssert.h"
 #include "Main/QtUtils.h"
 #include "QtPropertyDataDavaVariant.h"
-#include "Tools/QtFileDialog/QtFileDialog.h"
 #include "Tools/QtPropertyEditor/QtPropertyWidgets/FlagSelectorCombo.h"
+#include "Tools/ColorPicker/ColorPicker.h"
+#include "Tools/Widgets/MultilineEditor.h"
 
-#include <QColorDialog>
+#include "QtTools/FileDialog/FileDialog.h"
+
+
 #include <QListWidget>
 #include <QDoubleSpinBox>
 #include <QComboBox>
@@ -53,8 +56,8 @@ QtPropertyDataDavaVariant::QtPropertyDataDavaVariant(const DAVA::VariantType &va
 	: curVariantValue(value)
 	, allowedValuesLocked(false)
 	, allowedButton(NULL)
-    , isSettingMeFromChilds(false)
-    , allowedValueType(Default)
+	, allowedValueType(Default)
+	, isSettingMeFromChilds(false)
 {
 	InitFlags();
 	ChildsCreate();
@@ -286,7 +289,6 @@ QVariant QtPropertyDataDavaVariant::GetValueAlias() const
 	{
         if (allowedValueType == TypeFlags)
         {
-            const quint64 val = FromDavaVariant(curVariantValue).toULongLong();
             const QString alias = GetFlagsList().join(" | ");
             ret = alias;
         }
@@ -297,7 +299,14 @@ QVariant QtPropertyDataDavaVariant::GetValueAlias() const
 			    DAVA::VariantType v = DAVA::VariantType::Convert(allowedValues[i].realValue, curVariantValue.type);
 			    if(v == curVariantValue)
 			    {
-				    ret = allowedValues[i].visibleValue;
+                    if(allowedValues[i].visibleValue.isValid())
+                    {
+                        ret = allowedValues[i].visibleValue;
+                    }
+                    else
+                    {
+                        ret = FromDavaVariant(allowedValues[i].realValue);
+                    }
 				    break;
 			    }
 		    }
@@ -365,7 +374,10 @@ void QtPropertyDataDavaVariant::SetValueInternal(const QVariant &value)
         ToColor(value);
         break;
     case DAVA::VariantType::TYPE_FASTNAME:
-        curVariantValue.SetFastName(DAVA::FastName(value.toString().toStdString().c_str()));
+        if(value.isValid())
+            curVariantValue.SetFastName(DAVA::FastName(value.toString().toStdString().c_str()));
+        else
+            curVariantValue.SetFastName(DAVA::FastName());
         break;
 	case DAVA::VariantType::TYPE_AABBOX3:
 		ToAABBox3(value);
@@ -387,13 +399,23 @@ void QtPropertyDataDavaVariant::SubValueAdd(const QString &key, const DAVA::Vari
 	ChildAdd(key, new QtPropertyDataDavaVariantSubValue(this, subvalue));
 }
 
-void QtPropertyDataDavaVariant::SubValueSet(const QString &key, const QVariant &subvalue)
+void QtPropertyDataDavaVariant::SubValueSetToMe(const QString &key, const QVariant &subvalue)
 {
 	QtPropertyDataDavaVariantSubValue *child = (QtPropertyDataDavaVariantSubValue *) ChildGet(key);
 	if(NULL != child)
 	{
 		child->trackParent = false;
 		child->SetValue(subvalue);
+	}
+}
+
+void QtPropertyDataDavaVariant::SubValueSetFromMe(const QString &key, const QVariant &subvalue)
+{
+	QtPropertyDataDavaVariantSubValue *child = (QtPropertyDataDavaVariantSubValue *) ChildGet(key);
+	if(NULL != child)
+	{
+		child->trackParent = false;
+		child->SetValueInternal(subvalue);
 	}
 }
 
@@ -474,6 +496,16 @@ void QtPropertyDataDavaVariant::ChildsCreate()
 			QObject::connect(filePathBtn, SIGNAL(released()), this, SLOT(FilePathOWPressed()));
 		}
 		break;
+    case DAVA::VariantType::TYPE_STRING:
+        {
+            QToolButton *editMultiline = AddButton( QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED );
+            editMultiline->setIcon( QIcon( ":/QtIcons/pencil.png" ) );
+            editMultiline->setIconSize( QSize( 14, 14 ) );
+            editMultiline->setAutoRaise( true );
+            editMultiline->setToolTip( "Open multiline editor" );
+            connect( editMultiline, &QToolButton::clicked, this, &QtPropertyDataDavaVariant::MultilineEditClicked );
+        }
+        break;
 	case DAVA::VariantType::TYPE_KEYED_ARCHIVE:
 	case DAVA::VariantType::TYPE_MATRIX2:
 	case DAVA::VariantType::TYPE_MATRIX3:
@@ -492,45 +524,45 @@ void QtPropertyDataDavaVariant::ChildsSetFromMe()
 	    case DAVA::VariantType::TYPE_VECTOR2:
 		    {
 			    DAVA::Vector2 vec = curVariantValue.AsVector2();
-			    SubValueSet("X", vec.x);
-			    SubValueSet("Y", vec.y);
+			    SubValueSetFromMe("X", vec.x);
+			    SubValueSetFromMe("Y", vec.y);
 		    }
 		    break;
 	    case DAVA::VariantType::TYPE_VECTOR3:
 		    {
 			    DAVA::Vector3 vec = curVariantValue.AsVector3();
-			    SubValueSet("X", vec.x);
-			    SubValueSet("Y", vec.y);
-			    SubValueSet("Z", vec.z);
+			    SubValueSetFromMe("X", vec.x);
+			    SubValueSetFromMe("Y", vec.y);
+			    SubValueSetFromMe("Z", vec.z);
 		    }
 		    break;
 	    case DAVA::VariantType::TYPE_VECTOR4:
 		    {
 			    DAVA::Vector4 vec = curVariantValue.AsVector4();
-			    SubValueSet("X", vec.x);
-			    SubValueSet("Y", vec.y);
-			    SubValueSet("Z", vec.z);
-			    SubValueSet("W", vec.w);
+			    SubValueSetFromMe("X", vec.x);
+			    SubValueSetFromMe("Y", vec.y);
+			    SubValueSetFromMe("Z", vec.z);
+			    SubValueSetFromMe("W", vec.w);
 		    }
 		    break;
 	    case DAVA::VariantType::TYPE_AABBOX3:
             {
                 DAVA::AABBox3 box = curVariantValue.AsAABBox3();
-			    SubValueSet("min X", box.min.x);
-			    SubValueSet("min Y", box.min.y);
-			    SubValueSet("min Z", box.min.z);
-			    SubValueSet("max X", box.max.x);
-			    SubValueSet("max Y", box.max.y);
-			    SubValueSet("max Z", box.max.z);
+			    SubValueSetFromMe("min X", box.min.x);
+			    SubValueSetFromMe("min Y", box.min.y);
+			    SubValueSetFromMe("min Z", box.min.z);
+			    SubValueSetFromMe("max X", box.max.x);
+			    SubValueSetFromMe("max Y", box.max.y);
+			    SubValueSetFromMe("max Z", box.max.z);
             }
             break;
         case DAVA::VariantType::TYPE_COLOR:
             {
                 DAVA::Color color = curVariantValue.AsColor();
-                SubValueSet("R", color.r);
-                SubValueSet("G", color.g);
-                SubValueSet("B", color.b);
-                SubValueSet("A", color.a);
+                SubValueSetFromMe("R", color.r);
+                SubValueSetFromMe("G", color.g);
+                SubValueSetFromMe("B", color.b);
+                SubValueSetFromMe("A", color.a);
             }
             break;
 	    case DAVA::VariantType::TYPE_KEYED_ARCHIVE:
@@ -688,7 +720,8 @@ QVariant QtPropertyDataDavaVariant::FromDavaVariant(const DAVA::VariantType &var
 		v = FromColor(variant.AsColor());
 		break;
 	case DAVA::VariantType::TYPE_FASTNAME:
-		v = QString(variant.AsFastName().c_str());
+        if(variant.AsFastName().IsValid())
+		    v = QString(variant.AsFastName().c_str());
 		break;
 	case DAVA::VariantType::TYPE_AABBOX3:
 		v = FromAABBox3(variant.AsAABBox3());
@@ -976,9 +1009,6 @@ QWidget* QtPropertyDataDavaVariant::CreateEditorInternal(QWidget *parent, const 
                 }
                 break;
 
-            case DAVA::VariantType::TYPE_INT32:
-                break;
-
             default:
                 break;
         }
@@ -1055,17 +1085,65 @@ bool QtPropertyDataDavaVariant::EditorDoneInternal(QWidget *editor)
 	return ret;
 }
 
+void QtPropertyDataDavaVariant::MultilineEditClicked()
+{
+    DVASSERT( curVariantValue.type == DAVA::VariantType::TYPE_STRING );
+
+    MultilineEditor editor( GetOWViewport() );
+    QEventLoop loop;
+
+    connect( &editor, &MultilineEditor::done, &loop, &QEventLoop::quit );
+
+    editor.setWindowFlags( Qt::Window );
+    editor.setWindowModality( Qt::WindowModal );
+    editor.SetText( curVariantValue.AsString().c_str() );
+    editor.show();
+    loop.exec();
+
+    if ( editor.IsAccepted() )
+    {
+        SetValue( editor.GetText(), VALUE_EDITED );
+    }
+}
+
 void QtPropertyDataDavaVariant::ColorOWPressed()
 {
-	QColor c = QColorDialog::getColor(ColorToQColor(curVariantValue.AsColor()), GetOWViewport(), "Select color", QColorDialog::ShowAlphaChannel);
-	if(c.isValid())
-	{
-        QString str;
-        str.sprintf(FLOAT_PRINTF_FORMAT4, c.redF(), c.greenF(), c.blueF(), c.alphaF());
+    const DAVA::Color oldColor = curVariantValue.AsColor();
+    
+    ColorPicker cp(GetOWViewport());
+    cp.SetDavaColor(oldColor);
 
-		SetValue(str, QtPropertyData::VALUE_EDITED);
-		SetColorIcon();
+    connect( &cp, SIGNAL( changing( const QColor& ) ), SLOT( OnColorChanging() ) );
+    connect( &cp, SIGNAL( changed( const QColor& ) ), SLOT( OnColorChanging() ) );
+
+    const bool result = cp.Exec();
+    const DAVA::Color newColor = cp.GetDavaColor();
+
+    QString str;
+
+    str.sprintf(FLOAT_PRINTF_FORMAT4, oldColor.r, oldColor.g, oldColor.b, oldColor.a);
+    SetTempValue(str);  // Restore original value, need for undo/redo
+
+    if (result && newColor != oldColor)
+	{
+        str.sprintf(FLOAT_PRINTF_FORMAT4, newColor.r, newColor.g, newColor.b, newColor.a);
+	    SetValue(str, VALUE_EDITED);
 	}
+
+    SetColorIcon();
+}
+
+void QtPropertyDataDavaVariant::OnColorChanging()
+{
+    ColorPicker *cp = qobject_cast<ColorPicker *>( sender() );
+    if (cp == NULL)
+        return;
+
+    const DAVA::Color newColor = cp->GetDavaColor();
+    QString str;
+    str.sprintf(FLOAT_PRINTF_FORMAT4, newColor.r, newColor.g, newColor.b, newColor.a);
+
+	SetTempValue(str);
 }
 
 void QtPropertyDataDavaVariant::FilePathOWPressed()
@@ -1076,7 +1154,7 @@ void QtPropertyDataDavaVariant::FilePathOWPressed()
     {
         openFilePath = defaultOpenDialogPath;
     }
-	QString path = QtFileDialog::getOpenFileName(GetOWViewport(), "Select file", openFilePath, openDialogFilter);
+	QString path = FileDialog::getOpenFileName(GetOWViewport(), "Select file", openFilePath, openDialogFilter);
 	if(!path.isEmpty())
 	{
 		SetValue(path, QtPropertyData::VALUE_EDITED);
@@ -1118,7 +1196,7 @@ QWidget* QtPropertyDataDavaVariant::CreateAllowedValuesEditor(QWidget *parent) c
 			// if not - we will create it from dava::varianttype
 			else
 			{
-				text = FromDavaVariant(curVariantValue).toString();
+                text = FromDavaVariant(allowedValues[i].realValue).toString();
 			}
 
 			allowedWidget->addItem(text);

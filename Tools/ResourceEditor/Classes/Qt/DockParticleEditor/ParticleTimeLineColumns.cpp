@@ -105,7 +105,7 @@ QString ParticlesExtraInfoColumn::FormatFloat(float32 value)
 		strValue = "%.0f";
 	}
 	
-	strValue.sprintf(strValue.toAscii(), value);
+	strValue.sprintf(strValue.toLatin1(), value);
 	return strValue;
 }
 

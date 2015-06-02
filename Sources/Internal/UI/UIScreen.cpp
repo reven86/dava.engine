@@ -32,6 +32,7 @@
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Platform/SystemTimer.h"
+#include <Render/2D/Systems/RenderSystem2D.h>
 
 namespace DAVA 
 {
@@ -68,15 +69,10 @@ void UIScreen::SystemWillAppear()
 {
     UIControl::SystemWillAppear();
 
-    if (fullScreenRect.dx != Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin()
-        || fullScreenRect.dy != Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin())
+    if (fullScreenRect.dx != VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx
+        || fullScreenRect.dy != VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dy)
     {
-        Rect fsr;
-        fsr.x = Core::Instance()->GetVirtualScreenXMin();
-        fsr.y = Core::Instance()->GetVirtualScreenYMin();
-        fsr.dx = Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin();
-        fsr.dy = Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin();
-        SystemScreenSizeDidChanged(fsr);
+        SystemScreenSizeDidChanged(VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect());
     }
 }
 
@@ -113,44 +109,49 @@ void UIScreen::SystemDraw(const UIGeometricData &geometricData)
 
 void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
 {
+    RenderSystem2D::Instance()->Flush();
+
 	RenderManager::Instance()->SetColor(0, 0, 0, 1.0f);
 	UIGeometricData drawData;
 	drawData.position = relativePosition;
 	drawData.size = size;
-	drawData.pivotPoint = pivotPoint;
+	drawData.pivotPoint = GetPivotPoint();
 	drawData.scale = scale;
 	drawData.angle = angle;
-	drawData.AddToGeometricData(geometricData);
+    drawData.AddGeometricData(geometricData);
 
 	Rect drawRect = drawData.GetUnrotatedRect();
-	if (Core::Instance()->GetVirtualScreenXMin() < 0)
+    Rect fullRect = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect();
+    Vector2 virtualSize = Vector2((float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx,
+                                  (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
+	if (fullRect.x < 0)
 	{
 		RenderHelper::Instance()->FillRect(Rect(
-													Core::Instance()->GetVirtualScreenXMin()
+													fullRect.x
 												 ,	0
-												 ,	-Core::Instance()->GetVirtualScreenXMin()
-												 ,	Core::Instance()->GetVirtualScreenHeight())
+												 ,	-fullRect.x
+												 ,	virtualSize.y)
                                                  ,  RenderState::RENDERSTATE_2D_BLEND);
 		RenderHelper::Instance()->FillRect(Rect(
-												 Core::Instance()->GetVirtualScreenWidth()
+												 virtualSize.x
 												 ,	0
-												 ,	Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenWidth()
-												 ,	Core::Instance()->GetVirtualScreenHeight())
+												 ,	fullRect.x + fullRect.dx - virtualSize.x
+												 ,	virtualSize.y)
                                                  ,  RenderState::RENDERSTATE_2D_BLEND);
 	}
 	else 
 	{
 		RenderHelper::Instance()->FillRect(Rect(
 													0
-												 ,	Core::Instance()->GetVirtualScreenYMin()
-												 ,	Core::Instance()->GetVirtualScreenWidth()+1
-												 ,	-Core::Instance()->GetVirtualScreenYMin())
+												 ,	fullRect.y
+												 ,	virtualSize.x + 1
+												 ,	-fullRect.y)
                                                  ,  RenderState::RENDERSTATE_2D_BLEND);
 		RenderHelper::Instance()->FillRect(Rect(
 												 0
-												 ,	Core::Instance()->GetVirtualScreenHeight()
-												 ,	Core::Instance()->GetVirtualScreenWidth()+1
-												 ,	Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenHeight())
+												 ,	virtualSize.y
+												 ,	virtualSize.x + 1
+												 ,	fullRect.y + fullRect.dy - virtualSize.y)
                                                  ,  RenderState::RENDERSTATE_2D_BLEND);
 	}
 
@@ -170,10 +171,11 @@ void UIScreen::LoadGroup()
 		isLoaded = true;
 	}else
 	{
+		int32 screenGroupId = groupId;
 		for (List<UIScreen*>::iterator t = appScreens.begin(); t != appScreens.end(); ++t)
 		{
 			UIScreen * screen = *t;
-			if ((screen->groupId == groupId) && (!screen->isLoaded))
+			if ((screen->groupId == screenGroupId) && (!screen->isLoaded))
 			{
 				screen->LoadResources();
 				screen->isLoaded = true;
@@ -194,7 +196,7 @@ void UIScreen::UnloadGroup()
 		isLoaded = false;
 	}else
 	{
-        int32 screenGroupId = groupId;
+		int32 screenGroupId = groupId;
 		for (List<UIScreen*>::iterator t = appScreens.begin(); t != appScreens.end(); ++t)
 		{
 			UIScreen * screen = *t;

@@ -31,9 +31,10 @@
 #include "SpeedTreeImporter.h"
 #include "ui_treeimportdialog.h"
 #include "Qt/Project/ProjectManager.h"
-#include "Qt/Tools/QtFileDialog/QtFileDialog.h"
 #include "Qt/Main/mainwindow.h"
 #include "Qt/Tools/QtWaitDialog/QtWaitDialog.h"
+
+#include "QtTools/FileDialog/FileDialog.h"
 
 using namespace DAVA;
 
@@ -73,6 +74,7 @@ void SpeedTreeImportDialog::OnCancel()
 
 void SpeedTreeImportDialog::OnOk()
 {
+#ifdef __DAVAENGINE_SPEEDTREE__
     FilePath texturesDirPath = sc2FolderPath + "images/";
 
     //make out files
@@ -109,6 +111,7 @@ void SpeedTreeImportDialog::OnOk()
             QtMainWindow::Instance()->OpenScene(outFiles[i].GetAbsolutePathname().c_str());
         }
     }
+#endif
 }
 
 void SpeedTreeImportDialog::OnXMLSelect()
@@ -117,7 +120,7 @@ void SpeedTreeImportDialog::OnXMLSelect()
     if(xmlFiles.size())
         dialogPath = QString(xmlFiles[0].GetDirectory().GetAbsolutePathname().c_str());
 
-    QStringList selectedFiles = QtFileDialog::getOpenFileNames(QtMainWindow::Instance(), "Import SpeedTree", dialogPath, "SpeedTree RAW File (*.xml)");
+    QStringList selectedFiles = FileDialog::getOpenFileNames(QtMainWindow::Instance(), "Import SpeedTree", dialogPath, "SpeedTree RAW File (*.xml)");
     if(!selectedFiles.size())
         return;
 
@@ -138,7 +141,7 @@ void SpeedTreeImportDialog::OnSc2Select()
     if(!sc2FolderPath.IsEmpty())
         dialogPath = QString(sc2FolderPath.GetAbsolutePathname().c_str());
 
-    QString selectedPath = QtFileDialog::getExistingDirectory(QtMainWindow::Instance(), "Select .sc2 file", dialogPath);
+    QString selectedPath = FileDialog::getExistingDirectory(QtMainWindow::Instance(), "Select .sc2 file", dialogPath);
     if(selectedPath.isEmpty())
         return;
 

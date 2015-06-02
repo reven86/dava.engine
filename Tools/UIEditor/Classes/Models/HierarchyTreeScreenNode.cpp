@@ -53,9 +53,9 @@ HierarchyTreeScreenNode::HierarchyTreeScreenNode(HierarchyTreePlatformNode* pare
 	posY = POSITION_UNDEFINED;
 }
 
-HierarchyTreeScreenNode::HierarchyTreeScreenNode(HierarchyTreePlatformNode* parent, const HierarchyTreeScreenNode* base):
+HierarchyTreeScreenNode::HierarchyTreeScreenNode(HierarchyTreePlatformNode* parent, const HierarchyTreeScreenNode* base, bool needLoad/* = true*/):
 	HierarchyTreeNode(base),
-    loaded(false)
+    loaded(!needLoad)
 {
 	this->parent = parent;
 	this->screen = new ScreenControl();
@@ -68,16 +68,25 @@ HierarchyTreeScreenNode::HierarchyTreeScreenNode(HierarchyTreePlatformNode* pare
 
 	unsavedChangesCounter = 0;
 
-	const HierarchyTreeNode::HIERARCHYTREENODESLIST& chilren = base->GetChildNodes();
-	for (HierarchyTreeNode::HIERARCHYTREENODESLIST::const_iterator iter = chilren.begin();
-		 iter != chilren.end();
+	const HierarchyTreeNode::HIERARCHYTREENODESLIST& children = base->GetChildNodes();
+	for (HierarchyTreeNode::HIERARCHYTREENODESLIST::const_iterator iter = children.begin();
+		 iter != children.end();
 		 ++iter)
 	{
 		const HierarchyTreeControlNode* baseControl = dynamic_cast<const HierarchyTreeControlNode* >((*iter));
 		if (!baseControl)
 			continue;
 		
-		HierarchyTreeControlNode* control = new HierarchyTreeControlNode(this, baseControl);
+		HierarchyTreeControlNode* control = NULL;
+		if (dynamic_cast<UIAggregatorControl*>(baseControl->GetUIObject()))
+        {
+        	const HierarchyTreeAggregatorControlNode* aggregatorBaseControl = static_cast<const HierarchyTreeAggregatorControlNode*>(baseControl);
+			control = new HierarchyTreeAggregatorControlNode(this, aggregatorBaseControl);
+        }
+		else
+        {
+        	 control = new HierarchyTreeControlNode(this, baseControl);
+        }
 		AddTreeNode(control);
 	}
 }
@@ -195,7 +204,7 @@ bool HierarchyTreeScreenNode::Load(const QString& path)
 {
     if(!loaded)
     {
-        UIYamlLoader::Load(screen, path.toStdString());
+        UIYamlLoader::Load(screen, path.toStdString(), false);
         guides.Load(path.toStdString());
         
         BuildHierarchyTree(this, screen->GetChildren());
@@ -268,11 +277,10 @@ void HierarchyTreeScreenNode::CombineRectWithChild(Rect& rect) const
 	for (HIERARCHYTREENODESLIST::const_iterator iter = childs.begin(); iter != childs.end(); ++iter)
 	{
 		const HierarchyTreeControlNode* control = dynamic_cast<const HierarchyTreeControlNode*>(*iter);
-		if (!control)
+		if (!control || !control->GetUIObject())
 			continue;
 		
-		Rect controlRect = control->GetRect();
-		
+		Rect controlRect = control->GetUIObject()->GetGeometricData().GetAABBox();
 		rect = rect.Combine(controlRect);
 	}
 }
@@ -489,7 +497,7 @@ Rect HierarchyTreeScreenNode::GetOwnRect() const
 void HierarchyTreeScreenNode::GetControlRectsListRecursive(const HierarchyTreeControlNode* rootNode, List<GuidesManager::StickedRect>& rectsList) const
 {
     // Inner controls aren't forced to be sticked.
-    rectsList.push_back(GuidesManager::StickedRect(rootNode->GetUIObject()->GetRect(true), false));
+    rectsList.push_back(GuidesManager::StickedRect(rootNode->GetUIObject()->GetGeometricData().GetAABBox(), false));
 
     const HierarchyTreeNode::HIERARCHYTREENODESLIST& children = rootNode->GetChildNodes();
     for (HierarchyTreeNode::HIERARCHYTREENODESCONSTITER iter = children.begin(); iter != children.end(); iter ++)

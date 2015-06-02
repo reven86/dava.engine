@@ -54,7 +54,7 @@ void CullingSystem::ImmediateUpdate(Entity * entity)
     RenderObject * renderObject = ((RenderComponent*)entity->GetComponent(Component::RENDER_COMPONENT))->GetRenderObject();
     if (!renderObject)return;
     
-    if (renderObject->GetRemoveIndex() == -1) // FAIL, SHOULD NOT HAPPEN
+    if (renderObject->GetRemoveIndex() == static_cast<uint32>(-1)) // FAIL, SHOULD NOT HAPPEN
     {
         Logger::Error("Object in entity was replaced suddenly. ");
     }
@@ -77,13 +77,13 @@ void CullingSystem::SetCamera(Camera * _camera)
     camera = _camera;
 }
     
-void CullingSystem::Process()
+void CullingSystem::Process(float32 timeElapsed)
 {
     int32 objectsCulled = 0;
     
     //Frustum * frustum = camera->GetFrustum();
 
-    uint32 size = renderObjectArray.size();
+    uint32 size = static_cast<uint32>(renderObjectArray.size());
     for (uint32 pos = 0; pos < size; ++pos)
     {
         //RenderObject * node = renderObjectArray[pos];

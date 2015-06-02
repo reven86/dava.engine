@@ -115,6 +115,16 @@ public:
     */
     DLCError GetError() const;
 
+    /** 
+        \brief Return errno from patching process
+    */
+    int32 GetLastErrno() const;
+
+    /**
+        \brief Return patching error
+    */
+    PatchFileReader::PatchError GetPatchError() const;
+
     /**
         \brief Returns path to appropriate meta-file that was downloaded from DLC server.
     */
@@ -156,18 +166,22 @@ protected:
         FilePath remoteMetaStorePath;
 
         String remotePatchFullUrl;
+        uint64 remotePatchFullSize;
         String remotePatchLiteUrl;
+        uint64 remotePatchLiteSize;
         String remoteMetaUrl;
 
         String remotePatchUrl;
         uint64 remotePatchSize;
+        uint64 remotePatchReadySize;
         uint32 remotePatchDownloadId;
         FilePath remotePatchStorePath;
 
-        uint32 patchCount;
-        uint32 patchIndex;
-        bool patchInProgress;
+        uint32 totalPatchCount;
+        uint32 appliedPatchCount;
+        volatile bool patchInProgress;
         PatchFileReader::PatchError patchingError;
+        int32 lastErrno;
 
         FilePath stateInfoStorePath;
         FilePath downloadInfoStorePath;
@@ -206,7 +220,7 @@ protected:
     void StepDownloadPatchCancel();
 
     void StepPatchBegin();
-    void StepPatchFinish(BaseObject *caller, void *callerData, void *userData);
+    void StepPatchFinish();
     void StepPatchCancel();
 
     void StepClean();
@@ -219,9 +233,6 @@ protected:
     bool WriteUint32(const FilePath &path, uint32 value);
 
     String MakePatchUrl(uint32 localVer, uint32 removeVer);
-    
-private:
-    void PostEventJob(BaseObject *caller, void *callerData, void *userData);
 };
 
 }

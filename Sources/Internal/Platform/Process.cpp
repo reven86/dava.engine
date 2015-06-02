@@ -29,7 +29,16 @@
 #include "Platform/Process.h"
 #include "FileSystem/FilePath.h"
 
+#if defined (__DAVAENGINE_MACOS__)
+#include <sys/wait.h>
+
+#endif
+
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+
+#if defined(__DAVAENGINE_MACOS__)
+#include <sys/wait.h>
+#endif
 
 static const int READ = 0;
 static const int WRITE = 1;

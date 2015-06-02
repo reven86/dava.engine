@@ -1109,7 +1109,7 @@ void RenderManager::ClearStencilBuffer(int32 stencil)
 	RENDER_VERIFY(direct3DDevice->Clear(0,  0, D3DCLEAR_STENCIL,  0,  0,  stencil));
 }
 
-void RenderManager::SetHWClip(const Rect &rect)
+void RenderManager::SetClip(const Rect &rect)
 {
 	PrepareRealMatrix();
 	currentClip = rect;
@@ -1251,7 +1251,7 @@ void RenderManager::SetHWRenderTargetSprite(Sprite *renderTarget)
 	currentRenderTarget = renderTarget;
 }
 
-void RenderManager::SetHWRenderTargetTexture(Texture * renderTarget)
+void RenderManager::SetRenderTarget(Texture * renderTarget)
 {
 
 }

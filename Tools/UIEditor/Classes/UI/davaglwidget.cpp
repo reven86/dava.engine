@@ -52,10 +52,10 @@
 #include "Guides/GuideMimeData.h"
 
 #if defined (__DAVAENGINE_MACOS__)
-#include "Platform/Qt/MacOS/QtLayerMacOS.h"
+#include "QtLayerMacOS.h"
 #elif defined (__DAVAENGINE_WIN32__)
-#include "Platform/Qt/Win32/QtLayerWin32.h"
-#include "Platform/Qt/Win32/CorePlatformWin32Qt.h"
+#include "QtLayerWin32.h"
+#include "CorePlatformWin32Qt.h"
 #endif //#if defined (__DAVAENGINE_MACOS__)
 
 DavaGLWidget::DavaGLWidget(QWidget *parent)
@@ -136,9 +136,9 @@ void DavaGLWidget::resizeEvent(QResizeEvent *e)
 
 	//YZ fix load resource
 	
-	Core::Instance()->UnregisterAllAvailableResourceSizes();
-	Core::Instance()->RegisterAvailableResourceSize(size().width(), size().height(), "Gfx");
-	Core::Instance()->CalculateScaleMultipliers();
+	VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
+    VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(size().width(), size().height(), "Gfx");
+    VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
     
     emit DavaGLWidgetResized();
 }
@@ -168,7 +168,7 @@ void DavaGLWidget::focusOutEvent(QFocusEvent *e)
 {
 	QWidget::focusOutEvent(e);
 
-	DAVA::InputSystem::Instance()->GetKeyboard()->ClearAllKeys();
+	DAVA::InputSystem::Instance()->GetKeyboard().ClearAllKeys();
 	DAVA::QtLayer::Instance()->LockKeyboardInput(false);
 }
 
@@ -362,9 +362,4 @@ Vector2 DavaGLWidget::GuideToInternal(const QPoint& pos)
     internalPos.y = Round(internalPos.y);
     
     return internalPos;
-}
-
-void DavaGLWidget::ShowAssertMessage(const char * message)
-{
-	QMessageBox::critical(this, "", message);
 }

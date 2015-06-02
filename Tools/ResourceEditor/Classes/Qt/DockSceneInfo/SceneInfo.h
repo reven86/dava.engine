@@ -48,7 +48,7 @@ protected:
     
     struct LODInfo
     {
-        DAVA::uint32 trianglesOnLod[DAVA::LodComponent::MAX_LOD_LAYERS];
+		std::array<DAVA::uint32, DAVA::LodComponent::MAX_LOD_LAYERS> trianglesOnLod;
         DAVA::uint32 trianglesOnObjects;
         
         void Clear()
@@ -85,7 +85,8 @@ public slots:
     void UpdateInfoByTimer();
     void TexturesReloaded();
     void SpritesReloaded();
-
+    void OnQualityChanged();
+    
 
 protected slots:
     void SceneActivated(SceneEditor2 *scene);
@@ -110,7 +111,6 @@ protected:
     void InitializeVegetationInfoSection();
     
     void InitializeLayersSection();
-    void UpdateLayersSectionStructure(SceneEditor2 *scene);
 
     void RefreshSceneGeneralInfo();
     void Refresh3DDrawInfo();

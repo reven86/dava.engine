@@ -91,24 +91,30 @@ void MD5::ForFile(const FilePath & pathName, unsigned char * digest)
 	memcpy(digest, md5.GetDigest(), DIGEST_SIZE);
 }
 
-void MD5::ForDirectory(const FilePath & pathName, uint8 * digest, bool isRecursive)
+void MD5::ForDirectory(const FilePath & pathName, uint8 * digest, bool isRecursive, bool includeHidden)
 {
 	MD5 md5;
 	md5.Init();
-	MD5::RecursiveDirectoryMD5(pathName, md5, isRecursive);
+	MD5::RecursiveDirectoryMD5(pathName, md5, isRecursive, includeHidden);
 	md5.Final();
 
 	memcpy(digest, md5.GetDigest(), DIGEST_SIZE);
 }
 
-void MD5::RecursiveDirectoryMD5(const FilePath & pathName, MD5 & md5, bool isRecursive)
+void MD5::RecursiveDirectoryMD5(const FilePath & pathName, MD5 & md5, bool isRecursive, bool includeHidden)
 {
-    String path = pathName.GetAbsolutePathname();
-	md5.Update((uint8*)path.c_str(), (uint32)path.size());
+    String name = pathName.GetLastDirectoryName();
+	md5.Update((uint8*)name.c_str(), (uint32)name.size());
 
-	FileList * fileList = new FileList(pathName);
+	FileList * fileList = new FileList(pathName, includeHidden);
+    fileList->Sort();
 	for(int i = 0; i < fileList->GetCount(); ++i)
 	{
+        if (fileList->IsHidden(i) && !includeHidden)
+        {
+            continue;
+        }
+
 		if(fileList->IsDirectory(i))
 		{
 			if(!fileList->IsNavigationDirectory(i))
@@ -117,14 +123,14 @@ void MD5::RecursiveDirectoryMD5(const FilePath & pathName, MD5 & md5, bool isRec
 				//	Logger::FrameworkDebug("- delete directory: %s / %s- %d", fileList->GetPathname(i).c_str(), fileList->GetFilename(i).c_str(), success ? (1): (0));
 				//	if (!success)return false;
 				if (isRecursive)
-					RecursiveDirectoryMD5(fileList->GetPathname(i), md5, isRecursive);
+					RecursiveDirectoryMD5(fileList->GetPathname(i), md5, isRecursive, includeHidden);
 			}
 		}
 		else 
 		{
 			// update MD5 according to the file
-            path = fileList->GetPathname(i).GetAbsolutePathname();
-			md5.Update((uint8*)path.c_str(), (uint32)path.size());
+            name = fileList->GetPathname(i).GetFilename();
+			md5.Update((uint8*)name.c_str(), (uint32)name.size());
 			
 			uint8 fileDigest[DIGEST_SIZE];
 			MD5::ForFile(fileList->GetPathname(i), fileDigest);
@@ -153,7 +159,7 @@ void MD5::HashToChar(const uint8 * hash, char8 *buffer, uint32 bufferSize)
     
 void MD5::CharToHash(const char8 *buffer, uint8 * hash)
 {
-    int32 bufferSize = strlen(buffer);
+    int32 bufferSize = static_cast<int32>(strlen(buffer));
     if((MD5::DIGEST_SIZE * 2) != bufferSize)
     {
         Logger::Error("[MD5::CharToHash] char string has wrong size (%d). Must be 32 characters", bufferSize);

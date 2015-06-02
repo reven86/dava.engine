@@ -39,8 +39,8 @@ class CollisionBaseObject
 public:
 	CollisionBaseObject(DAVA::Entity *ent, btCollisionWorld *word)
 		: entity(ent)
-		, btWord(word)
 		, btObject(NULL)
+		, btWord(word)
 	{ }
 
 	virtual ~CollisionBaseObject()

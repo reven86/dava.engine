@@ -36,8 +36,11 @@
 
 #include "../QtPropertyData.h"
 
+
 class QtComboFake;
-class QtPropertyDataDavaVariant : public QtPropertyData
+
+class QtPropertyDataDavaVariant
+    : public QtPropertyData
 {
 	Q_OBJECT
 
@@ -86,10 +89,12 @@ protected:
 	virtual bool EditorDoneInternal(QWidget *editor);
 
 protected slots:
+    void MultilineEditClicked();
 	void ColorOWPressed();
 	void FilePathOWPressed();
 	void AllowedOWPressed();
 	void AllowedSelected(int index);
+    void OnColorChanging();
 
 protected:
 	struct AllowedValue
@@ -97,15 +102,6 @@ protected:
 		DAVA::VariantType realValue;
 		QVariant visibleValue;
 	};
-
-	QVector<AllowedValue> allowedValues;
-	mutable bool allowedValuesLocked;
-	QtPropertyToolButton *allowedButton;
-    AllowedValueType allowedValueType;
-    
-    QString openDialogFilter;
-    QString defaultOpenDialogPath;
-    bool isSettingMeFromChilds;
 
 	void InitFlags();
 	void ChildsCreate();
@@ -138,7 +134,8 @@ protected:
 	int ParseFloatList(const QString &str, int maxCount, DAVA::float32 *dest);
 
 	void SubValueAdd(const QString &key, const DAVA::VariantType &subvalue);
-	void SubValueSet(const QString &key, const QVariant &subvalue);
+	void SubValueSetToMe(const QString &key, const QVariant &subvalue);
+	void SubValueSetFromMe(const QString &key, const QVariant &subvalue);
 	QVariant SubValueGet(const QString &key);
 
 	QWidget* CreateAllowedValuesEditor(QWidget *parent) const;
@@ -147,6 +144,15 @@ protected:
 	void ApplyAllowedValueFromEditor(QWidget *editorWidget);
 
     QStringList GetFlagsList() const;
+
+	QVector<AllowedValue> allowedValues;
+	mutable bool allowedValuesLocked;
+	QtPropertyToolButton *allowedButton;
+    AllowedValueType allowedValueType;
+    
+    QString openDialogFilter;
+    QString defaultOpenDialogPath;
+    bool isSettingMeFromChilds;
 };
 
 class QtPropertyDataDavaVariantSubValue

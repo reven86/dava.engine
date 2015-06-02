@@ -29,7 +29,6 @@
 
 #include "Render/RenderManager.h"
 #include "Render/Texture.h"
-#include "Render/2D/Sprite.h"
 #include "Utils/Utils.h"
 #include "Core/Core.h"
 #include "Render/Shader.h"
@@ -40,12 +39,6 @@
 
 namespace DAVA
 {
-    
-Shader * RenderManager::FLAT_COLOR = 0;
-Shader * RenderManager::TEXTURE_MUL_FLAT_COLOR = 0;
-Shader * RenderManager::TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = 0;
-Shader * RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = 0;
-
 AutobindVariableData RenderManager::dynamicParameters[DYNAMIC_PARAMETERS_COUNT];
 uint32  RenderManager::dynamicParamersRequireUpdate;
 Matrix4 RenderManager::worldViewMatrix;
@@ -61,8 +54,9 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
 :   renderer(_renderer),
     currentState(),
     hardwareState(),
+    currentRenderTarget(0),
     needGLScreenShot(false),
-    screenShotCallback(NULL)
+    screenShotCallback(nullptr)
 {
     // Create shader cache singleton
     ShaderCache * cache = new ShaderCache();
@@ -71,32 +65,17 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
 //	Logger::FrameworkDebug("[RenderManager] created");
 
     GPUFamilyDescriptor::SetupGPUParameters();
-    
-	renderOrientation = 0;
-	currentRenderTarget = 0;
 	
 	currentRenderEffect = 0;
 
 	frameBufferWidth = 0;
 	frameBufferHeight = 0;
-	retScreenWidth = 0;
-	retScreenHeight = 0;
 
 	fps = 60;
 
 	debugEnabled = false;
 	fboViewRenderbuffer = 0;
 	fboViewFramebuffer = 0;
-	
-	userDrawOffset = Vector2(0, 0);
-	userDrawScale = Vector2(1, 1);
-
-	viewMappingDrawOffset = Vector2(0, 0);
-	viewMappingDrawScale = Vector2(1, 1);
-
-	currentDrawOffset = Vector2(0, 0);
-	currentDrawScale = Vector2(1, 1);
-    mappingMatrixChanged = true;
 	
 	isInsideDraw = false;
 
@@ -109,12 +88,6 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
 #if defined (__DAVAENGINE_OPENGL__)
     bufferBindingId[0] = 0;
     bufferBindingId[1] = 0;
-    
-	for(uint32 i  = 0; i < Texture::TEXTURE_TYPE_COUNT; ++i)
-	{
-		lastBindedTexture[i] = 0;
-	}
-	lastBindedTextureType = Texture::TEXTURE_2D;
 	
     lastBindedFBO = 0;
 	
@@ -128,11 +101,6 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
     
     statsFrameCountToShowDebug = 0;
     frameToShowDebugStats = -1;
-    
-    FLAT_COLOR = 0;
-    TEXTURE_MUL_FLAT_COLOR = 0;
-    TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = 0;
-    TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = 0;
 	
 	renderContextId = 0;
     
@@ -148,8 +116,6 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
     SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     SetDynamicParam(PARAM_VIEW, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     SetDynamicParam(PARAM_PROJ, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
-    
-    GetOptions()->SetOption(RenderOptions::LAYER_OCCLUSION_STATS, false);
 }
 	
 RenderManager::~RenderManager()
@@ -157,9 +123,6 @@ RenderManager::~RenderManager()
     ShaderCache::Instance()->Release();
     
     currentRenderData = 0;
-    SafeRelease(FLAT_COLOR);
-    SafeRelease(TEXTURE_MUL_FLAT_COLOR);
-    SafeRelease(TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST);
 	SafeRelease(cursor);
 	Logger::FrameworkDebug("[RenderManager] released");
 }
@@ -200,38 +163,9 @@ void RenderManager::InitFBSize(int32 _frameBufferWidth, int32 _frameBufferHeight
 }
 #endif //    #ifdef __DAVAENGINE_ANDROID__    
 
-FastName RenderManager::FLAT_COLOR_SHADER("~res:/Shaders/renderer2dColor");
-FastName RenderManager::TEXTURE_MUL_FLAT_COLOR_SHADER("~res:/Shaders/renderer2dTexture");
-
-
 void RenderManager::Init(int32 _frameBufferWidth, int32 _frameBufferHeight)
 {
     DetectRenderingCapabilities();
-    
-    
-    if (!FLAT_COLOR)
-    {
-        FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(FLAT_COLOR_SHADER, FastNameSet()));
-    }
-    
-    if (!TEXTURE_MUL_FLAT_COLOR)
-    {
-        TEXTURE_MUL_FLAT_COLOR = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, FastNameSet()));
-
-    }
-    if (!TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST)
-    {
-        FastNameSet set;
-        set.Insert(FastName("ALPHA_TEST_ENABLED"));
-        TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
-    }
-    
-    if(!TEXTURE_MUL_FLAT_COLOR_IMAGE_A8)
-    {
-        FastNameSet set;
-        set.Insert(FastName("IMAGE_A8"));
-        TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = SafeRetain(ShaderCache::Instance()->Get(TEXTURE_MUL_FLAT_COLOR_SHADER, set));
-    }
 
 #if defined(__DAVAENGINE_DIRECTX9__)
 	currentState.direct3DDevice = GetD3DDevice();
@@ -266,39 +200,8 @@ void RenderManager::Init(int32 _frameBufferWidth, int32 _frameBufferHeight)
 void RenderManager::Reset()
 {
 	ResetColor();
-
-	currentRenderTarget = NULL;
-
-	currentClip.x = 0;
-	currentClip.y = 0;
-	currentClip.dx = -1;
-	currentClip.dy = -1;
-	
-//	for (uint32 idx = 0; idx < MAX_TEXTURE_LEVELS; ++idx)
-//        currentTexture[idx] = 0;
-
-	userDrawOffset = Vector2(0, 0);
-	userDrawScale = Vector2(1, 1);
-	
-	currentDrawOffset = Vector2(0, 0);
-	currentDrawScale = Vector2(1, 1);
-    mappingMatrixChanged = true;
-	//currentState.Reset(false);
-//	glLoadIdentity();
-}
-
-int32 RenderManager::GetRenderOrientation()
-{
-	return renderOrientation;
-}
-	
-int32 RenderManager::GetScreenWidth()
-{
-	return retScreenWidth;	
-}
-int32 RenderManager::GetScreenHeight()
-{
-	return retScreenHeight;
+    
+    lastBindedFBO = fboViewFramebuffer;
 }
 
 void RenderManager::SetColor(float32 r, float32 g, float32 b, float32 a)
@@ -340,17 +243,6 @@ void RenderManager::ResetColor()
 {
 	currentState.ResetColor();
 }
-	
-/*void RenderManager::SetTexture(Texture *texture, uint32 textureLevel)
-{	
-    currentState.SetTexture(texture, textureLevel);
-}
-	
-Texture *RenderManager::GetTexture(uint32 textureLevel)
-{
-    DVASSERT(textureLevel < RenderState::MAX_TEXTURE_LEVELS);
-	return currentState.currentTexture[textureLevel];	
-}*/
     
 void RenderManager::SetShader(Shader * _shader)
 {
@@ -369,107 +261,17 @@ void RenderManager::SetRenderData(RenderDataObject * object)
 {
     currentRenderData = object;
 }
-		
-void RenderManager::SetClip(const Rect &rect)
-{
-	SetHWClip(rect);
-}
-	
-void RenderManager::RemoveClip()
-{
-	SetHWClip(Rect(0,0,-1,-1));
-}
 
-void RenderManager::ClipRect(const Rect &rect)
-{
-	Rect r = currentClip;
-	if(r.dx < 0)
-	{
-		r.dx = (float32)retScreenWidth * Core::GetPhysicalToVirtualFactor();
-	}
-	if(r.dy < 0)
-	{
-		r.dy = (float32)retScreenHeight * Core::GetPhysicalToVirtualFactor();
-	}
-	
-	r = r.Intersection(rect);
-	SetHWClip(r);
-}
-
-void RenderManager::ClipPush()
-{
-	clipStack.push(currentClip);
-}
-
-void RenderManager::ClipPop()
-{
-	if(clipStack.empty())
-	{
-		Rect r(0, 0, -1, -1);
-		SetClip(r);
-	}
-	else
-	{
-		Rect r = clipStack.top();
-		SetClip(r);
-	}
-	clipStack.pop();
-}
-	
 void RenderManager::InitFBO(GLuint _viewRenderbuffer, GLuint _viewFramebuffer)
 {
 	fboViewRenderbuffer = _viewRenderbuffer;
 	fboViewFramebuffer = _viewFramebuffer;
 }
 
-void RenderManager::SetRenderTarget(Sprite *renderTarget)
+Size2i RenderManager::GetFramebufferSize()
 {
-//	Logger::Info("Set Render target");
-	RenderTarget rt;
-	rt.spr = currentRenderTarget;
-	rt.orientation = renderOrientation;
-	renderTargetStack.push(rt);
-		
-	ClipPush();
-	PushDrawMatrix();
-	PushMappingMatrix();
-	IdentityDrawMatrix();
-	SetHWRenderTargetSprite(renderTarget);
+    return Size2i(frameBufferWidth, frameBufferHeight);
 }
-
-void RenderManager::SetRenderTarget(Texture * renderTarget)
-{
-	SetHWRenderTargetTexture(renderTarget);
-}
-
-void RenderManager::RestoreRenderTarget()
-{
-//	Logger::Info("Restore Render target");
-	RenderTarget rt = renderTargetStack.top();
-	renderTargetStack.pop();
-	SetHWRenderTargetSprite(rt.spr);
-
-	PopDrawMatrix();
-	PopMappingMatrix();
-	ClipPop();
-}
-
-bool RenderManager::IsRenderTarget()
-{
-	return currentRenderTarget != NULL;
-}
-    
-/*
-bool RenderManager::IsDepthTestEnabled()
-{
-    return (hardwareState.state & RenderStateBlock::STATE_DEPTH_TEST) != 0;
-}
-
-bool RenderManager::IsDepthWriteEnabled()
-{
-    return (depthWriteEnabled & RenderStateBlock::STATE_DEPTH_WRITE) != 0;
-}
-*/
 
 void RenderManager::SetRenderEffect(Shader * renderEffect)
 {
@@ -529,130 +331,6 @@ int32 RenderManager::GetFPS()
 {
 	return fps;
 }
-	
-	
-void RenderManager::SetDrawTranslate(const Vector2 &offset)
-{
-    mappingMatrixChanged = true;
-	userDrawOffset.x += offset.x * userDrawScale.x;
-	userDrawOffset.y += offset.y * userDrawScale.y;
-}
-
-void RenderManager::SetDrawTranslate(const Vector3 &offset)
-{
-    mappingMatrixChanged = true;
-    userDrawOffset.x += offset.x * userDrawScale.x;
-    userDrawOffset.y += offset.y * userDrawScale.y;
-}
-
-const Vector2& RenderManager::GetDrawTranslate() const
-{
-    return userDrawOffset;
-}
-
-void RenderManager::SetDrawScale(const Vector2 &scale)
-{
-    mappingMatrixChanged = true;
-	userDrawScale.x *= scale.x;
-	userDrawScale.y *= scale.y;
-}
-
-const Vector2& RenderManager::GetDrawScale() const
-{
-    return userDrawScale;
-}
-	
-void RenderManager::IdentityDrawMatrix()
-{
-    mappingMatrixChanged = true;
-	userDrawScale.x = 1.0f;
-	userDrawScale.y = 1.0f;
-
-	userDrawOffset.x = 0.0f;
-	userDrawOffset.y = 0.0f;
-}
-
-void RenderManager::IdentityMappingMatrix()
-{
-    mappingMatrixChanged = true;
-	viewMappingDrawOffset = Vector2(0.0f, 0.0f);
-	viewMappingDrawScale = Vector2(1.0f, 1.0f);
-}
-	
-void RenderManager::IdentityModelMatrix()
-{
-    mappingMatrixChanged = true;
-    currentDrawOffset = Vector2(0.0f, 0.0f);
-    currentDrawScale = Vector2(1.0f, 1.0f);
-
-    renderer2d.viewMatrix = Matrix4::IDENTITY;
-}
-    
-	
-	
-void RenderManager::SetPhysicalViewScale()
-{
-    mappingMatrixChanged = true;
-	viewMappingDrawScale.x = 1.0f;
-	viewMappingDrawScale.y = 1.0f;
-}
-
-void RenderManager::SetPhysicalViewOffset()
-{
-    mappingMatrixChanged = true;
-	viewMappingDrawOffset = Core::Instance()->GetPhysicalDrawOffset();
-}
-
-void RenderManager::SetVirtualViewScale()
-{
-    mappingMatrixChanged = true;
-	viewMappingDrawScale.x = Core::GetVirtualToPhysicalFactor();
-	viewMappingDrawScale.y = Core::GetVirtualToPhysicalFactor();
-}
-
-void RenderManager::SetVirtualViewOffset()
-{
-    mappingMatrixChanged = true;
-	viewMappingDrawOffset.x -= Core::Instance()->GetVirtualScreenXMin() * viewMappingDrawScale.x;
-	viewMappingDrawOffset.y -= Core::Instance()->GetVirtualScreenYMin() * viewMappingDrawScale.y;
-}
-	
-void RenderManager::PushDrawMatrix()
-{
-	DrawMatrix dm;
-	dm.userDrawOffset = userDrawOffset;
-	dm.userDrawScale = userDrawScale;
-	matrixStack.push(dm);
-}
-
-void RenderManager::PopDrawMatrix()
-{
-	IdentityDrawMatrix();
-	DrawMatrix dm = matrixStack.top();
-	matrixStack.pop();
-	userDrawOffset = dm.userDrawOffset;
-	userDrawScale = dm.userDrawScale;
-	PrepareRealMatrix();
-}
-	
-void RenderManager::PushMappingMatrix()
-{
-	DrawMatrix dm;
-	dm.userDrawOffset = viewMappingDrawOffset;
-	dm.userDrawScale = viewMappingDrawScale;
-	mappingMatrixStack.push(dm);
-}
-
-void RenderManager::PopMappingMatrix()
-{
-	IdentityMappingMatrix();
-	DrawMatrix dm = mappingMatrixStack.top();
-	mappingMatrixStack.pop();
-	viewMappingDrawOffset = dm.userDrawOffset;
-	viewMappingDrawScale = dm.userDrawScale;
-    DVASSERT(mappingMatrixChanged == true);
-	PrepareRealMatrix();
-}
 
 void RenderManager::SetCursor(Cursor * _cursor)
 {
@@ -682,50 +360,6 @@ void RenderManager::ClearStats()
 {
     stats.Clear();
 }
-    
-void RenderManager::RectFromRenderOrientationToViewport(Rect & rect)
-{
-
-}
-
-//const Matrix4 & RenderManager::GetMatrix(eMatrixType type)
-//{
-//    return matrices[type];
-//}
-
-//const Matrix3 & RenderManager::GetNormalMatrix()
-//{
-//    if (uniformMatrixFlags[UNIFORM_MATRIX_NORMAL] == 0)
-//    {
-//        //GetUniformMatrix(UNIFORM_MATRIX_MODELVIEWPROJECTION);
-//        const Matrix4 & modelViewMatrix = GetMatrix(MATRIX_MODELVIEW);
-//        
-//        modelViewMatrix.GetInverse(uniformMatrices[UNIFORM_MATRIX_NORMAL]);
-//        uniformMatrices[UNIFORM_MATRIX_NORMAL].Transpose();
-//        uniformMatrixNormal = uniformMatrices[UNIFORM_MATRIX_NORMAL];
-//        uniformMatrixFlags[UNIFORM_MATRIX_NORMAL] = 1; // matrix is ready
-//    }
-//    return uniformMatrixNormal;
-//}
-
-//const Matrix4 & RenderManager::GetUniformMatrix(eUniformMatrixType type)
-//{
-//    if (uniformMatrixFlags[type] == 0)
-//    {
-//        if (type == UNIFORM_MATRIX_MODELVIEWPROJECTION)
-//        {
-//            uniformMatrices[type] =  matrices[MATRIX_MODELVIEW] * matrices[MATRIX_PROJECTION];
-//        }
-//        uniformMatrixFlags[type] = 1; // matrix is ready
-//    }
-//    return uniformMatrices[type];
-//}
-//    
-//void RenderManager::ClearUniformMatrices()
-//{
-//    for (int32 k = 0; k < UNIFORM_MATRIX_COUNT; ++k)
-//        uniformMatrixFlags[k] = 0;
-//}
     
 void RenderManager::Stats::Clear()
 {
@@ -766,6 +400,7 @@ void RenderManager::ProcessStats()
         Logger::FrameworkDebug("== Frame stats: DrawArraysCount: %d DrawElementCount: %d ==", stats.drawArraysCalls, stats.drawElementsCalls);
         for (int32 k = 0; k < PRIMITIVETYPE_COUNT; ++k)
             Logger::FrameworkDebug("== Primitive Stats: %d ==", stats.primitiveCount[k]);
+        Logger::FrameworkDebug("== SpriteDrawCount: %d  ==", stats.spriteDrawCount);
     }
 }
     
@@ -829,19 +464,4 @@ void RenderManager::VerifyRenderContext()
 #endif
 }
     
-    
-void RenderManager::Setup2DMatrices()
-{
-    Matrix4 glTranslate, glScale;
-    glTranslate.glTranslate(currentDrawOffset.x, currentDrawOffset.y, 0.0f);
-    glScale.glScale(currentDrawScale.x, currentDrawScale.y, 1.0f);
-    renderer2d.viewMatrix = glScale * glTranslate;
-    
-    RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, UPDATE_SEMANTIC_ALWAYS);
-    RenderManager::SetDynamicParam(PARAM_VIEW, &renderer2d.viewMatrix, UPDATE_SEMANTIC_ALWAYS);
-    RenderManager::SetDynamicParam(PARAM_PROJ, &renderer2d.projMatrix, UPDATE_SEMANTIC_ALWAYS);
-}
-    
-
-	
 };

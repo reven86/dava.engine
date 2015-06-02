@@ -48,14 +48,13 @@ public:
 	static GraphicsFont * Create(const FilePath & fontDefName, const FilePath & spriteName);
 	
 	virtual void	SetSize(float32 size);
-    virtual void    SetRenderSize(float32 renderSize);
-	virtual Size2i	GetStringSize(const WideString & str, Vector<float32> *charSizes = NULL) const;
+	virtual StringMetrics GetStringMetrics(const WideString & str, Vector<float32> *charSizes = NULL) const;
 	virtual bool	IsCharAvaliable(char16 ch) const;
 	virtual uint32	GetFontHeight() const;
     virtual int32   GetHorizontalSpacing() const;
 	
 	virtual bool	IsTextSupportsHardwareRendering() const;
-	virtual Size2i	DrawString(float32 x, float32 y, const WideString & string, int32 justifyWidth = 0, int32 spaceAddon = 0, Vector<float32> *charSizes = NULL, bool draw = true) const;
+	virtual StringMetrics DrawString(float32 x, float32 y, const WideString & string, int32 justifyWidth = 0, int32 spaceAddon = 0, Vector<float32> *charSizes = NULL, bool draw = true) const;
 	
     virtual void    SetHorizontalSpacing(int32 horizontalSpacing);
     

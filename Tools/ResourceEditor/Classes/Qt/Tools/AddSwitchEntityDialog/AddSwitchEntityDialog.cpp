@@ -131,12 +131,20 @@ void AddSwitchEntityDialog::accept()
 	DAVA::uint32 switchCount = (DAVA::uint32)vector.size(); 
 	for(DAVA::uint32 i = 0; i < switchCount; ++i)
 	{
-		if(creator.CountSwitchComponentsRecursive(vector[i]) > 0)
+		if(creator.HasSwitchComponentsRecursive(vector[i]))
 		{
 			canCreateSwitch = false;
 			Logger::Error("Can't create switch in switch: %s", vector[i]->GetName().c_str());
-			break;
+            ShowErrorDialog(ResourceEditor::ADD_SWITCH_NODE_DIALOG_DENY_SRC_SWITCH);
+			return;
 		}
+        if(!creator.HasRenderObjectsRecursive(vector[i]))
+        {
+            canCreateSwitch = false;
+            Logger::Error("Entity '%s' hasn't mesh render objects", vector[i]->GetName().c_str());
+            ShowErrorDialog(ResourceEditor::ADD_SWITCH_NODE_DIALOG_NO_RENDER_OBJECTS);
+            return;
+        }
 	}
 
 	if(canCreateSwitch)
@@ -158,11 +166,7 @@ void AddSwitchEntityDialog::accept()
 			vector[i]->Release();
 		}
 
-		scene->selectionSystem->SetSelection(switchEntity);
-
 		scene->EndBatch();
-
-		scene->selectionSystem->SetSelection(switchEntity);
 		SafeRelease(switchEntity);
 	}
 	

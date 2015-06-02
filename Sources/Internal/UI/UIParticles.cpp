@@ -29,48 +29,56 @@
 
 
 #include "UI/UIParticles.h"
-#include "Render/RenderManager.h"
-#include "Render/RenderHelper.h"
-#include "Core/Core.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Components/ParticleEffectComponent.h"
+#include "Scene3D/Systems/ParticleEffectSystem.h"
 
 namespace DAVA {
 
 /* this camera is required just for preparing draw data*/
-UIParticles::ParticleCameraWrap UIParticles::defaultCamera;
-UIParticles::ParticleCameraWrap::ParticleCameraWrap():camera(new Camera())
-{
-    camera->SetPosition(Vector3(0,0,-1));
-    camera->SetUp(Vector3(0,-1,0));    
-    camera->RebuildCameraFromValues();
-    camera->RebuildViewMatrix();
+Camera *UIParticles::defaultCamera = nullptr;
 
-}
-UIParticles::ParticleCameraWrap::~ParticleCameraWrap()
-{
-    SafeRelease(camera);
-}
-
-UIParticles::UIParticles(const Rect &rect, bool rectInAbsoluteCoordinates)
-    :   UIControl(rect, rectInAbsoluteCoordinates)    
-    , effect(NULL)
-    , system(new ParticleEffectSystem(NULL, true))
-    , updateTime(0)
+UIParticles::UIParticles(const Rect &rect)
+    : UIControl(rect)
     , isAutostart(false)
     , startDelay(0.0f)
+    , effect(nullptr)
+    , system(new ParticleEffectSystem(nullptr, true))
+    , updateTime(0)
     , delayedActionType(UIParticles::actionNone)
     , delayedActionTime(0.0f)
     , delayedDeleteAllParticles(false)
+    , needHandleAutoStart(false)
 {
-    matrix.Identity();    
+    if (defaultCamera != nullptr)
+    {
+        defaultCamera->Retain();
+    }
+    else
+    {
+        defaultCamera = new Camera();
+        defaultCamera->SetPosition(-Vector3::UnitZ);
+        defaultCamera->SetUp(-Vector3::UnitY);
+        defaultCamera->RebuildCameraFromValues();
+        defaultCamera->RebuildViewMatrix(); 
+    }
 }
 
 UIParticles::~UIParticles()
-{    
-    if (effect&&effect->state!=ParticleEffectComponent::STATE_STOPPED)
-        system->RemoveFromActive(effect);
+{
+    UnloadEffect();
     SafeDelete(system);
-    SafeDelete(effect);
+
+    if (defaultCamera->GetRetainCount() != 1)
+    {
+        defaultCamera->Release();
+    }
+    else
+    {
+        SafeRelease(defaultCamera);
+    }
 }
 
 void UIParticles::WillAppear()
@@ -98,7 +106,7 @@ void UIParticles::DoStart()
         return;
     }
 
-    updateTime = 0;
+    updateTime = 0.0f;
 
     if (effect->state == ParticleEffectComponent::STATE_STARTING ||
         effect->state == ParticleEffectComponent::STATE_PLAYING)
@@ -108,7 +116,7 @@ void UIParticles::DoStart()
 
     effect->isPaused = false;
     system->AddToActive(effect);
-    effect->effectRenderObject->SetEffectMatrix(&matrix);
+    effect->effectRenderObject->SetWorldTransformPtr(&matrix);
     system->RunEffect(effect);
 }
 
@@ -119,10 +127,11 @@ void UIParticles::Stop(bool isDeleteAllParticles)
         return;
     }
 
-    updateTime = 0;
-    
-    if (effect->state == ParticleEffectComponent::STATE_STOPPED) return;
-    
+    updateTime = 0.0f;
+
+    if (effect->state == ParticleEffectComponent::STATE_STOPPED)
+        return;
+
     if (isDeleteAllParticles)
     {
         effect->ClearCurrentGroups();		
@@ -146,7 +155,7 @@ void UIParticles::Pause(bool isPaused /*= true*/)
     effect->isPaused = isPaused;
 }
 
-bool UIParticles::IsStopped()
+bool UIParticles::IsStopped() const
 {
     if (!effect)
     {
@@ -156,7 +165,7 @@ bool UIParticles::IsStopped()
     return effect->state == ParticleEffectComponent::STATE_STOPPED;
 }
 
-bool UIParticles::IsPaused()
+bool UIParticles::IsPaused() const
 {
     if (!effect)
     {
@@ -179,7 +188,7 @@ void UIParticles::Restart(bool isDeleteAllParticles)
         delayedActionTime = 0.0f;
     }
 }
-    
+
 void UIParticles::DoRestart()
 {
     if (!effect)
@@ -197,15 +206,15 @@ void UIParticles::DoRestart()
     system->RunEffect(effect);
 }
 
-void UIParticles::AddControl(UIControl *control)
-{
-    DVASSERT(0 && "UIParticles do not support children");
-}
-
-    
 void UIParticles::Update(float32 timeElapsed)
 {
-    updateTime = timeElapsed;        
+    updateTime = timeElapsed;
+    if (needHandleAutoStart)
+    {
+        needHandleAutoStart = false;
+        HandleAutostart();
+    }
+
     if (delayedActionType != UIParticles::actionNone)
     {
         HandleDelayedAction(timeElapsed);
@@ -214,58 +223,76 @@ void UIParticles::Update(float32 timeElapsed)
 
 void UIParticles::Draw(const UIGeometricData & geometricData)
 {
-    if ((!effect)||(effect->state == ParticleEffectComponent::STATE_STOPPED)) 
+    if ( !effect || effect->state == ParticleEffectComponent::STATE_STOPPED)
         return;
 
-    matrix.CreateRotation(Vector3(0,0,1), -geometricData.angle);
+    RenderSystem2D::Instance()->Flush();
+
+    matrix.CreateRotation(Vector3::UnitZ, -geometricData.angle);
     matrix.SetTranslationVector(Vector3(geometricData.position.x, geometricData.position.y, 0));
+    effect->SetExtertnalValue("scale", geometricData.scale.x);
     system->Process(updateTime);
-    updateTime = 0;    		        
+    updateTime = 0.0f;
     
-    effect->effectRenderObject->PrepareToRender(defaultCamera.camera);
+    RenderSystem2D::Instance()->UpdateClip();
+
+    effect->effectRenderObject->PrepareToRender(defaultCamera);
     for (int32 i=0, sz = effect->effectRenderObject->GetActiveRenderBatchCount(); i<sz; ++i)
-        effect->effectRenderObject->GetActiveRenderBatch(i)->Draw(PASS_FORWARD, defaultCamera.camera);
+        effect->effectRenderObject->GetActiveRenderBatch(i)->Draw(PASS_FORWARD, defaultCamera);
 }
 
-void UIParticles::Load(const FilePath& path)
+void UIParticles::SetExtertnalValue(const String& name, float32 value)
 {
-    SceneFileV2 *sceneFile = new SceneFileV2();
+    if (effect != nullptr)
+        effect->SetExtertnalValue(name, value);
+}
+
+void UIParticles::LoadEffect(const FilePath& path)
+{
+    ScopedPtr<SceneFileV2> sceneFile(new SceneFileV2());
     sceneFile->EnableDebugLog(false);
-    SceneArchive *archive = sceneFile->LoadSceneArchive(path);    
-    SafeRelease(sceneFile);
-    if (archive && archive->children.size()>0)
+
+    ScopedPtr<SceneArchive> archive(sceneFile->LoadSceneArchive(path));
+    ParticleEffectComponent *newEffect = nullptr;
+    if ((SceneArchive *)archive != nullptr && !archive->children.empty())
     {
-        Entity *e = new Entity();
+        ScopedPtr<Entity> entity(new Entity());
         SerializationContext serializationContext;
         serializationContext.SetRootNodePath(path);
         serializationContext.SetScenePath(FilePath(path.GetDirectory()));
         serializationContext.SetVersion(10);
-        serializationContext.SetScene(NULL);
+        serializationContext.SetScene(nullptr);
         serializationContext.SetDefaultMaterialQuality(NMaterial::DEFAULT_QUALITY_NAME);
-        e->Load(archive->children[0]->archive, &serializationContext);
-        ParticleEffectComponent *effSrc = GetEffectComponent(e);
+        entity->Load(archive->children[0]->archive, &serializationContext);
+        ParticleEffectComponent *effSrc = GetEffectComponent(entity);
         if (effSrc)
-            effect = (ParticleEffectComponent*)effSrc->Clone(NULL);
-        SafeRelease(e);
+        {
+            newEffect = (ParticleEffectComponent*)effSrc->Clone(NULL);
+        }
     }
 
-    SafeRelease(archive);
-
-    if (effect)
+    if (newEffect)
     {
-        effect->effectRenderObject->SetEffectMatrix(&matrix);
+        DVASSERT(!effect);
+        effect = newEffect;
+        effect->effectRenderObject->SetWorldTransformPtr(&matrix);
         effect->effectRenderObject->Set2DMode(true);
-        effectPath = path;
-        
-        HandleAutostart();
-    }
-    else
-    {
-        effectPath = path;
+        needHandleAutoStart = true;
     }
 }
 
-void UIParticles::Reload()
+void UIParticles::UnloadEffect()
+{
+    if (!effect)
+        return;
+
+    if (effect->state != ParticleEffectComponent::STATE_STOPPED)
+        system->RemoveFromActive(effect);
+
+    SafeDelete(effect);
+}
+
+void UIParticles::ReloadEffect()
 {
     if (effectPath.IsEmpty())
     {
@@ -273,7 +300,15 @@ void UIParticles::Reload()
         return;
     }
 
-    Load(effectPath);
+    UnloadEffect();
+    LoadEffect(effectPath);
+}
+    
+void UIParticles::SetEffectPath(const FilePath& path)
+{
+    effectPath = path;
+    UnloadEffect();
+    LoadEffect(effectPath);
 }
 
 const FilePath& UIParticles::GetEffectPath() const
@@ -284,7 +319,7 @@ const FilePath& UIParticles::GetEffectPath() const
 void UIParticles::SetAutostart(bool value)
 {
     isAutostart = value;
-    HandleAutostart();
+    needHandleAutoStart = true;
 }
 
 bool UIParticles::IsAutostart() const
@@ -294,7 +329,7 @@ bool UIParticles::IsAutostart() const
    
 YamlNode * UIParticles::SaveToYamlNode(UIYamlLoader * loader)
 {
-    UIParticles* baseControl = new UIParticles();
+    ScopedPtr<UIParticles> baseControl(new UIParticles());
 
     YamlNode *node = UIControl::SaveToYamlNode(loader);
     
@@ -316,7 +351,7 @@ YamlNode * UIParticles::SaveToYamlNode(UIYamlLoader * loader)
     return node;
 }
 
-UIControl* UIParticles::Clone()
+UIParticles* UIParticles::Clone()
 {
     UIParticles *particles = new UIParticles(GetRect());
     particles->CopyDataFrom(this);
@@ -326,15 +361,11 @@ UIControl* UIParticles::Clone()
 void UIParticles::CopyDataFrom(UIControl *srcControl)
 {
     UIControl::CopyDataFrom(srcControl);
-    UIParticles* particles = (UIParticles*) srcControl;
+    UIParticles* src = (UIParticles*) srcControl;
 
-    SetStartDelay(particles->GetStartDelay());
-    SetAutostart(particles->IsAutostart());
-
-    if (!particles->effectPath.IsEmpty())
-    {
-        Load(particles->effectPath);
-    }
+    SetEffectPath(src->GetEffectPath());
+    SetStartDelay(src->GetStartDelay());
+    SetAutostart(src->IsAutostart());
 }
 
 void UIParticles::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
@@ -347,7 +378,7 @@ void UIParticles::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 
     if (effectPathNode)
     {
-        Load(effectPathNode->AsString());
+        SetEffectPath(effectPathNode->AsString());
     }
 
     if (startDelayNode)
@@ -381,31 +412,34 @@ void UIParticles::SetStartDelay(float32 value)
     
 void UIParticles::HandleDelayedAction(float32 timeElapsed)
 {
-    delayedActionTime += timeElapsed;
-    if (delayedActionTime >= startDelay)
+    if(IsOnScreen())
     {
-        switch (delayedActionType)
+        delayedActionTime += timeElapsed;
+        if (delayedActionTime >= startDelay)
         {
-            case UIParticles::actionStart:
+            switch (delayedActionType)
             {
-                DoStart();
-                break;
+                case UIParticles::actionStart:
+                {
+                    DoStart();
+                    break;
+                }
+
+                case UIParticles::actionRestart:
+                {
+                    DoRestart();
+                    break;
+                }
+
+                default:
+                {
+                    break;
+                }
             }
 
-            case UIParticles::actionRestart:
-            {
-                DoRestart();
-                break;
-            }
-
-            default:
-            {
-                break;
-            }
+            delayedActionType = UIParticles::actionNone;
+            delayedActionTime = 0.0f;
         }
-
-        delayedActionType = UIParticles::actionNone;
-        delayedActionTime = 0.0f;
     }
 }
 

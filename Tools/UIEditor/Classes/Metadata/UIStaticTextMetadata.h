@@ -41,10 +41,7 @@ namespace DAVA {
 class UIStaticTextMetadata : public UITextControlMetadata
 {
     Q_OBJECT
-	// Text properties
-    Q_PROPERTY(bool Multiline READ GetMultiline WRITE SetMultiline);
-    Q_PROPERTY(bool MultilineBySymbol READ GetMultilineBySymbol WRITE SetMultilineBySymbol);
-
+	
 public:
     UIStaticTextMetadata(QObject* parent = 0);
 
@@ -64,13 +61,16 @@ protected:
     UIStaticText* GetActiveStaticText() const;
     
     // Getters/setters.
-	virtual int GetAlign();
+	virtual int GetAlign() const;
     virtual void SetAlign(int value);
 
-	virtual int GetTextAlign();
+	virtual int GetTextAlign() const;
     virtual void SetTextAlign(int value);
+	
+	virtual bool GetTextUseRtlAlign();
+	virtual void SetTextUseRtlAlign(bool value);
 
-    virtual Font * GetFont();
+    virtual Font * GetFont() const;
     virtual void SetFont(Font* font);
     
     virtual float GetFontSize() const;
@@ -88,17 +88,38 @@ protected:
 	virtual QColor GetShadowColor() const;
 	virtual void SetShadowColor(const QColor& value);
 
-	virtual bool GetMultiline() const;
-	virtual void SetMultiline(const bool value);
+	virtual bool GetTextMultiline() const;
+	virtual void SetTextMultiline(bool value);
 
-	virtual bool GetMultilineBySymbol() const;
-	virtual void SetMultilineBySymbol(const bool value);
+	virtual bool GetTextMultilineBySymbol() const;
+	virtual void SetTextMultilineBySymbol(bool value);
     
     virtual int GetFittingType() const;
     virtual void SetFittingType(int value);
     
-    virtual int GetFontShadowColorInheritType() const;
-    virtual void SetFontShadowColorInheritType(int value);
+    virtual int GetTextColorInheritType() const;
+    virtual void SetTextColorInheritType(int value);
+
+    virtual int GetTextPerPixelAccuracyType() const;
+    virtual void SetTextPerPixelAccuracyType(int value);
+
+    // Text margins.
+    virtual QRectF GetTextMargins() const;
+    virtual void SetTextMargins(const QRectF& value);
+    
+    virtual float GetTextLeftMargin() const;
+    virtual void SetTextLeftMargin(float value);
+
+    virtual float GetTextTopMargin() const;
+    virtual void SetTextTopMargin(float value);
+    
+    virtual float GetTextRightMargin() const;
+    virtual void SetTextRightMargin(float value);
+    
+    virtual float GetTextBottomMargin() const;
+    virtual void SetTextBottomMargin(float value);
+
+    virtual UIControlBackground::UIMargins GetTextMarginsToUpdate(UIControl::eControlState state = UIControl::STATE_NORMAL) const;
 };
 
 };

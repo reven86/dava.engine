@@ -31,19 +31,34 @@
 #define __DAVAENGINE_TEMPLATEHELPERS_H__
 
 #include <typeinfo>
+#include "NullType.h"
+#include "TypeList.h"
+#include <type_traits>
+#include <utility>
 
 namespace DAVA
 {
 
-// Alexandresky style compile time assertion. 
+// Alexandresky style compile time assertion.
 template <bool>
 struct CompileTimeError;
-
+    
 template <>
-struct CompileTimeError<true> 
+struct CompileTimeError<true>
 {};
-
+    
 #define COMPILER_ASSERT(expr) DAVA::CompileTimeError<(expr)>();
+
+// Template for intergal constant types
+template<typename T, T Value>
+struct IntegralConstant
+{
+    static const T value = Value;
+};
+
+// Specializations for boolean constants
+typedef IntegralConstant<bool, false>   FalseType;
+typedef IntegralConstant<bool, true>    TrueType;
 
 template<bool C, typename T = void>
 struct EnableIf
@@ -77,6 +92,95 @@ struct Select<false, T, U>
 {
     typedef U Result;
 };
+
+template <bool, unsigned int index_A, unsigned int index_B>
+struct SelectIndex
+{
+	enum { result = index_A };
+};
+
+template <unsigned int index_A, unsigned int index_B>
+struct SelectIndex<false, index_A, index_B>
+{
+	enum { result = index_B };
+};
+    
+template<typename U>
+struct PointerTraits
+{
+	enum{ result = false };
+	typedef NullType PointerType;
+};
+template <typename U>
+struct PointerTraits<U*>
+{
+	enum{ result = true };
+	typedef U PointerType;
+};
+    
+template<typename U>
+struct ReferenceTraits
+{
+	enum{ result = false };
+	typedef NullType ReferenceType;
+};
+template <typename U>
+struct ReferenceTraits<U&>
+{
+	enum{ result = true };
+	typedef U ReferenceType;
+};
+    
+template<class U>
+struct P2MTraits
+{
+	enum{ result = false };
+};
+template <class R, class V>
+struct P2MTraits<R V::*>
+{
+	enum{ result = true };
+};
+
+template<typename T1, typename T2>
+struct IsSame
+{
+    enum{ result = false };
+};
+
+template<typename T>
+struct IsSame<T, T>
+{
+    enum{ result = true };
+};
+
+namespace TemplateHelper
+{
+    typedef DAVA_TYPELIST_5(unsigned char, unsigned short int, unsigned int, unsigned long int, unsigned long long) StdUnsignedInts;
+    typedef DAVA_TYPELIST_5(signed char, short int, int, long int, long long) StdSignedInts;
+    typedef DAVA_TYPELIST_3(bool, char, wchar_t) StdOtherInts;
+    typedef DAVA_TYPELIST_3(float, double, long double) StdFloats;
+};
+    
+template <typename T>
+class TypeTraits
+{
+public:
+    enum { isStdUnsignedInt = (TL::IndexOf<TemplateHelper::StdUnsignedInts, T>::value >= 0) };
+    enum { isStdSignedInt   = (TL::IndexOf<TemplateHelper::StdSignedInts, T>::value >= 0) };
+    enum { isStdIntegral    = (isStdUnsignedInt || isStdSignedInt || TL::IndexOf<TemplateHelper::StdOtherInts, T>::value >= 0) };
+    enum { isStdFloat       = (TL::IndexOf<TemplateHelper::StdFloats, T>::value >= 0) };
+    enum { isStdArith       = isStdIntegral || isStdFloat };
+    enum { isStdFundamental = isStdArith || isStdFloat || IsSame<T, void>::result };
+
+	enum { isPointer = PointerTraits<T>::result };
+	enum { isReference = ReferenceTraits<T>::result };
+	enum { isPointerToMemberFunction = P2MTraits<T>::result };
+        
+	typedef typename Select<isPointer || isReference, T, const T&>::Result ParamType;
+	typedef typename Select<isReference, typename ReferenceTraits<T>::ReferenceType, T>::Result NonRefType;
+};
+    
     
 template <class TO, class FROM>
 class Conversion
@@ -100,7 +204,27 @@ public:
     {
         sameType = false
     };
-};   
+};
+
+template<bool>
+struct IsEnumImpl
+{ };
+
+template<>
+struct IsEnumImpl<true>
+{
+	enum { result = true };
+};
+
+template<>
+struct IsEnumImpl<false>
+{
+	enum { result = false };
+};
+
+template <class T>
+struct IsEnum : public IsEnumImpl<__is_enum(T)>
+{ };
     
 template <class T>
 class Conversion<T, T>
@@ -111,251 +235,104 @@ public:
 };
     
 #define SUPERSUBCLASS(SUPER, SUB) (Conversion<const SUB*, const SUPER*>::exists && !Conversion<const SUPER*, const void*>::sameType) 
+  
 
-class NullType{};
-
-template<typename U>
-struct IsNullType
+/**
+    \brief Works like dynamic_cast for Debug and like a static_cast for release.
+    */
+template<class C, class O>
+C DynamicTypeCheck(O* pObject)
 {
-	enum{ result = false };
-};
-
-template<>
-struct IsNullType<NullType>
-{
-	enum{ result = true };
-};
-
-struct EmptyType{};
-    
-template<typename U>
-struct PointerTraits
-{
-    enum{result = false };
-    typedef NullType PointerType;
-};
-template <typename U>
-struct PointerTraits<U*>
-{
-    enum{result = true };
-    typedef U PointerType;
-};
-
-template<typename U>
-struct ReferenceTraits
-{
-    enum{result = false };
-	typedef NullType ReferenceType;
-};
-template <typename U>
-struct ReferenceTraits<U&>
-{
-    enum{result = true };
-    typedef U ReferenceType;
-};
-
-template<class U>
-struct P2MTraits
-{
-    enum{result = false };
-};
-template <class R, class V>
-struct P2MTraits<R V::*>
-{
-    enum{result = true };
-};
-
-template <typename T>
-class TypeTraits
-{
-public:    
-    enum {isPointer = PointerTraits<T>::result };    
-    enum {isReference = ReferenceTraits<T>::result };   
-    enum {isPointerToMemberFunction = P2MTraits<T>::result };
-	typedef typename Select<isPointer || isReference, T, const T&>::Result ParamType;
-	typedef typename Select<isReference, typename ReferenceTraits<T>::ReferenceType, T>::Result NonRefType;
-};
-
-// type list
-template <class T, class U>
-struct Typelist
-{
-	typedef T Head;
-	typedef U Tail;
-};
-
-// type list operations
-namespace TL
-{
-	// append type
-	template <class TList, class T>
-	struct Append;
-
-	template <>
-	struct Append<NullType, NullType>
-	{
-		typedef NullType Result;
-	};
-
-	template <class T>
-	struct Append<NullType, T>
-	{
-		typedef Typelist<T, NullType> Result;
-	};
-
-	template <class Head, class Tail>
-	struct Append<NullType, Typelist<Head, Tail> >
-	{
-		typedef Typelist<Head, Tail> Result;
-	};
-
-	template <class Head, class Tail, class T>
-	struct Append<Typelist<Head, Tail>, T>
-	{
-		typedef Typelist<Head, typename Append<Tail, T>::Result> Result;
-	};
-
-	template <class Head, class Tail>
-	struct Append<Typelist<Head, Tail>, NullType>
-	{
-		typedef Typelist<Head, Tail> Result;
-	};
-
-	// type at given index
-	template <class TList, unsigned int index>
-	struct TypeAt;
-
-	template <class Head, class Tail>
-	struct TypeAt<Typelist<Head, Tail>, 0>
-	{
-		typedef Head Result;
-	};
-
-	template <class Head, class Tail, unsigned int i>
-	struct TypeAt<Typelist<Head, Tail>, i>
-	{
-		typedef typename TypeAt<Tail, i - 1>::Result Result;
-	};
-
-	// type at given index with default type, when no such index 
-	template <class TList, unsigned int index, typename DefaultType = NullType>
-	struct TypeAtNonStrict
-	{
-		typedef DefaultType Result;
-	};
-
-	template <class Head, class Tail, typename DefaultType>
-	struct TypeAtNonStrict<Typelist<Head, Tail>, 0, DefaultType>
-	{
-		typedef Head Result;
-	};
-
-	template <class Head, class Tail, unsigned int i, typename DefaultType>
-	struct TypeAtNonStrict<Typelist<Head, Tail>, i, DefaultType>
-	{
-		typedef typename
-			TypeAtNonStrict<Tail, i - 1, DefaultType>::Result Result;
-	};
-};
-
-template<bool>
-struct IsEnumImpl
-{ };
-
-template<>
-struct IsEnumImpl<true>
-{
-    enum { result = true };
-};
-
-template<>
-struct IsEnumImpl<false>
-{
-    enum { result = false };
-};
-
-template <class T>
-struct IsEnum : public IsEnumImpl<__is_enum(T)>
-{ };
-
-
-    /**
-     \brief Works like dynamic_cast for Debug and like a static_cast for release.
-     */
-    template<class C, class O>
-    C DynamicTypeCheck(O* pObject)
-    {
-#ifdef DAVA_DEBUG
-        if(!pObject) return static_cast<C>(pObject);
+#ifdef __DAVAENGINE_DEBUG__
+    if(!pObject) return static_cast<C>(pObject);
         
-        C c = dynamic_cast<C>(pObject);
-        if (!c)
-        {//assert emulation )
-            int *i = 0;
-            *(i) = 0;
-        }
-        return c;
+    C c = dynamic_cast<C>(pObject);
+    if (!c)
+    {//assert emulation )
+        int *i = 0;
+        *(i) = 0;
+    }
+    return c;
 #else
-        return static_cast<C>(pObject);
+    return static_cast<C>(pObject);
 #endif
-    }
+}
     
-    /**
-     \brief Returns true if object pointer is a pointer to the exact class.
-     */
-    template<class C, class O>
-    bool IsPointerToExactClass(const O* pObject) 
+/**
+    \brief Returns true if object pointer is a pointer to the exact class.
+    */
+template<class C, class O>
+bool IsPointerToExactClass(const O* pObject) 
+{
+	if (pObject)
     {
-		if (pObject)
-        {
-			COMPILER_ASSERT(!TypeTraits<C>::isPointer);//You should not use pointers for this method
-			return &typeid(*pObject) == &typeid(C);
-		}
-	    return false;
-    }
+		COMPILER_ASSERT(!TypeTraits<C>::isPointer);//You should not use pointers for this method
+		return &typeid(*pObject) == &typeid(C);
+	}
+	return false;
+}
     
-    template<class C, class O>
-    C cast_if_equal(O* pObject)
+template<class C, class O>
+C cast_if_equal(O* pObject)
+{
+	if (pObject)
     {
-		if (pObject)
+		COMPILER_ASSERT(TypeTraits<C>::isPointer);
+		if (typeid(*pObject) == typeid(typename PointerTraits<C>::PointerType))
         {
-			COMPILER_ASSERT(TypeTraits<C>::isPointer);
-			if (typeid(*pObject) == typeid(typename PointerTraits<C>::PointerType))
-            {
-                return static_cast<C>(pObject);
-            }
-		}
-	    return 0;
-    }
-    
-    /* TEST, need to transfer to unit tests.
-     Logger::FrameworkDebug("%d", Conversion<double, int>::exists);
-     Logger::FrameworkDebug("%d", Conversion<Component*, VisibilityAABBoxComponent*>::exists);
-     Logger::FrameworkDebug("%d", Conversion<VisibilityAABBoxComponent*, Component*>::exists);
-     Logger::FrameworkDebug("%d", SUPERSUBCLASS(VisibilityAABBoxComponent, Component));
-     Logger::FrameworkDebug("%d", SUPERSUBCLASS(Component, VisibilityAABBoxComponent));
-     Logger::FrameworkDebug("%d", SUPERSUBCLASS(void*, VisibilityAABBoxComponent));
-     Logger::FrameworkDebug("%d", SUPERSUBCLASS(BaseObject, VisibilityAABBoxComponent));
-     
-     
-     Logger::FrameworkDebug("(BaseObject*) isPointer: %d", TypeTraits<BaseObject*>::isPointer);
-     Logger::FrameworkDebug("(BaseObject*) isReference: %d", TypeTraits<BaseObject*>::isReference);
-     Logger::FrameworkDebug("(BaseObject*) isPointerToMemberFunction: %d", TypeTraits<BaseObject*>::isPointerToMemberFunction);
-     
-     Logger::FrameworkDebug("(BaseObject&) isPointer: %d", TypeTraits<BaseObject&>::isPointer);
-     Logger::FrameworkDebug("(BaseObject&) isReference: %d", TypeTraits<BaseObject&>::isReference);
-     Logger::FrameworkDebug("(BaseObject&) isPointerToMemberFunction: %d", TypeTraits<BaseObject&>::isPointerToMemberFunction);
-     
-     void(VisibilityAABBoxSystem::*func)() = &VisibilityAABBoxSystem::Run;
-     
-     //    Logger::FrameworkDebug("(&VisibilityAABBoxSystem::Run) isPointer: %d", TypeTraits<VisibilityAABBoxSystem::Run>::isPointer);
-     //    Logger::FrameworkDebug("(&VisibilityAABBoxSystem::Run) isReference: %d", TypeTraits<&VisibilityAABBoxSystem::Run>::isReference);
-     //    Logger::FrameworkDebug("(&VisibilityAABBoxSystem::Run) isPointerToMemberFunction: %d", TypeTraits<&VisibilityAABBoxSystem::Run>::isPointerToMemberFunction);
-     */    
+            return static_cast<C>(pObject);
+        }
+	}
+	return 0;
+}
 
-    
+
+//ScopeGuard is borrowed from https://github.com/facebook/folly
+template <typename FunctionType>
+class ScopeGuardImpl
+{
+public:
+   explicit ScopeGuardImpl(const FunctionType& fn) : function_(fn) {}
+
+   explicit ScopeGuardImpl(FunctionType&& fn) : function_(std::move(fn)) {}
+
+   ScopeGuardImpl(ScopeGuardImpl&& other) : function_(std::move(other.function_)) {}
+
+   ~ScopeGuardImpl()
+   {
+       execute();
+   }
+   
+private:
+   void* operator new(std::size_t) = delete;
+   void execute() { function_(); }
+   FunctionType function_;
+};
+
+enum class ScopeGuardOnExit {};
+
+template <typename FunctionType>
+ScopeGuardImpl<typename std::decay<FunctionType>::type>
+operator+(ScopeGuardOnExit, FunctionType&& fn)
+{
+   return ScopeGuardImpl<typename std::decay<FunctionType>::type>(std::forward<FunctionType>(fn));
+}
     
 };
+
+#ifndef DF_ANONYMOUS_VARIABLE
+#define DF_CONCATENATE_IMPL(s1, s2) s1##s2
+#define DF_CONCATENATE(s1, s2) DF_CONCATENATE_IMPL(s1, s2)
+#ifdef __COUNTER__
+#define DF_ANONYMOUS_VARIABLE(str) DF_CONCATENATE(str, __COUNTER__)
+#else
+#define DF_ANONYMOUS_VARIABLE(str) DF_CONCATENATE(str, __LINE__)
+#endif
+#endif
+
+#define SCOPE_EXIT \
+ auto DF_ANONYMOUS_VARIABLE(SCOPE_EXIT_STATE) \
+ = ::DAVA::ScopeGuardOnExit() + [&]()
 
 #endif // __DAVAENGINE_TEMPLATEHELPERS_H__
 

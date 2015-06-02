@@ -33,21 +33,28 @@
 #include "SizeDialog.h"
 #include "Project/ProjectManager.h"
 #include "Main/QtUtils.h"
+#include "Settings/SettingsManager.h"
 
-#include <QtGui>
-#include <QFileDialog>
+#include "QtTools/FileDialog/FileDialog.h"
+
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QUrl>
+#include <QMimeData>
 
 
 ImageArea::ImageArea(QWidget *parent /*= 0*/)
-    :QLabel(parent),
-    image(NULL),
-    acceptableSize(0,0)
+    : QLabel(parent)
+    , image(NULL)
+    , acceptableSize(0, 0)
+    , imagePath(SettingsManager::Instance()->GetValue(Settings::Internal_ImageSplitterPathSpecular).AsString())
+    , requestedFormat(DAVA::FORMAT_A8)
 {
     setFrameStyle(QFrame::Sunken | QFrame::StyledPanel);
     setAcceptDrops(true);
     setAutoFillBackground(true);
     ConnectSignals();
-    clear();
+    ClearArea();
 }
 
 ImageArea::~ImageArea()
@@ -82,12 +89,26 @@ void ImageArea::ConnectSignals()
     connect(this, SIGNAL(changed()), this, SLOT(UpdatePreviewPicture()));
 }
 
+DAVA::String ImageArea::GetDefaultPath() const
+{
+    return ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname();
+}
+
 void ImageArea::mousePressEvent (QMouseEvent * ev)
 {
     if(ev->button() == Qt::LeftButton)
 	{
-        DAVA::FilePath defaultPath = ProjectManager::Instance()->CurProjectPath();
-		DAVA::String retString = QFileDialog::getOpenFileName(this, "Select png", defaultPath.GetAbsolutePathname().c_str(),"PNG(*.png)").toStdString();
+        DAVA::FilePath defaultPath = SettingsManager::Instance()->GetValue(Settings::Internal_ImageSplitterPathSpecular).AsString();
+        if (defaultPath.IsEmpty())
+        {
+            defaultPath = SettingsManager::Instance()->GetValue(Settings::Internal_ImageSplitterPath).AsString();
+            if (defaultPath.IsEmpty())
+            {
+                defaultPath = GetDefaultPath();
+            }
+        }
+
+		DAVA::String retString = FileDialog::getOpenFileName(this, "Select png", defaultPath.GetAbsolutePathname().c_str(),"PNG(*.png)").toStdString();
         if(!retString.empty())
         {
             SetImage(retString);
@@ -123,8 +144,12 @@ void ImageArea::SetImage(const DAVA::FilePath& filePath)
         QMessageBox::warning(this, "File error", "Cann't load image.", QMessageBox::Ok);
         return;
     }
-    if(selectedImage->GetPixelFormat() == DAVA::FORMAT_A8)
+
+    if((DAVA::FORMAT_INVALID == requestedFormat) || (selectedImage->GetPixelFormat() == requestedFormat))
     {
+        const DAVA::FilePath path = filePath;
+        SettingsManager::Instance()->SetValue(Settings::Internal_ImageSplitterPathSpecular, DAVA::VariantType(path.GetAbsolutePathname()));
+        imagePath = filePath;
         SetImage(selectedImage);
     }
     else
@@ -134,7 +159,7 @@ void ImageArea::SetImage(const DAVA::FilePath& filePath)
     DAVA::SafeRelease(selectedImage);
 }
 
-void ImageArea::clear()
+void ImageArea::ClearArea()
 {
     DAVA::SafeRelease(image);
     setBackgroundRole(QPalette::Dark);
@@ -164,4 +189,19 @@ void ImageArea::SetAcceptableSize(const DAVA::Vector2& newSize)
 DAVA::Vector2 ImageArea::GetAcceptableSize() const
 {
     return acceptableSize;
+}
+
+DAVA::FilePath const& ImageArea::GetImagePath() const
+{
+    return imagePath;
+}
+
+void ImageArea::SetRequestedImageFormat(const DAVA::PixelFormat format)
+{
+    requestedFormat = format;
+}
+
+DAVA::PixelFormat ImageArea::GetRequestedImageFormat() const
+{
+    return requestedFormat;
 }

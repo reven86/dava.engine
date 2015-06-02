@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
+
 import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
@@ -25,43 +26,43 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.provider.Settings.Secure;
+import android.util.Log;
 
 public class JNIDeviceInfo {
 	final static String TAG = "JNIDeviceInfo";
 	static int gpuFamily = -1;
 
-	public static void GetVersion()
+	public static String GetVersion()
 	{
-		SetJString(Build.VERSION.RELEASE);
+		return Build.VERSION.RELEASE;
 	}
 
-	public static void GetManufacturer()
+	public static String GetManufacturer()
 	{
-		SetJString(Build.MANUFACTURER);
+		return Build.MANUFACTURER;
 	}
 
-	public static void GetModel()
+	public static String GetModel()
 	{
-		SetJString(Build.MODEL);
+		return Build.MODEL;
 	}
 
-	public static void GetLocale()
+	public static String GetLocale()
 	{
-		SetJString(Locale.getDefault().getDisplayLanguage(Locale.US));
+		return Locale.getDefault().getDisplayLanguage(Locale.US);
 	}
 
-	public static void GetRegion()
+	public static String GetRegion()
 	{
-		String country = JNIActivity.GetActivity().getResources().getConfiguration().locale.getCountry();
-		SetJString(country);
+		return JNIActivity.GetActivity().getResources().getConfiguration().locale.getCountry();
 	}
 
-	public static void GetTimeZone()
+	public static String GetTimeZone()
 	{
-		SetJString(TimeZone.getDefault().getDisplayName(Locale.US));
+		return TimeZone.getDefault().getID();
 	}
 
-	public static void GetUDID()
+	public static String GetUDID()
 	{
 		String aid = Secure.getString(JNIActivity.GetActivity().getApplicationContext() .getContentResolver(), Secure.ANDROID_ID);
 
@@ -75,20 +76,37 @@ public class JNIDeviceInfo {
 			obj = aid.substring(0, 32);
 		}
 
-		SetJString(obj.toString().toLowerCase());
+		return obj.toString().toLowerCase();
 	}
 	
-	public static void GetName()
+	public static String GetName()
 	{
 		String serial = android.os.Build.SERIAL;
 		if (serial == null || serial.isEmpty())
 			serial = "ErrorGetSerialNumber";
-		SetJString(serial);
+		return serial;
 	}
 	
 	public static int GetZBufferSize()
 	{
 		return JNIConfigChooser.GetDepthBufferSize();
+	}
+	
+	public static String GetHTTPProxyHost()
+	{		
+		return System.getProperty("http.proxyHost");
+	}
+	
+	public static int GetHTTPProxyPort()
+	{
+		String portStr = System.getProperty("http.proxyPort");
+	    int proxyPort = Integer.parseInt((portStr != null ? portStr : "-1"));
+	    return proxyPort;
+	}
+	
+	public static String GetHTTPNonProxyHosts()
+	{
+		return System.getProperty("http.nonProxyHosts");
 	}
 	
 	static final int GPU_UNKNOWN = -1;
@@ -204,30 +222,61 @@ public class JNIDeviceInfo {
 		public final String path;
 
 		public final boolean readOnly;
+		public final boolean removable;
 		public final boolean emulated;
 
 		public final long capacity;
 		public final long freeSpace;
 
-		StorageInfo(String path, boolean readOnly, boolean emulated, long capacity, long freeSpace)
+		StorageInfo(String path, boolean readOnly, boolean removable, boolean emulated, long capacity, long freeSpace)
 		{
 			this.path = path;
 			this.readOnly = readOnly;
+			this.removable = removable;
 			this.emulated = emulated;
 			this.capacity = capacity;
 			this.freeSpace = freeSpace;
 		}
 	}
+	
+	private static class StorageCapacity
+	{
+	    public long capacity = 0;
+	    public long free = 0;
+	}
 
-	public static StorageInfo GetInternalStorageInfo()
+	private static StorageCapacity getCapacityAndFreeSpace(String path)
+	{
+        StatFs statFs = new StatFs(path);
+
+		StorageCapacity sc = new StorageCapacity();
+		
+		fillCapacityAndFreeSpace(statFs, sc);
+        return sc;
+    }
+
+	
+    @SuppressWarnings("deprecation")
+    private static void fillCapacityAndFreeSpace(StatFs statFs,
+            StorageCapacity st) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) // 4.2
+		{
+		    st.capacity = statFs.getBlockCountLong() * statFs.getBlockSizeLong();
+		    st.free = statFs.getAvailableBlocksLong() * statFs.getBlockSizeLong();
+		} else
+		{
+		    // do not remove (long) conversion may return negative values
+		    st.capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
+		    st.free = (long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize();
+		}
+    }
+	
+    public static StorageInfo GetInternalStorageInfo()
 	{
 		String path = Environment.getDataDirectory().getPath();
-		StatFs statFs = new StatFs(path);
-
-		long capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
-		long free = (long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize();
-
-		return new StorageInfo(path, false, false, capacity, free);
+		path += "/";
+		StorageCapacity st = getCapacityAndFreeSpace(path);
+		return new StorageInfo(path, false, false, false, st.capacity, st.free);
 	}
 
 	public static boolean IsPrimaryExternalStoragePresent()
@@ -241,23 +290,23 @@ public class JNIDeviceInfo {
 		return false;
 	}
 
-	public static StorageInfo GetPrimaryExternalStorageInfo()
+    public static StorageInfo GetPrimaryExternalStorageInfo()
 	{
 		if (IsPrimaryExternalStoragePresent())
 		{
 			String path = Environment.getExternalStorageDirectory().getPath();
-			StatFs statFs = new StatFs(path);
+			path += "/";
+			
+			StorageCapacity st = getCapacityAndFreeSpace(path);
 
-            long capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
-            long free = (long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize();
-
+			boolean isRemovable = Environment.isExternalStorageRemovable();
             boolean isEmulated = Environment.isExternalStorageEmulated();
             boolean isReadOnly = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED_READ_ONLY);
 
-            return new StorageInfo(path, isReadOnly, isEmulated, capacity, free);
+            return new StorageInfo(path, isReadOnly, isRemovable, isEmulated, st.capacity, st.free);
         }
 
-		return new StorageInfo("", false, false, -1, -1);
+		return new StorageInfo("", false, false, false, -1, -1);
 	}
 
 	public static StorageInfo[] GetSecondaryExternalStoragesList()
@@ -275,28 +324,30 @@ public class JNIDeviceInfo {
 			String line;
 			while ((line = reader.readLine()) != null)
 			{
-				if (line.contains("vfat") || line.contains("/mnt"))
+				if (!line.contains("/mnt/secure")
+						&& !line.contains("/mnt/asec")
+						&& !line.contains("/mnt/obb")
+						&& !line.contains("/dev/mapper")
+						&& !line.contains("emulated")
+						&& !line.contains("tmpfs"))
 				{
 					StringTokenizer tokens = new StringTokenizer(line, " ");
-					String unused = tokens.nextToken(); //device
-					String mountPoint = tokens.nextToken(); //mount point
+					tokens.nextToken(); //device
+					String mountPoint = tokens.nextToken();
 
 					if (paths.contains(mountPoint))
 					{
 					    continue;
 					}
 
-					unused = tokens.nextToken(); //file system
+					String fileSystem = tokens.nextToken();
 
 					List<String> flags = Arrays.asList(tokens.nextToken().split(",")); //flags
 					boolean readonly = flags.contains("ro");
 
-					if (!line.contains("/mnt/secure")
-						&& !line.contains("/mnt/asec")
-						&& !line.contains("/mnt/obb")
-						&& !line.contains("/dev/mapper")
-						&& !line.contains("tmpfs"))
+					if (fileSystem.equals("vfat") || mountPoint.startsWith("/mnt") || mountPoint.startsWith("/storage"))
 					{
+						mountPoint += "/";
 						paths.add(mountPoint);
 
 						StatFs statFs = null;
@@ -309,19 +360,22 @@ public class JNIDeviceInfo {
 							continue;
 						}
 
-			            long capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
-			            long free = (long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize();
+						StorageCapacity sc = new StorageCapacity();
+						
+						fillCapacityAndFreeSpace(statFs, sc);
 
-						infos.add(new StorageInfo(mountPoint, readonly, false, capacity, free));
+						infos.add(new StorageInfo(mountPoint, readonly, true, false, sc.capacity, sc.free));
 					}
 				}
 			}
 		}
 		catch (FileNotFoundException e)
 		{
+		    Log.e(TAG, e.getMessage());
 		}
 		catch (IOException e)
 		{
+		    Log.e(TAG, e.getMessage());
 		}
 		finally
 		{
@@ -333,6 +387,7 @@ public class JNIDeviceInfo {
 				}
 				catch (IOException e)
 				{
+				    Log.e(TAG, e.getMessage());
 				}
 			}
 		}
@@ -341,6 +396,4 @@ public class JNIDeviceInfo {
 		infos.toArray(arr);
 		return arr;
 	}
-	
-	public static native void SetJString(String str);
 }

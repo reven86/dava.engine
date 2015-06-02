@@ -25,7 +25,7 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-
+#include "DAVAConfig.h"
 
 #ifdef __DAVAENGINE_AUTOTESTING__
 #include "KeyedArchive_wrap.cxx"

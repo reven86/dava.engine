@@ -45,7 +45,7 @@
 #include "Scene/SceneSignals.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneHelper.h"
-#include "DockLODEditor/EditorLODData.h"
+#include "Scene/System/EditorLODSystem.h"
 #include "Main/mainwindow.h"
 
 #include <QHeaderView>
@@ -60,9 +60,9 @@ using namespace DAVA;
 
 SceneInfo::SceneInfo(QWidget *parent /* = 0 */)
 	: QtPropertyEditor(parent)
-    , activeScene(NULL)
+	, treeStateHelper(this, curModel)
+	, activeScene(NULL)
 	, landscape(NULL)
-    , treeStateHelper(this, curModel)
 	, isUpToDate(false)
 {
 	// global scene manager signals
@@ -308,7 +308,8 @@ uint32 SceneInfo::CalculateTextureSize(const TexturesMap &textures)
             continue;
         }
         
-        textureSize += ImageTools::GetTexturePhysicalSize(tex->GetDescriptor(), (eGPUFamily) SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
+        auto baseMipmap = tex->GetBaseMipMap();
+        textureSize += ImageTools::GetTexturePhysicalSize(tex->GetDescriptor(), (eGPUFamily) SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32(), baseMipmap);
     }
 
     return textureSize;
@@ -449,7 +450,7 @@ void SceneInfo::CollectLODDataInEntityRecursive(DAVA::Entity *entity)
     
     if(lod)
     {
-        EditorLODData::AddTrianglesInfo(lodInfoInFrame.trianglesOnLod, lod, true);
+        EditorLODSystem::AddTrianglesInfo(lodInfoInFrame.trianglesOnLod, lod, true);
     }
     
     DAVA::int32 count = entity->GetChildrenCount();
@@ -466,7 +467,7 @@ void SceneInfo::CollectLODTriangles(const DAVA::Vector<DAVA::LodComponent *> &lo
     uint32 count = (uint32)lods.size();
     for(uint32 i = 0; i < count; ++i)
     {
-        EditorLODData::AddTrianglesInfo(info.trianglesOnLod, lods[i], false);
+        EditorLODSystem::AddTrianglesInfo(info.trianglesOnLod, lods[i], false);
     }
 }
 
@@ -640,8 +641,6 @@ void SceneInfo::SceneActivated(SceneEditor2 *scene)
 {
     activeScene = scene;
     landscape = FindLandscape(activeScene);
-    
-    UpdateLayersSectionStructure(activeScene);
 	
 	isUpToDate = isVisible();
 	if(isUpToDate)
@@ -781,6 +780,11 @@ void SceneInfo::SpritesReloaded()
     particleTexturesSize = CalculateTextureSize(particleTextures);
     
     RefreshSceneGeneralInfo();
+}
+
+void SceneInfo::OnQualityChanged()
+{
+    RefreshAllData(activeScene);
 }
 
 void SceneInfo::InitializeVegetationInfoSection()
@@ -955,23 +959,6 @@ void SceneInfo::InitializeLayersSection()
     CreateInfoHeader("Fragments Info");
 }
 
-void SceneInfo::UpdateLayersSectionStructure(SceneEditor2 *scene)
-{
-    QtPropertyData* header = GetInfoHeader("Fragments Info");
-    header->ChildRemoveAll();
-    
-    if(scene)
-    {
-        RenderPass* renderPass = scene->renderSystem->GetMainRenderPass();
-        uint32 layerCount = renderPass->GetRenderLayerCount();
-        for(uint32 layerIndex = 0; layerIndex < layerCount; ++layerIndex)
-        {
-            RenderLayer* layer = renderPass->GetRenderLayer(layerIndex);
-            AddChild(layer->GetName().c_str(), header);
-        }
-    }
-}
-
 void SceneInfo::RefreshLayersSection()
 {
     if(activeScene)
@@ -980,16 +967,21 @@ void SceneInfo::RefreshLayersSection()
         
         QtPropertyData* header = GetInfoHeader("Fragments Info");
     
-        RenderPass* renderPass = activeScene->renderSystem->GetMainRenderPass();
-        uint32 layerCount = renderPass->GetRenderLayerCount();
-        for(uint32 layerIndex = 0; layerIndex < layerCount; ++layerIndex)
+        Vector<FastName> queriesNames;
+        FrameOcclusionQueryManager::Instance()->GetQueriesNames(queriesNames);
+        int32 namesCount = queriesNames.size();
+        for(int32 i = 0; i < namesCount; i++)
         {
-            RenderLayer* layer = renderPass->GetRenderLayer(layerIndex);
-            uint32 fragmentStats = layer->GetFragmentStats();
-            
+            if(queriesNames[i] == FRAME_QUERY_UI_DRAW)
+                continue;
+
+            uint32 fragmentStats = FrameOcclusionQueryManager::Instance()->GetFrameStats(queriesNames[i]);
             String str = Format("%d / %.2f%%", fragmentStats, (fragmentStats * 100.0f) / viewportSize);
-            
-            SetChild(layer->GetName().c_str(), str.c_str(), header);
+
+            if(!HasChild(queriesNames[i].c_str(), header))
+                AddChild(queriesNames[i].c_str(), header);
+
+            SetChild(queriesNames[i].c_str(), str.c_str(), header);
         }
     }
 }

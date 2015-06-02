@@ -43,14 +43,17 @@ class ScrollHelper;
 
 class UIScrollView : public UIControl, public UIScrollBarDelegate
 {
-protected:
-	virtual ~UIScrollView();
 public:
 	UIScrollView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
-	
-	virtual void AddControl(UIControl *control);
-    virtual List<UIControl* > GetSubcontrols();
 
+protected:
+    virtual ~UIScrollView();
+
+public:
+	virtual void AddControl(UIControl *control);
+    virtual void RemoveControl(UIControl *control);
+    virtual List<UIControl* > GetSubcontrols();
+    
 	// Add the control directly to the Scroll View Container.
 	void AddControlToContainer(UIControl* control);
 
@@ -95,7 +98,9 @@ public:
     virtual float32 TotalAreaSize(UIScrollBar *forScrollBar);
     virtual float32 ViewPosition(UIScrollBar *forScrollBar);
     virtual void OnViewPositionChanged(UIScrollBar *byScrollBar, float32 newPosition);
-	
+
+    virtual const String GetDelegateControlPath(const UIControl *rootControl) const;
+
 protected:
 	virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
     virtual void LoadFromYamlNodeCompleted();

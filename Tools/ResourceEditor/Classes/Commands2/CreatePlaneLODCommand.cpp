@@ -38,12 +38,12 @@ using namespace DAVA;
 
 CreatePlaneLODCommand::CreatePlaneLODCommand(DAVA::LodComponent * _lodComponent, int32 _fromLodLayer, uint32 _textureSize, const DAVA::FilePath & texturePath)
     : Command2(CMDID_LOD_CREATE_PLANE, "Create Plane LOD")
-    , newSwitchIndex(-1)
-    , planeImage(NULL)
+    , lodComponent(_lodComponent)
     , planeBatch(NULL)
+    , planeImage(NULL)
+    , newSwitchIndex(-1)
     , fromLodLayer(_fromLodLayer)
     , textureSize(_textureSize)
-    , lodComponent(_lodComponent)
     , textureSavePath(texturePath)
 {
     DVASSERT(GetRenderObject(GetEntity()));
@@ -120,21 +120,23 @@ void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camer
         it->second->ReloadAs(GPU_PNG);
 
     Rect oldViewport = RenderManager::Instance()->GetViewport();
+    Texture * oldRenderTarget = RenderManager::Instance()->GetRenderTarget();
+    
     Rect newViewport = viewport;
-
     if(newViewport.dx == -1)
         newViewport.dx = (float32)toTexture->GetWidth();
     if(newViewport.dy == -1)
         newViewport.dy = (float32)toTexture->GetHeight();
 
     RenderManager::Instance()->SetRenderTarget(toTexture);
-
-	RenderManager::Instance()->SetViewport(newViewport, true);
-
-    if(clearTarget)
-        RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
+	RenderManager::Instance()->SetViewport(newViewport);
 
     Scene * tempScene = new Scene();
+    if(clearTarget)
+        tempScene->SetClearBuffers(RenderManager::ALL_BUFFERS);
+    else
+        tempScene->SetClearBuffers(0);
+
     NMaterial * globalMaterial = fromEntity->GetScene()->GetGlobalMaterial();
     if(globalMaterial)
         tempScene->SetGlobalMaterial(globalMaterial->Clone());
@@ -165,11 +167,8 @@ void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camer
     SafeRelease(entity);
     SafeRelease(tempScene);
 
-    RenderManager::Instance()->SetViewport(oldViewport, true);
-
-#ifdef __DAVAENGINE_OPENGL__
-    RenderManager::Instance()->HWglBindFBO(RenderManager::Instance()->GetFBOViewFramebuffer());
-#endif //#ifdef __DAVAENGINE_OPENGL__
+    RenderManager::Instance()->SetRenderTarget(oldRenderTarget);
+    RenderManager::Instance()->SetViewport(oldViewport);
 
     it = textures.begin();
     end = textures.end();
@@ -240,7 +239,6 @@ void CreatePlaneLODCommand::CreatePlaneBatch()
     bool isMeshHorizontal = IsHorisontalMesh(bbox);
     
     const Vector3 & min = bbox.min;
-    const Vector3 & max = bbox.max;
     Vector3 size = bbox.GetSize();
 
     //

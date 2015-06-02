@@ -39,6 +39,7 @@
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
+#include "Base/Observer.h"
 
 namespace DAVA
 {
@@ -69,7 +70,6 @@ class TransformSystem;
 class LodSystem;
 class DebugRenderSystem;
 class EventSystem;
-class ParticleEmitterSystem;
 class ParticleEffectSystem;
 class UpdateSystem;
 class LightUpdateSystem;
@@ -84,6 +84,10 @@ class SpeedTreeUpdateSystem;
 class FoliageSystem;
 class WindSystem;
 class WaveSystem;
+class SkeletonSystem;
+class AnimationSystem;
+    
+class UIEvent;
     
 /**
     \ingroup scene3d
@@ -94,7 +98,7 @@ class WaveSystem;
  
  
  */
-class Scene : public Entity
+class Scene : public Entity, Observer
 {
 protected:
 	virtual ~Scene();
@@ -118,10 +122,20 @@ public:
         SCENE_SYSTEM_SPEEDTREE_UPDATE_FLAG  = 1 << 14,
         SCENE_SYSTEM_WIND_UPDATE_FLAG       = 1 << 15,
         SCENE_SYSTEM_WAVE_UPDATE_FLAG       = 1 << 16,
-
+        SCENE_SYSTEM_SKELETON_UPDATE_FLAG   = 1 << 17,
+        SCENE_SYSTEM_ANIMATION_FLAG         = 1 << 18,
+        
         SCENE_SYSTEM_ALL_MASK               = 0xFFFFFFFF
     };
 
+    
+    enum eSceneProcessFlags
+    {
+        SCENE_SYSTEM_REQUIRE_PROCESS = 1 << 0,
+        SCENE_SYSTEM_REQUIRE_INPUT = 1 << 1
+    };
+    
+    
 	Scene(uint32 systemsMask = SCENE_SYSTEM_ALL_MASK);
 	
     /**
@@ -142,13 +156,14 @@ public:
      */
     void    UnregisterComponent(Entity * entity, Component * component);
     
-    virtual void    AddSystem(SceneSystem * sceneSystem, uint32 componentFlags, bool needProcess = false, SceneSystem * insertBeforeSceneForProcess = NULL);
+    virtual void    AddSystem(SceneSystem * sceneSystem, uint64 componentFlags, uint32 processFlags = 0, SceneSystem * insertBeforeSceneForProcess = NULL);
     virtual void    RemoveSystem(SceneSystem * sceneSystem);    
     
 	//virtual void ImmediateEvent(Entity * entity, uint32 componentType, uint32 event);
 
     Vector<SceneSystem*> systems;
     Vector<SceneSystem*> systemsToProcess;
+    Vector<SceneSystem*> systemsToInput;
     //HashMap<uint32, Set<SceneSystem*> > componentTypeMapping;
     TransformSystem * transformSystem;
     RenderUpdateSystem * renderUpdateSystem;
@@ -170,7 +185,9 @@ public:
     VersionInfo::SceneVersion version;
     WindSystem * windSystem;
     WaveSystem * waveSystem;
+    AnimationSystem * animationSystem;
     StaticOcclusionDebugDrawSystem *staticOcclusionDebugDrawSystem;
+    SkeletonSystem *skeletonSystem;
     
     /**
         \brief Overloaded GetScene returns this, instead of normal functionality.
@@ -181,12 +198,8 @@ public:
 	void RemoveAnimatedMesh(AnimatedMesh * mesh);
 	AnimatedMesh * GetAnimatedMesh(int32 index);
 	inline int32	GetAnimatedMeshCount();
-	
-	void AddAnimation(SceneNodeAnimationList * animation);
-	SceneNodeAnimationList * GetAnimation(int32 index);
-	SceneNodeAnimationList * GetAnimation(const FastName & name);
-	inline int32 GetAnimationCount();
-    
+
+    virtual void HandleEvent(Observable * observable); //Handle RenderOptions
     
     /**
         \brief Function to add root node.
@@ -257,8 +270,9 @@ public:
 	EventSystem * GetEventSystem() const;
 	RenderSystem * GetRenderSystem() const;
     MaterialSystem * GetMaterialSystem() const;
-    
-	virtual SceneFileV2::eError Save(const DAVA::FilePath & pathname, bool saveForGame = false);
+    AnimationSystem * GetAnimationSystem() const;
+
+	SceneFileV2::eError SaveScene(const DAVA::FilePath & pathname, bool saveForGame = false);
 
     virtual void OptimizeBeforeExport();
 
@@ -270,13 +284,27 @@ public:
     void SetClearBuffers(uint32 buffers);
     uint32 GetClearBuffers() const;
 
+    
+    void Input(UIEvent *event);
+    
+    /**
+        \brief This functions activate and deactivate scene sustems
+     */
+    virtual void Activate();
+    virtual void Deactivate();
+
+    
 protected:
     void UpdateLights();
 
     void RegisterEntitiesInSystemRecursively(SceneSystem *system, Entity * entity);
     void UnregisterEntitiesInSystemRecursively(SceneSystem *system, Entity * entity);
 
-	uint64 updateTime;
+    
+    bool RemoveSystem(Vector<SceneSystem*> &storage, SceneSystem *system);
+    
+    
+    uint64 updateTime;
 
     uint64 drawTime;
     uint32 nodeCounter;
@@ -287,7 +315,6 @@ protected:
 
 	Vector<AnimatedMesh*> animatedMeshes;
 	Vector<Camera*> cameras;
-	Vector<SceneNodeAnimationList*> animations;
     
     static Texture* stubTexture2d;
     static Texture* stubTextureCube;
@@ -318,11 +345,6 @@ protected:
     friend class Entity;
 };
 
-	
-int32 Scene::GetAnimationCount()
-{
-    return (int32)animations.size();
-}
 
 int32 Scene::GetAnimatedMeshCount()
 {

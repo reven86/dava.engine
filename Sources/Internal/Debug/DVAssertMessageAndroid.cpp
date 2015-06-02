@@ -32,46 +32,29 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
-#include "DVAssertMessageAndroid.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 #include "ExternC/AndroidLayer.h"
 
 #include "AndroidCrashReport.h"
+#include "Debug/Backtrace.h"
 
 using namespace DAVA;
 
-jclass JniDVAssertMessage::gJavaClass = NULL;
-const char* JniDVAssertMessage::gJavaClassName = NULL;
-
-jclass JniDVAssertMessage::GetJavaClass() const
+bool DVAssertMessage::InnerShow(eModalType modalType, const char* message)
 {
-	return gJavaClass;
-}
+    Logger::FrameworkDebug("DAVA BACKTRACE PRINTING");
+    PrintBackTraceToLog(Logger::LEVEL_ERROR);
+	JNI::JavaClass msg("com/dava/framework/JNIAssert");
+	auto showMessage = msg.GetStaticMethod<jboolean, jboolean, jstring>("Assert");
 
-const char* JniDVAssertMessage::GetJavaClassName() const
-{
-	return gJavaClassName;
-}
+	JNIEnv *env = JNI::GetEnv();
+	jstring jStrMessage = env->NewStringUTF(message);
+    bool waitUserInput = (ALWAYS_MODAL == modalType);
+	jboolean breakExecution = showMessage(waitUserInput, jStrMessage);
+	env->DeleteLocalRef(jStrMessage);
 
-
-void JniDVAssertMessage::ShowMessage(const char* message)
-{
-	jmethodID mid = GetMethodID("Assert", "(Ljava/lang/String;)V");
-	if (mid)
-	{
-		jstring jStrMessage = GetEnvironment()->NewStringUTF(message);
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, jStrMessage);
-		GetEnvironment()->DeleteLocalRef(jStrMessage);
-	}
-}
-
-
-void DVAssertMessage::InnerShow(eModalType modalType, const char* message)
-{
-	JniDVAssertMessage msg;
-	msg.ShowMessage(message);
-
-	AndroidCrashReport::ThrowExeption(message);
+	return breakExecution == JNI_FALSE? false : true;
 }
 
 #endif

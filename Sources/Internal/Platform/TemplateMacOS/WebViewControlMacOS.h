@@ -35,37 +35,61 @@
 
 namespace DAVA {
 
+class UIWebView;
+    
 // Web View Control - MacOS version.
 class WebViewControl : public IWebViewControl
 {
 public:
-	WebViewControl();
+	explicit WebViewControl(UIWebView& uiWebView);
 	virtual ~WebViewControl();
 	
 	// Initialize the control.
-	virtual void Initialize(const Rect& rect);
+    void Initialize(const Rect& rect) override;
 	
 	// Open the URL requested.
-	virtual void OpenURL(const String& urlToOpen);
+    void OpenURL(const String& urlToOpen) override;
+	// Load html page from string
+    void LoadHtmlString(const WideString& htlmString) override;
+	// Delete all cookies associated with target URL
+    void DeleteCookies(const String& targetUrl) override;
+    // Execute javascript command, return request ID
+    void ExecuteJScript(const String& scriptString) override;
     
-    virtual void OpenFromBuffer(const String& string, const FilePath& basePath);
+    void OpenFromBuffer(const String& string, const FilePath& basePath) override;
 
 	// Size/pos/visibility changes.
-	virtual void SetRect(const Rect& rect);
-	virtual void SetVisible(bool isVisible, bool hierarchic);
+    void SetRect(const Rect& rect) override;
+    void SetVisible(bool isVisible, bool hierarchic) override;
 
-	virtual void SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView);
-	virtual void SetBackgroundTransparency(bool enabled);
+	void SetDelegate(DAVA::IUIWebViewDelegate *delegate,
+                     DAVA::UIWebView* webView) override;
+	void SetBackgroundTransparency(bool enabled) override;
+    
+    void SetRenderToTexture(bool value) override;
+    bool IsRenderToTexture() const override {return isRenderToTexture;}
+    
+    void SetImageCache(void* ptr);
+    void* GetImageCache() const;
 
-protected:
+    void RenderToTextureAndSetAsBackgroundSpriteToControl(DAVA::UIWebView&
+                                                          uiWebViewControl);
+private:
+    
 	//A pointer to MacOS WebView.
 	void* webViewPtr;
-    bool isWebViewVisible;
 	
 	// A pointer to the WebView delegate.
 	void* webViewDelegatePtr;
 
 	void* webViewPolicyDelegatePtr;
+    // A pointer to NSBitmapImageRep cached image of web view to texture
+    void* webImageCachePtr;
+    
+    UIWebView& uiWebViewControl;
+    
+    bool isRenderToTexture;
+    bool isVisible;
 };
 
 };

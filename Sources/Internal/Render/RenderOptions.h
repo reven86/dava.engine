@@ -33,6 +33,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/Observable.h"
+#include "Base/FastName.h"
 
 namespace DAVA
 {
@@ -42,36 +43,28 @@ class RenderOptions : public Observable
 public:
 	enum RenderOption
 	{
-		LANDSCAPE_DRAW = 0,
+        TEST_OPTION = 0,
+
+		LANDSCAPE_DRAW,
 		WATER_REFLECTION_REFRACTION_DRAW,
 		OPAQUE_DRAW,
 		TRANSPARENT_DRAW,
-		MATERIAL_DRAW,
-		SPRITE_DRAW,
+        SPRITE_DRAW,
+        SHADOWVOLUME_DRAW,
+        VEGETATION_DRAW,
 
-		IMPOSTERS_ENABLE,
 		FOG_ENABLE,
-
-		SHADOWVOLUME_DRAW,
 
 		UPDATE_LODS, 
 		UPDATE_LANDSCAPE_LODS, 
 		UPDATE_ANIMATIONS, 
-		UPDATE_ANIMATED_MESHES,
 		PROCESS_CLIPPING,
-		UPDATE_PARTICLE_EMMITERS,
 		UPDATE_UI_CONTROL_SYSTEM,
 
-        SPEEDTREE_LEAFS_DRAW,
         SPEEDTREE_ANIMATIONS,
-
         WAVE_DISTURBANCE_PROCESS,
-        
-        DYNAMIC_OCCLUSION_ENABLE,
-        
-        VEGETATION_DRAW,
 
-		ALL_RENDER_FUNCTIONS_ENABLED,
+        ALL_RENDER_FUNCTIONS_ENABLED,
         TEXTURE_LOAD_ENABLED,
         
         LAYER_OCCLUSION_STATS,
@@ -79,11 +72,24 @@ public:
         ENABLE_STATIC_OCCLUSION,
         DEBUG_DRAW_STATIC_OCCLUSION,
 
+        UPDATE_PARTICLE_EMMITERS,
+        PARTICLES_DRAW,
+        PARTICLES_PREPARE_BUFFERS,
+        REPLACE_ALBEDO_MIPMAPS,
+        REPLACE_LIGHTMAP_MIPMAPS,
+#if defined(LOCALIZATION_DEBUG)
+        DRAW_LOCALIZATION_WARINGS,
+        DRAW_LOCALIZATION_ERRORS,
+        DRAW_LINEBREAK_ERRORS,
+#endif
+        DRAW_NONDEF_GLYPH,
+        HIGHLIGHT_HARD_CONTROLS,
 		OPTIONS_COUNT
 	};
 
 	bool IsOptionEnabled(RenderOption option);
 	void SetOption(RenderOption option, bool value);
+    FastName GetOptionName(RenderOption option);
 
 private:
 	RenderOptions();

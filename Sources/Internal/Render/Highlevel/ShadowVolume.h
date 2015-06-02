@@ -49,45 +49,7 @@ protected:
 	virtual ~ShadowVolume();
 
 public:
-	ShadowVolume();
-	static const FastName MATERIAL_NAME;
-
-    //virtual void Draw(Camera * camera);
-	virtual void Draw(const FastName & ownerRenderPass, Camera * camera);
-
-	void MakeShadowVolumeFromPolygonGroup(PolygonGroup * polygonGroup);
-    void SetPolygonGroup(PolygonGroup * polygonGroup);
-    PolygonGroup * GetPolygonGroup();
-    
-	virtual void GetDataNodes(Set<DataNode*> & dataNodes);
-	virtual RenderBatch * Clone(RenderBatch * dstNode = NULL);
-	virtual void Save(KeyedArchive *archive, SerializationContext *serializationContext);
-	virtual void Load(KeyedArchive *archive, SerializationContext *serializationContext);
-
-	virtual void UpdateAABBoxFromSource();
-
-	virtual ShadowVolume * CreateShadow();
-
-
-private:
-	struct EdgeMapping
-	{
-		int32 oldEdge[2];
-		int32 newEdge[2][2];
-
-    public:
-		EdgeMapping()
-		{
-			Memset(oldEdge, -1, sizeof(oldEdge));
-			Memset(newEdge, -1, sizeof(newEdge));
-		}
-	};
-
-	int32 FindEdgeInMappingTable(int32 nV1, int32 nV2, EdgeMapping* mapping, int32 count);
-    
-public:
-    INTROSPECTION_EXTEND(ShadowVolume, RenderBatch,
-                         0);
+    ShadowVolume();
 };
 
 }

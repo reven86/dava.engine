@@ -34,48 +34,44 @@ using namespace DAVA;
 
 #if defined(__DAVAENGINE_ANDROID__)
 
-jclass JniUtils::gJavaClass = NULL;
-const char* JniUtils::gJavaClassName = NULL;
-
-jclass JniUtils::GetJavaClass() const
+JniUtils::JniUtils()
+    : jniUtils("com/dava/framework/JNIUtils")
 {
-	return gJavaClass;
-}
-
-const char* JniUtils::GetJavaClassName() const
-{
-	return gJavaClassName;
+	disableSleepTimer = jniUtils.GetStaticMethod<void>("DisableSleepTimer");
+	enableSleepTimer = jniUtils.GetStaticMethod<void>("EnableSleepTimer");
+	openURL = jniUtils.GetStaticMethod<void, jstring>("OpenURL");
+	generateGUID = jniUtils.GetStaticMethod<jstring>("GenerateGUID");
 }
 
 bool JniUtils::DisableSleepTimer()
 {
-	jmethodID mid = GetMethodID("DisableSleepTimer", "()V");
-	if (!mid)
-		return false;
-
-	GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid);
+	disableSleepTimer();
 	return true;
 }
 
 bool JniUtils::EnableSleepTimer()
 {
-	jmethodID mid = GetMethodID("EnableSleepTimer", "()V");
-	if (!mid)
-		return false;
-
-	GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid);
+	enableSleepTimer();
 	return true;
 }
 
 void JniUtils::OpenURL(const String& url)
 {
-	jmethodID mid = GetMethodID("OpenURL", "(Ljava/lang/String;)V");
-	if (mid)
-	{
-		jstring jUrl = GetEnvironment()->NewStringUTF(url.c_str());
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, jUrl);
-		GetEnvironment()->DeleteLocalRef(jUrl);
-	}
+	JNIEnv *env = JNI::GetEnv();
+	jstring jUrl = env->NewStringUTF(url.c_str());
+	openURL(jUrl);
+	env->DeleteLocalRef(jUrl);
+
+}
+
+String JniUtils::GenerateGUID()
+{
+    JNIEnv *env = JNI::GetEnv();
+    jstring jstr = generateGUID();
+    const char *str = env->GetStringUTFChars(jstr, 0);
+    DAVA::String result(str);
+    env->ReleaseStringUTFChars(jstr, str);
+    return result;
 }
 
 void DAVA::DisableSleepTimer()
@@ -104,6 +100,12 @@ void DAVA::OpenURL(const String& url)
 {
 	JniUtils jniUtils;
 	jniUtils.OpenURL(url);
+}
+
+String DAVA::GenerateGUID()
+{
+    JniUtils jniUtils;
+    return jniUtils.GenerateGUID();
 }
 
 #endif //#if defined(__DAVAENGINE_ANDROID__)

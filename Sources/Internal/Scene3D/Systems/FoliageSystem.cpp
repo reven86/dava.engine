@@ -101,7 +101,7 @@ void FoliageSystem::Process(float32 timeElapsed)
         
         Camera * camera = GetScene()->GetRenderSystem()->GetMainCamera();
         Vector<AbstractQuadTreeNode<VegetationSpatialData>*> & visibleCells = vegetationRO->BuildVisibleCellList(camera);
-        uint32 cellsCount = visibleCells.size();
+        uint32 cellsCount = static_cast<uint32>(visibleCells.size());
         
         Set<AbstractQuadTreeNode<VegetationSpatialData>* > updatableCells;
         for(uint32 i = 0; i < cellsCount; ++i)
@@ -222,6 +222,26 @@ void FoliageSystem::DebugDrawVegetation()
     if(NULL != vegetationRO)
     {
         vegetationRO->DebugDrawVisibleNodes();
+    }
+}
+
+void FoliageSystem::CollectFoliageMaterials(Set<NMaterial *> & materials)
+{
+    if(!foliageEntity)
+        return;
+
+    Set<DataNode *> dataNodes;
+    foliageEntity->GetDataNodes(dataNodes);
+
+    Set<DataNode *>::iterator it = dataNodes.begin();
+    Set<DataNode *>::iterator itEnd = dataNodes.end();
+    for(; it != itEnd; ++it)
+    {
+        NMaterial * material = dynamic_cast<NMaterial *>(*it);
+        if(material)
+        {
+            materials.insert(material);
+        }
     }
 }
 

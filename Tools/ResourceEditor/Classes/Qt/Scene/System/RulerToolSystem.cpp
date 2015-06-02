@@ -43,8 +43,8 @@
 RulerToolSystem::RulerToolSystem(Scene* scene)
 :	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
 ,	curToolSize(0)
-,	previewEnabled(true)
 ,	lineWidth(1)
+,	previewEnabled(true)
 {
 }
 
@@ -74,7 +74,7 @@ LandscapeEditorDrawSystem::eErrorType RulerToolSystem::EnableLandscapeEditing()
 	selectionSystem->SetLocked(true);
 	modifSystem->SetLocked(true);
 
-	Texture* rulerToolTexture = drawSystem->GetRulerToolProxy()->GetSprite()->GetTexture();
+	Texture* rulerToolTexture = drawSystem->GetRulerToolProxy()->GetTexture();
 	drawSystem->GetLandscapeProxy()->SetRulerToolTexture(rulerToolTexture);
 	drawSystem->GetLandscapeProxy()->SetRulerToolTextureEnabled(true);
 	landscapeSize = drawSystem->GetHeightmapProxy()->Size();
@@ -127,7 +127,7 @@ void RulerToolSystem::Process(DAVA::float32 timeElapsed)
 	}
 }
 
-void RulerToolSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void RulerToolSystem::Input(DAVA::UIEvent *event)
 {
 	if (!IsLandscapeEditingEnabled())
 	{
@@ -139,50 +139,54 @@ void RulerToolSystem::ProcessUIEvent(DAVA::UIEvent *event)
 	Vector3 point;
 	collisionSystem->LandRayTestFromCamera(point);
 
-	if (UIEvent::PHASE_KEYCHAR == event->phase)
-	{
-		if (DVKEY_BACKSPACE == event->tid)
-		{
-			if (previewEnabled)
-			{
-				RemoveLastPoint();
-			}
-			else
-			{
-				previewEnabled = true;
-			}
-			CalcPreviewPoint(point, true);
-			DrawPoints();
-		}
-		else if (DVKEY_ESCAPE == event->tid)
-		{
-			DisablePreview();
-			DrawPoints();
-		}
-	}
-	else if(UIEvent::BUTTON_1 == event->tid)
-	{
-		if(UIEvent::PHASE_ENDED == event->phase)
-		{
-			if (isIntersectsLandscape)
-			{
-				if (IsKeyModificatorPressed(DVKEY_SHIFT))
-				{
-					SetStartPoint(Vector3(point));
-				}
-				else
-				{
-					AddPoint(Vector3(point));
-				}
-			}
-		}
-		else
-		{
-			CalcPreviewPoint(point);
-		}
+    switch ( event->phase )
+    {
+    case UIEvent::PHASE_KEYCHAR:
+        if ( DVKEY_BACKSPACE == event->tid )
+        {
+            RemoveLastPoint();
+            previewEnabled = true;
+            CalcPreviewPoint( point, true );
+        }
+        else if ( DVKEY_ESCAPE == event->tid )
+        {
+            previewEnabled = false;
+        }
+        DrawPoints();
+        break;
 
-		DrawPoints();
-	}
+    case UIEvent::PHASE_MOVE:
+        if ( previewEnabled )
+        {
+            CalcPreviewPoint( point );
+            DrawPoints();
+        }
+        break;
+
+    case UIEvent::PHASE_ENDED:
+        if ( event->tid == UIEvent::BUTTON_1 && isIntersectsLandscape )
+        {
+            if ( IsKeyModificatorPressed( DVKEY_SHIFT ) )
+            {
+                SetStartPoint( Vector3( point ) );
+            }
+            else
+            {
+                if ( previewEnabled )
+                {
+                    AddPoint( Vector3( point ) );
+                }
+            }
+
+            previewEnabled = true;
+            CalcPreviewPoint( point );
+            DrawPoints();
+        }
+        break;
+
+    default:
+        break;
+    }
 }
 
 void RulerToolSystem::SetStartPoint(const DAVA::Vector3 &point)
@@ -277,10 +281,9 @@ void RulerToolSystem::DrawPoints()
 		return;
 	}
 
-	Sprite* sprite = drawSystem->GetRulerToolProxy()->GetSprite();
-	Texture* targetTexture = sprite->GetTexture();
+    Texture* targetTexture = drawSystem->GetRulerToolProxy()->GetTexture();
 
-	RenderManager::Instance()->SetRenderTarget(sprite);
+    RenderHelper::Instance()->Set2DRenderTarget(targetTexture);
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
 	Vector<Vector3> points;
@@ -308,7 +311,7 @@ void RulerToolSystem::DrawPoints()
 		const Vector3 landSize = boundingBox.max - boundingBox.min;
 		Vector3 offsetPoint = boundingBox.min;
 
-		float32 koef = (float32)targetTexture->GetWidth() / landSize.x / Core::GetVirtualToPhysicalFactor();
+        float32 koef = (float32)targetTexture->GetWidth() / landSize.x;
 
 		Vector3 startPoint = points[0];
 		for (uint32 i = 1; i < pointsCount; ++i)
@@ -332,10 +335,10 @@ void RulerToolSystem::DrawPoints()
 		}
 	}
 
-	RenderManager::Instance()->ResetColor();
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderManager::Instance()->ResetColor();
+    RenderManager::Instance()->SetRenderTarget(0);
     
-	drawSystem->GetRulerToolProxy()->UpdateSprite();
+	drawSystem->GetRulerToolProxy()->UpdateTexture();
 }
 
 void RulerToolSystem::Clear()

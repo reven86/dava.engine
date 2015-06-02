@@ -69,51 +69,19 @@ void ScreenControl::SetPos(const Vector2& value)
     this->pos = value;
 }
 
-void ScreenControl::Draw(const UIGeometricData & /*geometricData*/)
+void ScreenControl::Draw(const UIGeometricData &geometricData)
 {
     // Draw "transparent" (cheqered) backgound under the control.
-    RenderManager::Instance()->PushDrawMatrix();
-    RenderManager::Instance()->IdentityDrawMatrix();
-
-    UIGeometricData backGd;
-    backGd.scale = Vector2(1.0f, 1.0f);
-    if (screenShotMode)
-    {
-        backGd.position.x = 0.0f;
-        backGd.position.y = 0.0f;
-    }
-    else
-    {
-        backGd.position.x = Max(0.0f, pos.x * scale.x);
-        backGd.position.y = Max(0.0f, pos.y * scale.y);
-    }
-
-    const Vector2& screenSize = ScreenWrapper::Instance()->GetBackgroundFrameRect().GetSize() * scale;
-    backGd.size.x = Min(size.x * scale.x, screenSize.x);
-    backGd.size.y = Min(size.y * scale.y, screenSize.y);
-
-    backGd.size.x = Min(backGd.size.x, (size.x + pos.x) * scale.x);
-    backGd.size.y = Min(backGd.size.y, (size.y + pos.y) * scale.y);
-
-    chequeredBackground->Draw(backGd);
-
-    RenderManager::Instance()->PopDrawMatrix();
+    chequeredBackground->Draw(geometricData);
 }
 
-void ScreenControl::DrawAfterChilds(const UIGeometricData & /*geometricData*/)
+void ScreenControl::DrawAfterChilds(const UIGeometricData & geometricData)
 {
     // Draw the grid over the control.
     GridVisualizer::Instance()->DrawGridIfNeeded( GetRect(), RenderState::RENDERSTATE_2D_BLEND);
 
     static const Color RED_COLOR = Color(1.0f, 0.0f, 0.0f, 1.0f);
     static const Color GREY_COLOR = Color(0.55f, 0.55f, 0.55f, 1.0f);
-
-    RenderManager::Instance()->PushDrawMatrix();
-    RenderManager::Instance()->IdentityDrawMatrix();
-
-    UIGeometricData screenGd;
-    screenGd.scale = scale;
-    screenGd.position = pos * scale;
 
     const HierarchyTreeController::SELECTEDCONTROLNODES &selectedNodes = HierarchyTreeController::Instance()->GetActiveControlNodes();
     HierarchyTreeController::SELECTEDCONTROLNODES::const_iterator iter = selectedNodes.begin();
@@ -132,12 +100,12 @@ void ScreenControl::DrawAfterChilds(const UIGeometricData & /*geometricData*/)
         if( control->GetParent() )
         {
             UIGeometricData parentGd = control->GetParent()->GetGeometricData();
-            parentGd.AddToGeometricData(screenGd);
+            parentGd.AddToGeometricData(geometricData);
             DrawSelectionFrame(parentGd, GREY_COLOR);
         }
 
         UIGeometricData controlGd = control->GetGeometricData();
-        controlGd.AddToGeometricData(screenGd);
+        controlGd.AddToGeometricData(geometricData);
         DrawSelectionFrame(controlGd, RED_COLOR);
 
         if (!control->pivotPoint.IsZero())
@@ -148,7 +116,6 @@ void ScreenControl::DrawAfterChilds(const UIGeometricData & /*geometricData*/)
             DrawPivotPoint(pivotGd, RED_COLOR);
         }
     }
-    RenderManager::Instance()->PopDrawMatrix();
 }
 
 void ScreenControl::DrawSelectionFrame(const UIGeometricData &gd, const Color &color)

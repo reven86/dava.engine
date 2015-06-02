@@ -34,18 +34,15 @@
 #include "Utils/StringFormat.h"
 #include "FileSystem/ResourceArchive.h"
 
-
 #if defined(__DAVAENGINE_MACOS__)
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/errno.h>
 #include <copyfile.h>
 #include <libproc.h>
 #include <libgen.h>
 #elif defined(__DAVAENGINE_IPHONE__)
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/errno.h>
 #include <copyfile.h>
 #include <libgen.h>
 #include <sys/sysctl.h>
@@ -61,8 +58,6 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/errno.h>
-
 #endif //PLATFORMS
 
 namespace DAVA
@@ -209,8 +204,12 @@ bool FileSystem::MoveFile(const FilePath & existingFile, const FilePath & newFil
 {
     DVASSERT(newFile.GetType() != FilePath::PATH_IN_RESOURCES);
 
-#ifdef __DAVAENGINE_WIN32__
+#if defined(__DAVAENGINE_WIN32__)
 	DWORD flags = (overwriteExisting) ? MOVEFILE_REPLACE_EXISTING : 0;
+    // Add flag MOVEFILE_COPY_ALLOWED to allow file moving between different volumes
+    // Without this flags MoveFileEx fails and GetLastError return ERROR_NOT_SAME_DEVICE
+    // see https://msdn.microsoft.com/en-us/library/windows/desktop/aa365240%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+    flags |= MOVEFILE_COPY_ALLOWED;
 	BOOL ret = ::MoveFileExA(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), flags);
 	return ret != 0;
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -354,18 +353,16 @@ File *FileSystem::CreateFileForFrameworkPath(const FilePath & frameworkPath, uin
         frameworkPath.GetAbsolutePathname().c_str()[0] != '/')
     {
 #ifdef USE_LOCAL_RESOURCES
-        return File::CreateFromSystemPath(frameworkPath, attributes);
+        File * res = File::CreateFromSystemPath(frameworkPath, attributes);
+        if (!res)
+        	res = ZipFile::CreateFromZip(frameworkPath, attributes);
+        return res;
 #else
-        return APKFile::CreateFromAssets(frameworkPath, attributes);
+        return ZipFile::CreateFromAPK(frameworkPath, attributes);
 #endif
     }
-    else
-    {
-        return File::CreateFromSystemPath(frameworkPath, attributes);
-    }
-#else //#if defined(__DAVAENGINE_ANDROID__)
-	return File::CreateFromSystemPath(frameworkPath, attributes);
 #endif //#if defined(__DAVAENGINE_ANDROID__)
+	return File::CreateFromSystemPath(frameworkPath, attributes);
 }
 
 
@@ -389,14 +386,15 @@ const FilePath & FileSystem::GetCurrentWorkingDirectory()
 
 FilePath FileSystem::GetCurrentExecutableDirectory()
 {
-    char tempDir[2048];
     FilePath currentExecuteDirectory;
 #if defined(__DAVAENGINE_WIN32__)
-    ::GetModuleFileNameA( NULL, tempDir, 2048 );
-    currentExecuteDirectory = FilePath(tempDir).GetDirectory();
+    std::array<char, 2048> tempDir;
+    ::GetModuleFileNameA( NULL, tempDir.data(), tempDir.size() );
+    currentExecuteDirectory = FilePath(tempDir.data()).GetDirectory();
 #elif defined(__DAVAENGINE_MACOS__)
-    proc_pidpath(getpid(), tempDir, sizeof(tempDir));
-    currentExecuteDirectory = FilePath(dirname(tempDir));
+    std::array<char, 2048> tempDir;
+    proc_pidpath(getpid(), tempDir.data(), tempDir.size());
+    currentExecuteDirectory = FilePath(dirname(tempDir.data()));
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 	DVASSERT(0);
 #endif //PLATFORMS
@@ -421,7 +419,7 @@ bool FileSystem::SetCurrentWorkingDirectory(const FilePath & newWorkingDirectory
 bool FileSystem::IsFile(const FilePath & pathToCheck)
 {
 #if defined(__DAVAENGINE_ANDROID__)
-	const String& path = pathToCheck.GetAbsoluteAssetPathnameTruncated();
+	const String& path = pathToCheck.GetAbsolutePathname();
 	if (IsAPKPath(path))
 		return (fileSet.find(path) != fileSet.end());
 #endif
@@ -441,6 +439,7 @@ bool FileSystem::IsDirectory(const FilePath & pathToCheck)
 	return (stats != -1) && (0 != (stats & FILE_ATTRIBUTE_DIRECTORY));
 #else //defined (__DAVAENGINE_WIN32__)
 #if defined(__DAVAENGINE_ANDROID__)
+    
 	String path = pathToCheck.GetAbsolutePathname();
 	if (path.length() &&
 		path.at(path.length() - 1) == '/')
@@ -606,13 +605,13 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 const FilePath FileSystem::GetUserDocumentsPath()
 {
     CorePlatformAndroid *core = (CorePlatformAndroid *)Core::Instance();
-    return core->GetInternalStoragePathname() + String("/");
+    return core->GetInternalStoragePathname();
 }
 
 const FilePath FileSystem::GetPublicDocumentsPath()
 {
     CorePlatformAndroid *core = (CorePlatformAndroid *)Core::Instance();
-    return core->GetExternalStoragePathname() + String("/");
+    return core->GetExternalStoragePathname();
 }
 #endif //#if defined(__DAVAENGINE_ANDROID__)
     
@@ -711,8 +710,16 @@ int32 FileSystem::Spawn(const String& command)
 	{
 		Logger::Warning("[FileSystem::Spawn] command (%s) has return code (%d)", command.c_str(), retCode);
 	}
+    return retCode;
+}
 
-	return retCode;
+void FileSystem::MarkFolderAsNoMedia(const FilePath &folder)
+{
+#if defined(__DAVAENGINE_ANDROID__)
+	// for android we create .nomedia file to say to the OS that this directory have no media content and exclude it from index
+    File *nomedia = FileSystem::Instance()->CreateFileForFrameworkPath(folder + ".nomedia", File::WRITE | File::CREATE);
+    SafeRelease(nomedia);
+#endif
 }
 
 #if defined(__DAVAENGINE_ANDROID__)
@@ -726,7 +733,11 @@ bool FileSystem::IsAPKPath(const String& path) const
 
 void FileSystem::Init()
 {
+#ifdef USE_LOCAL_RESOURCES
+	YamlParser* parser = YamlParser::Create("~zip:/fileSystem.yaml");
+#else
 	YamlParser* parser = YamlParser::Create("~res:/fileSystem.yaml");
+#endif
 	if (parser)
 	{
 		const YamlNode* node = parser->GetRootNode();
@@ -749,8 +760,113 @@ void FileSystem::Init()
 }
 #endif
 
+bool FileSystem::CompareTextFiles(const FilePath& filePath1, const FilePath& filePath2)
+{
+    ScopedPtr<File> f1(File::Create(filePath1, File::OPEN | File::READ));
+    ScopedPtr<File> f2(File::Create(filePath2, File::OPEN | File::READ));
+
+    if (nullptr == static_cast<File *>(f1) || nullptr == static_cast<File *>(f2))
+    {
+        Logger::Error("Couldn't copmare file %s and file %s, can't open", filePath1.GetAbsolutePathname().c_str(), filePath2.GetAbsolutePathname().c_str());
+        return false;
+    }
+
+    String tmpStr1;
+    bool end1;
+    String tmpStr2;
+    bool end2;
+    bool feof1 = false;
+    bool feof2 = false;
+
+    do
+    {
+        tmpStr1 = f1->ReadLine();
+        end1 = HasLineEnding(f1);
+
+        tmpStr2 = f2->ReadLine();
+        end2 = HasLineEnding(f2);
+
+        // if one file have no line ending and another - have - we tryes to compare binary file with text file
+        // if we have no line endings - then we tryes to compare binary files - comparision is correct
+        if (end1 != end2)
+        {
+            return false;
+        }
+
+        if (tmpStr1.size() != tmpStr2.size() && 0 != tmpStr1.compare(tmpStr2))
+        {
+            return false;
+        }
+        feof1 = f1->IsEof();
+        feof2 = f2->IsEof();
+
+    } while (!feof1 && !feof2);
+
+    return (feof1 == feof2);
 }
 
+bool FileSystem::HasLineEnding(File *f)
+{
+    bool isHave = false;
+    uint8 prevChar;
+    f->Seek(-1, File::SEEK_FROM_CURRENT);
+    if (1 == f->Read(&prevChar, 1))
+    {
+        isHave = '\n' == prevChar;
+    }
 
+    // make sure that we have eof if it was before HasLineEnding call
+    if (1 == f->Read(&prevChar, 1))
+    {
+        f->Seek(-1, File::SEEK_FROM_CURRENT);
+    }
+    return isHave;
+}
 
+bool FileSystem::CompareBinaryFiles(const FilePath &filePath1, const FilePath &filePath2)
+{
+    ScopedPtr<File> f1(File::Create(filePath1, File::OPEN | File::READ));
+    ScopedPtr<File> f2(File::Create(filePath2, File::OPEN | File::READ));
 
+    if (nullptr == static_cast<File *>(f1) || nullptr == static_cast<File *>(f2))
+    {
+        Logger::Error("Couldn't copmare file %s and file %s, can't open", filePath1.GetAbsolutePathname().c_str(), filePath2.GetAbsolutePathname().c_str());
+        return false;
+    }
+
+    const uint32 bufferSize = 16*1024*1024;
+
+    uint8 *buffer1 = new uint8[bufferSize];
+    uint8 *buffer2 = new uint8[bufferSize];
+    
+    SCOPE_EXIT
+    {
+        SafeDelete(buffer1);
+        SafeDelete(buffer2);
+    };
+
+    bool res = false;
+
+    do
+    {
+        uint32 actuallyRead1 = f1->Read(buffer1, bufferSize);
+        uint32 actuallyRead2 = f2->Read(buffer2, bufferSize);
+
+        if (actuallyRead1 != actuallyRead2)
+        {
+            res = false;
+            break;
+        }
+
+        res = 0 == Memcmp(buffer1, buffer2, actuallyRead1);
+    } while (res && !f1->IsEof() && !f2->IsEof());
+
+    if (res && f1->IsEof() != f2->IsEof())
+    {
+        res = false;
+    }
+
+    return res;
+}
+
+}

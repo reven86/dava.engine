@@ -68,7 +68,9 @@ void UIStaticTextPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
     
     // All these properties are state-aware.
     RegisterColorWidgetForProperty(propertiesMap, PropertyNames::FONT_COLOR_PROPERTY_NAME, ui->textColorWidget, false, true);
-    RegisterComboBoxWidgetForProperty(propertiesMap, PropertyNames::FONT_SHADOW_COLOR_INHERIT_TYPE_PROPERTY_NAME, ui->fontShadowColorInheritTypeCombobox, false, true);
+    RegisterComboBoxWidgetForProperty(propertiesMap, PropertyNames::TEXT_COLOR_INHERIT_TYPE_PROPERTY_NAME, ui->colorInheritTypeCombobox, false, true);
+    RegisterComboBoxWidgetForProperty(propertiesMap, PropertyNames::TEXT_PER_PIXEL_ACCURACY_TYPE_PROPERTY_NAME,
+    													ui->perPixelAccuracyTypeCombobox, false, true);
 
     // Localized Text Key is handled through generic Property mechanism, but we need to update the
     // Localization Value widget each time Localization Key is changes.
@@ -92,7 +94,12 @@ void UIStaticTextPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
     }
     
     //bool isUIStaticText = (dynamic_cast<UIStaticTextMetadata*>(activeMetadata)	!= NULL);
-    
+
+    //DF-3280 multiline should be enabled for UIStaticText and UIButton
+    ui->multilineCheckBox->setEnabled(true);
+    ui->multilineBySymbolCheckBox->setEnabled(false); // false by default - this checkbox depends on multilineCheckBox one.
+    ui->multilineWidget->setVisible(true);
+
     // Register checkbox widget for property Multiline only for (DF-3280) UIStaticText and UIButton
     RegisterCheckBoxWidgetForProperty(propertiesMap, PropertyNames::TEXT_PROPERTY_MULTILINE, ui->multilineCheckBox, false, true);
     RegisterCheckBoxWidgetForProperty(propertiesMap, PropertyNames::TEXT_PROPERTY_MULTILINE_BY_SYMBOL, ui->multilineBySymbolCheckBox, false, true);
@@ -108,11 +115,6 @@ void UIStaticTextPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
     ui->returnKeyTypeWidget->setVisible(isUITextField);
     ui->isReturnKeyAutoWidget->setVisible(isUITextField);
     ui->isPasswordWidget->setVisible(isUITextField);
-    
-    //DF-3280 multiline should be enabled for UIStaticText and UIButton
-	ui->multilineCheckBox->setEnabled(true);
-	ui->multilineBySymbolCheckBox->setEnabled(false); // false by default - this checkbox depends on multilineCheckBox one.
-    ui->multilineWidget->setVisible(true);
     
     // Fitting Type is needed for all text-aware controls but UITextField.
     ui->fittingWidget->setVisible(!isUITextField);
@@ -142,6 +144,8 @@ void UIStaticTextPropertyGridWidget::Cleanup()
     }
     
     UnregisterComboBoxWidget(ui->fittingTypeComboBox);
+    UnregisterComboBoxWidget(ui->colorInheritTypeCombobox);
+    UnregisterComboBoxWidget(ui->perPixelAccuracyTypeCombobox);
     
     TextPropertyGridWidget::Cleanup();
 }
@@ -197,6 +201,8 @@ void UIStaticTextPropertyGridWidget::HandleChangePropertyFailed(const QString& p
 
 void UIStaticTextPropertyGridWidget::UpdateCheckBoxWidgetWithPropertyValue(QCheckBox* checkBoxWidget, const QMetaProperty& curProperty)
 {
+    TextPropertyGridWidget::UpdateCheckBoxWidgetWithPropertyValue(checkBoxWidget, curProperty);
+
     // Yuri Coder, 2013/10/24. "Multiline By Symbol" checkbox should be unchecked and disabled if
     // "Multiline" one is unchecked - see please DF-2393.
     if (checkBoxWidget && ui->multilineCheckBox && checkBoxWidget == ui->multilineCheckBox)
@@ -209,8 +215,6 @@ void UIStaticTextPropertyGridWidget::UpdateCheckBoxWidgetWithPropertyValue(QChec
             ui->multilineBySymbolCheckBox->setCheckState(Qt::Unchecked);
         }
     }
-    
-    TextPropertyGridWidget::UpdateCheckBoxWidgetWithPropertyValue(checkBoxWidget, curProperty);
 }
 
 void UIStaticTextPropertyGridWidget::UpdateComboBoxWidgetWithPropertyValue(QComboBox* comboBoxWidget, const QMetaProperty& curProperty)
@@ -231,13 +235,22 @@ void UIStaticTextPropertyGridWidget::UpdateComboBoxWidgetWithPropertyValue(QComb
         return SetComboboxSelectedItem(ui->fittingTypeComboBox, BackgroundGridWidgetHelper::GetFittingTypeDescByType(propertyValue) );
     }
     
-    if (comboBoxWidget == ui->fontShadowColorInheritTypeCombobox)
+    if (comboBoxWidget == ui->colorInheritTypeCombobox)
     {
         int propertyValue = PropertiesHelper::GetPropertyValue<int>(this->activeMetadata, propertyName, isPropertyValueDiffers);
 
         UpdateWidgetPalette(comboBoxWidget, propertyName);
         return SetComboboxSelectedItem(comboBoxWidget,
             BackgroundGridWidgetHelper::GetColorInheritTypeDescByType((UIControlBackground::eColorInheritType)propertyValue));
+    }
+    
+    if (comboBoxWidget == ui->perPixelAccuracyTypeCombobox)
+    {
+        int propertyValue = PropertiesHelper::GetPropertyValue<int>(this->activeMetadata, propertyName, isPropertyValueDiffers);
+
+        UpdateWidgetPalette(comboBoxWidget, propertyName);
+        return SetComboboxSelectedItem(comboBoxWidget,
+            BackgroundGridWidgetHelper::GetPerPixelAccuracyTypeDescByType((UIControlBackground::ePerPixelAccuracyType)propertyValue));
     }
 
     return TextPropertyGridWidget::UpdateComboBoxWidgetWithPropertyValue(comboBoxWidget, curProperty);
@@ -270,10 +283,16 @@ void UIStaticTextPropertyGridWidget::ProcessComboboxValueChanged(QComboBox* send
         return;
     }
 
-    if (senderWidget == ui->fontShadowColorInheritTypeCombobox)
+    if (senderWidget == ui->colorInheritTypeCombobox)
     {
         int selectedIndex = senderWidget->currentIndex();
         return CustomProcessComboboxValueChanged(iter, BackgroundGridWidgetHelper::GetColorInheritType(selectedIndex));
+    }
+    
+    if (senderWidget == ui->perPixelAccuracyTypeCombobox)
+    {
+        int selectedIndex = senderWidget->currentIndex();
+        return CustomProcessComboboxValueChanged(iter, BackgroundGridWidgetHelper::GetPerPixelAccuracyType(selectedIndex));
     }
 
     // No postprocessing was applied - use the generic process.
@@ -284,12 +303,21 @@ void UIStaticTextPropertyGridWidget::FillComboboxes()
 {
     TextPropertyGridWidget::FillComboboxes();
 
-    WidgetSignalsBlocker fontShadowColorInheritTypeBlocker(ui->fontShadowColorInheritTypeCombobox);
-    ui->fontShadowColorInheritTypeCombobox->clear();
+    WidgetSignalsBlocker colorInheritTypeBlocker(ui->colorInheritTypeCombobox);
+    WidgetSignalsBlocker perPixelAccuracyTypeBlocker(ui->perPixelAccuracyTypeCombobox);
+    
+    ui->colorInheritTypeCombobox->clear();
+    ui->perPixelAccuracyTypeCombobox->clear();
 
     int32 itemsCount = BackgroundGridWidgetHelper::GetColorInheritTypesCount();
     for (int i = 0; i < itemsCount; i ++)
     {
-        ui->fontShadowColorInheritTypeCombobox->addItem(BackgroundGridWidgetHelper::GetColorInheritTypeDesc(i));
+        ui->colorInheritTypeCombobox->addItem(BackgroundGridWidgetHelper::GetColorInheritTypeDesc(i));
+    }
+    
+    itemsCount = BackgroundGridWidgetHelper::GetPerPixelAccuracyTypesCount();
+    for (int i = 0; i < itemsCount; i ++)
+    {
+        ui->perPixelAccuracyTypeCombobox->addItem(BackgroundGridWidgetHelper::GetPerPixelAccuracyTypeDesc(i));
     }
 }

@@ -34,8 +34,8 @@ ParticleEmitterMoveCommand::ParticleEmitterMoveCommand(DAVA::ParticleEffectCompo
 	: Command2(CMDID_PARTICLE_EMITTER_MOVE, "Move particle emitter")
 	, emitter(_emitter)
 	, oldEffect(_oldEffect)
-	, oldIndex(-1)
 	, newEffect(_newEffect)
+	, oldIndex(-1)
 	, newIndex(_newIndex)
 {
 	SafeRetain(emitter);

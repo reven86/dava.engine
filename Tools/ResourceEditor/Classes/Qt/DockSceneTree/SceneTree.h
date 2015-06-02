@@ -35,41 +35,26 @@
 #include <QTreeView>
 #include <QTableView>
 #include <QTimer>
+#include <QPointer>
 
 #include "Scene/SceneSignals.h"
 #include "DockSceneTree/SceneTreeModel.h"
 #include "DockSceneTree/SceneTreeDelegate.h"
 
-class SceneTree : public QTreeView
+class SceneTree
+    : public QTreeView
 {
 	Q_OBJECT
 
 public:
-	SceneTree(QWidget *parent = 0);
+	explicit SceneTree(QWidget *parent = 0);
 	~SceneTree();
 
 public slots:
 	void ShowContextMenu(const QPoint &pos);
 	void SetFilter(const QString &filter);
 
-protected:
-	SceneTreeModel * treeModel;
-	SceneTreeFilteringModel *filteringProxyModel;
-	SceneTreeDelegate *treeDelegate;
-	QTimer refreshTimer;
-
-	bool isInSync;
-
-	void dropEvent(QDropEvent * event);
-	void dragMoveEvent(QDragMoveEvent *event);
-	void dragEnterEvent(QDragEnterEvent *event);
-
-	void GetDropParams(const QPoint &pos, QModelIndex &index, int &row, int &col);
-
-	void EmitParticleSignals(const QItemSelection & selected);
-
-public slots:
-	void LookAtSelection();
+    void LookAtSelection();
 	void RemoveSelection();
 
 	void CollapseSwitch();
@@ -110,7 +95,7 @@ public slots:
 	void SetCurrentCamera();
     void SetCustomDrawCamera();
 
-protected slots:
+private slots:
 	void SceneActivated(SceneEditor2 *scene);
 	void SceneDeactivated(SceneEditor2 *scene);
 	void SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected);
@@ -125,11 +110,11 @@ protected slots:
 	void TreeItemExpanded(const QModelIndex &index);
 
 	void SyncSelectionToTree();
-	void SyncSelectionFromTree();	
+	void SyncSelectionFromTree();
 
 	void OnRefreshTimeout();
 
-protected:
+private:
 	void ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlags, const QPoint &pos);
 	
 	void ShowContextMenuEmitter(DAVA::ParticleEffectComponent *effect, DAVA::ParticleEmitter *emitter, const QPoint &pos);
@@ -147,17 +132,31 @@ protected:
 
 	// Cleanup the selected Particle Editor items.
 	void CleanupParticleEditorSelectedItems();
-
-	void ExpandUntilFilterAccepted(const QModelIndex &index);
     
     void AddCameraActions(QMenu &menu);
 
-private:
+	void dropEvent(QDropEvent * event);
+	void dragMoveEvent(QDragMoveEvent *event);
+	void dragEnterEvent(QDragEnterEvent *event);
+
+	void GetDropParams(const QPoint &pos, QModelIndex &index, int &row, int &col);
+
+	void EmitParticleSignals(const QItemSelection & selected);
+
+    void ExpandFilteredItems();
+    void BuildExpandItemsSet(QSet<QModelIndex>& indexSet, const QModelIndex& parent = QModelIndex());
 	
 	ParticleEffectComponent *selectedEffect;
 	ParticleEmitter *selectedEmitter;
 	ParticleLayer* selectedLayer;
-	ParticleForce* selectedForce;	
+	ParticleForce* selectedForce;
+
+	QPointer< SceneTreeModel > treeModel;
+	QPointer< SceneTreeFilteringModel > filteringProxyModel;
+	SceneTreeDelegate *treeDelegate;
+	QTimer refreshTimer;
+
+	bool isInSync;
 };
 
 #endif // __QT_SCENE_TREE_H__

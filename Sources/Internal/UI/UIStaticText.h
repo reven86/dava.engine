@@ -33,27 +33,45 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
-//#include "FTFont.h"
-//#include "Texture.h"
-//#include "Sprite.h"
 #include "Render/2D/TextBlock.h"
 
 namespace DAVA
 {
 class UIStaticText : public UIControl
 {
+public:
+    enum eMultiline
+    {
+        MULTILINE_DISABLED = 0,
+        MULTILINE_ENABLED,
+        MULTILINE_ENABLED_BY_SYMBOL
+    };
+#if defined(LOCALIZATION_DEBUG)
+    static const Color  HIGHLITE_COLORS[];
+    enum DebugHighliteColor
+    {
+        RED = 0,
+        BLUE,
+        YELLOW,
+        WHITE,
+        MAGENTA,
+        GREEN,
+        NONE
+    };
+    static const float32 LOCALIZATION_RESERVED_PORTION;
+#endif
 protected:
     virtual ~UIStaticText();
 public:
 
     UIStaticText(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 
-    virtual void Draw(const UIGeometricData &geometricData);
-    virtual void SetParentColor(const Color &parentColor);
+    virtual void Draw(const UIGeometricData &geometricData) override;
+    virtual void SetParentColor(const Color &parentColor) override;
     //if requested size is 0 - text creates in the rect with size of the drawRect on draw phase
     //if requested size is >0 - text creates int the rect with the requested size
     //if requested size in <0 - rect creates for the all text size
-    void SetText(const WideString & string, const Vector2 &requestedTextRectSize = Vector2(0,0));
+    virtual void SetText(const WideString & string, const Vector2 &requestedTextRectSize = Vector2(0,0));
     void SetFont(Font * font);
     void SetTextColor(const Color& color);
 
@@ -64,15 +82,22 @@ public:
     bool GetMultiline() const;
     bool GetMultilineBySymbol() const;
 
+    void SetMargins(const UIControlBackground::UIMargins* margins);
+    const UIControlBackground::UIMargins* GetMargins() const;
+
     void SetFittingOption(int32 fittingType);//may be FITTING_DISABLED, FITTING_ENLARGE, FITTING_REDUCE, FITTING_ENLARGE | FITTING_REDUCE
     int32 GetFittingOption() const;
 
     //for background sprite
-    virtual void SetAlign(int32 _align);
+    virtual void SetAlign(int32 _align); // TODO remove legacy methods
     virtual int32 GetAlign() const;
 
     virtual void SetTextAlign(int32 _align);
     virtual int32 GetTextAlign() const;
+	virtual int32 GetTextVisualAlign() const;
+	virtual bool GetTextIsRtl() const;
+	virtual void SetTextUseRtlAlign(bool useRtlAlign);
+    virtual bool GetTextUseRtlAlign() const;
 
     const Vector2 & GetTextSize();
 
@@ -84,8 +109,8 @@ public:
 
     Font * GetFont() const { return textBlock->GetFont(); }
 
-    virtual UIStaticText *Clone();
-    virtual void CopyDataFrom(UIControl *srcControl);
+    virtual UIStaticText *Clone() override;
+    virtual void CopyDataFrom(UIControl *srcControl) override;
     TextBlock * GetTextBlock() { return textBlock; }
     const Color &GetTextColor() const;
     const Color &GetShadowColor() const;
@@ -101,18 +126,65 @@ public:
     const Vector<int32> & GetStringSizes() const;
 
 protected:
-    void PrepareSpriteInternal(BaseObject * caller, void * param, void *callerData);
-
-
+    void PrepareSpriteInternal();
+    Rect CalculateTextBlockRect(const UIGeometricData &geometricData) const;
+#if defined(LOCALIZATION_DEBUG)
+    void DrawLocalizationDebug(const UIGeometricData & textGeomData) const;
+    void DrawLocalizationErrors(const UIGeometricData & textGeomData, const UIGeometricData & elementGeomData) const;
+    void RecalculateDebugColoring();
+#endif
 protected:
     TextBlock *textBlock;
     Vector2 shadowOffset;
     UIControlBackground *shadowBg;
     UIControlBackground *textBg;
+#if defined(LOCALIZATION_DEBUG)
+    DebugHighliteColor warningColor;
+    DebugHighliteColor lineBreakError;
+#endif
 
 public:
-    void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
-    virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
+    virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader) override;
+    virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader) override;
+    
+public:
+    void SetTextWithoutRect(const WideString &text) {
+        SetText(text);
+    }
+    
+    String GetFontPresetName() const;
+    void SetFontByPresetName(const String &presetName);
+    
+    int32 GetTextColorInheritType() const;
+    void SetTextColorInheritType(int32 type);
+
+    int32 GetTextPerPixelAccuracyType() const;
+    void SetTextPerPixelAccuracyType(int32 type);
+
+    int32 GetMultilineType() const;
+    void SetMultilineType(int32 multilineType);
+
+    Vector4 GetMarginsAsVector4() const;
+    void SetMarginsAsVector4(const Vector4 &margins);
+    
+    INTROSPECTION_EXTEND(UIStaticText, UIControl,
+                         PROPERTY("text", "Text", GetText, SetTextWithoutRect, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("font", "Font", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
+                         
+                         PROPERTY("textColor", "Text Color", GetTextColor, SetTextColor, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("textcolorInheritType", InspDesc("Text Color Inherit Type", GlobalEnumMap<UIControlBackground::eColorInheritType>::Instance()), GetTextColorInheritType, SetTextColorInheritType, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("textperPixelAccuracyType", InspDesc("Text Per Pixel Accuracy Type", GlobalEnumMap<UIControlBackground::ePerPixelAccuracyType>::Instance()), GetTextPerPixelAccuracyType, SetTextPerPixelAccuracyType, I_SAVE | I_VIEW | I_EDIT)
+
+                         PROPERTY("shadowoffset", "Shadow Offset", GetShadowOffset, SetShadowOffset, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("shadowcolor", "Shadow Color", GetShadowColor, SetShadowColor, I_SAVE | I_VIEW | I_EDIT)
+
+                         PROPERTY("multiline", InspDesc("Multi Line", GlobalEnumMap<eMultiline>::Instance()), GetMultilineType, SetMultilineType, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("fitting", InspDesc("Fitting", GlobalEnumMap<TextBlock::eFitType>::Instance(), InspDesc::T_FLAGS), GetFittingOption, SetFittingOption, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("textalign", InspDesc("Text Align", GlobalEnumMap<eAlign>::Instance(), InspDesc::T_FLAGS), GetTextAlign, SetTextAlign, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("textUseRtlAlign", "Use Rtl Align", GetTextUseRtlAlign, SetTextUseRtlAlign, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("textMargins", "Text margins", GetMarginsAsVector4, SetMarginsAsVector4, I_SAVE | I_VIEW | I_EDIT)
+                         );
+
 };
 
 };

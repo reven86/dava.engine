@@ -41,98 +41,6 @@
 		D027BE0D0CA8024100BD95DA /* FAXStructures.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BDB30CA8024100BD95DA /* FAXStructures.h */; };
 		D027BE140CA8025A00BD95DA /* StdAfx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D027BE0E0CA8025900BD95DA /* StdAfx.cpp */; };
 		D027BE150CA8025A00BD95DA /* StdAfx.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE0F0CA8025900BD95DA /* StdAfx.h */; };
-		D027BE220CA802CC00BD95DA /* acconfig.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE160CA802CC00BD95DA /* acconfig.h */; };
-		D027BE230CA802CC00BD95DA /* c14n.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BE170CA802CC00BD95DA /* c14n.c */; };
-		D027BE240CA802CC00BD95DA /* catalog.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BE180CA802CC00BD95DA /* catalog.c */; };
-		D027BE250CA802CC00BD95DA /* chvalid.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BE190CA802CC00BD95DA /* chvalid.c */; };
-		D027BE2C0CA802E300BD95DA /* config-ps3.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE260CA802E300BD95DA /* config-ps3.h */; };
-		D027BE2D0CA802E300BD95DA /* config.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE270CA802E300BD95DA /* config.h */; };
-		D027BEE70CA8030600BD95DA /* debugXML.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BE2E0CA8030600BD95DA /* debugXML.c */; };
-		D027BEE80CA8030600BD95DA /* dict.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BE2F0CA8030600BD95DA /* dict.c */; };
-		D027BEE90CA8030600BD95DA /* DOCBparser.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BE300CA8030600BD95DA /* DOCBparser.c */; };
-		D027BEEA0CA8030600BD95DA /* elfgcchack.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE310CA8030600BD95DA /* elfgcchack.h */; };
-		D027BEEB0CA8030600BD95DA /* encoding.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BE320CA8030600BD95DA /* encoding.c */; };
-		D027BEEC0CA8030600BD95DA /* entities.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BE330CA8030600BD95DA /* entities.c */; };
-		D027BEED0CA8030600BD95DA /* error.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BE340CA8030600BD95DA /* error.c */; };
-		D027BEEE0CA8030600BD95DA /* globals.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BE350CA8030600BD95DA /* globals.c */; };
-		D027BEEF0CA8030600BD95DA /* hash.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BE360CA8030600BD95DA /* hash.c */; };
-		D027BEF00CA8030600BD95DA /* HTMLparser.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BE370CA8030600BD95DA /* HTMLparser.c */; };
-		D027BEF10CA8030600BD95DA /* HTMLtree.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BE380CA8030600BD95DA /* HTMLtree.c */; };
-		D027BEF20CA8030600BD95DA /* c14n.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE3B0CA8030600BD95DA /* c14n.h */; };
-		D027BEF30CA8030600BD95DA /* catalog.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE3C0CA8030600BD95DA /* catalog.h */; };
-		D027BEF40CA8030600BD95DA /* chvalid.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE3D0CA8030600BD95DA /* chvalid.h */; };
-		D027BEF50CA8030600BD95DA /* debugXML.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE3E0CA8030600BD95DA /* debugXML.h */; };
-		D027BEF60CA8030600BD95DA /* dict.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE3F0CA8030600BD95DA /* dict.h */; };
-		D027BEF70CA8030600BD95DA /* DOCBparser.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE400CA8030600BD95DA /* DOCBparser.h */; };
-		D027BEF80CA8030600BD95DA /* encoding.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE410CA8030600BD95DA /* encoding.h */; };
-		D027BEF90CA8030600BD95DA /* entities.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE420CA8030600BD95DA /* entities.h */; };
-		D027BEFA0CA8030600BD95DA /* globals.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE430CA8030600BD95DA /* globals.h */; };
-		D027BEFB0CA8030600BD95DA /* hash.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE440CA8030600BD95DA /* hash.h */; };
-		D027BEFC0CA8030600BD95DA /* HTMLparser.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE450CA8030600BD95DA /* HTMLparser.h */; };
-		D027BEFD0CA8030600BD95DA /* HTMLtree.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE460CA8030600BD95DA /* HTMLtree.h */; };
-		D027BEFE0CA8030600BD95DA /* list.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE470CA8030600BD95DA /* list.h */; };
-		D027BEFF0CA8030600BD95DA /* nanoftp.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE480CA8030600BD95DA /* nanoftp.h */; };
-		D027BF000CA8030600BD95DA /* nanohttp.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE490CA8030600BD95DA /* nanohttp.h */; };
-		D027BF010CA8030600BD95DA /* parser.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE4A0CA8030600BD95DA /* parser.h */; };
-		D027BF020CA8030600BD95DA /* parserInternals.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE4B0CA8030600BD95DA /* parserInternals.h */; };
-		D027BF030CA8030600BD95DA /* pattern.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE4C0CA8030600BD95DA /* pattern.h */; };
-		D027BF040CA8030600BD95DA /* relaxng.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE4D0CA8030600BD95DA /* relaxng.h */; };
-		D027BF050CA8030600BD95DA /* SAX.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE4E0CA8030600BD95DA /* SAX.h */; };
-		D027BF060CA8030600BD95DA /* SAX2.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE4F0CA8030600BD95DA /* SAX2.h */; };
-		D027BF070CA8030600BD95DA /* schemasInternals.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE500CA8030600BD95DA /* schemasInternals.h */; };
-		D027BF080CA8030600BD95DA /* threads.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE510CA8030600BD95DA /* threads.h */; };
-		D027BF090CA8030600BD95DA /* tree.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE520CA8030600BD95DA /* tree.h */; };
-		D027BF0A0CA8030600BD95DA /* uri.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE530CA8030600BD95DA /* uri.h */; };
-		D027BF0B0CA8030600BD95DA /* valid.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE540CA8030600BD95DA /* valid.h */; };
-		D027BF0C0CA8030600BD95DA /* xinclude.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE550CA8030600BD95DA /* xinclude.h */; };
-		D027BF0D0CA8030600BD95DA /* xlink.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE560CA8030600BD95DA /* xlink.h */; };
-		D027BF0E0CA8030600BD95DA /* xmlautomata.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE570CA8030600BD95DA /* xmlautomata.h */; };
-		D027BF0F0CA8030600BD95DA /* xmlerror.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE580CA8030600BD95DA /* xmlerror.h */; };
-		D027BF100CA8030600BD95DA /* xmlexports.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE590CA8030600BD95DA /* xmlexports.h */; };
-		D027BF110CA8030600BD95DA /* xmlIO.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE5A0CA8030600BD95DA /* xmlIO.h */; };
-		D027BF120CA8030600BD95DA /* xmlmemory.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE5B0CA8030600BD95DA /* xmlmemory.h */; };
-		D027BF130CA8030600BD95DA /* xmlmodule.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE5C0CA8030600BD95DA /* xmlmodule.h */; };
-		D027BF140CA8030600BD95DA /* xmlreader.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE5D0CA8030600BD95DA /* xmlreader.h */; };
-		D027BF150CA8030600BD95DA /* xmlregexp.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE5E0CA8030600BD95DA /* xmlregexp.h */; };
-		D027BF160CA8030600BD95DA /* xmlsave.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE5F0CA8030600BD95DA /* xmlsave.h */; };
-		D027BF170CA8030600BD95DA /* xmlschemas.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE600CA8030600BD95DA /* xmlschemas.h */; };
-		D027BF180CA8030600BD95DA /* xmlschemastypes.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE610CA8030600BD95DA /* xmlschemastypes.h */; };
-		D027BF190CA8030600BD95DA /* xmlstring.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE620CA8030600BD95DA /* xmlstring.h */; };
-		D027BF1A0CA8030600BD95DA /* xmlunicode.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE630CA8030600BD95DA /* xmlunicode.h */; };
-		D027BF1B0CA8030600BD95DA /* xmlversion.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE640CA8030600BD95DA /* xmlversion.h */; };
-		D027BF1C0CA8030600BD95DA /* xmlwriter.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE650CA8030600BD95DA /* xmlwriter.h */; };
-		D027BF1D0CA8030600BD95DA /* xpath.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE660CA8030600BD95DA /* xpath.h */; };
-		D027BF1E0CA8030600BD95DA /* xpathInternals.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE670CA8030600BD95DA /* xpathInternals.h */; };
-		D027BF1F0CA8030600BD95DA /* xpointer.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE680CA8030600BD95DA /* xpointer.h */; };
-		D027BF200CA8030600BD95DA /* win32config.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE690CA8030600BD95DA /* win32config.h */; };
-		D027BF210CA8030600BD95DA /* wsockcompat.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE6A0CA8030600BD95DA /* wsockcompat.h */; };
-		D027BF220CA8030600BD95DA /* legacy.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BE6B0CA8030600BD95DA /* legacy.c */; };
-		D027BF230CA8030600BD95DA /* libxml.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BE6C0CA8030600BD95DA /* libxml.h */; };
-		D027BF6F0CA8032D00BD95DA /* list.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF240CA8032D00BD95DA /* list.c */; };
-		D027BF700CA8032D00BD95DA /* nanoftp.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF250CA8032D00BD95DA /* nanoftp.c */; };
-		D027BF710CA8032D00BD95DA /* nanohttp.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF260CA8032D00BD95DA /* nanohttp.c */; };
-		D027BF720CA8032D00BD95DA /* parser.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF270CA8032D00BD95DA /* parser.c */; };
-		D027BF730CA8032D00BD95DA /* parserInternals.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF280CA8032D00BD95DA /* parserInternals.c */; };
-		D027BF740CA8032D00BD95DA /* pattern.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF290CA8032D00BD95DA /* pattern.c */; };
-		D027BF750CA8032D00BD95DA /* relaxng.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF2A0CA8032D00BD95DA /* relaxng.c */; };
-		D027BF760CA8032D00BD95DA /* SAX.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF2B0CA8032D00BD95DA /* SAX.c */; };
-		D027BF770CA8032D00BD95DA /* SAX2.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF2C0CA8032D00BD95DA /* SAX2.c */; };
-		D027BF780CA8032D00BD95DA /* threads.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF2D0CA8032D00BD95DA /* threads.c */; };
-		D027BF790CA8032D00BD95DA /* tree.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF2E0CA8032D00BD95DA /* tree.c */; };
-		D027BF7A0CA8032D00BD95DA /* uri.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF2F0CA8032D00BD95DA /* uri.c */; };
-		D027BF7B0CA8032D00BD95DA /* valid.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF300CA8032D00BD95DA /* valid.c */; };
-		D027BF7C0CA8032D00BD95DA /* xinclude.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF310CA8032D00BD95DA /* xinclude.c */; };
-		D027BF7D0CA8032D00BD95DA /* xlink.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF320CA8032D00BD95DA /* xlink.c */; };
-		D027BF7E0CA8032D00BD95DA /* xmlcatalog.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF330CA8032D00BD95DA /* xmlcatalog.c */; };
-		D027BF7F0CA8032D00BD95DA /* xmlIO.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF340CA8032D00BD95DA /* xmlIO.c */; };
-		D027BF800CA8032D00BD95DA /* xmlmemory.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF350CA8032D00BD95DA /* xmlmemory.c */; };
-		D027BF810CA8032D00BD95DA /* xmlmodule.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF360CA8032D00BD95DA /* xmlmodule.c */; };
-		D027BF820CA8032D00BD95DA /* xmlreader.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF370CA8032D00BD95DA /* xmlreader.c */; };
-		D027BF830CA8032D00BD95DA /* xmlregexp.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF380CA8032D00BD95DA /* xmlregexp.c */; };
-		D027BF840CA8032D00BD95DA /* xmlsave.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF390CA8032D00BD95DA /* xmlsave.c */; };
-		D027BF850CA8032D00BD95DA /* xmlstring.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF3A0CA8032D00BD95DA /* xmlstring.c */; };
-		D027BF860CA8032D00BD95DA /* xmlunicode.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF3B0CA8032D00BD95DA /* xmlunicode.c */; };
-		D027BF870CA8032D00BD95DA /* xmlwriter.c in Sources */ = {isa = PBXBuildFile; fileRef = D027BF3C0CA8032D00BD95DA /* xmlwriter.c */; };
 		D027C18F0CA8038900BD95DA /* FCDAnimated.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D027BF880CA8038800BD95DA /* FCDAnimated.cpp */; };
 		D027C1900CA8038900BD95DA /* FCDAnimated.h in Headers */ = {isa = PBXBuildFile; fileRef = D027BF890CA8038800BD95DA /* FCDAnimated.h */; };
 		D027C1910CA8038900BD95DA /* FCDAnimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D027BF8A0CA8038800BD95DA /* FCDAnimation.cpp */; };
@@ -479,98 +387,6 @@
 		D027BDB30CA8024100BD95DA /* FAXStructures.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FAXStructures.h; path = ../FColladaPlugins/FArchiveXML/FAXStructures.h; sourceTree = SOURCE_ROOT; };
 		D027BE0E0CA8025900BD95DA /* StdAfx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StdAfx.cpp; path = ../FColladaPlugins/FArchiveXML/StdAfx.cpp; sourceTree = SOURCE_ROOT; };
 		D027BE0F0CA8025900BD95DA /* StdAfx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StdAfx.h; path = ../FColladaPlugins/FArchiveXML/StdAfx.h; sourceTree = SOURCE_ROOT; };
-		D027BE160CA802CC00BD95DA /* acconfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = acconfig.h; path = LibXML/acconfig.h; sourceTree = SOURCE_ROOT; };
-		D027BE170CA802CC00BD95DA /* c14n.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = c14n.c; path = LibXML/c14n.c; sourceTree = SOURCE_ROOT; };
-		D027BE180CA802CC00BD95DA /* catalog.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = catalog.c; path = LibXML/catalog.c; sourceTree = SOURCE_ROOT; };
-		D027BE190CA802CC00BD95DA /* chvalid.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = chvalid.c; path = LibXML/chvalid.c; sourceTree = SOURCE_ROOT; };
-		D027BE260CA802E300BD95DA /* config-ps3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "config-ps3.h"; path = "LibXML/config-ps3.h"; sourceTree = SOURCE_ROOT; };
-		D027BE270CA802E300BD95DA /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = config.h; path = LibXML/config.h; sourceTree = SOURCE_ROOT; };
-		D027BE2E0CA8030600BD95DA /* debugXML.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = debugXML.c; path = LibXML/debugXML.c; sourceTree = SOURCE_ROOT; };
-		D027BE2F0CA8030600BD95DA /* dict.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = dict.c; path = LibXML/dict.c; sourceTree = SOURCE_ROOT; };
-		D027BE300CA8030600BD95DA /* DOCBparser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = DOCBparser.c; path = LibXML/DOCBparser.c; sourceTree = SOURCE_ROOT; };
-		D027BE310CA8030600BD95DA /* elfgcchack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = elfgcchack.h; path = LibXML/elfgcchack.h; sourceTree = SOURCE_ROOT; };
-		D027BE320CA8030600BD95DA /* encoding.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = encoding.c; path = LibXML/encoding.c; sourceTree = SOURCE_ROOT; };
-		D027BE330CA8030600BD95DA /* entities.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = entities.c; path = LibXML/entities.c; sourceTree = SOURCE_ROOT; };
-		D027BE340CA8030600BD95DA /* error.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = error.c; path = LibXML/error.c; sourceTree = SOURCE_ROOT; };
-		D027BE350CA8030600BD95DA /* globals.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = globals.c; path = LibXML/globals.c; sourceTree = SOURCE_ROOT; };
-		D027BE360CA8030600BD95DA /* hash.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = hash.c; path = LibXML/hash.c; sourceTree = SOURCE_ROOT; };
-		D027BE370CA8030600BD95DA /* HTMLparser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = HTMLparser.c; path = LibXML/HTMLparser.c; sourceTree = SOURCE_ROOT; };
-		D027BE380CA8030600BD95DA /* HTMLtree.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = HTMLtree.c; path = LibXML/HTMLtree.c; sourceTree = SOURCE_ROOT; };
-		D027BE3B0CA8030600BD95DA /* c14n.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = c14n.h; path = LibXML/include/libxml/c14n.h; sourceTree = SOURCE_ROOT; };
-		D027BE3C0CA8030600BD95DA /* catalog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = catalog.h; path = LibXML/include/libxml/catalog.h; sourceTree = SOURCE_ROOT; };
-		D027BE3D0CA8030600BD95DA /* chvalid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = chvalid.h; path = LibXML/include/libxml/chvalid.h; sourceTree = SOURCE_ROOT; };
-		D027BE3E0CA8030600BD95DA /* debugXML.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = debugXML.h; path = LibXML/include/libxml/debugXML.h; sourceTree = SOURCE_ROOT; };
-		D027BE3F0CA8030600BD95DA /* dict.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = dict.h; path = LibXML/include/libxml/dict.h; sourceTree = SOURCE_ROOT; };
-		D027BE400CA8030600BD95DA /* DOCBparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DOCBparser.h; path = LibXML/include/libxml/DOCBparser.h; sourceTree = SOURCE_ROOT; };
-		D027BE410CA8030600BD95DA /* encoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = encoding.h; path = LibXML/include/libxml/encoding.h; sourceTree = SOURCE_ROOT; };
-		D027BE420CA8030600BD95DA /* entities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = entities.h; path = LibXML/include/libxml/entities.h; sourceTree = SOURCE_ROOT; };
-		D027BE430CA8030600BD95DA /* globals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = globals.h; path = LibXML/include/libxml/globals.h; sourceTree = SOURCE_ROOT; };
-		D027BE440CA8030600BD95DA /* hash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = hash.h; path = LibXML/include/libxml/hash.h; sourceTree = SOURCE_ROOT; };
-		D027BE450CA8030600BD95DA /* HTMLparser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HTMLparser.h; path = LibXML/include/libxml/HTMLparser.h; sourceTree = SOURCE_ROOT; };
-		D027BE460CA8030600BD95DA /* HTMLtree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HTMLtree.h; path = LibXML/include/libxml/HTMLtree.h; sourceTree = SOURCE_ROOT; };
-		D027BE470CA8030600BD95DA /* list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = list.h; path = LibXML/include/libxml/list.h; sourceTree = SOURCE_ROOT; };
-		D027BE480CA8030600BD95DA /* nanoftp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = nanoftp.h; path = LibXML/include/libxml/nanoftp.h; sourceTree = SOURCE_ROOT; };
-		D027BE490CA8030600BD95DA /* nanohttp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = nanohttp.h; path = LibXML/include/libxml/nanohttp.h; sourceTree = SOURCE_ROOT; };
-		D027BE4A0CA8030600BD95DA /* parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = parser.h; path = LibXML/include/libxml/parser.h; sourceTree = SOURCE_ROOT; };
-		D027BE4B0CA8030600BD95DA /* parserInternals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = parserInternals.h; path = LibXML/include/libxml/parserInternals.h; sourceTree = SOURCE_ROOT; };
-		D027BE4C0CA8030600BD95DA /* pattern.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pattern.h; path = LibXML/include/libxml/pattern.h; sourceTree = SOURCE_ROOT; };
-		D027BE4D0CA8030600BD95DA /* relaxng.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = relaxng.h; path = LibXML/include/libxml/relaxng.h; sourceTree = SOURCE_ROOT; };
-		D027BE4E0CA8030600BD95DA /* SAX.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SAX.h; path = LibXML/include/libxml/SAX.h; sourceTree = SOURCE_ROOT; };
-		D027BE4F0CA8030600BD95DA /* SAX2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SAX2.h; path = LibXML/include/libxml/SAX2.h; sourceTree = SOURCE_ROOT; };
-		D027BE500CA8030600BD95DA /* schemasInternals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = schemasInternals.h; path = LibXML/include/libxml/schemasInternals.h; sourceTree = SOURCE_ROOT; };
-		D027BE510CA8030600BD95DA /* threads.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = threads.h; path = LibXML/include/libxml/threads.h; sourceTree = SOURCE_ROOT; };
-		D027BE520CA8030600BD95DA /* tree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tree.h; path = LibXML/include/libxml/tree.h; sourceTree = SOURCE_ROOT; };
-		D027BE530CA8030600BD95DA /* uri.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = uri.h; path = LibXML/include/libxml/uri.h; sourceTree = SOURCE_ROOT; };
-		D027BE540CA8030600BD95DA /* valid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = valid.h; path = LibXML/include/libxml/valid.h; sourceTree = SOURCE_ROOT; };
-		D027BE550CA8030600BD95DA /* xinclude.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xinclude.h; path = LibXML/include/libxml/xinclude.h; sourceTree = SOURCE_ROOT; };
-		D027BE560CA8030600BD95DA /* xlink.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xlink.h; path = LibXML/include/libxml/xlink.h; sourceTree = SOURCE_ROOT; };
-		D027BE570CA8030600BD95DA /* xmlautomata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xmlautomata.h; path = LibXML/include/libxml/xmlautomata.h; sourceTree = SOURCE_ROOT; };
-		D027BE580CA8030600BD95DA /* xmlerror.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xmlerror.h; path = LibXML/include/libxml/xmlerror.h; sourceTree = SOURCE_ROOT; };
-		D027BE590CA8030600BD95DA /* xmlexports.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xmlexports.h; path = LibXML/include/libxml/xmlexports.h; sourceTree = SOURCE_ROOT; };
-		D027BE5A0CA8030600BD95DA /* xmlIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xmlIO.h; path = LibXML/include/libxml/xmlIO.h; sourceTree = SOURCE_ROOT; };
-		D027BE5B0CA8030600BD95DA /* xmlmemory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xmlmemory.h; path = LibXML/include/libxml/xmlmemory.h; sourceTree = SOURCE_ROOT; };
-		D027BE5C0CA8030600BD95DA /* xmlmodule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xmlmodule.h; path = LibXML/include/libxml/xmlmodule.h; sourceTree = SOURCE_ROOT; };
-		D027BE5D0CA8030600BD95DA /* xmlreader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xmlreader.h; path = LibXML/include/libxml/xmlreader.h; sourceTree = SOURCE_ROOT; };
-		D027BE5E0CA8030600BD95DA /* xmlregexp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xmlregexp.h; path = LibXML/include/libxml/xmlregexp.h; sourceTree = SOURCE_ROOT; };
-		D027BE5F0CA8030600BD95DA /* xmlsave.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xmlsave.h; path = LibXML/include/libxml/xmlsave.h; sourceTree = SOURCE_ROOT; };
-		D027BE600CA8030600BD95DA /* xmlschemas.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xmlschemas.h; path = LibXML/include/libxml/xmlschemas.h; sourceTree = SOURCE_ROOT; };
-		D027BE610CA8030600BD95DA /* xmlschemastypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xmlschemastypes.h; path = LibXML/include/libxml/xmlschemastypes.h; sourceTree = SOURCE_ROOT; };
-		D027BE620CA8030600BD95DA /* xmlstring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xmlstring.h; path = LibXML/include/libxml/xmlstring.h; sourceTree = SOURCE_ROOT; };
-		D027BE630CA8030600BD95DA /* xmlunicode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xmlunicode.h; path = LibXML/include/libxml/xmlunicode.h; sourceTree = SOURCE_ROOT; };
-		D027BE640CA8030600BD95DA /* xmlversion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xmlversion.h; path = LibXML/include/libxml/xmlversion.h; sourceTree = SOURCE_ROOT; };
-		D027BE650CA8030600BD95DA /* xmlwriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xmlwriter.h; path = LibXML/include/libxml/xmlwriter.h; sourceTree = SOURCE_ROOT; };
-		D027BE660CA8030600BD95DA /* xpath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xpath.h; path = LibXML/include/libxml/xpath.h; sourceTree = SOURCE_ROOT; };
-		D027BE670CA8030600BD95DA /* xpathInternals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xpathInternals.h; path = LibXML/include/libxml/xpathInternals.h; sourceTree = SOURCE_ROOT; };
-		D027BE680CA8030600BD95DA /* xpointer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xpointer.h; path = LibXML/include/libxml/xpointer.h; sourceTree = SOURCE_ROOT; };
-		D027BE690CA8030600BD95DA /* win32config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = win32config.h; path = LibXML/include/win32config.h; sourceTree = SOURCE_ROOT; };
-		D027BE6A0CA8030600BD95DA /* wsockcompat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = wsockcompat.h; path = LibXML/include/wsockcompat.h; sourceTree = SOURCE_ROOT; };
-		D027BE6B0CA8030600BD95DA /* legacy.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = legacy.c; path = LibXML/legacy.c; sourceTree = SOURCE_ROOT; };
-		D027BE6C0CA8030600BD95DA /* libxml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = libxml.h; path = LibXML/libxml.h; sourceTree = SOURCE_ROOT; };
-		D027BF240CA8032D00BD95DA /* list.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = list.c; path = LibXML/list.c; sourceTree = SOURCE_ROOT; };
-		D027BF250CA8032D00BD95DA /* nanoftp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = nanoftp.c; path = LibXML/nanoftp.c; sourceTree = SOURCE_ROOT; };
-		D027BF260CA8032D00BD95DA /* nanohttp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = nanohttp.c; path = LibXML/nanohttp.c; sourceTree = SOURCE_ROOT; };
-		D027BF270CA8032D00BD95DA /* parser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = parser.c; path = LibXML/parser.c; sourceTree = SOURCE_ROOT; };
-		D027BF280CA8032D00BD95DA /* parserInternals.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = parserInternals.c; path = LibXML/parserInternals.c; sourceTree = SOURCE_ROOT; };
-		D027BF290CA8032D00BD95DA /* pattern.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = pattern.c; path = LibXML/pattern.c; sourceTree = SOURCE_ROOT; };
-		D027BF2A0CA8032D00BD95DA /* relaxng.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = relaxng.c; path = LibXML/relaxng.c; sourceTree = SOURCE_ROOT; };
-		D027BF2B0CA8032D00BD95DA /* SAX.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SAX.c; path = LibXML/SAX.c; sourceTree = SOURCE_ROOT; };
-		D027BF2C0CA8032D00BD95DA /* SAX2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SAX2.c; path = LibXML/SAX2.c; sourceTree = SOURCE_ROOT; };
-		D027BF2D0CA8032D00BD95DA /* threads.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = threads.c; path = LibXML/threads.c; sourceTree = SOURCE_ROOT; };
-		D027BF2E0CA8032D00BD95DA /* tree.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = tree.c; path = LibXML/tree.c; sourceTree = SOURCE_ROOT; };
-		D027BF2F0CA8032D00BD95DA /* uri.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = uri.c; path = LibXML/uri.c; sourceTree = SOURCE_ROOT; };
-		D027BF300CA8032D00BD95DA /* valid.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = valid.c; path = LibXML/valid.c; sourceTree = SOURCE_ROOT; };
-		D027BF310CA8032D00BD95DA /* xinclude.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xinclude.c; path = LibXML/xinclude.c; sourceTree = SOURCE_ROOT; };
-		D027BF320CA8032D00BD95DA /* xlink.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xlink.c; path = LibXML/xlink.c; sourceTree = SOURCE_ROOT; };
-		D027BF330CA8032D00BD95DA /* xmlcatalog.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlcatalog.c; path = LibXML/xmlcatalog.c; sourceTree = SOURCE_ROOT; };
-		D027BF340CA8032D00BD95DA /* xmlIO.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlIO.c; path = LibXML/xmlIO.c; sourceTree = SOURCE_ROOT; };
-		D027BF350CA8032D00BD95DA /* xmlmemory.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlmemory.c; path = LibXML/xmlmemory.c; sourceTree = SOURCE_ROOT; };
-		D027BF360CA8032D00BD95DA /* xmlmodule.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlmodule.c; path = LibXML/xmlmodule.c; sourceTree = SOURCE_ROOT; };
-		D027BF370CA8032D00BD95DA /* xmlreader.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlreader.c; path = LibXML/xmlreader.c; sourceTree = SOURCE_ROOT; };
-		D027BF380CA8032D00BD95DA /* xmlregexp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlregexp.c; path = LibXML/xmlregexp.c; sourceTree = SOURCE_ROOT; };
-		D027BF390CA8032D00BD95DA /* xmlsave.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlsave.c; path = LibXML/xmlsave.c; sourceTree = SOURCE_ROOT; };
-		D027BF3A0CA8032D00BD95DA /* xmlstring.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlstring.c; path = LibXML/xmlstring.c; sourceTree = SOURCE_ROOT; };
-		D027BF3B0CA8032D00BD95DA /* xmlunicode.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlunicode.c; path = LibXML/xmlunicode.c; sourceTree = SOURCE_ROOT; };
-		D027BF3C0CA8032D00BD95DA /* xmlwriter.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmlwriter.c; path = LibXML/xmlwriter.c; sourceTree = SOURCE_ROOT; };
 		D027BF880CA8038800BD95DA /* FCDAnimated.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDAnimated.cpp; path = FCDocument/FCDAnimated.cpp; sourceTree = SOURCE_ROOT; };
 		D027BF890CA8038800BD95DA /* FCDAnimated.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FCDAnimated.h; path = FCDocument/FCDAnimated.h; sourceTree = SOURCE_ROOT; };
 		D027BF8A0CA8038800BD95DA /* FCDAnimation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FCDAnimation.cpp; path = FCDocument/FCDAnimation.cpp; sourceTree = SOURCE_ROOT; };
@@ -927,7 +743,6 @@
 				D027C43F0CA80F3000BD95DA /* FCollada.h */,
 				D027C43A0CA80F2000BD95DA /* DLLEntry.cpp */,
 				D0E3D0BD0C60C61F007FB141 /* FArchiveXML */,
-				C3D609990ADFD88500019D9C /* LibXML */,
 				D08EFFB30B866D7900040832 /* FCDocument */,
 				C3D6078D0ADFD14100019D9C /* FMath */,
 				C3D6078B0ADFD11200019D9C /* FUtils */,
@@ -1112,123 +927,6 @@
 			);
 			name = FMath;
 			sourceTree = "<group>";
-		};
-		C3D609990ADFD88500019D9C /* LibXML */ = {
-			isa = PBXGroup;
-			children = (
-				D027BF240CA8032D00BD95DA /* list.c */,
-				D027BF250CA8032D00BD95DA /* nanoftp.c */,
-				D027BF260CA8032D00BD95DA /* nanohttp.c */,
-				D027BF270CA8032D00BD95DA /* parser.c */,
-				D027BF280CA8032D00BD95DA /* parserInternals.c */,
-				D027BF290CA8032D00BD95DA /* pattern.c */,
-				D027BF2A0CA8032D00BD95DA /* relaxng.c */,
-				D027BF2B0CA8032D00BD95DA /* SAX.c */,
-				D027BF2C0CA8032D00BD95DA /* SAX2.c */,
-				D027BF2D0CA8032D00BD95DA /* threads.c */,
-				D027BF2E0CA8032D00BD95DA /* tree.c */,
-				D027BF2F0CA8032D00BD95DA /* uri.c */,
-				D027BF300CA8032D00BD95DA /* valid.c */,
-				D027BF310CA8032D00BD95DA /* xinclude.c */,
-				D027BF320CA8032D00BD95DA /* xlink.c */,
-				D027BF330CA8032D00BD95DA /* xmlcatalog.c */,
-				D027BF340CA8032D00BD95DA /* xmlIO.c */,
-				D027BF350CA8032D00BD95DA /* xmlmemory.c */,
-				D027BF360CA8032D00BD95DA /* xmlmodule.c */,
-				D027BF370CA8032D00BD95DA /* xmlreader.c */,
-				D027BF380CA8032D00BD95DA /* xmlregexp.c */,
-				D027BF390CA8032D00BD95DA /* xmlsave.c */,
-				D027BF3A0CA8032D00BD95DA /* xmlstring.c */,
-				D027BF3B0CA8032D00BD95DA /* xmlunicode.c */,
-				D027BF3C0CA8032D00BD95DA /* xmlwriter.c */,
-				D027BE2E0CA8030600BD95DA /* debugXML.c */,
-				D027BE2F0CA8030600BD95DA /* dict.c */,
-				D027BE300CA8030600BD95DA /* DOCBparser.c */,
-				D027BE310CA8030600BD95DA /* elfgcchack.h */,
-				D027BE320CA8030600BD95DA /* encoding.c */,
-				D027BE330CA8030600BD95DA /* entities.c */,
-				D027BE340CA8030600BD95DA /* error.c */,
-				D027BE350CA8030600BD95DA /* globals.c */,
-				D027BE360CA8030600BD95DA /* hash.c */,
-				D027BE370CA8030600BD95DA /* HTMLparser.c */,
-				D027BE380CA8030600BD95DA /* HTMLtree.c */,
-				D027BE390CA8030600BD95DA /* include */,
-				D027BE6B0CA8030600BD95DA /* legacy.c */,
-				D027BE6C0CA8030600BD95DA /* libxml.h */,
-				D027BE260CA802E300BD95DA /* config-ps3.h */,
-				D027BE270CA802E300BD95DA /* config.h */,
-				D027BE160CA802CC00BD95DA /* acconfig.h */,
-				D027BE170CA802CC00BD95DA /* c14n.c */,
-				D027BE180CA802CC00BD95DA /* catalog.c */,
-				D027BE190CA802CC00BD95DA /* chvalid.c */,
-			);
-			name = LibXML;
-			sourceTree = "<group>";
-		};
-		D027BE390CA8030600BD95DA /* include */ = {
-			isa = PBXGroup;
-			children = (
-				D027BE3A0CA8030600BD95DA /* libxml */,
-				D027BE690CA8030600BD95DA /* win32config.h */,
-				D027BE6A0CA8030600BD95DA /* wsockcompat.h */,
-			);
-			name = include;
-			path = LibXML/include;
-			sourceTree = SOURCE_ROOT;
-		};
-		D027BE3A0CA8030600BD95DA /* libxml */ = {
-			isa = PBXGroup;
-			children = (
-				D027BE3B0CA8030600BD95DA /* c14n.h */,
-				D027BE3C0CA8030600BD95DA /* catalog.h */,
-				D027BE3D0CA8030600BD95DA /* chvalid.h */,
-				D027BE3E0CA8030600BD95DA /* debugXML.h */,
-				D027BE3F0CA8030600BD95DA /* dict.h */,
-				D027BE400CA8030600BD95DA /* DOCBparser.h */,
-				D027BE410CA8030600BD95DA /* encoding.h */,
-				D027BE420CA8030600BD95DA /* entities.h */,
-				D027BE430CA8030600BD95DA /* globals.h */,
-				D027BE440CA8030600BD95DA /* hash.h */,
-				D027BE450CA8030600BD95DA /* HTMLparser.h */,
-				D027BE460CA8030600BD95DA /* HTMLtree.h */,
-				D027BE470CA8030600BD95DA /* list.h */,
-				D027BE480CA8030600BD95DA /* nanoftp.h */,
-				D027BE490CA8030600BD95DA /* nanohttp.h */,
-				D027BE4A0CA8030600BD95DA /* parser.h */,
-				D027BE4B0CA8030600BD95DA /* parserInternals.h */,
-				D027BE4C0CA8030600BD95DA /* pattern.h */,
-				D027BE4D0CA8030600BD95DA /* relaxng.h */,
-				D027BE4E0CA8030600BD95DA /* SAX.h */,
-				D027BE4F0CA8030600BD95DA /* SAX2.h */,
-				D027BE500CA8030600BD95DA /* schemasInternals.h */,
-				D027BE510CA8030600BD95DA /* threads.h */,
-				D027BE520CA8030600BD95DA /* tree.h */,
-				D027BE530CA8030600BD95DA /* uri.h */,
-				D027BE540CA8030600BD95DA /* valid.h */,
-				D027BE550CA8030600BD95DA /* xinclude.h */,
-				D027BE560CA8030600BD95DA /* xlink.h */,
-				D027BE570CA8030600BD95DA /* xmlautomata.h */,
-				D027BE580CA8030600BD95DA /* xmlerror.h */,
-				D027BE590CA8030600BD95DA /* xmlexports.h */,
-				D027BE5A0CA8030600BD95DA /* xmlIO.h */,
-				D027BE5B0CA8030600BD95DA /* xmlmemory.h */,
-				D027BE5C0CA8030600BD95DA /* xmlmodule.h */,
-				D027BE5D0CA8030600BD95DA /* xmlreader.h */,
-				D027BE5E0CA8030600BD95DA /* xmlregexp.h */,
-				D027BE5F0CA8030600BD95DA /* xmlsave.h */,
-				D027BE600CA8030600BD95DA /* xmlschemas.h */,
-				D027BE610CA8030600BD95DA /* xmlschemastypes.h */,
-				D027BE620CA8030600BD95DA /* xmlstring.h */,
-				D027BE630CA8030600BD95DA /* xmlunicode.h */,
-				D027BE640CA8030600BD95DA /* xmlversion.h */,
-				D027BE650CA8030600BD95DA /* xmlwriter.h */,
-				D027BE660CA8030600BD95DA /* xpath.h */,
-				D027BE670CA8030600BD95DA /* xpathInternals.h */,
-				D027BE680CA8030600BD95DA /* xpointer.h */,
-			);
-			name = libxml;
-			path = LibXML/include/libxml;
-			sourceTree = SOURCE_ROOT;
 		};
 		D027C6030CA841AD00BD95DA /* Libs */ = {
 			isa = PBXGroup;
@@ -1476,59 +1174,6 @@
 				D027BDF70CA8024100BD95DA /* FAXColladaWriter.h in Headers */,
 				D027BE0D0CA8024100BD95DA /* FAXStructures.h in Headers */,
 				D027BE150CA8025A00BD95DA /* StdAfx.h in Headers */,
-				D027BE220CA802CC00BD95DA /* acconfig.h in Headers */,
-				D027BE2C0CA802E300BD95DA /* config-ps3.h in Headers */,
-				D027BE2D0CA802E300BD95DA /* config.h in Headers */,
-				D027BEEA0CA8030600BD95DA /* elfgcchack.h in Headers */,
-				D027BEF20CA8030600BD95DA /* c14n.h in Headers */,
-				D027BEF30CA8030600BD95DA /* catalog.h in Headers */,
-				D027BEF40CA8030600BD95DA /* chvalid.h in Headers */,
-				D027BEF50CA8030600BD95DA /* debugXML.h in Headers */,
-				D027BEF60CA8030600BD95DA /* dict.h in Headers */,
-				D027BEF70CA8030600BD95DA /* DOCBparser.h in Headers */,
-				D027BEF80CA8030600BD95DA /* encoding.h in Headers */,
-				D027BEF90CA8030600BD95DA /* entities.h in Headers */,
-				D027BEFA0CA8030600BD95DA /* globals.h in Headers */,
-				D027BEFB0CA8030600BD95DA /* hash.h in Headers */,
-				D027BEFC0CA8030600BD95DA /* HTMLparser.h in Headers */,
-				D027BEFD0CA8030600BD95DA /* HTMLtree.h in Headers */,
-				D027BEFE0CA8030600BD95DA /* list.h in Headers */,
-				D027BEFF0CA8030600BD95DA /* nanoftp.h in Headers */,
-				D027BF000CA8030600BD95DA /* nanohttp.h in Headers */,
-				D027BF010CA8030600BD95DA /* parser.h in Headers */,
-				D027BF020CA8030600BD95DA /* parserInternals.h in Headers */,
-				D027BF030CA8030600BD95DA /* pattern.h in Headers */,
-				D027BF040CA8030600BD95DA /* relaxng.h in Headers */,
-				D027BF050CA8030600BD95DA /* SAX.h in Headers */,
-				D027BF060CA8030600BD95DA /* SAX2.h in Headers */,
-				D027BF070CA8030600BD95DA /* schemasInternals.h in Headers */,
-				D027BF080CA8030600BD95DA /* threads.h in Headers */,
-				D027BF090CA8030600BD95DA /* tree.h in Headers */,
-				D027BF0A0CA8030600BD95DA /* uri.h in Headers */,
-				D027BF0B0CA8030600BD95DA /* valid.h in Headers */,
-				D027BF0C0CA8030600BD95DA /* xinclude.h in Headers */,
-				D027BF0D0CA8030600BD95DA /* xlink.h in Headers */,
-				D027BF0E0CA8030600BD95DA /* xmlautomata.h in Headers */,
-				D027BF0F0CA8030600BD95DA /* xmlerror.h in Headers */,
-				D027BF100CA8030600BD95DA /* xmlexports.h in Headers */,
-				D027BF110CA8030600BD95DA /* xmlIO.h in Headers */,
-				D027BF120CA8030600BD95DA /* xmlmemory.h in Headers */,
-				D027BF130CA8030600BD95DA /* xmlmodule.h in Headers */,
-				D027BF140CA8030600BD95DA /* xmlreader.h in Headers */,
-				D027BF150CA8030600BD95DA /* xmlregexp.h in Headers */,
-				D027BF160CA8030600BD95DA /* xmlsave.h in Headers */,
-				D027BF170CA8030600BD95DA /* xmlschemas.h in Headers */,
-				D027BF180CA8030600BD95DA /* xmlschemastypes.h in Headers */,
-				D027BF190CA8030600BD95DA /* xmlstring.h in Headers */,
-				D027BF1A0CA8030600BD95DA /* xmlunicode.h in Headers */,
-				D027BF1B0CA8030600BD95DA /* xmlversion.h in Headers */,
-				D027BF1C0CA8030600BD95DA /* xmlwriter.h in Headers */,
-				D027BF1D0CA8030600BD95DA /* xpath.h in Headers */,
-				D027BF1E0CA8030600BD95DA /* xpathInternals.h in Headers */,
-				D027BF1F0CA8030600BD95DA /* xpointer.h in Headers */,
-				D027BF200CA8030600BD95DA /* win32config.h in Headers */,
-				D027BF210CA8030600BD95DA /* wsockcompat.h in Headers */,
-				D027BF230CA8030600BD95DA /* libxml.h in Headers */,
 				D027C1900CA8038900BD95DA /* FCDAnimated.h in Headers */,
 				D027C1920CA8038900BD95DA /* FCDAnimation.h in Headers */,
 				D027C1940CA8038900BD95DA /* FCDAnimationChannel.h in Headers */,
@@ -1774,45 +1419,6 @@
 				D027BE0B0CA8024100BD95DA /* FAXSceneExport.cpp in Sources */,
 				D027BE0C0CA8024100BD95DA /* FAXSceneImport.cpp in Sources */,
 				D027BE140CA8025A00BD95DA /* StdAfx.cpp in Sources */,
-				D027BE230CA802CC00BD95DA /* c14n.c in Sources */,
-				D027BE240CA802CC00BD95DA /* catalog.c in Sources */,
-				D027BE250CA802CC00BD95DA /* chvalid.c in Sources */,
-				D027BEE70CA8030600BD95DA /* debugXML.c in Sources */,
-				D027BEE80CA8030600BD95DA /* dict.c in Sources */,
-				D027BEE90CA8030600BD95DA /* DOCBparser.c in Sources */,
-				D027BEEB0CA8030600BD95DA /* encoding.c in Sources */,
-				D027BEEC0CA8030600BD95DA /* entities.c in Sources */,
-				D027BEED0CA8030600BD95DA /* error.c in Sources */,
-				D027BEEE0CA8030600BD95DA /* globals.c in Sources */,
-				D027BEEF0CA8030600BD95DA /* hash.c in Sources */,
-				D027BEF00CA8030600BD95DA /* HTMLparser.c in Sources */,
-				D027BEF10CA8030600BD95DA /* HTMLtree.c in Sources */,
-				D027BF220CA8030600BD95DA /* legacy.c in Sources */,
-				D027BF6F0CA8032D00BD95DA /* list.c in Sources */,
-				D027BF700CA8032D00BD95DA /* nanoftp.c in Sources */,
-				D027BF710CA8032D00BD95DA /* nanohttp.c in Sources */,
-				D027BF720CA8032D00BD95DA /* parser.c in Sources */,
-				D027BF730CA8032D00BD95DA /* parserInternals.c in Sources */,
-				D027BF740CA8032D00BD95DA /* pattern.c in Sources */,
-				D027BF750CA8032D00BD95DA /* relaxng.c in Sources */,
-				D027BF760CA8032D00BD95DA /* SAX.c in Sources */,
-				D027BF770CA8032D00BD95DA /* SAX2.c in Sources */,
-				D027BF780CA8032D00BD95DA /* threads.c in Sources */,
-				D027BF790CA8032D00BD95DA /* tree.c in Sources */,
-				D027BF7A0CA8032D00BD95DA /* uri.c in Sources */,
-				D027BF7B0CA8032D00BD95DA /* valid.c in Sources */,
-				D027BF7C0CA8032D00BD95DA /* xinclude.c in Sources */,
-				D027BF7D0CA8032D00BD95DA /* xlink.c in Sources */,
-				D027BF7E0CA8032D00BD95DA /* xmlcatalog.c in Sources */,
-				D027BF7F0CA8032D00BD95DA /* xmlIO.c in Sources */,
-				D027BF800CA8032D00BD95DA /* xmlmemory.c in Sources */,
-				D027BF810CA8032D00BD95DA /* xmlmodule.c in Sources */,
-				D027BF820CA8032D00BD95DA /* xmlreader.c in Sources */,
-				D027BF830CA8032D00BD95DA /* xmlregexp.c in Sources */,
-				D027BF840CA8032D00BD95DA /* xmlsave.c in Sources */,
-				D027BF850CA8032D00BD95DA /* xmlstring.c in Sources */,
-				D027BF860CA8032D00BD95DA /* xmlunicode.c in Sources */,
-				D027BF870CA8032D00BD95DA /* xmlwriter.c in Sources */,
 				D027C18F0CA8038900BD95DA /* FCDAnimated.cpp in Sources */,
 				D027C1910CA8038900BD95DA /* FCDAnimation.cpp in Sources */,
 				D027C1930CA8038900BD95DA /* FCDAnimationChannel.cpp in Sources */,
@@ -1969,6 +1575,7 @@
 		C315DF6109783EFB005D77BE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LIBRARY = "libc++";
 				COPY_PHASE_STRIP = NO;
 				GCC_INPUT_FILETYPE = sourcecode.cpp.cpp;
 				GCC_MODEL_TUNING = G4;
@@ -2001,6 +1608,7 @@
 		C315DF6209783EFB005D77BE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LIBRARY = "libc++";
 				COPY_PHASE_STRIP = YES;
 				GCC_INPUT_FILETYPE = sourcecode.cpp.cpp;
 				GCC_MODEL_TUNING = G4;
@@ -2034,6 +1642,7 @@
 		C315DFDE097840EB005D77BE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_MODEL_TUNING = G5;
@@ -2054,6 +1663,7 @@
 		C315DFDF097840EB005D77BE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;

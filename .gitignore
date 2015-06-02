@@ -5,6 +5,7 @@
 build/     # ignore all files in the build/ directory
 /build     # ignore all files in the build/ directory
 /build/    # ignore all files in the build/ directory
+_build/    # ignore all files in the _build/ directory
 xcuserdata/
 /xcuserdata
 /xcuserdata/
@@ -21,6 +22,8 @@ _DebugQt
 Release
 ReleaseQt
 _ReleaseQt
+_build*
+.build*
 *Generated*
 *.vcxproj.user
 *.suo
@@ -35,3 +38,9 @@ ddd
 /scene_sample_multi/
 /testproj/
 fmod.log
+*.user
+/DavaConfig.in
+*.xccheckout
+Projects/UnitTests/android/assets
+
+Projects/UnitTests/android/.settings/*

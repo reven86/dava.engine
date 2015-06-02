@@ -30,6 +30,7 @@
 #define __QUALITY_SWITCHER_H__
 
 #include <QDialog>
+#include "Scene3D/Entity.h"
 
 class QualitySwitcher : public QDialog
 {
@@ -39,16 +40,22 @@ public:
     static void Show();
     static void ShowModal();
 
+signals:
+    void QualityChanged();
+
 protected:
-    QualitySwitcher(QWidget *parent = NULL);
-    ~QualitySwitcher();
+    QualitySwitcher(QWidget *parent = nullptr);
+    ~QualitySwitcher() = default;
 
     void ApplyTx();
     void ApplyMa();
 
+    void UpdateEntitiesToQuality(DAVA::Entity *e);
+
 protected slots:
     void OnTxQualitySelect(int index);
     void OnMaQualitySelect(int index);
+    void OnOptionClick(bool);
 };
 
 #endif // __QUALITY_SWITCHER_H__

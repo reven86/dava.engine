@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>357</width>
-    <height>850</height>
+    <height>910</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -328,6 +328,18 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
       </item>
       <item>
        <widget class="QWidget" name="fontColorInheritTypeWidget" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
         <layout class="QHBoxLayout" name="horizontalLayout_18">
          <property name="margin">
           <number>0</number>
@@ -335,13 +347,37 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
          <item>
           <widget class="QLabel" name="label">
            <property name="text">
-            <string>Font/Shadow
-Color Inherit Type:</string>
+            <string>Color Inherit Type:</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="fontShadowColorInheritTypeCombobox"/>
+          <widget class="QComboBox" name="colorInheritTypeCombobox"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="fontPerPixelAccuracyTypeWidget" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_19">
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="perPixelAccuracyLabel">
+           <property name="text">
+            <string>Per Pixel Accuracy Type:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="perPixelAccuracyTypeCombobox"/>
          </item>
         </layout>
        </widget>
@@ -462,15 +498,6 @@ Color Inherit Type:</string>
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="shadowColorInheritWidget" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout_17">
-         <property name="margin">
-          <number>0</number>
-         </property>
-        </layout>
-       </widget>
-      </item>
-      <item>
        <widget class="QWidget" name="alignWidget" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
@@ -491,6 +518,40 @@ Color Inherit Type:</string>
          </item>
          <item>
           <widget class="QComboBox" name="alignComboBox"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="useRtlAlignWidget" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_17">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QCheckBox" name="useRtlAlignCheckBox">
+           <property name="text">
+            <string>Use RTL align</string>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -536,6 +597,32 @@ Color Inherit Type:</string>
           <widget class="QCheckBox" name="isPasswordCheckbox">
            <property name="text">
             <string>Is Password</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="maxTextLengthWidget" native="true">
+        <layout class="QHBoxLayout" name="horizontalLayout_17">
+         <property name="margin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="maxTextLengthLabel">
+           <property name="text">
+            <string>Max Text Length</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="maxTextLengthSpinBox">
+           <property name="minimum">
+            <number>-1</number>
+           </property>
+           <property name="maximum">
+            <number>9999</number>
            </property>
           </widget>
          </item>
@@ -714,6 +801,9 @@ Color Inherit Type:</string>
         </layout>
        </widget>
       </item>
+      <item>
+       <widget class="UIMarginsPropertyGridWidget" name="marginsWidget" native="true"/>
+      </item>
      </layout>
     </widget>
    </item>
@@ -724,6 +814,12 @@ Color Inherit Type:</string>
    <class>QColorWidget</class>
    <extends>QWidget</extends>
    <header>qcolorwidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>UIMarginsPropertyGridWidget</class>
+   <extends>QWidget</extends>
+   <header>uimarginspropertygridwidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <tabstops>
@@ -736,7 +832,7 @@ Color Inherit Type:</string>
   <tabstop>fontPresetEditButton</tabstop>
   <tabstop>fontSelectButton</tabstop>
   <tabstop>fontSizeSpinBox</tabstop>
-  <tabstop>fontShadowColorInheritTypeCombobox</tabstop>
+  <tabstop>colorInheritTypeCombobox</tabstop>
   <tabstop>shadowOffsetXSpinBox</tabstop>
   <tabstop>shadowOffsetYSpinBox</tabstop>
   <tabstop>alignComboBox</tabstop>

@@ -30,26 +30,26 @@
 #include "QtPropertyDataValidator.h"
 
 QtPropertyData::QtPropertyData()
-	: curFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable)
-	, parent(NULL)
+	: isValuesMerged( true )
+	, curFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable)
 	, updatingValue(false)
 	, model(NULL)
+	, parent(NULL)
 	, userData(NULL)
 	, optionalButtonsViewport(NULL)
-    , validator(NULL)
-    , isValuesMerged( true )
+	, validator(NULL)
 { }
 
 QtPropertyData::QtPropertyData(const QVariant &value, Qt::ItemFlags flags)
 	: curValue(value)
+	, isValuesMerged( true )
 	, curFlags(flags)
-	, parent(NULL)
 	, updatingValue(false)
 	, model(NULL)
+	, parent(NULL)
 	, userData(NULL)
 	, optionalButtonsViewport(NULL)
-    , validator(NULL)
-    , isValuesMerged( true )
+	, validator(NULL)
 { }
 
 QtPropertyData::~QtPropertyData()
@@ -64,15 +64,10 @@ QtPropertyData::~QtPropertyData()
 
 	for (int i = 0; i < optionalButtons.size(); i++)
 	{
-		optionalButtons.at(i)->setParent(NULL);
 		optionalButtons.at(i)->deleteLater();
 	}
 
-	if(NULL != userData)
-	{
-		delete userData;
-	}
-    
+    DAVA::SafeDelete(userData);
     DAVA::SafeDelete(validator);
 }
 
@@ -919,11 +914,50 @@ QVariant QtPropertyData::GetValueAlias() const
 	return QVariant();
 }
 
+void QtPropertyData::SetTempValue(const QVariant &value)
+{
+    foreach ( QtPropertyData *merged, mergedData )
+    {
+        QtPropertyDataValidator *mergedValidator = merged->validator;
+        QVariant validatedValue = value;
+
+        if (NULL != mergedValidator)
+        {
+            if(!mergedValidator->Validate(validatedValue))
+            {
+                continue;
+            }
+        }
+
+        merged->SetTempValueInternal(validatedValue);
+    }
+
+    // set value
+    bool valueIsValid = true;
+    QVariant validatedValue = value;
+
+    if (NULL != validator)
+    {
+        valueIsValid = validator->Validate(validatedValue);
+    }
+   
+    if(valueIsValid)
+    {
+        SetTempValueInternal(validatedValue);
+    }
+}
+
 void QtPropertyData::SetValueInternal(const QVariant &value)
 {
 	// should be re-implemented by sub-class
 
 	curValue = value;
+}
+
+void QtPropertyData::SetTempValueInternal(QVariant const& value)
+{
+    // should be re-implemented by sub-class
+    Q_UNUSED(value);
 }
 
 QWidget* QtPropertyData::CreateEditorInternal(QWidget *parent, const QStyleOptionViewItem& option) const
@@ -953,10 +987,10 @@ bool QtPropertyData::SetEditorDataInternal(QWidget *editor)
 
 QtPropertyToolButton::QtPropertyToolButton(QtPropertyData* data, QWidget * parent /* = 0 */)
 	: QToolButton(parent)
-	, propertyData(data)
-	, eventsPassThrought(false) 
+	, eventsPassThrought(false)
 	, overlayed(false)
-    , stateVariant(ACTIVE_ALWAYS)
+	, propertyData(data)
+	, stateVariant(ACTIVE_ALWAYS)
 {}
 
 QtPropertyToolButton::~QtPropertyToolButton()

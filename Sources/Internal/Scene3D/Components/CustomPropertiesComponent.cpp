@@ -39,7 +39,6 @@
 
 namespace DAVA
 {
-	REGISTER_CLASS(CustomPropertiesComponent)
 	
 	CustomPropertiesComponent::CustomPropertiesComponent()
 	{

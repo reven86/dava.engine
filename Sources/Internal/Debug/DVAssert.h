@@ -74,23 +74,31 @@
 
 #if defined(ENABLE_ASSERT_BREAK)
 
-    #if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__) // Mac & iPhone & Android
 
-        #define DebugBreak() { __debugbreak(); }
+#include <signal.h>
+#include <unistd.h>
 
-    #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__) // Mac & iPhone & Android
+#endif //PLATFORMS
 
-        #include <signal.h>
-        #include <unistd.h>
-        #define DebugBreak() { kill( getpid(), SIGINT ) ; }
+inline void DavaDebugBreak()
+{
+#if defined(__DAVAENGINE_WIN32__)
 
-    #else //PLATFORMS
-        //other platforms
-    #endif //PLATFORMS
+    __debugbreak();
+
+#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__) // Mac & iPhone & Android
+
+    raise(SIGTRAP);
+
+#else //PLATFORMS
+    //other platforms
+#endif //PLATFORMS
+}
 
 #else
 
-#define DebugBreak() 
+#define DavaDebugBreak() 
 
 #endif  //__DAVAENGINE_DEBUG__
 
@@ -104,9 +112,13 @@
 #endif //ENABLE_ASSERT_LOGGING
 
 #if defined(ENABLE_ASSERT_MESSAGE)
-    #define MessageFunction(messagetype, assertType, expr, msg, file, line) { DAVA::DVAssertMessage::ShowMessage(messagetype, "%s\n\n%s\n%s\n\nFile: %s\nLine: %d", assertType, expr, msg, file, line); }
+    #define MessageFunction(messagetype, assertType, expr, msg, file, line) \
+        DAVA::DVAssertMessage::ShowMessage(messagetype, \
+            "%s\n\n%s\n%s\n\nFile: %s\nLine: %d", assertType, expr, msg, file, \
+            line)
 #else //ENABLE_ASSERT_MESSAGE
-    #define MessageFunction(messagetype, assertType, expr, msg, file, line)
+    #define MessageFunction(messagetype, assertType, expr, msg, file, line) \
+        false
 #endif //ENABLE_ASSERT_MESSAGE
 
 
@@ -115,35 +127,42 @@
 #if !defined(__DAVAENGINE_DEBUG__) && !defined(ENABLE_ASSERT_MESSAGE) && !defined(ENABLE_ASSERT_LOGGING) && !defined(ENABLE_ASSERT_BREAK)
 
 	// no assert functions in release builds
-	#define DVASSERT(expr)
-	#define DVASSERT_MSG(expr, msg)
-	#define DVWARNING(expr, msg)
+	#define DVASSERT(expr) {}
+	#define DVASSERT_MSG(expr, msg) {}
+	#define DVWARNING(expr, msg) {}
 
-	#define DVVERIFY(expr) (expr)
+	#define DVVERIFY(expr) do {(void)(expr);} while(false);
 
 #else
 
 #define DVASSERT(expr)\
-	if (!(expr))\
-	{\
+    if (!(expr))\
+    {\
         LogErrorFunction("DV_ASSERT", #expr, "", __FILE__, __LINE__);\
-		MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", #expr, "", __FILE__, __LINE__);\
-		DebugBreak()\
+        if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", \
+                #expr, "", __FILE__, __LINE__))\
+        { \
+            DavaDebugBreak();\
+        } \
 	}\
 
 #define DVASSERT_MSG(expr, msg)\
-	if (!(expr))\
-	{\
+    if (!(expr))\
+    {\
         LogErrorFunction("DV_ASSERT", #expr, msg, __FILE__, __LINE__);\
-		MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", #expr, msg, __FILE__, __LINE__);\
-		DebugBreak()\
-	}\
+        if (MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", \
+                #expr, msg, __FILE__, __LINE__))\
+        { \
+            DavaDebugBreak();\
+        } \
+    }\
 
 #define DVWARNING(expr, msg)\
     if (!(expr))\
     {\
         LogWarningFunction("DV_WARNING", #expr, msg, __FILE__, __LINE__);\
-		MessageFunction(DAVA::DVAssertMessage::TRY_NONMODAL, "DV_WARNING", #expr, msg, __FILE__, __LINE__);\
+		MessageFunction(DAVA::DVAssertMessage::TRY_NONMODAL, "DV_WARNING", \
+		        #expr, msg, __FILE__, __LINE__);\
     }\
 
 #define DVVERIFY(expr) DVASSERT(expr)

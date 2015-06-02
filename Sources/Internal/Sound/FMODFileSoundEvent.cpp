@@ -66,13 +66,16 @@ FMODFileSoundEvent * FMODFileSoundEvent::CreateWithFlags(const FilePath & fileNa
     }
     else
     {
-        FMOD_VERIFY(soundSystem->fmodSystem->createSound(fileName.GetStringValue().c_str(), fmodMode, 0, &sound->fmodSound));
+        if (soundSystem->fmodSystem)
+        {
+            FMOD_VERIFY(soundSystem->fmodSystem->createSound(fileName.GetStringValue().c_str(), fmodMode, 0, &sound->fmodSound));
+        }
 
         if(!sound->fmodSound)
         {
             soundMapMutex.Unlock();
             SafeRelease(sound);
-            return 0;
+            return nullptr;
         }
 
         if(flags & SOUND_EVENT_CREATE_LOOP)
@@ -82,16 +85,20 @@ FMODFileSoundEvent * FMODFileSoundEvent::CreateWithFlags(const FilePath & fileNa
         soundRefsMap[sound->fmodSound] = 1;
     }
     soundMapMutex.Unlock();
-	FMOD_VERIFY(soundSystem->fmodSystem->createChannelGroup(0, &sound->fmodInstanceGroup));
-    FMOD_VERIFY(soundSystem->masterChannelGroup->addGroup(sound->fmodInstanceGroup));
+
+    if (soundSystem->fmodSystem)
+    {
+        FMOD_VERIFY(soundSystem->fmodSystem->createChannelGroup(0, &sound->fmodInstanceGroup));
+        FMOD_VERIFY(soundSystem->masterChannelGroup->addGroup(sound->fmodInstanceGroup));
+    }
     
 	return sound;
 }
     
 FMODFileSoundEvent::FMODFileSoundEvent(const FilePath & _fileName, uint32 _flags, int32 _priority) :
     fileName(_fileName),
-    flags(_flags),
     priority(_priority),
+    flags(_flags),
     fmodSound(0),
     fmodInstanceGroup(0)
 {
@@ -125,24 +132,32 @@ int32 FMODFileSoundEvent::Release()
 
 bool FMODFileSoundEvent::Trigger()
 {
-    FMOD::Channel * fmodInstance = 0;
+    if (nullptr == SoundSystem::Instance()->fmodSystem)
+        return false;
+
+    FMOD::Channel * fmodInstance = nullptr;
     FMOD_VERIFY(SoundSystem::Instance()->fmodSystem->playSound(FMOD_CHANNEL_FREE, fmodSound, true, &fmodInstance)); //start sound paused
-    FMOD_VERIFY(fmodInstance->setPriority(priority));
-    FMOD_VERIFY(fmodInstance->setCallback(SoundInstanceEndPlaying));
-    FMOD_VERIFY(fmodInstance->setUserData(this));
-    FMOD_VERIFY(fmodInstance->setChannelGroup(fmodInstanceGroup));
+    if (fmodInstance && fmodInstanceGroup)
+    {
+        FMOD_VERIFY(fmodInstance->setPriority(priority));
+        FMOD_VERIFY(fmodInstance->setCallback(SoundInstanceEndPlaying));
+        FMOD_VERIFY(fmodInstance->setUserData(this));
+        FMOD_VERIFY(fmodInstance->setChannelGroup(fmodInstanceGroup));
 
-    if(flags & SOUND_EVENT_CREATE_3D)
-        FMOD_VERIFY(fmodInstance->set3DAttributes((FMOD_VECTOR*)&position, 0));
+        if (flags & SOUND_EVENT_CREATE_3D)
+            FMOD_VERIFY(fmodInstance->set3DAttributes((FMOD_VECTOR*)&position, 0));
 
-	FMOD_VERIFY(fmodInstanceGroup->setPaused(false));
-	FMOD_VERIFY(fmodInstance->setPaused(false));
+        FMOD_VERIFY(fmodInstanceGroup->setPaused(false));
+        FMOD_VERIFY(fmodInstance->setPaused(false));
 
-	Retain();
+        Retain();
 
-    PerformEvent(EVENT_TRIGGERED);
+        PerformEvent(EVENT_TRIGGERED);
 
-    return true;
+        return true;
+    }
+
+    return false;
 }
 
 void FMODFileSoundEvent::SetPosition(const Vector3 & _position)
@@ -154,7 +169,7 @@ void FMODFileSoundEvent::SetPosition(const Vector3 & _position)
 
 void FMODFileSoundEvent::UpdateInstancesPosition()
 {
-	if(flags & SOUND_EVENT_CREATE_3D)
+    if (flags & SOUND_EVENT_CREATE_3D && fmodInstanceGroup)
 	{
 		int32 instancesCount = 0;
 		FMOD_VERIFY(fmodInstanceGroup->getNumChannels(&instancesCount));
@@ -170,40 +185,60 @@ void FMODFileSoundEvent::UpdateInstancesPosition()
 void FMODFileSoundEvent::SetVolume(float32 _volume)
 {
     volume = _volume;
-	FMOD_VERIFY(fmodInstanceGroup->setVolume(volume));
+    if (fmodInstanceGroup)
+    {
+        FMOD_VERIFY(fmodInstanceGroup->setVolume(volume));
+    }
 }
 
 bool FMODFileSoundEvent::IsActive() const
 {
-    int32 numChanels = 0;
-    FMOD_VERIFY(fmodInstanceGroup->getNumChannels(&numChanels));
+    if (fmodInstanceGroup)
+    {
+        int32 numChanels = 0;
+        FMOD_VERIFY(fmodInstanceGroup->getNumChannels(&numChanels));
+
+        bool isPaused = false;
+        FMOD_VERIFY(fmodInstanceGroup->getPaused(&isPaused));
+
+        return numChanels != 0 && !isPaused;
+    }
     
-    bool isPaused = false;
-    FMOD_VERIFY(fmodInstanceGroup->getPaused(&isPaused));
-    
-	return numChanels != 0 && !isPaused;
+    return false;
 }
 
 void FMODFileSoundEvent::Stop(bool force /* = false */)
 {
-    FMOD_VERIFY(fmodInstanceGroup->stop());
+    if (fmodInstanceGroup)
+    {
+        FMOD_VERIFY(fmodInstanceGroup->stop());
+    }
 }
 
 int32 FMODFileSoundEvent::GetLoopCount()
 {
-	int32 loopCount;
-	FMOD_VERIFY(fmodSound->getLoopCount(&loopCount));
+	int32 loopCount = 0;
+    if (fmodInstanceGroup)
+    {
+        FMOD_VERIFY(fmodSound->getLoopCount(&loopCount));
+    }
 	return loopCount;
 }
 
 void FMODFileSoundEvent::SetLoopCount(int32 loopCount)
 {
-	FMOD_VERIFY(fmodSound->setLoopCount(loopCount));
+    if (fmodInstanceGroup)
+    {
+        FMOD_VERIFY(fmodSound->setLoopCount(loopCount));
+    }
 }
 
 void FMODFileSoundEvent::SetPaused(bool paused)
 {
-    FMOD_VERIFY(fmodInstanceGroup->setPaused(paused));
+    if (fmodInstanceGroup)
+    {
+        FMOD_VERIFY(fmodInstanceGroup->setPaused(paused));
+    }
 }
 
 FMOD_RESULT F_CALLBACK FMODFileSoundEvent::SoundInstanceEndPlaying(FMOD_CHANNEL *channel, FMOD_CHANNEL_CALLBACKTYPE type, void *commanddata1, void *commanddata2)

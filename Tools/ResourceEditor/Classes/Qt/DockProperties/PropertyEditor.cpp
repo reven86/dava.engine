@@ -48,6 +48,7 @@
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataMetaObject.h"
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/HeightmapValidator.h"
 #include "Tools/QtPropertyEditor/QtPropertyDataValidator/TexturePathValidator.h"
+#include "Tools/QtPropertyEditor/QtPropertyDataValidator/ScenePathValidator.h"
 #include "Commands2/MetaObjModifyCommand.h"
 #include "Commands2/InspMemberModifyCommand.h"
 #include "Commands2/ConvertToShadowCommand.h"
@@ -64,6 +65,10 @@
 
 #include "ActionComponentEditor.h"
 #include "SoundComponentEditor/SoundComponentEditor.h"
+
+#include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
+
+#include "Scene/System/PathSystem.h"
 
 #include "Deprecated/SceneValidator.h"
 
@@ -84,14 +89,22 @@ PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSig
 	posSaver.Attach(this, "DocPropetyEditor");
 
 	DAVA::VariantType v = posSaver.LoadValue("splitPos");
-	if(v.GetType() == DAVA::VariantType::TYPE_INT32) header()->resizeSection(0, v.AsInt32());
+	if(v.GetType() == DAVA::VariantType::TYPE_INT32)
+	{
+        header()->resizeSection( 0, v.AsInt32() );
+    }
 
     Ui::MainWindow* mainUi = QtMainWindow::Instance()->GetUI();
-    connect(mainUi->actionAddActionComponent, SIGNAL(triggered()), SLOT(OnAddActionComponent()));
+    connect( mainUi->actionAddActionComponent, SIGNAL( triggered() ), SLOT( OnAddActionComponent() ) );
     connect(mainUi->actionAddQualitySettingsComponent, SIGNAL(triggered()), SLOT(OnAddModelTypeComponent()));
     connect(mainUi->actionAddStaticOcclusionComponent, SIGNAL(triggered()), SLOT(OnAddStaticOcclusionComponent()));
     connect(mainUi->actionAddSoundComponent, SIGNAL(triggered()), this, SLOT(OnAddSoundComponent()));
     connect(mainUi->actionAddWaveComponent, SIGNAL(triggered()), SLOT(OnAddWaveComponent()));
+    connect(mainUi->actionAddSkeletonComponent, SIGNAL(triggered()), SLOT(OnAddSkeletonComponent()));
+    connect(mainUi->actionAddPathComponent, SIGNAL(triggered()), SLOT(OnAddPathComponent()));
+    connect(mainUi->actionAddRotationComponent, SIGNAL(triggered()), SLOT(OnAddRotationControllerComponent()));
+    connect(mainUi->actionAddSnapToLandscapeComponent, SIGNAL(triggered()), SLOT(OnAddSnapToLandscapeControllerComponent()));
+    connect(mainUi->actionAddWASDComponent, SIGNAL(triggered()), SLOT(OnAddWASDControllerComponent()));
 
 	SetUpdateTimeout(5000);
 	SetEditTracking(true);
@@ -215,8 +228,12 @@ void PropertyEditor::ResetProperties()
                         bool isRemovable = true;
                         switch (component->GetType())
                         {
+                        case Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT:
+                        case Component::DEBUG_RENDER_COMPONENT:
                         case Component::TRANSFORM_COMPONENT:
                         case Component::CUSTOM_PROPERTIES_COMPONENT:    // Disable removing, because custom properties are created automatically
+                        case Component::WAYPOINT_COMPONENT:             // disable remove, b/c waypoint entity doesn't make sence without waypoint component
+                        case Component::EDGE_COMPONENT:                 // disable remove, b/c edge has to be removed directly from scene only
                             isRemovable = false;
                             break;
                         }
@@ -252,11 +269,8 @@ void PropertyEditor::ResetProperties()
 			QtPropertyData *row = root->ChildGet(0);
 			root->ChildExtract(row);
 
-			if(row->ChildCount() > 0)
-			{
-				AppendProperty(row->GetName(), row);
-				ApplyStyle(row, QtPropertyEditor::HEADER_STYLE);
-			}
+            AppendProperty(row->GetName(), row);
+            ApplyStyle(row, QtPropertyEditor::HEADER_STYLE);
 		}
 
 		delete root;
@@ -367,13 +381,13 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 				// Add optional button to edit action component
 				QtPropertyToolButton * editActions = CreateButton(data, QIcon(":/QtIcons/settings.png"), "Edit action component");
                 editActions->setEnabled(isSingleSelection);
-				QObject::connect(editActions, SIGNAL(pressed()), this, SLOT(ActionEditComponent()));
+				QObject::connect(editActions, SIGNAL(clicked()), this, SLOT(ActionEditComponent()));
 			}
             else if(DAVA::MetaInfo::Instance<DAVA::SoundComponent>() == meta)
             {
                 QtPropertyToolButton * editSound = CreateButton(data, QIcon( ":/QtIcons/settings.png" ), "Edit sound component");
                 editSound->setAutoRaise(true);
-                QObject::connect(editSound, SIGNAL(pressed()), this, SLOT(ActionEditSoundComponent()));
+                QObject::connect(editSound, SIGNAL(clicked()), this, SLOT(ActionEditSoundComponent()));
             }
             else if(DAVA::MetaInfo::Instance<DAVA::WaveComponent>() == meta)
             {
@@ -381,7 +395,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
                 triggerWave->setIcon(QIcon(":/QtIcons/clone.png"));
                 triggerWave->setAutoRaise(true);
 
-                QObject::connect(triggerWave, SIGNAL(pressed()), this, SLOT(OnTriggerWaveComponent()));
+                QObject::connect(triggerWave, SIGNAL(clicked()), this, SLOT(OnTriggerWaveComponent()));
             }
 			else if(DAVA::MetaInfo::Instance<DAVA::RenderObject>() == meta)
 			{
@@ -393,7 +407,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
                     {
                         QtPropertyToolButton * cloneBatches = CreateButton(data, QIcon(":/QtIcons/clone_batches.png"), "Clone batches for LODs correction");
                         cloneBatches->setEnabled(isSingleSelection);
-                        QObject::connect(cloneBatches, SIGNAL(pressed()), this, SLOT(CloneRenderBatchesToFixSwitchLODs()));
+                        QObject::connect(cloneBatches, SIGNAL(clicked()), this, SLOT(CloneRenderBatchesToFixSwitchLODs()));
                     }
                 }
 			}
@@ -401,36 +415,45 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 			{
 				QtPropertyToolButton * deleteButton = CreateButton(data, QIcon(":/QtIcons/remove.png"), "Delete RenderBatch");
                 deleteButton->setEnabled(isSingleSelection);
-				QObject::connect(deleteButton, SIGNAL(pressed()), this, SLOT(DeleteRenderBatch()));
+				QObject::connect(deleteButton, SIGNAL(clicked()), this, SLOT(DeleteRenderBatch()));
 
 				QtPropertyDataIntrospection *introData = dynamic_cast<QtPropertyDataIntrospection *>(data);
 				if(NULL != introData)
 				{
 					DAVA::RenderBatch *batch = (DAVA::RenderBatch *) introData->object;
-					DAVA::RenderObject *ro = batch->GetRenderObject();
-					if(ConvertToShadowCommand::CanConvertBatchToShadow(batch) && (ro->GetType() == RenderObject::TYPE_MESH))
-					{
-						QtPropertyToolButton * convertButton = CreateButton(data, QIcon(":/QtIcons/shadow.png"), "Convert To ShadowVolume");
-                        convertButton->setEnabled(isSingleSelection);
-						QObject::connect(convertButton, SIGNAL(pressed()), this, SLOT(ConvertToShadow()));
-					}
+                    if (batch != NULL)
+                    {
+					    DAVA::RenderObject *ro = batch->GetRenderObject();
+					    if (ro != NULL && ConvertToShadowCommand::CanConvertBatchToShadow(batch))
+					    {
+						    QtPropertyToolButton * convertButton = CreateButton(data, QIcon(":/QtIcons/shadow.png"), "Convert To ShadowVolume");
+                            convertButton->setEnabled(isSingleSelection);
+						    connect(convertButton, SIGNAL(clicked()), this, SLOT(ConvertToShadow()));
+					    }
 
-                    QtPropertyToolButton * rebuildTangentButton = CreateButton(data, QIcon(":/QtIcons/external.png"), "Rebuild tangent space");
-                    rebuildTangentButton->setEnabled(isSingleSelection);
-                    QObject::connect(rebuildTangentButton, SIGNAL(pressed()), this, SLOT(RebuildTangentSpace()));
+                        PolygonGroup* group = batch->GetPolygonGroup();
+                        if (group != NULL)
+                        {
+                            bool isRebuildTsEnabled = true;
+                            const int32 requiredVertexFormat = (EVF_TEXCOORD0 | EVF_NORMAL);
+                            isRebuildTsEnabled &= (group->GetPrimitiveType() == PRIMITIVETYPE_TRIANGLELIST);
+                            isRebuildTsEnabled &= ((group->GetFormat() & requiredVertexFormat) == requiredVertexFormat);
+
+                            if (isRebuildTsEnabled)
+                            {
+                                QtPropertyToolButton * rebuildTangentButton = CreateButton(data, QIcon(":/QtIcons/external.png"), "Rebuild tangent space");
+                                rebuildTangentButton->setEnabled(isSingleSelection);
+                                connect(rebuildTangentButton, SIGNAL(clicked()), this, SLOT(RebuildTangentSpace()));
+                            }
+                        }
+                    }
 				}
-			}
-			else if(DAVA::MetaInfo::Instance<DAVA::ShadowVolume>() == meta)
-			{
-				QtPropertyToolButton * deleteButton = CreateButton(data, QIcon(":/QtIcons/remove.png"), "Delete RenderBatch");
-                deleteButton->setEnabled(isSingleSelection);
-				QObject::connect(deleteButton, SIGNAL(pressed()), this, SLOT(DeleteRenderBatch()));
 			}
 			else if(DAVA::MetaInfo::Instance<DAVA::NMaterial>() == meta)
 			{
 				QtPropertyToolButton * goToMaterialButton = CreateButton(data, QIcon(":/QtIcons/3d.png"), "Edit material");
                 goToMaterialButton->setEnabled(isSingleSelection);
-				QObject::connect(goToMaterialButton, SIGNAL(pressed()), this, SLOT(ActionEditMaterial()));
+				QObject::connect(goToMaterialButton, SIGNAL(clicked()), this, SLOT(ActionEditMaterial()));
 			}
             else if(DAVA::MetaInfo::Instance<DAVA::FilePath>() == meta)
 			{
@@ -442,6 +465,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 						PATH_IMAGE,
 						PATH_HEIGHTMAP,
 						PATH_TEXT,
+                        PATH_SCENE,
 						PATH_NOT_SPECIFIED
 					};
 
@@ -459,6 +483,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 					PathDescriptor("texture", "All (*.tex *.png);;PNG (*.png);;TEX (*.tex)", PathDescriptor::PATH_TEXTURE),
 					PathDescriptor("lightmap", "All (*.tex *.png);;PNG (*.png);;TEX (*.tex)", PathDescriptor::PATH_TEXTURE),
 					PathDescriptor("vegetationTexture", "All (*.tex *.png);;PNG (*.png);;TEX (*.tex)", PathDescriptor::PATH_TEXTURE),
+                    PathDescriptor("customGeometry", "All (*.sc2);;SC2 (*.sc2);", PathDescriptor::PATH_SCENE),
 					PathDescriptor("textureSheet", "All (*.txt);;TXT (*.tex)", PathDescriptor::PATH_TEXT),
 					PathDescriptor("densityMap", "All (*.png);;PNG (*.png)", PathDescriptor::PATH_IMAGE),
 				};
@@ -498,10 +523,48 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 					case PathDescriptor::PATH_TEXT:
 						variantData->SetValidator(new PathValidator(pathList));
 						break;
+                    case PathDescriptor::PATH_SCENE:
+                        variantData->SetValidator(new ScenePathValidator(pathList));
+                        break;
 
 					default:
 						break;
 				}
+            }
+            else if(DAVA::MetaInfo::Instance<DAVA::QualitySettingsComponent>() == meta)
+            {
+                DAVA::QualitySettingsSystem* qss = DAVA::QualitySettingsSystem::Instance();
+                QtPropertyDataDavaVariant *modelTypeData = (QtPropertyDataDavaVariant *)data->ChildGet("modelType");
+                if(NULL != modelTypeData)
+                {
+                    modelTypeData->AddAllowedValue(DAVA::VariantType(DAVA::FastName()), "Undefined");
+                    for(int i = 0; i < qss->GetOptionsCount(); ++i)
+                    {
+                        modelTypeData->AddAllowedValue(DAVA::VariantType(qss->GetOptionName(i)));
+                    }
+                }
+
+                QtPropertyDataDavaVariant *groupData = (QtPropertyDataDavaVariant *) data->ChildGet("requiredGroup");
+                if(NULL != groupData)
+                {
+                    groupData->AddAllowedValue(DAVA::VariantType(DAVA::FastName()), "Undefined");
+                    for(size_t i = 0; i < qss->GetMaterialQualityGroupCount(); ++i)
+                    {
+                        groupData->AddAllowedValue(DAVA::VariantType(qss->GetMaterialQualityGroupName(i)));
+                    }
+                }
+
+                DAVA::FastName curGroup = groupData->GetVariantValue().AsFastName();
+
+                QtPropertyDataDavaVariant *requiredQualityData = (QtPropertyDataDavaVariant *)data->ChildGet("requiredQuality");
+                if(NULL != requiredQualityData)
+                {
+                    requiredQualityData->AddAllowedValue(DAVA::VariantType(DAVA::FastName()), "Undefined");
+                    for(size_t i = 0; i < qss->GetMaterialQualityCount(curGroup); ++i)
+                    {
+                        requiredQualityData->AddAllowedValue(DAVA::VariantType(qss->GetMaterialQualityName(curGroup, i)));
+                    }
+                }
             }
 		}
 
@@ -725,6 +788,8 @@ void PropertyEditor::CommandExecuted(SceneEditor2 *scene, const Command2* comman
     case CMDID_SOUND_REMOVE_EVENT:
 	case CMDID_DELETE_RENDER_BATCH:
 	case CMDID_CLONE_LAST_BATCH:
+    case CMDID_EXPAND_PATH:
+    case CMDID_COLLAPSE_PATH:
         {
             bool doReset = (command->GetEntity() == NULL);
             for ( int i = 0; !doReset && i < curNodes.size(); i++ )
@@ -784,6 +849,26 @@ void PropertyEditor::OnItemEdited(const QModelIndex &index) // TODO: fix undo/re
             curScene->EndBatch();
         }
 	}
+
+    // this code it used to reload QualitySettingComponent field, when some changes made by user
+    // because of QualitySettingComponent->requiredQuality directly depends from QualitySettingComponent->requiredGroup
+    if(propData->GetName() == "requiredGroup")
+    {
+        QtPropertyDataDavaVariant *requiredQualityData = (QtPropertyDataDavaVariant *)propData->Parent()->ChildGet("requiredQuality");
+        if(NULL != requiredQualityData)
+        {
+            requiredQualityData->ClearAllowedValues();
+
+            DAVA::FastName curGroup = ((QtPropertyDataDavaVariant *)propData)->GetVariantValue().AsFastName();
+            requiredQualityData->AddAllowedValue(DAVA::VariantType(DAVA::FastName()), "Undefined");
+            for(size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityCount(curGroup); ++i)
+            {
+                requiredQualityData->AddAllowedValue(DAVA::VariantType(DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityName(curGroup, i)));
+            }
+        }
+
+        propData->Parent()->EmitDataChanged(QtPropertyData::VALUE_SOURCE_CHANGED);
+    }
 }
 
 void PropertyEditor::mouseReleaseEvent(QMouseEvent *event)
@@ -1319,19 +1404,47 @@ void PropertyEditor::CloneRenderBatchesToFixSwitchLODs()
 void PropertyEditor::OnAddComponent(Component::eType type)
 {
     SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-    if(curNodes.size() > 0)
+    int size = curNodes.size();
+    if(size > 0)
     {
-        curScene->BeginBatch("Add Component");
+        curScene->BeginBatch(Format("Add Component: %d", type));
 
-        for(int i = 0; i < curNodes.size(); ++i)
+        for(int i = 0; i < size; ++i)
         {
             Entity* node = curNodes.at(i);
             if (node->GetComponentCount(type) == 0)
             {
-                curScene->Exec(new AddComponentCommand(curNodes.at(i), Component::CreateByType(type)));
+                Component *c = Component::CreateByType(type);
+                curScene->Exec(new AddComponentCommand(curNodes.at(i), c));
             }
         }
 
+        curScene->EndBatch();
+    }
+}
+
+void PropertyEditor::OnAddComponent(DAVA::Component *component)
+{
+    DVASSERT(component);
+    if(!component) return;
+    
+    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    int size = curNodes.size();
+    if(size > 0)
+    {
+        curScene->BeginBatch(Format("Add Component: %d", component->GetType()));
+        
+        for(int i = 0; i < size; ++i)
+        {
+            Entity* node = curNodes.at(i);
+            
+            if (node->GetComponentCount(component->GetType()) == 0)
+            {
+                Component *c = component->Clone(node);
+                curScene->Exec(new AddComponentCommand(curNodes.at(i), c));
+            }
+        }
+        
         curScene->EndBatch();
     }
 }
@@ -1359,6 +1472,55 @@ void PropertyEditor::OnAddWaveComponent()
 void PropertyEditor::OnAddModelTypeComponent()
 {
     OnAddComponent(Component::QUALITY_SETTINGS_COMPONENT);
+}
+
+void PropertyEditor::OnAddSkeletonComponent()
+{
+    OnAddComponent(Component::SKELETON_COMPONENT);
+}
+
+void PropertyEditor::OnAddPathComponent()
+{
+    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    if (curNodes.size() > 0)
+    {
+        curScene->BeginBatch(Format("Add Component: %d", Component::PATH_COMPONENT));
+
+        for (Entity* node : curNodes)
+        {
+            DVASSERT(node);
+            if (node->GetComponentCount(Component::PATH_COMPONENT) == 0 
+             && node->GetComponentCount(Component::WAYPOINT_COMPONENT) == 0)
+            {
+                PathComponent* pathComponent = curScene->pathSystem->CreatePathComponent();
+                curScene->Exec(new AddComponentCommand(node, pathComponent));
+            }
+        }
+
+        curScene->EndBatch();
+    }
+}
+
+void PropertyEditor::OnAddRotationControllerComponent()
+{
+    OnAddComponent(Component::ROTATION_CONTROLLER_COMPONENT);
+}
+
+void PropertyEditor::OnAddSnapToLandscapeControllerComponent()
+{
+    SnapToLandscapeControllerComponent *snapComponent = static_cast<SnapToLandscapeControllerComponent *> (Component::CreateByType(Component::SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT));
+
+    float32 height = SettingsManager::Instance()->GetValue(Settings::Scene_CameraHeightOnLandscape).AsFloat();
+    snapComponent->SetHeightOnLandscape(height);
+
+    OnAddComponent(snapComponent);
+    
+    SafeDelete(snapComponent);
+}
+
+void PropertyEditor::OnAddWASDControllerComponent()
+{
+    OnAddComponent(Component::WASD_CONTROLLER_COMPONENT);
 }
 
 void PropertyEditor::OnRemoveComponent()

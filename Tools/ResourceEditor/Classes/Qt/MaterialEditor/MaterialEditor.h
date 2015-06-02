@@ -30,7 +30,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __MATERIAL_EDITOR_H__
 
 #include <QDialog>
-#include <QtGui>
 #include <QPointer>
 #include <QStandardItemModel>
 
@@ -66,6 +65,8 @@ public slots:
 	void sceneDeactivated(SceneEditor2 *scene);
 	void commandExecuted(SceneEditor2 *scene, const Command2 *command, bool redo);
 	void materialSelected(const QItemSelection & selected, const QItemSelection & deselected);
+
+    void OnQualityChanged();
 
 protected slots:
 	void OnTemplateChanged(int index);

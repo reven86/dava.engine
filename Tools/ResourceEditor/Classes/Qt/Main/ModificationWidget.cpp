@@ -40,14 +40,12 @@
 
 ModificationWidget::ModificationWidget(QWidget* parent)
 	: QWidget(parent)
-	, curScene(NULL)
+	, curScene(nullptr)
 	, groupMode(false)
 	, pivotMode(PivotAbsolute)
 	, modifMode(ST_MODIF_OFF)
 {
-	QHBoxLayout *horizontalLayout;
-
-	horizontalLayout = new QHBoxLayout(this);
+	auto horizontalLayout = new QHBoxLayout(this);
 	horizontalLayout->setSpacing(2);
 	horizontalLayout->setContentsMargins(2, 1, 2, 1);
 
@@ -75,15 +73,14 @@ ModificationWidget::ModificationWidget(QWidget* parent)
 	zAxisModify->setMinimumSize(QSize(70, 0));
 	horizontalLayout->addWidget(zAxisModify);
 
-	QObject::connect(xAxisModify, SIGNAL(valueEdited()), this, SLOT(OnXChanged()));
-	QObject::connect(yAxisModify, SIGNAL(valueEdited()), this, SLOT(OnYChanged()));
-	QObject::connect(zAxisModify, SIGNAL(valueEdited()), this, SLOT(OnZChanged()));
+    connect( xAxisModify, &DAVAFloat32SpinBox::valueEdited, this, &ModificationWidget::OnXChanged );
+    connect( yAxisModify, &DAVAFloat32SpinBox::valueEdited, this, &ModificationWidget::OnYChanged );
+    connect( zAxisModify, &DAVAFloat32SpinBox::valueEdited, this, &ModificationWidget::OnZChanged );
 
-	QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), this, SLOT(OnSceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(OnSceneActivated(SceneEditor2 *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(OnSceneDeactivated(SceneEditor2 *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2* , bool)), this, SLOT(OnSceneCommand(SceneEditor2 *, const Command2* , bool)));
-
+    connect( SceneSignals::Instance(), &SceneSignals::SelectionChanged, this, &ModificationWidget::OnSceneSelectionChanged );
+    connect( SceneSignals::Instance(), &SceneSignals::Activated, this, &ModificationWidget::OnSceneActivated );
+    connect( SceneSignals::Instance(), &SceneSignals::Deactivated, this, &ModificationWidget::OnSceneDeactivated );
+    connect( SceneSignals::Instance(), &SceneSignals::CommandExecuted, this, &ModificationWidget::OnSceneCommand );
 }
 
 ModificationWidget::~ModificationWidget()
@@ -103,6 +100,10 @@ void ModificationWidget::SetModifMode(ST_ModifMode mode)
 
 void ModificationWidget::ReloadValues()
 {
+    xAxisModify->clear();
+    yAxisModify->clear();
+    zAxisModify->clear();
+
 	if(modifMode == ST_MODIF_SCALE)
 	{
 		xLabel->setText("Scale:");
@@ -122,9 +123,9 @@ void ModificationWidget::ReloadValues()
 		zAxisModify->setVisible(true);
 	}
 
-	if(NULL != curScene)
+	if (nullptr != curScene)
 	{
-		EntityGroup selection = curScene->selectionSystem->GetSelection();
+		auto selection = curScene->selectionSystem->GetSelection();
 		if(selection.Size() > 0 && (modifMode == ST_MODIF_MOVE || modifMode == ST_MODIF_ROTATE || modifMode == ST_MODIF_SCALE))
 		{
 			xAxisModify->setEnabled(true);
@@ -618,7 +619,7 @@ void DAVAFloat32SpinBox::textEditingFinished()
 			// current double value is different from the original
 			if(convertedNew && convertedOrig && newValue != origValue)
 			{
-				setValue((DAVA::float32) newValue);
+				setValue(static_cast<DAVA::float32>(newValue));
 
 				emit valueEdited();
 			}

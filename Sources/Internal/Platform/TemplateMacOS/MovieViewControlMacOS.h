@@ -31,7 +31,7 @@
 #define __DAVAENGINE_MOVIEVIEWCONTROL_MACOS_H__
 
 #include "DAVAEngine.h"
-#include "IMovieViewControl.h"
+#include "UI/IMovieViewControl.h"
 
 namespace DAVA {
 

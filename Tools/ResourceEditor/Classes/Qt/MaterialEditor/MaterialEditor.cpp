@@ -31,6 +31,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QTextStream>
 #include <QAction>
 #include <QVariant>
+#include <QGroupBox>
+#include <QDialogButtonBox>
+#include <QDebug>
 
 #include "MaterialEditor.h"
 #include "ui_materialeditor.h"
@@ -52,7 +55,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
-#include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+
+#include "QtTools/FileDialog/FileDialog.h"
+
 
 #define MATERIAL_NAME_LABEL "Name"
 #define MATERIAL_GROUP_LABEL "Group"
@@ -319,26 +324,56 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
     {
         int cmdId = command->GetId();
 
-        if(cmdId == CMDID_INSP_DYNAMIC_MODIFY)
+        switch (cmdId)
         {
-            InspDynamicModifyCommand *inspCommand = (InspDynamicModifyCommand *) command;
-
-            // if material flag was changed we should rebuild list of all properties
-            // because their set can be changed
-            if(inspCommand->dynamicInfo->GetMember()->Name() == "materialSetFlags")
+        case CMDID_INSP_MEMBER_MODIFY:
             {
-                FillDynamic(propertiesRoot, "materialProperties");
-                FillDynamic(texturesRoot, "textures");
-            }
+                InspMemberModifyCommand *inspCommand = (InspMemberModifyCommand *) command;
 
-            UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
-        }
-        else if(cmdId == CMDID_MATERIAL_GLOBAL_SET)
-        {
-            sceneActivated(scene);
-            SetCurMaterial(curMaterials);
+                const QString memberName = inspCommand->member->Name();
+                if (memberName == "materialGroup" || memberName == "materialTemplate")
+                {
+                    for (int i = 0; i < curMaterials.size(); i++)
+                    {
+                        curMaterials[i]->ReloadQuality();
+                    }
+
+                    FillDynamic(texturesRoot, "textures");
+                    UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
+                }
+            }
+            break;
+        case CMDID_INSP_DYNAMIC_MODIFY:
+            {
+                InspDynamicModifyCommand *inspCommand = (InspDynamicModifyCommand *) command;
+
+                // if material flag was changed we should rebuild list of all properties
+                // because their set can be changed
+                const QString memberName = inspCommand->dynamicInfo->GetMember()->Name(); // Do not compare raw pointers
+                if (memberName == "materialSetFlags")
+                {
+                    FillDynamic(propertiesRoot, "materialProperties");
+                    FillDynamic(texturesRoot, "textures");
+                }
+
+                UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
+            }
+            break;
+        case CMDID_MATERIAL_GLOBAL_SET:
+            {
+                sceneActivated(scene);
+                SetCurMaterial(curMaterials);
+            }
+            break;
+        default:
+            break;
         }
     }
+}
+
+void MaterialEditor::OnQualityChanged()
+{
+    SetCurMaterial(curMaterials);
 }
 
 void MaterialEditor::onCurrentExpandModeChange( bool mode )
@@ -390,6 +425,9 @@ void MaterialEditor::FillBase()
             {
                 QtPropertyDataInspMember *group = new QtPropertyDataInspMember(material, groupMember);
                 baseRoot->MergeChild(group, MATERIAL_GROUP_LABEL);
+
+                // Add unknown value:
+                group->AddAllowedValue(VariantType(String()), "Unknown");
 
                 // fill allowed values for material group
                 for(size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount(); ++i)
@@ -835,7 +873,7 @@ void MaterialEditor::OnMaterialSave(bool checked)
 {
     if(curMaterials.size() == 1)
     {
-        QString outputFile = QFileDialog::getSaveFileName(this, "Save Material Preset", lastSavePath.GetAbsolutePathname().c_str(), "Material Preset (*.mpreset)");
+        QString outputFile = FileDialog::getSaveFileName(this, "Save Material Preset", lastSavePath.GetAbsolutePathname().c_str(), "Material Preset (*.mpreset)");
         SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
 
         if(!outputFile.isEmpty() && NULL != curScene)
@@ -848,7 +886,7 @@ void MaterialEditor::OnMaterialSave(bool checked)
             materialContext.SetScene(curScene);
             materialContext.SetScenePath(ProjectManager::Instance()->CurProjectPath());
 
-            lastSavePath = outputFile.toAscii().data();
+            lastSavePath = outputFile.toLatin1().data();
             material->Save(materialArchive, &materialContext);
             materialArchive->Save(lastSavePath);
             materialArchive->Release();
@@ -864,7 +902,7 @@ void MaterialEditor::OnMaterialLoad(bool checked)
 {
     if(curMaterials.size() > 0)
     {
-        QString inputFile = QFileDialog::getOpenFileName(this, "Load Material Preset", lastSavePath.GetAbsolutePathname().c_str(), "Material Preset (*.mpreset)");
+        QString inputFile = FileDialog::getOpenFileName(this, "Load Material Preset", lastSavePath.GetAbsolutePathname().c_str(), "Material Preset (*.mpreset)");
         SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
         DAVA::NMaterial *material = curMaterials[0];
 
@@ -872,7 +910,7 @@ void MaterialEditor::OnMaterialLoad(bool checked)
         {
             DAVA::KeyedArchive *materialArchive = new DAVA::KeyedArchive();
 
-            lastSavePath = inputFile.toAscii().data();
+            lastSavePath = inputFile.toLatin1().data();
             materialArchive->Load(lastSavePath);
 
             DAVA::uint32 userChoiseWhatToLoad = ExecMaterialLoadingDialog(lastCheckState, inputFile);

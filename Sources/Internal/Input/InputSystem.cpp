@@ -29,25 +29,28 @@
 
 #include "InputSystem.h"
 #include "Input/KeyboardDevice.h"
-#include "Input/GamepadManager.h"
+#include "Input/GamepadDevice.h"
 #include "UI/UIControlSystem.h"
 #include "Render/RenderManager.h"
 
 namespace DAVA 
 {
 
-InputSystem::InputSystem()
+InputSystem::InputSystem() :
+keyboard(0),
+gamepad(0),
+isMultitouchEnabled(true)
 {
     keyboard = new KeyboardDevice();
-    gamepadManager = new GamepadManager();
+    gamepad = new GamepadDevice();
     AddInputCallback(InputCallback(UIControlSystem::Instance(), &UIControlSystem::OnInput, INPUT_DEVICE_KEYBOARD));
     pinCursor = false;
 }
     
 InputSystem::~InputSystem()
 {
+    SafeRelease(gamepad);
     SafeRelease(keyboard);
-    SafeRelease(gamepadManager);
 }
 
 void InputSystem::ProcessInputEvent(UIEvent * event)
@@ -61,9 +64,6 @@ void InputSystem::ProcessInputEvent(UIEvent * event)
 		else if(((*it).devices & INPUT_DEVICE_TOUCH))
 			(*it)(event);
 	}
-
-//	Logger::FrameworkDebug("InputSystem::ProcessInputEvent: keyCode: %d", event->tid);
-//	UIControlSystem::Instance()->OnInput(event);
 }
 
 void InputSystem::AddInputCallback(const InputCallback& inputCallback)
@@ -96,28 +96,14 @@ void InputSystem::OnAfterUpdate()
 {
     keyboard->OnAfterUpdate();
 }
-    
-bool InputSystem::IsCursorPining()
-{
-    return pinCursor;
-}
 
 void InputSystem::SetCursorPining(bool isPin)
 {
     pinCursor = isPin;
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
-    Cursor::ShowSystemCursor(!isPin);
-#endif
-}
-    
-KeyboardDevice *InputSystem::GetKeyboard()
-{
-    return keyboard;
-}
 
-GamepadManager *InputSystem::GetGamepadManager()
-{
-    return gamepadManager;
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+    Cursor::SetCursorPinning(isPin);
+#endif
 }
 
 

@@ -36,6 +36,7 @@
 
 #include "Platform/Mutex.h"
 
+#include <cstdlib>
 namespace DAVA
 {
 class Mutex;
@@ -104,7 +105,7 @@ private:
     void Init(const char * name);
 	int index;
 
-#ifdef DAVA_DEBUG
+#ifdef __DAVAENGINE_DEBUG__
 	const char* debug_str_ptr;
 #endif
 
@@ -121,7 +122,7 @@ FastName& FastName::operator=(const FastName &_name)
 		
 	index = _name.index;
 		
-#ifdef DAVA_DEBUG
+#ifdef __DAVAENGINE_DEBUG__
 	debug_str_ptr = _name.debug_str_ptr;
 #endif
 		

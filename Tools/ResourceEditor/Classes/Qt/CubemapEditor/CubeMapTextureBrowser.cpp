@@ -34,21 +34,22 @@
 #include "ui_CubeMapTextureBrowser.h"
 #include "../../StringConstants.h"
 #include "Scene3D/Systems/SkyboxSystem.h"
-#include "Tools/QtFileDialog/QtFileDialog.h"
 #include "Project/ProjectManager.h"
 
-#include <QFileDialog>
 #include <QScrollBar>
 
 #include "Qt/Settings/SettingsManager.h"
+#include "QtTools/FileDialog/FileDialog.h"
+
+
 #include <qdir>
 
 const int FACE_IMAGE_SIZE = 64;
 
 CubeMapTextureBrowser::CubeMapTextureBrowser(SceneEditor2* currentScene, QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::CubeMapTextureBrowser),
-	cubeListItemDelegate(QSize(FACE_IMAGE_SIZE, FACE_IMAGE_SIZE))
+    cubeListItemDelegate(QSize(FACE_IMAGE_SIZE, FACE_IMAGE_SIZE)),
+    ui(new Ui::CubeMapTextureBrowser)
 {
 	scene = currentScene;
 	
@@ -187,7 +188,7 @@ void CubeMapTextureBrowser::RestoreListSelection(int currentRow)
 
 void CubeMapTextureBrowser::OnChooseDirectoryClicked()
 {
-	QString newDir = QtFileDialog::getExistingDirectory(this, tr("Open Directory"),
+	QString newDir = FileDialog::getExistingDirectory(this, tr("Open Directory"),
 													   ui->textRootPath->text());
 	if(!newDir.isNull())
 	{
@@ -209,7 +210,7 @@ void CubeMapTextureBrowser::OnReloadClicked()
 
 void CubeMapTextureBrowser::OnCreateCubemapClicked()
 {
-	QString fileName = QtFileDialog::getSaveFileName(this,
+	QString fileName = FileDialog::getSaveFileName(this,
 													tr("Create Cubemap Texture"),
 													ui->textRootPath->text(),
 													tr("Tex File (*.tex)"));

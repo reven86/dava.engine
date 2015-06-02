@@ -10,41 +10,274 @@ LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libiconv_android.s
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE            := fmodex-prebuild
-LOCAL_SRC_FILES         := ../../Libs/fmod/lib/android/$(TARGET_ARCH_ABI)/libfmodex.so
+LOCAL_MODULE := fmodex-prebuild
+LOCAL_SRC_FILES := ../../Libs/fmod/lib/android/$(TARGET_ARCH_ABI)/libfmodex.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE            := fmodevent-prebuild
-LOCAL_SRC_FILES         := ../../Libs/fmod/lib/android/$(TARGET_ARCH_ABI)/libfmodevent.so
+LOCAL_MODULE := fmodevent-prebuild
+LOCAL_SRC_FILES := ../../Libs/fmod/lib/android/$(TARGET_ARCH_ABI)/libfmodevent.so
 include $(PREBUILT_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := xml_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libxml_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := png_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libpng_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := freetype_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libfreetype_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := yaml_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libyaml_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := mongodb_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libmongodb_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := lua_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/liblua_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := dxt_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libdxt_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := jpeg_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libjpeg_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := curl_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libcurl_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := ssl_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libssl_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := crypto_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libcrypto_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := zip_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libzip_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := fribidi_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libfribidi_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := unibreak_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libunibreak_android.a
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := uv_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libuv_android.a
+include $(PREBUILT_STATIC_LIBRARY)
 
 
 DAVA_ROOT := $(LOCAL_PATH)
+
+# set path for includes
+DV_LOCAL_C_INCLUDES := $(LOCAL_PATH)
+DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/Platform/TemplateAndroid/
+DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/include
+DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/fmod/include
+DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/lua/include
+
+# set exported includes
+DV_LOCAL_EXPORT_C_INCLUDES := $(DV_LOCAL_C_INCLUDES)
+
+# starting from ndk10b x86 support NEON too! Add latter
+ifeq ($(TARGET_ARCH_ABI), $(filter $(TARGET_ARCH_ABI), armeabi-v7a))
+DV_LOCAL_ARM_NEON := true
+DV_LOCAL_ARM_MODE := arm
+DV_LOCAL_NEON_CFLAGS := -mfloat-abi=softfp -mfpu=neon -march=armv7
+DV_LOCAL_CFLAGS += -DUSE_NEON
+else
+DV_LOCAL_ARM_NEON := false
+endif
+
+# set build flags
+DV_LOCAL_CPPFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1
+DV_LOCAL_CPPFLAGS += -std=c++1y
+
+DV_LOCAL_CFLAGS += -DDAVA_FMOD
+
+# remove warnings about unused arguments to compiler
+DV_LOCAL_CFLAGS += -Qunused-arguments
+# enable ALL warnings
+# we write C++ so check warnings only inside our C++ code not C libraries
+DV_LOCAL_CPPFLAGS += -Weverything
+# treat warnings as errors
+DV_LOCAL_CPPFLAGS += -Werror
+# disable common simple warnings
+# read about any clang warning messages http://fuckingclangwarnings.com/
+DV_LOCAL_CPPFLAGS += -Wno-c++98-compat-pedantic
+DV_LOCAL_CPPFLAGS += -Wno-newline-eof
+DV_LOCAL_CPPFLAGS += -Wno-gnu-anonymous-struct
+DV_LOCAL_CPPFLAGS += -Wno-nested-anon-types
+DV_LOCAL_CPPFLAGS += -Wno-float-equal
+DV_LOCAL_CPPFLAGS += -Wno-extra-semi
+DV_LOCAL_CPPFLAGS += -Wno-unused-parameter
+DV_LOCAL_CPPFLAGS += -Wno-shadow
+DV_LOCAL_CPPFLAGS += -Wno-exit-time-destructors
+DV_LOCAL_CPPFLAGS += -Wno-documentation
+DV_LOCAL_CPPFLAGS += -Wno-global-constructors
+DV_LOCAL_CPPFLAGS += -Wno-padded
+DV_LOCAL_CPPFLAGS += -Wno-weak-vtables
+DV_LOCAL_CPPFLAGS += -Wno-variadic-macros
+DV_LOCAL_CPPFLAGS += -Wno-deprecated-register
+DV_LOCAL_CPPFLAGS += -Wno-sign-conversion
+DV_LOCAL_CPPFLAGS += -Wno-sign-compare
+DV_LOCAL_CPPFLAGS += -Wno-format-nonliteral
+
+# TODO fix next warnings first
+DV_LOCAL_CPPFLAGS += -Wno-cast-align
+DV_LOCAL_CPPFLAGS += -Wno-conversion
+DV_LOCAL_CPPFLAGS += -Wno-unreachable-code
+DV_LOCAL_CPPFLAGS += -Wno-zero-length-array
+DV_LOCAL_CPPFLAGS += -Wno-switch-enum
+DV_LOCAL_CPPFLAGS += -Wno-c99-extensions
+DV_LOCAL_CPPFLAGS += -Wno-missing-prototypes
+DV_LOCAL_CPPFLAGS += -Wno-missing-field-initializers
+DV_LOCAL_CPPFLAGS += -Wno-conditional-uninitialized
+DV_LOCAL_CPPFLAGS += -Wno-covered-switch-default
+DV_LOCAL_CPPFLAGS += -Wno-deprecated
+DV_LOCAL_CPPFLAGS += -Wno-unused-macros
+DV_LOCAL_CPPFLAGS += -Wno-disabled-macro-expansion
+DV_LOCAL_CPPFLAGS += -Wno-undef
+DV_LOCAL_CPPFLAGS += -Wno-non-virtual-dtor
+DV_LOCAL_CPPFLAGS += -Wno-char-subscripts
+DV_LOCAL_CPPFLAGS += -Wno-unneeded-internal-declaration
+DV_LOCAL_CPPFLAGS += -Wno-unused-variable
+DV_LOCAL_CPPFLAGS += -Wno-used-but-marked-unused
+DV_LOCAL_CPPFLAGS += -Wno-missing-variable-declarations
+DV_LOCAL_CPPFLAGS += -Wno-gnu-statement-expression
+DV_LOCAL_CPPFLAGS += -Wno-missing-braces
+DV_LOCAL_CPPFLAGS += -Wno-reorder
+DV_LOCAL_CPPFLAGS += -Wno-implicit-fallthrough
+DV_LOCAL_CPPFLAGS += -Wno-ignored-qualifiers
+DV_LOCAL_CPPFLAGS += -Wno-shift-sign-overflow
+DV_LOCAL_CPPFLAGS += -Wno-mismatched-tags
+DV_LOCAL_CPPFLAGS += -Wno-missing-noreturn
+DV_LOCAL_CPPFLAGS += -Wno-consumed
+DV_LOCAL_CPPFLAGS += -Wno-sometimes-uninitialized
+
+DV_LOCAL_CPP_FEATURES += exceptions
+
+ifeq ($(DAVA_PROFILE), true)
+ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
+$(info ==============)
+$(info profiling enabled!)
+$(info ==============)
+
+DV_LOCAL_CFLAGS += -pg
+DV_LOCAL_CFLAGS += -D__DAVAENGINE_PROFILE__
+endif
+endif
+
+# set exported build flags
+DV_LOCAL_EXPORT_CFLAGS := $(LOCAL_CFLAGS)
+
+# set exported used libs
+DV_LOCAL_EXPORT_LDLIBS := $(LOCAL_LDLIBS)
+
+# set included libraries
+DV_LOCAL_STATIC_LIBRARIES := libbox2d
+
+ifeq ($(DAVA_PROFILE), true)
+ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
+DV_LOCAL_STATIC_LIBRARIES += android-ndk-profiler
+endif
+endif
+
+DV_LOCAL_SHARED_LIBRARIES += iconv_android-prebuilt
+DV_LOCAL_SHARED_LIBRARIES += fmodex-prebuild
+DV_LOCAL_SHARED_LIBRARIES += fmodevent-prebuild
+
+DV_LOCAL_STATIC_LIBRARIES += xml_android
+DV_LOCAL_STATIC_LIBRARIES += png_android
+DV_LOCAL_STATIC_LIBRARIES += freetype_android
+DV_LOCAL_STATIC_LIBRARIES += yaml_android
+DV_LOCAL_STATIC_LIBRARIES += mongodb_android
+DV_LOCAL_STATIC_LIBRARIES += lua_android
+DV_LOCAL_STATIC_LIBRARIES += dxt_android
+DV_LOCAL_STATIC_LIBRARIES += jpeg_android
+DV_LOCAL_STATIC_LIBRARIES += curl_android
+DV_LOCAL_STATIC_LIBRARIES += ssl_android
+DV_LOCAL_STATIC_LIBRARIES += crypto_android
+DV_LOCAL_STATIC_LIBRARIES += zip_android
+DV_LOCAL_STATIC_LIBRARIES += fribidi_android
+DV_LOCAL_STATIC_LIBRARIES += unibreak_android
+DV_LOCAL_STATIC_LIBRARIES += uv_android
+
+DV_LOCAL_EXPORT_LDLIBS := -lGLESv1_CM -llog -lEGL
+
+ifeq ($(APP_PLATFORM), android-14)
+	DV_LOCAL_EXPORT_LDLIBS += -lGLESv2
+else 
+ifeq ($(APP_PLATFORM), android-15)
+	DV_LOCAL_EXPORT_LDLIBS += -lGLESv2
+else 
+ifeq ($(APP_PLATFORM), android-16)
+	DV_LOCAL_EXPORT_LDLIBS += -lGLESv2
+else 
+ifeq ($(APP_PLATFORM), android-17)
+	DV_LOCAL_EXPORT_LDLIBS += -lGLESv2
+else
+	DV_LOCAL_EXPORT_LDLIBS += -lGLESv3
+endif
+endif
+endif
+endif
 
 # clear all variables
 include $(CLEAR_VARS)
 
 # set module name
-LOCAL_MODULE := libInternal
+LOCAL_MODULE := libInternalPart1
 
-# set path for includes
-LOCAL_C_INCLUDES := $(LOCAL_PATH)
-LOCAL_C_INCLUDES += $(LOCAL_PATH)/Platform/TemplateAndroid/
-LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/include
-LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/fmod/include
-LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/lua/include
-
-# set exported includes
-LOCAL_EXPORT_C_INCLUDES := $(LOCAL_C_INCLUDES)
+LOCAL_C_INCLUDES := $(DV_LOCAL_C_INCLUDES)
+LOCAL_EXPORT_C_INCLUDES := $(DV_LOCAL_EXPORT_C_INCLUDES)
+LOCAL_ARM_NEON := $(DV_LOCAL_ARM_NEON)
+LOCAL_ARM_MODE := $(DV_LOCAL_ARM_MODE)
+LOCAL_NEON_CFLAGS := $(DV_LOCAL_NEON_CFLAGS)
+LOCAL_CPPFLAGS := $(DV_LOCAL_CPPFLAGS)
+LOCAL_CFLAGS := $(DV_LOCAL_CFLAGS)
+LOCAL_CPP_FEATURES := $(DV_LOCAL_CPP_FEATURES)
+LOCAL_EXPORT_CFLAGS := $(DV_LOCAL_EXPORT_CFLAGS)
+LOCAL_EXPORT_LDLIBS := $(DV_LOCAL_EXPORT_LDLIBS)
+LOCAL_STATIC_LIBRARIES := $(DV_LOCAL_STATIC_LIBRARIES)
+LOCAL_SHARED_LIBRARIES := $(DV_LOCAL_SHARED_LIBRARIES)
+LOCAL_STATIC_LIBRARIES := $(DV_LOCAL_STATIC_LIBRARIES)
 
 # set source files 
-
 LOCAL_SRC_FILES := \
                      $(subst $(LOCAL_PATH)/,, \
                      $(wildcard $(LOCAL_PATH)/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Animation/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Autotesting/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Autotesting/*.c) \
                      $(wildcard $(LOCAL_PATH)/Base/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Collision/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Core/*.cpp) \
@@ -55,12 +288,44 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Input/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Math/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Math/Neon/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/MemoryManager/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Network/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Network/Base/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Network/Services/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Network/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Particles/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/BacktraceAndroid/*.cpp))
+                     
+include $(BUILD_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+
+# set module name
+LOCAL_MODULE := libInternal
+
+LOCAL_C_INCLUDES := $(DV_LOCAL_C_INCLUDES)
+LOCAL_EXPORT_C_INCLUDES := $(DV_LOCAL_EXPORT_C_INCLUDES)
+LOCAL_ARM_NEON := $(DV_LOCAL_ARM_NEON)
+LOCAL_ARM_MODE := $(DV_LOCAL_ARM_MODE)
+LOCAL_NEON_CFLAGS := $(DV_LOCAL_NEON_CFLAGS)
+LOCAL_CPPFLAGS := $(DV_LOCAL_CPPFLAGS)
+LOCAL_CFLAGS := $(DV_LOCAL_CFLAGS)
+LOCAL_CPP_FEATURES := $(DV_LOCAL_CPP_FEATURES)
+LOCAL_EXPORT_CFLAGS := $(DV_LOCAL_EXPORT_CFLAGS)
+LOCAL_EXPORT_LDLIBS := $(DV_LOCAL_EXPORT_LDLIBS)
+LOCAL_STATIC_LIBRARIES := $(DV_LOCAL_STATIC_LIBRARIES)
+LOCAL_SHARED_LIBRARIES := $(DV_LOCAL_SHARED_LIBRARIES)
+LOCAL_STATIC_LIBRARIES := $(DV_LOCAL_STATIC_LIBRARIES)
+
+LOCAL_WHOLE_STATIC_LIBRARIES := libInternalPart1
+
+LOCAL_SRC_FILES := \
+                     $(subst $(LOCAL_PATH)/,, \
                      $(wildcard $(LOCAL_PATH)/Render/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/2D/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Render/2D/Systems/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/3D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Effects/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Highlevel/*.cpp) \
@@ -69,97 +334,27 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Scene2D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Components/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Scene3D/Components/Controller/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Scene3D/Components/Waypoint/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Converters/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/SceneFile/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Systems/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Scene3D/Systems/Controller/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Sound/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Thread/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Components/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Utils/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Job/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Image/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DLC/Downloader/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DLC/Patcher/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DLC/Patcher/bsdiff/*.c) \
-                     $(wildcard $(LOCAL_PATH)/DLC/*.cpp))
-
-ifneq ($(filter $(TARGET_ARCH_ABI), armeabi-v7a armeabi-v7a-hard),)
-ifndef USE_NEON
-USE_NEON := true
-endif
-ifeq ($(USE_NEON), true)
-LOCAL_ARM_NEON := true
-LOCAL_ARM_MODE := arm
-LOCAL_NEON_CFLAGS := -mfloat-abi=softfp -mfpu=neon -march=armv7
-LOCAL_CFLAGS += -DUSE_NEON
-endif
-endif
-
-# set build flags
-LOCAL_CFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1 -Wno-psabi
-LOCAL_CFLAGS += -Wno-invalid-offsetof
-LOCAL_CFLAGS += -DDAVA_FMOD
-
-
-ifeq ($(DAVA_PROFILE), true)
-ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
-$(info ==============)
-$(info profiling enabled!)
-$(info ==============)
-
-LOCAL_CFLAGS += -pg
-LOCAL_CFLAGS += -D__DAVAENGINE_PROFILE__
-endif
-endif
-
-# set exported build flags
-LOCAL_EXPORT_CFLAGS := $(LOCAL_CFLAGS)
-
-# set used libs
-
-LIBS_PATH := $(call host-path,$(LOCAL_PATH)/../../Libs/libs)
-
-LOCAL_LDLIBS := -lGLESv1_CM -llog -lEGL
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libxml_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libpng_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libfreetype_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libyaml_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libmongodb_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/liblua_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libdxt_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libjpeg_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libcurl_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libssl_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libcrypto_android.a
-LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libzip_android.a
-
-APP_PLATFORM_LEVEL := $(strip $(subst android-,,$(APP_PLATFORM)))
-IS_GL2_PLATFORM := $(shell (if [ $(APP_PLATFORM_LEVEL) -lt 18 ]; then echo "GLES2"; else echo "GLES3"; fi))
-ifeq ($(IS_GL2_PLATFORM), GLES2)
-LOCAL_LDLIBS += -lGLESv2
-else ifeq ($(IS_GL2_PLATFORM), GLES3)
-LOCAL_LDLIBS += -lGLESv3
-else
-#$(warning UNKNOWN GL VERSION)
-LOCAL_LDLIBS += -lGLESv2
-endif
-
-# set exported used libs
-LOCAL_EXPORT_LDLIBS := $(LOCAL_LDLIBS)
-
-# set included libraries
-LOCAL_STATIC_LIBRARIES := libbox2d
-
-ifeq ($(DAVA_PROFILE), true)
-ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
-LOCAL_STATIC_LIBRARIES += android-ndk-profiler
-endif
-endif
-
-
-LOCAL_SHARED_LIBRARIES += iconv_android-prebuilt
-LOCAL_SHARED_LIBRARIES += fmodex-prebuild
-LOCAL_SHARED_LIBRARIES += fmodevent-prebuild
+                     $(wildcard $(LOCAL_PATH)/DLC/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/DataStorage/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/DataStorage/Android/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Timer/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Notification/*.cpp))
 
 include $(BUILD_STATIC_LIBRARY)
 
@@ -176,5 +371,4 @@ $(call import-module,android-ndk-profiler)
 endif
 endif
 
-
-$(call import-module,box2d)
+$(call import-module,Box2D)

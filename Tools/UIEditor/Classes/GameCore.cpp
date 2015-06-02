@@ -139,7 +139,7 @@ void GameCore::BeginFrame()
 {
 	ApplicationCore::BeginFrame();
 	// DF-1781 and DF-1572 - Increase size and position of default cliprect
-	RenderManager::Instance()->SetClip(Rect(-1000, -1000, 5000, 5000));
+    RenderManager::Instance()->SetClip(Rect(0.f, 0.f, -1.f, -1.f));
 	RenderManager::Instance()->ClearWithColor(0, 0, 0, 0);
 }
 

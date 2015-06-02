@@ -60,6 +60,19 @@ public:
 		,	TYPE_GRAPHICAL	//!< sprite-based
 		,	TYPE_DISTANCE	//!< distance-based
 	};
+
+	/**
+		\brief Structure with sizes of string
+		Contents draw rect (buffer, sprite bounds), height, baseline, width.
+	*/
+	struct StringMetrics
+	{
+        inline StringMetrics(): drawRect(), height(0), width(0), baseline(0) {}
+		Rect2i drawRect;
+		int32 height;
+		int32 width;
+		int32 baseline;
+	};
 protected:
 	virtual ~Font();
 public:
@@ -91,18 +104,6 @@ public:
 	virtual float32	GetSize() const;
 
 	/**
-		\brief Get the render size.
-		\returns size in pixels
-	*/
-	virtual float32	GetRenderSize() const;
-
-    /**
-     \brief Set the render size.
-     \param[in] size in points
-     */
-	virtual void SetRenderSize(float32 renderSize);
-
-	/**
 	 \brief Set vertical spacing.
 	 Spacing value is added to vertical range between lines in multiline text.
 	 \param[in] verticalSpacing value in pixels
@@ -115,34 +116,46 @@ public:
 	 \returns vertical spacing value in pixels
 	 */
 	virtual int32 GetVerticalSpacing() const;
-    
-	/**
-		\brief Split string into substrings.
-		If one word(letters without separators) is longer than targetRectSize.dx, word will not be splitted.
-		Separator symbols:
-		1. '\n', "\n"(two symbols) - forced split.
-		3. ' '(space) - soft split. If substring is longer than targetRectSize.dx, it will be limited to the last found space symbol. 
-		\param[in] text - string to be splitted
-		\param[in] targetRectSize - targetRectSize.dx sets desirable maximum substring width
-		\param[in, out] resultVector - contains resulting substrings
-	*/
-	void SplitTextToStrings(const WideString & text, const Vector2 & targetRectSize, Vector<WideString> & resultVector);
 
-	/**
-     \brief Split string into substrings by characters.
-     \param[in] text - string to be splitted
-     \param[in] targetRectSize - targetRectSize.dx sets desirable maximum substring width
-     \param[in, out] resultVector - contains resulting substrings
-     */
-	void SplitTextBySymbolsToStrings(const WideString & text, const Vector2 & targetRectSize, Vector<WideString> & resultVector);    
+    /**
+     \brief Set font ascend scale factor for FT font. Using for vertical align.
+     \param[in] ascendScale ascend scale factor
+    */
+    virtual void SetAscendScale(float32 ascendScale);
     
-	/**
+    /**
+    \brief Get font ascend scale factor for FT font. Using for vertical align.
+    \returns ascend scale factor
+    */
+    virtual float32 GetAscendScale() const;
+
+    /**
+     \brief Set font descend scale factor for FT font. Using for vertical align.
+     \param[in] descendScale descend scale factor
+    */
+    virtual void SetDescendScale(float32 descendScale);
+
+    /**
+     \brief Get font descend scale factor for FT font. Using for vertical align.
+     \returns descend scale factor
+    */
+    virtual float32 GetDescendScale() const;
+
+    /**
 		\brief Get string size(rect).
 		\param[in] str - processed string
 		\param[in, out] charSizes - if present(not NULL), will contain widths of every symbol in str 
 		\returns bounding rect for string in pixels
 	*/
-	virtual Size2i GetStringSize(const WideString & str, Vector<float32> *charSizes = 0) const = 0;
+	virtual Size2i GetStringSize(const WideString & str, Vector<float32> *charSizes = 0);
+	
+	/**
+	 \brief Get string metrics.
+	 \param[in] str - processed string
+	 \param[in, out] charSizes - if present(not NULL), will contain widths of every symbol in str
+	 \returns StringMetrics structure
+	 */
+	virtual StringMetrics GetStringMetrics(const WideString & str, Vector<float32> *charSizes = 0) const = 0;
 
 	/**
 		\brief Checks if symbol is present in font.
@@ -181,53 +194,18 @@ public:
 	virtual uint32 GetHashCode();
 
 protected:
-
-    struct SeparatorPositions
-    {
-        SeparatorPositions() { Reset(); }
-
-        void Reset();
-        
-        bool IsLineInitialized() const;
-        
-        int32 lastWordStart;
-        int32 lastWordEnd;
-        int32 currentLineStart;
-        int32 currentLineEnd;
-    };
-
-    
-    void AddCurrentLine(const WideString & text, const int32 pos, SeparatorPositions & separatorPosition, Vector<WideString> & resultVector) const;
-	
-    
     // Get the raw hash string (identical for identical fonts).
 	virtual String GetRawHashString();
     
-    inline bool IsLineEnd(char16 t) const;
-    inline bool IsSpace(char16 t) const;
-    
-    bool IsWordSeparator(char16 t) const;
-
 	static int32 globalFontDPI;
 	
 	float32	size;
-    float32 renderSize;
 
 	int32 verticalSpacing;
 	
 	eFontType fontType;
 };
     
-inline bool Font::IsLineEnd(char16 t) const
-{
-    return (t == L'\n');
-}
-    
-inline bool Font::IsSpace(char16 t) const
-{
-    return (t == L' ');
-}
-
 };
 
 #endif // __DAVAENGINE_FONT_H__

@@ -35,7 +35,6 @@
 
 namespace DAVA 
 {
-	REGISTER_CLASS(SpeedTreeComponent)
 
 SpeedTreeComponent::SpeedTreeComponent() :
     trunkOscillationAmplitude(1.f),

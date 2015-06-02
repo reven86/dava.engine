@@ -39,8 +39,7 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Base/HashMap.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
-
-//#define COMPONENT_STORAGE_STDMAP 1
+#include "Scene3D/EntityFamily.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
 
 namespace DAVA
@@ -84,10 +83,10 @@ public:
 
     Component * GetComponent(uint32 componentType, uint32 index = 0) const;
     Component * GetOrCreateComponent(uint32 componentType, uint32 index = 0);
-    uint32 GetComponentCount();
-    uint32 GetComponentCount(uint32 componentType);
+    uint32 GetComponentCount() const;
+    uint32 GetComponentCount(uint32 componentType) const;
     
-    inline uint32 GetAvailableComponentFlags();
+    inline uint64 GetAvailableComponentFlags();
 
 
 	// working with childs
@@ -192,12 +191,8 @@ public:
      */
 	Matrix4 & ModifyLocalTransform(); 
     const Matrix4 & GetWorldTransform() const;
-    const Matrix4 & GetDefaultLocalTransform(); 
     
     void SetLocalTransform(const Matrix4 & newMatrix);
-    //inline void SetWorldTransform(const Matrix4 & newMatrix);
-    inline void SetDefaultLocalTransform(const Matrix4 & newMatrix);
-    //inline void InvalidateLocalTransform();
 	Matrix4 AccamulateLocalTransform(Entity * fromParent);
     Matrix4 AccamulateTransformUptoFarParent(Entity * farParent);
     
@@ -255,8 +250,6 @@ public:
 // 	void DetachAnimation(SceneNodeAnimation * animation);
 // 	virtual void StopAllAnimations(bool recursive = true);
 
-	void RestoreOriginalTransforms();
-
 	
     virtual Entity* Clone(Entity *dstNode = NULL);
 	
@@ -293,11 +286,14 @@ public:
     uint32 GetDebugFlags() const;
     	
     void SetSolid(bool isSolid);
-    bool GetSolid();
+    bool GetSolid() const;
 
 	void SetLocked(bool isLocked);
-	bool GetLocked();
+	bool GetLocked() const;
 
+    void SetNotRemovable(bool notRemovabe);
+    bool GetNotRemovable() const;
+    
     /**
         \brief function returns maximum bounding box of scene in world coordinates.
         \returns bounding box
@@ -326,8 +322,8 @@ public:
     /**
         \brief Function to get data nodes of requested type to specific container you provide.
      */
-    template<template <typename> class Container, class T>
-	void GetDataNodes(Container<T> & container);
+    template<template <typename, typename> class Container, class T, class A>
+	void GetDataNodes(Container<T, A> & container);
 	/**
 	 \brief Optimize scene before export.
      */
@@ -347,11 +343,13 @@ public:
         }
         \endcode
      */
-    template<template <typename> class Container, class T>
-	void GetChildNodes(Container<T> & container);
+    template<template <typename, typename> class Container, class T, class A>
+	void GetChildNodes(Container<T, A> & container);
     
-    template<template <typename> class Container>
-    void GetChildEntitiesWithComponent(Container<Entity*> & container, Component::eType type);
+    template<template <typename, typename> class Container, class A>
+    void GetChildEntitiesWithComponent(Container<Entity*, A> & container, Component::eType type);
+
+    uint32 CountChildEntitiesWithComponent(Component::eType type, bool recursive = false) const;
 
     /**
         \brief This function is called after scene is loaded from file.
@@ -362,14 +360,15 @@ public:
 	// Property names.
 	static const char* SCENE_NODE_IS_SOLID_PROPERTY_NAME;
 	static const char* SCENE_NODE_IS_LOCKED_PROPERTY_NAME;
+    static const char* SCENE_NODE_IS_NOT_REMOVABLE_PROPERTY_NAME;
 
 	void FindComponentsByTypeRecursive(Component::eType type, List<DAVA::Entity*> & components);
     
     Vector<Entity*> children;
     
-protected:
+    void UpdateFamily();
     
-    inline void CleanupComponent(Component* component, uint32 componentCount);
+protected:
     void RemoveAllComponents();
     void LoadComponentsV6(KeyedArchive *compsArch, SerializationContext * serializationContext);
     void LoadComponentsV7(KeyedArchive *compsArch, SerializationContext * serializationContext);
@@ -378,37 +377,21 @@ protected:
 
     String RecursiveBuildFullName(Entity * node, Entity * endNode);
 
-//    virtual Entity* CopyDataTo(Entity *dstNode);
 	void SetParent(Entity * node);
 
 	Scene * scene;
 	Entity * parent;
-	
-
-	FastName	name;
-	int32	tag;
-
+	FastName name;
+	int32 tag;
     uint32 flags;
     
 private:
         
 	Vector<Component *> components;
-    uint32 componentFlags;
-    uint32 componentUpdateMarks;
-    
-#if defined(COMPONENT_STORAGE_STDMAP)
+    EntityFamily * family;
+    void DetachComponent(Vector<Component *>::iterator & it);
+    void RemoveComponent(Vector<Component *>::iterator & it);
 
-    typedef Map<uint32, Vector<Component*>* > ComponentsMap;
-    ComponentsMap componentsMap;
-
-#else
-    
-    typedef HashMap<uint32, Vector<Component*>* > ComponentsMap;
-    ComponentsMap componentsMap;
-    
-#endif
-
-    Matrix4 defaultLocalTransform;
    	friend class Scene;
     
 public:
@@ -418,9 +401,6 @@ public:
         MEMBER( flags, "Flags", I_SAVE | I_VIEW | I_EDIT )
 
         PROPERTY("visible", "Visible", GetVisible, SetVisible, I_VIEW | I_EDIT)
-
-		//COLLECTION(components, "Components", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
-		//COLLECTION(children, "Children nodes", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
     );
 };
 	
@@ -470,37 +450,15 @@ inline int32 Entity::GetTag()
     return tag; 
 }
     
-inline const Matrix4 & Entity::GetDefaultLocalTransform()
-{
-    return defaultLocalTransform;
-}
-    
-//
-//inline void Entity::SetWorldTransform(const Matrix4 & newMatrix)
-//{
-//    worldTransform = newMatrix;
-//}
-//
-    
-//inline void Entity::InvalidateLocalTransform()
-//{
-//    flags &= ~(NODE_WORLD_MATRIX_ACTUAL | NODE_LOCAL_MATRIX_IDENTITY);
-//}
-
-    
-inline void Entity::SetDefaultLocalTransform(const Matrix4 & newMatrix)
-{
-    defaultLocalTransform = newMatrix;
-}
-    
+   
 inline void Entity::SetTag(int32 _tag)
 {
     tag = _tag;
 }
 
     
-template<template <typename> class Container, class T>
-void Entity::GetDataNodes(Container<T> & container)
+template<template <typename, typename> class Container, class T, class A>
+void Entity::GetDataNodes(Container<T, A> & container)
 {
     Set<DataNode*> objects;
     GetDataNodes(objects);
@@ -516,8 +474,8 @@ void Entity::GetDataNodes(Container<T> & container)
     }	
 }
     
-template<template <typename> class Container, class T>
-void Entity::GetChildNodes(Container<T> & container)
+template<template <typename, typename> class Container, class T, class A>
+void Entity::GetChildNodes(Container<T, A> & container)
 {    
     Vector<Entity*>::const_iterator end = children.end();
     for (Vector<Entity*>::iterator t = children.begin(); t != end; ++t)
@@ -532,8 +490,8 @@ void Entity::GetChildNodes(Container<T> & container)
     }	
 }
     
-template<template <typename> class Container>
-void Entity::GetChildEntitiesWithComponent(Container<Entity*> & container, Component::eType type)
+template<template <typename, typename> class Container, class A>
+void Entity::GetChildEntitiesWithComponent(Container<Entity*, A> & container, Component::eType type)
 {
     Vector<Entity*>::const_iterator end = children.end();
     for (Vector<Entity*>::iterator t = children.begin(); t != end; ++t)
@@ -550,19 +508,81 @@ void Entity::GetChildEntitiesWithComponent(Container<Entity*> & container, Compo
     }	
 }
 
-uint32 Entity::GetAvailableComponentFlags()
+inline uint64 Entity::GetAvailableComponentFlags()
 {
-    return componentFlags;
+    return family->GetComponentsFlags();
 }
     
-Entity * Entity::GetChild(int32 index) const
+inline Entity * Entity::GetChild (int32 index) const
 {
     return children[index];
 }
 
-int32 Entity::GetChildrenCount() const
+inline int32 Entity::GetChildrenCount () const
 {
     return (int32)children.size();
+}
+
+inline uint32 Entity::GetComponentCount () const
+{
+    return static_cast<uint32>(components.size ());
+}
+
+inline void Entity::UpdateFamily ()
+{
+    EntityFamily::Release (family);
+    family = EntityFamily::GetOrCreate (components);
+}
+
+inline void Entity::RemoveAllComponents ()
+{
+    while (!components.empty ())
+    {
+        RemoveComponent (--components.end ());
+    }
+}
+
+inline void Entity::RemoveComponent (Vector<Component *>::iterator & it)
+{
+    if (it != components.end ())
+    {
+        Component * c = *it;
+        DetachComponent (it);
+        SafeDelete (c);
+    }
+}
+
+inline void Entity::RemoveComponent (uint32 componentType, uint32 index)
+{
+    Component * c = GetComponent (componentType, index);
+    if (c)
+    {
+        RemoveComponent (c);
+    }
+}
+
+inline void Entity::RemoveComponent (Component * component)
+{
+    DetachComponent (component);
+    SafeDelete (component);
+}
+
+inline void Entity::DetachComponent (Component * component)
+{
+    DVASSERT (component);
+
+    auto it = std::find (components.begin (), components.end (), component);
+    DetachComponent (it);
+}
+
+inline Scene * Entity::GetScene ()
+{
+    return scene;
+}
+
+inline uint32 Entity::GetComponentCount (uint32 componentType) const
+{
+    return family->GetComponentsCount (componentType);
 }
 
 

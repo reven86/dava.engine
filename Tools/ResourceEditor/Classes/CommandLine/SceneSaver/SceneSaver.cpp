@@ -37,6 +37,7 @@
 #include "Classes/Qt/Main/QtUtils.h"
 
 #include "Scene3D/Components/CustomPropertiesComponent.h"
+#include "CommandLine/CommandLineTool.h"
 
 using namespace DAVA;
 
@@ -124,7 +125,7 @@ void SceneSaver::ResaveFile(const String &fileName, Set<String> &errorLog)
 		}
 
 		//scene->Update(0.f);
-        scene->Save(sc2Filename);
+        scene->SaveScene(sc2Filename, false);
 	}
 	else
 	{
@@ -187,7 +188,7 @@ void SceneSaver::SaveScene(Scene *scene, const FilePath &fileName, Set<String> &
     tempSceneName.ReplaceExtension(".saved.sc2");
     
     sceneUtils.CopyFiles(errorLog);
-    scene->Save(tempSceneName, true);
+    scene->SaveScene(tempSceneName, false);
 
     bool moved = FileSystem::Instance()->MoveFile(tempSceneName, sceneUtils.dataFolder + relativeFilename, true);
 	if(!moved)
@@ -300,6 +301,18 @@ void SceneSaver::CopyEffects(Entity *node)
 	{
 		CopyEffects(node->GetChild(i));
 	}
+    
+    for (auto it = effectFolders.begin(), endIt = effectFolders.end(); it != endIt; ++it)
+    {
+        FilePath flagsTXT = *it + "flags.txt";
+        
+        if(flagsTXT.Exists())
+        {
+            sceneUtils.AddFile(flagsTXT);
+        }
+    }
+    
+    effectFolders.clear();
 }
 
 void SceneSaver::CopyEmitter( ParticleEmitter *emitter)
@@ -330,6 +343,9 @@ void SceneSaver::CopyEmitter( ParticleEmitter *emitter)
 			FilePath psdPath = ReplaceInString(sprite->GetRelativePathname().GetAbsolutePathname(), "/Data/", "/DataSource/");
 			psdPath.ReplaceExtension(".psd");
 			sceneUtils.AddFile(psdPath);
+            
+            
+            effectFolders.insert(psdPath.GetDirectory());
 		}
 	}
 }
@@ -345,7 +361,7 @@ void SceneSaver::CopyCustomColorTexture(Scene *scene, const FilePath & sceneFold
 	String pathname = customProps->GetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
 	if(pathname.empty()) return;
 
-    FilePath projectPath = CreateProjectPathFromPath(sceneFolder);
+    FilePath projectPath = CommandLineTool::CreateProjectPathFromPath(sceneFolder);
     if(projectPath.IsEmpty())
     {
         errorLog.insert(Format("Can't copy custom colors texture (%s)", pathname.c_str()));
@@ -356,7 +372,7 @@ void SceneSaver::CopyCustomColorTexture(Scene *scene, const FilePath & sceneFold
     sceneUtils.AddFile(texPathname);
     
     FilePath newTexPathname = sceneUtils.GetNewFilePath(texPathname);
-    FilePath newProjectPathname = CreateProjectPathFromPath(sceneUtils.dataFolder);
+    FilePath newProjectPathname = CommandLineTool::CreateProjectPathFromPath(sceneUtils.dataFolder);
     if(newProjectPathname.IsEmpty())
     {
         errorLog.insert(Format("Can't save custom colors texture (%s)", pathname.c_str()));
@@ -365,16 +381,4 @@ void SceneSaver::CopyCustomColorTexture(Scene *scene, const FilePath & sceneFold
     
     //save new path to custom colors texture
     customProps->SetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP, newTexPathname.GetRelativePathname(newProjectPathname));
-}
-
-FilePath SceneSaver::CreateProjectPathFromPath(const FilePath & pathname)
-{
-	String fullPath = pathname.GetAbsolutePathname();
-	String::size_type pos = fullPath.find("/Data");
-	if(pos != String::npos)
-	{
-        return fullPath.substr(0, pos+1);
-	}
-    
-    return FilePath();
 }

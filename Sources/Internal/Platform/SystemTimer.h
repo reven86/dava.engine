@@ -72,6 +72,7 @@ public:
 
     uint64 AbsoluteMS();
     uint64 GetAbsoluteNano();
+    uint64 GetAbsoluteUs();
 
     static void SetFrameDelta(float32 _delta); //for replay playback only
 	
@@ -101,7 +102,6 @@ public:
     
     
 #if defined(__DAVAENGINE_ANDROID__)
-	Mutex  tickMutex;
 	uint64 GetTickCount();
 	void InitTickCount();
 #endif //#if defined(__DAVAENGINE_ANDROID__)

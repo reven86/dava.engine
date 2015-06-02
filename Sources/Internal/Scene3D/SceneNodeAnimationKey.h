@@ -41,23 +41,23 @@ public:
 	float32 time;
 	Vector3 translation;
 	Quaternion rotation;
-	// Matrix4 matrix;
+	Vector3 scale;
 	
-	inline void GetMatrix(Matrix4 & matrix);
+	inline void GetMatrix(Matrix4 & matrix) const;
 };
 	
 	
-inline void SceneNodeAnimationKey::GetMatrix(Matrix4 & result)
+inline void SceneNodeAnimationKey::GetMatrix(Matrix4 & result) const
 {
-	Matrix4 localTransformTrans;
 	Matrix4 localTransformRot;
-	Matrix4 localTransformFinal;
-	localTransformTrans.CreateTranslation(translation);
+	Matrix4 localTransformScale;
 	localTransformRot = rotation.GetMatrix();
+	localTransformScale.CreateScale(scale);
 
-	result = localTransformRot * localTransformTrans;	 
+	result = localTransformRot * localTransformScale;	 
+	result.SetTranslationVector(translation);
 }
-	
+
 };
 
 #endif // __DAVAENGINE_SCENE_NODE_ANIMATION_KEY_H__

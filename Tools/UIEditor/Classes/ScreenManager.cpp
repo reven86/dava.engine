@@ -70,4 +70,8 @@ void ScreenManager::OnSelectedScreenChanged(const HierarchyTreeScreenNode* node)
 	}
     
     defaultScreen->SetScreenControl(activeScreenControl);
+    if (node)
+    {
+        HierarchyTreeController::Instance()->UpdateLocalization(false, node);
+    }
 }

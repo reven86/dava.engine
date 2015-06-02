@@ -42,7 +42,6 @@ namespace DAVA
 
 class PolygonGroup;
 class RenderBatch;
-class ShadowVolume;
 class NMaterial;
 
 class Mesh : public RenderObject

@@ -34,6 +34,7 @@
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "Thread/LockGuard.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #define NOT_DEF_CHAR 0xffff
 
@@ -47,6 +48,7 @@ DFFontInternalData::DFFontInternalData()
     baseSize = 0;
     paddingLeft = paddingRight = paddingTop = paddingBottom = 0;
     lineHeight = 0;
+	baselineHeight = 0;
     spread = 1.f;
 }
     
@@ -113,6 +115,9 @@ bool DFFontInternalData::InitFromConfig(const DAVA::FilePath &path)
     const YamlNode* lineHeight = configNode->Get("lineHeight");
     if (lineHeight)
         this->lineHeight = lineHeight->AsFloat();
+	const YamlNode* baselineHeight = configNode->Get("baselineHeight");
+	if (baselineHeight)
+		this->baselineHeight = baselineHeight->AsFloat();
     const YamlNode* spread = configNode->Get("spread");
     if (spread)
         this->spread = spread->AsFloat();
@@ -194,7 +199,7 @@ DFFont* DFFont::Create(const FilePath & path)
     return font;
 }
     
-Size2i DFFont::GetStringSize(const WideString & str, Vector<float32> *charSizes/* = 0*/) const
+Font::StringMetrics DFFont::GetStringMetrics(const WideString & str, Vector<float32> *charSizes/* = 0*/) const
 { 
     int32 charDrawed = 0;
     return DrawStringToBuffer(str, 0, 0, NULL, charDrawed, charSizes);
@@ -217,8 +222,9 @@ Font * DFFont::Clone() const
     dfFont->fontInternal = SafeRetain(fontInternal);
     dfFont->fontTexture = SafeRetain(fontTexture);
     dfFont->size = size;
-    dfFont->renderSize = renderSize;
     dfFont->fontTextureHandler = fontTextureHandler;
+    dfFont->SetAscendScale(GetAscendScale());
+    dfFont->SetDescendScale(GetDescendScale());
     RenderManager::Instance()->RetainTextureState(fontTextureHandler);
 
     return dfFont;
@@ -236,7 +242,7 @@ bool DFFont::IsEqual(const Font *font) const
     return true;
 }
 
-Size2i DFFont::DrawStringToBuffer(const WideString & str,
+Font::StringMetrics DFFont::DrawStringToBuffer(const WideString & str,
                                   int32 xOffset,
                                   int32 yOffset,
                                   DFFontVertex* vertexBuffer,
@@ -246,7 +252,7 @@ Size2i DFFont::DrawStringToBuffer(const WideString & str,
                                   int32 spaceAddon) const
 {
     int32 countSpace = 0;
-    uint32 strLength = str.length();
+    uint32 strLength = static_cast<uint32>(str.length());
 	for(uint32 i = 0; i < strLength; ++i)
 	{
 		if( L' ' == str[i])
@@ -273,7 +279,11 @@ Size2i DFFont::DrawStringToBuffer(const WideString & str,
     DFFontInternalData::CharsMap::const_iterator notDef = fontInternal->chars.find(NOT_DEF_CHAR);
     bool notDefExists = (notDef != fontInternal->chars.end());
 
+	Font::StringMetrics metrics;
+	metrics.drawRect = Rect2i(0x7fffffff, 0x7fffffff, 0, 0);
     
+	float32 ascent = fontInternal->lineHeight * GetSizeScale();
+
     for (uint32 charPos = 0; charPos < strLength; ++charPos)
     {
         char16 charId = str.at(charPos);
@@ -309,11 +319,22 @@ Size2i DFFont::DrawStringToBuffer(const WideString & str,
         float32 startHeight = charDescription.yOffset * sizeScale;
         float32 fullHeight = (charDescription.height + charDescription.yOffset) * sizeScale;
         
+		ascent = Min(startHeight, ascent);
+
         startHeight += yOffset;
         fullHeight += yOffset;
 
+		metrics.drawRect.x = Min(metrics.drawRect.x, (int32)startX);
+		metrics.drawRect.y = Min(metrics.drawRect.y, (int32)startHeight);
+		metrics.drawRect.dx = Max(metrics.drawRect.dx, (int32)(startX + width));
+		metrics.drawRect.dy = Max(metrics.drawRect.dy, (int32)(fullHeight));
+
+		
+		//const float32 borderAlign = (startHeight - yOffset)*2.0f;
+		//metrics.drawRect.dy = Max(metrics.drawRect.dy, (int32)(fullHeight + borderAlign));
+
         if (vertexBuffer)
-        {
+        {	
             vertexBuffer[vertexAdded].position.x = startX;
             vertexBuffer[vertexAdded].position.y = startHeight;
             vertexBuffer[vertexAdded].position.z = 0;
@@ -351,14 +372,24 @@ Size2i DFFont::DrawStringToBuffer(const WideString & str,
         }
         float32 charWidth = (charDescription.xAdvance + nextKerning) * sizeScale;
         if (charSizes)
-            charSizes->push_back(charWidth * Core::GetVirtualToPhysicalFactor());
+            charSizes->push_back(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(charWidth));
         lastX += charWidth;
         
         charDrawed++;
     }
     lastY += yOffset + GetFontHeight();
 
-    return Size2i((int32)ceilf(lastX), (int32)ceilf(lastY));
+	metrics.drawRect.dy += (int32)(ascent);
+
+	//@note : "-1" fix magic fix from FTFont
+	// Transform right/bottom edges into width/height
+	metrics.drawRect.dx += -metrics.drawRect.x + 1;
+	metrics.drawRect.dy += -metrics.drawRect.y + 1;
+
+	metrics.height = (int32)ceilf(lastY);
+	metrics.width = (int32)ceilf(lastX);
+	metrics.baseline = yOffset + (int32)fontInternal->baselineHeight;
+	return metrics;
 }
 
 float32 DFFont::GetSpread() const
@@ -368,7 +399,7 @@ float32 DFFont::GetSpread() const
 
 float32 DFFont::GetSizeScale() const
 {
-    return renderSize / fontInternal->baseSize;
+    return size / fontInternal->baseSize;
 }
     
 bool DFFont::LoadTexture(const FilePath & path)

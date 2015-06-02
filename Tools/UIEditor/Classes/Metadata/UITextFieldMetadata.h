@@ -52,6 +52,9 @@ class UITextFieldMetadata : public UITextControlMetadata
 	Q_PROPERTY(int KeyboardType READ GetKeyboardType WRITE SetKeyboardType);
 	Q_PROPERTY(int ReturnKeyType READ GetReturnKeyType WRITE SetReturnKeyType);
 	Q_PROPERTY(bool IsReturnKeyAutomatically READ GetIsReturnKeyAutomatically WRITE SetIsReturnKeyAutomatically);
+    
+    Q_PROPERTY(int MaxLength READ GetMaxLength WRITE SetMaxLength);
+
 public:
     UITextFieldMetadata(QObject* parent = 0);
 
@@ -69,7 +72,7 @@ protected:
     QString GetText() const;
     void SetText(const QString& text);
     
-    virtual Font * GetFont();
+    virtual Font * GetFont() const;
     virtual void SetFont(Font* font);
 
     virtual float GetFontSize() const;
@@ -90,8 +93,17 @@ protected:
 	virtual QColor GetShadowColor() const;
 	virtual void SetShadowColor(const QColor& value);
 
-	virtual int GetTextAlign();
+	virtual int GetTextAlign() const;
     virtual void SetTextAlign(int align);
+	
+	virtual bool GetTextUseRtlAlign();
+	virtual void SetTextUseRtlAlign(bool value);
+
+    virtual bool GetTextMultiline() const;
+    virtual void SetTextMultiline(bool value);
+
+    virtual bool GetTextMultilineBySymbol() const;
+    virtual void SetTextMultilineBySymbol(bool value);
 	
 	bool GetIsPassword() const;
 	void SetIsPassword(bool value);
@@ -116,6 +128,9 @@ protected:
 	
 	bool GetIsReturnKeyAutomatically() const;
 	void SetIsReturnKeyAutomatically(bool value);
+
+	int GetMaxLength() const;
+	void SetMaxLength(int value);
 };
 
 };

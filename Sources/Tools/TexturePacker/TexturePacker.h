@@ -35,6 +35,7 @@
 #include "Render/Texture.h"
 #include "Math/Math2D.h"
 #include "TextureCompression/TextureConverter.h"
+#include "TexturePacker/ImagePacker.h"
 
 namespace DAVA
 {
@@ -59,6 +60,7 @@ public:
 	static const uint32 DEFAULT_TEXTURE_SIZE = 2048;
 	static const uint32 TSIZE_4096 = 4096;
 	static const Set<PixelFormat> PIXEL_FORMATS_WITH_COMPRESSION;
+	static const uint32 DEFAULT_MARGIN = 1;
 
 	struct FilterItem
 	{
@@ -89,13 +91,19 @@ public:
 	int TryToPackFromSortVector(ImagePacker * packer, Vector<SizeSortItem> & tempSortVector);
 	float TryToPackFromSortVectorWeight(ImagePacker * packer, Vector<SizeSortItem> & tempSortVector);
 
-	Rect2i ReduceRectToOriginalSize(const Rect2i & _input);
+    Rect2i GetOriginalSizeRect(const PackedInfo& _input);
 
 	void UseOnlySquareTextures();
 
 	void SetMaxTextureSize(uint32 maxTextureSize);
 	
     void SetConvertQuality(TextureConverter::eConvertQuality quality);
+
+	// set visible 1 pixel border for each texture
+	void SetTwoSideMargin(bool val=true) { useTwoSideMargin = val; }
+
+	// set space in pixels between two neighboring textures. value is omitted if two-side margin is set
+	void SetTexturesMargin(uint32 margin) { texturesMargin = margin; }
 
 	const Set<String>& GetErrors() const;
 	
@@ -109,8 +117,8 @@ private:
     
     bool CheckFrameSize(const Size2i &spriteSize, const Size2i &frameSize);
     
-	void WriteDefinitionString(FILE *fp, const Rect2i & writeRect, const Rect2i &originRect, int textureIndex);
-	void DrawToFinalImage(PngImageExt & finalImage, PngImageExt & drawedImage, const Rect2i & drawRect, const Rect2i &frameRect);
+	void WriteDefinitionString(FILE *fp, const Rect2i & writeRect, const Rect2i &originRect, int textureIndex, const String& frameName);
+	void DrawToFinalImage(PngImageExt & finalImage, PngImageExt & drawedImage, const PackedInfo & drawRect, const Rect2i &frameRect);
 
     
 	ImagePacker *			lastPackedPacker;
@@ -124,6 +132,9 @@ private:
 	bool IsFormatSupportedForGPU(PixelFormat format, eGPUFamily forGPU);
 	
     TextureConverter::eConvertQuality quality;
+
+	bool useTwoSideMargin;
+	uint32 texturesMargin;
     
 	Set<String> errors;
 	void AddError(const String& errorMsg);

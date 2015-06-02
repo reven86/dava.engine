@@ -36,19 +36,19 @@ namespace DAVA
 
 UIHierarchyCell::UIHierarchyCell()
 :   UIButton()
-,	node(NULL)
-,	identifier("")
-,	cellStore(NULL)
 ,   text(NULL)
 ,   openButton(NULL)
+,   node(NULL)
+,   identifier("")
+,   cellStore(NULL)
 {
 }
 
 UIHierarchyCell::UIHierarchyCell(const Rect &rect, const String &cellIdentifier)
-:	UIButton(rect)
-,	node(NULL)
-,	identifier(cellIdentifier)
-,	cellStore(NULL)
+:   UIButton(rect)
+,   node(NULL)
+,   identifier(cellIdentifier)
+,   cellStore(NULL)
 {
     text = new UIStaticText(Rect(15, 0, rect.dx - 15, rect.dy));
     AddControl(text);

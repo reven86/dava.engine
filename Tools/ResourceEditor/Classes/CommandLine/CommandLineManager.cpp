@@ -36,6 +36,7 @@
 #include "SceneSaver/SceneSaverTool.h"
 #include "SceneExporter/SceneExporterTool.h"
 #include "DDSExtractor/DDSExtractorTool.h"
+#include "StaticOcclusion/StaticOcclusionTool.h"
 
 #include "Beast/BeastCommandLineTool.h"
 #include "TextureDescriptor/TextureDescriptorTool.h"
@@ -85,14 +86,15 @@ void CommandLineManager::PrintUsageForActiveTool()
 
 CommandLineManager::CommandLineManager()
 	: isEnabled(false)
-	, isToolInitialized(false)
 	, activeTool(NULL)
+	, isToolInitialized(false)
 {
     AddCommandLineTool(new CleanFolderTool());
     AddCommandLineTool(new ImageSplitterTool());
     AddCommandLineTool(new SceneExporterTool());
     AddCommandLineTool(new SceneSaverTool());
 	AddCommandLineTool(new DDSExtractorTool());
+    AddCommandLineTool(new StaticOcclusionTool());
 
 #if defined (__DAVAENGINE_BEAST__)
 	AddCommandLineTool(new BeastCommandLineTool());
@@ -199,6 +201,12 @@ void CommandLineManager::Process()
 {
     if(activeTool)
     {
+        const FilePath qualitySettings = activeTool->GetQualityConfigPath();
+        if(!qualitySettings.IsEmpty())
+        {
+            QualitySettingsSystem::Instance()->Load(activeTool->GetQualityConfigPath());
+        }
+
         activeTool->Process();
     }
 }

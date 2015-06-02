@@ -30,6 +30,7 @@
 #include "QualitySwitcher.h"
 #include "Project/ProjectManager.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
+#include "MaterialEditor/MaterialEditor.h"
 
 #include <QComboBox>
 #include <QPushButton>
@@ -38,8 +39,8 @@
 #include <QGroupBox>
 #include <QLabel>
 
-QualitySwitcher::QualitySwitcher(QWidget *parent /* = NULL */)
-: QDialog(parent , Qt::Tool)
+QualitySwitcher::QualitySwitcher(QWidget *parent /* = nullptr */)
+    : QDialog(parent, Qt::Tool)
 {
     int mainRow = 0;
     int height = 10;
@@ -49,6 +50,7 @@ QualitySwitcher::QualitySwitcher(QWidget *parent /* = NULL */)
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     QGroupBox *texturesGroup = new QGroupBox(this);
     QGroupBox *materialsGroup = new QGroupBox(this);
+    QGroupBox *optionsGroup = new QGroupBox(this);
 
     // textures quality
     {
@@ -117,8 +119,35 @@ QualitySwitcher::QualitySwitcher(QWidget *parent /* = NULL */)
         }
     }
 
+    // quality options
+    {
+        QGridLayout *optionsLayout = new QGridLayout(optionsGroup);
+        optionsLayout->setColumnMinimumWidth(0, minColumnW);
+        optionsLayout->setColumnMinimumWidth(1, minColumnW);
+
+        optionsGroup->setTitle("Options");
+        optionsGroup->setLayout(optionsLayout);
+
+        int32 optionsCount = QualitySettingsSystem::Instance()->GetOptionsCount();
+        for(int32 i = 0; i < optionsCount; ++i)
+        {
+            DAVA::FastName optionName = QualitySettingsSystem::Instance()->GetOptionName(i);
+
+            QLabel *labOp = new QLabel(QString(optionName.c_str()) + ":", materialsGroup);
+            QCheckBox *checkOp = new QCheckBox(materialsGroup);
+            checkOp->setChecked(QualitySettingsSystem::Instance()->IsOptionEnabled(optionName));
+            checkOp->setProperty("qualityOptionName", QVariant(optionName.c_str()));
+
+            QObject::connect(checkOp, SIGNAL(clicked(bool)), this, SLOT(OnOptionClick(bool)));
+
+            optionsLayout->addWidget(labOp, i, 0);
+            optionsLayout->addWidget(checkOp, i, 1);
+        }
+    }
+
     mainLayout->addWidget(texturesGroup);
     mainLayout->addWidget(materialsGroup);
+    mainLayout->addWidget(optionsGroup);
     mainLayout->addStretch();
     mainLayout->setMargin(5);
     mainLayout->setSpacing(spacing);
@@ -126,9 +155,6 @@ QualitySwitcher::QualitySwitcher(QWidget *parent /* = NULL */)
     setLayout(mainLayout);
     adjustSize();
 }
-
-QualitySwitcher::~QualitySwitcher()
-{ }
 
 void QualitySwitcher::ApplyTx()
 {
@@ -161,25 +187,38 @@ void QualitySwitcher::ApplyMa()
     }
 }
 
+void QualitySwitcher::UpdateEntitiesToQuality(DAVA::Entity *e)
+{
+    DAVA::QualitySettingsSystem::Instance()->UpdateEntityVisibility(e);
+    for (int32 i = 0, sz = e->GetChildrenCount(); i < sz; ++i)
+    {
+        UpdateEntitiesToQuality(e->GetChild(i));
+    }
+}
+
 void QualitySwitcher::Show()
 {
     QualitySwitcher *sw = new QualitySwitcher(QtMainWindow::Instance());
     sw->setAttribute(Qt::WA_DeleteOnClose, true);
+    connect(sw, &QualitySwitcher::QualityChanged, MaterialEditor::Instance(), &MaterialEditor::OnQualityChanged);
+    connect(sw, &QualitySwitcher::QualityChanged, QtMainWindow::Instance()->GetUI()->sceneInfo, &SceneInfo::OnQualityChanged);
     sw->show();
 }
 
 void QualitySwitcher::ShowModal()
 {
     QualitySwitcher sw(QtMainWindow::Instance());
+    connect(&sw, &QualitySwitcher::QualityChanged, MaterialEditor::Instance(), &MaterialEditor::OnQualityChanged);
+    connect(&sw, &QualitySwitcher::QualityChanged, QtMainWindow::Instance()->GetUI()->sceneInfo, &SceneInfo::OnQualityChanged);
     sw.exec();
 }
 
 void QualitySwitcher::OnTxQualitySelect(int index)
 {
     QComboBox *combo = dynamic_cast<QComboBox *>(QObject::sender());
-    if(NULL != combo)
+    if(nullptr != combo)
     {
-        DAVA::FastName newTxQuality(combo->itemText(index).toAscii());
+        DAVA::FastName newTxQuality(combo->itemText(index).toLatin1());
         if(newTxQuality != DAVA::QualitySettingsSystem::Instance()->GetCurTextureQuality())
         {
             DAVA::QualitySettingsSystem::Instance()->SetCurTextureQuality(newTxQuality);
@@ -191,15 +230,41 @@ void QualitySwitcher::OnTxQualitySelect(int index)
 void QualitySwitcher::OnMaQualitySelect(int index)
 {
     QComboBox *combo = dynamic_cast<QComboBox *>(QObject::sender());
-    if(NULL != combo)
+    if(nullptr != combo)
     {
-        DAVA::FastName newMaQuality(combo->itemText(index).toAscii());
-        DAVA::FastName group(combo->itemData(index).toString().toAscii());
+        DAVA::FastName newMaQuality(combo->itemText(index).toLatin1());
+        DAVA::FastName group(combo->itemData(index).toString().toLatin1());
 
         if(newMaQuality != DAVA::QualitySettingsSystem::Instance()->GetCurMaterialQuality(group))
         {
             DAVA::QualitySettingsSystem::Instance()->SetCurMaterialQuality(group, newMaQuality);
             ApplyMa();
+
+            SceneTabWidget *tabWidget = QtMainWindow::Instance()->GetSceneWidget();
+            for (int tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
+            {
+                Scene* scene = tabWidget->GetTabScene(tab);
+                UpdateEntitiesToQuality(scene);
+            }
+
+            emit QualityChanged();
+        }
+    }
+}
+
+void QualitySwitcher::OnOptionClick(bool checked)
+{
+    QCheckBox *checkBox = dynamic_cast<QCheckBox *>(QObject::sender());
+    if(nullptr != checkBox)
+    {
+        FastName optionName(checkBox->property("qualityOptionName").toString().toStdString().c_str());
+        QualitySettingsSystem::Instance()->EnableOption(optionName, checked);
+        
+        SceneTabWidget *tabWidget = QtMainWindow::Instance()->GetSceneWidget();
+        for (int tab = 0, sz = tabWidget->GetTabCount(); tab < sz; ++tab)
+        {
+            Scene* scene = tabWidget->GetTabScene(tab);
+            UpdateEntitiesToQuality(scene);
         }
     }
 }

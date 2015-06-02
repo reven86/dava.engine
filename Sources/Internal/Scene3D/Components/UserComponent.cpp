@@ -34,7 +34,6 @@
 namespace DAVA
 {
     
-REGISTER_CLASS(UserComponent);
 
 UserComponent::UserComponent()
 { }

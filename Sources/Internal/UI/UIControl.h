@@ -27,28 +27,26 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_UI_CONTROL_H__
 #define __DAVAENGINE_UI_CONTROL_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/BaseMath.h"
-#include "Base/Message.h"
-#include "Base/BaseObject.h"
-#include "Base/EventDispatcher.h"
-
 #include "UI/UIControlBackground.h"
-#include "UI/UIEvent.h"
 #include "Animation/AnimatedObject.h"
-#include "Animation/Animation.h"
 #include "Animation/Interpolation.h"
-#include "FileSystem/YamlParser.h"
-#include "UI/UIYamlLoader.h"
-#include "DAVAConfig.h"
 
 namespace DAVA
 {
-#define CONTROL_TOUCH_AREA		15
+class UIYamlLoader;
+class Animation;
+class EventDispatcher;
+class UIEvent;
+class UIControlBackground;
+class Message;
+class UIComponent;
+class UIControlFamily;
+
+#define CONTROL_TOUCH_AREA  15
     /**
      \ingroup controlsystem
      \brief Compound of geometric transformations used to draw control in the screen space.
@@ -56,6 +54,7 @@ namespace DAVA
 
 class UIGeometricData
 {
+    friend class UIControl;
 
 public:
     UIGeometricData()
@@ -73,10 +72,10 @@ public:
     Vector2 scale;
     float32 angle;
 
-    float32 cosA;
-    float32 sinA;
+    mutable float32 cosA;
+    mutable float32 sinA;
 
-    void AddToGeometricData(const UIGeometricData &data)
+    void AddGeometricData(const UIGeometricData &data)
     {
         position.x = data.position.x - data.pivotPoint.x * data.scale.x + position.x * data.scale.x;
         position.y = data.position.y - data.pivotPoint.y * data.scale.y + position.y * data.scale.y;
@@ -110,6 +109,11 @@ public:
         unrotatedRect.dy = size.y * scale.y;
     }
 
+    DAVA_DEPRECATED(void AddToGeometricData(const UIGeometricData &data))
+    {
+        AddGeometricData(data);
+    }
+
     void BuildTransformMatrix( Matrix3 &transformMatr ) const
     {
         Matrix3 pivotMatr;
@@ -117,7 +121,13 @@ public:
 
         Matrix3 translateMatr;
         translateMatr.BuildTranslation( position );
-
+        // well it must be here otherwise there is a bug!
+        if (calculatedAngle != angle)
+        {
+            cosA = cosf(angle);
+            sinA = sinf(angle);
+            calculatedAngle = angle;
+        }
         Matrix3 rotateMatr;
         rotateMatr.BuildRotation( cosA, sinA );
 
@@ -145,9 +155,23 @@ public:
     {
         return unrotatedRect;
     }
+    
+    Rect GetAABBox() const
+    {
+        Polygon2 polygon;
+        GetPolygon(polygon);
+
+        AABBox2 aabbox;
+        for(int32 i = 0; i < polygon.GetPointCount(); ++i)
+        {
+            aabbox.AddPoint(polygon.GetPoints()[i]);
+        }
+        Rect bboxRect = Rect(aabbox.min, aabbox.max - aabbox.min);
+        return bboxRect;
+    }
 
 private:
-    float32 calculatedAngle;
+    mutable float32 calculatedAngle;
     Rect unrotatedRect;
 };
 
@@ -210,36 +234,37 @@ public:
      */
     enum eControlState
     {
-        STATE_NORMAL			= 1 << 0,//!<Control isn't under influence of any activities.
-        STATE_PRESSED_OUTSIDE	= 1 << 1,//!<Mouse or touch comes into control but dragged outside of control.
-        STATE_PRESSED_INSIDE	= 1 << 2,//!<Mouse or touch comes into control.
-        STATE_DISABLED			= 1 << 3,//!<Control is disabled (don't process any input). Use this state only if you want change graphical representation of the control. Don't use this state for the disabling inputs for parts of the controls hierarchy!.
-        STATE_SELECTED			= 1 << 4,//!<Just a state for base control, nothing more.
-        STATE_HOVER				= 1 << 5,//!<This bit is rise then mouse is over the control.
+        STATE_NORMAL            = 1 << 0,//!<Control isn't under influence of any activities.
+        STATE_PRESSED_OUTSIDE   = 1 << 1,//!<Mouse or touch comes into control but dragged outside of control.
+        STATE_PRESSED_INSIDE    = 1 << 2,//!<Mouse or touch comes into control.
+        STATE_DISABLED          = 1 << 3,//!<Control is disabled (don't process any input). Use this state only if you want change graphical representation of the control. Don't use this state for the disabling inputs for parts of the controls hierarchy!.
+        STATE_SELECTED          = 1 << 4,//!<Just a state for base control, nothing more.
+        STATE_HOVER             = 1 << 5,//!<This bit is rise then mouse is over the control.
 
-        STATE_COUNT				=	6
+        STATE_COUNT             = 6
     };
     /**
      \enum Control events supported by default.
      */
     enum eEventType
     {
-        EVENT_TOUCH_DOWN			= 1,//!<Trigger when mouse button or touch comes down inside the control.
-        EVENT_TOUCH_UP_INSIDE		= 2,//!<Trigger when mouse pressure or touch processed by the control is released.
-        EVENT_VALUE_CHANGED			= 3,//!<Used only with sliders for now. Trigger when value of the slider is changed.
+        EVENT_TOUCH_DOWN            = 1,//!<Trigger when mouse button or touch comes down inside the control.
+        EVENT_TOUCH_UP_INSIDE       = 2,//!<Trigger when mouse pressure or touch processed by the control is released.
+        EVENT_VALUE_CHANGED         = 3,//!<Used with sliders, spinners and switches. Trigger when value of the control is changed. Non-NULL callerData means that value is changed from code, not from UI.
         EVENT_HOVERED_SET           = 4,//!<
         EVENT_HOVERED_REMOVED       = 5,//!<
         EVENT_FOCUS_SET             = 6,//!<Trigger when control becomes focused
         EVENT_FOCUS_LOST            = 7,//!<Trigger when control losts focus
-        EVENT_TOUCH_UP_OUTSIDE		= 8,//!<Trigger when mouse pressure or touch processed by the control is released outside of the control.
+        EVENT_TOUCH_UP_OUTSIDE      = 8,//!<Trigger when mouse pressure or touch processed by the control is released outside of the control.
+        EVENT_ALL_ANIMATIONS_FINISHED	= 9,//!<Trigger when all animations associated with control are ended.
         EVENTS_COUNT
     };
 
     enum eDebugDrawPivotMode
     {
-        DRAW_NEVER					= 1, //!<Never draw the Pivot Point.
-        DRAW_ONLY_IF_NONZERO,			 //!<Draw the Pivot Point only if it is defined (nonzero).
-        DRAW_ALWAYS						 //!<Always draw the Pivot Point mark.
+        DRAW_NEVER          = 1, //!<Never draw the Pivot Point.
+        DRAW_ONLY_IF_NONZERO,    //!<Draw the Pivot Point only if it is defined (nonzero).
+        DRAW_ALWAYS              //!<Always draw the Pivot Point mark.
     };
 
     friend class ControlSystem;
@@ -297,6 +322,11 @@ public:
      \param[in] spriteFrame Sprite frame.
      */
     virtual void SetSpriteFrame(int32 spriteFrame);
+	 /**
+     \brief Sets Sprite frame you want to use for draw for the control UIControlBackground object.
+     \param[in] frame Sprite frame name.
+     */
+	virtual void SetSpriteFrame(const FastName& frameName);
     /**
      \brief Sets draw type you want to use the control UIControlBackground object.
      \param[in] drawType Draw type to use for drawing.
@@ -324,122 +354,122 @@ public:
      \brief Sets left align of control relative to its parent.
      \param[in] align left align of control.
      */
-    virtual void SetLeftAlign(int32 align);
+    virtual void SetLeftAlign(float32 align, bool applyAlign = true);
     /**
      \brief Returns left align of control relative to its parent.
      \returns left align of control.
      */
-    virtual int32 GetLeftAlign();
+    virtual float32 GetLeftAlign() const;
     /**
      \brief Sets horizontal central align of control relative to its parent.
      \param[in] align horizontal central align of control.
      */
-    virtual void SetHCenterAlign(int32 align);
+    virtual void SetHCenterAlign(float32 align, bool applyAlign = true);
     /**
      \brief Returns horizontal central align of control relative to its parent.
      \returns horizontal central align of control.
      */
-    virtual int32 GetHCenterAlign();
+    virtual float32 GetHCenterAlign() const;
     /**
      \brief Sets right align of control relative to its parent.
      \param[in] align right align of control.
      */
-    virtual void SetRightAlign(int32 align);
+    virtual void SetRightAlign(float32 align, bool applyAlign = true);
     /**
      \brief Returns right align of control relative to its parent.
      \returns right align of control.
      */
-    virtual int32 GetRightAlign();
+    virtual float32 GetRightAlign() const;
         /**
      \brief Sets top align of control relative to its parent.
      \param[in] align top align of control.
      */
-    virtual void SetTopAlign(int32 align);
+    virtual void SetTopAlign(float32 align, bool applyAlign = true);
     /**
      \brief Returns top align of control relative to its parent.
      \returns top align of control.
      */
-    virtual int32 GetTopAlign();
+    virtual float32 GetTopAlign() const;
         /**
      \brief Sets vertical central align of control relative to its parent.
      \param[in] align l vertical central align of control.
      */
-    virtual void SetVCenterAlign(int32 align);
+    virtual void SetVCenterAlign(float32 align, bool applyAlign = true);
     /**
      \brief Returns vertical central align of control relative to its parent.
      \returns vertical central align of control.
      */
-    virtual int32 GetVCenterAlign();
+    virtual float32 GetVCenterAlign() const;
         /**
      \brief Sets bottom align of control relative to its parent.
      \param[in] align bottom align of control.
      */
-    virtual void SetBottomAlign(int32 align);
+    virtual void SetBottomAlign(float32 align, bool applyAlign = true);
     /**
      \brief Returns bottom align of control relative to its parent.
      \returns bottom align of control.
      */
-    virtual int32 GetBottomAlign();
+    virtual float32 GetBottomAlign() const;
     /**
      \brief Sets control ability to change left align.
      \param[in] isEnabled left align availability.
      */
-    virtual void SetLeftAlignEnabled(bool isEnabled);
+    virtual void SetLeftAlignEnabled(bool isEnabled, bool applyAlign = true);
     /**
      \brief Returns availability of left align of control.
      \returns ability to change left align.
      */
-    virtual bool GetLeftAlignEnabled();
+    virtual bool GetLeftAlignEnabled() const;
     /**
      \brief Sets horizontal central align of control relative to its parent.
      \param[in] align horizontal central align of control.
      */
-    virtual void SetHCenterAlignEnabled(bool isEnabled);
+    virtual void SetHCenterAlignEnabled(bool isEnabled, bool applyAlign = true);
     /**
      \brief Returns horizontal central align of control relative to its parent.
      \returns horizontal central align of control.
      */
-    virtual bool GetHCenterAlignEnabled();
+    virtual bool GetHCenterAlignEnabled() const;
     /**
      \brief Sets right align of control relative to its parent.
      \param[in] align right align of control.
      */
-    virtual void SetRightAlignEnabled(bool isEnabled);
+    virtual void SetRightAlignEnabled(bool isEnabled, bool applyAlign = true);
     /**
      \brief Returns right align of control relative to its parent.
      \returns right align of control.
      */
-    virtual bool GetRightAlignEnabled();
+    virtual bool GetRightAlignEnabled() const;
         /**
      \brief Sets top align of control relative to its parent.
      \param[in] align top align of control.
      */
-    virtual void SetTopAlignEnabled(bool isEnabled);
+    virtual void SetTopAlignEnabled(bool isEnabled, bool applyAlign = true);
     /**
      \brief Returns top align of control relative to its parent.
      \returns top align of control.
      */
-    virtual bool GetTopAlignEnabled();
+    virtual bool GetTopAlignEnabled() const;
         /**
      \brief Sets vertical central align of control relative to its parent.
      \param[in] align l vertical central align of control.
      */
-    virtual void SetVCenterAlignEnabled(bool isEnabled);
+    virtual void SetVCenterAlignEnabled(bool isEnabled, bool applyAlign = true);
     /**
      \brief Returns vertical central align of control relative to its parent.
      \returns vertical central align of control.
      */
-    virtual bool GetVCenterAlignEnabled();
+    virtual bool GetVCenterAlignEnabled() const;
         /**
      \brief Sets bottom align of control relative to its parent.
      \param[in] align bottom align of control.
      */
-    virtual void SetBottomAlignEnabled(bool isEnabled);
+    virtual void SetBottomAlignEnabled(bool isEnabled, bool applyAlign = true);
     /**
      \brief Returns bottom align of control relative to its parent.
      \returns bottom align of control.
      */
-    virtual bool GetBottomAlignEnabled();
+    virtual bool GetBottomAlignEnabled() const;
 
     /**
      \brief Returns untransformed control rect.
@@ -532,10 +562,34 @@ public:
     inline void SetPivotPoint(const Vector2 &newPivot);
 
     /**
+     \brief Returns control pivot.
+     \returns control pivot.
+     */
+    inline Vector2 GetPivot() const;
+
+    /**
+     \brief Sets the control pivot.
+     \param[in] newPivot new control pivot.
+     */
+    inline void SetPivot(const Vector2 &newPivot);
+
+    /**
+     \brief Returns control scale.
+     \returns control scale.
+     */
+    inline const Vector2 &GetScale() const;
+
+    /**
+     \brief Sets the control scale.
+     \param[in] newScale new control scale.
+     */
+    inline void SetScale(const Vector2 &newScale);
+
+    /**
      \brief Returns actual control transformation and metrics.
      \returns control geometric data.
      */
-    const UIGeometricData &GetGeometricData();
+    virtual const UIGeometricData &GetGeometricData() const;
 
     /**
      \brief Returns actual control local transformation and metrics.
@@ -556,13 +610,8 @@ public:
      \returns control angle in radians.
      */
     inline float32 GetAngle() const;
+    inline float32 GetAngleInDegrees() const;
     
-    /**
-     \brief Returns control's parents total rotation angle in radians.
-     \returns control's parents total angle in radians.
-     */
-    virtual float32 GetParentsTotalAngle(bool includeOwn);
-
     /**
      \brief Sets contol rotation angle in radians.
         Control rotates around the pivot point.
@@ -570,26 +619,7 @@ public:
      */
     virtual void SetAngle(float32 angleInRad);
 
-    /**
-     \brief Returns control visibility.
-        Invisible controls don't process any inputs. But allows input processing for their children.
-        Also for invisible controls didn't calls Draw() and DrawAfterChilds() methods.
-        But this methods calls for their children.
-     \returns control visibility.
-     */
-    DAVA_DEPRECATED(virtual bool GetVisible() const);// use GetRecursiveVisible instead
-
-    /**
-     \brief Sets contol visibility.
-        Invisible controls don't process any inputs. But allows input processing for their children.
-        Also for invisible controls didn't calls Draw() and DrawAfterChilds() methods.
-        But this methods calls for their children.
-        It's always better to remove part of controls hierarchy from the parent then to make them invisible.
-        Visibility is usually used for the single control.
-     \param[in] isVisible new control visibility.
-     \param[in] hierarchic use true if you want to all control children change visiblity.
-     */
-    DAVA_DEPRECATED(virtual void SetVisible(bool isVisible, bool hierarchic = true));// use SetRecursiveVisible instead;
+    void SetAngleInDegrees(float32 angle);
 
     /**
      \brief Returns control visibility.
@@ -597,7 +627,7 @@ public:
         Also for invisible controls didn't calls Draw() and DrawAfterChilds() methods.
      \returns control visibility.
      */
-    inline bool GetRecursiveVisible() const;
+    inline bool GetVisible() const;
 
     /**
      \brief Sets contol recursive visibility.
@@ -605,7 +635,7 @@ public:
         Also for invisible controls didn't calls Draw() and DrawAfterChilds() methods.
      \param[in] isVisible new control visibility.
      */
-    virtual void SetRecursiveVisible(bool isVisible);
+    virtual void SetVisible(bool isVisible);
 
     /**
      \brief Returns control input processing ability.
@@ -767,6 +797,14 @@ public:
      */
     UIControl * FindByName(const String & name, bool recursive = true) const;
 
+    UIControl * FindByPath(const String & path) const;
+    
+    template<class C>
+    C FindByPath(const String & path) const
+    {
+        return DynamicTypeCheck<C>(FindByPath(path));
+    }
+
     /**
      \brief Returns control state bit mask.
      \returns control state.
@@ -922,7 +960,7 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *		WaitAnimation(float32 time, int32 track = 0);
+    Animation *     WaitAnimation(float32 time, int32 track = 0);
     /**
      \brief Starts move and size animation for the control.
      \param[in] rect New control position and size.
@@ -931,7 +969,7 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *		MoveAnimation(const Rect & rect, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
+    Animation *     MoveAnimation(const Rect & rect, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
     /**
      \brief Starts move and scale animation for the control. Changing scale instead of size.
      \param[in] rect New control position and size.
@@ -940,7 +978,7 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *		ScaledRectAnimation(const Rect & rect, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
+    Animation *     ScaledRectAnimation(const Rect & rect, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
     /**
      \brief Starts scale animation for the control. Changing scale instead of size.
      \param[in] newSize New control size.
@@ -949,7 +987,7 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *		ScaledSizeAnimation(const Vector2 & newSize, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
+    Animation *     ScaledSizeAnimation(const Vector2 & newSize, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
     /**
      \brief Starts control position animation.
      \param[in] _position New control position.
@@ -958,7 +996,7 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *		PositionAnimation(const Vector2 & _position, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
+    Animation *     PositionAnimation(const Vector2 & _position, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
     /**
      \brief Starts control size animation.
      \param[in] _size New control size.
@@ -967,7 +1005,7 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *		SizeAnimation(const Vector2 & _size, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
+    Animation *     SizeAnimation(const Vector2 & _size, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
     /**
      \brief Starts control scale animation.
      \param[in] newScale New control scale.
@@ -976,7 +1014,7 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *		ScaleAnimation(const Vector2 & newScale, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
+    Animation *     ScaleAnimation(const Vector2 & newScale, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
     /**
      \brief Starts control rotation angle animation.
      \param[in] newAngle New control rotation angle.
@@ -985,7 +1023,7 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *		AngleAnimation(float32 newAngle, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
+    Animation *     AngleAnimation(float32 newAngle, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
     /**
      \brief Starts input enabling switching animation. This animation changing control
         input enabling state on the next frame after the animation start.
@@ -994,7 +1032,7 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *		TouchableAnimation(bool touchable, bool hierarhic = true, int32 track = 0);
+    Animation *     TouchableAnimation(bool touchable, bool hierarhic = true, int32 track = 0);
     /**
      \brief Starts control disabling animation. This animation changing control
         disable state on the next frame after the animation start.
@@ -1003,31 +1041,22 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *		DisabledAnimation(bool disabled, bool hierarhic = true, int32 track = 0);
+    Animation *     DisabledAnimation(bool disabled, bool hierarhic = true, int32 track = 0);
     /**
      \brief Starts control visible animation. This animation changing control visibility
-        on the next frame after the animation start.
-     \param[in] visible New control visible value.
-     \param[in] hierarhic Is value need to be changed in all coltrol children.
-     \param[in] track animation track. 0 by default.
-     \returns Animation object
-     */
-    Animation *		VisibleAnimation(bool visible, bool hierarhic = true, int32 track = 0);
-    /**
-     \brief Starts control recursive visible animation. This animation changing control visibility
         on the next frame after the animation start.
      \param[in] visible New control recursive visible value.
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *		RecursiveVisibleAnimation(bool visible, int32 track = 0);
+    Animation *		VisibleAnimation(bool visible, int32 track = 0);
     /**
      \brief Starts control removation animation. This animation removes control from the parent
      on the next frame  after the animation start.
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *		RemoveControlAnimation(int32 track = 0);
+    Animation *     RemoveControlAnimation(int32 track = 0);
     /**
      \brief Starts control color animation.
      \param[in] New control color.
@@ -1036,13 +1065,12 @@ public:
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    virtual Animation *	ColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
+    Animation * ColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
 
 protected:
     void TouchableAnimationCallback(BaseObject * caller, void * param, void *callerData);
     void DisabledAnimationCallback(BaseObject * caller, void * param, void *callerData);
     void VisibleAnimationCallback(BaseObject * caller, void * param, void *callerData);
-    void RecursiveVisibleAnimationCallback(BaseObject * caller, void * param, void *callerData);
     void RemoveControlAnimationCallback(BaseObject * caller, void * param, void *callerData);
 
 public:
@@ -1052,9 +1080,9 @@ public:
      \param[in] _debugDrawEnabled New debug draw value.
      \param[in] hierarchic Is value need to be changed in all coltrol children.
      */
-    void	SetDebugDraw(bool _debugDrawEnabled, bool hierarchic = false);
-    void	SetDebugDrawColor(const Color& color);
-    const Color	&GetDebugDrawColor() const;
+    void    SetDebugDraw(bool _debugDrawEnabled, bool hierarchic = false);
+    void    SetDebugDrawColor(const Color& color);
+    const Color &GetDebugDrawColor() const;
 
     /**
      \brief Set the draw pivot point mode for the control.
@@ -1163,6 +1191,9 @@ public:
      \returns true if control processed this input.
      */
     virtual bool SystemProcessInput(UIEvent *currentInput);// Internal method used by ControlSystem
+
+    Function<bool(UIControl*,UIEvent*)> customSystemProcessInput;
+
     /**
      \brief Calls when input processd by control is cancelled.
         Internal method used by ControlSystem.
@@ -1269,7 +1300,7 @@ public:
      \param[in] expandWithFocus Is area should be expanded with focus.
      \returns True if inside the control rect.
      */
-    virtual bool IsPointInside(const Vector2 &point, bool expandWithFocus = false);
+    virtual bool IsPointInside(const Vector2 &point, bool expandWithFocus = false) const;
 
     virtual bool IsLostFocusAllowed(UIControl *newFocus);
 
@@ -1281,16 +1312,20 @@ public:
 
     virtual void OnFocused();
 
+	virtual void OnAllAnimationsFinished();
+	
     /// sets rect to match background sprite, also moves pivot point to center
     void SetSizeFromBg(bool pivotToCenter = true);
 
+    virtual void UpdateLayout();
+    virtual void UpdateChildrenLayout();
     // Recalculate the size and positions for the child controls according to their Align Options.
     void ApplyAlignSettingsForChildren();
 
+    const String &GetControlClassName() const;
     // Access to Custom Control Type.
-    const String &GetCustomControlType() const;
-    void SetCustomControlType(const String& value);
-    void ResetCustomControlType();
+    const String &GetCustomControlClassName() const;
+    void SetCustomControlClassName(const String& value);
 
     // Find the control by name and add it to the list, if found.
     bool AddControlToList(List<UIControl*>& controlsList, const String& controlName, bool isRecursive = false);
@@ -1301,9 +1336,16 @@ public:
 
     // Get/set visible flag for UI editor. Should not be serialized.
     bool GetVisibleForUIEditor() const { return visibleForUIEditor; };
-    virtual void SetVisibleForUIEditor(bool value, bool hierarchic = true);
+    virtual void SetVisibleForUIEditor(bool value);
 
     void DumpInputs(int32 depthLevel);
+
+    static void DumpControls(bool onlyOrphans);
+private:
+    String name;
+protected:
+    UIControl *parent;
+    List<UIControl*> childs;
 
 public:
     //TODO: store geometric data in UIGeometricData
@@ -1315,8 +1357,6 @@ public:
     float32 angle;//!<control rotation angle. Rotation around pivot point.
 
 protected:
-    UIControl *parent;
-    List<UIControl*> childs;
     List<UIControl*> realChilds;
 
     UIControlBackground *background;
@@ -1324,7 +1364,6 @@ protected:
 
     // boolean flags are grouped here to pack them together (see please DF-2149).
     bool exclusiveInput : 1;
-    bool recursiveVisible : 1;
     bool visible : 1;
     bool clipContents : 1;
     bool debugDrawEnabled : 1;
@@ -1345,20 +1384,19 @@ protected:
 
     int32 inputProcessorsCount;
 
-
     int32 currentInputID;
     int32 touchesInside;
     int32 totalTouches;
 
     // Align options
-    int32 leftAlign;
-    int32 hcenterAlign;
-    int32 rightAlign;
-    int32 topAlign;
-    int32 vcenterAlign;
-    int32 bottomAlign;
+    float32 leftAlign;
+    float32 hcenterAlign;
+    float32 rightAlign;
+    float32 topAlign;
+    float32 vcenterAlign;
+    float32 bottomAlign;
 
-    UIGeometricData tempGeometricData;
+    mutable UIGeometricData tempGeometricData;
 
     EventDispatcher *eventDispatcher;
 
@@ -1367,7 +1405,7 @@ protected:
     eDebugDrawPivotMode drawPivotPointMode;
 
     // If this UI control represents Custom Control - its type is stored here.
-    String customControlType;
+    String customClassName;
 
     // Initial control's state which is stored on Yaml.
     int32 initialState;
@@ -1389,26 +1427,134 @@ protected:
     void DrawPivotPoint(const Rect &drawRect);
 
 private:
-    String	name;
-    int32	tag;
+    int32  tag;
     bool inputEnabled : 1;
     bool focusEnabled : 1;
 
+    void CalculateAlignSettings();
 
-    void RecalculateAlignProperties();
-    void RecalculateChildsSize();
-    void RecalculatePivotPoint(const Rect &newRect);
+    void ApplyAlignSettings();
 
-    float32 GetSizeX(UIControl *parent, int32 leftAlign, int32 rightAlign, bool useHalfParentSize = false);
-    float32 GetSizeY(UIControl *parent, int32 topAlign, int32 bottomAlign, bool useHalfParentSize = false);
+    void GetAxisDataByAlignData(float32 size, float32 parentSize,
+                                bool firstSideAlignEnabled, float32 firstSideAlign,
+                                bool centerAlignEnabled, float32 centerAlign,
+                                bool secondSideAlignEnabled, float32 secondSideAlign,
+                                float32 &newPos, float32 &newSize);
 
-    float32 GetCenterX(UIControl *parent, int32 centerAlign, UIControl* child);
-    float32 GetCenterY(UIControl *parent, int32 centerAlign, UIControl* child);
+    void GetAlignDataByAxisData(float32 size, float32 pos, float32 parentSize,
+                                bool firstSideAlignEnabled, bool centerAlignEnabled, bool secondSideAlignEnabled,
+                                float32 &firstSideAlign, float32 &centerAlign, float32 &secondSideAlign);
+    
+/* Components */
+public:
+    void AddComponent(UIComponent * component);
+    void RemoveComponent(UIComponent * component);
+    void RemoveComponent(uint32 componentType, uint32 index = 0);
+    void RemoveAllComponents();
 
-    float32 GetRelativeX(UIControl *parent, int32 align);
-    float32 GetRelativeX(UIControl *parent, int32 align, UIControl* child, bool useHalfParentSize = false);
-    float32 GetRelativeY(UIControl *parent, int32 align);
-    float32 GetRelativeY(UIControl *parent, int32 align, UIControl* child, bool useHalfParentSize = false);
+    UIComponent * GetComponent(uint32 componentType, uint32 index = 0) const;
+    UIComponent * GetOrCreateComponent(uint32 componentType, uint32 index = 0);
+
+    template<class T> inline T* GetComponent(uint32 index = 0) const
+    {
+        return DynamicTypeCheck<T*>(GetComponent(T::C_TYPE, index));
+    }
+    template<class T> inline T* GetOrCreateComponent(uint32 index = 0)
+    {
+        return DynamicTypeCheck<T*>(GetOrCreateComponent(T::C_TYPE, index));
+    }
+    template<class T> inline uint32 GetComponentCount() const
+    {
+        return GetComponentCount(T::C_TYPE);
+    }
+
+    inline uint32 GetComponentCount() const;
+    inline uint32 GetComponentCount(uint32 componentType) const;
+    inline uint64 GetAvailableComponentFlags() const;
+
+private:
+    Vector<UIComponent *> components;
+    UIControlFamily * family;
+    void RemoveComponent(const Vector<UIComponent *>::iterator & it);
+    void UpdateFamily();
+/* Components */
+
+public:
+    inline bool GetSystemVisible() const;
+    void SystemNotifyVisibilityChanged();
+    
+    virtual int32 GetBackgroundComponentsCount() const;
+    virtual UIControlBackground *GetBackgroundComponent(int32 index) const;
+    virtual UIControlBackground *CreateBackgroundComponent(int32 index) const;
+    virtual void SetBackgroundComponent(int32 index, UIControlBackground *bg);
+    virtual String GetBackgroundComponentName(int32 index) const;
+    
+    virtual int32 GetInternalControlsCount() const;
+    virtual UIControl *GetInternalControl(int32 index) const;
+    virtual UIControl *CreateInternalControl(int32 index) const;
+    virtual void SetInternalControl(int32 index, UIControl *control);
+    virtual String GetInternalControlName(int32 index) const;
+    virtual String GetInternalControlDescriptions() const;
+
+    // for introspection
+    inline bool GetEnabled() const;
+    inline void SetEnabledNotHierarchic(bool enabled);
+    inline bool GetNoInput() const;
+    inline void SetNoInput(bool noInput);
+    inline bool GetDebugDraw() const;
+    inline void SetDebugDrawNotHierarchic(bool val);
+    
+
+    inline void SetAndApplyLeftAlign(float32 align);
+    inline void SetAndApplyRightAlign(float32 align);
+    inline void SetAndApplyBottomAlign(float32 align);
+    inline void SetAndApplyTopAlign(float32 align);
+    inline void SetAndApplyHCenterAlign(float32 align);
+    inline void SetAndApplyVCenterAlign(float32 align);
+
+    inline void SetAndApplyLeftAlignEnabled(bool isEnabled);
+    inline void SetAndApplyHCenterAlignEnabled(bool isEnabled);
+    inline void SetAndApplyRightAlignEnabled(bool isEnabled);
+    inline void SetAndApplyTopAlignEnabled(bool isEnabled);
+    inline void SetAndApplyVCenterAlignEnabled(bool isEnabled);
+    inline void SetAndApplyBottomAlignEnabled(bool isEnabled);
+
+    INTROSPECTION_EXTEND(UIControl, AnimatedObject,
+                         PROPERTY("customClass", "Custom Class", GetCustomControlClassName, SetCustomControlClassName, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("name", "Name", GetName, SetName, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("position", "Position", GetPosition, SetPosition, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("size", "Size", GetSize, SetSize, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("scale", "Scale", GetScale, SetScale, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("pivot", "Pivot", GetPivot, SetPivot, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("angle", "Angle", GetAngleInDegrees, SetAngleInDegrees, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("visible", "Visible", GetVisible, SetVisible, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("enabled", "Enabled", GetEnabled, SetEnabledNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("clip", "Clip", GetClipContents, SetClipContents, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("noInput", "No Input", GetNoInput, SetNoInput, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("tag", "Tag", GetTag, SetTag, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("initialState", "Initial State", GetInitialState, SetInitialState, I_SAVE | I_VIEW | I_EDIT)
+                         
+                         PROPERTY("leftAlignEnabled", "Left Align Enabled", GetLeftAlignEnabled, SetAndApplyLeftAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("leftAlign", "Left Align", GetLeftAlign, SetAndApplyLeftAlign, I_SAVE | I_VIEW | I_EDIT)
+
+                         PROPERTY("rightAlignEnabled", "Right Align Enabled", GetRightAlignEnabled, SetAndApplyRightAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("rightAlign", "Right Align", GetRightAlign, SetAndApplyRightAlign, I_SAVE | I_VIEW | I_EDIT)
+
+                         PROPERTY("bottomAlignEnabled", "Bottom Align Enabled", GetBottomAlignEnabled, SetAndApplyBottomAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("bottomAlign", "Bottom Align", GetBottomAlign, SetAndApplyBottomAlign, I_SAVE | I_VIEW | I_EDIT)
+
+                         PROPERTY("topAlignEnabled", "Top Align Enabled", GetTopAlignEnabled, SetAndApplyTopAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("topAlign", "Top Align", GetTopAlign, SetAndApplyTopAlign, I_SAVE | I_VIEW | I_EDIT)
+
+                         PROPERTY("hcenterAlignEnabled", "Horizontal Center Align Enabled", GetHCenterAlignEnabled, SetAndApplyHCenterAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("hcenterAlign", "Horizontal Center Align", GetHCenterAlign, SetAndApplyHCenterAlign, I_SAVE | I_VIEW | I_EDIT)
+
+                         PROPERTY("vcenterAlignEnabled", "Vertical Center Align Enabled", GetVCenterAlignEnabled, SetAndApplyVCenterAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("vcenterAlign", "Vertical Center Align", GetVCenterAlign, SetAndApplyVCenterAlign, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("debugDraw", "Debug Draw", GetDebugDraw, SetDebugDrawNotHierarchic, I_VIEW | I_EDIT)
+                         PROPERTY("debugDrawColor", "Debug draw color", GetDebugDrawColor, SetDebugDrawColor, I_VIEW | I_EDIT)
+                         );
+
 };
 
 const Vector2 & UIControl::GetPivotPoint() const
@@ -1419,6 +1565,29 @@ const Vector2 & UIControl::GetPivotPoint() const
 void UIControl::SetPivotPoint(const Vector2 &newPivot)
 {
     pivotPoint = newPivot;
+}
+
+Vector2 UIControl::GetPivot() const
+{
+    Vector2 pivot;
+    pivot.x = (size.x == 0.0f) ? 0.0f : (pivotPoint.x/size.x);
+    pivot.y = (size.y == 0.0f) ? 0.0f : (pivotPoint.y/size.y);
+    return pivot;
+}
+
+void UIControl::SetPivot(const Vector2 &newPivot)
+{
+    SetPivotPoint(size*newPivot);
+}
+
+const Vector2 & UIControl::GetScale() const
+{
+    return scale;
+}
+
+void UIControl::SetScale( const Vector2 &newScale )
+{
+    scale = newScale;
 }
 
 const Vector2 &UIControl::GetSize() const
@@ -1436,6 +1605,11 @@ float32 UIControl::GetAngle() const
     return angle;
 }
 
+float32 UIControl::GetAngleInDegrees() const
+{
+    return RadToDeg(angle);
+}
+
 const String & UIControl::GetName() const
 {
     return name;
@@ -1448,12 +1622,12 @@ int32 UIControl::GetTag() const
 
 Rect UIControl::GetRect() const
 {
-    return Rect(relativePosition - pivotPoint, size);
+    return Rect(GetPosition() - GetPivotPoint(), GetSize());
 }
 
-bool UIControl::GetRecursiveVisible() const
+bool UIControl::GetVisible() const
 {
-    return recursiveVisible;
+    return visible;
 }
 
 bool UIControl::GetInputEnabled() const
@@ -1485,6 +1659,104 @@ int32 UIControl::GetState() const
 {
     return controlState;
 }
+    
+bool UIControl::GetSystemVisible() const
+{
+    return visible & visibleForUIEditor;
+}
+
+bool UIControl::GetEnabled() const
+{
+    return !GetDisabled();
+}
+
+void UIControl::SetEnabledNotHierarchic(bool enabled)
+{
+    SetDisabled(!enabled, false);
+}
+
+bool UIControl::GetNoInput() const
+{
+    return !GetInputEnabled();
+}
+
+void UIControl::SetNoInput(bool noInput)
+{
+    SetInputEnabled(!noInput, false);
+}
+
+bool UIControl::GetDebugDraw() const
+{
+    return debugDrawEnabled;
+}
+
+void UIControl::SetDebugDrawNotHierarchic(bool val)
+{
+    SetDebugDraw(val, false);
+}
+
+void UIControl::SetAndApplyLeftAlign(float32 align)
+{
+    SetLeftAlign(align, true);
+}
+
+void UIControl::SetAndApplyRightAlign(float32 align)
+{
+    SetRightAlign(align, true);
+}
+
+void UIControl::SetAndApplyBottomAlign(float32 align)
+{
+    SetBottomAlign(align, true);
+}
+
+void UIControl::SetAndApplyTopAlign(float32 align)
+{
+    SetTopAlign(align, true);
+}
+
+void UIControl::SetAndApplyHCenterAlign(float32 align)
+{
+    SetHCenterAlign(align, true);
+}
+
+void UIControl::SetAndApplyVCenterAlign(float32 align)
+{
+    SetVCenterAlign(align, true);
+}
+
+void UIControl::SetAndApplyLeftAlignEnabled(bool isEnabled)
+{
+    SetLeftAlignEnabled(isEnabled, true);
+}
+
+void UIControl::SetAndApplyHCenterAlignEnabled(bool isEnabled)
+{
+    SetHCenterAlignEnabled(isEnabled, true);
+}
+
+void UIControl::SetAndApplyRightAlignEnabled(bool isEnabled)
+{
+    SetRightAlignEnabled(isEnabled, true);
+}
+
+void UIControl::SetAndApplyTopAlignEnabled(bool isEnabled)
+{
+    SetTopAlignEnabled(isEnabled, true);
+}
+
+void UIControl::SetAndApplyVCenterAlignEnabled(bool isEnabled)
+{
+    SetVCenterAlignEnabled(isEnabled, true);
+}
+
+void UIControl::SetAndApplyBottomAlignEnabled(bool isEnabled)
+{
+    SetBottomAlignEnabled(isEnabled, true);
+}
+
+
 };
+
 
 #endif

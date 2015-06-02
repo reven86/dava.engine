@@ -118,26 +118,35 @@ void UITextControlMetadata::UpdateStaticTextExtraData(UIStaticText* staticText, 
     }
 }
 
-Vector2 UITextControlMetadata::GetOffsetX(const Vector2& currentOffset, float offsetX)
+Vector2 UITextControlMetadata::GetOffsetX(const Vector2& currentOffset, float offsetX) const
 {
 	Vector2 offset(currentOffset);
 	offset.x = offsetX;
 	return offset;
 }
 
-Vector2 UITextControlMetadata::GetOffsetY(const Vector2& currentOffset, float offsetY)
+Vector2 UITextControlMetadata::GetOffsetY(const Vector2& currentOffset, float offsetY) const
 {
 	Vector2 offset(currentOffset);
 	offset.y = offsetY;
 	return offset;
 }
 
-int UITextControlMetadata::GetFontShadowColorInheritType() const
+int UITextControlMetadata::GetTextColorInheritType() const
 {
     return UIControlBackground::COLOR_IGNORE_PARENT;
 }
 
-void UITextControlMetadata::SetFontShadowColorInheritType(int /*value*/)
+void UITextControlMetadata::SetTextColorInheritType(int /*value*/)
+{
+}
+
+int UITextControlMetadata::GetTextPerPixelAccuracyType() const
+{
+    return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+}
+
+void UITextControlMetadata::SetTextPerPixelAccuracyType(int /*value*/)
 {
 }
 
@@ -147,5 +156,50 @@ int UITextControlMetadata::GetFittingType() const
 }
 
 void UITextControlMetadata::SetFittingType(int /*value*/)
+{
+}
+
+QRectF UITextControlMetadata::GetTextMargins() const
+{
+    return QRectF();
+}
+
+void UITextControlMetadata::SetTextMargins(const QRectF& /* value */)
+{
+}
+
+float UITextControlMetadata::GetTextLeftMargin() const
+{
+    return 0.0f;
+}
+
+void UITextControlMetadata::SetTextLeftMargin(float /* value */)
+{
+}
+
+float UITextControlMetadata::GetTextTopMargin() const
+{
+    return 0.0f;
+}
+
+void UITextControlMetadata::SetTextTopMargin(float /* value */)
+{
+}
+
+float UITextControlMetadata::GetTextRightMargin() const
+{
+    return 0.0f;
+}
+
+void UITextControlMetadata::SetTextRightMargin(float /* value */)
+{
+}
+
+float UITextControlMetadata::GetTextBottomMargin() const
+{
+    return 0.0f;
+}
+
+void UITextControlMetadata::SetTextBottomMargin(float /* value */)
 {
 }

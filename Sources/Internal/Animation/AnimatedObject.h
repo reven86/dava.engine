@@ -66,7 +66,7 @@ public:
 		\param[in] track id of track you want to check or -1 if you want to check if any tracks animating now
 		\returns true if object is animating on the requested tracks
 	 */
-	bool	IsAnimating(int32 track = -1);
+	bool	IsAnimating(int32 track = -1) const;
 	/**
 		\brief Load animated object animations from yaml
 	 */
@@ -80,6 +80,11 @@ public:
 		\returns animation, or 0 if no animations are playing
 	 */
 	Animation * FindPlayingAnimation(int32 track = -1);
+	
+	/**
+		\brief Called when all animations for object are finished. Reimplement this function for specific needs
+	*/
+	virtual void OnAllAnimationsFinished() {};
 	
 private:
 	//AnimationsStorage * animationsStorage;

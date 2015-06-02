@@ -215,11 +215,12 @@ public:
     static const FastName PARAM_SHADOW_COLOR;
     static const FastName PARAM_DECAL_TILE_SCALE;
     static const FastName PARAM_DECAL_TILE_COLOR;
+    static const FastName PARAM_DETAIL_TILE_SCALE;
     static const FastName PARAM_RCP_SCREEN_SIZE;
     static const FastName PARAM_SCREEN_OFFSET;
+    static const FastName PARAM_NORMAL_SCALE;
     
 	static const FastName FLAG_VERTEXFOG;
-	static const FastName FLAG_FOG_EXP;
 	static const FastName FLAG_FOG_LINEAR;
     static const FastName FLAG_FOG_HALFSPACE;
     static const FastName FLAG_FOG_HALFSPACE_LINEAR;
@@ -228,16 +229,21 @@ public:
 	static const FastName FLAG_TEXTURE0_ANIMATION_SHIFT;
 	static const FastName FLAG_WAVE_ANIMATION;
 	static const FastName FLAG_FAST_NORMALIZATION;    
-    static const FastName FLAG_TILED_DECAL;
+    static const FastName FLAG_TILED_DECAL_MASK;
 	static const FastName FLAG_FLATCOLOR;
     static const FastName FLAG_DISTANCEATTENUATION;
     static const FastName FLAG_SPECULAR;
+    static const FastName FLAG_SEPARATE_NORMALMAPS;
 
     static const FastName FLAG_SPHERICAL_LIT;
 
     static const FastName FLAG_TANGENT_SPACE_WATER_REFLECTIONS;
     
     static const FastName FLAG_DEBUG_UNITY_Z_NORMAL;
+    static const FastName FLAG_DEBUG_Z_NORMAL_SCALE;
+    static const FastName FLAG_DEBUG_NORMAL_ROTATION;
+
+    static const FastName FLAG_SKINNING;
     
 	static const FastName FLAG_LIGHTMAPONLY;
 	static const FastName FLAG_TEXTUREONLY; //VI: this flag is for backward compatibility with old materials. See FLAG_ALBEDOONLY
@@ -309,7 +315,13 @@ public:
 	//setting properties via special setters
 	inline uint8 GetDynamicBindFlags() const;
 	//}END TODO
-	
+
+    /**
+    \brief Returns using material flags.
+    \param[in] reference vector
+    */
+    inline void GetFlags(Vector<FastName> &flagsCollection) const;
+
     /**
 	 \brief Renders given polygon group with the current material.
      \param[in] polygonGroup polygon group to render.
@@ -965,12 +977,12 @@ void NMaterial::SetRenderLayers(uint32 bitmask)
 }
 
 inline NMaterial::RenderPassInstance::RenderPassInstance() :
-textureIndexMap(8),
 dirtyState(false),
 texturesDirty(true),
+propsDirty(true),
+textureIndexMap(8),
 activeUniformsCachePtr(NULL),
-activeUniformsCacheSize(0),
-propsDirty(true)
+activeUniformsCacheSize(0)
 {
     renderState.shader = NULL;
 }
@@ -1074,12 +1086,12 @@ inline NMaterial* NMaterial::GetParent() const
 
 inline uint32 NMaterial::GetChildrenCount() const
 {
-    return children.size();
+    return static_cast<uint32>(children.size());
 }
 
 inline NMaterial* NMaterial::GetChild(uint32 index) const
 {
-    DVASSERT(index >= 0 && index < children.size());
+    DVASSERT(index < children.size());
     return children[index];
 }
 
@@ -1121,6 +1133,17 @@ inline const NMaterialTemplate* NMaterial::GetMaterialTemplate() const
 inline uint8 NMaterial::GetDynamicBindFlags() const
 {
     return dynamicBindFlags;
+}
+
+inline void NMaterial::GetFlags(Vector<FastName> &flagsCollection) const
+{
+    flagsCollection.reserve(flagsCollection.size() + materialSetFlags.size());
+
+    const HashMap<FastName, int32>& hash = materialSetFlags;
+    for (HashMap<FastName, int32>::iterator it = hash.begin(); it != hash.end(); ++it)
+    {
+        flagsCollection.push_back((*it).first);
+    }
 }
 
 inline IlluminationParams::IlluminationParams(NMaterial* parentMaterial) :
@@ -1215,8 +1238,8 @@ inline const FilePath& NMaterial::TextureBucket::GetPath() const
 
 inline NMaterial::UniformCacheEntry::UniformCacheEntry() :
 uniform(NULL),
-prop(NULL),
-index(-1)
+index(-1),
+prop(NULL)
 {
 }
 

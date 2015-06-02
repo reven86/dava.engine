@@ -91,8 +91,9 @@ const float32 & SpeedTreeObject::GetLightSmoothing() const
     return lightSmoothing;
 }
 
-void SpeedTreeObject::BindDynamicParams()
+void SpeedTreeObject::BindDynamicParameters(Camera * camera)
 {
+    RenderObject::BindDynamicParameters(camera);
     RenderManager::SetDynamicParam(PARAM_SPEED_TREE_TRUNK_OSCILLATION, &trunkOscillation, UPDATE_SEMANTIC_ALWAYS);
     RenderManager::SetDynamicParam(PARAM_SPEED_TREE_LEAFS_OSCILLATION, &leafOscillation, UPDATE_SEMANTIC_ALWAYS);
     RenderManager::SetDynamicParam(PARAM_SPEED_TREE_LIGHT_SMOOTHING, &lightSmoothing, UPDATE_SEMANTIC_ALWAYS);
@@ -132,7 +133,7 @@ void SpeedTreeObject::Save(KeyedArchive *archive, SerializationContext *serializ
 {
     RenderObject::Save(archive, serializationContext);
 
-    int32 shCount = sphericalHarmonics.size();
+    int32 shCount = static_cast<int32>(sphericalHarmonics.size());
     if(shCount)
     {
         archive->SetInt32("sto.SHBasisCount", shCount);

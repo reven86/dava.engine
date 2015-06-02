@@ -35,10 +35,10 @@
 ImageRegionCopyCommand::ImageRegionCopyCommand(DAVA::Image* _dst, const DAVA::Vector2& dstPos, DAVA::Image* src, const DAVA::Rect &srcRect, DAVA::FilePath _savePath, DAVA::Image* _orig)
 	: Command2(CMDID_IMAGE_REGION_COPY, "Remove entity")
 	, dst(_dst)
-    , pos(dstPos)
-    , copy(NULL)
-    , orig(NULL)
-    , savePath(_savePath)
+	, orig(NULL)
+	, copy(NULL)
+	, pos(dstPos)
+	, savePath(_savePath)
 {
 	SafeRetain(dst);
 

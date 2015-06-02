@@ -1,23 +1,37 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#import  <AppKit/AppKit.h>
 #import "NPAPIPluginMacOS.h"
 
 #include "NPAPICorePlatformMacOS.h"
-#include "RenderManager.h"
+
+#include "Render/RenderManager.h"
 
 #include <pwd.h>
 
@@ -212,7 +226,7 @@ extern void FrameworkWillTerminate();
 
 	if (touchPhase == DAVA::UIEvent::PHASE_DRAG)
 	{
-		for(DAVA::Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+		for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 		{
 			NSPoint p;
 			p.x = curEvent->data.mouse.pluginX;
@@ -234,7 +248,7 @@ extern void FrameworkWillTerminate();
 	}
 
 	bool isFind = false;
-	for(DAVA::Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+	for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 	{
 		if(it->tid == button)
 		{
@@ -281,21 +295,21 @@ extern void FrameworkWillTerminate();
 		newTouch.tapCount = curEvent->data.mouse.clickCount;
 		newTouch.timestamp = timestamp;
 		newTouch.phase = touchPhase;
-		activeTouches.push_back(newTouch);
+		allTouches.push_back(newTouch);
 	}
 
-	for(DAVA::Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+	for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 	{
 		outTouches->push_back(*it);
 	}
 
 	if(touchPhase == DAVA::UIEvent::PHASE_ENDED || touchPhase == DAVA::UIEvent::PHASE_MOVE)
 	{
-		for(DAVA::Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+		for(DAVA::Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 		{
 			if(it->tid == button)
 			{
-				activeTouches.erase(it);
+				allTouches.erase(it);
 				break;
 			}
 		}
@@ -305,17 +319,10 @@ extern void FrameworkWillTerminate();
 -(void) processEvent:(int)touchPhase touch:(NPCocoaEvent*)touch
 {
 	DAVA::Vector<DAVA::UIEvent> touches;
-	DAVA::Vector<DAVA::UIEvent> emptyTouches;
 	[self moveTouchesToVector:touch touchPhase:touchPhase outTouches:&touches];
 
-	DAVA::UIControlSystem::Instance()->OnInput(touchPhase, emptyTouches, touches);
+	DAVA::UIControlSystem::Instance()->OnInput(touchPhase, touches, allTouches);
 	touches.clear();
-	
-	if ((touchPhase == DAVA::UIEvent::PHASE_MOVE || touchPhase == DAVA::UIEvent::PHASE_DRAG)
-		&& DAVA::InputSystem::Instance()->IsCursorPining())
-	{
-		DAVA::Cursor::MoveToCenterOfWindow();
-	}
 }
 
 -(void) keyDown:(NPCocoaEvent*)event
@@ -324,12 +331,6 @@ extern void FrameworkWillTerminate();
 	unichar c = [s characterAtIndex:0];
 
 	DAVA::Vector<DAVA::UIEvent> touches;
-	DAVA::Vector<DAVA::UIEvent> emptyTouches;
-
-	for(DAVA::Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
-	{
-		touches.push_back(*it);
-	}
 
 	time_t timestamp = time(NULL);
 
@@ -338,24 +339,24 @@ extern void FrameworkWillTerminate();
 	ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
 	ev.timestamp = timestamp;
 	ev.tapCount = 1;
-	ev.tid = DAVA::InputSystem::Instance()->GetKeyboard()->GetDavaKeyForSystemKey(event->data.key.keyCode);
+	ev.tid = DAVA::InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(event->data.key.keyCode);
 
 	touches.push_back(ev);
 
-	DAVA::UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+	DAVA::UIControlSystem::Instance()->OnInput(0, touches, allTouches);
 	touches.pop_back();
-	DAVA::UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+	DAVA::UIControlSystem::Instance()->OnInput(0, touches, allTouches);
 
-	DAVA::InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed(event->data.key.keyCode);
+	DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(event->data.key.keyCode);
 	if (event->data.key.modifierFlags & NSCommandKeyMask)
 	{
-		DAVA::InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed(event->data.key.keyCode);
+		DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(event->data.key.keyCode);
 	}
 }
 
 -(void) keyUp:(NPCocoaEvent*) event
 {
-	DAVA::InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed(event->data.key.keyCode);
+	DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(event->data.key.keyCode);
 }
 
 -(void) flagsChanged:(NPCocoaEvent*) event
@@ -382,11 +383,11 @@ extern void FrameworkWillTerminate();
 		{
 			if (newModifiers & masks[i])
 			{
-				DAVA::InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed(keyCodes[i]);
+				DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(keyCodes[i]);
 			}
 			else
 			{
-				DAVA::InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed(keyCodes[i]);
+				DAVA::InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(keyCodes[i]);
 			}
 		}
 	}
@@ -471,6 +472,7 @@ extern void FrameworkWillTerminate();
 
 	FrameworkDidLaunched();
     DAVA::RenderManager::Create(DAVA::Core::RENDERER_OPENGL);
+    DAVA::RenderSystem2D::Instance()->Init();
 
 	appCore = DAVA::Core::GetApplicationCore();
 }
@@ -482,9 +484,9 @@ extern void FrameworkWillTerminate();
 	NSRect rect = NSRectFromCGRect([openGLLayer frame]);
 	DAVA::RenderManager::Instance()->SetRenderContextId((uint64)CGLGetCurrentContext());
 	DAVA::RenderManager::Instance()->Init(rect.size.width, rect.size.height);
-	DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
-	DAVA::Core::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
-    DAVA::Core::Instance()->SetVirtualScreenSize(rect.size.width, rect.size.height);
+	DAVA::VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
+	DAVA::VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
+    DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(rect.size.width, rect.size.height);
 	
 	NSLog(@"[NPAPICoreMacOSPlatform] SystemAppStarted");
 	DAVA::Core::Instance()->SystemAppStarted();

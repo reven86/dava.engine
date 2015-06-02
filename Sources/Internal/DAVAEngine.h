@@ -32,9 +32,8 @@
 
 #include "DAVAVersion.h"
 #include "DAVAConfig.h"
-#include "Debug/MemoryManager.h"
 #include "Debug/Stats.h"
-#include "Debug/Backtrace.h"
+#include "MemoryManager/MemoryProfiler.h"
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
@@ -46,6 +45,7 @@
 
 #include "FileSystem/Logger.h"
 #include "Platform/SystemTimer.h"
+#include "Platform/DateTime.h"
 
 // system stuff
 #include "Utils/Utils.h"
@@ -59,7 +59,6 @@
 #include "UI/ScrollHelper.h"
 #include "Debug/Replay.h"
 #include "Utils/Random.h"
-#include "Utils/VirtualToPhysicalHelper.h"
 
 #include "Base/ObjectFactory.h"
 #include "Base/FixedSizePoolAllocator.h"
@@ -78,14 +77,13 @@
 
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
-#include "Input/GamepadManager.h"
 #include "Input/GamepadDevice.h"
 
 // Localization
 #include "FileSystem/LocalizationSystem.h"
 
 // Image formats stuff (PNG & JPG & other formats)
-#include "Render/Image/LibPngHelpers.h"
+#include "Render/Image/LibPngHelper.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/LibDdsHelper.h"
@@ -126,15 +124,13 @@
 #include "Render/Texture.h"
 #include "Render/Shader.h"
 #include "Render/ShaderCache.h"
-
 #include "Core/DisplayMode.h"
 #include "Render/RenderManager.h"
-
 #include "Render/RenderHelper.h"
-
 #include "Render/Cursor.h"
-
 #include "Render/MipmapReplacer.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 // Fonts
 #include "Render/2D/Font.h"
@@ -147,6 +143,10 @@
 // UI
 #include "UI/UIControl.h"
 #include "UI/UIControlSystem.h"
+#include "UI/UIPackage.h"
+#include "UI/UIPackagesCache.h"
+#include "UI/UIPackageLoader.h"
+#include "UI/DefaultUIPackageBuilder.h"
 #include "UI/UIEvent.h"
 #include "UI/UIButton.h"
 #include "UI/UIStaticText.h"
@@ -185,6 +185,7 @@
 #include "UI/UIAggregatorControl.h"
 
 #include "UI/UIScrollViewContainer.h"
+#include "UI/UIControlHelpers.h"
 
 // Game object manager / 2D Scene
 #include "Scene2D/GameObject.h"
@@ -212,12 +213,14 @@
 #include "Render/3D/StaticMesh.h"
 #include "Render/3D/PolygonGroup.h"
 #include "Render/3D/EdgeAdjacency.h"
+#include "Render/3D/MeshUtils.h"
 
 // Material compiler
 #include "Render/Material/MaterialCompiler.h"
 #include "Render/Material/MaterialGraph.h"
 #include "Render/Material/MaterialGraphNode.h"
 #include "Render/Material/RenderTechnique.h"
+#include "Render/Material/NMaterialNames.h"
 
 // 3D scene management
 #include "Scene3D/Scene.h"
@@ -228,7 +231,7 @@
 #include "Render/Highlevel/Heightmap.h"
 #include "Render/Highlevel/Light.h"
 #include "Render/Highlevel/Mesh.h"
-#include "Render/Highlevel/ShadowVolume.h"
+#include "Render/Highlevel/SkinnedMesh.h"
 #include "Render/Highlevel/SpriteObject.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/RenderFastNames.h"
@@ -238,6 +241,7 @@
 #include "Render/Highlevel/Vegetation/TextureSheet.h"
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 
+#include "Scene3D/AnimationData.h"
 #include "Scene3D/ShadowVolumeNode.h"
 #include "Scene3D/LodNode.h"
 #include "Scene3D/ImposterNode.h"
@@ -255,9 +259,11 @@
 #include "Scene3D/Systems/SpeedTreeUpdateSystem.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Scene3D/Systems/FoliageSystem.h"
+#include "Scene3D/Systems/ParticleEffectSystem.h"
 
 //Components
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Components/AnimationComponent.h"
 #include "Scene3D/Components/BulletComponent.h"
 #include "Scene3D/Components/CameraComponent.h"
 #include "Scene3D/Components/DebugRenderComponent.h"
@@ -276,15 +282,23 @@
 #include "Scene3D/Components/SpeedTreeComponent.h"
 #include "Scene3D/Components/WindComponent.h"
 #include "Scene3D/Components/WaveComponent.h"
+#include "Scene3D/Components/Waypoint/PathComponent.h"
+#include "Scene3D/Components/Controller/WASDControllerComponent.h"
+#include "Scene3D/Components/Controller/RotationControllerComponent.h"
+#include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
 
 // Application core 
 #include "Core/Core.h"
 #include "Core/ApplicationCore.h"
 
-// Networking
-#include "Network/NetworkConnection.h"
-#include "Network/NetworkDelegate.h"
-#include "Network/NetworkPacket.h"
+
+
+// Notifications
+#include "Notification/LocalNotification.h"
+#include "Notification/LocalNotificationText.h"
+#include "Notification/LocalNotificationProgress.h"
+#include "Notification/LocalNotificationDelayed.h"
+#include "Notification/LocalNotificationController.h"
 
 #endif // __DAVAENGINE_H__
 

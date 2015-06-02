@@ -33,29 +33,13 @@
 #include "Base/BaseTypes.h"
 #if defined(__DAVAENGINE_ANDROID__)
 
-#include "Platform/TemplateAndroid/JniExtensions.h"
-
 namespace DAVA 
 {
-
-class JniLocalization: public JniExtension
-{
-public:
-	String GetLocale();
-
-protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
-
-public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
-};
 
 class LocalizationAndroid
 {
 public:
-	static void SelecePreferedLocalization();
+	static void SelectPreferedLocalization();
     static String GetDeviceLang(void);
 };
 	

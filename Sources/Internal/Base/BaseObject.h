@@ -38,6 +38,7 @@
 #include "Base/RefPtr.h"
 #include "Base/ScopedPtr.h"
 #include "Base/Atomic.h"
+
 #include <typeinfo>
 
 namespace DAVA
@@ -74,7 +75,6 @@ protected:
 	}
 
 public:
-	
 	//! Constructor
 	BaseObject()
 		: referenceCount(1)
@@ -130,8 +130,8 @@ public:
      */
     const String & GetClassName() const;
     
-    virtual void Save(KeyedArchive * archive);
-	virtual void Load(KeyedArchive * archive);
+    virtual void SaveObject(KeyedArchive * archive);
+	virtual void LoadObject(KeyedArchive * archive);
     
     static BaseObject * LoadFromArchive(KeyedArchive * archive);
     

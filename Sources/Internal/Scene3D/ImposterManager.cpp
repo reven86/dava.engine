@@ -37,14 +37,10 @@ namespace DAVA
 {
 
 ImposterManager::ImposterManager(Scene * _scene)
-:	scene(_scene),
-	sharedFBO(0)
+    :	sharedFBO(0)
+    ,   scene(_scene)
 {
-	if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE))
-	{
-		CreateFBO();
-	}
-	RenderManager::Instance()->GetOptions()->AddObserver(this);
+	CreateFBO();
 }
 
 void ImposterManager::CreateFBO()
@@ -78,7 +74,6 @@ void ImposterManager::ReleaseFBO()
 
 ImposterManager::~ImposterManager()
 {
-	RenderManager::Instance()->GetOptions()->RemoveObserver(this);
 	ReleaseFBO();
 }
 
@@ -89,11 +84,6 @@ bool ImposterManager::IsEmpty()
 
 void ImposterManager::Update(float32 frameTime)
 {
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE))
-	{
-		return;
-	}
-
 	List<ImposterNode*>::iterator end = imposters.end();
 	for(List<ImposterNode*>::iterator iter = imposters.begin(); iter != end; ++iter)
 	{
@@ -104,12 +94,6 @@ void ImposterManager::Update(float32 frameTime)
 
 void ImposterManager::Draw()
 {
-//    TIME_PROFILE("ImposterManager::Draw");
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE))
-	{
-		return;
-	}
-
 	ProcessQueue();
 
 	List<ImposterNode*>::iterator end = imposters.end();
@@ -202,23 +186,6 @@ void ImposterManager::RemoveFromQueue(ImposterNode * node)
 		{
 			queue.erase(iter);
 			return;
-		}
-	}
-}
-
-void ImposterManager::HandleEvent(Observable * observable)
-{
-	RenderOptions * renderOptions = dynamic_cast<RenderOptions*>(observable);
-	if(renderOptions)
-	{
-		bool areImpostersEnabled = renderOptions->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE);
-		if(areImpostersEnabled)
-		{
-			CreateFBO();
-		}
-		else
-		{
-			ReleaseFBO();
 		}
 	}
 }

@@ -35,7 +35,7 @@
 
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
-
+#include <functional>
 
 namespace DAVA
 {
@@ -56,6 +56,9 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
 
     DVASSERT(!gameVersion.empty());
 
+    //  we suppose that downloaded data should not be media data and exclude it from index.
+    FileSystem::Instance()->MarkFolderAsNoMedia(destinationDir);
+
     // initial values
     dlcContext.remoteUrl = url;
     dlcContext.localVer = 0;
@@ -75,18 +78,22 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
     dlcContext.remoteVerStotePath = workingDir + "RemoteVersion.info";
     dlcContext.remotePatchDownloadId = 0;
     dlcContext.remotePatchSize = 0;
+    dlcContext.remotePatchReadySize = 0;
     dlcContext.remotePatchStorePath = workingDir + "Remote.patch";
     dlcContext.remoteMetaStorePath = workingDir + "Remote.meta";
 
     dlcContext.patchInProgress = true;
-    dlcContext.patchCount = 0;
-    dlcContext.patchIndex = 0;
+    dlcContext.totalPatchCount = 0;
+    dlcContext.appliedPatchCount = 0;
+    dlcContext.patchingError = PatchFileReader::ERROR_NO;
+    dlcContext.lastErrno = 0;
 
     dlcContext.downloadInfoStorePath = workingDir + "Download.info";
     dlcContext.stateInfoStorePath = workingDir + "State.info";
     dlcContext.prevState = 0;
 
     ReadUint32(dlcContext.stateInfoStorePath, dlcContext.prevState);
+    ReadUint32(dlcContext.remoteVerStotePath, dlcContext.remoteVer);
 
     // FSM variables
     fsmAutoReady = false;
@@ -94,6 +101,7 @@ DLC::DLC(const String &url, const FilePath &sourceDir, const FilePath &destinati
 
 DLC::~DLC()
 {
+    DVASSERT((dlcState == DS_INIT || dlcState == DS_READY || dlcState == DS_DONE) && "DLC can be safely destroyed only in certain modes");
 }
 
 void DLC::Check()
@@ -116,13 +124,16 @@ void DLC::GetProgress(uint64 &cur, uint64 &total) const
     switch(dlcState)
     {
         case DS_READY:
+            total = dlcContext.remotePatchSize;
+            cur = dlcContext.remotePatchReadySize;
+            break;
         case DS_DOWNLOADING:
             total = dlcContext.remotePatchSize;
             DownloadManager::Instance()->GetProgress(dlcContext.remotePatchDownloadId, cur);
             break;
         case DS_PATCHING:
-            total = dlcContext.patchCount;
-            cur = dlcContext.patchIndex;
+            total = dlcContext.totalPatchCount;
+            cur = dlcContext.appliedPatchCount;
             break;
         default:
             cur = 0;
@@ -141,6 +152,16 @@ DLC::DLCError DLC::GetError() const
     return dlcError;
 }
 
+int32 DLC::GetLastErrno() const
+{
+    return dlcContext.lastErrno;
+}
+
+PatchFileReader::PatchError DLC::GetPatchError() const
+{
+    return dlcContext.patchingError;
+}
+
 FilePath DLC::GetMetaStorePath() const
 {
     return dlcContext.remoteMetaStorePath;
@@ -148,23 +169,14 @@ FilePath DLC::GetMetaStorePath() const
     
 void DLC::PostEvent(DLCEvent event)
 {
-    JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &DLC::PostEventJob, reinterpret_cast<void*>(event)));
+    Function<void()> fn = Bind(MakeFunction(this, &DLC::FSM), event);
+	JobManager::Instance()->CreateMainJob(fn);
 }
 
 void DLC::PostError(DLCError error)
 {
     dlcError = error;
     PostEvent(EVENT_ERROR);
-}
-    
-void DLC::PostEventJob(BaseObject *caller, void *callerData, void *userData)
-{
-#if UINTPTR_MAX == UINT64_MAX
-    DLCEvent event = (DLCEvent) reinterpret_cast<int64>(callerData);
-#else
-    DLCEvent event = (DLCEvent) reinterpret_cast<int32>(callerData);
-#endif
-    FSM(event);
 }
 
 void DLC::FSM(DLCEvent event)
@@ -182,10 +194,22 @@ void DLC::FSM(DLCEvent event)
             {
                 case EVENT_DOWNLOAD_START:
                     fsmAutoReady = true;
-                    dlcState = DS_CHECKING_INFO;
-                    break;
+                    // don't break here
+
                 case EVENT_CHECK_START:
-                    dlcState = DS_CHECKING_INFO;
+                    // if last time stopped on the patching state and patch file exists - continue patching
+                    if( !dlcContext.forceFullUpdate &&
+                        DS_PATCHING == dlcContext.prevState &&
+                        dlcContext.remotePatchStorePath.Exists() &&
+                        dlcContext.remoteVerStotePath.Exists())
+                    {
+                        dlcContext.prevState = 0;
+                        dlcState = DS_PATCHING;
+                    }
+                    else
+                    {
+                        dlcState = DS_CHECKING_INFO;
+                    }
                     break;
                 case EVENT_CANCEL:
                     dlcError = DE_WAS_CANCELED;
@@ -250,6 +274,7 @@ void DLC::FSM(DLCEvent event)
                     // automatically start download after check?
                     if(fsmAutoReady)
                     {
+                        // download patch
                         dlcState = DS_DOWNLOADING;
                     }
                     else
@@ -399,6 +424,9 @@ void DLC::FSM(DLCEvent event)
                     case DS_CHECKING_INFO:
                         StepCheckInfoCancel();
                         break;
+                    case DS_CHECKING_META:
+                        StepCheckMetaCancel();
+                        break;
                     case DS_CHECKING_PATCH:
                         StepCheckPatchCancel();
                         break;
@@ -411,7 +439,7 @@ void DLC::FSM(DLCEvent event)
                         StepPatchCancel();
                         break;
                     default:
-                        Logger::Error("Unhanded state canceling\n");
+                        Logger::Error("Unhanded state %d canceling\n", oldState);
                         DVASSERT(false);
                         break;
                 }
@@ -434,6 +462,7 @@ void DLC::StepCheckInfoBegin()
     // write current dlcState into state-file
     if(!WriteUint32(dlcContext.stateInfoStorePath, dlcState))
     {
+        dlcContext.lastErrno = errno;
         PostError(DE_WRITE_ERROR);
         return;
     }
@@ -446,7 +475,7 @@ void DLC::StepCheckInfoBegin()
     Logger::Info("DLC: Downloading game-info\n\tfrom: %s\n\tto: %s", dlcContext.remoteVerUrl.c_str(), dlcContext.remoteVerStotePath.GetAbsolutePathname().c_str());
 
     DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepCheckInfoFinish));
-    dlcContext.remoteVerDownloadId = DownloadManager::Instance()->Download(dlcContext.remoteVerUrl, dlcContext.remoteVerStotePath.GetAbsolutePathname(), FULL);   
+    dlcContext.remoteVerDownloadId = DownloadManager::Instance()->Download(dlcContext.remoteVerUrl, dlcContext.remoteVerStotePath.GetAbsolutePathname(), FULL, 1);
 }
 
 // downloading DLC version file finished. need to read removeVersion
@@ -467,12 +496,14 @@ void DLC::StepCheckInfoFinish(const uint32 &id, const DownloadStatus &status)
                 }
                 else
                 {
+                    dlcContext.lastErrno = errno;
                     PostError(DE_READ_ERROR);
                 }
             }
             else
             {
-                if(DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_CANNOT_CONNECT == downloadError)
+                Logger::FrameworkDebug("DLC: error %d", downloadError);
+                if(DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_COULDNT_CONNECT == downloadError)
                 {
                     // connection problem
                     PostError(DE_CONNECT_ERROR);
@@ -480,6 +511,7 @@ void DLC::StepCheckInfoFinish(const uint32 &id, const DownloadStatus &status)
                 else if(DLE_FILE_ERROR == downloadError)
                 {
                     // writing file problem
+                    dlcContext.lastErrno = errno;
                     PostError(DE_WRITE_ERROR);
                 }
                 else
@@ -499,6 +531,16 @@ void DLC::StepCheckInfoCancel()
 
 void DLC::StepCheckPatchBegin()
 {
+    File *f = File::Create(dlcContext.remotePatchStorePath, File::OPEN | File::READ);
+    if(nullptr != f)
+    {
+        dlcContext.remotePatchReadySize = f->GetSize();
+        f->Release();
+    }
+
+    dlcContext.remotePatchLiteSize = 0;
+    dlcContext.remotePatchFullSize = 0;
+
     dlcContext.remotePatchFullUrl = dlcContext.remoteUrl + MakePatchUrl(0, dlcContext.remoteVer);
     dlcContext.remotePatchLiteUrl = dlcContext.remoteUrl + MakePatchUrl(dlcContext.localVer, dlcContext.remoteVer);
 
@@ -526,26 +568,29 @@ void DLC::StepCheckPatchFinish(const uint32 &id, const DownloadStatus &status)
 
             // when lite id finishing, full id should be already finished
             DVASSERT(DL_FINISHED == statusFull);
-    
+
+            DownloadManager::Instance()->GetTotal(dlcContext.remoteLiteSizeDownloadId, dlcContext.remotePatchLiteSize);
+            DownloadManager::Instance()->GetTotal(dlcContext.remoteFullSizeDownloadId, dlcContext.remotePatchFullSize);
+
             if(DLE_NO_ERROR == downloadErrorLite)
             {
                 dlcContext.remotePatchUrl = dlcContext.remotePatchLiteUrl;
-                DownloadManager::Instance()->GetTotal(dlcContext.remoteLiteSizeDownloadId, dlcContext.remotePatchSize);
+                dlcContext.remotePatchSize = dlcContext.remotePatchLiteSize;
 
                 PostEvent(EVENT_CHECK_OK);
             }
             else
             {
-                if(DL_FINISHED == statusFull && DLE_NO_ERROR == downloadErrorFull)
+                if(DLE_NO_ERROR == downloadErrorFull)
                 {
                     dlcContext.remotePatchUrl = dlcContext.remotePatchFullUrl;
-                    DownloadManager::Instance()->GetTotal(dlcContext.remoteFullSizeDownloadId, dlcContext.remotePatchSize);
+                    dlcContext.remotePatchSize = dlcContext.remotePatchFullSize;
 
                     PostEvent(EVENT_CHECK_OK);
                 }
                 else
                 {
-                    if(DLE_COULDNT_RESOLVE_HOST == downloadErrorFull || DLE_CANNOT_CONNECT == downloadErrorFull)
+                    if(DLE_COULDNT_RESOLVE_HOST == downloadErrorFull || DLE_COULDNT_CONNECT == downloadErrorFull)
                     {
                         // connection problem
                         PostError(DE_CONNECT_ERROR);
@@ -553,6 +598,7 @@ void DLC::StepCheckPatchFinish(const uint32 &id, const DownloadStatus &status)
                     else if(DLE_FILE_ERROR == downloadErrorFull)
                     {
                         // writing file problem
+                        dlcContext.lastErrno = errno;
                         PostError(DE_WRITE_ERROR);
                     }
                     else
@@ -580,7 +626,7 @@ void DLC::StepCheckMetaBegin()
 
     FileSystem::Instance()->DeleteFile(dlcContext.remoteMetaStorePath);
     DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepCheckMetaFinish));
-    dlcContext.remoteMetaDownloadId = DownloadManager::Instance()->Download(dlcContext.remoteMetaUrl, dlcContext.remoteMetaStorePath, FULL);
+    dlcContext.remoteMetaDownloadId = DownloadManager::Instance()->Download(dlcContext.remoteMetaUrl, dlcContext.remoteMetaStorePath, FULL, 1);
 }
 
 void DLC::StepCheckMetaFinish(const uint32 &id, const DownloadStatus &status)
@@ -592,7 +638,7 @@ void DLC::StepCheckMetaFinish(const uint32 &id, const DownloadStatus &status)
             DownloadError downloadError;
             DownloadManager::Instance()->GetError(dlcContext.remoteMetaDownloadId, downloadError);
 
-            if(DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_CANNOT_CONNECT == downloadError)
+            if(DLE_COULDNT_RESOLVE_HOST == downloadError || DLE_COULDNT_CONNECT == downloadError)
             {
                 // connection problem
                 PostError(DE_CONNECT_ERROR);
@@ -600,6 +646,7 @@ void DLC::StepCheckMetaFinish(const uint32 &id, const DownloadStatus &status)
             else if(DLE_FILE_ERROR == downloadError)
             {
                 // writing file problem
+                dlcContext.lastErrno = errno;
                 PostError(DE_WRITE_ERROR);
             }
             else
@@ -622,63 +669,62 @@ void DLC::StepDownloadPatchBegin()
     // write current dlcState into state-file
     if(!WriteUint32(dlcContext.stateInfoStorePath, dlcState))
     {
+        dlcContext.lastErrno = errno;
         PostError(DE_WRITE_ERROR);
         return;
     }
 
-    // last state was 'Patching'?
-    if(DS_PATCHING == dlcContext.prevState && dlcContext.remotePatchStorePath.Exists())
-    {
-        Logger::Info("DLC: Patch-file already exists\n\tfrom: %s\n\tto: %s", dlcContext.remotePatchUrl.c_str(), dlcContext.remotePatchStorePath.GetAbsolutePathname().c_str());
+    // what mode should be used for download?
+    // by default - full download
+    DownloadType donwloadType = FULL;
 
-        // we should patch without downloading
-        PostEvent(EVENT_DOWNLOAD_OK);
-    }
-    else
+    // check what URL was downloaded last time
+    File *downloadInfoFile = File::Create(dlcContext.downloadInfoStorePath, File::OPEN | File::READ);
+    if(NULL != downloadInfoFile)
     {
-        // what mode should be used for download?
-        // by default - full download
-        DownloadType donwloadType = FULL;
+        String lastUrl;
+        String lastSizeStr;
+        uint32 lastSize;
 
-        // check what URL was downloaded last time
-        File *downloadInfoFile = File::Create(dlcContext.downloadInfoStorePath, File::OPEN | File::READ);
-        if(NULL != downloadInfoFile)
+        downloadInfoFile->ReadString(lastSizeStr);
+        downloadInfoFile->ReadString(lastUrl);
+
+        lastSize = atoi(lastSizeStr.c_str());
+
+        // if last url is same as current full or lite url we should continue downloading it
+        if( (lastUrl == dlcContext.remotePatchFullUrl && lastSize == dlcContext.remotePatchFullSize) ||
+            (lastUrl == dlcContext.remotePatchLiteUrl && lastSize == dlcContext.remotePatchLiteSize))
         {
-            String lastUrl;
-            String lastSizeStr;
-            uint32 lastSize;
+            dlcContext.remotePatchUrl = lastUrl;
+            dlcContext.remotePatchSize = lastSize;
 
-            downloadInfoFile->ReadString(lastSizeStr);
-            downloadInfoFile->ReadString(lastUrl);
-
-            lastSize = atoi(lastSizeStr.c_str());
-
-            // last url is same as we are trying to download now
-            if(lastUrl == dlcContext.remotePatchUrl && lastSize == dlcContext.remotePatchSize)
-            {
-                // now we can resume last download
-                donwloadType = RESUMED;
-            }
-
-            SafeRelease(downloadInfoFile);
+            // now we can resume last download
+            donwloadType = RESUMED;
+        }
+        else
+        {
+            // ensure that there is no already downloaded file with another version
+            FileSystem::Instance()->DeleteFile(dlcContext.remotePatchStorePath);
         }
 
-        // save URL that we gonna download
-        downloadInfoFile = File::Create(dlcContext.downloadInfoStorePath, File::CREATE | File::WRITE);
-        if(NULL != downloadInfoFile)
-        {
-            String sizeStr = Format("%u", dlcContext.remotePatchSize);
-            downloadInfoFile->WriteString(sizeStr);
-            downloadInfoFile->WriteString(dlcContext.remotePatchUrl);
-            SafeRelease(downloadInfoFile);
-        }
-
-        Logger::Info("DLC: Downloading patch-file\n\tfrom: %s\n\tto: %s", dlcContext.remotePatchUrl.c_str(), dlcContext.remotePatchStorePath.GetAbsolutePathname().c_str());
-
-        // start download and notify about download status into StepDownloadPatchFinish
-        DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepDownloadPatchFinish));
-        dlcContext.remotePatchDownloadId = DownloadManager::Instance()->Download(dlcContext.remotePatchUrl, dlcContext.remotePatchStorePath.GetAbsolutePathname(), donwloadType);
+        SafeRelease(downloadInfoFile);
     }
+
+    // save URL that we gonna download
+    downloadInfoFile = File::Create(dlcContext.downloadInfoStorePath, File::CREATE | File::WRITE);
+    if(NULL != downloadInfoFile)
+    {
+        String sizeStr = Format("%u", dlcContext.remotePatchSize);
+        downloadInfoFile->WriteString(sizeStr);
+        downloadInfoFile->WriteString(dlcContext.remotePatchUrl);
+        SafeRelease(downloadInfoFile);
+    }
+
+    Logger::Info("DLC: Downloading patch-file\n\tfrom: %s\n\tto: %s", dlcContext.remotePatchUrl.c_str(), dlcContext.remotePatchStorePath.GetAbsolutePathname().c_str());
+
+    // start download and notify about download status into StepDownloadPatchFinish
+    DownloadManager::Instance()->SetNotificationCallback(DownloadManager::NotifyFunctor(this, &DLC::StepDownloadPatchFinish));
+    dlcContext.remotePatchDownloadId = DownloadManager::Instance()->Download(dlcContext.remotePatchUrl, dlcContext.remotePatchStorePath.GetAbsolutePathname(), donwloadType);
 }
 
 void DLC::StepDownloadPatchFinish(const uint32 &id, const DownloadStatus &status)
@@ -699,13 +745,14 @@ void DLC::StepDownloadPatchFinish(const uint32 &id, const DownloadStatus &status
                     break;
 
                 case DAVA::DLE_COULDNT_RESOLVE_HOST:
-                case DAVA::DLE_CANNOT_CONNECT:
+                case DAVA::DLE_COULDNT_CONNECT:
                     // connection problem
                     PostError(DE_CONNECT_ERROR);
                     break;
 
                 case DAVA::DLE_FILE_ERROR:
                     // writing file problem
+                    DownloadManager::Instance()->GetFileErrno(id, dlcContext.lastErrno);
                     PostError(DE_WRITE_ERROR);
                     break;
 
@@ -733,9 +780,10 @@ void DLC::StepPatchBegin()
     }
 
     dlcContext.patchingError = PatchFileReader::ERROR_NO;
+    dlcContext.lastErrno = 0;
     dlcContext.patchInProgress = true;
-    dlcContext.patchIndex = 0;
-    dlcContext.patchCount = 0;
+    dlcContext.appliedPatchCount = 0;
+    dlcContext.totalPatchCount = 0;
 
     // read number of available patches
     PatchFileReader patchReader(dlcContext.remotePatchStorePath);
@@ -743,18 +791,20 @@ void DLC::StepPatchBegin()
     {
         do
         {
-            dlcContext.patchCount++;
+            dlcContext.totalPatchCount++;
         }
         while(patchReader.ReadNext());
     }
-
-    Logger::Info("DLC: Patching, %d files to patch", dlcContext.patchCount);
+    
+    Logger::Info("DLC: Patching, %d files to patch", dlcContext.totalPatchCount);
     patchingThread = Thread::Create(Message(this, &DLC::PatchingThread));
     patchingThread->Start();
 }
 
-void DLC::StepPatchFinish(BaseObject *caller, void *callerData, void *userData)
+void DLC::StepPatchFinish()
 {
+    bool errors = true;
+
     patchingThread->Join();
     SafeRelease(patchingThread);
 
@@ -764,6 +814,7 @@ void DLC::StepPatchFinish(BaseObject *caller, void *callerData, void *userData)
     switch(dlcContext.patchingError)
     {
         case PatchFileReader::ERROR_NO:
+            errors = false;
             PostEvent(EVENT_PATCH_OK);
             break;
 
@@ -771,60 +822,129 @@ void DLC::StepPatchFinish(BaseObject *caller, void *callerData, void *userData)
             PostError(DE_READ_ERROR);
             break;
 
+        case PatchFileReader::ERROR_NEW_CREATE:
         case PatchFileReader::ERROR_NEW_WRITE:
             PostError(DE_WRITE_ERROR);
             break;
 
         default:
-            (dlcContext.remotePatchUrl == dlcContext.remotePatchFullUrl) ? PostError(DE_PATCH_ERROR_FULL) : PostError(DE_PATCH_ERROR_LITE);
+            if(!dlcContext.remotePatchUrl.empty() && dlcContext.remotePatchUrl == dlcContext.remotePatchFullUrl)
+            {
+                PostError(DE_PATCH_ERROR_FULL);
+            }
+            else
+            {
+                PostError(DE_PATCH_ERROR_LITE);
+            }
             break;
+    }
+
+    if(errors)
+    {
+        Logger::Error("DLC: Error applying patch: %u, errno %u", dlcContext.patchingError, dlcContext.lastErrno);
     }
 }
 
 void DLC::StepPatchCancel()
 {
     dlcContext.patchInProgress = false;
+    patchingThread->Join();
 }
-
+    
 void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
 {
     PatchFileReader patchReader(dlcContext.remotePatchStorePath);
-    if(patchReader.ReadFirst())
+
+    bool applySuccess = true;
+    const PatchInfo *patchInfo = nullptr;
+
+    auto applyPatchesFn = [&](bool allowTruncate, std::function<bool(const PatchInfo* info)> conditionFn)
     {
-        do
+        if(applySuccess)
         {
-            if(!patchReader.Apply(dlcContext.localSourceDir, FilePath(), dlcContext.localDestinationDir, FilePath()))
+            bool truncate = false;
+
+            // To be able to truncate patch-file we should go from last patch to the first one.
+            // If incoming patch-file doesn't support reverse pass we will try to apply it without truncation.
+            // This will allow us to support old patch files.
+            if(allowTruncate && patchReader.ReadLast())
             {
-                // stop patching process 
-                dlcContext.patchInProgress = false;
+                truncate = true;
             }
 
-            dlcContext.patchIndex++;
-        }
-        while(dlcContext.patchInProgress && patchReader.ReadNext());
-
-        // check if no errors occurred during patching
-        dlcContext.patchingError = patchReader.GetLastError();
-
-        if(PatchFileReader::ERROR_NO == dlcContext.patchingError)
-        {
-            // ensure directory, where resource version file should be, exists
-            FileSystem::Instance()->CreateDirectory(dlcContext.localVerStorePath.GetDirectory(), true);
-
-            // update local version
-            if(!WriteUint32(dlcContext.localVerStorePath, dlcContext.remoteVer))
+            if(!truncate)
             {
-                // error, version can't be written
-                dlcContext.patchingError = PatchFileReader::ERROR_NEW_WRITE;
+                patchReader.ReadFirst();
+            }
+
+            // Get current patch info
+            patchInfo = patchReader.GetCurInfo();
+            while(applySuccess && nullptr != patchInfo && dlcContext.patchInProgress)
+            {
+                // Patch will be applied only if it fit condition, specified by caller
+                if(conditionFn(patchInfo))
+                {
+                    applySuccess = patchReader.Apply(dlcContext.localSourceDir, FilePath(), dlcContext.localDestinationDir, FilePath());
+                    if(applySuccess)
+                    {
+                        dlcContext.appliedPatchCount++;
+                    }
+                }
+
+                // Go to the next patch and check if we need to truncate applied patch
+                if(applySuccess && dlcContext.patchInProgress)
+                {
+                    if(truncate)
+                    {
+                        patchReader.Truncate();
+                        patchReader.ReadPrev();
+                    }
+                    else
+                    {
+                        patchReader.ReadNext();
+                    }
+
+                    patchInfo = patchReader.GetCurInfo();
+                }
             }
         }
-    }
-    else
+    };
+
+    // first step - apply patches, that either reduce or don't change resources size
+    applyPatchesFn(false, 
+        [](const PatchInfo* info) 
+        { 
+            return info->newSize <= info->origSize; 
+        });
+
+    // no errors on first step - continue applying patches, that increase resources size
+    applyPatchesFn(true,
+        [](const PatchInfo* info) 
+        { 
+            return info->newSize > info->origSize; 
+        });
+
+    // check if no errors occurred during patching
+    dlcContext.lastErrno = patchReader.GetErrno();
+    dlcContext.patchingError = patchReader.GetLastError();
+    if(dlcContext.patchInProgress && PatchFileReader::ERROR_NO == dlcContext.patchingError)
     {
-        dlcContext.patchInProgress = false;
+        DVASSERT(dlcContext.appliedPatchCount == dlcContext.totalPatchCount);
+        
+        // ensure directory, where resource version file should be, exists
+        FileSystem::Instance()->CreateDirectory(dlcContext.localVerStorePath.GetDirectory(), true);
+
+        // update local version
+        if(!WriteUint32(dlcContext.localVerStorePath, dlcContext.remoteVer))
+        {
+            // error, version can't be written
+            dlcContext.patchingError = PatchFileReader::ERROR_NEW_WRITE;
+            dlcContext.lastErrno = errno;
+        }
     }
 
-    JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &DLC::StepPatchFinish));
+	Function<void()> fn(this, &DLC::StepPatchFinish);
+	JobManager::Instance()->CreateMainJob(fn);
 }
 
 void DLC::StepClean()
@@ -840,10 +960,9 @@ void DLC::StepClean()
 
 void DLC::StepDone()
 {
-    FileSystem::Instance()->DeleteFile(dlcContext.remoteVerStotePath);
-
     if(DE_NO_ERROR == dlcError)
     {
+        FileSystem::Instance()->DeleteFile(dlcContext.remoteVerStotePath);
         FileSystem::Instance()->DeleteFile(dlcContext.stateInfoStorePath);
     }
 
@@ -862,8 +981,10 @@ bool DLC::ReadUint32(const FilePath &path, uint32 &value)
         tmp[0] = 0;
         if(f->ReadLine(tmp, sizeof(tmp)) > 0)
         {
-            value = atoi(tmp);
-            ret = true;
+            if(sscanf(tmp, "%u", &value) > 0)
+            {
+                ret = true;
+            }
         }
         SafeRelease(f);
     }

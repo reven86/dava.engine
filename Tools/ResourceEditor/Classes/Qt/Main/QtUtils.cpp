@@ -30,7 +30,6 @@
 
 #include "QtUtils.h"
 #include "Deprecated/SceneValidator.h"
-#include "Tools/QtFileDialog/QtFileDialog.h"
 
 #include <QMessageBox>
 #include <QToolButton>
@@ -40,6 +39,8 @@
 
 #include "TexturePacker/CommandLineParser.h"
 #include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+
+#include "QtTools/FileDialog/FileDialog.h"
 
 #include "DAVAEngine.h"
 #include <QProcess>
@@ -54,7 +55,7 @@ DAVA::FilePath PathnameToDAVAStyle(const QString &convertedPathname)
 
 DAVA::FilePath GetOpenFileName(const DAVA::String &title, const DAVA::FilePath &pathname, const DAVA::String &filter)
 {
-    QString filePath = QtFileDialog::getOpenFileName(NULL, QString(title.c_str()), QString(pathname.GetAbsolutePathname().c_str()),
+    QString filePath = FileDialog::getOpenFileName(NULL, QString(title.c_str()), QString(pathname.GetAbsolutePathname().c_str()),
                                                     QString(filter.c_str()));
     
 	// TODO: mainwindow
@@ -70,6 +71,8 @@ DAVA::FilePath GetOpenFileName(const DAVA::String &title, const DAVA::FilePath &
     
     if(openedPathname.IsEqualToExtension(".png"))
     {
+        DVASSERT(false); // todo to detect using of this code
+        
         //VK: create descriptor only for *.png without paired *.tex
         TextureDescriptorUtils::CreateDescriptorIfNeed(openedPathname);
     }
@@ -137,17 +140,17 @@ void ShowErrorDialog(const DAVA::Set<DAVA::String> &errors)
 
 void ShowErrorDialog(const DAVA::String &errorMessage)
 {
-	bool forceClose =    CommandLineParser::CommandIsFound(String("-force"))
-					||  CommandLineParser::CommandIsFound(String("-forceclose"));
-	if(!forceClose && !Core::Instance()->IsConsoleMode())
-	{
-		QMessageBox::critical(QtMainWindow::Instance(), "Error", errorMessage.c_str());
-	}
+    bool forceClose = CommandLineParser::CommandIsFound(String("-force"))
+                      || CommandLineParser::CommandIsFound(String("-forceclose"));
+    if (!forceClose && !Core::Instance()->IsConsoleMode())
+    {
+        QMessageBox::critical(QApplication::activeWindow(), "Error", errorMessage.c_str());
+    }
 }
 
 bool IsKeyModificatorPressed(int32 key)
 {
-	return InputSystem::Instance()->GetKeyboard()->IsKeyPressed(key);
+	return InputSystem::Instance()->GetKeyboard().IsKeyPressed(key);
 }
 
 bool IsKeyModificatorsPressed()
@@ -214,7 +217,7 @@ void ShowFileInExplorer(const QString& path)
 {
     const QFileInfo fileInfo(path);
 
-#if defined (Q_WS_MAC)
+#if defined (Q_OS_MAC)
     QStringList args;
     args << "-e";
     args << "tell application \"Finder\"";
@@ -225,10 +228,34 @@ void ShowFileInExplorer(const QString& path)
     args << "-e";
     args << "end tell";
     QProcess::startDetached( "osascript", args );
-#elif defined (Q_WS_WIN)
+#elif defined (Q_OS_WIN)
     QStringList args;
     args << "/select," << QDir::toNativeSeparators( fileInfo.absoluteFilePath() );
     QProcess::startDetached( "explorer", args );
 #endif//
 
 }
+
+void SaveSpriteToFile(DAVA::Sprite * sprite, const DAVA::FilePath & path)
+{
+    if(sprite)
+    {
+        SaveTextureToFile(sprite->GetTexture(), path);
+    }
+}
+
+void SaveTextureToFile(DAVA::Texture * texture, const DAVA::FilePath & path)
+{
+    if(texture)
+    {
+        DAVA::Image * img = texture->CreateImageFromMemory(DAVA::RenderState::RENDERSTATE_2D_OPAQUE);
+        SaveImageToFile(img, path);
+        img->Release();
+    }
+}
+
+void SaveImageToFile(DAVA::Image * image, const DAVA::FilePath & path)
+{
+    DAVA::ImageSystem::Instance()->Save(path, image);
+}
+

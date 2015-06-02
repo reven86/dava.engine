@@ -105,10 +105,6 @@ DefaultScreen::~DefaultScreen()
 void DefaultScreen::Update(float32 /*timeElapsed*/)
 {
 	CheckScreenMoveState();
-
-	//update view port
-	RenderManager::Instance()->SetDrawScale(scale);
-	RenderManager::Instance()->SetDrawTranslate(pos);
     
     // Handle the "screen scale changed"/"screen position changed" after the scale/translate is set.
     HandleScreenScalePositionChanged();
@@ -124,6 +120,9 @@ void DefaultScreen::SystemDraw(const UIGeometricData &geometricData)
     bool previewEnabled = PreviewController::Instance()->IsPreviewEnabled();
     Color oldColor = RenderManager::Instance()->GetColor();
 
+    Matrix4 wt = Matrix4::MakeTranslation(Vector3(pos)) * Matrix4::MakeScale(Vector3(scale.x, scale.y, 1.f));
+    RenderManager::SetDynamicParam(PARAM_VIEW, &wt, UPDATE_SEMANTIC_ALWAYS);
+
     RenderManager::Instance()->SetColor(ScreenWrapper::Instance()->GetBackgroundFrameColor());
     RenderHelper::Instance()->FillRect(ScreenWrapper::Instance()->GetBackgroundFrameRect(), RenderState::RENDERSTATE_2D_BLEND);
     RenderManager::Instance()->SetColor(oldColor);
@@ -131,18 +130,18 @@ void DefaultScreen::SystemDraw(const UIGeometricData &geometricData)
    // For Preview mode display only what is inside the preview rectangle.
     if (previewEnabled)
     {
-        RenderManager::Instance()->ClipPush();
+        RenderSystem2D::Instance()->PushClip();
         
         Rect previewClipRect;
         previewClipRect.SetSize(PreviewController::Instance()->GetTransformData().screenSize);
-        RenderManager::Instance()->SetClip(previewClipRect);
+        RenderSystem2D::Instance()->SetClip(previewClipRect);
     }
 
 	UIScreen::SystemDraw(geometricData);
 
     if (previewEnabled)
     {
-        RenderManager::Instance()->ClipPop();
+        RenderSystem2D::Instance()->PopClip();
     }
     else if (inputState == InputStateSelectorControl)
     {
@@ -361,7 +360,7 @@ void DefaultScreen::SmartGetSelectedControl(SmartSelection* list, const Hierarch
 		if (!control)
 			continue;
 
-		if (!control->GetRecursiveVisible())
+		if (!control->GetVisible())
 			continue;
 
         SmartSelection* currList = list;
@@ -374,7 +373,7 @@ void DefaultScreen::SmartGetSelectedControl(SmartSelection* list, const Hierarch
             currList = newList;
         }
 
-        if (controlVisible || IsControlContentVisible(control))
+        if (controlVisible)
         {
             SmartGetSelectedControl(currList, node, point);
         }
@@ -429,19 +428,19 @@ void DefaultScreen::GetSelectedControl(HierarchyTreeNode::HIERARCHYTREENODESLIST
         if (!control)
             continue;
 
-        if (!control->GetRecursiveVisible())
+        if (!control->GetVisible())
             continue;
 
         bool controlVisible = IsControlVisible(control);
 
         if (controlVisible)
         {
-            Rect controlRect = GetControlRect(controlNode);
+            Rect controlRect = GetControlRect(controlNode, true);
             if (controlRect.RectIntersects(rect))
                 list.push_back(node);
         }
 
-        if (controlVisible || IsControlContentVisible(control))
+        if (controlVisible)
         {
             GetSelectedControl(list, rect, node);
         }
@@ -493,7 +492,7 @@ void DefaultScreen::ApplyMoveDelta(const Vector2& delta)
 		UIControl* control = controlNode->GetUIObject();
 		if (control)
 		{
-            float32 parentsTotalAngle = control->GetParentsTotalAngle(false);
+            float32 parentsTotalAngle = control->GetParent()->GetGeometricData().angle;
             if(parentsTotalAngle != 0)
             {
                 Matrix3 tmp;
@@ -670,39 +669,19 @@ void DefaultScreen::MoveControl(const Vector2& delta, bool alignControlToInteger
 void DefaultScreen::DeleteSelectedControls()
 {
 	const HierarchyTreeController::SELECTEDCONTROLNODES& selectedControls = HierarchyTreeController::Instance()->GetActiveControlNodes();
-	HierarchyTreeController::SELECTEDCONTROLNODES::const_iterator iter;
-	HierarchyTreeController::SELECTEDCONTROLNODES::const_iterator innerIter;
-	HierarchyTreeNode::HIERARCHYTREENODESLIST nodes;
-	HierarchyTreeController::SELECTEDCONTROLNODES parentNodes(selectedControls);
-	
-	// DF-1273 - remove all child nodes of selected controls - we don't have to remove them here
-	for (iter = selectedControls.begin(); iter != selectedControls.end(); ++iter)
-	{
-		HierarchyTreeNode *node = (*iter);
-		for (innerIter = selectedControls.begin(); innerIter != selectedControls.end(); ++innerIter)
-		{			
-			if (node->IsHasChild(*innerIter))
-			{
-				HierarchyTreeController::SELECTEDCONTROLNODES::iterator parentNodeIter =
-					std::find(parentNodes.begin(), parentNodes.end(), *innerIter);
-				if (parentNodeIter != parentNodes.end())
-				{
-					parentNodes.erase(parentNodeIter);
-				}
-			}
-		}
-	}
+    if (selectedControls.empty())
+    {
+        return;
+    }
 
-	// DF-1273 - put only "parent" nodes to delete
-	for (iter = parentNodes.begin(); iter != parentNodes.end(); ++iter)
-		nodes.push_back(*iter);
+    HierarchyTreeNode::HIERARCHYTREENODESLIST nodesList;
+    for (HierarchyTreeController::SELECTEDCONTROLNODES::const_iterator iter = selectedControls.begin(); iter != selectedControls.end(); iter ++)
+    {
+        nodesList.push_back(*iter);
+    }
 
-	if (!nodes.size())
-		return;
-	
-	DeleteSelectedNodeCommand* cmd = new DeleteSelectedNodeCommand(nodes);
-	CommandsController::Instance()->ExecuteCommand(cmd);
-	SafeRelease(cmd);
+    // HierarchyTreeWidget is subscribed to this signal and will handle deletion.
+    emit DeleteNodes(nodesList);
 }
 
 void DefaultScreen::MoveGuide(HierarchyTreeScreenNode* screenNode)
@@ -792,9 +771,13 @@ ResizeType DefaultScreen::GetResizeType(const HierarchyTreeControlNode* selected
         horLeft = true;
     }
 
-    // If at least one coord is less than zero and more than SIZE_CURSOR_DELTA - we are outside the control.
-    if ((distancesToBounds.x < 0 || distancesToBounds.y < 0 || distancesToBounds.z < 0 || distancesToBounds.w < 0) &&
-        (verTop || verBottom || horLeft || horRight))
+    // Check whether the cursor is out of the control but within SIZE_CURSOR_DELTA value.
+    // Separate check for all sides to avoid side effects like "resize on X allowed while
+    // cursor is in X bounds but out of Y bounds".
+    if (((distancesToBounds.x < -SIZE_CURSOR_DELTA || distancesToBounds.z < -SIZE_CURSOR_DELTA) &&
+         !(horRight && horLeft)) ||
+        ((distancesToBounds.y < -SIZE_CURSOR_DELTA || distancesToBounds.w < -SIZE_CURSOR_DELTA) &&
+         !(verTop && verBottom)))
     {
         return ResizeTypeNoResize;
     }
@@ -976,6 +959,11 @@ void DefaultScreen::MouseInputBegin(const DAVA::UIEvent* event)
 
     Vector2 localPoint = event->point;
 	Vector2 point = LocalToInternal(localPoint);
+    
+	if (event->tid == UIEvent::BUTTON_1 && CheckEnterScreenMoveState())
+	{
+		return;
+	}
 
     HierarchyTreeScreenNode* screenNode = HierarchyTreeController::Instance()->GetActiveScreen();
 	if (screenNode && event->tid == UIEvent::BUTTON_1 && screenNode->AreGuidesEnabled() && screenNode->StartMoveGuide(point))
@@ -1025,7 +1013,7 @@ void DefaultScreen::MouseInputBegin(const DAVA::UIEvent* event)
 			{
 				//Don't check active controls size anymore - we have to be able to deselect any control
 				if (/*HierarchyTreeController::Instance()->GetActiveControlNodes().size() > 1 &&*/
-					InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_SHIFT))
+					InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
 				{
 					lastSelectedControl = selectedControlNode;
 					//If controls was selected with SHIFT key pressed - we don't need mouseUp selection
@@ -1034,7 +1022,7 @@ void DefaultScreen::MouseInputBegin(const DAVA::UIEvent* event)
 			}
 			else
 			{
-				if (!InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_SHIFT))
+				if (!InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
 					HierarchyTreeController::Instance()->ResetSelectedControl();
 					
 				HierarchyTreeController::Instance()->SelectControl(selectedControlNode);
@@ -1139,7 +1127,7 @@ void DefaultScreen::MouseInputDrag(const DAVA::UIEvent* event)
 	if (inputState == InputStateDrag)
 	{
 		//If control key is pressed - we are going to copy control(s)
-		if (InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_CTRL) && !copyControlsInProcess)
+		if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL) && !copyControlsInProcess)
 		{
 			CopySelectedControls();
 		}	
@@ -1242,7 +1230,7 @@ void DefaultScreen::HandleMouseLeftButtonClick(const Vector2& point)
 	{
 		if (!HierarchyTreeController::Instance()->IsControlSelected(selectedControlNode))
 		{
-			if (!InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_SHIFT))
+			if (!InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_SHIFT))
 				HierarchyTreeController::Instance()->ResetSelectedControl();
 
 				HierarchyTreeController::Instance()->SelectControl(selectedControlNode);
@@ -1340,14 +1328,14 @@ void DefaultScreen::KeyboardInput(const DAVA::UIEvent* event)
 		}break;
 		case DVKEY_C:
 		{
-			if (InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_CTRL))
+			if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL))
 			{
 				CopyPasteController::Instance()->CopyControls(HierarchyTreeController::Instance()->GetActiveControlNodes());
 			}
 		}break;
 		case DVKEY_V:
 		{
-			if (InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_CTRL))
+			if (InputSystem::Instance()->GetKeyboard().IsKeyPressed(DVKEY_CTRL))
 			{
                 const HierarchyTreeController::SELECTEDCONTROLNODES &selectedList = HierarchyTreeController::Instance()->GetActiveControlNodes();                
                 if (selectedList.empty())
@@ -1470,30 +1458,7 @@ int32 DefaultScreen::CalculateStickToGuidesDrag(Vector2& offset) const
         HierarchyTreeControlNode* controlNode = (*iter);
         if (controlNode && controlNode->GetUIObject())
         {
-            Rect rectControl = controlNode->GetUIObject()->GetRect(true);
-            Rect rectFinal = rectControl;
-            float32 fAngle = controlNode->GetUIObject()->GetAngle();
-            if(fAngle != 0)
-            {
-                // Complex case - angle is not 0. Particular fix for 90, 180 and 270 degrees goes here
-                if(FLOAT_EQUAL_EPS(fAngle, PI_05, 1e-4f))
-                {
-                    // 90
-                    rectFinal = Rect(rectControl.x - rectControl.dy, rectControl.y, rectControl.dy, rectControl.dx);
-                }
-                else if(FLOAT_EQUAL_EPS(fAngle, PI, 1e-4f))
-                {
-                    // 180
-                    rectFinal = Rect(rectControl.x - rectControl.dx, rectControl.y - rectControl.dy, rectControl.dx, rectControl.dy);
-                }
-                else if(FLOAT_EQUAL_EPS(fAngle, (PI+PI_05), 1e-4f))
-                {
-                    // 270
-                    rectFinal = Rect(rectControl.x, rectControl.y - rectControl.dx, rectControl.dy, rectControl.dx);
-                }
-                
-            }
-            controlRects.push_back(rectFinal);
+            controlRects.push_back(controlNode->GetUIObject()->GetGeometricData().GetAABBox());
         }
     }
     
@@ -1695,7 +1660,7 @@ bool DefaultScreen::IsDropEnable(const DAVA::Vector2 &position) const
 	return true;
 }
 
-Rect DefaultScreen::GetControlRect(const HierarchyTreeControlNode* controlNode) const
+Rect DefaultScreen::GetControlRect(const HierarchyTreeControlNode* controlNode, bool checkAngle/*=false*/) const
 {
 	Rect rect;
 	
@@ -1706,7 +1671,14 @@ Rect DefaultScreen::GetControlRect(const HierarchyTreeControlNode* controlNode) 
 	if (!control)
 		return rect;
 	
-	rect = control->GetRect();
+    if(!checkAngle)
+    {
+        rect = control->GetRect(false);
+    }
+    else
+    {
+        rect = control->GetGeometricData().GetAABBox();
+    }
 	rect += controlNode->GetParentDelta(true);
 
 	return rect;
@@ -1787,31 +1759,6 @@ void DefaultScreen::HandleScreenMove(const DAVA::UIEvent* event)
 bool DefaultScreen::IsControlVisible(const UIControl* uiControl) const
 {
     return (uiControl->GetVisibleForUIEditor() && uiControl->GetVisible());
-}
-
-bool DefaultScreen::IsControlContentVisible( const UIControl *control ) const
-{
-    const List<UIControl*>& children = control->GetChildren();
-    if( children.empty() )
-        return false;
-
-    List<UIControl*>::const_iterator iter = children.begin();
-    List<UIControl*>::const_iterator end = children.end();
-    for(; iter != end; ++iter)
-    {
-        if (!control->GetRecursiveVisible())
-        {
-            continue;
-        }
-
-        if (IsControlVisible(*iter))
-            return true;
-
-        if (IsControlContentVisible(*iter))
-            return true;
-    }
-
-    return false;
 }
 
 void DefaultScreen::SetScreenControl(ScreenControl* control)
@@ -1906,8 +1853,8 @@ void DefaultScreen::DrawGuides()
         }
     }
 
-    RenderManager::Instance()->ClipPush();
-    RenderManager::Instance()->SetClip(rect);
+    RenderSystem2D::Instance()->PushClip();
+    RenderSystem2D::Instance()->SetClip(rect);
     Color oldColor = RenderManager::Instance()->GetColor();
 
     RenderManager::Instance()->SetColor(selectedColor);
@@ -1916,7 +1863,7 @@ void DefaultScreen::DrawGuides()
     RenderHelper::Instance()->DrawLines(unselectedGuides, RenderState::RENDERSTATE_2D_BLEND);
 
     RenderManager::Instance()->SetColor(oldColor);
-    RenderManager::Instance()->ClipPop();
+    RenderSystem2D::Instance()->PopClip();
 }
 
 // Screen scale/position is changed.

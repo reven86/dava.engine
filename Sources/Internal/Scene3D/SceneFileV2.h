@@ -177,6 +177,8 @@ public:
     bool RemoveEmptyHierarchy(Entity * currentNode);
 	void ConvertShadows(Entity * rootNode);
     void RebuildTangentSpace(Entity *entity);
+    void ConvertShadowVolumes(Entity * rootNode, NMaterial * shadowMaterialParent);
+    void RemoveDeprecatedMaterialFlags(Entity * rootNode);
     int32 removedNodeCount;
     	    
     void UpdatePolygonGroupRequestedFormatRecursively(Entity *entity);

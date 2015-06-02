@@ -36,7 +36,7 @@
 #include "FileSystem/FilePath.h"
 
 #if defined (__DAVAENGINE_ANDROID__)
-#include "FileSystem/APKFile.h"
+#include "FileSystem/ZipFile.h"
 #endif //__DAVAENGINE_ANDROID__
 /**
 	\defgroup filesystem File System
@@ -145,7 +145,7 @@ public:
          \brief Function to retrieve user's documents path
          \returns user's documents path
      */
-	virtual const FilePath GetUserDocumentsPath();
+	static const FilePath GetUserDocumentsPath();
     
     /**
          \brief Function to retrieve public documents path
@@ -247,10 +247,32 @@ public:
 	 \returns platform-dependent
 	 */
 	int32 Spawn(const String& command);
-    
-    
+
+	/**
+	 \brief Marks folder as contains no media files to exclude it from index
+	 */
+	void MarkFolderAsNoMedia(const FilePath &folder);
+
+    /**
+    \brief Compares two files to check if theirs content is same. Ignores lineendings
+    \param[in] filePath1 - path to one of files to compare
+    \param[in] filePath2 - path to one of files to compare
+    \param[in] ignoreEmptyLines - ignores any empty lines
+    \returns true if files are equals and false if not
+    */
+    bool CompareTextFiles(const FilePath &filePath1, const FilePath &filePath2);
+
+    /**
+    \brief Compares two files to check if theirs content is same.
+    \param[in] filePath1 - path to one of files to compare
+    \param[in] filePath2 - path to one of files to compare
+    \returns true if files are equals and false if not
+    */
+    bool CompareBinaryFiles(const FilePath &filePath1, const FilePath &filePath2);
+
 private:
-    
+    bool HasLineEnding(File *f);
+
 	virtual eCreateDirectoryResult CreateExactDirectory(const FilePath & filePath);
 
 	FilePath currentWorkingDirectory;
@@ -267,7 +289,7 @@ private:
 
 	friend class File;
 #if defined(__DAVAENGINE_ANDROID__)
-	friend class APKFile;
+	friend class ZipFile;
 public:
 	void Init();
 

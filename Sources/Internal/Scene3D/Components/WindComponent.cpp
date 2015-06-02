@@ -38,12 +38,11 @@
 
 namespace DAVA 
 {
-	REGISTER_CLASS(WindComponent)
 
 WindComponent::WindComponent() :
+    influenceBbox(Vector3(), 10000.f),
     windForce(1.f),
-    windSpeed(1.f),
-    influenceBbox(Vector3(), 10000.f)
+    windSpeed(1.f)
 {
 }
 

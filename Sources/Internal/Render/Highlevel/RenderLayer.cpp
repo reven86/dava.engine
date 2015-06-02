@@ -41,16 +41,12 @@ RenderLayer::RenderLayer(const FastName & _name, uint32 sortingFlags, RenderLaye
     :	name(_name)
     ,   flags(sortingFlags)
     ,   id(_id)
-    ,   queryPending(false)
-    ,   lastFragmentsRenderedValue(0)
-    ,   occlusionQuery(NULL)
 {
     
 }
     
 RenderLayer::~RenderLayer()
 {
-    SafeRelease(occlusionQuery);
 }
 
 void RenderLayer::Draw(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray)
@@ -66,23 +62,8 @@ void RenderLayer::Draw(const FastName & ownerRenderPass, Camera * camera, Render
     Vector<int32> chain;
 #endif
     uint32 size = (uint32)renderLayerBatchArray->GetRenderBatchCount();
-    
-    RenderOptions* options = RenderManager::Instance()->GetOptions();
-    bool layerOcclustionStatsEnabled = options->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS);
-    
-    if(layerOcclustionStatsEnabled)
-    {
-        if(NULL == occlusionQuery)
-        {
-            occlusionQuery = new OcclusionQuery();
-            occlusionQuery->Init();
-        }
-    
-        if(false == queryPending)
-        {
-            occlusionQuery->BeginQuery();
-        }
-    }
+
+    FrameOcclusionQueryManager::Instance()->BeginQuery(name);
     
     for (uint32 k = 0; k < size; ++k)
     {
@@ -105,21 +86,7 @@ void RenderLayer::Draw(const FastName & ownerRenderPass, Camera * camera, Render
 #endif
     }
     
-    if(layerOcclustionStatsEnabled)
-    {
-        if(false == queryPending)
-        {
-            occlusionQuery->EndQuery();
-            queryPending = true;
-        }
-        
-        if((true == queryPending) &&
-           occlusionQuery->IsResultAvailable())
-        {
-            occlusionQuery->GetQuery(&lastFragmentsRenderedValue);
-            queryPending = false;
-        }
-    }
+    FrameOcclusionQueryManager::Instance()->EndQuery(name);
     
 #if CAN_INSTANCE_CHECK
     int32 realDrawEconomy = 0;

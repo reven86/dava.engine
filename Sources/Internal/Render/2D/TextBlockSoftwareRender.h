@@ -55,16 +55,31 @@ class TextBlockSoftwareRender: public TextBlockRender
 public:
 	TextBlockSoftwareRender(TextBlock*);
 	virtual void Prepare(Texture *texture = NULL);
-	
+
+#if defined(LOCALIZATION_DEBUG)
+    //in physical coordinates
+    Vector2 getTextOffsetTL();
+    //in physical coordinates
+    Vector2 getTextOffsetBR();
+#endif
 protected:
-	virtual Size2i DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w);
-	virtual Size2i DrawTextML(const WideString& drawText,
+	virtual Font::StringMetrics DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w);
+	virtual Font::StringMetrics DrawTextML(const WideString& drawText,
 							  int32 x, int32 y, int32 w,
 							  int32 xOffset, uint32 yOffset,
-							  int32 lineSize);
+                              int32 lineSize);
+
+#if defined(LOCALIZATION_DEBUG)
+    void CalculateTextBBox();
+#endif
 
 private:
-	int16* buf;
+#if defined(LOCALIZATION_DEBUG)
+    Vector2 textOffsetTL;
+    Vector2 textOffsetBR;
+    int32 bufHeight, bufWidth;
+#endif
+    int8* buf;
 	FTFont* ftFont;
 };
 	

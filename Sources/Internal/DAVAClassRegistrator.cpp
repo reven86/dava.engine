@@ -29,6 +29,7 @@
 #include "DAVAEngine.h"
 #include "DAVAClassRegistrator.h"
 #include "Render/Highlevel/SpriteRenderBatch.h"
+#include "Render/Highlevel/ShadowVolume.h"
 
 using namespace DAVA;
 
@@ -44,6 +45,7 @@ void DAVA::RegisterDAVAClasses()
 REGISTER_CLASS(TheoraPlayer);
 #endif
 
+REGISTER_CLASS(BaseObject);
 REGISTER_CLASS(PolygonGroup);
 REGISTER_CLASS(StaticMesh);
 REGISTER_CLASS(Camera);
@@ -56,8 +58,10 @@ REGISTER_CLASS(UISwitch);
 REGISTER_CLASS(UITextField);
 REGISTER_CLASS(Landscape);
 REGISTER_CLASS(UIAggregatorControl);
+REGISTER_CLASS(AnimationData);
 REGISTER_CLASS(Light);
 REGISTER_CLASS(Mesh);
+REGISTER_CLASS(SkinnedMesh);
 REGISTER_CLASS(SpeedTreeObject);
 REGISTER_CLASS(RenderBatch);
 REGISTER_CLASS(RenderObject);
@@ -87,8 +91,6 @@ REGISTER_CLASS(UIList);
 REGISTER_CLASS(UIListCell);
 REGISTER_CLASS(UIScrollBar);
 REGISTER_CLASS(UIScrollView);
-REGISTER_CLASS(StaticOcclusionComponent);
-REGISTER_CLASS(StaticOcclusionDataComponent);
 REGISTER_CLASS_WITH_ALIAS(PartilceEmitterLoadProxy, "ParticleEmitter3D");
 REGISTER_CLASS(UIWebView);
 REGISTER_CLASS(UIMovieView);
@@ -98,3 +100,28 @@ REGISTER_CLASS(VegetationRenderObject);
 REGISTER_CLASS(SpriteObject);
 REGISTER_CLASS(SpriteRenderBatch);
 REGISTER_CLASS(UI3DView);
+REGISTER_CLASS(AnimationComponent);
+REGISTER_CLASS(TransformComponent);
+REGISTER_CLASS(UpdatableComponent);
+REGISTER_CLASS(RenderComponent);
+REGISTER_CLASS(CustomPropertiesComponent);
+REGISTER_CLASS(ActionComponent);
+REGISTER_CLASS(DebugRenderComponent);
+REGISTER_CLASS(SoundComponent);
+REGISTER_CLASS(BulletComponent);
+REGISTER_CLASS(LightComponent);
+REGISTER_CLASS(SpeedTreeComponent);
+REGISTER_CLASS(WindComponent);
+REGISTER_CLASS(WaveComponent);
+REGISTER_CLASS(QualitySettingsComponent);
+REGISTER_CLASS(UserComponent);
+REGISTER_CLASS(SwitchComponent);
+REGISTER_CLASS(LodComponent);
+REGISTER_CLASS(ParticleEffectComponent);
+REGISTER_CLASS(CameraComponent);
+REGISTER_CLASS(StaticOcclusionComponent);
+REGISTER_CLASS(StaticOcclusionDataComponent);
+REGISTER_CLASS(PathComponent);
+REGISTER_CLASS(WASDControllerComponent);
+REGISTER_CLASS(RotationControllerComponent);
+REGISTER_CLASS(SnapToLandscapeControllerComponent);

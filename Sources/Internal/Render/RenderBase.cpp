@@ -245,6 +245,20 @@ const int32 FILLMODE_MAP[FILLMODE_COUNT] =
 };
 #endif
     
+#if defined(__DAVAENGINE_OPENGL__)
+const GLint BUFFERDRAWTYPE_MAP[BDT_COUNT] =
+{
+    GL_STATIC_DRAW,
+    GL_DYNAMIC_DRAW,
+};
+#elif defined(__DAVAENGINE_DIRECTX9__)
+const int32 BUFFERDRAWTYPE_MAP[BDT_COUNT] =
+{
+    0,
+    0,
+};
+#endif
+
 /*
  FastName("modelViewProjectionMatrix"),
  FastName("modelViewMatrix"),
@@ -299,6 +313,10 @@ const FastName DYNAMIC_PARAM_NAMES[] =
         FastName("speedTreeLightSmoothing"),
 
         FastName("sphericalHarmonics[0]"),
+
+        FastName("jointPositions[0]"),
+        FastName("jointQuaternions[0]"),
+        FastName("jointsCount"),
 
         FastName("rtSize"),
         FastName("rtPixelSize"),

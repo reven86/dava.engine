@@ -39,7 +39,6 @@
 
 namespace DAVA 
 {
-	REGISTER_CLASS(WaveComponent)
 
 WaveComponent::WaveComponent() :
     amplitude(10.f),

@@ -26,6 +26,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_ESRENDERER_H__
+#define __DAVAENGINE_ESRENDERER_H__
+
 
 #include "Base/BaseTypes.h"
 #if defined(__DAVAENGINE_IPHONE__)
@@ -47,4 +50,6 @@
 - (void) setCurrentContext;
 @end
 
-#endif 
+#endif //__DAVAENGINE_IPHONE__
+#endif //__DAVAENGINE_ESRENDERER_H__
+

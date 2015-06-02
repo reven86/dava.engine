@@ -30,6 +30,8 @@
 #include "Render/RenderManager.h"
 #include "Core/Core.h"
 #include "Render/ShaderCache.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 namespace DAVA 
 {
@@ -78,7 +80,7 @@ TextBlockDistanceRender::~TextBlockDistanceRender()
 	SafeRelease(renderObject);
 }
 	
-void TextBlockDistanceRender::Prepare()
+void TextBlockDistanceRender::Prepare(Texture *texture /*= NULL*/)
 {
 	charDrawed = 0;
 	renderRect = Rect(0, 0, 0, 0);
@@ -86,7 +88,7 @@ void TextBlockDistanceRender::Prepare()
     uint32 charCount = 0;
     if (!textBlock->isMultilineEnabled || textBlock->treatMultilineAsSingleLine)
     {
-        charCount = textBlock->pointsStr.length() ? textBlock->pointsStr.length() : textBlock->text.length();
+        charCount = static_cast<uint32>(textBlock->visualText.length());
     }
     else
     {
@@ -114,8 +116,8 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 	if (charDrawed == 0)
 		return;
 	
-	int32 xOffset = (int32)(textBlock->position.x - textBlock->pivotPoint.x);
-	int32 yOffset = (int32)(textBlock->position.y - textBlock->pivotPoint.y);
+	int32 xOffset = 0;// (int32)(textBlock->position.x);
+	int32 yOffset = 0;// (int32)(textBlock->position.y);
 
 	if (offset)
 	{
@@ -123,12 +125,12 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 		yOffset += (int32)offset->y;
 	}
 	
-	int32 align = textBlock->GetAlign();
+	int32 align = textBlock->GetVisualAlignNoMutexLock();
 	if (align & ALIGN_RIGHT)
 	{
 		xOffset += (int32)(textBlock->rectSize.dx - renderRect.dx);
 	}
-	else if (align & ALIGN_HCENTER)
+	else if ((align & ALIGN_HCENTER) || (align & ALIGN_HJUSTIFY))
 	{
 		xOffset += (int32)((textBlock->rectSize.dx - renderRect.dx) * 0.5f);
 	}
@@ -141,24 +143,34 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 	{
 		yOffset += (int32)((textBlock->rectSize.dy - renderRect.dy) * 0.5f);
 	}
-    
-    bool needClipPop = false;
-    if (textBlock->requestedSize.dx == 0 && textBlock->requestedSize.dy == 0)
-    {
-        RenderManager::Instance()->ClipPush();
-        RenderManager::Instance()->ClipRect(Rect((float32)xOffset, (float32)yOffset, textBlock->rectSize.dx, textBlock->rectSize.dy));
-        needClipPop = true;
-    }
-    else if (textBlock->requestedSize.dx > 0 && textBlock->requestedSize.dy > 0)
-    {
-        RenderManager::Instance()->ClipPush();
-        RenderManager::Instance()->ClipRect(Rect((float32)xOffset, (float32)yOffset, textBlock->requestedSize.dx, textBlock->requestedSize.dy));
-        needClipPop = true;
-    }
-    RenderManager::Instance()->PushDrawMatrix();
-    RenderManager::Instance()->SetDrawTranslate(Vector2((float32)xOffset, (float32)yOffset));
 
-    RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
+    RenderSystem2D::Instance()->Flush();
+    
+    //TODO: temporary crutch until 2D render became fully stateless
+    const Matrix4 * oldMatrix = (Matrix4 *)RenderManager::GetDynamicParam(PARAM_WORLD);
+    
+	//NOTE: correct affine transformations
+
+    Matrix4 offsetMatrix;
+	offsetMatrix.glTranslate((float32)xOffset - textBlock->pivot.x, (float32)yOffset - textBlock->pivot.y, 0.f);
+
+	Matrix4 rotateMatrix;
+	rotateMatrix.glRotate(RadToDeg(textBlock->angle), 0.f, 0.f, 1.f);
+
+	Matrix4 scaleMatrix;
+	//recalculate x scale - for non-uniform scale
+	const float difX = 1.0f - (textBlock->scale.dy - textBlock->scale.dx);
+	scaleMatrix.glScale(difX, 1.f, 1.0f);
+
+	Matrix4 worldMatrix;
+	worldMatrix.glTranslate(textBlock->position.x, textBlock->position.y, 0.f);
+
+	offsetMatrix = (scaleMatrix*offsetMatrix*rotateMatrix)*worldMatrix;
+	//offsetMatrix = (scaleMatrix * rotateMatrix * offsetMatrix)*worldMatrix;
+
+	RenderManager::SetDynamicParam(PARAM_WORLD, &offsetMatrix, UPDATE_SEMANTIC_ALWAYS);
+
+	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
     RenderManager::Instance()->SetTextureState(dfFont->GetTextureHandler());
 	RenderManager::Instance()->SetShader(shader);
     RenderManager::Instance()->SetRenderData(renderObject);
@@ -175,40 +187,36 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
     
 	RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, charDrawed * 6, EIF_16, this->indexBuffer);
     
-    RenderManager::Instance()->PopDrawMatrix();
-    if (needClipPop)
-    {
-        RenderManager::Instance()->ClipPop();
-    }
+    RenderManager::SetDynamicParam(PARAM_WORLD, oldMatrix, (pointer_size)oldMatrix);
 }
 	
-Size2i TextBlockDistanceRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
+Font::StringMetrics TextBlockDistanceRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
 {
 	return InternalDrawText(drawText, 0, 0, 0, 0);
 }
 		
-Size2i TextBlockDistanceRender::DrawTextML(const WideString& drawText,
+Font::StringMetrics TextBlockDistanceRender::DrawTextML(const WideString& drawText,
 										   int32 x, int32 y, int32 w,
 										   int32 xOffset, uint32 yOffset,
 										   int32 lineSize)
 {
-	return InternalDrawText(drawText, xOffset, yOffset, (int32)ceilf(Core::GetVirtualToPhysicalFactor() * w), lineSize);
+    return InternalDrawText(drawText, xOffset, yOffset, (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)w)), lineSize);
 }
 	
-Size2i TextBlockDistanceRender::InternalDrawText(const WideString& drawText, int32 x, int32 y, int32 w, int32 lineSize)
+Font::StringMetrics TextBlockDistanceRender::InternalDrawText(const WideString& drawText, int32 x, int32 y, int32 w, int32 lineSize)
 {
 	if (drawText.empty())
-		return Size2i(0, 0);
+		return Font::StringMetrics();
 	
 	int32 lastDrawed = 0;
 	
-	Size2i drawRect = dfFont->DrawStringToBuffer(drawText, x, y, &vertexBuffer[0] + (charDrawed * 4), lastDrawed, NULL, w, lineSize);
-	if (drawRect.dx <= 0 && drawRect.dy <= 0)
-		return drawRect;
+	Font::StringMetrics metrics = dfFont->DrawStringToBuffer(drawText, x, y, &vertexBuffer[0] + (charDrawed * 4), lastDrawed, NULL, w, lineSize);
+	if (metrics.drawRect.dx <= 0 && metrics.drawRect.dy <= 0)
+		return metrics;
 	
-	renderRect = renderRect.Combine(Rect(0.f, 0.f, (float32)drawRect.dx, (float32)drawRect.dy));
+	renderRect = renderRect.Combine(Rect((float32)metrics.drawRect.x, (float)metrics.drawRect.y, (float32)metrics.drawRect.dx, (float32)metrics.drawRect.dy));
 	this->charDrawed += lastDrawed;
-	return drawRect;
+	return metrics;
 }
 	
 };

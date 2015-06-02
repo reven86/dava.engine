@@ -34,6 +34,8 @@
 #include "UI/UIControlSystem.h"
 #include "Base/ObjectFactory.h"
 #include "FileSystem/YamlNode.h"
+#include "UI/UIYamlLoader.h"
+#include "UI/UIControlHelpers.h"
 
 namespace DAVA
 {
@@ -82,7 +84,7 @@ void UIList::InitAfterYaml()
         RemoveControl(scrollContainer);
         SafeRelease(scrollContainer);
     }
-
+    
     scrollContainer = new UIControl(r);
     AddControl(scrollContainer);
     scrollContainer->SetFocusEnabled(false);
@@ -137,6 +139,13 @@ void UIList::SetRect(const Rect &rect)
     }
 
     UIControl::SetRect(rect);
+    scrollContainer->SetRect(rect);
+}
+    
+void UIList::SetSize(const Vector2 &newSize)
+{
+    UIControl::SetSize(newSize);
+    scrollContainer->SetSize(newSize);
 }
 
 void UIList::SetDelegate(UIListDelegate *newDelegate)
@@ -172,9 +181,9 @@ void UIList::ScrollToElement(int32 index)
     SetScrollPosition(newScrollPos);
 }
 
-void UIList::SetOrientation(eListOrientation _orientation)
+void UIList::SetOrientation(int32 _orientation)
 {
-    orientation = _orientation;
+    orientation = (UIList::eListOrientation)_orientation;
 }
 
 float32 UIList::GetScrollPosition()
@@ -516,7 +525,7 @@ bool UIList::SystemInput(UIEvent *currentInput)
         {
             if(orientation == ORIENTATION_HORIZONTAL)
             {
-                if(abs(currentInput->point.x - newPos) > touchHoldSize)
+                if(Abs(currentInput->point.x - newPos) > touchHoldSize)
                 {
                     UIControlSystem::Instance()->SwitchInputToControl(mainTouch, this);
                     newPos = currentInput->point.x;
@@ -525,7 +534,7 @@ bool UIList::SystemInput(UIEvent *currentInput)
             }
             else
             {
-                if(abs(currentInput->point.y - newPos) > touchHoldSize)
+                if(Abs(currentInput->point.y - newPos) > touchHoldSize)
                 {
                     UIControlSystem::Instance()->SwitchInputToControl(mainTouch, this);
                     newPos = currentInput->point.y;
@@ -720,7 +729,7 @@ YamlNode * UIList::SaveToYamlNode(UIYamlLoader * loader)
     String stringValue;
 
     //Orientation
-    eListOrientation orient = this->GetOrientation();
+    eListOrientation orient = (eListOrientation)GetOrientation();
     switch(orient)
     {
         case ORIENTATION_VERTICAL:
@@ -780,6 +789,11 @@ List<UIControl* >& UIList::GetRealChildren()
 void UIList::ScrollToPosition( float32 position, float32 timeSec /*= 0.3f*/ )
 {
     scroll->ScrollToPosition(-position);
+}
+
+const String UIList::GetDelegateControlPath(const UIControl *rootControl) const
+{
+    return UIControlHelpers::GetControlPath(this, rootControl);
 }
 
 };

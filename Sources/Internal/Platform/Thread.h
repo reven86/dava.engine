@@ -35,11 +35,17 @@
 #include "Base/BaseObject.h"
 #include "Mutex.h"
 
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#if !defined __DAVAENGINE_PTHREAD__
+    #define __DAVAENGINE_PTHREAD__
+#endif
+#endif
+
+
 #if defined (__DAVAENGINE_WIN32__)
 #include "Platform/TemplateWin32/pThreadWin32.h"
-#else
+#elif defined(__DAVAENGINE_PTHREAD__)
 #include <pthread.h>
-#include <signal.h>
 #endif
 
 namespace DAVA
@@ -61,102 +67,90 @@ public:
 
 private:
     pthread_cond_t cv;
-    pthread_mutex_t exMutex;
 
     friend class Thread;
 };
 
 class Thread : public BaseObject
 {
+#if defined(__DAVAENGINE_PTHREAD__)
+private:
+    typedef pthread_t Handle;
+    friend void	*PthreadMain(void *param);
 public:
-	enum eThreadState
+    typedef pthread_t Id;
+#elif defined(__DAVAENGINE_WIN32__)
+private:
+    typedef HANDLE Handle;
+    friend DWORD WINAPI ThreadFunc(void *param);
+public:
+    typedef DWORD Id;
+#endif
+#if defined(__DAVAENGINE_ANDROID__)
+    static void thread_exit_handler(int sig);
+#endif
+    
+public:
+	
+    enum eThreadState
 	{
 		STATE_CREATED = 0,
 		STATE_RUNNING,
-		STATE_ENDED,
+        STATE_ENDED,
         STATE_KILLED
 	};
-
-	class ThreadId
-	{
-#if defined (__DAVAENGINE_WIN32__)
-	public:
-		bool operator<(const ThreadId & otherThread) const 
-		{ 
-			return internalTid < otherThread.internalTid; 
-		}
-
-	private:
-		ThreadId(DWORD _internalTid = 0) 
-		{ 
-			internalTid = _internalTid; 
-		}
-		bool operator==(const ThreadId & otherThread) const
-		{ 
-			return internalTid == otherThread.internalTid; 
-		}
-		DWORD internalTid;
-#else
-    public:
-		bool operator<(const ThreadId & otherThread) const
-		{
-			return internalTid < otherThread.internalTid;
-		}
-        
-    private:
-        ThreadId(pthread_t _internalTid = 0)
-		{
-			internalTid = _internalTid;
-		}
-		bool operator==(const ThreadId & otherThread) const
-		{
-			return internalTid == otherThread.internalTid;
-		}
-		pthread_t internalTid;
-#endif
-		friend class Thread;
-	};
-	
+    
 	/**
 		\brief static function to detect if current thread is main thread of application
 		\returns true if now main thread executes
 	*/
-	static	bool IsMainThread();
+    static bool IsMainThread();
 
 	/**
 		\brief static function to create instance of thread object based on Message.
-
 		This function create thread based on message. It do not start the thread until Start function called.
-
 		\returns ptr to thread object 
 	*/
-	static Thread		* Create(const Message& msg);
+	static Thread *Create(const Message& msg);
 
-    static void KillAll();
-
+    /**
+     \brief Sets thread name. You should to use it before Thread::Start().
+     */
+    inline void SetName(const String &_name);
+    inline String GetName();
+    
 	/**
-		\brief start execution of the thread
+		\brief Start execution of the thread
 	*/
-	void			Start();
+	void Start();
+
 	/**
 		\brief get current thread state. 
 
 		This function return state of the thread. It can be STATE_CREATED, STATE_RUNNING, STATE_ENDED.
 	*/
-	eThreadState	GetState();
+    inline eThreadState GetState() const;
 
     /** Wait until thread's finished.
     */
     void Join();
 
-    /** Kill thread
+    /** Kill thread by OS. No signals will be sent.
     */
     void Kill();
+    static void KillAll();
 
+    /** Ask to cancel thred. User should to check state variable
+    */
+    inline void Cancel();
+    /** Check if someone asked thiead to cancel
+     */
+    inline bool IsCancelling() const;
+    static void CancelAll();
     /**
         Wrapp pthread wait, signal and broadcast
 	*/
-    static void Wait(ConditionalVariable * cv);
+    static void Wait(ConditionalVariable * cv, Mutex * mutex);
     static void Signal(ConditionalVariable * cv);
     static void Broadcast(ConditionalVariable * cv);
     
@@ -165,71 +159,106 @@ public:
      willing to release its processor to other threads of the same or higher
      priority.
      */
-    static void YieldThread();
+    static void Yield();
 
     /**
      \brief suspends the execution of the current thread until the time-out interval elapses
      */
-    static void SleepThread(uint32 timeMS);
+    static void Sleep(uint32 timeMS);
 
-	static ThreadId GetCurrentThreadId();
+    /**
+     \brief 
+     \returns returns unique current thread identifier.
+    */
+    static Id GetCurrentId();
 
-	void SetThreadId(const ThreadId & threadId);
-	ThreadId GetThreadId();
+    /**
+     \returns returns Id of Thread Object.
+     */
+    inline Id GetId() const;
 
-#if defined(__DAVAENGINE_ANDROID__)
-	static void AttachToJVM();
-	static void DetachFromJVM();
-#endif
+    /**
+     \brief register current native thread handle and remember it's Id as Id of MainThread.
+     */
+    static void	InitMainThread();
+    static void InitGLThread();
 
 private:
-    ~Thread();
-	Thread(const Message& msg);
-	
+    virtual ~Thread();
+	Thread(const Message &msg);
+    void Init();
+    void Shutdown();
+
+    /**
+    \brief Kill thread native implementation (contains no Thread logic)
+    */
+    void KillNative();
+    
+    /**
+    \brief Function which processes in separate thread. Used to launch user defined code and handle state.
+    */
+    static void ThreadFunction(void *param);
+
 	Message	msg;
 	eThreadState state;
+    
+    volatile bool isCancelling;
 
-	ThreadId threadId;
-	static ThreadId mainThreadId;
+    /**
+    \brief Native thread handle - variable which used to thread manipulations
+    */
+    Handle handle;
+    /**
+    \brief Some value which is unique for any thread in current OS. Could be used only for equals comparision.
+    */
+	Id id;
+	static Id mainThreadId;
+	static Id glThreadId;
 
+    /**
+    \brief Full list of created DAVA::Thread's. Main thread is not DAVA::Thread, so it is not there.
+    */
     static Set<Thread *> threadList;
     static Mutex threadListMutex;
-	
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-	#if defined (__DAVAENGINE_NPAPI__)
-		CGLContextObj npAPIGLContext;
-	#endif // #if defined (__DAVAENGINE_NPAPI__)
-
-	friend void	* PthreadMain(void * param);
-	void		StartMacOS();
-	static void	InitMacOS();
-#elif defined (__DAVAENGINE_WIN32__)
-public:
-	static HDC		currentDC;
-	static HGLRC	secondaryContext;
-
-private:
-    HANDLE threadHandle;
-	void		StartWin32();
-	friend DWORD WINAPI ThreadFunc(void* param);
-public:
-	static void	InitMainThread();
-
-#elif defined(__DAVAENGINE_ANDROID__)
-private:
-	static ThreadId glThreadId;
-private:
-	friend void	* PthreadMain(void * param);
-	void StartAndroid();
-public:
-	static void	InitMainThread();
-	static void	InitGLThread();
-private:
-	uint32 attachedToJVMCount;
-#else //PLATFORMS
-	// other platforms
-#endif //PLATFORMS	
+    
+    /**
+     \brief Full list of created DAVA::Thread's. Main thread is not DAVA::Thread, so it is not there.
+     */
+    String name;
 };
+
+
+inline void Thread::SetName(const String &_name)
+{
+    // name sets inside thread function, so we cannot change thread name after starting.
+    DVASSERT(STATE_CREATED == state);
+    name = _name;
+}
+
+inline String Thread::GetName()
+{
+    return name;
+}
+    
+inline Thread::eThreadState Thread::GetState() const
+{
+    return state;
+}
+
+inline void Thread::Cancel()
+{
+    isCancelling = true;
+}
+    
+inline bool Thread::IsCancelling() const
+{
+    return isCancelling;
+}
+
+inline Thread::Id Thread::GetId() const
+{
+    return id;
+}
 
 };
 

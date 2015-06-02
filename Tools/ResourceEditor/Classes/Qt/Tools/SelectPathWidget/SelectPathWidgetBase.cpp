@@ -30,9 +30,10 @@
 
 #include "SelectPathWidgetBase.h"
 #include "Tools/MimeDataHelper/MimeDataHelper.h"
-#include "Tools/QtFileDialog/QtFileDialog.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
+
+#include "QtTools/FileDialog/FileDialog.h"
 
 #include <QFileInfo>
 #include <QKeyEvent>
@@ -131,7 +132,7 @@ void SelectPathWidgetBase::OpenClicked()
 		dialogString = presentPath.GetDirectory();
 	}
 	this->blockSignals(true);
-	DAVA::String retString = QtFileDialog::getOpenFileName(this, openFileDialogTitle.c_str(), QString(dialogString.GetAbsolutePathname().c_str()), fileFormatFilter.c_str()).toStdString();
+	DAVA::String retString = FileDialog::getOpenFileName(this, openFileDialogTitle.c_str(), QString(dialogString.GetAbsolutePathname().c_str()), fileFormatFilter.c_str()).toStdString();
 	this->blockSignals(false);
 
     if(retString.empty())
@@ -165,12 +166,9 @@ void SelectPathWidgetBase::HandlePathSelected(DAVA::String name)
 
 void SelectPathWidgetBase::setText(const QString& filePath)
 {
-    if(filePath != text())
-    {
-        QLineEdit::setText(filePath);
-        setToolTip(filePath);
-        emit PathSelected(filePath.toStdString());
-    }
+    QLineEdit::setText(filePath);
+    setToolTip(filePath);
+    emit PathSelected(filePath.toStdString());
 }
 
 void SelectPathWidgetBase::setText(const DAVA::String &filePath)
@@ -230,17 +228,24 @@ void SelectPathWidgetBase::dropEvent(QDropEvent* event)
 		setText(itemName);
 	}
 	
-	event->acceptProposedAction();
+    event->setDropAction(Qt::LinkAction);
+    event->accept();
 }
 
 void SelectPathWidgetBase::dragEnterEvent(QDragEnterEvent* event)
 {
+    event->setDropAction(Qt::LinkAction);
 	if(DAVA::MimeDataHelper::IsMimeDataTypeSupported(event->mimeData()))
 	{
-		event->acceptProposedAction();
+        event->accept();
 	}
 }
 
+void SelectPathWidgetBase::dragMoveEvent(QDragMoveEvent* event)
+{
+    event->setDropAction(Qt::LinkAction);
+    event->accept();
+}
 
 bool SelectPathWidgetBase::IsOpenButtonVisible() const
 {

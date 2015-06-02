@@ -128,7 +128,7 @@ ModifyCustomColorsCommand::ModifyCustomColorsCommand(Image* originalImage,
 	this->updatedRect = updatedRect;
 	this->customColorsProxy = SafeRetain(customColorsProxy);
 	
-	Image* currentImage = customColorsProxy->GetSprite()->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+	Image* currentImage = customColorsProxy->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
 	
 	undoImage = Image::CopyImageRegion(originalImage, updatedRect);
 	redoImage = Image::CopyImageRegion(currentImage, updatedRect);
@@ -157,29 +157,18 @@ void ModifyCustomColorsCommand::Redo()
 
 void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
 {
-	Sprite* customColorsSprite = customColorsProxy->GetSprite();
-	
+	Texture* customColorsTarget = customColorsProxy->GetTexture();
 	Texture* texture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
 											   image->GetWidth(), image->GetHeight(), false);
-	Sprite* sprite = Sprite::CreateFromTexture(texture, 0, 0, (float32)texture->GetWidth(), (float32)texture->GetHeight());
 	
-	RenderManager::Instance()->SetRenderTarget(customColorsSprite);
-	
-    Rect rect = ConvertPhysicalToVirtual(updatedRect);
-    
-	RenderManager::Instance()->ClipPush();
-	RenderManager::Instance()->SetClip(rect);
-
-    Sprite::DrawState drawState;
-    drawState.SetPosition(rect.x, rect.y);
-	sprite->Draw(&drawState);
-	
-	RenderManager::Instance()->ClipPop();
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderHelper::Instance()->Set2DRenderTarget(customColorsTarget);
+    RenderManager::Instance()->SetClip(updatedRect);
+    RenderHelper::Instance()->DrawTexture(texture, RenderState::RENDERSTATE_2D_BLEND, updatedRect);
+    RenderManager::Instance()->SetClip(Rect(0.f, 0.f, -1.f, -1.f));
+    RenderManager::Instance()->SetRenderTarget(0);
 	
 	customColorsProxy->UpdateRect(updatedRect);
 	
-	SafeRelease(sprite);
 	SafeRelease(texture);
 }
 

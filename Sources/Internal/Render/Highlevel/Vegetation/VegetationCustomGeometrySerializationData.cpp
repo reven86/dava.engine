@@ -156,12 +156,12 @@ void VegetationCustomGeometrySerializationData::Load(Vector<NMaterial*>& materia
 
 uint32 VegetationCustomGeometrySerializationData::GetLayerCount() const
 {
-    return materials.size();
+    return static_cast<uint32>(materials.size());
 }
 
 uint32 VegetationCustomGeometrySerializationData::GetLodCount(uint32 layerIndex) const
 {
-    return positions[layerIndex].size();
+    return static_cast<uint32>(positions[layerIndex].size());
 }
 
 NMaterial* VegetationCustomGeometrySerializationData::GetMaterial(uint32 layerIndex)
@@ -189,18 +189,18 @@ Vector<VegetationIndex>& VegetationCustomGeometrySerializationData::GetIndices(u
     return indices[layerIndex][lodIndex];
 }
 
-Entity* VegetationCustomGeometrySerializationDataReader::SelectDataVariation(Entity* rootNode)
+VegetationCustomGeometrySerializationDataPtr VegetationCustomGeometrySerializationDataReader::ReadScene(const FilePath& scenePath)
 {
-    return rootNode->FindByName(VEGETATION_ENTITY_VARIATION_0);
-}
+    VegetationCustomGeometrySerializationDataPtr result;
 
-
-VegetationCustomGeometrySerializationData* VegetationCustomGeometrySerializationDataReader::ReadScene(const FilePath& scenePath)
-{
-    Scene* scene = new Scene();
-    Entity* entity = scene->GetRootNode(scenePath);
+    ScopedPtr<Scene> scene(new Scene);
+    Entity* sceneRootNode = scene->GetRootNode(scenePath);
     
-    DVASSERT(entity && "Cannot load custom geometry scene specified!");
+    if (!sceneRootNode)
+    {
+        Logger::Error("Cannot load custom geometry scene specified");
+        return result;
+    }
     
     Vector<NMaterial*> materialsData;
     Vector<Vector<Vector<Vector3> > > positionLods;
@@ -208,133 +208,124 @@ VegetationCustomGeometrySerializationData* VegetationCustomGeometrySerialization
     Vector<Vector<Vector<Vector3> > > normalLods;
     Vector<Vector<Vector<VegetationIndex> > > indexLods;
     
-    if(entity)
+    //VI: wait for all scene objects to initialize
+    //VI: in order to avoid crashes when scene released
+    JobManager::Instance()->WaitMainJobs();
+
+    Entity* currentVariation = sceneRootNode->FindByName(VEGETATION_ENTITY_VARIATION_0);
+    if (!currentVariation)
     {
-        //VI: wait for all scene objects to initialize
-        //VI: in order to avoid crashes when scene released
-        ThreadIdJobWaiter waiter(Thread::GetCurrentThreadId());
-        waiter.Wait();
-        
-        Entity* currentVariation = SelectDataVariation(entity);
-        DVASSERT(currentVariation && "Invalid scene structure: variations!");
-        
-        if(currentVariation)
+        Logger::Error("Invalid scene structure: variations!");
+        return result;
+    }
+
+    uint32 layerCount = COUNT_OF(VEGETATION_ENTITY_LAYER_NAMES);
+    for (uint32 layerIndex = 0; layerIndex < layerCount; ++layerIndex)
+    {
+        Entity* layerEntity = currentVariation->FindByName(VEGETATION_ENTITY_LAYER_NAMES[layerIndex]);
+        if (!layerEntity)
         {
-            uint32 layerCount = COUNT_OF(VEGETATION_ENTITY_LAYER_NAMES);
-            for(uint32 layerIndex = 0; layerIndex < layerCount; ++layerIndex)
+            Logger::Error("Invalid scene structure: layers!");
+            return result;
+        }
+
+        positionLods.push_back(Vector<Vector<Vector3> >());
+        texCoordLods.push_back(Vector<Vector<Vector2> >());
+        normalLods.push_back(Vector<Vector<Vector3> >());
+        indexLods.push_back(Vector<Vector<VegetationIndex> >());
+
+        Vector<Vector<Vector3> >& layerPositions = positionLods[positionLods.size() - 1];
+        Vector<Vector<Vector2> >& layerTexCoords = texCoordLods[texCoordLods.size() - 1];
+        Vector<Vector<Vector3> >& layerNormals = normalLods[normalLods.size() - 1];
+        Vector<Vector<VegetationIndex> >& layerIndices = indexLods[indexLods.size() - 1];
+
+        RenderObject* ro = GetRenderObject(layerEntity);
+        if (!ro)
+        {
+            Logger::Error("Invalid scene structure: no render object!");
+            return result;
+        }
+
+        uint32 renderBatchCount = ro->GetRenderBatchCount();
+        if (!ro->GetRenderBatchCount())
+        {
+            Logger::Error("Invalid scene structure: no render batches!");
+            return result;
+        }
+
+        NMaterial* parentMaterial = ro->GetRenderBatch(0)->GetMaterial()->GetParent();
+
+        materialsData.push_back(parentMaterial);
+
+
+        for (uint32 resolutionIndex = 0;
+            resolutionIndex < renderBatchCount;
+            resolutionIndex++)
+        {
+            RenderBatch* rb = ro->GetRenderBatch(resolutionIndex);
+            DVASSERT(rb);
+
+            PolygonGroup* pg = rb->GetPolygonGroup();
+
+            DVASSERT(pg);
+
+            layerPositions.push_back(Vector<Vector3>());
+            layerTexCoords.push_back(Vector<Vector2>());
+            layerNormals.push_back(Vector<Vector3>());
+            layerIndices.push_back(Vector<VegetationIndex>());
+
+            Vector<Vector3>& positions = layerPositions[layerPositions.size() - 1];
+            Vector<Vector2>& texCoords = layerTexCoords[layerTexCoords.size() - 1];
+            Vector<Vector3>& normals = layerNormals[layerNormals.size() - 1];
+            Vector<VegetationIndex>& indices = layerIndices[layerIndices.size() - 1];
+
+            int32 vertexFormat = pg->GetFormat();
+            DVASSERT((vertexFormat & EVF_VERTEX) != 0);
+
+            uint32 vertexCount = pg->GetVertexCount();
+            for (uint32 vertexIndex = 0;
+                vertexIndex < vertexCount;
+                ++vertexIndex)
             {
-                Entity* layerEntity = currentVariation->FindByName(VEGETATION_ENTITY_LAYER_NAMES[layerIndex]);
-                
-                DVASSERT(layerEntity && "Invalid scene structure: layers!");
-                
-                positionLods.push_back(Vector<Vector<Vector3> >());
-                texCoordLods.push_back(Vector<Vector<Vector2> >());
-                normalLods.push_back(Vector<Vector<Vector3> >());
-                indexLods.push_back(Vector<Vector<VegetationIndex> >());
-                
-                Vector<Vector<Vector3> >& layerPositions = positionLods[positionLods.size() - 1];
-                Vector<Vector<Vector2> >& layerTexCoords = texCoordLods[texCoordLods.size() - 1];
-                Vector<Vector<Vector3> >& layerNormals = normalLods[normalLods.size() - 1];
-                Vector<Vector<VegetationIndex> >& layerIndices = indexLods[indexLods.size() - 1];
-                
-                if(layerEntity)
+                Vector3 coord;
+                pg->GetCoord(vertexIndex, coord);
+
+                Vector3 normal;
+                if ((vertexFormat & EVF_NORMAL) != 0)
                 {
-                    RenderComponent* rc = GetRenderComponent(layerEntity);
-                    DVASSERT(rc && "Invalid scene structure: no render component!");
-                    
-                    if(rc)
-                    {
-                        RenderObject* ro = rc->GetRenderObject();
-                        DVASSERT(ro && "Invalid scene structure: no render object!");
-                        
-                        if(ro)
-                        {
-                            DVASSERT(ro->GetRenderBatchCount() > 0 && "Invalid scene structure: no render batches!");
-                            
-                            uint32 renderBatchCount = ro->GetRenderBatchCount();
-                            if(renderBatchCount > 0)
-                            {
-                                NMaterial* parentMaterial = ro->GetRenderBatch(0)->GetMaterial()->GetParent();
-                                
-                                materialsData.push_back(parentMaterial);
-                                
-                                
-                                for(uint32 resolutionIndex = 0;
-                                    resolutionIndex < renderBatchCount;
-                                    resolutionIndex++)
-                                {
-                                    RenderBatch* rb = ro->GetRenderBatch(resolutionIndex);
-                                    
-                                    DVASSERT(rb);
-                                    
-                                    PolygonGroup* pg = rb->GetPolygonGroup();
-                                    
-                                    DVASSERT(pg);
-                                    
-                                    layerPositions.push_back(Vector<Vector3>());
-                                    layerTexCoords.push_back(Vector<Vector2>());
-                                    layerNormals.push_back(Vector<Vector3>());
-                                    layerIndices.push_back(Vector<VegetationIndex>());
-                                    
-                                    Vector<Vector3>& positions = layerPositions[layerPositions.size() - 1];
-                                    Vector<Vector2>& texCoords = layerTexCoords[layerTexCoords.size() - 1];
-                                    Vector<Vector3>& normals = layerNormals[layerNormals.size() - 1];
-                                    Vector<VegetationIndex>& indices = layerIndices[layerIndices.size() - 1];
-                                    
-                                    int32 vertexFormat = pg->GetFormat();
-                                    DVASSERT((vertexFormat & EVF_VERTEX) != 0);
-                                    
-                                    uint32 vertexCount = pg->GetVertexCount();
-                                    for(uint32 vertexIndex = 0;
-                                        vertexIndex < vertexCount;
-                                        ++vertexIndex)
-                                    {
-                                        Vector3 coord;
-                                        pg->GetCoord(vertexIndex, coord);
-                                        
-                                        Vector3 normal;
-                                        if((vertexFormat & EVF_NORMAL) != 0)
-                                        {
-                                            pg->GetNormal(vertexIndex, normal);
-                                        }
-                                        
-                                        Vector2 texCoord;
-                                        if((vertexFormat & EVF_TEXCOORD0) != 0)
-                                        {
-                                            pg->GetTexcoord(0, vertexIndex, texCoord);
-                                        }
-                                        
-                                        positions.push_back(coord);
-                                        normals.push_back(normal);
-                                        texCoords.push_back(texCoord);
-                                    }
-                                    
-                                    uint32 indexCount = pg->GetIndexCount();
-                                    for(uint32 indexIndex = 0;
-                                        indexIndex < indexCount;
-                                        ++indexIndex)
-                                    {
-                                        int32 currentIndex = 0;
-                                        pg->GetIndex(indexIndex, currentIndex);
-                                        
-                                        indices.push_back(currentIndex);
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    pg->GetNormal(vertexIndex, normal);
                 }
+
+                Vector2 texCoord;
+                if ((vertexFormat & EVF_TEXCOORD0) != 0)
+                {
+                    pg->GetTexcoord(0, vertexIndex, texCoord);
+                }
+
+                positions.push_back(coord);
+                normals.push_back(normal);
+                texCoords.push_back(texCoord);
+            }
+
+            uint32 indexCount = pg->GetIndexCount();
+            for (uint32 indexIndex = 0;
+                indexIndex < indexCount;
+                ++indexIndex)
+            {
+                int32 currentIndex = 0;
+                pg->GetIndex(indexIndex, currentIndex);
+
+                indices.push_back(currentIndex);
             }
         }
     }
     
-    VegetationCustomGeometrySerializationData* result = new VegetationCustomGeometrySerializationData(materialsData,
-                                                                                                      positionLods,
-                                                                                                      texCoordLods,
-                                                                                                      normalLods,
-                                                                                                      indexLods);
-    
-    SafeRelease(scene);
+    result.reset(new VegetationCustomGeometrySerializationData(
+        materialsData,
+        positionLods,
+        texCoordLods,
+        normalLods,
+        indexLods));
     
     return result;
 }

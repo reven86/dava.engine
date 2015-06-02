@@ -77,16 +77,14 @@ void UndoRedoController::AddCommandToUndoStack(BaseCommand* command)
 	}
     
     HierarchyTreeNode::HIERARCHYTREENODEID idScreen = GetCurrentScreenId();
-    Deque<BaseCommand*> undoStack = undoStacks[idScreen];
-    Deque<BaseCommand*> redoStack = redoStacks[idScreen];
+    Deque<BaseCommand*>& undoStack = undoStacks[idScreen];
+    Deque<BaseCommand*>& redoStack = redoStacks[idScreen];
     
 	SafeRetain(command);
 	AddCommandToStack(undoStack, command);
 	
 	// Adding the Undo command should cleanup the Redo stack.
 	CleanupStack(redoStack);
-    undoStacks[idScreen] = undoStack;
-    redoStacks[idScreen] = redoStack;
 }
 
 bool UndoRedoController::Undo()
@@ -97,10 +95,9 @@ bool UndoRedoController::Undo()
 	}
 	
     HierarchyTreeNode::HIERARCHYTREENODEID idScreen = GetCurrentScreenId();
-    Deque<BaseCommand*> undoStack = undoStacks[idScreen];
-    Deque<BaseCommand*> redoStack = redoStacks[idScreen];
+    Deque<BaseCommand*>& undoStack = undoStacks[idScreen];
+    Deque<BaseCommand*>& redoStack = redoStacks[idScreen];
 
-    
 	BaseCommand* command = undoStack.front();
 	AddCommandToStack(redoStack, command);
 	undoStack.pop_front();
@@ -108,8 +105,6 @@ bool UndoRedoController::Undo()
 	command->ActivateCommandScreen();
 	command->Rollback();
     
-    undoStacks[idScreen] = undoStack;
-    redoStacks[idScreen] = redoStack;
 	return true;
 }
 
@@ -122,8 +117,8 @@ bool UndoRedoController::Redo()
 	}
 	
     HierarchyTreeNode::HIERARCHYTREENODEID idScreen = GetCurrentScreenId();
-    Deque<BaseCommand*> undoStack = undoStacks[idScreen];
-    Deque<BaseCommand*> redoStack = redoStacks[idScreen];
+    Deque<BaseCommand*>& undoStack = undoStacks[idScreen];
+    Deque<BaseCommand*>& redoStack = redoStacks[idScreen];
 
     
 	BaseCommand* command = redoStack.front();
@@ -133,8 +128,6 @@ bool UndoRedoController::Redo()
 	command->ActivateCommandScreen();
 	command->Execute();
     
-    undoStacks[idScreen] = undoStack;
-    redoStacks[idScreen] = redoStack;
 	return true;
 }
 

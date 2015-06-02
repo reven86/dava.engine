@@ -35,38 +35,39 @@
 
 namespace DAVA 
 {
-    
+
 PolygonGroup::PolygonGroup()
 :	DataNode(),
     vertexCount(0),
-	indexCount(0),
-	textureCoordCount(0),
-	cubeTextureCoordCount(0),
-	vertexStride(0),
-	vertexFormat(0),
+    indexCount(0),
+    textureCoordCount(0),
+    vertexStride(0),
+    vertexFormat(0),
     indexFormat(EIF_16),
-	triangleCount(0),
+    triangleCount(0),
+    primitiveType(PRIMITIVETYPE_TRIANGLELIST),
+    cubeTextureCoordCount(0),
+
+    vertexArray(0),
+    textureCoordArray(0),
+    normalArray(0),
+    tangentArray(0),
+    binormalArray(0),
+    jointIdxArray(0),
+    jointWeightArray(0),
+    cubeTextureCoordArray(0),
+    jointCountArray(0),
 	
-	vertexArray(0), 
-	textureCoordArray(0),
-	cubeTextureCoordArray(0),
-	normalArray(0), 
-	tangentArray(0),
-	binormalArray(0),
-	jointIdxArray(0),
-	weightArray(0),
-	jointCountArray(0),
-	
+    pivotArray(0),
     flexArray(0),
     angleArray(0),
-    pivotArray(0),
 
-	colorArray(0), 
-	indexArray(0), 
-	meshData(0),
-	baseVertexArray(0),
-    renderDataObject(0),
-    primitiveType(PRIMITIVETYPE_TRIANGLELIST)
+    colorArray(0),
+    indexArray(0),
+    meshData(0),
+
+    baseVertexArray(0),
+    renderDataObject(0)
 {
 }
 
@@ -140,15 +141,23 @@ void PolygonGroup::UpdateDataPointersAndStreams()
 		baseShift += GetVertexSize(EVF_BINORMAL);
         
         renderDataObject->SetStream(EVF_BINORMAL, TYPE_FLOAT, 3, vertexStride, binormalArray);
-	}
+    }
+    if (vertexFormat & EVF_JOINTINDEX)
+    {
+        jointIdxArray = reinterpret_cast<uint32*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_JOINTINDEX);
+
+        renderDataObject->SetStream(EVF_JOINTINDEX , TYPE_UNSIGNED_BYTE, 4, vertexStride, jointIdxArray);
+
+        SafeDeleteArray(jointCountArray);
+        jointCountArray = new int32[vertexCount];
+    }
 	if (vertexFormat & EVF_JOINTWEIGHT)
 	{
-		jointIdxArray = reinterpret_cast<int32*>(meshData + baseShift);
-		weightArray = reinterpret_cast<float32*>(meshData + baseShift + 4 * 4);
+		jointWeightArray = reinterpret_cast<uint32*>(meshData + baseShift);
 		baseShift += GetVertexSize(EVF_JOINTWEIGHT);
 		
-		SafeDeleteArray(jointCountArray);
-		jointCountArray = new int32[vertexCount];
+        renderDataObject->SetStream(EVF_JOINTWEIGHT , TYPE_UNSIGNED_BYTE, 4, vertexStride, jointWeightArray);
 	}
 	if (vertexFormat & EVF_CUBETEXCOORD0)
 	{
@@ -439,14 +448,51 @@ void PolygonGroup::ReleaseData()
     SafeDeleteArray(textureCoordArray);
 	SafeDeleteArray(cubeTextureCoordArray);
 }
+
+uint32 PolygonGroup::ReleaseGeometryData()
+{
+    if (meshData)
+    {
+        SafeDeleteArray(jointCountArray);
+        SafeDeleteArray(meshData);
+        SafeDeleteArray(indexArray);
+        SafeDeleteArray(textureCoordArray);
+        SafeDeleteArray(cubeTextureCoordArray);
+
+        vertexArray = nullptr;
+        textureCoordArray = nullptr;
+        normalArray = nullptr;
+        tangentArray = nullptr;
+        binormalArray = nullptr;
+        jointIdxArray = nullptr;
+        jointWeightArray = nullptr;
+        cubeTextureCoordArray = nullptr;
+        jointCountArray = nullptr;
 	
+        pivotArray = nullptr;
+        flexArray = nullptr;
+        angleArray = nullptr;
+
+        colorArray = nullptr;
+        indexArray = nullptr;
+        meshData = nullptr;
+
+        uint32 ret = vertexStride * vertexCount; //released vertex bytes
+        ret += indexCount * INDEX_FORMAT_SIZE[indexFormat]; //released index bytes
+
+        return ret;
+    }
+
+    return 0;
+}
+
 void PolygonGroup::BuildBuffers()
 {
     UpdateDataPointersAndStreams();
-    JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &PolygonGroup::BuildBuffersInternal));
+	JobManager::Instance()->CreateMainJob(MakeFunction(PointerWrapper<PolygonGroup>::WrapRetainRelease(this), &PolygonGroup::BuildBuffersInternal));
 };
     
-void PolygonGroup::BuildBuffersInternal(BaseObject * caller, void * param, void *callerData)
+void PolygonGroup::BuildBuffersInternal()
 {
     DVASSERT(Thread::IsMainThread());    
     
@@ -653,7 +699,7 @@ bool PolygonGroup::IsFloatDataEqual(const float32 ** meshData, const float32 ** 
 	
 int32 PolygonGroup::OptimazeVertexes(const uint8 * meshData, Vector<uint8> & optMeshData, uint32 vertexFormat) const
 {
-	uint32 optimizedVertexCount = optMeshData.size() / GetVertexSize(vertexFormat);
+	uint32 optimizedVertexCount = static_cast<uint32>(optMeshData.size() / GetVertexSize(vertexFormat));
 
 	for (uint32 i = 0; i < optimizedVertexCount; ++i)
 	{
@@ -712,7 +758,7 @@ void PolygonGroup::OptimizeVertices(uint32 newVertexFormat, float32 eplison)
 		}
 	}
 
-	uint32 newVertexCount = optMeshData.size() / GetVertexSize(newVertexFormat);
+	uint32 newVertexCount = static_cast<uint32>(optMeshData.size() / GetVertexSize(newVertexFormat));
 	
 	SAFE_DELETE_ARRAY(meshData);
 	SAFE_DELETE_ARRAY(newMeshData);

@@ -1,28 +1,44 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "WebViewControliOS.h"
 #include "DAVAEngine.h"
 
 #import <UIKit/UIKit.h>
-#import <HelperAppDelegate.h>
+#import <Platform/TemplateiOS/HelperAppDelegate.h>
+#import "Platform/TemplateiOS/BackgroundView.h"
 
 @interface WebViewURLDelegate : NSObject<UIWebViewDelegate>
 {
 	DAVA::IUIWebViewDelegate* delegate;
 	DAVA::UIWebView* webView;
+    DAVA::WebViewControl* webViewControl;
 }
 
 - (id)init;
@@ -35,7 +51,10 @@
 - (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error;
 - (void)leftGesture;
 - (void)rightGesture;
-
+- (UIImage *)renderUIViewToImage:(UIView *)view;
+- (void)setDAVAUIWebView:(DAVA::UIWebView*) uiWebControl;
+- (void)onExecuteJScript:(NSArray *)result;
+- (void)setDAVAWebViewControl:(DAVA::WebViewControl*) webViewControl;
 @end
 
 @implementation WebViewURLDelegate
@@ -45,8 +64,9 @@
 	self = [super init];
 	if (self)
 	{
-		delegate = NULL;
-		webView = NULL;
+		delegate = nullptr;
+		webView = nullptr;
+        webViewControl = nullptr;
 	}
 	return self;
 }
@@ -115,8 +135,17 @@
 }
 
 
-- (void)webViewDidFinishLoad:(UIWebView *)webView
+- (void)webViewDidFinishLoad:(UIWebView *)webViewParam
 {
+    DVASSERT(webViewControl);
+    DVASSERT(webView);
+    
+    if (webViewControl->IsRenderToTexture())
+    {
+        webViewControl->RenderToTextureAndSetAsBackgroundSpriteToControl(
+                                                                    *webView);
+    }
+    
     if (delegate && self->webView)
 	{
         delegate->PageLoaded(self->webView);
@@ -131,7 +160,154 @@
     }
 }
 
+- (UIImage *)renderUIViewToImage:(UIView *)view
+{
+    void* image = DAVA::WebViewControl::RenderIOSUIViewToImage(view);
+    DVASSERT(image);
+    UIImage* uiImage = static_cast<UIImage*>(image);
+    return uiImage;
+}
+
+- (void)onExecuteJScript:(NSString *)result
+{
+    if (delegate)
+    {
+        delegate->OnExecuteJScript(webView, DAVA::String([result UTF8String]));
+    }
+}
+
+- (void)setDAVAUIWebView:(DAVA::UIWebView*) uiWebControl
+{
+    DVASSERT(uiWebControl);
+    webView = uiWebControl;
+}
+
+- (void)setDAVAWebViewControl:(DAVA::WebViewControl*) control
+{
+    DVASSERT(control);
+    webViewControl = control;
+}
+
 @end
+
+DAVA::WebViewControl::WebViewControl(DAVA::UIWebView& uiWeb):
+    webViewPtr(0),
+    webViewURLDelegatePtr(0),
+    rightSwipeGesturePtr(0),
+    leftSwipeGesturePtr(0),
+    gesturesEnabled(false),
+    isRenderToTexture(false),
+    isVisible(true),
+    uiWebView(uiWeb)
+{
+    HelperAppDelegate* appDelegate = [[UIApplication sharedApplication]
+                                                                    delegate];
+    BackgroundView* backgroundView = [appDelegate glController].backgroundView;
+    
+    ::UIWebView* localWebView = [backgroundView CreateWebView];
+    webViewPtr = localWebView;
+    
+    CGRect emptyRect = CGRectMake(0.0f, 0.0f, 0.0f, 0.0f);
+    [localWebView setFrame:emptyRect];
+    
+    SetBounces(false);
+    
+    webViewURLDelegatePtr = [[WebViewURLDelegate alloc] init];
+    WebViewURLDelegate* viewURLDelegate =
+                            (WebViewURLDelegate*)webViewURLDelegatePtr;
+    [localWebView setDelegate:viewURLDelegate];
+    [viewURLDelegate setDAVAUIWebView:&uiWebView];
+    [viewURLDelegate setDAVAWebViewControl:this];
+    
+    [localWebView becomeFirstResponder];
+}
+
+void* DAVA::WebViewControl::RenderIOSUIViewToImage(void* uiviewPtr)
+{
+    ::UIView* view = static_cast<::UIView*>(uiviewPtr);
+    DVASSERT(view);
+    DAVA::float32 scale = DAVA::Core::Instance()->GetScreenScaleFactor();
+    
+    size_t w = view.frame.size.width * scale;
+    size_t h = view.frame.size.height * scale;
+    
+    UIGraphicsBeginImageContextWithOptions(CGSizeMake(w, h), NO, scale);
+    CGRect rect = CGRectMake(0, 0, w, h);
+    [view drawViewHierarchyInRect:rect afterScreenUpdates:YES];
+    
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    DVASSERT(image);
+    return image;
+}
+
+void DAVA::WebViewControl::SetImageAsSpriteToControl(void* imagePtr, UIControl& control)
+{
+    ::UIImage* image = static_cast<::UIImage*>(imagePtr);
+    DVASSERT(image);
+    // copy image into our buffer with bitmap context
+    // TODO create fucntion static void copyImageToTexture(UIControl& control, ::UIImage* image
+    CGImageRef imageRef = [image CGImage];
+    DAVA::int32 width = static_cast<DAVA::int32>(CGImageGetWidth(imageRef));
+    DAVA::int32 height = static_cast<DAVA::int32>(CGImageGetHeight(imageRef));
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    
+    {
+        DAVA::Image* imageRGB = DAVA::Image::Create(width, height,
+                                                    DAVA::FORMAT_RGBA8888);
+        DVASSERT(imageRGB);
+        
+        DAVA::uint8 *rawData = imageRGB->GetData();
+        
+        NSUInteger bytesPerPixel = 4;
+        NSUInteger bytesPerRow = bytesPerPixel * width;
+        NSUInteger bitsPerComponent = 8;
+        
+        // this way we can copy image from system memory into our buffer
+        
+        CGContextRef context = CGBitmapContextCreate(rawData, width, height,
+                                                     bitsPerComponent, bytesPerRow, colorSpace,
+                                                     kCGImageAlphaPremultipliedLast
+                                                     | kCGBitmapByteOrder32Big);
+        CGColorSpaceRelease(colorSpace);
+        
+        CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
+        CGContextRelease(context);
+        
+        {
+            DAVA::Texture* tex = DAVA::Texture::CreateFromData(imageRGB, false);
+            DVASSERT(tex);
+            
+            DAVA::Rect rect = control.GetRect();
+            {
+                DAVA::Sprite* spr = DAVA::Sprite::CreateFromTexture(tex, 0, 0, width, height, rect.dx, rect.dy);
+                DVASSERT(spr);
+                
+                control.GetBackground()->SetSprite(spr, 0);
+                DAVA::SafeRelease(spr);
+            }
+            DAVA::SafeRelease(tex);
+        }
+        DAVA::SafeRelease(imageRGB);
+    }
+}
+
+void DAVA::WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(
+                                            DAVA::UIWebView& control)
+{
+    WebViewURLDelegate* webURLDelegate =
+                (WebViewURLDelegate*)webViewURLDelegatePtr;
+    DVASSERT(webURLDelegate);
+    
+    ::UIWebView* iosWebView = (::UIWebView*)webViewPtr;
+    DVASSERT(iosWebView);
+    
+    
+    UIImage* image = [webURLDelegate renderUIViewToImage:iosWebView];
+    DVASSERT(image);
+    
+    WebViewControl::SetImageAsSpriteToControl(image, control);
+}
 
 namespace DAVA
 {
@@ -156,33 +332,25 @@ namespace DAVA
         {DAVAWebView::DATA_DETECTOR_CALENDAR_EVENTS, UIDataDetectorTypeCalendarEvent}
     };
 
-WebViewControl::WebViewControl()
-{
-    gesturesEnabled = false;
-    CGRect emptyRect = CGRectMake(0.0f, 0.0f, 0.0f, 0.0f);
-    webViewPtr = [[UIWebView alloc] initWithFrame:emptyRect];
-    SetBounces(false);
 
-	UIWebView* localWebView = (UIWebView*)webViewPtr;
-	HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-	[[appDelegate glController].backgroundView addSubview:localWebView];
-
-    webViewURLDelegatePtr = [[WebViewURLDelegate alloc] init];
-    [localWebView setDelegate:(WebViewURLDelegate*)webViewURLDelegatePtr];
-
-    [localWebView becomeFirstResponder];
- }
 
 WebViewControl::~WebViewControl()
 {
     SetGestures(NO);
 	UIWebView* innerWebView = (UIWebView*)webViewPtr;
 
+    
     [innerWebView setDelegate:nil];
     [innerWebView stopLoading];
     [innerWebView loadHTMLString:@"" baseURL:nil];
-	[innerWebView removeFromSuperview];
-	[innerWebView release];
+    
+    [innerWebView resignFirstResponder];
+
+    
+    HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
+    BackgroundView* backgroundView = [appDelegate glController].backgroundView;
+    [backgroundView ReleaseWebView:innerWebView];
+    
 	webViewPtr = nil;
 
 	WebViewURLDelegate* w = (WebViewURLDelegate*)webViewURLDelegatePtr;
@@ -218,32 +386,109 @@ void WebViewControl::OpenURL(const String& urlToOpen)
 void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)
 {
 	NSString* dataToOpen = [NSString stringWithUTF8String:string.c_str()];
-    NSString* baseUrl = [NSString stringWithUTF8String:basePath.GetAbsolutePathname().c_str()];
+    NSString* baseUrl = [NSString stringWithUTF8String:basePath.AsURL().c_str()];
     
     UIWebView* innerWebView = (UIWebView*)webViewPtr;
     [innerWebView stopLoading];
     
-    [innerWebView loadHTMLString:dataToOpen baseURL:[NSURL fileURLWithPath:baseUrl]];
+    [innerWebView loadHTMLString:dataToOpen baseURL:[NSURL URLWithString:baseUrl]];
+}
+
+void WebViewControl::LoadHtmlString(const WideString& htlmString)
+{
+	NSString* htmlPageToLoad = [[[NSString alloc] initWithBytes: htlmString.data()
+												   length: htlmString.size() * sizeof(wchar_t)
+												 encoding:NSUTF32LittleEndianStringEncoding] autorelease];
+
+    [(UIWebView*)webViewPtr loadHTMLString:htmlPageToLoad baseURL:nil];
+}
+
+void WebViewControl::DeleteCookies(const String& targetUrl)
+{
+	NSString *targetUrlString = [NSString stringWithUTF8String:targetUrl.c_str()];
+	NSHTTPCookieStorage* cookies = [NSHTTPCookieStorage sharedHTTPCookieStorage];
+	// Delete all cookies for specified URL
+	for(NSHTTPCookie *cookie in [cookies cookies])
+	{
+		if([[cookie domain] rangeOfString:targetUrlString].location != NSNotFound)
+	  	{
+       		[cookies deleteCookie:cookie];
+   	 	}
+	}
+	// Syncronized all changes with file system
+	[[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+String WebViewControl::GetCookie(const String& targetUrl, const String& name) const
+{
+	Map<String, String> cookiesMap = GetCookies(targetUrl);
+	Map<String, String>::iterator cIter = cookiesMap.find(name);
+	
+	if (cIter != cookiesMap.end())
+	{
+		return cIter->second;
+	}
+
+	return String();
+}
+
+Map<String, String> WebViewControl::GetCookies(const String& targetUrl) const
+{
+	Map<String, String> resultMap;
+	
+	NSString *targetUrlString = [NSString stringWithUTF8String:targetUrl.c_str()];
+    NSArray  *cookiesArray = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL: [NSURL URLWithString:targetUrlString]];
+
+	for(NSHTTPCookie * cookie in cookiesArray)
+	{
+		String cookieName = [[cookie name] UTF8String];
+		resultMap[cookieName] = [[cookie value] UTF8String];
+    }
+	
+	return resultMap;
+}
+
+void WebViewControl::ExecuteJScript(const String& scriptString)
+{
+	NSString *jScriptString = [NSString stringWithUTF8String:
+                                                scriptString.c_str()];
+    
+	NSString *resultString = [(UIWebView*)webViewPtr
+                        stringByEvaluatingJavaScriptFromString:jScriptString];
+
+    WebViewURLDelegate* w = (WebViewURLDelegate*)webViewURLDelegatePtr;
+    if (w)
+    {
+        [w performSelector:@selector(onExecuteJScript:)
+                withObject:resultString afterDelay:0.0];
+    }
 }
 
 void WebViewControl::SetRect(const Rect& rect)
 {
 	CGRect webViewRect = [(UIWebView*)webViewPtr frame];
 
-	
-    // Minimum recalculations are needed, no swapping, no rotation.
-    webViewRect.origin.x = rect.x * DAVA::Core::GetVirtualToPhysicalFactor();
-    webViewRect.origin.y = rect.y * DAVA::Core::GetVirtualToPhysicalFactor();
-			
-    webViewRect.size.width = rect.dx * DAVA::Core::GetVirtualToPhysicalFactor();
-    webViewRect.size.height = rect.dy * DAVA::Core::GetVirtualToPhysicalFactor();
+    VirtualCoordinatesSystem& VCS = *VirtualCoordinatesSystem::Instance();
+    
+    Rect physicalRect = VCS.ConvertVirtualToPhysical(rect);
+    
+    webViewRect.origin.x = physicalRect.x + VCS.GetPhysicalDrawOffset().x;
+    webViewRect.origin.y = physicalRect.y + VCS.GetPhysicalDrawOffset().y;
+    
+    if (isRenderToTexture)
+    {
+        const int32 offScreenPos = -10000;
+        // on iOS just move window away and we can render it into our texture
+        // if we will add/remove to view hierarchy - bug with memory
+        // if we hide windows render to texture - always blank texture
+        webViewRect.origin.x = offScreenPos;
+    }
 
-    webViewRect.origin.x += Core::Instance()->GetPhysicalDrawOffset().x;
-    webViewRect.origin.y += Core::Instance()->GetPhysicalDrawOffset().y;
-
+    webViewRect.size.width = physicalRect.dx;
+    webViewRect.size.height = physicalRect.dy;
 	
 	// Apply the Retina scale divider, if any.
-	float scaleDivider = GetScaleDivider();
+    DAVA::float32 scaleDivider = Core::Instance()->GetScreenScaleFactor();
 	webViewRect.origin.x /= scaleDivider;
 	webViewRect.origin.y /= scaleDivider;
 	webViewRect.size.height /= scaleDivider;
@@ -254,22 +499,34 @@ void WebViewControl::SetRect(const Rect& rect)
 
 void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 {
-	[(UIWebView*)webViewPtr setHidden:!isVisible];
+    this->isVisible = isVisible;
+    
+    if (isRenderToTexture)
+    {
+        DAVA::Rect r = uiWebView.GetRect();
+        SetRect(r);
+    }
+    else
+    {
+        if(!isVisible)
+        {
+            [(UIWebView *) webViewPtr setHidden:YES];
+        }
+        else
+        {
+            // if we wan't native control to become invisible we ca do it immidiatly
+            // during update process. But when we want it to be visible, it can't be shown
+            // immidiatly, because is cases, when current Update() takes a lot of time and
+            // user will see native webview over old frame during all that time. This can
+            // be treat as webview blinking, so we should care abot it. We will show webview
+            // in next Draw call.
+        }
+    }
 }
 
-float WebViewControl::GetScaleDivider()
+void WebViewControl::SetScalesPageToFit(bool isScalesToFit)
 {
-    float scaleDivider = 1.f;
-    if (DAVA::Core::IsAutodetectContentScaleFactor())
-    {
-        if ([UIScreen instancesRespondToSelector: @selector(scale) ]
-            && [UIView instancesRespondToSelector: @selector(contentScaleFactor) ])
-        {
-            scaleDivider = [[UIScreen mainScreen] scale];
-        }
-	}
-
-	return scaleDivider;
+	[(UIWebView*)webViewPtr setScalesPageToFit:isScalesToFit];
 }
 
 void WebViewControl::SetBackgroundTransparency(bool enabled)
@@ -283,21 +540,29 @@ void WebViewControl::SetBackgroundTransparency(bool enabled)
 
 	if (enabled)
 	{
-		[webView setBackgroundColor:[UIColor colorWithRed:r green:g blue:b alpha:0.f]];
+		[webView setBackgroundColor:[UIColor colorWithRed:r green:g blue:b
+                                                    alpha:0.f]];
 		HideSubviewImages(webView);
 	}
 	else
 	{
-		[webView setBackgroundColor:[UIColor colorWithRed:r green:g blue:b alpha:1.0f]];
+		[webView setBackgroundColor:[UIColor colorWithRed:r green:g blue:b
+                                                    alpha:1.0f]];
 		RestoreSubviewImages();
 	}
 }
 
 void WebViewControl::HideSubviewImages(void* view)
 {
+    UIWebView* webView = (UIWebView*)webViewPtr;
+    ::UIScrollView *scrollView = webView.scrollView;
+    
 	UIView* uiview = (UIView*)view;
 	for (UIView* subview in [uiview subviews])
 	{
+        if(uiview == scrollView)
+            continue;
+        
 		if ([subview isKindOfClass:[UIImageView class]])
 		{
 			subviewVisibilityMap[subview] = [subview isHidden];
@@ -337,7 +602,7 @@ void WebViewControl::SetBounces(bool value)
 	localWebView.scrollView.bounces = (value == true);
 }
 
-//for android we need use techique like http://stackoverflow.com/questions/12578895/how-to-detect-a-swipe-gesture-on-webview
+//for iOS we need use techique like http://stackoverflow.com/questions/12578895/how-to-detect-a-swipe-gesture-on-webview
 void WebViewControl::SetGestures(bool value)
 {
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
@@ -412,4 +677,40 @@ int32 WebViewControl::GetDataDetectorTypes() const
     return davaDetectorTypes;
 }
     
-};
+void WebViewControl::SetRenderToTexture(bool value)
+{
+    isRenderToTexture = value;
+    
+    // hide windows - move to offScreenPos position
+    // so it still can render WebView into
+    DAVA::Rect r = uiWebView.GetRect();
+    SetRect(r);
+    
+    if (isRenderToTexture)
+    {
+        // we have to show window or we can't render web view into texture
+        if ([(UIWebView*)webViewPtr isHidden])
+        {
+            [(UIWebView*)webViewPtr setHidden:NO];
+        }
+        
+        RenderToTextureAndSetAsBackgroundSpriteToControl(uiWebView);
+    } else
+    {
+        if (isVisible)
+        {
+            [(UIWebView*)webViewPtr setHidden:NO];
+        }
+    }
+}
+    
+void WebViewControl::WillDraw()
+{
+    bool isNativeHidden = [(UIWebView *) webViewPtr isHidden];
+    if(isVisible && isNativeHidden)
+    {
+        [(UIWebView *) webViewPtr setHidden:NO];
+    }
+}
+    
+} // end namespace DAVA

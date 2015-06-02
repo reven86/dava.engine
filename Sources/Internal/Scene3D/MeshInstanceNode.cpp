@@ -171,17 +171,6 @@ uint64 PolygonGroupWithMaterial::GetSortID()
     return 0;
 }
     
-void PolygonGroupWithMaterial::Draw()
-{
-    
-}
-
-ShadowVolume * PolygonGroupWithMaterial::CreateShadow()
-{
-	return NULL;
-}
-
-
 
 MeshInstanceNode::MeshInstanceNode()
 :	Entity()
@@ -681,7 +670,7 @@ void MeshInstanceNode::AddLightmap(int32 polygonGroupIndex, const LightmapData &
 
 void MeshInstanceNode::AddLightmap(const LightmapData & lightmapData)
 {
-	AddLightmap(lightmaps.size(), lightmapData);
+	AddLightmap(static_cast<int32>(lightmaps.size()), lightmapData);
 }
 
 void MeshInstanceNode::ClearLightmaps()
@@ -716,7 +705,7 @@ MeshInstanceNode::LightmapData * MeshInstanceNode::GetLightmapDataForIndex(int32
 
 int32 MeshInstanceNode::GetLightmapCount()
 {
-    return lightmaps.size();
+    return static_cast<int32>(lightmaps.size());
 }
     
 void MeshInstanceNode::CreateDynamicShadowNode()

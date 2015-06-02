@@ -37,12 +37,6 @@
 #include "Platform/Mutex.h"
 #include "FileSystem/FilePath.h"
 
-struct FT_FaceRec_;
-typedef struct FT_FaceRec_*  FT_Face;
-
-struct FT_GlyphRec_;
-typedef struct FT_GlyphRec_*  FT_Glyph;
-
 namespace DAVA
 {	
 	
@@ -84,12 +78,12 @@ public:
 	virtual bool IsEqual(const Font *font) const;
 
 	/**
-		\brief Get string size(rect).
+		\brief Get string metrics.
 		\param[in] str - processed string
-		\param[in, out] charSizes - if present(not NULL), will contain widths of every symbol in str 
-		\returns bounding rect for string in pixels
-	*/
-	virtual Size2i		GetStringSize(const WideString & str, Vector<float32> *charSizes = NULL) const;
+		\param[in, out] charSizes - if present(not NULL), will contain widths of every symbol in str
+		\returns StringMetrics structure
+	 */
+	virtual StringMetrics GetStringMetrics(const WideString & str, Vector<float32> *charSizes = NULL) const;
 
 	/**
 		\brief Get height of highest symbol in font.
@@ -117,7 +111,7 @@ public:
 		\param[in] contentScaleIncluded - TODO
 		\returns bounding rect for string in pixels
 	*/
-	virtual Size2i DrawStringToBuffer(void * buffer, int32 bufWidth, int32 bufHeight, int32 offsetX, int32 offsetY, int32 justifyWidth, int32 spaceAddon, const WideString & str, bool contentScaleIncluded = false);
+	virtual StringMetrics DrawStringToBuffer(void * buffer, int32 bufWidth, int32 bufHeight, int32 offsetX, int32 offsetY, int32 justifyWidth, int32 spaceAddon, const WideString & str, bool contentScaleIncluded = false);
 
 	virtual bool IsTextSupportsSoftwareRendering() const { return true; };
 
@@ -126,6 +120,11 @@ public:
 	// Put font properties into YamlNode
 	virtual YamlNode * SaveToYamlNode() const;
 
+    void SetAscendScale(float32 ascend) override;
+    float32 GetAscendScale() const override;
+    void SetDescendScale(float32 ascend) override;
+    float32 GetDescendScale() const override;
+
 protected:
 	// Get the raw hash string (identical for identical fonts).
 	virtual String GetRawHashString();
@@ -133,6 +132,9 @@ protected:
 private:
 	FTFont(FTInternalFont* internalFont);
 	FTInternalFont	* internalFont;
+
+    float32 ascendScale;
+    float32 descendScale;
 	
 	FilePath fontPath;
 };

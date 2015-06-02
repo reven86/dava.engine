@@ -62,7 +62,7 @@ public:
 	virtual ~GrassEditorSystem();
 
 	void Update(DAVA::float32 timeElapsed);
-	void ProcessUIEvent(DAVA::UIEvent *event);
+	virtual void Input(DAVA::UIEvent *event);
     void ProcessCommand(const Command2 *command, bool redo);
 
     bool EnableGrassEdit(bool enable);

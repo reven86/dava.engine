@@ -41,7 +41,7 @@ Vector<FastName> NMaterialStateDynamicFlagsInsp::MembersList(void *object) const
     
     if(0 == ret.size())
     {
-        ret.reserve(11);
+        ret.reserve(18);
         
         ret.push_back(NMaterial::FLAG_VERTEXFOG);
         ret.push_back(NMaterial::FLAG_FOG_LINEAR);
@@ -57,9 +57,13 @@ Vector<FastName> NMaterialStateDynamicFlagsInsp::MembersList(void *object) const
         ret.push_back(NMaterial::FLAG_FAST_NORMALIZATION);
         
         ret.push_back(NMaterial::FLAG_SPECULAR);
+        ret.push_back(NMaterial::FLAG_SEPARATE_NORMALMAPS);
         ret.push_back(NMaterial::FLAG_TANGENT_SPACE_WATER_REFLECTIONS);
         ret.push_back(NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL);
-        ret.push_back(NMaterial::FLAG_TILED_DECAL);
+        ret.push_back(NMaterial::FLAG_DEBUG_Z_NORMAL_SCALE);
+        ret.push_back(NMaterial::FLAG_DEBUG_NORMAL_ROTATION);        
+        ret.push_back(NMaterial::FLAG_SKINNING);
+        ret.push_back(NMaterial::FLAG_TILED_DECAL_MASK);
     }
     return ret;
 }

@@ -75,6 +75,7 @@ private:
 	QPointer<QtPropertyData> lastHoverData;
     QPointer<QAbstractItemView> view;
     mutable QPointer<QWidget> activeEditor;
+    mutable bool editorDataWasSet;
 };
 
 #endif // __QT_PROPERY_ITEM_DELEGATE_H__

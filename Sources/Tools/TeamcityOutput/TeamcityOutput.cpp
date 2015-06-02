@@ -33,15 +33,25 @@
 
 #include <iostream>
 
+#ifdef __DAVAENGINE_ANDROID__
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#include <android/log.h>
+#define  LOG_TAG    "TeamcityOutput"
+
+#elif  defined(__DAVAENGINE_IPHONE__)
+#import "UIKit/UIKit.h"
+
+#endif
 
 
 namespace DAVA
 {
     
-void TeamcityOutput::Output(Logger::eLogLevel ll, const char8 *text) const
+void TeamcityOutput::Output(Logger::eLogLevel ll, const char8 *text)
 {
+    if(ll < Logger::Instance()->GetLogLevel())
+        return;
+    
     String outStr = NormalizeString(text);
 	String output;
     String status;
@@ -67,7 +77,7 @@ void TeamcityOutput::Output(Logger::eLogLevel ll, const char8 *text) const
     PlatformOutput(output);
 }
 
-void TeamcityOutput::Output(Logger::eLogLevel ll, const char16 *text) const
+void TeamcityOutput::Output(Logger::eLogLevel ll, const char16 *text)
 {
     WideString wstr = text;
     Output(ll, WStringToString(wstr).c_str());
@@ -83,10 +93,6 @@ String TeamcityOutput::NormalizeString(const char8 *text) const
     StringReplace(str, "\n", "|n");
     StringReplace(str, "\r", "|r");
 
-//    StringReplace(str, "\u0085", "|x");
-//     StringReplace(str, "\u2028", "|l");
-//     StringReplace(str, "\u2029", "|p");
-
     StringReplace(str, "[", "|[");
     StringReplace(str, "]", "|]");
     
@@ -95,10 +101,14 @@ String TeamcityOutput::NormalizeString(const char8 *text) const
 
 void TeamcityOutput::PlatformOutput(const String &text) const
 {
+#ifdef __DAVAENGINE_IPHONE__
+    NSLog(@"%s", text.c_str());
+#elif  defined(__DAVAENGINE_ANDROID__)
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG, "%s", text.c_str());
+#else
     std::cout << text << std::endl;
+#endif
 }
     
 }; // end of namespace DAVA
-
-#endif //#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 

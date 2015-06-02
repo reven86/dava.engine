@@ -63,6 +63,7 @@ SliderPropertyGridWidget::SliderPropertyGridWidget(QWidget *parent) :
 
 SliderPropertyGridWidget::~SliderPropertyGridWidget()
 {
+    disconnect(ui->valuePosition, SIGNAL(valueChanged(int)), this, SLOT(OnSliderValueChanged(int)));
     delete ui;
 }
 
@@ -136,10 +137,9 @@ void SliderPropertyGridWidget::UpdateDoubleSpinBoxWidgetWithPropertyValue(QDoubl
         return;
     }
 
-    bool isPropertyValueDiffers = false;
 	double propertyValue = PropertiesHelper::GetAllPropertyValues<double>(this->activeMetadata,
-                                                 					     curProperty.name(),
-                                                     					 isPropertyValueDiffers);
+                                                 					     curProperty.name());
+
     WidgetSignalsBlocker blocker(doubleSpinBoxWidget);
     doubleSpinBoxWidget->setValue(propertyValue);
 	UpdateWidgetPalette(doubleSpinBoxWidget, curProperty.name());

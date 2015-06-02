@@ -50,7 +50,10 @@ public:
     ~HierarchyTreeWidget();
     void ScrollTo(HierarchyTreeNode *node);
     void HighlightScreenNodes(const QList<HierarchyTreeScreenNode*>& foundNodesList);
-	
+
+    // Delete the requested nodes.
+    void DeleteNodes(const HierarchyTreeNode::HIERARCHYTREENODESLIST& selectedNodes);
+
 private:
 	typedef Set<HierarchyTreeNode::HIERARCHYTREENODEID> EXPANDEDITEMS;
 	void AddControlItem(QTreeWidgetItem* parent, const HierarchyTreeNode::HIERARCHYTREENODESLIST& items);
@@ -65,6 +68,9 @@ signals:
 	void CreateNewAggregator();
 
 	void ImportScreenOrAggregator();
+
+public slots:
+	void OnDeleteNodes(const HierarchyTreeNode::HIERARCHYTREENODESLIST& selectedNodes);
 
 protected slots:
 	void OnTreeUpdated(bool needRestoreSelection);
@@ -104,7 +110,8 @@ private:
 
 	// "UI Editor Visible Flag" behavior.
 	HierarchyTreeControlNode* GetControlNodeByTreeItem(QTreeWidgetItem* item);
-	void UpdateVisibleFlagRecursive(QTreeWidgetItem* rootItem, int column, bool flagValue);
+
+    virtual bool eventFilter(QObject *target, QEvent *event);
 
 private:
 	bool internalSelectionChanged;

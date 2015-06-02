@@ -31,103 +31,78 @@
 
 namespace DAVA {
 
-jclass JniMovieViewControl::gJavaClass = NULL;
-const char* JniMovieViewControl::gJavaClassName = NULL;
-
-jclass JniMovieViewControl::GetJavaClass() const
-{
-	return gJavaClass;
-}
-
-const char* JniMovieViewControl::GetJavaClassName() const
-{
-	return gJavaClassName;
-}
-
 JniMovieViewControl::JniMovieViewControl(uint32 id)
+    : jniMovieViewControl("com/dava/framework/JNIMovieViewControl")
 {
 	this->id = id;
+
+    initialize = jniMovieViewControl.GetStaticMethod<void, jint, jfloat, jfloat, jfloat, jfloat>("Initialize");
+    uninitialize = jniMovieViewControl.GetStaticMethod<void, jint>("Uninitialize");
+    setRect = jniMovieViewControl.GetStaticMethod<void, jint, jfloat, jfloat, jfloat, jfloat>("SetRect");
+    setVisible = jniMovieViewControl.GetStaticMethod<void, jint, jboolean>("SetVisible");
+    openMovie = jniMovieViewControl.GetStaticMethod<void, jint, jstring, jint>("OpenMovie");
+    play = jniMovieViewControl.GetStaticMethod<void, jint>("Play");
+    stop = jniMovieViewControl.GetStaticMethod<void, jint>("Stop");
+    pause = jniMovieViewControl.GetStaticMethod<void, jint>("Pause");
+    resume = jniMovieViewControl.GetStaticMethod<void, jint>("Resume");
+    isPlaying = jniMovieViewControl.GetStaticMethod<jboolean, jint>("IsPlaying");
 }
 
 void JniMovieViewControl::Initialize(const Rect& _rect)
 {
-	jmethodID mid = GetMethodID("Initialize", "(IFFFF)V");
-	if (mid)
-	{
-		Rect rect = V2P(_rect);
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, rect.x, rect.y, rect.dx, rect.dy);
-	}
+    Rect rect = JNI::V2P(_rect);
+    initialize(id, rect.x, rect.y, rect.dx, rect.dy);
 }
 
 void JniMovieViewControl::Uninitialize()
 {
-	jmethodID mid = GetMethodID("Uninitialize", "(I)V");
-	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id);
+    uninitialize(id);
 }
 
 void JniMovieViewControl::SetRect(const Rect& _rect)
 {
-	jmethodID mid = GetMethodID("SetRect", "(IFFFF)V");
-	if (mid)
-	{
-		Rect rect = V2P(_rect);
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, rect.x, rect.y, rect.dx, rect.dy);
-	}
+    Rect rect = JNI::V2P(_rect);
+    setRect(id, rect.x, rect.y, rect.dx, rect.dy);
 }
 
 void JniMovieViewControl::SetVisible(bool isVisible)
 {
-	jmethodID mid = GetMethodID("SetVisible", "(IZ)V");
-	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, isVisible);
+	setVisible(id, isVisible);
 }
 
 void JniMovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
 {
-	jmethodID mid = GetMethodID("OpenMovie", "(ILjava/lang/String;I)V");
-	if (mid)
-	{
-		jstring jMoviePath = GetEnvironment()->NewStringUTF(moviePath.GetAbsoluteAssetPathnameTruncated().c_str());
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, jMoviePath, params.scalingMode);
-		GetEnvironment()->DeleteLocalRef(jMoviePath);
-	}
+    JNIEnv *env = JNI::GetEnv();
+    jstring jMoviePath = env->NewStringUTF(moviePath.GetAbsolutePathname().c_str());
+
+    openMovie(id, jMoviePath, params.scalingMode);
+
+    env->DeleteLocalRef(jMoviePath);
 }
 
 void JniMovieViewControl::Play()
 {
-	jmethodID mid = GetMethodID("Play", "(I)V");
-	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id);
+    play(id);
 }
 
 void JniMovieViewControl::Stop()
 {
-	jmethodID mid = GetMethodID("Stop", "(I)V");
-	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id);
+    stop(id);
 }
 
 void JniMovieViewControl::Pause()
 {
-	jmethodID mid = GetMethodID("Pause", "(I)V");
-	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id);
+    pause(id);
 }
 
 void JniMovieViewControl::Resume()
 {
-	jmethodID mid = GetMethodID("Resume", "(I)V");
-	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id);
+    resume(id);
 }
 
 bool JniMovieViewControl::IsPlaying()
 {
-	jmethodID mid = GetMethodID("IsPlaying", "(I)Z");
-	if (mid)
-		return GetEnvironment()->CallStaticBooleanMethod(GetJavaClass(), mid, id);
-	return false;
+    return isPlaying(id);
 }
 
 MovieViewControl::MovieViewControl() :

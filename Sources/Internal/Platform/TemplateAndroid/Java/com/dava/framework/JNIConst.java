@@ -3,6 +3,7 @@ package com.dava.framework;
 import javax.microedition.khronos.egl.EGL10;
 
 import android.opengl.GLES20;
+import android.opengl.GLUtils;
 import android.util.Log;
 
 public class JNIConst
@@ -14,7 +15,7 @@ public class JNIConst
 		int error = EGL10.EGL_SUCCESS;
 		while ((error = egl.eglGetError()) != EGL10.EGL_SUCCESS) 
 		{
-			Log.e(LOG_TAG, String.format("%s: EGL error: 0x%x", prompt, error));
+			Log.e(LOG_TAG, String.format("%s: EGL error: 0x%x (%s)", prompt, error, GLUtils.getEGLErrorString(error)));
 		}
 	}
 	
@@ -24,7 +25,7 @@ public class JNIConst
         while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) 
         {
             Log.e(LOG_TAG, op + ": glError " + error);
-            throw new RuntimeException(op + ": glError " + error);
+            throw new RuntimeException(op + ": glError " + error + "( " + GLUtils.getEGLErrorString(error) + ")");
         }
     }
 

@@ -31,7 +31,8 @@
 #include <QMouseEvent>
 #include <QHeaderView>
 #include <QPainter>
-#include <QCoreApplication>
+#include <QApplication>
+#include <QScrollBar>
 
 #include "QtPropertyEditor.h"
 #include "QtPropertyModel.h"
@@ -203,7 +204,12 @@ void QtPropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem &o
 		QHeaderView *hdr = header();
 		if(NULL != hdr && hdr->count() > 1)
 		{
-			int sz = hdr->sectionSize(0);
+            int sz = hdr->sectionSize(0);
+            QScrollBar *scroll = horizontalScrollBar();
+            if (scroll != NULL)
+            {
+                sz -= scroll->value();
+            }
 
 			QPoint p1 = option.rect.topLeft();
 			QPoint p2 = option.rect.bottomLeft();

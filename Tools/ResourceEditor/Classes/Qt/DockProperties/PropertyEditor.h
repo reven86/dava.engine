@@ -101,6 +101,11 @@ public slots:
     void OnAddSoundComponent();
     void OnAddWaveComponent();
     void OnAddModelTypeComponent();
+    void OnAddSkeletonComponent();
+    void OnAddPathComponent();
+    void OnAddRotationControllerComponent();
+    void OnAddSnapToLandscapeControllerComponent();
+    void OnAddWASDControllerComponent();
     void OnRemoveComponent();
     void OnTriggerWaveComponent();
 	
@@ -111,6 +116,9 @@ public slots:
     void RebuildTangentSpace();
 
     void CloneRenderBatchesToFixSwitchLODs();
+
+    void ResetProperties();
+
 
 protected:
 	eViewMode viewMode;
@@ -138,6 +146,7 @@ protected:
 	void ApplyCustomExtensions(QtPropertyData *data);
 
     void OnAddComponent(Component::eType type);
+    void OnAddComponent(Component *component);
 
 	void AddFavoriteChilds(QtPropertyData *parent);
 	void RemFavoriteChilds(QtPropertyData *parent);
@@ -155,9 +164,6 @@ protected:
 	QtPropertyToolButton * CreateButton(QtPropertyData *data, const QIcon & icon, const QString & tooltip);
 
 	QString GetDefaultFilePath(); 
-
-private slots:
-    void ResetProperties();
 
 private:
     int resetRequests;

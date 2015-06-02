@@ -54,9 +54,9 @@ namespace DAVA
 
 RenderSystem::RenderSystem()
     :   renderPassManager()
+    ,   forceUpdateLights(false)
     ,   mainCamera(0)
     ,   drawCamera(0)
-    ,   forceUpdateLights(false)
     ,   globalMaterial(NULL)
 {
     //mainRenderPass = GetRenderPassManager()->GetRenderPass(PASS_FORWARD);
@@ -76,12 +76,13 @@ RenderSystem::~RenderSystem()
     SafeRelease(globalMaterial);
     
     SafeDelete(renderHierarchy);	
+    SafeDelete(mainRenderPass);
 }
     
 
 void RenderSystem::RenderPermanent(RenderObject * renderObject)
 {
-    DVASSERT(renderObject->GetRemoveIndex() == -1);
+    DVASSERT(renderObject->GetRemoveIndex() == static_cast<uint32>(-1));
     
 	/*on add calculate valid world bbox*/	
     renderObject->Retain();
@@ -99,7 +100,7 @@ void RenderSystem::RenderPermanent(RenderObject * renderObject)
 
 void RenderSystem::RemoveFromRender(RenderObject * renderObject)
 {
-    DVASSERT(renderObject->GetRemoveIndex() != -1);
+    DVASSERT(renderObject->GetRemoveIndex() != static_cast<uint32>(-1));
     
 //	uint32 renderBatchCount = renderObject->GetRenderBatchCount();
 //	for (uint32 k = 0; k < renderBatchCount; ++k)
@@ -189,7 +190,7 @@ void RenderSystem::SetGlobalMaterial(NMaterial *material)
     SafeRelease(globalMaterial);
     globalMaterial = SafeRetain(material);
 
-    uint32 count = renderObjectArray.size();
+    uint32 count = static_cast<uint32>(renderObjectArray.size());
     for(uint32 i = 0; i < count; ++i)
     {
         RenderObject *obj = renderObjectArray[i];
@@ -231,7 +232,7 @@ void RenderSystem::RegisterForUpdate(IRenderUpdatable * updatable)
     
 void RenderSystem::UnregisterFromUpdate(IRenderUpdatable * updatable)
 {
-    uint32 size = objectsForUpdate.size();
+    uint32 size = static_cast<uint32>(objectsForUpdate.size());
 	for(uint32 i = 0; i < size; ++i)
 	{
 		if(objectsForUpdate[i] == updatable)
@@ -250,31 +251,12 @@ void RenderSystem::UnregisterFromUpdate(IRenderUpdatable * updatable)
 
     
 void RenderSystem::FindNearestLights(RenderObject * renderObject)
-{
-	//do not calculate nearest lights for non-lit objects
-	bool needUpdate = false;
-	uint32 renderBatchCount = renderObject->GetRenderBatchCount();
-    for (uint32 k = 0; k < renderBatchCount; ++k)
-    {
-        RenderBatch * batch = renderObject->GetRenderBatch(k);
-        NMaterial * material = batch->GetMaterial();
-        if (material)
-        {
-			needUpdate = true;
-			break;
-		}
-	}
-	
-	if(!needUpdate)
-	{
-		return;
-	}
-	
+{		
     Light * nearestLight = 0;
     float32 squareMinDistance = 10000000.0f;
     Vector3 position = renderObject->GetWorldBoundingBox().GetCenter();
     
-    uint32 size = lights.size();
+    uint32 size = static_cast<uint32>(lights.size());
 	
 	if(1 == size)
 	{
@@ -299,11 +281,7 @@ void RenderSystem::FindNearestLights(RenderObject * renderObject)
 		}
 	}
     
-    for (uint32 k = 0; k < renderBatchCount; ++k)
-    {
-        RenderBatch * batch = renderObject->GetRenderBatch(k);
-        batch->SetLight(0, nearestLight);
-    }
+    renderObject->SetLight(0, nearestLight);    
 }
 
 void RenderSystem::FindNearestLights()
@@ -374,7 +352,7 @@ void RenderSystem::Update(float32 timeElapsed)
 		movedLights.clear();
     }
     
-	uint32 size = objectsForUpdate.size();
+	uint32 size = static_cast<uint32>(objectsForUpdate.size());
 	for(uint32 i = 0; i < size; ++i)
 	{
         objectsForUpdate[i]->RenderUpdate(mainCamera, timeElapsed);

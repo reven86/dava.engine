@@ -89,13 +89,8 @@ void HierarchyTreeNode::AddTreeNode(HierarchyTreeNode* treeNode, HierarchyTreeNo
     if (iter != childNodes.end())
 		return;
 
-	if (nodeToAddAfter == NULL)
-	{
-		AddTreeNode(treeNode);
-		return;
-	}
-	
-	if (nodeToAddAfter == this)
+	if (nodeToAddAfter == NULL ||
+        nodeToAddAfter == this )    //YZ: (nodeToAddAfter == this) WTF????
 	{
 		childNodes.push_front(treeNode);
 		return;
@@ -197,10 +192,13 @@ void HierarchyTreeNode::PrepareRemoveFromSceneInformation()
 	for (List<HierarchyTreeNode*>::const_iterator iter = parentNode->GetChildNodes().begin();
 		 iter != parentNode->GetChildNodes().end(); iter ++)
 	{
-		if ((*iter == this) && (iter != parentNode->GetChildNodes().begin()))
-		{
-			iter --;
-			this->redoPreviousNode = (*iter);
+		if (*iter == this)
+        {
+            if (iter != parentNode->GetChildNodes().begin())
+            {
+                iter --;
+                this->redoPreviousNode = (*iter);
+            }
 			break;
 		}
 	}

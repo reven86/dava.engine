@@ -75,7 +75,7 @@ public:
                              const uint32* _resolutionClusterStride,
                              uint32 _resolutionClusterStrideCount,
                              const Vector3& _worldSize,
-                             VegetationCustomGeometrySerializationData* geometryData);
+                             const VegetationCustomGeometrySerializationDataPtr& geometryData);
     virtual ~VegetationCustomSLGeometry();
     
     virtual void Build(Vector<VegetationRenderData*>& renderDataArray, const FastNameSet& materialFlags);
@@ -203,7 +203,7 @@ private:
                Vector<Vector3>& scaledNormals);
     
     uint32 PrepareResolutionId(uint32 currentResolutionId, uint32 cellX, uint32 cellY) const;
-    void InitCustomGeometry(VegetationCustomGeometrySerializationData* geometryData);
+    void InitCustomGeometry(const VegetationCustomGeometrySerializationDataPtr& geometryData);
     
     void PrepareBoundingBoxes();
     

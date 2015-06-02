@@ -29,44 +29,22 @@
 
 #include "DAVAEngine.h"
 #include "GameCore.h"
- 
-using namespace DAVA;
-
 
 void FrameworkDidLaunched()
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-	KeyedArchive * appOptions = new KeyedArchive();
-	appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT);
-    appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_2_0);
-	
-	DAVA::Core::Instance()->SetVirtualScreenSize(960, 480);
-	DAVA::Core::Instance()->RegisterAvailableResourceSize(960, 480, "Gfx");
+    DAVA::KeyedArchive *appOptions = new DAVA::KeyedArchive();
 
-#else
-	KeyedArchive * appOptions = new KeyedArchive();
-	
-	appOptions->SetInt32("width", 700);
-	appOptions->SetInt32("height", 500);
+    appOptions->SetString("title", DAVA::Format("DAVA Framework - TemplateProjectQt | %s", DAVAENGINE_VERSION));
+    appOptions->SetInt32("bpp", 32);
 
-// 	appOptions->SetInt("fullscreen.width",	1280);
-// 	appOptions->SetInt("fullscreen.height", 800);
-	
-	appOptions->SetInt32("fullscreen", 0);
-	appOptions->SetInt32("bpp", 32); 
+    GameCore * core = new GameCore();
+    DAVA::Core::SetApplicationCore(core);
+    DAVA::Core::Instance()->SetOptions(appOptions);
+    DAVA::VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(false);
 
-	DAVA::Core::Instance()->SetVirtualScreenSize(700, 500);
-	DAVA::Core::Instance()->RegisterAvailableResourceSize(700, 500, "Gfx");
-	DAVA::Core::Instance()->RegisterAvailableResourceSize(500, 700, "Gfx");
-#endif 
-
-	GameCore * core = new GameCore();
-	DAVA::Core::SetApplicationCore(core);
-	DAVA::Core::Instance()->SetOptions(appOptions);
+    SafeRelease(appOptions);
 }
 
-
-void FrameworkWillTerminate() 
+void FrameworkWillTerminate()
 {
-
 }

@@ -37,10 +37,13 @@ extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 
 #include "Platform/Thread.h"
+#include "Platform/DeviceInfo.h"
 #include "Input/InputSystem.h"
 #include "FileSystem/FileSystem.h"
 #include "Scene3D/SceneCache.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
 {
@@ -58,8 +61,8 @@ namespace DAVA
 
 	Core::eDeviceFamily Core::GetDeviceFamily()
 	{
-		float32 width = GetPhysicalScreenWidth();
-		float32 height = GetPhysicalScreenHeight();
+		float32 width = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx;
+		float32 height = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy;
 		float32 dpi = GetScreenDPI();
 
 		float32 inches = sqrt((width * width) + (height * height)) / dpi;
@@ -70,7 +73,7 @@ namespace DAVA
 		return DEVICE_HANDSET;
 	}
 
-	CorePlatformAndroid::CorePlatformAndroid()
+	CorePlatformAndroid::CorePlatformAndroid(const String& cmdLine)
 	: Core()
 	{
 		wasCreated = false;
@@ -80,6 +83,8 @@ namespace DAVA
 		screenOrientation = Core::SCREEN_ORIENTATION_PORTRAIT; //no need rotate GL for Android
 
 		foreground = false;
+
+		SetCommandLine(cmdLine);
 	}
 
 	int Core::Run(int argc, char * argv[], AppHandle handle)
@@ -88,21 +93,18 @@ namespace DAVA
 // 		core->CreateWin32Window(handle);
 		// 		core->Run();
 // 		core->ReleaseSingletons();
-// #ifdef ENABLE_MEMORY_MANAGER
-// 		if (DAVA::MemoryManager::Instance() != 0)
-// 		{
-// 			DAVA::MemoryManager::Instance()->FinalLog();
-// 		}
-// #endif
 		return 0;
-
 	}
 
 	void CorePlatformAndroid::Quit()
 	{
 		Logger::Debug("[CorePlatformAndroid::Quit]");
 		QuitAction();
-		Core::Quit();
+
+		// finish java activity, never return back
+		JNI::JavaClass javaClass("com.dava.framework.JNIActivity");
+		Function<void()> finishActivity = javaClass.GetStaticMethod<void>("finishActivity");
+		finishActivity();
 	}
 
 	void CorePlatformAndroid::QuitAction()
@@ -116,13 +118,6 @@ namespace DAVA
 
 		FrameworkWillTerminate();
 
-#ifdef ENABLE_MEMORY_MANAGER
-		if (DAVA::MemoryManager::Instance() != 0)
-		{
-			DAVA::MemoryManager::Instance()->FinalLog();
-		}
-#endif
-
 		Logger::Debug("[CorePlatformAndroid::QuitAction] done");
 	}
 
@@ -130,28 +125,41 @@ namespace DAVA
 	{
 		if(renderIsActive)
 		{
+			uint64 startTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
+		
 			DAVA::RenderManager::Instance()->Lock();
 			Core::SystemProcessFrame();
 			DAVA::RenderManager::Instance()->Unlock();
+
+			uint32 elapsedTime = (uint32) (SystemTimer::Instance()->AbsoluteMS() - startTime);
+            int32 sleepMs = 1;
+
+            int32 fps = RenderManager::Instance()->GetFPS();
+            if(fps > 0)
+            {
+                sleepMs = (1000 / fps) - elapsedTime;
+                if(sleepMs > 0)
+                {
+                	Thread::Sleep(sleepMs);
+                }
+            }
 		}
 	}
 
 	void CorePlatformAndroid::ResizeView(int32 w, int32 h)
 	{
-		if(width != w || height != h)
-		{
-			width = w;
-			height = h;
+		width = w;
+		height = h;
+		DeviceInfo::InitializeScreenInfo();
 
-			UpdateScreenMode();
-		}
+		UpdateScreenMode();
 	}
 
 	void CorePlatformAndroid::UpdateScreenMode()
 	{
 		Logger::Debug("[CorePlatformAndroid::UpdateScreenMode] start");
-		UIControlSystem::Instance()->SetInputScreenAreaSize(width, height);
-		Core::Instance()->SetPhysicalScreenSize(width, height);
+		VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(width, height);
+		VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(width, height);
 
 		RenderManager::Instance()->InitFBSize(width, height);
         RenderManager::Instance()->Init(width, height);
@@ -191,22 +199,52 @@ namespace DAVA
 
 			RenderManager::Instance()->Invalidate();
 			RenderResource::InvalidateAllResources();
-			
 			SceneCache::Instance()->InvalidateSceneMaterials();
-		}
+        }
 		else
 		{
 			wasCreated = true;
 
 			Logger::Debug("[CorePlatformAndroid::] before create renderer");
-			RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
+			const GLubyte* glVersion = glGetString(GL_VERSION);
+			Logger::Debug("RENDERER glVersion %s",(const char*)glVersion);
+			if ((NULL != glVersion))
+			{
+				String ver((const char*)glVersion);
+				std::size_t found = ver.find_first_of(".");
+				if (found!=std::string::npos && found > 0)
+				{
+					char cv = ver.at(found-1);
+					int major = atoi(&cv);
+					if(major >= 3)
+					{
+						RenderManager::Create(Core::RENDERER_OPENGL_ES_3_0);
+						Logger::Debug("RENDERER_OPENGL_ES_3_0 ");
+					} else
+					{
+						RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
+						Logger::Debug("RENDERER_OPENGL_ES_2_0 ");
+					}
+				}else
+				{
+					RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
+					Logger::Debug("RENDERER_OPENGL_ES_2_0 GLVersion invalid format");
+				}
+
+			} else
+			{
+				RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
+				Logger::Debug("RENDERER_OPENGL_ES_2_0 NULL");
+			}
+
 			FileSystem::Instance()->Init();
+			RenderSystem2D::Instance()->Init();
 
 			RenderManager::Instance()->InitFBO(androidDelegate->RenderBuffer(), androidDelegate->FrameBuffer());
 			Logger::Debug("[CorePlatformAndroid::] after create renderer");
 
 			ResizeView(w, h);
-
+			// Set proper width and height before call FrameworkDidlaunched
 			FrameworkDidLaunched();
 
 			RenderManager::Instance()->SetFPS(60);
@@ -280,122 +318,75 @@ namespace DAVA
 		DAVA::Core::Instance()->GoBackground(isLock);
 
 		foreground = false;
-
-		width = 0;
-		height = 0;
 	}
 
 	void CorePlatformAndroid::KeyUp(int32 keyCode)
 	{
-		InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed(keyCode);
+		InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(keyCode);
 	}
 
 	void CorePlatformAndroid::KeyDown(int32 keyCode)
 	{
-		InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed(keyCode);
+		InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(keyCode);
 
 		UIEvent * keyEvent = new UIEvent;
 		keyEvent->keyChar = 0;
 		keyEvent->phase = DAVA::UIEvent::PHASE_KEYCHAR;
 		keyEvent->tapCount = 1;
-		keyEvent->tid = InputSystem::Instance()->GetKeyboard()->GetDavaKeyForSystemKey(keyCode);
+		keyEvent->tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey(keyCode);
 
 		InputSystem::Instance()->ProcessInputEvent(keyEvent);
 
 		SafeDelete(keyEvent);
 	}
 
-	UIEvent CorePlatformAndroid::CreateInputEvent(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount)
+	void CorePlatformAndroid::OnGamepadElement(int32 elementKey, float32 value, bool isKeycode)
 	{
-		int32 phase = DAVA::UIEvent::PHASE_DRAG;
-		switch(action)
-		{
-			case 5: //ACTION_POINTER_DOWN
-			case 0://ACTION_DOWN
-			phase = DAVA::UIEvent::PHASE_BEGAN;
-			break;
+		GamepadDevice & gamepadDevice = InputSystem::Instance()->GetGamepadDevice();
 
-			case 6://ACTION_POINTER_UP
-			case 1://ACTION_UP
-			phase = DAVA::UIEvent::PHASE_ENDED;
-			break;
+		int32 davaKey = GamepadDevice::INVALID_DAVAKEY;
+		if(isKeycode)
+			davaKey = gamepadDevice.GetDavaEventIdForSystemKeycode(elementKey);
+		else
+			davaKey = gamepadDevice.GetDavaEventIdForSystemAxis(elementKey);
 
-			case 2://ACTION_MOVE
-			{
-				if((source & 0x10) > 0)//SOURCE_CLASS_JOYSTICK
-				{
-					phase = DAVA::UIEvent::PHASE_JOYSTICK;
-				}
-				else //Touches
-					phase = DAVA::UIEvent::PHASE_DRAG;
-			}
-			break;
-
-			case 3://ACTION_CANCEL
-			phase = DAVA::UIEvent::PHASE_CANCELLED;
-			break;
-
-			case 4://ACTION_OUTSIDE
-			break;
-		}
+		if(davaKey == GamepadDevice::INVALID_DAVAKEY)
+			return;
 
 		UIEvent newEvent;
-		newEvent.tid = id;
-		newEvent.physPoint.x = x;
-		newEvent.physPoint.y = y;
-		newEvent.point.x = x;
-		newEvent.point.y = y;
-		newEvent.phase = phase;
-		newEvent.tapCount = tapCount;
-		newEvent.timestamp = time;
+		newEvent.tid = davaKey;
+		newEvent.physPoint.x = value;
+		newEvent.point.x = value;
+		newEvent.phase = DAVA::UIEvent::PHASE_JOYSTICK;
 
-		return newEvent;
+		gamepadDevice.SystemProcessElement(static_cast<GamepadDevice::eDavaGamepadElement>(davaKey), value);
+		InputSystem::Instance()->ProcessInputEvent(&newEvent);
 	}
 
-	void CorePlatformAndroid::OnInput(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount)
+	void CorePlatformAndroid::OnGamepadAvailable(bool isAvailable)
 	{
-		UIEvent touchEvent = CreateInputEvent(action, id, x, y, time, source, tapCount);
+		InputSystem::Instance()->GetGamepadDevice().SetAvailable(isAvailable);
+	}
 
-		if(touchEvent.phase == DAVA::UIEvent::PHASE_JOYSTICK)
-		{
-			InputSystem::Instance()->ProcessInputEvent(&touchEvent);
-			return;
-		}
-		
-		bool isFound = false;
-		for(Vector<DAVA::UIEvent>::iterator it = totalTouches.begin(); it != totalTouches.end(); ++it)
-		{
-			if((*it).tid == touchEvent.tid)
-			{
-				(*it).physPoint.x = touchEvent.physPoint.x;
-				(*it).physPoint.y = touchEvent.physPoint.y;
-				(*it).phase = touchEvent.phase;
-				(*it).tapCount = touchEvent.tapCount;
+	void CorePlatformAndroid::OnGamepadTriggersAvailable(bool isAvailable)
+	{
+		InputSystem::Instance()->GetGamepadDevice().OnTriggersAvailable(isAvailable);
+	}
 
-				isFound = true;
-				break;
-			}
-		}
-		if(!isFound)
+	void CorePlatformAndroid::OnInput(int32 action, int32 source, Vector< UIEvent >& activeInputs, Vector< UIEvent >& allInputs)
+	{
+		DVASSERT(!allInputs.empty());
+		if (!allInputs.empty())
 		{
-			totalTouches.push_back(touchEvent);
-		}
-
-		UIControlSystem::Instance()->OnInput(touchEvent.phase, totalTouches, totalTouches);
-
-		for(Vector<DAVA::UIEvent>::iterator it = totalTouches.begin(); it != totalTouches.end(); )
-		{
-			if((DAVA::UIEvent::PHASE_ENDED == (*it).phase) || (DAVA::UIEvent::PHASE_CANCELLED == (*it).phase) || (DAVA::UIEvent::PHASE_JOYSTICK == (*it).phase))
-			{
-				it = totalTouches.erase(it);
-			}
-			else
-			{
-				++it;
-			}
+			UIControlSystem::Instance()->OnInput(action, activeInputs, allInputs, allInputs[0].timestamp);
 		}
 	}
 
+    bool CorePlatformAndroid::IsMultitouchEnabled()
+    {
+        return InputSystem::Instance()->GetMultitouchEnabled();
+    }
+    
 	bool CorePlatformAndroid::DownloadHttpFile(const String & url, const String & documentsPathname)
 	{
 		if(androidDelegate)

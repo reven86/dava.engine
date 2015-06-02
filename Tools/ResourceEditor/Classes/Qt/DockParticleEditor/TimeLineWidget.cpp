@@ -84,7 +84,7 @@ void TimeLineWidget::paintEvent(QPaintEvent * e)
 {
 	QPainter painter(this);
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 	QFont font("Courier", 8, QFont::Normal);
 #else
 	QFont font("Courier", 11, QFont::Normal);
@@ -810,7 +810,6 @@ void TimeLineWidget::mousePressEvent(QMouseEvent *event)
 		}
 		else
 		{
-			bool emitUpdate = false;
 			for (LINES_MAP::iterator iter = lines.begin(); iter != lines.end(); ++iter)
 			{
 				QRect rect = GetLineEnableRect(iter->first);
@@ -1183,8 +1182,6 @@ QRect TimeLineWidget::GetLockRect() const
 
 void TimeLineWidget::UpdateSizePolicy()
 {
-	QRect gRect = GetGraphRect();
-
 	switch (sizeState)
 	{
 		case SIZE_STATE_MINIMIZED:

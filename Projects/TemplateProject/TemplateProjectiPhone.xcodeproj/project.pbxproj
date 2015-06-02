@@ -30,7 +30,6 @@
 		FEC9200F13BA2D7D006F347F /* iPhoneProjectDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = FEC9200C13BA2D7D006F347F /* iPhoneProjectDelegate.mm */; };
 		FEC9201013BA2D7D006F347F /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = FEC9200D13BA2D7D006F347F /* main.mm */; };
 		FEC9201113BA2D7D006F347F /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = FEC9200E13BA2D7D006F347F /* MainWindow.xib */; };
-		FEFB01D311C8F28A00B65B8B /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEFB01D211C8F28A00B65B8B /* GameKit.framework */; };
 		FEFCD63412AE78D90060A1A1 /* Data in Resources */ = {isa = PBXBuildFile; fileRef = FEFCD63312AE78D90060A1A1 /* Data */; };
 /* End PBXBuildFile section */
 
@@ -91,7 +90,6 @@
 		FEC9200C13BA2D7D006F347F /* iPhoneProjectDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = iPhoneProjectDelegate.mm; path = iOSSpecific/iPhoneProjectDelegate.mm; sourceTree = "<group>"; };
 		FEC9200D13BA2D7D006F347F /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = main.mm; path = iOSSpecific/main.mm; sourceTree = "<group>"; };
 		FEC9200E13BA2D7D006F347F /* MainWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = MainWindow.xib; path = iOSSpecific/MainWindow.xib; sourceTree = "<group>"; };
-		FEFB01D211C8F28A00B65B8B /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
 		FEFCD63312AE78D90060A1A1 /* Data */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Data; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -115,7 +113,6 @@
 				FE76D9F81163F304009E83B6 /* CoreAudio.framework in Frameworks */,
 				FE76D9FF1163F316009E83B6 /* AudioToolbox.framework in Frameworks */,
 				FE76DA041163F32F009E83B6 /* QuartzCore.framework in Frameworks */,
-				FEFB01D311C8F28A00B65B8B /* GameKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -189,7 +186,6 @@
 				CC677BA9197D46A50089547A /* SystemConfiguration.framework */,
 				EA56553D17CCF07D00426EB8 /* MessageUI.framework */,
 				EA56553B17CCF06B00426EB8 /* AdSupport.framework */,
-				FEFB01D211C8F28A00B65B8B /* GameKit.framework */,
 				FE76DA031163F32F009E83B6 /* QuartzCore.framework */,
 				FE76D9FE1163F316009E83B6 /* AudioToolbox.framework */,
 				FE76D9F51163F304009E83B6 /* AVFoundation.framework */,
@@ -241,6 +237,16 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0510;
+				TargetAttributes = {
+					1D6058900D05DD3D006BFB54 = {
+						DevelopmentTeam = XC9DK9T39T;
+						SystemCapabilities = {
+							com.apple.GameCenter = {
+								enabled = 0;
+							};
+						};
+					};
+				};
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "TemplateProjectiPhone" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -348,7 +354,6 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
 				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				PRODUCT_NAME = TemplateProjectiPhone;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -362,7 +367,6 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
 				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				PRODUCT_NAME = TemplateProjectiPhone;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -371,9 +375,11 @@
 		C01FCF4F08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GCC_C_LANGUAGE_STANDARD = c99;
-				GCC_PREPROCESSOR_DEFINITIONS = DAVA_DEBUG;
+				GCC_PREPROCESSOR_DEFINITIONS = __DAVAENGINE_DEBUG__;
 				GCC_THUMB_SUPPORT = NO;
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -403,6 +409,8 @@
 		C01FCF5008A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = s;

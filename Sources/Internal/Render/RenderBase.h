@@ -88,6 +88,7 @@
     #include <android/api-level.h>
 	#include <GLES/gl.h>
 	#include <GLES/glext.h>
+    #include <EGL/egl.h>
 #if (__ANDROID_API__ < 18)
     #include <GLES2/gl2.h>
     #include <GLES2/gl2ext.h>
@@ -148,6 +149,7 @@ enum PixelFormat
     FORMAT_RGBA32323232,
 
     FORMAT_DXT1,
+    FORMAT_REMOVED_DXT_1N,  //to use it in
     FORMAT_DXT1A = 14, //back compatibility
     FORMAT_DXT3,
     FORMAT_DXT5,
@@ -168,6 +170,9 @@ enum PixelFormat
 	FORMAT_ETC2_RGB,
 	FORMAT_ETC2_RGBA,
 	FORMAT_ETC2_RGB_A1,
+
+    FORMAT_BGR888, // windows BMP format
+    FORMAT_BGRA8888, // android web view format only for ImageConvert
 
     FORMAT_COUNT,
     FORMAT_CLOSEST = 255 // fit PixelFormat at 8bits (PixelFormat format:8;)
@@ -363,25 +368,41 @@ enum eVertexFormat
     EVF_TEXCOORD3       = 1 << 6,
     EVF_TANGENT         = 1 << 7,
     EVF_BINORMAL        = 1 << 8,
-    EVF_JOINTWEIGHT     = 1 << 9,
+  // nine bit skipped cause legacy; for now it unused
     EVF_TIME            = 1 << 10,
     EVF_PIVOT           = 1 << 11,
     EVF_FLEXIBILITY     = 1 << 12,
-    EVF_ANGLE_SIN_COS           = 1 << 13,
-    EVF_CUBETEXCOORD0   = 1 << 14,
-    EVF_CUBETEXCOORD1   = 1 << 15,
-    EVF_CUBETEXCOORD2   = 1 << 16,
-    EVF_CUBETEXCOORD3   = 1 << 17,	
+    EVF_ANGLE_SIN_COS   = 1 << 13,
+    EVF_JOINTINDEX      = 1 << 14,
+    EVF_JOINTWEIGHT     = 1 << 15,
+    EVF_CUBETEXCOORD0   = 1 << 16,
+    EVF_CUBETEXCOORD1   = 1 << 17,
+    EVF_CUBETEXCOORD2   = 1 << 18,
+    EVF_CUBETEXCOORD3   = 1 << 19,	
     EVF_LOWER_BIT       = EVF_VERTEX,
-    EVF_HIGHER_BIT      = EVF_ANGLE_SIN_COS, 
+    EVF_HIGHER_BIT      = EVF_JOINTWEIGHT, 
     EVF_NEXT_AFTER_HIGHER_BIT
     = (EVF_HIGHER_BIT << 1),
     EVF_FORCE_DWORD     = 0x7fffffff,
 };
 enum
 {
-    VERTEX_FORMAT_STREAM_MAX_COUNT = 14
+    VERTEX_FORMAT_STREAM_MAX_COUNT = 16
 };
+
+enum eBufferDrawType
+{
+    BDT_STATIC_DRAW = 0,
+    BDT_DYNAMIC_DRAW,
+
+    BDT_COUNT
+};
+
+#if defined(__DAVAENGINE_OPENGL__)
+extern const GLint BUFFERDRAWTYPE_MAP[BDT_COUNT];
+#elif defined(__DAVAENGINE_DIRECTX9__) 
+extern const int32 BUFFERDRAWTYPE_MAP[BDT_COUNT];
+#endif
 
 inline int32 GetTexCoordCount(int32 vertexFormat)
 {
@@ -425,8 +446,6 @@ inline int32 GetVertexSize(int32 flags)
     if (flags & EVF_TEXCOORD3) size += 2 * sizeof(float32);
     if (flags & EVF_TANGENT) size += 3 * sizeof(float32);
     if (flags & EVF_BINORMAL) size += 3 * sizeof(float32);
-    
-    if (flags & EVF_JOINTWEIGHT) size += 2 * sizeof(float32); // 4 * 3 + 4 * 3= 12 + 12
 	
 	if (flags & EVF_CUBETEXCOORD0) size += 3 * sizeof(float32);
     if (flags & EVF_CUBETEXCOORD1) size += 3 * sizeof(float32);
@@ -438,6 +457,9 @@ inline int32 GetVertexSize(int32 flags)
     if (flags & EVF_PIVOT) size += 3 * sizeof(float32);
     if (flags & EVF_FLEXIBILITY) size += sizeof(float32);
     if (flags & EVF_ANGLE_SIN_COS) size += 2 * sizeof(float32);
+
+    if (flags & EVF_JOINTINDEX) size += 4;
+    if (flags & EVF_JOINTWEIGHT) size += 4;
 
     return size;
 }
@@ -493,6 +515,10 @@ enum eShaderSemantic
     PARAM_SPEED_TREE_LIGHT_SMOOTHING,
 
     PARAM_SPHERICAL_HARMONICS,
+
+    PARAM_JOINT_POSITIONS,
+    PARAM_JOINT_QUATERNIONS,
+    PARAM_JOINTS_COUNT,     //it wil not be bound into shader, but will be used to bind joints
 
     PARAM_RT_SIZE,
     PARAM_RT_PIXEL_SIZE,

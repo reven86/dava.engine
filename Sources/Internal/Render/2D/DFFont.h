@@ -74,6 +74,7 @@ protected:
     float32 paddingTop;
     float32 paddingBottom;
     float32 lineHeight;
+	float32 baselineHeight;
     float32 spread;
     
     FilePath configPath;
@@ -105,8 +106,8 @@ public:
      \param[in, out] charSizes - if present(not NULL), will contain widths of every symbol in str
      \returns bounding rect for string in pixels
      */
-    virtual Size2i GetStringSize(const WideString & str, Vector<float32> *charSizes = 0) const;
-    
+    virtual Font::StringMetrics GetStringMetrics(const WideString & str, Vector<float32> *charSizes = 0) const;
+
     /**
      \brief Checks if symbol is present in font.
      \param[in] ch - tested symbol
@@ -119,7 +120,7 @@ public:
      \returns height in pixels
      */
     virtual uint32 GetFontHeight() const;
-    
+
     /**
      \brief Clone font.
      */
@@ -151,7 +152,7 @@ public:
     //We need to return font path
     const FilePath & GetFontPath() const;
     
-    Size2i DrawStringToBuffer(const WideString & str,
+    Font::StringMetrics DrawStringToBuffer(const WideString & str,
                               int32 xOffset,
                               int32 yOffset,
                               DFFontVertex* vertexBuffer,
@@ -159,6 +160,7 @@ public:
                               Vector<float32> *charSizes = NULL,
                               int32 justifyWidth = 0,
                               int32 spaceAddon = 0) const;
+
     float32 GetSpread() const;
     
 protected:

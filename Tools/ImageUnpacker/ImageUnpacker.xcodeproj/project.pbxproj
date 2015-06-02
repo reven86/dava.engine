@@ -9,12 +9,16 @@
 /* Begin PBXBuildFile section */
 		74B038C018AD1ECC00A42A19 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74B038BF18AD1ECC00A42A19 /* WebKit.framework */; };
 		A641264117D0CDEF004D3C5E /* libFrameworkTools.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A641263C17D0CDDA004D3C5E /* libFrameworkTools.a */; };
+		B019F1C51A0FEBA6004FB420 /* libIMagickHelper.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = B019F1C41A0FEBA6004FB420 /* libIMagickHelper.dylib */; };
+		B019F1C61A0FEBAC004FB420 /* libIMagickHelper.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = B019F1C41A0FEBA6004FB420 /* libIMagickHelper.dylib */; };
 		E854AB421933975900A4E79C /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E854AB411933975900A4E79C /* CoreMedia.framework */; };
 		E854AB491933976100A4E79C /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E854AB481933976100A4E79C /* AVFoundation.framework */; };
 		E8951AF61737775600755339 /* FrameworkMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8951AF21737775600755339 /* FrameworkMain.cpp */; };
 		E8951AF71737775600755339 /* GameCore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8951AF41737775600755339 /* GameCore.cpp */; };
 		E8C4C6AC1729BBAE004B0B3B /* libFramework.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FEC3E2EF133A9A5A00442ADD /* libFramework.a */; };
-		E8C4C849165F6966009DB9E1 /* libpng-static.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E8C4C848165F6966009DB9E1 /* libpng-static.a */; };
+		E8E18F1B1A80F5CB008CC1C7 /* libTextureConverter.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E8E18F1A1A80F5CB008CC1C7 /* libTextureConverter.dylib */; };
+		E8E18F221A80F5DE008CC1C7 /* libTextureConverter.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = E8E18F1A1A80F5CB008CC1C7 /* libTextureConverter.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		E8E18F261A80F816008CC1C7 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E8E18F251A80F816008CC1C7 /* Security.framework */; };
 		E8F8A259173A3A6A0090C110 /* libfmodevent.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E8F8A257173A3A6A0090C110 /* libfmodevent.dylib */; };
 		E8F8A25A173A3A6A0090C110 /* libfmodex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E8F8A258173A3A6A0090C110 /* libfmodex.dylib */; };
 		E8F8A25D173A43330090C110 /* libfmodevent.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = E8F8A257173A3A6A0090C110 /* libfmodevent.dylib */; };
@@ -82,12 +86,23 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		E8E18F211A80F5D0008CC1C7 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 6;
+			files = (
+				E8E18F221A80F5DE008CC1C7 /* libTextureConverter.dylib in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E8F8A25C173A43250090C110 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
+				B019F1C61A0FEBAC004FB420 /* libIMagickHelper.dylib in CopyFiles */,
 				E8F8A25D173A43330090C110 /* libfmodevent.dylib in CopyFiles */,
 				E8F8A25E173A43330090C110 /* libfmodex.dylib in CopyFiles */,
 			);
@@ -99,6 +114,7 @@
 		74B038BF18AD1ECC00A42A19 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		8DD76F6C0486A84900D96B5E /* ImageUnpacker */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ImageUnpacker; sourceTree = BUILT_PRODUCTS_DIR; };
 		A641263517D0CDD9004D3C5E /* FrameworkTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FrameworkTools.xcodeproj; path = ../../Projects/MacOSFramework/FrameworkTools.xcodeproj; sourceTree = "<group>"; };
+		B019F1C41A0FEBA6004FB420 /* libIMagickHelper.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libIMagickHelper.dylib; path = ../../Libs/IMagickHelpLib/libIMagickHelper.dylib; sourceTree = "<group>"; };
 		C6859E8B029090EE04C91782 /* ResourceEditorConsole.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = ResourceEditorConsole.1; sourceTree = "<group>"; };
 		E854AB411933975900A4E79C /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		E854AB481933976100A4E79C /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
@@ -106,7 +122,8 @@
 		E8951AF31737775600755339 /* FrameworkMain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FrameworkMain.h; path = Classes/FrameworkMain.h; sourceTree = "<group>"; };
 		E8951AF41737775600755339 /* GameCore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GameCore.cpp; path = Classes/GameCore.cpp; sourceTree = "<group>"; };
 		E8951AF51737775600755339 /* GameCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GameCore.h; path = Classes/GameCore.h; sourceTree = "<group>"; };
-		E8C4C848165F6966009DB9E1 /* libpng-static.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libpng-static.a"; path = "../../Libs/ImageMagick-6.7.4/delegates/lib/libpng-static.a"; sourceTree = "<group>"; };
+		E8E18F1A1A80F5CB008CC1C7 /* libTextureConverter.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libTextureConverter.dylib; path = ../Bin/libTextureConverter.dylib; sourceTree = "<group>"; };
+		E8E18F251A80F816008CC1C7 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		E8F8A257173A3A6A0090C110 /* libfmodevent.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodevent.dylib; path = ../../Libs/fmod/lib/macos/libfmodevent.dylib; sourceTree = "<group>"; };
 		E8F8A258173A3A6A0090C110 /* libfmodex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodex.dylib; path = ../../Libs/fmod/lib/macos/libfmodex.dylib; sourceTree = "<group>"; };
 		FEC3E2EA133A9A5A00442ADD /* Framework.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Framework.xcodeproj; path = ../../Projects/MacOSFramework/Framework.xcodeproj; sourceTree = SOURCE_ROOT; };
@@ -126,6 +143,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E8E18F261A80F816008CC1C7 /* Security.framework in Frameworks */,
+				E8E18F1B1A80F5CB008CC1C7 /* libTextureConverter.dylib in Frameworks */,
 				E854AB491933976100A4E79C /* AVFoundation.framework in Frameworks */,
 				E854AB421933975900A4E79C /* CoreMedia.framework in Frameworks */,
 				74B038C018AD1ECC00A42A19 /* WebKit.framework in Frameworks */,
@@ -140,7 +159,7 @@
 				FEC3E46B133A9AA500442ADD /* Foundation.framework in Frameworks */,
 				FEC3EC7113432F4400442ADD /* libz.dylib in Frameworks */,
 				FEC3EC7313432F5500442ADD /* libbz2.dylib in Frameworks */,
-				E8C4C849165F6966009DB9E1 /* libpng-static.a in Frameworks */,
+				B019F1C51A0FEBA6004FB420 /* libIMagickHelper.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -150,10 +169,10 @@
 		08FB7794FE84155DC02AAC07 /* ResourceEditorConsole */ = {
 			isa = PBXGroup;
 			children = (
+				B019F1C41A0FEBA6004FB420 /* libIMagickHelper.dylib */,
 				A641263517D0CDD9004D3C5E /* FrameworkTools.xcodeproj */,
 				E8F8A257173A3A6A0090C110 /* libfmodevent.dylib */,
 				E8F8A258173A3A6A0090C110 /* libfmodex.dylib */,
-				E8C4C848165F6966009DB9E1 /* libpng-static.a */,
 				FEC3E2EA133A9A5A00442ADD /* Framework.xcodeproj */,
 				FEC3E46E133A9AAB00442ADD /* Frameworks */,
 				08FB7795FE84155DC02AAC07 /* Source */,
@@ -214,6 +233,8 @@
 		FEC3E46E133A9AAB00442ADD /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E8E18F251A80F816008CC1C7 /* Security.framework */,
+				E8E18F1A1A80F5CB008CC1C7 /* libTextureConverter.dylib */,
 				E854AB481933976100A4E79C /* AVFoundation.framework */,
 				E854AB411933975900A4E79C /* CoreMedia.framework */,
 				74B038BF18AD1ECC00A42A19 /* WebKit.framework */,
@@ -240,6 +261,7 @@
 				8DD76F660486A84900D96B5E /* Frameworks */,
 				E8C4C84E165F6F54009DB9E1 /* ShellScript */,
 				E8F8A25C173A43250090C110 /* CopyFiles */,
+				E8E18F211A80F5D0008CC1C7 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -383,7 +405,11 @@
 				INSTALL_PATH = /usr/local/bin;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
+					"$(SRCROOT)/../../Libs/fmod/lib/macos",
+					/Users/i_bratchik/Documents/work/dava.framework/Libs/IMagickHelpLib,
+					"$(SRCROOT)/../../Libs/libs",
+					/Users/i_bratchik/Documents/work/dava.framework/Libs/libs,
+					/Users/victorkleschenko/Work/WoT/dava.framework/Tools/Bin,
 				);
 				PRODUCT_NAME = ImageUnpacker;
 			};
@@ -398,7 +424,11 @@
 				INSTALL_PATH = /usr/local/bin;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
+					"$(SRCROOT)/../../Libs/fmod/lib/macos",
+					/Users/i_bratchik/Documents/work/dava.framework/Libs/IMagickHelpLib,
+					"$(SRCROOT)/../../Libs/libs",
+					/Users/i_bratchik/Documents/work/dava.framework/Libs/libs,
+					/Users/victorkleschenko/Work/WoT/dava.framework/Tools/Bin,
 				);
 				PRODUCT_NAME = ImageUnpacker;
 			};
@@ -408,12 +438,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
 					FT2_BUILD_LIBRARY,
-					DAVA_DEBUG,
+					__DAVAENGINE_DEBUG__,
 				);
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
@@ -421,25 +453,16 @@
 					./../../Sources/Internal,
 					./../../Sources/Tools,
 					./../../Sources/External,
-					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.7.4/delegates/include",
+					../../Libs/IMagickHelpLib,
 					./../../Libs/include,
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"./../../Libs/ImageMagick-6.7.4/lib/",
-					"./../../Libs/ImageMagick-6.7.4/delegates/lib",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				LIBRARY_SEARCH_PATHS = "";
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-fvisibility=hidden",
 				);
-				OTHER_LDFLAGS = (
-					"-lMagickCore",
-					"-lMagick++",
-					"-lMagickWand",
-				);
+				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				SDKROOT = macosx;
 				STANDARD_C_PLUS_PLUS_LIBRARY_TYPE = dynamic;
@@ -450,6 +473,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
@@ -461,25 +486,16 @@
 					./../../Sources/Internal,
 					./../../Sources/Tools,
 					./../../Sources/External,
-					"./../../Libs/ImageMagick-6.7.4/include/ImageMagick",
-					"./../../Libs/ImageMagick-6.7.4/delegates/include",
+					../../Libs/IMagickHelpLib,
 					./../../Libs/include,
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"./../../Libs/ImageMagick-6.7.4/lib/",
-					"./../../Libs/ImageMagick-6.7.4/delegates/lib",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				LIBRARY_SEARCH_PATHS = "";
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-fvisibility=hidden",
 				);
-				OTHER_LDFLAGS = (
-					"-lMagickCore",
-					"-lMagick++",
-					"-lMagickWand",
-				);
+				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				SDKROOT = macosx;
 				STANDARD_C_PLUS_PLUS_LIBRARY_TYPE = dynamic;

@@ -102,15 +102,10 @@ Shader * ShaderAsset::Compile(const FastNameSet & defines)
                                             fragmentShaderDataSize,
                                             defines);
 	
-        CompiledShaderData * shaderData = new CompiledShaderData();
-        shaderData->shader = shader;
-        shaderData->defines = defines;
-
-        ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN,
-                                                               Message(this, &ShaderAsset::CompileShaderInternal, shaderData));
-        JobInstanceWaiter waiter(job);
-        waiter.Wait();
-    }
+		Function<void()> fn = DAVA::Bind(MakeFunction(this, &ShaderAsset::CompileShaderInternal), shader, defines);
+		uint32 jobId = JobManager::Instance()->CreateMainJob(fn);
+		JobManager::Instance()->WaitMainJobID(jobId);
+	}
     
 	compileShaderMutex.Unlock();
 
@@ -124,34 +119,24 @@ void ShaderAsset::ReloadShaders()
 	for( ; it != endIt; ++it)
 	{
 		Shader *shader = it->second;
-
 		shader->Reload(vertexShaderData, fragmentShaderData, vertexShaderDataStart, vertexShaderDataSize, fragmentShaderDataStart, fragmentShaderDataSize);
-		ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &ShaderAsset::ReloadShaderInternal, shader));
 
-        JobInstanceWaiter waiter(job);
-        waiter.Wait();
+		Function<void()> fn = DAVA::Bind(MakeFunction(this, &ShaderAsset::ReloadShaderInternal), shader);
+		uint32 jobId = JobManager::Instance()->CreateMainJob(fn);
+		JobManager::Instance()->WaitMainJobID(jobId);
 	}
 }
 
-void ShaderAsset::CompileShaderInternal( BaseObject * caller, void * param, void *callerData )
+void ShaderAsset::CompileShaderInternal(Shader *shader, FastNameSet defines)
 {
-	CompiledShaderData *shaderData = (CompiledShaderData*)param;
-	DVASSERT(shaderData);
-
-	shaderData->shader->Recompile();
-
-	BindShaderDefaults(shaderData->shader);
-	compiledShaders.insert(shaderData->defines, shaderData->shader);
-
-	delete shaderData;
+	shader->Recompile();
+	BindShaderDefaults(shader);
+	compiledShaders.insert(defines, shader);
 }
 
-
-void ShaderAsset::ReloadShaderInternal(BaseObject * caller, void * param, void *callerData)
+void ShaderAsset::ReloadShaderInternal(Shader *shader)
 {
-	Shader *shader = (Shader*)param;
 	shader->Recompile();
-
 	BindShaderDefaults(shader);
 }
 
@@ -189,11 +174,9 @@ void ShaderAsset::BindShaderDefaults(Shader * shader)
                 break;
                 case Shader::UT_FLOAT:
                     shader->SetUniformValueByIndex(ui, value.float32Value);
-                    Logger::FrameworkDebug("Assign: %s = %f", uniform->name.c_str(), value.float32Value);
                 break;
                 case Shader::UT_INT:
                     shader->SetUniformValueByIndex(ui, value.int32Value);
-                    Logger::FrameworkDebug("Assign: %s = %d", uniform->name.c_str(), value.int32Value);
                 break;
 
                 default:
@@ -465,7 +448,7 @@ void ShaderCache::ParseShader(ShaderAsset * asset)
     }
     
     asset->vertexShaderDataStart = vertexShaderStartPosition;
-    asset->vertexShaderDataSize = vertexShaderData->GetSize() - (vertexShaderStartPosition - vertexShaderData->GetPtr());
+    asset->vertexShaderDataSize = static_cast<uint32>(vertexShaderData->GetSize() - (vertexShaderStartPosition - vertexShaderData->GetPtr()));
     
     //    includesList.clear();
     //    includesList.push_back(fragmentShaderPath.GetFilename());
@@ -545,7 +528,7 @@ void ShaderCache::ParseShader(ShaderAsset * asset)
         lineBegin = lineEnd + lineEnding;
     }
     asset->fragmentShaderDataStart = fragmentShaderStartPosition;
-    asset->fragmentShaderDataSize = fragmentShaderData->GetSize() - (fragmentShaderStartPosition - fragmentShaderData->GetPtr());
+    asset->fragmentShaderDataSize = static_cast<uint32>(fragmentShaderData->GetSize() - (fragmentShaderStartPosition - fragmentShaderData->GetPtr()));
     
     
     //        curData = strtok((char*)fragmentShaderData, "\n");

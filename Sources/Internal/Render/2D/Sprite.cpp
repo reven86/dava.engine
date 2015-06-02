@@ -42,6 +42,9 @@
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "FileSystem/DynamicMemoryFile.h"
+#include "Render/TextureDescriptor.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #define NEW_PPA
 
@@ -55,8 +58,6 @@ namespace DAVA
 	SpriteMap spriteMap;
 
 static int32 fboCounter = 0;
-Vector<Vector2> Sprite::clippedTexCoords;
-Vector<Vector2> Sprite::clippedVertices;
 
 Mutex Sprite::spriteMapMutex;
 
@@ -65,9 +66,7 @@ Sprite::DrawState::DrawState()
     Reset();
     
     renderState = RenderState::RENDERSTATE_2D_BLEND;
-    shader = RenderManager::TEXTURE_MUL_FLAT_COLOR;
-    //RenderManager::Instance()->RetainRenderState(renderState);
-    //shader = SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+    shader = RenderSystem2D::TEXTURE_MUL_FLAT_COLOR;
 }
 
 Sprite::Sprite()
@@ -80,15 +79,13 @@ Sprite::Sprite()
 	frameVertices = 0;
 	texCoords = 0;
 	rectsAndOffsets = 0;
-//	originalVertices = 0;
 
 	size.dx = 24;
 	size.dy = 24;
-//	originalSize = size;
 	frameCount = 0;
-	//frame = 0;
 
-	isPreparedForTiling = false;
+    isPreparedForTiling = false;
+    textureInVirtualSpace = false;
 
 	modification = 0;
 	flags = 0;
@@ -96,14 +93,6 @@ Sprite::Sprite()
 
 	clipPolygon = 0;
 
-	resourceToVirtualFactor = 1.0f;
-	resourceToPhysicalFactor = 1.0f;
-
-	spriteRenderObject = new RenderDataObject();
-	vertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
-	texCoordStream  = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
-
-	//pivotPoint = Vector2(0.0f, 0.0f);
 	defaultPivotPoint = Vector2(0.0f, 0.0f);
 }
 
@@ -165,18 +154,20 @@ Sprite* Sprite::GetSpriteFromMap(const FilePath &pathname)
 
 FilePath Sprite::GetScaledName(const FilePath &spriteName)
 {
-	String::size_type pos = spriteName.GetAbsolutePathname().find(Core::Instance()->GetResourceFolder(Core::Instance()->GetBaseResourceIndex()));
+    String pathname;
+    if(FilePath::PATH_IN_RESOURCES == spriteName.GetType())
+        pathname = spriteName.GetFrameworkPath();//as we can have several res folders we should work with 'FrameworkPath' instead of 'AbsolutePathname'
+    else
+        pathname = spriteName.GetAbsolutePathname();
+
+    VirtualCoordinatesSystem * virtualCoordsSystem = VirtualCoordinatesSystem::Instance();
+    const String baseGfxFolderName = virtualCoordsSystem->GetResourceFolder(virtualCoordsSystem->GetBaseResourceIndex());
+    String::size_type pos = pathname.find(baseGfxFolderName);
 	if(String::npos != pos)
 	{
-		String pathname = spriteName.GetAbsolutePathname();
-
-		String subStrPath = pathname.substr(0, pos);
-		String resFolder = Core::Instance()->GetResourceFolder(Core::Instance()->GetDesirableResourceIndex());
-		String footer = pathname.substr(pos + Core::Instance()->GetResourceFolder(Core::Instance()->GetBaseResourceIndex()).length());
-
-		return pathname.substr(0, pos)
-						+ Core::Instance()->GetResourceFolder(Core::Instance()->GetDesirableResourceIndex())
-						+ pathname.substr(pos + Core::Instance()->GetResourceFolder(Core::Instance()->GetBaseResourceIndex()).length());
+        const String &desirableGfxFolderName = virtualCoordsSystem->GetResourceFolder(virtualCoordsSystem->GetDesirableResourceIndex());
+        pathname.replace(pos, baseGfxFolderName.length(), desirableGfxFolderName);
+		return pathname;
 	}
 
 	return spriteName;
@@ -209,8 +200,6 @@ void Sprite::InitFromFile(File *file)
 {
 	bool usedForScale = false;//Думаю, после исправлений в конвертере, эта магия больше не нужна. Но переменную пока оставлю.
 
-//	uint64 timeSpriteRead = SystemTimer::Instance()->AbsoluteMS();
-
 	type = SPRITE_FROM_FILE;
     const FilePath& pathName = file->GetFilename();
 
@@ -219,7 +208,6 @@ void Sprite::InitFromFile(File *file)
 	sscanf(tempBuf, "%d", &textureCount);
 	textures = new Texture*[textureCount];
 	textureNames = new FilePath[textureCount];
-//	timeSpriteRead = SystemTimer::Instance()->AbsoluteMS() - timeSpriteRead;
 
 	char textureCharName[128];
 	for (int32 k = 0; k < textureCount; ++k)
@@ -228,7 +216,6 @@ void Sprite::InitFromFile(File *file)
 		sscanf(tempBuf, "%s", textureCharName);
 
 		FilePath tp = pathName.GetDirectory() + String(textureCharName);
-//		Logger::FrameworkDebug("Opening texture: %s", tp.c_str());
         Texture* testTexture = Texture::CreateFromFile(tp);
 		textures[k] = testTexture;
 		textureNames[k] = tp;
@@ -237,60 +224,50 @@ void Sprite::InitFromFile(File *file)
 	
 	RegisterTextureStates();
 
-	resourceToVirtualFactor = Core::Instance()->GetResourceToVirtualFactor(resourceSizeIndex);
-	resourceToPhysicalFactor = Core::Instance()->GetResourceToPhysicalFactor(resourceSizeIndex);
-
-//	uint64 timeSpriteRead2 = SystemTimer::Instance()->AbsoluteMS();
-
 	int32 width, height;
 	file->ReadLine(tempBuf, 1024);
 	sscanf(tempBuf, "%d %d", &width, &height);
-	size.dx = (float32)width;
-	size.dy = (float32)height;
-//	originalSize = size;
-	size.dx *= resourceToVirtualFactor;
-	size.dy *= resourceToVirtualFactor;
+    size = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Vector2((float32)width, (float32)height), resourceSizeIndex);
+    
 	file->ReadLine(tempBuf, 1024);
 	sscanf(tempBuf, "%d", &frameCount);
 
-	texCoords = new GLfloat*[frameCount];
-	frameVertices = new GLfloat*[frameCount];
-//	originalVertices = new float32*[frameCount];
+	texCoords = new float32*[frameCount];
+	frameVertices = new float32*[frameCount];
 	rectsAndOffsets = new float32*[frameCount];
 	frameTextureIndex = new int32[frameCount];
 
-
+	frameNames.resize(frameCount);
 	for (int32 i = 0; i < frameCount; i++)
 	{
-		frameVertices[i] = new GLfloat[8];
-//		originalVertices[i] = new float32[4];
-		texCoords[i] = new GLfloat[8];
-		rectsAndOffsets[i] = new GLfloat[6];
-
-		int32 x, y, dx,dy, xOff, yOff;
+		frameVertices[i] = new float32[8];
+		texCoords[i] = new float32[8];
+		rectsAndOffsets[i] = new float32[6];
+    	char frameName[128] = {0};
+    	
+		int32 x, y, dx, dy, xOff, yOff;
 
 		file->ReadLine(tempBuf, 1024);
-		sscanf(tempBuf, "%d %d %d %d %d %d %d", &x, &y, &dx, &dy, &xOff, &yOff, &frameTextureIndex[i]);
+		sscanf(tempBuf, "%d %d %d %d %d %d %d %s", &x, &y, &dx, &dy, &xOff, &yOff, &frameTextureIndex[i], frameName);
+		frameNames[i] = (*frameName == '\0') ? FastName() : FastName(frameName);
+        
+        Rect rect = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtual(Rect((float32)xOff, (float32)yOff, (float32)dx, (float32)dy), resourceSizeIndex);
 
 		rectsAndOffsets[i][0] = (float32)x;
-		rectsAndOffsets[i][1] = (float32)y;
-//		rectsAndOffsets[i][2] = (float32)dx;
-//		rectsAndOffsets[i][3] = (float32)dy;
-//		rectsAndOffsets[i][4] = (float32)xOff;
-//		rectsAndOffsets[i][5] = (float32)yOff;
-//		originalVertices[i][0] = (float32)dx;
-//		originalVertices[i][1] = (float32)dy;
-//		originalVertices[i][2] = (float32)xOff;
-//		originalVertices[i][3] = (float32)yOff;
-
-		frameVertices[i][0] = (float32)xOff;
-		frameVertices[i][1] = (float32)yOff;
-		frameVertices[i][2] = (float32)(xOff + dx);
-		frameVertices[i][3] = (float32)yOff;
-		frameVertices[i][4] = (float32)xOff;
-		frameVertices[i][5] = (float32)(yOff + dy);
-		frameVertices[i][6] = (float32)(xOff + dx);
-		frameVertices[i][7] = (float32)(yOff + dy);
+        rectsAndOffsets[i][1] = (float32)y;
+        rectsAndOffsets[i][2] = rect.dx;
+        rectsAndOffsets[i][3] = rect.dy;
+        rectsAndOffsets[i][4] = rect.x;
+        rectsAndOffsets[i][5] = rect.y;
+        
+        frameVertices[i][0] = rect.x;
+        frameVertices[i][1] = rect.y;
+        frameVertices[i][2] = rect.x + rect.dx;
+        frameVertices[i][3] = rect.y;
+        frameVertices[i][4] = rect.x;
+        frameVertices[i][5] = rect.y + rect.dy;
+        frameVertices[i][6] = rect.x + rect.dx;
+        frameVertices[i][7] = rect.y + rect.dy;
 
 		float32 xof = 0;
 		float32 yof = 0;
@@ -308,44 +285,20 @@ void Sprite::InitFromFile(File *file)
 			}
 		}
 
-
-		rectsAndOffsets[i][2] = dx * resourceToVirtualFactor;
-		rectsAndOffsets[i][3] = dy * resourceToVirtualFactor;
-		rectsAndOffsets[i][4] = xOff * resourceToVirtualFactor;
-		rectsAndOffsets[i][5] = yOff * resourceToVirtualFactor;
-
 		dx += x;
 		dy += y;
 
-		texCoords[i][0] = ((GLfloat)x + xof) / textures[frameTextureIndex[i]]->width;
-		texCoords[i][1] = ((GLfloat)y + yof) / textures[frameTextureIndex[i]]->height;
-		texCoords[i][2] = ((GLfloat)dx - xof) / textures[frameTextureIndex[i]]->width;
-		texCoords[i][3] = ((GLfloat)y + yof) / textures[frameTextureIndex[i]]->height;
-		texCoords[i][4] = ((GLfloat)x + xof) / textures[frameTextureIndex[i]]->width;
-		texCoords[i][5] = ((GLfloat)dy - yof) / textures[frameTextureIndex[i]]->height;
-		texCoords[i][6] = ((GLfloat)dx - xof) / textures[frameTextureIndex[i]]->width;
-		texCoords[i][7] = ((GLfloat)dy - yof) / textures[frameTextureIndex[i]]->height;
-
-		frameVertices[i][0] *= resourceToVirtualFactor;
-		frameVertices[i][1] *= resourceToVirtualFactor;
-		frameVertices[i][2] *= resourceToVirtualFactor;
-		frameVertices[i][3] *= resourceToVirtualFactor;
-		frameVertices[i][4] *= resourceToVirtualFactor;
-		frameVertices[i][5] *= resourceToVirtualFactor;
-		frameVertices[i][6] *= resourceToVirtualFactor;
-		frameVertices[i][7] *= resourceToVirtualFactor;
+		texCoords[i][0] = ((float32)x + xof) / textures[frameTextureIndex[i]]->width;
+        texCoords[i][1] = ((float32)y + yof) / textures[frameTextureIndex[i]]->height;
+        texCoords[i][2] = ((float32)dx - xof) / textures[frameTextureIndex[i]]->width;
+        texCoords[i][3] = ((float32)y + yof) / textures[frameTextureIndex[i]]->height;
+        texCoords[i][4] = ((float32)x + xof) / textures[frameTextureIndex[i]]->width;
+        texCoords[i][5] = ((float32)dy - yof) / textures[frameTextureIndex[i]]->height;
+        texCoords[i][6] = ((float32)dx - xof) / textures[frameTextureIndex[i]]->width;
+        texCoords[i][7] = ((float32)dy - yof) / textures[frameTextureIndex[i]]->height;
 	}
-
-//	Logger::FrameworkDebug("Frames created: %d", spr->frameCount);
-	//	center.x = width / 2;
-	//	center.y = height / 2;
-
 	defaultPivotPoint.x = 0;
 	defaultPivotPoint.y = 0;
-
-//	timeSpriteRead2 = SystemTimer::Instance()->AbsoluteMS() - timeSpriteRead2;
-//  Logger::FrameworkDebug("Sprite: %s time:%lld", relativePathname.c_str(), timeSpriteRead2 + timeSpriteRead);
-
 }
 
 
@@ -355,41 +308,12 @@ Sprite* Sprite::Create(const FilePath &spriteName)
 	if (!spr)
 	{
 		Texture *pinkTexture = Texture::CreatePink();
-		spr = CreateFromTexture(Vector2(16.f, 16.f), pinkTexture, Vector2(0.f, 0.f), Vector2(16.f, 16.f), spriteName);
+		spr = CreateFromTexture(pinkTexture, 0, 0, 16, 16, 16.f, 16.f, spriteName);
 		spr->type = SPRITE_FROM_FILE;
 
 		pinkTexture->Release();
 	}
 	return spr;
-}
-
-Sprite* Sprite::CreateAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelFormat textureFormat, bool contentScaleIncluded)
-{
-	Sprite * sprite = new Sprite();
-	sprite->InitAsRenderTarget(sprWidth, sprHeight, textureFormat, contentScaleIncluded);
-	return sprite;
-}
-
-void Sprite::InitAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelFormat textureFormat, bool contentScaleIncluded)
-{
-	if (!contentScaleIncluded)
-	{
-		sprWidth = sprWidth * Core::GetVirtualToPhysicalFactor();
-		sprHeight = sprHeight * Core::GetVirtualToPhysicalFactor();
-	}
-
-	Texture *t = Texture::CreateFBO((int32)ceilf(sprWidth), (int32)ceilf(sprHeight), textureFormat, Texture::DEPTH_NONE);
-
-	this->InitFromTexture(t, 0, 0, sprWidth, sprHeight, -1, -1, true);
-
-	t->Release();
-
-	this->type = SPRITE_RENDER_TARGET;
-
-	// Clear created render target first
-	RenderManager::Instance()->SetRenderTarget(this);
-	RenderManager::Instance()->ClearWithColor(0, 0, 0, 0);
-	RenderManager::Instance()->RestoreRenderTarget();
 }
 
 Sprite* Sprite::CreateFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset, float32 sprWidth, float32 sprHeight, bool contentScaleIncluded)
@@ -401,12 +325,12 @@ Sprite* Sprite::CreateFromTexture(Texture *fromTexture, int32 xOffset, int32 yOf
 	return spr;
 }
 
-Sprite * Sprite::CreateFromTexture(const Vector2 & spriteSize, Texture * fromTexture, const Vector2 & textureRegionOffset, const Vector2 & textureRegionSize, const FilePath &spriteName /* = FilePath()*/)
+Sprite * Sprite::CreateFromTexture(Texture *fromTexture, int32 textureRegionOffsetX, int32 textureRegionOffsetY, int32 textureRegionWidth, int32 textureRegionHeigth, float32 sprWidth, float32 sprHeight, const FilePath &spriteName /* = FilePath()*/)
 {
 	DVASSERT(fromTexture);
 	Sprite *spr = new Sprite();
 	DVASSERT_MSG(spr, "Render Target Sprite Creation failed");
-	spr->InitFromTexture(fromTexture, (int32)textureRegionOffset.x, (int32)textureRegionOffset.y, textureRegionSize.x, textureRegionSize.y, (int32)spriteSize.x, (int32)spriteSize.y, false, spriteName);
+    spr->InitFromTexture(fromTexture, textureRegionOffsetX, textureRegionOffsetY, sprWidth, sprHeight, textureRegionWidth, textureRegionHeigth, false, spriteName);
 	return spr;
 }
 
@@ -415,35 +339,20 @@ Sprite* Sprite::CreateFromImage(Image* image, bool contentScaleIncluded /* = fal
     uint32 width = image->GetWidth();
     uint32 height = image->GetHeight();
     
-    int32 size = (int32)Max(width, height);
-    
-    Image *img = NULL;
-    if(IsPowerOf2(width) && IsPowerOf2(height))
-    {
-        img = SafeRetain(image);
-    }
-    else
-    {
-        EnsurePowerOf2(size);
-
-        img = Image::Create((uint32)size, (uint32)size, image->GetPixelFormat());
-        img->InsertImage(image, 0, 0);
-    }
+    Image *img = ImageSystem::Instance()->EnsurePowerOf2Image(image);
 
     Texture* texture = Texture::CreateFromData(img, false);
 
     Sprite* sprite = NULL;
     if (texture)
     {
-        float32 sprWidth = (float32)width;
-		float32 sprHeight = (float32)height;
+        Vector2 sprSize((float32)width, (float32)height);
         if(inVirtualSpace)
         {
-            sprWidth *= Core::GetPhysicalToVirtualFactor();
-            sprHeight *= Core::GetPhysicalToVirtualFactor();
+            sprSize = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(sprSize);
         }
         
-        sprite = Sprite::CreateFromTexture(texture, 0, 0, sprWidth, sprHeight, contentScaleIncluded);
+        sprite = Sprite::CreateFromTexture(texture, 0, 0, sprSize.x, sprSize.y, contentScaleIncluded);
         
         if(inVirtualSpace)
         {
@@ -505,6 +414,12 @@ String Sprite::GetPathString( const Sprite *sprite )
 
 Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncluded /* = false*/, bool inVirtualSpace /* = false */)
 {
+    Sprite* sprite = GetSpriteFromMap(path);
+    if (sprite)
+    {
+        return sprite;
+    }
+    
     Vector<Image*> images;
     ImageSystem::Instance()->Load(path, images);
     if (images.size() == 0)
@@ -512,7 +427,11 @@ Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncl
         return NULL;
     }
 
-    Sprite* sprite = CreateFromImage(images[0], contentScaleIncluded, inVirtualSpace);
+    sprite = CreateFromImage(images[0], contentScaleIncluded, inVirtualSpace);
+    if (sprite)
+    {
+        sprite->SetRelativePathname(path);
+    }
 
     for_each(images.begin(), images.end(), SafeRelease<Image>);
 
@@ -521,115 +440,108 @@ Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncl
 
 void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset, float32 sprWidth, float32 sprHeight, int32 targetWidth, int32 targetHeight, bool contentScaleIncluded, const FilePath &spriteName /* = FilePath() */)
 {
+    Clear();
+    
+    Vector2 offset((float32)xOffset, (float32)yOffset);
+    size = Vector2(sprWidth, sprHeight);
 	if (!contentScaleIncluded)
 	{
-		xOffset = (int32)(Core::GetVirtualToPhysicalFactor() * xOffset);
-		yOffset = (int32)(Core::GetVirtualToPhysicalFactor() * yOffset);
+        offset = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(offset);
 	}
 	else
 	{
-		sprWidth = Core::GetPhysicalToVirtualFactor() * sprWidth;
-		sprHeight = Core::GetPhysicalToVirtualFactor() * sprHeight;
+        size = VirtualCoordinatesSystem::Instance()->ConvertPhysicalToVirtual(size);
 	}
 
-	resourceToPhysicalFactor = Core::GetVirtualToPhysicalFactor();
-	resourceToVirtualFactor = Core::GetPhysicalToVirtualFactor();
-	resourceSizeIndex = Core::Instance()->GetDesirableResourceIndex();
+	resourceSizeIndex = VirtualCoordinatesSystem::Instance()->GetBaseResourceIndex();
 
-	this->type = SPRITE_FROM_TEXTURE;
-	this->textureCount = 1;
-	this->textures = new Texture*[this->textureCount];
-	this->textureNames = new FilePath[this->textureCount];
+    type = SPRITE_FROM_TEXTURE;
+    textureCount = 1;
+    textures = new Texture*[textureCount];
+    textureNames = new FilePath[textureCount];
+    textureInVirtualSpace = contentScaleIncluded;
 
 
-	this->textures[0] = SafeRetain(fromTexture);
-	if(this->textures[0])
-	{
-		this->textureNames[0] = this->textures[0]->GetPathname();
-	}
+    textures[0] = SafeRetain(fromTexture);
+    if(textures[0])
+    {
+        textureNames[0] = textures[0]->GetPathname();
+    }
 
-//	int32 width = sprWidth;
-	this->size.dx = (float32)sprWidth;
+    defaultPivotPoint.x = 0;
+	defaultPivotPoint.y = 0;
+	frameCount = 1;
 
-//	int32 height = sprHeight;
-	this->size.dy = (float32)sprHeight;
+    texCoords = new float32*[frameCount];
+    frameVertices = new float32*[frameCount];
+    rectsAndOffsets = new float32*[frameCount];
+    frameTextureIndex = new int32[frameCount];
 
-//	Logger::FrameworkDebug("Init from texture: %.4fx%.4f", sprWidth, sprWidth);
-
-//	this->originalSize = this->size;
-	this->defaultPivotPoint.x = 0;
-	this->defaultPivotPoint.y = 0;
-	this->frameCount = 1;
-
-	this->texCoords = new GLfloat*[this->frameCount];
-	this->frameVertices = new GLfloat*[this->frameCount];
-//	this->originalVertices = new GLfloat*[this->frameCount];
-	this->rectsAndOffsets = new GLfloat*[this->frameCount];
-	this->frameTextureIndex = new int32[this->frameCount];
-
-	for (int i = 0;	i < this->frameCount; i++)
-	{
-		this->frameVertices[i] = new GLfloat[8];
-//		this->originalVertices[i] = new GLfloat[4];
-		this->texCoords[i] = new GLfloat[8];
-		this->rectsAndOffsets[i] = new GLfloat[6];
-		this->frameTextureIndex[i] = 0;
+    for (int i = 0;	i < frameCount; i++)
+    {
+        frameVertices[i] = new float32[8];
+        texCoords[i] = new float32[8];
+        rectsAndOffsets[i] = new float32[6];
+        frameTextureIndex[i] = 0;
 
 		float32 x, y, dx,dy, xOff, yOff;
-		x = (float32)xOffset;
-		y = (float32)yOffset;
-		dx = sprWidth * Core::GetVirtualToPhysicalFactor();
-		dy = sprHeight * Core::GetVirtualToPhysicalFactor();
+		x = offset.x;
+		y = offset.y;
+        dx = (targetWidth == -1) ? VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(size.x) : (float32)targetWidth;
+        dy = (targetHeight == -1) ? VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(size.y) : (float32)targetHeight;
 		xOff = 0;
 		yOff = 0;
 
-		this->rectsAndOffsets[i][0] = (float32)x;
-		this->rectsAndOffsets[i][1] = (float32)y;
-		this->rectsAndOffsets[i][2] = sprWidth;
-		this->rectsAndOffsets[i][3] = sprHeight;
-		this->rectsAndOffsets[i][4] = (float32)xOff;
-		this->rectsAndOffsets[i][5] = (float32)yOff;
-
-//		this->originalVertices[i][0] = (float32)dx;
-//		this->originalVertices[i][1] = (float32)dy;
-//		this->originalVertices[i][2] = (float32)xOff;
-//		this->originalVertices[i][3] = (float32)yOff;
-
-		this->frameVertices[i][0] = (float32)xOff;
-		this->frameVertices[i][1] = (float32)yOff;
-		this->frameVertices[i][2] = (float32)xOff + sprWidth;
-		this->frameVertices[i][3] = (float32)yOff;
-		this->frameVertices[i][4] = (float32)xOff;
-		this->frameVertices[i][5] = (float32)(yOff + sprHeight);
-		this->frameVertices[i][6] = (float32)(xOff + sprWidth);
-		this->frameVertices[i][7] = (float32)(yOff + sprHeight);
+        float32* rectAndOffset = rectsAndOffsets[i];
+        rectAndOffset[0] = x;
+        rectAndOffset[1] = y;
+        rectAndOffset[2] = size.x;
+        rectAndOffset[3] = size.y;
+        rectAndOffset[4] = xOff;
+        rectAndOffset[5] = yOff;
 
 
-		dx += x;
-		dy += y;
+        float32* frameVerts = frameVertices[i];
+        frameVerts[0] = xOff;
+        frameVerts[1] = yOff;
+        frameVerts[2] = xOff + size.x;
+        frameVerts[3] = yOff;
+        frameVerts[4] = xOff;
+        frameVerts[5] = (yOff + size.y);
+        frameVerts[6] = (xOff + size.x);
+        frameVerts[7] = (yOff + size.y);
 
-		this->texCoords[i][0] = (GLfloat)x / this->textures[this->frameTextureIndex[i]]->width;
-		this->texCoords[i][1] = (GLfloat)y / this->textures[this->frameTextureIndex[i]]->height;
-		this->texCoords[i][2] = (GLfloat)dx / this->textures[this->frameTextureIndex[i]]->width;
-		this->texCoords[i][3] = (GLfloat)y / this->textures[this->frameTextureIndex[i]]->height;
-		this->texCoords[i][4] = (GLfloat)x / this->textures[this->frameTextureIndex[i]]->width;
-		this->texCoords[i][5] = (GLfloat)dy / this->textures[this->frameTextureIndex[i]]->height;
-		this->texCoords[i][6] = (GLfloat)dx / this->textures[this->frameTextureIndex[i]]->width;
-		this->texCoords[i][7] = (GLfloat)dy / this->textures[this->frameTextureIndex[i]]->height;
+        dx += x;
+        dy += y;
 
+        int32 frameIndex = frameTextureIndex[i];
+        Texture* texture = textures[frameIndex];
+        float32* texCoord = texCoords[i];
+        
+        texCoord[0] = x / texture->width;
+        texCoord[1] = y / texture->height;
+        texCoord[2] = dx / texture->width;
+        texCoord[3] = y / texture->height;
+        texCoord[4] = x / texture->width;
+        texCoord[5] = dy / texture->height;
+        texCoord[6] = dx / texture->width;
+        texCoord[7] = dy / texture->height;
 	}
 
 	// DF-1984 - Set available sprite relative path name here. Use FBO sprite name only if sprite name is empty.
-	this->relativePathname = spriteName.IsEmpty() ? Format("FBO sprite %d", fboCounter) : spriteName;
+    if (relativePathname.IsEmpty())
+    {
+        relativePathname = spriteName.IsEmpty() ? Format("FBO sprite %d", fboCounter) : spriteName;
+    }
 
     spriteMapMutex.Lock();
-	spriteMap[FILEPATH_MAP_KEY(this->relativePathname)] = this;
+    spriteMap[FILEPATH_MAP_KEY(relativePathname)] = this;
     spriteMapMutex.Unlock();
 
-	fboCounter++;
-	this->Reset();
-	
-	RegisterTextureStates();
+    fboCounter++;
+    Reset();
+
+    RegisterTextureStates();
 }
 
 void Sprite::SetOffsetsForFrame(int frame, float32 xOff, float32 yOff)
@@ -638,9 +550,6 @@ void Sprite::SetOffsetsForFrame(int frame, float32 xOff, float32 yOff)
 
 	rectsAndOffsets[frame][4] = xOff;
 	rectsAndOffsets[frame][5] = yOff;
-
-//	originalVertices[frame][2] = xOff / Core::Instance()->GetResourceToVirtualFactor(resourceSizeIndex);
-//	originalVertices[frame][3] = yOff / Core::Instance()->GetResourceToVirtualFactor(resourceSizeIndex);
 
 	frameVertices[frame][0] = xOff;
 	frameVertices[frame][1] = yOff;
@@ -667,21 +576,12 @@ void Sprite::Clear()
 		for (int i = 0;	i < frameCount; i++)
 		{
 			SafeDeleteArray(frameVertices[i]);
-			//			SafeDeleteArray(originalVertices[i]);
 			SafeDeleteArray(texCoords[i]);
 			SafeDeleteArray(rectsAndOffsets[i]);
 		}
 	}
-	//	if(maxCollisionPoints != 0)
-	//	{
-	//		for (int i = 0;	i < frameCount; i++)
-	//		{
-	//			[collision[i] release];
-	//		}
-	//		SAFE_DELETE_ARRAY(collision);
-	//	}
+    
 	SafeDeleteArray(frameVertices);
-	//	SafeDeleteArray(originalVertices);
 	SafeDeleteArray(texCoords);
 	SafeDeleteArray(rectsAndOffsets);
 	SafeDeleteArray(frameTextureIndex);
@@ -691,7 +591,6 @@ void Sprite::Clear()
 Sprite::~Sprite()
 {
     spriteMapMutex.Lock();
-    SafeRelease(spriteRenderObject);
     spriteMap.erase(FILEPATH_MAP_KEY(relativePathname));
     spriteMapMutex.Unlock();
 	Clear();
@@ -704,7 +603,6 @@ Texture* Sprite::GetTexture() const
 
 Texture* Sprite::GetTexture(int32 frameNumber) const
 {
-//	DVASSERT(frameNumber > -1 && frameNumber < frameCount);
 	frameNumber = Clamp(frameNumber, 0, frameCount - 1);
 	return textures[frameTextureIndex[frameNumber]];
 }
@@ -717,7 +615,6 @@ UniqueHandle Sprite::GetTextureHandle(int32 frameNumber) const
 
 float32 *Sprite::GetTextureVerts(int32 frameNumber)
 {
-//	DVASSERT(frame > -1 && frame < frameCount);
 	frameNumber = Clamp(frameNumber, 0, frameCount - 1);
 	return texCoords[frameNumber];
 }
@@ -758,9 +655,20 @@ void Sprite::SetDefaultPivotPoint(const Vector2 &newPivotPoint)
     defaultPivotPoint = newPivotPoint;
 }
 
-void Sprite::SetFrame(int32 frm)
+int32 Sprite::GetFrameByName(const FastName& frameName) const
 {
-	frame = Clamp(frm, 0, frameCount - 1);
+	if (!frameName.IsValid())
+    {
+		return INVALID_FRAME_INDEX;
+    }
+    
+    for (int32 i = 0; i < frameCount; i++)
+	{
+    	if (frameNames[i] == frameName)
+        	return i;
+    }
+    
+    return INVALID_FRAME_INDEX;
 }
 
 void Sprite::SetModification(int32 modif)
@@ -778,618 +686,14 @@ void Sprite::SetModification(int32 modif)
 
 void Sprite::Reset()
 {
-	//drawCoord.x = 0;
-	//drawCoord.y = 0;
-	//frame = 0;
 	flags = 0;
-	//rotateAngle = 0.0f;
 	modification = 0;
-	//SetScale(1.0f, 1.0f);
-	//ResetPivotPoint();
 	clipPolygon = 0;
 }
 
 void Sprite::ResetModification()
 {
     flags = flags & ~EST_MODIFICATION;
-}
-
-inline void Sprite::PrepareSpriteRenderData(Sprite::DrawState * state)
-{
-    DVASSERT(state);
-    
-	float32 x, y;
-    float32 scaleX = 1.0f;
-    float32 scaleY = 1.0f;
-
-    flags = 0;
-    if (state->flags != 0)
-    {
-        flags |= EST_MODIFICATION;
-    }
-    
-    if(state->scale.x != 1.f || state->scale.y != 1.f)
-    {
-        flags |= EST_SCALE;
-        scaleX = state->scale.x;
-        scaleY = state->scale.y;
-    }
-    
-    if(state->angle != 0.f) flags |= EST_ROTATE;
-    
-    frame = Clamp(state->frame, 0, frameCount - 1);
-    
-    x = state->position.x - state->pivotPoint.x * state->scale.x;
-    y = state->position.y - state->pivotPoint.y * state->scale.y;
-    
-	if(flags & EST_MODIFICATION)
-	{
-		if((state->flags & (ESM_HFLIP | ESM_VFLIP)) == (ESM_HFLIP | ESM_VFLIP))
-		{//HFLIP|VFLIP
-			if(flags & EST_SCALE)
-			{//SCALE
-				x += (size.dx - rectsAndOffsets[frame][2] - rectsAndOffsets[frame][4] * 2) * scaleX;
-				y += (size.dy - rectsAndOffsets[frame][3] - rectsAndOffsets[frame][5] * 2) * scaleY;
-				if(!state || !state->usePerPixelAccuracy || (flags & EST_ROTATE))
-				{
-					tempVertices[2] = tempVertices[6] = frameVertices[frame][0] * scaleX + x;//x2 do not change this sequence. This is because of the cache reason
-					tempVertices[1] = tempVertices[3] = frameVertices[frame][5] * scaleY + y;//y1
-					tempVertices[0] = tempVertices[4] = frameVertices[frame][2] * scaleX + x;//x1
-					tempVertices[5] = tempVertices[7] = frameVertices[frame][1] * scaleY + y;//y2
-				}
-				else
-				{
-#if !defined (NEW_PPA)
-					tempVertices[2] = tempVertices[6] = floorf((frameVertices[frame][0] * scaleX + x) * Core::GetVirtualToPhysicalFactor() + 0.5f);//x2
-					tempVertices[5] = tempVertices[7] = floorf((frameVertices[frame][1] * scaleY + y) * Core::GetVirtualToPhysicalFactor() + 0.5f);//y2
-					tempVertices[0] = tempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX * Core::GetVirtualToPhysicalFactor() + tempVertices[2];//x1
-					tempVertices[1] = tempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY * Core::GetVirtualToPhysicalFactor() + tempVertices[5];//y1
-
-					RenderManager::Instance()->SetPhysicalViewScale();
-#else
-					tempVertices[2] = tempVertices[6] = floorf((frameVertices[frame][0] * scaleX + x) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//x2
-					tempVertices[5] = tempVertices[7] = floorf((frameVertices[frame][1] * scaleY + y) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//y2
-					tempVertices[0] = tempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + tempVertices[2];//x1
-					tempVertices[1] = tempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + tempVertices[5];//y1
-#endif
-				}
-			}
-			else
-			{//NOT SCALE
-				x += (size.dx - rectsAndOffsets[frame][2] - rectsAndOffsets[frame][4] * 2);
-				y += (size.dy - rectsAndOffsets[frame][3] - rectsAndOffsets[frame][5] * 2);
-				if(!state || !state->usePerPixelAccuracy || (flags & EST_ROTATE))
-				{
-					tempVertices[2] = tempVertices[6] = frameVertices[frame][0] + x;//x2 do not change this sequence. This is because of the cache reason
-					tempVertices[1] = tempVertices[3] = frameVertices[frame][5] + y;//y1
-					tempVertices[0] = tempVertices[4] = frameVertices[frame][2] + x;//x1
-					tempVertices[5] = tempVertices[7] = frameVertices[frame][1] + y;//y2
-				}
-				else
-				{
-#if !defined (NEW_PPA)
-					tempVertices[2] = tempVertices[6] = floorf((frameVertices[frame][0] + x) * Core::GetVirtualToPhysicalFactor() + 0.5f);//x2
-					tempVertices[5] = tempVertices[7] = floorf((frameVertices[frame][1] + y) * Core::GetVirtualToPhysicalFactor() + 0.5f);//y2
-					tempVertices[0] = tempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) * Core::GetVirtualToPhysicalFactor() + tempVertices[2];//x1
-					tempVertices[1] = tempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) * Core::GetVirtualToPhysicalFactor() + tempVertices[5];//y1
-
-					RenderManager::Instance()->SetPhysicalViewScale();
-#else
-					tempVertices[2] = tempVertices[6] = floorf((frameVertices[frame][0] + x) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//x2
-					tempVertices[5] = tempVertices[7] = floorf((frameVertices[frame][1] + y) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//y2
-					tempVertices[0] = tempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) + tempVertices[2];//x1
-					tempVertices[1] = tempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) + tempVertices[5];//y1
-#endif
-				}
-			}
-		}
-		else
-		{
-			if(state->flags & ESM_HFLIP)
-			{//HFLIP
-				if(flags & EST_SCALE)
-				{//SCALE
-					x += (size.dx - rectsAndOffsets[frame][2] - rectsAndOffsets[frame][4] * 2) * scaleX;
-					if(!state || !state->usePerPixelAccuracy || (flags & EST_ROTATE))
-					{
-						tempVertices[0] = tempVertices[4] = frameVertices[frame][2] * scaleX + x;//x1
-						tempVertices[5] = tempVertices[7] = frameVertices[frame][5] * scaleY + y;//y2
-						tempVertices[1] = tempVertices[3] = frameVertices[frame][1] * scaleX + y;//y1 //WEIRD: maybe scaleY should be used?
-						tempVertices[2] = tempVertices[6] = frameVertices[frame][0] * scaleX + x;//x2
-					}
-					else
-					{
-#if !defined (NEW_PPA)
-						tempVertices[2] = tempVertices[6] = floorf((frameVertices[frame][0] * scaleX + x) * Core::GetVirtualToPhysicalFactor() + 0.5f);//x2
-						tempVertices[0] = tempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) * scale.x * Core::GetVirtualToPhysicalFactor() + tempVertices[2];//x1
-						tempVertices[1] = tempVertices[3] = floorf((frameVertices[frame][1] * scaleY + y) * Core::GetVirtualToPhysicalFactor() + 0.5f);//y1
-						tempVertices[5] = tempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) * scale.y * Core::GetVirtualToPhysicalFactor() + tempVertices[1];//y2
-
-						RenderManager::Instance()->SetPhysicalViewScale();
-#else
-						tempVertices[2] = tempVertices[6] = floorf((frameVertices[frame][0] * scaleX + x) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//x2
-						tempVertices[0] = tempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + tempVertices[2];//x1
-						tempVertices[1] = tempVertices[3] = floorf((frameVertices[frame][1] * scaleY + y) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//y1
-						tempVertices[5] = tempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + tempVertices[1];//y2
-#endif
-					}
-				}
-				else
-				{//NOT SCALE
-					x += (size.dx - rectsAndOffsets[frame][2] - rectsAndOffsets[frame][4] * 2);
-					if(!state || !state->usePerPixelAccuracy || (flags & EST_ROTATE))
-					{
-						tempVertices[0] = tempVertices[4] = frameVertices[frame][2] + x;//x1
-						tempVertices[5] = tempVertices[7] = frameVertices[frame][5] + y;//y2
-						tempVertices[1] = tempVertices[3] = frameVertices[frame][1] + y;//y1
-						tempVertices[2] = tempVertices[6] = frameVertices[frame][0] + x;//x2
-					}
-					else
-					{
-#if !defined (NEW_PPA)
-						tempVertices[2] = tempVertices[6] = floorf((frameVertices[frame][0] + x) * Core::GetVirtualToPhysicalFactor() + 0.5f);//x2
-						tempVertices[0] = tempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) * Core::GetVirtualToPhysicalFactor() + tempVertices[2];//x1
-						tempVertices[1] = tempVertices[3] = floorf((frameVertices[frame][1] + y) * Core::GetVirtualToPhysicalFactor() + 0.5f);//y1
-						tempVertices[5] = tempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) * Core::GetVirtualToPhysicalFactor() + tempVertices[1];//y2
-
-						RenderManager::Instance()->SetPhysicalViewScale();
-#else
-						tempVertices[2] = tempVertices[6] = floorf((frameVertices[frame][0] + x) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//x2
-						tempVertices[0] = tempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) + tempVertices[2];//x1
-						tempVertices[1] = tempVertices[3] = floorf((frameVertices[frame][1] + y) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//y1
-						tempVertices[5] = tempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) + tempVertices[1];//y2
-#endif
-					}
-				}
-			}
-			else
-			{//VFLIP
-				if(flags & EST_SCALE)
-				{//SCALE
-					y += (size.dy - rectsAndOffsets[frame][3] - rectsAndOffsets[frame][5] * 2) * scaleY;
-					if(!state || !state->usePerPixelAccuracy || (flags & EST_ROTATE))
-					{
-						tempVertices[0] = tempVertices[4] = frameVertices[frame][0] * scaleX + x;//x1
-						tempVertices[5] = tempVertices[7] = frameVertices[frame][1] * scaleY + y;//y2
-						tempVertices[1] = tempVertices[3] = frameVertices[frame][5] * scaleY + y;//y1
-						tempVertices[2] = tempVertices[6] = frameVertices[frame][2] * scaleX + x;//x2
-					}
-					else
-					{
-#if !defined (NEW_PPA)
-						tempVertices[0] = tempVertices[4] = floorf((frameVertices[frame][0] * scale.x + x) * Core::GetVirtualToPhysicalFactor() + 0.5f);//x1
-						tempVertices[5] = tempVertices[7] = floorf((frameVertices[frame][1] * scale.y + y) * Core::GetVirtualToPhysicalFactor() + 0.5f);//y2
-						tempVertices[2] = tempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) * scale.x * Core::GetVirtualToPhysicalFactor() + tempVertices[0];//x2
-						tempVertices[1] = tempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) * scale.y * Core::GetVirtualToPhysicalFactor() + tempVertices[5];//y1
-
-						RenderManager::Instance()->SetPhysicalViewScale();
-#else
-						tempVertices[0] = tempVertices[4] = floorf((frameVertices[frame][0] * scaleX + x) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//x1
-						tempVertices[5] = tempVertices[7] = floorf((frameVertices[frame][1] * scaleY + y) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//y2
-						tempVertices[2] = tempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + tempVertices[0];//x2
-						tempVertices[1] = tempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + tempVertices[5];//y1
-#endif
-					}
-				}
-				else
-				{//NOT SCALE
-					y += (size.dy - rectsAndOffsets[frame][3] - rectsAndOffsets[frame][5] * 2);
-					if(!state || !state->usePerPixelAccuracy || (flags & EST_ROTATE))
-					{
-						tempVertices[0] = tempVertices[4] = frameVertices[frame][0] + x;//x1
-						tempVertices[5] = tempVertices[7] = frameVertices[frame][1] + y;//y2
-						tempVertices[1] = tempVertices[3] = frameVertices[frame][5] + y;//y1
-						tempVertices[2] = tempVertices[6] = frameVertices[frame][2] + x;//x2
-					}
-					else
-					{
-#if !defined (NEW_PPA)
-						tempVertices[0] = tempVertices[4] = floorf((frameVertices[frame][0] + x) * Core::GetVirtualToPhysicalFactor() + 0.5f);//x1
-						tempVertices[5] = tempVertices[7] = floorf((frameVertices[frame][1] + y) * Core::GetVirtualToPhysicalFactor() + 0.5f);//y2
-						tempVertices[2] = tempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) * Core::GetVirtualToPhysicalFactor() + tempVertices[0];//x2
-						tempVertices[1] = tempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) * Core::GetVirtualToPhysicalFactor() + tempVertices[5];//y1
-
-						RenderManager::Instance()->SetPhysicalViewScale();
-#else
-						tempVertices[0] = tempVertices[4] = floorf((frameVertices[frame][0] + x) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//x1
-						tempVertices[5] = tempVertices[7] = floorf((frameVertices[frame][1] + y) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//y2
-						tempVertices[2] = tempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) + tempVertices[0];//x2
-						tempVertices[1] = tempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) + tempVertices[5];//y1
-#endif
-					}
-				}
-			}
-		}
-
-	}
-	else
-	{//NO MODIFERS
-		if(flags & EST_SCALE)
-		{//SCALE
-			if(!state || !state->usePerPixelAccuracy || (flags & EST_ROTATE))
-			{
-				tempVertices[0] = tempVertices[4] = frameVertices[frame][0] * scaleX + x;//x1
-				tempVertices[5] = tempVertices[7] = frameVertices[frame][5] * scaleY + y;//y2
-				tempVertices[1] = tempVertices[3] = frameVertices[frame][1] * scaleY + y;//y1
-				tempVertices[2] = tempVertices[6] = frameVertices[frame][2] * scaleX + x;//x2 do not change this sequence. This is because of the cache reason
-			}
-			else
-			{
-#if !defined (NEW_PPA)
-				tempVertices[0] = tempVertices[4] = floorf((frameVertices[frame][0] * scale.x + x) * Core::GetVirtualToPhysicalFactor() + 0.5f);//x1
-				tempVertices[1] = tempVertices[3] = floorf((frameVertices[frame][1] * scale.y + y) * Core::GetVirtualToPhysicalFactor() + 0.5f);//y1
-				tempVertices[2] = tempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) * scale.x * Core::GetVirtualToPhysicalFactor() + tempVertices[0];//x2
-				tempVertices[5] = tempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) * scale.y * Core::GetVirtualToPhysicalFactor() + tempVertices[1];//y2
-
-				RenderManager::Instance()->SetPhysicalViewScale();
-#else
-				tempVertices[0] = tempVertices[4] = floorf((frameVertices[frame][0] * scaleX + x) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//x1
-				tempVertices[1] = tempVertices[3] = floorf((frameVertices[frame][1] * scaleY + y) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//y1
-				tempVertices[2] = tempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + tempVertices[0];//x2
-				tempVertices[5] = tempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + tempVertices[1];//y2
-#endif
-			}
-		}
-		else
-		{//NOT SCALE
-			if(!state || !state->usePerPixelAccuracy || (flags & EST_ROTATE))
-			{
-				tempVertices[0] = tempVertices[4] = frameVertices[frame][0] + x;//x1
-				tempVertices[5] = tempVertices[7] = frameVertices[frame][5] + y;//y2
-				tempVertices[1] = tempVertices[3] = frameVertices[frame][1] + y;//y1
-				tempVertices[2] = tempVertices[6] = frameVertices[frame][2] + x;//x2 do not change this sequence. This is because of the cache reason
-			}
-			else
-			{
-#if !defined (NEW_PPA)
-				tempVertices[0] = tempVertices[4] = floorf((frameVertices[frame][0] + x) * Core::GetVirtualToPhysicalFactor() + 0.5f);//x1
-				tempVertices[1] = tempVertices[3] = floorf((frameVertices[frame][1] + y) * Core::GetVirtualToPhysicalFactor() + 0.5f);//y1
-				tempVertices[2] = tempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) * Core::GetVirtualToPhysicalFactor() + tempVertices[0];//x2
-				tempVertices[5] = tempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) * Core::GetVirtualToPhysicalFactor() + tempVertices[1];//y2
-
-				RenderManager::Instance()->SetPhysicalViewScale();
-#else
-				tempVertices[0] = tempVertices[4] = floorf((frameVertices[frame][0] + x) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//x1
-				tempVertices[1] = tempVertices[3] = floorf((frameVertices[frame][1] + y) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//y1
-				tempVertices[2] = tempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) + tempVertices[0];//x2
-				tempVertices[5] = tempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) + tempVertices[1];//y2
-#endif
-			}
-
-		}
-
-	}
-
-	if(!clipPolygon)
-	{
-		if(flags & EST_ROTATE)
-		{
-			//SLOW CODE
-			//			glPushMatrix();
-			//			glTranslatef(drawCoord.x, drawCoord.y, 0);
-			//			glRotatef(RadToDeg(rotateAngle), 0.0f, 0.0f, 1.0f);
-			//			glTranslatef(-drawCoord.x, -drawCoord.y, 0);
-			//			RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
-			//			glPopMatrix();
-
-			// Optimized code
-			float32 sinA = sinf(state->angle);
-			float32 cosA = cosf(state->angle);
-			for(int32 k = 0; k < 4; ++k)
-			{
-				float32 x = tempVertices[(k << 1)] - state->position.x;
-				float32 y = tempVertices[(k << 1) + 1] - state->position.y;
-
-				float32 nx = (x) * cosA  - (y) * sinA + state->position.x;
-				float32 ny = (x) * sinA  + (y) * cosA + state->position.y;
-
-				tempVertices[(k << 1)] = nx;
-				tempVertices[(k << 1) + 1] = ny;
-			}
-		}
-
-		vertexStream->Set(TYPE_FLOAT, 2, 0, tempVertices);
-		texCoordStream->Set(TYPE_FLOAT, 2, 0, texCoords[frame]);
-		primitiveToDraw = PRIMITIVETYPE_TRIANGLESTRIP;
-		vertexCount = 4;
-	}
-	else
-	{
-		clippedVertices.clear();
-        clippedVertices.reserve(clipPolygon->GetPointCount());
-		clippedTexCoords.clear();
-        clippedTexCoords.reserve(clipPolygon->GetPointCount());
-        
-		Texture * t = GetTexture(frame);
-		float32 adjWidth = 1.f / t->width / resourceToVirtualFactor;
-		float32 adjHeight = 1.f / t->height / resourceToVirtualFactor;
-
-		if( flags & EST_SCALE )
-		{
-			for(int32 i = 0; i < clipPolygon->GetPointCount(); ++i)
-			{
-				const Vector2 &point = clipPolygon->GetPoints()[i];
-				clippedVertices.push_back( Vector2( point.x*scaleX + x, point.y*scaleY + y ) );
-			}
-		}
-		else
-		{
-			Vector2 pos(x, y);
-			for(int32 i = 0; i < clipPolygon->GetPointCount(); ++i)
-			{
-				const Vector2 &point = clipPolygon->GetPoints()[i];
-				clippedVertices.push_back( point + pos );
-			}
-		}
-
-		for( int32 i = 0; i < clipPolygon->GetPointCount(); ++i )
-		{
-			const Vector2 &point = clipPolygon->GetPoints()[i];
-
-			Vector2 texCoord( ( point.x - frameVertices[frame][0] ) * adjWidth
-							, ( point.y - frameVertices[frame][1] ) * adjHeight );
-
-			clippedTexCoords.push_back( Vector2( texCoords[frame][0] + texCoord.x
-											   , texCoords[frame][1] + texCoord.y ) );
-		}
-
-		vertexStream->Set(TYPE_FLOAT, 2, 0, &clippedVertices.front());
-		texCoordStream->Set(TYPE_FLOAT, 2, 0, &clippedTexCoords.front());
-		primitiveToDraw = PRIMITIVETYPE_TRIANGLEFAN;
-		vertexCount = clipPolygon->pointCount;
-	}
-
-	DVASSERT(vertexStream->pointer != 0);
-	DVASSERT(texCoordStream->pointer != 0);
-}
-
-void Sprite::Draw(DrawState * state)
-{
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
-	{
-		return;
-	}
-    
-    RENDERER_UPDATE_STATS(spriteDrawCount++);
-
-#if !defined (NEW_PPA)
-	if (state->usePerPixelAccuracy)
-		RenderManager::Instance()->PushMappingMatrix();
-#endif
-
-	PrepareSpriteRenderData(state);
-
-	if( clipPolygon )
-	{
-		RenderManager::Instance()->ClipPush();
-		Rect clipRect;
-		if( flags & EST_SCALE )
-		{
-			float32 x = state->position.x - state->pivotPoint.x * state->scale.x;
-			float32 y = state->position.y - state->pivotPoint.y * state->scale.y;
-			clipRect = Rect( GetRectOffsetValueForFrame( state->frame, X_OFFSET_TO_ACTIVE ) * state->scale.x + x
-						   , GetRectOffsetValueForFrame( state->frame, Y_OFFSET_TO_ACTIVE ) * state->scale.y + y
-						   , GetRectOffsetValueForFrame( state->frame, ACTIVE_WIDTH  ) * state->scale.x
-						   , GetRectOffsetValueForFrame( state->frame, ACTIVE_HEIGHT ) * state->scale.y );
-		}
-		else
-		{
-			float32 x = state->position.x - state->pivotPoint.x;
-			float32 y = state->position.y - state->pivotPoint.y;
-			clipRect = Rect( GetRectOffsetValueForFrame( state->frame, X_OFFSET_TO_ACTIVE ) + x
-						   , GetRectOffsetValueForFrame( state->frame, Y_OFFSET_TO_ACTIVE ) + y
-						   , GetRectOffsetValueForFrame( state->frame, ACTIVE_WIDTH )
-						   , GetRectOffsetValueForFrame( state->frame, ACTIVE_HEIGHT ) );
-		}
-
-		RenderManager::Instance()->ClipRect( clipRect );
-	}
-
-    RenderManager::Instance()->SetRenderState(state->renderState);
-	RenderManager::Instance()->SetTextureState(textureHandles[frameTextureIndex[frame]]);
-	RenderManager::Instance()->SetRenderData(spriteRenderObject);
-    RenderManager::Instance()->SetRenderEffect(state->shader);
- 	RenderManager::Instance()->DrawArrays(primitiveToDraw, 0, vertexCount);
-
-	if( clipPolygon )
-	{
-		RenderManager::Instance()->ClipPop();
-	}
-
-#if !defined (NEW_PPA)
-	if (state->usePerPixelAccuracy)
-		RenderManager::Instance()->PopMappingMatrix();
-#endif
-
-}
-
-void Sprite::DrawPoints(Vector2 *verticies, Vector2 *textureCoordinates, DrawState* drawState)
-{
-	GLfloat tempCoord[8];
-	Memcpy(tempCoord, texCoords[frame], sizeof(float32)*8);
-
-
-	texCoords[frame][0] = textureCoordinates[0].x;
-	texCoords[frame][1] = textureCoordinates[0].y;
-	texCoords[frame][2] = textureCoordinates[1].x;
-	texCoords[frame][3] = textureCoordinates[1].y;
-	texCoords[frame][4] = textureCoordinates[2].x;
-	texCoords[frame][5] = textureCoordinates[2].y;
-	texCoords[frame][6] = textureCoordinates[3].x;
-	texCoords[frame][7] = textureCoordinates[3].y;
-	DrawPoints(verticies, drawState);
-
-	Memcpy(texCoords[frame], tempCoord, sizeof(float32)*8);
-}
-
-
-void Sprite::DrawPoints(Vector2 *verticies, DrawState* drawState)
-{
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
-	{
-		return;
-	}
-    
-    RENDERER_UPDATE_STATS(spriteDrawCount++);
-
-	float32 x = drawState->position.x;
-	float32 y = drawState->position.y;
-	if(flags & EST_SCALE)
-	{
-		x -= drawState->pivotPoint.x * drawState->scale.x;
-		y -= drawState->pivotPoint.y * drawState->scale.y;
-	}
-	else
-	{
-		x -= drawState->pivotPoint.x;
-		y -= drawState->pivotPoint.y;
-	}
-
-	if (!textures)
-	{
-		RenderManager::Instance()->SetColor(1.0f, 0.0f, 1.0f, 1.0f);
-		RenderHelper::Instance()->FillRect(Rect(drawState->position.x - 12, drawState->position.y - 12, 24.0f, 24.0f), drawState->GetRenderState());
-		RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-		return;
-	}
-
-	if(flags & EST_MODIFICATION)
-	{
-		if((modification & (ESM_HFLIP | ESM_VFLIP)) == (ESM_HFLIP | ESM_VFLIP))
-		{
-			if(flags & EST_SCALE)
-			{
-				tempVertices[0] = verticies[3].x * drawState->scale.x + x;
-				tempVertices[1] = verticies[3].y * drawState->scale.y + y;
-				tempVertices[2] = verticies[2].x * drawState->scale.x + x;
-				tempVertices[3] = verticies[2].y * drawState->scale.y + y;
-				tempVertices[4] = verticies[1].x * drawState->scale.x + x;
-				tempVertices[5] = verticies[1].y * drawState->scale.y + y;
-				tempVertices[6] = verticies[0].x * drawState->scale.x + x;
-				tempVertices[7] = verticies[0].y * drawState->scale.y + y;
-			}
-			else
-			{
-				tempVertices[0] = verticies[3].x + x;
-				tempVertices[1] = verticies[3].y + y;
-				tempVertices[2] = verticies[2].x + x;
-				tempVertices[3] = verticies[2].y + y;
-				tempVertices[4] = verticies[1].x + x;
-				tempVertices[5] = verticies[1].y + y;
-				tempVertices[6] = verticies[0].x + x;
-				tempVertices[7] = verticies[0].y + y;
-			}
-		}
-		else
-		{
-			if(modification & ESM_HFLIP)
-			{
-				if(flags & EST_SCALE)
-				{
-					tempVertices[0] = verticies[1].x * drawState->scale.x + x;
-					tempVertices[1] = verticies[1].y * drawState->scale.y + y;
-					tempVertices[2] = verticies[0].x * drawState->scale.x + x;
-					tempVertices[3] = verticies[0].y * drawState->scale.y + y;
-					tempVertices[4] = verticies[3].x * drawState->scale.x + x;
-					tempVertices[5] = verticies[3].y * drawState->scale.y + y;
-					tempVertices[6] = verticies[2].x * drawState->scale.x + x;
-					tempVertices[7] = verticies[2].y * drawState->scale.y + y;
-				}
-				else
-				{
-					tempVertices[0] = verticies[1].x + x;
-					tempVertices[1] = verticies[1].y + y;
-					tempVertices[2] = verticies[0].x + x;
-					tempVertices[3] = verticies[0].y + y;
-					tempVertices[4] = verticies[3].x + x;
-					tempVertices[5] = verticies[3].y + y;
-					tempVertices[6] = verticies[2].x + x;
-					tempVertices[7] = verticies[2].y + y;
-				}
-			}
-			else
-			{
-				if(flags & EST_SCALE)
-				{
-					tempVertices[0] = verticies[2].x * drawState->scale.x + x;
-					tempVertices[1] = verticies[2].y * drawState->scale.y + y;
-					tempVertices[2] = verticies[3].x * drawState->scale.x + x;
-					tempVertices[3] = verticies[3].y * drawState->scale.y + y;
-					tempVertices[4] = verticies[0].x * drawState->scale.x + x;
-					tempVertices[5] = verticies[0].y * drawState->scale.y + y;
-					tempVertices[6] = verticies[1].x * drawState->scale.x + x;
-					tempVertices[7] = verticies[1].y * drawState->scale.y + y;
-				}
-				else
-				{
-					tempVertices[0] = verticies[2].x + x;
-					tempVertices[1] = verticies[2].y + y;
-					tempVertices[2] = verticies[3].x + x;
-					tempVertices[3] = verticies[3].y + y;
-					tempVertices[4] = verticies[0].x + x;
-					tempVertices[5] = verticies[0].y + y;
-					tempVertices[6] = verticies[1].x + x;
-					tempVertices[7] = verticies[1].y + y;
-				}
-			}
-		}
-	}
-	else
-	{
-		if(flags & EST_SCALE)
-		{
-			tempVertices[0] = verticies[0].x * drawState->scale.x + x;
-			tempVertices[1] = verticies[0].y * drawState->scale.y + y;
-			tempVertices[2] = verticies[1].x * drawState->scale.x + x;
-			tempVertices[3] = verticies[1].y * drawState->scale.y + y;
-			tempVertices[4] = verticies[2].x * drawState->scale.x + x;
-			tempVertices[5] = verticies[2].y * drawState->scale.y + y;
-			tempVertices[6] = verticies[3].x * drawState->scale.x + x;
-			tempVertices[7] = verticies[3].y * drawState->scale.y + y;
-		}
-		else
-		{
-			tempVertices[0] = verticies[0].x + x;
-			tempVertices[1] = verticies[0].y + y;
-			tempVertices[2] = verticies[1].x + x;
-			tempVertices[3] = verticies[1].y + y;
-			tempVertices[4] = verticies[2].x + x;
-			tempVertices[5] = verticies[2].y + y;
-			tempVertices[6] = verticies[3].x + x;
-			tempVertices[7] = verticies[3].y + y;
-		}
-
-	}
-
-	vertexStream->Set(TYPE_FLOAT, 2, 0, tempVertices);
-	texCoordStream->Set(TYPE_FLOAT, 2, 0, texCoords[frame]);
-
-	primitiveToDraw = PRIMITIVETYPE_TRIANGLESTRIP;
-	vertexCount = 4;
-
-	if(flags & EST_ROTATE)
-	{
-        // Optimized code
-        float32 sinA = sinf(drawState->angle);
-        float32 cosA = cosf(drawState->angle);
-        for(int32 k = 0; k < 4; ++k)
-        {
-            float32 x = tempVertices[(k << 1)] - drawState->position.x;
-            float32 y = tempVertices[(k << 1) + 1] - drawState->position.y;
-            
-            float32 nx = (x) * cosA  - (y) * sinA + drawState->position.x;
-            float32 ny = (x) * sinA  + (y) * cosA + drawState->position.y;
-            
-            tempVertices[(k << 1)] = nx;
-            tempVertices[(k << 1) + 1] = ny;
-        }
-    }	
-
-    //RenderManager::Instance()->SetTexture(textures[frameTextureIndex[frame]]);
-	RenderManager::Instance()->SetTextureState(textureHandles[frameTextureIndex[frame]]);
-	RenderManager::Instance()->SetRenderData(spriteRenderObject);
-	RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
-	RenderManager::Instance()->DrawArrays(primitiveToDraw, 0, vertexCount);
 }
 
 float32 Sprite::GetRectOffsetValueForFrame(int32 frame, eRectsAndOffsets valueType) const
@@ -1416,8 +720,8 @@ void Sprite::PrepareForNewSize()
     
 	String pathname = relativePathname.GetAbsolutePathname();
 
-	int pos = (int)pathname.find(Core::Instance()->GetResourceFolder(Core::Instance()->GetBaseResourceIndex()));
-	String scaledName = pathname.substr(0, pos) + Core::Instance()->GetResourceFolder(Core::Instance()->GetDesirableResourceIndex()) + pathname.substr(pos + Core::Instance()->GetResourceFolder(Core::Instance()->GetBaseResourceIndex()).length());
+	int pos = (int)pathname.find(VirtualCoordinatesSystem::Instance()->GetResourceFolder(VirtualCoordinatesSystem::Instance()->GetBaseResourceIndex()));
+	String scaledName = pathname.substr(0, pos) + VirtualCoordinatesSystem::Instance()->GetResourceFolder(VirtualCoordinatesSystem::Instance()->GetDesirableResourceIndex()) + pathname.substr(pos + VirtualCoordinatesSystem::Instance()->GetResourceFolder(VirtualCoordinatesSystem::Instance()->GetBaseResourceIndex()).length());
 
 	Logger::FrameworkDebug("Seraching for file: %s", scaledName.c_str());
 
@@ -1436,7 +740,6 @@ void Sprite::PrepareForNewSize()
 	Clear();
     
     spriteMapMutex.Lock();
-//	Logger::FrameworkDebug("erasing from sprite from map");
 	spriteMap.erase(FILEPATH_MAP_KEY(relativePathname));
     spriteMapMutex.Unlock();
 
@@ -1453,18 +756,12 @@ void Sprite::PrepareForNewSize()
 	size.dx = 24;
 	size.dy = 24;
 	frameCount = 0;
-	frame = 0;
 
 	modification = 0;
 	flags = 0;
 	resourceSizeIndex = 0;
 
 	clipPolygon = 0;
-
-	resourceToVirtualFactor = 1.0f;
-
-    resourceToPhysicalFactor = 1.0f;
-    
     
 	PureCreate(pathname.substr(0, pathname.length() - 4), this);
 //TODO: следующая строка кода написада здесь только до тех времен
@@ -1482,7 +779,7 @@ void Sprite::ValidateForSize()
 	for(SpriteMap::iterator it = spriteMap.begin(); it != spriteMap.end(); ++it)
 	{
 		Sprite *sp = it->second;
-		if (sp->type == SPRITE_FROM_FILE && Core::Instance()->GetDesirableResourceIndex() != sp->GetResourceSizeIndex())
+		if (sp->type == SPRITE_FROM_FILE && VirtualCoordinatesSystem::Instance()->GetDesirableResourceIndex() != sp->GetResourceSizeIndex())
 		{
 			spritesToReload.push_back(sp);
 		}
@@ -1521,26 +818,32 @@ void Sprite::SetClipPolygon(Polygon2 * _clipPolygon)
 
 void Sprite::ConvertToVirtualSize()
 {
-	float32 virtualToPhysicalFactor = Core::Instance()->GetVirtualToPhysicalFactor();
-	float32 resourceToVirtualFactor = Core::Instance()->GetResourceToVirtualFactor(GetResourceSizeIndex());
+    frameVertices[0][0] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(frameVertices[0][0], resourceSizeIndex);
+    frameVertices[0][1] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(frameVertices[0][1], resourceSizeIndex);
+    frameVertices[0][2] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(frameVertices[0][2], resourceSizeIndex);
+    frameVertices[0][3] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(frameVertices[0][3], resourceSizeIndex);
+    frameVertices[0][4] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(frameVertices[0][4], resourceSizeIndex);
+    frameVertices[0][5] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(frameVertices[0][5], resourceSizeIndex);
+    frameVertices[0][6] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(frameVertices[0][6], resourceSizeIndex);
+    frameVertices[0][7] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(frameVertices[0][7], resourceSizeIndex);
 
-	frameVertices[0][0] *= virtualToPhysicalFactor * resourceToVirtualFactor;
-	frameVertices[0][1] *= virtualToPhysicalFactor * resourceToVirtualFactor;
-	frameVertices[0][2] *= virtualToPhysicalFactor * resourceToVirtualFactor;
-	frameVertices[0][3] *= virtualToPhysicalFactor * resourceToVirtualFactor;
-	frameVertices[0][4] *= virtualToPhysicalFactor * resourceToVirtualFactor;
-	frameVertices[0][5] *= virtualToPhysicalFactor * resourceToVirtualFactor;
-	frameVertices[0][6] *= virtualToPhysicalFactor * resourceToVirtualFactor;
-	frameVertices[0][7] *= virtualToPhysicalFactor * resourceToVirtualFactor;
+    frameVertices[0][0] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[0][0]);
+    frameVertices[0][1] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[0][1]);
+    frameVertices[0][2] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[0][2]);
+    frameVertices[0][3] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[0][3]);
+    frameVertices[0][4] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[0][4]);
+    frameVertices[0][5] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[0][5]);
+    frameVertices[0][6] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(frameVertices[0][6]);
+    frameVertices[0][7] = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalY(frameVertices[0][7]);
 
-	texCoords[0][0] *= resourceToVirtualFactor;
-	texCoords[0][1] *= resourceToVirtualFactor;
-	texCoords[0][2] *= resourceToVirtualFactor;
-	texCoords[0][3] *= resourceToVirtualFactor;
-	texCoords[0][4] *= resourceToVirtualFactor;
-	texCoords[0][5] *= resourceToVirtualFactor;
-	texCoords[0][6] *= resourceToVirtualFactor;
-	texCoords[0][7] *= resourceToVirtualFactor;
+    texCoords[0][0] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(texCoords[0][0], resourceSizeIndex);
+    texCoords[0][1] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(texCoords[0][1], resourceSizeIndex);
+    texCoords[0][2] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(texCoords[0][2], resourceSizeIndex);
+    texCoords[0][3] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(texCoords[0][3], resourceSizeIndex);
+    texCoords[0][4] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(texCoords[0][4], resourceSizeIndex);
+    texCoords[0][5] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(texCoords[0][5], resourceSizeIndex);
+    texCoords[0][6] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualX(texCoords[0][6], resourceSizeIndex);
+    texCoords[0][7] = VirtualCoordinatesSystem::Instance()->ConvertResourceToVirtualY(texCoords[0][7], resourceSizeIndex);
 }
 
 const FilePath & Sprite::GetRelativePathname() const
@@ -1600,7 +903,6 @@ void Sprite::Reload()
 		if(fp)
 		{
 			InitFromFile(fp);
-			SetFrame(frame);
 			SafeRelease(fp);
 		}
 		else
@@ -1632,11 +934,11 @@ File* Sprite::GetSpriteFile(const FilePath & spriteName, int32& resourceSizeInde
             return NULL;
         }
 
-        resourceSizeIndex = Core::Instance()->GetBaseResourceIndex();
+        resourceSizeIndex = VirtualCoordinatesSystem::Instance()->GetBaseResourceIndex();
     }
     else
     {
-        resourceSizeIndex = Core::Instance()->GetDesirableResourceIndex();
+        resourceSizeIndex = VirtualCoordinatesSystem::Instance()->GetDesirableResourceIndex();
     }
 
     return fp;
@@ -1686,6 +988,16 @@ void Sprite::ReloadExistingTextures()
             Logger::Error("[Sprite::ReloadSpriteTextures] Something strange with texture_%d", i);
         }
     }
+}
+    
+void Sprite::SetRelativePathname(const FilePath& path)
+{
+    spriteMapMutex.Lock();
+    spriteMap.erase(FILEPATH_MAP_KEY(relativePathname));
+    relativePathname = path;
+    spriteMap[FILEPATH_MAP_KEY(this->relativePathname)] = this;
+    spriteMapMutex.Unlock();
+    GetTexture()->SetPathname(path);
 }
 
 };

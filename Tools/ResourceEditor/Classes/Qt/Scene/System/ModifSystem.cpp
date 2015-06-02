@@ -50,10 +50,10 @@ EntityModificationSystem::EntityModificationSystem(DAVA::Scene * scene, SceneCol
 	, collisionSystem(colSys)
 	, cameraSystem(camSys)
 	, hoodSystem(hoodSys)
+	, cloneState(CLONE_DONT)
 	, inModifState(false)
 	, modified(false)
 	, snapToLandscape(false)
-	, cloneState(CLONE_DONT)
 {
 	SetModifMode(ST_MODIF_OFF);
 	SetModifAxis(ST_AXIS_Z);
@@ -160,10 +160,15 @@ bool EntityModificationSystem::InCloneState() const
 	return (cloneState == CLONE_NEED);
 }
 
+bool EntityModificationSystem::InCloneDoneState() const
+{
+    return (cloneState == CLONE_DONE);
+}
+
 void EntityModificationSystem::Process(DAVA::float32 timeElapsed)
 { }
 
-void EntityModificationSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void EntityModificationSystem::Input(DAVA::UIEvent *event)
 {
 	if (IsLocked())
 	{
@@ -456,6 +461,8 @@ bool EntityModificationSystem::ModifCanStartByMouse(const EntityGroup &selectedE
 	// we can start modif only if there is no locked entities
 	if(ModifCanStart(selectedEntities))
 	{
+        const bool modificationByGizmoOnly = SettingsManager::GetValue(Settings::Scene_ModificationByGizmoOnly).AsBool();
+        
 		// we can start modification only if mouse is over hood
 		// on mouse is over one of currently selected items
 		if(hoodSystem->GetPassingAxis() != ST_AXIS_NONE)
@@ -463,7 +470,7 @@ bool EntityModificationSystem::ModifCanStartByMouse(const EntityGroup &selectedE
 			// allow starting modification
 			modifCanStart = true;
 		}
-		else
+		else if(!modificationByGizmoOnly)
 		{
 			// send this ray to collision system and get collision objects
 			const EntityGroup *collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
@@ -756,9 +763,9 @@ DAVA::Matrix4 EntityModificationSystem::SnapToLandscape(const DAVA::Vector3 &poi
 		DAVA::Vector3 resPoint;
 		DAVA::Vector3 realPoint = point * originalParentTransform;
 
-		if(landscape->PlacePoint(point, resPoint))
+        if (landscape->PlacePoint(realPoint, resPoint))
 		{
-			resPoint = resPoint - point;
+            resPoint = resPoint - realPoint;
 			ret.SetTranslationVector(resPoint);
 		}
 	}
@@ -799,6 +806,15 @@ void EntityModificationSystem::CloneBegin()
 			DAVA::Entity *newEntity = origEntity->Clone();
             newEntity->SetLocalTransform(modifEntities[i].originalTransform);
 
+            Scene *scene = origEntity->GetScene();
+            if(scene)
+            {
+                StaticOcclusionSystem *sosystem = scene->staticOcclusionSystem;
+                DVASSERT(sosystem);
+                
+                sosystem->InvalidateOcclusionIndicesRecursively(newEntity);
+            }
+
 			origEntity->GetParent()->AddNode(newEntity);
 
 			clonedEntities.push_back(newEntity);
@@ -812,8 +828,6 @@ void EntityModificationSystem::CloneEnd()
 	{
 		SceneEditor2 *sceneEditor = ((SceneEditor2 *) GetScene());
 		SceneSelectionSystem *selectionSystem = sceneEditor->selectionSystem;
-
-		selectionSystem->Clear();
 
 		sceneEditor->BeginBatch("Clone");
 
@@ -839,7 +853,6 @@ void EntityModificationSystem::CloneEnd()
 			sceneEditor->Exec(new EntityAddCommand(clonedEntities[i], cloneParent));
 
 			// make cloned entiti selected
-			selectionSystem->AddSelection(clonedEntities[i]);
 			SafeRelease(clonedEntities[i]);
 		}
 

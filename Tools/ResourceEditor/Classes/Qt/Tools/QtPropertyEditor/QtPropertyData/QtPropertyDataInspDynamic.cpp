@@ -16,11 +16,14 @@
 
 #include "QtPropertyDataInspDynamic.h"
 
+#include <QDebug>
+
+
 QtPropertyDataInspDynamic::QtPropertyDataInspDynamic(void *_object, DAVA::InspInfoDynamic *_dynamicInfo, DAVA::FastName _name)
 	: QtPropertyDataDavaVariant(DAVA::VariantType())
 	, object(_object)
-	, dynamicInfo(_dynamicInfo)
 	, name(_name)
+	, dynamicInfo(_dynamicInfo)
 	, inspFlags(0)
 	, lastCommand(NULL)
 {
@@ -79,6 +82,24 @@ void QtPropertyDataInspDynamic::SetValueInternal(const QVariant &value)
 		DAVA::SafeDelete(lastCommand);
 		lastCommand = new InspDynamicModifyCommand(dynamicInfo, object, name, newValue);
 
+		dynamicInfo->MemberValueSet(object, name, newValue);
+	}
+}
+
+
+void QtPropertyDataInspDynamic::SetTempValueInternal(const QVariant& value)
+{
+	QtPropertyDataDavaVariant::SetValueInternal(value);
+	DAVA::VariantType newValue;
+	
+	if(!value.isNull())
+	{
+		newValue = QtPropertyDataDavaVariant::GetVariantValue();
+	}
+
+	// save value to meta-object
+	if(NULL != dynamicInfo)
+	{
 		dynamicInfo->MemberValueSet(object, name, newValue);
 	}
 }

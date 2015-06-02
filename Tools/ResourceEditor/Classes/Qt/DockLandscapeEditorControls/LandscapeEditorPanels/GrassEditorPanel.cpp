@@ -9,6 +9,14 @@
 #define LAYERS_PREVIEW_WIDTH 48
 #define LAYERS_CHECKBOX_WIDTH 24
 
+#include <QVBoxLayout>
+#include <QGroupBox>
+#include <QLabel>
+#include <QApplication>
+#include <QHeaderView>
+#include <QPainter>
+
+
 GrassEditorPanel::GrassEditorPanel(QWidget* parent)
 :	LandscapeEditorBasePanel(parent)
 {
@@ -93,7 +101,7 @@ void GrassEditorPanel::InitUI()
     layersList->horizontalHeader()->setVisible(false);
     layersList->horizontalHeader()->resizeSection(0, LAYERS_CHECKBOX_WIDTH);
     layersList->horizontalHeader()->resizeSection(1, LAYERS_PREVIEW_WIDTH);
-    layersList->horizontalHeader()->setResizeMode(2, QHeaderView::Stretch);
+    layersList->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
     layersList->verticalHeader()->setVisible(false);
     layersList->setSelectionBehavior(QAbstractItemView::SelectRows);
     layersList->setSelectionMode(QAbstractItemView::SingleSelection);

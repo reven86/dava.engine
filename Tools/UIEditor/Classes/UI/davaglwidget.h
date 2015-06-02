@@ -32,8 +32,9 @@
 
 #include <QWidget>
 #include <QTimer>
+#include "Math/Vector.h"
 
-#include "Platform/Qt/QtLayer.h"
+#include "QtLayer.h"
 
 namespace Ui {
 	class DavaGLWidget;
@@ -92,7 +93,6 @@ protected:
     DAVA::float32 ToNearestInteger(DAVA::float32 value);
 
 	virtual void Quit();
-	virtual void ShowAssertMessage(const char * message);
 
 private:
 	Ui::DavaGLWidget *ui;

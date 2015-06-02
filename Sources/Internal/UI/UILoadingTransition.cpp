@@ -33,7 +33,7 @@
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
 #include "Debug/Replay.h"
-#include "Job/JobWaiter.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 namespace DAVA 
 {
@@ -129,8 +129,7 @@ void UILoadingTransition::Update(float32 timeElapsed)
 {
 	if ((thread) && (thread->GetState() == Thread::STATE_ENDED))
 	{
-		ThreadIdJobWaiter waiter(thread->GetThreadId());
-		waiter.Wait();
+		JobManager::Instance()->WaitMainJobs(thread->GetId());
 
 		UIControlSystem::Instance()->SetScreen(nextScreen, outTransition);
         if (!inTransition) 
@@ -157,7 +156,7 @@ void UILoadingTransition::Draw(const UIGeometricData &geometricData)
         Sprite::DrawState drawState;
         drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
         drawState.SetPosition(geometricData.position);
- 		backgroundSprite->Draw(&drawState);
+        RenderSystem2D::Instance()->Draw(backgroundSprite, &drawState);
     }
 
 	if (animationSprite)
@@ -171,7 +170,7 @@ void UILoadingTransition::Draw(const UIGeometricData &geometricData)
         drawState.SetFrame(frame);
         drawState.SetPosition(geometricData.position);
         
-		animationSprite->Draw(&drawState);
+        RenderSystem2D::Instance()->Draw(animationSprite, &drawState);
 	}
 }
 	

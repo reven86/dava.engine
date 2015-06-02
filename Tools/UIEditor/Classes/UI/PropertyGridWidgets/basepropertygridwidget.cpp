@@ -693,11 +693,8 @@ void BasePropertyGridWidget::UpdateSpinBoxWidgetWithPropertyValue(QSpinBox* spin
                                                                   const QMetaProperty& curProperty)
 {
     // Get the current value.
-    bool isPropertyValueDiffers = false;
-    float propertyValue =
-        PropertiesHelper::GetAllPropertyValues<float>(this->activeMetadata,
-                                                      curProperty.name(),
-                                                      isPropertyValueDiffers);
+    float propertyValue = PropertiesHelper::GetAllPropertyValues<float>(this->activeMetadata,
+                                                                        curProperty.name());
     
     {
         // For Spin Box set some value irregardless of isPropertyValueDiffers flag.
@@ -786,12 +783,24 @@ void BasePropertyGridWidget::ProcessPushButtonClicked(QPushButton *)
     Logger::Error("BasePropertyGridWidget::ProcessPushButtonClicked is called - you've forgot to create custom handler for this button!!!");
 }
 
-void BasePropertyGridWidget::SetComboboxSelectedItem(QComboBox* comboBoxWidget, const QString& selectedItemText)
+void BasePropertyGridWidget::SetComboboxSelectedItem(QComboBox* comboBoxWidget, const QString& selectedItemText, bool byToolTip)
 {
-    int index = comboBoxWidget->findText(selectedItemText);
-    if ( index != -1 )
+    int index = -1;
+    if (byToolTip)
     {
-        comboBoxWidget->setCurrentIndex(index);
+        index = comboBoxWidget->findData(QVariant(selectedItemText),Qt::ToolTipRole);
+        if ( index != -1 )
+        {
+            comboBoxWidget->setCurrentIndex(index);
+        }
+    }
+    else
+    {
+        index = comboBoxWidget->findText(selectedItemText);
+        if ( index != -1 )
+        {
+            comboBoxWidget->setCurrentIndex(index);
+        }
     }
 }
 

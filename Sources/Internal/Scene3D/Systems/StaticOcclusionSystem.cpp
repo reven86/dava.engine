@@ -161,11 +161,27 @@ void StaticOcclusionBuildSystem::Cancel()
 {
     activeIndex = -1;
     SafeDelete(staticOcclusion);
+    
+    StaticOcclusionSystem *sos = GetScene()->staticOcclusionSystem;
+    sos->InvalidateOcclusion();
+    SceneForceLod(LodComponent::INVALID_LOD_LAYER);
+    RestoreOcclusionMaterials();
+}
+
+void StaticOcclusionBuildSystem::CollectEntitiesForOcclusionRecursively(Vector<Entity*>& dest, Entity *entity)
+{
+    if (GetAnimationComponent(entity)) //skip animated hierarchies
+        return;
+    if (GetRenderComponent(entity))
+        dest.push_back(entity);
+
+    for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
+        CollectEntitiesForOcclusionRecursively(dest, entity->GetChild(i));
 }
     
 void StaticOcclusionBuildSystem::StartBuildOcclusion(BaseObject * bo, void * messageData, void * callerData)
 {
-    if (activeIndex == -1)return; // System inactive
+    if (activeIndex == static_cast<uint32>(-1))return; // System inactive
     
     SetCamera(GetScene()->GetCurrentCamera());
 
@@ -181,7 +197,7 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion(BaseObject * bo, void * mes
     Vector<Entity*> entities;
     Vector<RenderObject*> renderObjectsArray;
     Landscape * landscape = 0;
-    GetScene()->GetChildEntitiesWithComponent(entities, Component::RENDER_COMPONENT);
+    CollectEntitiesForOcclusionRecursively(entities, GetScene());    
     
     uint32 size = (uint32)entities.size();
     renderObjectsArray.reserve(size);
@@ -250,14 +266,21 @@ void StaticOcclusionBuildSystem::OcclusionBuildStep(BaseObject * bo, void * mess
         const Vector3 & position = camera->GetPosition();
         
         StaticOcclusionData & data = componentInProgress->GetData();
-        
-        if (data.bbox.IsInside(position))
-        {
+
+        if ((position.x>=data.bbox.min.x)&&(position.x<=data.bbox.max.x)&&(position.y>=data.bbox.min.y)&&(position.y<=data.bbox.max.y))
+        {        
             uint32 x = (uint32)((position.x - data.bbox.min.x) / (data.bbox.max.x - data.bbox.min.x) * (float32)data.sizeX);
             uint32 y = (uint32)((position.y - data.bbox.min.y) / (data.bbox.max.y - data.bbox.min.y) * (float32)data.sizeY);
-            uint32 z = (uint32)((position.z - data.bbox.min.z) / (data.bbox.max.z - data.bbox.min.z) * (float32)data.sizeZ);
-            
-            staticOcclusion->RenderFrame(x, y, z);
+            float32 dH = data.cellHeightOffset?data.cellHeightOffset[x+y*data.sizeX]:0;        
+            if ((position.z>=(data.bbox.min.z+dH))&&(position.z<=(data.bbox.max.z+dH)))
+            {        
+                uint32 z = (uint32)((position.z - (data.bbox.min.z+dH)) / (data.bbox.max.z - data.bbox.min.z) * (float32)data.sizeZ);                                    
+                
+                if ((x < data.sizeX) && (y < data.sizeY) && (z < data.sizeZ))
+                {                    
+                    staticOcclusion->RenderFrame(x, y, z);
+                }
+            }
         }
 
         entities[activeIndex]->AddComponent(componentInProgress);
@@ -268,7 +291,7 @@ void StaticOcclusionBuildSystem::OcclusionBuildStep(BaseObject * bo, void * mess
         SceneForceLod(LodComponent::INVALID_LOD_LAYER);
         RestoreOcclusionMaterials();
     }
-    else
+    else if(staticOcclusion)
     {
         buildStepRemains = staticOcclusion->RenderFrame();
         if(buildStepRemains > buildStepsCount)
@@ -316,7 +339,7 @@ void StaticOcclusionBuildSystem::FinishBuildOcclusion(DAVA::BaseObject *bo, void
     
 bool StaticOcclusionBuildSystem::IsInBuild() const
 {
-    return (-1 != activeIndex);
+    return (static_cast<uint32>(-1) != activeIndex);
 }
 
 uint32 StaticOcclusionBuildSystem::GetBuildStatus() const
@@ -491,25 +514,33 @@ void StaticOcclusionSystem::Process(float32 timeElapsed)
         StaticOcclusionData * data = &staticOcclusionComponents[k]->GetData();
         if (!data)return;
 
-        
-        uint32 x = (uint32)((position.x - data->bbox.min.x) / (data->bbox.max.x - data->bbox.min.x) * (float32)data->sizeX);
-        uint32 y = (uint32)((position.y - data->bbox.min.y) / (data->bbox.max.y - data->bbox.min.y) * (float32)data->sizeY);
-        float32 dH = data->cellHeightOffset?data->cellHeightOffset[x+y*data->sizeX]:0;        
-        uint32 z = (uint32)((position.z - (data->bbox.min.z+dH)) / (data->bbox.max.z - data->bbox.min.z) * (float32)data->sizeZ);                    
-            
-        if ((x < data->sizeX) && (y < data->sizeY) && (z < data->sizeZ))
-        {
-            uint32 blockIndex = z * (data->sizeX * data->sizeY) + y * (data->sizeX) + (x);
-
-            if ((activePVSSet != data) || (activeBlockIndex != blockIndex))
+        if ((position.x>=data->bbox.min.x)&&(position.x<=data->bbox.max.x)&&(position.y>=data->bbox.min.y)&&(position.y<=data->bbox.max.y))
+        {        
+            uint32 x = (uint32)((position.x - data->bbox.min.x) / (data->bbox.max.x - data->bbox.min.x) * (float32)data->sizeX);
+            uint32 y = (uint32)((position.y - data->bbox.min.y) / (data->bbox.max.y - data->bbox.min.y) * (float32)data->sizeY);   
+            if ((x < data->sizeX) && (y < data->sizeY)) //
             {
-                activePVSSet = data;
-                activeBlockIndex = blockIndex;
-                needUpdatePVS = true;
+                float32 dH = data->cellHeightOffset?data->cellHeightOffset[x+y*data->sizeX]:0;  
+                if ((position.z>=(data->bbox.min.z+dH))&&(position.z<=(data->bbox.max.z+dH)))
+                {
+
+                    uint32 z = (uint32)((position.z - (data->bbox.min.z+dH)) / (data->bbox.max.z - data->bbox.min.z) * (float32)data->sizeZ);                    
+            
+                    if (z < data->sizeZ)
+                    {
+                        uint32 blockIndex = z * (data->sizeX * data->sizeY) + y * (data->sizeX) + (x);
+
+                        if ((activePVSSet != data) || (activeBlockIndex != blockIndex))
+                        {
+                            activePVSSet = data;
+                            activeBlockIndex = blockIndex;
+                            needUpdatePVS = true;
+                        }
+                        notInPVS = false;
+                    }
+                }
             }
-            notInPVS = false;
         }
-        
     }
     
     if (notInPVS)
@@ -558,7 +589,7 @@ void StaticOcclusionSystem::RegisterComponent(Entity *entity, Component * compon
     }
 }
     
-void StaticOcclusionSystem::UnregisterEntity(Entity *entity, Component * component)
+void StaticOcclusionSystem::UnregisterComponent(Entity *entity, Component * component)
 {
     if (component->GetType() == Component::RENDER_COMPONENT)
     {
@@ -621,7 +652,7 @@ void StaticOcclusionSystem::RemoveEntity(Entity * entity)
 
 void StaticOcclusionSystem::ClearOcclusionObjects()
 {
-    for (int32 i=0, sz = indexedRenderObjects.size(); i<sz; ++i)
+    for (size_t i=0, sz = indexedRenderObjects.size(); i<sz; ++i)
     {
         if (indexedRenderObjects[i])
             indexedRenderObjects[i]->SetStaticOcclusionIndex(INVALID_STATIC_OCCLUSION_INDEX);
@@ -787,7 +818,7 @@ PolygonGroup* StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawGrid
             for (uint32 zs = 0; zs < zSubdivisions; ++zs)
             {
                 int32 iBase = (zs + zSubdivisions*(ys + xs * ySubdivisions)) * 24;
-                int32 vBase[2] = {IDX_BY_POS(xs, ys, zs), IDX_BY_POS(xs, ys, zs+1)};
+                int32 vBase[2] = {static_cast<int32>(IDX_BY_POS(xs, ys, zs)), static_cast<int32>(IDX_BY_POS(xs, ys, zs+1))};
                 for (int32 i=0; i<24; i++)
                     res->SetIndex(iBase + i, indexOffsets[i*2] + vBase[indexOffsets[i*2+1]]);
 
@@ -806,7 +837,7 @@ PolygonGroup* StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawCove
     int32 xSideIndexCount = xSubdivisions * 6 * 2; 
     int32 ySideIndexCount = ySubdivisions * 6 * 2;
     int32 xySideIndexCount =  xSideIndexCount + ySideIndexCount;
-    int32 zSideIndexCount = xSubdivisions * xSubdivisions * 6 * 2;
+    int32 zSideIndexCount = xSubdivisions * ySubdivisions * 6 * 2;
     int32 totalSideIndexCount = xySideIndexCount+zSideIndexCount;
     int32 xExtraIndexCount = (xSubdivisions-1) * (ySubdivisions) * 6 * 2;
     int32 yExtraIndexCount = (ySubdivisions-1) * (xSubdivisions) * 6 * 2;

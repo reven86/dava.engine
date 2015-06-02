@@ -23,21 +23,12 @@ TilemaskEditorPanel::TilemaskEditorPanel(QWidget* parent)
 ,	frameStrength(NULL)
 ,	frameTileTexturesPreview(NULL)
 {
-    DAVA::RenderStateData noBlendStateData;
-    DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND, noBlendStateData);
-	
-    noBlendStateData.sourceFactor = DAVA::BLEND_ONE;
-	noBlendStateData.destFactor = DAVA::BLEND_ZERO;
-	
-	noBlendDrawState = DAVA::RenderManager::Instance()->CreateRenderState(noBlendStateData);
-
 	InitUI();
 	ConnectToSignals();
 }
 
 TilemaskEditorPanel::~TilemaskEditorPanel()
 {
-	RenderManager::Instance()->ReleaseRenderState(noBlendDrawState);
 }
 
 bool TilemaskEditorPanel::GetEditorEnabled()
@@ -136,7 +127,7 @@ void TilemaskEditorPanel::InitUI()
 	radioDraw->setText(ResourceEditor::TILEMASK_EDITOR_DRAW_CAPTION.c_str());
 	radioCopyPaste->setText(ResourceEditor::TILEMASK_EDITOR_COPY_PASTE_CAPTION.c_str());
 
-	tileTexturePreviewWidget->setMaximumHeight(160);
+    tileTexturePreviewWidget->setFixedHeight(130);
 
 	layoutBrushImage->setContentsMargins(0, 0, 0, 0);
 	layoutTileTexture->setContentsMargins(0, 0, 0, 0);
@@ -263,24 +254,17 @@ void TilemaskEditorPanel::SplitImageToChannels(Image* image, Image*& r, Image*& 
 		uint32 width = image->GetWidth();
 		uint32 height = image->GetHeight();
 
-		Texture* t = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
-											 width, height, false);
-		Sprite* s = Sprite::CreateFromTexture(t, 0, 0, width, height);
+        Texture* t = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(), width, height, false);
+		Texture* fbo = Texture::CreateFBO(width, height, FORMAT_RGBA8888, Texture::DEPTH_NONE);
 
-		Sprite* sprite = Sprite::CreateAsRenderTarget(width, height, FORMAT_RGBA8888);
-		RenderManager::Instance()->SetRenderTarget(sprite);
-        
-        Sprite::DrawState drawState;
-		drawState.SetPosition(0.f, 0.f);
-        drawState.SetRenderState(noBlendDrawState);
-		s->Draw(&drawState);
-		RenderManager::Instance()->RestoreRenderTarget();
+        RenderHelper::Instance()->Set2DRenderTarget(fbo);
+        RenderHelper::Instance()->DrawTexture(t, RenderState::RENDERSTATE_2D_OPAQUE);
+        RenderManager::Instance()->SetRenderTarget(0);
 
-		image = sprite->GetTexture()->CreateImageFromMemory(noBlendDrawState);
+        image = fbo->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
 		image->ResizeCanvas(width, height);
 
-		SafeRelease(sprite);
-		SafeRelease(s);
+        SafeRelease(fbo);
 		SafeRelease(t);
 	}
 	else
@@ -346,7 +330,7 @@ void TilemaskEditorPanel::UpdateTileTextures()
 	int32 count = (int32)sceneEditor->tilemaskEditorSystem->GetTileTextureCount();
 	Image** images = new Image*[count];
 
-    Image* image = sceneEditor->tilemaskEditorSystem->GetTileTexture(0)->CreateImageFromMemory(noBlendDrawState);
+    Image* image = sceneEditor->tilemaskEditorSystem->GetTileTexture(0)->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
     
     image->ResizeCanvas(iconSize.width(), iconSize.height());
     

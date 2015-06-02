@@ -37,7 +37,6 @@
 namespace DAVA
 {
     
-REGISTER_CLASS(CameraComponent)
     
 CameraComponent::CameraComponent(Camera * _camera)
 {
@@ -76,7 +75,7 @@ void CameraComponent::Serialize(KeyedArchive *archive, SerializationContext *ser
 	if(NULL != archive && NULL != camera)
 	{
 		KeyedArchive *camArch = new KeyedArchive();
-		camera->Save(camArch);
+		camera->SaveObject(camArch);
 
 		archive->SetArchive("cc.camera", camArch);
 
@@ -92,7 +91,7 @@ void CameraComponent::Deserialize(KeyedArchive *archive, SerializationContext *s
 		if(NULL != camArch)
 		{
 			Camera* cam = new Camera();
-			cam->Load(camArch);
+			cam->LoadObject(camArch);
 			SetCamera(cam);
 			cam->Release();
 		}

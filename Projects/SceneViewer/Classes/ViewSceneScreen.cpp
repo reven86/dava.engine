@@ -53,8 +53,8 @@ void ViewSceneScreen::LoadResources()
     DVASSERT(camera == NULL);
     camera = new Camera();
     
-	Core* core = DAVA::Core::Instance();
-	float32 aspect = core->GetVirtualScreenHeight() / core->GetVirtualScreenWidth();
+    VirtualCoordinatesSystem* vcs = DAVA::VirtualCoordinatesSystem::Instance();
+	float32 aspect = (float32)vcs->GetVirtualScreenSize().dy / (float32)vcs->GetVirtualScreenSize().dx;
     
 	camera->SetupPerspective(70.f, aspect, 0.5f, 2500.f);
 	camera->SetLeft(Vector3(1, 0, 0));
@@ -147,7 +147,7 @@ void ViewSceneScreen::Update(float32 timeElapsed)
     
     updateTime += (SystemTimer::Instance()->GetAbsoluteNano() - startTime);
 
-//    UpdateCamera(timeElapsed);
+    UpdateCamera(timeElapsed);
     UpdateInfo(timeElapsed);
 }
 

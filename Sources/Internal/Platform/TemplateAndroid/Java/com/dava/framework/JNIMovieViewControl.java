@@ -7,6 +7,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.view.SurfaceHolder;
 import android.view.ViewGroup;
@@ -25,6 +26,7 @@ public class JNIMovieViewControl {
 	private final static int playerStateInprogress = 1;
 	private final static int playerStateReady = 2;
 	private final static int playerStatePlaying = 3;
+	private final static int playerStateErrorData = 4;
 
 	private static class MovieControl {
 		public MovieControl(int id, RelativeLayout layout, VideoView view, MediaPlayer player) {
@@ -34,11 +36,20 @@ public class JNIMovieViewControl {
 			this.layout = layout;
 		}
 
+		void setPlayerState(int newState) {
+			if (_playerState != playerStateErrorData)
+				_playerState = newState;
+		}
+		
+		int getPlayerState() {
+			return _playerState;
+		}
+		
 		public int id = 0;
 		public RelativeLayout layout = null;
 		public VideoView view = null;
 		public MediaPlayer player = null;
-		public int playerState = playerStateNoReady;
+		private int _playerState = playerStateNoReady;
 		public boolean isResetedBeforeHide = false;
 		public String path = null;
 		public int scalingMode = scalingModeNone;
@@ -69,6 +80,7 @@ public class JNIMovieViewControl {
 				} else {
 					layout = new RelativeLayout(activity);
 					view = new VideoView(layout.getContext());
+					view.setBackgroundColor(Color.BLACK);
 					RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
 					layout.addView(view, params2);
 					control = new MovieControl(id, layout, view, new MediaPlayer());
@@ -100,7 +112,7 @@ public class JNIMovieViewControl {
 									e.printStackTrace();
 								}
 							}
-							control.playerState = playerStateNoReady;
+							control.setPlayerState(playerStateNoReady);
 							control.isResetedBeforeHide = false;
 						}
 
@@ -179,7 +191,7 @@ public class JNIMovieViewControl {
 	}
 	
 	private static void PrepareVideo(final MovieControl control) {
-		control.playerState = playerStateInprogress;
+		control.setPlayerState(playerStateInprogress);
 		control.player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
 			
 			@Override
@@ -188,6 +200,12 @@ public class JNIMovieViewControl {
 				int layoutHeight = control.layout.getHeight();
 				int videoWidth = control.player.getVideoWidth();
 				int videoHeight = control.player.getVideoHeight();
+				
+				if (videoHeight == 0 || videoWidth == 0)
+				{
+					control.setPlayerState(playerStateErrorData);
+					return;
+				}
 				
 				//update scaling
 				RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(0, 0);
@@ -218,9 +236,11 @@ public class JNIMovieViewControl {
 						params.height = layoutHeight;
 						params.width = videoWidth * layoutHeight/ videoHeight;
 						params.leftMargin = params.rightMargin = (layoutWidth - params.width) / 2;
+						params.topMargin = params.bottomMargin = 1;
 					} else {
 						params.width = layoutWidth;
 						params.height = videoHeight * layoutWidth / videoWidth;
+						params.leftMargin = params.rightMargin = 1;
 						params.topMargin = params.bottomMargin = (layoutHeight - params.height) / 2;
 					}
 				} break;
@@ -236,7 +256,7 @@ public class JNIMovieViewControl {
 					
 					@Override
 					public void onSeekComplete(MediaPlayer mp) {
-						control.playerState = playerStateReady;
+						control.setPlayerState(playerStateReady);
 						Play(control.id);
 						control.player.setOnSeekCompleteListener(null);
 					}
@@ -262,16 +282,9 @@ public class JNIMovieViewControl {
 				try {
 					LocalFileDescriptor descriptor = new LocalFileDescriptor(path);
 					control.player.setDataSource(descriptor.GetDescriptor(), descriptor.GetStartOffset(), descriptor.GetLength());
-				} catch (IllegalArgumentException e) {
-					e.printStackTrace();
-				} catch (SecurityException e) {
-					e.printStackTrace();
-				} catch (IllegalStateException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
+				} catch (Exception e) {
+					control.setPlayerState(playerStateErrorData);
 				}
-				
 				return null;
 			}
 		});
@@ -290,11 +303,11 @@ public class JNIMovieViewControl {
 			public Void call() throws Exception {
 				MovieControl control = controls.get(id);
 				
-				if (control.playerState == playerStateNoReady)
+				if (control.getPlayerState() == playerStateNoReady)
 					PrepareVideo(control);
-				else if (control.playerState == playerStateReady) {
+				else if (control.getPlayerState() == playerStateReady) {
 					control.player.start();
-					control.playerState = playerStatePlaying;
+					control.setPlayerState(playerStatePlaying);
 				}
 				return null;
 			}
@@ -315,7 +328,7 @@ public class JNIMovieViewControl {
 			public void run() {
 				MovieControl control = controls.get(id);
 				control.player.stop();
-				control.playerState = playerStateNoReady;
+				control.setPlayerState(playerStateNoReady);
 			}
 		});
 	}
@@ -343,8 +356,13 @@ public class JNIMovieViewControl {
 			return false;
 		
 		MovieControl control = controls.get(id);
-		if (control.playerState == playerStateInprogress ||
-			control.playerState == playerStateReady)
+		if (control.getPlayerState() == playerStateErrorData)
+		{
+			return false;
+		}
+		
+		if (control.getPlayerState() == playerStateInprogress ||
+			control.getPlayerState() == playerStateReady)
 			return true;
 		
 		MediaPlayer player = control.player;

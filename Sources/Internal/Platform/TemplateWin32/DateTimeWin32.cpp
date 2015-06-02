@@ -27,6 +27,7 @@
 =====================================================================================*/
 #include "Platform/DateTime.h"
 #include "Utils/UTF8Utils.h"
+#include "Utils/Utils.h"
 #include "FileSystem/LocalizationSystem.h"
 
 namespace DAVA
@@ -42,7 +43,7 @@ namespace DAVA
 		GetLocaleInfoW(locale, LOCALE_SENGLANGUAGE, languageCode, nchars);
 
 		DAVA::WideString locID(languageCode);
-		delete languageCode;
+		SafeDeleteArray(languageCode);
 
 		struct tm timeinfo = {0};
         wchar_t buffer [256] = {0};

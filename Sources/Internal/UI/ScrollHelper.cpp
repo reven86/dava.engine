@@ -36,6 +36,8 @@
 
 namespace DAVA 
 {
+    const float32 ScrollHelper::maxDeltaTime = 0.1f;
+
 	ScrollHelper::ScrollHelper()
 	:	BaseObject()
 	,	position(0.f)
@@ -52,6 +54,23 @@ namespace DAVA
 		slowDown = 0.25f;
 		backward = 0.3f;
 	}
+
+    void ScrollHelper::CopyDataFrom(const ScrollHelper *src)
+    {
+        position = src->position;
+        elementSize = src->elementSize;
+        viewSize = src->viewSize;
+        virtualViewSize = src->virtualViewSize;
+        
+        slowDown = src->slowDown;
+        backward = src->backward;
+        
+        speed = src->speed;
+        
+        scrollToPos = src->scrollToPos;
+        scrollToAcc = src->scrollToAcc;
+        scrollToTopSpeed = src->scrollToTopSpeed;
+    }
 
 	void ScrollHelper::SetPosition(float32 pos)
 	{
@@ -147,7 +166,7 @@ namespace DAVA
 			moves.push_back(m);
 			totalDeltaTime += timeDelta;
 			totalDeltaMove += positionDelta;
-			if(totalDeltaTime >= 0.4f)
+			if(totalDeltaTime >= maxDeltaTime)
 			{
 				List<MovesDelta>::iterator it = moves.begin();
 				totalDeltaTime -= it->deltaTime;

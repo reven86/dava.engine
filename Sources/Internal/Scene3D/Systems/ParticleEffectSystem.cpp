@@ -118,7 +118,7 @@ void ParticleEffectSystem::SetGlobalMaterial(NMaterial *material)
 
 void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleEmitter *emitter, const Vector3& spawnPosition, int32 positionSource)
 {
-	for (int32 layerId=0, layersCount = emitter->layers.size(); layerId<layersCount; ++layerId)
+	for (size_t layerId=0, layersCount = emitter->layers.size(); layerId<layersCount; ++layerId)
 	{
 		ParticleLayer *layer = emitter->layers[layerId];
 		bool isLodActive = layer->IsLodActive(effect->activeLodLevel);
@@ -156,7 +156,7 @@ void ParticleEffectSystem::RunEffect(ParticleEffectComponent *effect)
 	if (effect->effectData.groups.empty()) //clean position sources
 		effect->effectData.infoSources.resize(1);
 	//create particle groups
-	for (int32 emitterId = 0, emittersCount = effect->emitters.size(); emitterId<emittersCount; ++emitterId)
+	for (size_t emitterId = 0, emittersCount = effect->emitters.size(); emitterId<emittersCount; ++emitterId)
 	{
 		RunEmitter(effect, effect->emitters[emitterId], effect->spawnPositions[emitterId]);		
 	}
@@ -177,7 +177,7 @@ void ParticleEffectSystem::AddToActive(ParticleEffectComponent *effect)
         if (scene)
         {
             Matrix4 * worldTransformPointer = ((TransformComponent*)effect->GetEntity()->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
-            effect->effectRenderObject->SetEffectMatrix(worldTransformPointer);
+            effect->effectRenderObject->SetWorldTransformPtr(worldTransformPointer);
             Vector3 pos = worldTransformPointer->GetTranslationVector();
             effect->effectRenderObject->SetAABBox(AABBox3(pos, pos));
             scene->GetRenderSystem()->RenderPermanent(effect->effectRenderObject);
@@ -240,8 +240,8 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 	float32 speedMult = 1.0f+(PerformanceSettings::Instance()->GetPsPerformanceSpeedMult()-1.0f)*(1-currPSValue);
 	float32 shortEffectTime = timeElapsed*speedMult;
 	
-	int componentsCount = activeComponents.size();
-	for(int i=0; i<componentsCount; i++) 
+	size_t componentsCount = activeComponents.size();
+	for(size_t i=0; i<componentsCount; i++)
 	{
 		ParticleEffectComponent * effect = activeComponents[i];
         if (effect->activeLodLevel!=effect->desiredLodLevel)
@@ -355,7 +355,7 @@ void ParticleEffectSystem::UpdateEffect(ParticleEffectComponent *effect, float32
     if (GetScene())
         worldTransformPtr = &effect->GetEntity()->GetWorldTransform();
     else
-        worldTransformPtr = effect->effectRenderObject->GetEffectMatrix();
+        worldTransformPtr = effect->effectRenderObject->GetWorldTransformPtr();
 
 	effect->effectData.infoSources[0].position = worldTransformPtr->GetTranslationVector();
 	
@@ -384,7 +384,7 @@ void ParticleEffectSystem::UpdateEffect(ParticleEffectComponent *effect, float32
 		int32 forcesCount;
 		if (group.head)
 		{
-			forcesCount = group.layer->forces.size();			
+			forcesCount = static_cast<int32>(group.layer->forces.size());
 			if (forcesCount)
 			{				
 				currForceValues.resize(forcesCount);
@@ -621,7 +621,7 @@ Particle* ParticleEffectSystem::GenerateNewParticle(ParticleEffectComponent *eff
 		info.position = particle->position;
 		info.size = particle->currSize; 
 		effect->effectData.infoSources.push_back(info);
-		particle->positionTarget = effect->effectData.infoSources.size()-1;		
+		particle->positionTarget = static_cast<int32>(effect->effectData.infoSources.size()-1);
 		ParticleEmitter *innerEmitter = group.layer->innerEmitter;
 		if (innerEmitter)
 			RunEmitter(effect, innerEmitter, Vector3(0,0,0), particle->positionTarget);

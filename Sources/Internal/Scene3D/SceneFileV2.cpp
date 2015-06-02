@@ -40,6 +40,7 @@
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Mesh.h"
 #include "Render/3D/MeshUtils.h"
+#include "Render/Material/NMaterialNames.h"
 
 #include "Scene3D/SceneNodeAnimationList.h"
 #include "Scene3D/LodNode.h"
@@ -64,14 +65,16 @@
 #include "Base/TemplateHelpers.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/ShadowVolume.h"
-
 #include "Scene3D/SpriteNode.h"
 #include "Render/Highlevel/SpriteObject.h"
+#include "Render/Highlevel/RenderObject.h"
 
 #include "Render/Material/NMaterial.h"
 #include "Scene3D/Systems/MaterialSystem.h"
 #include "Render/Highlevel/RenderFastNames.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
+#include "Scene3D/Components/RenderComponent.h"
+#include "Scene3D/Components/ComponentHelpers.h"
 
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
@@ -79,6 +82,7 @@
 #include "Scene3D/Converters/LodToLod2Converter.h"
 #include "Scene3D/Converters/SwitchToRenerObjectConverter.h"
 #include "Scene3D/Converters/TreeToAnimatedTreeConverter.h"
+
 
 namespace DAVA
 {
@@ -386,7 +390,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
     File * file = File::Create(filename, File::OPEN | File::READ);
     if (!file)
     {
-        Logger::Error("SceneFileV2::LoadScene failed to create file: %s", filename.GetAbsolutePathname().c_str());
+        Logger::Error("SceneFileV2::LoadScene failed to open file: %s", filename.GetAbsolutePathname().c_str());
         SetError(ERROR_FAILED_TO_CREATE_FILE);
         return GetError();
     }   
@@ -398,8 +402,16 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
 
     if (!headerValid)
     {
-        
         SafeRelease(file);
+        Logger::Error("SceneFileV2::LoadScene: scene header is not valid");
+        SetError(ERROR_VERSION_IS_TOO_OLD);
+        return GetError();
+    }
+
+    if (header.version < SCENE_FILE_MINIMAL_SUPPORTED_VERSION)
+    {
+        SafeRelease(file);
+        Logger::Error("SceneFileV2::LoadScene: scene version %d is too old. Minimal supported version is %d", header.version, SCENE_FILE_MINIMAL_SUPPORTED_VERSION);
         SetError(ERROR_VERSION_IS_TOO_OLD);
         return GetError();
     }
@@ -484,9 +496,9 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
     }
 		    
     //as we are going to take information about required attribute streams from shader - we are to wait for shader compilation
-    ThreadIdJobWaiter waiter;
-    waiter.Wait();
-    UpdatePolygonGroupRequestedFormatRecursively(rootNode);
+	JobManager::Instance()->WaitMainJobs();
+
+	UpdatePolygonGroupRequestedFormatRecursively(rootNode);
     serializationContext.LoadPolygonGroupData(file);
 
     OptimizeScene(rootNode);	            
@@ -512,7 +524,7 @@ SceneArchive *SceneFileV2::LoadSceneArchive(const FilePath & filename)
     File * file = File::Create(filename, File::OPEN | File::READ);
     if (!file)
     {
-        Logger::Error("SceneFileV2::LoadScene failed to create file: %s", filename.GetAbsolutePathname().c_str());
+        Logger::Error("SceneFileV2::LoadScene failed to open file: %s", filename.GetAbsolutePathname().c_str());
         return res;
     }   
 
@@ -520,6 +532,14 @@ SceneArchive *SceneFileV2::LoadSceneArchive(const FilePath & filename)
 
     if (!headerValid)
     {
+        Logger::Error("SceneFileV2::LoadScene: scene header is not valid");
+        SafeRelease(file);
+        return res;
+    }
+
+    if (header.version < SCENE_FILE_MINIMAL_SUPPORTED_VERSION)
+    {
+        Logger::Error("SceneFileV2::LoadScene: scene version %d is too old. Minimal supported version is %d", header.version, SCENE_FILE_MINIMAL_SUPPORTED_VERSION);
         SafeRelease(file);
         return res;
     }
@@ -531,7 +551,6 @@ SceneArchive *SceneFileV2::LoadSceneArchive(const FilePath & filename)
     if (!versionValid)
     {
         Logger::Error("SceneFileV2::LoadScene version tags are wrong");
-
         SafeRelease(file);
         return res;
     }
@@ -739,6 +758,7 @@ bool SceneFileV2::SaveHierarchy(Entity * node, File * file, int32 level)
 
 void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entity * parent, File * file, int32 level)
 {
+    bool keepUnusedQualityEntities = QualitySettingsSystem::Instance()->GetKeepUnusedEntities();
     KeyedArchive * archive = new KeyedArchive();
     archive->Load(file);
 
@@ -797,7 +817,7 @@ void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entit
             Logger::FrameworkDebug("%s %s(%s)", GetIndentString('-', level).c_str(), name.c_str(), node->GetClassName().c_str());
         }
 
-        if(!skipNode && QualitySettingsSystem::Instance()->NeedLoadEntity(node))
+        if (!skipNode && (keepUnusedQualityEntities||QualitySettingsSystem::Instance()->IsQualityVisible(node)))
         {
             parent->AddNode(node);
         }
@@ -851,7 +871,7 @@ Entity * SceneFileV2::LoadCamera(Scene * scene, KeyedArchive * archive)
     Entity * cameraEntity = LoadEntity(scene, archive);
     
     Camera * cameraObject = new Camera();
-    cameraObject->Load(archive);
+    cameraObject->LoadObject(archive);
     
     cameraEntity->AddComponent(new CameraComponent(cameraObject));
     SafeRelease(cameraObject);
@@ -1338,6 +1358,49 @@ void SceneFileV2::ReplaceOldNodes(Entity * currentNode)
 	}
 }
 
+void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity * node)
+{
+    RenderObject * ro = GetRenderObject(node);
+    if (ro)
+    {
+        static const FastName FLAG_TILED_DECAL = FastName("TILED_DECAL");
+        static const FastName FLAG_FOG_EXP = FastName("FOG_EXP");
+
+        uint32 batchCount = ro->GetRenderBatchCount();
+        for (uint32 ri = 0; ri < batchCount; ++ri)
+        {
+            int32 flagValue = 0;
+            RenderBatch * batch = ro->GetRenderBatch(ri);
+            NMaterial * material = batch->GetMaterial();
+
+            while (material)
+            {
+                flagValue = material->GetFlagValue(FLAG_FOG_EXP);
+                if ((flagValue & NMaterial::FlagInherited) == 0)
+                {
+                    material->ResetFlag(FLAG_FOG_EXP);
+                }
+
+                flagValue = material->GetFlagValue(FLAG_TILED_DECAL);
+                if ((flagValue & NMaterial::FlagInherited) == 0)
+                {
+                    NMaterial::eFlagValue flag = ((flagValue & NMaterial::FlagOn) == NMaterial::FlagOn) ? NMaterial::FlagOn : NMaterial::FlagOff;
+                    material->SetFlag(NMaterial::FLAG_TILED_DECAL_MASK, flag);
+                    material->ResetFlag(FLAG_TILED_DECAL);
+                }
+
+                material = material->GetParent();
+            }
+        }
+    }
+
+    uint32 size = node->GetChildrenCount();
+    for (uint32 i = 0; i < size; ++i)
+    {
+        Entity * child = node->GetChild(i);
+        RemoveDeprecatedMaterialFlags(child);
+    }
+}
 
 void SceneFileV2::RebuildTangentSpace(Entity *entity)
 {
@@ -1363,7 +1426,48 @@ void SceneFileV2::RebuildTangentSpace(Entity *entity)
         RebuildTangentSpace(entity->GetChild(i));
 }
 
- 
+void SceneFileV2::ConvertShadowVolumes(Entity * entity, NMaterial * shadowMaterialParent)
+{
+    RenderObject * ro = GetRenderObject(entity);
+    if(ro)
+    {
+        int32 batchCount = ro->GetRenderBatchCount();
+        for(int32 ri = 0; ri < batchCount; ++ri)
+        {
+            RenderBatch * batch = ro->GetRenderBatch(ri);
+            if(typeid(*batch) == typeid(ShadowVolume) || entity->GetName().find("_shadow") != String::npos)
+            {
+                RenderBatch * shadowBatch = new RenderBatch();
+                if(typeid(*batch) == typeid(ShadowVolume))
+                {
+                    shadowBatch->SetPolygonGroup(batch->GetPolygonGroup());
+                }
+                else
+                {
+                    PolygonGroup * shadowPg = MeshUtils::CreateShadowPolygonGroup(batch->GetPolygonGroup());
+                    shadowBatch->SetPolygonGroup(shadowPg);
+                    shadowPg->Release();
+                }
+
+                NMaterial* shadowMaterial = NMaterial::CreateMaterialInstance();
+                shadowMaterial->SetParent(shadowMaterialParent);
+                shadowBatch->SetMaterial(shadowMaterial);
+                shadowMaterial->Release();
+
+                ro->ReplaceRenderBatch(ri, shadowBatch);
+                shadowBatch->Release();
+            }
+        }
+    }
+
+    uint32 size = entity->GetChildrenCount();
+    for(uint32 i = 0; i < size; ++i)
+    {
+        Entity * child = entity->GetChild(i);
+        ConvertShadowVolumes(child, shadowMaterialParent);
+    }
+}
+
 void SceneFileV2::OptimizeScene(Entity * rootNode)
 {
     int32 beforeCount = rootNode->GetChildrenCountRecursive();
@@ -1374,6 +1478,13 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
     RemoveEmptySceneNodes(rootNode);
 	ReplaceOldNodes(rootNode);
 	RemoveEmptyHierarchy(rootNode);
+
+    if (header.version < SHADOW_VOLUME_SCENE_VERSION)
+    {
+        NMaterial * shadowMaterial = NMaterial::CreateMaterial(FastName("Shadow_Material"), NMaterialName::SHADOW_VOLUME, NMaterial::DEFAULT_QUALITY_NAME);
+        ConvertShadowVolumes(rootNode, shadowMaterial);
+        shadowMaterial->Release();
+    }
 
     if(header.version < OLD_LODS_SCENE_VERSION)
     {
@@ -1392,6 +1503,11 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
     if (header.version < PREREQUIRED_BINORMAL_SCENE_VERSION)
     {     
         RebuildTangentSpace(rootNode);
+    }
+
+    if (header.version < DEPRECATED_MATERIAL_FLAGS_SCENE_VERSION)
+    {
+        RemoveDeprecatedMaterialFlags(rootNode);
     }
 
     QualitySettingsSystem::Instance()->UpdateEntityAfterLoad(rootNode);
@@ -1436,14 +1552,14 @@ void SceneFileV2::SetVersion(const VersionInfo::SceneVersion& version)
 }
 
 SceneArchive::~SceneArchive()
-{    
-    for (int32 i=0, sz = dataNodes.size(); i<sz; ++i)
+{
+    for(auto& node : dataNodes)
     {
-        SafeRelease(dataNodes[i]);
+        SafeRelease(node);
     }
-    for (int32 i=0, sz = children.size(); i<sz; ++i)
+    for(auto& child : children)
     {
-        SafeRelease(children[i]);
+        SafeRelease(child);
     }
 }
 
@@ -1468,9 +1584,9 @@ void SceneArchive::SceneArchiveHierarchyNode::LoadHierarchy(File *file)
 SceneArchive::SceneArchiveHierarchyNode::~SceneArchiveHierarchyNode()
 {
     SafeRelease(archive);
-    for (int32 i=0, sz = children.size(); i<sz; ++i)
+    for(auto& child : children)
     {
-        SafeRelease(children[i]);
+        SafeRelease(child);
     }
 }
 

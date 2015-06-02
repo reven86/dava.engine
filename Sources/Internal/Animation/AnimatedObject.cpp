@@ -49,7 +49,7 @@ void AnimatedObject::StopAnimations(int32 track)
 	AnimationManager::Instance()->DeleteAnimations(this, track);
 }
 
-bool AnimatedObject::IsAnimating(int32 track)
+bool AnimatedObject::IsAnimating(int32 track) const
 {
 	return AnimationManager::Instance()->IsAnimating(this, track);
 }

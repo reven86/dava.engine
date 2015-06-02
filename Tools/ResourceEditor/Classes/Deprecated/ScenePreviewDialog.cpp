@@ -134,6 +134,7 @@ void ScenePreviewDialog::Show(const FilePath &scenePathname)
     }
 }
 
+
 void ScenePreviewDialog::OnClose(BaseObject *, void *, void *)
 {
     Close();

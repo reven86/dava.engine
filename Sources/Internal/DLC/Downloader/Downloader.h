@@ -35,6 +35,8 @@
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 #include "DownloaderCommon.h"
+#include "Base/Function.h"
+#include "Thread/Spinlock.h"
 
 namespace DAVA
 {
@@ -44,30 +46,84 @@ namespace DAVA
 */
 class Downloader
 {
-
+/* only Download manager could use Downloader and it's childs*/
 friend class DownloadManager;
-
+    
 public:
-    Downloader(uint32 operationTimeout = 2);
+    Downloader();
     virtual ~Downloader(){};
 
 /* all methods putted into protected section because they should be used only from DownloadManager. */
 protected: 
-    /* Get content size in bytes for remote Url. Place result to retSize, timeout - for operation cancelling */
-    virtual DownloadError GetSize(const String &url, int64 &retSize, int32 _timeout = -1) = 0;
-    /* Main downloading operation. Should call SaveData to store data. */
-    virtual DownloadError Download(const String &url, const uint64 &loadFrom, int32 _timeout = -1) = 0;
-    /* Interrupt download process. We expects that you will save last data chunk came before */
-    virtual void Interrupt() = 0;
-    /* 
-        Main save method. Should be preferred way to store any downloaded data. If not - you can reimplement it, but it is not recommended. 
-        Take a look on CurlDownloader::CurlDataRecvHandler(...) for example.
+    /**
+        \brief Get content size in bytes for remote Url.
+        \param[in] url - destination fie Url
+        \param[out] retSize - place result to
+        \param[in] timeout - operation timeout
+     */
+    virtual DownloadError GetSize(const String &url, uint64 &retSize, int32 timeout) = 0;
+    /**
+        \brief Main downloading operation. Should call SaveData to store data.
+        \param[in] url - destination file Url
+        \param[in] savePath - path to save location of remote file
+        \param[in] partsCount - quantity of download threads
+        \param[in] timeout - operation timeout
     */
-    virtual size_t SaveData(void *ptr, size_t size, size_t nmemb);
+    virtual DownloadError Download(const String &url, const FilePath &savePath, uint8 partsCount, int32 timeout) = 0;
+    /**
+        \brief Interrupt download process. We expects that you will save last data chunk came before 
+     */
+    virtual void Interrupt() = 0;
+    /**
+        \brief Main save method. Should be preferred way to store any downloaded data. If not - you can reimplement it, but it is not recommended.
+        Take a look on CurlDownloader::CurlDataRecvHandler(...) for example.
+        \param[in] ptr - pointer to data
+        \param[in] storePath - path to save location of remote file
+        \param[in] size - amout of data
+        \param[in] seek - position in file where data should be stored
+    */
+    virtual bool SaveData(const void *ptr, const FilePath& storePath, uint64 size);
+    /**
+        \brief Used to report about saved data size to download manager. Used to calculate total download progress.
+     */
+    virtual void SetProgressNotificator(Function<void (uint64)> progressNotifier);
+    /**
+        \brief Reset download statistics
+        \param[in] sizeToDownload - data size we suppose to download
+     */
+    void ResetStatistics(uint64 sizeToDownload);
+    /**
+        \brief Calculate download statistics. Should be called at data came or saved.
+        \param[in] dataCame - amout of data came or saved.
+     */
+    void CalcStatistics(uint32 dataCame);
+    /**
+        \brief Returns download statistics structure
+     */
+    DownloadStatistics GetStatistics();
+    /**
+         \brief Sets maximum allowed download speed. 0 means unlimited.
+         \param[in] limit - speed limit in bytes per second.
+     */
+    virtual void SetDownloadSpeedLimit(const uint64 limit) = 0;
+
+    /**
+        \brief return errno occurred during work with destination file
+    */
+    int32 GetFileErrno() const;
 
 protected:
-    uint32 timeout;
+    int32 fileErrno;
+    Function<void(uint64)> notifyProgress;
+    
+private:
+    uint64 dataToDownloadLeft;
+    
+    Spinlock statisticsMutex;
+    DownloadStatistics statistics;
+
 };
+
 
 }
 

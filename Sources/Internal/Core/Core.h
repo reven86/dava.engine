@@ -94,23 +94,6 @@ class Core : public Singleton<Core>
 {
 public:
 	
-	struct AvailableSize
-	{
-		AvailableSize()
-			:	width(0)
-			,	height(0)
-			,	toVirtual(0)
-			,	toPhysical(0)
-		{
-
-		}
-		int32 width;
-		int32 height;
-		String folderName;
-		float32 toVirtual;
-		float32 toPhysical;
-	};
-	
 	enum eScreenOrientation
 	{
 			SCREEN_ORIENTATION_TEXTURE = -1// uses only for the draw to texture purposes
@@ -218,45 +201,9 @@ public:
 	 */
 	virtual void SetIcon(int32 iconId);
 	
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-	static bool IsAutodetectContentScaleFactor();
-#endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-//	static void SetContentScaleFactor(float scaleFactor);//sets content scale factor
-//	static float GetContentScaleFactor();//returns content scale factor
-//	static float GetInverseContentScaleFactor();//returns one divided by content scale factor(0.5 for scale factor 2.0)
-	
-	static float32 GetVirtualToPhysicalFactor();
-	static float32 GetPhysicalToVirtualFactor();
-	
-	
+    inline float32 GetScreenScaleFactor() const;
+    
 	virtual Core::eScreenOrientation GetScreenOrientation();
-	virtual void CalculateScaleMultipliers();
-	
-	virtual void SetPhysicalScreenSize(int32 width, int32 height);//!< May be used only by the system
-	virtual void SetVirtualScreenSize(int32 width, int32 height);//!< Sets virtual screen size. You need to set size what takes into account screen orientation modifier
-	virtual void SetProportionsIsFixed(bool needFixed);
-	virtual void RegisterAvailableResourceSize(int32 width, int32 height, const String &resourcesFolderName);//!< Registers available sizes of resources. Can be called many times.
-	virtual void UnregisterAllAvailableResourceSizes();
-	
-
-	virtual float32 GetPhysicalScreenWidth();//returns physical size what don't take intpo account screen orientation
-	virtual float32 GetPhysicalScreenHeight();//returns physical size what don't take intpo account screen orientation
-	virtual const Vector2 &GetPhysicalDrawOffset();
-
-	virtual float32 GetVirtualScreenWidth();
-	virtual float32 GetVirtualScreenHeight();
-    virtual float32 GetRequestedVirtualScreenWidth();
-    virtual float32 GetRequestedVirtualScreenHeight();
-	virtual float32 GetVirtualScreenXMin();
-	virtual float32 GetVirtualScreenXMax();
-	virtual float32 GetVirtualScreenYMin();
-	virtual float32 GetVirtualScreenYMax();
-	
-	virtual float32 GetResourceToPhysicalFactor(int32 resourceIndex);
-	virtual float32 GetResourceToVirtualFactor(int32 resourceIndex);
-	virtual const String& GetResourceFolder(int32 resourceIndex);
-	virtual int32 GetDesirableResourceIndex();
-	virtual int32 GetBaseResourceIndex();
 	
     virtual uint32 GetScreenDPI();
 	
@@ -315,18 +262,11 @@ public:
 	
 	virtual void GoBackground(bool isLock);
 	virtual void GoForeground();
-	
-	/**
-		\brief Checks if framework needs to recalculate scale multipliers.
-	*/
-	bool NeedToRecalculateMultipliers();
     
 	/**
      \brief Get device familty
      */
     eDeviceFamily GetDeviceFamily();
-    
-    void EnableReloadResourceOnResize(bool enable);
 	
 	// Needs to be overriden for the platforms where it has sence (MacOS only for now).
 	virtual void* GetOpenGLView() { return NULL; };
@@ -336,50 +276,35 @@ public:
 protected:
 	int32 screenOrientation;
 
+	void SetCommandLine(int argc, char *argv[]);
+	void SetCommandLine(const DAVA::String& cmdLine);
+
 private:
-	float32 screenWidth;
-	float32 screenHeight;	
-	
-	int desirableIndex;
-	
-	float32 virtualScreenWidth;
-	float32 virtualScreenHeight;
-	float32 requestedVirtualScreenWidth;
-	float32 requestedVirtualScreenHeight;
-	bool fixedProportions;
-	
-	Vector<AvailableSize> allowedSizes;
-	bool needTorecalculateMultipliers;
-	
-	static float32 virtualToPhysical;
-	static float32 physicalToVirtual;
-	static Vector2 drawOffset;
-	
     KeyedArchive * options;
 
 	bool isActive;
-	
+
 	uint32 globalFrameIndex;
 
 	bool firstRun;//call begin frame 1st time
 	
-	void SetCommandLine(int argc, char *argv[]);
 	Vector<String> commandLine;
 	bool isConsoleMode;
     
     void CheckDataTypeSizes();
     template <class T> void CheckType(T t, int32 expectedSize, const char * typeString);
     
-    
-    bool enabledReloadResourceOnResize;
+    float32 screenScaleFactor;
 };
-
-float32 GetScreenWidth();
-float32 GetScreenHeight();
     
 inline bool Core::IsActive()
 {
     return isActive;
+}
+    
+inline float32 Core::GetScreenScaleFactor() const
+{
+    return screenScaleFactor;
 }
 
 };

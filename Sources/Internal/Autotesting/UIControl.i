@@ -5,6 +5,7 @@
 
 %import Vector.i
 %import Rect.i
+%import Polygon2.i
 
 namespace DAVA
 {
@@ -29,6 +30,20 @@ public:
 	
 	float32 cosA;
 	float32 sinA;
+
+    void GetPolygon( Polygon2 &polygon ) const
+    {
+        polygon.Clear();
+        polygon.points.reserve( 4 );
+        polygon.AddPoint( Vector2() );
+        polygon.AddPoint( Vector2( size.x, 0 ) );
+        polygon.AddPoint( size );
+        polygon.AddPoint( Vector2( 0, size.y ) );
+
+        Matrix3 transformMtx;
+        BuildTransformMatrix( transformMtx );
+        polygon.Transform( transformMtx );
+    }
 
 	const Rect &GetUnrotatedRect() const
 	{
@@ -71,6 +86,8 @@ public:
 	DAVA::int32 GetState() const;
 
 	int32 GetFrame() const;
+
+	const Vector2 & UIControl::GetPivotPoint() const;
 
 protected:
 	virtual ~UIControl();

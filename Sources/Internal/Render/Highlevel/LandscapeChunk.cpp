@@ -50,7 +50,7 @@ void LandscapeChunk::Draw(const FastName & ownerPassName, Camera * camera)
 {
 	if(NULL != landscape)
 	{
-        BindDynamicParameters(camera);
+        landscape->BindDynamicParameters(camera);
 		landscape->Draw(camera);
 	}
 }
@@ -64,11 +64,5 @@ void LandscapeChunk::Load(KeyedArchive *archive, SerializationContext *serializa
 {
     RenderBatch::Load(archive, serializationContext);
 }
-
-ShadowVolume * LandscapeChunk::CreateShadow()
-{
-	return NULL;
-}
-
 
 };

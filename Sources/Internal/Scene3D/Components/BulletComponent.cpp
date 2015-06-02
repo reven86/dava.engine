@@ -34,7 +34,6 @@
 namespace DAVA
 {
     
-REGISTER_CLASS(BulletComponent)
 
 BulletComponent::BulletComponent()
 :	bulletObject(0)

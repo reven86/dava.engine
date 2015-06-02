@@ -10,6 +10,7 @@ uniform sampler2D cubemap = 3;
 uniform sampler2D heightmap = 4;
 uniform sampler2D densitymap = 5;
 uniform sampler2D decaltexture = 6;
+uniform samplerCube atmospheremap = 7;
 
 uniform float normalScale = 1.0;
 uniform float inGlossiness = 0.5;
@@ -104,7 +105,7 @@ uniform lowp vec4 decalTileColor;
 varying vec2 varDecalTileTexCoord;
 #endif
 
-#if defined(VERTEX_LIT) || defined(PIXEL_LIT)
+#if defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(VERTEX_FOG)
 uniform vec3 lightAmbientColor0;
 uniform vec3 lightColor0;
 uniform float inGlossiness;
@@ -134,8 +135,8 @@ varying float varPerPixelAttenuation;
 #endif
 
 #if defined(VERTEX_FOG)
-uniform vec3 fogColor;
-varying float varFogFactor;
+varying lowp float varFogAmoung;
+varying lowp vec3 varFogColor;
 #endif
 
 #if defined(SETUP_LIGHTMAP)
@@ -507,42 +508,36 @@ void main()
     //    gl_FragColor.r += 0.5;
 
 #if defined(MATERIAL_GRASS_TRANSFORM)
-    
-#if defined(MATERIAL_GRASS_OPAQUE)
-    gl_FragColor.rgb = gl_FragColor.rgb * varVegetationColor * 2.0;
-#endif
-    
-#if defined(MATERIAL_GRASS_BLEND)
-    
-    gl_FragColor.a = gl_FragColor.a * varTexCoord2.x;
-    
-    #if defined(FRAMEBUFFER_FETCH)
-        //VI: fog is taken to account here
-        #if defined(VERTEX_FOG)
-            gl_FragColor.rgb = mix(gl_LastFragData[0].rgb, mix(fogColor, gl_FragColor.rgb * varVegetationColor * 2.0, varFogFactor), gl_FragColor.a);
-        #else
-            gl_FragColor.rgb = mix(gl_LastFragData[0].rgb, gl_FragColor.rgb * varVegetationColor * 2.0, gl_FragColor.a);
-        #endif
-    #else
+    #if defined(MATERIAL_GRASS_OPAQUE)
         gl_FragColor.rgb = gl_FragColor.rgb * varVegetationColor * 2.0;
     #endif
+        
+    #if defined(MATERIAL_GRASS_BLEND)
+        gl_FragColor.a = gl_FragColor.a * varTexCoord2.x;
+        #if defined(FRAMEBUFFER_FETCH)
+            //VI: fog is taken to account here
+            #if defined(VERTEX_FOG)
+                gl_FragColor.rgb = mix(gl_LastFragData[0].rgb, mix(gl_FragColor.rgb * varVegetationColor * 2.0, varFogColor, varFogAmoung), gl_FragColor.a);
+            #else
+                gl_FragColor.rgb = mix(gl_LastFragData[0].rgb, gl_FragColor.rgb * varVegetationColor * 2.0, gl_FragColor.a);
+            #endif
+        #else
+            gl_FragColor.rgb = gl_FragColor.rgb * varVegetationColor * 2.0;
+        #endif
+    #endif
     
-#endif
-
-#if defined(MATERIAL_GRASS_OPAQUE) || defined(MATERIAL_GRASS_BLEND)
-
-#if defined(VEGETATION_DRAW_LOD_COLOR)
-    gl_FragColor.rgb += lodColor;
-#endif
-
-#endif
+    #if defined(MATERIAL_GRASS_OPAQUE) || defined(MATERIAL_GRASS_BLEND)
+        #if defined(VEGETATION_DRAW_LOD_COLOR)
+            gl_FragColor.rgb += lodColor;
+        #endif
+    #endif
 
 #endif
     
 #if defined(VERTEX_FOG)
-#if !defined(FRAMEBUFFER_FETCH)
-    //VI: fog equation is inside of color equation for framebuffer fetch
-    gl_FragColor.rgb = mix(fogColor, gl_FragColor.rgb, varFogFactor);
-#endif
+    #if !defined(FRAMEBUFFER_FETCH)
+        //VI: fog equation is inside of color equation for framebuffer fetch
+        gl_FragColor.rgb = mix(gl_FragColor.rgb, varFogColor, varFogAmoung);
+    #endif
 #endif
 }

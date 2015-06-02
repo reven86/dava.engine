@@ -102,5 +102,11 @@ const DAVA::FilePath & BeastCommandLineTool::GetScenePathname() const
     return scenePathname;
 }
 
+DAVA::FilePath BeastCommandLineTool::GetQualityConfigPath() const
+{
+    return CreateQualityConfigPath(scenePathname);
+}
+
+
 #endif //#if defined (__DAVAENGINE_BEAST__)
 

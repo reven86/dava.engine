@@ -176,12 +176,8 @@ void RectPropertyGridWidget::OnCenterPivotPointButtonClicked()
 
 void RectPropertyGridWidget::UpdateDoubleSpinBoxWidgetWithPropertyValue(QDoubleSpinBox *spinBox, const QMetaProperty& curProperty)
 {
-    bool isPropertyValueDiffers = false;
-    double value =
-    PropertiesHelper::GetAllPropertyValues<double>(this->activeMetadata,
-                                                   curProperty.name(),
-                                                   isPropertyValueDiffers);
-
+    double value = PropertiesHelper::GetAllPropertyValues<double>(this->activeMetadata,
+                                                                  curProperty.name());
     {
         WidgetSignalsBlocker blocker(spinBox);
         AdjustablePointDoubleSpinBox* customSpinBox = dynamic_cast<AdjustablePointDoubleSpinBox*>(spinBox);

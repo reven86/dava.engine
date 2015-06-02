@@ -54,12 +54,15 @@ class ScrollHelper : public BaseObject
 protected:
     ~ScrollHelper(){}
 public:
-	
+    const static float32 maxDeltaTime;
+    
 	/**
 	 \brief Constructor.
 	 */
 	ScrollHelper();
 	
+    void CopyDataFrom(const ScrollHelper *src);
+
 	/**
 	 \brief Sets new scrolling position.
 	 \param[in] pos new scrolling position.

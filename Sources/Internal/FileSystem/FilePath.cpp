@@ -32,12 +32,9 @@
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
 
-#if defined(__DAVAENGINE_ANDROID__)
-    #ifdef USE_LOCAL_RESOURCES
-        #define USE_LOCAL_RESOURCES_PATH "/mnt/sdcard/DavaProject/"
-    #endif //USE_LOCAL_RESOURCES
-#endif //__DAVAENGINE_ANDROID__
-
+#if defined(__DAVAENGINE_MACOS__)
+#include <pwd.h>
+#endif
 
 
 namespace DAVA
@@ -126,9 +123,12 @@ void FilePath::InitializeBundleName()
 void FilePath::InitializeBundleName()
 {
 #ifdef USE_LOCAL_RESOURCES
-    SetBundleName(FilePath(USE_LOCAL_RESOURCES_PATH));
+    SetBundleName(FilePath(localResourcesPath));
+    FilePath zipDataPath;
+    zipDataPath.pathType = PATH_IN_RESOURCES;
+    resourceFolders.push_back(zipDataPath);
 #else
-    SetBundleName(FilePath("assets/"));
+    SetBundleName(FilePath());
 #endif
 }
 
@@ -234,6 +234,10 @@ void FilePath::Initialize(const String &_pathname)
     else if(pathType == PATH_IN_RESOURCES || pathType == PATH_IN_MEMORY)
     {
         absolutePathname = pathname;
+#if defined(__DAVAENGINE_ANDROID__) && defined(USE_LOCAL_RESOURCES)
+        if(0 == pathname.find("~zip:"))
+            absolutePathname = "Data" + absolutePathname.substr(5);
+#endif
     }
     else if(pathType == PATH_IN_DOCUMENTS)
     {
@@ -241,7 +245,24 @@ void FilePath::Initialize(const String &_pathname)
     }
     else if(IsAbsolutePathname(pathname))
     {
-        absolutePathname = pathname;
+#if defined(__DAVAENGINE_MACOS__)
+        if(IsGlobbing(pathname))
+        {
+            char *value = getenv("HOME");
+            if(!value)
+            {
+                // No $HOME variable, check the password database.
+                passwd *pw = getpwuid(getuid());
+                value = pw->pw_dir;
+            }
+            
+            absolutePathname = value + pathname.substr(1, -1);
+        }
+        else
+#endif
+        {
+            absolutePathname = pathname;
+        }
     }
     else
     {
@@ -272,24 +293,6 @@ const String FilePath::GetAbsolutePathname() const
     
     return absolutePathname;
 }
-
-#ifdef __DAVAENGINE_ANDROID__
-const String FilePath::GetAbsoluteAssetPathnameTruncated() const
-{
-    String str = GetAbsolutePathname();
-
-    if(pathType == PATH_IN_RESOURCES)
-    {
-        String::size_type find = str.find("assets/");
-        if (0 == find)
-        {
-            str = str.substr(7);
-        }
-    }
-
-    return str;
-}
-#endif //__DAVAENGINE_ANDROID__
 
 String FilePath::ResolveResourcesPath() const
 {
@@ -375,7 +378,7 @@ bool FilePath::IsDirectoryPathname() const
         return false;
     }
 
-    const int32 lastPosition = absolutePathname.length() - 1;
+    const auto lastPosition = absolutePathname.length() - 1;
     return (absolutePathname.at(lastPosition) == '/');
 }
 
@@ -678,7 +681,7 @@ String FilePath::MakeDirectory(const String &pathname)
         return String();
     }
     
-    const int32 lastPosition = pathname.length() - 1;
+    const auto lastPosition = pathname.length() - 1;
     if(pathname.at(lastPosition) != '/')
     {
         return pathname + String("/");
@@ -732,13 +735,27 @@ String FilePath::AbsoluteToRelative(const FilePath &directoryPathname, const Fil
 }
     
     
+bool FilePath::IsGlobbing(const String &pathname)
+{
+    if(pathname.empty() || pathname.length() < 2)
+    {
+        return false;
+    }
+    
+    if(pathname[0] == '~' && pathname[1] == '/')
+    {
+        return true;
+    }
+    return false;
+}
+    
 bool FilePath::IsAbsolutePathname(const String &pathname)
 {
     if(pathname.empty())
         return false;
     
     //Unix style
-    if(pathname[0] == '/')
+    if((pathname[0] == '/') || IsGlobbing(pathname))
         return true;
     
     //Win or DAVA style (c:/, ~res:/, ~doc:/)
@@ -784,6 +801,13 @@ FilePath::ePathType FilePath::GetPathType(const String &pathname)
     {
         return PATH_IN_RESOURCES;
     }
+    
+#if defined(__DAVAENGINE_ANDROID__) && defined(USE_LOCAL_RESOURCES)
+    if(0 == pathname.find("~zip:"))
+    {
+        return PATH_IN_RESOURCES;
+    }
+#endif
 
     find = pathname.find("~doc:");
     if(find == 0)
@@ -823,6 +847,20 @@ int32 FilePath::Compare( const FilePath &right ) const
 	if(absolutePathname > right.absolutePathname) return 1;
 
 	return 0;
+}
+
+const String FilePath::AsURL() const
+{
+    String path = GetAbsolutePathname();
+    
+#if defined(__DAVAENGINE_ANDROID__)
+    if(!path.empty() && (path[0] != '/'))
+    {
+        return ("file:///android_asset/" + path);
+    }
+#endif //#if defined(__DAVAENGINE_ANDROID__)
+
+    return ("file://" + path);
 }
 
     

@@ -41,7 +41,6 @@
 #include "Scene3D/Systems/MaterialSystem.h"
 #include "Render/OcclusionQuery.h"
 #include "Debug/Stats.h"
-#include "Render/Highlevel/ShadowVolume.h"
 
 namespace DAVA
 {
@@ -49,17 +48,16 @@ namespace DAVA
     
 RenderBatch::RenderBatch()
     :   renderLayerIDsBitmaskFromMaterial(0)
-    ,   sortingKey(0xF8)
     ,   dataSource(0)
     ,   renderDataObject(0)
     ,   material(0)
+    ,   renderObject(0)
+    ,   sortingTransformPtr(NULL)
     ,   startIndex(0)
     ,   indexCount(0)
     ,   type(PRIMITIVETYPE_TRIANGLELIST)
-    ,   renderObject(0)
-    ,	visiblityCriteria(RenderObject::VISIBILITY_CRITERIA)
+    ,   sortingKey(SORTING_KEY_DEF_VALUE)
     ,   aabbox(Vector3(), Vector3())
-    ,   sortingTransformPtr(NULL)
 {
 	
 #if defined(__DAVA_USE_OCCLUSION_QUERY__)
@@ -67,10 +65,7 @@ RenderBatch::RenderBatch()
     queryRequested = -1;
     queryRequestFrame = 0;
     lastFraemDrawn = -10;
-#endif
-    
-    lights[0] = NULL;
-    lights[1] = NULL;
+#endif        
 }
     
 RenderBatch::~RenderBatch()
@@ -104,40 +99,13 @@ void RenderBatch::SetMaterial(NMaterial * _material)
 	SafeRelease(oldMat);
     
     renderLayerIDsBitmaskFromMaterial = material->GetRenderLayerIDsBitmask();
-}
-    
-    
-void RenderBatch::BindDynamicParameters(Camera * camera)
-{
-    if(camera)
-    {
-        if(lights[0])
-        {
-            const Vector4 & lightPositionDirection0InCameraSpace = lights[0]->CalculatePositionDirectionBindVector(camera);
-            RenderManager::SetDynamicParam(PARAM_LIGHT0_POSITION, &lightPositionDirection0InCameraSpace, (pointer_size)&lightPositionDirection0InCameraSpace);
-            RenderManager::SetDynamicParam(PARAM_LIGHT0_COLOR, &lights[0]->GetDiffuseColor(), (pointer_size)&lights[0]->GetDiffuseColor());
-            RenderManager::SetDynamicParam(PARAM_LIGHT0_AMBIENT_COLOR, &lights[0]->GetAmbientColor(), (pointer_size)&lights[0]->GetAmbientColor());
-        }
-        if(material->GetDynamicBindFlags() & NMaterial::DYNAMIC_BIND_OBJECT_CENTER)
-        {
-            const AABBox3 & objectBox = renderObject->GetBoundingBox();
-            RenderManager::SetDynamicParam(PARAM_LOCAL_BOUNDING_BOX, &objectBox, (pointer_size)&objectBox);
-        }
-    }
-	
-    if(renderObject->GetType() == RenderObject::TYPE_SPEED_TREE)
-    {
-        (static_cast<SpeedTreeObject*>(renderObject))->BindDynamicParams();
-    }
-}
+}    
 
 void RenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
 {
 //  TIME_PROFILE("RenderBatch::Draw");
 //	if(!renderObject)return;
-    DVASSERT(renderObject != 0);
-    Matrix4 * worldTransformPtr = renderObject->GetWorldTransformPtr();
-    DVASSERT(worldTransformPtr != 0);
+    DVASSERT(renderObject != 0);    
     
 #if defined(DYNAMIC_OCCLUSION_CULLING_ENABLED)
     uint32 globalFrameIndex = Core::Instance()->GetGlobalFrameIndex();
@@ -165,19 +133,10 @@ void RenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
         return;
     }
 #endif
-//    if (!worldTransformPtr)
-//    {
-//        return;
-//    }
-//    uint32 flags = renderObject->GetFlags();
-//    if ((flags & visiblityCriteria) != visiblityCriteria)
-//        return;
-//    if(!GetVisible())
-//        return;
 	
-    RenderManager::SetDynamicParam(PARAM_WORLD, worldTransformPtr, (pointer_size)worldTransformPtr);
     
-    BindDynamicParameters(camera);
+    
+    renderObject->BindDynamicParameters(camera);
     material->BindMaterialTechnique(ownerRenderPass, camera);
     
 #if defined(DYNAMIC_OCCLUSION_CULLING_ENABLED)
@@ -216,11 +175,6 @@ void RenderBatch::SetRenderObject(RenderObject * _renderObject)
 	renderObject = _renderObject;
 }
 
-void RenderBatch::SetSortingTransformPtr(Matrix4 * _worldTransformPtr)
-{
-    sortingTransformPtr = _worldTransformPtr;
-}
-
 const AABBox3 & RenderBatch::GetBoundingBox() const
 {
     return aabbox;
@@ -230,13 +184,13 @@ const AABBox3 & RenderBatch::GetBoundingBox() const
 void RenderBatch::SetSortingKey(uint32 _key)
 {
     DVASSERT(_key<16);
-    sortingKey = (sortingKey&~0x0f)+_key;
+    sortingKey = (sortingKey&~SORTING_KEY_MASK)+_key;
 }
 
 void RenderBatch::SetSortingOffset(uint32 offset)
 {
     DVASSERT(offset<32);    
-    sortingKey=(sortingKey&~0x1F0)+(offset<<4);
+    sortingKey=(sortingKey&~SORTING_OFFSET_MASK)+(offset<<SORTING_OFFSET_SHIFT);
 }
 
 
@@ -299,7 +253,7 @@ RenderBatch * RenderBatch::Clone(RenderBatch * destination)
 
 void RenderBatch::Save(KeyedArchive * archive, SerializationContext* serializationContext)
 {
-	BaseObject::Save(archive);
+	BaseObject::SaveObject(archive);
 
 	if(NULL != archive)
 	{
@@ -308,6 +262,7 @@ void RenderBatch::Save(KeyedArchive * archive, SerializationContext* serializati
 		archive->SetUInt32("rb.startIndex", startIndex);
 		archive->SetVariant("rb.aabbox", VariantType(aabbox));
 		archive->SetVariant("rb.datasource", VariantType((uint64)dataSource));
+        archive->SetUInt32("rb.sortingKey", sortingKey);
 		
 		NMaterial* material = GetMaterial();
 		if(material)
@@ -332,6 +287,7 @@ void RenderBatch::Load(KeyedArchive * archive, SerializationContext *serializati
 		indexCount = archive->GetUInt32("rb.indexCount", indexCount);
 		startIndex = archive->GetUInt32("rb.startIndex", startIndex);
 		aabbox = archive->GetVariant("rb.aabbox")->AsAABBox3();
+        sortingKey = archive->GetUInt32("rb.sortingKey", SORTING_KEY_DEF_VALUE);
 		PolygonGroup *pg = static_cast<PolygonGroup*>(serializationContext->GetDataBlock(archive->GetVariant("rb.datasource")->AsUInt64()));
 		
 		NMaterial * newMaterial = NULL;
@@ -360,13 +316,7 @@ void RenderBatch::Load(KeyedArchive * archive, SerializationContext *serializati
 			int64 matKey = archive->GetUInt64("rb.nmatname");
 			
 			newMaterial = static_cast<NMaterial*>(serializationContext->GetDataBlock(matKey));
-		
-#if defined(__DAVAENGINE_DEBUG__)
-			if(NULL == GetMaterial())
-			{
-				DVASSERT(newMaterial);
-			}
-#endif
+
 			SafeRetain(newMaterial); //VI: material refCount should be >1 at this point
 		}
 
@@ -374,10 +324,7 @@ void RenderBatch::Load(KeyedArchive * archive, SerializationContext *serializati
         {
             SafeRelease(dataSource);
             dataSource = SafeRetain(pg);
-        }		
-        
-		if(GetMaterial() == NULL)
-			DVASSERT(newMaterial);
+        }
 
 		if(newMaterial)
 		{
@@ -390,12 +337,7 @@ void RenderBatch::Load(KeyedArchive * archive, SerializationContext *serializati
         
 	}
 
-	BaseObject::Load(archive);
-}
-
-void RenderBatch::SetVisibilityCriteria(uint32 criteria)
-{
-	visiblityCriteria = criteria;
+	BaseObject::LoadObject(archive);
 }
 
 void RenderBatch::UpdateAABBoxFromSource()
@@ -408,20 +350,5 @@ void RenderBatch::UpdateAABBoxFromSource()
 			aabbox.min.z != AABBOX_INFINITY);
 	}
 }
-    
-//bool RenderBatch::GetVisible() const
-//{
-//    uint32 flags = renderObject->GetFlags();
-//    return ((flags & visiblityCriteria) == visiblityCriteria);
-//}
-
-ShadowVolume * RenderBatch::CreateShadow()
-{
-	ShadowVolume * newShadowVolume = new ShadowVolume();
-	newShadowVolume->MakeShadowVolumeFromPolygonGroup(dataSource);
-
-	return newShadowVolume;
-}
-
 
 };

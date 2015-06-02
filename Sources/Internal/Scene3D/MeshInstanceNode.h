@@ -58,7 +58,6 @@ public:
     PolygonGroupWithMaterial();
     
     void Setup(StaticMesh * mesh, int32 polygroupIndex, Material * material, TransformComponent * transform);
-    virtual void Draw();
     virtual uint64 GetSortID();
 
     
@@ -70,8 +69,6 @@ public:
     NMaterialInstance * GetNMaterialInstance();
     
     //Component * Clone();
-	
-	virtual ShadowVolume * CreateShadow();
 
 private:
 	Material * material;

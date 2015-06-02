@@ -342,7 +342,7 @@ ColladaPolygonGroup::ColladaPolygonGroup(ColladaMesh * _parentMesh, FCDGeometryP
         
 		if ((vertexIndex != normalIndex || vertexIndex != tex0Index || vertexIndex != tex1Index))
 		{
-			int fuckingMax = 0;
+            printf("Error:: fucking Max!!!!");
 		}
 
 		unoptimizedVerteces[v] = tv;

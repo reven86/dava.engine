@@ -30,6 +30,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Math/Matrix4.h"
+#include "Math/Quaternion.h"
 #include "FileSystem/Logger.h"
 
 namespace DAVA 
@@ -285,5 +286,19 @@ void Matrix4::Dump()
     Logger::FrameworkDebug("%5.5f %5.5f %5.5f %5.5f ", _30, _31, _32, _33);
 }
 
+void Matrix4::Decomposition(Vector3& position, Vector3& scale, Quaternion& rot) const
+{
+	scale = GetScaleVector();
+	position = GetTranslationVector();
+	
+	Matrix4 unscaled(*this);
+	for (int32 i = 0; i < 3; ++i)
+	{
+		unscaled._data[0][i] /= scale.x;
+		unscaled._data[1][i] /= scale.y;
+		unscaled._data[2][i] /= scale.z;
+	}
+	rot.Construct(unscaled);
+}
 
 };

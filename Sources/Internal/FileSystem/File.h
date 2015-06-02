@@ -81,8 +81,8 @@ public:
 	File();
 	
 	/** 
-		\brief funciton to create a file instance with give attributes
-		this function must be used for opening existing files also
+		\brief function to create a file instance with give attributes.
+        Use framework notation for paths.
 		\param[in] filePath absolute or relative framework specific path to file
 		\param[in] attributes combinations of eFileAttributes
 		\returns file instance
@@ -90,14 +90,21 @@ public:
 	static File * Create(const FilePath &filePath, uint32 attributes);
 
 	/** 
-	 \brief funciton to create a file instance with give attributes
-	 this function must be used for opening existing files also
-	 \param[in] filePath absolute system specific path to file
-	 \param[in] attributes combinations of eFileAttributes
-	 \returns file instance
+        \brief funciton to create a file instance with give attributes
+        this function must be used for opening existing files also
+        \param[in] filePath absolute system path to file
+        \param[in] attributes combinations of eFileAttributes
+        \returns file instance
 	 */
 	static File * CreateFromSystemPath(const FilePath &filePath, uint32 attributes);
 
+    /**
+        \brief funciton to create a file instance with give attributes directly without framework path management.
+        \param[in] filePath absolute system path to file
+        \param[in] attributes combinations of eFileAttributes
+        \returns file instance
+     */
+    static File * PureCreate(const FilePath & filePath, uint32 attributes);
 	/**
 		\brief Get this file name
 		\returns name of this file
@@ -169,8 +176,12 @@ public:
 		\param[in] bufferSize size of [pointerToData] buffer
 		\return number of bytes actually read
 	*/
-	virtual uint32 ReadLine(void * destinationBuffer, uint32 bufferSize);
-	
+    uint32 ReadLine(void * destinationBuffer, uint32 bufferSize);
+
+    /**
+    \brief Read one line from text file without line endings
+     */
+    String ReadLine();
 	
 	/**
 		\brief Read string line from file to destination buffer with destinationBufferSize
@@ -180,7 +191,6 @@ public:
 	 */
 	virtual uint32 ReadString(char8 * destinationBuffer, uint32 destinationBufferSize);
     uint32 ReadString(String & destinationString);
-    
     
 	/** 
 		\brief Get current file position
@@ -203,9 +213,19 @@ public:
 	
 	//! return true if end of file reached and false in another case
 	virtual bool IsEof();
+
+    /**
+        \brief Truncate a file to a specified length
+        \param size A size, that file is going to be truncated to
+    */
+    bool Truncate(int32 size);
 	
     static String GetModificationDate(const FilePath & filePathname);
-    
+
+private:
+    // reads 1 byte from current line in the file and sets it in next char if it is not a line ending char. Returns true if read was successful.
+    bool GetNextChar(uint8 *nextChar);
+
 private:
 	FILE	*	file;
 	uint32		size;

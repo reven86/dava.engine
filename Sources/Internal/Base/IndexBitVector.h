@@ -76,7 +76,7 @@ IndexBitVector::~IndexBitVector()
 
 inline void IndexBitVector::PushBack(uint32 value)
 {
-    if (value > (1 << maxIndexBits) - 1)
+    if (value > (1u << maxIndexBits) - 1u)
     {
         ReallocateBits(maxIndexBits << 1);
     }

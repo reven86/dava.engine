@@ -39,7 +39,9 @@ namespace Settings
 
     static const DAVA::FastName General_DesinerName("General/DesignerName");
     static const DAVA::FastName General_RecentFilesCount("General/RecentFilesCount");
+    static const DAVA::FastName General_RecentProjectsCount("General/RecentProjectsCount");
 	static const DAVA::FastName General_PreviewEnabled("General/PreviewEnabled");
+    static const DAVA::FastName General_OpenByDBClick("General/OpenByDoubleClick");
     static const DAVA::FastName General_CompressionQuality("General/CompressionQuality");
 
     static const DAVA::FastName General_MaterialEditor_SwitchColor0("General/MaterialEditor/SwitchColor0");
@@ -51,6 +53,8 @@ namespace Settings
     
     static const DAVA::FastName General_HeighMaskTool_Color0("General/HeighMaskTool/Color0");
     static const DAVA::FastName General_HeighMaskTool_Color1("General/HeighMaskTool/Color1");
+
+    static const DAVA::FastName General_ColorMultiplyMax("General/ColorPicker/Maximum multiplier");
     
 	static const DAVA::FastName Scene_GridStep("Scene/GridStep");
 	static const DAVA::FastName Scene_GridSize("Scene/GridSize");
@@ -61,18 +65,26 @@ namespace Settings
 	static const DAVA::FastName Scene_CameraFOV("Scene/CameraFOV");
 	static const DAVA::FastName Scene_CameraNear("Scene/CameraNear");
 	static const DAVA::FastName Scene_CameraFar("Scene/CameraFar");
+    static const DAVA::FastName Scene_CameraHeightOnLandscape("Scene/HeightOnLandscape");
+    static const DAVA::FastName Scene_CameraHeightOnLandscapeStep("Scene/HeightOnLandscapeStep");
     static const DAVA::FastName Scene_SelectionSequent("Scene/SelectionSequent");
     static const DAVA::FastName Scene_SelectionDrawMode("Scene/SelectionDrawMode");
     static const DAVA::FastName Scene_CollisionDrawMode("Scene/CollisionDrawMode");
+    static const DAVA::FastName Scene_ModificationByGizmoOnly("Scene/ModificationByGizmoOnly");
     static const DAVA::FastName Scene_GizmoScale("Scene/GizmoScale");
     static const DAVA::FastName Scene_DebugBoxScale("Scene/DebugBoxScale");
     static const DAVA::FastName Scene_DebugBoxUserScale("Scene/DebugBoxUserScale");
     static const DAVA::FastName Scene_DebugBoxParticleScale("Scene/DebugBoxParticleScale");
+    static const DAVA::FastName Scene_DebugBoxWaypointScale("Scene/DebugBoxWaypointScale");
+    static const DAVA::FastName Scene_DragAndDropWithShift("Scene/Drag&DropInTreeWithShift");
+    static const DAVA::FastName Scene_AutoselectNewEntities("Scene/AutoselectNewEnities");
+    static const DAVA::FastName Scene_RefreshLodForNonSolid("Scene/RefreshLodForNonSolid");
+    static const DAVA::FastName Scene_RememberForceParameters("Scene/RememberForceParameters");
 
     static const DAVA::FastName Scene_Sound_SoundObjectDraw("Scene/Sound/SoundObjectDraw");
     static const DAVA::FastName Scene_Sound_SoundObjectBoxColor("Scene/Sound/SoundObjectBoxColor");
     static const DAVA::FastName Scene_Sound_SoundObjectSphereColor("Scene/Sound/SoundObjectSphereColor");
-    
+
     // this settings won't be shown in settings dialog
     // and are used only by application
     static const DAVA::FastName InternalGroup("Internal");
@@ -83,10 +95,17 @@ namespace Settings
 	static const DAVA::FastName Internal_CubemapLastProjDir("Internal/CubemapLastProjDir");
     static const DAVA::FastName Internal_ParticleLastEmitterDir("Internal/ParticleLastEmitterDir");
 	static const DAVA::FastName Internal_RecentFiles("Internal/RecentFiles");
+    static const DAVA::FastName Internal_RecentProjects("Internal/RecentProjects");
     static const DAVA::FastName Internal_MaterialsLightViewMode("Internal/MaterialsLightViewMode");
     static const DAVA::FastName Internal_MaterialsShowLightmapCanvas("Internal/MaterialsShowLightmapCanvas");
     static const DAVA::FastName Internal_LicenceAccepted("Internal/LicenceAccepted");
 	static const DAVA::FastName Internal_LODEditorMode("Internal/LODEditorMode");
+    static const DAVA::FastName Internal_ImageSplitterPath("Internal/ImageSplitterPath");
+    static const DAVA::FastName Internal_ImageSplitterPathSpecular("Internal/ImageSplitterPath_specular");
+
+    static const DAVA::FastName Internal_CustomPalette("Internal/CustomPalette");
+    static const DAVA::FastName Internal_LogLevelFilter("Internal/LogLevelFilter");
+    static const DAVA::FastName Internal_LogTextFilter("Internal/LogTextFilter");
 };
 
 struct SettingsNode

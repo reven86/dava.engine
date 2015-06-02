@@ -302,31 +302,31 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 		heightmapProxy->ResetHeightmapChanged();
 	}
 	
-	if (customColorsProxy && customColorsProxy->IsSpriteChanged())
+	if (customColorsProxy && customColorsProxy->IsTargetChanged())
 	{
 		if (landscapeProxy)
 		{
-			landscapeProxy->SetCustomColorsTexture(customColorsProxy->GetSprite()->GetTexture());
+			landscapeProxy->SetCustomColorsTexture(customColorsProxy->GetTexture());
 		}
-		customColorsProxy->ResetSpriteChanged();
+		customColorsProxy->ResetTargetChanged();
 	}
 
-	if (visibilityToolProxy && visibilityToolProxy->IsSpriteChanged())
+	if (visibilityToolProxy && visibilityToolProxy->IsTextureChanged())
 	{
 		if (landscapeProxy)
 		{
-			landscapeProxy->SetVisibilityCheckToolTexture(visibilityToolProxy->GetSprite()->GetTexture());
+			landscapeProxy->SetVisibilityCheckToolTexture(visibilityToolProxy->GetTexture());
 		}
-		visibilityToolProxy->ResetSpriteChanged();
+		visibilityToolProxy->ResetTextureChanged();
 	}
 
-	if (rulerToolProxy && rulerToolProxy->IsSpriteChanged())
+	if (rulerToolProxy && rulerToolProxy->IsTextureChanged())
 	{
 		if (rulerToolProxy)
 		{
-			landscapeProxy->SetRulerToolTexture(rulerToolProxy->GetSprite()->GetTexture());
+			landscapeProxy->SetRulerToolTexture(rulerToolProxy->GetTexture());
 		}
-		rulerToolProxy->ResetSpriteChanged();
+		rulerToolProxy->ResetTextureChanged();
 	}
 }
 
@@ -338,6 +338,8 @@ void LandscapeEditorDrawSystem::UpdateBaseLandscapeHeightmap()
 	baseLandscape->SetHeightmap(h);
 	
 	SafeRelease(h);
+    
+    GetScene()->foliageSystem->SyncFoliageWithLandscape();
 }
 
 float32 LandscapeEditorDrawSystem::GetTextureSize(Landscape::eTextureLevel level)
@@ -453,7 +455,7 @@ Vector2 LandscapeEditorDrawSystem::TranslatePoint(const Vector2& point, const Re
 
 	Vector2 relPos = point - fromRect.GetPosition();
 	Vector2 newRelPos(relPos.x * scale.x,
-					  relPos.y * scale.y);
+					  toRect.dy - 1.0f - relPos.y * scale.y);
 
 	Vector2 newPos = newRelPos + toRect.GetPosition();
 

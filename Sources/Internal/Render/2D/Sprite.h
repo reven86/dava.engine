@@ -55,6 +55,7 @@ enum eSpriteModification
 
 class Shader;
 class Texture;
+class RenderSystem2D;
 
 /**
 	\ingroup render_2d
@@ -68,7 +69,7 @@ class Sprite : public BaseObject
 public:
 	class DrawState
 	{
-        friend class Sprite;
+        friend class RenderSystem2D;
         
     public:
     
@@ -114,13 +115,10 @@ public:
 
 	};
 
-    friend class DrawState;
-
 	enum eSpriteType
 	{
 			SPRITE_FROM_FILE = 0
 		,	SPRITE_FROM_TEXTURE
-		,	SPRITE_RENDER_TARGET
 	};
 
 	enum eRectsAndOffsets
@@ -132,6 +130,8 @@ public:
 		,	X_OFFSET_TO_ACTIVE
 		,	Y_OFFSET_TO_ACTIVE
 	};
+    
+    const static int32 INVALID_FRAME_INDEX = -1; //Use it when we try to get sprite frame using invalid frameName
 
 	/**
 	 \brief Function to create sprite. This is convinience function and it return sprite in any case.
@@ -142,19 +142,6 @@ public:
 	 \return sprite pointer in any case will be returned
 	 */
 	static Sprite* Create(const FilePath &spriteName);// Creating sprite by name
-
-	/**
-	 \brief Function to create sprite as render target.
-
-	 \param sprWidth width of requested render target
-	 \param sprHeight height of requested render target
-	 \param textureFormat texture pixel format
-	 \param contentScaleIncluded set true if content scale already taken into account. Just send false if you don't know how it's works.
-
-	 \return sprite pointer or 0 if it will be impossible to create such render target
-	 */
-	static Sprite* CreateAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelFormat textureFormat, bool contentScaleIncluded = false);
-	void InitAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelFormat textureFormat, bool contentScaleIncluded = false);
 
 	/*
 		\brief Function to create sprite
@@ -179,7 +166,7 @@ public:
 	 */
 	static Sprite* CreateFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset, float32 sprWidth, float32 sprHeight, bool contentScaleIncluded = false);
 
-	static Sprite* CreateFromTexture(const Vector2 & spriteSize, Texture * fromTexture, const Vector2 & textureRegionOffset, const Vector2 & textureRegionSize, const FilePath &spriteName = FilePath());
+    static Sprite* CreateFromTexture(Texture *fromTexture, int32 textureRegionOffsetX, int32 textureRegionOffsetY, int32 textureRegionWidth, int32 textureRegionHeigth, float32 sprWidth, float32 sprHeight, const FilePath &spriteName = FilePath());
 
 	void InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset, float32 sprWidth, float32 sprHeight, int32 targetWidth, int32 targetHeight, bool contentScaleIncluded = false, const FilePath &spriteName = FilePath());
 
@@ -204,6 +191,8 @@ public:
 
 	const Vector2 &GetDefaultPivotPoint() const;
 
+    int32 GetFrameByName(const FastName& frameName) const;
+
 	void SetDefaultPivotPoint(float32 x, float32 y);
 	void SetDefaultPivotPoint(const Vector2 &newPivotPoint);
 
@@ -212,15 +201,11 @@ public:
 	void ResetModification();
 	void Reset();//Reset do not resets the pivot point
 
-	void Draw(DrawState * state);
 	/**
 	 \brief	Draw sprite by the 4 verticies.
 		The vertices sequence is (xLeft,yTop), (xRight,yTop), (xLeft,yBottom), (xRight,yBottom)
 	 \param v poiterto the array of the four Vector2 objects.
 	 */
-	void DrawPoints(Vector2 *verticies, DrawState* drawState);
-
-	void DrawPoints(Vector2 *verticies, Vector2 *textureCoordinates, DrawState* drawState);
 
 	inline int32 GetResourceSizeIndex() const;
 
@@ -253,17 +238,7 @@ public:
 		\brief Set polygon to draw the sprite with specific clip. Resets to null after draw.
 	 */
 	void SetClipPolygon(Polygon2 * clipPolygon);
-
-	/**
-	 \brief Returns multiplyer to convert sprite to the physical coordinates.
-	 */
-	inline float32 GetResourceToPhysicalFactor() const;
-
-	/**
-	 \brief Returns multiplyer to convert sprite to the virtual coordinates.
-	 */
-    inline float32 GetResourceToVirtualFactor() const;
-
+    
 	/**
 	 \brief Returns texture coordinates for the requested frame.
 	 */
@@ -277,9 +252,6 @@ public:
 	void ConvertToVirtualSize();
 
 	const FilePath & GetRelativePathname() const;
-
-	inline void PrepareSpriteRenderData(Sprite::DrawState * drawState);
-	RenderDataObject * spriteRenderObject;
 
     /**
 	 \brief Removes all sprite data.
@@ -311,7 +283,8 @@ protected:
     static File* GetSpriteFile(const FilePath & spriteName, int32& resourceSizeIndex);
 
     void ReloadExistingTextures();
-//private:
+    
+    void SetRelativePathname(const FilePath& path);
 
     static Mutex spriteMapMutex;
 
@@ -321,11 +294,6 @@ protected:
 		EST_SCALE			= 1 << 1,
 		EST_MODIFICATION	= 1 << 2
 	};
-
-	float32 tempVertices[8];
-
-
-	FilePath  relativePathname;
 
 	Texture ** textures;
 	FilePath *textureNames;
@@ -337,29 +305,20 @@ protected:
 	float32 **frameVertices;
 	float32 **texCoords;
 
-//	float32 **originalVertices;
-
 	Polygon2 * clipPolygon;
 
 	void PrepareForNewSize();
-    void SetFrame(int32 frm);
 
 	Vector2	size;
-//	Vector2 originalSize;
 
-	int32	frameCount;
-	int32	frame;
+	int32 frameCount;
 
 	Vector2	defaultPivotPoint;
-	//Vector2	pivotPoint;
-
-	//Vector2	drawCoord;
-
-	//float32	rotateAngle;
-
-	//Vector2	scale;
+    Vector<FastName> frameNames;
 
 	bool isPreparedForTiling;
+
+    bool textureInVirtualSpace;
 
 	int32 modification;
 
@@ -367,26 +326,13 @@ protected:
 
 	int32 resourceSizeIndex;
 
-	float32 resourceToVirtualFactor;
-	float32 resourceToPhysicalFactor;
-
 	eSpriteType type;
 
-//public:
 	float32 **rectsAndOffsets;
+    
+    FilePath  relativePathname;
 
-	RenderDataStream * vertexStream;
-	RenderDataStream * texCoordStream;
-	ePrimitiveType primitiveToDraw;
-	int32 vertexCount;
-
-	// For rendering of clipped objects
-	static Vector<Vector2> clippedTexCoords;
-	static Vector<Vector2> clippedVertices;
-
-
-	//static bool batchingEnabled;
-	//static Vector<Vector2>
+    friend class RenderSystem2D;
 };
 
 
@@ -401,7 +347,7 @@ inline void Sprite::DrawState::Reset()
 	scale.x = 1.0f;
 	scale.y = 1.0f;
 	angle = 0.0f;
-	//frame = 0;
+	frame = 0;
 	flags = 0;
 	usePerPixelAccuracy = false;
 	precomputedAngle = 0.0f;
@@ -462,16 +408,6 @@ inline void Sprite::DrawState::SetPerPixelAccuracyUsage(bool needToUse)
 inline int32 Sprite::GetResourceSizeIndex() const
 {
 	return resourceSizeIndex;
-}
-
-inline float32 Sprite::GetResourceToPhysicalFactor() const
-{
-	return resourceToPhysicalFactor;
-}
-
-inline float32 Sprite::GetResourceToVirtualFactor() const
-{
-    return resourceToVirtualFactor;
 }
 
 inline Shader* Sprite::DrawState::GetShader() const

@@ -58,9 +58,9 @@ class TextureInvalidater
 {
 public:
     virtual ~TextureInvalidater() {};
-	virtual void InvalidateTexture(Texture * texure) = 0;
-    virtual void AddTexture(Texture * texure) = 0;
-    virtual void RemoveTexture(Texture * texure) = 0;
+	virtual void InvalidateTexture(Texture * texture) = 0;
+    virtual void AddTexture(Texture * texture) = 0;
+    virtual void RemoveTexture(Texture * texture) = 0;
 };
 	
 #ifdef USE_FILEPATH_IN_MAP
@@ -184,6 +184,14 @@ public:
 	
 	static Texture * CreatePink(TextureType requestedType = Texture::TEXTURE_2D, bool checkers = true);
 
+    
+    /**
+        \brief Get texture from cache.
+        If texture isn't in cache, returns 0
+        \param[in] name path of TextureDescriptor
+     */
+    static Texture * Get(const FilePath & name);
+
 
 	virtual int32 Release();
 
@@ -213,6 +221,7 @@ public:
         \returns pathname of texture
      */
     const FilePath & GetPathname() const;
+    void SetPathname(const FilePath& path);
     
     Image * CreateImageFromMemory(UniqueHandle renderState);
 
@@ -258,12 +267,14 @@ public:
 	PixelFormat GetFormat() const;
 
     static void SetPixelization(bool value);
+    
+    int32 GetBaseMipMap() const;
+
 protected:
     
     void ReleaseTextureData();
     void GenerateID();
 
-	static Texture * Get(const FilePath & name);
 	static void AddToMap(Texture *tex);
     
 	static Texture * CreateFromImage(TextureDescriptor *descriptor, eGPUFamily gpu);
@@ -271,18 +282,17 @@ protected:
 	bool LoadImages(eGPUFamily gpu, Vector<Image *> * images);
     
 	void SetParamsFromImages(const Vector<Image *> * images);
-	void FlushDataToRendererInternal(BaseObject * caller, void * param, void *callerData);
+	void FlushDataToRendererInternal(Vector<Image *> * images);
 	void FlushDataToRenderer(Vector<Image *> * images);
 	void ReleaseImages(Vector<Image *> * images);
     
     void MakePink(bool checkers = true);
-	void ReleaseTextureDataInternal(BaseObject * caller, void * param, void *callerData);
+	void ReleaseTextureDataInternal(uint32 textureType, uint32 id, uint32 fboID, uint32 rboID, uint32 stencilRboID);
     
-	void GeneratePixelesationInternal(BaseObject * caller, void * param, void *callerData);
-    
+	void GeneratePixelesationInternal();
+	void GenerateMipmapsInternal();
+
     static bool CheckImageSize(const Vector<Image *> &imageSet);
-    
-	void GenerateMipmapsInternal(BaseObject * caller, void * param, void *callerData);
     
 	Texture();
 	virtual ~Texture();
@@ -291,26 +301,12 @@ protected:
     
 #if defined(__DAVAENGINE_OPENGL__)
 	void HWglCreateFBOBuffers();
-	void HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, void *callerData);
+	void HWglCreateFBOBuffersInternal();
 #endif //#if defined(__DAVAENGINE_OPENGL__)
     
     bool IsLoadAvailable(const eGPUFamily gpuFamily) const;
-    
+
 	static eGPUFamily GetGPUForLoading(const eGPUFamily requestedGPU, const TextureDescriptor *descriptor);
-    
-    struct ReleaseTextureDataContainer
-	{
-		uint32 textureType;
-		uint32 id;
-		uint32 fboID;
-		uint32 rboID;
-#if defined(__DAVAENGINE_ANDROID__)
-        uint32 stencilRboID;
-#endif
-	};
-
-
-    int32 GetBaseMipMap() const;
 
 public:							// properties for fast access
 

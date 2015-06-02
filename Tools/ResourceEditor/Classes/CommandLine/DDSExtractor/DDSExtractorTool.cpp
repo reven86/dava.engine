@@ -103,7 +103,8 @@ void DDSExtractorTool::ExtractImagesFromFile(const DAVA::FilePath& pathToDDS)
     DAVA::File* file = DAVA::File::Create(pathToDDS, DAVA::File::OPEN | DAVA::File::READ);
     DAVA::int32 mipMapsCount = DAVA::LibDdsHelper::GetMipMapLevelsCount(file);
     DAVA::LibDdsHelper* helper = static_cast<DAVA::LibDdsHelper* >(DAVA::ImageSystem::Instance()->GetImageFormatInterface(DAVA::ImageSystem::FILE_FORMAT_DDS));
-    DAVA::eErrorCode retCode = helper->ReadFile(file, imageSet, mipMapsCount, true);
+
+    helper->ReadFile(file, imageSet, mipMapsCount, true);
 	SafeRelease(file);
     if(!imageSet.size())
     {

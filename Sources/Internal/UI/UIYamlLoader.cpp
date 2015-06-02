@@ -31,6 +31,7 @@
 #include "Base/ObjectFactory.h"
 #include "Platform/SystemTimer.h"
 #include "UI/UIControl.h"
+#include "UI/UIScrollBar.h"
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/YamlEmitter.h"
 #include "FileSystem/YamlParser.h"
@@ -39,6 +40,12 @@
 #include "Render/2D/DFFont.h"
 #include "Render/2D/FontManager.h"
 #include "Render/2D/TextBlock.h"
+#include "Utils/Utils.h"
+#include "Render/2D/FTFont.h"
+#include "UI/UIPackage.h"
+#include "UI/DefaultUIPackageBuilder.h"
+#include "UI/UIPackageLoader.h"
+#include "UI/UIControlHelpers.h"
 
 namespace DAVA
 {
@@ -51,7 +58,7 @@ UIYamlLoader::UIYamlLoader() :
     currentPath = FilePath();
 }
 
-int32 UIYamlLoader::GetDrawTypeFromNode(const YamlNode * drawTypeNode)
+int32 UIYamlLoader::GetDrawTypeFromNode(const YamlNode * drawTypeNode) const
 {
     int32 ret = UIControlBackground::DRAW_ALIGNED;
     if(!drawTypeNode)
@@ -72,7 +79,7 @@ int32 UIYamlLoader::GetDrawTypeFromNode(const YamlNode * drawTypeNode)
     return ret;
 }
 
-String UIYamlLoader::GetDrawTypeNodeValue(int32 drawType)
+String UIYamlLoader::GetDrawTypeNodeValue(int32 drawType) const
 {
     String ret;
     switch (drawType) {
@@ -110,7 +117,7 @@ String UIYamlLoader::GetDrawTypeNodeValue(int32 drawType)
     return ret;
 }
 
-int32 UIYamlLoader::GetColorInheritTypeFromNode(const YamlNode * colorInheritNode)
+int32 UIYamlLoader::GetColorInheritTypeFromNode(const YamlNode * colorInheritNode) const
 {
     int32 ret = UIControlBackground::COLOR_IGNORE_PARENT;
     if(!colorInheritNode)
@@ -128,7 +135,7 @@ int32 UIYamlLoader::GetColorInheritTypeFromNode(const YamlNode * colorInheritNod
     return ret;
 }
 
-String UIYamlLoader::GetColorInheritTypeNodeValue(int32 colorInheritType)
+String UIYamlLoader::GetColorInheritTypeNodeValue(int32 colorInheritType) const
 {
     String ret;
     switch (colorInheritType) {
@@ -157,7 +164,39 @@ String UIYamlLoader::GetColorInheritTypeNodeValue(int32 colorInheritType)
     return ret;
 }
 
-int32 UIYamlLoader::GetAlignFromYamlNode(const YamlNode * alignNode)
+int32 UIYamlLoader::GetPerPixelAccuracyTypeFromNode(const YamlNode *perPixelAccuracyNode) const
+{
+	int32 ret = UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+	if(!perPixelAccuracyNode)
+		return ret;
+
+	const String & type = perPixelAccuracyNode->AsString();
+
+	if("PER_PIXEL_ACCURACY_DISABLED" == type) ret = UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+	if("PER_PIXEL_ACCURACY_ENABLED" == type) ret = UIControlBackground::PER_PIXEL_ACCURACY_ENABLED;
+	if("PER_PIXEL_ACCURACY_FORCED" == type) ret = UIControlBackground::PER_PIXEL_ACCURACY_FORCED;
+
+	return ret;
+}
+
+String UIYamlLoader::GetPerPixelAccuracyTypeNodeValue(int32 perPixelAccuracyType) const
+{
+	String ret;
+    switch (perPixelAccuracyType) {
+        case UIControlBackground::PER_PIXEL_ACCURACY_DISABLED:
+            ret = "PER_PIXEL_ACCURACY_DISABLED";
+            break;
+        case UIControlBackground::PER_PIXEL_ACCURACY_ENABLED:
+            ret = "PER_PIXEL_ACCURACY_ENABLED";
+            break;
+        case UIControlBackground::PER_PIXEL_ACCURACY_FORCED:
+            ret = "PER_PIXEL_ACCURACY_FORCED";
+            break;
+    }
+    return ret;
+}
+	
+int32 UIYamlLoader::GetAlignFromYamlNode(const YamlNode * alignNode) const
 {
     if (!alignNode)return ALIGN_HCENTER | ALIGN_VCENTER;
 
@@ -213,7 +252,7 @@ int32 UIYamlLoader::GetFittingOptionFromYamlNode( const YamlNode * fittingNode )
 }
 
 //Vector<String> UIYamlLoader::GetAlignNodeValue(int32 align)
-YamlNode * UIYamlLoader::GetAlignNodeValue(int32 align)
+YamlNode * UIYamlLoader::GetAlignNodeValue(int32 align) const
 {
     YamlNode *alignNode = YamlNode::CreateArrayNode(YamlNode::AR_FLOW_REPRESENTATION);
     String horzAlign = "HCENTER";
@@ -283,7 +322,7 @@ YamlNode * UIYamlLoader::GetFittingOptionNodeValue( int32 fitting ) const
     return fittingNode;
 }
 
-bool UIYamlLoader::GetBoolFromYamlNode(const YamlNode * node, bool defaultValue)
+bool UIYamlLoader::GetBoolFromYamlNode(const YamlNode * node, bool defaultValue) const
 {
     if (!node)return defaultValue;
 
@@ -303,7 +342,7 @@ int32 HexCharToInt(char c)
     return 0;
 }
 
-Color UIYamlLoader::GetColorFromYamlNode(const YamlNode * node)
+Color UIYamlLoader::GetColorFromYamlNode(const YamlNode * node) const
 {
     if (node->GetType() == YamlNode::TYPE_ARRAY)
     {
@@ -324,7 +363,7 @@ Color UIYamlLoader::GetColorFromYamlNode(const YamlNode * node)
 }
 
 
-Font * UIYamlLoader::GetFontByName(const String & fontName)
+Font * UIYamlLoader::GetFontByName(const String & fontName) const
 {
     return FontManager::Instance()->GetFont(fontName);
 }
@@ -348,24 +387,22 @@ bool UIYamlLoader::SaveFonts(const FilePath & yamlPathname)
     bool res = false;
 
     //save used fonts
-    const FontManager::TRACKED_FONTS& usedFonts = FontManager::Instance()->GetTrackedFont();
+    const auto& usedFonts = FontManager::Instance()->GetFontMap();
     ScopedPtr<YamlNode> fontsNode( new YamlNode(YamlNode::TYPE_MAP) );
-    for (FontManager::TRACKED_FONTS::const_iterator iter = usedFonts.begin();
+    for (auto iter = usedFonts.begin();
          iter != usedFonts.end();
          ++iter)
     {
-        Font* font = (*iter);
+        Font* font = iter->second;
         if (!font)
             continue;
 
         // The font should be stored once only.
         String fontName = FontManager::Instance()->GetFontName(font);
-        Logger::FrameworkDebug("UIYamlLoader::SaveFonts fontName=%s for font=%p", fontName.c_str(), font);
 
         font = FontManager::Instance()->GetFont(fontName);
         if (!font)
             continue;
-        Logger::FrameworkDebug("UIYamlLoader::SaveFonts font=%p for fontName=%s", font, fontName.c_str());
 
         if (fontsNode->AsMap().find(fontName) == fontsNode->AsMap().end())
         {
@@ -378,8 +415,25 @@ bool UIYamlLoader::SaveFonts(const FilePath & yamlPathname)
     return res;
 }
 
-void UIYamlLoader::Load(UIControl * rootControl, const FilePath & yamlPathname, bool assertIfCustomControlNotFound)
+void UIYamlLoader::Load(UIControl * rootControl, const FilePath & yamlPathname, bool assertIfCustomControlNotFound /* = true */)
 {
+    DefaultUIPackageBuilder builder;
+    RefPtr<UIPackage> package(UIPackageLoader(&builder).LoadPackage(yamlPathname));
+    if (package.Valid())
+    {
+        DVASSERT(package->GetControlsCount() == 1);
+        UIControl *control = package->GetControl(0);
+        DVASSERT(control);
+        while (!control->GetChildren().empty())
+        {
+            rootControl->AddControl(control->GetChildren().front());
+        }
+
+        if (rootControl->GetSize() != control->GetSize())
+            rootControl->UpdateLayout();
+        return;
+    }
+
     UIYamlLoader * loader = new UIYamlLoader();
     loader->SetAssertIfCustomControlNotFound(assertIfCustomControlNotFound);
 
@@ -431,13 +485,32 @@ void UIYamlLoader::ProcessLoad(UIControl * rootControl, const FilePath & yamlPat
     LoadFromNode(rootControl, childrenNode, false);
 
     SafeRelease(rootNode);
+	
+	// After the scene is fully loaded, apply the align settings
+	// to position child controls correctly.
+    rootControl->UpdateChildrenLayout();
+    
+    PostLoad(rootControl);
+    
+	uint64 t2 = SystemTimer::Instance()->AbsoluteMS();
+	Logger::FrameworkDebug("Load of %s time: %lld", yamlPathname.GetAbsolutePathname().c_str(), t2 - t1);    
+}
 
-    // After the scene is fully loaded, apply the align settings
-    // to position child controls correctly.
-    rootControl->ApplyAlignSettingsForChildren();
+void UIYamlLoader::PostLoad(UIControl * rootControl)
+{
+    //Find ScrollBars and set delegates
+    SetScrollBarDelegates(rootControl);
+}
 
-    uint64 t2 = SystemTimer::Instance()->AbsoluteMS();
-    Logger::FrameworkDebug("Load of %s time: %lld", yamlPathname.GetAbsolutePathname().c_str(), t2 - t1);
+void UIYamlLoader::SetScrollBarDelegates(UIControl * rootControl)
+{
+    Map<UIScrollBar*,String>::iterator it = scrollsToLink.begin();
+    for (; it!=scrollsToLink.end(); ++it)
+    {
+        UIControl * control = UIControlHelpers::GetControlByPath(it->second, rootControl);
+        it->first->SetDelegate( dynamic_cast<UIScrollBarDelegate*>(control));
+    }
+    scrollsToLink.clear();
 }
 
 bool UIYamlLoader::ProcessSave(UIControl * rootControl, const FilePath & yamlPathname, bool skipRootNode)
@@ -493,6 +566,18 @@ void UIYamlLoader::LoadFontsFromNode(const YamlNode * rootNode)
                 font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt32());
             }
 
+            const YamlNode * fontFontAscendNode = node->Get("ascendScale");
+            if (fontFontAscendNode)
+            {
+                font->SetAscendScale(fontFontAscendNode->AsFloat());
+            }
+
+            const YamlNode * fontFontDescendNode = node->Get("descendScale");
+            if (fontFontDescendNode)
+            {
+                font->SetDescendScale(fontFontDescendNode->AsFloat());
+            }
+
             //fontMap[t->first] = font;
             FontManager::Instance()->SetFontName(font, t->first);
             SafeRelease(font);
@@ -522,6 +607,18 @@ void UIYamlLoader::LoadFontsFromNode(const YamlNode * rootNode)
             if(fontVerticalSpacingNode)
             {
                 font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt32());
+            }
+            
+            const YamlNode * fontFontAscendNode = node->Get("ascendScale");
+            if (fontFontAscendNode)
+            {
+                font->SetAscendScale(fontFontAscendNode->AsFloat());
+            }
+
+            const YamlNode * fontFontDescendNode = node->Get("descendScale");
+            if (fontFontDescendNode)
+            {
+                font->SetDescendScale(fontFontDescendNode->AsFloat());
             }
 
             const YamlNode * fontHorizontalSpacingNode = node->Get("horizontalSpacing");
@@ -558,6 +655,18 @@ void UIYamlLoader::LoadFontsFromNode(const YamlNode * rootNode)
                 font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt());
             }
 
+            const YamlNode * fontFontAscendNode = node->Get("ascendScale");
+            if (fontFontAscendNode)
+            {
+                font->SetAscendScale(fontFontAscendNode->AsFloat());
+            }
+
+            const YamlNode * fontFontDescendNode = node->Get("descendScale");
+            if (fontFontDescendNode)
+            {
+                font->SetDescendScale(fontFontDescendNode->AsFloat());
+            }
+
             //fontMap[t->first] = font;
             FontManager::Instance()->SetFontName(font, t->first);
         }
@@ -566,45 +675,45 @@ void UIYamlLoader::LoadFontsFromNode(const YamlNode * rootNode)
 
 void UIYamlLoader::LoadFromNode(UIControl * parentControl, const YamlNode * rootNode, bool needParentCallback)
 {
-    //for (Map<String, YamlNode*>::iterator t = rootNode->AsMap().begin(); t != rootNode->AsMap().end(); ++t)
-    int cnt = rootNode->GetCount();
-    for (int k = 0; k < cnt; ++k)
-    {
-        const YamlNode * node = rootNode->Get(k);
-        const YamlNode * typeNode = node->Get("type");
+	//for (Map<String, YamlNode*>::iterator t = rootNode->AsMap().begin(); t != rootNode->AsMap().end(); ++t)
+	int cnt = rootNode->GetCount();
+	for (int k = 0; k < cnt; ++k)
+	{
+		const YamlNode * node = rootNode->Get(k);
+		const YamlNode * typeNode = node->Get("type");
         if (!typeNode)
             continue;
 
-        const String & type = typeNode->AsString();
+		const String & type = typeNode->AsString();
 
-        // Base Type might be absent.
-        const YamlNode* baseTypeNode = node->Get("baseType");
-        const String baseType = baseTypeNode ? baseTypeNode->AsString() : String();
+		// Base Type might be absent.
+		const YamlNode* baseTypeNode = node->Get("baseType");
+		const String baseType = baseTypeNode ? baseTypeNode->AsString() : String();
 
-        // The control can be loaded either from its Type or from Base Type (depending on
-        // whether the control is custom or not.
-        UIControl* control = CreateControl(type, baseType);
-        if (!control)
-        {
-            Logger::Warning("ObjectFactory haven't found object with type:%s, base type %s", type.c_str(), baseType.c_str());
-            continue;
-        }else
-        {
-            //Logger::FrameworkDebug("Create control with type:%s", type.c_str());
-        }
+		// The control can be loaded either from its Type or from Base Type (depending on
+		// whether the control is custom or not.
+		UIControl* control = CreateControl(type, baseType);
+		if (!control)
+		{
+			Logger::Warning("ObjectFactory haven't found object with type:%s, base type %s", type.c_str(), baseType.c_str());
+			continue;
+		}else
+		{
+			//Logger::FrameworkDebug("Create control with type:%s", type.c_str());
+		}
 
-        control->SetName(rootNode->GetItemKeyName(k));
-        control->LoadFromYamlNode(node, this);
-        parentControl->AddControl(control);
+		control->SetName(rootNode->GetItemKeyName(k));
+		control->LoadFromYamlNode(node, this);
+		parentControl->AddControl(control);
 
-        const YamlNode *childrenNode = node->Get("children");
-        if (!childrenNode)
-            childrenNode = node;
+		const YamlNode *childrenNode = node->Get("children");
+		if (!childrenNode)
+		    childrenNode = node;
 
-        LoadFromNode(control, childrenNode, true);
-        SafeRelease(control);
-    }
-
+		LoadFromNode(control, childrenNode, true);
+		SafeRelease(control);
+	}
+    
     if(needParentCallback)
     {
         parentControl->LoadFromYamlNodeCompleted();
@@ -621,7 +730,7 @@ UIControl* UIYamlLoader::CreateControl(const String& type, const String& baseTyp
         bool hasCustomType = (!type.empty() && !baseType.empty() && (type != baseType));
         if (hasCustomType)
         {
-            control->SetCustomControlType(type);
+            control->SetCustomControlClassName(type);
         }
 
         return control;
@@ -642,7 +751,7 @@ UIControl* UIYamlLoader::CreateControl(const String& type, const String& baseTyp
         if (control)
         {
             // Even if the control of the base type was created, we have to store its custom type.
-            control->SetCustomControlType(type);
+            control->SetCustomControlClassName(type);
         }
     }
 
@@ -689,6 +798,11 @@ void UIYamlLoader::SetAssertIfCustomControlNotFound(bool value)
 const FilePath & UIYamlLoader::GetCurrentPath() const
 {
     return currentPath;
+}
+
+void UIYamlLoader::AddScrollBarToLink(UIScrollBar* scroll, const String& delegatePath)
+{
+    scrollsToLink.insert(std::pair<UIScrollBar*,String>(scroll,delegatePath));
 }
 
 }

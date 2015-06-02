@@ -68,11 +68,20 @@ public:
         SPEEDTREE_COMPONENT,
         WIND_COMPONENT,
         WAVE_COMPONENT,
-
+        SKELETON_COMPONENT,
+        PATH_COMPONENT,
+        ROTATION_CONTROLLER_COMPONENT,
+        SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT,
+        WASD_CONTROLLER_COMPONENT,
+        
         //debug components - note that everything below won't be serialized
         DEBUG_COMPONENTS,
         STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT,
-        COMPONENT_COUNT
+        WAYPOINT_COMPONENT,
+        EDGE_COMPONENT,
+
+        COMPONENT_COUNT,
+        FIRST_USER_DEFINED_COMPONENT = 0xFFFF
     };
 
 public:
@@ -81,12 +90,12 @@ public:
 	Component();
 	virtual ~Component();
 
-    virtual uint32 GetType() = 0;
+    virtual uint32 GetType() const = 0;
     virtual Component* Clone(Entity * toEntity) = 0;
 	virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
 	virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
 
-	Entity* GetEntity();
+	inline Entity* GetEntity() const;
 	virtual void SetEntity(Entity * entity);
     
     /**
@@ -113,7 +122,16 @@ public:
 		);
 };
 
-#define IMPLEMENT_COMPONENT_TYPE(TYPE) virtual uint32 GetType() { return TYPE; }; 
+inline Entity* Component::GetEntity() const
+{
+	return entity;
+};
+
+#define IMPLEMENT_COMPONENT_TYPE(TYPE) \
+    virtual uint32 GetType() const { return TYPE; }; \
+    static const uint32 C_TYPE = TYPE; 
+
+#define MAKE_COMPONENT_MASK(x) ((uint64)1 << (uint64)x)
     
 template<template <typename> class Container, class T>
 void Component::GetDataNodes(Container<T> & container)
@@ -132,7 +150,6 @@ void Component::GetDataNodes(Container<T> & container)
     }	
 }
 
-    
     
 };
 #endif //__DAVAENGINE_SCENE3D_COMPONENT_H__

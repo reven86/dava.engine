@@ -31,6 +31,8 @@
 #include "Core/Core.h"
 #include "Utils/Utils.h"
 #include "Render/RenderManager.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 namespace DAVA 
 {
@@ -42,16 +44,17 @@ TextBlockGraphicsRender::TextBlockGraphicsRender(TextBlock* textBlock) :
 	isPredrawed = true;
 }
 	
-void TextBlockGraphicsRender::Prepare()
+void TextBlockGraphicsRender::Prepare(Texture *texture /*= NULL*/)
 {
-	TextBlockRender::Prepare();
+	TextBlockRender::Prepare(texture);
 	
 	isPredrawed = false;
-	sprite = Sprite::CreateAsRenderTarget((float32)textBlock->cacheDx, (float32)textBlock->cacheDy, FORMAT_RGBA8888);
+    Texture * fbo = Texture::CreateFBO(textBlock->cacheDx, textBlock->cacheDy, FORMAT_RGBA8888, Texture::DEPTH_NONE);
+    sprite = Sprite::CreateFromTexture(fbo, 0, 0, (float32)fbo->GetWidth(), (float32)fbo->GetHeight());
 	if (sprite && sprite->GetTexture())
 	{
 		if (!textBlock->isMultilineEnabled)
-			sprite->GetTexture()->SetDebugInfo(WStringToString(textBlock->text));
+            sprite->GetTexture()->SetDebugInfo(WStringToString(textBlock->visualText));
 		else if (textBlock->isMultilineEnabled)
 		{
 			if (textBlock->multilineStrings.size() > 0)
@@ -66,22 +69,29 @@ void TextBlockGraphicsRender::PreDraw()
 		return;
 	
 	isPredrawed = true;
-	RenderManager::Instance()->SetRenderTarget(sprite);
-	DrawText();
-	RenderManager::Instance()->RestoreRenderTarget();
+
+    Texture * rt = sprite->GetTexture();
+    Rect oldviewport = RenderManager::Instance()->GetViewport();
+
+    RenderManager::Instance()->SetRenderTarget(rt);
+    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)rt->GetWidth(), (float32)rt->GetHeight()));
+    DrawText();
+
+    RenderManager::Instance()->SetRenderTarget(0);
+    RenderManager::Instance()->SetViewport(oldviewport);
 }
 	
-Size2i TextBlockGraphicsRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
+Font::StringMetrics TextBlockGraphicsRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
 {
 	if (textBlock->cacheUseJustify)
 	{
-		return grFont->DrawString(0, 0, drawText, (int32)ceilf(Core::GetVirtualToPhysicalFactor() * w));
+		return grFont->DrawString(0, 0, drawText, (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)w)));
 	}
 
 	return grFont->DrawString(0, 0, drawText);
 }
 
-Size2i TextBlockGraphicsRender::DrawTextML(const WideString& drawText,
+Font::StringMetrics TextBlockGraphicsRender::DrawTextML(const WideString& drawText,
 										   int32 x, int32 y, int32 w,
 										   int32 xOffset, uint32 yOffset,
 										   int32 lineSize)
@@ -91,7 +101,7 @@ Size2i TextBlockGraphicsRender::DrawTextML(const WideString& drawText,
 		return grFont->DrawString((float32)xOffset,
 										   (float32)yOffset,
 										   drawText,
-										   (int32)ceilf(Core::GetVirtualToPhysicalFactor() * w), lineSize);
+                                           (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)w)), lineSize);
 	}
 	
 	return grFont->DrawString((float32)xOffset, (float32)yOffset, drawText, 0, 0);

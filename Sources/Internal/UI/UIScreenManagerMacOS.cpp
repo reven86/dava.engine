@@ -64,10 +64,12 @@ UIScreenManager::~UIScreenManager()
 	
 void UIScreenManager::ScreenSizeChanged()
 {
-    GetScreen()->SystemScreenSizeDidChanged(Rect(Core::Instance()->GetVirtualScreenXMin()
-                                                    , Core::Instance()->GetVirtualScreenYMin()
-                                                    , Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin()
-                                                 , Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin()));
+    UIScreen *screen = GetScreen();
+    if(nullptr != screen)
+    {
+        Rect fullscreenRect = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect();
+        screen->SystemScreenSizeDidChanged(fullscreenRect);
+    }
 }
     
 void UIScreenManager::SetFirst(int screenId)

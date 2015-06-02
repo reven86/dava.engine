@@ -50,6 +50,7 @@ const char* PropertyNames::STRETCH_VERTICAL_PROPERTY_NAME = "TopBottomStretchCap
 
 const char* PropertyNames::DRAW_TYPE_PROPERTY_NAME = "DrawType";
 const char* PropertyNames::COLOR_INHERIT_TYPE_PROPERTY_NAME = "ColorInheritType";
+const char* PropertyNames::PER_PIXEL_ACCURACY_TYPE_PROPERTY_NAME = "PerPixelAccuracyType";
 const char* PropertyNames::ALIGN_PROPERTY_NAME = "Align";
 
 const char* PropertyNames::TEXT_PROPERTY_NAME = "Text";
@@ -57,6 +58,7 @@ const char* PropertyNames::TEXT_PROPERTY_MULTILINE = "Multiline";
 const char* PropertyNames::TEXT_PROPERTY_MULTILINE_BY_SYMBOL = "MultilineBySymbol";
 const char* PropertyNames::TEXT_COLOR_PROPERTY_NAME = "TextColor";
 const char* PropertyNames::TEXT_ALIGN_PROPERTY_NAME = "TextAlign";
+const char* PropertyNames::TEXT_USE_RTL_ALIGN_PROPERTY_NAME = "TextUseRtlAlign";
 const char* PropertyNames::TEXT_FITTING_TYPE_PROPERTY_NAME = "FittingType";
 
 const char* PropertyNames::IS_PASSWORD_PROPERTY_NAME = "IsPassword";
@@ -73,7 +75,10 @@ const char* PropertyNames::SHADOW_OFFSET_X = "ShadowOffsetX";
 const char* PropertyNames::SHADOW_OFFSET_Y = "ShadowOffsetY";
 const char* PropertyNames::SHADOW_COLOR = "ShadowColor";
 
-const char* PropertyNames::FONT_SHADOW_COLOR_INHERIT_TYPE_PROPERTY_NAME = "FontShadowColorInheritType";
+const char* PropertyNames::TEXT_COLOR_INHERIT_TYPE_PROPERTY_NAME = "TextColorInheritType";
+const char* PropertyNames::TEXT_PER_PIXEL_ACCURACY_TYPE_PROPERTY_NAME = "TextPerPixelAccuracyType";
+
+const char* PropertyNames::MAX_TEXT_LENGTH_PROPERTY_NAME = "MaxLength";
 
 // Slider properties
 const char* PropertyNames::SLIDER_VALUE_PROPERTY_NAME = "SliderValue";
@@ -107,6 +112,10 @@ const char* PropertyNames::HORIZONTAL_SCROLL_POSITION = "HorizontalScrollPositio
 const char* PropertyNames::VERTICAL_SCROLL_POSITION = "VerticalScrollPosition";
 const char* PropertyNames::SCROLL_CONTENT_SIZE_X = "ContentSizeX";
 const char* PropertyNames::SCROLL_CONTENT_SIZE_Y = "ContentSizeY";
+    
+//UI Scroll Bar properties
+const char* PropertyNames::SCROLL_ORIENTATION ="ScrollOrientation";
+const char* PropertyNames::SCROLL_BAR_DELEGATE_NAME="UIScrollBarDelegateName";
 
 // UI Spinner properties.
 const char* PropertyNames::UISPINNER_PREV_BUTTON_TEXT = "PrevButtonText";
@@ -131,6 +140,20 @@ const char* PropertyNames::JOYPAD_DIGITAL_SENSE_PROPERTY_NAME = "DigitalSense";
 
 // UI Web View properties.
 const char* PropertyNames::WEBVIEW_DATA_DETECTOR_TYPES_PROPERTY_NAME = "DataDetectorTypes";
+
+// UI Margin properties.
+const char* PropertyNames::MARGINS_PROPERTY_NAME = "Margins";
+const char* PropertyNames::LEFT_MARGIN_PROPERTY_NAME = "LeftMargin";
+const char* PropertyNames::TOP_MARGIN_PROPERTY_NAME = "TopMargin";
+const char* PropertyNames::RIGHT_MARGIN_PROPERTY_NAME = "RightMargin";
+const char* PropertyNames::BOTTOM_MARGIN_PROPERTY_NAME = "BottomMargin";
+
+// UI Text Margin properties.
+const char* PropertyNames::TEXT_MARGINS_PROPERTY_NAME = "TextMargins";
+const char* PropertyNames::TEXT_LEFT_MARGIN_PROPERTY_NAME = "TextLeftMargin";
+const char* PropertyNames::TEXT_TOP_MARGIN_PROPERTY_NAME = "TextTopMargin";
+const char* PropertyNames::TEXT_RIGHT_MARGIN_PROPERTY_NAME = "TextRightMargin";
+const char* PropertyNames::TEXT_BOTTOM_MARGIN_PROPERTY_NAME = "TextBottomMargin";
 
 // Custom Control properties.
 const char* PropertyNames::CUSTOM_CONTROL_NAME = "CustomControlName";

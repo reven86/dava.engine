@@ -27,10 +27,16 @@
 =====================================================================================*/
 #include "Render/RenderManager.h"
 #include "Render/OcclusionQuery.h"
+#include "Render/Highlevel/RenderFastNames.h"
+#include "Utils/Utils.h"
 
 namespace DAVA
 {
 #if defined(__DAVAENGINE_OPENGL__)
+
+/////////////////////////////////////////////////////////////////////
+///////////OcclusionQuery
+
 OcclusionQuery::OcclusionQuery()
 {
     id = 0;
@@ -58,8 +64,11 @@ void OcclusionQuery::Release()
 
 OcclusionQuery::~OcclusionQuery()
 {
-    Release();
-    id = 0;
+    if(id != 0)
+    {
+        Release();
+        id = 0;
+    }
 }
 
 void OcclusionQuery::BeginQuery()
@@ -114,9 +123,11 @@ void OcclusionQuery::GetQuery(uint32 * resultValue)
     RENDER_VERIFY(glGetQueryObjectuivEXT(id, GL_QUERY_RESULT_EXT, resultValue));
 #endif
 }
+   
+/////////////////////////////////////////////////////////////////////
+///////////OcclusionQueryPool
     
-    
-OcclusionQueryManager::OcclusionQueryManager(uint32 _occlusionQueryCount)
+OcclusionQueryPool::OcclusionQueryPool(uint32 _occlusionQueryCount)
 {
     createdCounter = 0;
     nextFree = 0;
@@ -131,7 +142,7 @@ OcclusionQueryManager::OcclusionQueryManager(uint32 _occlusionQueryCount)
     }
 }
     
-OcclusionQueryManager::~OcclusionQueryManager()
+OcclusionQueryPool::~OcclusionQueryPool()
 {
     for (uint32 k = 0; k < occlusionQueryCount; ++k)
     {
@@ -140,7 +151,7 @@ OcclusionQueryManager::~OcclusionQueryManager()
     queries.clear();
 }
 
-OcclusionQueryManagerHandle OcclusionQueryManager::CreateQueryObject()
+OcclusionQueryPoolHandle OcclusionQueryPool::CreateQueryObject()
 {
     if (nextFree == INVALID_INDEX)
     {
@@ -157,14 +168,14 @@ OcclusionQueryManagerHandle OcclusionQueryManager::CreateQueryObject()
         }
     }
     createdCounter++;
-    OcclusionQueryManagerHandle handle;
+    OcclusionQueryPoolHandle handle;
     handle.index = nextFree;
     handle.salt = queries[nextFree].salt;
     nextFree = queries[nextFree].next;
     return handle;
 }
     
-void OcclusionQueryManager::ReleaseQueryObject(OcclusionQueryManagerHandle handle)
+void OcclusionQueryPool::ReleaseQueryObject(OcclusionQueryPoolHandle handle)
 {
     createdCounter--;
     DVASSERT(handle.salt == queries[handle.index].salt);
@@ -173,6 +184,163 @@ void OcclusionQueryManager::ReleaseQueryObject(OcclusionQueryManagerHandle handl
     nextFree = handle.index;
 }
 
+/////////////////////////////////////////////////////////////////////
+///////////FrameOcclusionQueryManager
+
+FrameOcclusionQueryManager::FrameOcclusionQueryManager() :
+behavior(BEHAVIOR_WAIT),
+frameBegan(false)
+{}
+
+FrameOcclusionQueryManager::~FrameOcclusionQueryManager()
+{
+    for(auto& frameQuery : frameQueries)
+    {
+        SafeDelete(frameQuery);
+    }
+}
+
+FrameOcclusionQueryManager::FrameQuery * FrameOcclusionQueryManager::GetQuery(const FastName & queryName) const
+{
+    for(auto frameQuery : frameQueries)
+    {
+        if (frameQuery->queryName == queryName)
+        {
+            return frameQuery;
+        }
+    }
+    return nullptr;
+}
+
+void FrameOcclusionQueryManager::ResetFrameStats() //OnBeginFrame
+{
+    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
+        return;
+
+    frameBegan = true;
+
+    for (auto frameQuery : frameQueries)
+    {
+        frameQuery->drawedFrameStats = 0;
+    }
+}
+
+void FrameOcclusionQueryManager::ProccesRenderedFrame() //OnEndFrame
+{
+    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
+        return;
+
+    frameBegan = false;
+
+    int32 frameQueriesCount = static_cast<int32>(frameQueries.size());
+    for(int32 i = 0; i < frameQueriesCount; ++i)
+    {
+        FrameQuery * frameQuery = frameQueries[i];
+        for(int32 q = static_cast<int32>(frameQuery->activeQueries.size() - 1); q >= 0; --q)
+        {
+            OcclusionQueryPoolHandle queryHandle = frameQuery->activeQueries[q];
+            OcclusionQuery & query = frameQuery->queryPool.Get(queryHandle);
+
+            bool needRetrieve = false;
+            bool needRemove = false;
+
+            if(behavior == BEHAVIOR_WAIT)
+            {
+                while(!query.IsResultAvailable()) {}
+
+                needRetrieve = true;
+                needRemove = true;
+            }
+            else if(behavior == BEHAVIOR_SKIP)
+            {
+                needRemove = true;
+                needRetrieve = query.IsResultAvailable();
+            }
+            else if(behavior == BEHAVIOR_RETRIEVE_ON_NEXT_FRAME)
+            {
+                needRetrieve = needRemove = query.IsResultAvailable();
+            }
+
+            if(needRetrieve)
+            {
+                uint32 result = 0;
+                query.GetQuery(&result);
+                frameQuery->drawedFrameStats += result;
+            }
+
+            if(needRemove)
+            {
+                frameQuery->queryPool.ReleaseQueryObject(queryHandle);
+                RemoveExchangingWithLast(frameQuery->activeQueries, q);
+            }
+        }
+    }
+}
+
+void FrameOcclusionQueryManager::BeginQuery(const FastName & queryName)
+{
+    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
+        return;
+
+    FrameQuery * frameQuery = GetQuery(queryName);
+    if(!frameQuery)
+    {
+        frameQuery = new FrameQuery(queryName);
+        frameQueries.push_back(frameQuery);
+    }
+
+    DVASSERT(!frameQuery->isQueryOpen);
+
+    OcclusionQueryPoolHandle handle = frameQuery->queryPool.CreateQueryObject();
+    frameQuery->queryPool.Get(handle).BeginQuery();
+    frameQuery->activeQueries.push_back(handle);
+    frameQuery->isQueryOpen = true;
+}
+
+void FrameOcclusionQueryManager::EndQuery(const FastName & queryName)
+{
+    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
+        return;
+
+    FrameOcclusionQueryManager::FrameQuery * frameQuery = GetQuery(queryName);
+    DVASSERT(frameQuery);
+    DVASSERT(frameQuery->isQueryOpen);
+
+    OcclusionQueryPoolHandle handle = frameQuery->activeQueries.back();
+    frameQuery->queryPool.Get(handle).EndQuery();
+    frameQuery->isQueryOpen = false;
+}
+
+bool FrameOcclusionQueryManager::IsQueryOpen(const FastName & queryName)
+{
+	FrameOcclusionQueryManager::FrameQuery * frameQuery = GetQuery(queryName);
+	if (frameQuery)
+		return frameQuery->isQueryOpen;
+
+	return false;
+}
+
+uint32 FrameOcclusionQueryManager::GetFrameStats(const FastName & queryName) const
+{
+    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::LAYER_OCCLUSION_STATS))
+        return 0;
+
+    DVASSERT(!frameBegan); //should be called on after EndFrame() and before BeginFrame()
+
+    const FrameQuery * frameQuery = GetQuery(queryName);
+    if(frameQuery)
+        return frameQuery->drawedFrameStats;
+
+    return 0;
+}
+
+void FrameOcclusionQueryManager::GetQueriesNames(Vector<FastName> & names) const
+{
+    for (auto query : frameQueries)
+    {
+        names.emplace_back(query->queryName);
+    }
+}
 
 #else
 #error "Require Occlusion Queries Implementation"

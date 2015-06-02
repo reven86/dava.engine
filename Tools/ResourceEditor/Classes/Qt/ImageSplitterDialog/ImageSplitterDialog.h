@@ -30,10 +30,11 @@
 #ifndef __RESOURCEEDITORQT__IMAGESPLITTER_DIALOG_H__
 #define __RESOURCEEDITORQT__IMAGESPLITTER_DIALOG_H__
 
-#include <QDialog>
 #include "DAVAEngine.h"
 
-#include <QtGui>
+#include <QDialog>
+#include <QScopedPointer>
+
 
 namespace Ui {
 class ImageSplitter;
@@ -45,37 +46,27 @@ class ImageSplitterDialog : public QDialog
     Q_OBJECT
     
 public:
-    
-    explicit ImageSplitterDialog(QWidget *parent = 0);
-    
+    explicit ImageSplitterDialog(QWidget *parent = nullptr);
     ~ImageSplitterDialog();
-    
-protected slots:
-    
-    void PathSelected(DAVA::String path);
-    
-    void ImageAreaChanged();
-    
-    void OnRestoreClicked();
-    
-    void OnSaveAsClicked(bool saveSplittedImages = false);
-    
-    void OnSaveClicked();
-    
-    void OnSaveChannelsClicked();
-    
-    void OnFillBtnClicked();
-    
-protected:
-    
-    void ConnectSignals();
 
+private slots:
+    void PathSelected(const QString& path);
+    void ImageAreaChanged();
+    void OnRestoreClicked();
+    void OnSaveAsClicked(bool saveSplittedImages = false);
+    void OnSaveClicked();
+    void OnSaveChannelsClicked();
+    void OnFillBtnClicked();
+    void OnReload();
+    void OnReloadSpecularMap();
+    
+private:
+    void ConnectSignals();
     void SetAcceptableImageSize(const DAVA::Vector2& newSize);
-    
     void Save(const DAVA::FilePath& filePath, bool saveSplittedImagesSeparately);
+    DAVA::String GetDefaultPath() const;
     
-    Ui::ImageSplitter *ui;
-    
+    QScopedPointer<Ui::ImageSplitter> ui;
     DAVA::Vector2 acceptableSize;
     DAVA::String  lastSelectedFile;
     DAVA::Vector<ImageArea*> rgbaControls;

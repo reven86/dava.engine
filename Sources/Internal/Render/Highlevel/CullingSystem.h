@@ -53,7 +53,7 @@ public:
     virtual void RemoveEntity(Entity * entity);
     virtual void ImmediateUpdate(Entity * entity);
 
-    virtual void Process();
+    virtual void Process(float32 timeElapsed);
     
     void SetCamera(Camera * camera);
     

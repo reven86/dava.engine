@@ -27,40 +27,116 @@
 =====================================================================================*/
 
 #include "Downloader.h"
-#include "DownloadManager.h"
+#include "DLC/Downloader/DownloadManager.h"
+#include "Platform/SystemTimer.h"
+#include "Thread/LockGuard.h"
 
 namespace DAVA
 {
 
-Downloader::Downloader(uint32 operationTimeout)
-    : timeout(operationTimeout)
+Downloader::Downloader()
+    : fileErrno(0)
+{ }
+
+bool Downloader::SaveData(const void *ptr, const FilePath& storePath, uint64 size)
 {
-
-}
-
-size_t Downloader::SaveData(void *ptr, size_t size, size_t nmemb)
-{
-    DownloadManager *mgr = DownloadManager::Instance();
-    
-    // SaveData performs when task is in IN_PROCESS state, so currentTask should be NOT NULL.
-    DVASSERT(mgr->currentTask);
-
-    FilePath storePath = mgr->currentTask->storePath;
-
     size_t written = 0;
-    File *destFile = File::Create(storePath, File::APPEND | File::WRITE);
+    File *destFile = File::Create(storePath, File::OPEN | File::WRITE | File::APPEND);
     if (destFile)
     {
-        written = destFile->Write(ptr, size * nmemb);
-        mgr->currentTask->downloadProgress += written;
+        DownloadManager::Instance()->ResetRetriesCount();
+#if defined(__DAVAENGINE_ANDROID__) 
+        uint32 posBeforeWrite = destFile->GetPos();
+#endif
+        written = destFile->Write(ptr, static_cast<int32>(size)); // only 32 bit write is supported
+
+#if defined(__DAVAENGINE_ANDROID__) 
+        //for Android value returned by 'Write()' is incorrect in case of full disk, that's why we calculate 'written' using 'GetPos()'
+        DVASSERT(destFile->GetPos() >= posBeforeWrite);
+        written = destFile->GetPos() - posBeforeWrite;
+#endif
         SafeRelease(destFile);
+        
+        notifyProgress(written);
+        
+        if (written != size)
+        {
+            Logger::Error("[Downloader::SaveData] Cannot save data to the file");
+            return false;
+        }
+    }
+    else
+    {
+        Logger::Error("[Downloader::SaveData] Cannot open file to save data");
+        return false;
     }
 
-    // maybee not ideal, but only Manager can use Downloader, so maybee callback is not required.
-    if (written != 0)
-        DownloadManager::Instance()->ResetRetriesCount();
-
-    return written;
+    return true;
+}
+    
+void Downloader::SetProgressNotificator(Function<void (uint64)> progressNotifier)
+{
+    notifyProgress = progressNotifier;
 }
 
+void Downloader::ResetStatistics(uint64 sizeToDownload)
+{
+    dataToDownloadLeft = sizeToDownload;
+    statistics.downloadSpeedBytesPerSec = 0;
+    statistics.timeLeftSecs = static_cast<uint64>(DownloadStatistics::VALUE_UNKNOWN);
+    statistics.dataCameTotalBytes = 0;
+}
+
+void Downloader::CalcStatistics(uint32 dataCame)
+{
+    dataToDownloadLeft -= dataCame;
+    
+    static uint64 curTime = SystemTimer::Instance()->AbsoluteMS();
+    static uint64 prevTime = curTime;
+    static uint64 timeDelta = 0;
+    
+    static uint64 dataSizeCame = 0;
+    dataSizeCame += dataCame;
+    
+    curTime = SystemTimer::Instance()->AbsoluteMS();
+    timeDelta += curTime - prevTime;
+    prevTime = curTime;
+    
+    DownloadStatistics tmpStats(statistics);
+    
+    tmpStats.dataCameTotalBytes += dataCame;
+
+    // update download speed 5 times per second
+    if (200 <= timeDelta)
+    {
+        tmpStats.downloadSpeedBytesPerSec = 1000*dataSizeCame/timeDelta;
+        if (0 < tmpStats.downloadSpeedBytesPerSec)
+        {
+            tmpStats.timeLeftSecs = static_cast<uint64>(dataToDownloadLeft / tmpStats.downloadSpeedBytesPerSec);
+        }
+        else
+        {
+            tmpStats.timeLeftSecs = static_cast<uint64>(DownloadStatistics::VALUE_UNKNOWN);
+        }
+        
+        timeDelta = 0;
+        dataSizeCame = 0;
+    }
+
+    statisticsMutex.Lock();
+    statistics = tmpStats;
+    statisticsMutex.Unlock();
+}
+    
+DownloadStatistics Downloader::GetStatistics()
+{
+    LockGuard<Spinlock> lock(statisticsMutex);
+    return statistics;
+}
+
+int32 Downloader::GetFileErrno() const
+{
+    return fileErrno;
+}
+    
 }

@@ -34,16 +34,15 @@
 
 namespace DAVA 
 {
-    
 
 Image::Image()
-:	data(0)
-,   dataSize(0)
-,	width(0)
-,	height(0)
-,	format(FORMAT_RGB565)
-,	cubeFaceID(Texture::CUBE_FACE_INVALID)
-,	mipmapLevel(-1)
+:   dataSize(0)
+,   width(0)
+,   height(0)
+,   data(0)
+,   mipmapLevel(-1)
+,   format(FORMAT_RGB565)
+,   cubeFaceID(Texture::CUBE_FACE_INVALID)
 {
 }
 
@@ -123,7 +122,7 @@ void Image::MakePink(bool checkers)
     if(data == NULL) return;
     
     uint32 pink = 0xffff00ff;
-    uint32 gray = (checkers) ? 0xff7f7f7f : 0xffff00ff;
+    uint32 gray = (checkers) ? 0xffffff00 : 0xffff00ff;
     bool pinkOrGray = false;
     
     uint32 * writeData = (uint32*) data;
@@ -309,8 +308,6 @@ Image* Image::CopyImageRegion(const Image* imageToCopy,
 							  uint32 newWidth, uint32 newHeight,
 							  uint32 xOffset, uint32 yOffset)
 {
-	DVASSERT(newWidth >= 0 && newHeight >= 0 && xOffset >= 0 && yOffset >= 0);
-
 	uint32 oldWidth = imageToCopy->GetWidth();
 	uint32 oldHeight = imageToCopy->GetHeight();
 	DVASSERT((newWidth + xOffset) <= oldWidth && (newHeight + yOffset) <= oldHeight);

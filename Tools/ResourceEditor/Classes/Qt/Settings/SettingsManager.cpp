@@ -33,6 +33,9 @@
 #include "Scene/System/SelectionSystem.h"
 #include "Scene/System/CollisionSystem.h"
 
+#include <QColor>
+#include <QDebug>
+
 // framework
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/VariantType.h"
@@ -55,7 +58,9 @@ void SettingsManager::Init()
 {
 	CreateValue(Settings::General_DesinerName, DAVA::VariantType(DAVA::String("nobody")));
     CreateValue(Settings::General_RecentFilesCount, DAVA::VariantType((DAVA::int32) 5));
+    CreateValue(Settings::General_RecentProjectsCount, DAVA::VariantType((DAVA::int32) 5));
 	CreateValue(Settings::General_PreviewEnabled, DAVA::VariantType(false));
+    CreateValue(Settings::General_OpenByDBClick, DAVA::VariantType(false));
     CreateValue(Settings::General_CompressionQuality, DAVA::VariantType((DAVA::int32)DAVA::TextureConverter::ECQ_DEFAULT), DAVA::InspDesc("Compression quality", GlobalEnumMap<DAVA::TextureConverter::eConvertQuality>::Instance()));
 
     CreateValue(Settings::General_MaterialEditor_SwitchColor0, DAVA::VariantType(DAVA::Color(0.0f, 1.0f, 0.0f, 1.0f)));
@@ -77,13 +82,21 @@ void SettingsManager::Init()
 	CreateValue(Settings::Scene_CameraFOV, DAVA::VariantType(70.0f));
 	CreateValue(Settings::Scene_CameraNear, DAVA::VariantType(1.0f));
 	CreateValue(Settings::Scene_CameraFar, DAVA::VariantType(5000.0f));
+    CreateValue(Settings::Scene_CameraHeightOnLandscape, DAVA::VariantType(2.0f));
+    CreateValue(Settings::Scene_CameraHeightOnLandscapeStep, DAVA::VariantType(0.5f));
     CreateValue(Settings::Scene_SelectionSequent, DAVA::VariantType(false));
     CreateValue(Settings::Scene_SelectionDrawMode, DAVA::VariantType((DAVA::int32) SS_DRAW_DEFAULT), DAVA::InspDesc("Selection draw modes", GlobalEnumMap<SelectionSystemDrawMode>::Instance(), DAVA::InspDesc::T_FLAGS));
     CreateValue(Settings::Scene_CollisionDrawMode, DAVA::VariantType((DAVA::int32) CS_DRAW_DEFAULT), DAVA::InspDesc("Collision draw modes", GlobalEnumMap<CollisionSystemDrawMode>::Instance(), DAVA::InspDesc::T_FLAGS));
+    CreateValue(Settings::Scene_ModificationByGizmoOnly, DAVA::VariantType(false));
     CreateValue(Settings::Scene_GizmoScale, DAVA::VariantType(DAVA::float32(1.0)));
     CreateValue(Settings::Scene_DebugBoxScale, DAVA::VariantType(DAVA::float32(1.0)));
     CreateValue(Settings::Scene_DebugBoxUserScale, DAVA::VariantType(DAVA::float32(1.0)));
     CreateValue(Settings::Scene_DebugBoxParticleScale, DAVA::VariantType(DAVA::float32(1.0)));
+    CreateValue(Settings::Scene_DebugBoxWaypointScale, DAVA::VariantType(DAVA::float32(1.0)));
+    CreateValue(Settings::Scene_DragAndDropWithShift, DAVA::VariantType(false));
+    CreateValue(Settings::Scene_AutoselectNewEntities, DAVA::VariantType(true));
+    CreateValue(Settings::Scene_RefreshLodForNonSolid, DAVA::VariantType(true));
+    CreateValue(Settings::Scene_RememberForceParameters, DAVA::VariantType(false));
 
     CreateValue(Settings::Scene_Sound_SoundObjectDraw, DAVA::VariantType(false));
     CreateValue(Settings::Scene_Sound_SoundObjectBoxColor, DAVA::VariantType(DAVA::Color(0.0f, 0.8f, 0.4f, 0.2f)));
@@ -96,13 +109,30 @@ void SettingsManager::Init()
 	CreateValue(Settings::Internal_CubemapLastProjDir, DAVA::VariantType(DAVA::FilePath()));
     CreateValue(Settings::Internal_ParticleLastEmitterDir, DAVA::VariantType(DAVA::FilePath()));
 
-	CreateValue(Settings::Internal_RecentFiles, DAVA::VariantType((DAVA::KeyedArchive *) NULL));
+	CreateValue(Settings::Internal_RecentFiles, DAVA::VariantType((DAVA::KeyedArchive *) nullptr));
+    CreateValue(Settings::Internal_RecentProjects, DAVA::VariantType((DAVA::KeyedArchive *) nullptr));
+    
     CreateValue(Settings::Internal_MaterialsLightViewMode, DAVA::VariantType((DAVA::int32) EditorMaterialSystem::LIGHTVIEW_ALL));
     CreateValue(Settings::Internal_MaterialsShowLightmapCanvas, DAVA::VariantType((bool) false));
     CreateValue(Settings::Internal_LicenceAccepted, DAVA::VariantType((bool) false));
 	CreateValue(Settings::Internal_LODEditorMode, DAVA::VariantType((bool) false));
     CreateValue(DAVA::FastName("Internal/RunActionEventWidget/CurrentType"), DAVA::VariantType((DAVA::uint32)0));
     CreateValue(DAVA::FastName("Internal/Beast/LightmapsDefaultDir"), DAVA::VariantType(DAVA::String("lightmaps")));
+    CreateValue(Settings::Internal_ImageSplitterPath, DAVA::VariantType(DAVA::String("")));
+    CreateValue(Settings::Internal_ImageSplitterPathSpecular, DAVA::VariantType(DAVA::String("")));
+
+    const DAVA::int32 nColors = Qt::darkYellow - Qt::black + 1;
+    DAVA::uint32 colors[nColors];   // Init from Qt::GlobalColor
+    for (int i = 0; i < nColors; i++)
+    {
+        colors[i] = QColor(Qt::GlobalColor(i + Qt::black)).rgba();
+    }
+    CreateValue(Settings::Internal_CustomPalette, DAVA::VariantType( (DAVA::uint8 *)colors, nColors * sizeof(*colors) ));
+    CreateValue(Settings::General_ColorMultiplyMax, DAVA::VariantType((DAVA::float32)2.0));
+
+    const DAVA::uint32 levels[] = { DAVA::Logger::LEVEL_FRAMEWORK, DAVA::Logger::LEVEL_DEBUG, DAVA::Logger::LEVEL_INFO, DAVA::Logger::LEVEL_WARNING, DAVA::Logger::LEVEL_ERROR };
+    CreateValue(Settings::Internal_LogLevelFilter, DAVA::VariantType((DAVA::uint8 *)levels, sizeof(levels)));
+    CreateValue(Settings::Internal_LogTextFilter, DAVA::VariantType(DAVA::String()));
 }
 
 DAVA::VariantType SettingsManager::GetValue(const DAVA::FastName& path)

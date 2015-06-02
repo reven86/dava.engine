@@ -140,7 +140,6 @@ bool RenderTechniqueSingleton::LoadRenderTechniqueFromYamlNode(const YamlNode * 
                 renderPassName = renderPassNameNode->AsFastName();
             }
             
-            Logger::FrameworkDebug("- RenderPass: %s", renderPassName.c_str());
             const YamlNode * shaderNode = renderStepNode->Get("Shader");
             const YamlNode * shaderGraphNode = renderStepNode->Get("ShaderGraph");
             
@@ -200,8 +199,8 @@ RenderTechnique * RenderTechniqueSingleton::CreateTechniqueByName(const FastName
 			Logger::Error("Can't load requested material: %s", renderTechniquePathname.GetRelativePathname().c_str());
 			return 0;
 		}
-        Logger::FrameworkDebug("Load render technique: %s", renderTechniquePathname.GetRelativePathname().c_str());
-		YamlNode * rootNode = parser->GetRootNode();
+
+        YamlNode * rootNode = parser->GetRootNode();
 		if (!rootNode)
 		{
 			SafeRelease(parser);

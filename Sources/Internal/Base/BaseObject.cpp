@@ -35,8 +35,6 @@
 
 namespace DAVA
 {
-REGISTER_CLASS(BaseObject);    
-    
 
 const String & BaseObject::GetClassName() const
 {
@@ -46,7 +44,7 @@ const String & BaseObject::GetClassName() const
 /**
     \brief virtual function to save node to KeyedArchive
  */
-void BaseObject::Save(KeyedArchive * archive)
+void BaseObject::SaveObject(KeyedArchive * archive)
 {
     archive->SetString("##name", GetClassName());
     
@@ -161,7 +159,7 @@ BaseObject * BaseObject::LoadFromArchive(KeyedArchive * archive)
     BaseObject * object = ObjectFactory::Instance()->New<BaseObject>(name);
     if (object)
     {
-        object->Load(archive);
+        object->LoadObject(archive);
     }
     return object;
 }
@@ -169,7 +167,7 @@ BaseObject * BaseObject::LoadFromArchive(KeyedArchive * archive)
 /**
     \brief virtual function to load node to KeyedArchive
  */
-void BaseObject::Load(KeyedArchive * archive)
+void BaseObject::LoadObject(KeyedArchive * archive)
 {
 //    LoadIntrospection(GetClassName(), archive, GetIntrospection(this), this);
 }

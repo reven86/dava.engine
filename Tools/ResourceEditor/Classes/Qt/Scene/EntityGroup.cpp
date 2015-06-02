@@ -184,7 +184,7 @@ DAVA::Vector3 EntityGroup::GetCommonZeroPos() const
 	return ret;
 }
 
-bool EntityGroup::HasEntity(DAVA::Entity *entity) const
+bool EntityGroup::ContainsEntity(DAVA::Entity *entity) const
 {
 	size_t i;
 	return Index(entity, i);
@@ -206,7 +206,7 @@ bool EntityGroup::operator==( const EntityGroup &ss ) const
 
 		for(size_t i = 0; i < entities.size(); ++i)
 		{
-			if(!ss.HasEntity(entities[i].entity))
+			if(!ss.ContainsEntity(entities[i].entity))
 			{
 				ret = false;
 				break;
@@ -216,6 +216,12 @@ bool EntityGroup::operator==( const EntityGroup &ss ) const
 
 	return ret;
 }
+
+bool EntityGroup::operator!=( const EntityGroup &ss ) const
+{
+    return ((*this == ss) == false);
+}
+
 
 bool EntityGroup::Index(DAVA::Entity *entity, size_t &index) const
 {
@@ -237,7 +243,7 @@ DAVA::Entity* EntityGroup::IntersectedEntity(const EntityGroup *group) const
 
 	for(size_t i = 0; i < entities.size(); ++i)
 	{
-		if(group->HasEntity(entities[i].entity))
+		if(group->ContainsEntity(entities[i].entity))
 		{
 			ret = entities[i].entity;
 			break;

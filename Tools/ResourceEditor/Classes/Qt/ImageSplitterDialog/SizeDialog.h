@@ -30,8 +30,15 @@
 #ifndef __QT_IMAGE_SPLITTER_SIZE_DIALOG_H__
 #define __QT_IMAGE_SPLITTER_SIZE_DIALOG_H__
 
+#include <QWidget>
+#include <QVBoxLayout>
+#include <QSpinBox>
+#include <QDialogButtonBox>
+#include <QDialog>
+#include <QLabel>
+
 #include "DAVAEngine.h"
-#include <QtGui>
+
 
 class SizeDialog : public QDialog
 {

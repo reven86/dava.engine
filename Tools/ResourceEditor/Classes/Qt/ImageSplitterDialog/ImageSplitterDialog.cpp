@@ -35,21 +35,30 @@
 #include "Main/QtUtils.h"
 #include "Render/Image/ImageSystem.h"
 
+#include "Qt/Settings/SettingsManager.h"
+#include "QtTools/FileDialog/FileDialog.h"
+
 #include <QMessageBox>
-#include <QFileDialog>
+#include <QFileInfo>
 
 ImageSplitterDialog::ImageSplitterDialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::ImageSplitter),
+    ui(new Ui::ImageSplitter()),
     acceptableSize(0,0)
 {
     ui->setupUi(this);
 	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    ui->selectPathWidget->SetClearButtonVisible(false);
-    ui->selectPathWidget->setAcceptDrops(false);
-    ui->selectPathWidget->SetFileFormatFilter("PNG(*.png)");
-    DAVA::FilePath defaultPath = ProjectManager::Instance()->CurProjectPath();
-    ui->selectPathWidget->SetOpenDialogDefaultPath(defaultPath);
+
+    ui->path->SetFilter("PNG (*.png)");
+
+    DAVA::FilePath defaultPath = SettingsManager::Instance()->GetValue(Settings::Internal_ImageSplitterPath).AsString();
+    if (defaultPath.IsEmpty())
+    {
+        defaultPath = GetDefaultPath();
+    }
+
+    ui->path->SetDefaultFolder(QString::fromStdString(defaultPath.GetDirectory().GetAbsolutePathname()));
+    ui->path->SetPath(QString::fromStdString(defaultPath.GetAbsolutePathname()));
     ui->saveBtn->setFocus();
     lastSelectedFile = "";
     ConnectSignals();
@@ -61,38 +70,47 @@ ImageSplitterDialog::ImageSplitterDialog(QWidget *parent) :
 
 ImageSplitterDialog::~ImageSplitterDialog()
 {
-    delete ui;
 }
 
 void ImageSplitterDialog::ConnectSignals()
 {
-    connect(ui->selectPathWidget, SIGNAL(PathSelected(DAVA::String)), this, SLOT(PathSelected(DAVA::String)));
+    connect(ui->path, SIGNAL(pathChanged(const QString&)), SLOT(PathSelected(const QString&)));
 
-    connect(ui->redImgLbl, SIGNAL(changed()), this, SLOT(ImageAreaChanged()));
-    connect(ui->greenImgLbl, SIGNAL(changed()), this, SLOT(ImageAreaChanged()));
-    connect(ui->blueImgLbl, SIGNAL(changed()), this, SLOT(ImageAreaChanged()));
-    connect(ui->alphaImgLbl, SIGNAL(changed()), this, SLOT(ImageAreaChanged()));
+    connect(ui->redImgLbl, SIGNAL(changed()), SLOT(ImageAreaChanged()));
+    connect(ui->greenImgLbl, SIGNAL(changed()), SLOT(ImageAreaChanged()));
+    connect(ui->blueImgLbl, SIGNAL(changed()), SLOT(ImageAreaChanged()));
+    connect(ui->alphaImgLbl, SIGNAL(changed()), SLOT(ImageAreaChanged()));
     
-    connect(ui->restoreBtn, SIGNAL(clicked()), this, SLOT(OnRestoreClicked()));
+    connect(ui->restoreBtn, SIGNAL(clicked()), SLOT(OnRestoreClicked()));
     
-    connect(ui->saveAsBtn, SIGNAL(clicked()), this, SLOT(OnSaveAsClicked()));
-    connect(ui->saveBtn, SIGNAL(clicked()), this, SLOT(OnSaveClicked()));
-    connect(ui->saveChannelsBtn, SIGNAL(clicked()), this, SLOT(OnSaveChannelsClicked()));
+    connect(ui->saveAsBtn, SIGNAL(clicked()), SLOT(OnSaveAsClicked()));
+    connect(ui->saveBtn, SIGNAL(clicked()), SLOT(OnSaveClicked()));
+    connect(ui->saveChannelsBtn, SIGNAL(clicked()), SLOT(OnSaveChannelsClicked()));
     
-    connect(ui->redFillBtn, SIGNAL(clicked()), this, SLOT(OnFillBtnClicked()));
-    connect(ui->greenFillBtn, SIGNAL(clicked()), this, SLOT(OnFillBtnClicked()));
-    connect(ui->blueFillBtn, SIGNAL(clicked()), this, SLOT(OnFillBtnClicked()));
-    connect(ui->alphaFillBtn, SIGNAL(clicked()), this, SLOT(OnFillBtnClicked()));
+    connect(ui->redFillBtn, SIGNAL(clicked()), SLOT(OnFillBtnClicked()));
+    connect(ui->greenFillBtn, SIGNAL(clicked()), SLOT(OnFillBtnClicked()));
+    connect(ui->blueFillBtn, SIGNAL(clicked()), SLOT(OnFillBtnClicked()));
+    connect(ui->alphaFillBtn, SIGNAL(clicked()), SLOT(OnFillBtnClicked()));
+
+    connect(ui->reload, SIGNAL(clicked()), SLOT(OnReload()));
+    connect(ui->reloadSpecular, SIGNAL(clicked()), SLOT(OnReloadSpecularMap()));
 }
 
-void ImageSplitterDialog::PathSelected(DAVA::String path)
+void ImageSplitterDialog::PathSelected(const QString& path)
 {
-    if(path.empty())
+    if(path.isEmpty())
     {
         return;
     }
+
+    DAVA::FilePath defaultPath = ui->path->text().toStdString();
+    if (defaultPath.IsEmpty())
+    {
+        defaultPath = GetDefaultPath();
+    }
+    SettingsManager::Instance()->SetValue(Settings::Internal_ImageSplitterPath, DAVA::VariantType(defaultPath.GetAbsolutePathname()));
     
-    DAVA::FilePath imagePath(path);
+    DAVA::FilePath imagePath(path.toStdString());
     DAVA::Image* image = CreateTopLevelImage(imagePath);
     if(NULL != image && image->GetPixelFormat() == DAVA::FORMAT_RGBA8888)
     {
@@ -111,12 +129,11 @@ void ImageSplitterDialog::PathSelected(DAVA::String path)
     }
     else
     {
-        ui->selectPathWidget->blockSignals(true);
-        ui->selectPathWidget->setText(lastSelectedFile);
-        ui->selectPathWidget->blockSignals(false);
+        ui->path->SetDefaultFolder(QString::fromStdString(defaultPath.GetDirectory().GetAbsolutePathname()));
+        ui->path->SetPath(QString());
         if(NULL == image)
         {
-            QMessageBox::warning(this, "File error", "Cann't load image.", QMessageBox::Ok);
+            QMessageBox::warning(this, "File error", "Couldn't load image.", QMessageBox::Ok);
         }
         else if(image->GetPixelFormat() != DAVA::FORMAT_RGBA8888)
         {
@@ -156,20 +173,21 @@ void ImageSplitterDialog::ImageAreaChanged()
 void ImageSplitterDialog::OnRestoreClicked()
 {
     SetAcceptableImageSize(DAVA::Vector2(0,0));
-    ui->redImgLbl->clear();
-    ui->greenImgLbl->clear();
-    ui->blueImgLbl->clear();
-    ui->alphaImgLbl->clear();
+    ui->redImgLbl->ClearArea();
+    ui->greenImgLbl->ClearArea();
+    ui->blueImgLbl->ClearArea();
+    ui->alphaImgLbl->ClearArea();
     ui->redSpinBox->setValue(0);
     ui->greenSpinBox->setValue(0);
     ui->blueSpinBox->setValue(0);
     ui->alphaSpinBox->setValue(0);
-    PathSelected(lastSelectedFile);
+
+    PathSelected(QString::fromStdString(lastSelectedFile));
 }
 
 void ImageSplitterDialog::OnSaveAsClicked(bool saveSplittedImages)
 {
-    DAVA::FilePath retPath = QFileDialog::getSaveFileName(this, "Select png", ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str(),"PNG(*.png)").toStdString();
+    DAVA::FilePath retPath = FileDialog::getSaveFileName(this, "Select png", ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str(),"PNG(*.png)").toStdString();
     if(!retPath.IsEmpty())
     {
         Save(retPath, saveSplittedImages);
@@ -178,40 +196,30 @@ void ImageSplitterDialog::OnSaveAsClicked(bool saveSplittedImages)
 
 void ImageSplitterDialog::OnSaveClicked()
 {
-    DAVA::FilePath presentPath = ui->selectPathWidget->text().toStdString();
+    DAVA::FilePath presentPath = ui->path->text().toStdString();
     if(!presentPath.Exists())
     {
         OnSaveAsClicked();
         return;
     }
     
-    if(DAVA::FileSystem::Instance()->DeleteFile(presentPath))
-    {
-        Save(presentPath, false);
-    }
-    else
-    {
-        QMessageBox::warning(this, "Save error", "Cann't overwrite file.", QMessageBox::Ok);
-    }
+    Save(presentPath, false);
 }
 
 void ImageSplitterDialog::OnSaveChannelsClicked()
 {
-    DAVA::FilePath savePath = ui->selectPathWidget->text().toStdString();
+    DAVA::FilePath savePath = ui->path->text().toStdString();
     if(!savePath.Exists())
     {
-        QFileDialog dialog;
-        dialog.setFileMode(QFileDialog::Directory);
-        dialog.setOption(QFileDialog::ShowDirsOnly);
-        dialog.setDirectory(ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str());
-        dialog.exec();
-        DAVA::FilePath selectedFolder = dialog.selectedFiles().first().toStdString();
-        selectedFolder.MakeDirectoryPathname();
-        if(!selectedFolder.Exists() || dialog.result() == QDialog::Rejected)
+        auto folder = FileDialog::getExistingDirectory(this, "Select folder to save images", ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str(), FileDialog::ShowDirsOnly);
+        
+        if(folder.isEmpty() || folder.isNull())
         {
             return;
         }
-        savePath = selectedFolder;
+        
+        savePath = folder.toStdString();
+        savePath.MakeDirectoryPathname();
     }
     
     Save(savePath, true);
@@ -278,6 +286,18 @@ void ImageSplitterDialog::OnFillBtnClicked()
     DAVA::SafeRelease(bufferImg);
 }
 
+void ImageSplitterDialog::OnReload()
+{
+    const DAVA::FilePath path = ui->path->text().toStdString();
+    PathSelected(QString::fromStdString(path.GetAbsolutePathname()));
+}
+
+void ImageSplitterDialog::OnReloadSpecularMap()
+{
+    const DAVA::FilePath path = ui->alphaImgLbl->GetImagePath();
+    ui->alphaImgLbl->SetImage(path);
+}
+
 void ImageSplitterDialog::SetAcceptableImageSize(const DAVA::Vector2& newSize)
 {
     acceptableSize = newSize;
@@ -324,7 +344,12 @@ void ImageSplitterDialog::Save(const DAVA::FilePath& filePath, bool saveSplitted
         DAVA::Image* mergedImage = ImageTools::CreateMergedImage(channels);
         system->Save(filePath, mergedImage, mergedImage->format);
         DAVA::SafeRelease(mergedImage);
-        ui->selectPathWidget->setText(filePath.GetAbsolutePathname());
+        ui->path->SetPath(QString::fromStdString(filePath.GetAbsolutePathname()));
     }
     QMessageBox::information(this, "Save succes", "Saved!", QMessageBox::Ok);
+}
+
+DAVA::String ImageSplitterDialog::GetDefaultPath() const
+{
+    return ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname();
 }

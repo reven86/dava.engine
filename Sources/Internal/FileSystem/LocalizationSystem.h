@@ -40,23 +40,25 @@ namespace DAVA
 
 class LocalizationSystem : public Singleton<LocalizationSystem>
 {
-public:	
+public:
+    static const char* DEFAULT_LOCALE;
+    
 	LocalizationSystem();
 	virtual ~LocalizationSystem();
 	
 	void InitWithDirectory(const FilePath &directoryPath);
 	void SetDirectory(const FilePath &directoryPath);
+
 	void Init();
 	
-	const String &GetCurrentLocale();
+	const String &GetCurrentLocale() const;
 	void SetCurrentLocale(const String &newLangId);
-    
-    const char * GetDeviceLocale();
+    String GetDeviceLocale() const;
     
     String GetCountryCode() const;
 	
-	WideString GetLocalizedString(const WideString & key);
-    WideString GetLocalizedString(const WideString & key, const String &langId);
+	WideString GetLocalizedString(const WideString & key) const;
+    WideString GetLocalizedString(const WideString & key, const String &langId) const;
 	void SetLocalizedString(const WideString & key, const WideString & value);
 	void RemoveLocalizedString(const WideString & key);
 
@@ -66,7 +68,7 @@ public:
 
 	// Access to the whole strings list for the current locale.
 	// Returns FALSE if no strings found.
-	bool GetStringsForCurrentLocale(Map<WideString, WideString>& strings);
+	bool GetStringsForCurrentLocale(Map<WideString, WideString>& strings) const;
 	
 	// Save the current localization data to the files they were loaded from.
 	bool SaveLocalizedStrings();

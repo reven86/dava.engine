@@ -70,19 +70,20 @@ public:
 	void SetAnimationsMultiplier(float32 f, int32 tag = 0);
 private:
 	Animation * FindLastAnimation(AnimatedObject * owner, int32 _groupId);
-	bool IsAnimating(AnimatedObject * owner, int32 trackId);
+	bool IsAnimating(const AnimatedObject * owner, int32 trackId) const;
 	
 	void AddAnimation(Animation * _animation);
-    void AddAnimationInternal(BaseObject * caller, void * param, void *callerData);
-	
+	void AddAnimationInternal(Animation * animation);
+
     void RemoveAnimation(Animation * _animation);
-    void RemoveAnimationInternal(BaseObject * caller, void * param, void *callerData);
+	void RemoveAnimationInternal(Animation * animation);
 	
+	bool HasActiveAnimations(AnimatedObject * owner) const;
 	/*
 	 Function remove all animations for given object from update and delete objects and their references
 	 */
 	void DeleteAnimations(AnimatedObject * _owner, int32 track = -1);
-    void DeleteAnimationInternal(BaseObject * caller, void * param, void *callerData);
+	void DeleteAnimationInternal(AnimatedObject * owner, int32 track);
     struct DeleteAnimationsData
     {
         AnimatedObject * owner;

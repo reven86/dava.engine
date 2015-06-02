@@ -58,6 +58,19 @@ void QtPropertyDataInspMember::SetValueInternal(const QVariant &value)
 	}
 }
 
+
+void QtPropertyDataInspMember::SetTempValueInternal(const QVariant& value)
+{
+	QtPropertyDataDavaVariant::SetValueInternal(value);
+	DAVA::VariantType newValue = GetVariantValue();
+
+	// save value to meta-object
+	if(NULL != member)
+	{
+		member->SetValue(object, newValue);
+	}
+}
+
 bool QtPropertyDataInspMember::UpdateValueInternal()
 {
 	bool ret = false;

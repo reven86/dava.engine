@@ -34,7 +34,6 @@
 namespace DAVA
 {
 
-REGISTER_CLASS(StaticOcclusionComponent)
 
 
 StaticOcclusionComponent::StaticOcclusionComponent()
@@ -87,7 +86,7 @@ void StaticOcclusionComponent::Deserialize(KeyedArchive *archive, SerializationC
         if (placeOnLandscape)
         {
             cellHeightOffset.resize(xSubdivisions*ySubdivisions, 0);
-            DVASSERT(xSubdivisions*ySubdivisions*sizeof(float32) == archive->GetByteArraySize("soc.cellHeightOffset"));            
+            DVASSERT(xSubdivisions*ySubdivisions*sizeof(float32) == static_cast<uint32>(archive->GetByteArraySize("soc.cellHeightOffset")));
             memcpy(&cellHeightOffset.front(), archive->GetByteArray("soc.cellHeightOffset"), xSubdivisions*ySubdivisions*sizeof(float32));            
         }
     }
@@ -148,7 +147,7 @@ void StaticOcclusionDataComponent::Deserialize(KeyedArchive *archive, Serializat
         if (archive->IsKeyExists("sodc.cellHeightOffset"))
         {
             data.cellHeightOffset = new float32[data.sizeX*data.sizeY];
-            DVASSERT(data.sizeX*data.sizeY*sizeof(float32) == archive->GetByteArraySize("sodc.cellHeightOffset"));
+            DVASSERT(data.sizeX*data.sizeY*sizeof(float32) == static_cast<uint32>(archive->GetByteArraySize("sodc.cellHeightOffset")));
             memcpy(data.cellHeightOffset, archive->GetByteArray("sodc.cellHeightOffset"), data.sizeX*data.sizeY*sizeof(float32));
         }
     }

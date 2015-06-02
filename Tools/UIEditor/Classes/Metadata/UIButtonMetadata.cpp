@@ -97,7 +97,7 @@ QString DAVA::UIButtonMetadata::GetLocalizedTextKeyForState( UIControl::eControl
     return QString();
 }
 
-Font * UIButtonMetadata::GetFont()
+Font * UIButtonMetadata::GetFont() const
 {
     if (VerifyActiveParamID())
     {
@@ -218,7 +218,7 @@ float UIButtonMetadata::GetShadowOffsetX() const
         return 0.0f;
     }
     
-    return GetShadowOffsetXForState(this->uiControlStates[GetActiveStateIndex()]);
+    return GetShadowOffsetXYForState(this->uiControlStates[GetActiveStateIndex()]).x;
 }
 
 void UIButtonMetadata::SetShadowOffsetX(float offset)
@@ -240,7 +240,7 @@ void UIButtonMetadata::SetShadowOffsetX(float offset)
 	}
 
     UpdateExtraDataLocalizationKey();
-    UpdatePropertyDirtyFlagForShadowOffsetX();
+    UpdatePropertyDirtyFlagForShadowOffsetXY();
 }
 	
 float UIButtonMetadata::GetShadowOffsetY() const
@@ -250,7 +250,7 @@ float UIButtonMetadata::GetShadowOffsetY() const
         return 0.0f;
     }
     
-    return GetShadowOffsetYForState(this->uiControlStates[GetActiveStateIndex()]);
+    return GetShadowOffsetXYForState(this->uiControlStates[GetActiveStateIndex()]).y;
 }
 
 void UIButtonMetadata::SetShadowOffsetY(float offset)
@@ -272,7 +272,7 @@ void UIButtonMetadata::SetShadowOffsetY(float offset)
 	}
 
     UpdateExtraDataLocalizationKey();
-    UpdatePropertyDirtyFlagForShadowOffsetY();
+    UpdatePropertyDirtyFlagForShadowOffsetXY();
 }
 	
 QColor UIButtonMetadata::GetShadowColor() const
@@ -346,6 +346,77 @@ void UIButtonMetadata::UpdatePropertyDirtyFlagForTextAlign()
         bool curStateDirty = (GetTextAlignForState(curState) !=
                               GetTextAlignForState(GetReferenceState()));
         SetStateDirtyForProperty(curState, PropertyNames::TEXT_ALIGN_PROPERTY_NAME, curStateDirty);
+    }
+}
+
+bool UIButtonMetadata::GetTextUseRtlAlignForState(UIControl::eControlState state) const
+{
+	UIStaticText* referenceButtonText = GetActiveUIButton()->GetStateTextControl(state);
+    if (referenceButtonText)
+    {
+		return referenceButtonText->GetTextUseRtlAlign();
+    }
+    
+    return false;
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForTextUseRtlAlign()
+{
+	int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    for (int i = 0; i < statesCount; i ++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+        
+        bool curStateDirty = (GetTextUseRtlAlignForState(curState) !=
+                              GetTextUseRtlAlignForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::TEXT_USE_RTL_ALIGN_PROPERTY_NAME, curStateDirty);
+    }
+
+}
+
+bool UIButtonMetadata::GetTextMultilineForState(UIControl::eControlState state) const
+{
+    UIStaticText* referenceButtonText = GetActiveUIButton()->GetStateTextControl(state);
+    if (referenceButtonText)
+    {
+        return referenceButtonText->GetMultiline();
+    }
+
+    return false;
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForTextMultiline()
+{
+    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    for (int i = 0; i < statesCount; i++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+
+        bool curStateDirty = (GetTextMultilineForState(curState) != GetTextMultilineForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::TEXT_PROPERTY_MULTILINE, curStateDirty);
+    }
+}
+
+bool UIButtonMetadata::GetTextMultilineBySymbolForState(UIControl::eControlState state) const
+{
+    UIStaticText* referenceButtonText = GetActiveUIButton()->GetStateTextControl(state);
+    if (referenceButtonText)
+    {
+        return referenceButtonText->GetMultilineBySymbol();
+    }
+
+    return false;
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForTextMultilineBySymbol()
+{
+    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    for (int i = 0; i < statesCount; i++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+
+        bool curStateDirty = (GetTextMultilineBySymbolForState(curState) != GetTextMultilineBySymbolForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::TEXT_PROPERTY_MULTILINE_BY_SYMBOL, curStateDirty);
     }
 }
 
@@ -433,7 +504,7 @@ void UIButtonMetadata::SetSpriteFrame(int value)
     UpdatePropertyDirtyFlagForSpriteFrame();
 }
 
-int UIButtonMetadata::GetSpriteFrame()
+int UIButtonMetadata::GetSpriteFrame() const
 {
     if (!VerifyActiveParamID())
     {
@@ -467,7 +538,7 @@ UIControl::eControlState UIButtonMetadata::GetCurrentStateForLocalizedText() con
     return this->uiControlStates[GetActiveStateIndex()];
 }
 
-QColor UIButtonMetadata::GetColor()
+QColor UIButtonMetadata::GetColor() const
 {
     if (!VerifyActiveParamID())
     {
@@ -517,7 +588,7 @@ QColor UIButtonMetadata::GetColorForState(UIControl::eControlState state) const
     return QColor();
 }
 
-int UIButtonMetadata::GetDrawType()
+int UIButtonMetadata::GetDrawType() const
 {
     if (!VerifyActiveParamID())
     {
@@ -554,7 +625,7 @@ void UIButtonMetadata::UpdatePropertyDirtyFlagForDrawType()
     }
 }
 
-int UIButtonMetadata::GetColorInheritType()
+int UIButtonMetadata::GetColorInheritType() const
 {
     if (!VerifyActiveParamID())
     {
@@ -602,7 +673,55 @@ void UIButtonMetadata::UpdatePropertyDirtyFlagForColorInheritType()
     }
 }
 
-int UIButtonMetadata::GetAlign()
+int UIButtonMetadata::GetPerPixelAccuracyType() const
+{
+    if (!VerifyActiveParamID())
+    {
+        return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+    }
+    
+    return GetPerPixelAccuracyTypeForState(this->uiControlStates[GetActiveStateIndex()]);
+}
+
+void UIButtonMetadata::SetPerPixelAccuracyType(int value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+	for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+	{
+		GetActiveUIButton()->SetStatePerPixelAccuracyType(this->uiControlStates[i],(UIControlBackground::ePerPixelAccuracyType)value);
+	}
+    UpdatePropertyDirtyFlagForPerPixelAccuracyType();
+}
+
+int UIButtonMetadata::GetPerPixelAccuracyTypeForState(UIControl::eControlState state) const
+{
+    UIControlBackground* background = GetActiveUIButton()->GetStateBackground(state);
+    if (!background)
+    {
+        return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+    }
+    
+    return background->GetPerPixelAccuracyType();
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForPerPixelAccuracyType()
+{
+    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    for (int i = 0; i < statesCount; i ++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+        
+        bool curStateDirty = (GetPerPixelAccuracyTypeForState(curState) !=
+                              GetPerPixelAccuracyTypeForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::PER_PIXEL_ACCURACY_TYPE_PROPERTY_NAME, curStateDirty);
+    }
+}
+
+int UIButtonMetadata::GetAlign() const
 {
     if (!VerifyActiveParamID())
     {
@@ -646,7 +765,7 @@ void UIButtonMetadata::UpdatePropertyDirtyFlagForAlign()
 }
 
 
-int UIButtonMetadata::GetSpriteModification()
+int UIButtonMetadata::GetSpriteModification() const
 {
 	if (!VerifyActiveParamID())
 	{
@@ -656,7 +775,7 @@ int UIButtonMetadata::GetSpriteModification()
 	return GetSpriteModificationForState(uiControlStates[GetActiveStateIndex()]);
 }
 
-int UIButtonMetadata::GetTextAlign()
+int UIButtonMetadata::GetTextAlign() const
 {
 	if (!VerifyActiveParamID())
 	{
@@ -680,6 +799,85 @@ void UIButtonMetadata::SetTextAlign(int align)
 
     UpdateExtraDataLocalizationKey();
 	UpdatePropertyDirtyFlagForTextAlign();
+}
+
+bool UIButtonMetadata::GetTextUseRtlAlign()
+{
+	if (!VerifyActiveParamID())
+	{
+		return false;
+	}
+	
+	return GetTextUseRtlAlignForState(this->uiControlStates[GetActiveStateIndex()]);
+}
+
+void UIButtonMetadata::SetTextUseRtlAlign(bool value)
+{
+	if (!VerifyActiveParamID())
+    {
+        return;
+    }
+	
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+	{
+		GetActiveUIButton()->SetStateTextUseRtlAlign(this->uiControlStates[i], value);
+	}
+	
+    UpdateExtraDataLocalizationKey();
+	UpdatePropertyDirtyFlagForTextUseRtlAlign();
+	
+}
+
+bool UIButtonMetadata::GetTextMultiline() const
+{
+    if (!VerifyActiveParamID())
+    {
+        return false;
+    }
+
+    return GetTextMultilineForState(this->uiControlStates[GetActiveStateIndex()]);
+}
+
+void UIButtonMetadata::SetTextMultiline(bool value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+    {
+        GetActiveUIButton()->SetStateTextMultiline(this->uiControlStates[i], value);
+    }
+
+    UpdateExtraDataLocalizationKey();
+    UpdatePropertyDirtyFlagForTextMultiline();
+}
+
+bool UIButtonMetadata::GetTextMultilineBySymbol() const
+{
+    if (!VerifyActiveParamID())
+    {
+        return false;
+    }
+
+    return GetTextMultilineBySymbolForState(this->uiControlStates[GetActiveStateIndex()]);
+}
+
+void UIButtonMetadata::SetTextMultilineBySymbol(bool value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+    {
+        GetActiveUIButton()->SetStateTextMultilineBySymbol(this->uiControlStates[i], value);
+    }
+
+    UpdateExtraDataLocalizationKey();
+    UpdatePropertyDirtyFlagForTextMultilineBySymbol();
 }
 
 void UIButtonMetadata::SetSpriteModification(int value)
@@ -831,7 +1029,7 @@ void UIButtonMetadata::UpdatePropertyDirtyFlagForFittingType()
 	}
 }
 
-float UIButtonMetadata::GetLeftRightStretchCap()
+float UIButtonMetadata::GetLeftRightStretchCap() const
 {
     if (!VerifyActiveParamID())
     {
@@ -860,7 +1058,7 @@ void UIButtonMetadata::SetLeftRightStretchCap(float value)
     UpdatePropertyDirtyFlagForLeftRightStretchCap();
 }
 
-float UIButtonMetadata::GetTopBottomStretchCap()
+float UIButtonMetadata::GetTopBottomStretchCap() const
 {
     if (!VerifyActiveParamID())
     {
@@ -923,26 +1121,15 @@ float UIButtonMetadata::GetTopBottomStretchCapForState(UIControl::eControlState 
 	return background->GetTopBottomStretchCap();
 }
 
-float UIButtonMetadata::GetShadowOffsetXForState(UIControl::eControlState state) const
+Vector2 UIButtonMetadata::GetShadowOffsetXYForState(UIControl::eControlState state) const
 {
 	UIStaticText* staticText = GetActiveUIButton()->GetStateTextControl(state);
 	if (!staticText)
 	{
-		return 0.0f;
+		return Vector2();
 	}
 
-	return staticText->GetShadowOffset().x;
-}
-
-float UIButtonMetadata::GetShadowOffsetYForState(UIControl::eControlState state) const
-{
-	UIStaticText* staticText = GetActiveUIButton()->GetStateTextControl(state);
-	if (!staticText)
-	{
-		return 0.0f;
-	}
-    
-	return staticText->GetShadowOffset().y;
+	return staticText->GetShadowOffset();
 }
 
 QColor UIButtonMetadata::GetShadowColorForState(UIControl::eControlState state) const
@@ -969,29 +1156,18 @@ void UIButtonMetadata::UpdatePropertyDirtyFlagForTopBottomStretchCap()
     }
 }
 
-void UIButtonMetadata::UpdatePropertyDirtyFlagForShadowOffsetX()
+void UIButtonMetadata::UpdatePropertyDirtyFlagForShadowOffsetXY()
 {
     int statesCount = UIControlStateHelper::GetUIControlStatesCount();
-    for (int i = 0; i < statesCount; i ++)
-    {
-        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
-        
-        bool curStateDirty = (GetShadowOffsetXForState(curState) !=
-                              GetShadowOffsetXForState(GetReferenceState()));
-        SetStateDirtyForProperty(curState, PropertyNames::SHADOW_OFFSET_X, curStateDirty);
-    }
-}
+    const Vector2& refShadowOffset = GetShadowOffsetXYForState(GetReferenceState());
 
-void UIButtonMetadata::UpdatePropertyDirtyFlagForShadowOffsetY()
-{
-    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
     for (int i = 0; i < statesCount; i ++)
     {
         UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+        const Vector2& curShadowOffset = GetShadowOffsetXYForState(curState);
         
-        bool curStateDirty = (GetShadowOffsetYForState(curState) !=
-                              GetShadowOffsetYForState(GetReferenceState()));
-        SetStateDirtyForProperty(curState, PropertyNames::SHADOW_OFFSET_Y, curStateDirty);
+        SetStateDirtyForProperty(curState, PropertyNames::SHADOW_OFFSET_X, refShadowOffset.x != curShadowOffset.x);
+        SetStateDirtyForProperty(curState, PropertyNames::SHADOW_OFFSET_Y, refShadowOffset.y != curShadowOffset.y);
     }
 }
 
@@ -1008,17 +1184,17 @@ void UIButtonMetadata::UpdatePropertyDirtyFlagForShadowColor()
     }
 }
 
-int UIButtonMetadata::GetFontShadowColorInheritType() const
+int UIButtonMetadata::GetTextColorInheritType() const
 {
     if (!VerifyActiveParamID())
     {
         return UIControlBackground::COLOR_IGNORE_PARENT;
     }
     
-    return GetFontShadowColorInheritTypeForState(uiControlStates[GetActiveStateIndex()]);
+    return GetTextColorInheritTypeForState(uiControlStates[GetActiveStateIndex()]);
 }
 
-void UIButtonMetadata::SetFontShadowColorInheritType(int value)
+void UIButtonMetadata::SetTextColorInheritType(int value)
 {
     if (!VerifyActiveParamID())
     {
@@ -1028,14 +1204,289 @@ void UIButtonMetadata::SetFontShadowColorInheritType(int value)
     for (uint32 i = 0; i < this->GetStatesCount(); ++i)
 	{
         UIControl::eControlState state = uiControlStates[i];
-        GetActiveUIButton()->SetStateFontColorInheritType(state, (UIControlBackground::eColorInheritType)value);
+        GetActiveUIButton()->SetStateTextColorInheritType(state, (UIControlBackground::eColorInheritType)value);
     }
 
     UpdateExtraDataLocalizationKey();
-    UpdatePropertyDirtyFlagForFontShadowColorInheritType();
+    UpdatePropertyDirtyFlagForTextColorInheritType();
 }
 
-int UIButtonMetadata::GetFontShadowColorInheritTypeForState(UIControl::eControlState state) const
+QRectF UIButtonMetadata::GetMargins() const
+{
+    if (!VerifyActiveParamID())
+    {
+        return QRectF();
+    }
+    
+    return GetMarginsForState(uiControlStates[GetActiveStateIndex()]);
+}
+
+QRectF UIButtonMetadata::GetMarginsForState(UIControl::eControlState state) const
+{
+    if (!GetActiveUIButton()->GetStateBackground(state))
+    {
+        return QRectF();
+    }
+
+    const UIControlBackground::UIMargins* margins = GetActiveUIButton()->GetStateBackground(state)->GetMargins();
+    return UIMarginsToQRectF(margins);
+}
+
+void UIButtonMetadata::SetMargins(const QRectF& value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+	{
+        UIControl::eControlState state = uiControlStates[i];
+ 
+        UIControlBackground::UIMargins margins = QRectFToUIMargins(value);
+        GetActiveUIButton()->SetStateMargins(state, &margins);
+    }
+    
+    UpdatePropertyDirtyFlagForMargins();
+}
+
+float UIButtonMetadata::GetLeftMargin() const
+{
+    return GetMargins().left();
+}
+
+void UIButtonMetadata::SetLeftMargin(float value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+ 
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+	{
+        UIControl::eControlState state = uiControlStates[i];
+ 
+        UIControlBackground::UIMargins margins = GetMarginsToUpdate(state);
+        margins.left = value;
+        GetActiveUIButton()->SetStateMargins(state, &margins);
+    }
+    
+    UpdatePropertyDirtyFlagForMargins();
+}
+
+float UIButtonMetadata::GetTopMargin() const
+{
+    return GetMargins().top();
+}
+
+void UIButtonMetadata::SetTopMargin(float value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+	{
+        UIControl::eControlState state = uiControlStates[i];
+
+        UIControlBackground::UIMargins margins = GetMarginsToUpdate(state);
+        margins.top = value;
+        GetActiveUIButton()->SetStateMargins(state, &margins);
+    }
+    
+    UpdatePropertyDirtyFlagForMargins();
+}
+
+float UIButtonMetadata::GetRightMargin() const
+{
+    return GetMargins().width();
+}
+
+void  UIButtonMetadata::SetRightMargin(float value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+	{
+        UIControl::eControlState state = uiControlStates[i];
+        
+        UIControlBackground::UIMargins margins = GetMarginsToUpdate(state);
+        margins.right = value;
+        GetActiveUIButton()->SetStateMargins(state, &margins);
+    }
+    
+    UpdatePropertyDirtyFlagForMargins();
+}
+
+float UIButtonMetadata::GetBottomMargin() const
+{
+    return GetMargins().height();
+}
+
+void UIButtonMetadata::SetBottomMargin(float value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+	{
+        UIControl::eControlState state = uiControlStates[i];
+
+        UIControlBackground::UIMargins margins = GetMarginsToUpdate(state);
+        margins.bottom = value;
+        GetActiveUIButton()->SetStateMargins(state, &margins);
+    }
+    
+    UpdatePropertyDirtyFlagForMargins();
+}
+
+QRectF UIButtonMetadata::GetTextMargins() const
+{
+    if (!VerifyActiveParamID())
+    {
+        return QRectF();
+    }
+
+    return GetTextMarginsForState(uiControlStates[GetActiveStateIndex()]);
+}
+    
+QRectF UIButtonMetadata::GetTextMarginsForState(UIControl::eControlState state) const
+{
+    if (!GetActiveUIButton()->GetStateTextControl(state))
+    {
+        return QRectF();
+    }
+ 
+    const UIControlBackground::UIMargins* margins = GetActiveUIButton()->GetStateTextControl(state)->GetMargins();
+    return UIMarginsToQRectF(margins);
+}
+
+void UIButtonMetadata::SetTextMargins(const QRectF& value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+    {
+        UIControl::eControlState state = uiControlStates[i];
+
+        UIControlBackground::UIMargins margins = QRectFToUIMargins(value);
+        GetActiveUIButton()->SetStateTextMargins(state, &margins);
+    }
+
+    UpdateExtraDataLocalizationKey();
+    UpdatePropertyDirtyFlagForTextMargins();
+}
+
+float UIButtonMetadata::GetTextLeftMargin() const
+{
+    return GetTextMargins().left();
+}
+
+void UIButtonMetadata::SetTextLeftMargin(float value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+	{
+        UIControl::eControlState state = uiControlStates[i];
+        
+        UIControlBackground::UIMargins margins = GetTextMarginsToUpdate(state);
+        margins.left = value;
+        GetActiveUIButton()->SetStateTextMargins(state, &margins);
+    }
+    
+    UpdatePropertyDirtyFlagForTextMargins();
+    UpdateExtraDataLocalizationKey();
+}
+
+float UIButtonMetadata::GetTextTopMargin() const
+{
+    return GetTextMargins().top();
+}
+
+void UIButtonMetadata::SetTextTopMargin(float value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+	{
+        UIControl::eControlState state = uiControlStates[i];
+        
+        UIControlBackground::UIMargins margins = GetTextMarginsToUpdate(state);
+        margins.top = value;
+        GetActiveUIButton()->SetStateTextMargins(state, &margins);
+    }
+    
+    UpdatePropertyDirtyFlagForTextMargins();
+    UpdateExtraDataLocalizationKey();
+}
+
+float UIButtonMetadata::GetTextRightMargin() const
+{
+    return GetTextMargins().width();
+}
+
+void UIButtonMetadata::SetTextRightMargin(float value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+	{
+        UIControl::eControlState state = uiControlStates[i];
+        
+        UIControlBackground::UIMargins margins = GetTextMarginsToUpdate(state);
+        margins.right = value;
+        GetActiveUIButton()->SetStateTextMargins(state, &margins);
+    }
+    
+    UpdatePropertyDirtyFlagForTextMargins();
+    UpdateExtraDataLocalizationKey();
+}
+
+float UIButtonMetadata::GetTextBottomMargin() const
+{
+    return GetTextMargins().height();
+}
+
+void UIButtonMetadata::SetTextBottomMargin(float value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+	{
+        UIControl::eControlState state = uiControlStates[i];
+        
+        UIControlBackground::UIMargins margins = GetTextMarginsToUpdate(state);
+        margins.bottom = value;
+        GetActiveUIButton()->SetStateTextMargins(state, &margins);
+    }
+    
+    UpdatePropertyDirtyFlagForTextMargins();
+    UpdateExtraDataLocalizationKey();
+}
+
+int UIButtonMetadata::GetTextColorInheritTypeForState(UIControl::eControlState state) const
 {
     UIStaticText* textControl = GetActiveUIButton()->GetStateTextControl(state);
     if (textControl)
@@ -1046,16 +1497,224 @@ int UIButtonMetadata::GetFontShadowColorInheritTypeForState(UIControl::eControlS
     return UIControlBackground::COLOR_IGNORE_PARENT;
 }
 
-void UIButtonMetadata::UpdatePropertyDirtyFlagForFontShadowColorInheritType()
+void UIButtonMetadata::UpdatePropertyDirtyFlagForTextColorInheritType()
 {
     int statesCount = UIControlStateHelper::GetUIControlStatesCount();
     for (int i = 0; i < statesCount; i ++)
     {
         UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
         
-        bool curStateDirty = (GetFontShadowColorInheritTypeForState(curState) !=
-                              GetFontShadowColorInheritTypeForState(GetReferenceState()));
-        SetStateDirtyForProperty(curState, PropertyNames::FONT_SHADOW_COLOR_INHERIT_TYPE_PROPERTY_NAME, curStateDirty);
+        bool curStateDirty = (GetTextColorInheritTypeForState(curState) !=
+                              GetTextColorInheritTypeForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::TEXT_COLOR_INHERIT_TYPE_PROPERTY_NAME, curStateDirty);
+    }
+}
+
+int UIButtonMetadata::GetTextPerPixelAccuracyType() const
+{
+   if (!VerifyActiveParamID())
+    {
+        return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+    }
+    
+    return GetTextPerPixelAccuracyTypeForState(uiControlStates[GetActiveStateIndex()]);
+}
+
+void UIButtonMetadata::SetTextPerPixelAccuracyType(int value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+	{
+        UIControl::eControlState state = uiControlStates[i];
+        GetActiveUIButton()->SetStateTextPerPixelAccuracyType(state, (UIControlBackground::ePerPixelAccuracyType)value);
+    }
+
+    UpdateExtraDataLocalizationKey();
+    UpdatePropertyDirtyFlagForTextPerPixelAccuracyType();
+}
+
+int UIButtonMetadata::GetTextPerPixelAccuracyTypeForState(UIControl::eControlState state) const
+{
+    UIStaticText* textControl = GetActiveUIButton()->GetStateTextControl(state);
+    if (textControl)
+    {
+        return textControl->GetTextBackground()->GetPerPixelAccuracyType();
+    }
+    
+    return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForTextPerPixelAccuracyType()
+{
+    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    for (int i = 0; i < statesCount; i ++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+        
+        bool curStateDirty = (GetTextPerPixelAccuracyTypeForState(curState) !=
+                              GetTextPerPixelAccuracyTypeForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::TEXT_PER_PIXEL_ACCURACY_TYPE_PROPERTY_NAME, curStateDirty);
+    }
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForMargins()
+{
+    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    const QRectF& referenceMargins = GetMarginsForState(GetReferenceState());
+
+    for (int i = 0; i < statesCount; i ++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+        const QRectF& curMargins = GetMarginsForState(curState);
+
+        SetStateDirtyForProperty(curState, PropertyNames::LEFT_MARGIN_PROPERTY_NAME,
+                                 !FLOAT_EQUAL(referenceMargins.left(), curMargins.left()));
+        SetStateDirtyForProperty(curState, PropertyNames::TOP_MARGIN_PROPERTY_NAME,
+                                 !FLOAT_EQUAL(referenceMargins.top(), curMargins.top()));
+        SetStateDirtyForProperty(curState, PropertyNames::RIGHT_MARGIN_PROPERTY_NAME,
+                                 !FLOAT_EQUAL(referenceMargins.width(), curMargins.width()));
+        SetStateDirtyForProperty(curState, PropertyNames::BOTTOM_MARGIN_PROPERTY_NAME,
+                                 !FLOAT_EQUAL(referenceMargins.height(), curMargins.height()));
+    }
+}
+
+bool UIButtonMetadata::GetMultiline() const
+{
+    if (!VerifyActiveParamID())
+    {
+        return false;
+    }
+    
+    return GetMultilineForState(uiControlStates[GetActiveStateIndex()]);
+}
+
+void UIButtonMetadata::SetMultiline(const bool value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+
+    // Need  to keep multilineBySymbol value.
+    bool multilineBySymbol = GetMultilineBySymbolForState(uiControlStates[0]);
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+    {
+        UIControl::eControlState state = uiControlStates[i];
+        UIStaticText* stateTextControl = GetActiveUIButton()->GetStateTextControl(state);
+        if (stateTextControl)
+        {
+            stateTextControl->SetMultiline(value, multilineBySymbol);
+        }
+    }
+
+    UpdateExtraDataLocalizationKey();
+    UpdatePropertyDirtyFlagForMultiline();
+}
+
+bool UIButtonMetadata::GetMultilineForState(UIControl::eControlState state) const
+{
+    UIStaticText* textControl = GetActiveUIButton()->GetStateTextControl(state);
+    if (textControl)
+    {
+        return textControl->GetMultiline();
+    }
+
+    return false;
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForMultiline()
+{
+    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    for (int i = 0; i < statesCount; i ++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+        
+        bool curStateDirty = (GetMultilineForState(curState) !=
+                              GetMultilineForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::TEXT_PROPERTY_MULTILINE, curStateDirty);
+    }
+}
+
+bool UIButtonMetadata::GetMultilineBySymbol() const
+{
+    if (!VerifyActiveParamID())
+    {
+        return false;
+    }
+    
+    return GetMultilineBySymbolForState(uiControlStates[GetActiveStateIndex()]);
+}
+
+void UIButtonMetadata::SetMultilineBySymbol(const bool value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+
+    // Need  to keep multiline value.
+    bool multiline = GetMultilineForState(uiControlStates[0]);
+
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+    {
+        UIControl::eControlState state = uiControlStates[i];
+        UIStaticText* stateTextControl = GetActiveUIButton()->GetStateTextControl(state);
+        if (stateTextControl)
+        {
+            stateTextControl->SetMultiline(multiline, value);
+        }
+    }
+    
+    UpdateExtraDataLocalizationKey();
+    UpdatePropertyDirtyFlagForMultilineBySymbol();
+}
+
+bool UIButtonMetadata::GetMultilineBySymbolForState(UIControl::eControlState state) const
+{
+    UIStaticText* textControl = GetActiveUIButton()->GetStateTextControl(state);
+    if (textControl)
+    {
+        return textControl->GetMultilineBySymbol();
+    }
+    
+    return false;
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForMultilineBySymbol()
+{
+    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    for (int i = 0; i < statesCount; i ++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+        
+        bool curStateDirty = (GetMultilineBySymbolForState(curState) !=
+                              GetMultilineBySymbolForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::TEXT_PROPERTY_MULTILINE_BY_SYMBOL, curStateDirty);
+    }
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForTextMargins()
+{
+    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    const QRectF& referenceMargins = GetTextMarginsForState(GetReferenceState());
+
+    for (int i = 0; i < statesCount; i ++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+        const QRectF& curMargins = GetTextMarginsForState(curState);
+        
+        SetStateDirtyForProperty(curState, PropertyNames::TEXT_LEFT_MARGIN_PROPERTY_NAME,
+                                 !FLOAT_EQUAL(referenceMargins.left(), curMargins.left()));
+        SetStateDirtyForProperty(curState, PropertyNames::TEXT_TOP_MARGIN_PROPERTY_NAME,
+                                 !FLOAT_EQUAL(referenceMargins.top(), curMargins.top()));
+        SetStateDirtyForProperty(curState, PropertyNames::TEXT_RIGHT_MARGIN_PROPERTY_NAME,
+                                 !FLOAT_EQUAL(referenceMargins.width(), curMargins.width()));
+        SetStateDirtyForProperty(curState, PropertyNames::TEXT_BOTTOM_MARGIN_PROPERTY_NAME,
+                                 !FLOAT_EQUAL(referenceMargins.height(), curMargins.height()));
     }
 }
 
@@ -1070,17 +1729,23 @@ void UIButtonMetadata::RecoverPropertyDirtyFlags()
     
     UpdatePropertyDirtyFlagForDrawType();
     UpdatePropertyDirtyFlagForColorInheritType();
+    UpdatePropertyDirtyFlagForPerPixelAccuracyType();
     UpdatePropertyDirtyFlagForAlign();
     
     UpdatePropertyDirtyFlagForFittingType();
-    UpdatePropertyDirtyFlagForFontShadowColorInheritType();
+    UpdatePropertyDirtyFlagForTextColorInheritType();
+    UpdatePropertyDirtyFlagForTextPerPixelAccuracyType();
     
     UpdatePropertyDirtyFlagForLeftRightStretchCap();
     UpdatePropertyDirtyFlagForTopBottomStretchCap();
 
     UpdatePropertyDirtyFlagForShadowColor();
-    UpdatePropertyDirtyFlagForShadowOffsetX();
-    UpdatePropertyDirtyFlagForShadowOffsetY();
+    UpdatePropertyDirtyFlagForShadowOffsetXY();
+
+    UpdatePropertyDirtyFlagForMargins();
+    
+    UpdatePropertyDirtyFlagForMultiline();
+    UpdatePropertyDirtyFlagForMultilineBySymbol();
 }
 
 void UIButtonMetadata::UpdateExtraDataLocalizationKey()
@@ -1118,3 +1783,34 @@ void UIButtonMetadata::UpdateExtraDataLocalizationKey()
     }
 }
 
+UIControlBackground::UIMargins UIButtonMetadata::GetMarginsToUpdate(UIControl::eControlState state) const
+{
+    if (!VerifyActiveParamID() || !GetActiveUIButton()->GetStateBackground(state))
+    {
+        return UIControlBackground::UIMargins();
+    }
+
+    const UIControlBackground::UIMargins* margins = GetActiveUIButton()->GetStateBackground(state)->GetMargins();
+    if (!margins)
+    {
+        return UIControlBackground::UIMargins();
+    }
+
+    return *margins;
+}
+
+UIControlBackground::UIMargins UIButtonMetadata::GetTextMarginsToUpdate(UIControl::eControlState state) const
+{
+    if (!VerifyActiveParamID() || !GetActiveUIButton()->GetStateTextControl(state))
+    {
+        return UIControlBackground::UIMargins();
+    }
+    
+    const UIControlBackground::UIMargins* margins = GetActiveUIButton()->GetStateTextControl(state)->GetMargins();
+    if (!margins)
+    {
+        return UIControlBackground::UIMargins();
+    }
+    
+    return *margins;
+}

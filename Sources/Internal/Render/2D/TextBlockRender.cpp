@@ -53,15 +53,7 @@ void TextBlockRender::DrawText()
 {
 	if (!textBlock->isMultilineEnabled || textBlock->treatMultilineAsSingleLine)
 	{
-		WideString drawText = textBlock->text;
-		
-		//if((fittingType & FITTING_POINTS) && pointsStr.length())
-		if (textBlock->pointsStr.length())
-		{
-			drawText = textBlock->pointsStr;
-		}
-		
-		DrawTextSL(drawText, textBlock->cacheDx, textBlock->cacheDy, textBlock->cacheW);
+        DrawTextSL(textBlock->visualText, textBlock->cacheDx, textBlock->cacheDy, textBlock->cacheW);
 	}
 	else
 	{
@@ -77,25 +69,24 @@ void TextBlockRender::DrawText()
 				textBlock->cacheUseJustify = false;
 			}
 			int32 xOffset = 0;
-			if (textBlock->align & ALIGN_RIGHT)
+            int32 align = textBlock->GetVisualAlignNoMutexLock();
+			if (align & ALIGN_RIGHT)
 			{
-				//xOffset = (int32)(textBlock->cacheFinalW - textBlock->stringSizes[line]);
-                xOffset = (int32)(textBlock->cacheFinalSize.dx - textBlock->stringSizes[line]);
+                xOffset = (int32)(textBlock->cacheTextSize.dx - textBlock->stringSizes[line] + textBlock->cacheSpriteOffset.x);
 				if(xOffset < 0)
 				{
 					xOffset = 0;
 				}
 			}
-			else if(textBlock->align & ALIGN_HCENTER)
+			else if(align & ALIGN_HCENTER)
 			{
-				//xOffset = (int32)(textBlock->cacheFinalW - textBlock->stringSizes[line]) / 2;
-                xOffset = (int32)(textBlock->cacheFinalSize.dx - textBlock->stringSizes[line]) / 2;
+                xOffset = (int32)(textBlock->cacheTextSize.dx - textBlock->stringSizes[line] + textBlock->cacheSpriteOffset.x) / 2;
 				if(xOffset < 0)
 				{
 					xOffset = 0;
 				}
 			}
-            if(textBlock->align & ALIGN_HJUSTIFY && textBlock->cacheUseJustify)
+            if(align & ALIGN_HJUSTIFY && textBlock->cacheUseJustify)
             {
                 stringSize = textBlock->stringSizes[line];
                 blockWidth =textBlock->cacheW;

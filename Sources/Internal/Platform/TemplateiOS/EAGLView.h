@@ -26,6 +26,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_EAGLVIEW_H__
+#define __DAVAENGINE_EAGLVIEW_H__
+
 
 #include "Base/BaseTypes.h"
 
@@ -69,9 +72,10 @@
 	// mutex (since assertion might be called in the middle of drawing, DAVA::RenderManager::Instance()->Lock()
 	// mutex might be already locked so we'll got a deadlock.
 	// Return to this code after RenderManager mutex will be removed.
-	
-	// Also it is used to block drawing while device keyboard is changed (see please DF-2012 for details).
 	bool blockDrawView;
+    
+    // Used to limit fps while device keyboard is changed
+    bool limitKeyboardFps;
 }
 
 @property (readonly, nonatomic, getter=isAnimating) BOOL animating;
@@ -87,7 +91,9 @@
 // Yuri Coder, 2013/02/06. This method is introduced to block rendering
 // when assertion happened.
 - (void) blockDrawing;
+- (void) unblockDrawing;
 
 @end
 
-#endif //
+#endif //__DAVAENGINE_IPHONE__
+#endif //__DAVAENGINE_EAGLVIEW_H__

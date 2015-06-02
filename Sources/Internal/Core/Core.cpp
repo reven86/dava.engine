@@ -51,53 +51,48 @@
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Render/Image/ImageSystem.h"
 #include "Scene3D/SceneCache.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
-#include "Platform/Notification.h"
+#include "Render/OcclusionQuery.h"
+#include "Notification/LocalNotificationController.h"
+#include "Platform/DeviceInfo.h"
+
+#include "Network/NetCore.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #endif
 
 #if defined(__DAVAENGINE_IPHONE__)
-#include "Input/AccelerometeriPhone.h"
+// not used
 #elif defined(__DAVAENGINE_ANDROID__)
 #	include "Input/AccelerometerAndroid.h"
 #endif //PLATFORMS
-
-#ifdef __DAVAENGINE_AUTOTESTING__
-#include "Autotesting/AutotestingSystem.h"
-#endif
 
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
 #include <EGL/eglext.h>
 #endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
 
+#ifdef __DAVAENGINE_AUTOTESTING__
+#include "Autotesting/AutotestingSystem.h"
+#endif
+
+
 namespace DAVA 
 {
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-	static bool useAutodetectContentScaleFactor = false;
-#endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-
-	float Core::virtualToPhysical = 0;
-	float Core::physicalToVirtual = 0;
-	Vector2 Core::drawOffset;
-
-	static ApplicationCore * core = 0;
+static ApplicationCore * core = nullptr;
 
 Core::Core()
 {
-	globalFrameIndex = 1;
-	isActive = false;
-	firstRun = true;
+    globalFrameIndex = 1;
+    isActive = false;
+    firstRun = true;
 	isConsoleMode = false;
 	options = new KeyedArchive();
-	fixedProportions = true;
-    
-    desirableIndex = 0;
-
-    EnableReloadResourceOnResize(true);
+    screenScaleFactor = 1.f;
 }
 
 Core::~Core()
@@ -109,14 +104,6 @@ Core::~Core()
 
 void Core::CreateSingletons()
 {
-#ifndef __DAVAENGINE_IPHONE__
-//	if (!Core::Instance())
-//	{
-//		//Logger::Warning("[Core::Create] failed / something wrong with template or your platform code / contact framework developers");
-//	}
-#endif
-    
-    
     // check types size
 	new Logger();
 	new AllocatorFactory();
@@ -136,7 +123,6 @@ void Core::CreateSingletons()
 		 */
 		Logger::Instance()->SetLogLevel(Logger::LEVEL_INFO);
 	}
-//	Logger::FrameworkDebug("[Core::Create] successfull");
     
 	new LocalizationSystem();
 
@@ -152,35 +138,43 @@ void Core::CreateSingletons()
     new VersionInfo();
     new ImageSystem();
     new SceneCache();
+    new FrameOcclusionQueryManager();
 	
+    new VirtualCoordinatesSystem();
+    new RenderSystem2D();
 
 #if defined(__DAVAENGINE_ANDROID__)
     new AssetsManager();
 #endif
-
+	
 #if defined __DAVAENGINE_IPHONE__
-	new AccelerometeriPhoneImpl();
+	// not used
 #elif defined(__DAVAENGINE_ANDROID__)
 	new AccelerometerAndroidImpl();
 #endif //#if defined __DAVAENGINE_IPHONE__
 	
 	new UIScreenManager();
 
-#ifdef __DAVAENGINE_AUTOTESTING__
-    new AutotestingSystem();
-#endif
-
-#if defined(__DAVAENGINE_WIN32__)
 	Thread::InitMainThread();
-#endif
 
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
-
+    
     new LocalNotificationController();
+
+    DeviceInfo::InitializeScreenInfo();
     
     RegisterDAVAClasses();
     CheckDataTypeSizes();
+
+    new Net::NetCore();
+
+#ifdef __DAVAENGINE_AUTOTESTING__
+	new AutotestingSystem();
+#endif
+    
+    // Init default screen scale factor from screen info
+    screenScaleFactor = DeviceInfo::GetScreenInfo().scale;
 }
 
 // We do not create RenderManager until we know which version of render manager we want to create
@@ -193,6 +187,15 @@ void Core::CreateRenderManager()
         
 void Core::ReleaseSingletons()
 {
+    // Finish network infrastructure
+    // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
+    Net::NetCore::Instance()->Finish(true);
+    Net::NetCore::Instance()->Release();
+
+#ifdef __DAVAENGINE_AUTOTESTING__
+	AutotestingSystem::Instance()->Release();
+#endif
+
 	LocalNotificationController::Instance()->Release();
     DownloadManager::Instance()->Release();
 	PerformanceSettings::Instance()->Release();
@@ -212,10 +215,10 @@ void Core::ReleaseSingletons()
     SoundSystem::Instance()->Release();
 	Random::Instance()->Release();
 	RenderLayerManager::Instance()->Release();
+    FrameOcclusionQueryManager::Instance()->Release();
+    VirtualCoordinatesSystem::Instance()->Release();
+    RenderSystem2D::Instance()->Release();
 	RenderManager::Instance()->Release();
-#ifdef __DAVAENGINE_AUTOTESTING__
-    AutotestingSystem::Instance()->Release();
-#endif
 
 	InputSystem::Instance()->Release();
 	JobManager::Instance()->Release();
@@ -235,12 +238,13 @@ void Core::SetOptions(KeyedArchive * archiveOfOptions)
 	SafeRelease(options);
 
 	options = SafeRetain(archiveOfOptions);
-#if defined(__DAVAENGINE_IPHONE__)
-		useAutodetectContentScaleFactor = options->GetBool("iPhone_autodetectScreenScaleFactor", false);
-#elif defined(__DAVAENGINE_ANDROID__)
-		useAutodetectContentScaleFactor = options->GetBool("Android_autodetectScreenScaleFactor", false);
-#endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-
+    
+    screenScaleFactor = options->GetFloat("screenScaleFactor", screenScaleFactor);
+    if (screenScaleFactor <= 0.f)
+    {
+        screenScaleFactor = DeviceInfo::GetScreenInfo().scale;
+    }
+    
 #if !defined(__DAVAENGINE_ANDROID__)
 	//YZ android platform always use SCREEN_ORIENTATION_PORTRAIT and rotate system view and don't rotate GL view  
 	screenOrientation = options->GetInt32("orientation", SCREEN_ORIENTATION_PORTRAIT);
@@ -270,208 +274,9 @@ KeyedArchive * Core::GetOptions()
 	return options;
 }
 	
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-bool Core::IsAutodetectContentScaleFactor()
-{
-	return useAutodetectContentScaleFactor;
-}
-#endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-
-	
-float32 Core::GetVirtualToPhysicalFactor()
-{
-	return virtualToPhysical;
-}
-	
-float32 Core::GetPhysicalToVirtualFactor()
-{
-	return physicalToVirtual;
-}
-
 Core::eScreenOrientation Core::GetScreenOrientation()
 {
 	return (Core::eScreenOrientation)screenOrientation;
-}
-
-void Core::CalculateScaleMultipliers()
-{
-	needTorecalculateMultipliers = false;		
-
-	virtualScreenWidth = requestedVirtualScreenWidth;
-	virtualScreenHeight = requestedVirtualScreenHeight;
-
-	float32 w, h;
-	w = (float32)virtualScreenWidth / (float32)screenWidth;
-	h = (float32)virtualScreenHeight / (float32)screenHeight;
-	drawOffset.x = drawOffset.y = 0;
-	float32 desD = 10000.0f;
-	if(w > h)
-	{
-		physicalToVirtual = w;
-		virtualToPhysical = (float32)screenWidth / (float32)virtualScreenWidth;
-		if (fixedProportions)
-		{
-			drawOffset.y = 0.5f * ((float32)screenHeight - (float32)Core::Instance()->GetVirtualScreenHeight() * virtualToPhysical);
-		}
-		else
-		{
-			virtualScreenHeight = screenHeight * physicalToVirtual;
-		}
-		for (int i = 0; i < (int)allowedSizes.size(); i++) 
-		{
-			allowedSizes[i].toVirtual = (float32)virtualScreenWidth / (float32)allowedSizes[i].width;
-			allowedSizes[i].toPhysical = (float32)screenWidth / (float32)allowedSizes[i].width;
-			if (fabs(allowedSizes[i].toPhysical - 1.0f) < desD) 
-			{
-				desD = fabsf(allowedSizes[i].toPhysical - 1.0f);
-				desirableIndex = i;
-			}
-		}
-	}
-	else
-	{
-		physicalToVirtual = h;
-		virtualToPhysical = (float32)screenHeight / (float32)virtualScreenHeight;
-		if (fixedProportions)
-		{
-			drawOffset.x = 0.5f * ((float32)screenWidth - (float32)Core::Instance()->GetVirtualScreenWidth() * virtualToPhysical);
-		}
-		else
-		{
-			virtualScreenWidth = screenWidth * physicalToVirtual;
-		}
-		for (int i = 0; i < (int)allowedSizes.size(); i++) 
-		{
-			allowedSizes[i].toVirtual = (float32)virtualScreenHeight / (float32)allowedSizes[i].height;
-			allowedSizes[i].toPhysical = (float32)screenHeight / (float32)allowedSizes[i].height;
-			if (fabs(allowedSizes[i].toPhysical - 1.0f) < desD) 
-			{
-				desD = fabsf(allowedSizes[i].toPhysical - 1.0f);
-				desirableIndex = i;
-			}
-		}
-	}
-	
-	drawOffset.y = floorf(drawOffset.y);
-	drawOffset.x = floorf(drawOffset.x);
-
-	UIControlSystem::Instance()->CalculateScaleMultipliers();
-
-    if(enabledReloadResourceOnResize)
-    {
-        Sprite::ValidateForSize();
-        TextBlock::ScreenResolutionChanged();
-    }
-			
-//	Logger::FrameworkDebug("[Core] CalculateScaleMultipliers desirableIndex: %d", desirableIndex);
-		
-}
-	
-float32 Core::GetResourceToPhysicalFactor(int32 resourceIndex)
-{
-	DVASSERT(resourceIndex < (int32)allowedSizes.size());
-	return allowedSizes[resourceIndex].toPhysical;
-}
-float32 Core::GetResourceToVirtualFactor(int32 resourceIndex)
-{
-	DVASSERT(resourceIndex < (int32)allowedSizes.size());
-	return allowedSizes[resourceIndex].toVirtual;
-}
-const String& Core::GetResourceFolder(int32 resourceIndex)
-{
-	DVASSERT(resourceIndex < (int32)allowedSizes.size());
-	return allowedSizes[resourceIndex].folderName;
-}
-int32 Core::GetDesirableResourceIndex()
-{
-	return desirableIndex;
-}
-int32 Core::GetBaseResourceIndex()
-{
-	return 0;
-}
-	
-const Vector2 &Core::GetPhysicalDrawOffset()
-{
-	return drawOffset;
-}
-
-	
-	
-
-void Core::SetPhysicalScreenSize(int32 width, int32 height)
-{
-//	Logger::Info("Setting physical screen size to %dx%d", width, height);
-	screenWidth = (float32)width;
-	screenHeight = (float32)height;
-	needTorecalculateMultipliers = true;
-}
-	
-void Core::SetVirtualScreenSize(int32 width, int32 height)
-{
-	requestedVirtualScreenWidth = virtualScreenWidth = (float32)width;
-	requestedVirtualScreenHeight = virtualScreenHeight = (float32)height;
-	needTorecalculateMultipliers = true;
-}
-
-void Core::SetProportionsIsFixed( bool needFixed )
-{
-	fixedProportions = needFixed;
-	needTorecalculateMultipliers = true;
-}
-
-
-void Core::RegisterAvailableResourceSize(int32 width, int32 height, const String &resourcesFolderName)
-{
-	Core::AvailableSize newSize;
-	newSize.width = width;
-	newSize.height = height;
-	newSize.folderName = resourcesFolderName;
-	
-	allowedSizes.push_back(newSize);
-}
-
-void Core::UnregisterAllAvailableResourceSizes()
-{
-	allowedSizes.clear();
-}
-	
-float32 Core::GetPhysicalScreenWidth()
-{
-	return screenWidth;
-}
-float32 Core::GetPhysicalScreenHeight()
-{
-	return screenHeight;
-}
-	
-float32 Core::GetVirtualScreenWidth()
-{
-	return virtualScreenWidth;
-}
-float32 Core::GetVirtualScreenHeight()
-{
-	return virtualScreenHeight;
-}
-	
-float32 Core::GetVirtualScreenXMin()
-{
-	return -(drawOffset.x * physicalToVirtual);
-}
-	
-float32 Core::GetVirtualScreenXMax()
-{
-	return ((float32)(screenWidth - drawOffset.x) * physicalToVirtual);
-}
-	
-float32 Core::GetVirtualScreenYMin()
-{
-	return -(drawOffset.y * physicalToVirtual);
-}
-	
-float32 Core::GetVirtualScreenYMax()
-{
-	return ((float32)(screenHeight - drawOffset.y) * physicalToVirtual);
 }
 	
 Core::eScreenMode Core::GetScreenMode()
@@ -615,30 +420,28 @@ ApplicationCore * Core::GetApplicationCore()
 	return core;
 }
 	
-	
 void Core::SystemAppStarted()
 {
-	if (Core::Instance()->NeedToRecalculateMultipliers()) 
+	if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
 	{
-		Core::Instance()->CalculateScaleMultipliers();
-		/*  Question to Hottych: Does it really necessary here? 
+		VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
+		/*  Question to Hottych: Does it really necessary here?
             RenderManager::Instance()->SetRenderOrientation(Core::Instance()->GetScreenOrientation());
          */
 	}
 
-	if (core)core->OnAppStarted();
-    
-#ifdef __DAVAENGINE_AUTOTESTING__
-    AutotestingSystem::Instance()->OnAppStarted();
-#endif //__DAVAENGINE_AUTOTESTING__
+	if (core != nullptr)
+	{
+        core->OnAppStarted();
+    }
 }
 	
 void Core::SystemAppFinished()
 {
-#ifdef __DAVAENGINE_AUTOTESTING__
-    AutotestingSystem::Instance()->OnAppFinished();
-#endif //__DAVAENGINE_AUTOTESTING__    
-	if (core)core->OnAppFinished();
+    if (core != nullptr)
+    {
+        core->OnAppFinished();
+    }
 }
 
 
@@ -691,10 +494,9 @@ void Core::SystemProcessFrame()
 #endif //#if !defined(__DAVAENGINE_ANDROID__)
 
 		// recalc frame inside begin / end frame
-		if (Core::Instance()->needTorecalculateMultipliers) 
+		if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
 		{
-			Core::Instance()->CalculateScaleMultipliers();
-			RenderManager::Instance()->SetRenderOrientation(screenOrientation);
+			VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
             UIScreenManager::Instance()->ScreenSizeChanged();
             UIControlSystem::Instance()->ScreenSizeChanged();
 		}
@@ -719,6 +521,10 @@ void Core::SystemProcessFrame()
 		LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
 		JobManager::Instance()->Update();
+
+        // Poll for network I/O events here
+        Net::NetCore::Instance()->Poll();
+
 		core->Update(frameDelta);
         InputSystem::Instance()->OnAfterUpdate();
 		core->Draw();
@@ -762,6 +568,7 @@ void Core::GoForeground()
 	{
 		core->OnForeground();
 	}
+    Net::NetCore::Instance()->RestartAllControllers();
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 }
 
@@ -769,22 +576,16 @@ uint32 Core::GetGlobalFrameIndex()
 {
 	return globalFrameIndex;
 }
-
-float32 GetScreenWidth()
-{
-	return Core::Instance()->GetVirtualScreenWidth();
-}
-
-float32 GetScreenHeight()
-{
-	return Core::Instance()->GetVirtualScreenHeight();
-}
 	
 void Core::SetCommandLine(int argc, char *argv[])
 {
-    commandLine.reserve(argc);
-	for (int k = 0; k < argc; ++k)
-		commandLine.push_back(argv[k]);
+    commandLine.assign(argv, argv + argc);
+}
+
+void Core::SetCommandLine(const DAVA::String& cmdLine)
+{
+    commandLine.clear();
+    Split(cmdLine, " ", commandLine);
 }
 
 Vector<String> & Core::GetCommandLine()
@@ -802,11 +603,6 @@ void Core::EnableConsoleMode()
 	isConsoleMode = true;
 }
 
-bool Core::NeedToRecalculateMultipliers()
-{
-	return needTorecalculateMultipliers;
-}
-
 void Core::SetIsActive(bool _isActive)
 {
 	isActive = _isActive;
@@ -817,12 +613,7 @@ Core::eDeviceFamily Core::GetDeviceFamily()
 {
     return DEVICE_DESKTOP;
 }
-#endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)    
-    
-void Core::EnableReloadResourceOnResize(bool enable)
-{
-    enabledReloadResourceOnResize = enable;
-}
+#endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
     
 uint32 Core::GetScreenDPI()
 {
@@ -833,14 +624,5 @@ void Core::SetIcon(int32 /*iconId*/)
 {
 };
 
-DAVA::float32 Core::GetRequestedVirtualScreenWidth()
-{
-    return requestedVirtualScreenWidth;
-}
-
-DAVA::float32 Core::GetRequestedVirtualScreenHeight()
-{
-    return requestedVirtualScreenHeight;
-}
-
 };
+

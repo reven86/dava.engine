@@ -39,7 +39,6 @@
 #include "Base/FastNameMap.h"
 #include "FileSystem/FilePath.h"
 #include "Job/JobManager.h"
-#include "Job/JobWaiter.h"
 
 //#define USE_CRC_COMPARE
 
@@ -201,6 +200,7 @@ protected:
 public:
     Shader();
     
+    
     Shader * Clone();
     
     void SetDefines(const String & _defines);
@@ -317,7 +317,7 @@ private:
     GLint CompileShader(GLuint *shader, GLenum type, GLint count, const GLchar * sources, const String & defines);
     GLint LinkProgram(GLuint prog);
 	
-	void RecompileInternal(BaseObject * caller, void * param, void *callerData);
+	void RecompileInternal(bool silentDelete);
     
 	void DeleteShaders();
 	struct DeleteShaderContainer
@@ -326,7 +326,7 @@ private:
 		GLuint vertexShader;
 		GLuint fragmentShader;
 	};
-	void DeleteShadersInternal(BaseObject * caller, void * param, void *callerData);
+	void DeleteShadersInternal(GLuint program, GLuint vertexShader, GLuint fragmentShader);
 
     eShaderSemantic GetShaderSemanticByName(const FastName &name);
     int32 GetAttributeIndexByName(const FastName &name);

@@ -30,12 +30,14 @@
 
 #include "Scene3D/Systems/TransformSystem.h"
 #include "Scene3D/Components/TransformComponent.h"
+#include "Scene3D/Components/AnimationComponent.h"
 #include "Scene3D/Entity.h"
 #include "Debug/DVAssert.h"
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Debug/Stats.h"
+#include "Scene3D/Components/ComponentHelpers.h"
 
 namespace DAVA
 {
@@ -45,6 +47,7 @@ TransformSystem::TransformSystem(Scene * scene)
 {
 	scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::LOCAL_TRANSFORM_CHANGED);
 	scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::TRANSFORM_PARENT_CHANGED);
+    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::ANIMATION_TRANSFORM_CHANGED);
 }
 
 TransformSystem::~TransformSystem()
@@ -66,7 +69,7 @@ void TransformSystem::Process(float32 timeElapsed)
     passedNodes = 0;
     multipliedNodes = 0;
     
-    uint32 size = updatableEntities.size();
+    uint32 size = static_cast<uint32>(updatableEntities.size());
     for(uint32 i = 0; i < size; ++i)
     {
         //HierahicFindUpdatableTransform(updatableEntities[i]);
@@ -137,8 +140,12 @@ void TransformSystem::TransformAllChildEntities(Entity * entity)
         TransformComponent * transform = (TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT);
         if(transform->parentMatrix)
         {
+            AnimationComponent * animComp = GetAnimationComponent(entity);
             localMultiplied++;
-            transform->worldMatrix = transform->localMatrix * *(transform->parentMatrix);
+            if (animComp)
+                transform->worldMatrix = animComp->animationTransform * transform->localMatrix * *(transform->parentMatrix);
+            else
+                transform->worldMatrix = transform->localMatrix * *(transform->parentMatrix);
             //GlobalEventSystem::Instance()->Event(entity, EventSystem::WORLD_TRANSFORM_CHANGED);
             sendEvent.push_back(entity);
         }
@@ -202,7 +209,8 @@ void TransformSystem::ImmediateEvent(Entity * entity, uint32 event)
 	{
 	case EventSystem::LOCAL_TRANSFORM_CHANGED:
 	case EventSystem::TRANSFORM_PARENT_CHANGED:
-		EntityNeedUpdate(entity);
+    case EventSystem::ANIMATION_TRANSFORM_CHANGED:
+        EntityNeedUpdate(entity);
 		HierahicAddToUpdate(entity);
 		break;
 	}
@@ -244,7 +252,7 @@ void TransformSystem::AddEntity(Entity * entity)
 void TransformSystem::RemoveEntity(Entity * entity)
 {
 	//TODO: use hashmap
-	uint32 size = updatableEntities.size();
+	uint32 size = static_cast<uint32>(updatableEntities.size());
 	for(uint32 i = 0; i < size; ++i)
 	{
 		if(updatableEntities[i] == entity)

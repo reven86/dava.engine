@@ -76,7 +76,6 @@ protected:
 	virtual void Process(DAVA::float32 timeElapsed);
 	void Draw();
 
-	void ProcessUIEvent(DAVA::UIEvent *event);
 	void ProcessCommand(const Command2 *command, bool redo);
 
 	virtual void AddEntity(DAVA::Entity * entity);
@@ -94,6 +93,8 @@ protected:
     void CreateIlluminationParams(DAVA::Entity *entity);
 
 	void SearchEntityByRef(DAVA::Entity *parent, const DAVA::FilePath &refToOwner, DAVA::Set<DAVA::Entity *> &result);
+    
+    void ProcessAutoSelection(const Command2 *command, bool redo) const;
 };
 
 #endif // __SCENE_STRUCTURE_SYSTEM_H__

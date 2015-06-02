@@ -46,8 +46,8 @@
 #include "Math/Matrix2.h"
 #include "Math/Matrix3.h"
 #include "Math/Matrix4.h"
-#include "Math/Quaternion.h"
 #include "Math/MathHelpers.h"
+#include "Math/Quaternion.h"
 
 
 #include "Math/Plane.h"

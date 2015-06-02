@@ -238,7 +238,14 @@ int32 do_div(int64 &n, int32 base)
         int32 tail = (int32)num;
         
         num -= tail;
-        if (num > 0.5f)
+        if (
+			// tested on gcc 4.8.1, msvc2013, Apple LLVM version 6.0
+#ifdef _MSC_VER
+			num >= 0.5f
+#else
+			num > 0.5f
+#endif
+			)
         {
             if (precision > 0)
                 tail++;
@@ -256,7 +263,7 @@ int32 do_div(int64 &n, int32 base)
         char16 *firstStr = Number(str, whole, 10, -1, -1, type);
         if (isNegativeValue)
         {
-            memcpy(str + 1, str, (firstStr - str) * sizeof(char16));
+            Memmove(str + 1, str, (firstStr - str) * sizeof(char16));
             *str = L'-';
             firstStr++;
         }
@@ -264,7 +271,7 @@ int32 do_div(int64 &n, int32 base)
         {
             while (firstStr - str < base - precision)
             {
-                memcpy(str + 1, str, (firstStr - str) * sizeof(char16));
+            	Memmove(str + 1, str, (firstStr - str) * sizeof(char16));
                 *str = L' ';
                 firstStr++;
             }
@@ -447,7 +454,7 @@ int32 do_div(int64 &n, int32 base)
                             s = "<NULL>";
                         }
                         
-                        len = strlen (s);
+                        len = static_cast<int32>(strlen (s));
                         if ((uint32)len > (uint32)precision)
                         {
                             len = precision;
@@ -480,7 +487,7 @@ int32 do_div(int64 &n, int32 base)
                             sw = L"<NULL>";
                         }
                         
-                        len = wcslen (sw);
+                        len = static_cast<int32>(wcslen (sw));
                         if ((uint32)len > (uint32)precision)
                         {
                             len = precision;
@@ -516,7 +523,7 @@ int32 do_div(int64 &n, int32 base)
                             sw = L"<NULL>";
                         }
                         
-                        len = wcslen (sw);
+                        len = static_cast<int32>(wcslen (sw));
                         if ((uint32)len > (uint32)precision)
                         {
                             len = precision;
@@ -549,7 +556,7 @@ int32 do_div(int64 &n, int32 base)
                             s = "<NULL>";
                         }
                         
-                        len = strlen (s);
+                        len = static_cast<int32>(strlen (s));
                         if ((uint32)len > (uint32)precision)
                         {
                             len = precision;
@@ -639,7 +646,7 @@ int32 do_div(int64 &n, int32 base)
                     else
                     {
                         int32 * ip = va_arg(args, int32 *);
-                        *ip = (str - buf);
+                        *ip = static_cast<int32>(str - buf);
                     }
                     continue;
                     
@@ -803,7 +810,7 @@ int32 do_div(int64 &n, int32 base)
         }
         
         *str = L'\0';
-        return str-buf;
+        return static_cast<int32>(str-buf);
     }
     
 //! formatting function (use printf syntax (%ls for WideString))

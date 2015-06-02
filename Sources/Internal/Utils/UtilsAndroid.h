@@ -32,25 +32,26 @@
 
 #include "Base/BaseTypes.h"
 #if defined(__DAVAENGINE_ANDROID__)
-#include "JniExtensions.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA
 {
 
-class JniUtils: public JniExtension
+class JniUtils
 {
 public:
+	JniUtils();
 	bool DisableSleepTimer();
 	bool EnableSleepTimer();
 	void OpenURL(const String& url);
+	String GenerateGUID();
 
-protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
-
-public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
+private:
+	JNI::JavaClass jniUtils;
+	Function<void()> disableSleepTimer;
+	Function<void()> enableSleepTimer;
+	Function<void (jstring)> openURL;
+	Function<jstring ()> generateGUID;
 };
 
 };

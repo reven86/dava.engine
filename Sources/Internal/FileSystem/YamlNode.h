@@ -143,6 +143,7 @@ public:
     inline void     Add(const String& name, const Vector2 &value);
     inline void     Add(const String& name, const Vector3 &value);
     inline void     Add(const String& name, const Vector4 &value);
+    inline void     Add(const String& name, const Color &value);
     inline void     Add(const String& name, const VariantType &value);
     inline void     Add(const String& name, VariantType *varType);
     inline void     Add(const String &name, YamlNode *value);
@@ -275,6 +276,7 @@ inline void YamlNode::Add(const String& name, const WideString &value) { Interna
 inline void YamlNode::Add(const String& name, const Vector2 &value)    { InternalAddToMap(name, VariantType(value), false); }
 inline void YamlNode::Add(const String& name, const Vector3 &value)    { InternalAddToMap(name, VariantType(value), false); }
 inline void YamlNode::Add(const String& name, const Vector4 &value)    { InternalAddToMap(name, VariantType(value), false); }
+inline void YamlNode::Add(const String& name, const Color &value)      { InternalAddToMap(name, VariantType(value), false); }
 
 inline void YamlNode::Add(const String& name, const VariantType &value){ InternalAddToMap(name, value, false); }
 inline void YamlNode::Add(const String& name, VariantType *varType)    { InternalAddToMap(name, *varType, false); }

@@ -2,4 +2,4 @@
 # call as: ./mergeimagesinfolder.sh sourceimages_folder
 # as result generated image would be created in sourceimages_folder (merged.png)
 
-ResourceEditorQtVS2010.exe -imagesplitter -merge -folder %1
+ResourceEditor.exe -imagesplitter -merge -folder %1

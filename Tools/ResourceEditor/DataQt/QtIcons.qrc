@@ -161,5 +161,10 @@
         <file>QtLibraryIcons/orientation.png</file>
         <file>QtLibraryIcons/lodmaterial.png</file>
         <file>QtIcons/so.png</file>
+        <file>QtIcons/dropper.png</file>
+        <file>QtIcons/accept_button.png</file>
+        <file>QtIcons/prohibition_button.png</file>
+        <file>QtIcons/path.png</file>
+        <file>QtIcons/snapcamera.png</file>
     </qresource>
 </RCC>

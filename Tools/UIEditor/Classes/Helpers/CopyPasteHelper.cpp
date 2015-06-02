@@ -98,11 +98,13 @@ QString CopyPasteHelper::FormatCopyName(QString baseName, const HierarchyTreeNod
 	return baseName;
 }
 
-void CopyPasteHelper::UpdateAggregators(HierarchyTreeControlNode* controlNode, HierarchyTreeNode* targetNode)
+void CopyPasteHelper::UpdateAggregators(HierarchyTreeNode* controlNode, HierarchyTreeNode* targetNode)
 {
     HierarchyTreePlatformNode* activePlatform = NULL;
     HierarchyTreeControlNode* targetControl = dynamic_cast<HierarchyTreeControlNode*>(targetNode);
     HierarchyTreeScreenNode* targetScreen = dynamic_cast<HierarchyTreeScreenNode*>(targetNode);
+    HierarchyTreePlatformNode* targetPlatform = dynamic_cast<HierarchyTreePlatformNode*>(targetNode);
+    
     if (targetControl)
     {
     	activePlatform = targetControl->GetScreenNode()->GetPlatform();
@@ -111,6 +113,10 @@ void CopyPasteHelper::UpdateAggregators(HierarchyTreeControlNode* controlNode, H
     {
     	activePlatform = targetScreen->GetPlatform();
     }
+    else if (targetPlatform)
+    {
+    	activePlatform = targetPlatform;
+    }
                 
     if (activePlatform)
     {
@@ -118,7 +124,7 @@ void CopyPasteHelper::UpdateAggregators(HierarchyTreeControlNode* controlNode, H
     }
 }
 
-void CopyPasteHelper::UpdateAggregatorControls(HierarchyTreeControlNode* control, HierarchyTreePlatformNode* activePlatform)
+void CopyPasteHelper::UpdateAggregatorControls(HierarchyTreeNode* control, HierarchyTreePlatformNode* activePlatform)
 {
 	HierarchyTreeAggregatorControlNode* aggregator = dynamic_cast<HierarchyTreeAggregatorControlNode*>(control);
     if (aggregator)
@@ -148,10 +154,7 @@ void CopyPasteHelper::UpdateAggregatorControls(HierarchyTreeControlNode* control
 			 iter != control->GetChildNodes().end();
 			 ++iter)
 	{
-		HierarchyTreeControlNode* childControl = dynamic_cast<HierarchyTreeControlNode*>((*iter));
-		if (!childControl)
-			continue;
-				
+		HierarchyTreeNode* childControl = (*iter);
 		UpdateAggregatorControls(childControl, activePlatform);
 	}
 }

@@ -91,7 +91,7 @@ void WaveSystem::Process(float32 timeElapsed)
     TIME_PROFILE("WaveSystem::Process");
 
     int32 index = 0;
-    int32 size = waves.size();
+    int32 size = static_cast<int32>(waves.size());
     while(index < size)
     {
         WaveInfo * info = waves[index];
@@ -113,7 +113,7 @@ void WaveSystem::Process(float32 timeElapsed)
 Vector3 WaveSystem::GetWaveDisturbance(const Vector3 & inPosition) const
 {
     Vector3 ret;
-    int32 wavesCount = waves.size();
+    int32 wavesCount = static_cast<int32>(waves.size());
     for(int32 i = 0; i < wavesCount; ++i)
     {
         WaveInfo * info = waves[i];
@@ -129,7 +129,7 @@ Vector3 WaveSystem::GetWaveDisturbance(const Vector3 & inPosition) const
 
             float32 distance = sqrtf(distanceSq);
             direction /= distance;
-            float32 dt = abs(info->currentWaveRadius - distance);
+            float32 dt = Abs(info->currentWaveRadius - distance);
             float32 value = Max(1 - dt / component->GetWaveLenght(), 0.f) * component->GetWaveAmplitude() * component->GetWaveSpeed() * damping; // wave function: A = (1 - x/L) * A0
 
             DVASSERT(value >= 0.f);
@@ -143,9 +143,10 @@ Vector3 WaveSystem::GetWaveDisturbance(const Vector3 & inPosition) const
 
 void WaveSystem::ClearWaves()
 {
-    int32 wavesCount = waves.size();
-    for(int32 i = 0; i < wavesCount; ++i)
-        SafeDelete(waves[i]);
+    for(auto& wave : waves)
+    {
+        SafeDelete(wave);
+    }
 
     waves.clear();
 }

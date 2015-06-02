@@ -151,11 +151,8 @@ bool ImposterNode::IsAngleOrRangeChangedEnough(float32 squareDistance, float32 d
 
 void ImposterNode::Draw()
 {
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE) && GetChildrenCount() > 0)
-	{
-		DVASSERT(GetChildrenCount() == 1);
-		GetChild(0)->Draw();
-	}
+	DVASSERT(GetChildrenCount() == 1);
+	GetChild(0)->Draw();
 }
 
 void ImposterNode::GeneralDraw()
@@ -317,7 +314,7 @@ void ImposterNode::UpdateImposter()
 	RenderManager::Instance()->ClearDepthBuffer();
 	//RenderManager::Instance()->RemoveState(RenderState::STATE_SCISSOR_TEST);
 
-	RenderManager::Instance()->SetViewport(Rect(block->offset.x, block->offset.y, block->size.dx, block->size.dy), true);
+	RenderManager::Instance()->SetViewport(Rect(block->offset.x, block->offset.y, block->size.dx, block->size.dy));
 
 
 	imposterCamera->SetTarget(center);
@@ -328,7 +325,7 @@ void ImposterNode::UpdateImposter()
 	RenderManager::Instance()->FlushState();
 	child->Draw();
 
-	RenderManager::Instance()->SetViewport(oldViewport, true);
+	RenderManager::Instance()->SetViewport(oldViewport);
 
 	isReady = true;
 	state = STATE_IMPOSTER;
@@ -390,7 +387,7 @@ void ImposterNode::DrawImposter()
 	meshFinalMatrix = /*worldTransform **/ cameraMatrix;
 
 	RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, meshFinalMatrix);
-	RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST);
+    RenderManager::Instance()->SetRenderEffect(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST);
 
 	RenderManager::Instance()->SetColor(1.f, 1.f, 1.f, 1.f);
 

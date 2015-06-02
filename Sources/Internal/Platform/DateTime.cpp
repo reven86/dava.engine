@@ -26,7 +26,14 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#include "DateTime.h"
+#include "Platform/DateTime.h"
+#include <stdlib.h>
+
+#ifdef __DAVAENGINE_WIN32__
+#include <time.h>
+#endif
+
+
 
 #define SKIP_WHITESPACE while (*s == ' ' || *s == '\t') s++;
 #define SKIP_NON_WHITESPACE while (*s != ' ' && *s != '\t' && *s != '\0') s++;
@@ -415,11 +422,11 @@ bool DateTime::ParseRFC822Date(const DAVA::String& src)
     
     // Get the day, month, and year.
     int32 day;
-    char monthStr[20];
+    char monthStr[20] = {0};
     int32 month;
     int32 year;
     
-    if (sscanf(s,"%d%s%d",&day,monthStr,&year) != 3) return false;
+    if (sscanf(s,"%d%19s%d",&day,monthStr,&year) != 3) return false;
     SKIP_NON_WHITESPACE
     SKIP_WHITESPACE
     SKIP_NON_WHITESPACE
@@ -462,8 +469,8 @@ bool DateTime::ParseRFC822Date(const DAVA::String& src)
     SKIP_WHITESPACE
     
     if(*s == '+') s++;
-    char zoneStr[20];
-    if(sscanf(s,"%s",zoneStr) != 1)
+    char zoneStr[20] = {0};
+    if(sscanf(s,"%19s",zoneStr) != 1)
     {
         strcpy(zoneStr,"GMT");
     }
@@ -569,7 +576,7 @@ bool DateTime::ParseRFC822Date(const DAVA::String& src)
 // calc time_t by hand to get time stamp in utc(system function
 // returns it with local timezone shift only )
 // code from http://stackoverflow.com/questions/16647819/timegm-cross-platform
-Timestamp DateTime::InternalTimeGm(std::tm *t) const
+Timestamp DateTime::InternalTimeGm(tm *t) const
 {
     int32 year = t->tm_year + 1900;
     int32 month = t->tm_mon;
@@ -584,7 +591,7 @@ Timestamp DateTime::InternalTimeGm(std::tm *t) const
         year -= yearsDiff;
         month+=12 * yearsDiff;
     }
-    month++;
+
     int32 day = t->tm_mday;
     int32 dayOfYear = DaysFrom1jan(year,month,day);
     int32 daysSinceEpoch = DaysFrom1970(year) + dayOfYear;

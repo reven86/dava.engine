@@ -82,10 +82,8 @@ void JoypadPropertyGridWidget::UpdateDoubleSpinBoxWidgetWithPropertyValue(QDoubl
         return;
     }
 
-    bool isPropertyValueDiffers = false;
     double propertyValue = PropertiesHelper::GetAllPropertyValues<double>(this->activeMetadata,
-                                                                          curProperty.name(),
-                                                                          isPropertyValueDiffers);
+                                                                          curProperty.name());
     WidgetSignalsBlocker blocker(doubleSpinBoxWidget);
     
     if (doubleSpinBoxWidget == ui->digitalSenseSpinBox)

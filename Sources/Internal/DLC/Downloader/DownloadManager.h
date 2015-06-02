@@ -65,7 +65,7 @@ public:
     void Update();
 
     // Schedule download content or get content size (handles by DwonloadMode)
-    uint32 Download(const String &srcUrl, const FilePath &storeToFilePath, DownloadType downloadMode = RESUMED, int32 timeout = 2, int32 retriesCount = 1);
+    uint32 Download(const String &srcUrl, const FilePath &storeToFilePath, const DownloadType downloadMode = RESUMED, const uint8 partsCount = 4, int32 timeout = 30, int32 retriesCount = 3);
     
     // Retry finished download
     void Retry(const uint32 &taskId);
@@ -90,7 +90,9 @@ public:
     bool GetTotal(const uint32 &taskId, uint64 &total);
     bool GetProgress(const uint32 &taskId, uint64 &progress);
     bool GetError(const uint32 &taskId, DownloadError &error);
-    bool SetOperationTimeout(const uint32 operationTimeout);
+    bool GetFileErrno(const uint32 &taskId, int32 &fileErrno);
+    DownloadStatistics GetStatistics();
+    void SetDownloadSpeedLimit(const uint64 limit);
 
 private:
     struct CallbackData
@@ -100,6 +102,8 @@ private:
         uint32 id;
         DownloadStatus status;
     };
+
+
 
 private:
     void SetTaskStatus(DownloadTaskDescription *task, const DownloadStatus &status);
@@ -123,8 +127,10 @@ private:
     DownloadError TryDownload();
     void Interrupt();
     bool IsInterrupting();
-    void MakeFullDownload(DownloadTaskDescription *task);
+    void MakeFullDownload();
+    void MakeResumedDownload();
     void ResetRetriesCount();
+    void OnCurrentTaskProgressChanged(uint64 progressDelta);
 
 private:
     Thread *thisThread;
@@ -142,7 +148,6 @@ private:
     Downloader *downloader;
     NotifyFunctor callNotify;
 
-    int64 remoteFileSize;
     uint64 downloadedTotal;
 };
 

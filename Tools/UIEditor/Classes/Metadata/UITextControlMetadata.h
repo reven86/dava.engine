@@ -54,10 +54,24 @@ class UITextControlMetadata : public UIControlMetadata
 	Q_PROPERTY(float ShadowOffsetY READ GetShadowOffsetY WRITE SetShadowOffsetY);
 	Q_PROPERTY(QColor ShadowColor READ GetShadowColor WRITE SetShadowColor);
 	Q_PROPERTY(int TextAlign READ GetTextAlign WRITE SetTextAlign);
+	Q_PROPERTY(bool TextUseRtlAlign READ GetTextUseRtlAlign WRITE SetTextUseRtlAlign);
     Q_PROPERTY(int FittingType READ GetFittingType WRITE SetFittingType);
 
     // Font color/shadow color inherit types.
-    Q_PROPERTY(int FontShadowColorInheritType READ GetFontShadowColorInheritType WRITE SetFontShadowColorInheritType);
+    Q_PROPERTY(int TextColorInheritType READ GetTextColorInheritType WRITE SetTextColorInheritType);
+    // Font/Shadow per pixel accuracy types
+    Q_PROPERTY(int TextPerPixelAccuracyType READ GetTextPerPixelAccuracyType WRITE SetTextPerPixelAccuracyType);
+
+    // Text margins.
+    Q_PROPERTY(QRectF TextMargins READ GetTextMargins WRITE SetTextMargins);
+    Q_PROPERTY(float TextLeftMargin READ GetTextLeftMargin WRITE SetTextLeftMargin);
+	Q_PROPERTY(float TextTopMargin READ GetTextTopMargin WRITE SetTextTopMargin);
+	Q_PROPERTY(float TextRightMargin READ GetTextRightMargin WRITE SetTextRightMargin);
+	Q_PROPERTY(float TextBottomMargin READ GetTextBottomMargin WRITE SetTextBottomMargin);
+
+    // Text properties
+    Q_PROPERTY(bool Multiline READ GetTextMultiline WRITE SetTextMultiline);
+    Q_PROPERTY(bool MultilineBySymbol READ GetTextMultilineBySymbol WRITE SetTextMultilineBySymbol);
 
 public:
     UITextControlMetadata(QObject* parent = 0);
@@ -68,11 +82,20 @@ protected:
     virtual void SetLocalizedTextKey(const QString& value);
     
     // Getters/setters.
-    virtual Font * GetFont() = 0;
+    virtual Font * GetFont() const = 0;
     virtual void SetFont(Font * font) = 0;
 
-	virtual int GetTextAlign() = 0;
+	virtual int GetTextAlign() const = 0;
     virtual void SetTextAlign(int align) = 0;
+
+    virtual bool GetTextMultiline() const = 0;
+    virtual void SetTextMultiline(bool value) = 0;
+
+    virtual bool GetTextMultilineBySymbol() const = 0;
+    virtual void SetTextMultilineBySymbol(bool value) = 0;
+	
+	virtual bool GetTextUseRtlAlign() = 0;
+    virtual void SetTextUseRtlAlign(bool value) = 0;
     
     virtual float GetFontSize() const = 0;
     //virtual void SetFontSize(float fontSize) = 0;
@@ -89,12 +112,31 @@ protected:
 	virtual QColor GetShadowColor() const = 0;
 	virtual void SetShadowColor(const QColor& value) = 0;
 	
-	Vector2 GetOffsetX(const Vector2& currentOffset, float offsetX);
-	Vector2 GetOffsetY(const Vector2& currentOffset, float offsetY);
+	Vector2 GetOffsetX(const Vector2& currentOffset, float offsetX) const;
+	Vector2 GetOffsetY(const Vector2& currentOffset, float offsetY) const;
+
+    // Text margins. Should be overriden in the derived classes.
+    virtual QRectF GetTextMargins() const;
+    virtual void SetTextMargins(const QRectF& value);
+    
+    virtual float GetTextLeftMargin() const;
+    virtual void SetTextLeftMargin(float value);
+    
+    virtual float GetTextTopMargin() const;
+    virtual void SetTextTopMargin(float value);
+    
+    virtual float GetTextRightMargin() const;
+    virtual void SetTextRightMargin(float value);
+
+    virtual float GetTextBottomMargin() const;
+    virtual void SetTextBottomMargin(float value);
 
     // These methods should not be overriden for the UITextField, that's why not pure virtual.
-    virtual int GetFontShadowColorInheritType() const;
-    virtual void SetFontShadowColorInheritType(int value);
+    virtual int GetTextColorInheritType() const;
+    virtual void SetTextColorInheritType(int value);
+    
+    virtual int GetTextPerPixelAccuracyType() const;
+    virtual void SetTextPerPixelAccuracyType(int value);
 
     virtual int GetFittingType() const;
     virtual void SetFittingType(int value);

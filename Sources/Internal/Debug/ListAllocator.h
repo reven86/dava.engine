@@ -31,6 +31,11 @@
 #define __DAVAENGINE_LIST_ALLOCATOR_H__
 
 #include "Base/BaseTypes.h"
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#include <stdlib.h>
+#endif
+
+#include <cstdlib>
 
 namespace DAVA 
 {

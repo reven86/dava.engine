@@ -29,6 +29,8 @@
 
 #include "Base/BaseTypes.h"
 #include "Render/2D/GraphicsFont.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/RenderManager.h"
 #include "FileSystem/File.h"
 #include "Debug/DVAssert.h"
@@ -117,7 +119,9 @@ Font * GraphicsFont::Clone() const
 	cloneFont->SetVerticalSpacing(this->GetVerticalSpacing());
     cloneFont->SetHorizontalSpacing(this->GetHorizontalSpacing());
 	cloneFont->SetSize(this->GetSize());
-    cloneFont->SetRenderSize(this->GetRenderSize());
+
+    cloneFont->SetAscendScale(this->GetAscendScale());
+    cloneFont->SetDescendScale(this->GetDescendScale());
 
     cloneFont->fontDefinitionName = this->GetFontDefinitionName();
 	
@@ -143,13 +147,6 @@ void GraphicsFont::SetSize(float32 _size)
 {
     Font::SetSize(_size);
 	fontScaleCoeff = size / (fdef->fontAscent + fdef->fontDescent);
-}
-
-void GraphicsFont::SetRenderSize(float32 renderSize)
-{
-    float32 rescale = renderSize/this->renderSize;
-    Font::SetRenderSize(renderSize);
-    fontScaleCoeff *= rescale;
 }
 
 YamlNode * GraphicsFont::SaveToYamlNode() const
@@ -357,15 +354,15 @@ float32 GraphicsFont::GetDistanceFromAtoB(int32 prevChIndex, int32 chIndex) cons
 	return currentX * fontScaleCoeff;
 }
 
-Size2i GraphicsFont::GetStringSize(const WideString& str, Vector<float32> *charSizes) const
+Font::StringMetrics GraphicsFont::GetStringMetrics(const WideString& str, Vector<float32> *charSizes) const
 {
 	return DrawString(0.f, 0.f, str, 0, 0, charSizes, false);
 }
 
-Size2i GraphicsFont::DrawString(float32 x, float32 y, const WideString & string, int32 justifyWidth, int32 spaceAddon, Vector<float32> *charSizes, bool draw) const
+Font::StringMetrics GraphicsFont::DrawString(float32 x, float32 y, const WideString & string, int32 justifyWidth, int32 spaceAddon, Vector<float32> *charSizes, bool draw) const
 {
-	const uint32 length = string.length();
-	if(length == 0) return Size2i();
+	const uint32 length = static_cast<uint32>(string.length());
+	if(length == 0) return Font::StringMetrics();
 
 	uint32 countSpace = 0;
 	for(uint32 i = 0; i < length; ++i)
@@ -443,12 +440,12 @@ Size2i GraphicsFont::DrawString(float32 x, float32 y, const WideString & string,
 			state.SetScale(fontScaleCoeff, fontScaleCoeff);
 			state.SetPosition(drawX, drawY);
         
-			fontSprite->Draw(&state);
+            RenderSystem2D::Instance()->Draw(fontSprite, &state);
 		}
 
 		currentX += (fdef->characterWidthTable[chIndex] + horizontalSpacing) * fontScaleCoeff;
 
-		float32 newSize = Round((currentX - prevX) * Core::GetVirtualToPhysicalFactor());
+        float32 newSize = Round(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX(currentX - prevX));
 		
 		if(charSizes)
 			charSizes->push_back(newSize);
@@ -457,7 +454,12 @@ Size2i GraphicsFont::DrawString(float32 x, float32 y, const WideString & string,
 		prevChIndex = chIndex;
 	}
 
-	return Size2i((int32)(ceilf(currentX + sizeFix - x)), GetFontHeight());
+	Font::StringMetrics metrics;
+	metrics.drawRect = Rect2i(0, 0, (int32)(ceilf(currentX + sizeFix - x)), GetFontHeight());
+    metrics.width = metrics.drawRect.dx;
+	metrics.height = metrics.drawRect.dy;
+	metrics.baseline = 0;
+	return metrics;
 }
 
 };

@@ -46,6 +46,8 @@ public:
 	ColladaSceneNode(ColladaScene * scene, FCDSceneNode * _node);
 	~ColladaSceneNode();
 	
+	static bool KeyTimeEqual(float32 first, float32 second);
+
 	static SceneNodeAnimationKey ExportAnimationKey(FCDSceneNode * originalNode, float32 t);
 	static SceneNodeAnimation * ExportNodeAnimation(FCDSceneNode * originalNode, float32 startTime, float32 endTime, float32 fps);
 	static FMMatrix44 CalculateTransformForTime(FCDSceneNode * originalNode, float32 time);

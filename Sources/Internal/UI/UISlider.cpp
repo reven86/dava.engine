@@ -36,6 +36,10 @@
 #include "Base/ObjectFactory.h"
 #include "Utils/Utils.h"
 #include "Core/Core.h"
+#include "UI/UIEvent.h"
+#include "UI/UIYamlLoader.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 namespace DAVA 
 {
@@ -75,7 +79,7 @@ void UISlider::InitThumb()
 
 	thumbButton->SetInputEnabled(false);
 	thumbButton->relativePosition.y = size.y * 0.5f;
-    thumbButton->pivotPoint = thumbButton->size*0.5f;
+    thumbButton->SetPivot(Vector2(0.5f, 0.5f));
 	
 	SetValue(currentValue);
 }
@@ -105,7 +109,7 @@ void UISlider::SetThumb(UIControl *newThumb)
 	thumbButton->SetInputEnabled(false);
 	
 	thumbButton->relativePosition.y = size.y * 0.5f;
-    thumbButton->pivotPoint = thumbButton->size*0.5f;
+    thumbButton->SetPivot(Vector2(0.5f, 0.5f));
 	
 	UIControl::AddControl(thumbButton);
 	
@@ -136,27 +140,59 @@ void UISlider::SyncThumbWithSprite()
 
 void UISlider::SetValue(float32 value)
 {
+    bool needSendEvent = !FLOAT_EQUAL(currentValue, value);
 	currentValue = value;
 	RecalcButtonPos();
+    
+    if (needSendEvent)
+    {
+        PerformEvent(EVENT_VALUE_CHANGED);
+    }
 }
 
 void UISlider::SetMinValue(float32 value)
 {
     minValue = value;
-    RecalcButtonPos();
+    if (currentValue < minValue)
+    {
+        SetValue(minValue);
+    }
+    else
+    {
+        RecalcButtonPos();
+    }
 }
     
 void UISlider::SetMaxValue(float32 value)
 {
     maxValue = value;
-    RecalcButtonPos();
+    if (currentValue > maxValue)
+    {
+        SetValue(maxValue);
+    }
+    else
+    {
+        RecalcButtonPos();
+    }
 }
     
 void UISlider::SetMinMaxValue(float32 _minValue, float32 _maxValue)
 {
 	minValue = _minValue;
 	maxValue = _maxValue;
-	SetValue((minValue + maxValue) / 2.0f);
+
+    if (currentValue < minValue)
+    {
+        SetValue(minValue);
+    }
+    else if (currentValue > maxValue)
+    {
+        SetValue(maxValue);
+    }
+    else
+    {
+        RecalcButtonPos();
+    }
 }
 
 void UISlider::AddControl(UIControl *control)
@@ -211,12 +247,12 @@ void UISlider::Input(UIEvent *currentInput)
 	{
 		if(oldVal != currentValue)
 		{
-			PerformEvent(EVENT_VALUE_CHANGED);
+			PerformEventWithData(EVENT_VALUE_CHANGED, currentInput);
 		}
 	}else if (currentInput->phase == UIEvent::PHASE_ENDED) 
 	{
 		/* if not continuos always perform event because last move position almost always the same as end pos */
-		PerformEvent(EVENT_VALUE_CHANGED);
+		PerformEventWithData(EVENT_VALUE_CHANGED, currentInput);
 	}
 
 	RecalcButtonPos();
@@ -228,29 +264,27 @@ void UISlider::Draw(const UIGeometricData &geometricData)
 	const Rect & aRect =  thumbButton->GetGeometricData().GetUnrotatedRect();
 	float32 clipPointAbsolute = aRect.x + aRect.dx * 0.5f;
 
-    const Vector2& drawTranslate = RenderManager::Instance()->GetDrawTranslate();
-    const Vector2& drawScale = RenderManager::Instance()->GetDrawScale();
+    Rect fullVirtualScreen = VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect();
+    float32 screenXMin = fullVirtualScreen.x;
+    float32 screenXMax = fullVirtualScreen.x + fullVirtualScreen.dx;
+    float32 screenYMin = 0.f;
+    float32 screenYMax = (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
 
-    float32 screenXMin = (Core::Instance()->GetVirtualScreenXMin() - drawTranslate.x) / drawScale.x;
-    float32 screenXMax = (Core::Instance()->GetVirtualScreenXMax() - drawTranslate.x) / drawScale.x;
-    float32 screenYMin = - drawTranslate.y / drawScale.y;
-    float32 screenYMax = (GetScreenHeight() - drawTranslate.y) / drawScale.y;
-
-	if (minBackground)
+    if (minBackground)
 	{
 		minBackground->SetParentColor(GetBackground()->GetDrawColor());
-		RenderManager::Instance()->ClipPush();
-        RenderManager::Instance()->ClipRect(Rect(screenXMin, screenYMin, clipPointAbsolute - screenXMin, screenYMax));
+		RenderSystem2D::Instance()->PushClip();
+        RenderSystem2D::Instance()->IntersectClipRect(Rect(screenXMin, screenYMin, clipPointAbsolute - screenXMin, screenYMax));
 		minBackground->Draw(geometricData);
-		RenderManager::Instance()->ClipPop();
+		RenderSystem2D::Instance()->PopClip();
 	}
 	if (maxBackground)
 	{
 		maxBackground->SetParentColor(GetBackground()->GetDrawColor());
-		RenderManager::Instance()->ClipPush();
-        RenderManager::Instance()->ClipRect(Rect(clipPointAbsolute, screenYMin, screenXMax - clipPointAbsolute, screenYMax));
+		RenderSystem2D::Instance()->PushClip();
+        RenderSystem2D::Instance()->IntersectClipRect(Rect(clipPointAbsolute, screenYMin, screenXMax - clipPointAbsolute, screenYMax));
 		maxBackground->Draw(geometricData);
-		RenderManager::Instance()->ClipPop();
+		RenderSystem2D::Instance()->PopClip();
 	}
 
 	if (!minBackground && !maxBackground)
@@ -406,26 +440,19 @@ List<UIControl*> UISlider::GetSubcontrols()
 	return subControls;
 }
 
-void UISlider::SetVisibleForUIEditor(bool value, bool hierarchic/* = true*/)
-{
-    UIControl::SetVisibleForUIEditor(value, hierarchic);
-    if (thumbButton)
-    {
-        thumbButton->SetVisibleForUIEditor(value, hierarchic);
-    }
-}
-
-void UISlider::LoadBackgound(const char* prefix, UIControlBackground* background, const YamlNode* rootNode, UIYamlLoader* loader)
+void UISlider::LoadBackgound(const char* prefix, UIControlBackground* background, const YamlNode* rootNode, const UIYamlLoader* loader)
 {
     const YamlNode * colorNode = rootNode->Get(Format("%scolor", prefix));
     const YamlNode * spriteNode = rootNode->Get(Format("%ssprite", prefix));
     const YamlNode * frameNode = rootNode->Get(Format("%sframe", prefix));
     const YamlNode * alignNode = rootNode->Get(Format("%salign", prefix));
     const YamlNode * colorInheritNode = rootNode->Get(Format("%scolorInherit", prefix));
+    const YamlNode * pixelAccuracyNode = rootNode->Get(Format("%spixelAccuracy", prefix));
     const YamlNode * drawTypeNode = rootNode->Get(Format("%sdrawType", prefix));
     const YamlNode * leftRightStretchCapNode = rootNode->Get(Format("%sleftRightStretchCap", prefix));
     const YamlNode * topBottomStretchCapNode = rootNode->Get(Format("%stopBottomStretchCap", prefix));
     const YamlNode * spriteModificationNode = rootNode->Get(Format("%sspriteModification", prefix));
+    const YamlNode * marginsNode = rootNode->Get(Format("%smargins", prefix));
 
     if (colorNode)
     {
@@ -453,6 +480,11 @@ void UISlider::LoadBackgound(const char* prefix, UIControlBackground* background
     {
         background->SetColorInheritType((UIControlBackground::eColorInheritType)loader->GetColorInheritTypeFromNode(colorInheritNode));
     }
+
+    if (pixelAccuracyNode)
+    {
+        background->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)loader->GetPerPixelAccuracyTypeFromNode(pixelAccuracyNode));
+    }
     
     if(drawTypeNode)
     {
@@ -473,9 +505,15 @@ void UISlider::LoadBackgound(const char* prefix, UIControlBackground* background
     {
         background->SetModification(spriteModificationNode->AsInt32());
     }
+    
+    if (marginsNode)
+    {
+        UIControlBackground::UIMargins margins(marginsNode->AsVector4());
+        background->SetMargins(&margins);
+    }
 }
 
-void UISlider::SaveBackground(const char* prefix, UIControlBackground* background, YamlNode* rootNode, UIYamlLoader * loader)
+void UISlider::SaveBackground(const char* prefix, UIControlBackground* background, YamlNode* rootNode, const UIYamlLoader * loader)
 {
     if (!background)
     {
@@ -519,6 +557,13 @@ void UISlider::SaveBackground(const char* prefix, UIControlBackground* backgroun
     {
         rootNode->Set(Format("%scolorInherit", prefix), loader->GetColorInheritTypeNodeValue(colorInheritType));
     }
+    
+    // Per pixel accuracy
+    UIControlBackground::ePerPixelAccuracyType perPixelAccuracyType =  background->GetPerPixelAccuracyType();
+    if (baseBackground->GetPerPixelAccuracyType() != perPixelAccuracyType)
+    {
+        rootNode->Set(Format("%spixelAccuracy", prefix), loader->GetPerPixelAccuracyTypeNodeValue(perPixelAccuracyType));
+    }
 
     // Draw type.
     UIControlBackground::eDrawType drawType = background->GetDrawType();
@@ -543,6 +588,13 @@ void UISlider::SaveBackground(const char* prefix, UIControlBackground* backgroun
     {
         rootNode->Set(Format("%sspriteModification", prefix), modification);
     }
+
+    // margins.
+    const UIControlBackground::UIMargins* margins = background->GetMargins();
+    if (margins)
+    {
+        rootNode->Set(Format("%smargins", prefix), margins->AsVector4());
+    }
 }
 
 void UISlider::CopyBackgroundAndRemoveControl(UIControl* from, UIControlBackground*& to)
@@ -560,5 +612,47 @@ void UISlider::CopyBackgroundAndRemoveControl(UIControl* from, UIControlBackgrou
     to = from->GetBackground()->Clone();
     RemoveControl(from);
 }
-	
+
+int32 UISlider::GetBackgroundComponentsCount() const
+{
+    return BACKGROUND_COMPONENTS_COUNT;
+}
+
+UIControlBackground *UISlider::GetBackgroundComponent(int32 index) const
+{
+    switch (index)
+    {
+        case 0:
+            return GetBackground();
+            
+        case 1:
+            return minBackground;
+            
+        case 2:
+            return maxBackground;
+            
+        default:
+            DVASSERT(false);
+            return NULL;
+    }
+}
+
+UIControlBackground *UISlider::CreateBackgroundComponent(int32 index) const
+{
+    DVASSERT(0 <= index && index < BACKGROUND_COMPONENTS_COUNT);
+    return new UIControlBackground();
+}
+
+void UISlider::SetBackgroundComponent(int32 index, UIControlBackground *bg)
+{
+    DVASSERT(false);
+}
+
+String UISlider::GetBackgroundComponentName(int32 index) const
+{
+    DVASSERT(0 <= index && index < BACKGROUND_COMPONENTS_COUNT);
+    static const String names[BACKGROUND_COMPONENTS_COUNT] = {"Background", "min", "max"};
+    return names[index];
+}
+
 } // ns

@@ -32,6 +32,11 @@ int32 AtomicDecrement( int32 &value )
     return (int32)OSAtomicDecrement32Barrier((volatile int32_t *)&value);
 }
     
+bool AtomicCompareAndSwap(const int32 oldVal, const int32 newVal, int32 &value)
+{
+    return OSAtomicCompareAndSwap32Barrier(oldVal, newVal, (volatile int32_t *)&value);
+}
+    
 };
 
 #endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)

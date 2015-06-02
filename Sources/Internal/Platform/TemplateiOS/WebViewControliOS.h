@@ -35,60 +35,89 @@
 
 namespace DAVA {
 
+class UIControl;
 class FilePath;
+class UIWebView;
     
-// Web View Control - MacOS version.
+// Web View Control - iOS version.
 class WebViewControl : public IWebViewControl
 {
 public:
-	WebViewControl();
+	explicit WebViewControl(UIWebView& uiWebView);
 	virtual ~WebViewControl();
 	
 	// Initialize the control.
-	virtual void Initialize(const Rect& rect);
+	void Initialize(const Rect& rect) override;
 	
 	// Open the URL requested.
-	virtual void OpenURL(const String& urlToOpen);
+	void OpenURL(const String& urlToOpen) override;
+	// Load html page from string
+	void LoadHtmlString(const WideString& htmlString) override;
+	// Delete all cookies associated with target URL
+	void DeleteCookies(const String& targetUrl) override;
+	// Get cookie for specific domain and name
+	String GetCookie(const String& targetUrl, const String& name) const override;
+	// Get the list of cookies for specific domain
+    Map<String, String> GetCookies(const String& targetUrl) const override;
+	// Perfrom Java script
+    void ExecuteJScript(const String& scriptString) override;
 
-    virtual void OpenFromBuffer(const String& string, const FilePath& basePath);
+    void OpenFromBuffer(const String& string, const FilePath& basePath) override;
     
 	// Size/pos/visibility changes.
-	virtual void SetRect(const Rect& rect);
-	virtual void SetVisible(bool isVisible, bool hierarchic);
+	void SetRect(const Rect& rect) override;
+    void SetVisible(bool isVisible, bool hierarchic) override;
 
-	virtual void SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView);
-	virtual void SetBackgroundTransparency(bool enabled);
+    void SetScalesPageToFit(bool isScalesToFit) override;
+
+	void SetDelegate(IUIWebViewDelegate *delegate,
+                             UIWebView* webView) override;
+	void SetBackgroundTransparency(bool enabled) override;
 
 	// Bounces control.
-	virtual bool GetBounces() const;
-	virtual void SetBounces(bool value);
-    virtual void SetGestures(bool value);
+	bool GetBounces() const override;
+	void SetBounces(bool value) override;
+    void SetGestures(bool value) override;
 
     // Data detector types.
-    virtual void SetDataDetectorTypes(int32 value);
-    virtual int32 GetDataDetectorTypes() const;
+    void SetDataDetectorTypes(int32 value) override;
+    int32 GetDataDetectorTypes() const override;
+    
+    void SetRenderToTexture(bool value) override;
+    bool IsRenderToTexture() const override {return isRenderToTexture;}
+    
+    void WillDraw() override;
+    
+    // common ios part to render any UIView* to UIImage*
+    static void* RenderIOSUIViewToImage(void* uiviewPtr);
+    // common ios part to copy from ios ::UIImage* to DAVA::Sprite*
+    static void SetImageAsSpriteToControl(void* imagePtr, UIControl& control);
+    
+    void RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView& control);
 
-protected:
-	// Get the scale divider for Retina devices.
-	float GetScaleDivider();
+private:
 
 	//A pointer to iOS WebView.
 	void* webViewPtr;
 	
 	// A pointer to the WebView delegate.
-	void* webViewDelegatePtr;
 
 	void* webViewURLDelegatePtr;
 
-    void *rightSwipeGesturePtr;
-    void *leftSwipeGesturePtr;
+    void* rightSwipeGesturePtr;
+    void* leftSwipeGesturePtr;
 
     
 	Map<void*, bool> subviewVisibilityMap;
 
 	void HideSubviewImages(void* view);
 	void RestoreSubviewImages();
+    
     bool gesturesEnabled;
+    bool isRenderToTexture;
+    bool isVisible;
+    
+    UIWebView& uiWebView;
 };
 
 };

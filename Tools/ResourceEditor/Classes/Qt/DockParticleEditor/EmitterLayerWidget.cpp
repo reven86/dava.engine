@@ -32,18 +32,20 @@
 #include "Commands2/ParticleEditorCommands.h"
 #include "TextureBrowser/TextureConvertor.h"
 #include "Qt/Settings/SettingsManager.h"
-#include "Tools/QtFileDialog/QtFileDialog.h"
 #include "Project/ProjectManager.h"
+
+#include "QtTools/FileDialog/FileDialog.h"
+
 
 #include <QHBoxLayout>
 #include <QGraphicsWidget>
 #include <QFile>
 #include <QMessageBox>
 
-#define SPRITE_SIZE 60
+static const uint32 SPRITE_SIZE = 60;
 
-#define ANGLE_MIN_LIMIT_DEGREES -360.0f
-#define ANGLE_MAX_LIMIT_DEGREES 360.0f
+static const float32 ANGLE_MIN_LIMIT_DEGREES = -360.0f;
+static const float32 ANGLE_MAX_LIMIT_DEGREES = 360.0f;
 
 const EmitterLayerWidget::LayerTypeMap EmitterLayerWidget::layerTypeMap[] =
 {
@@ -673,7 +675,7 @@ void EmitterLayerWidget::OnSpriteBtn()
 	FilePath projectPath(ProjectManager::Instance()->CurProjectPath());
 	projectPath += "Data/Gfx/Particles/";
     
-	QString filePath = QtFileDialog::getOpenFileName(NULL, QString("Open particle sprite"), QString::fromStdString(projectPath.GetAbsolutePathname()), QString("Effect File (*.txt)"));
+	QString filePath = FileDialog::getOpenFileName(NULL, QString("Open particle sprite"), QString::fromStdString(projectPath.GetAbsolutePathname()), QString("Effect File (*.txt)"));
 	if (filePath.isEmpty())
 		return;
 	
@@ -906,22 +908,24 @@ void EmitterLayerWidget::Update(bool updateMinimized)
     degradeStrategyComboBox->setCurrentIndex((int32)layer->degradeStrategy);
     //LAYER_SPRITE = 0,
     sprite = layer->sprite;
-    Sprite* renderSprite = Sprite::CreateAsRenderTarget(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
-    RenderManager::Instance()->SetRenderTarget(renderSprite);
+
     if (sprite)
     {
-        Sprite::DrawState drawState;
-        drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE,
-            sprite->GetWidth(), sprite->GetHeight());
-        sprite->Draw(&drawState);
-    }
+        Texture * renderTexture = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888, Texture::DEPTH_NONE);
+        RenderHelper::Instance()->Set2DRenderTarget(renderTexture);
+        RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
-    RenderManager::Instance()->RestoreRenderTarget();
-    Texture* texture = renderSprite->GetTexture();
-    Image* image = texture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
-    spriteLabel->setPixmap(QPixmap::fromImage(TextureConvertor::FromDavaImage(image)));
-    SafeRelease(image);
-    SafeRelease(renderSprite);
+        Sprite::DrawState drawState;
+        drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE, sprite->GetWidth(), sprite->GetHeight());
+        RenderSystem2D::Instance()->Draw(sprite, &drawState);
+        RenderSystem2D::Instance()->Flush();
+
+        RenderManager::Instance()->SetRenderTarget(0);
+        Image* image = renderTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+        spriteLabel->setPixmap(QPixmap::fromImage(TextureConvertor::FromDavaImage(image)));
+        SafeRelease(image);
+        SafeRelease(renderTexture);
+    }
 
     QString spriteName = "<none>";
     if (sprite)

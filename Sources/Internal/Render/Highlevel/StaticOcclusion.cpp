@@ -37,19 +37,19 @@
 #include "Platform/SystemTimer.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Image/ImageSystem.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 namespace DAVA
 {
     
     static const uint32 RENDER_TARGET_WIDTH = 1024;// / 4;
-    static const uint32 RENDER_TARGET_HEIGHT = 512;// / 4;
+    static const uint32 RENDER_TARGET_HEIGHT = 1024;// / 4;
     
     
     StaticOcclusion::StaticOcclusion()
-    : manager(10000)
+    : queryPool(10000)
     {
         staticOcclusionRenderPass = 0;
-        renderTargetSprite = 0;
         renderTargetTexture = 0;
         currentData = 0;
         landscape = 0;
@@ -62,7 +62,6 @@ namespace DAVA
             SafeRelease(cameras[k]);
         }
         SafeDelete(staticOcclusionRenderPass);
-        SafeRelease(renderTargetSprite);
         SafeRelease(renderTargetTexture);
     }
     
@@ -96,8 +95,6 @@ namespace DAVA
         
         if (!renderTargetTexture)
             renderTargetTexture = Texture::CreateFBO(RENDER_TARGET_WIDTH, RENDER_TARGET_HEIGHT, FORMAT_RGBA8888, Texture::DEPTH_RENDERBUFFER);
-        if (!renderTargetSprite)
-            renderTargetSprite = Sprite::CreateFromTexture(renderTargetTexture, 0, 0, (float32)RENDER_TARGET_WIDTH, (float32)RENDER_TARGET_HEIGHT);
         
         /* Set<uint16> busyIndices;
          for (uint32 k = 0; k < renderObjects.size(); ++k)
@@ -202,8 +199,8 @@ namespace DAVA
         //    {
         //        for (uint32 m = 0; m < 3000; ++m)
         //        {
-        //            OcclusionQueryManagerHandle handle = manager.CreateQueryObject();
-        //            manager.ReleaseQueryObject(handle);
+        //            OcclusionQueryPoolHandle handle = queryPool.CreateQueryObject();
+        //            queryPool.ReleaseQueryObject(handle);
         //        }
         //    }
         //
@@ -328,8 +325,8 @@ namespace DAVA
                         //camera->SetupDynamicParameters();
                         // Do Render
                         
-                        RenderManager::Instance()->SetRenderTarget(renderTargetSprite);
-                        RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)RENDER_TARGET_WIDTH, (float32)RENDER_TARGET_HEIGHT), true);
+                        RenderManager::Instance()->SetRenderTarget(renderTargetTexture);
+                        RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)RENDER_TARGET_WIDTH, (float32)RENDER_TARGET_HEIGHT));
                         
                         //camera->SetupDynamicParameters();
                         
@@ -346,8 +343,8 @@ namespace DAVA
                         
                         timeRendering = SystemTimer::Instance()->GetAbsoluteNano() - timeRendering;
                         timeTotalRendering += timeRendering;
-                        
-                        RenderManager::Instance()->RestoreRenderTarget();
+
+                        RenderManager::Instance()->SetRenderTarget(0);
                         
                         size_t size = recordedBatches.size();
                         /*
@@ -360,8 +357,8 @@ namespace DAVA
                         {
                             for (size_t k = 0; k < size; ++k)
                             {
-                                std::pair<RenderBatch*, OcclusionQueryManagerHandle> & batchInfo = recordedBatches[k];
-                                OcclusionQuery & query = manager.Get(batchInfo.second);
+                                std::pair<RenderBatch*, OcclusionQueryPoolHandle> & batchInfo = recordedBatches[k];
+                                OcclusionQuery & query = queryPool.Get(batchInfo.second);
                                 
                                 uint64 timeWaiting = SystemTimer::Instance()->GetAbsoluteNano();
                                 while (!query.IsResultAvailable())
@@ -376,18 +373,18 @@ namespace DAVA
                                 {
                                     frameGlobalVisibleInfo.insert(batchInfo.first->GetRenderObject());
                                 }
-                                manager.ReleaseQueryObject(batchInfo.second);
+                                queryPool.ReleaseQueryObject(batchInfo.second);
                             }
                             recordedBatches.clear();
                         }
                         
-                        //                    if (/*(stepX == 0) && (stepY == 0) &&*/ effectiveSides[side][realSideIndex] == side)
-                        //                    {
-                        //                        Image * image = renderTargetTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
-                        //                        ImageSystem::Instance()->Save(FilePath(Format("~doc:/renderimage_b%d_s_%d_es_%d_%d_%d.png", blockIndex, side, effectiveSides[side][realSideIndex] ,stepX, stepY)),
-                        //                                                      image);
-                        //                        SafeRelease(image);
-                        //                    }
+//                                             if (/*(stepX == 0) && (stepY == 0) &&*/ effectiveSides[side][realSideIndex] == side)                                            
+//                                             {
+//                                                 Image * image = renderTargetTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
+//                                                 ImageSystem::Instance()->Save(FilePath(Format("~doc:/renderimage_b%d_s_%d_es_%d_%d_%d.png", blockIndex, side, effectiveSides[side][realSideIndex] ,stepX, stepY)),
+//                                                                               image);
+//                                                 SafeRelease(image);
+//                                             }
                     }
             
         }
@@ -395,8 +392,8 @@ namespace DAVA
         //    size_t size = recordedBatches.size();
         //    for (size_t k = 0; k < size; ++k)
         //    {
-        //        std::pair<RenderBatch*, OcclusionQueryManagerHandle> & batchInfo = recordedBatches[k];
-        //        OcclusionQuery & query = manager.Get(batchInfo.second);
+        //        std::pair<RenderBatch*, OcclusionQueryPoolHandle> & batchInfo = recordedBatches[k];
+        //        OcclusionQuery & query = queryPool.Get(batchInfo.second);
         //
         //        uint64 timeWaiting = SystemTimer::Instance()->GetAbsoluteNano();
         //        while (!query.IsResultAvailable())
@@ -417,8 +414,8 @@ namespace DAVA
         
         
         // Invisible on every frame
-        uint32 invisibleObjectCount =  (uint32)renderObjectsArray.size() - frameGlobalVisibleInfo.size();
-        uint32 visibleCount = frameGlobalVisibleInfo.size();
+        uint32 invisibleObjectCount =  static_cast<uint32>((uint32)renderObjectsArray.size() - frameGlobalVisibleInfo.size());
+        uint32 visibleCount = static_cast<uint32>(frameGlobalVisibleInfo.size());
         //    for (Map<RenderObject*, uint32>::iterator it = frameGlobalOccludedInfo.begin(), end = frameGlobalOccludedInfo.end(); it != end; ++it)
         //    {
         //        if (renderFrameCount == it->second)
@@ -446,7 +443,7 @@ namespace DAVA
             if (findIt != equalVisibilityArray.end())
             {
                 Vector<RenderObject*> & equalObjects = findIt->second;
-                uint32 size = equalObjects.size();
+                uint32 size = static_cast<uint32>(equalObjects.size());
                 for (uint32 k = 0; k < size; ++k)
                 {
                     DVASSERT(equalObjects[k]->GetStaticOcclusionIndex() != INVALID_STATIC_OCCLUSION_INDEX);
@@ -490,19 +487,27 @@ namespace DAVA
     }
     
     
-    void StaticOcclusion::RecordFrameQuery(RenderBatch * batch, OcclusionQueryManagerHandle handle)
+    void StaticOcclusion::RecordFrameQuery(RenderBatch * batch, OcclusionQueryPoolHandle handle)
     {
-        recordedBatches.push_back(std::pair<RenderBatch*, OcclusionQueryManagerHandle>(batch, handle));
+        recordedBatches.push_back(std::pair<RenderBatch*, OcclusionQueryPoolHandle>(batch, handle));
     }
     
-    
+    AABBox3 bbox;
+    uint32 sizeX;
+    uint32 sizeY;
+    uint32 sizeZ;
+    uint32  blockCount;
+    uint32  objectCount;
+    uint32 * data;
+    float32* cellHeightOffset;
+
     StaticOcclusionData::StaticOcclusionData()
-    : data(0)
-    , objectCount(0)
-    , blockCount(0)
-    , sizeX(5)
+    : sizeX(5)
     , sizeY(5)
     , sizeZ(2)
+    , blockCount(0)
+    , objectCount(0)
+    , data(0)
     , cellHeightOffset(0)
     {
         

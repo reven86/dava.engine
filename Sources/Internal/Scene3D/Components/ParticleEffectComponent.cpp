@@ -42,7 +42,6 @@
 namespace DAVA
 {
     
-REGISTER_CLASS(ParticleEffectComponent)
 
 ParticleEffectComponent::ParticleEffectComponent()
 {
@@ -69,9 +68,10 @@ ParticleEffectComponent::~ParticleEffectComponent()
 	if (state!=STATE_STOPPED)
 		GetEntity()->GetScene()->particleEffectSystem->RemoveFromActive(this);
 	SafeRelease(effectRenderObject);
-	for (int32 i=0, sz = emitters.size(); i<sz; ++i)
-		SafeRelease(emitters[i]);
-	
+    for(auto& emitter : emitters)
+    {
+        SafeRelease(emitter);
+    }
 }
 
 Component * ParticleEffectComponent::Clone(Entity * toEntity)
@@ -83,7 +83,7 @@ Component * ParticleEffectComponent::Clone(Entity * toEntity)
 	newComponent->playbackComplete = playbackComplete;
 	newComponent->effectDuration = effectDuration;
     newComponent->clearOnRestart = clearOnRestart;
-	uint32 emittersCount = emitters.size();
+	uint32 emittersCount = static_cast<uint32>(emitters.size());
 	newComponent->emitters.resize(emittersCount);
 	for (uint32 i=0; i<emittersCount; ++i)
 		newComponent->emitters[i] = emitters[i]->Clone();
@@ -269,7 +269,7 @@ void ParticleEffectComponent::RebuildEffectModifiables()
 	externalModifiables.clear();
 	List<ModifiablePropertyLineBase *> modifiables;
 	
-	for (int32 i = 0, sz = emitters.size(); i < sz; i ++)
+	for (int32 i = 0, sz = static_cast<uint32>(emitters.size()); i < sz; i ++)
 	{		
 		emitters[i]->GetModifableLines(modifiables);					
 	}
@@ -302,7 +302,7 @@ void ParticleEffectComponent::Serialize(KeyedArchive *archive, SerializationCont
 	archive->SetFloat("pe.effectDuration", effectDuration);
 	archive->SetUInt32("pe.repeatsCount", repeatsCount);
 	archive->SetBool("pe.clearOnRestart", clearOnRestart);
-	archive->SetUInt32("pe.emittersCount", emitters.size());
+	archive->SetUInt32("pe.emittersCount", static_cast<uint32>(emitters.size()));
 	KeyedArchive *emittersArch = new KeyedArchive();	
 	for (uint32 i=0; i<emitters.size(); ++i)
 	{		
@@ -435,7 +435,7 @@ void ParticleEffectComponent::AddEmitter(ParticleEmitter *emitter)
 
 int32 ParticleEffectComponent::GetEmitterId(ParticleEmitter *emitter)
 {
-    for (int32 i=0, sz=emitters.size(); i<sz; ++i)
+    for (int32 i=0, sz=static_cast<int32>(emitters.size()); i<sz; ++i)
         if (emitters[i]==emitter)
             return i;
     return -1;

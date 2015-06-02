@@ -81,14 +81,8 @@ private:
 	void SetShaderData(Data * _vertexShaderData, Data * _fragmentShaderData);
     void ReloadShaders();
 	
-	struct CompiledShaderData
-	{
-		Shader *shader;
-		FastNameSet defines;
-	};
-
-	void CompileShaderInternal(BaseObject * caller, void * param, void *callerData);
-	void ReloadShaderInternal(BaseObject * caller, void * param, void *callerData);
+	void CompileShaderInternal(Shader *shader, FastNameSet defines);
+	void ReloadShaderInternal(Shader *shader);
 
     void ClearAllLastBindedCaches();
     
@@ -102,8 +96,6 @@ protected:
     uint32 fragmentShaderDataSize;
 
 	Mutex compileShaderMutex;
-    
-    void BindDefaultValues();
 
     HashMap<FastName, DefaultValue> defaultValues;
     

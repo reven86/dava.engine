@@ -30,8 +30,8 @@
 
 #include "npapisdk/headers/npapi.h"
 #include "npapisdk/headers/npfunctions.h"
-#include "ApplicationCore.h"
-#include "UIEvent.h"
+#include "Core/ApplicationCore.h"
+#include "UI/UIEvent.h"
 
 #import <Foundation/Foundation.h>
 #import "NPAPIOpenGLLayerMacOS.h"
@@ -55,7 +55,7 @@
 	// Bundle Path to the Plugin (passed from the HTML page).
 	NSString* bundlePath;
 
-	DAVA::Vector<DAVA::UIEvent> activeTouches;
+	DAVA::Vector<DAVA::UIEvent> allTouches;
 	DAVA::int32 oldModifiersFlags;
 }
 

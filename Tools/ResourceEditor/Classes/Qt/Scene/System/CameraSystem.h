@@ -60,7 +60,7 @@ public:
 	void SetMoveSpeedArrayIndex(DAVA::uint32 index);
 
 	void SetViewportRect(const DAVA::Rect &rect);
-	const DAVA::Rect GetViewportRect();
+	const DAVA::Rect& GetViewportRect() const;
 
 	void LookAt(const DAVA::AABBox3 &box);
 	void MoveTo(const DAVA::Vector3 &pos);
@@ -73,31 +73,27 @@ public:
     DAVA::float32 GetDistanceToCamera() const;
     void UpdateDistanceToCamera();
 
-    virtual void Process(DAVA::float32 timeElapsed);
+    void Process(DAVA::float32 timeElapsed) override;
+    void Input(DAVA::UIEvent *event) override;
+    
+    bool SnapEditorCameraToLandscape(bool snap);
+    bool IsEditorCameraSnappedToLandscape() const;
 
+    
 protected:
 	void Draw();
 
-	void ProcessUIEvent(DAVA::UIEvent *event);
 	void ProcessCommand(const Command2 *command, bool redo);
 
-	virtual void AddEntity(DAVA::Entity * entity);
-	virtual void RemoveEntity(DAVA::Entity * entity);
+	void AddEntity(DAVA::Entity * entity) override;
+    void RemoveEntity(DAVA::Entity * entity) override;
 
-    void ProcessKeyboardMove(float timeElapsed);
-    
 	void CreateDebugCameras();
-	void RecalcCameraViewAngles();
 	void RecalcCameraAspect();
-	void MouseMoveCameraPosition();
-	void MouseMoveCameraDirection();
-	void MouseMoveCameraPosAroundPoint(const DAVA::Vector3 &point);
     
 	void MoveAnimate(DAVA::float32 timeElapsed);
 	DAVA::Entity* GetEntityFromCamera(DAVA::Camera *camera) const;
-
-    bool IsCameraMovementKeyPressed();
-    bool IsModifiersPressed();
+    DAVA::Entity* GetEntityWithEditorCamera() const;
 
 protected:
 	DAVA::Rect viewportRect;
@@ -105,16 +101,10 @@ protected:
 
 	DAVA::Camera* curSceneCamera;
 
-	DAVA::Vector2 rotateStartPoint;
-	DAVA::Vector2 rotateStopPoint;
-
 	bool animateToNewPos;
 	DAVA::float32 animateToNewPosTime;
 	DAVA::Vector3 newPos;
 	DAVA::Vector3 newTar;
-
-	DAVA::float32 curViewAngleZ, curViewAngleY;
-	const DAVA::float32 maxViewAngle;
 
 	DAVA::Set<DAVA::Entity *> sceneCameras;
 
@@ -122,8 +112,6 @@ protected:
 
     DAVA::UniqueHandle renderState;
 	DAVA::uint32 activeSpeedIndex;
-    
-    bool cameraShouldIgnoreKeyboard;
 };
 
 #endif

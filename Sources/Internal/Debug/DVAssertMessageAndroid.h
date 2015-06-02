@@ -40,7 +40,7 @@ namespace DAVA {
 class JniDVAssertMessage: public JniExtension
 {
 public:
-	void ShowMessage(const char* message);
+	bool ShowMessage(bool isModal, const char* message);
 
 protected:
 	virtual jclass GetJavaClass() const;

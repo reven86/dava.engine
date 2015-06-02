@@ -36,12 +36,16 @@
 #include "Base/BaseObject.h"
 #include "Render/2D/Sprite.h"
 #include "FileSystem/FilePath.h"
+#include "Base/GlobalEnum.h"
+
 
 namespace DAVA
 {
 
 class UIControl;
 class UIGeometricData;
+struct TiledDrawData;
+struct StretchDrawData;
 
     /**
      \ingroup controlsystem
@@ -91,6 +95,36 @@ public:
         PER_PIXEL_ACCURACY_FORCED,
 
         PER_PIXEL_ACCURACY_TYPES
+    };
+
+    /**
+     \brief Constructor.
+     */
+    struct UIMargins
+    {
+        UIMargins() :
+            top(0.0f), right(0.0f), bottom(0.0f), left(0.0f)
+        {
+        }
+
+        UIMargins(const Vector4& value)
+        {
+            left = value.x;
+            top = value.y;
+            right = value.z;
+            bottom = value.w;
+        }
+    
+        inline bool operator == (const UIMargins & value) const;
+        inline bool operator != (const UIMargins & value) const;
+        inline bool empty() const;
+
+        inline Vector4 AsVector4() const;
+        
+        float32 top;
+        float32 right;
+        float32 bottom;
+        float32 left;
     };
 
     /**
@@ -160,6 +194,11 @@ public:
      */
     virtual void SetFrame(int32 drawFrame);
     /**
+     \brief Sets Sprite frame you want to use.
+     \param[in] frameName Sprite frame name.
+     */
+	virtual void SetFrame(const FastName& frameName);
+    /**
      \brief Sets size of the left and right unscalable sprite part.
         Middle sprite part would be scaled along a full control width.
         Used for DRAW_STRETCH_HORIZONTAL, DRAW_STRETCH_BOTH draw types.
@@ -221,6 +260,7 @@ public:
         Default color is Color(1,1,1,1).
      \param[in] geometricData Control geometric data.
      */
+
     virtual void Draw(const UIGeometricData &geometricData);
 
     /**
@@ -261,13 +301,21 @@ public:
 
     void SetShader(Shader *shader);
     
+    /**
+     \brief Sets the margins for drawing background. Positive values means inner
+     offset, negative ones - outer.
+     */
+    void SetMargins(const UIMargins* uiMargins);
+    
+    /**
+     \brief Returns the margins for drawing background. Can be NULL.
+     */
+    inline const UIMargins* GetMargins() const;
+
     void SetRenderState(UniqueHandle renderState);
     UniqueHandle GetRenderState() const;
 
 protected:
-    void DrawStretched(const Rect &drawRect, UniqueHandle renderState);
-    void DrawTiled(const UIGeometricData &geometricData, UniqueHandle renderState);
-    void DrawFilled(const UIGeometricData &geometricData, UniqueHandle renderState);
 
     Sprite *spr;
     int32 align;
@@ -279,35 +327,20 @@ protected:
     int32 frame;
 
     Vector2 lastDrawPos;
-    RenderDataObject * rdoObject;
-    RenderDataStream * vertexStream;
-    RenderDataStream * texCoordStream;
 
     ePerPixelAccuracyType perPixelAccuracyType;//!<Is sprite should be drawn with per pixel accuracy. Used for texts, for example.
 
 private:
-    struct TiledDrawData
-    {
-        Vector< Vector2 > vertices;
-        Vector< Vector2 > texCoords;
-        Vector< uint16  > indeces;
-        void GenerateTileData();
-        void GenerateAxisData( float32 size, float32 spriteSize, float32 textureSize, float32 stretchCap, Vector< Vector3 > &axisData );
+	TiledDrawData *tiledData;
+    StretchDrawData *stretchData;
+    
+    UIMargins* margins;
 
-        Vector< Vector2 > transformedVertices;
-        void GenerateTransformData();
-
-        Sprite *sprite;
-        int32 frame;
-        Vector2 size;
-        Vector2 stretchCap;
-        Matrix3 transformMatr;
-    };
-
-    TiledDrawData *tiledData;
 public:
     void ReleaseDrawData(); // Delete all spec draw data
-
+#if defined(LOCALIZATION_DEBUG)
+    const Sprite::DrawState & GetLastDrawState()const;
+#endif
 protected:
     ~UIControlBackground();
     Color drawColor;
@@ -315,6 +348,39 @@ protected:
     Shader *shader;
     
     UniqueHandle renderState;
+#if defined(LOCALIZATION_DEBUG)
+    Sprite::DrawState lastDrawState;
+#endif
+    
+public:
+    
+    // for introspection
+    
+    inline int GetBgDrawType() const;
+    inline void SetBgDrawType(int type);
+    inline FilePath GetBgSpritePath() const;
+    inline void SetBgSpriteFromPath(const FilePath &path);
+    inline int32 GetBgColorInherit() const;
+    inline void SetBgColorInherit(int32 type);
+    inline int32 GetBgPerPixelAccuracy() const;
+    inline void SetBgPerPixelAccuracy(int32 type);
+    Vector4 GetMarginsAsVector4() const;
+    void SetMarginsAsVector4(const Vector4 &margins);
+    
+    INTROSPECTION_EXTEND(UIControlBackground, BaseObject,
+                         PROPERTY("drawType", InspDesc("Draw Type", GlobalEnumMap<eDrawType>::Instance()), GetBgDrawType, SetBgDrawType, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("sprite", "Sprite", GetBgSpritePath, SetBgSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("frame", "Sprite Frame", GetFrame, SetFrame, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("spriteModification", "Spirte Modification", GetModification, SetModification, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("color", "Color", GetColor, SetColor, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("colorInherit", InspDesc("Color Inherit", GlobalEnumMap<eColorInheritType>::Instance()), GetBgColorInherit, SetBgColorInherit, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("perPixelAccuracy", InspDesc("Per Pixel Accuracy", GlobalEnumMap<ePerPixelAccuracyType>::Instance()), GetBgPerPixelAccuracy, SetBgPerPixelAccuracy, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("align", InspDesc("Align", GlobalEnumMap<eAlign>::Instance(), InspDesc::T_FLAGS), GetAlign, SetAlign, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("leftRightStretchCap", "Left-Right Stretch Cap", GetLeftRightStretchCap, SetLeftRightStretchCap, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("topBottomStretchCap", "Top-Bottom Stretch Cap", GetTopBottomStretchCap, SetTopBottomStretchCap, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("margins", "Margins", GetMarginsAsVector4, SetMarginsAsVector4, I_SAVE | I_VIEW | I_EDIT)
+                         );
+
 };
 
 // Implementation
@@ -337,6 +403,82 @@ inline UniqueHandle UIControlBackground::GetRenderState() const
 {
     return renderState;
 }
+
+inline const UIControlBackground::UIMargins* UIControlBackground::GetMargins() const
+{
+    return margins;
+}
+
+inline bool UIControlBackground::UIMargins::operator == (const UIControlBackground::UIMargins& value) const
+{
+    return FLOAT_EQUAL(left, value.left) && FLOAT_EQUAL(top, value.top) &&
+    FLOAT_EQUAL(right, value.right) && FLOAT_EQUAL(bottom, value.bottom);
+}
+
+inline bool UIControlBackground::UIMargins::operator != (const UIControlBackground::UIMargins& value) const
+{
+    return !UIControlBackground::UIMargins::operator == (value);
+}
+
+inline bool UIControlBackground::UIMargins::empty() const
+{
+    return FLOAT_EQUAL(left, 0.0f)  && FLOAT_EQUAL(top, 0.0f) &&
+    FLOAT_EQUAL(right, 0.0f) && FLOAT_EQUAL(bottom, 0.0f);
+}
+
+inline Vector4 UIControlBackground::UIMargins::AsVector4() const
+{
+    return Vector4(left, top, right, bottom);
+}
+
+int UIControlBackground::GetBgDrawType() const
+{
+    return GetDrawType();
+}
+
+void UIControlBackground::SetBgDrawType(int type)
+{ // TODO: FIXME: type
+    SetDrawType((UIControlBackground::eDrawType) type);
+}
+
+FilePath UIControlBackground::GetBgSpritePath() const
+{
+    if (GetSprite() == NULL)
+        return "";
+    else if (GetSprite()->GetRelativePathname().GetType() == FilePath::PATH_IN_MEMORY)
+        return "";
+    else
+        return Sprite::GetPathString(GetSprite());
+}
+
+void UIControlBackground::SetBgSpriteFromPath(const FilePath &path)
+{
+    if (path == "")
+        SetSprite(NULL, 0);
+    else
+        SetSprite(path, GetFrame());
+}
+
+int32 UIControlBackground::GetBgColorInherit() const
+{
+    return GetColorInheritType();
+}
+
+void UIControlBackground::SetBgColorInherit(int32 type)
+{
+    SetColorInheritType((UIControlBackground::eColorInheritType) type);
+}
+
+int32 UIControlBackground::GetBgPerPixelAccuracy() const
+{
+    return GetPerPixelAccuracyType();
+}
+
+void UIControlBackground::SetBgPerPixelAccuracy(int32 type)
+{
+    SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType) type);
+}
+
 
 };
 

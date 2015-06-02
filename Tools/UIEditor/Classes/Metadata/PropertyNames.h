@@ -56,6 +56,7 @@ public:
     
     static const char* DRAW_TYPE_PROPERTY_NAME;
     static const char* COLOR_INHERIT_TYPE_PROPERTY_NAME;
+    static const char* PER_PIXEL_ACCURACY_TYPE_PROPERTY_NAME;
     static const char* ALIGN_PROPERTY_NAME;
     
     static const char* TEXT_PROPERTY_NAME;
@@ -63,6 +64,7 @@ public:
     static const char* TEXT_PROPERTY_MULTILINE_BY_SYMBOL;
     static const char* TEXT_COLOR_PROPERTY_NAME;
 	static const char* TEXT_ALIGN_PROPERTY_NAME;
+	static const char* TEXT_USE_RTL_ALIGN_PROPERTY_NAME;
 	static const char* TEXT_FITTING_TYPE_PROPERTY_NAME;
 
 	static const char* IS_PASSWORD_PROPERTY_NAME;
@@ -79,8 +81,11 @@ public:
 	static const char* SHADOW_OFFSET_Y;
 	static const char* SHADOW_COLOR;
     
-    static const char* FONT_SHADOW_COLOR_INHERIT_TYPE_PROPERTY_NAME;
+    static const char* TEXT_COLOR_INHERIT_TYPE_PROPERTY_NAME;
+    static const char* TEXT_PER_PIXEL_ACCURACY_TYPE_PROPERTY_NAME;
 
+    static const char* MAX_TEXT_LENGTH_PROPERTY_NAME;
+    
 	// Slider properties
 	static const char* SLIDER_VALUE_PROPERTY_NAME;
 	static const char* SLIDER_MIN_VALUE_PROPERTY_NAME;
@@ -113,6 +118,10 @@ public:
 	static const char* VERTICAL_SCROLL_POSITION;
 	static const char* SCROLL_CONTENT_SIZE_X;
 	static const char* SCROLL_CONTENT_SIZE_Y;
+    
+    //UI Scroll Bar properties
+    static const char* SCROLL_ORIENTATION;
+	static const char* SCROLL_BAR_DELEGATE_NAME;
 
 	// UI Spinner properties.
 	static const char* UISPINNER_PREV_BUTTON_TEXT;
@@ -137,6 +146,20 @@ public:
     
     // UI Web View properties.
     static const char* WEBVIEW_DATA_DETECTOR_TYPES_PROPERTY_NAME;
+
+    // UI Margins properties.
+    static const char* MARGINS_PROPERTY_NAME;
+    static const char* LEFT_MARGIN_PROPERTY_NAME;
+    static const char* TOP_MARGIN_PROPERTY_NAME;
+    static const char* RIGHT_MARGIN_PROPERTY_NAME;
+    static const char* BOTTOM_MARGIN_PROPERTY_NAME;
+
+    // UI Text Margins properties.
+    static const char* TEXT_MARGINS_PROPERTY_NAME;
+    static const char* TEXT_LEFT_MARGIN_PROPERTY_NAME;
+    static const char* TEXT_TOP_MARGIN_PROPERTY_NAME;
+    static const char* TEXT_RIGHT_MARGIN_PROPERTY_NAME;
+    static const char* TEXT_BOTTOM_MARGIN_PROPERTY_NAME;
 
 	// Custom Control properties.
 	static const char* CUSTOM_CONTROL_NAME;

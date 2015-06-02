@@ -49,10 +49,9 @@ namespace DAVA
 
     
 InstanceMaterialState::InstanceMaterialState()
-    :   flatColor(1.0f, 1.0f, 1.0f, 1.0f)
+    :   lightmapSize(LIGHTMAP_SIZE_DEFAULT)
+    ,   flatColor(1.0f, 1.0f, 1.0f, 1.0f)
     ,   texture0Shift(0.0f, 0.0f)
-	,	lightmapSize(LIGHTMAP_SIZE_DEFAULT)
-
 {
     for (int32 k = 0; k < LIGHT_NODE_MAX_COUNT; ++k)
         lightNodes[k] = 0;
@@ -259,34 +258,33 @@ const char8 * Material::GetTypeName(eType format)
     return "WRONG MATERIAL";
 }
 
-
 Material::Material() 
     :   DataNode()
+    ,	viewOptions(MATERIAL_VIEW_TEXTURE_LIGHTMAP)
+    ,	blendSrc(BLEND_ONE)
+    ,	blendDst(BLEND_ONE)
+    ,   isTranslucent(false)
+    ,   isTwoSided(false)
+    ,	isSetupLightmap(false)
+    ,   shininess(1.0f)
+    ,   ambientColor(0.2f, 0.2f, 0.2f, 1.0f)
     ,   diffuseColor(0.8f, 0.8f, 0.8f, 1.0f)
     ,   specularColor(0.0f, 0.0f, 0.0f, 1.0f)
-    ,   ambientColor(0.2f, 0.2f, 0.2f, 1.0f)
     ,   emissiveColor(0.0f, 0.0f, 0.0f, 1.0f)
     ,   treeLeafColor(1.f, 1.f, 1.f, 1.f)
     ,   treeLeafOcclusionOffset(0.f)
     ,   treeLeafOcclusionMul(1.f)
-    ,   shininess(1.0f)
-    ,   isTranslucent(false)
-    ,   isTwoSided(false)
-	,	isSetupLightmap(false)
     ,   isFogEnabled(false)
     ,   fogDensity(0.006f)
     ,   fogColor((float32)0x87 / 255.0f, (float32)0xbe / 255.0f, (float32)0xd7 / 255.0f, 1.0f)
+    ,	lightingParams(0)
 	,	isAlphablend(false)
     ,   isFlatColorEnabled(false)
-	,	blendSrc(BLEND_ONE)
-	,	blendDst(BLEND_ONE)
-	,	renderStateBlock()
-    ,   isWireframe(false)
     ,   isTexture0ShiftEnabled(false)
+    ,   isWireframe(false)
+    ,   renderStateBlock()
     ,   isExportOwnerLayerEnabled(true)
     ,   ownerLayerName(LAYER_OPAQUE)
-	,	lightingParams(0)
-	,	viewOptions(MATERIAL_VIEW_TEXTURE_LIGHTMAP)
 {
     //Reserve memory for Collection
     names.resize(TEXTURE_COUNT);
@@ -1158,11 +1156,6 @@ void Material::PrepareRenderState(InstanceMaterialState * instanceMaterialState,
 
 void Material::Draw(PolygonGroup * group, InstanceMaterialState * instanceMaterialState, Matrix4 * worldMxPtr)
 {
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::MATERIAL_DRAW))
-	{
-		return;
-	}
-
 	if(isTranslucent && !RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TRANSPARENT_DRAW))
 	{
 		return;
@@ -1172,11 +1165,6 @@ void Material::Draw(PolygonGroup * group, InstanceMaterialState * instanceMateri
 	{
 		return;
 	}
-
-    if(type == MATERIAL_SPEED_TREE_LEAF && !RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPEEDTREE_LEAFS_DRAW))
-    {
-        return;
-    }
 
 	//Dizz: uniformFogDensity != -1 is a check if fog is inabled in shader
 	if(isFogEnabled && (uniformFogDensity != -1) && !RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::FOG_ENABLE))

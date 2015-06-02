@@ -34,9 +34,14 @@
 
 #include "Utils/StringFormat.h"
 
+#if defined (__DAVAENGINE_WIN32__)
+#include <io.h>
+#elif defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_IPHONE__)
+#include <unistd.h>
+#endif
+
 #include <sys/stat.h>
 #include <time.h>
-
 
 namespace DAVA 
 {
@@ -95,49 +100,54 @@ File * File::CreateFromSystemPath(const FilePath &filename, uint32 attributes)
         return NULL;
     }
     
+    return PureCreate(filename, attributes);
+}
 
-	FILE * file = 0;
-	uint32 size = 0;
+File * File::PureCreate(const FilePath & filePath, uint32 attributes)
+{
+    FILE * file = 0;
+    uint32 size = 0;
     if((attributes & File::OPEN) && (attributes & File::READ))
     {
         if(attributes & File::WRITE)
         {
-    		file = fopen(filename.GetAbsolutePathname().c_str(),"r+b");
+            file = fopen(filePath.GetAbsolutePathname().c_str(), "r+b");
         }
         else
         {
-            file = fopen(filename.GetAbsolutePathname().c_str(),"rb");
+            file = fopen(filePath.GetAbsolutePathname().c_str(), "rb");
         }
-
-		if (!file) return NULL;
-		fseek(file, 0, SEEK_END);
-		size = ftell(file);
+        
+        if (!file) return NULL;
+        fseek(file, 0, SEEK_END);
+        size = static_cast<uint32>(ftell(file));
         fseek(file, 0, SEEK_SET);
     }
-	else if ((attributes & File::CREATE) && (attributes & File::WRITE))
-	{
-		file = fopen(filename.GetAbsolutePathname().c_str(),"wb");
-		if (!file)return NULL;
-	}
-	else if ((attributes & File::APPEND) && (attributes & File::WRITE))
-	{
-		file = fopen(filename.GetAbsolutePathname().c_str(),"ab");
-		if (!file)return NULL;
-		fseek(file, 0, SEEK_END);
-		size = ftell(file);
-	}
-	else 
-	{
-		return NULL;
-	}
-
-
-	File * fileInstance = new File();
-	fileInstance->filename = filename;
-	fileInstance->size = size;
-	fileInstance->file = file;
-	return fileInstance;
+    else if ((attributes & File::CREATE) && (attributes & File::WRITE))
+    {
+        file = fopen(filePath.GetAbsolutePathname().c_str(), "wb");
+        if (!file)return NULL;
+    }
+    else if ((attributes & File::APPEND) && (attributes & File::WRITE))
+    {
+        file = fopen(filePath.GetAbsolutePathname().c_str(), "ab");
+        if (!file)return NULL;
+        fseek(file, 0, SEEK_END);
+        size = static_cast<uint32>(ftell(file));
+    }
+    else 
+    {
+        return NULL;
+    }
+    
+    
+    File * fileInstance = new File();
+    fileInstance->filename = filePath;
+    fileInstance->size = size;
+    fileInstance->file = file;
+    return fileInstance;
 }
+    
 
 const FilePath & File::GetFilename()
 {
@@ -146,8 +156,18 @@ const FilePath & File::GetFilename()
 
 uint32 File::Write(const void * pointerToData, uint32 dataSize)
 {
-	//! Do not change order fread return not bytes -- items
+#if defined(__DAVAENGINE_ANDROID__) 
+    uint32 posBeforeWrite = GetPos();
+#endif
+
+    //! Do not change order fread return not bytes -- items
 	uint32 lSize = (uint32) fwrite(pointerToData, 1, dataSize, file);
+
+#if defined(__DAVAENGINE_ANDROID__) 
+    //for Android value returned by 'fwrite()' is incorrect in case of full disk, that's why we calculate 'lSize' using 'GetPos()'
+    lSize = GetPos() - posBeforeWrite;
+#endif
+
 	size += lSize;
 	return lSize;
 }
@@ -216,30 +236,81 @@ uint32 File::ReadString(String & destinationString)
 
 uint32 File::ReadLine(void * pointerToData, uint32 bufferSize)
 {
-	uint8 *inPtr = (uint8*)pointerToData;
-	while(!IsEof())
-	{
-		uint8 nextChar;
-		uint32 actuallyRead = Read(&nextChar, 1);
-        if(actuallyRead != 1)break;
-        
-		if(nextChar == '\n')break;
-		if(nextChar == 0)break;
+    uint32 ret = 0;
 
-		if(nextChar == '\r')
-		{
-			if(Read(&nextChar, 1) && nextChar != '\n')
-			{
-				Seek(-1, File::SEEK_FROM_CURRENT);
-			}
-			break;
-		}
-		*inPtr = nextChar;
-		inPtr++;
-	}
-	*inPtr = 0;
+    if(bufferSize > 0)
+    {
+        uint8 *inPtr = (uint8 *) pointerToData;
+        while(!IsEof() && bufferSize > 1)
+        {
+            uint8 nextChar;
+            if(GetNextChar(&nextChar))
+            {
+                *inPtr = nextChar;
+                inPtr++;
+                bufferSize--;
+            }
+            else
+            {
+                break;
+            }
+        }
+        *inPtr = 0;
+        inPtr++;
+        ret = (uint32)(inPtr - (uint8*)pointerToData);
+    }
 
-	return (uint32)(inPtr - (uint8*)pointerToData);
+    return ret;
+}
+
+String File::ReadLine()
+{
+    String destinationString;
+    while (!IsEof())
+    {
+        uint8 nextChar;
+        if (GetNextChar(&nextChar))
+        {
+            destinationString += nextChar;
+        }
+        else
+        {
+            break;
+        }
+    }
+    return destinationString;
+}
+
+
+bool File::GetNextChar(uint8 *nextChar)
+{
+    uint32 actuallyRead = Read(nextChar, 1);
+    if (actuallyRead != 1)
+    {
+        //seems IsEof()
+        return false;
+    }
+
+    if (0 == *nextChar)
+    {
+        // 0 terminated string
+        return false;
+    }
+    else if ('\r' == *nextChar)
+    {
+        // we don't need to return \r as a charracter
+        return GetNextChar(nextChar);
+    }
+    else if ('\n' == *nextChar)
+    {
+        // there was a last charracter in string ended by \n, then we cannot read more
+        return false;
+    }
+    else
+    {
+        // some regular charracter readed
+        return true;
+    }
 }
 
 uint32 File::GetPos()
@@ -283,6 +354,18 @@ bool File::Seek(int32 position, uint32 seekType)
 bool File::IsEof()
 {
 	return (feof(file) != 0);
+}
+
+bool File::Truncate(int32 size)
+{
+#if defined (__DAVAENGINE_WIN32__)
+    return (0 == _chsize(_fileno(file), size));
+#elif defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+    return (0 == ftruncate(fileno(file), size));
+#else
+#error No implementation for current platform
+    return false;
+#endif
 }
 
 bool File::WriteString(const String & strtowrite, bool shouldNullBeWritten)

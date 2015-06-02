@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #import "OpenGLView.h"
 #include "DAVAEngine.h"
 #include <ApplicationServices/ApplicationServices.h>
@@ -43,7 +57,7 @@ extern void FrameworkMain(int argc, char *argv[]);
 		
         // Attributes Common to FullScreen and non-FullScreen
 #ifdef __DAVAENGINE_MACOS_VERSION_10_6__
-        NSOpenGLPFAColorSize, [self displayBitsPerPixel:kCGDirectMainDisplay],//24,
+        NSOpenGLPFAColorSize, static_cast<NSOpenGLPixelFormatAttribute>([self displayBitsPerPixel:kCGDirectMainDisplay]),//24,
 #else //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
         NSOpenGLPFAColorSize, CGDisplayBitsPerPixel(kCGDirectMainDisplay),//24,
 #endif //#ifdef __DAVAENGINE_MACOS_VERSION_10_6__
@@ -134,8 +148,8 @@ extern void FrameworkMain(int argc, char *argv[]);
 {
 	NSRect rect = self.frame;
 	DAVA::RenderManager::Instance()->Init(rect.size.width, rect.size.height);
-	UIControlSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
-	Core::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
+	VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
+	VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
 	
 	sizeChanged = YES;
 	[super reshape];
@@ -216,7 +230,6 @@ extern void FrameworkMain(int argc, char *argv[]);
 
 -(void)cursorUpdate:(NSEvent *)theEvent
 {
-	NSLog(@"OpenGLView  Cursor update");
 }
 
 - (BOOL)acceptsFirstResponder
@@ -233,8 +246,6 @@ extern void FrameworkMain(int argc, char *argv[]);
 {	
 	return YES;
 }
-
-static Vector<DAVA::UIEvent> activeTouches;
 
 void ConvertNSEventToUIEvent(NSEvent *curEvent, UIEvent & event, int32 phase)
 {
@@ -255,7 +266,7 @@ void ConvertNSEventToUIEvent(NSEvent *curEvent, UIEvent & event, int32 phase)
     else
     {
         event.physPoint.x = p.x;
-        event.physPoint.y = Core::Instance()->GetPhysicalScreenHeight() - p.y;
+        event.physPoint.y = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy - p.y;
         
         event.tapCount = curEvent.clickCount;
     }
@@ -263,10 +274,10 @@ void ConvertNSEventToUIEvent(NSEvent *curEvent, UIEvent & event, int32 phase)
     event.phase = phase;
 }
 
-void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outTouches)
+- (void)moveTouchsToVector:(int)touchPhase curEvent:(NSEvent*)curEvent outTouches:(Vector<UIEvent>*)outTouches
 {
 	int button = 0;
-	if(curEvent.type == NSLeftMouseDown || curEvent.type == NSLeftMouseUp || curEvent.type == NSLeftMouseDragged || curEvent.type == NSMouseMoved)
+	if(curEvent.type == NSLeftMouseDown || curEvent.type == NSLeftMouseUp || curEvent.type == NSLeftMouseDragged)
 	{
 		button = 1;
 	}
@@ -274,7 +285,7 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 	{
 		button = 2;
 	}
-	else 
+	else if(curEvent.type != NSMouseMoved)
 	{
 		button = curEvent.buttonNumber + 1;
 	}
@@ -299,14 +310,14 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
     
 	if(phase == UIEvent::PHASE_DRAG)
 	{
-		for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+		for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 		{
             ConvertNSEventToUIEvent(curEvent, (*it), phase);
 		}
 	}
     
 	bool isFind = false;
-	for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+	for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 	{
 		if(it->tid == button)
 		{
@@ -325,21 +336,21 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
         
         ConvertNSEventToUIEvent(curEvent, newTouch, phase);
         
-		activeTouches.push_back(newTouch);
+		allTouches.push_back(newTouch);
 	}
 
-	for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+	for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 	{
 		outTouches->push_back(*it);
 	}
 
 	if(phase == UIEvent::PHASE_ENDED || phase == UIEvent::PHASE_MOVE)
 	{
-		for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
+		for(Vector<DAVA::UIEvent>::iterator it = allTouches.begin(); it != allTouches.end(); it++)
 		{
 			if(it->tid == button)
 			{
-				activeTouches.erase(it);
+				allTouches.erase(it);
 				break;
 			}
 		}
@@ -351,10 +362,9 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 -(void)process:(int)touchPhase touch:(NSEvent*)touch
 {
 	Vector<DAVA::UIEvent> touches;
-	Vector<DAVA::UIEvent> emptyTouches;
 
-	MoveTouchsToVector(touch, touchPhase, &touches);
-	UIControlSystem::Instance()->OnInput(touchPhase, emptyTouches, touches);
+    [self moveTouchsToVector:touchPhase curEvent:touch outTouches:&touches];
+	UIControlSystem::Instance()->OnInput(touchPhase, touches, allTouches);
 	touches.clear();
 }
 
@@ -371,10 +381,6 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 - (void)mouseMoved:(NSEvent *)theEvent
 {
 	[self process:DAVA::UIEvent::PHASE_MOVE touch:theEvent];
-    if(InputSystem::Instance()->IsCursorPining())
-    {
-        Cursor::MoveToCenterOfWindow();
-    }
 }
 
 - (void)mouseUp:(NSEvent *)theEvent
@@ -385,10 +391,6 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 - (void)mouseDragged:(NSEvent *)theEvent
 {
 	[self process:DAVA::UIEvent::PHASE_ENDED touch:theEvent];
-    if(InputSystem::Instance()->IsCursorPining())
-    {
-        Cursor::MoveToCenterOfWindow();
-    }
 }
 - (void)mouseEntered:(NSEvent *)theEvent
 {
@@ -441,31 +443,25 @@ static int32 oldModifersFlags = 0;
 		unichar c = [[event characters] characterAtIndex:0];
 		
 		Vector<DAVA::UIEvent> touches;
-		Vector<DAVA::UIEvent> emptyTouches;
 
-		for(Vector<DAVA::UIEvent>::iterator it = activeTouches.begin(); it != activeTouches.end(); it++)
-		{
-			touches.push_back(*it);
-		}
-		
 		DAVA::UIEvent ev;
 		ev.keyChar = c;
 		ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
 		ev.timestamp = event.timestamp;
 		ev.tapCount = 1;
-		ev.tid = InputSystem::Instance()->GetKeyboard()->GetDavaKeyForSystemKey([event keyCode]);
+		ev.tid = InputSystem::Instance()->GetKeyboard().GetDavaKeyForSystemKey([event keyCode]);
         
         touches.push_back(ev);
 		
-		UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+		UIControlSystem::Instance()->OnInput(0, touches, allTouches);
         touches.pop_back();
-		UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
+		UIControlSystem::Instance()->OnInput(0, touches, allTouches);
 	}
 	
-    InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed([event keyCode]);
+    InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed([event keyCode]);
     if ([event modifierFlags]&NSCommandKeyMask)
     {
-        InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed([event keyCode]);
+        InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed([event keyCode]);
     }
 
 //NSLog(@"key Down View");
@@ -490,7 +486,7 @@ static int32 oldModifersFlags = 0;
 
 - (void) keyUp:(NSEvent *)event
 {
-    InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed([event keyCode]);
+    InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed([event keyCode]);
 }
 
 - (void) flagsChanged :(NSEvent *)event
@@ -505,11 +501,11 @@ static int32 oldModifersFlags = 0;
         {
             if (newModifers&masks[i]) 
             {
-                InputSystem::Instance()->GetKeyboard()->OnSystemKeyPressed(keyCodes[i]);
+                InputSystem::Instance()->GetKeyboard().OnSystemKeyPressed(keyCodes[i]);
             }
             else 
             {
-                InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed(keyCodes[i]);
+                InputSystem::Instance()->GetKeyboard().OnSystemKeyUnpressed(keyCodes[i]);
             }
         }
     }

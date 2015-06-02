@@ -404,7 +404,7 @@ void VariantType::SetVariant(const VariantType& var)
 	case TYPE_BYTE_ARRAY:
 		{
 			Vector<uint8> *ar = (Vector<uint8>*) var.pointerValue;
-			SetByteArray(ar->data(), ar->size());
+			SetByteArray(ar->data(), static_cast<int32>(ar->size()));
 		}
 		break;
 	case TYPE_KEYED_ARCHIVE:
@@ -744,7 +744,7 @@ bool VariantType::Write(File * fp) const
         break;
     case TYPE_FASTNAME:
 	    {
-			int32 len = strlen(fastnameValue->c_str());
+			int32 len = static_cast<int32>(strlen(fastnameValue->c_str()));
 			written = fp->Write(&len, 4);
 			if (written != 4)return false;
         
@@ -926,7 +926,7 @@ bool VariantType::Read(File * fp)
 			{
 				colorValue = new Color;
 				read = fp->Read(colorValue->color, sizeof(float32) * 4);
-				if (read != sizeof(sizeof(float32) * 4))return false;
+				if (read != sizeof(float32) * 4) return false;
 			}
             break;
 

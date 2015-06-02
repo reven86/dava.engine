@@ -47,7 +47,7 @@ UIStaticText* UIStaticTextMetadata::GetActiveStaticText() const
     return static_cast<UIStaticText*>(GetActiveUIControl());
 }
 
-Font * UIStaticTextMetadata::GetFont()
+Font * UIStaticTextMetadata::GetFont() const
 {
     if (VerifyActiveParamID())
     {
@@ -244,7 +244,7 @@ void UIStaticTextMetadata::SetShadowColor(const QColor& value)
 	GetActiveStaticText()->SetShadowColor(ColorHelper::QTColorToDAVAColor(value));
 }
 
-int UIStaticTextMetadata::GetAlign()
+int UIStaticTextMetadata::GetAlign() const
 {
     if (!VerifyActiveParamID())
     {
@@ -264,7 +264,7 @@ void UIStaticTextMetadata::SetAlign(int value)
     GetActiveStaticText()->SetAlign((eAlign)value);
 }
 
-int UIStaticTextMetadata::GetTextAlign()
+int UIStaticTextMetadata::GetTextAlign() const
 {
     if (!VerifyActiveParamID())
     {
@@ -284,7 +284,27 @@ void UIStaticTextMetadata::SetTextAlign(int value)
     GetActiveStaticText()->SetTextAlign((eAlign)value);
 }
 
-bool UIStaticTextMetadata::GetMultiline() const
+bool UIStaticTextMetadata::GetTextUseRtlAlign()
+{
+	if (!VerifyActiveParamID())
+	{
+		return false;
+	}
+	
+	return GetActiveStaticText()->GetTextUseRtlAlign();
+}
+
+void UIStaticTextMetadata::SetTextUseRtlAlign(bool value)
+{
+	if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    GetActiveStaticText()->SetTextUseRtlAlign(value);
+}
+
+bool UIStaticTextMetadata::GetTextMultiline() const
 {
     if (!VerifyActiveParamID())
     {
@@ -294,7 +314,7 @@ bool UIStaticTextMetadata::GetMultiline() const
 	return GetActiveStaticText()->GetMultiline();
 }
 
-void UIStaticTextMetadata::SetMultiline(const bool value)
+void UIStaticTextMetadata::SetTextMultiline(bool value)
 {
 	if (!VerifyActiveParamID())
     {
@@ -306,7 +326,7 @@ void UIStaticTextMetadata::SetMultiline(const bool value)
     GetActiveStaticText()->SetMultiline(value, curMultilineBySymbolValue);
 }
 
-bool UIStaticTextMetadata::GetMultilineBySymbol() const
+bool UIStaticTextMetadata::GetTextMultilineBySymbol() const
 {
     if (!VerifyActiveParamID())
     {
@@ -316,7 +336,7 @@ bool UIStaticTextMetadata::GetMultilineBySymbol() const
     return GetActiveStaticText()->GetMultilineBySymbol();
 }
 
-void UIStaticTextMetadata::SetMultilineBySymbol(const bool value)
+void UIStaticTextMetadata::SetTextMultilineBySymbol(bool value)
 {
     if (!VerifyActiveParamID())
     {
@@ -349,7 +369,7 @@ int UIStaticTextMetadata::GetFittingType() const
     return GetActiveStaticText()->GetFittingOption();
 }
 
-int UIStaticTextMetadata::GetFontShadowColorInheritType() const
+int UIStaticTextMetadata::GetTextColorInheritType() const
 {
     if (!VerifyActiveParamID() || !GetActiveStaticText()->GetTextBackground())
     {
@@ -360,7 +380,7 @@ int UIStaticTextMetadata::GetFontShadowColorInheritType() const
     return GetActiveStaticText()->GetTextBackground()->GetColorInheritType();
 }
 
-void UIStaticTextMetadata::SetFontShadowColorInheritType(int value)
+void UIStaticTextMetadata::SetTextColorInheritType(int value)
 {
     if (!VerifyActiveParamID() || !GetActiveStaticText()->GetTextBackground())
     {
@@ -369,4 +389,136 @@ void UIStaticTextMetadata::SetFontShadowColorInheritType(int value)
 
     GetActiveStaticText()->GetTextBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)value);
     GetActiveStaticText()->GetShadowBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)value);
+}
+
+int UIStaticTextMetadata::GetTextPerPixelAccuracyType() const
+{
+    if (!VerifyActiveParamID() || !GetActiveStaticText()->GetTextBackground())
+    {
+        return UIControlBackground::PER_PIXEL_ACCURACY_DISABLED;
+    }
+    
+    return GetActiveStaticText()->GetTextBackground()->GetPerPixelAccuracyType();
+}
+
+void UIStaticTextMetadata::SetTextPerPixelAccuracyType(int value)
+{
+    if (!VerifyActiveParamID() || !GetActiveStaticText()->GetTextBackground())
+    {
+        return;
+    }
+    
+    GetActiveStaticText()->GetTextBackground()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)value);
+    GetActiveStaticText()->GetShadowBackground()->SetPerPixelAccuracyType((UIControlBackground::ePerPixelAccuracyType)value);
+}
+
+QRectF UIStaticTextMetadata::GetTextMargins() const
+{
+    if (!VerifyActiveParamID() || !GetActiveStaticText()->GetTextBackground())
+    {
+        return QRectF();
+    }
+    
+    const UIControlBackground::UIMargins* margins = GetActiveStaticText()->GetTextBackground()->GetMargins();
+    if (!margins)
+    {
+        return QRectF();
+    }
+
+    return UIMarginsToQRectF(margins);
+}
+
+void UIStaticTextMetadata::SetTextMargins(const QRectF& value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    UIControlBackground::UIMargins margins = QRectFToUIMargins(value);
+    GetActiveStaticText()->SetMargins(&margins);
+}
+
+float UIStaticTextMetadata::GetTextLeftMargin() const
+{
+    return GetTextMargins().left();
+}
+
+void UIStaticTextMetadata::SetTextLeftMargin(float value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    UIControlBackground::UIMargins margins = GetTextMarginsToUpdate();
+    margins.left = value;
+    GetActiveStaticText()->SetMargins(&margins);
+}
+
+float UIStaticTextMetadata::GetTextTopMargin() const
+{
+    return GetTextMargins().top();
+}
+
+void UIStaticTextMetadata::SetTextTopMargin(float value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    UIControlBackground::UIMargins margins = GetTextMarginsToUpdate();
+    margins.top = value;
+    GetActiveStaticText()->SetMargins(&margins);
+}
+
+float UIStaticTextMetadata::GetTextRightMargin() const
+{
+    return GetTextMargins().width();
+}
+
+void UIStaticTextMetadata::SetTextRightMargin(float value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    UIControlBackground::UIMargins margins = GetTextMarginsToUpdate();
+    margins.right = value;
+    GetActiveStaticText()->SetMargins(&margins);
+}
+
+float UIStaticTextMetadata::GetTextBottomMargin() const
+{
+    return GetTextMargins().height();
+}
+
+void UIStaticTextMetadata::SetTextBottomMargin(float value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    UIControlBackground::UIMargins margins = GetTextMarginsToUpdate();
+    margins.bottom = value;
+    GetActiveStaticText()->SetMargins(&margins);
+}
+
+UIControlBackground::UIMargins UIStaticTextMetadata::GetTextMarginsToUpdate(UIControl::eControlState /* state */) const
+{
+    if (!VerifyActiveParamID() || !GetActiveStaticText()->GetTextBackground())
+    {
+        return UIControlBackground::UIMargins();
+    }
+    
+    const UIControlBackground::UIMargins* textMargins = GetActiveStaticText()->GetTextBackground()->GetMargins();
+    if (!textMargins)
+    {
+        return UIControlBackground::UIMargins();
+    }
+    
+    return *textMargins;
 }

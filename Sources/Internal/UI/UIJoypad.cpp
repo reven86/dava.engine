@@ -29,21 +29,23 @@
 
 
 #include "UI/UIJoypad.h"
+#include "UI/UIEvent.h"
 #include "FileSystem/Logger.h"
 #include "FileSystem/YamlNode.h"
 
 
 namespace DAVA 
 {
+    
 UIJoypad::UIJoypad(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
 :	UIControl(rect, rectInAbsoluteCoordinates)
+,	stick(NULL)
+,	mainTouch(TOUCH_INVALID_ID)
 ,	deadAreaSize(10.0f)
 ,	digitalSense(0.5f)
 ,	needRecalcDigital(true)
 ,	needRecalcAnalog(true)
 ,	currentPos(Vector2(0,0))
-,	mainTouch(TOUCH_INVALID_ID)
-,   stick(NULL)
 {
     SetInputEnabled(true, false);
 }
@@ -112,7 +114,7 @@ void UIJoypad::CreateStickControl()
         stick = new UIControl(Rect(0, 0, 10, 10));
         stick->GetBackground()->SetAlign(ALIGN_HCENTER|ALIGN_VCENTER);
         stick->SetInputEnabled(false);
-        stick->pivotPoint = Vector2(5, 5);
+        stick->SetPivotPoint(Vector2(5, 5));
         stick->relativePosition = Vector2(size.x/2, size.y/2);
         AddControl(stick);
     }
@@ -324,7 +326,7 @@ void UIJoypad::LoadFromYamlNode(const DAVA::YamlNode *node, DAVA::UIYamlLoader *
 
 YamlNode*  UIJoypad::SaveToYamlNode(DAVA::UIYamlLoader *loader)
 {
-    UIJoypad* baseControl = new UIJoypad();
+    ScopedPtr<UIJoypad> baseControl(new UIJoypad());
 
     YamlNode *node = UIControl::SaveToYamlNode(loader);
     
@@ -345,7 +347,6 @@ YamlNode*  UIJoypad::SaveToYamlNode(DAVA::UIYamlLoader *loader)
         node->Set("digitalSense", GetDigitalSense());
     }
 
-    SafeRelease(baseControl);
     return node;
 }
     
@@ -355,6 +356,22 @@ List<UIControl* >& UIJoypad::GetRealChildren()
     realChilds.remove(stick);
     
     return realChilds;
+}
+
+DAVA::FilePath UIJoypad::GetStickSpritePath() const
+{
+    Sprite *sprite = GetStickSprite();
+    if (sprite == nullptr)
+        return "";
+    else if (sprite->GetRelativePathname().GetType() == FilePath::PATH_IN_MEMORY)
+        return "";
+
+    return Sprite::GetPathString(sprite);
+}
+
+void UIJoypad::SetStickSpritePath(const FilePath &path)
+{
+    SetStickSprite(path, GetStickSpriteFrame());
 }
 
 };

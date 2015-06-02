@@ -56,6 +56,8 @@ BackgroundPropertyGridWidget::BackgroundPropertyGridWidget(const QString& contro
     connect(ui->openSpriteButton, SIGNAL(clicked()), this, SLOT(OnOpenSpriteDialog()));
     connect(ui->removeSpriteButton, SIGNAL(clicked()), this, SLOT(OnRemoveSprite()));
     connect(ui->expandButton, SIGNAL(pressed()), this, SLOT(OnExpandButtonPressed()));
+    
+    ui->marginsWidget->SetPropertyPrefix(propPrefix.toStdString());
 }
 
 BackgroundPropertyGridWidget::~BackgroundPropertyGridWidget()
@@ -119,6 +121,7 @@ void BackgroundPropertyGridWidget::UpdateDetailsWidget()
 void BackgroundPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
 {
     BasePropertyGridWidget::Initialize(activeMetadata);
+    ui->marginsWidget->Initialize(activeMetadata);
     FillComboboxes();
 
     RegisterGridWidgetAsStateAware();
@@ -136,6 +139,7 @@ void BackgroundPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
     
     RegisterComboBoxWidgetForProperty(propertiesMap, GetPrefixedPropertyName(PropertyNames::DRAW_TYPE_PROPERTY_NAME).c_str(), ui->drawTypeComboBox, false, true);
     RegisterComboBoxWidgetForProperty(propertiesMap, GetPrefixedPropertyName(PropertyNames::COLOR_INHERIT_TYPE_PROPERTY_NAME).c_str(), ui->colorInheritComboBox, false, true);
+    RegisterComboBoxWidgetForProperty(propertiesMap, GetPrefixedPropertyName(PropertyNames::PER_PIXEL_ACCURACY_TYPE_PROPERTY_NAME).c_str(), ui->pixelAccuracyComboBox, false, true);
 	RegisterComboBoxWidgetForProperty(propertiesMap, GetPrefixedPropertyName(PropertyNames::ALIGN_PROPERTY_NAME).c_str(), ui->alignComboBox, false, true);
 
 	ui->spriteLineEdit->setEnabled(true);
@@ -144,6 +148,7 @@ void BackgroundPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
 
 void BackgroundPropertyGridWidget::Cleanup()
 {
+    ui->marginsWidget->Cleanup();
     UnregisterGridWidgetAsStateAware();
     
     UnregisterColorWidget(ui->selectColorWidget);
@@ -152,6 +157,7 @@ void BackgroundPropertyGridWidget::Cleanup()
     UnregisterSpinBoxWidget(ui->frameSpinBox);
     UnregisterComboBoxWidget(ui->drawTypeComboBox);
     UnregisterComboBoxWidget(ui->colorInheritComboBox);
+    UnregisterComboBoxWidget(ui->pixelAccuracyComboBox);
     UnregisterComboBoxWidget(ui->alignComboBox);
     
 	UnregisterComboBoxWidget(ui->modificationComboBox);
@@ -165,6 +171,7 @@ void BackgroundPropertyGridWidget::FillComboboxes()
 {
     WidgetSignalsBlocker drawTypeBlocker(ui->drawTypeComboBox);
     WidgetSignalsBlocker colorInheritTypeBlocker(ui->colorInheritComboBox);
+    WidgetSignalsBlocker pixelAccuracyTypeBlocker(ui->pixelAccuracyComboBox);
     WidgetSignalsBlocker alignBlocker(ui->alignComboBox);
 	WidgetSignalsBlocker spriteModificationBlocker(ui->modificationComboBox);
     
@@ -180,6 +187,13 @@ void BackgroundPropertyGridWidget::FillComboboxes()
     for (int i = 0; i < itemsCount; i ++)
     {
         ui->colorInheritComboBox->addItem(BackgroundGridWidgetHelper::GetColorInheritTypeDesc(i));
+    }
+    
+    ui->pixelAccuracyComboBox->clear();
+    itemsCount = BackgroundGridWidgetHelper::GetPerPixelAccuracyTypesCount();
+    for (int i = 0; i < itemsCount; i ++)
+    {
+        ui->pixelAccuracyComboBox->addItem(BackgroundGridWidgetHelper::GetPerPixelAccuracyTypeDesc(i));
     }
     
     ui->alignComboBox->clear();
@@ -298,6 +312,10 @@ void BackgroundPropertyGridWidget::ProcessComboboxValueChanged(QComboBox* sender
     {
         return CustomProcessComboboxValueChanged(iter, BackgroundGridWidgetHelper::GetColorInheritType(selectedIndex));
     }
+    else if (senderWidget == ui->pixelAccuracyComboBox)
+    {
+        return CustomProcessComboboxValueChanged(iter, BackgroundGridWidgetHelper::GetPerPixelAccuracyType(selectedIndex));
+    }
     else if (senderWidget == ui->alignComboBox)
     {
         return CustomProcessComboboxValueChanged(iter, BackgroundGridWidgetHelper::GetAlignType(selectedIndex));
@@ -350,6 +368,13 @@ void BackgroundPropertyGridWidget::UpdateComboBoxWidgetWithPropertyValue(QComboB
                                        BackgroundGridWidgetHelper::GetColorInheritTypeDescByType((UIControlBackground::eColorInheritType)
                                                                                                  propertyValue));
     }
+    else if (comboBoxWidget == ui->pixelAccuracyComboBox)
+    {
+        UpdateWidgetPalette(comboBoxWidget, propertyName);
+        return SetComboboxSelectedItem(comboBoxWidget,
+                                       BackgroundGridWidgetHelper::GetPerPixelAccuracyTypeDescByType((UIControlBackground::ePerPixelAccuracyType)
+                                       propertyValue));
+    }
     else if (comboBoxWidget == ui->alignComboBox)
     {
         UpdateWidgetPalette(comboBoxWidget, propertyName);
@@ -367,7 +392,7 @@ void BackgroundPropertyGridWidget::UpdateComboBoxWidgetWithPropertyValue(QComboB
     BasePropertyGridWidget::UpdateComboBoxWidgetWithPropertyValue(comboBoxWidget, curProperty);
 }
 
-String BackgroundPropertyGridWidget::GetPrefixedPropertyName(const char* propertyName)
+String BackgroundPropertyGridWidget::GetPrefixedPropertyName(const char* propertyName) const
 {
     if (propertyPrefix.empty())
     {
@@ -379,6 +404,16 @@ String BackgroundPropertyGridWidget::GetPrefixedPropertyName(const char* propert
 
 void BackgroundPropertyGridWidget::ForceExpand(bool value)
 {
+    // Center the label in case the widget is expanded.
+    if (value)
+    {
+        ui->backgroundNameLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    }
+    else
+    {
+        ui->backgroundNameLabel->setAlignment(Qt::AlignHCenter | Qt::AlignLeft);
+    }
+
     ui->expandButton->setVisible(!value);
     isDetailsVisible = value;
     UpdateDetailsWidget();

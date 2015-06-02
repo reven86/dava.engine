@@ -33,6 +33,7 @@
 #include "Sound/SoundEvent.h"
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
+#include "Scene3D/Components/AnimationComponent.h"
 #include "Scene3D/Components/SoundComponent.h"
 #include "Scene3D/Components/WaveComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
@@ -48,9 +49,6 @@ namespace DAVA
     {
         actualDelay = static_cast<float32>( delay + Random::Instance()->RandFloat(delayVariation) );
     }
-
-
-	REGISTER_CLASS(ActionComponent)
 
     const FastName ActionComponent::ACTION_COMPONENT_SELF_ENTITY_NAME("*** Self ***");
 
@@ -99,7 +97,7 @@ namespace DAVA
 
         StopSwitch(switchIndex);
         uint32 markedCount = 0;
-        uint32 count = actions.size();
+        uint32 count = static_cast<uint32>(actions.size());
         for ( uint32 i = 0; i < count; ++i )
         {
             Action& action = actions[i].action;
@@ -129,7 +127,7 @@ namespace DAVA
             return;
 
         uint32 markedCount = 0;
-        uint32 count = actions.size();
+        uint32 count = static_cast<uint32>(actions.size());
         for ( uint32 i = 0; i < count; ++i )
         {
             Action& action = actions[i].action;
@@ -160,7 +158,7 @@ namespace DAVA
 
         StopUser(name);
         uint32 markedCount = 0;
-        uint32 count = actions.size();
+        uint32 count = static_cast<uint32>(actions.size());
         for (uint32 i = 0; i < count; ++i)
         {
             Action& action = actions[i].action;
@@ -199,7 +197,7 @@ namespace DAVA
 			entity->GetScene()->actionSystem->UnWatch(this);
 		}
 		
-		uint32 count = actions.size();
+		uint32 count = static_cast<uint32>(actions.size());
 		for(uint32 i = 0; i < count; ++i)
 		{
 			actions[i].active = false;
@@ -211,7 +209,7 @@ namespace DAVA
 	void ActionComponent::StopSwitch(int32 switchIndex)
 	{
 		uint32 markedCount = 0;
-		uint32 count = actions.size();
+		uint32 count = static_cast<uint32>(actions.size());
 		for(uint32 i = 0; i < count; ++i)
 		{
             Action& action = actions[i].action;
@@ -241,7 +239,7 @@ namespace DAVA
     void ActionComponent::StopUser(const FastName& name)
     {
         uint32 markedCount = 0;
-        uint32 count = actions.size();
+        uint32 count = static_cast<uint32>(actions.size());
         for ( uint32 i = 0; i < count; ++i )
         {
             Action& action = actions[i].action;
@@ -293,7 +291,7 @@ namespace DAVA
 		
 		uint32 activeActionCount = 0;
         uint32 markedCount = 0;
-		uint32 count = actions.size();
+		uint32 count = static_cast<uint32>(actions.size());
 		for(uint32 i = 0; i < count; ++i)
 		{
 			if(actions[i].active)
@@ -325,12 +323,12 @@ namespace DAVA
 	
 	uint32 ActionComponent::GetCount()
 	{
-		return actions.size();
+		return static_cast<uint32>(actions.size());
 	}
 	
 	ActionComponent::Action& ActionComponent::Get(uint32 index)
 	{
-		DVASSERT(index >= 0 && index < actions.size());
+		DVASSERT(index < actions.size());
 		return actions[index].action;
 	}
 	
@@ -340,7 +338,7 @@ namespace DAVA
 		if(started && !allActionsActive)
 		{
 			uint32 activeActionCount = 0;
-			uint32 count = actions.size();
+			uint32 count = static_cast<uint32>(actions.size());
 			for(uint32 i = 0; i < count; ++i)
 			{
 				ActionContainer& container = actions[i];
@@ -379,7 +377,7 @@ namespace DAVA
 		ActionComponent* actionComponent = new ActionComponent();
 		actionComponent->SetEntity(toEntity);
 		
-		uint32 count = actions.size();
+		uint32 count = static_cast<uint32>(actions.size());
 		actionComponent->actions.resize(count);
 		for(uint32 i = 0; i < count; ++i)
 		{
@@ -398,7 +396,7 @@ namespace DAVA
 		
 		if(NULL != archive)
 		{
-			uint32 count = actions.size();
+			uint32 count = static_cast<uint32>(actions.size());
 			archive->SetUInt32("ac.actionCount", count);
 			
 			for(uint32 i = 0; i < count; ++i)
@@ -461,6 +459,12 @@ namespace DAVA
         case Action::TYPE_PARTICLE_EFFECT_STOP:
             OnActionParticleEffectStop( action );
             break;
+        case Action::TYPE_ANIMATION_START:
+            OnActionAnimationStart( action );
+            break;
+        case Action::TYPE_ANIMATION_STOP:
+            OnActionAnimationStop( action );
+            break;
         case Action::TYPE_SOUND_START:
             OnActionSoundStart( action );
             break;
@@ -506,7 +510,36 @@ namespace DAVA
             }
         }
     }
-	
+
+    void ActionComponent::OnActionAnimationStart(const Action& action)
+    {
+        Entity* target = GetTargetEntity( action.entityName, entity );
+        if ( target != NULL )
+        {
+            AnimationComponent* component = GetAnimationComponent(target);
+            if ( component )
+            {
+                component->StopAfterNRepeats(action.stopAfterNRepeats);
+                component->Stop();
+                component->Start();
+            }
+        }
+    }
+
+    void ActionComponent::OnActionAnimationStop(const Action& action)
+    {
+        Entity* target = GetTargetEntity( action.entityName, entity );
+        if ( target != NULL )
+        {
+            AnimationComponent* component = GetAnimationComponent(target);
+            if ( component )
+            {
+                component->StopAfterNRepeats(action.stopAfterNRepeats);
+                component->Stop();
+            }
+        }
+    }
+
 	void ActionComponent::OnActionSoundStart(const Action& action)
 	{
 		Entity* target = GetTargetEntity(action.entityName, entity);
@@ -516,9 +549,7 @@ namespace DAVA
 			SoundComponent* component = static_cast<SoundComponent*>(target->GetComponent(Component::SOUND_COMPONENT));
 			if(component)
 			{
-                int32 eventsCount = component->GetEventsCount();
-                for(int32 i = 0; i < eventsCount; ++i)
-                    component->GetSoundEvent(i)->Trigger();
+                component->Trigger();
 			}
 
 		}
@@ -533,9 +564,7 @@ namespace DAVA
             SoundComponent* component = static_cast<SoundComponent*>(target->GetComponent(Component::SOUND_COMPONENT));
             if(component)
             {
-                int32 eventsCount = component->GetEventsCount();
-                for(int32 i = 0; i < eventsCount; ++i)
-                    component->GetSoundEvent(i)->Stop();
+                component->Stop();
             }
 
         }

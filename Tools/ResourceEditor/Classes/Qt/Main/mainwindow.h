@@ -43,16 +43,19 @@
 
 #include "Scene/SceneEditor2.h"
 #include "Tools/QtPosSaver/QtPosSaver.h"
+#include "Main/RecentMenuItems.h"
 
 #include "Beast/BeastProxy.h"
 
 class AddSwitchEntityDialog;
 class Request;
 class QtLabelWithActions;
-class LandscapeDialog;
 class HangingObjectsHeight;
 class DeveloperTools;
 class VersionInfoWidget;
+
+class DeviceListController;
+
 
 
 class QtMainWindow
@@ -104,9 +107,9 @@ public slots:
 	void OnSceneSave();
 	void OnSceneSaveAs();
 	void OnSceneSaveToFolder();
-	void OnRecentTriggered(QAction *recentAction);
+	void OnRecentFilesTriggered(QAction *recentAction);
+    void OnRecentProjectsTriggered(QAction *recentAction);
 	void ExportMenuTriggered(QAction *exportAsAction);
-
     void OnImportSpeedTreeXML();
 
 	void OnUndo();
@@ -151,6 +154,7 @@ public slots:
 	void OnCameraDialog();
 	void OnEmptyEntity();
 	void OnAddWindEntity();
+    void OnAddPathEntity();
 
 	void OnUserNodeDialog();
 	void OnSwitchEntityDialog();
@@ -179,12 +183,6 @@ public slots:
     void OnRebuildCurrentOcclusionCell();
     void OnInavalidateStaticOcclusion();
 
-	void OnCameraSpeed0();
-	void OnCameraSpeed1();
-	void OnCameraSpeed2();
-	void OnCameraSpeed3();
-	void OnCameraLookFromTop();
-
 	void OnLandscapeEditorToggled(SceneEditor2* scene);
 	void OnCustomColorsEditor();
 	void OnHeightmapEditor();
@@ -193,6 +191,7 @@ public slots:
 	void OnVisibilityTool();
 	void OnNotPassableTerrain();
     void OnGrasEditor();
+    void OnWayEditor();
 	
 	void OnObjectsTypeChanged(QAction *action);
     void OnObjectsTypeChanged(int type);
@@ -211,6 +210,8 @@ public slots:
 
     void OnBatchProcessScene();
     
+    void OnSnapCameraToLandscape(bool);
+    
 protected:
 	virtual bool eventFilter(QObject *object, QEvent *event);
 	void closeEvent(QCloseEvent * e);
@@ -223,9 +224,6 @@ protected:
 	void SetupTitle();
 	void SetupShortCuts();
 
-	void InitRecent();
-	void AddRecent(const QString &path);
-    
     void StartGlobalInvalidateTimer();
 
 	void RunBeast(const QString& outputPath, BeastProxy::eBeastMode mode);
@@ -236,6 +234,11 @@ protected:
 	
 	bool SelectCustomColorsTexturePath();
 	
+	static void SetActionCheckedSilently(QAction *action, bool checked);
+
+    void OpenProject(const DAVA::FilePath & projectPath);
+    
+    
 private slots:
 	void ProjectOpened(const QString &path);
 	void ProjectClosed();
@@ -251,20 +254,21 @@ private slots:
 	void UnmodalDialogFinished(int);
 
     void DebugVersionInfo();
+    void DebugColorPicker();
+    void DebugDeviceList();
 
 private:
 	Ui::MainWindow *ui;
 	QtWaitDialog *waitDialog;
 	QtWaitDialog *beastWaitDialog;
     QPointer<QDockWidget> dockActionEvent;
+    QPointer<QDockWidget> dockConsole;
 
 	QtPosSaver posSaver;
 	bool globalInvalidate;
 
-	QList<QAction *> recentScenes;
 	ModificationWidget *modificationWidget;
 
-	QtLabelWithActions *objectTypesLabel;
     QComboBox *objectTypesWidget;
 
 	AddSwitchEntityDialog*	addSwitchEntityDialog;
@@ -274,6 +278,7 @@ private:
 	void EnableProjectActions(bool enable);
 	void UpdateConflictingActionsState(bool enable);
     void UpdateModificationActionsState();
+    void UpdateWayEditor(const Command2* command, bool redo);
 
 	void LoadViewState(SceneEditor2 *scene);
 	void LoadUndoRedoState(SceneEditor2 *scene);
@@ -296,8 +301,13 @@ private:
 	// <--
 
     //Need for any debug functionality
-    DeveloperTools *developerTools;
+    QPointer<DeveloperTools> developerTools;
     QPointer<VersionInfoWidget> versionInfoWidget;
+
+    QPointer<DeviceListController> deviceListController;
+
+    RecentMenuItems recentFiles;
+    RecentMenuItems recentProjects;
 };
 
 

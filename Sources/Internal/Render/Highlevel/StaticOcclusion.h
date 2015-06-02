@@ -43,7 +43,7 @@ class StaticOcclusionRenderPass;
 class RenderObject;
 class RenderHierarchy;
 class RenderPassBatchArray;
-class OcclusionQueryManager;
+class OcclusionQueryPool;
 class RenderBatch;
 class RenderSystem;
 class Scene;
@@ -97,7 +97,7 @@ public:
                                   Vector<RenderObject*> > & equalVisibility);
 
     
-    inline OcclusionQueryManager & GetOcclusionQueryManager();
+    inline OcclusionQueryPool & GetOcclusionQueryPool();
     //uint32 * GetCellVisibilityData(Camera * camera);
     
     uint32 RenderFrame();
@@ -105,7 +105,7 @@ public:
 
     void FillOcclusionDataObject(StaticOcclusionData * data);
     
-    void RecordFrameQuery(RenderBatch * batch, OcclusionQueryManagerHandle handle);
+    void RecordFrameQuery(RenderBatch * batch, OcclusionQueryPoolHandle handle);
     
     //Vector<Vector3> renderPositions;
     //Vector<Vector3> renderDirections;
@@ -116,8 +116,8 @@ private:
     void ProcessRecordedBatches();
     AABBox3 GetCellBox(uint32 x, uint32 y, uint32 z);
         
-    OcclusionQueryManager manager;
-    Vector<std::pair<RenderBatch*, OcclusionQueryManagerHandle> > recordedBatches;
+    OcclusionQueryPool queryPool;
+    Vector<std::pair<RenderBatch*, OcclusionQueryPoolHandle> > recordedBatches;
     Set<RenderObject*> frameGlobalVisibleInfo;
     
     AABBox3  occlusionAreaRect;
@@ -131,7 +131,6 @@ private:
     uint32 currentFrameZ;
     Camera * cameras[6];
     StaticOcclusionRenderPass * staticOcclusionRenderPass;
-    Sprite * renderTargetSprite;
     Texture * renderTargetTexture;
 
     StaticOcclusionData * currentData;
@@ -144,9 +143,9 @@ private:
     Map<RenderObject*, Vector<RenderObject*> > equalVisibilityArray;
 };
     
-inline OcclusionQueryManager & StaticOcclusion::GetOcclusionQueryManager()
+inline OcclusionQueryPool & StaticOcclusion::GetOcclusionQueryPool()
 {
-    return manager;
+    return queryPool;
 }
 
 inline void StaticOcclusion::SetScene(Scene * _scene) { scene = _scene; };

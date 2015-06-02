@@ -4,10 +4,10 @@
 #include "StringConstants.h"
 
 #include "TileTexturePreviewWidgetItemDelegate.h"
+#include "Tools/ColorPicker/ColorPicker.h"
 
 #include <QHeaderView>
 #include <QLabel>
-#include <QColorDialog>
 #include <QEvent>
 
 TileTexturePreviewWidget::TileTexturePreviewWidget(QWidget* parent)
@@ -102,8 +102,8 @@ void TileTexturePreviewWidget::InitWithColors()
 	setColumnCount(2);
 	setRootIsDecorated(false);
 	header()->setStretchLastSection(false);
-	header()->setResizeMode(0, QHeaderView::Stretch);
-	header()->setResizeMode(1, QHeaderView::ResizeToContents);
+	header()->setSectionResizeMode(0, QHeaderView::Stretch);
+	header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
 	setIconSize(QSize(TEXTURE_PREVIEW_WIDTH_SMALL, TEXTURE_PREVIEW_HEIGHT));
 
 	blockSignals(blocked);
@@ -183,7 +183,10 @@ void TileTexturePreviewWidget::UpdateImage(int32 number)
 void TileTexturePreviewWidget::UpdateColor(int32 number)
 {
 	DVASSERT(number >= 0 && number < (int32)images.size());
+    
+    bool blocked = blockSignals(true);
 
+    
 	QTreeWidgetItem* item = topLevelItem(number);
 	QColor color = ColorToQColor(colors[number]);
 
@@ -196,6 +199,8 @@ void TileTexturePreviewWidget::UpdateColor(int32 number)
 	item->setText(0, str);
 
 	UpdateImage(number);
+    
+    blockSignals(blocked);
 }
 
 void TileTexturePreviewWidget::UpdateSelection()
@@ -264,12 +269,16 @@ bool TileTexturePreviewWidget::eventFilter(QObject *obj, QEvent *ev)
 		{
 			if (ev->type() == QEvent::MouseButtonRelease)
 			{
-				QColor curColor = ColorToQColor(colors[i]);
-				QColor color = QColorDialog::getColor(curColor, this, tr("Tile color"), 0);
+                const Color oldColor = colors[i];
+                ColorPicker cp(this);
+                cp.setWindowTitle("Tile color");
+                cp.SetDavaColor(oldColor);
+                const bool result = cp.Exec();
+                const Color newColor = cp.GetDavaColor();
 
-				if (color.isValid() && color != curColor)
+				if (result && newColor != oldColor)
 				{
-					SetColor(i, QColorToColor(color));
+					SetColor(i, newColor);
 				}
 
 				return true;
@@ -316,26 +325,19 @@ Image* TileTexturePreviewWidget::MultiplyImageWithColor(DAVA::Image *image, cons
 
 	Texture* srcTexture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
 												  width, height, false);
-	Sprite* srcSprite = Sprite::CreateFromTexture(srcTexture, 0, 0, width, height, true);
+    Texture * dstTexture = Texture::CreateFBO(width, height, FORMAT_RGBA8888, Texture::DEPTH_NONE);
 
-	Sprite* dstSprite = Sprite::CreateAsRenderTarget(width, height, FORMAT_RGBA8888, true);
-
-	RenderManager::Instance()->SetRenderTarget(dstSprite);
-	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 1.f);
-	RenderManager::Instance()->SetColor(color);
-
-    Sprite::DrawState drawState;
-	drawState.SetPosition(0.f, 0.f);
-    drawState.SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
-	srcSprite->Draw(&drawState);
+    RenderManager::Instance()->SetColor(color);
+    RenderHelper::Instance()->Set2DRenderTarget(dstTexture);
+    RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 1.f);
+    RenderHelper::Instance()->DrawTexture(srcTexture, RenderState::RENDERSTATE_2D_BLEND, Rect(0.f, 0.f, (float32)width, (float32)height));
 
 	RenderManager::Instance()->ResetColor();
-	RenderManager::Instance()->RestoreRenderTarget();
+    RenderManager::Instance()->SetRenderTarget(0);
 
-	Image* res = dstSprite->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_3D_BLEND);
+    Image* res = dstTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
 
-	SafeRelease(dstSprite);
-	SafeRelease(srcSprite);
+    SafeRelease(dstTexture);
 	SafeRelease(srcTexture);
 
 	return res;

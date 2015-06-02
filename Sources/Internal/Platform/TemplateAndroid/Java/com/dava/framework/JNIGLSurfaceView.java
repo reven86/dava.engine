@@ -1,47 +1,68 @@
 package com.dava.framework;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
-import com.bda.controller.ControllerListener;
-import com.bda.controller.StateEvent;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.util.Pair;
 import android.view.GestureDetector;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.ViewGroup.LayoutParams;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
+
+import com.bda.controller.ControllerListener;
+import com.bda.controller.StateEvent;
 
 public class JNIGLSurfaceView extends GLSurfaceView
 {
+	private static final int MAX_KEYS = 256; // Maximum number of keycodes which used in native code
+
 	private JNIRenderer mRenderer = null;
 
-	private native void nativeOnInput(int action, int id, float x, float y, double time, int source, int tapCount);
+	private native void nativeOnInput(int action, int source, int groupSize, ArrayList< InputRunnable.InputEvent > activeInputs, ArrayList< InputRunnable.InputEvent > allInputs);
 	private native void nativeOnKeyDown(int keyCode);
 	private native void nativeOnKeyUp(int keyCode);
+	private native void nativeOnGamepadElement(int elementKey, float value, boolean isKeycode);
+	
+	private boolean isMultitouchEnabled = true;
+	
+	private Integer[] gamepadAxises = null;
+	private Integer[] overridedGamepadKeys = null;
+	private ArrayList< Pair<Integer, Integer> > gamepadButtonsAxisMap = new ArrayList< Pair<Integer, Integer> >();
+	
+	private static volatile boolean isPaused = false;
 	
 	MOGAListener mogaListener = null;
-
-	boolean[] pressedKeys = new boolean[KeyEvent.getMaxKeyCode()];
+	
+	boolean[] pressedKeys = new boolean[MAX_KEYS]; // Use MAX_KEYS for mapping keycodes to native
 
 	public int lastDoubleActionIdx = -1;
 	
+	public static boolean isPaused()
+	{
+	    return isPaused;
+	}
+	
 	class DoubleTapListener extends GestureDetector.SimpleOnGestureListener{
-		JNIGLSurfaceView view;
+		JNIGLSurfaceView glview;
 		
 		DoubleTapListener(JNIGLSurfaceView view) {
-			this.view = view;
+			this.glview = view;
 		}
 		
 		@Override
 		public boolean onDoubleTap(MotionEvent e) {
 			lastDoubleActionIdx = e.getActionIndex();
 			
-			view.queueEvent(new InputRunnable(e, 2));
+			glview.queueEvent(new InputRunnable(e, 2));
 			return true;
 		}
 	}
@@ -64,7 +85,10 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	{
 		this.getHolder().setFormat(PixelFormat.TRANSLUCENT);
 
-		//setPreserveEGLContextOnPause(true);
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
+		{
+			setPreserveEGLContextOnPause(true);
+		}
 		setEGLContextFactory(new JNIContextFactory());
 		setEGLConfigChooser(new JNIConfigChooser());
 
@@ -74,14 +98,45 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		
 		mogaListener = new MOGAListener(this);
 		
-		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
-		{
-			setPreserveEGLContextOnPause(true);
-		}
+		setDebugFlags(0);
 		
 		doubleTapDetector = new GestureDetector(JNIActivity.GetActivity(), new DoubleTapListener(this));
+
+		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_L2, MotionEvent.AXIS_LTRIGGER));
+		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_L2, MotionEvent.AXIS_BRAKE));
+		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_R2, MotionEvent.AXIS_RTRIGGER));
+		gamepadButtonsAxisMap.add(new Pair<Integer, Integer>(KeyEvent.KEYCODE_BUTTON_R2, MotionEvent.AXIS_GAS));
 	}
 	
+	public void SetAvailableGamepadAxises(Integer[] axises)
+	{
+		gamepadAxises = axises;
+		
+		Set<Integer> overridedKeys = new HashSet<Integer>();
+		for(Pair<Integer, Integer> p : gamepadButtonsAxisMap) {
+			for(Integer a : axises) {
+				if(a == p.second) {
+					overridedKeys.add(p.first);
+				}
+			}
+		}
+		
+		overridedGamepadKeys = overridedKeys.toArray(new Integer[overridedKeys.size()]);
+	}
+	
+	public void SetMultitouchEnabled(boolean enabled)
+	{
+		isMultitouchEnabled = enabled;
+	}
+	
+    @Override
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        // Fix lag when text field lost focus, but keyboard not closed yet. 
+        outAttrs.imeOptions = JNITextField.GetLastKeyboardIMEOptions();
+        outAttrs.inputType = JNITextField.GetLastKeyboardInputType();
+        return super.onCreateInputConnection(outAttrs);
+    }
+    
 	@Override
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 		//YZ rewrite size parameter from fill parent to fixed size
@@ -91,145 +146,217 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		super.onSizeChanged(w, h, oldw, oldh);
 	}
 	
-	@Override
-	public void onPause()
-	{
-		super.onPause();
-		setRenderMode(RENDERMODE_WHEN_DIRTY);
-		mRenderer.OnPause();
-	}
-	
-	@Override
-	public void onResume()
-	{
-		super.onResume();
-		setRenderMode(RENDERMODE_CONTINUOUSLY);
-	};
+    @Override
+    public void onPause() {
+        isPaused = true;
+        Log.d(JNIConst.LOG_TAG, "Activity JNIGLSurfaceView onPause");
+        setRenderMode(RENDERMODE_WHEN_DIRTY);
+        queueEvent(new Runnable() {
+            public void run() {
+                mRenderer.OnPause();
+            }
+        });
+        super.onPause();// destroy eglCondext(or unbind), eglScreen, eglSurface
+        // we write AAA mobile game and for user better resume as fast as posible
+        // so DO NOT destroy opengl context
+    }
 
-	Map<Integer, Integer> tIdMap = new HashMap<Integer, Integer>();
-	int nexttId = 1;
+    @Override
+    public void onResume() {
+        Log.d(JNIConst.LOG_TAG, "Activity JNIGLSurfaceView onResume");
+        // first call parent to restore eglContext and start gl thread
+        super.onResume();
+        
+        JNIActivity activity = JNIActivity.GetActivity();
+
+        Runnable action = new Runnable() {
+            public void run() {
+                resumeGameLoop();
+            }
+        };
+        
+        if (activity.hasWindowFocus())
+        {
+            queueEvent(action);
+        } else 
+        {
+            // we have to resume game later on some devices
+            // to resolve deadlock
+            activity.setResumeGLActionOnWindowReady(action);
+        }
+        isPaused = false;
+    }
+    
+    private void resumeGameLoop() {
+        mRenderer.OnResume();
+        setRenderMode(RENDERMODE_CONTINUOUSLY);
+    };
 	
-	class InputRunnable implements Runnable
+	public class InputRunnable implements Runnable
 	{
-		class InputEvent
+		public class InputEvent
 		{
-			int id;
+			int tid;
 			float x;
 			float y;
-			int source;
 			int tapCount;
-			
-			InputEvent(int id, float x, float y, int source)
+			double time;
+
+			InputEvent(int tid, float x, float y, double time)
 			{
-				this.id = id;
+				this.tid = tid;
 				this.x = x;
 				this.y = y;
-				this.source = source;
 				this.tapCount = 1;
+				this.time = time;
 			}
 			
-			InputEvent(int id, float x, float y, int source, int tapCount)
+			InputEvent(int tid, float x, float y, int tapCount, double time)
 			{
-				this.id = id;
+				this.tid = tid;
 				this.x = x;
 				this.y = y;
-				this.source = source;
 				this.tapCount = tapCount;
+				this.time = time;
 			}
 		}
 
-		ArrayList<InputEvent> events;
-		double time;
-		int action;
+		ArrayList<InputEvent> activeEvents;
+		ArrayList<InputEvent> allEvents;
 
-		public InputRunnable(final android.view.MotionEvent event, int tapCount)
+		int action;
+		int source;
+		int groupSize;
+
+		int touchIdForPointerId(int pointerId) {
+			return pointerId + 1;
+		}
+
+		public InputRunnable(final android.view.MotionEvent event, final int tapCount)
 		{
-			events = new ArrayList<InputEvent>();
+			allEvents = new ArrayList<InputEvent>();
+
 			action = event.getActionMasked();
-			if(action == MotionEvent.ACTION_MOVE)
-			{
-				int pointerCount = event.getPointerCount();
-				for (int i = 0; i < pointerCount; ++i)
-				{
-					if((event.getSource() & InputDevice.SOURCE_CLASS_POINTER) > 0)
-					{
-						events.add(new InputEvent(event.getPointerId(i), event.getX(i), event.getY(i), event.getSource(), tapCount));
+			source = event.getSource();
+
+			final int historySize = event.getHistorySize();
+			final int pointerCount = event.getPointerCount();
+
+			for (int historyStep = 0; historyStep < historySize; historyStep++) {
+				for (int i = 0; i < pointerCount; i++) {
+					if ((source & InputDevice.SOURCE_CLASS_POINTER) > 0) {
+						int pointerId = event.getPointerId(i);
+						if(isMultitouchEnabled || pointerId == 0) {
+							InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getHistoricalX(i, historyStep), event.getHistoricalY(i, historyStep), tapCount, event.getHistoricalEventTime(historyStep));
+							allEvents.add(ev);
+						}
 					}
-					if((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) > 0)
-					{
-						//InputEvent::id corresponds to axis id from UIEvent::eJoystickAxisID
-						events.add(new InputEvent(0, event.getAxisValue(MotionEvent.AXIS_X, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(1, event.getAxisValue(MotionEvent.AXIS_Y, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(2, event.getAxisValue(MotionEvent.AXIS_Z, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(3, event.getAxisValue(MotionEvent.AXIS_RX, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(4, event.getAxisValue(MotionEvent.AXIS_RY, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(5, event.getAxisValue(MotionEvent.AXIS_RZ, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(6, event.getAxisValue(MotionEvent.AXIS_LTRIGGER, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(7, event.getAxisValue(MotionEvent.AXIS_RTRIGGER, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(8, event.getAxisValue(MotionEvent.AXIS_HAT_X, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(9, event.getAxisValue(MotionEvent.AXIS_HAT_Y, i), 0, event.getSource(), tapCount));
-	    			}
-	    		}
-    		}
-    		else
-    		{
-    			int actionIdx = event.getActionIndex();
-    			assert(actionIdx <= event.getPointerCount());
-    			events.add(new InputEvent(event.getPointerId(actionIdx), event.getX(actionIdx), event.getY(actionIdx), event.getSource(), tapCount));
-    		}
+					if((source & InputDevice.SOURCE_CLASS_JOYSTICK) > 0) {
+						for (int a = 0; a < gamepadAxises.length; ++a) {
+							InputEvent ev = new InputEvent(gamepadAxises[a], event.getHistoricalAxisValue(gamepadAxises[a], i, historyStep), 0, tapCount, event.getHistoricalEventTime(historyStep));
+
+							allEvents.add(ev);
+						}
+					}
+				}
+			}
+
+			for (int i = 0; i < pointerCount; i++) {
+				if ((source & InputDevice.SOURCE_CLASS_POINTER) > 0) {
+					int pointerId = event.getPointerId(i);
+					if(isMultitouchEnabled || pointerId == 0) {
+						InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getX(i), event.getY(i), tapCount, event.getEventTime());
+						allEvents.add(ev);
+					}
+				}
+				if((source & InputDevice.SOURCE_CLASS_JOYSTICK) > 0) {
+					for (int a = 0; a < gamepadAxises.length; ++a) {
+						InputEvent ev = new InputEvent(gamepadAxises[a], event.getAxisValue(gamepadAxises[a], i), 0, tapCount, event.getEventTime());
+						allEvents.add(ev);
+					}
+				}
+			}
+
+			if(isMultitouchEnabled) {
+				groupSize = event.getPointerCount();
+			}
+			else {
+				groupSize = 1;
+			}
+			
+			if (action == MotionEvent.ACTION_MOVE) {
+				activeEvents = allEvents;
+			} else {
+				activeEvents = new ArrayList<InputEvent>();
+
+				int actionIdx = event.getActionIndex();
+				assert(actionIdx <= event.getPointerCount());
+				
+				final int pointerId = event.getPointerId(actionIdx);
+
+				if(isMultitouchEnabled || pointerId == 0) {
+					InputEvent ev = new InputEvent(touchIdForPointerId(pointerId), event.getX(actionIdx), event.getY(actionIdx), tapCount, event.getEventTime());
+					allEvents.add(ev);
+					activeEvents.add(ev);
+					groupSize += 1; // only ACTION_MOVE events can have history, so in this case there will be only one group
+				}
+			}
     	}
     	public InputRunnable(final com.bda.controller.MotionEvent event)
     	{
     		action = MotionEvent.ACTION_MOVE;
-    		events = new ArrayList<InputEvent>();
+    		allEvents = new ArrayList<InputEvent>();
+    		source = InputDevice.SOURCE_CLASS_JOYSTICK;
         	int pointerCount = event.getPointerCount();
 	    	for (int i = 0; i < pointerCount; ++i)
 	    	{
 	    		//InputEvent::id corresponds to axis id from UIEvent::eJoystickAxisID
-	        	events.add(new InputEvent(0, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_X, i), 0, InputDevice.SOURCE_CLASS_JOYSTICK));
-	        	events.add(new InputEvent(1, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_Y, i), 0, InputDevice.SOURCE_CLASS_JOYSTICK));
-	        	events.add(new InputEvent(2, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_Z, i), 0, InputDevice.SOURCE_CLASS_JOYSTICK));
-	        	events.add(new InputEvent(5, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_RZ, i), 0, InputDevice.SOURCE_CLASS_JOYSTICK));
-	        	events.add(new InputEvent(6, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_LTRIGGER, i), 0, InputDevice.SOURCE_CLASS_JOYSTICK));
-	        	events.add(new InputEvent(7, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_RTRIGGER, i), 0, InputDevice.SOURCE_CLASS_JOYSTICK));
+	        	allEvents.add(new InputEvent(1, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_X, i), 0, event.getEventTime()));
+	        	allEvents.add(new InputEvent(2, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_Y, i), 0, event.getEventTime()));
+	        	allEvents.add(new InputEvent(3, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_Z, i), 0, event.getEventTime()));
+	        	allEvents.add(new InputEvent(6, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_RZ, i), 0, event.getEventTime()));
+	        	allEvents.add(new InputEvent(7, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_LTRIGGER, i), 0, event.getEventTime()));
+	        	allEvents.add(new InputEvent(8, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_RTRIGGER, i), 0, event.getEventTime()));
     		}
-    	}
-    	
-    	int GetTId(int id) {
-    		if (tIdMap.containsKey(id))
-    			return tIdMap.get(id);
-    		
-    		int tId = nexttId++;
-    		tIdMap.put(id, tId);
-    		return tId;
-    	}
-    	
-    	void RemoveTId(int id) {
-    		tIdMap.remove(id);
+    		activeEvents = allEvents;
+    		groupSize = event.getPointerCount();
     	}
 
 		@Override
-		public void run() {
-			for (int i = 0; i < events.size(); ++i) {
-				InputEvent event = events.get(i);
-				
-				if (event.source == InputDevice.SOURCE_CLASS_JOYSTICK) {
-					nativeOnInput(action, event.id + 1, event.x, event.y, time, event.source, event.tapCount);
-				} else {
-					nativeOnInput(action, GetTId(event.id), event.x, event.y, time, event.source, event.tapCount);
-					
-					if (action == MotionEvent.ACTION_CANCEL ||
-						action == MotionEvent.ACTION_UP ||
-						action == MotionEvent.ACTION_POINTER_1_UP ||
-						action == MotionEvent.ACTION_POINTER_2_UP ||
-						action == MotionEvent.ACTION_POINTER_3_UP) {
-						RemoveTId(event.id);
+		public void run() 
+		{
+			if ((source & InputDevice.SOURCE_CLASS_JOYSTICK) > 0)
+			{
+				for(InputEvent event : allEvents)
+				{
+					if(event.tid == MotionEvent.AXIS_Y || event.tid == MotionEvent.AXIS_RZ || event.tid == MotionEvent.AXIS_RY) 
+					{
+						nativeOnGamepadElement(event.tid, -event.x, false);
+					} 
+					else 
+					{
+						nativeOnGamepadElement(event.tid, event.x, false);
 					}
 				}
 			}
+			else if(activeEvents.size() != 0) 
+			{
+				nativeOnInput(action, source, groupSize, activeEvents, allEvents);
+			}
 		}
     }
-
+	
+	boolean IsGamepadButton(int keyCode)
+	{
+		for(Integer o : overridedGamepadKeys) {
+			if(o == keyCode) {
+				return false;
+			}
+		}
+		
+		return KeyEvent.isGamepadButton(keyCode);
+	}
+	
     class KeyInputRunnable implements Runnable {
     	int keyCode;
     	public KeyInputRunnable(int keyCode) {
@@ -238,12 +365,24 @@ public class JNIGLSurfaceView extends GLSurfaceView
     	
     	@Override
     	public void run() {
-    		nativeOnKeyDown(keyCode);
+    		if(IsGamepadButton(keyCode))
+    		{
+    			nativeOnGamepadElement(keyCode, 1.f, true);
+    		}
+    		else
+    		{
+    			nativeOnKeyDown(keyCode);
+    		}
     	}
     }
     
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+    	if(keyCode >= MAX_KEYS) // Ignore too big keycodes
+    	{
+    		return super.onKeyDown(keyCode, event);
+    	}
+    	
     	if(pressedKeys[keyCode] == false)
     		queueEvent(new KeyInputRunnable(keyCode));
     	pressedKeys[keyCode] = true;
@@ -256,8 +395,22 @@ public class JNIGLSurfaceView extends GLSurfaceView
     
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+    	if(keyCode >= MAX_KEYS) // Ignore too big keycodes
+    	{
+    		return super.onKeyUp(keyCode, event);
+    	}
+    	
     	pressedKeys[keyCode] = false;
-        nativeOnKeyUp(keyCode);
+    	
+    	if(IsGamepadButton(keyCode))
+    	{
+    		nativeOnGamepadElement(keyCode, 0.f, true);
+    	}
+    	else
+    	{
+    		nativeOnKeyUp(keyCode);
+    	}
+    	
     	return super.onKeyUp(keyCode, event);
     }
     
@@ -297,6 +450,10 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		public void onKeyEvent(com.bda.controller.KeyEvent event)
 		{
 			int keyCode = event.getKeyCode();
+            if(keyCode >= MAX_KEYS) // Ignore too big keycodes
+            {
+                return;
+            }
 			if(event.getAction() == com.bda.controller.KeyEvent.ACTION_DOWN)
 			{
 		    	if(pressedKeys[keyCode] == false)
@@ -306,7 +463,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 			else if(event.getAction() == com.bda.controller.KeyEvent.ACTION_UP)
 			{
 		    	pressedKeys[keyCode] = false;
-		        nativeOnKeyUp(keyCode);
+		        nativeOnGamepadElement(keyCode, 0.f, true);
 			}
 		}
 		@Override

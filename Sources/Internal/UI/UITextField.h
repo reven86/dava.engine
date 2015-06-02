@@ -81,7 +81,9 @@ public:
         \param[in] replacementString the replacement string.
         \returns true if the specified text range should be replaced; otherwise, false to keep the old text. Default implementation returns true.
 	 */
-	virtual bool TextFieldKeyPressed(UITextField * textField, int32 replacementLocation, int32 replacementLength, const WideString & replacementString);
+	virtual bool TextFieldKeyPressed(UITextField * textField, int32 replacementLocation, int32 replacementLength, WideString & replacementString);
+
+    virtual void TextFieldOnTextChanged(UITextField * textField, const WideString& newText, const WideString& oldText);
     
     virtual bool IsTextFieldShouldSetFocusedOnAppear(UITextField * textField);
     virtual bool IsTextFieldCanLostFocus(UITextField * textField);
@@ -101,7 +103,6 @@ public:
 class UITextField : public UIControl 
 {
 public:
-	// TODO: fix big BOOLs(TRUE, FALSE) in code
 	// Auto-capitalization type.
 	enum eAutoCapitalizationType
 	{
@@ -166,57 +167,58 @@ public:
 	};
 
 protected:
-	virtual ~UITextField();
+	~UITextField() override;
 public:
-	UITextField();
-	UITextField(const Rect &rect, bool rectInAbsoluteCoordinates = false);
+	UITextField(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 	
-	virtual void WillAppear();
-	virtual void DidAppear();
-	virtual void WillDisappear();
+	void WillAppear() override;
+	void DidAppear() override;
+	void WillDisappear() override;
 	
-    virtual void OnFocused();
-    virtual void OnFocusLost(UIControl *newFocus);
+    void OnFocused() override;
+    void OnFocusLost(UIControl* newFocus) override;
 
-	void SetDelegate(UITextFieldDelegate * delegate);
-	UITextFieldDelegate * GetDelegate();
+	void SetDelegate(UITextFieldDelegate* delegate);
+	UITextFieldDelegate* GetDelegate();
 
-	virtual void Update(float32 timeElapsed);
+	void Update(float32 timeElapsed) override;
 	
 	void OpenKeyboard();
 	void CloseKeyboard();
 	
-	virtual void SetSpriteAlign(int32 align);
+	void SetSpriteAlign(int32 align) override;
     
-	virtual const WideString & GetText();
-	virtual void SetText(const WideString & text);
+	const WideString & GetText();
+	virtual void SetText(const WideString& text);
     
-    virtual WideString GetAppliedChanges(int32 replacementLocation, int32 replacementLength, const WideString & replacementString);
+    WideString GetAppliedChanges(int32 replacementLocation,
+            int32 replacementLength, const WideString& replacementString);
 
-    virtual void Input(UIEvent *currentInput);
+    void Input(UIEvent* currentInput) override;
 
-    virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
-    virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
+    void LoadFromYamlNode(const YamlNode* node, UIYamlLoader* loader) override;
+    YamlNode * SaveToYamlNode(UIYamlLoader * loader) override;
 	
 	/**
 	 \brief Sets contol input processing ability.
 	 */
-	virtual void SetInputEnabled(bool isEnabled, bool hierarchic = true);
+	void SetInputEnabled(bool isEnabled, bool hierarchic = true) override;
+
 protected:
-    virtual void WillBecomeVisible();
-    virtual void WillBecomeInvisible();
+    void WillBecomeVisible() override;
+    void WillBecomeInvisible() override;
 
 public:
 	/**
 	 \brief Returns the font of control
 	 \returns Font font of the control
 	 */
-    Font *GetFont();
+    Font *GetFont() const;
 	/**
 	 \brief Returns the text color of control.
 	 \returns Color color of control's text
 	 */
-	virtual const Color &GetTextColor() const;
+	const Color &GetTextColor() const;
 	/**
 	 \brief Returns text shadow offset relative to base text.
 	 \returns Vector2 with shadow offset for X and Y axis
@@ -226,9 +228,15 @@ public:
 	 \brief Returns color of text shadow.
 	 \returns Color of text shadow.
 	 */
-	virtual const Color &GetShadowColor() const;
+	const Color &GetShadowColor() const;
 
 	int32 GetTextAlign() const;
+
+	/**
+	 \brief Returns using RTL align flag
+	 \returns Using RTL align flag
+	 */
+	bool GetTextUseRtlAlign() const;
 
     void SetFocused()
     {
@@ -237,7 +245,7 @@ public:
     
     void ReleaseFocus();
     
-    virtual bool IsLostFocusAllowed(UIControl *newFocus);
+    bool IsLostFocusAllowed(UIControl *newFocus) override;
 	
   	/**
 	 \brief Sets the font of the control text.
@@ -248,12 +256,12 @@ public:
 	 \brief Sets the color of the text.
 	 \param[in] fontColor font used for text draw of the states.
 	 */
-    virtual void SetTextColor(const Color& fontColor);
+    void SetTextColor(const Color& fontColor);
 	/**
 	 \brief Sets the size of the font.
 	 \param[in] size font size to be set.
 	 */
-    void SetFontSize(float size);
+    void SetFontSize(float32 size);
 	/**
 	 \brief Sets shadow offset of text control.
 	 \param[in] offset offset of text shadow relative to base text.
@@ -263,19 +271,24 @@ public:
 	 \brief Sets shadow color of text control.
 	 \param[in] color color of text shadow.
 	 */
-	virtual void SetShadowColor(const Color& color);
+	void SetShadowColor(const Color& color);
 
 	void SetTextAlign(int32 align);
 
-    virtual void SetVisible(bool isVisible, bool hierarchic = true);
+	/**
+	 \brief Sets using mirror align for RTL texts
+	 \param[in] useRrlAlign flag of support RTL align
+	 */
+	void SetTextUseRtlAlign(bool useRtlAlign);
 
-    virtual void SetSize(const DAVA::Vector2 &newSize);
+    void SetSize(const DAVA::Vector2 &newSize) override;
+    void SetPosition(const Vector2 &position) override;
 
     /**
 	 \brief Set control text style hide.
 	 \param[in] isPassword draw text with hide char.
 	 */
-    virtual void SetIsPassword(bool isPassword);
+    void SetIsPassword(bool isPassword);
     /**
 	 \brief Return is text style is hide.
 	 */
@@ -284,38 +297,38 @@ public:
 	/**
  	 \brief Auto-capitalization type.
 	 */
-	eAutoCapitalizationType GetAutoCapitalizationType() const;
-	void SetAutoCapitalizationType(eAutoCapitalizationType value);
+	int32 GetAutoCapitalizationType() const;
+	void SetAutoCapitalizationType(int32 value);
 
 	/**
  	 \brief Auto-correction type.
 	 */
-	eAutoCorrectionType GetAutoCorrectionType() const;
-	void SetAutoCorrectionType(eAutoCorrectionType value);
+	int32 GetAutoCorrectionType() const;
+	void SetAutoCorrectionType(int32 value);
 
 	/**
  	 \brief Spell checking type.
 	 */
-	eSpellCheckingType GetSpellCheckingType() const;
-	void SetSpellCheckingType(eSpellCheckingType value);
+	int32 GetSpellCheckingType() const;
+	void SetSpellCheckingType(int32 value);
 
 	/**
  	 \brief Keyboard appearance type.
 	 */
-	eKeyboardAppearanceType GetKeyboardAppearanceType() const;
-	void SetKeyboardAppearanceType(eKeyboardAppearanceType value);
+	int32 GetKeyboardAppearanceType() const;
+	void SetKeyboardAppearanceType(int32 value);
 
 	/**
  	 \brief Keyboard type.
 	 */
-	eKeyboardType GetKeyboardType() const;
-	void SetKeyboardType(eKeyboardType value);
+	int32 GetKeyboardType() const;
+	void SetKeyboardType(int32 value);
 	
 	/**
  	 \brief Return key type.
 	 */
-	eReturnKeyType GetReturnKeyType() const;
-	void SetReturnKeyType(eReturnKeyType value);
+	int32 GetReturnKeyType() const;
+	void SetReturnKeyType(int32 value);
 
 	/**
  	 \brief Enable return key automatically.
@@ -327,14 +340,25 @@ public:
 	 \brief Returns list of control children without internal controls.
 	 \returns list of control children without internal controls.
 	 */
-	virtual List<UIControl* >& GetRealChildren();
+	List<UIControl* >& GetRealChildren() override;
 	
-	virtual UIControl *Clone();
-	virtual void CopyDataFrom(UIControl *srcControl);
+	UITextField *Clone() override;
+	void CopyDataFrom(UIControl *srcControl) override;
 
     // Cursor control.
     uint32 GetCursorPos();
     void SetCursorPos(uint32 pos);
+
+    /**
+      \brief Set maximum text length in text edit
+      maxLength - >=0 - max count, -1 - unlimited count
+     */
+    void SetMaxLength(int32 maxLength);
+    int32 GetMaxLength() const;
+
+    String GetFontPresetName() const;
+
+    void SetFontByPresetName(const String &presetName);
 
 protected:
 	WideString text;
@@ -349,16 +373,25 @@ protected:
 	eKeyboardType keyboardType;
 	eReturnKeyType returnKeyType;
 
-
 	// All Boolean variables are grouped together because of DF-2149.
-	bool needRedraw : 1;
-	bool isPassword : 1;
-	bool enableReturnKeyAutomatically : 1;
-	bool showCursor : 1;
+	bool needRedraw;
+	bool isPassword;
+	bool enableReturnKeyAutomatically;
+	bool showCursor;
+	bool isRenderToTexture;
 
     void RenderText();
 private:
     WideString GetVisibleText() const;
+
+    void SetRenderToTexture(bool value);
+    bool IsRenderToTexture() const;
+
+    
+    /**
+         \brief Setups initial state to reset settings for cached native control.
+     */
+    void SetupDefaults();
 
 #ifdef __DAVAENGINE_IPHONE__
 	UITextFieldiPhone * textFieldiPhone;
@@ -369,6 +402,26 @@ private:
     Font * textFont;
 #endif
     float32 cursorTime;
+    int32 maxLength;
+public:
+    INTROSPECTION_EXTEND(UITextField, UIControl,
+        PROPERTY("text", "Text", GetText, SetText, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("font", "Font", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("textcolor", "Text color", GetTextColor, SetTextColor, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("shadowoffset", "Shadow Offset", GetShadowOffset, SetShadowOffset, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("shadowcolor", "Shadow Color", GetShadowColor, SetShadowColor, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("textalign", InspDesc("Text Align", GlobalEnumMap<eAlign>::Instance(), InspDesc::T_FLAGS), GetTextAlign, SetTextAlign, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("textUseRtlAlign", "Use Rtl Align", GetTextUseRtlAlign, SetTextUseRtlAlign, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("maxLength", "Max text lenght", GetMaxLength, SetMaxLength, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("isPassword", "Is password", IsPassword, SetIsPassword, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("autoCapitalizationType", InspDesc("Auto capitalization type", GlobalEnumMap<eAutoCapitalizationType>::Instance()), GetAutoCapitalizationType, SetAutoCapitalizationType , I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("autoCorrectionType"    , InspDesc("Auto correction type"    , GlobalEnumMap<eAutoCorrectionType>::Instance())    , GetAutoCorrectionType    , SetAutoCorrectionType     , I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("spellCheckingType"     , InspDesc("Spell checking type"     , GlobalEnumMap<eSpellCheckingType>::Instance())     , GetSpellCheckingType     , SetSpellCheckingType      , I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("keyboardAppearanceType", InspDesc("Keyboard appearance type", GlobalEnumMap<eKeyboardAppearanceType>::Instance()), GetKeyboardAppearanceType, SetKeyboardAppearanceType , I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("keyboardType"          , InspDesc("Keyboard type"           , GlobalEnumMap<eKeyboardType>::Instance())          , GetKeyboardType          , SetKeyboardType           , I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("returnKeyType"         , InspDesc("Return key type"         , GlobalEnumMap<eReturnKeyType>::Instance())         , GetReturnKeyType         , SetReturnKeyType          , I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("enableReturnKeyAutomatically", "Automatically enable return key", IsEnableReturnKeyAutomatically, SetEnableReturnKeyAutomatically, I_SAVE | I_VIEW | I_EDIT)
+    );
 };
 
 };

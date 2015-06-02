@@ -123,8 +123,8 @@ uint32 YamlNode::GetCount() const
 {
     switch (GetType())
     {
-        case TYPE_MAP: return objectMap->unordered.size();
-        case TYPE_ARRAY: return objectArray->array.size();
+        case TYPE_MAP: return static_cast<uint32>(objectMap->unordered.size());
+        case TYPE_ARRAY: return static_cast<uint32>(objectArray->array.size());
         default: break;
     }
     return 0;//string nodes does not contain content
@@ -368,7 +368,7 @@ VariantType YamlNode::AsVariantType() const
         if(innerTypeName == DAVA::VariantType::TYPENAME_BYTE_ARRAY)
         {
             const Vector<YamlNode*> &byteArrayNoodes = it->second->AsVector();
-            int32 size = byteArrayNoodes.size();
+            int32 size = static_cast<int32>(byteArrayNoodes.size());
             uint8* innerArray = new uint8[size];
             for (int32 i = 0; i < size; ++i)
             {
@@ -678,7 +678,6 @@ void YamlNode::InternalSetKeyedArchive(KeyedArchive* archive)
 {
     //creation array with variables
     const Map<String, VariantType*> & innerArchiveMap =  archive->GetArchieveData();
-    objectArray->array.reserve(innerArchiveMap.size());
     for (Map<String, VariantType*>::const_iterator it = innerArchiveMap.begin(); it != innerArchiveMap.end(); ++it)
     {
         YamlNode* arrayElementNodeValue = CreateMapNode(true, MR_BLOCK_REPRESENTATION);
@@ -707,7 +706,7 @@ bool YamlNode::InitStringFromVariantType(const VariantType &varType)
         break;
     case VariantType::TYPE_FLOAT:
         {
-            InternalSetString(Format("%.4f", varType.AsFloat()), SR_PLAIN_REPRESENTATION);
+            InternalSetString(Format("%f", varType.AsFloat()), SR_PLAIN_REPRESENTATION);
         }
         break;
     case VariantType::TYPE_STRING:
@@ -718,6 +717,11 @@ bool YamlNode::InitStringFromVariantType(const VariantType &varType)
     case VariantType::TYPE_WIDE_STRING:
         {
             InternalSetString(UTF8Utils::EncodeToUTF8(varType.AsWideString()), SR_DOUBLE_QUOTED_REPRESENTATION);
+        }
+        break;
+    case VariantType::TYPE_FILEPATH:
+        {
+            InternalSetString(varType.AsFilePath().GetStringValue(), SR_DOUBLE_QUOTED_REPRESENTATION);
         }
         break;
     case VariantType::TYPE_UINT32:
@@ -872,6 +876,7 @@ DAVA::YamlNode::eType YamlNode::VariantTypeToYamlNodeType(VariantType::eVariantT
     case VariantType::TYPE_UINT32:
     case VariantType::TYPE_INT64:
     case VariantType::TYPE_UINT64:
+    case VariantType::TYPE_FILEPATH:
         return TYPE_STRING;
 
     case VariantType::TYPE_BYTE_ARRAY:

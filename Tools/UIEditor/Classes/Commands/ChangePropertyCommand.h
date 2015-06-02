@@ -309,10 +309,8 @@ template<typename Type>
 	PropertiesHelper::SetAllPropertyValues<Type>(baseMetadata, propertyName, newValue);
 
 	// Verify whether the properties were indeed changed.
-	bool isPropertyValueDiffers = false;
-	Type realValue = PropertiesHelper::GetAllPropertyValues<Type>(baseMetadata, propertyName,
-																  isPropertyValueDiffers);
-	bool propertySetOK = Compare(realValue, curValue);
+	Type realValue = PropertiesHelper::GetAllPropertyValues<Type>(baseMetadata, propertyName);
+	bool propertySetOK = Compare(realValue, newValue);
 
 	SAFE_DELETE(baseMetadata);
 

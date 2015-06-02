@@ -47,7 +47,6 @@
 #include "Render/Material/NMaterial.h"
 #include "Scene3D/Systems/MaterialSystem.h"
 #include "Scene3D/Systems/FoliageSystem.h"
-
 #include "Render/Material/NMaterialNames.h"
 
 namespace DAVA
@@ -111,9 +110,8 @@ static FastName TILEMASK_COLOR_PROPS_NAMES[] =
 
 Landscape::Landscape()
     : indices(0)
-    , foliageSystem(NULL)
     , tileMaskMaterial(NULL)
-	  //currentMaterial(NULL)
+    , foliageSystem(NULL)
 {
 	drawIndices = 0;
     //textureNames.resize(TEXTURE_COUNT);
@@ -223,8 +221,10 @@ int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
     landscapeRDO->SetStream(EVF_TANGENT, TYPE_FLOAT, 3, sizeof(LandscapeVertex), &landscapeVertices[0].tangent);
 #endif
 	
-    landscapeRDO->BuildVertexBuffer((quad->size + 1) * (quad->size + 1));
-//    SafeDeleteArray(landscapeVertices);
+    landscapeRDO->BuildVertexBuffer((quad->size + 1) * (quad->size + 1), BDT_STATIC_DRAW, true);
+#if defined(__DAVAENGINE_IPHONE__)
+    SafeDeleteArray(landscapeVertices);
+#endif
     
     landscapeVerticesArray.push_back(landscapeVertices);
     
@@ -765,8 +765,8 @@ void Landscape::DrawFans()
     
     ClearQueue();
     
-    List<LandQuadTreeNode<LandscapeQuad>*>::const_iterator end = fans.end();
-    for (List<LandQuadTreeNode<LandscapeQuad>*>::iterator t = fans.begin(); t != end; ++t)
+    Vector<LandQuadTreeNode<LandscapeQuad>*>::const_iterator end = fans.end();
+    for (Vector<LandQuadTreeNode<LandscapeQuad>*>::iterator t = fans.begin(); t != end; ++t)
     {
         //uint16 * drawIndices = indices;
         LandQuadTreeNode<LandscapeQuad>* node = *t;
@@ -1205,7 +1205,7 @@ void Landscape::Draw(Camera * camera)
 	}
         
     BindMaterial(nearLodIndex, camera);
-    int32 count0 = lod0quads.size();
+    int32 count0 = static_cast<int32>(lod0quads.size());
     for(int32 i = 0; i < count0; ++i)
     {
         DrawQuad(lod0quads[i], 0);
@@ -1217,7 +1217,7 @@ void Landscape::Draw(Camera * camera)
 		BindMaterial(farLodIndex, camera);
 	}
 
-    int32 countNot0 = lodNot0quads.size();
+    int32 countNot0 = static_cast<int32>(lodNot0quads.size());
     for(int32 i = 0; i < countNot0; ++i)
     {
         DrawQuad(lodNot0quads[i], lodNot0quads[i]->data.lod);
@@ -1260,7 +1260,7 @@ void Landscape::Draw(Camera * camera)
 		{
 			BindMaterial(nearLodIndex, camera);
 		}
-        int32 count0 = lod0quads.size();
+        int32 count0 = static_cast<int32>(lod0quads.size());
         for(int32 i = 0; i < count0; ++i)
         {
             DrawQuad(lod0quads[i], 0);
@@ -1272,7 +1272,7 @@ void Landscape::Draw(Camera * camera)
 			BindMaterial(farLodIndex, camera);
 		}
         
-        int32 countNot0 = lodNot0quads.size();
+        int32 countNot0 = static_cast<int32>(lodNot0quads.size());
         for(int32 i = 0; i < countNot0; ++i)
         {
             DrawQuad(lodNot0quads[i], lodNot0quads[i]->data.lod);
@@ -1622,10 +1622,10 @@ Texture * Landscape::CreateLandscapeTexture()
     Vector<float32> ftVertexes;
     Vector<float32> ftTextureCoords;
     
-    float32 x0 = 0;
-    float32 y0 = 0;
-    float32 x1 = TEXTURE_TILE_FULL_SIZE;
-    float32 y1 = TEXTURE_TILE_FULL_SIZE;
+    float32 x0 = 0.f;
+    float32 y0 = 0.f;
+    float32 x1 = 1.f;
+    float32 y1 = 1.f;
     
     //triangle 1
     //0, 0
@@ -1667,23 +1667,38 @@ Texture * Landscape::CreateLandscapeTexture()
     
     Texture *fullTiled = Texture::CreateFBO(TEXTURE_TILE_FULL_SIZE, TEXTURE_TILE_FULL_SIZE, FORMAT_RGBA8888, Texture::DEPTH_NONE);
     RenderManager::Instance()->SetRenderTarget(fullTiled);
-    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)fullTiled->GetWidth(), (float32)fullTiled->GetHeight()), true);
-
+    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)fullTiled->GetWidth(), (float32)fullTiled->GetHeight()));
+    RenderManager::Instance()->SetClip(Rect(0.f, 0.f, -1.f, -1.f));
 
 	RenderManager::Instance()->ClearWithColor(1.f, 0.f, 1.f, 1.f);
  
     RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+    RenderManager::SetDynamicParam(PARAM_VIEW, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     Matrix4 projection;
-    projection.glOrtho(0, TEXTURE_TILE_FULL_SIZE * Core::GetVirtualToPhysicalFactor(), 0, TEXTURE_TILE_FULL_SIZE * Core::GetVirtualToPhysicalFactor(), 0, 1);
+    projection.glOrtho(0.f, 1.f, 0.f, 1.f, -1.f, 1.f);
     
     Matrix4 *oldProjection = (Matrix4*)RenderManager::GetDynamicParam(PARAM_PROJ);
     RenderManager::SetDynamicParam(PARAM_PROJ, &projection, UPDATE_SEMANTIC_ALWAYS);
-    //RenderManager::Instance()->SetState(RenderState::DEFAULT_2D_STATE);
     
     prevLodLayer = -1;
 
     NMaterial* tmpLandscapeParent = NMaterial::CreateMaterial(FastName("Landscape_Tilemask_Material_TMP"), FastName("~res:/Materials/TileMask.material"), NMaterial::DEFAULT_QUALITY_NAME);
     NMaterial* tmpTileMaskMaterial = tileMaskMaterial->Clone();
+    
+
+    //MAGIC: This magic code is workaround for situation when fbo textures are present in tileMaskMaterial with pathname. Because NMaterial::Clone() use pathnames for cloning textures.
+    const uint32 texturesCount = tileMaskMaterial->GetTextureCount();
+    for(uint32 t = 0; t < texturesCount; ++t)
+    {
+        FastName tName = tileMaskMaterial->GetTextureName(t);
+        Texture *tex = tileMaskMaterial->GetTexture(t);
+        if(tex && tex->isRenderTarget)
+        {
+            tmpTileMaskMaterial->SetTexture(tName, tex);
+        }
+    }
+    //END of MAGIC
+    
     tmpTileMaskMaterial->SetFlag(NMaterial::FLAG_VERTEXFOG, NMaterial::FlagOff);
     tmpTileMaskMaterial->SetParent(tmpLandscapeParent);
     tmpTileMaskMaterial->BindMaterialTechnique(TECHNIQUE_TILEMASK_NAME, NULL);
@@ -1692,12 +1707,10 @@ Texture * Landscape::CreateLandscapeTexture()
 	RenderManager::Instance()->AttachRenderData();
 	RenderManager::Instance()->HWDrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
 
-#ifdef __DAVAENGINE_OPENGL__
-	RenderManager::Instance()->HWglBindFBO(RenderManager::Instance()->GetFBOViewFramebuffer());
-#endif //#ifdef __DAVAENGINE_OPENGL__
+    RenderManager::Instance()->SetRenderTarget(0);
     
     RenderManager::SetDynamicParam(PARAM_PROJ, &oldProjection, UPDATE_SEMANTIC_ALWAYS);
-	RenderManager::Instance()->SetViewport(oldViewport, true);
+	RenderManager::Instance()->SetViewport(oldViewport);
     SafeRelease(ftRenderData);
 
     SafeRelease(tmpTileMaskMaterial);

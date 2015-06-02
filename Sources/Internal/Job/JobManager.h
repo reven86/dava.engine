@@ -32,61 +32,99 @@
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
 #include "Base/Message.h"
+#include "Base/Function.h"
+#include "Base/Bind.h"
+#include "Base/FastName.h"
 #include "Platform/Thread.h"
 #include "Platform/Mutex.h"
-#include "Base/ScopedPtr.h"
-#include "Job/Job.h"
+#include "JobQueue.h"
+#include "JobThread.h"
 
 namespace DAVA
 {
-
-class MainThreadJobQueue;
-class ThreadIdJobWaiter;
-class JobInstanceWaiter;
-
+class JobManager;
 class JobManager : public Singleton<JobManager>
 {
 public:
-	enum eThreadType
+	/*! Available types of main-thread job. */
+	enum eMainJobType
 	{
-		THREAD_MAIN = 0,
-		THREAD_WORKER
+		JOB_MAIN = 0,       ///< Run only in the main thread. If job is created from the main thread, function will be run immediately.
+		JOB_MAINLAZY,		///< Run only in the main thread. If job is created from the main thread, function will be run on next update.
+		JOB_MAINBG,         ///< Run in the main or background thread. !!!!!!! TODO: isn't implemented yet
 	};
 
-	enum eWaiterRegistrationResult
-	{
-		WAITER_WILL_WAIT,
-		WAITER_RETURN_IMMEDIATELY
-	};
-
+public:
 	JobManager();
 	virtual ~JobManager();
 
-	ScopedPtr<Job> CreateJob(eThreadType threadType, const Message & message, uint32 flags = Job::DEFAULT_FLAGS);
-
+	/*! This function should be called periodically from the main thread. All main-thread jobs added to the queue
+		will be performed inside this function. 
+	*/
 	void Update();
-	
-	void OnJobCreated(Job * job);
-	void OnJobCompleted(Job * job);
 
-	eWaiterRegistrationResult RegisterWaiterForCreatorThread(ThreadIdJobWaiter * waiter);
-	void UnregisterWaiterForCreatorThread(ThreadIdJobWaiter * waiter);
+	/*! Add function to execute in the main-thread.
+		\param [in] fn Function to execute.
+		\param [in] mainJobType Type of execution. See ::eMainJobType for detailed description.
+        \return id Created job id. This id can be used to wait until this job finished.
+	*/
+    uint32 CreateMainJob(const Function<void ()>& fn, eMainJobType mainJobType = JOB_MAIN);
 
-	eWaiterRegistrationResult RegisterWaiterForJobInstance(JobInstanceWaiter * waiter);
-	void UnregisterWaiterForJobInstance(JobInstanceWaiter * waiter);
+	/*! Wait for the main-thread jobs, that were added from other thread with the given ID. 
+		\param [in] invokerThreadId Thread ID. By default it is 0, which means that current thread ID will be taken.
+	*/
+    void WaitMainJobs(Thread::Id invokerThreadId = 0);
+
+    void WaitMainJobID(uint32 mainJobID);
+
+	/*! Check in there are some main-thread jobs in the queue, that were added from thread with the given ID.
+		\param [in] invokerThreadId Thread ID. By default it is 0, which means that current thread ID will be taken.
+		\return Return true if there are some jobs, otherwise false.
+	*/
+    bool HasMainJobs(Thread::Id invokerThreadId = 0);
+
+    bool HasMainJobID(uint32 mainJobID);
+
+	/*! Returns the number of available worker-threads. */
+	uint32 GetWorkersCount() const;
+
+	/*! Add function to execute in the worker-thread.
+		\param [in] fn Function to execute.
+	*/
+	void CreateWorkerJob(const Function<void()>& fn);
+
+	/*! Wait until all worker-thread jobs are executed. */
+    void WaitWorkerJobs();
+
+	/*!  Check in there are some not executed worker-thread jobs.
+		\return Return true if there are some jobs, otherwise false.
+	*/
+    bool HasWorkerJobs();
 
 protected:
-	Mutex jobsDoneMutex;
-	MainThreadJobQueue * mainQueue;
-	void UpdateMainQueue();
+    struct MainJob
+    {
+        MainJob() : id(0), type(JOB_MAIN), invokerThreadId(0) {}
 
-	Map<Thread::ThreadId, uint32> jobsPerCreatorThread;
-	Map<Thread::ThreadId, ThreadIdJobWaiter *> waitersPerCreatorThread;
-	void CheckAndCallWaiterForThreadId(const Thread::ThreadId & threadId);
-	
-	
-	void CheckAndCallWaiterForJobInstance(Job * job);
-	Map<Job *, JobInstanceWaiter *> waitersPerJob;
+        uint32 id;
+        eMainJobType type;
+        Thread::Id invokerThreadId;
+
+        Function<void ()> fn;
+    };
+
+    uint32 mainJobIDCounter;
+    uint32 mainJobLastExecutedID;
+
+    Mutex mainQueueMutex;
+    Mutex mainCVMutex;
+    Deque<MainJob> mainJobs;
+    ConditionalVariable mainCV;
+    MainJob curMainJob;
+
+    Semaphore workerDoneSem;
+    JobQueueWorker workerQueue;
+    Vector<JobThread*> workerThreads;
 };
 
 }

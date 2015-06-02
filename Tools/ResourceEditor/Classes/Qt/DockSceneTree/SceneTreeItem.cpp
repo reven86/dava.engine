@@ -37,8 +37,9 @@
 
 SceneTreeItem::SceneTreeItem(eItemType _type)
 	: type(_type)
+    , isAcceptedByFilter(false)
+    , isHighlighted(false)
 { 
-	SetAcceptedByFilter(false);
 }
 
 SceneTreeItem::~SceneTreeItem()
@@ -62,9 +63,6 @@ QVariant SceneTreeItem::data(int role) const
 	case EIDR_Data:
 		v = ItemData();
 		break;
-	case Qt::BackgroundColorRole:
-        v = ItemBackgroundColor();
-        break;
 	default:
 		break;
 	}
@@ -89,31 +87,26 @@ QIcon SceneTreeItem::ItemIcon() const
 	return icon;
 }
 
-QVariant SceneTreeItem::ItemBackgroundColor() const
-{
-	QVariant ret;
-
-	if(IsAcceptedByFilter())
-	{
-		ret.setValue(QColor(0, 255, 0, 20));
-	}
-	else
-	{
-		ret = QStandardItem::data(Qt::BackgroundColorRole);
-	}
-
-	return ret;
-}
-
 bool SceneTreeItem::IsAcceptedByFilter() const
 {
-	return data(EIDR_AcceptedByFilter).toBool();
+    return isAcceptedByFilter;
 }
 
-void SceneTreeItem::SetAcceptedByFilter(bool accepted)
+void SceneTreeItem::SetAcceptByFilter(bool state)
 {
-	setData(accepted, EIDR_AcceptedByFilter);
+    isAcceptedByFilter = state;
 }
+
+bool SceneTreeItem::IsHighlighed() const
+{
+    return isHighlighted;
+}
+
+void SceneTreeItem::SetHighlight(bool state)
+{
+    isHighlighted = state;
+}
+
 
 // =========================================================================================
 // SceneTreeItemEntity
@@ -173,6 +166,8 @@ QIcon SceneTreeItemEntity::ItemIcon() const
 	static QIcon switchIcon(":/QtIcons/switch.png");
 	static QIcon windIcon(":/QtIcons/wind.png");
     static QIcon soIcon(":/QtIcons/so.png");
+    static QIcon pathIcon(":/QtIcons/path.png");
+    static QIcon grassIcon(":/QtIcons/grass.png");
 
 	QIcon ret;
 
@@ -198,6 +193,10 @@ QIcon SceneTreeItemEntity::ItemIcon() const
 		{
 			ret = switchIcon;
 		}
+        else if (NULL != DAVA::GetVegetation(entity))
+        {
+            ret = grassIcon;
+        }
 		else if(NULL != DAVA::GetRenderObject(entity))
 		{
 			ret = renderobjIcon;
@@ -218,6 +217,10 @@ QIcon SceneTreeItemEntity::ItemIcon() const
 		{
 			ret = windIcon;
 		}
+        else if(NULL != DAVA::GetPathComponent(entity))
+        {
+            ret = pathIcon;
+        }
 	}
 
 	if(ret.isNull())
@@ -383,12 +386,9 @@ void SceneTreeItemEntity::DoSync(QStandardItem *rootItem, DAVA::Entity *entity)
 					repeatStep = false;
 
 					// remove items that we already add
-					while(emitterSet.contains(itemEmitter))
+					if (emitterSet.contains(itemEmitter))
 					{
 						rootItem->removeRow(row);
-
-						SceneTreeItem *item = (SceneTreeItem *) rootItem->child(row);
-						DAVA::ParticleEmitter *itemEmitter = SceneTreeItemParticleEmitter::GetEmitter(item);
 					}
 
 					if(NULL == item)
@@ -477,9 +477,9 @@ DAVA::ParticleEmitter* SceneTreeItemParticleEmitter::GetEmitter(SceneTreeItem *i
 
 DAVA::ParticleEmitter* SceneTreeItemParticleEmitter::GetEmitterStrict(SceneTreeItem *item)
 {
-    DAVA::ParticleEmitter *ret = NULL;
+    DAVA::ParticleEmitter *ret = nullptr;
 
-    if(NULL != item && (item->ItemType() == SceneTreeItem::EIT_Emitter))
+    if (nullptr != item && (item->ItemType() == SceneTreeItem::EIT_Emitter))
     {
         SceneTreeItemParticleEmitter *itemEmitter = (SceneTreeItemParticleEmitter *) item;
         ret = itemEmitter->emitter;
@@ -519,15 +519,6 @@ QIcon SceneTreeItemParticleEmitter::ItemIcon() const
 {
 	static QIcon icon = QIcon(":/QtIcons/emitter_particle.png");
 	return icon;
-}
-
-QVariant SceneTreeItemParticleEmitter::ItemBackgroundColor() const
-{			
-	if(emitter && emitter->shortEffect)
-	{
-		return QColor(245, 215, 210);
-	}	
-	return SceneTreeItem::ItemBackgroundColor();
 }
 
 // =========================================================================================

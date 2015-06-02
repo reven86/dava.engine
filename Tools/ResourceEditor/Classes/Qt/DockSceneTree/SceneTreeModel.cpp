@@ -52,13 +52,7 @@ SceneTreeModel::SceneTreeModel(QObject* parent /*= 0*/ )
 	, curScene(NULL)
 	, dropAccepted(false)
 {
-	setColumnCount(1);
-	setSupportedDragActions(Qt::MoveAction|Qt::LinkAction);
-
-	QStringList headerLabels;
-	headerLabels.append("Scene hierarchy");
-	setHorizontalHeaderLabels(headerLabels);
-
+    SetScene(NULL);
 	QObject::connect(this, SIGNAL(itemChanged(QStandardItem *)), this, SLOT(ItemChanged(QStandardItem *)));
 }
 
@@ -71,10 +65,16 @@ SceneTreeModel::~SceneTreeModel()
 	}
 }
 
+Qt::DropActions SceneTreeModel::supportedDragActions() const
+{
+	return Qt::MoveAction|Qt::LinkAction;
+}
+
 void SceneTreeModel::SetScene(SceneEditor2 *scene)
 {
-	// remove add rows
-	removeRows(0, rowCount());
+    clear();
+    setColumnCount(1);
+    setHorizontalHeaderLabels( QStringList() << "Scene hierarchy" );
 
 	if(NULL != curScene)
 	{
@@ -89,6 +89,7 @@ void SceneTreeModel::SetScene(SceneEditor2 *scene)
 	}
 
 	ResyncStructure(invisibleRootItem(), curScene);
+    SetFilter(filterText);  // Apply filter to new model
 }
 
 SceneEditor2* SceneTreeModel::GetScene() const
@@ -103,6 +104,7 @@ void SceneTreeModel::SetSolid(const QModelIndex &index, bool solid)
 	if(NULL != entity)
 	{
 		entity->SetSolid(solid);
+		SceneSignals::Instance()->EmitSolidChanged(curScene, entity, solid);
 	}
 }
 
@@ -479,7 +481,7 @@ bool SceneTreeModel::DropCanBeAccepted(const QMimeData * data, Qt::DropAction ac
 	case DropingEntity:
 		{
 			ret = true;
-
+            
 			// don't accept entity to be dropped anywhere except other entity
 			if(NULL != parentItem && parentItem->ItemType() != SceneTreeItem::EIT_Entity)
 			{
@@ -534,6 +536,23 @@ bool SceneTreeModel::DropCanBeAccepted(const QMimeData * data, Qt::DropAction ac
 							ret = false;
 							break;
 						}
+                        
+                        // 5. or we are dropping waypoint outside of its path
+                        if(GetWaypointComponent(entity))
+                        {
+                            if(entity->GetParent() != targetEntity)
+                            {
+                                ret = false;
+                                break;
+                            }
+                        }
+
+                        // 6. or we are dropping path inside of another path or waypoint
+                        if (GetPathComponent(entity) && (GetPathComponent(targetEntity) || GetWaypointComponent(targetEntity)))
+                        {
+                            ret = false;
+                            break;
+                        }
 					}
 				}
 			}
@@ -624,6 +643,82 @@ void SceneTreeModel::ResyncStructure(QStandardItem *item, DAVA::Entity *entity)
 	RebuildIndexesCache();
 }
 
+void SceneTreeModel::SetFilter(const QString& text)
+{
+    filterText = text;
+    ReloadFilter();
+}
+
+void SceneTreeModel::ReloadFilter()
+{
+    ResetFilter();
+
+    if (!filterText.isEmpty())
+    {
+        const int n = rowCount();
+        for (int i = 0; i < n; i++)
+        {
+            const QModelIndex _index = index(i, 0);
+            SetFilterInternal(_index, filterText);
+        }
+    }
+}
+
+bool SceneTreeModel::IsFilterSet() const
+{
+    return !filterText.isEmpty();
+}
+
+void SceneTreeModel::SetFilterInternal(const QModelIndex& _index, const QString& text)
+{
+    SceneTreeItem *item = GetItem(_index);
+    const QString& name = item->ItemName();
+
+    if (!item->IsAcceptedByFilter())
+    {
+        const bool match = (text.isEmpty() || name.contains(text, Qt::CaseInsensitive));
+        const bool isChild = _index.parent().isValid();
+
+        item->SetAcceptByFilter(isChild || match);
+        item->SetHighlight(match);
+        
+        if (match)
+        {
+            QModelIndex p = _index.parent();
+            while (p.isValid())
+            {
+                SceneTreeItem *parentItem = GetItem(p);
+                if (parentItem->IsAcceptedByFilter())
+                {
+                    break;
+                }
+                parentItem->SetAcceptByFilter(true);
+                p = p.parent();
+            }
+        }
+    }
+
+    const int n = rowCount(_index);
+    for ( int i = 0; i < n; i++)
+    {
+        const QModelIndex child = _index.child(i, 0);
+        SetFilterInternal(child, text);
+    }
+}
+
+void SceneTreeModel::ResetFilter(const QModelIndex& parent)
+{
+    const int n = rowCount(parent);
+    for (int i = 0; i < n; i++)
+    {
+        const QModelIndex _index = index(i, 0, parent);
+        SceneTreeItem *item = GetItem(_index);
+        item->SetAcceptByFilter(false);
+        item->SetHighlight(false);
+        ResetFilter(_index);
+    }
+}
+
 void SceneTreeModel::RebuildIndexesCache()
 {
 	indexesCacheEntities.clear();
@@ -685,26 +780,6 @@ void SceneTreeModel::AddIndexesCache(SceneTreeItem *item)
 	}
 }
 
-void SceneTreeModel::ResetFilterAcceptFlag()
-{
-	for(int i = 0; i < invisibleRootItem()->rowCount(); ++i)
-	{
-		ResetFilterAcceptFlagInternal(GetItem(index(i, 0)));
-	}
-}
-
-void SceneTreeModel::ResetFilterAcceptFlagInternal(SceneTreeItem *item)
-{
-	if(NULL != item)
-	{
-		item->SetAcceptedByFilter(false);
-		for(int i = 0; i < item->rowCount(); ++i)
-		{
-			ResetFilterAcceptFlagInternal((SceneTreeItem *) item->child(i));
-		}
-	}
-}
-
 bool SceneTreeModel::AreSameType(const QModelIndexList & indexes) const
 {
 	bool ret = true;
@@ -759,6 +834,45 @@ int SceneTreeModel::GetDropType(const QMimeData *data) const
 	return ret;
 }
 
+
+Qt::ItemFlags SceneTreeModel::flags ( const QModelIndex & index ) const
+{
+    const Qt::ItemFlags f = QStandardItemModel::flags(index);
+    
+    DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(GetItem(index));
+    if(NULL != entity)
+    {
+        if(!curScene->selectionSystem->IsEntitySelectable(entity))
+        {
+            return (f & ~Qt::ItemIsSelectable);
+        }
+    }
+
+    return f;
+}
+
+QVariant SceneTreeModel::data(const QModelIndex &_index, int role) const
+{
+    switch (role)
+    {
+    case Qt::BackgroundRole:
+        {
+            SceneTreeItem *item = GetItem(_index);
+            ParticleEmitter *emitter = SceneTreeItemParticleEmitter::GetEmitterStrict(item);
+            if (nullptr != emitter && emitter->shortEffect)
+            {
+                return QBrush(QColor(255, 0, 0, 20));
+            }
+        }
+        break;
+    default:
+        break;
+    }
+
+    return QStandardItemModel::data(_index, role);
+}
+
+
 SceneTreeFilteringModel::SceneTreeFilteringModel(SceneTreeModel *_treeModel, QObject *parent /* = NULL */)
 	: QSortFilterProxyModel(parent)
 	, treeModel(_treeModel)
@@ -768,72 +882,37 @@ SceneTreeFilteringModel::SceneTreeFilteringModel(SceneTreeModel *_treeModel, QOb
 
 bool SceneTreeFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
-	if(NULL != treeModel)
-	{
-		// check self accept
-		if(selfAcceptRow(sourceRow, sourceParent))
-		{
-			return true;
-		}
+    if (!treeModel->IsFilterSet())
+        return true;
 
-		//accept if any of the parents is accepted
-		QModelIndex parent = sourceParent;
-		while(parent.isValid()) 
-		{
-			if(selfAcceptRow(parent.row(), parent.parent()))
-			{
-				return true;
-			}
+    const QModelIndex& _index = treeModel->index(sourceRow, 0, sourceParent);
+    SceneTreeItem *item = treeModel->GetItem(_index);
+    DVASSERT(item);
 
-			parent = parent.parent();
-		}
-
-		// accept if any child is accepted
-		if(childrenAcceptRow(sourceRow, sourceParent))
-		{
-			return true;
-		}
-	}
-
-	return false;
+	return item->IsAcceptedByFilter();
 }
 
-bool SceneTreeFilteringModel::selfAcceptRow(int sourceRow, const QModelIndex &sourceParent) const
+QVariant SceneTreeFilteringModel::data(const QModelIndex& _index, int role) const
 {
-	bool accepted = QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
-	SceneTreeItem *item = treeModel->GetItem(treeModel->index(sourceRow, 0, sourceParent));
+    if (!treeModel->IsFilterSet())
+        return QSortFilterProxyModel::data(_index, role);
 
-	if(NULL != item)
-	{
-		if(accepted && !filterRegExp().isEmpty())
-		{
-			item->SetAcceptedByFilter(accepted);
-		}
-		else
-		{
-			item->SetAcceptedByFilter(false);
-		}
-	}
+    switch ( role )
+    {
+    case Qt::BackgroundRole:
+        {
+            SceneTreeItem *item = treeModel->GetItem(mapToSource(_index));
+            if (item->IsHighlighed())
+            {
+                return QBrush(QColor(0, 255, 0, 20));
+            }
+        }
+        break;
+    default:
+        break;
+    }
 
-	return accepted;
+    return QSortFilterProxyModel::data(_index, role);
 }
 
-bool SceneTreeFilteringModel::childrenAcceptRow(int sourceRow, const QModelIndex &sourceParent) const
-{
-	bool ret = false;
 
-	QModelIndex index = treeModel->index(sourceRow, 0, sourceParent);
-	if(treeModel->rowCount(index) > 0)
-	{
-		for(int i = 0; i < treeModel->rowCount(index); i++)
-		{
-			if(selfAcceptRow(i, index) || childrenAcceptRow(i, index))
-			{
-				ret = true;
-				break;
-			}
-		}
-	}
-
-	return ret;
-}

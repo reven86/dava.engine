@@ -90,7 +90,7 @@ ParticleRenderObject::ParticleRenderObject(ParticleEffectData *effect): effectDa
 
 ParticleRenderObject::~ParticleRenderObject()
 {
-    for (int32 i=0, sz = renderGroupCache.size(); i<sz; ++i)
+    for (size_t i=0, sz = renderGroupCache.size(); i<sz; ++i)
     {
         SafeRelease(renderGroupCache[i]->renderBatch);
         SafeDelete(renderGroupCache[i]);
@@ -100,23 +100,23 @@ ParticleRenderObject::~ParticleRenderObject()
 
 void ParticleRenderObject::PrepareToRender(Camera *camera)
 {
+    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::PARTICLES_PREPARE_BUFFERS))
+		return;
+    
 	PrepareRenderData(camera);
+    
+    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::PARTICLES_DRAW))
+    {
+        activeRenderBatchArray.clear();
+		return;
+    }
 }
 
-void ParticleRenderObject::SetEffectMatrix(Matrix4 *matrix)
-{
-    effectMatrix = matrix;
-}
-
-Matrix4 * ParticleRenderObject::GetEffectMatrix()
-{
-    return effectMatrix;
-}
 
 void ParticleRenderObject::SetSortingOffset(uint32 offset)
 {
     sortingOffset = offset;
-    for (int32 i=0, sz = renderGroupCache.size(); i<sz; ++i)
+    for (size_t i=0, sz = renderGroupCache.size(); i<sz; ++i)
         renderGroupCache[i]->renderBatch->SetSortingOffset(offset);
 }
 
@@ -136,11 +136,11 @@ void ParticleRenderObject::Set2DMode(bool is2d)
 
 void ParticleRenderObject::PrepareRenderData(Camera * camera)
 {
-	for (int32 i=0, sz = renderGroupCache.size(); i<sz; ++i)
+	for (size_t i=0, sz = renderGroupCache.size(); i<sz; ++i)
 		renderGroupCache[i]->ClearArrays();
 	activeRenderBatchArray.clear();
-	
-	if (!effectMatrix)
+	    
+	if (!worldTransform)
         return;
 
 	Vector3 currCamDirection = camera->GetDirection();
@@ -151,9 +151,9 @@ void ParticleRenderObject::PrepareRenderData(Camera * camera)
 	basisVectors[1] = Vector3(mv._01, mv._11, mv._21);
 	basisVectors[0].Normalize();
 	basisVectors[1].Normalize();	
-	Vector3 ex(effectMatrix->_00, effectMatrix->_01, effectMatrix->_02);
-	Vector3 ey(effectMatrix->_10, effectMatrix->_11, effectMatrix->_12);
-	Vector3 ez(effectMatrix->_20, effectMatrix->_21, effectMatrix->_22);
+	Vector3 ex(worldTransform->_00, worldTransform->_01, worldTransform->_02);
+	Vector3 ey(worldTransform->_10, worldTransform->_11, worldTransform->_12);
+	Vector3 ez(worldTransform->_20, worldTransform->_21, worldTransform->_22);
 	ex.Normalize();
 	ey.Normalize();
 	ez.Normalize();
@@ -205,7 +205,7 @@ void ParticleRenderObject::PrepareRenderData(Camera * camera)
 	}
 	
 	
-	int32 currParticleIndices = indices.size()/INDICES_PER_PARTICLE;
+	int32 currParticleIndices = static_cast<int32>(indices.size()/INDICES_PER_PARTICLE);
 	if (maxParticlesPerBatch>currParticleIndices)
 	{
 		indices.resize(maxParticlesPerBatch*INDICES_PER_PARTICLE);
@@ -225,8 +225,7 @@ void ParticleRenderObject::PrepareRenderData(Camera * camera)
 		{
 			renderGroupCache[i]->UpdateRenderBatch(vertexSize, vertexStride);
 			renderGroupCache[i]->renderBatch->SetIndexCount(renderGroupCache[i]->currParticlesCount*INDICES_PER_PARTICLE);		
-			renderGroupCache[i]->renderBatch->GetRenderDataObject()->SetIndices(EIF_16, (uint8*)(&indices.front()), renderGroupCache[i]->currParticlesCount*INDICES_PER_PARTICLE);
-            renderGroupCache[i]->renderBatch->SetSortingTransformPtr(effectMatrix);
+			renderGroupCache[i]->renderBatch->GetRenderDataObject()->SetIndices(EIF_16, (uint8*)(&indices.front()), renderGroupCache[i]->currParticlesCount*INDICES_PER_PARTICLE);            
 			activeRenderBatchArray.push_back(renderGroupCache[i]->renderBatch);
 		}
 		
@@ -335,6 +334,21 @@ void ParticleRenderObject::AppendParticleGroup(const ParticleGroup &group, Parti
 		}
 		current = current->next;
 	}
+}
+
+void ParticleRenderObject::BindDynamicParameters(Camera * camera)
+{        
+    RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+    if(camera)
+    {
+        if(lights[0])
+        {
+            const Vector4 & lightPositionDirection0InCameraSpace = lights[0]->CalculatePositionDirectionBindVector(camera);
+            RenderManager::SetDynamicParam(PARAM_LIGHT0_POSITION, &lightPositionDirection0InCameraSpace, (pointer_size)&lightPositionDirection0InCameraSpace);
+            RenderManager::SetDynamicParam(PARAM_LIGHT0_COLOR, &lights[0]->GetDiffuseColor(), (pointer_size)lights[0]);
+            RenderManager::SetDynamicParam(PARAM_LIGHT0_AMBIENT_COLOR, &lights[0]->GetAmbientColor(), (pointer_size)lights[0]);
+        }                
+    }    
 }
 
 

@@ -31,7 +31,7 @@
 #define __DAVAENGINE_DATE_TIME_H__
 
 #include "Base/BaseTypes.h"
-#include "DAVAEngine.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
@@ -193,7 +193,7 @@ private:
     
     inline int32 DaysFrom1jan(int32 year, int32 month, int32 day) const;
     
-    Timestamp InternalTimeGm(std::tm *t) const;
+    Timestamp InternalTimeGm(tm *t) const;
     
     bool IsNumber(const char * s) const;
     
@@ -240,14 +240,14 @@ int32 DateTime::DaysFrom1970(int32 year) const
 
 int32 DateTime::DaysFrom1jan(int32 year, int32 month, int32 day) const
 {
-    DVASSERT(year >= 1970 && month >= 0 && month < 12 && day >=0 && day < 31);
+    DVASSERT(year >= 1970 && month >= 0 && month < 12 && day >=1 && day <= 31);
     static const int32 days[2][12] =
     {
         { 0,31,59,90,120,151,181,212,243,273,304,334},
         { 0,31,60,91,121,152,182,213,244,274,305,335}
     };
     int32 rowNumberToSelect = IsLeap(year) ? 1 : 0;
-    return days[rowNumberToSelect][month-1] + day - 1;
+    return days[rowNumberToSelect][month] + day - 1;
 }
 };
 

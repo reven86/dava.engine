@@ -32,6 +32,8 @@
 #include "DAVAEngine.h"
 #include "Render/2D/TextBlock.h"
 
+#if 0
+
 namespace DAVA {
 
 // The purpose of this controller is to gather the controls which pixelization settings
@@ -56,5 +58,6 @@ private:
 };
 
 };
+#endif
 
 #endif /* defined(__PIXELIZATIONCONTROLLER__H__) */

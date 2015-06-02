@@ -43,30 +43,35 @@ class SoundUpdateSystem : public SceneSystem
 {
     struct AutoTriggerSound
     {
-        AutoTriggerSound(SoundComponent * component, SoundEvent * sound);
+        AutoTriggerSound(Entity * owner, SoundEvent * sound);
 
-        SoundComponent * component;
+        Entity * owner;
         SoundEvent * soundEvent;
         float32 maxSqDistance;
-        bool wasTriggered;
     };
 
 public:
     SoundUpdateSystem(Scene * scene);
-    virtual ~SoundUpdateSystem();
+    ~SoundUpdateSystem() override;
 
-    virtual void ImmediateEvent(Entity * entity, uint32 event);
-    virtual void Process(float32 timeElapsed);
-    virtual void AddEntity(Entity * entity);
-    virtual void RemoveEntity(Entity * entity);
+    void ImmediateEvent(Entity * entity, uint32 event) override;
+    void Process(float32 timeElapsed) override;
+    void AddEntity(Entity * entity) override;
+    void RemoveEntity(Entity * entity) override;
 
-    void OnSoundTriggeredCallback(BaseObject * caller, void * param, void *callerData);
+    void Activate() override;
+    void Deactivate() override;
 
 protected:
-    void RebuildAutoTriggerArray();
+    void AddAutoTriggerSound(Entity * soundOwner, SoundEvent * sound);
+    void RemoveAutoTriggerSound(Entity * soundOwner, SoundEvent * sound = 0);
 
-    Set<SoundComponent *> componentsWithAutoTrigger;
     Vector<AutoTriggerSound> autoTriggerSounds;
+
+    Vector<Entity *> sounds;
+    Vector<SoundEvent *> pausedEvents;
+
+    friend class SoundComponent;
 };
     
 } // ns

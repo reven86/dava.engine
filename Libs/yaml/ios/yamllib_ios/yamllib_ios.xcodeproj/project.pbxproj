@@ -34,7 +34,6 @@
 		5CD4BCD714E3E2DE005A0E41 /* writer.c in Sources */ = {isa = PBXBuildFile; fileRef = 5CD4BCCD14E3E2DE005A0E41 /* writer.c */; };
 		5CD4BCD814E3E2DE005A0E41 /* yaml_private.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CD4BCCE14E3E2DE005A0E41 /* yaml_private.h */; };
 		5CDE1A1B14E3E43300B38E04 /* api.c in Sources */ = {isa = PBXBuildFile; fileRef = 5CD4BCC514E3E2DE005A0E41 /* api.c */; };
-		5CDE1A1C14E3E43300B38E04 /* config.h in Sources */ = {isa = PBXBuildFile; fileRef = 5CD4BCC614E3E2DE005A0E41 /* config.h */; };
 		5CDE1A1D14E3E43300B38E04 /* dumper.c in Sources */ = {isa = PBXBuildFile; fileRef = 5CD4BCC714E3E2DE005A0E41 /* dumper.c */; };
 		5CDE1A1E14E3E43300B38E04 /* emitter.c in Sources */ = {isa = PBXBuildFile; fileRef = 5CD4BCC814E3E2DE005A0E41 /* emitter.c */; };
 		5CDE1A1F14E3E43300B38E04 /* loader.c in Sources */ = {isa = PBXBuildFile; fileRef = 5CD4BCC914E3E2DE005A0E41 /* loader.c */; };
@@ -42,7 +41,6 @@
 		5CDE1A2114E3E43300B38E04 /* reader.c in Sources */ = {isa = PBXBuildFile; fileRef = 5CD4BCCB14E3E2DE005A0E41 /* reader.c */; };
 		5CDE1A2214E3E43300B38E04 /* scanner.c in Sources */ = {isa = PBXBuildFile; fileRef = 5CD4BCCC14E3E2DE005A0E41 /* scanner.c */; };
 		5CDE1A2314E3E43300B38E04 /* writer.c in Sources */ = {isa = PBXBuildFile; fileRef = 5CD4BCCD14E3E2DE005A0E41 /* writer.c */; };
-		5CDE1A2414E3E43300B38E04 /* yaml_private.h in Sources */ = {isa = PBXBuildFile; fileRef = 5CD4BCCE14E3E2DE005A0E41 /* yaml_private.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -195,6 +193,8 @@
 /* Begin PBXProject section */
 		5C42C99014E3C22A00EB3F53 /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+			};
 			buildConfigurationList = 5C42C99314E3C22A00EB3F53 /* Build configuration list for PBXProject "yamllib_ios" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
@@ -251,7 +251,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				5CDE1A1B14E3E43300B38E04 /* api.c in Sources */,
-				5CDE1A1C14E3E43300B38E04 /* config.h in Sources */,
 				5CDE1A1D14E3E43300B38E04 /* dumper.c in Sources */,
 				5CDE1A1E14E3E43300B38E04 /* emitter.c in Sources */,
 				5CDE1A1F14E3E43300B38E04 /* loader.c in Sources */,
@@ -259,7 +258,6 @@
 				5CDE1A2114E3E43300B38E04 /* reader.c in Sources */,
 				5CDE1A2214E3E43300B38E04 /* scanner.c in Sources */,
 				5CDE1A2314E3E43300B38E04 /* writer.c in Sources */,
-				5CDE1A2414E3E43300B38E04 /* yaml_private.h in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -270,7 +268,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					armv7s,
+					arm64,
+				);
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -280,15 +282,16 @@
 					"$(inherited)",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				GCC_VERSION = "";
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = ./../../include;
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
 				OTHER_CFLAGS = "";
 				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = NO;
 				SDKROOT = iphoneos;
+				VALID_ARCHS = "arm64 armv7 armv7s i386";
 			};
 			name = Debug;
 		};
@@ -296,19 +299,24 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					armv7s,
+					arm64,
+				);
 				COPY_PHASE_STRIP = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
-				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				GCC_VERSION = "";
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = ./../../include;
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1.1;
 				OTHER_CFLAGS = "";
 				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = NO;
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
+				VALID_ARCHS = "arm64 armv7 armv7s i386";
 			};
 			name = Release;
 		};
@@ -320,6 +328,7 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				VALID_ARCHS = "arm64 armv7 armv7s";
 			};
 			name = Debug;
 		};
@@ -331,12 +340,14 @@
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				VALID_ARCHS = "arm64 armv7 armv7s";
 			};
 			name = Release;
 		};
 		5C42CA1C14E3C36300EB3F53 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = i386;
 				DSTROOT = /tmp/yamllib_ios_sim.dst;
 				GCC_PREFIX_HEADER = "";
 				OTHER_LDFLAGS = "-ObjC";
@@ -349,6 +360,7 @@
 		5C42CA1D14E3C36300EB3F53 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = i386;
 				DSTROOT = /tmp/yamllib_ios_sim.dst;
 				GCC_PREFIX_HEADER = "";
 				OTHER_LDFLAGS = "-ObjC";

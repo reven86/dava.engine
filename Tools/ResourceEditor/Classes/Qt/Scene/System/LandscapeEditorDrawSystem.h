@@ -145,8 +145,6 @@ private:
 	uint32 cursorSize;
 	Vector2 cursorPosition;
 
-	bool fogWasEnabled;
-
 	void UpdateBaseLandscapeHeightmap();
 	eErrorType Init();
 

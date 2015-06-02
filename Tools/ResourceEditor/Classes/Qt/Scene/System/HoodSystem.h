@@ -81,6 +81,7 @@ public:
 	bool IsVisible() const;
 
     virtual void Process(DAVA::float32 timeElapsed);
+    virtual void Input(DAVA::UIEvent *event);
 
 protected:
 	bool lockedScale;
@@ -99,7 +100,6 @@ protected:
 
 	void Draw();
 
-	void ProcessUIEvent(DAVA::UIEvent *event);
 	void ProcessCommand(const Command2 *command, bool redo);
 
 	void AddCollObjects(const DAVA::Vector<HoodCollObject*>* objects);

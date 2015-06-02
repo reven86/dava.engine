@@ -33,7 +33,6 @@
 #include "Render/RenderBase.h"
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
-#include "Render/2D/Sprite.h"
 #include "Platform/Mutex.h"
 #include "Platform/Thread.h"
 #include "Render/RenderEffect.h"
@@ -79,15 +78,6 @@ protected:
 class RenderManager : public Singleton<RenderManager>
 {
 public:
-    static FastName FLAT_COLOR_SHADER;
-    static FastName TEXTURE_MUL_FLAT_COLOR_SHADER;
-    
-    static Shader * FLAT_COLOR;
-    static Shader * TEXTURE_MUL_FLAT_COLOR;
-    static Shader * TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST;
-    static Shader * TEXTURE_MUL_FLAT_COLOR_IMAGE_A8;
-    
-    
     struct Caps
 	{
 		Caps() 
@@ -252,25 +242,14 @@ public:
 	void Unlock();
 	
     /**
-     === Viewport and orientation 
+     === Viewport
      */
-
-	/** 
-	 \brief 
-	 \param[in] orientation
-	 */
-	void SetRenderOrientation(int32 orientation);
-	/** 
-	 \brief 
-	 \returns 
-	 */
-	int32 GetRenderOrientation();
     
     /**
         \brief 
         
      */
-    void SetViewport(const Rect & rect, bool precaleulatedCoordinates);
+    void SetViewport(const Rect & rect);
     
     
     void SetCullOrder(eCullOrder cullOrder);
@@ -349,33 +328,6 @@ public:
 	
 	void DrawElements(ePrimitiveType type, int32 count, eIndexFormat indexFormat, void * indices); 
 	void HWDrawElements(ePrimitiveType type, int32 count, eIndexFormat indexFormat, void * indices); 
-		
-	/** 
-	 \brief Sets the clip rect
-	 \param[in] rect
-	 */
-	void SetClip(const Rect &rect);
-
-	/** 
-	 \brief Sets the clip rect as an intersection of the current rect and rect sent to method
-	 \param[in] rect
-	 */
-	void ClipRect(const Rect &rect);
-	
-	/** 
-	 \brief Sets clip yo the full screen
-	 */
-	void RemoveClip();
-
-	/** 
-	 \brief Store current clip
-	 */
-	void ClipPush();
-
-	/** 
-	 \brief Restore current screen
-	 */
-	void ClipPop();
     
     void Clear(const Color & color, float32 depth, int32 stencil);
 	
@@ -396,33 +348,9 @@ public:
         \param[in] stencil specifies the index used when the stencil buffer is cleared
      */
 	void ClearStencilBuffer(int32 stencil = 0);
-
-	/** 
-	 \brief Sets the sprite to use as a render target. Sprite should be created with CreateAsRenderTarget method.
-			Call RestoreRenderTarget when you finish drawing to your sprite 
-	 \param[in] renderTarget - Render target sprite. If NULL 0 render manager will draw to the screen.
-	 */
-	void SetRenderTarget(Sprite *renderTarget);
-
-	/** 
-	 \brief Sets the texture to use as a render target. Texture should be created with CreateFBO method.
-			Call RestoreRenderTarget when you finish drawing to your texture 
-	 \param[in] renderTarget - Render target texture.
-	 */
-	void SetRenderTarget(Texture * renderTarget);
-
-	/** 
-        \brief Restores the previous render target
-	 */
-	void RestoreRenderTarget();
-
-	/** 
-	 \brief Checks is render target using for drawing now
-	 \param[out] true if render manager sets to a render targe. false if render manager draws to the screen now
-	 */
-	bool IsRenderTarget();
        
-	
+    Size2i GetFramebufferSize();
+
 	/** 
         \brief Sets the effect for the rendering. 
         \param[in] renderEffect - if 0, sets the effect to none
@@ -442,45 +370,6 @@ public:
     int32 GetFPS();
 
 	void SetDebug(bool isDebugEnabled);
-
-
-	/** 
-	 \brief 
-	 \param[in] offset
-	 */
-	void SetDrawTranslate(const Vector2 &offset);
-    
-	void SetDrawTranslate(const Vector3 &offset);
-
-    const Vector2& GetDrawTranslate() const;
-
-	/** 
-	 \brief 
-	 \param[in] offset
-	 */
-	void SetDrawScale(const Vector2 &scale);
-    const Vector2& GetDrawScale() const;
-
-	void IdentityDrawMatrix();
-	void IdentityMappingMatrix();
-	void IdentityModelMatrix();
-	
-	/*
-		TODO:	Hottych - напиши пожалуйста что делают эти функции детально, 
-				чтобы было понятно как и в каких случаях их надо использовать
-				Думаю что пока воспоминания свежи, напиши документацию по системе виртуальных преобразований
-				Можешь писать на русском - я переведу потом.
-	 */
-	void SetPhysicalViewScale();
-	void SetPhysicalViewOffset();
-	void SetVirtualViewScale();
-	void SetVirtualViewOffset();
-
-	void PushDrawMatrix();
-    void PopDrawMatrix();
-
-    void PushMappingMatrix();
-	void PopMappingMatrix();
     
     void SetRenderContextId(uint64 contextId);
 	uint64 GetRenderContextId();
@@ -551,11 +440,7 @@ public:
     void HWglDeleteBuffers(GLsizei count, const GLuint * buffers);
     
     int32 HWglGetLastTextureID(int textureType);
-	void HWglBindTexture(int32 tId, uint32 textureType = Texture::TEXTURE_2D);
-	void HWglForceBindTexture(int32 tId, uint32 textureType = Texture::TEXTURE_2D);
-    int32 lastBindedTexture[Texture::TEXTURE_TYPE_COUNT];
-	uint32 lastBindedTextureType;
-
+    void HWglBindTexture(int32 tId, uint32 textureType = Texture::TEXTURE_2D);
     
     int32 HWglGetLastFBO();
     void HWglBindFBO(const int32 fbo);
@@ -604,63 +489,9 @@ public:
     inline void RetainTextureState(UniqueHandle handle);
 	inline void ReleaseTextureState(UniqueHandle handle);
 	inline void SetTextureState(UniqueHandle requestedState);
-		
-protected:
-    //do nothing right now
-    DAVA_DEPRECATED(void RectFromRenderOrientationToViewport(Rect & rect));
-    
-	// SHOULD BE REPLACED WITH MATRICES IN FUTURE
-	Vector2 userDrawOffset;
-	Vector2 userDrawScale;
 
-	//need to think about optimization two matrices (userDraw matrix and mapping matrix) to the one matrix
-	Vector2 viewMappingDrawOffset;
-	Vector2 viewMappingDrawScale;
-
-	Vector2 currentDrawOffset;
-	Vector2 currentDrawScale;
-    
-    bool mappingMatrixChanged;
-	
-	void PrepareRealMatrix();
-    
-    struct Renderer2D
-    {
-        
-        Matrix4 viewMatrix;
-        Matrix4 projMatrix;
-        Matrix4 viewProjMatrix;
-        
-	};
-    Renderer2D renderer2d;
 public:
-    void Setup2DMatrices();
-    Renderer2D * GetRenderer2D() { return &renderer2d; };
-
-	/**
-	 \brief 
-	 \returns 
-	 */
-	int32 GetScreenWidth();
-	
-	/** 
-	 \brief 
-	 \returns 
-	 */
-	int32 GetScreenHeight();
-	
-	
-	typedef struct RenderTarget_t 
-		{
-			Sprite *spr;
-			int orientation;
-		} RenderTarget;
-
-	typedef struct DrawMatrix_t 
-	{
-		Vector2 userDrawOffset;
-		Vector2 userDrawScale;
-	} DrawMatrix;
+    Matrix4 projMatrix;
 	
 	// fbo data
 	uint32 fboViewRenderbuffer;
@@ -676,13 +507,6 @@ public:
 
     int32 cachedEnabledStreams;
     uint32 cachedAttributeMask;
-    
-    int32 renderOrientation;
-	Sprite *currentRenderTarget;
-	std::stack<Rect> clipStack;
-	std::stack<RenderTarget> renderTargetStack;
-	std::stack<DrawMatrix> matrixStack;
-	std::stack<DrawMatrix> mappingMatrixStack;
 
 	Shader * currentRenderEffect;
 	
@@ -697,8 +521,6 @@ public:
     
 	int32 frameBufferWidth;
 	int32 frameBufferHeight;
-	int32 retScreenWidth;
-	int32 retScreenHeight;
 	
 	int32 fps;
 
@@ -708,11 +530,11 @@ public:
     Mutex renderStateMutex;
     Mutex textureStateMutex;
 	
-	Rect currentClip;
-	
-	void SetHWClip(const Rect &rect);
-	void SetHWRenderTargetSprite(Sprite *renderTarget);
-	void SetHWRenderTargetTexture(Texture * renderTarget);
+	void SetClip(const Rect &rect);
+
+    void SetRenderTarget(Texture * renderTarget);
+    inline Texture * GetRenderTarget();
+    Texture * currentRenderTarget;
     
     enum eClearBuffers
     {
@@ -998,7 +820,7 @@ inline UniqueHandle RenderManager::SubclassRenderState(UniqueHandle parentStateH
     LockRenderState();
     const RenderStateData& parentState = RenderManager::Instance()->GetRenderStateData(parentStateHandle);
     RenderStateData derivedState;
-    memcpy(&derivedState, &parentState, sizeof(derivedState));
+    Memcpy(&derivedState, &parentState, sizeof(derivedState));
     UnlockRenderState();
     
     derivedState.sourceFactor = srcBlend;
@@ -1052,7 +874,13 @@ inline void RenderManager::RetainTextureState(UniqueHandle handle)
 inline void RenderManager::ReleaseTextureState(UniqueHandle handle)
 {
     LockTextureState();
-    uniqueTextureStates.ReleaseUnique(handle);
+    if(uniqueTextureStates.ReleaseUnique(handle) == 0)
+    {
+        if(hardwareState.textureState == handle)
+            hardwareState.textureState = InvalidUniqueHandle;
+        if(currentState.textureState == handle)
+            currentState.textureState = InvalidUniqueHandle;
+    }
     UnlockTexturerState();
 }
 
@@ -1061,7 +889,10 @@ inline void RenderManager::SetTextureState(UniqueHandle requestedState)
     currentState.textureState = requestedState;
 }
 
-    
+inline Texture * RenderManager::GetRenderTarget()
+{
+    return currentRenderTarget;
+}
 
     
 };

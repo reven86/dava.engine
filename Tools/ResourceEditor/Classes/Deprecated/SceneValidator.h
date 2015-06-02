@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __SCENE_VALIDATOR_H__
 #define __SCENE_VALIDATOR_H__
 
@@ -37,7 +36,6 @@ using namespace DAVA;
 
 class SceneValidator: public Singleton<SceneValidator>
 {
-    
 public:
     SceneValidator();
     virtual ~SceneValidator();
@@ -48,14 +46,14 @@ public:
      \returns true if errors were found
 	 */
     bool ValidateSceneAndShowErrors(Scene *scene, const DAVA::FilePath &scenePath);
-    
+
 	/*
      \brief Function to validate Scene errors
      \param[in] scene scene for validation
      \param[out] errorsLog set for validation errors
 	 */
     void ValidateScene(Scene *scene, const DAVA::FilePath &scenePath, Set<String> &errorsLog);
-    
+
     /*
      \brief Function to find Scales in models transformations
      \param[in] scene scene for validation
@@ -63,12 +61,11 @@ public:
 	 */
 	void ValidateScales(Scene *scene, Set<String> &errorsLog);
 
-
     /*
      \brief Function to validate Texture errors
-     
+
      Displays errors log at Errors Dialog
-     
+
      \param[in] texture texture for validation
 	 */
     void ValidateTextureAndShowErrors(Texture *texture, const String &validatedObjectName);
@@ -78,9 +75,8 @@ public:
      \param[in] texture texture for validation
      \param[out] errorsLog set for validation errors
 	 */
-    
-    void ValidateTexture(Texture *texture, const String &validatedObjectName, Set<String> &errorsLog);
 
+    void ValidateTexture(Texture *texture, const String &validatedObjectName, Set<String> &errorsLog);
 
     /*
      \brief Function to validate LandscapeNode errors
@@ -88,14 +84,14 @@ public:
      \param[out] errorsLog set for validation errors
 	 */
     void ValidateLandscape(Landscape *landscape, Set<String> &errorsLog);
-        
+
     /*
      \brief Function to validate Entity errors
      \param[in] sceneNode sceneNode for validation
      \param[out] errorsLog set for validation errors
 	 */
     void ValidateSceneNode(Entity *sceneNode, Set<String> &errorsLog);
-    
+
     /*
      \brief Function to validate Materials errors
      \param[in] scene that has materials for validation
@@ -113,32 +109,28 @@ public:
     void ValidateNodeCustomProperties(Entity * sceneNode);
 
     FilePath SetPathForChecking(const FilePath &pathname);
-    
+
     void EnumerateNodes(Scene *scene);
-    
+
     static bool IsTextureChanged(const TextureDescriptor *descriptor, eGPUFamily forGPU);
     static bool IsTextureChanged(const FilePath &texturePathname, eGPUFamily forGPU);
-    
+
 	bool ValidateTexturePathname(const FilePath &pathForValidation, Set<String> &errorsLog);
 	bool ValidateHeightmapPathname(const FilePath &pathForValidation, Set<String> &errorsLog);
 
     bool IsPathCorrectForProject(const FilePath &pathname);
-    
-    
+
     DAVA_DEPRECATED(static void FindSwitchesWithDifferentLODs(DAVA::Entity *entity, Set<FastName> & names));
     DAVA_DEPRECATED(static bool IsEntityHasDifferentLODsCount(DAVA::Entity *entity));
     DAVA_DEPRECATED(static bool IsObjectHasDifferentLODsCount(DAVA::RenderObject *renderObject));
 
-
 protected:
-
     void ValidateRenderComponent(Entity *ownerNode, Set<String> &errorsLog);
     void ValidateRenderBatch(Entity *ownerNode, RenderBatch *renderBatch, Set<String> &errorsLog);
 
     void ValidateParticleEffectComponent(Entity *ownerNode, Set<String> &errorsLog) const;
     void ValidateParticleEmitter(ParticleEmitter *emitter, Set<String> &errorsLog) const;
 
-    
 	void ValidateLandscapeTexture(Landscape *landscape, Landscape::eTextureLevel texLevel, Set<String> &errorsLog);
 	void ValidateCustomColorsTexture(Entity *landscapeEntity, Set<String> &errorsLog);
 
@@ -149,30 +141,28 @@ protected:
 	bool ValidateColor(Color& color);
 
     int32 EnumerateSceneNodes(Entity *node);
-    
+
 	void ValidateScalesInternal(Entity *sceneNode, Set<String> &errorsLog);
-    
+
     bool ValidatePathname(const FilePath &pathForValidation, const String &validatedObjectName);
 
     bool NodeRemovingDisabled(Entity *node);
-    
+
     bool WasTextureChanged(Texture *texture, eGPUFamily forGPU);
 
 	bool IsTextureDescriptorPath(const FilePath &path);
-    
+
     bool IsFBOTexture(Texture *texture);
-    
+
     void ConvertIlluminationParamsFromProperty(Entity *ownerNode, NMaterial *material);
 
     VariantType* GetCustomPropertyFromParentsTree(Entity *ownerNode, const String & key);
-    bool VariantTypeToBool();
 
     Set<Entity *> emptyNodesForDeletion;
     Set<String> errorMessages;
-    
+
     FilePath pathForChecking;
+    String sceneName;
 };
-
-
 
 #endif // __SCENE_VALIDATOR_H__

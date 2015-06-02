@@ -80,22 +80,14 @@ public:
         Interleaved data is the fastest way to submit data to any modern hw, so renderdataobject support buffers only 
         for interleaved data. This means we can have only 1 buffer for 1 RenderDataObject
     */
-    void BuildVertexBuffer(int32 vertexCount, bool synchronously = false); // pack data to VBOs and allow to use VBOs instead of SetStreams
-	void BuildVertexBufferInternal(BaseObject * caller, void * param, void *callerData);
-	void DeleteBuffersInternal(BaseObject * caller, void * param, void *callerData);
-    
-#if defined (__DAVAENGINE_ANDROID__)
-	virtual void SaveToSystemMemory();
-	virtual void Lost();
-	virtual void Invalidate();
-	int32 savedVertexCount;
-    bool isLost;
-    bool buildIndexBuffer;
-#endif //#if defined(__DAVAENGINE_ANDROID__)
-    
+    void BuildVertexBuffer(int32 vertexCount, eBufferDrawType type = BDT_STATIC_DRAW, bool synchronously = false); // pack data to VBOs and allow to use VBOs instead of SetStreams
+    void BuildVertexBufferInternal(int32 vertexCount, eBufferDrawType type);
+    void DeleteBuffersInternal(uint32 vboBuffer, uint32 indexBuffer);
+    uint32 GetVertexBufferID() const { return vboBuffer; }
+
     void SetIndices(eIndexFormat format, uint8 * indices, int32 count);
-    void BuildIndexBuffer(bool synchronously = false);
-	void BuildIndexBufferInternal(BaseObject * caller, void * param, void *callerData);
+    void BuildIndexBuffer(eBufferDrawType type = BDT_STATIC_DRAW, bool synchronously = false);
+    void BuildIndexBufferInternal(eBufferDrawType type);
     uint32 GetIndexBufferID() const { return indexBuffer; };
     
     void AttachVertices(RenderDataObject* vertexSource);
@@ -104,6 +96,21 @@ public:
 
     inline eIndexFormat GetIndexFormat() const;
     
+    void UpdateVertexBuffer(int32 offset, int32 vertexCount, bool synchronously = false);
+    void UpdateVertexBufferInternal(int32 offset, int32 vertexCount);
+    void UpdateIndexBuffer(int32 offset, bool synchronously = false);
+    void UpdateIndexBufferInternal(int32 offset);
+
+#if defined (__DAVAENGINE_ANDROID__)
+	virtual void SaveToSystemMemory();
+	virtual void Lost();
+	virtual void Invalidate();
+
+	// Methods for set vertices and indices count to rebuild buffers after context lost
+	void SetForceVerticesCount(int32 count);
+    void SetForceIndicesCount(int32 count);
+#endif //#if defined(__DAVAENGINE_ANDROID__)
+
 private:
     Map<eVertexFormat, RenderDataStream *> streamMap;
     Vector<RenderDataStream *> streamArray;
@@ -115,7 +122,14 @@ private:
     eIndexFormat indexFormat;
     uint8 * indices;
 #if defined (__DAVAENGINE_ANDROID__)
+    int32 forceVerticesCount;
+    int32 forceIndicesCount;
+    int32 savedVertexCount;
     uint8 * savedIndices;
+    eBufferDrawType savedIndexBufferType;
+    eBufferDrawType savedVertexBufferType;
+    bool isLost;
+    bool buildIndexBuffer;
 #endif //#if defined(__DAVAENGINE_ANDROID__)
     uint32 indexBuffer;
     int32 indexCount;
@@ -143,7 +157,18 @@ inline bool RenderDataObject::HasVertexAttachment() const
     return vertexAttachmentActive;
 }
 
-    
+#if defined (__DAVAENGINE_ANDROID__)
+inline void RenderDataObject::SetForceVerticesCount(int32 count)
+{
+	forceVerticesCount = count;
+}
+
+inline void RenderDataObject::SetForceIndicesCount(int32 count)
+{
+	forceIndicesCount = count;
+}
+#endif
+
 };
 
 #endif // __DAVAENGINE_RENDERSTATEBLOCK_H__

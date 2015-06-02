@@ -267,6 +267,10 @@ MainWindow::MainWindow(QWidget *parent) :
             this,
             SLOT(OnGuideDropped(Qt::DropAction)));
 
+    DefaultScreen* defaultScreen = ScreenWrapper::Instance()->GetActiveScreen();
+    connect(defaultScreen, SIGNAL(DeleteNodes(const HierarchyTreeNode::HIERARCHYTREENODESLIST&)),
+            this->ui->hierarchyDockWidgetContents, SLOT(OnDeleteNodes(const HierarchyTreeNode::HIERARCHYTREENODESLIST&)));
+
 	InitMenu();
 	RestoreMainWindowState();
 	CreateHierarchyDockWidgetToolbar();
@@ -1134,6 +1138,15 @@ void MainWindow::FileMenuTriggered(QAction *resentScene)
 
 bool MainWindow::CheckAndUnlockProject(const QString& projectPath)
 {
+    if (!FileSystem::Instance()->IsFile(projectPath.toStdString()))
+    {
+        QMessageBox msgBox;
+        msgBox.setText(QString(tr("The project file %1 does not exist").arg(projectPath)));
+        msgBox.addButton(tr("OK"), QMessageBox::YesRole);
+        msgBox.exec();
+        return false;
+    }
+    
     if (!FileSystem::Instance()->IsFileLocked(projectPath.toStdString()))
     {
         // Nothing to unlock.
@@ -1762,6 +1775,16 @@ void MainWindow::OnScreenshot()
     DefaultScreen* currentScreen = ScreenWrapper::Instance()->GetActiveScreen();
     if (!currentScreen || !currentScreen->GetScreenControl())
     {
+        return;
+    }
+
+    static const float32 maxScreenshotScale = 4.0f;
+    if (currentScreen->GetScale().x > maxScreenshotScale || currentScreen->GetScale().y > maxScreenshotScale)
+    {
+        QMessageBox msgBox;
+        msgBox.setText(QString("Current zoom level is too high for making screenshots. Reduce it to less than %1%.").arg((int)(maxScreenshotScale * 100)));
+        msgBox.exec();
+
         return;
     }
 

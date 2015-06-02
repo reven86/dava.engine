@@ -58,4 +58,13 @@
         <file>Icons/ignore-case.png</file>
         <file>Icons/custom_icon.png</file>
     </qresource>
+    <qresource prefix="/Cursors">
+        <file>Cursors/arrow.png</file>
+        <file>Cursors/left_corner.png</file>
+        <file>Cursors/left_right.png</file>
+        <file>Cursors/right_corner.png</file>
+        <file>Cursors/up_down.png</file>
+        <file>Cursors/size_all.png</file>
+        <file>Cursors/open_hand.png</file>
+    </qresource>
 </RCC>

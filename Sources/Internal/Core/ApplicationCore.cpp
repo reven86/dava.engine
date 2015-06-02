@@ -31,18 +31,19 @@
 #include "Animation/AnimationManager.h"
 #include "UI/UIControlSystem.h"
 #include "Render/RenderManager.h"
+#include "Render/OcclusionQuery.h"
 #include "Sound/SoundSystem.h"
 #include "Debug/Stats.h"
 #include "Platform/SystemTimer.h"
 #include "DLC/Downloader/DownloadManager.h"
-#include "Platform/Notification.h"
-
+#include "Notification/LocalNotificationController.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
 
 #ifdef __DAVAENGINE_AUTOTESTING__
 #include "Autotesting/AutotestingSystem.h"
 #endif
 
-namespace DAVA 
+namespace DAVA
 {
 
 ApplicationCore::ApplicationCore()
@@ -64,32 +65,41 @@ ApplicationCore::~ApplicationCore()
 void ApplicationCore::Update(float32 timeElapsed)
 {
 	TIME_PROFILE("ApplicationCore::Update");
-
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Update(timeElapsed);
 #endif
-	SoundSystem::Instance()->Update(timeElapsed);
+    SoundSystem::Instance()->Update(timeElapsed);
 	AnimationManager::Instance()->Update(timeElapsed);    
 	UIControlSystem::Instance()->Update();
 }
+    
+void ApplicationCore::OnEnterFullscreen()
+{ }
+
+void ApplicationCore::OnExitFullscreen()
+{ }
 
 void ApplicationCore::Draw()
 {
 	TIME_PROFILE("ApplicationCore::Draw");
 
-	UIControlSystem::Instance()->Draw();	
+    FrameOcclusionQueryManager::Instance()->ResetFrameStats();
+    UIControlSystem::Instance()->Draw();
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Draw();
 #endif
+    FrameOcclusionQueryManager::Instance()->ProccesRenderedFrame();
 }
 
 void ApplicationCore::BeginFrame()
 {
 	RenderManager::Instance()->BeginFrame();
+    RenderSystem2D::Instance()->BeginFrame();
 }
 
 void ApplicationCore::EndFrame()
 {
+    RenderSystem2D::Instance()->EndFrame();
 	RenderManager::Instance()->EndFrame();
     RenderManager::Instance()->ProcessStats();
 }
@@ -148,7 +158,7 @@ void ApplicationCore::BackgroundTickerHandler(BaseObject * caller, void * caller
 {
 	while(!backgroundTickerFinishing)
 	{
-		Thread::SleepThread(backgroundTickTimeMs);
+		Thread::Sleep(backgroundTickTimeMs);
 		OnBackgroundTick();
 	}
 }

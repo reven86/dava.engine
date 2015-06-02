@@ -138,7 +138,7 @@ void HeightmapEditorSystem::Process(DAVA::float32 timeElapsed)
 	}
 }
 
-void HeightmapEditorSystem::ProcessUIEvent(DAVA::UIEvent *event)
+void HeightmapEditorSystem::Input(DAVA::UIEvent *event)
 {
 	if (!IsLandscapeEditingEnabled())
 	{
@@ -243,31 +243,19 @@ void HeightmapEditorSystem::UpdateToolImage(bool force)
 
 Image* HeightmapEditorSystem::CreateToolImage(int32 sideSize, const FilePath& filePath)
 {
-	Sprite *dstSprite = Sprite::CreateAsRenderTarget((float32)sideSize, (float32)sideSize, FORMAT_RGBA8888, true);
+	Texture *dstTex = Texture::CreateFBO((float32)sideSize, (float32)sideSize, FORMAT_RGBA8888, Texture::DEPTH_NONE);
 	Texture *srcTex = Texture::CreateFromFile(filePath);
-	Sprite *srcSprite = Sprite::CreateFromTexture(srcTex, 0, 0, (float32)srcTex->GetWidth(), (float32)srcTex->GetHeight(), true);
 	
-	RenderManager::Instance()->SetRenderTarget(dstSprite);
-	
-	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-		
+    RenderHelper::Instance()->Set2DRenderTarget(dstTex);
+    RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 	RenderManager::Instance()->SetColor(Color::White);
+    RenderHelper::Instance()->DrawTexture(srcTex, RenderState::RENDERSTATE_2D_BLEND, Rect((dstTex->GetWidth() - sideSize) / 2.f, (dstTex->GetHeight() - sideSize) / 2.f, (float32)sideSize, (float32)sideSize));
+    RenderManager::Instance()->SetRenderTarget(0);
 	
-    Sprite::DrawState drawState;
-    drawState.SetScaleSize((float32)sideSize / Core::GetVirtualToPhysicalFactor(),
-                           (float32)sideSize / Core::GetVirtualToPhysicalFactor(),
-                           srcSprite->GetWidth(),
-                           srcSprite->GetHeight());
-    drawState.SetPosition(Vector2((dstSprite->GetTexture()->GetWidth() - sideSize)/2.0f,
-                                  (dstSprite->GetTexture()->GetHeight() - sideSize)/2.0f) / Core::GetVirtualToPhysicalFactor());
-	srcSprite->Draw(&drawState);
-	RenderManager::Instance()->RestoreRenderTarget();
+    Image *retImage = dstTex->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
 	
-	Image *retImage = dstSprite->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
-	
-	SafeRelease(srcSprite);
 	SafeRelease(srcTex);
-	SafeRelease(dstSprite);
+    SafeRelease(dstTex);
 	
 	return retImage;
 }

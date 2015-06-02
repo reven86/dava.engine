@@ -100,7 +100,7 @@ public:
 	
 	inline uint32 GetPassCount() const
 	{
-		return renderTechniquePassArray.size();
+		return static_cast<uint32>(renderTechniquePassArray.size());
 	}
 	
 	inline uint16 GetTechniqueId() const
@@ -137,7 +137,6 @@ public:
 protected:
     bool LoadRenderTechnique(const FastName & fastName, RenderTechnique * targetTechnique);
     bool LoadRenderTechniqueFromYamlNode(const YamlNode * rootNode, RenderTechnique * targetTechnique);
-    
     HashMap<FastName, RenderTechnique *> renderTechniqueMap;
 };
     

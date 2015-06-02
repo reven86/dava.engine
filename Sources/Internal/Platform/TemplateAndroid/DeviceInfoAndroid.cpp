@@ -27,160 +27,135 @@
 =====================================================================================*/
 
 
-#include "../../Utils/Utils.h"
+#include "Utils/Utils.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "DeviceInfoAndroid.h"
 #include "ExternC/AndroidLayer.h"
-#include "unistd.h"
-
-DAVA::String intermediateStr;
-
-extern "C"
-{
-
-void Java_com_dava_framework_JNIDeviceInfo_SetJString(JNIEnv* env, jobject classthis, jstring jString)
-{
-	char str[256] = {0};
-	CreateStringFromJni(env, jString, str);
-	intermediateStr = DAVA::String(str);
-}
-
-}
+#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#include "Platform/TemplateAndroid/JniHelpers.h"
+#include <unistd.h>
 
 namespace DAVA
 {
 
-jclass JniDeviceInfo::gJavaClass = NULL;
-const char* JniDeviceInfo::gJavaClassName = NULL;
-
-jclass JniDeviceInfo::GetJavaClass() const
+JniDeviceInfo::JniDeviceInfo()
+    : jniDeviceInfo("com/dava/framework/JNIDeviceInfo")
 {
-	return gJavaClass;
+	getVersion = jniDeviceInfo.GetStaticMethod<jstring>("GetVersion");
+	getManufacturer = jniDeviceInfo.GetStaticMethod<jstring>("GetManufacturer");
+	getModel = jniDeviceInfo.GetStaticMethod<jstring>("GetModel");
+	getLocale = jniDeviceInfo.GetStaticMethod<jstring>("GetLocale");
+	getRegion = jniDeviceInfo.GetStaticMethod<jstring>("GetRegion");
+	getTimeZone = jniDeviceInfo.GetStaticMethod<jstring>("GetTimeZone");
+	getUDID = jniDeviceInfo.GetStaticMethod<jstring>("GetUDID");
+	getName = jniDeviceInfo.GetStaticMethod<jstring>("GetName");
+	getZBufferSize = jniDeviceInfo.GetStaticMethod<jint>("GetZBufferSize");
+	getHTTPProxyHost = jniDeviceInfo.GetStaticMethod<jstring>("GetHTTPProxyHost");
+	getHTTPNonProxyHosts = jniDeviceInfo.GetStaticMethod<jstring>("GetHTTPNonProxyHosts");
+	getHTTPProxyPort = jniDeviceInfo.GetStaticMethod<jint>("GetHTTPProxyPort");
+	getGPUFamily = jniDeviceInfo.GetStaticMethod<jint>("GetGPUFamily");
+	getNetworkType = jniDeviceInfo.GetStaticMethod<jint>("GetNetworkType");
+	getSignalStrength = jniDeviceInfo.GetStaticMethod<jint, jint>("GetSignalStrength");
+	isPrimaryExternalStoragePresent = jniDeviceInfo.GetStaticMethod<jboolean>("IsPrimaryExternalStoragePresent");
+
 }
 
-const char* JniDeviceInfo::GetJavaClassName() const
+namespace
 {
-	return gJavaClassName;
+    String jstringToString(jstring s)
+    {
+        DVASSERT(0 != s);
+        String result;
+        JNI::CreateStringFromJni(s, result);
+        return result;
+    }
 }
 
 String JniDeviceInfo::GetVersion()
 {
-	intermediateStr = "";
-	jmethodID mid = GetMethodID("GetVersion", "()V");
-	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, 0);
-
-	return intermediateStr;
+	jstring s = getVersion();
+	return jstringToString(s);
 }
 
 String JniDeviceInfo::GetManufacturer()
 {
-	intermediateStr = "";
-	jmethodID mid = GetMethodID("GetManufacturer", "()V");
-	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, 0);
-
-	return intermediateStr;
+	jstring s = getManufacturer();
+	return jstringToString(s);
 }
 
 String JniDeviceInfo::GetModel()
 {
-	intermediateStr = "";
-
-	jmethodID mid = GetMethodID("GetModel", "()V");
-	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, 0);
-
-	return intermediateStr;
+	jstring s = getModel();
+	return jstringToString(s);
 }
 
 String JniDeviceInfo::GetLocale()
 {
-	intermediateStr = "";
-
-	jmethodID mid = GetMethodID("GetLocale", "()V");
-	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, 0);
-
-	return intermediateStr;
+	jstring s = getLocale();
+	return jstringToString(s);
 }
 
 String JniDeviceInfo::GetRegion()
 {
-	intermediateStr = "";
-	jmethodID mid = GetMethodID("GetRegion", "()V");
-	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, 0);
-
-	return intermediateStr;
+	jstring s = getRegion();
+	return jstringToString(s);
 }
 
 String JniDeviceInfo::GetTimeZone()
 {
-	intermediateStr = "";
-	jmethodID mid = GetMethodID("GetTimeZone", "()V");
-	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, 0);
-
-	return intermediateStr;
+	jstring s = getTimeZone();
+	return jstringToString(s);
 }
 
 String JniDeviceInfo::GetUDID()
 {
-	intermediateStr = "";
-	jmethodID mid = GetMethodID("GetUDID", "()V");
-	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, 0);
-
-	return intermediateStr;
+	jstring s = getUDID();
+	return jstringToString(s);
 }
 
 String JniDeviceInfo::GetName()
 {
-	intermediateStr = "";
-	jmethodID mid = GetMethodID("GetName", "()V");
-	if (mid)
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, 0);
-
-	return intermediateStr;
+    jstring s = getName();
+	return jstringToString(s);
 }
 
 int32 JniDeviceInfo::GetZBufferSize()
 {
-	jmethodID mid = GetMethodID("GetZBufferSize", "()I");
-	if (mid)
-		return GetEnvironment()->CallStaticIntMethod(GetJavaClass(), mid);
+	return getZBufferSize();
+}
 
-	return 0;
+String JniDeviceInfo::GetHTTPProxyHost()
+{
+	jstring s = getHTTPProxyHost();
+	return jstringToString(s);
+}
+
+String JniDeviceInfo::GetHTTPNonProxyHosts()
+{
+	jstring s = getHTTPNonProxyHosts();
+	return jstringToString(s);
+}
+
+int32 JniDeviceInfo::GetHTTPProxyPort()
+{
+	return getHTTPProxyPort();
 }
 
 int32 JniDeviceInfo::GetGPUFamily()
 {
-	jmethodID mid = GetMethodID("GetGPUFamily", "()I");
-	if (mid)
-		return GetEnvironment()->CallStaticIntMethod(GetJavaClass(), mid);
-
-	return -1;
+	return getGPUFamily();
 }
 
 int32 JniDeviceInfo::GetNetworkType()
 {
-	jmethodID mid = GetMethodID("GetNetworkType", "()I");
-	if (mid)
-		return GetEnvironment()->CallStaticIntMethod(GetJavaClass(), mid);
-
-	return 0;
+	return getNetworkType();
 }
 
-int32 JniDeviceInfo::GetSignalStrength(int networkType)
+int32 JniDeviceInfo::GetSignalStrength(int32 networkType)
 {
-	jmethodID mid = GetMethodID("GetSignalStrength", "(I)I");
-	if (mid)
-		return GetEnvironment()->CallStaticIntMethod(GetJavaClass(), mid, networkType);
-
-	return 0;
+	return getSignalStrength(networkType);
 }
 
 DeviceInfo::StorageInfo JniDeviceInfo::StorageInfoFromJava(jobject object)
@@ -189,26 +164,30 @@ DeviceInfo::StorageInfo JniDeviceInfo::StorageInfoFromJava(jobject object)
 
 	if (object)
 	{
-		jclass classInfo = GetEnvironment()->GetObjectClass(object);
+		JNIEnv *env = JNI::GetEnv();
+		jclass classInfo = env->GetObjectClass(object);
 
 		jfieldID fieldID;
 
-		fieldID = GetEnvironment()->GetFieldID(classInfo, "freeSpace", "J");
-		info.freeSpace = GetEnvironment()->GetLongField(object, fieldID);
+		fieldID = env->GetFieldID(classInfo, "freeSpace", "J");
+		info.freeSpace = env->GetLongField(object, fieldID);
 
-		fieldID = GetEnvironment()->GetFieldID(classInfo, "capacity", "J");
-		info.totalSpace = GetEnvironment()->GetLongField(object, fieldID);
+		fieldID = env->GetFieldID(classInfo, "capacity", "J");
+		info.totalSpace = env->GetLongField(object, fieldID);
 
-		fieldID = GetEnvironment()->GetFieldID(classInfo, "readOnly", "Z");
-		info.readOnly = GetEnvironment()->GetBooleanField(object, fieldID);
+		fieldID = env->GetFieldID(classInfo, "readOnly", "Z");
+		info.readOnly = env->GetBooleanField(object, fieldID);
 
-		fieldID = GetEnvironment()->GetFieldID(classInfo, "emulated", "Z");
-		info.emulated = GetEnvironment()->GetBooleanField(object, fieldID);
+		fieldID = env->GetFieldID(classInfo, "removable", "Z");
+		info.removable = env->GetBooleanField(object, fieldID);
+		
+		fieldID = env->GetFieldID(classInfo, "emulated", "Z");
+		info.emulated = env->GetBooleanField(object, fieldID);
 
-		fieldID = GetEnvironment()->GetFieldID(classInfo, "path", "Ljava/lang/String;");
-		jstring jStr = (jstring)GetEnvironment()->GetObjectField(object, fieldID);
+		fieldID = env->GetFieldID(classInfo, "path", "Ljava/lang/String;");
+		jstring jStr = (jstring)env->GetObjectField(object, fieldID);
 		char str[512] = {0};
-		CreateStringFromJni(GetEnvironment(), jStr, str);
+		JNI::CreateStringFromJni(env, jStr, str);
 		info.path = String(str);
 	}
 
@@ -217,14 +196,15 @@ DeviceInfo::StorageInfo JniDeviceInfo::StorageInfoFromJava(jobject object)
 
 DeviceInfo::StorageInfo JniDeviceInfo::GetInternalStorageInfo()
 {
-	jmethodID mid = GetMethodID("GetInternalStorageInfo", "()Lcom/dava/framework/JNIDeviceInfo$StorageInfo;");
+	JNIEnv *env = JNI::GetEnv();
+	jmethodID mid = env->GetStaticMethodID(jniDeviceInfo, "GetInternalStorageInfo", "()Lcom/dava/framework/JNIDeviceInfo$StorageInfo;");
 
 	DeviceInfo::StorageInfo info;
 
 	if (mid)
 	{
-		jobject object = (jobject)GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid);
-
+		jobject object = (jobject)env->CallStaticObjectMethod(jniDeviceInfo, mid);
+		DAVA_JNI_EXCEPTION_CHECK
 		if (object)
 		{
 			info = StorageInfoFromJava(object);
@@ -237,14 +217,7 @@ DeviceInfo::StorageInfo JniDeviceInfo::GetInternalStorageInfo()
 
 bool JniDeviceInfo::IsPrimaryExternalStoragePresent()
 {
-	jmethodID mid = GetMethodID("IsPrimaryExternalStoragePresent", "()Z");
-
-	int ret = false;
-	if (mid)
-	{
-		ret = GetEnvironment()->CallStaticBooleanMethod(GetJavaClass(), mid);
-	}
-	return ret;
+	return isPrimaryExternalStoragePresent();
 }
 
 DeviceInfo::StorageInfo JniDeviceInfo::GetPrimaryExternalStorageInfo()
@@ -255,12 +228,14 @@ DeviceInfo::StorageInfo JniDeviceInfo::GetPrimaryExternalStorageInfo()
 		return info;
 	}
 
-	jmethodID mid = GetMethodID("GetPrimaryExternalStorageInfo", "()Lcom/dava/framework/JNIDeviceInfo$StorageInfo;");
+	JNIEnv *env = JNI::GetEnv();
+
+	jmethodID mid = env->GetStaticMethodID(jniDeviceInfo, "GetPrimaryExternalStorageInfo", "()Lcom/dava/framework/JNIDeviceInfo$StorageInfo;");
 
 	if (mid)
 	{
-		jobject object = (jobject)GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid);
-
+		jobject object = (jobject)env->CallStaticObjectMethod(jniDeviceInfo, mid);
+		DAVA_JNI_EXCEPTION_CHECK
 		if (object)
 		{
 			info = StorageInfoFromJava(object);
@@ -275,18 +250,21 @@ List<DeviceInfo::StorageInfo> JniDeviceInfo::GetSecondaryExternalStoragesList()
 {
 	List<DeviceInfo::StorageInfo> list;
 
-	jmethodID mid = GetMethodID("GetSecondaryExternalStoragesList", "()[Lcom/dava/framework/JNIDeviceInfo$StorageInfo;");
+	JNIEnv *env = JNI::GetEnv();
+
+	jmethodID mid = env->GetStaticMethodID(jniDeviceInfo, "GetSecondaryExternalStoragesList", "()[Lcom/dava/framework/JNIDeviceInfo$StorageInfo;");
 
 	if (mid)
 	{
-		jarray array = (jarray)GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid);
+		jarray array = (jarray)env->CallStaticObjectMethod(jniDeviceInfo, mid);
+		DAVA_JNI_EXCEPTION_CHECK
 		if (array)
 		{
-			jsize length = GetEnvironment()->GetArrayLength(array);
+			jsize length = env->GetArrayLength(array);
 
 			for (jsize i = 0; i < length; ++i)
 			{
-				jobject object = GetEnvironment()->GetObjectArrayElement((jobjectArray)array, i);
+				jobject object = env->GetObjectArrayElement((jobjectArray)array, i);
 
 				if (object)
 				{
@@ -372,6 +350,24 @@ int DeviceInfo::GetZBufferSize()
 	return jniDeviceInfo.GetZBufferSize();
 }
 
+String DeviceInfo::GetHTTPProxyHost()
+{
+	JniDeviceInfo jniDeviceInfo;
+	return jniDeviceInfo.GetHTTPProxyHost();
+}
+
+String DeviceInfo::GetHTTPNonProxyHosts()
+{
+	JniDeviceInfo jniDeviceInfo;
+	return jniDeviceInfo.GetHTTPNonProxyHosts();
+}
+
+int DeviceInfo::GetHTTPProxyPort()
+{
+	JniDeviceInfo jniDeviceInfo;
+	return jniDeviceInfo.GetHTTPProxyPort();
+}
+
 eGPUFamily DeviceInfo::GetGPUFamily()
 {
 	JniDeviceInfo jniDeviceInfo;
@@ -410,6 +406,15 @@ List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
 
     return l;
 }
+
+void DeviceInfo::InitializeScreenInfo()
+{
+    CorePlatformAndroid *core = (CorePlatformAndroid *)Core::Instance();
+    screenInfo.width = core->GetViewWidth();
+    screenInfo.height = core->GetViewHeight();
+    screenInfo.scale = 1;
+}
+
 
 int32 DeviceInfo::GetCpuCount()
 {
