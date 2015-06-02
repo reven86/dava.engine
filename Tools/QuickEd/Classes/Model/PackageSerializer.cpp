@@ -270,7 +270,7 @@ void PackageSerializer::VisitRootProperty(RootProperty *property)
         for (const auto section : property->GetInternalControlProperties())
             section->Accept(this);
         
-        EndArray();
+        EndMap();
     }
 
 }
