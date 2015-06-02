@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Render/Material.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Render/Highlevel/RenderFastNames.h"

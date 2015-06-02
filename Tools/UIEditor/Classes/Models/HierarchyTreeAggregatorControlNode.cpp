@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "HierarchyTreeAggregatorControlNode.h"
 #include "HierarchyTreeAggregatorNode.h"
 

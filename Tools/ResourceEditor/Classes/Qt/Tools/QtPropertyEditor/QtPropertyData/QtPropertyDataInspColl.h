@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __QT_PROPERTY_DATA_INTRO_COLLECTION_H__
 #define __QT_PROPERTY_DATA_INTRO_COLLECTION_H__
 

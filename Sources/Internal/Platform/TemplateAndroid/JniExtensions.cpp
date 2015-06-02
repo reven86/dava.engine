@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "JniExtensions.h"
 #include "Platform/Thread.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"

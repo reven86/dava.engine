@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef CHANGEFONTPROPERTYCOMMAND_H
 #define CHANGEFONTPROPERTYCOMMAND_H
 

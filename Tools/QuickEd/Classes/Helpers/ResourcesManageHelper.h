@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #ifndef UIEditor_ResourcesManageHelper_h
 #define UIEditor_ResourcesManageHelper_h
 

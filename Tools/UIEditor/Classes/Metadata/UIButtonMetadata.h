@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #ifndef __UIEditor__ButtonNodeMetadata__
 #define __UIEditor__ButtonNodeMetadata__
 

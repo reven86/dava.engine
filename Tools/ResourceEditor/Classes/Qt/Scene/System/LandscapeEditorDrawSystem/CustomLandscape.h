@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__CUSTOMLANDSCAPE__
 #define __RESOURCEEDITORQT__CUSTOMLANDSCAPE__
 

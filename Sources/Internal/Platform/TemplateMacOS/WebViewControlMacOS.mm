@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "WebViewControlMacOS.h"
 #include "MainWindowController.h"
 

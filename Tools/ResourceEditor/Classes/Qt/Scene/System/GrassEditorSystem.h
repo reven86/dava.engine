@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__GRASSEDITORSYSTEM__
 #define __RESOURCEEDITORQT__GRASSEDITORSYSTEM__
 

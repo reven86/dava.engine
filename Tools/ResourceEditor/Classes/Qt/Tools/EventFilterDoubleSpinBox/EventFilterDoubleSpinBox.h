@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __EVENT_FILTER_DOUBLE_SPIN_BOX_H__
 #define __EVENT_FILTER_DOUBLE_SPIN_BOX_H__
 

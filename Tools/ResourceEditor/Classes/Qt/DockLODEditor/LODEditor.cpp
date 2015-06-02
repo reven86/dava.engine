@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "LODEditor.h"
 #include "ui_LODEditor.h"
 
@@ -43,6 +42,8 @@
 #include <QWidget>
 #include <QLineEdit>
 #include <QInputDialog>
+#include <QFrame>
+#include <QPushButton>
 
 
 LODEditor::LODEditor(QWidget* parent)
@@ -58,8 +59,8 @@ LODEditor::LODEditor(QWidget* parent)
 
     SetupInternalUI();
     SetupSceneSignals();
-       
-    posSaver.Attach(this);
+      
+    new QtPosSaver( this );
 }
 
 LODEditor::~LODEditor()

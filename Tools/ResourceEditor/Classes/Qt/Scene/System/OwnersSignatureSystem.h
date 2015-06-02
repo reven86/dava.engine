@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __OWNERS_SIGNATURE_SYSTEM_H__
 #define __OWNERS_SIGNATURE_SYSTEM_H__
 
