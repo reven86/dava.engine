@@ -56,7 +56,7 @@ class TextureDescriptor
 
     static const int32 DATE_BUFFER_SIZE = 20;
     static const int32 LINE_SIZE = 256;
-    static const int8 CURRENT_VERSION = 9;
+    static const int8 CURRENT_VERSION = 10;
     
 	enum eSignatures
 	{
@@ -79,22 +79,13 @@ public:
 		int8 magFilter;
         int8 mipFilter;
 
-		
-#if RHI_COMPLETE
         INTROSPECTION(TextureDrawSettings,
-			MEMBER(wrapModeS, InspDesc("wrapModeS", GlobalEnumMap<Texture::TextureWrap>::Instance()), I_VIEW | I_EDIT | I_SAVE)
-			MEMBER(wrapModeT, InspDesc("wrapModeT", GlobalEnumMap<Texture::TextureWrap>::Instance()), I_VIEW | I_EDIT | I_SAVE)
-			MEMBER(minFilter, InspDesc("minFilter", GlobalEnumMap<Texture::TextureFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
-			MEMBER(magFilter, InspDesc("magFilter", GlobalEnumMap<Texture::TextureFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
+            MEMBER(wrapModeS, InspDesc("wrapModeS", GlobalEnumMap<rhi::TextureAddrMode>::Instance()), I_VIEW | I_EDIT | I_SAVE)
+            MEMBER(wrapModeT, InspDesc("wrapModeT", GlobalEnumMap<rhi::TextureAddrMode>::Instance()), I_VIEW | I_EDIT | I_SAVE)
+			MEMBER(minFilter, InspDesc("minFilter", GlobalEnumMap<rhi::TextureFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
+            MEMBER(magFilter, InspDesc("magFilter", GlobalEnumMap<rhi::TextureFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
+            MEMBER(mipFilter, InspDesc("mipFilter", GlobalEnumMap<rhi::TextureMipFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
         )
-#else
-        INTROSPECTION(TextureDrawSettings,
-            MEMBER(wrapModeS, "wrapModeS", I_VIEW | I_EDIT | I_SAVE)
-            MEMBER(wrapModeT, "wrapModeT", I_VIEW | I_EDIT | I_SAVE)
-            MEMBER(minFilter, "minFilter", I_VIEW | I_EDIT | I_SAVE)
-            MEMBER(magFilter, "magFilter", I_VIEW | I_EDIT | I_SAVE)
-        )
-#endif // RHI_COMPLETE
 		
 
 	};
@@ -231,7 +222,10 @@ protected:
     void LoadVersion7(File *file);
     void LoadVersion8(File *file);
     void LoadVersion9(File *file);
+    void LoadVersion10(File *file);
     
+    void ConvertV9orLessToV10();
+
     void RecalculateCompressionSourceCRC();
 	uint32 ReadSourceCRC() const;
     uint32 ReadSourceCRC_V8_or_less() const;

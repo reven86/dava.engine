@@ -118,6 +118,14 @@
 #define  GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG    0
 #endif
 
+#if !defined(GL_HALF_FLOAT_OES)
+#define  GL_HALF_FLOAT_OES    0
+#endif
+
+#if !defined(GL_HALF_FLOAT)
+#define GL_HALF_FLOAT GL_HALF_FLOAT_OES
+#endif
+
 #include "../rhi_Type.h"
 
 #if 0

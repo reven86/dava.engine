@@ -270,6 +270,26 @@ ENUM_DECLARE(UIComponent::eType)
     ENUM_ADD_DESCR(UIComponent::FAKE_MULTI_COMPONENT       , "FakeMultiple"       );
 };
 
+ENUM_DECLARE(rhi::TextureAddrMode)
+{
+    ENUM_ADD(rhi::TEXADDR_WRAP);
+    ENUM_ADD(rhi::TEXADDR_CLAMP);
+    ENUM_ADD(rhi::TEXADDR_MIRROR);
+};
+
+ENUM_DECLARE(rhi::TextureFilter)
+{
+    ENUM_ADD(rhi::TEXFILTER_NEAREST);
+    ENUM_ADD(rhi::TEXFILTER_LINEAR);
+};
+
+ENUM_DECLARE(rhi::TextureMipFilter)
+{
+    ENUM_ADD(rhi::TEXMIPFILTER_NONE);
+    ENUM_ADD(rhi::TEXMIPFILTER_NEAREST);
+    ENUM_ADD(rhi::TEXMIPFILTER_LINEAR);
+};
+
 /*
 void f()
 {

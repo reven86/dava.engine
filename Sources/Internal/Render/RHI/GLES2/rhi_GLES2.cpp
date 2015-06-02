@@ -230,12 +230,6 @@ gles2_Initialize( const InitParam& param )
 
     ConstBufferGLES2::InitializeRingBuffer( 4*1024*1024 ); // CRAP: hardcoded default const ring-buf size
 
-    Logger::Info("GL inited\n");
-    Logger::Info("  GL version   : %s", glGetString(GL_VERSION));
-    Logger::Info("  GPU vendor   : %s", glGetString(GL_VENDOR));
-    Logger::Info("  GPU          : %s", glGetString(GL_RENDERER));
-    Logger::Info("  GLSL version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
-
 #if defined(__DAVAENGINE_WIN32__)
     glEnable( GL_DEBUG_OUTPUT );
     glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE );
@@ -368,6 +362,13 @@ GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* 
             success = true;
             break;
 
+        case TEXTURE_FORMAT_A16R16G16B16:
+            *internalFormat = GL_RGBA;
+            *format = GL_RGBA;
+            *type = GL_HALF_FLOAT;
+            success = true;
+            break;
+
         case TEXTURE_FORMAT_A32R32G32B32:
             *internalFormat = GL_RGBA;
             *format = GL_RGBA;
@@ -482,18 +483,6 @@ GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* 
             *type = GL_UNSIGNED_BYTE;
             success = true;
             break;
-            /*
-                TEXTURE_FORMAT_A16R16G16B16,
-
-                TEXTURE_FORMAT_PVRTC_4BPP_RGB,
-                TEXTURE_FORMAT_PVRTC_2BPP_RGB,
-
-                TEXTURE_FORMAT_PVRTC2_4BPP_RGB,
-                TEXTURE_FORMAT_PVRTC2_2BPP_RGB,
-
-                TEXTURE_FORMAT_D16,
-                TEXTURE_FORMAT_D24S8
-                */
 
         default :
             success = false;
