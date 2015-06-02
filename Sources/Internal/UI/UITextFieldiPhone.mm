@@ -328,7 +328,7 @@ namespace DAVA
         // Notify UITextFieldDelegate::TextFieldOnTextChanged event
         [textFieldHolder->textField sendActionsForControlEvents:UIControlEventEditingChanged];
         
-        if(textChanged)
+        if(textChanged || string.empty())
         {
             UpdateStaticTexture();
         }
@@ -461,10 +461,13 @@ namespace DAVA
     
     void UITextFieldiPhone::UpdateStaticTexture()
     {
-        if (renderToTexture && deltaMoveControl != 0)
+        UITextFieldHolder * textFieldHolder = static_cast<UITextFieldHolder*>(objcClassPtr);
+        DVASSERT(textFieldHolder);
+        
+        if (renderToTexture && deltaMoveControl != 0
+            && textFieldHolder->textField.text.length > 0)
         {
-            UITextFieldHolder * textFieldHolder = static_cast<UITextFieldHolder*>(objcClassPtr);
-            DVASSERT(textFieldHolder);
+            
             ::UITextField* textField = textFieldHolder->textField;
             DVASSERT(textField);
             void* imgPtr = DAVA::WebViewControl::RenderIOSUIViewToImage(textField);
