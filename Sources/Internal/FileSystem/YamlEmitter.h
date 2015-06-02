@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __DAVAENGINE_YAML_EMITTER_H__
 #define __DAVAENGINE_YAML_EMITTER_H__
 #include "Base/BaseObject.h"

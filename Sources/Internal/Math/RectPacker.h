@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_RECT_PACKER__
 #define __DAVAENGINE_RECT_PACKER__
 

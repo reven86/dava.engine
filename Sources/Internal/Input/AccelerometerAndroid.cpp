@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Input/AccelerometerAndroid.h"
 
 #if defined(__DAVAENGINE_ANDROID__)

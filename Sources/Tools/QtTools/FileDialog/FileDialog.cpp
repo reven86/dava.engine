@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "QtTools/FileDialog/FileDialog.h"
 #include "QtTools/FrameworkBinding/FrameworkLoop.h"
 

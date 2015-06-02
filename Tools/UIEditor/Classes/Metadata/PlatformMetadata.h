@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #ifndef __UIEditor__PlatformMetadata__
 #define __UIEditor__PlatformMetadata__
 

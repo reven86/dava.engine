@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "MaterialSwitchParentCommand.h"
 
 MaterialSwitchParentCommand::MaterialSwitchParentCommand(DAVA::NMaterial *instance, DAVA::NMaterial *_newParent)

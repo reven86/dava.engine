@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_SCENE3D_LODSYSTEM_H__
 #define __DAVAENGINE_SCENE3D_LODSYSTEM_H__
 

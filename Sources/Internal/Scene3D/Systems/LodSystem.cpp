@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene3D/Systems/LodSystem.h"
 #include "Debug/DVAssert.h"
 #include "Scene3D/Entity.h"

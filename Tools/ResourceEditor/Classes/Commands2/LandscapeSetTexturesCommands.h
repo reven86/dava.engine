@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__LANDSCAPESETTEXTURESCOMMANDS2__
 #define __RESOURCEEDITORQT__LANDSCAPESETTEXTURESCOMMANDS2__
 

@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #ifndef __UIEditor__HierarchyTreeNodeExtraData__
 #define __UIEditor__HierarchyTreeNodeExtraData__
 

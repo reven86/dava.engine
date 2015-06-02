@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "GradientPickerWidget.h"
 #include <QPainter>
 #include <QPaintEvent>

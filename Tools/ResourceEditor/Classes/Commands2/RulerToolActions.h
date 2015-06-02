@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __RESOURCEEDITORQT__RULERTOOLACTIONS__
 #define __RESOURCEEDITORQT__RULERTOOLACTIONS__
 

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "SelectPathWidgetBase.h"
 #include "Tools/MimeDataHelper/MimeDataHelper.h"
 #include "Qt/Settings/SettingsManager.h"

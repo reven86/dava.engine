@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __PARTICLE_EMITTER_MOVE_COMMANDS_H__
 #define __PARTICLE_EMITTER_MOVE_COMMANDS_H__
 

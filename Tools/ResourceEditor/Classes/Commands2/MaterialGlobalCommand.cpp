@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "MaterialGlobalCommand.h"
 
 MaterialGlobalSetCommand::MaterialGlobalSetCommand(DAVA::Scene *_scene, DAVA::NMaterial *global)

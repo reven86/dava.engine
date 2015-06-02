@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "DockSceneTree/SceneTree.h"
 #include "Main/mainwindow.h"
 #include "StringConstants.h"

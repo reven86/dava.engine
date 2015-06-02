@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __Q_RESOURSE_EDITOR_PROGRESS_DIALOG_H__
 #define __Q_RESOURSE_EDITOR_PROGRESS_DIALOG_H__
 

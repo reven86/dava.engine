@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __RESOURCEEDITORQT__TEXTUREPATHVALIDATOR__
 #define __RESOURCEEDITORQT__TEXTUREPATHVALIDATOR__
 

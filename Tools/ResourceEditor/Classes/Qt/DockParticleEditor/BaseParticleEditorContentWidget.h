@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__BASEPARTICLEEDITORCONTENTWIDGET__
 #define __RESOURCEEDITORQT__BASEPARTICLEEDITORCONTENTWIDGET__
 
