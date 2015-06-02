@@ -36,152 +36,238 @@ namespace //for private members
 {
 uint32 defaultPageSize = 0x0000ffff;
 
-struct BufferInfo
+const uint32 DEF_FRAMES_COUNT = 3;
+
+
+template <class HBuffer> class BufferProxy
 {
-    rhi::HVertexBuffer buffer;
-    uint32 allocatedSize;
-    uint32 dirtyTimeout;
-    bool shouldBeEvicted;
+public:
+    static HBuffer CreateBuffer(uint32 size);
+    static uint8* MapBuffer(HBuffer handle, uint32 offset, uint32 size);
+    static void UnmapBuffer(HBuffer handle);
+    static void DeleteBuffer(HBuffer handle);
 };
 
-BufferInfo* currentlyMappedBuffer = nullptr;
-uint8* currentlyMappedData = nullptr;
-uint32 currentlyUsedSize = 0;
-
-List<BufferInfo*> freeBuffers;
-List<BufferInfo*> usedBuffers;
-
-}
-
-
-
-AllocResultVB AllocateVertexBuffer(uint32 vertexSize, uint32 vertexCount)
+template <> class BufferProxy<rhi::HVertexBuffer>
 {
-    DVASSERT(vertexSize);
-    DVASSERT((vertexSize * vertexCount) <= defaultPageSize); //assert for now - later allocate as much as possible and return incomplete buffer
-    uint32 requiredSize = vertexSize * vertexCount;
+public:
+    static rhi::HVertexBuffer CreateBuffer(uint32 size){ return rhi::CreateVertexBuffer(size); }
+    static uint8* MapBuffer(rhi::HVertexBuffer handle, uint32 offset, uint32 size){ return (uint8*) rhi::MapVertexBuffer(handle, offset, size); }
+    static void UnmapBuffer(rhi::HVertexBuffer handle){ rhi::UnmapVertexBuffer(handle); }
+    static void DeleteBuffer(rhi::HVertexBuffer handle){ rhi::DeleteVertexBuffer(handle); }
+};
 
-    //try to fit in current buffer
-    if (currentlyMappedBuffer) //try to fit in existing
+template <> class BufferProxy < rhi::HIndexBuffer >
+{
+public:
+    static rhi::HIndexBuffer CreateBuffer(uint32 size){ return rhi::CreateIndexBuffer(size); }
+    static uint8* MapBuffer(rhi::HIndexBuffer handle, uint32 offset, uint32 size){ return (uint8*)rhi::MapIndexBuffer(handle, offset, size); }
+    static void UnmapBuffer(rhi::HIndexBuffer handle){ rhi::UnmapIndexBuffer(handle); }
+    static void DeleteBuffer(rhi::HIndexBuffer handle){ rhi::DeleteIndexBuffer(handle); }
+};
+
+
+
+
+template <class HBuffer> struct BufferAllocator
+{    
+    struct BufferInfo
     {
-        uint32 baseV = ((currentlyUsedSize + vertexSize - 1) / vertexSize);
-        uint32 offset = baseV * vertexSize;
-        if ((offset + requiredSize) < currentlyMappedBuffer->allocatedSize)
+        HBuffer buffer;
+        uint32 allocatedSize;
+        uint32 dirtyTimeout;
+        bool shouldBeEvicted;
+    };
+
+    struct BufferAllocateResult
+    {
+        HBuffer buffer;
+        uint8 *data;
+        uint32 base;
+        uint32 count;
+    };    
+
+    BufferAllocateResult AllocateData(uint32 size, uint32 count)
+    {
+        DVASSERT(size);
+        uint32 requiredSize = (size * count);
+        DVASSERT(requiredSize <= defaultPageSize); //assert for now - later allocate as much as possible and return incomplete buffer
+        uint32 base = ((currentlyUsedSize + size - 1) / size);
+        uint32 offset = base * size;
+        //cant fit - start new
+        if ((!currentlyMappedBuffer) || ((offset + requiredSize) > currentlyMappedBuffer->allocatedSize))
         {
-            currentlyUsedSize = offset + requiredSize;
-            AllocResultVB res;
-            res.buffer = currentlyMappedBuffer->buffer;
-            res.data = currentlyMappedData + offset;
-            res.baseVertex = baseV;
-            res.allocatedVertices = vertexCount;            
-            return res;
+            if (currentlyMappedBuffer) //unmap it
+            {
+                BufferProxy<HBuffer>::UnmapBuffer(currentlyMappedBuffer->buffer);
+                currentlyMappedBuffer->dirtyTimeout = DEF_FRAMES_COUNT;
+                usedBuffers.push_back(currentlyMappedBuffer);
+            }
+            if (freeBuffers.size())
+            {
+                currentlyMappedBuffer = *freeBuffers.begin();
+                freeBuffers.pop_front();
+            }
+            else
+            {
+                currentlyMappedBuffer = new BufferInfo();
+                currentlyMappedBuffer->allocatedSize = defaultPageSize;
+                currentlyMappedBuffer->buffer = BufferProxy<HBuffer>::CreateBuffer(defaultPageSize); 
+                currentlyMappedBuffer->shouldBeEvicted = false;
+            }
+            currentlyMappedData = BufferProxy<HBuffer>::MapBuffer(currentlyMappedBuffer->buffer, 0, currentlyMappedBuffer->allocatedSize); 
+            offset = 0;
+            base = 0;
         }
-        else // cant fit - finish it! :)
+
+        BufferAllocateResult res;
+        res.buffer = currentlyMappedBuffer->buffer;
+        res.data = currentlyMappedData + offset;
+        res.base = base;
+        res.count = count;
+
+        return res;
+    }
+
+
+    void Clear()
+    {
+        for (auto b : freeBuffers)
         {
-            rhi::UnmapVertexBuffer(currentlyMappedBuffer->buffer);
+            BufferProxy<HBuffer>::DeleteBuffer(b->buffer);
+            SafeDelete(b);
+        }
+        for (auto b : usedBuffers)
+            b->shouldBeEvicted = true;       
+    }
+
+    void BeginFrame()
+    {
+        //update used buffers ttl
+        auto it = usedBuffers.begin();
+        while (it != usedBuffers.end())
+        {
+            (*it)->dirtyTimeout--;
+            if ((*it)->dirtyTimeout == 0)
+            {
+                if ((*it)->shouldBeEvicted)
+                {
+                    BufferProxy<HBuffer>::DeleteBuffer((*it)->buffer);
+                    SafeDelete(*it);
+                }
+                else
+                {
+                    freeBuffers.push_back(*it);
+                }
+                it = usedBuffers.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+    }
+
+    void EndFrame()
+    {
+        if (currentlyMappedBuffer)
+        {
+            BufferProxy<HBuffer>::UnmapBuffer(currentlyMappedBuffer->buffer);
             usedBuffers.push_back(currentlyMappedBuffer);
-            currentlyMappedBuffer->dirtyTimeout = 3;            
+            currentlyMappedBuffer->dirtyTimeout = DEF_FRAMES_COUNT;
             currentlyMappedData = nullptr;
             currentlyMappedBuffer = nullptr;
             currentlyUsedSize = 0;
         }
     }
 
-    //start new buffer
-    if (freeBuffers.size())
-    {
-        currentlyMappedBuffer = *freeBuffers.begin();
-        freeBuffers.pop_front();
+    void InsertEvictingBuffer(HBuffer buffer)
+    {        
+        BufferInfo *target = new BufferInfo();
+        target->buffer = buffer;
+        target->dirtyTimeout = DEF_FRAMES_COUNT;
+        target->shouldBeEvicted = true;
+        usedBuffers.push_back(target);
     }
-    else
-    {
-        currentlyMappedBuffer = new BufferInfo();
-        currentlyMappedBuffer->allocatedSize = defaultPageSize;
-        currentlyMappedBuffer->buffer = rhi::CreateVertexBuffer(defaultPageSize);
-        currentlyMappedBuffer->shouldBeEvicted = false;        
-    }    
-    currentlyMappedData = (uint8*) rhi::MapVertexBuffer(currentlyMappedBuffer->buffer, 0, currentlyMappedBuffer->allocatedSize);            
-    
-    //fit new
-    currentlyUsedSize = requiredSize;
-    AllocResultVB res;
-    res.buffer = currentlyMappedBuffer->buffer;
-    res.data = currentlyMappedData;
-    res.baseVertex = 0;
-    res.allocatedVertices = vertexCount;    
-    return res;
-    
+
+private:
+    BufferInfo* currentlyMappedBuffer = nullptr;
+    uint8* currentlyMappedData = nullptr;
+    uint32 currentlyUsedSize = 0;
+    List<BufferInfo*> freeBuffers;
+    List<BufferInfo*> usedBuffers;
+
+};
+
+BufferAllocator<rhi::HVertexBuffer> vertexBufferAllocator;
+BufferAllocator<rhi::HIndexBuffer>  indexBufferAllocator;
+
+rhi::HIndexBuffer currQuadList;
+uint32 currMaxQuadCount = 0;
 }
 
 
-rhi::HIndexBuffer GetDefaultQuadListIndexBuffer(uint32 quadCount)
+AllocResultVB AllocateVertexBuffer(uint32 vertexSize, uint32 vertexCount)
 {
-    /*
-    uint16 indices[6 * 1000];
+    BufferAllocator<rhi::HVertexBuffer>::BufferAllocateResult result = vertexBufferAllocator.AllocateData(vertexSize, vertexCount);    
+    return AllocResultVB{ result.buffer, result.data, result.base, result.count };        
+}
 
-    for (int i = 0; i < 1000; ++i)
+AllocResultIB AllocateIndexBuffer(uint32 indexCount)
+{
+    BufferAllocator<rhi::HIndexBuffer>::BufferAllocateResult result = indexBufferAllocator.AllocateData(2, indexCount);
+    return AllocResultIB{ result.buffer, (uint16 *) result.data, result.base, result.count };
+}
+
+
+rhi::HIndexBuffer AllocateQuadListIndexBuffer(uint32 quadCount)
+{
+
+    if (quadCount > currMaxQuadCount)
     {
-    indices[i*INDICES_PER_PARTICLE + 0] = i*POINTS_PER_PARTICLE + 0;
-    indices[i*INDICES_PER_PARTICLE + 1] = i*POINTS_PER_PARTICLE + 1;
-    indices[i*INDICES_PER_PARTICLE + 2] = i*POINTS_PER_PARTICLE + 2;
-    indices[i*INDICES_PER_PARTICLE + 3] = i*POINTS_PER_PARTICLE + 2;
-    indices[i*INDICES_PER_PARTICLE + 4] = i*POINTS_PER_PARTICLE + 1;
-    indices[i*INDICES_PER_PARTICLE + 5] = i*POINTS_PER_PARTICLE + 3; //preserve order
+        if (currQuadList.IsValid())
+            indexBufferAllocator.InsertEvictingBuffer(currQuadList);
+
+        const uint32 VERTICES_PER_QUAD = 4;
+        const uint32 INDICES_PER_QUAD = 6;
+
+        currMaxQuadCount = quadCount;
+        uint32 bufferSize = quadCount * INDICES_PER_QUAD * 2; //uint16 = 2 bytes per index
+        currQuadList = rhi::CreateIndexBuffer(bufferSize);
+        uint16 * indices = (uint16*)rhi::MapIndexBuffer(currQuadList, 0, bufferSize);
+
+        for (uint32 i = 0; i < quadCount; ++i)
+        {
+            indices[i*INDICES_PER_QUAD + 0] = i*VERTICES_PER_QUAD + 0;
+            indices[i*INDICES_PER_QUAD + 1] = i*VERTICES_PER_QUAD + 1;
+            indices[i*INDICES_PER_QUAD + 2] = i*VERTICES_PER_QUAD + 2;
+            indices[i*INDICES_PER_QUAD + 3] = i*VERTICES_PER_QUAD + 2;
+            indices[i*INDICES_PER_QUAD + 4] = i*VERTICES_PER_QUAD + 1;
+            indices[i*INDICES_PER_QUAD + 5] = i*VERTICES_PER_QUAD + 3; //preserve order
+        }
+
+        rhi::UnmapIndexBuffer(currQuadList);
     }
-    indexBuffer = rhi::CreateIndexBuffer(1000 * 2);
-    rhi::UpdateIndexBuffer(indexBuffer, indices, 0, 1000 * 2);
-    */
+
+    return currQuadList;
 }
 
 void BeginFrame()
 {
-    //update used buffers ttl
-    auto it = usedBuffers.begin();
-    while (it!=usedBuffers.end())
-    {
-        (*it)->dirtyTimeout--;
-        if ((*it)->dirtyTimeout == 0)
-        {
-            if ((*it)->shouldBeEvicted)
-            {
-                rhi::DeleteVertexBuffer((*it)->buffer);
-                SafeDelete(*it);
-            }
-            else
-            {
-                freeBuffers.push_back(*it);
-            }
-            it = usedBuffers.erase(it);
-        }
-        else
-        {
-            ++it;
-        }
-    }
+    vertexBufferAllocator.BeginFrame();
+    indexBufferAllocator.BeginFrame();
 }
 
 void EndFrame()
 {    
-    if (currentlyMappedBuffer)
-    {
-        rhi::UnmapVertexBuffer(currentlyMappedBuffer->buffer);
-        usedBuffers.push_back(currentlyMappedBuffer);
-        currentlyMappedBuffer->dirtyTimeout = 3;
-        currentlyMappedData = nullptr;
-        currentlyMappedBuffer = nullptr;
-        currentlyUsedSize = 0;
-    }
+    vertexBufferAllocator.EndFrame();
+    indexBufferAllocator.EndFrame();
 }
 
 void Clear()
 {
-    for (auto b : freeBuffers)
-    {
-        rhi::DeleteVertexBuffer(b->buffer);
-        SafeDelete(b);
-    }
-    for (auto b : usedBuffers)
-        b->shouldBeEvicted = true;
+    vertexBufferAllocator.Clear();
+    indexBufferAllocator.Clear();
 }
 void SetDefaultPageSize(uint32 size)
 {

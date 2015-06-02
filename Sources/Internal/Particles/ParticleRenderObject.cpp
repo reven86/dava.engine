@@ -366,7 +366,7 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
 
     //test
     targetBatch->indexCount = particlesCount * 6;
-    targetBatch->indexBuffer = DynamicBufferAllocator::GetDefaultQuadListIndexBuffer(particlesCount);
+    targetBatch->indexBuffer = DynamicBufferAllocator::AllocateQuadListIndexBuffer(particlesCount);
     targetBatch->startIndex = 0;
     targetBatch->vertexLayoutId = begin->layer->enableFrameBlend ? frameBlendVertexLayoutId : regularVertexLayoutId;
     activeRenderBatchArray.push_back(targetBatch);

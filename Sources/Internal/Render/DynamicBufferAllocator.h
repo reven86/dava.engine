@@ -54,7 +54,9 @@ namespace DynamicBufferAllocator
 
     AllocResultVB AllocateVertexBuffer(uint32 vertexSize, uint32 vertexCount);
     AllocResultIB AllocateIndexBuffer(uint32 indexCount);
-    rhi::HIndexBuffer GetDefaultQuadListIndexBuffer(uint32 quadCount);
+    
+    //it has a bit different life cycle - it is put to eviction queue only once greater size buffer is requested (so client code should still request it every frame), still trying to share existing one
+    rhi::HIndexBuffer AllocateQuadListIndexBuffer(uint32 quadCount);
     
     void BeginFrame();
     void EndFrame();
