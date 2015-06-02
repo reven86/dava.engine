@@ -94,6 +94,10 @@ LOCAL_MODULE := uv_android
 LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libuv_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
+include $(CLEAR_VARS)
+LOCAL_MODULE := webp_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libwebp_android.a
+include $(PREBUILT_STATIC_LIBRARY)
 
 DAVA_ROOT := $(LOCAL_PATH)
 
@@ -204,7 +208,6 @@ DV_LOCAL_EXPORT_LDLIBS := $(LOCAL_LDLIBS)
 
 # set included libraries
 DV_LOCAL_STATIC_LIBRARIES := libbox2d
-DV_LOCAL_STATIC_LIBRARIES += cpufeatures
 
 ifeq ($(DAVA_PROFILE), true)
 ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
@@ -231,6 +234,8 @@ DV_LOCAL_STATIC_LIBRARIES += zip_android
 DV_LOCAL_STATIC_LIBRARIES += fribidi_android
 DV_LOCAL_STATIC_LIBRARIES += unibreak_android
 DV_LOCAL_STATIC_LIBRARIES += uv_android
+DV_LOCAL_STATIC_LIBRARIES += webp_android
+DV_LOCAL_STATIC_LIBRARIES += cpufeatures
 
 DV_LOCAL_EXPORT_LDLIBS := -lGLESv1_CM -llog -lEGL
 
