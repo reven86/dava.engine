@@ -102,7 +102,7 @@ namespace DAVA
 		QuitAction();
 
 		// finish java activity, never return back
-		JNI::JavaClass javaClass("com.dava.framework.JNIActivity");
+		JNI::JavaClass javaClass("com/dava/framework/JNIActivity");
 		Function<void()> finishActivity = javaClass.GetStaticMethod<void>("finishActivity");
 		finishActivity();
 	}
