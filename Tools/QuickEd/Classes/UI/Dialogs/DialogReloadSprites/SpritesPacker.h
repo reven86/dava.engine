@@ -35,6 +35,7 @@
 #include <QObject>
 #include <QFuture>
 #include "TextureCompression/TextureConverter.h"
+#include <atomic>
 
 namespace DAVA {
     class ResourcePacker2D;
@@ -63,7 +64,7 @@ public slots:
 signals:
     void runningStateChanged(bool arg);
 private:
-    volatile bool running;
+    std::atomic<bool> running;
 };
 
 #endif //__SPRITES_PACKER_H__
