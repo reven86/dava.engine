@@ -974,7 +974,7 @@ DbgDraw::_init()
 
     // init small-font texture
     {
-        _tex_small_font = rhi::CreateTexture( rhi::Texture::Descriptor(FontTextureSize,FontTextureSize,rhi::TEXTURE_FORMAT_A8R8G8B8) );
+        _tex_small_font = rhi::CreateTexture( rhi::Texture::Descriptor(FontTextureSize,FontTextureSize,rhi::TEXTURE_FORMAT_R8G8B8A8) );
         
         if( _tex_small_font )
         {
@@ -991,7 +991,7 @@ DbgDraw::_init()
 
     // init normal-font texture
     {
-        _tex_normal_font = rhi::CreateTexture( rhi::Texture::Descriptor(FontTextureSize,FontTextureSize,rhi::TEXTURE_FORMAT_A8R8G8B8) );
+        _tex_normal_font = rhi::CreateTexture( rhi::Texture::Descriptor(FontTextureSize,FontTextureSize,rhi::TEXTURE_FORMAT_R8G8B8A8) );
         
         if( _tex_normal_font )
         {

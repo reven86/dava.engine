@@ -276,14 +276,14 @@ TextureType
 enum
 TextureFormat
 {
-    TEXTURE_FORMAT_A8R8G8B8,
-    TEXTURE_FORMAT_X8R8G8B8,
+    TEXTURE_FORMAT_R8G8B8A8,
+    TEXTURE_FORMAT_R8G8B8X8,
     TEXTURE_FORMAT_R8G8B8,
 
-    TEXTURE_FORMAT_A1R5G5B5,
+    TEXTURE_FORMAT_R5G5B5A1,
     TEXTURE_FORMAT_R5G6B5,
 
-    TEXTURE_FORMAT_A4R4G4B4,
+    TEXTURE_FORMAT_R4G4B4A4,
 
     TEXTURE_FORMAT_A16R16G16B16,
     TEXTURE_FORMAT_A32R32G32B32,
@@ -408,7 +408,7 @@ Descriptor
                       : type(TEXTURE_TYPE_2D),
                         width(0),
                         height(0),
-                        format(TEXTURE_FORMAT_A8R8G8B8),
+                        format(TEXTURE_FORMAT_R8G8B8A8),
                         mipCount(0),
                         isRenderTarget(false),
                         autoGenMipmaps(false)

@@ -215,7 +215,7 @@ gles2_Texture_Map( Handle tex, unsigned level, TextureFace face )
         }
     }
     
-    if( self->format == TEXTURE_FORMAT_A4R4G4B4 )
+    if( self->format == TEXTURE_FORMAT_R4G4B4A4 )
     {
         Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
         
@@ -240,7 +240,7 @@ gles2_Texture_Unmap( Handle tex )
     GetGLTextureFormat( self->format, &int_fmt, &fmt, &type );
 
     DVASSERT(self->isMapped);
-    if( self->format == TEXTURE_FORMAT_A4R4G4B4 )
+    if( self->format == TEXTURE_FORMAT_R4G4B4A4 )
     {
         Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
         
@@ -275,7 +275,7 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
     GetGLTextureFormat( self->format, &int_fmt, &fmt, &type );
     
     DVASSERT(!self->isMapped);
-    if( self->format == TEXTURE_FORMAT_A4R4G4B4 )
+    if( self->format == TEXTURE_FORMAT_R4G4B4A4 )
     {
         Size2i  ext = TextureExtents( Size2i(self->width,self->height), level );
         
