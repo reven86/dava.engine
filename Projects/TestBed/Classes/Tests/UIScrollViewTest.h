@@ -26,5 +26,30 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __UISCROLL_VIEW_TEST__
+#define __UISCROLL_VIEW_TEST__
 
+#include "BaseScreen.h"
 
+using namespace DAVA;
+
+class UIScrollViewTest: public BaseScreen
+{
+protected:
+    ~UIScrollViewTest(){}
+public:
+	UIScrollViewTest();
+
+	virtual void LoadResources();
+	virtual void UnloadResources();
+	
+private:
+	void ButtonPressed(BaseObject *obj, void *data, void *callerData);
+	
+private:
+	UIButton* 		finishTestBtn;
+	UIStaticText*	testMessageText;
+	UIScrollView*	scrollView;
+};
+
+#endif /* defined(__UISCROLL_VIEW_TEST__) */

@@ -268,7 +268,6 @@ private:
     QPointer<QDockWidget> dockActionEvent;
     QPointer<QDockWidget> dockConsole;
 
-	QtPosSaver posSaver;
 	bool globalInvalidate;
 
 	ModificationWidget *modificationWidget;
