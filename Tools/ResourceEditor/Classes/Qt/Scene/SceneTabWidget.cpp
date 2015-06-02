@@ -123,7 +123,7 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
             return;
         curScene->cameraSystem->MoveToSelection();
     };
-    auto moveToSelectionHandlerHotkey = new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_X ), this );
+    auto moveToSelectionHandlerHotkey = new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_D ), this );
     connect( moveToSelectionHandlerHotkey, &QShortcut::activated, moveToSelectionHandler );
 }
 
