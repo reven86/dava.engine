@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "Commands2/SoundComponentEditCommands.h"
 
 AddSoundEventCommand::AddSoundEventCommand(DAVA::Entity *_entity, DAVA::SoundEvent * _event)

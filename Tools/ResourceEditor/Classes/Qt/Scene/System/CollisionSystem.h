@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __SCENE_COLLISION_SYSTEM_H__
 #define __SCENE_COLLISION_SYSTEM_H__
 

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene3D/Systems/AnimationSystem.h"
 #include "Scene3D/Components/AnimationComponent.h"
 #include "Scene3D/Entity.h"

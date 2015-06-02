@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene/System/GridSystem.h"
 #include "Qt/Settings/SettingsManager.h"
 

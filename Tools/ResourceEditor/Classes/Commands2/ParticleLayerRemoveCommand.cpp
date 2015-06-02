@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Commands2/ParticleLayerRemoveCommand.h"
 
 ParticleLayerRemoveCommand::ParticleLayerRemoveCommand(DAVA::ParticleEmitter *_emitter, DAVA::ParticleLayer* _layer)

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Commands2/EntityLockCommand.h"
 
 EntityLockCommand::EntityLockCommand(DAVA::Entity* _entity, bool lock)
