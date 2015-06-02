@@ -101,7 +101,7 @@ void LocalizationSystem::SetDirectory(const FilePath &directoryPath)
 void LocalizationSystem::Init()
 {
 	LoadStringFile(langId, directoryPath + (langId + ".yaml"));
-}
+}   
 
 String LocalizationSystem::GetDeviceLocale() const
 {

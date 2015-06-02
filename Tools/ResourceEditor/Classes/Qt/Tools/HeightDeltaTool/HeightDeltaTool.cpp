@@ -1,3 +1,32 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
+
 #include "HeightDeltaTool.h"
 
 #include <QFileInfo>
@@ -9,6 +38,10 @@
 #include "Qt/Main/mainwindow.h"
 #include "Project/ProjectManager.h"
 #include "Commands2/PaintHeightDeltaAction.h"
+
+#include "Tools/PathDescriptor/PathDescriptor.h"
+#include "Render/Image/ImageSystem.h"
+#include "Render/Image/ImageFormatInterface.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
 
@@ -50,7 +83,7 @@ void HeightDeltaTool::SetOutputTemplate( QString const& prefix, QString const& s
 
 void HeightDeltaTool::OnBrowse()
 {
-    const QString path = FileDialog::getOpenFileName( this, QString(), defaultDir, "Png images (*.png)" );
+    const QString path = FileDialog::getOpenFileName( this, QString(), defaultDir, PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
     
     if ( path != NULL )
     {
@@ -71,6 +104,7 @@ double HeightDeltaTool::GetThresholdInMeters(double unitSize)
     return delta;
 }
 
+
 void HeightDeltaTool::OnRun()
 {
     const bool sourceExists = QFileInfo(inPath).exists();
@@ -86,16 +120,18 @@ void HeightDeltaTool::OnRun()
         Landscape* landscapeRO = FindLandscape(scene);
         if (landscapeRO != NULL)
         {
-            QtMainWindow::Instance()->WaitStart("Generating color height mask...", outPath);
-
-            QImageReader imageReader(inPath);
             const DAVA::AABBox3& bbox = landscapeRO->GetBoundingBox();
             DAVA::Heightmap* heightmap = landscapeRO->GetHeightmap();
             
             if (heightmap != NULL)
             {
                 const double unitSize = (bbox.max.x - bbox.min.x) / heightmap->Size();
-                const QSize imageSize = imageReader.size();
+                
+                auto inputPathname = FilePath(inPath.toStdString());
+                auto imInterface = DAVA::ImageSystem::Instance()->GetImageFormatInterface(inputPathname);
+                DVASSERT(imInterface);
+                auto imageInfo = imInterface->GetImageInfo(inputPathname);
+                
                 const double threshold = GetThresholdInMeters(unitSize);
 
                 DAVA::Vector<DAVA::Color> colors;
@@ -107,16 +143,14 @@ void HeightDeltaTool::OnRun()
                         outPath.toStdString(),
                         (DAVA::float32)threshold,
                         heightmap,
-                        imageSize.width(),
-                        imageSize.height(),
+                        imageInfo.width,
+                        imageInfo.height,
                         bbox.max.z - bbox.min.z,
                         colors);
         
                 action->Redo();
                 DAVA::SafeDelete(action);
             }
-
-            QtMainWindow::Instance()->WaitStop();
 
             if (heightmap != NULL)
             {

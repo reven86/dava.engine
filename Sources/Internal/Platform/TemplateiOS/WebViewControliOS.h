@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_WEBVIEWCONTROL_IOS_H__
 #define __DAVAENGINE_WEBVIEWCONTROL_IOS_H__
 
@@ -85,6 +84,8 @@ public:
     
     void SetRenderToTexture(bool value) override;
     bool IsRenderToTexture() const override {return isRenderToTexture;}
+    
+    void WillDraw() override;
     
     // common ios part to render any UIView* to UIImage*
     static void* RenderIOSUIViewToImage(void* uiviewPtr);

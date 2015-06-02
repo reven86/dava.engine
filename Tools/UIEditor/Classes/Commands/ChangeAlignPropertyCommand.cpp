@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ChangeAlignPropertyCommand.h"
 
 ChangeAlignPropertyCommand::ChangeAlignPropertyCommand(BaseMetadata* baseMetadata,

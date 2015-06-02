@@ -36,6 +36,7 @@
 #include "Tests/MathTest.h"
 #include "Tests/FunctionBindSingalTest.h"
 #include "Tests/SaveImageTest.h"
+#include "Tests/LoadImageTest.h"
 #include "Tests/StringFormatTest.h"
 #include "Tests/ComponentsTest.h"
 #include "Tests/FileListTest.h"
@@ -57,6 +58,7 @@
 #include "Tests/SpinLockTest.h"
 #include "Tests/ThreadSyncTest.h"
 #include "Tests/MemoryManagerTest.h"
+#include "Tests/ThreadLocalTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -78,10 +80,11 @@ void GameCore::RegisterTests()
 #endif
     new MathTest();
     new FunctionBindSignalTest();
+    new LoadImageTest();
     new SaveImageTest();
     new StringFormatTest();
     new ComponentsTest();
-    new FileListTest();
+//    new FileListTest(); tmp !!!
     new FileSystemTest();
     new DateTimeTest();
     new LocalizationTest();
@@ -99,6 +102,7 @@ void GameCore::RegisterTests()
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
     new MemoryManagerTest();
 #endif  // DAVA_MEMORY_PROFILING_ENABLE
+    new ThreadLocalTest();
 //  $UNITTEST_CTOR
 }
 

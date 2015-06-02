@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ChangeLODDistanceCommand.h"
 
 using namespace DAVA;

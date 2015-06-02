@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_SNAPTOLANDSCAPE_CONTROLLER_SYSTEM_H__
 #define __DAVAENGINE_SNAPTOLANDSCAPE_CONTROLLER_SYSTEM_H__
 
@@ -51,7 +50,7 @@ public:
     virtual void RemoveEntity(Entity * entity);
     
     virtual void Process(float32 timeElapsed);
-    virtual void ImmediateEvent(Entity * entity, uint32 event);
+    void ImmediateEvent(Component * component, uint32 event) override;
 
 private:
     

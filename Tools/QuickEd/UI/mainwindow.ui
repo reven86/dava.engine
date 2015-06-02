@@ -187,9 +187,6 @@
      <height>250</height>
     </size>
    </property>
-   <property name="floating">
-    <bool>true</bool>
-   </property>
    <property name="allowedAreas">
     <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
    </property>
@@ -206,9 +203,6 @@
      <width>100</width>
      <height>250</height>
     </size>
-   </property>
-   <property name="floating">
-    <bool>true</bool>
    </property>
    <property name="allowedAreas">
     <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
@@ -293,9 +287,6 @@
    <property name="text">
     <string>New project</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+N</string>
-   </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
    </property>
@@ -364,7 +355,7 @@
     <string>Save document</string>
    </property>
    <property name="toolTip">
-    <string>Save changes</string>
+    <string>Save document</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>

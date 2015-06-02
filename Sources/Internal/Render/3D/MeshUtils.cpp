@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "MeshUtils.h"
 #include "EdgeAdjacency.h"
 
@@ -80,6 +81,35 @@ void CopyGroupData(PolygonGroup *srcGroup, PolygonGroup *dstGroup)
     Memcpy(dstGroup->indexArray, srcGroup->indexArray, srcGroup->GetIndexCount()*sizeof(int16));
 
     dstGroup->BuildBuffers();
+}
+
+uint32 ReleaseGeometryDataRecursive(Entity * forEntity)
+{
+    if (!forEntity) return 0;
+
+    uint32 ret = 0;
+
+    int32 childrenCount = forEntity->GetChildrenCount();
+    for (int32 i = 0; i < childrenCount; ++i)
+    {
+        ret += ReleaseGeometryDataRecursive(forEntity->GetChild(i));
+    }
+
+    RenderObject * ro = GetRenderObject(forEntity);
+    if (ro)
+    {
+        uint32 rbCount = ro->GetRenderBatchCount();
+        for (uint32 i = 0; i < rbCount; ++i)
+        {
+            PolygonGroup * pg = ro->GetRenderBatch(i)->GetPolygonGroup();
+            if (pg && pg->renderDataObject && pg->renderDataObject->GetVertexBufferID() && pg->renderDataObject->GetIndexBufferID())
+            {
+                ret += pg->ReleaseGeometryData();
+            }
+        }
+    }
+
+    return ret;
 }
 
 void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal/*=true*/)

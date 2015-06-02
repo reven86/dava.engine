@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef UIEditor_UISliderMetadata_h
 #define UIEditor_UISliderMetadata_h
 

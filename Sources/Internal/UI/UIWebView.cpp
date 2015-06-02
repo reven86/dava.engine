@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "UIWebView.h"
 #include "Render/RenderManager.h"
 #include "FileSystem/YamlNode.h"
@@ -257,6 +256,13 @@ void UIWebView::CopyDataFrom(UIControl *srcControl)
     UIWebView* webView = (UIWebView*) srcControl;
     SetNativeControlVisible(webView->GetNativeControlVisible());
     SetDataDetectorTypes(webView->GetDataDetectorTypes());
+}
+
+void UIWebView::SystemDraw(const DAVA::UIGeometricData &geometricData)
+{
+    webViewControl->WillDraw();
+    UIControl::SystemDraw(geometricData);
+    webViewControl->DidDraw();
 }
 
 

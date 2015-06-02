@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 /*
      File: Reachability.m
  Abstract: Basic demonstration of how to use the SystemConfiguration Reachablity APIs.

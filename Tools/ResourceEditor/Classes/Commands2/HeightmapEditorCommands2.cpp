@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "HeightmapEditorCommands2.h"
 #include "../Qt/Scene/System/LandscapeEditorDrawSystem/HeightmapProxy.h"
 #include "../Qt/Scene/System/LandscapeEditorDrawSystem/LandscapeProxy.h"

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "TextureCache.h"
 #include "TextureConvertor.h"
 #include "Main/mainwindow.h"

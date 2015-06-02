@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_SCENE3D_DEBUGRENDERSYSTEM_H__
 #define __DAVAENGINE_SCENE3D_DEBUGRENDERSYSTEM_H__
 

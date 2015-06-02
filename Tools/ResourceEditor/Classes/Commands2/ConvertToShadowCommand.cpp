@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "ConvertToShadowCommand.h"
 
 ConvertToShadowCommand::ConvertToShadowCommand(DAVA::RenderBatch *batch)

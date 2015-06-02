@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #ifndef __DAVAENGINE_CUSTOM_PROPERTIES_COMPONENT_H__
 #define __DAVAENGINE_CUSTOM_PROPERTIES_COMPONENT_H__
 

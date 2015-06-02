@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "DAVAEngine.h"
 
 #include <QMessageBox>
@@ -124,6 +123,7 @@
 
 #include "Tools/HeightDeltaTool/HeightDeltaTool.h"
 #include "Tools/ColorPicker/ColorPicker.h"
+#include "Tools/PathDescriptor/PathDescriptor.h"
 #include "Settings/SettingsManager.h"
 
 #include "SceneProcessing/SceneProcessor.h"
@@ -150,18 +150,21 @@ QtMainWindow::QtMainWindow(QWidget *parent)
     , recentFiles(Settings::General_RecentFilesCount, Settings::Internal_RecentFiles)
     , recentProjects(Settings::General_RecentProjectsCount, Settings::Internal_RecentProjects)
 {
+    PathDescriptor::InitializePathDescriptors();
+    
 	new ProjectManager();
 	ui->setupUi(this);
     
     recentFiles.SetMenu(ui->menuFile);
     recentProjects.SetMenu(ui->menuRecentProjects);
     
-    
     centralWidget()->setMinimumSize(ui->sceneTabWidget->minimumSize());
     
     SetupTitle();
 
 	qApp->installEventFilter(this);
+
+    new QtPosSaver( this );
 
     SetupDocks();
 	SetupMainMenu();
@@ -176,32 +179,21 @@ QtMainWindow::QtMainWindow(QWidget *parent)
     new FMODSoundBrowser(this);
 
 	waitDialog = new QtWaitDialog(this);
-
 	beastWaitDialog = new QtWaitDialog(this);
 
-	posSaver.Attach(this);
-	posSaver.LoadState(this);
-
-	QObject::connect(ProjectManager::Instance(), SIGNAL(ProjectOpened(const QString &)), this, SLOT(ProjectOpened(const QString &)));
-	QObject::connect(ProjectManager::Instance(), SIGNAL(ProjectClosed()), this, SLOT(ProjectClosed()));
-
-	QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), this, SLOT(SceneCommandExecuted(SceneEditor2 *, const Command2*, bool)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(SceneActivated(SceneEditor2 *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(SceneDeactivated(SceneEditor2 *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), this, SLOT(SceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
-
-
-	QObject::connect(SceneSignals::Instance(), SIGNAL(EditorLightEnabled(bool)), this, SLOT(EditorLightEnabled(bool)));
-
-    QObject::connect(this, SIGNAL(TexturesReloaded()), TextureCache::Instance(), SLOT(ClearCache()));
-    
-    
-    QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Initialized()), ui->landscapeEditorControlsPlaceholder, SLOT(OnOpenGLInitialized()));
-
-    
+	connect(ProjectManager::Instance(), SIGNAL(ProjectOpened(const QString &)), this, SLOT(ProjectOpened(const QString &)));
+	connect(ProjectManager::Instance(), SIGNAL(ProjectClosed()), this, SLOT(ProjectClosed()));
+	connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), this, SLOT(SceneCommandExecuted(SceneEditor2 *, const Command2*, bool)));
+	connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(SceneActivated(SceneEditor2 *)));
+	connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(SceneDeactivated(SceneEditor2 *)));
+	connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), this, SLOT(SceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
+	connect(SceneSignals::Instance(), SIGNAL(EditorLightEnabled(bool)), this, SLOT(EditorLightEnabled(bool)));
+    connect(this, SIGNAL(TexturesReloaded()), TextureCache::Instance(), SLOT(ClearCache()));
+    connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Initialized()), ui->landscapeEditorControlsPlaceholder, SLOT(OnOpenGLInitialized()));
     
 	LoadGPUFormat();
     LoadMaterialLightViewMode();
+
 
     EnableGlobalTimeout(globalInvalidate);
 
@@ -217,8 +209,6 @@ QtMainWindow::~QtMainWindow()
     
     TextureBrowser::Instance()->Release();
 	MaterialEditor::Instance()->Release();
-
-	posSaver.SaveState(this);
 
 	delete ui;
 	ui = nullptr;
@@ -474,8 +464,9 @@ void QtMainWindow::SetupToolBars()
 	redoBtn->setPopupMode(QToolButton::MenuButtonPopup);
 
 	// modification widget
-	modificationWidget = new ModificationWidget(NULL);
+	modificationWidget = new ModificationWidget(nullptr);
 	ui->modificationToolBar->insertWidget(ui->actionModifyReset, modificationWidget);
+    connect( ui->actionModifySnapToLandscape, &QAction::triggered, modificationWidget, &ModificationWidget::OnSnapToLandscapeChanged );
 
 	// adding reload textures actions
 	{
@@ -551,30 +542,22 @@ void QtMainWindow::SetupStatusBar()
 
 	QObject::connect(this, SIGNAL(GlobalInvalidateTimeout()), ui->statusBar, SLOT(UpdateByTimer()));
 
-	QToolButton *gizmoStatusBtn = new QToolButton();
-	gizmoStatusBtn->setDefaultAction(ui->actionShowEditorGizmo);
-	gizmoStatusBtn->setAutoRaise(true);
-	gizmoStatusBtn->setMaximumSize(QSize(16, 16));
-	ui->statusBar->insertPermanentWidget(0, gizmoStatusBtn);
 
-    QToolButton *lighmapCanvasStatusBtn = new QToolButton();
-    lighmapCanvasStatusBtn->setDefaultAction(ui->actionLightmapCanvas);
-    lighmapCanvasStatusBtn->setAutoRaise(true);
-    lighmapCanvasStatusBtn->setMaximumSize(QSize(16, 16));
-    ui->statusBar->insertPermanentWidget(0, lighmapCanvasStatusBtn);
-
-	QToolButton *onSceneSelectStatusBtn = new QToolButton();
-	onSceneSelectStatusBtn->setDefaultAction(ui->actionOnSceneSelection);
-	onSceneSelectStatusBtn->setAutoRaise(true);
-	onSceneSelectStatusBtn->setMaximumSize(QSize(16, 16));
-	ui->statusBar->insertPermanentWidget(0, onSceneSelectStatusBtn);
-
-    QToolButton *staticOcclusionStatusBtn = new QToolButton();
-    staticOcclusionStatusBtn->setDefaultAction(ui->actionShowStaticOcclusion);
-    staticOcclusionStatusBtn->setAutoRaise(true);
-    staticOcclusionStatusBtn->setMaximumSize(QSize(16, 16));
-    ui->statusBar->insertPermanentWidget(0, staticOcclusionStatusBtn);
-
+    auto CreateStatusBarButton = [](QAction *action, QStatusBar *statusBar)
+    {
+        auto *statusBtn = new QToolButton();
+        statusBtn->setDefaultAction(action);
+        statusBtn->setAutoRaise(true);
+        statusBtn->setMaximumSize(QSize(16, 16));
+        statusBar->insertPermanentWidget(0, statusBtn);
+    };
+    
+    CreateStatusBarButton(ui->actionShowEditorGizmo, ui->statusBar);
+    CreateStatusBarButton(ui->actionLightmapCanvas, ui->statusBar);
+    CreateStatusBarButton(ui->actionOnSceneSelection, ui->statusBar);
+    CreateStatusBarButton(ui->actionShowStaticOcclusion, ui->statusBar);
+    CreateStatusBarButton(ui->actionEnableDisableShadows, ui->statusBar);
+    
 	QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Resized(int, int, int)), ui->statusBar, SLOT(OnSceneGeometryChaged(int, int, int)));
 }
 
@@ -633,7 +616,7 @@ void QtMainWindow::SetupActions()
 	ui->actionExportTegra->setData(GPU_TEGRA);
 	ui->actionExportMali->setData(GPU_MALI);
 	ui->actionExportAdreno->setData(GPU_ADRENO);
-	ui->actionExportPNG->setData(GPU_PNG);
+	ui->actionExportPNG->setData(GPU_ORIGIN);
 	
 	// import
 #ifdef __DAVAENGINE_SPEEDTREE__
@@ -646,7 +629,7 @@ void QtMainWindow::SetupActions()
 	ui->actionReloadTegra->setData(GPU_TEGRA);
 	ui->actionReloadMali->setData(GPU_MALI);
 	ui->actionReloadAdreno->setData(GPU_ADRENO);
-	ui->actionReloadPNG->setData(GPU_PNG);
+	ui->actionReloadPNG->setData(GPU_ORIGIN);
 
     QActionGroup *reloadGroup = new QActionGroup(this);
     QList<QAction *> reloadActions = ui->menuTexturesForGPU->actions();
@@ -669,6 +652,8 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionOnSceneSelection, SIGNAL(toggled(bool)), this, SLOT(OnAllowOnSceneSelectionToggle(bool)));
     QObject::connect(ui->actionShowStaticOcclusion, SIGNAL(toggled(bool)), this, SLOT(OnShowStaticOcclusionToggle(bool)));
 
+    QObject::connect(ui->actionEnableDisableShadows, &QAction::toggled, this, &QtMainWindow::OnEnableDisableShadows);
+    
 	// scene undo/redo
 	QObject::connect(ui->actionUndo, SIGNAL(triggered()), this, SLOT(OnUndo()));
 	QObject::connect(ui->actionRedo, SIGNAL(triggered()), this, SLOT(OnRedo()));
@@ -733,7 +718,7 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->menuDynamicShadowBlendMode, SIGNAL(aboutToShow()), this, SLOT(OnShadowBlendModeWillShow()));
 
     
-	QObject::connect(ui->actionSaveHeightmapToPNG, SIGNAL(triggered()), this, SLOT(OnSaveHeightmapToPNG()));
+	QObject::connect(ui->actionSaveHeightmapToPNG, SIGNAL(triggered()), this, SLOT(OnSaveHeightmapToImage()));
 	QObject::connect(ui->actionSaveTiledTexture, SIGNAL(triggered()), this, SLOT(OnSaveTiledTexture()));
 	
 	QObject::connect(ui->actionConvertModifiedTextures, SIGNAL(triggered()), this, SLOT(OnConvertModifiedTextures()));
@@ -1338,6 +1323,11 @@ void QtMainWindow::OnShowStaticOcclusionToggle(bool show)
     RenderManager::Instance()->GetOptions()->SetOption(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION, show);
 }
 
+void QtMainWindow::OnEnableDisableShadows(bool enable)
+{
+    RenderManager::Instance()->GetOptions()->SetOption(RenderOptions::SHADOWVOLUME_DRAW, enable);
+}
+
 void QtMainWindow::OnReloadTextures()
 {
 	SetGPUFormat(GetGPUFormat());
@@ -1521,7 +1511,7 @@ void QtMainWindow::OnZeroPivotPoint()
 
 void QtMainWindow::OnMaterialEditor()
 { 
-	MaterialEditor::Instance()->showNormal();
+	MaterialEditor::Instance()->show();
 }
 
 void QtMainWindow::OnTextureBrowser()
@@ -1534,7 +1524,7 @@ void QtMainWindow::OnTextureBrowser()
 		selectedEntities = sceneEditor->selectionSystem->GetSelection();
 	}
 
-	TextureBrowser::Instance()->showNormal();
+	TextureBrowser::Instance()->show();
 	TextureBrowser::Instance()->sceneActivated(sceneEditor);
 	TextureBrowser::Instance()->sceneSelectionChanged(sceneEditor, &selectedEntities, NULL); 
 }
@@ -1814,6 +1804,9 @@ void QtMainWindow::LoadViewState(SceneEditor2 *scene)
      
         bool viewLMCanvas = SettingsManager::GetValue(Settings::Internal_MaterialsShowLightmapCanvas).AsBool();
         ui->actionLightmapCanvas->setChecked(viewLMCanvas);
+        
+        auto options = RenderManager::Instance()->GetOptions();
+        ui->actionEnableDisableShadows->setChecked(options->IsOptionEnabled(RenderOptions::SHADOWVOLUME_DRAW));
 	}
 }
 
@@ -1966,7 +1959,7 @@ void QtMainWindow::OnShadowBlendModeMultiply()
 	scene->Exec(new ChangeDynamicShadowModeCommand(scene, ShadowPassBlendMode::MODE_BLEND_MULTIPLY));
 }
 
-void QtMainWindow::OnSaveHeightmapToPNG()
+void QtMainWindow::OnSaveHeightmapToImage()
 {
 	if (!IsSavingAllowed())
 	{
@@ -1991,12 +1984,12 @@ void QtMainWindow::OnSaveHeightmapToPNG()
 	
     Heightmap * heightmap = landscape->GetHeightmap();
     FilePath heightmapPath = landscape->GetHeightmapPathname();
-    FilePath requestedPngPath = FilePath::CreateWithNewExtension(heightmapPath, ".png");
 
-    QString selectedPath = FileDialog::getSaveFileName(this, "Save heightmap as", requestedPngPath.GetAbsolutePathname().c_str(), "PGN Image (*.png)");
+    QString selectedPath = FileDialog::getSaveFileName(this, "Save heightmap as", heightmapPath.GetAbsolutePathname().c_str(),
+                                                         PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
     if(selectedPath.isEmpty()) return;
 
-    requestedPngPath = DAVA::FilePath(selectedPath.toStdString());
+    FilePath requestedPngPath = DAVA::FilePath(selectedPath.toStdString());
     heightmap->SaveToImage(requestedPngPath);
 }
 
@@ -2030,7 +2023,7 @@ void QtMainWindow::OnSaveTiledTexture()
 			FilePath scenePath = scene->GetScenePath().GetDirectory();
 			QString selectedPath = FileDialog::getSaveFileName(this, "Save landscape texture as",
 														 scenePath.GetAbsolutePathname().c_str(),
-														 "PGN Image (*.png)");
+														 PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 			if (selectedPath.isEmpty())
 			{
 				SafeRelease(landscapeTexture);
@@ -2322,7 +2315,7 @@ bool QtMainWindow::SelectCustomColorsTexturePath()
 	QString filePath = FileDialog::getSaveFileName(NULL,
 													 QString(ResourceEditor::CUSTOM_COLORS_SAVE_CAPTION.c_str()),
 													 QString(scenePath.GetAbsolutePathname().c_str()),
-													 QString(ResourceEditor::CUSTOM_COLORS_FILE_FILTER.c_str()));
+													 PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 	FilePath selectedPathname = PathnameToDAVAStyle(filePath);
 	Entity* landscape = FindLandscapeEntity(sceneEditor);
 	if (selectedPathname.IsEmpty() || NULL == landscape)
@@ -2863,7 +2856,7 @@ void QtMainWindow::OnAddPathEntity()
 
 bool QtMainWindow::LoadAppropriateTextureFormat()
 {
-	if (GetGPUFormat() != GPU_PNG)
+	if (GetGPUFormat() != GPU_ORIGIN)
 	{
 		int answer = ShowQuestion("Inappropriate texture format",
 								  "Landscape editing is only allowed in PNG texture format.\nDo you want to reload textures in PNG format?",
@@ -2876,7 +2869,7 @@ bool QtMainWindow::LoadAppropriateTextureFormat()
 		OnReloadTexturesTriggered(ui->actionReloadPNG);
 	}
 
-	return (GetGPUFormat() == GPU_PNG);
+	return (GetGPUFormat() == GPU_ORIGIN);
 }
 
 bool QtMainWindow::IsTilemaskModificationCommand(const Command2* cmd)

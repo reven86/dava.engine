@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_INTROSPECTION_COLLECTION_H__
 #define __DAVAENGINE_INTROSPECTION_COLLECTION_H__
 

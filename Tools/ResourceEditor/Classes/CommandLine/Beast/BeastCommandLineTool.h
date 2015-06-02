@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __BEAST_COMMAND_LINE_TOOL_H__
 #define __BEAST_COMMAND_LINE_TOOL_H__
 

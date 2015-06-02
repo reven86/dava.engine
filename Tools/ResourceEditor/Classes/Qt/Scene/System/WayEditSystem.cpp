@@ -1,30 +1,31 @@
 /*==================================================================================
-Copyright (c) 2008, binaryzebra
-All rights reserved.
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-* Neither the name of the binaryzebra nor the
-names of its contributors may be used to endorse or promote products
-derived from this software without specific prior written permission.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
 
 #include <QApplication>
 #include "WayEditSystem.h"
@@ -41,11 +42,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 WayEditSystem::WayEditSystem(DAVA::Scene * scene, SceneSelectionSystem *_selectionSystem, SceneCollisionSystem *_collisionSystem)
-: DAVA::SceneSystem(scene)
-, isEnabled(false)
-, selectionSystem(_selectionSystem)
-, collisionSystem(_collisionSystem)
-, underCursorPathEntity(NULL)
+    : DAVA::SceneSystem(scene)
+    , isEnabled(false)
+    , selectionSystem(_selectionSystem)
+    , collisionSystem(_collisionSystem)
+    , underCursorPathEntity(nullptr)
 {
     wayDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(
         DAVA::RenderStateData::STATE_COLORMASK_ALL |
@@ -67,25 +68,6 @@ void WayEditSystem::AddEntity(DAVA::Entity * newWaypoint)
     {
         mapStartPoints[newWaypoint->GetParent()] = newWaypoint;
     }
-
-    if (sceneEditor->modifSystem->InCloneDoneState())
-    {
-        ProcessSelection();
-
-        newWaypoint->SetNotRemovable(false); // cloned waypoint can't be nonremovable
-
-        EntityGroup entitiesToAddEdge;
-        EntityGroup entitiesToRemoveEdge;
-        DefineAddOrRemoveEdges(prevSelectedWaypoints, newWaypoint, entitiesToAddEdge, entitiesToRemoveEdge);
-        const size_t countToAdd = entitiesToAddEdge.Size();
-        const size_t countToRemove = entitiesToRemoveEdge.Size();
-
-        if ((countToAdd + countToRemove) > 0)
-        {
-            AddEdges(entitiesToAddEdge, newWaypoint);
-            RemoveEdges(entitiesToRemoveEdge, newWaypoint);
-        }
-    }
 }
 void WayEditSystem::RemoveEntity(DAVA::Entity * removedPoint)
 {
@@ -104,12 +86,21 @@ void WayEditSystem::RemoveEntity(DAVA::Entity * removedPoint)
     }
 }
 
-void WayEditSystem::RemoveWayPoint(DAVA::Entity* removedPoint)
+void WayEditSystem::WillRemove(DAVA::Entity *removedPoint)
 {
-    DAVA::Entity* startPoint = mapStartPoints[removedPoint->GetParent()];
-    DVASSERT(startPoint);
+    if (IsWayEditEnabled() && GetWaypointComponent(removedPoint))
+    {
+        startPointForRemove = mapStartPoints[removedPoint->GetParent()];
+        DVASSERT(startPointForRemove);
+    }
+}
 
-    sceneEditor->Exec(new EntityRemoveCommand(removedPoint));
+void WayEditSystem::DidRemoved(DAVA::Entity *removedPoint)
+{
+    if (!IsWayEditEnabled() || !GetWaypointComponent(removedPoint))
+    {
+        return;
+    }
 
     DAVA::EdgeComponent* edge;
 
@@ -134,18 +125,17 @@ void WayEditSystem::RemoveWayPoint(DAVA::Entity* removedPoint)
         DVASSERT(edge);
 
         dest = edge->GetNextEntity();
-        if(dest)
+        if (dest)
         {
             breachPoints.push_back(dest);
         }
-
     }
 
     // detect really breached points
     for (auto breachPoint = breachPoints.begin(); breachPoint != breachPoints.end();)
     {
         DAVA::Set<DAVA::Entity*> passedPoints;
-        if (IsAccessible(startPoint, *breachPoint, removedPoint, nullptr/*no excluding edge*/, passedPoints))
+        if (IsAccessible(startPointForRemove, *breachPoint, removedPoint, nullptr/*no excluding edge*/, passedPoints))
         {
             auto delPoint = breachPoint++;
             breachPoints.erase(delPoint);
@@ -153,6 +143,7 @@ void WayEditSystem::RemoveWayPoint(DAVA::Entity* removedPoint)
         else
             ++breachPoint;
     }
+    startPointForRemove = nullptr;
 
     // link source points and breached points
     for (auto breachPoint : breachPoints)
@@ -162,10 +153,10 @@ void WayEditSystem::RemoveWayPoint(DAVA::Entity* removedPoint)
             if (srcPoint == breachPoint)
                 continue;
 
-            DAVA::EdgeComponent *edge = new DAVA::EdgeComponent();
-            edge->SetNextEntity(breachPoint);
+            DAVA::EdgeComponent *newEdge = new DAVA::EdgeComponent();
+            newEdge->SetNextEntity(breachPoint);
 
-            sceneEditor->Exec(new AddComponentCommand(srcPoint, edge));
+            sceneEditor->Exec(new AddComponentCommand(srcPoint, newEdge));
         }
     }
 }
@@ -235,7 +226,6 @@ void WayEditSystem::Process(DAVA::float32 timeElapsed)
     }
 }
 
-
 void WayEditSystem::ResetSelection()
 {
     selectedWaypoints.Clear();
@@ -247,13 +237,13 @@ void WayEditSystem::ResetSelection()
 void WayEditSystem::ProcessSelection()
 {
     const EntityGroup selection = selectionSystem->GetSelection();
-    if(currentSelection != selection)
+    if (currentSelection != selection)
     {
         currentSelection = selection;
-        
         prevSelectedWaypoints = selectedWaypoints;
+
         selectedWaypoints.Clear();
-        
+
         const size_t count = currentSelection.Size();
         for(size_t i = 0; i < count; ++i)
         {
@@ -270,10 +260,9 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
 {
     if (isEnabled)
     {
-
         if((DAVA::UIEvent::BUTTON_1 == event->tid) && (DAVA::UIEvent::PHASE_MOVE == event->phase))
         {
-            underCursorPathEntity = NULL;
+            underCursorPathEntity = nullptr;
             const EntityGroup* collObjects = collisionSystem->ObjectsRayTestFromCamera();
             if (NULL != collObjects && collObjects->Size() > 0)
             {
@@ -367,7 +356,7 @@ void WayEditSystem::Input(DAVA::UIEvent *event)
                     }
                     
                     sceneEditor->EndBatch();
-                    
+
                     newWaypoint->Release();
                 }
             }
@@ -444,7 +433,6 @@ void WayEditSystem::RemoveEdges(const EntityGroup & group, DAVA::Entity *nextEnt
     }
 }
 
-
 DAVA::Entity* WayEditSystem::CreateWayPoint(DAVA::Entity *parent, DAVA::Vector3 pos)
 {
     DAVA::PathComponent *pc = DAVA::GetPathComponent(parent);
@@ -470,11 +458,9 @@ DAVA::Entity* WayEditSystem::CreateWayPoint(DAVA::Entity *parent, DAVA::Vector3 
     DAVA::Matrix4 m;
     m.SetTranslationVector(pos);
     waypoint->SetLocalTransform(m * pm);
-    
+
     return waypoint;
 }
-
-
 
 void WayEditSystem::ProcessCommand(const Command2 *command, bool redo)
 {
@@ -488,7 +474,6 @@ void WayEditSystem::ProcessCommand(const Command2 *command, bool redo)
          EnableWayEdit(!redo);
      }
 }
-
 
 void WayEditSystem::Draw()
 {
@@ -543,7 +528,7 @@ void WayEditSystem::EnableWayEdit(bool enable)
     ResetSelection();
 
     isEnabled = enable;
-	UpdateSelectionMask();
+    UpdateSelectionMask();
 }
 
 bool WayEditSystem::IsWayEditEnabled() const
@@ -553,14 +538,27 @@ bool WayEditSystem::IsWayEditEnabled() const
 
 void WayEditSystem::UpdateSelectionMask()
 {
-	if(isEnabled)
-	{
-		selectionSystem->SetSelectionComponentMask((DAVA::uint64)1 << DAVA::Component::WAYPOINT_COMPONENT | (DAVA::uint64)1 << DAVA::Component::PATH_COMPONENT);
-	}
-	else
-	{
-		selectionSystem->ResetSelectionComponentMask();
-	}
+    if(isEnabled)
+    {
+        selectionSystem->SetSelectionComponentMask((DAVA::uint64)1 << DAVA::Component::WAYPOINT_COMPONENT | (DAVA::uint64)1 << DAVA::Component::PATH_COMPONENT);
+    }
+    else
+    {
+        selectionSystem->ResetSelectionComponentMask();
+    }
 }
 
+void WayEditSystem::WillClone(DAVA::Entity *originalEntity)
+{
+}
 
+void WayEditSystem::DidCloned(DAVA::Entity *originalEntity, DAVA::Entity *newEntity)
+{
+    if (isEnabled && GetWaypointComponent(originalEntity) != nullptr)
+    {
+        DAVA::EdgeComponent *edge = new DAVA::EdgeComponent();
+        edge->SetNextEntity(newEntity);
+
+        sceneEditor->Exec(new AddComponentCommand(originalEntity, edge));
+    }
+}

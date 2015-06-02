@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "TextGameObject.h"
 #include "Render/2D/TextBlock.h"
 #include "Render/2D/FTFont.h"

@@ -1,3 +1,32 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
+
 #include "LegacyEditorUIPackageLoader.h"
 
 #include "Base/ObjectFactory.h"
@@ -72,12 +101,12 @@ UIPackage *LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath)
     const LegacyControlData::Data *data = legacyData ? legacyData->Get(packagePath.GetFrameworkPath()) : NULL;
     if (data)
     {
-        builder->ProcessProperty(legacyControl->TypeInfo()->Member("name"), VariantType(data->name));
+        legacyControl->SetName(data->name);
         builder->ProcessProperty(legacyControl->TypeInfo()->Member("size"), VariantType(data->size));
     }
     else
     {
-        builder->ProcessProperty(legacyControl->TypeInfo()->Member("name"), VariantType(String("LegacyControl")));
+        legacyControl->SetName("LegacyControl");
     }
     builder->EndControlPropertiesSection();
 
@@ -120,7 +149,7 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
         const YamlNode *pathNode = node->Get("aggregatorPath");
         RefPtr<UIPackage> importedPackage = builder->ProcessImportedPackage(pathNode->AsString(), this);
         DVASSERT(importedPackage.Get());
-        control = builder->BeginControlWithPrototype(FilePath(pathNode->AsString()).GetBasename(), importedPackage->GetControl(0)->GetName(), "", this);
+        control = builder->BeginControlWithPrototype(FilePath(pathNode->AsString()).GetBasename(), importedPackage->GetControl(0)->GetName(), nullptr, this);
     }
     else if (baseType)
         control = builder->BeginControlWithCustomClass(type->AsString(), baseType->AsString());
@@ -154,7 +183,6 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
         
         control->LoadFromYamlNodeCompleted();
         control->ApplyAlignSettingsForChildren();
-        // yamlLoader->PostLoad(control);
     }
     builder->EndControl(false);
 }
@@ -167,7 +195,7 @@ void LegacyEditorUIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *c
     
     builder->BeginControlPropertiesSection(typeInfo->Name());
 
-    String className = control->GetControlClassName();
+    String className = control->GetClassName();
     for (int32 i = 0; i < typeInfo->MembersCount(); i++)
     {
         const InspMember *member = typeInfo->Member(i);
@@ -176,9 +204,7 @@ void LegacyEditorUIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *c
         memberName = GetOldPropertyName(className, memberName);
         
         VariantType res;
-        if (memberName == "name")
-            res = VariantType(control->GetName());
-        else if (node)
+        if (node)
             res = ReadVariantTypeFromYamlNode(member, node, -1, memberName);
         
         builder->ProcessProperty(member, res);
@@ -198,7 +224,7 @@ void LegacyEditorUIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *c
 
 void LegacyEditorUIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *control, const YamlNode *node)
 {
-    String className = control->GetControlClassName();
+    String className = control->GetClassName();
     for (int32 i = 0; i < control->GetBackgroundComponentsCount(); i++)
     {
         UIControlBackground *bg = builder->BeginBgPropertiesSection(i, true);
@@ -251,7 +277,7 @@ void LegacyEditorUIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *contro
 
 void LegacyEditorUIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *control, const YamlNode *node)
 {
-    String className = control->GetControlClassName();
+    String className = control->GetClassName();
     for (int32 i = 0; i < control->GetInternalControlsCount(); i++)
     {
         UIControl *internalControl = builder->BeginInternalControlSection(i, true);

@@ -68,7 +68,7 @@ public:
     int CloseTab(int index);
     void SetCurrentTab(int index);
     void OnProjectOpened(Result result, QString projectPath);
-    int AddTab(const QString &tabText);
+    int AddTab(const DAVA::FilePath &scenePath);
     void OnCleanChanged(int index, bool val);
     DavaGLWidget *GetGLWidget() const;
 

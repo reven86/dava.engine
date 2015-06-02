@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_DVASSERT_MESSAGE_H__
 #define __DAVAENGINE_DVASSERT_MESSAGE_H__
 

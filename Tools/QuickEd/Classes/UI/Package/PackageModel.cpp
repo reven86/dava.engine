@@ -1,3 +1,32 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
+
 #include "PackageModel.h"
 
 #include <QIcon>
@@ -16,6 +45,11 @@
 #include "Model/PackageHierarchy/ImportedPackagesNode.h"
 #include "Model/PackageHierarchy/ControlPrototype.h"
 #include "Model/PackageHierarchy/ControlsContainerNode.h"
+#include "Model/ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/NameProperty.h"
+#include "Model/ControlProperties/ClassProperty.h"
+#include "Model/ControlProperties/CustomClassProperty.h"
+#include "Model/ControlProperties/PrototypeNameProperty.h"
 #include "Model/YamlPackageSerializer.h"
 
 #include "PackageMimeData.h"
@@ -27,18 +61,14 @@ PackageModel::PackageModel(PackageNode *_root, QtModelPackageCommandExecutor *_c
     , root(SafeRetain(_root))
     , commandExecutor(SafeRetain(_commandExecutor))
 {
+    root->AddListener(this);
 }
 
 PackageModel::~PackageModel()
 {
+    root->RemoveListener(this);
     SafeRelease(root);
     SafeRelease(commandExecutor);
-}
-
-void PackageModel::emitNodeChanged(PackageBaseNode *node)
-{
-    QModelIndex index = indexByNode(node);
-    emit dataChanged(index, index);
 }
 
 QModelIndex PackageModel::indexByNode(PackageBaseNode *node) const
@@ -110,7 +140,23 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
             return StringToQString(node->GetName());
             
         case Qt::DecorationRole:
-            return node->GetControl() != nullptr ? QIcon(IconHelper::GetIconPathForUIControl(node->GetControl())) : QVariant();
+            if (node->GetControl())
+            {
+                ControlNode *controlNode = DynamicTypeCheck<ControlNode *>(node);
+                if (controlNode)
+                {
+                    if (controlNode->GetRootProperty()->GetCustomClassProperty()->IsSet())
+                    {
+                        return QIcon(IconHelper::GetCustomIconPath());
+                    }
+                    else
+                    {
+                        const String &className = controlNode->GetRootProperty()->GetClassProperty()->GetClassName();
+                        return QIcon(IconHelper::GetIconPathForClassName(QString::fromStdString(className)));
+                    }
+                }
+            }
+            return QVariant();
             
         case Qt::CheckStateRole:
             if (node->GetControl())
@@ -122,16 +168,18 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
             if (node->GetControl() != nullptr)
             {
                 ControlNode *controlNode = DynamicTypeCheck<ControlNode *>(node);
-                QString toolTip = QString("class: ") + controlNode->GetControl()->GetControlClassName().c_str();
-                if (!controlNode->GetControl()->GetCustomControlClassName().empty())
+                const String &prototype = controlNode->GetRootProperty()->GetPrototypeProperty()->GetPrototypeName();
+                const String &className = controlNode->GetRootProperty()->GetClassProperty()->GetClassName();
+                const String &customClassName = controlNode->GetRootProperty()->GetCustomClassProperty()->GetCustomClassName();
+                QString toolTip = QString("class: ") + className.c_str();
+                if (!customClassName.empty())
                 {
-                    toolTip += QString("\ncustom class: ") + controlNode->GetControl()->GetCustomControlClassName().c_str();
+                    toolTip += QString("\ncustom class: ") + customClassName.c_str();
                 }
 
                 if (controlNode->GetPrototype())
                 {
-                    bool withPackage = true; // TODO fix for currentPackage
-                    toolTip += QString("\nprototype: ") + controlNode->GetPrototype()->GetName(withPackage).c_str();
+                    toolTip += QString("\nprototype: ") + prototype.c_str();
                 }
                 return toolTip;
             }
@@ -189,6 +237,7 @@ Qt::ItemFlags PackageModel::flags(const QModelIndex &index) const
         flags |= Qt::ItemIsDragEnabled;
     if (node->IsInsertingSupported())
         flags |= Qt::ItemIsDropEnabled;
+    //TODO: DF-6265, add insert import packages here
     
     return flags;
 }
@@ -277,6 +326,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
                 FilePath path(url.toLocalFile().toStdString());
                 if (root->FindImportedPackage(path) == nullptr)
                 {
+                    //TODO: DF-6265, implement here
                 }
             }
         }
@@ -335,37 +385,54 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
     return false;
 }
 
-void PackageModel::InsertControlNode(ControlNode *node, ControlsContainerNode *dest, int row)
+void PackageModel::ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property)
 {
-    QModelIndex destIndex = indexByNode(dest);
+    QModelIndex index = indexByNode(node);
+    emit dataChanged(index, index);
+}
+
+void PackageModel::ControlWillBeAdded(ControlNode *node, ControlsContainerNode *destination, int row)
+{
+    QModelIndex destIndex = indexByNode(destination);
     beginInsertRows(destIndex, row, row);
-    dest->InsertAtIndex(row, node);
+}
+
+void PackageModel::ControlWasAdded(ControlNode *node, ControlsContainerNode *destination, int row)
+{
     endInsertRows();
 }
 
-void PackageModel::RemoveControlNode(ControlNode *node, ControlsContainerNode *parent)
+void PackageModel::ControlWillBeRemoved(ControlNode *node, ControlsContainerNode *from)
 {
-    QModelIndex parentIndex = indexByNode(parent);
-    int index = parent->GetIndex(node);
+    QModelIndex parentIndex = indexByNode(from);
+    int index = from->GetIndex(node);
     beginRemoveRows(parentIndex, index, index);
-    parent->Remove(node);
+}
+
+void PackageModel::ControlWasRemoved(ControlNode *node, ControlsContainerNode *from)
+{
     endRemoveRows();
 }
 
-void PackageModel::InsertImportedPackage(PackageControlsNode *node, PackageNode *dest, int destRow)
+void PackageModel::ImportedPackageWillBeAdded(PackageControlsNode *node, PackageNode *to, int index)
 {
-    QModelIndex destIndex = indexByNode(dest);
-    beginInsertRows(destIndex, destRow, destRow);
-    dest->GetImportedPackagesNode()->InsertAtIndex(destRow, node);
+    QModelIndex destIndex = indexByNode(to);
+    beginInsertRows(destIndex, index, index);
+}
+
+void PackageModel::ImportedPackageWasAdded(PackageControlsNode *node, PackageNode *to, int index)
+{
     endInsertRows();
 }
 
-void PackageModel::RemoveImportedPackage(PackageControlsNode *node, PackageNode *parent)
+void PackageModel::ImportedPackageWillBeRemoved(PackageControlsNode *node, PackageNode *from)
 {
-    QModelIndex parentIndex = indexByNode(parent);
-    int index = parent->GetIndex(node);
+    QModelIndex parentIndex = indexByNode(from);
+    int index = from->GetIndex(node);
     beginRemoveRows(parentIndex, index, index);
-    parent->GetImportedPackagesNode()->Remove(node);
-    endRemoveRows();
 }
 
+void PackageModel::ImportedPackageWasRemoved(PackageControlsNode *node, PackageNode *from)
+{
+    endRemoveRows();
+}

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "EditorSettings.h"
 #include "ResourcesManageHelper.h"
 #include <QString>

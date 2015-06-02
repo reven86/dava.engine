@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __SCROLL_PROPERTY_GRID_WIDGET_HELPER__
 #define __SCROLL_PROPERTY_GRID_WIDGET_HELPER__
 

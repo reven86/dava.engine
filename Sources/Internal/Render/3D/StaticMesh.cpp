@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Render/3D/StaticMesh.h"
 #include "Scene3D/DataNode.h"
 #include "Scene3D/Scene.h"

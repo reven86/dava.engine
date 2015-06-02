@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -120,6 +119,8 @@ public slots:
     void OnViewLightmapCanvas(bool show);
 	void OnAllowOnSceneSelectionToggle(bool allow);
     void OnShowStaticOcclusionToggle(bool show);
+    
+    void OnEnableDisableShadows(bool enable);
 
 	void OnReloadTextures();
 	void OnReloadTexturesTriggered(QAction *reloadAction);
@@ -171,7 +172,7 @@ public slots:
 	void OnShadowBlendModeAlpha();
 	void OnShadowBlendModeMultiply();
 
-	void OnSaveHeightmapToPNG();
+	void OnSaveHeightmapToImage();
 	void OnSaveTiledTexture();
 
 	void OnConvertModifiedTextures();
@@ -267,7 +268,6 @@ private:
     QPointer<QDockWidget> dockActionEvent;
     QPointer<QDockWidget> dockConsole;
 
-	QtPosSaver posSaver;
 	bool globalInvalidate;
 
 	ModificationWidget *modificationWidget;
