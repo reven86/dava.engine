@@ -78,7 +78,7 @@ public:
     FILESMAP spriteFiles;
 
     const Set<String>& GetErrors() const;
-    std::atomic_bool running; //we do not declare this as "atomic", because in bad case we will convert one extra file
+    std::atomic_bool running;
 protected:
     Set<String> errors;
 

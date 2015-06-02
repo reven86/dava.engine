@@ -43,7 +43,7 @@ using namespace DAVA;
 SpritesPacker::SpritesPacker(QObject* parent)
     : QObject(parent)
     , resourcePacker2D(new ResourcePacker2D())
-    , m_running(false)
+    , running(false)
 {
     resourcePacker2D->isLightmapsPacking = true;
 }
@@ -108,14 +108,14 @@ void SpritesPacker::stop()
 
 bool SpritesPacker::isRunning() const
 {
-    return m_running;
+    return running;
 }
 
 void SpritesPacker::setRunning(bool arg)
 {
-    if (arg != m_running)
+    if (arg != running)
     {
-        m_running = arg;
+        running = arg;
         emit runningStateChanged(arg);
     }
 }

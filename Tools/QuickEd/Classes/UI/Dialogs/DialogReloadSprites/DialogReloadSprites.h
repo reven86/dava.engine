@@ -34,10 +34,6 @@
 
 class SpritesPacker;
 
-namespace DAVA {
-    class Font;
-}
-
 class DialogReloadSprites : public QDialog, public Ui::DialogReloadSprites
 {
     Q_OBJECT
