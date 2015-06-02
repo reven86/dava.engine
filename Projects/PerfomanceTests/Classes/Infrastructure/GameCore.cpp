@@ -64,6 +64,7 @@ void GameCore::OnAppStarted()
 void GameCore::OnAppFinished()
 {
 	testFlowController->Finish();
+    GraphicsDetect::Instance()->Release();
     SafeRelease(testFlowController);
     
 

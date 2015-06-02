@@ -46,7 +46,7 @@ WaypointsInterpolator::WaypointsInterpolator(const Vector<PathComponent::Waypoin
 
 WaypointsInterpolator::~WaypointsInterpolator()
 {
-    delete spline;
+    SafeDelete(spline);
 }
 
 void WaypointsInterpolator::Init()
@@ -104,7 +104,7 @@ void WaypointsInterpolator::NextPosition(Vector3& position, Vector3& target, flo
     if (segmentTime >= targetSegmentTime)
     {
         segment = (segment == spline->pointCount - 2) ? 0 : segment + 1;
-        segmentTime = 0.0f;
+        segmentTime -= targetSegmentTime;
         targetSegmentTime = segmentsLength[segment];
     }
 

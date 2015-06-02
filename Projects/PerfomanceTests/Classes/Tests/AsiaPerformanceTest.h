@@ -37,24 +37,24 @@ class AsiaPerformanceTest : public BaseTest
 {
 public:
     AsiaPerformanceTest(const TestParams& params);
+    ~AsiaPerformanceTest();
 
 protected:
 
     void LoadResources() override;
-    void UnloadResources() override;
-
     void PerformTestLogic(float32 timeElapsed) override;
 
 private:
     static const String TEST_NAME;
-    static const String CAMERA_PATH;
-    static const String TANK_STUB;
 
-    static const String CENTURION;
-    static const String CONQUEROR;
-    static const String VALENTINE;
-    static const String T150;
-    static const String T110E5;
+    static const FastName CAMERA_PATH;
+    static const FastName TANK_STUB;
+
+    static const FastName CENTURION;
+    static const FastName CONQUEROR;
+    static const FastName VALENTINE;
+    static const FastName T150;
+    static const FastName T110E5;
 
     static const float32 TANK_ROTATION_ANGLE;
 

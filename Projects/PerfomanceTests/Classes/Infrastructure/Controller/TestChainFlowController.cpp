@@ -43,6 +43,7 @@ void TestChainFlowController::Init(const Vector<BaseTest*>& _testChain)
 {
     TestFlowController::Init(_testChain);
     
+    currentTestIndex = 0;
     currentTest = testChain[currentTestIndex];
     currentScreen = currentTest;
 }

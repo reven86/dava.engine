@@ -29,14 +29,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "AsiaPerformanceTest.h"
 
 const String AsiaPerformanceTest::TEST_NAME = "AsiaPerformanceTest";
-const String AsiaPerformanceTest::CAMERA_PATH = "CameraPath";
-const String AsiaPerformanceTest::TANK_STUB = "TankStub";
 
-const String AsiaPerformanceTest::CENTURION = "Centurion.sc2";
-const String AsiaPerformanceTest::CONQUEROR = "Conqueror.sc2";
-const String AsiaPerformanceTest::VALENTINE = "Valentine_LL.sc2";
-const String AsiaPerformanceTest::T150 = "T150.sc2";
-const String AsiaPerformanceTest::T110E5 = "T110E5.sc2";
+const FastName AsiaPerformanceTest::CAMERA_PATH = FastName("CameraPath");
+const FastName AsiaPerformanceTest::TANK_STUB = FastName("TankStub");
+
+const FastName AsiaPerformanceTest::CENTURION = FastName("Centurion.sc2");
+const FastName AsiaPerformanceTest::CONQUEROR = FastName("Conqueror.sc2");
+const FastName AsiaPerformanceTest::VALENTINE = FastName("Valentine_LL.sc2");
+const FastName AsiaPerformanceTest::T150 = FastName("T150.sc2");
+const FastName AsiaPerformanceTest::T110E5 = FastName("T110E5.sc2");
 
 const float32 AsiaPerformanceTest::TANK_ROTATION_ANGLE = 45.0f;
 
@@ -47,6 +48,14 @@ AsiaPerformanceTest::AsiaPerformanceTest(const TestParams& params)
 {
 }
 
+AsiaPerformanceTest::~AsiaPerformanceTest()
+{
+    SafeDelete(waypointInterpolator);
+    SafeDelete(tankAnimator);
+
+    SafeRelease(camera);
+}
+
 void AsiaPerformanceTest::LoadResources()
 {
     BaseTest::LoadResources();
@@ -54,7 +63,7 @@ void AsiaPerformanceTest::LoadResources()
     Entity* rootEntity = GetScene()->GetRootNode(FilePath("~res:/3d/Maps/10_asia_as/10_asia_as.sc2"));
     GetScene()->AddNode(rootEntity);
 
-    Entity* cameraPathEntity = rootEntity->FindByName(CAMERA_PATH.c_str());
+    Entity* cameraPathEntity = rootEntity->FindByName(CAMERA_PATH);
     PathComponent* pathComponent = static_cast<PathComponent*>(cameraPathEntity->GetComponent(Component::PATH_COMPONENT));
 
     const Vector3& startPosition = pathComponent->GetStartWaypoint()->position;
@@ -73,11 +82,11 @@ void AsiaPerformanceTest::LoadResources()
 
     Vector<Entity*> tanks;
 
-    tanks.push_back(rootEntity->FindByName(CENTURION.c_str()));
-    tanks.push_back(rootEntity->FindByName(CONQUEROR.c_str()));
-    tanks.push_back(rootEntity->FindByName(VALENTINE.c_str()));
-    tanks.push_back(rootEntity->FindByName(T150.c_str()));
-    tanks.push_back(rootEntity->FindByName(T110E5.c_str()));
+    tanks.push_back(rootEntity->FindByName(CENTURION));
+    tanks.push_back(rootEntity->FindByName(CONQUEROR));
+    tanks.push_back(rootEntity->FindByName(VALENTINE));
+    tanks.push_back(rootEntity->FindByName(T150));
+    tanks.push_back(rootEntity->FindByName(T110E5));
 
     for (uint32 i = 0; i < tanks.size(); i++)
     {
@@ -106,14 +115,6 @@ void AsiaPerformanceTest::LoadResources()
             tankIt = skinnedTankData.cbegin();
         }
     }
-}
-
-void AsiaPerformanceTest::UnloadResources()
-{
-    BaseTest::UnloadResources();
-
-    delete waypointInterpolator;
-    delete tankAnimator;
 }
 
 void AsiaPerformanceTest::PerformTestLogic(float32 timeElapsed)

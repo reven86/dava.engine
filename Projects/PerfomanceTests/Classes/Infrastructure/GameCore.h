@@ -54,20 +54,20 @@ public:
         return (GameCore*) DAVA::Core::GetApplicationCore();
     };
     
-    virtual void OnAppStarted() override;
-    virtual void OnAppFinished() override;
+    void OnAppStarted() override;
+    void OnAppFinished() override;
     
-    virtual void OnSuspend() override;
-    virtual void OnResume() override;
+    void OnSuspend() override;
+    void OnResume() override;
     
 #if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-    virtual void OnBackground();
-    virtual void OnForeground();
-    virtual void OnDeviceLocked();
+    void OnBackground() override;
+    void OnForeground() override;
+    void OnDeviceLocked() override;
 #endif
 
-    virtual void BeginFrame() override;
-	virtual void EndFrame() override;
+    void BeginFrame() override;
+	void EndFrame() override;
     
 private:
     void InitScreenController();
