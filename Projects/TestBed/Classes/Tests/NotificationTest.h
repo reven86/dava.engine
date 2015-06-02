@@ -26,5 +26,47 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __NOTIFICATION_SCREEN_H__
+#define __NOTIFICATION_SCREEN_H__
 
+#include "BaseScreen.h"
 
+using namespace DAVA;
+
+class NotificationScreen : public BaseScreen
+{
+public:
+	NotificationScreen();
+protected:
+	~NotificationScreen() {}
+public:
+	void LoadResources() override;
+	void UnloadResources() override;
+
+	void Update(float32 timeElapsed) override;
+	void Draw(const UIGeometricData &geometricData) override;
+
+	void UpdateNotification();
+
+private:
+	void OnNotifyText(BaseObject *obj, void *data, void *callerData);
+	void OnHideText(BaseObject *obj, void *data, void *callerData);
+	void OnNotifyProgress(BaseObject *obj, void *data, void *callerData);
+	void OnHideProgress(BaseObject *obj, void *data, void *callerData);
+
+	void OnNotificationTextPressed(BaseObject *obj, void *data, void *callerData);
+	void OnNotificationProgressPressed(BaseObject *obj, void *data, void *callerData);
+
+private:
+	UIButton *showNotificationText;
+	UIButton *hideNotificationText;
+	UIButton *showNotificationProgress;
+	UIButton *hideNotificationProgress;
+
+	LocalNotificationProgress *notificationProgress;
+	LocalNotificationText *notificationText;
+
+	uint32 progress;
+};
+
+#endif
