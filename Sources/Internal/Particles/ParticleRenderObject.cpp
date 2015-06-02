@@ -60,21 +60,7 @@ ParticleRenderObject::ParticleRenderObject(ParticleEffectData *effect): effectDa
     regularVertexLayoutId = rhi::VertexLayout::UniqueId(layout);
     layout.AddElement(rhi::VS_TEXCOORD, 1, rhi::VDT_FLOAT, 2);
     layout.AddElement(rhi::VS_TEXCOORD, 2, rhi::VDT_FLOAT, 1);
-    frameBlendVertexLayoutId = rhi::VertexLayout::UniqueId(layout);
-        
-    uint16 indices[6 * 1000];
-    
-    for (int i = 0; i < 1000; ++i)
-    {
-        indices[i*INDICES_PER_PARTICLE + 0] = i*POINTS_PER_PARTICLE + 0;
-        indices[i*INDICES_PER_PARTICLE + 1] = i*POINTS_PER_PARTICLE + 1;
-        indices[i*INDICES_PER_PARTICLE + 2] = i*POINTS_PER_PARTICLE + 2;
-        indices[i*INDICES_PER_PARTICLE + 3] = i*POINTS_PER_PARTICLE + 2;
-        indices[i*INDICES_PER_PARTICLE + 4] = i*POINTS_PER_PARTICLE + 1;
-        indices[i*INDICES_PER_PARTICLE + 5] = i*POINTS_PER_PARTICLE + 3; //preserve order
-    }
-    indexBuffer = rhi::CreateIndexBuffer(1000 * 2);
-    rhi::UpdateIndexBuffer(indexBuffer, indices, 0, 1000 * 2);
+    frameBlendVertexLayoutId = rhi::VertexLayout::UniqueId(layout);    
 }
 
 ParticleRenderObject::~ParticleRenderObject()
@@ -251,7 +237,7 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
 
     
     
-    DynamicBufferAllocator::AllocResult target = DynamicBufferAllocator::AllocateVertexBuffer(vertexStride, particlesCount * 4);    
+    DynamicBufferAllocator::AllocResultVB target = DynamicBufferAllocator::AllocateVertexBuffer(vertexStride, particlesCount * 4);    
     
     uint32 particleStride = vertexStride * 4;
     uint8* currpos = target.data;    
@@ -380,7 +366,7 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
 
     //test
     targetBatch->indexCount = particlesCount * 6;
-    targetBatch->indexBuffer = indexBuffer;
+    targetBatch->indexBuffer = DynamicBufferAllocator::GetDefaultQuadListIndexBuffer(particlesCount);
     targetBatch->startIndex = 0;
     targetBatch->vertexLayoutId = begin->layer->enableFrameBlend ? frameBlendVertexLayoutId : regularVertexLayoutId;
     activeRenderBatchArray.push_back(targetBatch);

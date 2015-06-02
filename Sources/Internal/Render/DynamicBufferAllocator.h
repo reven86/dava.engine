@@ -36,7 +36,7 @@ namespace DAVA
 {
 namespace DynamicBufferAllocator
 {
-    struct AllocResult
+    struct AllocResultVB
     {
         rhi::HVertexBuffer buffer;
         uint8 *data;
@@ -44,7 +44,17 @@ namespace DynamicBufferAllocator
         uint32 allocatedVertices;
     };
 
-    AllocResult AllocateVertexBuffer(uint32 vertexSize, uint32 vertexCount);
+    struct AllocResultIB
+    {
+        rhi::HIndexBuffer buffer;
+        uint16 *data;
+        uint32 baseIndex;
+        uint32 allocatedindices;
+    };
+
+    AllocResultVB AllocateVertexBuffer(uint32 vertexSize, uint32 vertexCount);
+    AllocResultIB AllocateIndexBuffer(uint32 indexCount);
+    rhi::HIndexBuffer GetDefaultQuadListIndexBuffer(uint32 quadCount);
     
     void BeginFrame();
     void EndFrame();

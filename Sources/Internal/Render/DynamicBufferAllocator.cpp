@@ -53,12 +53,15 @@ List<BufferInfo*> usedBuffers;
 
 }
 
-AllocResult AllocateVertexBuffer(uint32 vertexSize, uint32 vertexCount)
+
+
+AllocResultVB AllocateVertexBuffer(uint32 vertexSize, uint32 vertexCount)
 {
     DVASSERT(vertexSize);
-    DVASSERT((vertexSize * vertexCount) <= defaultPageSize); //assert for now - later allocate as much as possible and return inclomplete buffer
+    DVASSERT((vertexSize * vertexCount) <= defaultPageSize); //assert for now - later allocate as much as possible and return incomplete buffer
     uint32 requiredSize = vertexSize * vertexCount;
 
+    //try to fit in current buffer
     if (currentlyMappedBuffer) //try to fit in existing
     {
         uint32 baseV = ((currentlyUsedSize + vertexSize - 1) / vertexSize);
@@ -66,7 +69,7 @@ AllocResult AllocateVertexBuffer(uint32 vertexSize, uint32 vertexCount)
         if ((offset + requiredSize) < currentlyMappedBuffer->allocatedSize)
         {
             currentlyUsedSize = offset + requiredSize;
-            AllocResult res;
+            AllocResultVB res;
             res.buffer = currentlyMappedBuffer->buffer;
             res.data = currentlyMappedData + offset;
             res.baseVertex = baseV;
@@ -84,6 +87,7 @@ AllocResult AllocateVertexBuffer(uint32 vertexSize, uint32 vertexCount)
         }
     }
 
+    //start new buffer
     if (freeBuffers.size())
     {
         currentlyMappedBuffer = *freeBuffers.begin();
@@ -95,19 +99,38 @@ AllocResult AllocateVertexBuffer(uint32 vertexSize, uint32 vertexCount)
         currentlyMappedBuffer->allocatedSize = defaultPageSize;
         currentlyMappedBuffer->buffer = rhi::CreateVertexBuffer(defaultPageSize);
         currentlyMappedBuffer->shouldBeEvicted = false;        
-    }
-
-    
+    }    
     currentlyMappedData = (uint8*) rhi::MapVertexBuffer(currentlyMappedBuffer->buffer, 0, currentlyMappedBuffer->allocatedSize);            
     
+    //fit new
     currentlyUsedSize = requiredSize;
-    AllocResult res;
+    AllocResultVB res;
     res.buffer = currentlyMappedBuffer->buffer;
     res.data = currentlyMappedData;
     res.baseVertex = 0;
     res.allocatedVertices = vertexCount;    
     return res;
     
+}
+
+
+rhi::HIndexBuffer GetDefaultQuadListIndexBuffer(uint32 quadCount)
+{
+    /*
+    uint16 indices[6 * 1000];
+
+    for (int i = 0; i < 1000; ++i)
+    {
+    indices[i*INDICES_PER_PARTICLE + 0] = i*POINTS_PER_PARTICLE + 0;
+    indices[i*INDICES_PER_PARTICLE + 1] = i*POINTS_PER_PARTICLE + 1;
+    indices[i*INDICES_PER_PARTICLE + 2] = i*POINTS_PER_PARTICLE + 2;
+    indices[i*INDICES_PER_PARTICLE + 3] = i*POINTS_PER_PARTICLE + 2;
+    indices[i*INDICES_PER_PARTICLE + 4] = i*POINTS_PER_PARTICLE + 1;
+    indices[i*INDICES_PER_PARTICLE + 5] = i*POINTS_PER_PARTICLE + 3; //preserve order
+    }
+    indexBuffer = rhi::CreateIndexBuffer(1000 * 2);
+    rhi::UpdateIndexBuffer(indexBuffer, indices, 0, 1000 * 2);
+    */
 }
 
 void BeginFrame()
@@ -163,6 +186,7 @@ void Clear()
 void SetDefaultPageSize(uint32 size)
 {
     defaultPageSize = size;
+    Clear();
 }
 
 

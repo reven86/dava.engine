@@ -71,9 +71,7 @@ public:
 private:
     int32 CalculateParticleCount(const ParticleGroup& group);
 
-    uint32 regularVertexLayoutId, frameBlendVertexLayoutId;
-    
-    rhi::HIndexBuffer indexBuffer; //RHI_COMPLETE - temporary here!!!
+    uint32 regularVertexLayoutId, frameBlendVertexLayoutId;        
 	
 };
 
