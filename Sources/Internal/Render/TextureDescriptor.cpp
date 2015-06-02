@@ -191,7 +191,7 @@ bool TextureDescriptor::IsCompressedTextureActual(eGPUFamily forGPU) const
 	return ((compression->sourceFileCrc == sourceCRC) && (compression->convertedFileCrc == convertedCRC));
 }
 
-bool TextureDescriptor::IsCompressedTextureExists(eGPUFamily forGPU) const
+bool TextureDescriptor::HasCompressionFor(eGPUFamily forGPU) const
 {
     const Compression *compression = GetCompressionParams(forGPU);
     return (compression && compression->format != FORMAT_INVALID);

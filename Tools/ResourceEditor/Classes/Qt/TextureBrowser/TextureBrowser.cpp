@@ -365,7 +365,7 @@ void TextureBrowser::updateInfoConverted()
 {
 	if(curTexture != nullptr && 
        curDescriptor != nullptr && 
-       curDescriptor->IsCompressedTextureExists(curTextureView))
+       curDescriptor->HasCompressionFor(curTextureView))
 	{
 		char tmp[1024];
 		const char *formatStr = "Unknown";
