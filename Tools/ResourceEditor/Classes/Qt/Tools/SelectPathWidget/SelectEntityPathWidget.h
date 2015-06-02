@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__SELECENTITYTPATHWIDGET__
 #define __RESOURCEEDITORQT__SELECENTITYTPATHWIDGET__
 

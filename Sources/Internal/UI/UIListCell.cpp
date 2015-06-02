@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "UI/UIListCell.h"
 #include "Base/ObjectFactory.h"
 #include "UI/UIAggregatorControl.h"

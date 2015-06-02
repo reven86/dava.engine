@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene3D/Systems/UpdateSystem.h"
 #include "Scene3D/Components/UpdatableComponent.h"
 #include "Scene3D/Entity.h"

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Commands2/Command2.h"
 
 Command2::Command2(int _id, const DAVA::String& _text)

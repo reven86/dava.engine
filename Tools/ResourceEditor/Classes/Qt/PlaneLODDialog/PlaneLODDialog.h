@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__PLANELODDIALOG__
 #define __RESOURCEEDITORQT__PLANELODDIALOG__
 

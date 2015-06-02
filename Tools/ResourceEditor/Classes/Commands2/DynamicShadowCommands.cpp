@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Commands2/DynamicShadowCommands.h"
 #include "Scene/SceneEditor2.h"
 

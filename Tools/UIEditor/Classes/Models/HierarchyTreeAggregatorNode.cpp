@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #include "HierarchyTreeAggregatorNode.h"
 #include "ResourcesManageHelper.h"
 #include "HierarchyTreePlatformNode.h"

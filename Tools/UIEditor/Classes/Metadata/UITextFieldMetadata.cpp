@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "UITextFieldMetadata.h"
 #include "EditorFontManager.h"
 

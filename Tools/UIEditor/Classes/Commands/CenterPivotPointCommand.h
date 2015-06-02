@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __CENTERPIVOTPOINTCOMMAND__H__
 #define __CENTERPIVOTPOINTCOMMAND__H__
 

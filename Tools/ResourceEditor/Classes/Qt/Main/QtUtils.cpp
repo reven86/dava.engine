@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "QtUtils.h"
 #include "Deprecated/SceneValidator.h"
 
@@ -57,6 +56,7 @@ DAVA::FilePath GetOpenFileName(const DAVA::String &title, const DAVA::FilePath &
 {
     QString filePath = FileDialog::getOpenFileName(nullptr, QString(title.c_str()), QString(pathname.GetAbsolutePathname().c_str()),
                                                    QString(filter.c_str()));
+
 
     FilePath openedPathname = PathnameToDAVAStyle(filePath);
     if (!openedPathname.IsEmpty() && !SceneValidator::Instance()->IsPathCorrectForProject(openedPathname))

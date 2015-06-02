@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__CUSTOMCOLORSCOMMANDS2__
 #define __RESOURCEEDITORQT__CUSTOMCOLORSCOMMANDS2__
 

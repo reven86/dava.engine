@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __UIEditor__WidgetSignalsBlocker__
 #define __UIEditor__WidgetSignalsBlocker__
 
