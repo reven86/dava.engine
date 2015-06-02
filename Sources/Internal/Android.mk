@@ -204,6 +204,7 @@ DV_LOCAL_EXPORT_LDLIBS := $(LOCAL_LDLIBS)
 
 # set included libraries
 DV_LOCAL_STATIC_LIBRARIES := libbox2d
+DV_LOCAL_STATIC_LIBRARIES += cpufeatures
 
 ifeq ($(DAVA_PROFILE), true)
 ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
@@ -372,3 +373,4 @@ endif
 endif
 
 $(call import-module,Box2D)
+$(call import-module,android/cpufeatures)
