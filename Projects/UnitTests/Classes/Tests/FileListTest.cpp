@@ -391,7 +391,7 @@ void FileListTest::HiddenDirTest(PerfFuncData* data)
     
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     
-    FilePath folder1hidden = "~doc:/TestData/FileListTest/.Folder1";
+    FilePath folder1hidden = "~doc:/TestData/FileListTest/.Folder1/";
     TEST_VERIFY(FileSystem::Instance()->CreateDirectory(folder1hidden, true));
     ScopedPtr<FileList> files(new FileList("~doc:/TestData/FileListTest/"));
     TEST_VERIFY(files->GetDirectoryCount() == 4);
