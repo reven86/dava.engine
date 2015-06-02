@@ -104,10 +104,6 @@ void Server::PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, si
                 OnAddToCache(tcpChannel, archieve);
                 break;
                 
-            case PACKET_CHECK_FILE_IN_CACHE_REQUEST:
-                OnIsInCache(tcpChannel, archieve);
-                break;
-                
             case PACKET_GET_FILES_REQUEST:
                 OnGetFromCache(tcpChannel, archieve);
                 break;
@@ -141,25 +137,6 @@ bool Server::FilesAddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey 
     return false;
 }
     
-bool Server::FilesInCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, bool isInCache)
-{
-    Logger::FrameworkDebug("[AssetCache::Server::%s] tcpChannel = 0x%p", __FUNCTION__, tcpChannel);
-    if(tcpChannel)
-    {
-        ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        archieve->SetUInt32("PacketID", PACKET_CHECK_FILE_IN_CACHE_RESPONCE);
-        
-        ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
-        key.Serialize(keyArchieve);
-        archieve->SetArchive("key", keyArchieve);
-
-        archieve->SetBool("isInCache", isInCache);
-        
-        return tcpChannel->SendArchieve(archieve);
-    }
-    
-    return false;
-}
     
 bool Server::SendFiles(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, const CachedFiles &files)
 {
@@ -209,24 +186,6 @@ void Server::OnAddToCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve)
     }
 }
     
-void Server::OnIsInCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve)
-{
-    Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
-    if(delegate)
-    {
-        KeyedArchive *keyArchieve = archieve->GetArchive("key");
-        DVASSERT(keyArchieve);
-        
-        CacheItemKey key;
-        key.Deserialize(keyArchieve);
-        
-        delegate->OnIsInCache(tcpChannel, key);
-    }
-    else
-    {
-        Logger::Error("[Server::%s] delegate not installed", __FUNCTION__);
-    }
-}
     
 void Server::OnGetFromCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve)
 {

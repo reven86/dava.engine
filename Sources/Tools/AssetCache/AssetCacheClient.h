@@ -49,7 +49,6 @@ class ClientDelegate
 public:
     
     virtual void OnAddedToCache(const CacheItemKey &key, bool added) {};
-    virtual void OnIsInCache(const CacheItemKey &key, bool isInCache) {};
     virtual void OnReceivedFromCache(const CacheItemKey &key, const CachedFiles &files) {};
 };
 
@@ -68,7 +67,6 @@ public:
     bool IsConnected();
     
     bool AddToCache(const CacheItemKey &key, const CachedFiles &files);
-    bool IsInCache(const CacheItemKey &key);
     bool GetFromCache(const CacheItemKey &key);
     
     
@@ -83,7 +81,6 @@ public:
 private:
     
     void OnAddToCache(KeyedArchive * archieve);
-    void OnIsInCache(KeyedArchive * archieve);
     void OnGetFromCache(KeyedArchive * archieve);
     
     

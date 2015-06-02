@@ -118,38 +118,6 @@ void Client::OnAddToCache(KeyedArchive * archieve)
 }
     
 
-bool Client::IsInCache(const CacheItemKey &key)
-{
-    if(openedChannel)
-    {
-        ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
-        archieve->SetUInt32("PacketID", PACKET_CHECK_FILE_IN_CACHE_REQUEST);
-        
-        ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
-        key.Serialize(keyArchieve);
-        archieve->SetArchive("key", keyArchieve);
-        
-        return openedChannel->SendArchieve(archieve);
-    }
-    
-    return false;
-}
-    
-void Client::OnIsInCache(KeyedArchive * archieve)
-{
-    if(delegate)
-    {
-        KeyedArchive *keyArchieve = archieve->GetArchive("key");
-        DVASSERT(keyArchieve);
-        CacheItemKey key;
-        key.Deserialize(keyArchieve);
-        
-        bool isInCache = archieve->GetBool("isInCache");
-        delegate->OnIsInCache(key, isInCache);
-    }
-}
-
-
 bool Client::GetFromCache(const CacheItemKey &key)
 {
     if(openedChannel)
@@ -218,10 +186,6 @@ void Client::PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, si
         {
             case PACKET_ADD_FILES_RESPONCE:
                 OnAddToCache(archieve);
-                break;
-
-            case PACKET_CHECK_FILE_IN_CACHE_RESPONCE:
-                OnIsInCache(archieve);
                 break;
 
             case PACKET_GET_FILES_RESPONCE:

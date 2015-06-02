@@ -47,18 +47,6 @@ void ServerLogics::OnAddedToCache(DAVA::TCPChannel *tcpChannel, const DAVA::Asse
     }
 }
 
-void ServerLogics::OnIsInCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key)
-{
-    DAVA::Logger::FrameworkDebug("[ServerLogics::%s]", __FUNCTION__);
-    if(server && dataBase && tcpChannel)
-    {
-        auto entry = dataBase->Get(key);
-        bool inCache = (nullptr != entry);
-        
-        server->FilesInCache(tcpChannel, key, inCache);
-    }
-}
-
 void ServerLogics::OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key)
 {
     DAVA::Logger::FrameworkDebug("[ServerLogics::%s]", __FUNCTION__);
