@@ -33,18 +33,9 @@
 #include "Base/BaseTypes.h"
 #include "Core/Core.h"
 
-#include "Infrastructure/TeamCityTestsOutput.h"
+#include "UnitTests/TeamCityTestsOutput.h"
 
-#include <fstream>
-
-namespace Testing
-{
-    class TestClass;
-}
-
-using namespace DAVA;
-
-class GameCore : public ApplicationCore
+class GameCore : public DAVA::ApplicationCore
 {
 protected:
     virtual ~GameCore() = default;
@@ -64,57 +55,25 @@ public:
     void OnResume() override;
     
 #if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-    void OnBackground() override;
+    void OnBackground() override {}
     void OnForeground() override;
-    void OnDeviceLocked() override;
+    void OnDeviceLocked() override {}
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 
     void Update(DAVA::float32 update) override;
 
-    void RegisterError(const String &command, const String &fileName, int32 line, const String& userMessage);
-    void LogMessage(const String &message);
-
-protected:
-    void ProcessTests(float32 timeElapsed);
+private:
+    void ProcessTests(DAVA::float32 timeElapsed);
     void FinishTests();
 
-    DAVA::String CreateOutputLogFile();
-    DAVA::String ReadLogFile();
-
-    void CreateDocumentsFolder();
-    DAVA::File* CreateDocumentsFile(const DAVA::String &filePathname);
-    
-private:
-    void InitLogging();
-
-    void RunOnlyThisTest();
     void OnError();
 
-    DAVA::String runOnlyThisTest;
+    void OnTestStarted(const DAVA::String& testClassName);
+    void OnTestFinished(const DAVA::String& testClassName);
+    void OnTestFailed(const DAVA::String& testClassName, const DAVA::String& testName, const DAVA::String& condition, const char* filename, int lineno, const DAVA::String& userMessage);
 
-    DAVA::String logFilePath;
-    std::ofstream logFile;
-
+private:
     DAVA::TeamcityTestsOutput teamCityOutput;
-
-    Testing::TestClass* curTestClass = nullptr;
-    DAVA::String curTestClassName;
-    DAVA::String curTestName;
-    size_t curTestClassIndex = 0;
-    size_t curTestIndex = 0;
-    bool testSetUpInvoked = false;
 };
-
-#define TEST_VERIFY(condition)                                                                              \
-    if (!(condition))                                                                                       \
-    {                                                                                                       \
-        GameCore::Instance()->RegisterError(DAVA::String(#condition), __FILE__, __LINE__, DAVA::String());  \
-    }
-
-#define TEST_VERIFY_WITH_MESSAGE(condition, message)                                                                \
-    if (!(condition))                                                                                               \
-    {                                                                                                               \
-        GameCore::Instance()->RegisterError(DAVA::String(#condition), __FILE__, __LINE__, DAVA::String(message));   \
-    }
 
 #endif // __GAMECORE_H__
