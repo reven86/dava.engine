@@ -87,9 +87,11 @@ public:
 
     inline bool IsFileExtensionSupported(const String& extension) const;
     inline const Vector<String>& Extensions() const;
+    inline const char* Name() const;
     
 protected:
     Vector<String> supportedExtensions;
+    String name;
 };
 
 ImageInfo ImageFormatInterface::GetImageInfo(const FilePath &path) const
@@ -121,6 +123,11 @@ inline bool ImageFormatInterface::IsFileExtensionSupported(const String& extensi
 inline const Vector<String>& ImageFormatInterface::Extensions() const
 {
     return supportedExtensions;
+}
+
+inline const char* ImageFormatInterface::Name() const
+{
+    return name.c_str();
 }
 
 };

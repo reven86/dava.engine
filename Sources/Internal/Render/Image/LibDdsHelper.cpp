@@ -683,6 +683,7 @@ bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, Pix
     
 LibDdsHelper::LibDdsHelper()
 {
+    name.assign("DDS");
     supportedExtensions.push_back(".dds");
 }
 
