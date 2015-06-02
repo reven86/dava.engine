@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "QtPropertyDataInspColl.h"
 #include "QtPropertyDataIntrospection.h"
 #include "QtPropertyDataMetaObject.h"

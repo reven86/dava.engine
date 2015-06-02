@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "VisibilityToolProxy.h"
 
 VisibilityToolProxy::VisibilityToolProxy(int32 size)

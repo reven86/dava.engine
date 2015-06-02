@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "MaterialCompilerTest.h"
 
 MaterialCompilerTest::MaterialCompilerTest()

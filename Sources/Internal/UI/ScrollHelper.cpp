@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "UI/ScrollHelper.h"
 #include "FileSystem/Logger.h"
 #include "Math/Math2D.h"

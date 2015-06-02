@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "SpritePackerHelper.h"
 #include "SpritesPacker.h"
 #include "Qt/Settings/SettingsManager.h"

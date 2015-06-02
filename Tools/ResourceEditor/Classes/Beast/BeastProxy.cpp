@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "BeastProxy.h"
 
 BeastManager * BeastProxy::CreateManager()

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __UIEditor__UISwitchMetadata__
 #define __UIEditor__UISwitchMetadata__
 

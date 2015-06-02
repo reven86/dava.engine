@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ControlsFactory.h"
 #include "Qt/Settings/SettingsManager.h"
 

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__TILEMASKEDITORSYSTEM__
 #define __RESOURCEEDITORQT__TILEMASKEDITORSYSTEM__
 

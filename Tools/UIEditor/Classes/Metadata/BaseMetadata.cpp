@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #include "BaseMetadata.h"
 #include "HierarchyTreeController.h"
 

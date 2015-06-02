@@ -84,7 +84,7 @@ void GameCore::RegisterTests()
     new SaveImageTest();
     new StringFormatTest();
     new ComponentsTest();
-    new FileListTest();
+//    new FileListTest(); tmp !!!
     new FileSystemTest();
     new DateTimeTest();
     new LocalizationTest();

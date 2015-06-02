@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __EDITOR_LOCALIZATION_SYSTEM_H__
 #define __EDITOR_LOCALIZATION_SYSTEM_H__
 

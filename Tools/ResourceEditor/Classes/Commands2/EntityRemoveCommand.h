@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __ENTITY_REMOVE_COMMAND_H__
 #define __ENTITY_REMOVE_COMMAND_H__
 

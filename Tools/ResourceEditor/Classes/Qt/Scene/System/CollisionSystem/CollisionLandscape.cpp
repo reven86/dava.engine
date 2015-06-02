@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Qt/Scene/System/CollisionSystem/CollisionLandscape.h"
 #include "Render/Highlevel/Heightmap.h"
 

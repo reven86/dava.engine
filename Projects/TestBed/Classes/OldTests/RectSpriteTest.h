@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __TEMPLATEPROJECTMACOS__RECTSPRITETEST__
 #define __TEMPLATEPROJECTMACOS__RECTSPRITETEST__
 

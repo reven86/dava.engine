@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Debug/Backtrace.h"
 #include "Base/Bind.h"
 #include "FileSystem/Logger.h"

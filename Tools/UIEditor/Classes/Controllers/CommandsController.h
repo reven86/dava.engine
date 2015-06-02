@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __UIEditor__CommandsController__
 #define __UIEditor__CommandsController__
 

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_EDGE_ADJACENCY_H__
 #define __DAVAENGINE_EDGE_ADJACENCY_H__
 

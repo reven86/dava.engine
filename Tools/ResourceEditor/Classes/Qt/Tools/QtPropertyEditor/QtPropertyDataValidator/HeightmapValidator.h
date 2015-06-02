@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __TEXTURE_FILE_VALIDATOR_H__
 #define __TEXTURE_FILE_VALIDATOR_H__
 

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
 #include "Platform/Thread.h"

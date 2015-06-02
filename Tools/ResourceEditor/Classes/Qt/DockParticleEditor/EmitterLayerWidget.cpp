@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "EmitterLayerWidget.h"
 #include "Commands2/ParticleEditorCommands.h"
 #include "TextureBrowser/TextureConvertor.h"

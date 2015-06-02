@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "npapisdk/headers/npapi.h"
 #include "npapisdk/headers/npfunctions.h"
 #include "Core/ApplicationCore.h"

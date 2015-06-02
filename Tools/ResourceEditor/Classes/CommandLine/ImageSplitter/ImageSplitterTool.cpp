@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ImageSplitterTool.h"
 #include "ImageTools/ImageTools.h"
 #include "TexturePacker/CommandLineParser.h"

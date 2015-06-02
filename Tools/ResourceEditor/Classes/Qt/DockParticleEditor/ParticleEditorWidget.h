@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __ResourceEditorQt__ParticleEditorWidget__
 #define __ResourceEditorQt__ParticleEditorWidget__
 
