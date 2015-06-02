@@ -78,11 +78,11 @@ protected:
     void ProcessTests(float32 timeElapsed);
     void FinishTests();
 
-    String CreateOutputLogFile();
-    String ReadLogFile();
+    DAVA::String CreateOutputLogFile();
+    DAVA::String ReadLogFile();
 
     void CreateDocumentsFolder();
-    File* CreateDocumentsFile(const String &filePathname);
+    DAVA::File* CreateDocumentsFile(const DAVA::String &filePathname);
     
 private:
     void InitLogging();
@@ -90,31 +90,31 @@ private:
     void RunOnlyThisTest();
     void OnError();
 
-    String runOnlyThisTest;
+    DAVA::String runOnlyThisTest;
 
-    String logFilePath;
+    DAVA::String logFilePath;
     std::ofstream logFile;
 
-    TeamcityTestsOutput teamCityOutput;
+    DAVA::TeamcityTestsOutput teamCityOutput;
 
     Testing::TestClass* curTestClass = nullptr;
-    String curTestClassName;
-    String curTestName;
+    DAVA::String curTestClassName;
+    DAVA::String curTestName;
     size_t curTestClassIndex = 0;
     size_t curTestIndex = 0;
     bool testSetUpInvoked = false;
 };
 
-#define TEST_VERIFY(condition)                                                                          \
-    if (!(condition))                                                                                   \
-    {                                                                                                   \
-        GameCore::Instance()->RegisterError(String(#condition), __FILE__, __LINE__, DAVA::String());    \
-    }
-
-#define TEST_VERIFY_WITH_MESSAGE(condition, message)                                                        \
+#define TEST_VERIFY(condition)                                                                              \
     if (!(condition))                                                                                       \
     {                                                                                                       \
-        GameCore::Instance()->RegisterError(String(#condition), __FILE__, __LINE__, DAVA::String(message)); \
+        GameCore::Instance()->RegisterError(DAVA::String(#condition), __FILE__, __LINE__, DAVA::String());  \
+    }
+
+#define TEST_VERIFY_WITH_MESSAGE(condition, message)                                                                \
+    if (!(condition))                                                                                               \
+    {                                                                                                               \
+        GameCore::Instance()->RegisterError(DAVA::String(#condition), __FILE__, __LINE__, DAVA::String(message));   \
     }
 
 #endif // __GAMECORE_H__

@@ -26,9 +26,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#pragma once
+#ifndef __DAVAENGINE_NEWTESTFRAMEWORK_H__
+#define __DAVAENGINE_NEWTESTFRAMEWORK_H__
 
-using namespace DAVA;
+#include "Base/BaseTypes.h"
 
 namespace Testing
 {
@@ -59,7 +60,7 @@ struct TestInfo
         : name(name_)
         , testFunction(testFunction_)
     {}
-    String name;
+    DAVA::String name;
     void (*testFunction)(TestClass*);
 };
 
@@ -73,7 +74,7 @@ struct TestClassInfo
         : name(std::move(other.name))
         , factory(std::move(other.factory))
     {}
-    String name;
+    DAVA::String name;
     std::unique_ptr<TestClassFactoryBase> factory;
 };
 
@@ -82,10 +83,10 @@ class TestClass
 public:
     virtual ~TestClass() {}
 
-    virtual void SetUp(const String& testName) {}
-    virtual void TearDown(const String& testName) {}
-    virtual void Update(float32 timeElapsed, const String& testName) {}
-    virtual bool TestComplete(const String& testName) const { return true; }
+    virtual void SetUp(const DAVA::String& testName) {}
+    virtual void TearDown(const DAVA::String& testName) {}
+    virtual void Update(DAVA::float32 timeElapsed, const DAVA::String& testName) {}
+    virtual bool TestComplete(const DAVA::String& testName) const { return true; }
 
     void RegisterTest(const char* name, void (*testFunc)(TestClass*))
     {
@@ -97,7 +98,7 @@ public:
         return tests.size();
     }
 
-    const String& TestName(size_t index) const
+    const DAVA::String& TestName(size_t index) const
     {
         return tests[index].name;
     }
@@ -108,7 +109,7 @@ public:
     }
 
 private:
-    Vector<TestInfo> tests;
+    DAVA::Vector<TestInfo> tests;
 };
 
 template<typename T>
@@ -136,7 +137,7 @@ public:
         return testClasses.size();
     }
 
-    const String& TestClassName(size_t index) const
+    const DAVA::String& TestClassName(size_t index) const
     {
         return testClasses[index].name;
     }
@@ -146,7 +147,7 @@ public:
         return testClasses[index].factory->CreateTestClass();
     }
 
-    size_t IsTestClassRegistered(const String& name) const
+    size_t IsTestClassRegistered(const DAVA::String& name) const
     {
         auto iter = std::find_if(testClasses.begin(), testClasses.end(), [&name](const TestClassInfo& info) -> bool {
             return info.name == name;
@@ -164,20 +165,20 @@ public:
     }
 
 private:
-    Vector<TestClassInfo> testClasses;
+    DAVA::Vector<TestClassInfo> testClasses;
 };
 
 }   // namespace Testing
 
-#define DAVA_TESTCLASS(classname)                                                                                                   \
-    struct classname;                                                                                                               \
-    static struct testclass_ ## classname ## _registrar                                                                             \
-    {                                                                                                                               \
-        testclass_ ## classname ## _registrar()                                                                                     \
-        {                                                                                                                           \
+#define DAVA_TESTCLASS(classname)                                                                                                               \
+    struct classname;                                                                                                                           \
+    static struct testclass_ ## classname ## _registrar                                                                                         \
+    {                                                                                                                                           \
+        testclass_ ## classname ## _registrar()                                                                                                 \
+        {                                                                                                                                       \
             Testing::TestClassCollection::Instance()->RegisterTestClass(#classname, new Testing::TestClassFactoryImpl<classname>);  \
-        }                                                                                                                           \
-    } testclass_ ## classname ## _registrar_instance;                                                                               \
+        }                                                                                                                                       \
+    } testclass_ ## classname ## _registrar_instance;                                                                                           \
     struct classname : public Testing::TestClass, public Testing::TestClassTypeKeeper<classname>
 
 #define DAVA_TEST(testname)                                                                                             \
@@ -193,3 +194,5 @@ private:
         static_cast<TestClassType*>(testClass)->testname();                                                             \
     }                                                                                                                   \
     void testname()
+
+#endif  // __DAVAENGINE_NEWTESTFRAMEWORK_H__

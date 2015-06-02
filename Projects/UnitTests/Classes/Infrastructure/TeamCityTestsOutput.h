@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
 #define __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
 
@@ -35,7 +34,6 @@
 namespace DAVA 
 {
 
-   
 class TeamcityTestsOutput: public TeamcityOutput
 {
 public:
@@ -48,8 +46,6 @@ private:
     void TestOutput(const String& data);
 };
 
-
 };
 
 #endif // __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
-
