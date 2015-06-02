@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __TEXTURE_DESCRIPTOR_UTILS_H__
 #define __TEXTURE_DESCRIPTOR_UTILS_H__
 

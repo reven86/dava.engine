@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "LibraryFileSystemModel.h"
 
 #include "FileSystem/Logger.h"

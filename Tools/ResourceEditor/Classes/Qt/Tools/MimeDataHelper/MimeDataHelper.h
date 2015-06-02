@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__MIMEDATAHELPER__
 #define __RESOURCEEDITORQT__MIMEDATAHELPER__
 

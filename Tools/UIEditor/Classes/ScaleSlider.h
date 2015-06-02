@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __UIEDITOR__SCALESLIDER__H__
 #define __UIEDITOR__SCALESLIDER__H__
 

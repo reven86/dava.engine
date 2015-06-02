@@ -40,6 +40,7 @@
 #include <vector>
 #include <algorithm>
 #include <set>
+#include <unordered_set>
 #include <stack>
 #include <queue>
 #include <array>
@@ -107,6 +108,10 @@ template<typename CharT>
 using BasicStringStream = std::basic_stringstream<CharT, std::char_traits<CharT>, DefaultSTLAllocator<CharT>>;
 
 using StringStream = BasicStringStream<char8>;
+
+template< class T, 
+          std::size_t N > 
+using Array = std::array<T, N>;
 
 template<typename T>
 using List = std::list<T, DefaultSTLAllocator<T>>;

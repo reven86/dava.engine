@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene3D/SpriteNode.h"
 #include "Scene3D/Scene.h"
 #include "Render/RenderManager.h"

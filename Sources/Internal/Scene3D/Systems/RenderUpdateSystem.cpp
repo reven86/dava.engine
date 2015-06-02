@@ -60,10 +60,11 @@ RenderUpdateSystem::~RenderUpdateSystem()
 {
 }
 
-void RenderUpdateSystem::ImmediateEvent(Entity * entity, uint32 event)
+void RenderUpdateSystem::ImmediateEvent(Component * component, uint32 event)
 {
     if (event == EventSystem::WORLD_TRANSFORM_CHANGED)
     {
+        Entity * entity = component->GetEntity();
         // Update new transform pointer, and mark that transform is changed
         Matrix4 * worldTransformPointer = ((TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
 		RenderObject * object = ((RenderComponent*)entity->GetComponent(Component::RENDER_COMPONENT))->GetRenderObject();

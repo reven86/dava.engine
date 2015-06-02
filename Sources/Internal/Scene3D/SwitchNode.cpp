@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene3D/SwitchNode.h"
 #include "FileSystem/KeyedArchive.h"
 

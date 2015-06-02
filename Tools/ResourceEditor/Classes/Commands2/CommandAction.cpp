@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "CommandAction.h"
 
 CommandAction::CommandAction(int _id, const DAVA::String& _text)

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_PATH_COMPONENT_H__
 #define __DAVAENGINE_PATH_COMPONENT_H__
 
@@ -114,9 +113,9 @@ public:
 	PathComponent();
     virtual ~PathComponent();
 
-	virtual Component * Clone(Entity * toEntity);
-	virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
-	virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
+    Component * Clone(Entity * toEntity) override;
+    void Serialize(KeyedArchive *archive, SerializationContext *serializationContext) override;
+    void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext) override;
 
     void AddPoint(Waypoint *point);
     void RemovePoint(Waypoint *point);
@@ -194,7 +193,6 @@ inline KeyedArchive* PathComponent::Edge::GetProperties() const
     return properties;
 }
 
-    
-    
+
 }
 #endif //__DAVAENGINE_PATH_COMPONENT_H__

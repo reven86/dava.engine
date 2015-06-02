@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Base/BaseTypes.h"
 #include "Platform/DPIHelper.h"
 #include "Platform/DeviceInfo.h"

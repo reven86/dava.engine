@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __QT_PROPERY_ITEM_DELEGATE_H__
 #define __QT_PROPERY_ITEM_DELEGATE_H__
 

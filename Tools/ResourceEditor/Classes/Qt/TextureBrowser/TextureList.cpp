@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "TextureList.h"
 
 TextureList::TextureList(QWidget *parent /* = 0 */)

@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "SnapToLandscapeControllerSystem.h"
 
 #include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
@@ -98,12 +99,12 @@ void SnapToLandscapeControllerSystem::Process(float32 timeElapsed)
     }
 }
     
-void SnapToLandscapeControllerSystem::ImmediateEvent(Entity * entity, uint32 event)
+void SnapToLandscapeControllerSystem::ImmediateEvent(Component * component, uint32 event)
 {
     if(EventSystem::SNAP_TO_LANDSCAPE_HEIGHT_CHANGED == event)
     {
         Landscape *landscape = FindLandscape(GetScene());
-        SnapToLandscape(landscape, entity, true);
+        SnapToLandscape(landscape, component->GetEntity(), true);
     }
 }
     

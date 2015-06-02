@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "CustomColorsProxy.h"
 #include "Deprecated/EditorConfig.h"
 
