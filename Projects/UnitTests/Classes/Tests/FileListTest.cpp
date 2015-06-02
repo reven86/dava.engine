@@ -60,7 +60,7 @@ void FileListTest::ResTestFunction(PerfFuncData * data)
 
     ScopedPtr<FileList> fileList( new FileList("~res:/TestData/FileListTest/") );
 
-    TEST_VERIFY(fileList->GetDirectoryCount() == 4);
+    TEST_VERIFY(fileList->GetDirectoryCount() == 3);
     TEST_VERIFY(fileList->GetFileCount() == 0);
 
     for(int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
@@ -75,7 +75,7 @@ void FileListTest::ResTestFunction(PerfFuncData * data)
         if(filename == "Folder1")
         {
             TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder1/");
-            TEST_VERIFY(files->GetFileCount() == 4);
+            TEST_VERIFY(files->GetFileCount() == 3);
 
             for(int32 ifi = 0; ifi < files->GetCount(); ++ifi)
             {
@@ -87,10 +87,6 @@ void FileListTest::ResTestFunction(PerfFuncData * data)
                 if(filename == "file1")
                 {
                     TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder1/file1");
-                }
-                else if (filename == ".file1")
-                {
-                    TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder1/.file1");
                 }
                 else if(filename == "file2.txt")
                 {
@@ -105,11 +101,6 @@ void FileListTest::ResTestFunction(PerfFuncData * data)
                     TEST_VERIFY(false);
                 }
             }
-        }
-        else if (filename == ".Folder1")
-        {
-            TEST_VERIFY(pathname == "~res:/TestData/FileListTest/.Folder1/");
-            TEST_VERIFY(files->GetFileCount() == 1);
         }
         else if(filename == "Folder2")
         {
@@ -362,6 +353,7 @@ void FileListTest::HiddenFileTest(PerfFuncData* data)
             TEST_VERIFY(files->IsHidden(i) == startsWithDot);
         }
     }
+    FileSystem::Instance()->DeleteFile(file1hidden);
     
 #endif //PLATFORMS
 }
@@ -411,6 +403,7 @@ void FileListTest::HiddenDirTest(PerfFuncData* data)
             TEST_VERIFY(files->IsHidden(i) == startsWithDot);
         }
     }
+    FileSystem::Instance()->DeleteDirectory(folder1hidden);
     
 #endif //PLATFORMS
 }
