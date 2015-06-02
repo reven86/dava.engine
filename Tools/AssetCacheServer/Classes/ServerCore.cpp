@@ -29,7 +29,6 @@
 
 #include "ServerCore.h"
 
-
 #include <QTimer>
 
 ServerCore::ServerCore()
@@ -62,15 +61,10 @@ void ServerCore::Start()
     QTimer::singleShot(UPDATE_TIMEOUT, this, &ServerCore::UpdateByTimer);
 }
 
-static bool connectedState = true;
 void ServerCore::Update()
 {
-    if(connectedState != server.IsConnected())
-    {
-        connectedState = server.IsConnected();
-        DAVA::Logger::FrameworkDebug("[ServerCore::%s] isConnected = %d", __FUNCTION__, connectedState);
-    }
-
+    logics.Update();
+    
     auto netSystem = DAVA::Net::NetCore::Instance();
     if(netSystem)
     {
@@ -92,10 +86,11 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
         auto & folder = settings->GetFolder();
         auto size = settings->GetCacheSize();
         auto count = settings->GetFilesCount();
+        auto autoSaveTimeout = settings->GetAutoSaveTimeout();
         
         if(size && !folder.IsEmpty())
         {
-            dataBase.UpdateSettings(folder, size, count);
+            dataBase.UpdateSettings(folder, size, count, autoSaveTimeout);
         }
         else
         {

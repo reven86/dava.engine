@@ -40,6 +40,9 @@
 
 #include "Debug/DVAssert.h"
 
+#include "Platform/SystemTimer.h"
+
+
 namespace DAVA
 {
     
@@ -48,12 +51,18 @@ namespace AssetCache
     
 const String CacheDB::DB_FILE_NAME = "cache.dat";
     
+CacheDB::CacheDB()
+    : dbStateChanged(false)
+{
+}
+    
+    
 CacheDB::~CacheDB()
 {
     Unload();
 }
 
-void CacheDB::UpdateSettings(const DAVA::FilePath &folderPath, uint64 size, uint32 _itemsInMemory)
+void CacheDB::UpdateSettings(const FilePath &folderPath, const uint64 size, const uint32 _itemsInMemory, const uint64 _autoSaveTimeout)
 {
     if(cacheRootFolder != folderPath)
     {
@@ -84,6 +93,7 @@ void CacheDB::UpdateSettings(const DAVA::FilePath &folderPath, uint64 size, uint
         fastCache.reserve(itemsInMemory);
     }
     
+    autoSaveTimeout = _autoSaveTimeout;
     Save();
 }
 
@@ -134,6 +144,8 @@ void CacheDB::Load()
         
         fullCache[key] = entry;
     }
+    
+    dbStateChanged = false;
 }
     
 void CacheDB::Unload()
@@ -150,7 +162,7 @@ void CacheDB::Unload()
 }
 
     
-void CacheDB::Save() const
+void CacheDB::Save()
 {
     FileSystem::Instance()->CreateDirectory(cacheRootFolder, true);
     
@@ -180,7 +192,11 @@ void CacheDB::Save() const
         cache->SetArchive(Format("item_%d", index++), itemArchieve);
     }
     cache->Save(file);
+    
+    dbStateChanged = false;
+    lastSaveTime = SystemTimer::Instance()->AbsoluteMS();
 }
+    
     
     
 void CacheDB::ReduceFastCacheByCount(uint32 toCount)
@@ -246,6 +262,7 @@ ServerCacheEntry * CacheDB::Get(const CacheItemKey &key)
     if(nullptr != entry)
     {   // update access token
         entry->InvalidateAccesToken(nextItemID++);
+        dbStateChanged = true;
     }
     
     return entry;
@@ -288,6 +305,8 @@ void CacheDB::Insert(const CacheItemKey &key, const ServerCacheEntry &entry)
     auto savedPath = CreateFolderPath(key);
     entry.GetFiles().Save(savedPath);
     usedSize += newFilesSize;
+    
+    dbStateChanged = true;
 }
 
 void CacheDB::InsertInFastCache(const CacheItemKey &key, ServerCacheEntry * entry)
@@ -309,6 +328,7 @@ void CacheDB::Remove(const CacheItemKey &key)
     if(found != fullCache.end())
     {
         RemoveFromFullCache(found);
+        dbStateChanged = true;
     }
     else
     {
@@ -383,64 +403,20 @@ const uint64 CacheDB::GetUsedSize() const
 {
     return usedSize;
 }
-    
-    
-void CacheDB::Dump()
+
+void CacheDB::Update()
 {
-    Logger::FrameworkDebug("======= [CacheDB::%s] =======", __FUNCTION__);
-
-    Logger::FrameworkDebug(" == General Info ==");
-    Logger::FrameworkDebug("\tstorageSize = %lld", GetStorageSize());
-    Logger::FrameworkDebug("\tusedSize = %lld", GetUsedSize());
-    Logger::FrameworkDebug("\tavailableSize = %lld", GetAvailableSize());
-    
-    Logger::FrameworkDebug(" == Files Info ==");
-    Logger::FrameworkDebug(" FAST:");
-
-    Logger::FrameworkDebug("\tentries count = %d", fastCache.size());
-    size_t index = 0;
-    for(auto & entry: fastCache)
+    if(dbStateChanged && (autoSaveTimeout != 0))
     {
-        auto & files = entry.second->GetFiles();
-        auto & fileDescriptors = files.GetFiles();
-        
-        Logger::FrameworkDebug("\tentry[%d]:", index);
-        Logger::FrameworkDebug("\t\taccessID = %d", entry.second->GetAccesID());
-        Logger::FrameworkDebug("\t\tnames count = %d", fileDescriptors.size());
-        
-        for(auto &f: fileDescriptors)
+        auto curTime = SystemTimer::Instance()->AbsoluteMS();
+        if(curTime - lastSaveTime > autoSaveTimeout)
         {
-            Logger::FrameworkDebug("\t\tname: %s", f.first.GetStringValue().c_str());
+            Save();
+            lastSaveTime = curTime;
         }
-        
-        ++index;
     }
-    
-    Logger::FrameworkDebug(" FULL:");
-    Logger::FrameworkDebug("\tentries count = %d", fullCache.size());
-    index = 0;
-    for(auto & entry: fullCache)
-    {
-        auto & files = entry.second.GetFiles();
-        auto & fileDescriptors = files.GetFiles();
-
-        Logger::FrameworkDebug("\tentry[%d]:", index);
-        Logger::FrameworkDebug("\t\taccessID = %d", entry.second.GetAccesID());
-        Logger::FrameworkDebug("\t\tnames count = %d", fileDescriptors.size());
-        
-        for(auto &f: fileDescriptors)
-        {
-            Logger::FrameworkDebug("\t\tname: %s", f.first.GetStringValue().c_str());
-        }
-
-        ++index;
-    }
-    
-    Logger::FrameworkDebug("======= [CacheDB::%s] =======", __FUNCTION__);
 }
     
-    
-
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA

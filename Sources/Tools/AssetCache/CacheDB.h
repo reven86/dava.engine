@@ -83,12 +83,12 @@ class CacheDB
     
 public:
     
-    CacheDB() = default;
+    CacheDB();
     virtual ~CacheDB();
 
-    void UpdateSettings(const FilePath &folderPath, uint64 size, uint32 itemsInMemory);
+    void UpdateSettings(const FilePath &folderPath, const uint64 size, const uint32 itemsInMemory, const uint64 autoSaveTimeout);
     
-    void Save() const;
+    void Save();
     void Load();
     
     ServerCacheEntry * Get(const CacheItemKey &key);
@@ -103,7 +103,7 @@ public:
     const uint64 GetAvailableSize() const;
     const uint64 GetUsedSize() const;
 
-    void Dump();
+    void Update();
     
 private:
     
@@ -134,8 +134,13 @@ private:
     uint64 usedSize = 0;                //used by files
     uint64 nextItemID = 0;              //item counter, used as last access time token
     
+    uint64 autoSaveTimeout = 0;
+    uint64 lastSaveTime = 0;
+    
     FASTCACHE fastCache;                //runtime, week storage
     CACHE fullCache;                    //stored on disk, strong storage
+    
+    std::atomic_bool dbStateChanged;    //flag about changes in db
 };
     
 }; // end of namespace AssetCache

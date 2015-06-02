@@ -64,3 +64,11 @@ void ServerLogics::OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA
     }
 }
 
+void ServerLogics::Update()
+{
+    if(dataBase)
+    {
+        dataBase->Update();
+    }
+}
+

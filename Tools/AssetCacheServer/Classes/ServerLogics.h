@@ -40,6 +40,8 @@ public:
     void OnAddedToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files) override;
     void OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key) override;
     
+    void Update();
+    
 private:
     
     DAVA::AssetCache::Server *server = nullptr;

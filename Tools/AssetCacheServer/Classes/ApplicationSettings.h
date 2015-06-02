@@ -64,6 +64,10 @@ struct ServerData
     DAVA::uint16 port = DAVA::AssetCache::ASSET_SERVER_PORT;
 };
 
+
+//TODO: we need one code for settings in different projects
+//need to use introspection instead of hardcoding of values
+
 class ApplicationSettings: public QObject
 {
     Q_OBJECT
@@ -82,18 +86,15 @@ public:
     const DAVA::uint32 GetFilesCount() const;
     void SetFilesCount(const DAVA::uint32 count);
 
+    const DAVA::uint64 GetAutoSaveTimeout() const;
+    void SetAutoSaveTimeout(const DAVA::uint64 timeout);
+
     const DAVA::List<ServerData> & GetServers() const;
     void ResetServers();
     void AddServer(const ServerData & server);
     void RemoveServer(const ServerData & server);
     
 signals:
-    
-    void FolderChanged(const DAVA::FilePath & folder);
-    void CacheSizeChanged(const DAVA::float64 cacheSize);
-    void FilesCountChanged(const DAVA::uint32 filesCount);
-    
-    void ServersListChanged(const DAVA::List<ServerData> &);
     
     void SettingsUpdated(const ApplicationSettings * settings) const;
     
@@ -109,6 +110,8 @@ public:
     DAVA::float64 cacheSize;
     DAVA::uint32 filesCount;
 
+    DAVA::uint64 autoSaveTimeout = 1 * 60 * 1000;   //ms, 1 minute
+    
     DAVA::List<ServerData> servers;
 };
 

@@ -70,6 +70,8 @@ private:
     
     ServerLogics logics;
     ApplicationSettings * settings;
+    
+    DAVA::uint64 dbSaveTime = 0;
 };
 
 
