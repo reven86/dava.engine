@@ -27,12 +27,8 @@
 =====================================================================================*/
 
 #include "DAVAEngine.h"
+#include "UnitTests/UnitTests.h"
 
-#include "Infrastructure/GameCore.h"
-#include "Infrastructure/NewTestFramework.h"
-
-#include "Base/Function.h"
-#include "Base/Bind.h"
 #include "Base/Signal2.h"
 
 using namespace DAVA;

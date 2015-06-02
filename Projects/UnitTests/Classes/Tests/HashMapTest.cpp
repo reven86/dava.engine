@@ -27,9 +27,7 @@
 =====================================================================================*/
 
 #include "DAVAEngine.h"
-
-#include "Infrastructure/GameCore.h"
-#include "Infrastructure/NewTestFramework.h"
+#include "UnitTests/UnitTests.h"
 
 #include "Utils/Random.h"
 #include "Base/HashMap.h"

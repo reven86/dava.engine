@@ -27,9 +27,7 @@
 =====================================================================================*/
 
 #include "DAVAEngine.h"
-
-#include "Infrastructure/GameCore.h"
-#include "Infrastructure/NewTestFramework.h"
+#include "UnitTests/UnitTests.h"
 
 #include "Network/Base/IPAddress.h"
 #include "Network/Base/Endpoint.h"

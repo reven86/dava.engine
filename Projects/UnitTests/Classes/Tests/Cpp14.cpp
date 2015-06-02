@@ -28,8 +28,7 @@
 
 #include "DAVAEngine.h"
 
-#include "Infrastructure/GameCore.h"
-#include "Infrastructure/NewTestFramework.h"
+#include "UnitTests/UnitTests.h"
 
 using namespace DAVA;
 
