@@ -127,13 +127,15 @@ namespace DAVA
 		{
 			//  Control FPS
 			{
+				//Because we shouldn't sleep more than 1 frame at 60 FPS
+				static uint32 MAX_FRAME_SLEEP_TIME = 1000 / 60;
 				static uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
-				int32 elapsedTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
+				uint64 elapsedTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
 				int32 fps = RenderManager::Instance()->GetFPS();
 				if(fps > 0)
 				{
-					int32 sleepMs = (1000 / fps) - elapsedTime;
-					if(sleepMs > 0)
+					int64 sleepMs = (1000 / fps) - elapsedTime;
+					if(sleepMs > 0 && sleepMs <= MAX_FRAME_SLEEP_TIME)
 					{
 						Thread::Sleep(sleepMs);
 					}
