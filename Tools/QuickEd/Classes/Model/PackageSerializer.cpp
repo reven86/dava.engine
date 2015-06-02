@@ -257,7 +257,7 @@ void PackageSerializer::VisitComponentSection(ComponentPropertiesSection *proper
     {
         String name = property->GetComponentName();
         if (UIComponent::IsMultiple(property->GetComponentType()))
-            name += Format("%d", index);
+            name += Format("%d", property->GetComponentIndex());
         
         BeginMap(name);
         AcceptChildren(property);
