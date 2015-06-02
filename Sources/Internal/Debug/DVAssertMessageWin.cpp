@@ -36,10 +36,11 @@
 namespace DAVA
 {
 
-bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
+bool DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 {
 	// Modal Type is ignored by Win32.
-	int buttonId = MessageBoxA(HWND_DESKTOP, content, "Assert", MB_OKCANCEL | MB_ICONEXCLAMATION);
+    const int flags = MB_OKCANCEL | MB_ICONEXCLAMATION | MB_SETFOREGROUND | MB_TOPMOST | (modalType == TRY_NONMODAL ? MB_APPLMODAL : MB_TASKMODAL);
+    int buttonId = ::MessageBoxA(HWND_DESKTOP, content, "Assert", flags);
     switch (buttonId)
     {
     case IDCANCEL:
