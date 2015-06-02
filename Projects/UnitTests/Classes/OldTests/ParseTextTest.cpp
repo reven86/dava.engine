@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ParseTextTest.h"
 
 ParseTextTest::ParseTextTest(Font::eFontType fontType)

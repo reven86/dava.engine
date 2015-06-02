@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "UI/UILoadingTransition.h"
 #include "Render/RenderManager.h"
 #include "Platform/SystemTimer.h"

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -269,7 +268,6 @@ private:
     QPointer<QDockWidget> dockActionEvent;
     QPointer<QDockWidget> dockConsole;
 
-	QtPosSaver posSaver;
 	bool globalInvalidate;
 
 	ModificationWidget *modificationWidget;

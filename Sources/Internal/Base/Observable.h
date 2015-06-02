@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_OBSERVABLE_H__
 #define __DAVAENGINE_OBSERVABLE_H__
 

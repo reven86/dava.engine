@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "QtPropertyModelFiltering.h"
 #include "QtPropertyData.h"
 

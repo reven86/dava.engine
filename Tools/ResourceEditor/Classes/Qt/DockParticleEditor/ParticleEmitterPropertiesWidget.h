@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCE_EDITOR_PARTICLEEMITTERPROPERTIESWIDGET_H__
 #define __RESOURCE_EDITOR_PARTICLEEMITTERPROPERTIESWIDGET_H__
 

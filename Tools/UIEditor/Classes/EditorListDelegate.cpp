@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #include "EditorListDelegate.h"
 #include "Utils/Utils.h"
 #include "UI/UIAggregatorControl.h"

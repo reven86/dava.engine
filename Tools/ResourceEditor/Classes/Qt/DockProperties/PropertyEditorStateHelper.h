@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __PROPERTY_EDITOR_STATE_HELPER__H__
 #define __PROPERTY_EDITOR_STATE_HELPER__H__
 
