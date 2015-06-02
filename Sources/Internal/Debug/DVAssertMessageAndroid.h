@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_DVASSERT_MESSAGE_ANDROID_H__
 #define __DAVAENGINE_DVASSERT_MESSAGE_ANDROID_H__
 

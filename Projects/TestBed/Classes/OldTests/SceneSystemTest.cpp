@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "SceneSystemTest.h"
 
 TestSceneSystem::TestSceneSystem(Scene * scene)

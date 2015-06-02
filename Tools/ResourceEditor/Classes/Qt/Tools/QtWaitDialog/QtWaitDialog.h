@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__QTWAITDIALOG__
 #define __RESOURCEEDITORQT__QTWAITDIALOG__
 

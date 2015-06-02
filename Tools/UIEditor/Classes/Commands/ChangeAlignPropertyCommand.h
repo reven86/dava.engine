@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef CHANGEALIGNPROPERTYCOMMAND_H
 #define CHANGEALIGNPROPERTYCOMMAND_H
 

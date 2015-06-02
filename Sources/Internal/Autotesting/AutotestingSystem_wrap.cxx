@@ -1466,7 +1466,7 @@ SWIGINTERN int SWIG_Lua_iterate_bases(lua_State *L, swig_type_info * SWIGUNUSED 
     if(bases_count>0)
     {
       int to_remove;
-      size_t i;
+      int i;
       int j;
       int subcall_last_arg;
       int subcall_first_arg = lua_gettop(L) + 1;/* Here a copy of first_arg and arguments begin */
@@ -1477,10 +1477,10 @@ SWIGINTERN int SWIG_Lua_iterate_bases(lua_State *L, swig_type_info * SWIGUNUSED 
       subcall_last_arg = lua_gettop(L);
 
       /* Trick: temporarily replacing original metatable with metatable for base class and call getter */
-      for(i=0;i<bases_count;i++) {
+      for(i=0;static_cast<size_t>(i)<bases_count;i++) {
         /* Iteration through class bases */
 #if (SWIG_LUA_TARGET == SWIG_LUA_FLAVOR_LUA)
-        lua_rawgeti(L,bases_table,i+1);
+        lua_rawgeti(L,bases_table, i+1);
         base_swig_type = 0;
         if(lua_isnil(L,-1)) {
           valid = 0;

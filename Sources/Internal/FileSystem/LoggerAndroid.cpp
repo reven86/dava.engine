@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "FileSystem/Logger.h"
 
 #if defined(__DAVAENGINE_ANDROID__)

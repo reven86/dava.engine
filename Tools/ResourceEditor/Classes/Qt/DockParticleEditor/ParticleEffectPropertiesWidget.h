@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __PARTICLE_EFFECT_PROPERTIES_WIDGET__H__
 #define __PARTICLE_EFFECT_PROPERTIES_WIDGET__H__
 

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Commands2/ParticleForceMoveCommand.h"
 
 ParticleForceMoveCommand::ParticleForceMoveCommand(DAVA::ParticleForce* _force, DAVA::ParticleLayer *_oldLayer, DAVA::ParticleLayer *_newLayer)
