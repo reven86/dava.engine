@@ -313,7 +313,7 @@ void FileListTest::HiddenFileTest(PerfFuncData* data)
 
 #if defined(__DAVAENGINE_WIN32__)
     
-    FilePath file1 = FilePath("~res:/TestData/FileListTest/Folder1/file1");
+    FilePath file1 = FilePath("~doc:/TestData/FileListTest/Folder1/file1");
     auto file1str = file1.GetAbsolutePathname();
     auto attrs = GetFileAttributesA(file1str.c_str());
     
@@ -322,7 +322,7 @@ void FileListTest::HiddenFileTest(PerfFuncData* data)
         SetFileAttributesA(file1str.c_str(), attrs ^ FILE_ATTRIBUTE_HIDDEN );
     }
 
-    ScopedPtr<FileList> files(new FileList("~res:/TestData/FileListTest/Folder1/"));
+    ScopedPtr<FileList> files(new FileList("~doc:/TestData/FileListTest/Folder1/"));
     TEST_VERIFY(files->GetFileCount() == 3);
     auto i = GetIndex(files, "file1");
     TEST_VERIFY(i < files->GetCount());
@@ -330,7 +330,7 @@ void FileListTest::HiddenFileTest(PerfFuncData* data)
 
     SetFileAttributesA(file1str.c_str(), attrs | FILE_ATTRIBUTE_HIDDEN);
 
-    files = new FileList("~res:/TestData/FileListTest/Folder1/");
+    files = new FileList("~doc:/TestData/FileListTest/Folder1/");
     TEST_VERIFY(files->GetFileCount() == 3);
     i = GetIndex(files, "file1");
     TEST_VERIFY(i < files->GetCount());
@@ -340,10 +340,10 @@ void FileListTest::HiddenFileTest(PerfFuncData* data)
     
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 
-    FilePath file1 = "~res:/TestData/FileListTest/Folder1/file1";
-    FilePath file1hidden = "~res:/TestData/FileListTest/Folder1/.file1";
+    FilePath file1 = "~doc:/TestData/FileListTest/Folder1/file1";
+    FilePath file1hidden = "~doc:/TestData/FileListTest/Folder1/.file1";
     TEST_VERIFY(FileSystem::Instance()->CopyFile(file1, file1hidden, true));
-    ScopedPtr<FileList> files(new FileList("~res:/TestData/FileListTest/Folder1/"));
+    ScopedPtr<FileList> files(new FileList("~doc:/TestData/FileListTest/Folder1/"));
     TEST_VERIFY(files->GetFileCount() == 4);
     for (auto i = 0; i < files->GetCount(); ++i)
     {
@@ -364,7 +364,7 @@ void FileListTest::HiddenDirTest(PerfFuncData* data)
     
 #if defined(__DAVAENGINE_WIN32__)
     
-    FilePath dir1 = FilePath("~res:/TestData/FileListTest/Folder1/");
+    FilePath dir1 = FilePath("~doc:/TestData/FileListTest/Folder1/");
     auto dir1str = dir1.GetAbsolutePathname();
     auto attrs = GetFileAttributesA(dir1str.c_str());
     
@@ -373,7 +373,7 @@ void FileListTest::HiddenDirTest(PerfFuncData* data)
         SetFileAttributesA(dir1str.c_str(), attrs ^ FILE_ATTRIBUTE_HIDDEN );
     }
     
-    ScopedPtr<FileList> files(new FileList("~res:/TestData/FileListTest/"));
+    ScopedPtr<FileList> files(new FileList("~doc:/TestData/FileListTest/"));
     TEST_VERIFY(files->GetDirectoryCount() == 3);
     auto i = GetIndex(files, "Folder1");
     TEST_VERIFY(i < files->GetCount());
@@ -381,7 +381,7 @@ void FileListTest::HiddenDirTest(PerfFuncData* data)
     
     SetFileAttributesA(dir1str.c_str(), attrs | FILE_ATTRIBUTE_HIDDEN);
     
-    files = new FileList("~res:/TestData/FileListTest/");
+    files = new FileList("~doc:/TestData/FileListTest/");
     TEST_VERIFY(files->GetDirectoryCount() == 3);
     i = GetIndex(files, "Folder1");
     TEST_VERIFY(i < files->GetCount());
@@ -391,9 +391,9 @@ void FileListTest::HiddenDirTest(PerfFuncData* data)
     
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     
-    FilePath folder1hidden = "~res:/TestData/FileListTest/.Folder1";
+    FilePath folder1hidden = "~doc:/TestData/FileListTest/.Folder1";
     TEST_VERIFY(FileSystem::Instance()->CreateDirectory(folder1hidden, true));
-    ScopedPtr<FileList> files(new FileList("~res:/TestData/FileListTest/"));
+    ScopedPtr<FileList> files(new FileList("~doc:/TestData/FileListTest/"));
     TEST_VERIFY(files->GetDirectoryCount() == 4);
     for (auto i = 0; i < files->GetCount(); ++i)
     {
