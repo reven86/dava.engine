@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include <QSortFilterProxyModel>
 
 #include "DockSceneTree/SceneTreeDelegate.h"

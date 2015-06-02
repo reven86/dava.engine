@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "FileSystem/Logger.h"
 #include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"

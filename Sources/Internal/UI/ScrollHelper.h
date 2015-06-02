@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_SCROLL_HELPER__
 #define __DAVAENGINE_SCROLL_HELPER__
 

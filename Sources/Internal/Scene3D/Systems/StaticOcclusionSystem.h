@@ -25,6 +25,8 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #ifndef __DAVAENGINE_SCENE3D_STATIC_OCCLUSION_SYSTEM_H__
 #define	__DAVAENGINE_SCENE3D_STATIC_OCCLUSION_SYSTEM_H__
 
@@ -64,7 +66,7 @@ public:
     virtual void AddEntity(Entity * entity);
     virtual void RemoveEntity(Entity * entity);
     virtual void Process(float32 timeElapsed);
-    virtual void ImmediateEvent(Entity * entity, uint32 event);
+    void ImmediateEvent(Component * component, uint32 event) override;
     
     inline void SetCamera(Camera * camera);
 
@@ -151,7 +153,7 @@ public:
 
     virtual void AddEntity(Entity * entity);
     virtual void RemoveEntity(Entity * entity);
-    virtual void ImmediateEvent(Entity * entity, uint32 event);    
+    void ImmediateEvent(Component * component, uint32 event) override;
 
 
     static PolygonGroup* CreateStaticOcclusionDebugDrawGrid(const AABBox3& boundingBox, uint32 xSubdivisions, uint32 ySubdivisions, uint32 zSubdivisions, const float32 *cellHeightOffset);

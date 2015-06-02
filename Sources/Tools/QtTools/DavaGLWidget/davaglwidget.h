@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef DAVAGLWIDGET_H
 #define DAVAGLWIDGET_H
 
@@ -56,6 +55,7 @@ class OpenGLWindow
     
 signals:
     void mousePressed();
+    void mouseScrolled( int ofs );
     
 public:
     OpenGLWindow();

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__DAECONVERTACTION__
 #define __RESOURCEEDITORQT__DAECONVERTACTION__
 

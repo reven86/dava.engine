@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ControlCommands.h"
 #include "CommandsController.h"
 #include "AlignDistribute/AlignDistributeManager.h"

@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "PatchFile.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileList.h"
@@ -116,7 +117,7 @@ bool PatchInfo::ReadString(File* file, String &str)
 {
     bool ret = false;
     uint32 len = 0;
-    uint32 rlen = file->Read(&len);
+    size_t rlen = file->Read(&len);
 
     if(rlen == sizeof(len))
     {
@@ -124,7 +125,7 @@ bool PatchInfo::ReadString(File* file, String &str)
         {
             String tmpStr;
             tmpStr.resize(len);
-            rlen = file->Read(&tmpStr[0], tmpStr.size());
+            rlen = file->Read(&tmpStr[0], static_cast<uint32>(tmpStr.size()));
 
             if(rlen == tmpStr.size())
             {

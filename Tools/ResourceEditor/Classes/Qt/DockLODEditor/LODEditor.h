@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __LOD_EDITOR_H__
 #define __LOD_EDITOR_H__
 
@@ -106,6 +105,9 @@ protected:
 private:
     Ui::LODEditor *ui;
     QtPosSaver posSaver;
+
+    bool frameViewVisible;
+    bool frameEditVisible;
 
     struct DistanceWidget
     {

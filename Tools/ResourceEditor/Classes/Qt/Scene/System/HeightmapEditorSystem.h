@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__HEIGHTMAPEDITORSYSTEM__
 #define __RESOURCEEDITORQT__HEIGHTMAPEDITORSYSTEM__
 
