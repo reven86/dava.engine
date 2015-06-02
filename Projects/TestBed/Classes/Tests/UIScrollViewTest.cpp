@@ -26,15 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-//
-//  UIScrollViewTest.cpp
-//  TemplateProjectMacOS
-//
-//  Created by Denis Bespalov on 5/20/13.
-//
-//
-
 #include "UIScrollViewTest.h"
 
 UIScrollViewTest::UIScrollViewTest()

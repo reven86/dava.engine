@@ -26,15 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-//
-//  UIScrollViewTest.h
-//  TemplateProjectMacOS
-//
-//  Created by Denis Bespalov on 5/20/13.
-//
-//
-
 #ifndef __UISCROLL_VIEW_TEST__
 #define __UISCROLL_VIEW_TEST__
 
