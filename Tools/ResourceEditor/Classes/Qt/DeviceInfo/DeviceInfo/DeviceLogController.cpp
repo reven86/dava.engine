@@ -60,7 +60,7 @@ void DeviceLogController::ShowView()
 
         connect(this, &QObject::destroyed, view, &QObject::deleteLater);
     }
-    view->showNormal();
+    view->show();
     view->activateWindow();
     view->raise();
 }
