@@ -77,7 +77,7 @@ void MemProfController::ShowView()
         connect(view, SIGNAL(OnDumpButton()), this, SLOT(OnDumpPressed()));
         connect(this, &QObject::destroyed, view, &QObject::deleteLater);
     }
-    view->showNormal();
+    view->show();
     view->activateWindow();
     view->raise();
 }
