@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Utils/HTTPDownloader.h"
 
 #if defined(__DAVAENGINE_ANDROID__) 

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__BASEADDENTITYDIALOG__
 #define __RESOURCEEDITORQT__BASEADDENTITYDIALOG__
 

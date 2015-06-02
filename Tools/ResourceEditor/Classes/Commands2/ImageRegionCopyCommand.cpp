@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Commands2/ImageRegionCopyCommand.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"

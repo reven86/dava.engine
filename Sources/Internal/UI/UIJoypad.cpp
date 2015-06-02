@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "UI/UIJoypad.h"
 #include "UI/UIEvent.h"
 #include "FileSystem/Logger.h"

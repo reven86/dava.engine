@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #ifndef __UIEditor__UIAggregatorMetadata__
 #define __UIEditor__UIAggregatorMetadata__
 

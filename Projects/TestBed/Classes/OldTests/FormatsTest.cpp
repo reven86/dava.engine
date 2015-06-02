@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "FormatsTest.h"
 #include "Render/PixelFormatDescriptor.h"
 

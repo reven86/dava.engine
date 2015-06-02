@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene3D/Components/RenderComponent.h"
 #include "Base/ObjectFactory.h"
 #include "Render/Material/MaterialOptimazer.h"

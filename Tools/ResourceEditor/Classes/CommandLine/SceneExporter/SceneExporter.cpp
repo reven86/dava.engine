@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "SceneExporter.h"
 #include "Deprecated/SceneValidator.h"
 

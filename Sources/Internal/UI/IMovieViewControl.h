@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #ifndef __DAVAENGINE_IMOVIEVIEWCONTROL__H__
 #define __DAVAENGINE_IMOVIEVIEWCONTROL__H__
 

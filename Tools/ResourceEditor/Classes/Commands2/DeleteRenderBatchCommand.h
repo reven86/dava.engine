@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DELETE_RENDER_BATCH_COMMAND_H__
 #define __DELETE_RENDER_BATCH_COMMAND_H__
 
