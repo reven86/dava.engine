@@ -97,7 +97,7 @@ eErrorCode ImageSystem::Load(File *file, Vector<Image *> & imageSet, int32 baseM
 
 Image* ImageSystem::EnsurePowerOf2Image(Image* image) const
 {
-    if (IsPowerOf2(image->GetWidth() && IsPowerOf2(image->GetHeight())))
+    if (IsPowerOf2(image->GetWidth()) && IsPowerOf2(image->GetHeight()))
     {
         return SafeRetain(image);
     }
