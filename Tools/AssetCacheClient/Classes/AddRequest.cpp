@@ -38,17 +38,20 @@ using namespace DAVA;
 AddRequest::AddRequest()
     :   CacheRequest("add")
 {
-    options.AddOption("-f", VariantType(String("")), "Files list to send files to server");
+    options.AddOption("-f", VariantType(String("")), "Files list to send files to server", true);
 }
 
 int AddRequest::SendRequest()
 {
-    const String hash = options.GetOption("-h").AsString();
-    const String filepath = options.GetOption("-f").AsString();
-    
-    AssetCache::CacheItemKey key(hash);
+    AssetCache::CacheItemKey key(options.GetOption("-h").AsString());
     AssetCache::CachedFiles files;
-    files.AddFile(filepath);
+
+    auto filesCount = options.GetOptionsCount("-f");
+    for(decltype(filesCount) i = 0; i < filesCount; ++i)
+    {
+        files.AddFile(options.GetOption("-f", i).AsString());
+    }
+    
     files.LoadFiles();
     files.InvalidateFileSize();
     

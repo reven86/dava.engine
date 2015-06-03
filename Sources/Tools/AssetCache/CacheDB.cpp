@@ -371,16 +371,7 @@ void CacheDB::IncreaseUsedSize(const CachedFiles &files)
 
 FilePath CacheDB::CreateFolderPath(const CacheItemKey &key) const
 {
-    constexpr auto HASH_STRING_SIZE = MD5::DIGEST_SIZE * 2 + 1;
-    
-    std::array<char8, HASH_STRING_SIZE> primaryHashBuffer;
-    std::array<char8, HASH_STRING_SIZE> secondaryHashBuffer;
-    
-    MD5::HashToChar(key.keyData.hash.primary, primaryHashBuffer.data(), HASH_STRING_SIZE);
-    MD5::HashToChar(key.keyData.hash.secondary, secondaryHashBuffer.data(), HASH_STRING_SIZE);
-    
-    auto folder = String(primaryHashBuffer.data()) + String(secondaryHashBuffer.data());
-    return (cacheRootFolder + (folder + "/"));
+    return (cacheRootFolder + (key.ToString() + "/"));
 }
     
 const FilePath & CacheDB::GetPath() const

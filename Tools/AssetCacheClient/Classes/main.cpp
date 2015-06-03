@@ -37,7 +37,7 @@ void FrameworkDidLaunched()
 {
     DAVA::Logger::Instance()->SetLogFilename("AssetServerClient.log");
     DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_WARNING);
-    
+  
     cacheClient.Process();
 }
 

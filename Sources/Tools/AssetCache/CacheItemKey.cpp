@@ -52,7 +52,6 @@ CacheItemKey::CacheItemKey()
     Memset(keyData.internalData, 0, INTERNAL_DATA_SIZE);
 }
 
-    
 void CacheItemKey::Serialize(KeyedArchive * archieve) const
 {
     DVASSERT(nullptr != archieve);
@@ -86,6 +85,19 @@ bool CacheItemKey::operator() (const CacheItemKey &left, const CacheItemKey &rig
     return (Memcmp(keyData.internalData, right.keyData.internalData, INTERNAL_DATA_SIZE) < 0);
 }
     
+String CacheItemKey::ToString() const
+{
+    constexpr auto HASH_STRING_SIZE = INTERNAL_DATA_SIZE * 2 + 1;
+    
+    std::array<char8, HASH_STRING_SIZE> primaryHashBuffer;
+    std::array<char8, HASH_STRING_SIZE> secondaryHashBuffer;
+    
+    MD5::HashToChar(keyData.hash.primary, primaryHashBuffer.data(), HASH_STRING_SIZE);
+    MD5::HashToChar(keyData.hash.secondary, secondaryHashBuffer.data(), HASH_STRING_SIZE);
+    
+    return String(primaryHashBuffer.data()) + String(secondaryHashBuffer.data());
+}
+
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA

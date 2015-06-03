@@ -64,6 +64,7 @@ public:
 
     bool operator() (const CacheItemKey &left, const CacheItemKey &right) const;
     
+    String ToString() const;
 
 public:
     
