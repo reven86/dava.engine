@@ -53,10 +53,10 @@ gles2_TextureFormatSupported( TextureFormat format )
     
     switch( format )
     {
-        case TEXTURE_FORMAT_A8R8G8B8 :
-        case TEXTURE_FORMAT_A1R5G5B5 :
+        case TEXTURE_FORMAT_R8G8B8A8 :
+        case TEXTURE_FORMAT_R5G5B5A1 :
         case TEXTURE_FORMAT_R5G6B5 :
-        case TEXTURE_FORMAT_A4R4G4B4 :
+        case TEXTURE_FORMAT_R4G4B4A4 :
         case TEXTURE_FORMAT_R8 :
         case TEXTURE_FORMAT_R16 :
         case TEXTURE_FORMAT_DXT1 :
@@ -257,7 +257,7 @@ GL_TextureFormat( TextureFormat format )
     switch( format ) 
     {
         case TEXTURE_FORMAT_R8G8B8      : fmt = GL_RGB; break;
-        case TEXTURE_FORMAT_A8R8G8B8    : fmt = GL_RGBA; break;
+        case TEXTURE_FORMAT_R8G8B8A8    : fmt = GL_RGBA; break;
 /*
         TEXTURE_FORMAT_A1R5G5B5,
         TEXTURE_FORMAT_R5G6B5,
@@ -315,7 +315,7 @@ GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* 
     
     switch( rhiFormat )
     {
-        case TEXTURE_FORMAT_A8R8G8B8 :
+        case TEXTURE_FORMAT_R8G8B8A8 :
             *internalFormat = GL_RGBA;
             *format         = GL_RGBA;
             *type           = GL_UNSIGNED_BYTE;
@@ -331,7 +331,7 @@ GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* 
             success         = true;
             break;
         
-        case TEXTURE_FORMAT_A4R4G4B4 :
+        case TEXTURE_FORMAT_R4G4B4A4 :
             *internalFormat = GL_RGBA;
             *format         = GL_RGBA;
             *type           = GL_UNSIGNED_SHORT_4_4_4_4;

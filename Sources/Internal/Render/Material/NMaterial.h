@@ -77,7 +77,6 @@ class RenderVariantInstance
     rhi::HDepthStencilState depthState;
     rhi::HSamplerState samplerState;
     rhi::HTextureSet textureSet;
-    rhi::HTextureSet vertexTextureSet;
     rhi::CullMode cullMode;
 
     Vector<rhi::HConstBuffer> vertexConstBuffers;

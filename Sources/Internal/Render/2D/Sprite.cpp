@@ -950,8 +950,8 @@ void Sprite::RegisterTextureStates()
         if(textures[i])
         {
             rhi::TextureSetDescriptor descriptor;
-            descriptor.count = 1;
-            descriptor.texture[0] = textures[i]->handle;            			
+            descriptor.fragmentTextureCount = 1;
+            descriptor.fragmentTexture[0] = textures[i]->handle;            			
             textureHandles[i] = rhi::AcquireTextureSet(descriptor);
 		}
 	}

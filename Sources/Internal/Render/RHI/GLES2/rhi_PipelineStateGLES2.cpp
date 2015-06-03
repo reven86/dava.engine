@@ -108,9 +108,11 @@ VertexDeclGLES2
                         }
                         vattrInited = true;
                     }
-    void            SetToRHI()
+    void            SetToRHI( uint32 firstVertex )
                     {
                         DVASSERT(vattrInited);
+
+                        uint32  base = firstVertex * stride;
                         
                         for( unsigned i=0; i!=elemCount; ++i )
                         {
@@ -119,7 +121,7 @@ VertexDeclGLES2
                             if( idx != InvalidIndex )
                             {
                                 GL_CALL(glEnableVertexAttribArray( idx ));
-                                GL_CALL(glVertexAttribPointer( idx, elem[i].count, elem[i].type, (GLboolean)(elem[i].normalized), stride, elem[i].offset ));
+                                GL_CALL(glVertexAttribPointer( idx, elem[i].count, elem[i].type, (GLboolean)(elem[i].normalized), stride, base+(uint8_t*)elem[i].offset ));
                             }
                         }
                     }
@@ -161,11 +163,11 @@ public:
                                   : ProgGLES2(PROG_VERTEX)
                                 {}
 
-        void                    SetToRHI( uint32 layoutUID )
+        void                    SetToRHI( uint32 layoutUID, uint32 firstVertex=0 )
                                 {
                                     if( layoutUID == VertexLayout::InvalidUID )
                                     {
-                                        vdecl.SetToRHI();
+                                        vdecl.SetToRHI( firstVertex );
                                     }
                                     else
                                     {
@@ -173,7 +175,7 @@ public:
                                         {
                                             if( v->layoutUID == layoutUID )
                                             {
-                                                v->vdecl.SetToRHI();
+                                                v->vdecl.SetToRHI( firstVertex );
                                                 break;
                                             }
                                         }
@@ -398,7 +400,7 @@ SetToRHI( Handle ps, uint32 layoutUID )
 }
 
 void
-SetVertexDeclToRHI( Handle ps, uint32 layoutUID )
+SetVertexDeclToRHI( Handle ps, uint32 layoutUID, uint32 firstVertex )
 {
     PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get( ps );
 
@@ -427,7 +429,7 @@ SetVertexDeclToRHI( Handle ps, uint32 layoutUID )
         }
     }    
     
-    ps2->vprog.SetToRHI( layoutUID );
+    ps2->vprog.SetToRHI( layoutUID, firstVertex );
 }
 
 uint32

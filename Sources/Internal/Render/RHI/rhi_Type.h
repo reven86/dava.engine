@@ -95,10 +95,11 @@ PrimitiveType
 
 enum
 {
-    MAX_CONST_BUFFER_COUNT      = 8,
-    MAX_RENDER_TARGET_COUNT     = 2,
-    MAX_TEXTURE_SAMPLER_COUNT   = 8,
-    MAX_VERTEX_STREAM_COUNT     = 8
+    MAX_CONST_BUFFER_COUNT              = 8,
+    MAX_RENDER_TARGET_COUNT             = 2,
+    MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT  = 8,
+    MAX_VERTEX_TEXTURE_SAMPLER_COUNT    = 2,
+    MAX_VERTEX_STREAM_COUNT             = 4
 };
 
 
@@ -276,14 +277,14 @@ TextureType
 enum
 TextureFormat
 {
-    TEXTURE_FORMAT_A8R8G8B8,
-    TEXTURE_FORMAT_X8R8G8B8,
+    TEXTURE_FORMAT_R8G8B8A8,
+    TEXTURE_FORMAT_R8G8B8X8,
     TEXTURE_FORMAT_R8G8B8,
 
-    TEXTURE_FORMAT_A1R5G5B5,
+    TEXTURE_FORMAT_R5G5B5A1,
     TEXTURE_FORMAT_R5G6B5,
 
-    TEXTURE_FORMAT_A4R4G4B4,
+    TEXTURE_FORMAT_R4G4B4A4,
 
     TEXTURE_FORMAT_A16R16G16B16,
     TEXTURE_FORMAT_A32R32G32B32,
@@ -411,7 +412,7 @@ Descriptor
                       : type(TEXTURE_TYPE_2D),
                         width(0),
                         height(0),
-                        format(TEXTURE_FORMAT_A8R8G8B8),
+                        format(TEXTURE_FORMAT_R8G8B8A8),
                         mipCount(0),
                         isRenderTarget(false),
                         autoGenMipmaps(false)
@@ -525,11 +526,11 @@ Descriptor
                 {}    
     };
     
-    Sampler sampler[MAX_TEXTURE_SAMPLER_COUNT];
-    uint32  count;
+    Sampler fragmentSampler[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
+    uint32  fragmentSamplerCount;
 
             Descriptor()
-              : count(0)
+              : fragmentSamplerCount(0)
             {}
 };
 

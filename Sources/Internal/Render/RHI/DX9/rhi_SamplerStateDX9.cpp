@@ -25,7 +25,7 @@ SamplerStateDX9_t
         DWORD   minFilter;
         DWORD   magFilter;
         DWORD   mipFilter;
-    }       sampler[MAX_TEXTURE_SAMPLER_COUNT];
+    }       sampler[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
     uint32  count;
 };
 
@@ -95,15 +95,15 @@ dx9_SamplerState_Create( const SamplerState::Descriptor& desc )
     Handle              handle = SamplerStateDX9Pool::Alloc();
     SamplerStateDX9_t*  state  = SamplerStateDX9Pool::Get( handle );
     
-    state->count = desc.count;
-    for( unsigned i=0; i!=desc.count; ++i )    
+    state->count = desc.fragmentSamplerCount;
+    for( unsigned i=0; i!=desc.fragmentSamplerCount; ++i )
     {
-        state->sampler[i].addrU     = _AddrMode( TextureAddrMode(desc.sampler[i].addrU) );
-        state->sampler[i].addrV     = _AddrMode( TextureAddrMode(desc.sampler[i].addrV) );
-        state->sampler[i].addrW     = _AddrMode( TextureAddrMode(desc.sampler[i].addrW) );
-        state->sampler[i].minFilter = _TextureFilter( TextureFilter(desc.sampler[i].minFilter) );
-        state->sampler[i].magFilter = _TextureFilter( TextureFilter(desc.sampler[i].magFilter) );
-        state->sampler[i].mipFilter = _TextureMipFilter( TextureMipFilter(desc.sampler[i].mipFilter) );
+        state->sampler[i].addrU     = _AddrMode( TextureAddrMode(desc.fragmentSampler[i].addrU) );
+        state->sampler[i].addrV     = _AddrMode( TextureAddrMode(desc.fragmentSampler[i].addrV) );
+        state->sampler[i].addrW     = _AddrMode( TextureAddrMode(desc.fragmentSampler[i].addrW) );
+        state->sampler[i].minFilter = _TextureFilter( TextureFilter(desc.fragmentSampler[i].minFilter) );
+        state->sampler[i].magFilter = _TextureFilter( TextureFilter(desc.fragmentSampler[i].magFilter) );
+        state->sampler[i].mipFilter = _TextureMipFilter( TextureMipFilter(desc.fragmentSampler[i].mipFilter) );
     }
 
     return handle;

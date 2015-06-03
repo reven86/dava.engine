@@ -62,6 +62,7 @@ void Initialize()
 {
     DVASSERT(!initialized);
     initialized = true;
+return;
     RenderPassDescriptor defaultPass;
     defaultPass.passName = PASS_FORWARD;
     defaultPass.renderLayer = RenderLayer::RENDER_LAYER_OPAQUE_ID;

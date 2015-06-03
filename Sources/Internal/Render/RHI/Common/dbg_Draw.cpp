@@ -472,7 +472,7 @@ DbgDraw::Buffer<Vertex,Prim>::flush_batched_2d( rhi::HPacketList batch_buf )
             batch.fragmentConstCount = 0;
             batch.primitiveType      = Prim;
             batch.primitiveCount     = _prim_count(_v_cnt);
-            batch.fragmentTextureSet = (_small_text)  ? dd->_texset_small_font : dd->_texset_normal_font;
+            batch.textureSet         = (_small_text)  ? dd->_texset_small_font : dd->_texset_normal_font;
 
             switch( Vertex::Format )
             {
@@ -931,10 +931,10 @@ DbgDraw::_init()
         ds_desc.depthTestEnabled    = false;
         ds_desc.depthWriteEnabled   = false;
         
-        s_desc.count                = 1;
-        s_desc.sampler[0].minFilter = rhi::TEXFILTER_NEAREST;
-        s_desc.sampler[0].magFilter = rhi::TEXFILTER_NEAREST;
-        s_desc.sampler[0].mipFilter = rhi::TEXMIPFILTER_NONE;
+        s_desc.fragmentSamplerCount         = 1;
+        s_desc.fragmentSampler[0].minFilter = rhi::TEXFILTER_NEAREST;
+        s_desc.fragmentSampler[0].magFilter = rhi::TEXFILTER_NEAREST;
+        s_desc.fragmentSampler[0].mipFilter = rhi::TEXMIPFILTER_NONE;
     
         rhi::ShaderCache::UpdateProg( rhi::HostApi(), rhi::PROG_VERTEX, ps_desc.vprogUid, vp_ptc.SourceCode() );
         rhi::ShaderCache::UpdateProg( rhi::HostApi(), rhi::PROG_FRAGMENT, ps_desc.fprogUid, fp_ptc.SourceCode() );
@@ -974,7 +974,7 @@ DbgDraw::_init()
 
     // init small-font texture
     {
-        _tex_small_font = rhi::CreateTexture( rhi::Texture::Descriptor(FontTextureSize,FontTextureSize,rhi::TEXTURE_FORMAT_A8R8G8B8) );
+        _tex_small_font = rhi::CreateTexture( rhi::Texture::Descriptor(FontTextureSize,FontTextureSize,rhi::TEXTURE_FORMAT_R8G8B8A8) );
         
         if( _tex_small_font )
         {
@@ -983,7 +983,10 @@ DbgDraw::_init()
             memcpy( mip0, Bin__dbg_FontSmall, Bin__dbg_FontSmall__Size );
             rhi::UnmapTexture( _tex_small_font );
 
-            rhi::TextureSetDescriptor ts = { 1, {_tex_small_font} };
+            rhi::TextureSetDescriptor ts;
+            ts.fragmentTextureCount = 1;
+            ts.fragmentTexture[0]   = _tex_small_font;
+
             _texset_small_font = rhi::AcquireTextureSet( ts );
         }
     }
@@ -991,7 +994,7 @@ DbgDraw::_init()
 
     // init normal-font texture
     {
-        _tex_normal_font = rhi::CreateTexture( rhi::Texture::Descriptor(FontTextureSize,FontTextureSize,rhi::TEXTURE_FORMAT_A8R8G8B8) );
+        _tex_normal_font = rhi::CreateTexture( rhi::Texture::Descriptor(FontTextureSize,FontTextureSize,rhi::TEXTURE_FORMAT_R8G8B8A8) );
         
         if( _tex_normal_font )
         {
@@ -1000,7 +1003,10 @@ DbgDraw::_init()
             memcpy( mip0, Bin__dbg_FontNormal, Bin__dbg_FontNormal__Size );
             rhi::UnmapTexture( _tex_normal_font );
 
-            rhi::TextureSetDescriptor ts = { 1, {_tex_normal_font} };
+            rhi::TextureSetDescriptor ts;
+            ts.fragmentTextureCount = 1;
+            ts.fragmentTexture[0]   = _tex_normal_font;
+
             _texset_normal_font = rhi::AcquireTextureSet( ts );
         }
     }

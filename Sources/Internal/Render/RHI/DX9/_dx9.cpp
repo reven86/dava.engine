@@ -145,14 +145,14 @@ DX9_TextureFormat( TextureFormat format )
 {
     switch( format )
     {
-        case TEXTURE_FORMAT_A8R8G8B8        : return D3DFMT_A8R8G8B8;
-        case TEXTURE_FORMAT_X8R8G8B8        : return D3DFMT_X8R8G8B8;
+        case TEXTURE_FORMAT_R8G8B8A8        : return D3DFMT_A8R8G8B8;
+        case TEXTURE_FORMAT_R8G8B8X8        : return D3DFMT_X8R8G8B8;
         case TEXTURE_FORMAT_R8G8B8          : return D3DFMT_R8G8B8;
 
-        case TEXTURE_FORMAT_A1R5G5B5        : return D3DFMT_A1R5G5B5;
+        case TEXTURE_FORMAT_R5G5B5A1        : return D3DFMT_A1R5G5B5;
         case TEXTURE_FORMAT_R5G6B5          : return D3DFMT_R5G6B5;
 
-        case TEXTURE_FORMAT_A4R4G4B4        : return D3DFMT_A4R4G4B4;
+        case TEXTURE_FORMAT_R4G4B4A4        : return D3DFMT_A4R4G4B4;
 
         case TEXTURE_FORMAT_A16R16G16B16    : return D3DFMT_A16B16G16R16F;
         case TEXTURE_FORMAT_A32R32G32B32    : return D3DFMT_A32B32G32R32F;
