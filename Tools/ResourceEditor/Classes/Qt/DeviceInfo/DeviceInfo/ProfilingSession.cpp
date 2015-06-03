@@ -238,7 +238,6 @@ bool ProfilingSession::SaveLogHeader(const DAVA::MMStatConfig* config)
     logFile->Flush();
 
     uint32 nexpected = sizeof(FileHeader) + header.devInfoSize + config->size;
-    DVASSERT(nexpected == nwritten);
     return nexpected == nwritten;
 }
 
@@ -262,7 +261,6 @@ void ProfilingSession::UpdateFileHeader(bool finalize)
 bool ProfilingSession::LoadLogFile()
 {
     logFile.Set(File::Create(logFileName, File::OPEN | File::READ));
-    DVASSERT(logFile.Valid());
     if (logFile.Valid())
     {
         size_t itemCount = 0;
@@ -281,10 +279,6 @@ bool ProfilingSession::LoadLogHeader(size_t* itemCount, size_t* itemSize)
     size_t nread = logFile->Read(&header);
     if (sizeof(FileHeader) == nread)
     {
-        DVASSERT(FILE_SIGNATURE == header.signature);
-        DVASSERT(header.devInfoSize > 0);
-        DVASSERT(header.statConfigSize > sizeof(MMStatConfig));
-        DVASSERT(header.statItemSize > sizeof(MMCurStat));
         if (FILE_SIGNATURE == header.signature && header.devInfoSize > 0 &&
                               header.statConfigSize > sizeof(MMStatConfig) && header.statItemSize > sizeof(MMCurStat))
         {
@@ -293,7 +287,6 @@ bool ProfilingSession::LoadLogHeader(size_t* itemCount, size_t* itemSize)
             // Load device info
             tempBuf.resize(header.devInfoSize);
             nread = logFile->Read(&*tempBuf.begin(), header.devInfoSize);
-            DVASSERT(nread == header.devInfoSize);
             if (nread == header.devInfoSize)
             {
                 deviceInfo.Deserialize(tempBuf.data(), header.devInfoSize);
@@ -301,7 +294,6 @@ bool ProfilingSession::LoadLogHeader(size_t* itemCount, size_t* itemSize)
                 // Load stat config
                 tempBuf.resize(header.statConfigSize);
                 nread = logFile->Read(&*tempBuf.begin(), header.statConfigSize);
-                DVASSERT(nread == header.statConfigSize);
                 if (nread == header.statConfigSize)
                 {
                     *itemCount = header.statCount;
@@ -319,7 +311,7 @@ bool ProfilingSession::LoadLogHeader(size_t* itemCount, size_t* itemSize)
 
 bool ProfilingSession::LoadStatItems(size_t count, size_t itemSize)
 {
-    const size_t BUF_CAPACITY = 1000;
+    const size_t BUF_CAPACITY = 1000;   // Some reasonable buffer size
     Vector<uint8> buf(BUF_CAPACITY * itemSize, 0);
 
     bool result = true;
@@ -329,8 +321,6 @@ bool ProfilingSession::LoadStatItems(size_t count, size_t itemSize)
     {
         size_t toread = Min(BUF_CAPACITY * itemSize, (count - nloaded) * itemSize);
         size_t nread = logFile->Read(&*buf.begin(), toread);
-        DVASSERT(toread == nread);
-        DVASSERT(0 == nread % itemSize);
         result = toread == nread && 0 == nread % itemSize;
         if (result)
         {

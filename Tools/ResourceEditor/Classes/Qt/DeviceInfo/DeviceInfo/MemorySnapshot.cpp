@@ -36,6 +36,35 @@
 
 using namespace DAVA;
 
+MemorySnapshot::MemorySnapshot(MemorySnapshot&& other)
+    : fileName(std::move(other.fileName))
+    , timestamp(std::move(other.timestamp))
+    , blockCount(std::move(other.blockCount))
+    , symbolCount(std::move(other.symbolCount))
+    , bktraceCount(std::move(other.bktraceCount))
+    , totalSize(std::move(other.totalSize))
+    , symbolTable(std::move(other.symbolTable))
+    , mblocks(std::move(other.mblocks))
+    , blockMap(std::move(other.blockMap))
+{}
+
+MemorySnapshot& MemorySnapshot::operator = (MemorySnapshot&& other)
+{
+    if (this != &other)
+    {
+        fileName = std::move(other.fileName);
+        timestamp = std::move(other.timestamp);
+        blockCount = std::move(other.blockCount);
+        symbolCount = std::move(other.symbolCount);
+        bktraceCount = std::move(other.bktraceCount);
+        totalSize = std::move(other.totalSize);
+        symbolTable = std::move(other.symbolTable);
+        mblocks = std::move(other.mblocks);
+        blockMap = std::move(other.blockMap);
+    }
+    return *this;
+}
+
 bool MemorySnapshot::Load(BacktraceSymbolTable* symbolTable_)
 {
     DVASSERT(symbolTable_ != nullptr);

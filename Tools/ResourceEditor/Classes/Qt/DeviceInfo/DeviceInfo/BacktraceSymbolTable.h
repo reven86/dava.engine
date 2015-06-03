@@ -34,14 +34,14 @@ public:
     void IterateOverBacktraces(F fn) const;
 
 private:
-    Backtrace CreateBacktrace(DAVA::uint32 hash, const DAVA::uint64* frames, size_t maxFrameDepth) const;
+    Backtrace CreateBacktrace(DAVA::uint32 hash, const DAVA::uint64* frames, size_t maxFrameDepth);
     size_t GetUsefulFramesCount(const DAVA::uint64* frames, size_t maxFrameDepth) const;
 
 private:
-    DAVA::Map<DAVA::uint64, DAVA::uint32> addrToNameMap;
-    DAVA::Map<DAVA::uint32, DAVA::String> uniqueNames;
+    DAVA::UnorderedMap<DAVA::uint64, DAVA::uint32> addrToNameMap;
+    DAVA::UnorderedMap<DAVA::uint32, DAVA::String> uniqueNames;
 
-    DAVA::Map<DAVA::uint32, Backtrace> bktraces;
+    DAVA::UnorderedMap<DAVA::uint32, Backtrace> bktraces;
 };
 
 //////////////////////////////////////////////////////////////////////////

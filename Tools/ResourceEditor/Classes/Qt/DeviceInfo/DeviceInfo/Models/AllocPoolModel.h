@@ -48,7 +48,6 @@ public:
         CLM_ALLOC_APP,
         CLM_ALLOC_TOTAL,
         CLM_NBLOCKS,
-        //CLM_MAX_SIZE,
         NCOLUMNS = 4
     };
 

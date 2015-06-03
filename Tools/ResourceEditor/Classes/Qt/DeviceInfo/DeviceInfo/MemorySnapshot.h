@@ -40,8 +40,10 @@ class MemorySnapshot final
 {
 public:
     MemorySnapshot(const DAVA::FilePath& filename, const DAVA::MMSnapshot* msnapshot);
-    //MemorySnapshot(const MemorySnapshot&) = delete;
-    //MemorySnapshot& operator = (const MemorySnapshot&) = delete;
+    MemorySnapshot(const MemorySnapshot&) = delete;
+    MemorySnapshot& operator = (const MemorySnapshot&) = delete;
+    MemorySnapshot(MemorySnapshot&& other);
+    MemorySnapshot& operator = (MemorySnapshot&& other);
     ~MemorySnapshot() = default;
 
     const DAVA::FilePath& FileName() const;

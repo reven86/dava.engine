@@ -54,9 +54,6 @@ public:
     ProfilingSession();
     ProfilingSession(const ProfilingSession&) = delete;
     ProfilingSession& operator = (const ProfilingSession&) = delete;
-    // TODO: implement move semantic
-    //ProfilingSession(ProfilingSession&& other);
-    //ProfilingSession& operator = (ProfilingSession&& other);
     ~ProfilingSession();
 
     bool StartNew(const DAVA::MMStatConfig* config, const DAVA::Net::PeerDescription& deviceInfo, const DAVA::FilePath& destDir);

@@ -16,7 +16,7 @@ public:
     class NameNode : public GenericTreeNode
     {
     public:
-        NameNode(const DAVA::char8* s) : GenericTreeNode(TYPE_NAME), name(s) {}
+        NameNode(const DAVA::char8*& s) : GenericTreeNode(TYPE_NAME), name(s) {}
         const DAVA::char8* Name() const { return name; }
     private:
         const DAVA::char8* name;

@@ -45,17 +45,7 @@ void BacktraceSymbolTable::AddBacktrace(DAVA::uint32 hash, const DAVA::uint64* f
     auto iterBktrace = bktraces.find(hash);
     if (iterBktrace == bktraces.end())
     {
-        Backtrace bktrace = CreateBacktrace(hash, frames, maxFrameDepth);
-        bktraces.emplace(hash, std::move(bktrace));
-    }
-    else
-    {
-        // TODO: remove debug check
-        Backtrace& bktraceCur = iterBktrace->second;
-        Backtrace bktraceNew = CreateBacktrace(hash, frames, maxFrameDepth);
-
-        DVASSERT(bktraceCur.frameNames.size() == bktraceNew.frameNames.size());
-        DVASSERT(std::equal(bktraceCur.frameNames.begin(), bktraceCur.frameNames.end(), bktraceNew.frameNames.begin()));
+        bktraces.emplace(hash, CreateBacktrace(hash, frames, maxFrameDepth));
     }
 }
 
@@ -66,7 +56,6 @@ const DAVA::String& BacktraceSymbolTable::GetSymbol(DAVA::uint64 frameAddr) cons
     {
         const uint32 nameHash = iterAddr->second;
         auto iterName = uniqueNames.find(nameHash);
-        DVASSERT(iterName != uniqueNames.end());
         if (iterName != uniqueNames.end())
         {
             return iterName->second;
@@ -89,7 +78,7 @@ const DAVA::Vector<const char*>& BacktraceSymbolTable::GetFrames(DAVA::uint32 ha
     return empty;
 }
 
-BacktraceSymbolTable::Backtrace BacktraceSymbolTable::CreateBacktrace(DAVA::uint32 hash, const DAVA::uint64* frames, size_t maxFrameDepth) const
+BacktraceSymbolTable::Backtrace BacktraceSymbolTable::CreateBacktrace(DAVA::uint32 hash, const DAVA::uint64* frames, size_t maxFrameDepth)
 {
     size_t nframes = GetUsefulFramesCount(frames, maxFrameDepth);
     DVASSERT(nframes > 0);
@@ -103,8 +92,7 @@ BacktraceSymbolTable::Backtrace BacktraceSymbolTable::CreateBacktrace(DAVA::uint
         {
             char buf[32];
             Snprintf(buf, COUNT_OF(buf), "#_%08llX", frames[i]);
-            // Ugly hack with const_cast
-            const_cast<BacktraceSymbolTable*>(this)->AddSymbol(frames[i], buf);
+            AddSymbol(frames[i], buf);
             s = GetSymbol(frames[i]).c_str();
         }
         bktrace.frameNames.push_back(s);

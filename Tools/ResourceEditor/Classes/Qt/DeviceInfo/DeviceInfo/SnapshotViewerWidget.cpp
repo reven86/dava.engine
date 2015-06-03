@@ -134,14 +134,7 @@ void SnapshotViewerWidget::BranchBlockView_DoubleClicked(const QModelIndex& curr
     const MMBlock* block = blockListModel->GetBlock(current);
     if (block != nullptr)
     {
-        /*Vector<QModelIndex> v = branchTreeModel->Select2(p);
-        if (!v.empty())
-        {
-            for (auto& x : v)
-                branchTree->expand(x);
-            branchTree->setCurrentIndex(v.back());
-            branchTree->selectionModel()->select(v.back(), QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
-        }*/
+        // TODO: expand callstack tree to view block allocation site
     }
 }
 
