@@ -268,7 +268,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         Log.i(JNIConst.LOG_TAG, "[Activity::onResume] start");
         // recreate eglContext (also eglSurface, eglScreen) should be first
         super.onResume();
-
+         
         // activate accelerometer
         if(accelerometer != null)
         {
@@ -295,6 +295,26 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         JNITextField.RelinkNativeControls();
         JNIWebView.RelinkNativeControls();
+
+        Thread waitThread = new Thread() {
+        	@Override
+        	public void run() {
+				try {
+					Thread.sleep(150);
+				}
+				catch(InterruptedException ex) {
+				}
+				finally {
+	        		runOnUiThread(new Runnable() {
+	        			@Override
+	        			public void run() {
+        					HideNavigationBar(getWindow().getDecorView());
+        				}
+	        		});
+				}
+        	}
+        };
+    	waitThread.run();
         
         isPausing = false;
         Log.i(JNIConst.LOG_TAG, "[Activity::onResume] finish");
@@ -348,8 +368,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         super.onWindowFocusChanged(hasFocus);
         
     	if(hasFocus) {
-    		HideNavigationBar(getWindow().getDecorView());
-    		
     		// we have to wait for window to get focus and only then
     		// resume game
     		// because on some slow devices:
@@ -366,6 +384,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     		    glView.queueEvent(action);
     		    setResumeGLActionOnWindowReady(null);
     		}
+    		
+    		HideNavigationBar(getWindow().getDecorView());
     	}
     	Log.i(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] finish");
     }
