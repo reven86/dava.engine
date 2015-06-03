@@ -839,6 +839,8 @@
 		17675C2319472C1400054F8F /* LibDdsHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF419201BEF009E3E90 /* LibDdsHelper.h */; };
 		17675C2419472C1400054F8F /* LibJpegHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF519201BEF009E3E90 /* LibJpegHelper.cpp */; };
 		17675C2519472C1400054F8F /* LibJpegHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF619201BEF009E3E90 /* LibJpegHelper.h */; };
+		17675C2419472C1400054F8F /* LibWebPHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF519201BEF009E3E90 /* LibWebPHelper.cpp */; };
+		17675C2519472C1400054F8F /* LibWebPHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF619201BEF009E3E90 /* LibWebPHelper.h */; };
 		17675C2619472C1400054F8F /* LibPngHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF719201BEF009E3E90 /* LibPngHelper.cpp */; };
 		17675C2719472C1400054F8F /* LibPngHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF819201BEF009E3E90 /* LibPngHelper.h */; };
 		17675C2819472C1400054F8F /* LibPVRHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF919201BEF009E3E90 /* LibPVRHelper.cpp */; };
@@ -1072,6 +1074,8 @@
 		84D18C0319201BEF009E3E90 /* LibDdsHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF419201BEF009E3E90 /* LibDdsHelper.h */; };
 		84D18C0419201BEF009E3E90 /* LibJpegHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF519201BEF009E3E90 /* LibJpegHelper.cpp */; };
 		84D18C0519201BEF009E3E90 /* LibJpegHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF619201BEF009E3E90 /* LibJpegHelper.h */; };
+		84D18C0419201BEF009E3E90 /* LibWebPHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF519201BEF009E3E90 /* LibWebPHelper.cpp */; };
+		84D18C0519201BEF009E3E90 /* LibWebPHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF619201BEF009E3E90 /* LibWebPHelper.h */; };
 		84D18C0619201BEF009E3E90 /* LibPngHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF719201BEF009E3E90 /* LibPngHelper.cpp */; };
 		84D18C0719201BEF009E3E90 /* LibPngHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF819201BEF009E3E90 /* LibPngHelper.h */; };
 		84D18C0819201BEF009E3E90 /* LibPVRHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF919201BEF009E3E90 /* LibPVRHelper.cpp */; };
@@ -2166,6 +2170,8 @@
 		84D18BF419201BEF009E3E90 /* LibDdsHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LibDdsHelper.h; path = Image/LibDdsHelper.h; sourceTree = "<group>"; };
 		84D18BF519201BEF009E3E90 /* LibJpegHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LibJpegHelper.cpp; path = Image/LibJpegHelper.cpp; sourceTree = "<group>"; };
 		84D18BF619201BEF009E3E90 /* LibJpegHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LibJpegHelper.h; path = Image/LibJpegHelper.h; sourceTree = "<group>"; };
+		84D18BF519201BEF009E3E90 /* LibWebPHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LibWebPHelper.cpp; path = Image/LibWebPHelper.cpp; sourceTree = "<group>"; };
+		84D18BF619201BEF009E3E90 /* LibWebPHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LibWebPHelper.h; path = Image/LibWebPHelper.h; sourceTree = "<group>"; };
 		84D18BF719201BEF009E3E90 /* LibPngHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LibPngHelper.cpp; path = Image/LibPngHelper.cpp; sourceTree = "<group>"; };
 		84D18BF819201BEF009E3E90 /* LibPngHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LibPngHelper.h; path = Image/LibPngHelper.h; sourceTree = "<group>"; };
 		84D18BF919201BEF009E3E90 /* LibPVRHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LibPVRHelper.cpp; path = Image/LibPVRHelper.cpp; sourceTree = "<group>"; };
@@ -3219,6 +3225,8 @@
 				84D18BF419201BEF009E3E90 /* LibDdsHelper.h */,
 				84D18BF519201BEF009E3E90 /* LibJpegHelper.cpp */,
 				84D18BF619201BEF009E3E90 /* LibJpegHelper.h */,
+				84D18BF519201BEF009E3E90 /* LibWebPHelper.cpp */,
+				84D18BF619201BEF009E3E90 /* LibWebPHelper.h */,
 				84D18BF719201BEF009E3E90 /* LibPngHelper.cpp */,
 				84D18BF819201BEF009E3E90 /* LibPngHelper.h */,
 				84D18BF919201BEF009E3E90 /* LibPVRHelper.cpp */,
@@ -4916,6 +4924,7 @@
 				02FD808E1924997C007762C0 /* RenderStateData.h in Headers */,
 				02FD808F1924997C007762C0 /* UIParticles.h in Headers */,
 				17675C2519472C1400054F8F /* LibJpegHelper.h in Headers */,
+				17675C2519472C1400054F8F /* LibWebPHelper.h in Headers */,
 				02FD80901924997C007762C0 /* UniqueStateSet.h in Headers */,
 				02FD80911924997C007762C0 /* TextureStateData.h in Headers */,
 				02FD80921924997C007762C0 /* GamepadDevice.h in Headers */,
@@ -5086,6 +5095,7 @@
 				E8B3CB5716B9326E002BD35F /* Plane.h in Headers */,
 				647EFC71195F0AC40073B3CB /* NMaterialHelper.h in Headers */,
 				84D18C0519201BEF009E3E90 /* LibJpegHelper.h in Headers */,
+				84D18C0519201BEF009E3E90 /* LibWebPHelper.h in Headers */,
 				E8B3CB5916B9326E002BD35F /* Polygon2.h in Headers */,
 				E8B3CB5B16B9326E002BD35F /* Polygon3.h in Headers */,
 				EA10607718892B7C00CB99A3 /* ParticleGroup.h in Headers */,
@@ -5752,6 +5762,7 @@
 				02FD81501924997C007762C0 /* SwitchComponent.cpp in Sources */,
 				02FD81511924997C007762C0 /* TransformComponent.cpp in Sources */,
 				17675C2419472C1400054F8F /* LibJpegHelper.cpp in Sources */,
+				17675C2419472C1400054F8F /* LibWebPHelper.cpp in Sources */,
 				02FD81521924997C007762C0 /* UpdatableComponent.cpp in Sources */,
 				D738BD7C1B01FCC700989C29 /* RawTimer.cpp in Sources */,
 				64493E1119476F4700AB2715 /* VegetationPropertyNames.cpp in Sources */,
@@ -6229,6 +6240,7 @@
 				EA10607818892B7C00CB99A3 /* ParticleRenderObject.cpp in Sources */,
 				E8B3CCC016B9326E002BD35F /* LightUpdateSystem.cpp in Sources */,
 				84D18C0419201BEF009E3E90 /* LibJpegHelper.cpp in Sources */,
+				84D18C0419201BEF009E3E90 /* LibWebPHelper.cpp in Sources */,
 				E8F43E2D186C5D4E006796CB /* MaterialSystem.cpp in Sources */,
 				E8B3CCC216B9326E002BD35F /* LodSystem.cpp in Sources */,
 				E8B3CCC416B9326E002BD35F /* ParticleEffectSystem.cpp in Sources */,

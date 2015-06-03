@@ -144,6 +144,10 @@ eErrorCode LibWebPHelper::WriteFile(const FilePath & fileName, const Vector<Imag
     }
 
     uint8_t *outData;
+    SCOPE_EXIT
+    {
+        SafeDeleteArray(outData);
+    };
     size_t outSize;
     uint8 channelCount;
     int stride = width * sizeof(*imageData);
@@ -167,15 +171,12 @@ eErrorCode LibWebPHelper::WriteFile(const FilePath & fileName, const Vector<Imag
     File *outFile = File::Create(fileName, File::CREATE | File::WRITE);
     if (nullptr == outFile)
     {
-        outFile->Release();
-        free(outData);
         Logger::Error("[LibWebPHelper::WriteFile] File %s could not be opened for writing", fileName.GetAbsolutePathname().c_str());
         return ERROR_WRITE_FAIL;
     }
 
     outFile->Write(outData, outSize);
     outFile->Release();
-    free(outData);
 
     return SUCCESS;
 }

@@ -535,6 +535,7 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Image\ImageSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibWebPHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibTgaHelper.h" />
@@ -1035,6 +1036,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibWebPHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibTgaHelper.cpp" />
