@@ -149,8 +149,15 @@ void GameCore::ProcessTests(float32 timeElapsed)
 
 void GameCore::FinishTests()
 {
-    // inform teamcity script we just finished all tests
-    // useful on ios devices (run with lldb)
-    teamCityOutput.Output(DAVA::Logger::LEVEL_DEBUG, "Finish all tests.");
+    if (teamcityOutputEnabled)
+    {
+        // inform teamcity script we just finished all tests
+        // useful on ios devices (run with lldb)
+        teamCityOutput.Output(DAVA::Logger::LEVEL_DEBUG, "Finish all tests.");
+    }
+    else
+    {
+        Logger::Debug("Finish all tests.");
+    }
     Core::Instance()->Quit();
 }
