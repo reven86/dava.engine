@@ -159,7 +159,7 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
                 GLCommand   cmd4[] =
                 {
                     { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, uid } },
-                    { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_2D, 0, GL_RGBA, self->width, self->height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0 } },
+                    { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_2D, 0, GL_RGBA, self->width, self->height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0, 0, 0 } },
                     { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST } },
                     { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
                     { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, 0 } },
@@ -236,22 +236,22 @@ gles2_Texture_Unmap( Handle tex )
     GLint           int_fmt;
     GLint           fmt;
     GLenum          type;
+    bool            compressed;
     
-    GetGLTextureFormat( self->format, &int_fmt, &fmt, &type );
+    uint32 textureDataSize = TextureSize(self->format, sz.dx, sz.dy);
+    GetGLTextureFormat( self->format, &int_fmt, &fmt, &type, &compressed );
 
     DVASSERT(self->isMapped);
     if( self->format == TEXTURE_FORMAT_A4R4G4B4 )
     {
-        Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
-        
-        _FlipRGBA4( self->mappedData, ext.dx*ext.dy*sizeof(uint16) );
+        _FlipRGBA4( self->mappedData, textureDataSize );
     }
 
     GLenum      target = (self->isCubeMap)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
     GLCommand   cmd[]  =
     {
         { GLCommand::BIND_TEXTURE, {target, self->uid} },
-        { GLCommand::TEX_IMAGE2D, {target, self->mappedLevel, uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, (uint64)(self->mappedData)} },
+        { GLCommand::TEX_IMAGE2D, {target, self->mappedLevel, uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(self->mappedData), compressed} },
         { GLCommand::BIND_TEXTURE, {target, 0} }
     };
 
@@ -271,16 +271,16 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
     GLint           int_fmt;
     GLint           fmt;
     GLenum          type;
+    bool            compressed;
     
-    GetGLTextureFormat( self->format, &int_fmt, &fmt, &type );
+    uint32 textureDataSize = TextureSize(self->format, sz.dx, sz.dy);
+    GetGLTextureFormat( self->format, &int_fmt, &fmt, &type, &compressed);
     
     DVASSERT(!self->isMapped);
     if( self->format == TEXTURE_FORMAT_A4R4G4B4 )
     {
-        Size2i  ext = TextureExtents( Size2i(self->width,self->height), level );
-        
         gles2_Texture_Map( tex, level, face );
-        memcpy( self->mappedData, data, ext.dx*ext.dy*sizeof(uint16) );
+        memcpy( self->mappedData, data, textureDataSize );
         gles2_Texture_Unmap( tex );
     }
     else
@@ -289,7 +289,7 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
         GLCommand   cmd[]  =
         {
             { GLCommand::BIND_TEXTURE, {target, self->uid} },
-            { GLCommand::TEX_IMAGE2D, {target, uint64(level), uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, (uint64)(data)} },
+            { GLCommand::TEX_IMAGE2D, {target, uint64(level), uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(data), compressed} },
             { GLCommand::BIND_TEXTURE, {target, 0} }
         };
 

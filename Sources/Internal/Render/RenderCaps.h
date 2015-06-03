@@ -49,6 +49,7 @@ struct RenderCaps
         isGlDepth24Stencil8Supported = isGlDepthNvNonLinearSupported = false;
 #endif
         isVertexTextureUnitsSupported = true; // RHI_COMPLETE for grass rendering
+        isPVRTC2Supported = isPVRTCSupported = true;
     }
     bool isHardwareCursorSupported;
     bool isPVRTCSupported;

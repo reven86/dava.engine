@@ -71,8 +71,8 @@ void PixelFormatDescriptor::InitializePixelFormatDescriptors()
     
     SetPixelDescription(FORMAT_RGBA32323232, FastName("RGBA32323232"), 128, rhi::TEXTURE_FORMAT_A32R32G32B32, caps.isFloat32Supported);
 
-    SetPixelDescription(FORMAT_PVR4, FastName("PVR4"), 4, UNSUPPORTED_FORMAT, caps.isPVRTCSupported);
-    SetPixelDescription(FORMAT_PVR2, FastName("PVR2"), 2, UNSUPPORTED_FORMAT, caps.isPVRTCSupported);
+    SetPixelDescription(FORMAT_PVR4, FastName("PVR4"), 4, rhi::TEXTURE_FORMAT_PVRTC_4BPP_RGBA, caps.isPVRTCSupported);
+    SetPixelDescription(FORMAT_PVR2, FastName("PVR2"), 2, rhi::TEXTURE_FORMAT_PVRTC_2BPP_RGBA, caps.isPVRTCSupported);
 
     SetPixelDescription(FORMAT_DXT1, FastName("DXT1"), 4, rhi::TEXTURE_FORMAT_DXT1, caps.isDXTSupported);
     SetPixelDescription(FORMAT_DXT1A, FastName("DXT1a"), 4, UNSUPPORTED_FORMAT, caps.isDXTSupported);

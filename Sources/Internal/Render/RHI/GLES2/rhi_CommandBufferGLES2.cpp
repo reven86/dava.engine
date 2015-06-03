@@ -617,7 +617,10 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                         flags |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
                     }
 
-                    glClear( flags );
+                    if(flags)
+                    {
+                        glClear( flags );
+                    }
                 }
 
                 GL_CALL(glViewport(passCfg.viewport[0], passCfg.viewport[1], passCfg.viewport[2], passCfg.viewport[3]));
@@ -1122,7 +1125,14 @@ if( err != GL_NO_ERROR ) \
 
             case GLCommand::TEX_IMAGE2D :
             {
-                EXEC_GL(glTexImage2D( (GLenum)(arg[0]), (GLint)(arg[1]), (GLint)(arg[2]), (GLsizei)(arg[3]), (GLsizei)(arg[4]), (GLint)(arg[5]), (GLenum)(arg[6]), (GLenum)(arg[7]), (const GLvoid*)(arg[8]) ));
+                if(arg[10])
+                {
+                    EXEC_GL(glCompressedTexImage2D( (GLenum)(arg[0]), (GLint)(arg[1]), (GLenum)(arg[2]), (GLsizei)(arg[3]), (GLsizei)(arg[4]), (GLint)(arg[5]), (GLsizei)(arg[8]), (const GLvoid*)(arg[9]) ));
+                }
+                else
+                {
+                    EXEC_GL(glTexImage2D( (GLenum)(arg[0]), (GLint)(arg[1]), (GLint)(arg[2]), (GLsizei)(arg[3]), (GLsizei)(arg[4]), (GLint)(arg[5]), (GLenum)(arg[6]), (GLenum)(arg[7]), (const GLvoid*)(arg[9]) ));
+                }
                 cmd->status = err;
             }   break;
 

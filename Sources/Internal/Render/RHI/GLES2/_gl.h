@@ -145,4 +145,4 @@ extern GLint    _GLES2_Default_FrameBuffer;
 extern void     (*_Make_Current)();
 extern void     (*_End_Frame)();
 
-bool            GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type );
+bool            GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type, bool* compressed );

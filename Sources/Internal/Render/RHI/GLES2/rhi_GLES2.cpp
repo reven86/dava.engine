@@ -73,6 +73,8 @@ gles2_TextureFormatSupported( TextureFormat format )
             supported = Float_Supported;
             break;
 
+        case TEXTURE_FORMAT_PVRTC_4BPP_RGBA :
+        case TEXTURE_FORMAT_PVRTC_2BPP_RGBA :
         case TEXTURE_FORMAT_PVRTC2_4BPP_RGBA :
         case TEXTURE_FORMAT_PVRTC2_2BPP_RGBA :
             supported = PVRTC2_Supported;
@@ -305,7 +307,7 @@ GL_TextureFormat( TextureFormat format )
 
 
 bool
-GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type )
+GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type, bool* compressed )
 {
     using namespace rhi;
 
@@ -317,6 +319,7 @@ GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* 
             *internalFormat = GL_RGBA;
             *format         = GL_RGBA;
             *type           = GL_UNSIGNED_BYTE;
+            *compressed     = false;
             success         = true;
             break;
 
@@ -324,6 +327,7 @@ GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* 
             *internalFormat = GL_RGB; 
             *format         = GL_RGB;
             *type           = GL_UNSIGNED_BYTE;
+            *compressed     = false;
             success         = true;
             break;
         
@@ -331,6 +335,7 @@ GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* 
             *internalFormat = GL_RGBA;
             *format         = GL_RGBA;
             *type           = GL_UNSIGNED_SHORT_4_4_4_4;
+            *compressed     = false;
             success         = true;
             break;
 
@@ -338,150 +343,188 @@ GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* 
             *internalFormat = GL_ALPHA; 
             *format         = GL_ALPHA;
             *type           = GL_UNSIGNED_BYTE;
+            *compressed     = false;
             success         = true;
             break;
 
         case TEXTURE_FORMAT_R16:
             *internalFormat = GL_ALPHA;
-            *format = GL_ALPHA;
-            *type = GL_UNSIGNED_SHORT;
-            success = true;
+            *format         = GL_ALPHA;
+            *type           = GL_UNSIGNED_SHORT;
+            *compressed     = false;
+            success         = true;
             break;
 
         case TEXTURE_FORMAT_A1R5G5B5:
             *internalFormat = GL_RGBA;
-            *format = GL_RGBA;
-            *type = GL_UNSIGNED_SHORT_5_5_5_1;
-            success = true;
+            *format         = GL_RGBA;
+            *type           = GL_UNSIGNED_SHORT_5_5_5_1;
+            *compressed     = false;
+            success         = true;
             break;
 
         case TEXTURE_FORMAT_R5G6B5:
             *internalFormat = GL_RGB;
-            *format = GL_RGB;
-            *type = GL_UNSIGNED_SHORT_5_6_5;
-            success = true;
+            *format         = GL_RGB;
+            *type           = GL_UNSIGNED_SHORT_5_6_5;
+            *compressed     = false;
+            success         = true;
             break;
 
         case TEXTURE_FORMAT_A16R16G16B16:
             *internalFormat = GL_RGBA;
-            *format = GL_RGBA;
-            *type = GL_HALF_FLOAT;
-            success = true;
+            *format         = GL_RGBA;
+            *type           = GL_HALF_FLOAT;
+            *compressed     = false;
+            success         = true;
             break;
 
         case TEXTURE_FORMAT_A32R32G32B32:
             *internalFormat = GL_RGBA;
-            *format = GL_RGBA;
-            *type = GL_FLOAT;
-            success = true;
+            *format         = GL_RGBA;
+            *type           = GL_FLOAT;
+            *compressed     = false;
+            success         = true;
             break;
 
         case TEXTURE_FORMAT_DXT1:
             *internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-            *format = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
-            *type = GL_UNSIGNED_BYTE;
-            success = true;
+            *format         = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+            *type           = GL_UNSIGNED_BYTE;
+            *compressed     = true;
+            success         = true;
             break;
 
         case TEXTURE_FORMAT_DXT3:
             *internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-            *format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-            *type = GL_UNSIGNED_BYTE;
-            success = true;
+            *format         = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+            *type           = GL_UNSIGNED_BYTE;
+            *compressed     = true;
+            success         = true;
             break;
 
         case TEXTURE_FORMAT_DXT5:
             *internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-            *format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-            *type = GL_UNSIGNED_BYTE;
-            success = true;
+            *format         = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+            *type           = GL_UNSIGNED_BYTE;
+            *compressed     = true;
+            success         = true;
             break;
-
+            
+        case TEXTURE_FORMAT_PVRTC_4BPP_RGBA:
+            *internalFormat = GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
+            *format         = GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
+            *type           = GL_UNSIGNED_BYTE;
+            *compressed     = true;
+            success         = true;
+            break;
+            
+        case TEXTURE_FORMAT_PVRTC_2BPP_RGBA:
+            *internalFormat = GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
+            *format         = GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
+            *type           = GL_UNSIGNED_BYTE;
+            *compressed     = true;
+            success         = true;
+            break;
+            
         case TEXTURE_FORMAT_PVRTC2_4BPP_RGBA:
             *internalFormat = GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG;
-            *format = GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG;
-            *type = GL_UNSIGNED_BYTE;
-            success = true;
+            *format         = GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG;
+            *type           = GL_UNSIGNED_BYTE;
+            *compressed     = true;
+            success         = true;
             break;
 
         case TEXTURE_FORMAT_PVRTC2_2BPP_RGBA:
             *internalFormat = GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG;
-            *format = GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG;
-            *type = GL_UNSIGNED_BYTE;
-            success = true;
+            *format         = GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG;
+            *type           = GL_UNSIGNED_BYTE;
+            *compressed     = true;
+            success         = true;
             break;
 
         case TEXTURE_FORMAT_ETC1:
             *internalFormat = GL_ETC1_RGB8_OES;
-            *format = GL_ETC1_RGB8_OES;
-            *type = GL_UNSIGNED_BYTE;
-            success = true;
+            *format         = GL_ETC1_RGB8_OES;
+            *type           = GL_UNSIGNED_BYTE;
+            *compressed     = true;
+            success         = true;
             break;
 
         case TEXTURE_FORMAT_ETC2_R8G8B8:
             *internalFormat = GL_COMPRESSED_RGB8_ETC2;
-            *format = GL_COMPRESSED_RGB8_ETC2;
-            *type = GL_UNSIGNED_BYTE;
-            success = true;
+            *format         = GL_COMPRESSED_RGB8_ETC2;
+            *type           = GL_UNSIGNED_BYTE;
+            *compressed     = true;
+            success         = true;
             break;
 
         case TEXTURE_FORMAT_ETC2_R8G8B8A8:
             *internalFormat = GL_COMPRESSED_RGBA8_ETC2_EAC;
-            *format = GL_COMPRESSED_RGBA8_ETC2_EAC;
-            *type = GL_UNSIGNED_BYTE;
-            success = true;
+            *format         = GL_COMPRESSED_RGBA8_ETC2_EAC;
+            *type           = GL_UNSIGNED_BYTE;
+            *compressed     = true;
+            success         = true;
             break;
 
         case TEXTURE_FORMAT_ETC2_R8G8B8A1:
             *internalFormat = GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
-            *format = GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
-            *type = GL_UNSIGNED_BYTE;
-            success = true;
+            *format         = GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
+            *type           = GL_UNSIGNED_BYTE;
+            *compressed     = true;
+            success         = true;
 
         case TEXTURE_FORMAT_EAC_R11_UNSIGNED:
             *internalFormat = GL_COMPRESSED_R11_EAC;
-            *format = GL_COMPRESSED_R11_EAC;
-            *type = GL_UNSIGNED_BYTE;
-            success = true;
+            *format         = GL_COMPRESSED_R11_EAC;
+            *type           = GL_UNSIGNED_BYTE;
+            *compressed     = true;
+            success         = true;
 
         case TEXTURE_FORMAT_EAC_R11_SIGNED:
             *internalFormat = GL_COMPRESSED_SIGNED_R11_EAC;
-            *format = GL_COMPRESSED_SIGNED_R11_EAC;
-            *type = GL_UNSIGNED_BYTE;
-            success = true;
+            *format         = GL_COMPRESSED_SIGNED_R11_EAC;
+            *type           = GL_UNSIGNED_BYTE;
+            *compressed     = true;
+            success         = true;
 
         case TEXTURE_FORMAT_EAC_R11G11_UNSIGNED:
             *internalFormat = GL_COMPRESSED_RG11_EAC;
-            *format = GL_COMPRESSED_RG11_EAC;
-            *type = GL_UNSIGNED_BYTE;
-            success = true;
+            *format         = GL_COMPRESSED_RG11_EAC;
+            *type           = GL_UNSIGNED_BYTE;
+            *compressed     = true;
+            success         = true;
 
         case TEXTURE_FORMAT_EAC_R11G11_SIGNED:
             *internalFormat = GL_COMPRESSED_SIGNED_RG11_EAC;
-            *format = GL_COMPRESSED_SIGNED_RG11_EAC;
-            *type = GL_UNSIGNED_BYTE;
-            success = true;
+            *format         = GL_COMPRESSED_SIGNED_RG11_EAC;
+            *type           = GL_UNSIGNED_BYTE;
+            *compressed     = true;
+            success         = true;
             break;
 
         case TEXTURE_FORMAT_ATC_RGB:
             *internalFormat = GL_ATC_RGB_AMD;
-            *format = GL_ATC_RGB_AMD;
-            *type = GL_UNSIGNED_BYTE;
-            success = true;
+            *format         = GL_ATC_RGB_AMD;
+            *type           = GL_UNSIGNED_BYTE;
+            *compressed     = true;
+            success         = true;
             break;
 
         case TEXTURE_FORMAT_ATC_RGBA_EXPLICIT:
             *internalFormat = GL_ATC_RGBA_EXPLICIT_ALPHA_AMD;
-            *format = GL_ATC_RGBA_EXPLICIT_ALPHA_AMD;
-            *type = GL_UNSIGNED_BYTE;
-            success = true;
+            *format         = GL_ATC_RGBA_EXPLICIT_ALPHA_AMD;
+            *type           = GL_UNSIGNED_BYTE;
+            *compressed     = true;
+            success         = true;
             break;
 
         case TEXTURE_FORMAT_ATC_RGBA_INTERPOLATED:
             *internalFormat = GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD;
-            *format = GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD;
-            *type = GL_UNSIGNED_BYTE;
-            success = true;
+            *format         = GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD;
+            *type           = GL_UNSIGNED_BYTE;
+            *compressed     = true;
+            success         = true;
             break;
 
         default :
