@@ -286,7 +286,7 @@ DAVA::ImageInfo LibJpegHelper::GetImageInfo(File *infile) const
 
     jpeg_create_decompress(&cinfo);
     jpeg_mem_src(&cinfo, fileBuffer, fileSize);
-    jpeg_read_header(&cinfo, true);
+    jpeg_read_header(&cinfo, TRUE);
     infile->Seek(0, File::SEEK_FROM_START);
 
     info.width = cinfo.image_width;
