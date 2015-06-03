@@ -54,7 +54,7 @@ DAVA_TESTCLASS(FileListTest)
     {
         ScopedPtr<FileList> fileList(new FileList("~res:/TestData/FileListTest/"));
 
-        TEST_VERIFY(fileList->GetDirectoryCount() == 4);
+        TEST_VERIFY(fileList->GetDirectoryCount() == 3);
         TEST_VERIFY(fileList->GetFileCount() == 0);
 
         for (int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
@@ -69,7 +69,7 @@ DAVA_TESTCLASS(FileListTest)
             if (filename == "Folder1")
             {
                 TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder1/");
-                TEST_VERIFY(files->GetFileCount() == 4);
+                TEST_VERIFY(files->GetFileCount() == 3);
 
                 for (int32 ifi = 0; ifi < files->GetCount(); ++ifi)
                 {
@@ -81,10 +81,6 @@ DAVA_TESTCLASS(FileListTest)
                     if (filename == "file1")
                     {
                         TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder1/file1");
-                    }
-                    else if (filename == ".file1")
-                    {
-                        TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder1/.file1");
                     }
                     else if (filename == "file2.txt")
                     {
@@ -99,11 +95,6 @@ DAVA_TESTCLASS(FileListTest)
                         TEST_VERIFY(false);
                     }
                 }
-            }
-            else if (filename == ".Folder1")
-            {
-                TEST_VERIFY(pathname == "~res:/TestData/FileListTest/.Folder1/");
-                TEST_VERIFY(files->GetFileCount() == 1);
             }
             else if (filename == "Folder2")
             {
@@ -182,7 +173,7 @@ DAVA_TESTCLASS(FileListTest)
     {
         ScopedPtr<FileList> fileList(new FileList("~doc:/TestData/FileListTest/"));
 
-        TEST_VERIFY(fileList->GetDirectoryCount() == 4);
+        TEST_VERIFY(fileList->GetDirectoryCount() == 3);
         TEST_VERIFY(fileList->GetFileCount() == 0);
 
         for (int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
@@ -197,7 +188,7 @@ DAVA_TESTCLASS(FileListTest)
             if (filename == "Folder1")
             {
                 TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder1/");
-                TEST_VERIFY(files->GetFileCount() == 4);
+                TEST_VERIFY(files->GetFileCount() == 3);
 
                 for (int32 ifi = 0; ifi < files->GetCount(); ++ifi)
                 {
@@ -209,10 +200,6 @@ DAVA_TESTCLASS(FileListTest)
                     if (filename == "file1")
                     {
                         TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder1/file1");
-                    }
-                    else if (filename == ".file1")
-                    {
-                        TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder1/.file1");
                     }
                     else if (filename == "file2.txt")
                     {
@@ -227,11 +214,6 @@ DAVA_TESTCLASS(FileListTest)
                         TEST_VERIFY(false);
                     }
                 }
-            }
-            else if (filename == ".Folder1")
-            {
-                TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/.Folder1/");
-                TEST_VERIFY(files->GetFileCount() == 1);
             }
             else if (filename == "Folder2")
             {
@@ -309,7 +291,7 @@ DAVA_TESTCLASS(FileListTest)
     DAVA_TEST(HiddenFileTest)
     {
 #if defined(__DAVAENGINE_WIN32__)
-        FilePath file1 = FilePath("~res:/TestData/FileListTest/Folder1/file1");
+        FilePath file1 = FilePath("~doc:/TestData/FileListTest/Folder1/file1");
         auto file1str = file1.GetAbsolutePathname();
         auto attrs = GetFileAttributesA(file1str.c_str());
 
@@ -318,23 +300,26 @@ DAVA_TESTCLASS(FileListTest)
             SetFileAttributesA(file1str.c_str(), attrs ^ FILE_ATTRIBUTE_HIDDEN);
         }
 
-        ScopedPtr<FileList> files(new FileList("~res:/TestData/FileListTest/Folder1/"));
-        TEST_VERIFY(files->GetFileCount() == 4);
+        ScopedPtr<FileList> files(new FileList("~doc:/TestData/FileListTest/Folder1/"));
+        TEST_VERIFY(files->GetFileCount() == 3);
         auto i = GetIndex(files, "file1");
         TEST_VERIFY(i < files->GetCount());
         TEST_VERIFY(files->IsHidden(i) == false);
 
         SetFileAttributesA(file1str.c_str(), attrs | FILE_ATTRIBUTE_HIDDEN);
 
-        files = new FileList("~res:/TestData/FileListTest/Folder1/");
-        TEST_VERIFY(files->GetFileCount() == 4);
+        files = new FileList("~doc:/TestData/FileListTest/Folder1/");
+        TEST_VERIFY(files->GetFileCount() == 3);
         i = GetIndex(files, "file1");
         TEST_VERIFY(i < files->GetCount());
         TEST_VERIFY(files->IsHidden(i) == true);
 
         SetFileAttributesA(file1str.c_str(), attrs);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-        ScopedPtr<FileList> files(new FileList("~res:/TestData/FileListTest/Folder1/"));
+        FilePath file1 = "~doc:/TestData/FileListTest/Folder1/file1";
+        FilePath file1hidden = "~doc:/TestData/FileListTest/Folder1/.file1";
+        TEST_VERIFY(FileSystem::Instance()->CopyFile(file1, file1hidden, true));
+        ScopedPtr<FileList> files(new FileList("~doc:/TestData/FileListTest/Folder1/"));
         TEST_VERIFY(files->GetFileCount() == 4);
         for (auto i = 0; i < files->GetCount(); ++i)
         {
@@ -344,13 +329,14 @@ DAVA_TESTCLASS(FileListTest)
                 TEST_VERIFY(files->IsHidden(i) == startsWithDot);
             }
         }
+        FileSystem::Instance()->DeleteFile(file1hidden);
 #endif //PLATFORMS
     }
 
     DAVA_TEST(HiddenDirTest)
     {
 #if defined(__DAVAENGINE_WIN32__)
-        FilePath dir1 = FilePath("~res:/TestData/FileListTest/Folder1/");
+        FilePath dir1 = FilePath("~doc:/TestData/FileListTest/Folder1/");
         auto dir1str = dir1.GetAbsolutePathname();
         auto attrs = GetFileAttributesA(dir1str.c_str());
 
@@ -359,16 +345,16 @@ DAVA_TESTCLASS(FileListTest)
             SetFileAttributesA(dir1str.c_str(), attrs ^ FILE_ATTRIBUTE_HIDDEN);
         }
 
-        ScopedPtr<FileList> files(new FileList("~res:/TestData/FileListTest/"));
-        TEST_VERIFY(files->GetDirectoryCount() == 4);
+        ScopedPtr<FileList> files(new FileList("~doc:/TestData/FileListTest/"));
+        TEST_VERIFY(files->GetDirectoryCount() == 3);
         auto i = GetIndex(files, "Folder1");
         TEST_VERIFY(i < files->GetCount());
         TEST_VERIFY(files->IsHidden(i) == false);
 
         SetFileAttributesA(dir1str.c_str(), attrs | FILE_ATTRIBUTE_HIDDEN);
 
-        files = new FileList("~res:/TestData/FileListTest/");
-        TEST_VERIFY(files->GetDirectoryCount() == 4);
+        files = new FileList("~doc:/TestData/FileListTest/");
+        TEST_VERIFY(files->GetDirectoryCount() == 3);
         i = GetIndex(files, "Folder1");
         TEST_VERIFY(i < files->GetCount());
         TEST_VERIFY(files->IsHidden(i) == true);
@@ -377,7 +363,9 @@ DAVA_TESTCLASS(FileListTest)
 
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 
-        ScopedPtr<FileList> files(new FileList("~res:/TestData/FileListTest/"));
+        FilePath folder1hidden = "~doc:/TestData/FileListTest/.Folder1/";
+        TEST_VERIFY(FileSystem::Instance()->CreateDirectory(folder1hidden, true));
+        ScopedPtr<FileList> files(new FileList("~doc:/TestData/FileListTest/"));
         TEST_VERIFY(files->GetDirectoryCount() == 4);
         for (auto i = 0; i < files->GetCount(); ++i)
         {
@@ -387,6 +375,7 @@ DAVA_TESTCLASS(FileListTest)
                 TEST_VERIFY(files->IsHidden(i) == startsWithDot);
             }
         }
+        FileSystem::Instance()->DeleteDirectory(folder1hidden);
 
 #endif //PLATFORMS
     }

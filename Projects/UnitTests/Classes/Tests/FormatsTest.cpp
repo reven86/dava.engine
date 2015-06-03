@@ -118,7 +118,8 @@ DAVA_TESTCLASS(FormatsTest)
             }
         }
     }
-
+    
+#if !defined (__DAVAENGINE_IPHONE__)
     DAVA_TEST(TestDds)
     {
         Vector<PixelFormat> suportedFormats;
@@ -175,6 +176,7 @@ DAVA_TESTCLASS(FormatsTest)
             }
         }
     }
+#endif
 
     void TestImageInfo(const DAVA::FilePath &fileName, DAVA::PixelFormat &requestedFormat)
     {
