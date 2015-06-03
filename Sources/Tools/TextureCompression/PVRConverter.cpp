@@ -107,6 +107,12 @@ PVRConverter::~PVRConverter()
 
 FilePath PVRConverter::ConvertToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, bool addCRC /* = true */)
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return FilePath();
+
+#else
 	FilePath outputName = (descriptor.IsCubeMap()) ? PrepareCubeMapForPvrConvert(descriptor) : descriptor.GetSourceTexturePathname();
 
 	Vector<String> args;
@@ -141,6 +147,7 @@ FilePath PVRConverter::ConvertToPvr(const TextureDescriptor &descriptor, eGPUFam
 	    helper.AddCRCIntoMetaData(outputName);
     }
 	return outputName;
+#endif
 }
 
 FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality)
@@ -226,7 +233,7 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor, const
 	String inputName = GenerateInputName(descriptor, fileToConvert);
 #if defined (__DAVAENGINE_MACOS__)
 	args.push_back(inputName);
-#else //defined (__DAVAENGINE_WIN32__)
+#else //defined (__DAVAENGINE_WINDOWS__)
 	args.push_back(String("\"") + inputName + String("\""));
 #endif //MAC-WIN
 
@@ -234,7 +241,7 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor, const
 	args.push_back("-o");
 #if defined (__DAVAENGINE_MACOS__)
 	args.push_back(outputFile.GetAbsolutePathname());
-#else //defined (__DAVAENGINE_WIN32__)
+#else //defined (__DAVAENGINE_WINDOWS__)
 	args.push_back(String("\"") + outputFile.GetAbsolutePathname() + String("\""));
 #endif //MAC-WIN
 

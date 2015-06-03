@@ -591,7 +591,11 @@ bool NvttHelper::DecompressDxt(const nvtt::Decompressor & dec, DDSInfo info, Vec
 
 bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, PixelFormat format, Vector<Image*> &imageSet, int32 baseMipMap)
 {
-#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN_UAP__)
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return false;
+
+#elif defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
 #if defined(__DAVAENGINE_MACOS__)
     if (format == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
     {
@@ -1043,6 +1047,10 @@ bool LibDdsHelper::WriteDxtFile(const FilePath & fileNameOriginal, const Vector<
     
     DVASSERT_MSG(false, "No necessary write compressed files on mobile");
     return false;
+
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return false;
     
 #else
 	if(!((compressionFormat >= FORMAT_DXT1 && compressionFormat <= FORMAT_DXT5NM)||(compressionFormat == FORMAT_RGBA8888)))
@@ -1137,6 +1145,10 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 	DVASSERT_MSG(false, "Qualcomm doesn't provide texture converter library for ios/android");
 	return false;
+
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return false;
 
 #else
 
@@ -1264,6 +1276,10 @@ bool LibDdsHelper::WriteDxtFileAsCubemap(const DAVA::FilePath &fileNameOriginal,
     
     DVASSERT_MSG(false, "No necessary write compressed files on mobile");
     return false;
+
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return false;
     
 #else
     if(!((compressionFormat >= FORMAT_DXT1 && compressionFormat <= FORMAT_DXT5NM)||(compressionFormat == FORMAT_RGBA8888)))
@@ -1344,6 +1360,10 @@ bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath &fileNameOriginal,
 {
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     DVASSERT_MSG(false, "Qualcomm doesn't provide texture converter library for ios/android");
+    return false;
+
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return false;
     
 #else
