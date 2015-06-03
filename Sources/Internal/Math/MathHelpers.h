@@ -123,7 +123,7 @@ inline size_t HighestBitIndex(T value)
     size_t index = 0;
     if (value != 0)
     {
-        using UnsignedT = std::make_unsigned<T>::type;
+        using UnsignedT = typename std::make_unsigned<T>::type;
         UnsignedT unsignedValue = static_cast<UnsignedT>(value);
         for (;unsignedValue != 0;++index)
         {
