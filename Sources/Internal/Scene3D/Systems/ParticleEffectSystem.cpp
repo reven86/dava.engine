@@ -72,8 +72,8 @@ NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, b
 		NMaterial *material = new NMaterial();
         material->SetParent(particleBaseMaterial);        
 		
-        /*if (enableFrameBlend)
-			material->AddFlag(NMaterialFlagName::FLAG_FRAME_BLEND, 1);		*/
+        if (enableFrameBlend)
+			material->AddFlag(NMaterialFlagName::FLAG_FRAME_BLEND, 1);		
 
         if (!enableFog)  //inverse logic to suspend vertex fog inherited from global material
             material->AddFlag(NMaterialFlagName::FLAG_VERTEXFOG, 0);        
