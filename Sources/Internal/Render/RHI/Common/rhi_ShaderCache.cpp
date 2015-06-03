@@ -179,6 +179,8 @@ static const char* _ShaderHeader_Metal =
 "#include <metal_texture>\n"
 "using namespace metal;\n\n"
 
+"#define float1 float\n"
+
 "float4 mul( float4 v, float4x4 m );\n"
 "float4 mul( float4 v, float4x4 m ) { return m*v; }\n"
 "float4 mul( float4x4 m, float4 v );\n"
@@ -470,7 +472,7 @@ static const char* _ShaderDefine_GLES2 =
 
 
 static const char* _ShaderHeader_DX9 =
-"\n"
+"#define float1                 float\n"
 ;
 
 static const char* _ShaderDefine_DX9 =
