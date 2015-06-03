@@ -90,15 +90,15 @@
 
 ******************************************************************************************/
 
-#define DAVA_TESTCLASS(classname)                                                                                                               \
-    struct classname;                                                                                                                           \
-    static struct testclass_ ## classname ## _registrar                                                                                         \
-    {                                                                                                                                           \
-        testclass_ ## classname ## _registrar()                                                                                                 \
-        {                                                                                                                                       \
-            DAVA::UnitTests::TestCore::Instance()->RegisterTestClass(#classname, new DAVA::UnitTests::TestClassFactoryImpl<classname>);  \
-        }                                                                                                                                       \
-    } testclass_ ## classname ## _registrar_instance;                                                                                           \
+#define DAVA_TESTCLASS(classname)                                                                                                                       \
+    struct classname;                                                                                                                                   \
+    static struct testclass_ ## classname ## _registrar                                                                                                 \
+    {                                                                                                                                                   \
+        testclass_ ## classname ## _registrar()                                                                                                         \
+        {                                                                                                                                               \
+            DAVA::UnitTests::TestCore::Instance()->RegisterTestClass(#classname, std::make_unique<DAVA::UnitTests::TestClassFactoryImpl<classname>>()); \
+        }                                                                                                                                               \
+    } testclass_ ## classname ## _registrar_instance;                                                                                                   \
     struct classname : public DAVA::UnitTests::TestClass, public DAVA::UnitTests::TestClassTypeKeeper<classname>
 
 #define DAVA_TEST(testname)                                                                                             \

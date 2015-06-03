@@ -38,9 +38,9 @@ namespace DAVA
 namespace UnitTests
 {
 
-TestCore::TestClassInfo::TestClassInfo(const char* name_, TestClassFactoryBase* factory_)
+    TestCore::TestClassInfo::TestClassInfo(const char* name_, std::unique_ptr<TestClassFactoryBase>&& factory_)
     : name(name_)
-    , factory(factory_)
+    , factory(std::move(factory_))
 {}
 
 TestCore::TestClassInfo::TestClassInfo(TestClassInfo&& other)
@@ -142,9 +142,9 @@ void TestCore::TestFailed(const String& condition, const char* filename, int lin
     testFailedCallback(curTestClassName, curTestName, condition, filename, lineno, userMessage);
 }
 
-void TestCore::RegisterTestClass(const char* name, TestClassFactoryBase* factory)
+void TestCore::RegisterTestClass(const char* name, std::unique_ptr<TestClassFactoryBase>&& factory)
 {
-    testClasses.emplace_back(name, factory);
+    testClasses.emplace_back(name, std::move(factory));
 }
 
 bool TestCore::IsTestRegistered(const String& testClassName) const
