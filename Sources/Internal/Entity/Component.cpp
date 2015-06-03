@@ -52,8 +52,6 @@
 #include "Scene3D/Components/StaticOcclusionComponent.h"
 #include "Scene3D/Components/QualitySettingsComponent.h"
 #include "Scene3D/Components/SkeletonComponent.h"
-#include "Scene3D/Components/LandscapeComponent.h"
-#include "Scene3D/Components/GeoDecalComponent.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"
 #include "Scene3D/Components/Waypoint/WaypointComponent.h"
 #include "Scene3D/Components/Waypoint/EdgeComponent.h"
@@ -124,10 +122,6 @@ Component * Component::CreateByType(uint32 componentType)
         return new SnapToLandscapeControllerComponent();
     case WASD_CONTROLLER_COMPONENT:
         return new WASDControllerComponent();
-    case LANDSCAPE_COMPONENT:
-        return new LandscapeComponent();
-    case GEODECAL_COMPONENT:
-        return new GeoDecalComponent();
 	case ANIMATION_COMPONENT:
 	case COLLISION_COMPONENT:
 	case SCRIPT_COMPONENT:
