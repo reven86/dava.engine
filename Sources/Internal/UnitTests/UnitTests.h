@@ -115,16 +115,12 @@
     }                                                                                                                   \
     void testname()
 
-#define TEST_VERIFY(condition)                                                                                              \
-    if (!(condition))                                                                                                       \
-    {                                                                                                                       \
-        DAVA::UnitTests::TestCore::Instance()->TestFailed(DAVA::String(#condition), __FILE__, __LINE__, DAVA::String());    \
-    }
-
 #define TEST_VERIFY_WITH_MESSAGE(condition, message)                                                                            \
     if (!(condition))                                                                                                           \
     {                                                                                                                           \
         DAVA::UnitTests::TestCore::Instance()->TestFailed(DAVA::String(#condition), __FILE__, __LINE__, DAVA::String(message)); \
     }
+
+#define TEST_VERIFY(condition)  TEST_VERIFY_WITH_MESSAGE(condition, DAVA::String())
 
 #endif  // __DAVAENGINE_UNITTESTS_H__
