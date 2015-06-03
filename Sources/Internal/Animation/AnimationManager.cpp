@@ -196,7 +196,7 @@ bool AnimationManager::HasActiveAnimations(AnimatedObject * owner) const
 
 void AnimationManager::Update(float32 timeElapsed)
 {
-	TIME_PROFILE("AnimationManager::Update");
+    TIME_PROFILE("AnimationManager::Update");
 
     DVASSERT(Thread::IsMainThread());
 
@@ -248,13 +248,21 @@ void AnimationManager::Update(float32 timeElapsed)
 				animation->next->state |= Animation::STATE_IN_PROGRESS;
 				animation->next->OnStart();
 			}
-
-			SafeRelease(animation);
-            
-            size = (uint32)animations.size();
-            k--;
 		}
 	}
+
+    //remove all old animations
+    size = (uint32)animations.size();
+    for (uint32 k = 0; k < size; ++k)
+    {
+        Animation * animation = animations[k];
+        if (animation->state & Animation::STATE_DELETE_ME)
+        {
+            SafeRelease(animation);
+            size = (uint32)animations.size();
+            k--;
+        }
+    }
 }
 	
 void AnimationManager::DumpState()
