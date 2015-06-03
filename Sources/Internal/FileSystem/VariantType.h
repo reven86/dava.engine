@@ -68,6 +68,7 @@ public:
     static const String TYPENAME_UINT32;    // "uint32"
     static const String TYPENAME_INT64;     // "int64"
     static const String TYPENAME_UINT64;    // "uint64"
+    static const String TYPENAME_POINTER;   //"Pointer"
 
     static const String TYPENAME_FLOAT;     // "float"
     static const String TYPENAME_STRING;    // "string"
@@ -84,7 +85,7 @@ public:
 	static const String TYPENAME_COLOR;     // "Color"
 	static const String TYPENAME_FASTNAME;     // "FastName"
 	static const String TYPENAME_AABBOX3;     // "AABBox3"
-	static const String TYPENAME_FILEPATH;	// FilePath
+	static const String TYPENAME_FILEPATH;	// "FilePath"
 
 	VariantType();
 	VariantType(const VariantType &value);

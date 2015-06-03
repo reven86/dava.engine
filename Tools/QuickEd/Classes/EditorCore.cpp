@@ -203,12 +203,12 @@ void EditorCore::OpenProject(const QString &path)
     {
         return;
     }
-    Result result;
+    ResultList resultList;
     if (!project->Open(path))
     {
-        result.addError(Result::CriticalError, tr("Error while loading project"));
+        resultList.AddResult(Result::RESULT_ERROR, "Error while loading project");
     }
-    mainWindow->OnProjectOpened(result, path);
+    mainWindow->OnProjectOpened(resultList, path);
 }
 
 bool EditorCore::CloseProject()

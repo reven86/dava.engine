@@ -33,6 +33,9 @@
 #include "Base/BaseTypes.h"
 #include "FileSystem/VariantType.h"
 
+namespace DAVA
+{
+
 struct Result
 {
     enum ResultType 
@@ -41,18 +44,17 @@ struct Result
         RESULT_WARNING,
         RESULT_ERROR
     };
-    enum FinishedType // we need this flag to confirm that action is completely performed
-    {
-        FINISHED_SUCCESS,
-        FINISHED_ALMOST,
-        FINISHED_NOT
-    };
-    Result(ResultType type = RESULT_SUCCESS, const DAVA::String &error = DAVA::String(), const DAVA::VariantType &data = DAVA::VariantType());
+    Result(const ResultType type = RESULT_SUCCESS, const String &error = String(), const VariantType &data = VariantType());
     operator bool() const;
     ResultType type;
-    DAVA::String resultText;
-    DAVA::VariantType data;
+    String resultText;
+    VariantType data;
 };
+
+inline Result::operator bool() const
+{
+    return type == RESULT_SUCCESS;
+}
 
 class ResultList
 {
@@ -62,7 +64,26 @@ public:
     ~ResultList() = default;
     operator bool() const;
     ResultList &AddResult(const Result &result);
+    ResultList &AddResult(const Result::ResultType type = Result::RESULT_SUCCESS, const String &error = String(), const VariantType &data = VariantType());
+    
+    const Deque<Result> &GetResults() const;
+    List<Result::ResultType> GetResultTypes() const;
+    List<String> GetErrors() const;
 private:
-    DAVA::Deque < Result > results;
+    Deque < Result > results;
+    bool allOk;
 };
+
+inline ResultList::operator bool() const
+{
+    return allOk;
+}
+    
+inline const Deque<Result> &ResultList::GetResults() const
+{
+    return results;
+}
+
+
+}
 #endif // QUICKED_RESULT_H_

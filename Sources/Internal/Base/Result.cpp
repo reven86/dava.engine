@@ -29,28 +29,56 @@
 
 #include "result.h"
 
-Result::Result(ResultType type_, const DAVA::String &error_, const DAVA::VariantType &data_)
+using namespace DAVA;
+
+Result::Result(ResultType type_, const DAVA::String &text, const DAVA::VariantType &data_)
     : type(type_)
-    , resultText(resultText)
+    , resultText(text)
     , data(data_)
 {
 }
 
-Result::operator bool() const
+ResultList::ResultList()
+    : allOk(true)
 {
-    return type == RESULT_SUCCESS;
+    
 }
 
-Result Result::addError(Result::ResultType type, const QString &errorText)
+ResultList::ResultList(const Result& result)
+    : allOk(result)
 {
-    types << type;
-    errors << errorText;
+    
+}
+
+ResultList& ResultList::AddResult(const Result &result)
+{
+    allOk &= result;
+    results.push_back(result);
     return *this;
 }
 
-Result Result::addError(const Result &err)
+ResultList& ResultList::AddResult(const Result::ResultType type, const String &error, const VariantType &data)
 {
-    types << err.types;
-    errors << err.errors;
-    return *this;
+    Result result(type, error, data);
+    return AddResult(result);
+}
+
+List<Result::ResultType> ResultList::GetResultTypes() const
+{
+    List<Result::ResultType> resultTypes;
+    for(const auto &result : results)
+    {
+        resultTypes.push_back(result.type);
+    }
+    return resultTypes;
+}
+
+List<String> ResultList::GetErrors() const
+{
+    List<String> errors;
+    for(const auto &result : results)
+    {
+        errors.push_back(result.resultText);
+    }
+    return errors;
 }

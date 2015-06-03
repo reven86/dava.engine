@@ -50,6 +50,8 @@
 #include "Model/YamlPackageSerializer.h"
 #include "Model/EditorUIPackageBuilder.h"
 
+#include "Base/Result.h"
+
 using namespace DAVA;
 
 QtModelPackageCommandExecutor::QtModelPackageCommandExecutor(Document *_document)
@@ -114,14 +116,20 @@ void QtModelPackageCommandExecutor::RemoveComponent(ControlNode *node, uint32 co
     }
 }
 
-void QtModelPackageCommandExecutor::InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex)
+ResultList QtModelPackageCommandExecutor::InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex)
 {
+    ResultList resultList;
     if (dest->CanInsertControl(control, destIndex))
     {
         BeginMacro(Format("Insert Control %s(%s)", control->GetName().c_str(), control->GetClassName().c_str()).c_str());
         InsertControlImpl(control, dest, destIndex);
         EndMacro();
     }
+    else
+    {
+        resultList.AddResult(Result::RESULT_ERROR, "Can not inster control!", VariantType(control));
+    }
+    return resultList;
 }
 
 void QtModelPackageCommandExecutor::CopyControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex)

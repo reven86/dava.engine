@@ -380,9 +380,9 @@ void MainWindow::closeEvent(QCloseEvent *ev)
     ev->ignore();
 }
 
-void MainWindow::OnProjectOpened(Result result, QString projectPath)
+void MainWindow::OnProjectOpened(const ResultList &resultList, QString projectPath)
 {
-    if (result)
+    if (resultList)
     {
         UpdateProjectSettings(projectPath);
 
@@ -393,7 +393,12 @@ void MainWindow::OnProjectOpened(Result result, QString projectPath)
     }
     else
     {
-        QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), result.errors.join('\n'));
+        QStringList errors;
+        for(const auto text : resultList.GetErrors())
+        {
+            errors.push_back(QString::fromStdString(text));
+        }
+        QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), errors.join('\n'));
     }
 }
 

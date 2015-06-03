@@ -31,6 +31,7 @@
 #define __QUICKED_QT_MODEL_PACKAGE_COMMAND_EXECUTOR_H__
 
 #include "Model/PackageCommandExecutor.h"
+#include "Base/Result.h"
 
 #include <QString>
 
@@ -55,7 +56,7 @@ public:
     void AddComponent(ControlNode *node, DAVA::uint32 componentType) override;
     void RemoveComponent(ControlNode *node, DAVA::uint32 componentType, DAVA::uint32 componentIndex) override;
 
-    void InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex) override;
+    DAVA::ResultList InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex) override;
     void CopyControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex) override;
     void MoveControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex) override;
     void RemoveControls(const DAVA::Vector<ControlNode*> &nodes) override;
