@@ -44,7 +44,7 @@ class TestCore final
 {
     struct TestClassInfo
     {
-        TestClassInfo(const char* name, std::unique_ptr<TestClassFactoryBase>&& factory);
+        TestClassInfo(const char* name, TestClassFactoryBase* factory);
         TestClassInfo(TestClassInfo&& other);
         ~TestClassInfo();
 
@@ -72,7 +72,7 @@ public:
     bool ProcessTests(float32 timeElapsed);
 
     void TestFailed(const String& condition, const char* filename, int lineno, const String& userMessage);
-    void RegisterTestClass(const char* name, std::unique_ptr<TestClassFactoryBase>&& factory);
+    void RegisterTestClass(const char* name, TestClassFactoryBase* factory);
 
 private:
     bool IsTestRegistered(const String& testClassName) const;
