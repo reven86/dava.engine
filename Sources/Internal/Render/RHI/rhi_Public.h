@@ -151,8 +151,15 @@ void            UpdateTexture( HTexture tex, const void* data, uint32 level, Tex
 struct
 TextureSetDescriptor
 {
-    uint32  count;
-    HTexture    texture[MAX_TEXTURE_SAMPLER_COUNT];
+    uint32      fragmentTextureCount;
+    HTexture    fragmentTexture[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
+    uint32      vertexTextureCount;
+    HTexture    vertexTexture[MAX_VERTEX_TEXTURE_SAMPLER_COUNT];
+                
+                TextureSetDescriptor()
+                  : fragmentTextureCount(0),
+                    vertexTextureCount(0)
+                {}
 };
 
 HTextureSet     AcquireTextureSet( const TextureSetDescriptor& desc );
@@ -213,8 +220,7 @@ Packet
     HConstBuffer        vertexConst[MAX_CONST_BUFFER_COUNT];
     uint32              fragmentConstCount;
     HConstBuffer        fragmentConst[MAX_CONST_BUFFER_COUNT];
-    HTextureSet         fragmentTextureSet;
-    HTextureSet         vertexTextureSet;
+    HTextureSet         textureSet;
     PrimitiveType       primitiveType;
     uint32              primitiveCount;
     const char*         debugMarker;

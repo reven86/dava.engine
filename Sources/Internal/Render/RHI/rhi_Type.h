@@ -95,10 +95,11 @@ PrimitiveType
 
 enum
 {
-    MAX_CONST_BUFFER_COUNT      = 8,
-    MAX_RENDER_TARGET_COUNT     = 2,
-    MAX_TEXTURE_SAMPLER_COUNT   = 8,
-    MAX_VERTEX_STREAM_COUNT     = 8
+    MAX_CONST_BUFFER_COUNT              = 8,
+    MAX_RENDER_TARGET_COUNT             = 2,
+    MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT  = 8,
+    MAX_VERTEX_TEXTURE_SAMPLER_COUNT    = 2,
+    MAX_VERTEX_STREAM_COUNT             = 4
 };
 
 
@@ -522,11 +523,11 @@ Descriptor
                 {}    
     };
     
-    Sampler sampler[MAX_TEXTURE_SAMPLER_COUNT];
-    uint32  count;
+    Sampler fragmentSampler[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
+    uint32  fragmentSamplerCount;
 
             Descriptor()
-              : count(0)
+              : fragmentSamplerCount(0)
             {}
 };
 

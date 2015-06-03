@@ -412,9 +412,9 @@ bool DFFont::LoadTexture(const FilePath & path)
     }            
 
     rhi::TextureSetDescriptor descriptor;
-    descriptor.count = 1;
-    descriptor.texture[0] = fontTexture->handle;    
-    fontTextureHandler = rhi::AcquireTextureSet(descriptor);
+    descriptor.fragmentTextureCount = 1;
+    descriptor.fragmentTexture[0]   = fontTexture->handle;    
+    fontTextureHandler              = rhi::AcquireTextureSet(descriptor);
 
     return true;
 }

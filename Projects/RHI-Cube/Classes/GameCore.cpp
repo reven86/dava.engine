@@ -232,7 +232,7 @@ GameCore::SetupCube()
 */
     rhi::VertexBuffer::Update( cube.vb, v, 0, sizeof(v) );
 
-    rhi::Texture::Descriptor    tdesc(128,128,rhi::TEXTURE_FORMAT_A8R8G8B8);
+    rhi::Texture::Descriptor    tdesc(128,128,rhi::TEXTURE_FORMAT_R8G8B8A8);
     
 //    tdesc.autoGenMipmaps = true;
     cube.tex = rhi::HTexture(rhi::Texture::Create( tdesc ));
@@ -241,10 +241,10 @@ GameCore::SetupCube()
 
     if( tex )
     {
-//        uint8   color1[4] = { 0xFF, 0xFF, 0xFF, 0xFF };
-//        uint8   color2[4] = { 0x80, 0x80, 0x80, 0xFF };
-        uint8   color1[4] = { 0xFF, 0x00, 0x00, 0xFF };
-        uint8   color2[4] = { 0x80, 0x00, 0x00, 0xFF };
+        uint8   color1[4] = { 0xFF, 0xFF, 0xFF, 0xFF };
+        uint8   color2[4] = { 0x80, 0x80, 0x80, 0xFF };
+//        uint8   color1[4] = { 0xFF, 0x00, 0x00, 0xFF };
+//        uint8   color2[4] = { 0x80, 0x00, 0x00, 0xFF };
         uint32  cell_size = 8;
 
         for( unsigned y=0; y!=128; ++y )
@@ -265,12 +265,12 @@ GameCore::SetupCube()
 
     rhi::SamplerState::Descriptor   sdesc;
     
-    sdesc.count = 1;
-    sdesc.sampler[0].addrU      = rhi::TEXADDR_WRAP;
-    sdesc.sampler[0].addrV      = rhi::TEXADDR_WRAP;
-    sdesc.sampler[0].minFilter  = rhi::TEXFILTER_LINEAR;
-    sdesc.sampler[0].magFilter  = rhi::TEXFILTER_LINEAR;
-    sdesc.sampler[0].mipFilter  = rhi::TEXMIPFILTER_NONE;
+    sdesc.fragmentSamplerCount          = 1;
+    sdesc.fragmentSampler[0].addrU      = rhi::TEXADDR_WRAP;
+    sdesc.fragmentSampler[0].addrV      = rhi::TEXADDR_WRAP;
+    sdesc.fragmentSampler[0].minFilter  = rhi::TEXFILTER_LINEAR;
+    sdesc.fragmentSampler[0].magFilter  = rhi::TEXFILTER_LINEAR;
+    sdesc.fragmentSampler[0].mipFilter  = rhi::TEXMIPFILTER_NONE;
     
     cube.samplerState = rhi::HSamplerState(rhi::SamplerState::Create( sdesc ));
 
@@ -451,7 +451,9 @@ GameCore::SetupCube()
     cube.vb_layout = rhi::VertexLayout::UniqueId( vb_layout );
     cube.vb_layout = rhi::VertexLayout::InvalidUID;
 
-    rhi::TextureSetDescriptor   td = { 1, {cube.tex} };
+    rhi::TextureSetDescriptor   td;
+    td.fragmentTextureCount = 1;
+    td.fragmentTexture[0]   = cube.tex;
     cube.texSet = rhi::AcquireTextureSet( td );
 
     cube_t0     = SystemTimer::Instance()->AbsoluteMS();
@@ -532,7 +534,7 @@ GameCore::SetupRT()
     rtQuad.vp_const[0] = rhi::HConstBuffer(rhi::PipelineState::CreateVertexConstBuffer( rtQuad.ps, 0 ));
     rtQuad.vp_const[1] = rhi::HConstBuffer(rhi::PipelineState::CreateVertexConstBuffer( rtQuad.ps, 1 ));
 
-    rhi::Texture::Descriptor    colorDesc(512,512,rhi::TEXTURE_FORMAT_A8R8G8B8);
+    rhi::Texture::Descriptor    colorDesc(512,512,rhi::TEXTURE_FORMAT_R8G8B8A8);
     rhi::Texture::Descriptor    depthDesc(512,512,rhi::TEXTURE_FORMAT_D16);
     
     colorDesc.isRenderTarget = true;
@@ -541,8 +543,10 @@ GameCore::SetupRT()
     rtDepthStencil  = rhi::Texture::Create( depthDesc );
 
 
-    rhi::TextureSetDescriptor   tsDesc = { 1, {rhi::HTexture(rtColor)} };
-
+    rhi::TextureSetDescriptor   tsDesc;
+    
+    tsDesc.fragmentTextureCount = 1;
+    tsDesc.fragmentTexture[0]   = rhi::HTexture(rtColor);
 
     rtQuadBatch.vertexStreamCount   = 1;
     rtQuadBatch.vertexStream[0]     = rtQuad.vb;
@@ -554,7 +558,7 @@ GameCore::SetupRT()
     rtQuadBatch.renderPipelineState = rtQuad.ps;
     rtQuadBatch.primitiveType       = rhi::PRIMITIVE_TRIANGLELIST;
     rtQuadBatch.primitiveCount      = 2;
-    rtQuadBatch.fragmentTextureSet  = rhi::AcquireTextureSet( tsDesc );
+    rtQuadBatch.textureSet          = rhi::AcquireTextureSet( tsDesc );
 }
 
 
@@ -620,7 +624,7 @@ void GameCore::SetupTank()
         PixelFormat format = img->GetPixelFormat();
         uint32 w = img->GetWidth();
         uint32 h = img->GetHeight();
-        tank.tex = rhi::Texture::Create( rhi::Texture::Descriptor(w,h,rhi::TEXTURE_FORMAT_A8R8G8B8) );
+        tank.tex = rhi::Texture::Create( rhi::Texture::Descriptor(w,h,rhi::TEXTURE_FORMAT_R8G8B8A8) );
         uint8*  tex = (uint8*)(rhi::Texture::Map(tank.tex));
         memcpy(tex, img->GetData(), w*h*4);
         rhi::Texture::Unmap(tank.tex);
@@ -1260,7 +1264,7 @@ SCOPED_NAMED_TIMING("app-draw");
     packet.vertexConst[1]       = cube.vp_const[1];
     packet.fragmentConstCount   = 1;
     packet.fragmentConst[0]     = cube.fp_const;
-    packet.fragmentTextureSet   = cube.texSet;
+    packet.textureSet           = cube.texSet;
     packet.samplerState         = cube.samplerState;
     packet.primitiveType        = rhi::PRIMITIVE_TRIANGLELIST;
     packet.primitiveCount       = 12;
@@ -1281,7 +1285,7 @@ SCOPED_NAMED_TIMING("app-draw");
         {
             for( unsigned i=0; i!=col_cnt; ++i )
             {
-                const uint32 c      = 0xFFFFFFFF;//(z*row_cnt+i+1) * 0x775511; // 0x15015
+                const uint32 c      = (z*row_cnt+i+1) * 0x775511; // 0x15015
                 const uint8* cc     = (const uint8*)(&c);
                 const float  clr2[] = { float(cc[2])/255.0f, float(cc[1])/255.0f, float(cc[0])/255.0f, 1.0f };
 
@@ -1383,7 +1387,7 @@ GameCore::rtDraw()
     packet.vertexConst[1]       = cube.vp_const[1];
     packet.fragmentConstCount   = 1;
     packet.fragmentConst[0]     = cube.fp_const;
-    packet.fragmentTextureSet   = cube.texSet;
+    packet.textureSet           = cube.texSet;
     packet.primitiveType        = rhi::PRIMITIVE_TRIANGLELIST;
     packet.primitiveCount       = 12;
 

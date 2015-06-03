@@ -692,7 +692,7 @@ void RenderSystem2D::Flush()
         //packet.clip = clip; //RHI_COMPLETE
 
         batch.material->BindParams(packet);
-        packet.fragmentTextureSet = batch.textureSetHandle;
+        packet.textureSet = batch.textureSetHandle;
 
         rhi::AddPacket(renderTargetWidth ? packetListTargetHandle : packetList2DHandle, packet);
     }
