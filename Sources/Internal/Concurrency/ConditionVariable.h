@@ -38,7 +38,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #elif defined(__DAVAENGINE_WINDOWS__)
 #   include "Platform/TemplateWin32/pThreadWin32.h"
 #else
-#   inclide <pthread.h>
+#   include <pthread.h>
 #endif
 
 namespace DAVA
@@ -62,7 +62,7 @@ public:
 
     //mutex must be unlocked
     template <typename Predicate>
-    void Wait(Mutex& guard, Predicate pred);
+    void Wait(Mutex& mutex, Predicate pred);
     void Wait(Mutex& mutex);
 
     void NotifyOne();
@@ -87,7 +87,7 @@ void ConditionVariable::Wait(LockGuard<Mutex>& guard, Predicate pred)
 }
 
 template <typename Predicate>
-void ConditionVariable::Wait(Mutex& guard, Predicate pred)
+void ConditionVariable::Wait(Mutex& mutex, Predicate pred)
 {
     LockGuard<Mutex> lock(mutex);
     Wait(lock, pred);
@@ -111,8 +111,9 @@ inline void ConditionVariable::Wait(LockGuard<Mutex>& guard)
 {
     if (guard.OwnsLock())
     {
-        std::unique_lock<std::mutex> lock(guard.mutex_ptr->mutex, std::defer_lock_t());
+        std::unique_lock<std::mutex> lock(guard.mutex_ptr->mutex, std::adopt_lock_t());
         cv.wait(lock);
+        lock.release();
     }
     else
     {

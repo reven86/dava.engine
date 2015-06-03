@@ -90,6 +90,9 @@ public:
 
     // return true if this object owns the lock
     bool OwnsLock() DAVA_NOEXCEPT;
+    
+    // release the mutex
+    MutexType* Release() DAVA_NOEXCEPT;
 
 private:
     MutexType *mutex_ptr;
@@ -178,6 +181,15 @@ template<class MutexT>
 bool LockGuard<MutexT>::OwnsLock() DAVA_NOEXCEPT
 {
     return owns;
+}
+
+template<class MutexT>
+typename LockGuard<MutexT>::MutexType* LockGuard<MutexT>::Release() DAVA_NOEXCEPT
+{
+    MutexType* mtx = mutex_ptr;
+    mutex_ptr = nullptr;
+    owns = false;
+    return mtx;
 }
 
 } //  namespace DAVA

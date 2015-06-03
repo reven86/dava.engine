@@ -34,8 +34,8 @@
 
 #if defined(__DAVAENGINE_IPHONE__)
 
-#include "Platform/Mutex.h"
-#include "Thread/LockGuard.h"
+#include "Concurrency/Mutex.h"
+#include "Concurrency/LockGuard.h"
 
 #import <UIKit/UIKit.h>
 

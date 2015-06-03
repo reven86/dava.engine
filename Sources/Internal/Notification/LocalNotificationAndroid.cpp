@@ -34,7 +34,7 @@
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
-#include "Thread/LockGuard.h"
+#include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {

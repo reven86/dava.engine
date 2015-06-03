@@ -35,7 +35,6 @@
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include <jni.h>
-#include "Platform/Mutex.h"
 
 namespace DAVA
 {

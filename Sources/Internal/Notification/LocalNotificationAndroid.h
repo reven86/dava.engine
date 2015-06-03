@@ -38,7 +38,7 @@
 #include "Notification/LocalNotificationImpl.h"
 #include "Platform/TemplateAndroid/JniExtensions.h"
 #include "Base/Message.h"
-#include "Platform/Mutex.h"
+#include "Concurrency/Mutex.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA

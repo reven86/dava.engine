@@ -36,7 +36,7 @@
 #elif defined(__DAVAENGINE_WINDOWS__)
 #   include "Platform/TemplateWin32/pThreadWin32.h"
 #else
-#   inclide <pthread.h>
+#   include <pthread.h>
 #endif
 
 namespace DAVA
