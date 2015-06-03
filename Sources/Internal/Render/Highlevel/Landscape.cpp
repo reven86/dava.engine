@@ -144,7 +144,11 @@ Landscape::Landscape()
     zoomGeometryAngleError = geometryAngleError;
     zoomAbsHeightError = 0.5f;
     
+    zoomFov = 6.5f;
+    normalFov = 70.0f;
+    
     isDebugDraw = false;
+    isRequireTangentBasis = false;
 }
 
 Landscape::~Landscape()
@@ -162,7 +166,7 @@ int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
     DVASSERT(quad->size <= RENDER_QUAD_WIDTH - 1);
     
     uint32 vertexSize = sizeof(LandscapeVertex);
-    if (landscapeQuality != LANDSCAPE_QUALITY_VALUE_HIGH)
+    if (!isRequireTangentBasis)
     {
         vertexSize -= sizeof(Vector3); // (LandscapeVertex::normal);
         vertexSize -= sizeof(Vector3); // (LandscapeVertex::tangent);
@@ -681,7 +685,7 @@ void Landscape::ReallocateLandscape()
     ReleaseLandscape();
  
     landscapeQuality = QualitySettingsSystem::Instance()->GetCurMaterialQuality(LANDSCAPE_QUALITY_NAME);
-
+    isRequireTangentBasis = (landscapeQuality == LANDSCAPE_QUALITY_VALUE_HIGH);
     
     uint32 heightmapSizeMinus1 = heightmap->Size() - 1;
     uint32 maxLevels = FastLog2(heightmapSizeMinus1 / PATCH_QUAD_COUNT) + 1;
@@ -983,7 +987,7 @@ void Landscape::Draw(Camera * drawCamera)
 
 //    memset(testMatrix, sizeof(testMatrix), 0);
 
-    float32 fovLerp = Clamp((camera->GetFOV() - 6.5f) /  (70.0f - 6.5f), 0.0f, 1.0f);
+    float32 fovLerp = Clamp((camera->GetFOV() - zoomFov) /  (normalFov - zoomFov), 0.0f, 1.0f);
     fovSolidAngleError = zoomSolidAngleError + (solidAngleError - zoomSolidAngleError) * fovLerp;
     fovGeometryAngleError = zoomGeometryAngleError + (geometryAngleError - zoomGeometryAngleError) * fovLerp;
     fovAbsHeightError = zoomAbsHeightError + (absHeightError - zoomAbsHeightError) * fovLerp;

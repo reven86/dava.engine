@@ -413,9 +413,13 @@ protected:
     float32 fovGeometryAngleError;
     float32 fovAbsHeightError;
     
+    float32 zoomFov;
+    float32 normalFov;
+    
     bool    isDebugDraw;
     
     FastName landscapeQuality;
+    bool isRequireTangentBasis;
     FastName LANDSCAPE_QUALITY_NAME;
     FastName LANDSCAPE_QUALITY_VALUE_HIGH;
 public:
