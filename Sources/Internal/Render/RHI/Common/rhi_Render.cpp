@@ -13,8 +13,10 @@ namespace rhi
 struct
 TextureSet_t
 {
-    uint32  textureCount;
-    Handle  texture[MAX_TEXTURE_SAMPLER_COUNT];
+    uint32  fragmentTextureCount;
+    Handle  fragmentTexture[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
+    uint32  vertexTextureCount;
+    Handle  vertexTexture[MAX_VERTEX_TEXTURE_SAMPLER_COUNT];
     int     refCount;
 };
 
@@ -59,8 +61,7 @@ PacketList_t
 
     Handle      curPipelineState;
     uint32      curVertexLayout;
-    Handle      curFragmentTextureSet;
-    Handle      curVertexTextureSet;
+    Handle      curTextureSet;
     Handle      curSamplerState;
     Handle      curDepthStencilState;
     CullMode    curCullMode;
@@ -320,8 +321,10 @@ AcquireTextureSet( const TextureSetDescriptor& desc )
 
     for( std::vector<TextureSetInfo>::const_iterator i=_TextureSetInfo.begin(),i_end=_TextureSetInfo.end(); i!=i_end; ++i )
     {
-        if(     i->desc.count == desc.count 
-            &&  memcmp( i->desc.texture, desc.texture, desc.count*sizeof(Handle) ) == 0
+        if(     i->desc.fragmentTextureCount == desc.fragmentTextureCount 
+            &&  i->desc.vertexTextureCount == desc.vertexTextureCount
+            &&  memcmp( i->desc.fragmentTexture, desc.fragmentTexture, desc.fragmentTextureCount*sizeof(Handle) ) == 0
+            &&  memcmp( i->desc.vertexTexture, desc.vertexTexture, desc.vertexTextureCount*sizeof(Handle) ) == 0
           )
         {
             TextureSet_t*   ts  = TextureSetPool::Get( i->handle );
@@ -340,9 +343,11 @@ AcquireTextureSet( const TextureSetDescriptor& desc )
         TextureSet_t*   ts  = TextureSetPool::Get( handle );
         TextureSetInfo  info;
 
-        ts->refCount     = 1;
-        ts->textureCount = desc.count;
-        memcpy( ts->texture, desc.texture, desc.count*sizeof(Handle) );
+        ts->refCount             = 1;
+        ts->fragmentTextureCount = desc.fragmentTextureCount;
+        ts->vertexTextureCount   = desc.vertexTextureCount;
+        memcpy( ts->fragmentTexture, desc.fragmentTexture, desc.fragmentTextureCount*sizeof(Handle) );
+        memcpy( ts->vertexTexture, desc.vertexTexture, desc.vertexTextureCount*sizeof(Handle) );
         
         info.desc   = desc;
         info.handle = handle;
@@ -612,15 +617,14 @@ BeginPacketList( HPacketList packetList )
     {
         rhi::SamplerState::Descriptor   desc;
 
-        desc.count = rhi::MAX_TEXTURE_SAMPLER_COUNT;        
-        def_ss     = rhi::SamplerState::Create( desc );
+        desc.fragmentSamplerCount = rhi::MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT;
+        def_ss                    = rhi::SamplerState::Create( desc );
     }
     
 
     pl->curPipelineState      = InvalidHandle;
     pl->curVertexLayout       = rhi::VertexLayout::InvalidUID;
-    pl->curFragmentTextureSet = InvalidHandle;
-    pl->curVertexTextureSet   = InvalidHandle;
+    pl->curTextureSet         = InvalidHandle;
     pl->defDepthStencilState  = def_ds;
     pl->defSamplerState       = def_ss;
 
@@ -727,34 +731,23 @@ AddPackets( HPacketList packetList, const Packet* packet, uint32 packetCount )
             rhi::CommandBuffer::SetFragmentConstBuffer( cmdBuf, i, p->fragmentConst[i] );
         }
 
-        if( p->fragmentTextureSet != pl->curFragmentTextureSet )
+        if( p->textureSet != pl->curTextureSet )
         {
-            TextureSet_t*   ts  = TextureSetPool::Get( p->fragmentTextureSet );
+            TextureSet_t*   ts  = TextureSetPool::Get( p->textureSet );
 
             if( ts )
             {
-                for( unsigned i=0; i!=ts->textureCount; ++i )
+                for( unsigned i=0; i!=ts->fragmentTextureCount; ++i )
                 {
-                    rhi::CommandBuffer::SetFragmentTexture( cmdBuf, i, ts->texture[i] );
+                    rhi::CommandBuffer::SetFragmentTexture( cmdBuf, i, ts->fragmentTexture[i] );
+                }
+                for( unsigned i=0; i!=ts->vertexTextureCount; ++i )
+                {
+                    rhi::CommandBuffer::SetVertexTexture( cmdBuf, i, ts->vertexTexture[i] );
                 }
             }                                                
 
-            pl->curFragmentTextureSet = p->fragmentTextureSet;
-        }
-        
-        if( p->vertexTextureSet != pl->curVertexTextureSet )
-        {
-            TextureSet_t*   ts  = TextureSetPool::Get( p->vertexTextureSet );
-
-            if( ts )
-            {
-                for( unsigned i=0; i!=ts->textureCount; ++i )
-                {
-                    rhi::CommandBuffer::SetVertexTexture( cmdBuf, i, ts->texture[i] );
-                }
-            }
-
-            pl->curVertexTextureSet = p->vertexTextureSet;
+            pl->curTextureSet = p->textureSet;
         }
 
         if( p->indexBuffer != InvalidHandle )

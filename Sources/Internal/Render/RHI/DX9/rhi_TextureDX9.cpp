@@ -276,13 +276,13 @@ dx9_Texture_Map( Handle tex, unsigned level, TextureFace face )
         }
     }
 
-    if( self->format == TEXTURE_FORMAT_A8R8G8B8 )
+    if( self->format == TEXTURE_FORMAT_R8G8B8A8 )
     {
         Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
         
         _SwapRB8( self->mappedData, ext.dx*ext.dy*sizeof(uint32) );
     }
-    else if( self->format == TEXTURE_FORMAT_A4R4G4B4 )
+    else if( self->format == TEXTURE_FORMAT_R4G4B4A4 )
     {
         Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
         
@@ -302,13 +302,13 @@ dx9_Texture_Unmap( Handle tex )
 
     DVASSERT(self->isMapped);
 
-    if( self->format == TEXTURE_FORMAT_A8R8G8B8 )
+    if( self->format == TEXTURE_FORMAT_R8G8B8A8 )
     {
         Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
         
         _SwapRB8( self->mappedData, ext.dx*ext.dy*sizeof(uint32) );
     }
-    else if( self->format == TEXTURE_FORMAT_A4R4G4B4 )
+    else if( self->format == TEXTURE_FORMAT_R4G4B4A4 )
     {
         Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
         

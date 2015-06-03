@@ -18,7 +18,7 @@ struct
 SamplerStateMetal_t
 {
     uint32              count;
-    id<MTLSamplerState> uid[MAX_TEXTURE_SAMPLER_COUNT];
+    id<MTLSamplerState> uid[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
 };
 
 typedef Pool<SamplerStateMetal_t,RESOURCE_SAMPLER_STATE>    SamplerStateMetalPool;
@@ -78,17 +78,17 @@ metal_SamplerState_Create( const SamplerState::Descriptor& desc )
     Handle                  handle  = SamplerStateMetalPool::Alloc();
     SamplerStateMetal_t*    state   = SamplerStateMetalPool::Get( handle );
     
-    state->count = desc.count;
-    for( unsigned s=0; s!=desc.count; ++s )
+    state->count = desc.fragmentSamplerCount;
+    for( unsigned s=0; s!=desc.fragmentSamplerCount; ++s )
     {
         MTLSamplerDescriptor*   s_desc = [MTLSamplerDescriptor new];
         
-        s_desc.sAddressMode          = _AddrMode( TextureAddrMode(desc.sampler[s].addrU) );
-        s_desc.tAddressMode          = _AddrMode( TextureAddrMode(desc.sampler[s].addrV) );
-        s_desc.rAddressMode          = _AddrMode( TextureAddrMode(desc.sampler[s].addrW) );
-        s_desc.minFilter             = _TextureFilter( TextureFilter(desc.sampler[s].minFilter) );
-        s_desc.magFilter             = _TextureFilter( TextureFilter(desc.sampler[s].magFilter) );
-        s_desc.mipFilter             = _TextureMipFilter( TextureMipFilter(desc.sampler[s].mipFilter) );
+        s_desc.sAddressMode          = _AddrMode( TextureAddrMode(desc.fragmentSampler[s].addrU) );
+        s_desc.tAddressMode          = _AddrMode( TextureAddrMode(desc.fragmentSampler[s].addrV) );
+        s_desc.rAddressMode          = _AddrMode( TextureAddrMode(desc.fragmentSampler[s].addrW) );
+        s_desc.minFilter             = _TextureFilter( TextureFilter(desc.fragmentSampler[s].minFilter) );
+        s_desc.magFilter             = _TextureFilter( TextureFilter(desc.fragmentSampler[s].magFilter) );
+        s_desc.mipFilter             = _TextureMipFilter( TextureMipFilter(desc.fragmentSampler[s].mipFilter) );
         s_desc.lodMinClamp           = 0.0f;
         s_desc.lodMaxClamp           = FLT_MAX;
         s_desc.maxAnisotropy         = 1;

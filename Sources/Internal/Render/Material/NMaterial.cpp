@@ -56,7 +56,6 @@ RenderVariantInstance::~RenderVariantInstance()
 {    
     rhi::ReleaseDepthStencilState(depthState);
     rhi::ReleaseTextureSet(textureSet);
-    rhi::ReleaseTextureSet(vertexTextureSet);
     rhi::ReleaseSamplerState(samplerState);    
 }
 
@@ -100,8 +99,7 @@ void NMaterial::BindParams(rhi::Packet& target)
     target.renderPipelineState = activeVariantInstance->shader->GetPiplineState();
     target.depthStencilState = activeVariantInstance->depthState;
     target.samplerState = activeVariantInstance->samplerState;
-    target.fragmentTextureSet = activeVariantInstance->textureSet;
-    target.vertexTextureSet = activeVariantInstance->vertexTextureSet;
+    target.textureSet = activeVariantInstance->textureSet;
     target.cullMode = activeVariantInstance->cullMode;
 
     activeVariantInstance->shader->UpdateDynamicParams();
@@ -571,7 +569,6 @@ void NMaterial::RebuildTextureBindings()
         
         //release existing        
         rhi::ReleaseTextureSet(currRenderVariant->textureSet);        
-        rhi::ReleaseTextureSet(currRenderVariant->vertexTextureSet);
         rhi::ReleaseSamplerState(currRenderVariant->samplerState);
         
 
@@ -580,9 +577,9 @@ void NMaterial::RebuildTextureBindings()
             continue;
         rhi::TextureSetDescriptor textureDescr;        
         rhi::SamplerState::Descriptor samplerDescr;
-        textureDescr.count = currShader->fragmentSamplerList.size();       
-        samplerDescr.count = currShader->fragmentSamplerList.size();
-        for (size_t i = 0, sz = textureDescr.count; i < sz; ++i)
+        textureDescr.fragmentTextureCount = currShader->fragmentSamplerList.size();       
+        samplerDescr.fragmentSamplerCount = currShader->fragmentSamplerList.size();
+        for (size_t i = 0, sz = textureDescr.fragmentTextureCount; i < sz; ++i)
         {       
             DynamicBindings::eTextureSemantic textureSemantic = DynamicBindings::GetTextureSemanticByName(currShader->fragmentSamplerList[i].uid);
             if (textureSemantic == DynamicBindings::TEXTURE_STATIC)
@@ -596,28 +593,29 @@ void NMaterial::RebuildTextureBindings()
                 }
                     
                 DVASSERT(tex);
-                textureDescr.texture[i] = tex->handle;
-                samplerDescr.sampler[i] = tex->samplerState;                
+                textureDescr.fragmentTexture[i] = tex->handle;
+                samplerDescr.fragmentSampler[i] = tex->samplerState;                
             }
             else
             {
-                textureDescr.texture[i] = Renderer::GetDynamicBindings().GetDynamicTexture(textureSemantic);
-                samplerDescr.sampler[i] = Renderer::GetDynamicBindings().GetDynamicTextureSamplerState(textureSemantic);
+                textureDescr.fragmentTexture[i] = Renderer::GetDynamicBindings().GetDynamicTexture(textureSemantic);
+                samplerDescr.fragmentSampler[i] = Renderer::GetDynamicBindings().GetDynamicTextureSamplerState(textureSemantic);
             }
-            DVASSERT(textureDescr.texture[i].IsValid());                        
+            DVASSERT(textureDescr.fragmentTexture[i].IsValid());                        
         }
-        currRenderVariant->textureSet = rhi::AcquireTextureSet(textureDescr);
-        currRenderVariant->samplerState = rhi::AcquireSamplerState(samplerDescr);
 
-        rhi::TextureSetDescriptor vertexTextureDescr;
-        vertexTextureDescr.count = currShader->vertexSamplerList.size();
-        for (size_t i = 0, sz = vertexTextureDescr.count; i < sz; ++i)
+
+        textureDescr.vertexTextureCount = currShader->vertexSamplerList.size();
+        for (size_t i = 0, sz = textureDescr.vertexTextureCount; i < sz; ++i)
         {
             Texture *tex = GetEffectiveTexture(currShader->vertexSamplerList[i].uid);
             DVASSERT(tex);
-            vertexTextureDescr.texture[i] = tex->handle;
+            textureDescr.vertexTexture[i] = tex->handle;
         }                            
-        currRenderVariant->vertexTextureSet = rhi::AcquireTextureSet(vertexTextureDescr);
+
+
+        currRenderVariant->textureSet = rhi::AcquireTextureSet(textureDescr);
+        currRenderVariant->samplerState = rhi::AcquireSamplerState(samplerDescr);
     }
 
     needRebuildTextures = false;

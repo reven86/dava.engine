@@ -215,7 +215,7 @@ gles2_Texture_Map( Handle tex, unsigned level, TextureFace face )
         }
     }
     
-    if( self->format == TEXTURE_FORMAT_A4R4G4B4 )
+    if( self->format == TEXTURE_FORMAT_R4G4B4A4 )
     {
         Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
         
@@ -240,7 +240,7 @@ gles2_Texture_Unmap( Handle tex )
     GetGLTextureFormat( self->format, &int_fmt, &fmt, &type );
 
     DVASSERT(self->isMapped);
-    if( self->format == TEXTURE_FORMAT_A4R4G4B4 )
+    if( self->format == TEXTURE_FORMAT_R4G4B4A4 )
     {
         Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
         
@@ -275,7 +275,7 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
     GetGLTextureFormat( self->format, &int_fmt, &fmt, &type );
     
     DVASSERT(!self->isMapped);
-    if( self->format == TEXTURE_FORMAT_A4R4G4B4 )
+    if( self->format == TEXTURE_FORMAT_R4G4B4A4 )
     {
         Size2i  ext = TextureExtents( Size2i(self->width,self->height), level );
         
@@ -304,7 +304,7 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
 struct
 SamplerStateGLES2_t
 {
-    SamplerState::Descriptor::Sampler   sampler[MAX_TEXTURE_SAMPLER_COUNT];
+    SamplerState::Descriptor::Sampler   sampler[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
     uint32                              count;
 };
 
@@ -321,10 +321,10 @@ gles2_SamplerState_Create( const SamplerState::Descriptor& desc )
     Handle                  handle = SamplerStateGLES2Pool::Alloc();
     SamplerStateGLES2_t*    state  = SamplerStateGLES2Pool::Get( handle );
     
-    state->count = desc.count;
-    for( unsigned i=0; i!=desc.count; ++i )    
+    state->count = desc.fragmentSamplerCount;
+    for( unsigned i=0; i!=desc.fragmentSamplerCount; ++i )    
     {
-        state->sampler[i] = desc.sampler[i];
+        state->sampler[i] = desc.fragmentSampler[i];
     }
 
     return handle;
