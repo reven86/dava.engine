@@ -47,6 +47,7 @@
 #include "Base/Hash.h"
 #include "Debug/DVAssert.h"
 #include "Platform/Thread.h"
+#include "Math/MathHelpers.h"
 
 #include "MemoryManager/MallocHook.h"
 #include "MemoryManager/MemoryManager.h"
@@ -97,34 +98,16 @@ struct MemoryManager::AllocScopeItem
 //////////////////////////////////////////////////////////////////////////
 
 MMItemName MemoryManager::tagNames[MAX_TAG_COUNT];
-
-MMItemName MemoryManager::allocPoolNames[MAX_ALLOC_POOL_COUNT] = {
-    { "total"          },
-    { "default"        },
-    { "gpu texture"    },
-    { "gpu rdo vertex" },
-    { "gpu rdo index"  },
-    { "system"         },
-    { "fmod"           },
-    { "bullet"         },
-    { "base object"    },
-    { "polygon group"  },
-    { "render dataobj" },
-    { "component"      },
-    { "entity"         },
-    { "landscape"      },
-    { "image"          },
-    { "texture"        }
-};
+MMItemName MemoryManager::allocPoolNames[MAX_ALLOC_POOL_COUNT];
 
 size_t MemoryManager::registeredTagCount = 0;
-size_t MemoryManager::registeredAllocPoolCount = PREDEF_POOL_COUNT;
+size_t MemoryManager::registeredAllocPoolCount = 0;
 
 void MemoryManager::RegisterAllocPoolName(uint32 index, const char8* name)
 {
     DVASSERT(name != nullptr && 0 < strlen(name) && strlen(name) < MMItemName::MAX_NAME_LENGTH);
-    DVASSERT(FIRST_CUSTOM_ALLOC_POOL <= index && index < MAX_ALLOC_POOL_COUNT);
-    DVASSERT(allocPoolNames[index - 1].name[0] != '\0');     // Names should be registered sequentially with no gap
+    DVASSERT(index < MAX_ALLOC_POOL_COUNT);
+    DVASSERT(0 == index || allocPoolNames[index - 1].name[0] != '\0');  // Names should be registered sequentially with no gap
 
     strncpy(allocPoolNames[index].name, name, MMItemName::MAX_NAME_LENGTH);
     allocPoolNames[index].name[MMItemName::MAX_NAME_LENGTH - 1] = '\0';
@@ -136,7 +119,7 @@ void MemoryManager::RegisterTagName(uint32 tagMask, const char8* name)
     DVASSERT(name != nullptr && 0 < strlen(name) && strlen(name) < MMItemName::MAX_NAME_LENGTH);
     DVASSERT(tagMask != 0 && IsPowerOf2(tagMask));
 
-    const size_t index = BitIndex(tagMask);
+    const size_t index = HighestBitIndex(tagMask);
     DVASSERT(index < MAX_TAG_COUNT);
     DVASSERT(0 == index || tagNames[index - 1].name[0] != '\0');     // Names should be registered sequentially with no gap
 
@@ -146,9 +129,25 @@ void MemoryManager::RegisterTagName(uint32 tagMask, const char8* name)
 }
 
 //////////////////////////////////////////////////////////////////////////
-MemoryManager::MemoryManager() {}
-
-MemoryManager::~MemoryManager() {}
+MemoryManager::MemoryManager()
+{
+    RegisterAllocPoolName(ALLOC_POOL_TOTAL, "total");
+    RegisterAllocPoolName(ALLOC_POOL_DEFAULT, "default");
+    RegisterAllocPoolName(ALLOC_GPU_TEXTURE, "gpu texture");
+    RegisterAllocPoolName(ALLOC_GPU_RDO_VERTEX, "gpu rdo vertex");
+    RegisterAllocPoolName(ALLOC_GPU_RDO_INDEX, "gpu rdo index");
+    RegisterAllocPoolName(ALLOC_POOL_SYSTEM, "system");
+    RegisterAllocPoolName(ALLOC_POOL_FMOD, "fmod");
+    RegisterAllocPoolName(ALLOC_POOL_BULLET, "bullet");
+    RegisterAllocPoolName(ALLOC_POOL_BASEOBJECT, "base object");
+    RegisterAllocPoolName(ALLOC_POOL_POLYGONGROUP, "polygon group");
+    RegisterAllocPoolName(ALLOC_POOL_RENDERDATAOBJECT, "render dataobj");
+    RegisterAllocPoolName(ALLOC_POOL_COMPONENT, "component");
+    RegisterAllocPoolName(ALLOC_POOL_ENTITY, "entity");
+    RegisterAllocPoolName(ALLOC_POOL_LANDSCAPE, "landscape");
+    RegisterAllocPoolName(ALLOC_POOL_IMAGE, "image");
+    RegisterAllocPoolName(ALLOC_POOL_TEXTURE, "texture");
+}
 
 MemoryManager* MemoryManager::Instance()
 {
@@ -345,7 +344,7 @@ void MemoryManager::Deallocate(void* ptr)
             // Tracked memory blocks are distinguished by special mark in header.
             // In some cases, especially on iOS, memory allocations bypass memory manager, but memory freeing goes through
             // memory manager. So I need to erase header to properly free bypassed allocations as system can allocate memory at the same address
-            block->mark = 0xECECECEC;
+            block->mark = DEAD_BLOCK_MARK;
             ptrToFree = block->realBlockStart;
         }
         else
@@ -397,7 +396,7 @@ void MemoryManager::InternalDeallocate(void* ptr) DAVA_NOEXCEPT
         }
 
         // Clear mark of deallocated block
-        block->mark = 0xECECECEC;
+        block->mark = DEAD_BLOCK_MARK;
         MallocHook::Free(block);
     }
 }
@@ -405,11 +404,6 @@ void MemoryManager::InternalDeallocate(void* ptr) DAVA_NOEXCEPT
 uint32 MemoryManager::GetSystemMemoryUsage() const
 {
 #if defined(__DAVAENGINE_WIN32__)
-    //PROCESS_MEMORY_COUNTERS counters;
-    //if (GetProcessMemoryInfo(GetCurrentProcess(), &counters, sizeof(counters)))
-    //{
-    //    return static_cast<uint32>(counters.WorkingSetSize);
-    //}
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     struct task_basic_info info;
     mach_msg_type_number_t size = sizeof(info);
@@ -912,12 +906,13 @@ bool MemoryManager::GetMemorySnapshot(FILE* file, uint64 curTimestamp, size_t* s
                 size_t k = 0;
                 for (;k < BLOCKS_IN_BUF && i < n;++k, ++i)
                 {
-                    blocks[k].orderNo = curBlock->orderNo;
-                    blocks[k].allocByApp = curBlock->allocByApp;
-                    blocks[k].allocTotal = curBlock->allocTotal;
-                    blocks[k].bktraceHash = curBlock->bktraceHash;
-                    blocks[k].pool = curBlock->pool;
-                    blocks[k].tags = curBlock->tags;
+                    MMBlock& dstBlock = blocks[k];
+                    dstBlock.orderNo = curBlock->orderNo;
+                    dstBlock.allocByApp = curBlock->allocByApp;
+                    dstBlock.allocTotal = curBlock->allocTotal;
+                    dstBlock.bktraceHash = curBlock->bktraceHash;
+                    dstBlock.pool = curBlock->pool;
+                    dstBlock.tags = curBlock->tags;
 
                     curBlock = curBlock->next;
                 }
@@ -936,9 +931,10 @@ bool MemoryManager::GetMemorySnapshot(FILE* file, uint64 curTimestamp, size_t* s
                     void* addr = i->first;
                     auto& name = i->second;
 
-                    symbols[k].addr = reinterpret_cast<uint64>(addr);
-                    strncpy(symbols[k].name, name.c_str(), MMSymbol::NAME_LENGTH);
-                    symbols[k].name[MMSymbol::NAME_LENGTH - 1] = '\0';
+                    MMSymbol& dstSymbol = symbols[k];
+                    dstSymbol.addr = reinterpret_cast<uint64>(addr);
+                    strncpy(dstSymbol.name, name.c_str(), MMSymbol::NAME_LENGTH);
+                    dstSymbol.name[MMSymbol::NAME_LENGTH - 1] = '\0';
                 }
                 fwrite(buffer, sizeof(MMSymbol), k, file);
             }
@@ -973,7 +969,8 @@ bool MemoryManager::GetMemorySnapshot(FILE* file, uint64 curTimestamp, size_t* s
 
 void MemoryManager::SymbolCollectorThread(BaseObject*, void*, void*)
 {
-    const size_t BUF_CAPACITY = 1000;
+    const size_t BUF_CAPACITY = 1000;   // Select some reasonable buffer for backtraces
+                                        // to give some job to symbol collector
     Backtrace* bktraceBuf = new Backtrace[BUF_CAPACITY];
 
     for (;;)

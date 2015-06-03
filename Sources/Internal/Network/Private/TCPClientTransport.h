@@ -43,7 +43,12 @@ namespace Net
 class IOLoop;
 class TCPClientTransport : public IClientTransport
 {
-    static const uint32 DEFAULT_READ_TIMEOUT = 5 * 1000 * 100;
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+    // Increase read timeout when memory profiling enabled to reduce connection breaks on timeout
+    static const uint32 DEFAULT_READ_TIMEOUT = 5 * 1000 * 10;   // Timeout in ms
+#else
+    static const uint32 DEFAULT_READ_TIMEOUT = 5 * 1000;        // Timeout in ms
+#endif
     static const uint32 RESTART_DELAY_PERIOD = 3000;
 
 public:

@@ -61,6 +61,41 @@ class MMNetServer : public NetService
             , header(static_cast<MMNetProto::PacketHeader*>(buffer))
             , data(static_cast<void*>(header + 1))
         {}
+        ParcelEx(ParcelEx&& other)
+            : bufferSize(other.bufferSize)
+            , buffer(other.buffer)
+            , header(other.header)
+            , data(other.data)
+        {
+            other.bufferSize = 0;
+            other.buffer = nullptr;
+            other.header = nullptr;
+            other.data = nullptr;
+        }
+        ParcelEx& operator = (ParcelEx&& other)
+        {
+            if (this != &other)
+            {
+                ::operator delete(buffer);
+
+                bufferSize = other.bufferSize;
+                buffer = other.buffer;
+                header = other.header;
+                data = other.data;
+
+                other.bufferSize = 0;
+                other.buffer = nullptr;
+                other.header = nullptr;
+                other.data = nullptr;
+            }
+            return *this;
+        }
+        ParcelEx(const ParcelEx& other) = delete;
+        ParcelEx& operator = (const ParcelEx&) = delete;
+        ~ParcelEx()
+        {
+            ::operator delete(buffer);
+        }
 
         size_t bufferSize;
         void* buffer;
@@ -112,8 +147,8 @@ private:
     void AutoReplyStat(uint64 curTimestamp);
     void FastReply(uint16 type, uint16 status);
 
-    void EnqueueParcel(const ParcelEx& parcel);
-    void SendParcel(ParcelEx& parcel);
+    void EnqueueParcel(ParcelEx& parcel);
+    void SendParcel(const ParcelEx& parcel);
     
     void Cleanup();
     void CleanupSnapshot(bool erase);

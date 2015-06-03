@@ -107,7 +107,9 @@ static_assert(sizeof(MMBacktrace) == 8, "sizeof(MMBacktrace) != 8");
 */
 struct MMSymbol
 {
-    static const size_t NAME_LENGTH = 136;
+    static const size_t NAME_LENGTH = 136;  // Reasons to select 136 as name length:
+                                            //  - make struct size to be multiple of 16
+                                            //  - allow to store long enough symbol name
     uint64 addr;
     char8 name[NAME_LENGTH];
 };

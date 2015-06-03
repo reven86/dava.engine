@@ -59,6 +59,7 @@ class MemoryManager final
 {
     static const uint32 BLOCK_MARK = 0xBA0BAB;
     static const uint32 INTERNAL_BLOCK_MARK = 0x55AACC11;
+    static const uint32 DEAD_BLOCK_MARK = 0xECECECEC;
     static const size_t BLOCK_ALIGN = 16;
     static const size_t BACKTRACE_DEPTH = 32;
 
@@ -95,9 +96,6 @@ public:
     void* Reallocate(void* ptr, size_t newSize);
     void Deallocate(void* ptr);
     
-    void* InternalAllocate(size_t size) DAVA_NOEXCEPT;
-    void InternalDeallocate(void* ptr) DAVA_NOEXCEPT;
-
     void EnterTagScope(uint32 tag);
     void LeaveTagScope(uint32 tag);
 
@@ -121,12 +119,20 @@ public:
 private:
     // Make construtor and destructor private to disallow external creation of MemoryManager
     MemoryManager();
-    ~MemoryManager();
+    ~MemoryManager() = default;
 
     MemoryManager(const MemoryManager&) = delete;
     MemoryManager& operator = (const MemoryManager&) = delete;
     MemoryManager(MemoryManager&&) = delete;
     MemoryManager& operator = (MemoryManager&&) = delete;
+
+    // Methods for memory allocating for internal data structures
+    void* InternalAllocate(size_t size) DAVA_NOEXCEPT;
+    void InternalDeallocate(void* ptr) DAVA_NOEXCEPT;
+
+    // Make these functions friends to allow access to InternalAllocate and InternalDeallocate methods
+    friend void* InternalAlloc(size_t size) DAVA_NOEXCEPT;
+    friend void InternalDealloc(void* ptr) DAVA_NOEXCEPT;
 
 private:
     void InsertBlock(MemoryBlock* block);
@@ -143,11 +149,6 @@ private:
 
     DAVA_NOINLINE void CollectBacktrace(Backtrace* backtrace, size_t nskip);
     void ObtainBacktraceSymbols(const Backtrace* backtrace);
-
-    template<typename T>
-    static size_t BitIndex(T value);
-    template<typename T>
-    static bool IsPowerOf2(T value);
 
     uint64 PackGPUKey(uint32 id, uint32 allocPool) const;
 
@@ -197,25 +198,6 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-template<typename T>
-inline size_t MemoryManager::BitIndex(T value)
-{
-    static_assert(std::is_integral<T>::value, "BitIndex works only with integral types");
-    size_t index = 0;
-    for (value -= 1;value != 0;++index)
-    {
-        value >>= 1;
-    }
-    return index;
-}
-
-template<typename T>
-inline bool MemoryManager::IsPowerOf2(T value)
-{
-    static_assert(std::is_integral<T>::value, "IsPowerOf2 works only with integral types");
-    return (value & (value - 1)) == 0;
-}
-
 inline uint64 MemoryManager::PackGPUKey(uint32 id, uint32 allocPool) const
 {
     return static_cast<uint64>(id) | (static_cast<uint64>(allocPool) << 32);

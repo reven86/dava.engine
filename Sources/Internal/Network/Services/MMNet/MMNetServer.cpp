@@ -149,7 +149,7 @@ void MMNetServer::ProcessRequestSnapshot(const MMNetProto::PacketHeader* inHeade
         {
             lastManualSnapshotTimestamp = curTimestamp;
             status = GetAndSaveSnapshot(curTimestamp - timerBegin) ? MMNetProto::STATUS_SUCCESS
-                                                               : MMNetProto::STATUS_BUSY;
+                                                                   : MMNetProto::STATUS_BUSY;
         }
     }
     FastReply(MMNetProto::TYPE_REPLY_SNAPSHOT, status);
@@ -188,25 +188,17 @@ void MMNetServer::PacketDelivered()
 {
     DVASSERT(!queue.empty());
 
-    ParcelEx parcel = queue.front();
+    ParcelEx parcel = std::move(queue.front());
     queue.pop_front();
     
     if (parcel.header->type == MMNetProto::TYPE_REPLY_TOKEN)
     {
         tokenRequested = true;
-        ::operator delete(parcel.buffer);
-    }
-    else if (parcel.header->type == MMNetProto::TYPE_REPLY_SNAPSHOT)
-    {
-        ::operator delete(parcel.buffer);
-    }
-    else if (parcel.header->type == MMNetProto::TYPE_AUTO_STAT)
-    {
-        ::operator delete(parcel.buffer);
     }
     else if (parcel.header->type == MMNetProto::TYPE_AUTO_SNAPSHOT)
     {
         UpdateSnapshotProgress(parcel);
+        snapshotParcel = std::move(parcel); // Do not free buffer used for sending memory snapshot
     }
 
     if (!queue.empty())
@@ -219,30 +211,23 @@ void MMNetServer::PacketDelivered()
     }
 }
 
-void MMNetServer::EnqueueParcel(const ParcelEx& parcel)
+void MMNetServer::EnqueueParcel(ParcelEx& parcel)
 {
     bool wasEmpty = queue.empty();
-    queue.push_back(parcel);
+    queue.emplace_back(std::forward<ParcelEx>(parcel));
     if (wasEmpty)
     {
         SendParcel(queue.front());
     }
 }
 
-void MMNetServer::SendParcel(ParcelEx& parcel)
+void MMNetServer::SendParcel(const ParcelEx& parcel)
 {
     Send(parcel.buffer, parcel.header->length);
 }
 
 void MMNetServer::Cleanup()
 {
-    for (auto& parcel : queue)
-    {
-        if (parcel.header->type != MMNetProto::TYPE_AUTO_SNAPSHOT)
-        {
-            ::operator delete(parcel.buffer);
-        }
-    }
     queue.clear();
     CleanupSnapshot(false);
 }
@@ -271,7 +256,7 @@ void MMNetServer::UpdateSnapshotProgress(const ParcelEx& parcel)
     bool transferDone = true;
     if (parcel.header->status == MMNetProto::STATUS_SUCCESS)
     {
-        const MMNetProto::PacketParamSnapshot* param = static_cast<const MMNetProto::PacketParamSnapshot*>(snapshotParcel.data);
+        const MMNetProto::PacketParamSnapshot* param = static_cast<const MMNetProto::PacketParamSnapshot*>(parcel.data);
         curSnapshotInfo->bytesTransferred += param->chunkSize;
         
         transferDone = curSnapshotInfo->bytesTransferred == curSnapshotInfo->fileSize;

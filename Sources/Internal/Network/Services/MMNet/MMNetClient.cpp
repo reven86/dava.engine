@@ -190,10 +190,10 @@ void MMNetClient::FastRequest(uint16 type)
     EnqueueParcel(parcel);
 }
 
-void MMNetClient::EnqueueParcel(const ParcelEx& parcel)
+void MMNetClient::EnqueueParcel(ParcelEx& parcel)
 {
     bool wasEmpty = queue.empty();
-    queue.push_back(parcel);
+    queue.emplace_back(std::forward<ParcelEx>(parcel));
     if (wasEmpty)
     {
         SendParcel(queue.front());
@@ -207,10 +207,6 @@ void MMNetClient::SendParcel(ParcelEx& parcel)
 
 void MMNetClient::Cleanup()
 {
-    for (auto& parcel : queue)
-    {
-        ::operator delete(parcel.buffer);
-    }
     queue.clear();
 }
 
@@ -218,10 +214,8 @@ void MMNetClient::PacketDelivered()
 {
     DVASSERT(!queue.empty());
     
-    ParcelEx parcel = queue.front();
+    ParcelEx parcel = std::move(queue.front());
     queue.pop_front();
-    
-    ::operator delete(parcel.buffer);
     
     if (!queue.empty())
     {

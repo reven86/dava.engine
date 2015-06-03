@@ -471,7 +471,7 @@ void Core::SystemProcessFrame()
     
     // Poll for network I/O events here, not depending on Core active flag
     Net::NetCore::Instance()->Poll();
-
+    // Give memory profiler chance to notify its subscribers about new frame
     DAVA_MEMORY_PROFILER_UPDATE();
     
 	if (!core) return;
