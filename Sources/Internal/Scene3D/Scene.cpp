@@ -720,7 +720,7 @@ void Scene::Draw()
     }
     else
     {
-        Color defShadowColor(1.f, 0.f, 0.f, 1.f);
+        static Color defShadowColor(1.f, 0.f, 0.f, 1.f);
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR, defShadowColor.color, (pointer_size)this);
     }
     

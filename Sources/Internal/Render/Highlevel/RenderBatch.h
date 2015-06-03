@@ -164,7 +164,7 @@ public:
 
         MEMBER(startIndex, "Start Index", I_SAVE)
         MEMBER(indexCount, "Index Count", I_SAVE)
-        MEMBER(primitiveType, "Type", I_SAVE | I_VIEW | I_EDIT)
+//        MEMBER(primitiveType, "Type", I_SAVE | I_VIEW | I_EDIT) RHI_COMPLETE
                          
         MEMBER(aabbox, "AABBox",  I_SAVE | I_VIEW | I_EDIT )
         MEMBER(material, "Material", I_VIEW | I_EDIT)

@@ -39,6 +39,7 @@
 #include "Render/2D/TextBlock.h"
 #include "UI/UIList.h"
 #include "UI/UITextField.h"
+#include "UI/Components/UIComponent.h"
 
 using namespace DAVA;
 
@@ -49,7 +50,7 @@ ENUM_DECLARE(eGPUFamily)
 	ENUM_ADD_DESCR(GPU_TEGRA, "tegra");
 	ENUM_ADD_DESCR(GPU_MALI, "mali");
 	ENUM_ADD_DESCR(GPU_ADRENO, "adreno");
-	ENUM_ADD_DESCR(GPU_PNG, "PNG");
+	ENUM_ADD_DESCR(GPU_ORIGIN, "origin");
 }
 
 ENUM_DECLARE(PixelFormat)
@@ -261,6 +262,32 @@ ENUM_DECLARE(UITextField::eReturnKeyType)
     ENUM_ADD_DESCR(UITextField::RETURN_KEY_YAHOO         , "RETURN_KEY_YAHOO"         );
     ENUM_ADD_DESCR(UITextField::RETURN_KEY_DONE          , "RETURN_KEY_DONE"          );
     ENUM_ADD_DESCR(UITextField::RETURN_KEY_EMERGENCY_CALL, "RETURN_KEY_EMERGENCY_CALL");
+};
+
+ENUM_DECLARE(UIComponent::eType)
+{
+    ENUM_ADD_DESCR(UIComponent::FAKE_COMPONENT       , "Fake"       );
+    ENUM_ADD_DESCR(UIComponent::FAKE_MULTI_COMPONENT       , "FakeMultiple"       );
+};
+
+ENUM_DECLARE(rhi::TextureAddrMode)
+{
+    ENUM_ADD(rhi::TEXADDR_WRAP);
+    ENUM_ADD(rhi::TEXADDR_CLAMP);
+    ENUM_ADD(rhi::TEXADDR_MIRROR);
+};
+
+ENUM_DECLARE(rhi::TextureFilter)
+{
+    ENUM_ADD(rhi::TEXFILTER_NEAREST);
+    ENUM_ADD(rhi::TEXFILTER_LINEAR);
+};
+
+ENUM_DECLARE(rhi::TextureMipFilter)
+{
+    ENUM_ADD(rhi::TEXMIPFILTER_NONE);
+    ENUM_ADD(rhi::TEXMIPFILTER_NEAREST);
+    ENUM_ADD(rhi::TEXMIPFILTER_LINEAR);
 };
 
 /*

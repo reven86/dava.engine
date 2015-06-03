@@ -30,7 +30,6 @@
 
 #include "DAVAEngine.h"
 
-#include <QFileDialog>
 #include <QMessageBox>
 #include <QDesktopServices>
 #include <QColorDialog>
@@ -60,7 +59,6 @@
 #include "../ImageSplitterDialog/ImageSplitterDialog.h"
 
 #include "Tools/BaseAddEntityDialog/BaseAddEntityDialog.h"
-#include "Tools/QtFileDialog/QtFileDialog.h"
 
 #ifdef __DAVAENGINE_SPEEDTREE__
 #include "Classes/Qt/SpeedTreeImport/SpeedTreeImportDialog.h"
@@ -122,6 +120,7 @@
 
 #include "Tools/HeightDeltaTool/HeightDeltaTool.h"
 #include "Tools/ColorPicker/ColorPicker.h"
+#include "Tools/PathDescriptor/PathDescriptor.h"
 #include "Settings/SettingsManager.h"
 
 #include "SceneProcessing/SceneProcessor.h"
@@ -133,6 +132,7 @@
 #include "Scene3D/Components/Controller/WASDControllerComponent.h"
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
 
+#include "QtTools/FileDialog/FileDialog.h"
 
 QtMainWindow::QtMainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -147,6 +147,8 @@ QtMainWindow::QtMainWindow(QWidget *parent)
     , recentFiles(Settings::General_RecentFilesCount, Settings::Internal_RecentFiles)
     , recentProjects(Settings::General_RecentProjectsCount, Settings::Internal_RecentProjects)
 {
+    PathDescriptor::InitializePathDescriptors();
+    
 	new ProjectManager();
 	ui->setupUi(this);
     
@@ -283,7 +285,7 @@ bool QtMainWindow::SaveSceneAs(SceneEditor2 *scene)
 			saveAsPath = dataSourcePath.MakeDirectoryPathname() + scene->GetScenePath().GetFilename();
 		}
 
-		QString selectedPath = QtFileDialog::getSaveFileName(this, "Save scene as", saveAsPath.GetAbsolutePathname().c_str(), "DAVA Scene V2 (*.sc2)");
+		QString selectedPath = FileDialog::getSaveFileName(this, "Save scene as", saveAsPath.GetAbsolutePathname().c_str(), "DAVA Scene V2 (*.sc2)");
 		if(!selectedPath.isEmpty())
 		{
 			DAVA::FilePath scenePath = DAVA::FilePath(selectedPath.toStdString());
@@ -471,8 +473,9 @@ void QtMainWindow::SetupToolBars()
 	redoBtn->setPopupMode(QToolButton::MenuButtonPopup);
 
 	// modification widget
-	modificationWidget = new ModificationWidget(NULL);
+	modificationWidget = new ModificationWidget(nullptr);
 	ui->modificationToolBar->insertWidget(ui->actionModifyReset, modificationWidget);
+    connect( ui->actionModifySnapToLandscape, &QAction::triggered, modificationWidget, &ModificationWidget::OnSnapToLandscapeChanged );
 
 	// adding reload textures actions
 	{
@@ -548,30 +551,22 @@ void QtMainWindow::SetupStatusBar()
 
 	QObject::connect(this, SIGNAL(GlobalInvalidateTimeout()), ui->statusBar, SLOT(UpdateByTimer()));
 
-	QToolButton *gizmoStatusBtn = new QToolButton();
-	gizmoStatusBtn->setDefaultAction(ui->actionShowEditorGizmo);
-	gizmoStatusBtn->setAutoRaise(true);
-	gizmoStatusBtn->setMaximumSize(QSize(16, 16));
-	ui->statusBar->insertPermanentWidget(0, gizmoStatusBtn);
 
-    QToolButton *lighmapCanvasStatusBtn = new QToolButton();
-    lighmapCanvasStatusBtn->setDefaultAction(ui->actionLightmapCanvas);
-    lighmapCanvasStatusBtn->setAutoRaise(true);
-    lighmapCanvasStatusBtn->setMaximumSize(QSize(16, 16));
-    ui->statusBar->insertPermanentWidget(0, lighmapCanvasStatusBtn);
-
-	QToolButton *onSceneSelectStatusBtn = new QToolButton();
-	onSceneSelectStatusBtn->setDefaultAction(ui->actionOnSceneSelection);
-	onSceneSelectStatusBtn->setAutoRaise(true);
-	onSceneSelectStatusBtn->setMaximumSize(QSize(16, 16));
-	ui->statusBar->insertPermanentWidget(0, onSceneSelectStatusBtn);
-
-    QToolButton *staticOcclusionStatusBtn = new QToolButton();
-    staticOcclusionStatusBtn->setDefaultAction(ui->actionShowStaticOcclusion);
-    staticOcclusionStatusBtn->setAutoRaise(true);
-    staticOcclusionStatusBtn->setMaximumSize(QSize(16, 16));
-    ui->statusBar->insertPermanentWidget(0, staticOcclusionStatusBtn);
-
+    auto CreateStatusBarButton = [](QAction *action, QStatusBar *statusBar)
+    {
+        auto *statusBtn = new QToolButton();
+        statusBtn->setDefaultAction(action);
+        statusBtn->setAutoRaise(true);
+        statusBtn->setMaximumSize(QSize(16, 16));
+        statusBar->insertPermanentWidget(0, statusBtn);
+    };
+    
+    CreateStatusBarButton(ui->actionShowEditorGizmo, ui->statusBar);
+    CreateStatusBarButton(ui->actionLightmapCanvas, ui->statusBar);
+    CreateStatusBarButton(ui->actionOnSceneSelection, ui->statusBar);
+    CreateStatusBarButton(ui->actionShowStaticOcclusion, ui->statusBar);
+    CreateStatusBarButton(ui->actionEnableDisableShadows, ui->statusBar);
+    
 	QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Resized(int, int, int)), ui->statusBar, SLOT(OnSceneGeometryChaged(int, int, int)));
 }
 
@@ -611,29 +606,30 @@ void QtMainWindow::SetupDocks()
 void QtMainWindow::SetupActions()
 {
 	// scene file actions
-	QObject::connect(ui->actionOpenProject, SIGNAL(triggered()), this, SLOT(OnProjectOpen()));
-    QObject::connect(ui->actionCloseProject, SIGNAL(triggered()), this, SLOT(OnProjectClose()));
-	QObject::connect(ui->actionOpenScene, SIGNAL(triggered()), this, SLOT(OnSceneOpen()));
-	QObject::connect(ui->actionNewScene, SIGNAL(triggered()), this, SLOT(OnSceneNew()));
-	QObject::connect(ui->actionSaveScene, SIGNAL(triggered()), this, SLOT(OnSceneSave()));
-	QObject::connect(ui->actionSaveSceneAs, SIGNAL(triggered()), this, SLOT(OnSceneSaveAs()));
-	QObject::connect(ui->actionSaveToFolder, SIGNAL(triggered()), this, SLOT(OnSceneSaveToFolder()));
+	QObject::connect(ui->actionOpenProject, &QAction::triggered, this, &QtMainWindow::OnProjectOpen);
+    QObject::connect(ui->actionCloseProject, &QAction::triggered, this, &QtMainWindow::OnProjectClose);
+	QObject::connect(ui->actionOpenScene, &QAction::triggered, this, &QtMainWindow::OnSceneOpen);
+	QObject::connect(ui->actionNewScene, &QAction::triggered, this, &QtMainWindow::OnSceneNew);
+	QObject::connect(ui->actionSaveScene, &QAction::triggered, this, &QtMainWindow::OnSceneSave);
+	QObject::connect(ui->actionSaveSceneAs, &QAction::triggered, this, &QtMainWindow::OnSceneSaveAs);
+    QObject::connect(ui->actionOnlyOriginalTextures, &QAction::triggered, this, &QtMainWindow::OnSceneSaveToFolder);
+    QObject::connect(ui->actionWithCompressedTextures, &QAction::triggered, this, &QtMainWindow::OnSceneSaveToFolderCompressed);
 
     QObject::connect(ui->menuFile, &QMenu::triggered, this, &QtMainWindow::OnRecentFilesTriggered);
     QObject::connect(ui->menuRecentProjects, &QMenu::triggered, this, &QtMainWindow::OnRecentProjectsTriggered);
 
 	// export
-	QObject::connect(ui->menuExport, SIGNAL(triggered(QAction *)), this, SLOT(ExportMenuTriggered(QAction *)));
+	QObject::connect(ui->menuExport, &QMenu::triggered, this, &QtMainWindow::ExportMenuTriggered);
     ui->actionExportPVRIOS->setData(GPU_POWERVR_IOS);
 	ui->actionExportPVRAndroid->setData(GPU_POWERVR_ANDROID);
 	ui->actionExportTegra->setData(GPU_TEGRA);
 	ui->actionExportMali->setData(GPU_MALI);
 	ui->actionExportAdreno->setData(GPU_ADRENO);
-	ui->actionExportPNG->setData(GPU_PNG);
+	ui->actionExportPNG->setData(GPU_ORIGIN);
 	
 	// import
 #ifdef __DAVAENGINE_SPEEDTREE__
-    QObject::connect(ui->actionImportSpeedTreeXML, SIGNAL(triggered()), this, SLOT(OnImportSpeedTreeXML()));
+    QObject::connect(ui->actionImportSpeedTreeXML, &QAction::triggered, this, &QtMainWindow::OnImportSpeedTreeXML);
 #endif //__DAVAENGINE_SPEEDTREE__
 
 	// reload
@@ -642,7 +638,7 @@ void QtMainWindow::SetupActions()
 	ui->actionReloadTegra->setData(GPU_TEGRA);
 	ui->actionReloadMali->setData(GPU_MALI);
 	ui->actionReloadAdreno->setData(GPU_ADRENO);
-	ui->actionReloadPNG->setData(GPU_PNG);
+	ui->actionReloadPNG->setData(GPU_ORIGIN);
 
     QActionGroup *reloadGroup = new QActionGroup(this);
     QList<QAction *> reloadActions = ui->menuTexturesForGPU->actions();
@@ -665,6 +661,8 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionOnSceneSelection, SIGNAL(toggled(bool)), this, SLOT(OnAllowOnSceneSelectionToggle(bool)));
     QObject::connect(ui->actionShowStaticOcclusion, SIGNAL(toggled(bool)), this, SLOT(OnShowStaticOcclusionToggle(bool)));
 
+    QObject::connect(ui->actionEnableDisableShadows, &QAction::toggled, this, &QtMainWindow::OnEnableDisableShadows);
+    
 	// scene undo/redo
 	QObject::connect(ui->actionUndo, SIGNAL(triggered()), this, SLOT(OnUndo()));
 	QObject::connect(ui->actionRedo, SIGNAL(triggered()), this, SLOT(OnRedo()));
@@ -729,7 +727,7 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->menuDynamicShadowBlendMode, SIGNAL(aboutToShow()), this, SLOT(OnShadowBlendModeWillShow()));
 
     
-	QObject::connect(ui->actionSaveHeightmapToPNG, SIGNAL(triggered()), this, SLOT(OnSaveHeightmapToPNG()));
+	QObject::connect(ui->actionSaveHeightmapToPNG, SIGNAL(triggered()), this, SLOT(OnSaveHeightmapToImage()));
 	QObject::connect(ui->actionSaveTiledTexture, SIGNAL(triggered()), this, SLOT(OnSaveTiledTexture()));
 	
 	QObject::connect(ui->actionConvertModifiedTextures, SIGNAL(triggered()), this, SLOT(OnConvertModifiedTextures()));
@@ -909,7 +907,8 @@ void QtMainWindow::EnableSceneActions(bool enable)
 
 	ui->actionSaveScene->setEnabled(enable);
 	ui->actionSaveSceneAs->setEnabled(enable);
-	ui->actionSaveToFolder->setEnabled(enable);
+    ui->actionOnlyOriginalTextures->setEnabled(enable);
+	ui->actionWithCompressedTextures->setEnabled(enable);
 
 	ui->actionModifySelect->setEnabled(enable);
 	ui->actionModifyMove->setEnabled(enable);
@@ -1071,7 +1070,7 @@ void QtMainWindow::OnSceneNew()
 
 void QtMainWindow::OnSceneOpen()
 {
-	QString path = QtFileDialog::getOpenFileName(this, "Open scene file", ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname().c_str(), "DAVA Scene V2 (*.sc2)");
+	QString path = FileDialog::getOpenFileName(this, "Open scene file", ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname().c_str(), "DAVA Scene V2 (*.sc2)");
 	OpenScene(path);
 }
 
@@ -1105,46 +1104,63 @@ void QtMainWindow::OnSceneSaveAs()
 
 void QtMainWindow::OnSceneSaveToFolder()
 {
-	if (!IsSavingAllowed())
-	{
-		return;
-	}
-
-	SceneEditor2* scene = GetCurrentScene();
-	if(!scene) return;
-
-	FilePath scenePathname = scene->GetScenePath();
-	if(scenePathname.IsEmpty() || scenePathname.GetType() == FilePath::PATH_IN_MEMORY || !scene->IsLoaded())
-	{
-		ShowErrorDialog("Can't save not saved scene.");
-		return;
-	}
-
-	QString path = QtFileDialog::getExistingDirectory(NULL, QString("Open Folder"), QString("/"));
-	if(path.isEmpty())
-		return;
-
-
-	WaitStart("Save with Children", "Please wait...");
-
-
-	FilePath folder = PathnameToDAVAStyle(path);
-	folder.MakeDirectoryPathname();
-
-	SceneSaver sceneSaver;
-	sceneSaver.SetInFolder(scene->GetScenePath().GetDirectory());
-	sceneSaver.SetOutFolder(folder);
-
-	Set<String> errorsLog;
-
-	SceneEditor2 *sceneForSaving = scene->CreateCopyForExport();
-	sceneSaver.SaveScene(sceneForSaving, scene->GetScenePath(), errorsLog);
-	sceneForSaving->Release();
-
-	WaitStop();
-
-	ShowErrorDialog(errorsLog);
+    OnSceneSaveAsInternal(false);
 }
+
+void QtMainWindow::OnSceneSaveToFolderCompressed()
+{
+    OnSceneSaveAsInternal(true);
+}
+
+void QtMainWindow::OnSceneSaveAsInternal(bool saveWithCompressed)
+{
+    if (!IsSavingAllowed())
+    {
+        return;
+    }
+    
+    SceneEditor2* scene = GetCurrentScene();
+    if(nullptr == scene)
+    {
+        return;
+    }
+    
+    auto scenePathname = scene->GetScenePath();
+    if(scenePathname.IsEmpty() || scenePathname.GetType() == FilePath::PATH_IN_MEMORY || !scene->IsLoaded())
+    {
+        ShowErrorDialog("Can't save not saved scene.");
+        return;
+    }
+    
+    QString path = FileDialog::getExistingDirectory(NULL, QString("Open Folder"), QString("/"));
+    if(path.isEmpty())
+    {
+        return;
+    }
+    
+    
+    WaitStart("Save with Children", "Please wait...");
+    
+    
+    FilePath folder = PathnameToDAVAStyle(path);
+    folder.MakeDirectoryPathname();
+    
+    SceneSaver sceneSaver;
+    sceneSaver.SetInFolder(scene->GetScenePath().GetDirectory());
+    sceneSaver.SetOutFolder(folder);
+    sceneSaver.EnableCopyConverted(saveWithCompressed);
+    
+    Set<String> errorsLog;
+    
+    SceneEditor2 *sceneForSaving = scene->CreateCopyForExport();
+    sceneSaver.SaveScene(sceneForSaving, scene->GetScenePath(), errorsLog);
+    sceneForSaving->Release();
+    
+    WaitStop();
+    
+    ShowErrorDialog(errorsLog);
+}
+
 
 void QtMainWindow::OnCloseTabRequest(int tabIndex, Request *closeRequest)
 {
@@ -1314,6 +1330,11 @@ void QtMainWindow::OnAllowOnSceneSelectionToggle(bool allow)
 void QtMainWindow::OnShowStaticOcclusionToggle(bool show)
 {
     Renderer::GetOptions()->SetOption(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION, show);
+}
+
+void QtMainWindow::OnEnableDisableShadows(bool enable)
+{
+    Renderer::GetOptions()->SetOption(RenderOptions::SHADOWVOLUME_DRAW, enable);
 }
 
 void QtMainWindow::OnReloadTextures()
@@ -1738,7 +1759,7 @@ void QtMainWindow::On2DSpriteDialog()
     FilePath projectPath = ProjectManager::Instance()->CurProjectPath();
     projectPath += "Data/Gfx/";
 
-    QString filePath = QtFileDialog::getOpenFileName(NULL, QString("Open sprite"), QString::fromStdString(projectPath.GetAbsolutePathname()), QString("Sprite File (*.txt)"));
+    QString filePath = FileDialog::getOpenFileName(NULL, QString("Open sprite"), QString::fromStdString(projectPath.GetAbsolutePathname()), QString("Sprite File (*.txt)"));
     if (filePath.isEmpty())
         return;        
     filePath.remove(filePath.size() - 4, 4);
@@ -1797,6 +1818,9 @@ void QtMainWindow::LoadViewState(SceneEditor2 *scene)
      
         bool viewLMCanvas = SettingsManager::GetValue(Settings::Internal_MaterialsShowLightmapCanvas).AsBool();
         ui->actionLightmapCanvas->setChecked(viewLMCanvas);
+        
+        auto options = Renderer::GetOptions();
+        ui->actionEnableDisableShadows->setChecked(options->IsOptionEnabled(RenderOptions::SHADOWVOLUME_DRAW));
 	}
 }
 
@@ -1951,7 +1975,7 @@ void QtMainWindow::OnShadowBlendModeMultiply()
 	scene->Exec(new ChangeDynamicShadowModeCommand(scene));
 }
 
-void QtMainWindow::OnSaveHeightmapToPNG()
+void QtMainWindow::OnSaveHeightmapToImage()
 {
 	if (!IsSavingAllowed())
 	{
@@ -1976,12 +2000,12 @@ void QtMainWindow::OnSaveHeightmapToPNG()
 	
     Heightmap * heightmap = landscape->GetHeightmap();
     FilePath heightmapPath = landscape->GetHeightmapPathname();
-    FilePath requestedPngPath = FilePath::CreateWithNewExtension(heightmapPath, ".png");
 
-    QString selectedPath = QtFileDialog::getSaveFileName(this, "Save heightmap as", requestedPngPath.GetAbsolutePathname().c_str(), "PGN Image (*.png)");
+    QString selectedPath = FileDialog::getSaveFileName(this, "Save heightmap as", heightmapPath.GetAbsolutePathname().c_str(),
+                                                         PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
     if(selectedPath.isEmpty()) return;
 
-    requestedPngPath = DAVA::FilePath(selectedPath.toStdString());
+    FilePath requestedPngPath = DAVA::FilePath(selectedPath.toStdString());
     heightmap->SaveToImage(requestedPngPath);
 }
 
@@ -2014,9 +2038,9 @@ void QtMainWindow::OnSaveTiledTexture()
 		if (pathToSave.IsEmpty())
 		{
 			FilePath scenePath = scene->GetScenePath().GetDirectory();
-			QString selectedPath = QtFileDialog::getSaveFileName(this, "Save landscape texture as",
+			QString selectedPath = FileDialog::getSaveFileName(this, "Save landscape texture as",
 														 scenePath.GetAbsolutePathname().c_str(),
-														 "PGN Image (*.png)");
+														 PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 			if (selectedPath.isEmpty())
 			{
 				SafeRelease(landscapeTexture);
@@ -2306,10 +2330,10 @@ bool QtMainWindow::SelectCustomColorsTexturePath()
 	}
 	FilePath scenePath = sceneEditor->GetScenePath().GetDirectory();
 	
-	QString filePath = QtFileDialog::getSaveFileName(NULL,
+	QString filePath = FileDialog::getSaveFileName(NULL,
 													 QString(ResourceEditor::CUSTOM_COLORS_SAVE_CAPTION.c_str()),
 													 QString(scenePath.GetAbsolutePathname().c_str()),
-													 QString(ResourceEditor::CUSTOM_COLORS_FILE_FILTER.c_str()));
+													 PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 	FilePath selectedPathname = PathnameToDAVAStyle(filePath);
 	Entity* landscape = FindLandscapeEntity(sceneEditor);
 	if (selectedPathname.IsEmpty() || NULL == landscape)
@@ -2786,7 +2810,8 @@ void QtMainWindow::UpdateConflictingActionsState(bool enable)
 	ui->menuTexturesForGPU->setEnabled(enable);
 	ui->actionReloadTextures->setEnabled(enable);
 	ui->menuExport->setEnabled(enable);
-    ui->actionSaveToFolder->setEnabled(enable);
+    ui->actionOnlyOriginalTextures->setEnabled(enable);
+    ui->actionWithCompressedTextures->setEnabled(enable);
 }
 
 void QtMainWindow::DiableUIForFutureUsing()
@@ -2849,7 +2874,7 @@ void QtMainWindow::OnAddPathEntity()
 
 bool QtMainWindow::LoadAppropriateTextureFormat()
 {
-	if (GetGPUFormat() != GPU_PNG)
+	if (GetGPUFormat() != GPU_ORIGIN)
 	{
 		int answer = ShowQuestion("Inappropriate texture format",
 								  "Landscape editing is only allowed in PNG texture format.\nDo you want to reload textures in PNG format?",
@@ -2862,7 +2887,7 @@ bool QtMainWindow::LoadAppropriateTextureFormat()
 		OnReloadTexturesTriggered(ui->actionReloadPNG);
 	}
 
-	return (GetGPUFormat() == GPU_PNG);
+	return (GetGPUFormat() == GPU_ORIGIN);
 }
 
 bool QtMainWindow::IsTilemaskModificationCommand(const Command2* cmd)

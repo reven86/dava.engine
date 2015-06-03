@@ -74,7 +74,7 @@ namespace DAVA
     renderToTexture(false)
     {
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-        BackgroundView* backgroundView = [appDelegate glController].backgroundView;
+        BackgroundView* backgroundView = [appDelegate renderViewController].backgroundView;
         
         UITextFieldHolder * textFieldHolder= [backgroundView CreateTextField];
         [textFieldHolder setTextField:&davaTextField];
@@ -87,7 +87,7 @@ namespace DAVA
         [textFieldHolder setTextField:(DAVA::UITextField *)nil];
         
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-        BackgroundView* backgroundView = [appDelegate glController].backgroundView;
+        BackgroundView* backgroundView = [appDelegate renderViewController].backgroundView;
 
         [backgroundView ReleaseTextField:textFieldHolder];
         

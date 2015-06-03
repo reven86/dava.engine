@@ -56,6 +56,10 @@ RenderPass::RenderPass(const FastName & _name) : passName(_name)
     passConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     passConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     passConfig.priority = PRIORITY_MAIN_3D;
+    passConfig.viewport[0] = 0;
+    passConfig.viewport[1] = 0;
+    passConfig.viewport[2] = Renderer::GetFramebufferWidth();
+    passConfig.viewport[3] = Renderer::GetFramebufferHeight();
 }
 
 RenderPass::~RenderPass()

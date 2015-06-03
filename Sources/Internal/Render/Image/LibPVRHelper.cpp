@@ -93,7 +93,7 @@ LibPVRHelper::LibPVRHelper()
     supportedExtensions.push_back(".pvr");
 }
 
-bool LibPVRHelper::IsImage(DAVA::File *file) const
+bool LibPVRHelper::IsMyImage(DAVA::File *file) const
 {
     bool isPvrFile = false;
 
@@ -149,6 +149,7 @@ DAVA::ImageInfo LibPVRHelper::GetImageInfo(File *infile) const
         info.height = pvrFile->header.u32Height;
         info.format = GetTextureFormat(pvrFile->header);
         info.dataSize = infile->GetSize() - (PVRTEX3_HEADERSIZE + pvrFile->header.u32MetaDataSize);
+        info.mipmapsCount = pvrFile->header.u32MIPMapCount;
 
         delete pvrFile;
     }

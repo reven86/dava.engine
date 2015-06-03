@@ -43,11 +43,32 @@
 
 #include "Components/UIComponent.h"
 #include "Components/UIControlFamily.h"
+#include "Thread/LockGuard.h"
 
 namespace DAVA
 {
+    static Mutex controlsListMutex;
+    static Vector<const UIControl *> controlsList;//weak pointers
+
+    static void StartControlTracking(const UIControl *control)
+    {
+#if defined(__DAVAENGINE_DEBUG__)
+        LockGuard<Mutex> lock(controlsListMutex);
+        controlsList.push_back(control);
+#endif
+    }
+
+    static void StopControlTracking(const UIControl *control)
+    {
+#if defined(__DAVAENGINE_DEBUG__)
+        LockGuard<Mutex> lock(controlsListMutex);
+        controlsList.erase(find(controlsList.begin(), controlsList.end(), control));
+#endif
+    }
+
     UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/) : family(nullptr)
     {
+        StartControlTracking(this);
         UpdateFamily();
 
         parent = NULL;
@@ -112,6 +133,7 @@ namespace DAVA
         RemoveAllControls();
         RemoveAllComponents();
         UIControlFamily::Release(family);
+        StopControlTracking(this);
     }
 
     void UIControl::SetParent(UIControl *newParent)
@@ -1101,17 +1123,18 @@ namespace DAVA
         inputEnabled = srcControl->inputEnabled;
         clipContents = srcControl->clipContents;
 
-        customClassName = srcControl->GetCustomControlClassName();
         initialState = srcControl->GetInitialState();
         drawPivotPointMode = srcControl->drawPivotPointMode;
         debugDrawColor = srcControl->debugDrawColor;
         debugDrawEnabled = srcControl->debugDrawEnabled;
 
         SafeRelease(eventDispatcher);
-        if(srcControl->eventDispatcher)
+        if (srcControl->eventDispatcher != nullptr && srcControl->eventDispatcher->GetEventsCount() != 0)
         {
-            eventDispatcher = new EventDispatcher();
-            eventDispatcher->CopyDataFrom(srcControl->eventDispatcher);
+            Logger::FrameworkDebug("[UIControl::CopyDataFrom] Source control \"%s:%s\" have events."
+                                   "Event copying is forbidden."
+                                   , srcControl->GetClassName().c_str()
+                                   , srcControl->GetName().c_str());
         }
 
         RemoveAllControls();
@@ -1386,18 +1409,12 @@ namespace DAVA
 
     void UIControl::DrawDebugRect(const UIGeometricData &gd, bool useAlpha)
     {
-        Color oldColor = RenderSystem2D::Instance()->GetColor();
         RenderSystem2D::Instance()->PushClip();
 
+        auto drawColor = debugDrawColor;
         if (useAlpha)
         {
-            Color drawColor = debugDrawColor;
             drawColor.a = 0.4f;
-            RenderSystem2D::Instance()->SetColor(drawColor);
-        }
-        else
-        {
-            RenderSystem2D::Instance()->SetColor(debugDrawColor);
         }
 
         if( gd.angle != 0.0f )
@@ -1405,15 +1422,14 @@ namespace DAVA
             Polygon2 poly;
             gd.GetPolygon( poly );
 
-            RenderHelper::Instance()->DrawPolygon( poly, true, RenderHelper::DEFAULT_2D_BLEND_MATERIAL );
+            RenderSystem2D::Instance()->DrawPolygon(poly, true, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
         }
         else
         {
-            RenderHelper::Instance()->DrawRect( gd.GetUnrotatedRect(), RenderHelper::DEFAULT_2D_BLEND_MATERIAL );
+            RenderSystem2D::Instance()->DrawRect(gd.GetUnrotatedRect(), RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
         }
 
         RenderSystem2D::Instance()->PopClip();
-        RenderSystem2D::Instance()->SetColor(oldColor);
     }
 
     void UIControl::DrawPivotPoint(const Rect &drawRect)
@@ -1430,29 +1446,27 @@ namespace DAVA
 
         static const float32 PIVOT_POINT_MARK_RADIUS = 10.0f;
         static const float32 PIVOT_POINT_MARK_HALF_LINE_LENGTH = 13.0f;
+        static const Color drawColor(1.0f, 0.0f, 0.0f, 1.0f);
 
-        Color oldColor = RenderSystem2D::Instance()->GetColor();
         RenderSystem2D::Instance()->PushClip();
-        RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
-
+        
         Vector2 pivotPointCenter = drawRect.GetPosition() + GetPivotPoint();
-        RenderHelper::Instance()->DrawCircle(pivotPointCenter, PIVOT_POINT_MARK_RADIUS, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+        RenderSystem2D::Instance()->DrawCircle(pivotPointCenter, PIVOT_POINT_MARK_RADIUS, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
 
         // Draw the cross mark.
         Vector2 lineStartPoint = pivotPointCenter;
         Vector2 lineEndPoint = pivotPointCenter;
         lineStartPoint.y -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
         lineEndPoint.y += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
-        RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+        RenderSystem2D::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
 
         lineStartPoint = pivotPointCenter;
         lineEndPoint = pivotPointCenter;
         lineStartPoint.x -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
         lineEndPoint.x += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
-        RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+        RenderSystem2D::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
 
         RenderSystem2D::Instance()->PopClip();
-        RenderSystem2D::Instance()->SetColor(oldColor);
     }
 
     bool UIControl::IsPointInside(const Vector2 &_point, bool expandWithFocus/* = false*/) const
@@ -1871,7 +1885,7 @@ namespace DAVA
         ScopedPtr<UIControl> baseControl(new UIControl());
 
         // Control name
-        SetPreferredNodeType(node, GetControlClassName());
+        SetPreferredNodeType(node, GetClassName());
 
         // Transform data
         // Position
@@ -2580,36 +2594,9 @@ namespace DAVA
         UpdateChildrenLayout();
     }
 
-    const String & UIControl::GetControlClassName() const
-    {
-        return GetClassName();
-    }
-
-    const String &UIControl::GetCustomControlClassName() const
-    {
-        return customClassName;
-    }
-
-    void UIControl::SetCustomControlClassName(const String& value)
-    {
-        customClassName = value;
-    }
-
     void UIControl::SetPreferredNodeType(YamlNode* node, const String& nodeTypeName)
     {
-        // Do we have Custom Control name? If yes, use it as type and passed one
-        // as the "Base Type"
-        bool hasCustomControl = !GetCustomControlClassName().empty();
-        if (hasCustomControl)
-        {
-            node->Set("type", GetCustomControlClassName());
-            node->Set("baseType", nodeTypeName);
-        }
-        else
-        {
-            // The type coincides with the node type name passed, no base type exists.
-            node->Set("type", nodeTypeName);
-        }
+        node->Set("type", nodeTypeName);
     }
 
     int32 UIControl::GetInitialState() const
@@ -2684,7 +2671,23 @@ namespace DAVA
         {
             (*it)->DumpInputs(depthLevel + 1);
         }
-    }    
+    }
+
+    void UIControl::DumpControls(bool onlyOrphans)
+    {
+        LockGuard<Mutex> lock(controlsListMutex);
+        Logger::FrameworkDebug("============================================================");
+        Logger::FrameworkDebug("--------------- Currently allocated controls ----------------");
+
+        for (auto control : controlsList)
+        {
+            if (onlyOrphans && control->GetParent() != nullptr)
+                continue;
+            Logger::FrameworkDebug("class:\"%s\" name:\"%s\" count:%d", control->GetClassName().c_str(), control->GetName().c_str(), control->GetRetainCount());
+        }
+
+        Logger::FrameworkDebug("============================================================");
+    }
 
     int32 UIControl::GetBackgroundComponentsCount() const
     {
@@ -2771,12 +2774,32 @@ namespace DAVA
 
     void UIControl::AddComponent(UIComponent * component)
     {
-        DynamicTypeCheck<UIComponent*>(component)->SetControl(this);
+        DVASSERT(component->GetControl() == nullptr);
+        component->SetControl(this);
         components.push_back(SafeRetain(component));
         std::stable_sort(components.begin(), components.end(), [](UIComponent * left, UIComponent * right) {
             return left->GetType() < right->GetType();
         });
         UpdateFamily();
+    }
+    
+    void UIControl::InsertComponentAt(UIComponent * component, uint32 index)
+    {
+        uint32 count = family->GetComponentsCount(component->GetType());
+        if (count == 0 || index >= count)
+        {
+            AddComponent(component);
+        }
+        else
+        {
+            DVASSERT(component->GetControl() == nullptr);
+            component->SetControl(this);
+            
+            uint32 insertIndex = family->GetComponentIndex(component->GetType(), index);
+            components.insert(components.begin() + insertIndex, SafeRetain(component));
+            
+            UpdateFamily();
+        }
     }
 
     UIComponent * UIControl::GetComponent(uint32 componentType, uint32 index) const
@@ -2788,12 +2811,25 @@ namespace DAVA
         }
         return nullptr;
     }
+    
+    int32 UIControl::GetComponentIndex(const UIComponent *component) const
+    {
+        uint32 count = family->GetComponentsCount(component->GetType());
+        uint32 index = family->GetComponentIndex(component->GetType(), 0);
+        for (uint32 i = 0; i < count; i++)
+        {
+            if (components[index + i] == component)
+                return i;
+        }
+        return -1;
+    }
 
     UIComponent * UIControl::GetOrCreateComponent(uint32 componentType, uint32 index)
     {
         UIComponent * ret = GetComponent(componentType, index);
         if (!ret)
         {
+            DVASSERT(index == 0);
             ret = UIComponent::CreateByType(componentType);
             if (ret)
             {
@@ -2805,13 +2841,13 @@ namespace DAVA
         return ret;
     }
 
-    inline void UIControl::UpdateFamily()
+    void UIControl::UpdateFamily()
     {
         UIControlFamily::Release(family);
         family = UIControlFamily::GetOrCreate(components);
     }
 
-    inline void UIControl::RemoveAllComponents()
+    void UIControl::RemoveAllComponents()
     {
         while (!components.empty())
         {
@@ -2847,17 +2883,17 @@ namespace DAVA
         RemoveComponent(it);
     }
 
-    inline uint32 UIControl::GetComponentCount() const
+    uint32 UIControl::GetComponentCount() const
     {
         return static_cast<uint32>(components.size());
     }
     
-    inline uint32 UIControl::GetComponentCount(uint32 componentType) const
+    uint32 UIControl::GetComponentCount(uint32 componentType) const
     {
         return family->GetComponentsCount(componentType);
     }
     
-    inline uint64 UIControl::GetAvailableComponentFlags() const
+    uint64 UIControl::GetAvailableComponentFlags() const
     {
         return family->GetComponentsFlags();
     }

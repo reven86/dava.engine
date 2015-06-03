@@ -556,6 +556,10 @@ SCOPED_FUNCTION_TIMING();
                         DX9_CALL(_D3D9_Device->Clear( 0,NULL, flags, D3DCOLOR_RGBA(r,g,b,a), passCfg.depthStencilBuffer.clearDepth, 0 ),"Clear");
                     }
                 }
+
+                D3DVIEWPORT9 viewport = { passCfg.viewport[0], passCfg.viewport[1], passCfg.viewport[2], passCfg.viewport[3], 0.f, 1.f };
+                DX9_CALL(_D3D9_Device->SetViewport(&viewport), "SetViewport");
+
             }   break;
 
             case DX9__END :
@@ -739,37 +743,9 @@ dx9_Present()
         RenderPassPool::Free( _CmdQueue[i] );
     _CmdQueue.clear();
 
-
+    _End_Frame();
 
     ConstBufferDX9::InvalidateAllConstBufferInstances();
-
-    HRESULT hr;
-
-    if( _ResetPending )
-    {
-        hr = _D3D9_Device->TestCooperativeLevel();
-
-        if( hr == D3DERR_DEVICENOTRESET )
-        {
-///            reset( Size2i(_present_param->BackBufferWidth,_present_param->BackBufferHeight) );
-
-            _ResetPending = false;
-        }
-        else
-        {
-            ::Sleep( 100 );
-        }
-    }
-    else
-    {
-        hr = _D3D9_Device->Present( NULL, NULL, NULL, NULL );
-
-        if( FAILED(hr) )
-            Logger::Error( "present() failed:\n%s\n", D3D9ErrorText(hr) );
-
-        if( hr == D3DERR_DEVICELOST )
-            _ResetPending = true;
-    }    
 }
 
 

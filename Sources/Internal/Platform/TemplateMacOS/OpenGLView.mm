@@ -31,13 +31,7 @@
 #include "DAVAEngine.h"
 #include <ApplicationServices/ApplicationServices.h>
 
-#include "macos_gl.h"
-
 extern void FrameworkMain(int argc, char *argv[]);
-
-static OpenGLView*  _View    = nullptr;
-static uint64       _Context = 0;
-
 
 @implementation OpenGLView
 @synthesize willQuit;
@@ -103,9 +97,6 @@ static uint64       _Context = 0;
     //RenderManager::Create(Core::RENDERER_OPENGL);
 	
     willQuit = false;
-    
-    _View    = self;
-    _Context = (uint64)CGLGetCurrentContext();
 
     return self;    
 }
@@ -543,21 +534,5 @@ static int32 oldModifersFlags = 0;
     
     oldModifersFlags = newModifers;
 }
-
-void
-macos_gl_end_frame()
-{
-    if( _View )
-    {
-        [[_View openGLContext] flushBuffer];
-    }
-}
-
-void
-macos_gl_set_current()
-{
-    CGLSetCurrentContext( (CGLContextObj)_Context );
-}
-
 
 @end

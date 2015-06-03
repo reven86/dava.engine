@@ -54,7 +54,7 @@ MovieViewControl::MovieViewControl()
 	}
 
 	HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-	[[appDelegate glController].backgroundView addSubview:player.view];
+	[[appDelegate renderViewController].backgroundView addSubview:player.view];
 }
 
 MovieViewControl::~MovieViewControl()

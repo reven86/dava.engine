@@ -11,7 +11,7 @@ CheckeredCanvas::CheckeredCanvas()
 {
     GetBackground()->SetSprite("~res:/Gfx/CheckeredBg", 0);
     GetBackground()->SetDrawType(UIControlBackground::DRAW_TILED);
-    GetBackground()->SetShader(SafeRetain(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR));
+    GetBackground()->SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
 }
 
 CheckeredCanvas::~CheckeredCanvas()
@@ -37,24 +37,23 @@ void CheckeredCanvas::DrawAfterChilds( const UIGeometricData &geometricData )
     if (GetScale().x >= scaleTresholdToDrawGrid)
     {
         Color gridColor = EditorSettings::Instance()->GetGrigColor();
-        RenderHelper::Instance()->DrawGrid(geometricData.GetUnrotatedRect(), Vector2(GetScale().x, GetScale().x), gridColor, RenderState::RENDERSTATE_2D_BLEND);
+        RenderSystem2D::Instance()->DrawGrid(geometricData.GetUnrotatedRect(),
+                                             Vector2(GetScale().x, GetScale().x),
+                                             gridColor,
+                                             RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL);
     }
     
     for (auto &control : selectionControls)
     {
-        Color oldColor = RenderManager::Instance()->GetColor();
-
         UIControl *parent = control->GetParent();
         if (parent && parent != this)
         {
-            RenderManager::Instance()->SetColor(0.5f, 0.5f, 0.5f, 1.f);
-            RenderHelper::Instance()->DrawRect(parent->GetGeometricData().GetUnrotatedRect(), RenderState::RENDERSTATE_2D_BLEND);
+            RenderSystem2D::Instance()->DrawRect(parent->GetGeometricData().GetUnrotatedRect(),
+                                                 RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL,
+                                                 Color(0.5f, 0.5f, 0.5f, 1.f));
         }
         
-        RenderManager::Instance()->SetColor(1, 0, 0, 1);
-        RenderHelper::Instance()->DrawRect(control->GetGeometricData().GetUnrotatedRect(), RenderState::RENDERSTATE_2D_BLEND);
-        
-        RenderManager::Instance()->SetColor(oldColor);
+        RenderSystem2D::Instance()->DrawRect(control->GetGeometricData().GetUnrotatedRect(), RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, Color(1.f, 0.f, 0.f, 1.f));
     }
 }
 

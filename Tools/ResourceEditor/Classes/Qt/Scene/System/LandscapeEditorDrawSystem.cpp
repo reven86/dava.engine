@@ -39,6 +39,7 @@
 #include "LandscapeEditorDrawSystem/GrassEditorProxy.h"
 
 #include "Commands2/InspMemberModifyCommand.h"
+#include "Commands2/InspDynamicModifyCommand.h"
 
 #include "Scene3D/Systems/RenderUpdateSystem.h"
 
@@ -46,17 +47,18 @@
 
 LandscapeEditorDrawSystem::LandscapeEditorDrawSystem(Scene* scene)
 :	SceneSystem(scene)
+,	landscapeNode(nullptr)
+,	baseLandscape(nullptr)
+,	landscapeProxy(nullptr)
+,	heightmapProxy(nullptr)
+,	notPassableTerrainProxy(nullptr)
+,	customColorsProxy(nullptr)
+,	visibilityToolProxy(nullptr)
+,	rulerToolProxy(nullptr)
+,   grassEditorProxy(nullptr)
 ,	customDrawRequestCount(0)
-,	landscapeProxy(NULL)
-,	heightmapProxy(NULL)
-,	landscapeNode(NULL)
-,	baseLandscape(NULL)
-,	cursorTexture(NULL)
-,	notPassableTerrainProxy(NULL)
-,	customColorsProxy(NULL)
-,	visibilityToolProxy(NULL)
-,	rulerToolProxy(NULL)
-,   grassEditorProxy(NULL)
+,	cursorTexture(nullptr)
+,   sourceTilemaskPath("")
 {	
 }
 
@@ -515,6 +517,9 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::InitLandscape(E
 
 	landscapeNode = landscapeEntity;
 	baseLandscape = SafeRetain(landscape);
+    
+    UpdateTilemaskPathname();
+    
 	landscapeProxy = new LandscapeProxy(baseLandscape, landscapeNode);
 
 	return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
@@ -581,36 +586,22 @@ void LandscapeEditorDrawSystem::SaveTileMaskTexture()
 		return;
 	}
 
-	if (!GetLandscapeProxy()->IsTilemaskChanged())
-	{
-		return;
-	}
+ 	if (!GetLandscapeProxy()->IsTilemaskChanged())
+ 	{
+ 		return;
+ 	}
 
 	Texture* texture = baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_NAME_TILEMASK);
 
 	if (texture)
 	{
-		//FilePath texturePathname = baseLandscape->GetTextureName(Landscape::TEXTURE_TILE_MASK);
-       // RHI_COMPLETE_EDITOR - not sure whi it asked landscape instead
-        FilePath texturePathname = texture->GetPathname();
-
-		if (texturePathname.IsEmpty())
-		{
-			return;
-		}
-
-		texturePathname.ReplaceExtension(".png");
-		
-		
 		Image *image = texture->CreateImageFromMemory();
 
 		if(image)
 		{
-            ImageSystem::Instance()->Save(texturePathname, image);
+            ImageSystem::Instance()->Save(sourceTilemaskPath, image);
 			SafeRelease(image);
 		}
-
-		TextureDescriptorUtils::CreateDescriptorIfNeed(texturePathname);
 
 		GetLandscapeProxy()->ResetTilemaskChanged();
 	}
@@ -737,8 +728,34 @@ void LandscapeEditorDrawSystem::ProcessCommand(const Command2 *command, bool red
             }
             break;
         }
+        case CMDID_INSP_DYNAMIC_MODIFY:
+        {
+            const InspDynamicModifyCommand* cmd = static_cast<const InspDynamicModifyCommand*>(command);
+            if (DAVA::FastName("tileMask") == cmd->key)
+            {
+                UpdateTilemaskPathname();
+            }
+            break;
+        }
 
         default:
             break;
     }
+}
+
+bool LandscapeEditorDrawSystem::UpdateTilemaskPathname()
+{
+#if RHI_COMPLETE_EDITOR
+    if(nullptr != baseLandscape)
+    {
+        auto texture = baseLandscape->GetTexture(Landscape::TEXTURE_TILE_MASK);
+        if(nullptr != texture)
+        {
+            sourceTilemaskPath = texture->GetDescriptor()->GetSourceTexturePathname();
+            return true;
+        }
+    }
+#endif
+    
+    return false;
 }

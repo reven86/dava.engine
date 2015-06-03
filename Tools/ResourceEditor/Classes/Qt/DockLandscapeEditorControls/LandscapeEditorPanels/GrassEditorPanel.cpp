@@ -15,7 +15,6 @@
 #include <QApplication>
 #include <QHeaderView>
 #include <QPainter>
-#include <QFileDialog>
 
 
 GrassEditorPanel::GrassEditorPanel(QWidget* parent)

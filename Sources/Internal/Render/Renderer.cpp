@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Render/ShaderCache.h"
 #include "Render/Material/FXCache.h"
 #include "Render/DynamicBufferAllocator.h"
+#include "Render/GPUFamilyDescriptor.h"
 
 namespace DAVA
 {
@@ -54,25 +55,21 @@ namespace //for private variables
     ScreenShotCallbackDelegate * screenshotCallback = nullptr;
 }
 
-void Initialize(rhi::Api _api, int32 _framebufferWidth, int32 _framebufferHeight, void * externalData)
+void Initialize(rhi::Api _api, const rhi::InitParam & params, int32 width, int32 height)
 {
     DVASSERT(!ininialized);
 
     api = _api;
-    framebufferWidth = _framebufferWidth;
-    framebufferHeight = _framebufferHeight;
     
-    rhi::InitParam param;
-    param.width = framebufferWidth;
-    param.height = framebufferHeight;
-    param.window = externalData;
+    framebufferWidth = width;
+    framebufferHeight = height;
     
-    rhi::Initialize(api, param);
+    rhi::Initialize(api, params);
     rhi::ShaderCache::Initialize();
     ShaderDescriptorCache::Initialize();
     FXCache::Initialize();
     PixelFormatDescriptor::InitializePixelFormatDescriptors();
-
+    GPUFamilyDescriptor::SetupGPUParameters();
     
     ininialized = true;
 }

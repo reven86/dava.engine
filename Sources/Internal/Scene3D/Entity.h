@@ -542,16 +542,6 @@ inline void Entity::RemoveAllComponents ()
     }
 }
 
-inline void Entity::RemoveComponent (Vector<Component *>::iterator & it)
-{
-    if (it != components.end ())
-    {
-        Component * c = *it;
-        DetachComponent (it);
-        SafeDelete (c);
-    }
-}
-
 inline void Entity::RemoveComponent (uint32 componentType, uint32 index)
 {
     Component * c = GetComponent (componentType, index);

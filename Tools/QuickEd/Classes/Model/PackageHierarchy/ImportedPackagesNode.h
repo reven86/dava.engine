@@ -27,6 +27,9 @@ public:
     
     void Serialize(PackageSerializer *serializer) const;
     void Serialize(PackageSerializer *serializer, const DAVA::Set<PackageRef*> &packageRefs) const;
+
+protected:
+    virtual bool IsReadOnly() const override;
     
 private:
     DAVA::Vector<PackageControlsNode*> packageControlsNode;

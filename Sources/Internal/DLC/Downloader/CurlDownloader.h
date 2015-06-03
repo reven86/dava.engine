@@ -31,6 +31,7 @@
 
 #include "Downloader.h"
 #include "curl/curl.h"
+#include "Timer/RawTimer.h"
 
 namespace DAVA
 {
@@ -168,6 +169,7 @@ private:
     FilePath storePath;
     String downloadUrl;
     int32 operationTimeout;
+    RawTimer inactivityConnectionTimer;
     uint64 remoteFileSize;
     uint64 sizeToDownload;
     uint64 downloadSpeedLimit;

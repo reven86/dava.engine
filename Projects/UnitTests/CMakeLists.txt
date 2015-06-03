@@ -2,7 +2,10 @@ cmake_minimum_required (VERSION 3.0)
 
 # add DAVA_MEMORY_PROFILING_ENABLE to enable MemoryManagerTest in UnitTests
 # this macro should be defined in all dependant projects (dava framework, etc)
-add_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
+if( NOT DAVA_MEGASOLUTION )
+    add_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
+
+endif()
 
 set          ( WARNINGS_AS_ERRORS true )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 

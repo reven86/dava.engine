@@ -34,6 +34,10 @@
 namespace DAVA
 {
 
+Downloader::Downloader()
+    : fileErrno(0)
+{ }
+
 bool Downloader::SaveData(const void *ptr, const FilePath& storePath, uint64 size)
 {
     size_t written = 0;
@@ -128,6 +132,11 @@ DownloadStatistics Downloader::GetStatistics()
 {
     LockGuard<Spinlock> lock(statisticsMutex);
     return statistics;
+}
+
+int32 Downloader::GetFileErrno() const
+{
+    return fileErrno;
 }
     
 }

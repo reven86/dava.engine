@@ -30,9 +30,10 @@
 
 #include "SelectPathWidgetBase.h"
 #include "Tools/MimeDataHelper/MimeDataHelper.h"
-#include "Tools/QtFileDialog/QtFileDialog.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
+
+#include "QtTools/FileDialog/FileDialog.h"
 
 #include <QFileInfo>
 #include <QKeyEvent>
@@ -131,7 +132,7 @@ void SelectPathWidgetBase::OpenClicked()
 		dialogString = presentPath.GetDirectory();
 	}
 	this->blockSignals(true);
-	DAVA::String retString = QtFileDialog::getOpenFileName(this, openFileDialogTitle.c_str(), QString(dialogString.GetAbsolutePathname().c_str()), fileFormatFilter.c_str()).toStdString();
+	DAVA::String retString = FileDialog::getOpenFileName(this, openFileDialogTitle.c_str(), QString(dialogString.GetAbsolutePathname().c_str()), fileFormatFilter.c_str()).toStdString();
 	this->blockSignals(false);
 
     if(retString.empty())

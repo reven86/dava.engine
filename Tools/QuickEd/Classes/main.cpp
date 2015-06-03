@@ -46,6 +46,10 @@ int main(int argc, char *argv[])
     DAVA::Core::Run( argc, argv );
     new DAVA::QtLayer();
 
+    // Editor Settings might be used by any singleton below during initialization, so
+    // initialize it before any other one.
+    new EditorSettings();
+    
     DAVA::ParticleEmitter::FORCE_DEEP_CLONE = true;
 
     auto loopManager = new DavaLoop();

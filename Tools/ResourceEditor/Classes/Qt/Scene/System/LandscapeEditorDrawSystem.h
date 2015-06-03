@@ -112,8 +112,8 @@ public:
 	void ClampToTexture(const FastName& level, Rect& rect);
 	void ClampToHeightmap(Rect& rect);
 
-	virtual void AddEntity(DAVA::Entity * entity);
-	virtual void RemoveEntity(DAVA::Entity * entity);
+	void AddEntity(DAVA::Entity * entity) override;
+	void RemoveEntity(DAVA::Entity * entity) override;
 
 	Rect GetTextureRect(const FastName& level);
 	Rect GetHeightmapRect();
@@ -129,7 +129,19 @@ public:
 	static String GetDescriptionByError(eErrorType error);
 
 private:
-	Entity* landscapeNode;
+    
+    void UpdateBaseLandscapeHeightmap();
+    eErrorType Init();
+    
+    eErrorType InitLandscape(Entity* landscapeEntity, Landscape* landscape);
+    void DeinitLandscape();
+    
+    eErrorType IsNotPassableTerrainCanBeEnabled();
+    
+    bool UpdateTilemaskPathname();
+    
+
+    Entity* landscapeNode;
 	Landscape* baseLandscape;
 	LandscapeProxy* landscapeProxy;
 	HeightmapProxy* heightmapProxy;
@@ -145,14 +157,9 @@ private:
 	uint32 cursorSize;
 	Vector2 cursorPosition;
 
-	void UpdateBaseLandscapeHeightmap();
-	eErrorType Init();
+	UniqueHandle noBlendDrawState;
 
-	eErrorType InitLandscape(Entity* landscapeEntity, Landscape* landscape);
-	void DeinitLandscape();
-
-	eErrorType IsNotPassableTerrainCanBeEnabled();
-		
+    FilePath sourceTilemaskPath;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEM__) */

@@ -568,18 +568,16 @@ void UIStaticText::PrepareSpriteInternal()
         textBg->SetSprite(sprite, 0);
 
         Texture *tex = sprite->GetTexture();
-#if RHI_COMPLETE
         if(tex && tex->GetFormat() == FORMAT_A8)
         {
-            textBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
-            shadowBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+            textBg->SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL);
+            shadowBg->SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL);
         }
         else
         {
-            textBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
-            shadowBg->SetShader(RenderSystem2D::TEXTURE_MUL_FLAT_COLOR);
+            textBg->SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
+            shadowBg->SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
         }
-#endif RHI_COMPLETE
     }
     else
     {
@@ -731,13 +729,13 @@ void  UIStaticText::DrawLocalizationErrors(const UIGeometricData & geometricData
 
 
             RenderSystem2D::Instance()->SetColor(HIGHLITE_COLORS[RED]);
-            RenderHelper::Instance()->FillPolygon(controllPolygon, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+            RenderHelper::Instance()->FillPolygon(controllPolygon, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL);
 
         }
         if (textBlock->IsVisualTextCroped())
         {
             RenderSystem2D::Instance()->SetColor(HIGHLITE_COLORS[YELLOW]);
-            RenderHelper::Instance()->FillPolygon(textPolygon, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+            RenderHelper::Instance()->FillPolygon(textPolygon, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL);
         }
     }
 }
@@ -759,7 +757,7 @@ void  UIStaticText::DrawLocalizationDebug(const UIGeometricData & textGeomData) 
         DAVA::Polygon2 polygon;
         textGeomData.GetPolygon(polygon);
 
-        RenderHelper::Instance()->FillPolygon(polygon, RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+        RenderHelper::Instance()->FillPolygon(polygon, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL);
         RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
     if (textBlock->GetFittingOption() != TextBlock::FITTING_DISABLED 
@@ -778,7 +776,7 @@ void  UIStaticText::DrawLocalizationDebug(const UIGeometricData & textGeomData) 
         DAVA::Polygon2 polygon;
         textGeomData.GetPolygon(polygon);
         DVASSERT(polygon.GetPointCount() == 4);
-        RenderHelper::Instance()->DrawLine(polygon.GetPoints()[0], polygon.GetPoints()[2], RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+        RenderHelper::Instance()->DrawLine(polygon.GetPoints()[0], polygon.GetPoints()[2], RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL);
         RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
@@ -801,8 +799,7 @@ void UIStaticText::RecalculateDebugColoring()
         
         if (!text.empty())
         {
-            WideString textNoSpaces(text);
-            TextBlock::CleanLine(textNoSpaces);
+            WideString textNoSpaces = StringUtils::RemoveNonPrintable(text, 1);
             auto res = remove_if(textNoSpaces.begin(), textNoSpaces.end(), StringUtils::IsWhitespace);
             textNoSpaces.erase(res, textNoSpaces.end());
 

@@ -258,5 +258,12 @@ void UIWebView::CopyDataFrom(UIControl *srcControl)
     SetDataDetectorTypes(webView->GetDataDetectorTypes());
 }
 
+void UIWebView::SystemDraw(const DAVA::UIGeometricData &geometricData)
+{
+    webViewControl->WillDraw();
+    UIControl::SystemDraw(geometricData);
+    webViewControl->DidDraw();
+}
+
 
 };

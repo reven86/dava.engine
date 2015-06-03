@@ -1,11 +1,10 @@
 <CONFIG>
-tileTexture0 = 2
-tileTexture1 = 3
-tileTexture2 = 4
-tileTexture3 = 5
-tileMask = 1
-colorTexture = 0
-specularMap = 6
+uniform sampler2D tileTexture0 = 2;
+uniform sampler2D tileMask = 1;
+uniform sampler2D colorTexture = 0;
+uniform sampler2D fullTiledTexture = 3;
+uniform sampler2D specularMap = 6;
+uniform samplerCube atmospheremap = 7;
 <FRAGMENT_SHADER>
 #ifdef GL_ES
 precision highp float;
@@ -15,35 +14,30 @@ precision highp float;
 #define mediump
 #endif
 
-#ifdef SPECULAR_LAND
+#ifdef SPECULAR
 uniform sampler2D specularMap;
-uniform vec3 materialLightSpecularColor;
-varying float varSpecularColor;
+uniform float inGlossiness;
+
+varying vec3 varSpecularColor;
+varying float varNdotH;
 #endif
 
-#ifdef DETAILMASK
+#ifdef TILEMASK
 uniform lowp vec3 tileColor0;
 uniform lowp vec3 tileColor1;
 uniform lowp vec3 tileColor2;
 uniform lowp vec3 tileColor3;
-#endif
 
 uniform sampler2D tileTexture0;
-#ifndef DETAILMASK
-uniform sampler2D tileTexture1;
-uniform sampler2D tileTexture2;
-uniform sampler2D tileTexture3;
-#endif
 uniform sampler2D tileMask;
 uniform sampler2D colorTexture;
 
-varying mediump vec2 varTexCoordOrig;
 varying mediump vec2 varTexCoord0;
-#ifndef DETAILMASK
-varying mediump vec2 varTexCoord1;
-varying mediump vec2 varTexCoord2;
-varying mediump vec2 varTexCoord3;
+#else
+uniform sampler2D fullTiledTexture;
 #endif
+
+varying mediump vec2 varTexCoordOrig;
 
 #ifdef EDITOR_CURSOR
 varying vec2 varTexCoordCursor;
@@ -51,28 +45,20 @@ uniform sampler2D cursorTexture;
 #endif
 
 #if defined(VERTEX_FOG)
-uniform vec3 fogColor;
-varying float varFogFactor;
+varying lowp float varFogAmoung;
+varying lowp vec3 varFogColor;
 #endif
 
 void main()
 {
-#ifndef DETAILMASK
-    lowp vec3 color0 = texture2D(tileTexture0, varTexCoord0).rgb;
-    lowp vec3 color1 = texture2D(tileTexture1, varTexCoord1).rgb;
-    lowp vec3 color2 = texture2D(tileTexture2, varTexCoord2).rgb;
-    lowp vec3 color3 = texture2D(tileTexture3, varTexCoord3).rgb;
-#else
+#ifdef TILEMASK
     lowp vec4 color0 = texture2D(tileTexture0, varTexCoord0).rgba;
-#endif
-
     lowp vec4 mask = texture2D(tileMask, varTexCoordOrig);
     lowp vec4 lightMask = texture2D(colorTexture, varTexCoordOrig);
 
-#ifndef DETAILMASK
-    lowp vec3 color = (mask.r * color0 + mask.g * color1 + mask.b * color2 + mask.a * color3) * lightMask.rgb * 2.0;
-#else
     lowp vec3 color = (color0.r*mask.r*tileColor0 + color0.g*mask.g*tileColor1 + color0.b*mask.b*tileColor2 + color0.a*mask.a*tileColor3) * lightMask.rgb * 2.0;
+#else
+	lowp vec3 color = texture2D(fullTiledTexture, varTexCoordOrig).rgb;
 #endif
     
 #ifdef EDITOR_CURSOR
@@ -81,13 +67,17 @@ void main()
 	color += colorCursor.rgb*colorCursor.a;
 #endif
 	
-#ifdef SPECULAR_LAND
-	color = color + varSpecularColor * materialLightSpecularColor * texture2D(specularMap, varTexCoordOrig).rgb;
+#ifdef SPECULAR
+	float glossiness = pow(5000.0, inGlossiness * lightMask.a);
+    float specularNorm = (glossiness + 2.0) / 8.0;
+    color += varSpecularColor * pow(varNdotH, glossiness) * specularNorm;
 #endif
+    //color = vec3(1.0);
 
 #if defined(VERTEX_FOG)
-    gl_FragColor = vec4(mix(fogColor, color, varFogFactor), 1.0);
+    gl_FragColor.rgb = mix(color, varFogColor, varFogAmoung);
 #else
     gl_FragColor = vec4(color, 1.0);
 #endif
+    //gl_FragColor = vec4(varSpecularColor, 1.0);
 }

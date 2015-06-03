@@ -35,10 +35,57 @@
 
 #if defined(__DAVAENGINE_WIN32__)
 
+#pragma warning( disable: 7 9 193 271 304 791 )
+#include <d3d9.h>
+#pragma warning( default: 7 9 193 271 304 791 )
+
 #include <shellapi.h>
+
+#include "Render/RHI/DX9/_dx9.h"
 
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
+
+HDC deviceContext = 0;
+HGLRC glRenderContext = 0;
+
+D3DPRESENT_PARAMETERS d3dPresentParams;
+IDirect3DDevice9 * d3d9Device = nullptr;
+bool d3d9DeviceLost = false;
+
+//------------------------------------------------------------------------------
+
+#define E_MINSPEC (-3)  // Error code for gfx-card that doesn't meet min.spec
+
+bool IsValidIntelCard(unsigned vendor_id, unsigned device_id)
+{
+    return ((vendor_id == 0x8086) &&  // Intel Architecture
+
+        // These guys are prehistoric :)
+
+        (device_id == 0x2572) ||  // 865G
+        (device_id == 0x3582) ||  // 855GM
+        (device_id == 0x2562) ||  // 845G
+        (device_id == 0x3577) ||  // 830M
+
+        // These are from 2005 and later
+
+        (device_id == 0x2A02) ||  // GM965 Device 0 
+        (device_id == 0x2A03) ||  // GM965 Device 1 
+        (device_id == 0x29A2) ||  // G965 Device 0 
+        (device_id == 0x29A3) ||  // G965 Device 1 
+        (device_id == 0x27A2) ||  // 945GM Device 0 
+        (device_id == 0x27A6) ||  // 945GM Device 1 
+        (device_id == 0x2772) ||  // 945G Device 0 
+        (device_id == 0x2776) ||  // 945G Device 1 
+        (device_id == 0x2592) ||  // 915GM Device 0 
+        (device_id == 0x2792) ||  // 915GM Device 1 
+        (device_id == 0x2582) ||  // 915G Device 0 
+        (device_id == 0x2782)     // 915G Device 1 
+        );
+}
+
+//------------------------------------------------------------------------------
 
 namespace DAVA 
 {
@@ -53,20 +100,11 @@ namespace DAVA
 		{
 			core->Run();
 			core->ReleaseSingletons();
-			
 		}
 
-		//CloseHandle(core->hMutex);
 		return 0;
 	
 	}
-
-	/*const Vector2 & Core::GetMouseLocation();
-	{
-		POINT pt;
-		GetCursorPos(&pt);
-		
-	}*/
     
 	int Core::RunCmdTool(int argc, char * argv[], AppHandle handle)
 	{
@@ -103,11 +141,6 @@ namespace DAVA
 			}
 		}
         SetLastError(0);
-		//hMutex = CreateMutex(NULL, FALSE, fileName);
-		//if(ERROR_ALREADY_EXISTS == GetLastError())
-		//{
-		//	return false;
-		//}
 
 		windowedMode = DisplayMode(800, 600, 16, 0);
 		fullscreenMode = DisplayMode(800, 600, 16, 0);
@@ -169,14 +202,14 @@ namespace DAVA
 		// create window
 		hWindow = CreateWindow( className, L"", style, windowLeft, windowTop, 
 			realWidth, realHeight,	NULL, NULL, hInstance, NULL);
-        
-        nativeWindowHandle = (void *)hWindow;
 
 		ShowWindow(hWindow, SW_SHOW);
 		UpdateWindow(hWindow);
 
 		// fix ugly ATI driver bugs. Thanks to ariaci (Taken from Irrlight).
 		MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
+
+        deviceContext = ::GetDC(hWindow);
 
 		FrameworkDidLaunched();
 		KeyedArchive * options = Core::GetOptions();
@@ -222,7 +255,21 @@ namespace DAVA
 		windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
 		windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
 		MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
-	
+
+        rhi::Api renderApi = (rhi::Api)options->GetInt32("renderer", rhi::RHI_DX9);
+        switch (renderApi)
+        {
+        case rhi::RHI_DX9:
+            CreateDirect3DDevice();
+            break;
+        case rhi::RHI_GLES2:
+            CreateGLContext();
+            break;
+        default:
+            DVASSERT(false);
+            break;
+        }
+
         RAWINPUTDEVICE Rid;
 
         Rid.usUsagePage = 0x01; 
@@ -241,6 +288,325 @@ namespace DAVA
 
 		return true;
 	}
+
+    void EndFrameDX9()
+    {
+        HRESULT hr;
+
+        if (d3d9DeviceLost)
+        {
+            hr = d3d9Device->TestCooperativeLevel();
+
+            if (hr == D3DERR_DEVICENOTRESET)
+            {
+                d3d9DeviceLost = false;
+            }
+            else
+            {
+                ::Sleep(100);
+            }
+        }
+        else
+        {
+            hr = d3d9Device->Present(NULL, NULL, NULL, NULL);
+
+            if (FAILED(hr))
+                Logger::Error("present() failed:\n%s\n", D3D9ErrorText(hr));
+
+            if (hr == D3DERR_DEVICELOST)
+                d3d9DeviceLost = true;
+        }
+    }
+
+    void CoreWin32Platform::CreateDirect3DDevice()
+    {
+        IDirect3D9 * _D3D9 = Direct3DCreate9(D3D_SDK_VERSION);
+
+        if (_D3D9)
+        {
+            RECT clientRect;
+            GetClientRect(hWindow, &clientRect);
+
+            HRESULT                 hr;
+            unsigned                backbuf_width = clientRect.right - clientRect.left;
+            unsigned                backbuf_height = clientRect.bottom - clientRect.top;
+            bool                    use_vsync = true;//(vsync)  ? (bool)(*vsync)  : false;
+            D3DADAPTER_IDENTIFIER9  info = { 0 };
+            D3DCAPS9                caps;
+            DWORD                   vertex_processing = E_FAIL;
+
+            hr = _D3D9->GetAdapterIdentifier(D3DADAPTER_DEFAULT, 0, &info);
+
+
+            // check if running on Intel card
+
+            Logger::Info("vendor-id : %04X  device-id : %04X\n", info.VendorId, info.DeviceId);
+
+            hr = _D3D9->GetDeviceCaps(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, &caps);
+
+            if (SUCCEEDED(hr))
+            {
+                if (caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT)
+                {
+                    vertex_processing = D3DCREATE_HARDWARE_VERTEXPROCESSING;
+                }
+                else
+                {
+                    // check vendor and device ID and enable SW vertex processing 
+                    // for Intel(R) Extreme Graphics cards
+
+                    if (SUCCEEDED(hr)) // if GetAdapterIdentifier SUCCEEDED
+                    {
+                        if (IsValidIntelCard(info.VendorId, info.DeviceId))
+                        {
+                            vertex_processing = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
+                        }
+                        else
+                        {
+                            // this is something else
+                            vertex_processing = E_MINSPEC;
+                            Logger::Error("GPU does not meet minimum specs: Intel(R) 845G or Hardware T&L chip required\n");
+                            ///                        return false;
+                            return;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                Logger::Error("failed to get device caps:\n%s\n", D3D9ErrorText(hr));
+
+                if (IsValidIntelCard(info.VendorId, info.DeviceId))
+                    vertex_processing = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
+            }
+
+            if (vertex_processing == E_FAIL)
+            {
+                Logger::Error("failed to identify GPU\n");
+                ///            return false;
+                return;
+            }
+
+
+            // detect debug DirectX runtime
+            /*
+            _debug_dx_runtime = false;
+
+            HKEY    key_direct3d;
+
+            if( ::RegOpenKeyA( HKEY_LOCAL_MACHINE, "Software\\Microsoft\\Direct3D", &key_direct3d ) == ERROR_SUCCESS )
+            {
+            DWORD   type;
+            DWORD   data    = 0;
+            DWORD   data_sz = sizeof(data);
+
+            if( ::RegQueryValueExA( key_direct3d, "LoadDebugRuntime", UNUSED_PARAM, &type, (BYTE*)(&data), &data_sz ) == ERROR_SUCCESS )
+            {
+            _debug_dx_runtime = (data == 1) ? true : false;
+            }
+            }
+            note( "using %s DirectX runtime\n", (_debug_dx_runtime) ? "debug" : "retail" );
+            */
+
+            // create device
+
+            // CRAP: hardcoded params
+
+            d3dPresentParams.Windowed = TRUE;
+            d3dPresentParams.BackBufferFormat = D3DFMT_UNKNOWN;
+            d3dPresentParams.BackBufferWidth = backbuf_width;
+            d3dPresentParams.BackBufferHeight = backbuf_height;
+            d3dPresentParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
+            d3dPresentParams.BackBufferCount = 1;
+            d3dPresentParams.EnableAutoDepthStencil = TRUE;
+            d3dPresentParams.AutoDepthStencilFormat = D3DFMT_D24S8;
+            d3dPresentParams.PresentationInterval = (use_vsync) ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
+
+            // TODO: check z-buf formats and create most suitable
+
+            D3DDEVTYPE  device = D3DDEVTYPE_HAL;
+            UINT        adapter = D3DADAPTER_DEFAULT;
+
+            // check if specified display-mode supported
+
+            ///        _DetectVideoModes();
+            /*
+            if( !_PresentParam.Windowed )
+            {
+            bool    found = false;
+
+            for( unsigned f=0; f<countof(_VideomodeFormat); ++f )
+            {
+            D3DFORMAT   fmt = _VideomodeFormat[f];
+
+            for( unsigned m=0; m<_DisplayMode.count(); ++m )
+            {
+            if(     _DisplayMode[m].width == _PresentParam.BackBufferWidth
+            &&  _DisplayMode[m].height == _PresentParam.BackBufferHeight
+            &&  _DisplayMode[m].format == fmt
+            )
+            {
+            found = true;
+            break;
+            }
+            }
+
+            if( found )
+            {
+            _PresentParam.BackBufferFormat = (D3DFORMAT)fmt;
+            break;
+            }
+            }
+
+            if( !found )
+            {
+            Log::Error( "rhi.DX9", "invalid/unsuported display mode %ux%u\n", _PresentParam.BackBufferWidth, _PresentParam.BackBufferHeight );
+            ///                return false;
+            return;
+            }
+            }
+            */
+
+            // create device
+
+            if (SUCCEEDED(hr = _D3D9->CreateDevice(adapter,
+                device,
+                hWindow,
+                vertex_processing,
+                &d3dPresentParams,
+                &d3d9Device
+                )
+                ))
+            {
+                if (SUCCEEDED(_D3D9->GetAdapterIdentifier(D3DADAPTER_DEFAULT, 0, &info)))
+                {
+
+                    Logger::Info("Adapter[%u]:\n  %s \"%s\"\n", adapter, info.DeviceName, info.Description);
+                    Logger::Info("  Driver %u.%u.%u.%u\n",
+                        HIWORD(info.DriverVersion.HighPart),
+                        LOWORD(info.DriverVersion.HighPart),
+                        HIWORD(info.DriverVersion.LowPart),
+                        LOWORD(info.DriverVersion.LowPart)
+                        );
+                }
+
+            }
+            else
+            {
+                Logger::Error("failed to create device:\n%s\n", D3D9ErrorText(hr));
+            }
+
+            rendererParams.context = d3d9Device;
+            rendererParams.endFrameFunc = &EndFrameDX9;
+        }
+        else
+        {
+            Logger::Error("failed to create Direct3D object\n");
+        }
+    }
+
+    void EndFrameGL()
+    {
+        DVASSERT(deviceContext);
+        SwapBuffers(deviceContext);
+    }
+
+    void MakeCurrentGL()
+    {
+        DVASSERT(deviceContext);
+        DVASSERT(glRenderContext);
+        wglMakeCurrent(deviceContext, glRenderContext);
+    }
+
+    void CoreWin32Platform::CreateGLContext()
+    {
+        DVASSERT(deviceContext);
+
+        PIXELFORMATDESCRIPTOR pfd =
+        {
+            sizeof(PIXELFORMATDESCRIPTOR),    // size of this pfd
+            1,                                // version number
+            PFD_DRAW_TO_WINDOW |              // support window
+            PFD_SUPPORT_OPENGL |              // support OpenGL
+            PFD_DOUBLEBUFFER,                 // double buffered
+            PFD_TYPE_RGBA,                    // RGBA type
+            32,                               // 32-bit color depth
+            0, 0, 0, 0, 0, 0,                 // color bits ignored
+
+            0,                                // no alpha buffer
+            0,                                // shift bit ignored
+            0,                                // no accumulation buffer
+            0, 0, 0, 0,                       // accum bits ignored
+            24,                               // 24-bit z-buffer
+            8,                                // 8-bit stencil buffer
+            0,                                // no auxiliary buffer
+            PFD_MAIN_PLANE,                   // main layer
+
+            0,                                // reserved
+            0, 0, 0                           // layer masks ignored
+        };
+
+        int  pixel_format = ChoosePixelFormat( deviceContext, &pfd );
+        SetPixelFormat( deviceContext, pixel_format, &pfd );
+        SetMapMode( deviceContext, MM_TEXT );
+
+
+        glRenderContext = wglCreateContext( deviceContext );
+
+        if (glRenderContext)
+        {
+            Logger::Info( "GL-context created\n" );
+
+            /*
+            GLint attr[] =
+            {
+            // here we ask for OpenGL 4.0
+            WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+            WGL_CONTEXT_MINOR_VERSION_ARB, 3,
+            // forward compatibility mode
+            WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+            // uncomment this for Compatibility profile
+            WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
+            // we are using Core profile here
+            WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+            0
+            };
+            */
+
+            wglMakeCurrent(deviceContext, glRenderContext);
+
+            rendererParams.makeCurrentFunc = &MakeCurrentGL;
+            rendererParams.endFrameFunc = &EndFrameGL;
+
+            glewExperimental = false;
+
+            if (glewInit() == GLEW_OK)
+            {
+                /*
+                HGLRC ctx4 = wglCreateContextAttribsARB( dc, 0, attr );
+                if( ctx4  &&  wglMakeCurrent( dc, ctx4 ) )
+                {
+                //            wglDeleteContext( ctx );
+                note( "using GL 4.0\n" );
+                }
+                */
+
+                Logger::Info("GL inited\n");
+                Logger::Info("  GL version   : %s", glGetString(GL_VERSION));
+                Logger::Info("  GPU vendor   : %s", glGetString(GL_VENDOR));
+                Logger::Info("  GPU          : %s", glGetString(GL_RENDERER));
+                Logger::Info("  GLSL version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+            }
+            else
+            {
+                Logger::Error("GLEW init failed\n");
+            }
+        }
+        else
+        {
+            Logger::Error( "can't create GL-context" );
+        }
+    }
 
 	void CoreWin32Platform::Run()
 	{

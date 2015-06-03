@@ -671,10 +671,13 @@ RenderPassConfig
     ColorBuffer         colorBuffer[MAX_RENDER_TARGET_COUNT];
     DepthStencilBuffer  depthStencilBuffer;
     int                 priority;
+    int                 viewport[4];
                         
                         RenderPassConfig()
                           : priority(0)
-                        {}
+                        {
+                            viewport[0] = viewport[1] = viewport[2] = viewport[3] = 0;
+                        }
 };
 
 

@@ -85,6 +85,8 @@ namespace Settings
     static const DAVA::FastName Scene_Sound_SoundObjectBoxColor("Scene/Sound/SoundObjectBoxColor");
     static const DAVA::FastName Scene_Sound_SoundObjectSphereColor("Scene/Sound/SoundObjectSphereColor");
 
+    static const DAVA::FastName General_Mouse_InvertWheel( "General/Mouse/InvertWheel" );
+
     // this settings won't be shown in settings dialog
     // and are used only by application
     static const DAVA::FastName InternalGroup("Internal");
