@@ -1183,6 +1183,28 @@ inline void Entity::RemoveComponent (Vector<Component *>::iterator & it)
         SafeDelete (c);
     }
 }
-	
-	
+
+Entity* Entity::GetEntityByID(uint32 id)
+{
+    Entity* ret = nullptr;
+
+    if (this->id == id)
+    {
+        ret = this;
+    }
+    else
+    {
+        for (auto child : children)
+        {
+            ret = child->GetEntityByID(id);
+            if (nullptr != ret)
+            {
+                break;
+            }
+        }
+    }
+
+    return ret;
+}
+
 };
