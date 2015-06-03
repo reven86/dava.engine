@@ -693,6 +693,17 @@ namespace DAVA
 		ProcessInput(touchDown);
 	}
 
+	void AutotestingSystemLua::DoubleTouchDown(const Vector2 &point, int32 touchId)
+	{
+		UIEvent touchDown;
+		touchDown.phase = UIEvent::PHASE_BEGAN;
+		touchDown.tid = touchId;
+		touchDown.tapCount = 2;
+		touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
+		touchDown.point = point;
+		ProcessInput(touchDown);
+	}
+
 	void AutotestingSystemLua::TouchMove(const Vector2 &point, int32 touchId)
 	{
 		UIEvent touchMove;

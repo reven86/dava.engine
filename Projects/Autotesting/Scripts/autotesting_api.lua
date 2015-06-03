@@ -42,7 +42,7 @@ end
 
 local function __GetNewPosition(list, vertical, invert, notInCenter)
     local position, newPosition = Vector.Vector2(), Vector.Vector2()
-    local rect = GetElementRect(list)
+    local rect = GetElementRectByName(list)
     position.x, position.y = (rect.x + rect.dx / 2), (rect.y + rect.dy / 2)
     if invert then
         newPosition.y = position.y + rect.dy / 1.5
@@ -312,18 +312,7 @@ end
 -- Getters
 ------------------------------------------------------------------------------------------------------------------------
 function GetControl(name)
-    local control
-    if type(name) == "string" then
-        control = autotestingSystem:FindControl(name) or autotestingSystem:FindControlOnPopUp(name)
-    else
-        control = name
-    end
-
-    if control then
-        return control
-    end
-    return false
-    --OnError("Couldn't find control " .. tostring(name))
+    return autotestingSystem:FindControl(name) or autotestingSystem:FindControlOnPopUp(name)
 end
 
 function GetCenter(element)
@@ -338,23 +327,23 @@ end
 
 function GetFrame(element)
     local control = GetControl(element)
-    return control:GetFrame()
+    if control then
+        return control:GetFrame()
+    end
+    return nil
 end
 
 function GetScreen()
     local screen =  autotestingSystem:GetScreen()
-    local geomData = screen:GetGeometricData()
-    return geomData:GetUnrotatedRect()
+    return GetElementRect(screen)
 end
 
-function GetSize(element)
-    local control = GetControl(element)
+function GetSize(controlName)
+    local control = GetControl(controlName)
     if not control then
-        OnError("Couldn't find element: " .. element)
+        OnError("Couldn't find element: " .. controlName)
     end
-    local geomData = control:GetGeometricData()
-    local rect = geomData:GetUnrotatedRect()
-    --print(element .. " = " .. tostring(rect.x))
+    local rect = GetElementRect(control)
     local result = {}
     result.x = math.floor(rect.x + 0.5)
     result.y = math.floor(rect.y + 0.5)
@@ -368,21 +357,28 @@ function GetState(name)
     if control then
         return control:GetState()
     end
-    OnError("Couldn't get control: " .. name)
+    return nil
 end
 
-function GetText(element)
-    local control = GetControl(element)
+function GetText(controlName)
+    local control = GetControl(controlName)
     if control then
         return autotestingSystem:GetText(control)
     end
-    return ""
+    return nil
 end
 
-function GetElementRect(element)
-    local control = GetControl(element)
+function GetElementRect(control)
     local geomData = control:GetGeometricData()
     return geomData:GetUnrotatedRect()
+end
+
+function GetElementRectByName(name)
+    local control = GetControl(name)
+    if control then
+        return GetElementRect(control)
+    end
+    return nil
 end
 
 function GetPosition(element)
@@ -400,32 +396,46 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 function IsVisible(element, background)
     local control = autotestingSystem:FindControl(element) or autotestingSystem:FindControlOnPopUp(element)
-    return toboolean(control and control:GetVisible() and control:IsOnScreen() and IsOnScreen(control, background))
+    return toboolean(control and control:GetVisible() and control:IsOnScreen() and IsOnScreen(element, background))
 end
 
-function IsDisabled(element)
+function IsDisabled(controlName)
     Yield()
-    local control = GetControl(element)
-    return control:GetDisabled()
+    local control = GetControl(controlName)
+    if control then return control:GetDisabled() end
+    return nil
 end
 
-function IsOnScreen(control, background)
+function IsOnScreen(controlName, background)
     local screen = background and autotestingSystem:FindControl(background) or autotestingSystem:GetScreen()
-    local geomData = control:GetGeometricData()
-    local rect = geomData:GetUnrotatedRect()
-    geomData = screen:GetGeometricData()
-    local backRect = geomData:GetUnrotatedRect()
+    local rect = GetElementRectByName(controlName)
+    local backRect = GetElementRect(screen)
     return toboolean((backRect.x - rect.x <= 1) and ((rect.x + rect.dx) - (backRect.x + backRect.dx) <= 1) and (backRect.y - rect.y <= 1)
             and ((rect.y + rect.dy) - (backRect.y + backRect.dy) <= 1))
 end
 
-function IsCenterOnScreen(control, background)
+function IsCenterOnScreen(controlName, background)
     local screen = background and autotestingSystem:FindControl(background) or autotestingSystem:GetScreen()
-    local center = GetCenter(control)
-    local geomData = screen:GetGeometricData()
-    local backRect = geomData:GetUnrotatedRect()
+    local center = GetCenter(controlName)
+    local backRect = GetElementRect(screen)
     return toboolean((center.x >= backRect.x) and (center.x <= backRect.x + backRect.dx) and (center.y >= backRect.y)
             and (center.y <= backRect.y + backRect.dy))
+end
+
+function IsReady(controlName, waitTime)
+    if not WaitControl(controlName, waitTime) then
+        Log("Control " .. controlName .. " not found.")
+        return false
+    end
+    if not IsVisible(controlName) then
+        Log("Control " .. controlName .. " is not visible.")
+        return false
+    end
+    if not IsCenterOnScreen(controlName) then
+        Log("Control " .. controlName .. " is not on the screen.")
+        return false
+    end
+    return true
 end
 
 function IsSelected(name)
@@ -433,7 +443,7 @@ function IsSelected(name)
     if control then
         return autotestingSystem:IsSelected(control)
     end
-    OnError("Control not found: " .. name)
+    return nil
 end
 
 function CheckText(name, txt)
@@ -701,6 +711,12 @@ function TouchDownPosition(pos, touchId)
     Yield()
 end
 
+function DoubleTouchDownPosition(pos, touchId)
+    local position = Vector.Vector2(pos.x, pos.y)
+    autotestingSystem:DoubleTouchDown(position, touchId or 1)
+    Yield()
+end
+
 function TouchDown(x, y, touchId)
     local position = Vector.Vector2(x, y)
     TouchDownPosition(position, touchId)
@@ -715,6 +731,15 @@ end
 function ClickPosition(position, time, touchId)
     local waitTime = time or TIMECLICK
     TouchDownPosition(position, touchId)
+    Wait(waitTime)
+    TouchUp(touchId)
+    Wait(waitTime)
+    return true
+end
+
+function DoubleClickPosition(position, time, touchId)
+    local waitTime = time or TIMECLICK
+    DoubleTouchDownPosition(position, touchId)
     Wait(waitTime)
     TouchUp(touchId)
     Wait(waitTime)
@@ -737,34 +762,25 @@ end
 
 function ClickControl(name, time, touchId)
     local waitTime = time or TIMEOUT
-    Log("ClickControl name=" .. name .. " touchId=" .. tostring(touchId or 1) .. " waitTime=" .. waitTime)
-    if not WaitControl(name, waitTime) then
-        Log("Control " .. name .. " not found.")
-        return false
-    end
-    if IsVisible(name) and IsCenterOnScreen(name) then
+    local touchId = touchId or 1
+    Log("ClickControl name=" .. name .. " touchId=" .. touchId .. " waitTime=" .. waitTime)
+    if IsReady(name) then
         local position = GetCenter(name)
         ClickPosition(position, TIMECLICK, touchId)
         return true
     end
-    Log("Control " .. name .. " is not visible.")
     return false
 end
 
 function DoubleClick(name, time, touchId)
     local waitTime = time or TIMEOUT
-    Log("DoubleClick name=" .. name .. " touchId=" .. tostring(touchId or 1) .. " waitTime=" .. waitTime)
-    if not WaitControl(name, waitTime) then
-        Log("Control " .. name .. " not found.")
-        return false
-    end
-    if IsVisible(name) and IsCenterOnScreen(name) then
+    local touchId = touchId or 1
+    Log("DoubleClick name=" .. name .. " touchId=" .. touchId .. " waitTime=" .. waitTime)
+    if IsReady(name) then
         local position = GetCenter(name)
-        ClickPosition(position, 0.1, touchId)
-        ClickPosition(position, 0.1, touchId)
+        DoubleClickPosition(position, 0.1, touchId)
         return true
     end
-    Log("Control " .. name .. " is not visible.")
     return false
 end
 
