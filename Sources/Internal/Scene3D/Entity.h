@@ -128,6 +128,12 @@ public:
     */
     void ResetID();
 
+        /**
+        \brief Function allows to find necessary entity by id.
+        \returns entity with given id or nullptr
+    */
+    Entity* GetEntityByID(uint32 id);
+
     /**
     \brief Get string with path by indexes in scenegraph from root node to current node.
     \returns result string.
