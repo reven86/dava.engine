@@ -348,7 +348,7 @@ GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* 
             success = true;
             break;
 
-        case TEXTURE_FORMAT_A1R5G5B5:
+        case TEXTURE_FORMAT_R5G5B5A1:
             *internalFormat = GL_RGBA;
             *format = GL_RGBA;
             *type = GL_UNSIGNED_SHORT_5_5_5_1;
