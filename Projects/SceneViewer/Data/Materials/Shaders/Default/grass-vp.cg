@@ -116,8 +116,9 @@ VPROG_BEGIN
     fog_param.halfspace_limit   = fogHalfspaceLimit;
     #endif
 
-    #if FOG_ATMOSPHERE
     float3 eyeCoordsPosition = mul( float4(VP_IN_POSITION,1.0), worldViewMatrix ).xyz; 
+    
+    #if FOG_ATMOSPHERE
     fog_param.tolight_dir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
 
     fog_param.atmosphere_distance = fogAtmosphereDistance;
