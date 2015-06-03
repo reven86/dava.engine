@@ -27,36 +27,42 @@
 =====================================================================================*/
 
 
-#include "result.h"
+#ifndef QUICKED_RESULT_H_
+#define QUICKED_RESULT_H_
 
-Result::Result(ResultType type, const QString &error)
-{
-        types << type;
-        errors << error;
-}
+#include "Base/BaseTypes.h"
+#include "FileSystem/VariantType.h"
 
-Result::operator bool() const
+struct Result
 {
-    for (auto type : types)
+    enum ResultType 
     {
-        if (type != Success)
-        {
-            return false;
-        }
-    }
-    return true;
-}
+        RESULT_SUCCESS,
+        RESULT_WARNING,
+        RESULT_ERROR
+    };
+    enum FinishedType // we need this flag to confirm that action is completely performed
+    {
+        FINISHED_SUCCESS,
+        FINISHED_ALMOST,
+        FINISHED_NOT
+    };
+    Result(ResultType type = RESULT_SUCCESS, const DAVA::String &error = DAVA::String(), const DAVA::VariantType &data = DAVA::VariantType());
+    operator bool() const;
+    ResultType type;
+    DAVA::String resultText;
+    DAVA::VariantType data;
+};
 
-Result Result::addError(Result::ResultType type, const QString &errorText)
+class ResultList
 {
-    types << type;
-    errors << errorText;
-    return *this;
-}
-
-Result Result::addError(const Result &err)
-{
-    types << err.types;
-    errors << err.errors;
-    return *this;
-}
+public:
+    explicit ResultList();
+    explicit ResultList(const Result& result);
+    ~ResultList() = default;
+    operator bool() const;
+    ResultList &AddResult(const Result &result);
+private:
+    DAVA::Deque < Result > results;
+};
+#endif // QUICKED_RESULT_H_

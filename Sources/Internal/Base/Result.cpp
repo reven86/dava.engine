@@ -27,25 +27,30 @@
 =====================================================================================*/
 
 
-#ifndef QUICKED_RESULT_H_
-#define QUICKED_RESULT_H_
+#include "result.h"
 
-#include <QString>
-#include <QStringList>
-
-struct Result
+Result::Result(ResultType type_, const DAVA::String &error_, const DAVA::VariantType &data_)
+    : type(type_)
+    , resultText(resultText)
+    , data(data_)
 {
-    enum ResultType {
-        Success,
-        DAVAError,
-        Warning,
-        CriticalError,
-    };
-    explicit Result(ResultType type = Success, const QString &error = QString());
-    operator bool() const;
-    QStringList errors;
-    QList<ResultType> types;
-    Result addError(ResultType type, const QString &errorText);
-    Result addError(const Result &err); 
-};
-#endif // QUICKED_RESULT_H_
+}
+
+Result::operator bool() const
+{
+    return type == RESULT_SUCCESS;
+}
+
+Result Result::addError(Result::ResultType type, const QString &errorText)
+{
+    types << type;
+    errors << errorText;
+    return *this;
+}
+
+Result Result::addError(const Result &err)
+{
+    types << err.types;
+    errors << err.errors;
+    return *this;
+}
