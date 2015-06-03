@@ -41,11 +41,7 @@
 #ifndef AUTOTESTING_LUA
 #define AUTOTESTING_LUA
 #endif
-#if !defined(DAVA_MEMORY_PROFILING_DISABLE)
-#if !defined(DAVA_MEMORY_PROFILING_ENABLE)
-#define DAVA_MEMORY_PROFILING_ENABLE
-#endif
-#endif
+
 //#define ENABLE_BASE_OBJECT_CHECKS // separate thing to check if you release BaseObjects properly. Need to be disabled for release configurations 
 
 //#define ENABLE_CONTROL_EDIT //allows to drug'n'drop controls for position editing
