@@ -28,8 +28,8 @@
 
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
-#include "Platform/Thread.h"
-#include "Platform/Mutex.h"
+#include "Concurrency/Thread.h"
+#include "Concurrency/Mutex.h"
 #include "Base/FunctionTraits.h"
 
 #include "DownloadManager.h"

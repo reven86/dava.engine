@@ -39,7 +39,6 @@ namespace DAVA
 {
 
 class Thread;
-class Mutex;
 class Downloader;
 
 class DownloadManager : public Singleton<DownloadManager>

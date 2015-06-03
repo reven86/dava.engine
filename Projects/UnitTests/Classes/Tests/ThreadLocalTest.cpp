@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Platform/Thread.h"
-#include "Thread/ThreadLocalPtr.h"
+#include "Concurrency/Thread.h"
+#include "Concurrency/ThreadLocalPtr.h"
 
 #include "ThreadLocalTest.h"
 

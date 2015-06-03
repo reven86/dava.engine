@@ -34,7 +34,7 @@
 
 #include "Base/Function.h"
 #include "Base/Noncopyable.h"
-#include "Platform/Mutex.h"
+#include "Concurrency/Mutex.h"
 
 namespace DAVA
 {

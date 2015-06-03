@@ -32,7 +32,6 @@
 #define __DAVAENGINE_UI_LOADING_TRANSITION_H__
 
 #include "Base/BaseTypes.h"
-#include "Platform/Thread.h"
 #include "UI/UIScreenTransition.h"
 
 namespace DAVA

@@ -43,7 +43,7 @@
 #include "Render/2D/TextBlockDistanceRender.h"
 
 #include "Utils/StringUtils.h"
-#include <Thread/LockGuard.h>
+#include "Concurrency/LockGuard.h"
 #include "fribidi/fribidi-bidi-types.h"
 #include "fribidi/fribidi-unicode.h"
 #include "TextLayout.h"

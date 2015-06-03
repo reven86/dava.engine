@@ -32,7 +32,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
 #include "Base/Message.h"
-#include "Platform/Mutex.h"
+#include "Concurrency/Mutex.h"
 #include "Notification/LocalNotificationAndroid.h"
 #include "Notification/LocalNotificationNotImplemented.h"
 

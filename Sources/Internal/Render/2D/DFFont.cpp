@@ -33,7 +33,7 @@
 #include "Render/Shader.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
-#include "Thread/LockGuard.h"
+#include "Concurrency/LockGuard.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #define NOT_DEF_CHAR 0xffff

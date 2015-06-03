@@ -27,91 +27,126 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_SPINLOCK_H__
-#define __DAVAENGINE_SPINLOCK_H__
+#ifndef __DAVAENGINE_SEMAPHORE_H__
+#define __DAVAENGINE_SEMAPHORE_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/Atomic.h"
+#include "Debug/DVAssert.h"
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-#include <libkern/OSAtomic.h>
+#include <dispatch/dispatch.h>
+#elif defined(__DAVAENGINE_ANDROID__)
+#include <semaphore.h>
 #endif //PLATFORMS
 
 namespace DAVA
 {
 
-/*! brief Spinlock wrapper class compatible with Thread class. Supports Win32, MacOS, iPhone, Android platforms. */
-class Spinlock
+/*! brief Semaphore wrapper class compatible with Thread class. Supports Win32, MacOS, iPhone, Android platforms. */
+class Semaphore
 {
 public:
-    Spinlock() : spin(0) {};
+	Semaphore(uint32 value);
+	~Semaphore();
 
-    void Lock();
-    void Unlock();
-    bool TryLock();
+	void Post();
+	void Wait();
 
 protected:
 
-#if defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_ANDROID__)
-    volatile int32 spin;
+#if defined(__DAVAENGINE_WINDOWS__)
+	HANDLE semaphore;
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-    OSSpinLock spin;
+    dispatch_semaphore_t semaphore;
+#elif defined(__DAVAENGINE_ANDROID__)
+	sem_t semaphore;
 #endif //PLATFORMS
 
 };
 
-#if defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_WINDOWS__)
 
 // ##########################################################################################################
-// Windows/Android implementation
+// Windows implementation
 // ##########################################################################################################
 
-inline void Spinlock::Lock()
+inline Semaphore::Semaphore(uint32 value)
 {
-    // try to set spin = 1
-    while(!AtomicCompareAndSwap(0, 1, (int&) spin))
-    {
-        // wait till spin become equal to 0
-        while(0 != spin) 
-        { }
-    }
+#ifdef __DAVAENGINE_WIN32__
+    semaphore = CreateSemaphore(NULL, value, 0x0FFFFFFF, NULL);
+#else
+	semaphore = CreateSemaphoreEx(NULL, value, 0x0FFFFFFF, NULL, 0, SEMAPHORE_ALL_ACCESS);
+#endif
+	DVASSERT(NULL != semaphore);
 }
 
-inline void Spinlock::Unlock()
+inline Semaphore::~Semaphore()
 {
-    // set spin = 0
-    AtomicCompareAndSwap(1, 0, (int&) spin);
+	CloseHandle(semaphore);
 }
 
-inline bool Spinlock::TryLock()
+inline void Semaphore::Post()
 {
-    // try to set spin = 1
-    return AtomicCompareAndSwap(0, 1, (int&) spin);
+	ReleaseSemaphore(semaphore, 1, NULL);
 }
 
-#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+inline void Semaphore::Wait()
+{
+	WaitForSingleObjectEx(semaphore, INFINITE, FALSE);
+}
+
+#elif defined(__DAVAENGINE_APPLE__) 
 
 // ##########################################################################################################
 // MacOS/IOS implementation
 // ##########################################################################################################
 
-inline void Spinlock::Lock()
+inline Semaphore::Semaphore(uint32 value)
 {
-    OSSpinLockLock(&spin);
+	semaphore = dispatch_semaphore_create(value);
 }
 
-inline void Spinlock::Unlock()
+inline Semaphore::~Semaphore()
 {
-    OSSpinLockUnlock(&spin);
+	dispatch_release(semaphore);
 }
 
-inline bool Spinlock::TryLock()
+inline void Semaphore::Post()
 {
-    return OSSpinLockTry(&spin);
+	dispatch_semaphore_signal(semaphore);
 }
 
-#endif //PLATFORMS
+inline void Semaphore::Wait()
+{
+	dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+}
+
+#elif defined(__DAVAENGINE_ANDROID__)
+
+// ##########################################################################################################
+// Android implementation
+// ##########################################################################################################
+inline Semaphore::Semaphore(uint32 value)
+{
+	sem_init(&semaphore, 0, value);
+}
+
+inline Semaphore::~Semaphore()
+{
+	sem_destroy(&semaphore);
+}
+
+inline void Semaphore::Post()
+{
+	sem_post(&semaphore);
+}
+
+inline void Semaphore::Wait()
+{
+	sem_wait(&semaphore);
+}
+#endif
 
 };
 
-#endif // __DAVAENGINE_SPINLOCK_H__
+#endif // __DAVAENGINE_SEMAPHORE_H__

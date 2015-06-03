@@ -30,13 +30,13 @@
 #define __DATA_DOWNLOADER_H__
 
 #include "Base/BaseTypes.h"
-#include "Platform/Thread.h"
-#include "Platform/Mutex.h"
+#include "Concurrency/Thread.h"
+#include "Concurrency/Mutex.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 #include "DownloaderCommon.h"
 #include "Base/Function.h"
-#include "Thread/Spinlock.h"
+#include "Concurrency/Spinlock.h"
 
 namespace DAVA
 {

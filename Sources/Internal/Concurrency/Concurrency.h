@@ -26,34 +26,24 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_JOB_THREAD_H__
-#define __DAVAENGINE_JOB_THREAD_H__
+#ifndef __DAVAENGINE_CONCURRENCY_H__
+#define __DAVAENGINE_CONCURRENCY_H__
 
+// All concurrency subsystem includes
+
+#include "Concurrency/Atomic.h"
+#include "Concurrency/ConcurrentObject.h"
+#include "Concurrency/ConditionVariable.h"
+#include "Concurrency/LockGuard.h"
+#include "Concurrency/Mutex.h"
 #include "Concurrency/Semaphore.h"
+#include "Concurrency/Spinlock.h"
 #include "Concurrency/Thread.h"
-#include "JobQueue.h"
+#include "Concurrency/ThreadLocalPtr.h"
 
-namespace DAVA
-{
+//TODO: uncomment this include in client
+#if defined(__DAVAENGINE_WINDOWS__)
+#   include "Platform/TemplateWin32/pThreadWin32.h"
+#endif
 
-class JobThread
-{
-public:
-    JobThread(JobQueueWorker *workerQueue, Semaphore *workerDoneSem);
-    ~JobThread();
-
-    void Cancel();
-
-protected:
-    Thread *thread;
-    JobQueueWorker *workerQueue;
-    Semaphore *workerDoneSem;
-    volatile bool threadCancel;
-    volatile bool threadFinished;
-
-    void ThreadFunc(BaseObject * bo, void * userParam, void * callerParam);
-};
-
-}
-
-#endif // __DAVAENGINE_JOB_THREAD_H__
+#endif //  __DAVAENGINE_CONCURRENCY_H__

@@ -29,7 +29,7 @@
 #include "Downloader.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "Platform/SystemTimer.h"
-#include "Thread/LockGuard.h"
+#include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {

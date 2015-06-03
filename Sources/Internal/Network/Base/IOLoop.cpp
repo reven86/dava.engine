@@ -28,7 +28,7 @@
 
 #include "Base/FunctionTraits.h"
 #include "Debug/DVAssert.h"
-#include "Thread/LockGuard.h"
+#include "Concurrency/LockGuard.h"
 
 #include "Network/Base/IOLoop.h"
 

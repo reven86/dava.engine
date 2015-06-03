@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <new>
 #include "TemplateHelpers.h"
 #include "Base/BaseTypes.h"
-#include "Base/Atomic.h"
+#include "Concurrency/Atomic.h"
 
 namespace DAVA
 {
@@ -48,19 +48,19 @@ public:
 
 	void Retain()
 	{
-        AtomicIncrement(refCount);
+        refCount.Increment();
 	}
 
 	void Release()
 	{
-		if (0 == AtomicDecrement(refCount))
+		if (0 == refCount.Decrement())
 		{
 			delete this;
 		}
 	}
 
 private:
-	int32 refCount;
+	Atomic<int32> refCount;
 };
 
 // ====================================================================================================================================================

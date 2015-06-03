@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #include "SpinLockTest.h"
-#include "Thread/Spinlock.h"
+#include "Concurrency/Spinlock.h"
 
 #include <array>
 

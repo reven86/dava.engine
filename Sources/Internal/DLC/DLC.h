@@ -30,7 +30,7 @@
 #define __DAVAENGINE_DLC_H__
 
 #include "Base/BaseTypes.h"
-#include "Platform/Thread.h"
+#include "Concurrency/Thread.h"
 #include "Downloader/DownloaderCommon.h"
 #include "Patcher/PatchFile.h"
 

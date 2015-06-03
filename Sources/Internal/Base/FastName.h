@@ -34,12 +34,12 @@
 #include "Base/HashMap.h"
 #include "Base/StaticSingleton.h"
 
-#include "Platform/Mutex.h"
+#include "Concurrency/Mutex.h"
 
 #include <cstdlib>
 namespace DAVA
 {
-class Mutex;
+
 struct FastNameDB : public StaticSingleton<FastNameDB>
 {
 	FastNameDB()

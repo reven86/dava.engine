@@ -37,7 +37,7 @@
 #include "Base/EventDispatcher.h"
 #include "Base/FastName.h"
 #include "Sound/SoundEvent.h"
-#include "Platform/Mutex.h"
+#include "Concurrency/Mutex.h"
 
 #ifdef DAVA_FMOD
 namespace FMOD

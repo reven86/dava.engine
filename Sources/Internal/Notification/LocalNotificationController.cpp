@@ -34,7 +34,7 @@
 #include "Notification/LocalNotificationDelayed.h"
 
 #include "Base/BaseTypes.h"
-#include "Thread/LockGuard.h"
+#include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {

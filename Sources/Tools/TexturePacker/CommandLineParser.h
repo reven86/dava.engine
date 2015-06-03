@@ -69,7 +69,7 @@ public:
     static String GetCommand(uint32 commandPosition);
     static String GetCommandParam(const String &command);
 
-	CC_DEPRECATED(static String GetCommandParamAdditional(const String &command, const int32 paramIndex));	//TODO: remove this method after fix of DF-1584
+	DAVA_DEPRECATED(static String GetCommandParamAdditional(const String &command, const int32 paramIndex));	//TODO: remove this method after fix of DF-1584
 
     static bool CommandIsFound(const String &command);
     static bool CheckPosition(int32 commandPosition);

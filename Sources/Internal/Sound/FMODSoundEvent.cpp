@@ -32,7 +32,7 @@
 #include "Sound/SoundSystem.h"
 #include "Scene3D/Entity.h"
 
-#include "Platform/Thread.h"
+#include "Concurrency/Thread.h"
 #include "Utils/StringFormat.h"
 
 namespace DAVA

@@ -52,7 +52,7 @@ void ThreadSyncTest::SomeThreadFunc(BaseObject * caller, void * callerData, void
 {
     someValue = 0;
     cvMutex.Lock();
-    Thread::Signal(&cv);
+    cv.NotifyOne();
     cvMutex.Unlock();
 }
 
@@ -67,12 +67,12 @@ void ThreadSyncTest::ThreadSleepTestFunction(PerfFuncData * data)
 
 void ThreadSyncTest::ThreadSyncTestFunction(PerfFuncData * data)
 {
-    cvMutex.Lock();
+    LockGuard<Mutex> guard(cvMutex);
     someThread = Thread::Create(Message(this, &ThreadSyncTest::SomeThreadFunc));
     someValue = -1;
     someThread->Start();
-    Thread::Wait(&cv, &cvMutex);
-    cvMutex.Unlock();
+    
+    cv.Wait(guard);
 
     TEST_VERIFY(someValue == 0);
     someThread->Join();

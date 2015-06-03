@@ -28,8 +28,7 @@
 
 #include <Base/FunctionTraits.h>
 #include <Debug/DVAssert.h>
-#include <Base/Atomic.h>
-#include <Thread/LockGuard.h>
+#include <Concurrency/LockGuard.h>
 
 #include <Network/Base/IOLoop.h>
 #include <Network/ServiceRegistrar.h>
@@ -41,7 +40,7 @@ namespace DAVA
 namespace Net
 {
 
-uint32 ProtoDriver::nextPacketId = 0;
+Atomic<uint32> ProtoDriver::nextPacketId;
 
 ProtoDriver::ProtoDriver(IOLoop* aLoop, eNetworkRole aRole, const ServiceRegistrar& aRegistrar, void* aServiceContext)
     : loop(aLoop)
@@ -383,7 +382,7 @@ void ProtoDriver::PreparePacket(Packet* packet, uint32 channelId, const void* bu
     DVASSERT(buffer != NULL && length > 0);
 
     packet->channelId = channelId;
-    packet->packetId = AtomicIncrement(reinterpret_cast<int32&>(nextPacketId));;
+    packet->packetId = nextPacketId.Increment();
     packet->dataLength = length;
     packet->sentLength = 0;
     packet->chunkLength = 0;

@@ -30,7 +30,7 @@
 #if defined(__DAVAENGINE_WIN32__)
 
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
-#include "Platform/Thread.h"
+#include "Concurrency/Thread.h"
 #include "Utils/UTF8Utils.h"
 #include <shellapi.h>
 

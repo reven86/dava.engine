@@ -37,7 +37,6 @@
 #include "Base/FastName.h"
 #include "Render/RenderResource.h"
 #include "FileSystem/FilePath.h"
-#include "Platform/Mutex.h"
 
 #include "Render/UniqueStateSet.h"
 

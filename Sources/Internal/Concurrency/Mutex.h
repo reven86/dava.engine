@@ -26,53 +26,92 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __DAVAENGINE_MUTEX_H__
 #define __DAVAENGINE_MUTEX_H__
 
 #include "Base/Platform.h"
 
-#if defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_ANDROID__)
-#   include <pthread.h>
+#if defined(USE_CPP11_CONCURRENCY)
+#   include <mutex> //for std::mutex and std::recursive_mutex
 #elif defined(__DAVAENGINE_WINDOWS__)
 #   include "Platform/TemplateWin32/pThreadWin32.h"
+#else
+#   inclide <pthread.h>
 #endif
 
 namespace DAVA
 {
-/**
-	\ingroup threads
-	\brief wrapper mutex class compatible with Thread class. Now is supports Win32, MacOS, iPhone platforms.
+
+//-----------------------------------------------------------------------------
+//Mutex realization
+//Direct using of mutex is inadvisable. 
+//Use LockGuard or ConcurrentObject instead 
+//-----------------------------------------------------------------------------
+#if defined(USE_CPP11_CONCURRENCY)
+
+//MutexTemplate - adapter for lockable objects
+template <typename MutexT>
+class MutexTemplate
+{
+    friend class ConditionVariable;
+public:
+    MutexTemplate() = default;
+    MutexTemplate(const MutexTemplate&) = delete;
+    MutexTemplate& operator=(const MutexTemplate&) = delete;
+
+    void Lock() { mutex.lock(); }
+    void Unlock() { mutex.unlock(); }
+    bool TryLock() { return mutex.try_lock(); }
+
+private:
+    using MutexType = MutexT;
+    MutexType mutex;
+};
+
+//Mutexes types
+using Mutex = MutexTemplate<std::mutex>;
+using RecursiveMutex = MutexTemplate<std::recursive_mutex>;
+
+#else 
+
+//Base mutex class
+class MutexBase
+{
+    friend class ConditionVariable;
+public:
+    MutexBase() = default;
+    ~MutexBase();
+
+    MutexBase(const MutexBase&) = delete;
+    MutexBase& operator=(const MutexBase&) = delete;
 	
-	This class works primarily as POSIX pthread mutex. 
-	Main difference that on Win32 it allows recursive locks from one thread. On Unix it doesn't because of it's mutex implementation.
-	So be careful and try to avoid recursive locks because in this case code will not be portable. 
-*/
-class Mutex
+	void Lock();
+    void Unlock();
+    bool TryLock();
+	
+protected:
+    pthread_mutex_t mutex;
+};
+
+//Specialized mutexes
+class Mutex final : public MutexBase
 {
 public:
 	Mutex();
-	~Mutex();
-
     Mutex(const Mutex&) = delete;
-    Mutex& opetator(const Mutex&) = delete;
-
-	/**
-		\brief lock the execution thread of this mutex object
-
-		If the mutex is already locked, the calling thread shall block until the mutex becomes available. 
-		This operation returns when all references of this mutex will be unlocked. 
-	*/
-	void Lock();
-
-	/**
-		\brief release the mutex object.
-	*/
-	void Unlock();
-
-	pthread_mutex_t mutex;
+    Mutex& operator=(const Mutex&) = delete;
 };
+
+class RecursiveMutex final : public MutexBase
+{
+public:
+    RecursiveMutex();
+    RecursiveMutex(const RecursiveMutex&) = delete;
+    RecursiveMutex& operator=(const RecursiveMutex&) = delete;
+};
+	
+#endif  // defined(USE_CPP11_CONCURRENCY)
 
 };
 
-#endif // __DAVAENGINE_MUTEX_H__
+#endif  // __DAVAENGINE_MUTEX_H__

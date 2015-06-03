@@ -175,8 +175,8 @@ public:
 	void SetVisible(const bool & isVisible);
 	inline const bool GetVisible();
 	inline Entity * GetParent();
-	CC_DEPRECATED(void SetUpdatable(bool isUpdatable));
-	CC_DEPRECATED(inline bool GetUpdatable(void));
+	DAVA_DEPRECATED(void SetUpdatable(bool isUpdatable));
+	DAVA_DEPRECATED(inline bool GetUpdatable(void));
 	inline bool IsLodPart(void);
     virtual bool IsLodMain(Entity *childToCheck = NULL);//if childToCheck is NULL checks the caller node
 	

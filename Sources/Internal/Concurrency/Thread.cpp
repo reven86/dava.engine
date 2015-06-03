@@ -26,15 +26,13 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "Platform/Thread.h"
+#include "Concurrency/Thread.h"
+#include "Concurrency/LockGuard.h"
 
 #ifndef __DAVAENGINE_WINDOWS__
-#include <time.h>
-#include <errno.h>
+#   include <time.h>
+#   include <errno.h>
 #endif
-
-#include "Thread/LockGuard.h"
 
 namespace DAVA
 {
@@ -42,26 +40,8 @@ namespace DAVA
 Set<Thread *> Thread::threadList;
 Mutex Thread::threadListMutex;
 
-Thread::Id Thread::mainThreadId = 0;
-Thread::Id Thread::glThreadId = 0;
-
-ConditionalVariable::ConditionalVariable()
-{
-    int32 ret = pthread_cond_init(&cv, 0);
-    if (0 != ret)
-    {
-        Logger::Error("[ConditionalVariable::ConditionalVariable()]: pthread_cond_init error code %d", ret);
-    }
-}
-
-ConditionalVariable::~ConditionalVariable()
-{
-    int32 ret = pthread_cond_destroy(&cv);
-    if (0 != ret)
-    {
-        Logger::Error("[ConditionalVariable::~ConditionalVariable()]: pthread_cond_destroy error code %d", ret);
-    }
-}
+Thread::Id Thread::mainThreadId;
+Thread::Id Thread::glThreadId;
 
 void Thread::InitMainThread()
 {
@@ -75,7 +55,7 @@ void Thread::InitGLThread()
 
 bool Thread::IsMainThread()
 {
-    if (0 == mainThreadId)
+    if (Thread::Id() == mainThreadId)
     {
         Logger::Error("Main thread not initialized");
     }
@@ -135,7 +115,7 @@ Thread::Thread(const Message& _msg)
     , msg(_msg)
     , state(STATE_CREATED)
     , isCancelling(false)
-    , id(0)
+    , id(Thread::Id())
     , name("DAVA::Thread")
 {
     threadListMutex.Lock();
@@ -151,34 +131,6 @@ Thread::~Thread()
     threadListMutex.Lock();
     threadList.erase(this);
     threadListMutex.Unlock();
-}
-
-void Thread::Wait(ConditionalVariable * cv, Mutex * mutex)
-{
-    int32 ret = 0;
-
-    if ((ret = pthread_cond_wait(&cv->cv, (pthread_mutex_t*)(&mutex->mutex))))
-    {
-        Logger::Error("[Thread::Wait]: pthread_cond_wait error code %d", ret);
-    }
-}
-
-void Thread::Signal(ConditionalVariable * cv)
-{
-    int32 ret = pthread_cond_signal(&cv->cv);
-    if (ret)
-    {
-        Logger::Error("[Thread::Signal]: pthread_cond_signal error code %d", ret);
-    }
-}
-    
-void Thread::Broadcast(ConditionalVariable * cv)
-{
-    int32 ret = pthread_cond_broadcast(&cv->cv);
-    if (ret)
-    {
-        Logger::Error("[Thread::Broadcast]: pthread_cond_broadcast error code %d", ret);
-    }
 }
     
 void Thread::ThreadFunction(void *param)

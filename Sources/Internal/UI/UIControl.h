@@ -109,7 +109,7 @@ public:
         unrotatedRect.dy = size.y * scale.y;
     }
 
-    CC_DEPRECATED(void AddToGeometricData(const UIGeometricData &data))
+    DAVA_DEPRECATED(void AddToGeometricData(const UIGeometricData &data))
     {
         AddGeometricData(data);
     }
@@ -487,7 +487,7 @@ public:
      */
     Rect GetAbsoluteRect();
 
-    CC_DEPRECATED(Rect GetRect(bool absoluteCoordinates));
+    DAVA_DEPRECATED(Rect GetRect(bool absoluteCoordinates));
 
     /**
      \brief Sets the untransformed control rect.
@@ -501,7 +501,7 @@ public:
      */
     void SetAbsoluteRect(const Rect &rect);
 
-    CC_DEPRECATED(virtual void SetRect(const Rect &rect, bool rectInAbsoluteCoordinates));
+    DAVA_DEPRECATED(virtual void SetRect(const Rect &rect, bool rectInAbsoluteCoordinates));
 
     /**
      \brief Returns untransformed control position.
@@ -519,7 +519,7 @@ public:
      */
     Vector2 GetAbsolutePosition();
 
-    CC_DEPRECATED(Vector2 GetPosition(bool absoluteCoordinates));
+    DAVA_DEPRECATED(Vector2 GetPosition(bool absoluteCoordinates));
 
     /**
      \brief Sets the untransformed control position.
@@ -533,7 +533,7 @@ public:
      */
     void SetAbsolutePosition(const Vector2 &position);
 
-    CC_DEPRECATED(virtual void SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates));
+    DAVA_DEPRECATED(virtual void SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates));
 
     /**
      \brief Returns untransformed control size.

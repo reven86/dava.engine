@@ -29,8 +29,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Job/JobManager.h"
 #include "Debug/DVAssert.h"
 #include "Base/ScopedPtr.h"
-#include "Platform/Thread.h"
-#include "Thread/LockGuard.h"
+#include "Concurrency/Thread.h"
+#include "Concurrency/LockGuard.h"
 #include "Platform/DeviceInfo.h"
 
 namespace DAVA
@@ -84,7 +84,7 @@ void JobManager::Update()
                 DVASSERT(false);
             }
 
-            if(curMainJob.invokerThreadId != 0 && curMainJob.fn != 0)
+            if(curMainJob.invokerThreadId != Thread::Id() && curMainJob.fn != 0)
             {
                 // unlock queue mutex until function execution finished
                 mainQueueMutex.Unlock();
@@ -104,7 +104,7 @@ void JobManager::Update()
     if(hasFinishedJobs)
     {
         LockGuard<Mutex> cvguard(mainCVMutex);
-        Thread::Broadcast(&mainCV);
+        mainCV.NotifyAll();
     }
 }
 
@@ -126,7 +126,7 @@ uint32 JobManager::CreateMainJob(const Function<void()>& fn, eMainJobType mainJo
     else
     {
         // reserve job ID
-        jobID = AtomicIncrement((int32&)mainJobIDCounter);
+        jobID = mainJobIDCounter.Increment();
 
         // push requested job into queue
         MainJob job;
@@ -170,7 +170,7 @@ void JobManager::WaitMainJobs(Thread::Id invokerThreadId /* = 0 */)
         LockGuard<Mutex> guard(mainCVMutex);
         while(HasMainJobs())
         {
-            Thread::Wait(&mainCV, &mainCVMutex);
+            mainCV.Wait(guard);
         }
     }
 }
@@ -201,7 +201,7 @@ void JobManager::WaitMainJobID(uint32 mainJobID)
         LockGuard<Mutex> guard(mainCVMutex);
         while(HasMainJobID(mainJobID))
         {
-            Thread::Wait(&mainCV, &mainCVMutex);
+            mainCV.Wait(guard);
         }
     }
 }
@@ -211,7 +211,7 @@ bool JobManager::HasMainJobs(Thread::Id invokerThreadId /* = 0 */)
     bool ret = false;
 
     // tread id = 0 as current thread id, so we should get it
-    if(0 == invokerThreadId)
+    if(Thread::Id() == invokerThreadId)
     {
         invokerThreadId = Thread::GetCurrentId();
     }

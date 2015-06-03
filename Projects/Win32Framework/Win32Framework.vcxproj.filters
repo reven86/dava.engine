@@ -133,9 +133,6 @@
     <Filter Include="Internal\Render\Highlevel\Vegetation">
       <UniqueIdentifier>{e44970a1-4a1f-4e97-aaf5-44659db3a9de}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Internal\Thread">
-      <UniqueIdentifier>{e940db21-ebe2-45bb-bc09-5f3e66960d95}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Internal\DLC\Patcher">
       <UniqueIdentifier>{99a0f84c-8f10-4225-b742-de1df099c7ae}</UniqueIdentifier>
     </Filter>
@@ -189,6 +186,9 @@
     </Filter>
     <Filter Include="Internal\Timer">
       <UniqueIdentifier>{ad6cd690-f1f4-454a-ab5a-65272ae1bf13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Concurrency">
+      <UniqueIdentifier>{5aabf08b-b0ce-4582-90ce-a768cf59e71e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -474,13 +474,7 @@
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticlePropertyLine.h">
       <Filter>Internal\Particles</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\Mutex.h">
-      <Filter>Internal\Platform</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Platform\SystemTimer.h">
-      <Filter>Internal\Platform</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\Thread.h">
       <Filter>Internal\Platform</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Cursor.h">
@@ -1489,9 +1483,6 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderObject.h">
       <Filter>Internal\Render\Highlevel\Vegetation</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Thread\LockGuard.h">
-      <Filter>Internal\Thread</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlNode.h">
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
@@ -1605,12 +1596,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UIPackageLoader.h">
       <Filter>Internal\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Thread\Semaphore.h">
-      <Filter>Internal\Thread</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Thread\Spinlock.h">
-      <Filter>Internal\Thread</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Job\JobThread.h">
       <Filter>Internal\Job</Filter>
@@ -1828,9 +1813,6 @@
     <ClInclude Include="..\..\Sources\Internal\Timer\RawTimer.h">
       <Filter>Internal\Timer</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Thread\ThreadLocalPtr.h">
-      <Filter>Internal\Thread</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeComponent.h">
       <Filter>Internal\UI\Components</Filter>
     </ClInclude>
@@ -1839,6 +1821,42 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Base\Platform.h">
       <Filter>Internal\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Atomic.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\AtomicGNU.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\AtomicWindows.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Concurrency.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\ConcurrentObject.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\ConditionVariable.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\LockGuard.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Mutex.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Semaphore.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Spinlock.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Thread.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\ThreadLocalPtr.h">
+      <Filter>Internal\Concurrency</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2040,16 +2058,7 @@
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticlePropertyLine.cpp">
       <Filter>Internal\Particles</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\Mutex.cpp">
-      <Filter>Internal\Platform</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Platform\SystemTimer.cpp">
-      <Filter>Internal\Platform</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\Thread.cpp">
-      <Filter>Internal\Platform</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\ThreadWin32.cpp">
       <Filter>Internal\Platform</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\CursorWin32.cpp">
@@ -3282,6 +3291,21 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.cpp">
       <Filter>Internal\UI\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\ConditionVariable.cpp">
+      <Filter>Internal\Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\Mutex.cpp">
+      <Filter>Internal\Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\Thread.cpp">
+      <Filter>Internal\Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\ThreadPosix.cpp">
+      <Filter>Internal\Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\ThreadWin32.cpp">
+      <Filter>Internal\Concurrency</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

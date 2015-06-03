@@ -33,19 +33,23 @@
 #include "Base/BaseTypes.h"
 #include "Base/Message.h"
 #include "Base/BaseObject.h"
-#include "Mutex.h"
+#include "Concurrency/Atomic.h"
+#include "Concurrency/Mutex.h"
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
-#if !defined __DAVAENGINE_PTHREAD__
-    #define __DAVAENGINE_PTHREAD__
+#if defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_ANDROID__)
+#   if !defined __DAVAENGINE_PTHREAD__
+#       define __DAVAENGINE_PTHREAD__
+#   endif
 #endif
-#endif
-
 
 #if defined (__DAVAENGINE_WINDOWS__)
-#include "Platform/TemplateWin32/pThreadWin32.h"
+#   if defined(USE_CPP11_CONCURRENCY)
+#       include <thread>
+#   else
+#       include "Platform/TemplateWin32/pThreadWin32.h"
+#   endif
 #elif defined(__DAVAENGINE_PTHREAD__)
-#include <pthread.h>
+#   include <pthread.h>
 #endif
 
 namespace DAVA
@@ -53,23 +57,6 @@ namespace DAVA
 /**
 	\defgroup threads Thread wrappers
 */
-
-/**
-	\ingroup threads
-	\brief wrapper class to give us level of abstraction on thread implementation in particual OS. Now is supports Win32, MacOS, iPhone platforms.
-*/
-
-class ConditionalVariable
-{
-public:
-    ConditionalVariable();
-    ~ConditionalVariable();
-
-private:
-    pthread_cond_t cv;
-
-    friend class Thread;
-};
 
 class Thread : public BaseObject
 {
@@ -80,11 +67,19 @@ private:
 public:
     typedef pthread_t Id;
 #elif defined(__DAVAENGINE_WINDOWS__)
+#   if defined(USE_CPP11_CONCURRENCY)
+private:
+    typedef std::thread Handle;
+    friend DWORD WINAPI ThreadFunc(void *param);
+public:
+    typedef std::thread::id Id;
+#   else 
 private:
     typedef HANDLE Handle;
     friend DWORD WINAPI ThreadFunc(void *param);
 public:
     typedef DWORD Id;
+#   endif
 #endif
 #if defined(__DAVAENGINE_ANDROID__)
     static void thread_exit_handler(int sig);
@@ -147,13 +142,7 @@ public:
      */
     inline bool IsCancelling() const;
     static void CancelAll();
-    /**
-        Wrapp pthread wait, signal and broadcast
-	*/
-    static void Wait(ConditionalVariable * cv, Mutex * mutex);
-    static void Signal(ConditionalVariable * cv);
-    static void Broadcast(ConditionalVariable * cv);
-    
+
     /**
      \brief Notifies the scheduler that the current thread is
      willing to release its processor to other threads of the same or higher
@@ -200,9 +189,8 @@ private:
     static void ThreadFunction(void *param);
 
 	Message	msg;
-	eThreadState state;
-    
-    volatile bool isCancelling;
+    Atomic<eThreadState> state;
+    Atomic<int> isCancelling;
 
     /**
     \brief Native thread handle - variable which used to thread manipulations
@@ -242,17 +230,17 @@ inline String Thread::GetName()
     
 inline Thread::eThreadState Thread::GetState() const
 {
-    return state;
+    return state.Get();
 }
 
 inline void Thread::Cancel()
 {
-    isCancelling = true;
+    isCancelling = 1;
 }
     
 inline bool Thread::IsCancelling() const
 {
-    return isCancelling;
+    return isCancelling.Get() == 1;
 }
 
 inline Thread::Id Thread::GetId() const

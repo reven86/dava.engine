@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 #include <Utils/UTF8Utils.h>
-#include <Thread/LockGuard.h>
+#include <Concurrency/LockGuard.h>
 
 #include <Network/Base/Endpoint.h>
 

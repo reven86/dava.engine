@@ -36,8 +36,6 @@
 #include "Base/BaseMath.h"
 #include "Render/Shader.h"
 
-#include "Platform/Mutex.h"
-
 namespace DAVA
 {
     

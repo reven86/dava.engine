@@ -27,7 +27,7 @@
  =====================================================================================*/
 
 
-#include "Platform/Thread.h"
+#include "Concurrency/Thread.h"
 
 #if defined(__DAVAENGINE_PTHREAD__)
 

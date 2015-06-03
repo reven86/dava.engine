@@ -281,6 +281,18 @@
     <ClInclude Include="..\..\Sources\Internal\Base\ScopedPtr.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Serializable.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\TemplateHelpers.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Atomic.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\AtomicGNU.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\AtomicWindows.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Concurrency.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\ConcurrentObject.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\ConditionVariable.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\LockGuard.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Mutex.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Semaphore.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Spinlock.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Thread.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\ThreadLocalPtr.h" />
     <ClInclude Include="..\..\Sources\Internal\Core\PerformanceSettings.h" />
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbClient.h" />
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbObject.h" />
@@ -451,7 +463,6 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\DeviceInfo.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DPIHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\MovieViewControlStub.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\Mutex.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Process.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\QtLayer.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\Win32\CorePlatformWin32Qt.h" />
@@ -465,7 +476,6 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\pThreadWin32.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WindowsSpecifics.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\Thread.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\DFFont.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\Systems\RenderSystem2D.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\Systems\VirtualCoordinatesSystem.h" />
@@ -690,10 +700,6 @@
     <ClInclude Include="..\..\Sources\Internal\Sound\FMODUtils.h" />
     <ClInclude Include="..\..\Sources\Internal\Sound\SoundEvent.h" />
     <ClInclude Include="..\..\Sources\Internal\Sound\SoundSystem.h" />
-    <ClInclude Include="..\..\Sources\Internal\Thread\LockGuard.h" />
-    <ClInclude Include="..\..\Sources\Internal\Thread\Semaphore.h" />
-    <ClInclude Include="..\..\Sources\Internal\Thread\Spinlock.h" />
-    <ClInclude Include="..\..\Sources\Internal\Thread\ThreadLocalPtr.h" />
     <ClInclude Include="..\..\Sources\Internal\Timer\RawTimer.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIComponent.h" />
@@ -812,7 +818,6 @@
     <ClCompile Include="..\..\Sources\Internal\Autotesting\UIControlSwig.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\VectorSwig.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\AllocatorFactory.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Base\AtomicWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\BaseObject.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\Data.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\EnumMap.cpp" />
@@ -823,6 +828,11 @@
     <ClCompile Include="..\..\Sources\Internal\Base\IntrospectionDynamic.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\Observable.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\Radix\Radix.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\ConditionVariable.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\Mutex.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\Thread.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\ThreadPosix.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\ThreadWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Core\PerformanceSettings.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Database\MongodbClient.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Database\MongodbObject.cpp" />
@@ -955,7 +965,6 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\DateTime.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfo.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\MovieViewControlStub.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\Mutex.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Process.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\QtLayer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\Win32\CorePlatformWin32Qt.cpp" />
@@ -971,8 +980,6 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\pThreadWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\DPIHelperWin32.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\Thread.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\ThreadWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\DFFont.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\Systems\RenderSystem2D.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\Systems\VirtualCoordinatesSystem.cpp" />

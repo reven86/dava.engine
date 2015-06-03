@@ -29,7 +29,7 @@
 
 #include "Render/RenderBase.h"
 #include "Render/RenderManager.h"
-#include "Platform/Thread.h"
+#include "Concurrency/Thread.h"
 
 namespace DAVA
 {

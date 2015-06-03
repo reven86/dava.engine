@@ -26,34 +26,69 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_JOB_THREAD_H__
-#define __DAVAENGINE_JOB_THREAD_H__
+#include "Base/Platform.h"
+#ifndef USE_CPP11_CONCURRENCY
 
-#include "Concurrency/Semaphore.h"
-#include "Concurrency/Thread.h"
-#include "JobQueue.h"
+#include "Concurrency/Mutex.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
 
-class JobThread
+Mutex::Mutex()
 {
-public:
-    JobThread(JobQueueWorker *workerQueue, Semaphore *workerDoneSem);
-    ~JobThread();
-
-    void Cancel();
-
-protected:
-    Thread *thread;
-    JobQueueWorker *workerQueue;
-    Semaphore *workerDoneSem;
-    volatile bool threadCancel;
-    volatile bool threadFinished;
-
-    void ThreadFunc(BaseObject * bo, void * userParam, void * callerParam);
-};
-
+    int ret = pthread_mutex_init(&mutex, nullptr);
+    if (ret != 0)
+    {
+        Logger::Error("Mutex::Mutex() error: %d", ret);
+    }
 }
 
-#endif // __DAVAENGINE_JOB_THREAD_H__
+RecursiveMutex::RecursiveMutex()
+{
+    pthread_mutexattr_t attributes;
+    pthread_mutexattr_init(&attributes);
+    pthread_mutexattr_settype(&attributes, PTHREAD_MUTEX_RECURSIVE);
+
+    int ret = pthread_mutex_init(&mutex, &attributes);
+    if (ret != 0)
+    {
+        Logger::Error("RecursiveMutex::RecursiveMutex() error: %d", ret);
+    }
+}
+
+MutexBase::~MutexBase()
+{
+    int ret = pthread_mutex_destroy(&mutex);
+    if (ret != 0)
+    {
+        Logger::Error("Mutex::~Mutex() error: %d", ret);
+    }
+}
+
+void MutexBase::Lock()
+{
+    int ret = pthread_mutex_lock(&mutex);
+    if (ret != 0)
+    {
+        Logger::Error("MutexBase::Lock() error: %d", ret);
+    }
+}
+
+void MutexBase::Unlock()
+{
+    int ret = pthread_mutex_unlock(&mutex);
+    if (ret != 0)
+    {
+        Logger::Error("MutexBase::Unlock() error: %d", ret);
+    }
+}
+
+bool MutexBase::TryLock()
+{
+    return pthread_mutex_trylock(&mutex) == 0;
+}
+
+}  // namespace DAVA
+
+#endif  // !USE_CPP11_CONCURRENCY

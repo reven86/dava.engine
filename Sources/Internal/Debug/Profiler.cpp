@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     #include "Profiler.h"
     #include "Debug/DVAssert.h"
     #include "FileSystem/Logger.h"
-    #include "Thread/Spinlock.h"
+    #include "Concurrency/Spinlock.h"
     #include "Base/BaseTypes.h"
     #include "Platform/SystemTimer.h"
     using namespace DAVA;

@@ -34,6 +34,7 @@
 #include <Base/Noncopyable.h>
 #include <FileSystem/Logger.h>
 #include <Platform/DateTime.h>
+#include <Concurrency/Mutex.h>
 
 #include <Network/NetService.h>
 

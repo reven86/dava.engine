@@ -1,0 +1,138 @@
+/*==================================================================================
+Copyright (c) 2008, binaryzebra
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+* Neither the name of the binaryzebra nor the
+names of its contributors may be used to endorse or promote products
+derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
+#ifndef __DAVAENGINE_CONDITION_VARIABLE_H__
+#define __DAVAENGINE_CONDITION_VARIABLE_H__
+
+#include "Base/Platform.h"
+#include "Concurrency/Mutex.h"
+#include "Concurrency/LockGuard.h"
+
+#ifdef USE_CPP11_CONCURRENCY
+#   include <condition_variable> //for std::condition_variable
+#elif defined(__DAVAENGINE_WINDOWS__)
+#   include "Platform/TemplateWin32/pThreadWin32.h"
+#else
+#   inclide <pthread.h>
+#endif
+
+namespace DAVA
+{
+    
+//-------------------------------------------------------------------------------------------------
+//Condition variable class
+//-------------------------------------------------------------------------------------------------
+class ConditionVariable
+{
+public:
+    ConditionVariable();
+    ~ConditionVariable() DAVA_NOEXCEPT;
+
+    ConditionVariable(const ConditionVariable&) = delete;
+    ConditionVariable& operator=(const ConditionVariable&) = delete;
+
+    template <typename Predicate>
+    void Wait(LockGuard<Mutex>& guard, Predicate pred);
+    void Wait(LockGuard<Mutex>& guard);
+
+    //mutex must be unlocked
+    template <typename Predicate>
+    void Wait(Mutex& guard, Predicate pred);
+    void Wait(Mutex& mutex);
+
+    void NotifyOne();
+    void NotifyAll();
+
+private:
+
+#ifdef USE_CPP11_CONCURRENCY
+    std::condition_variable cv;
+#else
+    pthread_cond_t cv;
+#endif
+};
+
+template <typename Predicate>
+void ConditionVariable::Wait(LockGuard<Mutex>& guard, Predicate pred)
+{
+    while (!pred)
+    {
+        Wait(guard);
+    }
+}
+
+template <typename Predicate>
+void ConditionVariable::Wait(Mutex& guard, Predicate pred)
+{
+    LockGuard<Mutex> lock(mutex);
+    Wait(lock, pred);
+}
+
+inline void ConditionVariable::Wait(Mutex& mutex)
+{
+    LockGuard<Mutex> lock(mutex);
+    Wait(lock);
+}
+
+#ifdef USE_CPP11_CONCURRENCY
+
+//-------------------------------------------------------------------------------------------------
+//Condition variable realization using std::condition_variable
+//-------------------------------------------------------------------------------------------------
+inline ConditionVariable::ConditionVariable() {}
+inline ConditionVariable::~ConditionVariable() DAVA_NOEXCEPT{}
+
+inline void ConditionVariable::Wait(LockGuard<Mutex>& guard)
+{
+    if (guard.OwnsLock())
+    {
+        std::unique_lock<std::mutex> lock(guard.mutex_ptr->mutex, std::defer_lock_t());
+        cv.wait(lock);
+    }
+    else
+    {
+        std::unique_lock<std::mutex> lock(guard.mutex_ptr->mutex);
+        cv.wait(lock);
+    }
+}
+
+inline void ConditionVariable::NotifyOne()
+{
+    cv.notify_one();
+}
+
+inline void ConditionVariable::NotifyAll()
+{
+    cv.notify_all();
+}
+
+#endif //  USE_CPP11_CONCURRENCY
+
+} //  namespace DAVA
+
+#endif //  __DAVAENGINE_CONDITION_VARIABLE_H__

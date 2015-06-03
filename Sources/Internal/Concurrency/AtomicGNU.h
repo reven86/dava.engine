@@ -26,34 +26,69 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_JOB_THREAD_H__
-#define __DAVAENGINE_JOB_THREAD_H__
+#ifndef __DAVAENGINE_ATOMIC_GNU_H__
+#define __DAVAENGINE_ATOMIC_GNU_H__
 
-#include "Concurrency/Semaphore.h"
-#include "Concurrency/Thread.h"
-#include "JobQueue.h"
+#include "Base/Platform.h"
+#ifndef USE_CPP11_CONCURRENCY
+
+#include "Concurrency/Atomic.h"
 
 namespace DAVA
 {
 
-class JobThread
+#if defined(__GNUC__)
+
+//-----------------------------------------------------------------------------
+//Atomic template class realization using built-in intrisics
+//-----------------------------------------------------------------------------
+template <typename T>
+Atomic<T>::Atomic(T val) DAVA_NOEXCEPT : value(val) {}
+
+template <typename T>
+void Atomic<T>::Set(T val) DAVA_NOEXCEPT
 {
-public:
-    JobThread(JobQueueWorker *workerQueue, Semaphore *workerDoneSem);
-    ~JobThread();
-
-    void Cancel();
-
-protected:
-    Thread *thread;
-    JobQueueWorker *workerQueue;
-    Semaphore *workerDoneSem;
-    volatile bool threadCancel;
-    volatile bool threadFinished;
-
-    void ThreadFunc(BaseObject * bo, void * userParam, void * callerParam);
-};
-
+    __atomic_store(&value, &val, __ATOMIC_SEQ_CST);
 }
 
-#endif // __DAVAENGINE_JOB_THREAD_H__
+template <typename T>
+T Atomic<T>::Get() const DAVA_NOEXCEPT
+{
+    T result;
+    __atomic_load(&value, &result, __ATOMIC_SEQ_CST);
+    return result;
+}
+
+template <typename T>
+T Atomic<T>::Increment() DAVA_NOEXCEPT
+{
+    return __atomic_add_fetch(&value, 1, __ATOMIC_SEQ_CST);
+}
+
+template <typename T>
+T Atomic<T>::Decrement() DAVA_NOEXCEPT
+{
+    return __atomic_sub_fetch(&value, 1, __ATOMIC_SEQ_CST);
+}
+
+template <typename T>
+T Atomic<T>::Swap(T desired) DAVA_NOEXCEPT
+{
+    T result;
+    __atomic_exchange(&value, &desired, &result, __ATOMIC_SEQ_CST);
+    return result;
+}
+
+template <typename T>
+bool Atomic<T>::CompareAndSwap(T expected, T desired) DAVA_NOEXCEPT
+{
+    return __atomic_compare_exchange(&value, &expected, &desired,
+    false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+}
+
+#endif //  __GNUC__
+
+} //  namespace DAVA
+
+#endif //  !USE_CPP11_CONCURRENCY
+#endif //  __DAVAENGINE_ATOMIC_GNU_H__

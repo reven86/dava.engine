@@ -26,34 +26,53 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_JOB_THREAD_H__
-#define __DAVAENGINE_JOB_THREAD_H__
+#ifndef __DAVAENGINE_CONCURRENT_OBJECT_H__
+#define __DAVAENGINE_CONCURRENT_OBJECT_H__
 
-#include "Concurrency/Semaphore.h"
-#include "Concurrency/Thread.h"
-#include "JobQueue.h"
+#include "Concurrency/LockGuard.h"
+#include "Concurrency/Mutex.h"
 
 namespace DAVA
 {
-
-class JobThread
+    
+//-------------------------------------------------------------------------------------------------
+//Class for concurrent use of objects. Stored object protected by mutex
+//-------------------------------------------------------------------------------------------------
+template <typename T, typename MutexType = Mutex>
+class ConcurrentObject
 {
+    friend class Accessor;
 public:
-    JobThread(JobQueueWorker *workerQueue, Semaphore *workerDoneSem);
-    ~JobThread();
+    template <typename... Args>
+    ConcurrentObject(Args&&... args) : object(std::forward<Args>(args)...) {}
 
-    void Cancel();
+    class Accessor
+    {
+    public:
+        Accessor(ConcurrentObject& object) 
+            : objectRef(object.object), guard(object.mutex) {}
 
-protected:
-    Thread *thread;
-    JobQueueWorker *workerQueue;
-    Semaphore *workerDoneSem;
-    volatile bool threadCancel;
-    volatile bool threadFinished;
+        Accessor(Accessor&& other) 
+            : objectRef(other.objectRef), guard(std::move(other.guard)) {}
 
-    void ThreadFunc(BaseObject * bo, void * userParam, void * callerParam);
+        T& operator*() { return objectRef; }
+        T* operator->() { return &objectRef; }
+
+    private:
+        T& objectRef;
+        LockGuard<MutexType> guard;
+    };
+
+    Accessor GetAccessor() { return Accessor(*this); }
+
+    T Load() { return *Accessor(*this); }
+    void Store(const T& value) { *Accessor(*this) = value; }
+
+private:
+    T object;
+    MutexType mutex;
 };
 
 }
 
-#endif // __DAVAENGINE_JOB_THREAD_H__
+#endif //  __DAVAENGINE_CONCURRENT_OBJECT_H__

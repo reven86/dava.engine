@@ -59,7 +59,7 @@ private:
     Thread * someThread;
 
     Mutex cvMutex;
-    ConditionalVariable cv;
+    ConditionVariable cv;
     int someValue;
 };
 

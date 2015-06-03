@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "Platform/Thread.h"
+#include "Concurrency/Thread.h"
 
 namespace DAVA
 {
@@ -49,23 +49,30 @@ typedef struct tagTHREADNAME_INFO
 
 void Thread::Init()
 {
+#if !defined(USE_CPP11_CONCURRENCY)
     handle = NULL;
+#endif
 }
 
 void Thread::Shutdown()
 {
+#if !defined(USE_CPP11_CONCURRENCY)
     DVASSERT(STATE_ENDED == state || STATE_KILLED == state);
     if (handle)
     {
         CloseHandle(handle);
         handle = NULL;
     }
+#endif
 }
 
 void Thread::Start()
 {
     Retain();
     DVASSERT(STATE_CREATED == state);
+
+#if !defined(USE_CPP11_CONCURRENCY)
+
     handle = CreateThread 
         (
         0, // Security attributes
@@ -74,12 +81,20 @@ void Thread::Start()
         this,
         CREATE_SUSPENDED,
         0);
+    HANDLE native_handle = handle;
 
-    if(!SetThreadPriority(handle, THREAD_PRIORITY_ABOVE_NORMAL))
+#else
+
+    handle = std::thread(ThreadFunc, this);
+    HANDLE native_handle = handle.native_handle();
+
+#endif
+
+    if (!SetThreadPriority(native_handle, THREAD_PRIORITY_ABOVE_NORMAL))
     {
         Logger::Error("Thread::StartWin32 error %d", (int32)GetLastError());
     }
-    ResumeThread(handle);
+    ResumeThread(native_handle);
 }
 
 void Thread::Sleep(uint32 timeMS)
@@ -118,16 +133,31 @@ void Thread::Yield()
 
 void Thread::Join()
 {
+#if !defined(USE_CPP11_CONCURRENCY)
     if (WaitForSingleObjectEx(handle, INFINITE, FALSE) != WAIT_OBJECT_0)
     {
         DAVA::Logger::Error("Thread::Join() failed in WaitForSingleObjectEx");
     }
+#else
+    if (handle.joinable())
+    {
+        handle.join();
+    }
+#endif
 }
 
 void Thread::KillNative()
 {
 #if defined(__DAVAENGINE_WIN32__)
+
+#if !defined(USE_CPP11_CONCURRENCY)
     TerminateThread(handle, 0);
+#else
+    HANDLE native_handle = handle.native_handle();
+    handle.detach();
+    TerminateThread(native_handle, 0);
+#endif
+
 #elif defined(__DAVAENGINE_WIN_UAP__)
     DAVA::Logger::Warning("Thread::KillNative() is not implemented for Windows Store platform");
 #endif
@@ -135,9 +165,13 @@ void Thread::KillNative()
 
 Thread::Id Thread::GetCurrentId()
 {
+#if !defined(USE_CPP11_CONCURRENCY)
     return ::GetCurrentThreadId();
+#else
+    return std::this_thread::get_id();
+#endif
 }
 
 #endif 
 
-};
+}

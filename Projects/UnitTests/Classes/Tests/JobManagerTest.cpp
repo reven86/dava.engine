@@ -47,13 +47,13 @@ class TestJobOwner : public BaseObject
 {
 public:
     TestJobOwner(int32 * _outData) : resultData(_outData), anyData(0) {}
-    virtual ~TestJobOwner() { (*resultData) = anyData; };
+    virtual ~TestJobOwner() { (*resultData) = anyData; }
 
-    void AnyFunction() { AtomicIncrement(anyData); };
+    void AnyFunction() { anyData.Increment(); }
 
 protected:
     int32 * resultData;
-    int32 anyData;
+    Atomic<int32> anyData;
 };
 
 static void testCalc(uint32 *var)
