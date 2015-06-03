@@ -270,8 +270,9 @@ protected:
         enum
         {
             CLIPPED = 1,
-            SUBDIVIDED = 2,
-            TERMINATED = 3,
+            DRAW = 2,
+            SUBDIVIDED = 3,
+            TERMINATED = 4,
         };
         
         SubdivisionPatchInfo()
