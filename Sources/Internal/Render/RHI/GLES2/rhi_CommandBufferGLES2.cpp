@@ -761,14 +761,14 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
 
             case GLES2__SET_FRAGMENT_TEXTURE :
             {
-                TextureGLES2::SetToRHI( (Handle)(arg[1]), tex_unit_0+unsigned(arg[0]) );
+                TextureGLES2::SetToRHI( (Handle)(arg[1]), unsigned(arg[0]), tex_unit_0 );
                 StatSet::IncStat( stat_SET_TEX, 1 );
                 c += 2;
             }   break;
             
             case GLES2__SET_VERTEX_TEXTURE :
             {
-                TextureGLES2::SetToRHI( (Handle)(arg[1]), unsigned(arg[0]) );
+                TextureGLES2::SetToRHI( (Handle)(arg[1]), unsigned(arg[0]), InvalidIndex );
                 StatSet::IncStat( stat_SET_TEX, 1 );
                 c += 2;
             }   break;

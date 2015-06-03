@@ -526,9 +526,20 @@ Descriptor
     Sampler fragmentSampler[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
     uint32  fragmentSamplerCount;
 
+    Sampler vertexSampler[MAX_VERTEX_TEXTURE_SAMPLER_COUNT];
+    uint32  vertexSamplerCount;
+
             Descriptor()
-              : fragmentSamplerCount(0)
-            {}
+              : fragmentSamplerCount(0),
+                vertexSamplerCount(0)
+            {
+                for( uint32 s=0; s!=MAX_VERTEX_TEXTURE_SAMPLER_COUNT; ++s )
+                {
+                    vertexSampler[s].minFilter = TEXFILTER_NEAREST;
+                    vertexSampler[s].magFilter = TEXFILTER_NEAREST;
+                    vertexSampler[s].mipFilter = TEXMIPFILTER_NONE;
+                }
+            }
 };
 
 }
