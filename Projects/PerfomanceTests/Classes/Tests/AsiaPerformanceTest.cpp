@@ -42,9 +42,11 @@ const FastName AsiaPerformanceTest::T110E5 = FastName("T110E5.sc2");
 const float32 AsiaPerformanceTest::TANK_ROTATION_ANGLE = 45.0f;
 
 AsiaPerformanceTest::AsiaPerformanceTest(const TestParams& params)
-    : BaseTest(TEST_NAME, params)
-    , camera(nullptr)
-    , time(0.0f)
+    :   BaseTest(TEST_NAME, params)
+    ,   camera(nullptr)
+    ,   waypointInterpolator(nullptr)
+    ,   tankAnimator(nullptr)
+    ,   time(0.0f)
 {
 }
 
