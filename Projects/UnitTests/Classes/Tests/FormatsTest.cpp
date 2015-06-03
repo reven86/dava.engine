@@ -54,7 +54,9 @@ void FormatsTest::TestFunction(PerfFuncData * data)
     TestJpeg(data);
     TestPng(data);
     TestPvr(data);
+#if !defined (__DAVAENGINE_IPHONE__)
     TestDds(data);
+#endif
 }
 
 void FormatsTest::TestJpeg(PerfFuncData *data)
