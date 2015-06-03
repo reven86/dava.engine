@@ -64,7 +64,7 @@ public slots:
 signals:
     void runningStateChanged(bool arg);
 private:
-    std::atomic_bool running;
+    std::atomic<bool> running;
 };
 
 #endif //__SPRITES_PACKER_H__

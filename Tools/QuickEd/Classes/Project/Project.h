@@ -74,11 +74,6 @@ private:
     bool isOpen;
 };
 
-inline QString Project::GetProjectDir() const
-{
-    return projectDir;
-}
-
 inline EditorFontSystem* Project::GetEditorFontSystem() const
 {
     return editorFontSystem;

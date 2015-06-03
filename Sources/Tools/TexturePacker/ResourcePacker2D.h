@@ -77,12 +77,13 @@ public:
     FILESMAP spriteFiles;
 
     const Set<String>& GetErrors() const;
-    std::atomic_bool running;
 protected:
     Set<String> errors;
 
     void AddError(const String& errorMsg);
     void RecursiveTreeWalk(const FilePath & inputPath, const FilePath & outputPath, const Vector<String> & flags = Vector<String>());
+private:
+    std::atomic<bool> running;
 };
 
 inline bool ResourcePacker2D::IsRunning() const
