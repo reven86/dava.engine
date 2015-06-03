@@ -67,7 +67,9 @@ public:
     ImportedPackagesNode *GetImportedPackagesNode() const;
     PackageControlsNode *GetPackageControlsNode() const;
 
-    PackageNode *FindImportedPackage(const DAVA::FilePath &path);
+    PackageNode *FindImportedPackage(const DAVA::FilePath &path) const;
+    bool FindPackageInImportedPackagesRecursively(const PackageNode *node) const;
+    bool FindPackageInImportedPackagesRecursively(const DAVA::FilePath &path) const;
 
     void AddListener(PackageListener *listener);
     void RemoveListener(PackageListener *listener);

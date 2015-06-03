@@ -116,7 +116,7 @@ PackageControlsNode *PackageNode::GetPackageControlsNode() const
     return packageControlsNode;
 }
 
-PackageNode *PackageNode::FindImportedPackage(const DAVA::FilePath &path)
+PackageNode *PackageNode::FindImportedPackage(const DAVA::FilePath &path) const
 {
     for (int32 index = 0; index < importedPackagesNode->GetCount(); index++)
     {
@@ -124,6 +124,24 @@ PackageNode *PackageNode::FindImportedPackage(const DAVA::FilePath &path)
             return importedPackagesNode->GetImportedPackage(index);
     }
     return nullptr;
+}
+
+bool PackageNode::FindPackageInImportedPackagesRecursively(const PackageNode *node) const
+{
+    return FindPackageInImportedPackagesRecursively(node->GetPath());
+}
+
+bool PackageNode::FindPackageInImportedPackagesRecursively(const DAVA::FilePath &path) const
+{
+    for (int32 index = 0; index < importedPackagesNode->GetCount(); index++)
+    {
+        PackageNode *importedPackage = importedPackagesNode->GetImportedPackage(index);
+        if (importedPackage->GetPath().GetFrameworkPath() == path.GetFrameworkPath())
+            return true;
+        if (importedPackage->FindPackageInImportedPackagesRecursively(path))
+            return true;
+    }
+    return false;
 }
 
 void PackageNode::AddListener(PackageListener *listener)

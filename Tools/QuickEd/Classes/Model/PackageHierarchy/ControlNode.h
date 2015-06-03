@@ -73,6 +73,7 @@ public:
     DAVA::UIControl *GetControl() const;
     ControlNode *GetPrototype() const;
     const DAVA::Vector<ControlNode*> &GetInstances() const;
+    bool IsDependsOnPackage(PackageNode *package) const;
 
     virtual bool IsEditingSupported() const override;
     virtual bool IsInsertingSupported() const override;

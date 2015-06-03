@@ -69,7 +69,7 @@ public:
     virtual bool IsEditingSupported() const;
     virtual bool IsInsertingSupported() const;
     virtual bool CanInsertControl(ControlNode *node, DAVA::int32 pos) const;
-    virtual bool CanInsertImportedPackage() const;
+    virtual bool CanInsertImportedPackage(PackageNode *package) const;
     virtual bool CanRemove() const;
     virtual bool CanCopy() const;
     virtual bool IsReadOnly() const;

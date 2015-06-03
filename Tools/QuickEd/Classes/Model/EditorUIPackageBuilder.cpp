@@ -42,7 +42,11 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageCommandExecutor.h"
+
 #include "UI/UIPackage.h"
+#include "UI/UIControl.h"
+#include "Base/ObjectFactory.h"
+#include "Utils/Utils.h"
 
 using namespace DAVA;
 
@@ -85,7 +89,16 @@ bool EditorUIPackageBuilder::ProcessImportedPackage(const String &packagePathStr
             return true;
     }
     
+    if (std::find(declinedPackages.begin(), declinedPackages.end(), packagePath) != declinedPackages.end())
+    {
+        DVASSERT(false); 
+        return false;
+    }
+    
     EditorUIPackageBuilder builder;
+    builder.declinedPackages.insert(builder.declinedPackages.end(), declinedPackages.begin(), declinedPackages.end());
+    builder.declinedPackages.push_back(packagePath);
+    
     if (loader->LoadPackage(packagePath, &builder))
     {
         RefPtr<PackageNode> importedPackage = builder.BuildPackage();
@@ -299,15 +312,33 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
     DVASSERT(!packagePath.IsEmpty());
     RefPtr<PackageNode> package(new PackageNode(packagePath));
     
+    Vector<PackageNode*> declinedPackages;
     for (PackageNode *importedPackage : importedPackages)
     {
-        package->GetImportedPackagesNode()->Add(importedPackage);
+        if (package->GetImportedPackagesNode()->CanInsertImportedPackage(importedPackage))
+        {
+            package->GetImportedPackagesNode()->Add(importedPackage);
+        }
+        else
+        {
+            declinedPackages.push_back(importedPackage);
+        }
     }
     
     for (ControlNode *control : rootControls)
     {
-        package->GetPackageControlsNode()->Add(control);
+        bool canInsert = true;
+        for (PackageNode *declinedPackage : declinedPackages)
+        {
+            if (control->IsDependsOnPackage(declinedPackage))
+                canInsert = false;
+        }
+        
+        if (canInsert)
+            package->GetPackageControlsNode()->Add(control);
     }
+    
+    DVASSERT(declinedPackages.empty());
     
     return package;
 }

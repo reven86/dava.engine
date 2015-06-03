@@ -106,7 +106,7 @@ bool PackageBaseNode::CanInsertControl(ControlNode *node, DAVA::int32 pos) const
     return false;
 }
 
-bool PackageBaseNode::CanInsertImportedPackage() const
+bool PackageBaseNode::CanInsertImportedPackage(PackageNode *package) const
 {
     return false;
 }

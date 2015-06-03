@@ -103,8 +103,10 @@ String ImportedPackagesNode::GetName() const
     return "Imported Packages";
 }
 
-bool ImportedPackagesNode::CanInsertImportedPackage() const
+bool ImportedPackagesNode::CanInsertImportedPackage(PackageNode *package) const
 {
+    if (package->FindPackageInImportedPackagesRecursively(GetPackage()))
+        return false;
     return true;
 }
 

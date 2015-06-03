@@ -50,6 +50,9 @@
 #include "Model/YamlPackageSerializer.h"
 #include "Model/EditorUIPackageBuilder.h"
 
+#include "UI/UIControl.h"
+#include "UI/UIPackageLoader.h"
+
 using namespace DAVA;
 
 QtModelPackageCommandExecutor::QtModelPackageCommandExecutor(Document *_document)
@@ -65,7 +68,10 @@ QtModelPackageCommandExecutor::~QtModelPackageCommandExecutor()
 
 void QtModelPackageCommandExecutor::AddImportedPackageIntoPackage(PackageNode *importedPackage, PackageNode *package)
 {
-    PushCommand(new InsertImportedPackageCommand(package, importedPackage, package->GetImportedPackagesNode()->GetCount()));
+    if (package->GetImportedPackagesNode()->CanInsertImportedPackage(importedPackage))
+    {
+        PushCommand(new InsertImportedPackageCommand(package, importedPackage, package->GetImportedPackagesNode()->GetCount()));
+    }
 }
 
 void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value)
@@ -227,20 +233,46 @@ bool QtModelPackageCommandExecutor::Paste(PackageNode *root, ControlsContainerNo
             const Vector<PackageNode*> &importedPackages = builder.GetImportedPackages();
             const Vector<ControlNode*> &controls = builder.GetRootControls();
             Vector<ControlNode*> acceptedControls;
+            Vector<PackageNode*> acceptedPackages;
+            Vector<PackageNode*> declinedPackages;
+            
+            for (PackageNode *importedPackage : importedPackages)
+            {
+                if (importedPackage != root && importedPackage->GetParent() != root->GetImportedPackagesNode())
+                {
+                    if (root->GetImportedPackagesNode()->CanInsertImportedPackage(importedPackage))
+                        acceptedPackages.push_back(importedPackage);
+                    else
+                        declinedPackages.push_back(importedPackage);
+                }
+            }
 
             for (ControlNode *control : controls)
             {
                 if (dest->CanInsertControl(control, destIndex))
-                    acceptedControls.push_back(control);
+                {
+                    bool canInsert = true;
+                    for (PackageNode *declinedPackage : declinedPackages)
+                    {
+                        if (control->IsDependsOnPackage(declinedPackage))
+                        {
+                            canInsert = false;
+                            break;
+                        }
+                    }
+
+                    if (canInsert)
+                    {
+                        acceptedControls.push_back(control);
+                    }
+                }
             }
 
             if (!acceptedControls.empty())
             {
                 BeginMacro("Paste");
-                for (PackageNode *importedPackage : importedPackages)
+                for (PackageNode *importedPackage : acceptedPackages)
                 {
-                    if (importedPackage == root || importedPackage->GetParent() == root->GetImportedPackagesNode())
-                        continue;
                     AddImportedPackageIntoPackage(importedPackage, root);
                 }
                 

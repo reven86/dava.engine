@@ -30,8 +30,8 @@
 #ifndef __EDITOR_UI_PACKAGE_BUILDER_H__
 #define __EDITOR_UI_PACKAGE_BUILDER_H__
 
-#include "DAVAEngine.h"
 #include "UI/AbstractUIPackageBuilder.h"
+#include "FileSystem/FilePath.h"
 
 class PackageNode;
 class ControlNode;
@@ -97,6 +97,7 @@ private:
     
     DAVA::Vector<PackageNode*> importedPackages;
     DAVA::Vector<ControlNode*> rootControls;
+    DAVA::Vector<DAVA::FilePath> declinedPackages;
     
     DAVA::BaseObject *currentObject;
     SectionProperty *currentSection;

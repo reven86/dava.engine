@@ -207,6 +207,20 @@ const Vector<ControlNode*> &ControlNode::GetInstances() const
     return instances;
 }
 
+bool ControlNode::IsDependsOnPackage(PackageNode *package) const
+{
+    if (prototype && prototype->GetPackage() == package)
+        return true;
+    
+    for (ControlNode *child : nodes)
+    {
+        if (child->IsDependsOnPackage(package))
+            return true;
+    }
+    
+    return false;
+}
+
 bool ControlNode::IsEditingSupported() const
 {
     return !IsReadOnly();
