@@ -33,7 +33,7 @@
 #include "Base/BaseTypes.h"
 #include "Core/Core.h"
 
-#include "UnitTests/TeamCityTestsOutput.h"
+#include "TeamcityOutput/TeamCityTestsOutput.h"
 
 class GameCore : public DAVA::ApplicationCore
 {
