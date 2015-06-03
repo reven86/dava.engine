@@ -270,9 +270,8 @@ protected:
         enum
         {
             CLIPPED = 1,
-            DRAW = 2,
-            SUBDIVIDED = 3,
-            TERMINATED = 4,
+            SUBDIVIDED = 2,
+            TERMINATED = 3,
         };
         
         SubdivisionPatchInfo()
@@ -315,8 +314,6 @@ protected:
     void DrawLandscape();
     
     inline uint16 GetVertexIndex(uint16 x, uint16 y);
-
-    //uint8 testMatrix[32][32];
 
     class LandscapeQuad
     {

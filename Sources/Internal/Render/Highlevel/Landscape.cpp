@@ -985,8 +985,6 @@ void Landscape::Draw(Camera * drawCamera)
     frustum = camera->GetFrustum();
     cameraPos = camera->GetPosition();
 
-//    memset(testMatrix, sizeof(testMatrix), 0);
-
     float32 fovLerp = Clamp((camera->GetFOV() - zoomFov) /  (normalFov - zoomFov), 0.0f, 1.0f);
     fovSolidAngleError = zoomSolidAngleError + (solidAngleError - zoomSolidAngleError) * fovLerp;
     fovGeometryAngleError = zoomGeometryAngleError + (geometryAngleError - zoomGeometryAngleError) * fovLerp;
@@ -1440,6 +1438,9 @@ RenderObject * Landscape::Clone( RenderObject *newObject )
     newLandscape->zoomSolidAngleError = zoomSolidAngleError;
     newLandscape->zoomGeometryAngleError = zoomGeometryAngleError;
     newLandscape->zoomAbsHeightError = zoomAbsHeightError;
+    newLandscape->zoomFov = zoomFov;
+    newLandscape->normalFov = normalFov;
+    
     newLandscape->flags = flags;
     newLandscape->BuildLandscapeFromHeightmapImage(heightmapPath, bbox);
 	newLandscape->SetupMaterialProperties();
