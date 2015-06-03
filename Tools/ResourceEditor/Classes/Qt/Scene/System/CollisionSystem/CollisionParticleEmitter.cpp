@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene/System/CollisionSystem/CollisionParticleEmitter.h"
 
 CollisionParticleEffect::CollisionParticleEffect(DAVA::Entity *entity, btCollisionWorld *world, DAVA::float32 boxSize)

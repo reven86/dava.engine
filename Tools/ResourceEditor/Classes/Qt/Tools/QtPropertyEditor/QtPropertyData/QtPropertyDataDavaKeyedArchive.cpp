@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "DAVAEngine.h"
 #include "Debug/DVAssert.h"
 #include "Main/QtUtils.h"

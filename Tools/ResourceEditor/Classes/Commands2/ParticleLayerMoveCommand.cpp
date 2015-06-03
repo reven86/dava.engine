@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Commands2/ParticleLayerMoveCommand.h"
 
 ParticleLayerMoveCommand::ParticleLayerMoveCommand(DAVA::ParticleEmitter *_oldEmitter, DAVA::ParticleLayer* _layer, DAVA::ParticleEmitter *_newEmitter, DAVA::ParticleLayer *_newBefore /* = NULL */)

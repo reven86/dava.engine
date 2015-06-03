@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_LIGHT_NODE_H__
 #define __DAVAENGINE_LIGHT_NODE_H__
 

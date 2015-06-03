@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "DeleteRenderBatchCommand.h"
 
 DeleteRenderBatchCommand::DeleteRenderBatchCommand(DAVA::Entity *en, DAVA::RenderObject *ro, DAVA::uint32 batchIndex)

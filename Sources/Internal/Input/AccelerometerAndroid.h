@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_ACCELEROMETER_ANDROID_H__
 #define __DAVAENGINE_ACCELEROMETER_ANDROID_H__
 

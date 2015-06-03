@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "SettingsManager.h"
 #include "Scene/System/EditorMaterialSystem.h"
 #include "TextureCompression/TextureConverter.h"
@@ -101,6 +102,9 @@ void SettingsManager::Init()
     CreateValue(Settings::Scene_Sound_SoundObjectDraw, DAVA::VariantType(false));
     CreateValue(Settings::Scene_Sound_SoundObjectBoxColor, DAVA::VariantType(DAVA::Color(0.0f, 0.8f, 0.4f, 0.2f)));
     CreateValue(Settings::Scene_Sound_SoundObjectSphereColor, DAVA::VariantType(DAVA::Color(0.0f, 0.8f, 0.4f, 0.1f)));
+
+    CreateValue( Settings::General_Mouse_WheelMoveCamera, DAVA::VariantType( true ) );
+    CreateValue( Settings::General_Mouse_InvertWheel, DAVA::VariantType( false ) );
 
     CreateValue(Settings::Internal_TextureViewGPU, DAVA::VariantType((DAVA::int32) DAVA::GPU_ORIGIN));
 	CreateValue(Settings::Internal_LastProjectPath, DAVA::VariantType(DAVA::FilePath()));

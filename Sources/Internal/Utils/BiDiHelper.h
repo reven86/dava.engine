@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __DAVAENGINE_BIDIHELPER_H__
 #define __DAVAENGINE_BIDIHELPER_H__
 
@@ -57,7 +58,7 @@ public:
     * \param forceRtl (Optional) true if input text is mixed and must be processed as RTL.
     * \return true if it succeeds, false if it fails.
     */
-    bool ReorderString(WideString& string, const bool forceRtl = false) const;
+    bool ReorderString(const WideString& preparedStr, WideString& reorderedStr, const bool forceRtl = false) const;
 
     bool IsBiDiSpecialCharacter(uint32 character) const;
 

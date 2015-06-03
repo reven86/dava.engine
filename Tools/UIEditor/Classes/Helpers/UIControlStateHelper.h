@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #ifndef __UIEditor__UIControlStateHelper__
 #define __UIEditor__UIControlStateHelper__
 

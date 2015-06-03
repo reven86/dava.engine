@@ -1,5 +1,5 @@
 /*==================================================================================
-    Copyright (c) 2008, ;
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -25,6 +25,8 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "Render/Highlevel/RenderLayerManager.h"
 #include "Render/Highlevel/RenderFastNames.h"
 #include "Render/Highlevel/RenderBatchArray.h"

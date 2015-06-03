@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "BackgroundGridWidgetHelper.h"
 using namespace DAVA;
 

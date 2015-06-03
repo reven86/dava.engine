@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Platform/Qt5/QtLayer.h"
 
 #include "Render/RenderManager.h"
