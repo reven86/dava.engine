@@ -33,8 +33,6 @@
 
 namespace DAVA
 {
-static const int32 POINTS_PER_PARTICLE = 4;
-static const int32 INDICES_PER_PARTICLE = 6;
 
 //camera_facing, x_emitter, y_emitter, z_emitter, x_world, y_world, z_world
 static Vector3 basisVectors[7*2] = {Vector3(), Vector3(), 
@@ -59,7 +57,7 @@ ParticleRenderObject::ParticleRenderObject(ParticleEffectData *effect): effectDa
     layout.AddElement(rhi::VS_COLOR, 0, rhi::VDT_UINT8N, 4);
     regularVertexLayoutId = rhi::VertexLayout::UniqueId(layout);
     layout.AddElement(rhi::VS_TEXCOORD, 1, rhi::VDT_FLOAT, 2);
-    layout.AddElement(rhi::VS_TEXCOORD, 2, rhi::VDT_FLOAT, 1);
+    layout.AddElement(rhi::VS_TEXCOORD, 3, rhi::VDT_FLOAT, 1);
     frameBlendVertexLayoutId = rhi::VertexLayout::UniqueId(layout);    
 }
 
@@ -170,35 +168,7 @@ void ParticleRenderObject::PrepareRenderData(Camera * camera)
 	}	
     if (itGroupStart != effectData->groups.end())
         AppendParticleGroup(itGroupStart, effectData->groups.end(), particlesInGroup, currCamDirection);
-	
-    /*
-	int32 currParticleIndices = static_cast<int32>(indices.size()/INDICES_PER_PARTICLE);
-	if (maxParticlesPerBatch>currParticleIndices)
-	{
-		indices.resize(maxParticlesPerBatch*INDICES_PER_PARTICLE);
-		for (;currParticleIndices<maxParticlesPerBatch; currParticleIndices++)
-		{
-			indices[currParticleIndices*INDICES_PER_PARTICLE+0] = currParticleIndices*POINTS_PER_PARTICLE+0;
-			indices[currParticleIndices*INDICES_PER_PARTICLE+1] = currParticleIndices*POINTS_PER_PARTICLE+1;
-			indices[currParticleIndices*INDICES_PER_PARTICLE+2] = currParticleIndices*POINTS_PER_PARTICLE+2;
-			indices[currParticleIndices*INDICES_PER_PARTICLE+3] = currParticleIndices*POINTS_PER_PARTICLE+2;
-			indices[currParticleIndices*INDICES_PER_PARTICLE+4] = currParticleIndices*POINTS_PER_PARTICLE+1;
-			indices[currParticleIndices*INDICES_PER_PARTICLE+5] = currParticleIndices*POINTS_PER_PARTICLE+3; //preserve order
-		}
-	}
-	for (uint32 i=0; i<renderGroupCount; ++i)
-	{
-		if (renderGroupCache[i]->currParticlesCount)
-		{
-			renderGroupCache[i]->UpdateRenderBatch(vertexSize, vertexStride);
-			renderGroupCache[i]->renderBatch->SetIndexCount(renderGroupCache[i]->currParticlesCount*INDICES_PER_PARTICLE);		
-
-			activeRenderBatchArray.push_back(renderGroupCache[i]->renderBatch);
-		}
-		
-	}
-    */
-	
+	    	
 }
 int32 ParticleRenderObject::CalculateParticleCount(const ParticleGroup& group)
 {

@@ -119,12 +119,14 @@ template <class HBuffer> struct BufferAllocator
             offset = 0;
             base = 0;
         }
-
+        
         BufferAllocateResult res;
         res.buffer = currentlyMappedBuffer->buffer;
         res.data = currentlyMappedData + offset;
         res.base = base;
         res.count = count;
+
+        currentlyUsedSize = offset + requiredSize;
 
         return res;
     }
@@ -224,9 +226,10 @@ rhi::HIndexBuffer AllocateQuadListIndexBuffer(uint32 quadCount)
 {
 
     if (quadCount > currMaxQuadCount)
-    {
+    {        
         if (currQuadList.IsValid())
             indexBufferAllocator.InsertEvictingBuffer(currQuadList);
+
 
         const uint32 VERTICES_PER_QUAD = 4;
         const uint32 INDICES_PER_QUAD = 6;
@@ -234,8 +237,7 @@ rhi::HIndexBuffer AllocateQuadListIndexBuffer(uint32 quadCount)
         currMaxQuadCount = quadCount;
         uint32 bufferSize = quadCount * INDICES_PER_QUAD * 2; //uint16 = 2 bytes per index
         currQuadList = rhi::CreateIndexBuffer(bufferSize);
-        uint16 * indices = (uint16*)rhi::MapIndexBuffer(currQuadList, 0, bufferSize);
-
+        uint16 * indices = (uint16*)rhi::MapIndexBuffer(currQuadList, 0, bufferSize);        
         for (uint32 i = 0; i < quadCount; ++i)
         {
             indices[i*INDICES_PER_QUAD + 0] = i*VERTICES_PER_QUAD + 0;
@@ -247,8 +249,7 @@ rhi::HIndexBuffer AllocateQuadListIndexBuffer(uint32 quadCount)
         }
 
         rhi::UnmapIndexBuffer(currQuadList);
-    }
-
+    }    
     return currQuadList;
 }
 
@@ -266,8 +267,14 @@ void EndFrame()
 
 void Clear()
 {
+    if (currQuadList.IsValid())
+    {
+        indexBufferAllocator.InsertEvictingBuffer(currQuadList);
+        currQuadList = rhi::HIndexBuffer();
+    }
+    
     vertexBufferAllocator.Clear();
-    indexBufferAllocator.Clear();
+    indexBufferAllocator.Clear();    
 }
 void SetDefaultPageSize(uint32 size)
 {
