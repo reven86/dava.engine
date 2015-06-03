@@ -41,6 +41,7 @@ PRJ_POSTFIX = get_postfix(sys.platform)
 parser = argparse.ArgumentParser(description='Start tests')
 parser.add_argument('--branch', nargs='?', default = 'development')
 parser.add_argument('--platform', nargs='?', default = 'android')
+parser.add_argument('--not_install', nargs='?', const=True)
 
 parser.add_argument('-chooser', nargs='?', const=True)
 parser.add_argument('-test')
@@ -114,10 +115,16 @@ def start_performance_tests_on_android_device():
 
 if start_on_ios:
     # ../build/ios-deploy -d --noninteractive -b ../build/UnitTests.app
-    sub_process = subprocess.Popen(["./ios-deploy", "-a", TEST_PARAMS, "-d", "--noninteractive", "-b", "../build/" +
+    if args['not_install'] :
+        sub_process = subprocess.Popen(["./ios-deploy", "-a", TEST_PARAMS, "-m", "--noninteractive", "-b", "../build/Debug-iphoneos/" +
                                     PRJ_NAME_BASE + PRJ_POSTFIX],
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    print("copy " + PRJ_NAME_BASE + PRJ_POSTFIX + " on device and run")
+        print(PRJ_NAME_BASE + PRJ_POSTFIX + " run")
+    else :   
+        sub_process = subprocess.Popen(["./ios-deploy", "-a", TEST_PARAMS, "-d", "--noninteractive", "-b", "../build/Debug-iphoneos/" +
+                                        PRJ_NAME_BASE + PRJ_POSTFIX],
+                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print("copy " + PRJ_NAME_BASE + PRJ_POSTFIX + " on device and run")
 elif start_on_android:
     sub_process = start_performance_tests_on_android_device()
 elif sys.platform == 'win32':
