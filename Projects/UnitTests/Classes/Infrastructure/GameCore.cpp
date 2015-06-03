@@ -40,6 +40,7 @@ namespace
 {
 
 String runOnlyThisTest = "";
+bool teamcityOutputEnabled = true;
 
 }
 
@@ -49,8 +50,15 @@ void GameCore::OnAppStarted()
     {
         runOnlyThisTest = CommandLineParser::Instance()->GetCommandParam("-only_test");
     }
+    if (CommandLineParser::Instance()->CommandIsFound("-noteamcity"))
+    {
+        teamcityOutputEnabled = false;
+    }
 
-    Logger::Instance()->AddCustomOutput(&teamCityOutput);
+    if (teamcityOutputEnabled)
+    {
+        Logger::Instance()->AddCustomOutput(&teamCityOutput);
+    }
 
     UnitTests::TestCore::Instance()->Init(MakeFunction(this, &GameCore::OnTestStarted),
                                           MakeFunction(this, &GameCore::OnTestFinished),
@@ -69,7 +77,10 @@ void GameCore::OnAppStarted()
 
 void GameCore::OnAppFinished()
 {
-    DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
+    if (teamcityOutputEnabled)
+    {
+        DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
+    }
 }
 
 void GameCore::OnSuspend()
