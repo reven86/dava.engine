@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugQt|Win32">
@@ -740,6 +740,8 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UISlider.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UISpinner.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIStaticText.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\UIStyleSheet.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\UIStyleSheetCascade.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UISwitch.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UITextField.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UITextFieldiPhone.h" />
@@ -1229,6 +1231,8 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UISlider.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UISpinner.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIStaticText.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\UIStyleSheet.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\UIStyleSheetCascade.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UISwitch.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UITextField.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIWebView.cpp" />
