@@ -1,6 +1,8 @@
 package com.dava.framework;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -1251,7 +1253,26 @@ public class JNITextField {
         });
     }
 
+    static ArrayList<Long> last_four_calls = new ArrayList<Long>();
+    
     public static void OpenKeyboard(final int id) {
+        // Workaround!!! if user quickly tap on two or more text fields
+        // we protect our slow text field and just skip such calls
+        // we use 4 last calls to guarantee user mind damaged
+        Date date = new Date();
+        long now = date.getTime();
+        last_four_calls.add(now);
+        if (last_four_calls.size() > 4)
+        {
+            last_four_calls.remove(0);
+            // 4 last call * 2 time hide and open keyboard
+            if (now - last_four_calls.get(0) < (CLOSE_KEYBOARD_DELAY * 8))
+            {
+                Log.e(TAG, "multiple simultanious tap on textfield detected");
+                return;
+            }
+        }
+        
         JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
             public void safeRun() {
