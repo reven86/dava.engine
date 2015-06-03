@@ -170,6 +170,12 @@ void SpeedLoadImagesTest::TestAndDisplayFormat(String extension, Vector<String> 
         auto fileName = path.GetFilename();
         resultString.append(Format("%s: %s - %f\n", extension.c_str(), fileName.c_str(), loadTime));
     }
+
+    if (paths.empty())
+    {
+        resultString.append(Format("Files *.%s not found.\n", extension));
+    }
+
     WideString resultWideString = resultText->GetText();
     resultWideString.append(UTF8Utils::EncodeToWideString(resultString));
     resultText->SetText(resultWideString);
