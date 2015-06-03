@@ -42,10 +42,10 @@ metal_TextureFormatSupported( TextureFormat format )
     
     switch( format )
     {
-        case TEXTURE_FORMAT_A8R8G8B8 :
-        case TEXTURE_FORMAT_A1R5G5B5 :
+        case TEXTURE_FORMAT_R8G8B8A8 :
+        case TEXTURE_FORMAT_R5G5B5A1 :
         case TEXTURE_FORMAT_R5G6B5 :
-        case TEXTURE_FORMAT_A4R4G4B4 :
+        case TEXTURE_FORMAT_R4G4B4A4 :
         case TEXTURE_FORMAT_R8 :
         case TEXTURE_FORMAT_R16 :
             supported = true;
