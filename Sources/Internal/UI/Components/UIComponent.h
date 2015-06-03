@@ -41,6 +41,10 @@ class UIComponent : public BaseObject
 public:
     enum eType
     {
+        LAYOUT_COMPONENT,
+        SIZE_HINT_COMPONENT,
+        ALIGN_HINT_COMPONENT,
+        
         FAKE_COMPONENT,
         FAKE_MULTI_COMPONENT,
         

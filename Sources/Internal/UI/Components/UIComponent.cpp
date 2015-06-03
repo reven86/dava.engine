@@ -33,6 +33,10 @@
 #include "UIFakeComponent.h"
 #include "UIFakeMultiComponent.h"
 
+#include "UI/Layouts/UILayoutComponent.h"
+#include "UI/Layouts/UISizeHintComponent.h"
+#include "UI/Layouts/UIAlignHintComponent.h"
+
 namespace DAVA
 {
 
@@ -49,9 +53,18 @@ UIComponent * UIComponent::CreateByType(uint32 componentType)
 {
     switch (componentType)
     {
+        case LAYOUT_COMPONENT:
+            return new UILayoutComponent();
+            
+        case SIZE_HINT_COMPONENT:
+            return new UISizeHintComponent();
+            
+        case ALIGN_HINT_COMPONENT:
+            return new UIAlignHintComponent();
+            
         case FAKE_COMPONENT:
             return new UIFakeComponent();
-
+            
         case FAKE_MULTI_COMPONENT:
             return new UIFakeMultiComponent();
             
@@ -66,6 +79,9 @@ bool UIComponent::IsMultiple(uint32 componentType)
 {
     switch (componentType)
     {
+        case LAYOUT_COMPONENT:
+            return false;
+            
         case FAKE_COMPONENT:
             return false;
             
