@@ -392,7 +392,7 @@ void Landscape::UpdatePatchInfo(uint32 level, uint32 x, uint32 y)
                     
                     DVASSERT(FLOAT_EQUAL(lodPos.x, pos.x) && FLOAT_EQUAL(lodPos.y, pos.y));
                     
-                    if (Abs(lodPos.z - pos.z) > patch->maxError)
+                    if (Abs(lodPos.z - pos.z) > Abs(patch->maxError))
                     {
                         patch->maxError = pos.z - lodPos.z;
                         patch->positionOfMaxError = pos;
@@ -493,7 +493,6 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
     {
         //DrawPatch(level, x, y, 0, 0, 0, 0);
         TerminateSubdivision(level, x, y, levelInfo.size);
-        subdivPatchInfo->subdivisionState = SubdivisionPatchInfo::DRAW;
     }
 }
     
