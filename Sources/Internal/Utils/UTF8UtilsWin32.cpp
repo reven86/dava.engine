@@ -34,47 +34,50 @@
 
 #include <Windows.h>
 
-using namespace DAVA;
-
-void UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString & resultString)
+namespace DAVA 
 {
-    resultString = L"";
 
-    int32 wstringLen = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)string, size, NULL, NULL);
-    if (!wstringLen)
-    {
-        return;
-    }
+void  UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString & resultString)
+{
+	resultString = L"";
 
-    wchar_t* buf = new wchar_t[wstringLen];
-    int32 convertRes = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)string, size, buf, wstringLen);
-    if (convertRes)
-    {
-        resultString = WideString(buf, wstringLen);
-    }
+	int32 wstringLen = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)string, size, NULL, NULL);
+	if (!wstringLen)
+	{
+		return;
+	}
 
-    delete[] buf;
+	wchar_t* buf = new wchar_t[wstringLen];
+	int32 convertRes = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)string, size, buf, wstringLen);
+	if (convertRes)
+	{
+		resultString = WideString(buf, wstringLen);
+	}
+
+	delete[] buf;
 };
 
 String UTF8Utils::EncodeToUTF8(const WideString& wstring)
 {
-    int32 bufSize = WideCharToMultiByte(CP_UTF8, 0, wstring.c_str(), -1, 0, 0, NULL, NULL);
-    if (!bufSize)
-    {
-        return "";
-    }
+	int32 bufSize = WideCharToMultiByte(CP_UTF8, 0, wstring.c_str(), -1, 0, 0, NULL, NULL);
+	if (!bufSize)
+	{
+		return "";
+	}
 
-    String resStr = "";
+	String resStr = "";
 
-    char* buf = new char[bufSize];
-    int32 res = WideCharToMultiByte(CP_UTF8, 0, wstring.c_str(), -1, buf, bufSize, NULL, NULL);
-    if (res)
-    {
-        resStr = String(buf);
-    }
+	char* buf = new char[bufSize];
+	int32 res = WideCharToMultiByte(CP_UTF8, 0, wstring.c_str(), -1, buf, bufSize, NULL, NULL);
+	if (res)
+	{
+		resStr = String(buf);
+	}
 
-    delete[] buf;
-    return resStr;
+	delete[] buf;
+	return resStr;
+};
+
 };
 
 #endif

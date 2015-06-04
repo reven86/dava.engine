@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_SKYBOX_SYSTEM_H__
 #define __DAVAENGINE_SKYBOX_SYSTEM_H__
 

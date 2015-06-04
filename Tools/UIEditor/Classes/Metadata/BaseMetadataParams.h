@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #ifndef __UIEditor__BaseMetadataParams__
 #define __UIEditor__BaseMetadataParams__
 

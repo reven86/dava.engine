@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __UIEditor__ControlsMoveCommand__
 #define __UIEditor__ControlsMoveCommand__
 

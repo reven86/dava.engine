@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "SwitchEntityCreator.h"
 #include "StringConstants.h"
 

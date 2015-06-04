@@ -119,6 +119,7 @@
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
@@ -133,11 +134,12 @@
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Link>
-      <AdditionalDependencies>d2d1.lib;d3d11.lib;dxgi.lib;windowscodecs.lib;dwrite.lib;Kernel32.lib;..\_build\DavaFramework\Debug\DavaFramework.lib;..\_build\DavaTools\Debug\DavaTools.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\angle_common.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\fmodexWSA80L_vc.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\fmodexWSA81L_vc.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\fmod_eventWSA80L.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\fmod_eventWSA81L.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\freetype.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\fribidid.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\jpeg_win10.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libANGLE.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libcurl.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libdxtd.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libEGL.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libGLESv2.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libmongodb_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libogg_static.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libtheora10_static.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libvorbis_static.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libxml_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\libyaml_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\lua_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\pnglib_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\preprocessor.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\PVRTexLib32.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\translator.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\translator_lib.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\translator_static.lib;..\..\..\Libs\lib_CMake\win10\x86\dbg\unibreak.lib;..\..\..\Libs\IMagickHelpLib\IMagickHelper.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d2d1.lib;d3d11.lib;dxgi.lib;windowscodecs.lib;dwrite.lib;Kernel32.lib;..\_build\DavaFramework\Debug\DavaFramework.lib;..\_build\DavaTools\Debug\DavaTools.lib;..\..\..\Libs\lib_CMake\win10\x86\Debug\fmodexWSA80L_vc.lib;..\..\..\Libs\lib_CMake\win10\x86\Debug\fmodexWSA81L_vc.lib;..\..\..\Libs\lib_CMake\win10\x86\Debug\fmod_eventWSA80L.lib;..\..\..\Libs\lib_CMake\win10\x86\Debug\fmod_eventWSA81L.lib;..\..\..\Libs\lib_CMake\win10\x86\Debug\freetype.lib;..\..\..\Libs\lib_CMake\win10\x86\Debug\fribidid.lib;..\..\..\Libs\lib_CMake\win10\x86\Debug\jpeg_win10.lib;..\..\..\Libs\lib_CMake\win10\x86\Debug\libcurl.lib;..\..\..\Libs\lib_CMake\win10\x86\Debug\libdxtd.lib;..\..\..\Libs\lib_CMake\win10\x86\Debug\libEGL.lib;..\..\..\Libs\lib_CMake\win10\x86\Debug\libGLESv2.lib;..\..\..\Libs\lib_CMake\win10\x86\Debug\libmongodb_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\Debug\libogg_static.lib;..\..\..\Libs\lib_CMake\win10\x86\Debug\libtheora10_static.lib;..\..\..\Libs\lib_CMake\win10\x86\Debug\libvorbis_static.lib;..\..\..\Libs\lib_CMake\win10\x86\Debug\libxml_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\Debug\libyaml_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\Debug\lua_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\Debug\pnglib_wind.lib;..\..\..\Libs\lib_CMake\win10\x86\Debug\PVRTexLib32.lib;..\..\..\Libs\lib_CMake\win10\x86\Debug\unibreak.lib;..\..\..\Libs\IMagickHelpLib\IMagickHelper.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories); $(VCInstallDir)\lib\store; $(VCInstallDir)\lib</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libcmt.lib;libcmtd.lib;</IgnoreSpecificDefaultLibraries>
     </Link>
@@ -153,7 +155,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Link>
-      <AdditionalDependencies>d2d1.lib;d3d11.lib;dxgi.lib;windowscodecs.lib;dwrite.lib;..\_build\DavaFramework\Release\DavaFramework.lib;..\_build\DavaTools\Release\DavaTools.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\angle_common.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\fmodexWSA80_vc.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\fmodexWSA81_vc.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\fmod_eventWSA80.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\fmod_eventWSA81.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\freetype.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\fribidi.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\jpeg_win10.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\libANGLE.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\libcurl.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\libdxt.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\libEGL.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\libGLESv2.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\libmongodb_win.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\libogg_static.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\libtheora10_static.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\libvorbis_static.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\libxml_win.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\libyaml_win.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\lua_win.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\pnglib_win.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\preprocessor.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\PVRTexLib32.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\translator.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\translator_lib.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\translator_static.lib;..\..\..\Libs\lib_CMake\win10\x86\rls\unibreak.lib;..\..\..\Libs\IMagickHelpLib\IMagickHelper.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d2d1.lib;d3d11.lib;dxgi.lib;windowscodecs.lib;dwrite.lib;..\_build\DavaFramework\Release\DavaFramework.lib;..\_build\DavaTools\Release\DavaTools.lib;..\..\..\Libs\lib_CMake\win10\x86\Release\fmodexWSA80_vc.lib;..\..\..\Libs\lib_CMake\win10\x86\Release\fmodexWSA81_vc.lib;..\..\..\Libs\lib_CMake\win10\x86\Release\fmod_eventWSA80.lib;..\..\..\Libs\lib_CMake\win10\x86\Release\fmod_eventWSA81.lib;..\..\..\Libs\lib_CMake\win10\x86\Release\freetype.lib;..\..\..\Libs\lib_CMake\win10\x86\Release\fribidi.lib;..\..\..\Libs\lib_CMake\win10\x86\Release\jpeg_win10.lib;..\..\..\Libs\lib_CMake\win10\x86\Release\libcurl.lib;..\..\..\Libs\lib_CMake\win10\x86\Release\libdxt.lib;..\..\..\Libs\lib_CMake\win10\x86\Release\libEGL.lib;..\..\..\Libs\lib_CMake\win10\x86\Release\libGLESv2.lib;..\..\..\Libs\lib_CMake\win10\x86\Release\libmongodb_win.lib;..\..\..\Libs\lib_CMake\win10\x86\Release\libogg_static.lib;..\..\..\Libs\lib_CMake\win10\x86\Release\libtheora10_static.lib;..\..\..\Libs\lib_CMake\win10\x86\Release\libvorbis_static.lib;..\..\..\Libs\lib_CMake\win10\x86\Release\libxml_win.lib;..\..\..\Libs\lib_CMake\win10\x86\Release\libyaml_win.lib;..\..\..\Libs\lib_CMake\win10\x86\Release\lua_win.lib;..\..\..\Libs\lib_CMake\win10\x86\Release\pnglib_win.lib;..\..\..\Libs\lib_CMake\win10\x86\Release\PVRTexLib32.lib;..\..\..\Libs\lib_CMake\win10\x86\Release\unibreak.lib;..\..\..\Libs\IMagickHelpLib\IMagickHelper.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories); $(VCInstallDir)\lib\store; $(VCInstallDir)\lib</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libcmt.lib;libcmtd.lib;</IgnoreSpecificDefaultLibraries>
     </Link>
@@ -249,6 +251,7 @@
     <ClCompile Include="..\..\UnitTests\Classes\Tests\JNITest.cpp" />
     <ClCompile Include="..\..\UnitTests\Classes\Tests\JobManagerTest.cpp" />
     <ClCompile Include="..\..\UnitTests\Classes\Tests\KeyedArchiveYamlTest.cpp" />
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\LoadImageTest.cpp" />
     <ClCompile Include="..\..\UnitTests\Classes\Tests\LocalizationTest.cpp" />
     <ClCompile Include="..\..\UnitTests\Classes\Tests\MathTest.cpp" />
     <ClCompile Include="..\..\UnitTests\Classes\Tests\MemoryAllocatorsTest.cpp" />
@@ -322,6 +325,7 @@
     <ClInclude Include="..\..\UnitTests\Classes\Tests\JNITest.h" />
     <ClInclude Include="..\..\UnitTests\Classes\Tests\JobManagerTest.h" />
     <ClInclude Include="..\..\UnitTests\Classes\Tests\KeyedArchiveYamlTest.h" />
+    <ClInclude Include="..\..\UnitTests\Classes\Tests\LoadImageTest.h" />
     <ClInclude Include="..\..\UnitTests\Classes\Tests\LocalizationTest.h" />
     <ClInclude Include="..\..\UnitTests\Classes\Tests\MathTest.h" />
     <ClInclude Include="..\..\UnitTests\Classes\Tests\MemoryAllocatorsTest.h" />

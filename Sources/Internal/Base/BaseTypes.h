@@ -33,6 +33,7 @@
 #include "Base/Platform.h"
 #include "Base/TemplateHelpers.h"
 
+#include <array>
 #include <memory>
 #include <string>
 #include <list>
@@ -40,6 +41,7 @@
 #include <vector>
 #include <algorithm>
 #include <set>
+#include <unordered_set>
 #include <stack>
 #include <queue>
 #include <array>
@@ -56,6 +58,7 @@
 namespace DAVA
 {
 
+//Platform-independent signed and unsigned integer type
 using uint8 = uint8_t;
 using uint16 = uint16_t;
 using uint32 = uint32_t;
@@ -66,7 +69,6 @@ using int16 = int16_t;
 using int32 = int32_t;
 using int64 = int64_t;
 
-//Platform-independent signed and unsigned integer type
 //Always has a size equal to pointer size (4 bytes in x86, 8 in x64)
 using pointer_size = uintptr_t;
 
@@ -110,6 +112,10 @@ template<typename CharT>
 using BasicStringStream = std::basic_stringstream<CharT, std::char_traits<CharT>, DefaultSTLAllocator<CharT>>;
 
 using StringStream = BasicStringStream<char8>;
+
+template< class T, 
+          std::size_t N > 
+using Array = std::array<T, N>;
 
 template<typename T>
 using List = std::list<T, DefaultSTLAllocator<T>>;
@@ -253,7 +259,7 @@ DAVA_CONSTEXPR size_t COUNT_OF(T(&)[N]) DAVA_NOEXCEPT{ return N; }
 #   endif
 #endif
 
-enum eErrorCode
+enum class eErrorCode
 {
     SUCCESS,
     ERROR_FILE_FORMAT_INCORRECT,

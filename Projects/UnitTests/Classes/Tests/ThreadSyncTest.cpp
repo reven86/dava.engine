@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ThreadSyncTest.h"
 
 ThreadSyncTest::ThreadSyncTest()

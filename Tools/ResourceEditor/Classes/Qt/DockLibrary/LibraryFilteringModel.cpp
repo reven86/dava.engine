@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "LibraryFilteringModel.h"
 #include "LibraryFileSystemModel.h"
 

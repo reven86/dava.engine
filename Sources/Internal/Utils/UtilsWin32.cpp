@@ -26,27 +26,38 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "Utils.h"
 
 #if defined (__DAVAENGINE_WINDOWS__)
+#   include <Objbase.h>
+#   include <AtlConv.h>
 
-namespace DAVA {
+#   if defined (__DAVAENGINE_WIN32__)
+#       include <ShellAPI.h>
+#   elif defined (__DAVAENGINE_WIN_UAP__)
+#       include <ppltasks.h>
+#   endif
+
+namespace DAVA 
+{
 
 String GenerateGUID()
 {
-	Logger::Warning("GenerateGUID for Win32 Not implemented");
-	//TO::DO
-	return String();
+    //create new GUID
+    GUID guid;
+    if (FAILED(CoCreateGuid(&guid)))
+        return "";
+
+    //get string representation of GUID
+    Array<OLECHAR, 64> guidString {};
+    ::StringFromGUID2(guid, guidString.data(), guidString.size());
+    
+    //convert to normal string
+    USES_CONVERSION;
+    return OLE2CA(guidString.data());
 }
-};
 
-#endif //  __DAVAENGINE_WINDOWS__
-
-#if defined (__DAVAENGINE_WIN_UAP__)
-#include <ppltasks.h>
-
-namespace DAVA {
+#   if defined (__DAVAENGINE_WIN_UAP__)
 
 void OpenURL(const String& url)
 {
@@ -55,20 +66,17 @@ void OpenURL(const String& url)
 	concurrency::task<bool> launchUriOperation(Windows::System::Launcher::LaunchUriAsync(uri));
 	launchUriOperation.get();
 }
-};
 
-#elif defined (__DAVAENGINE_WIN32__)
-
-#include <Windows.h>
-#include <ShellAPI.h>
-
-namespace DAVA {
+#   elif defined (__DAVAENGINE_WIN32__)
 
 void OpenURL(const String& url)
 {
 	WideString urlWide = StringToWString(url);
 	ShellExecute(NULL, L"open", urlWide.c_str(), NULL, NULL, SW_SHOWNORMAL);
 }
-};
 
-#endif //  __DAVAENGINE_WIN_UAP__ | __DAVAENGINE_WIN32__
+#   endif //  __DAVAENGINE_WIN32__
+
+} //  namespace DAVA
+
+#endif //  __DAVAENGINE_WINDOWS__

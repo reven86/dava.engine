@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ControlsFactory.h"
 #include "Qt/Settings/SettingsManager.h"
 
@@ -87,7 +86,7 @@ void ControlsFactory::CustomizeButtonExpandable(UIButton *btn)
     //Temporary fix for loading of UI Interface to avoid reloading of texrures to different formates.
     // 1. Reset default format before loading of UI
     // 2. Restore default format after loading of UI from stored settings.
-    Texture::SetDefaultGPU(GPU_PNG);
+    Texture::SetDefaultGPU(GPU_ORIGIN);
     
     UIControl *expandable = new UIControl(Rect(btn->GetSize().dx - btn->GetSize().dy, 0, btn->GetSize().dy, btn->GetSize().dy));
     expandable->SetInputEnabled(false);
@@ -420,7 +419,7 @@ void ControlsFactory::SetScrollbar(DAVA::UIList *l)
     //Temporary fix for loading of UI Interface to avoid reloading of texrures to different formates.
     // 1. Reset default format before loading of UI
     // 2. Restore default format after loading of UI from stored settings.
-    Texture::SetDefaultGPU(GPU_PNG);
+    Texture::SetDefaultGPU(GPU_ORIGIN);
 
     
     UIControl *c = l->FindByName("ScrollBar");
@@ -463,7 +462,7 @@ void ControlsFactory::SetScrollbar(DAVA::UIHierarchy *h)
     //Temporary fix for loading of UI Interface to avoid reloading of texrures to different formates.
     // 1. Reset default format before loading of UI
     // 2. Restore default format after loading of UI from stored settings.
-    Texture::SetDefaultGPU(GPU_PNG);
+    Texture::SetDefaultGPU(GPU_ORIGIN);
     
     Rect fr = h->GetRect();
     

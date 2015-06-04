@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "Notification/LocalNotificationAndroid.h"
 
 #if defined(__DAVAENGINE_ANDROID__)

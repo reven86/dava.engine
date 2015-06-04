@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene3D/Systems/TransformSystem.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/AnimationComponent.h"
@@ -135,7 +134,7 @@ void TransformSystem::TransformAllChildEntities(Entity * entity)
     
     while(stackPosition > 0)
     {
-        entity = stack[--stackPosition];
+        Entity * entity = stack[--stackPosition];
         
         TransformComponent * transform = (TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT);
         if(transform->parentMatrix)
@@ -147,7 +146,7 @@ void TransformSystem::TransformAllChildEntities(Entity * entity)
             else
                 transform->worldMatrix = transform->localMatrix * *(transform->parentMatrix);
             //GlobalEventSystem::Instance()->Event(entity, EventSystem::WORLD_TRANSFORM_CHANGED);
-            sendEvent.push_back(entity);
+            sendEvent.push_back(transform);
         }
         
         entity->RemoveFlag(Entity::TRANSFORM_NEED_UPDATE | Entity::TRANSFORM_DIRTY);
@@ -182,7 +181,7 @@ void TransformSystem::HierahicFindUpdatableTransform(Entity * entity, bool force
 		if(transform->parentMatrix)
 		{
 			transform->worldMatrix = transform->localMatrix * *(transform->parentMatrix);
-            GlobalEventSystem::Instance()->Event(entity, EventSystem::WORLD_TRANSFORM_CHANGED);
+            GlobalEventSystem::Instance()->Event(transform, EventSystem::WORLD_TRANSFORM_CHANGED);
 		}
 	}
 
@@ -203,8 +202,9 @@ void TransformSystem::SortAndThreadSplit()
 {
 }
 
-void TransformSystem::ImmediateEvent(Entity * entity, uint32 event)
+void TransformSystem::ImmediateEvent(Component * component, uint32 event)
 {
+    Entity * entity = component->GetEntity();
 	switch(event)
 	{
 	case EventSystem::LOCAL_TRANSFORM_CHANGED:

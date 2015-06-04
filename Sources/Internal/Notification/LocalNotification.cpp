@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Notification/LocalNotification.h"
 #include "Utils/Utils.h"
 #include "Concurrency/LockGuard.h"

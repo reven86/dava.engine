@@ -25,6 +25,8 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #ifndef __DAVAENGINE_STATIC_OCCLUSION_COMPONENT_H__
 #define __DAVAENGINE_STATIC_OCCLUSION_COMPONENT_H__
 
@@ -157,7 +159,7 @@ inline void StaticOcclusionDataComponent::SetDataSize(uint32 bytes)
 inline void StaticOcclusionComponent::SetBoundingBox(const AABBox3 & newBBox)
 {
     boundingBox = newBBox;
-    GlobalEventSystem::Instance()->Event(GetEntity(), EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);	
+    GlobalEventSystem::Instance()->Event(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
 }
 
 inline const AABBox3 & StaticOcclusionComponent::GetBoundingBox() const
@@ -168,25 +170,25 @@ inline const AABBox3 & StaticOcclusionComponent::GetBoundingBox() const
 inline void StaticOcclusionComponent::SetSubdivisionsX(uint32 _sizeX)
 {
     xSubdivisions = _sizeX;
-    GlobalEventSystem::Instance()->Event(GetEntity(), EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);	
+    GlobalEventSystem::Instance()->Event(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
 }
 
 inline void StaticOcclusionComponent::SetSubdivisionsY(uint32 _sizeY)
 {
     ySubdivisions = _sizeY;
-    GlobalEventSystem::Instance()->Event(GetEntity(), EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);	
+    GlobalEventSystem::Instance()->Event(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
 }
     
 inline void StaticOcclusionComponent::SetSubdivisionsZ(uint32 _sizeZ)
 {
     zSubdivisions = _sizeZ;
-    GlobalEventSystem::Instance()->Event(GetEntity(), EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);	
+    GlobalEventSystem::Instance()->Event(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
 }
 
 inline void StaticOcclusionComponent::SetPlaceOnLandscape(bool place)
 {
     placeOnLandscape = place;
-    GlobalEventSystem::Instance()->Event(GetEntity(), EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);	
+    GlobalEventSystem::Instance()->Event(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);	
 }
 
 inline uint32 StaticOcclusionComponent::GetSubdivisionsX() const

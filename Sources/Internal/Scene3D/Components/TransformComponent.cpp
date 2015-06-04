@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
@@ -71,7 +70,7 @@ void TransformComponent::SetLocalTransform(const Matrix4 * transform)
 		worldMatrix = *transform;
 	}
 
-	GlobalEventSystem::Instance()->Event(entity, EventSystem::LOCAL_TRANSFORM_CHANGED);
+	GlobalEventSystem::Instance()->Event(this, EventSystem::LOCAL_TRANSFORM_CHANGED);
 }
 
 void TransformComponent::SetParent(Entity * node)
@@ -87,12 +86,12 @@ void TransformComponent::SetParent(Entity * node)
 		parentMatrix = 0;
 	}
 
-	GlobalEventSystem::Instance()->Event(entity, EventSystem::TRANSFORM_PARENT_CHANGED);
+	GlobalEventSystem::Instance()->Event(this, EventSystem::TRANSFORM_PARENT_CHANGED);
 }
 
 Matrix4 & TransformComponent::ModifyLocalTransform()
 {
-	GlobalEventSystem::Instance()->Event(entity, EventSystem::LOCAL_TRANSFORM_CHANGED);
+	GlobalEventSystem::Instance()->Event(this, EventSystem::LOCAL_TRANSFORM_CHANGED);
 	return localMatrix;
 }
 

@@ -1,19 +1,10 @@
 include ( GlobalVariables      )
 
-macro ( enable_memory_profiling )
+if ( DAVA_MEMORY_PROFILER )
     add_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
     if ( NOT DAVA_MEMORY_PROFILER )
         set ( DAVA_MEMORY_PROFILER 1 )
     endif()
-endmacro ()
-
-macro ( disable_memory_profiling )
-    remove_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
-    unset ( DAVA_MEMORY_PROFILER )
-endmacro ()
-
-if ( DAVA_MEMORY_PROFILER )
-    enable_memory_profiling()
 endif()
 
 if( ANDROID AND NOT CMAKE_TOOLCHAIN_FILE )
@@ -43,7 +34,8 @@ elseif ( WINDOWS_UAP )
 
     if ( DAVA_MEMORY_PROFILER )
         message(WARNING "Windows Store platform detected. Memory profiling is disabled")
-        disable_memory_profiling()
+        remove_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
+        unset ( DAVA_MEMORY_PROFILER )
     endif ()
 	
 endif()

@@ -54,7 +54,7 @@ public:
     SoundUpdateSystem(Scene * scene);
     ~SoundUpdateSystem() override;
 
-    void ImmediateEvent(Entity * entity, uint32 event) override;
+    void ImmediateEvent(Component * component, uint32 event) override;
     void Process(float32 timeElapsed) override;
     void AddEntity(Entity * entity) override;
     void RemoveEntity(Entity * entity) override;

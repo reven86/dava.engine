@@ -55,7 +55,7 @@ HWND CoreWin32PlatformBase::GetWindow() const
 
 void CoreWin32PlatformBase::InitArgs()
 {
-    SetCommandLine(UTF8Utils::EncodeToUTF8(::GetCommandLineW()));
+    SetCommandLine(WStringToString(::GetCommandLineW()));
 }
 
 void CoreWin32PlatformBase::Quit()

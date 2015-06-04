@@ -35,6 +35,7 @@
 #include "Tests/MathTest.h"
 #include "Tests/FunctionBindSingalTest.h"
 #include "Tests/SaveImageTest.h"
+#include "Tests/LoadImageTest.h"
 #include "Tests/StringFormatTest.h"
 #include "Tests/ComponentsTest.h"
 #include "Tests/FileListTest.h"
@@ -59,15 +60,9 @@
 #include "Tests/ThreadLocalTest.h"
 //$UNITTEST_INCLUDE
 
-//#define TEMP_UI_TEST
-
 void GameCore::RunOnlyThisTest()
 {
-#ifdef TEMP_UI_TEST
-    runOnlyThisTest = "SpinLockTest";
-#else
     //runOnlyThisTest = "StaticTextFieldTest";
-#endif
 }
 
 void GameCore::OnError()
@@ -84,10 +79,11 @@ void GameCore::RegisterTests()
 #endif
     new MathTest();
     new FunctionBindSignalTest();
+    new LoadImageTest();
     new SaveImageTest();
     new StringFormatTest();
     new ComponentsTest();
-    new FileListTest();
+//    new FileListTest(); tmp !!!
     new FileSystemTest();
     new DateTimeTest();
     new LocalizationTest();
@@ -266,25 +262,10 @@ void GameCore::RunTests()
 
 void GameCore::FinishTests()
 {
-#ifdef TEMP_UI_TEST
-    UIScreen *scr1 = new UIScreen();
-    UIButton *btn1 = new UIButton(Rect(0, 0, 100, 100));
-    btn1->SetDebugDraw(true);
-    btn1->SetDebugDrawColor(Color(1.f, 0.f, 0.f, 1.f));
-    btn1->GetBackground()->SetBgDrawType(UIControlBackground::DRAW_FILL);
-    btn1->GetBackground()->SetColor(Color(0.f, 1.f, 1.f, 1.f));
-    scr1->AddControl(btn1);
-    scr1->SetDebugDraw(true);
-
-    UIScreenManager::Instance()->RegisterScreen(111, scr1);
-    UIScreenManager::Instance()->SetFirst(111);
-    UIScreenManager::Instance()->SetScreen(111);
-#else
     // inform teamcity script we just finished all tests
     // useful on ios devices (run with lldb)
     teamCityOutput.Output(DAVA::Logger::LEVEL_DEBUG, "Finish all tests.");
     Core::Instance()->Quit();
-#endif
 }
 
 void GameCore::LogMessage(const String &message)

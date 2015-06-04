@@ -29,7 +29,6 @@
 
 #include "FileSystem/FileList.h"
 #include "Utils/Utils.h"
-#include "Utils/Utf8Utils.h"
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <dirent.h>
