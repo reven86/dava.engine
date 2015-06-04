@@ -14,6 +14,7 @@ import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.InputDevice;
@@ -296,25 +297,24 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         JNITextField.RelinkNativeControls();
         JNIWebView.RelinkNativeControls();
 
-        Thread waitThread = new Thread() {
-        	@Override
-        	public void run() {
-				try {
-					Thread.sleep(150);
-				}
-				catch(InterruptedException ex) {
-				}
-				finally {
-	        		runOnUiThread(new Runnable() {
-	        			@Override
-	        			public void run() {
-        					HideNavigationBar(getWindow().getDecorView());
-        				}
-	        		});
-				}
-        	}
-        };
-    	waitThread.run();
+        /*
+         Start of workaround
+         
+         Here we need to hide navigation bar. 
+         Activity is configured to hide the bar, but seems android shows the bar before activity. 
+         In that case we need to hide the bar. 
+         */
+        Runnable navigationBarHider = new Runnable() {
+    		@Override
+			public void run() {
+				HideNavigationBar(getWindow().getDecorView());
+			}
+		};
+		
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.postDelayed(navigationBarHider, 300);
+        
+        // end of workaround
         
         isPausing = false;
         Log.i(JNIConst.LOG_TAG, "[Activity::onResume] finish");
