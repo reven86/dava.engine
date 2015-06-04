@@ -440,13 +440,10 @@ void Texture::FlushDataToRenderer(Vector<Image *> * images)
     descriptor.type = ((*images)[0]->cubeFaceID == Texture::INVALID_CUBEMAP_FACE) ? rhi::TEXTURE_TYPE_2D : rhi::TEXTURE_TYPE_CUBE;
     descriptor.format = formatDescriptor.format;
 
-    descriptor.mipCount = ((descriptor.type == rhi::TEXTURE_TYPE_CUBE) ? (uint32)images->size() / 6 : (uint32)images->size()) - 1;
+    descriptor.mipCount = ((descriptor.type == rhi::TEXTURE_TYPE_CUBE) ? (uint32)images->size() / 6 : (uint32)images->size());
 
     for (Image * img : (*images))
-    {
-        if(img->mipmapLevel != -1)
-            descriptor.mipCount = Max(descriptor.mipCount, img->mipmapLevel);
-    }
+        descriptor.mipCount = Max(descriptor.mipCount, img->mipmapLevel + 1);
 
     DVASSERT(descriptor.format != -1);//unsupported format
     handle = rhi::CreateTexture(descriptor);
