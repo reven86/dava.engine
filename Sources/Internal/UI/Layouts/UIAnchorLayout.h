@@ -30,6 +30,7 @@
 #define __DAVAENGINE_UI_ANCHOR_LAYOUT_H__
 
 #include "UILayout.h"
+#include "Base/BaseTypes.h"
 
 namespace DAVA
 {
@@ -39,8 +40,18 @@ namespace DAVA
         UIAnchorLayout();
         virtual ~UIAnchorLayout();
         
-        virtual void MeasureSize(UIControl *control);
-        virtual void ApplyLayout(UIControl *control);
+        void MeasureSize(UIControl *control) override;
+        void ApplyLayout(UIControl *control) override;
+        
+    private:
+        void GetAxisDataByAnchorData(float32 size, float32 parentSize,
+                                               bool firstSideAnchorEnabled, float32 firstSideAnchor,
+                                               bool centerAnchorEnabled, float32 centerAnchor,
+                                               bool secondSideAnchorEnabled, float32 secondSideAnchor,
+                                    float32 &newPos, float32 &newSize);
+        
+        void GetAnchorDataByAxisData(float32 size, float32 pos, float32 parentSize, bool firstSideAnchorEnabled, bool centerAnchorEnabled, bool secondSideAnchorEnabled,
+                                    float32 &firstSideAnchor, float32 &centerAnchor, float32 &secondSideAnchor);
     };
 }
 

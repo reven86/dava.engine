@@ -39,8 +39,8 @@ namespace DAVA
         UILinearLayout();
         virtual ~UILinearLayout();
         
-        virtual void MeasureSize(UIControl *control);
-        virtual void ApplyLayout(UIControl *control);
+        void MeasureSize(UIControl *control) override;
+        void ApplyLayout(UIControl *control) override;
     };
 }
 
