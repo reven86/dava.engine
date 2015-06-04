@@ -317,7 +317,7 @@ end
 
 function GetCenter(element)
     local control = GetSize(element)
-    return {dx = control.dx, dy=control.dy, x=control.x + control.dx / 2, y = control.y + control.dy / 2}
+    return { dx = control.dx, dy = control.dy, x = control.x + control.dx / 2, y = control.y + control.dy / 2 }
 end
 
 function GetFrame(element)
@@ -340,7 +340,7 @@ function GetSize(controlName)
     end
     local rect = GetElementRect(control)
     local floor = math.floor
-    return {x=floor(rect.x + 0.5), y=floor(rect.y + 0.5), dx=floor(rect.dx + 0.5), dy=floor(rect.dy + 0.5)}
+    return { x = floor(rect.x + 0.5), y = floor(rect.y + 0.5), dx = floor(rect.dx + 0.5), dy = floor(rect.dy + 0.5) }
 end
 
 function GetState(controlName)
@@ -375,12 +375,7 @@ end
 
 function GetPosition(element)
     local control = GetSize(element)
-    local result = {}
-    result.x = control.x
-    result.y = control.y
-    result.dx = control.x + control.dx
-    result.dy = control.y + control.dy
-    return {x = control.x, y = control.y, dx = control.x + control.dx, dy = control.y + control.dy}
+    return { x = control.x, y = control.y, dx = control.x + control.dx, dy = control.y + control.dy }
 end
 
 ------------------------------------------------------------------------------------------------------------------------
