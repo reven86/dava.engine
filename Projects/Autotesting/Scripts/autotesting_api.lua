@@ -376,7 +376,8 @@ end
 function GetElementRectByName(name)
     local control = GetControl(name)
     if control then
-        return GetElementRect(control)
+        local geomData = control:GetGeometricData()
+        return geomData:GetUnrotatedRect()
     end
     return nil
 end
@@ -394,15 +395,17 @@ end
 ------------------------------------------------------------------------------------------------------------------------
 -- Check states
 ------------------------------------------------------------------------------------------------------------------------
-function IsVisible(element, background)
-    local control = autotestingSystem:FindControl(element) or autotestingSystem:FindControlOnPopUp(element)
-    return toboolean(control and control:GetVisible() and control:IsOnScreen() and IsOnScreen(element, background))
+function IsVisible(controlName, background)
+    local control = autotestingSystem:FindControl(controlName) or autotestingSystem:FindControlOnPopUp(controlName)
+    return toboolean(control and control:GetVisible() and control:IsOnScreen() and IsOnScreen(controlName, background))
 end
 
 function IsDisabled(controlName)
     Yield()
     local control = GetControl(controlName)
-    if control then return control:GetDisabled() end
+    if control then
+        return control:GetDisabled() 
+    end
     return nil
 end
 
@@ -705,9 +708,11 @@ end
 ----------------------------------------------------------------------------------------------------
 
 -- Touch down
-function TouchDownPosition(pos, touchId)
+function TouchDownPosition(pos, touchId, tapCount)
+    local tapCount = tapCount or 1
+    local touchId = touchId or 1
     local position = Vector.Vector2(pos.x, pos.y)
-    autotestingSystem:TouchDown(position, touchId or 1)
+    autotestingSystem:TouchDown(position, touchId, tapCount)
     Yield()
 end
 
@@ -728,26 +733,16 @@ function TouchUp(touchId)
     autotestingSystem:TouchUp(touchId)
 end
 
-function ClickPosition(position, time, touchId)
-    local waitTime = time or TIMECLICK
-    TouchDownPosition(position, touchId)
+function ClickPosition(position, waitTime, touchId, tapCount)
+    TouchDownPosition(position, touchId, tapCount)
     Wait(waitTime)
     TouchUp(touchId)
     Wait(waitTime)
     return true
 end
 
-function DoubleClickPosition(position, time, touchId)
-    local waitTime = time or TIMECLICK
-    DoubleTouchDownPosition(position, touchId)
-    Wait(waitTime)
-    TouchUp(touchId)
-    Wait(waitTime)
-    return true
-end
-
-function Click(x, y, time, touchId)
-    local waitTime = time or TIMECLICK
+function Click(x, y, waitTime, touchId)
+    local waitTime = waitTime or TIMECLICK
     local touchId = touchId or 1
     local position = Vector.Vector2(x, y)
     ClickPosition(position, touchId, waitTime)
@@ -760,25 +755,25 @@ function KeyPress(key, control)
     autotestingSystem:KeyPress(key)
 end
 
-function ClickControl(name, time, touchId)
-    local waitTime = time or TIMEOUT
+function ClickControl(name, waitTime, touchId)
+    local waitTime = waitTime or TIMECLICK
     local touchId = touchId or 1
     Log("ClickControl name=" .. name .. " touchId=" .. touchId .. " waitTime=" .. waitTime)
     if IsReady(name) then
         local position = GetCenter(name)
-        ClickPosition(position, TIMECLICK, touchId)
+        ClickPosition(position, waitTime, touchId)
         return true
     end
     return false
 end
 
-function DoubleClick(name, time, touchId)
-    local waitTime = time or TIMEOUT
+function DoubleClick(name, waitTime, touchId)
+    local waitTime = waitTime or TIMECLICK
     local touchId = touchId or 1
     Log("DoubleClick name=" .. name .. " touchId=" .. touchId .. " waitTime=" .. waitTime)
     if IsReady(name) then
         local position = GetCenter(name)
-        DoubleClickPosition(position, 0.1, touchId)
+        ClickPosition(position, waitTime, touchId, 2)
         return true
     end
     return false
