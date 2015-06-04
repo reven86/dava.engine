@@ -87,7 +87,7 @@ VPROG_BEGIN
     #endif
     
     fog_param.view_position  = eyeCoordsPosition;
-    fog_param.world_position = mul(VP_IN_POSITION,worldMatrix).xyz;
+    fog_param.world_position = mul( float4(VP_IN_POSITION,1.0), worldMatrix ).xyz;
     fog_param.eye_position   = cameraPosition;
     
     VP_OUT(varFog) = CalculateVertexFog( fog_param );

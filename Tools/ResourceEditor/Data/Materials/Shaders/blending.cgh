@@ -6,11 +6,15 @@
 #define BLENDING_MULTIPLICATIVE         5
 #define BLENDING_STRONG_MULTIPLICATIVE  6
 
+#ifndef BLENDING
+#define BLENDING BLENDING_NONE
+#endif
+
 #if BLENDING == BLENDING_ALPHABLEND
     blending : src=src_alpha dst=inv_src_alpha
-#else if BLENDING == BLENDING_ADDITIVE
+#elif BLENDING == BLENDING_ADDITIVE
     blending : src=one dst=one
-#else if BLENDING == BLENDING_ALPHA_ADDITIVE
+#elif BLENDING == BLENDING_ALPHA_ADDITIVE
     blending : src=src_alpha dst=one
 #endif
 

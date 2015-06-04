@@ -94,7 +94,7 @@ VPROG_BEGIN
     pos.y += inTexCoord1.z * vegWaveOffsety[waveIndex];
     
     pos = lerp(clusterCenter, pos, vegetationMask.a * clusterScale);
-    VP_OUT_POSITION = mul(float4(pos, 1.0), worldViewProjMatrix);
+    VP_OUT_POSITION = mul( float4(pos, 1.0), worldViewProjMatrix );
 
 
 #if VERTEX_FOG
@@ -117,7 +117,7 @@ VPROG_BEGIN
     #endif
 
     float3 eyeCoordsPosition = mul( float4(VP_IN_POSITION,1.0), worldViewMatrix ).xyz; 
-
+    
     #if FOG_ATMOSPHERE
     fog_param.tolight_dir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
 
@@ -131,7 +131,7 @@ VPROG_BEGIN
     #endif
     
     fog_param.view_position  = eyeCoordsPosition;
-    fog_param.world_position = mul(VP_IN_POSITION,worldMatrix).xyz;
+    fog_param.world_position = mul(float4(VP_IN_POSITION, 1.0),worldMatrix).xyz;
     fog_param.eye_position   = cameraPosition;
     
     VP_OUT(varFog) = CalculateVertexFog( fog_param );
