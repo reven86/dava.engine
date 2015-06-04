@@ -59,6 +59,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     setupUi(this);
     actionReloadSprites->setEnabled(false);
+    toolBarConvertGPU->addAction(actionReloadSprites);
     actionLocalizationManager->setEnabled(false);
     InitLanguageBox();
     tabBar->setElideMode(Qt::ElideNone);
@@ -332,9 +333,6 @@ void MainWindow::DisableActions()
 
     actionClose_project->setEnabled(false);
     actionFontManager->setEnabled(false);
-
-    // Reload.
-    actionRepack_And_Reload->setEnabled(false);
 }
 
 void MainWindow::RebuildRecentMenu()

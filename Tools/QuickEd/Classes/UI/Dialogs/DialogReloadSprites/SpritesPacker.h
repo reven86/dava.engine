@@ -50,7 +50,8 @@ public:
     ~SpritesPacker();
     void ReloadSprites(bool clearDirs, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
 public slots:
-    void stop();
+    void Cancel();
+    void Stop();
 private:
     void ReloadSpritePrivate(bool clearDirs, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
     DAVA::ResourcePacker2D *resourcePacker2D;

@@ -53,7 +53,7 @@ DialogReloadSprites::DialogReloadSprites(QWidget* parent)
     connect(spritesPacker, &SpritesPacker::runningStateChanged, pushButton_start, &QPushButton::setDisabled);
     connect(spritesPacker, &SpritesPacker::runningStateChanged, comboBox_targetGPU, &QComboBox::setDisabled);
     connect(spritesPacker, &SpritesPacker::runningStateChanged, comboBox_quality, &QComboBox::setDisabled);
-    connect(pushButton_cancel, &QPushButton::clicked, spritesPacker, &SpritesPacker::stop);
+    connect(pushButton_cancel, &QPushButton::clicked, spritesPacker, &SpritesPacker::Cancel);
     connect(pushButton_start, &QPushButton::clicked, this, &DialogReloadSprites::OnStartClicked);
 
     const auto &gpuMap = GlobalEnumMap<eGPUFamily>::Instance();
@@ -101,6 +101,11 @@ void DialogReloadSprites::OnStartClicked()
     auto gpuType = static_cast<DAVA::eGPUFamily>(gpuData.toInt());
     auto quality = static_cast<TextureConverter::eConvertQuality>(qualityData.toInt());
     spritesPacker->ReloadSprites(checkBox_clean->isChecked(), gpuType, quality);
+}
+
+void DialogReloadSprites::closeEvent()
+{
+    spritesPacker->Stop();
 }
 
 void DialogReloadSprites::LoadSettings()

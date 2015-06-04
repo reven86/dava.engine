@@ -94,7 +94,7 @@ void SpritesPacker::ReloadSpritePrivate(bool clearDirs, const eGPUFamily gpu, co
     setRunning(false);
 }
 
-void SpritesPacker::stop()
+void SpritesPacker::Cancel()
 {
     resourcePacker2D->SetRunning(false);
     QApplication::setOverrideCursor(Qt::WaitCursor);
@@ -103,7 +103,14 @@ void SpritesPacker::stop()
         QApplication::processEvents();
     }
     QApplication::restoreOverrideCursor();
+}
 
+void SpritesPacker::Stop()
+{
+    resourcePacker2D->SetRunning(false);
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    process.waitForFinished();
+    QApplication::restoreOverrideCursor();
 }
 
 bool SpritesPacker::isRunning() const

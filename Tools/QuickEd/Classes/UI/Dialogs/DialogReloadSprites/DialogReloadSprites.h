@@ -43,6 +43,8 @@ public:
     ~DialogReloadSprites(); 
 private slots:
     void OnStartClicked();
+protected:
+    void closeEvent();
 private:
     void LoadSettings();
     void SaveSettings() const;

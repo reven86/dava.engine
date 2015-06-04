@@ -449,18 +449,6 @@
     <string>Ctrl+Shift+S</string>
    </property>
   </action>
-  <action name="actionRepack_And_Reload">
-   <property name="icon">
-    <iconset resource="../DataQt/icons.qrc">
-     <normaloff>:/Icons/reloadtextures.png</normaloff>:/Icons/reloadtextures.png</iconset>
-   </property>
-   <property name="text">
-    <string>Repack And Reload</string>
-   </property>
-   <property name="toolTip">
-    <string>Repack and reload sprites</string>
-   </property>
-  </action>
   <action name="actionPixelized">
    <property name="checkable">
     <bool>true</bool>
@@ -482,6 +470,10 @@
    </property>
   </action>
   <action name="actionReloadSprites">
+   <property name="icon">
+    <iconset resource="../DataQt/icons.qrc">
+     <normaloff>:/Icons/reload.png</normaloff>:/Icons/reload.png</iconset>
+   </property>
    <property name="text">
     <string>Reload Sprites</string>
    </property>
