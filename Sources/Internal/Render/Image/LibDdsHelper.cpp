@@ -306,6 +306,12 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet,
     
     if (!forceSoftwareConvertation && isHardwareSupport)
     {
+        PixelFormat pixFormat = GetPixelFormat(dec);
+        if (pixFormat == FORMAT_INVALID)
+        {
+            return false;
+        }
+
         uint8* compressedImges = new uint8[info.dataSize];
         
         if(!dec.getRawData(compressedImges, info.dataSize))
@@ -320,8 +326,6 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet,
         {
             SwapBRChannels(compressedImges, info.dataSize);
         }
-        
-        PixelFormat pixFormat = GetPixelFormat(dec);
         
         bool retValue = true;
         
@@ -396,7 +400,13 @@ PixelFormat NvttHelper::GetPixelFormat(nvtt::Decompressor & dec)
         return FORMAT_INVALID;
     }
     
-    return NvttHelper::GetPixelFormatByNVTTFormat(innerFormat);
+    PixelFormat format = NvttHelper::GetPixelFormatByNVTTFormat(innerFormat);
+    if (format == FORMAT_INVALID)
+    {
+        Logger::Error("[NvttHelper::GetPixelFormat] Can't map nvtt format to pixel format");
+    }
+    
+    return format;
 }
     
 PixelFormat NvttHelper::GetPixelFormatByNVTTFormat(nvtt::Format nvttFormat)
