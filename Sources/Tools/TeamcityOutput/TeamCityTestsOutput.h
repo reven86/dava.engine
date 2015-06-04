@@ -26,29 +26,26 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
+#define __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
 
-#include "FileSystem/LocalizationAndroid.h"
-#include "FileSystem/LocalizationSystem.h"
-#include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
+#include "TeamcityOutput/TeamcityOutput.h"
 
-namespace DAVA
+namespace DAVA 
 {
 
-void LocalizationAndroid::SelectPreferedLocalization()
+class TeamcityTestsOutput: public TeamcityOutput
 {
-    LocalizationSystem::Instance()->SetCurrentLocale(GetDeviceLang());
-}
+public:
+    virtual void Output(Logger::eLogLevel ll, const char8* text);
 
-String LocalizationAndroid::GetDeviceLang(void)
-{
-    JNI::JavaClass jniLocalisation("com/dava/framework/JNILocalization");
-    Function<jstring ()> getLocale  = jniLocalisation.GetStaticMethod<jstring>("GetLocale");
-
-    char str[256] = {0};
-    JNI::CreateStringFromJni(getLocale(), str);
-    String locale = str;
-    return locale;
-}
+    static String FormatTestStarted(const String& testName);
+    static String FormatTestFinished(const String& testName);
+    static String FormatTestFailed(const String& testName, const String& condition, const String& errMsg);
+private:
+    void TestOutput(const String& data);
+};
 
 };
+
+#endif // __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
