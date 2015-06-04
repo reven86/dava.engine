@@ -41,8 +41,7 @@ elseif ( MACOS )
 
 elseif ( WIN32 )
     #dynamic runtime on windows store
-    if (CMAKE_SYSTEM_NAME STREQUAL WindowsStore OR CMAKE_SYSTEM_NAME STREQUAL WindowsPhone)
-	    set ( WINSTORE 1 )
+    if ( WINDOWS_UAP )
 	    set ( CRT_TYPE_DEBUG "/MDd" )
 		set ( CRT_TYPE_RELEASE "/MD" )
 		#consume windows runtime extension (C++/CX)
@@ -52,9 +51,9 @@ elseif ( WIN32 )
 		set ( CRT_TYPE_RELEASE "/MT" )
 	endif ()
 	
-    set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CRT_TYPE_DEBUG} ${ADDITIONAL_CXX_FLAGS} /MP /EHsc" ) 
+    set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CRT_TYPE_DEBUG} ${ADDITIONAL_CXX_FLAGS} /MP /EHsc /Zi /Od" ) 
     set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CRT_TYPE_RELEASE} ${ADDITIONAL_CXX_FLAGS} /MP /EHsc" ) 
-    set ( CMAKE_EXE_LINKER_FLAGS_RELEASE "/ENTRY:mainCRTStartup" )
+    set ( CMAKE_EXE_LINKER_FLAGS_RELEASE "/ENTRY:mainCRTStartup /INCREMENTAL:NO" )
 
     # undef macros min and max defined in windows.h
     add_definitions ( -DNOMINMAX )

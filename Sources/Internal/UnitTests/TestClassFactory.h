@@ -26,29 +26,36 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_TESTCLASSFACTORY_H__
+#define __DAVAENGINE_TESTCLASSFACTORY_H__
 
-#include "FileSystem/LocalizationAndroid.h"
-#include "FileSystem/LocalizationSystem.h"
-#include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
+#include "Base/BaseTypes.h"
 
 namespace DAVA
 {
-
-void LocalizationAndroid::SelectPreferedLocalization()
+namespace UnitTests
 {
-    LocalizationSystem::Instance()->SetCurrentLocale(GetDeviceLang());
-}
 
-String LocalizationAndroid::GetDeviceLang(void)
+class TestClass;
+
+class TestClassFactoryBase
 {
-    JNI::JavaClass jniLocalisation("com/dava/framework/JNILocalization");
-    Function<jstring ()> getLocale  = jniLocalisation.GetStaticMethod<jstring>("GetLocale");
+public:
+    virtual ~TestClassFactoryBase() = default;
+    virtual TestClass* CreateTestClass() = 0;
 
-    char str[256] = {0};
-    JNI::CreateStringFromJni(getLocale(), str);
-    String locale = str;
-    return locale;
-}
-
+protected:
+    TestClassFactoryBase() = default;
 };
+
+template<typename T>
+class TestClassFactoryImpl : public TestClassFactoryBase
+{
+public:
+    TestClass* CreateTestClass() override { return new T; }
+};
+
+}   // namespace UnitTests
+}   // namespace DAVA
+
+#endif  // __DAVAENGINE_TESTCLASSFACTORY_H__
