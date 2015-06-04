@@ -86,6 +86,20 @@ _SwapRB4( void* data, uint32 size )
     }
 }
 
+//------------------------------------------------------------------------------
+
+static void
+_SwapRB5551( void* data, uint32 size )
+{
+    for (uint8* d = (uint8*)data, *d_end = (uint8*)data + size; d != d_end; d += 2)
+    {
+        uint8   t0 = d[0];
+        uint8   t1 = d[1];
+
+        d[0] = ((t1 & 0x7C) >> 2) | (t0 & 0xE0);
+        d[1] = ((t0 & 0x1F) << 2) | (t1 & 0x83);
+    }
+}
 
 //------------------------------------------------------------------------------
 
@@ -278,15 +292,15 @@ dx9_Texture_Map( Handle tex, unsigned level, TextureFace face )
 
     if( self->format == TEXTURE_FORMAT_R8G8B8A8 )
     {
-        Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
-        
-        _SwapRB8( self->mappedData, ext.dx*ext.dy*sizeof(uint32) );
+        _SwapRB8( self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel) );
     }
     else if( self->format == TEXTURE_FORMAT_R4G4B4A4 )
     {
-        Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
-        
-        _SwapRB4( self->mappedData, ext.dx*ext.dy*sizeof(uint16) );
+        _SwapRB4( self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel) );
+    }
+    else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
+    {
+        _SwapRB5551( self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel) );
     }
 
     return mem;
@@ -302,17 +316,17 @@ dx9_Texture_Unmap( Handle tex )
 
     DVASSERT(self->isMapped);
 
-    if( self->format == TEXTURE_FORMAT_R8G8B8A8 )
+    if (self->format == TEXTURE_FORMAT_R8G8B8A8)
     {
-        Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
-        
-        _SwapRB8( self->mappedData, ext.dx*ext.dy*sizeof(uint32) );
+        _SwapRB8(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
     }
-    else if( self->format == TEXTURE_FORMAT_R4G4B4A4 )
+    else if (self->format == TEXTURE_FORMAT_R4G4B4A4)
     {
-        Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
-        
-        _SwapRB4( self->mappedData, ext.dx*ext.dy*sizeof(uint16) );
+        _SwapRB4(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
+    }
+    else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
+    {
+        _SwapRB5551(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
     }
 
     if( self->cubetex9 )

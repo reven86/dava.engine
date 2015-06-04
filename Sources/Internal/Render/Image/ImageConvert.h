@@ -252,6 +252,51 @@ struct ConvertBGRA4444toRGBA4444
     }
 };
 
+struct ConvertABGR4444toRGBA4444
+{
+    inline void operator()(const uint16 * input, uint16 *output)
+    {
+        const uint8 * in = (const uint8 *)input;
+        uint8 * out = (uint8 *)output;
+
+        //aaaa bbbb gggg rrrr --> rrrr gggg bbbb aaaa
+        uint8 ab = in[0];
+        uint8 gr = in[1];
+
+        out[0] = ((gr & 0x0f) << 4) | ((gr & 0xf0) >> 4); //rg
+        out[1] = ((ab & 0x0f) << 4) | ((ab & 0xf0) >> 4); //ba
+    }
+};
+
+struct ConvertBGRA5551toRGBA5551
+{
+    inline void operator()(const uint16 * input, uint16 *output)
+    {
+        //bbbb bggg ggrr rrra --> rrrr rggg ggbb bbba
+        const uint16 in = *input;
+        uint16 r = (in & 0x7c00) >> 5;
+        uint16 b = (in & 0x001f) << 5;
+        uint16 ga = in & 0x83e0;
+
+        *output = r | b | ga;
+    }
+};
+
+struct ConvertABGR1555toRGBA5551
+{
+    inline void operator()(const uint16 * input, uint16 *output)
+    {
+        //abbb bbgg gggr rrrr --> rrrr rggg ggbb bbba
+        const uint16 in = *input;
+        uint16 r = (in & 0xf800) >> 11;
+        uint16 g = (in & 0x07c0) >> 1;
+        uint16 b = (in & 0x003e) << 9;
+        uint16 a = (in & 0x0001) << 15;
+
+        *output = r | g | b | a;
+    }
+};
+
 struct ConvertBGR565toRGB565
 {
     inline void operator()(const uint16* input, uint16* output)

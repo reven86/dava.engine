@@ -36,6 +36,7 @@
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/LibPVRHelper.h"
+#include "Render/Image/ImageConvert.h"
 #include "Render/PixelFormatDescriptor.h"
 
 
@@ -2502,7 +2503,21 @@ bool LibPVRHelper::CopyToImage(Image *image, uint32 mipMapLevel, uint32 faceInde
     {
         //Setup temporary variables.
         uint8* data = (uint8*)pvrData + GetMipMapLayerOffset(mipMapLevel, faceIndex, header);
-        Memcpy(image->data, data, image->dataSize);
+
+        if (image->format == FORMAT_RGBA4444)
+        {
+            ConvertDirect<uint16, uint16, ConvertABGR4444toRGBA4444> convert;
+            convert(data, image->width, image->height, image->width * sizeof(uint16), image->data);
+        }
+        else if (image->format == FORMAT_RGBA5551)
+        {
+            ConvertDirect<uint16, uint16, ConvertABGR1555toRGBA5551> convert;
+            convert(data, image->width, image->height, image->width * sizeof(uint16), image->data);
+        }
+        else
+        {
+            Memcpy(image->data, data, image->dataSize);
+        }
 
         return true;
     }
