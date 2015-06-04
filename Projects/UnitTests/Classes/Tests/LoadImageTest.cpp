@@ -74,14 +74,10 @@ void LoadImageTest::WebPTest(PerfFuncData * data)
     };
 
     TEST_VERIFY(DAVA::ImageSystem::Instance()->Load("~res:/TestData/LoadImageTest/rgb888.webp", imgSet) == DAVA::SUCCESS);
-    // TODO
-    //DAVA::ImageSystem::Instance()->Save("d:/rgb888.webp", imgSet);
-    //DAVA::ImageSystem::Instance()->Save("d:/rgb888.png", imgSet);
+    TEST_VERIFY(imgSet[0]->GetPixelFormat() == PixelFormat::FORMAT_RGB888);
     ClearImgSet();
 
     TEST_VERIFY(DAVA::ImageSystem::Instance()->Load("~res:/TestData/LoadImageTest/rgba8888.webp", imgSet) == DAVA::SUCCESS);
-    // TODO
-    //DAVA::ImageSystem::Instance()->Save("d:/rgba8888.webp", imgSet);
-    //DAVA::ImageSystem::Instance()->Save("d:/rgba8888.png", imgSet);
+    TEST_VERIFY(imgSet[0]->GetPixelFormat() == PixelFormat::FORMAT_RGBA8888);
     ClearImgSet();
 }
