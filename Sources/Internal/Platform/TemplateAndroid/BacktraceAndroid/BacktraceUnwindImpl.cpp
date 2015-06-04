@@ -30,7 +30,7 @@
 #include <unistd.h>
 #include "BacktraceUnwindImpl.h"
 #include "AndroidCrashUtility.h"
-#if defined(__arm__)
+#if defined(__arm__) && defined(CRASH_HANDLER_CUSTOMSIGNALS)
 namespace DAVA
 {
 MemoryMapUnwind::MemoryMapUnwind():

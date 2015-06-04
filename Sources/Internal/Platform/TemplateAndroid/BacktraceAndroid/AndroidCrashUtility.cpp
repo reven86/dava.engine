@@ -38,7 +38,7 @@
 #if defined(__DAVAENGINE_ANDROID__)
 
 //__arm__ should only be defined when compiling on arm32
-#if defined(__arm__)
+#if defined(__arm__) && defined(CRASH_HANDLER_CUSTOMSIGNALS)
 
 namespace DAVA
 {

@@ -32,7 +32,7 @@
 #include <sys/types.h>
 
 #include "Base/BaseTypes.h"
-#if defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_ANDROID__) && defined(CRASH_HANDLER_CUSTOMSIGNALS)
 //__arm__ should only be defined when compiling on arm32
 #if defined(__arm__)
 

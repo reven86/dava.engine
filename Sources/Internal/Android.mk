@@ -112,6 +112,10 @@ else
 DV_LOCAL_ARM_NEON := false
 endif
 
+ifeq ($(MEMORY_SANITIZE), true)
+DV_LOCAL_ARM_MODE := arm
+endif
+
 # set build flags
 DV_LOCAL_CPPFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1
 DV_LOCAL_CPPFLAGS += -std=c++1y

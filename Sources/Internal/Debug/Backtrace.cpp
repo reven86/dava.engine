@@ -41,26 +41,6 @@
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "../Platform/TemplateAndroid/BacktraceAndroid/AndroidBacktraceChooser.h"
 #include <cxxabi.h>
-// workaround bug: https://code.google.com/p/android/issues/detail?id=79483
-#if defined(__i386__) && defined(__clang__) && defined(_LIBCPP_VERSION)
-namespace __cxxabiv1
-{
-extern "C"
-{
-// https://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-4.3/a01696.html
-extern char* __cxa_demangle(const char* mangled_name,
-                            char*       output_buffer,
-                            size_t*     length,
-                            int*        status)
-{
-#pragma message("not implemented __cxa_demangle on android x86")
-	return nullptr;
-}
-
-} // extern "C"
-} // namespace __cxxabiv1
-namespace abi = __cxxabiv1;
-#endif //i386
 #endif
 
 #include <cstdlib>
@@ -259,6 +239,7 @@ public:
 #if defined(__DAVAENGINE_ANDROID__)
 	void OnStackFrame(Logger::eLogLevel logLevel,pointer_size addr,const char * functName)
 	{
+#if defined(CRASH_HANDLER_CUSTOMSIGNALS)
         DAVA::BacktraceInterface * backtraceProvider = DAVA::AndroidBacktraceChooser::ChooseBacktraceAndroid();
         const char * libName = nullptr;
         pointer_size relAddres = 0;
@@ -274,7 +255,7 @@ public:
             Logger::Instance()->Log(logLevel,"DAVA BACKTRACE:%p : %s (%s)\n", relAddres, libName,realname);
         }
         free(realname);
-         
+#endif // defined(CRASH_HANDLER_CUSTOMSIGNALS)
 	}
 #endif
     void PrintBackTraceToLog(Logger::eLogLevel logLevel )
@@ -305,7 +286,7 @@ public:
 #endif
        
 
-#if defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_ANDROID__) && defined(CRASH_HANDLER_CUSTOMSIGNALS)
         BacktraceInterface * backtraceProvider = AndroidBacktraceChooser::ChooseBacktraceAndroid();
        
         if(backtraceProvider != nullptr)
