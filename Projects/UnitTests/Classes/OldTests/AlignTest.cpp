@@ -35,7 +35,7 @@ const float32 ACCETABLE_DELTA_IN_PERSENTS = 2.0f;
 
 #if defined(__DAVAENGINE_MACOS__)
 const char* REFERENCE_IMAGE_PATH = "~res:/TestData/AlignTest/MacOS/test%d.png";
-#elif defined(__DAVAENGINE_WIN32__)
+#elif defined(__DAVAENGINE_WINDOWS__)
 const char* REFERENCE_IMAGE_PATH = "~res:/TestData/AlignTest/Win32/test%d.png";
 #elif defined(__DAVAENGINE_IPHONE__)
 const char* REFERENCE_IMAGE_PATH = "~res:/TestData/AlignTest/IOS/test%d.png";
@@ -79,7 +79,7 @@ TestTemplate<AlignTest>("AlignTest"),
 void AlignTest::LoadResources()
 {
 	// DF-1627 - Always set black background for this test for Windows - all screenshots should be the same
-#ifdef __DAVAENGINE_WIN32__
+#ifdef __DAVAENGINE_WINDOWS__
 	GetBackground()->SetColor(Color::Black);
 	GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
 #endif

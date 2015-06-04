@@ -229,6 +229,11 @@ const String FILL_MODE_NAMES[FILLMODE_COUNT] =
 	"FILLMODE_SOLID"
 };
 
+#if defined(__DAVAENGINE_WIN_UAP__)
+__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
+//FILLMODE_MAP is not implemented for WinStore (OpenGL ES with ANGLE)
+#endif
+
 #if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__))
 const GLint FILLMODE_MAP[FILLMODE_COUNT] =
 {

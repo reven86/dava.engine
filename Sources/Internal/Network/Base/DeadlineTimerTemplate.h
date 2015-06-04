@@ -30,10 +30,10 @@
 #ifndef __DAVAENGINE_DEADLINETIMERTEMPLATE_H__
 #define __DAVAENGINE_DEADLINETIMERTEMPLATE_H__
 
-#include <Base/BaseTypes.h>
-#include <Base/Noncopyable.h>
+#include "Base/BaseTypes.h"
+#include "Base/Noncopyable.h"
 
-#include <Network/Base/IOLoop.h>
+#include "Network/Base/IOLoop.h"
 
 namespace DAVA
 {
@@ -93,8 +93,12 @@ DeadlineTimerTemplate<T>::~DeadlineTimerTemplate()
 template<typename T>
 void DeadlineTimerTemplate<T>::CancelWait()
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+#else
     DVASSERT(true == isOpen && false == isClosing);
     uv_timer_stop(&uvhandle);
+#endif
 }
 
 template<typename T>
@@ -112,6 +116,10 @@ bool DeadlineTimerTemplate<T>::IsClosing() const
 template<typename T>
 int32 DeadlineTimerTemplate<T>::DoOpen()
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return -1;
+#else
     DVASSERT(false == isOpen && false == isClosing);
     int32 error = uv_timer_init(loop->Handle(), &uvhandle);
     if (0 == error)
@@ -120,11 +128,16 @@ int32 DeadlineTimerTemplate<T>::DoOpen()
         uvhandle.data = this;
     }
     return error;
+#endif
 }
 
 template<typename T>
 int32 DeadlineTimerTemplate<T>::DoWait(uint32 timeout)
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return -1;
+#else
     DVASSERT(false == isClosing);
     int32 error = 0;
     if (false == isOpen)
@@ -132,15 +145,20 @@ int32 DeadlineTimerTemplate<T>::DoWait(uint32 timeout)
     if (0 == error)
         error = uv_timer_start(&uvhandle, &HandleTimerThunk, timeout, 0);
     return error;
+#endif
 }
 
 template<typename T>
 void DeadlineTimerTemplate<T>::DoClose()
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+#else
     DVASSERT(true == isOpen && false == isClosing);
     isOpen = false;
     isClosing = true;
     uv_close(reinterpret_cast<uv_handle_t*>(&uvhandle), &HandleCloseThunk);
+#endif
 }
 
 ///   Thunks   ///////////////////////////////////////////////////////////

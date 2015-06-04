@@ -53,7 +53,7 @@ void FilePath::SetBundleName(const FilePath & newBundlePath)
 
     virtualBundlePath.pathType = PATH_IN_RESOURCES;
 
-    if(resourceFolders.size())
+    if(!resourceFolders.empty())
         resourceFolders.pop_front();
     
     resourceFolders.push_front(virtualBundlePath);
@@ -105,7 +105,7 @@ const List<FilePath> FilePath::GetResourcesFolders()
 }
 
     
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 void FilePath::InitializeBundleName()
 {
 	FilePath execDirectory = FileSystem::Instance()->GetCurrentExecutableDirectory();
@@ -116,7 +116,7 @@ void FilePath::InitializeBundleName()
 		AddResourcesFolder(workingDirectory);
 	}
 }
-#endif //#if defined(__DAVAENGINE_WIN32__)
+#endif //#if defined(__DAVAENGINE_WINDOWS__)
 
 
 #if defined(__DAVAENGINE_ANDROID__)
@@ -172,13 +172,19 @@ bool operator < (const FilePath& left, const FilePath& right)
 FilePath::FilePath()
 {
     pathType = PATH_EMPTY;
-    absolutePathname = String();
 }
 
 FilePath::FilePath(const FilePath &path)
 {
     pathType = path.pathType;
     absolutePathname = path.absolutePathname;
+}
+
+FilePath::FilePath(FilePath&& path) DAVA_NOEXCEPT
+    : pathType(path.pathType)
+    , absolutePathname(std::move(path.absolutePathname))
+{
+    path.pathType = PATH_EMPTY;
 }
     
 FilePath::FilePath(const char * sourcePath)
@@ -304,15 +310,14 @@ String FilePath::ResolveResourcesPath() const
 
         if(resourceFolders.size() == 1) // optimization to avoid call path.Exists()
         {
-            path = (*resourceFolders.begin()).absolutePathname + relativePathname;
+            path = resourceFolders.front().absolutePathname + relativePathname;
             return path.absolutePathname;
         }
         else
         {
-            List<FilePath>::reverse_iterator endIt = resourceFolders.rend();
-            for(List<FilePath>::reverse_iterator it = resourceFolders.rbegin(); it != endIt; ++it)
+            for(const auto& x : resourceFolders)
             {
-                path = (*it).absolutePathname + relativePathname;
+                path = x.absolutePathname + relativePathname;
                 if(path.Exists())
                 {
                     return path.absolutePathname;
@@ -330,6 +335,15 @@ FilePath& FilePath::operator=(const FilePath &path)
     this->absolutePathname = path.absolutePathname;
     this->pathType = path.pathType;
     
+    return *this;
+}
+
+FilePath& FilePath::operator=(FilePath&& path) DAVA_NOEXCEPT
+{
+    absolutePathname = std::move(path.absolutePathname);
+    pathType = path.pathType;
+    path.pathType = PATH_EMPTY;
+
     return *this;
 }
     

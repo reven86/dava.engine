@@ -56,14 +56,14 @@ void DAVA::Cursor::ShowSystemCursor(bool show)
 {
     ShowCursor(show);
 }
+
 #endif
 
-#if defined(__DAVAENGINE_WIN32__) && defined (__DAVAENGINE_DIRECTX9__)
+#if defined(__DAVAENGINE_WINDOWS__) && defined (__DAVAENGINE_DIRECTX9__)
 
 #include "FileSystem/FileSystem.h"
 #include "Render/RenderManager.h"
 #include "Render/D3D9Helpers.h"
-
 
 namespace DAVA
 {

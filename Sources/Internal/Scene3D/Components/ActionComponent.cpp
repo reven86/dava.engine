@@ -274,16 +274,15 @@ namespace DAVA
 	void ActionComponent::Remove(const ActionComponent::Action::eType type, const FastName& entityName, const int switchIndex)
 	{
         bool wasMarked = false;
-		Vector<ActionComponent::ActionContainer>::iterator i = actions.begin();
-		for(; i < actions.end(); ++i)
+		for(auto it = actions.begin(); it < actions.end(); ++it)
 		{
-			const Action& innerAction = (*i).action;
+			const Action& innerAction = (*it).action;
 			if(innerAction.type == type &&
 			   innerAction.entityName == entityName &&
 			   innerAction.switchIndex == switchIndex)
 			{
-                wasMarked = (*i).markedForUpdate;
-				actions.erase(i);
+                wasMarked = (*it).markedForUpdate;
+				actions.erase(it);
 				break;
 			}
 		}

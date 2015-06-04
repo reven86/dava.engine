@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "GameCore.h"
 
 #include "Platform/DateTime.h"
@@ -95,8 +94,14 @@ void GameCore::RegisterTests()
     new KeyedArchiveYamlTest();
     new JobManagerTest();
     new Cpp14Test();
-    new FormatsTest();
+
+#if !defined(__DAVAENGINE_WIN_UAP__)
     new NetworkTest();
+    new FormatsTest();
+#else
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
+#endif
+
     new UnlimitedLogOutputTest();
     new SpinLockTest();
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -381,9 +386,3 @@ bool GameCore::IsNeedSkipTest(const BaseScreen& screen) const
 
     return 0 != CompareCaseInsensitive(runOnlyThisTest, name);
 }
-
-
-
-
-
-

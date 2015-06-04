@@ -118,9 +118,9 @@ void FormatsTest::TestPvr(PerfFuncData *data)
 
         TestImageInfo(compressedPathname, requestedFormat, data);
 
-#if !(defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
+#if !(defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__))
         continue;
-#endif //#if !(defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
+#endif //#if !(defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__))
 
         const DAVA::PixelFormatDescriptor & descriptor = DAVA::PixelFormatDescriptor::GetPixelFormatDescriptor(requestedFormat);
         if (descriptor.isHardwareSupported)
@@ -129,10 +129,10 @@ void FormatsTest::TestPvr(PerfFuncData *data)
         DAVA::Vector<DAVA::Image *> pngImages;
         DAVA::Vector<DAVA::Image *> compressedImages;
         const DAVA::eErrorCode loadPng = DAVA::ImageSystem::Instance()->Load(pngPathname, pngImages);
-        TEST_VERIFY(DAVA::SUCCESS == loadPng);
+        TEST_VERIFY(DAVA::eErrorCode::SUCCESS == loadPng);
 
         const DAVA::eErrorCode loadCompressed = DAVA::ImageSystem::Instance()->Load(compressedPathname, compressedImages);
-        TEST_VERIFY(DAVA::SUCCESS == loadCompressed);
+        TEST_VERIFY(DAVA::eErrorCode::SUCCESS == loadCompressed);
 
         if (pngImages.empty() || compressedImages.empty())
         {
@@ -178,9 +178,9 @@ void FormatsTest::TestDds(PerfFuncData *data)
 
         TestImageInfo(compressedPathname, requestedFormat, data);
 
-#if !(defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
+#if !(defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__))
         continue;
-#endif //#if !(defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
+#endif //#if !(defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__))
 
 #if defined(__DAVAENGINE_MACOS__) && (requestedFormat == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
         continue;
@@ -193,10 +193,10 @@ void FormatsTest::TestDds(PerfFuncData *data)
         DAVA::Vector<DAVA::Image *> pngImages;
         DAVA::Vector<DAVA::Image *> compressedImages;
         const DAVA::eErrorCode loadPng = DAVA::ImageSystem::Instance()->Load(pngPathname, pngImages);
-        TEST_VERIFY(DAVA::SUCCESS == loadPng);
+        TEST_VERIFY(DAVA::eErrorCode::SUCCESS == loadPng);
 
         const DAVA::eErrorCode loadCompressed = DAVA::ImageSystem::Instance()->Load(compressedPathname, compressedImages);
-        TEST_VERIFY(DAVA::SUCCESS == loadCompressed);
+        TEST_VERIFY(DAVA::eErrorCode::SUCCESS == loadCompressed);
 
         if (pngImages.empty() || compressedImages.empty())
         {

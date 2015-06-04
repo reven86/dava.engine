@@ -39,9 +39,21 @@ elseif ( MACOS )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
     set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS YES )
 
-elseif ( WIN32)
-    set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd /MP /EHsc" ) 
-    set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /MP /EHsc" ) 
+elseif ( WIN32 )
+    #specify compiler options for windows store platform
+    if ( WINDOWS_UAP )
+        #dynamic runtime on windows store
+        set ( CRT_TYPE_DEBUG "/MDd" )
+        set ( CRT_TYPE_RELEASE "/MD" )
+        #consume windows runtime extension (C++/CX) and supress warning C4458
+        set ( ADDITIONAL_CXX_FLAGS "/ZW /wd4458")
+    else ()
+        set ( CRT_TYPE_DEBUG "/MTd" )
+        set ( CRT_TYPE_RELEASE "/MT" )
+    endif ()
+    
+    set ( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${CRT_TYPE_DEBUG} ${ADDITIONAL_CXX_FLAGS} /MP /EHsc" ) 
+    set ( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${CRT_TYPE_RELEASE} ${ADDITIONAL_CXX_FLAGS} /MP /EHsc" ) 
     set ( CMAKE_EXE_LINKER_FLAGS_RELEASE "/ENTRY:mainCRTStartup" )
 
     # undef macros min and max defined in windows.h

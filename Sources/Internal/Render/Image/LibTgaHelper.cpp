@@ -62,7 +62,7 @@ ImageInfo LibTgaHelper::GetImageInfo(File *infile) const
 
     ImageInfo imageInfo;
 
-    if (readResult == SUCCESS)
+    if (readResult == eErrorCode::SUCCESS)
     {
         imageInfo.height = tgaInfo.height;
         imageInfo.width = tgaInfo.width;
@@ -102,7 +102,7 @@ DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(const FilePath& filepath, TgaInfo& 
     ScopedPtr<File> fileRead(File::Create(filepath, File::READ | File::OPEN));
     if (!fileRead)
     {
-        return ERROR_FILE_NOTFOUND;
+        return eErrorCode::ERROR_FILE_NOTFOUND;
     }
 
     fileRead->Seek(0, File::SEEK_FROM_START);
@@ -114,13 +114,13 @@ DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(File *infile, TgaInfo& tgaInfo) con
     Array<uint8, 18> fields;
     size_t bytesRead = infile->Read(&fields, fields.size());
     if (bytesRead != fields.size())
-        return ERROR_READ_FAIL;
+        return eErrorCode::ERROR_READ_FAIL;
 
     static const Array<uint8, 5> zeroes = {{ 0, 0, 0, 0, 0 }};
     if (Memcmp(&fields[idlengthOffset], &zeroes[0], 2) != 0 ||
         Memcmp(&fields[colorMapDataOffset], &zeroes[0], 5) != 0)
     {
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     // obtaining imageType
@@ -130,7 +130,7 @@ DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(File *infile, TgaInfo& tgaInfo) con
         tgaInfo.imageType != TgaInfo::COMPRESSED_GRAYSCALE &&
         tgaInfo.imageType != TgaInfo::COMPRESSED_TRUECOLOR)
     {
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     // obtaining width and height
@@ -138,7 +138,7 @@ DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(File *infile, TgaInfo& tgaInfo) con
     tgaInfo.height = LowEndianToUint16(&fields[heightOffset]);  //tga uses low endianness
     if (!tgaInfo.width || !tgaInfo.height)
     {
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     // obtaining bytes per pixel
@@ -146,7 +146,7 @@ DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(File *infile, TgaInfo& tgaInfo) con
     switch (tgaInfo.bytesPerPixel)
     {
     case 1: case 2: case 3: case 4: case 8: case 16: break;
-    default: return ERROR_FILE_FORMAT_INCORRECT;
+    default: return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     // obtaining origin corner info
@@ -158,15 +158,15 @@ DAVA::eErrorCode LibTgaHelper::ReadTgaHeader(File *infile, TgaInfo& tgaInfo) con
     switch (tgaInfo.alphaBits)
     {
     case 0: case 1: case 4: case 8: break;
-    default: return ERROR_FILE_FORMAT_INCORRECT;
+    default: return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     // defining pixel format
     tgaInfo.pixelFormat = DefinePixelFormat(tgaInfo);
     if (tgaInfo.pixelFormat == FORMAT_INVALID)
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
 
-    return SUCCESS;
+    return eErrorCode::SUCCESS;
 }
 
 struct Convert_TgaARGB1555_to_RGBA5551
@@ -197,7 +197,7 @@ eErrorCode LibTgaHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32
 
     infile->Seek(0, File::SEEK_FROM_START);
     eErrorCode readResult = ReadTgaHeader(infile, tgaInfo);
-    if (readResult != SUCCESS)
+    if (readResult != eErrorCode::SUCCESS)
         return readResult;
 
     Image* pImage = Image::Create(tgaInfo.width, tgaInfo.height, tgaInfo.pixelFormat);
@@ -208,7 +208,7 @@ eErrorCode LibTgaHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32
     else
         readResult = ReadUncompressedTga(infile, tgaInfo, image);
 
-    if (readResult == SUCCESS)
+    if (readResult == eErrorCode::SUCCESS)
     {
         // color formats are stored by TGA with swapped red-blue channels, 
         // excepting RGBA5551 that is stored as ARGB1555
@@ -228,7 +228,7 @@ eErrorCode LibTgaHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32
         
         SafeRetain(pImage);
         imageSet.push_back(pImage);
-        return SUCCESS;
+        return eErrorCode::SUCCESS;
     }
 
     return readResult;
@@ -297,7 +297,7 @@ eErrorCode LibTgaHelper::ReadUncompressedTga(File *infile, const TgaInfo& tgaInf
     auto readSize = infile->Read(image->data, image->dataSize);
     if(readSize != image->dataSize)
     {
-        return ERROR_READ_FAIL;
+        return eErrorCode::ERROR_READ_FAIL;
     }
     
     switch (tgaInfo.origin_corner)
@@ -322,7 +322,7 @@ eErrorCode LibTgaHelper::ReadUncompressedTga(File *infile, const TgaInfo& tgaInf
             break;
     }
     
-    return SUCCESS;
+    return eErrorCode::SUCCESS;
 }
 
 eErrorCode LibTgaHelper::ReadCompressedTga(File *infile, const TgaInfo& tgaInfo, ScopedPtr<Image>& image) const
@@ -335,7 +335,7 @@ eErrorCode LibTgaHelper::ReadCompressedTga(File *infile, const TgaInfo& tgaInfo,
     while (!dataWriter.AtEnd())
     {
         if (infile->Read(&chunkHeader, 1) != 1)
-            return ERROR_READ_FAIL;
+            return eErrorCode::ERROR_READ_FAIL;
 
         if (chunkHeader < 128)  // is raw section
         {
@@ -344,7 +344,7 @@ eErrorCode LibTgaHelper::ReadCompressedTga(File *infile, const TgaInfo& tgaInfo,
             for (uint8 i = 0; (i < chunkHeader) && !dataWriter.AtEnd(); ++i)
             {
                 if (infile->Read(pixelBuffer.data(), tgaInfo.bytesPerPixel) != tgaInfo.bytesPerPixel)
-                    return ERROR_READ_FAIL;
+                    return eErrorCode::ERROR_READ_FAIL;
 
                 dataWriter.Write(pixelBuffer.data());
             }
@@ -355,7 +355,7 @@ eErrorCode LibTgaHelper::ReadCompressedTga(File *infile, const TgaInfo& tgaInfo,
             chunkHeader -= 127; // number of repeated pixels
 
             if (infile->Read(pixelBuffer.data(), tgaInfo.bytesPerPixel) != tgaInfo.bytesPerPixel)
-                return ERROR_READ_FAIL;
+                return eErrorCode::ERROR_READ_FAIL;
 
             for (uint8 i = 0; (i < chunkHeader) && !dataWriter.AtEnd(); ++i)
             {
@@ -363,7 +363,7 @@ eErrorCode LibTgaHelper::ReadCompressedTga(File *infile, const TgaInfo& tgaInfo,
             }
         }
     }
-    return SUCCESS;
+    return eErrorCode::SUCCESS;
 }
 
 eErrorCode LibTgaHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat pixelFormat) const
@@ -436,7 +436,7 @@ eErrorCode LibTgaHelper::WriteFile(const FilePath & fileName, const Vector<Image
     default:
         Logger::Error("[%s] %s is not supported", __FUNCTION__, GlobalEnumMap<PixelFormat>::Instance()->ToString(pixelFormat));
         DVASSERT(false);
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     std::unique_ptr<uint8[]> convertedData;
@@ -460,11 +460,11 @@ eErrorCode LibTgaHelper::WriteFile(const FilePath & fileName, const Vector<Image
     if (!dstFile)
     {
         Logger::Error("[%s] File %s could not be opened for writing", __FUNCTION__, fileName.GetAbsolutePathname().c_str());
-        return ERROR_WRITE_FAIL;
+        return eErrorCode::ERROR_WRITE_FAIL;
     }
 
     auto res = WriteTgaHeader(dstFile, tgaInfo);
-    if (res != SUCCESS)
+    if (res != eErrorCode::SUCCESS)
         return res;
 
     return WriteUncompressedTga(dstFile, tgaInfo, imageData);
@@ -483,7 +483,7 @@ DAVA::eErrorCode LibTgaHelper::WriteTgaHeader(File *dstFile, const TgaInfo& tgaI
     fields[descriptorOffset] = tgaInfo.alphaBits | (tgaInfo.origin_corner & 0x03) << 4;
 
     auto bytesWritten = dstFile->Write(&fields, fields.size());
-    return (bytesWritten == fields.size()) ? SUCCESS : ERROR_WRITE_FAIL;
+    return (bytesWritten == fields.size()) ? eErrorCode::SUCCESS : eErrorCode::ERROR_WRITE_FAIL;
 }
 
 eErrorCode LibTgaHelper::WriteUncompressedTga(File *dstFile, const TgaInfo& tgaInfo, const uint8* data) const
@@ -492,10 +492,10 @@ eErrorCode LibTgaHelper::WriteUncompressedTga(File *dstFile, const TgaInfo& tgaI
     auto writeSize = dstFile->Write(data, dataSize);
     if (writeSize != dataSize)
     {
-        return ERROR_READ_FAIL;
+        return eErrorCode::ERROR_READ_FAIL;
     }
 
-    return SUCCESS;
+    return eErrorCode::SUCCESS;
 }
 
 LibTgaHelper::ImageDataWriter::ImageDataWriter(Image* img, const LibTgaHelper::TgaInfo& _tgaInfo)

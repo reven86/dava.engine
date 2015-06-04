@@ -1840,6 +1840,9 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.h">
       <Filter>Internal\UI\Components</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Base\Platform.h">
+      <Filter>Internal\Base</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
