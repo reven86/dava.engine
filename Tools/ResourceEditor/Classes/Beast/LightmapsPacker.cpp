@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "LightmapsPacker.h"
 
 #include "Qt/Main/QtUtils.h"
@@ -92,7 +91,7 @@ Vector2 LightmapsPacker::GetTextureSize(const FilePath & filePath)
 {
 	Vector2 ret;
 
-	FilePath sourceTexturePathname = FilePath::CreateWithNewExtension(filePath, TextureDescriptor::GetSourceTextureExtension());
+	FilePath sourceTexturePathname = FilePath::CreateWithNewExtension(filePath, TextureDescriptor::GetLightmapTextureExtension());
 
 	Image * image = CreateTopLevelImage(sourceTexturePathname);
     if(image)

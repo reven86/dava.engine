@@ -537,6 +537,7 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibTgaHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\IndexBuffer.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Material.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Material\MaterialCompiler.h" />
@@ -692,10 +693,13 @@
     <ClInclude Include="..\..\Sources\Internal\Thread\LockGuard.h" />
     <ClInclude Include="..\..\Sources\Internal\Thread\Semaphore.h" />
     <ClInclude Include="..\..\Sources\Internal\Thread\Spinlock.h" />
+    <ClInclude Include="..\..\Sources\Internal\Thread\ThreadLocalPtr.h" />
     <ClInclude Include="..\..\Sources\Internal\Timer\RawTimer.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIControlFamily.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\TheoraPlayer.h" />
@@ -742,6 +746,10 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIWebView.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIYamlLoader.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\VectorSpinnerAdapter.h" />
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClass.h" />
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClassFactory.h" />
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\TestCore.h" />
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\UnitTests.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\BiDiHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\CRC32.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\HTTPDownloader.h" />
@@ -1033,6 +1041,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibTgaHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material\MaterialCompiler.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material\MaterialGraph.cpp" />
@@ -1185,6 +1194,8 @@
     <ClCompile Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIControlFamily.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\ScrollHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\TheoraPlayer.cpp" />
@@ -1226,6 +1237,7 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UITextField.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIWebView.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIYamlLoader.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UnitTests\TestCore.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\BiDiHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\CRC32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\MD5.cpp" />

@@ -1,16 +1,49 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
+
 #include "InternalControlPropertiesSection.h"
 
 #include "ValueProperty.h"
 #include "UI/UIControl.h"
-#include "../PackageSerializer.h"
+#include "Model/PackageSerializer.h"
 #include "LocalizedTextValueProperty.h"
 #include "FontValueProperty.h"
 
 using namespace DAVA;
 
-InternalControlPropertiesSection::InternalControlPropertiesSection(DAVA::UIControl *control, int num, const InternalControlPropertiesSection *sourceSection, eCopyType copyType) : control(nullptr), internalControl(nullptr), internalControlNum(num)
+InternalControlPropertiesSection::InternalControlPropertiesSection(DAVA::UIControl *aControl, int num, const InternalControlPropertiesSection *sourceSection, eCloneType cloneType)
+    : SectionProperty("")
+    , control(SafeRetain(aControl))
+    , internalControl(nullptr)
+    , internalControlNum(num)
 {
-    this->control = SafeRetain(control);
+    name = control->GetInternalControlName(internalControlNum) + control->GetInternalControlDescriptions();
     
     internalControl = SafeRetain(control->GetInternalControl(num));
     if (internalControl == nullptr && sourceSection != nullptr && sourceSection->GetInternalControl() != nullptr)
@@ -27,19 +60,20 @@ InternalControlPropertiesSection::InternalControlPropertiesSection(DAVA::UIContr
             const InspMember *member = insp->Member(j);
             
             ValueProperty *sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindProperty(member);
+
             ValueProperty *prop = nullptr;
             //TODO: move it to fabric class
             if (strcmp(member->Name(), "text") == 0)
             {
-                prop = new LocalizedTextValueProperty(internalControl, member, sourceProperty, copyType);
+                prop = new LocalizedTextValueProperty(internalControl, member, dynamic_cast<LocalizedTextValueProperty*>(sourceProperty), cloneType);
             }
             else if (strcmp(member->Name(), "font") == 0)
             {
-                prop = new FontValueProperty(internalControl, member, sourceProperty, copyType);
+                prop = new FontValueProperty(internalControl, member, dynamic_cast<FontValueProperty*>(sourceProperty), cloneType);
             }
             else
             {
-                prop = new ValueProperty(internalControl, member, sourceProperty, copyType);
+                prop = new IntrospectionProperty(internalControl, member, dynamic_cast<IntrospectionProperty*>(sourceProperty), cloneType);
             }
             AddProperty(prop);
             SafeRelease(prop);
@@ -69,34 +103,31 @@ void InternalControlPropertiesSection::CreateInternalControl()
         for (int j = 0; j < insp->MembersCount(); j++)
         {
             const InspMember *member = insp->Member(j);
+
             ValueProperty *prop = nullptr;
             //TODO: move it to fabric class
             if (strcmp(member->Name(), "text") == 0)
             {
-                prop = new LocalizedTextValueProperty(internalControl, member, nullptr, COPY_VALUES);
+                prop = new LocalizedTextValueProperty(internalControl, member, nullptr, CT_COPY);
             }
             else if (strcmp(member->Name(), "font") == 0)
             {
-                prop = new FontValueProperty(internalControl, member, nullptr, COPY_VALUES);
+                prop = new FontValueProperty(internalControl, member, nullptr, CT_COPY);
             }
             else
             {
-                prop = new ValueProperty(internalControl, member, nullptr, COPY_VALUES);
+                prop = new IntrospectionProperty(internalControl, member, nullptr, CT_COPY);
             }
+            
             AddProperty(prop);
             SafeRelease(prop);
         }
     }
 }
 
-DAVA::String InternalControlPropertiesSection::GetName() const
-{
-    return control->GetInternalControlName(internalControlNum) + control->GetInternalControlDescriptions();
-}
-
 bool InternalControlPropertiesSection::HasChanges() const
 {
-    return internalControl && PropertiesSection::HasChanges();
+    return internalControl && SectionProperty::HasChanges();
 }
 
 void InternalControlPropertiesSection::Serialize(PackageSerializer *serializer) const
@@ -111,4 +142,3 @@ void InternalControlPropertiesSection::Serialize(PackageSerializer *serializer) 
         serializer->EndMap();
     }
 }
-

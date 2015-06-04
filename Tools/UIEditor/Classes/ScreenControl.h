@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __UIEditor__ScreenControl__
 #define __UIEditor__ScreenControl__
 

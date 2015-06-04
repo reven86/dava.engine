@@ -82,7 +82,7 @@ public:
 	// page each PSD file to separate texture
 	void PackToTexturesSeparate(const FilePath & excludeFolder, const FilePath & outputPath, List<DefinitionFile*> & defsList, eGPUFamily forGPU);
 	// pack one sprite and use several textures if more than one needed
-	void PackToMultipleTextures(const FilePath & excludeFolder, const FilePath & outputPath, List<DefinitionFile*> & remainingList, eGPUFamily forGPU);
+	void PackToMultipleTextures(const FilePath & excludeFolder, const FilePath & outputPath, const char* basename, List<DefinitionFile*> & remainingList, eGPUFamily forGPU);
 
 	bool TryToPack(const Rect2i & textureRect, List<DefinitionFile*> & defsList);
 	bool WriteDefinition(const FilePath & excludeFolder, const FilePath & outputPath, const String & textureName, DefinitionFile * defFile);
@@ -129,7 +129,6 @@ private:
 
 	bool onlySquareTextures;
     bool NeedSquareTextureForCompression(eGPUFamily forGPU);
-	bool IsFormatSupportedForGPU(PixelFormat format, eGPUFamily forGPU);
 	
     TextureConverter::eConvertQuality quality;
 
