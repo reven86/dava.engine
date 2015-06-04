@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ParticlesEditorNodeNameHelper.h"
 #include "../StringConstants.h"
 

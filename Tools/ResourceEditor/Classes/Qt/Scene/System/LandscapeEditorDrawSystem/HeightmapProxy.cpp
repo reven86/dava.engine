@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "HeightmapProxy.h"
 
 HeightmapProxy::HeightmapProxy(Heightmap* heightmap)

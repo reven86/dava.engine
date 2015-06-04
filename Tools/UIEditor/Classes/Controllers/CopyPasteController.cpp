@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #include "CopyPasteController.h"
 #include "PasteCommand.h"
 #include "CommandsController.h"

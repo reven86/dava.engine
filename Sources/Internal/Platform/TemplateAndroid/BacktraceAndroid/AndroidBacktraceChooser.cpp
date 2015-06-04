@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "AndroidBacktraceChooser.h"
 
 #if defined(CRASH_HANDLER_CUSTOMSIGNALS)

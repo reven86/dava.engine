@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __RESOURCEEDITORQT__SETTINGS_MANAGER__
 #define __RESOURCEEDITORQT__SETTINGS_MANAGER__
 
@@ -86,6 +87,7 @@ namespace Settings
     static const DAVA::FastName Scene_Sound_SoundObjectSphereColor("Scene/Sound/SoundObjectSphereColor");
 
     static const DAVA::FastName General_Mouse_InvertWheel( "General/Mouse/InvertWheel" );
+    static const DAVA::FastName General_Mouse_WheelMoveCamera( "General/Mouse/WheelMoveCamera" );
 
     // this settings won't be shown in settings dialog
     // and are used only by application

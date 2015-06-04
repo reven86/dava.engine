@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #include "HierarchyTree.h"
 #include "HierarchyTreePlatformNode.h"
 #include "HierarchyTreeScreenNode.h"

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __ResourceEditorQt__LayerForceWidget__
 #define __ResourceEditorQt__LayerForceWidget__
 

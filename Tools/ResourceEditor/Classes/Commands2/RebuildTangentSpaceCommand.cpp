@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "RebuildTangentSpaceCommand.h"
 #include "Render/3D/MeshUtils.h"
 

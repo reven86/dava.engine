@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_ROTATION_CONTROLLER_SYSTEM_H__
 #define __DAVAENGINE_ROTATION_CONTROLLER_SYSTEM_H__
 

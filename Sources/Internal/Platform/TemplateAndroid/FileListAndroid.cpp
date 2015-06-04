@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "FileListAndroid.h"
 #include "FileSystem/Logger.h"
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"

@@ -1,36 +1,35 @@
 /*==================================================================================
-Copyright (c) 2008, binaryzebra
-All rights reserved.
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-* Neither the name of the binaryzebra nor the
-names of its contributors may be used to endorse or promote products
-derived from this software without specific prior written permission.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include <time.h>
-#include <string>
-#include "JobManagerTest.h"
-#include "Job/JobManager.h"
-#include "Utils/Random.h"
+#include "DAVAEngine.h"
+#include "UnitTests/UnitTests.h"
+
+using namespace DAVA;
 
 #define JOBS_COUNT 500
 
@@ -64,7 +63,7 @@ static void testCalc(uint32 *var)
         uint32 t = 0;
         uint32 v = *var;
 
-        for(uint32 i = 1; i <= v; ++i)
+        for (uint32 i = 1; i <= v; ++i)
         {
             t += (i * v) + (t * i);
         }
@@ -73,90 +72,69 @@ static void testCalc(uint32 *var)
     }
 }
 
-JobManagerTest::JobManagerTest()
-: TestTemplate<JobManagerTest>("JobManagerTest")
+DAVA_TESTCLASS(JobManagerTest)
 {
-    RegisterFunction(this, &JobManagerTest::TestFunction, Format("JobManagerTest"), NULL);
-}
-
-void JobManagerTest::LoadResources()
-{
-}
-
-void JobManagerTest::UnloadResources()
-{
-}
-
-void JobManagerTest::DidAppear()
-{
-}
-
-void JobManagerTest::TestFunction(PerfFuncData *data)
-{
-    TestMainJobs(data);
-    TestWorkerJobs(data);
-}
-
-void JobManagerTest::TestMainJobs(PerfFuncData *data)
-{
-    JobManagerTestData testData;
-
-    Thread* thread = Thread::Create(Message(this, &JobManagerTest::ThreadFunc, &testData));
-    thread->Start();
-
-    while(thread->GetState() != Thread::STATE_ENDED)
+    DAVA_TEST(TestMainJobs)
     {
-        JobManager::Instance()->Update();
+        JobManagerTestData testData;
+
+        Thread* thread = Thread::Create(Message(this, &JobManagerTest::ThreadFunc, &testData));
+        thread->Start();
+
+        while (thread->GetState() != Thread::STATE_ENDED)
+        {
+            JobManager::Instance()->Update();
+        }
+
+        thread->Join();
+
+        TEST_VERIFY((testData.mainThreadVar == testData.testThreadVar));
+        TEST_VERIFY((testData.ownedMainJobsVar == JOBS_COUNT));
     }
 
-    thread->Join();
-
-    TEST_VERIFY((testData.mainThreadVar == testData.testThreadVar));
-    TEST_VERIFY((testData.ownedMainJobsVar == JOBS_COUNT));
-}
-
-void JobManagerTest::TestWorkerJobs(PerfFuncData *data)
-{
-    // TODO:
-    // ...
-}
-
-void JobManagerTest::ThreadFunc(BaseObject * bo, void * userParam, void * callerParam)
-{
-    JobManagerTestData *data = (JobManagerTestData*) userParam;
-
-    for (uint32 i = 0; i < JOBS_COUNT; i++)
+    DAVA_TEST(TestWorkerJobs)
     {
-        uint32 count = 50;
-        uint32 n = Random::Instance()->Rand(count);
-        uint32 jobId = 0;
+        // TODO:
+        // ...
+    }
 
-        for(uint32 j = 0; j < count; ++j)
+    void ThreadFunc(BaseObject * bo, void * userParam, void * callerParam)
+    {
+        JobManagerTestData *data = (JobManagerTestData*)userParam;
+
+        for (uint32 i = 0; i < JOBS_COUNT; i++)
         {
-            // calculate in main thread
-            Function<void()> fn = Bind(&testCalc, &data->mainThreadVar);
-            uint32 id = JobManager::Instance()->CreateMainJob(fn);
+            uint32 count = 50;
+            uint32 n = Random::Instance()->Rand(count);
+            uint32 jobId = 0;
 
-            if(j == n)
+            for (uint32 j = 0; j < count; ++j)
             {
-                jobId = id;
+                // calculate in main thread
+                Function<void()> fn = Bind(&testCalc, &data->mainThreadVar);
+                uint32 id = JobManager::Instance()->CreateMainJob(fn);
+
+                if (j == n)
+                {
+                    jobId = id;
+                }
+            }
+
+            JobManager::Instance()->WaitMainJobID(jobId);
+
+            for (uint32 j = 0; j < count; ++j)
+            {
+                // calculate in this thread
+                testCalc(&data->testThreadVar);
             }
         }
 
-        JobManager::Instance()->WaitMainJobID(jobId);
-
-        for(uint32 j = 0; j < count; ++j)
+        TestJobOwner * jobOwner = new TestJobOwner(&data->ownedMainJobsVar);
+        for (uint32 i = 0; i < JOBS_COUNT; ++i)
         {
-            // calculate in this thread
-            testCalc(&data->testThreadVar);
+            JobManager::Instance()->CreateMainJob(MakeFunction(PointerWrapper<TestJobOwner>::WrapRetainRelease(jobOwner), &TestJobOwner::AnyFunction));
         }
+        jobOwner->Release();
+        JobManager::Instance()->WaitMainJobs();
     }
-
-    TestJobOwner * jobOwner = new TestJobOwner(&data->ownedMainJobsVar);
-    for (uint32 i = 0; i < JOBS_COUNT; ++i)
-    {
-        JobManager::Instance()->CreateMainJob(MakeFunction(PointerWrapper<TestJobOwner>::WrapRetainRelease(jobOwner), &TestJobOwner::AnyFunction));
-    }
-    jobOwner->Release();
-    JobManager::Instance()->WaitMainJobs();
-}
+};

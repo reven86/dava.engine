@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene/System/HoodSystem/NormalHood.h"
 #include "Scene/System/ModifSystem.h"
 #include "Scene/System/TextDrawSystem.h"
