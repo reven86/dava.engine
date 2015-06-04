@@ -26,41 +26,75 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "DAVAEngine.h"
-#include "UnitTests/UnitTests.h"
+#ifndef __DAVAENGINE_TESTCLASS_H__
+#define __DAVAENGINE_TESTCLASS_H__
 
-#include "DataStorage/DataStorage.h"
+#include "Base/BaseTypes.h"
 
-using namespace DAVA;
-
-DAVA_TESTCLASS(DataVaultTest)
+namespace DAVA
 {
-    DAVA_TEST(TestFunction)
-    {
-        IDataStorage *storage = DataStorage::Create();
+namespace UnitTests
+{
 
-        storage->Clear();
-        storage->Push();
-        storage->SetStringValue("Test", "Test");
-        storage->Push();
-        String ret = storage->GetStringValue("Test");
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
-        TEST_VERIFY("" == ret);
-#else
-        TEST_VERIFY("Test" == ret);
-        storage->RemoveEntry("Test");
-        storage->Push();
-        ret = storage->GetStringValue("Test");
-        TEST_VERIFY("Test" != ret);
-
-        int64 iret = storage->GetLongValue("Test");
-        TEST_VERIFY(0 == iret);
-
-        storage->SetLongValue("Test", 1);
-        storage->Push();
-        iret = storage->GetLongValue("Test");
-        TEST_VERIFY(1 == iret);
-#endif
-        SafeRelease(storage);
-    }
+template<typename T>
+struct TestClassTypeKeeper
+{
+    using TestClassType = T;
 };
+
+class TestClass
+{
+    struct TestInfo
+    {
+        TestInfo(const char* name_, void (*testFunction_)(TestClass*))
+            : name(name_)
+            , testFunction(testFunction_)
+        {}
+        String name;
+        void (*testFunction)(TestClass*);
+    };
+
+public:
+    TestClass() = default;
+    virtual ~TestClass() = default;
+
+    virtual void SetUp(const String& testName) {}
+    virtual void TearDown(const String& testName) {}
+    virtual void Update(float32 timeElapsed, const String& testName) {}
+    virtual bool TestComplete(const String& testName) const { return true; }
+
+    const String& TestName(size_t index) const;
+    size_t TestCount() const;
+    void RunTest(size_t index);
+
+    void RegisterTest(const char* name, void (*testFunc)(TestClass*));
+
+private:
+    Vector<TestInfo> tests;
+};
+
+//////////////////////////////////////////////////////////////////////////
+inline const String& TestClass::TestName(size_t index) const
+{
+    return tests[index].name;
+}
+
+inline size_t TestClass::TestCount() const
+{
+    return tests.size();
+}
+
+inline void TestClass::RunTest(size_t index)
+{
+    tests[index].testFunction(this);
+}
+
+inline void TestClass::RegisterTest(const char* name, void (*testFunc)(TestClass*))
+{
+    tests.emplace_back(name, testFunc);
+}
+
+}   // namespace UnitTests
+}   // namespace DAVA
+
+#endif  // __DAVAENGINE_TESTCLASS_H__

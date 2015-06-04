@@ -26,41 +26,36 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "DAVAEngine.h"
-#include "UnitTests/UnitTests.h"
+#ifndef __DAVAENGINE_TESTCLASSFACTORY_H__
+#define __DAVAENGINE_TESTCLASSFACTORY_H__
 
-#include "DataStorage/DataStorage.h"
+#include "Base/BaseTypes.h"
 
-using namespace DAVA;
-
-DAVA_TESTCLASS(DataVaultTest)
+namespace DAVA
 {
-    DAVA_TEST(TestFunction)
-    {
-        IDataStorage *storage = DataStorage::Create();
+namespace UnitTests
+{
 
-        storage->Clear();
-        storage->Push();
-        storage->SetStringValue("Test", "Test");
-        storage->Push();
-        String ret = storage->GetStringValue("Test");
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
-        TEST_VERIFY("" == ret);
-#else
-        TEST_VERIFY("Test" == ret);
-        storage->RemoveEntry("Test");
-        storage->Push();
-        ret = storage->GetStringValue("Test");
-        TEST_VERIFY("Test" != ret);
+class TestClass;
 
-        int64 iret = storage->GetLongValue("Test");
-        TEST_VERIFY(0 == iret);
+class TestClassFactoryBase
+{
+public:
+    virtual ~TestClassFactoryBase() = default;
+    virtual TestClass* CreateTestClass() = 0;
 
-        storage->SetLongValue("Test", 1);
-        storage->Push();
-        iret = storage->GetLongValue("Test");
-        TEST_VERIFY(1 == iret);
-#endif
-        SafeRelease(storage);
-    }
+protected:
+    TestClassFactoryBase() = default;
 };
+
+template<typename T>
+class TestClassFactoryImpl : public TestClassFactoryBase
+{
+public:
+    TestClass* CreateTestClass() override { return new T; }
+};
+
+}   // namespace UnitTests
+}   // namespace DAVA
+
+#endif  // __DAVAENGINE_TESTCLASSFACTORY_H__

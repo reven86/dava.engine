@@ -26,41 +26,26 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "DAVAEngine.h"
-#include "UnitTests/UnitTests.h"
+#ifndef __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
+#define __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__
 
-#include "DataStorage/DataStorage.h"
+#include "TeamcityOutput/TeamcityOutput.h"
 
-using namespace DAVA;
-
-DAVA_TESTCLASS(DataVaultTest)
+namespace DAVA 
 {
-    DAVA_TEST(TestFunction)
-    {
-        IDataStorage *storage = DataStorage::Create();
 
-        storage->Clear();
-        storage->Push();
-        storage->SetStringValue("Test", "Test");
-        storage->Push();
-        String ret = storage->GetStringValue("Test");
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
-        TEST_VERIFY("" == ret);
-#else
-        TEST_VERIFY("Test" == ret);
-        storage->RemoveEntry("Test");
-        storage->Push();
-        ret = storage->GetStringValue("Test");
-        TEST_VERIFY("Test" != ret);
+class TeamcityTestsOutput: public TeamcityOutput
+{
+public:
+    virtual void Output(Logger::eLogLevel ll, const char8* text);
 
-        int64 iret = storage->GetLongValue("Test");
-        TEST_VERIFY(0 == iret);
-
-        storage->SetLongValue("Test", 1);
-        storage->Push();
-        iret = storage->GetLongValue("Test");
-        TEST_VERIFY(1 == iret);
-#endif
-        SafeRelease(storage);
-    }
+    static String FormatTestStarted(const String& testName);
+    static String FormatTestFinished(const String& testName);
+    static String FormatTestFailed(const String& testName, const String& condition, const String& errMsg);
+private:
+    void TestOutput(const String& data);
 };
+
+};
+
+#endif // __DAVAENGINE_TEAMCITY_TEST_OUTPUT_H__

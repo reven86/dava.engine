@@ -196,9 +196,9 @@ void UIControlSystem::ProcessScreenLogic()
 		LockInput();
 		
 		CancelAllInputs();
-		
-        NotifyListenersWillSwitch(nextScreenProcessed);
 
+        NotifyListenersWillSwitch(nextScreenProcessed);
+        
 		// If we have transition set
 		if (transitionProcessed)
 		{
