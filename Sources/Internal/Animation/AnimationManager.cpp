@@ -248,22 +248,19 @@ void AnimationManager::Update(float32 timeElapsed)
 				animation->next->state |= Animation::STATE_IN_PROGRESS;
 				animation->next->OnStart();
 			}
+
+            releaseCandidates.push_back(animation);
 		}
 	}
 
     //remove all animations
     //we need physically remove animations only after process all callbacks
-    size = (uint32)animations.size();
-    for (uint32 k = 0; k < size; ++k)
+    auto endIt = releaseCandidates.end();
+    for (auto it = releaseCandidates.begin(); it != endIt; ++it)
     {
-        Animation * animation = animations[k];
-        if (animation->state & Animation::STATE_DELETE_ME)
-        {
-            SafeRelease(animation);
-            size = (uint32)animations.size();
-            k--;
-        }
+        SafeRelease(*it);
     }
+    releaseCandidates.clear();
 }
 	
 void AnimationManager::DumpState()
