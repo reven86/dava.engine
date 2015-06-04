@@ -114,13 +114,16 @@ void MemoryManagerTest::TestAllocScope(PerfFuncData* data)
 
         DAVA_MEMORY_PROFILER_ALLOC_SCOPE(ALLOC_POOL_BULLET);
 
-        void* ptr = malloc(222);
+        // Use volatile keyword to prevent optimizer to throw allocations out
+        void* volatile ptr1 = malloc(222);
+        char* volatile ptr2 = new char[111];
 
         MemoryManager::Instance()->GetCurStat(buffer, statSize);
-        TEST_VERIFY(oldAllocByApp + 222 == poolStat[ALLOC_POOL_BULLET].allocByApp);
-        TEST_VERIFY(oldBlockCount + 1 == poolStat[ALLOC_POOL_BULLET].blockCount);
+        TEST_VERIFY(oldAllocByApp + 222 + 111 == poolStat[ALLOC_POOL_BULLET].allocByApp);
+        TEST_VERIFY(oldBlockCount + 1 + 1 == poolStat[ALLOC_POOL_BULLET].blockCount);
 
-        free(ptr);
+        free(ptr1);
+        delete[] ptr2;
 
         MemoryManager::Instance()->GetCurStat(buffer, statSize);
         TEST_VERIFY(oldAllocByApp == poolStat[ALLOC_POOL_BULLET].allocByApp);
