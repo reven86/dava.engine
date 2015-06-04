@@ -173,7 +173,7 @@ void SpeedLoadImagesTest::TestAndDisplayFormat(String extension, Vector<String> 
 
     if (paths.empty())
     {
-        resultString.append(Format("Files *.%s not found.\n", extension));
+        resultString.append(Format("Files *.%s not found.\n", extension.c_str()));
     }
 
     WideString resultWideString = resultText->GetText();
@@ -202,9 +202,13 @@ Vector<FilePath> SpeedLoadImagesTest::CreatePaths(String extension, Vector<Strin
                                    fileName.c_str(),
                                    quality.c_str(),
                                    extension.c_str()));
-            if (inpath.Exists())
+
+            File *infile = File::Create(inpath, File::OPEN | File::READ);
+            if (infile != nullptr)
+            //if (inpath.Exists())
             {
                 paths.push_back(inpath);
+                infile->Release();
             }
         }
     }
