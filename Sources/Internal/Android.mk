@@ -99,7 +99,7 @@ DAVA_ROOT := $(LOCAL_PATH)
 
 # set path for includes
 DV_LOCAL_C_INCLUDES := $(LOCAL_PATH)
-DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/Platform/TemplateAndroid/
+DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../Tools/
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/include
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/fmod/include
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/lua/include
@@ -352,6 +352,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Thread/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Components/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UnitTests/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Utils/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Job/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Image/*.cpp) \

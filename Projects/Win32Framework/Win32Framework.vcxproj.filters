@@ -190,6 +190,9 @@
     <Filter Include="Internal\Timer">
       <UniqueIdentifier>{ad6cd690-f1f4-454a-ab5a-65272ae1bf13}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\UnitTests">
+      <UniqueIdentifier>{74ad4986-9f1f-46aa-a7e2-2f8bc3f5dfe1}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Internal\Network\Services\MMNet">
       <UniqueIdentifier>{d0f16e2c-89a6-4e92-a990-9a10aa9bfe40}</UniqueIdentifier>
     </Filter>
@@ -1812,8 +1815,8 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibTgaHelper.h">
       <Filter>Internal\Render\Image</Filter>
-	</ClInclude>
-	<ClInclude Include="..\..\Sources\Internal\Render\2D\TextLayout.h">
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\TextLayout.h">
       <Filter>Internal\Render\2D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Timer\RawTimer.h">
@@ -1830,6 +1833,18 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.h">
       <Filter>Internal\UI\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClass.h">
+      <Filter>Internal\UnitTests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClassFactory.h">
+      <Filter>Internal\UnitTests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\TestCore.h">
+      <Filter>Internal\UnitTests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\UnitTests.h">
+      <Filter>Internal\UnitTests</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocatorBridge.h">
       <Filter>Internal\MemoryManager</Filter>
@@ -3271,7 +3286,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibTgaHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
-	<ClCompile Include="..\..\Sources\Internal\Render\2D\TextLayout.cpp">
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\TextLayout.cpp">
       <Filter>Internal\Render\2D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Timer\RawTimer.cpp">
@@ -3282,6 +3297,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.cpp">
       <Filter>Internal\UI\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UnitTests\TestCore.cpp">
+      <Filter>Internal\UnitTests</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Platform\ConditionalVariable.cpp">
       <Filter>Internal\Platform</Filter>
