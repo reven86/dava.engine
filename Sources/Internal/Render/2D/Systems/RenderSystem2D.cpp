@@ -667,9 +667,17 @@ void RenderSystem2D::PushBatch(NMaterial * material, rhi::HTextureSet texture, R
         vboTemp[vi++] = vertexPointer[i * 2];
         vboTemp[vi++] = vertexPointer[i * 2 + 1];
         vboTemp[vi++] = 0.f; // axe Z, empty but need for EVF_VERTEX format
-        vboTemp[vi++] = texCoordPointer ? texCoordPointer[i * 2] : 0.f;
-        vboTemp[vi++] = texCoordPointer ? texCoordPointer[i * 2 + 1] : 0.f;
-        *(uint32*)(&vboTemp[vi++]) = useColor.GetRGBA();
+        if (texCoordPointer)
+        {
+            vboTemp[vi++] = texCoordPointer[i * 2];
+            vboTemp[vi++] = texCoordPointer[i * 2 + 1];
+        }
+        else
+        {
+            vboTemp[vi++] = 0.f;
+            vboTemp[vi++] = 0.f;
+        }
+        *(uint32*)(&vboTemp[vi++]) = rhi::NativeColorRGBA(useColor.r, useColor.g, useColor.b, useColor.a);
     }
     for (uint32 i = 0; i < indexCount; ++i)
     {
