@@ -317,12 +317,7 @@ end
 
 function GetCenter(element)
     local control = GetSize(element)
-    local result = {}
-    result.dx = control.dx
-    result.dy = control.dy
-    result.x = control.x + control.dx / 2
-    result.y = control.y + control.dy / 2
-    return result
+    return {dx = control.dx, dy=control.dy, x=control.x + control.dx / 2, y = control.y + control.dy / 2}
 end
 
 function GetFrame(element)
@@ -344,16 +339,12 @@ function GetSize(controlName)
         OnError("Couldn't find element: " .. controlName)
     end
     local rect = GetElementRect(control)
-    local result = {}
-    result.x = math.floor(rect.x + 0.5)
-    result.y = math.floor(rect.y + 0.5)
-    result.dx = math.floor(rect.dx + 0.5)
-    result.dy = math.floor(rect.dy + 0.5)
-    return result
+    local floor = math.floor
+    return {x=floor(rect.x + 0.5), y=floor(rect.y + 0.5), dx=floor(rect.dx + 0.5), dy=floor(rect.dy + 0.5)}
 end
 
-function GetState(name)
-    local control = GetControl(name)
+function GetState(controlName)
+    local control = GetControl(controlName)
     if control then
         return control:GetState()
     end
@@ -389,7 +380,7 @@ function GetPosition(element)
     result.y = control.y
     result.dx = control.x + control.dx
     result.dy = control.y + control.dy
-    return result
+    return {x = control.x, y = control.y, dx = control.x + control.dx, dy = control.y + control.dy}
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -716,12 +707,6 @@ function TouchDownPosition(pos, touchId, tapCount)
     Yield()
 end
 
-function DoubleTouchDownPosition(pos, touchId)
-    local position = Vector.Vector2(pos.x, pos.y)
-    autotestingSystem:DoubleTouchDown(position, touchId or 1)
-    Yield()
-end
-
 function TouchDown(x, y, touchId)
     local position = Vector.Vector2(x, y)
     TouchDownPosition(position, touchId)
@@ -738,7 +723,6 @@ function ClickPosition(position, waitTime, touchId, tapCount)
     Wait(waitTime)
     TouchUp(touchId)
     Wait(waitTime)
-    return true
 end
 
 function Click(x, y, waitTime, touchId)
