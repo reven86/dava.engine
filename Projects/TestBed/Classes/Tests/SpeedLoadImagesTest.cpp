@@ -86,7 +86,7 @@ void SpeedLoadImagesTest::LoadResources()
     testWebPBtn->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &SpeedLoadImagesTest::OnTestWebP));
     AddControl(testWebPBtn);
 
-    resultText = new UIStaticText(Rect(10, 190, 990, 1200));
+    resultText = new UIStaticText(Rect(10, 190, 990, 1400));
     resultText->SetFont(font);
     resultText->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
     resultText->GetBackground()->SetColor(Color(0.0, 0.0, 0.0, 1.0));
