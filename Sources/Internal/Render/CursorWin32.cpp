@@ -51,9 +51,21 @@ void DAVA::Cursor::SetCursorPinning(bool pin)
     }
 }
 
-void DAVA::Cursor::ShowSystemCursor(bool show)
+void DAVA::Cursor::ShowSystemCursor( bool show )
 {
-    ShowCursor(show);
+    CURSORINFO ci = { sizeof( ci ), 0 };
+    if ( GetCursorInfo( &ci ) != 0 )
+    {
+        const auto isVisible = ( ci.flags & CURSOR_SHOWING ) == CURSOR_SHOWING; // In Windows 8 will be added other flags
+        if ( show != isVisible )
+        {
+            ShowCursor( show );
+        }
+    }
+    else
+    {
+        ShowCursor( show ); // No cursor info available, just call
+    }
 }
 #endif
 
