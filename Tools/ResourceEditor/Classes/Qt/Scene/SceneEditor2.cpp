@@ -46,6 +46,7 @@
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/Systems/RenderUpdateSystem.h"
 #include "Render/Highlevel/RenderBatchArray.h"
+#include "Render/Highlevel/RenderPass.h"
 
 #include "Scene/System/CameraSystem.h"
 #include "Scene/System/CollisionSystem.h"
@@ -170,6 +171,9 @@ SceneEditor2::SceneEditor2()
 	SetShadowBlendMode(ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
 #endif
 
+    float32 * clearColor = renderSystem->GetMainRenderPass()->GetPassConfig().colorBuffer[0].clearColor;
+    clearColor[0] = clearColor[1] = clearColor[2] = .3f;
+    clearColor[3] = 1.f;
 
     SceneSignals::Instance()->EmitOpened(this);
 

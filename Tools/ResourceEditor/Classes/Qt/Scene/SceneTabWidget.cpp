@@ -131,8 +131,6 @@ void SceneTabWidget::InitDAVAUI()
 
 	davaUIScreen = new DAVA::UIScreen();
 	davaUIScreen->AddControl(dava3DView);
-	davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
-	davaUIScreen->GetBackground()->SetColor(DAVA::Color(0.3f, 0.3f, 0.3f, 1.0f));
 
 	UIScreenManager::Instance()->RegisterScreen(davaUIScreenID, davaUIScreen);
 	UIScreenManager::Instance()->SetScreen(davaUIScreenID);
