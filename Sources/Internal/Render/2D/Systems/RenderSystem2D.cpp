@@ -392,7 +392,8 @@ void RenderSystem2D::Setup2DProjection()
     projMatrix = virtualToPhysicalMatrix * projMatrix;
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 
-    projMatrix.glOrtho(0.0f, (float32)1024, (float32)768, 0.0f, -1.0f, 1.0f);
+    
+    projMatrix.glOrtho(0.0f, (float32)Renderer::GetFramebufferWidth(), (float32)Renderer::GetFramebufferHeight(), 0.0f, -1.0f, 1.0f);
     projMatrix = virtualToPhysicalMatrix * projMatrix;
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 }
