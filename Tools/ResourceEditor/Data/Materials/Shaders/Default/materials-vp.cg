@@ -50,11 +50,11 @@ VPROG_IN_BEGIN
     #if WIND_ANIMATION
     VPROG_IN_TEXCOORD5(1)
     #endif
-/*
+
     #if FRAME_BLEND
-    attribute float inTime;
+    VPROG_IN_TEXCOORD3(1)
     #endif
-*/
+
 
 
 VPROG_IN_END
@@ -121,7 +121,7 @@ kkk
     #endif
     
     #if FRAME_BLEND
-        varying lowp float varTime;
+        VPROG_OUT_TEXCOORD3(varTime,1)        
     #endif
 
     #if VERTEX_FOG
@@ -580,7 +580,7 @@ VPROG_BEGIN
     #endif
     
     fog_param.view_position  = eyeCoordsPosition;
-    fog_param.world_position = mul(VP_IN_POSITION,worldMatrix).xyz;
+    fog_param.world_position = mul( float4(VP_IN_POSITION, 1.0),worldMatrix ).xyz;
     fog_param.eye_position   = cameraPosition;
     
     VP_OUT(varFog) = CalculateVertexFog( fog_param );
@@ -698,7 +698,7 @@ VPROG_BEGIN
 
 
 #if FRAME_BLEND
-    varTime = inTime;
+    VP_OUT(varTime) = VP_IN_TEXCOORD3;
 #endif
 
 VPROG_END
