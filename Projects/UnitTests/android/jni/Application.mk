@@ -1,8 +1,8 @@
 # DO NOT modify next 3 lines because TeamCity agent builder need it
 # to automaticaly build correct version
-MEMORY_SANITIZE := false
+MEMORY_SANITIZE := true
 
-APP_STL := c++_shared # warks with gnustl_static gnustl_share c++_static c++_shared tested on ndk10e
+APP_STL := c++_shared # works with gnustl_static gnustl_share c++_static c++_shared tested on ndk10e
 APP_CPPFLAGS := -frtti
 
 #APP_CFLAGS = -marm -g
@@ -22,8 +22,10 @@ ifeq ($(MEMORY_SANITIZE), true)
 # https://code.google.com/p/address-sanitizer/wiki/Android
 APP_CFLAGS   := -fsanitize=address -fno-omit-frame-pointer -fsanitize-memory-track-origins=2
 # use -g for MEMORY_SANITIZER and -O1 (no inline)
-APP_CFLAGS   += -O1 -g
-APP_STL      := c++_shared
+APP_CFLAGS   += -O1 -g # Warnign! -O0 - will crush clang++ with memory sanitizer
+APP_STL      := c++_shared # work with gnustl_shared or c++_shared, better with gnustl_shared
+                           # but because http://stackoverflow.com/questions/29018310/android-ndk-clang-compiler-cant-find-stdmake-unique
+                           # we have to stick with c++_shared
 APP_LDFLAGS  := -fsanitize=address -fuse-ld=gold
 endif
 

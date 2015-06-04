@@ -30,6 +30,8 @@
 
 #include "UnitTests/UnitTests.h"
 
+#include <memory>
+
 using namespace DAVA;
 
 auto f() -> int;
@@ -44,6 +46,14 @@ DAVA_TESTCLASS(Cpp14Test)
     DAVA_TEST(CompileTest)
     {
         TEST_VERIFY(f() == 42);
+
+        int* ptr = new int[100];
+        int* i_ptr = new int;
+        memcpy(i_ptr, ptr, sizeof(int) * 2);
+        std::make_unique<int>();
+        printf("%d", *i_ptr);
+
+        Logger::Info("just after memory corruption!!!!!");
     }
 
     DAVA_TEST(ScopeExit)
