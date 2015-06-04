@@ -1,6 +1,7 @@
 
     #include "../Common/rhi_Private.h"
     #include "../Common/rhi_Pool.h"
+    #include "../Common/format_convert.h"
     #include "rhi_GLES2.h"
 
     #include "Debug/DVAssert.h"
@@ -55,61 +56,6 @@ TextureGLES2_t::TextureGLES2_t()
 
 typedef Pool<TextureGLES2_t,RESOURCE_TEXTURE>   TextureGLES2Pool;
 RHI_IMPL_POOL(TextureGLES2_t,RESOURCE_TEXTURE);
-
-
-
-//------------------------------------------------------------------------------
-
-static void
-_FlipRGBA4( void* data, uint32 size )
-{
-    // flip RGBA-ABGR order
-    for( uint8* d=(uint8*)data,*d_end=(uint8*)data+size; d!=d_end; d+=2 )
-    {
-        uint8   t0 = d[0];
-        uint8   t1 = d[1];
-
-        t0 = ((t0&0x0F)<<4) | ((t0&0xF0)>>4);
-        t1 = ((t1&0x0F)<<4) | ((t1&0xF0)>>4);
-
-        d[0] = t1;
-        d[1] = t0;
-    }
-}
-
-//------------------------------------------------------------------------------
-
-static void
-_ABGR1555toRGBA5551(void* data, uint32 size)
-{
-    for (uint16* d = (uint16*)data, *d_end = (uint16*)data + size / sizeof(uint16); d != d_end; ++d)
-    {
-        const uint16 in = *d;
-        uint16 r = (in & 0xF800) >> 11;
-        uint16 g = (in & 0x07C0) >> 1;
-        uint16 b = (in & 0x003E) << 9;
-        uint16 a = (in & 0x0001) << 15;
-
-        *d = r | g | b | a;
-    }
-}
-
-//------------------------------------------------------------------------------
-
-static void
-_RGBA5551toABGR1555(void* data, uint32 size)
-{
-    for (uint16* d = (uint16*)data, *d_end = (uint16*)data + size / sizeof(uint16); d != d_end; ++d)
-    {
-        const uint16 in = *d;
-        uint16 r = (in & 0x001F) << 11;
-        uint16 g = (in & 0x03E0) << 1;
-        uint16 b = (in & 0x7C00) >> 9;
-        uint16 a = (in & 0x8000) >> 15;
-
-        *d = r | g | b | a;
-    }
-}
 
 //------------------------------------------------------------------------------
 
@@ -251,7 +197,7 @@ gles2_Texture_Map( Handle tex, unsigned level, TextureFace face )
     
     if( self->format == TEXTURE_FORMAT_R4G4B4A4 )
     {
-        _FlipRGBA4( self->mappedData, textureDataSize );
+        _FlipRGBA4_ABGR4( self->mappedData, textureDataSize );
     }
     else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
     {
@@ -280,7 +226,7 @@ gles2_Texture_Unmap( Handle tex )
     DVASSERT(self->isMapped);
     if( self->format == TEXTURE_FORMAT_R4G4B4A4 )
     {
-        _FlipRGBA4( self->mappedData, textureDataSize );
+        _FlipRGBA4_ABGR4( self->mappedData, textureDataSize );
     }
     else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
     {

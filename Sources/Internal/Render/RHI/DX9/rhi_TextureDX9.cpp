@@ -1,6 +1,7 @@
 
     #include "../Common/rhi_Private.h"
     #include "../Common/rhi_Pool.h"
+    #include "../Common/format_convert.h"
     #include "rhi_DX9.h"
 
     #include "Debug/DVAssert.h"
@@ -54,52 +55,6 @@ TextureDX9_t::TextureDX9_t()
 
 typedef Pool<TextureDX9_t,RESOURCE_TEXTURE>   TextureDX9Pool;
 RHI_IMPL_POOL(TextureDX9_t,RESOURCE_TEXTURE);
-
-
-//------------------------------------------------------------------------------
-
-static void
-_SwapRB8( void* data, uint32 size )
-{
-    for( uint8* d=(uint8*)data,*d_end=(uint8*)data+size; d!=d_end; d+=4 )
-    {
-        uint8   t = d[0];
-
-        d[0] = d[2];
-        d[2] = t;
-    }
-}
-
-
-//------------------------------------------------------------------------------
-
-static void
-_SwapRB4( void* data, uint32 size )
-{
-    for( uint8* d=(uint8*)data,*d_end=(uint8*)data+size; d!=d_end; d+=2 )
-    {
-        uint8   t0 = d[0];
-        uint8   t1 = d[1];
-
-        d[0] = (t0&0xF0) | (t1&0x0F);
-        d[1] = (t1&0xF0) | (t0&0x0F);
-    }
-}
-
-//------------------------------------------------------------------------------
-
-static void
-_SwapRB5551( void* data, uint32 size )
-{
-    for (uint8* d = (uint8*)data, *d_end = (uint8*)data + size; d != d_end; d += 2)
-    {
-        uint8   t0 = d[0];
-        uint8   t1 = d[1];
-
-        d[0] = ((t1 & 0x7C) >> 2) | (t0 & 0xE0);
-        d[1] = ((t0 & 0x1F) << 2) | (t1 & 0x83);
-    }
-}
 
 //------------------------------------------------------------------------------
 

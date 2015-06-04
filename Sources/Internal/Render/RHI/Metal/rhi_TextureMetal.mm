@@ -1,6 +1,7 @@
 
     #include "../Common/rhi_Private.h"
     #include "../Common/rhi_Pool.h"
+    #include "../Common/format_convert.h"
     #include "rhi_Metal.h"
 
     #include "Debug/DVAssert.h"
@@ -158,6 +159,7 @@ metal_Texture_Map( Handle tex, unsigned level, TextureFace face )
     MTLRegion       rgn;
     uint32          stride = TextureStride( self->format, Size2i([self->uid width],[self->uid height]), level );
     Size2i          ext    = TextureExtents( Size2i([self->uid width],[self->uid height]), level );
+    unsigned        sz     = TextureSize( self->format, [self->uid width], [self->uid height], level );
 
     DVASSERT(!self->is_renderable);
     DVASSERT(!self->is_mapped);
@@ -172,7 +174,6 @@ metal_Texture_Map( Handle tex, unsigned level, TextureFace face )
     if( self->is_cubemap )
     {
         NSUInteger  slice = 0;
-        unsigned    sz    = TextureSize( self->format, [self->uid width], [self->uid height], level );
         
         switch( face )
         {
@@ -192,6 +193,15 @@ metal_Texture_Map( Handle tex, unsigned level, TextureFace face )
         [self->uid getBytes:self->mappedData bytesPerRow:stride fromRegion:rgn mipmapLevel:level];
     }
     
+    if( self->format == TEXTURE_FORMAT_R4G4B4A4 )
+    {
+        _FlipRGBA4_ABGR4( self->mappedData, sz );
+    }
+    else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
+    {
+        _ABGR1555toRGBA5551(self->mappedData, sz);
+    }
+    
     self->is_mapped   = true;
     self->mappedLevel = level;
     
@@ -206,8 +216,9 @@ metal_Texture_Unmap( Handle tex )
 {
     TextureMetal_t* self    = TextureMetalPool::Get( tex );
     MTLRegion       rgn;
-    uint32          stride = TextureStride( self->format, Size2i([self->uid width],[self->uid height]), self->mappedLevel );
-    Size2i          ext    = TextureExtents( Size2i([self->uid width],[self->uid height]), self->mappedLevel );
+    uint32          stride  = TextureStride( self->format, Size2i([self->uid width],[self->uid height]), self->mappedLevel );
+    Size2i          ext     = TextureExtents( Size2i([self->uid width],[self->uid height]), self->mappedLevel );
+    unsigned        sz      = TextureSize( self->format, [self->uid width], [self->uid height], self->mappedLevel );
 
     DVASSERT(self->is_mapped);
 
@@ -218,16 +229,25 @@ metal_Texture_Unmap( Handle tex )
     rgn.size.height = ext.dy;
     rgn.size.depth  = 1;
     
+    if( self->format == TEXTURE_FORMAT_R4G4B4A4 )
+    {
+        _FlipRGBA4_ABGR4( self->mappedData, sz );
+    }
+    else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
+    {
+        _RGBA5551toABGR1555(self->mappedData, sz);
+    }
+    
     if( self->is_cubemap )
     {
-        unsigned    sz = TextureSize( self->format, [self->uid width], [self->uid height], self->mappedLevel );
-        
         [self->uid replaceRegion:rgn mipmapLevel:self->mappedLevel slice:self->mappedSlice withBytes:self->mappedData bytesPerRow:stride bytesPerImage:sz];
     }
     else
     {
         [self->uid replaceRegion:rgn mipmapLevel:self->mappedLevel withBytes:self->mappedData bytesPerRow:stride];
     }
+    
+    self->is_mapped = false;
 }
 
 
@@ -237,6 +257,7 @@ void
 metal_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace face )
 {
     TextureMetal_t* self   = TextureMetalPool::Get( tex );
+    Size2i          ext    = TextureExtents( Size2i(self->width, self->height), level );
     uint32          sz     = TextureSize( self->format, self->width, self->height, level );
     uint32          stride = TextureStride( self->format, Size2i(self->width,self->height), level );
     MTLRegion       rgn;
@@ -252,20 +273,29 @@ metal_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
         case TEXTURE_FACE_BOTTOM : slice = 5; break;
     }
     
-    rgn.origin.x    = 0;
-    rgn.origin.y    = 0;
-    rgn.origin.z    = 0;
-    rgn.size.width  = self->width;
-    rgn.size.height = self->height;
-    rgn.size.depth  = 1;
-
-    if( self->is_cubemap )
+    if (self->format == TEXTURE_FORMAT_R4G4B4A4 || self->format == TEXTURE_FORMAT_R5G5B5A1)
     {
-        [self->uid replaceRegion:rgn mipmapLevel:level slice:slice withBytes:data bytesPerRow:stride bytesPerImage:sz];
+        metal_Texture_Map( tex, level, face );
+        memcpy( self->mappedData, data, sz );
+        metal_Texture_Unmap( tex );
     }
     else
     {
-        [self->uid replaceRegion:rgn mipmapLevel:level withBytes:data bytesPerRow:stride];
+        rgn.origin.x    = 0;
+        rgn.origin.y    = 0;
+        rgn.origin.z    = 0;
+        rgn.size.width  = ext.dx;
+        rgn.size.height = ext.dy;
+        rgn.size.depth  = 1;
+        
+        if( self->is_cubemap )
+        {
+            [self->uid replaceRegion:rgn mipmapLevel:level slice:slice withBytes:data bytesPerRow:stride bytesPerImage:sz];
+        }
+        else
+        {
+            [self->uid replaceRegion:rgn mipmapLevel:level withBytes:data bytesPerRow:stride];
+        }
     }
 }
 
