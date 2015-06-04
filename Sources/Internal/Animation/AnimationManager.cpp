@@ -230,7 +230,7 @@ void AnimationManager::Update(float32 timeElapsed)
 		}
 	}
 
-	//remove all old animations
+	//check all animation and process all callbacks on delete
     size = (uint32)animations.size();
 	for (uint32 k = 0; k < size; ++k)
 	{
@@ -251,7 +251,8 @@ void AnimationManager::Update(float32 timeElapsed)
 		}
 	}
 
-    //remove all old animations
+    //remove all animations
+    //we need physically remove animations only after process all callbacks
     size = (uint32)animations.size();
     for (uint32 k = 0; k < size; ++k)
     {
