@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "CloneLastBatchCommand.h"
 
 CloneLastBatchCommand::CloneLastBatchCommand(DAVA::RenderObject *ro)

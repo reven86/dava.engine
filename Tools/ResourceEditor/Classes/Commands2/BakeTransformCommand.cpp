@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Commands2/BakeTransformCommand.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Scene3D/Components/ComponentHelpers.h"

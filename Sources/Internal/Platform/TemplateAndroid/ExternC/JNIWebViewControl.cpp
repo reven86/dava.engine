@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "AndroidLayer.h"
 #include "Platform/TemplateAndroid/WebViewControlAndroid.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"

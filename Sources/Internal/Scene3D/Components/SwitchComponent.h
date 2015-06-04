@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_SWITCH_COMPONENT_H__
 #define __DAVAENGINE_SWITCH_COMPONENT_H__
 

@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #ifndef __UIEditor__MetadataFactory__
 #define __UIEditor__MetadataFactory__
 

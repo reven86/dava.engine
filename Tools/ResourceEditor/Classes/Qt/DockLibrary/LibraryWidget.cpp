@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "LibraryWidget.h"
 #include "LibraryFileSystemModel.h"
 

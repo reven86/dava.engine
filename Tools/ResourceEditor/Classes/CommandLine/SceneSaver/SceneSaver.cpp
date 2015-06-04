@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "SceneSaver.h"
 #include "Deprecated/SceneValidator.h"
 

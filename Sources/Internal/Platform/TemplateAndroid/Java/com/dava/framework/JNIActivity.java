@@ -18,6 +18,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.InputDevice;
 import android.view.MotionEvent;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -75,6 +76,14 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     public synchronized void setResumeGLActionOnWindowReady(Runnable action)
     {
         onResumeGLThread = action;
+    }
+    
+    /**
+     * Get instance of {@link JNIGLSurfaceView} without loading content view
+     * @return instance of {@link JNIGLSurfaceView} or null
+     */
+    public JNIGLSurfaceView GetGLView() {
+    	return glView;
     }
     
     @Override
@@ -555,7 +564,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         activity.runOnUiThread(new Runnable(){
             @Override
             public void run() {
-                Log.v(JNIConst.LOG_TAG, "finish Activity");
                 activity.finish();
                 System.exit(0);
             }

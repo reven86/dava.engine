@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __TEXTURE_LIST_DELEGATE_H__
 #define __TEXTURE_LIST_DELEGATE_H__
 

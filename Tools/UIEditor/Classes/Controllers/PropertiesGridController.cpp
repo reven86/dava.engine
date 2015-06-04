@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "PropertiesGridController.h"
 #include "HierarchyTreeController.h"
 

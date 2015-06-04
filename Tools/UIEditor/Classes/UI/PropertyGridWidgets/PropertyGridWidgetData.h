@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #ifndef __UIEditor__PropertyGridWidgetData__
 #define __UIEditor__PropertyGridWidgetData__
 

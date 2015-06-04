@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__SPEEDTREEIMPORTDIALOG__
 #define __RESOURCEEDITORQT__SPEEDTREEIMPORTDIALOG__
 

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_UI_TEXT_FIELD_ANDROID_H__
 #define __DAVAENGINE_UI_TEXT_FIELD_ANDROID_H__
 

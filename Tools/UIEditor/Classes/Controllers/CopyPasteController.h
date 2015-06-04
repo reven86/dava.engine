@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __UIEditor__CopyPasteController__
 #define __UIEditor__CopyPasteController__
 
