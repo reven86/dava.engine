@@ -43,7 +43,10 @@ namespace
 DialogReloadSprites::DialogReloadSprites(QWidget* parent)
     : QDialog(parent)
     , spritesPacker(new SpritesPacker(this))
+    , actionReloadSprites(new QAction(QIcon(":/DialogReloadSprites/Icons/reload.png"), tr("Reload Sprites"), this))
 {
+    connect(actionReloadSprites, &QAction::triggered, this, &DialogReloadSprites::exec);
+
     setupUi(this);
     pushButton_cancel->setEnabled(spritesPacker->isRunning());
     pushButton_start->setDisabled(spritesPacker->isRunning());

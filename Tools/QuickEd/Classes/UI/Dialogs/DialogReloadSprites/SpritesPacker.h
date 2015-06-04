@@ -51,6 +51,8 @@ public:
 public slots:
     void Cancel();
     void Stop();
+signals:
+    bool ProcessStared();
 private:
     void ReloadSpritePrivate(bool clearDirs, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
     DAVA::ResourcePacker2D *resourcePacker2D;

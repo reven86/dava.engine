@@ -59,6 +59,10 @@ void SpritesPacker::ReloadSprites(bool clearDirs, const eGPUFamily gpu, const Te
 
 void SpritesPacker::ReloadSpritePrivate(bool clearDirs, const eGPUFamily gpu, const TextureConverter::eConvertQuality quality)
 {
+    if (!ProcessStared())
+    {
+        return;
+    }
     setRunning(true);
     QString currentProjectPath = ResourcesManageHelper::GetProjectPath();
     QDir inputDir(currentProjectPath + "/DataSource");

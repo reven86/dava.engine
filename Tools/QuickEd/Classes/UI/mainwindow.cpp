@@ -33,7 +33,6 @@
 #include "fontmanagerdialog.h"
 #include "Helpers/ResourcesManageHelper.h"
 #include "Dialogs/LocalizationEditorDialog.h"
-#include "Ui/Dialogs/DialogReloadSprites/DialogReloadSprites.h"
 //////////////////////////////////////////////////////////////////////////
 
 #include "UI/FileSystemView/FileSystemDockWidget.h"
@@ -55,11 +54,8 @@ MainWindow::MainWindow(QWidget *parent)
     , backgroundFrameUseCustomColorAction(nullptr)
     , backgroundFrameSelectCustomColorAction(nullptr)
     , localizationEditorDialog(new LocalizationEditorDialog(this))
-    , dialogReloadSprites(new DialogReloadSprites(this))
 {
     setupUi(this);
-    actionReloadSprites->setEnabled(false);
-    toolBarConvertGPU->addAction(actionReloadSprites);
     actionLocalizationManager->setEnabled(false);
     InitLanguageBox();
     tabBar->setElideMode(Qt::ElideNone);
@@ -74,7 +70,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(actionFontManager, &QAction::triggered, this, &MainWindow::OnOpenFontManager);
     connect(actionLocalizationManager, &QAction::triggered, localizationEditorDialog, &LocalizationEditorDialog::exec);
-    connect(actionReloadSprites, &QAction::triggered, dialogReloadSprites, &DialogReloadSprites::exec);
 
     connect(fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::OpenPackageFile);
     InitMenu();
@@ -212,7 +207,7 @@ void MainWindow::InitLanguageBox()
     layout->addWidget(comboboxLanguage);
     QWidget *wrapper = new QWidget();
     wrapper->setLayout(layout);
-    toolBarLanguage->addWidget(wrapper);
+    toolBarPlugins->addWidget(wrapper);
     comboboxLanguage->setModel(localizationEditorDialog->currentLocaleComboBox->model());
     connect(comboboxLanguage, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), localizationEditorDialog->currentLocaleComboBox, &QComboBox::setCurrentIndex);
     connect(localizationEditorDialog->currentLocaleComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), comboboxLanguage, &QComboBox::setCurrentIndex);
@@ -375,7 +370,8 @@ void MainWindow::closeEvent(QCloseEvent *ev)
 
 void MainWindow::OnProjectOpened(Result result, QString projectPath)
 {
-    actionReloadSprites->setEnabled(result);
+    menuTools->setEnabled(result);
+    toolBarPlugins->setEnabled(result);
     actionLocalizationManager->setEnabled(result);
     if (result)
     {

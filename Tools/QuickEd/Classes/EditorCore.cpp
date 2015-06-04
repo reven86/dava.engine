@@ -30,6 +30,7 @@
 #include "Platform/Qt5/QtLayer.h"
 
 #include "UI/mainwindow.h"
+#include "UI/Dialogs/DialogReloadSprites/DialogReloadSprites.h"
 #include "DocumentGroup.h"
 #include "Document.h"
 #include "EditorCore.h"
@@ -47,6 +48,12 @@ EditorCore::EditorCore(QObject *parent)
 {
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
+
+    DialogReloadSprites *dialogReloadSprites = new DialogReloadSprites(mainWindow);
+    QAction* actionReloadSprites = dialogReloadSprites->GetActionReloadSprites();
+    mainWindow->menuTools->addAction(actionReloadSprites);
+    mainWindow->toolBarPlugins->addAction(actionReloadSprites);
+    connect(dialogReloadSprites->GetSpritesPacker(), &SpritesPacker::ProcessStared, this, &EditorCore::CloseAllDocuments, Qt::BlockingQueuedConnection);
      
     connect(mainWindow, &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
     connect(mainWindow, &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
@@ -111,6 +118,16 @@ void EditorCore::OnOpenPackageFile(const QString &path)
         }
         mainWindow->SetCurrentTab(index);
     }
+}
+
+bool EditorCore::CloseAllDocuments()
+{
+    for (auto index = documents.size() - 1; index >= 0; --index)
+    {
+        if (!CloseOneDocument(index))
+            return false;
+    }
+    return true;
 }
 
 bool EditorCore::CloseOneDocument(int index)

@@ -31,8 +31,7 @@
 #define __DIALOG_RELOAD_SPRITES_H__
 
 #include "ui_DialogReloadSprites.h"
-
-class SpritesPacker;
+#include "SpritesPacker.h"
 
 class DialogReloadSprites : public QDialog, public Ui::DialogReloadSprites
 {
@@ -40,7 +39,9 @@ class DialogReloadSprites : public QDialog, public Ui::DialogReloadSprites
 
 public:
     explicit DialogReloadSprites(QWidget *parent = nullptr);
-    ~DialogReloadSprites(); 
+    ~DialogReloadSprites();
+    SpritesPacker *GetSpritesPacker() const;
+    QAction* GetActionReloadSprites() const;
 private slots:
     void OnStartClicked();
 protected:
@@ -49,6 +50,19 @@ private:
     void LoadSettings();
     void SaveSettings() const;
     SpritesPacker *spritesPacker;
+    QAction *actionReloadSprites;
 };
+
+inline SpritesPacker* DialogReloadSprites::GetSpritesPacker() const
+{
+    return spritesPacker;
+}
+
+inline QAction* DialogReloadSprites::GetActionReloadSprites() const
+{
+    return actionReloadSprites;
+}
+
+
 
 #endif // __DIALOG_RELOAD_SPRITES_H__

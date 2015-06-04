@@ -57,6 +57,7 @@ protected slots:
     void OnCleanChanged(bool clean);
     void OnOpenPackageFile(const QString &path);
 
+    bool CloseAllDocuments();
     bool CloseOneDocument(int index);
     void SaveDocument(int index);
     void SaveAllDocuments();

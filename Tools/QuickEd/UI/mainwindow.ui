@@ -101,7 +101,6 @@
     </property>
     <addaction name="actionFontManager"/>
     <addaction name="actionLocalizationManager"/>
-    <addaction name="actionReloadSprites"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="contextMenuPolicy">
@@ -222,18 +221,7 @@
     <number>8</number>
    </attribute>
   </widget>
-  <widget class="QToolBar" name="toolBarLanguage">
-   <property name="windowTitle">
-    <string>toolBar</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
-  <widget class="QToolBar" name="toolBarConvertGPU">
+  <widget class="QToolBar" name="toolBarPlugins">
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
@@ -449,6 +437,18 @@
     <string>Ctrl+Shift+S</string>
    </property>
   </action>
+  <action name="actionRepack_And_Reload">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/Icons/reloadtextures.png</normaloff>:/Icons/reloadtextures.png</iconset>
+   </property>
+   <property name="text">
+    <string>Repack And Reload</string>
+   </property>
+   <property name="toolTip">
+    <string>Repack and reload sprites</string>
+   </property>
+  </action>
   <action name="actionPixelized">
    <property name="checkable">
     <bool>true</bool>
@@ -467,15 +467,6 @@
   <action name="menuTexturesForGPU">
    <property name="text">
     <string>GPU</string>
-   </property>
-  </action>
-  <action name="actionReloadSprites">
-   <property name="icon">
-    <iconset resource="../DataQt/icons.qrc">
-     <normaloff>:/Icons/reload.png</normaloff>:/Icons/reload.png</iconset>
-   </property>
-   <property name="text">
-    <string>Reload Sprites</string>
    </property>
   </action>
  </widget>
