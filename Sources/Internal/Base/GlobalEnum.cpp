@@ -39,6 +39,8 @@
 #include "UI/UIList.h"
 #include "UI/UITextField.h"
 #include "UI/Components/UIComponent.h"
+#include "UI/Layouts/UISizeHintComponent.h"
+#include "UI/Layouts/UILayoutComponent.h"
 
 using namespace DAVA;
 
@@ -281,9 +283,30 @@ ENUM_DECLARE(UITextField::eReturnKeyType)
 
 ENUM_DECLARE(UIComponent::eType)
 {
-    ENUM_ADD_DESCR(UIComponent::FAKE_COMPONENT       , "Fake"       );
-    ENUM_ADD_DESCR(UIComponent::FAKE_MULTI_COMPONENT       , "FakeMultiple"       );
+    ENUM_ADD_DESCR(UIComponent::LAYOUT_COMPONENT, "Layout");
+    ENUM_ADD_DESCR(UIComponent::SIZE_HINT_COMPONENT, "SizeHint");
+    ENUM_ADD_DESCR(UIComponent::ALIGN_HINT_COMPONENT, "AlignHint");
+    ENUM_ADD_DESCR(UIComponent::ANCHOR_HINT_COMPONENT, "AnchorHint");
+    
+    ENUM_ADD_DESCR(UIComponent::FAKE_COMPONENT, "Fake");
+    ENUM_ADD_DESCR(UIComponent::FAKE_MULTI_COMPONENT, "FakeMulti");
 };
+
+ENUM_DECLARE(UILayoutComponent::eLayoutType)
+{
+    ENUM_ADD_DESCR(UILayoutComponent::LINEAR_LAYOUT, "Linear");
+    ENUM_ADD_DESCR(UILayoutComponent::ANCHOR_LAYOUT, "Anchor");
+};
+
+ENUM_DECLARE(UISizeHintComponent::eSizePolicy)
+{
+    ENUM_ADD_DESCR(UISizeHintComponent::FIXED_SIZE, "FixedSize");
+    ENUM_ADD_DESCR(UISizeHintComponent::PERCENT_OF_CHILDREN, "PercentOfChildren");
+    ENUM_ADD_DESCR(UISizeHintComponent::PERCENT_OF_CONTENT, "PercentOfContent");
+    ENUM_ADD_DESCR(UISizeHintComponent::PERCENT_OF_PARENT, "PercentOfParent");
+    
+};
+
 
 /*
 void f()

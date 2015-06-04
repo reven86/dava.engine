@@ -33,6 +33,9 @@
 
 namespace DAVA
 {
+    class UIControl;
+    class UILayout;
+    
     class UILayoutSystem : public BaseObject
     {
     public:
@@ -42,6 +45,17 @@ namespace DAVA
         virtual ~UILayoutSystem();
         
     public:
+        void ApplyLayout(UIControl *control);
+
+    private:
+        void DoMeasurePhase(UIControl *control);
+        void DoLayoutPhase(UIControl *control);
+        
+        UILayout *GetLayout(UIControl *control);
+        
+    private:
+        UILayout *linearLayout = nullptr;
+        UILayout *anchorLayout = nullptr;
     };
     
     

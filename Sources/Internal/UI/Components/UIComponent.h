@@ -44,6 +44,7 @@ public:
         LAYOUT_COMPONENT,
         SIZE_HINT_COMPONENT,
         ALIGN_HINT_COMPONENT,
+        ANCHOR_HINT_COMPONENT,
         
         FAKE_COMPONENT,
         FAKE_MULTI_COMPONENT,

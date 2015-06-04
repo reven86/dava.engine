@@ -26,54 +26,23 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_LAYOUT_COMPONENT_H__
-#define __DAVAENGINE_UI_LAYOUT_COMPONENT_H__
+#ifndef __DAVAENGINE_UI_ANCHOR_LAYOUT_H__
+#define __DAVAENGINE_UI_ANCHOR_LAYOUT_H__
 
-#include "UI/Components/UIComponent.h"
+#include "UILayout.h"
 
 namespace DAVA
 {
-    class UILayoutComponent : public UIComponent
+    class UIAnchorLayout : public UILayout
     {
     public:
-        enum eLayoutType {
-            LINEAR_LAYOUT,
-            ANCHOR_LAYOUT
-        };
+        UIAnchorLayout();
+        virtual ~UIAnchorLayout();
         
-    public:
-        IMPLEMENT_COMPONENT_TYPE(LAYOUT_COMPONENT);
-        
-        UILayoutComponent();
-        UILayoutComponent(const UILayoutComponent &src);
-        
-    protected:
-        virtual ~UILayoutComponent();
-        
-    private:
-        UILayoutComponent &operator=(const UILayoutComponent &) = delete;
-        
-    public:
-        virtual UILayoutComponent* Clone() override;
-        
-        eLayoutType GetLayoutType() const;
-        void SetLayoutType(eLayoutType type);
-
-    private:
-        int32 GetLayoutTypeAsInt() const;
-        void SetLayoutTypeFromInt(int32 type);
-
-    private:
-        eLayoutType type;
-        
-    public:
-        INTROSPECTION_EXTEND(UILayoutComponent, UIComponent,
-                             PROPERTY("layout", InspDesc("Layout", GlobalEnumMap<eLayoutType>::Instance()), GetLayoutTypeAsInt, SetLayoutTypeFromInt, I_SAVE | I_VIEW | I_EDIT)
-                             );
-        
+        virtual void MeasureSize(UIControl *control);
+        virtual void ApplyLayout(UIControl *control);
     };
-    
 }
 
 
-#endif //__DAVAENGINE_UI_FAKE_COMPONENT_H__
+#endif //__DAVAENGINE_UI_ANCHOR_LAYOUT_H__

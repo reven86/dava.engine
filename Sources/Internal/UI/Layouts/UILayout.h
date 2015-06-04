@@ -31,15 +31,17 @@
 
 namespace DAVA
 {
+    class UIControl;
+    
     class UILayout
     {
     public:
         UILayout();
         virtual ~UILayout();
         
-//        void 
+        virtual void MeasureSize(UIControl *control) = 0;
+        virtual void ApplyLayout(UIControl *control) = 0;
     };
-    
 }
 
 

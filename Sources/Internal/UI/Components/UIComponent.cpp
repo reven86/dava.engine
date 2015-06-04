@@ -36,6 +36,7 @@
 #include "UI/Layouts/UILayoutComponent.h"
 #include "UI/Layouts/UISizeHintComponent.h"
 #include "UI/Layouts/UIAlignHintComponent.h"
+#include "UI/Layouts/UIAnchorHintComponent.h"
 
 namespace DAVA
 {
@@ -62,6 +63,9 @@ UIComponent * UIComponent::CreateByType(uint32 componentType)
         case ALIGN_HINT_COMPONENT:
             return new UIAlignHintComponent();
             
+        case ANCHOR_HINT_COMPONENT:
+            return new UIAnchorHintComponent();
+            
         case FAKE_COMPONENT:
             return new UIFakeComponent();
             
@@ -80,6 +84,15 @@ bool UIComponent::IsMultiple(uint32 componentType)
     switch (componentType)
     {
         case LAYOUT_COMPONENT:
+            return false;
+            
+        case SIZE_HINT_COMPONENT:
+            return false;
+            
+        case ALIGN_HINT_COMPONENT:
+            return false;
+            
+        case ANCHOR_HINT_COMPONENT:
             return false;
             
         case FAKE_COMPONENT:
