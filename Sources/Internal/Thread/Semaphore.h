@@ -73,7 +73,7 @@ protected:
 
 inline Semaphore::Semaphore(uint32 value)
 {
-	semaphore = CreateSemaphoreEx(NULL, value, 0x0FFFFFFF, NULL, 0, SEMAPHORE_ALL_ACCESS);
+	semaphore = CreateSemaphore(NULL, value, 0x0FFFFFFF, NULL);
 	DVASSERT(NULL != semaphore);
 }
 

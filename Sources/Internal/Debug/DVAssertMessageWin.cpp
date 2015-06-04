@@ -37,7 +37,7 @@ namespace DAVA
 
 #if defined (__DAVAENGINE_WINDOWS_DESKTOP__)
 
-bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
+bool DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 {
 	// Modal Type is ignored by Win32.
     const int flags = MB_OKCANCEL | MB_ICONEXCLAMATION | MB_SETFOREGROUND | MB_TOPMOST | (modalType == TRY_NONMODAL ? MB_APPLMODAL : MB_TASKMODAL);
