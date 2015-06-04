@@ -335,13 +335,14 @@ void TextureScrollArea::mouseReleaseEvent(QMouseEvent *event)
 
 void TextureScrollArea::applyCurrentImageToScenePixmap()
 {
-	if(~textureColorMask)
+    if(~textureColorMask)
 	{
 		QImage tmpImage;
 		prepareImageWithColormask(currentTextureImage, tmpImage);
 		
 		QPixmap pixmap = QPixmap::fromImage(tmpImage);
-        textureScene->setSceneRect(pixmap.rect());
+        if (!pixmap.isNull())
+            textureScene->setSceneRect(pixmap.rect());
 		texturePixmap->setPixmap(pixmap);
 	}
 	else
