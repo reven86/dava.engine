@@ -82,7 +82,7 @@ public:
     inline void GetFlexibility(int32 i, float32 & v);
     inline void GetAngle(int32 i, Vector2 & v);
 
-    inline ePrimitiveType GetPrimitiveType();
+    inline rhi::PrimitiveType GetPrimitiveType();
 	
 	//! Setters
 	inline void	SetCoord(int32 i, const Vector3 & v);
@@ -109,7 +109,7 @@ public:
 	inline const AABBox3 & GetBoundingBox() const;
     
     
-    inline void SetPrimitiveType(ePrimitiveType type);
+    inline void SetPrimitiveType(rhi::PrimitiveType type);
     
 	
 	int32	vertexCount;
@@ -119,7 +119,7 @@ public:
 	int32	vertexFormat;
 	int32	indexFormat;
 	int32	triangleCount;
-    ePrimitiveType primitiveType;
+    rhi::PrimitiveType primitiveType;
 	int32	cubeTextureCoordCount;
 	
 	Vector3		*vertexArray;
@@ -300,7 +300,7 @@ inline void	PolygonGroup::SetIndex(int32 i, int16 index)
 	indexArray[i] = index;
 }
     
-inline void	PolygonGroup::SetPrimitiveType(ePrimitiveType type)
+inline void	PolygonGroup::SetPrimitiveType(rhi::PrimitiveType type)
 {
     primitiveType = type;
 }
@@ -389,7 +389,7 @@ inline const AABBox3 & PolygonGroup::GetBoundingBox() const
 	return aabbox;
 }
 	
-inline ePrimitiveType PolygonGroup::GetPrimitiveType()
+inline rhi::PrimitiveType PolygonGroup::GetPrimitiveType()
 {
     return primitiveType;
 }

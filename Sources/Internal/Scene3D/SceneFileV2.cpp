@@ -1463,14 +1463,14 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
 	ReplaceOldNodes(rootNode);
 	RemoveEmptyHierarchy(rootNode);
 
-#if RHI_COMPLETE
     if (header.version < SHADOW_VOLUME_SCENE_VERSION)
     {
-        NMaterial * shadowMaterial = NMaterial::CreateMaterial(FastName("Shadow_Material"), NMaterialName::SHADOW_VOLUME, NMaterialQualityName::DEFAULT_QUALITY_NAME);
+        NMaterial * shadowMaterial = new NMaterial();
+        shadowMaterial->SetMaterialName(FastName("Shadow_Material"));
+        shadowMaterial->SetFXName(NMaterialName::SHADOW_VOLUME);
         ConvertShadowVolumes(rootNode, shadowMaterial);
         shadowMaterial->Release();
     }
-#endif // RHI_COMPLETE
 
     if(header.version < OLD_LODS_SCENE_VERSION)
     {

@@ -796,7 +796,7 @@ PolygonGroup* StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawGrid
     int32 indexCount = xSubdivisions * ySubdivisions * zSubdivisions * 12 * 2; //12 lines per box 2 indices per line
     
     PolygonGroup *res = new PolygonGroup();
-    res->SetPrimitiveType(PRIMITIVETYPE_LINELIST);    
+    res->SetPrimitiveType(rhi::PRIMITIVE_LINELIST);
     res->AllocateData(EVF_VERTEX, vertexCount, indexCount);    
 
     Vector3 boxSize = boundingBox.GetSize();
