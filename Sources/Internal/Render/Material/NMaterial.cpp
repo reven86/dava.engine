@@ -500,8 +500,10 @@ void NMaterial::RebuildBindings()
                     for (auto& propDescr : ShaderDescriptor::GetProps(bufferDescr.propertyLayoutId))
                     {
                         NMaterialProperty *prop = GetMaterialProperty(propDescr.uid);
-                        if ((prop != nullptr) && (prop->type == propDescr.type)) //has property of the same type
+                        if ((prop != nullptr)) //has property of the same type
                         {
+                            DVASSERT(prop->type == propDescr.type);
+
                             //create property binding
                             MaterialPropertyBinding binding;
                             binding.type = propDescr.type;

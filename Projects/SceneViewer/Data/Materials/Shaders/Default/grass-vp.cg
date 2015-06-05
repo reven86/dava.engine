@@ -101,7 +101,7 @@ VPROG_BEGIN
 
     FogParam    fog_param;
 
-    fog_param.color     = fogColor;
+    fog_param.color     = fogColor.rgb;
     fog_param.limit     = fogLimit;
     #if FOG_LINEAR
     fog_param.start     = fogStart;
@@ -116,22 +116,22 @@ VPROG_BEGIN
     fog_param.halfspace_limit   = fogHalfspaceLimit;
     #endif
 
-    float3 eyeCoordsPosition = mul( float4(VP_IN_POSITION,1.0), worldViewMatrix ).xyz; 
+    float3 eyeCoordsPosition = mul( float4( pos, 1.0 ), worldViewMatrix ).xyz; 
     
     #if FOG_ATMOSPHERE
     fog_param.tolight_dir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
 
     fog_param.atmosphere_distance = fogAtmosphereDistance;
     #if !FOG_ATMOSPHERE_MAP
-    fog_param.atmosphere_sun_color  = fogAtmosphereColorSun;
-    fog_param.atmosphere_sky_color  = fogAtmosphereColorSky;
+    fog_param.atmosphere_sun_color  = fogAtmosphereColorSun.rgb;
+    fog_param.atmosphere_sky_color  = fogAtmosphereColorSky.rgb;
     fog_param.atmosphere_scattering = fogAtmosphereScattering;
     #endif
     
     #endif
     
     fog_param.view_position  = eyeCoordsPosition;
-    fog_param.world_position = mul(float4(VP_IN_POSITION, 1.0),worldMatrix).xyz;
+    fog_param.world_position = mul( float4( pos, 1.0 ), worldMatrix ).xyz;
     fog_param.eye_position   = cameraPosition;
     
     VP_OUT(varFog) = CalculateVertexFog( fog_param );
