@@ -77,14 +77,6 @@ void SectionProperty::Refresh()
         prop->Refresh();
 }
 
-void SectionProperty::Serialize(PackageSerializer *serializer) const
-{
-    for (ValueProperty* prop : children)
-    {
-        prop->Serialize(serializer);
-    }
-}
-
 const DAVA::String & SectionProperty::GetName() const
 {
     return name;

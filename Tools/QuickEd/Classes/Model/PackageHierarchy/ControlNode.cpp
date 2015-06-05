@@ -33,10 +33,8 @@
 #include "Base/ObjectFactory.h"
 
 #include "PackageNode.h"
-#include "../PackageSerializer.h"
+#include "PackageVisitor.h"
 #include "../ControlProperties/RootProperty.h"
-
-#include "ControlPrototype.h"
 
 using namespace DAVA;
 
@@ -50,41 +48,34 @@ ControlNode::ControlNode(UIControl *control)
     rootProperty = new RootProperty(this, nullptr, AbstractProperty::CT_COPY);
 }
 
-ControlNode::ControlNode(ControlNode *node)
+ControlNode::ControlNode(ControlNode *node, eCreationType _creationType)
     : ControlsContainerNode(nullptr)
     , control(nullptr)
     , rootProperty(nullptr)
-    , prototype(SafeRetain(node->prototype))
-    , creationType(node->creationType)
-{
-    control = ObjectFactory::Instance()->New<UIControl>(node->control->GetClassName());
-    
-    rootProperty = new RootProperty(this, node->rootProperty, RootProperty::CT_COPY);
-    
-    for (ControlNode *sourceChild : nodes)
-    {
-        RefPtr<ControlNode> childNode(sourceChild->Clone());
-        Add(childNode.Get());
-    }
-}
-
-ControlNode::ControlNode(ControlPrototype *_prototype, eCreationType _creationType)
-    : ControlsContainerNode(nullptr)
-    , control(nullptr)
-    , rootProperty(nullptr)
-    , prototype(SafeRetain(_prototype))
+    , prototype(nullptr)
     , creationType(_creationType)
 {
-    control = ObjectFactory::Instance()->New<UIControl>(prototype->GetControlNode()->GetControl()->GetClassName());
-
-    rootProperty = new RootProperty(this, prototype->GetControlNode()->GetRootProperty(), RootProperty::CT_INHERIT);
+    control = ObjectFactory::Instance()->New<UIControl>(node->GetControl()->GetClassName());
     
-    prototype->GetControlNode()->AddControlToInstances(this);
-
-    for (ControlNode *sourceChild : prototype->GetControlNode()->nodes)
+    eCreationType childCreationType;
+    if (creationType == CREATED_FROM_CLASS)
     {
-        ScopedPtr<ControlPrototype> childPrototype(new ControlPrototype(sourceChild, prototype->GetPackageRef()));
-        ScopedPtr<ControlNode> childNode(new ControlNode(childPrototype, CREATED_FROM_PROTOTYPE_CHILD));
+        prototype = SafeRetain(node->prototype);
+        rootProperty = new RootProperty(this, node->GetRootProperty(), RootProperty::CT_COPY);
+        childCreationType = CREATED_FROM_CLASS;
+    }
+    else
+    {
+        prototype = SafeRetain(node);
+        prototype->AddControlToInstances(this);
+        rootProperty = new RootProperty(this, node->GetRootProperty(), RootProperty::CT_INHERIT);
+        childCreationType = CREATED_FROM_PROTOTYPE_CHILD;
+    }
+    
+
+    for (ControlNode *sourceChild : node->nodes)
+    {
+        ScopedPtr<ControlNode> childNode(new ControlNode(sourceChild, childCreationType));
         Add(childNode);
     }
 }
@@ -99,7 +90,7 @@ ControlNode::~ControlNode()
     SafeRelease(rootProperty);
 
     if (prototype)
-        prototype->GetControlNode()->RemoveControlFromInstances(this);
+        prototype->RemoveControlFromInstances(this);
     SafeRelease(prototype);
     
     DVASSERT(instances.empty());
@@ -110,21 +101,19 @@ ControlNode *ControlNode::CreateFromControl(DAVA::UIControl *control)
     return new ControlNode(control);
 }
 
-ControlNode *ControlNode::CreateFromPrototype(ControlNode *sourceNode, PackageRef *nodePackage)
+ControlNode *ControlNode::CreateFromPrototype(ControlNode *sourceNode)
 {
-    ScopedPtr<ControlPrototype> prototype(new ControlPrototype(sourceNode, nodePackage));
-    return new ControlNode(prototype, CREATED_FROM_PROTOTYPE);
+    return new ControlNode(sourceNode, CREATED_FROM_PROTOTYPE);
 }
 
-ControlNode *ControlNode::CreateFromPrototypeChild(ControlNode *sourceNode, PackageRef *nodePackage)
+ControlNode *ControlNode::CreateFromPrototypeChild(ControlNode *sourceNode)
 {
-    ScopedPtr<ControlPrototype> prototype(new ControlPrototype(sourceNode, nodePackage));
-    return new ControlNode(prototype, CREATED_FROM_PROTOTYPE_CHILD);
+    return new ControlNode(sourceNode, CREATED_FROM_PROTOTYPE_CHILD);
 }
 
 ControlNode *ControlNode::Clone()
 {
-    return new ControlNode(this);
+    return new ControlNode(this, CREATED_FROM_CLASS);
 }
 
 void ControlNode::Add(ControlNode *node)
@@ -183,6 +172,11 @@ ControlNode *ControlNode::Get(int index) const
     return nodes[index];
 }
 
+void ControlNode::Accept(PackageVisitor *visitor)
+{
+    visitor->VisitControl(this);
+}
+
 ControlNode *ControlNode::FindByName(const DAVA::String &name) const
 {
     for (auto it = nodes.begin(); it != nodes.end(); ++it)
@@ -203,7 +197,7 @@ UIControl *ControlNode::GetControl() const
     return control;
 }
 
-ControlPrototype *ControlNode::GetPrototype() const
+ControlNode *ControlNode::GetPrototype() const
 {
     return prototype;
 }
@@ -213,25 +207,18 @@ const Vector<ControlNode*> &ControlNode::GetInstances() const
     return instances;
 }
 
-int ControlNode::GetFlags() const
+bool ControlNode::IsDependsOnPackage(PackageNode *package) const
 {
-    int flag = 0;
-    switch (creationType) {
-        case CREATED_FROM_CLASS:
-            flag |= FLAG_CONTROL_CREATED_FROM_CLASS;
-            break;
-        case CREATED_FROM_PROTOTYPE:
-            flag |= FLAG_CONTROL_CREATED_FROM_PROTOTYPE;
-            break;
-        case CREATED_FROM_PROTOTYPE_CHILD:
-            flag |= FLAG_CONTROL_CREATED_FROM_PROTOTYPE_CHILD;
-            break;
-            
-        default:
-            DVASSERT(false);
-            break;
+    if (prototype && prototype->GetPackage() == package)
+        return true;
+    
+    for (ControlNode *child : nodes)
+    {
+        if (child->IsDependsOnPackage(package))
+            return true;
     }
-    return IsReadOnly() ? (FLAG_READ_ONLY | flag) : flag ;
+    
+    return false;
 }
 
 bool ControlNode::IsEditingSupported() const
@@ -278,53 +265,16 @@ void ControlNode::RefreshProperties()
 void ControlNode::MarkAsRemoved()
 {
     if (prototype)
-        prototype->GetControlNode()->RemoveControlFromInstances(this);
+        prototype->RemoveControlFromInstances(this);
 }
 
 void ControlNode::MarkAsAlive()
 {
     if (prototype)
-        prototype->GetControlNode()->AddControlToInstances(this);
+        prototype->AddControlToInstances(this);
 }
 
-void ControlNode::Serialize(PackageSerializer *serializer) const
-{
-    serializer->BeginMap();
-    
-    rootProperty->Serialize(serializer);
-    
-    if (!nodes.empty())
-    {
-        bool shouldProcessChildren = true;
-        Vector<ControlNode*> prototypeChildrenWithChanges;
-
-        if (creationType == CREATED_FROM_PROTOTYPE)
-        {
-            CollectPrototypeChildrenWithChanges(prototypeChildrenWithChanges);
-            shouldProcessChildren = !prototypeChildrenWithChanges.empty() || HasNonPrototypeChildren();
-        }
-        
-        if (shouldProcessChildren)
-        {
-            serializer->BeginArray("children");
-
-            for (const auto &child : prototypeChildrenWithChanges)
-                child->Serialize(serializer);
-
-            for (const auto &child : nodes)
-            {
-                if (child->GetCreationType() != CREATED_FROM_PROTOTYPE_CHILD)
-                    child->Serialize(serializer);
-            }
-            
-            serializer->EndArray();
-        }
-    }
-    
-    serializer->EndMap();
-}
-
-String ControlNode::GetPathToPrototypeChild(bool withRootPrototypeName) const
+String ControlNode::GetPathToPrototypeChild() const
 {
     if (creationType == CREATED_FROM_PROTOTYPE_CHILD)
     {
@@ -336,54 +286,22 @@ String ControlNode::GetPathToPrototypeChild(bool withRootPrototypeName) const
             p = p->GetParent();
         }
         
-        if (withRootPrototypeName && p != nullptr && p->GetControl() != nullptr && static_cast<ControlNode*>(p)->GetCreationType() == CREATED_FROM_PROTOTYPE)
-        {
-            ControlNode *c = static_cast<ControlNode*>(p);
-            if (c->GetPrototype())
-                path = c->GetPrototype()->GetName(true) + "/" + path;
-        }
-        
         return path;
     }
     return "";
 }
 
-void ControlNode::CollectPrototypeChildrenWithChanges(Vector<ControlNode*> &out) const
-{
-    for (auto child : nodes)
-    {
-        if (child->GetCreationType() == CREATED_FROM_PROTOTYPE_CHILD)
-        {
-            if (child->HasNonPrototypeChildren() || child->rootProperty->HasChanges())
-                out.push_back(child);
-            
-            child->CollectPrototypeChildrenWithChanges(out);
-        }
-    }
-}
-
-bool ControlNode::HasNonPrototypeChildren() const
-{
-    for (const auto &child : nodes)
-    {
-        if (child->GetCreationType() != CREATED_FROM_PROTOTYPE_CHILD)
-            return true;
-    }
-    return false;
-}
-
-bool ControlNode::IsInstancedFrom(const ControlNode *prototypeControl) const
+bool ControlNode::IsInstancedFrom(const ControlNode *prototype) const
 {
     const ControlNode *test = this;
     
     while (test)
     {
-        ControlPrototype *prototype = test->GetPrototype();
-        if (prototype != nullptr)
+        if (test->GetPrototype() != nullptr)
         {
-            if (prototype->GetControlNode() == prototypeControl)
+            if (test->GetPrototype() == prototype)
                 return true;
-            test = prototype->GetControlNode();
+            test = test->GetPrototype();
         }
         else
         {
@@ -393,7 +311,7 @@ bool ControlNode::IsInstancedFrom(const ControlNode *prototypeControl) const
     
     for (const ControlNode *child : nodes)
     {
-        if (child->IsInstancedFrom(prototypeControl))
+        if (child->IsInstancedFrom(prototype))
             return true;
     }
     

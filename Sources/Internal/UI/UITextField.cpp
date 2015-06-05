@@ -175,8 +175,6 @@ UITextField::~UITextField()
 
 void UITextField::OpenKeyboard()
 {
-    // automatically disable render to texture on open virtual keyboard
-    SetRenderToTexture(false);
 #ifdef __DAVAENGINE_IPHONE__
 	textFieldiPhone->OpenKeyboard();
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -386,17 +384,12 @@ void UITextField::SetSize(const DAVA::Vector2 &newSize)
     UIControl::SetSize(newSize);
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
     staticText->SetSize(newSize);
-#elif defined(__DAVAENGINE_IPHONE__)
-    textFieldiPhone->OnSetSize(newSize);
 #endif
 }
     
 void UITextField::SetPosition(const DAVA::Vector2 &position)
 {
     UIControl::SetPosition(position);
-#if defined(__DAVAENGINE_IPHONE__)
-    textFieldiPhone->OnSetPosition(position);
-#endif
 }
     
 void UITextField::SetText(const WideString & _text)
@@ -1024,8 +1017,6 @@ void UITextField::SetInputEnabled(bool isEnabled, bool hierarchic)
 
 void UITextField::SetRenderToTexture(bool value)
 {
-    // disable this functionality
-    value = false;
 #ifdef __DAVAENGINE_WINDOWS__
     // do nothing
 #elif defined(__DAVAENGINE_MACOS__)
