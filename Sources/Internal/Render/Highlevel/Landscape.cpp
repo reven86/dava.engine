@@ -433,7 +433,7 @@ void Landscape::SubdividePatch(uint32 level, uint32 x, uint32 y, uint8 clippingF
 {
     if (level == subdivLevelCount)
     {
-        DVASSERT(true);
+        DVASSERT(false);
         return;
     }
     
