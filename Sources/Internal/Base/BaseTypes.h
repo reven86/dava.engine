@@ -135,6 +135,7 @@
 #pragma warning( disable : 4244)
 #endif 
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <list>

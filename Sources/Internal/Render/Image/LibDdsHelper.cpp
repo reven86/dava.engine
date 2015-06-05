@@ -306,6 +306,12 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet,
     
     if (!forceSoftwareConvertation && isHardwareSupport)
     {
+        PixelFormat pixFormat = GetPixelFormat(dec);
+        if (pixFormat == FORMAT_INVALID)
+        {
+            return false;
+        }
+
         uint8* compressedImges = new uint8[info.dataSize];
         
         if(!dec.getRawData(compressedImges, info.dataSize))
@@ -320,8 +326,6 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet,
         {
             SwapBRChannels(compressedImges, info.dataSize);
         }
-        
-        PixelFormat pixFormat = GetPixelFormat(dec);
         
         bool retValue = true;
         
@@ -396,7 +400,13 @@ PixelFormat NvttHelper::GetPixelFormat(nvtt::Decompressor & dec)
         return FORMAT_INVALID;
     }
     
-    return NvttHelper::GetPixelFormatByNVTTFormat(innerFormat);
+    PixelFormat format = NvttHelper::GetPixelFormatByNVTTFormat(innerFormat);
+    if (format == FORMAT_INVALID)
+    {
+        Logger::Error("[NvttHelper::GetPixelFormat] Can't map nvtt format to pixel format");
+    }
+    
+    return format;
 }
     
 PixelFormat NvttHelper::GetPixelFormatByNVTTFormat(nvtt::Format nvttFormat)
@@ -683,6 +693,7 @@ bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, Pix
     
 LibDdsHelper::LibDdsHelper()
 {
+    name.assign("DDS");
     supportedExtensions.push_back(".dds");
 }
 
@@ -1053,28 +1064,51 @@ bool LibDdsHelper::WriteDxtFile(const FilePath & fileNameOriginal, const Vector<
 		Logger::Error("[LibDdsHelper::WriteDxtFile] Empty income image vector.");
 		return false;
 	}
-    
-    auto inputFormat = imageSet[0]->format;
+
     Vector<Image *> workingImages;
-    for(auto image : imageSet)
+
+    auto inputFormat = imageSet[0]->format;
+
+    if (inputFormat >= FORMAT_DXT1 && inputFormat <= FORMAT_DXT5NM)
     {
-        if(FORMAT_RGBA8888 != inputFormat)
+        for (auto image : imageSet)
+        {
+            Vector<Image*> decomprImages;
+            if (DecompressImageToRGBA(*image, decomprImages, true) && decomprImages.size() == 1)
+            {
+                workingImages.push_back(decomprImages[0]);
+            }
+            else
+            {
+                Logger::Error("[LibDdsHelper::WriteDxtFile] Error during decompressing of DXT into RGBA");
+                for_each(decomprImages.begin(), decomprImages.end(), SafeRelease<Image>);
+                for_each(workingImages.begin(), workingImages.end(), SafeRelease<Image>);
+                return false;
+            }
+        }
+    }
+    else if (inputFormat != FORMAT_RGBA8888)
+    {
+        for (auto image : imageSet)
         {
             Image *newImage = Image::Create(image->width, image->height, FORMAT_RGBA8888);
             ImageConvert::ConvertImageDirect(image, newImage);
-            
+
             newImage->cubeFaceID = image->cubeFaceID;
             newImage->mipmapLevel = image->mipmapLevel;
-            
+
             workingImages.push_back(newImage);
         }
-        else
+    }
+    else
+    {
+        for (auto image : imageSet)
         {
             workingImages.push_back(SafeRetain(image));
         }
     }
+
     inputFormat = workingImages[0]->format;
-    
     
     nvtt::TextureType textureType = nvtt::TextureType_2D;
     int32 dataCount = workingImages.size();

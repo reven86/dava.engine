@@ -103,7 +103,6 @@ void ImageTools::ConvertImage(const DAVA::TextureDescriptor *descriptor, const D
 {
 	if(!descriptor || (format == FORMAT_INVALID)) return;
 
-	TextureConverter::CleanupOldTextures(descriptor, forGPU, format);
 	TextureConverter::ConvertTexture(*descriptor, forGPU, true, quality);
 }
 
