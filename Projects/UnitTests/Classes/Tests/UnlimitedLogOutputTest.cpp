@@ -26,11 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "UnlimitedLogOutputTest.h"
-
-#include <array>
-#include <sstream>
+#include "DAVAEngine.h"
+#include "UnitTests/UnitTests.h"
 
 using namespace DAVA;
 
@@ -51,7 +48,7 @@ public:
     void Output(Logger::eLogLevel ll, const char8* text) override
     {
         std::ostringstream ostr;
-        String msgFromLogger{ text };
+        String msgFromLogger{text};
 
         if (currentMessageRawSize + 1 != msgFromLogger.length())
         {
@@ -77,38 +74,34 @@ public:
     size_t currentMessageRawSize = 0;
 };
 
-UnlimitedLogOutputTest::UnlimitedLogOutputTest ()
-: TestTemplate<UnlimitedLogOutputTest> ("UnlimitedLogOutputTest")
+DAVA_TESTCLASS(UnlimitedLogOutputTest)
 {
-    RegisterFunction (this, &UnlimitedLogOutputTest::TestFunc, String ("TestFunc"), nullptr);
-}
-
-void UnlimitedLogOutputTest::TestFunc (PerfFuncData * data)
-{
-    TestLoggerOutput testOutput;
-
-    Logger::AddCustomOutput(&testOutput);
-
-    for (auto bufSizeLocal : { 10, static_cast<int32>(bufSize), 4095, 4096, 4097})
+    DAVA_TEST(CompileTest)
     {
-        String str(bufSizeLocal, 'a');
-        size_t startIndex = bufSizeLocal - messageEnd.size();
+        TestLoggerOutput testOutput;
+        Logger::AddCustomOutput(&testOutput);
 
-        for (auto c : messageEnd)
+        for (auto bufSizeLocal : {10, static_cast<int32>(bufSize), 4095, 4096, 4097})
         {
-            str[startIndex++] = c;
+            String str(bufSizeLocal, 'a');
+            size_t startIndex = bufSizeLocal - messageEnd.size();
+
+            for (auto c : messageEnd)
+            {
+                str[startIndex++] = c;
+            }
+
+            testOutput.currentMessageRawSize = bufSizeLocal;
+
+            Logger::Instance()->Info("%s", str.c_str());
+        }
+        Logger::RemoveCustomOutput(&testOutput);
+
+        if (!errorMessage.empty())
+        {
+            Logger::Error("Error: %s", errorMessage.c_str());
         }
 
-        testOutput.currentMessageRawSize = bufSizeLocal;
-
-        Logger::Instance()->Info("%s", str.c_str());
+        TEST_VERIFY(errorMessage.empty());
     }
-    Logger::RemoveCustomOutput(&testOutput);
-
-    if (!errorMessage.empty())
-    {
-        Logger::Error("Error: %s", errorMessage.c_str());
-    }
-
-    TEST_VERIFY(errorMessage.empty());
-}
+};

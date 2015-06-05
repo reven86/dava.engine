@@ -26,29 +26,75 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_TESTCLASS_H__
+#define __DAVAENGINE_TESTCLASS_H__
 
-#include "FileSystem/LocalizationAndroid.h"
-#include "FileSystem/LocalizationSystem.h"
-#include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
+#include "Base/BaseTypes.h"
 
 namespace DAVA
 {
-
-void LocalizationAndroid::SelectPreferedLocalization()
+namespace UnitTests
 {
-    LocalizationSystem::Instance()->SetCurrentLocale(GetDeviceLang());
-}
 
-String LocalizationAndroid::GetDeviceLang(void)
+template<typename T>
+struct TestClassTypeKeeper
 {
-    JNI::JavaClass jniLocalisation("com/dava/framework/JNILocalization");
-    Function<jstring ()> getLocale  = jniLocalisation.GetStaticMethod<jstring>("GetLocale");
-
-    char str[256] = {0};
-    JNI::CreateStringFromJni(getLocale(), str);
-    String locale = str;
-    return locale;
-}
-
+    using TestClassType = T;
 };
+
+class TestClass
+{
+    struct TestInfo
+    {
+        TestInfo(const char* name_, void (*testFunction_)(TestClass*))
+            : name(name_)
+            , testFunction(testFunction_)
+        {}
+        String name;
+        void (*testFunction)(TestClass*);
+    };
+
+public:
+    TestClass() = default;
+    virtual ~TestClass() = default;
+
+    virtual void SetUp(const String& testName) {}
+    virtual void TearDown(const String& testName) {}
+    virtual void Update(float32 timeElapsed, const String& testName) {}
+    virtual bool TestComplete(const String& testName) const { return true; }
+
+    const String& TestName(size_t index) const;
+    size_t TestCount() const;
+    void RunTest(size_t index);
+
+    void RegisterTest(const char* name, void (*testFunc)(TestClass*));
+
+private:
+    Vector<TestInfo> tests;
+};
+
+//////////////////////////////////////////////////////////////////////////
+inline const String& TestClass::TestName(size_t index) const
+{
+    return tests[index].name;
+}
+
+inline size_t TestClass::TestCount() const
+{
+    return tests.size();
+}
+
+inline void TestClass::RunTest(size_t index)
+{
+    tests[index].testFunction(this);
+}
+
+inline void TestClass::RegisterTest(const char* name, void (*testFunc)(TestClass*))
+{
+    tests.emplace_back(name, testFunc);
+}
+
+}   // namespace UnitTests
+}   // namespace DAVA
+
+#endif  // __DAVAENGINE_TESTCLASS_H__

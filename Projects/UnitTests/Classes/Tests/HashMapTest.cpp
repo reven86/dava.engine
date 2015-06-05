@@ -26,77 +26,64 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "DAVAEngine.h"
+#include "UnitTests/UnitTests.h"
 
-#include "HashMapTest.h"
 #include "Utils/Random.h"
 #include "Base/HashMap.h"
 
-HashMapTest::HashMapTest()
-: TestTemplate<HashMapTest>("HashMapTest")
+using namespace DAVA;
+
+DAVA_TESTCLASS(HashMapTest)
 {
-    ObjectFactory::Instance()->Dump();
-	RegisterFunction(this, &HashMapTest::HashMapInsertRemoveGetTest, "HashMapInsertRemoveGetTest", NULL);
-}
+    DAVA_TEST(HashMapInsertRemoveGetTest)
+    {
+        const int32 SIZE = 20000;
+        Vector<DAVA::uint32> vect(SIZE, 0);
+        HashMap<DAVA::int32, DAVA::uint32> map;
 
-void HashMapTest::LoadResources()
-{
-    GetBackground()->SetColor(Color::White);
-}
+        for (int32 i = 0; i < SIZE; ++i)
+        {
+            uint32 v = (i + 1); // any value
+            vect[i] = v;
+            map.insert(i, v);
+        }
 
-void HashMapTest::UnloadResources()
-{
-    
-}
+        // Get test
+        for (int32 i = 0; i < SIZE; ++i)
+        {
+            TEST_VERIFY(vect[i] == map[i]);
+        }
 
-void HashMapTest::HashMapInsertRemoveGetTest(PerfFuncData * data)
-{
-	const int sz = 20000;
-	DAVA::int32 i;
-	DAVA::Vector<DAVA::uint32> vect;
-	DAVA::HashMap<DAVA::int32, DAVA::uint32> map;
-	
-	vect.resize(sz);
+        //// remove some items
+        //for (int i = 0; i < sz/10; i++)
+        //{
+        //    int index = DAVA::Random::Instance()->Rand(sz);
+        //    vect[i] = 0;
+        //    map.Remove(i);
+        //}
 
-	for(i = 0; i < sz; ++i)
-	{
-		DAVA::uint32 v = (i + 1); // any value
-		vect[i] = v;
-		map.insert(i, v);
-	}
+        // check get after remove
+        for (int32 i = 0; i < SIZE; ++i)
+        {
+            if (0 != vect[i])
+            {
+                TEST_VERIFY(vect[i] == map[i]);
+            }
+        }
 
-	// Get test
-	for(i = 0; i < sz; ++i)
-	{
-		TEST_VERIFY(vect[i] == map[i]);
-	}
+        // iterator test
+        HashMap<int32, uint32>::iterator iter = map.begin();
+        for (;iter != map.end(); ++iter)
+        {
+            // TEST_VERIFY(vect[iter.GetKey()] == iter.GetValue());
+        }
 
-// 	// remove some items
-// 	for (int i = 0; i < sz/10; i++)
-// 	{
-// 		int index = DAVA::Random::Instance()->Rand(sz);
-// 		vect[i] = 0;
-// 		map.Remove(i);
-// 	}
-
-	// check get after remove
-	for (int i = 0; i < sz; i++)
-	{
-		if(0 != vect[i])
-		{
-			TEST_VERIFY(vect[i] == map[i]);
-		}
-	}
-
-	// iterator test
- 	DAVA::HashMap<DAVA::int32, DAVA::uint32>::iterator iter = map.begin();
-	for(; iter != map.end(); ++iter)
-	{
-//		TEST_VERIFY(vect[iter.GetKey()] == iter.GetValue());
-	}
-
-	// 0-size hash map iterator test
-	DAVA::HashMap<DAVA::int32, DAVA::uint32> map0;
-	iter = map0.begin();
-	for (; iter != map0.end(); ++iter)
-	{}
-}
+        // 0-size hash map iterator test
+        HashMap<int32, uint32> map0;
+        iter = map0.begin();
+        for (; iter != map0.end(); ++iter)
+        {
+        }
+    }
+};
