@@ -152,14 +152,14 @@ void GameCore::InitScreenController()
 
 	bool chooserFound = CommandLineParser::Instance()->CommandIsFound("-chooser");
     bool testFound = CommandLineParser::Instance()->CommandIsFound("-test");
-    bool uiStatFound = CommandLineParser::Instance()->CommandIsFound("-ui_stat");
+    bool uiStatFound = CommandLineParser::Instance()->CommandIsFound("-ui-stat");
 
-    bool testTimeFound = CommandLineParser::Instance()->CommandIsFound("-test_time");
-    bool testFramesFound = CommandLineParser::Instance()->CommandIsFound("-test_frames");
-    bool frameDeltaFound = CommandLineParser::Instance()->CommandIsFound("-frame_delta");
+    bool testTimeFound = CommandLineParser::Instance()->CommandIsFound("-test-time");
+    bool testFramesFound = CommandLineParser::Instance()->CommandIsFound("-test-frames");
+    bool frameDeltaFound = CommandLineParser::Instance()->CommandIsFound("-frame-delta");
 
-    bool debugFrameFound = CommandLineParser::Instance()->CommandIsFound("-debug_frame");
-    bool maxDeltaFound = CommandLineParser::Instance()->CommandIsFound("-max_delta");
+    bool debugFrameFound = CommandLineParser::Instance()->CommandIsFound("-debug-frame");
+    bool maxDeltaFound = CommandLineParser::Instance()->CommandIsFound("-max-delta");
 
 	if (chooserFound)
 	{
@@ -179,13 +179,13 @@ void GameCore::InitScreenController()
 
         if (testTimeFound)
         {
-            String testTimeParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test_time", 0);
+            String testTimeParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test-time", 0);
             params.targetTime = std::atoi(testTimeParam.c_str());
         }
         else if (testFramesFound && frameDeltaFound)
         {
-            String testFramesParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test_frames", 0);
-            String frameDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-frame_delta", 0);
+            String testFramesParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test-frames", 0);
+            String frameDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-frame-delta", 0);
 
             params.targetFramesCount = std::atoi(testFramesParam.c_str());
             params.targetFrameDelta = std::atof(frameDeltaParam.c_str());
@@ -198,13 +198,13 @@ void GameCore::InitScreenController()
 
         if (debugFrameFound)
         {
-            String debugFrameParam = CommandLineParser::Instance()->GetCommandParamAdditional("-debug_frame", 0);
+            String debugFrameParam = CommandLineParser::Instance()->GetCommandParamAdditional("-debug-frame", 0);
             params.frameForDebug = std::atoi(debugFrameParam.c_str());
         }
         
         if (maxDeltaFound)
         {
-            String maxDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-max_delta", 0);
+            String maxDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-max-delta", 0);
             params.maxDelta = std::atof(maxDeltaParam.c_str());
         }
 

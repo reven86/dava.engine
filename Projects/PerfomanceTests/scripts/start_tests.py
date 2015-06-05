@@ -41,18 +41,18 @@ PRJ_POSTFIX = get_postfix(sys.platform)
 parser = argparse.ArgumentParser(description='Start tests')
 parser.add_argument('--branch', nargs='?', default = 'development')
 parser.add_argument('--platform', nargs='?', default = 'android')
-parser.add_argument('--not_install', nargs='?', const=True)
+parser.add_argument('--not-install', dest='not-install', nargs='?', const=True)
 
-parser.add_argument('-chooser', nargs='?', const=True)
-parser.add_argument('-test')
-parser.add_argument('-ui_stat', nargs='?', const=True)
+parser.add_argument('--chooser', nargs='?', const=True)
+parser.add_argument('--test')
+parser.add_argument('--ui-stat', dest='ui-stat', nargs='?', const=True)
 
-parser.add_argument('-test_time')
-parser.add_argument('-test_frames')
-parser.add_argument('-frame_delta')
+parser.add_argument('--test-time', dest='test-time')
+parser.add_argument('--test-frames', dest='test-frames')
+parser.add_argument('--frame-delta', dest='frame-delta')
 
-parser.add_argument('-debug_frame')
-parser.add_argument('-max_delta')
+parser.add_argument('--debug-frame', dest='debug-frame')
+parser.add_argument('--max-delta', dest='max-delta')
 
 args = vars(parser.parse_args())
 TEST_PARAMS = ""
@@ -60,24 +60,24 @@ TEST_PARAMS = ""
 if(args['chooser']):
     TEST_PARAMS += "-chooser"
 
-if(args['ui_stat']):
-    TEST_PARAMS += "-ui_stat"
+if(args['ui-stat']):
+    TEST_PARAMS += "-ui-stat"
 
 if(args['test']):    
     TEST_PARAMS += "-test " + args['test']
 
-    if(args['test_time']):
-        TEST_PARAMS += " -test_time " + args['test_time']
+    if(args['test-time']):
+        TEST_PARAMS += " -test-time " + args['test-time']
 
-    if(args['test_frames']):
-        TEST_PARAMS += " -test_frames " + args['test_frames']
-        TEST_PARAMS += " -frame_delta " + args['frame_delta']   
+    if(args['test-frames']):
+        TEST_PARAMS += " -test-frames " + args['test-frames']
+        TEST_PARAMS += " -frame-delta " + args['frame-delta']   
 
-    if(args['debug_frame']):
-        TEST_PARAMS += " -debug_frame " + args['debug_frame']
+    if(args['debug-frame']):
+        TEST_PARAMS += " -debug-frame " + args['debug-frame']
 
-    if(args['max_delta']):
-        TEST_PARAMS += " -max_delta " + args['max_delta']
+    if(args['max-delta']):
+        TEST_PARAMS += " -max-delta " + args['max-delta']
 
 start_on_android = False
 start_on_ios = False
@@ -115,7 +115,7 @@ def start_performance_tests_on_android_device():
 
 if start_on_ios:
     # ../build/ios-deploy -d --noninteractive -b ../build/UnitTests.app
-    if args['not_install'] :
+    if args['not-install'] :
         sub_process = subprocess.Popen(["./ios-deploy", "-a", TEST_PARAMS, "-m", "--noninteractive", "-b", "../build/Debug-iphoneos/" +
                                     PRJ_NAME_BASE + PRJ_POSTFIX],
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
