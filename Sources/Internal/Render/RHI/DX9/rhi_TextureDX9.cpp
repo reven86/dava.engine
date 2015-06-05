@@ -92,6 +92,8 @@ _SwapRB4( void* data, uint32 size )
 static Handle
 dx9_Texture_Create( const Texture::Descriptor& desc )
 {
+    DVASSERT(desc.levelCount);
+
     Handle              handle      = InvalidHandle;
     TextureDX9_t*       tex         = nullptr;
     IDirect3DTexture9*  tex9        = nullptr;
@@ -99,7 +101,7 @@ dx9_Texture_Create( const Texture::Descriptor& desc )
     D3DPOOL             pool        = (desc.isRenderTarget/*  ||  options&TEXTURE_OPT_DYNAMIC*/)  ? D3DPOOL_DEFAULT  : D3DPOOL_MANAGED;
     HRESULT             hr          = E_FAIL;
     bool                auto_mip    = (desc.autoGenMipmaps)  ? true  : false;
-    unsigned            mip_count   = desc.mipCount;
+    unsigned            mip_count   = desc.levelCount;
 
 
 //    if( options&TEXTURE_OPT_DYNAMIC )

@@ -395,7 +395,7 @@ Descriptor
     uint32          width;
     uint32          height;
     TextureFormat   format;
-    uint32          mipCount;
+    uint32          levelCount;
     uint32          isRenderTarget:1;
     uint32          autoGenMipmaps:1;
     
@@ -404,7 +404,7 @@ Descriptor
                         width(w),
                         height(h),
                         format(fmt),
-                        mipCount(0),
+                        levelCount(1),
                         isRenderTarget(false),
                         autoGenMipmaps(false)
                     {}
@@ -413,7 +413,7 @@ Descriptor
                         width(0),
                         height(0),
                         format(TEXTURE_FORMAT_R8G8B8A8),
-                        mipCount(0),
+                        levelCount(1),
                         isRenderTarget(false),
                         autoGenMipmaps(false)
                     {}
@@ -529,9 +529,20 @@ Descriptor
     Sampler fragmentSampler[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
     uint32  fragmentSamplerCount;
 
+    Sampler vertexSampler[MAX_VERTEX_TEXTURE_SAMPLER_COUNT];
+    uint32  vertexSamplerCount;
+
             Descriptor()
-              : fragmentSamplerCount(0)
-            {}
+              : fragmentSamplerCount(0),
+                vertexSamplerCount(0)
+            {
+                for( uint32 s=0; s!=MAX_VERTEX_TEXTURE_SAMPLER_COUNT; ++s )
+                {
+                    vertexSampler[s].minFilter = TEXFILTER_NEAREST;
+                    vertexSampler[s].magFilter = TEXFILTER_NEAREST;
+                    vertexSampler[s].mipFilter = TEXMIPFILTER_NONE;
+                }
+            }
 };
 
 }
