@@ -29,11 +29,12 @@
 
 #include "InternalControlPropertiesSection.h"
 
+#include "PropertyVisitor.h"
 #include "ValueProperty.h"
-#include "UI/UIControl.h"
-#include "Model/PackageSerializer.h"
 #include "LocalizedTextValueProperty.h"
 #include "FontValueProperty.h"
+
+#include "UI/UIControl.h"
 
 using namespace DAVA;
 
@@ -130,15 +131,7 @@ bool InternalControlPropertiesSection::HasChanges() const
     return internalControl && SectionProperty::HasChanges();
 }
 
-void InternalControlPropertiesSection::Serialize(PackageSerializer *serializer) const
+void InternalControlPropertiesSection::Accept(PropertyVisitor *visitor)
 {
-    if (HasChanges())
-    {
-        serializer->BeginMap(GetName());
-        
-        for (const auto child : children)
-            child->Serialize(serializer);
-        
-        serializer->EndMap();
-    }
+    visitor->VisitInternalControlSection(this);
 }

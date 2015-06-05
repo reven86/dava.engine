@@ -41,6 +41,7 @@ static const uint8 MAX_BYTES_IN_PIXEL = 16;
 
 LibTgaHelper::LibTgaHelper()
 {
+    name.assign("TGA");
     supportedExtensions.emplace_back(".tga");
     supportedExtensions.emplace_back(".tpic");
 }

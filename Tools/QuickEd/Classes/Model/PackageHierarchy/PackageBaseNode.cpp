@@ -66,9 +66,14 @@ String PackageBaseNode::GetName() const
     return "Unknown";
 }
 
-PackageRef *PackageBaseNode::GetPackageRef() const
+PackageNode *PackageBaseNode::GetPackage()
 {
-    return parent == nullptr ? nullptr : parent->GetPackageRef();
+    return parent ? parent->GetPackage() : nullptr;
+}
+
+const PackageNode *PackageBaseNode::GetPackage() const
+{
+    return parent ? parent->GetPackage() : nullptr;
 }
 
 UIControl *PackageBaseNode::GetControl() const
@@ -101,7 +106,7 @@ bool PackageBaseNode::CanInsertControl(ControlNode *node, DAVA::int32 pos) const
     return false;
 }
 
-bool PackageBaseNode::CanInsertImportedPackage() const
+bool PackageBaseNode::CanInsertImportedPackage(PackageNode *package) const
 {
     return false;
 }

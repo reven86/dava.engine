@@ -31,6 +31,8 @@
 #define __UI_EDITOR_PACKAGE_CONTROLS_NODE_H__
 
 #include "PackageBaseNode.h"
+
+#include "PackageVisitor.h"
 #include "PackageControlsNode.h"
 #include "ControlNode.h"
 
@@ -39,14 +41,12 @@ namespace DAVA
     class UIPackage;
 }
 
-class PackageSerializer;
 class PackageNode;
-class PackageRef;
 
 class PackageControlsNode : public ControlsContainerNode
 {
 public:
-    PackageControlsNode(PackageNode *parent, PackageRef *packageRef);
+    PackageControlsNode(PackageNode *parent);
     virtual ~PackageControlsNode();
     
     void Add(ControlNode *node) override;
@@ -55,13 +55,10 @@ public:
     int GetCount() const override;
     ControlNode *Get(int index) const override;
 
-    DAVA::String GetName() const override;
-    void SetName(const DAVA::String &name);
-    
-    virtual PackageRef *GetPackageRef() const override;
-    
-    int GetFlags() const override;
+    void Accept(PackageVisitor *visitor) override;
 
+    DAVA::String GetName() const override;
+    
     virtual bool IsEditingSupported() const override;
     virtual bool IsInsertingSupported() const override;
     virtual bool CanInsertControl(ControlNode *node, DAVA::int32 pos) const override;
@@ -71,17 +68,9 @@ public:
     void RefreshControlProperties();
 
     ControlNode *FindControlNodeByName(const DAVA::String &name) const;
-    void Serialize(PackageSerializer *serializer) const;
-    void Serialize(PackageSerializer *serializer, const DAVA::Vector<ControlNode*> &nodes) const;
 
 private:
-    DAVA::UIPackage *GetPackage() const;
-
-private:
-    DAVA::String name;
     DAVA::Vector<ControlNode*> nodes;
-    
-    PackageRef *packageRef;
 };
 
 #endif // __UI_EDITOR_PACKAGE_CONTROLS_NODE_H__

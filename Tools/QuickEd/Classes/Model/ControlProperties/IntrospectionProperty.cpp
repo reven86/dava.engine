@@ -29,8 +29,8 @@
 
 #include "IntrospectionProperty.h"
 
+#include "PropertyVisitor.h"
 #include "SubValueProperty.h"
-#include "Model/PackageSerializer.h"
 #include <Base/BaseMath.h>
 
 using namespace DAVA;
@@ -123,38 +123,9 @@ AbstractProperty *IntrospectionProperty::FindPropertyByPrototype(AbstractPropert
     return prototype == prototypeProperty ? this : nullptr;
 }
 
-void IntrospectionProperty::Serialize(PackageSerializer *serializer) const
+void IntrospectionProperty::Accept(PropertyVisitor *visitor)
 {
-    if (replaced)
-    {
-        VariantType value = GetValue();
-        String key = member->Name();
-
-        if (value.GetType() == VariantType::TYPE_INT32 && GetType() == TYPE_FLAGS)
-        {
-            Vector<String> values;
-            const EnumMap *enumMap = GetEnumMap();
-            int val = value.AsInt32();
-            int p = 1;
-            while (val > 0)
-            {
-                if ((val & 0x01) != 0)
-                    values.push_back(enumMap->ToString(p));
-                val >>= 1;
-                p <<= 1;
-            }
-            serializer->PutValue(key, values);
-        }
-        else if (value.GetType() == VariantType::TYPE_INT32 && GetType() == TYPE_ENUM)
-        {
-            const EnumMap *enumMap = GetEnumMap();
-            serializer->PutValue(key, enumMap->ToString(value.AsInt32()));
-        }
-        else
-        {
-            serializer->PutValue(key, value);
-        }
-    }
+    visitor->VisitIntrospectionProperty(this);
 }
 
 IntrospectionProperty::ePropertyType IntrospectionProperty::GetType() const
@@ -190,6 +161,11 @@ const EnumMap *IntrospectionProperty::GetEnumMap() const
         return member->Desc().enumMap;
 
     return nullptr;
+}
+
+const DAVA::InspMember *IntrospectionProperty::GetMember() const
+{
+    return member;
 }
 
 void IntrospectionProperty::ApplyValue(const DAVA::VariantType &value)
