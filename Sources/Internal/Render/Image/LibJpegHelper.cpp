@@ -77,6 +77,7 @@ void jpegErrorExit (j_common_ptr cinfo)
     
 LibJpegHelper::LibJpegHelper()
 {
+    name.assign("JPG");
     supportedExtensions.push_back(".jpeg");
     supportedExtensions.push_back(".jpg");
 }

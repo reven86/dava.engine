@@ -968,6 +968,11 @@
 		50C7D5FC186082B100D8936D /* StaticOcclusionComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50C7D5FA186082B100D8936D /* StaticOcclusionComponent.cpp */; };
 		50C7D5FD186082B100D8936D /* StaticOcclusionComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 50C7D5FB186082B100D8936D /* StaticOcclusionComponent.h */; };
 		50C7D604186082D600D8936D /* StaticOcclusionRenderPass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50C7D600186082D600D8936D /* StaticOcclusionRenderPass.cpp */; };
+		50F3B8641B1EE34B00976CBC /* TestClass.h in Headers */ = {isa = PBXBuildFile; fileRef = 50F3B85D1B1EE34B00976CBC /* TestClass.h */; };
+		50F3B8651B1EE34B00976CBC /* TestClassFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 50F3B85E1B1EE34B00976CBC /* TestClassFactory.h */; };
+		50F3B8661B1EE34B00976CBC /* TestCore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50F3B85F1B1EE34B00976CBC /* TestCore.cpp */; };
+		50F3B8671B1EE34B00976CBC /* TestCore.h in Headers */ = {isa = PBXBuildFile; fileRef = 50F3B8601B1EE34B00976CBC /* TestCore.h */; };
+		50F3B8681B1EE34B00976CBC /* UnitTests.h in Headers */ = {isa = PBXBuildFile; fileRef = 50F3B8611B1EE34B00976CBC /* UnitTests.h */; };
 		50F706B91A93B224009506C9 /* MMNetClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50F706B31A93B224009506C9 /* MMNetClient.cpp */; };
 		50F706BA1A93B224009506C9 /* MMNetClient.h in Headers */ = {isa = PBXBuildFile; fileRef = 50F706B41A93B224009506C9 /* MMNetClient.h */; };
 		50F706BB1A93B224009506C9 /* MMNetProto.h in Headers */ = {isa = PBXBuildFile; fileRef = 50F706B51A93B224009506C9 /* MMNetProto.h */; };
@@ -2099,6 +2104,11 @@
 		50C7D5FF186082D600D8936D /* StaticOcclusion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticOcclusion.h; sourceTree = "<group>"; };
 		50C7D600186082D600D8936D /* StaticOcclusionRenderPass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticOcclusionRenderPass.cpp; sourceTree = "<group>"; };
 		50C7D601186082D600D8936D /* StaticOcclusionRenderPass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticOcclusionRenderPass.h; sourceTree = "<group>"; };
+		50F3B85D1B1EE34B00976CBC /* TestClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TestClass.h; path = UnitTests/TestClass.h; sourceTree = "<group>"; };
+		50F3B85E1B1EE34B00976CBC /* TestClassFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TestClassFactory.h; path = UnitTests/TestClassFactory.h; sourceTree = "<group>"; };
+		50F3B85F1B1EE34B00976CBC /* TestCore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TestCore.cpp; path = UnitTests/TestCore.cpp; sourceTree = "<group>"; };
+		50F3B8601B1EE34B00976CBC /* TestCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TestCore.h; path = UnitTests/TestCore.h; sourceTree = "<group>"; };
+		50F3B8611B1EE34B00976CBC /* UnitTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UnitTests.h; path = UnitTests/UnitTests.h; sourceTree = "<group>"; };
 		50F706B31A93B224009506C9 /* MMNetClient.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MMNetClient.cpp; sourceTree = "<group>"; };
 		50F706B41A93B224009506C9 /* MMNetClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMNetClient.h; sourceTree = "<group>"; };
 		50F706B51A93B224009506C9 /* MMNetProto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MMNetProto.h; sourceTree = "<group>"; };
@@ -3160,6 +3170,18 @@
 				50194D9D1A52D92600557DAB /* NetLogger.h */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		50F3B85A1B1EE31D00976CBC /* UnitTests */ = {
+			isa = PBXGroup;
+			children = (
+				50F3B85D1B1EE34B00976CBC /* TestClass.h */,
+				50F3B85E1B1EE34B00976CBC /* TestClassFactory.h */,
+				50F3B85F1B1EE34B00976CBC /* TestCore.cpp */,
+				50F3B8601B1EE34B00976CBC /* TestCore.h */,
+				50F3B8611B1EE34B00976CBC /* UnitTests.h */,
+			);
+			name = UnitTests;
 			sourceTree = "<group>";
 		};
 		50FB9DB01A925A2D00BDB8A2 /* MemoryManager */ = {
@@ -4453,6 +4475,7 @@
 				E8B3CA1816B9326E002BD35F /* Sound */,
 				E8C486F4196BD2390082E634 /* Thread */,
 				E8B3CA2E16B9326E002BD35F /* UI */,
+				50F3B85A1B1EE31D00976CBC /* UnitTests */,
 				E8B3CA7016B9326E002BD35F /* Utils */,
 			);
 			name = Internal;
@@ -5011,12 +5034,14 @@
 				E8B3CACC16B9326E002BD35F /* Core.h in Headers */,
 				50194DB31A52D92600557DAB /* UDPSocket.h in Headers */,
 				E8B3CAD216B9326E002BD35F /* DisplayMode.h in Headers */,
+				50F3B8651B1EE34B00976CBC /* TestClassFactory.h in Headers */,
 				E8B3CAD716B9326E002BD35F /* DAVAConfig.h in Headers */,
 				E8B3CAD916B9326E002BD35F /* DAVAEngine.h in Headers */,
 				A6AFDED9187187D3006E43A1 /* RenderLayerManager.h in Headers */,
 				0264E30D1A42F79500BD7279 /* JobQueue.h in Headers */,
 				E8B3CADC16B9326E002BD35F /* DVAssert.h in Headers */,
 				E8B3CADD16B9326E002BD35F /* List.h in Headers */,
+				50F3B8681B1EE34B00976CBC /* UnitTests.h in Headers */,
 				E8B3CADE16B9326E002BD35F /* ListAllocator.h in Headers */,
 				501620741A5ED5FC00E5A914 /* PeerDesription.h in Headers */,
 				647EFC75195F0AC40073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */,
@@ -5328,6 +5353,7 @@
 				E8B3CCFE16B9326E002BD35F /* UIHierarchyCell.h in Headers */,
 				E8B3CD0016B9326E002BD35F /* UIHierarchyNode.h in Headers */,
 				17FFF906193F03AF003D51DA /* MongodbObject.h in Headers */,
+				50F3B8671B1EE34B00976CBC /* TestCore.h in Headers */,
 				E8B3CD0216B9326E002BD35F /* UIHoleTransition.h in Headers */,
 				E8B3CD0416B9326E002BD35F /* UIJoypad.h in Headers */,
 				E8B3CD0616B9326E002BD35F /* UIList.h in Headers */,
@@ -5359,6 +5385,7 @@
 				64493E1C19476F4700AB2715 /* VegetationSpatialData.h in Headers */,
 				624C87F318C6160F00E1049D /* DateTime.h in Headers */,
 				E8B3CD2416B9326E002BD35F /* UITextFieldiPhone.h in Headers */,
+				50F3B8641B1EE34B00976CBC /* TestClass.h in Headers */,
 				E8B3CD2716B9326E002BD35F /* UIYamlLoader.h in Headers */,
 				E8B3CD2816B9326E002BD35F /* HTTPDownloader.h in Headers */,
 				64493DF819476F4700AB2715 /* TextureSheet.h in Headers */,
@@ -6127,6 +6154,7 @@
 				E8B3CBFD16B9326E002BD35F /* RenderObject.cpp in Sources */,
 				E8B3CBFF16B9326E002BD35F /* RenderPass.cpp in Sources */,
 				E8B3CC0116B9326E002BD35F /* RenderSystem.cpp in Sources */,
+				50F3B8661B1EE34B00976CBC /* TestCore.cpp in Sources */,
 				32B074BD19E53C0C0069981A /* UIControlHelpers.cpp in Sources */,
 				CC0D7B531A76066700309408 /* WaypointComponent.cpp in Sources */,
 				E8B3CC0316B9326E002BD35F /* ShadowRect.cpp in Sources */,

@@ -30,6 +30,7 @@
 #include "TextureUtils.h"
 #include "Render/PixelFormatDescriptor.h"
 
+using namespace DAVA;
 
 Sprite * TextureUtils::CreateSpriteFromTexture(const String &texturePathname)
 {

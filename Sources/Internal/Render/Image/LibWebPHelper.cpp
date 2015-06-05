@@ -119,6 +119,7 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     {
         image->format = FORMAT_RGB888;
     }
+    image->dataSize = data_size;
     image->width = bitstream->width;
     image->height = bitstream->height;
     image->data = newData;

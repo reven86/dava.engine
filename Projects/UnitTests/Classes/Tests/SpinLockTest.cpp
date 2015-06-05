@@ -26,30 +26,21 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "SpinLockTest.h"
-#include "Thread/Spinlock.h"
-
-#include <array>
+#include "DAVAEngine.h"
+#include "UnitTests/UnitTests.h"
 
 using namespace DAVA;
 
-SpinLockTest::SpinLockTest ()
-: TestTemplate<SpinLockTest> ("SpinLockTest")
+namespace
 {
-    RegisterFunction (this, &SpinLockTest::TestFunc, String ("TestFunc"), nullptr);
-}
-
-namespace 
-{
-    uint32 sharedCounter{ 0 };
-    const uint32 result{ 20000000 };
-    const uint32 numThreads{ 5 };
+    uint32 sharedCounter{0};
+    const uint32 result{20000000};
+    const uint32 numThreads{5};
     Spinlock spin;
 
     void ThreadFunc(DAVA::BaseObject* obj, void*, void*)
     {
-        uint32 count{ 0 };
+        uint32 count{0};
         while (count < (result / numThreads))
         {
             spin.Lock();
@@ -60,26 +51,29 @@ namespace
     }
 }
 
-void SpinLockTest::TestFunc (PerfFuncData * data)
+DAVA_TESTCLASS(SpinLockTest)
 {
-    static_assert(result % numThreads == 0, "numThreads equal for each thread?");
-
-    List<Thread*> threads;
-    for(int i = 0; i < numThreads; ++i)
+    DAVA_TEST(TestFunc)
     {
-        threads.push_back(Thread::Create(Message(ThreadFunc)));
-    }
+        static_assert(result % numThreads == 0, "numThreads equal for each thread?");
 
-    for (auto thread : threads)
-    {
-        thread->Start();
-    }
+        List<Thread*> threads;
+        for (int i = 0; i < numThreads; ++i)
+        {
+            threads.push_back(Thread::Create(Message(ThreadFunc)));
+        }
 
-    for (auto thread : threads)
-    {
-        thread->Join();
-        SafeRelease(thread);
-    }
+        for (auto thread : threads)
+        {
+            thread->Start();
+        }
 
-    TEST_VERIFY(result == sharedCounter);
-}
+        for (auto thread : threads)
+        {
+            thread->Join();
+            SafeRelease(thread);
+        }
+
+        TEST_VERIFY(result == sharedCounter);
+    }
+};
