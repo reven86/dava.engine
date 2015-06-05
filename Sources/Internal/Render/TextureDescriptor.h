@@ -244,7 +244,7 @@ public:
 	
     bool isCompressedFile:1;
 
-    static Array<ImageFormat, 4> sourceTextureTypes;
+    static Array<ImageFormat, 5> sourceTextureTypes;
     static Array<ImageFormat, 2> compressedTextureTypes;
 };
     

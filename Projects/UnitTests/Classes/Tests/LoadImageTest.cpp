@@ -55,9 +55,9 @@ DAVA_TESTCLASS(LoadImageTest)
         auto ClearImgSet = [&]()
         {
             for (auto image : imgSet)
-			{
-				image->Release();
-			}
+            {
+                image->Release();
+            }
             imgSet.clear();
         };
 

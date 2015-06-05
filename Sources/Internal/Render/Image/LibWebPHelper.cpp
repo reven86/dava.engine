@@ -43,6 +43,7 @@ namespace DAVA
 
 LibWebPHelper::LibWebPHelper()
 {
+    name.assign("WEBP");
     supportedExtensions.push_back(".webp");
 }
 
@@ -119,10 +120,11 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     {
         image->format = FORMAT_RGB888;
     }
-    image->dataSize = data_size;
     image->width = bitstream->width;
     image->height = bitstream->height;
     image->data = newData;
+    auto size = width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(image->format);
+    image->dataSize = size;
 
     imageSet.push_back(SafeRetain(image.get()));
 

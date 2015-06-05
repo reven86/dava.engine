@@ -78,28 +78,28 @@ DAVA_TESTCLASS(SaveImageTest)
 
     DAVA_TEST(WebPTest)
     {
-        SaveLoadCheck(imageRGBA8888, "testRGBA8888.webp", LOSSELESS_ALLOWED_DIFF);
         SaveLoadCheck(imageRGB888, "testRGB888.webp", LOSSELESS_ALLOWED_DIFF);
+        SaveLoadCheck(imageRGBA8888, "testRGBA8888.webp", LOSSELESS_ALLOWED_DIFF);
     }
 
-    void SaveLoadCheck(const Image* img, const String& filename, float32 diffThreshold)
+    void SaveLoadCheck(const Image* inImage, const String& filename, float32 diffThreshold)
     {
         FilePath path = FilePath::FilepathInDocuments(filename);
 
         DAVA::Vector<DAVA::Image*> imgSet;
 
-        TEST_VERIFY(img->Save(path));
+        TEST_VERIFY(inImage->Save(path));
 
         TEST_VERIFY(DAVA::ImageSystem::Instance()->Load(path, imgSet) == DAVA::SUCCESS);
-        TEST_VERIFY(imgSet[0]->dataSize == img->dataSize);
+        TEST_VERIFY(imgSet[0]->dataSize == inImage->dataSize);
 
-        const TextureUtils::CompareResult cmpRes = TextureUtils::CompareImages(img, imgSet[0], img->format);
+        const TextureUtils::CompareResult cmpRes = TextureUtils::CompareImages(inImage, imgSet[0], inImage->format);
         float32 differencePersentage = ((float32)cmpRes.difference / ((float32)cmpRes.bytesCount * 256.f)) * 100.f;
         TEST_VERIFY(differencePersentage <= diffThreshold);
 
-        for (auto img : imgSet)
+        for (auto ing : imgSet)
         {
-            img->Release();
+            ing->Release();
         }
     }
 
