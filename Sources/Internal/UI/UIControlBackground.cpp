@@ -282,10 +282,6 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
     geometricData.AddGeometricData(parentGeometricData);
     Rect drawRect = geometricData.GetUnrotatedRect();
 
-#if RHI_COMPLETE
-	RenderSystem2D::Instance()->UpdateClip();
-#endif
-
     Sprite::DrawState drawState;
 
     drawState.SetMaterial(material);

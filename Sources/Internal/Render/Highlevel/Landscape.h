@@ -160,8 +160,6 @@ public:
         Every next value should be almost twice higher than previous to avoid gaps between levels
      */
     void SetLods(const Vector4 & lods);
-
-    static NMaterial * CreateLandscapeMaterial();
     
     /**
         \brief Builds landscape from heightmap image and bounding box of this landscape block

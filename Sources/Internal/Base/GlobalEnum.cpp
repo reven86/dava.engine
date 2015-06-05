@@ -290,6 +290,13 @@ ENUM_DECLARE(rhi::TextureMipFilter)
     ENUM_ADD(rhi::TEXMIPFILTER_LINEAR);
 };
 
+ENUM_DECLARE(rhi::PrimitiveType)
+{
+    ENUM_ADD(rhi::PRIMITIVE_TRIANGLELIST);
+    ENUM_ADD(rhi::PRIMITIVE_TRIANGLEFAN);
+    ENUM_ADD(rhi::PRIMITIVE_LINELIST);
+};
+
 /*
 void f()
 {

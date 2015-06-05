@@ -279,7 +279,10 @@ void Landscape::AllocateGeometryData()
     DVASSERT(vertexLayoutUID != rhi::VertexLayout::InvalidUID);
 
     if (!landscapeMaterial)
-        landscapeMaterial = CreateLandscapeMaterial();
+    {
+        landscapeMaterial = new NMaterial();
+        landscapeMaterial->SetFXName(NMaterialName::TILE_MASK);
+    }
 
     for (int32 i = 0; i < LANDSCAPE_BATCHES_POOL_SIZE; i++)
     {
@@ -1062,16 +1065,6 @@ void Landscape::GetDataNodes(Set<DataNode*> & dataNodes)
         curMaterialNode = curMaterialNode->GetParent();
     }
 }
-
-NMaterial * Landscape::CreateLandscapeMaterial()
-{
-    NMaterial * material = new NMaterial();
-    //RHI_COMPLETE here need to set fx name
-
-    DVASSERT(nullptr);
-
-    return material;
-}
     
 void Landscape::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
@@ -1327,11 +1320,9 @@ RenderObject * Landscape::Clone( RenderObject *newObject )
 		DVASSERT_MSG(IsPointerToExactClass<Landscape>(this), "Can clone only Landscape");
 		newObject = new Landscape();
     }
-
-    //RHI_COMPLETE to think about material clone and review landscape cloning
     
     Landscape *newLandscape = static_cast<Landscape *>(newObject);
-    newLandscape->landscapeMaterial = SafeRetain(landscapeMaterial);
+    newLandscape->landscapeMaterial = landscapeMaterial->Clone();
 
     newLandscape->flags = flags;
     newLandscape->BuildLandscapeFromHeightmapImage(heightmapPath, bbox);

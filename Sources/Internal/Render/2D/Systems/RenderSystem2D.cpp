@@ -353,9 +353,10 @@ void RenderSystem2D::BeginRenderTargetPass(Texture * target)
 
     Flush();
 
-    //RHI_COMPLETE: set viewport
     rhi::RenderPassConfig renderTargetPassConfig;
     renderTargetPassConfig.priority = PRIORITY_SERVICE_2D;
+    renderTargetPassConfig.viewport[2] = target->GetWidth();
+    renderTargetPassConfig.viewport[3] = target->GetHeight();
     passTargetHandle = rhi::AllocateRenderPass(renderTargetPassConfig, 1, &packetListTargetHandle);
 
     rhi::BeginRenderPass(passTargetHandle);
@@ -489,19 +490,14 @@ void RenderSystem2D::SetSpriteClipping(bool clipping)
 
 bool RenderSystem2D::IsPreparedSpriteOnScreen(Sprite::DrawState * drawState)
 {
-#if RHI_COMPLETE
-    if (RenderManager::Instance()->GetRenderTarget() != nullptr)
-        return true;
-#endif RHI_COMPLETE
-
     Rect clipRect = currentClip;
     if (clipRect.dx == -1)
     {
-        clipRect.dx = (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx;
+        clipRect.dx = (float32)(renderTargetWidth ? renderTargetWidth : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx);
     }
     if (clipRect.dy == -1)
     {
-        clipRect.dy = (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy;
+        clipRect.dy = (float32)(renderTargetHeight ? renderTargetHeight : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
     }
 
     float32 left = Min(Min(spriteTempVertices[0], spriteTempVertices[2]), Min(spriteTempVertices[4], spriteTempVertices[6]));
