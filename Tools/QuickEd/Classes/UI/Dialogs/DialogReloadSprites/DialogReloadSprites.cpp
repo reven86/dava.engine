@@ -52,10 +52,10 @@ DialogReloadSprites::DialogReloadSprites(QWidget* parent)
     pushButton_start->setDisabled(spritesPacker->IsRunning());
     comboBox_targetGPU->setDisabled(spritesPacker->IsRunning());
     comboBox_quality->setDisabled(spritesPacker->IsRunning());
-    connect(spritesPacker, &SpritesPacker::runningStateChanged, pushButton_start, &QPushButton::setDisabled);
-    connect(spritesPacker, &SpritesPacker::runningStateChanged, comboBox_targetGPU, &QComboBox::setDisabled);
-    connect(spritesPacker, &SpritesPacker::runningStateChanged, comboBox_quality, &QComboBox::setDisabled);
-    connect(spritesPacker, &SpritesPacker::runningStateChanged, this, &DialogReloadSprites::OnRunningChanged);
+    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, pushButton_start, &QPushButton::setDisabled);
+    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, comboBox_targetGPU, &QComboBox::setDisabled);
+    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, comboBox_quality, &QComboBox::setDisabled);
+    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, this, &DialogReloadSprites::OnRunningChanged);
     connect(pushButton_cancel, &QPushButton::clicked, this, &DialogReloadSprites::OnStopClicked);
     connect(pushButton_start, &QPushButton::clicked, this, &DialogReloadSprites::OnStartClicked);
 

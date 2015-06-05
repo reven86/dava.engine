@@ -63,7 +63,7 @@ void SpritesPacker::ReloadSpritePrivate(bool clearDirs, const eGPUFamily gpu, co
     {
         return;
     }
-    setRunning(true);
+    SetRunning(true);
     QString currentProjectPath = ResourcesManageHelper::GetProjectPath();
     QDir inputDir(currentProjectPath + "/DataSource");
     QDirIterator it(inputDir);
@@ -94,7 +94,7 @@ void SpritesPacker::ReloadSpritePrivate(bool clearDirs, const eGPUFamily gpu, co
     }
     QtLayer::Instance()->ReleaseAutoreleasePool(pool);
     Sprite::ReloadSprites();
-    setRunning(false);
+    SetRunning(false);
 }
 
 void SpritesPacker::Cancel()
@@ -121,13 +121,13 @@ bool SpritesPacker::IsRunning() const
     return running;
 }
 
-void SpritesPacker::setRunning(bool arg)
+void SpritesPacker::SetRunning(bool arg)
 {
     if (arg != running)
     {
         running = arg;
         DAVA::String message = DAVA::String("Sprites packer ") + (arg ? "started" : "finished");
         Logger::Debug(message.c_str());
-        emit runningStateChanged(arg);
+        emit RunningStateChanged(arg);
     }
 }
