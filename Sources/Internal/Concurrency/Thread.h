@@ -190,7 +190,7 @@ private:
 
 	Message	msg;
     Atomic<eThreadState> state;
-    Atomic<int> isCancelling;
+    Atomic<bool> isCancelling;
 
     /**
     \brief Native thread handle - variable which used to thread manipulations
@@ -235,12 +235,12 @@ inline Thread::eThreadState Thread::GetState() const
 
 inline void Thread::Cancel()
 {
-    isCancelling = 1;
+    isCancelling = true;
 }
     
 inline bool Thread::IsCancelling() const
 {
-    return isCancelling.Get() == 1;
+    return isCancelling.Get();
 }
 
 inline Thread::Id Thread::GetId() const
