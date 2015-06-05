@@ -1,13 +1,13 @@
 #include "common.cgh"
 
-
-#if BLENDING == BLENDING_ALPHABLEND
-    blending : src=src_alpha dst=inv_src_alpha
-#endif
+#define DEBUG_UNITY_Z_NORMAL 1
 
 FPROG_IN_BEGIN
 FPROG_IN_TEXCOORD0(uv,2)
 FPROG_IN_TEXCOORD1(uv1,2)
+FPROG_IN_TEXCOORD2(eyeDist, 3)
+FPROG_IN_TEXCOORD3(normalizedFragPos, 4)
+FPROG_IN_TEXCOORD4(cameraToPointInTangentSpace, 3)
 
 FPROG_IN_END
 
@@ -15,12 +15,78 @@ FPROG_OUT_BEGIN
     FPROG_OUT_COLOR
 FPROG_OUT_END
 
+
 DECL_FP_SAMPLER2D(dynamicReflection)
 DECL_FP_SAMPLER2D(dynamicRefraction)
 
+#if !DEBUG_Z_NORMAL_SCALE
+DECL_FP_SAMPLER2D(normalmap)
+#if (SEPARATE_NORMALMAPS)
+DECL_FP_SAMPLER2D(normalmap1)
+#endif
+#endif
+
+
+//properties
+property float  distortionFallSquareDist   : static,a : ;
+property float  reflectionDistortion       : static,a : ;
+property float  refractionDistortion       : static,a : ;
+property float3 reflectionTintColor        : static,a : ;
+property float3 refractionTintColor        : static,a : ;
+
+property float  fresnelBias       : static,a : ;
+property float  fresnelPow        : static,a : ;
+
+
+float FresnelShlick(float NdotL, float fresnelBias, float fresnelPow)
+{	  
+    return fresnelBias + (1.0 - fresnelBias) * pow(1.0 - NdotL, fresnelPow);
+}
 
 FPROG_BEGIN    
-    float4 resColor = FP_TEXTURE2D( dynamicReflection, FP_IN(uv) );    
-    resColor += FP_TEXTURE2D( dynamicRefraction, FP_IN(uv) );    
-    FP_OUT_COLOR = resColor * 0.5;
+    float2 varTexCoord0 = FP_IN(uv);
+    float2 varTexCoord1 = FP_IN(uv1);
+           
+//compute normal
+    float3 normal;
+    float3 normal0 = FP_TEXTURE2D (normalmap, varTexCoord0).rgb;
+    #if defined(SEPARATE_NORMALMAPS)
+        float3 normal1 = FP_TEXTURE2D (normalmap1, varTexCoord1).rgb;    
+    #else
+        float3 normal1 = FP_TEXTURE2D (normalmap, varTexCoord1).rgb;
+    #endif
+    
+    #if DEBUG_Z_NORMAL_SCALE
+        normal0 = normal0 * 2.0 - 1.0;
+        normal1 = normal1 * 2.0 - 1.0;
+        normal0.xy *= normal0_z_scale;
+        normal1.xy *= normal1_z_scale;
+        normal = normalize (normal0 + normal1);
+    #else    
+        normal = normalize (normal0 + normal1 - 1.0); //same as * 2 -2
+    #endif
+    
+    #if DEBUG_UNITY_Z_NORMAL
+        normal = float3(0.0,0.0,1.0);
+    #endif
+    
+    float3 eyeDist = FP_IN(eyeDist);
+    
+    float3 cameraToPointInTangentSpaceNorm = normalize(FP_IN(cameraToPointInTangentSpace));    
+    float lambertFactor = max (dot (-cameraToPointInTangentSpaceNorm, normal), 0.0);
+    float fresnel = FresnelShlick(lambertFactor, fresnelBias, fresnelPow);
+    
+    float2 waveOffset = normal.xy*max(0.1, 1.0-dot(eyeDist, eyeDist)*distortionFallSquareDist);
+    float4 fragPos = FP_IN(normalizedFragPos);
+    float2 texturePos =  fragPos.xy/fragPos.w*0.5 + 0.5; //(gl_FragCoord.xy-viewportOffset)*rcpViewpoviewportOffset;
+    float3 reflectionColor = FP_TEXTURE2D(dynamicReflection, texturePos+waveOffset*reflectionDistortion).rgb;
+    //texturePos.y=1.0-texturePos.y;
+    float3 refractionColor = FP_TEXTURE2D(dynamicRefraction, texturePos+waveOffset*refractionDistortion).rgb;        
+    
+    float3 resColor = lerp(refractionColor*refractionTintColor, reflectionColor*reflectionTintColor, 0.0+0.00001*fresnel);
+
+    FP_OUT_COLOR = float4(resColor, 1.0);
+    
+    
 FPROG_END
+

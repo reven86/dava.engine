@@ -2,18 +2,27 @@
 
 VPROG_IN_BEGIN
     VPROG_IN_POSITION
+    
+    VPROG_IN_NORMAL    
+    VPROG_IN_TANGENT
+    
     VPROG_IN_TEXCOORD0(2)
-    VPROG_IN_TEXCOORD1(2)    
+    VPROG_IN_TEXCOORD1(2)        
 VPROG_IN_END
 
 VPROG_OUT_BEGIN
     VPROG_OUT_POSITION
     VPROG_OUT_TEXCOORD0(uv,2)
     VPROG_OUT_TEXCOORD1(uv1,2)
+    VPROG_OUT_TEXCOORD2(eyeDist, 3)
+    VPROG_OUT_TEXCOORD3(normalizedFragPos, 4)
+    VPROG_OUT_TEXCOORD4(cameraToPointInTangentSpace, 3)
 VPROG_OUT_END
 
 property float4 lightPosition0 : dynamic,instance : ;
 property float4x4 worldViewProjMatrix : dynamic,instance : ui_hidden=yes ;
+property float4x4 worldViewInvTransposeMatrix : dynamic,instance : ;
+property float4x4 worldViewMatrix : dynamic,instance : ;
 
 #if MATERIAL_LIGHTMAP
 property float2 uvOffset : static,instance : ui_hidden=yes ;
@@ -22,7 +31,27 @@ property float2 uvScale : static,instance : ui_hidden=yes ;
 
 VPROG_BEGIN
     float3 in_pos      = VP_IN_POSITION;    
+    float4 inPosition = float4(in_pos, 1.0);
     VP_OUT(uv) =  VP_IN_TEXCOORD;
     VP_OUT(uv1) = VP_IN_TEXCOORD1;
-    VP_OUT_POSITION   = mul( float4(in_pos.x,in_pos.y,in_pos.z,1.0), worldViewProjMatrix );
+    float4 resPosition = mul( inPosition, worldViewProjMatrix );
+    VP_OUT_POSITION   = resPosition;
+    VP_OUT(normalizedFragPos) = resPosition;//.xy/resPosition.w;
+    
+    float3 eyeCoordsPosition = mul (inPosition, worldViewMatrix ).xyz;
+    VP_OUT(eyeDist) = eyeCoordsPosition;
+    
+    float3  inNormal    = VP_IN_NORMAL;
+    float3  inTangent   = VP_IN_TANGENT;
+    
+    float3 n = normalize( mul( float4(inNormal,1.0), worldViewInvTransposeMatrix ).xyz );
+    float3 t = normalize( mul( float4(inTangent,1.0), worldViewInvTransposeMatrix ).xyz );
+    float3 b = cross (n, t);
+
+    float3 v;
+    v.x = dot (eyeCoordsPosition, t);
+    v.y = dot (eyeCoordsPosition, b);
+    v.z = dot (eyeCoordsPosition, n);
+    VP_OUT(cameraToPointInTangentSpace) = v;
+    
 VPROG_END

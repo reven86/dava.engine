@@ -42,6 +42,10 @@ uniform float lightIntensity0;
 uniform float materialSpecularShininess;
 #endif
 
+#if defined(DEBUG_NORMAL_ROTATION)
+uniform float normalRotation;
+#endif
+
 #if !defined (TANGENT_SPACE_WATER_REFLECTIONS)
 varying vec3 eyeDist;
 #endif
@@ -154,7 +158,20 @@ void main()
 	
 #if defined(PIXEL_LIT)||defined(MATERIAL_DECAL)	
 	varTexCoord0 = inTexCoord0 * normal0Scale + normal0ShiftPerSecond * globalTime;
-    varTexCoord1 = vec2(inTexCoord0.x+inTexCoord0.y, inTexCoord0.x-inTexCoord0.y) * normal1Scale + normal1ShiftPerSecond * globalTime;
+    #if defined(SEPARATE_NORMALMAPS)
+        #if defined(DEBUG_NORMAL_ROTATION)
+            float rota = radians(normalRotation);        
+            float cr = cos(rota);
+            float sr = sin(rota);
+            vec2 rotatedTC = vec2(inTexCoord0.x * cr + inTexCoord0.y * sr, inTexCoord0.x * sr - inTexCoord0.y * cr);
+            varTexCoord1 = rotatedTC * normal1Scale + normal1ShiftPerSecond * globalTime;
+        #else            
+            varTexCoord1 = inTexCoord0 * normal1Scale + normal1ShiftPerSecond * globalTime;
+        #endif
+    #else
+        varTexCoord1 = vec2(inTexCoord0.x+inTexCoord0.y, inTexCoord0.x-inTexCoord0.y) * normal1Scale + normal1ShiftPerSecond * globalTime;
+    #endif
+    
 #endif
 
 #if defined(VERTEX_FOG)

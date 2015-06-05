@@ -390,7 +390,7 @@ void WaterRefractionRenderPass::Draw(RenderSystem * renderSystem)
     passMainCamera->CopyMathOnly(*mainCamera);                    
 
     //-0.1f ?
-    Vector4 clipPlane(0,0,1, -waterLevel+0.1f);
+    Vector4 clipPlane(0,0,1, waterLevel);
 
     Camera* currMainCamera = passMainCamera;
     Camera* currDrawCamera;
