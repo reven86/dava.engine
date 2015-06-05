@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Commands2/TransformCommand.h"
 
 #include "Scene3D/Entity.h"

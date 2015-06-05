@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "DAVAEngine.h"
 
 #include "Platform/Qt5/QtLayer.h"
@@ -171,7 +170,14 @@ void OpenGLWindow::mouseDoubleClickEvent(QMouseEvent *e)
 
 void OpenGLWindow::wheelEvent(QWheelEvent *e)
 {
+    if ( e->phase() != Qt::ScrollUpdate )
+        return;
+
     controlMapper->wheelEvent(e);
+    if ( e->orientation() == Qt::Vertical )
+    {
+        emit mouseScrolled( e->delta() );
+    }
 }
 
 void OpenGLWindow::handleDragMoveEvent(QDragMoveEvent* e)

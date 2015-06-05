@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Commands2/ParticleForceRemoveCommand.h"
 
 ParticleForceRemoveCommand::ParticleForceRemoveCommand(DAVA::ParticleForce *_force, DAVA::ParticleLayer* _layer)

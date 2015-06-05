@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "DAVAEngine.h"
 
 #include <QMessageBox>
@@ -159,12 +158,13 @@ QtMainWindow::QtMainWindow(QWidget *parent)
     recentFiles.SetMenu(ui->menuFile);
     recentProjects.SetMenu(ui->menuRecentProjects);
     
-    
     centralWidget()->setMinimumSize(ui->sceneTabWidget->minimumSize());
     
     SetupTitle();
 
 	qApp->installEventFilter(this);
+
+    new QtPosSaver( this );
 
     SetupDocks();
 	SetupMainMenu();
@@ -179,32 +179,21 @@ QtMainWindow::QtMainWindow(QWidget *parent)
     new FMODSoundBrowser(this);
 
 	waitDialog = new QtWaitDialog(this);
-
 	beastWaitDialog = new QtWaitDialog(this);
 
-	posSaver.Attach(this);
-	posSaver.LoadState(this);
-
-	QObject::connect(ProjectManager::Instance(), SIGNAL(ProjectOpened(const QString &)), this, SLOT(ProjectOpened(const QString &)));
-	QObject::connect(ProjectManager::Instance(), SIGNAL(ProjectClosed()), this, SLOT(ProjectClosed()));
-
-	QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), this, SLOT(SceneCommandExecuted(SceneEditor2 *, const Command2*, bool)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(SceneActivated(SceneEditor2 *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(SceneDeactivated(SceneEditor2 *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), this, SLOT(SceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
-
-
-	QObject::connect(SceneSignals::Instance(), SIGNAL(EditorLightEnabled(bool)), this, SLOT(EditorLightEnabled(bool)));
-
-    QObject::connect(this, SIGNAL(TexturesReloaded()), TextureCache::Instance(), SLOT(ClearCache()));
-    
-    
-    QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Initialized()), ui->landscapeEditorControlsPlaceholder, SLOT(OnOpenGLInitialized()));
-
-    
+	connect(ProjectManager::Instance(), SIGNAL(ProjectOpened(const QString &)), this, SLOT(ProjectOpened(const QString &)));
+	connect(ProjectManager::Instance(), SIGNAL(ProjectClosed()), this, SLOT(ProjectClosed()));
+	connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), this, SLOT(SceneCommandExecuted(SceneEditor2 *, const Command2*, bool)));
+	connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(SceneActivated(SceneEditor2 *)));
+	connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(SceneDeactivated(SceneEditor2 *)));
+	connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), this, SLOT(SceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
+	connect(SceneSignals::Instance(), SIGNAL(EditorLightEnabled(bool)), this, SLOT(EditorLightEnabled(bool)));
+    connect(this, SIGNAL(TexturesReloaded()), TextureCache::Instance(), SLOT(ClearCache()));
+    connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Initialized()), ui->landscapeEditorControlsPlaceholder, SLOT(OnOpenGLInitialized()));
     
 	LoadGPUFormat();
     LoadMaterialLightViewMode();
+
 
     EnableGlobalTimeout(globalInvalidate);
 
@@ -220,8 +209,6 @@ QtMainWindow::~QtMainWindow()
     
     TextureBrowser::Instance()->Release();
 	MaterialEditor::Instance()->Release();
-
-	posSaver.SaveState(this);
 
 	delete ui;
 	ui = nullptr;
@@ -477,8 +464,9 @@ void QtMainWindow::SetupToolBars()
 	redoBtn->setPopupMode(QToolButton::MenuButtonPopup);
 
 	// modification widget
-	modificationWidget = new ModificationWidget(NULL);
+	modificationWidget = new ModificationWidget(nullptr);
 	ui->modificationToolBar->insertWidget(ui->actionModifyReset, modificationWidget);
+    connect( ui->actionModifySnapToLandscape, &QAction::triggered, modificationWidget, &ModificationWidget::OnSnapToLandscapeChanged );
 
 	// adding reload textures actions
 	{
@@ -1523,7 +1511,7 @@ void QtMainWindow::OnZeroPivotPoint()
 
 void QtMainWindow::OnMaterialEditor()
 { 
-	MaterialEditor::Instance()->showNormal();
+	MaterialEditor::Instance()->show();
 }
 
 void QtMainWindow::OnTextureBrowser()
@@ -1536,7 +1524,7 @@ void QtMainWindow::OnTextureBrowser()
 		selectedEntities = sceneEditor->selectionSystem->GetSelection();
 	}
 
-	TextureBrowser::Instance()->showNormal();
+	TextureBrowser::Instance()->show();
 	TextureBrowser::Instance()->sceneActivated(sceneEditor);
 	TextureBrowser::Instance()->sceneSelectionChanged(sceneEditor, &selectedEntities, NULL); 
 }

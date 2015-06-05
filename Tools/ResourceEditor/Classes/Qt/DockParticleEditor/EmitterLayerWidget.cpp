@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "EmitterLayerWidget.h"
 #include "Commands2/ParticleEditorCommands.h"
 #include "TextureBrowser/TextureConvertor.h"
@@ -926,6 +925,10 @@ void EmitterLayerWidget::Update(bool updateMinimized)
         spriteLabel->setPixmap(QPixmap::fromImage(ImageTools::FromDavaImage(image)));
         SafeRelease(image);
         SafeRelease(renderTexture);
+    }
+    else
+    {
+        spriteLabel->setPixmap( QPixmap() );
     }
 
     QString spriteName = "<none>";

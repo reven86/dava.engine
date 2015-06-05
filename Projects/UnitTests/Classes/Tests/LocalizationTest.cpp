@@ -26,71 +26,57 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "DAVAEngine.h"
+#include "UnitTests/UnitTests.h"
 
-#include "LocalizationTest.h"
+using namespace DAVA;
 
 static const String files[] = {
-	"weird_characters",
-	"de",
-	"en",
-	"es",
-	"it",
-	"ru"
+    "weird_characters",
+    "de",
+    "en",
+    "es",
+    "it",
+    "ru"
 };
 
-LocalizationTest::LocalizationTest()
-:	TestTemplate<LocalizationTest>("LocalizationTest")
+DAVA_TESTCLASS(LocalizationTest)
 {
-	currentTest = FIRST_TEST;
+    FilePath srcDir;
+    FilePath cpyDir;
 
-	for (int32 i = FIRST_TEST; i < FIRST_TEST + TEST_COUNT; ++i)
-	{
-		RegisterFunction(this, &LocalizationTest::TestFunction, Format("Localization test of %s", files[i].c_str()), NULL);
-	}
+    LocalizationTest()
+    {
+        srcDir = "~res:/TestData/LocalizationTest/";
+        cpyDir = FileSystem::Instance()->GetCurrentDocumentsDirectory() + "LocalizationTest/";
 
-	srcDir = "~res:/TestData/LocalizationTest/";
-	cpyDir = FileSystem::Instance()->GetCurrentDocumentsDirectory() + "LocalizationTest/";
+        FileSystem::Instance()->DeleteDirectory(cpyDir);
+        FileSystem::Instance()->CreateDirectory(cpyDir);
+    }
 
-	FileSystem::Instance()->DeleteDirectory(cpyDir);
-	FileSystem::Instance()->CreateDirectory(cpyDir);
-}
+    ~LocalizationTest()
+    {
+        FileSystem::Instance()->DeleteDirectory(cpyDir);
+    }
 
-void LocalizationTest::LoadResources()
-{
-}
+    DAVA_TEST(TestFunction)
+    {
+        for (size_t i = 0;i < COUNT_OF(files);++i)
+        {
+            FilePath srcFile = srcDir + (files[i] + ".yaml");
+            FilePath cpyFile = cpyDir + (files[i] + ".yaml");
 
-void LocalizationTest::UnloadResources()
-{
-    FileSystem::Instance()->DeleteDirectory(cpyDir);
-}
+            FileSystem::Instance()->CopyFile(srcFile, cpyFile);
 
-void LocalizationTest::Draw(const DAVA::UIGeometricData &geometricData)
-{
-}
+            LocalizationSystem* localizationSystem = LocalizationSystem::Instance();
 
-void LocalizationTest::TestFunction(TestTemplate<LocalizationTest>::PerfFuncData *data)
-{
-	FilePath srcFile = srcDir + (files[currentTest] + ".yaml");
-	FilePath cpyFile = cpyDir + (files[currentTest] + ".yaml");
+            localizationSystem->SetCurrentLocale(files[i]);
+            localizationSystem->InitWithDirectory(cpyDir);
 
-	FileSystem::Instance()->CopyFile(srcFile, cpyFile);
+            localizationSystem->SaveLocalizedStrings();
 
-	LocalizationSystem* localizationSystem = LocalizationSystem::Instance();
-
-	localizationSystem->SetCurrentLocale(files[currentTest]);
-	localizationSystem->InitWithDirectory(cpyDir);
-
-	localizationSystem->SaveLocalizedStrings();
-
-	localizationSystem->Cleanup();
-
-    bool res = FileSystem::Instance()->CompareTextFiles(srcFile, cpyFile);
-
-	String s = Format("Localization test %d: %s - %s", currentTest, files[currentTest].c_str(), (res ? "passed" : "fail"));
-	Logger::Debug(s.c_str());
-
-	data->testData.message = s;
-	TEST_VERIFY(res);
-
-	++currentTest;
-}
+            localizationSystem->Cleanup();
+            TEST_VERIFY_WITH_MESSAGE(FileSystem::Instance()->CompareTextFiles(srcFile, cpyFile), Format("Localization test: %s", files[i].c_str()));
+        }
+    }
+};

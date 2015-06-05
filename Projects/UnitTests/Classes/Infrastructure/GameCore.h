@@ -30,96 +30,50 @@
 #ifndef __GAMECORE_H__
 #define __GAMECORE_H__
 
-#include "DAVAEngine.h"
-#include "TeamCityTestsOutput.h"
+#include "Base/BaseTypes.h"
+#include "Core/Core.h"
 
-#include <fstream>
+#include "TeamcityOutput/TeamCityTestsOutput.h"
 
-using namespace DAVA;
-
-class TestData;
-class BaseScreen;
-class GameCore : public ApplicationCore
+class GameCore : public DAVA::ApplicationCore
 {
-    struct ErrorData
-    {
-        int32 line;
-        String command;
-        String filename;
-        String testName;
-        String testMessage;
-    };
-
 protected:
-    virtual ~GameCore();
-public:    
-    GameCore();
+    virtual ~GameCore() = default;
 
-    static GameCore * Instance() 
+public:    
+    GameCore() = default;
+
+    static GameCore* Instance()
     { 
-        return (GameCore*) DAVA::Core::GetApplicationCore();
+        return static_cast<GameCore*>(DAVA::Core::GetApplicationCore());
     };
     
-    virtual void OnAppStarted() override;
-    virtual void OnAppFinished() override;
-    
-    virtual void OnSuspend() override;
-    virtual void OnResume() override;
+    void OnAppStarted() override;
+    void OnAppFinished() override;
 
+    void OnSuspend() override;
+    void OnResume() override;
+    
 #if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-    virtual void OnBackground();
-    virtual void OnForeground();
-    virtual void OnDeviceLocked();
+    void OnBackground() override {}
+    void OnForeground() override;
+    void OnDeviceLocked() override {}
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 
-    virtual void BeginFrame() override;
-    virtual void Update(DAVA::float32 update) override;
-    virtual void Draw() override;
+    void Update(DAVA::float32 update) override;
 
-    void RegisterScreen(BaseScreen *screen);
-    
-    void RegisterError(const String &command, const String &fileName, int32 line, TestData *testData);
-
-    void LogMessage(const String &message);
-    
-protected:
-    
-    void RegisterTests();
-    void RunTests();
-    void ProcessTests();
+private:
+    void ProcessTests(DAVA::float32 timeElapsed);
     void FinishTests();
 
-    String CreateOutputLogFile();
-    String ReadLogFile();
-
-
-    int32 TestCount();
-    
-    void CreateDocumentsFolder();
-    File * CreateDocumentsFile(const String &filePathname);
-    
-private:
-    void InitLogging();
-
-    void RunOnlyThisTest();
     void OnError();
-    bool IsNeedSkipTest(const BaseScreen& screen) const;
 
-    String runOnlyThisTest;
+    void OnTestStarted(const DAVA::String& testClassName);
+    void OnTestFinished(const DAVA::String& testClassName);
+    void OnTestFailed(const DAVA::String& testClassName, const DAVA::String& testName, const DAVA::String& condition, const char* filename, int lineno, const DAVA::String& userMessage);
 
-    String logFilePath;
-    std::ofstream logFile;
-
-    BaseScreen *currentScreen;
-
-    int32 currentScreenIndex;
-    Vector<BaseScreen *> screens;
-    
-    int32 currentTestIndex;
-
-    TeamcityTestsOutput teamCityOutput;
+private:
+    DAVA::TeamcityTestsOutput teamCityOutput;
 };
-
-
 
 #endif // __GAMECORE_H__

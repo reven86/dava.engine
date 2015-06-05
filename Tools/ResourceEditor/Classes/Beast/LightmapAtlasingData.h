@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __LIGHTMAP_ATLASING_DATA__
 #define __LIGHTMAP_ATLASING_DATA__
 

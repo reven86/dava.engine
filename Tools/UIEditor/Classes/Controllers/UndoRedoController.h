@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __UIEditor__UndoRedoController__
 #define __UIEditor__UndoRedoController__
 

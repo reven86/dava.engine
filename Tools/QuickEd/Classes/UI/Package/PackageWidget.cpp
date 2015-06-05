@@ -1,5 +1,34 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
 
 #include <QClipboard>
+
 #include "PackageWidget.h"
 #include "PackageModel.h"
 
@@ -9,17 +38,13 @@
 #include "Model/PackageHierarchy/PackageBaseNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
-#include "Model/PackageHierarchy/ImportedPackagesNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
-#include "Model/PackageHierarchy/PackageRef.h"
 #include "Model/YamlPackageSerializer.h"
-#include "Model/EditorUIPackageBuilder.h"
-
-#include "Project/Project.h"
-#include "Utils/QtDavaConvertion.h"
-
 #include "SharedData.h"
+#include "EditorCore.h"
 #include "Document.h"
+
+#include "QtTools/FileDialog/FileDialog.h"
 
 using namespace DAVA;
 
@@ -55,24 +80,28 @@ PackageWidget::PackageWidget(QWidget *parent)
     connect(filterLine, &QLineEdit::textChanged, this, &PackageWidget::filterTextChanged);
 
     importPackageAction = new QAction(tr("Import package"), this);
+    importPackageAction->setShortcut(QKeySequence::New);
+    importPackageAction->setShortcutContext(Qt::WidgetShortcut);
+    connect(importPackageAction, &QAction::triggered, this, &PackageWidget::OnImport);
+
 
     cutAction = new QAction(tr("Cut"), this);
-    cutAction->setShortcut(QKeySequence(QKeySequence::Cut));
+    cutAction->setShortcut(QKeySequence::Cut);
     cutAction->setShortcutContext(Qt::WidgetShortcut);
     connect(cutAction, &QAction::triggered, this, &PackageWidget::OnCut);
 
     copyAction = new QAction(tr("Copy"), this);
-    copyAction->setShortcut(QKeySequence(QKeySequence::Copy));
+    copyAction->setShortcut(QKeySequence::Copy);
     copyAction->setShortcutContext(Qt::WidgetShortcut);
     connect(copyAction, &QAction::triggered, this, &PackageWidget::OnCopy);
 
     pasteAction = new QAction(tr("Paste"), this);
-    pasteAction->setShortcut(QKeySequence(QKeySequence::Paste));
+    pasteAction->setShortcut(QKeySequence::Paste);
     pasteAction->setShortcutContext(Qt::WidgetShortcut);
     connect(pasteAction, &QAction::triggered, this, &PackageWidget::OnPaste);
 
     delAction = new QAction(tr("Delete"), this);
-    delAction->setShortcut(QKeySequence(QKeySequence::Delete));
+    delAction->setShortcut(QKeySequence::Delete);
     delAction->setShortcutContext(Qt::WidgetShortcut);
     connect(delAction, &QAction::triggered, this, &PackageWidget::OnDelete);
 
@@ -169,14 +198,13 @@ void PackageWidget::RefreshActions(const QModelIndexList &indexList)
     for(const auto &index : indexList)
     {
         PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-        if (!node->CanCopy())
-            canCopy = false;    
-
-        if (!node->IsInsertingSupported())
-            canInsert = false;
-
-        if (!node->CanRemove())
-            canRemove = false;
+        canCopy &= node->CanCopy();
+        canInsert &= node->IsInsertingSupported();
+        canRemove &= node->CanRemove();
+        if (!canCopy && !canInsert && !canRemove)
+        {
+            break;
+        }
     }
     
     RefreshAction(copyAction, canCopy, true);
@@ -184,7 +212,8 @@ void PackageWidget::RefreshActions(const QModelIndexList &indexList)
     RefreshAction(cutAction, canCopy && canRemove, true);
     RefreshAction(delAction, canRemove, true);
 
-    RefreshAction(importPackageAction, false, false);
+    RefreshAction(importPackageAction, canInsert, canInsert);
+    //TODO: DF-6265, implement canInsert correctly
 
 }
 
@@ -316,6 +345,39 @@ void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, cons
     sharedData->SetData("activeRootControls", QVariant::fromValue(selectedRootControls));
     sharedData->SetData("activatedControls", QVariant::fromValue(selectedControls));
     sharedData->SetData("deactivatedControls", QVariant::fromValue(deselectedControls));
+}
+
+void PackageWidget::OnImport()
+{
+    QItemSelection selected = filteredPackageModel->mapSelectionToSource(treeView->selectionModel()->selection());
+    QModelIndexList selectedIndexList = selected.indexes();
+    if (selectedIndexList.isEmpty())
+    {
+        return;
+    }
+    QStringList fileNames = FileDialog::getOpenFileNames(
+        qApp->activeWindow()
+        , tr("Select one or move files to import")
+        , QString::fromStdString(sharedData->GetDocument()->GetPackageFilePath().GetDirectory().GetStringValue())
+        , "Packages (*.yaml)"
+        );
+    if (fileNames.isEmpty())
+    {
+        return;
+    }
+
+    const QModelIndex &index = selectedIndexList.first();
+
+    PackageBaseNode *baseNode = static_cast<PackageBaseNode*>(index.internalPointer());
+    ControlsContainerNode *node = dynamic_cast<ControlsContainerNode*>(baseNode);
+    DVASSERT(nullptr != node && (node->GetFlags() & PackageBaseNode::FLAG_READ_ONLY) == 0);
+
+    for (const auto &fileName : fileNames)
+    {
+        //TODO: DF-6265, add paste implementation
+        //read file
+        //GetCommandExecutor->paste
+    }
 }
 
 void PackageWidget::OnCopy()
