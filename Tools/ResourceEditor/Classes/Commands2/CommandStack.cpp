@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Commands2/CommandStack.h"
 #include "Commands2/CommandAction.h"
 

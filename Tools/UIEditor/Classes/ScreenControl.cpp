@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ScreenControl.h"
 #include <QString>
 #include "HierarchyTreeNode.h"

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "CleanFolderTool.h"
 
 #include "TexturePacker/CommandLineParser.h"

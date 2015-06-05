@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCE_EDITOR_GRADIENTPICKERWIDGET_H__
 #define __RESOURCE_EDITOR_GRADIENTPICKERWIDGET_H__
 

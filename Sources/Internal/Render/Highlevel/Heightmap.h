@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_HEIGHT_MAP_H__
 #define __DAVAENGINE_HEIGHT_MAP_H__
 

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #import <QuartzCore/QuartzCore.h>
 
 @class NPAPIPluginMacOS;

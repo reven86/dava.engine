@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ParticleTimeLineColumns.h"
 
 ParticlesExtraInfoColumn::ParticlesExtraInfoColumn(const ParticleTimeLineWidget* timeLineWidget,

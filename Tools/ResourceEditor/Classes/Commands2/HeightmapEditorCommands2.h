@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__HEIGHTMAPEDITORCOMMANDS2__
 #define __RESOURCEEDITORQT__HEIGHTMAPEDITORCOMMANDS2__
 

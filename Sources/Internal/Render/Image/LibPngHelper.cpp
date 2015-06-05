@@ -95,6 +95,7 @@ void abort_(const char * s, ...)
 
 LibPngHelper::LibPngHelper()
 {
+    name.assign("PNG");
     supportedExtensions.push_back(".png");
 }
 

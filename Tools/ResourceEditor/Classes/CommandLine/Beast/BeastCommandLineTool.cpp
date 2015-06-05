@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "BeastCommandLineTool.h"
 
 #include "TexturePacker/CommandLineParser.h"
