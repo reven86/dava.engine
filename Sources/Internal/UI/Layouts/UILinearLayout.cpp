@@ -21,6 +21,10 @@ namespace DAVA
     
     void UILinearLayout::ApplyLayout(UIControl *control)
     {
-        
+        const List<UIControl*> &children = control->GetChildren();
+        for (UIControl *child : children)
+        {
+            
+        }
     }
 }

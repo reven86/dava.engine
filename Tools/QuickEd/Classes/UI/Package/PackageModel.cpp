@@ -52,6 +52,8 @@
 #include "Model/YamlPackageSerializer.h"
 #include "Model/EditorUIPackageBuilder.h"
 
+#include "UI/Layouts/UILayoutSystem.h"
+
 #include "PackageMimeData.h"
 
 using namespace DAVA;
@@ -381,6 +383,13 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
 
 void PackageModel::ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property)
 {
+    for (int i = 0; i < root->GetPackageControlsNode()->GetCount(); i++)
+    {
+        ControlNode *control = root->GetPackageControlsNode()->Get(i);
+        UILayoutSystem *system = new UILayoutSystem();
+        system->ApplyLayout(control->GetControl());
+        system->Release();
+    }
     QModelIndex index = indexByNode(node);
     emit dataChanged(index, index);
 }

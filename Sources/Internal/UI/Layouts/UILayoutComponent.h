@@ -64,7 +64,7 @@ namespace DAVA
         void SetLayoutTypeFromInt(int32 type);
 
     private:
-        eLayoutType type;
+        eLayoutType type = LINEAR_LAYOUT;
         
     public:
         INTROSPECTION_EXTEND(UILayoutComponent, UIComponent,
