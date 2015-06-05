@@ -120,7 +120,7 @@ void DialogReloadSprites::OnStopClicked()
 
 void DialogReloadSprites::OnRunningChanged(bool running)
 {
-    pushButton_cancel->setText(running ? "Stop" : "Cancel");
+    pushButton_cancel->setText(running ? "Cancel" : "Close");
 }
 
 void DialogReloadSprites::closeEvent()

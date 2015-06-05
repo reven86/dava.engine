@@ -54,7 +54,7 @@ SpritesPacker::~SpritesPacker()
 
 void SpritesPacker::ReloadSprites(bool clearDirs, const eGPUFamily gpu, const TextureConverter::eConvertQuality quality)
 {
-    process = QtConcurrent::run(this, &SpritesPacker::ReloadSpritePrivate, clearDirs, gpu, quality);// there must be function UpdateSprites
+    process = QtConcurrent::run(this, &SpritesPacker::ReloadSpritePrivate, clearDirs, gpu, quality);
 }
 
 void SpritesPacker::ReloadSpritePrivate(bool clearDirs, const eGPUFamily gpu, const TextureConverter::eConvertQuality quality)
