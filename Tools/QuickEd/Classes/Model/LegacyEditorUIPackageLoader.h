@@ -64,20 +64,20 @@ public:
 class LegacyEditorUIPackageLoader : public DAVA::AbstractUIPackageLoader
 {
 public:
-    LegacyEditorUIPackageLoader(DAVA::AbstractUIPackageBuilder *builder, LegacyControlData *data = NULL);
+    LegacyEditorUIPackageLoader(LegacyControlData *data = NULL);
     virtual ~LegacyEditorUIPackageLoader();
     
 public:
-    virtual DAVA::UIPackage *LoadPackage(const DAVA::FilePath &packagePath) override;
-    virtual bool LoadControlByName(const DAVA::String &name) override;
+    bool LoadPackage(const DAVA::FilePath &packagePath, DAVA::AbstractUIPackageBuilder *builder) override;
+    bool LoadControlByName(const DAVA::String &name, DAVA::AbstractUIPackageBuilder *builder) override;
 
 private:
-    void LoadControl(const DAVA::String &controlName, const DAVA::YamlNode *node);
+    void LoadControl(const DAVA::String &controlName, const DAVA::YamlNode *node, DAVA::AbstractUIPackageBuilder *builder);
     
 private:
-    void LoadControlPropertiesFromYamlNode(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const DAVA::YamlNode *node);
-    void LoadBgPropertiesFromYamlNode(DAVA::UIControl *control, const DAVA::YamlNode *node);
-    void LoadInternalControlPropertiesFromYamlNode(DAVA::UIControl *control, const DAVA::YamlNode *node);
+    void LoadControlPropertiesFromYamlNode(DAVA::UIControl *control, const DAVA::InspInfo *typeInfo, const DAVA::YamlNode *node, DAVA::AbstractUIPackageBuilder *builder);
+    void LoadBgPropertiesFromYamlNode(DAVA::UIControl *control, const DAVA::YamlNode *node, DAVA::AbstractUIPackageBuilder *builder);
+    void LoadInternalControlPropertiesFromYamlNode(DAVA::UIControl *control, const DAVA::YamlNode *node, DAVA::AbstractUIPackageBuilder *builder);
     
 protected:
     virtual DAVA::VariantType ReadVariantTypeFromYamlNode(const DAVA::InspMember *member, const DAVA::YamlNode *node, DAVA::int32 subNodeIndex, const DAVA::String &propertyName);
@@ -92,8 +92,9 @@ private:
     DAVA::Map<DAVA::String, DAVA::String> baseClasses;
     
 private:
-    DAVA::AbstractUIPackageBuilder *builder;
     LegacyControlData *legacyData;
+    bool storeAggregatorName;
+    DAVA::String aggregatorName;
 };
 
 

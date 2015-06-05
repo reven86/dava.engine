@@ -61,9 +61,9 @@ DefaultPackageCommandExecutor::~DefaultPackageCommandExecutor()
     
 }
     
-void DefaultPackageCommandExecutor::AddImportedPackageIntoPackage(PackageControlsNode *importedPackageControls, PackageNode *package)
+void DefaultPackageCommandExecutor::AddImportedPackageIntoPackage(PackageNode *importedPackage, PackageNode *package)
 {
-    package->GetImportedPackagesNode()->Add(importedPackageControls);
+    package->GetImportedPackagesNode()->Add(importedPackage);
 }
 
 void DefaultPackageCommandExecutor::ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value)

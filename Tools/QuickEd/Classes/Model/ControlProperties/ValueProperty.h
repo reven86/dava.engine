@@ -48,7 +48,6 @@ public:
 
     virtual void Refresh() override;
     virtual bool HasChanges() const override;
-    virtual void Serialize(PackageSerializer *serializer) const override;
 
     virtual const DAVA::String &GetName() const override;
     virtual ePropertyType GetType() const override;
