@@ -28,56 +28,48 @@
 
 
 #include "Utils/UTF8Utils.h"
-#include "FileSystem/Logger.h"
 
-#if defined(__DAVAENGINE_WIN32__)
+#include <utf8.h>
 
-#include <Windows.h>
-
-namespace DAVA 
+namespace DAVA
 {
 
-void  UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString & resultString)
+#ifdef __DAVAENGINE_WIN32__
+
+static_assert(sizeof(wchar_t) == 2, "check size of wchar_t on current platform");
+
+void UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString & result)
 {
-	resultString = L"";
-
-	int32 wstringLen = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)string, size, NULL, NULL);
-	if (!wstringLen)
-	{
-		return;
-	}
-
-	wchar_t* buf = new wchar_t[wstringLen];
-	int32 convertRes = MultiByteToWideChar(CP_UTF8, 0, (LPCSTR)string, size, buf, wstringLen);
-	if (convertRes)
-	{
-		resultString = WideString(buf, wstringLen);
-	}
-
-	delete[] buf;
+	result.clear();
+    utf8::utf8to16(string, string + size, std::back_inserter(result));
 };
 
 String UTF8Utils::EncodeToUTF8(const WideString& wstring)
 {
-	int32 bufSize = WideCharToMultiByte(CP_UTF8, 0, wstring.c_str(), -1, 0, 0, NULL, NULL);
-	if (!bufSize)
-	{
-		return "";
-	}
-
-	String resStr = "";
-
-	char* buf = new char[bufSize];
-	int32 res = WideCharToMultiByte(CP_UTF8, 0, wstring.c_str(), -1, buf, bufSize, NULL, NULL);
-	if (res)
-	{
-		resStr = String(buf);
-	}
-
-	delete[] buf;
-	return resStr;
+	String result;
+	utf8::utf16to8(wstring.begin(), wstring.end(), std::back_inserter(result));
+	return result;
 };
 
+#else
+
+static_assert(sizeof(wchar_t) == 4, "check size of wchar_t on current platform");
+
+void UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString & result)
+{
+	result.clear();
+    utf8::utf8to32(string, string + size, std::back_inserter(result));
 };
 
+String UTF8Utils::EncodeToUTF8(const WideString& wstring)
+{
+	String result;
+	utf8::utf32to8(wstring.begin(), wstring.end(), std::back_inserter(result));
+	return result;
+};
 #endif
+
+
+
+} // namespace DAVA
+

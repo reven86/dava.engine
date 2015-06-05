@@ -26,64 +26,17 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "DAVAEngine.h"
+#include "UnitTests/UnitTests.h"
 
-#include "Utils/UTF8Utils.h"
-#include "FileSystem/Logger.h"
+#include "Infrastructure/TextureUtils.h"
 
-// This code is identical both for MacOSX and iOS.
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+using namespace DAVA;
 
-#import <Foundation/Foundation.h>
-
-namespace DAVA 
+DAVA_TESTCLASS(Utf8Test)
 {
-
-void UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString & resultString)
-{
-	char* buf = new char[size + 1];
-	memcpy(buf, string, size);
-	buf[size] = 0;
-
-	NSString* nsstring = [[NSString alloc] initWithUTF8String:buf];
-	delete[] buf;
-
-	NSStringEncoding encoding = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE);
-	NSData* data = [nsstring dataUsingEncoding:encoding];
-
-    if (nil == data)
+    DAVA_TEST(TestFunction)
     {
-        Logger::Error("Encode to WideString error. NSData is nil for string: %s", string);
-        resultString = WideString(L"");
-        [nsstring release];
-        return;
+        TEST_VERIFY(false);
     }
-    
-	resultString = WideString((wchar_t*)[data bytes], [data length] / sizeof(wchar_t));
-
-	[nsstring release];
-}
-
-String UTF8Utils::EncodeToUTF8(const WideString& wstring)
-{
-	NSStringEncoding encoding = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE);
-	NSString* nsstring = [[NSString alloc]
-						  initWithBytes:(const char*)wstring.c_str()
-						  length:wstring.length() * sizeof(wchar_t)
-						  encoding:encoding];
-
-    if (nil == nsstring)
-    {
-        Logger::Error("Encode to UTF8 error. NSString is nil for string: %ls", wstring.c_str());
-        return String("");
-    }
-    
-	String res = [nsstring UTF8String];
-
-	[nsstring release];
-
-	return res;
-}
-
 };
-
-#endif

@@ -47,13 +47,11 @@ DAVA_TESTCLASS(Cpp14Test)
     {
         TEST_VERIFY(f() == 42);
 
-        int* ptr = new int[100];
-        int* i_ptr = new int;
-        memcpy(i_ptr, ptr, sizeof(int) * 2);
-        std::make_unique<int>();
-        printf("%d", *i_ptr);
+        // TODO make crush to test clang address sanitizer on teamcity (remove after it)
+        int* ptr = new int[100]();
+        ptr[101] = 0xF0F0F0F0;
 
-        Logger::Info("just after memory corruption!!!!!");
+        Logger::Info("just after memory corruption!!!!! %d", &ptr[101]);
     }
 
     DAVA_TEST(ScopeExit)
@@ -64,5 +62,16 @@ DAVA_TESTCLASS(Cpp14Test)
             TEST_VERIFY(0 == i);
         }
         TEST_VERIFY(1 == i);
+    }
+
+    DAVA_TEST(MakeUnique)
+    {
+    	std::unique_ptr<int> ptr = std::make_unique<int>();
+    	*ptr = 10;
+    	TEST_VERIFY(10 == *(ptr.get()));
+
+    	int* raw_ptr = ptr.release();
+    	TEST_VERIFY(10 == *raw_ptr);
+    	delete raw_ptr;
     }
 };
