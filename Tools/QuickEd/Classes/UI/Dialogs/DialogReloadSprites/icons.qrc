@@ -1,5 +1,0 @@
-<RCC>
-  <qresource prefix="/DialogReloadSprites">
-    <file>Icons/reload.png</file>
-  </qresource>
-</RCC>

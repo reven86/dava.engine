@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/QtTools">
-        <file>wand.png</file>
+        <file>Icons/wand.png</file>
+		<file>Icons/reload.png</file>
     </qresource>
 </RCC>

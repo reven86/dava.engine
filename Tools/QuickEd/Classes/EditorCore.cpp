@@ -30,7 +30,7 @@
 #include "Platform/Qt5/QtLayer.h"
 
 #include "UI/mainwindow.h"
-#include "UI/Dialogs/DialogReloadSprites/DialogReloadSprites.h"
+#include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "DocumentGroup.h"
 #include "Document.h"
 #include "EditorCore.h"
@@ -54,6 +54,7 @@ EditorCore::EditorCore(QObject *parent)
     mainWindow->menuTools->addAction(actionReloadSprites);
     mainWindow->toolBarPlugins->addAction(actionReloadSprites);
     connect(dialogReloadSprites->GetSpritesPacker(), &SpritesPacker::ProcessStared, this, &EditorCore::CloseAllDocuments, Qt::BlockingQueuedConnection);
+    connect(project, &Project::ProjectPathChanged, dialogReloadSprites->GetSpritesPacker(), &SpritesPacker::SetProjectPath);
      
     connect(mainWindow, &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
     connect(mainWindow, &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);

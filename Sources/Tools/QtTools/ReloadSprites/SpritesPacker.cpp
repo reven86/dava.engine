@@ -30,12 +30,11 @@
 #include "SpritesPacker.h"
 #include "TexturePacker/ResourcePacker2D.h"
 #include <TexturePacker/CommandLineParser.h>
-#include "Classes/Helpers/ResourcesManageHelper.h"
 #include "Platform/Qt5/QtLayer.h"
 #include "Render/2D/Sprite.h"
 #include <QDirIterator>
 #include <QApplication>
-#include <QtConcurrent>
+#include <QtConcurrent/QtConcurrent>
 
 using namespace DAVA;
 
@@ -64,8 +63,7 @@ void SpritesPacker::ReloadSpritePrivate(bool clearDirs, const eGPUFamily gpu, co
         return;
     }
     SetRunning(true);
-    QString currentProjectPath = ResourcesManageHelper::GetProjectPath();
-    QDir inputDir(currentProjectPath + "/DataSource");
+    QDir inputDir(projectPath + "/DataSource");
     QDirIterator it(inputDir);
     void *pool = QtLayer::Instance()->CreateAutoreleasePool();
     resourcePacker2D->SetRunning(true);
@@ -131,3 +129,18 @@ void SpritesPacker::SetRunning(bool arg)
         emit RunningStateChanged(arg);
     }
 }
+
+QString SpritesPacker::GetProjectPath() const
+{
+    return projectPath;
+}
+
+void SpritesPacker::SetProjectPath(QString arg)
+{
+    if (arg != projectPath)
+    {
+        projectPath = arg;
+        emit ProjectPathChanged(arg);
+    }
+}
+

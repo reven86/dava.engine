@@ -27,44 +27,56 @@
 =====================================================================================*/
 
 
-#ifndef __DIALOG_RELOAD_SPRITES_H__
-#define __DIALOG_RELOAD_SPRITES_H__
+#ifndef __SPRITES_PACKER_H__
+#define __SPRITES_PACKER_H__
 
-#include "ui_DialogReloadSprites.h"
-#include "SpritesPacker.h"
+#include "Render/RenderBase.h"
+#include <QObject>
+#include <QFuture>
+#include "TextureCompression/TextureConverter.h"
+#include <atomic>
 
-class DialogReloadSprites : public QDialog, public Ui::DialogReloadSprites
+namespace DAVA {
+    class ResourcePacker2D;
+}
+
+class SpritesPacker : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool running READ IsRunning WRITE SetRunning NOTIFY RunningStateChanged);
+    Q_PROPERTY(QString projectPath READ GetProjectPath WRITE SetProjectPath NOTIFY ProjectPathChanged)
+public:
+    SpritesPacker(QObject *parent = nullptr);
+    ~SpritesPacker();
+    void ReloadSprites(bool clearDirs, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
+public slots:
+    void Cancel();
+    void Stop();
+signals:
+    bool ProcessStared();
+private:
+    void ReloadSpritePrivate(bool clearDirs, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
+    DAVA::ResourcePacker2D *resourcePacker2D;
+    QFuture<void> process;
+
+    //properties section
+public:
+    bool IsRunning() const;
+public slots:
+    void SetRunning(bool arg);
+signals:
+    void RunningStateChanged(bool arg);
+private:
+    std::atomic<bool> running;
 
 public:
-    explicit DialogReloadSprites(QWidget *parent = nullptr);
-    ~DialogReloadSprites();
-    SpritesPacker *GetSpritesPacker() const;
-    QAction* GetActionReloadSprites() const;
-private slots:
-    void OnStartClicked();
-    void OnStopClicked();
-    void OnRunningChanged(bool running);
-protected:
-    void closeEvent();
+    QString GetProjectPath() const;
+public slots:
+    void SetProjectPath(QString arg);
+signals:
+    void ProjectPathChanged(QString arg);
 private:
-    void LoadSettings();
-    void SaveSettings() const;
-    SpritesPacker *spritesPacker;
-    QAction *actionReloadSprites;
+    QString projectPath;
 };
 
-inline SpritesPacker* DialogReloadSprites::GetSpritesPacker() const
-{
-    return spritesPacker;
-}
-
-inline QAction* DialogReloadSprites::GetActionReloadSprites() const
-{
-    return actionReloadSprites;
-}
-
-
-
-#endif // __DIALOG_RELOAD_SPRITES_H__
+#endif //__SPRITES_PACKER_H__

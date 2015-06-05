@@ -41,6 +41,7 @@ class Project : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool isOpen READ IsOpen NOTIFY IsOpenChanged)
+    Q_PROPERTY(QString projectPath READ GetProjectPath WRITE SetProjectPath NOTIFY ProjectPathChanged)
 
 public:
     explicit Project(QObject *parent = nullptr);
@@ -59,7 +60,6 @@ signals:
 
 private:
     bool OpenInternal(const QString &path);
-    DAVA::FilePath projectPath;
     
     LegacyControlData *legacyData;
     EditorFontSystem *editorFontSystem;
@@ -72,6 +72,15 @@ signals:
 private:
     void SetIsOpen(bool arg);
     bool isOpen;
+
+    public:
+    QString GetProjectPath() const;
+public slots:
+    void SetProjectPath(QString arg);
+signals:
+    void ProjectPathChanged(QString arg);
+private:
+    DAVA::FilePath projectPath;
 };
 
 inline EditorFontSystem* Project::GetEditorFontSystem() const

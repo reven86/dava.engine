@@ -27,10 +27,11 @@
 =====================================================================================*/
 
 
-#include "UI/Dialogs/DialogReloadSprites/DialogReloadSprites.h"
-#include "UI/Dialogs/DialogReloadSprites/SpritesPacker.h"
+#include "QtTools/ReloadSprites/DialogReloadSprites.h"
+#include "QtTools/ReloadSprites/SpritesPacker.h"
 #include "TextureCompression/TextureConverter.h"
-#include "EditorCore.h"
+#include "ui_DialogReloadSprites.h"
+#include <QSettings>
 
 using namespace DAVA;
 namespace
@@ -42,22 +43,23 @@ namespace
 
 DialogReloadSprites::DialogReloadSprites(QWidget* parent)
     : QDialog(parent)
+    , ui(new Ui::DialogReloadSprites)
     , spritesPacker(new SpritesPacker(this))
     , actionReloadSprites(new QAction(QIcon(":/DialogReloadSprites/Icons/reload.png"), tr("Reload Sprites"), this))
 {
     connect(actionReloadSprites, &QAction::triggered, this, &DialogReloadSprites::exec);
 
-    setupUi(this);
+    ui->setupUi(this);
     OnRunningChanged(spritesPacker->IsRunning());
-    pushButton_start->setDisabled(spritesPacker->IsRunning());
-    comboBox_targetGPU->setDisabled(spritesPacker->IsRunning());
-    comboBox_quality->setDisabled(spritesPacker->IsRunning());
-    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, pushButton_start, &QPushButton::setDisabled);
-    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, comboBox_targetGPU, &QComboBox::setDisabled);
-    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, comboBox_quality, &QComboBox::setDisabled);
+    ui->pushButton_start->setDisabled(spritesPacker->IsRunning());
+    ui->comboBox_targetGPU->setDisabled(spritesPacker->IsRunning());
+    ui->comboBox_quality->setDisabled(spritesPacker->IsRunning());
+    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, ui->pushButton_start, &QPushButton::setDisabled);
+    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, ui->comboBox_targetGPU, &QComboBox::setDisabled);
+    connect(spritesPacker, &::SpritesPacker::RunningStateChanged, ui->comboBox_quality, &QComboBox::setDisabled);
     connect(spritesPacker, &::SpritesPacker::RunningStateChanged, this, &DialogReloadSprites::OnRunningChanged);
-    connect(pushButton_cancel, &QPushButton::clicked, this, &DialogReloadSprites::OnStopClicked);
-    connect(pushButton_start, &QPushButton::clicked, this, &DialogReloadSprites::OnStartClicked);
+    connect(ui->pushButton_cancel, &QPushButton::clicked, this, &DialogReloadSprites::OnStopClicked);
+    connect(ui->pushButton_start, &QPushButton::clicked, this, &DialogReloadSprites::OnStartClicked);
 
     const auto &gpuMap = GlobalEnumMap<eGPUFamily>::Instance();
     for (size_t i = 0; i < gpuMap->GetCount(); ++i)
@@ -69,7 +71,7 @@ DialogReloadSprites::DialogReloadSprites(QWidget* parent)
             DVASSERT_MSG(ok, "wrong enum used to create GPU list");
             break;
         }
-        comboBox_targetGPU->addItem(gpuMap->ToString(value), value);
+        ui->comboBox_targetGPU->addItem(gpuMap->ToString(value), value);
     }
 
     const auto &qualityMap = GlobalEnumMap<TextureConverter::eConvertQuality>::Instance();
@@ -82,28 +84,29 @@ DialogReloadSprites::DialogReloadSprites(QWidget* parent)
             DVASSERT_MSG(ok, "wrong enum used to create quality list");
             break;
         }
-        comboBox_quality->addItem(qualityMap->ToString(value), value);
+        ui->comboBox_quality->addItem(qualityMap->ToString(value), value);
     }
-    comboBox_quality->setCurrentText(qualityMap->ToString(TextureConverter::ECQ_DEFAULT));
+    ui->comboBox_quality->setCurrentText(qualityMap->ToString(TextureConverter::ECQ_DEFAULT));
     LoadSettings();
 }
 
 DialogReloadSprites::~DialogReloadSprites()
 {
     SaveSettings();
+    delete ui;
 }
 
 void DialogReloadSprites::OnStartClicked()
 {
-    const auto gpuData = comboBox_targetGPU->currentData();
-    const auto qualityData = comboBox_quality->currentData();
+    const auto gpuData = ui->comboBox_targetGPU->currentData();
+    const auto qualityData = ui->comboBox_quality->currentData();
     if (!gpuData.isValid() || !qualityData.isValid())
     {
         return;
     }
     auto gpuType = static_cast<DAVA::eGPUFamily>(gpuData.toInt());
     auto quality = static_cast<TextureConverter::eConvertQuality>(qualityData.toInt());
-    spritesPacker->ReloadSprites(checkBox_clean->isChecked(), gpuType, quality);
+    spritesPacker->ReloadSprites(ui->checkBox_clean->isChecked(), gpuType, quality);
 }
 
 void DialogReloadSprites::OnStopClicked()
@@ -120,7 +123,7 @@ void DialogReloadSprites::OnStopClicked()
 
 void DialogReloadSprites::OnRunningChanged(bool running)
 {
-    pushButton_cancel->setText(running ? "Cancel" : "Close");
+    ui->pushButton_cancel->setText(running ? "Cancel" : "Close");
 }
 
 void DialogReloadSprites::closeEvent()
@@ -135,25 +138,25 @@ void DialogReloadSprites::LoadSettings()
     if (targetGPU.isValid())
     {
         const auto &string = GlobalEnumMap<eGPUFamily>::Instance()->ToString(targetGPU.toInt());
-        comboBox_targetGPU->setCurrentText(string);
+        ui->comboBox_targetGPU->setCurrentText(string);
     }
     const auto &quality = settings.value(QUALITY);
     if (quality.isValid())
     {
         const auto &string = GlobalEnumMap<TextureConverter::eConvertQuality>::Instance()->ToString(quality.toInt());
-        comboBox_quality->setCurrentText(string);
+        ui->comboBox_quality->setCurrentText(string);
     }
     const auto &clear = settings.value(CLEAR_ON_START);
     if (clear.isValid())
     {
-        checkBox_clean->setChecked(clear.toBool());
+        ui->checkBox_clean->setChecked(clear.toBool());
     }
 }
 
 void DialogReloadSprites::SaveSettings() const
 {
     QSettings settings(QApplication::organizationName(), QApplication::applicationName());
-    settings.setValue(GPU, comboBox_targetGPU->currentData().toInt());
-    settings.setValue(QUALITY, comboBox_quality->currentData().toInt());
-    settings.setValue(CLEAR_ON_START, checkBox_clean->isChecked());
+    settings.setValue(GPU, ui->comboBox_targetGPU->currentData().toInt());
+    settings.setValue(QUALITY, ui->comboBox_quality->currentData().toInt());
+    settings.setValue(CLEAR_ON_START, ui->checkBox_clean->isChecked());
 }
