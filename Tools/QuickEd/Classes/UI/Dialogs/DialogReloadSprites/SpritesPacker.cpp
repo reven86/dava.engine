@@ -126,6 +126,8 @@ void SpritesPacker::setRunning(bool arg)
     if (arg != running)
     {
         running = arg;
+        DAVA::String message = DAVA::String("Sprites packer ") + (arg ? "started" : "finished");
+        Logger::Debug(message.c_str());
         emit runningStateChanged(arg);
     }
 }
