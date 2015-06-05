@@ -64,8 +64,7 @@ public:
 
         PARAM_WORLD_VIEW_PROJ,
         PARAM_INV_WORLD_VIEW_PROJ,
-
-        PARAM_COLOR,
+        
         PARAM_GLOBAL_TIME,
         PARAM_WORLD_SCALE,
 
