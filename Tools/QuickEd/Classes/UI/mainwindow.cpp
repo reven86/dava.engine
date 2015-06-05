@@ -78,7 +78,8 @@ MainWindow::MainWindow(QWidget *parent)
     fileSystemDockWidget->setEnabled(false);
 
     RebuildRecentMenu();
-
+    menuTools->setEnabled(false);
+    toolBarPlugins->setEnabled(false);
 }
 
 MainWindow::~MainWindow()

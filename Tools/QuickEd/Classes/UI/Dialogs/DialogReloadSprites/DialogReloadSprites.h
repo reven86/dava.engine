@@ -44,6 +44,8 @@ public:
     QAction* GetActionReloadSprites() const;
 private slots:
     void OnStartClicked();
+    void OnStopClicked();
+    void OnRunningChanged(bool running);
 protected:
     void closeEvent();
 private:

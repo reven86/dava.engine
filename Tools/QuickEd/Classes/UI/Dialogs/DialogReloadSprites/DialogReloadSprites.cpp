@@ -48,15 +48,15 @@ DialogReloadSprites::DialogReloadSprites(QWidget* parent)
     connect(actionReloadSprites, &QAction::triggered, this, &DialogReloadSprites::exec);
 
     setupUi(this);
-    pushButton_cancel->setEnabled(spritesPacker->isRunning());
-    pushButton_start->setDisabled(spritesPacker->isRunning());
-    comboBox_targetGPU->setDisabled(spritesPacker->isRunning());
-    comboBox_quality->setDisabled(spritesPacker->isRunning());
-    connect(spritesPacker, &SpritesPacker::runningStateChanged, pushButton_cancel, &QPushButton::setEnabled);
+    OnRunningChanged(spritesPacker->IsRunning());
+    pushButton_start->setDisabled(spritesPacker->IsRunning());
+    comboBox_targetGPU->setDisabled(spritesPacker->IsRunning());
+    comboBox_quality->setDisabled(spritesPacker->IsRunning());
     connect(spritesPacker, &SpritesPacker::runningStateChanged, pushButton_start, &QPushButton::setDisabled);
     connect(spritesPacker, &SpritesPacker::runningStateChanged, comboBox_targetGPU, &QComboBox::setDisabled);
     connect(spritesPacker, &SpritesPacker::runningStateChanged, comboBox_quality, &QComboBox::setDisabled);
-    connect(pushButton_cancel, &QPushButton::clicked, spritesPacker, &SpritesPacker::Cancel);
+    connect(spritesPacker, &SpritesPacker::runningStateChanged, this, &DialogReloadSprites::OnRunningChanged);
+    connect(pushButton_cancel, &QPushButton::clicked, this, &DialogReloadSprites::OnStopClicked);
     connect(pushButton_start, &QPushButton::clicked, this, &DialogReloadSprites::OnStartClicked);
 
     const auto &gpuMap = GlobalEnumMap<eGPUFamily>::Instance();
@@ -104,6 +104,23 @@ void DialogReloadSprites::OnStartClicked()
     auto gpuType = static_cast<DAVA::eGPUFamily>(gpuData.toInt());
     auto quality = static_cast<TextureConverter::eConvertQuality>(qualityData.toInt());
     spritesPacker->ReloadSprites(checkBox_clean->isChecked(), gpuType, quality);
+}
+
+void DialogReloadSprites::OnStopClicked()
+{
+    if (spritesPacker->IsRunning())
+    {
+        spritesPacker->Cancel();
+    }
+    else
+    {
+        close();
+    }
+}
+
+void DialogReloadSprites::OnRunningChanged(bool running)
+{
+    pushButton_cancel->setText(running ? "Stop" : "Cancel");
 }
 
 void DialogReloadSprites::closeEvent()

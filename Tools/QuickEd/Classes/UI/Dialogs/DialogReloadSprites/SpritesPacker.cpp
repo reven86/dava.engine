@@ -116,7 +116,7 @@ void SpritesPacker::Stop()
     QApplication::restoreOverrideCursor();
 }
 
-bool SpritesPacker::isRunning() const
+bool SpritesPacker::IsRunning() const
 {
     return running;
 }

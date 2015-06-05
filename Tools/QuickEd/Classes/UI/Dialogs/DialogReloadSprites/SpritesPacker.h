@@ -60,7 +60,7 @@ private:
 
     //properties section
 public:
-    bool isRunning() const;
+    bool IsRunning() const;
 public slots:
     void setRunning(bool arg);
 signals:
