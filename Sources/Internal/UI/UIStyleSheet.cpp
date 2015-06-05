@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 #include "UI/UIStyleSheet.h"
-#include "FileSystem/KeyedArchive.h"
 
 namespace DAVA
 {
@@ -36,14 +35,30 @@ namespace DAVA
 
     }
 
-    UIStyleSheet::UIStyleSheet() :
-        properties(new KeyedArchive())
+    UIStyleSheet::UIStyleSheet()
     {
 
     }
 
-    VariantType* UIStyleSheet::GetProperty(const String& name) const
+    int32 UIStyleSheet::GetScore() const
     {
-        return properties->GetVariant(name);
+        int32 score = 0;
+        for (const UIStyleSheetSelector& selector : selectorChain)
+        {
+            score += 100000 + selector.classes.size();
+            if (selector.name.IsValid())
+                score += 100;
+        }
+        return score;
+    }
+
+    const UIStyleSheetPropertyTable& UIStyleSheet::GetPropertyTable() const
+    {
+        return properties;
+    }
+
+    const Vector< UIStyleSheetSelector >& UIStyleSheet::GetSelectorChain() const
+    {
+        return selectorChain;
     }
 }

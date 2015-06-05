@@ -45,6 +45,7 @@ class UIControlBackground;
 class Message;
 class UIComponent;
 class UIControlFamily;
+class UIContext;
 
 #define CONTROL_TOUCH_AREA  15
     /**
@@ -776,6 +777,7 @@ public:
      \returns control name.
      */
     inline const String & GetName() const;
+    inline const FastName & GetFastName() const;
 
     /**
      \brief Sets the contol tag.
@@ -950,7 +952,6 @@ public:
      \param[in] srcControl Source control to copy parameters from.
      */
     virtual void CopyDataFrom(UIControl *srcControl);
-
 
      //Animation helpers
 
@@ -1338,7 +1339,9 @@ public:
     static void DumpControls(bool onlyOrphans);
 private:
     String name;
+    FastName fastName;
 protected:
+    UIContext* context;
     UIControl *parent;
     List<UIControl*> childs;
 
@@ -1402,6 +1405,7 @@ protected:
     // Initial control's state which is stored on Yaml.
     int32 initialState;
 
+    void SetUIContext(UIContext* context);
     void SetParent(UIControl *newParent);
 
     virtual ~UIControl();
@@ -1466,12 +1470,23 @@ public:
     uint32 GetComponentCount(uint32 componentType) const;
     uint64 GetAvailableComponentFlags() const;
 
+    const Vector<UIComponent *>& GetComponents();
 private:
     Vector<UIComponent *> components;
     UIControlFamily * family;
     void RemoveComponent(const Vector<UIComponent *>::iterator & it);
     void UpdateFamily();
 /* Components */
+
+/* Styles */
+public:
+    void AddClass(FastName clazz);
+    void RemoveClass(FastName clazz);
+    bool HasClass(FastName clazz);
+    
+private:
+    Vector<FastName> classes;
+/* Styles */
 
 public:
     inline bool GetSystemVisible() const;
@@ -1605,6 +1620,11 @@ float32 UIControl::GetAngleInDegrees() const
 const String & UIControl::GetName() const
 {
     return name;
+}
+
+const FastName & UIControl::GetFastName() const
+{
+    return fastName;
 }
 
 int32 UIControl::GetTag() const

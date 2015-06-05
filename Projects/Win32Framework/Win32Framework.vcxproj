@@ -706,6 +706,7 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UI3DView.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIAggregatorControl.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIButton.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\UIContext.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIControl.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIControlBackground.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIControlHelpers.h" />
@@ -742,6 +743,7 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIStaticText.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIStyleSheet.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIStyleSheetCascade.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\UIStyleSheetSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UISwitch.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UITextField.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UITextFieldiPhone.h" />
@@ -1200,6 +1202,7 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UI3DView.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIAggregatorControl.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIButton.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\UIContext.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIControl.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIControlBackground.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIControlHelpers.cpp" />
@@ -1233,6 +1236,7 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UIStaticText.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIStyleSheet.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIStyleSheetCascade.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\UIStyleSheetSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UISwitch.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UITextField.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIWebView.cpp" />

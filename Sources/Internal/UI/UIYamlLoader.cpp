@@ -696,7 +696,7 @@ YamlNode* UIYamlLoader::SaveToNode(UIControl * parentControl, YamlNode * parentN
     YamlNode* childNode = parentControl->SaveToYamlNode(this);
     if (parentNode && parentNode->GetType() == YamlNode::TYPE_MAP)
     {
-        parentNode->AddNodeToMap(parentControl->GetName(), childNode);
+        parentNode->AddNodeToMap(parentControl->GetName().c_str(), childNode);
     }
 
     SaveChildren(parentControl, childNode);

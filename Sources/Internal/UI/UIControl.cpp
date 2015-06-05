@@ -31,6 +31,8 @@
 #include "UI/UIControlSystem.h"
 #include "UI/UIYamlLoader.h"
 #include "UI/UIControlHelpers.h"
+#include "UI/UIContext.h"
+#include "UI/UIStyleSheetSystem.h"
 #include "Animation/LinearAnimation.h"
 #include "Animation/AnimationManager.h"
 #include "Debug/DVAssert.h"
@@ -67,7 +69,7 @@ namespace DAVA
 #endif
     }
 
-    UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/) : family(nullptr)
+    UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/) : family(nullptr), context(nullptr)
     {
         StartControlTracking(this);
         UpdateFamily();
@@ -278,6 +280,7 @@ namespace DAVA
     void UIControl::SetName(const String & _name)
     {
         name = _name;
+        fastName = FastName(_name);
     }
 
     void UIControl::SetTag(int32 _tag)
@@ -870,6 +873,7 @@ namespace DAVA
         }
         control->isUpdated = false;
         control->SetParent(this);
+        control->SetUIContext(context);
         childs.push_back(control);
         if (inHierarchy)
         {
@@ -903,6 +907,7 @@ namespace DAVA
                     control->SystemWillDisappear();
                 }
                 control->SetParent(NULL);
+                control->SetUIContext(nullptr);
                 childs.erase(it);
                 if (inHierarchy)
                 {
@@ -1117,6 +1122,7 @@ namespace DAVA
 
         tag = srcControl->GetTag();
         name = srcControl->name;
+        fastName = srcControl->fastName;
 
         controlState = srcControl->controlState;
         visible = srcControl->visible;
@@ -1161,6 +1167,18 @@ namespace DAVA
         }
     }
 
+    void UIControl::SetUIContext(UIContext* newContext)
+    {
+        context = newContext;
+
+        for (UIControl* child : childs)
+        {
+            child->SetUIContext(newContext);
+        }
+
+        if (context)
+            context->GetStyleSheetSystem()->MarkControlForUpdate(this);
+    }
 
     bool UIControl::InViewHierarchy() const
     {
@@ -2908,6 +2926,41 @@ namespace DAVA
         return family->GetComponentsFlags();
     }
 
+    const Vector<UIComponent *>& UIControl::GetComponents()
+    {
+        return components;
+    }
+
     /* Components */
 
+    /* Styles */
+
+    void UIControl::AddClass(FastName clazz)
+    {
+        classes.push_back(clazz);
+
+        if (context)
+            context->GetStyleSheetSystem()->MarkControlForUpdate(this);
+    }
+
+    void UIControl::RemoveClass(FastName clazz)
+    {
+        auto iter = find(classes.begin(), classes.end(), clazz);
+
+        if (iter != classes.end())
+        {
+            *iter = classes.back();
+            classes.pop_back();
+        }
+
+        if (context)
+            context->GetStyleSheetSystem()->MarkControlForUpdate(this);
+    }
+
+    bool UIControl::HasClass(FastName clazz)
+    {
+        return find(classes.begin(), classes.end(), clazz) != classes.end();
+    }
+
+    /* Styles */
 }

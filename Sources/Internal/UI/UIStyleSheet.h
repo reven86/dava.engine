@@ -32,15 +32,19 @@
 
 #include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
+#include "Base/FastName.h"
 #include "FileSystem/VariantType.h"
 
 namespace DAVA
 {
-    class UIStyleSheetSelector
+    struct UIStyleSheetSelector
     {
-        String name;
-        Vector< String > classes;
+        String className; // TODO
+        FastName name;
+        Vector< FastName > classes;
     };
+
+    typedef UnorderedMap< String, VariantType > UIStyleSheetPropertyTable;
 
     class UIStyleSheet :
         public BaseObject
@@ -50,10 +54,14 @@ namespace DAVA
     public:
         UIStyleSheet();
 
-        VariantType* GetProperty(const String& name) const;
+        int32 GetScore() const;
+
+        const UIStyleSheetPropertyTable& GetPropertyTable() const;
+
+        const Vector< UIStyleSheetSelector >& GetSelectorChain() const;
     private:
-        Vector< UIStyleSheetSelector > selectors;
-        UnorderedMap< FastName, VariantType > properties;
+        Vector< UIStyleSheetSelector > selectorChain;
+        UIStyleSheetPropertyTable properties;
     };
 };
 

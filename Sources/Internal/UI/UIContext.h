@@ -27,30 +27,23 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_UI_STYLESHEET_CASCADE_H__
-#define __DAVAENGINE_UI_STYLESHEET_CASCADE_H__
-
-#include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
-#include "UI/UIStyleSheet.h"
+#ifndef __DAVAENGINE_UI_CONTEXT_H__
+#define __DAVAENGINE_UI_CONTEXT_H__
 
 namespace DAVA
 {
-    class VariantType;
+    class UIStyleSheetSystem;
 
-    class UIStyleSheetCascade
+    class UIContext
     {
     public:
-        ~UIStyleSheetCascade();
-        UIStyleSheetCascade();
+        UIContext(UIStyleSheetSystem* aStyleSheetSystem);
 
-        void Clear();
-        void AddStyleSheet(const UIStyleSheetPropertyTable* table);
-
-        const VariantType* GetProperty(const String& name) const;
+        UIStyleSheetSystem* GetStyleSheetSystem();
     private:
-        Vector< const UIStyleSheetPropertyTable* > styleSheets;
+        UIStyleSheetSystem* styleSheetSystem;
     };
 };
+
 
 #endif

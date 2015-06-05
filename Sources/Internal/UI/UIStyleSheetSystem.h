@@ -27,30 +27,46 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_UI_STYLESHEET_CASCADE_H__
-#define __DAVAENGINE_UI_STYLESHEET_CASCADE_H__
+#ifndef __DAVAENGINE_UI_STYLESHEET_SYSTEM_H__
+#define __DAVAENGINE_UI_STYLESHEET_SYSTEM_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
-#include "UI/UIStyleSheet.h"
 
 namespace DAVA
 {
-    class VariantType;
+    class UIControl;
+    class UIControlBackground;
+    class UIComponent;
+    class UIStyleSheet;
+    struct UIStyleSheetSelector;
+    class UIStyleSheetCascade;
+    class InspInfo;
 
-    class UIStyleSheetCascade
+    class UIStyleSheetSystem
     {
     public:
-        ~UIStyleSheetCascade();
-        UIStyleSheetCascade();
+        UIStyleSheetSystem();
+        ~UIStyleSheetSystem();
 
-        void Clear();
-        void AddStyleSheet(const UIStyleSheetPropertyTable* table);
+        void MarkControlForUpdate(UIControl* control);
+        void RegisterStyleSheet(UIStyleSheet* styleSheet);
+        void UnregisterStyleSheet(UIStyleSheet* styleSheet);
 
-        const VariantType* GetProperty(const String& name) const;
+        void ProcessUpdates();
     private:
-        Vector< const UIStyleSheetPropertyTable* > styleSheets;
+        void SortStyleSheets();
+        bool StyleSheetMatchesControl(UIStyleSheet* styleSheet, UIControl* control);
+        bool SelectorMatchesControl(const UIStyleSheetSelector* selector, UIControl* control);
+        
+        void SetupControlFromCascade(UIControl* control, const UIStyleSheetCascade& cascade);
+
+        template < class T >
+        void SetupObjectPropertiesFromCascade(T* object, const InspInfo* typeInfo, const UIStyleSheetCascade& cascade);
+
+        DAVA::Vector< UIControl* > controlsToUpdate;
+        DAVA::Vector< UIStyleSheet* > styleSheets;
     };
 };
+
 
 #endif

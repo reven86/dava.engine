@@ -41,8 +41,26 @@ namespace DAVA
 
     }
 
+    void UIStyleSheetCascade::Clear()
+    {
+        styleSheets.clear();
+    }
+
+    void UIStyleSheetCascade::AddStyleSheet(const UIStyleSheetPropertyTable* table)
+    {
+        styleSheets.push_back(table);
+    }
+
     const VariantType* UIStyleSheetCascade::GetProperty(const String& name) const
     {
-
+        for (const UIStyleSheetPropertyTable* styleSheet : styleSheets)
+        {
+            auto iter = styleSheet->find(name);
+            if (iter != styleSheet->end())
+            {
+                return &iter->second;
+            }
+        }
+        return nullptr;
     }
 }
