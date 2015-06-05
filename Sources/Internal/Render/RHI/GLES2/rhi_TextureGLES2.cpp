@@ -108,6 +108,8 @@ gles2_Texture_Delete( Handle tex )
 static Handle
 gles2_Texture_Create( const Texture::Descriptor& desc )
 {
+    DVASSERT(desc.levelCount);
+
     Handle      handle = InvalidHandle;
     GLuint      uid    = InvalidIndex;
     GLCommand   cmd1   = { GLCommand::GEN_TEXTURES, { 1, (uint64)(&uid) } };
