@@ -618,6 +618,7 @@ BeginPacketList( HPacketList packetList )
         rhi::SamplerState::Descriptor   desc;
 
         desc.fragmentSamplerCount = rhi::MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT;
+        desc.vertexSamplerCount   = rhi::MAX_VERTEX_TEXTURE_SAMPLER_COUNT;
         def_ss                    = rhi::SamplerState::Create( desc );
     }
     

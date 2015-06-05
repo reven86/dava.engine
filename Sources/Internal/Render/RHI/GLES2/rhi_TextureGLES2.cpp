@@ -87,6 +87,8 @@ gles2_Texture_Delete( Handle tex )
 static Handle
 gles2_Texture_Create( const Texture::Descriptor& desc )
 {
+    DVASSERT(desc.levelCount);
+
     Handle      handle = InvalidHandle;
     GLuint      uid    = InvalidIndex;
     GLCommand   cmd1   = { GLCommand::GEN_TEXTURES, { 1, (uint64)(&uid) } };
@@ -290,8 +292,10 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
 struct
 SamplerStateGLES2_t
 {
-    SamplerState::Descriptor::Sampler   sampler[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
-    uint32                              count;
+    SamplerState::Descriptor::Sampler   fragmentSampler[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
+    uint32                              fragmentSamplerCount;
+    SamplerState::Descriptor::Sampler   vertexSampler[MAX_VERTEX_TEXTURE_SAMPLER_COUNT];
+    uint32                              vertexSamplerCount;
 };
 
 typedef Pool<SamplerStateGLES2_t,RESOURCE_SAMPLER_STATE>    SamplerStateGLES2Pool;
@@ -307,10 +311,24 @@ gles2_SamplerState_Create( const SamplerState::Descriptor& desc )
     Handle                  handle = SamplerStateGLES2Pool::Alloc();
     SamplerStateGLES2_t*    state  = SamplerStateGLES2Pool::Get( handle );
     
-    state->count = desc.fragmentSamplerCount;
+    state->fragmentSamplerCount = desc.fragmentSamplerCount;
     for( unsigned i=0; i!=desc.fragmentSamplerCount; ++i )    
     {
-        state->sampler[i] = desc.fragmentSampler[i];
+        state->fragmentSampler[i] = desc.fragmentSampler[i];
+    }
+    
+    state->vertexSamplerCount = desc.vertexSamplerCount;
+    for( unsigned i=0; i!=desc.vertexSamplerCount; ++i )    
+    {
+        state->vertexSampler[i] = desc.vertexSampler[i];
+    }
+    
+    // force no-filtering on vertex-textures
+    for( uint32 s=0; s!=MAX_VERTEX_TEXTURE_SAMPLER_COUNT; ++s )
+    {
+        state->vertexSampler[s].minFilter = TEXFILTER_NEAREST;
+        state->vertexSampler[s].magFilter = TEXFILTER_NEAREST;
+        state->vertexSampler[s].mipFilter = TEXMIPFILTER_NONE;
     }
 
     return handle;
@@ -424,34 +442,37 @@ SetupDispatch( Dispatch* dispatch )
 }
 
 void
-SetToRHI( Handle tex, unsigned unit_i )
+SetToRHI( Handle tex, unsigned unit_i, uint32 base_i )
 {
-    TextureGLES2_t* self = TextureGLES2Pool::Get( tex );
+    TextureGLES2_t* self        = TextureGLES2Pool::Get( tex );
+    bool            fragment    = base_i != InvalidIndex;
+    uint32          sampler_i   = (base_i == InvalidIndex)  ? unit_i  :  base_i+unit_i;
+    const SamplerState::Descriptor::Sampler* sampler = (fragment) 
+                                                        ? _CurSamplerState->fragmentSampler + unit_i
+                                                        : _CurSamplerState->vertexSampler + unit_i;
 
-    GL_CALL(glActiveTexture( GL_TEXTURE0+unit_i ));
+    GL_CALL(glActiveTexture( GL_TEXTURE0+sampler_i ));
     GL_CALL(glBindTexture( GL_TEXTURE_2D, self->uid ));
 
     if(     _CurSamplerState
-        &&  (self->forceSetSamplerState  ||  memcmp( &(self->samplerState), _CurSamplerState->sampler+unit_i, sizeof(rhi::SamplerState::Descriptor::Sampler)) )
+        &&  (self->forceSetSamplerState  ||  memcmp( &(self->samplerState), sampler, sizeof(rhi::SamplerState::Descriptor::Sampler)) )
        )
     {
-        const SamplerState::Descriptor::Sampler&    s = _CurSamplerState->sampler[unit_i];
-        
-        if( s.mipFilter != TEXMIPFILTER_NONE )
+        if( sampler->mipFilter != TEXMIPFILTER_NONE )
         {
-            GL_CALL(glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, _TextureMipFilter( TextureMipFilter(s.mipFilter) ) ));
+            GL_CALL(glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, _TextureMipFilter( TextureMipFilter(sampler->mipFilter) ) ));
         }
         else
         {
-            GL_CALL(glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, _TextureFilter( TextureFilter(s.minFilter) ) ));
+            GL_CALL(glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, _TextureFilter( TextureFilter(sampler->minFilter) ) ));
         }
         
-        GL_CALL(glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, _TextureFilter( TextureFilter(s.magFilter) ) ));
+        GL_CALL(glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, _TextureFilter( TextureFilter(sampler->magFilter) ) ));
 
-        GL_CALL(glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, _AddrMode( TextureAddrMode(s.addrU) ) ));
-        GL_CALL(glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, _AddrMode( TextureAddrMode(s.addrV) ) ));
+        GL_CALL(glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, _AddrMode( TextureAddrMode(sampler->addrU) ) ));
+        GL_CALL(glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, _AddrMode( TextureAddrMode(sampler->addrV) ) ));
         
-        self->samplerState          = _CurSamplerState->sampler[unit_i];
+        self->samplerState          = *sampler;
         self->forceSetSamplerState  = false;
     }
 }

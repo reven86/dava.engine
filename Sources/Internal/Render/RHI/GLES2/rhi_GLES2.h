@@ -57,7 +57,7 @@ void        SetToRHI( Handle vb );
 namespace TextureGLES2
 { 
 void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle tex, unsigned unit_i );
+void        SetToRHI( Handle tex, unsigned unit_i, uint32 base_i=InvalidIndex  );
 void        SetAsRenderTarget( Handle tex );
 }
 

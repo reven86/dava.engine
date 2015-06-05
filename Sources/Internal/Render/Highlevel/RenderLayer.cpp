@@ -127,7 +127,7 @@ void RenderLayer::Draw(Camera* camera, const RenderBatchArray & batchArray, rhi:
                 packet.baseVertex = 0;
                 packet.vertexCount = pg->vertexCount;
                 packet.indexBuffer = pg->indexBuffer;
-                packet.primitiveType = rhi::PRIMITIVE_TRIANGLELIST; //RHI_COMPLETE
+                packet.primitiveType = pg->primitiveType;
                 packet.primitiveCount = pg->indexCount / 3;
                 packet.vertexLayoutUID = pg->vertexLayoutId;                
                 packet.startIndex = 0;

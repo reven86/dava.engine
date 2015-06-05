@@ -89,7 +89,7 @@
 namespace DAVA 
 {
 
-//RHI_COMPLETE TODO: remove this crap with shadow color
+//TODO: remove this crap with shadow color
 static const FastName DEPRECATED_SHADOW_COLOR_PARAM("shadowColor");
 
 Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
@@ -712,7 +712,7 @@ void Scene::Draw()
 {
     TIME_PROFILE("Scene::Draw");
 
-    //RHI_COMPLETE TODO: remove this crap with shadow color
+    //TODO: remove this crap with shadow color
     if (sceneGlobalMaterial && sceneGlobalMaterial->HasLocalProperty(DEPRECATED_SHADOW_COLOR_PARAM))
     {
         const float32 * propDataPtr = sceneGlobalMaterial->GetLocalPropValue(DEPRECATED_SHADOW_COLOR_PARAM);
