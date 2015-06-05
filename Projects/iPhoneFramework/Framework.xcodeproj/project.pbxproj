@@ -963,18 +963,6 @@
 		5046BD801B0612DD0005D29F /* ThreadLocalPtr.h in Headers */ = {isa = PBXBuildFile; fileRef = 5046BD7F1B0612DD0005D29F /* ThreadLocalPtr.h */; };
 		505EB41C18250C53009BEA3C /* OcclusionQuery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 505EB41A18250C53009BEA3C /* OcclusionQuery.cpp */; };
 		505EB41D18250C53009BEA3C /* OcclusionQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 505EB41B18250C53009BEA3C /* OcclusionQuery.h */; };
-		507075271AF108D40097A7DA /* GeoDecalSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 507075231AF108D40097A7DA /* GeoDecalSystem.cpp */; };
-		507075281AF108D40097A7DA /* GeoDecalSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 507075241AF108D40097A7DA /* GeoDecalSystem.h */; };
-		507075291AF108D40097A7DA /* LandscapeSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 507075251AF108D40097A7DA /* LandscapeSystem.cpp */; };
-		5070752A1AF108D40097A7DA /* LandscapeSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 507075261AF108D40097A7DA /* LandscapeSystem.h */; };
-		5070752F1AF108EE0097A7DA /* GeoDecalComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5070752B1AF108EE0097A7DA /* GeoDecalComponent.cpp */; };
-		507075301AF108EE0097A7DA /* GeoDecalComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 5070752C1AF108EE0097A7DA /* GeoDecalComponent.h */; };
-		507075311AF108EE0097A7DA /* LandscapeComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5070752D1AF108EE0097A7DA /* LandscapeComponent.cpp */; };
-		507075321AF108EE0097A7DA /* LandscapeComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 5070752E1AF108EE0097A7DA /* LandscapeComponent.h */; };
-		50811F361AF123C600249956 /* LandscapeComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5070752D1AF108EE0097A7DA /* LandscapeComponent.cpp */; };
-		50811F371AF123C900249956 /* LandscapeComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 5070752E1AF108EE0097A7DA /* LandscapeComponent.h */; };
-		50811F381AF123CC00249956 /* LandscapeSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 507075251AF108D40097A7DA /* LandscapeSystem.cpp */; };
-		50811F391AF123CF00249956 /* LandscapeSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 507075261AF108D40097A7DA /* LandscapeSystem.h */; };
 		50C7D5FC186082B100D8936D /* StaticOcclusionComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50C7D5FA186082B100D8936D /* StaticOcclusionComponent.cpp */; };
 		50C7D5FD186082B100D8936D /* StaticOcclusionComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 50C7D5FB186082B100D8936D /* StaticOcclusionComponent.h */; };
 		50C7D604186082D600D8936D /* StaticOcclusionRenderPass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50C7D600186082D600D8936D /* StaticOcclusionRenderPass.cpp */; };
@@ -2104,14 +2092,6 @@
 		5046BD7F1B0612DD0005D29F /* ThreadLocalPtr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThreadLocalPtr.h; sourceTree = "<group>"; };
 		505EB41A18250C53009BEA3C /* OcclusionQuery.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OcclusionQuery.cpp; sourceTree = "<group>"; };
 		505EB41B18250C53009BEA3C /* OcclusionQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OcclusionQuery.h; sourceTree = "<group>"; };
-		507075231AF108D40097A7DA /* GeoDecalSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GeoDecalSystem.cpp; sourceTree = "<group>"; };
-		507075241AF108D40097A7DA /* GeoDecalSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GeoDecalSystem.h; sourceTree = "<group>"; };
-		507075251AF108D40097A7DA /* LandscapeSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LandscapeSystem.cpp; sourceTree = "<group>"; };
-		507075261AF108D40097A7DA /* LandscapeSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LandscapeSystem.h; sourceTree = "<group>"; };
-		5070752B1AF108EE0097A7DA /* GeoDecalComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GeoDecalComponent.cpp; sourceTree = "<group>"; };
-		5070752C1AF108EE0097A7DA /* GeoDecalComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GeoDecalComponent.h; sourceTree = "<group>"; };
-		5070752D1AF108EE0097A7DA /* LandscapeComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LandscapeComponent.cpp; sourceTree = "<group>"; };
-		5070752E1AF108EE0097A7DA /* LandscapeComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LandscapeComponent.h; sourceTree = "<group>"; };
 		50C7D5F6186082A600D8936D /* StaticOcclusionSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticOcclusionSystem.cpp; sourceTree = "<group>"; };
 		50C7D5F7186082A600D8936D /* StaticOcclusionSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticOcclusionSystem.h; sourceTree = "<group>"; };
 		50C7D5FA186082B100D8936D /* StaticOcclusionComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticOcclusionComponent.cpp; sourceTree = "<group>"; };
@@ -4189,10 +4169,6 @@
 		E8B3C9AC16B9326E002BD35F /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				5070752B1AF108EE0097A7DA /* GeoDecalComponent.cpp */,
-				5070752C1AF108EE0097A7DA /* GeoDecalComponent.h */,
-				5070752D1AF108EE0097A7DA /* LandscapeComponent.cpp */,
-				5070752E1AF108EE0097A7DA /* LandscapeComponent.h */,
 				CC0D7B441A76066700309408 /* Waypoint */,
 				E8525D0D1A30910400FDF76E /* Controller */,
 				026A1DDE19DAF24A00813AEF /* SkeletonComponent.cpp */,
@@ -4246,10 +4222,6 @@
 		E8B3C9FD16B9326E002BD35F /* Systems */ = {
 			isa = PBXGroup;
 			children = (
-				507075231AF108D40097A7DA /* GeoDecalSystem.cpp */,
-				507075241AF108D40097A7DA /* GeoDecalSystem.h */,
-				507075251AF108D40097A7DA /* LandscapeSystem.cpp */,
-				507075261AF108D40097A7DA /* LandscapeSystem.h */,
 				E8525D201A30911400FDF76E /* Controller */,
 				026A1DE419DAF25700813AEF /* SkeletonSystem.cpp */,
 				026A1DE519DAF25700813AEF /* SkeletonSystem.h */,
@@ -4640,7 +4612,6 @@
 				02FD7F751924997C007762C0 /* StaticOcclusionSystem.h in Headers */,
 				02FD7F771924997C007762C0 /* Matrix3.h in Headers */,
 				02FD7F781924997C007762C0 /* Matrix4.h in Headers */,
-				50811F391AF123CF00249956 /* LandscapeSystem.h in Headers */,
 				02FD7F791924997C007762C0 /* QualitySettingsSystem.h in Headers */,
 				02FD7F7A1924997C007762C0 /* NeonMath.h in Headers */,
 				02FD7F7B1924997C007762C0 /* OOBBox.h in Headers */,
@@ -4919,7 +4890,6 @@
 				02FD80661924997C007762C0 /* UpdateSystem.h in Headers */,
 				D7FEF14219864E5C00B2C7AF /* CurlDownloader.h in Headers */,
 				02FD80671924997C007762C0 /* DeviceInfo.h in Headers */,
-				50811F371AF123C900249956 /* LandscapeComponent.h in Headers */,
 				CC0D7B561A76066700309408 /* WaypointComponent.h in Headers */,
 				02FD80681924997C007762C0 /* IntrospectionDynamic.h in Headers */,
 				02FD80691924997C007762C0 /* StaticOcclusionRenderPass.h in Headers */,
@@ -5191,7 +5161,6 @@
 				E8B3CBC716B9326E002BD35F /* Sprite.h in Headers */,
 				E8B3CBC916B9326E002BD35F /* TextBlock.h in Headers */,
 				A6DBFA7F1887E3D5006BE11C /* NMaterialNames.h in Headers */,
-				507075281AF108D40097A7DA /* GeoDecalSystem.h in Headers */,
 				E8B3CBCB16B9326E002BD35F /* AnimatedMesh.h in Headers */,
 				505EB41D18250C53009BEA3C /* OcclusionQuery.h in Headers */,
 				32B074C719E53C0C0069981A /* UIPackageLoader.h in Headers */,
@@ -5276,7 +5245,6 @@
 				64493DFC19476F4700AB2715 /* VegetationCustomGeometry.h in Headers */,
 				E8B3CC5916B9326E002BD35F /* GameObject.h in Headers */,
 				84D18BFE19201BEF009E3E90 /* ImageConvert.h in Headers */,
-				5070752A1AF108D40097A7DA /* LandscapeSystem.h in Headers */,
 				E89C58F418B24832002C25FE /* Atomic.h in Headers */,
 				E8B3CC5B16B9326E002BD35F /* GameObjectAnimations.h in Headers */,
 				E8B3CC5D16B9326E002BD35F /* GameObjectManager.h in Headers */,
@@ -5321,8 +5289,6 @@
 				E8B3CCA416B9326E002BD35F /* SceneFileV2.h in Headers */,
 				50FB9DBB1A925A2D00BDB8A2 /* AllocPools.h in Headers */,
 				02FD7EBE19237D33007762C0 /* WindComponent.h in Headers */,
-				507075301AF108EE0097A7DA /* GeoDecalComponent.h in Headers */,
-				507075321AF108EE0097A7DA /* LandscapeComponent.h in Headers */,
 				E8B3CCA616B9326E002BD35F /* SceneManager.h in Headers */,
 				D7FEF15719864E5C00B2C7AF /* BSDiff.h in Headers */,
 				E8525D2D1A30911400FDF76E /* SnapToLandscapeControllerSystem.h in Headers */,
@@ -5647,7 +5613,6 @@
 				02FD80C01924997C007762C0 /* File.cpp in Sources */,
 				11CB614A19C338DF00B48A92 /* AnimationData.cpp in Sources */,
 				02FD80C11924997C007762C0 /* FileList.cpp in Sources */,
-				50811F361AF123C600249956 /* LandscapeComponent.cpp in Sources */,
 				022AA8E51934CED9009A4B84 /* WaveSystem.cpp in Sources */,
 				02FD80C21924997C007762C0 /* FilePath.cpp in Sources */,
 				155D77E9197DD265006AEBCD /* YamlNode.cpp in Sources */,
@@ -5979,7 +5944,6 @@
 				CC0D7B4C1A76066700309408 /* EdgeComponent.cpp in Sources */,
 				02FD81D71924997C007762C0 /* CRC32.cpp in Sources */,
 				02FD81D81924997C007762C0 /* MaterialOptimazer.cpp in Sources */,
-				50811F381AF123CC00249956 /* LandscapeSystem.cpp in Sources */,
 				02FD81D91924997C007762C0 /* SkyboxSystem.cpp in Sources */,
 				02FD81DA1924997C007762C0 /* AllocatorFactory.cpp in Sources */,
 				02FD81DB1924997C007762C0 /* SkyboxRenderObject.cpp in Sources */,
@@ -6041,7 +6005,6 @@
 				E8B3CAA116B9326E002BD35F /* DynamicObjectCache.cpp in Sources */,
 				FEA1D3D41ADF9CB5006B981A /* LibTgaHelper.cpp in Sources */,
 				84D18C0819201BEF009E3E90 /* LibPVRHelper.cpp in Sources */,
-				507075311AF108EE0097A7DA /* LandscapeComponent.cpp in Sources */,
 				E8B3CAA316B9326E002BD35F /* EventDispatcher.cpp in Sources */,
 				B786014D1A08EB140041F817 /* StringUtils.cpp in Sources */,
 				E8B3CAA616B9326E002BD35F /* FastName.cpp in Sources */,
@@ -6341,9 +6304,7 @@
 				E8B3CD1A16B9326E002BD35F /* UIScreenTransition.cpp in Sources */,
 				0264E3071A42F79500BD7279 /* JobManager.cpp in Sources */,
 				1146E10819D00649009E5FAB /* AnimationSystem.cpp in Sources */,
-				507075291AF108D40097A7DA /* LandscapeSystem.cpp in Sources */,
 				647EFC6F195F0AC40073B3CB /* NMaterialHelper.cpp in Sources */,
-				5070752F1AF108EE0097A7DA /* GeoDecalComponent.cpp in Sources */,
 				E8B3CD1C16B9326E002BD35F /* UIScrollBar.cpp in Sources */,
 				E8B3CD1E16B9326E002BD35F /* UISlider.cpp in Sources */,
 				E8B3CD2016B9326E002BD35F /* UIStaticText.cpp in Sources */,
@@ -6428,7 +6389,6 @@
 				A6E4FDF31761D40200B48E41 /* ActionComponent.cpp in Sources */,
 				A6E4FDF51761D40200B48E41 /* CustomPropertiesComponent.cpp in Sources */,
 				A6E4FDFB1761D83100B48E41 /* ActionUpdateSystem.cpp in Sources */,
-				507075271AF108D40097A7DA /* GeoDecalSystem.cpp in Sources */,
 				A6A1E8691785688600AA3A86 /* CRC32.cpp in Sources */,
 				84D18C0619201BEF009E3E90 /* LibPngHelper.cpp in Sources */,
 				4FDDEC5917A6920D00D9DDEA /* MaterialOptimazer.cpp in Sources */,
