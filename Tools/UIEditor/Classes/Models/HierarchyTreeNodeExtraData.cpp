@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #include "HierarchyTreeNodeExtraData.h"
 
 using namespace DAVA;

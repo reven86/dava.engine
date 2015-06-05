@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "UIScrollBarMetadata.h"
 #include "HierarchyTreeController.h"
 #include "UI/UIControlHelpers.h"

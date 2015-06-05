@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ShadowVolumeNode.h"
 #include "Render/RenderManager.h"
 #include "Render/3D/StaticMesh.h"

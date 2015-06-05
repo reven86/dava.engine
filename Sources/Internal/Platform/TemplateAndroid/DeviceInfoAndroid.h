@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __FRAMEWORK__DEVICEINFOANDROID__
 #define __FRAMEWORK__DEVICEINFOANDROID__
 

@@ -26,12 +26,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "AndroidCrashUtility.h"
 
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "ExternC/AndroidLayer.h"
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 
 

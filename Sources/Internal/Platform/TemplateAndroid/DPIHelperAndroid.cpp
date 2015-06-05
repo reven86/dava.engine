@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Platform/DPIHelper.h"
 #include "DPIHelperAndroid.h"
 

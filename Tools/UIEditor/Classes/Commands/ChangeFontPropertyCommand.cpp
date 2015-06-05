@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ChangeFontPropertyCommand.h"
 
 #include "EditorFontManager.h"

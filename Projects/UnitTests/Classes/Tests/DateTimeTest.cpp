@@ -27,82 +27,62 @@
 =====================================================================================*/
 
 
-#include "DateTimeTest.h"
-#include "Platform/DeviceInfo.h"
-#include "Platform/DateTime.h"
+#include "DAVAEngine.h"
+#include "UnitTests/UnitTests.h"
 
-DateTimeTest::DateTimeTest()
-:	TestTemplate<DateTimeTest>("DateTimeTest")
+using namespace DAVA;
+
+DAVA_TESTCLASS(DateTimeTest)
 {
-	RegisterFunction(this, &DateTimeTest::TestFunction, Format("DateTime test"), NULL);
-}
+    DAVA_TEST(TestFunction)
+    {
+        DAVA::DateTime date = DAVA::DateTime::Now();
+        Logger::Debug("#Getting of current date:");
+        PrintDateTimeContent(date);
 
-void DateTimeTest::LoadResources()
-{
-}
+        date = DAVA::DateTime(2001, 1, 1, 14, 0, 0, 5 * 3600);
+        Logger::Debug("#Creating of date of the 1st of Feb 2001, 14:00:00, utc+5:");
+        PrintDateTimeContent(date);
 
-void DateTimeTest::UnloadResources()
-{
-}
+        date = date.ConvertToLocalTimeZone();
+        Logger::Debug("#Changing to local tz:");
+        PrintDateTimeContent(date);
 
-void DateTimeTest::Draw(const DAVA::UIGeometricData &geometricData)
-{
-}
+        date = date.ConvertToTimeZone(-3 * 3600);;
+        Logger::Debug("#Changing to utc-3:");
+        PrintDateTimeContent(date);
 
-void DateTimeTest::TestFunction(TestTemplate<DateTimeTest>::PerfFuncData *data)
-{
-	Logger::Debug("********** DateTime test **********");
-    
-    DAVA::DateTime date = DAVA::DateTime::Now();
-    Logger::Debug("#Getting of current date:");
-    PrintDateTimeContent(date);
-    
-    date = DAVA::DateTime(2001,1,1,14,0,0,5*3600);
-    Logger::Debug("#Creating of date of the 1st of Feb 2001, 14:00:00, utc+5:");
-    PrintDateTimeContent(date);
+        DAVA::DateTime gmDate = DateTime::GmTime(date.GetTimestamp());
+        Logger::Debug("#GmTime() for the timestamp of <1st of Feb 2001, 9:00:00> call:");
+        PrintDateTimeContent(gmDate);
 
-    date = date.ConvertToLocalTimeZone();
-    Logger::Debug("#Changing to local tz:");
-    PrintDateTimeContent(date);
-    
-    date = date.ConvertToTimeZone(-3*3600);;
-    Logger::Debug("#Changing to utc-3:");
-    PrintDateTimeContent(date);
-    
-    
-    DAVA::DateTime gmDate = DateTime::GmTime(date.GetTimestamp());
-    Logger::Debug("#GmTime() for the timestamp of <1st of Feb 2001, 9:00:00> call:");
-    PrintDateTimeContent(gmDate);
-    
-    DAVA::DateTime localDate = DateTime::LocalTime(date.GetTimestamp());
-    Logger::Debug("#LocalTime() for the timestamp of <1st of Feb 2001, 9:00:00> call:");
-    PrintDateTimeContent(localDate);
-    
-    date.ParseISO8601Date("1970-01-01T05:00:00-03:00");
-    Logger::Debug("#Parcing of <1970-01-01T05:00:00-03:00>:");
-    PrintDateTimeContent(date);
-    
-    date.ParseRFC822Date("Wed, 27 Sep 2006 21:36:45 +0100");
-    Logger::Debug("#Parcing of <Wed, 27 Sep 2006 21:36:45 +0100>:");
-    PrintDateTimeContent(date);
+        DAVA::DateTime localDate = DateTime::LocalTime(date.GetTimestamp());
+        Logger::Debug("#LocalTime() for the timestamp of <1st of Feb 2001, 9:00:00> call:");
+        PrintDateTimeContent(localDate);
 
-	Logger::Debug("********** DateTime test **********");
+        date.ParseISO8601Date("1970-01-01T05:00:00-03:00");
+        Logger::Debug("#Parcing of <1970-01-01T05:00:00-03:00>:");
+        PrintDateTimeContent(date);
 
-	data->testData.message = "DeviceInfo test - passed";
-	TEST_VERIFY(true);
-}
+        date.ParseRFC822Date("Wed, 27 Sep 2006 21:36:45 +0100");
+        Logger::Debug("#Parcing of <Wed, 27 Sep 2006 21:36:45 +0100>:");
+        PrintDateTimeContent(date);
 
+        Logger::Debug("********** DateTime test **********");
 
-void DateTimeTest::PrintDateTimeContent(const DateTime& inputTime)
-{
-    int32 y = inputTime.GetYear();
-    int32 month = inputTime.GetMonth();
-    int32 day = inputTime.GetDay();
-    int32 hour = inputTime.GetHour();
-    int32 minute = inputTime.GetMinute();
-    int32 sec = inputTime.GetSecond();
-    int32 tz = inputTime.GetTimeZoneOffset() / 60;
-    Logger::Debug("\tContent of current date by components:");
-    Logger::Debug("\tYear:%d Month:%d DayOfMonth(counting from 1):%d Hour:%d Minute:%d Second:%d timZoneOffset(in minutes): %d", y, month, day, hour, minute, sec, tz);
-    
-}
+        TEST_VERIFY(true);
+    }
+
+    void PrintDateTimeContent(const DateTime& inputTime)
+    {
+        int32 y = inputTime.GetYear();
+        int32 month = inputTime.GetMonth();
+        int32 day = inputTime.GetDay();
+        int32 hour = inputTime.GetHour();
+        int32 minute = inputTime.GetMinute();
+        int32 sec = inputTime.GetSecond();
+        int32 tz = inputTime.GetTimeZoneOffset() / 60;
+        Logger::Debug("\tContent of current date by components:");
+        Logger::Debug("\tYear:%d Month:%d DayOfMonth(counting from 1):%d Hour:%d Minute:%d Second:%d timZoneOffset(in minutes): %d", y, month, day, hour, minute, sec, tz);
+    }
+};

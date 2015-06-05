@@ -1,3 +1,32 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
+
 #include "QtModelPackageCommandExecutor.h"
 
 #include "Document.h"
@@ -59,7 +88,8 @@ void QtModelPackageCommandExecutor::AddComponent(ControlNode *node, uint32 compo
 {
     if (node->GetRootProperty()->CanAddComponent(componentType))
     {
-        BeginMacro("Add Component");
+        const char *componentName = GlobalEnumMap<UIComponent::eType>::Instance()->ToString(componentType);
+        BeginMacro(Format("Add Component %s", componentName).c_str());
         UIComponent::eType type = static_cast<UIComponent::eType>(componentType);
         int32 index = node->GetControl()->GetComponentCount(componentType);
         ComponentPropertiesSection *section = new ComponentPropertiesSection(node->GetControl(), type, index, nullptr, AbstractProperty::CT_COPY);
@@ -76,7 +106,8 @@ void QtModelPackageCommandExecutor::RemoveComponent(ControlNode *node, uint32 co
         ComponentPropertiesSection *section = node->GetRootProperty()->FindComponentPropertiesSection(componentType, componentIndex);
         if (section)
         {
-            BeginMacro("Remove Component");
+            const char *componentName = GlobalEnumMap<UIComponent::eType>::Instance()->ToString(componentType);
+            BeginMacro(Format("Remove Component %s", componentName).c_str());
             RemoveComponentImpl(node, section);
             EndMacro();
         }
@@ -87,7 +118,7 @@ void QtModelPackageCommandExecutor::InsertControl(ControlNode *control, Controls
 {
     if (dest->CanInsertControl(control, destIndex))
     {
-        BeginMacro("Insert Control");
+        BeginMacro(Format("Insert Control %s(%s)", control->GetName().c_str(), control->GetClassName().c_str()).c_str());
         InsertControlImpl(control, dest, destIndex);
         EndMacro();
     }
@@ -104,7 +135,8 @@ void QtModelPackageCommandExecutor::CopyControls(const DAVA::Vector<ControlNode*
 
     if (!nodesToCopy.empty())
     {
-        BeginMacro("Copy Controls");
+        BeginMacro(Format("Copy Controls %s", FormatControlNames(nodes).c_str()).c_str());
+        
         int index = destIndex;
         for (ControlNode *node : nodesToCopy)
         {
@@ -129,7 +161,7 @@ void QtModelPackageCommandExecutor::MoveControls(const DAVA::Vector<ControlNode*
 
     if (!nodesToMove.empty())
     {
-        BeginMacro("Move Controls");
+        BeginMacro(Format("Move Controls %s", FormatControlNames(nodes).c_str()).c_str());
         int index = destIndex;
         for (ControlNode *node : nodesToMove)
         {
@@ -170,7 +202,7 @@ void QtModelPackageCommandExecutor::RemoveControls(const DAVA::Vector<ControlNod
     
     if (!nodesToRemove.empty())
     {
-        BeginMacro("Remove Controls");
+        BeginMacro(Format("Remove Controls %s", FormatControlNames(nodes).c_str()).c_str());
         for (ControlNode *node : nodesToRemove)
             RemoveControlImpl(node);
         EndMacro();
@@ -290,4 +322,21 @@ void QtModelPackageCommandExecutor::EndMacro()
 QUndoStack *QtModelPackageCommandExecutor::GetUndoStack()
 {
     return document->GetUndoStack();
+}
+
+String QtModelPackageCommandExecutor::FormatControlNames(const DAVA::Vector<ControlNode*> &nodes)
+{
+    const size_t maxControlNames = 3;
+    String list;
+    for (size_t i = 0; i < nodes.size() && i < maxControlNames; i++)
+    {
+        if (i != 0)
+            list += ", ";
+        list += nodes[i]->GetName();
+    }
+    
+    if (nodes.size() > maxControlNames)
+        list += ", etc.";
+    
+    return list;
 }

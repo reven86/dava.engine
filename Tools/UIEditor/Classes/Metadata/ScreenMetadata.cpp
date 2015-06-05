@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #include "ScreenMetadata.h"
 #include "HierarchyTreeController.h"
 

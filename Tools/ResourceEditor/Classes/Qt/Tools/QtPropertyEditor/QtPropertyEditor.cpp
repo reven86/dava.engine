@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include <QMouseEvent>
 #include <QHeaderView>
 #include <QPainter>

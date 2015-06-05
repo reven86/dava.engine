@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_LOCAL_NOTIFICATION_ANDROID_H__
 #define __DAVAENGINE_LOCAL_NOTIFICATION_ANDROID_H__
 

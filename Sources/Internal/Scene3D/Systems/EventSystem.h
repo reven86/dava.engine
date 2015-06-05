@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_SCENE3D_EVENTSYSTEM_H__
 #define __DAVAENGINE_SCENE3D_EVENTSYSTEM_H__
 
@@ -37,7 +36,7 @@ namespace DAVA
 {
 
 class SceneSystem;
-class Entity;
+class Component;
 class EventSystem
 {
 public:
@@ -64,9 +63,9 @@ public:
 
 	void RegisterSystemForEvent(SceneSystem * system, uint32 event);
 	void UnregisterSystemForEvent(SceneSystem * system, uint32 event);
-	void NotifySystem(SceneSystem * system, Entity * entity, uint32 event);
-    void NotifyAllSystems(Entity * entity, uint32 event);
-    void GroupNotifyAllSystems(Vector<Entity *> & entity, uint32 event);
+	void NotifySystem(SceneSystem * system, Component * component, uint32 event);
+    void NotifyAllSystems(Component * component, uint32 event);
+    void GroupNotifyAllSystems(Vector<Component*> & components, uint32 event);
 
 private:
 	Vector<SceneSystem*> registeredSystems[EVENTS_COUNT];

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "HierarchyTreeRootNode.h"
 #include <QFileInfo>
 #include <QDir>

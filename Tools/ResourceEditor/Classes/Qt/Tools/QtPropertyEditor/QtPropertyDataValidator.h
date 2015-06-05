@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __QT_PROPERTY_DATA_VALIDATOR_H__
 #define __QT_PROPERTY_DATA_VALIDATOR_H__
 

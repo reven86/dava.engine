@@ -31,12 +31,22 @@
 
 #include "TextureCompression/TextureConverter.h"
 
+#include "Base/GlobalEnum.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/PixelFormatDescriptor.h"
+#include "Render/Image/ImageConvert.h"
 
 #include "Main/QtUtils.h"
 
 using namespace DAVA;
+
+void Channels::ReleaseImages()
+{
+    DAVA::SafeRelease(red);
+    DAVA::SafeRelease(green);
+    DAVA::SafeRelease(blue);
+    DAVA::SafeRelease(alpha);
+}
 
 uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, const eGPUFamily forGPU, uint32 baseMipMaps)
 {
@@ -44,26 +54,26 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 	
 	Vector<FilePath> files;
 	
-	if(descriptor->IsCubeMap() && forGPU == GPU_PNG)
+	if(descriptor->IsCubeMap() && forGPU == GPU_ORIGIN)
 	{
 		Vector<FilePath> faceNames;
-		Texture::GenerateCubeFaceNames(descriptor->pathname.GetAbsolutePathname().c_str(), faceNames);
+		descriptor->GetFacePathnames(faceNames);
         
         files.reserve(faceNames.size());
-		for(size_t i = 0 ; i < faceNames.size(); ++i)
+		for(auto& faceName : faceNames)
 		{
-			files.push_back(FilePath(faceNames[i]));
+            if (!faceName.IsEmpty())
+			    files.push_back(faceName);
 		}
 	}
 	else
 	{
-		FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(descriptor, forGPU);
+		FilePath imagePathname = descriptor->CreatePathnameForGPU(forGPU);
 		files.push_back(imagePathname);
 	}
 	
 	for(size_t i = 0; i < files.size(); ++i)
 	{
-		//FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(descriptor, forGPU);
 		const FilePath& imagePathname = files[i];
         ImageInfo info = ImageSystem::Instance()->GetImageInfo(imagePathname);
         if (!info.isEmpty())
@@ -93,7 +103,6 @@ void ImageTools::ConvertImage(const DAVA::TextureDescriptor *descriptor, const D
 {
 	if(!descriptor || (format == FORMAT_INVALID)) return;
 
-	TextureConverter::CleanupOldTextures(descriptor, forGPU, format);
 	TextureConverter::ConvertTexture(*descriptor, forGPU, true, quality);
 }
 
@@ -163,7 +172,7 @@ bool ImageTools::MergeImages(const FilePath &folder, Set<String> &errorLog)
 
 void ImageTools::SaveImage(Image *image, const FilePath &pathname)
 {
-    ImageSystem::Instance()->Save(pathname, image);
+    ImageSystem::Instance()->Save(pathname, image, image->format);
 }
 
 Image * ImageTools::LoadImage(const FilePath &pathname)
@@ -195,7 +204,7 @@ DAVA::Image* ImageTools::CreateMergedImage(const Channels& channels)
 {
     if(!channels.ChannelesResolutionEqual() || !channels.HasFormat(FORMAT_A8))
     {
-        return NULL;
+        return nullptr;
     }
     Image *mergedImage = Image::Create(channels.red->width, channels.red->height, FORMAT_RGBA8888);
     int32 size = mergedImage->width * mergedImage->height;
@@ -226,10 +235,101 @@ void ImageTools::SetChannel(DAVA::Image* image, eComponentsRGBA channel, DAVA::u
     }
 }
 
-void Channels::ReleaseImages()
+
+QImage ImageTools::FromDavaImage(const DAVA::FilePath & pathname)
 {
-    DAVA::SafeRelease(red);
-    DAVA::SafeRelease(green);
-    DAVA::SafeRelease(blue);
-    DAVA::SafeRelease(alpha);
+    auto image = LoadImage(pathname);
+    if(image)
+    {
+        QImage img = FromDavaImage(image);
+        SafeRelease(image);
+        
+        return img;
+    }
+    
+    return QImage();
 }
+
+QImage ImageTools::FromDavaImage(Image *image)
+{
+    QImage qtImage;
+    
+    if(nullptr != image)
+    {
+        QRgb *line = nullptr;
+        
+        switch(image->format)
+        {
+            case FORMAT_DXT1:
+            case FORMAT_DXT1A:
+            case FORMAT_DXT3:
+            case FORMAT_DXT5:
+            case FORMAT_DXT5NM:
+            case FORMAT_ATC_RGB:
+            case FORMAT_ATC_RGBA_EXPLICIT_ALPHA:
+            case FORMAT_ATC_RGBA_INTERPOLATED_ALPHA:
+            {
+                Vector<Image* > vec;
+                LibDdsHelper::DecompressImageToRGBA(*image, vec, true);
+                if(vec.size() == 1)
+                {
+                    qtImage = FromDavaImage(vec.front());
+                }
+                else
+                {
+                    DAVA::Logger::Error("Error during conversion from DDS to QImage.");
+                }
+                
+                for_each(vec.begin(), vec.end(), SafeRelease<DAVA::Image>);
+                
+                break;
+            }
+            case FORMAT_PVR4:
+            case FORMAT_PVR2:
+            case FORMAT_PVR2_2:
+            case FORMAT_PVR4_2:
+            case FORMAT_ETC1:
+            case FORMAT_EAC_R11_UNSIGNED:
+            case FORMAT_EAC_R11_SIGNED:
+            case FORMAT_EAC_RG11_UNSIGNED:
+            case FORMAT_EAC_RG11_SIGNED:
+            case FORMAT_ETC2_RGB:
+            case FORMAT_ETC2_RGBA:
+            case FORMAT_ETC2_RGB_A1:
+            case FORMAT_RGBA8888:
+            {
+                qtImage = QImage(image->width, image->height, QImage::Format_RGBA8888);
+                Memcpy(qtImage.bits(), image->data, image->dataSize);
+                break;
+            }
+
+            case FORMAT_RGBA5551:
+            case FORMAT_RGBA4444:
+            case FORMAT_RGB565:
+            case FORMAT_A8:
+            case FORMAT_A16:
+            case FORMAT_RGB888:
+            case FORMAT_BGR888:
+            case FORMAT_BGRA8888:
+            case FORMAT_RGBA16161616:
+            case FORMAT_RGBA32323232:
+            {
+                qtImage = QImage(image->width, image->height, QImage::Format_RGBA8888);
+
+                auto srcPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(image->format);
+                auto dstPitch = image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
+                ImageConvert::ConvertImageDirect(image->format, FORMAT_RGBA8888, image->data, image->width, image->height, srcPitch, qtImage.bits(), image->width, image->height, dstPitch);
+                break;
+            }
+
+            default:
+            {
+                Logger::Error("[%s] Converting from %s is not implemented", __FUNCTION__, GlobalEnumMap<PixelFormat>::Instance()->ToString(image->format));
+                break;
+            }
+        }
+    }
+    
+    return qtImage;
+}
+

@@ -123,7 +123,7 @@ void CubeListItemDelegate::UpdateCache(DAVA::Vector<CubeListItemDelegate::ListIt
 void CubeListItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
 	int y = option.rect.y();
-	int totalImageStripWidth = (thumbnailSize.width() + FACE_IMAGE_BORDER) * CubemapUtils::GetMaxFaces();
+    int totalImageStripWidth = (thumbnailSize.width() + FACE_IMAGE_BORDER) * DAVA::Texture::CUBE_FACE_COUNT;
 	int faceStartX = option.rect.width() - totalImageStripWidth - FACE_IMAGE_BORDER;
 
 	QRect r = option.rect;

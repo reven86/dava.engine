@@ -53,6 +53,14 @@ struct ImageInfo
         return Size2i(width, height);
     }
 
+    bool operator==(const ImageInfo& another)
+    {
+        return (
+            width == another.width && 
+            height == another.height && 
+            format == another.format);
+    }
+
     uint32 width = 0;
     uint32 height = 0;
     PixelFormat format = FORMAT_INVALID;
@@ -64,10 +72,10 @@ struct ImageInfo
 class ImageFormatInterface
 {
 public:
-    virtual ~ImageFormatInterface()
-    {};
+    virtual ~ImageFormatInterface() = default;
 
-    virtual bool IsImage(File *file) const = 0;
+    virtual ImageFormat GetImageFormat() const = 0;
+    virtual bool IsMyImage(File *file) const = 0;
 
     virtual eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 fromMipmap) const = 0;
 
@@ -78,9 +86,12 @@ public:
     virtual ImageInfo GetImageInfo(File *infile) const = 0;
 
     inline bool IsFileExtensionSupported(const String& extension) const;
-
+    inline const Vector<String>& Extensions() const;
+    inline const char* Name() const;
+    
 protected:
     Vector<String> supportedExtensions;
+    String name;
 };
 
 ImageInfo ImageFormatInterface::GetImageInfo(const FilePath &path) const
@@ -107,6 +118,16 @@ inline bool ImageFormatInterface::IsFileExtensionSupported(const String& extensi
     }
 
     return false;
+}
+
+inline const Vector<String>& ImageFormatInterface::Extensions() const
+{
+    return supportedExtensions;
+}
+
+inline const char* ImageFormatInterface::Name() const
+{
+    return name.c_str();
 }
 
 };

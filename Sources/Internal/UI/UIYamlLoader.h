@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_YAML_LOADER_H__
 #define __DAVAENGINE_YAML_LOADER_H__
 
@@ -64,6 +63,8 @@ public:
      \param[in] yamlPathName						we get config file using this pathname
      */
     static void LoadFonts(const FilePath & yamlPathname);
+    static Font* CreateFontFromYamlNode(const YamlNode* node);
+
     /**
      \brief	This function saves fonts to the YAML file passed.
 

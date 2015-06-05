@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef REGEXPINPUTDIALOG_H
 #define REGEXPINPUTDIALOG_H
      

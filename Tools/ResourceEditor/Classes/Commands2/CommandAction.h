@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__COMMANDACTION__
 #define __RESOURCEEDITORQT__COMMANDACTION__
 

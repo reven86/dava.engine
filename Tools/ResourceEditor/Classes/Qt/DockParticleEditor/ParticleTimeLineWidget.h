@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __ResourceEditorQt__ParticleTimeLineWidget__
 #define __ResourceEditorQt__ParticleTimeLineWidget__
 
