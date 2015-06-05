@@ -43,9 +43,6 @@ class DynamicBindings
 {
 public:
 
-    const static int32 REFLECTION_TEX_SIZE = 512;
-    const static int32 REFRACTION_TEX_SIZE = 512;
-
     enum eUniformSemantic
     {
         UNKNOWN_SEMANTIC = 0,        
@@ -105,40 +102,19 @@ public:
         DYNAMIC_PARAMETERS_COUNT = AUTOBIND_UNIFORMS_END,
     };
 
-    enum eTextureSemantic
-    {
-        TEXTURE_STATIC = 0,
-        TEXTURE_DYNAMIC_REFLECTION,
-        TEXTURE_DYNAMIC_REFRACTION,
-        //later add here shadow maps, environment probes etc.
-
-        DYNAMIC_TEXTURES_END,
-
-        DYNAMIC_TEXTURES_COUNT = DYNAMIC_TEXTURES_END,
-
-    };
-
     enum
     {
         UPDATE_SEMANTIC_ALWAYS = 0,
     };
-    
 
 public:
     static DynamicBindings::eUniformSemantic GetUniformSemanticByName(const FastName& name);
-    static DynamicBindings::eTextureSemantic GetTextureSemanticByName(const FastName& name);
     
-
     void SetDynamicParam(eUniformSemantic shaderSemantic, const void * value, pointer_size updateSemantic);
     const void * GetDynamicParam(eUniformSemantic shaderSemantic);
     pointer_size GetDynamicParamUpdateSemantic(eUniformSemantic shaderSemantic);
     int32 GetDynamicParamArraySize(eUniformSemantic shaderSemantic, int32 defaultValue);
     inline const Matrix4& GetDynamicParamMatrix(eUniformSemantic shaderSemantic);
-
-    rhi::HTexture GetDynamicTexture(eTextureSemantic semantic);
-    rhi::SamplerState::Descriptor::Sampler GetDynamicTextureSamplerState(eTextureSemantic semantic);
-    void ClearDynamicTextures();
-    Size2i GetDynamicTextureSize();
 
 private:
     struct AutobindVariableData
@@ -173,11 +149,6 @@ private:
 
     void ComputeInvWorldMatrixIfRequired();
     void ComputeWorldInvTransposeMatrixIfRequired();
-
-    //dynamic textures stuff
-    rhi::HTexture dynamicTextures[DYNAMIC_TEXTURES_COUNT];
-
-    void InitDynamicTexture(eTextureSemantic semantic);
 };
 
 inline const Matrix4& DynamicBindings::GetDynamicParamMatrix(DynamicBindings::eUniformSemantic shaderSemantic)

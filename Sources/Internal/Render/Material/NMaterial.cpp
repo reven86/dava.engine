@@ -581,25 +581,27 @@ void NMaterial::RebuildTextureBindings()
         samplerDescr.fragmentSamplerCount = currShader->fragmentSamplerList.size();
         for (size_t i = 0, sz = textureDescr.fragmentTextureCount; i < sz; ++i)
         {       
-            DynamicBindings::eTextureSemantic textureSemantic = DynamicBindings::GetTextureSemanticByName(currShader->fragmentSamplerList[i].uid);
-            if (textureSemantic == DynamicBindings::TEXTURE_STATIC)
+            RuntimeTextures::eDynamicTextureSemantic textureSemantic = RuntimeTextures::GetDynamicTextureSemanticByName(currShader->fragmentSamplerList[i].uid);
+            if (textureSemantic == RuntimeTextures::TEXTURE_STATIC)
             {
                 Texture *tex = GetEffectiveTexture(currShader->fragmentSamplerList[i].uid);
-                //RHI_COMPLETE kostyl - on some maps there are objects with incomplete texture set - later think how to init with default texture (anyway would be required by RE)
-                if (!tex)
+                if (tex)
                 {
-                    Logger::Debug(" no texture for slot : %s", currShader->fragmentSamplerList[i].uid.c_str());
-                    tex = Texture::CreatePink(rhi::TEXTURE_TYPE_2D, false);                    
+                    textureDescr.fragmentTexture[i] = tex->handle;
+                    samplerDescr.fragmentSampler[i] = tex->samplerState;                  
                 }
-                    
-                DVASSERT(tex);
-                textureDescr.fragmentTexture[i] = tex->handle;
-                samplerDescr.fragmentSampler[i] = tex->samplerState;                
+                else
+                {
+                    textureDescr.fragmentTexture[i] = Renderer::GetRuntimeTextures().GetPinkTexture(currShader->fragmentSamplerList[i].type);
+                    samplerDescr.fragmentSampler[i] = Renderer::GetRuntimeTextures().GetPinkTextureSamplerState(currShader->fragmentSamplerList[i].type);
+
+                    Logger::Debug(" no texture for slot : %s", currShader->fragmentSamplerList[i].uid.c_str());
+                }
             }
             else
             {
-                textureDescr.fragmentTexture[i] = Renderer::GetDynamicBindings().GetDynamicTexture(textureSemantic);
-                samplerDescr.fragmentSampler[i] = Renderer::GetDynamicBindings().GetDynamicTextureSamplerState(textureSemantic);
+                textureDescr.fragmentTexture[i] = Renderer::GetRuntimeTextures().GetDynamicTexture(textureSemantic);
+                samplerDescr.fragmentSampler[i] = Renderer::GetRuntimeTextures().GetDynamicTextureSamplerState(textureSemantic);
             }
             DVASSERT(textureDescr.fragmentTexture[i].IsValid());                        
         }

@@ -48,6 +48,7 @@ namespace //for private variables
     RenderOptions renderOptions;
     RenderCaps renderCaps;
     DynamicBindings dynamicBindings;
+    RuntimeTextures runtimeTextures;
 
     int32 framebufferWidth;
     int32 framebufferHeight;
@@ -126,6 +127,11 @@ const RenderCaps & GetCaps()
 DynamicBindings& GetDynamicBindings()
 {
     return dynamicBindings;
+}
+
+RuntimeTextures& GetRuntimeTextures()
+{
+    return runtimeTextures;
 }
 
 int32 GetFramebufferWidth()

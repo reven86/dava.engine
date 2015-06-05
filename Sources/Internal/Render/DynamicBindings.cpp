@@ -4,8 +4,6 @@
 #include "Core/Core.h"
 #include "Platform/SystemTimer.h"
 #include "Render/RenderBase.h"
-#include "Render/RenderBase.h"
-#include "Render/PixelFormatDescriptor.h"
 
 namespace DAVA
 {
@@ -66,13 +64,6 @@ const FastName DYNAMIC_PARAM_NAMES[DynamicBindings::DYNAMIC_PARAMETERS_COUNT] =
     FastName("shadowColor")
 };
 
-const FastName DYNAMIC_TEXTURE_NAMES[DynamicBindings::DYNAMIC_TEXTURES_COUNT] =
-{
-    FastName("unknownTexture"),
-    FastName("dynamicReflection"),
-    FastName("dynamicRefraction")
-};
-
 }
 
 DynamicBindings::eUniformSemantic DynamicBindings::GetUniformSemanticByName(const FastName& name)
@@ -80,13 +71,6 @@ DynamicBindings::eUniformSemantic DynamicBindings::GetUniformSemanticByName(cons
     for (int32 k = 0; k < DYNAMIC_PARAMETERS_COUNT; ++k)
         if (name == DYNAMIC_PARAM_NAMES[k])return (eUniformSemantic)k;
     return UNKNOWN_SEMANTIC;
-}
-
-DynamicBindings::eTextureSemantic DynamicBindings::GetTextureSemanticByName(const FastName& name)
-{
-    for (int32 k = 0; k < DYNAMIC_TEXTURES_COUNT; ++k)
-        if (name == DYNAMIC_TEXTURE_NAMES[k])return (eTextureSemantic)k;
-    return TEXTURE_STATIC;
 }
 
 void DynamicBindings::SetDynamicParam(DynamicBindings::eUniformSemantic shaderSemantic, const void * value, pointer_size _updateSemantic)
@@ -297,71 +281,6 @@ const void * DynamicBindings::GetDynamicParam(eUniformSemantic shaderSemantic)
 pointer_size DynamicBindings::GetDynamicParamUpdateSemantic(eUniformSemantic shaderSemantic)
 {
     return dynamicParameters[shaderSemantic].updateSemantic;
-}
-
-
-rhi::HTexture DynamicBindings::GetDynamicTexture(eTextureSemantic semantic)
-{
-    DVASSERT(semantic != TEXTURE_STATIC);
-    DVASSERT(semantic < DYNAMIC_TEXTURES_COUNT);
-    if (!dynamicTextures[semantic].IsValid())
-        InitDynamicTexture(semantic);
-
-    return dynamicTextures[semantic];
-}
-void DynamicBindings::ClearDynamicTextures()
-{
-    for (int32 i = 0; i < DYNAMIC_TEXTURES_COUNT; i++)
-    {
-        if (dynamicTextures[i].IsValid())
-        {
-            rhi::DeleteTexture(dynamicTextures[i]);
-            dynamicTextures[i] = rhi::HTexture();
-        }
-    }
-}
-
-void DynamicBindings::InitDynamicTexture(eTextureSemantic semantic)
-{
-    DVASSERT(!dynamicTextures[semantic].IsValid());
-    rhi::Texture::Descriptor descriptor;
-    switch (semantic)
-    {    
-    case DAVA::DynamicBindings::TEXTURE_DYNAMIC_REFLECTION:        
-        descriptor.width = REFLECTION_TEX_SIZE;
-        descriptor.height = REFLECTION_TEX_SIZE;
-        descriptor.autoGenMipmaps = false;
-        descriptor.isRenderTarget = true;
-        descriptor.type = rhi::TEXTURE_TYPE_2D;
-        descriptor.format = rhi::TEXTURE_FORMAT_R5G6B5;                
-        dynamicTextures[semantic] = rhi::CreateTexture(descriptor);
-        break;
-    case DAVA::DynamicBindings::TEXTURE_DYNAMIC_REFRACTION:        
-        descriptor.width = REFRACTION_TEX_SIZE;
-        descriptor.height = REFRACTION_TEX_SIZE;
-        descriptor.autoGenMipmaps = false;
-        descriptor.isRenderTarget = true;
-        descriptor.type = rhi::TEXTURE_TYPE_2D;
-        descriptor.format = rhi::TEXTURE_FORMAT_R5G6B5;
-        dynamicTextures[semantic] = rhi::CreateTexture(descriptor);
-        break;
-    
-    default:
-        DVASSERT_MSG(false, "Trying to init unknown texture as dynamic");
-        break;
-    }
-}
-
-rhi::SamplerState::Descriptor::Sampler DynamicBindings::GetDynamicTextureSamplerState(eTextureSemantic semantic)
-{
-    rhi::SamplerState::Descriptor::Sampler sampler;
-    sampler.addrU = rhi::TEXADDR_MIRROR;
-    sampler.addrV = rhi::TEXADDR_MIRROR;
-    sampler.addrW = rhi::TEXADDR_MIRROR;
-    sampler.magFilter = rhi::TEXFILTER_LINEAR;
-    sampler.minFilter = rhi::TEXFILTER_LINEAR;
-    sampler.mipFilter = rhi::TEXMIPFILTER_NONE;
-    return sampler;
 }
 
 }

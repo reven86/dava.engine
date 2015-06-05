@@ -26,73 +26,57 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_RENDERER_H__
-#define __DAVAENGINE_RENDERER_H__
+#ifndef __DAVAENGINE_RUNTIME_TEXTURES_H__
+#define __DAVAENGINE_RUNTIME_TEXTURES_H__
 
-#include "Core/Core.h"
-#include "RenderBase.h"
-#include "RenderOptions.h"
-#include "RenderCaps.h"
-#include "DynamicBindings.h"
-#include "RuntimeTextures.h"
-#include "RHI/rhi_Public.h"
-#include "RHI/rhi_Type.h"
+#include "Math/Color.h"
+#include "Math/Matrix4.h"
+#include "Math/Vector.h"
+#include "Base/FastName.h"
+#include "Render/RHI/rhi_Public.h"
+#include "Render/Texture.h"
+
 
 namespace DAVA
+{    
+class RuntimeTextures
 {
+public:
 
-struct ScreenShotCallbackDelegate;
+    const static int32 REFLECTION_TEX_SIZE = 512;
+    const static int32 REFRACTION_TEX_SIZE = 512;
 
-namespace Renderer
-{
-
-    //init
-    void Initialize(rhi::Api api, const rhi::InitParam & params, int32 framebufferWidth, int32 framebufferHeight);
-    void Uninitialize();
-
-    void Reset(int32 framebufferWidth, int32 framebufferHeight);
-
-    rhi::Api GetAPI();
-
-    bool IsDeviceLost();
-
-    void SetDesiredFPS(int32 fps);
-    int32 GetDesiredFPS();
-
-    //frame management
-    void BeginFrame();
-    void EndFrame();
-
-    //caps
-    const RenderCaps & GetCaps();
-
-    //misc
-    int32 GetFramebufferWidth();
-    int32 GetFramebufferHeight();
-    void RequestGLScreenShot(ScreenShotCallbackDelegate *screenShotCallback);
-
-    //options
-    RenderOptions *GetOptions();    
-
-    //dynamic params
-    DynamicBindings& GetDynamicBindings();
-
-    //runtime textures
-    RuntimeTextures& GetRuntimeTextures();
-}
-
-
-class Image;
-struct ScreenShotCallbackDelegate
-{
-    void operator()(Image *image)
+    enum eDynamicTextureSemantic
     {
-        return OnScreenShot(image);
-    }
-protected:
-    virtual void OnScreenShot(Image *image) = 0;
+        TEXTURE_STATIC = 0,
+        TEXTURE_DYNAMIC_REFLECTION,
+        TEXTURE_DYNAMIC_REFRACTION,
+        //later add here shadow maps, environment probes etc.
+
+        DYNAMIC_TEXTURES_END,
+        DYNAMIC_TEXTURES_COUNT = DYNAMIC_TEXTURES_END,
+    };
+
+    RuntimeTextures() { pinkTexture[0] = pinkTexture[1] = nullptr; }
+
+public:
+    static RuntimeTextures::eDynamicTextureSemantic GetDynamicTextureSemanticByName(const FastName& name);
+
+    rhi::HTexture GetDynamicTexture(eDynamicTextureSemantic semantic);
+    rhi::SamplerState::Descriptor::Sampler GetDynamicTextureSamplerState(eDynamicTextureSemantic semantic);
+
+    rhi::HTexture GetPinkTexture(rhi::TextureType type);
+    rhi::SamplerState::Descriptor::Sampler GetPinkTextureSamplerState(rhi::TextureType type);
+
+    void ClearRuntimeTextures();
+
+private:
+    void InitDynamicTexture(eDynamicTextureSemantic semantic);
+
+    rhi::HTexture dynamicTextures[DYNAMIC_TEXTURES_COUNT];
+    Texture * pinkTexture[2]; //TEXTURE_2D & TEXTURE_CUBE    
 };
 
 }
+#endif // __DAVAENGINE_RUNTIME_TEXTURES_H__
 
-#endif
