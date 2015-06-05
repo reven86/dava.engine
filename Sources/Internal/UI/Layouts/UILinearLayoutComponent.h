@@ -26,49 +26,49 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_LAYOUT_COMPONENT_H__
-#define __DAVAENGINE_UI_LAYOUT_COMPONENT_H__
+#ifndef __DAVAENGINE_UI_LINEAR_LAYOUT_COMPONENT_H__
+#define __DAVAENGINE_UI_LINEAR_LAYOUT_COMPONENT_H__
 
 #include "UI/Components/UIComponent.h"
 
 namespace DAVA
 {
-    class UILayoutComponent : public UIComponent
+    class UILinearLayoutComponent : public UIComponent
     {
     public:
-        enum eLayoutType {
-            LINEAR_LAYOUT,
-            ANCHOR_LAYOUT
+        enum eOrientation {
+            HORIZONTAL,
+            VERTICAL
         };
         
     public:
-        IMPLEMENT_COMPONENT_TYPE(LAYOUT_COMPONENT);
+        IMPLEMENT_COMPONENT_TYPE(LINEAR_LAYOUT_COMPONENT);
         
-        UILayoutComponent();
-        UILayoutComponent(const UILayoutComponent &src);
+        UILinearLayoutComponent();
+        UILinearLayoutComponent(const UILinearLayoutComponent &src);
         
     protected:
-        virtual ~UILayoutComponent();
+        virtual ~UILinearLayoutComponent();
         
     private:
-        UILayoutComponent &operator=(const UILayoutComponent &) = delete;
+        UILinearLayoutComponent &operator=(const UILinearLayoutComponent &) = delete;
         
     public:
-        virtual UILayoutComponent* Clone() override;
+        virtual UILinearLayoutComponent* Clone() override;
         
-        eLayoutType GetLayoutType() const;
-        void SetLayoutType(eLayoutType type);
-
+        eOrientation GetOrientation() const;
+        void SetOrientation(eOrientation orientation);
+        
     private:
-        int32 GetLayoutTypeAsInt() const;
-        void SetLayoutTypeFromInt(int32 type);
-
+        int32 GetOrientationAsInt() const;
+        void SetOrientationFromInt(int32 type);
+        
     private:
-        eLayoutType type = LINEAR_LAYOUT;
+        eOrientation orientation = HORIZONTAL;
         
     public:
-        INTROSPECTION_EXTEND(UILayoutComponent, UIComponent,
-                             PROPERTY("layout", InspDesc("Layout", GlobalEnumMap<eLayoutType>::Instance()), GetLayoutTypeAsInt, SetLayoutTypeFromInt, I_SAVE | I_VIEW | I_EDIT)
+        INTROSPECTION_EXTEND(UILinearLayoutComponent, UIComponent,
+                             PROPERTY("orientation", InspDesc("Orientation", GlobalEnumMap<eOrientation>::Instance()), GetOrientationAsInt, SetOrientationFromInt, I_SAVE | I_VIEW | I_EDIT)
                              );
         
     };
@@ -76,4 +76,4 @@ namespace DAVA
 }
 
 
-#endif //__DAVAENGINE_UI_FAKE_COMPONENT_H__
+#endif //__DAVAENGINE_UI_LINEAR_LAYOUT_COMPONENT_H__

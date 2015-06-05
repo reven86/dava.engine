@@ -33,7 +33,8 @@
 #include "UIFakeComponent.h"
 #include "UIFakeMultiComponent.h"
 
-#include "UI/Layouts/UILayoutComponent.h"
+#include "UI/Layouts/UIAnchorLayoutComponent.h"
+#include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UISizeHintComponent.h"
 #include "UI/Layouts/UIAlignHintComponent.h"
 #include "UI/Layouts/UIAnchorHintComponent.h"
@@ -54,8 +55,11 @@ UIComponent * UIComponent::CreateByType(uint32 componentType)
 {
     switch (componentType)
     {
-        case LAYOUT_COMPONENT:
-            return new UILayoutComponent();
+        case LINEAR_LAYOUT_COMPONENT:
+            return new UILinearLayoutComponent();
+            
+        case ANCHOR_LAYOUT_COMPONENT:
+            return new UIAnchorLayoutComponent();
             
         case SIZE_HINT_COMPONENT:
             return new UISizeHintComponent();
@@ -83,7 +87,10 @@ bool UIComponent::IsMultiple(uint32 componentType)
 {
     switch (componentType)
     {
-        case LAYOUT_COMPONENT:
+        case LINEAR_LAYOUT_COMPONENT:
+            return false;
+            
+        case ANCHOR_LAYOUT_COMPONENT:
             return false;
             
         case SIZE_HINT_COMPONENT:

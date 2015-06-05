@@ -40,7 +40,7 @@
 #include "UI/UITextField.h"
 #include "UI/Components/UIComponent.h"
 #include "UI/Layouts/UISizeHintComponent.h"
-#include "UI/Layouts/UILayoutComponent.h"
+#include "UI/Layouts/UILinearLayoutComponent.h"
 
 using namespace DAVA;
 
@@ -283,19 +283,14 @@ ENUM_DECLARE(UITextField::eReturnKeyType)
 
 ENUM_DECLARE(UIComponent::eType)
 {
-    ENUM_ADD_DESCR(UIComponent::LAYOUT_COMPONENT, "Layout");
+    ENUM_ADD_DESCR(UIComponent::ANCHOR_LAYOUT_COMPONENT, "AnchorLayout");
+    ENUM_ADD_DESCR(UIComponent::LINEAR_LAYOUT_COMPONENT, "LinearLayout");
     ENUM_ADD_DESCR(UIComponent::SIZE_HINT_COMPONENT, "SizeHint");
     ENUM_ADD_DESCR(UIComponent::ALIGN_HINT_COMPONENT, "AlignHint");
     ENUM_ADD_DESCR(UIComponent::ANCHOR_HINT_COMPONENT, "AnchorHint");
     
     ENUM_ADD_DESCR(UIComponent::FAKE_COMPONENT, "Fake");
     ENUM_ADD_DESCR(UIComponent::FAKE_MULTI_COMPONENT, "FakeMulti");
-};
-
-ENUM_DECLARE(UILayoutComponent::eLayoutType)
-{
-    ENUM_ADD_DESCR(UILayoutComponent::LINEAR_LAYOUT, "Linear");
-    ENUM_ADD_DESCR(UILayoutComponent::ANCHOR_LAYOUT, "Anchor");
 };
 
 ENUM_DECLARE(UISizeHintComponent::eSizePolicy)
@@ -307,6 +302,11 @@ ENUM_DECLARE(UISizeHintComponent::eSizePolicy)
     
 };
 
+ENUM_DECLARE(UILinearLayoutComponent::eOrientation)
+{
+    ENUM_ADD_DESCR(UILinearLayoutComponent::HORIZONTAL, "Horizontal");
+    ENUM_ADD_DESCR(UILinearLayoutComponent::VERTICAL, "Vertical");
+};
 
 /*
 void f()

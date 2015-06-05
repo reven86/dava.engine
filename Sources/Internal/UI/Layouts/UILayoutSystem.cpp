@@ -1,8 +1,10 @@
 #include "UILayoutSystem.h"
 
-#include "UILinearLayout.h"
+#include "UIAnchorLayoutComponent.h"
+#include "UILinearLayoutComponent.h"
+
 #include "UIAnchorLayout.h"
-#include "UILayoutComponent.h"
+#include "UILinearLayout.h"
 
 #include "UI/UIControl.h"
 
@@ -50,21 +52,13 @@ namespace DAVA
 
     UILayout *UILayoutSystem::GetLayout(UIControl *control)
     {
-        UILayoutComponent *component = control->GetComponent<UILayoutComponent>();
-        if (component)
+        if (control->GetComponent<UILinearLayoutComponent>())
         {
-            switch (component->GetLayoutType())
-            {
-                case UILayoutComponent::LINEAR_LAYOUT:
-                    return linearLayout;
-                    
-                case UILayoutComponent::ANCHOR_LAYOUT:
-                    return anchorLayout;
-                    
-                default:
-                    DVASSERT(false);
-                    break;
-            }
+            return linearLayout;
+        }
+        else if (control->GetComponent<UIAnchorLayoutComponent>())
+        {
+            return anchorLayout;
         }
         return nullptr;
     }
