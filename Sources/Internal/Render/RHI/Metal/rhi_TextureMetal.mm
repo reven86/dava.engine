@@ -98,7 +98,7 @@ MetalTextureFormat( TextureFormat format )
 static Handle
 metal_Texture_Create( const Texture::Descriptor& texDesc )
 {
-    DVASSERT(desc.levelCount);
+    DVASSERT(texDesc.levelCount);
 
     Handle                  handle = InvalidHandle;
     MTLPixelFormat          pf     = MetalTextureFormat( texDesc.format );
