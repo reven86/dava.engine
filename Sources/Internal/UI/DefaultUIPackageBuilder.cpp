@@ -45,56 +45,6 @@ const String EXCEPTION_CLASS_UI_TEXT_FIELD = "UITextField";
 const String EXCEPTION_CLASS_UI_LIST = "UIList";
 
 ////////////////////////////////////////////////////////////////////////////////
-// PackageDescr
-////////////////////////////////////////////////////////////////////////////////
-    
-class DefaultUIPackageBuilder::PackageDescr
-{
-public:
-    PackageDescr(UIPackage *_package) : package(SafeRetain(_package))
-    {
-        
-    }
-    
-    ~PackageDescr()
-    {
-        SafeRelease(package);
-        
-        for (UIPackage *pack : importedPackages)
-            pack->Release();
-        importedPackages.clear();
-    }
-    
-    UIPackage *GetPackage() const
-    {
-        return package;
-    }
-
-    void PutImportredPackage(const FilePath &path, UIPackage *package)
-    {
-        int32 index = (int32) importedPackages.size();
-        importedPackages.push_back(SafeRetain(package));
-        packsByPaths[path] = index;
-        packsByNames[path.GetBasename()] = index;
-    }
-    
-    UIPackage *FindImportedPackageByName(const String &name) const
-    {
-        auto it = packsByNames.find(name);
-        if (it != packsByNames.end())
-            return importedPackages[it->second];
-        
-        return nullptr;
-    }
-    
-private:
-    UIPackage *package;
-    Vector<UIPackage*> importedPackages;
-    Map<FilePath, int32> packsByPaths;
-    Map<String, int32> packsByNames;
-};
-
-////////////////////////////////////////////////////////////////////////////////
 // ControlDescr
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -123,16 +73,6 @@ DefaultUIPackageBuilder::~DefaultUIPackageBuilder()
 {
     SafeRelease(cache);
     
-    if (!packagesStack.empty())
-    {
-        for (auto &descr : packagesStack)
-            SafeDelete(descr);
-        
-        packagesStack.clear();
-        
-        DVASSERT(false);
-    }
-
     if (!controlsStack.empty())
     {
         for (auto &descr : controlsStack)
@@ -144,63 +84,49 @@ DefaultUIPackageBuilder::~DefaultUIPackageBuilder()
     }
 }
 
+UIPackage *DefaultUIPackageBuilder::GetPackage() const
+{
+    return package.Get();
+}
+
 UIPackage *DefaultUIPackageBuilder::FindInCache(const String &packagePath) const
 {
     return cache->GetPackage(packagePath);
 }
 
-RefPtr<UIPackage> DefaultUIPackageBuilder::BeginPackage(const FilePath &packagePath)
+void DefaultUIPackageBuilder::BeginPackage(const FilePath &packagePath)
 {
-    RefPtr<UIPackage> package(new UIPackage());
-    
-    packagesStack.push_back(new PackageDescr(package.Get()));
-    
-    return package;
+    DVASSERT(!package.Valid());
+    package = RefPtr<UIPackage>(new UIPackage());
 }
 
 void DefaultUIPackageBuilder::EndPackage()
 {
-    if (!packagesStack.empty())
+}
+
+bool DefaultUIPackageBuilder::ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader)
+{
+    UIPackage *importedPackage = cache->GetPackage(packagePath);
+
+    if (!importedPackage)
     {
-        SafeDelete(packagesStack.back());
-        packagesStack.pop_back();
-        
-        if (!controlsStack.empty())
+        DefaultUIPackageBuilder builder(cache);
+        if (loader->LoadPackage(packagePath, &builder) && builder.GetPackage())
         {
-            for (auto &descr : controlsStack)
-                SafeDelete(descr);
-            
-            controlsStack.clear();
-            
-            DVASSERT(false);
+            importedPackage = builder.GetPackage();
+            cache->PutPackage(packagePath, importedPackage);
         }
-        
+    }
+
+    if (importedPackage)
+    {
+        PutImportredPackage(packagePath, importedPackage);
+        return true;
     }
     else
     {
         DVASSERT(false);
-    }
-}
-
-RefPtr<UIPackage> DefaultUIPackageBuilder::ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader)
-{
-    UIPackage *cachedPackage = cache->GetPackage(packagePath);
-
-    PackageDescr *descr = packagesStack.back();
-
-    if (cachedPackage)
-    {
-        descr->PutImportredPackage(packagePath, cachedPackage);
-        return RefPtr<UIPackage>(SafeRetain(cachedPackage));
-    }
-    else
-    {
-        RefPtr<UIPackage> res(loader->LoadPackage(packagePath));
-
-        cache->PutPackage(packagePath, res.Get());
-        descr->PutImportredPackage(packagePath, res.Get());
-        
-        return res;
+        return false;
     }
 }
 
@@ -241,20 +167,19 @@ UIControl *DefaultUIPackageBuilder::BeginControlWithCustomClass(const String &cu
 UIControl *DefaultUIPackageBuilder::BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String *customClassName, AbstractUIPackageLoader *loader)
 {
     UIControl *prototype = nullptr;
-    UIPackage *package = packagesStack.back()->GetPackage();
     
     if (packageName.empty())
     {
         prototype = package->GetControl(prototypeName);
         if (!prototype)
         {
-            if (loader->LoadControlByName(prototypeName))
+            if (loader->LoadControlByName(prototypeName, this))
                 prototype = package->GetControl(prototypeName);
         }
     }
     else
     {
-        UIPackage *importedPackage = packagesStack.back()->FindImportedPackageByName(packageName);
+        UIPackage *importedPackage = FindImportedPackageByName(packageName);
         if (importedPackage)
             prototype = importedPackage->GetControl(prototypeName);
     }
@@ -306,7 +231,7 @@ void DefaultUIPackageBuilder::EndControl(bool isRoot)
     {
         if (controlsStack.empty() || isRoot)
         {
-            packagesStack.back()->GetPackage()->AddControl(lastDescr->control.Get());
+            package->AddControl(lastDescr->control.Get());
         }
         else
         {
@@ -400,6 +325,23 @@ void DefaultUIPackageBuilder::ProcessProperty(const InspMember *member, const Va
         else
             member->SetValue(currentObject, value);
     }
+}
+
+void DefaultUIPackageBuilder::PutImportredPackage(const FilePath &path, UIPackage *package)
+{
+    int32 index = (int32) importedPackages.size();
+    importedPackages.push_back(SafeRetain(package));
+    packsByPaths[path] = index;
+    packsByNames[path.GetBasename()] = index;
+}
+
+UIPackage *DefaultUIPackageBuilder::FindImportedPackageByName(const String &name) const
+{
+    auto it = packsByNames.find(name);
+    if (it != packsByNames.end())
+        return importedPackages[it->second];
+    
+    return nullptr;
 }
 
 }

@@ -33,9 +33,9 @@
 
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
-#include "ExternC/AndroidLayer.h"
+#include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 
-#include "AndroidCrashReport.h"
+#include "Platform/TemplateAndroid/AndroidCrashReport.h"
 #include "Debug/Backtrace.h"
 
 using namespace DAVA;

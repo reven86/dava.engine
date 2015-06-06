@@ -315,9 +315,9 @@ String FilePath::ResolveResourcesPath() const
         }
         else
         {
-            for(const auto& x : resourceFolders)
+            for(auto iter = resourceFolders.rbegin(); iter != resourceFolders.rend(); ++iter)
             {
-                path = x.absolutePathname + relativePathname;
+                path = iter->absolutePathname + relativePathname;
                 if(path.Exists())
                 {
                     return path.absolutePathname;

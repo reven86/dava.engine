@@ -1236,18 +1236,23 @@ void Landscape::Draw(Camera * camera)
 		RenderManager::Instance()->SetRenderState(cursor->GetRenderState());
 		RenderManager::Instance()->FlushState();
 		
+		/*RenderManager::Instance()->AppendState(RenderState::STATE_BLEND);
+		eBlendMode src = RenderManager::Instance()->GetSrcBlend();
+		eBlendMode dst = RenderManager::Instance()->GetDestBlend();
+		RenderManager::Instance()->SetBlendMode(BLEND_SRC_ALPHA, BLEND_ONE_MINUS_SRC_ALPHA);
+		RenderManager::Instance()->SetDepthFunc(CMP_LEQUAL);*/
+		
 		cursor->Prepare();
 		ClearQueue();
-                
+
+        
 #if defined (DRAW_OLD_STYLE)    
         Draw(&quadTreeHead);
-#else //#if defined (DRAW_OLD_STYLE)
-
+#else //#if defined (DRAW_OLD_STYLE)            
         if(nearLodIndex != farLodIndex)     
 		{
 			BindMaterial(nearLodIndex, camera);
 		}
-        
         size_t count0 = lod0quads.size();
         for (size_t i = 0; i < count0; ++i)
         {
@@ -1260,19 +1265,41 @@ void Landscape::Draw(Camera * camera)
 			BindMaterial(farLodIndex, camera);
 		}
         
-        count0 = lod0quads.size();
-        for (size_t i = 0; i < count0; ++i)
+        size_t countNot0 = lodNot0quads.size();
+        for (size_t i = 0; i < countNot0; ++i)
         {
             DrawQuad(lodNot0quads[i], lodNot0quads[i]->data.lod);
         }
-
 #endif //#if defined (DRAW_OLD_STYLE)    
 
+        
 		FlushQueue();
 		DrawFans();
+		//RenderManager::Instance()->SetDepthFunc(CMP_LESS);
+		//RenderManager::Instance()->RemoveState(RenderState::STATE_BLEND);
+		//RenderManager::Instance()->SetBlendMode(src, dst);
 	}
     
     UnbindMaterial();
+
+//#if defined(__DAVAENGINE_MACOS__)
+//    if (debugFlags & DEBUG_DRAW_ALL)
+//    {
+//        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+//        glEnable(GL_POLYGON_OFFSET_LINE);
+//        glPolygonOffset(0.0f, 1.0f);
+//        RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
+//        fans.clear();
+//        Draw(&quadTreeHead);
+//        DrawFans();
+//        glDisable(GL_POLYGON_OFFSET_LINE);
+//        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+//    }   
+//#endif
+    
+    //RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, prevMatrix);
+    //uint64 drawTime = SystemTimer::Instance()->AbsoluteMS() - time;
+    //Logger::FrameworkDebug("landscape draw time: %lld", drawTime);
 }
 
 
@@ -1774,3 +1801,4 @@ void Landscape::SetFoliageSystem(FoliageSystem* _foliageSystem)
 }
 
 };
+

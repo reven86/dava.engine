@@ -26,55 +26,41 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "DAVAEngine.h"
+#include "UnitTests/UnitTests.h"
 
-#include "DataVaultTest.h"
 #include "DataStorage/DataStorage.h"
 
-DataVaultTest::DataVaultTest()
-    : TestTemplate<DataVaultTest>("DataVaultTest")
+using namespace DAVA;
+
+DAVA_TESTCLASS(DataVaultTest)
 {
-    RegisterFunction(this, &DataVaultTest::TestFunction, "TestFunction", NULL);
-}
+    DAVA_TEST(TestFunction)
+    {
+        IDataStorage *storage = DataStorage::Create();
 
-void DataVaultTest::LoadResources()
-{
-
-}
-
-void DataVaultTest::UnloadResources()
-{
-
-}
-
-void DataVaultTest::Draw(const DAVA::UIGeometricData &geometricData)
-{
-}
-
-void DataVaultTest::TestFunction(TestTemplate<DataVaultTest>::PerfFuncData *data)
-{
-    IDataStorage *storage = DataStorage::Create();
-
-    storage->Clear();
-    storage->Push();
-    storage->SetStringValue("Test", "Test");
-    storage->Push();
-    String ret = storage->GetStringValue("Test");
+        storage->Clear();
+        storage->Push();
+        storage->SetStringValue("Test", "Test");
+        storage->Push();
+        String ret = storage->GetStringValue("Test");
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
-    TEST_VERIFY("" == ret);
+        TEST_VERIFY("" == ret);
 #else
-    TEST_VERIFY("Test" == ret);
-    storage->RemoveEntry("Test");
-    storage->Push();
-    ret = storage->GetStringValue("Test");
-    TEST_VERIFY("Test" != ret);
-    
-    int64 iret = storage->GetLongValue("Test");
-    TEST_VERIFY(0 == iret);
-    
-    storage->SetLongValue("Test", 1);
-    storage->Push();
-    iret = storage->GetLongValue("Test");
-    TEST_VERIFY(1 == iret);
+        TEST_VERIFY("Test" == ret);
+        storage->RemoveEntry("Test");
+        storage->Push();
+        ret = storage->GetStringValue("Test");
+        TEST_VERIFY("Test" != ret);
+
+        int64 iret = storage->GetLongValue("Test");
+        TEST_VERIFY(0 == iret);
+
+        storage->SetLongValue("Test", 1);
+        storage->Push();
+        iret = storage->GetLongValue("Test");
+        TEST_VERIFY(1 == iret);
 #endif
-    SafeRelease(storage);
-}
+        SafeRelease(storage);
+    }
+};

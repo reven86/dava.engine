@@ -29,6 +29,8 @@
 
 #include "RootProperty.h"
 
+#include "PropertyVisitor.h"
+
 #include "ControlPropertiesSection.h"
 #include "ComponentPropertiesSection.h"
 
@@ -38,7 +40,6 @@
 #include "PropertyListener.h"
 #include "ValueProperty.h"
 
-#include "Model/PackageSerializer.h"
 #include "NameProperty.h"
 #include "PrototypeNameProperty.h"
 #include "ClassProperty.h"
@@ -132,6 +133,24 @@ AbstractProperty *RootProperty::GetProperty(int index) const
     return internalControlProperties[index];
 }
 
+DAVA::int32 RootProperty::GetControlPropertiesSectionsCount() const
+{
+    return (int32) controlProperties.size();
+}
+
+ControlPropertiesSection *RootProperty::GetControlPropertiesSection(DAVA::int32 index) const
+{
+    if (index >= 0 && index < controlProperties.size())
+    {
+        return controlProperties[index];
+    }
+    else
+    {
+        DVASSERT(false);
+        return nullptr;
+    }
+}
+
 ControlPropertiesSection *RootProperty::GetControlPropertiesSection(const DAVA::String &name) const
 {
     for (auto it = controlProperties.begin(); it != controlProperties.end(); ++it)
@@ -159,6 +178,11 @@ bool RootProperty::CanAddComponent(DAVA::uint32 componentType) const
 bool RootProperty::CanRemoveComponent(DAVA::uint32 componentType) const
 {
     return !IsReadOnly() && FindComponentPropertiesSection(componentType, 0) != nullptr; // TODO
+}
+
+const Vector<ComponentPropertiesSection*> &RootProperty::GetComponents() const
+{
+    return componentProperties;
 }
 
 int32 RootProperty::GetIndexOfCompoentPropertiesSection(ComponentPropertiesSection *section) const
@@ -275,11 +299,21 @@ void RootProperty::RemoveComponentPropertiesSection(ComponentPropertiesSection *
     }
 }
 
+const DAVA::Vector<BackgroundPropertiesSection*> &RootProperty::GetBackgroundProperties() const
+{
+    return backgroundProperties;
+}
+
 BackgroundPropertiesSection *RootProperty::GetBackgroundPropertiesSection(int num) const
 {
     if (0 <= num && num < (int) backgroundProperties.size())
         return backgroundProperties[num];
     return nullptr;
+}
+
+const DAVA::Vector<InternalControlPropertiesSection*> &RootProperty::GetInternalControlProperties() const
+{
+    return internalControlProperties;
 }
 
 InternalControlPropertiesSection *RootProperty::GetInternalControlPropertiesSection(int num) const
@@ -345,67 +379,9 @@ void RootProperty::Refresh()
         GetProperty(i)->Refresh();
 }
 
-void RootProperty::Serialize(PackageSerializer *serializer) const
+void RootProperty::Accept(PropertyVisitor *visitor)
 {
-    prototypeProperty->Serialize(serializer);
-    classProperty->Serialize(serializer);
-    customClassProperty->Serialize(serializer);
-    nameProperty->Serialize(serializer);
-    
-    for (const auto section : controlProperties)
-        section->Serialize(serializer);
-
-    bool hasChanges = false;
-    
-    for (ComponentPropertiesSection *section : componentProperties)
-    {
-        if (section->HasChanges() || (section->GetFlags() & AbstractProperty::EF_INHERITED) == 0)
-        {
-            hasChanges = true;
-            break;
-        }
-    }
-    
-    if (!hasChanges)
-    {
-        for (const auto section : backgroundProperties)
-        {
-            if (section->HasChanges())
-            {
-                hasChanges = true;
-                break;
-            }
-        }
-    }
-    
-    if (!hasChanges)
-    {
-        for (const auto section : internalControlProperties)
-        {
-            if (section->HasChanges())
-            {
-                hasChanges = true;
-                break;
-            }
-        }
-    }
-
-
-    if (hasChanges)
-    {
-        serializer->BeginMap("components");
-
-        for (const auto section : componentProperties)
-            section->Serialize(serializer);
-        
-        for (const auto section : backgroundProperties)
-            section->Serialize(serializer);
-
-        for (const auto section : internalControlProperties)
-            section->Serialize(serializer);
-        
-        serializer->EndArray();
-    }
+    visitor->VisitRootProperty(this);
 }
 
 bool RootProperty::IsReadOnly() const

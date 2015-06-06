@@ -184,8 +184,11 @@
     <Filter Include="Internal\Timer">
       <UniqueIdentifier>{ad6cd690-f1f4-454a-ab5a-65272ae1bf13}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\UnitTests">
+      <UniqueIdentifier>{74ad4986-9f1f-46aa-a7e2-2f8bc3f5dfe1}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Internal\Concurrency">
-      <UniqueIdentifier>{5aabf08b-b0ce-4582-90ce-a768cf59e71e}</UniqueIdentifier>
+      <UniqueIdentifier>{48909795-dd8c-473a-802a-93db086da78f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1807,8 +1810,17 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.h">
       <Filter>Internal\UI\Components</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Base\Platform.h">
-      <Filter>Internal\Base</Filter>
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClass.h">
+      <Filter>Internal\UnitTests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClassFactory.h">
+      <Filter>Internal\UnitTests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\TestCore.h">
+      <Filter>Internal\UnitTests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\UnitTests.h">
+      <Filter>Internal\UnitTests</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Concurrency\Atomic.h">
       <Filter>Internal\Concurrency</Filter>
@@ -1841,6 +1853,9 @@
       <Filter>Internal\Concurrency</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Concurrency\Mutex.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Base\Platform.h">
       <Filter>Internal\Concurrency</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Concurrency\PosixThreads.h">
@@ -3279,6 +3294,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.cpp">
       <Filter>Internal\UI\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UnitTests\TestCore.cpp">
+      <Filter>Internal\UnitTests</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Concurrency\ConditionVariable.cpp">
       <Filter>Internal\Concurrency</Filter>
