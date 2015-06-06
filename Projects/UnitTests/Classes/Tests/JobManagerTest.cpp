@@ -30,7 +30,7 @@
 #include <time.h>
 #include <string>
 #include "JobManagerTest.h"
-#include "Job/JobManager.h"
+#include "Concurrency/JobManager.h"
 #include "Utils/Random.h"
 
 #define JOBS_COUNT 500

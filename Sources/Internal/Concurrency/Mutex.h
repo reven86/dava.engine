@@ -33,10 +33,8 @@
 
 #if defined(USE_CPP11_CONCURRENCY)
 #   include <mutex> //for std::mutex and std::recursive_mutex
-#elif defined(__DAVAENGINE_WINDOWS__)
-#   include "Platform/TemplateWin32/pThreadWin32.h"
 #else
-#   include <pthread.h>
+#   include "Concurrency/PosixThreads.h"
 #endif
 
 namespace DAVA

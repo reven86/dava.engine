@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#include "Job/JobQueue.h"
-#include "Job/JobManager.h"
+#include "Concurrency/JobQueue.h"
+#include "Concurrency/JobManager.h"
 #include "Concurrency/LockGuard.h"
 
 namespace DAVA

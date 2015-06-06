@@ -26,16 +26,17 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __DAVAENGINE_PTHREAD_WIN32_H__
-#define __DAVAENGINE_PTHREAD_WIN32_H__ 
+#ifndef __DAVAENGINE_POSIX_THREADS_H__
+#define __DAVAENGINE_POSIX_THREADS_H__ 
 
 #include "Base/Platform.h"
 
+#ifndef __DAVAENGINE_WINDOWS__
+#   include <pthread.h>
+#else
+	
 //mimic to some posix threads api
 //No cancellations!
-
-#ifdef __DAVAENGINE_WINDOWS__
 
 namespace DAVA
 {
@@ -72,6 +73,6 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex);
 int pthread_mutex_destroy(pthread_mutex_t *mutex);
 };
 
-#endif //__DAVAENGINE_WINDOWS__
+#endif //  !__DAVAENGINE_WINDOWS__
 
-#endif // __DAVAENGINE_PTHREAD_WIN32_H__
+#endif // __DAVAENGINE_POSIX_THREADS_H__

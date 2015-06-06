@@ -42,12 +42,8 @@
 #   endif
 #endif
 
-#if defined (__DAVAENGINE_WINDOWS__)
-#   if defined(USE_CPP11_CONCURRENCY)
-#       include <thread>
-#   else
-#       include "Platform/TemplateWin32/pThreadWin32.h"
-#   endif
+#if defined (__DAVAENGINE_WINDOWS__) && defined(USE_CPP11_CONCURRENCY)
+#   include <thread>
 #elif defined(__DAVAENGINE_PTHREAD__)
 #   include <pthread.h>
 #endif

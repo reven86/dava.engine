@@ -56,7 +56,6 @@
 
 #include "Render/TextureDescriptor.h"
 #include "Render/GPUFamilyDescriptor.h"
-#include "Job/JobManager.h"
 #include "Math/MathHelpers.h"
 #include "Concurrency/LockGuard.h"
 

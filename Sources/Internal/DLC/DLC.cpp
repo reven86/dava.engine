@@ -28,7 +28,7 @@
 
 
 #include "DLC.h"
-#include "Job/JobManager.h"
+#include "Concurrency/JobManager.h"
 #include "Patcher/PatchFile.h"
 #include "Platform/DeviceInfo.h"
 #include "Downloader/DownloadManager.h"

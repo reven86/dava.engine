@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugQt|Win32">
@@ -287,8 +287,12 @@
     <ClInclude Include="..\..\Sources\Internal\Concurrency\Concurrency.h" />
     <ClInclude Include="..\..\Sources\Internal\Concurrency\ConcurrentObject.h" />
     <ClInclude Include="..\..\Sources\Internal\Concurrency\ConditionVariable.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\JobManager.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\JobQueue.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\JobThread.h" />
     <ClInclude Include="..\..\Sources\Internal\Concurrency\LockGuard.h" />
     <ClInclude Include="..\..\Sources\Internal\Concurrency\Mutex.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\PosixThreads.h" />
     <ClInclude Include="..\..\Sources\Internal\Concurrency\Semaphore.h" />
     <ClInclude Include="..\..\Sources\Internal\Concurrency\Spinlock.h" />
     <ClInclude Include="..\..\Sources\Internal\Concurrency\Thread.h" />
@@ -375,9 +379,6 @@
     <ClInclude Include="..\..\Sources\Internal\Input\InputCallback.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\InputSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\KeyboardDevice.h" />
-    <ClInclude Include="..\..\Sources\Internal\Job\JobManager.h" />
-    <ClInclude Include="..\..\Sources\Internal\Job\JobQueue.h" />
-    <ClInclude Include="..\..\Sources\Internal\Job\JobThread.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\AABBox2.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\AABBox3.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\BezierSpline.h" />
@@ -473,7 +474,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|Win32'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\CoreWin32PlatformBase.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\pThreadWin32.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WindowsSpecifics.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\DFFont.h" />
@@ -830,7 +830,11 @@
     <ClCompile Include="..\..\Sources\Internal\Base\Observable.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\Radix\Radix.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Concurrency\ConditionVariable.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\JobManager.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\JobQueue.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\JobThread.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Concurrency\Mutex.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\PosixThreads.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Concurrency\Thread.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Concurrency\ThreadPosix.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Concurrency\ThreadWin32.cpp" />
@@ -906,9 +910,6 @@
     <ClCompile Include="..\..\Sources\Internal\Input\GamepadDevice.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\InputSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\KeyboardDevice.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Job\JobManager.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Job\JobQueue.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Job\JobThread.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\AABBox2.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\AABBox3.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\BezierSpline.cpp" />
@@ -978,7 +979,6 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\CoreWin32PlatformBase.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\DateTimeWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\DeviceInfoWin32.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\pThreadWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\DPIHelperWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\DFFont.cpp" />

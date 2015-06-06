@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Concurrency/Atomic.h"
 #include "Concurrency/ConcurrentObject.h"
 #include "Concurrency/ConditionVariable.h"
+#include "Concurrency/JobManager.h"
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/Mutex.h"
 #include "Concurrency/Semaphore.h"
@@ -43,7 +44,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //TODO: uncomment this include in client
 #if defined(__DAVAENGINE_WINDOWS__)
-#   include "Platform/TemplateWin32/pThreadWin32.h"
+#   include "Concurrency/PosixThreads.h"
 #endif
 
 #endif //  __DAVAENGINE_CONCURRENCY_H__

@@ -28,7 +28,7 @@
 
 
 #include "Debug/DVAssert.h"
-#include "Platform/TemplateWin32/pThreadWin32.h"
+#include "Concurrency/PosixThreads.h"
 
 #ifdef __DAVAENGINE_WINDOWS__
 

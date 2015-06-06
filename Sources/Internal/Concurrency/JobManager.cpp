@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "Job/JobManager.h"
+#include "Concurrency/JobManager.h"
 #include "Debug/DVAssert.h"
 #include "Base/ScopedPtr.h"
 #include "Concurrency/Thread.h"

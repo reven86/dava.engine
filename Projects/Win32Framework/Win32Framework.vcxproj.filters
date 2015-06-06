@@ -121,9 +121,6 @@
     <Filter Include="Internal\Scene3D\SceneFile">
       <UniqueIdentifier>{6ee8193e-ec7e-456e-a4ed-4aff6d19fa73}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Internal\Job">
-      <UniqueIdentifier>{94116b3a-757d-4e56-95a2-a621c48f12e9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Internal\Scene3D\Converters">
       <UniqueIdentifier>{7b177406-71fe-404c-ae98-7e1b4697d436}</UniqueIdentifier>
     </Filter>
@@ -1224,9 +1221,6 @@
     <ClInclude Include="..\..\Sources\Internal\Core\PerformanceSettings.h">
       <Filter>Internal\Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\pThreadWin32.h">
-      <Filter>Internal\Platform\TemplateWin32</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Platform\MovieViewControlStub.h">
       <Filter>Internal\Platform</Filter>
     </ClInclude>
@@ -1295,12 +1289,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleRenderObject.h">
       <Filter>Internal\Particles</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Job\JobManager.h">
-      <Filter>Internal\Job</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Job\JobQueue.h">
-      <Filter>Internal\Job</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Base\IntrospectionDynamic.h">
       <Filter>Internal\Base</Filter>
@@ -1597,9 +1585,6 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIPackageLoader.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Job\JobThread.h">
-      <Filter>Internal\Job</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\QtLayer.h">
       <Filter>Internal\Platform\Qt4</Filter>
     </ClInclude>
@@ -1809,8 +1794,8 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibTgaHelper.h">
       <Filter>Internal\Render\Image</Filter>
-	</ClInclude>
-	<ClInclude Include="..\..\Sources\Internal\Render\2D\TextLayout.h">
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\TextLayout.h">
       <Filter>Internal\Render\2D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Timer\RawTimer.h">
@@ -1843,10 +1828,22 @@
     <ClInclude Include="..\..\Sources\Internal\Concurrency\ConditionVariable.h">
       <Filter>Internal\Concurrency</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\JobManager.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\JobQueue.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\JobThread.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Concurrency\LockGuard.h">
       <Filter>Internal\Concurrency</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Concurrency\Mutex.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\PosixThreads.h">
       <Filter>Internal\Concurrency</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Concurrency\Semaphore.h">
@@ -2757,9 +2754,6 @@
     <ClCompile Include="..\..\Sources\Internal\Core\PerformanceSettings.cpp">
       <Filter>Internal\Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\pThreadWin32.cpp">
-      <Filter>Internal\Platform\TemplateWin32</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Math\Vector.cpp">
       <Filter>Internal\Math</Filter>
     </ClCompile>
@@ -2819,12 +2813,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleRenderObject.cpp">
       <Filter>Internal\Particles</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Job\JobManager.cpp">
-      <Filter>Internal\Job</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Job\JobQueue.cpp">
-      <Filter>Internal\Job</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Base\IntrospectionDynamic.cpp">
       <Filter>Internal\Base</Filter>
@@ -2891,9 +2879,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIParticles.cpp">
       <Filter>Internal\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Base\AtomicWin32.cpp">
-      <Filter>Internal\Base\Radix</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\FoliageSystem.cpp">
       <Filter>Internal\Scene3D\Systems</Filter>
@@ -3112,9 +3097,6 @@
     <ClCompile Include="..\..\Sources\Internal\Utils\BiDiHelper.cpp">
       <Filter>Internal\Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Job\JobThread.cpp">
-      <Filter>Internal\Job</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIPackageLoader.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
@@ -3286,7 +3268,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibTgaHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
-	<ClCompile Include="..\..\Sources\Internal\Render\2D\TextLayout.cpp">
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\TextLayout.cpp">
       <Filter>Internal\Render\2D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Timer\RawTimer.cpp">
@@ -3301,7 +3283,19 @@
     <ClCompile Include="..\..\Sources\Internal\Concurrency\ConditionVariable.cpp">
       <Filter>Internal\Concurrency</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\JobManager.cpp">
+      <Filter>Internal\Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\JobQueue.cpp">
+      <Filter>Internal\Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\JobThread.cpp">
+      <Filter>Internal\Concurrency</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Concurrency\Mutex.cpp">
+      <Filter>Internal\Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\PosixThreads.cpp">
       <Filter>Internal\Concurrency</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Concurrency\Thread.cpp">

@@ -35,10 +35,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifdef USE_CPP11_CONCURRENCY
 #   include <condition_variable> //for std::condition_variable
-#elif defined(__DAVAENGINE_WINDOWS__)
-#   include "Platform/TemplateWin32/pThreadWin32.h"
 #else
-#   include <pthread.h>
+#   include "Concurrency/PosixThreads.h"
 #endif
 
 namespace DAVA
