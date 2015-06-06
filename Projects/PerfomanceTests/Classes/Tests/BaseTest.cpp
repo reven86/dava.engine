@@ -107,8 +107,10 @@ void BaseTest::OnFinish()
     float32 testTime = 0.0f;
     float32 elapsedTime = 0.0f;
 
-    uint32 framesCount = GetFramesInfo().size();
+    size_t framesCount = GetFramesInfo().size();
 
+    Logger::Info(("TestName:" + testName).c_str());
+    
     for (const BaseTest::FrameInfo& frameInfo : GetFramesInfo())
     {
         if (frameInfo.delta > maxDelta)
@@ -123,7 +125,6 @@ void BaseTest::OnFinish()
         averageDelta += frameInfo.delta;
 
         Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-            testName, 
             TeamcityTestsOutput::FRAME_DELTA,
             DAVA::Format("%f", frameInfo.delta)).c_str());
     }
@@ -134,47 +135,38 @@ void BaseTest::OnFinish()
     elapsedTime = GetElapsedTime() / 1000.0f;
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-        testName,
         TeamcityTestsOutput::MIN_DELTA,
         DAVA::Format("%f", minDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-        testName,
         TeamcityTestsOutput::MAX_DELTA,
         DAVA::Format("%f", maxDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-        testName,
         TeamcityTestsOutput::AVERAGE_DELTA,
         DAVA::Format("%f", averageDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-        testName,
         TeamcityTestsOutput::MAX_FPS,
         DAVA::Format("%f", 1.0f / minDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-        testName,
         TeamcityTestsOutput::MIN_FPS,
         DAVA::Format("%f", 1.0f / maxDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-        testName,
         TeamcityTestsOutput::AVERAGE_FPS,
         DAVA::Format("%f", 1.0f / averageDelta)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-        testName,
         TeamcityTestsOutput::TEST_TIME,
         DAVA::Format("%f", testTime)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-        testName,
         TeamcityTestsOutput::TIME_ELAPSED,
         DAVA::Format("%f", elapsedTime)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
-        testName,
         TeamcityTestsOutput::MAX_MEM_USAGE,
         DAVA::Format("%d", maxAllocatedMemory)).c_str());
 

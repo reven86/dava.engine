@@ -82,7 +82,7 @@ if(args['test']):
 start_on_android = False
 start_on_ios = False
 
-print TEST_PARAMS
+print "Performance tests command line params : " + TEST_PARAMS
 
 if args['platform'] == "android":
     start_on_android = True
@@ -154,65 +154,82 @@ branch = branch.replace("/", "_")
 if not os.path.exists("../artifacts"):
     os.makedirs("../artifacts")
 
+device_name = "device_unrecognized"
+test_name = ""
+
 continue_process_stdout = True
 
 while continue_process_stdout:
     try:
         line = sub_process.stdout.readline()
-        if line != '':
+        if line != "":
 
-            line = line.replace("(lldb) ", "") 
+            if(line.find("##teamcity") != -1):
 
-            # open Frame delta file for writing
-            teamcity_line_index = line.find("##teamcity[message text='device")
-            if teamcity_line_index != -1:
-                device_name = line[teamcity_line_index:]
-                device_name = device_name.split("'")[1].split("|")[0]
-                frame_delta_file = open("../artifacts/frame_delta" + "_branch_" + branch + "_" + device_name + ".txt", "w")
+                line = line.replace("(lldb) ", "") 
 
-            # write Frame_delta build statistic to file
-            teamcity_line_index = line.find("_Frame_delta")
-            if teamcity_line_index != -1:
-                teamcity_line_index = line.find("value")
-                teamcity_line = line[teamcity_line_index:]
-                teamcity_line = teamcity_line.split("'")[1] + "\n"
-                frame_delta_file.write(teamcity_line)
-            else:
-                # append build statistic keys for compare on teamcity
-                teamcity_line_index = line.find("buildStatisticValue key")
-                if teamcity_line_index != -1:
-                    teamcity_line = line[teamcity_line_index:]
-                    key = teamcity_line.split("key")[1].split("'")[1]
-                    value = teamcity_line.split("value")[1].split("'")[1]
+                # parse test name and device in ##teamcity[message text='']
+                if line.find("device") != -1:
+                    device_name = line.split("text")[1].split("'")[1].split("|")[0].split("device_")[1]
 
-                    #per frame metrics in ms
-                    if line.find("frame") != -1:
-                        value = str(float(value) * 1000)
+                if line.find("TestName") != -1:
 
-                    key = key + "_branch_" + branch + "_" + device_name
+                    print line
+                    test_name = line.split("text")[1].split("'")[1].split("|")[0].split(":")[1]
 
-                    sys.stdout.write("##teamcity[buildStatisticValue key='" + key + "' value='" + value + "']")
-                    sys.stdout.flush()          
-                else:
-                    teamcity_line_index = line.find("##teamcity")
-                    if teamcity_line_index != -1:
-                        teamcity_line = line[teamcity_line_index:]
-                        sys.stdout.write(teamcity_line)
-                        sys.stdout.flush()
+                    if 'frame_delta_file' in locals():
+                        frame_delta_file.close()
+                    if 'statistic_file' in locals():
+                        statistic_file.close()
 
-            if line.find("Finish all tests.") != -1:    # this text marker helps to detect good \
-                                    
-                app_exit_code = 0
-                frame_delta_file.close()
+                    frame_delta_file = open("../artifacts/frame_delta" + "_test_" + test_name + "_branch_" + branch + "_" + device_name + ".txt", "w")
+                    statistic_file = open("../artifacts/statistic" + "_test_" + test_name + "_branch_" + branch + "_" + device_name + ".txt", "w")
 
-                if start_on_android:
-                    # we want to exit from logcat process because sub_process.stdout.readline() will block
-                    # current thread
-                    if sys.platform == "win32":
-                        sub_process.send_signal(signal.CTRL_C_EVENT)
+                if line.find("buildStatisticValue") != -1:
+
+                    key = line.split("key")[1].split("'")[1]
+                    value = line.split("value")[1].split("'")[1]
+
+                    # write Frame_delta build statistic to file
+                    if line.find("Frame_delta") != -1:
+                        frame_delta_file.write(value + "\n")
+
+                    # append info to build statistic keys for compare on teamcity
                     else:
-                        sub_process.send_signal(signal.SIGINT)
-                    continue_process_stdout = False
+
+                        # write fps and memory statistic to file
+                        if line.find("fps") != -1 or line.find("memory") != -1:
+                            statistic_file.write(key + " " + value + "\n")
+
+                        #per frame metrics in ms
+                        if line.find("frame") != -1:
+                            value = str(float(value) * 1000)
+
+                        key = test_name + "_" + key + "_branch_" + branch + "_" + device_name
+
+                        sys.stdout.write("##teamcity[buildStatisticValue key='" + key + "' value='" + value + "']" + "\n")
+                        sys.stdout.flush()    
+
+                else:
+                    sys.stdout.write(line)
+                    sys.stdout.flush()
+                        
+
+                if line.find("Finish all tests.") != -1:    # this text marker helps to detect good \
+                                        
+                    app_exit_code = 0
+
+                    frame_delta_file.close()
+                    statistic_file.close()
+
+                    if start_on_android:
+                        # we want to exit from logcat process because sub_process.stdout.readline() will block
+                        # current thread
+                        if sys.platform == "win32":
+                            sub_process.send_signal(signal.CTRL_C_EVENT)
+                        else:
+                            sub_process.send_signal(signal.SIGINT)
+                        continue_process_stdout = False
         else:
             continue_process_stdout = False
     except IOError as err:
