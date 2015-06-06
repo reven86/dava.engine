@@ -58,7 +58,7 @@ public:
     void Wait(LockGuard<Mutex>& guard, Predicate pred);
     void Wait(LockGuard<Mutex>& guard);
 
-    //mutex must be unlocked
+    //mutex must be locked
     template <typename Predicate>
     void Wait(Mutex& mutex, Predicate pred);
     void Wait(Mutex& mutex);
@@ -87,14 +87,16 @@ void ConditionVariable::Wait(LockGuard<Mutex>& guard, Predicate pred)
 template <typename Predicate>
 void ConditionVariable::Wait(Mutex& mutex, Predicate pred)
 {
-    LockGuard<Mutex> lock(mutex);
+    LockGuard<Mutex> lock(mutex, AdoptLock());
     Wait(lock, pred);
+    lock.Release();
 }
 
 inline void ConditionVariable::Wait(Mutex& mutex)
 {
-    LockGuard<Mutex> lock(mutex);
+    LockGuard<Mutex> lock(mutex, AdoptLock());
     Wait(lock);
+    lock.Release();
 }
 
 #ifdef USE_CPP11_CONCURRENCY
