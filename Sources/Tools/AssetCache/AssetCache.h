@@ -39,7 +39,6 @@
 #include "AssetCache/CacheItemParams.h"
 #include "AssetCache/CachedFiles.h"
 
-#include "AssetCache/ClientCacheEntry.h"
 #include "AssetCache/ServerCacheEntry.h"
 
 #include "AssetCache/CacheDB.h"

@@ -34,8 +34,6 @@
 #include "ServerCore.h"
 #include "MainWindow.h"
 
-#include "AssetCache/Test/AssetCacheTest.h"
-
 
 void FrameworkWillTerminate()
 {
@@ -68,9 +66,5 @@ int main(int argc, char *argv[])
     w.show();
     server.Start();
     
-//    DAVA::JobManager::Instance()->CreateWorkerJob(&DAVA::AssetCache::AssetClientTestAdd);
-//    DAVA::JobManager::Instance()->CreateWorkerJob(&DAVA::AssetCache::AssetClientTestGet);
-
-
     return a.exec();
 }

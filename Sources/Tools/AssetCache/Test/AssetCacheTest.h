@@ -39,8 +39,8 @@ namespace DAVA
 namespace AssetCache
 {
     
-void AssetClientTestAdd();
-void AssetClientTestGet();
+//void AssetClientTestAdd();
+//void AssetClientTestGet();
     
     
 }; // end of namespace AssetCache
