@@ -45,7 +45,7 @@ parser.add_argument('--not-install', dest='not-install', nargs='?', const=True)
 
 parser.add_argument('--chooser', nargs='?', const=True)
 parser.add_argument('--test')
-parser.add_argument('--ui-stat', dest='ui-stat', nargs='?', const=True)
+parser.add_argument('--without-ui', dest='without-ui', nargs='?', const=True)
 
 parser.add_argument('--test-time', dest='test-time')
 parser.add_argument('--test-frames', dest='test-frames')
@@ -60,8 +60,8 @@ TEST_PARAMS = ""
 if(args['chooser']):
     TEST_PARAMS += "-chooser"
 
-if(args['ui-stat']):
-    TEST_PARAMS += "-ui-stat"
+if(args['without-ui']):
+    TEST_PARAMS += "-without-ui"
 
 if(args['test']):    
     TEST_PARAMS += "-test " + args['test']

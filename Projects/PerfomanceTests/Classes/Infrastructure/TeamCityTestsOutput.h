@@ -44,7 +44,7 @@ public:
     static String FormatTestStarted(const String& testName);
     static String FormatTestFinished(const String& testName);
     static String FormatTestFailed(const String& testName, const String& condition, const String& errMsg);
-    static String FormatBuildStatistic(const String& testName, const String& key, const String& value);
+    static String FormatBuildStatistic(const String& key, const String& value);
 
     static const String MIN_DELTA;
     static const String MAX_DELTA;

@@ -80,7 +80,7 @@ void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
             + "\' details=\'" + errorFileLine + "\']\n";
     } else if (STATISTIC == lines[0])
     {
-        output = "##teamcity[buildStatisticValue key=\'" + lines[1] + "_" + lines[2] + "\' value=\'" + lines[3] + "\']\n";
+        output = "##teamcity[buildStatisticValue key=\'" + lines[1] + "\' value=\'" + lines[2] + "\']\n";
 
     } else
     {
@@ -101,9 +101,9 @@ String TeamcityTestsOutput::FormatTestFinished(const String& testName)
     return FINISH_TEST + "\n" + testName;
 }
 
-String TeamcityTestsOutput::FormatBuildStatistic(const String& testName, const String& key, const String& value)
+String TeamcityTestsOutput::FormatBuildStatistic(const String& key, const String& value)
 {
-    return STATISTIC + "\n" + testName + "\n" + key + "\n" + value + "\n";
+    return STATISTIC + "\n" + key + "\n" + value + "\n";
 }
 
 String TeamcityTestsOutput::FormatTestFailed(const String& testName, const String& condition, const String& errMsg)

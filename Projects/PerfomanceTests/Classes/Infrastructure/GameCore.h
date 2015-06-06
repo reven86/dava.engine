@@ -78,6 +78,7 @@ private:
 	TestFlowController* testFlowController;
 
     TeamcityTestsOutput teamCityOutput;
+    BaseTest::TestParams defaultTestParams;
 };
 
 

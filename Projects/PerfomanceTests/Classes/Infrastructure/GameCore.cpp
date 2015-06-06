@@ -52,6 +52,8 @@ void GameCore::OnAppStarted()
     GraphicsDetect::Instance()->ReloadSettings();
     SoundSystem::Instance()->InitFromQualitySettings();
 
+    defaultTestParams.targetTime = 120000;
+    
 	RegisterTests();
 	InitScreenController();
 
@@ -120,10 +122,8 @@ void GameCore::EndFrame()
 
 void GameCore::RegisterTests()
 {
-    BaseTest::TestParams params;
-    params.targetTime = 120000;
-
-    testChain.push_back(new AsiaPerformanceTest(params));
+    testChain.push_back(new AsiaPerformanceTest(defaultTestParams));
+    testChain.push_back(new GlobalPerformanceTest(defaultTestParams));
 }
 
 String GameCore::GetDeviceName()
@@ -152,7 +152,7 @@ void GameCore::InitScreenController()
 
 	bool chooserFound = CommandLineParser::Instance()->CommandIsFound("-chooser");
     bool testFound = CommandLineParser::Instance()->CommandIsFound("-test");
-    bool uiStatFound = CommandLineParser::Instance()->CommandIsFound("-ui-stat");
+    bool withoutUIFound = CommandLineParser::Instance()->CommandIsFound("-without-ui");
 
     bool testTimeFound = CommandLineParser::Instance()->CommandIsFound("-test-time");
     bool testFramesFound = CommandLineParser::Instance()->CommandIsFound("-test-frames");
@@ -167,8 +167,7 @@ void GameCore::InitScreenController()
 	}
     else if (testFound)
     {
-        BaseTest::TestParams params;
-
+        BaseTest::TestParams params = defaultTestParams;
         String testForRun = CommandLineParser::Instance()->GetCommandParamAdditional("-test", 0);
 
         if (testForRun.empty())
@@ -182,18 +181,14 @@ void GameCore::InitScreenController()
             String testTimeParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test-time", 0);
             params.targetTime = std::atoi(testTimeParam.c_str());
         }
-        else if (testFramesFound && frameDeltaFound)
+        
+        if (testFramesFound && frameDeltaFound)
         {
             String testFramesParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test-frames", 0);
             String frameDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-frame-delta", 0);
 
             params.targetFramesCount = std::atoi(testFramesParam.c_str());
             params.targetFrameDelta = std::atof(frameDeltaParam.c_str());
-        }
-        else
-        {
-            Logger::Error("Incorrect params. Set target time or target frames count with frame delta");
-            Core::Instance()->Quit();
         }
 
         if (debugFrameFound)
@@ -210,13 +205,13 @@ void GameCore::InitScreenController()
 
         testFlowController = new SingleTestFlowController(testForRun, params);
     }
-	else if (uiStatFound)
+	else if (withoutUIFound)
 	{
-        testFlowController = new TestChainFlowController(true);
+        testFlowController = new TestChainFlowController(false);
 	} 
 	else
 	{
-		testFlowController = new TestChainFlowController(false);
+		testFlowController = new TestChainFlowController(true);
 	}
 
     testFlowController->Init(testChain);

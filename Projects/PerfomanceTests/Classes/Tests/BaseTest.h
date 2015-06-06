@@ -196,12 +196,7 @@ inline float32 BaseTest::GetFixedDelta() const
 
 inline float32 BaseTest::GetTargetTestTime() const
 {
-    if (targetTestTime > 0)
-    {
-        return targetTestTime / 1000.0f;
-    }
-
-    return targetFramesCount * targetFrameDelta;
+    return targetTestTime / 1000.0f;
 }
 
 inline void BaseTest::SetParams(const TestParams& testParams)
