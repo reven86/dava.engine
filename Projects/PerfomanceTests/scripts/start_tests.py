@@ -39,13 +39,15 @@ PRJ_NAME_BASE = "PerformanceTests"
 PRJ_POSTFIX = get_postfix(sys.platform)
 
 parser = argparse.ArgumentParser(description='Start tests')
-parser.add_argument('--branch', nargs='?', default = 'development')
-parser.add_argument('--platform', nargs='?', default = 'android')
+parser.add_argument('--branch', default = 'development')
+parser.add_argument('--platform', default = 'ios', choices=['ios', 'android'])
+parser.add_argument('--build', default='release', choices=['release', 'debug'])
+
 parser.add_argument('--not-install', dest='not-install', nargs='?', const=True)
+parser.add_argument('--without-ui', dest='without-ui', nargs='?', const=True)
 
 parser.add_argument('--chooser', nargs='?', const=True)
 parser.add_argument('--test')
-parser.add_argument('--without-ui', dest='without-ui', nargs='?', const=True)
 
 parser.add_argument('--test-time', dest='test-time')
 parser.add_argument('--test-frames', dest='test-frames')
@@ -55,13 +57,15 @@ parser.add_argument('--debug-frame', dest='debug-frame')
 parser.add_argument('--max-delta', dest='max-delta')
 
 args = vars(parser.parse_args())
+
+BUILD_PARAMS = "branch " + args['branch'] + " platform " + args['platform'] + " build " + args['build']
 TEST_PARAMS = ""
 
 if(args['chooser']):
     TEST_PARAMS += "-chooser"
 
 if(args['without-ui']):
-    TEST_PARAMS += "-without-ui"
+    TEST_PARAMS += "-without-ui "
 
 if(args['test']):    
     TEST_PARAMS += "-test " + args['test']
@@ -82,6 +86,13 @@ if(args['test']):
 start_on_android = False
 start_on_ios = False
 
+if args['platform'] == "ios":
+    if args['build'] == 'release':
+        buildPath = "../build/Release-iphoneos/"
+    else:
+        buildPath = "../build/Debug-iphoneos/"
+
+print "Build params : " + BUILD_PARAMS 
 print "Performance tests command line params : " + TEST_PARAMS
 
 if args['platform'] == "android":
@@ -115,36 +126,18 @@ def start_performance_tests_on_android_device():
 
 if start_on_ios:
     # ../build/ios-deploy -d --noninteractive -b ../build/UnitTests.app
-    if args['not-install'] :
-        sub_process = subprocess.Popen(["./ios-deploy", "-a", TEST_PARAMS, "-m", "--noninteractive", "-b", "../build/Debug-iphoneos/" +
+    if args['not-install']:
+        sub_process = subprocess.Popen(["./ios-deploy", "-a", TEST_PARAMS, "-m", "--noninteractive", "-b", buildPath +
                                     PRJ_NAME_BASE + PRJ_POSTFIX],
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         print(PRJ_NAME_BASE + PRJ_POSTFIX + " run")
-    else :   
-        sub_process = subprocess.Popen(["./ios-deploy", "-a", TEST_PARAMS, "-d", "--noninteractive", "-b", "../build/Debug-iphoneos/" +
+    else:   
+        sub_process = subprocess.Popen(["./ios-deploy", "-a", TEST_PARAMS, "-d", "--noninteractive", "-b", buildPath +
                                         PRJ_NAME_BASE + PRJ_POSTFIX],
                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         print("copy " + PRJ_NAME_BASE + PRJ_POSTFIX + " on device and run")
 elif start_on_android:
     sub_process = start_performance_tests_on_android_device()
-elif sys.platform == 'win32':
-    if os.path.isfile("..\\Release\\app\\" + PRJ_NAME_BASE + PRJ_POSTFIX):  # run on build server (TeamCity)
-        sub_process = subprocess.Popen(["..\\Release\\app\\" + PRJ_NAME_BASE + PRJ_POSTFIX], cwd="./..",
-                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    else:
-        sub_process = subprocess.Popen(["..\\Release\\" + PRJ_NAME_BASE + PRJ_POSTFIX], cwd="./..",
-                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-elif sys.platform == "darwin":
-    if os.path.exists("./" + PRJ_NAME_BASE + PRJ_POSTFIX):
-        # if run on teamcity current dir is: Projects/UnitTests/DerivedData/TemplateProjectMacOS/Build/Products/Release
-        app_path = "./" + PRJ_NAME_BASE + PRJ_POSTFIX + "/Contents/MacOS/" + PRJ_NAME_BASE
-    else:
-        # run on local machine from dir: UnitTests/Report
-        # Warning! To make DerivedData relative to project go to
-        # Xcode->Preferences->Location->DerivedData select relative
-        app_path = "../DerivedData/TemplateProjectMacOS/Build/Products/Release/PerformanceTests.app/Contents/MacOS/" \
-                   + PRJ_NAME_BASE
-    sub_process = subprocess.Popen([app_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 app_exit_code = None
 
