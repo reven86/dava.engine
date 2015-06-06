@@ -42,7 +42,7 @@ CacheRequest::CacheRequest(const String & commandLineOptionName)
 //    options.AddOption("-p", VariantType(0), "Set port of Asset Cache Server.");
     options.AddOption("-h", VariantType(String("")), "Hash string of requested data");
     options.AddOption("-v", VariantType(false), "Verbose output.");
-    options.AddOption("-t", VariantType(static_cast<uint64>(50)), "Connection timeout seconds.");
+    options.AddOption("-t", VariantType(static_cast<uint64>(10)), "Connection timeout seconds.");
     
     client.SetDelegate(this);
 }
@@ -105,7 +105,7 @@ int CacheRequest::Connect()
         auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
         if(((connectionTimeout > 0) && (deltaTime > connectionTimeout)) && (client.IsConnected() == false))
         {
-            Logger::Error("[CacheRequest::%s] connection to %s refused by timeout (%lld)", __FUNCTION__, ipAdress.c_str(), connectionTimeout);
+            Logger::Error("[CacheRequest::%s] connection to %s refused by timeout (%lld sec)", __FUNCTION__, ipAdress.c_str(), connectionTimeout / 1000);
             return AssetCacheClientConstants::EXIT_TIMEOUT;
         }
     }
@@ -126,7 +126,7 @@ int CacheRequest::WaitRequest()
         auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
         if(((connectionTimeout > 0) && (deltaTime > connectionTimeout)) && (requestResult.recieved == false))
         {
-            Logger::Error("[CacheRequest::%s] Sending files refused by timeout (%lld)", __FUNCTION__, connectionTimeout);
+            Logger::Error("[CacheRequest::%s] Sending files refused by timeout (%lld sec)", __FUNCTION__, (connectionTimeout / 1000));
             return AssetCacheClientConstants::EXIT_TIMEOUT;
         }
     }
