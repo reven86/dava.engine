@@ -86,9 +86,10 @@ void DefaultPackageCommandExecutor::RemoveComponent(ControlNode *node, DAVA::uin
     node->GetRootProperty()->RemoveComponentPropertiesSection(componentType, componentIndex);
 }
 
-void DefaultPackageCommandExecutor::InsertControl(ControlNode *control, ControlsContainerNode *dest, int32 destIndex)
+ResultList DefaultPackageCommandExecutor::InsertControl(ControlNode *control, ControlsContainerNode *dest, int32 destIndex)
 {
     dest->InsertAtIndex(destIndex, control);
+    return ResultList();
 }
 
 void DefaultPackageCommandExecutor::CopyControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, int32 destIndex)
