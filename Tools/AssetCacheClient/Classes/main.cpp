@@ -56,5 +56,6 @@ int main (int argc, char * argv[])
         DAVA::Core::RunCmdTool(argc, argv);
     }
     
-    return cacheClient.GetExitCode();
+    auto exitCode = cacheClient.GetExitCode();
+    return exitCode;
 }

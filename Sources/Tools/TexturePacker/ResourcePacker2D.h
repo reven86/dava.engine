@@ -34,6 +34,9 @@
 #include "Render/RenderBase.h"
 #include "FileSystem/FilePath.h"
 
+#include "AssetCache/CacheItemKey.h"
+
+
 namespace DAVA
 {
 
@@ -68,10 +71,16 @@ public:
     
     
     void SetCacheClientTool(const FilePath & path);
+
+protected:
+    bool isRecursiveFlagSet(const Vector<String> & flags);
+    void AddError(const String& errorMsg);
+    
+    bool GetFilesFromCache(const AssetCache::CacheItemKey &key, const FilePath & outputPath);
+    bool AddFilesToCache(const AssetCache::CacheItemKey &key, const FilePath & outputPath);
     
 public:
     
-    FilePath cacheClientTool;
     
 	FilePath inputGfxDirectory;
 	FilePath outputGfxDirectory;
@@ -88,10 +97,10 @@ public:
 	const Set<String>& GetErrors() const;
 	
 protected:
-	bool isRecursiveFlagSet(const Vector<String> & flags);
+    FilePath cacheClientTool;
+    
+    
 	Set<String> errors;
-
-	void AddError(const String& errorMsg);
 };
 };
 

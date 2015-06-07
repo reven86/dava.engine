@@ -367,8 +367,6 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 {
     DVASSERT(inputPath.IsDirectoryPathname() && outputPath.IsDirectoryPathname());
 
-	uint64 packTime = SystemTimer::Instance()->AbsoluteMS();
-
 	String inputRelativePath = inputPath.GetRelativePathname(excludeDirectory);
 	FilePath processDirectoryPath = excludeDirectory  + GetProcessFolderName() + inputRelativePath;
     FileSystem::Instance()->CreateDirectory(processDirectoryPath, true);
@@ -411,7 +409,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
         we need ask cache server about files from this cache and currentCommandFlags + command line arguments
     */
     AssetCache::CacheItemKey cacheKey;
-    {
+    {   //Detect cache key
         auto md5FileName = FilePath::CreateWithNewExtension(processDirectoryPath + "dir.md5", ".md5");
         ScopedPtr<File> md5File(File::Create(md5FileName, File::OPEN | File::READ));
         if(static_cast<File *>(md5File) != nullptr)
@@ -421,10 +419,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
         }
         
         String cachedParams;
-        for (auto & fl: currentCommandFlags)
-        {
-            cachedParams += fl;
-        }
+        Merge(currentCommandFlags, ',', cachedParams);
         
         cachedParams += String("GPU = ") + GPUFamilyDescriptor::GetGPUName(requestedGPUFamily);
         cachedParams += String("PackerVersion = ") + VERSION;
@@ -432,184 +427,141 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
         auto strDataPtr = cachedParams.c_str();
         auto strDataSize = cachedParams.size();
         MD5::ForData(reinterpret_cast<const uint8 *>(strDataPtr), strDataSize, cacheKey.keyData.hash.secondary);
-
-
-        Vector<String> arruments;
-        arruments.push_back("get");
-        arruments.push_back("-h");
-        arruments.push_back(cacheKey.ToString());
-
-        arruments.push_back("-f");
-        arruments.push_back(outputPath.GetAbsolutePathname());
-
-        Process cacheClient(cacheClientTool, arruments);
-        if(cacheClient.Run(false))
-        {
-            cacheClient.Wait();
-            
-            const String& procOutput = cacheClient.GetOutput();
-            if(procOutput.size() > 0)
-            {
-                Logger::FrameworkDebug(procOutput.c_str());
-            }
-        }
     }
+    
+    uint64 getTime = SystemTimer::Instance()->AbsoluteMS();
+    bool skipRepackOfFolder = GetFilesFromCache(cacheKey, outputPath);
+    getTime = SystemTimer::Instance()->AbsoluteMS() - getTime;
+    Logger::Info("[%s - %.2lf secs] - GET FROM CACHE", inputPath.GetAbsolutePathname().c_str(), (float64)(getTime) / 1000.0f);
     //TODO:AC: end
     
-	// read textures margins settings
-	bool useTwoSideMargin = CommandLineParser::Instance()->IsFlagSet("--add2sidepixel");
-	uint32 marginInPixels = TexturePacker::DEFAULT_MARGIN;
-	if (!useTwoSideMargin)
-	{
-		if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
-			marginInPixels = 0;
-		else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
-			marginInPixels = 1;
-		else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
-			marginInPixels = 2;
-		else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
-			marginInPixels = 4;
-	}
-
     ScopedPtr<FileList> fileList(new FileList(inputPath));
     fileList->Sort();
+    if(!skipRepackOfFolder)
+    {
+        uint64 packTime = SystemTimer::Instance()->AbsoluteMS();
 
-    bool needPackResourcesInThisDir = true;
-	if (modified)
-	{
-		FileSystem::Instance()->DeleteDirectoryFiles(outputPath, false);
-		
-        for (int fi = 0; fi < fileList->GetCount(); ++fi)
-		{
-			if (!fileList->IsDirectory(fi))
-			{
-				FilePath fullname = fileList->GetPathname(fi);
-				if (fullname.IsEqualToExtension(".psd"))
-				{
-                    //TODO: check if we need filename or pathname
-					DefinitionFile * defFile = ProcessPSD(processDirectoryPath, fullname, fullname.GetFilename(), useTwoSideMargin, marginInPixels);
-					if (!defFile)
-					{
-						// An error occured while converting this PSD file - cancel converting in this directory.
-						needPackResourcesInThisDir = false;
-						break;
-					}
-
-					definitionFileList.push_back(defFile);
-				}
-				else if(isLightmapsPacking && fullname.IsEqualToExtension(".png"))
-				{
-					DefinitionFile * defFile = new DefinitionFile();
-					defFile->LoadPNG(fullname, processDirectoryPath);
-					definitionFileList.push_back(defFile);
-				}
-				else if (fullname.IsEqualToExtension(".pngdef"))
-				{
-					DefinitionFile * defFile = new DefinitionFile();
-					if (defFile->LoadPNGDef(fullname, processDirectoryPath, useTwoSideMargin, marginInPixels))
-					{
-						definitionFileList.push_back(defFile);
-					}
-					else 
-					{
-						SafeDelete(defFile);
-					}
-				}
-			}
-		}
-
-        if (modified && !definitionFileList.empty())
-		{
-			TexturePacker packer;
-			if(isLightmapsPacking)
-			{
-				packer.UseOnlySquareTextures();
-				packer.SetMaxTextureSize(2048);
-			}
-            else if(CommandLineParser::Instance()->IsFlagSet("--tsize4096"))
-            {
-                packer.SetMaxTextureSize(TexturePacker::TSIZE_4096);
-            }
-
-			packer.SetTwoSideMargin(useTwoSideMargin);
-			packer.SetTexturesMargin(marginInPixels);
-
-			if (CommandLineParser::Instance()->IsFlagSet("--split"))
-			{
-				packer.PackToTexturesSeparate(excludeDirectory, outputPath, definitionFileList, requestedGPUFamily);
-			}
-			else
-			{
-				packer.PackToTextures(excludeDirectory, outputPath, definitionFileList, requestedGPUFamily);
-			}
-			
-			Set<String> currentErrors = packer.GetErrors();
-			if (!currentErrors.empty())
-			{
-				errors.insert(currentErrors.begin(), currentErrors.end());
-			}
+        // read textures margins settings
+        bool useTwoSideMargin = CommandLineParser::Instance()->IsFlagSet("--add2sidepixel");
+        uint32 marginInPixels = TexturePacker::DEFAULT_MARGIN;
+        if (!useTwoSideMargin)
+        {
+            if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
+                marginInPixels = 0;
+            else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
+                marginInPixels = 1;
+            else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
+                marginInPixels = 2;
+            else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
+                marginInPixels = 4;
+        }
+        
+        
+        bool needPackResourcesInThisDir = true;
+        if (modified)
+        {
+            FileSystem::Instance()->DeleteDirectoryFiles(outputPath, false);
             
-            {//Save files to asset cache
-                String fileListString;
-                ScopedPtr<FileList> outFilesList(new FileList(outputPath));
-                for (int fi = 0; fi < outFilesList->GetCount(); ++fi)
+            for (int fi = 0; fi < fileList->GetCount(); ++fi)
+            {
+                if (!fileList->IsDirectory(fi))
                 {
-                    if (!outFilesList->IsDirectory(fi))
+                    FilePath fullname = fileList->GetPathname(fi);
+                    if (fullname.IsEqualToExtension(".psd"))
                     {
-                        if(fileListString.empty() == false)
+                        //TODO: check if we need filename or pathname
+                        DefinitionFile * defFile = ProcessPSD(processDirectoryPath, fullname, fullname.GetFilename(), useTwoSideMargin, marginInPixels);
+                        if (!defFile)
                         {
-                            fileListString += String(",");
+                            // An error occured while converting this PSD file - cancel converting in this directory.
+                            needPackResourcesInThisDir = false;
+                            break;
                         }
                         
-                        fileListString += outFilesList->GetPathname(fi).GetAbsolutePathname();
+                        definitionFileList.push_back(defFile);
                     }
-                }
-
-                if(fileListString.empty() == false)
-                {
-                    Vector<String> arruments;
-                    arruments.push_back("add");
-                    arruments.push_back("-h");
-                    arruments.push_back(cacheKey.ToString());
-                    arruments.push_back("-f");
-                    arruments.push_back(fileListString);
-                    
-                    Process cacheClient(cacheClientTool, arruments);
-                    if(cacheClient.Run(false))
+                    else if(isLightmapsPacking && fullname.IsEqualToExtension(".png"))
                     {
-                        cacheClient.Wait();
-                        
-                        const String& procOutput = cacheClient.GetOutput();
-                        if(procOutput.size() > 0)
+                        DefinitionFile * defFile = new DefinitionFile();
+                        defFile->LoadPNG(fullname, processDirectoryPath);
+                        definitionFileList.push_back(defFile);
+                    }
+                    else if (fullname.IsEqualToExtension(".pngdef"))
+                    {
+                        DefinitionFile * defFile = new DefinitionFile();
+                        if (defFile->LoadPNGDef(fullname, processDirectoryPath, useTwoSideMargin, marginInPixels))
                         {
-                            Logger::FrameworkDebug(procOutput.c_str());
+                            definitionFileList.push_back(defFile);
+                        }
+                        else
+                        {
+                            SafeDelete(defFile);
                         }
                     }
                 }
             }
-		}
-	}	
-
-	packTime = SystemTimer::Instance()->AbsoluteMS() - packTime;
-
-	if (Core::Instance()->IsConsoleMode())
-	{
-        String flagsString;
-        Merge(currentCommandFlags, ' ', flagsString);
-        Logger::Info("[%d files packed with flags: %s]", (int)definitionFileList.size(), flagsString.c_str());
-	
-        const char* result = (modified && !definitionFileList.empty()) ? "[REPACKED]" : "[unchanged]";
-		Logger::Info("[%s - %.2lf secs] - %s", inputPath.GetAbsolutePathname().c_str(), (float64)packTime / 1000.0f, result);
-	}
-
-	
-	for (List<DefinitionFile*>::iterator it = definitionFileList.begin(); it != definitionFileList.end(); ++it)
-	{
-		DefinitionFile * file = *it;
-		SafeDelete(file);
-	}
-	definitionFileList.clear();
-	
+            
+            if (modified && !definitionFileList.empty())
+            {
+                TexturePacker packer;
+                if(isLightmapsPacking)
+                {
+                    packer.UseOnlySquareTextures();
+                    packer.SetMaxTextureSize(2048);
+                }
+                else if(CommandLineParser::Instance()->IsFlagSet("--tsize4096"))
+                {
+                    packer.SetMaxTextureSize(TexturePacker::TSIZE_4096);
+                }
+                
+                packer.SetTwoSideMargin(useTwoSideMargin);
+                packer.SetTexturesMargin(marginInPixels);
+                
+                if (CommandLineParser::Instance()->IsFlagSet("--split"))
+                {
+                    packer.PackToTexturesSeparate(excludeDirectory, outputPath, definitionFileList, requestedGPUFamily);
+                }
+                else
+                {
+                    packer.PackToTextures(excludeDirectory, outputPath, definitionFileList, requestedGPUFamily);
+                }
+                
+                Set<String> currentErrors = packer.GetErrors();
+                if (!currentErrors.empty())
+                {
+                    errors.insert(currentErrors.begin(), currentErrors.end());
+                }
+            }
+        }
+        
+        packTime = SystemTimer::Instance()->AbsoluteMS() - packTime;
+        
+        if (Core::Instance()->IsConsoleMode())
+        {
+            String flagsString;
+            Merge(currentCommandFlags, ' ', flagsString);
+            Logger::Info("[%d files packed with flags: %s]", (int)definitionFileList.size(), flagsString.c_str());
+            
+            const char* result = (modified && !definitionFileList.empty()) ? "[REPACKED]" : "[unchanged]";
+            Logger::Info("[%s - %.2lf secs] - %s", inputPath.GetAbsolutePathname().c_str(), (float64)packTime / 1000.0f, result);
+        }
+        
+        for (List<DefinitionFile*>::iterator it = definitionFileList.begin(); it != definitionFileList.end(); ++it)
+        {
+            DefinitionFile * file = *it;
+            SafeDelete(file);
+        }
+        definitionFileList.clear();
+        
+        
+        
+        auto addTime = SystemTimer::Instance()->AbsoluteMS();
+        AddFilesToCache(cacheKey, outputPath);
+        addTime = SystemTimer::Instance()->AbsoluteMS() - addTime;
+        Logger::Info("[%s - %.2lf secs] - AddToCache", inputPath.GetAbsolutePathname().c_str(), (float64)addTime / 1000.0f);
+    }
+    
+	//recursivity
 	for (int fi = 0; fi < fileList->GetCount(); ++fi)
 	{
 		if (fileList->IsDirectory(fi))
@@ -639,6 +591,78 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 	}
 }
 
+bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey &key, const FilePath & outputPath)
+{
+    Vector<String> arruments;
+    arruments.push_back("get");
+    arruments.push_back("-h");
+    arruments.push_back(key.ToString());
+    
+    arruments.push_back("-f");
+    arruments.push_back(outputPath.GetAbsolutePathname());
+    
+    Process cacheClient(cacheClientTool, arruments);
+    if(cacheClient.Run(false))
+    {
+        cacheClient.Wait();
+        
+        const String& procOutput = cacheClient.GetOutput();
+        if(procOutput.size() > 0)
+        {
+            Logger::FrameworkDebug(procOutput.c_str());
+        }
+        
+        return (cacheClient.GetExitCode() == 0);
+    }
+
+    
+    return false;
+}
+
+bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey &key, const FilePath & outputPath)
+{
+    String fileListString;
+    ScopedPtr<FileList> outFilesList(new FileList(outputPath));
+    for (int fi = 0; fi < outFilesList->GetCount(); ++fi)
+    {
+        if (!outFilesList->IsDirectory(fi))
+        {
+            if(fileListString.empty() == false)
+            {
+                fileListString += String(",");
+            }
+            
+            fileListString += outFilesList->GetPathname(fi).GetAbsolutePathname();
+        }
+    }
+    
+    if(fileListString.empty() == false)
+    {
+        Vector<String> arruments;
+        arruments.push_back("add");
+        arruments.push_back("-h");
+        arruments.push_back(key.ToString());
+        arruments.push_back("-f");
+        arruments.push_back(fileListString);
+        
+        Process cacheClient(cacheClientTool, arruments);
+        if(cacheClient.Run(false))
+        {
+            cacheClient.Wait();
+            
+            const String& procOutput = cacheClient.GetOutput();
+            if(procOutput.size() > 0)
+            {
+                Logger::FrameworkDebug(procOutput.c_str());
+            }
+            
+            return (cacheClient.GetExitCode() == 0);
+        }
+    }
+    
+    return false;
+}
+    
 const Set<String>& ResourcePacker2D::GetErrors() const
 {
 	return errors;
