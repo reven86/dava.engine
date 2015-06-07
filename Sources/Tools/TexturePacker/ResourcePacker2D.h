@@ -42,6 +42,8 @@ class YamlNode;
 
 class ResourcePacker2D
 {
+    static const String VERSION;
+    
 public:
 	typedef std::map<String, String> FILESMAP;
 	ResourcePacker2D();
@@ -63,7 +65,13 @@ public:
 	bool SaveFileListToYaml(const FilePath & yamlFilePath);
 	bool CheckSpriteFilesDates(YamlNode *rootNode);
 	void FillSpriteFilesMap(const FilePath & inputPathName);
+    
+    
+    void SetCacheClientTool(const FilePath & path);
+    
 public:
+    
+    FilePath cacheClientTool;
     
 	FilePath inputGfxDirectory;
 	FilePath outputGfxDirectory;

@@ -67,11 +67,16 @@ void SpritesPacker::PerformPack(bool isLightmapPacking, DAVA::eGPUFamily gpu)
 	CommandLineParser::Instance()->Clear(); //CommandLineParser is used in ResourcePackerScreen
 
 	resourcePacker->clearProcessDirectory = true;
-	resourcePacker->inputGfxDirectory = inputDir;
-	resourcePacker->outputGfxDirectory = outputDir;
-	resourcePacker->excludeDirectory = inputDir + "../";
+    resourcePacker->InitFolders(inputDir, outputDir);
 	resourcePacker->isLightmapsPacking = isLightmapPacking;
-	resourcePacker->PackResources(gpu);
+
+#if defined __DAVAENGINE_MACOS__
+    resourcePacker->SetCacheClientTool("~res:/AssetCacheClient.app/Contents/MacOS/AssetCacheClient");
+#elif defined __DAVAENGINE_WINDOWS__
+    resourcePacker->SetCacheClientTool("~res:/AssetCacheClient.exe")
+#endif
+    
+    resourcePacker->PackResources(gpu);
 
 	SafeDelete(resourcePacker);
 }

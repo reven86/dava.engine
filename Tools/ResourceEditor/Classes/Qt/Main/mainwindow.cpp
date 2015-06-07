@@ -138,9 +138,6 @@
 #include "QtTools/FileDialog/FileDialog.h"
 
 
-#include "AssetCache/Test/AssetCacheTest.h"
-
-
 QtMainWindow::QtMainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui(new Ui::MainWindow)
@@ -155,8 +152,6 @@ QtMainWindow::QtMainWindow(QWidget *parent)
     , recentProjects(Settings::General_RecentProjectsCount, Settings::Internal_RecentProjects)
 {
     PathDescriptor::InitializePathDescriptors();
-    
-    JobManager::Instance()->CreateWorkerJob(&DAVA::AssetCache::RunPackerTest);
     
 	new ProjectManager();
 	ui->setupUi(this);

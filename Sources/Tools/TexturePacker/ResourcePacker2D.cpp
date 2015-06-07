@@ -43,9 +43,16 @@
 
 #include "IMagickHelper.h"
 
+#include "AssetCache/AssetCache.h"
+#include "Platform/Process.h"
+
+
 namespace DAVA
 {
 
+const String ResourcePacker2D::VERSION = "0.0.1";
+    
+    
 static const String FLAG_RECURSIVE = "--recursive";
 
 ResourcePacker2D::ResourcePacker2D()
@@ -376,23 +383,16 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     Vector<String> currentCommandFlags;
     List<DefinitionFile *> definitionFileList;
 
-    ScopedPtr<FileList> fileList(new FileList(inputPath));
-    fileList->Sort();
-
-	bool flagsFileFound = false;
-	for (int fi = 0; fi < fileList->GetCount(); ++fi)
-	{
-		if (fileList->GetFilename(fi) == "flags.txt")
-		{
-			currentCommandFlags = FetchFlags(fileList->GetPathname(fi));
-			flagsFileFound = true;
-			break;
-		}
-	}
-	if (!flagsFileFound)
+    const auto flagsPathname = inputPath + "flags.txt";
+    if(flagsPathname.Exists())
+    {
+        currentCommandFlags = FetchFlags(flagsPathname);
+    }
+    else
     {
         currentCommandFlags = passedFlags;
     }
+    
 
     CommandLineParser::Instance()->SetArguments(currentCommandFlags);
 
@@ -405,7 +405,57 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     {
         modified = true;
     }
+    //TODO:AC: hash of folder is in dir.md5 file, see lines above
+    //TODO:AC:
+    /*
+        we need ask cache server about files from this cache and currentCommandFlags + command line arguments
+    */
+    AssetCache::CacheItemKey cacheKey;
+    {
+        auto md5FileName = FilePath::CreateWithNewExtension(processDirectoryPath + "dir.md5", ".md5");
+        ScopedPtr<File> md5File(File::Create(md5FileName, File::OPEN | File::READ));
+        if(static_cast<File *>(md5File) != nullptr)
+        {   //invalidation of primary key
+            auto read = md5File->Read(cacheKey.keyData.hash.primary, MD5::DIGEST_SIZE);
+            DVASSERT(read == MD5::DIGEST_SIZE);
+        }
+        
+        String cachedParams;
+        for (auto & fl: currentCommandFlags)
+        {
+            cachedParams += fl;
+        }
+        
+        cachedParams += String("GPU = ") + GPUFamilyDescriptor::GetGPUName(requestedGPUFamily);
+        cachedParams += String("PackerVersion = ") + VERSION;
+        
+        auto strDataPtr = cachedParams.c_str();
+        auto strDataSize = cachedParams.size();
+        MD5::ForData(reinterpret_cast<const uint8 *>(strDataPtr), strDataSize, cacheKey.keyData.hash.secondary);
 
+
+        Vector<String> arruments;
+        arruments.push_back("get");
+        arruments.push_back("-h");
+        arruments.push_back(cacheKey.ToString());
+
+        arruments.push_back("-f");
+        arruments.push_back(outputPath.GetAbsolutePathname());
+
+        Process cacheClient(cacheClientTool, arruments);
+        if(cacheClient.Run(false))
+        {
+            cacheClient.Wait();
+            
+            const String& procOutput = cacheClient.GetOutput();
+            if(procOutput.size() > 0)
+            {
+                Logger::FrameworkDebug(procOutput.c_str());
+            }
+        }
+    }
+    //TODO:AC: end
+    
 	// read textures margins settings
 	bool useTwoSideMargin = CommandLineParser::Instance()->IsFlagSet("--add2sidepixel");
 	uint32 marginInPixels = TexturePacker::DEFAULT_MARGIN;
@@ -421,12 +471,15 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 			marginInPixels = 4;
 	}
 
-	bool needPackResourcesInThisDir = true;
+    ScopedPtr<FileList> fileList(new FileList(inputPath));
+    fileList->Sort();
+
+    bool needPackResourcesInThisDir = true;
 	if (modified)
 	{
 		FileSystem::Instance()->DeleteDirectoryFiles(outputPath, false);
 		
-		for (int fi = 0; fi < fileList->GetCount(); ++fi)
+        for (int fi = 0; fi < fileList->GetCount(); ++fi)
 		{
 			if (!fileList->IsDirectory(fi))
 			{
@@ -495,6 +548,45 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 			{
 				errors.insert(currentErrors.begin(), currentErrors.end());
 			}
+            
+            {//Save files to asset cache
+                String fileListString;
+                ScopedPtr<FileList> outFilesList(new FileList(outputPath));
+                for (int fi = 0; fi < outFilesList->GetCount(); ++fi)
+                {
+                    if (!outFilesList->IsDirectory(fi))
+                    {
+                        if(fileListString.empty() == false)
+                        {
+                            fileListString += String(",");
+                        }
+                        
+                        fileListString += outFilesList->GetPathname(fi).GetAbsolutePathname();
+                    }
+                }
+
+                if(fileListString.empty() == false)
+                {
+                    Vector<String> arruments;
+                    arruments.push_back("add");
+                    arruments.push_back("-h");
+                    arruments.push_back(cacheKey.ToString());
+                    arruments.push_back("-f");
+                    arruments.push_back(fileListString);
+                    
+                    Process cacheClient(cacheClientTool, arruments);
+                    if(cacheClient.Run(false))
+                    {
+                        cacheClient.Wait();
+                        
+                        const String& procOutput = cacheClient.GetOutput();
+                        if(procOutput.size() > 0)
+                        {
+                            Logger::FrameworkDebug(procOutput.c_str());
+                        }
+                    }
+                }
+            }
 		}
 	}	
 
@@ -556,6 +648,11 @@ void ResourcePacker2D::AddError(const String& errorMsg)
 {
 	Logger::Error(errorMsg.c_str());
 	errors.insert(errorMsg);
+}
+    
+void ResourcePacker2D::SetCacheClientTool(const DAVA::FilePath &path)
+{
+    cacheClientTool = path;
 }
 
 };
