@@ -34,7 +34,7 @@
 using namespace DAVA;
 
 const float32 LOSSY_ALLOWED_DIFF = 2.f; //in percents
-const float32 LOSSELESS_ALLOWED_DIFF = 0.f; //in percents
+const float32 LOSSLESS_ALLOWED_DIFF = 0.f; //in percents
 
 DAVA_TESTCLASS(SaveImageTest)
 {
@@ -57,9 +57,9 @@ DAVA_TESTCLASS(SaveImageTest)
 
     DAVA_TEST(PngTest)
     {
-        SaveLoadCheck(imageRGBA8888, "testRGBA8888.png", LOSSELESS_ALLOWED_DIFF);
+        SaveLoadCheck(imageRGBA8888, "testRGBA8888.png", LOSSLESS_ALLOWED_DIFF);
         //SaveLoadCheck(imageRGB888, "testRGB888.png", LOSSELESS_ALLOWED_DIFF); -- RGB888 is not supported by PNG
-        SaveLoadCheck(imageA8, "testA8.png", LOSSELESS_ALLOWED_DIFF);
+        SaveLoadCheck(imageA8, "testA8.png", LOSSLESS_ALLOWED_DIFF);
     }
 
     DAVA_TEST(JpegTest)
@@ -71,15 +71,15 @@ DAVA_TESTCLASS(SaveImageTest)
 
     DAVA_TEST(TgaTest)
     {
-        SaveLoadCheck(imageRGBA8888, "testRGBA8888.tga", LOSSELESS_ALLOWED_DIFF);
-        SaveLoadCheck(imageRGB888, "testRGB888.tga", LOSSELESS_ALLOWED_DIFF);
-        SaveLoadCheck(imageA8, "testA8.tga", LOSSELESS_ALLOWED_DIFF);
+        SaveLoadCheck(imageRGBA8888, "testRGBA8888.tga", LOSSLESS_ALLOWED_DIFF);
+        SaveLoadCheck(imageRGB888, "testRGB888.tga", LOSSLESS_ALLOWED_DIFF);
+        SaveLoadCheck(imageA8, "testA8.tga", LOSSLESS_ALLOWED_DIFF);
     }
 
     DAVA_TEST(WebPTest)
     {
-        SaveLoadCheck(imageRGB888, "testRGB888.webp", LOSSELESS_ALLOWED_DIFF);
-        SaveLoadCheck(imageRGBA8888, "testRGBA8888.webp", LOSSELESS_ALLOWED_DIFF);
+        SaveLoadCheck(imageRGB888, "testRGB888.webp", LOSSY_ALLOWED_DIFF);
+        SaveLoadCheck(imageRGBA8888, "testRGBA8888.webp", LOSSY_ALLOWED_DIFF);
     }
 
     void SaveLoadCheck(const Image* inImage, const String& filename, float32 diffThreshold)
@@ -116,7 +116,7 @@ DAVA_TESTCLASS(SaveImageTest)
                 *_date++ = 0xFF * i2 / size;    // R channel, 0 to FF horizontally
                 *_date++ = 0x00;                // G channel
                 *_date++ = blue;                // B channel, 0 to FF vertically
-                *_date++ = 0xFF;                // A channel
+                *_date++ = 0xFA;                // A channel
             }
         }
         return img;

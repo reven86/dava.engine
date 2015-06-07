@@ -64,13 +64,13 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     }
 
     infile->Seek(0, File::SEEK_FROM_START);
-    size_t data_size = infile->GetSize();
-    uint8_t *data = new uint8_t[data_size];
+    size_t dataSize = infile->GetSize();
+    uint8_t *data = new uint8_t[dataSize];
     SCOPE_EXIT
     {
         SafeDeleteArray(data);
     };
-    infile->Read(data, data_size);
+    infile->Read(data, dataSize);
     infile->Seek(0, File::SEEK_FROM_START);
 
     WebPBitstreamFeatures local_features;
@@ -79,7 +79,7 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
         bitstream = &local_features;
     }
     
-    auto bsStatus = WebPGetFeatures(data, data_size, bitstream);
+    auto bsStatus = WebPGetFeatures(data, dataSize, bitstream);
     if (bsStatus != VP8_STATUS_OK)
     {
         Logger::Error("[LibWebPHelper::ReadFile] File %s has wrong WebP header", infile->GetFilename().GetAbsolutePathname().c_str());
@@ -88,7 +88,7 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
 
     int width;
     int height;
-    auto getInfoStatus = WebPGetInfo(data, data_size, &width, &height);
+    auto getInfoStatus = WebPGetInfo(data, dataSize, &width, &height);
     if (0 == getInfoStatus)
     {
         Logger::Error("[LibWebPHelper::ReadFile] Error in WebGetInfo. File %s", infile->GetFilename().GetAbsolutePathname().c_str());
@@ -98,11 +98,11 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     uint8_t *newData;
     if (bitstream->has_alpha)
     {
-        newData = WebPDecodeRGBA(data, data_size, &width, &height);
+        newData = WebPDecodeRGBA(data, dataSize, &width, &height);
     }
     else
     {
-        newData = WebPDecodeRGB(data, data_size, &width, &height);
+        newData = WebPDecodeRGB(data, dataSize, &width, &height);
     }
     if (nullptr == newData)
     {
@@ -152,17 +152,14 @@ eErrorCode LibWebPHelper::WriteFile(const FilePath & fileName, const Vector<Imag
         SafeDeleteArray(outData);
     };
     size_t outSize;
-    uint8 channelCount;
     int stride = width * sizeof(*imageData);
     if (FORMAT_RGB888 == format)
     {
-        channelCount = 3;
-        outSize = WebPEncodeRGB(imageData, width, height, stride * channelCount, QUALITY, &outData);
+        outSize = WebPEncodeRGB(imageData, width, height, stride * PixelFormatDescriptor::GetPixelFormatSizeInBytes(format), QUALITY, &outData);
     }
     else
     {
-        channelCount = 4;
-        outSize = WebPEncodeRGBA(imageData, width, height, stride * channelCount, QUALITY, &outData);
+        outSize = WebPEncodeRGBA(imageData, width, height, stride * PixelFormatDescriptor::GetPixelFormatSizeInBytes(format), QUALITY, &outData);
     }
 
     if (nullptr == outData)
@@ -197,16 +194,16 @@ DAVA::ImageInfo LibWebPHelper::GetImageInfo(File *infile) const
     WebPBitstreamFeatures* const bitstream = &config.input;
 
     infile->Seek(0, File::SEEK_FROM_START);
-    size_t data_size = infile->GetSize();
-    uint8_t *data = new uint8_t[data_size];
+    size_t dataSize = infile->GetSize();
+    uint8_t *data = new uint8_t[dataSize];
     SCOPE_EXIT
     {
         SafeDeleteArray(data);
     };
-    infile->Read(data, data_size);
+    infile->Read(data, dataSize);
     infile->Seek(0, File::SEEK_FROM_START);
 
-    auto bsStatus = WebPGetFeatures(data, data_size, bitstream);
+    auto bsStatus = WebPGetFeatures(data, dataSize, bitstream);
     if (bsStatus != VP8_STATUS_OK)
     {
         return ImageInfo();
@@ -215,7 +212,7 @@ DAVA::ImageInfo LibWebPHelper::GetImageInfo(File *infile) const
     int width;
     int height;
     
-    auto giStatus = WebPGetInfo(data, data_size, &width, &height);
+    auto giStatus = WebPGetInfo(data, dataSize, &width, &height);
     if (0 == giStatus)
     {
         return ImageInfo();
@@ -224,7 +221,6 @@ DAVA::ImageInfo LibWebPHelper::GetImageInfo(File *infile) const
     ImageInfo info;
     info.height = height;
     info.width = width;
-    info.dataSize = data_size;
     if (bitstream->has_alpha)
     {
         info.format = FORMAT_RGBA8888;
@@ -233,6 +229,8 @@ DAVA::ImageInfo LibWebPHelper::GetImageInfo(File *infile) const
     {
         info.format = FORMAT_RGB888;
     }
+    auto size = width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(info.format);
+    info.dataSize = size;
     info.mipmapsCount = 1;
 
     SafeDeleteArray(data);
