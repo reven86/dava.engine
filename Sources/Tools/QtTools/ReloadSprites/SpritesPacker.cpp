@@ -63,14 +63,14 @@ void SpritesPacker::ReloadSpritePrivate(bool clearDirs, const eGPUFamily gpu, co
         return;
     }
     SetRunning(true);
-    QDir inputDir(projectPath + "/DataSource");
+    QDir inputDir(projectPath);
     QDirIterator it(inputDir);
     void *pool = QtLayer::Instance()->CreateAutoreleasePool();
     resourcePacker2D->SetRunning(true);
-    while (it.hasNext() && resourcePacker2D->IsRunning())
+    while (resourcePacker2D->IsRunning() && it.hasNext())
     {
         const QFileInfo &fileInfo = it.fileInfo();
-        if (fileInfo.isDir() && fileInfo.absoluteFilePath().contains("gfx", Qt::CaseInsensitive))
+        if (fileInfo.isDir() && fileInfo.absoluteFilePath().contains(searchPattern))
         {
             QString outputPath = fileInfo.absoluteFilePath();
             outputPath.replace(outputPath.indexOf("DataSource"), QString("DataSource").size(), "Data");
@@ -141,6 +141,20 @@ void SpritesPacker::SetProjectPath(QString arg)
     {
         projectPath = arg;
         emit ProjectPathChanged(arg);
+    }
+}
+
+QRegularExpression SpritesPacker::GetSearchPattern() const
+{
+    return searchPattern;
+}
+
+void SpritesPacker::SetSearchPattern(QRegularExpression arg)
+{
+    if(arg != searchPattern)
+    {
+        searchPattern = arg;
+        emit SearchPatternChanged(arg);
     }
 }
 

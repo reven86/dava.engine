@@ -42,6 +42,8 @@ class Project;
 class MainWindow;
 class PackageNode;
 
+class DialogReloadSprites;
+
 class EditorCore : public QObject, public DAVA::Singleton<EditorCore>
 {
     Q_OBJECT
@@ -56,6 +58,7 @@ public:
 protected slots:
     void OnCleanChanged(bool clean);
     void OnOpenPackageFile(const QString &path);
+    void OnProjectPathChanged(const QString &path);
 
     bool CloseAllDocuments();
     bool CloseOneDocument(int index);
@@ -83,6 +86,8 @@ private:
     QList<Document*> documents;
     DocumentGroup *documentGroup;
     MainWindow *mainWindow;
+    
+    DialogReloadSprites *dialogReloadSprites;
 };
 
 inline MainWindow* EditorCore::GetMainWindow() const

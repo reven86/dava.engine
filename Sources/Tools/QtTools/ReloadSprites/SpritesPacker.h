@@ -31,9 +31,10 @@
 #define __SPRITES_PACKER_H__
 
 #include "Render/RenderBase.h"
+#include "TextureCompression/TextureConverter.h"
 #include <QObject>
 #include <QFuture>
-#include "TextureCompression/TextureConverter.h"
+#include <QRegularExpression>
 #include <atomic>
 
 namespace DAVA {
@@ -45,6 +46,7 @@ class SpritesPacker : public QObject
     Q_OBJECT
     Q_PROPERTY(bool running READ IsRunning WRITE SetRunning NOTIFY RunningStateChanged);
     Q_PROPERTY(QString projectPath READ GetProjectPath WRITE SetProjectPath NOTIFY ProjectPathChanged)
+    Q_PROPERTY(QRegularExpression searchPattern READ GetSearchPattern WRITE SetSearchPattern NOTIFY SearchPatternChanged)
 public:
     SpritesPacker(QObject *parent = nullptr);
     ~SpritesPacker();
@@ -77,6 +79,15 @@ signals:
     void ProjectPathChanged(QString arg);
 private:
     QString projectPath;
+    
+public:
+    QRegularExpression GetSearchPattern() const;
+public slots:
+    void SetSearchPattern(QRegularExpression arg);
+signals:
+    void SearchPatternChanged(QRegularExpression arg);
+private:
+    QRegularExpression searchPattern;
 };
 
 #endif //__SPRITES_PACKER_H__

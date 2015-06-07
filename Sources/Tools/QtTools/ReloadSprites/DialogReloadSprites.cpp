@@ -45,7 +45,7 @@ DialogReloadSprites::DialogReloadSprites(QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::DialogReloadSprites)
     , spritesPacker(new SpritesPacker(this))
-    , actionReloadSprites(new QAction(QIcon(":/DialogReloadSprites/Icons/reload.png"), tr("Reload Sprites"), this))
+    , actionReloadSprites(new QAction(QIcon(":/QtTools/Icons/reload.png"), tr("Reload Sprites"), this))
 {
     connect(actionReloadSprites, &QAction::triggered, this, &DialogReloadSprites::exec);
 

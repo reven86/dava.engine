@@ -45,17 +45,18 @@ EditorCore::EditorCore(QObject *parent)
     , project(new Project(this))
     , documentGroup(new DocumentGroup(this))
     , mainWindow(new MainWindow())
+    , dialogReloadSprites(new DialogReloadSprites(mainWindow))
 {
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
-
-    DialogReloadSprites *dialogReloadSprites = new DialogReloadSprites(mainWindow);
+    
+    dialogReloadSprites->GetSpritesPacker()->SetSearchPattern(QRegularExpression("Gfx*", QRegularExpression::CaseInsensitiveOption));
     QAction* actionReloadSprites = dialogReloadSprites->GetActionReloadSprites();
     mainWindow->menuTools->addAction(actionReloadSprites);
     mainWindow->toolBarPlugins->addAction(actionReloadSprites);
     connect(dialogReloadSprites->GetSpritesPacker(), &SpritesPacker::ProcessStared, this, &EditorCore::CloseAllDocuments, Qt::BlockingQueuedConnection);
-    connect(project, &Project::ProjectPathChanged, dialogReloadSprites->GetSpritesPacker(), &SpritesPacker::SetProjectPath);
-     
+    
+    connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
     connect(mainWindow, &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
     connect(mainWindow, &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
     connect(mainWindow, &MainWindow::CloseProject, this, &EditorCore::CloseProject);
@@ -119,6 +120,11 @@ void EditorCore::OnOpenPackageFile(const QString &path)
         }
         mainWindow->SetCurrentTab(index);
     }
+}
+
+void EditorCore::OnProjectPathChanged(const QString &projectPath)
+{
+    dialogReloadSprites->GetSpritesPacker()->SetProjectPath(projectPath+ "/DataSource");
 }
 
 bool EditorCore::CloseAllDocuments()
