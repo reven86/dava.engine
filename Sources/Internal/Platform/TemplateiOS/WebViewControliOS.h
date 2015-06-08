@@ -88,7 +88,8 @@ public:
     void WillDraw() override;
     
     // common ios part to render any UIView* to UIImage*
-    static void* RenderIOSUIViewToImage(void* uiviewPtr, bool workAroundKeyboardBug = false);
+    // workaroundKeyboardBug - if call during show/hide keyboard - false
+    static void* RenderIOSUIViewToImage(void* uiviewPtr, bool workaroundKeyboardBug = false);
     // common ios part to copy from ios ::UIImage* to DAVA::Sprite*
     static void SetImageAsSpriteToControl(void* imagePtr, UIControl& control);
     

@@ -222,7 +222,7 @@ DAVA::WebViewControl::WebViewControl(DAVA::UIWebView& uiWeb):
     [localWebView becomeFirstResponder];
 }
 
-void* DAVA::WebViewControl::RenderIOSUIViewToImage(void* uiviewPtr, bool workAroundKeyboardBug)
+void* DAVA::WebViewControl::RenderIOSUIViewToImage(void* uiviewPtr, bool workaroundKeyboardBug)
 {
     ::UIView* view = static_cast<::UIView*>(uiviewPtr);
     DVASSERT(view);
@@ -241,7 +241,7 @@ void* DAVA::WebViewControl::RenderIOSUIViewToImage(void* uiviewPtr, bool workAro
     // Workaround! we have to use YES - if we want defenetly render last
     // text into texture and we have to use NO during softkeyboard
     // show and hide to elemenate screen blinking
-    if (workAroundKeyboardBug)
+    if (workaroundKeyboardBug)
     {
         [view drawViewHierarchyInRect:rect afterScreenUpdates:NO];
     } else
