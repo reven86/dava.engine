@@ -328,11 +328,11 @@ void SafeDeleteArray(TYPE * & d)
 }
 
 #ifndef SAFE_DELETE // for compatibility with FCollada
-#define SAFE_DELETE(x)  SafeDelete(x)
+#define SAFE_DELETE(x)  DAVA::SafeDelete(x)
 #endif 
 
 #ifndef SAFE_DELETE_ARRAY // for compatibility with FCollada
-#define SAFE_DELETE_ARRAY(x)    SafeDeleteArray(x)
+#define SAFE_DELETE_ARRAY(x)    DAVA::SafeDeleteArray(x)
 #endif
 
 #ifndef OBJC_SAFE_RELEASE
