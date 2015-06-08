@@ -291,6 +291,18 @@ int32 Entity::GetChildrenCountRecursive() const
 	}
 	return result;
 }
+
+bool Entity::IsMyChildRecursive(const Entity* child) const
+{
+    if (std::find(children.begin(), children.end(), child) != children.end())
+    {
+        return true;
+    }
+    else
+    {
+        return std::any_of(children.begin(), children.end(), [&](const Entity* ch){return ch->IsMyChildRecursive(child);});
+    }
+}
 	
     
 void Entity::RemoveAllChildren()
