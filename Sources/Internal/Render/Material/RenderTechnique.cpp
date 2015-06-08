@@ -224,9 +224,23 @@ void RenderTechniqueSingleton::ReleaseRenderTechnique(RenderTechnique* renderTec
 
 void RenderTechniqueSingleton::ClearRenderTechniques()
 {
+    // DAVA::HashMap's iterators are invalidated after map erasing operation
+    // So ClearRenderTechniques does the following:
+    //  - traverses over map and releases technique
+    //  - if technique is referenced only by RenderTechniqueSingleton makes final release of technique
+    //  - instead of deleted technique places nullptr
     for (auto& x : renderTechniqueMap)
     {
-        ReleaseRenderTechnique(x.second);
+        RenderTechnique* technique = x.second;
+        if (technique != nullptr)
+        {
+            technique->Release();
+            if (1 == technique->GetRetainCount())
+            {
+                technique->Release();
+                renderTechniqueMap[x.first] = nullptr;
+            }
+        }
     }
 }
 
