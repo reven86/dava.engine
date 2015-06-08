@@ -79,6 +79,21 @@ void    Unmap( Handle ib );
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// query-buffer
+
+namespace QueryBuffer
+{
+
+Handle  Create( uint32 maxObjectCount );
+void    Delete( Handle buf );
+
+bool    IsReady( Handle buf, uint32 objectIndex );
+int     Value( Handle buf, uint32 objectIndex );
+
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 // texture
 
 namespace 
@@ -174,6 +189,9 @@ void    SetVertexConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle buffer );
 void    SetVertexTexture( Handle cmdBuf, uint32 unitIndex, Handle tex );
 
 void    SetIndices( Handle cmdBuf, Handle ib );
+
+void    SetQueryBuffer( Handle cmdBuf );
+void    SetQueryIndex( Handle cmdBuf, uint32 index );
     
 void    SetFragmentConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle buf );
 void    SetFragmentTexture( Handle cmdBuf, uint32 unitIndex, Handle tex );

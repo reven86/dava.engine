@@ -44,6 +44,8 @@ CommandDX9
 
     DX9__SET_VERTEX_DATA,
     DX9__SET_INDICES,
+    DX9__SET_QUERY_BUFFER,
+    DX9__SET_QUERY_INDEX,
 
     DX9__SET_PIPELINE_STATE,
     DX9__SET_CULL_MODE,
@@ -253,6 +255,24 @@ static void
 dx9_CommandBuffer_SetIndices( Handle cmdBuf, Handle ib )
 {
     CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_INDICES, ib );
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+dx9_CommandBuffer_SetQueryIndex( Handle cmdBuf, uint32 objectIndex )
+{
+    CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_QUERY_INDEX, objectIndex );
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+dx9_CommandBuffer_SetQueryBuffer( Handle cmdBuf )
+{
+    CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_QUERY_BUFFER, cmdBuf );
 }
 
 
@@ -514,6 +534,8 @@ CommandBufferDX9_t::Execute()
 SCOPED_FUNCTION_TIMING();
     Handle  cur_pipelinestate   = InvalidHandle;
     uint32  cur_stride          = 0;
+    Handle  cur_query_buf       = InvalidHandle;
+    uint32  cur_query_i         = InvalidIndex;
 
     for( std::vector<uint64>::const_iterator c=_cmd.begin(),c_end=_cmd.end(); c!=c_end; ++c )
     {
@@ -586,6 +608,31 @@ SCOPED_FUNCTION_TIMING();
             case DX9__SET_INDICES :
             {
                 IndexBufferDX9::SetToRHI( (Handle)(arg[0]) );
+                c += 1;
+            }   break;
+
+            case DX9__SET_QUERY_BUFFER :
+            {
+                DVASSERT(cur_query_buf == InvalidHandle);
+                cur_query_buf = (Handle)(arg[0]);
+                c += 1;
+            }   break;
+
+            case DX9__SET_QUERY_INDEX :
+            {
+                uint32 qi = uint32(arg[0]);
+
+                if( qi != cur_query_i  &&  cur_query_i != InvalidIndex )
+                {
+                    QueryBufferDX9::EndQuery( cur_query_buf, qi );
+                }
+
+                if( qi != InvalidIndex )
+                {
+                    QueryBufferDX9::BeginQuery( cur_query_buf, qi );
+                }
+
+                cur_query_i = qi;
                 c += 1;
             }   break;
 
@@ -683,6 +730,11 @@ SCOPED_FUNCTION_TIMING();
             default:
                 DVASSERT("unknown DX9 render-command");
         }
+    }
+
+    if( cur_query_i != InvalidIndex )
+    {
+        QueryBufferDX9::EndQuery( cur_query_buf, cur_query_i );
     }
 
     _cmd.clear();
@@ -785,7 +837,9 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_SetVertexData          = &dx9_CommandBuffer_SetVertexData;
     dispatch->impl_CommandBuffer_SetVertexConstBuffer   = &dx9_CommandBuffer_SetVertexConstBuffer;
     dispatch->impl_CommandBuffer_SetVertexTexture       = &dx9_CommandBuffer_SetVertexTexture;
-    dispatch->impl_CommandBuffer_SetIndices             = &dx9_CommandBuffer_SetIndices;
+    dispatch->impl_CommandBuffer_SetIndices             = &dx9_CommandBuffer_SetIndices;    
+    dispatch->impl_CommandBuffer_SetQueryBuffer         = &dx9_CommandBuffer_SetQueryBuffer;
+    dispatch->impl_CommandBuffer_SetQueryIndex          = &dx9_CommandBuffer_SetQueryIndex;
     dispatch->impl_CommandBuffer_SetFragmentConstBuffer = &dx9_CommandBuffer_SetFragmentConstBuffer;
     dispatch->impl_CommandBuffer_SetFragmentTexture     = &dx9_CommandBuffer_SetFragmentTexture;
     dispatch->impl_CommandBuffer_SetDepthStencilState   = &dx9_CommandBuffer_SetDepthStencilState;

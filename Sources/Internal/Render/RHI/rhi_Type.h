@@ -52,6 +52,7 @@ ResourceType
 {
     RESOURCE_VERTEX_BUFFER      = 11,
     RESOURCE_INDEX_BUFFER       = 12,
+    RESOURCE_QUERY_BUFFER       = 13,
     RESOURCE_CONST_BUFFER       = 22,
     RESOURCE_TEXTURE            = 31,
 
@@ -682,10 +683,14 @@ RenderPassConfig
 
     ColorBuffer         colorBuffer[MAX_RENDER_TARGET_COUNT];
     DepthStencilBuffer  depthStencilBuffer;
+
+    Handle              queryBuffer;
+
     int                 priority;
                         
                         RenderPassConfig()
-                          : priority(0)
+                          : queryBuffer(InvalidHandle),
+                            priority(0)
                         {}
 };
 

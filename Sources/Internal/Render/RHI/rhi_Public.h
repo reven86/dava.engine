@@ -113,6 +113,18 @@ void            UpdateIndexBuffer( HIndexBuffer ib, const void* data, uint32 off
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// query
+
+typedef ResourceHandle<RESOURCE_QUERY_BUFFER> HQueryBuffer;
+
+HQueryBuffer    CreateQueryBuffer( unsigned maxObjectCount );
+void            DeleteQueryBuffer( HQueryBuffer buf );
+
+bool            QueryIsReady( HQueryBuffer buf, uint32 objectIndex );
+int             QueryValue( HQueryBuffer buf, uint32 objectIndex );
+
+
+////////////////////////////////////////////////////////////////////////////////
 // render-pipeline state & const-buffers
 
 typedef ResourceHandle<RESOURCE_PIPELINE_STATE> HPipelineState;
@@ -187,7 +199,6 @@ HSamplerState       CopySamplerState( HSamplerState ss );
 void                ReleaseSamplerState( HSamplerState ss );
 
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // render-pass
 
@@ -223,6 +234,7 @@ Packet
     HTextureSet         textureSet;
     PrimitiveType       primitiveType;
     uint32              primitiveCount;
+    uint32              queryIndex;
     const char*         debugMarker;
 
                         Packet()
@@ -237,6 +249,7 @@ Packet
                             vertexConstCount(0),
                             fragmentConstCount(0),
                             primitiveCount(0),
+                            queryIndex(InvalidIndex),
                             debugMarker(nullptr)
                         {
                         }

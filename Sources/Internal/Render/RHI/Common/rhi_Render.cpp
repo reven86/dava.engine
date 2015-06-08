@@ -58,6 +58,7 @@ struct
 PacketList_t
 {
     Handle      cmdBuf;
+    Handle      queryBuffer;
 
     Handle      curPipelineState;
     uint32      curVertexLayout;
@@ -72,7 +73,7 @@ PacketList_t
     Handle      curVertexStream[MAX_VERTEX_STREAM_COUNT];
 
     // debug
-    uint32  batchIndex;
+    uint32      batchIndex;
 };
 
 typedef Pool<PacketList_t,RESOURCE_PACKET_LIST>     PacketListPool;
@@ -166,6 +167,42 @@ void
 UpdateIndexBuffer( HIndexBuffer ib, const void* data, uint32 offset, uint32 size )
 {
     IndexBuffer::Update( ib, data, offset, size );
+}
+
+
+//------------------------------------------------------------------------------
+
+HQueryBuffer
+CreateQueryBuffer( uint32 maxObjectCount )
+{
+    return HQueryBuffer(QueryBuffer::Create( maxObjectCount ));
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+DeleteQueryBuffer( HQueryBuffer buf )
+{
+    QueryBuffer::Delete( buf );
+}
+
+
+//------------------------------------------------------------------------------
+
+bool
+QueryIsReady( HQueryBuffer buf, uint32 objectIndex )
+{
+    return QueryBuffer::IsReady( buf, objectIndex );
+}
+
+
+//------------------------------------------------------------------------------
+
+int
+QueryValue( HQueryBuffer buf, uint32 objectIndex )
+{
+    return QueryBuffer::Value( buf, objectIndex );
 }
 
 
@@ -567,7 +604,8 @@ AllocateRenderPass( const RenderPassConfig& passDesc, uint32 packetListCount, HP
         Handle          plh = PacketListPool::Alloc();
         PacketList_t*   pl  = PacketListPool::Get( plh );
 
-        pl->cmdBuf = cb[i];
+        pl->cmdBuf      = cb[i];
+        pl->queryBuffer = passDesc.queryBuffer;
 
 
         packetList[i] = HPacketList(plh);
@@ -748,6 +786,12 @@ AddPackets( HPacketList packetList, const Packet* packet, uint32 packetCount )
 
             pl->curTextureSet = p->textureSet;
         }
+
+        
+        if( p->queryIndex != InvalidIndex )
+        {
+            rhi::CommandBuffer::SetQueryIndex( pl->queryBuffer, p->queryIndex );
+        }        
 
         if( p->indexBuffer != InvalidHandle )
         {

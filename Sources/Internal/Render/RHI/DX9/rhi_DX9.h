@@ -53,6 +53,14 @@ void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHI( Handle vb );
 }
 
+namespace QueryBufferDX9
+{
+void        SetupDispatch( Dispatch* dispatch );
+
+void        BeginQuery( Handle buf, uint32 objectIndex );
+void        EndQuery( Handle buf, uint32 objectIndex );
+}
+
 
 namespace PipelineStateDX9
 {
