@@ -39,15 +39,15 @@ namespace DAVA
 	template<typename F>
 	struct SignalBase
 	{
-		typedef typename FuncTraits<F>::FunctionType FunctionType;
-		typedef typename FunctionType::ParamType1 ParamType1;
-		typedef typename FunctionType::ParamType2 ParamType2;
-		typedef typename FunctionType::ParamType3 ParamType3;
-		typedef typename FunctionType::ParamType4 ParamType4;
-		typedef typename FunctionType::ParamType5 ParamType5;
-		typedef typename FunctionType::ParamType6 ParamType6;
-		typedef typename FunctionType::ParamType7 ParamType7;
-		typedef typename FunctionType::ParamType8 ParamType8;
+        using FunctionType = typename FuncTraits<F>::FunctionType;
+        using ParamType1 = typename FunctionType::ParamType1;
+        using ParamType2 = typename FunctionType::ParamType2;
+        using ParamType3 = typename FunctionType::ParamType3;
+        using ParamType4 = typename FunctionType::ParamType4;
+        using ParamType5 = typename FunctionType::ParamType5;
+        using ParamType6 = typename FunctionType::ParamType6;
+        using ParamType7 = typename FunctionType::ParamType7;
+        using ParamType8 = typename FunctionType::ParamType8;
 
 		void Connect(FunctionType &fn) 
 		{
@@ -73,7 +73,7 @@ namespace DAVA
 	template<typename R>
 	struct Signal<R()> : SignalBase< Function<R()> >
 	{
-		typedef SignalBase< Function<void()> > Base;
+        using Base = SignalBase<Function<void ()>>;
 
 		void Emit() 
 		{ 
@@ -87,7 +87,7 @@ namespace DAVA
 	template<typename R, typename P1, typename P2, typename P3>
 	struct Signal<R(P1, P2, P3)> : SignalBase< Function<R(P1, P2, P3)> >
 	{
-		typedef SignalBase< Function<R(P1, P2, P3)> > Base;
+        using Base = SignalBase<Function<R (P1, P2, P3)>>;
 
 		void Emit(P1 p1, P2 p2, P3 p3)
 		{
