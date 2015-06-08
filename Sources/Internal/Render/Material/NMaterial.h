@@ -115,6 +115,7 @@ public:
     bool HasLocalProperty(const FastName& propName);   
     rhi::ShaderProp::Type GetLocalPropType(const FastName& propName);
     const float32* GetLocalPropValue(const FastName& propName);
+    const float32* GetEffectivePropValue(const FastName& propName);
 
     /*textures*/
     void AddTexture(const FastName& slotName, Texture *texture);
@@ -128,8 +129,9 @@ public:
     void AddFlag(const FastName& flagName, int32 value);
     void RemoveFlag(const FastName& flagName);
     void SetFlag(const FastName& flagName, int32 value);
+    bool HasLocalFlag(const FastName& flagName);
     int32 GetLocalFlagValue(const FastName& flagName);
-    bool HasLocalFlag(const FastName& flagName);        
+    int32 GetEffectiveFlagValue(const FastName& flagName);
 
     void SetParent(NMaterial *parent);
     NMaterial* GetParent();       

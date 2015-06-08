@@ -66,6 +66,7 @@ NMaterial::NMaterial()
     , localProperties(16, nullptr)
     , localConstBuffers(16, nullptr)
     , localTextures(8, nullptr)
+    , localFlags(16, 0)
     , renderVariants(4, nullptr)
     , needRebuildBindings(true)
     , needRebuildTextures(true)
@@ -245,6 +246,15 @@ const float32* NMaterial::GetLocalPropValue(const FastName& propName)
     return prop->data.get();
 }
 
+const float32* NMaterial::GetEffectivePropValue(const FastName& propName)
+{
+    NMaterialProperty *prop = localProperties.at(propName);
+    if (prop)
+        return prop->data.get();
+    if (parent)
+        return parent->GetEffectivePropValue(propName);
+    return nullptr;
+}
 
 void NMaterial::AddTexture(const FastName& slotName, Texture* texture)
 {
@@ -302,6 +312,15 @@ void NMaterial::SetFlag(const FastName& flagName, int32 value)
     InvalidateRenderVariants();
 }
 
+int32 NMaterial::GetEffectiveFlagValue(const FastName& flagName)
+{
+    HashMap<FastName, int32>::iterator it = localFlags.find(flagName);
+    if (it != localFlags.end())
+        return it->second;
+    else if (parent)
+        return parent->GetEffectiveFlagValue(flagName);
+    return 0;
+}
 
 int32 NMaterial::GetLocalFlagValue(const FastName& flagName)
 {

@@ -288,11 +288,11 @@ void SceneValidator::ValidateRenderBatch(Entity *ownerNode, RenderBatch *renderB
 {
     ownerNode->RemoveFlag(Entity::NODE_INVALID);
     
-    NMaterial *material = renderBatch->GetMaterial();
-    if(material != nullptr)
-    {
-        ConvertIlluminationParamsFromProperty(ownerNode, material);
-    }
+    //NMaterial *material = renderBatch->GetMaterial();
+    //if(material != nullptr)
+    //{
+    //    ConvertIlluminationParamsFromProperty(ownerNode, material);
+    //}
 }
 
 void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLog)
@@ -429,39 +429,6 @@ void SceneValidator::ValidateLandscapeTexture(Landscape *landscape, const FastNa
 	}
 
 	ValidateTexture(landscape->GetTexture(texLevel), Format("Landscape. TextureLevel %d", texLevel), errorsLog);
-#endif // RHI_COMPLETE_EDITOR
-}
-
-
-void SceneValidator::ConvertIlluminationParamsFromProperty(Entity *ownerNode, NMaterial *material)
-{
-#if RHI_COMPLETE_EDITOR
-    IlluminationParams *params = material->GetIlluminationParams();
-
-    VariantType * variant = nullptr;
-    variant = GetCustomPropertyFromParentsTree(ownerNode, "editor.staticlight.used");
-    if (variant != nullptr)
-    {
-        params->isUsed = variant->AsBool();
-    }
-    variant = GetCustomPropertyFromParentsTree(ownerNode, "editor.staticlight.castshadows");
-    
-    if (variant != nullptr)
-    {
-        params->castShadow = variant->AsBool();
-    }
-    variant = GetCustomPropertyFromParentsTree(ownerNode, "editor.staticlight.receiveshadows");
-    
-    if (variant != nullptr)
-    {
-        params->receiveShadow = variant->AsBool();
-    }
-    variant = GetCustomPropertyFromParentsTree(ownerNode, "lightmap.size");
-    
-    if (variant != nullptr)
-    {
-        params->lightmapSize = variant->AsInt32();
-    }
 #endif // RHI_COMPLETE_EDITOR
 }
 

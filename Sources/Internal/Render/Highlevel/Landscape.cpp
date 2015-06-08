@@ -1302,18 +1302,6 @@ RenderObject * Landscape::Clone( RenderObject *newObject )
     newLandscape->flags = flags;
     newLandscape->BuildLandscapeFromHeightmapImage(heightmapPath, bbox);
 
-#if RHI_COMPLETE
-    IlluminationParams * params = GetRenderBatch(0)->GetMaterial()->GetIlluminationParams(false);
-    if(params)
-    {
-        IlluminationParams * newParams = newLandscape->GetRenderBatch(0)->GetMaterial()->GetIlluminationParams();
-        newParams->SetLightmapSize(params->GetLightmapSize());
-        newParams->isUsed = params->isUsed;
-        newParams->castShadow = params->castShadow;
-        newParams->receiveShadow = params->receiveShadow;
-    }
-#endif
-
 	return newObject;
 }
 	
