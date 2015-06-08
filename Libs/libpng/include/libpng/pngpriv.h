@@ -361,7 +361,7 @@ typedef PNG_CONST png_uint_16p FAR * png_const_uint_16pp;
 /* Memory model/platform independent fns */
 #ifndef PNG_ABORT
 #  ifdef _WINDOWS_
-#    define PNG_ABORT() ExitProcess(0)
+#    define PNG_ABORT() abort()
 #  else
 #    define PNG_ABORT() abort()
 #  endif
@@ -381,7 +381,7 @@ typedef PNG_CONST png_uint_16p FAR * png_const_uint_16pp;
 #  ifdef _WINDOWS_  /* Favor Windows over C runtime fns */
 #    define CVT_PTR(ptr)         (ptr)
 #    define CVT_PTR_NOCHECK(ptr) (ptr)
-#    define png_strlen  lstrlenA
+#    define png_strlen  strlen
 #    define png_memcmp  memcmp
 #    define png_memcpy  CopyMemory
 #    define png_memset  memset

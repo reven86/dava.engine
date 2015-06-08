@@ -39,12 +39,6 @@
 * so replacing that one function is sufficient to handle all deallocations.	(since C++11)
 */
 
-#if defined(__DAVAENGINE_WIN32__)
-#define DAVA_NOEXCEPT    throw()
-#else
-#define DAVA_NOEXCEPT    noexcept
-#endif
-
 void* operator new(size_t size)
 {
     return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);

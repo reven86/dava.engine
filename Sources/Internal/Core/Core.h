@@ -44,7 +44,6 @@
 */
 namespace DAVA 
 {
-
 #if defined(__DAVAENGINE_WIN32__)
     using AppHandle = HINSTANCE;
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -144,7 +143,7 @@ public:
     // Should be called after full release
 	void ReleaseSingletons();
 
-	Vector<String> & GetCommandLine(); 
+	const Vector<String> & GetCommandLine(); 
 	bool IsConsoleMode();
 	
 public:
@@ -289,10 +288,7 @@ private:
 	
 	Vector<String> commandLine;
 	bool isConsoleMode;
-    
-    void CheckDataTypeSizes();
-    template <class T> void CheckType(T t, int32 expectedSize, const char * typeString);
-    
+
     float32 screenScaleFactor;
 };
     
@@ -307,7 +303,5 @@ inline float32 Core::GetScreenScaleFactor() const
 }
 
 };
-
-
 
 #endif // __DAVAENGINE_CORE_H__

@@ -26,11 +26,11 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
+#include "Base/BaseTypes.h"
 #include <libuv/uv.h>
 
-#include <Network/Base/Endpoint.h>
-#include <Network/Base/IfAddress.h>
+#include "Network/Base/Endpoint.h"
+#include "Network/Base/IfAddress.h"
 
 namespace DAVA
 {

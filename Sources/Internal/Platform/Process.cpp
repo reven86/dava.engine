@@ -30,11 +30,6 @@
 #include "Platform/Process.h"
 #include "FileSystem/FilePath.h"
 
-#if defined (__DAVAENGINE_MACOS__)
-#include <sys/wait.h>
-
-#endif
-
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
 
 #if defined(__DAVAENGINE_MACOS__)
@@ -57,9 +52,10 @@ Process::Process(const FilePath& path, const Vector<String>& args)
     running = false;
     exitCode = -1; //invalid
     
-#if defined (__DAVAENGINE_WIN32__)
+#if defined (__DAVAENGINE_WINDOWS__)
     childProcIn[0] = childProcIn[1] = 0;
     childProcOut[0] = childProcOut[1] = 0;
+		
 #else
     pipes[0] = pipes[1] = -1;
 #endif

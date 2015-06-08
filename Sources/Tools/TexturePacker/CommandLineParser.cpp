@@ -179,7 +179,7 @@ bool CommandLineParser::CommandIsFound(const DAVA::String &command)
 
 DAVA::String CommandLineParser::GetCommand(DAVA::uint32 commandPosition)
 {
-    Vector<String> & commandLine = Core::Instance()->GetCommandLine();
+    const Vector<String>& commandLine = Core::Instance()->GetCommandLine();
 	if(commandPosition < commandLine.size())
 	{
 		return commandLine[commandPosition];
@@ -193,7 +193,7 @@ DAVA::int32 CommandLineParser::GetCommandPosition(const DAVA::String &command)
 {
     int32 position = INVALID_POSITION;
     
-    Vector<String> & commandLine = Core::Instance()->GetCommandLine();
+    const Vector<String> & commandLine = Core::Instance()->GetCommandLine();
     for(int32 i = 0; i < (int32)commandLine.size(); ++i)
     {
         if(command == commandLine[i])
@@ -227,7 +227,7 @@ String CommandLineParser::GetCommandParamAdditional(const String &command, const
 
 int32 CommandLineParser::GetCommandsCount()
 {
-    Vector<String> & commandLine = Core::Instance()->GetCommandLine();
+    const Vector<String> & commandLine = Core::Instance()->GetCommandLine();
     return (int32)commandLine.size();
 }
 
