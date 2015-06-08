@@ -48,11 +48,11 @@
 namespace DAVA
 {
 #ifdef USE_FILEPATH_IN_MAP
-	typedef Map<FilePath, FTInternalFont *> FontMap;
+    using FontMap = Map<FilePath, FTInternalFont *>;
 #else //#ifdef USE_FILEPATH_IN_MAP
-	typedef Map<String, FTInternalFont *> FontMap;
+    using FontMap = Map<String, FTInternalFont *>;
 #endif //#ifdef USE_FILEPATH_IN_MAP
-	FontMap fontMap;
+    FontMap fontMap;
 
 class FTInternalFont : public BaseObject
 {

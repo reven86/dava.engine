@@ -92,6 +92,7 @@ const uint32 PVRTEX3_METADATAIDENT	= 0x03525650;
 
 LibPVRHelper::LibPVRHelper()
 {
+    name.assign("PVR");
     supportedExtensions.push_back(".pvr");
 }
 

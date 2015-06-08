@@ -29,9 +29,9 @@
 
 #include "PrototypeNameProperty.h"
 
+#include "PropertyVisitor.h"
 #include "../PackageHierarchy/ControlNode.h"
-#include "../PackageHierarchy/ControlPrototype.h"
-#include "../PackageSerializer.h"
+#include "../PackageHierarchy/PackageNode.h"
 
 using namespace DAVA;
 
@@ -46,13 +46,9 @@ PrototypeNameProperty::~PrototypeNameProperty()
     node = nullptr; // weak
 }
 
-void PrototypeNameProperty::Serialize(PackageSerializer *serializer) const
+void PrototypeNameProperty::Accept(PropertyVisitor *visitor)
 {
-    if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
-    {
-        bool includePackageName = node->GetPackageRef() != node->GetPrototype()->GetPackageRef();
-        serializer->PutValue("prototype", node->GetPrototype()->GetName(includePackageName));
-    }
+    visitor->VisitPrototypeNameProperty(this);
 }
 
 AbstractProperty::ePropertyType PrototypeNameProperty::GetType() const
@@ -72,15 +68,33 @@ bool PrototypeNameProperty::IsReadOnly() const
 
 String PrototypeNameProperty::GetPrototypeName() const
 {
-    if (node->GetPrototype())
+    ControlNode *prototype = node->GetPrototype();
+    if (prototype)
     {
+        String path = "";
         if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE_CHILD)
-            return node->GetPathToPrototypeChild(true);
+        {
+            path = String("/") + node->GetPathToPrototypeChild();
+        }
+        
+        
+        const PackageNode *package = prototype->GetPackage();
+        if (package && package->IsImported())
+        {
+            return package->GetName() + "/" + prototype->GetName() + path;
+        }
         else
-            return node->GetPrototype()->GetName(true);
+        {
+            return prototype->GetName() + path;
+        }
     }
     
     return String("");
+}
+
+ControlNode *PrototypeNameProperty::GetControl() const
+{
+    return node;
 }
 
 void PrototypeNameProperty::ApplyValue(const DAVA::VariantType &value)

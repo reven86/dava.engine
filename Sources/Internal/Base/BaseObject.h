@@ -230,8 +230,7 @@ C * SafeRetain(C * c)
     
     
     
-//typedef BaseObject* (*CreateObjectFunc)();
-typedef void* (*CreateObjectFunc)();
+using CreateObjectFunc = void* (*)();
 
 class ObjectRegistrator
 {

@@ -37,11 +37,11 @@
 namespace DAVA
 {
 
-typedef void pthread_condattr_t;
-typedef HANDLE pthread_mutex_t;
-typedef void pthread_mutexattr_t;
+using pthread_condattr_t = void;
+using pthread_mutex_t = HANDLE;
+using pthread_mutexattr_t = void;
 
-typedef struct
+using pthread_cond_t = struct
 {
     int waiters_count_;
     // Number of waiting threads.
@@ -61,7 +61,7 @@ typedef struct
     size_t was_broadcast_;
     // Keeps track of whether we were broadcasting or signaling.  This
     // allows us to optimize the code if we're just signaling.
-} pthread_cond_t;
+};
 
 int pthread_cond_init(pthread_cond_t *cv, const pthread_condattr_t *);
 int pthread_cond_wait(pthread_cond_t *cv, pthread_mutex_t *external_mutex);
