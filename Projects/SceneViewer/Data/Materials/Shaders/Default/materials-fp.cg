@@ -205,14 +205,14 @@ FPROG_BEGIN
             #if VERTEX_COLOR
                 alpha *= FP_IN(varVertexColor).a;
             #endif
-            if( alpha < 0.5 ) discard;
+            if( alpha < 0.5 ) FP_DISCARD_FRAGMENT;
         #endif
         #if ALPHATESTVALUE
             float alpha = textureColor0.a;
             #if VERTEX_COLOR
                 alpha *= FPROG_IN(varVertexColor).a;
             #endif
-            if( alpha < ALPHATESTVALUE ) discard;
+            if( alpha < ALPHATESTVALUE ) FP_DISCARD_FRAGMENT;
         #endif
     #endif
 

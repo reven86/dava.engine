@@ -196,6 +196,8 @@ static const char* _ShaderHeader_Metal =
 "inline float2 lerp( float2 a, float2 b, float t ) { return mix( a, b, t ); }\n"
 "inline float3 lerp( float3 a, float3 b, float t ) { return mix( a, b, t ); }\n"
 "inline float4 lerp( float4 a, float4 b, float t ) { return mix( a, b, t ); }\n"
+
+"#define FP_DISCARD_FRAGMENT discard_fragment()\n"
 ;
     
 static const char* _ShaderDefine_Metal =
@@ -211,10 +213,10 @@ static const char* _ShaderDefine_Metal =
 "#define VPROG_IN_TEXCOORD1(sz)  float##sz texcoord1 [[ attribute(VATTR_TEXCOORD_1) ]] ; \n"
 "#define VPROG_IN_TEXCOORD2(sz)  float##sz texcoord2 [[ attribute(VATTR_TEXCOORD_2) ]] ; \n"
 "#define VPROG_IN_TEXCOORD3(sz)  float##sz texcoord3 [[ attribute(VATTR_TEXCOORD_3) ]] ; \n"
-"#define VPROG_IN_TEXCOORD4(sz)  float##sz texcoord3 [[ attribute(VATTR_TEXCOORD_4) ]] ; \n"
-"#define VPROG_IN_TEXCOORD5(sz)  float##sz texcoord3 [[ attribute(VATTR_TEXCOORD_5) ]] ; \n"
-"#define VPROG_IN_TEXCOORD6(sz)  float##sz texcoord3 [[ attribute(VATTR_TEXCOORD_6) ]] ; \n"
-"#define VPROG_IN_TEXCOORD7(sz)  float##sz texcoord3 [[ attribute(VATTR_TEXCOORD_7) ]] ; \n"
+"#define VPROG_IN_TEXCOORD4(sz)  float##sz texcoord4 [[ attribute(VATTR_TEXCOORD_4) ]] ; \n"
+"#define VPROG_IN_TEXCOORD5(sz)  float##sz texcoord5 [[ attribute(VATTR_TEXCOORD_5) ]] ; \n"
+"#define VPROG_IN_TEXCOORD6(sz)  float##sz texcoord6 [[ attribute(VATTR_TEXCOORD_6) ]] ; \n"
+"#define VPROG_IN_TEXCOORD7(sz)  float##sz texcoord7 [[ attribute(VATTR_TEXCOORD_7) ]] ; \n"
 "#define VPROG_IN_COLOR          uchar4 color0 [[ attribute(VATTR_COLOR_0) ]] ; \n"
 "#define VPROG_IN_COLOR0         uchar4 color0 [[ attribute(VATTR_COLOR_0) ]] ; \n"
 "#define VPROG_IN_COLOR1         uchar4 color1 [[ attribute(VATTR_COLOR_1) ]] ; \n"
@@ -414,6 +416,8 @@ static const char* _ShaderHeader_GLES2 =
 "vec3 mul( vec3 v, mat3 m ) { return m*v; }\n"
 
 "#define lerp(a,b,t) mix( (a), (b), (t) )\n"
+
+"#define FP_DISCARD_FRAGMENT discard\n"
 ;
 
 static const char* _ShaderDefine_GLES2 =
@@ -554,6 +558,8 @@ static const char* _ShaderDefine_GLES2 =
 static const char* _ShaderHeader_DX9 =
 "#define float1                 float\n"
 "#define half1                  half\n"
+
+"#define FP_DISCARD_FRAGMENT discard\n"
 ;
 
 static const char* _ShaderDefine_DX9 =
@@ -851,7 +857,7 @@ PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedT
         MCPP_Text
     };
 
-//DAVA::Logger::Info( "src=\n%s\n", src );
+DAVA::Logger::Info( "src=\n%s\n", src );
     _PreprocessedText = preprocessedText;
     mcpp__set_input( src, strlen(src) );
 
@@ -879,7 +885,7 @@ PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedT
             break;
     }
     ;
-//DAVA::Logger::Info( "pre-processed=\n%s\n", preprocessedText->c_str() );
+DAVA::Logger::Info( "pre-processed=\n%s\n", preprocessedText->c_str() );
 }
 
 

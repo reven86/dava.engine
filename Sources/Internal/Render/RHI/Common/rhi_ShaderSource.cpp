@@ -513,7 +513,8 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     case ShaderProp::TYPE_FLOAT1 :
                     {
                         const char* xyzw = "xyzw";
-                        var_len += Snprintf( var_def+var_len, sizeof(var_def)-var_len, "    float %s = %cP_Buffer%u[%u].%c;\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount] );
+//                        var_len += Snprintf( var_def+var_len, sizeof(var_def)-var_len, "    float %s = %cP_Buffer%u[%u].%c;\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount] );
+                        var_len += Snprintf( var_def+var_len, sizeof(var_def)-var_len, "    float %s = float4(%cP_Buffer%u[%u]).%c;\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount] );
                     }   break;
                     
                     case ShaderProp::TYPE_FLOAT2 :
@@ -522,7 +523,8 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                         var_len += Snprintf
                         ( 
                             var_def+var_len, sizeof(var_def)-var_len, 
-                            "    float2 %s = float2( %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c );\n", 
+//                            "    float2 %s = float2( %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c );\n", 
+                            "    float2 %s = float2( float4(%cP_Buffer%u[%u]).%c, float4(%cP_Buffer%u[%u]).%c );\n", 
                             p->uid.c_str(), 
                             pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+0],
                             pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+1]
@@ -535,7 +537,8 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                         var_len += Snprintf
                         ( 
                             var_def+var_len, sizeof(var_def)-var_len, 
-                            "    float3 %s = float3( %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c );\n", 
+//                            "    float3 %s = float3( %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c, %cP_Buffer%u[%u].%c );\n", 
+                            "    float3 %s = float3( float4(%cP_Buffer%u[%u]).%c, float4(%cP_Buffer%u[%u]).%c, float4(%cP_Buffer%u[%u]).%c );\n", 
                             p->uid.c_str(), 
                             pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+0],
                             pt, p->bufferindex, p->bufferReg, xyzw[p->bufferRegCount+1],

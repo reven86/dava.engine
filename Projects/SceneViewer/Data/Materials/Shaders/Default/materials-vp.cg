@@ -147,13 +147,16 @@ property float4x4 worldViewProjMatrix : dynamic,a : ;
 property float4x4 worldViewMatrix : dynamic,a : ;
 #endif
 
-#if VERTEX_LIT || PIXEL_LIT || (VERTEX_FOG && FOG_ATMOSPHERE)
+#if VERTEX_LIT || PIXEL_LIT /*|| (VERTEX_FOG && FOG_ATMOSPHERE)*/
 property float4x4 worldViewInvTransposeMatrix : dynamic,a : ;
-property float4 lightPosition0 : dynamic,a : ;
 #if DISTANCE_ATTENUATION
 property float lightIntensity0 : static,a : ; 
 #endif
 #endif
+#if VERTEX_LIT || PIXEL_LIT || (VERTEX_FOG && FOG_ATMOSPHERE)
+property float4 lightPosition0 : dynamic,a : ;
+#endif
+
 
 #if VERTEX_LIT
 property float materialSpecularShininess : dynamic,a : ;
@@ -242,6 +245,13 @@ property float4x4 worldMatrix : dynamic,a : ;
 #if WAVE_ANIMATION
 property float globalTime : dynamic,a : ;
 #endif
+
+
+// prototypes, to shut up Metal shader-compiler
+float  FresnelShlick( float NdotL, float Cspec );
+float3 FresnelShlickVec3( float NdotL, float3 Cspec );
+float3 JointTransformTangent( float3 inVec, float4 jointQuaternion );
+float4 Wave( float time, float4 pos, float2 uv );
 
 
 
@@ -580,7 +590,7 @@ VPROG_BEGIN
     #endif
     
     fog_param.view_position  = eyeCoordsPosition;
-    fog_param.world_position = mul(VP_IN_POSITION,worldMatrix).xyz;
+    fog_param.world_position = mul( float4(VP_IN_POSITION,1.0), worldMatrix ).xyz;
     fog_param.eye_position   = cameraPosition;
     
     VP_OUT(varFog) = CalculateVertexFog( fog_param );
@@ -656,7 +666,7 @@ VPROG_BEGIN
 
 #elif SPEED_TREE_LEAF //legacy for old tree lighting
     
-    VP_OUT(varVertexColor).xyz = inVertexColor.xyz * treeLeafColorMul * treeLeafOcclusionMul + float3(treeLeafOcclusionOffset,treeLeafOcclusionOffset,treeLeafOcclusionOffset);
+    VP_OUT(varVertexColor).xyz = inVertexColor.xyz * treeLeafColorMul.xyz * treeLeafOcclusionMul + float3(treeLeafOcclusionOffset,treeLeafOcclusionOffset,treeLeafOcclusionOffset);
 
 #endif
 
