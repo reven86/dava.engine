@@ -124,12 +124,6 @@
 		E834DEC61B171F8200E4B2DB /* TCPConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E834DE7E1B171F8200E4B2DB /* TCPConnection.h */; };
 		E834DEC71B171F8200E4B2DB /* TCPConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E834DE7E1B171F8200E4B2DB /* TCPConnection.h */; };
 		E834DEC81B171F8200E4B2DB /* TCPConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = E834DE7E1B171F8200E4B2DB /* TCPConnection.h */; };
-		E834DECF1B171F8200E4B2DB /* AssetCacheTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E834DE821B171F8200E4B2DB /* AssetCacheTest.cpp */; };
-		E834DED01B171F8200E4B2DB /* AssetCacheTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E834DE821B171F8200E4B2DB /* AssetCacheTest.cpp */; };
-		E834DED11B171F8200E4B2DB /* AssetCacheTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E834DE821B171F8200E4B2DB /* AssetCacheTest.cpp */; };
-		E834DED21B171F8200E4B2DB /* AssetCacheTest.h in Headers */ = {isa = PBXBuildFile; fileRef = E834DE831B171F8200E4B2DB /* AssetCacheTest.h */; };
-		E834DED31B171F8200E4B2DB /* AssetCacheTest.h in Headers */ = {isa = PBXBuildFile; fileRef = E834DE831B171F8200E4B2DB /* AssetCacheTest.h */; };
-		E834DED41B171F8200E4B2DB /* AssetCacheTest.h in Headers */ = {isa = PBXBuildFile; fileRef = E834DE831B171F8200E4B2DB /* AssetCacheTest.h */; };
 		E841A48C1B25AD97003E2C03 /* TCPChannel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E841A48A1B25AD97003E2C03 /* TCPChannel.cpp */; };
 		E841A48D1B25AD97003E2C03 /* TCPChannel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E841A48A1B25AD97003E2C03 /* TCPChannel.cpp */; };
 		E841A48E1B25AD97003E2C03 /* TCPChannel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E841A48A1B25AD97003E2C03 /* TCPChannel.cpp */; };
@@ -181,8 +175,6 @@
 		E834DE7A1B171F8200E4B2DB /* TCP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TCP.h; sourceTree = "<group>"; };
 		E834DE7D1B171F8200E4B2DB /* TCPConnection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TCPConnection.cpp; sourceTree = "<group>"; };
 		E834DE7E1B171F8200E4B2DB /* TCPConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TCPConnection.h; sourceTree = "<group>"; };
-		E834DE821B171F8200E4B2DB /* AssetCacheTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AssetCacheTest.cpp; sourceTree = "<group>"; };
-		E834DE831B171F8200E4B2DB /* AssetCacheTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AssetCacheTest.h; sourceTree = "<group>"; };
 		E841A48A1B25AD97003E2C03 /* TCPChannel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TCPChannel.cpp; sourceTree = "<group>"; };
 		E841A48B1B25AD97003E2C03 /* TCPChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TCPChannel.h; sourceTree = "<group>"; };
 		E8BE2FDD1A80CC7500AC96C2 /* libTextureConverter.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libTextureConverter.dylib; sourceTree = "<group>"; };
@@ -307,7 +299,6 @@
 				E834DE771B171F8200E4B2DB /* ServerCacheEntry.cpp */,
 				E834DE781B171F8200E4B2DB /* ServerCacheEntry.h */,
 				E834DE791B171F8200E4B2DB /* TCPConnection */,
-				E834DE811B171F8200E4B2DB /* Test */,
 			);
 			path = AssetCache;
 			sourceTree = "<group>";
@@ -322,15 +313,6 @@
 				E834DE7E1B171F8200E4B2DB /* TCPConnection.h */,
 			);
 			path = TCPConnection;
-			sourceTree = "<group>";
-		};
-		E834DE811B171F8200E4B2DB /* Test */ = {
-			isa = PBXGroup;
-			children = (
-				E834DE821B171F8200E4B2DB /* AssetCacheTest.cpp */,
-				E834DE831B171F8200E4B2DB /* AssetCacheTest.h */,
-			);
-			path = Test;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -348,7 +330,6 @@
 				E834DE9F1B171F8200E4B2DB /* CachedFiles.h in Headers */,
 				A69854D117CE41EC001E9FDE /* DefinitionFile.h in Headers */,
 				E834DEB71B171F8200E4B2DB /* ServerCacheEntry.h in Headers */,
-				E834DED21B171F8200E4B2DB /* AssetCacheTest.h in Headers */,
 				E834DE8D1B171F8200E4B2DB /* AssetCacheConstants.h in Headers */,
 				A69854D717CE41EC001E9FDE /* FramePathHelper.h in Headers */,
 				76962821196BF80D0064C3A0 /* TeamcityOutput.h in Headers */,
@@ -378,7 +359,6 @@
 				E834DEA01B171F8200E4B2DB /* CachedFiles.h in Headers */,
 				A69854D217CE41EC001E9FDE /* DefinitionFile.h in Headers */,
 				E834DEB81B171F8200E4B2DB /* ServerCacheEntry.h in Headers */,
-				E834DED31B171F8200E4B2DB /* AssetCacheTest.h in Headers */,
 				E834DE8E1B171F8200E4B2DB /* AssetCacheConstants.h in Headers */,
 				A69854D817CE41EC001E9FDE /* FramePathHelper.h in Headers */,
 				76962822196BF80D0064C3A0 /* TeamcityOutput.h in Headers */,
@@ -408,7 +388,6 @@
 				E834DEA11B171F8200E4B2DB /* CachedFiles.h in Headers */,
 				A69854D317CE41EC001E9FDE /* DefinitionFile.h in Headers */,
 				E834DEB91B171F8200E4B2DB /* ServerCacheEntry.h in Headers */,
-				E834DED41B171F8200E4B2DB /* AssetCacheTest.h in Headers */,
 				E834DE8F1B171F8200E4B2DB /* AssetCacheConstants.h in Headers */,
 				A69854D917CE41EC001E9FDE /* FramePathHelper.h in Headers */,
 				76962823196BF80D0064C3A0 /* TeamcityOutput.h in Headers */,
@@ -512,7 +491,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E834DECF1B171F8200E4B2DB /* AssetCacheTest.cpp in Sources */,
 				E834DE961B171F8200E4B2DB /* CacheDB.cpp in Sources */,
 				E834DE901B171F8200E4B2DB /* AssetCacheServer.cpp in Sources */,
 				E841A48C1B25AD97003E2C03 /* TCPChannel.cpp in Sources */,
@@ -539,7 +517,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E834DED01B171F8200E4B2DB /* AssetCacheTest.cpp in Sources */,
 				E834DE971B171F8200E4B2DB /* CacheDB.cpp in Sources */,
 				E834DE911B171F8200E4B2DB /* AssetCacheServer.cpp in Sources */,
 				E841A48D1B25AD97003E2C03 /* TCPChannel.cpp in Sources */,
@@ -566,7 +543,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E834DED11B171F8200E4B2DB /* AssetCacheTest.cpp in Sources */,
 				E834DE981B171F8200E4B2DB /* CacheDB.cpp in Sources */,
 				E834DE921B171F8200E4B2DB /* AssetCacheServer.cpp in Sources */,
 				E841A48E1B25AD97003E2C03 /* TCPChannel.cpp in Sources */,

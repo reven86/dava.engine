@@ -81,7 +81,6 @@ int AddRequest::CheckOptionsInternal() const
 
 void AddRequest::OnAddedToCache(const AssetCache::CacheItemKey &key, bool added)
 {
-    Logger::FrameworkDebug("[AddRequest::%s]", __FUNCTION__);
     requestResult.recieved = true;
     requestResult.succeed = added;
 }

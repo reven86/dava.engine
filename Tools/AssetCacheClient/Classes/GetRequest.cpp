@@ -29,6 +29,8 @@
 #include "GetRequest.h"
 #include "Constants.h"
 
+#include "Platform/SystemTimer.h"
+
 using namespace DAVA;
 
 GetRequest::GetRequest()

@@ -71,7 +71,7 @@ void SpritesPacker::PerformPack(bool isLightmapPacking, DAVA::eGPUFamily gpu)
 	resourcePacker->isLightmapsPacking = isLightmapPacking;
 
 #if defined __DAVAENGINE_MACOS__
-    resourcePacker->SetCacheClientTool("~res:/AssetCacheClient.app/Contents/MacOS/AssetCacheClient");
+    resourcePacker->SetCacheClientTool("~res:/AssetCacheClient");
 #elif defined __DAVAENGINE_WINDOWS__
     resourcePacker->SetCacheClientTool("~res:/AssetCacheClient.exe")
 #endif

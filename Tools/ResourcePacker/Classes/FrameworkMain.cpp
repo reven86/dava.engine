@@ -131,7 +131,7 @@ void ProcessRecourcePacker()
     auto toolFolderPath = resourcePacker->excludeDirectory + (commandLine[2] + "/");
 #if defined (__DAVAENGINE_MACOS__)
 	String pvrTexToolName = String("PVRTexToolCLI");
-    String cacheToolName = "AssetCacheClient.app/Contents/MacOS/AssetCacheClient";
+    String cacheToolName = "AssetCacheClient";
 #elif defined (__DAVAENGINE_WIN32__)
 	String pvrTexToolName = String("PVRTexToolCLI.exe");
     String cacheToolName = "AssetCacheClient.exe";

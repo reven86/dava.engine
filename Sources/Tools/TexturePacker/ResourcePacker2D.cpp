@@ -426,13 +426,17 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
         
         auto strDataPtr = cachedParams.c_str();
         auto strDataSize = cachedParams.size();
-        MD5::ForData(reinterpret_cast<const uint8 *>(strDataPtr), strDataSize, cacheKey.keyData.hash.secondary);
+        MD5::ForData(reinterpret_cast<const uint8 *>(strDataPtr), static_cast<uint32>(strDataSize), cacheKey.keyData.hash.secondary);
     }
     
-    uint64 getTime = SystemTimer::Instance()->AbsoluteMS();
-    bool skipRepackOfFolder = GetFilesFromCache(cacheKey, outputPath);
-    getTime = SystemTimer::Instance()->AbsoluteMS() - getTime;
-    Logger::Info("[%s - %.2lf secs] - GET FROM CACHE", inputPath.GetAbsolutePathname().c_str(), (float64)(getTime) / 1000.0f);
+    bool skipRepackOfFolder = !modified;
+    if(modified)
+    {
+        uint64 getTime = SystemTimer::Instance()->AbsoluteMS();
+        skipRepackOfFolder = GetFilesFromCache(cacheKey, outputPath);
+        getTime = SystemTimer::Instance()->AbsoluteMS() - getTime;
+        Logger::Info("[%s - %.2lf secs] - GET FROM CACHE", inputPath.GetAbsolutePathname().c_str(), (float64)(getTime) / 1000.0f);
+    }
     //TODO:AC: end
     
     ScopedPtr<FileList> fileList(new FileList(inputPath));
@@ -594,6 +598,13 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 
 bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey &key, const FilePath & outputPath)
 {
+    auto oldDir = FileSystem::Instance()->GetCurrentWorkingDirectory();
+    FileSystem::Instance()->SetCurrentWorkingDirectory(cacheClientTool.GetDirectory());
+    SCOPE_EXIT
+    {
+        FileSystem::Instance()->SetCurrentWorkingDirectory(oldDir);
+    };
+
     Vector<String> arruments;
     arruments.push_back("get");
     arruments.push_back("-h");
@@ -610,7 +621,7 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey &key, co
         const String& procOutput = cacheClient.GetOutput();
         if(procOutput.size() > 0)
         {
-            Logger::FrameworkDebug(procOutput.c_str());
+            Logger::FrameworkDebug("\nCacheClientLog: %s", procOutput.c_str());
         }
         
         return (cacheClient.GetExitCode() == 0);
@@ -622,6 +633,14 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey &key, co
 
 bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey &key, const FilePath & outputPath)
 {
+    auto oldDir = FileSystem::Instance()->GetCurrentWorkingDirectory();
+    FileSystem::Instance()->SetCurrentWorkingDirectory(cacheClientTool.GetDirectory());
+    SCOPE_EXIT
+    {
+        FileSystem::Instance()->SetCurrentWorkingDirectory(oldDir);
+    };
+    
+    
     String fileListString;
     ScopedPtr<FileList> outFilesList(new FileList(outputPath));
     for (int fi = 0; fi < outFilesList->GetCount(); ++fi)
@@ -654,7 +673,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey &key, cons
             const String& procOutput = cacheClient.GetOutput();
             if(procOutput.size() > 0)
             {
-                Logger::FrameworkDebug(procOutput.c_str());
+                Logger::FrameworkDebug("\nCacheClientLog: %s", procOutput.c_str());
             }
             
             return (cacheClient.GetExitCode() == 0);

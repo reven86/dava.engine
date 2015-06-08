@@ -155,16 +155,12 @@ void Client::OnGetFromCache(KeyedArchive * archieve)
 
 void Client::ChannelOpen(TCPChannel *tcpChannel)
 {
-    Logger::FrameworkDebug("[TCPConnection::%s] 0x%p, 0x%p", __FUNCTION__, tcpChannel, netClient);
-
     DVASSERT(openedChannel == nullptr);
     openedChannel = tcpChannel;
 }
 
 void Client::ChannelClosed(TCPChannel *tcpChannel, const char8* message)
 {
-    Logger::FrameworkDebug("[TCPConnection::%s] 0x%p, 0x%p", __FUNCTION__, tcpChannel, netClient);
-
     DVASSERT(openedChannel == tcpChannel);
     openedChannel = nullptr;
 }

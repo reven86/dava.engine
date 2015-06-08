@@ -52,7 +52,6 @@ TCPChannel::TCPChannel()
     
 TCPChannel::~TCPChannel()
 {
-    Logger::FrameworkDebug("[TCPChannel::%s]", __FUNCTION__);
     delegate = nullptr;
 }
     
@@ -72,8 +71,6 @@ bool TCPChannel::SendArchieve(KeyedArchive * archieve)
     
 uint32 TCPChannel::SendData(const uint8 * data, const size_t dataSize)
 {
-    Logger::FrameworkDebug("[TCPChannel::%s]", __FUNCTION__);
-
     uint32 packetID = 0;
     bool sent = Send(data, dataSize, &packetID);
     if(sent)
@@ -87,7 +84,6 @@ uint32 TCPChannel::SendData(const uint8 * data, const size_t dataSize)
     
 void TCPChannel::ChannelOpen()
 {
-    Logger::FrameworkDebug("[TCPChannel::%s] delegate = 0x%p", __FUNCTION__, delegate);
     if(delegate)
     {
         delegate->ChannelOpen(this);
@@ -97,7 +93,6 @@ void TCPChannel::ChannelOpen()
 
 void TCPChannel::ChannelClosed(const char8* message)
 {
-    Logger::FrameworkDebug("[TCPChannel::%s] %s", __FUNCTION__, message);
     if(delegate)
     {
         delegate->ChannelClosed(this, message);
@@ -108,7 +103,6 @@ void TCPChannel::ChannelClosed(const char8* message)
 
 void TCPChannel::PacketReceived(const void* packet, size_t length)
 {
-    Logger::FrameworkDebug("[TCPChannel::%s]", __FUNCTION__);
     if(delegate)
     {
         delegate->PacketReceived(this, packet, length);
@@ -119,7 +113,6 @@ void TCPChannel::PacketReceived(const void* packet, size_t length)
 
 void TCPChannel::PacketSent()
 {
-    Logger::FrameworkDebug("[TCPChannel::%s]", __FUNCTION__);
     if(delegate)
     {
         delegate->PacketSent(this);
@@ -130,7 +123,6 @@ void TCPChannel::PacketSent()
 
 void TCPChannel::PacketDelivered()
 {
-    Logger::FrameworkDebug("[TCPChannel::%s]", __FUNCTION__);
     if(delegate)
     {
         delegate->PacketDelivered(this);

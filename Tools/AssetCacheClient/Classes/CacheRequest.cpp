@@ -100,7 +100,6 @@ int CacheRequest::Connect()
     while(client.IsConnected() == false)
     {
         Net::NetCore::Instance()->Poll();
-        Thread::Sleep(10);
         
         auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
         if(((connectionTimeout > 0) && (deltaTime > connectionTimeout)) && (client.IsConnected() == false))
@@ -121,7 +120,6 @@ int CacheRequest::WaitRequest()
     while(requestResult.recieved == false)
     {
         Net::NetCore::Instance()->Poll();
-        Thread::Sleep(10);
         
         auto deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
         if(((connectionTimeout > 0) && (deltaTime > connectionTimeout)) && (requestResult.recieved == false))
@@ -136,7 +134,6 @@ int CacheRequest::WaitRequest()
         Logger::Error("[CacheRequest::%s] Request failed by server", __FUNCTION__);
         return AssetCacheClientConstants::EXIT_SERVER_ERROR;
     }
-    
     
     return AssetCacheClientConstants::EXIT_OK;
 }

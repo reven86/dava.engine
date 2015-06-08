@@ -47,13 +47,11 @@ Mutex TCPConnection::serviceMutex;
     
 TCPConnection * TCPConnection::CreateClient(uint32 service, const Net::Endpoint & endpoint)
 {
-    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
     return new TCPConnection(Net::CLIENT_ROLE, service, endpoint);
 }
 
 TCPConnection * TCPConnection::CreateServer(uint32 service, const Net::Endpoint & endpoint)
 {
-    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
     return new TCPConnection(Net::SERVER_ROLE, service, endpoint);
 }
     
@@ -70,7 +68,6 @@ TCPConnection::TCPConnection(Net::eNetworkRole _role, uint32 _service, const Net
     
 TCPConnection::~TCPConnection()
 {
-    Logger::FrameworkDebug("[TCPConnection::%s] role = %d", __FUNCTION__, role);
     if(Net::NetCore::INVALID_TRACK_ID != controllerId && Net::NetCore::Instance())
     {
         Disconnect();
@@ -81,8 +78,6 @@ TCPConnection::~TCPConnection()
     
 bool TCPConnection::Connect()
 {
-    Logger::FrameworkDebug("[TCPConnection::%s] role = %d", __FUNCTION__, role);
-
     bool registered = RegisterService(service);
     if(registered)
     {
@@ -108,8 +103,6 @@ bool TCPConnection::Connect()
     
 void TCPConnection::Disconnect()
 {
-    Logger::FrameworkDebug("[TCPConnection::%s] role = %d", __FUNCTION__, role);
-    
     DVASSERT(Net::NetCore::INVALID_TRACK_ID != controllerId);
     DVASSERT(Net::NetCore::Instance() != nullptr);
 
@@ -119,8 +112,6 @@ void TCPConnection::Disconnect()
     
 bool TCPConnection::RegisterService(uint32 service)
 {
-    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
-
     LockGuard<Mutex> guard(serviceMutex);
     
     auto registered = registeredServices.count(service) > 0;
@@ -142,15 +133,12 @@ bool TCPConnection::RegisterService(uint32 service)
     
 Net::IChannelListener * TCPConnection::Create(uint32 serviceId, void* context)
 {
-    Logger::FrameworkDebug("[TCPConnection::%s] 0x%p", __FUNCTION__, context);
-
     auto connection = static_cast<TCPConnection *>(context);
     return connection->CreateChannel();
 }
 
 void TCPConnection::Delete(Net::IChannelListener* obj, void* context)
 {
-    Logger::FrameworkDebug("[TCPConnection::%s] 0x%p", __FUNCTION__, context);
     auto connection = static_cast<TCPConnection *>(context);
     auto channel = DynamicTypeCheck<TCPChannel *>(obj);
     return connection->DestroyChannel(channel);
@@ -158,8 +146,6 @@ void TCPConnection::Delete(Net::IChannelListener* obj, void* context)
 
 TCPChannel * TCPConnection::CreateChannel()
 {
-    Logger::FrameworkDebug("[TCPConnection::%s] role = %d", __FUNCTION__, role);
-
     LockGuard<Mutex> guard(channelMutex);
 
     auto newChannel = new TCPChannel();
@@ -171,7 +157,6 @@ TCPChannel * TCPConnection::CreateChannel()
 
 void TCPConnection::DestroyChannel(TCPChannel *channel)
 {
-    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
     LockGuard<Mutex> guard(channelMutex);
 
     auto found = std::find(channels.cbegin(), channels.cend(), channel);
@@ -185,8 +170,6 @@ void TCPConnection::DestroyChannel(TCPChannel *channel)
 
 void TCPConnection::SetDelegate(TCPChannelDelegate * _delegate)
 {
-    Logger::FrameworkDebug("[TCPConnection::%s]", __FUNCTION__);
-
     delegate = _delegate;
     
     LockGuard<Mutex> guard(channelMutex);

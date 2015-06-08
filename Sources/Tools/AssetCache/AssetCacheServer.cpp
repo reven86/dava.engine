@@ -88,7 +88,6 @@ void Server::Disconnect()
     
 void Server::PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, size_t length)
 {
-    Logger::FrameworkDebug("[AssetCache::Server::%s] tcpChannel = 0x%p", __FUNCTION__, tcpChannel);
     if(length)
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
@@ -118,8 +117,6 @@ void Server::PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, si
     
 bool Server::FilesAddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, bool added)
 {
-    Logger::FrameworkDebug("[AssetCache::Server::%s] tcpChannel = 0x%p", __FUNCTION__, tcpChannel);
-    
     if(tcpChannel)
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
@@ -140,7 +137,6 @@ bool Server::FilesAddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey 
     
 bool Server::SendFiles(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, const CachedFiles &files)
 {
-    Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
     if(tcpChannel)
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
@@ -163,7 +159,6 @@ bool Server::SendFiles(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, co
 
 void Server::OnAddToCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve)
 {
-    Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
     if(delegate)
     {
         KeyedArchive *keyArchieve = archieve->GetArchive("key");
@@ -189,7 +184,6 @@ void Server::OnAddToCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve)
     
 void Server::OnGetFromCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve)
 {
-    Logger::FrameworkDebug("[AssetCache::Server::%s]", __FUNCTION__);
     if(delegate)
     {
         KeyedArchive *keyArchieve = archieve->GetArchive("key");
