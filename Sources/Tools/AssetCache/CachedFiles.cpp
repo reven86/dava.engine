@@ -280,6 +280,25 @@ void CachedFiles::InvalidateFileSize()
     }
 }
     
+CachedFiles CachedFiles::Copy(const FilePath & folder) const
+{
+    DVASSERT(folder.IsDirectoryPathname());
+    
+    CachedFiles copyFiles;
+    
+    copyFiles.filesAreLoaded = filesAreLoaded;
+    copyFiles.filesSize = filesSize;
+    
+    for(auto & f: files)
+    {
+        auto path = folder + f.first.GetFilename();
+        copyFiles.files[path] = SafeRetain(f.second);
+    }
+    
+    return copyFiles;
+}
+    
+    
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA

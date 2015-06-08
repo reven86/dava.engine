@@ -74,6 +74,8 @@ public:
     void InvalidateFileSize();
     uint64 GetFilesSize() const;
     
+    CachedFiles Copy(const FilePath & folder) const;
+    
 private:
     
     Data * LoadFile(const FilePath & pathname);

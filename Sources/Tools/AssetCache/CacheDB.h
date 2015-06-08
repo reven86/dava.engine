@@ -93,9 +93,7 @@ public:
     
     ServerCacheEntry * Get(const CacheItemKey &key);
 
-    void Insert(const CacheItemKey &key, const ServerCacheEntry &entry);
     void Insert(const CacheItemKey &key, const CachedFiles &files);
-    
     void Remove(const CacheItemKey &key);
     
     const FilePath & GetPath() const;
@@ -106,6 +104,9 @@ public:
     void Update();
     
 private:
+
+    void Insert(const CacheItemKey &key, const ServerCacheEntry &entry);
+
     
     FilePath CreateFolderPath(const CacheItemKey &key) const;
     

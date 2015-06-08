@@ -270,7 +270,10 @@ ServerCacheEntry * CacheDB::Get(const CacheItemKey &key)
 
 void CacheDB::Insert(const CacheItemKey &key, const CachedFiles &files)
 {
-    ServerCacheEntry entry(files);
+    auto savedPath = CreateFolderPath(key);
+    auto dbFiles = files.Copy(savedPath);
+    
+    ServerCacheEntry entry(dbFiles);
     Insert(key, entry);
 }
     

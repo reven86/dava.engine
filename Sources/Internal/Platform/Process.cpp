@@ -393,6 +393,10 @@ void Process::Wait()
     exitCode = WEXITSTATUS(status);
     if (WIFEXITED(status) == 0)
     {
+        if(exitCode == 0)
+        {
+            exitCode = -1;  //to say external code about problems
+        }
         Logger::Error("[Process::Wait] The process %s exited abnormally! (%d)", executablePath.GetAbsolutePathname().c_str(), exitCode);
     }
 

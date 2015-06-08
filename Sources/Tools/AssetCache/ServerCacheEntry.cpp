@@ -51,6 +51,7 @@ ServerCacheEntry::ServerCacheEntry(const CachedFiles &_files)
     : files(_files)
     , accessID(0)
 {
+    
 }
 
     
