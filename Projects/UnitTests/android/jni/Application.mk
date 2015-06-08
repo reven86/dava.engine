@@ -1,6 +1,6 @@
 # DO NOT modify next 3 lines because TeamCity agent builder need it
 # to automaticaly build correct version
-MEMORY_SANITIZE := true
+MEMORY_SANITIZE := false
 
 APP_STL := c++_shared # works with gnustl_static gnustl_share c++_static c++_shared tested on ndk10e
 APP_CPPFLAGS := -frtti -fexceptions -std=c++14
