@@ -57,7 +57,7 @@ class VersionInfo
     : public Singleton<VersionInfo>
 {
 public:
-    typedef Map<String, uint32> TagsMap;
+    using TagsMap = Map<String, uint32>;
     struct SceneVersion
     {
         uint32 version;
@@ -67,7 +67,7 @@ public:
             : version(0){}
         bool IsValid() const{ return version > 0; }
     };
-    typedef Map<uint32, SceneVersion> VersionMap;
+    using VersionMap = Map<uint32, SceneVersion>;
 
     enum eStatus
     {

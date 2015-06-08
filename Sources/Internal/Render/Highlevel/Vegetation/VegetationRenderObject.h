@@ -59,7 +59,7 @@
 namespace DAVA
 {
     
-typedef Image VegetationMap;
+using VegetationMap = Image;
 class FoliageSystem;
 
 /**

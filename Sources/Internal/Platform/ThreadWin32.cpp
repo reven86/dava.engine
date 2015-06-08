@@ -38,13 +38,13 @@ namespace DAVA
 const DWORD MS_VC_EXCEPTION=0x406D1388;
 
 #pragma pack(push,8)
-typedef struct tagTHREADNAME_INFO
+using THREADNAME_INFO = struct tagTHREADNAME_INFO
 {
-    DWORD dwType; // Must be 0x1000.
-    LPCSTR szName; // Pointer to name (in user addr space).
-    DWORD dwThreadID; // Thread ID
-    DWORD dwFlags; // Reserved for future use, must be zero.
-} THREADNAME_INFO;
+    DWORD dwType;       // Must be 0x1000.
+    LPCSTR szName;      // Pointer to name (in user addr space).
+    DWORD dwThreadID;   // Thread ID
+    DWORD dwFlags;      // Reserved for future use, must be zero.
+};
 #pragma pack(pop)
 
 void Thread::Init()

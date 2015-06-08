@@ -36,7 +36,7 @@
 namespace DAVA
 {
 
-typedef time_t Timestamp;
+using Timestamp = time_t;
     
 class DateTime
 {

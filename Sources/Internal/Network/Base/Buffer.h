@@ -38,7 +38,7 @@ namespace DAVA
 namespace Net
 {
 
-typedef uv_buf_t Buffer;
+using Buffer = uv_buf_t;
 
 template<typename T>
 Buffer CreateBuffer(T* buffer, std::size_t count = 1)
