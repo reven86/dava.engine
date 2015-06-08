@@ -37,7 +37,9 @@ const DAVA::uint32 InvalidUniqueHandle = -1;
 
 namespace DAVA
 {
-typedef uint32 UniqueHandle;
+
+using UniqueHandle = uint32;
+
 //T is element type
 template<typename T>
 class UniqueStateSet

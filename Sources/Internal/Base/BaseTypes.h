@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_TYPES_H__
-#define __DAVAENGINE_TYPES_H__
+#ifndef __DAVAENGINE_BASETYPES_H__
+#define __DAVAENGINE_BASETYPES_H__
 
 #include "DAVAConfig.h"
 #include "Base/TemplateHelpers.h"
@@ -129,10 +129,9 @@
 //#define _SECURE_SCL 0
 
 // MSVS: conversion from type1 to type2, possible loss of data
-
 #if defined(__DAVAENGINE_WIN32__)
-#pragma warning( push )
-#pragma warning( disable : 4244)
+#   pragma warning( push )
+#   pragma warning( disable : 4244)
 #endif 
 
 #include <cstdint>
@@ -151,9 +150,10 @@
 #include <unordered_set>
 #include <sstream>
 #include <cerrno>
+#include <cstdint>
 
 #if defined(__DAVAENGINE_WIN32__)
-#pragma warning( pop )
+#   pragma warning( pop )
 #endif 
 
 //#if TARGET_OS_IPHONE_SIMULATOR //) || defined(TARGET_IPHONE)
@@ -170,24 +170,23 @@
 namespace DAVA
 {
 
-typedef unsigned char   uint8;
-typedef unsigned short  uint16;
-typedef unsigned int    uint32;
+using uint8 = std::uint8_t;
+using uint16 = std::uint16_t;
+using uint32 = std::uint32_t;
+using uint64 = std::uint64_t;
 
-typedef signed char     int8;
-typedef signed short    int16;
-typedef signed int      int32;
+using int8 = std::int8_t;
+using int16 = std::int16_t;
+using int32 = std::int32_t;
+using int64 = std::int64_t;
 
-#if defined(__DAVAENGINE_WIN32__)
-    typedef unsigned __int64    uint64;
-    typedef signed __int64      int64;
-#else
-    typedef unsigned long long  uint64;
-    typedef signed long long    int64;
-#endif 
+using char8 = char;
+using char16 = wchar_t;
 
-// TODO: maybe replace pointer_size with using pointer_size = uintptr_t?
-typedef Select<sizeof(void*) == 4, uint32, uint64>::Result pointer_size;
+using float32 = float;
+using float64 = double;
+
+using pointer_size = std::uintptr_t;
 
 #ifndef TRUE
 #define TRUE    1
@@ -197,11 +196,6 @@ typedef Select<sizeof(void*) == 4, uint32, uint64>::Result pointer_size;
 #define FALSE   0
 #endif
 
-typedef char        char8;
-typedef wchar_t     char16;
-
-typedef float       float32;
-typedef double      float64;
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 // FIX: replace DefaultSTLAllocator with MemoryManagerAllocator after fixing framework and game codebases
@@ -224,8 +218,8 @@ using BasicStringStream = std::basic_stringstream<CharT, std::char_traits<CharT>
 
 using StringStream = BasicStringStream<char8>;
 
-template< class T, 
-          std::size_t N > 
+template<typename T,
+         std::size_t N>
 using Array = std::array<T, N>;
 
 template<typename T>
@@ -303,10 +297,10 @@ inline T Clamp(T val, T a, T b)
 }
 
 #if defined(__DAVAENGINE_WIN32__)
-#define Snprintf    _snprintf
-#else //#if defined(__DAVAENGINE_WIN32__)
-#define Snprintf    snprintf
-#endif //#if defined(__DAVAENGINE_WIN32__)
+#   define Snprintf    _snprintf
+#else
+#   define Snprintf    snprintf
+#endif
 
 #define Memcmp memcmp
 #define Memcpy memcpy
@@ -334,11 +328,11 @@ void SafeDeleteArray(TYPE * & d)
 }
 
 #ifndef SAFE_DELETE // for compatibility with FCollada
-#define SAFE_DELETE(x) if (x) { delete x; x = nullptr; };
+#define SAFE_DELETE(x)  DAVA::SafeDelete(x)
 #endif 
 
 #ifndef SAFE_DELETE_ARRAY // for compatibility with FCollada
-#define SAFE_DELETE_ARRAY(x) if (x) { delete [] x; x = nullptr; };
+#define SAFE_DELETE_ARRAY(x)    DAVA::SafeDeleteArray(x)
 #endif
 
 #ifndef OBJC_SAFE_RELEASE
@@ -402,7 +396,6 @@ enum eErrorCode
     ERROR_WRITE_FAIL
 };
 
-};
+}   // namespace DAVA
 
-#endif
-
+#endif  // __DAVAENGINE_BASETYPES_H__

@@ -78,18 +78,7 @@
 namespace DAVA
 {
 
-//typedef uint32 uint32;
-
 /* Data structure for MD5 (Message Digest) computation */
-/*
-typedef struct {
-} MD5_CTX;
-
-void MD5Init (MD5_CTX *mdContext);
-void MD5Update (MD5_CTX *mdContext, unsigned char *inBuf, unsigned int inLen);
-void MD5Final (MD5_CTX *mdContext);
-*/
-
 class MD5
 {
 public:
@@ -117,8 +106,8 @@ private:
 
 
 	uint32 i[2];                   /* number of _bits_ handled mod 2^64 */
-	uint32 buf[4];                                    /* scratch buffer */
-	uint8 in[64];                              /* input buffer */
+	uint32 buf[4];                 /* scratch buffer */
+	uint8 in[64];                  /* input buffer */
 	uint8 digest[DIGEST_SIZE];     /* actual digest after MD5Final call */
 };
 

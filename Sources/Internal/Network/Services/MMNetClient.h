@@ -45,11 +45,11 @@ namespace Net
 class MMNetClient : public NetService
 {
 public:
-    typedef Function<void(const MMStatConfig*)> ChOpenCallback;
-    typedef Function<void (const char8*)> ChClosedCallback;       // TODO: change to void(const char*) after fixing TypeTraits and Function
-    typedef Function<void(const MMStat*)> StatCallback;
-    typedef Function<void(size_t total, size_t recv)> DumpGetCallback;
-    typedef Function<void(const MMDump*, size_t)> DumpDoneCallback;
+    using ChOpenCallback = Function<void(const MMStatConfig*)>;
+    using ChClosedCallback = Function<void(const char8*)>;      // TODO: change to void(const char*) after fixing TypeTraits and Function
+    using StatCallback = Function<void(const MMStat*)>;
+    using DumpGetCallback = Function<void(size_t total, size_t recv)>;
+    using DumpDoneCallback = Function<void(const MMDump*, size_t)>;
 
 public:
     MMNetClient();

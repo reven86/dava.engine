@@ -40,8 +40,8 @@ namespace Net
 
 struct IChannelListener;
 
-typedef Function<IChannelListener* (uint32 serviceId, void* context)> ServiceCreator;
-typedef Function<void (IChannelListener* obj, void* context)> ServiceDeleter;
+using ServiceCreator = Function<IChannelListener* (uint32 serviceId, void* context)>;
+using ServiceDeleter = Function<void(IChannelListener* obj, void* context)>;
 
 class ServiceRegistrar
 {
