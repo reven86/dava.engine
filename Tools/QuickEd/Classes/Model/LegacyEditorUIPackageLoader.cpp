@@ -41,7 +41,11 @@
 
 using namespace DAVA;
 
-LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(AbstractUIPackageBuilder *builder, LegacyControlData *data) : builder(builder), legacyData(SafeRetain(data))
+LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(LegacyControlData *data)
+    : legacyData(SafeRetain(data))
+    , storeAggregatorName(false)
+    , aggregatorName("")
+
 {
     // for legacy loading
     
@@ -75,11 +79,10 @@ LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(AbstractUIPackageBuilde
 
 LegacyEditorUIPackageLoader::~LegacyEditorUIPackageLoader()
 {
-    builder = NULL;
     SafeRelease(legacyData);
 }
 
-UIPackage *LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath)
+bool LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath, AbstractUIPackageBuilder *builder)
 {
     RefPtr<YamlParser> parser(YamlParser::Create(packagePath));
 
@@ -89,18 +92,23 @@ UIPackage *LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath)
     YamlNode *rootNode = parser->GetRootNode();
     if (!rootNode)//empty yaml equal to empty UIPackage
     {
-        RefPtr<UIPackage> package = builder->BeginPackage(packagePath);
+        builder->BeginPackage(packagePath);
         builder->EndPackage();
-        return SafeRetain(package.Get());
+        return true;
     }
     
-    RefPtr<UIPackage> package = builder->BeginPackage(packagePath);
+    builder->BeginPackage(packagePath);
     
     UIControl *legacyControl = builder->BeginControlWithClass("UIControl");
     builder->BeginControlPropertiesSection("UIControl");
     const LegacyControlData::Data *data = legacyData ? legacyData->Get(packagePath.GetFrameworkPath()) : NULL;
     if (data)
     {
+        if (storeAggregatorName)
+        {
+            aggregatorName = data->name;
+            storeAggregatorName = false;
+        }
         legacyControl->SetName(data->name);
         builder->ProcessProperty(legacyControl->TypeInfo()->Member("size"), VariantType(data->size));
     }
@@ -120,7 +128,7 @@ UIPackage *LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath)
         if (childNode->Get("type"))
         {
             String name = childrenNode->GetItemKeyName(i);
-            LoadControl(name, childNode);
+            LoadControl(name, childNode, builder);
         }
     }
     
@@ -128,16 +136,16 @@ UIPackage *LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath)
     
     builder->EndPackage();
     
-    return SafeRetain(package.Get());
+    return true;
 }
 
-bool LegacyEditorUIPackageLoader::LoadControlByName(const DAVA::String &/*name*/)
+bool LegacyEditorUIPackageLoader::LoadControlByName(const DAVA::String &/*name*/, DAVA::AbstractUIPackageBuilder *builder)
 {
     DVASSERT(false);
     return false;
 }
 
-void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const YamlNode *node)
+void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const YamlNode *node, DAVA::AbstractUIPackageBuilder *builder)
 {
     UIControl *control = NULL;
     const YamlNode *type = node->Get("type");
@@ -147,9 +155,15 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
     {
         loadChildren = false;
         const YamlNode *pathNode = node->Get("aggregatorPath");
-        RefPtr<UIPackage> importedPackage = builder->ProcessImportedPackage(pathNode->AsString(), this);
-        DVASSERT(importedPackage.Get());
-        control = builder->BeginControlWithPrototype(FilePath(pathNode->AsString()).GetBasename(), importedPackage->GetControl(0)->GetName(), nullptr, this);
+        storeAggregatorName = true;
+        aggregatorName = "";
+        bool result = builder->ProcessImportedPackage(pathNode->AsString(), this);
+        DVASSERT(result);
+        DVASSERT(storeAggregatorName == false);
+        DVASSERT(!aggregatorName.empty());
+        control = builder->BeginControlWithPrototype(FilePath(pathNode->AsString()).GetBasename(), aggregatorName, nullptr, this);
+        storeAggregatorName = false;
+        aggregatorName = "";
     }
     else if (baseType)
         control = builder->BeginControlWithCustomClass(type->AsString(), baseType->AsString());
@@ -160,9 +174,9 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
     if (control)
     {
         control->SetName(name);
-        LoadControlPropertiesFromYamlNode(control, control->GetTypeInfo(), node);
-        LoadBgPropertiesFromYamlNode(control, node);
-        LoadInternalControlPropertiesFromYamlNode(control, node);
+        LoadControlPropertiesFromYamlNode(control, control->GetTypeInfo(), node, builder);
+        LoadBgPropertiesFromYamlNode(control, node, builder);
+        LoadInternalControlPropertiesFromYamlNode(control, node, builder);
         
         // load children
         if (loadChildren)
@@ -176,7 +190,7 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
                 if (childNode->Get("type"))
                 {
                     String name = childrenNode->GetItemKeyName(i);
-                    LoadControl(name, childNode);
+                    LoadControl(name, childNode, builder);
                 }
             }
         }
@@ -187,11 +201,11 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
     builder->EndControl(false);
 }
 
-void LegacyEditorUIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, const InspInfo *typeInfo, const YamlNode *node)
+void LegacyEditorUIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, const InspInfo *typeInfo, const YamlNode *node, DAVA::AbstractUIPackageBuilder *builder)
 {
     const InspInfo *baseInfo = typeInfo->BaseInfo();
     if (baseInfo)
-        LoadControlPropertiesFromYamlNode(control, baseInfo, node);
+        LoadControlPropertiesFromYamlNode(control, baseInfo, node, builder);
     
     builder->BeginControlPropertiesSection(typeInfo->Name());
 
@@ -222,7 +236,7 @@ void LegacyEditorUIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *c
     builder->EndControlPropertiesSection();
 }
 
-void LegacyEditorUIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *control, const YamlNode *node)
+void LegacyEditorUIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *control, const YamlNode *node, DAVA::AbstractUIPackageBuilder *builder)
 {
     String className = control->GetClassName();
     for (int32 i = 0; i < control->GetBackgroundComponentsCount(); i++)
@@ -275,7 +289,7 @@ void LegacyEditorUIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *contro
     }
 }
 
-void LegacyEditorUIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *control, const YamlNode *node)
+void LegacyEditorUIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *control, const YamlNode *node, DAVA::AbstractUIPackageBuilder *builder)
 {
     String className = control->GetClassName();
     for (int32 i = 0; i < control->GetInternalControlsCount(); i++)

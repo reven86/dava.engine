@@ -14,6 +14,7 @@ import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.InputDevice;
@@ -56,6 +57,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	public abstract JNIGLSurfaceView GetSurfaceView();
     
     private static JNIActivity activity = null;
+    private static long glThreadId = 0;
     protected static SingalStrengthListner singalStrengthListner = null;
     private boolean isPausing = false;
     
@@ -276,7 +278,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         Log.i(JNIConst.LOG_TAG, "[Activity::onResume] start");
         // recreate eglContext (also eglSurface, eglScreen) should be first
         super.onResume();
-
+         
         // activate accelerometer
         if(accelerometer != null)
         {
@@ -303,6 +305,25 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         JNITextField.RelinkNativeControls();
         JNIWebView.RelinkNativeControls();
+
+        /*
+         Start of workaround
+         
+         Here we need to hide navigation bar. 
+         Activity is configured to hide the bar, but seems android shows the bar before activity. 
+         In that case we need to hide the bar. 
+         */
+        Runnable navigationBarHider = new Runnable() {
+    		@Override
+			public void run() {
+				HideNavigationBar(getWindow().getDecorView());
+			}
+		};
+		
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.postDelayed(navigationBarHider, 300);
+        
+        // end of workaround
         
         isPausing = false;
         Log.i(JNIConst.LOG_TAG, "[Activity::onResume] finish");
@@ -356,8 +377,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         super.onWindowFocusChanged(hasFocus);
         
     	if(hasFocus) {
-    		HideNavigationBar(getWindow().getDecorView());
-    		
     		// we have to wait for window to get focus and only then
     		// resume game
     		// because on some slow devices:
@@ -374,6 +393,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     		    glView.queueEvent(action);
     		    setResumeGLActionOnWindowReady(null);
     		}
+    		
+    		HideNavigationBar(getWindow().getDecorView());
     	}
     	Log.i(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] finish");
     }
@@ -459,6 +480,14 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	{
 		nativeOnAccelerometer(x, y, z);
 	}
+    
+    public void setGLThreadId(long id) {
+        glThreadId = id;
+    }
+    
+    public long getGLThreadId() {
+        return glThreadId;
+    }
 	
 	public void PostEventToGL(Runnable event) {
 		glView.queueEvent(event);

@@ -34,57 +34,80 @@
 
 extern "C"
 {
-	int Java_com_dava_framework_JNIWebView_OnUrlChange(JNIEnv* env, jobject classthis, int id, jstring jUrl, jboolean hasGesture)
-	{
-		int res = 0;
-		char url[1024];
-		DAVA::JNI::CreateStringFromJni(env, jUrl, url);
-		bool isRedirectedByMouseClick = static_cast<bool>(hasGesture);
-		res = DAVA::JniWebView::URLChanged(id, url, isRedirectedByMouseClick);
-		return res;
-	}
+int Java_com_dava_framework_JNIWebView_OnUrlChange(JNIEnv* env, jobject classthis, int id, jstring jUrl, jboolean hasGesture)
+{
+    int res = 0;
+    char url[1024];
+    DAVA::JNI::CreateStringFromJni(env, jUrl, url);
+    bool isRedirectedByMouseClick = static_cast<bool>(hasGesture);
+    res = DAVA::JniWebView::URLChanged(id, url, isRedirectedByMouseClick);
+    return res;
+}
 
-	void Java_com_dava_framework_JNIWebView_OnPageLoaded(JNIEnv* env, jobject classthis, int id, jintArray pixels, int width, int height)
-	{
-		if (nullptr == pixels)
-		{
-			DAVA::JniWebView::PageLoaded(id, 0, 0, 0);
-		} else
-		{
-			jboolean isCopy = JNI_FALSE;
-			jint* rawData = env->GetIntArrayElements(pixels, &isCopy);
+void Java_com_dava_framework_JNIWebView_OnPageLoaded(JNIEnv* env, jobject classthis, int id, jintArray pixels, int width, int height)
+{
+    static_assert(sizeof(jint) == sizeof(DAVA::int32), "o_O can't be");
 
-			DVASSERT(rawData);
-			DVASSERT(width);
-			DVASSERT(height);
-			DVASSERT(env->GetArrayLength(pixels) == width * height); // ARGB
+    if (nullptr == pixels)
+    {
+        DAVA::JniWebView::PageLoaded(id, 0, 0, 0);
+    } else
+    {
+        jboolean isCopy{JNI_FALSE};
+        jint* rawData = env->GetIntArrayElements(pixels, &isCopy);
 
-            DAVA::uint32 pitch = width * DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBytes(DAVA::FORMAT_RGBA8888);
-            DAVA::ImageConvert::SwapRedBlueChannels(DAVA::FORMAT_RGBA8888, rawData, width, height, pitch);
+        DVASSERT(rawData);
+        DVASSERT(width);
+        DVASSERT(height);
+        DVASSERT(env->GetArrayLength(pixels) == width * height); // ARGB
 
-			DAVA::JniWebView::PageLoaded(id, rawData, width, height);
+        DAVA::uint32 pitch{static_cast<DAVA::uint32>(width) * 4}; // 4 byte per pixel
+        DAVA::int32* pixelsCopy{nullptr};
+        DAVA::Image* image{nullptr};
 
-			env->ReleaseIntArrayElements(pixels, rawData, 0);
-		}
+        if(JNI_TRUE == isCopy)
+        {
+            pixelsCopy = reinterpret_cast<DAVA::int32*>(rawData);
+        } else
+        {
+            // we have to copy pixels from Java because different threads (Java, OpenGL)
+            // and in Java main thread current pixel buffer can be rewritten
+            const DAVA::uint8* data = reinterpret_cast<DAVA::uint8*>(rawData);
+            image = DAVA::Image::CreateFromData(width, height, DAVA::FORMAT_RGBA8888, data);
 
-	}
+            pixelsCopy = reinterpret_cast<DAVA::int32*>(image->GetData());
+        }
 
-	void Java_com_dava_framework_JNIWebView_OnExecuteJScript(JNIEnv* env, jobject classthis, int id, jstring jResult)
-	{
-		// string with result can be large with JSON inside
+        // convert on the same memory
+        DAVA::ImageConvert::ConvertImageDirect(DAVA::FORMAT_BGRA8888,
+                DAVA::FORMAT_RGBA8888, pixelsCopy, width, height, pitch, pixelsCopy,
+                width, height, pitch);
 
-	    // Returns the length in bytes of the modified UTF-8
-	    // representation of a string.
-	    // http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/functions.html
-	    size_t size = env->GetStringUTFLength(jResult);
-	    const char* utf8Data = env->GetStringUTFChars(jResult, NULL);
+        DAVA::JniWebView::PageLoaded(id, pixelsCopy, width, height);
 
-	    DAVA::String str(utf8Data, size);
+        SafeRelease(image);
 
-		DAVA::JniWebView::OnExecuteJScript(id, str);
+        // JNI_ABORT free the buffer without copying back the possible changes
+        env->ReleaseIntArrayElements(pixels, rawData, JNI_ABORT);
+    }
+}
 
-		// http://stackoverflow.com/questions/5859673/should-you-call-releasestringutfchars-if-getstringutfchars-returned-a-copy
-		env->ReleaseStringUTFChars(jResult, utf8Data);
-	}
+void Java_com_dava_framework_JNIWebView_OnExecuteJScript(JNIEnv* env, jobject classthis, int id, jstring jResult)
+{
+    // string with result can be large with JSON inside
+
+    // Returns the length in bytes of the modified UTF-8
+    // representation of a string.
+    // http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/functions.html
+    size_t size = env->GetStringUTFLength(jResult);
+    const char* utf8Data = env->GetStringUTFChars(jResult, NULL);
+
+    DAVA::String str(utf8Data, size);
+
+    DAVA::JniWebView::OnExecuteJScript(id, str);
+
+    // http://stackoverflow.com/questions/5859673/should-you-call-releasestringutfchars-if-getstringutfchars-returned-a-copy
+    env->ReleaseStringUTFChars(jResult, utf8Data);
+}
 
 };

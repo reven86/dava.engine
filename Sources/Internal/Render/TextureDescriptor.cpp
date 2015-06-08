@@ -644,7 +644,7 @@ const TextureDescriptor::Compression * TextureDescriptor::GetCompressionParams(e
     return &compression[gpuFamily];
 }
 
-Array<ImageFormat, 3> TextureDescriptor::sourceTextureTypes = { { IMAGE_FORMAT_PNG, IMAGE_FORMAT_TGA, IMAGE_FORMAT_JPEG } };
+Array<ImageFormat, 4> TextureDescriptor::sourceTextureTypes = { { IMAGE_FORMAT_PNG, IMAGE_FORMAT_TGA, IMAGE_FORMAT_JPEG, IMAGE_FORMAT_DDS } };
 Array<ImageFormat, 2> TextureDescriptor::compressedTextureTypes = { { IMAGE_FORMAT_PVR, IMAGE_FORMAT_DDS } };
 
 auto IsSupportedFor = [](ImageFormat format, const String& extension)

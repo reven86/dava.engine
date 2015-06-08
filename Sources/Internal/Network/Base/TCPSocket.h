@@ -83,11 +83,11 @@ class TCPSocket : public TCPSocketTemplate<TCPSocket>
 
 public:
     // Handler types
-    typedef Function<void(TCPSocket* socket)> CloseHandlerType;
-    typedef Function<void(TCPSocket* socket, int32 error)> ShutdownHandlerType;
-    typedef Function<void(TCPSocket* socket, int32 error)> ConnectHandlerType;
-    typedef Function<void(TCPSocket* socket, int32 error, size_t nread)> ReadHandlerType;
-    typedef Function<void(TCPSocket* socket, int32 error, const Buffer* buffers, size_t bufferCount)> WriteHandlerType;
+    using CloseHandlerType = Function<void(TCPSocket* socket)>;
+    using ShutdownHandlerType = Function<void(TCPSocket* socket, int32 error)>;
+    using ConnectHandlerType = Function<void(TCPSocket* socket, int32 error)>;
+    using ReadHandlerType = Function<void(TCPSocket* socket, int32 error, size_t nread)>;
+    using WriteHandlerType = Function<void(TCPSocket* socket, int32 error, const Buffer* buffers, size_t bufferCount)>;
 
 public:
     TCPSocket(IOLoop* ioLoop);
