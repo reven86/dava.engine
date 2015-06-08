@@ -283,10 +283,8 @@ ENUM_DECLARE(UITextField::eReturnKeyType)
 
 ENUM_DECLARE(UIComponent::eType)
 {
-    ENUM_ADD_DESCR(UIComponent::ANCHOR_LAYOUT_COMPONENT, "AnchorLayout");
     ENUM_ADD_DESCR(UIComponent::LINEAR_LAYOUT_COMPONENT, "LinearLayout");
     ENUM_ADD_DESCR(UIComponent::SIZE_HINT_COMPONENT, "SizeHint");
-    ENUM_ADD_DESCR(UIComponent::ALIGN_HINT_COMPONENT, "AlignHint");
     ENUM_ADD_DESCR(UIComponent::ANCHOR_HINT_COMPONENT, "AnchorHint");
     
     ENUM_ADD_DESCR(UIComponent::FAKE_COMPONENT, "Fake");

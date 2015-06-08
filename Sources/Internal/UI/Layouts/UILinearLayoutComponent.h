@@ -37,8 +37,8 @@ namespace DAVA
     {
     public:
         enum eOrientation {
-            HORIZONTAL,
-            VERTICAL
+            HORIZONTAL = 0, // UILayoutSystem::AXIS_X
+            VERTICAL = 1    // UILayoutSystem::AXIS_Y
         };
         
     public:
@@ -59,16 +59,26 @@ namespace DAVA
         eOrientation GetOrientation() const;
         void SetOrientation(eOrientation orientation);
         
+        float32 GetPadding() const;
+        void SetPadding(float32 padding);
+        
+        float32 GetSpacing() const;
+        void SetSpacing(float32 spacing);
+        
     private:
         int32 GetOrientationAsInt() const;
         void SetOrientationFromInt(int32 type);
         
     private:
         eOrientation orientation = HORIZONTAL;
+        float32 padding = 0.0f;
+        float32 spacing = 0.0f;
         
     public:
         INTROSPECTION_EXTEND(UILinearLayoutComponent, UIComponent,
                              PROPERTY("orientation", InspDesc("Orientation", GlobalEnumMap<eOrientation>::Instance()), GetOrientationAsInt, SetOrientationFromInt, I_SAVE | I_VIEW | I_EDIT)
+                             PROPERTY("padding", "Padding", GetPadding, SetPadding, I_SAVE | I_VIEW | I_EDIT)
+                             PROPERTY("spacing", "Spacing", GetSpacing, SetSpacing, I_SAVE | I_VIEW | I_EDIT)
                              );
         
     };

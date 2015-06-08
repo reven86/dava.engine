@@ -715,7 +715,7 @@ namespace DAVA
         }
     }
 
-    Vector2 UIControl::GetContentSize() const
+    Vector2 UIControl::GetPreferredSize() const
     {
         return Vector2(100.0f, 25.0f);
     }

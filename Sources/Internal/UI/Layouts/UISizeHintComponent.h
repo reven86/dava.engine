@@ -87,11 +87,11 @@ namespace DAVA
         void SetVerticalPolicyFromInt(int32 policy);
         
     private:
-        eSizePolicy horizontalPolicy;
-        float32 horizontalValue;
+        eSizePolicy horizontalPolicy = IGNORE;
+        float32 horizontalValue = 100.0f;
         
-        eSizePolicy verticalPolicy;
-        float32 verticalValue;
+        eSizePolicy verticalPolicy = IGNORE;
+        float32 verticalValue = 50.0f;
         
     public:
         INTROSPECTION_EXTEND(UISizeHintComponent, UIComponent,

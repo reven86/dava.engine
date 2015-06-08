@@ -1,6 +1,5 @@
 #include "UILayoutSystem.h"
 
-#include "UIAnchorLayoutComponent.h"
 #include "UILinearLayoutComponent.h"
 #include "UIAnchorHintComponent.h"
 #include "UISizeHintComponent.h"
@@ -40,18 +39,24 @@ namespace DAVA
     {
         UILinearLayoutComponent *linearLayoutComponent = control->GetComponent<UILinearLayoutComponent>();
         
+        bool allowHorizontalAnchor = true;
+        bool allowVerticalAnchor = true;
+        
         if (linearLayoutComponent)
         {
+            if (linearLayoutComponent->GetOrientation() == UILinearLayoutComponent::HORIZONTAL)
+                allowHorizontalAnchor = false;
+            else
+                allowVerticalAnchor = false;
+            
             ApplyLinearLayout(control, linearLayoutComponent);
         }
-        else if (control->GetComponent<UIAnchorLayoutComponent>())
-        {
-            ApplyAnchorLayout(control);
-        }
+        
+        ApplyAnchorLayout(control, allowHorizontalAnchor, allowVerticalAnchor);
 
         const List<UIControl*> &children = control->GetChildren();
         for (UIControl *child : children)
-            DoMeasurePhase(child);
+            DoLayoutPhase(child);
     }
     
     ////////////////////////////////////////////////////////////////////////////////
@@ -107,12 +112,27 @@ namespace DAVA
                     break;
                     
                 case UISizeHintComponent::PERCENT_OF_CONTENT:
-                    value = control->GetContentSize().data[axis] * hintValue / 100.0f;
+                    value = control->GetPreferredSize().data[axis] * hintValue / 100.0f;
                     
                 case UISizeHintComponent::PERCENT_OF_PARENT:
                     value = newSize.data[axis]; // ignore
                     break;
                     
+            }
+            
+            if (policy == UISizeHintComponent::PERCENT_OF_CHILDREN_SUM ||
+                policy == UISizeHintComponent::PERCENT_OF_MAX_CHILD ||
+                policy == UISizeHintComponent::PERCENT_OF_FIRST_CHILD ||
+                policy == UISizeHintComponent::PERCENT_OF_LAST_CHILD)
+            {
+                UILinearLayoutComponent *layout = control->GetComponent<UILinearLayoutComponent>();
+                if (layout && layout->GetOrientation() == axis)
+                {
+                    if (policy == UISizeHintComponent::PERCENT_OF_CHILDREN_SUM && !children.empty())
+                        value += layout->GetSpacing() * (children.size() - 1);
+                    
+                    value += layout->GetPadding() * 2.0f;
+                }
             }
             newSize.data[axis] = value;
         }
@@ -125,28 +145,103 @@ namespace DAVA
     // Linear Layout
     ////////////////////////////////////////////////////////////////////////////////
     
-    void UILayoutSystem::ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *linearLayoutComponent)
+    void UILayoutSystem::ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *layout)
     {
+        float32 fixedSize = 0;
+        float32 totalPercent = 0;
         
+        const DAVA::List<UIControl*> &children = control->GetChildren();
+        if (children.empty())
+            return;
+        
+        const int32 axis = static_cast<int32>(layout->GetOrientation());
+        for (UIControl *child : children)
+        {
+            const UISizeHintComponent *sizeHint = child->GetComponent<UISizeHintComponent>();
+            if (sizeHint)
+            {
+                if (sizeHint->GetPolicyByAxis(axis) == UISizeHintComponent::PERCENT_OF_PARENT)
+                    totalPercent += sizeHint->GetValueByAxis(axis);
+                else
+                    fixedSize += child->GetSize().data[axis];
+            }
+            else
+            {
+                fixedSize += child->GetSize().data[axis];
+            }
+        }
+        
+        const float32 padding = layout->GetPadding();
+        const float32 spacing = layout->GetSpacing();
+        int32 spacesCount = children.size() - 1;
+        float32 contentSize = control->GetSize().data[axis] - padding * 2.0f;
+        float32 restSize = contentSize - fixedSize - spacesCount * spacing;
+        float32 position = padding;
+        for (UIControl *child : children)
+        {
+            float32 size;
+            const UISizeHintComponent *sizeHint = child->GetComponent<UISizeHintComponent>();
+            if (sizeHint)
+            {
+                if (sizeHint->GetPolicyByAxis(axis) == UISizeHintComponent::PERCENT_OF_PARENT)
+                    size = restSize * sizeHint->GetValueByAxis(axis) / totalPercent;
+                else
+                    size = child->GetSize().data[axis];
+            }
+            else
+            {
+                size = child->GetSize().data[axis];
+            }
+            
+            size = Max(size, 0.0f);
+            if (axis == AXIS_X)
+            {
+                child->SetPosition(Vector2(position, child->GetPosition().y));
+                child->SetSize(Vector2(size, child->GetSize().dy));
+            }
+            else
+            {
+                child->SetPosition(Vector2(child->GetPosition().x, position));
+                child->SetSize(Vector2(child->GetSize().dx, size));
+            }
+            
+            position += size;
+            position += spacing;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////
     // Anchor Layout
     ////////////////////////////////////////////////////////////////////////////////
     
-    void UILayoutSystem::ApplyAnchorLayout(UIControl *control)
+    void UILayoutSystem::ApplyAnchorLayout(UIControl *control, bool allowHorizontal, bool allowVertical)
     {
         const Vector2 &parentSize = control->GetSize();
         const List<UIControl*> &children = control->GetChildren();
         for (UIControl *child : children)
         {
+            const UISizeHintComponent *sizeHint = child->GetComponent<UISizeHintComponent>();
+            if (sizeHint)
+            {
+                if (allowHorizontal && sizeHint->GetHorizontalPolicy() == UISizeHintComponent::PERCENT_OF_PARENT)
+                {
+                    float32 size = control->GetSize().dx * sizeHint->GetHorizontalValue() / 100.0f;
+                    child->SetSize(Vector2(size, child->GetSize().dy));
+                }
+                if (allowVertical && sizeHint->GetVerticalPolicy() == UISizeHintComponent::PERCENT_OF_PARENT)
+                {
+                    float32 size = control->GetSize().dy * sizeHint->GetVerticalValue() / 100.0f;
+                    child->SetSize(Vector2(child->GetSize().dx, size));
+                }
+            }
+            
             UIAnchorHintComponent *hint = child->GetComponent<UIAnchorHintComponent>();
             if (hint)
             {
                 const Rect &rect = child->GetRect();
                 Rect newRect = rect;
                 
-                if (hint->IsLeftAnchorEnabled() || hint->IsHCenterAnchorEnabled() || hint->IsRightAnchorEnabled())
+                if (allowHorizontal && (hint->IsLeftAnchorEnabled() || hint->IsHCenterAnchorEnabled() || hint->IsRightAnchorEnabled()))
                 {
                     GetAxisDataByAnchorData(rect.dx, parentSize.x,
                                             hint->IsLeftAnchorEnabled(), hint->GetLeftAnchor(),
@@ -155,7 +250,7 @@ namespace DAVA
                                             newRect.x, newRect.dx);
                     
                 }
-                if (hint->IsTopAnchorEnabled() || hint->IsVCenterAnchorEnabled() || hint->IsBottomAnchorEnabled())
+                if (allowVertical && (hint->IsTopAnchorEnabled() || hint->IsVCenterAnchorEnabled() || hint->IsBottomAnchorEnabled()))
                 {
                     GetAxisDataByAnchorData(rect.dy, parentSize.y,
                                             hint->IsTopAnchorEnabled(), hint->GetTopAnchor(),

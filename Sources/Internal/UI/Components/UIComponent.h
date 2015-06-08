@@ -41,10 +41,8 @@ class UIComponent : public BaseObject
 public:
     enum eType
     {
-        ANCHOR_LAYOUT_COMPONENT,
         LINEAR_LAYOUT_COMPONENT,
         SIZE_HINT_COMPONENT,
-        ALIGN_HINT_COMPONENT,
         ANCHOR_HINT_COMPONENT,
         
         FAKE_COMPONENT,

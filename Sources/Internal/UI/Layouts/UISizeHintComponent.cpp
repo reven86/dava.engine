@@ -34,10 +34,6 @@
 namespace DAVA
 {
     UISizeHintComponent::UISizeHintComponent()
-        : horizontalPolicy(FIXED_SIZE)
-        , horizontalValue(100)
-        , verticalPolicy(FIXED_SIZE)
-        , verticalValue(25)
     {
         
     }

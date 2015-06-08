@@ -63,7 +63,7 @@ namespace DAVA
         void ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *linearLayoutComponent);
         
     private: // anchor layout
-        void ApplyAnchorLayout(UIControl *control);
+        void ApplyAnchorLayout(UIControl *control, bool allowHorizontal, bool allowVertical);
         void GetAxisDataByAnchorData(float32 size, float32 parentSize,
                                      bool firstSideAnchorEnabled, float32 firstSideAnchor,
                                      bool centerAnchorEnabled, float32 centerAnchor,

@@ -621,7 +621,7 @@ public:
 
     void SetAngleInDegrees(float32 angle);
     
-    virtual Vector2 GetContentSize() const;
+    virtual Vector2 GetPreferredSize() const;
 
     /**
      \brief Returns control visibility.

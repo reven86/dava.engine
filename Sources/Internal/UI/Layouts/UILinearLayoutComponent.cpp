@@ -43,4 +43,25 @@ namespace DAVA
         SetOrientation(static_cast<eOrientation>(orientation));
     }
     
+    
+    float32 UILinearLayoutComponent::GetPadding() const
+    {
+        return padding;
+    }
+    
+    void UILinearLayoutComponent::SetPadding(float32 newPadding)
+    {
+        padding = newPadding;
+    }
+    
+    float32 UILinearLayoutComponent::GetSpacing() const
+    {
+        return spacing;
+    }
+    
+    void UILinearLayoutComponent::SetSpacing(float32 newSpacing)
+    {
+        spacing = newSpacing;
+    }
+
 }
