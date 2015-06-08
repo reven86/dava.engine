@@ -552,7 +552,7 @@ VPROG_BEGIN
 
     FogParam    fog_param;
 
-    fog_param.color     = fogColor;
+    fog_param.color     = fogColor.rgb;
     fog_param.limit     = fogLimit;
     #if FOG_LINEAR
     fog_param.start     = fogStart;
@@ -572,8 +572,8 @@ VPROG_BEGIN
 
     fog_param.atmosphere_distance = fogAtmosphereDistance;
     #if !FOG_ATMOSPHERE_MAP
-    fog_param.atmosphere_sun_color  = fogAtmosphereColorSun;
-    fog_param.atmosphere_sky_color  = fogAtmosphereColorSky;
+    fog_param.atmosphere_sun_color  = fogAtmosphereColorSun.rgb;
+    fog_param.atmosphere_sky_color  = fogAtmosphereColorSky.rgb;
     fog_param.atmosphere_scattering = fogAtmosphereScattering;
     #endif
     

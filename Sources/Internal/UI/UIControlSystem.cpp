@@ -335,6 +335,8 @@ void UIControlSystem::Draw()
 
     rhi::RenderPassConfig clearPassConfig;
     clearPassConfig.priority = PRIORITY_CLEAR;
+    clearPassConfig.colorBuffer[0].clearColor[0] = clearPassConfig.colorBuffer[0].clearColor[1] = clearPassConfig.colorBuffer[0].clearColor[2] = .4f;
+    clearPassConfig.colorBuffer[0].clearColor[3] = 1.f;
     clearPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     clearPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_NONE;
     clearPassConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;

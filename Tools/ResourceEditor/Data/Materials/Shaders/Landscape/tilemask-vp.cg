@@ -21,21 +21,18 @@ VPROG_OUT_END
 
 
 
-property float4x4   worldViewProjMatrix : dynamic,instance : ;
-property float4x4   worldMatrix         : dynamic,instance : ;
-property float3     cameraPosition      : dynamic,a : ;
+property float4x4 worldViewProjMatrix          : dynamic,instance : ;
+property float4x4 worldMatrix                  : dynamic,instance : ;
 
-property float2 textureTiling : static,instance : def_value=50,50;
+property float2   textureTiling : static,instance : def_value=50,50;
 
-#if VERTEX_LIT || PIXEL_LIT || VERTEX_FOG || SPEED_TREE_LEAF || SPHERICAL_LIT
-property float4x4 worldViewMatrix : dynamic,a : ;
+#if VERTEX_FOG
+property float4x4 worldViewMatrix              : dynamic,a : ;
+property float3   cameraPosition               : dynamic,a : ;
 #endif
-#if VERTEX_LIT || PIXEL_LIT || (VERTEX_FOG && FOG_ATMOSPHERE)
-property float4x4 worldViewInvTransposeMatrix : dynamic,a : ;
-property float4 lightPosition0 : dynamic,a : ;
-#if DISTANCE_ATTENUATION
-property float lightIntensity0 : static,a : ; 
-#endif
+#if VERTEX_FOG && FOG_ATMOSPHERE
+property float4x4 worldViewInvTransposeMatrix  : dynamic,a : ;
+property float4   lightPosition0               : dynamic,a : ;
 #endif
 
 #include "vp-fog-props.cgh"
@@ -57,7 +54,7 @@ VPROG_BEGIN
 
     FogParam    fog_param;
 
-    fog_param.color     = fogColor;
+    fog_param.color     = fogColor.rgb;
     fog_param.limit     = fogLimit;
     #if FOG_LINEAR
     fog_param.start     = fogStart;
@@ -79,8 +76,8 @@ VPROG_BEGIN
 
     fog_param.atmosphere_distance = fogAtmosphereDistance;
     #if !FOG_ATMOSPHERE_MAP
-    fog_param.atmosphere_sun_color  = fogAtmosphereColorSun;
-    fog_param.atmosphere_sky_color  = fogAtmosphereColorSky;
+    fog_param.atmosphere_sun_color  = fogAtmosphereColorSun.rgb;
+    fog_param.atmosphere_sky_color  = fogAtmosphereColorSky.rgb;
     fog_param.atmosphere_scattering = fogAtmosphereScattering;
     #endif
     
