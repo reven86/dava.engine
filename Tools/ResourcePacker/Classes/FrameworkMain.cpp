@@ -127,12 +127,19 @@ void ProcessRecourcePacker()
         return;
     }
     
+    
+    auto toolFolderPath = resourcePacker->excludeDirectory + (commandLine[2] + "/");
 #if defined (__DAVAENGINE_MACOS__)
-	String toolName = String("/PVRTexToolCLI");
+	String pvrTexToolName = String("PVRTexToolCLI");
+    String cacheToolName = "AssetCacheClient.app/Contents/MacOS/AssetCacheClient";
 #elif defined (__DAVAENGINE_WIN32__)
-	String toolName = String("/PVRTexToolCLI.exe");
+	String pvrTexToolName = String("PVRTexToolCLI.exe");
+    String cacheToolName = "AssetCacheClient.exe";
 #endif
-    PVRConverter::Instance()->SetPVRTexTool(resourcePacker->excludeDirectory + (commandLine[2] + toolName));
+    
+    PVRConverter::Instance()->SetPVRTexTool(toolFolderPath + pvrTexToolName);
+    resourcePacker->SetCacheClientTool(toolFolderPath + cacheToolName);
+    
     
     uint64 elapsedTime = SystemTimer::Instance()->AbsoluteMS();
     Logger::FrameworkDebug("[Resource Packer Started]");
