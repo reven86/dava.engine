@@ -87,21 +87,20 @@
 #      version. For NDK r10c the possible values are:
 #
 #        * aarch64-linux-android-4.9
-#        * aarch64-linux-android-clang3.4
 #        * aarch64-linux-android-clang3.5
-#        * arm-linux-androideabi-4.6
+#        * aarch64-linux-android-clang3.6
 #        * arm-linux-androideabi-4.8
 #        * arm-linux-androideabi-4.9 (default)
-#        * arm-linux-androideabi-clang3.4
 #        * arm-linux-androideabi-clang3.5
+#        * arm-linux-androideabi-clang3.6
 #        * mips64el-linux-android-4.9
-#        * mips64el-linux-android-clang3.4
 #        * mips64el-linux-android-clang3.5
+#        * mips64el-linux-android-clang3.6
 #        * mipsel-linux-android-4.6
 #        * mipsel-linux-android-4.8
 #        * mipsel-linux-android-4.9
-#        * mipsel-linux-android-clang3.4
 #        * mipsel-linux-android-clang3.5
+#        * mipsel-linux-android-clang3.6
 #        * x86-4.6
 #        * x86-4.8
 #        * x86-4.9
@@ -154,6 +153,8 @@
 #                          Implies -frtti -fno-exceptions.
 #                          Available for NDK r7b and newer.
 #                          Silently degrades to gnustl_static if not available.
+#        c++_static     -> Use libc++ as a static library.
+#        c++_shared     -> Use libc++ as a shared library.
 #
 #    ANDROID_STL_FORCE_FEATURES=ON - turn rtti and exceptions support based on
 #      chosen runtime. If disabled, then the user is responsible for settings
@@ -187,8 +188,7 @@
 cmake_minimum_required( VERSION 2.6.3 )
 
 if( NOT ANDROID_TOOLCHAIN_NAME )
-    set( ANDROID_TOOLCHAIN_NAME arm-linux-androideabi-clang3.4 )
-
+    set( ANDROID_TOOLCHAIN_NAME arm-linux-androideabi-clang3.6 )
 endif()
 
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../Modules/" ) 
@@ -224,7 +224,7 @@ set( CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG "" )
 set( CMAKE_SKIP_RPATH TRUE CACHE BOOL "If set, runtime paths are not added when using shared libraries." )
 
 # NDK search paths
-set( ANDROID_SUPPORTED_NDK_VERSIONS ${ANDROID_EXTRA_NDK_VERSIONS} -r10d -r10c -r10b -r10 -r9d -r9c -r9b -r9 -r8e -r8d -r8c -r8b -r8 -r7c -r7b -r7 -r6b -r6 -r5c -r5b -r5 "" )
+set( ANDROID_SUPPORTED_NDK_VERSIONS ${ANDROID_EXTRA_NDK_VERSIONS} -r10e -r10d -r10c -r10b -r10 -r9d -r9c -r9b -r9 -r8e -r8d -r8c -r8b -r8 -r7c -r7b -r7 -r6b -r6 -r5c -r5b -r5 "" )
 if( NOT DEFINED ANDROID_NDK_SEARCH_PATHS )
  if( CMAKE_HOST_WIN32 )
   file( TO_CMAKE_PATH "$ENV{PROGRAMFILES}" ANDROID_NDK_SEARCH_PATHS )
@@ -480,7 +480,7 @@ if( BUILD_WITH_ANDROID_NDK )
   set( ANDROID_NDK_TOOLCHAINS_PATH "${ANDROID_NDK}/../../${ANDROID_NDK_HOST_SYSTEM_NAME}/toolchain" )
   set( ANDROID_NDK_TOOLCHAINS_SUBPATH  "" )
   set( ANDROID_NDK_TOOLCHAINS_SUBPATH2 "" )
- elseif( ANDROID_NDK_LAYOUT STREQUAL "ANDROID" )
+ elseif( ANDROID_NDK_LAYOUT STREQUAL ANDROID )
   set( ANDROID_NDK_HOST_SYSTEM_NAME ${ANDROID_NDK_HOST_SYSTEM_NAME2} ) # only 32-bit at the moment
   set( ANDROID_NDK_TOOLCHAINS_PATH "${ANDROID_NDK}/../../gcc/${ANDROID_NDK_HOST_SYSTEM_NAME}/arm" )
   set( ANDROID_NDK_TOOLCHAINS_SUBPATH  "" )
@@ -834,14 +834,14 @@ endif()
 
 # runtime choice (STL, rtti, exceptions)
 if( NOT ANDROID_STL )
-  set( ANDROID_STL gnustl_static )
+  set( ANDROID_STL c++_shared )
 endif()
 set( ANDROID_STL "${ANDROID_STL}" CACHE STRING "C++ runtime" )
 set( ANDROID_STL_FORCE_FEATURES ON CACHE BOOL "automatically configure rtti and exceptions support based on C++ runtime" )
 mark_as_advanced( ANDROID_STL ANDROID_STL_FORCE_FEATURES )
 
 if( BUILD_WITH_ANDROID_NDK )
- if( NOT "${ANDROID_STL}" MATCHES "^(none|system|system_re|gabi\\+\\+_static|gabi\\+\\+_shared|stlport_static|stlport_shared|gnustl_static|gnustl_shared)$")
+ if( NOT "${ANDROID_STL}" MATCHES "^(none|system|system_re|gabi\\+\\+_static|gabi\\+\\+_shared|stlport_static|stlport_shared|gnustl_static|gnustl_shared|c\\+\\+_static|c\\+\\+_shared)$")
   message( FATAL_ERROR "ANDROID_STL is set to invalid value \"${ANDROID_STL}\".
 The possible values are:
   none           -> Do not configure the runtime.
@@ -853,6 +853,8 @@ The possible values are:
   stlport_shared -> Use the STLport runtime as a shared library.
   gnustl_static  -> (default) Use the GNU STL as a static library.
   gnustl_shared  -> Use the GNU STL as a shared library.
+  c++_static  -> Use libc++ as a static library.
+  c++_shared  -> Use libc++ as a shared library.
 " )
  endif()
 elseif( BUILD_WITH_STANDALONE_TOOLCHAIN )
@@ -1033,6 +1035,26 @@ if( BUILD_WITH_ANDROID_NDK )
    set( __libstl                "${__libstl}/libs/${ANDROID_NDK_ABI_NAME}/libgnustl_static.a" )
   else()
    set( __libstl                "${__libstl}/libs/${ANDROID_NDK_ABI_NAME}/libstdc++.a" )
+  endif()
+ elseif( ANDROID_STL MATCHES "c\\+\\+_shared" OR ANDROID_STL MATCHES "c\\+\\+_static" )
+  set( ANDROID_EXCEPTIONS       ON )
+  set( ANDROID_RTTI             ON )
+  set( ANDROID_CXX_ROOT     "${ANDROID_NDK}/sources/cxx-stl/" )
+  set( ANDROID_LLVM_ROOT    "${ANDROID_CXX_ROOT}/llvm-libc++" )
+  if( X86 )
+   set( ANDROID_ABI_INCLUDE_DIRS "${ANDROID_CXX_ROOT}/gabi++/include" )
+  else()
+   set( ANDROID_ABI_INCLUDE_DIRS "${ANDROID_CXX_ROOT}/llvm-libc++abi/include" )
+  endif()
+  set( ANDROID_STL_INCLUDE_DIRS     "${ANDROID_LLVM_ROOT}/libcxx/include"
+                                    "${ANDROID_NDK}/sources/cxx-stl/llvm-libc++abi/libcxxabi/include"
+                                    "${ANDROID_ABI_INCLUDE_DIRS}" )
+  # android support sfiles
+  include_directories ( SYSTEM ${ANDROID_NDK}/sources/android/support/include )
+  if( EXISTS "${ANDROID_LLVM_ROOT}/libs/${ANDROID_NDK_ABI_NAME}/libc++_shared.so" )
+   set( __libstl 				"${ANDROID_LLVM_ROOT}/libs/${ANDROID_NDK_ABI_NAME}/libc++_static.a" )
+  else()
+   message( "c++ library doesn't exist" )
   endif()
  else()
   message( FATAL_ERROR "Unknown runtime: ${ANDROID_STL}" )

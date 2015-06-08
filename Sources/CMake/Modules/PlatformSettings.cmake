@@ -6,8 +6,8 @@ if( NOT DISABLE_DEBUG )
 endif  ()
 
 if     ( ANDROID )
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y -Wno-invalid-offsetof" )
-    set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -Wno-invalid-offsetof -frtti" )    
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14" )
+    set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -frtti" )    
     set( CMAKE_ECLIPSE_MAKE_ARGUMENTS -j8 )
     
 elseif ( IOS     ) 
@@ -104,17 +104,25 @@ if( WARNINGS_AS_ERRORS )
 -Wno-consumed \
 -Wno-sometimes-uninitialized \
 -Wno-delete-non-virtual-dtor \
--Wno-header-hygiene")
+-Wno-header-hygiene \
+-Wno-reserved-id-macro \
+-Wno-old-style-cast \
+-Wno-inconsistent-missing-override \
+-Wno-null-conversion \
+-Wno-unused-local-typedef \
+-Wno-unreachable-code-return \
+-Wno-unreachable-code-break \
+-Wno-unknown-warning-option \
+-Wno-pedantic \
+-Wno-extern-c-compat")
+
 
     if( ANDROID )
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LOCAL_DISABLED_WARNINGS}" ) # warnings as errors
     elseif( APPLE )
         set( LOCAL_DISABLED_WARNINGS "${LOCAL_DISABLED_WARNINGS} \
--Wno-old-style-cast \
 -Wno-cstring-format-directive \
 -Wno-duplicate-enum \
--Wno-unreachable-code-break \
--Wno-unreachable-code-return \
 -Wno-infinite-recursion \
 -Wno-objc-interface-ivars \
 -Wno-direct-ivar-access \
