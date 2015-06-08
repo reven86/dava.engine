@@ -40,7 +40,7 @@ namespace DAVA
 	class InspCollImpl : public InspColl
 	{
 	public:
-		typedef C<T, A> CollectionT;
+        using CollectionT = C<T, A>;
 
 		InspCollImpl(const char *_name, const InspDesc &_desc, const int _offset, const MetaInfo *_type, int _flags = 0)
 			: InspColl(_name, _desc, _offset, _type, _flags)
@@ -196,7 +196,7 @@ namespace DAVA
 	class InspKeyedCollImpl : public InspColl
 	{
 	public:
-		typedef C<K, V, A> CollectionT;
+        using CollectionT = C<K, V, A>;
 
 		InspKeyedCollImpl(const char *_name, const InspDesc &_desc, const int _offset, const MetaInfo *_type, int _flags = 0)
 			: InspColl(_name, _desc, _offset, _type, _flags)

@@ -73,7 +73,7 @@ public:
 		\brief This type describes our interpolation functions. 
 		It implement math equation - y = f(x) where x and y must lie in range [0; 1] 
 	 */
-    typedef Function<float32(float32)> Func;
+    using Func = Function<float32(float32)>;
 	/**
 		\brief Return interpolation function by it's type
 		\param[in] type function type you want to get 
