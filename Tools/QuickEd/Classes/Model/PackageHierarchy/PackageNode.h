@@ -37,9 +37,7 @@
 class ImportedPackagesNode;
 class PackageControlsNode;
 class ControlsContainerNode;
-class PackageSerializer;
 class ControlNode;
-class PackageRef;
 class PackageListener;
 class AbstractProperty;
 class ComponentPropertiesSection;
@@ -47,23 +45,31 @@ class ComponentPropertiesSection;
 class PackageNode : public PackageBaseNode
 {
 public:
-    PackageNode(PackageRef *_packageRef);
+    PackageNode(const DAVA::FilePath &path);
 private:
     virtual ~PackageNode();
     
 public:
-    virtual int GetCount() const override;
-    virtual PackageBaseNode *Get(int index) const override;
+    int GetCount() const override;
+    PackageBaseNode *Get(int index) const override;
 
-    virtual DAVA::String GetName() const override;
-    int GetFlags() const override;
+    void Accept(PackageVisitor *visitor) override;
+
+    DAVA::String GetName() const override;
     
-    virtual PackageRef *GetPackageRef() const override;
+    PackageNode *GetPackage() override;
+    const PackageNode *GetPackage() const override;
+    const DAVA::FilePath &GetPath() const;
+    bool IsImported() const;
+
+    bool IsReadOnly() const override;
     
     ImportedPackagesNode *GetImportedPackagesNode() const;
     PackageControlsNode *GetPackageControlsNode() const;
 
-    PackageControlsNode *FindImportedPackage(const DAVA::FilePath &path);
+    PackageNode *FindImportedPackage(const DAVA::FilePath &path) const;
+    bool FindPackageInImportedPackagesRecursively(const PackageNode *node) const;
+    bool FindPackageInImportedPackagesRecursively(const DAVA::FilePath &path) const;
 
     void AddListener(PackageListener *listener);
     void RemoveListener(PackageListener *listener);
@@ -79,22 +85,15 @@ public:
     void InsertControl(ControlNode *node, ControlsContainerNode *dest, DAVA::int32 index);
     void RemoveControl(ControlNode *node, ControlsContainerNode *from);
 
-    void InsertImportedPackage(PackageControlsNode *node, DAVA::int32 index);
-    void RemoveImportedPackage(PackageControlsNode *node);
+    void InsertImportedPackage(PackageNode *node, DAVA::int32 index);
+    void RemoveImportedPackage(PackageNode *node);
 
-    void Serialize(PackageSerializer *serializer) const;
-    void Serialize(PackageSerializer *serializer, const DAVA::Vector<ControlNode*> &nodes) const;
-    
-    
 private:
-    void CollectPackages(DAVA::Set<PackageRef*> &packageRefs, ControlNode *node) const;
     void RefreshPropertiesInInstances(ControlNode *node, AbstractProperty *property);
-
-protected:
-    virtual bool IsReadOnly() const override;
     
 private:
-    PackageRef *packageRef;
+    DAVA::FilePath path;
+    DAVA::String name;
     
     ImportedPackagesNode *importedPackagesNode;
     PackageControlsNode *packageControlsNode;

@@ -35,6 +35,7 @@ class ControlNode;
 class ControlsContainerNode;
 class PackageControlsNode;
 class AbstractProperty;
+class ImportedPackagesNode;
 
 class PackageListener
 {
@@ -47,11 +48,11 @@ public:
     virtual void ControlWillBeRemoved(ControlNode *node, ControlsContainerNode *from) = 0;
     virtual void ControlWasRemoved(ControlNode *node, ControlsContainerNode *from) = 0;
     
-    virtual void ImportedPackageWillBeAdded(PackageControlsNode *node, PackageNode *to, int index) = 0;
-    virtual void ImportedPackageWasAdded(PackageControlsNode *node, PackageNode *to, int index) = 0;
+    virtual void ImportedPackageWillBeAdded(PackageNode *node, ImportedPackagesNode *to, int index) = 0;
+    virtual void ImportedPackageWasAdded(PackageNode *node, ImportedPackagesNode *to, int index) = 0;
 
-    virtual void ImportedPackageWillBeRemoved(PackageControlsNode *node, PackageNode *from) = 0;
-    virtual void ImportedPackageWasRemoved(PackageControlsNode *node, PackageNode *from) = 0;
+    virtual void ImportedPackageWillBeRemoved(PackageNode *node, ImportedPackagesNode *from) = 0;
+    virtual void ImportedPackageWasRemoved(PackageNode *node, ImportedPackagesNode *from) = 0;
     
 };
 

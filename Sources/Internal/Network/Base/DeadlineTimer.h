@@ -62,8 +62,8 @@ class DeadlineTimer : public DeadlineTimerTemplate<DeadlineTimer>
     friend DeadlineTimerTemplate<DeadlineTimer>;    // Make base class friend to allow it to call my Handle... methods
 
 public:
-    typedef Function<void(DeadlineTimer* timer)> CloseHandlerType;
-    typedef Function<void(DeadlineTimer* timer)> WaitHandlerType;
+    using CloseHandlerType = Function<void(DeadlineTimer* timer)>;
+    using WaitHandlerType = Function<void(DeadlineTimer* timer)>;
 
 public:
     DeadlineTimer(IOLoop* loop);

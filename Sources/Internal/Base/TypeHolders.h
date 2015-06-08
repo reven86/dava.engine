@@ -90,9 +90,7 @@ struct FunctionPointerHolder
 	template<typename F>
 	FunctionPointerHolder(F fn)
 	{
-		// Function pointer with size greater than FuncHolderMaxSize
-		// can't be added to this holder. This will be checked on compile time.
-		COMPILER_ASSERT(sizeof(F) <= FuncHolderMaxSize);
+        static_assert(sizeof(F) <= FuncHolderMaxSize, "Function pointer size is greater than FuncHolderMaxSize can hold");
 
 		memset(buf, 0, FuncHolderMaxSize);
 		new(buf)F(fn);
@@ -306,7 +304,7 @@ namespace
 template<typename T>
 struct ParamHolder
 {
-	typedef typename TypeTraits<T>::NonRefType ParamType;
+    using ParamType = typename TypeTraits<T>::NonRefType;
 
 	ParamHolder(const T& p) : param(p)
 	{}

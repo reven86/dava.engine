@@ -43,18 +43,21 @@ protected:
     virtual ~NameProperty();
     
 public:
-    virtual void Refresh() override;
-    virtual AbstractProperty *FindPropertyByPrototype(AbstractProperty *prototype) override;
-    virtual void Serialize(PackageSerializer *serializer) const override;
-    virtual bool IsReadOnly() const override;
+    void Refresh() override;
+    AbstractProperty *FindPropertyByPrototype(AbstractProperty *prototype) override;
+    void Accept(PropertyVisitor *visitor) override;
     
-    virtual ePropertyType GetType() const override;
-    virtual DAVA::VariantType GetValue() const override;
+    bool IsReadOnly() const override;
+    
+    ePropertyType GetType() const override;
+    DAVA::VariantType GetValue() const override;
 
-    virtual bool IsReplaced() const override;
+    bool IsReplaced() const override;
+    
+    ControlNode *GetControlNode() const;
 
 protected:
-    virtual void ApplyValue(const DAVA::VariantType &value) override;
+    void ApplyValue(const DAVA::VariantType &value) override;
     
 protected:
     ControlNode *control; // weak

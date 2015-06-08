@@ -29,8 +29,8 @@
 
 #include "ClassProperty.h"
 
+#include "PropertyVisitor.h"
 #include "../PackageHierarchy/ControlNode.h"
-#include "../PackageSerializer.h"
 
 #include "UI/UIControl.h"
 
@@ -48,12 +48,9 @@ ClassProperty::~ClassProperty()
     control = nullptr; // weak
 }
 
-void ClassProperty::Serialize(PackageSerializer *serializer) const
+void ClassProperty::Accept(PropertyVisitor *visitor)
 {
-    if (control->GetCreationType() == ControlNode::CREATED_FROM_CLASS)
-    {
-        serializer->PutValue("class", control->GetControl()->GetClassName());
-    }
+    visitor->VisitClassProperty(this);
 }
 
 bool ClassProperty::IsReadOnly() const
@@ -74,4 +71,9 @@ VariantType ClassProperty::GetValue() const
 const String &ClassProperty::GetClassName() const
 {
     return control->GetControl()->GetClassName();
+}
+
+ControlNode *ClassProperty::GetControlNode() const
+{
+    return control;
 }

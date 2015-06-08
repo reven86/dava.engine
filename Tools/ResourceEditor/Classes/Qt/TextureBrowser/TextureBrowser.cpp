@@ -136,7 +136,7 @@ void TextureBrowser::Close()
 	// clear cache
 	TextureCache::Instance()->clearInsteadThumbnails();
 
-    ui->textureAreaConverted->warningSetText("");
+    ui->textureAreaConverted->warningShow(false);
 }
 
 void TextureBrowser::Update()
@@ -360,7 +360,9 @@ void TextureBrowser::updateInfoOriginal(const QList<QImage> &images)
 
 void TextureBrowser::updateInfoConverted()
 {
-	if(NULL != curTexture && NULL != curDescriptor)
+	if(curTexture != nullptr && 
+       curDescriptor != nullptr && 
+       curDescriptor->HasCompressionFor(curTextureView))
 	{
 		char tmp[1024];
 		const char *formatStr = "Unknown";

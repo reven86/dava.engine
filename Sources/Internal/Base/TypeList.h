@@ -39,81 +39,81 @@ namespace DAVA
 template <class T, class U>
 struct Typelist
 {
-	typedef T Head;
-	typedef U Tail;
+    using Head = T;
+    using Tail = U;
 };
 
 // type list operations
 namespace TL
 {
-	// append type
-	template <class TList, class T>
-	struct Append;
+    // append type
+    template <class TList, class T>
+    struct Append;
 
-	template <>
-	struct Append<NullType, NullType>
-	{
-		typedef NullType Result;
-	};
+    template <>
+    struct Append<NullType, NullType>
+    {
+        using Result = NullType;
+    };
 
-	template <class T>
-	struct Append<NullType, T>
-	{
-		typedef Typelist<T, NullType> Result;
-	};
+    template <class T>
+    struct Append<NullType, T>
+    {
+        using Result = Typelist<T, NullType>;
+    };
 
-	template <class Head, class Tail>
-	struct Append<NullType, Typelist<Head, Tail> >
-	{
-		typedef Typelist<Head, Tail> Result;
-	};
+    template <class Head, class Tail>
+    struct Append<NullType, Typelist<Head, Tail> >
+    {
+        using Result = Typelist<Head, Tail>;
+    };
 
-	template <class Head, class Tail, class T>
-	struct Append<Typelist<Head, Tail>, T>
-	{
-		typedef Typelist<Head, typename Append<Tail, T>::Result> Result;
-	};
+    template <class Head, class Tail, class T>
+    struct Append<Typelist<Head, Tail>, T>
+    {
+        using Result = Typelist<Head, typename Append<Tail, T>::Result>;
+    };
 
-	template <class Head, class Tail>
-	struct Append<Typelist<Head, Tail>, NullType>
-	{
-		typedef Typelist<Head, Tail> Result;
-	};
+    template <class Head, class Tail>
+    struct Append<Typelist<Head, Tail>, NullType>
+    {
+        using Result = Typelist<Head, Tail>;
+    };
 
-	// type at given index
-	template <class TList, unsigned int index>
-	struct TypeAt;
+    // type at given index
+    template <class TList, unsigned int index>
+    struct TypeAt;
 
-	template <class Head, class Tail>
-	struct TypeAt<Typelist<Head, Tail>, 0>
-	{
-		typedef Head Result;
-	};
+    template <class Head, class Tail>
+    struct TypeAt < Typelist<Head, Tail>, 0 >
+    {
+        using Result = Head;
+    };
 
-	template <class Head, class Tail, unsigned int i>
-	struct TypeAt<Typelist<Head, Tail>, i>
-	{
-		typedef typename TypeAt<Tail, i - 1>::Result Result;
-	};
+    template <class Head, class Tail, unsigned int i>
+    struct TypeAt < Typelist<Head, Tail>, i >
+    {
+        using Result = typename TypeAt<Tail, i - 1>::Result;
+    };
 
-	// type at given index with default type, when no such index 
-	template <class TList, unsigned int index, typename DefaultType = NullType>
-	struct TypeAtNonStrict
-	{
-		typedef DefaultType Result;
-	};
+    // type at given index with default type, when no such index 
+    template <class TList, unsigned int index, typename DefaultType = NullType>
+    struct TypeAtNonStrict
+    {
+        using Result = DefaultType;
+    };
 
-	template <class Head, class Tail, typename DefaultType>
-	struct TypeAtNonStrict<Typelist<Head, Tail>, 0, DefaultType>
-	{
-		typedef Head Result;
-	};
+    template <class Head, class Tail, typename DefaultType>
+    struct TypeAtNonStrict < Typelist<Head, Tail>, 0, DefaultType >
+    {
+        using Result = Head;
+    };
 
-	template <class Head, class Tail, unsigned int i, typename DefaultType>
-	struct TypeAtNonStrict<Typelist<Head, Tail>, i, DefaultType>
-	{
-		typedef typename TypeAtNonStrict<Tail, i - 1, DefaultType>::Result Result;
-	};
+    template <class Head, class Tail, unsigned int i, typename DefaultType>
+    struct TypeAtNonStrict < Typelist<Head, Tail>, i, DefaultType >
+    {
+        using Result = typename TypeAtNonStrict<Tail, i - 1, DefaultType>::Result;
+    };
 
     // finds the index of a given type
     template <class TList, class T> struct IndexOf;

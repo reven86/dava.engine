@@ -152,9 +152,12 @@ void LibraryWidget::SetupFileTypes()
     fileTypeValues.push_back(FileType("DAE", "*.dae"));
     fileTypeValues.push_back(FileType("SC2", "*.sc2"));
     fileTypeValues.push_back(FileType("TEX", QString("*") + DAVA::TextureDescriptor::GetDescriptorExtension().c_str()));
-    fileTypeValues.push_back(FileType("PNG", GetExtensions(DAVA::IMAGE_FORMAT_PNG)));
-    fileTypeValues.push_back(FileType("TGA", GetExtensions(DAVA::IMAGE_FORMAT_TGA)));
-    fileTypeValues.push_back(FileType("JPG", GetExtensions(DAVA::IMAGE_FORMAT_JPEG)));
+
+    for (auto formatType : DAVA::TextureDescriptor::sourceTextureTypes)
+    {
+        auto formatHelper = DAVA::ImageSystem::Instance()->GetImageFormatInterface(formatType);
+        fileTypeValues.push_back(FileType(formatHelper->Name(), GetExtensions(formatType)));
+    }
 }
 
 QStringList LibraryWidget::GetExtensions(DAVA::ImageFormat imageFormat) const
