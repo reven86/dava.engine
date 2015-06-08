@@ -907,7 +907,7 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
         { 0x8B5C/*GL_FLOAT_MAT4*/, rhi::ShaderProp::TYPE_FLOAT4X4}
     };
            
-    Array<FastName, 8> prepertyFloat4toFloat3 =
+    Array<FastName, 8> propertyFloat4toFloat3 =
     {
         NMaterialParamName::PARAM_FOG_COLOR,
         NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SKY,
@@ -918,7 +918,7 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
         Landscape::PARAM_TILE_COLOR2,
         Landscape::PARAM_TILE_COLOR3,
     };
-    Array<FastName, 1> prepertyFloat3toFloat4 =
+    Array<FastName, 1> propertyFloat3toFloat4 =
     {
         NMaterialParamName::PARAM_FLAT_COLOR,
     };
@@ -942,42 +942,28 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
             {
                 if (propType == propertyTypeRemapping[i].originalType)
                 {
-                    bool float3toFloat4 = false, float4toFloat3 = false;
-
-                    for (const FastName & name : prepertyFloat4toFloat3)
+                    if (propertyTypeRemapping[i].newType == rhi::ShaderProp::TYPE_FLOAT4)
                     {
-                        if (name == propName && propertyTypeRemapping[i].newType == rhi::ShaderProp::TYPE_FLOAT4)
+                        if (std::find(propertyFloat4toFloat3.begin(), propertyFloat4toFloat3.end(), propName) != propertyFloat4toFloat3.end())
                         {
-                            float4toFloat3 = true;
-                            break;
+                            AddProperty(propName, data, rhi::ShaderProp::TYPE_FLOAT3, 1);
+                            continue;
+                        }
+                    }
+                    else if (propertyTypeRemapping[i].newType == rhi::ShaderProp::TYPE_FLOAT3)
+                    {
+                        if (std::find(propertyFloat3toFloat4.begin(), propertyFloat3toFloat4.end(), propName) != propertyFloat3toFloat4.end())
+                        {
+                            float32 data4[4];
+                            Memcpy(data4, data, 3 * sizeof(float32));
+                            data[3] = 1.f;
+
+                            AddProperty(propName, data, rhi::ShaderProp::TYPE_FLOAT4, 1);
+                            continue;
                         }
                     }
 
-                    for (const FastName & name : prepertyFloat3toFloat4)
-                    {
-                        if (name == propName && propertyTypeRemapping[i].newType == rhi::ShaderProp::TYPE_FLOAT3)
-                        {
-                            float3toFloat4 = true;
-                            break;
-                        }
-                    }
-
-                    if (float3toFloat4)
-                    {
-                        float32 data4[4];
-                        Memcpy(data4, data, 3 * sizeof(float32));
-                        data[3] = 1.f;
-
-                        AddProperty(propName, data, rhi::ShaderProp::TYPE_FLOAT4, 1);
-                    }
-                    else if (float4toFloat3)
-                    {
-                        AddProperty(propName, data, rhi::ShaderProp::TYPE_FLOAT3, 1);
-                    }
-                    else
-                    {
-                        AddProperty(propName, data, propertyTypeRemapping[i].newType, 1);
-                    }
+                    AddProperty(propName, data, propertyTypeRemapping[i].newType, 1);
                 }
             }
 

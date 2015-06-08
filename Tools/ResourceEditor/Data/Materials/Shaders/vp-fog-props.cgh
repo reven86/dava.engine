@@ -1,6 +1,6 @@
 #if VERTEX_FOG
     
-    property float4 fogColor : static,fog : def_value=1,0,0,1 ;
+    property float3 fogColor : static,fog : def_value=1,0,0 ;
     property float  fogLimit : static,fog : def_value=1 ;
     
     
@@ -21,8 +21,8 @@
         #if FOG_ATMOSPHERE_MAP
             DECL_SAMPLERCUBE(atmospheremap) : static,fog : ;
         #else
-            property float4 fogAtmosphereColorSun   : static,fog : def_value=0,1,0,1 ;
-            property float4 fogAtmosphereColorSky   : static,fog : def_value=0,0,1,1 ;
+            property float3 fogAtmosphereColorSun   : static,fog : def_value=0,1,0 ;
+            property float3 fogAtmosphereColorSky   : static,fog : def_value=0,0,1 ;
             property float  fogAtmosphereScattering : static,fog : def_value=0.5 ;
         #endif
     #endif
