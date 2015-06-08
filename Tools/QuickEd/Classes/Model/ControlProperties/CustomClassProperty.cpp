@@ -29,8 +29,8 @@
 
 #include "CustomClassProperty.h"
 
+#include "PropertyVisitor.h"
 #include "../PackageHierarchy/ControlNode.h"
-#include "../PackageSerializer.h"
 
 #include "UI/UIControl.h"
 
@@ -79,12 +79,9 @@ AbstractProperty *CustomClassProperty::FindPropertyByPrototype(AbstractProperty 
     return prototypeProperty == prototype ? this : nullptr;
 }
 
-void CustomClassProperty::Serialize(PackageSerializer *serializer) const
+void CustomClassProperty::Accept(PropertyVisitor *visitor)
 {
-    if (IsReplaced())
-    {
-        serializer->PutValue("customClass", customClass);
-    }
+    visitor->VisitCustomClassProperty(this);
 }
 
 bool CustomClassProperty::IsReadOnly() const

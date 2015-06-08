@@ -196,7 +196,7 @@ bool AnimationManager::HasActiveAnimations(AnimatedObject * owner) const
 
 void AnimationManager::Update(float32 timeElapsed)
 {
-	TIME_PROFILE("AnimationManager::Update");
+    TIME_PROFILE("AnimationManager::Update");
 
     DVASSERT(Thread::IsMainThread());
 
@@ -230,7 +230,7 @@ void AnimationManager::Update(float32 timeElapsed)
 		}
 	}
 
-	//remove all old animations
+	//check all animation and process all callbacks on delete
     size = (uint32)animations.size();
 	for (uint32 k = 0; k < size; ++k)
 	{
@@ -248,13 +248,27 @@ void AnimationManager::Update(float32 timeElapsed)
 				animation->next->state |= Animation::STATE_IN_PROGRESS;
 				animation->next->OnStart();
 			}
-
-			SafeRelease(animation);
-            
-            size = (uint32)animations.size();
-            k--;
 		}
 	}
+
+    //we need physically remove animations only after process all callbacks
+    size = (uint32)animations.size();
+    for (uint32 k = 0; k < size; ++k)
+    {
+        Animation * animation = animations[k];
+        if (animation->state & Animation::STATE_DELETE_ME)
+        {
+            releaseCandidates.push_back(animation);
+        }
+    }
+
+    //remove all release candidates animations
+    auto endIt = releaseCandidates.end();
+    for (auto it = releaseCandidates.begin(); it != endIt; ++it)
+    {
+        SafeRelease(*it);
+    }
+    releaseCandidates.clear();
 }
 	
 void AnimationManager::DumpState()
