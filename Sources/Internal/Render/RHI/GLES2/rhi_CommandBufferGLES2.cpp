@@ -596,6 +596,10 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                     {
                         TextureGLES2::SetAsRenderTarget( passCfg.colorBuffer[0].texture );
                     }
+                    else
+                    {
+                        GL_CALL(glViewport(passCfg.viewport[0], passCfg.viewport[1], passCfg.viewport[2], passCfg.viewport[3]));
+                    }
                 
                     if( passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR )
                     {
@@ -620,8 +624,10 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                         glClear( flags );
                     }
                 }
-
-                GL_CALL(glViewport(passCfg.viewport[0], passCfg.viewport[1], passCfg.viewport[2], passCfg.viewport[3]));
+                else
+                {
+                    GL_CALL(glViewport(passCfg.viewport[0], passCfg.viewport[1], passCfg.viewport[2], passCfg.viewport[3]));
+                }
 
             }   break;
             

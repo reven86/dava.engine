@@ -331,12 +331,25 @@ void UIControlSystem::Draw()
     FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
 
     drawCounter = 0;
-#if RHI_COMPLETE
-    if (!ui3DViewCount)
-    {        
-        RenderManager::Instance()->Clear(Color(0,0,0,0), 1.0f, 0);                
-    }
-#endif RHI_COMPLETE
+
+
+    rhi::RenderPassConfig clearPassConfig;
+    clearPassConfig.priority = PRIORITY_CLEAR;
+    clearPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+    clearPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_NONE;
+    clearPassConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
+    clearPassConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+    clearPassConfig.viewport[2] = Renderer::GetFramebufferWidth();
+    clearPassConfig.viewport[3] = Renderer::GetFramebufferHeight();
+
+    rhi::HPacketList emptyPacketList;
+    rhi::HRenderPass clearPass = rhi::AllocateRenderPass(clearPassConfig, 1, &emptyPacketList);
+
+    rhi::BeginRenderPass(clearPass);
+    rhi::BeginPacketList(emptyPacketList);
+    rhi::EndPacketList(emptyPacketList);
+    rhi::EndRenderPass(clearPass);
+
 
 	if (currentScreen)
 	{

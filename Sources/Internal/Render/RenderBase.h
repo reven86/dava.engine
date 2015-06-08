@@ -223,8 +223,11 @@ enum ePrimitiveType
 
 enum eDefaultPassPriority
 {
-    PRIORITY_MAIN_2D = 10,
-    PRIORITY_MAIN_3D = 20,    
+    PRIORITY_MAIN_2D    = 10,
+    PRIORITY_MAIN_3D    = 20,
+
+    PRIORITY_CLEAR      = 25,
+
     PRIORITY_SERVICE_3D = 30,    
     PRIORITY_SERVICE_2D = 40,        
 };
