@@ -184,50 +184,49 @@ bool RenderTechniqueSingleton::LoadRenderTechniqueFromYamlNode(const YamlNode * 
 }
 
     
-RenderTechnique * RenderTechniqueSingleton::CreateTechniqueByName(const FastName & renderTechniquePathInFastName)
+RenderTechnique* RenderTechniqueSingleton::CreateTechniqueByName(const FastName & renderTechniquePathInFastName)
 {
     FilePath renderTechniquePathname(renderTechniquePathInFastName.c_str());
-    //FastName renderTechniqueFastName(renderTechniquePathname.GetRelativePathname().c_str());
-    //Logger::Debug("Get render technique: %s %d", renderTechniquePathname.GetRelativePathname().c_str(), renderTechniqueFastName.Index());
-    
-    RenderTechnique * renderTechnique = renderTechniqueMap.at(renderTechniquePathInFastName);
-    if (!renderTechnique)
+    RenderTechnique* renderTechnique = renderTechniqueMap.at(renderTechniquePathInFastName);
+    if (nullptr == renderTechnique)
     {
-		YamlParser * parser = YamlParser::Create(renderTechniquePathname);
-		if (!parser)
-		{
-			Logger::Error("Can't load requested material: %s", renderTechniquePathname.GetRelativePathname().c_str());
-			return 0;
-		}
+        RefPtr<YamlParser> parser(YamlParser::Create(renderTechniquePathname));
+        if (!parser.Valid())
+        {
+            Logger::Error("Cannot load requested material: %s", renderTechniquePathname.GetRelativePathname().c_str());
+            return nullptr;
+        }
 
-        YamlNode * rootNode = parser->GetRootNode();
-		if (!rootNode)
-		{
-			SafeRelease(parser);
-			return 0;
-		}
-        
-        renderTechnique = new RenderTechnique(renderTechniquePathInFastName);
-        LoadRenderTechniqueFromYamlNode(rootNode, renderTechnique);
-        renderTechniqueMap.insert(renderTechniquePathInFastName, renderTechnique);
-     
-        SafeRelease(parser);
+        YamlNode* rootNode = parser->GetRootNode();
+        if (rootNode != nullptr)
+        {
+            renderTechnique = new RenderTechnique(renderTechniquePathInFastName);
+            LoadRenderTechniqueFromYamlNode(rootNode, renderTechnique);
+            renderTechniqueMap.insert(renderTechniquePathInFastName, renderTechnique);
+        }
+        else
+        {
+            return nullptr;
+        }
     }
-	//else
-    //{
-    //    Logger::Debug("Get render technique: %s", renderTechnique->GetName().c_str());
-    //}
-	
     return SafeRetain(renderTechnique);
 }
-    
-void RenderTechniqueSingleton::ReleaseRenderTechnique(RenderTechnique * renderTechnique)
+
+void RenderTechniqueSingleton::ReleaseRenderTechnique(RenderTechnique* renderTechnique)
 {
     renderTechnique->Release();
     if (renderTechnique->GetRetainCount() == 1)
     {
         renderTechniqueMap.erase(renderTechnique->GetName());
         renderTechnique->Release();
+    }
+}
+
+void RenderTechniqueSingleton::ClearRenderTechniques()
+{
+    for (auto& x : renderTechniqueMap)
+    {
+        ReleaseRenderTechnique(x.second);
     }
 }
 
