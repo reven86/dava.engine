@@ -222,7 +222,7 @@ DAVA::WebViewControl::WebViewControl(DAVA::UIWebView& uiWeb):
     [localWebView becomeFirstResponder];
 }
 
-void* DAVA::WebViewControl::RenderIOSUIViewToImage(void* uiviewPtr)
+void* DAVA::WebViewControl::RenderIOSUIViewToImage(void* uiviewPtr, bool workAroundKeyboardBug)
 {
     ::UIView* view = static_cast<::UIView*>(uiviewPtr);
     DVASSERT(view);
@@ -238,7 +238,16 @@ void* DAVA::WebViewControl::RenderIOSUIViewToImage(void* uiviewPtr)
     
     UIGraphicsBeginImageContextWithOptions(CGSizeMake(w, h), NO, scale);
     CGRect rect = CGRectMake(0, 0, w, h);
-    [view drawViewHierarchyInRect:rect afterScreenUpdates:NO];
+    // Workaround! we have to use YES - if we want defenetly render last
+    // text into texture and we have to use NO during softkeyboard
+    // show and hide to elemenate screen blinking
+    if (workAroundKeyboardBug)
+    {
+        [view drawViewHierarchyInRect:rect afterScreenUpdates:NO];
+    } else
+    {
+        [view drawViewHierarchyInRect:rect afterScreenUpdates:YES];
+    }
     
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();

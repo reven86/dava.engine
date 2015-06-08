@@ -470,7 +470,18 @@ namespace DAVA
             
             ::UITextField* textField = textFieldHolder->textField;
             DVASSERT(textField);
-            void* imgPtr = DAVA::WebViewControl::RenderIOSUIViewToImage(textField);
+            void* imgPtr = nullptr;
+            if ([textFieldHolder->textField.text isEqual: @"0"])
+            {
+                bool workAroundKeyboardBug = false;
+                imgPtr = DAVA::WebViewControl::RenderIOSUIViewToImage(textField,
+                                                        workAroundKeyboardBug);
+            } else
+            {
+                bool workAroundKeyboardBug = true;
+                imgPtr = DAVA::WebViewControl::RenderIOSUIViewToImage(textField,
+                                                        workAroundKeyboardBug);
+            }
             ::UIImage* image = static_cast<::UIImage*>(imgPtr);
             if (nullptr != image) // can't render to empty rect so skip
             {
