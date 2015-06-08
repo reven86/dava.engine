@@ -172,6 +172,11 @@ public:
     static const FastName FLAG_VIEWSPECULAR;
 
     static const FastName FLAG_FRAME_BLEND;    
+
+    //Illumination params
+    static const FastName FLAG_ILLUMINATION_USED;
+    static const FastName FLAG_ILLUMINATION_SHADOW_CASTER;
+    static const FastName FLAG_ILLUMINATION_SHADOW_RECEIVER;
 };
 
 class NMaterialQualityName

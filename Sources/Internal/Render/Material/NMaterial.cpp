@@ -911,6 +911,24 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
 
         }
     }
+
+    if (archive->IsKeyExists("illumination.isUsed"))
+        AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED, archive->GetBool("illumination.isUsed"));
+
+    if (archive->IsKeyExists("illumination.castShadow"))
+        AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER, archive->GetBool("illumination.castShadow"));
+
+    if (archive->IsKeyExists("illumination.receiveShadow"))
+        AddFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER, archive->GetBool("illumination.receiveShadow"));
+
+    if (archive->IsKeyExists("illumination.lightmapSize"))
+    {
+        float32 lighmapSize = (float32)archive->GetInt32("illumination.lightmapSize");
+        if (HasLocalProperty(NMaterialParamName::PARAM_LIGHTMAP_SIZE))
+            SetPropertyValue(NMaterialParamName::PARAM_LIGHTMAP_SIZE, &lighmapSize);
+        else
+            AddProperty(NMaterialParamName::PARAM_LIGHTMAP_SIZE, &lighmapSize, rhi::ShaderProp::TYPE_FLOAT1, 1);
+    }
 }
 
 };

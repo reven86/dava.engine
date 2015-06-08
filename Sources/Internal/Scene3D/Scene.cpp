@@ -938,14 +938,21 @@ SceneFileV2::eError Scene::SaveScene(const DAVA::FilePath & pathname, bool saveF
     
 void Scene::OptimizeBeforeExport()
 {
-#if RHI_COMPLETE
     Set<NMaterial*> materials;
     materialSystem->BuildMaterialList(materials);
     
     Set<NMaterial *>::const_iterator endIt = materials.end();
-    for(Set<NMaterial *>::const_iterator it = materials.begin(); it != endIt; ++it)
-        (*it)->ReleaseIlluminationParams();
-#endif  // RHI_COMPLETE
+    for (Set<NMaterial *>::const_iterator it = materials.begin(); it != endIt; ++it)
+    {
+        if ((*it)->HasLocalFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED))
+            (*it)->RemoveFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED);
+
+        if ((*it)->HasLocalFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER))
+            (*it)->RemoveFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
+
+        if ((*it)->HasLocalFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER))
+            (*it)->RemoveFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
+    }
 
     ImportShadowColor(this);
 

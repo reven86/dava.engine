@@ -1086,18 +1086,6 @@ void Landscape::Save(KeyedArchive * archive, SerializationContext * serializatio
 	heightmap->Save(heightmapPath);
     archive->SetString("hmap", heightmapPath.GetRelativePathname(serializationContext->GetScenePath()));
     archive->SetByteArrayAsType("bbox", bbox);
-    
-#if RHI_COMPLETE
-    DVASSERT(GetRenderBatch(0));
-    IlluminationParams * illuminationParams = GetRenderBatch(0)->GetMaterial()->GetIlluminationParams(false);
-    if(illuminationParams)
-    {
-        archive->SetBool("illumination.isUsed", illuminationParams->isUsed);
-        archive->SetBool("illumination.castShadow", illuminationParams->castShadow);
-        archive->SetBool("illumination.receiveShadow", illuminationParams->receiveShadow);
-        archive->SetInt32("illumination.lightmapSize", illuminationParams->lightmapSize);
-    }
-#endif
 }
     
 void Landscape::Load(KeyedArchive * archive, SerializationContext * serializationContext)
@@ -1132,19 +1120,6 @@ void Landscape::Load(KeyedArchive * archive, SerializationContext * serializatio
     AABBox3 loadedBbox = archive->GetByteArrayAsType("bbox", AABBox3());
 
     BuildLandscapeFromHeightmapImage(heightmapPath, loadedBbox);
-
-#if RHI_COMPLETE
-    if(archive->IsKeyExists("illumination.isUsed"))
-    {
-        DVASSERT(GetRenderBatch(0));
-        IlluminationParams * illuminationParams = GetRenderBatch(0)->GetMaterial()->GetIlluminationParams();
-
-        illuminationParams->isUsed = archive->GetBool("illumination.isUsed", illuminationParams->isUsed);
-        illuminationParams->castShadow = archive->GetBool("illumination.castShadow", illuminationParams->castShadow);
-        illuminationParams->receiveShadow = archive->GetBool("illumination.receiveShadow", illuminationParams->receiveShadow);
-        illuminationParams->SetLightmapSize(archive->GetInt32("illumination.lightmapSize", illuminationParams->lightmapSize));
-    }
-#endif
 }
     
 Heightmap * Landscape::GetHeightmap()
