@@ -620,6 +620,8 @@ public:
     virtual void SetAngle(float32 angleInRad);
 
     void SetAngleInDegrees(float32 angle);
+    
+    virtual Vector2 GetContentSize() const;
 
     /**
      \brief Returns control visibility.

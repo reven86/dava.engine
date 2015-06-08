@@ -295,11 +295,14 @@ ENUM_DECLARE(UIComponent::eType)
 
 ENUM_DECLARE(UISizeHintComponent::eSizePolicy)
 {
+    ENUM_ADD_DESCR(UISizeHintComponent::IGNORE, "Ignore");
     ENUM_ADD_DESCR(UISizeHintComponent::FIXED_SIZE, "FixedSize");
-    ENUM_ADD_DESCR(UISizeHintComponent::PERCENT_OF_CHILDREN, "PercentOfChildren");
+    ENUM_ADD_DESCR(UISizeHintComponent::PERCENT_OF_CHILDREN_SUM, "PercentOfChildrenSum");
+    ENUM_ADD_DESCR(UISizeHintComponent::PERCENT_OF_MAX_CHILD, "PercentOfMaxChild");
+    ENUM_ADD_DESCR(UISizeHintComponent::PERCENT_OF_FIRST_CHILD, "PercentOfFirstChild");
+    ENUM_ADD_DESCR(UISizeHintComponent::PERCENT_OF_LAST_CHILD, "PercentOfLastChild");
     ENUM_ADD_DESCR(UISizeHintComponent::PERCENT_OF_CONTENT, "PercentOfContent");
     ENUM_ADD_DESCR(UISizeHintComponent::PERCENT_OF_PARENT, "PercentOfParent");
-    
 };
 
 ENUM_DECLARE(UILinearLayoutComponent::eOrientation)

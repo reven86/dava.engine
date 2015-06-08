@@ -715,6 +715,11 @@ namespace DAVA
         }
     }
 
+    Vector2 UIControl::GetContentSize() const
+    {
+        return Vector2(100.0f, 25.0f);
+    }
+
     void UIControl::SetVisible(bool isVisible)
     {
         if (visible == isVisible)

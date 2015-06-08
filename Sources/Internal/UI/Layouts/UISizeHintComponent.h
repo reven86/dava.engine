@@ -40,8 +40,12 @@ namespace DAVA
     public:
         enum eSizePolicy
         {
+            IGNORE,
             FIXED_SIZE,
-            PERCENT_OF_CHILDREN,
+            PERCENT_OF_CHILDREN_SUM,
+            PERCENT_OF_MAX_CHILD,
+            PERCENT_OF_FIRST_CHILD,
+            PERCENT_OF_LAST_CHILD,
             PERCENT_OF_CONTENT,
             PERCENT_OF_PARENT
         };
@@ -71,6 +75,9 @@ namespace DAVA
         
         float GetVerticalValue() const;
         void SetVerticalValue(float32 value);
+        
+        eSizePolicy GetPolicyByAxis(int32 axis) const;
+        float GetValueByAxis(int32 axis) const;
         
     private:
         int32 GetHorizontalPolicyAsInt() const;

@@ -58,8 +58,68 @@ namespace DAVA
     // Measuring
     ////////////////////////////////////////////////////////////////////////////////
     
-    void MeasureControl(UIControl *control);
+    void UILayoutSystem::MeasureControl(UIControl *control, UISizeHintComponent *sizeHint)
+    {
+        DVASSERT(sizeHint);
+        
+        Vector2 newSize = control->GetSize();
+        
+        const DAVA::List<UIControl*> &children = control->GetChildren();
+        
+        for (int32 axis = 0; axis < 2; axis++)
+        {
+            UISizeHintComponent::eSizePolicy policy = sizeHint->GetPolicyByAxis(axis);
+            float32 hintValue = sizeHint->GetValueByAxis(axis);
+            float32 value = 0;
+            
+            switch (policy)
+            {
+                case UISizeHintComponent::IGNORE:
+                    value = newSize.data[axis]; // ignore
+                    break;
+                    
+                case UISizeHintComponent::FIXED_SIZE:
+                    value = hintValue;
+                    break;
+                    
+                case UISizeHintComponent::PERCENT_OF_CHILDREN_SUM:
+                    for (UIControl *child : children)
+                        value += child->GetSize().data[axis];
+                    value = value * hintValue / 100.0f;
+                    break;
+                    
+                case UISizeHintComponent::PERCENT_OF_MAX_CHILD:
+                    for (UIControl *child : children)
+                        value = Max(value, child->GetSize().data[axis]);
+                    value = value * hintValue / 100.0f;
+                    break;
 
+                case UISizeHintComponent::PERCENT_OF_FIRST_CHILD:
+                    if (!children.empty())
+                        value = children.front()->GetSize().data[axis];
+                    value = value * hintValue / 100.0f;
+                    break;
+                    
+                case UISizeHintComponent::PERCENT_OF_LAST_CHILD:
+                    if (!children.empty())
+                        value = children.back()->GetSize().data[axis];
+                    value = value * hintValue / 100.0f;
+                    break;
+                    
+                case UISizeHintComponent::PERCENT_OF_CONTENT:
+                    value = control->GetContentSize().data[axis] * hintValue / 100.0f;
+                    
+                case UISizeHintComponent::PERCENT_OF_PARENT:
+                    value = newSize.data[axis]; // ignore
+                    break;
+                    
+            }
+            newSize.data[axis] = value;
+        }
+        
+        if (control->GetSize() != newSize)
+            control->SetSize(newSize);
+    }
 
     ////////////////////////////////////////////////////////////////////////////////
     // Linear Layout

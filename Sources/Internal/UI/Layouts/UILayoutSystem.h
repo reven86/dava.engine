@@ -40,6 +40,10 @@ namespace DAVA
     class UILayoutSystem : public BaseObject
     {
     public:
+        static const int32 AXIS_X = 0;
+        static const int32 AXIS_Y = 1;
+        
+    public:
         UILayoutSystem();
         
     private:
@@ -67,7 +71,6 @@ namespace DAVA
                                      float32 &newPos, float32 &newSize);
         void GetAnchorDataByAxisData(float32 size, float32 pos, float32 parentSize, bool firstSideAnchorEnabled, bool centerAnchorEnabled, bool secondSideAnchorEnabled, float32 &firstSideAnchor, float32 &centerAnchor, float32 &secondSideAnchor);
 
-    private:
     };
     
     

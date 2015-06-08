@@ -29,6 +29,8 @@
 
 #include "UISizeHintComponent.h"
 
+#include "UILayoutSystem.h"
+
 namespace DAVA
 {
     UISizeHintComponent::UISizeHintComponent()
@@ -99,6 +101,38 @@ namespace DAVA
         verticalValue = value;
     }
     
+    UISizeHintComponent::eSizePolicy UISizeHintComponent::GetPolicyByAxis(int32 axis) const
+    {
+        switch (axis)
+        {
+            case UILayoutSystem::AXIS_X:
+                return horizontalPolicy;
+                
+            case UILayoutSystem::AXIS_Y:
+                return verticalPolicy;
+                
+            default:
+                DVASSERT(false);
+                return FIXED_SIZE;
+        }
+    }
+    
+    float UISizeHintComponent::GetValueByAxis(int32 axis) const
+    {
+        switch (axis)
+        {
+            case UILayoutSystem::AXIS_X:
+                return horizontalValue;
+                
+            case UILayoutSystem::AXIS_Y:
+                return verticalValue;
+                
+            default:
+                DVASSERT(false);
+                return 0.0f;
+        }
+    }
+
     int32 UISizeHintComponent::GetHorizontalPolicyAsInt() const
     {
         return GetHorizontalPolicy();
