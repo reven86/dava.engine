@@ -34,7 +34,8 @@
 namespace DAVA
 {
     class UIControl;
-    class UILayout;
+    class UILinearLayoutComponent;
+    class UISizeHintComponent;
     
     class UILayoutSystem : public BaseObject
     {
@@ -51,11 +52,22 @@ namespace DAVA
         void DoMeasurePhase(UIControl *control);
         void DoLayoutPhase(UIControl *control);
         
-        UILayout *GetLayout(UIControl *control);
+    private: // measuring
+        void MeasureControl(UIControl *control, UISizeHintComponent *sizeHint);
         
+    private: // linear layout
+        void ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *linearLayoutComponent);
+        
+    private: // anchor layout
+        void ApplyAnchorLayout(UIControl *control);
+        void GetAxisDataByAnchorData(float32 size, float32 parentSize,
+                                     bool firstSideAnchorEnabled, float32 firstSideAnchor,
+                                     bool centerAnchorEnabled, float32 centerAnchor,
+                                     bool secondSideAnchorEnabled, float32 secondSideAnchor,
+                                     float32 &newPos, float32 &newSize);
+        void GetAnchorDataByAxisData(float32 size, float32 pos, float32 parentSize, bool firstSideAnchorEnabled, bool centerAnchorEnabled, bool secondSideAnchorEnabled, float32 &firstSideAnchor, float32 &centerAnchor, float32 &secondSideAnchor);
+
     private:
-        UILayout *linearLayout = nullptr;
-        UILayout *anchorLayout = nullptr;
     };
     
     
