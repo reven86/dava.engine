@@ -81,6 +81,8 @@ DFFontInternalData * DFFontInternalData::Create(const FilePath & path)
 bool DFFontInternalData::InitFromConfig(const DAVA::FilePath &path)
 {
     YamlParser* parser = YamlParser::Create(path.GetAbsolutePathname());
+    SCOPE_EXIT { SafeRelease(parser); };
+
     if (!parser)
         return false;
     
@@ -90,13 +92,11 @@ bool DFFontInternalData::InitFromConfig(const DAVA::FilePath &path)
     const YamlNode* configNode = rootNode->Get("font");
     if (!configNode)
     {
-        SafeRelease(parser);
         return false;
     }
     const YamlNode* charsNode = configNode->Get("chars");
     if (!charsNode)
     {
-        SafeRelease(parser);
         return false;
     }
         
@@ -146,8 +146,7 @@ bool DFFontInternalData::InitFromConfig(const DAVA::FilePath &path)
     if (kerningNode)
     {
         const MultiMap<String, YamlNode*> kerningMap = kerningNode->AsMap();
-        MultiMap<String, YamlNode*>::const_iterator kerningMapEnd = kerningMap.end();
-        for (MultiMap<String, YamlNode*>::const_iterator iter = kerningMap.begin(); iter != kerningMapEnd; ++iter)
+        for (auto iter = kerningMap.begin(); iter != kerningMap.end(); ++iter)
         {
             int32 charId = atoi(iter->first.c_str());
             CharsMap::iterator charIter = chars.find(charId);
@@ -155,17 +154,15 @@ bool DFFontInternalData::InitFromConfig(const DAVA::FilePath &path)
                 continue;
             
             const MultiMap<String, YamlNode*> charKerningMap = iter->second->AsMap();
-            MultiMap<String, YamlNode*>::const_iterator charKerningMapEnd = charKerningMap.end();
-            for (MultiMap<String, YamlNode*>::const_iterator iter = charKerningMap.begin(); iter != charKerningMapEnd; ++iter)
+            for (auto i = charKerningMap.begin(); i != charKerningMap.end(); ++i)
             {
-                int32 secondCharId = atoi(iter->first.c_str());
+                int32 secondCharId = atoi(i->first.c_str());
                 float32 kerning = iter->second->AsFloat();
                 charIter->second.kerning[secondCharId] = kerning;
             }
         }
     }
     
-    SafeRelease(parser);
     return true;
 }
     
@@ -365,10 +362,10 @@ Font::StringMetrics DFFont::DrawStringToBuffer(const WideString & str,
         float32 nextKerning = 0;
         if (charPos + 1 < strLength)
         {
-            Map<int32, float32>::const_iterator iter = charDescription.kerning.find(str.at(charPos + 1));
-            if (iter != charDescription.kerning.end())
+            auto i = charDescription.kerning.find(str.at(charPos + 1));
+            if (i != charDescription.kerning.end())
             {
-                nextKerning = iter->second;
+                nextKerning = i->second;
             }
         }
         float32 charWidth = (charDescription.xAdvance + nextKerning) * sizeScale;

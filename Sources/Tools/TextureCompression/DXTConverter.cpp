@@ -46,7 +46,7 @@ FilePath DXTConverter::ConvertToDxt(const TextureDescriptor &descriptor, eGPUFam
     Vector<Image*> inputImages;
     auto loadResult = ImageSystem::Instance()->Load(fileToConvert, inputImages, 0);
 
-    if (loadResult != SUCCESS || inputImages.empty())
+    if (loadResult != eErrorCode::SUCCESS || inputImages.empty())
     {
         Logger::Error("[DXTConverter::ConvertToDxt] can't open %s", fileToConvert.GetAbsolutePathname().c_str());
         return FilePath();
@@ -122,7 +122,7 @@ FilePath DXTConverter::ConvertToDxt(const TextureDescriptor &descriptor, eGPUFam
     eErrorCode retCode = ImageSystem::Instance()->Save(outputName, imagesToSave, (PixelFormat) compression->format);
     for_each(inputImages.begin(), inputImages.end(), SafeRelease<Image>);
     for_each(imagesToSave.begin(), imagesToSave.end(), SafeRelease<Image>);
-    if(SUCCESS == retCode)
+    if(eErrorCode::SUCCESS == retCode)
     {
         LibDdsHelper helper;
         helper.AddCRCIntoMetaData(outputName);
@@ -155,7 +155,7 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor &descriptor, 
     for (uint32 i = 0; i < DAVA::Texture::CUBE_FACE_COUNT; ++i)
 	{
         if (faceNames[i].IsEmpty() || 
-            ImageSystem::Instance()->Load(faceNames[i], imageSets[i]) != DAVA::SUCCESS ||
+            ImageSystem::Instance()->Load(faceNames[i], imageSets[i]) != DAVA::eErrorCode::SUCCESS ||
             imageSets[i].empty())
         {
             Logger::Error("[DXTConverter::ConvertCubemapToDxt] can't load %s", fileToConvert.GetAbsolutePathname().c_str());
@@ -253,7 +253,7 @@ FilePath DXTConverter::ConvertCubemapToDxt(const TextureDescriptor &descriptor, 
         }
 
         auto saveResult = ImageSystem::Instance()->SaveAsCubeMap(outputName, imageSets, (PixelFormat)compression->format);
-        if (saveResult == SUCCESS)
+        if (saveResult == eErrorCode::SUCCESS)
         {
             LibDdsHelper helper;
             helper.AddCRCIntoMetaData(outputName);
