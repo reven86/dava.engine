@@ -50,6 +50,8 @@ public:
     void Accept(PackageVisitor *visitor) override;
 
     virtual DAVA::String GetName() const override;
+
+    bool IsInsertingPackagesSupported() const override;
     bool CanInsertImportedPackage(PackageNode *package) const override;
 
     PackageNode *FindPackageByName(const DAVA::String &name) const;

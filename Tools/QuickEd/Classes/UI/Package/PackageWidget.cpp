@@ -191,7 +191,8 @@ void PackageWidget::SaveContext()
 
 void PackageWidget::RefreshActions(const QModelIndexList &indexList)
 {
-    bool canInsert = !indexList.empty();
+    bool canInsertControls = !indexList.empty();
+    bool canInsertPackages = !indexList.empty();
     bool canRemove = !indexList.empty();
     bool canCopy = !indexList.empty();
     
@@ -199,21 +200,21 @@ void PackageWidget::RefreshActions(const QModelIndexList &indexList)
     {
         PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
         canCopy &= node->CanCopy();
-        canInsert &= node->IsInsertingSupported();
+        canInsertControls &= node->IsInsertingControlsSupported();
+        canInsertPackages &= node->IsInsertingPackagesSupported();
         canRemove &= node->CanRemove();
-        if (!canCopy && !canInsert && !canRemove)
+        if (!canCopy && !canInsertControls && !canRemove && !canInsertPackages)
         {
             break;
         }
     }
     
     RefreshAction(copyAction, canCopy, true);
-    RefreshAction(pasteAction, canInsert, true);
+    RefreshAction(pasteAction, canInsertControls, true);
     RefreshAction(cutAction, canCopy && canRemove, true);
     RefreshAction(delAction, canRemove, true);
 
-    RefreshAction(importPackageAction, canInsert, canInsert);
-    //TODO: DF-6265, implement canInsert correctly
+    RefreshAction(importPackageAction, canInsertPackages, true);
 
 }
 
@@ -364,17 +365,12 @@ void PackageWidget::OnImport()
         return;
     }
 
-    const QModelIndex &index = selectedIndexList.first();
-
-    PackageBaseNode *baseNode = static_cast<PackageBaseNode*>(index.internalPointer());
-    ControlsContainerNode *node = dynamic_cast<ControlsContainerNode*>(baseNode);
-    DVASSERT(node && !node->IsReadOnly());
-
+    Document *doc = sharedData->GetDocument();
+    PackageNode *root = doc->GetPackage();
     for (const auto &fileName : fileNames)
     {
-        //TODO: DF-6265, add paste implementation
-        //read file
-        //GetCommandExecutor->paste
+        FilePath path(fileName.toStdString());
+        doc->GetCommandExecutor()->AddImportedPackageIntoPackage(path, root);
     }
 }
 

@@ -36,6 +36,7 @@
 #include "UI/Commands/InsertControlCommand.h"
 #include "UI/Commands/RemoveControlCommand.h"
 #include "UI/Commands/InsertImportedPackageCommand.h"
+#include "UI/Commands/RemoveImportedPackageCommand.h"
 #include "UI/Commands/AddComponentCommand.h"
 #include "UI/Commands/RemoveComponentCommand.h"
 
@@ -71,6 +72,38 @@ void QtModelPackageCommandExecutor::AddImportedPackageIntoPackage(PackageNode *i
     if (package->GetImportedPackagesNode()->CanInsertImportedPackage(importedPackage))
     {
         PushCommand(new InsertImportedPackageCommand(package, importedPackage, package->GetImportedPackagesNode()->GetCount()));
+    }
+}
+
+void QtModelPackageCommandExecutor::RemoveImportedPackageFromPackage(PackageNode *importedPackage, PackageNode *package)
+{
+    bool canRemove = true;
+    for (int i = 0; i < package->GetPackageControlsNode()->GetCount(); i++)
+    {
+        ControlNode *control = package->GetPackageControlsNode()->Get(i);
+        if (control->IsDependsOnPackage(importedPackage))
+        {
+            canRemove = false;
+            break;
+        }
+    }
+    
+    if (canRemove)
+    {
+        PushCommand(new RemoveImportedPackageCommand(package, importedPackage, package->GetImportedPackagesNode()->GetCount()));
+    }
+}
+
+void QtModelPackageCommandExecutor::AddImportedPackageIntoPackage(const DAVA::FilePath &path, PackageNode *package)
+{
+    if (package->FindImportedPackage(path) == nullptr && package->GetPath().GetFrameworkPath() != path.GetFrameworkPath())
+    {
+        EditorUIPackageBuilder builder;
+        if (UIPackageLoader().LoadPackage(path, &builder))
+        {
+            RefPtr<PackageNode> importedPackage = builder.BuildPackage();
+            AddImportedPackageIntoPackage(importedPackage.Get(), package);
+        }
     }
 }
 
