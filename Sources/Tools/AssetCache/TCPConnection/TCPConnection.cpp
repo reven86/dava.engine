@@ -32,6 +32,8 @@
 #include "AssetCache/TCPConnection/TCPChannel.h"
 
 #include "Base/FunctionTraits.h"
+#include "Debug/DVAssert.h"
+#include "FileSystem/Logger.h"
 
 #include "Network/NetworkCommon.h"
 #include "Network/NetConfig.h"
