@@ -113,7 +113,7 @@ uint32 ReleaseGeometryDataRecursive(Entity * forEntity)
 
 void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal/*=true*/)
 {
-    DVASSERT(group->GetPrimitiveType() == PRIMITIVETYPE_TRIANGLELIST); //only triangle lists for now    
+    DVASSERT(group->GetPrimitiveType() == rhi::PRIMITIVE_TRIANGLELIST); //only triangle lists for now    
     DVASSERT(group->GetFormat()&EVF_TEXCOORD0);
     DVASSERT(group->GetFormat()&EVF_NORMAL);
 

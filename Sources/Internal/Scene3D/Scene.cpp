@@ -30,7 +30,6 @@
 #include "Scene3D/Scene.h"
 
 #include "Render/Texture.h"
-#include "Render/Material.h"
 #include "Render/3D/StaticMesh.h"
 #include "Render/3D/AnimatedMesh.h"
 #include "Render/Image/Image.h"

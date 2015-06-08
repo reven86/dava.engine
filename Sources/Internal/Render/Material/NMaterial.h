@@ -99,6 +99,7 @@ public:
     ~NMaterial();
 
     void Load(KeyedArchive * archive, SerializationContext * serializationContext) override;
+    void Save(KeyedArchive * archive, SerializationContext * serializationContext) override;
     NMaterial* Clone();
 
     void SetFXName(const FastName & fxName);

@@ -31,7 +31,6 @@
 #include "Scene3D/ParticleEmitterNode.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/SceneFileV2.h"
-#include "Render/Material.h"
 
 
 namespace DAVA
