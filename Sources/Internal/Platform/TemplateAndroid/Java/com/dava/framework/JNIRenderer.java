@@ -32,6 +32,10 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
         Log.d(JNIConst.LOG_TAG, "Activity Render onSurfaceCreated started");
 
         JNIDeviceInfo.SetGPUFamily(gl);
+        
+        // remember current thread (OpenGL) for future native controls
+        long currentThreadId = Thread.currentThread().getId();
+        JNIActivity.GetActivity().setGLThreadId(currentThreadId);
 
         nativeRenderRecreated();
 

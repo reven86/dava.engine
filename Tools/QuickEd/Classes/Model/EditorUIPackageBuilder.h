@@ -30,8 +30,8 @@
 #ifndef __EDITOR_UI_PACKAGE_BUILDER_H__
 #define __EDITOR_UI_PACKAGE_BUILDER_H__
 
-#include "DAVAEngine.h"
 #include "UI/AbstractUIPackageBuilder.h"
+#include "FileSystem/FilePath.h"
 
 class PackageNode;
 class ControlNode;
@@ -42,15 +42,13 @@ class ControlsContainerNode;
 class EditorUIPackageBuilder : public DAVA::AbstractUIPackageBuilder
 {
 public:
-    EditorUIPackageBuilder(PackageNode *basePackage = nullptr, ControlsContainerNode *insertingTarget = nullptr, DAVA::int32 insertingIndx = -1, PackageCommandExecutor *executor = nullptr);
+    EditorUIPackageBuilder();
     virtual ~EditorUIPackageBuilder();
 
-    virtual DAVA::UIPackage *FindInCache(const DAVA::String &packagePath) const override;
-
-    virtual DAVA::RefPtr<DAVA::UIPackage> BeginPackage(const DAVA::FilePath &packagePath) override;
+    virtual void BeginPackage(const DAVA::FilePath &packagePath) override;
     virtual void EndPackage() override;
     
-    virtual DAVA::RefPtr<DAVA::UIPackage> ProcessImportedPackage(const DAVA::String &packagePath, DAVA::AbstractUIPackageLoader *loader) override;
+    virtual bool ProcessImportedPackage(const DAVA::String &packagePath, DAVA::AbstractUIPackageLoader *loader) override;
     
     virtual DAVA::UIControl *BeginControlWithClass(const DAVA::String &className) override;
     virtual DAVA::UIControl *BeginControlWithCustomClass(const DAVA::String &customClassName, const DAVA::String &className) override;
@@ -73,8 +71,14 @@ public:
     
     virtual void ProcessProperty(const DAVA::InspMember *member, const DAVA::VariantType &value) override;
 
-    DAVA::RefPtr<PackageNode> GetPackageNode() const;
+    DAVA::RefPtr<PackageNode> BuildPackage() const;
+    const DAVA::Vector<ControlNode*> &GetRootControls() const;
+    const DAVA::Vector<PackageNode*> &GetImportedPackages() const;
+    void AddImportedPackage(PackageNode *node);
 
+private:
+    ControlNode *FindRootControl(const DAVA::String &name) const;
+    
 private:
     struct ControlDescr {
         ControlNode *node;
@@ -88,16 +92,15 @@ private:
     };
     
 private:
-    PackageNode *packageNode;
-    PackageNode *basePackage;
-    ControlsContainerNode *insertingTarget;
-    DAVA::int32 insertingIndex;
-    
+    DAVA::FilePath packagePath;
     DAVA::List<ControlDescr> controlsStack;
+    
+    DAVA::Vector<PackageNode*> importedPackages;
+    DAVA::Vector<ControlNode*> rootControls;
+    DAVA::Vector<DAVA::FilePath> declinedPackages;
+    
     DAVA::BaseObject *currentObject;
     SectionProperty *currentSection;
-    
-    PackageCommandExecutor *commandExecutor;
 };
 
 #endif // __EDITOR_UI_PACKAGE_BUILDER_H__
