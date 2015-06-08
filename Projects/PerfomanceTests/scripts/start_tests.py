@@ -67,7 +67,7 @@ if args['chooser']:
 if args['without-ui']:
     TEST_PARAMS += "-without-ui "
 
-if args['test'] and args['test'] != "None":    
+if args['test'] and args['test'] != "All":    
     TEST_PARAMS += "-test " + args['test']
 
     if args['test-time']:
