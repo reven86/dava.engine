@@ -417,6 +417,7 @@ void Texture::FlushDataToRenderer(Vector<Image *> * images)
     rhi::Texture::Descriptor descriptor;
     descriptor.autoGenMipmaps = false;
     descriptor.isRenderTarget = false;
+    descriptor.levelCount = ((*images)[0]->cubeFaceID == Texture::INVALID_CUBEMAP_FACE)  ? images->size()  : images->size()/6;
     descriptor.width = (*images)[0]->width;
     descriptor.height = (*images)[0]->height;
     descriptor.type = ((*images)[0]->cubeFaceID == Texture::INVALID_CUBEMAP_FACE) ? rhi::TEXTURE_TYPE_2D : rhi::TEXTURE_TYPE_CUBE;
