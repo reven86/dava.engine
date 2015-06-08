@@ -28,7 +28,7 @@ APP_STL      := c++_shared # work with gnustl_shared or c++_shared, better with 
                            # but because http://stackoverflow.com/questions/29018310/android-ndk-clang-compiler-cant-find-stdmake-unique
                            # we have to stick with c++_shared
 APP_LDFLAGS  := -fsanitize=address
-LIBCXX_FORCE_REBUILD := true
+#LIBCXX_FORCE_REBUILD := true # if you want to see bug in stl line code
 endif
 
 APP_ABI := armeabi-v7a x86
