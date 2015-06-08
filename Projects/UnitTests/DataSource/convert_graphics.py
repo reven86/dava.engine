@@ -16,6 +16,9 @@ import string;
 import sys;
 import platform;
 
+import time;
+
+
 # *************** HERE YOU SHOULD SETUP YOUR OWN PATHS ***************
 framework_path = { "Darwin": "./../../../", "Windows": "./../../../" }
 # *************** HERE YOU SHOULD SETUP YOUR OWN PATHS ***************
@@ -34,6 +37,8 @@ flags = sys.argv[1:];
 gfxDirs = filter(lambda x: x[0:3] == "Gfx", os.listdir(currentDir));
 #print gfxDirs
 
+startTime = time.time()
+
 pvrTexToolPathname = framework_path[platform.system()] + "/Tools/Bin/"
 if (framework_path[platform.system()] != ""):
     os.chdir(framework_path[platform.system()] + "/Tools/Bin/");
@@ -42,3 +47,6 @@ if (framework_path[platform.system()] != ""):
         os.spawnv(os.P_WAIT, "./ResourcePacker", params);
 else:
 	print "Framework path not defined, please define it in dava_framework_path.py"
+
+deltaTime = time.time() - startTime;
+print "Operation  time", deltaTime; 
