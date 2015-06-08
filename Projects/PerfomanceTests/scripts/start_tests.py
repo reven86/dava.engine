@@ -61,26 +61,26 @@ args = vars(parser.parse_args())
 BUILD_PARAMS = "branch " + args['branch'] + " platform " + args['platform'] + " build " + args['build']
 TEST_PARAMS = ""
 
-if(args['chooser']):
+if args['chooser']:
     TEST_PARAMS += "-chooser"
 
-if(args['without-ui']):
+if args['without-ui']:
     TEST_PARAMS += "-without-ui "
 
-if(args['test']):    
+if args['test'] and args['test'] != "None":    
     TEST_PARAMS += "-test " + args['test']
 
-    if(args['test-time']):
+    if args['test-time']:
         TEST_PARAMS += " -test-time " + args['test-time']
 
-    if(args['test-frames']):
+    if args['test-frames']:
         TEST_PARAMS += " -test-frames " + args['test-frames']
         TEST_PARAMS += " -frame-delta " + args['frame-delta']   
 
-    if(args['debug-frame']):
+    if args['debug-frame']:
         TEST_PARAMS += " -debug-frame " + args['debug-frame']
 
-    if(args['max-delta']):
+    if args['max-delta']:
         TEST_PARAMS += " -max-delta " + args['max-delta']
 
 start_on_android = False
