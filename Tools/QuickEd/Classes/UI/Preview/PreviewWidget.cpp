@@ -176,9 +176,9 @@ void PreviewWidget::OnError(const ResultList &resultList)
     else
     {
         QStringList errors;
-        for(const auto &text : resultList.GetErrors())
+        for(const auto &result : resultList.GetResults())
         {
-            errors << QString::fromStdString(text);
+            errors << QString::fromStdString(result.message);
         }
         QMessageBox::warning(qApp->activeWindow(), tr("Error occurred!"), errors.join('\n'));
     }

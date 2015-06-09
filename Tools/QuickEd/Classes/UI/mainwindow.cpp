@@ -394,9 +394,9 @@ void MainWindow::OnProjectOpened(const ResultList &resultList, QString projectPa
     else
     {
         QStringList errors;
-        for(const auto text : resultList.GetErrors())
+        for (const auto &result : resultList.GetResults())
         {
-            errors.push_back(QString::fromStdString(text));
+            errors << QString::fromStdString(result.message);
         }
         QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), errors.join('\n'));
     }
