@@ -354,13 +354,13 @@ QVariant PropertiesModel::makeQVariant(const AbstractProperty *property) const
 //            return val.AsUInt64();
             
         case VariantType::TYPE_VECTOR2:
-            return StringToQString(Format("[%g, %g]", val.AsVector2().x, val.AsVector2().y));
+            return StringToQString(Format("%g; %g", val.AsVector2().x, val.AsVector2().y));
             
         case VariantType::TYPE_COLOR:
             return QColorToHex(ColorToQColor(val.AsColor()));
 
         case VariantType::TYPE_VECTOR4:
-            return StringToQString(Format("%g; %g; %g; %g;", val.AsVector4().x, val.AsVector4().y, val.AsVector4().z, val.AsVector4().w));
+            return StringToQString(Format("%g; %g; %g; %g", val.AsVector4().x, val.AsVector4().y, val.AsVector4().z, val.AsVector4().w));
             
         case VariantType::TYPE_FILEPATH:
             return StringToQString(val.AsFilePath().GetStringValue());
