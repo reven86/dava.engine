@@ -150,7 +150,6 @@ void TextureScrollArea::setImage(const QImage &image)
 	
 	currentTextureImage = image;
 
-	//applyCurrentImageToScenePixmap();
 	applyTextureImageToScenePixmap();
 	applyTextureImageBorder();
 
@@ -163,7 +162,6 @@ void TextureScrollArea::setImage(const QImage &image)
 void TextureScrollArea::setColorChannel(int mask)
 {
 	textureColorMask = mask;
-	//applyCurrentImageToScenePixmap();
 	applyTextureImageToScenePixmap();
 }
 
@@ -336,17 +334,14 @@ void TextureScrollArea::mouseReleaseEvent(QMouseEvent *event)
 
 void TextureScrollArea::applyCurrentImageToScenePixmap()
 {
-	if(~textureColorMask)
+    if(~textureColorMask)
 	{
 		QImage tmpImage;
 		prepareImageWithColormask(currentTextureImage, tmpImage);
 		
 		QPixmap pixmap = QPixmap::fromImage(tmpImage);
-        if (pixmap.isNull())
-        {
-            return;
-        }
-		textureScene->setSceneRect(pixmap.rect());
+        if (!pixmap.isNull())
+            textureScene->setSceneRect(pixmap.rect());
 		texturePixmap->setPixmap(pixmap);
 	}
 	else

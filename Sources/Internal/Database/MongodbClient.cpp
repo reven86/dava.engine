@@ -88,9 +88,9 @@ MongodbClient * MongodbClient::Create(const String &ip, int32 port)
 	
 MongodbClient::MongodbClient()
 {
-#if defined (__DAVAENGINE_WIN32__)
+#if defined (__DAVAENGINE_WINDOWS__)
     mongo_init_sockets();
-#endif //#if defined (__DAVAENGINE_WIN32__)
+#endif //#if defined (__DAVAENGINE_WINDOWS__)
 	
 	clientData = new MongodbClientInternalData();
     

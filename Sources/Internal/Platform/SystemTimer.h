@@ -43,7 +43,7 @@ class SystemTimer : public Singleton<SystemTimer>
 {
     friend class Core;
     
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 	LARGE_INTEGER	liFrequency;
 	LARGE_INTEGER	tLi;
 	BOOL			bHighTimerSupport;

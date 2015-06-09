@@ -42,7 +42,7 @@
 namespace DAVA
 {
 
-Mutex ZipFile::mutex = Mutex();
+Mutex ZipFile::mutex;
 
 #ifdef USE_LOCAL_RESOURCES
 zip* ZipFile::exZipPackage = NULL;

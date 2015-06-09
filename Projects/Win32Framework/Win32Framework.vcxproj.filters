@@ -1438,7 +1438,7 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
-	<ClInclude Include="..\..\Sources\Internal\Render\Image\LibWebPHelper.h">
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibWebPHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.h">

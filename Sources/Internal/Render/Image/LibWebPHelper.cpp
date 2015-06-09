@@ -60,7 +60,7 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     if (0 == initCStatus)
     {
         Logger::Error("[LibWebPHelper::ReadFile] Error in WebPInitDecpderConfig. File %s", infile->GetFilename().GetAbsolutePathname().c_str());
-        return ERROR_READ_FAIL;
+        return eErrorCode::ERROR_READ_FAIL;
     }
 
     infile->Seek(0, File::SEEK_FROM_START);
@@ -83,7 +83,7 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     if (bsStatus != VP8_STATUS_OK)
     {
         Logger::Error("[LibWebPHelper::ReadFile] File %s has wrong WebP header", infile->GetFilename().GetAbsolutePathname().c_str());
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     uint8_t *newData = nullptr;
@@ -98,7 +98,7 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     if (nullptr == newData)
     {
         Logger::Error("[LibWebPHelper::ReadFile] Error during decompression of file %s into WebP.", infile->GetFilename().GetAbsolutePathname().c_str());
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     Image* image = new Image();
@@ -118,7 +118,7 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
 
     imageSet.push_back(image);
 
-    return SUCCESS;
+    return eErrorCode::SUCCESS;
 }
 
 eErrorCode LibWebPHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
@@ -133,7 +133,7 @@ eErrorCode LibWebPHelper::WriteFile(const FilePath & fileName, const Vector<Imag
     if (!(FORMAT_RGBA8888 == format || format == FORMAT_RGB888))
     {
         Logger::Error("[LibWebPHelper::WriteFile] Not supported format");
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     uint8_t *outData = nullptr;
@@ -155,26 +155,26 @@ eErrorCode LibWebPHelper::WriteFile(const FilePath & fileName, const Vector<Imag
     if (nullptr == outData)
     {
         Logger::Error("[LibWebPHelper::WriteFile] Error during compression of WebP into file %s.", fileName.GetAbsolutePathname().c_str());
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     File *outFile = File::Create(fileName, File::CREATE | File::WRITE);
     if (nullptr == outFile)
     {
         Logger::Error("[LibWebPHelper::WriteFile] File %s could not be opened for writing", fileName.GetAbsolutePathname().c_str());
-        return ERROR_WRITE_FAIL;
+        return eErrorCode::ERROR_WRITE_FAIL;
     }
 
     outFile->Write(outData, outSize);
     outFile->Release();
 
-    return SUCCESS;
+    return eErrorCode::SUCCESS;
 }
 
 eErrorCode LibWebPHelper::WriteFileAsCubeMap(const FilePath &fileName, const Vector<Vector<Image *>> &imageSet, PixelFormat compressionFormat) const
 {
     Logger::Error("[LibWebPHelper::WriteFileAsCubeMap] For WebP cubeMaps are not supported");
-    return ERROR_WRITE_FAIL;
+    return eErrorCode::ERROR_WRITE_FAIL;
 }
 
 DAVA::ImageInfo LibWebPHelper::GetImageInfo(File *infile) const

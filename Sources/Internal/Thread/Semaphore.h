@@ -55,9 +55,9 @@ public:
 
 protected:
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 	HANDLE semaphore;
-#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+#elif defined(__DAVAENGINE_APPLE__)
     dispatch_semaphore_t semaphore;
 #elif defined(__DAVAENGINE_ANDROID__)
 	sem_t semaphore;
@@ -65,7 +65,7 @@ protected:
 
 };
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 
 // ##########################################################################################################
 // Windows implementation
@@ -73,7 +73,11 @@ protected:
 
 inline Semaphore::Semaphore(uint32 value)
 {
-	semaphore = CreateSemaphore(NULL, value, 0x0FFFFFFF, NULL);
+#ifdef __DAVAENGINE_WIN32__
+    semaphore = CreateSemaphore(NULL, value, 0x0FFFFFFF, NULL);
+#else
+	semaphore = CreateSemaphoreEx(NULL, value, 0x0FFFFFFF, NULL, 0, SEMAPHORE_ALL_ACCESS);
+#endif
 	DVASSERT(NULL != semaphore);
 }
 
@@ -89,10 +93,10 @@ inline void Semaphore::Post()
 
 inline void Semaphore::Wait()
 {
-	WaitForSingleObject(semaphore, INFINITE);
+	WaitForSingleObjectEx(semaphore, INFINITE, FALSE);
 }
 
-#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) 
+#elif defined(__DAVAENGINE_APPLE__) 
 
 // ##########################################################################################################
 // MacOS/IOS implementation

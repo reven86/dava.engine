@@ -29,29 +29,27 @@
 
 #include "PackageNode.h"
 
+#include "PackageVisitor.h"
 #include "PackageControlsNode.h"
 #include "ImportedPackagesNode.h"
-#include "ControlPrototype.h"
 #include "PackageListener.h"
-#include "PackageRef.h"
-#include "../PackageSerializer.h"
 #include "../ControlProperties/RootProperty.h"
 
 using namespace DAVA;
 
-PackageNode::PackageNode(PackageRef *_packageRef)
+PackageNode::PackageNode(const FilePath &aPath)
     : PackageBaseNode(nullptr)
-    , packageRef(SafeRetain(_packageRef))
+    , path(aPath)
     , importedPackagesNode(nullptr)
     , packageControlsNode(nullptr)
 {
     importedPackagesNode = new ImportedPackagesNode(this);
-    packageControlsNode = new PackageControlsNode(this, packageRef);
+    packageControlsNode = new PackageControlsNode(this);
+    name = path.GetBasename();
 }
 
 PackageNode::~PackageNode()
 {
-    SafeRelease(packageRef);
     importedPackagesNode->SetParent(nullptr);
     SafeRelease(importedPackagesNode);
     packageControlsNode->SetParent(nullptr);
@@ -73,19 +71,39 @@ PackageBaseNode *PackageNode::Get(int index) const
         return nullptr;
 }
 
+void PackageNode::Accept(PackageVisitor *visitor)
+{
+    visitor->VisitPackage(this);
+}
+
 String PackageNode::GetName() const
 {
-    return packageRef->GetName();
+    return name;
 }
 
-int PackageNode::GetFlags() const
+PackageNode *PackageNode::GetPackage()
 {
-    return 0;
+    return this;
 }
 
-PackageRef *PackageNode::GetPackageRef() const
+const FilePath &PackageNode::GetPath() const
 {
-    return packageRef;
+    return path;
+}
+
+const PackageNode *PackageNode::GetPackage() const
+{
+    return this;
+}
+
+bool PackageNode::IsImported() const
+{
+    return GetParent() != nullptr;
+}
+
+bool PackageNode::IsReadOnly() const
+{
+    return GetParent() != nullptr ? GetParent()->IsReadOnly() : false;
 }
 
 ImportedPackagesNode *PackageNode::GetImportedPackagesNode() const
@@ -98,14 +116,32 @@ PackageControlsNode *PackageNode::GetPackageControlsNode() const
     return packageControlsNode;
 }
 
-PackageControlsNode *PackageNode::FindImportedPackage(const DAVA::FilePath &path)
+PackageNode *PackageNode::FindImportedPackage(const DAVA::FilePath &path) const
 {
     for (int32 index = 0; index < importedPackagesNode->GetCount(); index++)
     {
-        if (importedPackagesNode->Get(index)->GetPackageRef()->GetPath() == path)
-            return importedPackagesNode->Get(index);
+        if (importedPackagesNode->GetImportedPackage(index)->GetPath() == path)
+            return importedPackagesNode->GetImportedPackage(index);
     }
     return nullptr;
+}
+
+bool PackageNode::FindPackageInImportedPackagesRecursively(const PackageNode *node) const
+{
+    return FindPackageInImportedPackagesRecursively(node->GetPath());
+}
+
+bool PackageNode::FindPackageInImportedPackagesRecursively(const DAVA::FilePath &path) const
+{
+    for (int32 index = 0; index < importedPackagesNode->GetCount(); index++)
+    {
+        PackageNode *importedPackage = importedPackagesNode->GetImportedPackage(index);
+        if (importedPackage->GetPath().GetFrameworkPath() == path.GetFrameworkPath())
+            return true;
+        if (importedPackage->FindPackageInImportedPackagesRecursively(path))
+            return true;
+    }
+    return false;
 }
 
 void PackageNode::AddListener(PackageListener *listener)
@@ -200,66 +236,26 @@ void PackageNode::RemoveControl(ControlNode *node, ControlsContainerNode *from)
         listener->ControlWasRemoved(node, from);
 }
 
-void PackageNode::InsertImportedPackage(PackageControlsNode *node, DAVA::int32 index)
+void PackageNode::InsertImportedPackage(PackageNode *node, DAVA::int32 index)
 {
     for (PackageListener *listener : listeners)
-        listener->ImportedPackageWillBeAdded(node, this, index);
+        listener->ImportedPackageWillBeAdded(node, importedPackagesNode, index);
     
     importedPackagesNode->InsertAtIndex(index, node);
     
     for (PackageListener *listener : listeners)
-        listener->ImportedPackageWasAdded(node, this, index);
+        listener->ImportedPackageWasAdded(node, importedPackagesNode, index);
 }
 
-void PackageNode::RemoveImportedPackage(PackageControlsNode *node)
+void PackageNode::RemoveImportedPackage(PackageNode *node)
 {
     for (PackageListener *listener : listeners)
-        listener->ImportedPackageWillBeRemoved(node, this);
+        listener->ImportedPackageWillBeRemoved(node, importedPackagesNode);
     
     importedPackagesNode->Remove(node);
     
     for (PackageListener *listener : listeners)
-        listener->ImportedPackageWasRemoved(node, this);
-}
-
-void PackageNode::Serialize(PackageSerializer *serializer) const
-{
-    serializer->BeginMap("Header");
-    serializer->PutValue("version", String("0"));
-    serializer->EndMap();
-    
-    importedPackagesNode->Serialize(serializer);
-    packageControlsNode->Serialize(serializer);
-}
-
-void PackageNode::Serialize(PackageSerializer *serializer, const DAVA::Vector<ControlNode*> &nodes) const
-{
-    serializer->BeginMap("Header");
-    serializer->PutValue("version", String("0"));
-    serializer->EndMap();
-    
-    Set<PackageRef*> usedImportedPackages;
-    for (ControlNode *node : nodes)
-        CollectPackages(usedImportedPackages, node);
-
-    importedPackagesNode->Serialize(serializer, usedImportedPackages);
-    packageControlsNode->Serialize(serializer, nodes);
-}
-
-void PackageNode::CollectPackages(Set<PackageRef*> &packageRefs, ControlNode *node) const
-{
-    if (node->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
-    {
-        ControlPrototype *prototype = node->GetPrototype();
-        if (prototype)
-        {
-            if (packageRefs.find(prototype->GetPackageRef()) == packageRefs.end())
-                packageRefs.insert(prototype->GetPackageRef());
-        }
-    }
-    
-    for (int32 index = 0; index < node->GetCount(); index++)
-        CollectPackages(packageRefs, node->Get(index));
+        listener->ImportedPackageWasRemoved(node, importedPackagesNode);
 }
 
 void PackageNode::RefreshPropertiesInInstances(ControlNode *node, AbstractProperty *property)
@@ -274,9 +270,4 @@ void PackageNode::RefreshPropertiesInInstances(ControlNode *node, AbstractProper
             RefreshProperty(instance, instanceProperty);
         }
     }
-}
-
-bool PackageNode::IsReadOnly() const
-{
-    return false;
 }

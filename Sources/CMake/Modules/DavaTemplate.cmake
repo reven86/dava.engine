@@ -91,6 +91,83 @@ elseif( MACOS )
     list( APPEND RESOURCES_LIST  ${MACOS_ICO}   )
 
     list( APPEND LIBRARIES      ${DYLIB_FILES} )
+
+elseif ( WINDOWS_UAP )
+
+	if(MSVC_VERSION GREATER 1899)
+		set(COMPILER_VERSION "14")
+	elseif(MSVC_VERSION GREATER 1700)
+		set(COMPILER_VERSION "12")
+	endif()
+	
+	set (APP_MANIFEST_NAME Package.appxmanifest)
+	set (APP_TEMPKEY_NAME "${PROJECT_NAME}_TemporaryKey.pfx" )
+	
+	if("${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsPhone")
+		set(PLATFORM WP)
+		add_definitions("-DPHONE")
+		if("${CMAKE_SYSTEM_VERSION}" STREQUAL "8.0")
+			set(APP_MANIFEST_NAME WMAppManifest.xml)
+			set(WINDOWS_PHONE8 1)
+		endif()
+	elseif("${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore")
+		set(PLATFORM STORE)
+	else()
+		set(PLATFORM DESKTOP)
+		message(FATAL_ERROR "This app supports Store / Phone only. Please edit the target platform.")
+	endif()
+	
+	set(SHORT_NAME ${PROJECT_NAME})
+	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+	set(PACKAGE_GUID "${WINDOWS_UAP_APPLICATION_GUID}")
+	
+	set ( WIN_UAP_CONF_DIR      "${CMAKE_MODULE_PATH}../Resources/WindowsStore" )
+	set ( WIN_UAP_MANIFESTS_DIR "${WIN_UAP_CONF_DIR}/Manifests" )
+	set ( WIN_UAP_ASSETS_DIR    "${WIN_UAP_CONF_DIR}/Assets" )
+	file( GLOB ASSET_FILES      "${WIN_UAP_ASSETS_DIR}/*.png" )
+	
+	if (NOT "${PLATFORM}" STREQUAL "DESKTOP")
+		configure_file(
+			${WIN_UAP_MANIFESTS_DIR}/Package_vc${COMPILER_VERSION}.${PLATFORM}.appxmanifest.in
+			${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME}
+			@ONLY)
+			
+		configure_file(
+			${WIN_UAP_CONF_DIR}/TemporaryKey.pfx
+			${CMAKE_CURRENT_BINARY_DIR}/${APP_TEMPKEY_NAME}
+			@ONLY)
+	endif()
+	
+	if (WINDOWS_PHONE8)
+	    file( GLOB PHONE_RESOURCES "${WIN_UAP_ASSETS_DIR}/Tiles/*.png" )
+		set( PHONE_RESOURCES "${PHONE_RESOURCES} ${ASSET_FILES}" )
+		
+		# Windows Phone 8.0 needs to copy all the images.
+	    # It doesn't know to use relative paths.
+		file( COPY ${PHONE_RESOURCES} DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+		
+		set ( PHONE_RESOURCES "${PHONE_RESOURCES} ${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME}" )
+		set ( CONTENT_FILES "${CONTENT_FILES} ${PHONE_RESOURCES}" )
+
+	elseif (NOT "${PLATFORM}" STREQUAL "DESKTOP")
+	    set(CONTENT_FILES ${CONTENT_FILES}
+		    ${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME} 
+		)
+	endif()
+	
+	set(RESOURCE_FILES
+		${CONTENT_FILES} ${DEBUG_CONTENT_FILES} ${RELEASE_CONTENT_FILES} ${ASSET_FILES} ${STRING_FILES} )
+	
+	list( APPEND RESOURCES_LIST ${RESOURCE_FILES} )
+
+	set_property(SOURCE ${CONTENT_FILES} PROPERTY VS_DEPLOYMENT_CONTENT 1)
+	set_property(SOURCE ${ASSET_FILES} PROPERTY VS_DEPLOYMENT_CONTENT 1)
+	set_property(SOURCE ${ASSET_FILES} PROPERTY VS_DEPLOYMENT_LOCATION "Assets")
+	set_property(SOURCE ${STRING_FILES} PROPERTY VS_TOOL_OVERRIDE "PRIResource")
+	set_property(SOURCE ${DEBUG_CONTENT_FILES} PROPERTY VS_DEPLOYMENT_CONTENT $<CONFIG:Debug>)
+	set_property(SOURCE ${RELEASE_CONTENT_FILES} PROPERTY
+		VS_DEPLOYMENT_CONTENT $<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>)
+
 elseif( WIN32 )
     list( APPEND RESOURCES_LIST  ${WIN32_RESOURCES} )
 endif()
@@ -340,6 +417,10 @@ elseif ( MSVC )
             set_target_properties ( ${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG}  ${OUTPUT_DIR} )
         endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
      endif()
+	 
+	if ( WINDOWS_UAP )
+		set_property(TARGET ${PROJECT_NAME} PROPERTY VS_WINRT_COMPONENT TRUE)
+	endif()
 
 endif()
 
