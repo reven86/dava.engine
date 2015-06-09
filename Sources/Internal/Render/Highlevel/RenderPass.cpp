@@ -275,11 +275,14 @@ void MainForwardRenderPass::Draw(RenderSystem * renderSystem)
     Camera *drawCamera = renderSystem->GetDrawCamera();   
     DVASSERT(mainCamera);
     DVASSERT(drawCamera);
-    Vector4 clip(0, 0, -1, 17);
-//    Vector4 clip(0, -0.976, 0.21, -45.59);
-    //drawCamera->SetInvert(true);
-    //drawCamera->SetupDynamicParameters();
-    drawCamera->SetupDynamicParameters(&clip);                
+    Vector4 clip(0, 0, -1, 1);
+    //Vector4 clip(1, 0, 0, 0);
+    /*drawCamera->SetPosition(Vector3(50, -54, 36));
+    drawCamera->SetTarget(Vector3(52, -45, 32));
+    drawCamera->SetAspect(1.0f/0.97097f);*/
+    drawCamera->SetPosition(Vector3(5, 5, 5));
+    drawCamera->SetTarget(Vector3(0, 0, 0));
+    drawCamera->SetupDynamicParameters(&clip);    
     if (mainCamera!=drawCamera)    
         mainCamera->PrepareDynamicParameters();
 	

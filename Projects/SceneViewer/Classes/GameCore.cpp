@@ -60,8 +60,9 @@ void GameCore::OnAppStarted()
 //    SetScenePath("~doc:/effect.sc2");    
 //    SetScenePath("~doc:/karelia/karelia.sc2");
 //    SetScenePath("~doc:/scene_viewer/test_box/box.sc2");
-    SetScenePath("~doc:/amigosville/amigosville.sc2");
-//      SetScenePath("~doc:/amigosville/amigosville2.sc2");
+//    SetScenePath("~doc:/amigosville/amigosville.sc2");
+      SetScenePath("~doc:/amigosville/amigosville2.sc2");
+      SetScenePath("~doc:/aaaa.sc2");
 //    SetScenePath("~doc:/karelia/karelia_landscape.sc2");
 //    SetScenePath("~doc:/karelia/gates_test.sc2");
     //SetScenePath("~doc:/karelia/objects/k_s01.sc2");
