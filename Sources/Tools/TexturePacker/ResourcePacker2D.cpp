@@ -612,13 +612,17 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey &key, co
     {
         cacheClient.Wait();
         
-        const String& procOutput = cacheClient.GetOutput();
-        if(procOutput.size() > 0)
+        auto exitCode = cacheClient.GetExitCode();
+        if(exitCode != 0)
         {
-            Logger::FrameworkDebug("\nCacheClientLog: %s", procOutput.c_str());
+            const String& procOutput = cacheClient.GetOutput();
+            if(procOutput.size() > 0)
+            {
+                Logger::FrameworkDebug("\nCacheClientLog: %s", procOutput.c_str());
+            }
         }
         
-        return (cacheClient.GetExitCode() == 0);
+        return (exitCode == 0);
     }
 
     
@@ -659,18 +663,28 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey &key, cons
         arruments.push_back("-f");
         arruments.push_back(fileListString);
         
+        if(outFilesList->GetFileCount() > 20)
+        {
+            arruments.push_back("-t");
+            arruments.push_back("5");   //enlarge default timeout
+        }
+        
         Process cacheClient(cacheClientTool, arruments);
         if(cacheClient.Run(false))
         {
             cacheClient.Wait();
             
-            const String& procOutput = cacheClient.GetOutput();
-            if(procOutput.size() > 0)
+            auto exitCode = cacheClient.GetExitCode();
+            if(exitCode != 0)
             {
-                Logger::FrameworkDebug("\nCacheClientLog: %s", procOutput.c_str());
+                const String& procOutput = cacheClient.GetOutput();
+                if(procOutput.size() > 0)
+                {
+                    Logger::FrameworkDebug("\nCacheClientLog: %s", procOutput.c_str());
+                }
             }
             
-            return (cacheClient.GetExitCode() == 0);
+            return (exitCode == 0);
         }
     }
     
