@@ -1,5 +1,12 @@
 include ( GlobalVariables      )
 
+if ( DAVA_MEMORY_PROFILER )
+    add_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
+    if ( NOT DAVA_MEMORY_PROFILER )
+        set ( DAVA_MEMORY_PROFILER 1 )
+    endif()
+endif()
+
 if( ANDROID AND NOT CMAKE_TOOLCHAIN_FILE )
     set( CMAKE_TOOLCHAIN_FILE ${DAVA_ROOT_DIR}/Sources/CMake/Toolchains/android.toolchain.cmake )
     find_package( AndroidTools REQUIRED )
@@ -19,6 +26,18 @@ if( ANDROID AND NOT CMAKE_TOOLCHAIN_FILE )
 elseif( IOS AND NOT CMAKE_TOOLCHAIN_FILE )
     set( CMAKE_TOOLCHAIN_FILE ${DAVA_ROOT_DIR}/Sources/CMake/Toolchains/ios.toolchain.cmake )
  
+elseif ( WINDOWS_UAP )
+
+    #define system name and version for windows universal application
+    set ( CMAKE_SYSTEM_NAME "${WINDOWS_UAP_PLATFORM_NAME}" )
+    set ( CMAKE_SYSTEM_VERSION "${WINDOWS_UAP_PLATRORM_VERSION}" )
+
+    if ( DAVA_MEMORY_PROFILER )
+        message(WARNING "Windows Store platform detected. Memory profiling is disabled")
+        remove_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
+        unset ( DAVA_MEMORY_PROFILER )
+    endif ()
+	
 endif()
 
 include ( PlatformSettings     )
@@ -317,9 +336,6 @@ install(
 ENDIF()
 
 endmacro ()
-
-
-
 
 
 

@@ -6,6 +6,8 @@ build/     # ignore all files in the build/ directory
 /build     # ignore all files in the build/ directory
 /build/    # ignore all files in the build/ directory
 _build/    # ignore all files in the _build/ directory
+cmake_build/
+cmake_repo/
 xcuserdata/
 /xcuserdata
 /xcuserdata/
@@ -17,9 +19,11 @@ $process/
 #doc/*.txt # ignore doc/notes.txt, but not doc/server/arch.txt
 Documentation/doxygen/*
 Debug
+Debug_Win32
 DebugQt
 _DebugQt
 Release
+Release_Win32
 ReleaseQt
 _ReleaseQt
 _build*
@@ -44,3 +48,12 @@ fmod.log
 Projects/UnitTests/android/assets
 
 Projects/UnitTests/android/.settings/*
+.vs
+AppPackages
+
+!/Libs/lib_CMake/win10/x86/Debug
+!/Libs/lib_CMake/win10/x86/Relese
+!/Libs/lib_CMake/win10/x64/Debug
+!/Libs/lib_CMake/win10/x64/Relese
+!/Libs/lib_CMake/win10/arm/Debug
+!/Libs/lib_CMake/win10/arm/Relese

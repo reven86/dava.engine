@@ -96,7 +96,7 @@ bool UIComponent::IsMultiple(uint32 componentType)
             
         default:
             DVASSERT(false);
-            return nullptr;
+            return false;
     }
     
 }

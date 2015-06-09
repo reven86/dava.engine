@@ -192,7 +192,7 @@ uint16 QuadTree::FindObjectAddNode(uint16 startNodeId, const AABBox3& objBox)
 				}
 				else //or create new node
 				{
-					newNodeIndex = nodes.size();
+					newNodeIndex = uint16(nodes.size());
 					nodes.resize(newNodeIndex+1);				//starting from here currNode may be invalid
 				} 
 				nodes[newNodeIndex].nodeInfo = (nodes[currIndex].nodeInfo&QuadTreeNode::NODE_DEPTH_MASK)+(1<<QuadTreeNode::NODE_DEPTH_OFFSET); //depth
@@ -311,7 +311,6 @@ void QuadTree::RemoveRenderObject(RenderObject * renderObject)
 		renderObject->RemoveFlag(RenderObject::TREE_NODE_NEED_UPDATE);
 	}
 	
-
 	//update tree branch info	
 	while(currIndex!=INVALID_TREE_NODE_INDEX) 
 	{
