@@ -52,7 +52,7 @@ private slots:
     void OnStopClicked();
     void OnRunningChanged(bool running);
 protected:
-    void closeEvent();
+    void closeEvent(QCloseEvent *event) override;
 private:
     void LoadSettings();
     void SaveSettings() const;

@@ -53,6 +53,9 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     a.setOrganizationName("DAVA");
     a.setApplicationName("QuickEd");
+
+    Q_INIT_RESOURCE(QtToolsResources);
+
     QApplication::setQuitOnLastWindowClosed(false);
 
     DAVA::Core::Run( argc, argv );

@@ -50,7 +50,6 @@ EditorCore::EditorCore(QObject *parent)
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
     
-    dialogReloadSprites->GetSpritesPacker()->SetSearchPattern(QRegularExpression("Gfx*", QRegularExpression::CaseInsensitiveOption));
     QAction* actionReloadSprites = dialogReloadSprites->GetActionReloadSprites();
     mainWindow->menuTools->addAction(actionReloadSprites);
     mainWindow->toolBarPlugins->addAction(actionReloadSprites);
@@ -124,7 +123,25 @@ void EditorCore::OnOpenPackageFile(const QString &path)
 
 void EditorCore::OnProjectPathChanged(const QString &projectPath)
 {
-    dialogReloadSprites->GetSpritesPacker()->SetProjectPath(projectPath+ "/DataSource");
+    QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
+    dialogReloadSprites->GetSpritesPacker()->ClearTasks();
+    QDirIterator it(projectPath + "/DataSource");
+    while (it.hasNext())
+    {
+        const QFileInfo &fileInfo = it.fileInfo();
+        it.next();
+        if (fileInfo.isDir())
+        {
+            QString outputPath = fileInfo.absoluteFilePath();
+            if (!outputPath.contains(searchOption))
+            {
+                continue;
+            }
+            outputPath.replace(outputPath.lastIndexOf("DataSource"), QString("DataSource").size(), "Data");
+            QDir outputDir(outputPath);
+            dialogReloadSprites->GetSpritesPacker()->AddTask(fileInfo.absolutePath(), outputDir);
+        }
+    }
 }
 
 bool EditorCore::CloseAllDocuments()

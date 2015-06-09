@@ -34,32 +34,32 @@
 #include "TextureCompression/TextureConverter.h"
 #include <QObject>
 #include <QFuture>
-#include <QRegularExpression>
 #include <atomic>
 
 namespace DAVA {
     class ResourcePacker2D;
 }
+class QDir;
 
 class SpritesPacker : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool running READ IsRunning WRITE SetRunning NOTIFY RunningStateChanged);
-    Q_PROPERTY(QString projectPath READ GetProjectPath WRITE SetProjectPath NOTIFY ProjectPathChanged)
-    Q_PROPERTY(QRegularExpression searchPattern READ GetSearchPattern WRITE SetSearchPattern NOTIFY SearchPatternChanged)
 public:
     SpritesPacker(QObject *parent = nullptr);
     ~SpritesPacker();
+    void AddTask(const QDir &inputDir, const QDir &outputDir);
+    void ClearTasks();
     void ReloadSprites(bool clearDirs, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
 public slots:
     void Cancel();
-    void Stop();
 signals:
     bool ProcessStared();
 private:
     void ReloadSpritePrivate(bool clearDirs, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
     DAVA::ResourcePacker2D *resourcePacker2D;
     QFuture<void> process;
+    QList < QPair<QDir, QDir> > tasks;
 
     //properties section
 public:
@@ -70,24 +70,6 @@ signals:
     void RunningStateChanged(bool arg);
 private:
     std::atomic<bool> running;
-
-public:
-    QString GetProjectPath() const;
-public slots:
-    void SetProjectPath(QString arg);
-signals:
-    void ProjectPathChanged(QString arg);
-private:
-    QString projectPath;
-    
-public:
-    QRegularExpression GetSearchPattern() const;
-public slots:
-    void SetSearchPattern(QRegularExpression arg);
-signals:
-    void SearchPatternChanged(QRegularExpression arg);
-private:
-    QRegularExpression searchPattern;
 };
 
 #endif //__SPRITES_PACKER_H__

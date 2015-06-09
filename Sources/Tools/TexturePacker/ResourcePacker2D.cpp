@@ -520,7 +520,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     }
     definitionFileList.clear();
     
-    for (int fi = 0; fi < fileList->GetCount(); ++fi)
+    for (int fi = 0; fi < fileList->GetCount() && running; ++fi)
     {
     	if (fileList->IsDirectory(fi))
     	{

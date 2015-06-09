@@ -126,9 +126,12 @@ void DialogReloadSprites::OnRunningChanged(bool running)
     ui->pushButton_cancel->setText(running ? "Cancel" : "Close");
 }
 
-void DialogReloadSprites::closeEvent()
+void DialogReloadSprites::closeEvent(QCloseEvent *event)
 {
-    spritesPacker->Stop();
+    Q_UNUSED(event);
+    this->setEnabled(false);
+    spritesPacker->Cancel();
+    this->setEnabled(true);
 }
 
 void DialogReloadSprites::LoadSettings()

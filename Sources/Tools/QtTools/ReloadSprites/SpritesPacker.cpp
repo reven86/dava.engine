@@ -35,6 +35,7 @@
 #include <QDirIterator>
 #include <QApplication>
 #include <QtConcurrent/QtConcurrent>
+#include <QFutureWatcher>
 
 using namespace DAVA;
 
@@ -51,6 +52,17 @@ SpritesPacker::~SpritesPacker()
     delete resourcePacker2D;
 }
 
+void SpritesPacker::AddTask(const QDir &inputDir, const QDir &outputDir)
+{
+    tasks.push_back(qMakePair(inputDir, outputDir));
+}
+
+void SpritesPacker::ClearTasks()
+{
+    tasks.clear();
+}
+
+
 void SpritesPacker::ReloadSprites(bool clearDirs, const eGPUFamily gpu, const TextureConverter::eConvertQuality quality)
 {
     process = QtConcurrent::run(this, &SpritesPacker::ReloadSpritePrivate, clearDirs, gpu, quality);
@@ -58,37 +70,35 @@ void SpritesPacker::ReloadSprites(bool clearDirs, const eGPUFamily gpu, const Te
 
 void SpritesPacker::ReloadSpritePrivate(bool clearDirs, const eGPUFamily gpu, const TextureConverter::eConvertQuality quality)
 {
+    resourcePacker2D->SetRunning(true);
     if (!ProcessStared())
     {
         return;
     }
     SetRunning(true);
-    QDir inputDir(projectPath);
-    QDirIterator it(inputDir);
     void *pool = QtLayer::Instance()->CreateAutoreleasePool();
     resourcePacker2D->SetRunning(true);
-    while (resourcePacker2D->IsRunning() && it.hasNext())
+    for (const auto &task : tasks)
     {
-        const QFileInfo &fileInfo = it.fileInfo();
-        if (fileInfo.isDir() && fileInfo.absoluteFilePath().contains(searchPattern))
+        const auto &inputDir = task.first;
+        const auto &outputDir = task.second;
+        if (!outputDir.exists())
         {
-            QString outputPath = fileInfo.absoluteFilePath();
-            outputPath.replace(outputPath.indexOf("DataSource"), QString("DataSource").size(), "Data");
-            QDir outputDir(outputPath);
-            if (!outputDir.exists())
-            {
-                outputDir.mkdir(".");
-            }
-
-            const FilePath inputFilePath = FilePath(QDir::toNativeSeparators(fileInfo.absoluteFilePath()).toStdString()).MakeDirectoryPathname();
-            const FilePath outputFilePath = FilePath(QDir::toNativeSeparators(outputDir.absolutePath()).toStdString()).MakeDirectoryPathname();
-            CommandLineParser::Instance()->Clear(); //CommandLineParser is used in ResourcePackerScreen
-            resourcePacker2D->clearProcessDirectory = clearDirs;
-            resourcePacker2D->SetConvertQuality(quality);
-            resourcePacker2D->InitFolders(inputFilePath, outputFilePath);
-            resourcePacker2D->PackResources(gpu);
+            outputDir.mkdir(".");
         }
-        it.next();
+
+        const FilePath inputFilePath = FilePath(inputDir.absolutePath().toStdString()).MakeDirectoryPathname();
+        const FilePath outputFilePath = FilePath(outputDir.absolutePath().toStdString()).MakeDirectoryPathname();
+        CommandLineParser::Instance()->Clear(); //CommandLineParser is used in ResourcePackerScreen
+        resourcePacker2D->clearProcessDirectory = clearDirs;
+        resourcePacker2D->SetConvertQuality(quality);
+        resourcePacker2D->InitFolders(inputFilePath, outputFilePath);
+        resourcePacker2D->PackResources(gpu);
+        if (!resourcePacker2D->IsRunning())
+        {
+            break;
+        }
+
     }
     QtLayer::Instance()->ReleaseAutoreleasePool(pool);
     Sprite::ReloadSprites();
@@ -97,20 +107,14 @@ void SpritesPacker::ReloadSpritePrivate(bool clearDirs, const eGPUFamily gpu, co
 
 void SpritesPacker::Cancel()
 {
-    resourcePacker2D->SetRunning(false);
+    QFutureWatcher<void> watcher;
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    while (!process.isFinished())
-    {
-        QApplication::processEvents();
-    }
-    QApplication::restoreOverrideCursor();
-}
+    watcher.setFuture(process);
+    QEventLoop loop;
+    connect(&watcher, &QFutureWatcher<void>::finished, &loop, &QEventLoop::quit);
 
-void SpritesPacker::Stop()
-{
     resourcePacker2D->SetRunning(false);
-    QApplication::setOverrideCursor(Qt::WaitCursor);
-    process.waitForFinished();
+    loop.exec();
     QApplication::restoreOverrideCursor();
 }
 
@@ -129,32 +133,3 @@ void SpritesPacker::SetRunning(bool arg)
         emit RunningStateChanged(arg);
     }
 }
-
-QString SpritesPacker::GetProjectPath() const
-{
-    return projectPath;
-}
-
-void SpritesPacker::SetProjectPath(QString arg)
-{
-    if (arg != projectPath)
-    {
-        projectPath = arg;
-        emit ProjectPathChanged(arg);
-    }
-}
-
-QRegularExpression SpritesPacker::GetSearchPattern() const
-{
-    return searchPattern;
-}
-
-void SpritesPacker::SetSearchPattern(QRegularExpression arg)
-{
-    if(arg != searchPattern)
-    {
-        searchPattern = arg;
-        emit SearchPatternChanged(arg);
-    }
-}
-

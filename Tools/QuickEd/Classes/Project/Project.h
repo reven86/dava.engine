@@ -73,7 +73,7 @@ private:
     void SetIsOpen(bool arg);
     bool isOpen;
 
-    public:
+public:
     QString GetProjectPath() const;
 public slots:
     void SetProjectPath(QString arg);
