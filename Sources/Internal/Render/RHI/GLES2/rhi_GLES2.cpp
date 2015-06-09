@@ -265,6 +265,7 @@ gles2_Initialize( const InitParam& param )
 
             VertexBufferGLES2::SetupDispatch( &DispatchGLES2 );
             IndexBufferGLES2::SetupDispatch( &DispatchGLES2 );
+            QueryBufferGLES2::SetupDispatch( &DispatchGLES2 );
             TextureGLES2::SetupDispatch( &DispatchGLES2 );
             PipelineStateGLES2::SetupDispatch( &DispatchGLES2 );
             ConstBufferGLES2::SetupDispatch( &DispatchGLES2 );
@@ -356,6 +357,7 @@ gles2_Initialize( const InitParam& param )
 
     VertexBufferGLES2::SetupDispatch( &DispatchGLES2 );
     IndexBufferGLES2::SetupDispatch( &DispatchGLES2 );
+    QueryBufferGLES2::SetupDispatch( &DispatchGLES2 );
     TextureGLES2::SetupDispatch( &DispatchGLES2 );
     PipelineStateGLES2::SetupDispatch( &DispatchGLES2 );
     ConstBufferGLES2::SetupDispatch( &DispatchGLES2 );
@@ -404,6 +406,7 @@ gles2_Initialize( const InitParam& param )
         
     VertexBufferGLES2::SetupDispatch( &DispatchGLES2 );
     IndexBufferGLES2::SetupDispatch( &DispatchGLES2 );
+    QueryBufferGLES2::SetupDispatch( &DispatchGLES2 );
     TextureGLES2::SetupDispatch( &DispatchGLES2 );
     PipelineStateGLES2::SetupDispatch( &DispatchGLES2 );
     ConstBufferGLES2::SetupDispatch( &DispatchGLES2 );

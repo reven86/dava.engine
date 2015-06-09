@@ -173,8 +173,39 @@ Unmap( Handle vb )
     return (*_Impl.impl_IndexBuffer_Unmap)( vb );
 }
 
-} // namespace VertexBuffer
+} // namespace IndexBuffer
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+namespace QueryBuffer
+{
+
+Handle
+Create( uint32 maxObjectCount )
+{
+    return (*_Impl.impl_QueryBuffer_Create)( maxObjectCount );
+}
+
+void
+Delete( Handle buf )
+{
+    (*_Impl.impl_QueryBuffer_Delete)( buf );
+}
+
+bool
+IsReady( Handle buf, uint32 objectIndex )
+{
+    return (*_Impl.impl_QueryBuffer_IsReady)( buf, objectIndex );
+}
+
+int
+Value( Handle buf, uint32 objectIndex )
+{
+    return (*_Impl.impl_QueryBuffer_Value)( buf, objectIndex );
+}
+
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -443,6 +474,18 @@ void
 SetIndices( Handle cmdBuf, Handle ib )
 {
     (*_Impl.impl_CommandBuffer_SetIndices)( cmdBuf, ib );
+}
+
+void
+SetQueryBuffer( Handle cmdBuf )
+{
+    (*_Impl.impl_CommandBuffer_SetQueryBuffer)( cmdBuf );
+}
+
+void
+SetQueryIndex( Handle cmdBuf, uint32 index )
+{
+    (*_Impl.impl_CommandBuffer_SetQueryIndex)( cmdBuf, index );
 }
     
 void
