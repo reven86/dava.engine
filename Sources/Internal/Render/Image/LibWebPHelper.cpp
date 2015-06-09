@@ -86,23 +86,14 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
         return ERROR_FILE_FORMAT_INCORRECT;
     }
 
-    int width;
-    int height;
-    auto getInfoStatus = WebPGetInfo(data, dataSize, &width, &height);
-    if (0 == getInfoStatus)
-    {
-        Logger::Error("[LibWebPHelper::ReadFile] Error in WebGetInfo. File %s", infile->GetFilename().GetAbsolutePathname().c_str());
-        return ERROR_FILE_FORMAT_INCORRECT;
-    }
-
-    uint8_t *newData;
+    uint8_t *newData = nullptr;
     if (bitstream->has_alpha)
     {
-        newData = WebPDecodeRGBA(data, dataSize, &width, &height);
+        newData = WebPDecodeRGBA(data, dataSize, &bitstream->width, &bitstream->height);
     }
     else
     {
-        newData = WebPDecodeRGB(data, dataSize, &width, &height);
+        newData = WebPDecodeRGB(data, dataSize, &bitstream->width, &bitstream->height);
     }
     if (nullptr == newData)
     {
@@ -110,7 +101,7 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
         return ERROR_FILE_FORMAT_INCORRECT;
     }
 
-    ScopedPtr<Image> image(new Image());
+    Image* image = new Image();
 
     if (bitstream->has_alpha)
     {
@@ -123,10 +114,9 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     image->width = bitstream->width;
     image->height = bitstream->height;
     image->data = newData;
-    auto size = width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(image->format);
-    image->dataSize = size;
+    image->dataSize = bitstream->width * bitstream->height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(image->format);
 
-    imageSet.push_back(SafeRetain(image.get()));
+    imageSet.push_back(image);
 
     return SUCCESS;
 }
@@ -146,7 +136,7 @@ eErrorCode LibWebPHelper::WriteFile(const FilePath & fileName, const Vector<Imag
         return ERROR_FILE_FORMAT_INCORRECT;
     }
 
-    uint8_t *outData;
+    uint8_t *outData = nullptr;
     SCOPE_EXIT
     {
         SafeDeleteArray(outData);
@@ -164,7 +154,7 @@ eErrorCode LibWebPHelper::WriteFile(const FilePath & fileName, const Vector<Imag
 
     if (nullptr == outData)
     {
-        Logger::Error("[LibWebPHelper::WriteFile] Error during compression of jpeg into file %s.", fileName.GetAbsolutePathname().c_str());
+        Logger::Error("[LibWebPHelper::WriteFile] Error during compression of WebP into file %s.", fileName.GetAbsolutePathname().c_str());
         return ERROR_FILE_FORMAT_INCORRECT;
     }
 
@@ -209,18 +199,9 @@ DAVA::ImageInfo LibWebPHelper::GetImageInfo(File *infile) const
         return ImageInfo();
     }
 
-    int width;
-    int height;
-    
-    auto giStatus = WebPGetInfo(data, dataSize, &width, &height);
-    if (0 == giStatus)
-    {
-        return ImageInfo();
-    }
-
     ImageInfo info;
-    info.height = height;
-    info.width = width;
+    info.height = bitstream->height;
+    info.width = bitstream->width;
     if (bitstream->has_alpha)
     {
         info.format = FORMAT_RGBA8888;
@@ -229,7 +210,7 @@ DAVA::ImageInfo LibWebPHelper::GetImageInfo(File *infile) const
     {
         info.format = FORMAT_RGB888;
     }
-    auto size = width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(info.format);
+    auto size = bitstream->width * bitstream->height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(info.format);
     info.dataSize = size;
     info.mipmapsCount = 1;
 

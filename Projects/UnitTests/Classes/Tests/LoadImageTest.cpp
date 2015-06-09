@@ -52,7 +52,7 @@ DAVA_TESTCLASS(LoadImageTest)
             0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xf3, 0x00, 0x12, 0xff, 0xf3, 0x00, 0x12, 0xff};
 
         DAVA::Vector<DAVA::Image*> imgSet;
-        auto ClearImgSet = [&]()
+        auto ClearImgSet = [&imgSet]()
         {
             for (auto image : imgSet)
             {
@@ -89,7 +89,7 @@ DAVA_TESTCLASS(LoadImageTest)
     DAVA_TEST(WebPTest)
     {
         DAVA::Vector<DAVA::Image*> imgSet;
-        auto ClearImgSet = [&]()
+        auto ClearImgSet = [&imgSet]()
         {
             for (auto image : imgSet)
             {

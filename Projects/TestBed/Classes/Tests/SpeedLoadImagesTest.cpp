@@ -34,7 +34,6 @@
 
 SpeedLoadImagesTest::SpeedLoadImagesTest()
     : BaseScreen("SpeedLoadImagesTest")
-    , testPngBtn(nullptr)
     , resultText(nullptr)
 {
 }
@@ -50,43 +49,23 @@ void SpeedLoadImagesTest::LoadResources()
     DVASSERT(font);
     font->SetSize(30);
 
-    testPngBtn = new UIButton(Rect(10, 10, 450, 60));
-    testPngBtn->SetStateFont(0xFF, font);
-    testPngBtn->SetStateFontColor(0xFF, Color::White);
-    testPngBtn->SetStateText(0xFF, L"Test PNG");
+    auto CreateButton = [font, this](Rect r, WideString str, void (SpeedLoadImagesTest::*targetFunction)(BaseObject*, void*, void*))
+    {
+        UIButton *button = new UIButton(r);
+        button->SetStateFont(0xFF, font);
+        button->SetStateFontColor(0xFF, Color::White);
+        button->SetStateText(0xFF, str);
+        button->SetDebugDraw(true);
+        button->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, targetFunction));
+        AddControl(button);
+    };
 
-    testPngBtn->SetDebugDraw(true);
-    testPngBtn->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &SpeedLoadImagesTest::OnTestPng));
-    AddControl(testPngBtn);
+    CreateButton(Rect(10, 10, 450, 60), L"Test PNG", &SpeedLoadImagesTest::OnTestPng);
+    CreateButton(Rect(500, 10, 450, 60), L"Test JPG", &SpeedLoadImagesTest::OnTestJpg);
+    CreateButton(Rect(10, 100, 450, 60), L"Test TGA", &SpeedLoadImagesTest::OnTestTga);
+    CreateButton(Rect(500, 100, 450, 60), L"Test WebP", &SpeedLoadImagesTest::OnTestWebP);
 
-    testJpgBtn = new UIButton(Rect(500, 10, 450, 60));
-    testJpgBtn->SetStateFont(0xFF, font);
-    testJpgBtn->SetStateFontColor(0xFF, Color::White);
-    testJpgBtn->SetStateText(0xFF, L"Test JPG");
-
-    testJpgBtn->SetDebugDraw(true);
-    testJpgBtn->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &SpeedLoadImagesTest::OnTestJpg));
-    AddControl(testJpgBtn);
-
-    testTgaBtn = new UIButton(Rect(10, 100, 450, 60));
-    testTgaBtn->SetStateFont(0xFF, font);
-    testTgaBtn->SetStateFontColor(0xFF, Color::White);
-    testTgaBtn->SetStateText(0xFF, L"Test TGA");
-
-    testTgaBtn->SetDebugDraw(true);
-    testTgaBtn->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &SpeedLoadImagesTest::OnTestTga));
-    AddControl(testTgaBtn);
-
-    testWebPBtn = new UIButton(Rect(500, 100, 450, 60));
-    testWebPBtn->SetStateFont(0xFF, font);
-    testWebPBtn->SetStateFontColor(0xFF, Color::White);
-    testWebPBtn->SetStateText(0xFF, L"Test WebP");
-
-    testWebPBtn->SetDebugDraw(true);
-    testWebPBtn->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &SpeedLoadImagesTest::OnTestWebP));
-    AddControl(testWebPBtn);
-
-    resultText = new UIStaticText(Rect(10, 190, 990, 1400));
+    resultText = new UIStaticText(Rect(10, 190, 700, 1400));
     resultText->SetFont(font);
     resultText->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
     resultText->GetBackground()->SetColor(Color(0.0, 0.0, 0.0, 1.0));
@@ -101,10 +80,6 @@ void SpeedLoadImagesTest::LoadResources()
 void SpeedLoadImagesTest::UnloadResources()
 {
     RemoveAllControls();
-    SafeRelease(testPngBtn);
-    SafeRelease(testJpgBtn);
-    SafeRelease(testTgaBtn);
-    SafeRelease(testWebPBtn);
 
     SafeRelease(resultText);
 
@@ -130,7 +105,7 @@ void SpeedLoadImagesTest::OnTestJpg(BaseObject *obj, void *data, void *callerDat
 
     Vector<String> qualities;
     qualities.push_back("100");
-    TestAndDisplayFormat("jpeg", qualities);
+    TestAndDisplayFormat("jpg", qualities);
 }
 
 void SpeedLoadImagesTest::OnTestTga(BaseObject *obj, void *data, void *callerData)
@@ -160,20 +135,23 @@ void SpeedLoadImagesTest::OnTestWebP(BaseObject *obj, void *data, void *callerDa
     TestAndDisplayFormat("webp", qualities);
 }
 
-void SpeedLoadImagesTest::TestAndDisplayFormat(String extension, Vector<String> qualities)
+void SpeedLoadImagesTest::TestAndDisplayFormat(String extension, const Vector<String> &qualities)
 {
     String resultString("\n");
-    Vector<FilePath> paths = CreatePaths(extension, qualities);
-    for (auto path : paths)
-    {
-        float loadTime = GetLoadTime(path);
-        auto fileName = path.GetFilename();
-        resultString.append(Format("%s: %s - %f\n", extension.c_str(), fileName.c_str(), loadTime));
-    }
-
+    Vector<FilePath> paths;
+    CreatePaths(extension, qualities, paths);
     if (paths.empty())
     {
         resultString.append(Format("Files *.%s not found.\n", extension.c_str()));
+    }
+    else
+    {
+        for (auto &path : paths)
+        {
+            uint64 loadTime = GetLoadTime(path);
+            auto fileName = path.GetFilename();
+            resultString.append(Format("%s: %s - %d\n", extension.c_str(), fileName.c_str(), loadTime));
+        }
     }
 
     WideString resultWideString = resultText->GetText();
@@ -181,10 +159,8 @@ void SpeedLoadImagesTest::TestAndDisplayFormat(String extension, Vector<String> 
     resultText->SetText(resultWideString);
 }
 
-Vector<FilePath> SpeedLoadImagesTest::CreatePaths(String extension, Vector<String> qualities)
+void SpeedLoadImagesTest::CreatePaths(String extension, const Vector<String> &qualities, Vector<FilePath> &outPaths)
 {
-    Vector<FilePath> paths;
-
     Vector<String> fileNames;
     fileNames.push_back("_rgb888_512");
     fileNames.push_back("_rgb888_1024");
@@ -193,9 +169,9 @@ Vector<FilePath> SpeedLoadImagesTest::CreatePaths(String extension, Vector<Strin
     fileNames.push_back("_rgba8888_1024");
     fileNames.push_back("_rgba8888_2048");
 
-    for (auto fileName : fileNames)
+    for (auto &fileName : fileNames)
     {
-        for (auto quality : qualities)
+        for (auto &quality : qualities)
         {
             FilePath inpath(Format("~res:/TestData/SpeedLoadImagesTest/%s%s_quality%s.%s",
                                    extension.c_str(),
@@ -203,26 +179,21 @@ Vector<FilePath> SpeedLoadImagesTest::CreatePaths(String extension, Vector<Strin
                                    quality.c_str(),
                                    extension.c_str()));
 
-            File *infile = File::Create(inpath, File::OPEN | File::READ);
-            if (infile != nullptr)
-            //if (inpath.Exists())
+            if (inpath.Exists())
             {
-                paths.push_back(inpath);
-                infile->Release();
+                outPaths.push_back(inpath);
             }
         }
     }
-
-    return paths;
 }
 
-float SpeedLoadImagesTest::GetLoadTime(FilePath path)
+uint64 SpeedLoadImagesTest::GetLoadTime(const FilePath &path)
 {
-    File *infile = File::Create(path, File::OPEN | File::READ);
+    ScopedPtr<File> infile(File::Create(path, File::OPEN | File::READ));
     Vector<Image *> imageSet;
 
     auto number = 5;
-    float allTime = 0;
+    uint64 allTime = 0;
     for (auto i = 0; i < number; ++i)
     {
         uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
@@ -236,8 +207,6 @@ float SpeedLoadImagesTest::GetLoadTime(FilePath path)
         }
         imageSet.clear();
     }
-
-    infile->Release();
 
     return allTime / number;
 }

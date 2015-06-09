@@ -49,16 +49,11 @@ private:
     void OnTestTga(BaseObject *obj, void *data, void *callerData);
     void OnTestWebP(BaseObject *obj, void *data, void *callerData);
 
-    void TestAndDisplayFormat(String extension, Vector<String> qualities);
-    Vector<FilePath> CreatePaths(String extension, Vector<String> qualities);
-    float GetLoadTime(FilePath path);
+    void TestAndDisplayFormat(String extension, const Vector<String> &qualities);
+    void CreatePaths(String extension, const Vector<String> &qualities, Vector<FilePath> &outPaths);
+    uint64 GetLoadTime(const FilePath &path);
 
 private:
-    UIButton *testPngBtn;
-    UIButton *testJpgBtn;
-    UIButton *testTgaBtn;
-    UIButton *testWebPBtn;
-
     UIStaticText *resultText;
 };
 
