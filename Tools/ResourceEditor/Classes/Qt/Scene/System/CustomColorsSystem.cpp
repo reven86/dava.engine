@@ -83,7 +83,7 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
 
     selectionSystem->SetLocked(true);
     modifSystem->SetLocked(true);
-    landscapeSize = drawSystem->GetTextureSize(Landscape::TEXTURE_NAME_FULL_TILED);
+    landscapeSize = drawSystem->GetTextureSize(Landscape::TEXTURE_FULL_TILED);
 
 	FilePath filePath = GetCurrentSaveFileName();
 	if (!filePath.IsEmpty())
@@ -267,7 +267,7 @@ void CustomColorsSystem::AddRectToAccumulator(const Rect &rect)
 Rect CustomColorsSystem::GetUpdatedRect()
 {
 	Rect r = updatedRectAccumulator;
-	drawSystem->ClampToTexture(Landscape::TEXTURE_NAME_FULL_TILED, r);
+	drawSystem->ClampToTexture(Landscape::TEXTURE_FULL_TILED, r);
 
 	return r;
 }

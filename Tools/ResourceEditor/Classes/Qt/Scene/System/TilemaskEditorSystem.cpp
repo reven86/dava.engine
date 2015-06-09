@@ -57,7 +57,7 @@ TilemaskEditorSystem::TilemaskEditorSystem(Scene* scene)
 ,	toolTexture(NULL)
 ,	toolSpriteUpdated(false)
 ,	needCreateUndo(false)
-,	textureLevel(Landscape::TEXTURE_NAME_TILEMASK)
+,	textureLevel(Landscape::TEXTURE_TILEMASK)
 {
     cursorSize = 120;
     

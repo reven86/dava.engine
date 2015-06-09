@@ -144,7 +144,7 @@ void ModifyTilemaskCommand::Undo()
 {
 
     ApplyImageToTexture(undoImageMask, landscapeProxy->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_SOURCE));
-    ApplyImageToTexture(undoImageMask, landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_NAME_TILEMASK));
+    ApplyImageToTexture(undoImageMask, landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILEMASK));
 
 	landscapeProxy->UpdateFullTiledTexture();
 	landscapeProxy->DecreaseTilemaskChanges();
@@ -158,7 +158,7 @@ void ModifyTilemaskCommand::Undo()
 void ModifyTilemaskCommand::Redo()
 {
 	ApplyImageToTexture(redoImageMask, landscapeProxy->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_SOURCE));
-    ApplyImageToTexture(redoImageMask, landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_NAME_TILEMASK));
+    ApplyImageToTexture(redoImageMask, landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILEMASK));
 
 	landscapeProxy->UpdateFullTiledTexture();
 	landscapeProxy->IncreaseTilemaskChanges();

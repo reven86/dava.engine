@@ -55,7 +55,6 @@ public:
 	static const FastName DETAIL_OPAQUE;
 	static const FastName SILHOUETTE;
 	static const FastName VERTEXCOLOR_FRAMEBLEND_ALPHABLEND;
-	static const FastName SKYBOX;
     static const FastName SKYOBJECT;
 	static const FastName VERTEXCOLOR_FRAMEBLEND_OPAQUE;
 	static const FastName PIXELLIT_ALPHATEST;

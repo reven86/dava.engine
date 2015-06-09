@@ -136,17 +136,15 @@ void BeastAction::Finish(bool canceled)
     }
 
 	Landscape *land = FindLandscape(workingScene);
-#if RHI_COMPLETE_EDITOR
 	if(land)
 	{
-		FilePath textureName = land->GetTextureName(DAVA::Landscape::TEXTURE_COLOR);
+		FilePath textureName = land->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_COLOR)->GetPathname();
         if (textureName.Exists())
         {
             textureName.ReplaceFilename("temp_beast.png");
             FileSystem::Instance()->DeleteFile(textureName);
         }
 	}
-#endif // RHI_COMPLETE_EDITOR
 
     FileSystem::Instance()->DeleteDirectory(FileSystem::Instance()->GetCurrentWorkingDirectory() + "temp_beast/");
     if(beastMode == BeastProxy::MODE_LIGHTMAPS)

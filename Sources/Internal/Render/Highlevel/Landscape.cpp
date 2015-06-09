@@ -56,12 +56,12 @@ const FastName Landscape::PARAM_TILE_COLOR2("tileColor2");
 const FastName Landscape::PARAM_TILE_COLOR3("tileColor3");
 const FastName Landscape::PARAM_CURSOR_COORD_SIZE("cursorCoordSize");
 
-const FastName Landscape::TEXTURE_NAME_COLOR("colorTexture");
-const FastName Landscape::TEXTURE_NAME_TILE("tileTexture0");
-const FastName Landscape::TEXTURE_NAME_TILEMASK("tileMask");
-const FastName Landscape::TEXTURE_NAME_SPECULAR("specularMap");
-const FastName Landscape::TEXTURE_NAME_FULL_TILED("fullTiledTexture");
-const FastName Landscape::TEXTURE_NAME_CURSOR("cursorTexture");
+const FastName Landscape::TEXTURE_COLOR("colorTexture");
+const FastName Landscape::TEXTURE_TILE("tileTexture0");
+const FastName Landscape::TEXTURE_TILEMASK("tileMask");
+const FastName Landscape::TEXTURE_SPECULAR("specularMap");
+const FastName Landscape::TEXTURE_FULL_TILED("fullTiledTexture");
+const FastName Landscape::TEXTURE_CURSOR("cursorTexture");
 
 const uint32 LANDSCAPE_BATCHES_POOL_SIZE = 32;
 
