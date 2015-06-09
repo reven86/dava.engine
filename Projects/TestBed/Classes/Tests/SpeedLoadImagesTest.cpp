@@ -49,21 +49,22 @@ void SpeedLoadImagesTest::LoadResources()
     DVASSERT(font);
     font->SetSize(30);
 
-    auto CreateButton = [font, this](Rect r, WideString str, void (SpeedLoadImagesTest::*targetFunction)(BaseObject*, void*, void*))
+    auto CreateButton = [font, this](const Rect &r, const WideString &str, const Message &m)
     {
         UIButton *button = new UIButton(r);
         button->SetStateFont(0xFF, font);
         button->SetStateFontColor(0xFF, Color::White);
         button->SetStateText(0xFF, str);
         button->SetDebugDraw(true);
-        button->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, targetFunction));
+        button->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, m);
         AddControl(button);
+        SafeRelease(button);
     };
 
-    CreateButton(Rect(10, 10, 450, 60), L"Test PNG", &SpeedLoadImagesTest::OnTestPng);
-    CreateButton(Rect(500, 10, 450, 60), L"Test JPG", &SpeedLoadImagesTest::OnTestJpg);
-    CreateButton(Rect(10, 100, 450, 60), L"Test TGA", &SpeedLoadImagesTest::OnTestTga);
-    CreateButton(Rect(500, 100, 450, 60), L"Test WebP", &SpeedLoadImagesTest::OnTestWebP);
+    CreateButton(Rect(10, 10, 450, 60), L"Test PNG", Message(this, &SpeedLoadImagesTest::OnTestPng));
+    CreateButton(Rect(500, 10, 450, 60), L"Test JPG", Message(this, &SpeedLoadImagesTest::OnTestJpg));
+    CreateButton(Rect(10, 100, 450, 60), L"Test TGA", Message(this, &SpeedLoadImagesTest::OnTestTga));
+    CreateButton(Rect(500, 100, 450, 60), L"Test WebP", Message(this, &SpeedLoadImagesTest::OnTestWebP));
 
     resultText = new UIStaticText(Rect(10, 190, 700, 1400));
     resultText->SetFont(font);

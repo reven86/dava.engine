@@ -97,9 +97,9 @@ DAVA_TESTCLASS(SaveImageTest)
         float32 differencePersentage = ((float32)cmpRes.difference / ((float32)cmpRes.bytesCount * 256.f)) * 100.f;
         TEST_VERIFY(differencePersentage <= diffThreshold);
 
-        for (auto ing : imgSet)
+        for (auto img : imgSet)
         {
-            ing->Release();
+            img->Release();
         }
     }
 
