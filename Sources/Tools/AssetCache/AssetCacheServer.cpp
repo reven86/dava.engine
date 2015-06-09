@@ -36,6 +36,7 @@
 #include "Debug/DVAssert.h"
 #include "FileSystem/KeyedArchive.h"
 
+
 namespace DAVA
 {
     
@@ -141,7 +142,7 @@ bool Server::SendFiles(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, co
     {
         ScopedPtr<KeyedArchive> archieve(new KeyedArchive());
         archieve->SetUInt32("PacketID", PACKET_GET_FILES_RESPONCE);
-        
+
         ScopedPtr<KeyedArchive> keyArchieve(new KeyedArchive());
         key.Serialize(keyArchieve);
         archieve->SetArchive("key", keyArchieve);
@@ -149,7 +150,7 @@ bool Server::SendFiles(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, co
         ScopedPtr<KeyedArchive> filesArchieve(new KeyedArchive());
         files.Serialize(filesArchieve, true);
         archieve->SetArchive("files", filesArchieve);
-        
+
         return tcpChannel->SendArchieve(archieve);
     }
     

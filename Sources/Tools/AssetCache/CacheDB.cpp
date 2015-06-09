@@ -264,7 +264,7 @@ ServerCacheEntry * CacheDB::Get(const CacheItemKey &key)
         entry->InvalidateAccesToken(nextItemID++);
         dbStateChanged = true;
     }
-    
+
     return entry;
 }
 

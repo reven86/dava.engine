@@ -40,7 +40,7 @@ class ServerCore: public QObject
 {
     Q_OBJECT
     
-    static const int UPDATE_TIMEOUT = 16;
+    static const int UPDATE_TIMEOUT = 1;
     
 public:
     

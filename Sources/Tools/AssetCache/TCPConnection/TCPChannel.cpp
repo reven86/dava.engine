@@ -55,6 +55,14 @@ TCPChannel::~TCPChannel()
     delegate = nullptr;
 }
     
+void TCPChannel::OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length)
+{
+    Net::NetService::OnPacketSent(channel, buffer, length);
+
+    // archieve has been sent and buffer can be deleted
+    delete [] static_cast<const uint8*>(buffer);
+}
+    
 
 bool TCPChannel::SendArchieve(KeyedArchive * archieve)
 {

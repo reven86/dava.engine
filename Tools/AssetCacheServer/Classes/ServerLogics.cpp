@@ -31,15 +31,12 @@
 
 void ServerLogics::Init(DAVA::AssetCache::Server *_server, DAVA::AssetCache::CacheDB *_dataBase)
 {
-    DAVA::Logger::FrameworkDebug("[ServerLogics::%s]", __FUNCTION__);
-    
     server = _server;
     dataBase = _dataBase;
 }
 
 void ServerLogics::OnAddedToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files)
 {
-    DAVA::Logger::FrameworkDebug("[ServerLogics::%s]", __FUNCTION__);
     if(server && tcpChannel)
     {
         dataBase->Insert(key, files);
@@ -49,7 +46,6 @@ void ServerLogics::OnAddedToCache(DAVA::TCPChannel *tcpChannel, const DAVA::Asse
 
 void ServerLogics::OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key)
 {
-    DAVA::Logger::FrameworkDebug("[ServerLogics::%s]", __FUNCTION__);
     if(server && dataBase && tcpChannel)
     {
         auto entry = dataBase->Get(key);
@@ -62,6 +58,7 @@ void ServerLogics::OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA
             server->SendFiles(tcpChannel, key, DAVA::AssetCache::CachedFiles());
         }
     }
+    
 }
 
 void ServerLogics::Update()

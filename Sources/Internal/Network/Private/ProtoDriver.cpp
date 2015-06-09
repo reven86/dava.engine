@@ -384,7 +384,7 @@ void ProtoDriver::PreparePacket(Packet* packet, uint32 channelId, const void* bu
     DVASSERT(buffer != NULL && length > 0);
 
     packet->channelId = channelId;
-    packet->packetId = AtomicIncrement(reinterpret_cast<int32&>(nextPacketId));;
+    packet->packetId = AtomicIncrement(reinterpret_cast<int32&>(nextPacketId));
     packet->dataLength = length;
     packet->sentLength = 0;
     packet->chunkLength = 0;

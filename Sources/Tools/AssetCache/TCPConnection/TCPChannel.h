@@ -61,6 +61,9 @@ public:
     uint32 SendData(const uint8 * data, const size_t dataSize);
     void SetDelegate(TCPChannelDelegate * delegate);
     
+    //IChannelListener
+    void OnPacketSent(Net::IChannel* channel, const void* buffer, size_t length) override;
+
     //Net::NetService
     void ChannelOpen() override;
     void ChannelClosed(const char8* message) override;
