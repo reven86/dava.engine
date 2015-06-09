@@ -39,15 +39,15 @@
 namespace DAVA
 {
 
-String FormatVL(const char8* format, va_list args)
-{
-    try {
-        return fmt::sprintf(format, args);
-    } catch (const std::exception& e) {
-        Logger::Debug("%s", e.what());
-    }
-    return String();
-}
+//String FormatVL(const char8* format, va_list args)
+//{
+//    try {
+//        return fmt::sprintf(format, args);
+//    } catch (const std::exception& e) {
+//        Logger::Debug("%s", e.what());
+//    }
+//    return String();
+//}
 
 //String Format(const char8* format, ...)
 //{
@@ -63,10 +63,10 @@ String FormatVL(const char8* format, va_list args)
 //    return WideString();
 //}
 
-WideString FormatVL(const char16* format, va_list args)
-{
-    return WideString();
-}
+//WideString FormatVL(const char16* format, va_list args)
+//{
+//    return WideString();
+//}
 
 }
 
