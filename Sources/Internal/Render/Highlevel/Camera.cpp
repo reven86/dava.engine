@@ -272,27 +272,15 @@ void Camera::RebuildProjectionMatrix()
     float32 xMinOrientation = xmin;
     float32 xMaxOrientation = xmax;
     float32 yMinOrientation = ymin;
-    float32 yMaxOrientation = ymax;
-    
-    uint32 cullInvert = 0;
+    float32 yMaxOrientation = ymax;        
 
-#if RHI_COMPLETE //is this really good place to make inverse projection? and is rendertarget really good criteria for it?
-    if (RenderManager::Instance()->GetRenderTarget() != nullptr)
+
+    if (flags & INVERT)
     {
         yMinOrientation = ymax;
-        yMaxOrientation = ymin;
-        cullInvert = 1 - cullInvert; // Invert once if we render to FBO
+        yMaxOrientation = ymin;               
     }
-    if (flags & INVERT_CULL)
-        cullInvert = 1 - cullInvert;    // Invert twice if we want to invert the faces for rendering purpose (for example shadow maps, or water reflection)
-    
-    // Set correct drawing order according to FBO config + camera requirements
-    if (cullInvert == 0)
-        RenderManager::Instance()->SetCullOrder(ORDER_CCW);
-    else
-        RenderManager::Instance()->SetCullOrder(ORDER_CW);
-
-#endif //RHI_COMPLETE
+        
     if (!ortho) 
     {
         projMatrix.glFrustum(xMinOrientation, xMaxOrientation, yMinOrientation, yMaxOrientation, znear, zfar);
@@ -316,7 +304,7 @@ void Camera::RebuildViewMatrix()
 //    }
 //    else
 //    {
-    viewMatrix = cameraTransform;
+    viewMatrix = cameraTransform;    
 //    }
 }
 
@@ -425,7 +413,7 @@ void Camera::LookAt(Vector3	position, Vector3 view, Vector3 up)
 
 void Camera::PrepareDynamicParameters(Vector4 *externalClipPlane)
 {
-	flags = REQUIRE_REBUILD | REQUIRE_REBUILD_MODEL | REQUIRE_REBUILD_PROJECTION;
+	flags |= REQUIRE_REBUILD | REQUIRE_REBUILD_MODEL | REQUIRE_REBUILD_PROJECTION;
     if (flags & REQUIRE_REBUILD)
     {
         RebuildCameraFromValues();
@@ -450,12 +438,12 @@ void Camera::PrepareDynamicParameters(Vector4 *externalClipPlane)
     if (externalClipPlane)
     {
         Vector4 clipPlane(*externalClipPlane);
-#if RHI_COMPLETE
-        if (RenderManager::Instance()->GetRenderTarget() != nullptr)
+
+        if (flags & INVERT)
         {
             clipPlane = -clipPlane;
         }
-#endif RHI_COMPLETE        
+
         Matrix4 m;
         
         viewMatrix.GetInverse(m);
@@ -550,12 +538,12 @@ float32 Camera::GetZoomFactor() const
     return zoomFactor;
 }
 
-void Camera::SetCullInvert(bool enabled)
+void Camera::SetInvert(bool enabled)
 {
     if (enabled)
-        flags |= INVERT_CULL;
+        flags |= INVERT;
     else
-        flags &= ~INVERT_CULL;
+        flags &= ~INVERT;
 }
 
     

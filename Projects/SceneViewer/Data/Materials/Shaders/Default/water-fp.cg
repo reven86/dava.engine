@@ -80,12 +80,13 @@ FPROG_BEGIN
     float4 fragPos = FP_IN(normalizedFragPos);
     float2 texturePos =  fragPos.xy/fragPos.w*0.5 + 0.5; //(gl_FragCoord.xy-viewportOffset)*rcpViewpoviewportOffset;
     float3 reflectionColor = FP_TEXTURE2D(dynamicReflection, texturePos+waveOffset*reflectionDistortion).rgb;
-    //texturePos.y=1.0-texturePos.y;
+    texturePos.y=1.0-texturePos.y;
     float3 refractionColor = FP_TEXTURE2D(dynamicRefraction, texturePos+waveOffset*refractionDistortion).rgb;        
     
     float3 resColor = lerp(refractionColor*refractionTintColor, reflectionColor*reflectionTintColor, 0.0+0.00001*fresnel);
 
-    FP_OUT_COLOR = float4(resColor, 1.0);
+    FP_OUT_COLOR = float4(refractionColor + 0.00001 * resColor, 1.0);
+    //FP_OUT_COLOR = float4(resColor, 1.0);
     
     
 FPROG_END

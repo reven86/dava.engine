@@ -338,15 +338,15 @@ public:
     
     /**
         \brief Get camera zoom factor. 
-        You can use zoom factor to have dependencies between camera zoom and visualisation of object
+        You can use zoom factor to have dependencies between camera zoom and visualization of object
         \returns tanf(fov / 2). 
      */
     float32 GetZoomFactor() const;
     
     /**
-        \brief Request camera to invert cull order direction.
+        \brief Request camera to invert upside-down.
      */
-    void SetCullInvert(bool enabled);
+    void SetInvert(bool enabled);
 
     
     /**
@@ -369,7 +369,7 @@ public:
         REQUIRE_REBUILD_MODEL = 1 << 1,
         REQUIRE_REBUILD_PROJECTION = 1 << 2,
         REQUIRE_REBUILD_UNIFORM_PROJ_MODEL = 1 << 3,
-        INVERT_CULL = 1 << 4,
+        INVERT = 1 << 4,
     };
     
     

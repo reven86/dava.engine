@@ -107,7 +107,7 @@ void RenderPass::Draw(RenderSystem * renderSystem)
     Camera *drawCamera = renderSystem->GetDrawCamera();   
     
     DVASSERT(drawCamera);
-    DVASSERT(mainCamera);
+    DVASSERT(mainCamera);    
     drawCamera->SetupDynamicParameters();            
     if (mainCamera!=drawCamera)    
         mainCamera->PrepareDynamicParameters();
@@ -275,7 +275,11 @@ void MainForwardRenderPass::Draw(RenderSystem * renderSystem)
     Camera *drawCamera = renderSystem->GetDrawCamera();   
     DVASSERT(mainCamera);
     DVASSERT(drawCamera);
-    drawCamera->SetupDynamicParameters();            
+    Vector4 clip(0, 0, -1, 17);
+//    Vector4 clip(0, -0.976, 0.21, -45.59);
+    //drawCamera->SetInvert(true);
+    //drawCamera->SetupDynamicParameters();
+    drawCamera->SetupDynamicParameters(&clip);                
     if (mainCamera!=drawCamera)    
         mainCamera->PrepareDynamicParameters();
 	
@@ -339,9 +343,9 @@ void WaterReflectionRenderPass::Draw(RenderSystem * renderSystem)
 
     passMainCamera->CopyMathOnly(*mainCamera);        
     UpdateCamera(passMainCamera);
+    
 
-    Vector4 clipPlane(0,0,-1, waterLevel-0.1f);
-
+    Vector4 clipPlane(0, 0, 1, -(waterLevel-0.1f));
     Camera* currMainCamera = passMainCamera;
     Camera* currDrawCamera;
     
@@ -384,13 +388,14 @@ void WaterRefractionRenderPass::Draw(RenderSystem * renderSystem)
     if (!passDrawCamera)
     {
         passMainCamera = new Camera();    
-        passDrawCamera = new Camera();            
+        passDrawCamera = new Camera();          
     }
 
     passMainCamera->CopyMathOnly(*mainCamera);                    
 
     //-0.1f ?
-    Vector4 clipPlane(0,0,1, waterLevel);
+    //Vector4 clipPlane(0,0, -1, waterLevel*3);
+    Vector4 clipPlane(0, 0, -1, waterLevel/* + 0.1f*/);
 
     Camera* currMainCamera = passMainCamera;
     Camera* currDrawCamera;
@@ -402,13 +407,12 @@ void WaterRefractionRenderPass::Draw(RenderSystem * renderSystem)
     else
     {
         passDrawCamera->CopyMathOnly(*drawCamera);                
-        currDrawCamera = passDrawCamera;
+        currDrawCamera = passDrawCamera;        
+        //currMainCamera->PrepareDynamicParameters();
         currMainCamera->PrepareDynamicParameters(&clipPlane);
     }
-    currDrawCamera->SetupDynamicParameters(&clipPlane);
-
-    //add clipping plane
-
+    //currDrawCamera->SetupDynamicParameters();
+    currDrawCamera->SetupDynamicParameters(&clipPlane);    
 
 
     visibilityArray.clear();

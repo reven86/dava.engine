@@ -52,7 +52,7 @@ GameCore::~GameCore()
 void GameCore::OnAppStarted()
 {
 	Renderer::SetDesiredFPS(60);
-    //ShaderDescriptorCache::GetShaderDescriptor(FastName("~res:/Materials/Shaders/Default/water"), HashMap<FastName, int32>());
+    ShaderDescriptorCache::GetShaderDescriptor(FastName("~res:/Materials/Shaders/Default/water"), HashMap<FastName, int32>());
     
     selectSceneScreen = new SelectSceneScreen();
     viewSceneScreen = new ViewSceneScreen();
@@ -61,6 +61,7 @@ void GameCore::OnAppStarted()
 //    SetScenePath("~doc:/karelia/karelia.sc2");
 //    SetScenePath("~doc:/scene_viewer/test_box/box.sc2");
     SetScenePath("~doc:/amigosville/amigosville.sc2");
+//      SetScenePath("~doc:/amigosville/amigosville2.sc2");
 //    SetScenePath("~doc:/karelia/karelia_landscape.sc2");
 //    SetScenePath("~doc:/karelia/gates_test.sc2");
     //SetScenePath("~doc:/karelia/objects/k_s01.sc2");
