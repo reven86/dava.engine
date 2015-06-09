@@ -37,6 +37,7 @@
 #include "Debug/Replay.h"
 #include "Debug/Stats.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/Layouts/UILayoutSystem.h"
 
 namespace DAVA 
 {
@@ -47,9 +48,11 @@ UIControlSystem::~UIControlSystem()
 {
 	SafeRelease(currentScreen); 
 	SafeRelease(popupContainer);
+    SafeRelease(layoutSystem);
 }
 	
 UIControlSystem::UIControlSystem()
+    : layoutSystem(nullptr)
 {
 	screenLockCount = 0;
 	frameSkip = 0;
@@ -78,6 +81,8 @@ UIControlSystem::UIControlSystem()
 	baseGeometricData.angle = 0;
 
     ui3DViewCount = 0;
+    
+    layoutSystem = new UILayoutSystem();
 }
 	
 void UIControlSystem::SetScreen(UIScreen *_nextScreen, UIScreenTransition * _transition)
@@ -825,6 +830,11 @@ void UIControlSystem::UI3DViewRemoved()
 {
     DVASSERT(ui3DViewCount);
     ui3DViewCount--;
+}
+
+UILayoutSystem *UIControlSystem::GetLayoutSystem() const
+{
+    return layoutSystem;
 }
 
 };

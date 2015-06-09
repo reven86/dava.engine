@@ -1369,13 +1369,6 @@ protected:
     bool visibleForUIEditor : 1;
 
     // Enable align options
-    bool leftAlignEnabled : 1;
-    bool hcenterAlignEnabled : 1;
-    bool rightAlignEnabled : 1;
-    bool topAlignEnabled : 1;
-    bool vcenterAlignEnabled : 1;
-    bool bottomAlignEnabled : 1;
-
     bool isUpdated : 1;
     bool isIteratorCorrupted : 1;
 
@@ -1384,14 +1377,6 @@ protected:
     int32 currentInputID;
     int32 touchesInside;
     int32 totalTouches;
-
-    // Align options
-    float32 leftAlign;
-    float32 hcenterAlign;
-    float32 rightAlign;
-    float32 topAlign;
-    float32 vcenterAlign;
-    float32 bottomAlign;
 
     mutable UIGeometricData tempGeometricData;
 
@@ -1528,23 +1513,6 @@ public:
                          PROPERTY("tag", "Tag", GetTag, SetTag, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("initialState", "Initial State", GetInitialState, SetInitialState, I_SAVE | I_VIEW | I_EDIT)
                          
-                         PROPERTY("leftAlignEnabled", "Left Align Enabled", GetLeftAlignEnabled, SetAndApplyLeftAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("leftAlign", "Left Align", GetLeftAlign, SetAndApplyLeftAlign, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("rightAlignEnabled", "Right Align Enabled", GetRightAlignEnabled, SetAndApplyRightAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("rightAlign", "Right Align", GetRightAlign, SetAndApplyRightAlign, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("bottomAlignEnabled", "Bottom Align Enabled", GetBottomAlignEnabled, SetAndApplyBottomAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("bottomAlign", "Bottom Align", GetBottomAlign, SetAndApplyBottomAlign, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("topAlignEnabled", "Top Align Enabled", GetTopAlignEnabled, SetAndApplyTopAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("topAlign", "Top Align", GetTopAlign, SetAndApplyTopAlign, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("hcenterAlignEnabled", "Horizontal Center Align Enabled", GetHCenterAlignEnabled, SetAndApplyHCenterAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("hcenterAlign", "Horizontal Center Align", GetHCenterAlign, SetAndApplyHCenterAlign, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("vcenterAlignEnabled", "Vertical Center Align Enabled", GetVCenterAlignEnabled, SetAndApplyVCenterAlignEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("vcenterAlign", "Vertical Center Align", GetVCenterAlign, SetAndApplyVCenterAlign, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("debugDraw", "Debug Draw", GetDebugDraw, SetDebugDrawNotHierarchic, I_VIEW | I_EDIT)
                          PROPERTY("debugDrawColor", "Debug draw color", GetDebugDrawColor, SetDebugDrawColor, I_VIEW | I_EDIT)
                          );

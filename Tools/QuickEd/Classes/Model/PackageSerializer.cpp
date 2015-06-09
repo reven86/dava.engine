@@ -97,7 +97,7 @@ void PackageSerializer::SerializePackageNodes(PackageNode *package, const DAVA::
 void PackageSerializer::VisitPackage(PackageNode *node)
 {
     BeginMap("Header");
-    PutValue("version", String("0"));
+    PutValue("version", Format("%d", CURRENT_VERSION));
     EndMap();
     
     BeginArray("ImportedPackages");

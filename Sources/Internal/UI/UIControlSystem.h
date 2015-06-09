@@ -49,6 +49,7 @@ namespace DAVA
 {
 
 class UIScreen;
+class UILayoutSystem;
 
 class ScreenSwitchListener
 {
@@ -296,6 +297,8 @@ public:
 
     void UI3DViewAdded();
     void UI3DViewRemoved();
+    
+    UILayoutSystem *GetLayoutSystem() const;
 
 private:
 	/**
@@ -339,7 +342,9 @@ private:
 	UIGeometricData baseGeometricData;
 
     int32 ui3DViewCount;
-	
+
+    UILayoutSystem *layoutSystem;
+
 	friend class UIScreenTransition;
 	friend class UIScreenManager;
 };

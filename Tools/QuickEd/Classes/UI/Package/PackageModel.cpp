@@ -386,9 +386,7 @@ void PackageModel::ControlPropertyWasChanged(ControlNode *node, AbstractProperty
     for (int i = 0; i < root->GetPackageControlsNode()->GetCount(); i++)
     {
         ControlNode *control = root->GetPackageControlsNode()->Get(i);
-        UILayoutSystem *system = new UILayoutSystem();
-        system->ApplyLayout(control->GetControl());
-        system->Release();
+        UIControlSystem::Instance()->GetLayoutSystem()->ApplyLayout(control->GetControl());
     }
     QModelIndex index = indexByNode(node);
     emit dataChanged(index, index);
