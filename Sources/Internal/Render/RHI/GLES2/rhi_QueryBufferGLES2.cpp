@@ -166,7 +166,7 @@ BeginQuery( Handle handle, uint32 objectIndex )
             #if defined(__DAVAENGINE_IPHONE__)
             glBeginQueryEXT( GL_ANY_SAMPLES_PASSED_EXT, q );
             #else
-            glBeginQuery( GL_SAMPLES_PASSED, q );
+            glBeginQuery( GL_ANY_SAMPLES_PASSED, q );
             #endif
         }
     }
@@ -185,9 +185,9 @@ EndQuery( Handle handle, uint32 objectIndex )
         if( q )
         {
             #if defined(__DAVAENGINE_IPHONE__)
-            glEndQueryEXT( q );
+            glEndQueryEXT( GL_ANY_SAMPLES_PASSED_EXT );
             #else
-            glEndQuery( GL_SAMPLES_PASSED, q );
+            glEndQuery( GL_ANY_SAMPLES_PASSED );
             #endif
         }
     }
