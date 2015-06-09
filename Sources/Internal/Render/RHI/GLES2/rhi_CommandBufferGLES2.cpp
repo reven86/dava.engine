@@ -31,6 +31,8 @@ CommandGLES2
 
     GLES2__SET_VERTEX_DATA,
     GLES2__SET_INDICES,
+    GLES2__SET_QUERY_BUFFER,
+    GLES2__SET_QUERY_INDEX,
 
     GLES2__SET_PIPELINE_STATE,
     GLES2__SET_CULL_MODE,
@@ -272,6 +274,24 @@ static void
 gles2_CommandBuffer_SetIndices( Handle cmdBuf, Handle ib )
 {
     CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_INDICES, ib );
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+gles2_CommandBuffer_SetQueryIndex( Handle cmdBuf, uint32 objectIndex )
+{
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_QUERY_INDEX, objectIndex );
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+gles2_CommandBuffer_SetQueryBuffer( Handle cmdBuf )
+{
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_QUERY_BUFFER, cmdBuf );
 }
 
 
@@ -550,15 +570,17 @@ void
 CommandBufferGLES2_t::Execute()
 {
 SCOPED_NAMED_TIMING("gl.cb-exec");
-    Handle      cur_ps    = InvalidHandle;
-    uint32      cur_vdecl = VertexLayout::InvalidUID;
-    Handle      last_ps   = InvalidHandle;
+    Handle      cur_ps          = InvalidHandle;
+    uint32      cur_vdecl       = VertexLayout::InvalidUID;
+    Handle      last_ps         = InvalidHandle;
     Handle      vp_const[MAX_CONST_BUFFER_COUNT];
     const void* vp_const_data[MAX_CONST_BUFFER_COUNT];
     Handle      fp_const[MAX_CONST_BUFFER_COUNT];
     const void* fp_const_data[MAX_CONST_BUFFER_COUNT];
-    Handle      cur_vb    = InvalidHandle;
-    unsigned    tex_unit_0=0;
+    Handle      cur_vb          = InvalidHandle;
+    unsigned    tex_unit_0      =0;
+    Handle      cur_query_buf   = InvalidHandle;
+    uint32      cur_query_i     = InvalidIndex;
 
     for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
     {
@@ -658,6 +680,31 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
             case GLES2__SET_INDICES :
             {
                 IndexBufferGLES2::SetToRHI( (Handle)(arg[0]) );
+                c += 1;
+            }   break;
+
+            case GLES2__SET_QUERY_BUFFER :
+            {
+                DVASSERT(cur_query_buf == InvalidHandle);
+                cur_query_buf = (Handle)(arg[0]);
+                c += 1;
+            }   break;
+
+            case GLES2__SET_QUERY_INDEX :
+            {
+                uint32 qi = uint32(arg[0]);
+
+                if( qi != cur_query_i  &&  cur_query_i != InvalidIndex )
+                {
+                    QueryBufferGLES2::EndQuery( cur_query_buf, qi );
+                }
+
+                if( qi != InvalidIndex )
+                {
+                    QueryBufferGLES2::BeginQuery( cur_query_buf, qi );
+                }
+
+                cur_query_i = qi;
                 c += 1;
             }   break;
 
@@ -862,6 +909,11 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
 
             immediate_cmd_ttw = 10;
         }
+    }
+    
+    if( cur_query_i != InvalidIndex )
+    {
+        QueryBufferGLES2::EndQuery( cur_query_buf, cur_query_i );
     }
 
     _cmd.clear();
@@ -1304,6 +1356,8 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_SetVertexConstBuffer   = &gles2_CommandBuffer_SetVertexConstBuffer;
     dispatch->impl_CommandBuffer_SetVertexTexture       = &gles2_CommandBuffer_SetVertexTexture;
     dispatch->impl_CommandBuffer_SetIndices             = &gles2_CommandBuffer_SetIndices;
+    dispatch->impl_CommandBuffer_SetQueryBuffer         = &gles2_CommandBuffer_SetQueryBuffer;
+    dispatch->impl_CommandBuffer_SetQueryIndex          = &gles2_CommandBuffer_SetQueryIndex;
     dispatch->impl_CommandBuffer_SetFragmentConstBuffer = &gles2_CommandBuffer_SetFragmentConstBuffer;
     dispatch->impl_CommandBuffer_SetFragmentTexture     = &gles2_CommandBuffer_SetFragmentTexture;
     dispatch->impl_CommandBuffer_SetDepthStencilState   = &gles2_CommandBuffer_SetDepthStencilState;
