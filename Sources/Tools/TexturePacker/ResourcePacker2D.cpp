@@ -124,7 +124,11 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
     								outputGfxDirectory.GetAbsolutePathname().c_str()));
     	}
     }
-    RecursiveTreeWalk(inputGfxDirectory, outputGfxDirectory);
+
+    DAVA::Vector<DAVA::String> flags;
+    Split("--add0pixel --adreno RGBA8888 --mali RGBA8888 --tegra RGBA8888 --PowerVR_iOS RGBA8888 --PowerVR_Android RGBA8888 --recursive", " ", flags, false);
+
+    RecursiveTreeWalk(inputGfxDirectory, outputGfxDirectory, flags);
 
     // Put latest md5 after convertation
     IsMD5ChangedDir(processDirectoryPath, outputGfxDirectory, gfxDirName + ".md5", true);
