@@ -1,6 +1,6 @@
 package com.dava.unittests;
 
-public class JINTest {
+public class JNITest {
 
 	public static boolean PassString(String string)
 	{

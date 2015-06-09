@@ -13,6 +13,7 @@
 					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.autotools.core.ErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
@@ -28,13 +29,6 @@
 							</builder>
 							<tool id="com.android.gcc.compiler.1615092382" name="Android GCC Compiler" superClass="com.android.gcc.compiler">
 								<inputType id="com.android.gcc.inputType.396978567" superClass="com.android.gcc.inputType"/>
-							</tool>
-						</toolChain>
-					</folderInfo>
-					<folderInfo id="com.android.toolchain.gcc.175927209.1829329729" name="/" resourcePath="jni">
-						<toolChain id="com.android.toolchain.gcc.1961288421" name="com.android.toolchain.gcc" superClass="com.android.toolchain.gcc" unusedChildren="">
-							<tool id="com.android.gcc.compiler.1038218226" name="Android GCC Compiler" superClass="com.android.gcc.compiler.1615092382">
-								<inputType id="com.android.gcc.inputType.185545351" superClass="com.android.gcc.inputType"/>
 							</tool>
 						</toolChain>
 					</folderInfo>
