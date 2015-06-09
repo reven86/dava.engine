@@ -29,7 +29,7 @@
 
 #include "FileSystem/LocalizationAndroid.h"
 #include "FileSystem/LocalizationSystem.h"
-#include "ExternC/AndroidLayer.h"
+#include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA

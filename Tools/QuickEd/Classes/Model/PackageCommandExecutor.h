@@ -46,7 +46,7 @@ public:
     PackageCommandExecutor();
     virtual ~PackageCommandExecutor();
     
-    virtual void AddImportedPackageIntoPackage(PackageControlsNode *importedPackageControls, PackageNode *package) = 0;
+    virtual void AddImportedPackageIntoPackage(PackageNode *importedPackage, PackageNode *package) = 0;
     virtual void ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value) = 0;
     virtual void ResetProperty(ControlNode *node, AbstractProperty *property) = 0;
     virtual void AddComponent(ControlNode *node, DAVA::uint32 componentType) = 0;
@@ -64,7 +64,7 @@ public:
     DefaultPackageCommandExecutor();
     virtual ~DefaultPackageCommandExecutor();
 
-    void AddImportedPackageIntoPackage(PackageControlsNode *importedPackageControls, PackageNode *package) override;
+    void AddImportedPackageIntoPackage(PackageNode *importedPackage, PackageNode *package) override;
     void ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value) override;
     void ResetProperty(ControlNode *node, AbstractProperty *property) override;
     void AddComponent(ControlNode *node, DAVA::uint32 componentType) override;

@@ -38,7 +38,7 @@
 namespace DAVA
 {
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 
 #define vsnprintf _vsnprintf
 #define snprintf _snprintf
@@ -143,7 +143,7 @@ Logger::eLogLevel Logger::GetLogLevel()
 
 const char8 * Logger::GetLogLevelString(eLogLevel ll)
 {
-#ifndef __DAVAENGINE_WIN32__
+#ifndef __DAVAENGINE_WINDOWS__
     static_assert(logLevelString.size() == LEVEL__DISABLE,
             "please update strings values");
 #endif

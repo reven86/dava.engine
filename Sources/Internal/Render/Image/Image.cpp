@@ -403,7 +403,7 @@ void Image::InsertImage(const Image* image, const Vector2& dstPos, const Rect& s
 
 bool Image::Save(const FilePath &path) const
 {
-    return ImageSystem::Instance()->Save(path, const_cast<Image*>(this), format) == SUCCESS;
+    return ImageSystem::Instance()->Save(path, const_cast<Image*>(this), format) == eErrorCode::SUCCESS;
 }
     
 

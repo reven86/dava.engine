@@ -83,7 +83,7 @@
 
 inline void DavaDebugBreak()
 {
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 
     __debugbreak();
 

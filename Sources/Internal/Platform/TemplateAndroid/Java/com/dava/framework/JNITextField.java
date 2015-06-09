@@ -1,6 +1,8 @@
 package com.dava.framework;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -58,7 +60,6 @@ public class JNITextField {
     private static Handler handler = new Handler();
     private static int lastSelectedImeMode = 0;
     private static int lastSelectedInputType = 0;
-    private static final InputFilter[] emptyFilterArray = new InputFilter[0];
     
     static class ControlNotFoundException extends RuntimeException
     {
@@ -107,12 +108,7 @@ public class JNITextField {
 
                 text.setFilters(filters);
                 
-                text.post(new Runnable(){
-                    @Override
-                    public void run() {
-                        text.updateStaticTexture();
-                    }
-                });
+                text.updateStaticTexture();
             }catch(ControlNotFoundException ex)
             {
                 Log.e(TAG, ex.getMessage());
@@ -140,6 +136,30 @@ public class JNITextField {
             if(!JNIGLSurfaceView.isPaused())
             {
                 TextFieldUpdateTexture(id, pixels, width, height);
+
+                SafeRunnable action = new SafeRunnable(){
+                    @Override
+                    public void safeRun() {
+                        TextField text = GetTextField(id);
+
+                        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)text.getLayoutParams();
+                        if (text.isRenderToTexture)
+                        {
+                            if (params.leftMargin < JNITextField.TEXT_FIELD_HIDE_FROM_SCREEN_STEP)
+                            {
+                                params.leftMargin += JNITextField.TEXT_FIELD_HIDE_FROM_SCREEN_STEP;
+                            }
+                        } else
+                        {
+                            if (params.leftMargin >= JNITextField.TEXT_FIELD_HIDE_FROM_SCREEN_STEP)
+                            {
+                                params.leftMargin -= JNITextField.TEXT_FIELD_HIDE_FROM_SCREEN_STEP;
+                            }
+                        }
+                        text.setLayoutParams(params);
+                    }
+                };
+                JNIActivity.GetActivity().runOnUiThread(action);
             }
         }
     }
@@ -150,6 +170,9 @@ public class JNITextField {
         private boolean logicVisible = false; 
         
         private volatile boolean isRenderToTexture = false;
+        // we have to make next field static because all TextField
+        // affected if we filtering and send data to c++ thread
+        private static volatile boolean isFilteringOnText = false;
         
         private int pixels[] = null;
         private int width = 0;
@@ -171,23 +194,6 @@ public class JNITextField {
         public void setRenderToTexture(boolean value)
         {
             isRenderToTexture = value;
-            
-            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)getLayoutParams();
-            if (isRenderToTexture)
-            {
-                if (params.leftMargin < JNITextField.TEXT_FIELD_HIDE_FROM_SCREEN_STEP)
-                {
-                    params.leftMargin += JNITextField.TEXT_FIELD_HIDE_FROM_SCREEN_STEP;
-                }
-            } else
-            {
-                if (params.leftMargin >= JNITextField.TEXT_FIELD_HIDE_FROM_SCREEN_STEP)
-                {
-                    params.leftMargin -= JNITextField.TEXT_FIELD_HIDE_FROM_SCREEN_STEP;
-                }
-            }
-            setLayoutParams(params);
-
             updateStaticTexture();
         }
 
@@ -195,7 +201,11 @@ public class JNITextField {
             // clear static texture
             JNIActivity activity = JNIActivity.GetActivity();
             UpdateTexture task = new UpdateTexture(id, null, 0, 0);
-            activity.PostEventToGL(task);
+            if (activity.getGLThreadId() == Thread.currentThread().getId()){
+                task.run();
+            } else {
+                activity.PostEventToGL(task);
+            }
         }
         
         public boolean isRenderToTexture()
@@ -227,6 +237,10 @@ public class JNITextField {
             // if we do not create bitmap do not recycle it
             boolean destroyBitmap = false;
             
+            // we have to enable and disable cache every time because of
+            // bugs with previous image in some situations
+            // example: search user dialog
+            setDrawingCacheEnabled(true);
             buildDrawingCache();
             Bitmap bitmap = getDrawingCache(); //renderToBitmap();
             if (bitmap == null) // could be if onDraw not called yet
@@ -255,25 +269,52 @@ public class JNITextField {
                 destroyBitmap = true;
             }
 
-            if (bitmap != null) {
-                if (pixels == null 
+            if (pixels == null 
                     || width != bitmap.getWidth()
                     || height != bitmap.getHeight()) {
-                    width = bitmap.getWidth();
-                    height = bitmap.getHeight();
-                    pixels = new int[width * height];
-                }
-                // copy ARGB pixels values into our buffer
-                bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
-                
-                if (destroyBitmap)
+                width = bitmap.getWidth();
+                height = bitmap.getHeight();
+                pixels = new int[width * height];
+            }
+            // copy ARGB pixels values into our buffer
+            bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+
+            setDrawingCacheEnabled(false);
+            
+            if (destroyBitmap)
+            {
+                bitmap.recycle();
+            }
+            
+            // Workaround! if all pixels is transparent and text length > 0
+            // we have to re-render one more time with delay
+            boolean isTransparent = true;
+
+            for(int pixel : pixels)
+            {
+                if (pixel != 0)
                 {
-                    bitmap.recycle();
+                    isTransparent = false;
+                    break;
                 }
             }
-            JNIActivity activity = JNIActivity.GetActivity();
-            UpdateTexture task = new UpdateTexture(id, pixels, width, height);
-            activity.PostEventToGL(task);
+
+            if (isTransparent && getText().length() > 0)
+            {
+                Log.d(TAG, "WARNING render second one more time to texture");
+                postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        renderToTexture();
+                    }
+                }, 1); // 1 - milliseconds tested on different values
+                // stay with 1
+            } else
+            {
+                JNIActivity activity = JNIActivity.GetActivity();
+                UpdateTexture task = new UpdateTexture(id, pixels, width, height);
+                activity.PostEventToGL(task);
+            }
         }
         
         public void setVisible(boolean value) {
@@ -302,7 +343,8 @@ public class JNITextField {
         
         public void updateStaticTexture()
         {
-            if (!JNIActivity.GetActivity().GetIsPausing())
+            JNIActivity activity = JNIActivity.GetActivity();
+            if (!activity.GetIsPausing())
             {
                 // Workaround if text empty but image cache
                 // return previous image and set it back to static
@@ -315,7 +357,18 @@ public class JNITextField {
                 {
                     if (isRenderToTexture)
                     {
-                        renderToTexture();
+                        Runnable action = new Runnable() {
+                            @Override
+                            public void run() {
+                                renderToTexture();
+                            }
+                        };
+                        
+                        if (activity.getGLThreadId() == Thread.currentThread().getId()) {
+                            activity.runOnUiThread(action);
+                        } else {
+                            action.run();
+                        }
                     }
                     else
                     {
@@ -672,10 +725,12 @@ public class JNITextField {
                                 return new String(retBytes, "UTF-8");
                             }
                         });
-                        JNIActivity.GetActivity().PostEventToGL(t);
 
                         try {
+                            TextField.isFilteringOnText = true;
+                            JNIActivity.GetActivity().PostEventToGL(t);
                             String s = t.get();
+                            TextField.isFilteringOnText = false;
                             if (s.equals(origSource))
                             {
                                 result = null;
@@ -704,6 +759,7 @@ public class JNITextField {
                                 JNITextField.TextFieldShouldReturn(id);
                             }
                         });
+                        text.updateStaticTexture();
                         return true;
                     }
                 });
@@ -718,6 +774,7 @@ public class JNITextField {
                 text.setOnFocusChangeListener(new View.OnFocusChangeListener() {
                     @Override
                     public void onFocusChange(View v, final boolean hasFocus) {
+                        
                         // Select UITextField when native filed selected (like
                         // iOS)
                         JNIActivity.GetActivity().PostEventToGL(new SafeRunnable() {
@@ -725,22 +782,6 @@ public class JNITextField {
                             public void safeRun() {
                                 JNITextField
                                 .TextFieldFocusChanged(id, hasFocus);
-                                final TextField text = GetTextField(id);
-                                // Workaround we have to call one more time
-                                // updateStaticTexture with delay
-                                // because if control is password 
-                                // android can visually convert ****1 to *****
-                                // with some delay
-                                Runnable runnable = new Runnable(){
-                                    @Override
-                                    public void run() {
-                                        text.updateStaticTexture();
-                                    }
-                                };
-                                
-                                text.post(runnable);
-
-                                handler.postDelayed(runnable, JNITextField.TEXT_CHANGE_DELAY_REFRESH);
                             }
                         });
 
@@ -816,6 +857,10 @@ public class JNITextField {
                                 }
                             }, CLOSE_KEYBOARD_DELAY);
                         }
+                        final TextField text = GetTextField(id);
+                        // if control is password 
+                        // android can visually convert ****1 to *****
+                        text.updateStaticTexture();
                     }
                 });
 
@@ -868,17 +913,7 @@ public class JNITextField {
 
                     @Override
                     public void afterTextChanged(Editable s) {
-                        Runnable runnable = new Runnable(){
-                            @Override
-                            public void run() {
-                                text.updateStaticTexture();
-                            }
-                        };
-                        // first call update static ASAP
-                        handler.post(runnable);
-                        // second call it with delay for 
-                        // fix some incorrect old text from cache
-                        handler.postDelayed(runnable, JNITextField.TEXT_CHANGE_DELAY_REFRESH);
+                        text.updateStaticTexture();
                     }
                 };
                 text.addTextChangedListener(textWatcher);
@@ -930,8 +965,14 @@ public class JNITextField {
                 params.width = Math.round(dx);
                 params.height = Math.round(dy);
                 
-                editText.viewWidth = params.width;
-                editText.viewHeight = params.height;
+                if (editText.viewWidth != params.width
+                        || editText.viewHeight != params.height)
+                {
+                    editText.viewWidth = params.width;
+                    editText.viewHeight = params.height;
+                    
+                    editText.updateStaticTexture();
+                }
                 
                 editText.setLayoutParams(params);
             }
@@ -942,14 +983,24 @@ public class JNITextField {
     
 
     public static void SetText(final int id, final String string) {
-        JNIActivity.GetActivity().runOnUiThread(new SafeRunnableNoFilters(id) {
+        SafeRunnableNoFilters action = new SafeRunnableNoFilters(id) {
             @Override
             public void safeRun() {
                 text.setText(string);
                 // set cursor to the end of text
                 text.setSelection(text.getText().length());
             }
-        });
+        };
+        // Workaround semi-render to texture so if we can block current function
+        // to work synchronously - block it. If it have to return to c++ because
+        // of filtering on text - post event to prevent deadlock
+        if (TextField.isFilteringOnText)
+        {
+            JNIActivity.GetActivity().runOnUiThread(action);
+        } else {
+            RunOnUIThreadAndWaitUntilDone run = new RunOnUIThreadAndWaitUntilDone(action);
+            run.RunAndWait();
+        }
     }
 
     public static void SetTextColor(final int id, final float r, final float g,
@@ -957,8 +1008,12 @@ public class JNITextField {
         JNIActivity.GetActivity().runOnUiThread(new SafeRunnableNoFilters(id) {
             @Override
             public void safeRun() {
-                text.setTextColor(Color.argb((int) (255 * a), (int) (255 * r),
-                        (int) (255 * g), (int) (255 * b)));
+                int alpha = (int)(255 * a);
+                int red = (int)(255 * r);
+                int green = (int)(255 * g);
+                int blue = (int)(255 * b);
+                int color = Color.argb(alpha, red, green, blue);
+                text.setTextColor(color);
             }
         });
     }
@@ -1198,7 +1253,26 @@ public class JNITextField {
         });
     }
 
+    static ArrayList<Long> last_four_calls = new ArrayList<Long>();
+    
     public static void OpenKeyboard(final int id) {
+        // Workaround!!! if user quickly tap on two or more text fields
+        // we protect our slow text field and just skip such calls
+        // we use 4 last calls to guarantee user mind damaged
+        Date date = new Date();
+        long now = date.getTime();
+        last_four_calls.add(now);
+        if (last_four_calls.size() > 4)
+        {
+            last_four_calls.remove(0);
+            // 4 last call * 2 time hide and open keyboard
+            if (now - last_four_calls.get(0) < (CLOSE_KEYBOARD_DELAY * 8))
+            {
+                Log.e(TAG, "multiple simultanious tap on textfield detected");
+                return;
+            }
+        }
+        
         JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
             public void safeRun() {
@@ -1326,7 +1400,7 @@ public class JNITextField {
             @Override
             public void safeRun() {
                 final TextField text = GetTextField(id);
-                text.setRenderToTexture(false);
+                text.setRenderToTexture(value);
             }
         });
     }

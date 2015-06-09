@@ -231,9 +231,14 @@ void* DAVA::WebViewControl::RenderIOSUIViewToImage(void* uiviewPtr)
     size_t w = view.frame.size.width * scale;
     size_t h = view.frame.size.height * scale;
     
+    if (w == 0 || h == 0)
+    {
+        return nullptr; // empty rect on start, just skip it
+    }
+    
     UIGraphicsBeginImageContextWithOptions(CGSizeMake(w, h), NO, scale);
     CGRect rect = CGRectMake(0, 0, w, h);
-    [view drawViewHierarchyInRect:rect afterScreenUpdates:YES];
+    [view drawViewHierarchyInRect:rect afterScreenUpdates:NO];
     
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();

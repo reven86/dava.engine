@@ -27,114 +27,13 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_TYPES_H__
-#define __DAVAENGINE_TYPES_H__
+#ifndef __DAVAENGINE_BASETYPES_H__
+#define __DAVAENGINE_BASETYPES_H__
 
-#include "DAVAConfig.h"
+#include "Base/Platform.h"
 #include "Base/TemplateHelpers.h"
 
-// Platform detection:
-
-#if defined(__GNUC__) && ( defined(__APPLE_CPP__) || defined(__APPLE_CC__) || defined(__MACOS_CLASSIC__) )
-//#if !defined(_WIN32) // fix for mac os platforms
-#include <TargetConditionals.h>
-#endif
-
-
-#if defined(TARGET_OS_IPHONE)
-#if TARGET_OS_IPHONE
-	#if !defined(__DAVAENGINE_IPHONE__) // for old projects we check if users defined it
-		#define __DAVAENGINE_IPHONE__
-	#endif
-#endif
-#endif
-
-
-#ifndef __DAVAENGINE_IPHONE__
-#if defined(_WIN32)
-#define __DAVAENGINE_WIN32__
-//#elif defined(__APPLE__) || defined(MACOSX)
-#elif defined(__GNUC__) && ( defined(__APPLE_CPP__) || defined(__APPLE_CC__) || defined(__MACOS_CLASSIC__) )
-#define __DAVAENGINE_MACOS__
-
-#if MAC_OS_X_VERSION_10_6 <= MAC_OS_X_VERSION_MAX_ALLOWED
-#define __DAVAENGINE_MACOS_VERSION_10_6__
-#endif //#if MAC_OS_X_VERSION_10_6 <= MAC_OS_X_VERSION_MAX_ALLOWED
-
-#endif
-#endif
-
-
-// add some other platform detection here...
-#if !defined (__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_MACOS__)
-#if defined(__ANDROID__) || defined(ANDROID) 
-	#define __DAVAENGINE_ANDROID__
-#endif //#if defined(__ANDROID__) || defined(ANDROID) 
-#endif //#if !defined (__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_WIN32__) && !defined(__DAVAENGINE_MACOS__)
-
-
-/////////
-// Default headers per platform:
-
-// Introduce useful defines:
-//  DAVA_NOINLINE to tell compiler not no inline function
-//  DAVA_ALIGNOF to get alignment of type
-//  DAVA_NOEXCEPT to point that function doesn't throw
-#if defined(__DAVAENGINE_WIN32__)
-#define DAVA_NOINLINE       __declspec(noinline)
-#define DAVA_ALIGNOF(x)     __alignof(x)
-#define DAVA_NOEXCEPT       throw()
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
-#define DAVA_NOINLINE       __attribute__((noinline))
-#define DAVA_ALIGNOF(x)     alignof(x)
-#define DAVA_NOEXCEPT       noexcept
-#elif defined(__DAVAENGINE_ANDROID__)
-#define DAVA_NOINLINE       __attribute__((noinline))
-#define DAVA_ALIGNOF(x)     alignof(x)
-#define DAVA_NOEXCEPT       noexcept
-#endif
-
-#if defined(__DAVAENGINE_WIN32__)
-#define __DAVASOUND_AL__
-#define WIN32_LEAN_AND_MEAN
-#ifndef NOMINMAX
-#define NOMINMAX        // undef macro min and max from windows headers
-#endif
-#include <windows.h>
-#include <windowsx.h>
-#undef DrawState
-#undef GetCommandLine
-#undef GetClassName
-#undef Yield
-
-#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) // Mac & iPhone
-#define __DAVASOUND_AL__
-
-#include <mach/mach.h>
-#include <mach/mach_time.h>
-#include <unistd.h>
-
-#elif defined(__DAVAENGINE_ANDROID__)
-//TODO: specific includes
-//#define __DAVASOUND_AL__
-#undef __DAVASOUND_AL__
-
-#else
-// some other platform...
-
-#endif 
-
-
-//#define _HAS_ITERATOR_DEBUGGING 0
-//#define _SECURE_SCL 0
-
-// MSVS: conversion from type1 to type2, possible loss of data
-
-#if defined(__DAVAENGINE_WIN32__)
-#pragma warning( push )
-#pragma warning( disable : 4244)
-#endif 
-
+#include <array>
 #include <memory>
 #include <string>
 #include <list>
@@ -142,7 +41,6 @@
 #include <vector>
 #include <algorithm>
 #include <set>
-#include <unordered_set>
 #include <stack>
 #include <queue>
 #include <array>
@@ -151,56 +49,47 @@
 #include <sstream>
 #include <cerrno>
 
-#if defined(__DAVAENGINE_WIN32__)
-#pragma warning( pop )
-#endif 
-
-//#if TARGET_OS_IPHONE_SIMULATOR //) || defined(TARGET_IPHONE)
-//#if defined(__APPLE__) || defined(MACOSX)
-//#define __IPHONE__
-//#endif 
-//#define __DAVAENGINE_IPHONE__
-
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
-#include "MemoryManager/AllocPools.h"
-#include "MemoryManager/MemoryManagerAllocator.h"
-#endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
+#   include "MemoryManager/AllocPools.h"
+#   include "MemoryManager/MemoryManagerAllocator.h"
+#endif
 
 namespace DAVA
 {
 
-typedef unsigned char   uint8;
-typedef unsigned short  uint16;
-typedef unsigned int    uint32;
+//Platform-independent signed and unsigned integer type
+using uint8 = uint8_t;
+using uint16 = uint16_t;
+using uint32 = uint32_t;
+using uint64 = uint64_t;
 
-typedef signed char     int8;
-typedef signed short    int16;
-typedef signed int      int32;
+using int8 = int8_t;
+using int16 = int16_t;
+using int32 = int32_t;
+using int64 = int64_t;
 
-#if defined(__DAVAENGINE_WIN32__)
-    typedef unsigned __int64    uint64;
-    typedef signed __int64      int64;
-#else
-    typedef unsigned long long  uint64;
-    typedef signed long long    int64;
-#endif 
+//Always has a size equal to pointer size (4 bytes in x86, 8 in x64)
+using pointer_size = uintptr_t;
 
-// TODO: maybe replace pointer_size with using pointer_size = uintptr_t?
-typedef Select<sizeof(void*) == 4, uint32, uint64>::Result pointer_size;
+using char8 = char;
+using char16 = wchar_t;
 
-#ifndef TRUE
-#define TRUE    1
-#endif
+using float32 = float;
+using float64 = double;
 
-#ifndef FALSE
-#define FALSE   0
-#endif
-
-typedef char        char8;
-typedef wchar_t     char16;
-
-typedef float       float32;
-typedef double      float64;
+//Compile-time checks for size of types
+static_assert(sizeof(int8)   == 1, "Invalid type size!");
+static_assert(sizeof(uint8)  == 1, "Invalid type size!");
+static_assert(sizeof(int16)  == 2, "Invalid type size!");
+static_assert(sizeof(uint16) == 2, "Invalid type size!");
+static_assert(sizeof(int32)  == 4, "Invalid type size!");
+static_assert(sizeof(uint32) == 4, "Invalid type size!");
+static_assert(sizeof(int64)  == 8, "Invalid type size!");
+static_assert(sizeof(uint64) == 8, "Invalid type size!");
+static_assert(sizeof(pointer_size) == sizeof(void*), "Invalid type size!");
+static_assert(sizeof(char8)  == 1, "Invalid type size!");
+static_assert(sizeof(float32) == 4, "Invalid type size!");
+static_assert(sizeof(float64) == 8, "Invalid type size!");
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 // FIX: replace DefaultSTLAllocator with MemoryManagerAllocator after fixing framework and game codebases
@@ -271,10 +160,10 @@ template<typename Key,
 using UnorderedMap = std::unordered_map<Key, T, Hash, KeyEqual, DefaultSTLAllocator<std::pair<const Key, T>>>;
 
 #ifdef min
-#undef min
+#   undef min
 #endif
 #ifdef max
-#undef max
+#   undef max
 #endif
 
 template <class T>
@@ -301,11 +190,11 @@ inline T Clamp(T val, T a, T b)
     return Min(b, Max(val, a));
 }
 
-#if defined(__DAVAENGINE_WIN32__)
-#define Snprintf    _snprintf
-#else //#if defined(__DAVAENGINE_WIN32__)
-#define Snprintf    snprintf
-#endif //#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
+#   define Snprintf    _snprintf
+#else
+#   define Snprintf    snprintf
+#endif
 
 #define Memcmp memcmp
 #define Memcpy memcpy
@@ -333,15 +222,15 @@ void SafeDeleteArray(TYPE * & d)
 }
 
 #ifndef SAFE_DELETE // for compatibility with FCollada
-#define SAFE_DELETE(x) if (x) { delete x; x = nullptr; };
+#   define SAFE_DELETE(x) if (x) { delete x; x = nullptr; };
 #endif 
 
 #ifndef SAFE_DELETE_ARRAY // for compatibility with FCollada
-#define SAFE_DELETE_ARRAY(x) if (x) { delete [] x; x = nullptr; };
+#   define SAFE_DELETE_ARRAY(x) if (x) { delete [] x; x = nullptr; };
 #endif
 
 #ifndef OBJC_SAFE_RELEASE
-#define OBJC_SAFE_RELEASE(x) [x release];x = nil;
+#   define OBJC_SAFE_RELEASE(x) [x release];x = nil;
 #endif 
 
 /**
@@ -358,41 +247,18 @@ enum eAlign
     ALIGN_HJUSTIFY  = 0x40  //!<Used only for the fonts. Stretch font string over all horizontal size of the area.
 };
 
-#ifndef COUNT_OF
-#define COUNT_OF(x) (sizeof(x)/sizeof(*x))
-#endif
+template <typename T, size_t N>
+DAVA_CONSTEXPR size_t COUNT_OF(T(&)[N]) DAVA_NOEXCEPT{ return N; }
     
 #ifndef REMOVE_IN_RELEASE
-    #if defined(__DAVAENGINE_DEBUG__)
-        #define REMOVE_IN_RELEASE (x) x
-    #else
-        #define REMOVE_IN_RELEASE (x) 
-    #endif
+#   if defined(__DAVAENGINE_DEBUG__)
+#       define REMOVE_IN_RELEASE (x) x
+#   else
+#       define REMOVE_IN_RELEASE (x) 
+#   endif
 #endif
 
-    
-//#if defined(__DAVAENGINE_IPHONE__)
-#ifdef __thumb__
-//#error "This file should be compiled in ARM mode only."
-    // Note in Xcode, right click file, Get Info->Build, Other compiler flags = "-marm"
-#endif
-//#endif//#if !defined(__DAVAENGINE_ANDROID__)
-
-
-#ifndef DAVAENGINE_HIDE_DEPRECATED
-#ifdef __GNUC__
-#define DAVA_DEPRECATED(func) func __attribute__ ((deprecated))
-#elif defined(_MSC_VER)
-#define DAVA_DEPRECATED(func) __declspec(deprecated) func
-#else
-#pragma message("WARNING: You need to implement DAVA_DEPRECATED for this compiler")
-#define DAVA_DEPRECATED(func) func
-#endif
-#else
-#define DAVA_DEPRECATED(func) func
-#endif //DAVAENGINE_HIDE_DEPRECATED
-    
-enum eErrorCode
+enum class eErrorCode
 {
     SUCCESS,
     ERROR_FILE_FORMAT_INCORRECT,
@@ -403,5 +269,4 @@ enum eErrorCode
 
 };
 
-#endif
-
+#endif  // __DAVAENGINE_BASETYPES_H__

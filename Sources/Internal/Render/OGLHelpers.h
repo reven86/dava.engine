@@ -37,7 +37,7 @@
 
 #define __ENABLE_OGL_DEBUG_BREAK__
 #if defined(__ENABLE_OGL_DEBUG_BREAK__)
-	#if defined(__DAVAENGINE_WIN32__)
+	#if defined(__DAVAENGINE_WINDOWS__)
 		#define OGLDebugBreak() { __debugbreak(); }
 	#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) // Mac & iPhone & Android
 		#include <signal.h>
@@ -58,7 +58,7 @@
 #if defined(__DAVAENGINE_OPENGL__)
 namespace DAVA
 {
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || (defined(__DAVAENGINE_IPHONE__) && defined (__DAVAENGINE_DEBUG__))
+#if defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_MACOS__) || (defined(__DAVAENGINE_IPHONE__) && defined (__DAVAENGINE_DEBUG__))
 #define RENDER_VERIFY(command) \
 { \
 	if(!Thread::IsMainThread())\
@@ -170,7 +170,7 @@ namespace DAVA
 
 #define DAVA_GL_DEPTH_COMPONENT GL_DEPTH_COMPONENT
     
-#elif defined(__DAVAENGINE_WIN32__)
+#elif defined(__DAVAENGINE_WINDOWS__)
 	#define DAVA_GL_DEPTH_COMPONENT GL_DEPTH_COMPONENT
 #endif //#if defined (__DAVAENGINE_IPHONE__)
     

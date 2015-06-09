@@ -37,9 +37,8 @@
 namespace DAVA
 {
 
-typedef uint32 RenderLayerID;
-typedef uint32 RenderPassID;
-    
+using RenderLayerID = uint32;
+using RenderPassID = uint32;
 
 // GLOBAL PASSES
 static const FastName PASS_FORWARD("ForwardPass");

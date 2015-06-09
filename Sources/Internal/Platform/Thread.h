@@ -42,7 +42,7 @@
 #endif
 
 
-#if defined (__DAVAENGINE_WIN32__)
+#if defined (__DAVAENGINE_WINDOWS__)
 #include "Platform/TemplateWin32/pThreadWin32.h"
 #elif defined(__DAVAENGINE_PTHREAD__)
 #include <pthread.h>
@@ -75,23 +75,22 @@ class Thread : public BaseObject
 {
 #if defined(__DAVAENGINE_PTHREAD__)
 private:
-    typedef pthread_t Handle;
+    using Handle = pthread_t;
     friend void	*PthreadMain(void *param);
 public:
-    typedef pthread_t Id;
-#elif defined(__DAVAENGINE_WIN32__)
+    using Id = pthread_t;
+#elif defined(__DAVAENGINE_WINDOWS__)
 private:
-    typedef HANDLE Handle;
+    using Handle = HANDLE;
     friend DWORD WINAPI ThreadFunc(void *param);
 public:
-    typedef DWORD Id;
+    using Id = DWORD;
 #endif
 #if defined(__DAVAENGINE_ANDROID__)
     static void thread_exit_handler(int sig);
 #endif
     
 public:
-	
     enum eThreadState
 	{
 		STATE_CREATED = 0,

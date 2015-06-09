@@ -29,7 +29,7 @@
 
 #include "FileSystem/Logger.h"
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>

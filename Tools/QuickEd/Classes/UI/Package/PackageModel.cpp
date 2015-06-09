@@ -43,7 +43,6 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ImportedPackagesNode.h"
-#include "Model/PackageHierarchy/ControlPrototype.h"
 #include "Model/PackageHierarchy/ControlsContainerNode.h"
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/NameProperty.h"
@@ -131,44 +130,37 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
+    ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
     
-    int prototypeFlag = PackageBaseNode::FLAG_CONTROL_CREATED_FROM_PROTOTYPE | PackageBaseNode::FLAG_CONTROL_CREATED_FROM_PROTOTYPE_CHILD;
-    int controlFlag = PackageBaseNode::FLAG_CONTROL_CREATED_FROM_CLASS | PackageBaseNode::FLAG_CONTROL_CREATED_FROM_PROTOTYPE | PackageBaseNode::FLAG_CONTROL_CREATED_FROM_PROTOTYPE_CHILD;
-    int flags = node->GetFlags();
     switch(role)
     {
         case Qt::DisplayRole:
             return StringToQString(node->GetName());
             
         case Qt::DecorationRole:
-            if (node->GetControl())
+            if (controlNode)
             {
-                ControlNode *controlNode = DynamicTypeCheck<ControlNode *>(node);
-                if (controlNode)
+                if (controlNode->GetRootProperty()->GetCustomClassProperty()->IsSet())
                 {
-                    if (controlNode->GetRootProperty()->GetCustomClassProperty()->IsSet())
-                    {
-                        return QIcon(IconHelper::GetCustomIconPath());
-                    }
-                    else
-                    {
-                        const String &className = controlNode->GetRootProperty()->GetClassProperty()->GetClassName();
-                        return QIcon(IconHelper::GetIconPathForClassName(QString::fromStdString(className)));
-                    }
+                    return QIcon(IconHelper::GetCustomIconPath());
+                }
+                else
+                {
+                    const String &className = controlNode->GetRootProperty()->GetClassProperty()->GetClassName();
+                    return QIcon(IconHelper::GetIconPathForClassName(QString::fromStdString(className)));
                 }
             }
             return QVariant();
             
         case Qt::CheckStateRole:
-            if (node->GetControl())
-                return node->GetControl()->GetVisibleForUIEditor() ? Qt::Checked : Qt::Unchecked;
+            if (controlNode)
+                return controlNode->GetControl()->GetVisibleForUIEditor() ? Qt::Checked : Qt::Unchecked;
             else
                 return QVariant();
             
         case Qt::ToolTipRole:
-            if (node->GetControl() != nullptr)
+            if (controlNode != nullptr)
             {
-                ControlNode *controlNode = DynamicTypeCheck<ControlNode *>(node);
                 const String &prototype = controlNode->GetRootProperty()->GetPrototypeProperty()->GetPrototypeName();
                 const String &className = controlNode->GetRootProperty()->GetClassProperty()->GetClassName();
                 const String &customClassName = controlNode->GetRootProperty()->GetCustomClassProperty()->GetCustomClassName();
@@ -187,17 +179,18 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
             break;
             
         case Qt::TextColorRole:
-            return (flags & prototypeFlag) != 0 ? QColor(Qt::blue) : QColor(Qt::black);
+            return controlNode != nullptr && controlNode->GetPrototype() != nullptr ? QColor(Qt::blue) : QColor(Qt::black);
             
         case Qt::BackgroundRole:
-            return (flags & controlFlag) == 0 ? QColor(Qt::lightGray) : QColor(Qt::white);
+            return controlNode == nullptr ? QColor(Qt::lightGray) : QColor(Qt::white);
             
         case Qt::FontRole:
         {
             QFont myFont;
-            if ((flags & PackageBaseNode::FLAG_CONTROL_CREATED_FROM_PROTOTYPE) != 0 || (flags & controlFlag) == 0)
+            if (controlNode == nullptr || controlNode->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
                 myFont.setBold(true);
-            if ((flags & PackageBaseNode::FLAG_READ_ONLY) != 0)
+            
+            if (node->IsReadOnly())
                 myFont.setItalic(true);
             
             return myFont;
@@ -275,7 +268,7 @@ QMimeData *PackageModel::mimeData(const QModelIndexList &indices) const
     }
     
     YamlPackageSerializer serializer;
-    root->Serialize(&serializer, mimeData->GetControlNodes());
+    serializer.SerializePackageNodes(root, mimeData->GetControlNodes());
     String str = serializer.WriteToString();
     mimeData->setText(QString::fromStdString(str));
 
@@ -346,13 +339,13 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
             {
                 String packName = controlName.substr(0, slashIndex);
                 controlName = controlName.substr(slashIndex + 1, controlName.size() - slashIndex - 1);
-                PackageControlsNode *packageControls = root->GetImportedPackagesNode()->FindPackageControlsNodeByName(packName);
-                if (packageControls)
+                PackageNode *importedPackage = root->GetImportedPackagesNode()->FindPackageByName(packName);
+                if (importedPackage)
                 {
-                    ControlNode *prototypeControl = packageControls->FindControlNodeByName(controlName);
+                    ControlNode *prototypeControl = importedPackage->GetPackageControlsNode()->FindControlNodeByName(controlName);
                     if (prototypeControl)
                     {
-                        node = ControlNode::CreateFromPrototype(prototypeControl, packageControls->GetPackageRef());
+                        node = ControlNode::CreateFromPrototype(prototypeControl);
                     }
                 }
             }
@@ -369,7 +362,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
                     ControlNode *prototypeControl = root->GetPackageControlsNode()->FindControlNodeByName(controlName);
                     if (prototypeControl)
                     {
-                        node = ControlNode::CreateFromPrototype(prototypeControl, root->GetPackageControlsNode()->GetPackageRef());
+                        node = ControlNode::CreateFromPrototype(prototypeControl);
                     }
                 }
             }
@@ -430,25 +423,25 @@ void PackageModel::ControlWasRemoved(ControlNode *node, ControlsContainerNode *f
     endRemoveRows();
 }
 
-void PackageModel::ImportedPackageWillBeAdded(PackageControlsNode *node, PackageNode *to, int index)
+void PackageModel::ImportedPackageWillBeAdded(PackageNode *node, ImportedPackagesNode *to, int index)
 {
     QModelIndex destIndex = indexByNode(to);
     beginInsertRows(destIndex, index, index);
 }
 
-void PackageModel::ImportedPackageWasAdded(PackageControlsNode *node, PackageNode *to, int index)
+void PackageModel::ImportedPackageWasAdded(PackageNode *node, ImportedPackagesNode *to, int index)
 {
     endInsertRows();
 }
 
-void PackageModel::ImportedPackageWillBeRemoved(PackageControlsNode *node, PackageNode *from)
+void PackageModel::ImportedPackageWillBeRemoved(PackageNode *node, ImportedPackagesNode *from)
 {
     QModelIndex parentIndex = indexByNode(from);
     int index = from->GetIndex(node);
     beginRemoveRows(parentIndex, index, index);
 }
 
-void PackageModel::ImportedPackageWasRemoved(PackageControlsNode *node, PackageNode *from)
+void PackageModel::ImportedPackageWasRemoved(PackageNode *node, ImportedPackagesNode *from)
 {
     endRemoveRows();
 }
