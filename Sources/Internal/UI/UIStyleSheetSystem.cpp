@@ -31,17 +31,23 @@
 #include "UI/UIStyleSheetCascade.h"
 #include "UI/UIControl.h"
 #include "UI/Components/UIComponent.h"
+#include "Platform/SystemTimer.h"
+#include "Platform/Thread.h"
 
 namespace DAVA
 {
-    UIStyleSheetSystem::UIStyleSheetSystem()
+    UIStyleSheetSystem::UIStyleSheetSystem() :
+        dirtySort(false)
     {
 
     }
 
     UIStyleSheetSystem::~UIStyleSheetSystem()
     {
-
+        for (UIStyleSheet* styleSheet : styleSheets)
+        {
+            SafeRelease(styleSheet);
+        }
     }
 
     void UIStyleSheetSystem::MarkControlForUpdate(UIControl* control)
@@ -56,7 +62,7 @@ namespace DAVA
     void UIStyleSheetSystem::RegisterStyleSheet(UIStyleSheet* styleSheet)
     {
         styleSheets.push_back(SafeRetain(styleSheet));
-        SortStyleSheets();
+        dirtySort = true;
     }
 
     void UIStyleSheetSystem::UnregisterStyleSheet(UIStyleSheet* styleSheet)
@@ -71,23 +77,40 @@ namespace DAVA
 
     void UIStyleSheetSystem::ProcessUpdates()
     {
-        static UIStyleSheetCascade cascade; // TODO
-        cascade.Clear();
-
-        std::sort(controlsToUpdate.begin(), controlsToUpdate.end());
-        std::unique(controlsToUpdate.begin(), controlsToUpdate.end());
-
-        for (UIControl* control : controlsToUpdate)
+        if (dirtySort)
         {
-            for (UIStyleSheet* styleSheet : styleSheets)
+            SortStyleSheets();
+            dirtySort = false;
+        }
+
+        if (!controlsToUpdate.empty())
+        {
+            uint64 start = SystemTimer::Instance()->AbsoluteMS();
+
+            std::sort(controlsToUpdate.begin(), controlsToUpdate.end());
+            std::unique(controlsToUpdate.begin(), controlsToUpdate.end());
+
+            for (UIControl* control : controlsToUpdate)
             {
-                if (StyleSheetMatchesControl(styleSheet, control))
+                static UIStyleSheetCascade cascade; // TODO
+                cascade.Clear();
+
+                for (UIStyleSheet* styleSheet : styleSheets)
                 {
-                    cascade.AddStyleSheet(&styleSheet->GetPropertyTable());
+                    if (StyleSheetMatchesControl(styleSheet, control))
+                    {
+                        cascade.AddStyleSheet(styleSheet);
+                    }
                 }
+
+                SetupControlFromCascade(control, cascade);
             }
 
-            SetupControlFromCascade(control, cascade);
+            controlsToUpdate.clear();
+
+            uint64 end = SystemTimer::Instance()->AbsoluteMS();
+
+            DAVA::Logger::Debug("%s took %llu", __FUNCTION__, end - start);
         }
     }
 
@@ -95,7 +118,7 @@ namespace DAVA
     {
         std::sort(styleSheets.begin(), styleSheets.end(),
             [](const UIStyleSheet* first, const UIStyleSheet* second) {
-            return first->GetScore() < second->GetScore();
+            return first->GetScore() > second->GetScore();
         });
     }
 
@@ -117,7 +140,7 @@ namespace DAVA
     bool UIStyleSheetSystem::SelectorMatchesControl(const UIStyleSheetSelector* selector, UIControl* control)
     {
         if ((selector->name.IsValid() && selector->name != control->GetFastName())
-            || (!selector->className.empty() && selector->className != control->GetClassName()))
+            || (!selector->controlClassName.empty() && selector->controlClassName != control->GetClassName()))
             return false;
 
         for (const FastName& clazz : selector->classes)
@@ -156,7 +179,7 @@ namespace DAVA
         {
             const InspMember *member = typeInfo->Member(i);
 
-            const VariantType* value = cascade.GetProperty(member->Name());
+            const VariantType* value = cascade.GetProperty(member->GetFastName());
 
             if (value)
                 member->SetValue(object, *value);

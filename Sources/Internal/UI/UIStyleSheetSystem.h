@@ -65,6 +65,8 @@ namespace DAVA
 
         DAVA::Vector< UIControl* > controlsToUpdate;
         DAVA::Vector< UIStyleSheet* > styleSheets;
+
+        bool dirtySort;
     };
 };
 

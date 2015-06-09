@@ -45,11 +45,22 @@ namespace DAVA
         UIStyleSheetCascade();
 
         void Clear();
-        void AddStyleSheet(const UIStyleSheetPropertyTable* table);
+        void AddStyleSheet(const UIStyleSheet* table);
 
-        const VariantType* GetProperty(const String& name) const;
+        inline const VariantType* GetProperty(const FastName& name) const
+        {
+            const auto& endIter = styleSheets.end();
+            for (auto styleSheetIter = styleSheets.begin(); styleSheetIter != endIter; ++styleSheetIter)
+            {
+                const UIStyleSheet* styleSheet = *styleSheetIter;
+
+                if (const VariantType * prop = styleSheet->GetProperty(name))
+                    return prop;
+            }
+            return nullptr;
+        }
     private:
-        Vector< const UIStyleSheetPropertyTable* > styleSheets;
+        Vector< const UIStyleSheet* > styleSheets;
     };
 };
 

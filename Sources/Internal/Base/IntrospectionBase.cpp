@@ -34,12 +34,17 @@ namespace DAVA
 {
 
 InspMember::InspMember(const char *_name, const InspDesc &_desc, const long int _offset, const MetaInfo *_type, int _flags /* = 0 */)
-: name(_name), desc(_desc), offset(_offset), type(_type), flags(_flags), parentInsp(NULL)
+: name(_name), fastName(name), desc(_desc), offset(_offset), type(_type), flags(_flags), parentInsp(NULL)
 { }
 
 const char* InspMember::Name() const
 {
 	return name;
+}
+
+const FastName& InspMember::GetFastName() const
+{
+    return fastName;
 }
 
 const InspDesc& InspMember::Desc() const

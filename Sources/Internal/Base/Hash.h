@@ -32,7 +32,8 @@
 
 #include <stddef.h>
 #include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
+#include "Debug/DVAssert.h"
+
 namespace DAVA
 {
     // TODO: Think how to make it work for generic pointers and char * at the same time

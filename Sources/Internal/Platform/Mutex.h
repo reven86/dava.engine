@@ -31,7 +31,6 @@
 #define __DAVAENGINE_MUTEX_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
 #include <pthread.h>

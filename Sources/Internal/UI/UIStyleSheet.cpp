@@ -35,20 +35,14 @@ namespace DAVA
 
     }
 
-    UIStyleSheet::UIStyleSheet()
+    UIStyleSheet::UIStyleSheet() :
+        score(0)
     {
 
     }
 
     int32 UIStyleSheet::GetScore() const
     {
-        int32 score = 0;
-        for (const UIStyleSheetSelector& selector : selectorChain)
-        {
-            score += 100000 + selector.classes.size();
-            if (selector.name.IsValid())
-                score += 100;
-        }
         return score;
     }
 
@@ -60,5 +54,28 @@ namespace DAVA
     const Vector< UIStyleSheetSelector >& UIStyleSheet::GetSelectorChain() const
     {
         return selectorChain;
+    }
+
+    void UIStyleSheet::SetPropertyTable(const UIStyleSheetPropertyTable& newProperties)
+    {
+        properties = newProperties;
+    }
+
+    void UIStyleSheet::SetSelectorChain(const Vector< UIStyleSheetSelector >& newSelectorChain)
+    {
+        selectorChain = newSelectorChain;
+
+        RecalculateScore();
+    }
+
+    void UIStyleSheet::RecalculateScore()
+    {
+        score = 0;
+        for (const UIStyleSheetSelector& selector : selectorChain)
+        {
+            score += 100000 + selector.classes.size();
+            if (selector.name.IsValid())
+                score += 100;
+        }
     }
 }

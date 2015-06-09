@@ -28,7 +28,7 @@
 
 
 #include "Platform/Mutex.h"
-
+#include "FileSystem/Logger.h"
 
 namespace DAVA
 {

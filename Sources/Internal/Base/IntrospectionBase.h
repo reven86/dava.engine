@@ -33,6 +33,7 @@
 #include "Base/BaseTypes.h"
 #include "FileSystem/VariantType.h"
 #include "Base/GlobalEnum.h"
+#include "Base/FastName.h"
 
 namespace DAVA
 {
@@ -41,7 +42,7 @@ namespace DAVA
 	class InspColl;
 	class KeyedArchive;
 	struct MetaInfo;
-
+    class FastName;
 	// абстрактный базовый класс для интроспекции
 	class InspBase
 	{
@@ -105,6 +106,7 @@ namespace DAVA
 
 		// Имя члена интроспекции, соответствует имени члена класса
 		const char* Name() const;
+        const FastName& GetFastName() const;
 
 		// Описание члена интроспекции, произвольно указанное пользователем при объявлении интроспекции
 		const InspDesc& Desc() const;
@@ -158,6 +160,7 @@ namespace DAVA
 		void ApplyParentInsp(const InspInfo *parentInsp) const;
 
 		const char* name;
+        FastName fastName;
 		InspDesc desc;
 		const long int offset;
 		const MetaInfo* type;
