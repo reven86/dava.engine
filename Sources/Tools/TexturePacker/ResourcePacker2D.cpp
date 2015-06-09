@@ -430,6 +430,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
         getTime = SystemTimer::Instance()->AbsoluteMS() - getTime;
         Logger::Info("[%s - %.2lf secs] - GET FROM CACHE", inputPath.GetAbsolutePathname().c_str(), (float64)(getTime) / 1000.0f);
     }
+
     //TODO:AC: end
     
     ScopedPtr<FileList> fileList(new FileList(inputPath));

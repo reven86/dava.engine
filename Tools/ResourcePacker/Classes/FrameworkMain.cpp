@@ -72,7 +72,7 @@ bool CheckPosition(int32 commandPosition)
 
 void DumpCommandLine()
 {
-    Vector<String> & commandLine = Core::Instance()->GetCommandLine();
+    auto & commandLine = Core::Instance()->GetCommandLine();
     int32 count = CommandLineParser::GetCommandsCount();
     for(int32 i = 0; i < count; ++i)
     {
@@ -100,7 +100,7 @@ void ProcessRecourcePacker()
 
     ResourcePacker2D * resourcePacker = new ResourcePacker2D();
     
-    Vector<String> & commandLine = Core::Instance()->GetCommandLine();
+    auto & commandLine = Core::Instance()->GetCommandLine();
     FilePath commandLinePath(commandLine[1]);
     commandLinePath.MakeDirectoryPathname();
     
