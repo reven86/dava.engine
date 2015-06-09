@@ -27,13 +27,13 @@
 =====================================================================================*/
 
 
-#include "result.h"
+#include "Result.h"
 
 using namespace DAVA;
 
-Result::Result(ResultType type_, const DAVA::String &text, const DAVA::VariantType &data_)
+Result::Result(ResultType type_, const DAVA::String &message_, const DAVA::VariantType &data_)
     : type(type_)
-    , resultText(text)
+    , message(message_)
     , data(data_)
 {
 }
@@ -57,28 +57,8 @@ ResultList& ResultList::AddResult(const Result &result)
     return *this;
 }
 
-ResultList& ResultList::AddResult(const Result::ResultType type, const String &error, const VariantType &data)
+ResultList& ResultList::AddResult(const Result::ResultType type, const String &message, const VariantType &data)
 {
-    Result result(type, error, data);
+    Result result(type, message, data);
     return AddResult(result);
-}
-
-List<Result::ResultType> ResultList::GetResultTypes() const
-{
-    List<Result::ResultType> resultTypes;
-    for(const auto &result : results)
-    {
-        resultTypes.push_back(result.type);
-    }
-    return resultTypes;
-}
-
-List<String> ResultList::GetErrors() const
-{
-    List<String> errors;
-    for(const auto &result : results)
-    {
-        errors.push_back(result.resultText);
-    }
-    return errors;
 }

@@ -44,10 +44,10 @@ struct Result
         RESULT_WARNING,
         RESULT_ERROR
     };
-    Result(const ResultType type = RESULT_SUCCESS, const String &error = String(), const VariantType &data = VariantType());
+    Result(const ResultType type = RESULT_SUCCESS, const String &message = String(), const VariantType &data = VariantType());
     operator bool() const;
     ResultType type;
-    String resultText;
+    String message;
     VariantType data;
 };
 
@@ -64,11 +64,9 @@ public:
     ~ResultList() = default;
     operator bool() const;
     ResultList &AddResult(const Result &result);
-    ResultList &AddResult(const Result::ResultType type = Result::RESULT_SUCCESS, const String &error = String(), const VariantType &data = VariantType());
+    ResultList &AddResult(const Result::ResultType type = Result::RESULT_SUCCESS, const String &message = String(), const VariantType &data = VariantType());
     
     const Deque<Result> &GetResults() const;
-    List<Result::ResultType> GetResultTypes() const;
-    List<String> GetErrors() const;
 private:
     Deque < Result > results;
     bool allOk;
