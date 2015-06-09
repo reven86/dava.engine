@@ -33,29 +33,107 @@
 #include "Utils/StringFormat.h"
 #include "Utils/Utils.h"
 #include "Debug/DVAssert.h"
+#include "FileSystem/Logger.h"
+#include "cppformat/format.h"
 
 namespace DAVA
 {
+
+//String FormatVL(const char8* format, va_list args)
+//{
+//    try {
+//        return fmt::sprintf(format, args);
+//    } catch (const std::exception& e) {
+//        Logger::Debug("%s", e.what());
+//    }
+//    return String();
+//}
+
+//String Format(const char8* format, ...)
+//{
+//    va_list args;
+//    va_start(args, format);
+//    String result = FormatVL(format, args);
+//    va_end(args);
+//    return result;
+//}
+
+//WideString Format(const char16* format, ...)
+//{
+//    return WideString();
+//}
+
+//WideString FormatVL(const char16* format, va_list args)
+//{
+//    return WideString();
+//}
+
+}
+
+#if 0
+namespace DAVA
+{
+
+namespace
+{
+
+inline size_t FormattedLengthV(const char* format, va_list args)
+{
+#if defined(__DAVAENGINE_WIN32__)
+    int result = _vscprintf(format, args);
+    DVASSERT(result >= 0);
+    return result >= 0 ? static_cast<size_t>(result) : 0;
+#else
+    int result = vsnprintf(nullptr, 0, format, args);
+    DVASSERT(result >= 0);
+    return result >= 0 ? static_cast<size_t>(result) : 0;
+#endif
+}
+
+}   // unnamed namespace
+
 static const int32 FORMAT_STRING_MAX_LEN = 512;
 
-//static char8 formatString8[FORMAT_STRING_SIZE];
-//static char16 formatString16[FORMAT_STRING_SIZE];
-//static int32 formatString8Position = 0;
-//static int32 formatString16Position = 0;
-
 //! formatting function (use printf syntax)
-String Format(const char8 * text, ...)
+String Format(const char8* format, ...)
 {
-	String str;
-	char8 buffer[FORMAT_STRING_MAX_LEN];
+    String result;
+    size_t length = 0;
+    {
+        va_list vargs;
+        va_start(vargs, format);
+        length = FormattedLengthV(format, vargs);
+        va_end(vargs);
+    }
+    if (length > 0)
+    {
+        va_list vargs;
+        va_start(vargs, format);
+        result.resize(length + 1);
+        vsnprintf(&*result.begin(), length + 1, format, vargs);
+        result.pop_back();
+        va_end(vargs);
+    }
+    return result;
+}
 
-	va_list ll;
-	va_start(ll, text);
-	vsnprintf(buffer,  FORMAT_STRING_MAX_LEN, text, ll);
-	va_end(ll);
-
-	str = buffer;
-	return str;
+String FormatVL(const char8* format, va_list vargs)
+{
+    String result;
+    size_t length = 0;
+    {
+        va_list xargs;
+        va_copy(xargs, vargs);
+        length = FormattedLengthV(format, xargs);
+        va_end(xargs);
+    }
+    if (length > 0)
+    {
+        result.resize(length + 1);
+        vsnprintf(&*result.begin(), length + 1, format, vargs);
+        result.pop_back();
+    }
+    return result;
 }
 
 String GetIndentString(char8 indentChar, int32 level)
@@ -828,17 +906,6 @@ WideString Format(const char16 * text, ...)
 	return str;
 }
 
-String FormatVL(const char8 * text, va_list &ll)
-{
-	String str;
-	char8 buffer[FORMAT_STRING_MAX_LEN];
-
-	vsprintf(buffer, text, ll);
-
-	str = buffer;
-	return str;
-}
-
 WideString FormatVL(const char16 * text, va_list &ll)
 {
 	WideString str;
@@ -850,3 +917,5 @@ WideString FormatVL(const char16 * text, va_list &ll)
 	return str;
 }
 }; // end of namespace Log
+
+#endif
