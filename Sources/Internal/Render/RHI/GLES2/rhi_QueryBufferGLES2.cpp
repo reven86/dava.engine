@@ -70,7 +70,11 @@ gles2_QueryBuffer_Delete( Handle handle )
 
             if( id )
             {
+                #if defined(__DAVAENGINE_IPHONE__)
+                glDeleteQueriesEXT( 1, &id );
+                #else
                 glDeleteQueries( 1, &id );
+                #endif
             }
         }
 
@@ -90,7 +94,12 @@ gles2_QueryBuffer_IsReady( Handle handle, uint32 objectIndex )
     {
         GLuint  result = 0;
 
+        #if defined(__DAVAENGINE_IPHONE__)
+        glGetQueryObjectuivEXT( buf->query[objectIndex], GL_QUERY_RESULT_AVAILABLE_EXT, &result );
+        #else
         glGetQueryObjectuiv( buf->query[objectIndex], GL_QUERY_RESULT_AVAILABLE, &result );
+        #endif
+        
         ready = result == GL_TRUE;
     }
 
@@ -107,7 +116,12 @@ gles2_QueryBuffer_Value( Handle handle, uint32 objectIndex )
     {
         GLuint  result = 0;
 
+        #if defined(__DAVAENGINE_IPHONE__)
+        glGetQueryObjectuivEXT( buf->query[objectIndex], GL_QUERY_RESULT_EXT, &result );
+        #else
         glGetQueryObjectuiv( buf->query[objectIndex], GL_QUERY_RESULT, &result );
+        #endif
+        
         value = result;
     }
 
@@ -138,13 +152,22 @@ BeginQuery( Handle handle, uint32 objectIndex )
 
         if( !q )
         {
+            #if defined(__DAVAENGINE_IPHONE__)
+            glGenQueriesEXT( 1, &q );
+            #else
             glGenQueries( 1, &q );
+            #endif
+            
             buf->query[objectIndex] = q;
         }
         
         if( q )
         {
+            #if defined(__DAVAENGINE_IPHONE__)
+            glBeginQueryEXT( GL_ANY_SAMPLES_PASSED_EXT, q );
+            #else
             glBeginQuery( GL_SAMPLES_PASSED, q );
+            #endif
         }
     }
 }
@@ -161,7 +184,11 @@ EndQuery( Handle handle, uint32 objectIndex )
 
         if( q )
         {
-            glBeginQuery( GL_SAMPLES_PASSED, q );
+            #if defined(__DAVAENGINE_IPHONE__)
+            glEndQueryEXT( q );
+            #else
+            glEndQuery( GL_SAMPLES_PASSED, q );
+            #endif
         }
     }
 }
