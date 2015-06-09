@@ -61,7 +61,9 @@ struct TypeSelector<sizeof(LONGLONG)> { using Type = LONGLONG; };
 //atomic increment overloads
 inline CHAR AtomicIncrement(volatile CHAR* value)
 {
-    return ::_InterlockedExchangeAdd8(value, 1);
+    CHAR initial = ::_InterlockedExchangeAdd8(value, 1);
+    return initial + 1;
+
 }
 inline SHORT AtomicIncrement(volatile SHORT* value)
 {
@@ -79,7 +81,8 @@ inline LONGLONG AtomicIncrement(volatile LONGLONG* value)
 //atomic decrement overloads 
 inline CHAR AtomicDecrement(volatile CHAR* value)
 {
-    return ::_InterlockedExchangeAdd8(value, -1);
+    CHAR initial = ::_InterlockedExchangeAdd8(value, -1);
+    return initial - 1;
 }
 inline SHORT AtomicDecrement(volatile SHORT* value)
 {
@@ -131,9 +134,6 @@ inline LONGLONG AtomicCAS(volatile LONGLONG* target, LONGLONG expected, LONGLONG
 }
 
 } //  namespace Detail
-
-template <typename T>
-Atomic<T>::Atomic(T val) DAVA_NOEXCEPT : value(val) {}
 
 template <typename T>
 void Atomic<T>::Set(T val) DAVA_NOEXCEPT

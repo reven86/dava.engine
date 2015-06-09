@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "Concurrency/JobManager.h"
+#include "Job/JobManager.h"
 #include "Debug/DVAssert.h"
 #include "Base/ScopedPtr.h"
 #include "Concurrency/Thread.h"
@@ -127,7 +127,7 @@ uint32 JobManager::CreateMainJob(const Function<void()>& fn, eMainJobType mainJo
     else
     {
         // reserve job ID
-        jobID = mainJobIDCounter.Increment();
+        jobID = ++mainJobIDCounter;
 
         // push requested job into queue
         MainJob job;

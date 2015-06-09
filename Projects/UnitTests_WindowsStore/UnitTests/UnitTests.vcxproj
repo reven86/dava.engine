@@ -208,6 +208,7 @@
     <ClCompile Include="..\..\UnitTests\Classes\Infrastructure\FrameworkMain.cpp" />
     <ClCompile Include="..\..\UnitTests\Classes\Infrastructure\GameCore.cpp" />
     <ClCompile Include="..\..\UnitTests\Classes\Infrastructure\TextureUtils.cpp" />
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\AtomicTest.cpp" />
     <ClCompile Include="..\..\UnitTests\Classes\Tests\ComponentsTest.cpp" />
     <ClCompile Include="..\..\UnitTests\Classes\Tests\Cpp14.cpp" />
     <ClCompile Include="..\..\UnitTests\Classes\Tests\DataVaultTest.cpp" />

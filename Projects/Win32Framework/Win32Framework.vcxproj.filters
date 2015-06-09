@@ -190,6 +190,9 @@
     <Filter Include="Internal\Concurrency">
       <UniqueIdentifier>{48909795-dd8c-473a-802a-93db086da78f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\Job">
+      <UniqueIdentifier>{6ca2c37e-0b3b-4ca9-8ce4-9e889278ba52}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -1074,9 +1077,6 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\CorePlatformWin32.h">
       <Filter>Internal\Platform\TemplateWin32</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WindowsSpecifics.h">
-      <Filter>Internal\Platform\TemplateWin32</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\LightUpdateSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClInclude>
@@ -1840,22 +1840,10 @@
     <ClInclude Include="..\..\Sources\Internal\Concurrency\ConditionVariable.h">
       <Filter>Internal\Concurrency</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Concurrency\JobManager.h">
-      <Filter>Internal\Concurrency</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Concurrency\JobQueue.h">
-      <Filter>Internal\Concurrency</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Concurrency\JobThread.h">
-      <Filter>Internal\Concurrency</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Concurrency\LockGuard.h">
       <Filter>Internal\Concurrency</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Concurrency\Mutex.h">
-      <Filter>Internal\Concurrency</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Base\Platform.h">
       <Filter>Internal\Concurrency</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Concurrency\PosixThreads.h">
@@ -1872,6 +1860,15 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Concurrency\ThreadLocalPtr.h">
       <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Job\JobManager.h">
+      <Filter>Internal\Job</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Job\JobQueue.h">
+      <Filter>Internal\Job</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Job\JobThread.h">
+      <Filter>Internal\Job</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3301,15 +3298,6 @@
     <ClCompile Include="..\..\Sources\Internal\Concurrency\ConditionVariable.cpp">
       <Filter>Internal\Concurrency</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Concurrency\JobManager.cpp">
-      <Filter>Internal\Concurrency</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Concurrency\JobQueue.cpp">
-      <Filter>Internal\Concurrency</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Concurrency\JobThread.cpp">
-      <Filter>Internal\Concurrency</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Concurrency\Mutex.cpp">
       <Filter>Internal\Concurrency</Filter>
     </ClCompile>
@@ -3324,6 +3312,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Concurrency\ThreadWin32.cpp">
       <Filter>Internal\Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Job\JobManager.cpp">
+      <Filter>Internal\Job</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Job\JobQueue.cpp">
+      <Filter>Internal\Job</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Job\JobThread.cpp">
+      <Filter>Internal\Job</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

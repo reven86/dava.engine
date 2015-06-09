@@ -58,7 +58,7 @@ ConditionVariable::~ConditionVariable() DAVA_NOEXCEPT
 
 void ConditionVariable::Wait(LockGuard<Mutex>& guard)
 {
-    pthread_mutex_t* mutex = &guard.mutex_ptr->mutex;
+    pthread_mutex_t* mutex = &guard.GetMutex()->mutex;
     int ret = pthread_cond_wait(&cv, mutex);
 
     if (ret != 0)

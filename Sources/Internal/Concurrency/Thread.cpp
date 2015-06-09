@@ -66,10 +66,12 @@ bool Thread::IsMainThread()
 
 Thread *Thread::Create(const Message& msg)
 {
-    Thread * t = new Thread(msg);
-    t->state = STATE_CREATED;
+    return new Thread(msg);
+}
 
-    return t;
+Thread *Thread::Create(const Procedure& proc)
+{
+    return new Thread(proc);
 }
 
 void Thread::Kill()
@@ -110,10 +112,8 @@ void Thread::CancelAll()
 }
 
 
-Thread::Thread(const Message& _msg)
-    : BaseObject()
-    , msg(_msg)
-    , state(STATE_CREATED)
+Thread::Thread()
+    : state(STATE_CREATED)
     , isCancelling(false)
     , id(Thread::Id())
     , name("DAVA::Thread")
@@ -123,6 +123,18 @@ Thread::Thread(const Message& _msg)
     threadListMutex.Unlock();
 
     Init();
+}
+
+Thread::Thread(const Message &msg) : Thread()
+{
+    Message message = msg;
+    Thread* caller = this;
+    thread_func = [=] { message(caller); };
+}
+
+Thread::Thread(const Procedure &proc) : Thread()
+{
+    thread_func = proc;
 }
 
 Thread::~Thread()
@@ -139,9 +151,9 @@ void Thread::ThreadFunction(void *param)
     t->id = GetCurrentId();
 
     t->state = STATE_RUNNING;
-    t->msg(t);
-
+    t->thread_func();
     t->state = STATE_ENDED;
+
     t->Release();
 }
     

@@ -111,13 +111,13 @@ inline void ConditionVariable::Wait(LockGuard<Mutex>& guard)
 {
     if (guard.OwnsLock())
     {
-        std::unique_lock<std::mutex> lock(guard.mutex_ptr->mutex, std::adopt_lock_t());
+        std::unique_lock<std::mutex> lock(guard.GetMutex()->mutex, std::adopt_lock_t());
         cv.wait(lock);
         lock.release();
     }
     else
     {
-        std::unique_lock<std::mutex> lock(guard.mutex_ptr->mutex);
+        std::unique_lock<std::mutex> lock(guard.GetMutex()->mutex);
         cv.wait(lock);
     }
 }

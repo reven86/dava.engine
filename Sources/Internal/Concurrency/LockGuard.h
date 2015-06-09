@@ -47,9 +47,7 @@ struct TryToLock {};
 template<class MutexT>
 class LockGuard
 {
-    friend class ConditionVariable;
     using MutexType = MutexT;
-
 public:
     // default construct
     LockGuard() DAVA_NOEXCEPT;
@@ -89,7 +87,10 @@ public:
     void Unlock();
 
     // return true if this object owns the lock
-    bool OwnsLock() DAVA_NOEXCEPT;
+    bool OwnsLock() const DAVA_NOEXCEPT;
+
+    // return pointer to the mutex
+    MutexType* GetMutex() const DAVA_NOEXCEPT;
     
     // release the mutex
     MutexType* Release() DAVA_NOEXCEPT;
@@ -178,9 +179,15 @@ void LockGuard<MutexT>::Unlock()
 }
 
 template<class MutexT>
-bool LockGuard<MutexT>::OwnsLock() DAVA_NOEXCEPT
+bool LockGuard<MutexT>::OwnsLock() const DAVA_NOEXCEPT
 {
     return owns;
+}
+
+template<class MutexT>
+typename LockGuard<MutexT>::MutexType* LockGuard<MutexT>::GetMutex() const DAVA_NOEXCEPT
+{
+    return mutex_ptr;
 }
 
 template<class MutexT>

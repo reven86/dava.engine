@@ -30,6 +30,8 @@
 #ifndef __DAVAENGINE_THREAD_H__
 #define __DAVAENGINE_THREAD_H__ 
 
+#include <functional>
+
 #include "Base/BaseTypes.h"
 #include "Base/Message.h"
 #include "Base/BaseObject.h"
@@ -58,31 +60,32 @@ class Thread : public BaseObject
 {
 #if defined(__DAVAENGINE_PTHREAD__)
 private:
-    typedef pthread_t Handle;
+    using Handle = pthread_t;
     friend void	*PthreadMain(void *param);
 public:
-    typedef pthread_t Id;
+    using Id = pthread_t;
 #elif defined(__DAVAENGINE_WINDOWS__)
 #   if defined(USE_CPP11_CONCURRENCY)
 private:
-    typedef std::thread Handle;
+    using Handle = std::thread;
     friend DWORD WINAPI ThreadFunc(void *param);
 public:
-    typedef std::thread::id Id;
+    using Id = std::thread::id;
 #   else 
 private:
-    typedef HANDLE Handle;
+    using Handle = HANDLE;
     friend DWORD WINAPI ThreadFunc(void *param);
 public:
-    typedef DWORD Id;
+    using Id = DWORD;
 #   endif
 #endif
 #if defined(__DAVAENGINE_ANDROID__)
     static void thread_exit_handler(int sig);
 #endif
-    
+
 public:
-	
+    using Procedure = std::function<void()>;
+
     enum eThreadState
 	{
 		STATE_CREATED = 0,
@@ -99,10 +102,12 @@ public:
 
 	/**
 		\brief static function to create instance of thread object based on Message.
-		This function create thread based on message. It do not start the thread until Start function called.
+		This functions create thread based on message or function with signature 'void()'. 
+        It do not start the thread until Start function called.
 		\returns ptr to thread object 
 	*/
-	static Thread *Create(const Message& msg);
+    static Thread *Create(const Message& msg);
+    static Thread *Create(const Procedure& proc);
 
     /**
      \brief Sets thread name. You should to use it before Thread::Start().
@@ -169,8 +174,11 @@ public:
     static void InitGLThread();
 
 private:
+    Thread();
+    Thread(const Message &msg);
+    Thread(const Procedure &proc);
     virtual ~Thread();
-	Thread(const Message &msg);
+
     void Init();
     void Shutdown();
 
@@ -184,7 +192,7 @@ private:
     */
     static void ThreadFunction(void *param);
 
-	Message	msg;
+    Procedure thread_func;
     Atomic<eThreadState> state;
     Atomic<bool> isCancelling;
 

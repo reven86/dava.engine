@@ -43,9 +43,6 @@ namespace DAVA
 //Atomic template class realization using built-in intrisics
 //-----------------------------------------------------------------------------
 template <typename T>
-Atomic<T>::Atomic(T val) DAVA_NOEXCEPT : value(val) {}
-
-template <typename T>
 void Atomic<T>::Set(T val) DAVA_NOEXCEPT
 {
     __atomic_store(&value, &val, __ATOMIC_SEQ_CST);
@@ -83,7 +80,7 @@ template <typename T>
 bool Atomic<T>::CompareAndSwap(T expected, T desired) DAVA_NOEXCEPT
 {
     return __atomic_compare_exchange(&value, &expected, &desired,
-    false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+                                     false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
 }
 
 #endif //  __GNUC__

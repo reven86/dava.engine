@@ -48,7 +48,7 @@ public:
     TestJobOwner(int32 * _outData) : resultData(_outData), anyData(0) {}
     virtual ~TestJobOwner() { (*resultData) = anyData; };
 
-    void AnyFunction() { anyData.Increment(); };
+    void AnyFunction() { anyData++; };
 
 protected:
     int32 * resultData;

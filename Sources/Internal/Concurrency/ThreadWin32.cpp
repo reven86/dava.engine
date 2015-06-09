@@ -79,7 +79,7 @@ void Thread::Start()
         0, // Stack size
         ThreadFunc,
         this,
-        CREATE_SUSPENDED,
+        0,
         0);
     HANDLE native_handle = handle;
 
@@ -94,7 +94,6 @@ void Thread::Start()
     {
         Logger::Error("Thread::StartWin32 error %d", (int32)GetLastError());
     }
-    ResumeThread(native_handle);
 }
 
 void Thread::Sleep(uint32 timeMS)
@@ -148,18 +147,14 @@ void Thread::Join()
 
 void Thread::KillNative()
 {
-#if defined(__DAVAENGINE_WIN32__)
-
-#if !defined(USE_CPP11_CONCURRENCY)
+#if defined(__DAVAENGINE_WIN_UAP__)
+    DAVA::Logger::Warning("Thread::KillNative() is not implemented for Windows Store platform");
+#elif !defined(USE_CPP11_CONCURRENCY)
     TerminateThread(handle, 0);
 #else
     HANDLE native_handle = handle.native_handle();
     handle.detach();
     TerminateThread(native_handle, 0);
-#endif
-
-#elif defined(__DAVAENGINE_WIN_UAP__)
-    DAVA::Logger::Warning("Thread::KillNative() is not implemented for Windows Store platform");
 #endif
 }
 

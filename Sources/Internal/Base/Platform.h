@@ -143,7 +143,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #   endif
 
 //Using C++11 concurrency as default
-#   ifndef USE_CPP11_CONCURRENCY
+#   if defined(__DAVAENGINE_WIN_UAP__) && !defined(USE_CPP11_CONCURRENCY)
 #       define USE_CPP11_CONCURRENCY
 #   endif
 

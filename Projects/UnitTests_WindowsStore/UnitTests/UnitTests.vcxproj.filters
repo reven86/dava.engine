@@ -120,6 +120,9 @@
     <ClCompile Include="..\..\UnitTests\Classes\Tests\UnlimitedLogOutputTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\UnitTests\Classes\Tests\AtomicTest.cpp">
+      <Filter>Classes\Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />

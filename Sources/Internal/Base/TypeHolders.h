@@ -49,12 +49,12 @@ public:
 
 	void Retain()
 	{
-        refCount.Increment();
+        refCount++;
 	}
 
 	void Release()
 	{
-		if (0 == refCount.Decrement())
+		if (0 == --refCount)
 		{
 			delete this;
 		}

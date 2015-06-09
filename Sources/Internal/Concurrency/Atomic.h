@@ -29,6 +29,7 @@
 #ifndef __DAVAENGINE_ATOMIC_H__
 #define __DAVAENGINE_ATOMIC_H__
 
+#include <type_traits>
 #include "Base/Platform.h"
 
 #ifdef USE_CPP11_CONCURRENCY
@@ -44,11 +45,15 @@ namespace DAVA
 template <typename T>
 class Atomic
 {
+    static_assert(std::is_integral<T>::value || 
+                  std::is_pointer<T>::value  ||
+                  std::is_enum<T>::value, 
+                  "Not valid type for atomic operations");
 public:
-    Atomic(T val = T()) DAVA_NOEXCEPT;
+    Atomic(T val = T()) DAVA_NOEXCEPT : value(val) {}
 
-    Atomic(const Atomic&) = delete;
-    Atomic& operator=(const Atomic&) = delete;
+    Atomic(const Atomic& other) = delete;
+    Atomic& operator=(const Atomic& other) = delete;
 
     Atomic& operator=(T val) DAVA_NOEXCEPT;
     operator T() DAVA_NOEXCEPT { return Get(); }
@@ -58,6 +63,11 @@ public:
 
     T Increment() DAVA_NOEXCEPT;
     T Decrement() DAVA_NOEXCEPT;
+
+    T operator++() DAVA_NOEXCEPT { return Increment(); }
+    T operator++(int) DAVA_NOEXCEPT { return Increment() - 1; }
+    T operator--() DAVA_NOEXCEPT { return Decrement(); }
+    T operator--(int) DAVA_NOEXCEPT { return Decrement() + 1; }
 
     T Swap(T desired) DAVA_NOEXCEPT;
     bool CompareAndSwap(T expected, T desired) DAVA_NOEXCEPT;
@@ -76,6 +86,9 @@ private:
 #endif
 };
 
+//-----------------------------------------------------------------------------
+//Common realization
+//-----------------------------------------------------------------------------
 template <typename T>
 Atomic<T>& Atomic<T>::operator=(T val) DAVA_NOEXCEPT
 {
@@ -85,6 +98,9 @@ Atomic<T>& Atomic<T>::operator=(T val) DAVA_NOEXCEPT
 
 } //  namespace DAVA
 
+//-----------------------------------------------------------------------------
+//Specific platform realization
+//-----------------------------------------------------------------------------
 #if defined (__DAVAENGINE_WINDOWS__) && !defined(USE_CPP11_CONCURRENCY)
 #   include "Concurrency/AtomicWindows.h"
 #elif defined (__GNUC__) && !defined(USE_CPP11_CONCURRENCY)
@@ -97,9 +113,6 @@ namespace DAVA
 //-----------------------------------------------------------------------------
 //Atomic template class realization using std::atomic
 //-----------------------------------------------------------------------------
-template <typename T>
-Atomic<T>::Atomic(T val) DAVA_NOEXCEPT : value(val) {}
-
 template <typename T>
 void Atomic<T>::Set(T val) DAVA_NOEXCEPT
 {

@@ -89,7 +89,7 @@ public:
 	 */
 	virtual void Retain()
 	{
-        referenceCount.Increment();
+        referenceCount++;
 	}
 	
 	/** 
