@@ -239,6 +239,7 @@ void
 metal_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace face )
 {
     TextureMetal_t* self   = TextureMetalPool::Get( tex );
+    Size2i          ext    = TextureExtents( Size2i(self->width,self->height), level );
     uint32          sz     = TextureSize( self->format, self->width, self->height, level );
     uint32          stride = TextureStride( self->format, Size2i(self->width,self->height), level );
     MTLRegion       rgn;
@@ -257,8 +258,8 @@ metal_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
     rgn.origin.x    = 0;
     rgn.origin.y    = 0;
     rgn.origin.z    = 0;
-    rgn.size.width  = self->width;
-    rgn.size.height = self->height;
+    rgn.size.width  = ext.dx;
+    rgn.size.height = ext.dy;
     rgn.size.depth  = 1;
 
     if( self->is_cubemap )
