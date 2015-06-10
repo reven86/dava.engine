@@ -26,22 +26,114 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include <cstdarg>
+#include <cstdio>
+//#include <cmath>
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <math.h> 
-#include "Utils/StringFormat.h"
-#include "Utils/Utils.h"
+#include "Base/BaseTypes.h"
 #include "Debug/DVAssert.h"
+//#include "Utils/Utils.h"
 
 namespace DAVA
 {
-static const int32 FORMAT_STRING_MAX_LEN = 512;
 
-//static char8 formatString8[FORMAT_STRING_SIZE];
-//static char16 formatString16[FORMAT_STRING_SIZE];
-//static int32 formatString8Position = 0;
-//static int32 formatString16Position = 0;
+namespace
+{
+
+inline size_t FormattedLengthV(const char8* format, va_list args)
+{
+    DVASSERT(format != nullptr);
+#if defined(__DAVAENGINE_WIN32__)
+    int result = _vscprintf(format, args);
+    DVASSERT(result >= 0);
+    return result >= 0 ? static_cast<size_t>(result) : 0;
+#else
+    int result = vsnprintf(nullptr, 0, format, args);
+    DVASSERT(result >= 0);
+    return result >= 0 ? static_cast<size_t>(result) : 0;
+#endif
+}
+
+inline size_t FormattedLengthV(const char16* format, va_list args)
+{
+    DVASSERT(format != nullptr);
+#if defined(__DAVAENGINE_WIN32__)
+    int result = _vscwprintf(format, args);
+    DVASSERT(result >= 0);
+    return result >= 0 ? static_cast<size_t>(result) : 0;
+#else
+    int result = vswprintf(nullptr, 0, format, args);
+    DVASSERT(result >= 0);
+    return result >= 0 ? static_cast<size_t>(result) : 0;
+#endif
+}
+
+}   // unnamed namespace
+
+String FormatVL(const char8* format, va_list args)
+{
+    String result;
+    size_t length = 0;
+    {
+        va_list xargs;
+        va_copy(xargs, args);   // args cannot be used twice without copying
+        length = FormattedLengthV(format, xargs);
+        va_end(xargs);
+    }
+    if (length > 0)
+    {
+        result.resize(length + 1);
+        vsnprintf(&*result.begin(), length + 1, format, args);
+        result.pop_back();
+    }
+    return result;
+}
+
+String Format(const char8* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    String result = FormatVL(format, args);
+    va_end(args);
+    return result;
+}
+
+WideString FormatVL(const char16* format, va_list args)
+{
+    WideString result;
+    size_t length = 0;
+    {
+        va_list xargs;
+        va_copy(xargs, args);   // args cannot be used twice without copying
+        length = FormattedLengthV(format, xargs);
+        va_end(xargs);
+    }
+    if (length > 0)
+    {
+        result.resize(length + 1);
+#if defined(__DAVAENGINE_WIN32__)
+        _vsnwprintf(&*result.begin(), length + 1, format, args);
+#else
+        vsnwprintf(&*result.begin(), length + 1, format, args);
+#endif
+        result.pop_back();
+    }
+    return result;
+}
+
+WideString Format(const char16* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    WideString result = FormatVL(format, args);
+    va_end(args);
+    return result;
+}
+
+}   // namespace DAVA
+
+#if 0
+static const int32 FORMAT_STRING_MAX_LEN = 512;
 
 //! formatting function (use printf syntax)
 String Format(const char8 * text, ...)
@@ -55,14 +147,6 @@ String Format(const char8 * text, ...)
 	va_end(ll);
 
 	str = buffer;
-	return str;
-}
-
-String GetIndentString(char8 indentChar, int32 level)
-{
-	String str;
-	str.resize(level, indentChar);
-	
 	return str;
 }
 
@@ -850,3 +934,4 @@ WideString FormatVL(const char16 * text, va_list &ll)
 	return str;
 }
 }; // end of namespace Log
+#endif
