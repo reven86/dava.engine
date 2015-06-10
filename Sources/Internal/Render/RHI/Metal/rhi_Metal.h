@@ -56,6 +56,12 @@ namespace IndexBufferMetal
 id<MTLBuffer> GetBuffer( Handle ib );
 }
 
+namespace QueryBufferMetal
+{
+id<MTLBuffer> GetBuffer( Handle qb );
+}
+
+
 namespace TextureMetal
 {
 void    SetToRHIFragment( Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> ce );

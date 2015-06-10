@@ -77,6 +77,11 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
     desc.depthAttachment.storeAction        = (passConf.depthStencilBuffer.storeAction==STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
     desc.depthAttachment.clearDepth         = passConf.depthStencilBuffer.clearDepth;
     
+    if( passConf.queryBuffer != InvalidHandle )
+    {
+        desc.visibilityResultBuffer = QueryBufferMetal::GetBuffer( passConf.queryBuffer );
+    }
+    
     pass->cmdBuf.resize( cmdBufCount );
     pass->priority = passConf.priority;
 
@@ -276,6 +281,26 @@ metal_CommandBuffer_SetIndices( Handle cmdBuf, Handle ib )
 //------------------------------------------------------------------------------
 
 static void
+metal_CommandBuffer_SetQueryIndex( Handle cmdBuf, uint32 objectIndex )
+{
+    CommandBufferMetal_t*   cb = CommandBufferPool::Get( cmdBuf );
+    
+    [cb->encoder setVisibilityResultMode:MTLVisibilityResultModeBoolean offset:objectIndex*sizeof(uint32)];
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+metal_CommandBuffer_SetQueryBuffer( Handle /*cmdBuf*/ )
+{
+    // do NOTHING
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
 metal_CommandBuffer_SetFragmentConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle buffer )
 {
     CommandBufferMetal_t*   cb = CommandBufferPool::Get( cmdBuf );
@@ -465,6 +490,8 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_SetVertexConstBuffer   = &metal_CommandBuffer_SetVertexConstBuffer;
     dispatch->impl_CommandBuffer_SetVertexTexture       = &metal_CommandBuffer_SetVertexTexture;
     dispatch->impl_CommandBuffer_SetIndices             = &metal_CommandBuffer_SetIndices;
+    dispatch->impl_CommandBuffer_SetQueryBuffer         = &metal_CommandBuffer_SetQueryBuffer;
+    dispatch->impl_CommandBuffer_SetQueryIndex          = &metal_CommandBuffer_SetQueryIndex;
     dispatch->impl_CommandBuffer_SetFragmentConstBuffer = &metal_CommandBuffer_SetFragmentConstBuffer;
     dispatch->impl_CommandBuffer_SetFragmentTexture     = &metal_CommandBuffer_SetFragmentTexture;
     dispatch->impl_CommandBuffer_SetDepthStencilState   = &metal_CommandBuffer_SetDepthStencilState;
