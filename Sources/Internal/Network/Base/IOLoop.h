@@ -61,7 +61,7 @@ public:
         RUN_NOWAIT  = UV_RUN_NOWAIT     // Execute handlers if they are ready and immediatly exit
     };
 
-    typedef Function<void()> UserHandlerType;
+    using UserHandlerType = Function<void()>;
 
 public:
     IOLoop(bool useDefaultIOLoop = true);

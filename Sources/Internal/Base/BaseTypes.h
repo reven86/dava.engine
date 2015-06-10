@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_TYPES_H__
-#define __DAVAENGINE_TYPES_H__
+#ifndef __DAVAENGINE_BASETYPES_H__
+#define __DAVAENGINE_BASETYPES_H__
 
 #include "Base/Platform.h"
 #include "Base/TemplateHelpers.h"
@@ -269,5 +269,4 @@ enum class eErrorCode
 
 };
 
-#endif
-
+#endif  // __DAVAENGINE_BASETYPES_H__

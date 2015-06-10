@@ -169,6 +169,7 @@ public:
     void Export(const FilePath &filePathname) const;
 
     bool IsCompressedTextureActual(eGPUFamily forGPU) const;
+    bool HasCompressionFor(eGPUFamily forGPU) const;
     bool UpdateCrcForFormat(eGPUFamily forGPU) const;
     
     

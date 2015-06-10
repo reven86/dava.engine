@@ -339,7 +339,7 @@ bool SceneFileV2::ReadVersionTags(VersionInfo::SceneVersion& _version, File * fi
 
         if (loaded)
         {
-            typedef Map<String, VariantType*> KeyedTagsMap;
+            using KeyedTagsMap = Map<String, VariantType*>;
             const KeyedTagsMap& keyedTags = tagsArchive->GetArchieveData();
             for (KeyedTagsMap::const_iterator it = keyedTags.begin(); it != keyedTags.end(); it++)
             {

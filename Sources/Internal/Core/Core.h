@@ -44,15 +44,14 @@
 */
 namespace DAVA 
 {
-	
 #if defined(__DAVAENGINE_WIN32__)
-	typedef HINSTANCE AppHandle;
+    using AppHandle = HINSTANCE;
 #elif defined(__DAVAENGINE_ANDROID__)
-    typedef struct android_app* AppHandle;
+    using AppHandle = struct android_app*;
 #else
-	typedef uint32 AppHandle;
+    using AppHandle = uint32;
 #endif 
-	
+
 /**
 	\ingroup core
 	\brief	Core is a main singleton that initialize everything under all of platforms. 

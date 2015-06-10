@@ -49,7 +49,7 @@
 
 #ifdef __DAVAENGINE_ANDROID__
 #if !defined(GLchar)
-typedef char             GLchar;
+using GLchar = char;
 #endif //not defined GLchar
 #endif //#ifdef __DAVAENGINE_ANDROID__
 
