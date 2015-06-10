@@ -236,7 +236,6 @@ void* DAVA::WebViewControl::RenderIOSUIViewToImage(void* uiviewPtr)
         return nullptr; // empty rect on start, just skip it
     }
     
-    //                                     size, opaque: Bool, scale
     UIGraphicsBeginImageContextWithOptions(CGSizeMake(w, h), NO, 0);
     CGRect rect = CGRectMake(0, 0, w, h);
     // Workaround! iOS bug see http://stackoverflow.com/questions/23157653/drawviewhierarchyinrectafterscreenupdates-delays-other-animations
