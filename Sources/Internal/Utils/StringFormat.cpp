@@ -114,7 +114,7 @@ WideString FormatVL(const char16* format, va_list args)
 #if defined(__DAVAENGINE_WIN32__)
         _vsnwprintf(&*result.begin(), length + 1, format, args);
 #else
-        vsnwprintf(&*result.begin(), length + 1, format, args);
+        vswprintf(&*result.begin(), length + 1, format, args);
 #endif
         result.pop_back();
     }
