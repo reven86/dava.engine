@@ -1086,9 +1086,6 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\CorePlatformWin32.h">
       <Filter>Internal\Platform\TemplateWin32</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WindowsSpecifics.h">
-      <Filter>Internal\Platform\TemplateWin32</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\LightUpdateSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClInclude>
@@ -1864,6 +1861,7 @@
     <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetServer.h">
       <Filter>Internal\Network\Services\MMNet</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Base\Platform.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">

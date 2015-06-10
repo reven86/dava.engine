@@ -30,12 +30,13 @@
 #ifndef __DAVAENGINE_MUTEX_H__
 #define __DAVAENGINE_MUTEX_H__
 
-#include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
-#include <pthread.h>
+#if defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_ANDROID__)
+#   include <pthread.h>
+#elif defined(__DAVAENGINE_WINDOWS__)
+#   include "Platform/TemplateWin32/pThreadWin32.h"
 #endif
-
 
 namespace DAVA
 {
@@ -50,8 +51,11 @@ namespace DAVA
 class Mutex
 {
 public:
-	Mutex();
-	virtual ~Mutex();
+    Mutex();
+    ~Mutex();
+
+    Mutex(const Mutex&) = delete;
+    Mutex& opetator(const Mutex&) = delete;
 
 	/**
 		\brief lock the execution thread of this mutex object
@@ -59,18 +63,14 @@ public:
 		If the mutex is already locked, the calling thread shall block until the mutex becomes available. 
 		This operation returns when all references of this mutex will be unlocked. 
 	*/
-	virtual void Lock();
+	void Lock();
 
 	/**
 		\brief release the mutex object.
 	*/
-	virtual void Unlock();
+	void Unlock();
 
-#if defined(__DAVAENGINE_WIN32__)
-	HANDLE mutex;
-#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
 	pthread_mutex_t mutex;
-#endif //PLATFORMS
 };
 
 };

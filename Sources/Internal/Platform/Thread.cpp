@@ -30,7 +30,7 @@
 #include "Platform/Thread.h"
 #include "Platform/ConditionalVariable.h"
 
-#ifndef __DAVAENGINE_WIN32__
+#ifndef __DAVAENGINE_WINDOWS__
 #include <time.h>
 #include <errno.h>
 #endif

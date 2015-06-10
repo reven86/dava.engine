@@ -36,6 +36,8 @@
 #include "Network/NetService.h"
 #include "Network/NetCore.h"
 
+#ifndef __DAVAENGINE_WIN_UAP__
+
 using namespace DAVA;
 using namespace DAVA::Net;
 
@@ -388,3 +390,9 @@ DAVA_TESTCLASS(NetworkTest)
         // Do nothing as services are members of NetworkTest
     }
 };
+
+#else
+
+__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
+
+#endif //  !__DAVAENGINE_WIN_UAP__

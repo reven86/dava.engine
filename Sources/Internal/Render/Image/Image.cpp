@@ -424,8 +424,7 @@ void Image::InsertImage(const Image* image, const Vector2& dstPos, const Rect& s
 bool Image::Save(const FilePath &path) const
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
-    return ImageSystem::Instance()->Save(path, const_cast<Image*>(this), format) == SUCCESS;
+    return ImageSystem::Instance()->Save(path, const_cast<Image*>(this), format) == eErrorCode::SUCCESS;
 }
     
 

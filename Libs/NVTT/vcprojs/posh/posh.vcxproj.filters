@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Sources\nvcore\poshlib\posh.c">
+    <ClCompile Include="..\..\Sources\nvcore\poshlib\posh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -42,9 +42,8 @@ template<typename MutexType>
 class LockGuard
 {
 public:
-    
     explicit LockGuard(MutexType& m) : mutex(m) { mutex.Lock(); }; //own and lock mutex
-    
+   
     LockGuard(MutexType& m, AdoptLock_t) : mutex(m) { }; //just own mutex
 
     LockGuard(const LockGuard&) = delete;

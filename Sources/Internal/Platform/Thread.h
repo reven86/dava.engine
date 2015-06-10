@@ -42,7 +42,7 @@
 #endif
 
 
-#if defined (__DAVAENGINE_WIN32__)
+#if defined (__DAVAENGINE_WINDOWS__)
 #include "Platform/TemplateWin32/pThreadWin32.h"
 #elif defined(__DAVAENGINE_PTHREAD__)
 #include <pthread.h>
@@ -69,7 +69,7 @@ private:
     friend void	*PthreadMain(void *param);
 public:
     using Id = pthread_t;
-#elif defined(__DAVAENGINE_WIN32__)
+#elif defined(__DAVAENGINE_WINDOWS__)
 private:
     using Handle = HANDLE;
     friend DWORD WINAPI ThreadFunc(void *param);

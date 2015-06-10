@@ -35,6 +35,8 @@ using namespace DAVA;
 
 const float32 MAX_DIFFERENCE = 2.f; // in percents
 
+#ifndef __DAVAENGINE_WIN_UAP__
+
 DAVA_TESTCLASS(FormatsTest)
 {
     DAVA_TEST(TestJpeg)
@@ -97,10 +99,10 @@ DAVA_TESTCLASS(FormatsTest)
             DAVA::Vector<DAVA::Image *> pngImages;
             DAVA::Vector<DAVA::Image *> compressedImages;
             const DAVA::eErrorCode loadPng = DAVA::ImageSystem::Instance()->Load(pngPathname, pngImages);
-            TEST_VERIFY(DAVA::SUCCESS == loadPng);
+            TEST_VERIFY(DAVA::eErrorCode::SUCCESS == loadPng);
 
             const DAVA::eErrorCode loadCompressed = DAVA::ImageSystem::Instance()->Load(compressedPathname, compressedImages);
-            TEST_VERIFY(DAVA::SUCCESS == loadCompressed);
+            TEST_VERIFY(DAVA::eErrorCode::SUCCESS == loadCompressed);
 
             if (pngImages.empty() || compressedImages.empty())
             {
@@ -154,10 +156,10 @@ DAVA_TESTCLASS(FormatsTest)
             DAVA::Vector<DAVA::Image *> pngImages;
             DAVA::Vector<DAVA::Image *> compressedImages;
             const DAVA::eErrorCode loadPng = DAVA::ImageSystem::Instance()->Load(pngPathname, pngImages);
-            TEST_VERIFY(DAVA::SUCCESS == loadPng);
+            TEST_VERIFY(DAVA::eErrorCode::SUCCESS == loadPng);
 
             const DAVA::eErrorCode loadCompressed = DAVA::ImageSystem::Instance()->Load(compressedPathname, compressedImages);
-            TEST_VERIFY(DAVA::SUCCESS == loadCompressed);
+            TEST_VERIFY(DAVA::eErrorCode::SUCCESS == loadCompressed);
 
             if (pngImages.empty() || compressedImages.empty())
             {
@@ -199,3 +201,9 @@ DAVA_TESTCLASS(FormatsTest)
         TEST_VERIFY(info.height == 256);
     }
 };
+
+#else
+
+__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
+
+#endif //  !__DAVAENGINE_WIN_UAP__

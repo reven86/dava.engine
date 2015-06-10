@@ -141,15 +141,15 @@ bool LodToLod2Converter::MergeLod(Entity * entity)
                 }
 
                 uint32 sourceRenderObjectsCount = static_cast<uint32>(sourceRenderObjects.size());
-                for (uint32 j = 0; j < sourceRenderObjectsCount; ++j)
+                for (uint32 n = 0; n < sourceRenderObjectsCount; ++n)
                 {
-                    sourceRenderObject = sourceRenderObjects[j].second;
+                    sourceRenderObject = sourceRenderObjects[n].second;
                     if (sourceTransform->GetLocalTransform() != Matrix4::IDENTITY)
                     {
                         PolygonGroup * pg = sourceRenderObject->GetRenderBatchCount() > 0 ? sourceRenderObject->GetRenderBatch(0)->GetPolygonGroup() : 0;
                         if (nullptr != pg && bakedPolygonGroups.end() == bakedPolygonGroups.find(pg))
                         {
-                            Matrix4 totalTransform = sourceRenderObjects[j].first->AccamulateTransformUptoFarParent(entity);
+                            Matrix4 totalTransform = sourceRenderObjects[n].first->AccamulateTransformUptoFarParent(entity);
                             sourceRenderObject->BakeGeometry(totalTransform);
                             bakedPolygonGroups.insert(pg);
                         }

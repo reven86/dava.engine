@@ -33,7 +33,7 @@
 
 #include <cassert>
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 #include <dbghelp.h>
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <execinfo.h>
@@ -719,8 +719,7 @@ DAVA_NOINLINE void MemoryManager::CollectBacktrace(Backtrace* backtrace, size_t 
     const size_t EXTRA_FRAMES = 5;
     void* frames[BACKTRACE_DEPTH + EXTRA_FRAMES] = {nullptr};
     Memset(backtrace, 0, sizeof(Backtrace));
-    
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
     CaptureStackBackTrace(0, COUNT_OF(frames), frames, nullptr);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     ::backtrace(frames, COUNT_OF(frames));
@@ -748,7 +747,7 @@ void MemoryManager::ObtainBacktraceSymbols(const Backtrace* backtrace)
     const size_t NAME_BUFFER_SIZE = 4 * 1024;
     static char8 nameBuffer[NAME_BUFFER_SIZE];
     
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
     HANDLE hprocess = GetCurrentProcess();
 
     static bool symInited = false;

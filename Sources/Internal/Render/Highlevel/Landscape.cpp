@@ -1174,7 +1174,7 @@ void Landscape::Draw(Camera * camera)
 		return;
 	}
 	
-#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
+#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__))
 //    if (debugFlags & DEBUG_DRAW_GRID)
 //    {
 //        RenderManager::Instance()->SetColor(1.0f, 0.f, 0.f, 1.f);
@@ -1188,7 +1188,7 @@ void Landscape::Draw(Camera * camera)
     
     //SceneNode::Draw();
 
-#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
+#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__))
 //    if (!(debugFlags & DEBUG_DRAW_GRID))
 //    {
 //        RenderManager::Instance()->ResetColor();
@@ -1294,8 +1294,8 @@ void Landscape::Draw(Camera * camera)
 		{
 			BindMaterial(nearLodIndex, camera);
 		}
-        int32 count0 = static_cast<int32>(lod0quads.size());
-        for(int32 i = 0; i < count0; ++i)
+        size_t count0 = lod0quads.size();
+        for (size_t i = 0; i < count0; ++i)
         {
             DrawQuad(lod0quads[i], 0);
         }
@@ -1306,8 +1306,8 @@ void Landscape::Draw(Camera * camera)
 			BindMaterial(farLodIndex, camera);
 		}
         
-        int32 countNot0 = static_cast<int32>(lodNot0quads.size());
-        for(int32 i = 0; i < countNot0; ++i)
+        size_t countNot0 = lodNot0quads.size();
+        for (size_t i = 0; i < countNot0; ++i)
         {
             DrawQuad(lodNot0quads[i], lodNot0quads[i]->data.lod);
         }
@@ -1877,3 +1877,4 @@ void Landscape::SetFoliageSystem(FoliageSystem* _foliageSystem)
 }
 
 };
+

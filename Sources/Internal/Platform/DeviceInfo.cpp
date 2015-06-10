@@ -54,6 +54,9 @@ DeviceInfo::ePlatform DeviceInfo::GetPlatform()
 #elif defined(__DAVAENGINE_ANDROID__)
 	platform = PLATFORM_ANDROID;
 
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    platform = PLATFORM_WIN_UAP;
+
 #elif defined(__DAVAENGINE_WIN32__)
 	platform = PLATFORM_WIN32;
 #endif
@@ -86,7 +89,7 @@ List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
     
 #endif
 
-#ifdef __DAVAENGINE_WIN32__
+#ifdef __DAVAENGINE_WINDOWS__
 
 int32 DeviceInfo::GetCpuCount()
 {

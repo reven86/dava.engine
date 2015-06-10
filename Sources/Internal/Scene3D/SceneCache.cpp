@@ -87,14 +87,10 @@ void SceneCache::InvalidateSceneMaterials()
             materialList.insert(scene->GetGlobalMaterial());
         }
         
-        Set<NMaterial *>::iterator it = materialList.begin();
-        Set<NMaterial *>::iterator endIt = materialList.end();
-        while (it != endIt)
+        for (NMaterial * material : materialList)
         {
-            NMaterial * material = *it;
             material->BuildActiveUniformsCacheParamsCache();
             material->BuildTextureParamsCache();
-            ++it;
         }
     }
 }

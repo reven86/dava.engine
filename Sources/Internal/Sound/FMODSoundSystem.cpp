@@ -607,10 +607,10 @@ void SoundSystem::SetGroupVolume(const FastName & groupName, float32 volume)
         if(group.name == groupName)
         {
             group.volume = volume;
-
-            Vector<SoundEvent *> & events = group.events;
-            for(size_t i = 0; i < events.size(); ++i)
-                events[i]->SetVolume(volume);
+            for (auto& x : group.events)
+            {
+                x->SetVolume(volume);
+            }
 
             break;
         }
