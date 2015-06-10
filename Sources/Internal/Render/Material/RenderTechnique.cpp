@@ -186,10 +186,10 @@ bool RenderTechniqueSingleton::LoadRenderTechniqueFromYamlNode(const YamlNode * 
     
 RenderTechnique* RenderTechniqueSingleton::CreateTechniqueByName(const FastName & renderTechniquePathInFastName)
 {
-    FilePath renderTechniquePathname(renderTechniquePathInFastName.c_str());
     RenderTechnique* renderTechnique = renderTechniqueMap.at(renderTechniquePathInFastName);
     if (nullptr == renderTechnique)
     {
+        FilePath renderTechniquePathname(renderTechniquePathInFastName.c_str());
         RefPtr<YamlParser> parser(YamlParser::Create(renderTechniquePathname));
         if (!parser.Valid())
         {
@@ -214,6 +214,10 @@ RenderTechnique* RenderTechniqueSingleton::CreateTechniqueByName(const FastName 
 
 void RenderTechniqueSingleton::ReleaseRenderTechnique(RenderTechnique* renderTechnique)
 {
+    DVASSERT(renderTechnique != nullptr);
+    DVASSERT(renderTechnique->GetRetainCount() > 1);    // If reference count is less than 2 then RenderTechnique
+                                                        // has been released bypassing ReleaseRenderTechnique
+
     renderTechnique->Release();
     if (renderTechnique->GetRetainCount() == 1)
     {
@@ -234,6 +238,8 @@ void RenderTechniqueSingleton::ClearRenderTechniques()
         RenderTechnique* technique = x.second;
         if (technique != nullptr)
         {
+            DVASSERT(technique->GetRetainCount() > 1);  // If reference count is less than 2 then RenderTechnique
+                                                        // has been released bypassing ReleaseRenderTechnique
             technique->Release();
             if (1 == technique->GetRetainCount())
             {
