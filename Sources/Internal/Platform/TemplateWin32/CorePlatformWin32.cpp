@@ -256,7 +256,8 @@ namespace DAVA
 		windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
 		MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
 
-        rhi::Api renderApi = (rhi::Api)options->GetInt32("renderer", rhi::RHI_DX9);
+        DVASSERT(options->IsKeyExists("renderer"));
+        rhi::Api renderApi = (rhi::Api)options->GetInt32("renderer");
         switch (renderApi)
         {
         case rhi::RHI_DX9:

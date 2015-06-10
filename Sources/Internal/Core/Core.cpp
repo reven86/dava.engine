@@ -190,21 +190,9 @@ void Core::CreateSingletons()
 // We do not create RenderManager until we know which version of render manager we want to create
 void Core::CreateRenderer()
 {
-    rhi::Api renderer;
-    
-#if defined(__DAVAENGINE_WIN32__)
-    renderer = rhi::RHI_DX9;
-//    renderer = rhi::RHI_GLES2;
-#elif defined(__DAVAENGINE_MACOS__)
-    renderer = rhi::RHI_GLES2;
-#elif defined(__DAVAENGINE_IPHONE__)
-    renderer = rhi::RHI_METAL;
-//    renderer = rhi::RHI_GLES2;
-#endif
-    
-    DVASSERT(options->IsKeyExists("renderer"));
-    
-    renderer = (rhi::Api)options->GetInt32("renderer", renderer);
+    rhi::Api renderer;    
+    DVASSERT(options->IsKeyExists("renderer"));    
+    renderer = (rhi::Api)options->GetInt32("renderer");
     Size2i bufferSize = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
     
     Renderer::Initialize(renderer, rendererParams, bufferSize.dx, bufferSize.dy);
