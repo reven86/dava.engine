@@ -243,6 +243,15 @@ namespace DAVA
                        CFStringRef name, const void *object, CFDictionaryRef userInfo)
         {
             UITextFieldiPhone* tf = (static_cast<UITextFieldiPhone *>(observer));
+            if(!tf->renderToTexture)
+            {
+                // workaround if user click hide softkeyboard but we don't lose
+                // focus on current control
+                tf->renderToTexture = true;
+                UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)tf->objcClassPtr;
+                [textFieldHolder->textField.superview.superview becomeFirstResponder];
+                DAVA::UIControlSystem::Instance()->SetFocusedControl(nullptr, false);
+            }
             tf->deltaMoveControl = MOVE_TO_OFFSCREEN_STEP;
             tf->UpdateStaticTexture();
         };
