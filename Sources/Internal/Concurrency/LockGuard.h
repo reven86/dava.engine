@@ -29,17 +29,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __DAVAENGINE_LOCK_GUARD_H__
 #define __DAVAENGINE_LOCK_GUARD_H__
 
-#include "Base/Platform.h"
-
 namespace DAVA
 {
-
-// indicates adopt lock
-struct AdoptLock {};
-// indicates defer lock
-struct DeferLock {};
-// indicates try to lock
-struct TryToLock {};
 
 //-----------------------------------------------------------------------------
 //LockGuard class - RAII wrapper for mutex object
@@ -49,26 +40,8 @@ class LockGuard
 {
     using MutexType = MutexT;
 public:
-    // default construct
-    LockGuard() DAVA_NOEXCEPT;
-
     // construct and lock
     explicit LockGuard(MutexType& mutex);
-
-    // construct and assume already locked
-    LockGuard(MutexType& mutex, AdoptLock);
-
-    // construct but don't lock
-    LockGuard(MutexType& mutex, DeferLock) DAVA_NOEXCEPT;
-
-    // construct and try to lock
-    LockGuard(MutexType& mutex, TryToLock);
-
-    // destructive copy
-    LockGuard(LockGuard&& other) DAVA_NOEXCEPT;
-
-    // destructive copy
-    LockGuard& operator=(LockGuard&& other) DAVA_NOEXCEPT;
 
     // clean up
     ~LockGuard() DAVA_NOEXCEPT;
@@ -77,126 +50,24 @@ public:
     LockGuard(const LockGuard&) = delete;
     LockGuard& operator=(const LockGuard&) = delete;
 
-    // lock the mutex
-    void Lock();
-
-    // try to lock the mutex
-    bool TryLock() DAVA_NOEXCEPT;
-
-    // unlock the mutex
-    void Unlock();
-
-    // return true if this object owns the lock
-    bool OwnsLock() const DAVA_NOEXCEPT;
-
-    // return pointer to the mutex
-    MutexType* GetMutex() const DAVA_NOEXCEPT;
-    
-    // release the mutex
-    MutexType* Release() DAVA_NOEXCEPT;
-
 private:
-    MutexType *mutex_ptr;
-    bool owns;
+    MutexType& mutex_ref;
 };
 
 //-----------------------------------------------------------------------------
-//Native realization of LockGuard
+//Realization of LockGuard
 //-----------------------------------------------------------------------------
 template<class MutexT>
-LockGuard<MutexT>::LockGuard() DAVA_NOEXCEPT
-    : mutex_ptr(nullptr), owns(false) {}
-
-template<class MutexT>
 LockGuard<MutexT>::LockGuard(MutexType& mutex)
-    : mutex_ptr(&mutex), owns(false)
+    : mutex_ref(mutex)
 {
-    mutex_ptr->Lock();
-    owns = true;
-}
-
-template<class MutexT>
-LockGuard<MutexT>::LockGuard(MutexType& mutex, AdoptLock)
-    : mutex_ptr(&mutex), owns(true) {}
-
-template<class MutexT>
-LockGuard<MutexT>::LockGuard(MutexType& mutex, DeferLock) DAVA_NOEXCEPT
-    : mutex_ptr(&mutex), owns(false) {}
-
-template<class MutexT>
-LockGuard<MutexT>::LockGuard(MutexType& mutex, TryToLock)
-    : mutex_ptr(&mutex), owns(mutex_ptr->TryLock()) {}
-
-template<class MutexT>
-LockGuard<MutexT>::LockGuard(LockGuard&& other) DAVA_NOEXCEPT
-    : mutex_ptr(other.mutex_ptr), owns(other.owns)
-{
-    other.mutex_ptr = 0;
-    other.owns = false;
-}
-
-template<class MutexT>
-LockGuard<MutexT>& LockGuard<MutexT>::operator=(LockGuard&& other) DAVA_NOEXCEPT
-{
-    if (this != &other)
-    {
-        if (owns)
-            mutex_ptr->Unlock();
-        mutex_ptr = other.mutex_ptr;
-        owns = other.owns;
-        other.mutex_ptr = 0;
-        other.owns = false;
-    }
-    return (*this);
+    mutex_ref.Lock();
 }
 
 template<class MutexT>
 LockGuard<MutexT>::~LockGuard() DAVA_NOEXCEPT
 {
-    if (owns)
-    mutex_ptr->Unlock();
-}
-
-template<class MutexT>
-void LockGuard<MutexT>::Lock()
-{
-    mutex_ptr->Lock();
-    owns = true;
-}
-
-template<class MutexT>
-bool LockGuard<MutexT>::TryLock() DAVA_NOEXCEPT
-{
-    owns = mutex_ptr->TryLock();
-    return owns;
-}
-
-template<class MutexT>
-void LockGuard<MutexT>::Unlock()
-{
-    mutex_ptr->Unlock();
-    owns = false;
-}
-
-template<class MutexT>
-bool LockGuard<MutexT>::OwnsLock() const DAVA_NOEXCEPT
-{
-    return owns;
-}
-
-template<class MutexT>
-typename LockGuard<MutexT>::MutexType* LockGuard<MutexT>::GetMutex() const DAVA_NOEXCEPT
-{
-    return mutex_ptr;
-}
-
-template<class MutexT>
-typename LockGuard<MutexT>::MutexType* LockGuard<MutexT>::Release() DAVA_NOEXCEPT
-{
-    MutexType* mtx = mutex_ptr;
-    mutex_ptr = nullptr;
-    owns = false;
-    return mtx;
+    mutex_ref.Unlock();
 }
 
 } //  namespace DAVA

@@ -102,18 +102,25 @@ public:
 
 	/**
 		\brief static function to create instance of thread object based on Message.
-		This functions create thread based on message or function with signature 'void()'. 
+		This functions create thread based on message. 
         It do not start the thread until Start function called.
 		\returns ptr to thread object 
 	*/
     static Thread *Create(const Message& msg);
+    
+    /**
+        \brief static function to create instance of thread object based on Procedure.
+        This functions create thread based on function with signature 'void()'.
+        It do not start the thread until Start function called.
+        \returns ptr to thread object
+     */
     static Thread *Create(const Procedure& proc);
 
     /**
      \brief Sets thread name. You should to use it before Thread::Start().
      */
     inline void SetName(const String &_name);
-    inline String GetName();
+    inline String GetName() const;
     
 	/**
 		\brief Start execution of the thread
@@ -227,7 +234,7 @@ inline void Thread::SetName(const String &_name)
     name = _name;
 }
 
-inline String Thread::GetName()
+inline String Thread::GetName() const
 {
     return name;
 }

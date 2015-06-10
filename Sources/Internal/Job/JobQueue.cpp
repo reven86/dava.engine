@@ -115,8 +115,8 @@ void JobQueueWorker::Broadcast()
 
 void JobQueueWorker::Wait()
 {
-    LockGuard<Mutex> guard(jobsInQueueMutex);
-    jobsInQueueCV.Wait(guard);
+    UniqueLock<Mutex> lock(jobsInQueueMutex);
+    jobsInQueueCV.Wait(lock);
 }
 
 }

@@ -59,13 +59,13 @@ T Atomic<T>::Get() const DAVA_NOEXCEPT
 template <typename T>
 T Atomic<T>::Increment() DAVA_NOEXCEPT
 {
-    return __atomic_add_fetch(&value, 1, __ATOMIC_SEQ_CST);
+    return __sync_add_and_fetch(&value, 1);
 }
 
 template <typename T>
 T Atomic<T>::Decrement() DAVA_NOEXCEPT
 {
-    return __atomic_sub_fetch(&value, 1, __ATOMIC_SEQ_CST);
+    return __sync_sub_and_fetch(&value, 1);
 }
 
 template <typename T>

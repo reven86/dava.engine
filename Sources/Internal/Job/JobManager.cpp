@@ -32,6 +32,7 @@
 #include "Base/ScopedPtr.h"
 #include "Concurrency/Thread.h"
 #include "Concurrency/LockGuard.h"
+#include "Concurrency/UniqueLock.h"
 #include "Platform/DeviceInfo.h"
 
 namespace DAVA
@@ -168,10 +169,10 @@ void JobManager::WaitMainJobs(Thread::Id invokerThreadId /* = 0 */)
         workerDoneSem.Post();
 
         // Now check if there are some jobs in the queue and wait for them
-        LockGuard<Mutex> guard(mainCVMutex);
+        UniqueLock<Mutex> lock(mainCVMutex);
         while(HasMainJobs())
         {
-            mainCV.Wait(guard);
+            mainCV.Wait(lock);
         }
     }
 }
@@ -199,10 +200,10 @@ void JobManager::WaitMainJobID(uint32 mainJobID)
         workerDoneSem.Post();
 
         // Now check if there are some jobs in the queue and wait for them
-        LockGuard<Mutex> guard(mainCVMutex);
+        UniqueLock<Mutex> lock(mainCVMutex);
         while(HasMainJobID(mainJobID))
         {
-            mainCV.Wait(guard);
+            mainCV.Wait(lock);
         }
     }
 }

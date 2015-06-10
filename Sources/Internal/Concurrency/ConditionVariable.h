@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Base/Platform.h"
 #include "Concurrency/Mutex.h"
-#include "Concurrency/LockGuard.h"
+#include "Concurrency/UniqueLock.h"
 
 #ifdef USE_CPP11_CONCURRENCY
 #   include <condition_variable> //for std::condition_variable
@@ -55,8 +55,8 @@ public:
     ConditionVariable& operator=(const ConditionVariable&) = delete;
 
     template <typename Predicate>
-    void Wait(LockGuard<Mutex>& guard, Predicate pred);
-    void Wait(LockGuard<Mutex>& guard);
+    void Wait(UniqueLock<Mutex>& guard, Predicate pred);
+    void Wait(UniqueLock<Mutex>& guard);
 
     //mutex must be locked
     template <typename Predicate>
@@ -76,7 +76,7 @@ private:
 };
 
 template <typename Predicate>
-void ConditionVariable::Wait(LockGuard<Mutex>& guard, Predicate pred)
+void ConditionVariable::Wait(UniqueLock<Mutex>& guard, Predicate pred)
 {
     while (!pred)
     {
@@ -87,14 +87,14 @@ void ConditionVariable::Wait(LockGuard<Mutex>& guard, Predicate pred)
 template <typename Predicate>
 void ConditionVariable::Wait(Mutex& mutex, Predicate pred)
 {
-    LockGuard<Mutex> lock(mutex, AdoptLock());
+    UniqueLock<Mutex> lock(mutex, AdoptLock());
     Wait(lock, pred);
     lock.Release();
 }
 
 inline void ConditionVariable::Wait(Mutex& mutex)
 {
-    LockGuard<Mutex> lock(mutex, AdoptLock());
+    UniqueLock<Mutex> lock(mutex, AdoptLock());
     Wait(lock);
     lock.Release();
 }
@@ -107,7 +107,7 @@ inline void ConditionVariable::Wait(Mutex& mutex)
 inline ConditionVariable::ConditionVariable() {}
 inline ConditionVariable::~ConditionVariable() DAVA_NOEXCEPT{}
 
-inline void ConditionVariable::Wait(LockGuard<Mutex>& guard)
+inline void ConditionVariable::Wait(UniqueLock<Mutex>& guard)
 {
     if (guard.OwnsLock())
     {
