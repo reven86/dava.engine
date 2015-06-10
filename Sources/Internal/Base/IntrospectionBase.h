@@ -169,7 +169,7 @@ namespace DAVA
 	class InspColl : public InspMember
 	{
 	public:
-		typedef void* Iterator;
+        using Iterator = void*;
 
 		InspColl(const char *_name, const InspDesc &_desc, const int _offset, const MetaInfo *_type, int _flags = 0)
 			: InspMember(_name, _desc, _offset, _type, _flags)
@@ -255,7 +255,7 @@ namespace DAVA
     template<typename T>
     struct HasInsp
     {
-        typedef typename Select< IsEnum<T>::result /* || IsUnion<T>::result */, HasNotInsp<T>, HasInspImpl<T> >::Result CheckInspImpl;
+        using CheckInspImpl = typename Select< IsEnum<T>::result /* || IsUnion<T>::result */, HasNotInsp<T>, HasInspImpl<T> >::Result;
         enum { result = CheckInspImpl::result };
     };
 	

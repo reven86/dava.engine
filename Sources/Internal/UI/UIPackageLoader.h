@@ -48,13 +48,13 @@ class UIControlBackground;
 class UIPackageLoader : public AbstractUIPackageLoader
 {
 public:
-    UIPackageLoader(AbstractUIPackageBuilder *builder);
+    UIPackageLoader();
     virtual ~UIPackageLoader();
 
 public:
-    virtual UIPackage *LoadPackage(const FilePath &packagePath) override;
-    virtual UIPackage *LoadPackage(const YamlNode *rootNode, const FilePath &packagePath);
-    virtual bool LoadControlByName(const String &name) override;
+    virtual bool LoadPackage(const FilePath &packagePath, AbstractUIPackageBuilder *builder) override;
+    virtual bool LoadPackage(const YamlNode *rootNode, const FilePath &packagePath, AbstractUIPackageBuilder *builder);
+    virtual bool LoadControlByName(const String &name, AbstractUIPackageBuilder *builder) override;
 
 private:
     struct ComponentNode
@@ -65,16 +65,16 @@ private:
     };
     
 private:
-    void LoadControl(const YamlNode *node, bool root);
+    void LoadControl(const YamlNode *node, bool root, AbstractUIPackageBuilder *builder);
 
-    void LoadControlPropertiesFromYamlNode(UIControl *control, const InspInfo *typeInfo, const YamlNode *node);
+    void LoadControlPropertiesFromYamlNode(UIControl *control, const InspInfo *typeInfo, const YamlNode *node, AbstractUIPackageBuilder *builder);
     
-    void LoadComponentPropertiesFromYamlNode(UIControl *control, const YamlNode *node);
+    void LoadComponentPropertiesFromYamlNode(UIControl *control, const YamlNode *node, AbstractUIPackageBuilder *builder);
     Vector<ComponentNode> ExtractComponentNodes(const YamlNode *node);
     
-    void LoadBgPropertiesFromYamlNode(UIControl *control, const YamlNode *node);
-    void LoadInternalControlPropertiesFromYamlNode(UIControl *control, const YamlNode *node);
-    virtual VariantType ReadVariantTypeFromYamlNode(const InspMember *member, const YamlNode *node);
+    void LoadBgPropertiesFromYamlNode(UIControl *control, const YamlNode *node, AbstractUIPackageBuilder *builder);
+    void LoadInternalControlPropertiesFromYamlNode(UIControl *control, const YamlNode *node, AbstractUIPackageBuilder *builder);
+    virtual VariantType ReadVariantTypeFromYamlNode(const InspMember *member, const YamlNode *node, AbstractUIPackageBuilder *builder);
 
 private:
     enum eItemStatus
@@ -92,7 +92,6 @@ private:
     };
     
     Vector<QueueItem> loadingQueue;
-    AbstractUIPackageBuilder *builder;
 };
 
 };

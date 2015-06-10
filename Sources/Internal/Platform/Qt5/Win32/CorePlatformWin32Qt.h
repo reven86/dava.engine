@@ -34,7 +34,6 @@
 #if defined(__DAVAENGINE_WIN32__)
 
 #include "Platform/TemplateWin32/CoreWin32PlatformBase.h"
-#include "Platform/TemplateWin32/WindowsSpecifics.h"
 
 namespace DAVA {
 

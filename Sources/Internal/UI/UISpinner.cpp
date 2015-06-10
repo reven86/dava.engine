@@ -155,8 +155,6 @@ void UISpinner::Input(UIEvent *currentInput)
     {
         if (content->IsPointInside(touchPos))
         {
-            DVASSERT(NULL == contentViewport->GetParent());
-            
             content->relativePosition = Vector2();
             content->SetPivot(Vector2());
             

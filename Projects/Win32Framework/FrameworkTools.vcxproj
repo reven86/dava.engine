@@ -180,6 +180,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Tools\TeamcityOutput\TeamcityOutput.h" />
+    <ClInclude Include="..\..\Sources\Tools\TeamcityOutput\TeamCityTestsOutput.h" />
     <ClInclude Include="..\..\Sources\Tools\TextureCompression\DXTConverter.h" />
     <ClInclude Include="..\..\Sources\Tools\TextureCompression\PVRConverter.h" />
     <ClInclude Include="..\..\Sources\Tools\TextureCompression\TextureConverter.h" />
@@ -193,6 +194,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Tools\TeamcityOutput\TeamcityOutput.cpp" />
+    <ClCompile Include="..\..\Sources\Tools\TeamcityOutput\TeamCityTestsOutput.cpp" />
     <ClCompile Include="..\..\Sources\Tools\TextureCompression\DXTConverter.cpp" />
     <ClCompile Include="..\..\Sources\Tools\TextureCompression\PVRConverter.cpp" />
     <ClCompile Include="..\..\Sources\Tools\TextureCompression\TextureConverter.cpp" />

@@ -443,7 +443,7 @@ inline void Quaternion::Construct(const Matrix4 & matrix)
     //              1.0f + m[2][2] - m[0][0] - m[1][1], m[0][1] - m[1][0] );
     //      }
     //}
-    typedef float mtx_elm[4][4];
+    using mtx_elm = float32[4][4];
     const mtx_elm& m = matrix._data;
 
     float  tr, s, q[4];

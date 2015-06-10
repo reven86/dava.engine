@@ -82,7 +82,20 @@
 		#define D3D_DEBUG_INFO
 		#include <d3d9.h>
 		#include <dxerr.h>
-#endif 
+    #endif
+
+
+#elif defined(__DAVAENGINE_WIN_UAP__)
+
+#define GL_GLEXT_PROTOTYPES
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#include <EGL/eglplatform.h>
+#include <angle_gl.h>
+#include <angle_windowsstore.h>
+
+#define __DAVAENGINE_OPENGL_ES__
+
 #elif defined(__DAVAENGINE_ANDROID__)
 	#define __DAVAENGINE_OPENGL__
     #include <android/api-level.h>
@@ -348,7 +361,7 @@ enum eFillMode
 
 extern const String FILL_MODE_NAMES[FILLMODE_COUNT];
 
-#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__))
+#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__))
 extern const GLint FILLMODE_MAP[FILLMODE_COUNT];
 #elif defined(__DAVAENGINE_DIRECTX9__) 
 extern const int32 FILLMODE_MAP[FILLMODE_COUNT];

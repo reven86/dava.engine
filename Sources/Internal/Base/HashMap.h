@@ -45,7 +45,7 @@ class HashMap
 {
 public:
 	struct HashMapIterator;
-	typedef HashMapIterator iterator;
+    using iterator = HashMapIterator;
 
 	HashMap(size_t _hashSize = 128, V _defaultV = V());
 	HashMap(const HashMap<K, V> &hm);
