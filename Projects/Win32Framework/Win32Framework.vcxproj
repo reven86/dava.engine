@@ -276,6 +276,7 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Meta.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Observable.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Observer.h" />
+    <ClInclude Include="..\..\Sources\Internal\Base\Platform.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Radix\Radix.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\ScopedPtr.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Serializable.h" />
@@ -293,6 +294,7 @@
     <ClInclude Include="..\..\Sources\Internal\Concurrency\Spinlock.h" />
     <ClInclude Include="..\..\Sources\Internal\Concurrency\Thread.h" />
     <ClInclude Include="..\..\Sources\Internal\Concurrency\ThreadLocalPtr.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\UniqueLock.h" />
     <ClInclude Include="..\..\Sources\Internal\Core\PerformanceSettings.h" />
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbClient.h" />
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbObject.h" />

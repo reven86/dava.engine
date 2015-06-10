@@ -1870,6 +1870,12 @@
     <ClInclude Include="..\..\Sources\Internal\Job\JobThread.h">
       <Filter>Internal\Job</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\UniqueLock.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Base\Platform.h">
+      <Filter>Internal\Base</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
