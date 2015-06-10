@@ -222,32 +222,25 @@ DAVA::WebViewControl::WebViewControl(DAVA::UIWebView& uiWeb):
     [localWebView becomeFirstResponder];
 }
 
-void* DAVA::WebViewControl::RenderIOSUIViewToImage(void* uiviewPtr, bool workaroundKeyboardBug)
+void* DAVA::WebViewControl::RenderIOSUIViewToImage(void* uiviewPtr)
 {
     ::UIView* view = static_cast<::UIView*>(uiviewPtr);
     DVASSERT(view);
     DAVA::float32 scale = DAVA::Core::Instance()->GetScreenScaleFactor();
     
-    size_t w = view.frame.size.width * scale;
-    size_t h = view.frame.size.height * scale;
+    size_t w = view.frame.size.width;
+    size_t h = view.frame.size.height;
     
     if (w == 0 || h == 0)
     {
         return nullptr; // empty rect on start, just skip it
     }
     
-    UIGraphicsBeginImageContextWithOptions(CGSizeMake(w, h), NO, scale);
+    //                                     size, opaque: Bool, scale
+    UIGraphicsBeginImageContextWithOptions(CGSizeMake(w, h), NO, 0);
     CGRect rect = CGRectMake(0, 0, w, h);
-    // Workaround! we have to use YES - if we want defenetly render last
-    // text into texture and we have to use NO during softkeyboard
-    // show and hide to elemenate screen blinking
-    if (workaroundKeyboardBug)
-    {
-        [view drawViewHierarchyInRect:rect afterScreenUpdates:NO];
-    } else
-    {
-        [view drawViewHierarchyInRect:rect afterScreenUpdates:YES];
-    }
+    // Workaround! iOS bug see http://stackoverflow.com/questions/23157653/drawviewhierarchyinrectafterscreenupdates-delays-other-animations
+    [view.layer renderInContext:UIGraphicsGetCurrentContext()];
     
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();

@@ -89,7 +89,7 @@ public:
     
     // common ios part to render any UIView* to UIImage*
     // workaroundKeyboardBug - if call during show/hide keyboard - false
-    static void* RenderIOSUIViewToImage(void* uiviewPtr, bool workaroundKeyboardBug = false);
+    static void* RenderIOSUIViewToImage(void* uiviewPtr);
     // common ios part to copy from ios ::UIImage* to DAVA::Sprite*
     static void SetImageAsSpriteToControl(void* imagePtr, UIControl& control);
     
