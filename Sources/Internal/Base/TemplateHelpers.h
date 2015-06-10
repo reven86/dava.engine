@@ -30,24 +30,18 @@
 #ifndef __DAVAENGINE_TEMPLATEHELPERS_H__
 #define __DAVAENGINE_TEMPLATEHELPERS_H__
 
-#include <typeinfo>
 #include "NullType.h"
 #include "TypeList.h"
+
+#include <typeinfo>
 #include <type_traits>
 #include <utility>
 
 namespace DAVA
 {
 
-// Alexandresky style compile time assertion.
-template <bool>
-struct CompileTimeError;
-    
-template <>
-struct CompileTimeError<true>
-{};
-    
-#define COMPILER_ASSERT(expr) DAVA::CompileTimeError<(expr)>();
+// Leave it for compatibility
+#define COMPILER_ASSERT(expr) static_assert(expr, #expr)
 
 // Template for intergal constant types
 template<typename T, T Value>
@@ -57,13 +51,13 @@ struct IntegralConstant
 };
 
 // Specializations for boolean constants
-typedef IntegralConstant<bool, false>   FalseType;
-typedef IntegralConstant<bool, true>    TrueType;
+using FalseType = IntegralConstant<bool, false>;
+using TrueType = IntegralConstant<bool, true>;
 
 template<bool C, typename T = void>
 struct EnableIf
 {
-	typedef T type;
+    using type = T;
 };
 
 template<typename T>
@@ -79,67 +73,68 @@ struct Int2Type
 template <class T>
 struct Type2Type
 {
-    typedef T OriginalType;
+    using OriginalType = T;
 };
     
 template <bool flag, typename T, typename U>
 struct Select
 {
-    typedef T Result;
+    using Result = T;
 };
 template <typename T, typename U>
 struct Select<false, T, U>
 {
-    typedef U Result;
+    using Result = U;
 };
 
 template <bool, unsigned int index_A, unsigned int index_B>
 struct SelectIndex
 {
-	enum { result = index_A };
+    enum { result = index_A };
 };
 
 template <unsigned int index_A, unsigned int index_B>
 struct SelectIndex<false, index_A, index_B>
 {
-	enum { result = index_B };
+    enum { result = index_B };
 };
     
 template<typename U>
 struct PointerTraits
 {
-	enum{ result = false };
-	typedef NullType PointerType;
+    enum{ result = false };
+    using PointerType = NullType;
 };
 template <typename U>
 struct PointerTraits<U*>
 {
-	enum{ result = true };
-	typedef U PointerType;
+    enum{ result = true };
+    using PointerType = U;
 };
     
 template<typename U>
 struct ReferenceTraits
 {
-	enum{ result = false };
-	typedef NullType ReferenceType;
+    enum{ result = false };
+    using ReferenceType = NullType;
 };
 template <typename U>
 struct ReferenceTraits<U&>
 {
-	enum{ result = true };
-	typedef U ReferenceType;
+    enum{ result = true };
+    using ReferenceType = U;
 };
     
 template<class U>
 struct P2MTraits
 {
-	enum{ result = false };
+    enum{ result = false };
 };
+
 template <class R, class V>
 struct P2MTraits<R V::*>
 {
-	enum{ result = true };
+    enum{ result = true };
 };
 
 template<typename T1, typename T2>
@@ -156,10 +151,10 @@ struct IsSame<T, T>
 
 namespace TemplateHelper
 {
-    typedef DAVA_TYPELIST_5(unsigned char, unsigned short int, unsigned int, unsigned long int, unsigned long long) StdUnsignedInts;
-    typedef DAVA_TYPELIST_5(signed char, short int, int, long int, long long) StdSignedInts;
-    typedef DAVA_TYPELIST_3(bool, char, wchar_t) StdOtherInts;
-    typedef DAVA_TYPELIST_3(float, double, long double) StdFloats;
+    using StdUnsignedInts = DAVA_TYPELIST_5(unsigned char, unsigned short int, unsigned int, unsigned long int, unsigned long long);
+    using StdSignedInts = DAVA_TYPELIST_5(signed char, short int, int, long int, long long);
+    using StdOtherInts = DAVA_TYPELIST_3(bool, char, wchar_t);
+    using StdFloats = DAVA_TYPELIST_3(float, double, long double);
 };
     
 template <typename T>
@@ -173,19 +168,19 @@ public:
     enum { isStdArith       = isStdIntegral || isStdFloat };
     enum { isStdFundamental = isStdArith || isStdFloat || IsSame<T, void>::result };
 
-	enum { isPointer = PointerTraits<T>::result };
-	enum { isReference = ReferenceTraits<T>::result };
-	enum { isPointerToMemberFunction = P2MTraits<T>::result };
+    enum { isPointer = PointerTraits<T>::result };
+    enum { isReference = ReferenceTraits<T>::result };
+    enum { isPointerToMemberFunction = P2MTraits<T>::result };
         
-	typedef typename Select<isPointer || isReference, T, const T&>::Result ParamType;
-	typedef typename Select<isReference, typename ReferenceTraits<T>::ReferenceType, T>::Result NonRefType;
+    using ParamType = typename Select<isPointer || isReference, T, const T&>::Result;
+    using NonRefType = typename Select<isReference, typename ReferenceTraits<T>::ReferenceType, T>::Result;
 };
     
     
 template <class TO, class FROM>
 class Conversion
 {
-    typedef char Small;
+    using Small = char;
     struct Big { char value[2]; };
     
     static Small Test(FROM);
@@ -213,13 +208,13 @@ struct IsEnumImpl
 template<>
 struct IsEnumImpl<true>
 {
-	enum { result = true };
+    enum { result = true };
 };
 
 template<>
 struct IsEnumImpl<false>
 {
-	enum { result = false };
+    enum { result = false };
 };
 
 template <class T>
@@ -264,26 +259,26 @@ C DynamicTypeCheck(O* pObject)
 template<class C, class O>
 bool IsPointerToExactClass(const O* pObject) 
 {
-	if (pObject)
+    if (pObject)
     {
-		COMPILER_ASSERT(!TypeTraits<C>::isPointer);//You should not use pointers for this method
-		return &typeid(*pObject) == &typeid(C);
-	}
-	return false;
+        static_assert(!std::is_pointer<C>::value, "IsPointerToExactClass doesn't operate on pointers");
+        return &typeid(*pObject) == &typeid(C);
+    }
+    return false;
 }
     
 template<class C, class O>
 C cast_if_equal(O* pObject)
 {
-	if (pObject)
+    if (pObject)
     {
-		COMPILER_ASSERT(TypeTraits<C>::isPointer);
-		if (typeid(*pObject) == typeid(typename PointerTraits<C>::PointerType))
+        static_assert(std::is_pointer<C>::value, "cast_if_equal operates on pointers");
+        if (typeid(*pObject) == typeid(typename PointerTraits<C>::PointerType))
         {
             return static_cast<C>(pObject);
         }
-	}
-	return 0;
+    }
+    return 0;
 }
 
 
@@ -330,9 +325,6 @@ operator+(ScopeGuardOnExit, FunctionType&& fn)
 #endif
 #endif
 
-#define SCOPE_EXIT \
- auto DF_ANONYMOUS_VARIABLE(SCOPE_EXIT_STATE) \
- = ::DAVA::ScopeGuardOnExit() + [&]()
+#define SCOPE_EXIT      auto DF_ANONYMOUS_VARIABLE(SCOPE_EXIT_STATE) = ::DAVA::ScopeGuardOnExit() + [&]()
 
 #endif // __DAVAENGINE_TEMPLATEHELPERS_H__
-

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ShadowRect.h"
 #include "Render/RenderDataObject.h"
 #include "Base/BaseMath.h"

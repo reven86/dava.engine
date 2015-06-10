@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene3D/ParticleEmitterNode.h"
 #include "Render/RenderManager.h"
 #include "Scene3D/Scene.h"

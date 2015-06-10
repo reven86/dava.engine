@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #include "PlatformMetadata.h"
 #include "HierarchyTreeController.h"
 

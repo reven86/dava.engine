@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_UI_SPINNER_H__
 #define __DAVAENGINE_UI_SPINNER_H__
 

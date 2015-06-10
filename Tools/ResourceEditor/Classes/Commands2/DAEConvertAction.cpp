@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "DAEConvertAction.h"
 #include "Collada/ColladaConvert.h"
 

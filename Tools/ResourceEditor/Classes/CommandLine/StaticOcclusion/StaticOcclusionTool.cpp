@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "StaticOcclusionTool.h"
 
 #include "TexturePacker/CommandLineParser.h"

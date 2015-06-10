@@ -54,17 +54,17 @@ inline float32 FloatClamp(float32 min, float32 max, float32 val);
     in all general cases use Vector2, Rect and other classes instead
  */
  //! int Point2 
-typedef Point2Base<int32>		Point2i;
+using Point2i = Point2Base<int32>;
 //! float Point2 
-typedef Point2Base<float32>		Point2f;
+using Point2f = Point2Base<float32>;
 //! int Size2
-typedef Size2Base<int32>		Size2i;
+using Size2i = Size2Base<int32>;
 //! float Size2
-typedef Size2Base<float32>		Size2f;
+using Size2f = Size2Base<float32>;
 //! int Rect2
-typedef Rect2Base<int32>		Rect2i;
+using Rect2i = Rect2Base<int32>;
 //! float Rect2
-typedef Rect2Base<float32>		Rect2f;
+using Rect2f = Rect2Base<float32>;
 
 
 // Implementations

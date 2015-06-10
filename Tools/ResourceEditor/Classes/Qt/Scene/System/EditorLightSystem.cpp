@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene/System/EditorLightSystem.h"
 #include "Qt/Scene/SceneEditor2.h"
 #include "Qt/Scene/SceneSignals.h"

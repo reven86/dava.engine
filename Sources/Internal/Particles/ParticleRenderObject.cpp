@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "ParticleRenderObject.h"
 
 
@@ -321,9 +322,9 @@ void ParticleRenderObject::AppendParticleGroup(const ParticleGroup &group, Parti
 					else
 						nextFrame = group.layer->sprite->GetFrameCount()-1;
 				}
-				float32 *pT = group.layer->sprite->GetTextureVerts(nextFrame);
+				float32 *pTNext = group.layer->sprite->GetTextureVerts(nextFrame);
 
-				memcpy(&renderGroup->texcoords2[currVerticesCount*2], pT, sizeof(float32) * 8);				
+				memcpy(&renderGroup->texcoords2[currVerticesCount*2], pTNext, sizeof(float32) * 8);
 				renderGroup->times[currVerticesCount] = current->animTime;
 				renderGroup->times[currVerticesCount+1] = current->animTime;
 				renderGroup->times[currVerticesCount+2] = current->animTime;

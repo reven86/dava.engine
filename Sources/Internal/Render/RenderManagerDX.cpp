@@ -738,12 +738,14 @@ void RenderManager::SetColorPointer(int size, eVertexDataType _typeIndex, int st
 	
 
 
-typedef struct{
-	enum { FVF = D3DFVF_XYZ| D3DFVF_DIFFUSE |D3DFVF_TEX1 };
-	float		X, Y, Z;
-	uint32		Diffuse;             
-	float		U, V;       
-}RTTRVertex;
+using RTTRVertex = struct
+{
+    enum { FVF = D3DFVF_XYZ| D3DFVF_DIFFUSE |D3DFVF_TEX1 };
+
+    float X, Y, Z;
+    uint32 Diffuse;
+    float U, V;
+};
 
 //! Render Textured Test Rect
 void RTTR()

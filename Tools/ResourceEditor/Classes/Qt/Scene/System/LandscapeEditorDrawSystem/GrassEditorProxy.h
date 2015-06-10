@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__GRASSEDITORPROXY__
 #define __RESOURCEEDITORQT__GRASSEDITORPROXY__
 

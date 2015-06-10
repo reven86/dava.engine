@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __ENTITY_MODIFICATION_SYSTEM_H__
 #define __ENTITY_MODIFICATION_SYSTEM_H__
 

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __MATERIALS_FILTER_MODEL_H__
 #define __MATERIALS_FILTER_MODEL_H__
 

@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "Render/Texture.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
@@ -402,7 +403,7 @@ void Image::InsertImage(const Image* image, const Vector2& dstPos, const Rect& s
 
 bool Image::Save(const FilePath &path) const
 {
-    return ImageSystem::Instance()->Save(path, const_cast<Image*>(this), format) == SUCCESS;
+    return ImageSystem::Instance()->Save(path, const_cast<Image*>(this), format) == eErrorCode::SUCCESS;
 }
     
 

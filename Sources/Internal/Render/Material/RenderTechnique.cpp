@@ -1,30 +1,30 @@
 /*==================================================================================
- Copyright (c) 2008, binaryzebra
- All rights reserved.
- 
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- 
- * Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
- * Neither the name of the binaryzebra nor the
- names of its contributors may be used to endorse or promote products
- derived from this software without specific prior written permission.
- 
- THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
- ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
- DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- =====================================================================================*/
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
 
 
 #include "Render/Material/RenderTechnique.h"
@@ -160,9 +160,9 @@ bool RenderTechniqueSingleton::LoadRenderTechniqueFromYamlNode(const YamlNode * 
             if (definesNode)
             {
                 int32 count = definesNode->GetCount();
-                for (int32 k = 0; k < count; ++k)
+                for (int32 n = 0; n < count; ++n)
                 {
-                    const YamlNode * singleDefineNode = definesNode->Get(k);
+                    const YamlNode * singleDefineNode = definesNode->Get(n);
                     definesSet.Insert(FastName(singleDefineNode->AsString().c_str()));
                 }
             }
@@ -184,50 +184,68 @@ bool RenderTechniqueSingleton::LoadRenderTechniqueFromYamlNode(const YamlNode * 
 }
 
     
-RenderTechnique * RenderTechniqueSingleton::CreateTechniqueByName(const FastName & renderTechniquePathInFastName)
+RenderTechnique* RenderTechniqueSingleton::CreateTechniqueByName(const FastName & renderTechniquePathInFastName)
 {
-    FilePath renderTechniquePathname(renderTechniquePathInFastName.c_str());
-    //FastName renderTechniqueFastName(renderTechniquePathname.GetRelativePathname().c_str());
-    //Logger::Debug("Get render technique: %s %d", renderTechniquePathname.GetRelativePathname().c_str(), renderTechniqueFastName.Index());
-    
-    RenderTechnique * renderTechnique = renderTechniqueMap.at(renderTechniquePathInFastName);
-    if (!renderTechnique)
+    RenderTechnique* renderTechnique = renderTechniqueMap.at(renderTechniquePathInFastName);
+    if (nullptr == renderTechnique)
     {
-		YamlParser * parser = YamlParser::Create(renderTechniquePathname);
-		if (!parser)
-		{
-			Logger::Error("Can't load requested material: %s", renderTechniquePathname.GetRelativePathname().c_str());
-			return 0;
-		}
+        FilePath renderTechniquePathname(renderTechniquePathInFastName.c_str());
+        RefPtr<YamlParser> parser(YamlParser::Create(renderTechniquePathname));
+        if (!parser.Valid())
+        {
+            Logger::Error("Cannot load requested material: %s", renderTechniquePathname.GetRelativePathname().c_str());
+            return nullptr;
+        }
 
-        YamlNode * rootNode = parser->GetRootNode();
-		if (!rootNode)
-		{
-			SafeRelease(parser);
-			return 0;
-		}
-        
-        renderTechnique = new RenderTechnique(renderTechniquePathInFastName);
-        LoadRenderTechniqueFromYamlNode(rootNode, renderTechnique);
-        renderTechniqueMap.insert(renderTechniquePathInFastName, renderTechnique);
-     
-        SafeRelease(parser);
+        YamlNode* rootNode = parser->GetRootNode();
+        if (rootNode != nullptr)
+        {
+            renderTechnique = new RenderTechnique(renderTechniquePathInFastName);
+            LoadRenderTechniqueFromYamlNode(rootNode, renderTechnique);
+            renderTechniqueMap.insert(renderTechniquePathInFastName, renderTechnique);
+        }
+        else
+        {
+            return nullptr;
+        }
     }
-	//else
-    //{
-    //    Logger::Debug("Get render technique: %s", renderTechnique->GetName().c_str());
-    //}
-	
     return SafeRetain(renderTechnique);
 }
-    
-void RenderTechniqueSingleton::ReleaseRenderTechnique(RenderTechnique * renderTechnique)
+
+void RenderTechniqueSingleton::ReleaseRenderTechnique(RenderTechnique* renderTechnique)
 {
+    DVASSERT(renderTechnique != nullptr);
+    DVASSERT(renderTechnique->GetRetainCount() > 1);    // If reference count is less than 2 then RenderTechnique
+                                                        // has been released bypassing ReleaseRenderTechnique
+
     renderTechnique->Release();
     if (renderTechnique->GetRetainCount() == 1)
     {
         renderTechniqueMap.erase(renderTechnique->GetName());
         renderTechnique->Release();
+    }
+}
+
+void RenderTechniqueSingleton::ClearRenderTechniques()
+{
+    // DAVA::HashMap's iterators are invalidated after map erasing operation
+    // So ClearRenderTechniques does the following:
+    //  - traverses over map and releases technique
+    //  - if technique is referenced only by RenderTechniqueSingleton makes final release of technique
+    //  - instead of deleted technique places nullptr
+    for (auto& x : renderTechniqueMap)
+    {
+        RenderTechnique* technique = x.second;
+        if (technique != nullptr)
+        {
+            // Release only techniques that doesn't have external references, i.e. number 
+            // of technique->Release() call count corrensponds CreateTechniqueByName call count
+            if (1 == technique->GetRetainCount())
+            {
+                technique->Release();
+                renderTechniqueMap[x.first] = nullptr;
+            }
+        }
     }
 }
 

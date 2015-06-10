@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ScrollPropertyGridWidgetHelper.h"
 
 using namespace DAVA;

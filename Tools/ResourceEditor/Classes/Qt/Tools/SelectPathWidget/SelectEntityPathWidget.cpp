@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "SelectEntityPathWidget.h"
 #include "Tools/MimeDataHelper/MimeDataHelper.h"
 #include "Scene/SceneEditor2.h"

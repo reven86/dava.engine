@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include <QMimeData>
 #include "Particles/ParticleEmitter.h"
 #include "Particles/ParticleLayer.h"

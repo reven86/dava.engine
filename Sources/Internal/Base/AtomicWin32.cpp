@@ -29,7 +29,7 @@
 
 #include "Base/Atomic.h"
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 
 namespace DAVA 
 {
@@ -51,5 +51,5 @@ bool AtomicCompareAndSwap(const int32 oldVal, const int32 newVal, volatile int32
 
 };
 
-#endif //#if defined(__DAVAENGINE_WIN32__)
+#endif //#if defined(__DAVAENGINE_WINDOWS__)
 

@@ -26,12 +26,13 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "DataStorage/DataStorage.h"
 
 namespace DAVA
 {
     
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
     
 class DataStorageEmptyWin : public IDataStorage
 {

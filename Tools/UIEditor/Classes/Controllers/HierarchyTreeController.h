@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __UIEditor__HierarchyTreeController__
 #define __UIEditor__HierarchyTreeController__
 

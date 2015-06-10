@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Render/Highlevel/Heightmap.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"

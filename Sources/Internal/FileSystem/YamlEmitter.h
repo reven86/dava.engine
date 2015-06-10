@@ -26,13 +26,14 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __DAVAENGINE_YAML_EMITTER_H__
 #define __DAVAENGINE_YAML_EMITTER_H__
 #include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
 #include "FileSystem/File.h"
 
-typedef struct yaml_emitter_s yaml_emitter_t;
+using yaml_emitter_t = struct yaml_emitter_s;
 
 namespace DAVA
 {
