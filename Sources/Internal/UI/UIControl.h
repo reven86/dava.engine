@@ -34,6 +34,7 @@
 #include "UI/UIControlBackground.h"
 #include "Animation/AnimatedObject.h"
 #include "Animation/Interpolation.h"
+#include "UI/UIStyleSheetPropertiesTable.h"
 
 namespace DAVA
 {
@@ -1484,8 +1485,13 @@ public:
     void RemoveClass(FastName clazz);
     bool HasClass(FastName clazz);
     
+    const Bitset< STYLE_SHEET_PROPERTY_COUNT >& GetLocalPropertySet() const;
+    void SetPropertyLocality(uint32 propertyIndex, bool value);
+
 private:
     Vector<FastName> classes;
+    Bitset< STYLE_SHEET_PROPERTY_COUNT > localProperties;
+    Bitset< STYLE_SHEET_PROPERTY_COUNT > styleProperties;
 /* Styles */
 
 public:

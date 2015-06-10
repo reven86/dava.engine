@@ -47,20 +47,24 @@ namespace DAVA
         void Clear();
         void AddStyleSheet(const UIStyleSheet* table);
 
-        inline const VariantType* GetProperty(const FastName& name) const
+        inline const VariantType* GetProperty(uint32 index) const
         {
             const auto& endIter = styleSheets.end();
             for (auto styleSheetIter = styleSheets.begin(); styleSheetIter != endIter; ++styleSheetIter)
             {
                 const UIStyleSheet* styleSheet = *styleSheetIter;
 
-                if (const VariantType * prop = styleSheet->GetProperty(name))
+                if (const VariantType * prop = styleSheet->GetProperty(index))
                     return prop;
             }
             return nullptr;
         }
+
+        const Bitset< STYLE_SHEET_PROPERTY_COUNT >& GetPropertySet() const;
     private:
         Vector< const UIStyleSheet* > styleSheets;
+
+        Bitset< STYLE_SHEET_PROPERTY_COUNT > propertiesSet;
     };
 };
 

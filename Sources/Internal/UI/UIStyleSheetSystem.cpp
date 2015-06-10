@@ -151,38 +151,36 @@ namespace DAVA
 
         return true;
     }
-
+    
     void UIStyleSheetSystem::SetupControlFromCascade(UIControl* control, const UIStyleSheetCascade& cascade)
     {
-        SetupObjectPropertiesFromCascade(control, control->GetTypeInfo(), cascade);
-        for (UIComponent* component : control->GetComponents())
+        Bitset< STYLE_SHEET_PROPERTY_COUNT > propertiesToSet = cascade.GetPropertySet() & (~control->GetLocalPropertySet());
+
+        for (uint32 propertyIndex = 0; propertyIndex < STYLE_SHEET_PROPERTY_COUNT; ++propertyIndex)
         {
-            if (!UIComponent::IsMultiple(component->GetType()))
-                SetupObjectPropertiesFromCascade(component, component->GetTypeInfo(), cascade);
-        }
-        
-        if (control->GetBackgroundComponentsCount() > 0) // multiple backgrounds are evil
-        {
-            UIControlBackground* bg = control->GetBackgroundComponent(0);
-            SetupObjectPropertiesFromCascade(bg, bg->GetTypeInfo(), cascade);
-        }
-    }
+            if (propertiesToSet.test(propertyIndex))
+            {
+                const UIStyleSheetPropertyDescriptor& descr = GetStyleSheetPropertyByIndex(propertyIndex);
+                const VariantType* value = cascade.GetProperty(propertyIndex);
 
-    template < class T >
-    void UIStyleSheetSystem::SetupObjectPropertiesFromCascade(T* object, const InspInfo* typeInfo, const UIStyleSheetCascade& cascade)
-    {
-        const InspInfo *baseInfo = typeInfo->BaseInfo();
-        if (baseInfo)
-            SetupObjectPropertiesFromCascade(object, baseInfo, cascade);
-
-        for (int32 i = 0; i < typeInfo->MembersCount(); i++)
-        {
-            const InspMember *member = typeInfo->Member(i);
-
-            const VariantType* value = cascade.GetProperty(member->GetFastName());
-
-            if (value)
-                member->SetValue(object, *value);
+                switch (descr.owner)
+                {
+                case ePropertyOwner::CONTROL:
+                    descr.inspMember->SetValue(control, *value);
+                    break;
+                case ePropertyOwner::BACKGROUND:
+                    if (control->GetBackgroundComponentsCount() > 0)
+                        descr.inspMember->SetValue(control->GetBackgroundComponent(0), *value);
+                    break;
+                case ePropertyOwner::COMPONENT:
+                    for (const auto& componentInfo : descr.targetComponents)
+                    {
+                        if (UIComponent* component = control->GetComponent(componentInfo.first))
+                            componentInfo.second->SetValue(component, *value);
+                    }
+                    break;
+                }
+            }
         }
     }
 }

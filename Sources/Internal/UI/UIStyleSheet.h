@@ -34,18 +34,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
 #include "FileSystem/VariantType.h"
-
-namespace std
-{
-    template <>
-    struct hash<DAVA::FastName>
-    {
-        std::size_t operator()(const DAVA::FastName& k) const
-        {
-            return k.Index();
-        }
-    };
-}
+#include "UI/UIStyleSheetPropertiesTable.h"
 
 namespace DAVA
 {
@@ -56,7 +45,7 @@ namespace DAVA
         Vector< FastName > classes;
     };
 
-    typedef UnorderedMap< FastName, VariantType > UIStyleSheetPropertyTable;
+    typedef UnorderedMap< uint32, VariantType > UIStyleSheetPropertyTable;
 
     class UIStyleSheet :
         public BaseObject
@@ -74,17 +63,21 @@ namespace DAVA
         void SetPropertyTable(const UIStyleSheetPropertyTable& properties);
         void SetSelectorChain(const Vector< UIStyleSheetSelector >& selectorChain);
 
-        inline const VariantType* GetProperty(const FastName& name) const
+        inline const VariantType* GetProperty(uint32 index) const
         {
-            auto iter = properties.find(name);
+            auto iter = properties.find(index);
 
             return (iter != properties.end()) ? &iter->second : nullptr;
         }
+
+        const Bitset< STYLE_SHEET_PROPERTY_COUNT >& GetPropertySet() const;
     private:
         void RecalculateScore();
 
         Vector< UIStyleSheetSelector > selectorChain;
+        
         UIStyleSheetPropertyTable properties;
+        Bitset< STYLE_SHEET_PROPERTY_COUNT > propertiesSet;
 
         int32 score;
     };

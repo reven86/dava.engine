@@ -743,6 +743,7 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIStaticText.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIStyleSheet.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIStyleSheetCascade.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\UIStyleSheetPropertiesTable.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIStyleSheetSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UISwitch.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UITextField.h" />
@@ -1236,6 +1237,7 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UIStaticText.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIStyleSheet.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIStyleSheetCascade.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\UIStyleSheetPropertiesTable.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIStyleSheetSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UISwitch.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UITextField.cpp" />

@@ -2951,15 +2951,27 @@ namespace DAVA
         {
             *iter = classes.back();
             classes.pop_back();
-        }
 
-        if (context)
-            context->GetStyleSheetSystem()->MarkControlForUpdate(this);
+            if (context)
+                context->GetStyleSheetSystem()->MarkControlForUpdate(this);
+        }
     }
 
     bool UIControl::HasClass(FastName clazz)
     {
         return find(classes.begin(), classes.end(), clazz) != classes.end();
+    }
+
+    const Bitset< STYLE_SHEET_PROPERTY_COUNT >& UIControl::GetLocalPropertySet() const
+    {
+        return localProperties;
+    }
+
+    void UIControl::SetPropertyLocality(uint32 propertyIndex, bool value)
+    {
+        localProperties.set(propertyIndex, value);
+        if (context)
+            context->GetStyleSheetSystem()->MarkControlForUpdate(this);
     }
 
     /* Styles */

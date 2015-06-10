@@ -44,10 +44,18 @@ namespace DAVA
     void UIStyleSheetCascade::Clear()
     {
         styleSheets.clear();
+        propertiesSet.reset();
     }
 
     void UIStyleSheetCascade::AddStyleSheet(const UIStyleSheet* table)
     {
         styleSheets.push_back(table);
+
+        propertiesSet |= table->GetPropertySet();
+    }
+
+    const Bitset< STYLE_SHEET_PROPERTY_COUNT >& UIStyleSheetCascade::GetPropertySet() const
+    {
+        return propertiesSet;
     }
 }

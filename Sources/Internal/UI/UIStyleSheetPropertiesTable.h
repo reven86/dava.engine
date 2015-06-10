@@ -27,47 +27,37 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_UI_STYLESHEET_SYSTEM_H__
-#define __DAVAENGINE_UI_STYLESHEET_SYSTEM_H__
+#ifndef __DAVAENGINE_UI_STYLESHEET_PROPERTIES_TABLE_H__
+#define __DAVAENGINE_UI_STYLESHEET_PROPERTIES_TABLE_H__
 
+#include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
+#include "Base/FastName.h"
+#include "FileSystem/VariantType.h"
 
 namespace DAVA
 {
-    class UIControl;
-    class UIControlBackground;
-    class UIComponent;
-    class UIStyleSheet;
-    struct UIStyleSheetSelector;
-    class UIStyleSheetCascade;
-    class InspInfo;
-
-    class UIStyleSheetSystem
+    enum class ePropertyOwner
     {
-    public:
-        UIStyleSheetSystem();
-        ~UIStyleSheetSystem();
-
-        void MarkControlForUpdate(UIControl* control);
-        void RegisterStyleSheet(UIStyleSheet* styleSheet);
-        void UnregisterStyleSheet(UIStyleSheet* styleSheet);
-
-        void ProcessUpdates();
-    private:
-        void SortStyleSheets();
-        bool StyleSheetMatchesControl(UIStyleSheet* styleSheet, UIControl* control);
-        bool SelectorMatchesControl(const UIStyleSheetSelector* selector, UIControl* control);
-        
-        void SetupControlFromCascade(UIControl* control, const UIStyleSheetCascade& cascade);
-
-        //template < class T >
-        //void SetupObjectPropertiesFromCascade(T* object, const InspInfo* typeInfo, const UIStyleSheetCascade& cascade);
-
-        DAVA::Vector< UIControl* > controlsToUpdate;
-        DAVA::Vector< UIStyleSheet* > styleSheets;
-
-        bool dirtySort;
+        UNKNOWN,
+        CONTROL,
+        BACKGROUND,
+        COMPONENT
     };
+    struct UIStyleSheetPropertyDescriptor
+    {
+        FastName name;
+        VariantType::eVariantType type;
+        ePropertyOwner owner;
+        const InspMember* inspMember;
+        DAVA::Vector< std::pair< uint32, const InspMember* > > targetComponents;
+    };
+
+    enum { STYLE_SHEET_PROPERTY_COUNT = 4 };
+
+    void InitializeStyleSheetPropertyTable();
+    uint32 StyleSheetProperty(const FastName& name);
+    const UIStyleSheetPropertyDescriptor& GetStyleSheetPropertyByIndex(uint32 index);
 };
 
 

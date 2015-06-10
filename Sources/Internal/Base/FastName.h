@@ -193,4 +193,16 @@ const char* FastName::c_str() const
 
 };
 
+namespace std
+{
+    template <>
+    struct hash<DAVA::FastName>
+    {
+        std::size_t operator()(const DAVA::FastName& k) const
+        {
+            return k.Index();
+        }
+    };
+}
+
 #endif // __DAVAENGINE_FAST_NAME__

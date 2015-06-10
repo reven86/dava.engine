@@ -59,6 +59,12 @@ namespace DAVA
     void UIStyleSheet::SetPropertyTable(const UIStyleSheetPropertyTable& newProperties)
     {
         properties = newProperties;
+        propertiesSet.reset();
+
+        for (auto& prop : properties)
+        {
+            propertiesSet.set(prop.first);
+        }
     }
 
     void UIStyleSheet::SetSelectorChain(const Vector< UIStyleSheetSelector >& newSelectorChain)
@@ -66,6 +72,11 @@ namespace DAVA
         selectorChain = newSelectorChain;
 
         RecalculateScore();
+    }
+
+    const Bitset< STYLE_SHEET_PROPERTY_COUNT >& UIStyleSheet::GetPropertySet() const
+    {
+        return propertiesSet;
     }
 
     void UIStyleSheet::RecalculateScore()
