@@ -56,12 +56,12 @@ const FastName Landscape::PARAM_TILE_COLOR2("tileColor2");
 const FastName Landscape::PARAM_TILE_COLOR3("tileColor3");
 const FastName Landscape::PARAM_CURSOR_COORD_SIZE("cursorCoordSize");
 
-const FastName Landscape::TEXTURE_NAME_COLOR("colorTexture");
-const FastName Landscape::TEXTURE_NAME_TILE("tileTexture0");
-const FastName Landscape::TEXTURE_NAME_TILEMASK("tileMask");
-const FastName Landscape::TEXTURE_NAME_SPECULAR("specularMap");
-const FastName Landscape::TEXTURE_NAME_FULL_TILED("fullTiledTexture");
-const FastName Landscape::TEXTURE_NAME_CURSOR("cursorTexture");
+const FastName Landscape::TEXTURE_COLOR("colorTexture");
+const FastName Landscape::TEXTURE_TILE("tileTexture0");
+const FastName Landscape::TEXTURE_TILEMASK("tileMask");
+const FastName Landscape::TEXTURE_SPECULAR("specularMap");
+const FastName Landscape::TEXTURE_FULL_TILED("fullTiledTexture");
+const FastName Landscape::TEXTURE_CURSOR("cursorTexture");
 
 const uint32 LANDSCAPE_BATCHES_POOL_SIZE = 32;
 
@@ -1086,18 +1086,6 @@ void Landscape::Save(KeyedArchive * archive, SerializationContext * serializatio
 	heightmap->Save(heightmapPath);
     archive->SetString("hmap", heightmapPath.GetRelativePathname(serializationContext->GetScenePath()));
     archive->SetByteArrayAsType("bbox", bbox);
-    
-#if RHI_COMPLETE
-    DVASSERT(GetRenderBatch(0));
-    IlluminationParams * illuminationParams = GetRenderBatch(0)->GetMaterial()->GetIlluminationParams(false);
-    if(illuminationParams)
-    {
-        archive->SetBool("illumination.isUsed", illuminationParams->isUsed);
-        archive->SetBool("illumination.castShadow", illuminationParams->castShadow);
-        archive->SetBool("illumination.receiveShadow", illuminationParams->receiveShadow);
-        archive->SetInt32("illumination.lightmapSize", illuminationParams->lightmapSize);
-    }
-#endif
 }
     
 void Landscape::Load(KeyedArchive * archive, SerializationContext * serializationContext)
@@ -1132,19 +1120,6 @@ void Landscape::Load(KeyedArchive * archive, SerializationContext * serializatio
     AABBox3 loadedBbox = archive->GetByteArrayAsType("bbox", AABBox3());
 
     BuildLandscapeFromHeightmapImage(heightmapPath, loadedBbox);
-
-#if RHI_COMPLETE
-    if(archive->IsKeyExists("illumination.isUsed"))
-    {
-        DVASSERT(GetRenderBatch(0));
-        IlluminationParams * illuminationParams = GetRenderBatch(0)->GetMaterial()->GetIlluminationParams();
-
-        illuminationParams->isUsed = archive->GetBool("illumination.isUsed", illuminationParams->isUsed);
-        illuminationParams->castShadow = archive->GetBool("illumination.castShadow", illuminationParams->castShadow);
-        illuminationParams->receiveShadow = archive->GetBool("illumination.receiveShadow", illuminationParams->receiveShadow);
-        illuminationParams->SetLightmapSize(archive->GetInt32("illumination.lightmapSize", illuminationParams->lightmapSize));
-    }
-#endif
 }
     
 Heightmap * Landscape::GetHeightmap()
@@ -1326,18 +1301,6 @@ RenderObject * Landscape::Clone( RenderObject *newObject )
 
     newLandscape->flags = flags;
     newLandscape->BuildLandscapeFromHeightmapImage(heightmapPath, bbox);
-
-#if RHI_COMPLETE
-    IlluminationParams * params = GetRenderBatch(0)->GetMaterial()->GetIlluminationParams(false);
-    if(params)
-    {
-        IlluminationParams * newParams = newLandscape->GetRenderBatch(0)->GetMaterial()->GetIlluminationParams();
-        newParams->SetLightmapSize(params->GetLightmapSize());
-        newParams->isUsed = params->isUsed;
-        newParams->castShadow = params->castShadow;
-        newParams->receiveShadow = params->receiveShadow;
-    }
-#endif
 
 	return newObject;
 }

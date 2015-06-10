@@ -146,7 +146,7 @@ FPROG_OUT_END
 
 
 #if FLATCOLOR
-    property float4 flatColor : dynamic,a : ;
+    property float4 flatColor : static,a : ;
 #endif
 
 float 

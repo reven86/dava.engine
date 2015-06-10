@@ -50,7 +50,6 @@
 #include "Scene/System/TilemaskEditorSystem.h"
 #include "Scene/System/CustomColorsSystem.h"
 #include "Scene/System/VisibilityToolSystem.h"
-#include "Scene/System/GrassEditorSystem.h"
 #include "Scene/System/RulerToolSystem.h"
 #include "Scene/System/StructureSystem.h"
 #include "Scene/System/EditorParticlesSystem.h"
@@ -88,7 +87,6 @@ public:
 		LANDSCAPE_TOOL_TILEMAP_EDITOR		= 1 << 3,
 		LANDSCAPE_TOOL_RULER				= 1 << 4,
 		LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN	= 1 << 5,
-        LANDSCAPE_TOOL_GRASS_EDITOR     	= 1 << 6,
 
 		LANDSCAPE_TOOLS_ALL					= 0x7FFFFFFF
 	};
@@ -109,7 +107,6 @@ public:
 	CustomColorsSystem* customColorsSystem;
 	VisibilityToolSystem* visibilityToolSystem;
 	RulerToolSystem* rulerToolSystem;
-    GrassEditorSystem *grassEditorSystem;
 	StructureSystem *structureSystem;
 	EditorParticlesSystem *particlesSystem;
 	EditorLightSystem *editorLightSystem;

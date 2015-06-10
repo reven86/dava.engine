@@ -23,10 +23,10 @@ DECL_FP_SAMPLER2D(tileTexture0)
 DECL_FP_SAMPLER2D(tileMask)
 DECL_FP_SAMPLER2D(colorTexture)
 
-property float4 tileColor0 : static,instance : def_value=1,1,1,1;
-property float4 tileColor1 : static,instance : def_value=1,1,1,1;
-property float4 tileColor2 : static,instance : def_value=1,1,1,1;
-property float4 tileColor3 : static,instance : def_value=1,1,1,1;
+property float3 tileColor0 : static,instance : def_value=1,1,1;
+property float3 tileColor1 : static,instance : def_value=1,1,1;
+property float3 tileColor2 : static,instance : def_value=1,1,1;
+property float3 tileColor3 : static,instance : def_value=1,1,1;
 #endif
 
 #if CURSOR

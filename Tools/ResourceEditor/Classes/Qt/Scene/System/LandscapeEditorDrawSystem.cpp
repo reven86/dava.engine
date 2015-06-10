@@ -337,9 +337,9 @@ float32 LandscapeEditorDrawSystem::GetTextureSize(const FastName& level)
 {
 	float32 size = 0.f;
 #if RHI_COMPLETE_EDITOR
-	if (level == Landscape::TEXTURE_NAME_FULL_TILED)
+	if (level == Landscape::TEXTURE_FULL_TILED)
 	{
-		level = Landscape::TEXTURE_NAME_TILEMASK;
+		level = Landscape::TEXTURE_TILEMASK;
 	}
 #endif RHI_COMPLETE_EDITOR
 	Texture* texture = baseLandscape->GetMaterial()->GetEffectiveTexture(level);
@@ -488,15 +488,15 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::Init()
 	}
 	if (!customColorsProxy)
 	{
-		customColorsProxy = new CustomColorsProxy((int32)GetTextureSize(Landscape::TEXTURE_NAME_FULL_TILED));
+		customColorsProxy = new CustomColorsProxy((int32)GetTextureSize(Landscape::TEXTURE_FULL_TILED));
 	}
 	if (!visibilityToolProxy)
 	{
-        visibilityToolProxy = new VisibilityToolProxy((int32)GetTextureSize(Landscape::TEXTURE_NAME_FULL_TILED));
+        visibilityToolProxy = new VisibilityToolProxy((int32)GetTextureSize(Landscape::TEXTURE_FULL_TILED));
 	}
 	if (!rulerToolProxy)
 	{
-        rulerToolProxy = new RulerToolProxy((int32)GetTextureSize(Landscape::TEXTURE_NAME_FULL_TILED));
+        rulerToolProxy = new RulerToolProxy((int32)GetTextureSize(Landscape::TEXTURE_FULL_TILED));
 	}
     if(!grassEditorProxy)
     {
@@ -591,7 +591,7 @@ void LandscapeEditorDrawSystem::SaveTileMaskTexture()
  		return;
  	}
 
-	Texture* texture = baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_NAME_TILEMASK);
+	Texture* texture = baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_TILEMASK);
 
 	if (texture)
 	{
@@ -635,7 +635,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::VerifyLandscape
 //		landscapeProxy->UpdateFullTiledTexture(true);
 //	}
 
-	Texture* tileMask = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_NAME_TILEMASK);
+	Texture* tileMask = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILEMASK);
 	if (tileMask == NULL || tileMask->IsPinkPlaceholder())
 	{
 		return LANDSCAPE_EDITOR_SYSTEM_TILE_MASK_TEXTURE_ABSENT;

@@ -49,7 +49,7 @@ VisibilityToolSystem::VisibilityToolSystem(Scene* scene)
 ,	editingIsEnabled(false)
 ,	originalImage(nullptr)
 ,	state(VT_STATE_NORMAL)
-,	textureLevel(Landscape::TEXTURE_NAME_FULL_TILED)
+,	textureLevel(Landscape::TEXTURE_FULL_TILED)
 {
     cursorSize = 120;
 
@@ -519,14 +519,18 @@ void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
             const uint32 matCount = materials.size();
             for(uint32 m = 0; m < matCount; ++m)
             {
-#if RHI_COMPLETE_EDITOR
-                const NMaterialTemplate *matTemplate = materials[m]->GetMaterialTemplate();
-                if((NMaterialName::SKYOBJECT == matTemplate->name)  || (NMaterialName::SKYBOX == matTemplate->name))
+                NMaterial * material = materials[m];
+                while (material && !material->GetFXName().IsValid())
+                    material = material->GetParent();
+
+                if (material)
                 {
-                    needToExclude = true;
-                    break;
+                    if ((NMaterialName::SKYOBJECT == material->GetFXName()))
+                    {
+                        needToExclude = true;
+                        break;
+                    }
                 }
-#endif // RHI_COMPLETE_EDITOR
             }
         }
 

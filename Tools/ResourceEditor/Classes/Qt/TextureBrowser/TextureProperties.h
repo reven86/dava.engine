@@ -77,6 +77,7 @@ protected:
 	QtPropertyDataInspMember *propWrapModeT;
 	QtPropertyDataInspMember *propMinFilter;
 	QtPropertyDataInspMember *propMagFilter;
+    QtPropertyDataInspMember *propMipFilter;
 	QtPropertyDataInspMember *propFormat;
 	QtPropertyDataMetaObject *propSizes;
 
@@ -90,6 +91,7 @@ protected:
 	EnumMap enumWpar;
 	EnumMap enumFiltersMin;
 	EnumMap enumFiltersMag;
+    EnumMap enumFiltersMip;
 
 	QMap<int, QSize> availableSizes;
 

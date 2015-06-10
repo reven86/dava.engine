@@ -28,7 +28,6 @@
 
 
 #include "Render/Highlevel/RenderBatch.h"
-#include "Render/Material.h"
 #include "Render/3D/PolygonGroup.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/RenderObject.h"

@@ -535,7 +535,11 @@ SCOPED_FUNCTION_TIMING();
                         _D3D9_Device->GetRenderTarget( 0, &_D3D9_BackBuf );
                         TextureDX9::SetAsRenderTarget( passCfg.colorBuffer[0].texture );
                     }
-
+                    else
+                    {
+                        D3DVIEWPORT9 viewport = { passCfg.viewport[0], passCfg.viewport[1], passCfg.viewport[2], passCfg.viewport[3], 0.f, 1.f };
+                        DX9_CALL(_D3D9_Device->SetViewport(&viewport), "SetViewport");
+                    }
 
                     bool    clear_color = passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR;
                     bool    clear_depth = passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR;
@@ -556,9 +560,11 @@ SCOPED_FUNCTION_TIMING();
                         DX9_CALL(_D3D9_Device->Clear( 0,NULL, flags, D3DCOLOR_RGBA(r,g,b,a), passCfg.depthStencilBuffer.clearDepth, 0 ),"Clear");
                     }
                 }
-
-                D3DVIEWPORT9 viewport = { passCfg.viewport[0], passCfg.viewport[1], passCfg.viewport[2], passCfg.viewport[3], 0.f, 1.f };
-                DX9_CALL(_D3D9_Device->SetViewport(&viewport), "SetViewport");
+                else
+                {
+                    D3DVIEWPORT9 viewport = { passCfg.viewport[0], passCfg.viewport[1], passCfg.viewport[2], passCfg.viewport[3], 0.f, 1.f };
+                    DX9_CALL(_D3D9_Device->SetViewport(&viewport), "SetViewport");
+                }
 
             }   break;
 

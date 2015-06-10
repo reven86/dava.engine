@@ -31,7 +31,6 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/MeshInstanceNode.h"
 #include "Render/Texture.h"
-#include "Render/Material.h"
 #include "Render/3D/AnimatedMesh.h"
 #include "Scene3D/PathManip.h"
 #include "Scene3D/SkeletonNode.h"
@@ -1065,26 +1064,9 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity * currentNode)
     
 bool SceneFileV2::ReplaceNodeAfterLoad(Entity * node)
 {
-#if RHI_COMPLETE
     MeshInstanceNode * oldMeshInstanceNode = dynamic_cast<MeshInstanceNode*>(node);
     if (oldMeshInstanceNode)
     {
-        Vector<PolygonGroupWithMaterial*> polygroups = oldMeshInstanceNode->GetPolygonGroups();
-
-        for (uint32 k = 0; k < (uint32)polygroups.size(); ++k)
-        {
-            PolygonGroupWithMaterial * group = polygroups[k];
-            if (group->GetMaterial() && (group->GetMaterial()->type == Material::MATERIAL_UNLIT_TEXTURE_LIGHTMAP))
-            {
-                if (oldMeshInstanceNode->GetLightmapCount() == 0)
-                {
-                    Logger::FrameworkDebug(Format("%s - lightmaps:%d", oldMeshInstanceNode->GetFullName().c_str(), 0).c_str());
-                }
-                
-                //DVASSERT(oldMeshInstanceNode->GetLightmapCount() > 0);
-                //DVASSERT(oldMeshInstanceNode->GetLightmapDataForIndex(0)->lightmap != 0)
-            }
-        }
         Entity * newMeshInstanceNode = new Entity();
         oldMeshInstanceNode->Entity::Clone(newMeshInstanceNode);
 
@@ -1092,43 +1074,18 @@ bool SceneFileV2::ReplaceNodeAfterLoad(Entity * node)
 		newMeshInstanceNode->RemoveComponent(Component::TRANSFORM_COMPONENT);
         newMeshInstanceNode->AddComponent(clonedComponent);
         
-        //Vector<PolygonGroupWithMaterial*> polygroups = oldMeshInstanceNode->GetPolygonGroups();
-        
         Mesh * mesh = new Mesh();
-        
+
+        Vector<PolygonGroupWithMaterial*> polygroups = oldMeshInstanceNode->GetPolygonGroups();
         for (uint32 k = 0; k < (uint32)polygroups.size(); ++k)
         {
             PolygonGroupWithMaterial * group = polygroups[k];
-            
-			Material* oldMaterial = group->GetMaterial();
-            if(!oldMaterial) continue;
-            
-            NMaterial* nMaterial = serializationContext.ConvertOldMaterialToNewMaterial(oldMaterial, 0, (uint64)oldMaterial);
-            mesh->AddPolygonGroup(group->GetPolygonGroup(), nMaterial);
-            
-            
-            if (group->GetMaterial()->type == Material::MATERIAL_UNLIT_TEXTURE_LIGHTMAP)
+            NMaterial * material = group->GetMaterial();
+            if (material)
             {
-//                if (oldMeshInstanceNode->GetLightmapCount() == 0)
-//                {
-//                    Logger::FrameworkDebug(Format("%s - lightmaps:%d", oldMeshInstanceNode->GetFullName().c_str(), 0));
-//                }
-                
-                //DVASSERT(oldMeshInstanceNode->GetLightmapCount() > 0);
-                //DVASSERT(oldMeshInstanceNode->GetLightmapDataForIndex(0)->lightmap != 0)
-            }
-            
-            if (oldMeshInstanceNode->GetLightmapCount() > 0)
-            {
-                RenderBatch * batch = mesh->GetRenderBatch(k);
-                //MaterialTechnique * tech = material->GetTechnique(PASS_FORWARD);
-
-                //tech->GetRenderState()->SetTexture(oldMeshInstanceNode->GetLightmapDataForIndex(k)->lightmap, 1);
-                batch->GetMaterial()->SetTexture(NMaterialTextureName::TEXTURE_LIGHTMAP, oldMeshInstanceNode->GetLightmapDataForIndex(k)->lightmap);
-
-                
-                batch->GetMaterial()->SetPropertyValue(NMaterialParamName::PARAM_UV_OFFSET, Shader::UT_FLOAT_VEC2, 1, &oldMeshInstanceNode->GetLightmapDataForIndex(k)->uvOffset);
-                batch->GetMaterial()->SetPropertyValue(NMaterialParamName::PARAM_UV_SCALE, Shader::UT_FLOAT_VEC2, 1, &oldMeshInstanceNode->GetLightmapDataForIndex(k)->uvScale);
+                NMaterial * batchMaterial = new NMaterial();
+                batchMaterial->SetParent(material);
+                mesh->AddPolygonGroup(group->GetPolygonGroup(), batchMaterial);
             }
         }
         
@@ -1160,9 +1117,6 @@ bool SceneFileV2::ReplaceNodeAfterLoad(Entity * node)
                 SafeRelease(newShadowVolume);
             }
         }
-        
-        
-        
         
         RenderComponent * renderComponent = new RenderComponent;
         renderComponent->SetRenderObject(mesh);
@@ -1320,7 +1274,6 @@ bool SceneFileV2::ReplaceNodeAfterLoad(Entity * node)
 		newNode->Release();
 		return true;
 	}
-#endif //RHI_COMPLETE
 
 	return false;
 } 

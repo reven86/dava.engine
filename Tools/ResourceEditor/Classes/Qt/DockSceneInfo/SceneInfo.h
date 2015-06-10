@@ -170,9 +170,7 @@ protected:
 	DAVA::TexturesMap sceneTextures;
 	DAVA::TexturesMap particleTextures;
 
-    DAVA::Vector<DAVA::Material *>materialsAtScene;
     DAVA::Vector<DAVA::DataNode *>dataNodesAtScene;
-
     
     DAVA::Vector<SpeedTreeInfo> speedTreeLeafInfo;
     

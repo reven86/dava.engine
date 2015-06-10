@@ -35,7 +35,6 @@
 #include "Base/BaseObject.h"
 #include "Base/FastName.h"
 
-#include "Render/Material.h"
 #include "Render/Material/NMaterial.h"
 
 #include "Render/Highlevel/Vegetation/VegetationRenderData.h"

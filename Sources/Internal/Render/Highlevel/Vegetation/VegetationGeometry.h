@@ -38,7 +38,6 @@
 
 #include "Render/3D/PolygonGroup.h"
 #include "Render/Highlevel/RenderObject.h"
-#include "Render/Material.h"
 #include "Render/Material/NMaterial.h"
 
 #include "Render/Highlevel/Vegetation/VegetationGeometry.h"

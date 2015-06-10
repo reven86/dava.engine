@@ -345,7 +345,7 @@ float32 HeightmapEditorPanel::GetBrushScaleCoef()
 	}
 
 	float32 heightmapSize = heightmapProxy->Size();
-	float32 textureSize = sceneEditor->landscapeEditorDrawSystem->GetTextureSize(Landscape::TEXTURE_NAME_FULL_TILED);
+	float32 textureSize = sceneEditor->landscapeEditorDrawSystem->GetTextureSize(Landscape::TEXTURE_FULL_TILED);
 
 	return textureSize / heightmapSize;
 }

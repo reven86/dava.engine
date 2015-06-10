@@ -39,7 +39,6 @@
 namespace DAVA
 {
 
-class Material;
 class ParticleEmitterNode : public Entity
 {
 protected:

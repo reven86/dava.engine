@@ -17,3 +17,4 @@
 #elif BLENDING == BLENDING_ALPHA_ADDITIVE
     blending : src=src_alpha dst=one
 #endif
+

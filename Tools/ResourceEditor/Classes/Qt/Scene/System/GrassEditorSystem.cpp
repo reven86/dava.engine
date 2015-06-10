@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
+#if 0
 
 #include "GrassEditorSystem.h"
 #include "CollisionSystem.h"
@@ -442,3 +442,5 @@ DAVA::Rect2i GrassEditorSystem::GetAffectedImageRect(DAVA::AABBox2 &area)
 
     return ret;
 }
+
+#endif

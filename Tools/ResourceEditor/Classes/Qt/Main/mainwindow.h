@@ -193,7 +193,6 @@ public slots:
 	void OnTilemaskEditor();
 	void OnVisibilityTool();
 	void OnNotPassableTerrain();
-    void OnGrasEditor();
     void OnWayEditor();
 	
 	void OnObjectsTypeChanged(QAction *action);

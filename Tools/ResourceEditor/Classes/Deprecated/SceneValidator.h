@@ -154,8 +154,6 @@ protected:
 
     bool IsFBOTexture(Texture *texture);
 
-    void ConvertIlluminationParamsFromProperty(Entity *ownerNode, NMaterial *material);
-
     VariantType* GetCustomPropertyFromParentsTree(Entity *ownerNode, const String & key);
 
     Set<Entity *> emptyNodesForDeletion;
