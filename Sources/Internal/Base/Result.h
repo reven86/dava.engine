@@ -60,9 +60,13 @@ class ResultList
 {
 public:
     explicit ResultList();
-    explicit ResultList(const Result& result);
+    explicit ResultList(const Result &result);
+    ResultList(const ResultList &resultList);
+    ResultList(const ResultList &&resultList);
     ~ResultList() = default;
     operator bool() const;
+    ResultList& operator = (ResultList& resultList);
+    ResultList& operator = (ResultList&& resultList);
     ResultList &AddResult(const Result &result);
     ResultList &AddResult(const Result::ResultType type = Result::RESULT_SUCCESS, const String &message = String(), const VariantType &data = VariantType());
     
@@ -81,7 +85,6 @@ inline const Deque<Result> &ResultList::GetResults() const
 {
     return results;
 }
-
 
 }
 #endif // QUICKED_RESULT_H_

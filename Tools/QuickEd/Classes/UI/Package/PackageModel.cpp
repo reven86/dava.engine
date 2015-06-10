@@ -369,7 +369,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
             
             if (node)
             {
-                const auto resultList = commandExecutor->InsertControl(node, parentNode, rowIndex);
+                const auto &resultList = commandExecutor->InsertControl(node, parentNode, rowIndex);
                 SafeRelease(node);
                 if (!resultList)
                 {

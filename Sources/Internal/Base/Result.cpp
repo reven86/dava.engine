@@ -47,7 +47,33 @@ ResultList::ResultList()
 ResultList::ResultList(const Result& result)
     : allOk(result)
 {
-    
+    AddResult(result);
+}
+
+ResultList::ResultList(const ResultList& resultList)
+    : allOk(resultList)
+{
+    results = resultList.GetResults();
+}
+
+ResultList::ResultList(const ResultList&& resultList)
+    : allOk(resultList)
+{
+    results = std::move(resultList.results);
+}
+
+ResultList& ResultList::operator=(ResultList& resultList)
+{
+    results = resultList.results;
+    allOk = resultList.allOk;
+    return *this;
+}
+
+ResultList& ResultList::operator=(ResultList&& resultList)
+{
+    results = std::move(resultList.results);
+    allOk = resultList.allOk;
+    return *this;
 }
 
 ResultList& ResultList::AddResult(const Result &result)

@@ -62,7 +62,7 @@ class DefaultPackageCommandExecutor : public PackageCommandExecutor
 {
 public:
     DefaultPackageCommandExecutor();
-    virtual ~DefaultPackageCommandExecutor();
+    virtual ~DefaultPackageCommandExecutor(); 
 
     void AddImportedPackageIntoPackage(PackageNode *importedPackage, PackageNode *package) override;
     void ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value) override;
