@@ -21,7 +21,7 @@ import texture_dimension_validator as tdv
 import time
 import shutil
 
-g_allowed_gpu = ['PowerVR_iOS', 'PowerVR_Android', 'tegra', 'mali', 'adreno', 'png']
+g_allowed_gpu = ['PowerVR_iOS', 'PowerVR_Android', 'tegra', 'mali', 'adreno', 'origin']
 g_default_gpu = 'PowerVR_iOS'
 g_default_dirs = ['Gfx']
 g_default_resdir = None
