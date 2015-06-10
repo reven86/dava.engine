@@ -28,6 +28,7 @@
 
 
 #include "Utils/UTF8Utils.h"
+#include "Debug/DVAssert.h"
 
 #include <utf8.h>
 
@@ -40,6 +41,7 @@ static_assert(sizeof(wchar_t) == 2, "check size of wchar_t on current platform")
 
 void UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString & result)
 {
+	DVASSERT(nullptr != string);
 	result.clear();
     utf8::utf8to16(string, string + size, std::back_inserter(result));
 };
@@ -57,7 +59,8 @@ static_assert(sizeof(wchar_t) == 4, "check size of wchar_t on current platform")
 
 void UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString & result)
 {
-	result.clear();
+	DVASSERT(nullptr != string);
+	result.reserve(size);
     utf8::utf8to32(string, string + size, std::back_inserter(result));
 };
 

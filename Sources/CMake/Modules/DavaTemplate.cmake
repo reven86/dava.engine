@@ -311,7 +311,7 @@ elseif( MACOS )
     endif()
 
 elseif ( MSVC )       
-    if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32" )
+    if( ${EXECUTABLE_FLAG} STREQUAL WIN32 )
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY: /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" ) 
 
     else()
