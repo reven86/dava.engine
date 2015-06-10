@@ -255,7 +255,7 @@ namespace DAVA
 #define INTROSPECTION(_type, _members) \
 	static const DAVA::InspInfo* TypeInfo() \
 	{ \
-		typedef _type ObjectT; \
+		using ObjectT = _type; \
 		static const DAVA::InspMember* data[] = { _members }; \
 		static DAVA::InspInfo info = DAVA::InspInfo(#_type, data, sizeof(data)/sizeof(data[0])); \
 		info.OneTimeMetaSafeSet<_type>(); \
@@ -270,7 +270,7 @@ namespace DAVA
 #define  INTROSPECTION_EXTEND(_type, _base_type, _members) \
 	static const DAVA::InspInfo* TypeInfo() \
 	{ \
-		typedef _type ObjectT; \
+		using ObjectT = _type; \
 		static const DAVA::InspMember* data[] = { _members }; \
 		static DAVA::InspInfo info = DAVA::InspInfo(_base_type::TypeInfo(), #_type, data, sizeof(data)/sizeof(data[0])); \
 		info.OneTimeMetaSafeSet<_type>(); \

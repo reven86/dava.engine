@@ -30,7 +30,7 @@
 #include "Platform/DateTime.h"
 #include <stdlib.h>
 
-#ifdef __DAVAENGINE_WIN32__
+#ifdef __DAVAENGINE_WINDOWS__
 #include <time.h>
 #endif
 
@@ -167,7 +167,7 @@ void DateTime::UpdateLocalTimeStructure()
     
 void DateTime::GmTimeThreadSafe(tm* resultGmTime, const time_t *unixTimestamp)
 {
-#ifdef __DAVAENGINE_WIN32__
+#ifdef __DAVAENGINE_WINDOWS__
     gmtime_s(resultGmTime, unixTimestamp);
 #else
     gmtime_r(unixTimestamp, resultGmTime);
@@ -176,7 +176,7 @@ void DateTime::GmTimeThreadSafe(tm* resultGmTime, const time_t *unixTimestamp)
     
 void DateTime::LocalTimeThreadSafe(tm* resultLocalTime, const time_t *unixTimestamp)
 {
-#ifdef __DAVAENGINE_WIN32__
+#ifdef __DAVAENGINE_WINDOWS__
     localtime_s(resultLocalTime, unixTimestamp);
 #else
     localtime_r(unixTimestamp, resultLocalTime);

@@ -30,26 +30,35 @@
 #ifndef __DAVAENGINE_BUFFER_H__
 #define __DAVAENGINE_BUFFER_H__
 
+#include "Base/BaseTypes.h"
 #include <libuv/uv.h>
-
-#include <Base/BaseTypes.h>
 
 namespace DAVA
 {
 namespace Net
 {
 
-typedef uv_buf_t Buffer;
+using Buffer = uv_buf_t;
 
 template<typename T>
 Buffer CreateBuffer(T* buffer, std::size_t count = 1)
 {
+#if defined(__DAVAENGINE_WIN_UAP__)
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return Buffer();
+#else
     return uv_buf_init(static_cast<char8*>(static_cast<void*>(buffer)), static_cast<uint32>(sizeof(T) * count));
+#endif
 }
 
 inline Buffer CreateBuffer(void* rawBuffer, std::size_t size)
 {
+#if defined(__DAVAENGINE_WIN_UAP__)
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return Buffer();
+#else
     return uv_buf_init(static_cast<char8*>(rawBuffer), static_cast<uint32>(size));
+#endif
 }
 
 /*
@@ -58,12 +67,22 @@ inline Buffer CreateBuffer(void* rawBuffer, std::size_t size)
 template<typename T>
 Buffer CreateBuffer(const T* buffer, std::size_t count = 1)
 {
+#if defined(__DAVAENGINE_WIN_UAP__)
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+        return Buffer();
+#else
     return uv_buf_init(static_cast<char8*>(static_cast<void*>(const_cast<T*>(buffer))), static_cast<uint32>(sizeof(T) * count));
+#endif
 }
 
 inline Buffer CreateBuffer(const void* rawBuffer, std::size_t size)
 {
+#if defined(__DAVAENGINE_WIN_UAP__)
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return Buffer();
+#else
     return uv_buf_init(static_cast<char8*>(const_cast<void*>(rawBuffer)), static_cast<uint32>(size));
+#endif
 }
 
 }   // namespace Net

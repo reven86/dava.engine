@@ -154,7 +154,7 @@ private:
     std::aligned_storage<sizeof(SymbolMap), DAVA_ALIGNOF(SymbolMap)>::type symbolStorage;
     BacktraceMap* backtraces;
     SymbolMap* symbols;
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
     bool symInited;     // Flag indicating that SymInitialize has been called on Win32
 #endif
 
