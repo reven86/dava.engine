@@ -476,11 +476,10 @@ bool FileSystem::IsFile(const FilePath & pathToCheck)
 bool FileSystem::IsDirectory(const FilePath & pathToCheck)
 {
 #if defined (__DAVAENGINE_WIN32__)
-
 	DWORD stats = GetFileAttributesA(pathToCheck.GetAbsolutePathname().c_str());
 	return (stats != -1) && (0 != (stats & FILE_ATTRIBUTE_DIRECTORY));
-
-#elif defined(__DAVAENGINE_ANDROID__)
+#else //defined (__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_ANDROID__)
     
 	String path = pathToCheck.GetAbsolutePathname();
 	if (path.length() &&
@@ -488,15 +487,14 @@ bool FileSystem::IsDirectory(const FilePath & pathToCheck)
 		path.erase(path.begin() + path.length() - 1);
 	if (IsAPKPath(path))
 		return (dirSet.find(path) != dirSet.end());
-#else
+#endif //#if defined(__DAVAENGINE_ANDROID__)
 
 	struct stat s;
 	if(stat(pathToCheck.GetAbsolutePathname().c_str(), &s) == 0)
 	{
 		return (0 != (s.st_mode & S_IFDIR));
 	}
-
-#endif
+#endif //#if defined (__DAVAENGINE_WIN32__)
 
 	return false;
 }
