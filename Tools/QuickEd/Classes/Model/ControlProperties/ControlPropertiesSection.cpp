@@ -33,6 +33,7 @@
 #include "ValueProperty.h"
 #include "LocalizedTextValueProperty.h"
 #include "FontValueProperty.h"
+#include "DependedOnLayoutProperty.h"
 
 #include "UI/UIControl.h"
 
@@ -53,7 +54,11 @@ ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *aControl, co
 
             ValueProperty *prop = nullptr;
             //TODO: move it to fabric class
-            if (strcmp(member->Name(), "text") == 0)
+            if (strcmp(member->Name(), "size") == 0 || strcmp(member->Name(), "position") == 0)
+            {
+                prop = new DependedOnLayoutProperty(control, member, dynamic_cast<DependedOnLayoutProperty*>(sourceProperty), cloneType);
+            }
+            else if (strcmp(member->Name(), "text") == 0)
             {
                 prop = new LocalizedTextValueProperty(control, member, dynamic_cast<LocalizedTextValueProperty*>(sourceProperty), cloneType);
             }

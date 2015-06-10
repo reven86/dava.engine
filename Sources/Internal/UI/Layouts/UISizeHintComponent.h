@@ -91,7 +91,7 @@ namespace DAVA
         float32 horizontalValue = 100.0f;
         
         eSizePolicy verticalPolicy = IGNORE;
-        float32 verticalValue = 50.0f;
+        float32 verticalValue = 100.0f;
         
     public:
         INTROSPECTION_EXTEND(UISizeHintComponent, UIComponent,

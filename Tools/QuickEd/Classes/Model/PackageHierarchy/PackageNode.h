@@ -90,6 +90,11 @@ public:
 
 private:
     void RefreshPropertiesInInstances(ControlNode *node, AbstractProperty *property);
+
+    void RefreshLayout(ControlNode *control);
+    void CollectRootControlsToRefreshLayout(ControlNode *node, DAVA::Vector<ControlNode*> &roots);
+    void RestoreProperties(ControlNode *control);
+    void NotifyPropertyChanged(ControlNode *control);
     
 private:
     DAVA::FilePath path;
