@@ -81,7 +81,7 @@ private:
     int pipes[2];
 #endif
 
-    int exitCode;
+    long exitCode;
     
 };
 };
