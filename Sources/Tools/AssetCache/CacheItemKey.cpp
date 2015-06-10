@@ -87,7 +87,7 @@ bool CacheItemKey::operator() (const CacheItemKey &left, const CacheItemKey &rig
     
 String CacheItemKey::ToString() const
 {
-    constexpr auto HASH_STRING_SIZE = INTERNAL_DATA_SIZE * 2 + 1;
+    const auto HASH_STRING_SIZE = INTERNAL_DATA_SIZE * 2 + 1;
     
     std::array<char8, HASH_STRING_SIZE> primaryHashBuffer;
     std::array<char8, HASH_STRING_SIZE> secondaryHashBuffer;

@@ -126,7 +126,7 @@ void CacheDB::Load()
     
     usedSize = header->GetUInt64("usedSize");
     auto cacheSize = header->GetUInt64("itemsCount");
-    fullCache.reserve(cacheSize);
+    fullCache.reserve(static_cast<size_t>(cacheSize));
 
     ScopedPtr<KeyedArchive> cache(new KeyedArchive());
     cache->Load(file);

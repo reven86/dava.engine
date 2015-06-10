@@ -166,13 +166,12 @@ String DeviceInfo::GetUDID()
         SafeDeleteArray(buf);
     }
 
-    MD5 md5;
-    md5.Init();
-    md5.Update((uint8*)res.c_str(), (uint32)res.size());
-    md5.Final();
+
+	uint8 md5Digest[MD5::DIGEST_SIZE];
+	MD5::ForData((uint8*)res.c_str(), (uint32)res.size(), md5Digest);
 
     char8 digest[MD5::DIGEST_SIZE * 2 + 1];
-    MD5::HashToChar(md5.GetDigest(), digest, MD5::DIGEST_SIZE * 2 + 1);
+	MD5::HashToChar(md5Digest, digest, MD5::DIGEST_SIZE * 2 + 1);
 
     return String(digest);
 }

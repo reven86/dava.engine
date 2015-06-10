@@ -35,6 +35,7 @@
 
 #include "AssetCache/CacheItemKey.h"
 
+#include <atomic>
 
 namespace std
 {
@@ -141,7 +142,7 @@ private:
     FASTCACHE fastCache;                //runtime, week storage
     CACHE fullCache;                    //stored on disk, strong storage
     
-    std::atomic_bool dbStateChanged;    //flag about changes in db
+	std::atomic<bool> dbStateChanged;    //flag about changes in db
 };
     
 }; // end of namespace AssetCache
