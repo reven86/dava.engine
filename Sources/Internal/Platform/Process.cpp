@@ -56,7 +56,7 @@ namespace DAVA
 		runArgs = args;
 		running = false;
 		
-#if defined (__DAVAENGINE_WIN32__)
+#if defined (__DAVAENGINE_WINDOWS__)
 		childProcIn[0] = childProcIn[1] = 0;
 		childProcOut[0] = childProcOut[1] = 0;
 #else

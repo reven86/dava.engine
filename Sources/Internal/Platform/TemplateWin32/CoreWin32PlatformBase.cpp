@@ -26,14 +26,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "Platform/TemplateWin32/CorePlatformWin32.h"
-#include "Platform/TemplateWin32/WindowsSpecifics.h"
-#include "Platform/Thread.h"
-#include "Utils/Utils.h"
-
+#include "Base/Platform.h"
 #if defined(__DAVAENGINE_WIN32__)
 
+#include "Platform/TemplateWin32/CorePlatformWin32.h"
+#include "Platform/Thread.h"
+#include "Utils/UTF8Utils.h"
 #include <shellapi.h>
 
 namespace DAVA
@@ -57,28 +55,7 @@ HWND CoreWin32PlatformBase::GetWindow() const
 
 void CoreWin32PlatformBase::InitArgs()
 {
-    LPWSTR *szArglist;
-    int nArgs;
-    int i;
-    szArglist = ::CommandLineToArgvW(::GetCommandLineW(), &nArgs);
-    if( NULL == szArglist )
-    {
-        Logger::Error("CommandLineToArgvW failed\n");
-        return;
-    }
-    else
-    {
-        Vector<String> & cl = GetCommandLine();
-        for( i=0; i<nArgs; i++)
-        {
-            WideString w = szArglist[i];
-            String nonWide = WStringToString(w);
-            cl.push_back(nonWide);
-            Logger::FrameworkDebug("%d: %s\n", i, nonWide.c_str());
-        }
-    }
-    // Free memory allocated for CommandLineToArgvW arguments.
-    LocalFree(szArglist);
+    SetCommandLine(WStringToString(::GetCommandLineW()));
 }
 
 void CoreWin32PlatformBase::Quit()

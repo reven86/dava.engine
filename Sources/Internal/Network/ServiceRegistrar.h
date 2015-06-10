@@ -82,7 +82,7 @@ inline ServiceRegistrar::Entry::Entry(uint32 id, const char8* serviceName, Servi
     , creator(creatorFunc)
     , deleter(deleterFunc)
 {
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
     strncpy_s(name, serviceName, _TRUNCATE);
 #else
     strncpy(name, serviceName, MAX_NAME_LENGTH);
