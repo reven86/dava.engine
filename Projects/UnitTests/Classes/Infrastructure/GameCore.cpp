@@ -39,7 +39,7 @@ using namespace DAVA;
 namespace
 {
 
-String runOnlyThisTest = "";
+String runOnlyThisTest = "StringFormatTest";
 bool teamcityOutputEnabled = true;
 
 }
