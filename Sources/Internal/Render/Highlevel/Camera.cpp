@@ -455,11 +455,11 @@ void Camera::PrepareDynamicParameters(Vector4 *externalClipPlane)
         m.Transpose();
         Vector4 v = Vector4 (Sign(clipPlane.x), Sign(clipPlane.y), 1, 1)*m;
         
-        Vector4 scaledPlane = clipPlane * (2.0f / v.DotProduct(clipPlane));
+        Vector4 scaledPlane = clipPlane * (1.0f / v.DotProduct(clipPlane));
 
         projMatrix.data[2] = scaledPlane.x;
         projMatrix.data[6] = scaledPlane.y;
-        projMatrix.data[10] = scaledPlane.z+1;
+        projMatrix.data[10] = scaledPlane.z;
         projMatrix.data[14] = scaledPlane.w;
        
     }

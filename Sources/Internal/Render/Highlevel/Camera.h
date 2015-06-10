@@ -403,15 +403,7 @@ public:
 	
 	void ExtractValuesFromMatrix();
 	void ConstructMatrixFromValues();
-	void Recalc();	
-    
-	
-	/** calls glFrustum for projection matrix */
-	void ApplyFrustum();
-	
-	/** operates on model-view matrix */
-	void ApplyTransform();
-    
+	void Recalc();	    		    
     
     void CalculateZoomFactor();
     

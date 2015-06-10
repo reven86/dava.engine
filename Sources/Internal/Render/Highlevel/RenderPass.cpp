@@ -50,7 +50,7 @@ RenderPass::RenderPass(const FastName & _name) : passName(_name)
     passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     passConfig.colorBuffer[0].storeAction = rhi::STOREACTION_NONE;
     passConfig.colorBuffer[0].clearColor[0] = 0.0f;
-    passConfig.colorBuffer[0].clearColor[1] = 0.3f;
+    passConfig.colorBuffer[0].clearColor[1] = 0.0f;
     passConfig.colorBuffer[0].clearColor[2] = 0.0f;
     passConfig.colorBuffer[0].clearColor[3] = 1.0f;
     passConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
@@ -270,19 +270,12 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
 }
 
 void MainForwardRenderPass::Draw(RenderSystem * renderSystem)
-{
+{ 
     Camera *mainCamera = renderSystem->GetMainCamera();        
     Camera *drawCamera = renderSystem->GetDrawCamera();   
     DVASSERT(mainCamera);
-    DVASSERT(drawCamera);
-    Vector4 clip(0, 0, -1, 1);
-    //Vector4 clip(1, 0, 0, 0);
-    /*drawCamera->SetPosition(Vector3(50, -54, 36));
-    drawCamera->SetTarget(Vector3(52, -45, 32));
-    drawCamera->SetAspect(1.0f/0.97097f);*/
-    drawCamera->SetPosition(Vector3(5, 5, 5));
-    drawCamera->SetTarget(Vector3(0, 0, 0));
-    drawCamera->SetupDynamicParameters(&clip);    
+    DVASSERT(drawCamera);        
+    drawCamera->SetupDynamicParameters();    
     if (mainCamera!=drawCamera)    
         mainCamera->PrepareDynamicParameters();
 	
@@ -398,7 +391,7 @@ void WaterRefractionRenderPass::Draw(RenderSystem * renderSystem)
 
     //-0.1f ?
     //Vector4 clipPlane(0,0, -1, waterLevel*3);
-    Vector4 clipPlane(0, 0, -1, waterLevel/* + 0.1f*/);
+    Vector4 clipPlane(0, 0, -1, waterLevel + 0.1f);
 
     Camera* currMainCamera = passMainCamera;
     Camera* currDrawCamera;

@@ -91,8 +91,8 @@ void Matrix4::glFrustum(float32 l, float32 r, float32 b, float32 t, float32 n, f
     
     data[2] = 0.0f;
     data[6] = 0.0f;
-    data[10] = - (f + n) / f_n;
-    data[14] = - 2 * f * n / f_n;
+    data[10] = - f  / f_n;     //moved to [0, 1] depth clip range
+    data[14] = - f * n / f_n;  //moved to [0, 1] depth clip range
     
     data[3] = 0;
     data[7] = 0;

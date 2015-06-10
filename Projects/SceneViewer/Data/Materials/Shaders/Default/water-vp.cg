@@ -23,6 +23,12 @@ property float4 lightPosition0 : dynamic,instance : ;
 property float4x4 worldViewProjMatrix : dynamic,instance : ui_hidden=yes ;
 property float4x4 worldViewInvTransposeMatrix : dynamic,instance : ;
 property float4x4 worldViewMatrix : dynamic,instance : ;
+property float globalTime : dynamic,instance : ;
+
+property float2 normal0ShiftPerSecond : static,instance : ; 
+property float2 normal1ShiftPerSecond : static,instance : ;
+property float normal0Scale : static,instance : ;
+property float normal1Scale : static,instance : ;
 
 #if MATERIAL_LIGHTMAP
 property float2 uvOffset : static,instance : ui_hidden=yes ;
@@ -31,9 +37,7 @@ property float2 uvScale : static,instance : ui_hidden=yes ;
 
 VPROG_BEGIN
     float3 in_pos      = VP_IN_POSITION;    
-    float4 inPosition = float4(in_pos, 1.0);
-    VP_OUT(uv) =  VP_IN_TEXCOORD;
-    VP_OUT(uv1) = VP_IN_TEXCOORD1;
+    float4 inPosition = float4(in_pos, 1.0);    
     float4 resPosition = mul( inPosition, worldViewProjMatrix );
     VP_OUT_POSITION   = resPosition;
     VP_OUT(normalizedFragPos) = resPosition;//.xy/resPosition.w;
@@ -53,5 +57,28 @@ VPROG_BEGIN
     v.y = dot (eyeCoordsPosition, b);
     v.z = dot (eyeCoordsPosition, n);
     VP_OUT(cameraToPointInTangentSpace) = v;
+    
+    
+
+    VP_OUT(uv) =  VP_IN_TEXCOORD;
+    VP_OUT(uv1) = VP_IN_TEXCOORD1;
+    float2 inTexCoord0 = VP_IN_TEXCOORD;
+    float2 inTexCoord1 = VP_IN_TEXCOORD1;
+    VP_OUT(uv) = inTexCoord0 * normal0Scale + normal0ShiftPerSecond * globalTime;
+    #if SEPARATE_NORMALMAPS
+        #if DEBUG_NORMAL_ROTATION
+            float rota = normalRotation/180.0*3.1415;        
+            float cr = cos(rota);
+            float sr = sin(rota);
+            float2 rotatedTC = float2(inTexCoord0.x * cr + inTexCoord0.y * sr, inTexCoord0.x * sr - inTexCoord0.y * cr);
+            VP_OUT(uv1) = rotatedTC * normal1Scale + normal1ShiftPerSecond * globalTime;
+        #else            
+            VP_OUT(uv1) = inTexCoord0 * normal1Scale + normal1ShiftPerSecond * globalTime;
+        #endif
+    #else
+        VP_OUT(uv1) = float2(inTexCoord0.x+inTexCoord0.y, inTexCoord0.x-inTexCoord0.y) * normal1Scale + normal1ShiftPerSecond * globalTime;
+    #endif
+    
+
     
 VPROG_END
