@@ -43,7 +43,7 @@ namespace
 inline size_t FormattedLengthV(const char8* format, va_list args)
 {
     DVASSERT(format != nullptr);
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
     int result = _vscprintf(format, args);
     DVASSERT(result >= 0);
     return result >= 0 ? static_cast<size_t>(result) : 0;
@@ -57,7 +57,7 @@ inline size_t FormattedLengthV(const char8* format, va_list args)
 inline size_t FormattedLengthV(const char16* format, va_list args)
 {
     DVASSERT(format != nullptr);
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
     int result = _vscwprintf(format, args);
     DVASSERT(result >= 0);
     return result >= 0 ? static_cast<size_t>(result) : 0;
@@ -112,7 +112,7 @@ WideString FormatVL(const char16* format, va_list args)
     if (length > 0)
     {
         result.resize(length + 1);
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
         _vsnwprintf(&*result.begin(), length + 1, format, args);
 #else
         vswprintf(&*result.begin(), length + 1, format, args);
