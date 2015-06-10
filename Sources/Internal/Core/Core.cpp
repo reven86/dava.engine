@@ -193,8 +193,8 @@ void Core::CreateRenderManager()
     rhi::Api renderer = (rhi::Api)options->GetInt32("renderer");
     
 #if defined(__DAVAENGINE_WIN32__)
-    renderer = rhi::RHI_DX9;
-//    renderer = rhi::RHI_GLES2;
+//    renderer = rhi::RHI_DX9;
+    renderer = rhi::RHI_GLES2;
 #elif defined(__DAVAENGINE_MACOS__)
     renderer = rhi::RHI_GLES2;
 #elif defined(__DAVAENGINE_IPHONE__)

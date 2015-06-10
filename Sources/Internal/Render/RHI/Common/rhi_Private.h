@@ -190,7 +190,7 @@ void    SetVertexTexture( Handle cmdBuf, uint32 unitIndex, Handle tex );
 
 void    SetIndices( Handle cmdBuf, Handle ib );
 
-void    SetQueryBuffer( Handle cmdBuf );
+void    SetQueryBuffer( Handle cmdBuf, Handle queryBuf );
 void    SetQueryIndex( Handle cmdBuf, uint32 index );
     
 void    SetFragmentConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle buf );

@@ -477,9 +477,9 @@ SetIndices( Handle cmdBuf, Handle ib )
 }
 
 void
-SetQueryBuffer( Handle cmdBuf )
+SetQueryBuffer( Handle cmdBuf, Handle queryBuf )
 {
-    (*_Impl.impl_CommandBuffer_SetQueryBuffer)( cmdBuf );
+    (*_Impl.impl_CommandBuffer_SetQueryBuffer)( cmdBuf, queryBuf );
 }
 
 void

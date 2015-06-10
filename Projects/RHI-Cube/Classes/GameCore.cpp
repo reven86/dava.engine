@@ -1023,8 +1023,9 @@ GameCore::Draw()
 {
 //    sceneRenderTest->Render();
 //    rhiDraw();
-    manticoreDraw();
+//    manticoreDraw();
 //    rtDraw();
+    visibilityTestDraw();
 }
 
 
@@ -1314,6 +1315,159 @@ STOP_NAMED_TIMING("app.cb--upd");
     rhi::RenderPass::End( pass );
 
     #undef USE_SECOND_CB
+}
+
+void
+GameCore::visibilityTestDraw()
+{
+    rhi::RenderPassConfig       pass_desc;
+    float                       clr[4]                  = { 1.0f, 0.6f, 0.0f, 1.0f };
+    Matrix4                     view;
+    Matrix4                     projection;
+    static bool                 visiblityTestDone       = false;
+    static int                  visiblityTestRepeatTTW  = 0;
+    static rhi::HQueryBuffer    visibilityBuffer        (rhi::InvalidHandle);
+
+
+    StatSet::ResetAll();
+
+    projection.Identity();
+    view.BuildProjectionFovLH(75.0f, float(VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx) / float(VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy), 1.0f, 1000.0f);
+
+    DbgDraw::SetScreenSize( VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx, VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy );
+
+    {
+    char    title[128] = "RHI Cube  -  ";
+
+    switch( rhi::HostApi() )
+    {
+        case rhi::RHI_DX9   : strcat( title, "DX9" ); break;
+        case rhi::RHI_DX11  : strcat( title, "DX11" ); break;
+        case rhi::RHI_GLES2 : strcat( title, "GL" ); break;
+        case rhi::RHI_METAL : strcat( title, "Metal" ); break;
+    }
+    DbgDraw::SetNormalTextSize();
+//    DbgDraw::SetSmallTextSize();
+    DbgDraw::Text2D( 10, 50, 0xFFFFFFFF, title );
+    
+    if( visiblityTestDone )    
+    {
+        for( unsigned i=0; i!=2; ++i )
+        {
+            if( rhi::QueryIsReady( visibilityBuffer, i ) )
+            {
+                DbgDraw::Text2D( 10, 80+i*(DbgDraw::NormalCharH+1), 0xFFFFFFFF, "obj#%u = %i", i, rhi::QueryValue( visibilityBuffer, i ) );
+            }
+            else
+            {
+                DbgDraw::Text2D( 10, 80+i*(DbgDraw::NormalCharH+1), 0xFFFFFFFF, "obj#%u = not ready", i );
+            }
+        }
+    }
+    }
+
+    pass_desc.colorBuffer[0].loadAction      = rhi::LOADACTION_CLEAR;
+    pass_desc.colorBuffer[0].storeAction     = rhi::STOREACTION_NONE;
+    pass_desc.colorBuffer[0].clearColor[0]   = 0.25f;
+    pass_desc.colorBuffer[0].clearColor[1]   = 0.25f;
+    pass_desc.colorBuffer[0].clearColor[2]   = 0.35f;
+    pass_desc.colorBuffer[0].clearColor[3]   = 1.0f;
+    pass_desc.depthStencilBuffer.loadAction  = rhi::LOADACTION_CLEAR;
+    pass_desc.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+
+    if( !visiblityTestDone )
+    {
+        if( !visibilityBuffer.IsValid() )
+        {
+            visibilityBuffer = rhi::CreateQueryBuffer( 16 );
+        }
+
+        pass_desc.queryBuffer = visibilityBuffer;
+    }
+
+    rhi::HPacketList    pl[2];
+    rhi::HRenderPass    pass = rhi::AllocateRenderPass( pass_desc, 1, pl );
+
+
+    rhi::RenderPass::Begin( pass );
+    rhi::BeginPacketList( pl[0] );
+
+    uint64  cube_t1 = SystemTimer::Instance()->AbsoluteMS();
+    uint64  dt      = cube_t1 - cube_t0;
+    
+    cube_angle += 0.001f*float(dt) * (30.0f*3.1415f/180.0f);
+    cube_t0     = cube_t1;
+    
+    Matrix4 world;
+    Matrix4 view_proj;
+    
+    world.Identity();
+    world.CreateRotation( Vector3(0,1,0), cube_angle );
+//    world.CreateRotation( Vector3(1,0,0), cube_angle );
+    world.SetTranslationVector( Vector3(0,0,5) );
+    //world *= Matrix4::MakeScale(Vector3(0.5f, 0.5f, 0.5f));
+    
+    view_proj.Identity();
+    view_proj.BuildProjectionFovLH(75.0f, float(VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dx) / float(VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize().dy), 1.0f, 1000.0f);
+    
+    
+    rhi::ConstBuffer::SetConst( cube.fp_const, 0, 1, clr );
+    rhi::ConstBuffer::SetConst( cube.vp_const[0], 0, 4, view_proj.data );
+    rhi::ConstBuffer::SetConst( cube.vp_const[1], 0, 4, world.data );
+
+    rhi::Packet packet;
+
+    packet.vertexStreamCount    = 1;
+    packet.vertexStream[0]      = cube.vb;
+    packet.vertexLayoutUID      = cube.vb_layout;
+//-    packet.indexBuffer          = rhi::InvalidHandle;
+    packet.renderPipelineState  = cube.ps;
+    packet.vertexConstCount     = 2;
+    packet.vertexConst[0]       = cube.vp_const[0];
+    packet.vertexConst[1]       = cube.vp_const[1];
+    packet.fragmentConstCount   = 1;
+    packet.fragmentConst[0]     = cube.fp_const;
+    packet.textureSet           = cube.texSet;
+    packet.samplerState         = cube.samplerState;
+    packet.primitiveType        = rhi::PRIMITIVE_TRIANGLELIST;
+    packet.primitiveCount       = 12;
+
+    rhi::UpdateConstBuffer4fv( cube.fp_const, 0, clr, 1 );
+    rhi::UpdateConstBuffer4fv( cube.vp_const[0], 0, view_proj.data, 4 );
+    rhi::UpdateConstBuffer4fv( cube.vp_const[1], 0, world.data, 4 );
+    if( !visiblityTestDone )
+        packet.queryIndex = 0;
+    rhi::AddPacket( pl[0], packet );
+
+
+    world.SetTranslationVector( Vector3(0,0,20) );
+    rhi::UpdateConstBuffer4fv( cube.vp_const[1], 0, world.data, 4 );
+    if( !visiblityTestDone )
+        packet.queryIndex = 1;
+    rhi::AddPacket( pl[0], packet );
+
+
+
+
+    DbgDraw::FlushBatched( pl[0], view, projection );
+
+    rhi::EndPacketList( pl[0] );
+
+    rhi::RenderPass::End( pass );
+
+
+    
+    if( !visiblityTestDone )
+    {
+        visiblityTestDone       = true;
+        visiblityTestRepeatTTW  = 5;
+    }
+
+    if( visiblityTestDone )
+    {
+        if( --visiblityTestRepeatTTW < 0 )
+            visiblityTestDone = false;
+    }
 }
 
 

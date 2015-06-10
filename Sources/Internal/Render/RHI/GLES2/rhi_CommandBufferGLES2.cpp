@@ -289,9 +289,9 @@ gles2_CommandBuffer_SetQueryIndex( Handle cmdBuf, uint32 objectIndex )
 //------------------------------------------------------------------------------
 
 static void
-gles2_CommandBuffer_SetQueryBuffer( Handle cmdBuf )
+gles2_CommandBuffer_SetQueryBuffer( Handle cmdBuf, Handle queryBuf )
 {
-    CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_QUERY_BUFFER, cmdBuf );
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_QUERY_BUFFER, queryBuf );
 }
 
 
@@ -692,19 +692,7 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
 
             case GLES2__SET_QUERY_INDEX :
             {
-                uint32 qi = uint32(arg[0]);
-
-                if( qi != cur_query_i  &&  cur_query_i != InvalidIndex )
-                {
-                    QueryBufferGLES2::EndQuery( cur_query_buf, qi );
-                }
-
-                if( qi != InvalidIndex )
-                {
-                    QueryBufferGLES2::BeginQuery( cur_query_buf, qi );
-                }
-
-                cur_query_i = qi;
+                cur_query_i = uint32(arg[0]);
                 c += 1;
             }   break;
 
@@ -843,10 +831,15 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                         ConstBufferGLES2::SetToRHI( fp_const[i], fp_const_data[i] );
                 }
 
+                if( cur_query_i != InvalidIndex )
+                    QueryBufferGLES2::BeginQuery( cur_query_buf, cur_query_i );
                 
                 GL_CALL(glDrawArrays( mode, 0, v_cnt ));
                 StatSet::IncStat( stat_DP, 1 );
 //Logger::Info( "  dp" );
+                
+                if( cur_query_i != InvalidIndex )
+                    QueryBufferGLES2::EndQuery( cur_query_buf, cur_query_i );
 
                 c += 2;
             }   break;
@@ -881,9 +874,15 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                     PipelineStateGLES2::SetVertexDeclToRHI( cur_ps, cur_vdecl, firstVertex );
                 }
 
+                if( cur_query_i != InvalidIndex )
+                    QueryBufferGLES2::BeginQuery( cur_query_buf, cur_query_i );
+
                 GL_CALL(glDrawElements( mode, v_cnt, GL_UNSIGNED_SHORT, (void*)(startIndex*sizeof(uint16)) ));
                 StatSet::IncStat( stat_DIP, 1 );
 //Logger::Info( "  dip" );
+
+                if( cur_query_i != InvalidIndex )
+                    QueryBufferGLES2::EndQuery( cur_query_buf, cur_query_i );
 
                 c += 4;
             }   break;
@@ -909,11 +908,6 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
 
             immediate_cmd_ttw = 10;
         }
-    }
-    
-    if( cur_query_i != InvalidIndex )
-    {
-        QueryBufferGLES2::EndQuery( cur_query_buf, cur_query_i );
     }
 
     _cmd.clear();

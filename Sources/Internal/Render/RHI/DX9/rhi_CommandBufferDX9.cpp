@@ -270,9 +270,9 @@ dx9_CommandBuffer_SetQueryIndex( Handle cmdBuf, uint32 objectIndex )
 //------------------------------------------------------------------------------
 
 static void
-dx9_CommandBuffer_SetQueryBuffer( Handle cmdBuf )
+dx9_CommandBuffer_SetQueryBuffer( Handle cmdBuf, Handle queryBuf )
 {
-    CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_QUERY_BUFFER, cmdBuf );
+    CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_QUERY_BUFFER, queryBuf );
 }
 
 
@@ -620,19 +620,7 @@ SCOPED_FUNCTION_TIMING();
 
             case DX9__SET_QUERY_INDEX :
             {
-                uint32 qi = uint32(arg[0]);
-
-                if( qi != cur_query_i  &&  cur_query_i != InvalidIndex )
-                {
-                    QueryBufferDX9::EndQuery( cur_query_buf, qi );
-                }
-
-                if( qi != InvalidIndex )
-                {
-                    QueryBufferDX9::BeginQuery( cur_query_buf, qi );
-                }
-
-                cur_query_i = qi;
+                cur_query_i = uint32(arg[0]);
                 c += 1;
             }   break;
 
@@ -701,8 +689,15 @@ SCOPED_FUNCTION_TIMING();
             
             case DX9__DRAW_PRIMITIVE :
             {
+                if( cur_query_i != InvalidIndex )
+                    QueryBufferDX9::BeginQuery( cur_query_buf, cur_query_i );
+
                 DX9_CALL(_D3D9_Device->DrawPrimitive( (D3DPRIMITIVETYPE)(arg[0]), /*base_vertex*/0, UINT(arg[1]) ),"DrawPrimitive");
                 StatSet::IncStat( stat_DP, 1 );
+                
+                if( cur_query_i != InvalidIndex )
+                    QueryBufferDX9::EndQuery( cur_query_buf, cur_query_i );
+
                 c += 2;    
             }   break;
             
@@ -714,7 +709,14 @@ SCOPED_FUNCTION_TIMING();
                 uint32              firstVertex = uint32(arg[3]);
                 uint32              startIndex  = uint32(arg[4]);
 
+                if( cur_query_i != InvalidIndex )
+                    QueryBufferDX9::BeginQuery( cur_query_buf, cur_query_i );
+                
                 DX9_CALL(_D3D9_Device->DrawIndexedPrimitive( type, firstVertex, 0, vertexCount, startIndex, primCount ),"DrawIndexedPrimitive");
+                
+                if( cur_query_i != InvalidIndex )
+                    QueryBufferDX9::EndQuery( cur_query_buf, cur_query_i );
+                
                 StatSet::IncStat( stat_DIP, 1 );
                 c += 5;
             }   break;
@@ -730,11 +732,6 @@ SCOPED_FUNCTION_TIMING();
             default:
                 DVASSERT("unknown DX9 render-command");
         }
-    }
-
-    if( cur_query_i != InvalidIndex )
-    {
-        QueryBufferDX9::EndQuery( cur_query_buf, cur_query_i );
     }
 
     _cmd.clear();

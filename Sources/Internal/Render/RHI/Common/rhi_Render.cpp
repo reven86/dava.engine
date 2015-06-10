@@ -678,7 +678,12 @@ BeginPacketList( HPacketList packetList )
 
     for( unsigned i=0; i!=countof(pl->curVertexStream); ++i )
         pl->curVertexStream[i] = InvalidHandle;
+    
 
+    CommandBuffer::SetCullMode( pl->cmdBuf, CULL_NONE );
+    
+    if( pl->queryBuffer != rhi::InvalidHandle )
+        CommandBuffer::SetQueryBuffer( pl->cmdBuf, pl->queryBuffer );
 
     pl->batchIndex = 0;
 }
@@ -788,9 +793,9 @@ AddPackets( HPacketList packetList, const Packet* packet, uint32 packetCount )
         }
 
         
-        if( p->queryIndex != InvalidIndex )
+//        if( p->queryIndex != InvalidIndex )
         {
-            rhi::CommandBuffer::SetQueryIndex( pl->queryBuffer, p->queryIndex );
+            rhi::CommandBuffer::SetQueryIndex( cmdBuf, p->queryIndex );
         }        
 
         if( p->indexBuffer != InvalidHandle )

@@ -107,7 +107,7 @@ Dispatch
     void    (*impl_CommandBuffer_SetVertexTexture)( Handle, uint32, Handle );
     void    (*impl_CommandBuffer_SetIndices)( Handle, Handle );
     void    (*impl_CommandBuffer_SetQueryIndex)( Handle, uint32 );
-    void    (*impl_CommandBuffer_SetQueryBuffer)( Handle );
+    void    (*impl_CommandBuffer_SetQueryBuffer)( Handle, Handle );
     void    (*impl_CommandBuffer_SetFragmentConstBuffer)( Handle, uint32, Handle );
     void    (*impl_CommandBuffer_SetFragmentTexture)( Handle, uint32, Handle );
     void    (*impl_CommandBuffer_SetDepthStencilState)( Handle, Handle );
