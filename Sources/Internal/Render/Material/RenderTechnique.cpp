@@ -238,9 +238,8 @@ void RenderTechniqueSingleton::ClearRenderTechniques()
         RenderTechnique* technique = x.second;
         if (technique != nullptr)
         {
-            DVASSERT(technique->GetRetainCount() > 1);  // If reference count is less than 2 then RenderTechnique
-                                                        // has been released bypassing ReleaseRenderTechnique
-            technique->Release();
+            // Release only techniques that doesn't have external references, i.e. number 
+            // of technique->Release() call count corrensponds CreateTechniqueByName call count
             if (1 == technique->GetRetainCount())
             {
                 technique->Release();
