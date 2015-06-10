@@ -36,6 +36,9 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "SharedData.h"
 
+#include "UI/Layouts/UILayoutSystem.h"
+#include "UI/UIControlSystem.h"
+
 using namespace DAVA;
 
 EditorCore::EditorCore(QObject *parent)
@@ -58,6 +61,7 @@ EditorCore::EditorCore(QObject *parent)
     connect(mainWindow, &MainWindow::OpenPackageFile, this, &EditorCore::OnOpenPackageFile);
     connect(mainWindow, &MainWindow::SaveAllDocuments, this, &EditorCore::SaveAllDocuments);
     connect(mainWindow, &MainWindow::SaveDocument, this, static_cast<void(EditorCore::*)(int)>(&EditorCore::SaveDocument));
+    connect(mainWindow, &MainWindow::RtlChanged, this, &EditorCore::OnRtlChanged);
 
     connect(documentGroup, &DocumentGroup::DocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
 
@@ -189,6 +193,15 @@ void EditorCore::UpdateLanguage()
     for(auto &document : documents)
     {
         document->RefreshAllControlProperties();
+    }
+}
+
+void EditorCore::OnRtlChanged(bool isRtl)
+{
+    UIControlSystem::Instance()->GetLayoutSystem()->SetRtl(isRtl);
+    for(auto &document : documents)
+    {
+        document->RefreshLayout();
     }
 }
 

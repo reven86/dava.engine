@@ -84,6 +84,7 @@ signals:
     void SaveDocument(int index);
     void CurrentTabChanged(int index);
     void CloseRequested();
+    void RtlChanged(bool isRtl);
 public slots:
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
@@ -102,8 +103,11 @@ private slots:
     
     // Pixelization.
     void OnPixelizationStateChanged();
+    
+    void OnRtlChanged(int arg);
 private:
     void InitLanguageBox();
+    void InitRtlBox();
 	void InitMenu();
     void SetupViewMenu();
     void DisableActions();

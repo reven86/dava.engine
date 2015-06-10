@@ -86,6 +86,9 @@ namespace DAVA
         float32 GetBottomAnchor() const;
         void SetBottomAnchor(float32 anchor);
         
+        bool IsUseRtl() const;
+        void SetUseRtl(bool use);
+
     private:
         static const int32 ANCHOR_LEFT = 0x01;
         static const int32 ANCHOR_HCENTER = 0x02;
@@ -101,7 +104,8 @@ namespace DAVA
         float32 topAnchor = 0.0f;
         float32 vCenterAnchor = 0.0f;
         float32 bottomAnchor = 0.0f;
-        
+        bool useRtl = false;
+
     public:
         INTROSPECTION_EXTEND(UIAnchorHintComponent, UIComponent,
                              PROPERTY("leftAnchorEnabled", "Left Anchor Enabled", IsLeftAnchorEnabled, SetLeftAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
@@ -121,6 +125,8 @@ namespace DAVA
 
                              PROPERTY("bottomAnchorEnabled", "Bottom Anchor Enabled", IsBottomAnchorEnabled, SetBottomAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
                              PROPERTY("bottomAnchor", "Bottom Anchor", GetBottomAnchor, SetBottomAnchor, I_SAVE | I_VIEW | I_EDIT)
+                             
+                             PROPERTY("useRtl", "Use Rtl Align", IsUseRtl, SetUseRtl, I_SAVE | I_VIEW | I_EDIT)
                              );
         
     };

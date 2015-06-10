@@ -65,6 +65,9 @@ namespace DAVA
         float32 GetSpacing() const;
         void SetSpacing(float32 spacing);
         
+        bool IsUseRtl() const;
+        void SetUseRtl(bool use);
+        
     private:
         int32 GetOrientationAsInt() const;
         void SetOrientationFromInt(int32 type);
@@ -73,12 +76,14 @@ namespace DAVA
         eOrientation orientation = HORIZONTAL;
         float32 padding = 0.0f;
         float32 spacing = 0.0f;
+        bool useRtl = false;
         
     public:
         INTROSPECTION_EXTEND(UILinearLayoutComponent, UIComponent,
                              PROPERTY("orientation", InspDesc("Orientation", GlobalEnumMap<eOrientation>::Instance()), GetOrientationAsInt, SetOrientationFromInt, I_SAVE | I_VIEW | I_EDIT)
                              PROPERTY("padding", "Padding", GetPadding, SetPadding, I_SAVE | I_VIEW | I_EDIT)
                              PROPERTY("spacing", "Spacing", GetSpacing, SetSpacing, I_SAVE | I_VIEW | I_EDIT)
+                             PROPERTY("useRtl", "Use Rtl Align", IsUseRtl, SetUseRtl, I_SAVE | I_VIEW | I_EDIT)
                              );
         
     };

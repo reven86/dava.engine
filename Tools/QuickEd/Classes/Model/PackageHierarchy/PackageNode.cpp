@@ -274,6 +274,19 @@ void PackageNode::RemoveImportedPackage(PackageNode *node)
         listener->ImportedPackageWasRemoved(node, importedPackagesNode);
 }
 
+void PackageNode::RefreshLayout()
+{
+    for (int32 i = 0; i < importedPackagesNode->GetCount(); i++)
+    {
+        importedPackagesNode->GetImportedPackage(i)->RefreshLayout();
+    }
+    
+    for (int32 i = 0; i < packageControlsNode->GetCount(); i++)
+    {
+        RefreshLayout(packageControlsNode->Get(i));
+    }
+}
+
 void PackageNode::RefreshPropertiesInInstances(ControlNode *node, AbstractProperty *property)
 {
     for (ControlNode *instance : node->GetInstances())

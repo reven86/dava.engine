@@ -64,4 +64,14 @@ namespace DAVA
         spacing = newSpacing;
     }
 
+    bool UILinearLayoutComponent::IsUseRtl() const
+    {
+        return useRtl;
+    }
+    
+    void UILinearLayoutComponent::SetUseRtl(bool use)
+    {
+        useRtl = use;
+    }
+
 }

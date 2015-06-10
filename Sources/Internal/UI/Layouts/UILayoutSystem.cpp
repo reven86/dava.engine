@@ -16,6 +16,16 @@ namespace DAVA
     {
     }
 
+    bool UILayoutSystem::IsRtl() const
+    {
+        return isRtl;
+    }
+    
+    void UILayoutSystem::SetRtl(bool rtl)
+    {
+        isRtl = rtl;
+    }
+
     void UILayoutSystem::ApplyLayout(UIControl *control)
     {
         DoMeasurePhase(control);
@@ -154,6 +164,8 @@ namespace DAVA
         if (children.empty())
             return;
         
+        bool inverse = isRtl && layout->IsUseRtl() && layout->GetOrientation() == UILinearLayoutComponent::HORIZONTAL;
+        
         const int32 axis = static_cast<int32>(layout->GetOrientation());
         for (UIControl *child : children)
         {
@@ -177,6 +189,8 @@ namespace DAVA
         float32 contentSize = control->GetSize().data[axis] - padding * 2.0f;
         float32 restSize = contentSize - fixedSize - spacesCount * spacing;
         float32 position = padding;
+        if (inverse)
+            position = contentSize + padding;
         for (UIControl *child : children)
         {
             float32 size;
@@ -196,7 +210,10 @@ namespace DAVA
             size = Max(size, 0.0f);
             if (axis == AXIS_X)
             {
-                child->SetPosition(Vector2(position, child->GetPosition().y));
+                if (inverse)
+                    child->SetPosition(Vector2(position - size, child->GetPosition().y));
+                else
+                    child->SetPosition(Vector2(position, child->GetPosition().y));
                 child->SetSize(Vector2(size, child->GetSize().dy));
             }
             else
@@ -205,8 +222,10 @@ namespace DAVA
                 child->SetSize(Vector2(child->GetSize().dx, size));
             }
             
-            position += size;
-            position += spacing;
+            if (inverse)
+                position -= size + spacing;
+            else
+                position += size + spacing;
         }
     }
 
@@ -243,10 +262,30 @@ namespace DAVA
                 
                 if (allowHorizontal && (hint->IsLeftAnchorEnabled() || hint->IsHCenterAnchorEnabled() || hint->IsRightAnchorEnabled()))
                 {
+                    bool leftEnabled = hint->IsLeftAnchorEnabled();
+                    float32 left = hint->GetLeftAnchor();
+
+                    bool rightEnabled = hint->IsRightAnchorEnabled();
+                    float32 right = hint->GetRightAnchor();
+
+                    bool hCenterEnabled = hint->IsHCenterAnchorEnabled();
+                    float32 hCenter = hint->GetHCenterAnchor();
+                    
+                    if (isRtl && hint->IsUseRtl())
+                    {
+                        leftEnabled = hint->IsRightAnchorEnabled();
+                        left = hint->GetRightAnchor();
+                        
+                        rightEnabled = hint->IsLeftAnchorEnabled();
+                        right = hint->GetLeftAnchor();
+                        
+                        hCenter = -hCenter;
+                    }
+                    
                     GetAxisDataByAnchorData(rect.dx, parentSize.x,
-                                            hint->IsLeftAnchorEnabled(), hint->GetLeftAnchor(),
-                                            hint->IsHCenterAnchorEnabled(), hint->GetHCenterAnchor(),
-                                            hint->IsRightAnchorEnabled(), hint->GetRightAnchor(),
+                                            leftEnabled, left,
+                                            hCenterEnabled, hCenter,
+                                            rightEnabled, right,
                                             newRect.x, newRect.dx);
                     
                 }

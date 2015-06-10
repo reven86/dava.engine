@@ -87,6 +87,8 @@ public:
 
     void InsertImportedPackage(PackageNode *node, DAVA::int32 index);
     void RemoveImportedPackage(PackageNode *node);
+    
+    void RefreshLayout();
 
 private:
     void RefreshPropertiesInInstances(ControlNode *node, AbstractProperty *property);

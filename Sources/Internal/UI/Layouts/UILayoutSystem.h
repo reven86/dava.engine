@@ -50,6 +50,9 @@ namespace DAVA
         virtual ~UILayoutSystem();
         
     public:
+        bool IsRtl() const;
+        void SetRtl(bool rtl);
+
         void ApplyLayout(UIControl *control);
 
     private:
@@ -71,6 +74,8 @@ namespace DAVA
                                      float32 &newPos, float32 &newSize);
         void GetAnchorDataByAxisData(float32 size, float32 pos, float32 parentSize, bool firstSideAnchorEnabled, bool centerAnchorEnabled, bool secondSideAnchorEnabled, float32 &firstSideAnchor, float32 &centerAnchor, float32 &secondSideAnchor);
 
+    private:
+        bool isRtl = false;
     };
     
     

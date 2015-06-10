@@ -166,5 +166,15 @@ namespace DAVA
     {
         bottomAnchor = anchor;
     }
-        
+
+    bool UIAnchorHintComponent::IsUseRtl() const
+    {
+        return useRtl;
+    }
+    
+    void UIAnchorHintComponent::SetUseRtl(bool use)
+    {
+        useRtl = use;
+    }
+
 }
