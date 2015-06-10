@@ -62,7 +62,8 @@ inline size_t FormattedLengthV(const char16* format, va_list args)
     DVASSERT(result >= 0);
     return result >= 0 ? static_cast<size_t>(result) : 0;
 #else
-    int result = vswprintf(nullptr, 0, format, args);
+    // To obtain neccesary buffer length pass null buffer and -1 as buffer length
+    int result = vswprintf(nullptr, -1, format, args);
     DVASSERT(result >= 0);
     return result >= 0 ? static_cast<size_t>(result) : 0;
 #endif

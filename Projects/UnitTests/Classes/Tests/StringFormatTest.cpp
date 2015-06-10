@@ -50,23 +50,19 @@ DAVA_TESTCLASS(StringFormatTest)
 
     DAVA_TEST(IntegerTestFunction)
     {
-        WideString formatStr1 = L"%i%%";
-        WideString formatStr2 = L"%d%%";
-        WideString formatStr3 = L"%lld%%";
-
         int32 value = 1234567890;
         int64 value64 = 1234567890123456789;
 
-        TEST_VERIFY(Format(formatStr1.c_str(), value) == StringToWString(Format(WStringToString(formatStr1).c_str(), value)));
-        TEST_VERIFY(Format(formatStr2.c_str(), value) == StringToWString(Format(WStringToString(formatStr2).c_str(), value)));
-        TEST_VERIFY(Format(formatStr3.c_str(), value64) == StringToWString(Format(WStringToString(formatStr3).c_str(), value64)));
+        TEST_VERIFY(Format(L"%i%%", value) == StringToWString(Format("%i%%", value)));
+        TEST_VERIFY(Format(L"%d%%", value) == StringToWString(Format("%d%%", value)));
+        TEST_VERIFY(Format(L"%lld%%", value64) == StringToWString(Format("%lld%%", value64)));
 
         value *= -1;
         value64 *= -1;
 
-        TEST_VERIFY(Format(formatStr1.c_str(), value) == StringToWString(Format(WStringToString(formatStr1).c_str(), value)));
-        TEST_VERIFY(Format(formatStr2.c_str(), value) == StringToWString(Format(WStringToString(formatStr2).c_str(), value)));
-        TEST_VERIFY(Format(formatStr3.c_str(), value64) == StringToWString(Format(WStringToString(formatStr3).c_str(), value64)));
+        TEST_VERIFY(Format(L"%i%%", value) == StringToWString(Format("%i%%", value)));
+        TEST_VERIFY(Format(L"%d%%", value) == StringToWString(Format("%d%%", value)));
+        TEST_VERIFY(Format(L"%lld%%", value64) == StringToWString(Format("%lld%%", value64)));
     }
 
     DAVA_TEST(FloatTestFunction)
