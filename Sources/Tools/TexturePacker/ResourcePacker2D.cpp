@@ -150,34 +150,21 @@ bool ResourcePacker2D::IsMD5ChangedDir(const FilePath & processDirectoryPath, co
 
     std::array<uint8, 16> oldMD5Digest;
     std::array<uint8, 16> newMD5Digest;
-    bool isChanged = false;
     File * file = File::Create(md5FileName, File::OPEN | File::READ);
-    if (nullptr == file)
-    {
-    	isChanged = true;		
-    }
-    else
-    {
-    	int32 bytes = file->Read(oldMD5Digest.data(), 16);
-    	DVASSERT(bytes == 16 && "We should always read 16 bytes from md5 file");
-    }
+    DVASSERT(nullptr != file);
+    int32 bytes = file->Read(oldMD5Digest.data(), 16);
+    DVASSERT(bytes == 16 && "We should always read 16 bytes from md5 file");
     SafeRelease(file);
 
     MD5::ForDirectory(pathname, newMD5Digest.data(), isRecursive, /*includeHidden=*/false);
 
     file = File::Create(md5FileName, File::CREATE | File::WRITE);
-    DVASSERT(file);
+    DVASSERT(nullptr != file);
     
-    int32 bytes = file->Write(newMD5Digest.data(), 16);
+    bytes = file->Write(newMD5Digest.data(), 16);
     DVASSERT(bytes == 16 && "16 bytes should be always written for md5 file");
     SafeRelease(file);
-
-    // if already changed return without compare
-    if (isChanged)
-    {
-        return true;
-    }
-    return std::equal(oldMD5Digest.begin(), oldMD5Digest.end(), newMD5Digest.begin());
+    return oldMD5Digest == newMD5Digest;
 }
 
 
