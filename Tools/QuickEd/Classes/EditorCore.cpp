@@ -139,7 +139,7 @@ void EditorCore::OnProjectPathChanged(const QString &projectPath)
             }
             outputPath.replace(outputPath.lastIndexOf("DataSource"), QString("DataSource").size(), "Data");
             QDir outputDir(outputPath);
-            dialogReloadSprites->GetSpritesPacker()->AddTask(fileInfo.absolutePath(), outputDir);
+            dialogReloadSprites->GetSpritesPacker()->AddTask(fileInfo.absoluteFilePath(), outputDir);
         }
     }
 }
