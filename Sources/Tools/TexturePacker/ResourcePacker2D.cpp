@@ -155,7 +155,10 @@ bool ResourcePacker2D::IsMD5ChangedDir(const FilePath & processDirectoryPath, co
     std::array<uint8, 16> oldMD5Digest;
     std::array<uint8, 16> newMD5Digest;
     File * file = File::Create(md5FileName, File::OPEN | File::READ);
-    DVASSERT(nullptr != file);
+    if (nullptr == file)
+    {
+        return true;
+    }
     int32 bytes = file->Read(oldMD5Digest.data(), 16);
     DVASSERT(bytes == 16 && "We should always read 16 bytes from md5 file");
     SafeRelease(file);
