@@ -162,11 +162,11 @@ void NetLogger::RemoveFirstMessage()
 String NetLogger::TimestampToString(time_t timestamp) const
 {
     tm tms = {0};
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
     localtime_s(&tms, &timestamp);
-#else   // __DAVAENGINE_WIN32__
+#else   // __DAVAENGINE_WINDOWS__
     localtime_r(&timestamp, &tms);
-#endif  // __DAVAENGINE_WIN32__
+#endif  // __DAVAENGINE_WINDOWS__
     char8 buf[50] = {0};
     strftime(buf, COUNT_OF(buf), "%Y-%m-%d %H:%M:%S", &tms);
     return String(buf);

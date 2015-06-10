@@ -187,29 +187,28 @@ bool ResourcePacker2D::IsMD5ChangedFile(const FilePath & processDirectoryPath, c
 
     FilePath md5FileName = FilePath::CreateWithNewExtension(processDirectoryPath + psdName, ".md5");
 
-    std::array<uint8, 16> oldMD5Digest;
-    std::array<uint8, 16> newMD5Digest;
+	std::array<uint8, MD5::DIGEST_SIZE> oldMD5Digest;
+	std::array<uint8, MD5::DIGEST_SIZE> newMD5Digest;
     bool isChanged = false;
     File * file = File::Create(md5FileName, File::OPEN | File::READ);
-    if (nullptr == file)
-    {
-    	isChanged = true;		
-    }else
-    {
-    	int32 bytes = file->Read(oldMD5Digest.data(), 16);
-    	DVASSERT(bytes == 16 && "We should always read 16 bytes from md5 file");
-    }
-    SafeRelease(file);
 
-    	
-    MD5::ForFile(pathname, newMD5Digest.data());
+	if (nullptr == file)
+    	isChanged = true;		
+	else
+    {
+		int32 bytes = file->Read(oldMD5Digest.data(), MD5::DIGEST_SIZE);
+		DVASSERT(bytes == MD5::DIGEST_SIZE && "We should always read 16 bytes from md5 file");
+		SafeRelease(file);
+	}
+		
+	MD5::ForFile(pathname, newMD5Digest.data());
     
     file = File::Create(md5FileName, File::CREATE | File::WRITE);
-    int32 bytes = file->Write(newMD5Digest.data(), 16);
-    DVASSERT(bytes == 16 && "16 bytes should be always written for md5 file");
+	int32 bytes = file->Write(newMD5Digest.data(), MD5::DIGEST_SIZE);
+	DVASSERT(bytes == MD5::DIGEST_SIZE && "16 bytes should be always written for md5 file");
     SafeRelease(file);
 
-    return std::equal(oldMD5Digest.begin(), oldMD5Digest.end(), newMD5Digest.begin());
+	return isChanged ? true : oldMD5Digest != newMD5Digest;
 }
 
 DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryPath, const FilePath & psdPathname, const String & psdName, bool twoSideMargin, uint32 texturesMargin)

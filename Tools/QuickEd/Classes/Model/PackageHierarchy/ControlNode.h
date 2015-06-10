@@ -33,10 +33,7 @@
 #include "PackageBaseNode.h"
 #include "ControlsContainerNode.h"
 
-class PackageSerializer;
 class PackageNode;
-class ControlPrototype;
-class PackageRef;
 class RootProperty;
 
 class ControlNode : public ControlsContainerNode
@@ -51,14 +48,13 @@ public:
     
 private:
     ControlNode(DAVA::UIControl *control);
-    ControlNode(ControlNode *node);
-    ControlNode(ControlPrototype *prototype, eCreationType creationType);
+    ControlNode(ControlNode *node, eCreationType creationType);
     virtual ~ControlNode();
 
 public:
     static ControlNode *CreateFromControl(DAVA::UIControl *control);
-    static ControlNode *CreateFromPrototype(ControlNode *sourceNode, PackageRef *nodePackage);
-    static ControlNode *CreateFromPrototypeChild(ControlNode *sourceNode, PackageRef *nodePackage);
+    static ControlNode *CreateFromPrototype(ControlNode *sourceNode);
+    static ControlNode *CreateFromPrototypeChild(ControlNode *sourceNode);
 
 public:
     ControlNode *Clone();
@@ -68,15 +64,17 @@ public:
     void Remove(ControlNode *node) override;
     int GetCount() const override;
     ControlNode *Get(int index) const override;
+    void Accept(PackageVisitor *visitor) override;
+    
     ControlNode *FindByName(const DAVA::String &name) const;
     
-    virtual DAVA::String GetName() const;
-    DAVA::UIControl *GetControl() const;
-    ControlPrototype *GetPrototype() const;
-    const DAVA::Vector<ControlNode*> &GetInstances() const;
-
-    int GetFlags() const override;
+    virtual DAVA::String GetName() const override;
     
+    DAVA::UIControl *GetControl() const;
+    ControlNode *GetPrototype() const;
+    const DAVA::Vector<ControlNode*> &GetInstances() const;
+    bool IsDependsOnPackage(PackageNode *package) const;
+
     virtual bool IsEditingSupported() const override;
     virtual bool IsInsertingSupported() const override;
     virtual bool CanInsertControl(ControlNode *node, DAVA::int32 pos) const override;
@@ -91,15 +89,10 @@ public:
     void MarkAsRemoved();
     void MarkAsAlive();
 
-    void Serialize(PackageSerializer *serializer) const;
-    DAVA::String GetPathToPrototypeChild(bool withRootPrototypeName = false) const;
+    DAVA::String GetPathToPrototypeChild() const;
 
 private:
-    void CollectPrototypeChildrenWithChanges(DAVA::Vector<ControlNode*> &out) const;
-    bool HasNonPrototypeChildren() const;
-    bool IsInstancedFrom(const ControlNode *prototypeControl) const;
-    
-private:
+    bool IsInstancedFrom(const ControlNode *prototype) const;
     void AddControlToInstances(ControlNode *control);
     void RemoveControlFromInstances(ControlNode *control);
 
@@ -108,7 +101,7 @@ private:
     RootProperty *rootProperty;
     DAVA::Vector<ControlNode*> nodes;
     
-    ControlPrototype *prototype;
+    ControlNode *prototype;
     DAVA::Vector<ControlNode*> instances; // weak
 
     eCreationType creationType;

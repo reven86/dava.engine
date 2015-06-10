@@ -44,9 +44,9 @@
 
 #include <libpng/png.h>
 
-#if !defined(__DAVAENGINE_WIN32__)
+#if !defined(__DAVAENGINE_WINDOWS__)
 #include <unistd.h>
-#endif //#if !defined(__DAVAENGINE_WIN32__)
+#endif //#if !defined(__DAVAENGINE_WINDOWS__)
 
 using namespace DAVA;
 
@@ -95,6 +95,7 @@ void abort_(const char * s, ...)
 
 LibPngHelper::LibPngHelper()
 {
+    name.assign("PNG");
     supportedExtensions.push_back(".png");
 }
 
@@ -117,7 +118,7 @@ eErrorCode LibPngHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32
     Image* image = new Image();
     eErrorCode innerRetCode = ReadPngFile(infile, image);
 
-    if (innerRetCode == SUCCESS)
+    if (innerRetCode == eErrorCode::SUCCESS)
     {
         imageSet.push_back(image);
     }
@@ -180,7 +181,7 @@ eErrorCode LibPngHelper::WriteFile(const FilePath & fileName, const Vector<Image
     {
         Logger::Error("[LibPngHelper::WritePngFile] File %s could not be opened for writing", fileName.GetAbsolutePathname().c_str());
         ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
-        return ERROR_FILE_NOTFOUND;
+        return eErrorCode::ERROR_FILE_NOTFOUND;
     }
 
     // initialize stuff
@@ -190,7 +191,7 @@ eErrorCode LibPngHelper::WriteFile(const FilePath & fileName, const Vector<Image
     {
         Logger::Error("[LibPngHelper::WritePngFile] png_create_write_struct failed");
         ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
-        return ERROR_WRITE_FAIL;
+        return eErrorCode::ERROR_WRITE_FAIL;
     }
 
     info_ptr = png_create_info_struct(png_ptr);
@@ -198,14 +199,14 @@ eErrorCode LibPngHelper::WriteFile(const FilePath & fileName, const Vector<Image
     {
         Logger::Error("[LibPngHelper::WritePngFile] png_create_info_struct failed");
         ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
-        return ERROR_WRITE_FAIL;
+        return eErrorCode::ERROR_WRITE_FAIL;
     }
 
     if (setjmp(png_jmpbuf(png_ptr)))
     {
         Logger::Error("[LibPngHelper::WritePngFile] Error during init_io");
         ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
-        return ERROR_WRITE_FAIL;
+        return eErrorCode::ERROR_WRITE_FAIL;
     }
 
     png_init_io(png_ptr, fp);
@@ -215,7 +216,7 @@ eErrorCode LibPngHelper::WriteFile(const FilePath & fileName, const Vector<Image
     {
         Logger::Error("[LibPngHelper::WritePngFile] Error during writing header");
         ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
-        return ERROR_WRITE_FAIL;
+        return eErrorCode::ERROR_WRITE_FAIL;
     }
 
     png_set_IHDR(png_ptr, info_ptr, width, height,
@@ -259,7 +260,7 @@ eErrorCode LibPngHelper::WriteFile(const FilePath & fileName, const Vector<Image
     {
         Logger::Error("[LibPngHelper::WritePngFile] Error during writing bytes");
         ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
-        return ERROR_WRITE_FAIL;
+        return eErrorCode::ERROR_WRITE_FAIL;
     }
 
     png_write_image(png_ptr, row_pointers);
@@ -269,19 +270,19 @@ eErrorCode LibPngHelper::WriteFile(const FilePath & fileName, const Vector<Image
     {
         Logger::Error("[LibPngHelper::WritePngFile] Error during end of write");
         ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
-        return ERROR_WRITE_FAIL;
+        return eErrorCode::ERROR_WRITE_FAIL;
     }
 
     png_write_end(png_ptr, nullptr);
 
     ReleaseWriteData(png_ptr, info_ptr, row_pointers, fp, convertedImage);
-    return SUCCESS;
+    return eErrorCode::SUCCESS;
 }
 
 eErrorCode LibPngHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
 {
     Logger::Error("[LibPngHelper::WriteFileAsCubeMap] For png cubeMaps are not supported");
-    return ERROR_WRITE_FAIL;
+    return eErrorCode::ERROR_WRITE_FAIL;
 }
 
 ImageInfo LibPngHelper::GetImageInfo(File *infile) const
@@ -410,14 +411,14 @@ eErrorCode LibPngHelper::ReadPngFile(File *infile, Image * image, PixelFormat ta
 
     if (!png_check_sig((unsigned char *)sig, 8))
     {
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     png_structp png_ptr = nullptr;
     png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
     if (nullptr == png_ptr)
     {
-        return ERROR_READ_FAIL; // out of memory
+        return eErrorCode::ERROR_READ_FAIL; // out of memory
     }
 
     png_infop info_ptr = nullptr;
@@ -425,13 +426,13 @@ eErrorCode LibPngHelper::ReadPngFile(File *infile, Image * image, PixelFormat ta
     if (nullptr == info_ptr)
     {
         png_destroy_read_struct(&png_ptr, (png_infopp)nullptr, (png_infopp)nullptr);
-        return ERROR_READ_FAIL; // out of memory
+        return eErrorCode::ERROR_READ_FAIL; // out of memory
     }
 
     if (setjmp(png_jmpbuf(png_ptr)))
     {
         png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     PngImageRawData raw;
@@ -488,7 +489,7 @@ eErrorCode LibPngHelper::ReadPngFile(File *infile, Image * image, PixelFormat ta
     {
         Logger::Error("Wrong image: must be 8bits on channel: %s", infile->GetFilename().GetAbsolutePathname().c_str());
         png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
@@ -508,7 +509,7 @@ eErrorCode LibPngHelper::ReadPngFile(File *infile, Image * image, PixelFormat ta
     if (nullptr == row_pointers)
     {
         png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
-        return ERROR_READ_FAIL;
+        return eErrorCode::ERROR_READ_FAIL;
     }
 
     // set the individual row_pointers to point at the correct offsets
@@ -528,5 +529,5 @@ eErrorCode LibPngHelper::ReadPngFile(File *infile, Image * image, PixelFormat ta
     // Clean up
     png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
 
-    return SUCCESS;
+    return eErrorCode::SUCCESS;
 }

@@ -52,18 +52,30 @@ void DAVA::Cursor::SetCursorPinning(bool pin)
     }
 }
 
-void DAVA::Cursor::ShowSystemCursor(bool show)
+void DAVA::Cursor::ShowSystemCursor( bool show )
 {
-    ShowCursor(show);
+    CURSORINFO ci = { sizeof( ci ), 0 };
+    if ( GetCursorInfo( &ci ) != 0 )
+    {
+        const auto isVisible = ( ci.flags & CURSOR_SHOWING ) == CURSOR_SHOWING; // In Windows 8 will be added other flags
+        if ( show != isVisible )
+        {
+            ShowCursor( show );
+        }
+    }
+    else
+    {
+        ShowCursor( show ); // No cursor info available, just call
+    }
 }
+
 #endif
 
-#if defined(__DAVAENGINE_WIN32__) && defined (__DAVAENGINE_DIRECTX9__)
+#if defined(__DAVAENGINE_WINDOWS__) && defined (__DAVAENGINE_DIRECTX9__)
 
 #include "FileSystem/FileSystem.h"
 #include "Render/RenderManager.h"
 #include "Render/D3D9Helpers.h"
-
 
 namespace DAVA
 {

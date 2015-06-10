@@ -191,11 +191,8 @@ bool PatchFileWriter::Write(const FilePath &_origBase, const FilePath &origPath,
         EnumerateDir(newPath, newPath, newList);
 
         // go through files, that should exist in new revision
-        List<String>::iterator i = newList.begin();
-        List<String>::iterator end = newList.end();
-        for(; i != end; ++i)
+        for(String& newRelativeFile : newList)
         {
-            String newRelativeFile = *i;
             String origRelativeFile;
 
             if(std::find(origList.begin(), origList.end(), newRelativeFile) != origList.end())
@@ -218,13 +215,11 @@ bool PatchFileWriter::Write(const FilePath &_origBase, const FilePath &origPath,
         {
             // through files, that were in old revision
             // and make patch to delete files that not exist in new revision
-            List<String>::iterator i = origList.begin();
-            List<String>::iterator end = origList.end();
-            for(; i != end; ++i)
+            for(String& x : origList)
             {
-                if(std::find(newList.begin(), newList.end(), *i) == newList.end())
+                if(std::find(newList.begin(), newList.end(), x) == newList.end())
                 {
-                    FilePath origSinglePath = origPath + *i;
+                    FilePath origSinglePath = origPath + x;
                     SingleWrite(origBase, origSinglePath, newBase, FilePath());
                 }
             }

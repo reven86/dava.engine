@@ -30,13 +30,12 @@
 #ifndef __DAVAENGINE_IOLOOP_H__
 #define __DAVAENGINE_IOLOOP_H__
 
+#include "Base/BaseTypes.h"
 #include <libuv/uv.h>
 
-#include <Base/BaseTypes.h>
-#include <Base/Function.h>
-#include <Base/Noncopyable.h>
-
-#include <Platform/Mutex.h>
+#include "Base/Function.h"
+#include "Base/Noncopyable.h"
+#include "Platform/Mutex.h"
 
 namespace DAVA
 {
@@ -62,7 +61,7 @@ public:
         RUN_NOWAIT  = UV_RUN_NOWAIT     // Execute handlers if they are ready and immediatly exit
     };
 
-    typedef Function<void()> UserHandlerType;
+    using UserHandlerType = Function<void()>;
 
 public:
     IOLoop(bool useDefaultIOLoop = true);

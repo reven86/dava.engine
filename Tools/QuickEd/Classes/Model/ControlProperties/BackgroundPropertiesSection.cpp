@@ -30,9 +30,9 @@
 #include "BackgroundPropertiesSection.h"
 
 #include "IntrospectionProperty.h"
+#include "PropertyVisitor.h"
 
 #include "UI/UIControl.h"
-#include "Model/PackageSerializer.h"
 
 using namespace DAVA;
 
@@ -98,15 +98,7 @@ bool BackgroundPropertiesSection::HasChanges() const
     return bg && SectionProperty::HasChanges();
 }
 
-void BackgroundPropertiesSection::Serialize(PackageSerializer *serializer) const
+void BackgroundPropertiesSection::Accept(PropertyVisitor *visitor)
 {
-    if (HasChanges())
-    {
-        serializer->BeginMap(GetName());
-        
-        for (const auto child : children)
-            child->Serialize(serializer);
-
-        serializer->EndMap();
-    }
+    visitor->VisitBackgroundSection(this);
 }

@@ -43,14 +43,15 @@ protected:
     virtual ~CustomClassProperty();
     
 public:
-    virtual void Refresh() override;
-    virtual AbstractProperty *FindPropertyByPrototype(AbstractProperty *prototype) override;
-    virtual void Serialize(PackageSerializer *serializer) const override;
-    virtual bool IsReadOnly() const override;
+    void Refresh() override;
+    AbstractProperty *FindPropertyByPrototype(AbstractProperty *prototype) override;
+    void Accept(PropertyVisitor *visitor) override;
     
-    virtual ePropertyType GetType() const override;
-    virtual DAVA::uint32 GetFlags() const  override { return EF_CAN_RESET; };
-    virtual DAVA::VariantType GetValue() const override;
+    bool IsReadOnly() const override;
+    
+    ePropertyType GetType() const override;
+    DAVA::uint32 GetFlags() const  override { return EF_CAN_RESET; };
+    DAVA::VariantType GetValue() const override;
     
     const DAVA::String &GetCustomClassName() const;
     bool IsSet() const;
