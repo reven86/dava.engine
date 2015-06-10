@@ -43,6 +43,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #   define DAVA_NOEXCEPT    noexcept
 #   define DAVA_CONSTEXPR   constexpr
 #   define DAVA_DEPRECATED(func) func __attribute__ ((deprecated))
+#   define DAVA_ALIGNED(Var, Len) Var __attribute__((aligned(Len)))
 
 //Microsoft Visual C++
 #elif defined(_MSC_VER)
@@ -61,6 +62,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #   endif
 
 #   define DAVA_DEPRECATED(func) __declspec(deprecated) func
+#   define DAVA_ALIGNED(Var, Len) __declspec(align(Len)) Var
 
 #endif
 
@@ -70,7 +72,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     !defined(DAVA_ALIGNOF)     || \
     !defined(DAVA_NOEXCEPT)    || \
     !defined(DAVA_CONSTEXPR)   || \
-    !defined(DAVA_DEPRECATED)
+    !defined(DAVA_DEPRECATED)  || \
+    !defined(DAVA_ALIGNED)
 #   error Some compiler features is not defined for current platform
 #endif
 

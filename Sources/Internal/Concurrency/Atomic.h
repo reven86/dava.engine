@@ -50,6 +50,8 @@ class Atomic
                   std::is_pointer<T>::value  ||
                   std::is_enum<T>::value, 
                   "Not valid type for atomic operations");
+    using aligned_storage = std::aligned_storage<sizeof(T), sizeof(T)>;
+    
 public:
     Atomic(T val = T()) DAVA_NOEXCEPT : value(val) {}
 
@@ -78,7 +80,7 @@ private:
 #ifdef USE_CPP11_CONCURRENCY
     std::atomic<T> value;
 #else
-    T value;
+    DAVA_ALIGNED(T value, sizeof(T));
 
 #   ifdef __DAVAENGINE_WINDOWS__
     template <typename Y> T Cast(Y val);

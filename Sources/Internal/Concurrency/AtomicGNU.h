@@ -52,9 +52,7 @@ void Atomic<T>::Set(T val) DAVA_NOEXCEPT
 template <typename T>
 T Atomic<T>::Get() const DAVA_NOEXCEPT
 {
-    T result;
-    __atomic_load(&value, &result, __ATOMIC_SEQ_CST);
-    return result;
+    return __atomic_load_n(&value, __ATOMIC_SEQ_CST);
 }
 
 template <typename T>
@@ -72,9 +70,7 @@ T Atomic<T>::Decrement() DAVA_NOEXCEPT
 template <typename T>
 T Atomic<T>::Swap(T desired) DAVA_NOEXCEPT
 {
-    T result;
-    __atomic_exchange(&value, &desired, &result, __ATOMIC_SEQ_CST);
-    return result;
+    return __atomic_exchange_n(&value, desired, __ATOMIC_SEQ_CST);
 }
 
 template <typename T>

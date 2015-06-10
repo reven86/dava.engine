@@ -38,6 +38,9 @@ DAVA_TESTCLASS(AtomicTest)
 {
     DAVA_TEST(OperationTest)
     {
+        const int theGreatestNumber = 42;
+        const int theRandomNumber = 7;
+        
         Atomic<char> atom_char;
         Atomic<short> atom_short;
         Atomic<int> atom_int;
@@ -50,7 +53,6 @@ DAVA_TESTCLASS(AtomicTest)
         TEST_VERIFY(atom_int64 == 0);
 
         //assigning
-        const int theGreatestNumber = 42;
         atom_char = theGreatestNumber;
         atom_short = theGreatestNumber;
         atom_int = theGreatestNumber;
@@ -101,17 +103,22 @@ DAVA_TESTCLASS(AtomicTest)
         TEST_VERIFY(atom_int64 != theGreatestNumber);
 
         //CAS
+        atom_char = theRandomNumber;
+        atom_short = theRandomNumber;
+        atom_int = theRandomNumber;
+        atom_int64 = theRandomNumber;
+        
         TEST_VERIFY(atom_char.CompareAndSwap(1, 2) == false);
-        TEST_VERIFY(atom_char.CompareAndSwap(0, theGreatestNumber) == true);
+        TEST_VERIFY(atom_char.CompareAndSwap(theRandomNumber, theGreatestNumber));
         TEST_VERIFY(atom_char == theGreatestNumber);
         TEST_VERIFY(atom_short.CompareAndSwap(1, 2) == false);
-        TEST_VERIFY(atom_short.CompareAndSwap(0, theGreatestNumber) == true);
+        TEST_VERIFY(atom_short.CompareAndSwap(theRandomNumber, theGreatestNumber));
         TEST_VERIFY(atom_short == theGreatestNumber);
         TEST_VERIFY(atom_int.CompareAndSwap(1, 2) == false);
-        TEST_VERIFY(atom_int.CompareAndSwap(0, theGreatestNumber) == true);
+        TEST_VERIFY(atom_int.CompareAndSwap(theRandomNumber, theGreatestNumber));
         TEST_VERIFY(atom_int == theGreatestNumber);
         TEST_VERIFY(atom_int64.CompareAndSwap(1, 2) == false);
-        TEST_VERIFY(atom_int64.CompareAndSwap(0, theGreatestNumber) == true);
+        TEST_VERIFY(atom_int64.CompareAndSwap(theRandomNumber, theGreatestNumber));
         TEST_VERIFY(atom_int64 == theGreatestNumber);
     }
 
