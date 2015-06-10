@@ -51,7 +51,7 @@
 #include "Scene/System/CameraSystem.h"
 #include "Scene/System/CollisionSystem.h"
 #include "Scene/System/HoodSystem.h"
-
+#include "Scene3D/Entity.h"
 #include "Scene/System/EditorLODSystem.h"
 
 
@@ -122,9 +122,6 @@ SceneEditor2::SceneEditor2()
 
     visibilityToolSystem = new VisibilityToolSystem(this);
     AddSystem(visibilityToolSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
-
-    grassEditorSystem = new GrassEditorSystem(this);
-    AddSystem(grassEditorSystem, 0, SCENE_SYSTEM_REQUIRE_INPUT);
 
     rulerToolSystem = new RulerToolSystem(this);
     AddSystem(rulerToolSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
@@ -457,7 +454,6 @@ void SceneEditor2::EditorCommandProcess(const Command2 *command, bool redo)
 	selectionSystem->ProcessCommand(command, redo);
 	hoodSystem->ProcessCommand(command, redo);
 	modifSystem->ProcessCommand(command, redo);
-    grassEditorSystem->ProcessCommand(command, redo);
 	
 	if(structureSystem)
 		structureSystem->ProcessCommand(command, redo);
@@ -550,11 +546,6 @@ void SceneEditor2::DisableTools(int32 toolFlags, bool saveChanges /*= true*/)
 	{
 		Exec(new ActionDisableNotPassable(this));
 	}
-
-    if(toolFlags & LANDSCAPE_TOOL_GRASS_EDITOR)
-    {
-        grassEditorSystem->EnableGrassEdit(false);
-    }
 }
 
 bool SceneEditor2::IsToolsEnabled(int32 toolFlags)
@@ -590,11 +581,6 @@ bool SceneEditor2::IsToolsEnabled(int32 toolFlags)
 	{
 		res |= landscapeEditorDrawSystem->IsNotPassableTerrainEnabled();
 	}
-
-    if(toolFlags & LANDSCAPE_TOOL_GRASS_EDITOR)
-    {
-        res |= grassEditorSystem->IsLandscapeEditingEnabled();
-    }
 
 	return res;
 }
@@ -632,11 +618,6 @@ int32 SceneEditor2::GetEnabledTools()
 	{
 		toolFlags |= LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN;
 	}
-
-    if(grassEditorSystem->IsLandscapeEditingEnabled())
-    {
-        toolFlags |= LANDSCAPE_TOOL_GRASS_EDITOR;
-    }
 
 	return toolFlags;
 }

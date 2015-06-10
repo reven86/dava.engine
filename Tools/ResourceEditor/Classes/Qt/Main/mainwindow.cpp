@@ -2271,10 +2271,6 @@ void QtMainWindow::OnLandscapeEditorToggled(SceneEditor2* scene)
 	{
 		ui->actionShowNotPassableLandscape->setChecked(true);
 	}
-    if(tools & SceneEditor2::LANDSCAPE_TOOL_GRASS_EDITOR)
-    {
-        ui->actionGrasEditor->setChecked(true);
-    }
 }
 
 void QtMainWindow::OnCustomColorsEditor()
@@ -2512,32 +2508,6 @@ void QtMainWindow::OnNotPassableTerrain()
 			OnLandscapeEditorToggled(sceneEditor);
 		}
 	}
-}
-
-void QtMainWindow::OnGrasEditor()
-{
-    /*SceneEditor2* sceneEditor = GetCurrentScene();
-    if(!sceneEditor)
-    {
-        return;
-    }
-
-    bool toggled = false;
-    if(sceneEditor->grassEditorSystem->IsEnabledGrassEdit())
-    {
-        toggled = sceneEditor->grassEditorSystem->EnableGrassEdit(false);
-    }
-    else
-    {
-        sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
-        toggled = sceneEditor->grassEditorSystem->EnableGrassEdit(true);
-    }
-
-    if(toggled)
-    {
-        SceneSignals::Instance()->EmitGrassEditorToggled(sceneEditor);
-        OnLandscapeEditorToggled(sceneEditor);
-    }*/
 }
 
 void QtMainWindow::OnWayEditor()

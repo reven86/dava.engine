@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 
+#if 0
 
 #ifndef __RESOURCEEDITORQT__GRASSEDITORSYSTEM__
 #define __RESOURCEEDITORQT__GRASSEDITORSYSTEM__
@@ -116,3 +117,5 @@ protected:
 };
 
 #endif /* defined(__RESOURCEEDITORQT__GRASSEDITORSYSTEM__) */
+
+#endif
