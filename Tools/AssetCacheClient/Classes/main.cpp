@@ -32,7 +32,13 @@
 
 #include "AssetCacheClient.h"
 
-#include <sys/time.h>
+void FrameworkDidLaunched() 
+{
+}
+
+void FrameworkWillTerminate()
+{
+}
 
 void CreateDAVA()
 {
