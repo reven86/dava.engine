@@ -54,7 +54,7 @@ public:
     const FilePath& GetPath() const;
     const Vector<String>& GetArgs() const;
 
-    int GetExitCode() const;
+    long GetExitCode() const;
     
 private:
     
@@ -81,7 +81,7 @@ private:
     int pipes[2];
 #endif
 
-    int exitCode;
+    long exitCode;
     
 };
 };

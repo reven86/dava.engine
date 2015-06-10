@@ -86,7 +86,7 @@ const Vector<String>& Process::GetArgs() const
     return runArgs;
 }
 
-int Process::GetExitCode() const
+long Process::GetExitCode() const
 {
     return exitCode;
 }
@@ -276,6 +276,15 @@ void Process::Wait()
 
     ::WaitForSingleObject((HANDLE)pid, INFINITE);
     
+    DWORD code;
+    bool res = ::GetExitCodeProcess((HANDLE)pid, &code);
+    exitCode = static_cast<long>(code);
+    if (!res)
+    {
+        exitCode = -1;
+        Logger::Error("[Process::Wait] Can't get exit code for process %s, error %d", executablePath.GetAbsolutePathname().c_str(), ::GetLastError());
+    }
+
     CleanupHandles();
 }
 
