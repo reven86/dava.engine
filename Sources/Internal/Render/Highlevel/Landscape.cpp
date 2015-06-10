@@ -277,7 +277,8 @@ void Landscape::BuildLandscapeFromHeightmapImage(const FilePath & heightmapPathn
 bool Landscape::BuildHeightmap()
 {
     bool retValue = false;
-    if(heightmapPath.IsEqualToExtension(".png"))
+
+    if(DAVA::TextureDescriptor::IsSourceTextureExtension(heightmapPath.GetExtension()))
     {
         Vector<Image *> imageSet;
         ImageSystem::Instance()->Load(heightmapPath, imageSet);
@@ -348,16 +349,8 @@ void Landscape::BuildLandscape()
 //    Logger::FrameworkDebug("sizeof(QuadTreeNode): %d bytes", sizeof(QuadTreeNode<LandscapeQuad>));
 }
     
-/*
-    level 0 = full landscape
-    level 1 = first set of quads
-    level 2 = 2
-    level 3 = 3
-    level 4 = 4
- */
-    
-//float32 LandscapeNode::BitmapHeightToReal(uint8 height)
-Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height)
+
+Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height) const
 {
     Vector3 res;
     res.x = (bbox.min.x + (float32)x / (float32)(heightmap->Size() - 1) * (bbox.max.x - bbox.min.x));
@@ -1140,7 +1133,7 @@ void Landscape::Draw(Camera * camera)
 		return;
 	}
 	
-#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
+#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__))
 //    if (debugFlags & DEBUG_DRAW_GRID)
 //    {
 //        RenderManager::Instance()->SetColor(1.0f, 0.f, 0.f, 1.f);
@@ -1154,7 +1147,7 @@ void Landscape::Draw(Camera * camera)
     
     //SceneNode::Draw();
 
-#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__))
+#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__))
 //    if (!(debugFlags & DEBUG_DRAW_GRID))
 //    {
 //        RenderManager::Instance()->ResetColor();
@@ -1260,8 +1253,8 @@ void Landscape::Draw(Camera * camera)
 		{
 			BindMaterial(nearLodIndex, camera);
 		}
-        int32 count0 = static_cast<int32>(lod0quads.size());
-        for(int32 i = 0; i < count0; ++i)
+        size_t count0 = lod0quads.size();
+        for (size_t i = 0; i < count0; ++i)
         {
             DrawQuad(lod0quads[i], 0);
         }
@@ -1272,8 +1265,8 @@ void Landscape::Draw(Camera * camera)
 			BindMaterial(farLodIndex, camera);
 		}
         
-        int32 countNot0 = static_cast<int32>(lodNot0quads.size());
-        for(int32 i = 0; i < countNot0; ++i)
+        size_t countNot0 = lodNot0quads.size();
+        for (size_t i = 0; i < countNot0; ++i)
         {
             DrawQuad(lodNot0quads[i], lodNot0quads[i]->data.lod);
         }
@@ -1310,10 +1303,15 @@ void Landscape::Draw(Camera * camera)
 }
 
 
-void Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<int32> & indices)
+bool Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<int32> & indices) const
 {
-	LandQuadTreeNode<LandscapeQuad> * currentNode = &quadTreeHead;
-	LandscapeQuad * quad = &currentNode->data;
+    if (heightmap->Data() == nullptr)
+    {
+        return false;
+    }
+
+	const LandQuadTreeNode<LandscapeQuad> * currentNode = &quadTreeHead;
+	const LandscapeQuad * quad = &currentNode->data;
 	
 	landscapeVertices.resize((quad->size + 1) * (quad->size + 1));
 
@@ -1345,26 +1343,9 @@ void Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<
 			indices[indexIndex++] = x + (y + step) * quadWidth;     
 		}
 	}
-}
 
-//AABBox3 LandscapeNode::GetWTMaximumBoundingBox()
-//{
-////    AABBox3 retBBox = box;
-////    box.GetTransformedBox(GetWorldTransform(), retBBox);
-////
-////    const Vector<SceneNode*>::iterator & itEnd = children.end();
-////    for (Vector<SceneNode*>::iterator it = children.begin(); it != itEnd; ++it)
-////    {
-////        AABBox3 lbox = (*it)->GetWTMaximumBoundingBoxSlow();
-////        if(  (AABBOX_INFINITY != lbox.min.x && AABBOX_INFINITY != lbox.min.y && AABBOX_INFINITY != lbox.min.z)
-////           &&(-AABBOX_INFINITY != lbox.max.x && -AABBOX_INFINITY != lbox.max.y && -AABBOX_INFINITY != lbox.max.z))
-////        {
-////            retBBox.AddAABBox(lbox);
-////        }
-////    }
-//    
-//    return retBBox;
-//}
+    return true;
+}
 
 const FilePath & Landscape::GetHeightmapPathname()
 {
@@ -1820,3 +1801,4 @@ void Landscape::SetFoliageSystem(FoliageSystem* _foliageSystem)
 }
 
 };
+

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "TextureScrollArea.h"
 #include "Render/Texture.h"
 
@@ -151,7 +150,6 @@ void TextureScrollArea::setImage(const QImage &image)
 	
 	currentTextureImage = image;
 
-	//applyCurrentImageToScenePixmap();
 	applyTextureImageToScenePixmap();
 	applyTextureImageBorder();
 
@@ -164,7 +162,6 @@ void TextureScrollArea::setImage(const QImage &image)
 void TextureScrollArea::setColorChannel(int mask)
 {
 	textureColorMask = mask;
-	//applyCurrentImageToScenePixmap();
 	applyTextureImageToScenePixmap();
 }
 
@@ -181,7 +178,7 @@ QColor TextureScrollArea::getPixelColor(QPoint pos)
 	{
 		int tileWidth = currentCompositeImages[0].width();
 		int tileHeight = currentCompositeImages[0].height();
-		for(int i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
+		for(int i = 0; i < DAVA::Texture::CUBE_FACE_COUNT; ++i)
 		{
 			if((compositeImagesFlags & (1 << i)) != 0)
 			{
@@ -337,13 +334,14 @@ void TextureScrollArea::mouseReleaseEvent(QMouseEvent *event)
 
 void TextureScrollArea::applyCurrentImageToScenePixmap()
 {
-	if(~textureColorMask)
+    if(~textureColorMask)
 	{
 		QImage tmpImage;
 		prepareImageWithColormask(currentTextureImage, tmpImage);
 		
 		QPixmap pixmap = QPixmap::fromImage(tmpImage);
-		textureScene->setSceneRect(pixmap.rect());
+        if (!pixmap.isNull())
+            textureScene->setSceneRect(pixmap.rect());
 		texturePixmap->setPixmap(pixmap);
 	}
 	else
@@ -519,7 +517,7 @@ void TextureScrollArea::applyCurrentCompositeImagesToScenePixmap()
 	QMatrix rotation;
 	//rotation.rotate(-90);
 	int currentIndex = 0;
-	for(int i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
+	for(int i = 0; i < DAVA::Texture::CUBE_FACE_COUNT; ++i)
 	{
 		if((compositeImagesFlags & (1 << i)) != 0)
 		{

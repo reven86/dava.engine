@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Qt/Scene/System/ModifSystem.h"
 #include "Qt/Scene/System/HoodSystem.h"
 #include "Qt/Scene/System/CameraSystem.h"
@@ -309,6 +308,16 @@ void EntityModificationSystem::Input(DAVA::UIEvent *event)
 			}
 		}
 	}
+}
+
+void EntityModificationSystem::AddDelegate(EntityModificationSystemDelegate *delegate)
+{
+    delegates.push_back(delegate);
+}
+
+void EntityModificationSystem::RemoveDelegate(EntityModificationSystemDelegate *delegate)
+{
+    delegates.remove(delegate);
 }
 
 void EntityModificationSystem::Draw()
@@ -802,8 +811,20 @@ void EntityModificationSystem::CloneBegin()
         clonedEntities.reserve(modifEntities.size());
 		for(size_t i = 0; i < modifEntities.size(); ++i)
 		{
-			DAVA::Entity *origEntity = modifEntities[i].entity;
+            DAVA::Entity *origEntity = modifEntities[i].entity;
+            
+            for (auto delegate : delegates)
+            {
+                delegate->WillClone(origEntity);
+            }
+
 			DAVA::Entity *newEntity = origEntity->Clone();
+
+            for (auto delegate : delegates)
+            {
+                delegate->DidCloned(origEntity, newEntity);
+            }
+
             newEntity->SetLocalTransform(modifEntities[i].originalTransform);
 
             Scene *scene = origEntity->GetScene();

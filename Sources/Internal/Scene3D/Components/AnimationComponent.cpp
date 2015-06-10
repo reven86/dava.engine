@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene3D/Components/AnimationComponent.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
@@ -125,7 +124,7 @@ bool AnimationComponent::GetIsPlaying() const
 
 void AnimationComponent::Start()
 {
-    GlobalEventSystem::Instance()->Event(GetEntity(), EventSystem::START_ANIMATION);
+    GlobalEventSystem::Instance()->Event(this, EventSystem::START_ANIMATION);
 }
 
 void AnimationComponent::StopAfterNRepeats( int32 numberOfRepeats )
@@ -138,7 +137,7 @@ void AnimationComponent::Stop()
 {
     if (state == STATE_STOPPED) 
         return;
-    GlobalEventSystem::Instance()->Event(GetEntity(), EventSystem::STOP_ANIMATION);
+    GlobalEventSystem::Instance()->Event(this, EventSystem::STOP_ANIMATION);
     animationTransform.Identity();
 }
 

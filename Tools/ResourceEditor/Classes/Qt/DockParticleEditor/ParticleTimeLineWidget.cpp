@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ParticleTimeLineWidget.h"
 #include "ParticleTimeLineColumns.h"
 #include <QPainter>

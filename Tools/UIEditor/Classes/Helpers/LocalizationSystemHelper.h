@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __UIEditor__LocalizationSystemHelper__
 #define __UIEditor__LocalizationSystemHelper__
 

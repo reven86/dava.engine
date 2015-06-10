@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __SCENE_EDITOR_PROXY_H__
 #define __SCENE_EDITOR_PROXY_H__
 
@@ -135,7 +134,7 @@ public:
 	SceneFileV2::eError Save();
 	bool Export(const DAVA::eGPUFamily newGPU);
 
-	DAVA::FilePath GetScenePath();
+	const DAVA::FilePath &GetScenePath();
 	void SetScenePath(const DAVA::FilePath &newScenePath);
 
 	// commands

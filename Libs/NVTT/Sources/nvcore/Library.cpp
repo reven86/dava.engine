@@ -15,7 +15,11 @@
 void * nvLoadLibrary(const char * name)
 {
 #if NV_OS_WIN32
+#  ifndef POSH_OS_WIN_STORE
 	return (void *)LoadLibraryExA( name, NULL, 0 );
+#  else
+    return NULL;
+#  endif
 #else
 	return dlopen(name, RTLD_LAZY);
 #endif
@@ -25,7 +29,9 @@ void nvUnloadLibrary(void * handle)
 {
 	nvDebugCheck(handle != NULL);
 #if NV_OS_WIN32
-	FreeLibrary((HMODULE)handle);
+#  ifndef POSH_OS_WIN_STORE
+    FreeLibrary((HMODULE)handle);
+#  endif
 #else
 	dlclose(handle);
 #endif

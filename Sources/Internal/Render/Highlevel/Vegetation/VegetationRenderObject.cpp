@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
- 
+
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
- 
+
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
- 
+
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -24,7 +24,8 @@
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- =====================================================================================*/
+=====================================================================================*/
+
 
 #include <cfloat>
 
@@ -434,7 +435,7 @@ bool VegetationRenderObject::IsDataLoadNeeded()
     
     RenderManager::Instance()->GetOptions()->SetOption(RenderOptions::VEGETATION_DRAW, shouldLoadData);
     
-#if defined(__DAVAENGINE_MACOS__)  || defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_MACOS__)  || defined(__DAVAENGINE_WINDOWS__)
     shouldLoadData = true;
 #endif
 
@@ -1130,7 +1131,7 @@ bool VegetationRenderObject::ReadyToRender()
 {
     bool renderFlag = IsHardwareCapableToRenderVegetation() && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::VEGETATION_DRAW);
     
-#if defined(__DAVAENGINE_MACOS__)  || defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_MACOS__)  || defined(__DAVAENGINE_WINDOWS__)
     //VI: case when vegetation was turned off and then qualit changed from low t high is not a real-world scenario
     //VI: real-world scenario is in resource editor when quality has been changed.
     FastName currentQuality = QualitySettingsSystem::Instance()->GetCurMaterialQuality(VegetationPropertyNames::VEGETATION_QUALITY_GROUP_NAME);

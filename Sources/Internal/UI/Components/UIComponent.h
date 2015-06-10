@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __DAVAENGINE_UI_COMPONENT_H__
 #define __DAVAENGINE_UI_COMPONENT_H__
 
@@ -41,6 +42,7 @@ public:
     enum eType
     {
         FAKE_COMPONENT,
+        FAKE_MULTI_COMPONENT,
         
         COMPONENT_COUNT
     };
@@ -50,13 +52,14 @@ public:
     virtual ~UIComponent();
 
     static UIComponent * CreateByType(uint32 componentType);
+    static bool IsMultiple(uint32 componentType);
 
     virtual uint32 GetType() const = 0;
 
     void SetControl(UIControl* _control);
     UIControl* GetControl() const;
 
-    virtual UIComponent* Clone(UIControl * toControl) = 0;
+    virtual UIComponent* Clone() = 0;
 
 private:
     UIControl* control;
@@ -68,6 +71,10 @@ public:
 
 };
 
+#define IMPLEMENT_COMPONENT_TYPE(TYPE) \
+    virtual uint32 GetType() const { return TYPE; }; \
+    static const uint32 C_TYPE = TYPE;
+
 inline void UIComponent::SetControl(UIControl* _control)
 {
     control = _control;
@@ -77,6 +84,7 @@ inline UIControl* UIComponent::GetControl() const
 {
     return control;
 }
+    
 
 }
 

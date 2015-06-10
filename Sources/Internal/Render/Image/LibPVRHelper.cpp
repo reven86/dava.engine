@@ -1,30 +1,30 @@
 /*==================================================================================
- Copyright (c) 2008, binaryzebra
- All rights reserved.
- 
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- 
- * Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
- * Neither the name of the binaryzebra nor the
- names of its contributors may be used to endorse or promote products
- derived from this software without specific prior written permission.
- 
- THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
- ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
- DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- =====================================================================================*/
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
 
 
 #include "Render/Texture.h"
@@ -41,13 +41,13 @@
 #include "Render/PixelFormatDescriptor.h"
 
 
-#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
+#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__)
 #include "libpvr/PVRTError.h"
 #include "libpvr/PVRTDecompress.h"
 #include "libpvr/PVRTMap.h"
 #include "libpvr/PVRTextureHeader.h"
 #include "libpvr/PVRTexture.h"
-#endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
+#endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__)
 
 #define METADATA_FOURCC_OFFSET 0
 #define METADATA_KEY_OFFSET 4
@@ -92,10 +92,11 @@ const uint32 PVRTEX3_METADATAIDENT	= 0x03525650;
 
 LibPVRHelper::LibPVRHelper()
 {
+    name.assign("PVR");
     supportedExtensions.push_back(".pvr");
 }
 
-bool LibPVRHelper::IsImage(DAVA::File *file) const
+bool LibPVRHelper::IsMyImage(DAVA::File *file) const
 {
     bool isPvrFile = false;
 
@@ -120,24 +121,24 @@ eErrorCode LibPVRHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32
 
         if (loaded)
         {
-            return SUCCESS;
+            return eErrorCode::SUCCESS;
         }
     }
-    return ERROR_READ_FAIL;
+    return eErrorCode::ERROR_READ_FAIL;
 }
 
 eErrorCode LibPVRHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
 {
     //not implemented due to external tool
     DVASSERT(0);
-    return ERROR_WRITE_FAIL;
+    return eErrorCode::ERROR_WRITE_FAIL;
 }
 
 eErrorCode LibPVRHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
 {
     //not implemented due to external tool
     DVASSERT(0);
-    return ERROR_WRITE_FAIL;
+    return eErrorCode::ERROR_WRITE_FAIL;
 }
 
 DAVA::ImageInfo LibPVRHelper::GetImageInfo(File *infile) const
@@ -603,7 +604,7 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 fileMipM
             image->format = FORMAT_RGBA8888;
 
             //Setup temporary variables.
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
             uint8* pTempDecompData = image->data;
             uint8* pTempCompData = (uint8*)pTextureData + GetMipMapLayerOffset(fileMipMapLevel, faceIndex, compressedHeader);
 #endif

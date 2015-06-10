@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef TIMELINE_WIDGET_BASE_H
 #define TIMELINE_WIDGET_BASE_H
 

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __CLONE_LAST_BATCH_COMMAND_H__
 #define __CLONE_LAST_BATCH_COMMAND_H__
 

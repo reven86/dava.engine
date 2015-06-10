@@ -335,7 +335,7 @@ void RenderHelper::DrawPoint(const Vector2 & pt, float32 ptSize, UniqueHandle re
 
     RenderSystem2D::Instance()->UpdateClip();
 
-#if defined (__DAVAENGINE_OPENGL__)
+#if defined (__DAVAENGINE_OPENGL__) && !defined(__DAVAENGINE_OPENGL_ES__)
     glPointSize(ptSize);
 #endif 
     vertexStream->Set(TYPE_FLOAT, 2, 0, (void*)&pt);
@@ -344,7 +344,7 @@ void RenderHelper::DrawPoint(const Vector2 & pt, float32 ptSize, UniqueHandle re
     RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(renderDataObject);
     RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_POINTLIST, 0, 1);
-#if defined (__DAVAENGINE_OPENGL__)
+#if defined (__DAVAENGINE_OPENGL__) && !defined(__DAVAENGINE_OPENGL_ES__)
     glPointSize(1.0f);
 #endif
 }
@@ -355,7 +355,7 @@ void RenderHelper::DrawPoint(const Vector3 & pt, float32 ptSize, UniqueHandle re
 
     RenderSystem2D::Instance()->UpdateClip();
 
-#if defined (__DAVAENGINE_OPENGL__)
+#if defined (__DAVAENGINE_OPENGL__) && !defined(__DAVAENGINE_OPENGL_ES__)
     glPointSize(ptSize);
 #endif 
     vertexStream->Set(TYPE_FLOAT, 3, 0, (void*)&pt);
@@ -364,7 +364,7 @@ void RenderHelper::DrawPoint(const Vector3 & pt, float32 ptSize, UniqueHandle re
     RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(renderDataObject);
     RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_POINTLIST, 0, 1);
-#if defined (__DAVAENGINE_OPENGL__)
+#if defined (__DAVAENGINE_OPENGL__) && !defined(__DAVAENGINE_OPENGL_ES__)
     glPointSize(1.0f);
 #endif		
 }
@@ -382,7 +382,7 @@ void RenderHelper::DrawCircle(const Vector2 & center, float32 radius, UniqueHand
     pts.points.reserve(ptsCount);
 	for (int k = 0; k < ptsCount; ++k)
 	{
-		float32 angle = ((float)k / (ptsCount - 1)) * 2 * PI;
+		angle = (float32(k) / (ptsCount - 1)) * 2 * PI;
 		float32 sinA = sinf(angle);
 		float32 cosA = cosf(angle);
 		Vector2 pos = center - Vector2(sinA * radius, cosA * radius);
@@ -406,7 +406,7 @@ void RenderHelper::DrawCircle(const Vector3 & center, float32 radius, UniqueHand
     pts.points.reserve(ptsCount);
 	for (int k = 0; k < ptsCount; ++k)
 	{
-		float32 angle = ((float)k / (ptsCount - 1)) * 2 * PI;
+		angle = ((float)k / (ptsCount - 1)) * 2 * PI;
 		float32 sinA = sinf(angle);
 		float32 cosA = cosf(angle);
 		Vector3 pos = center - Vector3(sinA * radius, cosA * radius, 0);
@@ -530,7 +530,7 @@ void RenderHelper::DrawPolygonPoints(const Polygon2 & polygon, UniqueHandle rend
 	int ptCount = polygon.pointCount;
 	if (ptCount >= 1)
 	{
-#if defined (__DAVAENGINE_OPENGL__)
+#if defined (__DAVAENGINE_OPENGL__) && !defined(__DAVAENGINE_OPENGL_ES__)
         glPointSize(3.0f);
 #endif 
         
@@ -539,7 +539,7 @@ void RenderHelper::DrawPolygonPoints(const Polygon2 & polygon, UniqueHandle rend
         RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
 		RenderManager::Instance()->SetRenderData(renderDataObject);
 		RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_POINTLIST, 0, ptCount);
-#if defined (__DAVAENGINE_OPENGL__)
+#if defined (__DAVAENGINE_OPENGL__) && !defined(__DAVAENGINE_OPENGL_ES__)
 		glPointSize(1.0f);
 #endif		
 	}
@@ -554,7 +554,7 @@ void RenderHelper::DrawPolygonPoints(const Polygon3 & polygon, UniqueHandle rend
 	int ptCount = polygon.pointCount;
 	if (ptCount >= 1)
 	{
-#if defined (__DAVAENGINE_OPENGL__)
+#if defined (__DAVAENGINE_OPENGL__) && !defined(__DAVAENGINE_OPENGL_ES__)
         glPointSize(3.0f);
 #endif 
 		vertexStream->Set(TYPE_FLOAT, 3, 0, polygon.GetPoints());
@@ -562,7 +562,7 @@ void RenderHelper::DrawPolygonPoints(const Polygon3 & polygon, UniqueHandle rend
         RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
 		RenderManager::Instance()->SetRenderData(renderDataObject);
 		RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_POINTLIST, 0, ptCount);
-#if defined (__DAVAENGINE_OPENGL__)
+#if defined (__DAVAENGINE_OPENGL__) && !defined(__DAVAENGINE_OPENGL_ES__)
 		glPointSize(1.0f);
 #endif		
 	}
@@ -1330,15 +1330,24 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
         RenderManager::Instance()->ReleaseTextureState(textureState);
     }
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
 	void RenderHelper::GetLineWidthRange(int32& rangeMin, int32& rangeMax)
 	{
 		int32 lineWidthMin = 1;
 		int32 lineWidthMax = 1;
 
 #if defined (__DAVAENGINE_OPENGL__)
+
+        GLenum pname;
+#if defined (__DAVAENGINE_OPENGL_ES__)
+        pname = GL_ALIASED_LINE_WIDTH_RANGE;
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+#else
+        pname = GL_LINE_WIDTH_RANGE;
+#endif
+
 		GLint range[2];
-		glGetIntegerv(GL_LINE_WIDTH_RANGE, range);
+		glGetIntegerv(pname, range);
 		lineWidthMin = range[0];
 		lineWidthMax = range[1];
 #endif

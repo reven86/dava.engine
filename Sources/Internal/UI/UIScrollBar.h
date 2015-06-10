@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_UI_SCROLL_BAR_H__
 #define __DAVAENGINE_UI_SCROLL_BAR_H__
 

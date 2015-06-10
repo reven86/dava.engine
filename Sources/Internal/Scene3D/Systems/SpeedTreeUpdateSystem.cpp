@@ -66,21 +66,22 @@ SpeedTreeUpdateSystem::~SpeedTreeUpdateSystem()
     RenderManager::Instance()->GetOptions()->RemoveObserver(this);
 }
 
-void SpeedTreeUpdateSystem::ImmediateEvent(Entity * entity, uint32 event)
+void SpeedTreeUpdateSystem::ImmediateEvent(Component * _component, uint32 event)
 {
+    Entity * entity = _component->GetEntity();
 	if(event == EventSystem::WORLD_TRANSFORM_CHANGED)
 	{
         SpeedTreeComponent * component = GetSpeedTreeComponent(entity);
         if(component)
         {
-            Matrix4 * wtMxPrt = GetTransformComponent(entity)->GetWorldTransformPtr();
+            Matrix4 * wtMxPrt = GetTransformComponent(component->GetEntity())->GetWorldTransformPtr();
             component->wtPosition = wtMxPrt->GetTranslationVector();
             wtMxPrt->GetInverse(component->wtInvMx);
         }
 	}
     if(event == EventSystem::SPEED_TREE_MAX_ANIMATED_LOD_CHANGED)
     {
-        UpdateAnimationFlag(entity);
+        UpdateAnimationFlag(_component->GetEntity());
     }
 }
 
@@ -107,7 +108,8 @@ void SpeedTreeUpdateSystem::RemoveEntity(Entity * entity)
 
 void SpeedTreeUpdateSystem::UpdateAnimationFlag(Entity * entity)
 {
-    SpeedTreeObject * treeObject = DynamicTypeCheck<SpeedTreeObject*>(GetRenderObject(entity));
+    DVASSERT(GetRenderObject(entity)->GetType() == RenderObject::TYPE_SPEED_TREE);
+    SpeedTreeObject * treeObject = static_cast<SpeedTreeObject*>(GetRenderObject(entity));
     SpeedTreeComponent * component = GetSpeedTreeComponent(entity);
 
     int32 lodIndex = (isAnimationEnabled && isVegetationAnimationEnabled) ? component->GetMaxAnimatedLOD() : -1;
@@ -129,7 +131,8 @@ void SpeedTreeUpdateSystem::Process(float32 timeElapsed)
     for(uint32 i = 0; i < treeCount; ++i)
     {
 		SpeedTreeComponent * component = allTrees[i];
-		SpeedTreeObject * treeObject = DynamicTypeCheck<SpeedTreeObject*>(GetRenderObject(component->GetEntity()));
+        DVASSERT(GetRenderObject(component->GetEntity())->GetType() == RenderObject::TYPE_SPEED_TREE);
+		SpeedTreeObject * treeObject = static_cast<SpeedTreeObject*>(GetRenderObject(component->GetEntity()));
 
         if(component->GetMaxAnimatedLOD() < treeObject->GetLodIndex())
             continue;

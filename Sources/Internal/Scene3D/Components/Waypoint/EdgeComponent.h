@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_EDGE_COMPONENT_H__
 #define __DAVAENGINE_EDGE_COMPONENT_H__
 

@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "BaseAddEntityDialog.h"
 #include "ui_BaseAddEntityDialog.h"
 #include "Qt/Main/QtUtils.h"

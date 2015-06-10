@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_UI_TEXT_FIELD_IPHONE_H__
 #define __DAVAENGINE_UI_TEXT_FIELD_IPHONE_H__
 
@@ -51,9 +50,6 @@ public:
 
 	void SetTextColor(const DAVA::Color &color);
 	void SetFontSize(float size);
-
-    void OnSetPosition(const DAVA::Vector2 &size);
-    void OnSetSize(const DAVA::Vector2 &size);
     
     void SetTextAlign(DAVA::int32 align);
     DAVA::int32 GetTextAlign();
@@ -86,16 +82,17 @@ public:
     
     void SetRenderToTexture(bool value);
     bool IsRenderToTexture() const;
-    
 private:
     // Truncate the text to maxLength characters.
     void* TruncateText(void* text, int maxLength);
     void UpdateStaticTexture();
     void UpdateNativeRect(const Rect & virtualRect, int xOffset);
     
+    Rect prevRect;
     UITextField& davaTextField;
 	void * objcClassPtr;
     bool renderToTexture;
+    int deltaMoveControl = 0;
 };
 };
 

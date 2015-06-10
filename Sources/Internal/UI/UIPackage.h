@@ -56,8 +56,6 @@ public:
     }
     
     void AddControl(UIControl *control);
-    void InsertControlAtIndex(DAVA::int32 index, UIControl *control);
-    void InsertControlBelow(UIControl *control, const UIControl *belowThis);
     void RemoveControl(UIControl *control);
 
 

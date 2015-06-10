@@ -1,8 +1,39 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
+
 #ifndef __QUICKED_PROPERTIES_MODEL_H__
 #define __QUICKED_PROPERTIES_MODEL_H__
 
 #include <QAbstractItemModel>
-#include "DAVAEngine.h"
+
+#include "FileSystem/VariantType.h"
+#include "Model/ControlProperties/PropertyListener.h"
 
 namespace DAVA {
     class InspInfo;
@@ -12,20 +43,20 @@ namespace DAVA {
     };
 }
 
-class BaseProperty;
+class AbstractProperty;
 class ControlNode;
+class QtModelPackageCommandExecutor;
+class ComponentPropertiesSection;
 
-class PropertiesModel : public QAbstractItemModel
+class PropertiesModel : public QAbstractItemModel, private PropertyListener
 {
     Q_OBJECT
     
 public:
-    PropertiesModel(ControlNode *controlNode, QObject *parent = nullptr);
+    PropertiesModel(ControlNode *controlNode, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent = nullptr);
     virtual ~PropertiesModel();
     
     ControlNode *GetControlNode() const {return controlNode; }
-    void emitPropertyChanged(BaseProperty *property);
-    QModelIndex indexByProperty(BaseProperty *property, int column = 0);
     
     virtual QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
     virtual QModelIndex parent(const QModelIndex &child) const override;
@@ -38,13 +69,23 @@ public:
     virtual QVariant headerData(int section, Qt::Orientation orientation,
                                 int role = Qt::DisplayRole) const override;
 
+private: // PropertyListener
+    virtual void PropertyChanged(AbstractProperty *property) override;
+
+    virtual void ComponentPropertiesWillBeAdded(RootProperty *root, ComponentPropertiesSection *section, int index) override;
+    virtual void ComponentPropertiesWasAdded(RootProperty *root, ComponentPropertiesSection *section, int index) override;
     
+    virtual void ComponentPropertiesWillBeRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) override;
+    virtual void ComponentPropertiesWasRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) override;
+
 private:
-    QVariant makeQVariant(const BaseProperty *property) const;
+    QModelIndex indexByProperty(AbstractProperty *property, int column = 0);
+    QVariant makeQVariant(const AbstractProperty *property) const;
     void initVariantType(DAVA::VariantType &var, const QVariant &val) const;
     
 private:
     ControlNode *controlNode;
+    QtModelPackageCommandExecutor *commandExecutor;
 };
 
 #endif // __QUICKED_PROPERTIES_MODEL_H__
