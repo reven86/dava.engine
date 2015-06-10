@@ -146,22 +146,22 @@ void LocalizationSystem::SetCurrentLocale(const String &requestedLangId)
             posScriptEnd = requestedLangId.find('_', posPartStart);
         }
         
+        String scriptPart = requestedLangId.substr(posPartStart);
         if(posScriptEnd != String::npos)
         {
             // ex. zh-Hans-CN or zh-Hans_CN try zh-Hans
-            String scriptPart = requestedLangId.substr(posPartStart, posScriptEnd - posPartStart);
-#if defined(__DAVAENGINE_ANDROID__)
-            if (scriptPart == "CN" || (langPart == "zh" && scriptPart == ""))
-            {
-                scriptPart = "Hans";
-            }
-            else if(scriptPart == "TW")
-            {
-                scriptPart = "Hant";
-            }
-#endif
-            langPart = Format("%s-%s", langPart.c_str(), scriptPart.c_str());
+            scriptPart = requestedLangId.substr(posPartStart, posScriptEnd - posPartStart);
         }
+        // ex. zh_CN, zh-HK
+        if (scriptPart == "CN" || (langPart == "zh" && scriptPart == ""))
+        {
+            scriptPart = "Hans";
+        }
+        else if(scriptPart == "TW" || scriptPart == "HK")
+        {
+            scriptPart = "Hant";
+        }
+        langPart = Format("%s-%s", langPart.c_str(), scriptPart.c_str());
         
         Logger::FrameworkDebug("LocalizationSystem requested locale %s is not supported, trying to check part %s", requestedLangId.c_str(), langPart.c_str());
         localeFilePath = directoryPath + (langPart + ".yaml");
@@ -169,7 +169,6 @@ void LocalizationSystem::SetCurrentLocale(const String &requestedLangId)
         {
             actualLangId = langPart;
         }
-#if defined(__DAVAENGINE_ANDROID__)
         else if(langPart == "zh")
         {
             // in case zh is returned without country code and no zh.yaml is found - try zh-Hans
@@ -180,7 +179,6 @@ void LocalizationSystem::SetCurrentLocale(const String &requestedLangId)
                 actualLangId = langPart;
             }
         }
-#endif
     }
     
     if(actualLangId.empty())
