@@ -52,10 +52,13 @@ metal_QueryBuffer_Create( uint32 maxObjectCount )
 
     if( buf )
     {
-        id<MTLBuffer>   uid     = [_Metal_Device newBufferWithLength:(maxObjectCount*sizeof(uint32)) options:MTLResourceOptionCPUCacheModeDefault];
+        int             sz  = maxObjectCount * QueryBUfferElemeentAlign;
+        id<MTLBuffer>   uid = [_Metal_Device newBufferWithLength:sz options:MTLResourceOptionCPUCacheModeDefault];
     
         buf->uid            = uid;
         buf->maxObjectCount = maxObjectCount;
+        
+        memset( [uid contents], 0x00, sz );
     }
 
     return handle;
@@ -99,7 +102,9 @@ metal_QueryBuffer_Value( Handle handle, uint32 objectIndex )
 
     if( buf  &&  objectIndex < buf->maxObjectCount )
     {
-        value = ((uint32*)([buf->uid contents]))[objectIndex];
+        uint8* data = (uint8*)([buf->uid contents]) + objectIndex*QueryBUfferElemeentAlign;
+    
+        value = *((uint32*)data);
     }
 
     return value;

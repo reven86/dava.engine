@@ -105,6 +105,10 @@ namespace IndexBufferMetal
 {
     void        SetupDispatch( Dispatch* dispatch );
 }
+namespace QueryBufferMetal
+{
+    void        SetupDispatch( Dispatch* dispatch );
+}
 namespace TextureMetal
 {
     void        SetupDispatch( Dispatch* dispatch );
@@ -134,7 +138,8 @@ namespace CommandBufferMetal
 {
     void        SetupDispatch( Dispatch* dispatch );
 }
-    
+
+const unsigned  QueryBUfferElemeentAlign = 8;
     
 
 //==============================================================================

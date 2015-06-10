@@ -285,16 +285,23 @@ metal_CommandBuffer_SetQueryIndex( Handle cmdBuf, uint32 objectIndex )
 {
     CommandBufferMetal_t*   cb = CommandBufferPool::Get( cmdBuf );
     
-    [cb->encoder setVisibilityResultMode:MTLVisibilityResultModeBoolean offset:objectIndex*sizeof(uint32)];
+    if( objectIndex != InvalidIndex )
+    {
+        [cb->encoder setVisibilityResultMode:MTLVisibilityResultModeBoolean offset:objectIndex*QueryBUfferElemeentAlign];
+    }
+    else
+    {
+        [cb->encoder setVisibilityResultMode:MTLVisibilityResultModeDisabled offset:0];
+    }
 }
 
 
 //------------------------------------------------------------------------------
 
 static void
-metal_CommandBuffer_SetQueryBuffer( Handle /*cmdBuf*/ )
+metal_CommandBuffer_SetQueryBuffer( Handle /*cmdBuf*/, Handle /*queryBuf*/ )
 {
-    // do NOTHING
+    // do NOTHING, since query-buffer specified in render-pass
 }
 
 
