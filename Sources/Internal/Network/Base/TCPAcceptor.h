@@ -69,8 +69,8 @@ private:
     friend TCPAcceptorTemplate<TCPAcceptor>;   // Make base class friend to allow it to call my Handle... methods
 
 public:
-    typedef Function<void(TCPAcceptor* acceptor)> CloseHandlerType;
-	typedef Function<void(TCPAcceptor* acceptor, int32 error)> ConnectHandlerType;
+    using CloseHandlerType = Function<void(TCPAcceptor* acceptor)>;
+    using ConnectHandlerType = Function<void(TCPAcceptor* acceptor, int32 error)>;
 
 public:
     TCPAcceptor(IOLoop* ioLoop);

@@ -80,8 +80,8 @@ SystemTimer::SystemTimer()
 {
     globalTime = 0.0f;
     pauseMultiplier = 1.0f;
-#if defined(__DAVAENGINE_WIN32__)
-    t0 = (float32)(GetTickCount() / 1000.0f);
+#if defined(__DAVAENGINE_WINDOWS__)
+    t0 = (float32)(GetTickCount64() / 1000.0f);
     QueryPerformanceCounter(&tLi);
 	bHighTimerSupport = QueryPerformanceFrequency(&liFrequency);
 	if (bHighTimerSupport)
@@ -130,7 +130,7 @@ void SystemTimer::Start()
         delta = 0.1f;
     }
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 
 	if (bHighTimerSupport)
 	{
@@ -140,7 +140,7 @@ void SystemTimer::Start()
 		tLi = liCounter;
 	}else
 	{
-		t0 = (float32)(GetTickCount() / 1000.0f);
+		t0 = (float32)(GetTickCount64() / 1000.0f);
 	}
 
 #elif defined (__DAVAENGINE_ANDROID__)
@@ -170,7 +170,7 @@ void SystemTimer::Start()
 
 float32 SystemTimer::ElapsedSec()
 {
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 	if (bHighTimerSupport)
 	{
 		LARGE_INTEGER liCounter;
@@ -180,7 +180,7 @@ float32 SystemTimer::ElapsedSec()
 	}
 	else
 	{
-		float32 currentTime = (float32)(GetTickCount() / 1000.0f);
+		float32 currentTime = GetTickCount64() / 1000.0f;
 		Logger::FrameworkDebug("delta %f", currentTime - t0);
 		return currentTime - t0;
 	}
@@ -215,7 +215,7 @@ float32 SystemTimer::ElapsedSec()
     
 uint64 SystemTimer::GetAbsoluteNano()
 {
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 	if (bHighTimerSupport)
 	{
 		LARGE_INTEGER liCounter;
@@ -246,7 +246,7 @@ uint64 SystemTimer::GetAbsoluteNano()
 
 uint64 SystemTimer::GetAbsoluteUs()
 {
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 	if (bHighTimerSupport)
 	{
         LARGE_INTEGER t;
@@ -283,7 +283,7 @@ uint64 SystemTimer::GetAbsoluteUs()
 
 uint64 SystemTimer::AbsoluteMS()
 {
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 	if (bHighTimerSupport)
 	{
 		LARGE_INTEGER liCounter;

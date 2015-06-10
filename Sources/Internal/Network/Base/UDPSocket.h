@@ -76,9 +76,9 @@ private:
     friend UDPSocketTemplate<UDPSocket>;   // Make base class friend to allow it to call my Handle... methods
 
 public:
-    typedef Function<void(UDPSocket* socket)> CloseHandlerType;
-    typedef Function<void(UDPSocket* socket, int32 error, size_t nread, const Endpoint& endpoint, bool partial)> ReceiveHandlerType;
-    typedef Function<void(UDPSocket* socket, int32 error, const Buffer* buffers, size_t bufferCount)> SendHandlerType;
+    using CloseHandlerType = Function<void(UDPSocket* socket)>;
+    using ReceiveHandlerType = Function<void(UDPSocket* socket, int32 error, size_t nread, const Endpoint& endpoint, bool partial)>;
+    using SendHandlerType = Function<void(UDPSocket* socket, int32 error, const Buffer* buffers, size_t bufferCount)>;
 
 public:
     UDPSocket(IOLoop* ioLoop);

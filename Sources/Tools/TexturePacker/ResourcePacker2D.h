@@ -43,7 +43,7 @@ class YamlNode;
 class ResourcePacker2D
 {
 public:
-	typedef std::map<String, String> FILESMAP;
+    using FILESMAP = std::map<String, String>;
 	ResourcePacker2D();
 
 	// Packing of resources section

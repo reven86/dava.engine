@@ -79,7 +79,7 @@ protected:
     void RegisterPicker(const QString& key, AbstractColorPicker* picker);
     void RegisterColorSpace(const QString& key, AbstractColorPicker* picker);
 
-    void SetColorInternal(const QColor& c);
+    void SetColorInternal(const QColor& c) override;
 
 private slots:
     void OnChanging(const QColor& c);
@@ -90,10 +90,10 @@ private slots:
     void OnOk();
 
 private:
-    void UpdateControls(const QColor& c, AbstractColorPicker* source = NULL);
+    void UpdateControls(const QColor& c, AbstractColorPicker* source = nullptr);
     void ConnectPicker(AbstractColorPicker* picker);
-    void closeEvent(QCloseEvent* e);
-    void keyPressEvent(QKeyEvent * e);
+    void closeEvent(QCloseEvent* e) override;
+    void keyPressEvent(QKeyEvent * e) override;
 
     void LoadCustomPalette();
     void SaveCustomPalette();
@@ -104,7 +104,6 @@ private:
     PickerMap pickers;
     PickerMap colorSpaces;
     QEventLoop modalLoop;
-    QScopedPointer<QtPosSaver> posSaver;
     QColor oldColor;
     bool confirmed;
 };

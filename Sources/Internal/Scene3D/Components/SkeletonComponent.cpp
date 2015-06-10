@@ -71,7 +71,7 @@ SkeletonComponent::JointConfig::JointConfig(int32 _parentIndex, int32 _targetId,
 
 uint16 SkeletonComponent::GetConfigJointsCount()
 {
-    return configJoints.size();
+    return uint16(configJoints.size());
 }
 void SkeletonComponent::SetConfigJoints(const Vector<JointConfig>& config)
 {

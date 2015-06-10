@@ -26,10 +26,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
+#include "Base/BaseTypes.h"
 #include <libuv/uv.h>
 
-#include <Base/BaseTypes.h>
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
@@ -38,7 +38,12 @@ namespace Net
 
 const char8* ErrorToString(int32 error)
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return "";
+#else
     return uv_strerror(error);
+#endif
 }
 
 }   // namespace Net
