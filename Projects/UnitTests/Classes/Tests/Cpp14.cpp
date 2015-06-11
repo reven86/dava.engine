@@ -46,12 +46,13 @@ DAVA_TESTCLASS(Cpp14Test)
     DAVA_TEST(CompileTest)
     {
         TEST_VERIFY(f() == 42);
-
+#ifdef __DAVAENGINE_ANDROID__
         // TODO make crush to test clang address sanitizer on teamcity (remove after it)
         int* ptr = new int[100]();
         ptr[101] = 0xF0F0F0F0;
 
         Logger::Info("just after memory corruption!!!!! %d", &ptr[101]);
+#endif
     }
 
     DAVA_TEST(ScopeExit)

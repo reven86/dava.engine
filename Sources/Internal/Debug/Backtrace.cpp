@@ -103,7 +103,17 @@ public:
     {
         assert(false && "old not working code");
         // remove old infinite recursion
-        Insert(head->children[(uint32)head->children.size() - 1], backtrace, depth - 1);
+//        uint32 size = (uint32)head->children.size();
+//        for (uint32 k = 0; k < size; ++k)
+//        {
+//        	if (head->children[k]->pointer == backtrace->array[depth])
+//        	{
+//        		Insert(head->children[k], backtrace, depth - 1);
+//        	}
+//        }
+//
+//        head->Insert(backtrace->array[depth]);
+//        Insert(head->children[(uint32)head->children.size() - 1], backtrace, depth - 1);
     }
 
     Backtrace* GetBacktraceByTreeNode(BacktraceTreeNode * node)
