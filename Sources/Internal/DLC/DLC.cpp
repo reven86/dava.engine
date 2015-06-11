@@ -924,7 +924,7 @@ void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
         { 
             return info->newSize > info->origSize; 
         });
-
+    
     // check if no errors occurred during patching
     dlcContext.lastErrno = patchReader.GetErrno();
     dlcContext.patchingError = patchReader.GetLastError();
@@ -941,6 +941,18 @@ void DLC::PatchingThread(BaseObject *caller, void *callerData, void *userData)
             // error, version can't be written
             dlcContext.patchingError = PatchFileReader::ERROR_NEW_WRITE;
             dlcContext.lastErrno = errno;
+        }
+        
+        // clean patch file if it was fully truncated
+        // if we don't do that - we have Empty Patch Error if patching was finished in background and application was closed
+        // because in that case StepPatchFinish losts and at application restart DLC follows to patching state.
+        File *patchFile = File::Create(dlcContext.remotePatchStorePath, File::OPEN | File::READ);
+        int32 patchSizeAfterPatching = patchFile->GetSize();
+        SafeRelease(patchFile);
+        
+        if (0 == patchSizeAfterPatching)
+        {
+            FileSystem::Instance()->DeleteFile(dlcContext.remotePatchStorePath);
         }
     }
 
