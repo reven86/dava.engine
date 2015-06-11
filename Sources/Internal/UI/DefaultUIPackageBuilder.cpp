@@ -82,6 +82,10 @@ DefaultUIPackageBuilder::~DefaultUIPackageBuilder()
         
         DVASSERT(false);
     }
+    
+    for (UIPackage *importedPackage : importedPackages)
+        SafeRelease(importedPackage);
+    importedPackages.clear();
 }
 
 UIPackage *DefaultUIPackageBuilder::GetPackage() const
