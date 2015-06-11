@@ -83,10 +83,8 @@ DefaultUIPackageBuilder::~DefaultUIPackageBuilder()
         DVASSERT(false);
     }
     
-    for (UIPackage *package : importedPackages)
-    {
-        SafeRelease(package);
-    }
+    for (UIPackage *importedPackage : importedPackages)
+        SafeRelease(importedPackage);
     importedPackages.clear();
 }
 
