@@ -26,87 +26,47 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "Base/Result.h"
+#include "UnitTests/UnitTests.h"
 
 using namespace DAVA;
 
-Result::Result(ResultType type_, const DAVA::String &message_, const DAVA::VariantType &data_)
-    : type(type_)
-    , message(message_)
-    , data(data_)
+DAVA_TESTCLASS(ResultTest)
 {
-}
-
-ResultList::ResultList()
-    : allOk(true)
-{
-    
-}
-
-ResultList::ResultList(const Result& result)
-    : allOk(result)
-{
-    AddResult(result);
-}
-
-ResultList::ResultList(const ResultList& resultList)
-    : allOk(resultList.allOk)
-{
-    results = resultList.GetResults();
-}
-
-ResultList::ResultList(const ResultList&& resultList)
-    : allOk(resultList.allOk)
-{
-    results = std::move(resultList.results);
-}
-
-ResultList& ResultList::operator=(ResultList& resultList)
-{
-    results = resultList.results;
-    allOk = resultList.allOk;
-    return *this;
-}
-
-ResultList& ResultList::operator=(ResultList&& resultList)
-{
-    results = std::move(resultList.results);
-    allOk = resultList.allOk;
-    return *this;
-}
-
-ResultList& ResultList::AddResult(const Result &result)
-{
-    allOk &= result;
-    results.push_back(result);
-    return *this;
-}
-
-ResultList& ResultList::AddResult(const Result &&result)
-{
-    allOk &= result;
-    results.emplace_back(result);
-    return *this;
-}
-
-ResultList& ResultList::AddResultList(const ResultList &resultList)
-{
-    allOk &= resultList.allOk;
-    results.insert(results.end(), resultList.results.begin(), resultList.results.end());
-    return *this;
-}
-
-ResultList& ResultList::AddResultList(const ResultList &&resultList)
-{
-    allOk &= resultList.allOk;
-    if (results.empty())
+    DAVA_TEST(GetResultFunction)
     {
-        results = move(resultList.results);
+        TEST_VERIFY(GetResultFunction(Result::RESULT_SUCCESS));
+        TEST_VERIFY(!GetResultFunction(Result::RESULT_WARNING));
+        TEST_VERIFY(!GetResultFunction(Result::RESULT_ERROR));
+
+        TEST_VERIFY(GetResultFunction(Result::RESULT_SUCCESS).IsSuccess());
+        TEST_VERIFY(!GetResultFunction(Result::RESULT_WARNING).IsSuccess());
+        TEST_VERIFY(!GetResultFunction(Result::RESULT_ERROR).IsSuccess());
+
+        Deque<Result> results;
+        results.emplace_back(Result::RESULT_SUCCESS, "this is ", VariantType(1));
+        results.emplace_back(Result::RESULT_WARNING, "result ", VariantType(2));
+        results.emplace_back(Result::RESULT_ERROR, "test.", VariantType(3));
+        ResultList resultList;
+        for (const auto &result : results)
+        {
+            resultList.AddResultList(GetResultFunction(result));
+        }
+        TEST_VERIFY(resultList.GetResults().size() == results.size());
+        auto resultIt = resultList.GetResults().begin();
+        for (const auto &result : results)
+        {
+            TEST_VERIFY(result == *resultIt++);
+        }
     }
-    else
+        
+    ResultList GetResultFunction(const Result &result)
     {
-        move(begin(resultList.results), end(resultList.results), back_inserter(results));
+        return ResultList(result);
     }
-    return *this;
-}
+
+    ResultList GetResultFunction(const Result &&result)
+    {
+        return ResultList(result);
+    }
+};

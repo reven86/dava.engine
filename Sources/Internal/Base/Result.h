@@ -46,7 +46,7 @@ struct Result
     };
     Result(const ResultType type = RESULT_SUCCESS, const String &message = String(), const VariantType &data = VariantType());
     operator bool() const;
-    ResultType type;
+    ResultType type = RESULT_SUCCESS;
     String message;
     VariantType data;
 };
@@ -65,10 +65,13 @@ public:
     ResultList(const ResultList &&resultList);
     ~ResultList() = default;
     operator bool() const;
+    bool IsSuccess() const;
     ResultList& operator = (ResultList& resultList);
     ResultList& operator = (ResultList&& resultList);
     ResultList &AddResult(const Result &result);
-    ResultList &AddResult(const Result::ResultType type = Result::RESULT_SUCCESS, const String &message = String(), const VariantType &data = VariantType());
+    ResultList &AddResult(const Result &&);
+    ResultList &AddResultList(const ResultList &resultList);
+    ResultList &AddResultList(const ResultList &&resultList);
     
     const Deque<Result> &GetResults() const;
 private:
@@ -80,6 +83,12 @@ inline ResultList::operator bool() const
 {
     return allOk;
 }
+
+inline bool ResultList::IsSuccess() const
+{
+    return allOk;
+}
+
     
 inline const Deque<Result> &ResultList::GetResults() const
 {
