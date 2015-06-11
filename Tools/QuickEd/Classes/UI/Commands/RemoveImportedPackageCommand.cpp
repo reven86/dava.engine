@@ -31,16 +31,17 @@
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
+#include "Model/PackageHierarchy/ImportedPackagesNode.h"
 
 using namespace DAVA;
 
-RemoveImportedPackageCommand::RemoveImportedPackageCommand(PackageNode *aRoot, PackageNode *anImportedPackage, int anIndex, QUndoCommand *parent)
+RemoveImportedPackageCommand::RemoveImportedPackageCommand(PackageNode *aRoot, PackageNode *anImportedPackage, QUndoCommand *parent)
     : QUndoCommand(parent)
     , root(SafeRetain(aRoot))
     , importedPackage(SafeRetain(anImportedPackage))
-    , index(anIndex)
+    , index(0)
 {
-    
+    index = root->GetImportedPackagesNode()->GetIndex(importedPackage);
 }
 
 RemoveImportedPackageCommand::~RemoveImportedPackageCommand()

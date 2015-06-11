@@ -127,5 +127,5 @@ PackageNode *ImportedPackagesNode::FindPackageByName(const DAVA::String &name) c
 
 bool ImportedPackagesNode::IsReadOnly() const
 {
-    return GetParent() == nullptr ? GetParent()->IsReadOnly() : true;
+    return GetParent() != nullptr ? GetParent()->IsReadOnly() : true;
 }

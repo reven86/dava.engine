@@ -38,7 +38,7 @@ class PackageControlsNode;
 class RemoveImportedPackageCommand : public QUndoCommand
 {
 public:
-    RemoveImportedPackageCommand(PackageNode *aRoot, PackageNode *anImportedPackage, int anIndex, QUndoCommand *parent = nullptr);
+    RemoveImportedPackageCommand(PackageNode *aRoot, PackageNode *anImportedPackage, QUndoCommand *parent = nullptr);
     virtual ~RemoveImportedPackageCommand();
     
     void redo() override;

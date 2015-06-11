@@ -47,7 +47,7 @@ public:
     
     void AddImportedPackageIntoPackage(PackageNode *importedPackage, PackageNode *package) override;
     void AddImportedPackageIntoPackage(const DAVA::FilePath &path, PackageNode *package) override;
-    void RemoveImportedPackageFromPackage(PackageNode *importedPackage, PackageNode *package) override;
+    void RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*> &importedPackage, PackageNode *package) override;
 
 public:
     void ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value) override;

@@ -75,22 +75,33 @@ void QtModelPackageCommandExecutor::AddImportedPackageIntoPackage(PackageNode *i
     }
 }
 
-void QtModelPackageCommandExecutor::RemoveImportedPackageFromPackage(PackageNode *importedPackage, PackageNode *package)
+void QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*> &importedPackages, PackageNode *package)
 {
-    bool canRemove = true;
-    for (int i = 0; i < package->GetPackageControlsNode()->GetCount(); i++)
+    DAVA::Vector<PackageNode*> checkedPackages;
+    for (PackageNode *testPackage : importedPackages)
     {
-        ControlNode *control = package->GetPackageControlsNode()->Get(i);
-        if (control->IsDependsOnPackage(importedPackage))
+        bool canRemove = true;
+        for (int i = 0; i < package->GetPackageControlsNode()->GetCount(); i++)
         {
-            canRemove = false;
-            break;
+            ControlNode *control = package->GetPackageControlsNode()->Get(i);
+            if (control->IsDependsOnPackage(testPackage))
+            {
+                canRemove = false;
+                break;
+            }
         }
+        if (canRemove)
+            checkedPackages.push_back(testPackage);
     }
     
-    if (canRemove)
+    if (!checkedPackages.empty())
     {
-        PushCommand(new RemoveImportedPackageCommand(package, importedPackage, package->GetImportedPackagesNode()->GetCount()));
+        BeginMacro("Remove Imported Packages");
+        for (PackageNode *importedPackage : checkedPackages)
+        {
+            PushCommand(new RemoveImportedPackageCommand(package, importedPackage));
+        }
+        EndMacro();
     }
 }
 
