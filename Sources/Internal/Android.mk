@@ -184,6 +184,9 @@ DV_LOCAL_CPPFLAGS += -Wno-sometimes-uninitialized
 DV_LOCAL_CPPFLAGS += -Wno-reserved-id-macro
 DV_LOCAL_CPPFLAGS += -Wno-old-style-cast
 DV_LOCAL_CPPFLAGS += -Wno-inconsistent-missing-override
+# we have to do it because clang3.6 bug http://bugs.mitk.org/show_bug.cgi?id=18883
+DV_LOCAL_CPPFLAGS += -Wno-error=inconsistent-missing-override
+DV_LOCAL_CPPFLAGS += -Wno-inconsistent-missing-override
 DV_LOCAL_CPPFLAGS += -Wno-null-conversion
 DV_LOCAL_CPPFLAGS += -Wno-unused-local-typedef
 DV_LOCAL_CPPFLAGS += -Wno-unreachable-code-return
