@@ -141,27 +141,72 @@ if( DAVA_FOUND )
 
     file( GLOB_RECURSE CPP_FILES ${PATTERNS_CPP} )
     file( GLOB_RECURSE H_FILES   ${PATTERNS_H} )
-    list( APPEND ADDED_SRC ${H_FILES} ${CPP_FILES} )
+    set ( PLATFORM_ADDED_SRC ${H_FILES} ${CPP_FILES} )
 
 endif()
 
 ###
 
 if( ANDROID )
-    add_library( ${PROJECT_NAME} SHARED
-        ${ADDED_SRC} 
-        ${PROJECT_SOURCE_FILES} 
-    )
+    set( POSTFIX 0  )
+    set( COUNTER 0 )
+    set( SRC_LIST  )
+    set( REMAINING_LIST  )
+
+    list( APPEND PROJECT_SOURCE_FILES  ${ADDED_SRC} )
+
+    foreach( ITEM ${PROJECT_SOURCE_FILES} )
+        get_filename_component( ITEM_EXT ${ITEM} EXT )
+
+        if( ${ITEM_EXT} STREQUAL ".cpp" )
+            list( APPEND SRC_LIST  ${ITEM} )
+            math( EXPR COUNTER "${COUNTER} + 1" )
+
+            if( ${COUNTER} GREATER 900 )
+                math( EXPR POSTFIX "${POSTFIX} + 1" )
+
+                set( LIB_NAME "${PROJECT_NAME}_${POSTFIX}"  ) 
+                add_library( ${LIB_NAME} STATIC ${SRC_LIST} )
+                target_link_libraries( ${LIB_NAME} ${LIBRARIES} )
+                list( APPEND LIBRARIES ${LIB_NAME} )
+
+                set( COUNTER 0 )
+                unset( SRC_LIST CACHE)
+
+            endif() 
+
+        else()
+            list( APPEND REMAINING_LIST  ${ITEM} )
+
+        endif() 
+
+    endforeach()
+
+    if( SRC_LIST )
+        math( EXPR POSTFIX "${POSTFIX} + 1" )
+        set( LIB_NAME "${PROJECT_NAME}_${POSTFIX}"  ) 
+        add_library( ${LIB_NAME} STATIC ${SRC_LIST} )
+        target_link_libraries( ${LIB_NAME} ${LIBRARIES} )
+        list( APPEND LIBRARIES ${LIB_NAME} )
+    endif()
+
+    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/CmakeDefaultCpp.in
+                    ${CMAKE_CURRENT_BINARY_DIR}/cmake_default.cpp )
+
+    list( APPEND REMAINING_LIST  ${CMAKE_CURRENT_BINARY_DIR}/cmake_default.cpp )
+    add_library( ${PROJECT_NAME} SHARED ${PLATFORM_ADDED_SRC} ${REMAINING_LIST} )
 
 else()                             
     add_executable( ${PROJECT_NAME} MACOSX_BUNDLE ${EXECUTABLE_FLAG}
-        ${ADDED_SRC} 
+        ${ADDED_SRC}
+        ${PLATFORM_ADDED_SRC}
         ${PROJECT_SOURCE_FILES} 
         ${RESOURCES_LIST}
     )
 
 endif()
 
+###
 
 if ( QT5_FOUND )
     if ( WIN32 )
