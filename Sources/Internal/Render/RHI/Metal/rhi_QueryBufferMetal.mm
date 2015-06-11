@@ -71,7 +71,7 @@ metal_QueryBuffer_Reset( Handle handle )
 
     if( buf )
     {
-        memset( [uid contents], 0x00, buf->maxObjectCount * QueryBUfferElemeentAlign );
+        memset( [buf->uid contents], 0x00, buf->maxObjectCount * QueryBUfferElemeentAlign );
     }
 }
 
