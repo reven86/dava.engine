@@ -103,7 +103,7 @@ void NMaterial::BindParams(rhi::Packet& target)
     target.depthStencilState = activeVariantInstance->depthState;
     target.samplerState = activeVariantInstance->samplerState;
     target.textureSet = activeVariantInstance->textureSet;
-    target.cullMode = activeVariantInstance->cullMode;
+    target.cullMode = rhi::CULL_NONE;// activeVariantInstance->cullMode;
 
     activeVariantInstance->shader->UpdateDynamicParams();
     /*update values in material const buffers*/
@@ -274,7 +274,8 @@ void NMaterial::RemoveTexture(const FastName& slotName)
 void NMaterial::SetTexture(const FastName& slotName, Texture* texture)
 {    
     Texture * currTexture = localTextures.at(slotName);
-    DVASSERT(currTexture != nullptr);
+    DVASSERT(texture != nullptr);       //use RemoveTexture to remove texture!
+    DVASSERT(currTexture != nullptr);   //use AddTexture to add texture!
     if (currTexture != texture)
     {
         SafeRelease(currTexture);

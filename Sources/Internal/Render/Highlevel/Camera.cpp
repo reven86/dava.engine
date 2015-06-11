@@ -241,7 +241,7 @@ Vector3 Camera::GetOnScreenPositionAndDepth(const Vector3 & forPoint, const Rect
 
 }
 
-const Matrix4 &Camera::GetViewProjMatrix()
+const Matrix4 &Camera::GetViewProjMatrix(bool invertProjection)
 {
     if (flags & REQUIRE_REBUILD)
     {
@@ -249,7 +249,7 @@ const Matrix4 &Camera::GetViewProjMatrix()
     }
     if (flags & REQUIRE_REBUILD_PROJECTION)
     {
-        RebuildProjectionMatrix();
+        RebuildProjectionMatrix(invertProjection);
     }
     if (flags & REQUIRE_REBUILD_MODEL)
     {
@@ -264,7 +264,7 @@ const Matrix4 &Camera::GetViewProjMatrix()
     return viewProjMatrix;
 }
 
-void Camera::RebuildProjectionMatrix()
+void Camera::RebuildProjectionMatrix(bool invertProjection)
 {
     flags &= ~REQUIRE_REBUILD_PROJECTION;
     flags |= REQUIRE_REBUILD_UNIFORM_PROJ_MODEL;
@@ -275,7 +275,7 @@ void Camera::RebuildProjectionMatrix()
     float32 yMaxOrientation = ymax;        
 
 
-    if (flags & INVERT)
+    if (invertProjection)
     {
         yMinOrientation = ymax;
         yMaxOrientation = ymin;               
@@ -283,11 +283,11 @@ void Camera::RebuildProjectionMatrix()
         
     if (!ortho) 
     {
-        projMatrix.glFrustum(xMinOrientation, xMaxOrientation, yMinOrientation, yMaxOrientation, znear, zfar);
+        projMatrix.glFrustum(xMinOrientation, xMaxOrientation, yMinOrientation, yMaxOrientation, znear, zfar, Renderer::GetCaps().zeroBaseClipRange);
     }
     else
     {
-        projMatrix.glOrtho(xMinOrientation, xMaxOrientation, yMinOrientation, yMaxOrientation, znear, zfar);
+        projMatrix.glOrtho(xMinOrientation, xMaxOrientation, yMinOrientation, yMaxOrientation, znear, zfar, Renderer::GetCaps().zeroBaseClipRange);
     }
 }
 
@@ -411,9 +411,9 @@ void Camera::LookAt(Vector3	position, Vector3 view, Vector3 up)
 }
  */
 
-void Camera::PrepareDynamicParameters(Vector4 *externalClipPlane)
+void Camera::PrepareDynamicParameters(bool invertProjection, Vector4 *externalClipPlane)
 {
-	flags |= REQUIRE_REBUILD | REQUIRE_REBUILD_MODEL | REQUIRE_REBUILD_PROJECTION;
+	flags = REQUIRE_REBUILD | REQUIRE_REBUILD_MODEL | REQUIRE_REBUILD_PROJECTION;
     if (flags & REQUIRE_REBUILD)
     {
         RebuildCameraFromValues();
@@ -421,7 +421,7 @@ void Camera::PrepareDynamicParameters(Vector4 *externalClipPlane)
 	// ApplyFrustum();
     if (flags & REQUIRE_REBUILD_PROJECTION)
     {
-        RebuildProjectionMatrix();
+        RebuildProjectionMatrix(invertProjection);
        
     }
 
@@ -439,7 +439,7 @@ void Camera::PrepareDynamicParameters(Vector4 *externalClipPlane)
     {
         Vector4 clipPlane(*externalClipPlane);
 
-        if (flags & INVERT)
+        if (invertProjection)
         {
             clipPlane = -clipPlane;
         }
@@ -455,12 +455,22 @@ void Camera::PrepareDynamicParameters(Vector4 *externalClipPlane)
         m.Transpose();
         Vector4 v = Vector4 (Sign(clipPlane.x), Sign(clipPlane.y), 1, 1)*m;
         
-        Vector4 scaledPlane = clipPlane * (1.0f / v.DotProduct(clipPlane));
-
-        projMatrix.data[2] = scaledPlane.x;
-        projMatrix.data[6] = scaledPlane.y;
-        projMatrix.data[10] = scaledPlane.z;
-        projMatrix.data[14] = scaledPlane.w;
+        if (Renderer::GetCaps().zeroBaseClipRange)
+        {
+            Vector4 scaledPlane = clipPlane * (1.0f / v.DotProduct(clipPlane));
+            projMatrix.data[2] = scaledPlane.x;
+            projMatrix.data[6] = scaledPlane.y;
+            projMatrix.data[10] = scaledPlane.z;
+            projMatrix.data[14] = scaledPlane.w;
+        }
+        else
+        {
+            Vector4 scaledPlane = clipPlane * (2.0f / v.DotProduct(clipPlane));
+            projMatrix.data[2] = scaledPlane.x;
+            projMatrix.data[6] = scaledPlane.y;
+            projMatrix.data[10] = scaledPlane.z+1.0f;
+            projMatrix.data[14] = scaledPlane.w;
+        }
        
     }
 
@@ -478,9 +488,9 @@ void Camera::PrepareDynamicParameters(Vector4 *externalClipPlane)
     }
 }   
 
-void Camera::SetupDynamicParameters(Vector4 *externalClipPlane)
+void Camera::SetupDynamicParameters(bool invertProjection, Vector4 *externalClipPlane)
 {
-    PrepareDynamicParameters(externalClipPlane);
+    PrepareDynamicParameters(invertProjection, externalClipPlane);
 
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, &viewMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
@@ -536,14 +546,6 @@ void Camera::CalculateZoomFactor()
 float32 Camera::GetZoomFactor() const
 {
     return zoomFactor;
-}
-
-void Camera::SetInvert(bool enabled)
-{
-    if (enabled)
-        flags |= INVERT;
-    else
-        flags &= ~INVERT;
 }
 
     

@@ -101,16 +101,31 @@ void RenderPass::RemoveRenderLayer(RenderLayer * layer)
 	renderLayers.erase(it);
 }
 
+void RenderPass::SetupCameraParams(Camera* mainCamera, Camera* drawCamera, Vector4 *externalClipPlane)
+{
+    DVASSERT(drawCamera);
+    DVASSERT(mainCamera);
+    
+    bool isRT = (passConfig.colorBuffer[0].texture != rhi::InvalidHandle)||
+                (passConfig.colorBuffer[1].texture != rhi::InvalidHandle)||
+                (passConfig.depthStencilBuffer.texture != rhi::InvalidHandle);
+
+    bool needInvertCamera = isRT && (!Renderer::GetCaps().upperLeftRTOrigin);    
+
+    passConfig.invertCulling = needInvertCamera ? 1 : 0;
+
+    drawCamera->SetupDynamicParameters(needInvertCamera, externalClipPlane);
+    if (mainCamera != drawCamera)
+        mainCamera->PrepareDynamicParameters(needInvertCamera, externalClipPlane);
+    
+    
+}
+
 void RenderPass::Draw(RenderSystem * renderSystem)
 {   
     Camera *mainCamera = renderSystem->GetMainCamera();        
-    Camera *drawCamera = renderSystem->GetDrawCamera();   
-    
-    DVASSERT(drawCamera);
-    DVASSERT(mainCamera);    
-    drawCamera->SetupDynamicParameters();            
-    if (mainCamera!=drawCamera)    
-        mainCamera->PrepareDynamicParameters();
+    Camera *drawCamera = renderSystem->GetDrawCamera();           
+    SetupCameraParams(mainCamera, drawCamera);
     
     PrepareVisibilityArrays(mainCamera, renderSystem);        
 
@@ -263,21 +278,19 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
     reflectionPass->Draw(renderSystem);
 
     refractionPass->SetWaterLevel(waterBox.min.z);
-    refractionPass->Draw(renderSystem);    
-
-    renderSystem->GetDrawCamera()->SetupDynamicParameters();    		
-        
+    refractionPass->Draw(renderSystem);            
 }
 
 void MainForwardRenderPass::Draw(RenderSystem * renderSystem)
 { 
     Camera *mainCamera = renderSystem->GetMainCamera();        
     Camera *drawCamera = renderSystem->GetDrawCamera();   
-    DVASSERT(mainCamera);
-    DVASSERT(drawCamera);        
-    drawCamera->SetupDynamicParameters();    
-    if (mainCamera!=drawCamera)    
-        mainCamera->PrepareDynamicParameters();
+    
+    /*Vector4 clip(0, 0, 1, -1);
+    drawCamera->SetTarget(Vector3(0, 0, 0));
+    drawCamera->SetPosition(Vector3(5, 5, 5));*/
+
+    SetupCameraParams(mainCamera, drawCamera/*, &clip*/);
 	
     PrepareVisibilityArrays(mainCamera, renderSystem);        
 
@@ -353,10 +366,10 @@ void WaterReflectionRenderPass::Draw(RenderSystem * renderSystem)
     {
         passDrawCamera->CopyMathOnly(*drawCamera);        
         UpdateCamera(passDrawCamera);
-        currDrawCamera = passDrawCamera;
-        currMainCamera->PrepareDynamicParameters(&clipPlane);
+        currDrawCamera = passDrawCamera;        
     }
-    currDrawCamera->SetupDynamicParameters(&clipPlane);
+    
+    SetupCameraParams(currMainCamera, currDrawCamera, &clipPlane);
         
 	visibilityArray.clear();
     renderSystem->GetRenderHierarchy()->Clip(currMainCamera, visibilityArray, RenderObject::CLIPPING_VISIBILITY_CRITERIA | RenderObject::VISIBLE_REFLECTION);
@@ -403,12 +416,10 @@ void WaterRefractionRenderPass::Draw(RenderSystem * renderSystem)
     else
     {
         passDrawCamera->CopyMathOnly(*drawCamera);                
-        currDrawCamera = passDrawCamera;        
-        //currMainCamera->PrepareDynamicParameters();
-        currMainCamera->PrepareDynamicParameters(&clipPlane);
+        currDrawCamera = passDrawCamera;                
     }
-    //currDrawCamera->SetupDynamicParameters();
-    currDrawCamera->SetupDynamicParameters(&clipPlane);    
+    
+    SetupCameraParams(currMainCamera, currDrawCamera, &clipPlane);
 
 
     visibilityArray.clear();

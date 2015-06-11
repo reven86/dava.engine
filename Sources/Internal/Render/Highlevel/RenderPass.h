@@ -69,6 +69,7 @@ protected:
     void PrepareLayersArrays(const Vector<RenderObject *> objectsArray, Camera * camera);
     void ClearLayersArrays();
 
+    void SetupCameraParams(Camera* mainCamera, Camera* drawCamera, Vector4 *externalClipPlane = NULL);
     void DrawLayers(Camera *camera);
 
     Vector<RenderLayer*> renderLayers;

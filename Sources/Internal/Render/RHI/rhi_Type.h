@@ -41,8 +41,10 @@ using DAVA::uint8;
 using DAVA::uint16;
 using DAVA::uint32;
 using DAVA::uint64;
+using DAVA::int32;
 using DAVA::float32;
 using DAVA::Size2i;
+
 
 typedef uint32 Handle;
 static const uint32 InvalidHandle = 0;
@@ -685,11 +687,12 @@ RenderPassConfig
 
     ColorBuffer         colorBuffer[MAX_RENDER_TARGET_COUNT];
     DepthStencilBuffer  depthStencilBuffer;
-    int                 priority;
-    int                 viewport[4];
+    int32               priority;
+    int32               viewport[4];
+    uint32              invertCulling:1;
                         
                         RenderPassConfig()
-                          : priority(0)
+                            : priority(0), invertCulling(0)
                         {
                             viewport[0] = viewport[1] = viewport[2] = viewport[3] = 0;
                         }
