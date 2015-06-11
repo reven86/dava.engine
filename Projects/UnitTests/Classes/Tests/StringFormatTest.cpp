@@ -115,6 +115,7 @@ DAVA_TESTCLASS(StringFormatTest)
         TEST_VERIFY(Format("%06X", 0x1A0D) == "001A0D");
 
         TEST_VERIFY(Format("%llX", 0x123456489ABCDEF0) == "123456489ABCDEF0");
+        TEST_VERIFY(Format("%lld", 0x8000000000000000) == "-9223372036854775808");
     }
 
     DAVA_TEST(WideStringFormatTest)
@@ -140,6 +141,7 @@ DAVA_TESTCLASS(StringFormatTest)
         TEST_VERIFY(Format(L"%06X", 0x1A0D) == L"001A0D");
 
         TEST_VERIFY(Format(L"%llX", 0x123456489ABCDEF0) == L"123456489ABCDEF0");
+        TEST_VERIFY(Format(L"%lld", 0x8000000000000000) == L"-9223372036854775808");
     }
 
     DAVA_TEST(VeryLongStringFormatTest)
