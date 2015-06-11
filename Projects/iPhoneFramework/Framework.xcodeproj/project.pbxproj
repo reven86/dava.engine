@@ -837,8 +837,6 @@
 		17675C2119472C1400054F8F /* ImageSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF219201BEF009E3E90 /* ImageSystem.h */; };
 		17675C2219472C1400054F8F /* LibDdsHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF319201BEF009E3E90 /* LibDdsHelper.cpp */; };
 		17675C2319472C1400054F8F /* LibDdsHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF419201BEF009E3E90 /* LibDdsHelper.h */; };
-		17675C2419472C1400054F8F /* LibJpegHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF519201BEF009E3E90 /* LibJpegHelper.cpp */; };
-		17675C2519472C1400054F8F /* LibJpegHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF619201BEF009E3E90 /* LibJpegHelper.h */; };
 		17675C2419472C1400054F8F /* LibWebPHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF519201BEF009E3E90 /* LibWebPHelper.cpp */; };
 		17675C2519472C1400054F8F /* LibWebPHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF619201BEF009E3E90 /* LibWebPHelper.h */; };
 		17675C2619472C1400054F8F /* LibPngHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF719201BEF009E3E90 /* LibPngHelper.cpp */; };
@@ -1059,6 +1057,7 @@
 		647EFC7C195F0AC40073B3CB /* NMaterialStateDynamicTexturesInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC6D195F0AC40073B3CB /* NMaterialStateDynamicTexturesInsp.cpp */; };
 		647EFC7D195F0AC40073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC6E195F0AC40073B3CB /* NMaterialStateDynamicTexturesInsp.h */; };
 		647EFC7E195F0AC40073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC6E195F0AC40073B3CB /* NMaterialStateDynamicTexturesInsp.h */; };
+		72C84EB61B29C98B003A52E0 /* libwebp_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 72C84EB51B29C98B003A52E0 /* libwebp_ios.a */; };
 		8402AB9E19B9FFB000111F35 /* libmongodb_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C0105D11577993400E0B939 /* libmongodb_ios.a */; };
 		8402ABA219BA033200111F35 /* TextBlockDistanceRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC2218C9F9D4004309CF /* TextBlockDistanceRender.cpp */; };
 		8402ABA319BA033600111F35 /* TextBlockGraphicsRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC2418C9F9D4004309CF /* TextBlockGraphicsRender.cpp */; };
@@ -1077,8 +1076,6 @@
 		84D18C0119201BEF009E3E90 /* ImageSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF219201BEF009E3E90 /* ImageSystem.h */; };
 		84D18C0219201BEF009E3E90 /* LibDdsHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF319201BEF009E3E90 /* LibDdsHelper.cpp */; };
 		84D18C0319201BEF009E3E90 /* LibDdsHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF419201BEF009E3E90 /* LibDdsHelper.h */; };
-		84D18C0419201BEF009E3E90 /* LibJpegHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF519201BEF009E3E90 /* LibJpegHelper.cpp */; };
-		84D18C0519201BEF009E3E90 /* LibJpegHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF619201BEF009E3E90 /* LibJpegHelper.h */; };
 		84D18C0419201BEF009E3E90 /* LibWebPHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF519201BEF009E3E90 /* LibWebPHelper.cpp */; };
 		84D18C0519201BEF009E3E90 /* LibWebPHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF619201BEF009E3E90 /* LibWebPHelper.h */; };
 		84D18C0619201BEF009E3E90 /* LibPngHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF719201BEF009E3E90 /* LibPngHelper.cpp */; };
@@ -2166,6 +2163,7 @@
 		647EFC6C195F0AC40073B3CB /* NMaterialStateDynamicPropertiesInsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialStateDynamicPropertiesInsp.h; sourceTree = "<group>"; };
 		647EFC6D195F0AC40073B3CB /* NMaterialStateDynamicTexturesInsp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NMaterialStateDynamicTexturesInsp.cpp; sourceTree = "<group>"; };
 		647EFC6E195F0AC40073B3CB /* NMaterialStateDynamicTexturesInsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialStateDynamicTexturesInsp.h; sourceTree = "<group>"; };
+		72C84EB51B29C98B003A52E0 /* libwebp_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libwebp_ios.a; path = ../../Libs/libs/libwebp_ios.a; sourceTree = "<group>"; };
 		840ED3C816D506F900D2BA6C /* DPIHelperiOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DPIHelperiOS.mm; sourceTree = "<group>"; };
 		840ED3CA16D5070400D2BA6C /* DPIHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DPIHelper.h; sourceTree = "<group>"; };
 		842D49CD19E43B8800098682 /* Polygon2Swig.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Polygon2Swig.cpp; sourceTree = "<group>"; };
@@ -2178,8 +2176,6 @@
 		84D18BF219201BEF009E3E90 /* ImageSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImageSystem.h; path = Image/ImageSystem.h; sourceTree = "<group>"; };
 		84D18BF319201BEF009E3E90 /* LibDdsHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LibDdsHelper.cpp; path = Image/LibDdsHelper.cpp; sourceTree = "<group>"; };
 		84D18BF419201BEF009E3E90 /* LibDdsHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LibDdsHelper.h; path = Image/LibDdsHelper.h; sourceTree = "<group>"; };
-		84D18BF519201BEF009E3E90 /* LibJpegHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LibJpegHelper.cpp; path = Image/LibJpegHelper.cpp; sourceTree = "<group>"; };
-		84D18BF619201BEF009E3E90 /* LibJpegHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LibJpegHelper.h; path = Image/LibJpegHelper.h; sourceTree = "<group>"; };
 		84D18BF519201BEF009E3E90 /* LibWebPHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LibWebPHelper.cpp; path = Image/LibWebPHelper.cpp; sourceTree = "<group>"; };
 		84D18BF619201BEF009E3E90 /* LibWebPHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LibWebPHelper.h; path = Image/LibWebPHelper.h; sourceTree = "<group>"; };
 		84D18BF719201BEF009E3E90 /* LibPngHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LibPngHelper.cpp; path = Image/LibPngHelper.cpp; sourceTree = "<group>"; };
@@ -2923,6 +2919,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				72C84EB61B29C98B003A52E0 /* libwebp_ios.a in Frameworks */,
 				CC677BA6197D46420089547A /* SystemConfiguration.framework in Frameworks */,
 				02FD81F21924997C007762C0 /* libjpeg_ios.a in Frameworks */,
 				02FD81F31924997C007762C0 /* AssetsLibrary.framework in Frameworks */,
@@ -3061,6 +3058,7 @@
 		0867D69AFE84028FC02AAC07 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				72C84EB51B29C98B003A52E0 /* libwebp_ios.a */,
 				50194DD01A52D94B00557DAB /* libuv_ios.a */,
 				CC677BA4197D46390089547A /* SystemConfiguration.framework */,
 				6252BF2518ED506E00058754 /* libjpeg_ios.a */,
@@ -3245,8 +3243,6 @@
 				84D18BF219201BEF009E3E90 /* ImageSystem.h */,
 				84D18BF319201BEF009E3E90 /* LibDdsHelper.cpp */,
 				84D18BF419201BEF009E3E90 /* LibDdsHelper.h */,
-				84D18BF519201BEF009E3E90 /* LibJpegHelper.cpp */,
-				84D18BF619201BEF009E3E90 /* LibJpegHelper.h */,
 				84D18BF519201BEF009E3E90 /* LibWebPHelper.cpp */,
 				84D18BF619201BEF009E3E90 /* LibWebPHelper.h */,
 				84D18BF719201BEF009E3E90 /* LibPngHelper.cpp */,
@@ -4946,7 +4942,7 @@
 				02FD808D1924997C007762C0 /* SerializationContext.h in Headers */,
 				02FD808E1924997C007762C0 /* RenderStateData.h in Headers */,
 				02FD808F1924997C007762C0 /* UIParticles.h in Headers */,
-				17675C2519472C1400054F8F /* LibJpegHelper.h in Headers */,
+				17675C2519472C1400054F8F /* LibWebPHelper.h in Headers */,
 				17675C2519472C1400054F8F /* LibWebPHelper.h in Headers */,
 				02FD80901924997C007762C0 /* UniqueStateSet.h in Headers */,
 				02FD80911924997C007762C0 /* TextureStateData.h in Headers */,
@@ -5119,7 +5115,7 @@
 				114B553C1AB9D2EE003EC488 /* dlmalloc.h in Headers */,
 				E8B3CB5716B9326E002BD35F /* Plane.h in Headers */,
 				647EFC71195F0AC40073B3CB /* NMaterialHelper.h in Headers */,
-				84D18C0519201BEF009E3E90 /* LibJpegHelper.h in Headers */,
+				84D18C0519201BEF009E3E90 /* LibWebPHelper.h in Headers */,
 				84D18C0519201BEF009E3E90 /* LibWebPHelper.h in Headers */,
 				E8B3CB5916B9326E002BD35F /* Polygon2.h in Headers */,
 				E8B3CB5B16B9326E002BD35F /* Polygon3.h in Headers */,
@@ -5788,7 +5784,7 @@
 				647EFC74195F0AC40073B3CB /* NMaterialStateDynamicFlagsInsp.cpp in Sources */,
 				02FD81501924997C007762C0 /* SwitchComponent.cpp in Sources */,
 				02FD81511924997C007762C0 /* TransformComponent.cpp in Sources */,
-				17675C2419472C1400054F8F /* LibJpegHelper.cpp in Sources */,
+				17675C2419472C1400054F8F /* LibWebPHelper.cpp in Sources */,
 				17675C2419472C1400054F8F /* LibWebPHelper.cpp in Sources */,
 				02FD81521924997C007762C0 /* UpdatableComponent.cpp in Sources */,
 				D738BD7C1B01FCC700989C29 /* RawTimer.cpp in Sources */,
@@ -6267,7 +6263,7 @@
 				CC0D7B4B1A76066700309408 /* EdgeComponent.cpp in Sources */,
 				EA10607818892B7C00CB99A3 /* ParticleRenderObject.cpp in Sources */,
 				E8B3CCC016B9326E002BD35F /* LightUpdateSystem.cpp in Sources */,
-				84D18C0419201BEF009E3E90 /* LibJpegHelper.cpp in Sources */,
+				84D18C0419201BEF009E3E90 /* LibWebPHelper.cpp in Sources */,
 				84D18C0419201BEF009E3E90 /* LibWebPHelper.cpp in Sources */,
 				E8F43E2D186C5D4E006796CB /* MaterialSystem.cpp in Sources */,
 				E8B3CCC216B9326E002BD35F /* LodSystem.cpp in Sources */,
@@ -6498,6 +6494,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
+					/Users/a_klubovich/Develop/dava.framework/Libs/libs,
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
@@ -6544,6 +6541,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
+					/Users/a_klubovich/Develop/dava.framework/Libs/libs,
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
@@ -6585,6 +6583,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
+					/Users/a_klubovich/Develop/dava.framework/Libs/libs,
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
@@ -6626,6 +6625,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
+					/Users/a_klubovich/Develop/dava.framework/Libs/libs,
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = FrameworkTesting;
