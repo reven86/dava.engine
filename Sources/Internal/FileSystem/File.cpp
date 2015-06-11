@@ -34,7 +34,7 @@
 
 #include "Utils/StringFormat.h"
 
-#if defined (__DAVAENGINE_WIN32__)
+#if defined (__DAVAENGINE_WINDOWS__)
 #include <io.h>
 #elif defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_IPHONE__)
 #include <unistd.h>
@@ -358,7 +358,7 @@ bool File::IsEof()
 
 bool File::Truncate(int32 size)
 {
-#if defined (__DAVAENGINE_WIN32__)
+#if defined (__DAVAENGINE_WINDOWS__)
     return (0 == _chsize(_fileno(file), size));
 #elif defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     return (0 == ftruncate(fileno(file), size));
@@ -404,7 +404,7 @@ String File::GetModificationDate(const FilePath & filePathname)
     int32 ret = stat(realPathname.c_str(), &fileInfo);
     if(0 == ret)
     {
-#if defined (__DAVAENGINE_WIN32__)
+#if defined (__DAVAENGINE_WINDOWS__)
 		tm* utcTime = gmtime(&fileInfo.st_mtime);
 #elif defined (__DAVAENGINE_ANDROID__)
 		tm* utcTime = gmtime((const time_t *)&fileInfo.st_mtime);

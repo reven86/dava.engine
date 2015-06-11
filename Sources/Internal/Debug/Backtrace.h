@@ -37,39 +37,40 @@ namespace DAVA
 //namespace Backtrace 
 //{
     
-    #define MAX_BACKTRACE_DEPTH  50
+#define MAX_BACKTRACE_DEPTH  50
     
-    struct Backtrace
-    {
-        uint32 size;
-        void * array[MAX_BACKTRACE_DEPTH];
-        pointer_size hash;   // identical backtraces have identical hash values. At the same time it does not guarantee that stacks are the same. 
-    };
+struct Backtrace
+{
+    uint32 size;
+    void * array[MAX_BACKTRACE_DEPTH];
+    pointer_size hash;   // identical backtraces have identical hash values. At the same time it does not guarantee that stacks are the same. 
+};
     
-    /**
-        \brief Function to create backtrace from current point and calculate hash.
-     */
-    Backtrace * CreateBacktrace();
-    /**
-        \brief Function to release backtrace.
-     */
-    void ReleaseBacktrace(Backtrace * backtrace);
-    /*
-        \brief Get backtrace to created pointer
-     */
-    void GetBacktrace(Backtrace * backtrace);
+/**
+    \brief Function to create backtrace from current point and calculate hash.
+    */
+Backtrace * CreateBacktrace();
+/**
+    \brief Function to release backtrace.
+    */
+void ReleaseBacktrace(Backtrace * backtrace);
+/*
+    \brief Get backtrace to created pointer
+    */
+void GetBacktrace(Backtrace * backtrace);
     
     
-    struct BacktraceLog
-    {
-        uint32 size;
-        char ** strings;
-    };
+struct BacktraceLog
+{
+    uint32 size;
+    char ** strings;
+};
     
-    void CreateBacktraceLog(Backtrace * backtrace, BacktraceLog * log);
-    void ReleaseBacktraceLog(BacktraceLog * log);
+void CreateBacktraceLog(Backtrace * backtrace, BacktraceLog * log);
+void ReleaseBacktraceLog(BacktraceLog * log);
         
-    void PrintBackTraceToLog(Logger::eLogLevel logLevel = Logger::eLogLevel::LEVEL_FRAMEWORK);
+void PrintBackTraceToLog(Logger::eLogLevel logLevel = Logger::eLogLevel::LEVEL_FRAMEWORK);
+
 //};
 };
 

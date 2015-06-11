@@ -46,13 +46,20 @@ bool KeyboardDevice::IsKeyPressed(int32 keyCode)
 {
     DVASSERT( keyCode < DVKEY_COUNT );
 
-#ifdef __DAVAENGINE_WIN32__
+#if defined (__DAVAENGINE_WIN_UAP__)
+	if (DVKEY_ALT == keyCode)
+	{
+		auto current_frame =  Windows::UI::Core::CoreWindow::GetForCurrentThread();
+		auto isAlt = current_frame->GetKeyState(static_cast<Windows::System::VirtualKey>(VK_MENU));
+		keyStatus[keyCode] = (Windows::UI::Core::CoreVirtualKeyStates::Down  == isAlt);
+	}
+#elif defined (__DAVAENGINE_WIN32__)
 	if(DVKEY_ALT == keyCode)
 	{
-        auto isAlt = ::GetKeyState(VK_MENU);
+		auto isAlt = ::GetKeyState(VK_MENU);
         keyStatus[keyCode] = (isAlt < 0);
 	}
-#endif 
+#endif //  __DAVAENGINE_WIN_UAP__ | __DAVAENGINE_WIN32__
 
     return keyStatus[keyCode];
 }
@@ -108,7 +115,7 @@ void KeyboardDevice::PrepareKeyTranslator()
         key = DVKEY_UNKNOWN;
     }
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 	keyTranslator[VK_LEFT] = DVKEY_LEFT;
 	keyTranslator[VK_RIGHT] = DVKEY_RIGHT;
 	keyTranslator[VK_UP] = DVKEY_UP;

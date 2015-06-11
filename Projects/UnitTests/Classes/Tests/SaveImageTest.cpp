@@ -84,7 +84,7 @@ DAVA_TESTCLASS(SaveImageTest)
 
         TEST_VERIFY(img->Save(path));
 
-        TEST_VERIFY(DAVA::ImageSystem::Instance()->Load(path, imgSet) == DAVA::SUCCESS);
+        TEST_VERIFY(DAVA::ImageSystem::Instance()->Load(path, imgSet) == DAVA::eErrorCode::SUCCESS);
         TEST_VERIFY(imgSet[0]->dataSize == img->dataSize);
 
         const TextureUtils::CompareResult cmpRes = TextureUtils::CompareImages(img, imgSet[0], img->format);
