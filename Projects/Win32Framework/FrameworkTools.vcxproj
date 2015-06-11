@@ -193,6 +193,14 @@
     <ClInclude Include="..\..\Sources\Tools\TexturePacker\TexturePacker.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Sources\Tools\AssetCache\AssetCacheClient.cpp" />
+    <ClCompile Include="..\..\Sources\Tools\AssetCache\AssetCacheServer.cpp" />
+    <ClCompile Include="..\..\Sources\Tools\AssetCache\CacheDB.cpp" />
+    <ClCompile Include="..\..\Sources\Tools\AssetCache\CachedFiles.cpp" />
+    <ClCompile Include="..\..\Sources\Tools\AssetCache\CacheItemKey.cpp" />
+    <ClCompile Include="..\..\Sources\Tools\AssetCache\ServerCacheEntry.cpp" />
+    <ClCompile Include="..\..\Sources\Tools\AssetCache\TCPConnection\TCPChannel.cpp" />
+    <ClCompile Include="..\..\Sources\Tools\AssetCache\TCPConnection\TCPConnection.cpp" />
     <ClCompile Include="..\..\Sources\Tools\TeamcityOutput\TeamcityOutput.cpp" />
     <ClCompile Include="..\..\Sources\Tools\TeamcityOutput\TeamCityTestsOutput.cpp" />
     <ClCompile Include="..\..\Sources\Tools\TextureCompression\DXTConverter.cpp" />

@@ -28,6 +28,12 @@
     <Filter Include="TeamcityOutput">
       <UniqueIdentifier>{ad6c97e8-fa9d-4027-9216-7b3a96be2c3e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\AssetCache">
+      <UniqueIdentifier>{c54f3a9f-7306-45a5-9e4d-1bfa06cac95c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\AssetCache\TCPConnection">
+      <UniqueIdentifier>{75f7fe1e-4c1a-497f-ad16-6b0825002e38}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
@@ -106,6 +112,30 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Tools\TeamcityOutput\TeamCityTestsOutput.cpp">
       <Filter>TeamcityOutput</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Tools\AssetCache\AssetCacheClient.cpp">
+      <Filter>Source Files\AssetCache</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Tools\AssetCache\AssetCacheServer.cpp">
+      <Filter>Source Files\AssetCache</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Tools\AssetCache\CacheDB.cpp">
+      <Filter>Source Files\AssetCache</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Tools\AssetCache\CachedFiles.cpp">
+      <Filter>Source Files\AssetCache</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Tools\AssetCache\CacheItemKey.cpp">
+      <Filter>Source Files\AssetCache</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Tools\AssetCache\ServerCacheEntry.cpp">
+      <Filter>Source Files\AssetCache</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Tools\AssetCache\TCPConnection\TCPChannel.cpp">
+      <Filter>Source Files\AssetCache\TCPConnection</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Tools\AssetCache\TCPConnection\TCPConnection.cpp">
+      <Filter>Source Files\AssetCache\TCPConnection</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
