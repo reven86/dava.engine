@@ -88,9 +88,9 @@ start_on_ios = False
 
 if args['platform'] == "ios":
     if args['build'] == 'release':
-        buildPath = "../build/Release-iphoneos/"
+        buildPath = "../_build/Release-iphoneos/"
     else:
-        buildPath = "../build/Debug-iphoneos/"
+        buildPath = "../_build/Debug-iphoneos/"
 
 print "Build params : " + BUILD_PARAMS 
 print "Performance tests command line params : " + TEST_PARAMS
