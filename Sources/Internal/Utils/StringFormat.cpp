@@ -44,8 +44,7 @@ class BufferState
 {
 public:
     BufferState(char16* buf_, size_t size_)
-        : buf(buf_)
-        , bufEnd(buf_ + size_ - 1)
+        : bufEnd(buf_ + size_ - 1)
         , curPtr(buf_)
         , ntotal(0)
     {}
@@ -111,7 +110,6 @@ public:
     size_t Total() const { return ntotal; }
 
 private:
-    char16* buf;
     char16* bufEnd;
     char16* curPtr;
     size_t ntotal;
