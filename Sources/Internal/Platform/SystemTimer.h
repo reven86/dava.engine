@@ -49,8 +49,7 @@ class SystemTimer : public Singleton<SystemTimer>
 	BOOL			bHighTimerSupport;
 	float32			t0;
 #elif defined (__DAVAENGINE_ANDROID__)
-	float32			t0;
-	uint64 savedSec;
+	uint64 t0;
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
 	uint64_t t0;
 #else //PLATFORMS
@@ -103,7 +102,6 @@ public:
     
 #if defined(__DAVAENGINE_ANDROID__)
 	uint64 GetTickCount();
-	void InitTickCount();
 #endif //#if defined(__DAVAENGINE_ANDROID__)
     
 private:
