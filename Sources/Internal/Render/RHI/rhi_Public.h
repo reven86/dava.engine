@@ -118,6 +118,7 @@ void            UpdateIndexBuffer( HIndexBuffer ib, const void* data, uint32 off
 typedef ResourceHandle<RESOURCE_QUERY_BUFFER> HQueryBuffer;
 
 HQueryBuffer    CreateQueryBuffer( unsigned maxObjectCount );
+void            ResetQueryBuffer( HQueryBuffer buf );
 void            DeleteQueryBuffer( HQueryBuffer buf );
 
 bool            QueryIsReady( HQueryBuffer buf, uint32 objectIndex );

@@ -65,6 +65,17 @@ metal_QueryBuffer_Create( uint32 maxObjectCount )
 }
 
 static void
+metal_QueryBuffer_Reset( Handle handle )
+{
+    QueryBufferMetal_t* buf = QueryBufferMetalPool::Get( handle );
+
+    if( buf )
+    {
+        memset( [uid contents], 0x00, buf->maxObjectCount * QueryBUfferElemeentAlign );
+    }
+}
+
+static void
 metal_QueryBuffer_Delete( Handle handle )
 {
     QueryBufferMetal_t* buf = QueryBufferMetalPool::Get( handle );
@@ -125,6 +136,7 @@ void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_QueryBuffer_Create   = &metal_QueryBuffer_Create;
+    dispatch->impl_QueryBuffer_Reset    = &metal_QueryBuffer_Reset;
     dispatch->impl_QueryBuffer_Delete   = &metal_QueryBuffer_Delete;
     dispatch->impl_QueryBuffer_IsReady  = &metal_QueryBuffer_IsReady;
     dispatch->impl_QueryBuffer_Value    = &metal_QueryBuffer_Value;

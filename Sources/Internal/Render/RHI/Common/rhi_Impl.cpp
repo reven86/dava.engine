@@ -188,6 +188,12 @@ Create( uint32 maxObjectCount )
 }
 
 void
+Reset( Handle buf )
+{
+    (*_Impl.impl_QueryBuffer_Reset)( buf );
+}
+
+void
 Delete( Handle buf )
 {
     (*_Impl.impl_QueryBuffer_Delete)( buf );

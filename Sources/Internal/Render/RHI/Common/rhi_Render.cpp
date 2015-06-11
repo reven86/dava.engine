@@ -182,6 +182,15 @@ CreateQueryBuffer( uint32 maxObjectCount )
 //------------------------------------------------------------------------------
 
 void
+ResetQueryBuffer( HQueryBuffer buf )
+{
+    QueryBuffer::Reset( buf );
+}
+
+
+//------------------------------------------------------------------------------
+
+void
 DeleteQueryBuffer( HQueryBuffer buf )
 {
     QueryBuffer::Delete( buf );

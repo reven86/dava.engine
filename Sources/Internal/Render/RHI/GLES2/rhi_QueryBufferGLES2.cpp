@@ -58,6 +58,16 @@ gles2_QueryBuffer_Create( uint32 maxObjectCount )
 }
 
 static void
+gles2_QueryBuffer_Reset( Handle handle )
+{
+    QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get( handle );
+
+    if( buf )
+    {
+    }
+}
+
+static void
 gles2_QueryBuffer_Delete( Handle handle )
 {
     QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get( handle );
@@ -136,6 +146,7 @@ void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_QueryBuffer_Create   = &gles2_QueryBuffer_Create;
+    dispatch->impl_QueryBuffer_Reset    = &gles2_QueryBuffer_Reset;
     dispatch->impl_QueryBuffer_Delete   = &gles2_QueryBuffer_Delete;
     dispatch->impl_QueryBuffer_IsReady  = &gles2_QueryBuffer_IsReady;
     dispatch->impl_QueryBuffer_Value    = &gles2_QueryBuffer_Value;

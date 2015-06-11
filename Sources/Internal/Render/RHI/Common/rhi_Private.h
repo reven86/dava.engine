@@ -85,6 +85,7 @@ namespace QueryBuffer
 {
 
 Handle  Create( uint32 maxObjectCount );
+void    Reset( Handle buf );
 void    Delete( Handle buf );
 
 bool    IsReady( Handle buf, uint32 objectIndex );

@@ -78,6 +78,16 @@ dx9_QueryBuffer_Delete( Handle handle )
     QueryBufferDX9Pool::Free( handle );
 }
 
+static void
+dx9_QueryBuffer_Reset( Handle handle )
+{
+    QueryBufferDX9_t*   buf    = QueryBufferDX9Pool::Get( handle );
+
+    if( buf )
+    {
+    }
+}
+
 static bool
 dx9_QueryBuffer_IsReady( Handle handle, uint32 objectIndex )
 {
@@ -136,6 +146,7 @@ void
 SetupDispatch( Dispatch* dispatch )
 {
     dispatch->impl_QueryBuffer_Create   = &dx9_QueryBuffer_Create;
+    dispatch->impl_QueryBuffer_Reset    = &dx9_QueryBuffer_Reset;
     dispatch->impl_QueryBuffer_Delete   = &dx9_QueryBuffer_Delete;
     dispatch->impl_QueryBuffer_IsReady  = &dx9_QueryBuffer_IsReady;
     dispatch->impl_QueryBuffer_Value    = &dx9_QueryBuffer_Value;
