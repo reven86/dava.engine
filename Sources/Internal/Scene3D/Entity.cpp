@@ -303,7 +303,6 @@ bool Entity::IsMyChildRecursive(const Entity* child) const
         return std::any_of(children.begin(), children.end(), [&](const Entity* ch){return ch->IsMyChildRecursive(child);});
     }
 }
-	
     
 void Entity::RemoveAllChildren()
 {
