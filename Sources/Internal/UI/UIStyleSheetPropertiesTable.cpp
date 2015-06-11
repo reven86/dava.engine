@@ -28,6 +28,7 @@
 
 #include "UI/UIStyleSheetPropertiesTable.h"
 #include "UI/UIControl.h"
+#include "UI/UIStaticText.h"
 #include "UI/UIControlBackground.h"
 #include "UI/Components/UIFakeComponent.h"
 #include "UI/Components/UIFakeMultiComponent.h"
@@ -37,10 +38,38 @@ namespace DAVA
     namespace
     {
         UIStyleSheetPropertyDescriptor STYLE_SHEET_PROPERTY_TABLE[STYLE_SHEET_PROPERTY_COUNT] = {
-            { FastName("color"), VariantType::TYPE_COLOR },
             { FastName("angle"), VariantType::TYPE_FLOAT },
+            { FastName("scale"), VariantType::TYPE_VECTOR2 },
+            { FastName("visible"), VariantType::TYPE_BOOLEAN },
+            { FastName("enabled"), VariantType::TYPE_BOOLEAN },
+            { FastName("leftAlignEnabled"), VariantType::TYPE_BOOLEAN },
+            { FastName("rightAlignEnabled"), VariantType::TYPE_BOOLEAN },
+            { FastName("bottomAlignEnabled"), VariantType::TYPE_BOOLEAN },
+            { FastName("topAlignEnabled"), VariantType::TYPE_BOOLEAN },
+            { FastName("hcenterAlignEnabled"), VariantType::TYPE_BOOLEAN },
+            { FastName("vcenterAlignEnabled"), VariantType::TYPE_BOOLEAN },
+            { FastName("leftAlign"), VariantType::TYPE_FLOAT },
+            { FastName("rightAlign"), VariantType::TYPE_FLOAT },
+            { FastName("bottomAlign"), VariantType::TYPE_FLOAT },
+            { FastName("topAlign"), VariantType::TYPE_FLOAT },
+            { FastName("hcenterAlign"), VariantType::TYPE_FLOAT },
+            { FastName("vcenterAlign"), VariantType::TYPE_FLOAT },
+
+            { FastName("drawType"), VariantType::TYPE_INT32 },
             { FastName("sprite"), VariantType::TYPE_FILEPATH },
-            { FastName("frame"), VariantType::TYPE_INT32 }
+            { FastName("frame"), VariantType::TYPE_INT32 },
+            { FastName("color"), VariantType::TYPE_COLOR },
+            { FastName("colorInherit"), VariantType::TYPE_INT32 },
+            { FastName("align"), VariantType::TYPE_INT32 },
+            { FastName("leftRightStretchCap"), VariantType::TYPE_FLOAT },
+            { FastName("topBottomStretchCap"), VariantType::TYPE_FLOAT },
+
+            { FastName("font"), VariantType::TYPE_STRING },
+            { FastName("textColor"), VariantType::TYPE_COLOR },
+            { FastName("textcolorInheritType"), VariantType::TYPE_INT32 },
+            { FastName("shadowoffset"), VariantType::TYPE_VECTOR2 },
+            { FastName("shadowcolor"), VariantType::TYPE_COLOR },
+            { FastName("textalign"), VariantType::TYPE_INT32 },
         };
 
         UnorderedMap< FastName, uint32 > propertyNameToIndexMap;
@@ -123,16 +152,22 @@ namespace DAVA
         ProcessComponentIntrospection< UIFakeComponent >();
         ProcessComponentIntrospection< UIFakeMultiComponent >();
         ProcessControlIntrospection< UIControl >();
+        ProcessControlIntrospection< UIStaticText >();
         ProcessObjectIntrospection(UIControlBackground::TypeInfo(), BackgroundPropertyRegistrator());
     }
 
-    uint32 StyleSheetProperty(const FastName& name)
+    uint32 GetStyleSheetPropertyIndex(const FastName& name)
     {
         auto& iter = propertyNameToIndexMap.find(name);
 
         DVASSERT(iter != propertyNameToIndexMap.end());
 
         return iter->second;
+    }
+
+    bool IsValidStyleSheetPropertyIndex(const FastName& name)
+    {
+        return propertyNameToIndexMap.find(name) != propertyNameToIndexMap.end();
     }
 
     const UIStyleSheetPropertyDescriptor& GetStyleSheetPropertyByIndex(uint32 index)

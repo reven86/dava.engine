@@ -252,7 +252,7 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, cons
         VariantType res;
         if (node)
             res = ReadVariantTypeFromYamlNode(member, node);
-        builder->ProcessProperty(member, res);
+        builder->ProcessProperty(control, member, res);
     }
     builder->EndControlPropertiesSection();
 }
@@ -270,7 +270,7 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl *control, co
             {
                 const InspMember *member = insp->Member(j);
                 VariantType res = ReadVariantTypeFromYamlNode(member, nodeDescr.node);
-                builder->ProcessProperty(member, res);
+                builder->ProcessProperty(control, member, res);
             }
         }
         
@@ -341,7 +341,7 @@ void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *control, const Yam
                 VariantType res;
                 if (componentNode)
                     res = ReadVariantTypeFromYamlNode(member, componentNode);
-                builder->ProcessProperty(member, res);
+                builder->ProcessProperty(control, member, res);
             }
         }
         builder->EndBgPropertiesSection();
@@ -369,7 +369,7 @@ void UIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *contr
                 VariantType value;
                 if (componentNode)
                     value = ReadVariantTypeFromYamlNode(member, componentNode);
-                builder->ProcessProperty(member, value);
+                builder->ProcessProperty(control, member, value);
             }
         }
         builder->EndInternalControlSection();
@@ -381,61 +381,7 @@ VariantType UIPackageLoader::ReadVariantTypeFromYamlNode(const InspMember *membe
     const YamlNode *valueNode = node->Get(member->Name());
     if (valueNode)
     {
-        if (member->Desc().type == InspDesc::T_ENUM)
-        {
-            int32 val = 0;
-            if (member->Desc().enumMap->ToValue(valueNode->AsString().c_str(), val))
-            {
-                return VariantType(val);
-            }
-            else
-            {
-                DVASSERT(false);
-            }
-        }
-        else if (member->Desc().type == InspDesc::T_FLAGS)
-        {
-            int32 val = 0;
-            for (uint32 i = 0; i < valueNode->GetCount(); i++)
-            {
-                const YamlNode *flagNode = valueNode->Get(i);
-                int32 flag = 0;
-                if (member->Desc().enumMap->ToValue(flagNode->AsString().c_str(), flag))
-                {
-                    val |= flag;
-                }
-                else
-                {
-                    DVASSERT(false);
-                }
-            }
-            return VariantType(val);
-        }
-        else if (member->Type() == MetaInfo::Instance<bool>())
-            return VariantType(valueNode->AsBool());
-        else if (member->Type() == MetaInfo::Instance<int32>())
-            return VariantType(valueNode->AsInt32());
-        else if (member->Type() == MetaInfo::Instance<uint32>())
-            return VariantType(valueNode->AsUInt32());
-        else if (member->Type() == MetaInfo::Instance<String>())
-            return VariantType(valueNode->AsString());
-        else if (member->Type() == MetaInfo::Instance<WideString>())
-            return VariantType(valueNode->AsWString());
-        else if (member->Type() == MetaInfo::Instance<float32>())
-            return VariantType(valueNode->AsFloat());
-        else if (member->Type() == MetaInfo::Instance<Vector2>())
-            return VariantType(valueNode->AsVector2());
-        else if (member->Type() == MetaInfo::Instance<Color>())
-            return VariantType(valueNode->AsColor());
-        else if (member->Type() == MetaInfo::Instance<Vector4>())
-            return VariantType(valueNode->AsVector4());
-        else if (member->Type() == MetaInfo::Instance<FilePath>())
-            return VariantType(FilePath(valueNode->AsString()));
-        else
-        {
-            DVASSERT(false);
-            return VariantType();
-        }
+        return valueNode->AsVariantType(member);
     }
     return VariantType();
 }

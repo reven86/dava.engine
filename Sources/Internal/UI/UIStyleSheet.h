@@ -40,9 +40,16 @@ namespace DAVA
 {
     struct UIStyleSheetSelector
     {
-        String controlClassName; // TODO
+        String controlClassName;
         FastName name;
         Vector< FastName > classes;
+
+        void Clear()
+        {
+            controlClassName = "";
+            name = FastName();
+            classes.clear();
+        }
     };
 
     typedef UnorderedMap< uint32, VariantType > UIStyleSheetPropertyTable;
@@ -62,6 +69,8 @@ namespace DAVA
 
         void SetPropertyTable(const UIStyleSheetPropertyTable& properties);
         void SetSelectorChain(const Vector< UIStyleSheetSelector >& selectorChain);
+
+        void SetProperty(uint32 index, const VariantType& value);
 
         inline const VariantType* GetProperty(uint32 index) const
         {

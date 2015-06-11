@@ -53,10 +53,9 @@ namespace DAVA
     void UIStyleSheetSystem::MarkControlForUpdate(UIControl* control)
     {
         controlsToUpdate.push_back(control);
+
         for (UIControl* child : control->GetChildren())
-        {
             MarkControlForUpdate(child);
-        }
     }
 
     void UIStyleSheetSystem::RegisterStyleSheet(UIStyleSheet* styleSheet)
@@ -75,7 +74,7 @@ namespace DAVA
         }
     }
 
-    void UIStyleSheetSystem::ProcessUpdates()
+    void UIStyleSheetSystem::Process()
     {
         if (dirtySort)
         {
@@ -88,22 +87,11 @@ namespace DAVA
             uint64 start = SystemTimer::Instance()->AbsoluteMS();
 
             std::sort(controlsToUpdate.begin(), controlsToUpdate.end());
-            std::unique(controlsToUpdate.begin(), controlsToUpdate.end());
+            auto endIter = std::unique(controlsToUpdate.begin(), controlsToUpdate.end());
 
-            for (UIControl* control : controlsToUpdate)
+            for (auto controlIter = controlsToUpdate.begin(); controlIter != endIter; ++controlIter)
             {
-                static UIStyleSheetCascade cascade; // TODO
-                cascade.Clear();
-
-                for (UIStyleSheet* styleSheet : styleSheets)
-                {
-                    if (StyleSheetMatchesControl(styleSheet, control))
-                    {
-                        cascade.AddStyleSheet(styleSheet);
-                    }
-                }
-
-                SetupControlFromCascade(control, cascade);
+                ProcessControl(*controlIter);
             }
 
             controlsToUpdate.clear();
@@ -112,6 +100,23 @@ namespace DAVA
 
             DAVA::Logger::Debug("%s took %llu", __FUNCTION__, end - start);
         }
+    }
+
+    void UIStyleSheetSystem::ProcessControl(UIControl* control)
+    {
+        static UIStyleSheetCascade cascade;
+
+        cascade.Clear();
+
+        for (UIStyleSheet* styleSheet : styleSheets)
+        {
+            if (StyleSheetMatchesControl(styleSheet, control))
+            {
+                cascade.AddStyleSheet(styleSheet);
+            }
+        }
+
+        SetupControlFromCascade(control, cascade);
     }
 
     void UIStyleSheetSystem::SortStyleSheets()
@@ -126,9 +131,10 @@ namespace DAVA
     {
         UIControl* currentControl = control;
 
-        for (const UIStyleSheetSelector& selector : styleSheet->GetSelectorChain())
+        auto endIter = styleSheet->GetSelectorChain().rend();
+        for (auto selectorIter = styleSheet->GetSelectorChain().rbegin(); selectorIter != endIter; ++selectorIter)
         {
-            if (!currentControl || !SelectorMatchesControl(&selector, currentControl))
+            if (!currentControl || !SelectorMatchesControl(*selectorIter, currentControl))
                 return false;
 
             currentControl = currentControl->GetParent();
@@ -137,13 +143,13 @@ namespace DAVA
         return true;
     }
 
-    bool UIStyleSheetSystem::SelectorMatchesControl(const UIStyleSheetSelector* selector, UIControl* control)
+    bool UIStyleSheetSystem::SelectorMatchesControl(const UIStyleSheetSelector& selector, UIControl* control)
     {
-        if ((selector->name.IsValid() && selector->name != control->GetFastName())
-            || (!selector->controlClassName.empty() && selector->controlClassName != control->GetClassName()))
+        if ((selector.name.IsValid() && selector.name != control->GetFastName())
+            || (!selector.controlClassName.empty() && selector.controlClassName != control->GetClassName()))
             return false;
 
-        for (const FastName& clazz : selector->classes)
+        for (const FastName& clazz : selector.classes)
         {
             if (!control->HasClass(clazz))
                 return false;
@@ -154,7 +160,7 @@ namespace DAVA
     
     void UIStyleSheetSystem::SetupControlFromCascade(UIControl* control, const UIStyleSheetCascade& cascade)
     {
-        Bitset< STYLE_SHEET_PROPERTY_COUNT > propertiesToSet = cascade.GetPropertySet() & (~control->GetLocalPropertySet());
+        Bitset< STYLE_SHEET_PROPERTY_COUNT > propertiesToSet = cascade.GetPropertySet() &(~control->GetLocalPropertySet());
 
         for (uint32 propertyIndex = 0; propertyIndex < STYLE_SHEET_PROPERTY_COUNT; ++propertyIndex)
         {
@@ -162,7 +168,7 @@ namespace DAVA
             {
                 const UIStyleSheetPropertyDescriptor& descr = GetStyleSheetPropertyByIndex(propertyIndex);
                 const VariantType* value = cascade.GetProperty(propertyIndex);
-
+                
                 switch (descr.owner)
                 {
                 case ePropertyOwner::CONTROL:

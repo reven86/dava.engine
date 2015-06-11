@@ -46,7 +46,6 @@ class UIControlBackground;
 class Message;
 class UIComponent;
 class UIControlFamily;
-class UIContext;
 
 #define CONTROL_TOUCH_AREA  15
     /**
@@ -1342,7 +1341,6 @@ private:
     String name;
     FastName fastName;
 protected:
-    UIContext* context;
     UIControl *parent;
     List<UIControl*> childs;
 
@@ -1406,7 +1404,6 @@ protected:
     // Initial control's state which is stored on Yaml.
     int32 initialState;
 
-    void SetUIContext(UIContext* context);
     void SetParent(UIControl *newParent);
 
     virtual ~UIControl();
@@ -1486,12 +1483,11 @@ public:
     bool HasClass(FastName clazz);
     
     const Bitset< STYLE_SHEET_PROPERTY_COUNT >& GetLocalPropertySet() const;
-    void SetPropertyLocality(uint32 propertyIndex, bool value);
+    void SetPropertyLocalFlag(uint32 propertyIndex, bool value);
 
 private:
     Vector<FastName> classes;
     Bitset< STYLE_SHEET_PROPERTY_COUNT > localProperties;
-    Bitset< STYLE_SHEET_PROPERTY_COUNT > styleProperties;
 /* Styles */
 
 public:

@@ -131,7 +131,10 @@ void Core::CreateSingletons()
 	new Random();
 	new AnimationManager();
 	new FontManager();
+
+    InitializeStyleSheetPropertyTable();
 	new UIControlSystem();
+
 	new InputSystem();
 	new RenderHelper();
     new RenderLayerManager();

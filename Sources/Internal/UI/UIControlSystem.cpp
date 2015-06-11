@@ -29,6 +29,7 @@
 
 #include "UI/UIControlSystem.h"
 #include "UI/UIScreen.h"
+#include "UI/UIStyleSheetSystem.h"
 #include "FileSystem/Logger.h"
 #include "Render/RenderManager.h"
 #include "Render/OcclusionQuery.h"
@@ -47,6 +48,7 @@ UIControlSystem::~UIControlSystem()
 {
 	SafeRelease(currentScreen); 
 	SafeRelease(popupContainer);
+    SafeDelete(styleSheetSystem);
 }
 	
 UIControlSystem::UIControlSystem()
@@ -78,6 +80,8 @@ UIControlSystem::UIControlSystem()
 	baseGeometricData.angle = 0;
 
     ui3DViewCount = 0;
+
+    styleSheetSystem = new UIStyleSheetSystem();
 }
 	
 void UIControlSystem::SetScreen(UIScreen *_nextScreen, UIScreenTransition * _transition)
@@ -311,6 +315,8 @@ void UIControlSystem::Update()
 
 	if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
 	{
+        styleSheetSystem->Process();
+
 		if(currentScreen)
 		{
 			currentScreen->SystemUpdate(timeElapsed);
@@ -825,6 +831,11 @@ void UIControlSystem::UI3DViewRemoved()
 {
     DVASSERT(ui3DViewCount);
     ui3DViewCount--;
+}
+
+UIStyleSheetSystem* UIControlSystem::GetStyleSheetSystem()
+{
+    return styleSheetSystem;
 }
 
 };

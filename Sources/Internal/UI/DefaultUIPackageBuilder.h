@@ -70,7 +70,7 @@ public:
     virtual UIControl *BeginInternalControlSection(int32 index, bool sectionHasProperties) override;
     virtual void EndInternalControlSection() override;
     
-    virtual void ProcessProperty(const InspMember *member, const VariantType &value) override;
+    virtual void ProcessProperty(UIControl* control, const InspMember *member, const VariantType &value) override;
     
 private:
     class PackageDescr;

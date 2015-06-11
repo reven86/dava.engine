@@ -74,6 +74,12 @@ namespace DAVA
         RecalculateScore();
     }
 
+    void UIStyleSheet::SetProperty(uint32 index, const VariantType& value)
+    {
+        properties[index] = value;
+        propertiesSet.set(index);
+    }
+
     const Bitset< STYLE_SHEET_PROPERTY_COUNT >& UIStyleSheet::GetPropertySet() const
     {
         return propertiesSet;
@@ -86,6 +92,8 @@ namespace DAVA
         {
             score += 100000 + selector.classes.size();
             if (selector.name.IsValid())
+                score += 100;
+            if (!selector.controlClassName.empty())
                 score += 100;
         }
     }

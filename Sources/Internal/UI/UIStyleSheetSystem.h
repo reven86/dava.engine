@@ -52,16 +52,14 @@ namespace DAVA
         void RegisterStyleSheet(UIStyleSheet* styleSheet);
         void UnregisterStyleSheet(UIStyleSheet* styleSheet);
 
-        void ProcessUpdates();
+        void Process();
     private:
+        void ProcessControl(UIControl* control);
         void SortStyleSheets();
         bool StyleSheetMatchesControl(UIStyleSheet* styleSheet, UIControl* control);
-        bool SelectorMatchesControl(const UIStyleSheetSelector* selector, UIControl* control);
+        bool SelectorMatchesControl(const UIStyleSheetSelector& selector, UIControl* control);
         
         void SetupControlFromCascade(UIControl* control, const UIStyleSheetCascade& cascade);
-
-        //template < class T >
-        //void SetupObjectPropertiesFromCascade(T* object, const InspInfo* typeInfo, const UIStyleSheetCascade& cascade);
 
         DAVA::Vector< UIControl* > controlsToUpdate;
         DAVA::Vector< UIStyleSheet* > styleSheets;

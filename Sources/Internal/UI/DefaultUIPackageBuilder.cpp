@@ -389,12 +389,15 @@ void DefaultUIPackageBuilder::EndInternalControlSection()
     currentObject = nullptr;
 }
 
-void DefaultUIPackageBuilder::ProcessProperty(const InspMember *member, const VariantType &value)
+void DefaultUIPackageBuilder::ProcessProperty(UIControl* control, const InspMember *member, const VariantType &value)
 {
     DVASSERT(currentObject);
     
     if (currentObject && value.GetType() != VariantType::TYPE_NONE)
     {
+        if (IsValidStyleSheetPropertyIndex(member->GetFastName()))
+            control->SetPropertyLocalFlag(GetStyleSheetPropertyIndex(member->GetFastName()), true);
+
         if (String(member->Name()) == "text")
             member->SetValue(currentObject, VariantType(LocalizedString(value.AsWideString())));
         else

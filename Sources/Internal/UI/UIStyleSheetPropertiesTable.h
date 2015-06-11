@@ -53,10 +53,11 @@ namespace DAVA
         DAVA::Vector< std::pair< uint32, const InspMember* > > targetComponents;
     };
 
-    enum { STYLE_SHEET_PROPERTY_COUNT = 4 };
+    enum { STYLE_SHEET_PROPERTY_COUNT = 30 };
 
     void InitializeStyleSheetPropertyTable();
-    uint32 StyleSheetProperty(const FastName& name);
+    uint32 GetStyleSheetPropertyIndex(const FastName& name);
+    bool IsValidStyleSheetPropertyIndex(const FastName& name);
     const UIStyleSheetPropertyDescriptor& GetStyleSheetPropertyByIndex(uint32 index);
 };
 

@@ -31,7 +31,6 @@
 #include "UI/UIControlSystem.h"
 #include "UI/UIYamlLoader.h"
 #include "UI/UIControlHelpers.h"
-#include "UI/UIContext.h"
 #include "UI/UIStyleSheetSystem.h"
 #include "Animation/LinearAnimation.h"
 #include "Animation/AnimationManager.h"
@@ -69,7 +68,7 @@ namespace DAVA
 #endif
     }
 
-    UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/) : family(nullptr), context(nullptr)
+    UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/) : family(nullptr)
     {
         StartControlTracking(this);
         UpdateFamily();
@@ -361,12 +360,15 @@ namespace DAVA
 
     void UIControl::SetLeftAlign(float32 align, bool applyAlign/* = true*/)
     {
-        // Set a property value
-        leftAlign = align;
-
-        if (leftAlignEnabled && applyAlign)
+        if (leftAlign != align)
         {
-            ApplyAlignSettings();
+            // Set a property value
+            leftAlign = align;
+
+            if (leftAlignEnabled && applyAlign)
+            {
+                ApplyAlignSettings();
+            }
         }
     }
 
@@ -377,11 +379,14 @@ namespace DAVA
 
     void UIControl::SetHCenterAlign(float32 align, bool applyAlign/* = true*/)
     {
-        hcenterAlign = align;
-
-        if (hcenterAlignEnabled && applyAlign)
+        if (hcenterAlign != align)
         {
-            ApplyAlignSettings();
+            hcenterAlign = align;
+
+            if (hcenterAlignEnabled && applyAlign)
+            {
+                ApplyAlignSettings();
+            }
         }
     }
 
@@ -392,11 +397,14 @@ namespace DAVA
 
     void UIControl::SetRightAlign(float32 align, bool applyAlign/* = true*/)
     {
-        rightAlign = align;
-
-        if (rightAlignEnabled && applyAlign)
+        if (rightAlign != align)
         {
-            ApplyAlignSettings();
+            rightAlign = align;
+
+            if (rightAlignEnabled && applyAlign)
+            {
+                ApplyAlignSettings();
+            }
         }
     }
 
@@ -407,11 +415,14 @@ namespace DAVA
 
     void UIControl::SetTopAlign(float32 align, bool applyAlign/* = true*/)
     {
-        topAlign = align;
-
-        if (topAlignEnabled && applyAlign)
+        if (topAlign != align)
         {
-            ApplyAlignSettings();
+            topAlign = align;
+
+            if (topAlignEnabled && applyAlign)
+            {
+                ApplyAlignSettings();
+            }
         }
     }
 
@@ -422,11 +433,14 @@ namespace DAVA
 
     void UIControl::SetVCenterAlign(float32 align, bool applyAlign/* = true*/)
     {
-        vcenterAlign = align;
-
-        if (vcenterAlignEnabled && applyAlign)
+        if (vcenterAlign != align)
         {
-            ApplyAlignSettings();
+            vcenterAlign = align;
+
+            if (vcenterAlignEnabled && applyAlign)
+            {
+                ApplyAlignSettings();
+            }
         }
     }
 
@@ -437,11 +451,14 @@ namespace DAVA
 
     void UIControl::SetBottomAlign(float32 align, bool applyAlign/* = true*/)
     {
-        bottomAlign = align;
-
-        if (bottomAlignEnabled && applyAlign)
+        if (bottomAlign != align)
         {
-            ApplyAlignSettings();
+            bottomAlign = align;
+
+            if (bottomAlignEnabled && applyAlign)
+            {
+                ApplyAlignSettings();
+            }
         }
     }
 
@@ -453,11 +470,14 @@ namespace DAVA
     // Enable align options methods
     void UIControl::SetLeftAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
     {
-        leftAlignEnabled = isEnabled;
-
-        if (applyAlign)
+        if (leftAlignEnabled != isEnabled)
         {
-            ApplyAlignSettings();
+            leftAlignEnabled = isEnabled;
+
+            if (applyAlign)
+            {
+                ApplyAlignSettings();
+            }
         }
     }
 
@@ -468,11 +488,14 @@ namespace DAVA
 
     void UIControl::SetHCenterAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
     {
-        hcenterAlignEnabled = isEnabled;
-
-        if (applyAlign)
+        if (hcenterAlignEnabled != isEnabled)
         {
-            ApplyAlignSettings();
+            hcenterAlignEnabled = isEnabled;
+
+            if (applyAlign)
+            {
+                ApplyAlignSettings();
+            }
         }
     }
 
@@ -483,11 +506,14 @@ namespace DAVA
 
     void UIControl::SetRightAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
     {
-        rightAlignEnabled = isEnabled;
-
-        if (applyAlign)
+        if (rightAlignEnabled != isEnabled)
         {
-            ApplyAlignSettings();
+            rightAlignEnabled = isEnabled;
+
+            if (applyAlign)
+            {
+                ApplyAlignSettings();
+            }
         }
     }
 
@@ -498,11 +524,14 @@ namespace DAVA
 
     void UIControl::SetTopAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
     {
-        topAlignEnabled = isEnabled;
-
-        if (applyAlign)
+        if (topAlignEnabled != isEnabled)
         {
-            ApplyAlignSettings();
+            topAlignEnabled = isEnabled;
+
+            if (applyAlign)
+            {
+                ApplyAlignSettings();
+            }
         }
     }
 
@@ -513,11 +542,14 @@ namespace DAVA
 
     void UIControl::SetVCenterAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
     {
-        vcenterAlignEnabled = isEnabled;
-
-        if (applyAlign)
+        if (vcenterAlignEnabled != isEnabled)
         {
-            ApplyAlignSettings();
+            vcenterAlignEnabled = isEnabled;
+
+            if (applyAlign)
+            {
+                ApplyAlignSettings();
+            }
         }
     }
 
@@ -528,11 +560,14 @@ namespace DAVA
 
     void UIControl::SetBottomAlignEnabled(bool isEnabled, bool applyAlign/* = true*/)
     {
-        bottomAlignEnabled = isEnabled;
-
-        if (applyAlign)
+        if (bottomAlignEnabled != isEnabled)
         {
-            ApplyAlignSettings();
+            bottomAlignEnabled = isEnabled;
+
+            if (applyAlign)
+            {
+                ApplyAlignSettings();
+            }
         }
     }
 
@@ -873,7 +908,6 @@ namespace DAVA
         }
         control->isUpdated = false;
         control->SetParent(this);
-        control->SetUIContext(context);
         childs.push_back(control);
         if (inHierarchy)
         {
@@ -907,7 +941,6 @@ namespace DAVA
                     control->SystemWillDisappear();
                 }
                 control->SetParent(NULL);
-                control->SetUIContext(nullptr);
                 childs.erase(it);
                 if (inHierarchy)
                 {
@@ -1165,19 +1198,6 @@ namespace DAVA
             AddControl(c);
             c->Release();
         }
-    }
-
-    void UIControl::SetUIContext(UIContext* newContext)
-    {
-        context = newContext;
-
-        for (UIControl* child : childs)
-        {
-            child->SetUIContext(newContext);
-        }
-
-        if (context)
-            context->GetStyleSheetSystem()->MarkControlForUpdate(this);
     }
 
     bool UIControl::InViewHierarchy() const
@@ -1860,6 +1880,8 @@ namespace DAVA
 
     void UIControl::SystemWillBecomeVisible()
     {
+        UIControlSystem::Instance()->GetStyleSheetSystem()->MarkControlForUpdate(this);
+
         WillBecomeVisible();
 
         List<UIControl*>::const_iterator it = childs.begin();
@@ -2939,8 +2961,7 @@ namespace DAVA
     {
         classes.push_back(clazz);
 
-        if (context)
-            context->GetStyleSheetSystem()->MarkControlForUpdate(this);
+        UIControlSystem::Instance()->GetStyleSheetSystem()->MarkControlForUpdate(this);
     }
 
     void UIControl::RemoveClass(FastName clazz)
@@ -2952,8 +2973,7 @@ namespace DAVA
             *iter = classes.back();
             classes.pop_back();
 
-            if (context)
-                context->GetStyleSheetSystem()->MarkControlForUpdate(this);
+            UIControlSystem::Instance()->GetStyleSheetSystem()->MarkControlForUpdate(this);
         }
     }
 
@@ -2967,11 +2987,10 @@ namespace DAVA
         return localProperties;
     }
 
-    void UIControl::SetPropertyLocality(uint32 propertyIndex, bool value)
+    void UIControl::SetPropertyLocalFlag(uint32 propertyIndex, bool value)
     {
         localProperties.set(propertyIndex, value);
-        if (context)
-            context->GetStyleSheetSystem()->MarkControlForUpdate(this);
+        UIControlSystem::Instance()->GetStyleSheetSystem()->MarkControlForUpdate(this);
     }
 
     /* Styles */

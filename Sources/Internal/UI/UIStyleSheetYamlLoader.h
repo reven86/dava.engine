@@ -27,18 +27,26 @@
 =====================================================================================*/
 
 
-#include "UI/UIContext.h"
+#ifndef __DAVAENGINE_UI_STYLESHEET_YAML_LOADER_H__
+#define __DAVAENGINE_UI_STYLESHEET_YAML_LOADER_H__
+
+#include "Base/BaseTypes.h"
+#include "FileSystem/FilePath.h"
 
 namespace DAVA
 {
-    UIContext::UIContext(UIStyleSheetSystem* aStyleSheetSystem) :
-        styleSheetSystem(aStyleSheetSystem)
-    {
+    class UIStyleSheet;
+    class YamlNode;
 
-    }
-
-    UIStyleSheetSystem* UIContext::GetStyleSheetSystem()
+    class UIStyleSheetYamlLoader
     {
-        return styleSheetSystem;
-    }
-}
+    public:
+        UIStyleSheetYamlLoader();
+
+        void LoadFromYaml(const FilePath& path, DAVA::Vector< UIStyleSheet* >& styleSheets);
+        void LoadFromYaml(const YamlNode* rootNode, DAVA::Vector< UIStyleSheet* >& styleSheets);
+    };
+};
+
+
+#endif

@@ -83,7 +83,7 @@ public:
     virtual UIControl *BeginInternalControlSection(int32 index, bool sectionHasProperties) = 0;
     virtual void EndInternalControlSection() = 0;
     
-    virtual void ProcessProperty(const InspMember *member, const VariantType &value) = 0;
+    virtual void ProcessProperty(UIControl* control, const InspMember *member, const VariantType &value) = 0;
 };
     
 }
