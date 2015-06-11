@@ -656,7 +656,7 @@ namespace DAVA
         SetPosition(rect.GetPosition() + GetPivotPoint());
 
         // Update aligns if control was resized manually
-        CalculateAlignSettings();
+//        CalculateAlignSettings();
     }
 
     void UIControl::SetAbsoluteRect(const Rect &rect)
@@ -2448,14 +2448,17 @@ namespace DAVA
 
     void UIControl::CalculateAlignSettings()
     {
-        if (!parent)
-            return;
-
-        const Rect &rect = GetRect();
-        const Vector2 &parentSize = parent->GetSize();
-
+//        if (!parent)
+//            return;
+//
+//        const Rect &rect = GetRect();
+//        const Vector2 &parentSize = parent->GetSize();
+//
 //        if (GetLeftAlignEnabled() || GetHCenterAlignEnabled() || GetRightAlignEnabled())
 //        {
+//            float32 leftAlign = GetLeftAlign();
+//            float32 hcenterAlign = GetHCenterAlign();
+//            float32 rightAlign = GetRightAlign();
 //            GetAlignDataByAxisData(rect.dx, rect.x, parentSize.x,
 //                GetLeftAlignEnabled(), GetHCenterAlignEnabled(), GetRightAlignEnabled(),
 //                leftAlign, hcenterAlign, rightAlign);
@@ -2467,6 +2470,9 @@ namespace DAVA
 //
 //        if (GetTopAlignEnabled() || GetVCenterAlignEnabled() || GetBottomAlignEnabled())
 //        {
+//            float32 topAlign = GetTopAlign();
+//            float32 vcenterAlign = GetVCenterAlign();
+//            float32 bottomAlign = GetBottomAlign();
 //            GetAlignDataByAxisData(rect.dy, rect.y, parentSize.y,
 //                GetTopAlignEnabled(), GetVCenterAlignEnabled(), GetBottomAlignEnabled(),
 //                topAlign, vcenterAlign, bottomAlign);
@@ -2477,12 +2483,12 @@ namespace DAVA
 //        }
     }
 
-    void UIControl::ApplyAlignSettings()
-    {
-        if (!parent)
-            return;
-
-        UIControlSystem::Instance()->GetLayoutSystem()->ApplyLayout(this);
+//    void UIControl::ApplyAlignSettings()
+//    {
+//        if (!parent)
+//            return;
+//
+//        UIControlSystem::Instance()->GetLayoutSystem()->ApplyLayout(parent);
 //        const Rect &rect = GetRect();
 //        const Vector2 &parentSize = parent->GetSize();
 //
@@ -2490,6 +2496,9 @@ namespace DAVA
 //
 //        if (GetLeftAlignEnabled() || GetHCenterAlignEnabled() || GetRightAlignEnabled())
 //        {
+//            float32 leftAlign = GetLeftAlign();
+//            float32 hcenterAlign = GetHCenterAlign();
+//            float32 rightAlign = GetRightAlign();
 //            GetAxisDataByAlignData(rect.dx, parentSize.x,
 //                GetLeftAlignEnabled(), leftAlign,
 //                GetHCenterAlignEnabled(), hcenterAlign,
@@ -2499,6 +2508,9 @@ namespace DAVA
 //        }
 //        if (GetTopAlignEnabled() || GetVCenterAlignEnabled() || GetBottomAlignEnabled())
 //        {
+//            float32 topAlign = GetTopAlign();
+//            float32 vcenterAlign = GetVCenterAlign();
+//            float32 bottomAlign = GetBottomAlign();
 //            GetAxisDataByAlignData(rect.dy, parentSize.y,
 //                GetTopAlignEnabled(), topAlign,
 //                GetVCenterAlignEnabled(), vcenterAlign,
@@ -2511,82 +2523,82 @@ namespace DAVA
 //
 //        SetSize(newRect.GetSize());
 //        SetPosition(newRect.GetPosition() + GetPivotPoint());
-    }
+//    }
 
-    void UIControl::GetAxisDataByAlignData(float32 size, float32 parentSize,
-        bool firstSideAlignEnabled, float32 firstSideAlign,
-        bool centerAlignEnabled, float32 centerAlign,
-        bool secondSideAlignEnabled, float32 secondSideAlign,
-        float32 &newPos, float32 &newSize)
-    {
-        if (firstSideAlignEnabled && secondSideAlignEnabled)
-        {
-            newPos = firstSideAlign;
-            newSize = parentSize - (firstSideAlign + secondSideAlign);
-        }
-        else if (firstSideAlignEnabled && centerAlignEnabled)
-        {
-            newPos = firstSideAlign;
-            newSize = parentSize / 2.0f - (firstSideAlign - centerAlign);
-        }
-        else if (centerAlignEnabled && secondSideAlignEnabled)
-        {
-            newPos = parentSize / 2.0f + centerAlign;
-            newSize = parentSize / 2.0f - (centerAlign + secondSideAlign);
-        }
-        else if (firstSideAlignEnabled)
-        {
-            newPos = firstSideAlign;
-            newSize = size;
-        }
-        else if (secondSideAlignEnabled)
-        {
-            newPos = parentSize - (size + secondSideAlign);
-            newSize = size;
-        }
-        else if (centerAlignEnabled)
-        {
-            newPos = (parentSize - size) / 2.0f + centerAlign;
-            newSize = size;
-        }
-    }
+//    void UIControl::GetAxisDataByAlignData(float32 size, float32 parentSize,
+//        bool firstSideAlignEnabled, float32 firstSideAlign,
+//        bool centerAlignEnabled, float32 centerAlign,
+//        bool secondSideAlignEnabled, float32 secondSideAlign,
+//        float32 &newPos, float32 &newSize)
+//    {
+//        if (firstSideAlignEnabled && secondSideAlignEnabled)
+//        {
+//            newPos = firstSideAlign;
+//            newSize = parentSize - (firstSideAlign + secondSideAlign);
+//        }
+//        else if (firstSideAlignEnabled && centerAlignEnabled)
+//        {
+//            newPos = firstSideAlign;
+//            newSize = parentSize / 2.0f - (firstSideAlign - centerAlign);
+//        }
+//        else if (centerAlignEnabled && secondSideAlignEnabled)
+//        {
+//            newPos = parentSize / 2.0f + centerAlign;
+//            newSize = parentSize / 2.0f - (centerAlign + secondSideAlign);
+//        }
+//        else if (firstSideAlignEnabled)
+//        {
+//            newPos = firstSideAlign;
+//            newSize = size;
+//        }
+//        else if (secondSideAlignEnabled)
+//        {
+//            newPos = parentSize - (size + secondSideAlign);
+//            newSize = size;
+//        }
+//        else if (centerAlignEnabled)
+//        {
+//            newPos = (parentSize - size) / 2.0f + centerAlign;
+//            newSize = size;
+//        }
+//    }
 
-    void UIControl::GetAlignDataByAxisData(float32 size, float32 pos, float32 parentSize, bool firstSideAlignEnabled, bool centerAlignEnabled, bool secondSideAlignEnabled, float32 &firstSideAlign, float32 &centerAlign, float32 &secondSideAlign)
-    {
-        if (firstSideAlignEnabled && secondSideAlignEnabled)
-        {
-            firstSideAlign = pos;
-            secondSideAlign = parentSize - (pos + size);
-        }
-        else if (firstSideAlignEnabled && centerAlignEnabled)
-        {
-            firstSideAlign = pos;
-            centerAlign = pos + size - parentSize / 2.0f;
-        }
-        else if (centerAlignEnabled && secondSideAlignEnabled)
-        {
-            centerAlign = pos - parentSize / 2.0f;
-            secondSideAlign = parentSize - (pos + size);
-        }
-        else if (firstSideAlignEnabled)
-        {
-            firstSideAlign = pos;
-        }
-        else if (secondSideAlignEnabled)
-        {
-            secondSideAlign = parentSize - (pos + size);
-        }
-        else if (centerAlignEnabled)
-        {
-            centerAlign = pos - parentSize / 2.0f + size / 2.0f;
-        }
-    }
+//    void UIControl::GetAlignDataByAxisData(float32 size, float32 pos, float32 parentSize, bool firstSideAlignEnabled, bool centerAlignEnabled, bool secondSideAlignEnabled, float32 &firstSideAlign, float32 &centerAlign, float32 &secondSideAlign)
+//    {
+//        if (firstSideAlignEnabled && secondSideAlignEnabled)
+//        {
+//            firstSideAlign = pos;
+//            secondSideAlign = parentSize - (pos + size);
+//        }
+//        else if (firstSideAlignEnabled && centerAlignEnabled)
+//        {
+//            firstSideAlign = pos;
+//            centerAlign = pos + size - parentSize / 2.0f;
+//        }
+//        else if (centerAlignEnabled && secondSideAlignEnabled)
+//        {
+//            centerAlign = pos - parentSize / 2.0f;
+//            secondSideAlign = parentSize - (pos + size);
+//        }
+//        else if (firstSideAlignEnabled)
+//        {
+//            firstSideAlign = pos;
+//        }
+//        else if (secondSideAlignEnabled)
+//        {
+//            secondSideAlign = parentSize - (pos + size);
+//        }
+//        else if (centerAlignEnabled)
+//        {
+//            centerAlign = pos - parentSize / 2.0f + size / 2.0f;
+//        }
+//    }
 
-    void UIControl::ApplyAlignSettingsForChildren()
-    {
-        UpdateChildrenLayout();
-    }
-
+//    void UIControl::ApplyAlignSettingsForChildren()
+//    {
+//        UpdateChildrenLayout();
+//    }
+//
     void UIControl::SetPreferredNodeType(YamlNode* node, const String& nodeTypeName)
     {
         node->Set("type", nodeTypeName);
@@ -2747,21 +2759,23 @@ namespace DAVA
 
     void UIControl::UpdateLayout()
     {
-        ApplyAlignSettings();
+        //ApplyAlignSettings();
+        UIControlSystem::Instance()->GetLayoutSystem()->ApplyLayout(this);
     }
 
-    void UIControl::UpdateChildrenLayout()
-    {
-        const List<UIControl*>& realChildren = this->GetChildren();//YZ recalculate size for all controls
-        for(List<UIControl*>::const_iterator iter = realChildren.begin(); iter != realChildren.end(); ++iter)
-        {
-            UIControl* child = (*iter);
-            if (child)
-            {
-                child->UpdateLayout();
-            }
-        }
-    }
+//    void UIControl::UpdateChildrenLayout()
+//    {
+//        UIControlSystem::Instance()->GetLayoutSystem()->ApplyLayout(this);
+//        const List<UIControl*>& realChildren = this->GetChildren();//YZ recalculate size for all controls
+//        for(List<UIControl*>::const_iterator iter = realChildren.begin(); iter != realChildren.end(); ++iter)
+//        {
+//            UIControl* child = (*iter);
+//            if (child)
+//            {
+//                child->UpdateLayout();
+//            }
+//        }
+//    }
 
     /* Components */
 

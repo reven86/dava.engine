@@ -255,6 +255,10 @@ namespace DAVA
             }
             
             UIAnchorHintComponent *hint = child->GetComponent<UIAnchorHintComponent>();
+            if (control->GetName() == "tankEquipment")
+            {
+                Logger::Debug("Equipment");
+            }
             if (hint)
             {
                 const Rect &rect = child->GetRect();

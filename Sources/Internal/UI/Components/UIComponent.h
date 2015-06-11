@@ -45,9 +45,6 @@ public:
         SIZE_HINT_COMPONENT,
         ANCHOR_HINT_COMPONENT,
         
-        FAKE_COMPONENT,
-        FAKE_MULTI_COMPONENT,
-        
         COMPONENT_COUNT
     };
     

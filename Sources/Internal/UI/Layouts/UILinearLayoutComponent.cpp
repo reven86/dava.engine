@@ -8,7 +8,10 @@ namespace DAVA
     }
     
     UILinearLayoutComponent::UILinearLayoutComponent(const UILinearLayoutComponent &src)
-    : orientation(src.orientation)
+        : orientation(src.orientation)
+        , padding(src.padding)
+        , spacing(src.spacing)
+        , useRtl(src.useRtl)
     {
         
     }

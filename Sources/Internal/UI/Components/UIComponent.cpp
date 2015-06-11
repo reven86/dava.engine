@@ -30,9 +30,6 @@
 #include "UIComponent.h"
 #include "UI/UIControl.h"
 
-#include "UIFakeComponent.h"
-#include "UIFakeMultiComponent.h"
-
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UISizeHintComponent.h"
 #include "UI/Layouts/UIAnchorHintComponent.h"
@@ -62,12 +59,6 @@ UIComponent * UIComponent::CreateByType(uint32 componentType)
         case ANCHOR_HINT_COMPONENT:
             return new UIAnchorHintComponent();
             
-        case FAKE_COMPONENT:
-            return new UIFakeComponent();
-            
-        case FAKE_MULTI_COMPONENT:
-            return new UIFakeMultiComponent();
-            
         default:
             DVASSERT(false);
             return nullptr;
@@ -87,12 +78,6 @@ bool UIComponent::IsMultiple(uint32 componentType)
             
         case ANCHOR_HINT_COMPONENT:
             return false;
-            
-        case FAKE_COMPONENT:
-            return false;
-            
-        case FAKE_MULTI_COMPONENT:
-            return true;
             
         default:
             DVASSERT(false);

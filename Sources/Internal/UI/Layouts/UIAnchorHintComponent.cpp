@@ -15,6 +15,7 @@ namespace DAVA
         , topAnchor(src.topAnchor)
         , vCenterAnchor(src.vCenterAnchor)
         , bottomAnchor(src.bottomAnchor)
+        , useRtl(src.useRtl)
     {
         
     }

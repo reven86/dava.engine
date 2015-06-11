@@ -48,18 +48,18 @@ UIPackageLoader::UIPackageLoader()
 {
     if (MIN_SUPPORTED_VERSION <= VERSION_WITH_LEGACY_ALIGNS)
     {
-        legacyAlignsMap["leftAnchorEnabled"] = "leftAlignEnabled";
-        legacyAlignsMap["leftAnchor"] = "leftAlign";
-        legacyAlignsMap["hCenterAnchorEnabled"] = "hcenterAlignEnabled";
-        legacyAlignsMap["hCenterAnchor"] = "hcenterAlign";
-        legacyAlignsMap["rightAnchorEnabled"] = "rightAlignEnabled";
-        legacyAlignsMap["rightAnchor"] = "rightAlign";
-        legacyAlignsMap["topAnchorEnabled"] = "topAlignEnabled";
-        legacyAlignsMap["topAnchor"] = "topAlign";
-        legacyAlignsMap["vCenterAnchorEnabled"] = "vcenterAlignEnabled";
-        legacyAlignsMap["vCenterAnchor"] = "vcenterAlign";
-        legacyAlignsMap["bottomAnchorEnabled"] = "bottomAlignEnabled";
-        legacyAlignsMap["bottomAnchor"] = "bottomAlign";
+        legacyAlignsMap["leftEnabled"] = "leftAlignEnabled";
+        legacyAlignsMap["left"] = "leftAlign";
+        legacyAlignsMap["hCenterEnabled"] = "hcenterAlignEnabled";
+        legacyAlignsMap["hCenter"] = "hcenterAlign";
+        legacyAlignsMap["rightEnabled"] = "rightAlignEnabled";
+        legacyAlignsMap["right"] = "rightAlign";
+        legacyAlignsMap["topEnabled"] = "topAlignEnabled";
+        legacyAlignsMap["top"] = "topAlign";
+        legacyAlignsMap["vCenterEnabled"] = "vcenterAlignEnabled";
+        legacyAlignsMap["vCenter"] = "vcenterAlign";
+        legacyAlignsMap["bottomEnabled"] = "bottomAlignEnabled";
+        legacyAlignsMap["bottom"] = "bottomAlign";
     }
     else
     {
@@ -269,7 +269,7 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, cons
 
         VariantType res;
         if (node)
-            res = ReadVariantTypeFromYamlNode(member, node, member->Name(), builder);
+            res = ReadVariantTypeFromYamlNode(member, node, member->Name());
         builder->ProcessProperty(member, res);
     }
     builder->EndControlPropertiesSection();
@@ -287,7 +287,7 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl *control, co
             for (int32 j = 0; j < insp->MembersCount(); j++)
             {
                 const InspMember *member = insp->Member(j);
-                VariantType res = ReadVariantTypeFromYamlNode(member, nodeDescr.node, member->Name(), builder);
+                VariantType res = ReadVariantTypeFromYamlNode(member, nodeDescr.node, member->Name());
                 builder->ProcessProperty(member, res);
             }
         }
@@ -316,7 +316,7 @@ void UIPackageLoader::ProcessLegacyAligns(UIControl *control, const YamlNode *no
             for (int32 j = 0; j < insp->MembersCount(); j++)
             {
                 const InspMember *member = insp->Member(j);
-                VariantType res = ReadVariantTypeFromYamlNode(member, node, legacyAlignsMap[String(member->Name())], builder);
+                VariantType res = ReadVariantTypeFromYamlNode(member, node, legacyAlignsMap[String(member->Name())]);
                 builder->ProcessProperty(member, res);
             }
         }
@@ -388,7 +388,7 @@ void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *control, const Yam
                 const InspMember *member = insp->Member(j);
                 VariantType res;
                 if (componentNode)
-                    res = ReadVariantTypeFromYamlNode(member, componentNode, member->Name(), builder);
+                    res = ReadVariantTypeFromYamlNode(member, componentNode, member->Name());
                 builder->ProcessProperty(member, res);
             }
         }
@@ -416,7 +416,7 @@ void UIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *contr
 
                 VariantType value;
                 if (componentNode)
-                    value = ReadVariantTypeFromYamlNode(member, componentNode, member->Name(), builder);
+                    value = ReadVariantTypeFromYamlNode(member, componentNode, member->Name());
                 builder->ProcessProperty(member, value);
             }
         }
@@ -424,7 +424,7 @@ void UIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *contr
     }
 }
 
-VariantType UIPackageLoader::ReadVariantTypeFromYamlNode(const InspMember *member, const YamlNode *node, const String &propertyName, AbstractUIPackageBuilder *builder)
+VariantType UIPackageLoader::ReadVariantTypeFromYamlNode(const InspMember *member, const YamlNode *node, const String &propertyName)
 {
     const YamlNode *valueNode = node->Get(propertyName);
     if (valueNode)

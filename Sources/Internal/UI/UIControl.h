@@ -1320,9 +1320,6 @@ public:
     void SetSizeFromBg(bool pivotToCenter = true);
 
     virtual void UpdateLayout();
-    virtual void UpdateChildrenLayout();
-    // Recalculate the size and positions for the child controls according to their Align Options.
-    void ApplyAlignSettingsForChildren();
 
     // Find the control by name and add it to the list, if found.
     bool AddControlToList(List<UIControl*>& controlsList, const String& controlName, bool isRecursive = false);
@@ -1410,19 +1407,17 @@ private:
     bool inputEnabled : 1;
     bool focusEnabled : 1;
 
-    void CalculateAlignSettings();
-
-    void ApplyAlignSettings();
-
-    void GetAxisDataByAlignData(float32 size, float32 parentSize,
-                                bool firstSideAlignEnabled, float32 firstSideAlign,
-                                bool centerAlignEnabled, float32 centerAlign,
-                                bool secondSideAlignEnabled, float32 secondSideAlign,
-                                float32 &newPos, float32 &newSize);
-
-    void GetAlignDataByAxisData(float32 size, float32 pos, float32 parentSize,
-                                bool firstSideAlignEnabled, bool centerAlignEnabled, bool secondSideAlignEnabled,
-                                float32 &firstSideAlign, float32 &centerAlign, float32 &secondSideAlign);
+//    void ApplyAlignSettings();
+//
+//    void GetAxisDataByAlignData(float32 size, float32 parentSize,
+//                                bool firstSideAlignEnabled, float32 firstSideAlign,
+//                                bool centerAlignEnabled, float32 centerAlign,
+//                                bool secondSideAlignEnabled, float32 secondSideAlign,
+//                                float32 &newPos, float32 &newSize);
+//
+//    void GetAlignDataByAxisData(float32 size, float32 pos, float32 parentSize,
+//                                bool firstSideAlignEnabled, bool centerAlignEnabled, bool secondSideAlignEnabled,
+//                                float32 &firstSideAlign, float32 &centerAlign, float32 &secondSideAlign);
     
 /* Components */
 public:

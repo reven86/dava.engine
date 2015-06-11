@@ -78,18 +78,18 @@ LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(LegacyControlData *data
     baseClasses["UIButton"] = "UIControl";
     baseClasses["UIListCell"] = "UIButton";
     
-    legacyAlignsMap["leftAnchorEnabled"] = "leftAlignEnabled";
-    legacyAlignsMap["leftAnchor"] = "leftAlign";
-    legacyAlignsMap["hCenterAnchorEnabled"] = "hcenterAlignEnabled";
-    legacyAlignsMap["hCenterAnchor"] = "hcenterAlign";
-    legacyAlignsMap["rightAnchorEnabled"] = "rightAlignEnabled";
-    legacyAlignsMap["rightAnchor"] = "rightAlign";
-    legacyAlignsMap["topAnchorEnabled"] = "topAlignEnabled";
-    legacyAlignsMap["topAnchor"] = "topAlign";
-    legacyAlignsMap["vCenterAnchorEnabled"] = "vcenterAlignEnabled";
-    legacyAlignsMap["vCenterAnchor"] = "vcenterAlign";
-    legacyAlignsMap["bottomAnchorEnabled"] = "bottomAlignEnabled";
-    legacyAlignsMap["bottomAnchor"] = "bottomAlign";
+    legacyAlignsMap["leftEnabled"] = "leftAlignEnabled";
+    legacyAlignsMap["left"] = "leftAlign";
+    legacyAlignsMap["hCenterEnabled"] = "hcenterAlignEnabled";
+    legacyAlignsMap["hCenter"] = "hcenterAlign";
+    legacyAlignsMap["rightEnabled"] = "rightAlignEnabled";
+    legacyAlignsMap["right"] = "rightAlign";
+    legacyAlignsMap["topEnabled"] = "topAlignEnabled";
+    legacyAlignsMap["top"] = "topAlign";
+    legacyAlignsMap["vCenterEnabled"] = "vcenterAlignEnabled";
+    legacyAlignsMap["vCenter"] = "vcenterAlign";
+    legacyAlignsMap["bottomEnabled"] = "bottomAlignEnabled";
+    legacyAlignsMap["bottom"] = "bottomAlign";
 
 }
 

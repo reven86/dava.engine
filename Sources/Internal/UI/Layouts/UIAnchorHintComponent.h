@@ -108,23 +108,23 @@ namespace DAVA
 
     public:
         INTROSPECTION_EXTEND(UIAnchorHintComponent, UIComponent,
-                             PROPERTY("leftAnchorEnabled", "Left Anchor Enabled", IsLeftAnchorEnabled, SetLeftAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
-                             PROPERTY("leftAnchor", "Left Anchor", GetLeftAnchor, SetLeftAnchor, I_SAVE | I_VIEW | I_EDIT)
+                             PROPERTY("leftEnabled", "Left Anchor Enabled", IsLeftAnchorEnabled, SetLeftAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
+                             PROPERTY("left", "Left Anchor", GetLeftAnchor, SetLeftAnchor, I_SAVE | I_VIEW | I_EDIT)
 
-                             PROPERTY("hCenterAnchorEnabled", "HCenter Anchor Enabled", IsHCenterAnchorEnabled, SetHCenterAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
-                             PROPERTY("hCenterAnchor", "HCenter Anchor", GetHCenterAnchor, SetHCenterAnchor, I_SAVE | I_VIEW | I_EDIT)
+                             PROPERTY("hCenterEnabled", "HCenter Anchor Enabled", IsHCenterAnchorEnabled, SetHCenterAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
+                             PROPERTY("hCenter", "HCenter Anchor", GetHCenterAnchor, SetHCenterAnchor, I_SAVE | I_VIEW | I_EDIT)
 
-                             PROPERTY("rightAnchorEnabled", "Right Anchor Enabled", IsRightAnchorEnabled, SetRightAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
-                             PROPERTY("rightAnchor", "Right Anchor", GetRightAnchor, SetRightAnchor, I_SAVE | I_VIEW | I_EDIT)
+                             PROPERTY("rightEnabled", "Right Anchor Enabled", IsRightAnchorEnabled, SetRightAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
+                             PROPERTY("right", "Right Anchor", GetRightAnchor, SetRightAnchor, I_SAVE | I_VIEW | I_EDIT)
 
-                             PROPERTY("topAnchorEnabled", "Top Anchor Enabled", IsTopAnchorEnabled, SetTopAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
-                             PROPERTY("topAnchor", "Top Anchor", GetTopAnchor, SetTopAnchor, I_SAVE | I_VIEW | I_EDIT)
+                             PROPERTY("topEnabled", "Top Anchor Enabled", IsTopAnchorEnabled, SetTopAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
+                             PROPERTY("top", "Top Anchor", GetTopAnchor, SetTopAnchor, I_SAVE | I_VIEW | I_EDIT)
 
-                             PROPERTY("vCenterAnchorEnabled", "VCenter Anchor Enabled", IsVCenterAnchorEnabled, SetVCenterAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
-                             PROPERTY("vCenterAnchor", "VCenter Anchor", GetVCenterAnchor, SetVCenterAnchor, I_SAVE | I_VIEW | I_EDIT)
+                             PROPERTY("vCenterEnabled", "VCenter Anchor Enabled", IsVCenterAnchorEnabled, SetVCenterAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
+                             PROPERTY("vCenter", "VCenter Anchor", GetVCenterAnchor, SetVCenterAnchor, I_SAVE | I_VIEW | I_EDIT)
 
-                             PROPERTY("bottomAnchorEnabled", "Bottom Anchor Enabled", IsBottomAnchorEnabled, SetBottomAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
-                             PROPERTY("bottomAnchor", "Bottom Anchor", GetBottomAnchor, SetBottomAnchor, I_SAVE | I_VIEW | I_EDIT)
+                             PROPERTY("bottomEnabled", "Bottom Anchor Enabled", IsBottomAnchorEnabled, SetBottomAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
+                             PROPERTY("bottom", "Bottom Anchor", GetBottomAnchor, SetBottomAnchor, I_SAVE | I_VIEW | I_EDIT)
                              
                              PROPERTY("useRtl", "Use Rtl Align", IsUseRtl, SetUseRtl, I_SAVE | I_VIEW | I_EDIT)
                              );

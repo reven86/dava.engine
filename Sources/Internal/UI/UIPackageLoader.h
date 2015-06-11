@@ -81,7 +81,7 @@ private:
     
     void LoadBgPropertiesFromYamlNode(UIControl *control, const YamlNode *node, AbstractUIPackageBuilder *builder);
     void LoadInternalControlPropertiesFromYamlNode(UIControl *control, const YamlNode *node, AbstractUIPackageBuilder *builder);
-    virtual VariantType ReadVariantTypeFromYamlNode(const InspMember *member, const YamlNode *node, const DAVA::String &propertyName, AbstractUIPackageBuilder *builder);
+    virtual VariantType ReadVariantTypeFromYamlNode(const InspMember *member, const YamlNode *node, const DAVA::String &propertyName);
 
 private:
     enum eItemStatus

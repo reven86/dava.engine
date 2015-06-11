@@ -338,6 +338,8 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
             package->GetPackageControlsNode()->Add(control);
     }
     
+    package->RefreshLayout();
+    
     DVASSERT(declinedPackages.empty());
     
     return package;
