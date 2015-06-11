@@ -99,6 +99,10 @@ DAVA_TESTCLASS(StringFormatTest)
         TEST_VERIFY(Format("%ls", L"this is a test") == "this is a test");
 
         TEST_VERIFY(Format("%d", 348) == "348");
+        TEST_VERIFY(Format("%2d", 348) == "348");
+        TEST_VERIFY(Format("%4d", 348) == " 348");
+        TEST_VERIFY(Format("%04d", 348) == "0348");
+        TEST_VERIFY(Format("%-4d", 348) == "348 ");
         TEST_VERIFY(Format("%+d", 348) == "+348");
         TEST_VERIFY(Format("%d", -348) == "-348");
         TEST_VERIFY(Format("%i", 348) == "348");
@@ -114,12 +118,16 @@ DAVA_TESTCLASS(StringFormatTest)
     DAVA_TEST(WideStringFormatTest)
     {
         TEST_VERIFY(Format(L"%%") == L"%");
-        TEST_VERIFY(Format(L"%c", 'A') == L"A");
+        TEST_VERIFY(Format(L"%c", L'A') == L"A");
         TEST_VERIFY(Format(L"%lc", L'A') == L"A");
-        //TEST_VERIFY(Format(L"%s", "this is a test") == L"this is a test");
+        TEST_VERIFY(Format(L"%s", L"this is a test") == L"this is a test");
         TEST_VERIFY(Format(L"%ls", L"this is a test") == L"this is a test");
 
         TEST_VERIFY(Format(L"%d", 348) == L"348");
+        TEST_VERIFY(Format(L"%2d", 348) == L"348");
+        TEST_VERIFY(Format(L"%4d", 348) == L" 348");
+        TEST_VERIFY(Format(L"%04d", 348) == L"0348");
+        TEST_VERIFY(Format(L"%-4d", 348) == L"348 ");
         TEST_VERIFY(Format(L"%+d", 348) == L"+348");
         TEST_VERIFY(Format(L"%d", -348) == L"-348");
         TEST_VERIFY(Format(L"%i", 348) == L"348");
@@ -136,7 +144,7 @@ DAVA_TESTCLASS(StringFormatTest)
     {
         TEST_VERIFY(Format("%s%s%s", String(100, 'A').c_str(), String(200, 'B').c_str(), String(400, 'C').c_str()).length() == 700);
         TEST_VERIFY(Format("%ls%ls%ls", WideString(100, 'A').c_str(), WideString(200, 'B').c_str(), WideString(400, 'C').c_str()).length() == 700);
-        //TEST_VERIFY(Format(L"%hs%hs%hs", String(100, 'A').c_str(), String(200, 'B').c_str(), String(400, 'C').c_str()).length() == 700);
+        TEST_VERIFY(Format(L"%hs%hs%hs", String(100, 'A').c_str(), String(200, 'B').c_str(), String(400, 'C').c_str()).length() == 700);
         TEST_VERIFY(Format(L"%ls%ls%ls", WideString(100, 'A').c_str(), WideString(200, 'B').c_str(), WideString(400, 'C').c_str()).length() == 700);
     }
 };
