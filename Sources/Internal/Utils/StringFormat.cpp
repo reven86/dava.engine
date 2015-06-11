@@ -28,13 +28,10 @@
 
 #include <cstdarg>
 #include <cstdio>
-//#include <cmath>
+#include <cmath>
 
 #include "Base/BaseTypes.h"
 #include "Debug/DVAssert.h"
-//#include "Utils/Utils.h"
-
-#define XXX
 
 namespace DAVA
 {
@@ -42,152 +39,92 @@ namespace DAVA
 namespace
 {
 
-inline size_t FormattedLengthV(const char8* format, va_list args)
+// Special class used in Vsnwprintf for counting neccesary buffer size and preventing buffer overrun
+class BufferState
 {
-    DVASSERT(format != nullptr);
-#if defined(__DAVAENGINE_WINDOWS__)
-    int result = _vscprintf(format, args);
-    DVASSERT(result >= 0);
-    return result >= 0 ? static_cast<size_t>(result) : 0;
-#else
-    int result = vsnprintf(nullptr, 0, format, args);
-    DVASSERT(result >= 0);
-    return result >= 0 ? static_cast<size_t>(result) : 0;
-#endif
-}
+public:
+    BufferState(char16* buf_, size_t size_)
+        : buf(buf_)
+        , bufEnd(buf_ + size_ - 1)
+        , curPtr(buf_)
+        , ntotal(0)
+    {}
 
-inline size_t FormattedLengthV(const char16* format, va_list args)
-{
-    DVASSERT(format != nullptr);
-#if defined(__DAVAENGINE_WINDOWS__)
-    int result = _vscwprintf(format, args);
-    DVASSERT(result >= 0);
-    return result >= 0 ? static_cast<size_t>(result) : 0;
-#else
-    // To obtain neccesary buffer length pass null buffer and -1 as buffer length
-    int result = vswprintf(nullptr, -1, format, args);
-    DVASSERT(result >= 0);
-    return result >= 0 ? static_cast<size_t>(result) : 0;
-#endif
-}
-
-}   // unnamed namespace
-
-String FormatVL(const char8* format, va_list args)
-{
-    String result;
-    size_t length = 0;
+    void PlaceChar(char16 c)
     {
-        va_list xargs;
-        va_copy(xargs, args);   // args cannot be used twice without copying
-        length = FormattedLengthV(format, xargs);
-        va_end(xargs);
+        if (curPtr < bufEnd)
+        {
+            *curPtr++ = c;
+        }
+        ntotal += 1;
     }
-    if (length > 0)
+
+    void PlaceCharN(char16 c, int32 n)
     {
-        result.resize(length + 1);
-        vsnprintf(&*result.begin(), length + 1, format, args);
-        result.pop_back();
+        ntotal += (n > 0 ? n : 0);
+        while (n-- > 0 && curPtr < bufEnd)
+        {
+            *curPtr++ = c;
+        }
     }
-    return result;
-}
 
-String Format(const char8* format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    String result = FormatVL(format, args);
-    va_end(args);
-    return result;
-}
-
-#ifndef XXX
-WideString FormatVL(const char16* format, va_list args)
-{
-    WideString result;
-    size_t length = 0;
+    void PlaceBuffer(const char16* buf, int32 n, bool reverse = false)
     {
-        va_list xargs;
-        va_copy(xargs, args);   // args cannot be used twice without copying
-        length = FormattedLengthV(format, xargs);
-        va_end(xargs);
+        ntotal += (n > 0 ? n : 0);
+        const char16* ptr = buf;
+        int32 inc = 1;
+        if (reverse)
+        {
+            ptr = buf + n - 1;
+            inc = -1;
+        }
+        while (n --> 0 && curPtr < bufEnd)
+        {
+            *curPtr++ = *ptr;
+            ptr += inc;
+        }
     }
-    if (length > 0)
+
+    void PlaceBuffer(const char8* buf, int32 n, bool reverse = false)
     {
-        result.resize(length + 1);
-#if defined(__DAVAENGINE_WINDOWS__)
-        _vsnwprintf(&*result.begin(), length + 1, format, args);
-#else
-        vswprintf(&*result.begin(), length + 1, format, args);
-#endif
-        result.pop_back();
+        ntotal += (n > 0 ? n : 0);
+        const char8* ptr = buf;
+        int32 inc = 1;
+        if (reverse)
+        {
+            ptr = buf + n - 1;
+            inc = -1;
+        }
+        while (n--> 0 && curPtr < bufEnd)
+        {
+            *curPtr++ = *ptr;
+            ptr += inc;
+        }
     }
-    return result;
-}
-#endif
 
-WideString FormatVL(const char16* text, va_list args);
-WideString Format(const char16* format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    WideString result = FormatVL(format, args);
-    va_end(args);
-    return result;
-}
+    void Finish()
+    {
+        curPtr < bufEnd ? *curPtr = L'\0'
+                        : *bufEnd = L'\0';
+    }
 
-}   // namespace DAVA
+    size_t Total() const { return ntotal; }
 
-#if 1
-namespace DAVA {
-static const int32 FORMAT_STRING_MAX_LEN = 512;
-
-//  Format(L"") use case with WideString parameter:
-//         WideString info( Format(L"%ls", tank->GetName().c_str()) ); // tank->GetName() -> WideString&
-//         activeTankInfo->SetText(info);
-
-#define ZEROPAD     1       // pad with zero
-#define SIGN        2       // unsigned/signed long
-#define PLUS        4       // show plus
-#define SPACE       8       // space if plus
-#define LEFT        16      // left justified
-#define SPECIAL     32      // 0x
-#define LARGE       64      // use 'ABCDEF' instead of 'abcdef'
-#define LONG_LONG  128      // use to convert long long '%lld'
-
-struct state_t
-{
-    char16* buf_end;
-    char16* cur;
+private:
+    char16* buf;
+    char16* bufEnd;
+    char16* curPtr;
     size_t ntotal;
 };
 
-void place_char(char16 c, state_t* state)
+int32 DoDiv(int64 &n, int32 base)
 {
-    if (state->cur < state->buf_end)
-    {
-        *state->cur = c;
-        state->cur += 1;
-    }
-    state->ntotal += 1;
-}
-
-void zero_terminate(state_t* state)
-{
-    if (state->cur < state->buf_end)
-        *state->cur = L'\0';
-    else
-        *state->buf_end = L'\0';
-}
-
-int32 DoDiv(int64& n, int32 base)
-{
-    int32 result = static_cast<int32>(uint64(n) % uint64(base));
-    n = static_cast<int64>(uint64(n) / uint64(base));
+    int32 result = ((unsigned long long) n) % (unsigned)base;
+    n = ((unsigned long long) n) / (unsigned)base;
     return result;
 }
-    
-int32 SkipAtoi(const char16** s)
+
+int32 SkipAtoi(const char16 **s)
 {
     int32 i = 0;
     while (iswdigit(**s))
@@ -196,21 +133,32 @@ int32 SkipAtoi(const char16** s)
     }
     return i;
 }
-    
-    
-char16* Number(char16* str_ptr, int64 num, int32 base, int32 size, int32 precision, int32 type, state_t* state)
+
+// Flags used by Vsnwprintf and friends
+enum
 {
-    const char16* digits = L"0123456789abcdefghijklmnopqrstuvwxyz";
+    ZEROPAD = 1,            /* pad with zero */
+    SIGN = 2,               /* unsigned/signed long */
+    PLUS = 4,               /* show plus */
+    SPACE = 8,              /* space if plus */
+    LEFT = 16,              /* left justified */
+    SPECIAL = 32,           /* 0x */
+    LARGE = 64,             /* use 'ABCDEF' instead of 'abcdef' */
+    LONG_LONG = 128         /* use to convert long long '%lld' */
+};
+
+void Number(int64 num, int32 base, int32 size, int32 precision, int32 type, BufferState* state)
+{
+    const char16 *digits = L"0123456789abcdefghijklmnopqrstuvwxyz";
     if (type & LARGE)
         digits = L"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     if (type & LEFT)
         type &= ~ZEROPAD;
     if (base < 2 || base > 36)
-        return 0;
-        
+        return;
+
     char16 c = (type & ZEROPAD) ? L'0' : L' ';
     char16 sign = 0;
-        
     if (type & SIGN)
     {
         if (num < 0)
@@ -230,7 +178,6 @@ char16* Number(char16* str_ptr, int64 num, int32 base, int32 size, int32 precisi
             --size;
         }
     }
-        
     if (type & SPECIAL)
     {
         if (base == 16)
@@ -242,12 +189,12 @@ char16* Number(char16* str_ptr, int64 num, int32 base, int32 size, int32 precisi
             --size;
         }
     }
-        
+
     char16 tmp[66];
     int32 i = 0;
     if (num == 0)
     {
-        tmp[i++]='0';
+        tmp[i++] = '0';
     }
     else
     {
@@ -256,93 +203,56 @@ char16* Number(char16* str_ptr, int64 num, int32 base, int32 size, int32 precisi
             tmp[i++] = digits[DoDiv(num, base)];
         }
     }
-        
     if (i > precision)
-    {
         precision = i;
-    }
-        
+
     size -= precision;
     if (!(type & (ZEROPAD + LEFT)))
     {
-        while(size-- > 0)
-        {
-            //*str++ = L' ';
-            place_char(L' ', state);
-        }
+        state->PlaceCharN(L' ', size);
+        size = 0;
     }
-        
     if (sign)
-    {
-        //*str++ = sign;
-        place_char(sign, state);
-    }
-        
+        state->PlaceChar(sign);
     if (type & SPECIAL)
     {
         if (base == 8)
         {
-            //*str++ = L'0';
-            place_char(L'0', state);
+            state->PlaceChar(L'0');
         }
         else if (base == 16)
         {
-            //*str++ = L'0';
-            //*str++ = digits[33];
-            place_char(L'0', state);
-            place_char(digits[33], state);
+            state->PlaceChar(L'0');
+            state->PlaceChar(digits[33]);   // X or x
         }
     }
-        
+
     if (!(type & LEFT))
     {
-        while (size-- > 0)
-        {
-            //*str++ = c;
-            place_char(c, state);
-        }
+        state->PlaceCharN(c, size);
+        size = 0;
     }
-        
-    while (i < precision--)
-    {
-        //*str++ = '0';
-        place_char(L'0', state);
-    }
-        
-    while (i-- > 0)
-    {
-        //*str++ = tmp[i];
-        place_char(tmp[i], state);
-    }
-        
-    while (size-- > 0)
-    {
-        //*str++ = L' ';
-        place_char(L' ', state);
-    }
-    //return str;
-    return str_ptr;
+    state->PlaceCharN(L'0', precision - i);
+    state->PlaceBuffer(tmp, i, true);
+    state->PlaceCharN(L' ', size);
 }
-    
-char16* Numberf(char16* str_ptr, float64 num, int32 base, int32 size, int32 precision, int32 type, state_t* state)
+
+void Numberf(float64 num, int32 base, int32 size, int32 precision, int32 type, BufferState* state)
 {
     bool isNegativeValue = false;
-    if (num < 0.0)
+    if (num < 0)
     {
         isNegativeValue = true;
         num = -num;
     }
-        
-    int32 whole = static_cast<int32>(num);
-    num -= whole;
-        
-    for(int32 i = 0; i < precision; ++i)
-    {
+
+    int32 integerPart = static_cast<int32>(num);
+    num -= integerPart;
+    for (int32 i = 0; i < precision; ++i)
         num *= 10;
-    }
-        
-    int32 tail = static_cast<int32>(num);
-    num -= tail;
+    int32 fracPart = static_cast<int32>(num);
+    num -= fracPart;
+
     if (
         // tested on gcc 4.8.1, msvc2013, Apple LLVM version 6.0
 #ifdef _MSC_VER
@@ -353,102 +263,90 @@ char16* Numberf(char16* str_ptr, float64 num, int32 base, int32 size, int32 prec
         )
     {
         if (precision > 0)
-            tail++;
+            fracPart++;
         else if (precision == 0)
-            whole++;
+            integerPart++;
     }
 
-    if (tail >= pow(10.f, precision))
-    {
-        whole++;
-        tail -= static_cast<int32>(pow(10.f, precision));
-    }
+    const size_t TEMPBUF_SIZE = 128;
+    char16 tempBuf[TEMPBUF_SIZE];
+    BufferState tstate(tempBuf, TEMPBUF_SIZE);
 
-    type = SIGN | LEFT;
-    //char16* firstStr = Number(str, whole, 10, -1, -1, type, state);
-    char16* firstStr = Number(str_ptr, whole, 10, -1, -1, type, state);
     if (isNegativeValue)
-    {
-        //Memmove(str + 1, str, (firstStr - str) * sizeof(char16));
-        //*str = L'-';
-        place_char(L'-', state);
-        firstStr++;
-    }
-    if (base > 0)
-    {
-        //while (firstStr - str < base - precision)
-        while (firstStr - str_ptr < base - precision)
-        {
-            //Memmove(str + 1, str, (firstStr - str) * sizeof(char16));
-            //*str = L' ';
-            place_char(L' ', state);
-            firstStr++;
-        }
-    }
+        tstate.PlaceChar(L'-');
+    Number(integerPart, 10, -1, -1, LEFT, &tstate);
     if (precision > 0)
     {
-        *firstStr++ = '.';
-        precision--;
-        while (pow(10.f, precision) > tail && precision > 0)
-        {
-            *firstStr++ = '0';
-            precision--;
-        }
-        type = LEFT;
-        firstStr = Number(firstStr, tail, 10, -1, -1, type, state);
+        tstate.PlaceChar(L'.');
+        //Number(fracPart, 10, -1, -1, LEFT, &tstate);
+        Number(fracPart, 10, -1, precision, LEFT, &tstate);
     }
-    return firstStr;
+    tstate.Finish();
+    int32 len = static_cast<int32>(wcslen(tempBuf));
+    if (len < size)
+    {
+        if (!(type & LEFT))
+        {
+            state->PlaceCharN(L' ', size - len);
+            state->PlaceBuffer(tempBuf, len);
+        }
+        else
+        {
+            state->PlaceBuffer(tempBuf, len);
+            state->PlaceCharN(L' ', size - len);
+        }
+    }
+    else
+        state->PlaceBuffer(tempBuf, len);
 }
-    
-    
-int32 Vsnwprintf(char16* buf, size_t cnt, const char16* fmt, va_list args)
+
+int32 Vsnwprintf(char16 *buf, size_t size, const char16 *format, va_list args)
 {
-    int32 len;
-    int64 num;
-    int32 i, base;
-    const char8 *s;
-    const char16 *sw;
-        
-    int32 flags = 0;            // flags to number()
-    int32 field_width = 0;      // width of output field
-    int32 precision = 0;        // min. # of digits for integers; max number of chars for from string
-    int32 qualifier = 0;        // 'h', 'l', 'L', 'w' or 'I' for integer fields
+    int32 len = 0;
+    int32 base = 0;
+    int64 num = 0;
+    const char8 *s = nullptr;
+    const char16 *sw = nullptr;
 
-    state_t state;
-    state.buf_end = buf + cnt - 1;
-    state.cur = buf;
-    state.ntotal = 0;
+    int32 flags = 0;        /* flags to Number() */
+    int32 field_width = 0;  /* width of output field */
+    int32 precision = 0;    /* min. # of digits for integers; max number of chars for from string */
+    int32 qualifier = 0;    /* 'h', 'l', 'L', 'w' or 'I' for integer fields */
 
-    const char16 *strBase = fmt;
-    //char16 * str = NULL;
-    char16* str_ptr = nullptr;
-    //for (str = buf; *fmt ; ++fmt)
-    for (str_ptr = buf; *fmt; ++fmt)
+    if (buf != nullptr && 0 == size)
+        return -1;
+
+    char16 dummyStorageOnNullBuffer[1];
+    if (nullptr == buf)
+    {
+        buf = dummyStorageOnNullBuffer;
+        size = 1;
+    }
+
+    BufferState state(buf, size);
+    const char16* fmt = format;
+    for (;*fmt; ++fmt)
     {
         if (*fmt != L'%')
         {
-            //*str++ = *fmt;
-            place_char(*fmt, &state);
+            state.PlaceChar(*fmt);
             continue;
         }
 
         /* process flags */
-        const char16 *floatFormatPointer = fmt;
-        ++floatFormatPointer;
-            
         flags = 0;
     repeat:
         ++fmt;      /* this also skips first '%' */
-            
+
         switch (*fmt)
         {
-            case L'-': flags |= LEFT; goto repeat;
-            case L'+': flags |= PLUS; goto repeat;
-            case L' ': flags |= SPACE; goto repeat;
-            case L'#': flags |= SPECIAL; goto repeat;
-            case L'0': flags |= ZEROPAD; goto repeat;
+        case L'-': flags |= LEFT; goto repeat;
+        case L'+': flags |= PLUS; goto repeat;
+        case L' ': flags |= SPACE; goto repeat;
+        case L'#': flags |= SPECIAL; goto repeat;
+        case L'0': flags |= ZEROPAD; goto repeat;
         }
-            
+
         /* get field width */
         field_width = -1;
         if (iswdigit(*fmt))
@@ -466,7 +364,6 @@ int32 Vsnwprintf(char16* buf, size_t cnt, const char16* fmt, va_list args)
                 flags |= LEFT;
             }
         }
-            
         /* get the precision */
         precision = -1;
         if (*fmt == L'.')
@@ -482,13 +379,10 @@ int32 Vsnwprintf(char16* buf, size_t cnt, const char16* fmt, va_list args)
                 /* it's the next argument */
                 precision = va_arg(args, int32);
             }
-                
             if (precision < 0)
-            {
                 precision = 0;
-            }
         }
-            
+
         /* get the conversion qualifier */
         qualifier = -1;
         if (*fmt == 'h' || *fmt == 'l' || *fmt == 'L' || *fmt == 'w')
@@ -496,420 +390,196 @@ int32 Vsnwprintf(char16* buf, size_t cnt, const char16* fmt, va_list args)
             qualifier = *fmt;
             ++fmt;
         }
-        else if (*fmt == 'I' && *(fmt+1) == '6' && *(fmt+2) == '4')
+        else if (*fmt == 'I' && *(fmt + 1) == '6' && *(fmt + 2) == '4') // I64
         {
             qualifier = *fmt;
             fmt += 3;
         }
-            
-        /* default base */
-        base = 10;
-            
+
+        base = 10;      /* default base */
         switch (*fmt)
         {
-            case L'c':
+        case L'c':
+            if (!(flags & LEFT))
+            {
+                state.PlaceCharN(L' ', field_width - 1);
+                field_width = 0;
+            }
+            {
+                char16 c = static_cast<char16>(va_arg(args, int32));
+                state.PlaceChar(c);
+            }
+            state.PlaceCharN(L' ', field_width - 1);
+            continue;
+        case L'C':
+            if (!(flags & LEFT))
+            {
+                state.PlaceCharN(L' ', field_width - 1);
+                field_width = 0;
+            }
+            {
+                char16 c = static_cast<char16>(va_arg(args, int32));
+                state.PlaceChar(c);
+            }
+            state.PlaceCharN(L' ', field_width - 1);
+            continue;
+        case L's':
+            if (qualifier == 'h')
+            {
+                /* print ascii string */
+                s = va_arg(args, char8*);
+                if (nullptr == s)
+                    s = "<NULL>";
+                len = static_cast<int32>(strlen(s));
+                if (precision >= 0 && len > precision)
+                    len = precision;
                 if (!(flags & LEFT))
                 {
-                    while (--field_width > 0)
-                    {
-                        //*str++ = L' ';
-                        place_char(L' ', &state);
-                    }
+                    state.PlaceCharN(L' ', field_width - len);
+                    field_width = 0;
                 }
-                    
-                if (qualifier == 'h')
-                {
-                    //*str++ = (char16) va_arg(args, int32);
-                    char16 c = (char16)va_arg(args, int32);
-                    place_char(c, &state);
-                }
-                else
-                {
-                    //*str++ = (char16) va_arg(args, int32);
-                    char16 c = (char16)va_arg(args, int32);
-                    place_char(c, &state);
-                }
-                    
-                while (--field_width > 0)
-                {
-                    //*str++ = L' ';
-                    place_char(L' ', &state);
-                }
-                    
-                continue;
-                    
-            case L'C':
+                state.PlaceBuffer(s, len);
+                state.PlaceCharN(L' ', field_width - len);
+            }
+            else
+            {
+                /* print unicode string */
+                sw = va_arg(args, char16*);
+                if (nullptr == sw)
+                    sw = L"<NULL>";
+                len = static_cast<int32>(wcslen(sw));
+                if (precision >= 0 && len > precision)
+                    len = precision;
                 if (!(flags & LEFT))
                 {
-                    while (--field_width > 0)
-                    {
-                        //*str++ = L' ';
-                        place_char(L' ', &state);
-                    }
+                    state.PlaceCharN(L' ', field_width - len);
+                    field_width = 0;
                 }
-                    
-                if (qualifier == 'l' || qualifier == 'w')
+                state.PlaceBuffer(sw, len);
+                state.PlaceCharN(L' ', field_width - len);
+            }
+            continue;
+        case L'S':
+            if (qualifier == 'l' || qualifier == 'w')
+            {
+                /* print unicode string */
+                sw = va_arg(args, char16*);
+                if (nullptr == sw)
+                    sw = L"<NULL>";
+                len = static_cast<int32>(wcslen(sw));
+                if (precision >= 0 && len > precision)
+                    len = precision;
+                if (!(flags & LEFT))
                 {
-                    //*str++ = (char16) va_arg(args, int32);
-                    char16 c = (char16)va_arg(args, int32);
-                    place_char(c, &state);
+                    state.PlaceCharN(L' ', field_width - len);
+                    field_width = 0;
                 }
-                else
+                state.PlaceBuffer(sw, len);
+                state.PlaceCharN(L' ', field_width - len);
+            }
+            else
+            {
+                /* print ascii string */
+                s = va_arg(args, char8*);
+                if (nullptr == s)
+                    s = "<NULL>";
+                len = static_cast<int32>(strlen(s));
+                if (precision >= 0 && len > precision)
+                    len = precision;
+                if (!(flags & LEFT))
                 {
-                    //*str++ = (char16) va_arg(args, int32);
-                    char16 c = (char16)va_arg(args, int32);
-                    place_char(c, &state);
+                    state.PlaceCharN(L' ', field_width - len);
+                    field_width = 0;
                 }
-                    
-                while (--field_width > 0)
-                {
-                    //*str++ = L' ';
-                    place_char(L' ', &state);
-                }
-                    
-                continue;
-                    
-            case L's':
-                if (qualifier == 'h')
-                {
-                    /* print ascii string */
-                    s = va_arg(args, char8 *);
-                    if (s == NULL)
-                    {
-                        s = "<NULL>";
-                    }
-                        
-                    len = static_cast<int32>(strlen (s));
-                    if ((uint32)len > (uint32)precision)
-                    {
-                        len = precision;
-                    }
-                        
-                    if (!(flags & LEFT))
-                    {
-                        while (len < field_width--)
-                        {
-                            //*str++ = L' ';
-                            place_char(L' ', &state);
-                        }
-                    }
-                        
-                    for (i = 0; i < len; ++i)
-                    {
-                        //*str++ = (char16)(*s++);
-                        char16 c = (char16)(*s++);
-                        place_char(c, &state);
-                    }
-                        
-                    while (len < field_width--)
-                    {
-                        //*str++ = L' ';
-                        place_char(L' ', &state);
-                    }
-                }
-                else
-                {
-                    /* print unicode string */
-                    sw = va_arg(args, char16 *);
-                    if (sw == NULL)
-                    {
-                        sw = L"<NULL>";
-                    }
-                        
-                    len = static_cast<int32>(wcslen (sw));
-                    if ((uint32)len > (uint32)precision)
-                    {
-                        len = precision;
-                    }
-                        
-                    if (!(flags & LEFT))
-                    {
-                        while (len < field_width--)
-                        {
-                            //*str++ = L' ';
-                            place_char(L' ', &state);
-                        }
-                    }
-                        
-                    for (i = 0; i < len; ++i)
-                    {
-                        //*str++ = *sw++;
-                        char16 c = *sw++;
-                        place_char(c, &state);
-                    }
-                        
-                    while (len < field_width--)
-                    {
-                        //*str++ = L' ';
-                        place_char(L' ', &state);
-                    }
-                }
-                continue;
-                    
-            case L'S':
-                if (qualifier == 'l' || qualifier == 'w')
-                {
-                    /* print unicode string */
-                    sw = va_arg(args, char16 *);
-                    if (sw == NULL)
-                    {
-                        sw = L"<NULL>";
-                    }
-                        
-                    len = static_cast<int32>(wcslen (sw));
-                    if ((uint32)len > (uint32)precision)
-                    {
-                        len = precision;
-                    }
-                        
-                    if (!(flags & LEFT))
-                    {
-                        while (len < field_width--)
-                        {
-                            //*str++ = L' ';
-                            place_char(L' ', &state);
-                        }
-                    }
-                        
-                    for (i = 0; i < len; ++i)
-                    {
-                        //*str++ = *sw++;
-                        char16 c = *sw++;
-                        place_char(c, &state);
-                    }
-                        
-                    while (len < field_width--)
-                    {
-                        //*str++ = L' ';
-                        place_char(L' ', &state);
-                    }
-                }
-                else
-                {
-                    /* print ascii string */
-                    s = va_arg(args, char8 *);
-                    if (s == NULL)
-                    {
-                        s = "<NULL>";
-                    }
-                        
-                    len = static_cast<int32>(strlen (s));
-                    if ((uint32)len > (uint32)precision)
-                    {
-                        len = precision;
-                    }
-                        
-                    if (!(flags & LEFT))
-                    {
-                        while (len < field_width--)
-                        {
-                            //*str++ = L' ';
-                            place_char(L' ', &state);
-                        }
-                    }
-                        
-                    for (i = 0; i < len; ++i)
-                    {
-                        //*str++ = (char16)(*s++);
-                        char16 c = (char16)(*s++);
-                        place_char(c, &state);
-                    }
-                        
-                    while (len < field_width--)
-                    {
-                        //*str++ = L' ';
-                        place_char(L' ', &state);
-                    }
-                }
-                continue;
-                    
-            case L'Z':
-                if (qualifier == 'h')
-                {
-                    /* print counted ascii string */
-                    char8 * pus = va_arg(args, char8 *);
-                    if (pus == NULL)
-                    {
-                        sw = L"<NULL>";
-                        while ((*sw) != 0)
-                        {
-                            //*str++ = *sw++;
-                            char16 c = *sw++;
-                            place_char(c, &state);
-                        }
-                    }
-                    else
-                    {
-                        for (i = 0; pus[i] && i < (int32)strlen(pus); i++)
-                        {
-                            //*str++ = (char16)(pus[i]);
-                            char16 c = (char16)(pus[i]);
-                            place_char(c, &state);
-                        }
-                    }
-                }
-                else
-                {
-                    /* print counted unicode string */
-                    char16* pus = va_arg(args, char16*);
-                    if (pus == NULL)
-                    {
-                        sw = L"<NULL>";
-                        while ((*sw) != 0)
-                        {
-                            //*str++ = *sw++;
-                            char16 c = *sw++;
-                            place_char(c, &state);
-                        }
-                    }
-                    else
-                    {
-                        for (i = 0; pus[i] && i < (int32)wcslen(pus); ++i) // / sizeof(WCHAR); i++)
-                        {
-                            //*str++ = pus[i];
-                            place_char(pus[i], &state);
-                        }
-                    }
-                }
-                continue;
-                    
-            case L'p':
-                if (field_width == -1)
-                {
-                    field_width = 2*sizeof(void *);
-                    flags |= ZEROPAD;
-                }
-                    
-                str_ptr = Number(str_ptr,
-                                        (unsigned long) va_arg(args, void *), 16,
-                                        field_width, precision, flags, &state);
-                continue;
-                    
-            case L'n':
-                if (qualifier == 'l')
-                {
-                    long * ip = va_arg(args, long *);
-                    *ip = (str_ptr - buf);
-                }
-                else
-                {
-                    int32 * ip = va_arg(args, int32 *);
-                    *ip = static_cast<int32>(str_ptr - buf);
-                }
-                continue;
-                    
-                /* integer number formats - set up the flags and "break" */
-            case L'o':
-                base = 8;
-                break;
-                    
-            case L'b':
-                base = 2;
-                break;
-                    
-            case L'X':
-                flags |= LARGE;
-            case L'x':
-                base = 16;
-                break;
-                    
-            case L'd':
-            case L'i':
-                flags |= SIGN;
-            case L'u':
-                break;
-                    
-            case L'l':
-                if (*(fmt) == L'l' && *(fmt + 1) == L'd')
+                state.PlaceBuffer(s, len);
+                state.PlaceCharN(L' ', field_width - len);
+            }
+            continue;
+        case L'Z':      // %Z is not supported
+            DVASSERT(0);
+            continue;
+        case L'p':
+            if (field_width == -1)
+            {
+                field_width = 2 * sizeof(void *);
+                flags |= ZEROPAD;
+            }
+            {
+                uintptr_t v = reinterpret_cast<uintptr_t>(va_arg(args, void*));
+                Number(v, 16, field_width, precision, flags, &state);
+            }
+            continue;
+        case L'n':
+            DVASSERT(0);    // %n is not supported
+            continue;
+            /* integer number formats - set up the flags and "break" */
+        case L'o':
+            base = 8;
+            break;
+        case L'b':
+            base = 2;
+            break;
+        case L'X':
+            flags |= LARGE;
+        case L'x':
+            base = 16;
+            break;
+        case L'd':
+        case L'i':
+            flags |= SIGN;
+        case L'u':
+            break;
+        case L'l':
+            if (*fmt == L'l')
+            {
+                char16 next = *(fmt + 1);
+                if (next == L'd')   // %lld
                 {
                     flags |= LONG_LONG | SIGN;
                     fmt++;
                 }
-                else if (*(fmt) == L'l' && *(fmt + 1) == L'u')
+                else if (next == L'u')  // %llu
                 {
                     flags |= LONG_LONG;
                     fmt++;
                 }
-                break;
-                    
-            case L'f':
+                else if (next == L'X')  // %llX
+                {
+                    base = 16;
+                    flags |= LONG_LONG | LARGE;
+                    fmt++;
+                }
+                else if (next == L'x')  // %llx
+                {
+                    base = 16;
+                    flags |= LONG_LONG;
+                    fmt++;
+                }
+            }
+            break;
+        case L'f':
             {
                 base = -1;
-                    
-                while (*strBase)
-                {
-                    if (iswdigit(*strBase))
-                    {
-                        if (base == -1)
-                            base = 0;
-                        base = base * 10 + SkipAtoi(&strBase);
-                        continue;
-                    }
-
-                    switch (*strBase)
-                    {
-                        case L'%':
-                            ++strBase;
-                            continue;
-
-                        default:
-                            break;
-                    }
-                    
-                    break;
-                }
-                    
                 qualifier = 'f';
                 flags |= SIGN;
-            } 
-                break;
-            default:
-                if (*fmt != L'%')
-                {
-                    //*str++ = L'%';
-                    place_char(L'%', &state);
-                }
-                if (*fmt)
-                {
-                    //*str++ = *fmt;
-                    place_char(*fmt, &state);
-                }
-                else
-                {
-                    --fmt;
-                }
-                continue;
+            }
+            break;
+        default:
+            if (*fmt != L'%')
+                state.PlaceChar(L'%');
+            if (*fmt)
+                state.PlaceChar(*fmt);
+            else
+                --fmt;
+            continue;
         }
 
         if (qualifier == 'f')
         {
             float64 floatValue = va_arg(args, float64);
-            precision = 0;
-            if (*floatFormatPointer != 'f')
-            {
-                bool wasPoint = false;
-                while(*floatFormatPointer != 'f')
-                {
-                    if ('.' == *floatFormatPointer)
-                    {
-                        wasPoint = true;
-                    }
-                    else if (wasPoint)
-                    {
-                        precision = (precision * 10) + (*floatFormatPointer) - '0';
-                    }
-                    ++floatFormatPointer;
-                }
-                if (!wasPoint)
-                {
-                    precision = 6;
-                }
-            }
-            else
-            {
+            if (precision < 0)
                 precision = 6;
-            }
-            str_ptr = Numberf(str_ptr, floatValue, base, field_width, precision, flags, &state);
+            Numberf(floatValue, base, field_width, precision, flags, &state);
         }
         else
         {
@@ -919,44 +589,111 @@ int32 Vsnwprintf(char16* buf, size_t cnt, const char16* fmt, va_list args)
             }
             else if (qualifier == 'l')
             {
-                if (flags & (LONG_LONG | SIGN))
-                    num = va_arg(args, int64);
-                else if (flags & LONG_LONG)
-                    num = va_arg(args, uint64);
+                if (flags & LONG_LONG)
+                    num = flags & SIGN ? va_arg(args, int64) : va_arg(args, uint64);
                 else
                     num = va_arg(args, unsigned long);
             }
-            else if (qualifier == 'h')
+            else
             {
-                num = flags & SIGN ? va_arg(args, int32)
-                                   : va_arg(args, uint32);
+                if (flags & SIGN)
+                    num = va_arg(args, int32);
+                else
+                    num = va_arg(args, uint32);
             }
-            else 
-            {
-                num = flags & SIGN ? va_arg(args, int32)
-                                   : va_arg(args, uint32);
-            }
-            str_ptr = Number(str_ptr, num, base, field_width, precision, flags, &state);
+            Number(num, base, field_width, precision, flags, &state);
         }
     }
-        
-    //*str = L'\0';
-    //return static_cast<int32>(str-buf);
-    zero_terminate(&state);
-    return static_cast<int32>(state.ntotal);
+    state.Finish();
+    return static_cast<int32>(state.Total());
 }
 
-WideString FormatVL(const char16* text, va_list args)
+size_t FormattedLengthV(const char8* format, va_list args)
 {
-    WideString str;
-    char16 buffer[FORMAT_STRING_MAX_LEN];
-
-    //Vsnwprintf(buffer, FORMAT_STRING_MAX_LEN, text, args);
-    Vsnwprintf(buffer, 10, text, args);
-
-    str = buffer;
-    return str;
-}
-}
-
+    DVASSERT(format != nullptr);
+#if defined(__DAVAENGINE_WINDOWS__)
+    int result = _vscprintf(format, args);
+    DVASSERT(result >= 0);
+    return result >= 0 ? static_cast<size_t>(result) : 0;
+#else
+    // To obtain neccesary buffer length pass null buffer and 0 as buffer length
+    int result = vsnprintf(nullptr, 0, format, args);
+    DVASSERT(result >= 0);
+    return result >= 0 ? static_cast<size_t>(result) : 0;
 #endif
+}
+
+size_t FormattedLengthV(const char16* format, va_list args)
+{
+    DVASSERT(format != nullptr);
+    // To obtain neccesary buffer length pass null buffer and 0 as buffer length
+    int result = Vsnwprintf(nullptr, 0, format, args);
+    DVASSERT(result >= 0);
+    return result >= 0 ? static_cast<size_t>(result) : 0;
+}
+
+}   // unnamed namespace
+
+//////////////////////////////////////////////////////////////////////////
+
+//! Formatting functions (use printf-like syntax (%ls for WideString))
+String FormatVL(const char8* format, va_list args)
+{
+    String result;
+    size_t length = 0;
+    {
+        va_list xargs;
+        va_copy(xargs, args);   // args cannot be used twice without copying
+        length = FormattedLengthV(format, xargs);
+        va_end(xargs);
+    }
+    if (length > 0)
+    {
+        result.resize(length + 1);
+        vsnprintf(&*result.begin(), length + 1, format, args);
+        result.pop_back();
+    }
+    return result;
+}
+
+WideString FormatVL(const char16* format, va_list args)
+{
+    WideString result;
+    size_t length = 0;
+    {
+        va_list xargs;
+        va_copy(xargs, args);   // args cannot be used twice without copying
+        length = FormattedLengthV(format, xargs);
+        va_end(xargs);
+    }
+    if (length > 0)
+    {
+        result.resize(length + 1);
+        Vsnwprintf(&*result.begin(), length + 1, format, args);
+        result.pop_back();
+    }
+    return result;
+}
+
+String Format(const char8* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    String result = FormatVL(format, args);
+    va_end(args);
+    return result;
+}
+
+//  Format(L"") use case with WideString parameter:
+//         WideString info( Format(L"%ls", tank->GetName().c_str()) ); // tank->GetName() -> WideString&
+//         activeTankInfo->SetText(info);
+WideString Format(const char16* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    WideString result = FormatVL(format, args);
+    va_end(args);
+    return result;
+}
+
+}   // namespace DAVA
