@@ -60,7 +60,6 @@ const FastName Landscape::TEXTURE_COLOR("colorTexture");
 const FastName Landscape::TEXTURE_TILE("tileTexture0");
 const FastName Landscape::TEXTURE_TILEMASK("tileMask");
 const FastName Landscape::TEXTURE_SPECULAR("specularMap");
-const FastName Landscape::TEXTURE_FULL_TILED("fullTiledTexture");
 const FastName Landscape::TEXTURE_CURSOR("cursorTexture");
 
 const uint32 LANDSCAPE_BATCHES_POOL_SIZE = 32;
@@ -1140,6 +1139,14 @@ NMaterial * Landscape::GetMaterial()
     return landscapeMaterial;
 }
 
+void Landscape::SetMaterial(NMaterial * material)
+{
+    SafeRelease(landscapeMaterial);
+    landscapeMaterial = SafeRetain(material);
+
+    for (uint32 i = 0; i < GetRenderBatchCount(); ++i)
+        GetRenderBatch(i)->SetMaterial(landscapeMaterial);
+}
 
 Texture * Landscape::CreateLandscapeTexture()
 {

@@ -624,11 +624,16 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, rhi::Textur
     EnsurePowerOf2(dy);
     
     Texture *tx = new Texture();
-    
+    tx->width = dx;
+    tx->height = dy;
+    tx->textureType = requestedType;
+    tx->texDescriptor->format = format;
+    tx->texDescriptor->drawSettings.mipFilter = rhi::TEXMIPFILTER_NONE;
+
     const PixelFormatDescriptor & formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(format);
     rhi::Texture::Descriptor descriptor;
-    descriptor.width = dx;
-    descriptor.height = dy;
+    descriptor.width = tx->width;
+    descriptor.height = tx->height;
     descriptor.autoGenMipmaps = false;
     descriptor.isRenderTarget = true;
     descriptor.type = requestedType;

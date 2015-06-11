@@ -49,7 +49,7 @@ VisibilityToolSystem::VisibilityToolSystem(Scene* scene)
 ,	editingIsEnabled(false)
 ,	originalImage(nullptr)
 ,	state(VT_STATE_NORMAL)
-,	textureLevel(Landscape::TEXTURE_FULL_TILED)
+,	textureLevel(Landscape::TEXTURE_COLOR)
 {
     cursorSize = 120;
 
@@ -87,11 +87,10 @@ LandscapeEditorDrawSystem::eErrorType VisibilityToolSystem::EnableLandscapeEditi
 	modifSystem->SetLocked(true);
 
 	Texture* visibilityToolTexture = drawSystem->GetVisibilityToolProxy()->GetTexture();
-	drawSystem->GetLandscapeProxy()->SetVisibilityCheckToolTexture(visibilityToolTexture);
-	drawSystem->GetLandscapeProxy()->SetVisibilityCheckToolTextureEnabled(true);
+	drawSystem->GetLandscapeProxy()->SetToolTexture(visibilityToolTexture);
 	landscapeSize = visibilityToolTexture->GetWidth();
 
-	drawSystem->EnableCursor(landscapeSize);
+	drawSystem->EnableCursor();
 	drawSystem->SetCursorSize(0);
 
 	PrepareConfig();
@@ -115,8 +114,7 @@ bool VisibilityToolSystem::DisableLandscapeEdititing()
 	drawSystem->DisableCursor();
 	drawSystem->DisableCustomDraw();
 
-	drawSystem->GetLandscapeProxy()->SetVisibilityCheckToolTexture(NULL);
-	drawSystem->GetLandscapeProxy()->SetVisibilityCheckToolTextureEnabled(false);
+	drawSystem->GetLandscapeProxy()->SetToolTexture(nullptr);
 
 	enabled = false;
 	return !enabled;

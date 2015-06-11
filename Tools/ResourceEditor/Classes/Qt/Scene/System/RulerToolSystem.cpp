@@ -75,11 +75,10 @@ LandscapeEditorDrawSystem::eErrorType RulerToolSystem::EnableLandscapeEditing()
 	modifSystem->SetLocked(true);
 
 	Texture* rulerToolTexture = drawSystem->GetRulerToolProxy()->GetTexture();
-	drawSystem->GetLandscapeProxy()->SetRulerToolTexture(rulerToolTexture);
-	drawSystem->GetLandscapeProxy()->SetRulerToolTextureEnabled(true);
+	drawSystem->GetLandscapeProxy()->SetToolTexture(rulerToolTexture);
 	landscapeSize = drawSystem->GetHeightmapProxy()->Size();
 
-	drawSystem->EnableCursor(landscapeSize);
+	drawSystem->EnableCursor();
 	drawSystem->SetCursorSize(0);
 
 	previewLength = -1.f;
@@ -107,8 +106,7 @@ bool RulerToolSystem::DisableLandscapeEdititing()
 	drawSystem->DisableCursor();
 	drawSystem->DisableCustomDraw();
 
-	drawSystem->GetLandscapeProxy()->SetRulerToolTexture(NULL);
-	drawSystem->GetLandscapeProxy()->SetRulerToolTextureEnabled(false);
+	drawSystem->GetLandscapeProxy()->SetToolTexture(nullptr);
 
 	Clear();
 	previewLength = -1.f;

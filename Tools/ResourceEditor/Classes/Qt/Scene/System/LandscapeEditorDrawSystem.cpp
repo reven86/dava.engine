@@ -120,14 +120,8 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableCustomDra
 		return initError;
 	}
 
-	GetLandscapeProxy()->UpdateFullTiledTexture(true);
 	landscapeProxy->SetMode(LandscapeProxy::MODE_CUSTOM_LANDSCAPE);
 	landscapeProxy->SetHeightmap(heightmapProxy);
-
-	AABBox3 landscapeBoundingBox = baseLandscape->GetBoundingBox();
-	LandscapeRenderer* landscapeRenderer = new LandscapeRenderer(heightmapProxy, landscapeBoundingBox);
-	landscapeProxy->SetRenderer(landscapeRenderer);
-	landscapeRenderer->Release();
 
 	++customDrawRequestCount;
 
@@ -190,12 +184,9 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
 	}
 
 	notPassableTerrainProxy->Enable();
-	notPassableTerrainProxy->UpdateTexture(heightmapProxy,
-										   landscapeProxy->GetLandscapeBoundingBox(),
-										   GetHeightmapRect());
+	notPassableTerrainProxy->UpdateTexture(heightmapProxy,  landscapeProxy->GetLandscapeBoundingBox(), GetHeightmapRect());
 	
-	landscapeProxy->SetNotPassableTexture(notPassableTerrainProxy->GetTexture());
-	landscapeProxy->SetNotPassableTextureEnabled(true);
+    landscapeProxy->SetToolTexture(notPassableTerrainProxy->GetTexture());
     
 	return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
@@ -208,16 +199,14 @@ void LandscapeEditorDrawSystem::DisableNotPassableTerrain()
 	}
 	
 	notPassableTerrainProxy->Disable();
-	landscapeProxy->SetNotPassableTexture(NULL);
-	landscapeProxy->SetNotPassableTextureEnabled(false);
+	landscapeProxy->SetToolTexture(nullptr);
     
 	DisableCustomDraw();
 }
 
-void LandscapeEditorDrawSystem::EnableCursor(int32 landscapeSize)
+void LandscapeEditorDrawSystem::EnableCursor()
 {
 	landscapeProxy->CursorEnable();
-	landscapeProxy->SetBigTextureSize((float32)landscapeSize);
 }
 
 void LandscapeEditorDrawSystem::DisableCursor()
@@ -238,7 +227,7 @@ void LandscapeEditorDrawSystem::SetCursorSize(uint32 cursorSize)
 	this->cursorSize = cursorSize;
 	if (landscapeProxy)
 	{
-		landscapeProxy->SetCursorScale((float32)cursorSize);
+		landscapeProxy->SetCursorSize((float32)cursorSize);
 		UpdateCursorPosition();
 	}
 }
@@ -270,19 +259,9 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 	{
 		Rect changedRect = heightmapProxy->GetChangedRect();
 		
-		if (landscapeProxy)
-		{
-			LandscapeRenderer* renderer = landscapeProxy->GetRenderer();
-			if (renderer)
-			{
-				renderer->RebuildVertexes(changedRect);
-			}
-		}
-		
 		if (notPassableTerrainProxy && notPassableTerrainProxy->IsEnabled())
 		{
 			notPassableTerrainProxy->UpdateTexture(heightmapProxy, landscapeProxy->GetLandscapeBoundingBox(), changedRect);
-			landscapeProxy->SetNotPassableTexture(notPassableTerrainProxy->GetTexture());
 		}
 		
 		if (customDrawRequestCount == 0)
@@ -297,7 +276,7 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 	{
 		if (landscapeProxy)
 		{
-			landscapeProxy->SetCustomColorsTexture(customColorsProxy->GetTexture());
+            landscapeProxy->SetToolTexture(customColorsProxy->GetTexture());
 		}
 		customColorsProxy->ResetTargetChanged();
 	}
@@ -306,7 +285,7 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 	{
 		if (landscapeProxy)
 		{
-			landscapeProxy->SetVisibilityCheckToolTexture(visibilityToolProxy->GetTexture());
+            landscapeProxy->SetToolTexture(visibilityToolProxy->GetTexture());
 		}
 		visibilityToolProxy->ResetTextureChanged();
 	}
@@ -315,7 +294,7 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 	{
 		if (rulerToolProxy)
 		{
-			landscapeProxy->SetRulerToolTexture(rulerToolProxy->GetTexture());
+            landscapeProxy->SetToolTexture(rulerToolProxy->GetTexture());
 		}
 		rulerToolProxy->ResetTextureChanged();
 	}
@@ -336,12 +315,6 @@ void LandscapeEditorDrawSystem::UpdateBaseLandscapeHeightmap()
 float32 LandscapeEditorDrawSystem::GetTextureSize(const FastName& level)
 {
 	float32 size = 0.f;
-#if RHI_COMPLETE_EDITOR
-	if (level == Landscape::TEXTURE_FULL_TILED)
-	{
-		level = Landscape::TEXTURE_TILEMASK;
-	}
-#endif RHI_COMPLETE_EDITOR
 	Texture* texture = baseLandscape->GetMaterial()->GetEffectiveTexture(level);
 	if (texture)
 	{
@@ -488,15 +461,15 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::Init()
 	}
 	if (!customColorsProxy)
 	{
-		customColorsProxy = new CustomColorsProxy((int32)GetTextureSize(Landscape::TEXTURE_FULL_TILED));
+		customColorsProxy = new CustomColorsProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
 	}
 	if (!visibilityToolProxy)
 	{
-        visibilityToolProxy = new VisibilityToolProxy((int32)GetTextureSize(Landscape::TEXTURE_FULL_TILED));
+        visibilityToolProxy = new VisibilityToolProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
 	}
 	if (!rulerToolProxy)
 	{
-        rulerToolProxy = new RulerToolProxy((int32)GetTextureSize(Landscape::TEXTURE_FULL_TILED));
+        rulerToolProxy = new RulerToolProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
 	}
     if(!grassEditorProxy)
     {

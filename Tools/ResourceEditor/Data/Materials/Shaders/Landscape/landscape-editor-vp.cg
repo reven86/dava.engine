@@ -1,0 +1,31 @@
+#include "common.cgh"
+
+VPROG_IN_BEGIN
+    VPROG_IN_POSITION
+    VPROG_IN_TEXCOORD
+VPROG_IN_END
+
+VPROG_OUT_BEGIN
+    
+    VPROG_OUT_POSITION
+    VPROG_OUT_TEXCOORD0(texCoord,2)
+    VPROG_OUT_TEXCOORD1(texCoordTiled,2)
+
+VPROG_OUT_END
+
+property float4x4 worldViewProjMatrix          : dynamic,instance : ;
+property float4x4 worldMatrix                  : dynamic,instance : ;
+
+property float2   textureTiling : static,instance : def_value=50,50;
+
+VPROG_BEGIN
+
+    float3 in_pos      = VP_IN_POSITION;
+    float2 in_texcoord = VP_IN_TEXCOORD;
+    
+    VP_OUT_POSITION = mul( float4(in_pos.x,in_pos.y,in_pos.z,1.0), worldViewProjMatrix );
+    
+    VP_OUT(texCoord) = in_texcoord;
+    VP_OUT(texCoordTiled) = in_texcoord * float2(textureTiling.x, textureTiling.y);
+    
+VPROG_END

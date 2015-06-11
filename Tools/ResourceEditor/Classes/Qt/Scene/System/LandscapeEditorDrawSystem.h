@@ -85,7 +85,7 @@ public:
 	eErrorType EnableNotPassableTerrain();
 	void DisableNotPassableTerrain();
 	
-	void EnableCursor(int32 landscapeSize);
+	void EnableCursor();
 	void DisableCursor();
 	void SetCursorTexture(Texture* cursorTexture);
 	void SetCursorSize(uint32 cursorSize);

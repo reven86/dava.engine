@@ -1862,18 +1862,6 @@
     <string>Show Lightmap Canvas</string>
    </property>
   </action>
-  <action name="actionGrasEditor">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="QtIcons.qrc">
-     <normaloff>:/QtIcons/grass.png</normaloff>:/QtIcons/grass.png</iconset>
-   </property>
-   <property name="text">
-    <string>GrasEditor</string>
-   </property>
-  </action>
   <action name="actionImageSplitter">
    <property name="icon">
     <iconset resource="QtIcons.qrc">

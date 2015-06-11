@@ -22,7 +22,6 @@ LandscapeEditorControlsPlaceholder::LandscapeEditorControlsPlaceholder(QWidget* 
 ,   visibilityToolPanel(nullptr)
 ,   tilemaskEditorPanel(nullptr)
 ,   heightmapEditorPanel(nullptr)
-,   grassEditorPanel(nullptr)
 {
 	InitUI();
 	ConnectToSignals();
@@ -31,7 +30,7 @@ LandscapeEditorControlsPlaceholder::LandscapeEditorControlsPlaceholder(QWidget* 
 
 void LandscapeEditorControlsPlaceholder::OnOpenGLInitialized()
 {
-    DVASSERT(!customColorsPanel && !rulerToolPanel && !visibilityToolPanel && !tilemaskEditorPanel && !heightmapEditorPanel && !grassEditorPanel);
+    DVASSERT(!customColorsPanel && !rulerToolPanel && !visibilityToolPanel && !tilemaskEditorPanel && !heightmapEditorPanel);
     
     customColorsPanel = new CustomColorsPanel();
     rulerToolPanel = new RulerToolPanel();
@@ -47,7 +46,6 @@ LandscapeEditorControlsPlaceholder::~LandscapeEditorControlsPlaceholder()
 	SafeDelete(visibilityToolPanel);
 	SafeDelete(tilemaskEditorPanel);
 	SafeDelete(heightmapEditorPanel);
-    SafeDelete(grassEditorPanel);
 }
 
 void LandscapeEditorControlsPlaceholder::InitUI()

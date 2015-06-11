@@ -36,7 +36,7 @@ NotPassableTerrainProxy::NotPassableTerrainProxy()
 	LoadColorsArray();
 	 
 	notPassableAngleTan = (float32)tan(DegToRad((float32)NOT_PASSABLE_ANGLE));
-	notPassableTexture = Texture::CreateFBO(2048, 2048, DAVA::FORMAT_RGBA8888/*, Texture::DEPTH_NONE*/); // RHI_COMPLETE_EDITOR
+	notPassableTexture = Texture::CreateFBO(2048, 2048, DAVA::FORMAT_RGBA8888);
 }
 
 NotPassableTerrainProxy::~NotPassableTerrainProxy()
@@ -155,11 +155,8 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
     const float32 dx = targetWidth / (float32)(heightmap->Size() - 1);
 
 	const Rect drawRect(forRect.x * dx, (heightmap->Size() - (forRect.y + forRect.dy)) * dx, (forRect.dx - 1)* dx, (forRect.dy - 1) * dx);
-    
-#if RHI_COMPLETE_EDITOR
-    RenderHelper::Instance()->Set2DRenderTarget(notPassableTexture);
-    RenderManager::Instance()->SetClip(drawRect);
-    RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
+
+    RenderSystem2D::Instance()->BeginRenderTargetPass(notPassableTexture);
 
 	const int32 lastY = (int32)(forRect.y + forRect.dy);
 	const int32 lastX = (int32)(forRect.x + forRect.dx);
@@ -185,21 +182,16 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
 
 			if(PickColor(tanRight, color))
 			{
-                RenderManager::Instance()->SetColor(color);
-                RenderHelper::Instance()->DrawLine(Vector2(xdx, ydx), Vector2((xdx + dx), ydx), DAVA::RenderState::RENDERSTATE_2D_BLEND);
+                RenderSystem2D::Instance()->DrawLine(Vector2(xdx, ydx), Vector2((xdx + dx), ydx), RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, color);
 			}
 			
 			if(PickColor(tanBottom, color))
 			{
-                RenderManager::Instance()->SetColor(color);
-                RenderHelper::Instance()->DrawLine(Vector2(xdx, ydx), Vector2(xdx, (ydx - dx)), DAVA::RenderState::RENDERSTATE_2D_BLEND);
+                RenderSystem2D::Instance()->DrawLine(Vector2(xdx, ydx), Vector2(xdx, (ydx - dx)), RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, color);
 			}
 			
 		}
 	}
-	
-    RenderManager::Instance()->ResetColor();
-    RenderManager::Instance()->SetClip(Rect(0.f, 0.f, -1.f, -1.f));
-    RenderManager::Instance()->SetRenderTarget(0);
-#endif // RHI_COMPLETE_EDITOR
+
+    RenderSystem2D::Instance()->EndRenderTargetPass();
 }

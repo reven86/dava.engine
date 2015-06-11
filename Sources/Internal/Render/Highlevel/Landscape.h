@@ -150,7 +150,6 @@ public:
     const static FastName TEXTURE_TILE;
     const static FastName TEXTURE_TILEMASK;
     const static FastName TEXTURE_SPECULAR;
-    const static FastName TEXTURE_FULL_TILED;
     
     const static FastName TEXTURE_CURSOR; //should use clamp wrap mode
 
@@ -216,6 +215,7 @@ public:
     virtual void SetHeightmap(Heightmap *height);
     
     NMaterial * GetMaterial();
+    void SetMaterial(NMaterial * material);
 
 //    virtual void UpdateFullTiledTexture();
 //    FilePath SaveFullTiledTexture();
