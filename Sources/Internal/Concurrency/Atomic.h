@@ -80,10 +80,12 @@ private:
 #ifdef USE_CPP11_CONCURRENCY
     std::atomic<T> value;
 #else
-    DAVA_ALIGNED(T value, sizeof(T));
 
 #   ifdef __DAVAENGINE_WINDOWS__
     template <typename Y> T Cast(Y val);
+    T value;
+#   else
+    DAVA_ALIGNED(T value, sizeof(T));
 #   endif
 
 #endif
