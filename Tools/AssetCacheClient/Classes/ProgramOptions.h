@@ -332,6 +332,18 @@ protected:
                                         }
                                     }
                                     break;
+                                case DAVA::VariantType::TYPE_UINT64:
+                                {
+                                    for(auto &t: tokens)
+                                    {
+                                        DAVA::uint64 value = 0;
+                                        if(1 == sscanf(t.c_str(), "%llu", &value))
+                                        {
+                                            options[i].SetValue(DAVA::VariantType(value));
+                                        }
+                                    }
+                                }
+                                    break;
                                 case DAVA::VariantType::TYPE_BOOLEAN:
                                 {
                                     for(auto &t: tokens)

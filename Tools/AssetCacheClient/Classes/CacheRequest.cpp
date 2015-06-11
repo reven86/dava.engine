@@ -38,8 +38,8 @@ using namespace DAVA;
 CacheRequest::CacheRequest(const String & commandLineOptionName)
     : options(commandLineOptionName)
 {
-    options.AddOption("-ip", VariantType(String("")), "Set ip adress of Asset Cache Server.");
-//    options.AddOption("-p", VariantType(0), "Set port of Asset Cache Server.");
+    options.AddOption("-ip", VariantType(String("127.0.0.1")), "Set ip adress of Asset Cache Server.");
+//    options.AddOption("-p", VariantType(AssetCache::ASSET_SERVER_PORT), "Set port of Asset Cache Server.");
     options.AddOption("-h", VariantType(String("")), "Hash string of requested data");
     options.AddOption("-v", VariantType(false), "Verbose output.");
     options.AddOption("-t", VariantType(static_cast<uint64>(1)), "Connection timeout seconds.");
