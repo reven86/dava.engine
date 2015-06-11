@@ -697,6 +697,25 @@ RenderPassConfig
 
 //------------------------------------------------------------------------------
 
+struct
+ScissorRect
+{
+    uint16  x;
+    uint16  y;
+    uint16  width;
+    uint16  height;
+
+            ScissorRect()
+              : x(0),
+                y(0),
+                width(0),
+                height(0)
+            {}
+};
+
+
+//------------------------------------------------------------------------------
+
 uint32  NativeColorRGBA( float r, float g, float b, float a=1.0f );
 
 } // namespace rhi

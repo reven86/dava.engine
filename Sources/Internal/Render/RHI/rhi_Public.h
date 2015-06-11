@@ -217,6 +217,8 @@ void                EndRenderPass( HRenderPass pass ); // no explicit render-pas
 struct
 Packet
 {
+    enum { OPT_OVERRIDE_SCISSOR=1 };
+
     uint32              vertexStreamCount;
     HVertexBuffer       vertexStream[MAX_VERTEX_STREAM_COUNT];
     uint32              vertexCount;
@@ -228,6 +230,7 @@ Packet
     HDepthStencilState  depthStencilState;
     HSamplerState       samplerState;
     CullMode            cullMode;
+    ScissorRect         scissorRect;
     uint32              vertexConstCount;
     HConstBuffer        vertexConst[MAX_CONST_BUFFER_COUNT];
     uint32              fragmentConstCount;
@@ -236,6 +239,7 @@ Packet
     PrimitiveType       primitiveType;
     uint32              primitiveCount;
     uint32              queryIndex;
+    uint32              options;
     const char*         debugMarker;
 
                         Packet()
@@ -251,6 +255,7 @@ Packet
                             fragmentConstCount(0),
                             primitiveCount(0),
                             queryIndex(InvalidIndex),
+                            options(0),
                             debugMarker(nullptr)
                         {
                         }

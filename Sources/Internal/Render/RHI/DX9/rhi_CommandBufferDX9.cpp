@@ -49,6 +49,7 @@ CommandDX9
 
     DX9__SET_PIPELINE_STATE,
     DX9__SET_CULL_MODE,
+    DX9__SET_SCISSOR_RECT,
     DX9__SET_VERTEX_PROG_CONST_BUFFER,
     DX9__SET_FRAGMENT_PROG_CONST_BUFFER,
     DX9__SET_TEXTURE,
@@ -215,6 +216,15 @@ static void
 dx9_CommandBuffer_SetCullMode( Handle cmdBuf, CullMode mode )
 {
     CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_CULL_MODE, mode );
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+dx9_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
+{
+    CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_SCISSOR_RECT, rect.x, rect.x, rect.width, rect.height );
 }
 
 
@@ -654,6 +664,28 @@ SCOPED_FUNCTION_TIMING();
                 c += 1;
             }   break;
 
+            case DX9__SET_SCISSOR_RECT :
+            {
+                int x = int(arg[0]);
+                int y = int(arg[1]);
+                int w = int(arg[2]);
+                int h = int(arg[3]);
+
+                if( x  &&  y  &&  w  &&  h )
+                {
+                    RECT    rect = { x, y, x+w-1, y+h-1 };
+
+                    _D3D9_Device->SetRenderState( D3DRS_SCISSORTESTENABLE, TRUE );
+                    _D3D9_Device->SetScissorRect( &rect );
+                }
+                else
+                {
+                    _D3D9_Device->SetRenderState( D3DRS_SCISSORTESTENABLE, FALSE );
+                }
+
+                c += 4;
+            }   break;
+
             case DX9__SET_DEPTHSTENCIL_STATE :
             {
                 DepthStencilStateDX9::SetToRHI( (Handle)(arg[0]) );
@@ -831,6 +863,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_End                    = &dx9_CommandBuffer_End;
     dispatch->impl_CommandBuffer_SetPipelineState       = &dx9_CommandBuffer_SetPipelineState;
     dispatch->impl_CommandBuffer_SetCullMode            = &dx9_CommandBuffer_SetCullMode;
+    dispatch->impl_CommandBuffer_SetScissorRect         = &dx9_CommandBuffer_SetScissorRect;
     dispatch->impl_CommandBuffer_SetVertexData          = &dx9_CommandBuffer_SetVertexData;
     dispatch->impl_CommandBuffer_SetVertexConstBuffer   = &dx9_CommandBuffer_SetVertexConstBuffer;
     dispatch->impl_CommandBuffer_SetVertexTexture       = &dx9_CommandBuffer_SetVertexTexture;

@@ -69,8 +69,11 @@ PacketList_t
 
     Handle      defDepthStencilState;
     Handle      defSamplerState;
+    ScissorRect defScissorRect;
 
     Handle      curVertexStream[MAX_VERTEX_STREAM_COUNT];
+
+    uint32      restoreDefScissorRect:1;
 
     // debug
     uint32      batchIndex;
@@ -694,6 +697,8 @@ BeginPacketList( HPacketList packetList )
     if( pl->queryBuffer != rhi::InvalidHandle )
         CommandBuffer::SetQueryBuffer( pl->cmdBuf, pl->queryBuffer );
 
+    pl->restoreDefScissorRect = false;
+
     pl->batchIndex = 0;
 }
 
@@ -799,6 +804,20 @@ AddPackets( HPacketList packetList, const Packet* packet, uint32 packetCount )
             }                                                
 
             pl->curTextureSet = p->textureSet;
+        }
+
+        if( p->options & Packet::OPT_OVERRIDE_SCISSOR )
+        {
+            rhi::CommandBuffer::SetScissorRect( cmdBuf, p->scissorRect );
+            pl->restoreDefScissorRect = true;
+        }
+        else
+        {
+            if( pl->restoreDefScissorRect )
+            {
+                rhi::CommandBuffer::SetScissorRect( cmdBuf, pl->defScissorRect );
+                pl->restoreDefScissorRect = false;
+            }
         }
 
         

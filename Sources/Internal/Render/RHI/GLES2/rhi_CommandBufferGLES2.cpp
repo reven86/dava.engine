@@ -36,6 +36,7 @@ CommandGLES2
 
     GLES2__SET_PIPELINE_STATE,
     GLES2__SET_CULL_MODE,
+    GLES2__SET_SCISSOR_RECT,
     GLES2__SET_VERTEX_PROG_CONST_BUFFER,
     GLES2__SET_FRAGMENT_PROG_CONST_BUFFER,
     GLES2__SET_VERTEX_TEXTURE,
@@ -233,6 +234,15 @@ static void
 gles2_CommandBuffer_SetCullMode( Handle cmdBuf, CullMode mode )
 {
     CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_CULL_MODE, mode );
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+gles2_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
+{
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_SCISSOR_RECT, rect.x, rect.x, rect.width, rect.height );
 }
 
 
@@ -745,6 +755,26 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
 
                 c += 1;
             }   break;
+            
+            case GLES2__SET_SCISSOR_RECT :
+            {
+                GLint   x = GLint(arg[0]);
+                GLint   y = GLint(arg[1]);
+                GLsizei w = GLsizei(arg[2]);
+                GLsizei h = GLsizei(arg[3]);
+
+                if( x  &&  y  &&  w  &&  h )
+                {
+                    glEnable( GL_SCISSOR_TEST );
+                    glScissor( x, y, w, h );
+                }
+                else
+                {
+                    glDisable( GL_SCISSOR_TEST );
+                }
+
+                c += 4;
+            }
 
             case GLES2__SET_DEPTHSTENCIL_STATE :
             {
@@ -1346,6 +1376,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_End                    = &gles2_CommandBuffer_End;
     dispatch->impl_CommandBuffer_SetPipelineState       = &gles2_CommandBuffer_SetPipelineState;
     dispatch->impl_CommandBuffer_SetCullMode            = &gles2_CommandBuffer_SetCullMode;
+    dispatch->impl_CommandBuffer_SetScissorRect         = &gles2_CommandBuffer_SetScissorRect;
     dispatch->impl_CommandBuffer_SetVertexData          = &gles2_CommandBuffer_SetVertexData;
     dispatch->impl_CommandBuffer_SetVertexConstBuffer   = &gles2_CommandBuffer_SetVertexConstBuffer;
     dispatch->impl_CommandBuffer_SetVertexTexture       = &gles2_CommandBuffer_SetVertexTexture;

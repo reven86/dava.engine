@@ -459,6 +459,12 @@ SetCullMode( Handle cmdBuf, CullMode mode )
 }
 
 void
+SetScissorRect( Handle cmdBuf, ScissorRect rect )
+{
+    (*_Impl.impl_CommandBuffer_SetScissorRect)( cmdBuf, rect );
+}
+
+void
 SetVertexData( Handle cmdBuf, Handle vb, uint32 streamIndex )
 {
     (*_Impl.impl_CommandBuffer_SetVertexData)( cmdBuf, vb, streamIndex );

@@ -184,6 +184,7 @@ void    End( Handle cmdBuf );
 
 void    SetPipelineState( Handle cmdBuf, Handle ps, uint32 vdecl=VertexLayout::InvalidUID );
 void    SetCullMode( Handle cmdBuf, CullMode mode );
+void    SetScissorRect( Handle cmdBuf, ScissorRect rect );
 
 void    SetVertexData( Handle cmdBuf, Handle vb, uint32 streamIndex=0 );
 void    SetVertexConstBuffer( Handle cmdBuf, uint32 bufIndex, Handle buffer );
