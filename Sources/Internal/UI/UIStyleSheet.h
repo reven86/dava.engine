@@ -52,7 +52,24 @@ namespace DAVA
         }
     };
 
-    typedef UnorderedMap< uint32, VariantType > UIStyleSheetPropertyTable;
+    class UIStyleSheetPropertyTable :
+        public DAVA::BaseObject
+    {
+    public:
+        void SetProperty(uint32 index, const VariantType& value);
+
+        inline const VariantType* GetProperty(uint32 index) const
+        {
+            auto iter = properties.find(index);
+
+            return (iter != properties.end()) ? &iter->second : nullptr;
+        }
+
+        const UIStyleSheetPropertySet& GetPropertySet() const;
+    private:
+        UnorderedMap< uint32, VariantType > properties;
+        UIStyleSheetPropertySet propertiesSet;
+    };
 
     class UIStyleSheet :
         public BaseObject
@@ -64,29 +81,17 @@ namespace DAVA
 
         int32 GetScore() const;
 
-        const UIStyleSheetPropertyTable& GetPropertyTable() const;
+        const UIStyleSheetPropertyTable* GetPropertyTable() const;
         const Vector< UIStyleSheetSelector >& GetSelectorChain() const;
 
-        void SetPropertyTable(const UIStyleSheetPropertyTable& properties);
+        void SetPropertyTable(UIStyleSheetPropertyTable* properties);
         void SetSelectorChain(const Vector< UIStyleSheetSelector >& selectorChain);
-
-        void SetProperty(uint32 index, const VariantType& value);
-
-        inline const VariantType* GetProperty(uint32 index) const
-        {
-            auto iter = properties.find(index);
-
-            return (iter != properties.end()) ? &iter->second : nullptr;
-        }
-
-        const Bitset< STYLE_SHEET_PROPERTY_COUNT >& GetPropertySet() const;
     private:
         void RecalculateScore();
 
         Vector< UIStyleSheetSelector > selectorChain;
         
-        UIStyleSheetPropertyTable properties;
-        Bitset< STYLE_SHEET_PROPERTY_COUNT > propertiesSet;
+        RefPtr< UIStyleSheetPropertyTable > properties;
 
         int32 score;
     };

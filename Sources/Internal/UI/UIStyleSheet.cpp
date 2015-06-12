@@ -30,6 +30,17 @@
 
 namespace DAVA
 {
+    void UIStyleSheetPropertyTable::SetProperty(uint32 index, const VariantType& value)
+    {
+        properties[index] = value;
+        propertiesSet.set(index);
+    }
+
+    const UIStyleSheetPropertySet& UIStyleSheetPropertyTable::GetPropertySet() const
+    {
+        return propertiesSet;
+    }
+
     UIStyleSheet::~UIStyleSheet()
     {
 
@@ -46,9 +57,9 @@ namespace DAVA
         return score;
     }
 
-    const UIStyleSheetPropertyTable& UIStyleSheet::GetPropertyTable() const
+    const UIStyleSheetPropertyTable* UIStyleSheet::GetPropertyTable() const
     {
-        return properties;
+        return properties.Get();
     }
 
     const Vector< UIStyleSheetSelector >& UIStyleSheet::GetSelectorChain() const
@@ -56,15 +67,9 @@ namespace DAVA
         return selectorChain;
     }
 
-    void UIStyleSheet::SetPropertyTable(const UIStyleSheetPropertyTable& newProperties)
+    void UIStyleSheet::SetPropertyTable(UIStyleSheetPropertyTable* newProperties)
     {
         properties = newProperties;
-        propertiesSet.reset();
-
-        for (auto& prop : properties)
-        {
-            propertiesSet.set(prop.first);
-        }
     }
 
     void UIStyleSheet::SetSelectorChain(const Vector< UIStyleSheetSelector >& newSelectorChain)
@@ -72,17 +77,6 @@ namespace DAVA
         selectorChain = newSelectorChain;
 
         RecalculateScore();
-    }
-
-    void UIStyleSheet::SetProperty(uint32 index, const VariantType& value)
-    {
-        properties[index] = value;
-        propertiesSet.set(index);
-    }
-
-    const Bitset< STYLE_SHEET_PROPERTY_COUNT >& UIStyleSheet::GetPropertySet() const
-    {
-        return propertiesSet;
     }
 
     void UIStyleSheet::RecalculateScore()

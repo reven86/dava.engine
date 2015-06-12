@@ -47,14 +47,14 @@ namespace DAVA
         propertiesSet.reset();
     }
 
-    void UIStyleSheetCascade::AddStyleSheet(const UIStyleSheet* table)
+    void UIStyleSheetCascade::AddStyleSheet(const UIStyleSheet* styleSheet)
     {
-        styleSheets.push_back(table);
+        styleSheets.push_back(styleSheet);
 
-        propertiesSet |= table->GetPropertySet();
+        propertiesSet |= styleSheet->GetPropertyTable()->GetPropertySet();
     }
 
-    const Bitset< STYLE_SHEET_PROPERTY_COUNT >& UIStyleSheetCascade::GetPropertySet() const
+    const UIStyleSheetPropertySet& UIStyleSheetCascade::GetPropertySet() const
     {
         return propertiesSet;
     }

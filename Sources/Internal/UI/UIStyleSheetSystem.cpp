@@ -29,6 +29,7 @@
 #include "UI/UIStyleSheetSystem.h"
 #include "UI/UIStyleSheet.h"
 #include "UI/UIStyleSheetCascade.h"
+#include "UI/UIStyleSheetPackage.h"
 #include "UI/UIControl.h"
 #include "UI/Components/UIComponent.h"
 #include "Platform/SystemTimer.h"
@@ -52,10 +53,7 @@ namespace DAVA
 
     void UIStyleSheetSystem::MarkControlForUpdate(UIControl* control)
     {
-        controlsToUpdate.push_back(control);
-
-        for (UIControl* child : control->GetChildren())
-            MarkControlForUpdate(child);
+        controlsToUpdate.push_back(SafeRetain(control));
     }
 
     void UIStyleSheetSystem::RegisterStyleSheet(UIStyleSheet* styleSheet)
@@ -71,6 +69,22 @@ namespace DAVA
         {
             SafeRelease(styleSheet);
             styleSheets.erase(iter);
+        }
+    }
+
+    void UIStyleSheetSystem::RegisterStyleSheetPackage(UIStyleSheetPackage* styleSheetPackage)
+    {
+        for (UIStyleSheet* styleSheet : *styleSheetPackage)
+        {
+            RegisterStyleSheet(styleSheet);
+        }
+    }
+
+    void UIStyleSheetSystem::UnregisterStyleSheetPackage(UIStyleSheetPackage* styleSheetPackage)
+    {
+        for (UIStyleSheet* styleSheet : *styleSheetPackage)
+        {
+            UnregisterStyleSheet(styleSheet);
         }
     }
 
@@ -92,6 +106,7 @@ namespace DAVA
             for (auto controlIter = controlsToUpdate.begin(); controlIter != endIter; ++controlIter)
             {
                 ProcessControl(*controlIter);
+                SafeRelease(*controlIter);
             }
 
             controlsToUpdate.clear();
@@ -160,7 +175,7 @@ namespace DAVA
     
     void UIStyleSheetSystem::SetupControlFromCascade(UIControl* control, const UIStyleSheetCascade& cascade)
     {
-        Bitset< STYLE_SHEET_PROPERTY_COUNT > propertiesToSet = cascade.GetPropertySet() &(~control->GetLocalPropertySet());
+        UIStyleSheetPropertySet propertiesToSet = cascade.GetPropertySet() &(~control->GetLocalPropertySet());
 
         for (uint32 propertyIndex = 0; propertyIndex < STYLE_SHEET_PROPERTY_COUNT; ++propertyIndex)
         {
@@ -172,8 +187,20 @@ namespace DAVA
                 switch (descr.owner)
                 {
                 case ePropertyOwner::CONTROL:
-                    descr.inspMember->SetValue(control, *value);
+                {
+                    const InspInfo* typeInfo = control->GetTypeInfo();
+                    do
+                    {
+                        if (typeInfo == descr.typeInfo)
+                        {
+                            descr.inspMember->SetValue(control, *value);
+                            break;
+                        }
+                        typeInfo = typeInfo->BaseInfo();
+                    } while (typeInfo);
+
                     break;
+                }
                 case ePropertyOwner::BACKGROUND:
                     if (control->GetBackgroundComponentsCount() > 0)
                         descr.inspMember->SetValue(control->GetBackgroundComponent(0), *value);

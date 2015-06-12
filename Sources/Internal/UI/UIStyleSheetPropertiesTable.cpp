@@ -76,7 +76,7 @@ namespace DAVA
 
         struct ComponentPropertyRegistrator
         {
-            void operator () (uint32 index, const InspMember* member) const
+            void operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const
             {
                 DVASSERT(STYLE_SHEET_PROPERTY_TABLE[index].owner == ePropertyOwner::COMPONENT || STYLE_SHEET_PROPERTY_TABLE[index].owner == ePropertyOwner::UNKNOWN);
                 STYLE_SHEET_PROPERTY_TABLE[index].owner = ePropertyOwner::COMPONENT;
@@ -88,25 +88,27 @@ namespace DAVA
 
         struct BackgroundPropertyRegistrator
         {
-            void operator () (uint32 index, const InspMember* member) const
+            void operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const
             {
                 DVASSERT(
                     STYLE_SHEET_PROPERTY_TABLE[index].owner == ePropertyOwner::UNKNOWN ||
                     (STYLE_SHEET_PROPERTY_TABLE[index].owner == ePropertyOwner::BACKGROUND && STYLE_SHEET_PROPERTY_TABLE[index].inspMember == member));
                 STYLE_SHEET_PROPERTY_TABLE[index].owner = ePropertyOwner::BACKGROUND;
                 STYLE_SHEET_PROPERTY_TABLE[index].inspMember = member;
+                STYLE_SHEET_PROPERTY_TABLE[index].typeInfo = typeInfo;
             }
         };
 
         struct ControlPropertyRegistrator
         {
-            void operator () (uint32 index, const InspMember* member) const
+            void operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const
             {
                 DVASSERT(
                     STYLE_SHEET_PROPERTY_TABLE[index].owner == ePropertyOwner::UNKNOWN || 
                     (STYLE_SHEET_PROPERTY_TABLE[index].owner == ePropertyOwner::CONTROL && STYLE_SHEET_PROPERTY_TABLE[index].inspMember == member));
                 STYLE_SHEET_PROPERTY_TABLE[index].owner = ePropertyOwner::CONTROL;
                 STYLE_SHEET_PROPERTY_TABLE[index].inspMember = member;
+                STYLE_SHEET_PROPERTY_TABLE[index].typeInfo = typeInfo;
             }
         };
 
@@ -124,7 +126,7 @@ namespace DAVA
                 auto& iter = propertyNameToIndexMap.find(member->GetFastName());
                 if (iter != propertyNameToIndexMap.end())
                 {
-                    callback(iter->second, member);
+                    callback(iter->second, typeInfo, member);
                 }
             }
         }

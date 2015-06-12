@@ -2957,14 +2957,14 @@ namespace DAVA
 
     /* Styles */
 
-    void UIControl::AddClass(FastName clazz)
+    void UIControl::AddClass(const FastName& clazz)
     {
         classes.push_back(clazz);
 
         UIControlSystem::Instance()->GetStyleSheetSystem()->MarkControlForUpdate(this);
     }
 
-    void UIControl::RemoveClass(FastName clazz)
+    void UIControl::RemoveClass(const FastName& clazz)
     {
         auto iter = find(classes.begin(), classes.end(), clazz);
 
@@ -2977,12 +2977,12 @@ namespace DAVA
         }
     }
 
-    bool UIControl::HasClass(FastName clazz)
+    bool UIControl::HasClass(const FastName& clazz)
     {
         return find(classes.begin(), classes.end(), clazz) != classes.end();
     }
 
-    const Bitset< STYLE_SHEET_PROPERTY_COUNT >& UIControl::GetLocalPropertySet() const
+    const UIStyleSheetPropertySet& UIControl::GetLocalPropertySet() const
     {
         return localProperties;
     }

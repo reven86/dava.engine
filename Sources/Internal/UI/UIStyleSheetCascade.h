@@ -45,7 +45,7 @@ namespace DAVA
         UIStyleSheetCascade();
 
         void Clear();
-        void AddStyleSheet(const UIStyleSheet* table);
+        void AddStyleSheet(const UIStyleSheet* styleSheet);
 
         inline const VariantType* GetProperty(uint32 index) const
         {
@@ -54,17 +54,17 @@ namespace DAVA
             {
                 const UIStyleSheet* styleSheet = *styleSheetIter;
 
-                if (const VariantType * prop = styleSheet->GetProperty(index))
+                if (const VariantType * prop = styleSheet->GetPropertyTable()->GetProperty(index))
                     return prop;
             }
             return nullptr;
         }
 
-        const Bitset< STYLE_SHEET_PROPERTY_COUNT >& GetPropertySet() const;
+        const UIStyleSheetPropertySet& GetPropertySet() const;
     private:
         Vector< const UIStyleSheet* > styleSheets;
 
-        Bitset< STYLE_SHEET_PROPERTY_COUNT > propertiesSet;
+        UIStyleSheetPropertySet propertiesSet;
     };
 };
 

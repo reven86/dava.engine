@@ -38,6 +38,7 @@ namespace DAVA
     class UIControlBackground;
     class UIComponent;
     class UIStyleSheet;
+    class UIStyleSheetPackage;
     struct UIStyleSheetSelector;
     class UIStyleSheetCascade;
     class InspInfo;
@@ -49,11 +50,14 @@ namespace DAVA
         ~UIStyleSheetSystem();
 
         void MarkControlForUpdate(UIControl* control);
-        void RegisterStyleSheet(UIStyleSheet* styleSheet);
-        void UnregisterStyleSheet(UIStyleSheet* styleSheet);
+        void RegisterStyleSheetPackage(UIStyleSheetPackage* styleSheetPackage);
+        void UnregisterStyleSheetPackage(UIStyleSheetPackage* styleSheetPackage);
 
         void Process();
     private:
+        void RegisterStyleSheet(UIStyleSheet* styleSheet);
+        void UnregisterStyleSheet(UIStyleSheet* styleSheet);
+
         void ProcessControl(UIControl* control);
         void SortStyleSheets();
         bool StyleSheetMatchesControl(UIStyleSheet* styleSheet, UIControl* control);

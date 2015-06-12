@@ -27,9 +27,11 @@
 =====================================================================================*/
 
 #include "UI/UIStyleSheetYamlLoader.h"
+#include "UI/UIStyleSheetPackage.h"
 #include "UI/UIStyleSheet.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
+#include "Utils/Utils.h"
 
 namespace DAVA
 {
@@ -64,10 +66,13 @@ namespace DAVA
                 {
                     if ((*selectorStr) == ' ')
                     {
-                        SwitchState(SELECTOR_STATE_CONTROL_CLASS_NAME);
-                        selectorChain.push_back(currentSelector);
-                        currentSelector.Clear();
-
+                        FinishProcessingCurrentSelector();
+                        while (*(selectorStr + 1) == ' ') ++selectorStr;
+                    }
+                    else if ((*selectorStr) == '?')
+                    {
+                        FinishProcessingCurrentSelector();
+                        selectorChain.push_back(UIStyleSheetSelector());
                         while (*(selectorStr + 1) == ' ') ++selectorStr;
                     }
                     else if ((*selectorStr) == '.')
@@ -78,6 +83,10 @@ namespace DAVA
                     {
                         SwitchState(SELECTOR_STATE_NAME);
                     }
+                    else if ((*selectorStr) == '*')
+                    {
+                        SwitchState(SELECTOR_STATE_NAME);
+                    }
                     else
                     {
                         currentToken += *selectorStr;
@@ -85,8 +94,7 @@ namespace DAVA
 
                     ++selectorStr;
                 }
-                SwitchState(SELECTOR_STATE_NONE);
-                selectorChain.push_back(currentSelector);
+                FinishProcessingCurrentSelector();
             }
         private:
             DAVA::String currentToken;
@@ -94,6 +102,14 @@ namespace DAVA
             UIStyleSheetSelector currentSelector;
 
             DAVA::Vector< UIStyleSheetSelector >& selectorChain;
+
+            void FinishProcessingCurrentSelector()
+            {
+                SwitchState(SELECTOR_STATE_CONTROL_CLASS_NAME);
+                if (!currentSelector.controlClassName.empty() || currentSelector.name.IsValid() || !currentSelector.classes.empty())
+                    selectorChain.push_back(currentSelector);
+                currentSelector.Clear();
+            }
 
             void SwitchState(SelectorParserState newState)
             {
@@ -123,34 +139,29 @@ namespace DAVA
 
     }
 
-    void UIStyleSheetYamlLoader::LoadFromYaml(const FilePath& path, DAVA::Vector< UIStyleSheet* >& styleSheets)
+    UIStyleSheetPackage* UIStyleSheetYamlLoader::LoadFromYaml(const FilePath& path)
     {
         RefPtr<YamlParser> parser(YamlParser::Create(path));
 
         if (parser.Get() == nullptr)
-            return;
+            return nullptr;
 
         YamlNode* rootNode = parser->GetRootNode();
         if (rootNode)
-            LoadFromYaml(rootNode, styleSheets);
+            return LoadFromYaml(rootNode);
+
+        return nullptr;
     }
 
-    void UIStyleSheetYamlLoader::LoadFromYaml(const YamlNode* rootNode, DAVA::Vector< UIStyleSheet* >& styleSheets)
+    UIStyleSheetPackage* UIStyleSheetYamlLoader::LoadFromYaml(const YamlNode* rootNode)
     {
+        UIStyleSheetPackage* package = new UIStyleSheetPackage();
+
         const MultiMap<String, YamlNode*> &styleSheetMap = rootNode->AsMap();
 
         for (auto styleSheetIter = styleSheetMap.begin(); styleSheetIter != styleSheetMap.end(); ++styleSheetIter)
         {
-            UIStyleSheet* styleSheet = new UIStyleSheet();
-
-            const DAVA::String& selectorString = styleSheetIter->first;
-
-            DAVA::Vector< UIStyleSheetSelector > selectorChain;
-
-            SelectorParser parser(selectorChain);
-            parser.Parse(selectorString.c_str());
-            styleSheet->SetSelectorChain(selectorChain);
-
+            ScopedPtr< UIStyleSheetPropertyTable > propertyTable(new UIStyleSheetPropertyTable());
             const MultiMap<String, YamlNode*> &propertiesMap = styleSheetIter->second->AsMap();
             for (const auto& propertyIter : propertiesMap)
             {
@@ -160,17 +171,34 @@ namespace DAVA
                 {
                 case ePropertyOwner::CONTROL:
                 case ePropertyOwner::BACKGROUND:
-                    styleSheet->SetProperty(index, propertyIter.second->AsVariantType(propertyDescr.inspMember));
+                    propertyTable->SetProperty(index, propertyIter.second->AsVariantType(propertyDescr.inspMember));
                     break;
                 case ePropertyOwner::COMPONENT:
-                    styleSheet->SetProperty(index, propertyIter.second->AsVariantType(propertyDescr.targetComponents[0].second));
+                    propertyTable->SetProperty(index, propertyIter.second->AsVariantType(propertyDescr.targetComponents[0].second));
                     break;
                 default:
                     DVASSERT(false);
                 }
             }
 
-            styleSheets.push_back(styleSheet);
+            Vector< String > selectorList;
+            Split(styleSheetIter->first, ",", selectorList);
+
+            for (const String& selectorString : selectorList)
+            {
+                ScopedPtr<UIStyleSheet> styleSheet(new UIStyleSheet());
+
+                DAVA::Vector< UIStyleSheetSelector > selectorChain;
+                SelectorParser parser(selectorChain);
+                parser.Parse(selectorString.c_str());
+
+                styleSheet->SetSelectorChain(selectorChain);
+                styleSheet->SetPropertyTable(propertyTable);
+
+                package->AddStyleSheet(styleSheet);
+            }
         }
+
+        return package;
     }
 }

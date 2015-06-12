@@ -49,6 +49,7 @@ namespace DAVA
         FastName name;
         VariantType::eVariantType type;
         ePropertyOwner owner;
+        const InspInfo* typeInfo;
         const InspMember* inspMember;
         DAVA::Vector< std::pair< uint32, const InspMember* > > targetComponents;
     };
@@ -59,6 +60,8 @@ namespace DAVA
     uint32 GetStyleSheetPropertyIndex(const FastName& name);
     bool IsValidStyleSheetPropertyIndex(const FastName& name);
     const UIStyleSheetPropertyDescriptor& GetStyleSheetPropertyByIndex(uint32 index);
+
+    typedef Bitset< STYLE_SHEET_PROPERTY_COUNT > UIStyleSheetPropertySet;
 };
 
 
