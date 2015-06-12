@@ -88,6 +88,25 @@
 
     delete unittest;
 
+ ==============================================================================================================
+
+ Also you can declare custom base class for your test class using DAVA_TESTCLASS_CUSTOM_BASE macro. Base class should be derived from
+ DAVA::UnitTests::TestClass and have default constructor.
+
+ class MyBaseTestClass : public DAVA::UnitTests::TestClass
+ {
+ public:
+    int CalcSomethingUseful(int param) { return 1 * 42; }
+ };
+
+ DAVA_TESTCLASS_CUSTOM_BASE(MyTestClass, MyBaseTestClass)
+ {
+    DAVA_TEST(Test1)
+    {
+        TEST_VERIFY(CalcSomethingUseful(1) == 42);
+    }
+ };
+
 ******************************************************************************************/
 
 #define DAVA_TESTCLASS(classname)                                                                                                               \
@@ -96,10 +115,21 @@
     {                                                                                                                                           \
         testclass_ ## classname ## _registrar()                                                                                                 \
         {                                                                                                                                       \
-            DAVA::UnitTests::TestCore::Instance()->RegisterTestClass(#classname, new DAVA::UnitTests::TestClassFactoryImpl<classname>);  \
+            DAVA::UnitTests::TestCore::Instance()->RegisterTestClass(#classname, new DAVA::UnitTests::TestClassFactoryImpl<classname>);         \
         }                                                                                                                                       \
     } testclass_ ## classname ## _registrar_instance;                                                                                           \
     struct classname : public DAVA::UnitTests::TestClass, public DAVA::UnitTests::TestClassTypeKeeper<classname>
+
+#define DAVA_TESTCLASS_CUSTOM_BASE(classname, base_classname)                                                                                   \
+    struct classname;                                                                                                                           \
+    static struct testclass_ ## classname ## _registrar                                                                                         \
+    {                                                                                                                                           \
+        testclass_ ## classname ## _registrar()                                                                                                 \
+        {                                                                                                                                       \
+            DAVA::UnitTests::TestCore::Instance()->RegisterTestClass(#classname, new DAVA::UnitTests::TestClassFactoryImpl<classname>);         \
+        }                                                                                                                                       \
+    } testclass_ ## classname ## _registrar_instance;                                                                                           \
+    struct classname : public base_classname, public DAVA::UnitTests::TestClassTypeKeeper<classname>
 
 #define DAVA_TEST(testname)                                                                                             \
     struct test_ ## testname ## _registrar {                                                                            \
