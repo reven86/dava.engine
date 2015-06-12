@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__SAVEENTITYASACTION__
 #define __RESOURCEEDITORQT__SAVEENTITYASACTION__
 

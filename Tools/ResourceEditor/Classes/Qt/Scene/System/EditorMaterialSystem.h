@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __EDITOR_MATERIAL_SYSTEM_H__
 #define __EDITOR_MATERIAL_SYSTEM_H__
 

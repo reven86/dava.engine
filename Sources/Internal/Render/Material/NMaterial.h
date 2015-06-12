@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __DAVAENGINE_NMATERIAL_H__
 #define __DAVAENGINE_NMATERIAL_H__
 
@@ -169,8 +170,7 @@ class NMaterial : public DataNode
     friend class NMaterialStateDynamicPropertiesInsp;
 	
 public:
-	
-	typedef uint64 NMaterialKey;
+    using NMaterialKey = uint64;
 
     static const FastName TEXTURE_ALBEDO;
     static const FastName TEXTURE_NORMAL;

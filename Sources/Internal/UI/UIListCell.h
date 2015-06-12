@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_UI_LIST_CELL_H__
 #define __DAVAENGINE_UI_LIST_CELL_H__
 

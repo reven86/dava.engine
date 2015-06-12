@@ -96,6 +96,7 @@ public:
     
 	virtual void	RemoveNode(Entity * node);
     virtual int32   GetChildrenCountRecursive() const;
+    virtual bool    IsMyChildRecursive(const Entity* child) const;
 	virtual void	RemoveAllChildren();
 	virtual Entity*	GetNextChild(Entity *child);
 

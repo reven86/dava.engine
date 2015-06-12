@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "ImageSystem.h"
 
 #include "FileSystem/File.h"
@@ -68,7 +69,7 @@ eErrorCode ImageSystem::Load(const FilePath & pathname, Vector<Image *> & imageS
     File *fileRead = File::Create(pathname, File::READ | File::OPEN);
     if (nullptr == fileRead)
     {
-        return ERROR_FILE_NOTFOUND;
+        return eErrorCode::ERROR_FILE_NOTFOUND;
     }
 
     eErrorCode result = Load(fileRead, imageSet, baseMipmap);
@@ -89,7 +90,7 @@ eErrorCode ImageSystem::Load(File *file, Vector<Image *> & imageSet, int32 baseM
 
     if (nullptr == properWrapper || !properWrapper->IsMyImage(file))
     {
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     return properWrapper->ReadFile(file, imageSet, baseMipmap);
@@ -131,7 +132,7 @@ eErrorCode ImageSystem::SaveAsCubeMap(const FilePath & fileName, const Vector<Ve
     ImageFormatInterface* properWrapper = GetImageFormatInterface(fileName);
     if (nullptr == properWrapper)
     {
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     return properWrapper->WriteFileAsCubeMap(fileName, imageSet, compressionFormat);
@@ -142,7 +143,7 @@ eErrorCode ImageSystem::Save(const FilePath & fileName, const Vector<Image *> &i
     ImageFormatInterface* properWrapper = GetImageFormatInterface(fileName);
     if (nullptr == properWrapper)
     {
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     return properWrapper->WriteFile(fileName, imageSet, compressionFormat);
@@ -152,7 +153,7 @@ eErrorCode ImageSystem::Save(const FilePath & fileName, Image *image, PixelForma
 {
     if (nullptr == image)
     {
-        return ERROR_WRITE_FAIL;
+        return eErrorCode::ERROR_WRITE_FAIL;
     }
     Vector<Image*> imageSet;
     imageSet.push_back(image);

@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #ifndef __UIEditor__UISpinnerMetadata__
 #define __UIEditor__UISpinnerMetadata__
 

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugQt|Win32">
@@ -276,6 +276,7 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Meta.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Observable.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Observer.h" />
+    <ClInclude Include="..\..\Sources\Internal\Base\Platform.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Radix\Radix.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\ScopedPtr.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Serializable.h" />
@@ -746,6 +747,10 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIWebView.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIYamlLoader.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\VectorSpinnerAdapter.h" />
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClass.h" />
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClassFactory.h" />
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\TestCore.h" />
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\UnitTests.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\BiDiHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\CRC32.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\HTTPDownloader.h" />
@@ -1233,6 +1238,7 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UITextField.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIWebView.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIYamlLoader.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UnitTests\TestCore.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\BiDiHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\CRC32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\MD5.cpp" />

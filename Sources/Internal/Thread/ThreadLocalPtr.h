@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __DAVAENGINE_THREADLOCALPTR_H__
 #define __DAVAENGINE_THREADLOCALPTR_H__
 
@@ -60,7 +61,7 @@ namespace DAVA
 template<typename T>
 class ThreadLocalPtr final
 {
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
     using KeyType = DWORD;
 #elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     using KeyType = pthread_key_t;
@@ -175,7 +176,7 @@ void ThreadLocalPtr<T>::DefaultDeleter(T* ptr) DAVA_NOEXCEPT
 }
 
 // Win32 implementation
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 
 template<typename T>
 inline void ThreadLocalPtr<T>::CreateTlsKey() DAVA_NOEXCEPT

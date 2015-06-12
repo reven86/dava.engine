@@ -1,9 +1,9 @@
 /*==================================================================================
-	Copyright (c) 2008, binaryzebra
-	All rights reserved.
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
 
-	Redistribution and use in source and binary forms, with or without
-	modification, are permitted provided that the following conditions are met:
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
@@ -228,6 +228,11 @@ const String FILL_MODE_NAMES[FILLMODE_COUNT] =
 	"FILLMODE_WIREFRAME",
 	"FILLMODE_SOLID"
 };
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
+//FILLMODE_MAP is not implemented for WinStore (OpenGL ES with ANGLE)
+#endif
 
 #if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__))
 const GLint FILLMODE_MAP[FILLMODE_COUNT] =

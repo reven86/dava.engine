@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_LOCAL_NOTIFICATION_H__
 #define __DAVAENGINE_LOCAL_NOTIFICATION_H__
 

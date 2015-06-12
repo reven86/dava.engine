@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __PARTICLE_EFFECT_COMPONENT_H__
 #define __PARTICLE_EFFECT_COMPONENT_H__
 

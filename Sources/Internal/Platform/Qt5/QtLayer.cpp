@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Platform/Qt5/QtLayer.h"
 
 #include "Render/RenderManager.h"
@@ -165,7 +164,7 @@ void QtLayer::KeyPressed(char16 key, int32 count, uint64 timestamp)
     UIEvent ev;
     ev.keyChar = 0;
     ev.phase = UIEvent::PHASE_KEYCHAR;
-    ev.timestamp = timestamp;
+    ev.timestamp = static_cast<float64>(timestamp);
     ev.tapCount = 1;
     ev.tid = key;
     

@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "DAVAClassRegistrator.h"
 
 #include "FileSystem/FileSystem.h"
@@ -165,7 +166,6 @@ void Core::CreateSingletons()
     DeviceInfo::InitializeScreenInfo();
     
     RegisterDAVAClasses();
-    CheckDataTypeSizes();
 
     new Net::NetCore();
 
@@ -251,24 +251,6 @@ void Core::SetOptions(KeyedArchive * archiveOfOptions)
 #endif
 }
     
-void Core::CheckDataTypeSizes()
-{
-    CheckType(int8(), 8, "int8");
-    CheckType(uint8(), 8, "uint8");
-    CheckType(int16(), 16, "int16");
-    CheckType(uint16(), 16, "uint16");
-    CheckType(int32(), 32, "int32");
-    CheckType(uint32(), 32, "uint32");
-}
-
-template <class T> void Core::CheckType(T t, int32 expectedSize, const char * typeString)
-{
-    if ((sizeof(t) * 8) != expectedSize)
-    {
-        Logger::Error("Size of %s is incorrect. Expected size: %d. Platform size: %d", typeString, expectedSize, sizeof(t));
-    }
-}
-
 KeyedArchive * Core::GetOptions()
 {
 	return options;
@@ -523,7 +505,11 @@ void Core::SystemProcessFrame()
 		JobManager::Instance()->Update();
 
         // Poll for network I/O events here
+#ifndef __DAVAENGINE_WIN_UAP__
         Net::NetCore::Instance()->Poll();
+#else
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
+#endif
 
 		core->Update(frameDelta);
         InputSystem::Instance()->OnAfterUpdate();
@@ -586,9 +572,19 @@ void Core::SetCommandLine(const DAVA::String& cmdLine)
 {
     commandLine.clear();
     Split(cmdLine, " ", commandLine);
+
+    //remove "quotes"
+    for (auto& arg : commandLine)
+    {
+        const char quote = '\"';
+        if (arg.front() == quote && arg.back() == quote)
+        {
+            arg = arg.substr(1, arg.size() - 2);
+        }
+    }
 }
 
-Vector<String> & Core::GetCommandLine()
+const Vector<String> & Core::GetCommandLine()
 {
 	return commandLine;
 }
@@ -608,12 +604,12 @@ void Core::SetIsActive(bool _isActive)
 	isActive = _isActive;
 }
 
-#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)    
+#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__)    
 Core::eDeviceFamily Core::GetDeviceFamily()
 {
     return DEVICE_DESKTOP;
 }
-#endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
+#endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__)
     
 uint32 Core::GetScreenDPI()
 {

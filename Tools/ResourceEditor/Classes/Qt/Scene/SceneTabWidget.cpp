@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "Scene/SceneTabWidget.h"
 
 #include "Main/Request.h"
@@ -101,8 +102,17 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
     {
         if ( curScene == nullptr )
             return;
+        const auto moveCamera = SettingsManager::GetValue( Settings::General_Mouse_WheelMoveCamera ).AsBool();
+        if ( !moveCamera )
+            return;
+
         const auto reverse = SettingsManager::GetValue( Settings::General_Mouse_InvertWheel ).AsBool() ? -1 : 1;
+#ifdef Q_OS_MAC
+        ofs *= reverse * -1;
+#else
         ofs *= reverse;
+#endif
+
         curScene->cameraSystem->MoveToStep( ofs );
     };
     connect( davaWidget->GetGLWindow(), &OpenGLWindow::mouseScrolled, mouseWheelHandler );
@@ -113,7 +123,7 @@ SceneTabWidget::SceneTabWidget(QWidget *parent)
             return;
         curScene->cameraSystem->MoveToSelection();
     };
-    auto moveToSelectionHandlerHotkey = new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_X ), this );
+    auto moveToSelectionHandlerHotkey = new QShortcut( QKeySequence( Qt::CTRL + Qt::Key_D ), this );
     connect( moveToSelectionHandlerHotkey, &QShortcut::activated, moveToSelectionHandler );
 }
 
