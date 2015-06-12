@@ -57,8 +57,7 @@ void ViewSceneScreen::LoadResources()
     ScopedPtr<Camera> camera(new Camera());
     
     VirtualCoordinatesSystem* vcs = DAVA::VirtualCoordinatesSystem::Instance();
-	float32 aspect = (float32)vcs->GetVirtualScreenSize().dy / (float32)vcs->GetVirtualScreenSize().dx;
-    
+	float32 aspect = (float32)vcs->GetVirtualScreenSize().dy / (float32)vcs->GetVirtualScreenSize().dx;    
 	camera->SetupPerspective(70.f, aspect, 0.5f, 2500.f);
 	camera->SetLeft(Vector3(1, 0, 0));
 	camera->SetUp(Vector3(0, 0, 1.f));

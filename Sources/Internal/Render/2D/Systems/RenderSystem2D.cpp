@@ -395,11 +395,11 @@ void RenderSystem2D::Setup2DProjection()
     {
         projMatrix.glOrtho(0.0f, (float32)renderTargetWidth,
                            0.0f, (float32)renderTargetHeight,
-                          -1.0f, 1.0f);
+                           -1.0f, 1.0f, Renderer::GetCaps().zeroBaseClipRange);
     }
     else
     {
-        projMatrix.glOrtho(0.0f, (float32)Renderer::GetFramebufferWidth(), (float32)Renderer::GetFramebufferHeight(), 0.0f, -1.0f, 1.0f);
+        projMatrix.glOrtho(0.0f, (float32)Renderer::GetFramebufferWidth(), (float32)Renderer::GetFramebufferHeight(), 0.0f, -1.0f, 1.0f, Renderer::GetCaps().zeroBaseClipRange);
     }
 
     projMatrix = virtualToPhysicalMatrix * projMatrix;

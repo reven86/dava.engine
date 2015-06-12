@@ -56,6 +56,8 @@ namespace //for private variables
     ScreenShotCallbackDelegate * screenshotCallback = nullptr;
 }
 
+void InitCaps();
+
 void Initialize(rhi::Api _api, const rhi::InitParam & params, int32 width, int32 height)
 {
     DVASSERT(!ininialized);
@@ -71,9 +73,18 @@ void Initialize(rhi::Api _api, const rhi::InitParam & params, int32 width, int32
     FXCache::Initialize();
     PixelFormatDescriptor::InitializePixelFormatDescriptors();
     GPUFamilyDescriptor::SetupGPUParameters();
-    
+           
+    InitCaps();
     ininialized = true;
 }
+
+
+void InitCaps()
+{
+    renderCaps.zeroBaseClipRange = (api == rhi::RHI_DX9) || (api == rhi::RHI_DX11);
+    renderCaps.upperLeftRTOrigin = (api == rhi::RHI_DX9) || (api == rhi::RHI_DX11);
+}
+
 void Uninitialize()
 {
     DVASSERT(ininialized);

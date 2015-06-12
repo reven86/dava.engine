@@ -41,8 +41,10 @@ using DAVA::uint8;
 using DAVA::uint16;
 using DAVA::uint32;
 using DAVA::uint64;
+using DAVA::int32;
 using DAVA::float32;
 using DAVA::Size2i;
+
 
 typedef uint32 Handle;
 static const uint32 InvalidHandle = 0;
@@ -711,10 +713,12 @@ RenderPassConfig
     Viewport            viewport;
 
     int                 priority;
+    uint32              invertCulling:1;
                         
                         RenderPassConfig()
                           : queryBuffer(InvalidHandle),
-                            priority(0)
+                            priority(0),
+							invertCulling(0)
                         {}
 };
 
