@@ -53,8 +53,8 @@ class TestCore final
     };
 
 public:
-    using TestStartedCallback  = Function<void (const String&)>;
-    using TestFinishedCallback = Function<void (const String&)>;
+    using TestStartedCallback  = Function<void (const String&, const String&)>;
+    using TestFinishedCallback = Function<void (const String&, const String&)>;
     using TestFailedCallback = Function<void (const String&, const String&, const String&, const char*, int, const String&)>;
 
 public:
@@ -66,6 +66,8 @@ public:
     void Init(TestStartedCallback testStartedCallback, TestFinishedCallback testFinishedCallback, TestFailedCallback testFailedCallback);
 
     void RunOnlyThisTest(const String& testClassName);
+
+    void SetPerTestProgress(bool value);
 
     bool HasTests() const;
 
@@ -86,12 +88,23 @@ private:
     String curTestName;
     size_t curTestClassIndex = 0;
     size_t curTestIndex = 0;
+    bool runLoopInProgress = false;
     bool testSetUpInvoked = false;
+    bool perTestProgress = false;
 
     TestStartedCallback testStartedCallback;
     TestFinishedCallback testFinishedCallback;
     TestFailedCallback testFailedCallback;
 };
+
+//////////////////////////////////////////////////////////////////////////
+inline void TestCore::SetPerTestProgress(bool value)
+{
+    if (!runLoopInProgress)
+    {
+        perTestProgress = value;
+    }
+}
 
 }   // namespace UnitTests
 }   // namespace DAVA

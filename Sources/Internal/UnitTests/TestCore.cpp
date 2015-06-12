@@ -79,6 +79,7 @@ bool TestCore::HasTests() const
 
 bool TestCore::ProcessTests(float32 timeElapsed)
 {
+    runLoopInProgress = true;
     const size_t testClassCount = testClasses.size();
     if (curTestClassIndex < testClassCount)
     {
@@ -89,7 +90,10 @@ bool TestCore::ProcessTests(float32 timeElapsed)
             if (runOnlyThisTest.empty() || curTestClassName == runOnlyThisTest)
             {
                 curTestClass = testClasInfo.factory->CreateTestClass();
-                testStartedCallback(curTestClassName);
+                if (!perTestProgress)
+                {
+                    testStartedCallback(curTestClassName, "");
+                }
             }
             else
             {
@@ -104,6 +108,10 @@ bool TestCore::ProcessTests(float32 timeElapsed)
                 if (!testSetUpInvoked)
                 {
                     curTestName = curTestClass->TestName(curTestIndex);
+                    if (perTestProgress)
+                    {
+                        testStartedCallback(curTestClassName, curTestName);
+                    }
                     curTestClass->SetUp(curTestName);
                     testSetUpInvoked = true;
                 }
@@ -113,6 +121,10 @@ bool TestCore::ProcessTests(float32 timeElapsed)
                 {
                     testSetUpInvoked = false;
                     curTestClass->TearDown(curTestName);
+                    if (perTestProgress)
+                    {
+                        testFinishedCallback(curTestClassName, curTestName);
+                    }
                     curTestIndex += 1;
                 }
                 else
@@ -122,7 +134,10 @@ bool TestCore::ProcessTests(float32 timeElapsed)
             }
             else
             {
-                testFinishedCallback(curTestClassName);
+                if (!perTestProgress)
+                {
+                    testFinishedCallback(curTestClassName, "");
+                }
 
                 SafeDelete(curTestClass);
                 curTestIndex = 0;
@@ -133,6 +148,7 @@ bool TestCore::ProcessTests(float32 timeElapsed)
     }
     else
     {
+        runLoopInProgress = false;
         return false;   // No more tests, finish
     }
 }
