@@ -36,37 +36,44 @@ using namespace DAVA;
 class NotificationScreen : public BaseScreen
 {
 public:
-	NotificationScreen();
+    NotificationScreen();
 protected:
-	~NotificationScreen() {}
+    ~NotificationScreen() {}
 public:
-	void LoadResources() override;
-	void UnloadResources() override;
+    void LoadResources() override;
+    void UnloadResources() override;
 
-	void Update(float32 timeElapsed) override;
-	void Draw(const UIGeometricData &geometricData) override;
+    void Update(float32 timeElapsed) override;
+    void Draw(const UIGeometricData &geometricData) override;
 
-	void UpdateNotification();
+    void UpdateNotification();
 
-private:
-	void OnNotifyText(BaseObject *obj, void *data, void *callerData);
-	void OnHideText(BaseObject *obj, void *data, void *callerData);
-	void OnNotifyProgress(BaseObject *obj, void *data, void *callerData);
-	void OnHideProgress(BaseObject *obj, void *data, void *callerData);
+    void SystemScreenSizeDidChanged(const Rect &newFullScreenSize) override
+    {
+        UnloadResources();
+        LoadResources();
+    }
 
-	void OnNotificationTextPressed(BaseObject *obj, void *data, void *callerData);
-	void OnNotificationProgressPressed(BaseObject *obj, void *data, void *callerData);
 
 private:
-	UIButton *showNotificationText;
-	UIButton *hideNotificationText;
-	UIButton *showNotificationProgress;
-	UIButton *hideNotificationProgress;
+    void OnNotifyText(BaseObject *obj, void *data, void *callerData);
+    void OnHideText(BaseObject *obj, void *data, void *callerData);
+    void OnNotifyProgress(BaseObject *obj, void *data, void *callerData);
+    void OnHideProgress(BaseObject *obj, void *data, void *callerData);
 
-	LocalNotificationProgress *notificationProgress;
-	LocalNotificationText *notificationText;
+    void OnNotificationTextPressed(BaseObject *obj, void *data, void *callerData);
+    void OnNotificationProgressPressed(BaseObject *obj, void *data, void *callerData);
 
-	uint32 progress;
+private:
+    UIButton *showNotificationText;
+    UIButton *hideNotificationText;
+    UIButton *showNotificationProgress;
+    UIButton *hideNotificationProgress;
+
+    LocalNotificationProgress *notificationProgress;
+    LocalNotificationText *notificationText;
+
+    uint32 progress;
 };
 
 #endif
