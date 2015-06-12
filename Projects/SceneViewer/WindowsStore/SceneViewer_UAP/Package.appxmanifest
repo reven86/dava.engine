@@ -14,7 +14,7 @@
   <mp:PhoneIdentity PhoneProductId="09abd972-ce4d-42dc-80a3-3377f4d62dee" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>Scene_Viewer_UAP</DisplayName>
+    <DisplayName>SceneViewer_UAP</DisplayName>
     <PublisherDisplayName>a_derkach2</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>

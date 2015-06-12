@@ -52,8 +52,8 @@ Projects/UnitTests/android/.settings/*
 AppPackages
 
 !/Libs/lib_CMake/win10/x86/Debug
-!/Libs/lib_CMake/win10/x86/Relese
+!/Libs/lib_CMake/win10/x86/Release
 !/Libs/lib_CMake/win10/x64/Debug
-!/Libs/lib_CMake/win10/x64/Relese
+!/Libs/lib_CMake/win10/x64/Release
 !/Libs/lib_CMake/win10/arm/Debug
-!/Libs/lib_CMake/win10/arm/Relese
+!/Libs/lib_CMake/win10/arm/Release
