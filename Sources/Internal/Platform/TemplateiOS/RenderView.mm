@@ -117,7 +117,7 @@ static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
         if ([currSysVer compare:reqSysVer options:NSNumericSearch] != NSOrderedAscending)
             displayLinkSupported = TRUE;
         
-        DAVA::Logger::Debug("OpenGL ES View Created successfully. displayLink: %d", (int)displayLinkSupported);
+        DAVA::Logger::Debug("RenderView Created successfully. displayLink: %d", (int)displayLinkSupported);
     }
 
     return self;
