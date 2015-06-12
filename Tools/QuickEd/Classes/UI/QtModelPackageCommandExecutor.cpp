@@ -185,6 +185,33 @@ void QtModelPackageCommandExecutor::InsertControl(ControlNode *control, Controls
     }
 }
 
+void QtModelPackageCommandExecutor::InsertInstances(const DAVA::Vector<ControlNode*> &controls, ControlsContainerNode *dest, DAVA::int32 destIndex)
+{
+    Vector<ControlNode*> nodesToInsert;
+    for (ControlNode *node : controls)
+    {
+        if (node->CanCopy() && dest->CanInsertControl(node, destIndex))
+            nodesToInsert.push_back(node);
+    }
+    
+    if (!nodesToInsert.empty())
+    {
+        BeginMacro(Format("Instance Controls %s", FormatControlNames(nodesToInsert).c_str()).c_str());
+        
+        int index = destIndex;
+        for (ControlNode *node : nodesToInsert)
+        {
+            ControlNode *copy = ControlNode::CreateFromPrototype(node);
+            InsertControlImpl(copy, dest, index);
+            SafeRelease(copy);
+            index++;
+        }
+        
+        EndMacro();
+    }
+
+}
+
 void QtModelPackageCommandExecutor::CopyControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex)
 {
     Vector<ControlNode*> nodesToCopy;

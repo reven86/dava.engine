@@ -237,7 +237,7 @@ Qt::ItemFlags PackageModel::flags(const QModelIndex &index) const
 
 Qt::DropActions PackageModel::supportedDropActions() const
 {
-    return Qt::CopyAction | Qt::MoveAction;
+    return Qt::CopyAction | Qt::MoveAction | Qt::LinkAction;
 }
 
 QStringList PackageModel::mimeTypes() const
@@ -303,9 +303,11 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
             commandExecutor->CopyControls(srcNodes, parentNode, rowIndex);
         else if (action == Qt::MoveAction)
             commandExecutor->MoveControls(srcNodes, parentNode, rowIndex);
+        else if (action == Qt::LinkAction)
+            commandExecutor->InsertInstances(srcNodes, parentNode, rowIndex);
         else
             return false;
-        
+
         return true;
     }
     else if (data->hasFormat("text/uri-list") && data->hasText())
