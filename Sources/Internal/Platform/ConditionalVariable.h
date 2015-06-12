@@ -26,21 +26,32 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __DAVAENGINE_ALLOCTHUNK_H__
-#define __DAVAENGINE_ALLOCTHUNK_H__
+#ifndef __DAVAENGINE_CONDITIONALVARIABLE_H__
+#define __DAVAENGINE_CONDITIONALVARIABLE_H__
 
 #include "Base/BaseTypes.h"
 
-#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+#if defined (__DAVAENGINE_WIN32__)
+#   include "Platform/TemplateWin32/pThreadWin32.h"
+#elif defined(__DAVAENGINE_PTHREAD__)
+#   include <pthread.h>
+#endif
 
 namespace DAVA
 {
 
-void* AllocThunk(size_t size, size_t poolIndex);
-void DeallocThunk(void* ptr);
+class ConditionalVariable final
+{
+    friend class Thread;
 
-}   // namespace DAVA
+public:
+    ConditionalVariable();
+    ~ConditionalVariable();
 
-#endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
-#endif  // __DAVAENGINE_ALLOCTHUNK_H__
+private:
+    pthread_cond_t cv;
+};
+
+}
+
+#endif  // __DAVAENGINE_CONDITIONALVARIABLE_H__

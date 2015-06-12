@@ -26,27 +26,30 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/BaseTypes.h"
 
-#pragma once
-#include <QStyledItemDelegate>
-class MemoryItemStyleDelegate : public QStyledItemDelegate
+using namespace DAVA;
+
+String FormatNumberWithDigitGroups(uint32 value)
 {
-    Q_OBJECT
-public:
-    MemoryItemStyleDelegate(QWidget *parent = 0) : QStyledItemDelegate(parent) {}
+    char buf[32];
+    int n = Snprintf(buf, COUNT_OF(buf), "%u", value);
+    int g = n / 3 - ((n % 3) == 0);
 
-    void paint(QPainter *painter, const QStyleOptionViewItem &option,
-        const QModelIndex &index) const override;
-    QSize sizeHint(const QStyleOptionViewItem &option,
-        const QModelIndex &index) const override;
-    
-
-    ~MemoryItemStyleDelegate();
-
-public slots:
-    void commitAndCloseEditor();
-
-
-
-};
-
+    int from = n - 1;
+    int to = from + g;
+    buf[to + 1] = '\0';
+    while (g > 0)
+    {
+        for (int j = 0;j < 3;++j)
+        {
+            buf[to] = buf[from];
+            to -= 1;
+            from -= 1;
+        }
+        buf[to] = ' ';
+        to -= 1;
+        g -= 1;
+    }
+    return String(buf);
+}

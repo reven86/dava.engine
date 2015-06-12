@@ -26,74 +26,71 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "SnapshotListModel.h"
 
-#ifndef __DAVAENGINE_MMNETSERVER_H__
-#define __DAVAENGINE_MMNETSERVER_H__
+#include "../ProfilingSession.h"
 
-#include "Base/BaseTypes.h"
+using namespace DAVA;
 
-#include "Network/NetService.h"
-#include "MemoryManager/MemoryManagerTypes.h"
-#include "MMNetProto.h"
+SnapshotListModel::SnapshotListModel(QObject* parent)
+    : QAbstractListModel(parent)
+{}
 
-namespace DAVA
+SnapshotListModel::~SnapshotListModel()
+{}
+
+int SnapshotListModel::rowCount(const QModelIndex& parent) const
 {
+    return profileSession != nullptr ? static_cast<int>(profileSession->SnapshotCount())
+                                     : 0;
+}
 
-class DynamicMemoryFile;
-
-namespace Net
+QVariant SnapshotListModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-
-class MMNetServer : public NetService
-{
-    struct Parcel
+    if (Qt::DisplayRole == role)
     {
-        size_t size;
-        size_t nsent;
-        size_t chunk;
-        void* buffer;
-    };
+        if (Qt::Horizontal == orientation)
+        {
+            return QVariant("Memory snapshots");
+        }
+        else
+        {
+            return QVariant(section + 1);
+        }
+    }
+    return QVariant();
+}
 
-    static const size_t CHUNK_SIZE = 60 * 1024;
+QVariant SnapshotListModel::data(const QModelIndex& index, int role) const
+{
+    if (index.isValid() && profileSession != nullptr)
+    {
+        int row = index.row();
+        const MemorySnapshot& snapshot = profileSession->Snapshot(row);
+        if (Qt::DisplayRole == role)
+        {
+            String filename = snapshot.FileName().GetFilename();
+            return QString("%1 - %2")
+                .arg(snapshot.Timestamp() / 1000)
+                .arg(filename.c_str());
+        }
+        else if (Qt::BackgroundRole == role)
+        {
+            // TODO: maybe colorize loaded snapshots
+        }
+    }
+    return QVariant();
+}
 
-public:
-    MMNetServer();
-    virtual ~MMNetServer();
+void SnapshotListModel::BeginNewProfileSession(ProfilingSession* profSession)
+{
+    beginResetModel();
+    profileSession = profSession;
+    endResetModel();
+}
 
-    void Update(float32 timeElapsed);
-
-    // Overriden methods from NetService
-    void ChannelOpen() override;
-    void ChannelClosed(const char8* message) override;
-    void PacketReceived(const void* packet, size_t length) override;
-    void PacketDelivered() override;
-    
-private:
-    void ProcessInitCommunication(const MMProtoHeader* hdr, const void* packet, size_t length);
-    void ProcessDump(const MMProtoHeader* hdr, const void* packet, size_t length);
-    void SendMemoryStat();
-
-    Parcel CreateParcel(size_t parcelSize);
-    Parcel CreateParcel(size_t parcelSize, void* buf);
-    void DestroyParcel(Parcel parcel);
-    void EnqueueAndSend(Parcel parcel);
-
-    static void DumpRequestCallback(void* arg, int32 type, uint32 tagOrCheckpoint, uint32 blockBegin, uint32 blockEnd);
-    void OnDumpRequest(int32 type, uint32 tagOrCheckpoint, uint32 blockBegin, uint32 blockEnd);
-
-private:
-    uint32 sessionId;
-    bool commInited;
-    uint64 timerBegin;
-    size_t statPeriod;
-    size_t periodCounter;
-    volatile bool allDone;
-
-    DynamicMemoryFile* zipFile;
-    Deque<Parcel> parcels;
-};
-
-}   // namespace Net
-}   // namespace DAVA
-
-#endif  // __DAVAENGINE_MMNETSERVER_H__
+void SnapshotListModel::NewSnapshotArrived()
+{
+    beginResetModel();
+    endResetModel();
+}

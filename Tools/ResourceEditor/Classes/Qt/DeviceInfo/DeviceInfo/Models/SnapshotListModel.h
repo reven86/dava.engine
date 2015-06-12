@@ -26,44 +26,30 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __SNAPSHOTLISTMODEL_H__
+#define __SNAPSHOTLISTMODEL_H__
 
-#include "Base/BaseTypes.h"     // For platfrom recognition
+#include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_ANDROID__)
+#include <QAbstractListModel>
 
-#include <cstddef>
+class ProfilingSession;
 
-// Internal android memory structures taken from Android Open Source Project (glibc/malloc/malloc.c)
-struct malloc_chunk
+class SnapshotListModel : public QAbstractListModel
 {
-    size_t        prev_size;    // Size of previous chunk (if free)
-    size_t        size;         // Size in bytes, also low order 3 bits contain some flags
+public:
+    SnapshotListModel(QObject* parent = nullptr);
+    virtual ~SnapshotListModel();
 
-    malloc_chunk* fd;           // Double links (forward and backward) -- used only if free
-    malloc_chunk* bk;
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+
+    void BeginNewProfileSession(ProfilingSession* profSession);
+    void NewSnapshotArrived();
+
+private:
+    ProfilingSession* profileSession = nullptr;
 };
 
-size_t AndroidMallocSize(void* ptr)
-{
-    /*
-    This is how memory chunks organized in memory, we are only care of allocated chunks
-    chunk->     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-                |             Size of previous chunk, if allocated            | |
-                +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-                |             Size of chunk, in bytes                     |A|M|P|
-          mem-> +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-                |             User data starts here...                          .
-                .                                                               .
-                .                                                               .
-    So to get malloc_chunk beginning we should move pointer backward by two size_t
-    To get chunk size we should clear flag bits
-    */
-
-    // Mask to extract chunk size
-    const size_t EXTRACT_SIZE_MASK = ~0x07;
-
-    malloc_chunk* chunk = reinterpret_cast<malloc_chunk*>(static_cast<char*>(ptr) - sizeof(size_t) * 2);
-    return chunk->size & EXTRACT_SIZE_MASK;
-}
-
-#endif  // __DAVAENGINE_ANDROID__
+#endif  // __SNAPSHOTLISTMODEL_H__

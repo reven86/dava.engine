@@ -66,7 +66,7 @@ void RenderDataStream::Set(eVertexDataType _type, int32 _size, int32 _stride, co
 }
     
 RenderDataObject::RenderDataObject()
-	: RenderResource()
+    : RenderResource()
 {
     resultVertexFormat = 0;
     vboBuffer = 0;
@@ -114,15 +114,23 @@ RenderDataObject::~RenderDataObject()
 void RenderDataObject::DeleteBuffersInternal(uint32 vboBuffer, uint32 indexBuffer)
 {
 #if defined(__DAVAENGINE_OPENGL__)
-	if(vboBuffer)
-		RENDER_VERIFY(RenderManager::Instance()->HWglDeleteBuffers(1, &vboBuffer));
-	if(indexBuffer)
-		RENDER_VERIFY(RenderManager::Instance()->HWglDeleteBuffers(1, &indexBuffer));
+    if(vboBuffer)
+    {
+        RENDER_VERIFY(RenderManager::Instance()->HWglDeleteBuffers(1, &vboBuffer));
+        DAVA_MEMORY_PROFILER_GPU_DEALLOC(vboBuffer, ALLOC_GPU_RDO_VERTEX);
+    }
+    if(indexBuffer)
+    {
+        RENDER_VERIFY(RenderManager::Instance()->HWglDeleteBuffers(1, &indexBuffer));
+        DAVA_MEMORY_PROFILER_GPU_DEALLOC(indexBuffer, ALLOC_GPU_RDO_INDEX);
+    }
 #endif
 }
 
 RenderDataStream * RenderDataObject::SetStream(eVertexFormat formatMark, eVertexDataType vertexType, int32 size, int32 stride, const void * pointer)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(!vertexAttachmentActive);
     
     Map<eVertexFormat, RenderDataStream *>::iterator iter = streamMap.find(formatMark);
@@ -131,7 +139,7 @@ RenderDataStream * RenderDataObject::SetStream(eVertexFormat formatMark, eVertex
     {
         // New item - add it
         resultVertexFormat |= formatMark;
-        stream = new RenderDataStream(); // todo optimize dynamic object cache
+        stream = new RenderDataStream; // todo optimize dynamic object cache
         
         streamMap[formatMark] = stream;
         streamArray.push_back(stream);
@@ -148,6 +156,8 @@ RenderDataStream * RenderDataObject::SetStream(eVertexFormat formatMark, eVertex
 
 void RenderDataObject::RemoveStream(eVertexFormat formatMark)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(!vertexAttachmentActive);
     
 	Map<eVertexFormat, RenderDataStream*>::iterator it = streamMap.find(formatMark);
@@ -168,8 +178,6 @@ void RenderDataObject::RemoveStream(eVertexFormat formatMark)
         
         SafeRelease(stream);
 	}
-	
-	
 }
 
 uint32 RenderDataObject::GetResultFormat() const
@@ -179,6 +187,8 @@ uint32 RenderDataObject::GetResultFormat() const
     
 void RenderDataObject::BuildVertexBuffer(int32 vertexCount, eBufferDrawType type, bool synchronously)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	DVASSERT(!vertexAttachmentActive);
 
 	Function<void()> fn = Bind(MakeFunction(PointerWrapper<RenderDataObject>::WrapRetainRelease(this), &RenderDataObject::BuildVertexBufferInternal), vertexCount, type);
@@ -195,6 +205,8 @@ void RenderDataObject::BuildVertexBuffer(int32 vertexCount, eBufferDrawType type
 
 void RenderDataObject::BuildVertexBufferInternal(int32 vertexCount, eBufferDrawType type)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)
     
@@ -228,6 +240,7 @@ void RenderDataObject::BuildVertexBufferInternal(int32 vertexCount, eBufferDrawT
     savedVertexBufferType = type;
 #endif //#if defined (__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glBufferData(GL_ARRAY_BUFFER, vertexCount * stride, streamArray[0]->pointer, BUFFERDRAWTYPE_MAP[type]));
+    DAVA_MEMORY_PROFILER_GPU_ALLOC(vboBuffer, static_cast<size_t>(vertexCount * stride), ALLOC_GPU_RDO_VERTEX);
 
     streamArray[0]->pointer = 0;
     for (uint32 k = 1; k < size; ++k)
@@ -264,7 +277,9 @@ void RenderDataObject::BuildIndexBuffer(eBufferDrawType type, bool synchronously
 
 void RenderDataObject::BuildIndexBufferInternal(eBufferDrawType type)
 {
-	DVASSERT(Thread::IsMainThread());
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)
     
     
@@ -283,6 +298,7 @@ void RenderDataObject::BuildIndexBufferInternal(eBufferDrawType type)
     RENDER_VERIFY(glGenBuffersARB(1, &indexBuffer));
     RENDER_VERIFY(glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexBuffer));
     RENDER_VERIFY(glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indexCount * INDEX_FORMAT_SIZE[indexFormat], indices, GL_STATIC_DRAW_ARB));
+    MEMORY_PROFILER_GPU_ALLOC(indexBuffer, static_cast<size_t>(indexCount * INDEX_FORMAT_SIZE[indexFormat]), ALLOC_GPU_RDO_INDEX);
 #else
     if (indexBuffer)
     {
@@ -292,6 +308,7 @@ void RenderDataObject::BuildIndexBufferInternal(eBufferDrawType type)
     RENDER_VERIFY(glGenBuffers(1, &indexBuffer));
     RENDER_VERIFY(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer));
     RENDER_VERIFY(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexCount * INDEX_FORMAT_SIZE[indexFormat], indices, GL_STATIC_DRAW));
+    DAVA_MEMORY_PROFILER_GPU_ALLOC(indexBuffer, static_cast<size_t>(indexCount * INDEX_FORMAT_SIZE[indexFormat]), ALLOC_GPU_RDO_INDEX);
 #endif
     
 #if defined(__DAVAENGINE_OPENGL_ARB_VBO__)
@@ -305,6 +322,8 @@ void RenderDataObject::BuildIndexBufferInternal(eBufferDrawType type)
 
 void RenderDataObject::AttachVertices(RenderDataObject* vertexSource)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(vertexSource);
     DVASSERT(0 == vboBuffer);
     DVASSERT(streamArray.size() == 0);
@@ -357,6 +376,8 @@ void RenderDataObject::UpdateVertexBuffer(int32 offset, int32 vertexCount, bool 
 
 void RenderDataObject::UpdateVertexBufferInternal(int32 offset, int32 vertexCount)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(Thread::IsMainThread());
 
 #if defined (__DAVAENGINE_OPENGL__)
@@ -401,6 +422,8 @@ void RenderDataObject::UpdateIndexBuffer(int32 offset, bool synchronously)
 
 void RenderDataObject::UpdateIndexBufferInternal(int32 offset)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)
     DVASSERT(indexBuffer);
@@ -425,6 +448,8 @@ void RenderDataObject::Lost()
 
 void RenderDataObject::Invalidate()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 //    Logger::FrameworkDebug("[RenderDataObject::Invalidate]");
 
     if(isLost)
