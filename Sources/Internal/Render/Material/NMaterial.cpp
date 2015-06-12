@@ -103,7 +103,7 @@ void NMaterial::BindParams(rhi::Packet& target)
     target.depthStencilState = activeVariantInstance->depthState;
     target.samplerState = activeVariantInstance->samplerState;
     target.textureSet = activeVariantInstance->textureSet;
-    target.cullMode = rhi::CULL_NONE;// activeVariantInstance->cullMode;
+    target.cullMode = activeVariantInstance->cullMode; //rhi::CULL_NONE;// 
 
     activeVariantInstance->shader->UpdateDynamicParams();
     /*update values in material const buffers*/

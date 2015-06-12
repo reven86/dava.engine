@@ -24,7 +24,6 @@ DECL_FP_SAMPLER2D(normalmap1)
 #endif
 #endif
 
-
 //properties
 property float  distortionFallSquareDist   : static,instance : ;
 property float  reflectionDistortion       : static,instance : ;
@@ -66,7 +65,7 @@ FPROG_BEGIN
     
     #if DEBUG_UNITY_Z_NORMAL
         normal = float3(0.0,0.0,1.0);
-    #endif
+    #endif    
     
     float3 eyeDist = FP_IN(eyeDist);
     

@@ -428,29 +428,7 @@ void Camera::PrepareDynamicParameters(bool invertProjection, Vector4 *externalCl
     if (flags & REQUIRE_REBUILD_MODEL)
     {
         RebuildViewMatrix();
-    }
-    
-
-    Logger::Debug("MATRIX DUMP BEGIN");
-
-    Logger::Debug("near: %f.3  far: %f.3", znear, zfar);
-    float32 *md;
-
-    md = viewMatrix.data;
-    Logger::Debug("viewMatrix:");
-    Logger::Debug("| %f.3 %f.3 %f.3 %f.3 |", md[0], md[1], md[2], md[3]);
-    Logger::Debug("| %f.3 %f.3 %f.3 %f.3 |", md[4], md[5], md[6], md[7]);
-    Logger::Debug("| %f.3 %f.3 %f.3 %f.3 |", md[8], md[9], md[10], md[11]);
-    Logger::Debug("| %f.3 %f.3 %f.3 %f.3 |", md[12], md[13], md[14], md[15]);
-
-    md = projMatrix.data;
-    Logger::Debug("Projection before:");
-    Logger::Debug("| %f.3 %f.3 %f.3 %f.3 |", md[0], md[1], md[2], md[3]);
-    Logger::Debug("| %f.3 %f.3 %f.3 %f.3 |", md[4], md[5], md[6], md[7]);
-    Logger::Debug("| %f.3 %f.3 %f.3 %f.3 |", md[8], md[9], md[10], md[11]);
-    Logger::Debug("| %f.3 %f.3 %f.3 %f.3 |", md[12], md[13], md[14], md[15]);
-
-    
+    }    
 
     viewMatrix.GetInverse(invViewMatrix);
 
@@ -476,10 +454,7 @@ void Camera::PrepareDynamicParameters(bool invertProjection, Vector4 *externalCl
         
         if (Renderer::GetCaps().zeroBaseClipRange)
         {
-            Vector4 scaledPlane = clipPlane * (1.0f / v.DotProduct(clipPlane));
-            md = scaledPlane.data;
-            Logger::Debug("zeroBaseClipRange scaled plane:");
-            Logger::Debug("| %f.3 %f.3 %f.3 %f.3 |", md[0], md[1], md[2], md[3]);
+            Vector4 scaledPlane = clipPlane * (1.0f / v.DotProduct(clipPlane));            
             projMatrix.data[2] = scaledPlane.x;
             projMatrix.data[6] = scaledPlane.y;
             projMatrix.data[10] = scaledPlane.z;
@@ -487,36 +462,16 @@ void Camera::PrepareDynamicParameters(bool invertProjection, Vector4 *externalCl
         }
         else
         {
-            Vector4 scaledPlane = clipPlane * (2.0f / v.DotProduct(clipPlane));
-            md = scaledPlane.data;
-            Logger::Debug("scaled plane:");
-            Logger::Debug("| %f.3 %f.3 %f.3 %f.3 |", md[0], md[1], md[2], md[3]);
+            Vector4 scaledPlane = clipPlane * (2.0f / v.DotProduct(clipPlane));            
             projMatrix.data[2] = scaledPlane.x;
             projMatrix.data[6] = scaledPlane.y;
             projMatrix.data[10] = scaledPlane.z+1.0f;
             projMatrix.data[14] = scaledPlane.w;
         }
        
-    }
-
-    md = projMatrix.data;
-    Logger::Debug("Projection after:");
-    Logger::Debug("| %f.3 %f.3 %f.3 %f.3 |", md[0], md[1], md[2], md[3]);
-    Logger::Debug("| %f.3 %f.3 %f.3 %f.3 |", md[4], md[5], md[6], md[7]);
-    Logger::Debug("| %f.3 %f.3 %f.3 %f.3 |", md[8], md[9], md[10], md[11]);
-    Logger::Debug("| %f.3 %f.3 %f.3 %f.3 |", md[12], md[13], md[14], md[15]);
+    }    
 
     viewProjMatrix = viewMatrix * projMatrix;
-
-
-    md = viewProjMatrix.data;
-    Logger::Debug("viewProjMatrix:");
-    Logger::Debug("| %f.3 %f.3 %f.3 %f.3 |", md[0], md[1], md[2], md[3]);
-    Logger::Debug("| %f.3 %f.3 %f.3 %f.3 |", md[4], md[5], md[6], md[7]);
-    Logger::Debug("| %f.3 %f.3 %f.3 %f.3 |", md[8], md[9], md[10], md[11]);
-    Logger::Debug("| %f.3 %f.3 %f.3 %f.3 |", md[12], md[13], md[14], md[15]);
-
-    Logger::Debug("MATRIX DUMP END");
     
     flags &= ~REQUIRE_REBUILD_UNIFORM_PROJ_MODEL;
 
