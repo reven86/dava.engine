@@ -640,6 +640,26 @@ CullMode
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// viewport
+
+struct
+Viewport
+{
+    uint32  x;
+    uint32  y;
+    uint32  width;
+    uint32  height;
+
+            Viewport()
+              : x(0),
+                y(0),
+                width(0),
+                height(0)
+            {}
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
 // render-target state
 
 struct
@@ -685,6 +705,7 @@ RenderPassConfig
     DepthStencilBuffer  depthStencilBuffer;
 
     Handle              queryBuffer;
+    Viewport            viewport;
 
     int                 priority;
                         

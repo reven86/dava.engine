@@ -465,6 +465,12 @@ SetScissorRect( Handle cmdBuf, ScissorRect rect )
 }
 
 void
+SetViewport( Handle cmdBuf, Viewport vp )
+{
+    (*_Impl.impl_CommandBuffer_SetViewport)( cmdBuf, vp );
+}
+
+void
 SetVertexData( Handle cmdBuf, Handle vb, uint32 streamIndex )
 {
     (*_Impl.impl_CommandBuffer_SetVertexData)( cmdBuf, vb, streamIndex );

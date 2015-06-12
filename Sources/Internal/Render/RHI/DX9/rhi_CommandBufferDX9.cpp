@@ -50,6 +50,7 @@ CommandDX9
     DX9__SET_PIPELINE_STATE,
     DX9__SET_CULL_MODE,
     DX9__SET_SCISSOR_RECT,
+    DX9__SET_VIEWPORT,
     DX9__SET_VERTEX_PROG_CONST_BUFFER,
     DX9__SET_FRAGMENT_PROG_CONST_BUFFER,
     DX9__SET_TEXTURE,
@@ -225,6 +226,15 @@ void
 dx9_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
 {
     CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_SCISSOR_RECT, rect.x, rect.x, rect.width, rect.height );
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+dx9_CommandBuffer_SetViewport( Handle cmdBuf, Viewport vp )
+{
+    CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_VIEWPORT, vp.x, vp.y, vp.width, vp.height );
 }
 
 
@@ -542,10 +552,13 @@ void
 CommandBufferDX9_t::Execute()
 {
 SCOPED_FUNCTION_TIMING();
-    Handle  cur_pipelinestate   = InvalidHandle;
-    uint32  cur_stride          = 0;
-    Handle  cur_query_buf       = InvalidHandle;
-    uint32  cur_query_i         = InvalidIndex;
+    Handle          cur_pipelinestate   = InvalidHandle;
+    uint32          cur_stride          = 0;
+    Handle          cur_query_buf       = InvalidHandle;
+    uint32          cur_query_i         = InvalidIndex;
+    D3DVIEWPORT9    def_viewport;
+
+    _D3D9_Device->GetViewport( &def_viewport );
 
     for( std::vector<uint64>::const_iterator c=_cmd.begin(),c_end=_cmd.end(); c!=c_end; ++c )
     {
@@ -681,6 +694,34 @@ SCOPED_FUNCTION_TIMING();
                 else
                 {
                     _D3D9_Device->SetRenderState( D3DRS_SCISSORTESTENABLE, FALSE );
+                }
+
+                c += 4;
+            }   break;
+            
+            case DX9__SET_VIEWPORT :
+            {
+                int x = int(arg[0]);
+                int y = int(arg[1]);
+                int w = int(arg[2]);
+                int h = int(arg[3]);
+
+                if( x  &&  y  &&  w  &&  h )
+                {
+                    D3DVIEWPORT9    vp;
+
+                    vp.X      = x;
+                    vp.Y      = y;
+                    vp.Width  = w;
+                    vp.Height = h;
+                    vp.MinZ   = 0.0f;
+                    vp.MaxZ   = 1.0f;
+                    
+                    _D3D9_Device->SetViewport( &vp );
+                }
+                else
+                {
+                    _D3D9_Device->SetViewport( &def_viewport );
                 }
 
                 c += 4;
@@ -864,6 +905,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_SetPipelineState       = &dx9_CommandBuffer_SetPipelineState;
     dispatch->impl_CommandBuffer_SetCullMode            = &dx9_CommandBuffer_SetCullMode;
     dispatch->impl_CommandBuffer_SetScissorRect         = &dx9_CommandBuffer_SetScissorRect;
+    dispatch->impl_CommandBuffer_SetViewport            = &dx9_CommandBuffer_SetViewport;
     dispatch->impl_CommandBuffer_SetVertexData          = &dx9_CommandBuffer_SetVertexData;
     dispatch->impl_CommandBuffer_SetVertexConstBuffer   = &dx9_CommandBuffer_SetVertexConstBuffer;
     dispatch->impl_CommandBuffer_SetVertexTexture       = &dx9_CommandBuffer_SetVertexTexture;

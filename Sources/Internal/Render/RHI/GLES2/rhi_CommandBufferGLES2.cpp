@@ -37,6 +37,7 @@ CommandGLES2
     GLES2__SET_PIPELINE_STATE,
     GLES2__SET_CULL_MODE,
     GLES2__SET_SCISSOR_RECT,
+    GLES2__SET_VIEWPORT,
     GLES2__SET_VERTEX_PROG_CONST_BUFFER,
     GLES2__SET_FRAGMENT_PROG_CONST_BUFFER,
     GLES2__SET_VERTEX_TEXTURE,
@@ -242,7 +243,16 @@ gles2_CommandBuffer_SetCullMode( Handle cmdBuf, CullMode mode )
 void
 gles2_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
 {
-    CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_SCISSOR_RECT, rect.x, rect.x, rect.width, rect.height );
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_SCISSOR_RECT, rect.x, rect.y, rect.width, rect.height );
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+gles2_CommandBuffer_SetViewport( Handle cmdBuf, Viewport vp )
+{
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_VIEWPORT, vp.x, vp.y, vp.width, vp.height );
 }
 
 
@@ -591,6 +601,7 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
     unsigned    tex_unit_0      =0;
     Handle      cur_query_buf   = InvalidHandle;
     uint32      cur_query_i     = InvalidIndex;
+    GLint       def_viewport[4];
 
     for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
     {
@@ -601,7 +612,6 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
     memset( fp_const_data, 0, sizeof(fp_const_data) );
 
     int immediate_cmd_ttw = 10;
-
 
     for( std::vector<uint64>::const_iterator c=_cmd.begin(),c_end=_cmd.end(); c!=c_end; ++c )
     {
@@ -653,9 +663,11 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
 
                         flags |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
                     }
-
+                    
                     glClear( flags );
                 }
+                
+                glGetIntegerv( GL_VIEWPORT, def_viewport );
             }   break;
             
             case GLES2__END :
@@ -774,7 +786,26 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                 }
 
                 c += 4;
-            }
+            }   break;
+
+            case GLES2__SET_VIEWPORT :
+            {
+                GLint   x = GLint(arg[0]);
+                GLint   y = GLint(arg[1]);
+                GLsizei w = GLsizei(arg[2]);
+                GLsizei h = GLsizei(arg[3]);
+
+                if( x  &&  y  &&  w  &&  h )
+                {
+                    glViewport( x, y, w, h );
+                }
+                else
+                {
+                    glViewport( def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3] );
+                }
+
+                c += 4;
+            }    break;
 
             case GLES2__SET_DEPTHSTENCIL_STATE :
             {
@@ -1377,6 +1408,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_SetPipelineState       = &gles2_CommandBuffer_SetPipelineState;
     dispatch->impl_CommandBuffer_SetCullMode            = &gles2_CommandBuffer_SetCullMode;
     dispatch->impl_CommandBuffer_SetScissorRect         = &gles2_CommandBuffer_SetScissorRect;
+    dispatch->impl_CommandBuffer_SetViewport            = &gles2_CommandBuffer_SetViewport;
     dispatch->impl_CommandBuffer_SetVertexData          = &gles2_CommandBuffer_SetVertexData;
     dispatch->impl_CommandBuffer_SetVertexConstBuffer   = &gles2_CommandBuffer_SetVertexConstBuffer;
     dispatch->impl_CommandBuffer_SetVertexTexture       = &gles2_CommandBuffer_SetVertexTexture;

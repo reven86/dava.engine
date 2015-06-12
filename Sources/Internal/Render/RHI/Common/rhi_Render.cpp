@@ -59,6 +59,7 @@ PacketList_t
 {
     Handle      cmdBuf;
     Handle      queryBuffer;
+    Viewport    viewport;
 
     Handle      curPipelineState;
     uint32      curVertexLayout;
@@ -618,6 +619,7 @@ AllocateRenderPass( const RenderPassConfig& passDesc, uint32 packetListCount, HP
 
         pl->cmdBuf      = cb[i];
         pl->queryBuffer = passDesc.queryBuffer;
+        pl->viewport    = passDesc.viewport;
 
 
         packetList[i] = HPacketList(plh);
@@ -678,6 +680,8 @@ BeginPacketList( HPacketList packetList )
     pl->defSamplerState       = def_ss;
 
     CommandBuffer::Begin( pl->cmdBuf );
+    
+    CommandBuffer::SetViewport( pl->cmdBuf, pl->viewport );
 
     CommandBuffer::SetDepthStencilState( pl->cmdBuf, pl->defDepthStencilState );
     pl->curDepthStencilState = pl->defDepthStencilState;
