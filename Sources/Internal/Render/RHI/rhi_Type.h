@@ -52,6 +52,7 @@ ResourceType
 {
     RESOURCE_VERTEX_BUFFER      = 11,
     RESOURCE_INDEX_BUFFER       = 12,
+    RESOURCE_QUERY_BUFFER       = 13,
     RESOURCE_CONST_BUFFER       = 22,
     RESOURCE_TEXTURE            = 31,
 
@@ -642,6 +643,26 @@ CullMode
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// viewport
+
+struct
+Viewport
+{
+    uint32  x;
+    uint32  y;
+    uint32  width;
+    uint32  height;
+
+            Viewport()
+              : x(0),
+                y(0),
+                width(0),
+                height(0)
+            {}
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
 // render-target state
 
 struct
@@ -685,14 +706,35 @@ RenderPassConfig
 
     ColorBuffer         colorBuffer[MAX_RENDER_TARGET_COUNT];
     DepthStencilBuffer  depthStencilBuffer;
+
+    Handle              queryBuffer;
+    Viewport            viewport;
+
     int                 priority;
-    int                 viewport[4];
                         
                         RenderPassConfig()
-                          : priority(0)
-                        {
-                            viewport[0] = viewport[1] = viewport[2] = viewport[3] = 0;
-                        }
+                          : queryBuffer(InvalidHandle),
+                            priority(0)
+                        {}
+};
+
+
+//------------------------------------------------------------------------------
+
+struct
+ScissorRect
+{
+    uint16  x;
+    uint16  y;
+    uint16  width;
+    uint16  height;
+
+            ScissorRect()
+              : x(0),
+                y(0),
+                width(0),
+                height(0)
+            {}
 };
 
 

@@ -341,8 +341,8 @@ void UIControlSystem::Draw()
     clearPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_NONE;
     clearPassConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     clearPassConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
-    clearPassConfig.viewport[2] = Renderer::GetFramebufferWidth();
-    clearPassConfig.viewport[3] = Renderer::GetFramebufferHeight();
+    clearPassConfig.viewport.width = Renderer::GetFramebufferWidth();
+    clearPassConfig.viewport.height = Renderer::GetFramebufferHeight();
 
     rhi::HPacketList emptyPacketList;
     rhi::HRenderPass clearPass = rhi::AllocateRenderPass(clearPassConfig, 1, &emptyPacketList);

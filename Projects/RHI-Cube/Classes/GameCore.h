@@ -85,6 +85,7 @@ protected:
     void    manticoreDraw();
     void    rhiDraw();
     void    rtDraw();
+    void    visibilityTestDraw();
 
 
     struct

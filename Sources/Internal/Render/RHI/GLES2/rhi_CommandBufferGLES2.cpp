@@ -28,9 +28,13 @@ CommandGLES2
 
     GLES2__SET_VERTEX_DATA,
     GLES2__SET_INDICES,
+    GLES2__SET_QUERY_BUFFER,
+    GLES2__SET_QUERY_INDEX,
 
     GLES2__SET_PIPELINE_STATE,
     GLES2__SET_CULL_MODE,
+    GLES2__SET_SCISSOR_RECT,
+    GLES2__SET_VIEWPORT,
     GLES2__SET_VERTEX_PROG_CONST_BUFFER,
     GLES2__SET_FRAGMENT_PROG_CONST_BUFFER,
     GLES2__SET_VERTEX_TEXTURE,
@@ -233,6 +237,24 @@ gles2_CommandBuffer_SetCullMode( Handle cmdBuf, CullMode mode )
 
 //------------------------------------------------------------------------------
 
+void
+gles2_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
+{
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_SCISSOR_RECT, rect.x, rect.y, rect.width, rect.height );
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+gles2_CommandBuffer_SetViewport( Handle cmdBuf, Viewport vp )
+{
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_VIEWPORT, vp.x, vp.y, vp.width, vp.height );
+}
+
+
+//------------------------------------------------------------------------------
+
 static void
 gles2_CommandBuffer_SetVertexData( Handle cmdBuf, Handle vb, uint32 streamIndex )
 {
@@ -269,6 +291,24 @@ static void
 gles2_CommandBuffer_SetIndices( Handle cmdBuf, Handle ib )
 {
     CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_INDICES, ib );
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+gles2_CommandBuffer_SetQueryIndex( Handle cmdBuf, uint32 objectIndex )
+{
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_QUERY_INDEX, objectIndex );
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+gles2_CommandBuffer_SetQueryBuffer( Handle cmdBuf, Handle queryBuf )
+{
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__SET_QUERY_BUFFER, queryBuf );
 }
 
 
@@ -547,15 +587,18 @@ void
 CommandBufferGLES2_t::Execute()
 {
 SCOPED_NAMED_TIMING("gl.cb-exec");
-    Handle      cur_ps    = InvalidHandle;
-    uint32      cur_vdecl = VertexLayout::InvalidUID;
-    Handle      last_ps   = InvalidHandle;
+    Handle      cur_ps          = InvalidHandle;
+    uint32      cur_vdecl       = VertexLayout::InvalidUID;
+    Handle      last_ps         = InvalidHandle;
     Handle      vp_const[MAX_CONST_BUFFER_COUNT];
     const void* vp_const_data[MAX_CONST_BUFFER_COUNT];
     Handle      fp_const[MAX_CONST_BUFFER_COUNT];
     const void* fp_const_data[MAX_CONST_BUFFER_COUNT];
-    Handle      cur_vb    = InvalidHandle;
-    unsigned    tex_unit_0=0;
+    Handle      cur_vb          = InvalidHandle;
+    unsigned    tex_unit_0      =0;
+    Handle      cur_query_buf   = InvalidHandle;
+    uint32      cur_query_i     = InvalidIndex;
+    GLint       def_viewport[4];
 
     for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
     {
@@ -566,7 +609,6 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
     memset( fp_const_data, 0, sizeof(fp_const_data) );
 
     int immediate_cmd_ttw = 10;
-
 
     for( std::vector<uint64>::const_iterator c=_cmd.begin(),c_end=_cmd.end(); c!=c_end; ++c )
     {
@@ -596,10 +638,6 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                     {
                         TextureGLES2::SetAsRenderTarget( passCfg.colorBuffer[0].texture );
                     }
-                    else
-                    {
-                        GL_CALL(glViewport(passCfg.viewport[0], passCfg.viewport[1], passCfg.viewport[2], passCfg.viewport[3]));
-                    }
                 
                     if( passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR )
                     {
@@ -624,11 +662,8 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                         glClear( flags );
                     }
                 }
-                else
-                {
-                    GL_CALL(glViewport(passCfg.viewport[0], passCfg.viewport[1], passCfg.viewport[2], passCfg.viewport[3]));
-                }
-
+                
+                glGetIntegerv( GL_VIEWPORT, def_viewport );
             }   break;
             
             case GLES2__END :
@@ -662,6 +697,19 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
             case GLES2__SET_INDICES :
             {
                 IndexBufferGLES2::SetToRHI( (Handle)(arg[0]) );
+                c += 1;
+            }   break;
+
+            case GLES2__SET_QUERY_BUFFER :
+            {
+                DVASSERT(cur_query_buf == InvalidHandle);
+                cur_query_buf = (Handle)(arg[0]);
+                c += 1;
+            }   break;
+
+            case GLES2__SET_QUERY_INDEX :
+            {
+                cur_query_i = uint32(arg[0]);
                 c += 1;
             }   break;
 
@@ -714,6 +762,45 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
 
                 c += 1;
             }   break;
+            
+            case GLES2__SET_SCISSOR_RECT :
+            {
+                GLint   x = GLint(arg[0]);
+                GLint   y = GLint(arg[1]);
+                GLsizei w = GLsizei(arg[2]);
+                GLsizei h = GLsizei(arg[3]);
+
+                if( x  &&  y  &&  w  &&  h )
+                {
+                    glEnable( GL_SCISSOR_TEST );
+                    glScissor( x, y, w, h );
+                }
+                else
+                {
+                    glDisable( GL_SCISSOR_TEST );
+                }
+
+                c += 4;
+            }   break;
+
+            case GLES2__SET_VIEWPORT :
+            {
+                GLint   x = GLint(arg[0]);
+                GLint   y = GLint(arg[1]);
+                GLsizei w = GLsizei(arg[2]);
+                GLsizei h = GLsizei(arg[3]);
+
+                if( x  &&  y  &&  w  &&  h )
+                {
+                    glViewport( x, y, w, h );
+                }
+                else
+                {
+                    glViewport( def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3] );
+                }
+
+                c += 4;
+            }    break;
 
             case GLES2__SET_DEPTHSTENCIL_STATE :
             {
@@ -800,10 +887,15 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                         ConstBufferGLES2::SetToRHI( fp_const[i], fp_const_data[i] );
                 }
 
+                if( cur_query_i != InvalidIndex )
+                    QueryBufferGLES2::BeginQuery( cur_query_buf, cur_query_i );
                 
                 GL_CALL(glDrawArrays( mode, 0, v_cnt ));
                 StatSet::IncStat( stat_DP, 1 );
 //Logger::Info( "  dp" );
+                
+                if( cur_query_i != InvalidIndex )
+                    QueryBufferGLES2::EndQuery( cur_query_buf, cur_query_i );
 
                 c += 2;
             }   break;
@@ -838,9 +930,15 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                     PipelineStateGLES2::SetVertexDeclToRHI( cur_ps, cur_vdecl, firstVertex );
                 }
 
+                if( cur_query_i != InvalidIndex )
+                    QueryBufferGLES2::BeginQuery( cur_query_buf, cur_query_i );
+
                 GL_CALL(glDrawElements( mode, v_cnt, GL_UNSIGNED_SHORT, (void*)(startIndex*sizeof(uint16)) ));
                 StatSet::IncStat( stat_DIP, 1 );
 //Logger::Info( "  dip" );
+
+                if( cur_query_i != InvalidIndex )
+                    QueryBufferGLES2::EndQuery( cur_query_buf, cur_query_i );
 
                 c += 4;
             }   break;
@@ -1296,10 +1394,14 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_End                    = &gles2_CommandBuffer_End;
     dispatch->impl_CommandBuffer_SetPipelineState       = &gles2_CommandBuffer_SetPipelineState;
     dispatch->impl_CommandBuffer_SetCullMode            = &gles2_CommandBuffer_SetCullMode;
+    dispatch->impl_CommandBuffer_SetScissorRect         = &gles2_CommandBuffer_SetScissorRect;
+    dispatch->impl_CommandBuffer_SetViewport            = &gles2_CommandBuffer_SetViewport;
     dispatch->impl_CommandBuffer_SetVertexData          = &gles2_CommandBuffer_SetVertexData;
     dispatch->impl_CommandBuffer_SetVertexConstBuffer   = &gles2_CommandBuffer_SetVertexConstBuffer;
     dispatch->impl_CommandBuffer_SetVertexTexture       = &gles2_CommandBuffer_SetVertexTexture;
     dispatch->impl_CommandBuffer_SetIndices             = &gles2_CommandBuffer_SetIndices;
+    dispatch->impl_CommandBuffer_SetQueryBuffer         = &gles2_CommandBuffer_SetQueryBuffer;
+    dispatch->impl_CommandBuffer_SetQueryIndex          = &gles2_CommandBuffer_SetQueryIndex;
     dispatch->impl_CommandBuffer_SetFragmentConstBuffer = &gles2_CommandBuffer_SetFragmentConstBuffer;
     dispatch->impl_CommandBuffer_SetFragmentTexture     = &gles2_CommandBuffer_SetFragmentTexture;
     dispatch->impl_CommandBuffer_SetDepthStencilState   = &gles2_CommandBuffer_SetDepthStencilState;

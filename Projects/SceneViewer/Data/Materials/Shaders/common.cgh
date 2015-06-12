@@ -235,6 +235,8 @@ FogParam
     float   atmosphere_scattering;
 };
 
+float4 CalculateVertexFog( FogParam param ); // to shut up Metal shader-compiler
+
 
 float4
 CalculateVertexFog( FogParam param )
@@ -244,12 +246,14 @@ CalculateVertexFog( FogParam param )
     float3  cameraPosition    = param.eye_position;
     float3  toLightDir        = param.tolight_dir;
 
-
+    #if FOG_HALFSPACE
     float   fogHalfspaceHeight  = param.halfspace_height;
+    #if !FOG_HALFSPACE_LINEAR
     float   fogHalfspaceFalloff = param.halfspace_falloff;
+    #endif
     float   fogHalfspaceDensity = param.halfspace_density;
     float   fogHalfspaceLimit   = param.halfspace_limit;
-
+    #endif
 
     float   fogAtmosphereDistance   = param.atmosphere_distance;
     float3  fogAtmosphereColorSun   = param.atmosphere_sun_color;

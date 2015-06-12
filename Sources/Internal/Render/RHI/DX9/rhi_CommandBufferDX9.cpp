@@ -44,9 +44,13 @@ CommandDX9
 
     DX9__SET_VERTEX_DATA,
     DX9__SET_INDICES,
+    DX9__SET_QUERY_BUFFER,
+    DX9__SET_QUERY_INDEX,
 
     DX9__SET_PIPELINE_STATE,
     DX9__SET_CULL_MODE,
+    DX9__SET_SCISSOR_RECT,
+    DX9__SET_VIEWPORT,
     DX9__SET_VERTEX_PROG_CONST_BUFFER,
     DX9__SET_FRAGMENT_PROG_CONST_BUFFER,
     DX9__SET_TEXTURE,
@@ -218,6 +222,24 @@ dx9_CommandBuffer_SetCullMode( Handle cmdBuf, CullMode mode )
 
 //------------------------------------------------------------------------------
 
+void
+dx9_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
+{
+    CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_SCISSOR_RECT, rect.x, rect.x, rect.width, rect.height );
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+dx9_CommandBuffer_SetViewport( Handle cmdBuf, Viewport vp )
+{
+    CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_VIEWPORT, vp.x, vp.y, vp.width, vp.height );
+}
+
+
+//------------------------------------------------------------------------------
+
 static void
 dx9_CommandBuffer_SetVertexData( Handle cmdBuf, Handle vb, uint32 streamIndex )
 {
@@ -253,6 +275,24 @@ static void
 dx9_CommandBuffer_SetIndices( Handle cmdBuf, Handle ib )
 {
     CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_INDICES, ib );
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+dx9_CommandBuffer_SetQueryIndex( Handle cmdBuf, uint32 objectIndex )
+{
+    CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_QUERY_INDEX, objectIndex );
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+dx9_CommandBuffer_SetQueryBuffer( Handle cmdBuf, Handle queryBuf )
+{
+    CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_QUERY_BUFFER, queryBuf );
 }
 
 
@@ -512,8 +552,13 @@ void
 CommandBufferDX9_t::Execute()
 {
 SCOPED_FUNCTION_TIMING();
-    Handle  cur_pipelinestate   = InvalidHandle;
-    uint32  cur_stride          = 0;
+    Handle          cur_pipelinestate   = InvalidHandle;
+    uint32          cur_stride          = 0;
+    Handle          cur_query_buf       = InvalidHandle;
+    uint32          cur_query_i         = InvalidIndex;
+    D3DVIEWPORT9    def_viewport;
+
+    _D3D9_Device->GetViewport( &def_viewport );
 
     for( std::vector<uint64>::const_iterator c=_cmd.begin(),c_end=_cmd.end(); c!=c_end; ++c )
     {
@@ -535,11 +580,7 @@ SCOPED_FUNCTION_TIMING();
                         _D3D9_Device->GetRenderTarget( 0, &_D3D9_BackBuf );
                         TextureDX9::SetAsRenderTarget( passCfg.colorBuffer[0].texture );
                     }
-                    else
-                    {
-                        D3DVIEWPORT9 viewport = { passCfg.viewport[0], passCfg.viewport[1], passCfg.viewport[2], passCfg.viewport[3], 0.f, 1.f };
-                        DX9_CALL(_D3D9_Device->SetViewport(&viewport), "SetViewport");
-                    }
+
 
                     bool    clear_color = passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR;
                     bool    clear_depth = passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR;
@@ -559,11 +600,6 @@ SCOPED_FUNCTION_TIMING();
 
                         DX9_CALL(_D3D9_Device->Clear( 0,NULL, flags, D3DCOLOR_RGBA(r,g,b,a), passCfg.depthStencilBuffer.clearDepth, 0 ),"Clear");
                     }
-                }
-                else
-                {
-                    D3DVIEWPORT9 viewport = { passCfg.viewport[0], passCfg.viewport[1], passCfg.viewport[2], passCfg.viewport[3], 0.f, 1.f };
-                    DX9_CALL(_D3D9_Device->SetViewport(&viewport), "SetViewport");
                 }
 
             }   break;
@@ -599,6 +635,19 @@ SCOPED_FUNCTION_TIMING();
                 c += 1;
             }   break;
 
+            case DX9__SET_QUERY_BUFFER :
+            {
+                DVASSERT(cur_query_buf == InvalidHandle);
+                cur_query_buf = (Handle)(arg[0]);
+                c += 1;
+            }   break;
+
+            case DX9__SET_QUERY_INDEX :
+            {
+                cur_query_i = uint32(arg[0]);
+                c += 1;
+            }   break;
+
             case DX9__SET_PIPELINE_STATE :
             {
                 uint32              vd_uid = (uint32)(arg[1]);
@@ -627,6 +676,56 @@ SCOPED_FUNCTION_TIMING();
 
                 _D3D9_Device->SetRenderState( D3DRS_CULLMODE, mode ); 
                 c += 1;
+            }   break;
+
+            case DX9__SET_SCISSOR_RECT :
+            {
+                int x = int(arg[0]);
+                int y = int(arg[1]);
+                int w = int(arg[2]);
+                int h = int(arg[3]);
+
+                if( x  &&  y  &&  w  &&  h )
+                {
+                    RECT    rect = { x, y, x+w-1, y+h-1 };
+
+                    _D3D9_Device->SetRenderState( D3DRS_SCISSORTESTENABLE, TRUE );
+                    _D3D9_Device->SetScissorRect( &rect );
+                }
+                else
+                {
+                    _D3D9_Device->SetRenderState( D3DRS_SCISSORTESTENABLE, FALSE );
+                }
+
+                c += 4;
+            }   break;
+            
+            case DX9__SET_VIEWPORT :
+            {
+                int x = int(arg[0]);
+                int y = int(arg[1]);
+                int w = int(arg[2]);
+                int h = int(arg[3]);
+
+                if( x  &&  y  &&  w  &&  h )
+                {
+                    D3DVIEWPORT9    vp;
+
+                    vp.X      = x;
+                    vp.Y      = y;
+                    vp.Width  = w;
+                    vp.Height = h;
+                    vp.MinZ   = 0.0f;
+                    vp.MaxZ   = 1.0f;
+                    
+                    _D3D9_Device->SetViewport( &vp );
+                }
+                else
+                {
+                    _D3D9_Device->SetViewport( &def_viewport );
+                }
+
+                c += 4;
             }   break;
 
             case DX9__SET_DEPTHSTENCIL_STATE :
@@ -664,8 +763,15 @@ SCOPED_FUNCTION_TIMING();
             
             case DX9__DRAW_PRIMITIVE :
             {
+                if( cur_query_i != InvalidIndex )
+                    QueryBufferDX9::BeginQuery( cur_query_buf, cur_query_i );
+
                 DX9_CALL(_D3D9_Device->DrawPrimitive( (D3DPRIMITIVETYPE)(arg[0]), /*base_vertex*/0, UINT(arg[1]) ),"DrawPrimitive");
                 StatSet::IncStat( stat_DP, 1 );
+                
+                if( cur_query_i != InvalidIndex )
+                    QueryBufferDX9::EndQuery( cur_query_buf, cur_query_i );
+
                 c += 2;    
             }   break;
             
@@ -677,7 +783,14 @@ SCOPED_FUNCTION_TIMING();
                 uint32              firstVertex = uint32(arg[3]);
                 uint32              startIndex  = uint32(arg[4]);
 
+                if( cur_query_i != InvalidIndex )
+                    QueryBufferDX9::BeginQuery( cur_query_buf, cur_query_i );
+                
                 DX9_CALL(_D3D9_Device->DrawIndexedPrimitive( type, firstVertex, 0, vertexCount, startIndex, primCount ),"DrawIndexedPrimitive");
+                
+                if( cur_query_i != InvalidIndex )
+                    QueryBufferDX9::EndQuery( cur_query_buf, cur_query_i );
+                
                 StatSet::IncStat( stat_DIP, 1 );
                 c += 5;
             }   break;
@@ -764,10 +877,14 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_End                    = &dx9_CommandBuffer_End;
     dispatch->impl_CommandBuffer_SetPipelineState       = &dx9_CommandBuffer_SetPipelineState;
     dispatch->impl_CommandBuffer_SetCullMode            = &dx9_CommandBuffer_SetCullMode;
+    dispatch->impl_CommandBuffer_SetScissorRect         = &dx9_CommandBuffer_SetScissorRect;
+    dispatch->impl_CommandBuffer_SetViewport            = &dx9_CommandBuffer_SetViewport;
     dispatch->impl_CommandBuffer_SetVertexData          = &dx9_CommandBuffer_SetVertexData;
     dispatch->impl_CommandBuffer_SetVertexConstBuffer   = &dx9_CommandBuffer_SetVertexConstBuffer;
     dispatch->impl_CommandBuffer_SetVertexTexture       = &dx9_CommandBuffer_SetVertexTexture;
-    dispatch->impl_CommandBuffer_SetIndices             = &dx9_CommandBuffer_SetIndices;
+    dispatch->impl_CommandBuffer_SetIndices             = &dx9_CommandBuffer_SetIndices;    
+    dispatch->impl_CommandBuffer_SetQueryBuffer         = &dx9_CommandBuffer_SetQueryBuffer;
+    dispatch->impl_CommandBuffer_SetQueryIndex          = &dx9_CommandBuffer_SetQueryIndex;
     dispatch->impl_CommandBuffer_SetFragmentConstBuffer = &dx9_CommandBuffer_SetFragmentConstBuffer;
     dispatch->impl_CommandBuffer_SetFragmentTexture     = &dx9_CommandBuffer_SetFragmentTexture;
     dispatch->impl_CommandBuffer_SetDepthStencilState   = &dx9_CommandBuffer_SetDepthStencilState;

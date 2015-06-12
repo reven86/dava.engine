@@ -84,9 +84,14 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
     desc.depthAttachment.storeAction        = (passConf.depthStencilBuffer.storeAction==STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
     desc.depthAttachment.clearDepth         = passConf.depthStencilBuffer.clearDepth;
     
+    if( passConf.queryBuffer != InvalidHandle )
+    {
+        desc.visibilityResultBuffer = QueryBufferMetal::GetBuffer( passConf.queryBuffer );
+    }
+    
     pass->cmdBuf.resize( cmdBufCount );
     pass->priority = passConf.priority;
-
+    
     if( cmdBufCount == 1 )
     {
         Handle                  cb_h = CommandBufferPool::Alloc();
@@ -97,9 +102,9 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
 //        pass->buf       = [_Metal_DefCmdQueue commandBuffer];
         pass->buf       = [_Metal_DefCmdQueue commandBufferWithUnretainedReferences]; 
 
-        cb->encoder = [pass->buf renderCommandEncoderWithDescriptor:desc];
-        cb->rt      = desc.colorAttachments[0].texture;
-        cb->cur_ib  = InvalidHandle;
+        cb->encoder      = [pass->buf renderCommandEncoderWithDescriptor:desc];
+        cb->rt           = desc.colorAttachments[0].texture;
+        cb->cur_ib       = InvalidHandle;
         
         [cb->encoder setViewport:viewport];
         
@@ -117,9 +122,9 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
             Handle                  cb_h = CommandBufferPool::Alloc();
             CommandBufferMetal_t*   cb   = CommandBufferPool::Get( cb_h );
 
-            cb->encoder = [pass->encoder renderCommandEncoder];
-            cb->rt      = desc.colorAttachments[0].texture;
-            cb->cur_ib  = InvalidHandle;        
+            cb->encoder     = [pass->encoder renderCommandEncoder];
+            cb->rt          = desc.colorAttachments[0].texture;
+            cb->cur_ib      = InvalidHandle;
             
             [cb->encoder setViewport:viewport];
             
@@ -229,6 +234,66 @@ metal_CommandBuffer_SetCullMode( Handle cmdBuf, CullMode mode )
 //------------------------------------------------------------------------------
 
 static void
+metal_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
+{
+    CommandBufferMetal_t*       cb      = CommandBufferPool::Get( cmdBuf );
+    id<MTLRenderCommandEncoder> encoder = cb->encoder;
+    MTLScissorRect              rc;
+
+    if( rect.x  &&  rect.y  &&  rect.width  &&  rect.height )
+    {
+        rc.x      = rect.x;
+        rc.x      = rect.y;
+        rc.width  = rect.width;
+        rc.height = rect.height;
+    }
+    else
+    {
+        rc.x      = 0;
+        rc.x      = 0;
+        rc.width  = cb->rt.width;
+        rc.height = cb->rt.height;
+    }
+    
+    [encoder setScissorRect:rc];
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+metal_CommandBuffer_SetViewport( Handle cmdBuf, Viewport viewport )
+{
+    CommandBufferMetal_t*       cb      = CommandBufferPool::Get( cmdBuf );
+    id<MTLRenderCommandEncoder> encoder = cb->encoder;
+    MTLViewport                 vp;
+
+    if( viewport.x  &&  viewport.y  &&  viewport.width  &&  viewport.height )
+    {
+        vp.originX  = viewport.x;
+        vp.originY  = viewport.y;
+        vp.width    = viewport.width;
+        vp.height   = viewport.height;
+        vp.znear    = 0.0;
+        vp.zfar     = 1.0;
+    }
+    else
+    {
+        vp.originX  = 0;
+        vp.originY  = 0;
+        vp.width    = cb->rt.width;
+        vp.height   = cb->rt.height;
+        vp.znear    = 0.0;
+        vp.zfar     = 1.0;
+    }
+    
+    [encoder setViewport:vp];
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
 metal_CommandBuffer_SetVertexData( Handle cmdBuf, Handle vb, uint32 streamIndex )
 {
     CommandBufferMetal_t*   cb = CommandBufferPool::Get( cmdBuf );
@@ -271,6 +336,33 @@ metal_CommandBuffer_SetIndices( Handle cmdBuf, Handle ib )
     CommandBufferMetal_t*   cb = CommandBufferPool::Get( cmdBuf );
 
     cb->cur_ib = ib;
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+metal_CommandBuffer_SetQueryIndex( Handle cmdBuf, uint32 objectIndex )
+{
+    CommandBufferMetal_t*   cb = CommandBufferPool::Get( cmdBuf );
+    
+    if( objectIndex != InvalidIndex )
+    {
+        [cb->encoder setVisibilityResultMode:MTLVisibilityResultModeBoolean offset:objectIndex*QueryBUfferElemeentAlign];
+    }
+    else
+    {
+        [cb->encoder setVisibilityResultMode:MTLVisibilityResultModeDisabled offset:0];
+    }
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+metal_CommandBuffer_SetQueryBuffer( Handle /*cmdBuf*/, Handle /*queryBuf*/ )
+{
+    // do NOTHING, since query-buffer specified in render-pass
 }
 
 
@@ -462,10 +554,14 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_End                    = &metal_CommandBuffer_End;
     dispatch->impl_CommandBuffer_SetPipelineState       = &metal_CommandBuffer_SetPipelineState;
     dispatch->impl_CommandBuffer_SetCullMode            = &metal_CommandBuffer_SetCullMode;
+    dispatch->impl_CommandBuffer_SetScissorRect         = &metal_CommandBuffer_SetScissorRect;
+    dispatch->impl_CommandBuffer_SetViewport            = &metal_CommandBuffer_SetViewport;
     dispatch->impl_CommandBuffer_SetVertexData          = &metal_CommandBuffer_SetVertexData;
     dispatch->impl_CommandBuffer_SetVertexConstBuffer   = &metal_CommandBuffer_SetVertexConstBuffer;
     dispatch->impl_CommandBuffer_SetVertexTexture       = &metal_CommandBuffer_SetVertexTexture;
     dispatch->impl_CommandBuffer_SetIndices             = &metal_CommandBuffer_SetIndices;
+    dispatch->impl_CommandBuffer_SetQueryBuffer         = &metal_CommandBuffer_SetQueryBuffer;
+    dispatch->impl_CommandBuffer_SetQueryIndex          = &metal_CommandBuffer_SetQueryIndex;
     dispatch->impl_CommandBuffer_SetFragmentConstBuffer = &metal_CommandBuffer_SetFragmentConstBuffer;
     dispatch->impl_CommandBuffer_SetFragmentTexture     = &metal_CommandBuffer_SetFragmentTexture;
     dispatch->impl_CommandBuffer_SetDepthStencilState   = &metal_CommandBuffer_SetDepthStencilState;

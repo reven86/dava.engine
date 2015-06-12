@@ -61,6 +61,12 @@ Dispatch
     void*   (*impl_IndexBuffer_Map)( Handle, uint32, uint32 );
     void    (*impl_IndexBuffer_Unmap)( Handle );
 
+    Handle  (*impl_QueryBuffer_Create)( unsigned maxObjectCount );
+    void    (*impl_QueryBuffer_Reset)( Handle buf );
+    void    (*impl_QueryBuffer_Delete)( Handle buf );
+    bool    (*impl_QueryBuffer_IsReady)( Handle buf, uint32 objectIndex );
+    int     (*impl_QueryBuffer_Value)( Handle buf, uint32 objectIndex );
+
     Handle  (*impl_Texture_Create)( const Texture::Descriptor& desc );
     void    (*impl_Texture_Delete)( Handle );
     void*   (*impl_Texture_Map)( Handle, unsigned, TextureFace );
@@ -97,10 +103,14 @@ Dispatch
     void    (*impl_CommandBuffer_End)( Handle );
     void    (*impl_CommandBuffer_SetPipelineState)( Handle, Handle, uint32 vdecl );
     void    (*impl_CommandBuffer_SetCullMode)( Handle, CullMode );
+    void    (*impl_CommandBuffer_SetScissorRect)( Handle, ScissorRect );
+    void    (*impl_CommandBuffer_SetViewport)( Handle, Viewport );
     void    (*impl_CommandBuffer_SetVertexData)( Handle, Handle, uint32 );
     void    (*impl_CommandBuffer_SetVertexConstBuffer)( Handle, uint32, Handle );
     void    (*impl_CommandBuffer_SetVertexTexture)( Handle, uint32, Handle );
     void    (*impl_CommandBuffer_SetIndices)( Handle, Handle );
+    void    (*impl_CommandBuffer_SetQueryIndex)( Handle, uint32 );
+    void    (*impl_CommandBuffer_SetQueryBuffer)( Handle, Handle );
     void    (*impl_CommandBuffer_SetFragmentConstBuffer)( Handle, uint32, Handle );
     void    (*impl_CommandBuffer_SetFragmentTexture)( Handle, uint32, Handle );
     void    (*impl_CommandBuffer_SetDepthStencilState)( Handle, Handle );

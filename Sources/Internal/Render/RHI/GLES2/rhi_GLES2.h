@@ -54,6 +54,14 @@ void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHI( Handle vb );
 }
 
+namespace QueryBufferGLES2
+{
+void        SetupDispatch( Dispatch* dispatch );
+
+void        BeginQuery( Handle buf, uint32 objectIndex );
+void        EndQuery( Handle buf, uint32 objectIndex );
+}
+
 namespace TextureGLES2
 { 
 void        SetupDispatch( Dispatch* dispatch );

@@ -173,8 +173,45 @@ Unmap( Handle vb )
     return (*_Impl.impl_IndexBuffer_Unmap)( vb );
 }
 
-} // namespace VertexBuffer
+} // namespace IndexBuffer
 
+
+////////////////////////////////////////////////////////////////////////////////
+
+namespace QueryBuffer
+{
+
+Handle
+Create( uint32 maxObjectCount )
+{
+    return (*_Impl.impl_QueryBuffer_Create)( maxObjectCount );
+}
+
+void
+Reset( Handle buf )
+{
+    (*_Impl.impl_QueryBuffer_Reset)( buf );
+}
+
+void
+Delete( Handle buf )
+{
+    (*_Impl.impl_QueryBuffer_Delete)( buf );
+}
+
+bool
+IsReady( Handle buf, uint32 objectIndex )
+{
+    return (*_Impl.impl_QueryBuffer_IsReady)( buf, objectIndex );
+}
+
+int
+Value( Handle buf, uint32 objectIndex )
+{
+    return (*_Impl.impl_QueryBuffer_Value)( buf, objectIndex );
+}
+
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -422,6 +459,18 @@ SetCullMode( Handle cmdBuf, CullMode mode )
 }
 
 void
+SetScissorRect( Handle cmdBuf, ScissorRect rect )
+{
+    (*_Impl.impl_CommandBuffer_SetScissorRect)( cmdBuf, rect );
+}
+
+void
+SetViewport( Handle cmdBuf, Viewport vp )
+{
+    (*_Impl.impl_CommandBuffer_SetViewport)( cmdBuf, vp );
+}
+
+void
 SetVertexData( Handle cmdBuf, Handle vb, uint32 streamIndex )
 {
     (*_Impl.impl_CommandBuffer_SetVertexData)( cmdBuf, vb, streamIndex );
@@ -443,6 +492,18 @@ void
 SetIndices( Handle cmdBuf, Handle ib )
 {
     (*_Impl.impl_CommandBuffer_SetIndices)( cmdBuf, ib );
+}
+
+void
+SetQueryBuffer( Handle cmdBuf, Handle queryBuf )
+{
+    (*_Impl.impl_CommandBuffer_SetQueryBuffer)( cmdBuf, queryBuf );
+}
+
+void
+SetQueryIndex( Handle cmdBuf, uint32 index )
+{
+    (*_Impl.impl_CommandBuffer_SetQueryIndex)( cmdBuf, index );
 }
     
 void

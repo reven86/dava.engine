@@ -120,8 +120,8 @@ void GameCore::EndFrame()
     pass_desc.depthStencilBuffer.loadAction  = rhi::LOADACTION_NONE;
     pass_desc.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     pass_desc.priority                       = -10000;
-    pass_desc.viewport[2]                    = Renderer::GetFramebufferWidth();
-    pass_desc.viewport[3]                    = Renderer::GetFramebufferHeight();
+    pass_desc.viewport.width                 = Renderer::GetFramebufferWidth();
+    pass_desc.viewport.height                = Renderer::GetFramebufferHeight();
 
     rhi::HPacketList pl;
     rhi::HRenderPass pass = rhi::AllocateRenderPass( pass_desc, 1, &pl );

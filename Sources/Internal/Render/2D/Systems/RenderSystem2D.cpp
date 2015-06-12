@@ -325,9 +325,9 @@ void RenderSystem2D::BeginFrame()
     rhi::RenderPassConfig renderPass2DConfig;
     renderPass2DConfig.priority = PRIORITY_MAIN_2D;
     renderPass2DConfig.colorBuffer[0].loadAction = rhi::LOADACTION_NONE;
-    renderPass2DConfig.viewport[0] = renderPass2DConfig.viewport[1] = 0;
-    renderPass2DConfig.viewport[2] = Renderer::GetFramebufferWidth();
-    renderPass2DConfig.viewport[3] = Renderer::GetFramebufferHeight();
+    renderPass2DConfig.viewport.x = renderPass2DConfig.viewport.y = 0;
+    renderPass2DConfig.viewport.width = Renderer::GetFramebufferWidth();
+    renderPass2DConfig.viewport.height = Renderer::GetFramebufferHeight();
 
     pass2DHandle = rhi::AllocateRenderPass(renderPass2DConfig, 1, &packetList2DHandle);
 
@@ -360,8 +360,8 @@ void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* =
     renderTargetPassConfig.colorBuffer[0].clearColor[2] = 0.f;
     renderTargetPassConfig.colorBuffer[0].clearColor[3] = 0.f;
     renderTargetPassConfig.priority = PRIORITY_SERVICE_2D;
-    renderTargetPassConfig.viewport[2] = target->GetWidth();
-    renderTargetPassConfig.viewport[3] = target->GetHeight();
+    renderTargetPassConfig.viewport.width = target->GetWidth();
+    renderTargetPassConfig.viewport.height = target->GetHeight();
     if(needClear)
         renderTargetPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     else

@@ -129,13 +129,6 @@ void ViewSceneScreen::OnBack(BaseObject *caller, void *param, void *callerData)
 
 void ViewSceneScreen::Draw(const DAVA::UIGeometricData &geometricData)
 {
-    Landscape * landscape = FindLandscape(scene);
-    if (landscape)
-    {
-        Vector4 cursorCoordSize(cursorPosition.x, cursorPosition.y, cursorSize, cursorSize);
-        landscape->GetMaterial()->SetPropertyValue(Landscape::PARAM_CURSOR_COORD_SIZE, cursorCoordSize.data);
-    }
-
     uint64 startTime = SystemTimer::Instance()->GetAbsoluteNano();
 
 

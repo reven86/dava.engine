@@ -58,6 +58,8 @@ struct
 PacketList_t
 {
     Handle      cmdBuf;
+    Handle      queryBuffer;
+    Viewport    viewport;
 
     Handle      curPipelineState;
     uint32      curVertexLayout;
@@ -68,11 +70,14 @@ PacketList_t
 
     Handle      defDepthStencilState;
     Handle      defSamplerState;
+    ScissorRect defScissorRect;
 
     Handle      curVertexStream[MAX_VERTEX_STREAM_COUNT];
 
+    uint32      restoreDefScissorRect:1;
+
     // debug
-    uint32  batchIndex;
+    uint32      batchIndex;
 };
 
 typedef Pool<PacketList_t,RESOURCE_PACKET_LIST>     PacketListPool;
@@ -166,6 +171,51 @@ void
 UpdateIndexBuffer( HIndexBuffer ib, const void* data, uint32 offset, uint32 size )
 {
     IndexBuffer::Update( ib, data, offset, size );
+}
+
+
+//------------------------------------------------------------------------------
+
+HQueryBuffer
+CreateQueryBuffer( uint32 maxObjectCount )
+{
+    return HQueryBuffer(QueryBuffer::Create( maxObjectCount ));
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+ResetQueryBuffer( HQueryBuffer buf )
+{
+    QueryBuffer::Reset( buf );
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+DeleteQueryBuffer( HQueryBuffer buf )
+{
+    QueryBuffer::Delete( buf );
+}
+
+
+//------------------------------------------------------------------------------
+
+bool
+QueryIsReady( HQueryBuffer buf, uint32 objectIndex )
+{
+    return QueryBuffer::IsReady( buf, objectIndex );
+}
+
+
+//------------------------------------------------------------------------------
+
+int
+QueryValue( HQueryBuffer buf, uint32 objectIndex )
+{
+    return QueryBuffer::Value( buf, objectIndex );
 }
 
 
@@ -560,7 +610,7 @@ AllocateRenderPass( const RenderPassConfig& passDesc, uint32 packetListCount, HP
 {
     Handle       cb[8];
     DVASSERT(packetListCount<countof(cb));
-    DVASSERT(passDesc.viewport[2] > 0 && passDesc.viewport[3] > 0);
+    DVASSERT(passDesc.viewport.width > 0 && passDesc.viewport.height > 0);
 
     Handle       pass = RenderPass::Allocate( passDesc, packetListCount, cb );
     
@@ -569,7 +619,9 @@ AllocateRenderPass( const RenderPassConfig& passDesc, uint32 packetListCount, HP
         Handle          plh = PacketListPool::Alloc();
         PacketList_t*   pl  = PacketListPool::Get( plh );
 
-        pl->cmdBuf = cb[i];
+        pl->cmdBuf      = cb[i];
+        pl->queryBuffer = passDesc.queryBuffer;
+        pl->viewport    = passDesc.viewport;
 
 
         packetList[i] = HPacketList(plh);
@@ -630,6 +682,8 @@ BeginPacketList( HPacketList packetList )
     pl->defSamplerState       = def_ss;
 
     CommandBuffer::Begin( pl->cmdBuf );
+    
+    CommandBuffer::SetViewport( pl->cmdBuf, pl->viewport );
 
     CommandBuffer::SetDepthStencilState( pl->cmdBuf, pl->defDepthStencilState );
     pl->curDepthStencilState = pl->defDepthStencilState;
@@ -642,7 +696,14 @@ BeginPacketList( HPacketList packetList )
 
     for( unsigned i=0; i!=countof(pl->curVertexStream); ++i )
         pl->curVertexStream[i] = InvalidHandle;
+    
 
+    CommandBuffer::SetCullMode( pl->cmdBuf, CULL_NONE );
+    
+    if( pl->queryBuffer != rhi::InvalidHandle )
+        CommandBuffer::SetQueryBuffer( pl->cmdBuf, pl->queryBuffer );
+
+    pl->restoreDefScissorRect = false;
 
     pl->batchIndex = 0;
 }
@@ -750,6 +811,26 @@ AddPackets( HPacketList packetList, const Packet* packet, uint32 packetCount )
 
             pl->curTextureSet = p->textureSet;
         }
+
+        if( p->options & Packet::OPT_OVERRIDE_SCISSOR )
+        {
+            rhi::CommandBuffer::SetScissorRect( cmdBuf, p->scissorRect );
+            pl->restoreDefScissorRect = true;
+        }
+        else
+        {
+            if( pl->restoreDefScissorRect )
+            {
+                rhi::CommandBuffer::SetScissorRect( cmdBuf, pl->defScissorRect );
+                pl->restoreDefScissorRect = false;
+            }
+        }
+
+        
+//        if( p->queryIndex != InvalidIndex )
+        {
+            rhi::CommandBuffer::SetQueryIndex( cmdBuf, p->queryIndex );
+        }        
 
         if( p->indexBuffer != InvalidHandle )
         {
