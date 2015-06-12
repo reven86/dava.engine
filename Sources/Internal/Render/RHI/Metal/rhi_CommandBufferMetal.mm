@@ -56,14 +56,6 @@ metal_RenderPass_Allocate( const RenderPassConfig& passConf, uint32 cmdBufCount,
     Handle                      pass_h = RenderPassPool::Alloc();
     RenderPassMetal_t*          pass   = RenderPassPool::Get( pass_h );
     MTLRenderPassDescriptor*    desc   = [MTLRenderPassDescriptor renderPassDescriptor];
-
-    MTLViewport viewport;
-    viewport.originX = passConf.viewport[0];
-    viewport.originY = passConf.viewport[1];
-    viewport.width   = passConf.viewport[2];
-    viewport.height  = passConf.viewport[3];
-    viewport.znear   = 0.0;
-    viewport.zfar    = 1.0;
     
     if( !_CurDrawable )
     {
@@ -106,8 +98,6 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
         cb->rt           = desc.colorAttachments[0].texture;
         cb->cur_ib       = InvalidHandle;
         
-        [cb->encoder setViewport:viewport];
-        
         pass->cmdBuf[0] = cb_h;        
         cmdBuf[0]       = cb_h;
     }
@@ -125,8 +115,6 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
             cb->encoder     = [pass->encoder renderCommandEncoder];
             cb->rt          = desc.colorAttachments[0].texture;
             cb->cur_ib      = InvalidHandle;
-            
-            [cb->encoder setViewport:viewport];
             
             pass->cmdBuf[i] = cb_h;        
             cmdBuf[i]       = cb_h;

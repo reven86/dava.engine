@@ -238,8 +238,8 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap, const AA
     passConfig.colorBuffer[0].clearColor[3] = 0.f;
     passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     passConfig.priority = PRIORITY_SERVICE_2D;
-    passConfig.viewport[2] = notPassableTexture->GetWidth();
-    passConfig.viewport[3] = notPassableTexture->GetHeight();
+    passConfig.viewport.width = notPassableTexture->GetWidth();
+    passConfig.viewport.height = notPassableTexture->GetHeight();
     
     rhi::HPacketList packetListHandle;
     rhi::HRenderPass passTargetHandle = rhi::AllocateRenderPass(passConfig, 1, &packetListHandle);
