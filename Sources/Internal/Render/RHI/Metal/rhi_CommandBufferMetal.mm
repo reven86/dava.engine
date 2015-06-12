@@ -84,7 +84,7 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
     
     pass->cmdBuf.resize( cmdBufCount );
     pass->priority = passConf.priority;
-
+    
     if( cmdBufCount == 1 )
     {
         Handle                  cb_h = CommandBufferPool::Alloc();
@@ -95,9 +95,9 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
 //        pass->buf       = [_Metal_DefCmdQueue commandBuffer];
         pass->buf       = [_Metal_DefCmdQueue commandBufferWithUnretainedReferences]; 
 
-        cb->encoder = [pass->buf renderCommandEncoderWithDescriptor:desc];
-        cb->rt      = desc.colorAttachments[0].texture;
-        cb->cur_ib  = InvalidHandle;
+        cb->encoder      = [pass->buf renderCommandEncoderWithDescriptor:desc];
+        cb->rt           = desc.colorAttachments[0].texture;
+        cb->cur_ib       = InvalidHandle;
         
         pass->cmdBuf[0] = cb_h;        
         cmdBuf[0]       = cb_h;
@@ -113,9 +113,9 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
             Handle                  cb_h = CommandBufferPool::Alloc();
             CommandBufferMetal_t*   cb   = CommandBufferPool::Get( cb_h );
 
-            cb->encoder = [pass->encoder renderCommandEncoder];
-            cb->rt      = desc.colorAttachments[0].texture;
-            cb->cur_ib  = InvalidHandle;        
+            cb->encoder     = [pass->encoder renderCommandEncoder];
+            cb->rt          = desc.colorAttachments[0].texture;
+            cb->cur_ib      = InvalidHandle;
             
             pass->cmdBuf[i] = cb_h;        
             cmdBuf[i]       = cb_h;
@@ -227,6 +227,34 @@ metal_CommandBuffer_SetCullMode( Handle cmdBuf, CullMode mode )
             [encoder setCullMode:MTLCullModeFront ];
             break;
     }
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+metal_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
+{
+    CommandBufferMetal_t*       cb      = CommandBufferPool::Get( cmdBuf );
+    id<MTLRenderCommandEncoder> encoder = cb->encoder;
+    MTLScissorRect              rc;
+
+    if( rect.x  &&  rect.y  &&  rect.width  &&  rect.height )
+    {
+        rc.x      = rect.x;
+        rc.x      = rect.y;
+        rc.width  = rect.width;
+        rc.height = rect.height;
+    }
+    else
+    {
+        rc.x      = 0;
+        rc.x      = 0;
+        rc.width  = cb->rt.width;
+        rc.height = cb->rt.height;
+    }
+    
+    [encoder setScissorRect:rc];
 }
 
 
@@ -493,6 +521,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_End                    = &metal_CommandBuffer_End;
     dispatch->impl_CommandBuffer_SetPipelineState       = &metal_CommandBuffer_SetPipelineState;
     dispatch->impl_CommandBuffer_SetCullMode            = &metal_CommandBuffer_SetCullMode;
+    dispatch->impl_CommandBuffer_SetScissorRect         = &metal_CommandBuffer_SetScissorRect;
     dispatch->impl_CommandBuffer_SetVertexData          = &metal_CommandBuffer_SetVertexData;
     dispatch->impl_CommandBuffer_SetVertexConstBuffer   = &metal_CommandBuffer_SetVertexConstBuffer;
     dispatch->impl_CommandBuffer_SetVertexTexture       = &metal_CommandBuffer_SetVertexTexture;
