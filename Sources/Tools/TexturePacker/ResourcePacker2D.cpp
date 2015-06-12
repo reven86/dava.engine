@@ -402,6 +402,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
         we need ask cache server about files from this cache and currentCommandFlags + command line arguments
     */
     AssetCache::CacheItemKey cacheKey;
+    if (IsUsingCache())
     {   //Detect cache key
         auto md5FileName = FilePath::CreateWithNewExtension(processDirectoryPath + "dir.md5", ".md5");
         ScopedPtr<File> md5File(File::Create(md5FileName, File::OPEN | File::READ));
@@ -422,20 +423,13 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
         MD5::ForData(reinterpret_cast<const uint8 *>(strDataPtr), static_cast<uint32>(strDataSize), cacheKey.keyData.hash.secondary);
     }
     
-    bool skipRepackOfFolder = !modified;
-    if(modified)
-    {
-        uint64 getTime = SystemTimer::Instance()->AbsoluteMS();
-        skipRepackOfFolder = GetFilesFromCache(cacheKey, outputPath);
-        getTime = SystemTimer::Instance()->AbsoluteMS() - getTime;
-        Logger::Info("[%s - %.2lf secs] - GET FROM CACHE", inputPath.GetAbsolutePathname().c_str(), (float64)(getTime) / 1000.0f);
-    }
+    bool needRepack = modified || !GetFilesFromCache(cacheKey, inputPath, outputPath);
 
     //TODO:AC: end
     
     ScopedPtr<FileList> fileList(new FileList(inputPath));
     fileList->Sort();
-    if(!skipRepackOfFolder)
+    if (needRepack)
     {
         uint64 packTime = SystemTimer::Instance()->AbsoluteMS();
 
@@ -552,15 +546,10 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
         }
         definitionFileList.clear();
         
-        
-        
-        auto addTime = SystemTimer::Instance()->AbsoluteMS();
-        AddFilesToCache(cacheKey, outputPath);
-        addTime = SystemTimer::Instance()->AbsoluteMS() - addTime;
-        Logger::Info("[%s - %.2lf secs] - AddToCache", inputPath.GetAbsolutePathname().c_str(), (float64)addTime / 1000.0f);
+        AddFilesToCache(cacheKey, inputPath, outputPath);
     }
     
-	//recursivity
+	// process subfolders recursively
 	for (int fi = 0; fi < fileList->GetCount(); ++fi)
 	{
 		if (fileList->IsDirectory(fi))
@@ -590,8 +579,13 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 	}
 }
 
-bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey &key, const FilePath & outputPath)
+bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey &key, const FilePath & inputPath, const FilePath & outputPath)
 {
+    if (!IsUsingCache())
+    {
+        return false;
+    }
+
     auto oldDir = FileSystem::Instance()->GetCurrentWorkingDirectory();
     FileSystem::Instance()->SetCurrentWorkingDirectory(cacheClientTool.GetDirectory());
     SCOPE_EXIT
@@ -599,38 +593,66 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey &key, co
         FileSystem::Instance()->SetCurrentWorkingDirectory(oldDir);
     };
 
-    Vector<String> arruments;
-    arruments.push_back("get");
-    arruments.push_back("-h");
-    arruments.push_back(key.ToString());
+    Vector<String> arguments;
+    arguments.push_back("get");
+
+    arguments.push_back("-h");
+    arguments.push_back(key.ToString());
+
+    arguments.push_back("-f");
+    arguments.push_back(outputPath.GetAbsolutePathname());
+
+    if (!cacheClientIp.empty())
+    {
+        arguments.push_back("-ip");
+        arguments.push_back(cacheClientIp);
+    }
+
+    if (!cacheClientTimeout.empty())
+    {
+        arguments.push_back("-t");
+        arguments.push_back(cacheClientTimeout);
+    }
     
-    arruments.push_back("-f");
-    arruments.push_back(outputPath.GetAbsolutePathname());
-    
-    Process cacheClient(cacheClientTool, arruments);
+    uint64 getTime = SystemTimer::Instance()->AbsoluteMS();
+    Process cacheClient(cacheClientTool, arguments);
     if(cacheClient.Run(false))
     {
         cacheClient.Wait();
         
         auto exitCode = cacheClient.GetExitCode();
-        if(exitCode != 0)
+        getTime = SystemTimer::Instance()->AbsoluteMS() - getTime;
+
+        if (exitCode == 0)
         {
+            Logger::Info("[%s - %.2lf secs] - GOT FROM CACHE", inputPath.GetAbsolutePathname().c_str(), (float64)(getTime) / 1000.0f);
+            return true;
+        }
+        else
+        {
+            Logger::Info("[%s - %.2lf secs] - attempted to retrieve from cache, result code %d", inputPath.GetAbsolutePathname().c_str(), (float64)(getTime) / 1000.0f, exitCode);
             const String& procOutput = cacheClient.GetOutput();
-            if(procOutput.size() > 0)
+            if(!procOutput.empty())
             {
                 Logger::FrameworkDebug("\nCacheClientLog: %s", procOutput.c_str());
             }
+            return false;
         }
-        
-        return (exitCode == 0);
     }
-
-    
-    return false;
+    else
+    {
+        Logger::Warning("Can't run process '%s'", cacheClientTool.GetAbsolutePathname().c_str());
+        return false;
+    }
 }
 
-bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey &key, const FilePath & outputPath)
+bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey &key, const FilePath & inputPath, const FilePath & outputPath)
 {
+    if (!IsUsingCache())
+    {
+        return false;
+    }
+
     auto oldDir = FileSystem::Instance()->GetCurrentWorkingDirectory();
     FileSystem::Instance()->SetCurrentWorkingDirectory(cacheClientTool.GetDirectory());
     SCOPE_EXIT
@@ -656,39 +678,68 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey &key, cons
     
     if(fileListString.empty() == false)
     {
-        Vector<String> arruments;
-        arruments.push_back("add");
-        arruments.push_back("-h");
-        arruments.push_back(key.ToString());
-        arruments.push_back("-f");
-        arruments.push_back(fileListString);
-        
-        if(outFilesList->GetFileCount() > 20)
+        Vector<String> arguments;
+        arguments.push_back("add");
+
+        arguments.push_back("-h");
+        arguments.push_back(key.ToString());
+
+        arguments.push_back("-f");
+        arguments.push_back(fileListString);
+
+        if (!cacheClientIp.empty())
         {
-            arruments.push_back("-t");
-            arruments.push_back("5");   //enlarge default timeout
+            arguments.push_back("-ip");
+            arguments.push_back(cacheClientIp);
+        }
+
+        if (!cacheClientTimeout.empty())
+        {
+            arguments.push_back("-t");
+            arguments.push_back(cacheClientTimeout);
+        }
+        else if(outFilesList->GetFileCount() > 20)
+        {
+            arguments.push_back("-t");
+            arguments.push_back("5");   //enlarge default timeout
         }
         
-        Process cacheClient(cacheClientTool, arruments);
-        if(cacheClient.Run(false))
+        uint64 getTime = SystemTimer::Instance()->AbsoluteMS();
+        Process cacheClient(cacheClientTool, arguments);
+        if (cacheClient.Run(false))
         {
             cacheClient.Wait();
-            
+
             auto exitCode = cacheClient.GetExitCode();
-            if(exitCode != 0)
+            getTime = SystemTimer::Instance()->AbsoluteMS() - getTime;
+
+            if (exitCode == 0)
             {
+                Logger::Info("[%s - %.2lf secs] - ADDED TO CACHE", inputPath.GetAbsolutePathname().c_str(), (float64)(getTime) / 1000.0f);
+                return true;
+            }
+            else
+            {
+                Logger::Info("[%s - %.2lf secs] - attempted to add to cache, result code %d", inputPath.GetAbsolutePathname().c_str(), (float64)(getTime) / 1000.0f, exitCode);
                 const String& procOutput = cacheClient.GetOutput();
-                if(procOutput.size() > 0)
+                if (!procOutput.empty())
                 {
                     Logger::FrameworkDebug("\nCacheClientLog: %s", procOutput.c_str());
                 }
+                return false;
             }
-            
-            return (exitCode == 0);
+        }
+        else
+        {
+            Logger::Warning("Can't run process '%s'", cacheClientTool.GetAbsolutePathname().c_str());
+            return false;
         }
     }
-    
-    return false;
+    else
+    {
+        Logger::FrameworkDebug("Dir [%s] is empty. Nothing to add to cache", outputPath);
+        return false;
+    }
 }
     
 const Set<String>& ResourcePacker2D::GetErrors() const
@@ -702,9 +753,18 @@ void ResourcePacker2D::AddError(const String& errorMsg)
 	errors.insert(errorMsg);
 }
     
-void ResourcePacker2D::SetCacheClientTool(const DAVA::FilePath &path)
+void ResourcePacker2D::SetCacheClientTool(const DAVA::FilePath &path, const String& ip, const String& timeout)
 {
     cacheClientTool = path;
+    cacheClientIp = ip;
+    cacheClientTimeout = timeout;
+}
+
+void ResourcePacker2D::ClearCacheClientTool()
+{
+    cacheClientTool = "";
+    cacheClientIp.clear();
+    cacheClientTimeout.clear();
 }
 
 };

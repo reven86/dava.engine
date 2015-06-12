@@ -50,6 +50,9 @@ void PrintUsage()
     printf("\t-s or --silent - silent mode. Log only warnings and errors.\n");
     printf("\t-teamcity - extra output in teamcity format\n");
     printf("\t-md5mode - only process md5 for output resources\n");
+    printf("\t-useCache - use asset cache\n");
+    printf("\t-ip - asset cache ip\n");
+    printf("\t-t - asset cache timeout\n");
 
     printf("\n");
     printf("resourcepacker [src_dir] - will pack resources from src_dir\n");
@@ -138,8 +141,6 @@ void ProcessRecourcePacker()
 #endif
     
     PVRConverter::Instance()->SetPVRTexTool(toolFolderPath + pvrTexToolName);
-    resourcePacker->SetCacheClientTool(toolFolderPath + cacheToolName);
-    
     
     uint64 elapsedTime = SystemTimer::Instance()->AbsoluteMS();
     Logger::FrameworkDebug("[Resource Packer Started]");
@@ -160,6 +161,19 @@ void ProcessRecourcePacker()
 		{
 			exportForGPU = GPU_ORIGIN;
 		}
+    }
+
+    if (CommandLineParser::CommandIsFound(String("-useCache")))
+    {
+        Logger::FrameworkDebug("Using asset cache");
+        String ip = CommandLineParser::GetCommandParam(String("-ip"));
+        String timeout = CommandLineParser::GetCommandParam(String("-t"));
+        resourcePacker->SetCacheClientTool(toolFolderPath + cacheToolName, ip, timeout);
+    }
+    else
+    {
+        Logger::FrameworkDebug("Asset cache will not be used");
+        resourcePacker->ClearCacheClientTool();
     }
     
     if (CommandLineParser::CommandIsFound(String("-md5mode")))

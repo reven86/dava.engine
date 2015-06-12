@@ -70,14 +70,16 @@ public:
 	void FillSpriteFilesMap(const FilePath & inputPathName);
     
     
-    void SetCacheClientTool(const FilePath & path);
+    void SetCacheClientTool(const FilePath & path, const String& ip, const String& timeout);
+    void ClearCacheClientTool();
+    bool IsUsingCache() const;
 
 protected:
     bool isRecursiveFlagSet(const Vector<String> & flags);
     void AddError(const String& errorMsg);
     
-    bool GetFilesFromCache(const AssetCache::CacheItemKey &key, const FilePath & outputPath);
-    bool AddFilesToCache(const AssetCache::CacheItemKey &key, const FilePath & outputPath);
+    bool GetFilesFromCache(const AssetCache::CacheItemKey &key, const FilePath & inputPath, const FilePath & outputPath);
+    bool AddFilesToCache(const AssetCache::CacheItemKey &key, const FilePath & inputPath, const FilePath & outputPath);
     
 public:
     
@@ -98,10 +100,18 @@ public:
 	
 protected:
     FilePath cacheClientTool;
+    String cacheClientIp;
+    String cacheClientTimeout;
     
     
 	Set<String> errors;
 };
+
+inline bool ResourcePacker2D::IsUsingCache() const
+{
+    return (!cacheClientTool.IsEmpty());
+}
+
 };
 
 
