@@ -26,23 +26,50 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __TAGMODEL_H__
+#define __TAGMODEL_H__
 
-#pragma once
-#include "qcustomplot.h"
-class MemProfInfoModel;
-class MemProfPlot : public QCustomPlot
+#include <QColor>
+#include <QAbstractTableModel>
+
+#include "Base/BaseTypes.h"
+#include "MemoryManager/MemoryManagerTypes.h"
+
+class ProfilingSession;
+class MemoryStatItem;
+
+class TagModel : public QAbstractTableModel
 {
     Q_OBJECT
+
 public:
-    explicit MemProfPlot(QWidget *parent = 0);
-    void mousePressEvent(QMouseEvent *event) override;
-    void mouseMoveEvent(QMouseEvent *event) override;
-    ~MemProfPlot();
-    void setModel(MemProfInfoModel * model);
-protected slots:
-    //bind to model data change signal
-    void dataChanged(const QModelIndex & topLeft, const QModelIndex & bottomRight);
-protected:
-    MemProfInfoModel * model;
+    enum {
+        CLM_NAME = 0,
+        CLM_ALLOC_APP,
+        CLM_NBLOCKS,
+        NCOLUMNS = 3
+    };
+
+public:
+    TagModel(QObject* parent = nullptr);
+    virtual ~TagModel();
+
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+
+    void BeginNewProfileSession(ProfilingSession* profSession);
+    void SetCurrentValues(const MemoryStatItem& item);
+    void SetTagColors(QColor colorActive, QColor colorInactive);
+
+private:
+    ProfilingSession* profileSession;
+
+    DAVA::uint64 timestamp;
+    DAVA::uint32 activeTags;
+    DAVA::Vector<DAVA::TagAllocStat> curValues;
+    QColor colors[2];
 };
 
+#endif  // __TAGMODEL_H__
