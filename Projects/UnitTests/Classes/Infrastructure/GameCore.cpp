@@ -39,34 +39,60 @@ using namespace DAVA;
 namespace
 {
 
-String runOnlyThisTest = "";
-bool teamcityOutputEnabled = true;
+// List of semicolon separated names specifying which test classes should run
+String runOnlyTheseTests = "";
+// List of semicolon separated names specifying which test classes shouldn't run. This list takes precedence over runOnlyTheseTests
+String excludeTheseTests = "";
 
+bool teamcityOutputEnabled = true;      // Flag whether to enable TeamCity output
+bool teamcityCaptureStdout = true;      // Flag whether to set TeamCity option 'captureStandardOutput=true'
+bool enablePerTestOutput = true;        // Flag whether to show progress of each test in test class
+
+}
+
+void GameCore::ProcessCommandLine()
+{
+    CommandLineParser* cmdline = CommandLineParser::Instance();
+    if (cmdline->CommandIsFound("-only_test"))
+    {
+        runOnlyTheseTests = cmdline->GetCommandParam("-only_test");
+    }
+    if (cmdline->CommandIsFound("-exclude_test"))
+    {
+        excludeTheseTests = cmdline->GetCommandParam("-only_test");
+    }
+    if (cmdline->CommandIsFound("-noteamcity"))
+    {
+        teamcityOutputEnabled = false;
+    }
+    if (cmdline->CommandIsFound("-teamcity_capture_stdout"))
+    {
+        teamcityCaptureStdout = true;
+    }
+    if (cmdline->CommandIsFound("-per_test_output"))
+    {
+        enablePerTestOutput = true;
+    }
 }
 
 void GameCore::OnAppStarted()
 {
-    if (CommandLineParser::Instance()->CommandIsFound("-only_test"))
-    {
-        runOnlyThisTest = CommandLineParser::Instance()->GetCommandParam("-only_test");
-    }
-    if (CommandLineParser::Instance()->CommandIsFound("-noteamcity"))
-    {
-        teamcityOutputEnabled = false;
-    }
+    ProcessCommandLine();
 
     if (teamcityOutputEnabled)
     {
+        teamCityOutput.SetCaptureStdoutFlag(teamcityCaptureStdout);
         Logger::Instance()->AddCustomOutput(&teamCityOutput);
     }
 
     UnitTests::TestCore::Instance()->Init(MakeFunction(this, &GameCore::OnTestStarted),
                                           MakeFunction(this, &GameCore::OnTestFinished),
                                           MakeFunction(this, &GameCore::OnTestFailed));
-    if (!runOnlyThisTest.empty())
+    if (!runOnlyTheseTests.empty())
     {
-        UnitTests::TestCore::Instance()->RunOnlyThisTest(runOnlyThisTest);
+        UnitTests::TestCore::Instance()->RunOnlyThisTest(runOnlyTheseTests);
     }
+    UnitTests::TestCore::Instance()->SetPerTestProgress(enablePerTestOutput);
 
     if (!UnitTests::TestCore::Instance()->HasTests())
     {
@@ -113,14 +139,14 @@ void GameCore::OnError()
     DavaDebugBreak();
 }
 
-void GameCore::OnTestStarted(const DAVA::String& testClassName)
+void GameCore::OnTestStarted(const DAVA::String& testClassName, const DAVA::String& testName)
 {
-    Logger::Info("%s", TeamcityTestsOutput::FormatTestStarted(testClassName).c_str());
+    Logger::Info("%s", TeamcityTestsOutput::FormatTestStarted(testClassName, testName, enablePerTestOutput).c_str());
 }
 
-void GameCore::OnTestFinished(const DAVA::String& testClassName)
+void GameCore::OnTestFinished(const DAVA::String& testClassName, const DAVA::String& testName)
 {
-    Logger::Info("%s", TeamcityTestsOutput::FormatTestFinished(testClassName).c_str());
+    Logger::Info("%s", TeamcityTestsOutput::FormatTestFinished(testClassName, testName, enablePerTestOutput).c_str());
 }
 
 void GameCore::OnTestFailed(const String& testClassName, const String& testName, const String& condition, const char* filename, int lineno, const String& userMessage)
@@ -136,7 +162,7 @@ void GameCore::OnTestFailed(const String& testClassName, const String& testName,
     {
         errorString = Format("%s:%d: %s (%s)", filename, lineno, testName.c_str(), userMessage.c_str());
     }
-    Logger::Error("%s", TeamcityTestsOutput::FormatTestFailed(testClassName, condition, errorString).c_str());
+    Logger::Error("%s", TeamcityTestsOutput::FormatTestFailed(testClassName, testName, condition, errorString, enablePerTestOutput).c_str());
 }
 
 void GameCore::ProcessTests(float32 timeElapsed)
