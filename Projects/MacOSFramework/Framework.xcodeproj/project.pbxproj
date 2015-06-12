@@ -1182,6 +1182,8 @@
 		84CB671F191FC8850086483D /* ImageSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6710191FC8850086483D /* ImageSystem.h */; };
 		84CB6720191FC8850086483D /* LibDdsHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6711191FC8850086483D /* LibDdsHelper.cpp */; };
 		84CB6721191FC8850086483D /* LibDdsHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6712191FC8850086483D /* LibDdsHelper.h */; };
+		84CB6722191FC8850086483D /* LibJpegPHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6713191FC8850086483D /* LibJpegPHelper.cpp */; };
+		84CB6723191FC8850086483D /* LibJpegPHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6714191FC8850086483D /* LibJpegPHelper.h */; };
 		84CB6722191FC8850086483D /* LibWebPHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6713191FC8850086483D /* LibWebPHelper.cpp */; };
 		84CB6723191FC8850086483D /* LibWebPHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84CB6714191FC8850086483D /* LibWebPHelper.h */; };
 		84CB6724191FC8850086483D /* LibPngHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84CB6715191FC8850086483D /* LibPngHelper.cpp */; };
