@@ -43,7 +43,7 @@ DAVA_TESTCLASS(Cpp14Test)
 {
     DAVA_TEST(CompileTest)
     {
-        TEST_VERIFY(f() == 42);
+        TEST_VERIFY(f() == 421);
     }
 
     DAVA_TEST(ScopeExit)
@@ -54,5 +54,31 @@ DAVA_TESTCLASS(Cpp14Test)
             TEST_VERIFY(0 == i);
         }
         TEST_VERIFY(1 == i);
+    }
+};
+
+class MyTestBase : public DAVA::UnitTests::TestClass
+{
+public:
+    int Get(int v)
+    {
+        return v >= 0 ? 42 : -42;
+    }
+};
+
+DAVA_TESTCLASS_CUSTOM_BASE(CustomBaseTest, MyTestBase)
+{
+    DAVA_TEST(Test1)
+    {
+        Logger::Debug("Test1 enter");
+        TEST_VERIFY(Get(1) == 42);
+        Logger::Debug("Test1 leave");
+    }
+
+    DAVA_TEST(Test2)
+    {
+        Logger::Debug("Test2 enter");
+        TEST_VERIFY(Get(-1) == 42);
+        Logger::Debug("Test2 leave");
     }
 };
