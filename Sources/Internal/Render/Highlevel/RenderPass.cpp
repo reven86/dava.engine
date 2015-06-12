@@ -286,11 +286,11 @@ void MainForwardRenderPass::Draw(RenderSystem * renderSystem)
     Camera *mainCamera = renderSystem->GetMainCamera();        
     Camera *drawCamera = renderSystem->GetDrawCamera();   
     
-    /*Vector4 clip(0, 0, 1, -1);
+    Vector4 clip(0, 0, 1, -1);
     drawCamera->SetTarget(Vector3(0, 0, 0));
-    drawCamera->SetPosition(Vector3(5, 5, 5));*/
+    drawCamera->SetPosition(Vector3(5, 5, 5));
 
-    SetupCameraParams(mainCamera, drawCamera/*, &clip*/);
+    SetupCameraParams(mainCamera, drawCamera, &clip);
 	
     PrepareVisibilityArrays(mainCamera, renderSystem);        
 
