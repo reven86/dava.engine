@@ -68,6 +68,9 @@ namespace DAVA
         bool IsUseRtl() const;
         void SetUseRtl(bool use);
         
+        bool IsSkipInvisibleControls() const;
+        void SetSkipInvisibleControls(bool skip);
+        
     private:
         int32 GetOrientationAsInt() const;
         void SetOrientationFromInt(int32 type);
@@ -77,12 +80,14 @@ namespace DAVA
         float32 padding = 0.0f;
         float32 spacing = 0.0f;
         bool useRtl = false;
+        bool skipInvisibleControls = false;
         
     public:
         INTROSPECTION_EXTEND(UILinearLayoutComponent, UIComponent,
                              PROPERTY("orientation", InspDesc("Orientation", GlobalEnumMap<eOrientation>::Instance()), GetOrientationAsInt, SetOrientationFromInt, I_SAVE | I_VIEW | I_EDIT)
                              PROPERTY("padding", "Padding", GetPadding, SetPadding, I_SAVE | I_VIEW | I_EDIT)
                              PROPERTY("spacing", "Spacing", GetSpacing, SetSpacing, I_SAVE | I_VIEW | I_EDIT)
+                             PROPERTY("skipInvisible", "Skip Invisible Controls", IsSkipInvisibleControls, SetSkipInvisibleControls, I_SAVE | I_VIEW | I_EDIT)
                              PROPERTY("useRtl", "Use Rtl Align", IsUseRtl, SetUseRtl, I_SAVE | I_VIEW | I_EDIT)
                              );
         

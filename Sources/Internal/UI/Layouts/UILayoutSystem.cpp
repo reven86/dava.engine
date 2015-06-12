@@ -26,10 +26,32 @@ namespace DAVA
         isRtl = rtl;
     }
 
+    bool UILayoutSystem::IsDirty() const
+    {
+        return dirty;
+    }
+    
+    void UILayoutSystem::SetDirty()
+    {
+        dirty = true;
+    }
+    
+    void UILayoutSystem::ResetDirty()
+    {
+        dirty = false;
+    }
     void UILayoutSystem::ApplyLayout(UIControl *control)
     {
         DoMeasurePhase(control);
         DoLayoutPhase(control);
+
+        std::sort(changedControls.begin(), changedControls.end());
+        auto end = std::unique(changedControls.begin(), changedControls.end());
+        for (auto it = changedControls.begin(); it != end; it++)
+        {
+            (*it)->OnSizeChanged();
+        }
+        changedControls.clear();
     }
     
     void UILayoutSystem::DoMeasurePhase(UIControl *control)
@@ -80,7 +102,10 @@ namespace DAVA
         Vector2 newSize = control->GetSize();
         
         const DAVA::List<UIControl*> &children = control->GetChildren();
+        UILinearLayoutComponent *layout = control->GetComponent<UILinearLayoutComponent>();
+        bool skipInvisible = layout ? layout->IsSkipInvisibleControls() : false;
         
+
         for (int32 axis = 0; axis < 2; axis++)
         {
             UISizeHintComponent::eSizePolicy policy = sizeHint->GetPolicyByAxis(axis);
@@ -99,13 +124,19 @@ namespace DAVA
                     
                 case UISizeHintComponent::PERCENT_OF_CHILDREN_SUM:
                     for (UIControl *child : children)
-                        value += child->GetSize().data[axis];
+                    {
+                        if (!skipInvisible || child->GetVisible())
+                            value += child->GetSize().data[axis];
+                    }
                     value = value * hintValue / 100.0f;
                     break;
                     
                 case UISizeHintComponent::PERCENT_OF_MAX_CHILD:
                     for (UIControl *child : children)
-                        value = Max(value, child->GetSize().data[axis]);
+                    {
+                        if (!skipInvisible || child->GetVisible())
+                            value = Max(value, child->GetSize().data[axis]);
+                    }
                     value = value * hintValue / 100.0f;
                     break;
 
@@ -135,7 +166,6 @@ namespace DAVA
                 policy == UISizeHintComponent::PERCENT_OF_FIRST_CHILD ||
                 policy == UISizeHintComponent::PERCENT_OF_LAST_CHILD)
             {
-                UILinearLayoutComponent *layout = control->GetComponent<UILinearLayoutComponent>();
                 if (layout && layout->GetOrientation() == axis)
                 {
                     if (policy == UISizeHintComponent::PERCENT_OF_CHILDREN_SUM && !children.empty())
@@ -148,7 +178,10 @@ namespace DAVA
         }
         
         if (control->GetSize() != newSize)
+        {
             control->SetSize(newSize);
+            changedControls.push_back(control);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -165,10 +198,14 @@ namespace DAVA
             return;
         
         bool inverse = isRtl && layout->IsUseRtl() && layout->GetOrientation() == UILinearLayoutComponent::HORIZONTAL;
-        
+        const bool skipInvisible = layout->IsSkipInvisibleControls();
+
         const int32 axis = static_cast<int32>(layout->GetOrientation());
         for (UIControl *child : children)
         {
+            if (skipInvisible && !child->GetVisible())
+                continue;
+            
             const UISizeHintComponent *sizeHint = child->GetComponent<UISizeHintComponent>();
             if (sizeHint)
             {
@@ -193,6 +230,9 @@ namespace DAVA
             position = contentSize + padding;
         for (UIControl *child : children)
         {
+            if (skipInvisible && !child->GetVisible())
+                continue;
+
             float32 size;
             const UISizeHintComponent *sizeHint = child->GetComponent<UISizeHintComponent>();
             if (sizeHint)
@@ -226,6 +266,8 @@ namespace DAVA
                 position -= size + spacing;
             else
                 position += size + spacing;
+            
+            changedControls.push_back(child);
         }
     }
 
@@ -246,19 +288,17 @@ namespace DAVA
                 {
                     float32 size = control->GetSize().dx * sizeHint->GetHorizontalValue() / 100.0f;
                     child->SetSize(Vector2(size, child->GetSize().dy));
+                    changedControls.push_back(child);
                 }
                 if (allowVertical && sizeHint->GetVerticalPolicy() == UISizeHintComponent::PERCENT_OF_PARENT)
                 {
                     float32 size = control->GetSize().dy * sizeHint->GetVerticalValue() / 100.0f;
                     child->SetSize(Vector2(child->GetSize().dx, size));
+                    changedControls.push_back(child);
                 }
             }
             
             UIAnchorHintComponent *hint = child->GetComponent<UIAnchorHintComponent>();
-            if (control->GetName() == "tankEquipment")
-            {
-                Logger::Debug("Equipment");
-            }
             if (hint)
             {
                 const Rect &rect = child->GetRect();
@@ -306,6 +346,7 @@ namespace DAVA
                 {
                     child->SetSize(newRect.GetSize());
                     child->SetPosition(newRect.GetPosition() + child->GetPivotPoint());
+                    changedControls.push_back(child);
                 }
             }
         }

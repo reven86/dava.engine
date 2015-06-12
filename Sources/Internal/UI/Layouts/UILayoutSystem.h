@@ -53,8 +53,12 @@ namespace DAVA
         bool IsRtl() const;
         void SetRtl(bool rtl);
 
+        bool IsDirty() const;
+        void SetDirty();
+        void ResetDirty();
+        
         void ApplyLayout(UIControl *control);
-
+        
     private:
         void DoMeasurePhase(UIControl *control);
         void DoLayoutPhase(UIControl *control);
@@ -76,6 +80,8 @@ namespace DAVA
 
     private:
         bool isRtl = false;
+        bool dirty = true;
+        DAVA::Vector<UIControl*> changedControls;
     };
     
     

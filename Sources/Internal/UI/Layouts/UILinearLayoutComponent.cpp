@@ -67,6 +67,16 @@ namespace DAVA
         spacing = newSpacing;
     }
 
+    bool UILinearLayoutComponent::IsSkipInvisibleControls() const
+    {
+        return skipInvisibleControls;
+    }
+    
+    void UILinearLayoutComponent::SetSkipInvisibleControls(bool skip)
+    {
+        skipInvisibleControls = skip;
+    }
+
     bool UILinearLayoutComponent::IsUseRtl() const
     {
         return useRtl;
