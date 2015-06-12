@@ -154,7 +154,7 @@ void HeightmapEditorSystem::Input(DAVA::UIEvent *event)
 				if (drawingType == HEIGHTMAP_DRAW_ABSOLUTE_DROPPER ||
 					drawingType == HEIGHTMAP_DROPPER)
 				{
-					curHeight = drawSystem->GetHeightAtPoint(GetHeightmapPositionFromCursor());
+					curHeight = drawSystem->GetHeightAtHeightmapPoint(GetHeightmapPositionFromCursor());
 					
 					SceneSignals::Instance()->EmitDropperHeightChanged(dynamic_cast<SceneEditor2*>(GetScene()), curHeight);
 				}
@@ -312,7 +312,7 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
 
 			case HEIGHTMAP_DROPPER:
 			{
-				float32 curHeight = drawSystem->GetHeightAtPoint(GetHeightmapPositionFromCursor());
+				float32 curHeight = drawSystem->GetHeightAtHeightmapPoint(GetHeightmapPositionFromCursor());
 				SceneSignals::Instance()->EmitDropperHeightChanged(dynamic_cast<SceneEditor2*>(GetScene()), curHeight);
 				return;
 			}
@@ -476,6 +476,6 @@ float32 HeightmapEditorSystem::GetDropperHeight()
 
 Vector2 HeightmapEditorSystem::GetHeightmapPositionFromCursor() const
 {
-    return Vector2(cursorPosition.x, landscapeSize - 1 - cursorPosition.y);
+    return originalHeightmap->Size() * Vector2(cursorPosition.x, 1.f - cursorPosition.y);
 }
 

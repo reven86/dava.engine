@@ -163,7 +163,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
 {
 	if (!notPassableTerrainProxy)
 	{
-		notPassableTerrainProxy = new NotPassableTerrainProxy();
+		notPassableTerrainProxy = new NotPassableTerrainProxy(baseLandscape->GetHeightmap()->Size());
 	}
 	
 	if (notPassableTerrainProxy->IsEnabled())
@@ -222,12 +222,12 @@ void LandscapeEditorDrawSystem::SetCursorTexture(Texture* cursorTexture)
 	landscapeProxy->SetCursorTexture(cursorTexture);
 }
 
-void LandscapeEditorDrawSystem::SetCursorSize(uint32 cursorSize)
+void LandscapeEditorDrawSystem::SetCursorSize(float32 cursorSize)
 {
 	this->cursorSize = cursorSize;
 	if (landscapeProxy)
 	{
-		landscapeProxy->SetCursorSize((float32)cursorSize);
+		landscapeProxy->SetCursorSize(cursorSize);
 		UpdateCursorPosition();
 	}
 }
@@ -279,24 +279,6 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
             landscapeProxy->SetToolTexture(customColorsProxy->GetTexture());
 		}
 		customColorsProxy->ResetTargetChanged();
-	}
-
-	if (visibilityToolProxy && visibilityToolProxy->IsTextureChanged())
-	{
-		if (landscapeProxy)
-		{
-            landscapeProxy->SetToolTexture(visibilityToolProxy->GetTexture());
-		}
-		visibilityToolProxy->ResetTextureChanged();
-	}
-
-	if (rulerToolProxy && rulerToolProxy->IsTextureChanged())
-	{
-		if (rulerToolProxy)
-		{
-            landscapeProxy->SetToolTexture(rulerToolProxy->GetTexture());
-		}
-		rulerToolProxy->ResetTextureChanged();
 	}
 }
 
@@ -360,7 +342,7 @@ Rect LandscapeEditorDrawSystem::GetLandscapeRect()
 	return Rect(landPos, landSize);
 }
 
-float32 LandscapeEditorDrawSystem::GetHeightAtPoint(const Vector2& point)
+float32 LandscapeEditorDrawSystem::GetHeightAtHeightmapPoint(const Vector2& point)
 {
 	Heightmap *heightmap = GetHeightmapProxy();
 	int32 x = (int32)point.x;
@@ -381,9 +363,19 @@ float32 LandscapeEditorDrawSystem::GetHeightAtPoint(const Vector2& point)
 
 float32 LandscapeEditorDrawSystem::GetHeightAtTexturePoint(const FastName& level, const Vector2& point)
 {
-	if (GetTextureRect(level).PointInside(point))
+    if (GetTextureRect(level).PointInside(point))
+    {
+        return GetHeightAtHeightmapPoint(TexturePointToHeightmapPoint(level, point));
+    }
+    
+    return 0.f;
+}
+
+float32 LandscapeEditorDrawSystem::GetHeightAtNormalizedPoint(const Vector2& point)
+{
+	if (point.x >= 0.f && point.x <= 1.f && point.y >= 0.f && point.y <= 1.f)
 	{
-		return GetHeightAtPoint(TexturePointToHeightmapPoint(level, point));
+		return GetHeightAtHeightmapPoint(point * GetHeightmapProxy()->Size());
 	}
 
 	return 0.f;

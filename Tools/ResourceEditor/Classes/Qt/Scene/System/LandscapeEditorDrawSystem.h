@@ -88,7 +88,7 @@ public:
 	void EnableCursor();
 	void DisableCursor();
 	void SetCursorTexture(Texture* cursorTexture);
-	void SetCursorSize(uint32 cursorSize);
+	void SetCursorSize(float32 cursorSize);
 	void SetCursorPosition(const Vector2& cursorPos);
 	void UpdateCursorPosition();
 	
@@ -99,8 +99,9 @@ public:
 	float32 GetTextureSize(const FastName& level);
 	Vector3 GetLandscapeSize();
 	float32 GetLandscapeMaxHeight();
-	float32 GetHeightAtPoint(const Vector2& point);
-	float32 GetHeightAtTexturePoint(const FastName& level, const Vector2& point);
+	float32 GetHeightAtHeightmapPoint(const Vector2& point);
+    float32 GetHeightAtNormalizedPoint(const Vector2& point);
+    float32 GetHeightAtTexturePoint(const FastName& level, const Vector2& point);
 	KeyedArchive* GetLandscapeCustomProperties();
 
 	Vector2 HeightmapPointToTexturePoint(const FastName& level, const Vector2& point);
@@ -128,7 +129,7 @@ public:
 	
 	static String GetDescriptionByError(eErrorType error);
 
-private:
+protected:
     
     void UpdateBaseLandscapeHeightmap();
     eErrorType Init();
@@ -156,8 +157,6 @@ private:
 	Texture* cursorTexture;
 	uint32 cursorSize;
 	Vector2 cursorPosition;
-
-	UniqueHandle noBlendDrawState;
 
     FilePath sourceTilemaskPath;
 };

@@ -628,8 +628,8 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, rhi::Textur
     tx->height = dy;
     tx->textureType = requestedType;
     tx->texDescriptor->format = format;
-    tx->texDescriptor->drawSettings.mipFilter = rhi::TEXMIPFILTER_NONE;
-
+    tx->samplerState.mipFilter = tx->texDescriptor->drawSettings.mipFilter = rhi::TEXMIPFILTER_NONE;
+    
     const PixelFormatDescriptor & formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(format);
     rhi::Texture::Descriptor descriptor;
     descriptor.width = tx->width;

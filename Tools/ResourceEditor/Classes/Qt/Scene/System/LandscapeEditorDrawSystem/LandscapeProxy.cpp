@@ -49,12 +49,17 @@ LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
 	tilemaskTextures[TILEMASK_SPRITE_DESTINATION] = NULL;
 
 	baseLandscape = SafeRetain(landscape);
-
+    
     landscapeEditorMaterial = new NMaterial();
     landscapeEditorMaterial->SetFXName(FastName("~res:/Materials/Landscape.Tool.material"));
     landscapeEditorMaterial->AddFlag(LANSDCAPE_FLAG_TOOL, 0);
     landscapeEditorMaterial->AddFlag(LANSDCAPE_FLAG_CURSOR, 0);
     landscapeEditorMaterial->AddProperty(LANDSCAPE_PARAM_CURSOR_COORD_SIZE, cursorCoordSize.data, rhi::ShaderProp::TYPE_FLOAT4);
+    
+    ScopedPtr<Texture> texture(Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/cursor.tex"));
+    texture->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
+    texture->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_NONE);
+    landscapeEditorMaterial->AddTexture(LANDSCAPE_TEXTURE_CURSOR, texture);
 }
 
 LandscapeProxy::~LandscapeProxy()

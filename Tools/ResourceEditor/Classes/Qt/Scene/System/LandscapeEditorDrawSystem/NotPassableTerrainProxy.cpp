@@ -30,18 +30,22 @@
 
 #include "NotPassableTerrainProxy.h"
 
-NotPassableTerrainProxy::NotPassableTerrainProxy()
+NotPassableTerrainProxy::NotPassableTerrainProxy(int32 heightmapSize)
 :	enabled(false)
 {
 	LoadColorsArray();
 	 
 	notPassableAngleTan = (float32)tan(DegToRad((float32)NOT_PASSABLE_ANGLE));
 	notPassableTexture = Texture::CreateFBO(2048, 2048, DAVA::FORMAT_RGBA8888);
+    
+    uint32 bufferSize = heightmapSize * heightmapSize * 4 * sizeof(float32) * 4;
+    gridBufferHandle = rhi::CreateVertexBuffer(bufferSize);
 }
 
 NotPassableTerrainProxy::~NotPassableTerrainProxy()
 {
 	SafeRelease(notPassableTexture);
+    rhi::DeleteVertexBuffer(gridBufferHandle);
 }
 
 void NotPassableTerrainProxy::LoadColorsArray()
@@ -136,9 +140,7 @@ Texture* NotPassableTerrainProxy::GetTexture()
 	return notPassableTexture;
 }
 
-void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
-											const AABBox3& landscapeBoundingBox,
-											const DAVA::Rect &forRect)
+void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap, const AABBox3& landscapeBoundingBox, const DAVA::Rect &forRect)
 {
 	if (forRect.dx <= 0 || forRect.dy <= 0)
 	{
@@ -153,45 +155,100 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
 	
     const float32 targetWidth = (float32)notPassableTexture->GetWidth();
     const float32 dx = targetWidth / (float32)(heightmap->Size() - 1);
-
-	const Rect drawRect(forRect.x * dx, (heightmap->Size() - (forRect.y + forRect.dy)) * dx, (forRect.dx - 1)* dx, (forRect.dy - 1) * dx);
-
-    RenderSystem2D::Instance()->BeginRenderTargetPass(notPassableTexture);
-
-	const int32 lastY = (int32)(forRect.y + forRect.dy);
-	const int32 lastX = (int32)(forRect.x + forRect.dx);
-	for (int32 y = (int32)forRect.y; y < lastY; ++y)
-	{
-		const int32 yOffset = y * heightmap->Size();
+    
+    uint32 bufferSize = forRect.dx * 4 * sizeof(float32) * 4;
+    float32 * buffer = new float32[bufferSize];
+    
+    const int32 lastY = (int32)(forRect.y + forRect.dy);
+    const int32 lastX = (int32)(forRect.x + forRect.dx);
+    for (int32 y = (int32)forRect.y; y < lastY; ++y)
+    {
+        const int32 yOffset = y * heightmap->Size();
         const float32 ydx = (heightmap->Size() - y - 1) * dx;
-		for (int32 x = (int32)forRect.x; x < lastX; ++x)
-		{
-			const uint16 currentPoint = heightmap->Data()[yOffset + x];
-			const uint16 rightPoint = heightmap->Data()[yOffset + x + 1];
-			const uint16 bottomPoint = heightmap->Data()[yOffset + x + heightmap->Size()];
-			
-			const uint16 deltaRight = (uint16)abs((int32)currentPoint - (int32)rightPoint);
-			const uint16 deltaBottom = (uint16)abs((int32)currentPoint - (int32)bottomPoint);
-			
-			const float32 tanRight = (float32)deltaRight * tanCoef;
-			const float32 tanBottom = (float32)deltaBottom * tanCoef;
-			
-			const float32 xdx = x * dx;
-			
-			Color color;
+        
+        float32 * bufferPtr = buffer;
+        
+        for (int32 x = (int32)forRect.x; x < lastX; ++x)
+        {
+            const uint16 currentPoint = heightmap->Data()[yOffset + x];
+            const uint16 rightPoint = heightmap->Data()[yOffset + x + 1];
+            const uint16 bottomPoint = heightmap->Data()[yOffset + x + heightmap->Size()];
+            
+            const uint16 deltaRight = (uint16)abs((int32)currentPoint - (int32)rightPoint);
+            const uint16 deltaBottom = (uint16)abs((int32)currentPoint - (int32)bottomPoint);
+            
+            const float32 tanRight = (float32)deltaRight * tanCoef;
+            const float32 tanBottom = (float32)deltaBottom * tanCoef;
+            
+            const float32 xdx = x * dx;
+            
+            Color color(0.f, 0.f, 0.f, 0.f);
+            
+            PickColor(tanRight, color);
+            
+            {
+                *((Vector3 *)bufferPtr) = Vector3(xdx, ydx, 0.f); bufferPtr +=3;
+                *(uint32*)(bufferPtr) = rhi::NativeColorRGBA(color.r, color.g, color.b, color.a); ++bufferPtr;
+                *((Vector3 *)bufferPtr) = Vector3((xdx + dx), ydx, 0.f); bufferPtr +=3;
+                *(uint32*)(bufferPtr) = rhi::NativeColorRGBA(color.r, color.g, color.b, color.a); ++bufferPtr;
+            }
+            
+            PickColor(tanBottom, color);
+            
+            {
+                *((Vector3 *)bufferPtr) = Vector3(xdx, ydx, 0.f); bufferPtr +=3;
+                *(uint32*)(bufferPtr) = rhi::NativeColorRGBA(color.r, color.g, color.b, color.a); ++bufferPtr;
+                *((Vector3 *)bufferPtr) = Vector3(xdx, (ydx - dx), 0.f); bufferPtr +=3;
+                *(uint32*)(bufferPtr) = rhi::NativeColorRGBA(color.r, color.g, color.b, color.a); ++bufferPtr;
+            }
+        }
+        uint32 bufferOffset = (yOffset + forRect.x) * 4 * sizeof(float32) * 4;
+        rhi::UpdateVertexBuffer(gridBufferHandle, buffer, bufferOffset, bufferSize);
+    }
+    SafeDeleteArray(buffer);
+    
+    Matrix4 projMatrix;
+    projMatrix.glOrtho(0.0f, (float32)notPassableTexture->GetWidth(), 0.0f, (float32)notPassableTexture->GetHeight(), -1.0f, 1.0f);
+    
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
+    
+    rhi::Packet gridPacket;
+    RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL->BindParams(gridPacket);
 
-			if(PickColor(tanRight, color))
-			{
-                RenderSystem2D::Instance()->DrawLine(Vector2(xdx, ydx), Vector2((xdx + dx), ydx), RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, color);
-			}
-			
-			if(PickColor(tanBottom, color))
-			{
-                RenderSystem2D::Instance()->DrawLine(Vector2(xdx, ydx), Vector2(xdx, (ydx - dx)), RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, color);
-			}
-			
-		}
-	}
-
-    RenderSystem2D::Instance()->EndRenderTargetPass();
+    rhi::VertexLayout layout;
+    layout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
+    layout.AddElement(rhi::VS_COLOR, 0, rhi::VDT_UINT8N, 4);
+    
+    gridPacket.vertexStreamCount = 1;
+    gridPacket.vertexStream[0] = gridBufferHandle;
+    gridPacket.primitiveType = rhi::PRIMITIVE_LINELIST;
+    gridPacket.vertexLayoutUID = rhi::VertexLayout::UniqueId(layout);
+    gridPacket.primitiveCount = heightmap->Size() * heightmap->Size() * 2;
+    gridPacket.vertexCount = gridPacket.primitiveCount * 2;
+    
+    SafeDeleteArray(buffer);
+    
+    rhi::RenderPassConfig passConfig;
+    passConfig.colorBuffer[0].texture = notPassableTexture->handle;
+    passConfig.colorBuffer[0].clearColor[0] = 0.f;
+    passConfig.colorBuffer[0].clearColor[1] = 0.f;
+    passConfig.colorBuffer[0].clearColor[2] = 0.f;
+    passConfig.colorBuffer[0].clearColor[3] = 0.f;
+    passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+    passConfig.priority = PRIORITY_SERVICE_2D;
+    passConfig.viewport[2] = notPassableTexture->GetWidth();
+    passConfig.viewport[3] = notPassableTexture->GetHeight();
+    
+    rhi::HPacketList packetListHandle;
+    rhi::HRenderPass passTargetHandle = rhi::AllocateRenderPass(passConfig, 1, &packetListHandle);
+    
+    rhi::BeginRenderPass(passTargetHandle);
+    rhi::BeginPacketList(packetListHandle);
+    
+    rhi::AddPacket(packetListHandle, gridPacket);
+    
+    rhi::EndPacketList(packetListHandle);
+    rhi::EndRenderPass(passTargetHandle);
 }

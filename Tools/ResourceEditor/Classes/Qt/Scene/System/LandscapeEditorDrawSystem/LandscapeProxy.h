@@ -60,10 +60,10 @@ public:
 	};
 
     static const FastName LANDSCAPE_TEXTURE_TOOL;
-    static const FastName LANDSCAPE_TEXTURE_CURSOR;
+    static const FastName LANDSCAPE_TEXTURE_CURSOR; //should use clamp wrap mode
     static const FastName LANSDCAPE_FLAG_CURSOR;
     static const FastName LANSDCAPE_FLAG_TOOL;
-    static const FastName LANDSCAPE_PARAM_CURSOR_COORD_SIZE;
+    static const FastName LANDSCAPE_PARAM_CURSOR_COORD_SIZE; //x,y - cursor position [0...1] (in landscape space); z,w - cursor size [0...1] (fraction of landscape)
 
 protected:
 	virtual ~LandscapeProxy();
@@ -87,7 +87,7 @@ public:
 	void CursorDisable();
 	void SetCursorTexture(Texture* texture);
     void SetCursorSize(float32 size);
-	void SetCursorPosition(const Vector2& position); // position in [0 ... 1] range
+	void SetCursorPosition(const Vector2& position);
 
 	Vector3 PlacePoint(const Vector3& point);
 
@@ -127,7 +127,6 @@ protected:
 	
 	void UpdateDisplayedTexture();
 	
-	UniqueHandle noBlendDrawState;
 	Texture* cursorTexture;
 };
 

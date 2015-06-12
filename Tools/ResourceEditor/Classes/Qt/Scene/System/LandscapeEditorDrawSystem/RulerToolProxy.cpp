@@ -34,12 +34,7 @@ RulerToolProxy::RulerToolProxy(int32 size)
 :	size(size)
 ,	spriteChanged(false)
 {
-    rulerToolTexture = Texture::CreateFBO((uint32)size, (uint32)size, FORMAT_RGBA8888/*, Texture::DEPTH_NONE*/);
-#if RHI_COMPLETE_EDITOR
-    RenderHelper::Instance()->Set2DRenderTarget(rulerToolTexture);
-    RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-    RenderManager::Instance()->SetRenderTarget(0);
-#endif // RHI_COMPLETE_EDITOR
+    rulerToolTexture = Texture::CreateFBO((uint32)size, (uint32)size, FORMAT_RGBA8888);
 }
 
 RulerToolProxy::~RulerToolProxy()
@@ -55,19 +50,4 @@ int32 RulerToolProxy::GetSize()
 Texture* RulerToolProxy::GetTexture()
 {
 	return rulerToolTexture;
-}
-
-bool RulerToolProxy::IsTextureChanged()
-{
-	return spriteChanged;
-}
-
-void RulerToolProxy::ResetTextureChanged()
-{
-	spriteChanged = false;
-}
-
-void RulerToolProxy::UpdateTexture()
-{
-	spriteChanged = true;
 }

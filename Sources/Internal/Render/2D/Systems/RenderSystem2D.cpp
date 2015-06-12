@@ -345,7 +345,7 @@ void RenderSystem2D::EndFrame()
     rhi::EndRenderPass(pass2DHandle);
 }
 
-void RenderSystem2D::BeginRenderTargetPass(Texture * target)
+void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* = true */)
 {
     DVASSERT(!renderTargetWidth);
     DVASSERT(target);
@@ -354,9 +354,19 @@ void RenderSystem2D::BeginRenderTargetPass(Texture * target)
     Flush();
 
     rhi::RenderPassConfig renderTargetPassConfig;
+    renderTargetPassConfig.colorBuffer[0].texture = target->handle;
+    renderTargetPassConfig.colorBuffer[0].clearColor[0] = 0.f;
+    renderTargetPassConfig.colorBuffer[0].clearColor[1] = 0.f;
+    renderTargetPassConfig.colorBuffer[0].clearColor[2] = 0.f;
+    renderTargetPassConfig.colorBuffer[0].clearColor[3] = 0.f;
     renderTargetPassConfig.priority = PRIORITY_SERVICE_2D;
     renderTargetPassConfig.viewport[2] = target->GetWidth();
     renderTargetPassConfig.viewport[3] = target->GetHeight();
+    if(needClear)
+        renderTargetPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+    else
+        renderTargetPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_NONE;
+    
     passTargetHandle = rhi::AllocateRenderPass(renderTargetPassConfig, 1, &packetListTargetHandle);
 
     rhi::BeginRenderPass(passTargetHandle);
@@ -364,6 +374,8 @@ void RenderSystem2D::BeginRenderTargetPass(Texture * target)
 
     renderTargetWidth = target->GetWidth();
     renderTargetHeight = target->GetHeight();
+    
+    Setup2DProjection();
 }
 
 void RenderSystem2D::EndRenderTargetPass()
@@ -390,11 +402,6 @@ void RenderSystem2D::Setup2DProjection()
         projMatrix.glOrtho(0.0f, (float32)Renderer::GetFramebufferWidth(), (float32)Renderer::GetFramebufferHeight(), 0.0f, -1.0f, 1.0f);
     }
 
-    projMatrix = virtualToPhysicalMatrix * projMatrix;
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
-
-    
-    projMatrix.glOrtho(0.0f, (float32)Renderer::GetFramebufferWidth(), (float32)Renderer::GetFramebufferHeight(), 0.0f, -1.0f, 1.0f);
     projMatrix = virtualToPhysicalMatrix * projMatrix;
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 }
@@ -1405,23 +1412,19 @@ void RenderSystem2D::DrawTexture(Texture * texture, NMaterial *material, const R
         return;
 
     Rect destRect(_dstRect);
-#if RHI_COMPLETE
     if (destRect.dx < 0.f || destRect.dy < 0.f)
     {
-        Size2i targetSize;
-        Texture * currentRenderTarget = RenderManager::Instance()->GetRenderTarget();
-        if (currentRenderTarget)
+        if (renderTargetWidth)
         {
-            targetSize = Size2i(currentRenderTarget->GetWidth(), currentRenderTarget->GetHeight());
+            destRect.dx = (float32)renderTargetWidth;
+            destRect.dy = (float32)renderTargetHeight;
         }
         else
         {
-            targetSize = RenderManager::Instance()->GetFramebufferSize();
+            destRect.dx = (float32)Renderer::GetFramebufferWidth();
+            destRect.dy = (float32)Renderer::GetFramebufferHeight();
         }
-        destRect.dx = (float32)targetSize.dx;
-        destRect.dy = (float32)targetSize.dy;
     }
-#endif
 
     spriteTempVertices[0] = spriteTempVertices[4] = destRect.x;//x1
     spriteTempVertices[5] = spriteTempVertices[7] = destRect.y;//y2
@@ -1442,15 +1445,14 @@ void RenderSystem2D::DrawTexture(Texture * texture, NMaterial *material, const R
     texCoords[1] = texCoords[3] = relativeSrcRect.y + relativeSrcRect.dy;//y1
     texCoords[2] = texCoords[6] = relativeSrcRect.x + relativeSrcRect.dx;//x2
 
-    rhi::HTextureSet htexture;
-#if RHI_COMPLETE
-    TextureStateData textureStateData;
-    textureStateData.SetTexture(0, texture);
-    UniqueHandle textureState = RenderManager::Instance()->CreateTextureState(textureStateData);
-#endif
+    //RHI_COMPLETE TODO: fix handle leak
+    rhi::TextureSetDescriptor descriptor;
+    descriptor.fragmentTextureCount = 1;
+    descriptor.fragmentTexture[0] = texture->handle;
+    rhi::HTextureSet htextureSet = rhi::AcquireTextureSet(descriptor);
 
     static uint16 indices[6] = { 0, 1, 2, 1, 3, 2 };
-    PushBatch(DEFAULT_2D_COLOR_MATERIAL, htexture, Rect(), 4, spriteTempVertices, texCoords, 6, indices, Color::White, rhi::PRIMITIVE_LINELIST);
+    PushBatch(DEFAULT_2D_TEXTURE_MATERIAL, htextureSet, Rect(), 4, spriteTempVertices, texCoords, 6, indices, Color::White, rhi::PRIMITIVE_TRIANGLELIST);
 }
 
 /* TiledDrawData Implementation */

@@ -158,7 +158,7 @@ public:
     
     void SetSpriteClipping(bool clipping);
 
-    void BeginRenderTargetPass(Texture * target);
+    void BeginRenderTargetPass(Texture * target, bool needClear = true);
     void EndRenderTargetPass();
 
     /* 2D DRAW HELPERS */

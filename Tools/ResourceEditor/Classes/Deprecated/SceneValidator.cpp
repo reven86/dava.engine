@@ -418,7 +418,7 @@ void SceneValidator::ValidateLandscapeTexture(Landscape *landscape, const FastNa
             texture->SetPathname(TextureDescriptor::GetDescriptorPathname(landTexName));
         }
 
-        ValidateTexture(texture, Format("Landscape. TextureLevel %d", texLevel), errorsLog);
+        ValidateTexture(texture, Format("Landscape. %s", texLevel.c_str()), errorsLog);
     }
 }
 
