@@ -30,7 +30,7 @@
 #ifndef __QUICKED_QT_MODEL_PACKAGE_COMMAND_EXECUTOR_H__
 #define __QUICKED_QT_MODEL_PACKAGE_COMMAND_EXECUTOR_H__
 
-#include "Model/PackageCommandExecutor.h"
+#include "Base/BaseObject.h"
 
 #include <QString>
 
@@ -39,32 +39,42 @@ class PackageBaseNode;
 class QUndoStack;
 class QUndoCommand;
 
-class QtModelPackageCommandExecutor : public PackageCommandExecutor
+class ControlNode;
+class PackageControlsNode;
+class PackageNode;
+class AbstractProperty;
+class ControlsContainerNode;
+class ComponentPropertiesSection;
+
+class QtModelPackageCommandExecutor : public DAVA::BaseObject
 {
 public:
     QtModelPackageCommandExecutor(Document *_document);
+    
+private:
     virtual ~QtModelPackageCommandExecutor();
     
-    void AddImportedPackageIntoPackage(PackageNode *importedPackage, PackageNode *package) override;
-    void AddImportedPackageIntoPackage(const DAVA::FilePath &path, PackageNode *package) override;
-    void RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*> &importedPackage, PackageNode *package) override;
+public:
+    void AddImportedPackagesIntoPackage(const DAVA::Vector<DAVA::FilePath> packagePaths, PackageNode *package);
+    void RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*> &importedPackage, PackageNode *package);
 
 public:
-    void ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value) override;
-    void ResetProperty(ControlNode *node, AbstractProperty *property) override;
+    void ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value);
+    void ResetProperty(ControlNode *node, AbstractProperty *property);
 
 public:
-    void AddComponent(ControlNode *node, DAVA::uint32 componentType) override;
-    void RemoveComponent(ControlNode *node, DAVA::uint32 componentType, DAVA::uint32 componentIndex) override;
+    void AddComponent(ControlNode *node, DAVA::uint32 componentType);
+    void RemoveComponent(ControlNode *node, DAVA::uint32 componentType, DAVA::uint32 componentIndex);
 
-    void InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex) override;
-    void CopyControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex) override;
-    void MoveControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex) override;
-    void RemoveControls(const DAVA::Vector<ControlNode*> &nodes) override;
+    void InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex);
+    void CopyControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex);
+    void MoveControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex);
+    void RemoveControls(const DAVA::Vector<ControlNode*> &nodes);
 
     bool Paste(PackageNode *root, ControlsContainerNode *dest, DAVA::int32 destIndex, const DAVA::String &data);
 
 private:
+    void AddImportedPackageIntoPackageImpl(PackageNode *importedPackage, PackageNode *package);
     void InsertControlImpl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex);
     void RemoveControlImpl(ControlNode *node);
     void AddComponentImpl(ControlNode *node, ComponentPropertiesSection *section);

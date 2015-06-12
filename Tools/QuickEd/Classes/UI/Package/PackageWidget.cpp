@@ -388,10 +388,15 @@ void PackageWidget::OnImport()
 
     Document *doc = sharedData->GetDocument();
     PackageNode *root = doc->GetPackage();
+    Vector<FilePath> packages;
     for (const auto &fileName : fileNames)
     {
-        FilePath path(fileName.toStdString());
-        doc->GetCommandExecutor()->AddImportedPackageIntoPackage(path, root);
+        packages.push_back(FilePath(fileName.toStdString()));
+    }
+    
+    if (!packages.empty())
+    {
+        doc->GetCommandExecutor()->AddImportedPackagesIntoPackage(packages, root);
     }
 }
 

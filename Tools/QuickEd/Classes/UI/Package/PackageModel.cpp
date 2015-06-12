@@ -311,14 +311,18 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
     else if (data->hasFormat("text/uri-list") && data->hasText())
     {
         QStringList list = data->text().split("\n");
+        Vector<FilePath> packages;
         for (const QString &str : list)
         {
             QUrl url(str);
             if (url.isLocalFile())
             {
-                FilePath path(url.toLocalFile().toStdString());
-                commandExecutor->AddImportedPackageIntoPackage(path, root);
+                packages.push_back(FilePath(url.toLocalFile().toStdString()));
             }
+        }
+        if (!packages.empty())
+        {
+            commandExecutor->AddImportedPackagesIntoPackage(packages, root);
         }
     }
     else if (parentNode && data->hasFormat("text/plain") && data->hasText())

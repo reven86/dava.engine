@@ -67,11 +67,35 @@ QtModelPackageCommandExecutor::~QtModelPackageCommandExecutor()
     document = nullptr;
 }
 
-void QtModelPackageCommandExecutor::AddImportedPackageIntoPackage(PackageNode *importedPackage, PackageNode *package)
+void QtModelPackageCommandExecutor::AddImportedPackagesIntoPackage(const DAVA::Vector<DAVA::FilePath> packagePaths, PackageNode *package)
 {
-    if (package->GetImportedPackagesNode()->CanInsertImportedPackage(importedPackage))
+    Vector<PackageNode*> importedPackages;
+    for (const FilePath &path : packagePaths)
     {
-        PushCommand(new InsertImportedPackageCommand(package, importedPackage, package->GetImportedPackagesNode()->GetCount()));
+        if (package->FindImportedPackage(path) == nullptr && package->GetPath().GetFrameworkPath() != path.GetFrameworkPath())
+        {
+            EditorUIPackageBuilder builder;
+            if (UIPackageLoader().LoadPackage(path, &builder))
+            {
+                RefPtr<PackageNode> importedPackage = builder.BuildPackage();
+                if (package->GetImportedPackagesNode()->CanInsertImportedPackage(importedPackage.Get()))
+                {
+                    importedPackages.push_back(SafeRetain(importedPackage.Get()));
+                }
+            }
+        }
+    }
+    
+    if (!importedPackages.empty())
+    {
+        BeginMacro("Insert Packages");
+        for (PackageNode *importedPackage : importedPackages)
+        {
+            AddImportedPackageIntoPackageImpl(importedPackage, package);
+            SafeRelease(importedPackage);
+        }
+        importedPackages.clear();
+        EndMacro();
     }
 }
 
@@ -102,19 +126,6 @@ void QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(const DAVA
             PushCommand(new RemoveImportedPackageCommand(package, importedPackage));
         }
         EndMacro();
-    }
-}
-
-void QtModelPackageCommandExecutor::AddImportedPackageIntoPackage(const DAVA::FilePath &path, PackageNode *package)
-{
-    if (package->FindImportedPackage(path) == nullptr && package->GetPath().GetFrameworkPath() != path.GetFrameworkPath())
-    {
-        EditorUIPackageBuilder builder;
-        if (UIPackageLoader().LoadPackage(path, &builder))
-        {
-            RefPtr<PackageNode> importedPackage = builder.BuildPackage();
-            AddImportedPackageIntoPackage(importedPackage.Get(), package);
-        }
     }
 }
 
@@ -317,7 +328,7 @@ bool QtModelPackageCommandExecutor::Paste(PackageNode *root, ControlsContainerNo
                 BeginMacro("Paste");
                 for (PackageNode *importedPackage : acceptedPackages)
                 {
-                    AddImportedPackageIntoPackage(importedPackage, root);
+                    AddImportedPackageIntoPackageImpl(importedPackage, root);
                 }
                 
                 int32 index = destIndex;
@@ -334,6 +345,11 @@ bool QtModelPackageCommandExecutor::Paste(PackageNode *root, ControlsContainerNo
         
     }
     return false;
+}
+
+void QtModelPackageCommandExecutor::AddImportedPackageIntoPackageImpl(PackageNode *importedPackage, PackageNode *package)
+{
+    PushCommand(new InsertImportedPackageCommand(package, importedPackage, package->GetImportedPackagesNode()->GetCount()));
 }
 
 void QtModelPackageCommandExecutor::InsertControlImpl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex)
