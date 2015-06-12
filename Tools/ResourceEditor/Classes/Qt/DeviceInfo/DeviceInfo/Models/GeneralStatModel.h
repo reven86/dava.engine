@@ -26,49 +26,50 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __GENERALSTATMODEL_H__
+#define __GENERALSTATMODEL_H__
 
-#ifndef __DAVAENGINE_MMNETPROTO_H__
-#define __DAVAENGINE_MMNETPROTO_H__
+#include <QAbstractTableModel>
 
 #include "Base/BaseTypes.h"
+#include "MemoryManager/MemoryManagerTypes.h"
 
-namespace DAVA
-{
-namespace Net
-{
+class ProfilingSession;
+class MemoryStatItem;
 
-enum class eMMProtoCmd
+class GeneralStatModel : public QAbstractTableModel
 {
-    INIT_COMM,
-    CUR_STAT,
-    DUMP,
-    DUMP_BEGIN,
-    DUMP_CHUNK,
-    DUMP_END
+public:
+    enum {
+        CLM_VALUE = 0,
+        NCOLUMNS = 1
+    };
+    enum {
+        ROW_ALLOC_INTERNAL = 0,
+        ROW_ALLOC_INTERNAL_TOTAL,
+        ROW_NBLOCKS_INTERNAL,
+        ROW_ALLOC_GHOST,
+        ROW_NBLOCKS_GHOST,
+        NROWS = 5
+    };
+
+public:
+    GeneralStatModel(QObject* parent = nullptr);
+    virtual ~GeneralStatModel();
+
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+
+    void BeginNewProfileSession(ProfilingSession* profSession);
+    void SetCurrentValues(const MemoryStatItem& item);
+
+private:
+    ProfilingSession* profileSession;
+
+    DAVA::uint64 timestamp;
+    DAVA::GeneralAllocStat curValues;
 };
 
-enum class eMMProtoStatus
-{
-    ACK,
-    DENY,
-};
-
-struct MMProtoHeader
-{
-    uint32 sessionId;
-    uint32 cmd;             // Command
-    uint32 status;          // 
-    uint32 length;          // Length of data attached to command, or zero if no data
-};
-
-struct MM
-{
-
-};
-
-static_assert(sizeof(MMProtoHeader) == 16, "sizeof(MMProtoHeader) == 16");
-
-}   // namespace Net
-}   // namespace DAVA
-
-#endif  // __DAVAENGINE_MMNETPROTO_H__
+#endif  // __GENERALSTATMODEL_H__

@@ -1182,6 +1182,5 @@ inline void Entity::RemoveComponent (Vector<Component *>::iterator & it)
         SafeDelete (c);
     }
 }
-	
-	
+
 };
