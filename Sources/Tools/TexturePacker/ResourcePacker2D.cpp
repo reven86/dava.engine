@@ -737,7 +737,7 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey &key, cons
     }
     else
     {
-        Logger::FrameworkDebug("Dir [%s] is empty. Nothing to add to cache", outputPath);
+        Logger::FrameworkDebug("Dir [%s] is empty. Nothing to add to cache", outputPath.GetAbsolutePathname().c_str());
         return false;
     }
 }
