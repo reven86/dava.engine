@@ -230,8 +230,6 @@ if( ANDROID )
     set( SRC_LIST  )
     set( REMAINING_LIST  )
 
-    list( APPEND PROJECT_SOURCE_FILES  ${ADDED_SRC} )
-
     foreach( ITEM ${PROJECT_SOURCE_FILES} )
         get_filename_component( ITEM_EXT ${ITEM} EXT )
 
@@ -259,19 +257,11 @@ if( ANDROID )
 
     endforeach()
 
-    if( SRC_LIST )
-        math( EXPR POSTFIX "${POSTFIX} + 1" )
-        set( LIB_NAME "${PROJECT_NAME}_${POSTFIX}"  ) 
-        add_library( ${LIB_NAME} STATIC ${SRC_LIST} )
-        target_link_libraries( ${LIB_NAME} ${LIBRARIES} )
-        list( APPEND LIBRARIES ${LIB_NAME} )
-    endif()
-
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/CmakeDefaultCpp.in
                     ${CMAKE_CURRENT_BINARY_DIR}/cmake_default.cpp )
 
     list( APPEND REMAINING_LIST  ${CMAKE_CURRENT_BINARY_DIR}/cmake_default.cpp )
-    add_library( ${PROJECT_NAME} SHARED ${PLATFORM_ADDED_SRC} ${REMAINING_LIST} )
+    add_library( ${PROJECT_NAME} SHARED ${PLATFORM_ADDED_SRC} ${SRC_LIST} ${ADDED_SRC} ${REMAINING_LIST} )
 
 else()                             
     add_executable( ${PROJECT_NAME} MACOSX_BUNDLE ${EXECUTABLE_FLAG}
