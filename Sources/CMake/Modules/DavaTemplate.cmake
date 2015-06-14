@@ -257,10 +257,6 @@ if( ANDROID )
 
     endforeach()
 
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/CmakeDefaultCpp.in
-                    ${CMAKE_CURRENT_BINARY_DIR}/cmake_default.cpp )
-
-    list( APPEND REMAINING_LIST  ${CMAKE_CURRENT_BINARY_DIR}/cmake_default.cpp )
     add_library( ${PROJECT_NAME} SHARED ${PLATFORM_ADDED_SRC} ${SRC_LIST} ${ADDED_SRC} ${REMAINING_LIST} )
 
 else()                             
