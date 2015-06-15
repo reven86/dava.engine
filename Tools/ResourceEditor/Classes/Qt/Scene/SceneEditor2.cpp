@@ -691,7 +691,7 @@ void SceneEditor2::Setup3DDrawing()
 {
     if (drawCamera)
     {
-        drawCamera->SetupDynamicParameters();
+        drawCamera->SetupDynamicParameters(false);
     }
 }
 

@@ -208,7 +208,7 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap, const AA
     SafeDeleteArray(buffer);
     
     Matrix4 projMatrix;
-    projMatrix.glOrtho(0.0f, (float32)notPassableTexture->GetWidth(), 0.0f, (float32)notPassableTexture->GetHeight(), -1.0f, 1.0f);
+    projMatrix.glOrtho(0.0f, (float32)notPassableTexture->GetWidth(), 0.0f, (float32)notPassableTexture->GetHeight(), -1.0f, 1.0f, false);
     
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
