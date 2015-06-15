@@ -126,7 +126,7 @@ String TeamcityTestsOutput::FormatTestClassDisabled(const String& testClassName)
 
 String TeamcityTestsOutput::FormatTestFailed(const String& testClassName, const String& testName, const String& condition, const String& errMsg)
 {
-    return errorTestMarker + "\n" + testClassName + "." + testClassName + "\n" + condition + "\n" + errMsg;
+    return errorTestMarker + "\n" + testClassName + "." + testName + "\n" + condition + "\n" + errMsg;
 }
 
 void TeamcityTestsOutput::TestOutput(const String& data)
