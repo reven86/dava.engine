@@ -101,12 +101,12 @@ void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
 
 String TeamcityTestsOutput::FormatTestStarted(const String& testClassName, const String& testName)
 {
-    return startTestMarker + "\n" + /*testClassName + "." +*/ testName;
+    return startTestMarker + "\n" + testName;
 }
 
 String TeamcityTestsOutput::FormatTestFinished(const String& testClassName, const String& testName)
 {
-    return finishTestMarker + "\n" + /*testClassName + "." +*/ testName;
+    return finishTestMarker + "\n" + testName;
 }
 
 String TeamcityTestsOutput::FormatTestClassStarted(const String& testClassName)
@@ -119,14 +119,14 @@ String TeamcityTestsOutput::FormatTestClassFinished(const String& testClassName)
     return finishSuiteMarker + "\n" + testClassName;
 }
 
-String TeamcityTestsOutput::FormatTestClassDisabled(const String& testClassName)
+String TeamcityTestsOutput::FormatTestClassDisabled(const String& /*testClassName*/)
 {
-    return disabledSuiteMarker + "\n" + testClassName;
+    return disabledSuiteMarker + "\n" + "disabled test";
 }
 
 String TeamcityTestsOutput::FormatTestFailed(const String& testClassName, const String& testName, const String& condition, const String& errMsg)
 {
-    return errorTestMarker + "\n" + /*testClassName + "." +*/ testName + "\n" + condition + "\n" + errMsg;
+    return errorTestMarker + "\n" + testName + "\n" + condition + "\n" + errMsg;
 }
 
 void TeamcityTestsOutput::TestOutput(const String& data)

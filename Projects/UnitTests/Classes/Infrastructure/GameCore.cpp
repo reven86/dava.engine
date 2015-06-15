@@ -46,7 +46,6 @@ String excludeTheseTests = "NetworkTest;ThreadSyncTest;JobManagerTest";
 
 bool teamcityOutputEnabled = true;      // Flag whether to enable TeamCity output
 bool teamcityCaptureStdout = false;     // Flag whether to set TeamCity option 'captureStandardOutput=true'
-bool teamcityDetailedOutput = false;    // Flag whether to do detailed output to Teamcity
 
 }
 
@@ -68,10 +67,6 @@ void GameCore::ProcessCommandLine()
     if (cmdline->CommandIsFound("-teamcity_capture_stdout"))
     {
         teamcityCaptureStdout = true;
-    }
-    if (cmdline->CommandIsFound("-teamcity_detailed_output"))
-    {
-        teamcityDetailedOutput = true;
     }
 }
 
@@ -196,6 +191,7 @@ void GameCore::ProcessTests(float32 timeElapsed)
 
 void GameCore::FinishTests()
 {
+    // Inform teamcity script we just finished all tests
     Logger::Debug("Finish all tests.");
     Core::Instance()->Quit();
 }
