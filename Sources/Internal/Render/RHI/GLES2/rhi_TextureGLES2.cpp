@@ -35,6 +35,7 @@ public:
     uint32          mappedLevel;
     GLenum          mappedFace;
     uint32          isCubeMap:1;
+    uint32          isRenderTarget:1;
     uint32          isMapped:1;
 
     SamplerState::Descriptor::Sampler   samplerState;
@@ -49,6 +50,7 @@ TextureGLES2_t::TextureGLES2_t()
     width(0),
     height(0),
     isCubeMap(false),
+    isRenderTarget(false),
     mappedData(nullptr),
     isMapped(false),
     forceSetSamplerState(true)
@@ -198,8 +200,9 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
 
                 if( cmd4[ countof(cmd4)-2 ].retval == GL_FRAMEBUFFER_COMPLETE )
                 {
-                    self->fbo   = fbo;
-                    self->depth = depth;
+                    self->fbo            = fbo;
+                    self->depth          = depth;
+                    self->isRenderTarget = true;
                 }
                 else
                 {
@@ -232,18 +235,34 @@ gles2_Texture_Map( Handle tex, unsigned level, TextureFace face )
     self->mappedData = ::realloc( self->mappedData, TextureSize( self->format, self->width, self->height, level ) );
     if( self->mappedData )
     {
-        mem               = self->mappedData;
-        self->mappedLevel = level;
-        self->isMapped    = true;
-
-        switch( face )
+        if( self->isRenderTarget )
         {
-            case TEXTURE_FACE_LEFT   : self->mappedFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_X ; break;
-            case TEXTURE_FACE_RIGHT  : self->mappedFace = GL_TEXTURE_CUBE_MAP_POSITIVE_X ; break;
-            case TEXTURE_FACE_FRONT  : self->mappedFace = GL_TEXTURE_CUBE_MAP_POSITIVE_Z ; break;
-            case TEXTURE_FACE_BACK   : self->mappedFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z ; break;
-            case TEXTURE_FACE_TOP    : self->mappedFace = GL_TEXTURE_CUBE_MAP_POSITIVE_Y ; break;
-            case TEXTURE_FACE_BOTTOM : self->mappedFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y ; break;
+            DVASSERT(level==0);
+            GLenum      target = (self->isCubeMap)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
+            GLCommand   cmd[]  =
+            {
+                { GLCommand::BIND_FRAMEBUFFER, {GL_FRAMEBUFFER, self->fbo} },
+                { GLCommand::READ_PIXELS, {0,0,self->width,self->height,GL_RGBA,GL_UNSIGNED_BYTE,uint64(self->mappedData)} },
+                { GLCommand::BIND_FRAMEBUFFER, {GL_FRAMEBUFFER, 0} },
+            };
+
+            ExecGL( cmd, countof(cmd) );            
+        }
+        else
+        {
+            mem               = self->mappedData;
+            self->mappedLevel = level;
+            self->isMapped    = true;
+
+            switch( face )
+            {
+                case TEXTURE_FACE_LEFT   : self->mappedFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_X ; break;
+                case TEXTURE_FACE_RIGHT  : self->mappedFace = GL_TEXTURE_CUBE_MAP_POSITIVE_X ; break;
+                case TEXTURE_FACE_FRONT  : self->mappedFace = GL_TEXTURE_CUBE_MAP_POSITIVE_Z ; break;
+                case TEXTURE_FACE_BACK   : self->mappedFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z ; break;
+                case TEXTURE_FACE_TOP    : self->mappedFace = GL_TEXTURE_CUBE_MAP_POSITIVE_Y ; break;
+                case TEXTURE_FACE_BOTTOM : self->mappedFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y ; break;
+            }
         }
     }
     

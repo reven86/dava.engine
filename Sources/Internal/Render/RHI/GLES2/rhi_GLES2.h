@@ -142,6 +142,7 @@ GLCommand
         TEX_PARAMETER_I,
         TEX_IMAGE2D,
         GENERATE_MIPMAP,
+        READ_PIXELS,
 
         CREATE_SHADER,
         SHADER_SOURCE,
