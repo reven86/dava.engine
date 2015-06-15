@@ -14,9 +14,6 @@
     #include "Debug/Profiler.h"
 
     #include "_gl.h"
-    #if defined(__DAVAENGINE_MACOS__)
-    #include "Platform/TemplateMacOS/macos_gl.h"
-    #endif
 
     #define USE_RENDER_THREAD 0
 
@@ -625,10 +622,6 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
         {
             case GLES2__BEGIN :
             {
-                #if defined(__DAVAENGINE_IPHONE__)
-                ios_GL_begin_frame();
-                #endif
-
                 GL_CALL(glFrontFace( GL_CW ));
                 GL_CALL(glEnable( GL_CULL_FACE ));
                 GL_CALL(glCullFace( GL_BACK ));
@@ -663,8 +656,11 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
 
                         flags |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
                     }
-                    
-                    glClear( flags );
+
+                    if(flags)
+                    {
+                        glClear( flags );
+                    }
                 }
                 
                 glGetIntegerv( GL_VIEWPORT, def_viewport );
@@ -676,11 +672,10 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                 {
                     glFlush();
 
-                    if( _GLES2_FrameBuffer )
+                    if (_GLES2_Binded_FrameBuffer != _GLES2_Default_FrameBuffer)
                     {
-                        glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-                        _GLES2_FrameBuffer = 0;
-                        glViewport( _GLES2_Viewport[0], _GLES2_Viewport[1], _GLES2_Viewport[2], _GLES2_Viewport[3] );
+                        glBindFramebuffer( GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer );
+                        _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;
                     }
                 }
             }   break;
@@ -1047,24 +1042,8 @@ _ExecuteQueuedCommands()
     _CmdQueueSync.Lock();
     _CurRenderQueueSize = 0;
     _CmdQueueSync.Unlock();
-
-
-#if defined(__DAVAENGINE_WIN32__)
     
-    HWND    wnd = (HWND)_NativeWindowHandle;
-    HDC     dc  = ::GetDC( wnd );
-
-    SwapBuffers( dc );
-
-#elif defined(__DAVAENGINE_MACOS__)
-
-    macos_gl_end_frame();
-
-#elif defined(__DAVAENGINE_IPHONE__)
-    
-    ios_GL_end_frame();
-
-#endif
+    _End_Frame();
 }
 
 
@@ -1103,9 +1082,10 @@ gles2_Present()
 static void
 _RenderFunc( DAVA::BaseObject* obj, void*, void* )
 {
-    #if defined(__DAVAENGINE_MACOS__)
-    macos_gl_set_current();
-    #endif
+    DVASSERT(_Make_Current);
+
+    _Make_Current();
+
     _RenderThredStartedSync.Post();
     Logger::Info( "RHI render-thread started" );
 
@@ -1257,7 +1237,14 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
 
             case GLCommand::TEX_IMAGE2D :
             {
-                EXEC_GL(glTexImage2D( (GLenum)(arg[0]), (GLint)(arg[1]), (GLint)(arg[2]), (GLsizei)(arg[3]), (GLsizei)(arg[4]), (GLint)(arg[5]), (GLenum)(arg[6]), (GLenum)(arg[7]), (const GLvoid*)(arg[8]) ));
+                if(arg[10])
+                {
+                    EXEC_GL(glCompressedTexImage2D( (GLenum)(arg[0]), (GLint)(arg[1]), (GLenum)(arg[2]), (GLsizei)(arg[3]), (GLsizei)(arg[4]), (GLint)(arg[5]), (GLsizei)(arg[8]), (const GLvoid*)(arg[9]) ));
+                }
+                else
+                {
+                    EXEC_GL(glTexImage2D( (GLenum)(arg[0]), (GLint)(arg[1]), (GLint)(arg[2]), (GLsizei)(arg[3]), (GLsizei)(arg[4]), (GLint)(arg[5]), (GLenum)(arg[6]), (GLenum)(arg[7]), (const GLvoid*)(arg[9]) ));
+                }
                 cmd->status = err;
             }   break;
 

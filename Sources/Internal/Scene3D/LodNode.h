@@ -37,7 +37,6 @@ namespace DAVA
 {
 class Scene;
 class StaticMesh;
-class Material;
 class Texture;
 class SceneFileV2;
     

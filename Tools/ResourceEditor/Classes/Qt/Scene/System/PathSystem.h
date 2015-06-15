@@ -35,23 +35,25 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Scene/System/SelectionSystem.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"
 
+#include "Scene/System/ModifSystem.h"
+
 static const DAVA::uint32 WAYPOINTS_DRAW_LIFTING = 1;
 
 class SceneEditor2;
-class PathSystem: public DAVA::SceneSystem
+class PathSystem : public DAVA::SceneSystem, public EntityModificationSystemDelegate
 {
     friend class SceneEditor2;
 
 public:
     PathSystem(DAVA::Scene * scene);
-    virtual ~PathSystem();
+    ~PathSystem() override;
 
     void EnablePathEdit(bool enable);
     bool IsPathEditEnabled() const;
-    
+
     void AddEntity(DAVA::Entity * entity) override;
     void RemoveEntity(DAVA::Entity * entity) override;
-    
+
     void Process(DAVA::float32 timeElapsed) override;
 
     DAVA::Entity * GetCurrrentPath() const;
@@ -61,14 +63,15 @@ public:
     
     DAVA::PathComponent* CreatePathComponent();
 
+    void WillClone(DAVA::Entity *originalEntity) override;
+    void DidCloned(DAVA::Entity *originalEntity, DAVA::Entity *newEntity) override;
+
 protected:
-    
     void Draw();
     void DrawInEditableMode();
     void DrawInViewOnlyMode();
     void DrawArrow(const DAVA::Vector3 & start, const DAVA::Vector3 & finish);
-    
-    
+
     void ProcessCommand(const Command2 *command, bool redo);
 
     DAVA::FastName GeneratePathName() const;
@@ -101,6 +104,5 @@ inline bool PathSystem::IsPathEditEnabled() const
 {
     return isEditingEnabled;
 }
-
 
 #endif // __PATH_SYSTEM_H__

@@ -131,7 +131,7 @@ inline void DavaDebugBreak()
 	#define DVASSERT_MSG(expr, msg) {}
 	#define DVWARNING(expr, msg) {}
 
-	#define DVVERIFY(expr) (expr)
+	#define DVVERIFY(expr) do {(void)(expr);} while(false);
 
 #else
 

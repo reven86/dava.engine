@@ -62,11 +62,7 @@ void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem)
     Camera *mainCamera = occlusionCamera;
     Camera *drawCamera = occlusionCamera;
 
-    DVASSERT(drawCamera);
-    DVASSERT(mainCamera);
-    drawCamera->SetupDynamicParameters();            
-    if (mainCamera!=drawCamera)    
-        mainCamera->PrepareDynamicParameters();
+    SetupCameraParams(mainCamera, drawCamera);
 
     PrepareVisibilityArrays(mainCamera, renderSystem);
 

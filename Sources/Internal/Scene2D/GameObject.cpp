@@ -308,8 +308,7 @@ void GameObject::Draw()
 
 	if (sprite)
 	{
-		RenderSystem2D::Instance()->SetColor(color.r, color.g, color.b, color.a);
-        RenderSystem2D::Instance()->Draw(sprite, &globalDrawState);
+		RenderSystem2D::Instance()->Draw(sprite, &globalDrawState, color);
 
 //		RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
 //		RenderManager::Instance()->FillRect(Rect(globalDrawState.position.x - 1, globalDrawState.position.y - 1, 3, 3));
@@ -323,7 +322,7 @@ void GameObject::Draw()
 	
 	if (isDebugDraw && collision)
 	{
-		collision->DebugDraw(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+		collision->DebugDraw(RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL);
 	}
 //	if (align == ALIGN_LEFTTOP)
 //	{

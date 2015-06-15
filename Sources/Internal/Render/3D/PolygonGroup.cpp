@@ -44,7 +44,7 @@ PolygonGroup::PolygonGroup()
     vertexFormat(0),
     indexFormat(EIF_16),
     triangleCount(0),
-    primitiveType(PRIMITIVETYPE_TRIANGLELIST),
+    primitiveType(rhi::PRIMITIVE_TRIANGLELIST),
     cubeTextureCoordCount(0),
 
     vertexArray(0),
@@ -270,7 +270,44 @@ void PolygonGroup::ReleaseData()
     SafeDeleteArray(textureCoordArray);
 	SafeDeleteArray(cubeTextureCoordArray);
 }
+
+uint32 PolygonGroup::ReleaseGeometryData()
+{
+    if (meshData)
+    {
+        SafeDeleteArray(jointCountArray);
+        SafeDeleteArray(meshData);
+        SafeDeleteArray(indexArray);
+        SafeDeleteArray(textureCoordArray);
+        SafeDeleteArray(cubeTextureCoordArray);
+
+        vertexArray = nullptr;
+        textureCoordArray = nullptr;
+        normalArray = nullptr;
+        tangentArray = nullptr;
+        binormalArray = nullptr;
+        jointIdxArray = nullptr;
+        jointWeightArray = nullptr;
+        cubeTextureCoordArray = nullptr;
+        jointCountArray = nullptr;
 	
+        pivotArray = nullptr;
+        flexArray = nullptr;
+        angleArray = nullptr;
+
+        colorArray = nullptr;
+        indexArray = nullptr;
+        meshData = nullptr;
+
+        uint32 ret = vertexStride * vertexCount; //released vertex bytes
+        ret += indexCount * INDEX_FORMAT_SIZE[indexFormat]; //released index bytes
+
+        return ret;
+    }
+
+    return 0;
+}
+
 void PolygonGroup::BuildBuffers()
 {
     if (vertexBuffer.IsValid())
@@ -297,7 +334,7 @@ void PolygonGroup::Save(KeyedArchive * keyedArchive, SerializationContext * seri
     keyedArchive->SetInt32("vertexCount", vertexCount); 
     keyedArchive->SetInt32("indexCount", indexCount); 
     keyedArchive->SetInt32("textureCoordCount", textureCoordCount);
-    keyedArchive->SetInt32("primitiveType", primitiveType);
+    keyedArchive->SetInt32("rhi_primitiveType", primitiveType);
                            
     keyedArchive->SetInt32("packing", PACKING_NONE);
     keyedArchive->SetByteArray("vertices", meshData, vertexCount * vertexStride);
@@ -322,7 +359,7 @@ void PolygonGroup::LoadPolygonData(KeyedArchive * keyedArchive, SerializationCon
     vertexCount = keyedArchive->GetInt32("vertexCount");
     indexCount = keyedArchive->GetInt32("indexCount");
     textureCoordCount = keyedArchive->GetInt32("textureCoordCount");
-    primitiveType = (ePrimitiveType)keyedArchive->GetInt32("primitiveType");
+    primitiveType = (rhi::PrimitiveType)keyedArchive->GetInt32("rhi_primitiveType", rhi::PRIMITIVE_TRIANGLELIST);
 	cubeTextureCoordCount = keyedArchive->GetInt32("cubeTextureCoordCount");
     
     int32 formatPacking = keyedArchive->GetInt32("packing");

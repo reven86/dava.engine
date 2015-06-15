@@ -44,7 +44,6 @@ public:
 	SceneExporter();
 	virtual ~SceneExporter();
     
-    void SetGPUForExporting(const String &newGPU);
     void SetGPUForExporting(const eGPUFamily newGPU);
     
 	void SetCompressionQuality(TextureConverter::eConvertQuality quality);

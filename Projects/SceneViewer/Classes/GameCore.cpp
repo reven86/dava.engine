@@ -35,6 +35,7 @@
 #include "Render/RHI/dbg_Draw.h"
 #include "Render/RHI/Common/dbg_StatSet.h"
 #include "Render/RHI/Common/rhi_Private.h"
+#include "Render/ShaderCache.h"
 
 using namespace DAVA;
 
@@ -51,16 +52,23 @@ GameCore::~GameCore()
 void GameCore::OnAppStarted()
 {
 	Renderer::SetDesiredFPS(60);
+    /*HashMap<FastName, int32> flags;    
+    ShaderDescriptorCache::GetShaderDescriptor(FastName("~res:/Materials/Shaders/Default/water"), flags);*/
     
     selectSceneScreen = new SelectSceneScreen();
     viewSceneScreen = new ViewSceneScreen();
     
-    //SetScenePath("~doc:/effect.sc2");
-    SetScenePath("~doc:/karelia/karelia.sc2");
-//    SetScenePath("~doc:/amigosville/amigosville.sc2");
+//    SetScenePath("~doc:/effect.sc2");    
+//    SetScenePath("~doc:/karelia/karelia.sc2");
+//    SetScenePath("~doc:/scene_viewer/test_box/box.sc2");
+    SetScenePath("~doc:/amigosville/amigosville.sc2");
+//    SetScenePath("~doc:/amigosville/amigosville2.sc2");
+//      SetScenePath("~doc:/amigosville/amigosville3.sc2");
+//      SetScenePath("~doc:/amigosville/amigosville4.sc2");
+//      SetScenePath("~doc:/aaaa.sc2");
 //    SetScenePath("~doc:/karelia/karelia_landscape.sc2");
-//    SetScenePath("~doc:/karelia/gates.sc2");
-//    SetScenePath("~doc:/karelia/objects/k_s01.sc2");
+//    SetScenePath("~doc:/karelia/gates_test.sc2");
+    //SetScenePath("~doc:/karelia/objects/k_s01.sc2");
     UIScreenManager::Instance()->SetFirst(viewSceneScreen->GetScreenID());
     //UIScreenManager::Instance()->SetFirst(selectSceneScreen->GetScreenID());
     
@@ -119,6 +127,8 @@ void GameCore::EndFrame()
     pass_desc.depthStencilBuffer.loadAction  = rhi::LOADACTION_NONE;
     pass_desc.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     pass_desc.priority                       = -10000;
+    pass_desc.viewport.width                 = Renderer::GetFramebufferWidth();
+    pass_desc.viewport.height                = Renderer::GetFramebufferHeight();
 
     rhi::HPacketList pl;
     rhi::HRenderPass pass = rhi::AllocateRenderPass( pass_desc, 1, &pl );
@@ -139,7 +149,7 @@ void GameCore::EndFrame()
     const uint32 color1  = rhi::NativeColorRGBA(0.9f,0.9f,1.0f,1);
     const uint32 color2  = rhi::NativeColorRGBA(0.8f,0.8f,0.8f,1);
     const int    x0      = 10;
-    const int    y0      = 10;
+    const int    y0      = 40;
 
     switch( rhi::HostApi() )
     {

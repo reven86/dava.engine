@@ -200,17 +200,17 @@ void UIScreenTransition::Draw(const UIGeometricData &geometricData)
     RenderSystem2D::Instance()->Setup2DMatrices();
 
     Sprite::DrawState drawState;
-    drawState.SetMaterial(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+    drawState.SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
 
     drawState.SetScale(0.5f, 1.0f);
     drawState.SetPosition(0, 0);
 
-    RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState);
+    RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState, Color::White);
 
     drawState.SetScale(0.5f, 1.0f);
     drawState.SetPosition((VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx) / 2.0f, 0);
 
-    RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState);
+    RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState, Color::White);
 }
 
 void UIScreenTransition::SetDuration(float32 timeInSeconds)

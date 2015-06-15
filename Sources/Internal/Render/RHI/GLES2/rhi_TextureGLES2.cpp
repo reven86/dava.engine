@@ -1,6 +1,7 @@
 
     #include "../Common/rhi_Private.h"
     #include "../Common/rhi_Pool.h"
+    #include "../Common/format_convert.h"
     #include "rhi_GLES2.h"
 
     #include "Debug/DVAssert.h"
@@ -59,28 +60,6 @@ TextureGLES2_t::TextureGLES2_t()
 
 typedef Pool<TextureGLES2_t,RESOURCE_TEXTURE>   TextureGLES2Pool;
 RHI_IMPL_POOL(TextureGLES2_t,RESOURCE_TEXTURE);
-
-
-
-//------------------------------------------------------------------------------
-
-static void
-_FlipRGBA4( void* data, uint32 size )
-{
-    // flip RGBA-ABGR order
-    for( uint8* d=(uint8*)data,*d_end=(uint8*)data+size; d!=d_end; d+=2 )
-    {
-        uint8   t0 = d[0];
-        uint8   t1 = d[1];
-
-        t0 = ((t0&0x0F)<<4) | ((t0&0xF0)>>4);
-        t1 = ((t1&0x0F)<<4) | ((t1&0xF0)>>4);
-
-        d[0] = t1;
-        d[1] = t0;
-    }
-}
-
 
 //------------------------------------------------------------------------------
 
@@ -229,10 +208,11 @@ static void*
 gles2_Texture_Map( Handle tex, unsigned level, TextureFace face )
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get( tex );
-    void*           mem  = nullptr;
+    void*              mem = nullptr;
+    uint32 textureDataSize = TextureSize(self->format, self->width, self->height, level);
 
     DVASSERT(!self->isMapped);
-    self->mappedData = ::realloc( self->mappedData, TextureSize( self->format, self->width, self->height, level ) );
+    self->mappedData = ::realloc( self->mappedData, textureDataSize );
     if( self->mappedData )
     {
         if( self->isRenderTarget )
@@ -268,9 +248,11 @@ gles2_Texture_Map( Handle tex, unsigned level, TextureFace face )
     
     if( self->format == TEXTURE_FORMAT_R4G4B4A4 )
     {
-        Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
-        
-        _FlipRGBA4( self->mappedData, ext.dx*ext.dy*sizeof(uint16) );
+        _FlipRGBA4_ABGR4( self->mappedData, textureDataSize );
+    }
+    else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
+    {
+        _ABGR1555toRGBA5551(self->mappedData, textureDataSize);
     }
 
     return mem;
@@ -287,22 +269,26 @@ gles2_Texture_Unmap( Handle tex )
     GLint           int_fmt;
     GLint           fmt;
     GLenum          type;
+    bool            compressed;
     
-    GetGLTextureFormat( self->format, &int_fmt, &fmt, &type );
+    uint32 textureDataSize = TextureSize(self->format, sz.dx, sz.dy);
+    GetGLTextureFormat( self->format, &int_fmt, &fmt, &type, &compressed );
 
     DVASSERT(self->isMapped);
     if( self->format == TEXTURE_FORMAT_R4G4B4A4 )
     {
-        Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
-        
-        _FlipRGBA4( self->mappedData, ext.dx*ext.dy*sizeof(uint16) );
+        _FlipRGBA4_ABGR4( self->mappedData, textureDataSize );
+    }
+    else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
+    {
+        _RGBA5551toABGR1555(self->mappedData, textureDataSize);
     }
 
     GLenum      target = (self->isCubeMap)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
     GLCommand   cmd[]  =
     {
         { GLCommand::BIND_TEXTURE, {target, self->uid} },
-        { GLCommand::TEX_IMAGE2D, {target, self->mappedLevel, uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, (uint64)(self->mappedData)} },
+        { GLCommand::TEX_IMAGE2D, {target, self->mappedLevel, uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(self->mappedData), compressed} },
         { GLCommand::BIND_TEXTURE, {target, 0} }
     };
 
@@ -322,16 +308,16 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
     GLint           int_fmt;
     GLint           fmt;
     GLenum          type;
+    bool            compressed;
     
-    GetGLTextureFormat( self->format, &int_fmt, &fmt, &type );
+    uint32 textureDataSize = TextureSize(self->format, sz.dx, sz.dy);
+    GetGLTextureFormat( self->format, &int_fmt, &fmt, &type, &compressed);
     
     DVASSERT(!self->isMapped);
-    if( self->format == TEXTURE_FORMAT_R4G4B4A4 )
+    if (self->format == TEXTURE_FORMAT_R4G4B4A4 || self->format == TEXTURE_FORMAT_R5G5B5A1)
     {
-        Size2i  ext = TextureExtents( Size2i(self->width,self->height), level );
-        
         gles2_Texture_Map( tex, level, face );
-        memcpy( self->mappedData, data, ext.dx*ext.dy*sizeof(uint16) );
+        memcpy( self->mappedData, data, textureDataSize );
         gles2_Texture_Unmap( tex );
     }
     else
@@ -340,7 +326,7 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
         GLCommand   cmd[]  =
         {
             { GLCommand::BIND_TEXTURE, {target, self->uid} },
-            { GLCommand::TEX_IMAGE2D, {target, uint64(level), uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, (uint64)(data)} },
+            { GLCommand::TEX_IMAGE2D, {target, uint64(level), uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(data), compressed} },
             { GLCommand::BIND_TEXTURE, {target, 0} }
         };
 
@@ -545,14 +531,9 @@ SetAsRenderTarget( Handle tex )
 {
     TextureGLES2_t* self = TextureGLES2Pool::Get( tex );
 
-    if( !_GLES2_FrameBuffer )
-    {
-        glGetIntegerv( GL_VIEWPORT, _GLES2_Viewport );
-    }
-
     glBindFramebuffer( GL_FRAMEBUFFER, self->fbo );
-    glViewport( 0, 0, self->width, self->height ); 
-    _GLES2_FrameBuffer = self->fbo;
+    glViewport( 0, 0, self->width, self->height );
+    _GLES2_Binded_FrameBuffer = self->fbo;
 }
 
 

@@ -54,25 +54,10 @@ void ViewSceneScreen::LoadResources()
     scene->AddNode(entity);
     scene->ReleaseRootNode(GameCore::Instance()->GetScenePath());
     
-    Landscape * landscape = FindLandscape(scene);
-    if (landscape)
-    {
-        NMaterial * landscapeMaterial = landscape->GetMaterial();
-        landscapeMaterial->AddFlag(FastName("CURSOR"), 1);
-        ScopedPtr<Texture> texture(Texture::CreateFromFile("~res:/cursor/cursor.tex"));
-        texture->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
-        texture->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_NONE);
-        landscapeMaterial->AddTexture(Landscape::TEXTURE_NAME_CURSOR, texture);
-        Vector4 cursorCoordSize(cursorPosition.x, cursorPosition.y, cursorSize, cursorSize);
-        landscapeMaterial->AddProperty(Landscape::PARAM_CURSOR_COORD_SIZE, cursorCoordSize.data, rhi::ShaderProp::TYPE_FLOAT4);
-        landscapeMaterial->GetEffectiveTexture(Landscape::TEXTURE_NAME_TILE)->SetWrapMode(rhi::TEXADDR_WRAP, rhi::TEXADDR_WRAP, rhi::TEXADDR_WRAP);
-    }
-
     ScopedPtr<Camera> camera(new Camera());
     
     VirtualCoordinatesSystem* vcs = DAVA::VirtualCoordinatesSystem::Instance();
-	float32 aspect = (float32)vcs->GetVirtualScreenSize().dy / (float32)vcs->GetVirtualScreenSize().dx;
-    
+	float32 aspect = (float32)vcs->GetVirtualScreenSize().dy / (float32)vcs->GetVirtualScreenSize().dx;    
 	camera->SetupPerspective(70.f, aspect, 0.5f, 2500.f);
 	camera->SetLeft(Vector3(1, 0, 0));
 	camera->SetUp(Vector3(0, 0, 1.f));
@@ -115,6 +100,12 @@ void ViewSceneScreen::LoadResources()
     info->SetTextAlign(ALIGN_VCENTER | ALIGN_RIGHT);
     
     AddControl(info);
+    
+    moveJoyPAD = new UIJoypad(Rect(0, screenRect.dy - 200.f, 200.f, 200.f));
+    moveJoyPAD->SetDebugDraw(true);
+    moveJoyPAD->SetStickDebugDraw(true);
+    AddControl(moveJoyPAD);
+    moveJoyPAD->Release();
 }
 
 void ViewSceneScreen::UnloadResources()
@@ -137,13 +128,6 @@ void ViewSceneScreen::OnBack(BaseObject *caller, void *param, void *callerData)
 
 void ViewSceneScreen::Draw(const DAVA::UIGeometricData &geometricData)
 {
-    Landscape * landscape = FindLandscape(scene);
-    if (landscape)
-    {
-        Vector4 cursorCoordSize(cursorPosition.x, cursorPosition.y, cursorSize, cursorSize);
-        landscape->GetMaterial()->SetPropertyValue(Landscape::PARAM_CURSOR_COORD_SIZE, cursorCoordSize.data);
-    }
-
     uint64 startTime = SystemTimer::Instance()->GetAbsoluteNano();
 
 
@@ -175,8 +159,13 @@ void ViewSceneScreen::Update(float32 timeElapsed)
         wasdSystem->SetMoveSpeed(30.f);
     else
         wasdSystem->SetMoveSpeed(10.f);
-
-
+    
+    Camera * camera = scene->GetDrawCamera();
+    Vector2 joypadPos = moveJoyPAD->GetDigitalPosition();
+    Vector3 cameraMoveOffset = (joypadPos.x * camera->GetLeft() - joypadPos.y * camera->GetDirection()) * timeElapsed * 20.f;
+    
+    camera->SetPosition(camera->GetPosition() + cameraMoveOffset);
+    camera->SetTarget(camera->GetTarget() + cameraMoveOffset);
 }
 
 static const float32 INFO_UPDATE_TIME = 1.0f;

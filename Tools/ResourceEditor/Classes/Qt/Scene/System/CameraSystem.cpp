@@ -53,19 +53,22 @@
 
 #include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
 
-
 #include "Commands2/RemoveComponentCommand.h"
 #include "Commands2/AddComponentCommand.h"
-
-
-
 
 #include "../StringConstants.h"
 
 #include "../../Main/QtUtils.h"
 #include "Qt/Settings/SettingsManager.h"
 
-#define SPEED_ARRAY_SIZE	4
+
+#include <QDebug>
+
+
+namespace
+{
+    const auto wheelAdjust = 0.002;
+}
 
 SceneCameraSystem::SceneCameraSystem(DAVA::Scene * scene)
 	: SceneSystem(scene)
@@ -292,78 +295,76 @@ void SceneCameraSystem::Process(float timeElapsed)
 
 void SceneCameraSystem::Input(DAVA::UIEvent *event)
 {
-    if (event->phase == UIEvent::PHASE_KEYCHAR)
+    switch ( event->phase )
     {
-        const auto isModificatorPressed =
-            DAVA::InputSystem::Instance()->GetKeyboard().IsKeyPressed( DVKEY_CTRL ) ||
-            DAVA::InputSystem::Instance()->GetKeyboard().IsKeyPressed( DVKEY_ALT ) ||
-            DAVA::InputSystem::Instance()->GetKeyboard().IsKeyPressed( DVKEY_SHIFT );
-        if ( isModificatorPressed )
-            return;
+    case UIEvent::PHASE_KEYCHAR:
+        OnKeyboardInput( event );
+        break;
+    case UIEvent::PHASE_WHEEL:
+        break;
 
-        switch ( event->tid )
+    default:
+        break;
+    }
+}
+
+void SceneCameraSystem::OnKeyboardInput( DAVA::UIEvent* event )
+{
+    const auto isModificatorPressed =
+        DAVA::InputSystem::Instance()->GetKeyboard().IsKeyPressed( DVKEY_CTRL ) ||
+        DAVA::InputSystem::Instance()->GetKeyboard().IsKeyPressed( DVKEY_ALT ) ||
+        DAVA::InputSystem::Instance()->GetKeyboard().IsKeyPressed( DVKEY_SHIFT );
+    if ( isModificatorPressed )
+        return;
+
+    switch ( event->tid )
+    {
+    case DVKEY_ADD:
+    case DVKEY_EQUALS:
         {
-        case DVKEY_ADD:
-        case DVKEY_EQUALS:
+            auto entity = GetEntityWithEditorCamera();
+            auto snapComponent = GetSnapToLandscapeControllerComponent( entity );
+            if ( snapComponent != nullptr )
             {
-                auto entity = GetEntityWithEditorCamera();
-                auto snapComponent = GetSnapToLandscapeControllerComponent( entity );
-                if ( snapComponent != nullptr )
-                {
-                    const auto height = snapComponent->GetHeightOnLandscape() + SettingsManager::Instance()->GetValue(Settings::Scene_CameraHeightOnLandscapeStep).AsFloat();
-                    snapComponent->SetHeightOnLandscape(height);
-                    SettingsManager::Instance()->SetValue(Settings::Scene_CameraHeightOnLandscape, DAVA::VariantType(height));
-                }
+                const auto height = snapComponent->GetHeightOnLandscape() + SettingsManager::Instance()->GetValue( Settings::Scene_CameraHeightOnLandscapeStep ).AsFloat();
+                snapComponent->SetHeightOnLandscape( height );
+                SettingsManager::Instance()->SetValue( Settings::Scene_CameraHeightOnLandscape, DAVA::VariantType( height ) );
             }
-            break;
-        case DVKEY_SUBTRACT:
-        case DVKEY_MINUS:
-            {
-                auto entity = GetEntityWithEditorCamera();
-                auto snapComponent = GetSnapToLandscapeControllerComponent( entity );
-                if ( snapComponent != nullptr )
-                {
-                    const auto height = snapComponent->GetHeightOnLandscape() - SettingsManager::Instance()->GetValue(Settings::Scene_CameraHeightOnLandscapeStep).AsFloat();
-                    snapComponent->SetHeightOnLandscape(height);
-                    SettingsManager::Instance()->SetValue(Settings::Scene_CameraHeightOnLandscape, DAVA::VariantType(height));
-                }
-            }
-            break;
-
-        case DVKEY_T:
-            MoveTo( Vector3( 0, 0, 200 ), Vector3( 1, 0, 0 ) );
-            break;
-
-        case DVKEY_Z:
-            {
-                auto sceneEditor = dynamic_cast<SceneEditor2*>(GetScene());
-                if ( sceneEditor == nullptr )
-                    break;
-
-                auto selection = sceneEditor->selectionSystem->GetSelection();
-                if ( selection.Size() > 0 )
-                {
-                    sceneEditor->cameraSystem->LookAt( selection.GetCommonBbox() );
-                }
-            }
-            break;
-
-        case DVKEY_1:
-            SetMoveSpeedArrayIndex( 0 );
-            break;
-        case DVKEY_2:
-            SetMoveSpeedArrayIndex( 1 );
-            break;
-        case DVKEY_3:
-            SetMoveSpeedArrayIndex( 2 );
-            break;
-        case DVKEY_4:
-            SetMoveSpeedArrayIndex( 3 );
-            break;
-
-        default:
-            break;
         }
+        break;
+    case DVKEY_SUBTRACT:
+    case DVKEY_MINUS:
+        {
+            auto entity = GetEntityWithEditorCamera();
+            auto snapComponent = GetSnapToLandscapeControllerComponent( entity );
+            if ( snapComponent != nullptr )
+            {
+                const auto height = snapComponent->GetHeightOnLandscape() - SettingsManager::Instance()->GetValue( Settings::Scene_CameraHeightOnLandscapeStep ).AsFloat();
+                snapComponent->SetHeightOnLandscape( height );
+                SettingsManager::Instance()->SetValue( Settings::Scene_CameraHeightOnLandscape, DAVA::VariantType( height ) );
+            }
+        }
+        break;
+
+    case DVKEY_T:
+        MoveTo( Vector3( 0, 0, 200 ), Vector3( 1, 0, 0 ) );
+        break;
+
+    case DVKEY_1:
+        SetMoveSpeedArrayIndex( 0 );
+        break;
+    case DVKEY_2:
+        SetMoveSpeedArrayIndex( 1 );
+        break;
+    case DVKEY_3:
+        SetMoveSpeedArrayIndex( 2 );
+        break;
+    case DVKEY_4:
+        SetMoveSpeedArrayIndex( 3 );
+        break;
+
+    default:
+        break;
     }
 }
 
@@ -640,4 +641,26 @@ bool SceneCameraSystem::IsEditorCameraSnappedToLandscape() const
     return (GetSnapToLandscapeControllerComponent(entity) != nullptr);
 }
 
+void SceneCameraSystem::MoveToSelection()
+{
+    auto sceneEditor = dynamic_cast<SceneEditor2*>( GetScene() );
+    if ( sceneEditor == nullptr )
+        return;
 
+    auto selection = sceneEditor->selectionSystem->GetSelection();
+    if ( selection.Size() > 0 )
+    {
+        sceneEditor->cameraSystem->LookAt( selection.GetCommonBbox() );
+    }
+}
+
+void SceneCameraSystem::MoveToStep( int ofs )
+{
+    const auto pos = GetCameraPosition();
+    const auto direction = GetCameraDirection();
+    const auto delta = direction * GetMoveSpeed() * ofs * wheelAdjust;
+    const auto dest = pos + delta;
+    const auto target = dest + direction;
+
+    MoveTo( dest, target );
+}

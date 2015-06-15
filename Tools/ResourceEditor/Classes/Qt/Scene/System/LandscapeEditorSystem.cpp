@@ -85,10 +85,10 @@ void LandscapeEditorSystem::UpdateCursorPosition()
 		
 		const AABBox3 & box = drawSystem->GetLandscapeProxy()->GetLandscapeBoundingBox();
 		
-		cursorPosition.x = (landPos.x - box.min.x) * (landscapeSize - 1) / (box.max.x - box.min.x);
-		cursorPosition.y = (landPos.y - box.min.y) * (landscapeSize - 1) / (box.max.y - box.min.y);
-		cursorPosition.x = (int32)cursorPosition.x;
-		cursorPosition.y = landscapeSize - 1 - (int32)cursorPosition.y;
+		cursorPosition.x = (landPos.x - box.min.x) / (box.max.x - box.min.x);
+		cursorPosition.y = (landPos.y - box.min.y) / (box.max.y - box.min.y);
+		cursorPosition.x = cursorPosition.x;
+		cursorPosition.y = 1.f - cursorPosition.y;
         
 		drawSystem->SetCursorPosition(cursorPosition);
 	}

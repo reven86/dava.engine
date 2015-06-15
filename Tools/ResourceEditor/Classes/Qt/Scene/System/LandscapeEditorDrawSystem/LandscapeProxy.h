@@ -58,35 +58,27 @@ public:
 
 		MODES_COUNT
 	};
+
+    static const FastName LANDSCAPE_TEXTURE_TOOL;
+    static const FastName LANDSCAPE_TEXTURE_CURSOR; //should use clamp wrap mode
+    static const FastName LANSDCAPE_FLAG_CURSOR;
+    static const FastName LANSDCAPE_FLAG_TOOL;
+    static const FastName LANDSCAPE_PARAM_CURSOR_COORD_SIZE; //x,y - cursor position [0...1] (in landscape space); z,w - cursor size [0...1] (fraction of landscape)
+
 protected:
 	virtual ~LandscapeProxy();
 public:
 	LandscapeProxy(Landscape* landscape, Entity* node);
 
 	void SetMode(LandscapeProxy::eLandscapeMode mode);
-	
-	void SetRenderer(LandscapeRenderer* renderer);
-	LandscapeRenderer* GetRenderer();
 
 	const AABBox3 & GetLandscapeBoundingBox();
 	Texture* GetLandscapeTexture(const FastName& level);
 	Color GetLandscapeTileColor(const FastName& level);
 	void SetLandscapeTileColor(const FastName& level, const Color& color);
 
+    void SetToolTexture(Texture * texture);
 	void SetTilemaskTexture(Texture* texture);
-	void SetTilemaskTextureEnabled(bool enabled);
-
-	void SetNotPassableTexture(Texture* texture);
-	void SetNotPassableTextureEnabled(bool enabled);
-	
-	void SetCustomColorsTexture(Texture* texture);
-	void SetCustomColorsTextureEnabled(bool enabled);
-	
-	void SetVisibilityCheckToolTexture(Texture* texture);
-	void SetVisibilityCheckToolTextureEnabled(bool enabled);
-
-	void SetRulerToolTexture(Texture* texture);
-	void SetRulerToolTextureEnabled(bool enabled);
 
 	RenderObject* GetRenderObject();
 	void SetHeightmap(Heightmap* heightmap);
@@ -94,12 +86,8 @@ public:
 	void CursorEnable();
 	void CursorDisable();
 	void SetCursorTexture(Texture* texture);
-	void SetBigTextureSize(float32 size);
-	void SetCursorScale(float32 scale);
+    void SetCursorSize(float32 size);
 	void SetCursorPosition(const Vector2& position);
-
-	void ApplyTilemask();
-	void UpdateFullTiledTexture(bool force = false);
 
 	Vector3 PlacePoint(const Vector3& point);
 
@@ -116,7 +104,7 @@ public:
 	void SwapTilemaskSprites();
 
 protected:
-	enum eTextureType
+	enum eToolTextureType
 	{
 		TEXTURE_TYPE_NOT_PASSABLE = 0,
 		TEXTURE_TYPE_CUSTOM_COLORS,
@@ -125,26 +113,20 @@ protected:
 
 		TEXTURE_TYPES_COUNT
 	};
-	
-	Texture* texturesToBlend[TEXTURE_TYPES_COUNT];
-	bool texturesEnabled[TEXTURE_TYPES_COUNT];
 
 	Image* tilemaskImageCopy;
 	Texture* tilemaskTextures[TILEMASK_SPRITES_COUNT];
 
 	int32 tilemaskWasChanged;
 
-	Texture* fullTiledTexture;
-	Texture* displayingTexture;
 	Landscape* baseLandscape;
-	CustomLandscape* customLandscape;
-	Entity* landscapeNode;
+    NMaterial* landscapeEditorMaterial;
+    Vector4 cursorCoordSize;
 
-	eLandscapeMode mode;
+    eLandscapeMode mode;
 	
 	void UpdateDisplayedTexture();
 	
-	UniqueHandle noBlendDrawState;
 	Texture* cursorTexture;
 };
 

@@ -55,7 +55,6 @@ public:
 	static const FastName DETAIL_OPAQUE;
 	static const FastName SILHOUETTE;
 	static const FastName VERTEXCOLOR_FRAMEBLEND_ALPHABLEND;
-	static const FastName SKYBOX;
     static const FastName SKYOBJECT;
 	static const FastName VERTEXCOLOR_FRAMEBLEND_OPAQUE;
 	static const FastName PIXELLIT_ALPHATEST;
@@ -172,6 +171,11 @@ public:
     static const FastName FLAG_VIEWSPECULAR;
 
     static const FastName FLAG_FRAME_BLEND;    
+
+    //Illumination params
+    static const FastName FLAG_ILLUMINATION_USED;
+    static const FastName FLAG_ILLUMINATION_SHADOW_CASTER;
+    static const FastName FLAG_ILLUMINATION_SHADOW_RECEIVER;
 };
 
 class NMaterialQualityName

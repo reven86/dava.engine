@@ -28,7 +28,6 @@
 
 
 #include "Render/Highlevel/RenderBatch.h"
-#include "Render/Material.h"
 #include "Render/3D/PolygonGroup.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/RenderObject.h"
@@ -153,17 +152,12 @@ RenderBatch * RenderBatch::Clone(RenderBatch * destination)
     SafeRelease(rb->dataSource);
 	rb->dataSource = SafeRetain(dataSource);    
 	
-    SafeRelease(rb->material);
-#if RHI_COMPLETE
 	if(material)
 	{
 		NMaterial *mat = material->Clone();
 		rb->SetMaterial(mat);
 		mat->Release();
-
- 		//rb->material->SetMaterialSystem(NULL);
 	}
-#endif RHI_COMPLETE
 
     rb->vertexBuffer = vertexBuffer;
     rb->vertexCount = vertexCount;

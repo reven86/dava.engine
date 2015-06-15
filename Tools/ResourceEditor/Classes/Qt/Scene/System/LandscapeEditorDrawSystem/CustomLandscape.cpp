@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
+#if 0
 
 #include "CustomLandscape.h"
 
@@ -98,3 +98,5 @@ void CustomLandscape::Draw(DAVA::Camera *camera)
 	landscapeRenderer->UnbindMaterial();
 #endif // RHI_COMPLETE_EDITOR
 }
+
+#endif

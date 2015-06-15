@@ -43,7 +43,7 @@
 #include <QDir>
 #include <QMessageBox>
 #include "UI/mainwindow.h"
-#include "Project.h"
+#include "Project/Project.h"
 
 
 /* 

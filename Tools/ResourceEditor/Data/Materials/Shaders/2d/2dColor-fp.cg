@@ -1,0 +1,16 @@
+blending : src=src_alpha dst=inv_src_alpha
+
+FPROG_IN_BEGIN
+    FPROG_IN_COLOR0(color,4)    
+FPROG_IN_END
+
+FPROG_OUT_BEGIN
+    FPROG_OUT_COLOR
+FPROG_OUT_END
+
+FPROG_BEGIN
+
+    float4 in_color = FP_IN(color);
+    FP_OUT_COLOR = in_color;
+    
+FPROG_END

@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#if 0
 
 #ifndef __LANDSCAPE_RENDERER_H__
 #define __LANDSCAPE_RENDERER_H__
@@ -73,3 +74,4 @@ protected:
 #endif // __LANDSCAPE_RENDERER_H__
 
 
+#endif

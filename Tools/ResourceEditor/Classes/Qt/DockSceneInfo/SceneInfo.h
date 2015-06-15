@@ -85,7 +85,8 @@ public slots:
     void UpdateInfoByTimer();
     void TexturesReloaded();
     void SpritesReloaded();
-
+    void OnQualityChanged();
+    
 
 protected slots:
     void SceneActivated(SceneEditor2 *scene);
@@ -169,9 +170,7 @@ protected:
 	DAVA::TexturesMap sceneTextures;
 	DAVA::TexturesMap particleTextures;
 
-    DAVA::Vector<DAVA::Material *>materialsAtScene;
     DAVA::Vector<DAVA::DataNode *>dataNodesAtScene;
-
     
     DAVA::Vector<SpeedTreeInfo> speedTreeLeafInfo;
     

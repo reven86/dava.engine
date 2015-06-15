@@ -102,8 +102,6 @@ public:
 	void SoftwareDraw(const Vector2 & pos);
 
 #endif
-	
-	friend class RenderManager;
     
 	bool show;
 };

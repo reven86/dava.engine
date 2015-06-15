@@ -37,19 +37,33 @@
 
 #import <OpenGLES/EAGL.h>
 #import <OpenGLES/EAGLDrawable.h>
-#import <OpenGLES/ES1/gl.h>
 #import <OpenGLES/ES2/gl.h>
+#import <OpenGLES/ES2/glext.h>
 
-@protocol ESRenderer <NSObject>
+@interface ESRenderer : NSObject
+{
+@private
+	EAGLContext *context;
+	
+	// The pixel dimensions of the CAEAGLLayer
+	GLint backingWidth;
+	GLint backingHeight;
+	
+	// The OpenGL names for the framebuffer and renderbuffer used to render to this view
+	GLuint defaultFramebuffer, colorRenderbuffer;
+    GLuint depthRenderbuffer;
+    
+    BOOL isGL30;
+}
 
-- (void) startRendering;
 - (void) endRendering;
 - (BOOL) resizeFromLayer:(CAEAGLLayer *)layer;
-- (GLuint) getColorRenderbuffer;
-- (GLuint) getDefaultFramebuffer;
-- (void) setCurrentContext;
-@end
 
-#endif //__DAVAENGINE_IPHONE__
+- (void) setCurrentContext;
+- (BOOL) getIsGL30;
+
+@end
+#endif // #if defined(__DAVAENGINE_IPHONE__)
+
 #endif //__DAVAENGINE_ESRENDERER_H__
 

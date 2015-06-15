@@ -69,6 +69,7 @@ protected:
     void PrepareLayersArrays(const Vector<RenderObject *> objectsArray, Camera * camera);
     void ClearLayersArrays();
 
+    void SetupCameraParams(Camera* mainCamera, Camera* drawCamera, Vector4 *externalClipPlane = NULL);
     void DrawLayers(Camera *camera);
 
     Vector<RenderLayer*> renderLayers;
@@ -92,6 +93,10 @@ inline rhi::RenderPassConfig& RenderPass::GetPassConfig()
 inline void RenderPass::SetViewport(const Rect& _viewport)
 {
     viewport = _viewport;
+    passConfig.viewport.x = (int32)viewport.x;
+    passConfig.viewport.y = (int32)viewport.y;
+    passConfig.viewport.width = (int32)viewport.dx;
+    passConfig.viewport.height = (int32)viewport.dy;
 }
 
 inline const FastName & RenderPass::GetName() const

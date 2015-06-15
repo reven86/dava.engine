@@ -280,7 +280,7 @@
 #include "Core/Core.h"
 #include "Core/ApplicationCore.h"
 
-
+#include "Job/JobManager.h"
 
 // Notifications
 #include "Notification/LocalNotification.h"

@@ -39,6 +39,7 @@
 #include "LandscapeEditorDrawSystem/GrassEditorProxy.h"
 
 #include "Commands2/InspMemberModifyCommand.h"
+#include "Commands2/InspDynamicModifyCommand.h"
 
 #include "Scene3D/Systems/RenderUpdateSystem.h"
 
@@ -46,17 +47,18 @@
 
 LandscapeEditorDrawSystem::LandscapeEditorDrawSystem(Scene* scene)
 :	SceneSystem(scene)
+,	landscapeNode(nullptr)
+,	baseLandscape(nullptr)
+,	landscapeProxy(nullptr)
+,	heightmapProxy(nullptr)
+,	notPassableTerrainProxy(nullptr)
+,	customColorsProxy(nullptr)
+,	visibilityToolProxy(nullptr)
+,	rulerToolProxy(nullptr)
+,   grassEditorProxy(nullptr)
 ,	customDrawRequestCount(0)
-,	landscapeProxy(NULL)
-,	heightmapProxy(NULL)
-,	landscapeNode(NULL)
-,	baseLandscape(NULL)
-,	cursorTexture(NULL)
-,	notPassableTerrainProxy(NULL)
-,	customColorsProxy(NULL)
-,	visibilityToolProxy(NULL)
-,	rulerToolProxy(NULL)
-,   grassEditorProxy(NULL)
+,	cursorTexture(nullptr)
+,   sourceTilemaskPath("")
 {	
 }
 
@@ -118,14 +120,8 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableCustomDra
 		return initError;
 	}
 
-	GetLandscapeProxy()->UpdateFullTiledTexture(true);
 	landscapeProxy->SetMode(LandscapeProxy::MODE_CUSTOM_LANDSCAPE);
 	landscapeProxy->SetHeightmap(heightmapProxy);
-
-	AABBox3 landscapeBoundingBox = baseLandscape->GetBoundingBox();
-	LandscapeRenderer* landscapeRenderer = new LandscapeRenderer(heightmapProxy, landscapeBoundingBox);
-	landscapeProxy->SetRenderer(landscapeRenderer);
-	landscapeRenderer->Release();
 
 	++customDrawRequestCount;
 
@@ -167,7 +163,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
 {
 	if (!notPassableTerrainProxy)
 	{
-		notPassableTerrainProxy = new NotPassableTerrainProxy();
+		notPassableTerrainProxy = new NotPassableTerrainProxy(baseLandscape->GetHeightmap()->Size());
 	}
 	
 	if (notPassableTerrainProxy->IsEnabled())
@@ -188,12 +184,9 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
 	}
 
 	notPassableTerrainProxy->Enable();
-	notPassableTerrainProxy->UpdateTexture(heightmapProxy,
-										   landscapeProxy->GetLandscapeBoundingBox(),
-										   GetHeightmapRect());
+	notPassableTerrainProxy->UpdateTexture(heightmapProxy,  landscapeProxy->GetLandscapeBoundingBox(), GetHeightmapRect());
 	
-	landscapeProxy->SetNotPassableTexture(notPassableTerrainProxy->GetTexture());
-	landscapeProxy->SetNotPassableTextureEnabled(true);
+    landscapeProxy->SetToolTexture(notPassableTerrainProxy->GetTexture());
     
 	return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
@@ -206,16 +199,14 @@ void LandscapeEditorDrawSystem::DisableNotPassableTerrain()
 	}
 	
 	notPassableTerrainProxy->Disable();
-	landscapeProxy->SetNotPassableTexture(NULL);
-	landscapeProxy->SetNotPassableTextureEnabled(false);
+	landscapeProxy->SetToolTexture(nullptr);
     
 	DisableCustomDraw();
 }
 
-void LandscapeEditorDrawSystem::EnableCursor(int32 landscapeSize)
+void LandscapeEditorDrawSystem::EnableCursor()
 {
 	landscapeProxy->CursorEnable();
-	landscapeProxy->SetBigTextureSize((float32)landscapeSize);
 }
 
 void LandscapeEditorDrawSystem::DisableCursor()
@@ -231,12 +222,12 @@ void LandscapeEditorDrawSystem::SetCursorTexture(Texture* cursorTexture)
 	landscapeProxy->SetCursorTexture(cursorTexture);
 }
 
-void LandscapeEditorDrawSystem::SetCursorSize(uint32 cursorSize)
+void LandscapeEditorDrawSystem::SetCursorSize(float32 cursorSize)
 {
 	this->cursorSize = cursorSize;
 	if (landscapeProxy)
 	{
-		landscapeProxy->SetCursorScale((float32)cursorSize);
+		landscapeProxy->SetCursorSize(cursorSize);
 		UpdateCursorPosition();
 	}
 }
@@ -268,19 +259,9 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 	{
 		Rect changedRect = heightmapProxy->GetChangedRect();
 		
-		if (landscapeProxy)
-		{
-			LandscapeRenderer* renderer = landscapeProxy->GetRenderer();
-			if (renderer)
-			{
-				renderer->RebuildVertexes(changedRect);
-			}
-		}
-		
 		if (notPassableTerrainProxy && notPassableTerrainProxy->IsEnabled())
 		{
 			notPassableTerrainProxy->UpdateTexture(heightmapProxy, landscapeProxy->GetLandscapeBoundingBox(), changedRect);
-			landscapeProxy->SetNotPassableTexture(notPassableTerrainProxy->GetTexture());
 		}
 		
 		if (customDrawRequestCount == 0)
@@ -295,27 +276,9 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 	{
 		if (landscapeProxy)
 		{
-			landscapeProxy->SetCustomColorsTexture(customColorsProxy->GetTexture());
+            landscapeProxy->SetToolTexture(customColorsProxy->GetTexture());
 		}
 		customColorsProxy->ResetTargetChanged();
-	}
-
-	if (visibilityToolProxy && visibilityToolProxy->IsTextureChanged())
-	{
-		if (landscapeProxy)
-		{
-			landscapeProxy->SetVisibilityCheckToolTexture(visibilityToolProxy->GetTexture());
-		}
-		visibilityToolProxy->ResetTextureChanged();
-	}
-
-	if (rulerToolProxy && rulerToolProxy->IsTextureChanged())
-	{
-		if (rulerToolProxy)
-		{
-			landscapeProxy->SetRulerToolTexture(rulerToolProxy->GetTexture());
-		}
-		rulerToolProxy->ResetTextureChanged();
 	}
 }
 
@@ -334,12 +297,6 @@ void LandscapeEditorDrawSystem::UpdateBaseLandscapeHeightmap()
 float32 LandscapeEditorDrawSystem::GetTextureSize(const FastName& level)
 {
 	float32 size = 0.f;
-#if RHI_COMPLETE_EDITOR
-	if (level == Landscape::TEXTURE_NAME_FULL_TILED)
-	{
-		level = Landscape::TEXTURE_NAME_TILEMASK;
-	}
-#endif RHI_COMPLETE_EDITOR
 	Texture* texture = baseLandscape->GetMaterial()->GetEffectiveTexture(level);
 	if (texture)
 	{
@@ -385,7 +342,7 @@ Rect LandscapeEditorDrawSystem::GetLandscapeRect()
 	return Rect(landPos, landSize);
 }
 
-float32 LandscapeEditorDrawSystem::GetHeightAtPoint(const Vector2& point)
+float32 LandscapeEditorDrawSystem::GetHeightAtHeightmapPoint(const Vector2& point)
 {
 	Heightmap *heightmap = GetHeightmapProxy();
 	int32 x = (int32)point.x;
@@ -406,9 +363,19 @@ float32 LandscapeEditorDrawSystem::GetHeightAtPoint(const Vector2& point)
 
 float32 LandscapeEditorDrawSystem::GetHeightAtTexturePoint(const FastName& level, const Vector2& point)
 {
-	if (GetTextureRect(level).PointInside(point))
+    if (GetTextureRect(level).PointInside(point))
+    {
+        return GetHeightAtHeightmapPoint(TexturePointToHeightmapPoint(level, point));
+    }
+    
+    return 0.f;
+}
+
+float32 LandscapeEditorDrawSystem::GetHeightAtNormalizedPoint(const Vector2& point)
+{
+	if (point.x >= 0.f && point.x <= 1.f && point.y >= 0.f && point.y <= 1.f)
 	{
-		return GetHeightAtPoint(TexturePointToHeightmapPoint(level, point));
+		return GetHeightAtHeightmapPoint(point * GetHeightmapProxy()->Size());
 	}
 
 	return 0.f;
@@ -486,15 +453,15 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::Init()
 	}
 	if (!customColorsProxy)
 	{
-		customColorsProxy = new CustomColorsProxy((int32)GetTextureSize(Landscape::TEXTURE_NAME_FULL_TILED));
+		customColorsProxy = new CustomColorsProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
 	}
 	if (!visibilityToolProxy)
 	{
-        visibilityToolProxy = new VisibilityToolProxy((int32)GetTextureSize(Landscape::TEXTURE_NAME_FULL_TILED));
+        visibilityToolProxy = new VisibilityToolProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
 	}
 	if (!rulerToolProxy)
 	{
-        rulerToolProxy = new RulerToolProxy((int32)GetTextureSize(Landscape::TEXTURE_NAME_FULL_TILED));
+        rulerToolProxy = new RulerToolProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
 	}
     if(!grassEditorProxy)
     {
@@ -515,6 +482,9 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::InitLandscape(E
 
 	landscapeNode = landscapeEntity;
 	baseLandscape = SafeRetain(landscape);
+    
+    UpdateTilemaskPathname();
+    
 	landscapeProxy = new LandscapeProxy(baseLandscape, landscapeNode);
 
 	return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
@@ -581,36 +551,22 @@ void LandscapeEditorDrawSystem::SaveTileMaskTexture()
 		return;
 	}
 
-	if (!GetLandscapeProxy()->IsTilemaskChanged())
-	{
-		return;
-	}
+ 	if (!GetLandscapeProxy()->IsTilemaskChanged())
+ 	{
+ 		return;
+ 	}
 
-	Texture* texture = baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_NAME_TILEMASK);
+	Texture* texture = baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_TILEMASK);
 
 	if (texture)
 	{
-		//FilePath texturePathname = baseLandscape->GetTextureName(Landscape::TEXTURE_TILE_MASK);
-       // RHI_COMPLETE_EDITOR - not sure whi it asked landscape instead
-        FilePath texturePathname = texture->GetPathname();
-
-		if (texturePathname.IsEmpty())
-		{
-			return;
-		}
-
-		texturePathname.ReplaceExtension(".png");
-		
-		
 		Image *image = texture->CreateImageFromMemory();
 
 		if(image)
 		{
-            ImageSystem::Instance()->Save(texturePathname, image);
+            ImageSystem::Instance()->Save(sourceTilemaskPath, image);
 			SafeRelease(image);
 		}
-
-		TextureDescriptorUtils::CreateDescriptorIfNeed(texturePathname);
 
 		GetLandscapeProxy()->ResetTilemaskChanged();
 	}
@@ -644,7 +600,7 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::VerifyLandscape
 //		landscapeProxy->UpdateFullTiledTexture(true);
 //	}
 
-	Texture* tileMask = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_NAME_TILEMASK);
+	Texture* tileMask = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILEMASK);
 	if (tileMask == NULL || tileMask->IsPinkPlaceholder())
 	{
 		return LANDSCAPE_EDITOR_SYSTEM_TILE_MASK_TEXTURE_ABSENT;
@@ -737,8 +693,34 @@ void LandscapeEditorDrawSystem::ProcessCommand(const Command2 *command, bool red
             }
             break;
         }
+        case CMDID_INSP_DYNAMIC_MODIFY:
+        {
+            const InspDynamicModifyCommand* cmd = static_cast<const InspDynamicModifyCommand*>(command);
+            if (DAVA::FastName("tileMask") == cmd->key)
+            {
+                UpdateTilemaskPathname();
+            }
+            break;
+        }
 
         default:
             break;
     }
+}
+
+bool LandscapeEditorDrawSystem::UpdateTilemaskPathname()
+{
+#if RHI_COMPLETE_EDITOR
+    if(nullptr != baseLandscape)
+    {
+        auto texture = baseLandscape->GetTexture(Landscape::TEXTURE_TILE_MASK);
+        if(nullptr != texture)
+        {
+            sourceTilemaskPath = texture->GetDescriptor()->GetSourceTexturePathname();
+            return true;
+        }
+    }
+#endif
+    
+    return false;
 }

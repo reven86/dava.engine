@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "RenderOptions.h"
 #include "RenderCaps.h"
 #include "DynamicBindings.h"
+#include "RuntimeTextures.h"
 #include "RHI/rhi_Public.h"
 #include "RHI/rhi_Type.h"
 
@@ -46,7 +47,7 @@ namespace Renderer
 {
 
     //init
-    void Initialize(rhi::Api api, int32 framebufferWidth, int32 framebufferHeight, void * externalData);
+    void Initialize(rhi::Api api, const rhi::InitParam & params, int32 framebufferWidth, int32 framebufferHeight);
     void Uninitialize();
 
     void Reset(int32 framebufferWidth, int32 framebufferHeight);
@@ -75,6 +76,9 @@ namespace Renderer
 
     //dynamic params
     DynamicBindings& GetDynamicBindings();
+
+    //runtime textures
+    RuntimeTextures& GetRuntimeTextures();
 }
 
 

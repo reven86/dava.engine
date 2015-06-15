@@ -107,6 +107,7 @@ public slots:
 	void OnSceneSave();
 	void OnSceneSaveAs();
 	void OnSceneSaveToFolder();
+    void OnSceneSaveToFolderCompressed();
 	void OnRecentFilesTriggered(QAction *recentAction);
     void OnRecentProjectsTriggered(QAction *recentAction);
 	void ExportMenuTriggered(QAction *exportAsAction);
@@ -119,6 +120,8 @@ public slots:
     void OnViewLightmapCanvas(bool show);
 	void OnAllowOnSceneSelectionToggle(bool allow);
     void OnShowStaticOcclusionToggle(bool show);
+    
+    void OnEnableDisableShadows(bool enable);
 
 	void OnReloadTextures();
 	void OnReloadTexturesTriggered(QAction *reloadAction);
@@ -170,7 +173,7 @@ public slots:
 	void OnShadowBlendModeAlpha();
 	void OnShadowBlendModeMultiply();
 
-	void OnSaveHeightmapToPNG();
+	void OnSaveHeightmapToImage();
 	void OnSaveTiledTexture();
 
 	void OnConvertModifiedTextures();
@@ -190,7 +193,6 @@ public slots:
 	void OnTilemaskEditor();
 	void OnVisibilityTool();
 	void OnNotPassableTerrain();
-    void OnGrasEditor();
     void OnWayEditor();
 	
 	void OnObjectsTypeChanged(QAction *action);
@@ -237,6 +239,8 @@ protected:
 	static void SetActionCheckedSilently(QAction *action, bool checked);
 
     void OpenProject(const DAVA::FilePath & projectPath);
+    
+    void OnSceneSaveAsInternal(bool saveWithCompressed);
     
     
 private slots:

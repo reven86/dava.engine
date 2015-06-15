@@ -15,7 +15,7 @@ void main()
 	vec4 stencil  = texture2D(texture2, varTexCoord0);
 
 	vec4 outColor = colorNew;
-	if( stencil.a < 0.05)
+	if (stencil.a < 0.05)
 	{
 		outColor = colorOld;
 	}

@@ -108,9 +108,8 @@ void UIScreen::SystemDraw(const UIGeometricData &geometricData)
 
 void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
 {
-    RenderSystem2D::Instance()->Flush();
+    static auto drawColor(Color::Black);
 
-	RenderSystem2D::Instance()->SetColor(0, 0, 0, 1.0f);
 	UIGeometricData drawData;
 	drawData.position = relativePosition;
 	drawData.size = size;
@@ -125,36 +124,18 @@ void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
                                   (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
 	if (fullRect.x < 0)
 	{
-		RenderHelper::Instance()->FillRect(Rect(
-													fullRect.x
-												 ,	0
-												 ,	-fullRect.x
-												 ,	virtualSize.y)
-                                                 ,  RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
-		RenderHelper::Instance()->FillRect(Rect(
-												 virtualSize.x
-												 ,	0
-												 ,	fullRect.x + fullRect.dx - virtualSize.x
-												 ,	virtualSize.y)
-                                                 ,  RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+	    auto rect1 = Rect(fullRect.x, 0,	-fullRect.x, virtualSize.y);
+        RenderSystem2D::Instance()->FillRect(rect1, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
+	    auto rect2 = Rect(virtualSize.x, 0,	fullRect.x + fullRect.dx - virtualSize.x, virtualSize.y);
+        RenderSystem2D::Instance()->FillRect(rect2, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
 	}
 	else 
 	{
-		RenderHelper::Instance()->FillRect(Rect(
-													0
-												 ,	fullRect.y
-												 ,	virtualSize.x + 1
-												 ,	-fullRect.y)
-                                                 ,  RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
-		RenderHelper::Instance()->FillRect(Rect(
-												 0
-												 ,	virtualSize.y
-												 ,	virtualSize.x + 1
-												 ,	fullRect.y + fullRect.dy - virtualSize.y)
-                                                 ,  RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+	    auto rect1 = Rect(0, fullRect.y, virtualSize.x + 1,	-fullRect.y);
+        RenderSystem2D::Instance()->FillRect(rect1, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
+        auto rect2 = Rect(0, virtualSize.y, virtualSize.x + 1, fullRect.y + fullRect.dy - virtualSize.y);
+        RenderSystem2D::Instance()->FillRect(rect2, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
 	}
-
-	RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 

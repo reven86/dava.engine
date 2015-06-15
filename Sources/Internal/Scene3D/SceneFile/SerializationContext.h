@@ -42,8 +42,6 @@ namespace DAVA
 	class Scene;
 	class DataNode;
 	class MaterialSystem;
-	class Material;
-	class InstanceMaterialState;
 	class NMaterial;
 	class Texture;
 	class NMaterial;
@@ -154,17 +152,6 @@ namespace DAVA
 			return (it != dataBlocks.end()) ? it->second : NULL;
 		}
 		
-		inline void SetImportedMaterial(uint64 blockId, NMaterial* data)
-		{
-			importedMaterials[blockId] = data;
-		}
-		
-		inline NMaterial* GetImportedMaterial(uint64 blockId)
-		{
-			Map<uint64, NMaterial*>::iterator it = importedMaterials.find(blockId);
-			return (it != importedMaterials.end()) ? it->second : NULL;
-		}
-		
 		inline void AddBinding(uint64 parentKey, NMaterial* material)
 		{
 			MaterialBinding binding;
@@ -203,10 +190,6 @@ namespace DAVA
 		{
 			return defaultMaterialQuality;
 		}
-		
-		NMaterial* ConvertOldMaterialToNewMaterial(Material* oldMaterial,
-											InstanceMaterialState* oldMaterialState,
-												   uint64 oldMaterialId);
 		
         Texture* PrepareTexture(rhi::TextureType textureTypeHint, Texture* tx);
 		

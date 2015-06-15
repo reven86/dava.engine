@@ -83,7 +83,7 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
 
     selectionSystem->SetLocked(true);
     modifSystem->SetLocked(true);
-    landscapeSize = drawSystem->GetTextureSize(Landscape::TEXTURE_NAME_FULL_TILED);
+    landscapeSize = drawSystem->GetTextureSize(Landscape::TEXTURE_COLOR);
 
 	FilePath filePath = GetCurrentSaveFileName();
 	if (!filePath.IsEmpty())
@@ -96,13 +96,12 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
 		drawSystem->GetCustomColorsProxy()->UpdateSpriteFromConfig();
 	}
 
-	drawSystem->EnableCursor(landscapeSize);
+	drawSystem->EnableCursor();
 	drawSystem->SetCursorTexture(cursorTexture);
 	drawSystem->SetCursorSize(cursorSize);
 	
 	Texture* customColorsTexture = drawSystem->GetCustomColorsProxy()->GetTexture();
-	drawSystem->GetLandscapeProxy()->SetCustomColorsTexture(customColorsTexture);
-	drawSystem->GetLandscapeProxy()->SetCustomColorsTextureEnabled(true);
+	drawSystem->GetLandscapeProxy()->SetToolTexture(customColorsTexture);
 	
 	if (!toolImageTexture)
 	{
@@ -141,8 +140,7 @@ bool CustomColorsSystem::DisableLandscapeEdititing( bool saveNeeded)
 	drawSystem->DisableCursor();
 	drawSystem->DisableCustomDraw();
 	
-	drawSystem->GetLandscapeProxy()->SetCustomColorsTexture(NULL);
-	drawSystem->GetLandscapeProxy()->SetCustomColorsTextureEnabled(false);
+	drawSystem->GetLandscapeProxy()->SetToolTexture(nullptr);
 	enabled = false;
 	
 	return !enabled;
@@ -267,7 +265,7 @@ void CustomColorsSystem::AddRectToAccumulator(const Rect &rect)
 Rect CustomColorsSystem::GetUpdatedRect()
 {
 	Rect r = updatedRectAccumulator;
-	drawSystem->ClampToTexture(Landscape::TEXTURE_NAME_FULL_TILED, r);
+    drawSystem->ClampToTexture(Landscape::TEXTURE_COLOR, r);
 
 	return r;
 }

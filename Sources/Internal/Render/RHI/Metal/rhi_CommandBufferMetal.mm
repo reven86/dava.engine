@@ -56,7 +56,6 @@ metal_RenderPass_Allocate( const RenderPassConfig& passConf, uint32 cmdBufCount,
     Handle                      pass_h = RenderPassPool::Alloc();
     RenderPassMetal_t*          pass   = RenderPassPool::Get( pass_h );
     MTLRenderPassDescriptor*    desc   = [MTLRenderPassDescriptor renderPassDescriptor];
-
     
     if( !_CurDrawable )
     {
@@ -72,7 +71,7 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
     desc.colorAttachments[0].storeAction    = MTLStoreActionStore;
     desc.colorAttachments[0].clearColor     = MTLClearColorMake(passConf.colorBuffer[0].clearColor[0],passConf.colorBuffer[0].clearColor[1],passConf.colorBuffer[0].clearColor[2],passConf.colorBuffer[0].clearColor[3]);
 
-    desc.depthAttachment.texture            = _Metal_DefDepthBuf;
+    desc.depthAttachment.texture            = _Metal_Layer.depthBuffer;
     desc.depthAttachment.loadAction         = (passConf.depthStencilBuffer.loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
     desc.depthAttachment.storeAction        = (passConf.depthStencilBuffer.storeAction==STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
     desc.depthAttachment.clearDepth         = passConf.depthStencilBuffer.clearDepth;
@@ -165,16 +164,6 @@ static void
 metal_CommandBuffer_Begin( Handle cmdBuf )
 {
     CommandBufferMetal_t*   cb    = CommandBufferPool::Get( cmdBuf );
-    MTLViewport             vp;
-
-    vp.originX  = 0;
-    vp.originY  = 0;
-    vp.width    = cb->rt.width;
-    vp.height   = cb->rt.height;
-    vp.znear    = 0;
-    vp.zfar     = 1;
-
-    [cb->encoder setViewport:vp];
     
     [cb->encoder setDepthStencilState:_Metal_DefDepthState];
 }

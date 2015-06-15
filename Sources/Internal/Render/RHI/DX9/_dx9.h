@@ -17,11 +17,10 @@ const char* D3D9ErrorText( HRESULT hr );
 namespace rhi
 {
 
-extern IDirect3D9*          _D3D9;
 extern IDirect3DDevice9*    _D3D9_Device;
-extern unsigned             _D3D9_Adapter;
 extern IDirect3DSurface9*   _D3D9_BackBuf;
 
+extern void(*_End_Frame)();
 
 D3DFORMAT          DX9_TextureFormat( TextureFormat format );
 

@@ -36,6 +36,7 @@
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/LibPVRHelper.h"
+#include "Render/Image/ImageConvert.h"
 #include "Render/PixelFormatDescriptor.h"
 
 
@@ -93,7 +94,7 @@ LibPVRHelper::LibPVRHelper()
     supportedExtensions.push_back(".pvr");
 }
 
-bool LibPVRHelper::IsImage(DAVA::File *file) const
+bool LibPVRHelper::IsMyImage(DAVA::File *file) const
 {
     bool isPvrFile = false;
 
@@ -149,6 +150,7 @@ DAVA::ImageInfo LibPVRHelper::GetImageInfo(File *infile) const
         info.height = pvrFile->header.u32Height;
         info.format = GetTextureFormat(pvrFile->header);
         info.dataSize = infile->GetSize() - (PVRTEX3_HEADERSIZE + pvrFile->header.u32MetaDataSize);
+        info.mipmapsCount = pvrFile->header.u32MIPMapCount;
 
         delete pvrFile;
     }
@@ -2501,7 +2503,21 @@ bool LibPVRHelper::CopyToImage(Image *image, uint32 mipMapLevel, uint32 faceInde
     {
         //Setup temporary variables.
         uint8* data = (uint8*)pvrData + GetMipMapLayerOffset(mipMapLevel, faceIndex, header);
-        Memcpy(image->data, data, image->dataSize);
+
+        if (image->format == FORMAT_RGBA4444)
+        {
+            ConvertDirect<uint16, uint16, ConvertABGR4444toRGBA4444> convert;
+            convert(data, image->width, image->height, image->width * sizeof(uint16), image->data);
+        }
+        else if (image->format == FORMAT_RGBA5551)
+        {
+            ConvertDirect<uint16, uint16, ConvertABGR1555toRGBA5551> convert;
+            convert(data, image->width, image->height, image->width * sizeof(uint16), image->data);
+        }
+        else
+        {
+            Memcpy(image->data, data, image->dataSize);
+        }
 
         return true;
     }

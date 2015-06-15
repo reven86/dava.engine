@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#if 0
 
 #include "LandscapeRenderer.h"
 
@@ -180,3 +181,4 @@ DAVA::uint32 * LandscapeRenderer::Indicies()
     return &indices.front();
 }
 
+#endif

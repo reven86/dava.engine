@@ -68,6 +68,9 @@ struct RenderCaps
     bool isGlDepthNvNonLinearSupported;
 #endif
 
+
+    bool upperLeftRTOrigin;
+    bool zeroBaseClipRange;
 };
 
 }

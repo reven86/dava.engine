@@ -464,20 +464,18 @@ metal_PipelineState_Create( const PipelineState::Descriptor& desc )
     id<MTLLibrary>      fp_lib  = [_Metal_Device newLibraryWithSource:fp_src options:fp_opt error:&fp_err];
     id<MTLFunction>     fp_func = nil;
     
-    if( fp_err == nil )
+    if(fp_err)
+    {
+        Logger::Error( "FAILED to compile fprog \"%s\" :\n%s", desc.fprogUid.c_str(), fp_err.localizedDescription.UTF8String );
+    }
+    if(fp_lib)
     {
         fp_func = [fp_lib newFunctionWithName:@"fp_main"];
-        
         if( fp_func == nil )
         {
             Logger::Error( "FAILED to get fprog \"%s\" function", desc.fprogUid.c_str() );
         }
     }
-    else
-    {
-        Logger::Error( "FAILED to compile fprog \"%s\" :\n%s", desc.fprogUid.c_str(), fp_err.localizedDescription.UTF8String );
-    }
-
 
     // create render-state
     
