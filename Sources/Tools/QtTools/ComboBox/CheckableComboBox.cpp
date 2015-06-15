@@ -91,6 +91,7 @@ void CheckableComboBox::selectUserData(const QList<QVariant>& dataList)
     }
 
     updateTextHints();
+    emit selectedUserDataChanged();
 }
 
 void CheckableComboBox::onRowsInserted(const QModelIndex& parent, int start, int end)

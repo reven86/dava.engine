@@ -113,8 +113,8 @@
 #include "Classes/Qt/BeastDialog/BeastDialog.h"
 #include "DebugTools/VersionInfoWidget/VersionInfoWidget.h"
 #include "Classes/Qt/RunActionEventWidget/RunActionEventWidget.h"
-#include "Classes/Qt/DockConsole/LogWidget.h"
-#include "Classes/Qt/DockConsole/LogModel.h"
+#include "QtTools/ConsoleWidget/LogWidget.h"
+#include "QtTools/ConsoleWidget/LogModel.h"
 
 #include "Classes/Qt/DeviceInfo/DeviceList/DeviceListWidget.h"
 #include "Classes/Qt/DeviceInfo/DeviceList/DeviceListController.h"

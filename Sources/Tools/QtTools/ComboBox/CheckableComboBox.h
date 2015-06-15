@@ -54,7 +54,8 @@ public:
     void selectUserData(const QList<QVariant>& dataList);
 
     QModelIndexList checkedIndexes() const;
-
+signals:
+    void selectedUserDataChanged();
 private slots:
     void onRowsInserted(const QModelIndex& parent, int start, int end);
     void updateTextHints();
