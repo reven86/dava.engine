@@ -45,7 +45,7 @@ String runOnlyTheseTests = "";
 String excludeTheseTests = "";
 
 bool teamcityOutputEnabled = true;      // Flag whether to enable TeamCity output
-bool teamcityCaptureStdout = true;      // Flag whether to set TeamCity option 'captureStandardOutput=true'
+bool teamcityCaptureStdout = false;     // Flag whether to set TeamCity option 'captureStandardOutput=true'
 
 }
 
@@ -58,7 +58,7 @@ void GameCore::ProcessCommandLine()
     }
     if (cmdline->CommandIsFound("-exclude_test"))
     {
-        excludeTheseTests = cmdline->GetCommandParam("-only_test");
+        excludeTheseTests = cmdline->GetCommandParam("-exclude_test");
     }
     if (cmdline->CommandIsFound("-noteamcity"))
     {
@@ -80,14 +80,19 @@ void GameCore::OnAppStarted()
         Logger::Instance()->AddCustomOutput(&teamCityOutput);
     }
 
-    UnitTests::TestCore::Instance()->Init(MakeFunction(this, &GameCore::OnTestSuiteStarted),
-                                          MakeFunction(this, &GameCore::OnTestSuiteFinished),
+    UnitTests::TestCore::Instance()->Init(MakeFunction(this, &GameCore::OnTestClassStarted),
+                                          MakeFunction(this, &GameCore::OnTestClassFinished),
                                           MakeFunction(this, &GameCore::OnTestStarted),
                                           MakeFunction(this, &GameCore::OnTestFinished),
-                                          MakeFunction(this, &GameCore::OnTestFailed));
+                                          MakeFunction(this, &GameCore::OnTestFailed),
+                                          MakeFunction(this, &GameCore::OnTestClassDisabled));
     if (!runOnlyTheseTests.empty())
     {
-        UnitTests::TestCore::Instance()->RunOnlyThisTest(runOnlyTheseTests);
+        UnitTests::TestCore::Instance()->RunOnlyTheseTests(runOnlyTheseTests);
+    }
+    if (!excludeTheseTests.empty())
+    {
+        UnitTests::TestCore::Instance()->ExcludeTheseTests(excludeTheseTests);
     }
 
     if (!UnitTests::TestCore::Instance()->HasTests())
@@ -135,14 +140,19 @@ void GameCore::OnError()
     DavaDebugBreak();
 }
 
-void GameCore::OnTestSuiteStarted(const DAVA::String& testClassName)
+void GameCore::OnTestClassStarted(const DAVA::String& testClassName)
 {
     Logger::Info("%s", TeamcityTestsOutput::FormatTestClassStarted(testClassName).c_str());
 }
 
-void GameCore::OnTestSuiteFinished(const DAVA::String& testClassName)
+void GameCore::OnTestClassFinished(const DAVA::String& testClassName)
 {
     Logger::Info("%s", TeamcityTestsOutput::FormatTestClassFinished(testClassName).c_str());
+}
+
+void GameCore::OnTestClassDisabled(const DAVA::String& testClassName)
+{
+    Logger::Info("%s", TeamcityTestsOutput::FormatTestClassDisabled(testClassName).c_str());
 }
 
 void GameCore::OnTestStarted(const DAVA::String& testClassName, const DAVA::String& testName)
