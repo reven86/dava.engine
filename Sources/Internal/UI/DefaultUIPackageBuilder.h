@@ -73,6 +73,7 @@ public:
 
     virtual void ProcessProperty(UIControl* control, const InspMember *member, const VariantType &value) override;
 
+    virtual void AddStyleSheets(const DAVA::Vector<UIStyleSheet*>& styleSheets) override;
 private:
     void PutImportredPackage(const FilePath &path, UIPackage *package);
     UIPackage *FindImportedPackageByName(const String &name) const;

@@ -36,6 +36,7 @@ namespace DAVA
 {
 class UIControl;
 class UIStyleSheet;
+class UIControlPackageContext;
 
 class UIPackage: public BaseObject
 {
@@ -59,6 +60,7 @@ public:
     void AddControl(UIControl *control);
     void RemoveControl(UIControl *control);
 
+    UIControlPackageContext* GetControlPackageContext();
 
     RefPtr<UIPackage> Clone() const;
 private:

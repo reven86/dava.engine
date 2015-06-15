@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 #include "UI/UIStyleSheetYamlLoader.h"
-#include "UI/UIStyleSheetPackage.h"
 #include "UI/UIStyleSheet.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
@@ -139,23 +138,21 @@ namespace DAVA
 
     }
 
-    UIStyleSheetPackage* UIStyleSheetYamlLoader::LoadFromYaml(const FilePath& path)
+    void UIStyleSheetYamlLoader::LoadFromYaml(const FilePath& path, DAVA::Vector< UIStyleSheet* >* styleSheets)
     {
         RefPtr<YamlParser> parser(YamlParser::Create(path));
 
         if (parser.Get() == nullptr)
-            return nullptr;
+            return;
 
         YamlNode* rootNode = parser->GetRootNode();
         if (rootNode)
-            return LoadFromYaml(rootNode);
-
-        return nullptr;
+            LoadFromYaml(rootNode, styleSheets);
     }
 
-    UIStyleSheetPackage* UIStyleSheetYamlLoader::LoadFromYaml(const YamlNode* rootNode)
+    void UIStyleSheetYamlLoader::LoadFromYaml(const YamlNode* rootNode, DAVA::Vector< UIStyleSheet* >* styleSheets)
     {
-        UIStyleSheetPackage* package = new UIStyleSheetPackage();
+        DVASSERT(styleSheets);
 
         const MultiMap<String, YamlNode*> &styleSheetMap = rootNode->AsMap();
 
@@ -186,7 +183,7 @@ namespace DAVA
 
             for (const String& selectorString : selectorList)
             {
-                ScopedPtr<UIStyleSheet> styleSheet(new UIStyleSheet());
+                UIStyleSheet* styleSheet = new UIStyleSheet();
 
                 DAVA::Vector< UIStyleSheetSelector > selectorChain;
                 SelectorParser parser(selectorChain);
@@ -195,10 +192,8 @@ namespace DAVA
                 styleSheet->SetSelectorChain(selectorChain);
                 styleSheet->SetPropertyTable(propertyTable);
 
-                package->AddStyleSheet(styleSheet);
+                styleSheets->push_back(styleSheet);
             }
         }
-
-        return package;
     }
 }

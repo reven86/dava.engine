@@ -35,9 +35,11 @@
 #include "FileSystem/YamlEmitter.h"
 #include "UI/UIYamlLoader.h"
 #include "UI/UIControl.h"
+#include "UI/UIStyleSheet.h"
 #include "UI/UIStaticText.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/UIPackage.h"
+#include "UI/UIStyleSheetYamlLoader.h"
 #include "UI/Components/UIComponent.h"
 
 namespace DAVA
@@ -95,6 +97,20 @@ bool UIPackageLoader::LoadPackage(const YamlNode *rootNode, const FilePath &pack
         int32 count = (int32) importedPackagesNode->GetCount();
         for (int32 i = 0; i < count; i++)
             builder->ProcessImportedPackage(importedPackagesNode->Get(i)->AsString(), this);
+    }
+
+    const YamlNode *styleSheetsNode = rootNode->Get("StyleSheets");
+    if (styleSheetsNode)
+    {
+        UIStyleSheetYamlLoader styleSheetLoader;
+
+        Vector< UIStyleSheet* > styleSheets;
+        styleSheetLoader.LoadFromYaml(styleSheetsNode, &styleSheets);
+
+        builder->AddStyleSheets(styleSheets);
+
+        for (UIStyleSheet* styleSheet : styleSheets)
+            SafeRelease(styleSheet);
     }
 
     const YamlNode *controlsNode = rootNode->Get("Controls");

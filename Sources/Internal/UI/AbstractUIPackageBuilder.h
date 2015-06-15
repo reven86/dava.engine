@@ -39,6 +39,7 @@ namespace DAVA
     
 class UIPackage;
 class UIControl;
+class UIStyleSheet;
 class UIComponent;
 class UIControlBackground;
 class YamlNode;
@@ -83,6 +84,8 @@ public:
     virtual void EndInternalControlSection() = 0;
     
     virtual void ProcessProperty(UIControl* control, const InspMember *member, const VariantType &value) = 0;
+
+    virtual void AddStyleSheets(const DAVA::Vector<UIStyleSheet*>& styleSheets) = 0;
 };
     
 }

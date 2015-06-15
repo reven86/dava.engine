@@ -29,7 +29,6 @@
 #include "UI/UIStyleSheetSystem.h"
 #include "UI/UIStyleSheet.h"
 #include "UI/UIStyleSheetCascade.h"
-#include "UI/UIStyleSheetPackage.h"
 #include "UI/UIControl.h"
 #include "UI/UIControlPackageContext.h"
 #include "UI/Components/UIComponent.h"
@@ -38,48 +37,23 @@
 
 namespace DAVA
 {
-    UIStyleSheetSystem::UIStyleSheetSystem() //: dirtySort(false)
+    UIStyleSheetSystem::UIStyleSheetSystem()
     {
 
     }
 
     UIStyleSheetSystem::~UIStyleSheetSystem()
     {
-        /*for (UIStyleSheet* styleSheet : styleSheets)
-        {
-            SafeRelease(styleSheet);
-        }*/
+
     }
 
     void UIStyleSheetSystem::MarkControlForUpdate(UIControl* control)
     {
         controlsToUpdate.push_back(SafeRetain(control));
     }
-    /*
-    void UIStyleSheetSystem::RegisterStyleSheet(UIStyleSheet* styleSheet)
-    {
-        styleSheets.push_back(SafeRetain(styleSheet));
-        dirtySort = true;
-    }
-
-    void UIStyleSheetSystem::UnregisterStyleSheet(UIStyleSheet* styleSheet)
-    {
-        auto iter = std::find(styleSheets.begin(), styleSheets.end(), styleSheet);
-        if (iter != styleSheets.end())
-        {
-            SafeRelease(styleSheet);
-            styleSheets.erase(iter);
-        }
-    }
-    */
+    
     void UIStyleSheetSystem::Process()
     {
-        /*if (dirtySort)
-        {
-            SortStyleSheets();
-            dirtySort = false;
-        }
-        */
         if (!controlsToUpdate.empty())
         {
             uint64 start = SystemTimer::Instance()->AbsoluteMS();
@@ -123,15 +97,7 @@ namespace DAVA
 
         SetupControlFromCascade(control, cascade);
     }
-    /*
-    void UIStyleSheetSystem::SortStyleSheets()
-    {
-        std::sort(styleSheets.begin(), styleSheets.end(),
-            [](const UIStyleSheet* first, const UIStyleSheet* second) {
-            return first->GetScore() > second->GetScore();
-        });
-    }
-    */
+
     bool UIStyleSheetSystem::StyleSheetMatchesControl(const UIStyleSheet* styleSheet, UIControl* control)
     {
         UIControl* currentControl = control;

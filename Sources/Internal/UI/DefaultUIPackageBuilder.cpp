@@ -33,6 +33,7 @@
 #include "UIPackageLoader.h"
 #include "Base/ObjectFactory.h"
 #include "UI/UIControl.h"
+#include "UI/UIControlPackageContext.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/Components/UIComponent.h"
 #include "FileSystem/LocalizationSystem.h"
@@ -106,6 +107,20 @@ void DefaultUIPackageBuilder::BeginPackage(const FilePath &packagePath)
 
 void DefaultUIPackageBuilder::EndPackage()
 {
+    Vector<UIStyleSheet*> importedStyleSheets;
+    for (UIPackage* importedPackage : importedPackages)
+    {
+        Vector<UIStyleSheet*> packageStyleSheets = importedPackage->GetControlPackageContext()->GetSortedStyleSheets();
+        for (UIStyleSheet* packageStyleSheet : packageStyleSheets)
+        {
+            importedStyleSheets.push_back(packageStyleSheet);
+        }
+    }
+    std::sort(importedStyleSheets.begin(), importedStyleSheets.end());
+    auto last = std::unique(importedStyleSheets.begin(), importedStyleSheets.end());
+    importedStyleSheets.erase(last, importedStyleSheets.end());
+
+    AddStyleSheets(importedStyleSheets);
 }
 
 bool DefaultUIPackageBuilder::ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader)
@@ -332,6 +347,12 @@ void DefaultUIPackageBuilder::ProcessProperty(UIControl* control, const InspMemb
         else
             member->SetValue(currentObject, value);
     }
+}
+
+void DefaultUIPackageBuilder::AddStyleSheets(const DAVA::Vector<UIStyleSheet*>& styleSheets)
+{
+    for (UIStyleSheet* styleSheet : styleSheets)
+        package->GetControlPackageContext()->AddStyleSheet(styleSheet);
 }
 
 void DefaultUIPackageBuilder::PutImportredPackage(const FilePath &path, UIPackage *package)
