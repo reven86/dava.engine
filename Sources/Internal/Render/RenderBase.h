@@ -321,8 +321,10 @@ inline int32 GetVertexSize(int32 flags)
     if (flags & EVF_FLEXIBILITY) size += sizeof(float32);
     if (flags & EVF_ANGLE_SIN_COS) size += 2 * sizeof(float32);
 
-    if (flags & EVF_JOINTINDEX) size += 4;
-    if (flags & EVF_JOINTWEIGHT) size += 4;
+//    if (flags & EVF_JOINTINDEX) size += 4;
+//    if (flags & EVF_JOINTWEIGHT) size += 4;
+    if (flags & EVF_JOINTINDEX) size += 1*sizeof(float32);
+    if (flags & EVF_JOINTWEIGHT) size += 1*sizeof(float32);
 
     return size;
 }

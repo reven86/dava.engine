@@ -91,7 +91,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
     if( in )
     {
         std::regex  prop_re(".*property\\s*(float|float2|float3|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
-        std::regex  proparr_re(".*property\\s*(float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\[([0-9]+)\\]\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
+        std::regex  proparr_re(".*property\\s*(float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\[(\\s*[0-9]+)\\s*\\]\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
         std::regex  fsampler2d_re(".*DECL_FP_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
         std::regex  vsampler2d_re(".*DECL_VP_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
         std::regex  samplercube_re(".*DECL_FP_SAMPLERCUBE\\s*\\(\\s*(.*)\\s*\\).*");
@@ -475,6 +475,23 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
             if( strstr( line, "VPROG_IN_COLOR" ) )
                 vdecl.AddElement( VS_COLOR, 0, VDT_UINT8N, 4 );
+            
+            if( strstr( line, "VPROG_IN_BLENDINDEX" ) )
+            {
+                uint32      data_cnt = 1;
+                std::regex  index_re (".*VPROG_IN_BLENDINDEX\\s*\\(([0-7])\\s*\\).*");
+
+                if( std::regex_match( line, match, index_re ) )
+                {
+                    std::string c = match[1].str();
+                    
+                    data_cnt = atoi( c.c_str() );                
+                }
+
+                vdecl.AddElement( VS_BLENDINDEX, 0, VDT_FLOAT, data_cnt );
+            }
+
+            
         } // for each line
 
         type =  progType;
@@ -547,8 +564,20 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     }   break;
 
                     case ShaderProp::TYPE_FLOAT4 :
-                        var_len += Snprintf(var_def + var_len, sizeof(var_def) - var_len, "    float4 %s = %cP_Buffer%u[%u];\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg);
-                        break;
+                    {
+                        if( p->arraySize == 1 )
+                        {
+                            var_len += Snprintf( var_def+var_len, sizeof(var_def)-var_len, "    float4 %s = %cP_Buffer%u[%u];\n", p->uid.c_str(), pt, p->bufferindex, p->bufferReg);
+                        }
+                        else
+                        {
+                            var_len += Snprintf( var_def+var_len, sizeof(var_def)-var_len, "    float4 %s[%u];\n", p->uid.c_str(), p->arraySize );
+                            for( unsigned i=0; i!=p->arraySize; ++i )
+                            {
+                                var_len += Snprintf( var_def+var_len, sizeof(var_def)-var_len, "      %s[%u] = %cP_Buffer%u[%u];\n", p->uid.c_str(), i, pt, p->bufferindex, p->bufferReg+i );
+                            }
+                        }
+                    }   break;
 
                     case ShaderProp::TYPE_FLOAT4X4 :
                     {

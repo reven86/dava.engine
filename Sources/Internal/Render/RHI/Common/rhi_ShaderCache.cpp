@@ -581,7 +581,7 @@ static const char* _ShaderDefine_DX9 =
 "#define VPROG_IN_TANGENT               float3 tangent : TANGENT;\n"
 "#define VPROG_IN_BINORMAL              float3 binormal : BINORMAL;\n"
 "#define VPROG_IN_BLENDWEIGHT           float3 blendweight : BLENDWEIGHT;\n"
-"#define VPROG_IN_BLENDINDEX            float3 blendindex : BLENDINDEX;\n"
+"#define VPROG_IN_BLENDINDEX(sz)        float##sz blendindex : BLENDINDICES;\n"
 "#define VPROG_IN_END                   };\n"
 
 "#define VPROG_OUT_BEGIN                        struct VP_Output {\n"
@@ -857,7 +857,7 @@ PreProcessSource( Api targetApi, const char* srcText, std::string* preprocessedT
         MCPP_Text
     };
 
-DAVA::Logger::Info( "src=\n%s\n", src );
+//DAVA::Logger::Info( "src=\n%s\n", src );
     _PreprocessedText = preprocessedText;
     mcpp__set_input( src, strlen(src) );
 
@@ -884,8 +884,8 @@ DAVA::Logger::Info( "src=\n%s\n", src );
             preprocessedText->insert( 0, _ShaderHeader_Metal );
             break;
     }
-    ;
-DAVA::Logger::Info( "pre-processed=\n%s\n", preprocessedText->c_str() );
+    
+//DAVA::Logger::Info( "pre-processed=\n%s\n", preprocessedText->c_str() );
 }
 
 

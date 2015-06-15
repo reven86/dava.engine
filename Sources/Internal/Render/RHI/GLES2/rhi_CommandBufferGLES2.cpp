@@ -790,7 +790,7 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                 GLsizei w = GLsizei(arg[2]);
                 GLsizei h = GLsizei(arg[3]);
 
-                if( x  &&  y  &&  w  &&  h )
+                if( !(x==0  &&  y==0  &&  w==0  &&  h==0) )
                 {
                     glViewport( x, y, w, h );
                 }
