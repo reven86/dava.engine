@@ -36,6 +36,8 @@ namespace DAVA
 namespace
 {
 
+const String startSuiteMarker = "start suite";
+const String finishSuiteMarker = "finish suite";
 const String startTestMarker = "start test ";
 const String finishTestMarker = "finish test ";
 const String errorTestMarker = "test error ";
@@ -51,7 +53,17 @@ void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
     Split(textStr, "\n", lines);
 
     String output;
-    if (startTestMarker == lines[0])
+    if (startSuiteMarker == lines[0])
+    {
+        String testName = lines.at(1);
+        output = "##teamcity[testSuiteStarted name='" + testName + "']\n";
+    }
+    else if (finishSuiteMarker == lines[0])
+    {
+        String testName = lines.at(1);
+        output = "##teamcity[testSuiteFinished name='" + testName + "']\n";
+    }
+    else if (startTestMarker == lines[0])
     {
         String testName = lines.at(1);
         output = "##teamcity[testStarted name='" + testName + "'";
@@ -64,16 +76,16 @@ void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
     else if (finishTestMarker == lines[0])
     {
         String testName = lines.at(1);
-        output = "##teamcity[testFinished name=\'" + testName + "\']\n";
+        output = "##teamcity[testFinished name='" + testName + "']\n";
     }
     else if (errorTestMarker == lines[0])
     {
         String testName = lines.at(1);
         String condition = NormalizeString(lines.at(2).c_str());
         String errorFileLine = NormalizeString(lines.at(3).c_str());
-        output = "##teamcity[testFailed name=\'" + testName 
-            + "\' message=\'" + condition 
-            + "\' details=\'" + errorFileLine + "\']\n";
+        output = "##teamcity[testFailed name='" + testName 
+            + "' message='" + condition 
+            + "' details='" + errorFileLine + "']\n";
     }
     else
     {
@@ -86,15 +98,28 @@ void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
 String TeamcityTestsOutput::FormatTestStarted(const String& testClassName, const String& testName, bool combineNames)
 {
     // TODO: make use of Format after merging pull request 367
-    return combineNames ? startTestMarker + "\n" + testClassName + "." + testName.c_str()
-                        : startTestMarker + "\n" + testClassName;
+    return startTestMarker + "\n" + testClassName + "." + testName;
+    //return combineNames ? startTestMarker + "\n" + testClassName + "." + testName
+    //                    : startTestMarker + "\n" + testClassName;
 }
 
 String TeamcityTestsOutput::FormatTestFinished(const String& testClassName, const String& testName, bool combineNames)
 {
     // TODO: make use of Format after merging pull request 367
-    return combineNames ? finishTestMarker + "\n" + testClassName + "." + testName.c_str()
-                        : finishTestMarker + "\n" + testClassName;
+    return startTestMarker + "\n" + testClassName + "." + testName;
+    //return combineNames ? finishTestMarker + "\n" + testClassName + "." + testName
+    //                    : finishTestMarker + "\n" + testClassName;
+}
+
+String TeamcityTestsOutput::FormatTestClassStarted(const String& testClassName)
+{
+    return startSuiteMarker + "\n" + testClassName;
+    //return "##teamcity[testSuiteStarted name='" + testClassName + "']";
+}
+
+String TeamcityTestsOutput::FormatTestClassFinished(const String& testClassName)
+{
+    return finishSuiteMarker + "\n" + testClassName;
 }
 
 String TeamcityTestsOutput::FormatTestFailed(const String& testClassName, const String& testName, const String& condition, const String& errMsg, bool combineNames)

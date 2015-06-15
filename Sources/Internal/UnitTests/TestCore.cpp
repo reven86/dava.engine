@@ -90,7 +90,7 @@ bool TestCore::ProcessTests(float32 timeElapsed)
             if (runOnlyThisTest.empty() || curTestClassName == runOnlyThisTest)
             {
                 curTestClass = testClasInfo.factory->CreateTestClass();
-                if (!perTestProgress)
+                //if (!perTestProgress)
                 {
                     testStartedCallback(curTestClassName, "");
                 }
@@ -108,7 +108,7 @@ bool TestCore::ProcessTests(float32 timeElapsed)
                 if (!testSetUpInvoked)
                 {
                     curTestName = curTestClass->TestName(curTestIndex);
-                    if (perTestProgress)
+                    //if (perTestProgress)
                     {
                         testStartedCallback(curTestClassName, curTestName);
                     }
@@ -121,7 +121,7 @@ bool TestCore::ProcessTests(float32 timeElapsed)
                 {
                     testSetUpInvoked = false;
                     curTestClass->TearDown(curTestName);
-                    if (perTestProgress)
+                    //if (perTestProgress)
                     {
                         testFinishedCallback(curTestClassName, curTestName);
                     }
@@ -134,7 +134,7 @@ bool TestCore::ProcessTests(float32 timeElapsed)
             }
             else
             {
-                if (!perTestProgress)
+                //if (!perTestProgress)
                 {
                     testFinishedCallback(curTestClassName, "");
                 }

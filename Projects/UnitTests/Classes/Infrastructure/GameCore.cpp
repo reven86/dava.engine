@@ -141,12 +141,18 @@ void GameCore::OnError()
 
 void GameCore::OnTestStarted(const DAVA::String& testClassName, const DAVA::String& testName)
 {
-    Logger::Info("%s", TeamcityTestsOutput::FormatTestStarted(testClassName, testName, enablePerTestOutput).c_str());
+    if (testName.empty())
+        Logger::Info("%s", TeamcityTestsOutput::FormatTestClassStarted(testClassName).c_str());
+    else
+        Logger::Info("%s", TeamcityTestsOutput::FormatTestStarted(testClassName, testName, enablePerTestOutput).c_str());
 }
 
 void GameCore::OnTestFinished(const DAVA::String& testClassName, const DAVA::String& testName)
 {
-    Logger::Info("%s", TeamcityTestsOutput::FormatTestFinished(testClassName, testName, enablePerTestOutput).c_str());
+    if (testName.empty())
+        Logger::Info("%s", TeamcityTestsOutput::FormatTestClassFinished(testClassName).c_str());
+    else
+        Logger::Info("%s", TeamcityTestsOutput::FormatTestFinished(testClassName, testName, enablePerTestOutput).c_str());
 }
 
 void GameCore::OnTestFailed(const String& testClassName, const String& testName, const String& condition, const char* filename, int lineno, const String& userMessage)
