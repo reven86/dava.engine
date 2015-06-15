@@ -32,9 +32,8 @@
 
 #include "PackageBaseNode.h"
 
-#include "PackageControlsNode.h"
-
-class PackageSerializer;
+class PackageNode;
+class PackageControlsNode;
 
 class ImportedPackagesNode : public PackageBaseNode
 {
@@ -42,26 +41,24 @@ public:
     ImportedPackagesNode(PackageBaseNode *parent);
     virtual ~ImportedPackagesNode();
 
-    void Add(PackageControlsNode *node);
-    void InsertAtIndex(DAVA::int32 index, PackageControlsNode *node);
-    void Remove(PackageControlsNode *node);
-    virtual int GetCount() const override;
-    virtual PackageControlsNode *Get(DAVA::int32 index) const override;
-    
-    virtual DAVA::String GetName() const;
-    PackageControlsNode *FindPackageControlsNodeByName(const DAVA::String &name) const;
+    void Add(PackageNode *node);
+    void InsertAtIndex(DAVA::int32 index, PackageNode *node);
+    void Remove(PackageNode *node);
+    PackageNode *GetImportedPackage(DAVA::int32 index) const;
+    int GetCount() const override;
+    PackageBaseNode *Get(DAVA::int32 index) const override;
+    void Accept(PackageVisitor *visitor) override;
 
-    virtual int GetFlags() const override;
-    bool CanInsertImportedPackage() const;
-    
-    void Serialize(PackageSerializer *serializer) const;
-    void Serialize(PackageSerializer *serializer, const DAVA::Set<PackageRef*> &packageRefs) const;
+    virtual DAVA::String GetName() const override;
+    bool CanInsertImportedPackage(PackageNode *package) const override;
 
+    PackageNode *FindPackageByName(const DAVA::String &name) const;
+    
 protected:
     virtual bool IsReadOnly() const override;
     
 private:
-    DAVA::Vector<PackageControlsNode*> packageControlsNode;
+    DAVA::Vector<PackageNode*> packages;
 };
 
 #endif //__UI_EDITOR_IMPORTED_PACKAGES_NODE_H__

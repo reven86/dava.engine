@@ -37,31 +37,42 @@
 
 namespace DAVA
 {
+
 struct NMaterialTemplate
 {
-	FastName name;
-	
-	HashMap<FastName, FastName> techniqueStateMap;
-	
-	NMaterialTemplate() : techniqueStateMap(4)
-	{
-		
-	}
+    FastName name;
+
+    HashMap<FastName, FastName> techniqueStateMap;
+
+    NMaterialTemplate() : techniqueStateMap(4)
+    {
+
+    }
 };
 
 class NMaterialTemplateCache : public StaticSingleton<NMaterialTemplateCache>
 {
 public:
-			
-	const NMaterialTemplate* Get(const FastName& templateName);
-	
+    NMaterialTemplateCache() = default;
+    ~NMaterialTemplateCache();
+
+    const NMaterialTemplate* Get(const FastName& templateName);
+
+    void Clear();
+
 private:
-	
-	NMaterialTemplate* Load(const FilePath& loadPath);
-			
+    NMaterialTemplate* Load(const FilePath& loadPath);
+
 private:
-	HashMap<FastName, NMaterialTemplate*> templateCache;
+    HashMap<FastName, NMaterialTemplate*> templateCache;
 };
-};
+
+//////////////////////////////////////////////////////////////////////////
+inline NMaterialTemplateCache::~NMaterialTemplateCache()
+{
+    Clear();
+}
+
+}   // namespace DAVA
 
 #endif /* defined(__Framework__NMaterialTemplate__) */

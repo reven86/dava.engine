@@ -128,7 +128,7 @@ MaterialEditor::MaterialEditor(QWidget *parent /* = 0 */)
     QObject::connect(ui->actionLoadMaterialPreset, SIGNAL(triggered(bool)), this, SLOT(OnMaterialLoad(bool)));
 
     posSaver.Attach(this);
-    posSaver.LoadState(ui->splitter);
+    new QtPosSaver(ui->splitter);
     treeStateHelper = new PropertyEditorStateHelper(ui->materialProperty, (QtPropertyModel *) ui->materialProperty->model());
 
     DAVA::VariantType v1 = posSaver.LoadValue("splitPosProperties");
@@ -158,7 +158,6 @@ MaterialEditor::~MaterialEditor()
     posSaver.SaveValue("splitPosPreview", v2);
     posSaver.SaveValue("lastSavePath", DAVA::VariantType(lastSavePath));
     posSaver.SaveValue("lastLoadState", DAVA::VariantType(lastCheckState));
-    posSaver.SaveState(ui->splitter);
 }
 
 void MaterialEditor::initActions()

@@ -30,9 +30,9 @@
 #include "ComponentPropertiesSection.h"
 
 #include "IntrospectionProperty.h"
+#include "PropertyVisitor.h"
 
 #include "UI/UIControl.h"
-#include "../PackageSerializer.h"
 
 using namespace DAVA;
 
@@ -137,21 +137,9 @@ void ComponentPropertiesSection::RefreshIndex()
     }
 }
 
-void ComponentPropertiesSection::Serialize(PackageSerializer *serializer) const
+void ComponentPropertiesSection::Accept(PropertyVisitor *visitor)
 {
-    if (HasChanges() || (GetFlags() & AbstractProperty::EF_INHERITED) == 0)
-    {
-        String name = GetComponentName();
-        if (UIComponent::IsMultiple(component->GetType()))
-            name += Format("%d", index);
-        
-        serializer->BeginMap(name);
-        
-        for (const auto child : children)
-            child->Serialize(serializer);
-        
-        serializer->EndMap();
-    }
+    visitor->VisitComponentSection(this);
 }
 
 String ComponentPropertiesSection::GetComponentName() const

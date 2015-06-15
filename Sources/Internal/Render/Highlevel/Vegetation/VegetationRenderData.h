@@ -41,7 +41,7 @@
 namespace DAVA
 {
 
-typedef int32 VegetationIndex;
+using VegetationIndex = int32;
 #define VEGETATION_INDEX_TYPE EIF_32
 
 struct VegetationVertex

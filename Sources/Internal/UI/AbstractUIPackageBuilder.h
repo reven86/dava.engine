@@ -42,12 +42,13 @@ class UIControl;
 class UIComponent;
 class UIControlBackground;
 class YamlNode;
-
+class AbstractUIPackageBuilder;
+    
 class AbstractUIPackageLoader
 {
 public:
-    virtual UIPackage *LoadPackage(const FilePath &packagePath) = 0;
-    virtual bool LoadControlByName(const String &name) = 0;
+    virtual bool LoadPackage(const FilePath &packagePath, AbstractUIPackageBuilder *builder) = 0;
+    virtual bool LoadControlByName(const String &name, AbstractUIPackageBuilder *builder) = 0;
 };
 
 
@@ -57,12 +58,10 @@ public:
     AbstractUIPackageBuilder();
     virtual ~AbstractUIPackageBuilder();
 
-    virtual UIPackage *FindInCache(const String &packagePath) const = 0;
-    
-    virtual RefPtr<UIPackage> BeginPackage(const FilePath &packagePath) = 0;
+    virtual void BeginPackage(const FilePath &packagePath) = 0;
     virtual void EndPackage() = 0;
     
-    virtual RefPtr<UIPackage> ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader) = 0;
+    virtual bool ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader) = 0;
     
     virtual UIControl *BeginControlWithClass(const String &className) = 0;
     virtual UIControl *BeginControlWithCustomClass(const String &customClassName, const String &className) = 0;

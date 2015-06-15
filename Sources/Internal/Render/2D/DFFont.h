@@ -66,7 +66,7 @@ protected:
         float32 v;
         float32 v2;
     };
-    typedef Map<char16, CharDescription> CharsMap;
+    using CharsMap = Map<char16, CharDescription>;
     CharsMap chars;
     float32 baseSize;
     float32 paddingLeft;

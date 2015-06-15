@@ -30,11 +30,11 @@
 #ifndef __DAVAENGINE_TCPACCEPTORTEMPLATE_H__
 #define __DAVAENGINE_TCPACCEPTORTEMPLATE_H__
 
-#include <Base/BaseTypes.h>
-#include <Base/Noncopyable.h>
+#include "Base/BaseTypes.h"
+#include "Base/Noncopyable.h"
 
-#include <Network/Base/IOLoop.h>
-#include <Network/Base/Endpoint.h>
+#include "Network/Base/Endpoint.h"
+#include "Network/Base/IOLoop.h"
 
 namespace DAVA
 {
@@ -96,6 +96,10 @@ TCPAcceptorTemplate<T>::~TCPAcceptorTemplate()
 template <typename T>
 int32 TCPAcceptorTemplate<T>::Bind(const Endpoint& endpoint)
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return -1;
+#else
     DVASSERT(false == isClosing);
     int32 error = 0;
     if (false == isOpen)
@@ -103,6 +107,7 @@ int32 TCPAcceptorTemplate<T>::Bind(const Endpoint& endpoint)
     if (0 == error)
         error = uv_tcp_bind(&uvhandle, endpoint.CastToSockaddr(), 0);
     return error;
+#endif
 }
 
 template <typename T>
@@ -120,6 +125,10 @@ bool TCPAcceptorTemplate<T>::IsClosing() const
 template <typename T>
 int32 TCPAcceptorTemplate<T>::DoOpen()
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return -1;
+#else
     DVASSERT(false == isOpen && false == isClosing);
     int32 error = uv_tcp_init(loop->Handle(), &uvhandle);
     if (0 == error)
@@ -128,30 +137,45 @@ int32 TCPAcceptorTemplate<T>::DoOpen()
         uvhandle.data = this;
     }
     return error;
+#endif
 }
 
 template <typename T>
 int32 TCPAcceptorTemplate<T>::DoAccept(uv_tcp_t* client)
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return -1;
+#else
     DVASSERT(true == isOpen && false == isClosing && client != NULL);
     return uv_accept(reinterpret_cast<uv_stream_t*>(&uvhandle), reinterpret_cast<uv_stream_t*>(client));
+#endif
 }
 
 template <typename T>
 int32 TCPAcceptorTemplate<T>::DoStartListen(int32 backlog)
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return -1;
+#else
     // Acceptor should be bound first
     DVASSERT(true == isOpen && false == isClosing && backlog > 0);
     return uv_listen(reinterpret_cast<uv_stream_t*>(&uvhandle), backlog, &HandleConnectThunk);
+#endif
 }
 
 template <typename T>
 void TCPAcceptorTemplate<T>::DoClose()
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+#else
     DVASSERT(true == isOpen && false == isClosing);
     isOpen = false;
     isClosing = true;
     uv_close(reinterpret_cast<uv_handle_t*>(&uvhandle), &HandleCloseThunk);
+#endif
 }
 
 ///   Thunks   ///////////////////////////////////////////////////////////

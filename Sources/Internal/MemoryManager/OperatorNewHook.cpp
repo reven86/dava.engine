@@ -39,15 +39,9 @@
 * so replacing that one function is sufficient to handle all deallocations.	(since C++11)
 */
 
-#if defined(__DAVAENGINE_WIN32__)
-#define DAVA_NOEXCEPT    throw()
-#else
-#define DAVA_NOEXCEPT    noexcept
-#endif
-
-void* operator new(size_t size)
+DAVA_NOINLINE void* operator new(size_t size)
 {
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
+    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_DEFAULT);
 }
 
 void operator delete(void* ptr) DAVA_NOEXCEPT
@@ -55,9 +49,9 @@ void operator delete(void* ptr) DAVA_NOEXCEPT
     DAVA::MemoryManager::Instance()->Deallocate(ptr);
 }
 
-void* operator new [](size_t size)
+DAVA_NOINLINE void* operator new [](size_t size)
 {
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
+    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_DEFAULT);
 }
 
 void operator delete[](void* ptr) DAVA_NOEXCEPT
