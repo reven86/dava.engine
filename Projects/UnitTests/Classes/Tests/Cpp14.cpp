@@ -82,3 +82,11 @@ DAVA_TESTCLASS_CUSTOM_BASE(CustomBaseTest, MyTestBase)
         Logger::Debug("Test2 leave");
     }
 };
+
+DAVA_TESTCLASS(SuccesfulTest)
+{
+    DAVA_TEST(test)
+    {
+        TEST_VERIFY(1 == 1);
+    }
+};
