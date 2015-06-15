@@ -43,7 +43,7 @@ DAVA_TESTCLASS(Cpp14Test)
 {
     DAVA_TEST(CompileTest)
     {
-        TEST_VERIFY(f() == 42);
+        TEST_VERIFY(f() == 421);
     }
 
     DAVA_TEST(ScopeExit)

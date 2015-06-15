@@ -70,7 +70,7 @@ DAVA_TESTCLASS(DateTimeTest)
 
         Logger::Debug("********** DateTime test **********");
 
-        TEST_VERIFY(true);
+        TEST_VERIFY(false);
     }
 
     void PrintDateTimeContent(const DateTime& inputTime)
