@@ -578,7 +578,30 @@ SCOPED_FUNCTION_TIMING();
                     {
                         DVASSERT(!_D3D9_BackBuf);
                         _D3D9_Device->GetRenderTarget( 0, &_D3D9_BackBuf );
-                        TextureDX9::SetAsRenderTarget( passCfg.colorBuffer[0].texture );
+                        TextureDX9::SetAsRenderTarget( passCfg.colorBuffer[0].texture );                        
+                    }
+                    
+                    // update default viewport
+                    {
+                        IDirect3DSurface9*  rt = NULL;
+
+                        _D3D9_Device->GetRenderTarget( 0, &rt );
+                        if( rt )
+                        {
+                            D3DSURFACE_DESC desc;
+                            
+                            if( SUCCEEDED(rt->GetDesc( &desc )) )
+                            {
+                                def_viewport.X      = 0;
+                                def_viewport.Y      = 0;
+                                def_viewport.Width  = desc.Width;
+                                def_viewport.Height = desc.Height;
+                                def_viewport.MinZ   = 0.0f;
+                                def_viewport.MaxZ   = 1.0f;
+                            }
+
+                            rt->Release();
+                        }
                     }
 
 
@@ -707,7 +730,7 @@ SCOPED_FUNCTION_TIMING();
                 int w = int(arg[2]);
                 int h = int(arg[3]);
 
-                if( x  &&  y  &&  w  &&  h )
+                if( !(x==0  &&  y==0  &&  w==0  &&  h==0) )
                 {
                     D3DVIEWPORT9    vp;
 

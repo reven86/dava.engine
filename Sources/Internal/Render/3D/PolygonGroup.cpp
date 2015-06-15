@@ -143,18 +143,18 @@ void PolygonGroup::UpdateDataPointersAndStreams()
     }
     if (vertexFormat & EVF_JOINTINDEX)
     {
-        jointIdxArray = reinterpret_cast<uint32*>(meshData + baseShift);
+        jointIdxArray = reinterpret_cast<float32*>(meshData + baseShift);
         baseShift += GetVertexSize(EVF_JOINTINDEX);
-        vLayout.AddElement(rhi::VS_BLENDINDEX, 0, rhi::VDT_UINT8, 4);
+        vLayout.AddElement(rhi::VS_BLENDINDEX, 0, rhi::VDT_FLOAT, 1);
 
         SafeDeleteArray(jointCountArray);
-        jointCountArray = new int32[vertexCount];
+        jointCountArray = new uint32[vertexCount];
     }
     if (vertexFormat & EVF_JOINTWEIGHT)
     {
-        jointWeightArray = reinterpret_cast<uint32*>(meshData + baseShift);
+        jointWeightArray = reinterpret_cast<float32*>(meshData + baseShift);
         baseShift += GetVertexSize(EVF_JOINTWEIGHT);
-        vLayout.AddElement(rhi::VS_BLENDWEIGHT, 0, rhi::VDT_UINT8, 4);
+        vLayout.AddElement(rhi::VS_BLENDWEIGHT, 0, rhi::VDT_FLOAT, 1);
     }
     if (vertexFormat & EVF_CUBETEXCOORD0)
     {
