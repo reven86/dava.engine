@@ -107,6 +107,35 @@
     }
  };
 
+ ==============================================================================================================
+
+ To run unit tests you should do some initialization:
+ 1. setup callbacks which will be called on test start, error, etc
+    Supported callbacks are:
+        void TestClassStartedCallback(const String& testClassName) - notifies that new test class will be prepared for running its tests
+        void TestClassFinishedCallback(const String& testClassName) - notifies that test class's tests have been complete
+        void TestClassDisabledCallback(const String& testClassName) - notifies that test class is disabled;
+        void TestStartedCallback(const String& testClassName, const String& testName) - notifies about starting test run
+        void TestFinishedCallback(const String& testClassName, const String& testName) - notifies that test has been finished
+        void TestFailedCallback(const String& testClassName, const String& testName, const String& condition,
+                                const char* filename, int line, const String& userMessage) - notifies about test failing
+    Callback are set up through DAVA::UnitTests::TestCore::Instance()->Init() call.
+ 2. optionally specify list of test class names that only should be run
+        DAVA::UnitTests::TestCore::Instance()->RunOnlyTheseTests() - takes string of semicolon separated names
+ 3. optionally specify list of test class names that shouldn't run
+        DAVA::UnitTests::TestCore::Instance()->DisableTheseTests() - takes string of semicolon separated names
+ 4. you can optionally check number of registered tests
+        DAVA::UnitTests::TestCore::Instance()->HasTests()
+
+ Now test framework is ready to run tests. You should periodically call DAVA::UnitTests::TestCore::Instance()->ProcessTests() until it returns false:
+    void GameCore::Update(float32 timeElapsed)
+    {
+       if (!UnitTests::TestCore::Instance()->ProcessTests(timeElapsed))
+       {
+           // all tests has been finished
+       }
+    }
+
 ******************************************************************************************/
 
 #define DAVA_TESTCLASS(classname)                                                                                                               \
