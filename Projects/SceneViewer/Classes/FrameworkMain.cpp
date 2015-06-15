@@ -45,6 +45,7 @@ void FrameworkDidLaunched()
 	appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
     
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+//    appOptions->SetInt32("renderer", rhi::RHI_METAL);
 	
     
 	appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
@@ -57,8 +58,8 @@ void FrameworkDidLaunched()
 #else
 	KeyedArchive * appOptions = new KeyedArchive();
 #if defined(__DAVAENGINE_WIN32__)
-    appOptions->SetInt32("renderer", rhi::RHI_DX9);
-//  appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+//    appOptions->SetInt32("renderer", rhi::RHI_DX9);
+  appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #elif defined(__DAVAENGINE_MACOS__)
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #endif
