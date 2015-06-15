@@ -5,9 +5,9 @@ VisualStudioVersion = 14.0.22823.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTests_WindowsStore", "UnitTests\UnitTests.vcxproj", "{82089167-FF09-4C4E-99E0-5BBB33984695}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DavaFramework", "_build\DavaFramework\DavaFramework.vcxproj", "{522AEA9D-711B-4C09-BE3F-056C864FA788}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DavaFramework", "UnitTests\_build\DavaFramework\DavaFramework.vcxproj", "{522AEA9D-711B-4C09-BE3F-056C864FA788}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DavaTools", "_build\DavaTools\DavaTools.vcxproj", "{290072D4-F43B-48CE-A971-34643FB16106}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DavaTools", "UnitTests\_build\DavaTools\DavaTools.vcxproj", "{290072D4-F43B-48CE-A971-34643FB16106}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
