@@ -26,6 +26,7 @@ public:
 
     unsigned        uid;
     GLuint          fbo;
+    GLuint          depth;
 
     unsigned        width;
     unsigned        height;
@@ -44,6 +45,7 @@ public:
 TextureGLES2_t::TextureGLES2_t()
   : uid(0),
     fbo(0),
+    depth(0),
     width(0),
     height(0),
     isCubeMap(false),
@@ -86,6 +88,15 @@ gles2_Texture_Delete( Handle tex )
     if( tex != InvalidHandle )
     {
         TextureGLES2_t* self = TextureGLES2Pool::Get( tex );
+        GLCommand       cmd[] =
+        {
+            { GLCommand::DELETE_TEXTURES, { 1, uint64(&(self->uid)) } },
+            { GLCommand::DELETE_TEXTURES, { 1, uint64(&(self->depth)) } },
+            { GLCommand::DELETE_FRAMEBUFFERS, { 1, uint64(&(self->fbo)) } }
+        };
+
+        ExecGL( cmd, countof(cmd) );
+
 
         DVASSERT(!self->isMapped);
         
@@ -150,23 +161,34 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
         
         if( desc.isRenderTarget )
         {
-            GLuint      fbo  = 0;
-            GLCommand   cmd3 = { GLCommand::GEN_FRAMEBUFFERS, { 1, (uint64)(&fbo) } };
+            GLuint      fbo    = 0;
+            GLuint      depth  = 0;
+            GLCommand   cmd3[] = 
+            { 
+                { GLCommand::GEN_FRAMEBUFFERS, { 1, (uint64)(&fbo) } },
+                { GLCommand::GEN_RENDERBUFFERS, { 1, (uint64)(&depth) } } 
+            };
             
-            ExecGL( &cmd3, 1 );
+            ExecGL( cmd3, countof(cmd3) );
 
-            if( fbo )
+            if( fbo  &&  depth )
             {
                 GLenum      b[1]   = { GL_COLOR_ATTACHMENT0 };
                 GLCommand   cmd4[] =
                 {
                     { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, uid } },
-                    { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_2D, 0, GL_RGBA, self->width, self->height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0 } },
+                    { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_2D, 0, GL_RGBA, desc.width, desc.height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0 } },
                     { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST } },
                     { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
                     { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, 0 } },
-                    { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, fbo } },
-                    { GLCommand::FRAMEBUFFER_TEXTURE, { GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, uid, 0 } },
+
+                    { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, depth } },
+                    { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, desc.width, desc.height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL } },
+                    { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, 0 } },
+
+                    { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, fbo } },                    
+                    { GLCommand::FRAMEBUFFER_TEXTURE, { GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, uid, 0 } },                    
+                    { GLCommand::FRAMEBUFFER_TEXTURE, { GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth, 0 } },                    
                     { GLCommand::DRAWBUFFERS, { 1, (uint64)b } },
                     { GLCommand::FRAMEBUFFER_STATUS, { GL_FRAMEBUFFER } },
                     { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, 0 } }
@@ -174,13 +196,21 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
 
                 ExecGL( cmd4, countof(cmd4) );
 
-                if( cmd4[8].retval == GL_FRAMEBUFFER_COMPLETE )
+                if( cmd4[ countof(cmd4)-2 ].retval == GL_FRAMEBUFFER_COMPLETE )
                 {
-                    self->fbo = fbo;
+                    self->fbo   = fbo;
+                    self->depth = depth;
                 }
                 else
                 {
-                    DVASSERT(cmd4[8].retval == GL_FRAMEBUFFER_COMPLETE);
+/*
+GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT
+GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS
+GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT
+GL_FRAMEBUFFER_UNSUPPORTED
+*/
+                    Logger::Error( "glCheckFramebufferStatus= %08X", cmd4[ countof(cmd4)-2 ].retval );
+                    DVASSERT(cmd4[ countof(cmd4)-2 ].retval == GL_FRAMEBUFFER_COMPLETE);
                 }
             }
         }

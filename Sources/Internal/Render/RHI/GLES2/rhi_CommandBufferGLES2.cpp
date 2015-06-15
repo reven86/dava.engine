@@ -769,7 +769,7 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
             }   break;
             
             case GLES2__SET_SCISSOR_RECT :
-            {
+            {               
                 GLint   x = GLint(arg[0]);
                 GLint   y = GLint(arg[1]);
                 GLsizei w = GLsizei(arg[2]);
@@ -1182,15 +1182,19 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
 {
     int     err = 0;
 
-/*
-#define EXEC_GL(expr) \
-expr ; \
-err = glGetError(); \
-if( err != GL_NO_ERROR ) \
-    Logger::Error( "FAILED  %s (%i) : %s\n", #expr, err, GetGLErrorString(err) );
-*/
-#define EXEC_GL(expr) expr 
+#if 0
 
+    #define EXEC_GL(expr) \
+    expr ; \
+    err = glGetError(); \
+    if( err != GL_NO_ERROR ) \
+        Logger::Error( "FAILED  %s (%i) : %s\n", #expr, err, GetGLErrorString(err) );
+
+#else
+
+    #define EXEC_GL(expr) expr 
+
+#endif
 
     for( GLCommand* cmd=command,*cmdEnd=command+cmdCount; cmd!=cmdEnd; ++cmd )
     {
@@ -1322,9 +1326,21 @@ if( err != GL_NO_ERROR ) \
                 cmd->status = err;
             }   break;        
 
+            case GLCommand::GEN_RENDERBUFFERS :
+            {
+                EXEC_GL(glGenRenderbuffers( (GLuint)(arg[0]), (GLuint*)(arg[1]) ));
+                cmd->status = err;
+            }   break;        
+
             case GLCommand::BIND_FRAMEBUFFER :
             {
                 EXEC_GL(glBindFramebuffer( (GLenum)(arg[0]), (GLuint)(arg[1]) ));
+                cmd->status = err;
+            }   break;        
+
+            case GLCommand::BIND_RENDERBUFFER :
+            {
+                EXEC_GL(glBindRenderbuffer( (GLenum)(arg[0]), (GLuint)(arg[1]) ));
                 cmd->status = err;
             }   break;        
 
@@ -1334,11 +1350,30 @@ if( err != GL_NO_ERROR ) \
                 cmd->status = err;
             }   break;        
 
+            case GLCommand::RENDERBUFFER_STORAGE :
+            {
+                EXEC_GL(glRenderbufferStorage( GLenum(arg[0]), GLenum(arg[1]), GLsizei(arg[2]), GLsizei(arg[3]) ));
+                cmd->status = err;
+            }   break;
+
+            case GLCommand::FRAMEBUFFER_RENDERBUFFER :
+            {
+                EXEC_GL(glFramebufferRenderbuffer( GLenum(arg[0]), GLenum(arg[1]), GLenum(arg[2]), GLuint(arg[3]) ));
+                cmd->status = err;
+            }   break;
+
             case GLCommand::FRAMEBUFFER_STATUS :
             {
                 cmd->retval = glCheckFramebufferStatus( GLenum(arg[0]) );
                 cmd->status = 0;
             }   break;        
+
+            case GLCommand::DELETE_FRAMEBUFFERS :
+            {
+                EXEC_GL(glDeleteFramebuffers( GLsizei(arg[0]), (const GLuint*)(arg[1]) ));
+                cmd->retval = 0;
+                cmd->status = err;
+            }   break;
 
             case GLCommand::DRAWBUFFERS :
             {
