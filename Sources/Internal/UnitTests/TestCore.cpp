@@ -29,6 +29,7 @@
 #include "TestCore.h"
 
 #include "Debug/DVAssert.h"
+#include "Utils/Utils.h"
 
 #include "UnitTests/TestClassFactory.h"
 #include "UnitTests/TestClass.h"
@@ -58,27 +59,74 @@ TestCore* TestCore::Instance()
 }
 
 void TestCore::Init(SuiteStartedCallback suiteStartedCallback_, SuiteFinishedCallback suiteFinishedCallback_,
-                    TestStartedCallback testStartedCallback_, TestFinishedCallback testFinishedCallback_, TestFailedCallback testFailedCallback_)
+                    TestStartedCallback testStartedCallback_, TestFinishedCallback testFinishedCallback_,
+                    TestFailedCallback testFailedCallback_, SuiteDisabledCallback suiteDisabledCallback_)
 {
-    DVASSERT(suiteStartedCallback_ != 0 && suiteFinishedCallback_ != 0);
+    DVASSERT(suiteStartedCallback_ != 0 && suiteFinishedCallback_ != 0 && suiteDisabledCallback_ != 0);
     DVASSERT(testStartedCallback_ != 0 && testFinishedCallback_ != 0 && testFailedCallback_ != 0);
     suiteStartedCallback = suiteStartedCallback_;
     suiteFinishedCallback = suiteFinishedCallback_;
     testStartedCallback = testStartedCallback_;
     testFinishedCallback = testFinishedCallback_;
     testFailedCallback = testFailedCallback_;
+    suiteDisabledCallback = suiteDisabledCallback_;
 }
 
-void TestCore::RunOnlyThisTest(const String& testClassName)
+void TestCore::RunOnlyTheseTests(const String& testClassNames)
 {
-    DVASSERT(testClassName.empty() || IsTestRegistered(testClassName));
-    runOnlyThisTest = testClassName;
+    DVASSERT(!runLoopInProgress);
+    if (!testClassNames.empty())
+    {
+        Vector<String> testNames;
+        Split(testClassNames, ";", testNames);
+
+        // First, disable all tests
+        for (TestClassInfo& x : testClasses)
+        {
+            x.runTest = false;
+        }
+
+        // Enable only specified tests
+        for (const String& testName : testNames)
+        {
+            auto iter = std::find_if(testClasses.begin(), testClasses.end(), [&testName](const TestClassInfo& testClassInfo) -> bool {
+                return testClassInfo.name == testName;
+            });
+            DVASSERT(iter != testClasses.end());
+            if (iter != testClasses.end())
+            {
+                iter->runTest = true;
+            }
+        }
+    }
+}
+
+void TestCore::ExcludeTheseTests(const String& testClassNames)
+{
+    DVASSERT(!runLoopInProgress);
+    if (!testClassNames.empty())
+    {
+        Vector<String> testNames;
+        Split(testClassNames, ";", testNames);
+
+        for (const String& testName : testNames)
+        {
+            auto iter = std::find_if(testClasses.begin(), testClasses.end(), [&testName](const TestClassInfo& testClassInfo) -> bool {
+                return testClassInfo.name == testName;
+            });
+            DVASSERT(iter != testClasses.end());
+            if (iter != testClasses.end())
+            {
+                iter->runTest = false;
+            }
+        }
+    }
 }
 
 bool TestCore::HasTests() const
 {
-    return runOnlyThisTest.empty() ? !testClasses.empty()
-                                   : IsTestRegistered(runOnlyThisTest);
+    ptrdiff_t n = std::count_if(testClasses.begin(), testClasses.end(), [](const TestClassInfo& info) -> bool { return info.runTest; });
+    return n > 0;
 }
 
 bool TestCore::ProcessTests(float32 timeElapsed)
@@ -89,15 +137,16 @@ bool TestCore::ProcessTests(float32 timeElapsed)
     {
         if (nullptr == curTestClass)
         {
-            TestClassInfo& testClasInfo = testClasses[curTestClassIndex];
-            curTestClassName = testClasInfo.name;
-            if (runOnlyThisTest.empty() || curTestClassName == runOnlyThisTest)
+            TestClassInfo& testClassInfo = testClasses[curTestClassIndex];
+            curTestClassName = testClassInfo.name;
+            if (testClassInfo.runTest)
             {
-                curTestClass = testClasInfo.factory->CreateTestClass();
+                curTestClass = testClassInfo.factory->CreateTestClass();
                 suiteStartedCallback(curTestClassName);
             }
             else
             {
+                suiteDisabledCallback(curTestClassName);
                 curTestClassIndex += 1;
             }
         }
@@ -153,11 +202,6 @@ void TestCore::TestFailed(const String& condition, const char* filename, int lin
 void TestCore::RegisterTestClass(const char* name, TestClassFactoryBase* factory)
 {
     testClasses.emplace_back(name, factory);
-}
-
-bool TestCore::IsTestRegistered(const String& testClassName) const
-{
-    return testClasses.end() != std::find_if(testClasses.begin(), testClasses.end(), [&testClassName](const TestClassInfo& o) -> bool { return o.name == testClassName; });
 }
 
 }   // namespace UnitTests

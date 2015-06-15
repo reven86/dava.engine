@@ -49,12 +49,14 @@ class TestCore final
         ~TestClassInfo();
 
         String name;
+        bool runTest = true;
         std::unique_ptr<TestClassFactoryBase> factory;
     };
 
 public:
     using SuiteStartedCallback = Function<void (const String&)>;
     using SuiteFinishedCallback = Function<void (const String&)>;
+    using SuiteDisabledCallback = Function<void(const String&)>;
     using TestStartedCallback = Function<void (const String&, const String&)>;
     using TestFinishedCallback = Function<void (const String&, const String&)>;
     using TestFailedCallback = Function<void (const String&, const String&, const String&, const char*, int, const String&)>;
@@ -67,9 +69,10 @@ public:
 
     void Init(SuiteStartedCallback suiteStartedCallback, SuiteFinishedCallback suiteFinishedCallback,
               TestStartedCallback testStartedCallback, TestFinishedCallback testFinishedCallback,
-              TestFailedCallback testFailedCallback);
+              TestFailedCallback testFailedCallback, SuiteDisabledCallback suiteDisabledCallback);
 
-    void RunOnlyThisTest(const String& testClassName);
+    void RunOnlyTheseTests(const String& testClassNames);
+    void ExcludeTheseTests(const String& testClassNames);
 
     bool HasTests() const;
 
@@ -79,11 +82,7 @@ public:
     void RegisterTestClass(const char* name, TestClassFactoryBase* factory);
 
 private:
-    bool IsTestRegistered(const String& testClassName) const;
-
-private:
     Vector<TestClassInfo> testClasses;
-    String runOnlyThisTest;
 
     TestClass* curTestClass = nullptr;
     String curTestClassName;
@@ -95,6 +94,7 @@ private:
 
     SuiteStartedCallback suiteStartedCallback;
     SuiteFinishedCallback suiteFinishedCallback;
+    SuiteDisabledCallback suiteDisabledCallback;
     TestStartedCallback testStartedCallback;
     TestFinishedCallback testFinishedCallback;
     TestFailedCallback testFailedCallback;
