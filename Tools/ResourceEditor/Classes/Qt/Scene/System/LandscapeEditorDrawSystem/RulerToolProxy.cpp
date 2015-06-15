@@ -35,6 +35,12 @@ RulerToolProxy::RulerToolProxy(int32 size)
 ,	spriteChanged(false)
 {
     rulerToolTexture = Texture::CreateFBO((uint32)size, (uint32)size, FORMAT_RGBA8888);
+
+    rhi::Viewport viewport;
+    viewport.x = viewport.y = 0U;
+    viewport.width = (uint32)size;
+    viewport.height = (uint32)size;
+    RenderHelper::Instance()->CreateClearPass(rulerToolTexture->handle, PRIORITY_CLEAR, Color(0.f, 0.f, 0.f, 0.f), viewport);
 }
 
 RulerToolProxy::~RulerToolProxy()

@@ -881,6 +881,30 @@ void RenderHelper::Set2DRenderTarget(Texture * renderTarget)
 #endif // RHI_COMPLETE
 }
 
+void RenderHelper::CreateClearPass(rhi::HTexture targetHandle, int32 passPriority, const Color & clearColor, const rhi::Viewport viewport)
+{
+    rhi::RenderPassConfig clearPassConfig;
+    clearPassConfig.priority = passPriority;
+    clearPassConfig.colorBuffer[0].texture = targetHandle;
+    clearPassConfig.colorBuffer[0].clearColor[0] = clearColor.r;
+    clearPassConfig.colorBuffer[0].clearColor[1] = clearColor.g;
+    clearPassConfig.colorBuffer[0].clearColor[2] = clearColor.b;
+    clearPassConfig.colorBuffer[0].clearColor[3] = clearColor.a;
+    clearPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+    clearPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_NONE;
+    clearPassConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
+    clearPassConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+    clearPassConfig.viewport = viewport;
+
+    rhi::HPacketList emptyPacketList;
+    rhi::HRenderPass clearPass = rhi::AllocateRenderPass(clearPassConfig, 1, &emptyPacketList);
+
+    rhi::BeginRenderPass(clearPass);
+    rhi::BeginPacketList(emptyPacketList);
+    rhi::EndPacketList(emptyPacketList);
+    rhi::EndRenderPass(clearPass);
+}
+
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 void RenderHelper::GetLineWidthRange(int32& rangeMin, int32& rangeMax)
 {

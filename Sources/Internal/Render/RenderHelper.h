@@ -150,6 +150,8 @@ public:
 
     void Set2DRenderTarget(Texture * renderTarget);
 
+    void CreateClearPass(rhi::HTexture handle, int32 passPriority, const Color & clearColor, const rhi::Viewport viewport);
+
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 	void GetLineWidthRange(int32& rangeMin, int32& rangeMax);
 #endif
