@@ -28,7 +28,6 @@
 
 #include "UI/UIStyleSheetSystem.h"
 #include "UI/UIStyleSheet.h"
-#include "UI/UIStyleSheetCascade.h"
 #include "UI/UIControl.h"
 #include "UI/UIControlPackageContext.h"
 #include "UI/Components/UIComponent.h"
@@ -50,16 +49,19 @@ namespace DAVA
     void UIStyleSheetSystem::MarkControlForUpdate(UIControl* control)
     {
         controlsToUpdate.push_back(SafeRetain(control));
+        for (UIControl* child : control->GetChildren())
+            MarkControlForUpdate(child);
     }
     
     void UIStyleSheetSystem::Process()
     {
         if (!controlsToUpdate.empty())
         {
-            uint64 start = SystemTimer::Instance()->AbsoluteMS();
 
             std::sort(controlsToUpdate.begin(), controlsToUpdate.end());
             auto endIter = std::unique(controlsToUpdate.begin(), controlsToUpdate.end());
+
+            uint64 start = SystemTimer::Instance()->AbsoluteMS();
 
             for (auto controlIter = controlsToUpdate.begin(); controlIter != endIter; ++controlIter)
             {
@@ -77,25 +79,31 @@ namespace DAVA
 
     void UIStyleSheetSystem::ProcessControl(UIControl* control)
     {
-        static UIStyleSheetCascade cascade;
-
-        cascade.Clear();
-
         UIControlPackageContext* packageContext = control->GetPackageContext();
 
         if (packageContext)
         {
+            UIStyleSheetPropertySet appliedProperties;
+            const UIStyleSheetPropertySet& localControlProperties = control->GetLocalPropertySet();
+
             const auto& styleSheets = packageContext->GetSortedStyleSheets();
             for (const UIStyleSheet* styleSheet : styleSheets)
             {
                 if (StyleSheetMatchesControl(styleSheet, control))
                 {
-                    cascade.AddStyleSheet(styleSheet);
+                    const auto& propertyTable = styleSheet->GetPropertyTable()->GetProperties();
+                    for (const auto& iter : propertyTable)
+                    {
+                        if (!appliedProperties.test(iter.first) && !localControlProperties.test(iter.first))
+                        {
+                            appliedProperties.set(iter.first);
+
+                            SetupPropertyFromVariantType(control, iter.first, iter.second);
+                        }
+                    }
                 }
             }
         }
-
-        SetupControlFromCascade(control, cascade);
     }
 
     bool UIStyleSheetSystem::StyleSheetMatchesControl(const UIStyleSheet* styleSheet, UIControl* control)
@@ -128,48 +136,39 @@ namespace DAVA
 
         return true;
     }
-    
-    void UIStyleSheetSystem::SetupControlFromCascade(UIControl* control, const UIStyleSheetCascade& cascade)
+
+    void UIStyleSheetSystem::SetupPropertyFromVariantType(UIControl* control, int32 propertyIndex, const VariantType& value)
     {
-        UIStyleSheetPropertySet propertiesToSet = cascade.GetPropertySet() &(~control->GetLocalPropertySet());
+        const UIStyleSheetPropertyDescriptor& descr = GetStyleSheetPropertyByIndex(propertyIndex);
 
-        for (uint32 propertyIndex = 0; propertyIndex < STYLE_SHEET_PROPERTY_COUNT; ++propertyIndex)
+        switch (descr.owner)
         {
-            if (propertiesToSet.test(propertyIndex))
+        case ePropertyOwner::CONTROL:
+        {
+            const InspInfo* typeInfo = control->GetTypeInfo();
+            do
             {
-                const UIStyleSheetPropertyDescriptor& descr = GetStyleSheetPropertyByIndex(propertyIndex);
-                const VariantType* value = cascade.GetProperty(propertyIndex);
-                
-                switch (descr.owner)
+                if (typeInfo == descr.typeInfo)
                 {
-                case ePropertyOwner::CONTROL:
-                {
-                    const InspInfo* typeInfo = control->GetTypeInfo();
-                    do
-                    {
-                        if (typeInfo == descr.typeInfo)
-                        {
-                            descr.inspMember->SetValue(control, *value);
-                            break;
-                        }
-                        typeInfo = typeInfo->BaseInfo();
-                    } while (typeInfo);
+                    descr.inspMember->SetValue(control, value);
+                    break;
+                }
+                typeInfo = typeInfo->BaseInfo();
+            } while (typeInfo);
 
-                    break;
-                }
-                case ePropertyOwner::BACKGROUND:
-                    if (control->GetBackgroundComponentsCount() > 0)
-                        descr.inspMember->SetValue(control->GetBackgroundComponent(0), *value);
-                    break;
-                case ePropertyOwner::COMPONENT:
-                    for (const auto& componentInfo : descr.targetComponents)
-                    {
-                        if (UIComponent* component = control->GetComponent(componentInfo.first))
-                            componentInfo.second->SetValue(component, *value);
-                    }
-                    break;
-                }
+            break;
+        }
+        case ePropertyOwner::BACKGROUND:
+            if (control->GetBackgroundComponentsCount() > 0)
+                descr.inspMember->SetValue(control->GetBackgroundComponent(0), value);
+            break;
+        case ePropertyOwner::COMPONENT:
+            for (const auto& componentInfo : descr.targetComponents)
+            {
+                if (UIComponent* component = control->GetComponent(componentInfo.first))
+                    componentInfo.second->SetValue(component, value);
             }
+            break;
         }
     }
 }

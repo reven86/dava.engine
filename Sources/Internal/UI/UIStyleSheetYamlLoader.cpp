@@ -158,6 +158,7 @@ namespace DAVA
 
         for (auto styleSheetIter = styleSheetMap.begin(); styleSheetIter != styleSheetMap.end(); ++styleSheetIter)
         {
+            DAVA::Vector<std::pair<uint32, VariantType>> propertiesToSet;
             ScopedPtr< UIStyleSheetPropertyTable > propertyTable(new UIStyleSheetPropertyTable());
             const MultiMap<String, YamlNode*> &propertiesMap = styleSheetIter->second->AsMap();
             for (const auto& propertyIter : propertiesMap)
@@ -168,15 +169,16 @@ namespace DAVA
                 {
                 case ePropertyOwner::CONTROL:
                 case ePropertyOwner::BACKGROUND:
-                    propertyTable->SetProperty(index, propertyIter.second->AsVariantType(propertyDescr.inspMember));
+                    propertiesToSet.push_back(std::make_pair(index, propertyIter.second->AsVariantType(propertyDescr.inspMember)));
                     break;
                 case ePropertyOwner::COMPONENT:
-                    propertyTable->SetProperty(index, propertyIter.second->AsVariantType(propertyDescr.targetComponents[0].second));
+                    propertiesToSet.push_back(std::make_pair(index, propertyIter.second->AsVariantType(propertyDescr.targetComponents[0].second)));
                     break;
                 default:
                     DVASSERT(false);
                 }
             }
+            propertyTable->SetProperties(propertiesToSet);
 
             Vector< String > selectorList;
             Split(styleSheetIter->first, ",", selectorList);

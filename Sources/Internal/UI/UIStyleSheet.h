@@ -56,18 +56,12 @@ namespace DAVA
         public DAVA::BaseObject
     {
     public:
-        void SetProperty(uint32 index, const VariantType& value);
-
-        inline const VariantType* GetProperty(uint32 index) const
-        {
-            auto iter = properties.find(index);
-
-            return (iter != properties.end()) ? &iter->second : nullptr;
-        }
+        void SetProperties(const DAVA::Vector<std::pair<uint32, VariantType>>& properties);
+        const DAVA::Vector< std::pair< uint32, VariantType > >& GetProperties() const;
 
         const UIStyleSheetPropertySet& GetPropertySet() const;
     private:
-        UnorderedMap< uint32, VariantType > properties;
+        DAVA::Vector<std::pair<uint32, VariantType>> properties;
         UIStyleSheetPropertySet propertiesSet;
     };
 

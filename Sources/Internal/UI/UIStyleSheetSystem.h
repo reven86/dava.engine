@@ -39,6 +39,7 @@ namespace DAVA
     struct UIStyleSheetSelector;
     class UIStyleSheetCascade;
     class InspInfo;
+    class VariantType;
 
     class UIStyleSheetSystem
     {
@@ -55,6 +56,7 @@ namespace DAVA
         bool SelectorMatchesControl(const UIStyleSheetSelector& selector, UIControl* control);
         
         void SetupControlFromCascade(UIControl* control, const UIStyleSheetCascade& cascade);
+        void SetupPropertyFromVariantType(UIControl* control, DAVA::int32 propertyIndex, const VariantType& value);
 
         DAVA::Vector< UIControl* > controlsToUpdate;
     };

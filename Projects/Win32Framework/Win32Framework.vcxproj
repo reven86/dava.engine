@@ -208,7 +208,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIControlPackageContext.h" />
     <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheet.h" />
-    <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetCascade.h" />
     <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetPropertiesTable.h" />
     <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetSystem.h" />
     <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetYamlLoader.h" />
@@ -771,7 +770,6 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIControlPackageContext.cpp" />
     <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheet.cpp" />
-    <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetCascade.cpp" />
     <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetPropertiesTable.cpp" />
     <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetSystem.cpp" />
     <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetYamlLoader.cpp" />

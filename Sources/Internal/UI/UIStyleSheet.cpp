@@ -30,10 +30,21 @@
 
 namespace DAVA
 {
-    void UIStyleSheetPropertyTable::SetProperty(uint32 index, const VariantType& value)
+    void UIStyleSheetPropertyTable::SetProperties(const DAVA::Vector<std::pair<uint32, VariantType>>& newProperties)
     {
-        properties[index] = value;
-        propertiesSet.set(index);
+        properties = newProperties;
+        for (const auto& prop : properties)
+            propertiesSet.set(prop.first);
+
+        std::sort(properties.begin(), properties.end(),
+            [](const std::pair< uint32, VariantType >& first, const std::pair< uint32, VariantType >& second) {
+            return first.first < second.first;
+        });
+    }
+
+    const DAVA::Vector< std::pair< uint32, VariantType > >& UIStyleSheetPropertyTable::GetProperties() const
+    {
+        return properties;
     }
 
     const UIStyleSheetPropertySet& UIStyleSheetPropertyTable::GetPropertySet() const

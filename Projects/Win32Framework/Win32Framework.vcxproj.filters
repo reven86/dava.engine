@@ -1871,9 +1871,6 @@
     <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheet.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetCascade.h">
-      <Filter>Internal\UI</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetPropertiesTable.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
@@ -3336,9 +3333,6 @@
       <Filter>Internal\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetYamlLoader.cpp">
-      <Filter>Internal\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetCascade.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetPropertiesTable.cpp">
