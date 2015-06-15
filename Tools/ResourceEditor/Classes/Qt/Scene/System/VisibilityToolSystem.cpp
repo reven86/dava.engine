@@ -54,11 +54,17 @@ VisibilityToolSystem::VisibilityToolSystem(Scene* scene)
 
     crossTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/setPointCursor.tex");
     crossTexture->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
+    
+    rhi::TextureSetDescriptor desc;
+    desc.fragmentTextureCount = 1;
+    desc.fragmentTexture[0] = crossTexture->handle;
+    crossTextureSet = rhi::AcquireTextureSet(desc);
 }
 
 VisibilityToolSystem::~VisibilityToolSystem()
 {
 	SafeRelease(crossTexture);
+    rhi::ReleaseTextureSet(crossTextureSet);
 }
 
 LandscapeEditorDrawSystem::eErrorType VisibilityToolSystem::EnableLandscapeEditing()
@@ -500,7 +506,7 @@ void VisibilityToolSystem::DrawVisibilityPoint()
     Vector2 curSize((float32)cursorSize, (float32)cursorSize);
     
     RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityToolTexture);
-    RenderSystem2D::Instance()->DrawTexture(crossTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Rect(cursorPosition * landscapeSize - curSize / 2.f, curSize));
+    RenderSystem2D::Instance()->DrawTexture(crossTextureSet, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Rect(cursorPosition * landscapeSize - curSize / 2.f, curSize));
     RenderSystem2D::Instance()->EndRenderTargetPass();
     
     visibilityToolProxy->UpdateVisibilityPointSet(true);

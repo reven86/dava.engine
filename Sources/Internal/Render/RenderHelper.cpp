@@ -867,20 +867,6 @@ void RenderHelper::FillDodecahedron(const Vector3 &center, float32 radius, NMate
 #endif // RHI_COMPLETE
 }
 
-void RenderHelper::Set2DRenderTarget(Texture * renderTarget)
-{
-#ifdef RHI_COMPLETE
-    if (!renderTarget)
-        return;
-
-    RenderManager::Instance()->SetRenderTarget(renderTarget);
-    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)renderTarget->GetWidth(), (float32)renderTarget->GetHeight()));
-
-    tempProjectionMatrix.glOrtho(0.0f, (float32)renderTarget->GetWidth(),  0.0f, (float32)renderTarget->GetHeight(), -1.0f, 1.0f);
-    Renderer::GetDynamicBindings().SetDynamicParam(PARAM_PROJ, &tempProjectionMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
-#endif // RHI_COMPLETE
-}
-
 void RenderHelper::CreateClearPass(rhi::HTexture targetHandle, int32 passPriority, const Color & clearColor, const rhi::Viewport viewport)
 {
     rhi::RenderPassConfig clearPassConfig;

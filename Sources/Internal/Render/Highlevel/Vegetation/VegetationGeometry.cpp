@@ -274,7 +274,10 @@ void VegetationGeometry::OnVegetationPropertiesChanged(NMaterial * mat, KeyedArc
         if(props->IsKeyExists(heightmapKeyName))
         {
             Texture* heightmap = (Texture*)props->GetUInt64(heightmapKeyName);
-            mat->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightmap);
+            if(mat->HasLocalTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP))
+                mat->SetTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightmap);
+            else
+                mat->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightmap);
         }
         
         String heightmapScaleKeyName = VegetationPropertyNames::UNIFORM_HEIGHTMAP_SCALE.c_str();
