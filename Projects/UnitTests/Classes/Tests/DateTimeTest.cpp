@@ -96,6 +96,6 @@ DAVA_TESTCLASS(DateTimeTest)
         int32 minute = dt.GetMinute();
         int32 sec = dt.GetSecond();
         int32 tz = dt.GetTimeZoneOffset();
-        return Format("%04d-%02d-%02d %02d:%02d:%02d+%d", year, month, day, hour, minute, sec, tz);
+        return Format("%04d-%02d-%02d %02d:%02d:%02d%+d", year, month, day, hour, minute, sec, tz);
     }
 };
