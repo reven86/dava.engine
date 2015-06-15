@@ -261,6 +261,38 @@ metal_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
 //------------------------------------------------------------------------------
 
 static void
+metal_CommandBuffer_SetViewport( Handle cmdBuf, Viewport viewport )
+{
+    CommandBufferMetal_t*       cb      = CommandBufferPool::Get( cmdBuf );
+    id<MTLRenderCommandEncoder> encoder = cb->encoder;
+    MTLViewport                 vp;
+
+    if( viewport.x  &&  viewport.y  &&  viewport.width  &&  viewport.height )
+    {
+        vp.originX  = viewport.x;
+        vp.originY  = viewport.y;
+        vp.width    = viewport.width;
+        vp.height   = viewport.height;
+        vp.znear    = 0.0;
+        vp.zfar     = 1.0;
+    }
+    else
+    {
+        vp.originX  = 0;
+        vp.originY  = 0;
+        vp.width    = cb->rt.width;
+        vp.height   = cb->rt.height;
+        vp.znear    = 0.0;
+        vp.zfar     = 1.0;
+    }
+    
+    [encoder setViewport:vp];
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
 metal_CommandBuffer_SetVertexData( Handle cmdBuf, Handle vb, uint32 streamIndex )
 {
     CommandBufferMetal_t*   cb = CommandBufferPool::Get( cmdBuf );
@@ -522,6 +554,7 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_SetPipelineState       = &metal_CommandBuffer_SetPipelineState;
     dispatch->impl_CommandBuffer_SetCullMode            = &metal_CommandBuffer_SetCullMode;
     dispatch->impl_CommandBuffer_SetScissorRect         = &metal_CommandBuffer_SetScissorRect;
+    dispatch->impl_CommandBuffer_SetViewport            = &metal_CommandBuffer_SetViewport;
     dispatch->impl_CommandBuffer_SetVertexData          = &metal_CommandBuffer_SetVertexData;
     dispatch->impl_CommandBuffer_SetVertexConstBuffer   = &metal_CommandBuffer_SetVertexConstBuffer;
     dispatch->impl_CommandBuffer_SetVertexTexture       = &metal_CommandBuffer_SetVertexTexture;
