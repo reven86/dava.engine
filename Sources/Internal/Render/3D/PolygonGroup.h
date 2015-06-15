@@ -127,11 +127,11 @@ public:
 	Vector3		*normalArray;
 	Vector3		*tangentArray;
 	Vector3		*binormalArray;
-	uint32		*jointIdxArray;
-	uint32		*jointWeightArray;
+	float32		*jointIdxArray;
+	float32		*jointWeightArray;
 	Vector3		**cubeTextureCoordArray;
 
-	int32		*jointCountArray;
+	uint32		*jointCountArray;
 	
     Vector3     *pivotArray;
     float32     *flexArray;
@@ -278,15 +278,17 @@ inline void PolygonGroup::SetAngle(int32 i, const Vector2 & _v)
 inline void	PolygonGroup::SetJointIndex(int32 vIndex, int32 jointIndex, int32 boneIndexValue)
 {
     DVASSERT(jointIndex >= 0 && jointIndex < 4);
-	uint8 * t = ((uint8*)jointIdxArray) + vIndex * vertexStride;
-	t[jointIndex] = boneIndexValue;
+    jointIdxArray[vIndex] = float32(boneIndexValue);
+//	uint8 * t = ((uint8*)jointIdxArray) + vIndex * vertexStride;
+//	t[jointIndex] = boneIndexValue;
 }
 	
 inline void	PolygonGroup::SetJointWeight(int32 vIndex, int32 jointIndex, float32 boneWeightValue)
 {
     DVASSERT(jointIndex >= 0 && jointIndex < 4);
-    uint8 * t = ((uint8*)jointWeightArray) + vIndex * vertexStride;
-	t[jointIndex] = (uint8)(255 * boneWeightValue);
+    jointWeightArray[vIndex] = boneWeightValue;
+//    uint8 * t = ((uint8*)jointWeightArray) + vIndex * vertexStride;
+//	t[jointIndex] = (uint8)(255 * boneWeightValue);
 }
 	
 inline void PolygonGroup::SetJointCount(int32 vIndex, int32 jointCount)

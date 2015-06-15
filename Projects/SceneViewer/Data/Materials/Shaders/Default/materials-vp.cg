@@ -13,10 +13,12 @@ VPROG_IN_BEGIN
     VPROG_IN_NORMAL
     #endif
 
-    #if MATERIAL_SKYBOX
-    VPROG_IN_TEXCOORD0(3)
-    #else
-    VPROG_IN_TEXCOORD0(2)
+    #if MATERIAL_TEXTURE
+        #if MATERIAL_SKYBOX
+        VPROG_IN_TEXCOORD0(3)
+        #else
+        VPROG_IN_TEXCOORD0(2)
+        #endif
     #endif
 
     #if MATERIAL_DECAL || MATERIAL_LIGHTMAP || FRAME_BLEND || ALPHA_MASK
@@ -33,8 +35,7 @@ VPROG_IN_BEGIN
     #endif
     
     #if SKINNING
-    VPROG_IN_BLENDINDEX
-    VPROG_IN_BLENDWEIGHT
+    VPROG_IN_BLENDINDEX(1)
     #endif
 
 
@@ -167,8 +168,8 @@ property float3 metalFresnelReflectance : dynamic,a : ;
 #endif
 
 #if SKINNING
-property float4 jointPositions[MAX_JOINTS] : dynamic,a : ; // (x, y, z, scale)
-property float4 jointQuaternions[MAX_JOINTS] : dynamic,a : ;
+property float4 jointPositions[MAX_JOINTS] : static,a : ; // (x, y, z, scale)
+property float4 jointQuaternions[MAX_JOINTS] : static,a : ;
 #endif
 
 #include "vp-fog-props.cgh"
@@ -319,7 +320,7 @@ VPROG_BEGIN
 
 #if SKINNING
     // compute final state - for now just effected by 1 bone - later blend everything here
-    int     index                    = int(inJointIndex);
+    int     index                    = int(VP_IN_BLENDINDEX);
     float4  weightedVertexPosition   = jointPositions[index];
     float4  weightedVertexQuaternion = jointQuaternions[index];
 #endif
@@ -411,7 +412,7 @@ VPROG_BEGIN
         #else
             #if SKINNING
                 float3 tmpVec = 2.0 * cross(weightedVertexQuaternion.xyz, VP_IN_POSITION.xyz);
-                float4 skinnedPosition = float4(weightedVertexPosition.xyz + (VP_IN_POSITION.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, VP_IN_POSITION.w);
+                float4 skinnedPosition = float4(weightedVertexPosition.xyz + (VP_IN_POSITION.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, 1.0);
                 VP_OUT_POSITION = mul( skinnedPosition, worldViewProjMatrix );
             #else
                 VP_OUT_POSITION = mul( float4(VP_IN_POSITION,1.0), worldViewProjMatrix );
