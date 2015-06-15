@@ -69,6 +69,8 @@ private:
 
     void OnError();
 
+    void OnTestSuiteStarted(const DAVA::String& testClassName);
+    void OnTestSuiteFinished(const DAVA::String& testClassName);
     void OnTestStarted(const DAVA::String& testClassName, const DAVA::String& testName);
     void OnTestFinished(const DAVA::String& testClassName, const DAVA::String& testName);
     void OnTestFailed(const DAVA::String& testClassName, const DAVA::String& testName, const DAVA::String& condition, const char* filename, int lineno, const DAVA::String& userMessage);

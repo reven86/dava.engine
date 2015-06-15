@@ -46,7 +46,6 @@ String excludeTheseTests = "";
 
 bool teamcityOutputEnabled = true;      // Flag whether to enable TeamCity output
 bool teamcityCaptureStdout = true;      // Flag whether to set TeamCity option 'captureStandardOutput=true'
-bool enablePerTestOutput = true;        // Flag whether to show progress of each test in test class
 
 }
 
@@ -69,10 +68,6 @@ void GameCore::ProcessCommandLine()
     {
         teamcityCaptureStdout = true;
     }
-    if (cmdline->CommandIsFound("-per_test_output"))
-    {
-        enablePerTestOutput = true;
-    }
 }
 
 void GameCore::OnAppStarted()
@@ -85,14 +80,15 @@ void GameCore::OnAppStarted()
         Logger::Instance()->AddCustomOutput(&teamCityOutput);
     }
 
-    UnitTests::TestCore::Instance()->Init(MakeFunction(this, &GameCore::OnTestStarted),
+    UnitTests::TestCore::Instance()->Init(MakeFunction(this, &GameCore::OnTestSuiteStarted),
+                                          MakeFunction(this, &GameCore::OnTestSuiteFinished),
+                                          MakeFunction(this, &GameCore::OnTestStarted),
                                           MakeFunction(this, &GameCore::OnTestFinished),
                                           MakeFunction(this, &GameCore::OnTestFailed));
     if (!runOnlyTheseTests.empty())
     {
         UnitTests::TestCore::Instance()->RunOnlyThisTest(runOnlyTheseTests);
     }
-    UnitTests::TestCore::Instance()->SetPerTestProgress(enablePerTestOutput);
 
     if (!UnitTests::TestCore::Instance()->HasTests())
     {
@@ -139,20 +135,24 @@ void GameCore::OnError()
     DavaDebugBreak();
 }
 
+void GameCore::OnTestSuiteStarted(const DAVA::String& testClassName)
+{
+    Logger::Info("%s", TeamcityTestsOutput::FormatTestClassStarted(testClassName).c_str());
+}
+
+void GameCore::OnTestSuiteFinished(const DAVA::String& testClassName)
+{
+    Logger::Info("%s", TeamcityTestsOutput::FormatTestClassFinished(testClassName).c_str());
+}
+
 void GameCore::OnTestStarted(const DAVA::String& testClassName, const DAVA::String& testName)
 {
-    if (testName.empty())
-        Logger::Info("%s", TeamcityTestsOutput::FormatTestClassStarted(testClassName).c_str());
-    else
-        Logger::Info("%s", TeamcityTestsOutput::FormatTestStarted(testClassName, testName, enablePerTestOutput).c_str());
+    Logger::Info("%s", TeamcityTestsOutput::FormatTestStarted(testClassName, testName).c_str());
 }
 
 void GameCore::OnTestFinished(const DAVA::String& testClassName, const DAVA::String& testName)
 {
-    if (testName.empty())
-        Logger::Info("%s", TeamcityTestsOutput::FormatTestClassFinished(testClassName).c_str());
-    else
-        Logger::Info("%s", TeamcityTestsOutput::FormatTestFinished(testClassName, testName, enablePerTestOutput).c_str());
+    Logger::Info("%s", TeamcityTestsOutput::FormatTestFinished(testClassName, testName).c_str());
 }
 
 void GameCore::OnTestFailed(const String& testClassName, const String& testName, const String& condition, const char* filename, int lineno, const String& userMessage)
@@ -168,7 +168,7 @@ void GameCore::OnTestFailed(const String& testClassName, const String& testName,
     {
         errorString = Format("%s:%d: %s (%s)", filename, lineno, testName.c_str(), userMessage.c_str());
     }
-    Logger::Error("%s", TeamcityTestsOutput::FormatTestFailed(testClassName, testName, condition, errorString, enablePerTestOutput).c_str());
+    Logger::Error("%s", TeamcityTestsOutput::FormatTestFailed(testClassName, testName, condition, errorString).c_str());
 }
 
 void GameCore::ProcessTests(float32 timeElapsed)
