@@ -59,18 +59,18 @@ TestCore* TestCore::Instance()
     return &core;
 }
 
-void TestCore::Init(SuiteStartedCallback suiteStartedCallback_, SuiteFinishedCallback suiteFinishedCallback_,
+void TestCore::Init(TestClassStartedCallback testClassStartedCallback_, TestClassFinishedCallback testClassFinishedCallback_,
                     TestStartedCallback testStartedCallback_, TestFinishedCallback testFinishedCallback_,
-                    TestFailedCallback testFailedCallback_, SuiteDisabledCallback suiteDisabledCallback_)
+                    TestFailedCallback testFailedCallback_, TestClassDisabledCallback testClassDisabledCallback_)
 {
-    DVASSERT(suiteStartedCallback_ != 0 && suiteFinishedCallback_ != 0 && suiteDisabledCallback_ != 0);
+    DVASSERT(testClassStartedCallback_ != 0 && testClassFinishedCallback_ != 0 && testClassDisabledCallback_ != 0);
     DVASSERT(testStartedCallback_ != 0 && testFinishedCallback_ != 0 && testFailedCallback_ != 0);
-    suiteStartedCallback = suiteStartedCallback_;
-    suiteFinishedCallback = suiteFinishedCallback_;
+    testClassStartedCallback = testClassStartedCallback_;
+    testClassFinishedCallback = testClassFinishedCallback_;
     testStartedCallback = testStartedCallback_;
     testFinishedCallback = testFinishedCallback_;
     testFailedCallback = testFailedCallback_;
-    suiteDisabledCallback = suiteDisabledCallback_;
+    testClassDisabledCallback = testClassDisabledCallback_;
 }
 
 void TestCore::RunOnlyTheseTests(const String& testClassNames)
@@ -143,13 +143,13 @@ bool TestCore::ProcessTests(float32 timeElapsed)
             if (testClassInfo.runTest)
             {
                 curTestClass = testClassInfo.factory->CreateTestClass();
-                suiteStartedCallback(curTestClassName);
+                testClassStartedCallback(curTestClassName);
             }
             else
             {
-                suiteStartedCallback(curTestClassName);
-                suiteDisabledCallback(curTestClassName);
-                suiteFinishedCallback(curTestClassName);
+                testClassStartedCallback(curTestClassName);
+                testClassDisabledCallback(curTestClassName);
+                testClassFinishedCallback(curTestClassName);
                 curTestClassIndex += 1;
             }
         }
@@ -181,7 +181,7 @@ bool TestCore::ProcessTests(float32 timeElapsed)
             }
             else
             {
-                suiteFinishedCallback(curTestClassName);
+                testClassFinishedCallback(curTestClassName);
 
                 SafeDelete(curTestClass);
                 curTestIndex = 0;

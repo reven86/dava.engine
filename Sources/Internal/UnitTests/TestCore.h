@@ -54,9 +54,9 @@ class TestCore final
     };
 
 public:
-    using SuiteStartedCallback = Function<void (const String&)>;
-    using SuiteFinishedCallback = Function<void (const String&)>;
-    using SuiteDisabledCallback = Function<void(const String&)>;
+    using TestClassStartedCallback = Function<void (const String&)>;
+    using TestClassFinishedCallback = Function<void (const String&)>;
+    using TestClassDisabledCallback = Function<void (const String&)>;
     using TestStartedCallback = Function<void (const String&, const String&)>;
     using TestFinishedCallback = Function<void (const String&, const String&)>;
     using TestFailedCallback = Function<void (const String&, const String&, const String&, const char*, int, const String&)>;
@@ -67,9 +67,9 @@ public:
     TestCore() = default;
     ~TestCore() = default;
 
-    void Init(SuiteStartedCallback suiteStartedCallback, SuiteFinishedCallback suiteFinishedCallback,
+    void Init(TestClassStartedCallback testClassStartedCallback, TestClassFinishedCallback testClassFinishedCallback,
               TestStartedCallback testStartedCallback, TestFinishedCallback testFinishedCallback,
-              TestFailedCallback testFailedCallback, SuiteDisabledCallback suiteDisabledCallback);
+              TestFailedCallback testFailedCallback, TestClassDisabledCallback testClassDisabledCallback);
 
     void RunOnlyTheseTests(const String& testClassNames);
     void DisableTheseTests(const String& testClassNames);
@@ -92,9 +92,9 @@ private:
     bool runLoopInProgress = false;
     bool testSetUpInvoked = false;
 
-    SuiteStartedCallback suiteStartedCallback;
-    SuiteFinishedCallback suiteFinishedCallback;
-    SuiteDisabledCallback suiteDisabledCallback;
+    TestClassStartedCallback testClassStartedCallback;
+    TestClassFinishedCallback testClassFinishedCallback;
+    TestClassDisabledCallback testClassDisabledCallback;
     TestStartedCallback testStartedCallback;
     TestFinishedCallback testFinishedCallback;
     TestFailedCallback testFailedCallback;
