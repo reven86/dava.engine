@@ -17,7 +17,7 @@ public:
 
     explicit LogFilterModel(QObject* parent = nullptr);
     ~LogFilterModel();
-
+    
     const LogLevels &GetFilters() const;
     const QString &GetFilterString() const;
 public slots:
@@ -27,7 +27,7 @@ public slots:
 private:
     bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
 
-    QFlags<DAVA::Logger::eLogLevel> filters;
+    LogLevels filters;
     QString filterText;
 };
 

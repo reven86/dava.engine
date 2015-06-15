@@ -28,6 +28,9 @@ public:
     ~LogWidget() = default;
 
     LogModel *Model();
+    QByteArray Serialize() const;
+    void Deserialize(const QByteArray &data);
+    void LoadDefaults();
 public slots:
     void OnFilterChanged();
 
@@ -35,8 +38,6 @@ private slots:
     void OnTextFilterChanged(const QString& text);
     void OnCopy();
     void OnClear();
-    void DetectAutoScroll();
-    void DoAutoScroll();
 
 private:
     void FillFiltersCombo();
@@ -44,9 +45,6 @@ private:
 
     QPointer<LogModel> logModel;
     QPointer<LogFilterModel> logFilterModel;
-    QPointer<QTimer> eventSkipper;
-    bool doAutoScroll;
-    bool scrollStateDetected;
     QTime time;
 };
 

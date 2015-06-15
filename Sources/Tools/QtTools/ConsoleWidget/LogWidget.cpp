@@ -1,19 +1,13 @@
 #include "LogWidget.h"
-
-#include <QAbstractItemModel>
 #include <QDebug>
 #include <QClipboard>
-#include <QApplication>
-#include <QTextStream>
-#include <QEvent>
 #include <QKeyEvent>
 #include <QScrollBar>
-#include <QTime>
+#include <QBuffer>
 
 #include "LogModel.h"
 #include "LogFilterModel.h"
 #include "LogDelegate.h"
-
 
 namespace
 {
@@ -23,14 +17,9 @@ namespace
 
 LogWidget::LogWidget(QWidget* parent)
     : QWidget(parent)
-    , eventSkipper(new QTimer(this))
-    , doAutoScroll(true)
-    , scrollStateDetected(false)
 {
     setupUi(this);
     time.start();
-    eventSkipper->setInterval(scrollDelay);
-    eventSkipper->setSingleShot(true);
 
     LogDelegate* delegate = new LogDelegate(log, this);
     logModel = new LogModel(this);
@@ -48,20 +37,38 @@ LogWidget::LogWidget(QWidget* parent)
     connect(filter, &CheckableComboBox::selectedUserDataChanged, this, &LogWidget::OnFilterChanged);
     connect(search, &LineEditEx::textUpdated, this, &LogWidget::OnTextFilterChanged);
 
-    // Auto scroll feature
-    connect(log->model(), &QAbstractItemModel::rowsAboutToBeInserted, this, &LogWidget::DetectAutoScroll);
-    connect(log->model(), &QAbstractItemModel::rowsAboutToBeRemoved, this, &LogWidget::DetectAutoScroll);
-    connect(log->model(), &QAbstractItemModel::modelAboutToBeReset, this, &LogWidget::DetectAutoScroll);
-
-    connect(log->model(), &QAbstractItemModel::rowsInserted, eventSkipper.data(), static_cast<void(QTimer::*)(void)>(&QTimer::start));
-    connect(log->model(), &QAbstractItemModel::modelReset, eventSkipper.data(), static_cast<void(QTimer::*)(void)>(&QTimer::start));
-    connect(eventSkipper.data(), &QTimer::timeout, this, &LogWidget::DoAutoScroll);
     OnFilterChanged();
 }
 
 LogModel* LogWidget::Model()
 {
     return logModel;
+}
+
+QByteArray LogWidget::Serialize() const
+{
+    QByteArray retData;
+    QDataStream stream(&retData, QIODevice::WriteOnly);
+    stream << logFilterModel->GetFilterString();
+    stream << logFilterModel->GetFilters();
+    return retData;
+}
+
+void LogWidget::Deserialize(const QByteArray& data)
+{
+    QDataStream stream(data);
+    QString filterString;
+    stream >> filterString;
+    logFilterModel->SetFilterString(filterString);
+    int logLevels;
+    stream >> logLevels;
+    logFilterModel->SetFilters(LogFilterModel::LogLevels(logLevels));
+}
+
+void LogWidget::LoadDefaults()
+{
+    logFilterModel->SetFilterString("");
+    logFilterModel->SetFilters(~LogFilterModel::LogLevels(0));
 }
 
 void LogWidget::OnFilterChanged()
@@ -159,32 +166,4 @@ void LogWidget::OnCopy()
 void LogWidget::OnClear()
 {
     logModel->clear();
-}
-
-void LogWidget::DetectAutoScroll()
-{
-    static int sum;
-    auto el = time.elapsed();
-    if (el > 40) //we use 40ms as minimum screen reload rate. There is no sense to do ti faster
-    {
-        time.restart();
-        QApplication::processEvents();
-        sum += time.elapsed();
-        time.restart();
-    }
-    if (scrollStateDetected)
-        return;
-
-    scrollStateDetected = true;
-    QScrollBar *scroll = log->verticalScrollBar();
-    doAutoScroll = (scroll->value() == scroll->maximum());
-}
-
-void LogWidget::DoAutoScroll()
-{
-    if (!doAutoScroll)
-        return ;
-
-    log->scrollToBottom();
-    scrollStateDetected = false;
 }
