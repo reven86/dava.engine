@@ -31,93 +31,93 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\UnitTests\Win32Specific\main_win_uap.cpp" />
-    <ClCompile Include="..\..\UnitTests\Win32Specific\main_win32.cpp" />
-    <ClCompile Include="..\..\UnitTests\Classes\Infrastructure\FrameworkMain.cpp">
+    <ClCompile Include="..\..\..\Win32Specific\main_win_uap.cpp" />
+    <ClCompile Include="..\..\..\Win32Specific\main_win32.cpp" />
+    <ClCompile Include="..\..\..\Classes\Infrastructure\FrameworkMain.cpp">
       <Filter>Classes\Infrastructure</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Infrastructure\GameCore.cpp">
+    <ClCompile Include="..\..\..\Classes\Infrastructure\GameCore.cpp">
       <Filter>Classes\Infrastructure</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Infrastructure\TextureUtils.cpp">
+    <ClCompile Include="..\..\..\Classes\Infrastructure\TextureUtils.cpp">
       <Filter>Classes\Infrastructure</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\ComponentsTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\ComponentsTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\Cpp14.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\Cpp14.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\DataVaultTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\DataVaultTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\DateTimeTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\DateTimeTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\FileListTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\FileListTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\FileSystemTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\FileSystemTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\FormatsTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\FormatsTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\FunctionBindSingalTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\FunctionBindSingalTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\HashMapTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\HashMapTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\JNITest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\JNITest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\JobManagerTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\JobManagerTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\KeyedArchiveYamlTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\KeyedArchiveYamlTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\LoadImageTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\LoadImageTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\LocalizationTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\LocalizationTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\MathTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\MathTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\MemoryAllocatorsTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\MemoryAllocatorsTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\MemoryManagerTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\MemoryManagerTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\NetworkTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\NetworkTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\SaveImageTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\SaveImageTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\SpinLockTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\SpinLockTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\SplitTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\SplitTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\StringFormatTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\StringFormatTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\TextSizeTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\TextSizeTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\ThreadLocalTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\ThreadLocalTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\ThreadSyncTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\ThreadSyncTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\UnitTests\Classes\Tests\UnlimitedLogOutputTest.cpp">
+    <ClCompile Include="..\..\..\Classes\Tests\UnlimitedLogOutputTest.cpp">
       <Filter>Classes\Tests</Filter>
     </ClCompile>
   </ItemGroup>
@@ -128,13 +128,13 @@
     <None Include="UnitTests_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\UnitTests\Classes\Infrastructure\FrameworkMain.h">
+    <ClInclude Include="..\..\..\Classes\Infrastructure\FrameworkMain.h">
       <Filter>Classes\Infrastructure</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\UnitTests\Classes\Infrastructure\GameCore.h">
+    <ClInclude Include="..\..\..\Classes\Infrastructure\GameCore.h">
       <Filter>Classes\Infrastructure</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\UnitTests\Classes\Infrastructure\TextureUtils.h">
+    <ClInclude Include="..\..\..\Classes\Infrastructure\TextureUtils.h">
       <Filter>Classes\Infrastructure</Filter>
     </ClInclude>
   </ItemGroup>
