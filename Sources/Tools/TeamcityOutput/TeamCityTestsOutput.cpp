@@ -95,26 +95,21 @@ void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
     TestOutput(output);
 }
 
-String TeamcityTestsOutput::FormatTestStarted(const String& testClassName, const String& testName, bool combineNames)
+String TeamcityTestsOutput::FormatTestStarted(const String& testClassName, const String& testName)
 {
     // TODO: make use of Format after merging pull request 367
     return startTestMarker + "\n" + testClassName + "." + testName;
-    //return combineNames ? startTestMarker + "\n" + testClassName + "." + testName
-    //                    : startTestMarker + "\n" + testClassName;
 }
 
-String TeamcityTestsOutput::FormatTestFinished(const String& testClassName, const String& testName, bool combineNames)
+String TeamcityTestsOutput::FormatTestFinished(const String& testClassName, const String& testName)
 {
     // TODO: make use of Format after merging pull request 367
-    return startTestMarker + "\n" + testClassName + "." + testName;
-    //return combineNames ? finishTestMarker + "\n" + testClassName + "." + testName
-    //                    : finishTestMarker + "\n" + testClassName;
+    return finishTestMarker + "\n" + testClassName + "." + testName;
 }
 
 String TeamcityTestsOutput::FormatTestClassStarted(const String& testClassName)
 {
     return startSuiteMarker + "\n" + testClassName;
-    //return "##teamcity[testSuiteStarted name='" + testClassName + "']";
 }
 
 String TeamcityTestsOutput::FormatTestClassFinished(const String& testClassName)
@@ -122,11 +117,10 @@ String TeamcityTestsOutput::FormatTestClassFinished(const String& testClassName)
     return finishSuiteMarker + "\n" + testClassName;
 }
 
-String TeamcityTestsOutput::FormatTestFailed(const String& testClassName, const String& testName, const String& condition, const String& errMsg, bool combineNames)
+String TeamcityTestsOutput::FormatTestFailed(const String& testClassName, const String& testName, const String& condition, const String& errMsg)
 {
     // TODO: make use of Format after merging pull request 367
-    return combineNames ? errorTestMarker + "\n" + testClassName + "." + testClassName + "\n" + condition + "\n" + errMsg
-                        : errorTestMarker + "\n" + testClassName + "\n" + condition + "\n" + errMsg;
+    return errorTestMarker + "\n" + testClassName + "." + testClassName + "\n" + condition + "\n" + errMsg;
 }
 
 void TeamcityTestsOutput::TestOutput(const String& data)

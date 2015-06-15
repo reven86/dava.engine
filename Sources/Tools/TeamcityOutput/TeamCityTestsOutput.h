@@ -42,9 +42,9 @@ public:
     bool CaptureStdoutFlag() const;
     void SetCaptureStdoutFlag(bool value);
 
-    static String FormatTestStarted(const String& testClassName, const String& testName, bool combineNames);
-    static String FormatTestFinished(const String& testClassName, const String& testName, bool combineNames);
-    static String FormatTestFailed(const String& testClassName, const String& testName, const String& condition, const String& errMsg, bool combineNames);
+    static String FormatTestStarted(const String& testClassName, const String& testName);
+    static String FormatTestFinished(const String& testClassName, const String& testName);
+    static String FormatTestFailed(const String& testClassName, const String& testName, const String& condition, const String& errMsg);
 
     static String FormatTestClassStarted(const String& testClassName);
     static String FormatTestClassFinished(const String& testClassName);
