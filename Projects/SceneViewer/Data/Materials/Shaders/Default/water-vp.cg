@@ -14,9 +14,10 @@ VPROG_OUT_BEGIN
     VPROG_OUT_POSITION
     VPROG_OUT_TEXCOORD0(uv,2)
     VPROG_OUT_TEXCOORD1(uv1,2)
-    VPROG_OUT_TEXCOORD2(eyeDist, 3)
-    VPROG_OUT_TEXCOORD3(normalizedFragPos, 4)
-    VPROG_OUT_TEXCOORD4(cameraToPointInTangentSpace, 3)
+    VPROG_OUT_TEXCOORD2(cameraToPointInTangentSpace, 3)
+    VPROG_OUT_TEXCOORD3(eyeDist, 3)
+    VPROG_OUT_TEXCOORD4(normalizedFragPos, 4)
+    
 VPROG_OUT_END
 
 property float4 lightPosition0 : dynamic,instance : ;
