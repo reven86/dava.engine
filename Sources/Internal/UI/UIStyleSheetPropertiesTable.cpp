@@ -123,7 +123,7 @@ namespace DAVA
             {
                 const InspMember *member = typeInfo->Member(i);
 
-                auto& iter = propertyNameToIndexMap.find(member->GetFastName());
+                const auto& iter = propertyNameToIndexMap.find(member->GetFastName());
                 if (iter != propertyNameToIndexMap.end())
                 {
                     callback(iter->second, typeInfo, member);
@@ -146,7 +146,7 @@ namespace DAVA
 
     void InitializeStyleSheetPropertyTable()
     {
-        for (size_t i = 0; i < COUNT_OF(STYLE_SHEET_PROPERTY_TABLE); ++i)
+        for (uint32_t i = 0; i < COUNT_OF(STYLE_SHEET_PROPERTY_TABLE); ++i)
         {
             propertyNameToIndexMap[STYLE_SHEET_PROPERTY_TABLE[i].name] = i;
         }
@@ -160,7 +160,7 @@ namespace DAVA
 
     uint32 GetStyleSheetPropertyIndex(const FastName& name)
     {
-        auto& iter = propertyNameToIndexMap.find(name);
+        const auto& iter = propertyNameToIndexMap.find(name);
 
         DVASSERT(iter != propertyNameToIndexMap.end());
 
