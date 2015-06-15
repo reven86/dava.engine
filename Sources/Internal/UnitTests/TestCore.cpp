@@ -57,9 +57,13 @@ TestCore* TestCore::Instance()
     return &core;
 }
 
-void TestCore::Init(TestStartedCallback testStartedCallback_, TestFinishedCallback testFinishedCallback_, TestFailedCallback testFailedCallback_)
+void TestCore::Init(SuiteStartedCallback suiteStartedCallback_, SuiteFinishedCallback suiteFinishedCallback_,
+                    TestStartedCallback testStartedCallback_, TestFinishedCallback testFinishedCallback_, TestFailedCallback testFailedCallback_)
 {
+    DVASSERT(suiteStartedCallback_ != 0 && suiteFinishedCallback_ != 0);
     DVASSERT(testStartedCallback_ != 0 && testFinishedCallback_ != 0 && testFailedCallback_ != 0);
+    suiteStartedCallback = suiteStartedCallback_;
+    suiteFinishedCallback = suiteFinishedCallback_;
     testStartedCallback = testStartedCallback_;
     testFinishedCallback = testFinishedCallback_;
     testFailedCallback = testFailedCallback_;
@@ -90,10 +94,7 @@ bool TestCore::ProcessTests(float32 timeElapsed)
             if (runOnlyThisTest.empty() || curTestClassName == runOnlyThisTest)
             {
                 curTestClass = testClasInfo.factory->CreateTestClass();
-                //if (!perTestProgress)
-                {
-                    testStartedCallback(curTestClassName, "");
-                }
+                suiteStartedCallback(curTestClassName);
             }
             else
             {
@@ -108,10 +109,7 @@ bool TestCore::ProcessTests(float32 timeElapsed)
                 if (!testSetUpInvoked)
                 {
                     curTestName = curTestClass->TestName(curTestIndex);
-                    //if (perTestProgress)
-                    {
-                        testStartedCallback(curTestClassName, curTestName);
-                    }
+                    testStartedCallback(curTestClassName, curTestName);
                     curTestClass->SetUp(curTestName);
                     testSetUpInvoked = true;
                 }
@@ -121,10 +119,7 @@ bool TestCore::ProcessTests(float32 timeElapsed)
                 {
                     testSetUpInvoked = false;
                     curTestClass->TearDown(curTestName);
-                    //if (perTestProgress)
-                    {
-                        testFinishedCallback(curTestClassName, curTestName);
-                    }
+                    testFinishedCallback(curTestClassName, curTestName);
                     curTestIndex += 1;
                 }
                 else
@@ -134,10 +129,7 @@ bool TestCore::ProcessTests(float32 timeElapsed)
             }
             else
             {
-                //if (!perTestProgress)
-                {
-                    testFinishedCallback(curTestClassName, "");
-                }
+                suiteFinishedCallback(curTestClassName);
 
                 SafeDelete(curTestClass);
                 curTestIndex = 0;

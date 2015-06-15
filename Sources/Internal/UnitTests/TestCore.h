@@ -53,7 +53,9 @@ class TestCore final
     };
 
 public:
-    using TestStartedCallback  = Function<void (const String&, const String&)>;
+    using SuiteStartedCallback = Function<void (const String&)>;
+    using SuiteFinishedCallback = Function<void (const String&)>;
+    using TestStartedCallback = Function<void (const String&, const String&)>;
     using TestFinishedCallback = Function<void (const String&, const String&)>;
     using TestFailedCallback = Function<void (const String&, const String&, const String&, const char*, int, const String&)>;
 
@@ -63,11 +65,11 @@ public:
     TestCore() = default;
     ~TestCore() = default;
 
-    void Init(TestStartedCallback testStartedCallback, TestFinishedCallback testFinishedCallback, TestFailedCallback testFailedCallback);
+    void Init(SuiteStartedCallback suiteStartedCallback, SuiteFinishedCallback suiteFinishedCallback,
+              TestStartedCallback testStartedCallback, TestFinishedCallback testFinishedCallback,
+              TestFailedCallback testFailedCallback);
 
     void RunOnlyThisTest(const String& testClassName);
-
-    void SetPerTestProgress(bool value);
 
     bool HasTests() const;
 
@@ -90,21 +92,13 @@ private:
     size_t curTestIndex = 0;
     bool runLoopInProgress = false;
     bool testSetUpInvoked = false;
-    bool perTestProgress = false;
 
+    SuiteStartedCallback suiteStartedCallback;
+    SuiteFinishedCallback suiteFinishedCallback;
     TestStartedCallback testStartedCallback;
     TestFinishedCallback testFinishedCallback;
     TestFailedCallback testFailedCallback;
 };
-
-//////////////////////////////////////////////////////////////////////////
-inline void TestCore::SetPerTestProgress(bool value)
-{
-    if (!runLoopInProgress)
-    {
-        perTestProgress = value;
-    }
-}
 
 }   // namespace UnitTests
 }   // namespace DAVA
