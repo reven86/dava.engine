@@ -27,47 +27,31 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_UI_PACKAGE_H__
-#define __DAVAENGINE_UI_PACKAGE_H__
+#ifndef __DAVAENGINE_UI_CONTROL_PACKAGE_CONTEXT_H__
+#define __DAVAENGINE_UI_CONTROL_PACKAGE_CONTEXT_H__
 
 #include "Base/BaseObject.h"
+#include "Base/BaseTypes.h"
 
 namespace DAVA
 {
-class UIControl;
-class UIStyleSheet;
+    class UIStyleSheet;
 
-class UIPackage: public BaseObject
-{
-public:
-    UIPackage();
-
-protected:
-    ~UIPackage();
-    
-public:
-    int32 GetControlsCount() const;
-    UIControl *GetControl(int32 index) const;
-    UIControl *GetControl(const String &name) const;
-    
-    template<class C>
-    C GetControl(const String &name) const
+    class UIControlPackageContext :
+        public BaseObject
     {
-        return DynamicTypeCheck<C>(GetControl(name));
-    }
-    
-    void AddControl(UIControl *control);
-    void InsertControlAtIndex(DAVA::int32 index, UIControl *control);
-    void InsertControlBelow(UIControl *control, const UIControl *belowThis);
-    void RemoveControl(UIControl *control);
+    protected:
+        virtual ~UIControlPackageContext();
+    public:
+        UIControlPackageContext();
 
+        void AddStyleSheet(UIStyleSheet* styleSheet);
 
-    RefPtr<UIPackage> Clone() const;
-private:
-    Vector<UIControl *> controls;
-
-    UIControlPackageContext* controlPackageContext;
+        const DAVA::Vector<UIStyleSheet*>& GetSortedStyleSheets();
+    private:
+        DAVA::Vector<UIStyleSheet*> styleSheets;
+        bool styleSheetsSorted;
+    };
 };
 
-};
-#endif // __DAVAENGINE_UI_PACKAGE_H__
+#endif

@@ -134,6 +134,8 @@ UIPackage *UIPackageLoader::LoadPackage(const YamlNode *rootNode, const FilePath
         
         loadingQueue.clear();
     }
+
+
     builder->EndPackage();
     
     return SafeRetain(package.Get());

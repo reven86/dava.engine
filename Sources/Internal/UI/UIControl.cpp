@@ -29,6 +29,7 @@
 
 #include "UI/UIControl.h"
 #include "UI/UIControlSystem.h"
+#include "UI/UIControlPackageContext.h"
 #include "UI/UIYamlLoader.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/UIStyleSheetSystem.h"
@@ -68,7 +69,9 @@ namespace DAVA
 #endif
     }
 
-    UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/) : family(nullptr)
+    UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/) : 
+        family(nullptr),
+        parentWithContext(nullptr)
     {
         StartControlTracking(this);
         UpdateFamily();
@@ -147,7 +150,13 @@ namespace DAVA
         parent = newParent;
         if (parent)
         {
+            PropagateParentWithContext(newParent->packageContext ? newParent : newParent->parentWithContext);
+
             parent->RegisterInputProcessors(inputProcessorsCount);
+        }
+        else
+        {
+            PropagateParentWithContext(nullptr);
         }
     }
     UIControl *UIControl::GetParent() const
@@ -2991,6 +3000,37 @@ namespace DAVA
     {
         localProperties.set(propertyIndex, value);
         UIControlSystem::Instance()->GetStyleSheetSystem()->MarkControlForUpdate(this);
+    }
+
+    void UIControl::SetPackageContext(UIControlPackageContext* newPackageContext)
+    {
+        packageContext = newPackageContext;
+        for (UIControl* child : childs)
+            child->PropagateParentWithContext(packageContext ? this : parentWithContext);
+    }
+
+    void UIControl::PropagateParentWithContext(UIControl* newParentWithContext)
+    {
+        parentWithContext = newParentWithContext;
+        if (packageContext == nullptr)
+        {
+            for (UIControl* child : childs)
+            {
+                child->PropagateParentWithContext(newParentWithContext);
+            }
+        }
+    }
+
+    UIControlPackageContext* UIControl::GetPackageContext() const
+    {
+        return packageContext.Valid() ? 
+            packageContext.Get() : 
+            (parentWithContext ? parentWithContext->GetLocalPackageContext() : nullptr);
+    }
+
+    UIControlPackageContext* UIControl::GetLocalPackageContext() const
+    {
+        return packageContext.Get();
     }
 
     /* Styles */

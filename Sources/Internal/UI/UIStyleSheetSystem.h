@@ -50,25 +50,22 @@ namespace DAVA
         ~UIStyleSheetSystem();
 
         void MarkControlForUpdate(UIControl* control);
-        void RegisterStyleSheetPackage(UIStyleSheetPackage* styleSheetPackage);
-        void UnregisterStyleSheetPackage(UIStyleSheetPackage* styleSheetPackage);
+        //void RegisterStyleSheet(UIStyleSheet* styleSheet);
+        //void UnregisterStyleSheet(UIStyleSheet* styleSheet);
 
         void Process();
     private:
-        void RegisterStyleSheet(UIStyleSheet* styleSheet);
-        void UnregisterStyleSheet(UIStyleSheet* styleSheet);
-
         void ProcessControl(UIControl* control);
-        void SortStyleSheets();
-        bool StyleSheetMatchesControl(UIStyleSheet* styleSheet, UIControl* control);
+        //void SortStyleSheets();
+        bool StyleSheetMatchesControl(const UIStyleSheet* styleSheet, UIControl* control);
         bool SelectorMatchesControl(const UIStyleSheetSelector& selector, UIControl* control);
         
         void SetupControlFromCascade(UIControl* control, const UIStyleSheetCascade& cascade);
 
         DAVA::Vector< UIControl* > controlsToUpdate;
-        DAVA::Vector< UIStyleSheet* > styleSheets;
+        //DAVA::Vector< UIStyleSheet* > styleSheets;
 
-        bool dirtySort;
+        //bool dirtySort;
     };
 };
 

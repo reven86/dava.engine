@@ -46,6 +46,7 @@ class UIControlBackground;
 class Message;
 class UIComponent;
 class UIControlFamily;
+class UIControlPackageContext;
 
 #define CONTROL_TOUCH_AREA  15
     /**
@@ -1484,10 +1485,18 @@ public:
     
     const UIStyleSheetPropertySet& GetLocalPropertySet() const;
     void SetPropertyLocalFlag(uint32 propertyIndex, bool value);
+    
+    UIControlPackageContext* GetPackageContext() const;
+    UIControlPackageContext* GetLocalPackageContext() const;
+    void SetPackageContext(UIControlPackageContext* packageContext);
 
 private:
     Vector<FastName> classes;
     UIStyleSheetPropertySet localProperties;
+    RefPtr< UIControlPackageContext > packageContext;
+    UIControl* parentWithContext;
+
+    void PropagateParentWithContext(UIControl* newParentWithContext);
 /* Styles */
 
 public:

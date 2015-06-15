@@ -1854,6 +1854,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UIStyleSheetYamlLoader.h" />
     <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetPackage.h" />
+    <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIControlPackageContext.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -3314,5 +3317,8 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIStyleSheetYamlLoader.cpp" />
     <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetPackage.cpp" />
+    <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIControlPackageContext.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -26,48 +26,42 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __DAVAENGINE_UI_PACKAGE_H__
-#define __DAVAENGINE_UI_PACKAGE_H__
-
-#include "Base/BaseObject.h"
+#include "UI/UIControlPackageContext.h"
+#include "UI/UIStyleSheet.h"
 
 namespace DAVA
 {
-class UIControl;
-class UIStyleSheet;
-
-class UIPackage: public BaseObject
-{
-public:
-    UIPackage();
-
-protected:
-    ~UIPackage();
-    
-public:
-    int32 GetControlsCount() const;
-    UIControl *GetControl(int32 index) const;
-    UIControl *GetControl(const String &name) const;
-    
-    template<class C>
-    C GetControl(const String &name) const
+    UIControlPackageContext::~UIControlPackageContext()
     {
-        return DynamicTypeCheck<C>(GetControl(name));
+        for (UIStyleSheet* styleSheet : styleSheets)
+        {
+            SafeRelease(styleSheet);
+        }
     }
-    
-    void AddControl(UIControl *control);
-    void InsertControlAtIndex(DAVA::int32 index, UIControl *control);
-    void InsertControlBelow(UIControl *control, const UIControl *belowThis);
-    void RemoveControl(UIControl *control);
 
+    UIControlPackageContext::UIControlPackageContext() :
+        styleSheetsSorted(false)
+    {
 
-    RefPtr<UIPackage> Clone() const;
-private:
-    Vector<UIControl *> controls;
+    }
 
-    UIControlPackageContext* controlPackageContext;
-};
+    void UIControlPackageContext::AddStyleSheet(UIStyleSheet* styleSheet)
+    {
+        styleSheetsSorted = false;
+        styleSheets.push_back(SafeRetain(styleSheet));
+    }
 
-};
-#endif // __DAVAENGINE_UI_PACKAGE_H__
+    const DAVA::Vector<UIStyleSheet*>& UIControlPackageContext::GetSortedStyleSheets()
+    {
+        if (!styleSheetsSorted)
+        {
+            std::sort(styleSheets.begin(), styleSheets.end(),
+                [](const UIStyleSheet* first, const UIStyleSheet* second) {
+                return first->GetScore() > second->GetScore();
+            });
+            styleSheetsSorted = true;
+        }
+
+        return styleSheets;
+    }
+}

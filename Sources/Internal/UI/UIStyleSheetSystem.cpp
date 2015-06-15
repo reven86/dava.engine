@@ -31,31 +31,31 @@
 #include "UI/UIStyleSheetCascade.h"
 #include "UI/UIStyleSheetPackage.h"
 #include "UI/UIControl.h"
+#include "UI/UIControlPackageContext.h"
 #include "UI/Components/UIComponent.h"
 #include "Platform/SystemTimer.h"
 #include "Platform/Thread.h"
 
 namespace DAVA
 {
-    UIStyleSheetSystem::UIStyleSheetSystem() :
-        dirtySort(false)
+    UIStyleSheetSystem::UIStyleSheetSystem() //: dirtySort(false)
     {
 
     }
 
     UIStyleSheetSystem::~UIStyleSheetSystem()
     {
-        for (UIStyleSheet* styleSheet : styleSheets)
+        /*for (UIStyleSheet* styleSheet : styleSheets)
         {
             SafeRelease(styleSheet);
-        }
+        }*/
     }
 
     void UIStyleSheetSystem::MarkControlForUpdate(UIControl* control)
     {
         controlsToUpdate.push_back(SafeRetain(control));
     }
-
+    /*
     void UIStyleSheetSystem::RegisterStyleSheet(UIStyleSheet* styleSheet)
     {
         styleSheets.push_back(SafeRetain(styleSheet));
@@ -71,31 +71,15 @@ namespace DAVA
             styleSheets.erase(iter);
         }
     }
-
-    void UIStyleSheetSystem::RegisterStyleSheetPackage(UIStyleSheetPackage* styleSheetPackage)
-    {
-        for (UIStyleSheet* styleSheet : *styleSheetPackage)
-        {
-            RegisterStyleSheet(styleSheet);
-        }
-    }
-
-    void UIStyleSheetSystem::UnregisterStyleSheetPackage(UIStyleSheetPackage* styleSheetPackage)
-    {
-        for (UIStyleSheet* styleSheet : *styleSheetPackage)
-        {
-            UnregisterStyleSheet(styleSheet);
-        }
-    }
-
+    */
     void UIStyleSheetSystem::Process()
     {
-        if (dirtySort)
+        /*if (dirtySort)
         {
             SortStyleSheets();
             dirtySort = false;
         }
-
+        */
         if (!controlsToUpdate.empty())
         {
             uint64 start = SystemTimer::Instance()->AbsoluteMS();
@@ -123,17 +107,23 @@ namespace DAVA
 
         cascade.Clear();
 
-        for (UIStyleSheet* styleSheet : styleSheets)
+        UIControlPackageContext* packageContext = control->GetPackageContext();
+
+        if (packageContext)
         {
-            if (StyleSheetMatchesControl(styleSheet, control))
+            const auto& styleSheets = packageContext->GetSortedStyleSheets();
+            for (const UIStyleSheet* styleSheet : styleSheets)
             {
-                cascade.AddStyleSheet(styleSheet);
+                if (StyleSheetMatchesControl(styleSheet, control))
+                {
+                    cascade.AddStyleSheet(styleSheet);
+                }
             }
         }
 
         SetupControlFromCascade(control, cascade);
     }
-
+    /*
     void UIStyleSheetSystem::SortStyleSheets()
     {
         std::sort(styleSheets.begin(), styleSheets.end(),
@@ -141,8 +131,8 @@ namespace DAVA
             return first->GetScore() > second->GetScore();
         });
     }
-
-    bool UIStyleSheetSystem::StyleSheetMatchesControl(UIStyleSheet* styleSheet, UIControl* control)
+    */
+    bool UIStyleSheetSystem::StyleSheetMatchesControl(const UIStyleSheet* styleSheet, UIControl* control)
     {
         UIControl* currentControl = control;
 
