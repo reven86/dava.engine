@@ -48,6 +48,7 @@ public:
 
     static String FormatTestClassStarted(const String& testClassName);
     static String FormatTestClassFinished(const String& testClassName);
+    static String FormatTestClassDisabled(const String& testClassName);
 
 private:
     void TestOutput(const String& data);

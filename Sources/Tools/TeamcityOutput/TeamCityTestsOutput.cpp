@@ -38,6 +38,7 @@ namespace
 
 const String startSuiteMarker = "start suite";
 const String finishSuiteMarker = "finish suite";
+const String disabledSuiteMarker = "disable suite";
 const String startTestMarker = "start test ";
 const String finishTestMarker = "finish test ";
 const String errorTestMarker = "test error ";
@@ -46,8 +47,6 @@ const String errorTestMarker = "test error ";
 
 void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
 {
-    // TODO: make use of Format after merging pull request 367
-
     String textStr = text;
     Vector<String> lines;
     Split(textStr, "\n", lines);
@@ -62,6 +61,11 @@ void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
     {
         String testName = lines.at(1);
         output = "##teamcity[testSuiteFinished name='" + testName + "']\n";
+    }
+    else if (disabledSuiteMarker == lines[0])
+    {
+        String testName = lines.at(1);
+        output = "##teamcity[testIgnored name='" + testName + "' message='test is disabled']\n";
     }
     else if (startTestMarker == lines[0])
     {
@@ -97,13 +101,11 @@ void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
 
 String TeamcityTestsOutput::FormatTestStarted(const String& testClassName, const String& testName)
 {
-    // TODO: make use of Format after merging pull request 367
     return startTestMarker + "\n" + testClassName + "." + testName;
 }
 
 String TeamcityTestsOutput::FormatTestFinished(const String& testClassName, const String& testName)
 {
-    // TODO: make use of Format after merging pull request 367
     return finishTestMarker + "\n" + testClassName + "." + testName;
 }
 
@@ -117,9 +119,13 @@ String TeamcityTestsOutput::FormatTestClassFinished(const String& testClassName)
     return finishSuiteMarker + "\n" + testClassName;
 }
 
+String TeamcityTestsOutput::FormatTestClassDisabled(const String& testClassName)
+{
+    return disabledSuiteMarker + "\n" + testClassName;
+}
+
 String TeamcityTestsOutput::FormatTestFailed(const String& testClassName, const String& testName, const String& condition, const String& errMsg)
 {
-    // TODO: make use of Format after merging pull request 367
     return errorTestMarker + "\n" + testClassName + "." + testClassName + "\n" + condition + "\n" + errMsg;
 }
 
