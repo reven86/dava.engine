@@ -42,7 +42,7 @@ namespace
 // List of semicolon separated names specifying which test classes should run
 String runOnlyTheseTests = "";
 // List of semicolon separated names specifying which test classes shouldn't run. This list takes precedence over runOnlyTheseTests
-String excludeTheseTests = "NetworkTest;ThreadSyncTest;JobManagerTest";
+String disableTheseTests = "NetworkTest;ThreadSyncTest;JobManagerTest";
 
 bool teamcityOutputEnabled = true;      // Flag whether to enable TeamCity output
 bool teamcityCaptureStdout = false;     // Flag whether to set TeamCity option 'captureStandardOutput=true'
@@ -56,9 +56,9 @@ void GameCore::ProcessCommandLine()
     {
         runOnlyTheseTests = cmdline->GetCommandParam("-only_test");
     }
-    if (cmdline->CommandIsFound("-exclude_test"))
+    if (cmdline->CommandIsFound("-disable_test"))
     {
-        excludeTheseTests = cmdline->GetCommandParam("-exclude_test");
+        disableTheseTests = cmdline->GetCommandParam("-disable_test");
     }
     if (cmdline->CommandIsFound("-noteamcity"))
     {
@@ -90,9 +90,9 @@ void GameCore::OnAppStarted()
     {
         UnitTests::TestCore::Instance()->RunOnlyTheseTests(runOnlyTheseTests);
     }
-    if (!excludeTheseTests.empty())
+    if (!disableTheseTests.empty())
     {
-        UnitTests::TestCore::Instance()->ExcludeTheseTests(excludeTheseTests);
+        UnitTests::TestCore::Instance()->DisableTheseTests(disableTheseTests);
     }
 
     if (!UnitTests::TestCore::Instance()->HasTests())

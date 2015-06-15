@@ -72,7 +72,7 @@ public:
               TestFailedCallback testFailedCallback, SuiteDisabledCallback suiteDisabledCallback);
 
     void RunOnlyTheseTests(const String& testClassNames);
-    void ExcludeTheseTests(const String& testClassNames);
+    void DisableTheseTests(const String& testClassNames);
 
     bool HasTests() const;
 

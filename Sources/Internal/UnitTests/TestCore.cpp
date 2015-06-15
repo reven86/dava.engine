@@ -46,6 +46,7 @@ TestCore::TestClassInfo::TestClassInfo(const char* name_, TestClassFactoryBase* 
 
 TestCore::TestClassInfo::TestClassInfo(TestClassInfo&& other)
     : name(std::move(other.name))
+    , runTest(other.runTest)
     , factory(std::move(other.factory))
 {}
 
@@ -101,7 +102,7 @@ void TestCore::RunOnlyTheseTests(const String& testClassNames)
     }
 }
 
-void TestCore::ExcludeTheseTests(const String& testClassNames)
+void TestCore::DisableTheseTests(const String& testClassNames)
 {
     DVASSERT(!runLoopInProgress);
     if (!testClassNames.empty())

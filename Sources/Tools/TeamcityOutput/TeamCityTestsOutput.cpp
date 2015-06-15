@@ -119,9 +119,9 @@ String TeamcityTestsOutput::FormatTestClassFinished(const String& testClassName)
     return finishSuiteMarker + "\n" + testClassName;
 }
 
-String TeamcityTestsOutput::FormatTestClassDisabled(const String& /*testClassName*/)
+String TeamcityTestsOutput::FormatTestClassDisabled(const String& testClassName)
 {
-    return disabledSuiteMarker + "\n" + "disabled test";
+    return disabledSuiteMarker + "\n" + testClassName;
 }
 
 String TeamcityTestsOutput::FormatTestFailed(const String& testClassName, const String& testName, const String& condition, const String& errMsg)
