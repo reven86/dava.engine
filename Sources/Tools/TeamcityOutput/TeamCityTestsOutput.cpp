@@ -101,12 +101,12 @@ void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
 
 String TeamcityTestsOutput::FormatTestStarted(const String& testClassName, const String& testName)
 {
-    return startTestMarker + "\n" + testName;
+    return startTestMarker + "\n" + testClassName + "." + testName;
 }
 
 String TeamcityTestsOutput::FormatTestFinished(const String& testClassName, const String& testName)
 {
-    return finishTestMarker + "\n" + testName;
+    return finishTestMarker + "\n" + testClassName + "." + testName;
 }
 
 String TeamcityTestsOutput::FormatTestClassStarted(const String& testClassName)
