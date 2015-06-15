@@ -42,10 +42,11 @@ namespace
 // List of semicolon separated names specifying which test classes should run
 String runOnlyTheseTests = "";
 // List of semicolon separated names specifying which test classes shouldn't run. This list takes precedence over runOnlyTheseTests
-String excludeTheseTests = "";
+String excludeTheseTests = "NetworkTest;ThreadSyncTest;JobManagerTest";
 
 bool teamcityOutputEnabled = true;      // Flag whether to enable TeamCity output
 bool teamcityCaptureStdout = false;     // Flag whether to set TeamCity option 'captureStandardOutput=true'
+bool teamcityDetailedOutput = false;    // Flag whether to do detailed output to Teamcity
 
 }
 
@@ -67,6 +68,10 @@ void GameCore::ProcessCommandLine()
     if (cmdline->CommandIsFound("-teamcity_capture_stdout"))
     {
         teamcityCaptureStdout = true;
+    }
+    if (cmdline->CommandIsFound("-teamcity_detailed_output"))
+    {
+        teamcityDetailedOutput = true;
     }
 }
 
@@ -142,12 +147,18 @@ void GameCore::OnError()
 
 void GameCore::OnTestClassStarted(const DAVA::String& testClassName)
 {
-    Logger::Info("%s", TeamcityTestsOutput::FormatTestClassStarted(testClassName).c_str());
+    if (teamcityDetailedOutput)
+    {
+        Logger::Info("%s", TeamcityTestsOutput::FormatTestClassStarted(testClassName).c_str());
+    }
 }
 
 void GameCore::OnTestClassFinished(const DAVA::String& testClassName)
 {
-    Logger::Info("%s", TeamcityTestsOutput::FormatTestClassFinished(testClassName).c_str());
+    if (teamcityDetailedOutput)
+    {
+        Logger::Info("%s", TeamcityTestsOutput::FormatTestClassFinished(testClassName).c_str());
+    }
 }
 
 void GameCore::OnTestClassDisabled(const DAVA::String& testClassName)
