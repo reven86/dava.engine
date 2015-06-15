@@ -706,7 +706,7 @@ SCOPED_FUNCTION_TIMING();
                 int w = int(arg[2]);
                 int h = int(arg[3]);
 
-                if( x  &&  y  &&  w  &&  h )
+                if( !(x==0  &&  y==0  &&  w==0  &&  h==0) )
                 {
                     D3DVIEWPORT9    vp;
 

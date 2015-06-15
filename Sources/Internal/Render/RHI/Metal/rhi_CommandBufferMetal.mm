@@ -267,7 +267,7 @@ metal_CommandBuffer_SetViewport( Handle cmdBuf, Viewport viewport )
     id<MTLRenderCommandEncoder> encoder = cb->encoder;
     MTLViewport                 vp;
 
-    if( viewport.x  &&  viewport.y  &&  viewport.width  &&  viewport.height )
+    if( !(viewport.x==0  &&  viewport.y==0  &&  viewport.width==0  &&  viewport.height==0) )
     {
         vp.originX  = viewport.x;
         vp.originY  = viewport.y;
