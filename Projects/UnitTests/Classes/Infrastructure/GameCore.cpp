@@ -147,18 +147,12 @@ void GameCore::OnError()
 
 void GameCore::OnTestClassStarted(const DAVA::String& testClassName)
 {
-    if (teamcityDetailedOutput)
-    {
-        Logger::Info("%s", TeamcityTestsOutput::FormatTestClassStarted(testClassName).c_str());
-    }
+    Logger::Info("%s", TeamcityTestsOutput::FormatTestClassStarted(testClassName).c_str());
 }
 
 void GameCore::OnTestClassFinished(const DAVA::String& testClassName)
 {
-    if (teamcityDetailedOutput)
-    {
-        Logger::Info("%s", TeamcityTestsOutput::FormatTestClassFinished(testClassName).c_str());
-    }
+    Logger::Info("%s", TeamcityTestsOutput::FormatTestClassFinished(testClassName).c_str());
 }
 
 void GameCore::OnTestClassDisabled(const DAVA::String& testClassName)
@@ -202,15 +196,6 @@ void GameCore::ProcessTests(float32 timeElapsed)
 
 void GameCore::FinishTests()
 {
-    if (teamcityOutputEnabled)
-    {
-        // inform teamcity script we just finished all tests
-        // useful on ios devices (run with lldb)
-        teamCityOutput.Output(DAVA::Logger::LEVEL_DEBUG, "Finish all tests.");
-    }
-    else
-    {
-        Logger::Debug("Finish all tests.");
-    }
+    Logger::Debug("Finish all tests.");
     Core::Instance()->Quit();
 }

@@ -146,7 +146,9 @@ bool TestCore::ProcessTests(float32 timeElapsed)
             }
             else
             {
+                suiteStartedCallback(curTestClassName);
                 suiteDisabledCallback(curTestClassName);
+                suiteFinishedCallback(curTestClassName);
                 curTestClassIndex += 1;
             }
         }
