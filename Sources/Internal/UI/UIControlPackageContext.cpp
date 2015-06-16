@@ -40,7 +40,8 @@ namespace DAVA
     }
 
     UIControlPackageContext::UIControlPackageContext() :
-        styleSheetsSorted(false)
+        styleSheetsSorted(false),
+        maxSelectorDepth(0)
     {
 
     }
@@ -49,9 +50,10 @@ namespace DAVA
     {
         styleSheetsSorted = false;
         styleSheets.push_back(SafeRetain(styleSheet));
+        maxSelectorDepth = Max(maxSelectorDepth, (int32)styleSheet->GetSelectorChain().size());
     }
 
-    const DAVA::Vector<UIStyleSheet*>& UIControlPackageContext::GetSortedStyleSheets()
+    const Vector<UIStyleSheet*>& UIControlPackageContext::GetSortedStyleSheets()
     {
         if (!styleSheetsSorted)
         {
@@ -63,5 +65,10 @@ namespace DAVA
         }
 
         return styleSheets;
+    }
+
+    int32 UIControlPackageContext::GetMaxStyleSheetSelectorDepth() const
+    {
+        return maxSelectorDepth;
     }
 }

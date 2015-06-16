@@ -46,13 +46,6 @@ namespace DAVA
 
     }
 
-    void UIStyleSheetSystem::MarkControlForUpdate(UIControl* control)
-    {
-        controlsToUpdate.push_back(SafeRetain(control));
-        for (UIControl* child : control->GetChildren())
-            MarkControlForUpdate(child);
-    }
-    
     void UIStyleSheetSystem::Process()
     {
         if (!controlsToUpdate.empty())
@@ -69,11 +62,31 @@ namespace DAVA
                 SafeRelease(*controlIter);
             }
 
-            controlsToUpdate.clear();
 
             uint64 end = SystemTimer::Instance()->AbsoluteMS();
 
-            DAVA::Logger::Debug("%s took %llu", __FUNCTION__, end - start);
+            DAVA::Logger::Debug("%s (%i) took %llu", __FUNCTION__, std::distance(controlsToUpdate.begin(), endIter), end - start);
+
+            controlsToUpdate.clear();
+        }
+    }
+
+    void UIStyleSheetSystem::MarkControlForUpdate(UIControl* control)
+    {
+        UIControlPackageContext* packageContext = control->GetPackageContext();
+        if (packageContext)
+        {
+            MarkControlForUpdate(control, packageContext->GetMaxStyleSheetSelectorDepth());
+        }
+    }
+
+    void UIStyleSheetSystem::MarkControlForUpdate(UIControl* control, int32 depth)
+    {
+        controlsToUpdate.push_back(SafeRetain(control));
+        if (depth > 1)
+        {
+            for (UIControl* child : control->GetChildren())
+                MarkControlForUpdate(child, depth - 1);
         }
     }
 

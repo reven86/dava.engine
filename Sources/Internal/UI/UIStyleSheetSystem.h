@@ -47,10 +47,11 @@ namespace DAVA
         UIStyleSheetSystem();
         ~UIStyleSheetSystem();
 
-        void MarkControlForUpdate(UIControl* control);
-
         void Process();
+
+        void MarkControlForUpdate(UIControl* control);
     private:
+        void MarkControlForUpdate(UIControl* control, DAVA::int32 depth);
         void ProcessControl(UIControl* control);
         bool StyleSheetMatchesControl(const UIStyleSheet* styleSheet, UIControl* control);
         bool SelectorMatchesControl(const UIStyleSheetSelector& selector, UIControl* control);

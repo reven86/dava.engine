@@ -48,8 +48,10 @@ namespace DAVA
         void AddStyleSheet(UIStyleSheet* styleSheet);
 
         const DAVA::Vector<UIStyleSheet*>& GetSortedStyleSheets();
+        DAVA::int32 UIControlPackageContext::GetMaxStyleSheetSelectorDepth() const;
     private:
         DAVA::Vector<UIStyleSheet*> styleSheets;
+        DAVA::int32 maxSelectorDepth;
         bool styleSheetsSorted;
     };
 };
