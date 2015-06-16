@@ -48,8 +48,8 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT);
     appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_2_0);
 
-    exWidth = screenWidth = Min(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
-    exHeight = screenHeight = Max(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
+    screenWidth = Min(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
+    screenHeight = Max(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
     appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
 
     DAVA::VirtualCoordinatesSystem::Instance()->SetProportionsIsFixed(false);
