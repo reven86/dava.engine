@@ -71,21 +71,7 @@ void BaseTest::UnloadResources()
 size_t BaseTest::GetAllocatedMemory()
 {
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
-    MemoryManager* mm = MemoryManager::Instance();
-    size_t bufSize = mm->CalcStatSize();
-    uint8* buf = new uint8[bufSize];
-
-    MMStat* stat = reinterpret_cast<MMStat*>(buf);
-    mm->GetStat(stat);
-
-    size_t total = 0;
-    for (uint32 ipool = 0; ipool < stat->allocPoolCount; ++ipool)
-    {
-        total += stat->poolStat[ipool].allocByApp;
-    }
-
-    delete[] buf;
-    return total;
+    return MemoryManager::Instance()->GetTrackedMemoryUsage();
 #else
     return 0;
 #endif
