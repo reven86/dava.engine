@@ -211,6 +211,7 @@
     <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetPropertiesTable.h" />
     <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetSystem.h" />
     <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetYamlLoader.h" />
+    <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetYamlWriter.h" />
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h" />
     <ClInclude Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.h" />
     <ClInclude Include="..\..\Sources\External\Box2D\Collision\b2Collision.h" />
@@ -773,6 +774,7 @@
     <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetPropertiesTable.cpp" />
     <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetSystem.cpp" />
     <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetYamlLoader.cpp" />
+    <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetYamlWriter.cpp" />
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp" />
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2CollideCircle.cpp" />
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2CollideEdge.cpp" />
