@@ -906,22 +906,10 @@ void Landscape::GenLods(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 cli
     }
 }
 
-    
-void Landscape::BindMaterial(int32 lodLayer, Camera* camera)
-{	
-	tileMaskMaterial->SetPropertyValue(Landscape::PARAM_CAMERA_POSITION, Shader::UT_FLOAT_VEC3, 1, &cameraPos);
-	tileMaskMaterial->BindMaterialTechnique(TECHNIQUE_TILEMASK_NAME, camera);
-
-    
-void Landscape::BindMaterial(int32 lodLayer, Camera* camera)
- 
 void Landscape::PrepareToRender(Camera * camera)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    tileMaskMaterial->SetPropertyValue(Landscape::PARAM_CAMERA_POSITION, Shader::UT_FLOAT_VEC3, 1, &cameraPos);
-    tileMaskMaterial->BindMaterialTechnique(TECHNIQUE_TILEMASK_NAME, camera);
-{
     RenderObject::PrepareToRender(camera);
 
     TIME_PROFILE("LandscapeNode.PrepareToRender");

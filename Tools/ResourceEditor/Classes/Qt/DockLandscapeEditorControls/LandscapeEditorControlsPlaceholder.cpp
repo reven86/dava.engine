@@ -36,7 +36,6 @@
 #include "LandscapeEditorPanels/VisibilityToolPanel.h"
 #include "LandscapeEditorPanels/TilemaskEditorPanel.h"
 #include "LandscapeEditorPanels/HeightmapEditorPanel.h"
-#include "LandscapeEditorPanels/GrassEditorPanel.h"
 
 #include <QVBoxLayout>
 

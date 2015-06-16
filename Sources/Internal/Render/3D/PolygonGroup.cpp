@@ -44,7 +44,7 @@ PolygonGroup::PolygonGroup()
     , vertexFormat(0)
     , indexFormat(EIF_16)
     , triangleCount(0)
-    , primitiveType(PRIMITIVETYPE_TRIANGLELIST)
+    , primitiveType(rhi::PRIMITIVE_TRIANGLELIST)
     , cubeTextureCoordCount(0)
 
     , vertexArray(0)
