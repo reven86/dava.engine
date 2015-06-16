@@ -27,33 +27,26 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_UI_CONTROL_PACKAGE_CONTEXT_H__
-#define __DAVAENGINE_UI_CONTROL_PACKAGE_CONTEXT_H__
+#ifndef __DAVAENGINE_UI_STYLESHEET_YAML_WRITER_H__
+#define __DAVAENGINE_UI_STYLESHEET_YAML_WRITER_H__
 
-#include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
+#include "Base/RefPtr.h"
+#include "FileSystem/FilePath.h"
 
 namespace DAVA
 {
     class UIStyleSheet;
+    class YamlNode;
 
-    class UIControlPackageContext :
-        public BaseObject
+    class UIStyleSheetYamlWriter
     {
-    protected:
-        virtual ~UIControlPackageContext();
     public:
-        UIControlPackageContext();
+        UIStyleSheetYamlWriter();
 
-        void AddStyleSheet(UIStyleSheet* styleSheet);
-
-        const DAVA::Vector<UIStyleSheet*>& GetSortedStyleSheets();
-        DAVA::int32 GetMaxStyleSheetSelectorDepth() const;
-    private:
-        DAVA::Vector<UIStyleSheet*> styleSheets;
-        DAVA::int32 maxSelectorDepth;
-        bool styleSheetsSorted;
+        DAVA::RefPtr<YamlNode> SaveToYaml(const DAVA::Vector< UIStyleSheet* >& styleSheets);
     };
 };
+
 
 #endif

@@ -1877,6 +1877,9 @@
     <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetYamlLoader.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetYamlWriter.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -3339,6 +3342,9 @@
       <Filter>Internal\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheet.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetYamlWriter.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
   </ItemGroup>
