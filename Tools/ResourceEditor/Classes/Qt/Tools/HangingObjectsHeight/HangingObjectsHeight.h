@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __QT_HANGING_OBJECTS_HEIGHT_H__
 #define __QT_HANGING_OBJECTS_HEIGHT_H__
 

@@ -179,7 +179,7 @@ Texture::Texture()
 ,	isPink(false)
 ,	invalidater(NULL)
 {
-	texDescriptor = new TextureDescriptor();
+    texDescriptor = new TextureDescriptor;
 }
 
 Texture::~Texture()
@@ -205,9 +205,10 @@ void Texture::ReleaseTextureData()
 
 
 
-
 Texture * Texture::CreateTextFromData(PixelFormat format, uint8 * data, uint32 width, uint32 height, bool generateMipMaps, const char * addInfo)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	Texture * tx = CreateFromData(format, data, width, height, generateMipMaps);
     
 	if (!addInfo)
@@ -226,11 +227,15 @@ Texture * Texture::CreateTextFromData(PixelFormat format, uint8 * data, uint32 w
 	
 void Texture::TexImage(int32 level, uint32 width, uint32 height, const void * _data, uint32 dataSize, uint32 cubeFaceId)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     rhi::UpdateTexture(handle, _data, level, (rhi::TextureFace)cubeFaceId);
 }
     
 Texture * Texture::CreateFromData(PixelFormat _format, const uint8 *_data, uint32 _width, uint32 _height, bool generateMipMaps)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	Image *image = Image::CreateFromData(_width, _height, _format, _data);
 	if(!image) return NULL;
 
@@ -248,6 +253,8 @@ Texture * Texture::CreateFromData(PixelFormat _format, const uint8 *_data, uint3
     
 Texture * Texture::CreateFromData(Image *image, bool generateMipMaps)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	Texture * texture = new Texture();
     texture->texDescriptor->Initialize(rhi::TEXADDR_CLAMP, generateMipMaps);
     
@@ -285,6 +292,8 @@ void Texture::GenerateMipmaps()
 
 Texture * Texture::CreateFromImage(TextureDescriptor *descriptor, eGPUFamily gpu)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	Texture * texture = new Texture();
 	texture->texDescriptor->Initialize(descriptor);
 
@@ -309,6 +318,8 @@ Texture * Texture::CreateFromImage(TextureDescriptor *descriptor, eGPUFamily gpu
 
 bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(gpu != GPU_INVALID);
     
     if (!IsLoadAvailable(gpu))
@@ -415,6 +426,8 @@ void Texture::ReleaseImages(Vector<Image *> *images)
 
 void Texture::SetParamsFromImages(const Vector<Image *> * images)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	DVASSERT(images->size() != 0);
 
     Image *img = *images->begin();
@@ -429,6 +442,8 @@ void Texture::SetParamsFromImages(const Vector<Image *> * images)
 
 void Texture::FlushDataToRenderer(Vector<Image *> * images)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(images->size() != 0);
 
     const PixelFormatDescriptor & formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(texDescriptor->format);
@@ -440,6 +455,7 @@ void Texture::FlushDataToRenderer(Vector<Image *> * images)
     descriptor.height = (*images)[0]->height;
     descriptor.type = ((*images)[0]->cubeFaceID == Texture::INVALID_CUBEMAP_FACE) ? rhi::TEXTURE_TYPE_2D : rhi::TEXTURE_TYPE_CUBE;
     descriptor.format = formatDescriptor.format;
+
 
     descriptor.levelCount = (descriptor.type == rhi::TEXTURE_TYPE_CUBE) ? (uint32)images->size() / 6 : (uint32)images->size();
 
@@ -483,8 +499,10 @@ bool Texture::CheckImageSize(const Vector<DAVA::Image *> &imageSet)
 
 Texture * Texture::CreateFromFile(const FilePath & pathName, const FastName &group, rhi::TextureType typeHint)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	Texture * texture = PureCreate(pathName, group);
- 	if(!texture)
+	if(!texture)
 	{
         TextureDescriptor *descriptor = TextureDescriptor::CreateFromFile(pathName);
         if(descriptor)
@@ -509,6 +527,8 @@ Texture * Texture::CreateFromFile(const FilePath & pathName, const FastName &gro
 
 Texture * Texture::PureCreate(const FilePath & pathName, const FastName &group)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	if(pathName.IsEmpty() || pathName.GetType() == FilePath::PATH_IN_MEMORY)
 		return NULL;
 
@@ -538,6 +558,8 @@ Texture * Texture::PureCreate(const FilePath & pathName, const FastName &group)
     
 void Texture::ReloadFromData(PixelFormat format, uint8 * data, uint32 _width, uint32 _height)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     ReleaseTextureData();
     
     Image *image = Image::CreateFromData(_width, _height, format, data);
@@ -557,6 +579,8 @@ void Texture::Reload()
     
 void Texture::ReloadAs(eGPUFamily gpuFamily)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(isRenderTarget == false);
     
     ReleaseTextureData();
@@ -618,7 +642,10 @@ int32 Texture::Release()
 	
 Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, rhi::TextureType requestedType)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     int32 dx = Max((int32)w, 8);
+
     EnsurePowerOf2(dx);
 
     int32 dy = Max((int32)h, 8);
@@ -655,6 +682,8 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, rhi::Textur
 	
 void Texture::DumpTextures()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	uint32 allocSize = 0;
 	int32 cnt = 0;
 	Logger::FrameworkDebug("============================================================");
@@ -691,13 +720,17 @@ void Texture::SetDebugInfo(const String & _debugInfo)
 	
 void Texture::Lost()
 {
-	RenderResource::Lost();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    RenderResource::Lost();
     
     ReleaseTextureData();
 }
 
 void Texture::Invalidate()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	RenderResource::Invalidate();
 	
 	DVASSERT(id == 0 && "Texture always invalidated");
@@ -735,7 +768,9 @@ void Texture::Invalidate()
 
 Image * Texture::ReadDataToImage()
 {
-	const PixelFormatDescriptor & formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(texDescriptor->format);
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    const PixelFormatDescriptor & formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(texDescriptor->format);
 
     Image *image = Image::Create(width, height, formatDescriptor.formatID);
     uint8 *imageData = image->GetData();
@@ -765,6 +800,8 @@ Image * Texture::ReadDataToImage()
 
 Image * Texture::CreateImageFromMemory()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     Image *image = NULL;
 #if RHI_COMPLETE
     if(isRenderTarget)
@@ -806,6 +843,8 @@ uint32 Texture::GetDataSize() const
 
 Texture * Texture::CreatePink(rhi::TextureType requestedType, bool checkers)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	//we need instances for pink textures for ResourceEditor. We use it for reloading for different GPUs
 	//pink textures at game is invalid situation
 	Texture *tex = new Texture();
@@ -826,6 +865,8 @@ Texture * Texture::CreatePink(rhi::TextureType requestedType, bool checkers)
 
 void Texture::MakePink(bool checkers)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     Vector<Image *> *images = new Vector<Image *> ();
 	if(texDescriptor->IsCubeMap())
 	{
@@ -877,6 +918,8 @@ eGPUFamily Texture::GetGPUForLoading(const eGPUFamily requestedGPU, const Textur
 
 void Texture::SetInvalidater(TextureInvalidater* invalidater)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     if(this->invalidater)
     {
         this->invalidater->RemoveTexture(this);
@@ -888,6 +931,8 @@ void Texture::SetInvalidater(TextureInvalidater* invalidater)
     }
 }
 
+
+
 const FilePath & Texture::GetPathname() const
 {
     return texDescriptor->pathname;
@@ -895,6 +940,8 @@ const FilePath & Texture::GetPathname() const
     
 void Texture::SetPathname(const FilePath& path)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     textureMapMutex.Lock();
     textureMap.erase(FILEPATH_MAP_KEY(texDescriptor->pathname));
     texDescriptor->pathname = path;
@@ -913,6 +960,8 @@ PixelFormat Texture::GetFormat() const
 
 void Texture::SetPixelization(bool value)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 #if RHI_COMPLETE
     if (value == pixelizationFlag)
     {
@@ -937,6 +986,8 @@ void Texture::SetPixelization(bool value)
 
 int32 Texture::GetBaseMipMap() const
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     if(texDescriptor->GetQualityGroup().IsValid())
     {
         const TextureQuality *curTxQuality = QualitySettingsSystem::Instance()->GetTxQuality(QualitySettingsSystem::Instance()->GetCurTextureQuality());

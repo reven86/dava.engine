@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene3D/Components/Waypoint/EdgeComponent.h"
 #include "Scene3D/Entity.h"
 

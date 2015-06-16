@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "RulerToolProxy.h"
 
 RulerToolProxy::RulerToolProxy(int32 size)

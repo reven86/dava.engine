@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ParticleEditorCommands.h"
 #include "DAVAEngine.h"
 #include "Qt/Settings/SettingsManager.h"

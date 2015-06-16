@@ -35,22 +35,21 @@
 #include "Base/BaseMath.h"
 
 struct FT_LibraryRec_;
-typedef struct FT_LibraryRec_  *FT_Library;
+using FT_Library = struct FT_LibraryRec_*;
 
 namespace DAVA
 {
-	
+
 class Font;
 class FTFont;
 class FTInternalFont;
 class Sprite;
 class UIStaticText;
-	
+
 class FontManager : public Singleton<FontManager>
 {
-	FT_Library		library;
+    FT_Library library;
 
-	
 public:
 	FontManager();
 	virtual ~FontManager();

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__ADDSWITCHENTITYDIALOG__
 #define __RESOURCEEDITORQT__ADDSWITCHENTITYDIALOG__
 

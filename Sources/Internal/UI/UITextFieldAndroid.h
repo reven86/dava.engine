@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_UI_TEXT_FIELD_ANDROID_H__
 #define __DAVAENGINE_UI_TEXT_FIELD_ANDROID_H__
 
@@ -167,7 +166,7 @@ protected:
 private:
 	UITextField* textField;
 	static uint32_t sId;
-	static DAVA::Map<uint32_t, UITextFieldAndroid*> controls;
+	static Map<uint32_t, UITextFieldAndroid*> controls;
 	uint32_t id;
 	Rect rect;
 	WideString text;

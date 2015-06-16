@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Base/BaseTypes.h"
 #include "TextureListDelegate.h"
 #include "TextureListModel.h"
@@ -39,10 +38,8 @@
 #include <QEvent>
 #include <QMouseEvent>
 #include <QMenu>
-#include <QDir>
-#include <QUrl>
-#include <QCursor>
 #include <QToolTip>
+#include <QAbstractItemView>
 
 #include "Main/QtUtils.h"
 

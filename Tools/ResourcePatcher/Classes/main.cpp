@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "DLC/Patcher/PatchFile.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/VariantType.h"

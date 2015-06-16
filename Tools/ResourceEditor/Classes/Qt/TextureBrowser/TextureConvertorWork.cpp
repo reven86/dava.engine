@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "TextureBrowser/TextureConvertorWork.h"
 
 JobStack::JobStack()

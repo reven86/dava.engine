@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene3D/Components/LightComponent.h"
 #include "Scene3D/Scene.h"
 #include "Render/Highlevel/RenderSystem.h"

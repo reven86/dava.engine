@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_NPAPI_CORE_PLATFORM_MAC_OS_H__
 #define __DAVAENGINE_NPAPI_CORE_PLATFORM_MAC_OS_H__
 

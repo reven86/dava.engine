@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #ifndef __DAVAENGINE_CORE_PLATFORM_ANDROID_H__
 #define __DAVAENGINE_CORE_PLATFORM_ANDROID_H__
 

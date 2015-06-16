@@ -29,7 +29,6 @@
 
 #include "SceneHelper.h"
 #include "Deprecated/SceneValidator.h"
-#include "CubemapEditor/MaterialHelper.h"
 
 #include "Scene3D/Systems/MaterialSystem.h"
 

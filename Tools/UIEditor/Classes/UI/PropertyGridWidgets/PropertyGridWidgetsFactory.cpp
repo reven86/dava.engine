@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #include "PropertyGridWidgetsFactory.h"
 
 #include "PlatformMetadata.h"

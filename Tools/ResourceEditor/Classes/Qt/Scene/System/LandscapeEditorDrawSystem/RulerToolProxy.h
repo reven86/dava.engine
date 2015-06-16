@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__RULERTOOLPROXY__
 #define __RESOURCEEDITORQT__RULERTOOLPROXY__
 

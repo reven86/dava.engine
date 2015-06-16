@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__VISIBILITYTOOLSYSTEM__
 #define __RESOURCEEDITORQT__VISIBILITYTOOLSYSTEM__
 

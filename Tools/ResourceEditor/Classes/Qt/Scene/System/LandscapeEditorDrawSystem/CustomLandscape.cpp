@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 #if 0
-
 #include "CustomLandscape.h"
 
 CustomLandscape::CustomLandscape()

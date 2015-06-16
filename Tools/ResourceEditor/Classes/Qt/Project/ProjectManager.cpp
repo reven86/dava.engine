@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Project/ProjectManager.h"
 #include "Main/QtUtils.h"
 #include "Qt/Settings/SettingsManager.h"

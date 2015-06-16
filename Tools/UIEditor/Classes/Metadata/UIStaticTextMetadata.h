@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #ifndef __UIEditor__UIStaticTextControlMetadata__
 #define __UIEditor__UIStaticTextControlMetadata__
 

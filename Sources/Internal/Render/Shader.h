@@ -98,6 +98,7 @@ private:
     uint32 vertexConstBuffersCount, fragmentConstBuffersCount;
     Vector<DynamicPropertyBinding> dynamicPropertyBindings;
 
+
     Map<std::pair<ConstBufferDescriptor::Type, uint32>, rhi::HConstBuffer> dynamicBuffers;
 
     rhi::HPipelineState piplineState;
