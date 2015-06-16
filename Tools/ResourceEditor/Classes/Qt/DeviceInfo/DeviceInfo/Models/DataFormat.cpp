@@ -26,48 +26,30 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/BaseTypes.h"
 
-#include <QtGui>
-#include <array>
-#include "MemoryItemStyleDelegate.h"
+using namespace DAVA;
 
-
-MemoryItemStyleDelegate::~MemoryItemStyleDelegate()
+String FormatNumberWithDigitGroups(uint32 value)
 {
-}
-void MemoryItemStyleDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
-    const QModelIndex &index) const
-{
-    
-    if (index.data().canConvert(QVariant::Int)) 
+    char buf[32];
+    int n = Snprintf(buf, COUNT_OF(buf), "%u", value);
+    int g = n / 3 - ((n % 3) == 0);
+
+    int from = n - 1;
+    int to = from + g;
+    buf[to + 1] = '\0';
+    while (g > 0)
     {
-        int memoryData = index.data().toInt(nullptr);
-        QString letter = "B";
-        static std::array<QString, 8> letters = { "KB", "MB", "GB", "TP", "PB", "EB", "ZB", "YB" };
-        size_t counter = 0;
-        while (memoryData > 1024 && counter < letters.size())
+        for (int j = 0;j < 3;++j)
         {
-            memoryData /= 1024;
-            letter = letters[counter];
-            counter++;
+            buf[to] = buf[from];
+            to -= 1;
+            from -= 1;
         }
-        
-        painter->save();
-        painter->setRenderHint(QPainter::Antialiasing, true);
-        painter->drawText(option.rect, QString(std::to_string(memoryData).c_str()) + letter);
-        painter->restore();
+        buf[to] = ' ';
+        to -= 1;
+        g -= 1;
     }
-    else {
-        QStyledItemDelegate::paint(painter, option, index);
-    }
-}
-QSize MemoryItemStyleDelegate::sizeHint(const QStyleOptionViewItem &option,
-    const QModelIndex &index) const
-{
-    return QSize(20,20);
-}
-
-void MemoryItemStyleDelegate::commitAndCloseEditor()
-{
-
+    return String(buf);
 }

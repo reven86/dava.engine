@@ -26,27 +26,30 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __SNAPSHOTLISTMODEL_H__
+#define __SNAPSHOTLISTMODEL_H__
 
-#pragma once
-#include <QStyledItemDelegate>
-class MemoryItemStyleDelegate : public QStyledItemDelegate
+#include "Base/BaseTypes.h"
+
+#include <QAbstractListModel>
+
+class ProfilingSession;
+
+class SnapshotListModel : public QAbstractListModel
 {
-    Q_OBJECT
 public:
-    MemoryItemStyleDelegate(QWidget *parent = 0) : QStyledItemDelegate(parent) {}
+    SnapshotListModel(QObject* parent = nullptr);
+    virtual ~SnapshotListModel();
 
-    void paint(QPainter *painter, const QStyleOptionViewItem &option,
-        const QModelIndex &index) const override;
-    QSize sizeHint(const QStyleOptionViewItem &option,
-        const QModelIndex &index) const override;
-    
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    ~MemoryItemStyleDelegate();
+    void BeginNewProfileSession(ProfilingSession* profSession);
+    void NewSnapshotArrived();
 
-public slots:
-    void commitAndCloseEditor();
-
-
-
+private:
+    ProfilingSession* profileSession = nullptr;
 };
 
+#endif  // __SNAPSHOTLISTMODEL_H__

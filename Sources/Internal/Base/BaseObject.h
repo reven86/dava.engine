@@ -39,6 +39,8 @@
 #include "Base/RefPtr.h"
 #include "Base/ScopedPtr.h"
 
+#include "MemoryManager/MemoryProfiler.h"
+
 #include <typeinfo>
 
 namespace DAVA
@@ -64,6 +66,8 @@ class KeyedArchive;
 	
 class BaseObject: public InspBase
 {
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_BASEOBJECT);
+
 protected:
 	//! Destructor
 	virtual ~BaseObject()

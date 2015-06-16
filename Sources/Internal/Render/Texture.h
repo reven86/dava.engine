@@ -40,6 +40,8 @@
 
 #include "Render/UniqueStateSet.h"
 
+#include "MemoryManager/MemoryProfiler.h"
+
 namespace DAVA
 {
 /**
@@ -71,6 +73,8 @@ public:
 
 class Texture : public RenderResource
 {
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_TEXTURE)
+
 public:
     
     enum TextureWrap

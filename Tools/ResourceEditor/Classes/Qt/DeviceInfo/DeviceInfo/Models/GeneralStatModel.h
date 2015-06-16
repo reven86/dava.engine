@@ -26,26 +26,50 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __GENERALSTATMODEL_H__
+#define __GENERALSTATMODEL_H__
+
+#include <QAbstractTableModel>
 
 #include "Base/BaseTypes.h"
+#include "MemoryManager/MemoryManagerTypes.h"
 
-#if defined(DAVA_MEMORY_PROFILING_ENABLE)
+class ProfilingSession;
+class MemoryStatItem;
 
-#include "MemoryManager.h"
-
-namespace DAVA
+class GeneralStatModel : public QAbstractTableModel
 {
+public:
+    enum {
+        CLM_VALUE = 0,
+        NCOLUMNS = 1
+    };
+    enum {
+        ROW_ALLOC_INTERNAL = 0,
+        ROW_ALLOC_INTERNAL_TOTAL,
+        ROW_NBLOCKS_INTERNAL,
+        ROW_ALLOC_GHOST,
+        ROW_NBLOCKS_GHOST,
+        NROWS = 5
+    };
 
-void* AllocThunk(size_t size, size_t poolIndex)
-{
-    return MemoryManager::Instance()->Allocate(size, poolIndex);
-}
+public:
+    GeneralStatModel(QObject* parent = nullptr);
+    virtual ~GeneralStatModel();
 
-void DeallocThunk(void* ptr)
-{
-    MemoryManager::Instance()->Deallocate(ptr);
-}
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-}   // namespace DAVA
+    void BeginNewProfileSession(ProfilingSession* profSession);
+    void SetCurrentValues(const MemoryStatItem& item);
 
-#endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
+private:
+    ProfilingSession* profileSession;
+
+    DAVA::uint64 timestamp;
+    DAVA::GeneralAllocStat curValues;
+};
+
+#endif  // __GENERALSTATMODEL_H__

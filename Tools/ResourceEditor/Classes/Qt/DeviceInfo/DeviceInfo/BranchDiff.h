@@ -26,39 +26,33 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __BRANCHDIFF_H__
+#define __BRANCHDIFF_H__
 
-#include "MemProfPlot.h"
-#include "MemProfInfoModel.h"
+#include "Base/BaseTypes.h"
 
-MemProfPlot::MemProfPlot(QWidget *parent )
-{
-    model = nullptr;
-}
+struct Branch;
 
-void MemProfPlot::setModel(MemProfInfoModel * model)
+struct BranchDiff final
 {
-    
-   // assert(model != nullptr);
-    this->model = model;
-    connect(model, 
-        SIGNAL(dataChanged(const QModelIndex & topLeft, const QModelIndex & bottomRight)), 
-        this, 
-        SLOT(dataChanged(const QModelIndex & topLeft, const QModelIndex & bottomRight)));
+    BranchDiff(Branch* leftBranch, Branch* rightBranch);
+    ~BranchDiff();
 
+    void AppendChild(BranchDiff* child);
 
-}
-MemProfPlot::~MemProfPlot()
-{
-}
-void MemProfPlot::mousePressEvent(QMouseEvent *event)
-{
-    QCustomPlot::mousePressEvent(event);
-}
-void MemProfPlot::mouseMoveEvent(QMouseEvent *event)
-{
-    QCustomPlot::mouseMoveEvent(event);
-}
-void MemProfPlot::dataChanged(const QModelIndex & topLeft, const QModelIndex & bottomRight)
-{
-   
-}
+    int level = 0;
+    Branch* left;
+    Branch* right;
+    BranchDiff* parent = nullptr;
+    DAVA::Vector<BranchDiff*> children;
+
+    // Create diff from two branches
+    static BranchDiff* Create(Branch* rootLeft, Branch* rootRight);
+
+private:
+    static void FollowBoth(BranchDiff* parent, Branch* rootLeft, Branch* rootRight);
+    static void FollowLeft(BranchDiff* parent, Branch* left);
+    static void FollowRight(BranchDiff* parent, Branch* right);
+};
+
+#endif  // __BRANCHDIFF_H__

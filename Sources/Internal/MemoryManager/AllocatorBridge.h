@@ -26,44 +26,27 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_ALLOCATORBRIDGE_H__
+#define __DAVAENGINE_ALLOCATORBRIDGE_H__
 
-#include "Base/BaseTypes.h"     // For platfrom recognition
+#include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_ANDROID__)
+#if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
-#include <cstddef>
-
-// Internal android memory structures taken from Android Open Source Project (glibc/malloc/malloc.c)
-struct malloc_chunk
+namespace DAVA
 {
-    size_t        prev_size;    // Size of previous chunk (if free)
-    size_t        size;         // Size in bytes, also low order 3 bits contain some flags
 
-    malloc_chunk* fd;           // Double links (forward and backward) -- used only if free
-    malloc_chunk* bk;
-};
+// Freestanding allocation functions that can be used where MemoryManager.h cannot be included (e.g. in allocators)
 
-size_t AndroidMallocSize(void* ptr)
-{
-    /*
-    This is how memory chunks organized in memory, we are only care of allocated chunks
-    chunk->     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-                |             Size of previous chunk, if allocated            | |
-                +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-                |             Size of chunk, in bytes                     |A|M|P|
-          mem-> +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-                |             User data starts here...                          .
-                .                                                               .
-                .                                                               .
-    So to get malloc_chunk beginning we should move pointer backward by two size_t
-    To get chunk size we should clear flag bits
-    */
+// For general use
+void* TrackingAlloc(size_t size, int poolIndex);
+void TrackingDealloc(void* ptr);
 
-    // Mask to extract chunk size
-    const size_t EXTRACT_SIZE_MASK = ~0x07;
+// For internal use by MemoryManager
+void* InternalAlloc(size_t size) DAVA_NOEXCEPT;
+void InternalDealloc(void* ptr) DAVA_NOEXCEPT;
 
-    malloc_chunk* chunk = reinterpret_cast<malloc_chunk*>(static_cast<char*>(ptr) - sizeof(size_t) * 2);
-    return chunk->size & EXTRACT_SIZE_MASK;
-}
+}   // namespace DAVA
 
-#endif  // __DAVAENGINE_ANDROID__
+#endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
+#endif  // __DAVAENGINE_ALLOCATORBRIDGE_H__

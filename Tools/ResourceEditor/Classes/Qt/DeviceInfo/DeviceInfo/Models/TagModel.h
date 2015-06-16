@@ -26,49 +26,50 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __TAGMODEL_H__
+#define __TAGMODEL_H__
 
-#ifndef __DAVAENGINE_MMNETPROTO_H__
-#define __DAVAENGINE_MMNETPROTO_H__
+#include <QColor>
+#include <QAbstractTableModel>
 
 #include "Base/BaseTypes.h"
+#include "MemoryManager/MemoryManagerTypes.h"
 
-namespace DAVA
-{
-namespace Net
-{
+class ProfilingSession;
+class MemoryStatItem;
 
-enum class eMMProtoCmd
+class TagModel : public QAbstractTableModel
 {
-    INIT_COMM,
-    CUR_STAT,
-    DUMP,
-    DUMP_BEGIN,
-    DUMP_CHUNK,
-    DUMP_END
+    Q_OBJECT
+
+public:
+    enum {
+        CLM_NAME = 0,
+        CLM_ALLOC_APP,
+        CLM_NBLOCKS,
+        NCOLUMNS = 3
+    };
+
+public:
+    TagModel(QObject* parent = nullptr);
+    virtual ~TagModel();
+
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+
+    void BeginNewProfileSession(ProfilingSession* profSession);
+    void SetCurrentValues(const MemoryStatItem& item);
+    void SetTagColors(QColor colorActive, QColor colorInactive);
+
+private:
+    ProfilingSession* profileSession;
+
+    DAVA::uint64 timestamp;
+    DAVA::uint32 activeTags;
+    DAVA::Vector<DAVA::TagAllocStat> curValues;
+    QColor colors[2];
 };
 
-enum class eMMProtoStatus
-{
-    ACK,
-    DENY,
-};
-
-struct MMProtoHeader
-{
-    uint32 sessionId;
-    uint32 cmd;             // Command
-    uint32 status;          // 
-    uint32 length;          // Length of data attached to command, or zero if no data
-};
-
-struct MM
-{
-
-};
-
-static_assert(sizeof(MMProtoHeader) == 16, "sizeof(MMProtoHeader) == 16");
-
-}   // namespace Net
-}   // namespace DAVA
-
-#endif  // __DAVAENGINE_MMNETPROTO_H__
+#endif  // __TAGMODEL_H__

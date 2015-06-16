@@ -367,6 +367,11 @@ void VariantType::SetFilePath(const FilePath & value)
 
 void VariantType::SetVariant(const VariantType& var)
 {
+    if (this == &var)
+    {
+        return;
+    }
+    
 	type = TYPE_NONE;
 
 	switch(var.type)
