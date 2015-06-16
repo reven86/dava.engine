@@ -43,12 +43,6 @@ public:
     virtual void LoadResources();
     virtual void UnloadResources();
 
-    void SystemScreenSizeDidChanged(const Rect &newFullScreenSize) override
-    {
-        UnloadResources();
-        LoadResources();
-    }
-
 private:
     void ButtonPressed(BaseObject *obj, void *data, void *callerData);
     

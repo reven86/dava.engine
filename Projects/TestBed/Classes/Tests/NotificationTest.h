@@ -48,13 +48,6 @@ public:
 
     void UpdateNotification();
 
-    void SystemScreenSizeDidChanged(const Rect &newFullScreenSize) override
-    {
-        UnloadResources();
-        LoadResources();
-    }
-
-
 private:
     void OnNotifyText(BaseObject *obj, void *data, void *callerData);
     void OnHideText(BaseObject *obj, void *data, void *callerData);
