@@ -40,9 +40,9 @@ namespace
 {
 
 // List of semicolon separated names specifying which test classes should run
-String runOnlyTheseTests = "";
+String runOnlyTheseTestClasses = "";
 // List of semicolon separated names specifying which test classes shouldn't run. This list takes precedence over runOnlyTheseTests
-String disableTheseTests = "";
+String disableTheseTestClasses = "";
 
 bool teamcityOutputEnabled = true;      // Flag whether to enable TeamCity output
 bool teamcityCaptureStdout = false;     // Flag whether to set TeamCity option 'captureStandardOutput=true'
@@ -54,11 +54,11 @@ void GameCore::ProcessCommandLine()
     CommandLineParser* cmdline = CommandLineParser::Instance();
     if (cmdline->CommandIsFound("-only_test"))
     {
-        runOnlyTheseTests = cmdline->GetCommandParam("-only_test");
+        runOnlyTheseTestClasses = cmdline->GetCommandParam("-only_test");
     }
     if (cmdline->CommandIsFound("-disable_test"))
     {
-        disableTheseTests = cmdline->GetCommandParam("-disable_test");
+        disableTheseTestClasses = cmdline->GetCommandParam("-disable_test");
     }
     if (cmdline->CommandIsFound("-noteamcity"))
     {
@@ -86,18 +86,18 @@ void GameCore::OnAppStarted()
                                           MakeFunction(this, &GameCore::OnTestFinished),
                                           MakeFunction(this, &GameCore::OnTestFailed),
                                           MakeFunction(this, &GameCore::OnTestClassDisabled));
-    if (!runOnlyTheseTests.empty())
+    if (!runOnlyTheseTestClasses.empty())
     {
-        UnitTests::TestCore::Instance()->RunOnlyTheseTests(runOnlyTheseTests);
+        UnitTests::TestCore::Instance()->RunOnlyTheseTestClasses(runOnlyTheseTestClasses);
     }
-    if (!disableTheseTests.empty())
+    if (!disableTheseTestClasses.empty())
     {
-        UnitTests::TestCore::Instance()->DisableTheseTests(disableTheseTests);
+        UnitTests::TestCore::Instance()->DisableTheseTestClasses(disableTheseTestClasses);
     }
 
-    if (!UnitTests::TestCore::Instance()->HasTests())
+    if (!UnitTests::TestCore::Instance()->HasTestClasses())
     {
-        Logger::Error("%s", "There are no tests.");
+        Logger::Error("%s", "There are no test classes");
         Core::Instance()->Quit();
     }
 }
