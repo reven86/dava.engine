@@ -318,7 +318,7 @@ void EditorUIPackageBuilder::AddStyleSheets(const DAVA::Vector<UIStyleSheet*>& n
 {
     for (UIStyleSheet *styleSheet : newStyleSheets)
     {
-        StyleSheetNode *node = new StyleSheetNode(nullptr);
+        StyleSheetNode *node = new StyleSheetNode(styleSheet);
         styleSheets.push_back(node);
     }
 }

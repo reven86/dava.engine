@@ -38,6 +38,9 @@ namespace DAVA
 {
     class UIStyleSheet;
     class YamlNode;
+    struct UIStyleSheetSelector;
+
+    String GenerateSelectorString(const Vector<UIStyleSheetSelector>& selectorChain);
 
     class UIStyleSheetYamlWriter
     {

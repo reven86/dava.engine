@@ -31,6 +31,7 @@
 #include "PackageVisitor.h"
 
 #include "UI/UIStyleSheet.h"
+#include "UI/UIStyleSheetYamlWriter.h"
 
 using namespace DAVA;
 
@@ -63,6 +64,5 @@ void StyleSheetNode::Accept(PackageVisitor *visitor)
 
 String StyleSheetNode::GetName() const
 {
-//    styleSheet->
-    return "Style";
+    return GenerateSelectorString(styleSheet->GetSelectorChain());
 }

@@ -34,29 +34,26 @@
 
 namespace DAVA
 {
-    namespace
+    String GenerateSelectorString(const Vector<UIStyleSheetSelector>& selectorChain)
     {
-        String GenerateSelectorString(const Vector<UIStyleSheetSelector>& selectorChain)
+        String result = "";
+
+        for (const UIStyleSheetSelector& selectorChainIter : selectorChain)
         {
-            String result = "";
+            result += selectorChainIter.controlClassName;
+            if (selectorChainIter.name.IsValid())
+                result += String("#") + selectorChainIter.name.c_str();
 
-            for (const UIStyleSheetSelector& selectorChainIter : selectorChain)
-            {
-                result += selectorChainIter.controlClassName;
-                if (selectorChainIter.name.IsValid())
-                    result += String("#") + selectorChainIter.name.c_str();
+            for (const FastName& clazz : selectorChainIter.classes)
+                result += String(".") + clazz.c_str();
 
-                for (const FastName& clazz : selectorChainIter.classes)
-                    result += String(".") + clazz.c_str();
-
-                result += " ";
-            }
-
-            if (!result.empty())
-                result.resize(result.size() - 1);
-
-            return result;
+            result += " ";
         }
+
+        if (!result.empty())
+            result.resize(result.size() - 1);
+
+        return result;
     }
 
     UIStyleSheetYamlWriter::UIStyleSheetYamlWriter()
