@@ -246,7 +246,7 @@ void PreviewModel::OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl 
     }
     if (!selectedNodes.isEmpty())
     {
-        ControlNodeSelected(selectedNodes);
+        emit ControlNodeSelected(selectedNodes);
     }
     if (!result)
     {
@@ -288,26 +288,21 @@ void PreviewModel::SetRootControls(const QList<ControlNode*> &activatedControls)
     SetCanvasPosition(QPoint(newPosition.x, newPosition.y));
 }
 
-void PreviewModel::ControlsDeactivated(const QList<ControlNode*> &deactivatedControls)
+void PreviewModel::SetSelectedControls(const QList<ControlNode *> &selectedControls)
 {
-    for (ControlNode *node : deactivatedControls)
+    for (auto &rootNode : rootNodes)
     {
-        UIControl *control = node->GetControl();
-        CheckeredCanvas *rootContainer = FindControlContainer(control);
-        if (rootContainer)
-            rootContainer->RemoveSelection(control);
+        DynamicTypeCheck<CheckeredCanvas*>(rootNode.first->GetParent())->ClearSelections();
     }
-}
-
-void PreviewModel::ControlsActivated(const QList<ControlNode *> &activatedControls)
-{
-    for (ControlNode *node : activatedControls)
+    
+    for (ControlNode *node : selectedControls)
     {
         UIControl *control = node->GetControl();
         CheckeredCanvas *rootContainer = FindControlContainer(control);
         if (rootContainer)
             rootContainer->SelectControl(control);
     }
+
 }
 
 QPoint PreviewModel::GetCanvasPosition() const

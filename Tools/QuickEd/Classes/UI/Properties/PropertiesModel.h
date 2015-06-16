@@ -45,6 +45,7 @@ namespace DAVA {
 
 class AbstractProperty;
 class ControlNode;
+class StyleSheetNode;
 class QtModelPackageCommandExecutor;
 class ComponentPropertiesSection;
 
@@ -54,6 +55,7 @@ class PropertiesModel : public QAbstractItemModel, private PropertyListener
     
 public:
     PropertiesModel(ControlNode *controlNode, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent = nullptr);
+    PropertiesModel(StyleSheetNode *styleSheet, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent = nullptr);
     virtual ~PropertiesModel();
     
     ControlNode *GetControlNode() const {return controlNode; }
@@ -84,8 +86,10 @@ private:
     void initVariantType(DAVA::VariantType &var, const QVariant &val) const;
     
 private:
-    ControlNode *controlNode;
-    QtModelPackageCommandExecutor *commandExecutor;
+    ControlNode *controlNode = nullptr;
+    StyleSheetNode *styleSheet = nullptr;
+    AbstractProperty *rootProperty = nullptr;
+    QtModelPackageCommandExecutor *commandExecutor = nullptr;
 };
 
 #endif // __QUICKED_PROPERTIES_MODEL_H__

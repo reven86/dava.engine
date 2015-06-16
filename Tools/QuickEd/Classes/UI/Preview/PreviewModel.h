@@ -62,8 +62,7 @@ public:
     DAVA::UIControl *GetViewControl() const;
 
     void SetRootControls(const QList<ControlNode*> &activatedControls);
-    void ControlsDeactivated(const QList<ControlNode*> &deactivatedControls);
-    void ControlsActivated(const QList<ControlNode *> &activatedControls);
+    void SetSelectedControls(const QList<ControlNode *> &selectedControls);
 
     // ControlSelectionListener
     virtual void OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl *, DAVA::UIControl*> > &selectedPairs) override;

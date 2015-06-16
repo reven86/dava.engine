@@ -411,6 +411,11 @@ void PackageSerializer::VisitIntrospectionProperty(IntrospectionProperty *proper
     }
 }
 
+void PackageSerializer::VisitStyleSheetRoot(StyleSheetRootProperty *property)
+{
+    DVASSERT(false);
+}
+
 void PackageSerializer::AcceptChildren(AbstractProperty *property)
 {
     for (int32 i = 0; i < property->GetCount(); i++)

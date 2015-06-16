@@ -32,6 +32,8 @@
 #include "Document.h"
 #include "LibraryModel.h"
 
+#include "UI/UIControl.h"
+
 namespace
 {
     struct LibraryContext : public WidgetContext
