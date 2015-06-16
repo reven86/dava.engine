@@ -36,6 +36,7 @@
 
 #ifdef USE_CPP11_CONCURRENCY
 #   include <condition_variable> //for std::condition_variable
+#   include "Debug/DVAssert.h"
 #else
 #   include "Concurrency/PosixThreads.h"
 #endif
@@ -79,7 +80,7 @@ private:
 template <typename Predicate>
 void ConditionVariable::Wait(UniqueLock<Mutex>& guard, Predicate pred)
 {
-    while (!pred)
+    while (!pred())
     {
         Wait(guard);
     }
@@ -110,17 +111,11 @@ inline ConditionVariable::~ConditionVariable() DAVA_NOEXCEPT{}
 
 inline void ConditionVariable::Wait(UniqueLock<Mutex>& guard)
 {
-    if (guard.OwnsLock())
-    {
-        std::unique_lock<std::mutex> lock(guard.GetMutex()->mutex, std::adopt_lock_t());
-        cv.wait(lock);
-        lock.release();
-    }
-    else
-    {
-        std::unique_lock<std::mutex> lock(guard.GetMutex()->mutex);
-        cv.wait(lock);
-    }
+    DVASSERT_MSG(guard.OwnsLock(), "Mutex must be locked and UniqueLock must own it");
+    
+    std::unique_lock<std::mutex> lock(guard.GetMutex()->mutex, std::adopt_lock_t());
+    cv.wait(lock);
+    lock.release();
 }
 
 inline void ConditionVariable::NotifyOne()
