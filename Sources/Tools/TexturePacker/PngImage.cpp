@@ -123,23 +123,18 @@ void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image, const Rect2
 	}
 }
 
-void PngImageExt::DrawImage(const Rect2i &drawRect, const Rect2i &alphaOffsetRect, PngImageExt *image, bool useTwoSideMargin)
+void PngImageExt::DrawImage(const PackedInfo &packedInfo, const Rect2i &alphaOffsetRect, PngImageExt *image)
 {
-	// printf("0x%08x 0x%08x %d %d\n", data, image->data, sx, sy);
-
     uint32 * destData32 = (uint32*)GetData();
 	uint32 * srcData32 = (uint32*)image->GetData();
 
 	bool withAlpha = CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha");
 
-	int32 sx = drawRect.x;
-	int32 sy = drawRect.y;
+    int32 sx = packedInfo.rect.x;
+	int32 sy = packedInfo.rect.y;
 
-    if (useTwoSideMargin)
-	{
-		++sx;
-		++sy;
-	}
+    sx += packedInfo.leftMargin;
+    sy += packedInfo.topMargin;
 
     if (withAlpha)
 	{
@@ -164,39 +159,67 @@ void PngImageExt::DrawImage(const Rect2i &drawRect, const Rect2i &alphaOffsetRec
                 continue;
 
 			destData32[destPos] = srcData32[srcPos];
-			//printf("%04x ", srcData32[x + y * image->width]);
 		}
 
-	// add 2side pixel
-    if (useTwoSideMargin)
+	// add 2side pixels
+    if (packedInfo.isTwoSideMargin)
 	{
-		sx = drawRect.x;
-		sy = drawRect.y;
+        sx = packedInfo.rect.x;
+        sy = packedInfo.rect.y;
 
-		destData32[sx + sy * GetWidth()] = destData32[(sx + 1) + (sy + 1) * GetWidth()];
-        destData32[sx + (sy + drawRect.dy - 1) * GetWidth()] = destData32[(sx + 1) + (sy + drawRect.dy - 2) * GetWidth()];
-		destData32[(sx + drawRect.dx - 1) + sy * GetWidth()] = destData32[(sx + drawRect.dx - 2) + (sy + 1) * GetWidth()];
-        destData32[(sx + drawRect.dx - 1) + (sy + drawRect.dy - 1)* GetWidth()] = destData32[(sx + drawRect.dx - 2) + (sy + drawRect.dy - 2) * GetWidth()];
+        if (packedInfo.leftMargin)
+        {
+            uint32 leftBorderPix = sx + (sy + packedInfo.topMargin) * GetWidth();
+            uint32 leftBorderLastPix = sx + (sy + packedInfo.rect.dy - 1) * GetWidth();
+            for (; leftBorderPix <= leftBorderLastPix; leftBorderPix += GetWidth())
+            {
+                destData32[leftBorderPix] = destData32[leftBorderPix + 1];
+            }
+        }
 
-		uint32 leftBorderPix = sx + (sy + 1) * GetWidth();
-		uint32 rightBorderPix = (sx + drawRect.dx - 1) + (sy + 1) * GetWidth();
-		uint32 leftBorderLastPix = sx + (sy + drawRect.dy - 2) * GetWidth();
-		for (; leftBorderPix <= leftBorderLastPix; leftBorderPix += GetWidth(), rightBorderPix += GetWidth())
-		{
-            destData32[leftBorderPix] = destData32[leftBorderPix + 1];
-            destData32[rightBorderPix] = destData32[rightBorderPix - 1];
-		}
+        if (packedInfo.rightMargin)
+        {
+            uint32 rightBorderPix = (sx + packedInfo.rect.dx - 1) + (sy + packedInfo.topMargin) * GetWidth();
+            uint32 rightBorderLastPix = (sx + packedInfo.rect.dx - 1) + (sy + packedInfo.rect.dy - 1) * GetWidth();
+            for (; rightBorderPix <= rightBorderLastPix; rightBorderPix += GetWidth())
+            {
+                destData32[rightBorderPix] = destData32[rightBorderPix - 1];
+            }
+        }
 
-		uint32 topBorderPix = (sx + 1) + (sy) * GetWidth();
-		uint32 topImagePix = (sx + 1) + (sy + 1) * GetWidth();
-		uint32 bottomBorderPix = (sx + 1) + (sy + drawRect.dy - 1) * GetWidth();
-		uint32 bottomImagePix = (sx + 1) + (sy + drawRect.dy - 2) * GetWidth();
-		uint32 topBorderLastPix = (sx + drawRect.dx - 2) + (sy) * GetWidth();
-		for (; topBorderPix <= topBorderLastPix; ++topBorderPix, ++topImagePix, ++bottomBorderPix, ++bottomImagePix)
-		{
-			destData32[topBorderPix] = destData32[topImagePix];
-			destData32[bottomBorderPix] = destData32[bottomImagePix];
-		}
+        if (packedInfo.topMargin)
+        {
+            uint32 topBorderPix = (sx + packedInfo.leftMargin) + (sy)* GetWidth();
+            uint32 topImagePix = (sx + packedInfo.leftMargin) + (sy + 1) * GetWidth();
+            uint32 topBorderLastPix = (sx + packedInfo.rect.dx - 1) + (sy)* GetWidth();
+            for (; topBorderPix <= topBorderLastPix; ++topBorderPix, ++topImagePix)
+            {
+                destData32[topBorderPix] = destData32[topImagePix];
+            }
+        }
+
+        if (packedInfo.bottomMargin)
+        {
+            uint32 bottomBorderPix = (sx + packedInfo.leftMargin) + (sy + packedInfo.rect.dy - 1) * GetWidth();
+            uint32 bottomImagePix = (sx + packedInfo.leftMargin) + (sy + packedInfo.rect.dy - 2) * GetWidth();
+            uint32 bottomBorderLastPix = (sx + packedInfo.rect.dx - 1) + (sy + packedInfo.rect.dy - 1) * GetWidth();
+            for (; bottomBorderPix <= bottomBorderLastPix; ++bottomBorderPix, ++bottomImagePix)
+            {
+                destData32[bottomBorderPix] = destData32[bottomImagePix];
+            }
+        }
+		
+        if (packedInfo.leftMargin && packedInfo.topMargin)
+            destData32[sx + sy * GetWidth()] = destData32[(sx + 1) + (sy + 1) * GetWidth()];
+
+        if (packedInfo.leftMargin && packedInfo.bottomMargin)
+            destData32[sx + (sy + packedInfo.rect.dy - 1) * GetWidth()] = destData32[(sx + 1) + (sy + packedInfo.rect.dy - 2) * GetWidth()];
+
+        if (packedInfo.rightMargin && packedInfo.topMargin)
+            destData32[(sx + packedInfo.rect.dx - 1) + sy * GetWidth()] = destData32[(sx + packedInfo.rect.dx - 2) + (sy + 1) * GetWidth()];
+
+        if (packedInfo.rightMargin && packedInfo.bottomMargin)
+            destData32[(sx + packedInfo.rect.dx - 1) + (sy + packedInfo.rect.dy - 1)* GetWidth()] = destData32[(sx + packedInfo.rect.dx - 2) + (sy + packedInfo.rect.dy - 2) * GetWidth()];
 	}
 }
 

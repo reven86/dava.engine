@@ -22,7 +22,6 @@ LandscapeEditorControlsPlaceholder::LandscapeEditorControlsPlaceholder(QWidget* 
 ,   visibilityToolPanel(nullptr)
 ,   tilemaskEditorPanel(nullptr)
 ,   heightmapEditorPanel(nullptr)
-,   grassEditorPanel(nullptr)
 {
 	InitUI();
 	ConnectToSignals();
@@ -31,14 +30,13 @@ LandscapeEditorControlsPlaceholder::LandscapeEditorControlsPlaceholder(QWidget* 
 
 void LandscapeEditorControlsPlaceholder::OnOpenGLInitialized()
 {
-    DVASSERT(!customColorsPanel && !rulerToolPanel && !visibilityToolPanel && !tilemaskEditorPanel && !heightmapEditorPanel && !grassEditorPanel);
+    DVASSERT(!customColorsPanel && !rulerToolPanel && !visibilityToolPanel && !tilemaskEditorPanel && !heightmapEditorPanel);
     
     customColorsPanel = new CustomColorsPanel();
     rulerToolPanel = new RulerToolPanel();
     visibilityToolPanel = new VisibilityToolPanel();
     tilemaskEditorPanel = new TilemaskEditorPanel();
     heightmapEditorPanel = new HeightmapEditorPanel();
-    grassEditorPanel = new GrassEditorPanel();
 }
 
 LandscapeEditorControlsPlaceholder::~LandscapeEditorControlsPlaceholder()
@@ -48,7 +46,6 @@ LandscapeEditorControlsPlaceholder::~LandscapeEditorControlsPlaceholder()
 	SafeDelete(visibilityToolPanel);
 	SafeDelete(tilemaskEditorPanel);
 	SafeDelete(heightmapEditorPanel);
-    SafeDelete(grassEditorPanel);
 }
 
 void LandscapeEditorControlsPlaceholder::InitUI()
@@ -74,8 +71,6 @@ void LandscapeEditorControlsPlaceholder::ConnectToSignals()
 			this, SLOT(EditorToggled(SceneEditor2*)));
 	connect(SceneSignals::Instance(), SIGNAL(RulerToolToggled(SceneEditor2*)),
 			this, SLOT(EditorToggled(SceneEditor2*)));
-    connect(SceneSignals::Instance(), SIGNAL(GrassEditorToggled(SceneEditor2*)),
-        this, SLOT(EditorToggled(SceneEditor2*)));
 }
 
 void LandscapeEditorControlsPlaceholder::SceneActivated(SceneEditor2* scene)
@@ -158,10 +153,6 @@ void LandscapeEditorControlsPlaceholder::UpdatePanels()
 	{
 		SetPanel(visibilityToolPanel);
 	}
-    else if(tools & SceneEditor2::LANDSCAPE_TOOL_GRASS_EDITOR)
-    {
-        SetPanel(grassEditorPanel);
-    }
 }
 
 

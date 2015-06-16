@@ -133,17 +133,14 @@ ActionSetVisibilityPoint::~ActionSetVisibilityPoint()
 
 void ActionSetVisibilityPoint::Redo()
 {
-#if RHI_COMPLETE_EDITOR
 	Texture * visibilityToolTexture = visibilityToolProxy->GetTexture();
-    RenderHelper::Instance()->Set2DRenderTarget(visibilityToolTexture);
-	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-    RenderHelper::Instance()->DrawTexture(cursorTexture, RenderState::RENDERSTATE_2D_BLEND, Rect(redoVisibilityPoint - cursorSize / 2.f, cursorSize));
-    RenderManager::Instance()->SetRenderTarget(0);
+    
+    RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityToolTexture);
+    RenderSystem2D::Instance()->DrawTexture(cursorTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Rect(redoVisibilityPoint - cursorSize / 2.f, cursorSize));
+    RenderSystem2D::Instance()->EndRenderTargetPass();
 
 	visibilityToolProxy->UpdateVisibilityPointSet(true);
-    visibilityToolProxy->UpdateRect(Rect(0.f, 0.f, visibilityToolTexture->GetWidth(), visibilityToolTexture->GetHeight()));
 	visibilityToolProxy->SetVisibilityPoint(redoVisibilityPoint);
-#endif // RHI_COMPLETE_EDITOR
 }
 
 
@@ -154,7 +151,6 @@ ActionSetVisibilityArea::ActionSetVisibilityArea(Image* originalImage,
 {
 	Image* currentImage = visibilityToolProxy->GetTexture()->CreateImageFromMemory();
 
-//	undoImage = Image::CopyImageRegion(originalImage, updatedRect);
 	redoImage = Image::CopyImageRegion(currentImage, updatedRect);
 
 	SafeRelease(currentImage);
@@ -165,7 +161,6 @@ ActionSetVisibilityArea::ActionSetVisibilityArea(Image* originalImage,
 
 ActionSetVisibilityArea::~ActionSetVisibilityArea()
 {
-//	SafeRelease(undoImage);
 	SafeRelease(redoImage);
 	SafeRelease(visibilityToolProxy);
 }
@@ -175,30 +170,17 @@ void ActionSetVisibilityArea::Redo()
 	ApplyImage(redoImage);
 }
 
-//void ActionSetVisibilityArea::Undo()
-//{
-//	ApplyImage(undoImage);
-//}
-
 void ActionSetVisibilityArea::ApplyImage(DAVA::Image *image)
 {
-#if RHI_COMPLETE_EDITOR
 	Texture* visibilityToolTexture = visibilityToolProxy->GetTexture();
 
 	Texture* texture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
 											   image->GetWidth(), image->GetHeight(), false);
-	texture->GeneratePixelesation();
-
-    RenderHelper::Instance()->Set2DRenderTarget(visibilityToolTexture);
-    RenderManager::Instance()->SetClip(updatedRect);
-    RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-    RenderHelper::Instance()->DrawTexture(texture, RenderState::RENDERSTATE_2D_BLEND, updatedRect);
-
-    RenderManager::Instance()->SetClip(Rect(0.f, 0.f, -1.f, -1.f));
-    RenderManager::Instance()->SetRenderTarget(0);
-
-	visibilityToolProxy->UpdateRect(updatedRect);
+	texture->SetPixelization(true);
+    
+    RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityToolTexture);
+    RenderSystem2D::Instance()->DrawTexture(texture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, updatedRect);
+    RenderSystem2D::Instance()->EndRenderTargetPass();
 
 	SafeRelease(texture);
-#endif // RHI_COMPLETE_EDITOR
 }

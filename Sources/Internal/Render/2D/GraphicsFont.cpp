@@ -439,7 +439,7 @@ Font::StringMetrics GraphicsFont::DrawString(float32 x, float32 y, const WideStr
 			state.SetScale(fontScaleCoeff, fontScaleCoeff);
 			state.SetPosition(drawX, drawY);
         
-            RenderSystem2D::Instance()->Draw(fontSprite, &state);
+            RenderSystem2D::Instance()->Draw(fontSprite, &state, Color::White);
 		}
 
 		currentX += (fdef->characterWidthTable[chIndex] + horizontalSpacing) * fontScaleCoeff;

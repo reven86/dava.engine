@@ -223,7 +223,7 @@ static const char* _ShaderDefine_Metal =
 "#define VPROG_IN_TANGENT        float3 tangent [[ attribute(VATTR_TANGENT) ]] ; \n"
 "#define VPROG_IN_BINORMAL       float3 binormal [[ attribute(VATTR_BINORMAL) ]] ; \n"
 "#define VPROG_IN_BLENDWEIGHT    float3 blendweight [[ attribute(VATTR_BLENDWEIGHT) ]] ; \n"
-"#define VPROG_IN_BLENDINDEX     float3 blendindex [[ attribute(VATTR_BLENDINDEX) ]] ; \n"
+"#define VPROG_IN_BLENDINDEX(sz) float##sz blendindex [[ attribute(VATTR_BLENDINDEX) ]] ; \n"
 "#define VPROG_IN_END            };\n"
 
 "#define VPROG_OUT_BEGIN                       struct VP_Output {\n"
@@ -298,7 +298,7 @@ static const char* _ShaderDefine_Metal =
 "#define VP_IN_TANGENT           (float3(IN.tangent))\n"
 "#define VP_IN_BINORMAL          (float3(IN.binormal))\n"
 "#define VP_IN_BLENDWEIGHT       (float3(IN.blendweight))\n"
-"#define VP_IN_BLENDINDEX        (float3(IN.blendindex))\n"
+"#define VP_IN_BLENDINDEX        (IN.blendindex)\n"
 
 "#define VP_TEXTURE2D(unit,uv)   tex##unit.sample( tex##unit##_sampler, uv, level(0) )\n"
 
@@ -439,7 +439,7 @@ static const char* _ShaderDefine_GLES2 =
 "#define VPROG_IN_TANGENT        attribute vec3 attr_tangent;\n"
 "#define VPROG_IN_BINORMAL       attribute vec3 attr_binormal;\n"
 "#define VPROG_IN_BLENDWEIGHT    attribute vec3 attr_blendweight;\n"
-"#define VPROG_IN_BLENDINDEX     attribute vec3 attr_blendindex;\n"
+"#define VPROG_IN_BLENDINDEX(sz) attribute vec##sz attr_blendindex;\n"
 "#define VPROG_IN_END            \n"
 
 "#define VPROG_OUT_BEGIN         \n"
@@ -678,9 +678,9 @@ static const char* _ShaderDefine_DX9 =
 "#define FPROG_OUT_COLOR         float4 color : COLOR0;\n"
 "#define FPROG_OUT_END           };\n"
 
-"#define DECL_FP_SAMPLER2D(unit)    uniform sampler2D FragmentTexture##unit;\n"
-"#define DECL_FP_SAMPLERCUBE(unit)  uniform samplerCube FragmentTexture##unit;\n"
-"#define DECL_VP_SAMPLER2D(unit)    uniform sampler2D VertexTexture##unit;\n"
+"#define DECL_FP_SAMPLER2D(unit)    uniform sampler2D FragmentTexture##unit : TEXUNIT##unit;\n"
+"#define DECL_FP_SAMPLERCUBE(unit)  uniform samplerCube FragmentTexture##unit : TEXUNIT##unit;\n"
+"#define DECL_VP_SAMPLER2D(unit)    uniform sampler2D VertexTexture##unit : TEXUNIT##unit;\n"
 
 "#define FP_TEXTURE2D(unit,uv)   tex2D( FragmentTexture##unit, uv )\n"
 "#define FP_TEXTURECUBE(unit,uv) texCube( FragmentTexture##unit, uv )\n"

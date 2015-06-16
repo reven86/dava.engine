@@ -68,19 +68,24 @@ SpriteObject::SpriteObject(Sprite *spr, int32 _frame
 
 SpriteObject::~SpriteObject()
 {
-	SafeRelease(sprite);
+    Clear();
 }
 
 void SpriteObject::Clear()
 {
-    while (GetRenderBatchCount())
+    DVASSERT(GetRenderBatchCount() < 2);
+    if (GetRenderBatchCount())
     {
-        RemoveRenderBatch(GetRenderBatchCount() - 1);
+        RenderBatch * batch = GetRenderBatch(0U);
+        if (batch->vertexBuffer.IsValid())
+            rhi::DeleteVertexBuffer(batch->vertexBuffer);
+        if (batch->indexBuffer.IsValid())
+            rhi::DeleteIndexBuffer(batch->indexBuffer);
+        RemoveRenderBatch(0U);
     }
+    bbox.Empty();
 
     SafeRelease(sprite);
-    verts.clear();
-    textures.clear();
 }
 
 void SpriteObject::Init( Sprite *spr, int32 _frame, const Vector2 &reqScale, const Vector2 &pivotPoint )
@@ -101,43 +106,78 @@ void SpriteObject::Init( Sprite *spr, int32 _frame, const Vector2 &reqScale, con
 
 void SpriteObject::SetupRenderBatch()
 {
-	if(sprite)
-	{
-		for (int32 i = 0; i < sprite->GetFrameCount(); ++i) 
-		{
-			CreateMeshFromSprite(i);
-		}
-	}
-#if RHI_COMPLETE
-	RenderDataObject *renderDataObject = new RenderDataObject();
-	renderDataObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, 0, &verts.front());
-	renderDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, &textures.front());
+    if (!sprite) return;
 
-//	Material * material = new Material();
-//	material->SetType(Material::MATERIAL_UNLIT_TEXTURE);
-//	material->SetAlphablend(true);
-//	material->SetBlendSrc(BLEND_SRC_ALPHA);
-//	material->SetBlendDest(BLEND_ONE_MINUS_SRC_ALPHA);
-//	material->SetName("SpriteObject_material");
-//	material->GetRenderState()->SetTexture(sprite->GetTexture(frame));
+    uint32 vxCount = sprite->GetFrameCount() * 4;
+    uint32 indCount = sprite->GetFrameCount() * 6;
 
+    float32 * verticies = new float32[vxCount * (3 + 2)];
+    uint16 * indices = new uint16[indCount];
+    float32 * verticesPtr = verticies;
+    uint16 * indicesPtr = indices;
+    for (int32 i = 0; i < sprite->GetFrameCount(); ++i)
+    {
+        float32 x0 = sprite->GetRectOffsetValueForFrame(i, Sprite::X_OFFSET_TO_ACTIVE) - sprPivot.x;
+        float32 y0 = sprite->GetRectOffsetValueForFrame(i, Sprite::Y_OFFSET_TO_ACTIVE) - sprPivot.y;
+        float32 x1 = x0 + sprite->GetRectOffsetValueForFrame(i, Sprite::ACTIVE_WIDTH);
+        float32 y1 = y0 + sprite->GetRectOffsetValueForFrame(i, Sprite::ACTIVE_HEIGHT);
+        x0 *= sprScale.x;
+        x1 *= sprScale.y;
+        y0 *= sprScale.x;
+        y1 *= sprScale.y;
 
-	NMaterial* material = NMaterial::CreateMaterialInstance(FastName("SpriteObject_material"),
-															NMaterialName::TEXTURED_ALPHABLEND,
-															NMaterialQualityName::DEFAULT_QUALITY_NAME);
-	material->GetParent()->AddNodeFlags(DataNode::NodeRuntimeFlag);
+        float32 *pT = sprite->GetTextureVerts(i);
+
+        *((Vector3*)verticesPtr) = Vector3(x0, y0, 0); bbox.AddPoint(*((Vector3 *)verticesPtr)); verticesPtr += 3;
+        *((Vector2*)verticesPtr) = *((Vector2*)(pT + 0)); verticesPtr += 2;
+        *((Vector3*)verticesPtr) = Vector3(x1, y0, 0); bbox.AddPoint(*((Vector3 *)verticesPtr)); verticesPtr += 3;
+        *((Vector2*)verticesPtr) = *((Vector2*)(pT + 2)); verticesPtr += 2;
+        *((Vector3*)verticesPtr) = Vector3(x0, y1, 0); bbox.AddPoint(*((Vector3 *)verticesPtr)); verticesPtr += 3;
+        *((Vector2*)verticesPtr) = *((Vector2*)(pT + 4)); verticesPtr += 2;
+        *((Vector3*)verticesPtr) = Vector3(x1, y1, 0); bbox.AddPoint(*((Vector3 *)verticesPtr)); verticesPtr += 3;
+        *((Vector2*)verticesPtr) = *((Vector2*)(pT + 6)); verticesPtr += 2;
+
+        *indicesPtr = i * 4 + 0; ++indicesPtr;
+        *indicesPtr = i * 4 + 1; ++indicesPtr;
+        *indicesPtr = i * 4 + 2; ++indicesPtr;
+
+        *indicesPtr = i * 4 + 2; ++indicesPtr;
+        *indicesPtr = i * 4 + 1; ++indicesPtr;
+        *indicesPtr = i * 4 + 3; ++indicesPtr;
+    }
+
+    NMaterial* material = new NMaterial();
+    material->SetMaterialName(FastName("SpriteObject_material"));
+    material->SetFXName(NMaterialName::TEXTURED_ALPHABLEND);
 	material->AddNodeFlags(DataNode::NodeRuntimeFlag);
-	material->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, sprite->GetTexture(frame));
+	material->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, sprite->GetTexture(frame));
         
 	RenderBatch *batch = new RenderBatch();
 	batch->SetMaterial(material);
-    batch->SetRenderDataObject(renderDataObject);
+
+    batch->vertexBuffer = rhi::CreateVertexBuffer(vxCount * (3 + 2) * sizeof(float32));
+    rhi::UpdateVertexBuffer(batch->vertexBuffer, verticies, 0, vxCount * (3 + 2) * sizeof(float32));
+    batch->indexBuffer = rhi::CreateIndexBuffer(indCount * sizeof(uint16));
+    rhi::UpdateIndexBuffer(batch->indexBuffer, indices, 0, indCount * sizeof(uint16));
+
+    batch->vertexBase = 0;
+    batch->vertexCount = vxCount;
+    batch->primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
+    batch->indexCount = 6;
+    batch->startIndex = frame * 6;
+
+    rhi::VertexLayout vxLayout;
+    vxLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
+    vxLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
+    batch->vertexLayoutId = rhi::VertexLayout::UniqueId(vxLayout);
+
 	AddRenderBatch(batch);
 
 	SafeRelease(material);
-	SafeRelease(renderDataObject);
 	SafeRelease(batch);
-#endif //RHI_COMPLETE
+
+    SafeDeleteArray(verticies);
+    SafeDeleteArray(indices);
 }
 
 
@@ -163,15 +203,14 @@ RenderObject * SpriteObject::Clone(RenderObject *newObject)
 
 void SpriteObject::SetFrame(int32 newFrame)
 {
-
 	frame = Clamp(newFrame, 0, sprite->GetFrameCount() - 1);
 
 	int32 count = GetRenderBatchCount();
 	if(count)
 	{
 		GetRenderBatch(0)->GetMaterial()->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, sprite->GetTexture(frame));
+        GetRenderBatch(0)->startIndex = frame * 6;
 	}
-
 }
 
 int32 SpriteObject::GetFrame() const
@@ -205,59 +244,65 @@ const Vector2 & SpriteObject::GetPivot() const
 	return sprPivot;
 }
 
-
-void SpriteObject::CreateMeshFromSprite(int32 frameToGen)
+void SpriteObject::BindDynamicParameters(Camera *camera)
 {
-	float32 x0 = sprite->GetRectOffsetValueForFrame(frameToGen, Sprite::X_OFFSET_TO_ACTIVE) - sprPivot.x;
-	float32 y0 = sprite->GetRectOffsetValueForFrame(frameToGen, Sprite::Y_OFFSET_TO_ACTIVE) - sprPivot.y;
-	float32 x1 = x0 + sprite->GetRectOffsetValueForFrame(frameToGen, Sprite::ACTIVE_WIDTH);
-	float32 y1 = y0 + sprite->GetRectOffsetValueForFrame(frameToGen, Sprite::ACTIVE_HEIGHT);
-	x0 *= sprScale.x;
-	x1 *= sprScale.y;
-	y0 *= sprScale.x;
-	y1 *= sprScale.y;
+    const Matrix4 & cameraMatrix = camera->GetMatrix();
+    switch (spriteType)
+    {
+        case SpriteObject::SPRITE_OBJECT:
+        {
+            worldMatrix = (*worldTransform);
+            break;
+        };
+        case SpriteObject::SPRITE_BILLBOARD:
+        {
+            DVASSERT(false); //TODO: fix math
 
-	//triangle 1
-	//0, 0
-	float32 *pT = sprite->GetTextureVerts(frameToGen);
+            Matrix4 inverse(Matrix4::IDENTITY);
 
-    verts.reserve(3 * 4);
+            inverse._00 = cameraMatrix._00;
+            inverse._01 = cameraMatrix._10;
+            inverse._02 = cameraMatrix._20;
 
-	verts.push_back(x0);
-	verts.push_back(y0);
-	verts.push_back(0);
-	//textures.push_back(pT[2 * 2 + 0]);
-	//textures.push_back(pT[2 * 2 + 1]);
+            inverse._10 = cameraMatrix._01;
+            inverse._11 = cameraMatrix._11;
+            inverse._12 = cameraMatrix._21;
 
+            inverse._20 = cameraMatrix._02;
+            inverse._21 = cameraMatrix._12;
+            inverse._22 = cameraMatrix._22;
 
-	//1, 0
-	verts.push_back(x1);
-	verts.push_back(y0);
-	verts.push_back(0);
-	//textures.push_back(pT[3 * 2 + 0]);
-	//textures.push_back(pT[3 * 2 + 1]);
+            worldMatrix = inverse * (*worldTransform);
+            break;
+        };
+        case SpriteObject::SPRITE_BILLBOARD_TO_CAMERA:
+        {
+            DVASSERT(false); //TODO: fix math
 
+            Vector3 look = camera->GetPosition() - Vector3(0.0f, 0.0f, 0.0f) * (*worldTransform);
+            look.Normalize();
+            Vector3 right = CrossProduct(camera->GetUp(), look);
+            Vector3 up = CrossProduct(look, right);
 
-	//0, 1
-	verts.push_back(x0);
-	verts.push_back(y1);
-	verts.push_back(0);
-	//textures.push_back(pT[0 * 2 + 0]);
-	//textures.push_back(pT[0 * 2 + 1]);
+            Matrix4 matrix = Matrix4::IDENTITY;
+            matrix._00 = right.x;
+            matrix._01 = right.y;
+            matrix._02 = right.z;
 
-	//1, 1
-	verts.push_back(x1);
-	verts.push_back(y1);
-	verts.push_back(0);
-	//textures.push_back(pT[1 * 2 + 0]);
-	//textures.push_back(pT[1 * 2 + 1]);
+            matrix._10 = up.x;
+            matrix._11 = up.y;
+            matrix._12 = up.z;
 
-    textures.reserve(2*4);
-	for (int32 i = 0; i < 2*4; i++) 
-	{
-		textures.push_back(*pT);
-		pT++;
-	}
+            matrix._20 = look.x;
+            matrix._21 = look.y;
+            matrix._22 = look.z;
+
+            worldMatrix = matrix * (*worldTransform);
+            break;
+        };
+    }
+
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &worldMatrix, (pointer_size)&worldMatrix);
 }
 
 void SpriteObject::Save(KeyedArchive *archive, SerializationContext *serializationContext)

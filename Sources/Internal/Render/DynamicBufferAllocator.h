@@ -36,7 +36,7 @@ namespace DAVA
 {
 namespace DynamicBufferAllocator
 {
-    struct AllocResult
+    struct AllocResultVB
     {
         rhi::HVertexBuffer buffer;
         uint8 *data;
@@ -44,7 +44,19 @@ namespace DynamicBufferAllocator
         uint32 allocatedVertices;
     };
 
-    AllocResult AllocateVertexBuffer(uint32 vertexSize, uint32 vertexCount);
+    struct AllocResultIB
+    {
+        rhi::HIndexBuffer buffer;
+        uint16 *data;
+        uint32 baseIndex;
+        uint32 allocatedindices;
+    };
+
+    AllocResultVB AllocateVertexBuffer(uint32 vertexSize, uint32 vertexCount);
+    AllocResultIB AllocateIndexBuffer(uint32 indexCount);
+    
+    //it has a bit different life cycle - it is put to eviction queue only once greater size buffer is requested (so client code should still request it every frame), still trying to share existing one
+    rhi::HIndexBuffer AllocateQuadListIndexBuffer(uint32 quadCount);
     
     void BeginFrame();
     void EndFrame();

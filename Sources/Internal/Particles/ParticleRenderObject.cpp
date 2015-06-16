@@ -33,8 +33,6 @@
 
 namespace DAVA
 {
-static const int32 POINTS_PER_PARTICLE = 4;
-static const int32 INDICES_PER_PARTICLE = 6;
 
 //camera_facing, x_emitter, y_emitter, z_emitter, x_world, y_world, z_world
 static Vector3 basisVectors[7*2] = {Vector3(), Vector3(), 
@@ -59,22 +57,8 @@ ParticleRenderObject::ParticleRenderObject(ParticleEffectData *effect): effectDa
     layout.AddElement(rhi::VS_COLOR, 0, rhi::VDT_UINT8N, 4);
     regularVertexLayoutId = rhi::VertexLayout::UniqueId(layout);
     layout.AddElement(rhi::VS_TEXCOORD, 1, rhi::VDT_FLOAT, 2);
-    layout.AddElement(rhi::VS_TEXCOORD, 2, rhi::VDT_FLOAT, 1);
-    frameBlendVertexLayoutId = rhi::VertexLayout::UniqueId(layout);
-        
-    uint16 indices[6 * 1000];
-    
-    for (int i = 0; i < 1000; ++i)
-    {
-        indices[i*INDICES_PER_PARTICLE + 0] = i*POINTS_PER_PARTICLE + 0;
-        indices[i*INDICES_PER_PARTICLE + 1] = i*POINTS_PER_PARTICLE + 1;
-        indices[i*INDICES_PER_PARTICLE + 2] = i*POINTS_PER_PARTICLE + 2;
-        indices[i*INDICES_PER_PARTICLE + 3] = i*POINTS_PER_PARTICLE + 2;
-        indices[i*INDICES_PER_PARTICLE + 4] = i*POINTS_PER_PARTICLE + 1;
-        indices[i*INDICES_PER_PARTICLE + 5] = i*POINTS_PER_PARTICLE + 3; //preserve order
-    }
-    indexBuffer = rhi::CreateIndexBuffer(1000 * 2);
-    rhi::UpdateIndexBuffer(indexBuffer, indices, 0, 1000 * 2);
+    layout.AddElement(rhi::VS_TEXCOORD, 3, rhi::VDT_FLOAT, 1);
+    frameBlendVertexLayoutId = rhi::VertexLayout::UniqueId(layout);    
 }
 
 ParticleRenderObject::~ParticleRenderObject()
@@ -176,43 +160,15 @@ void ParticleRenderObject::PrepareRenderData(Camera * camera)
 			currRenderGroup->enableFrameBlend = currGroup.layer->enableFrameBlend;
 			currRenderGroup->renderBatch->SetMaterial(currMaterial);*/
 
-            AppendParticleGroup(itGroupStart, itGroupCurr, particlesInGroup);
+            AppendParticleGroup(itGroupStart, itGroupCurr, particlesInGroup, currCamDirection);
             itGroupStart = itGroupCurr;
             particlesInGroup = 0;
 		}                    
         particlesInGroup += CalculateParticleCount(*itGroupCurr);
 	}	
     if (itGroupStart != effectData->groups.end())
-        AppendParticleGroup(itGroupStart, effectData->groups.end(), particlesInGroup);
-	
-    /*
-	int32 currParticleIndices = static_cast<int32>(indices.size()/INDICES_PER_PARTICLE);
-	if (maxParticlesPerBatch>currParticleIndices)
-	{
-		indices.resize(maxParticlesPerBatch*INDICES_PER_PARTICLE);
-		for (;currParticleIndices<maxParticlesPerBatch; currParticleIndices++)
-		{
-			indices[currParticleIndices*INDICES_PER_PARTICLE+0] = currParticleIndices*POINTS_PER_PARTICLE+0;
-			indices[currParticleIndices*INDICES_PER_PARTICLE+1] = currParticleIndices*POINTS_PER_PARTICLE+1;
-			indices[currParticleIndices*INDICES_PER_PARTICLE+2] = currParticleIndices*POINTS_PER_PARTICLE+2;
-			indices[currParticleIndices*INDICES_PER_PARTICLE+3] = currParticleIndices*POINTS_PER_PARTICLE+2;
-			indices[currParticleIndices*INDICES_PER_PARTICLE+4] = currParticleIndices*POINTS_PER_PARTICLE+1;
-			indices[currParticleIndices*INDICES_PER_PARTICLE+5] = currParticleIndices*POINTS_PER_PARTICLE+3; //preserve order
-		}
-	}
-	for (uint32 i=0; i<renderGroupCount; ++i)
-	{
-		if (renderGroupCache[i]->currParticlesCount)
-		{
-			renderGroupCache[i]->UpdateRenderBatch(vertexSize, vertexStride);
-			renderGroupCache[i]->renderBatch->SetIndexCount(renderGroupCache[i]->currParticlesCount*INDICES_PER_PARTICLE);		
-
-			activeRenderBatchArray.push_back(renderGroupCache[i]->renderBatch);
-		}
-		
-	}
-    */
-	
+        AppendParticleGroup(itGroupStart, effectData->groups.end(), particlesInGroup, currCamDirection);
+	    	
 }
 int32 ParticleRenderObject::CalculateParticleCount(const ParticleGroup& group)
 {
@@ -239,7 +195,7 @@ struct ParticleVertex
 };
 
 //void ParticleRenderObject::AppendParticleGroup(const ParticleGroup &group, ParticleRenderGroup *renderGroup, const Vector3& cameraDirection)
-void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator begin, List<ParticleGroup>::iterator end, uint32 particlesCount)
+void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator begin, List<ParticleGroup>::iterator end, uint32 particlesCount, const Vector3& cameraDirection)
 {
     
     if (!particlesCount)
@@ -251,7 +207,7 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
 
     
     
-    DynamicBufferAllocator::AllocResult target = DynamicBufferAllocator::AllocateVertexBuffer(vertexStride, particlesCount * 4);    
+    DynamicBufferAllocator::AllocResultVB target = DynamicBufferAllocator::AllocateVertexBuffer(vertexStride, particlesCount * 4);    
     
     uint32 particleStride = vertexStride * 4;
     uint8* currpos = target.data;    
@@ -305,7 +261,7 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
                 {
                     ey = current->speed;
                     float32 vel = ey.Length();
-                    ex = ey.CrossProduct(basisVectors[2]); //we place camera ey there
+                    ex = ey.CrossProduct(cameraDirection);
                     ex.Normalize();
                     ey *= (group.layer->scaleVelocityBase / vel + group.layer->scaleVelocityFactor); //optimized ex=(svBase+svFactor*vel)/vel
                 }
@@ -380,7 +336,7 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
 
     //test
     targetBatch->indexCount = particlesCount * 6;
-    targetBatch->indexBuffer = indexBuffer;
+    targetBatch->indexBuffer = DynamicBufferAllocator::AllocateQuadListIndexBuffer(particlesCount);
     targetBatch->startIndex = 0;
     targetBatch->vertexLayoutId = begin->layer->enableFrameBlend ? frameBlendVertexLayoutId : regularVertexLayoutId;
     activeRenderBatchArray.push_back(targetBatch);

@@ -53,6 +53,7 @@ public:
     virtual void Draw(const UIGeometricData &geometricData);
 
     void TestFunction(PerfFuncData * data);
+    void BiDiTest(PerfFuncData * data);
 
 private:
     int32 currentTest;

@@ -200,9 +200,8 @@ DAVA::WebViewControl::WebViewControl(DAVA::UIWebView& uiWeb):
     isVisible(true),
     uiWebView(uiWeb)
 {
-    HelperAppDelegate* appDelegate = [[UIApplication sharedApplication]
-                                                                    delegate];
-    BackgroundView* backgroundView = [appDelegate glController].backgroundView;
+    HelperAppDelegate * appDelegate = [[UIApplication sharedApplication] delegate];
+    BackgroundView * backgroundView = [appDelegate renderViewController].backgroundView;
     
     ::UIWebView* localWebView = [backgroundView CreateWebView];
     webViewPtr = localWebView;
@@ -348,7 +347,7 @@ WebViewControl::~WebViewControl()
 
     
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-    BackgroundView* backgroundView = [appDelegate glController].backgroundView;
+    BackgroundView* backgroundView = [appDelegate renderViewController].backgroundView;
     [backgroundView ReleaseWebView:innerWebView];
     
 	webViewPtr = nil;
@@ -501,13 +500,26 @@ void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 {
     this->isVisible = isVisible;
     
-    if (!isRenderToTexture)
-    {
-        [(UIWebView*)webViewPtr setHidden:!isVisible];
-    } else
+    if (isRenderToTexture)
     {
         DAVA::Rect r = uiWebView.GetRect();
         SetRect(r);
+    }
+    else
+    {
+        if(!isVisible)
+        {
+            [(UIWebView *) webViewPtr setHidden:YES];
+        }
+        else
+        {
+            // if we wan't native control to become invisible we ca do it immidiatly
+            // during update process. But when we want it to be visible, it can't be shown
+            // immidiatly, because is cases, when current Update() takes a lot of time and
+            // user will see native webview over old frame during all that time. This can
+            // be treat as webview blinking, so we should care abot it. We will show webview
+            // in next Draw call.
+        }
     }
 }
 
@@ -593,7 +605,7 @@ void WebViewControl::SetBounces(bool value)
 void WebViewControl::SetGestures(bool value)
 {
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-    UIView * backView = appDelegate.glController.backgroundView;
+    UIView * backView = appDelegate.renderViewController.backgroundView;
 
     if (value && !gesturesEnabled)
     {
@@ -688,6 +700,15 @@ void WebViewControl::SetRenderToTexture(bool value)
         {
             [(UIWebView*)webViewPtr setHidden:NO];
         }
+    }
+}
+    
+void WebViewControl::WillDraw()
+{
+    bool isNativeHidden = [(UIWebView *) webViewPtr isHidden];
+    if(isVisible && isNativeHidden)
+    {
+        [(UIWebView *) webViewPtr setHidden:NO];
     }
 }
     

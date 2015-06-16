@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
+#if 0
 
 #ifndef __RESOURCEEDITORQT__CUSTOMLANDSCAPE__
 #define __RESOURCEEDITORQT__CUSTOMLANDSCAPE__
@@ -55,3 +55,5 @@ protected:
 };
 
 #endif /* defined(__RESOURCEEDITORQT__CUSTOMLANDSCAPE__) */
+
+#endif

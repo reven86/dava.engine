@@ -208,6 +208,12 @@ int32 UIJoypad::GetStickSpriteFrame() const
     return 0;
 }
 
+void UIJoypad::SetStickDebugDraw(bool debugDraw)
+{
+    CreateStickControl();
+    stick->SetDebugDraw(debugDraw);
+}
+    
 void UIJoypad::SetStickSprite(Sprite *stickSprite, int32 frame)
 {
     CreateStickControl();

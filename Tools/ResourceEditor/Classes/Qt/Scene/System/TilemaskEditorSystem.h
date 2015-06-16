@@ -57,9 +57,9 @@ public:
 	
 	LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
 	bool DisableLandscapeEdititing();
-	
-	virtual void Process(DAVA::float32 timeElapsed);
-	virtual void Input(DAVA::UIEvent *event);
+
+	void Process(DAVA::float32 timeElapsed) override;
+	void Input(DAVA::UIEvent *event) override;
 	void Draw();
 	
 	void SetBrushSize(int32 brushSize);
@@ -80,6 +80,7 @@ public:
 	eTilemaskDrawType GetDrawingType();
 
 protected:
+    
 	uint32 curToolSize;
 	Image* toolImage;
 	Texture * toolImageTexture;
@@ -104,7 +105,7 @@ protected:
 
     float32 spriteTempVertices[8];
     float32 spriteTempCoords[8];    
-
+    
 	bool needCreateUndo;
 
 	const FastName& textureLevel;

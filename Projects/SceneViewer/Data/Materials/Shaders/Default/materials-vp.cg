@@ -51,11 +51,11 @@ VPROG_IN_BEGIN
     #if WIND_ANIMATION
     VPROG_IN_TEXCOORD5(1)
     #endif
-/*
+
     #if FRAME_BLEND
-    attribute float inTime;
+    VPROG_IN_TEXCOORD3(1)
     #endif
-*/
+
 
 
 VPROG_IN_END
@@ -122,7 +122,7 @@ kkk
     #endif
     
     #if FRAME_BLEND
-        varying lowp float varTime;
+        VPROG_OUT_TEXCOORD3(varTime,1)        
     #endif
 
     #if VERTEX_FOG
@@ -563,7 +563,7 @@ VPROG_BEGIN
 
     FogParam    fog_param;
 
-    fog_param.color     = fogColor;
+    fog_param.color     = fogColor.rgb;
     fog_param.limit     = fogLimit;
     #if FOG_LINEAR
     fog_param.start     = fogStart;
@@ -583,8 +583,8 @@ VPROG_BEGIN
 
     fog_param.atmosphere_distance = fogAtmosphereDistance;
     #if !FOG_ATMOSPHERE_MAP
-    fog_param.atmosphere_sun_color  = fogAtmosphereColorSun;
-    fog_param.atmosphere_sky_color  = fogAtmosphereColorSky;
+    fog_param.atmosphere_sun_color  = fogAtmosphereColorSun.rgb;
+    fog_param.atmosphere_sky_color  = fogAtmosphereColorSky.rgb;
     fog_param.atmosphere_scattering = fogAtmosphereScattering;
     #endif
     
@@ -709,7 +709,7 @@ VPROG_BEGIN
 
 
 #if FRAME_BLEND
-    varTime = inTime;
+    VP_OUT(varTime) = VP_IN_TEXCOORD3;
 #endif
 
 VPROG_END

@@ -38,7 +38,6 @@
 
 #include "Render/3D/PolygonGroup.h"
 #include "Render/Highlevel/RenderObject.h"
-#include "Render/Material.h"
 #include "Render/Material/NMaterial.h"
 
 #include "Scene3D/SceneFile/SerializationContext.h"
@@ -159,12 +158,10 @@ public:
     
     INTROSPECTION_EXTEND(RenderBatch, BaseObject,
         MEMBER(dataSource, "Data Source", I_SAVE | I_VIEW | I_EDIT)
-//        MEMBER(renderDataObject, "Render Data Object", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR | INTROSPECTION_EDITOR_READONLY)
-//        MEMBER(renderObject, "Render Object", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR | INTROSPECTION_EDITOR_READONLY)
 
         MEMBER(startIndex, "Start Index", I_SAVE)
         MEMBER(indexCount, "Index Count", I_SAVE)
-        MEMBER(primitiveType, "Type", I_SAVE | I_VIEW | I_EDIT)
+        //MEMBER(primitiveType, InspDesc("primitiveType", GlobalEnumMap<rhi::PrimitiveType>::Instance()), I_VIEW | I_EDIT | I_SAVE)
                          
         MEMBER(aabbox, "AABBox",  I_SAVE | I_VIEW | I_EDIT )
         MEMBER(material, "Material", I_VIEW | I_EDIT)

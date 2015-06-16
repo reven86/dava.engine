@@ -41,16 +41,19 @@ namespace rhi
 struct
 InitParam
 {
-    void*   window;
-    uint32  width;
-    uint32  height;
+//    uint32  width;
+//    uint32  height;
+    void*   context;
+
+    void    (*makeCurrentFunc)();
+    void    (*endFrameFunc)();
 };
 
 struct
 ResetParam
 {
-    uint32  width;
-    uint32  height;
+//    uint32  width;
+//    uint32  height;
 };
 
 

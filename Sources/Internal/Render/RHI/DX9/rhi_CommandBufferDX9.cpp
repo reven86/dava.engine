@@ -578,7 +578,30 @@ SCOPED_FUNCTION_TIMING();
                     {
                         DVASSERT(!_D3D9_BackBuf);
                         _D3D9_Device->GetRenderTarget( 0, &_D3D9_BackBuf );
-                        TextureDX9::SetAsRenderTarget( passCfg.colorBuffer[0].texture );
+                        TextureDX9::SetAsRenderTarget( passCfg.colorBuffer[0].texture );                        
+                    }
+                    
+                    // update default viewport
+                    {
+                        IDirect3DSurface9*  rt = NULL;
+
+                        _D3D9_Device->GetRenderTarget( 0, &rt );
+                        if( rt )
+                        {
+                            D3DSURFACE_DESC desc;
+                            
+                            if( SUCCEEDED(rt->GetDesc( &desc )) )
+                            {
+                                def_viewport.X      = 0;
+                                def_viewport.Y      = 0;
+                                def_viewport.Width  = desc.Width;
+                                def_viewport.Height = desc.Height;
+                                def_viewport.MinZ   = 0.0f;
+                                def_viewport.MaxZ   = 1.0f;
+                            }
+
+                            rt->Release();
+                        }
                     }
 
 
@@ -601,6 +624,7 @@ SCOPED_FUNCTION_TIMING();
                         DX9_CALL(_D3D9_Device->Clear( 0,NULL, flags, D3DCOLOR_RGBA(r,g,b,a), passCfg.depthStencilBuffer.clearDepth, 0 ),"Clear");
                     }
                 }
+
             }   break;
 
             case DX9__END :
@@ -861,37 +885,9 @@ dx9_Present()
         RenderPassPool::Free( _CmdQueue[i] );
     _CmdQueue.clear();
 
-
+    _End_Frame();
 
     ConstBufferDX9::InvalidateAllConstBufferInstances();
-
-    HRESULT hr;
-
-    if( _ResetPending )
-    {
-        hr = _D3D9_Device->TestCooperativeLevel();
-
-        if( hr == D3DERR_DEVICENOTRESET )
-        {
-///            reset( Size2i(_present_param->BackBufferWidth,_present_param->BackBufferHeight) );
-
-            _ResetPending = false;
-        }
-        else
-        {
-            ::Sleep( 100 );
-        }
-    }
-    else
-    {
-        hr = _D3D9_Device->Present( NULL, NULL, NULL, NULL );
-
-        if( FAILED(hr) )
-            Logger::Error( "present() failed:\n%s\n", D3D9ErrorText(hr) );
-
-        if( hr == D3DERR_DEVICELOST )
-            _ResetPending = true;
-    }    
 }
 
 

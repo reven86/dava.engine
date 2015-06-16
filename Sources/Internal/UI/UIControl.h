@@ -1322,11 +1322,6 @@ public:
     // Recalculate the size and positions for the child controls according to their Align Options.
     void ApplyAlignSettingsForChildren();
 
-    const String &GetControlClassName() const;
-    // Access to Custom Control Type.
-    const String &GetCustomControlClassName() const;
-    void SetCustomControlClassName(const String& value);
-
     // Find the control by name and add it to the list, if found.
     bool AddControlToList(List<UIControl*>& controlsList, const String& controlName, bool isRecursive = false);
 
@@ -1339,6 +1334,8 @@ public:
     virtual void SetVisibleForUIEditor(bool value);
 
     void DumpInputs(int32 depthLevel);
+
+    static void DumpControls(bool onlyOrphans);
 private:
     String name;
 protected:
@@ -1402,9 +1399,6 @@ protected:
 
     eDebugDrawPivotMode drawPivotPointMode;
 
-    // If this UI control represents Custom Control - its type is stored here.
-    String customClassName;
-
     // Initial control's state which is stored on Yaml.
     int32 initialState;
 
@@ -1446,11 +1440,13 @@ private:
 /* Components */
 public:
     void AddComponent(UIComponent * component);
+    void InsertComponentAt(UIComponent * component, uint32 index);
     void RemoveComponent(UIComponent * component);
     void RemoveComponent(uint32 componentType, uint32 index = 0);
     void RemoveAllComponents();
 
     UIComponent * GetComponent(uint32 componentType, uint32 index = 0) const;
+    int32 GetComponentIndex(const UIComponent *component) const;
     UIComponent * GetOrCreateComponent(uint32 componentType, uint32 index = 0);
 
     template<class T> inline T* GetComponent(uint32 index = 0) const
@@ -1466,9 +1462,9 @@ public:
         return GetComponentCount(T::C_TYPE);
     }
 
-    inline uint32 GetComponentCount() const;
-    inline uint32 GetComponentCount(uint32 componentType) const;
-    inline uint64 GetAvailableComponentFlags() const;
+    uint32 GetComponentCount() const;
+    uint32 GetComponentCount(uint32 componentType) const;
+    uint64 GetAvailableComponentFlags() const;
 
 private:
     Vector<UIComponent *> components;
@@ -1518,8 +1514,6 @@ public:
     inline void SetAndApplyBottomAlignEnabled(bool isEnabled);
 
     INTROSPECTION_EXTEND(UIControl, AnimatedObject,
-                         PROPERTY("customClass", "Custom Class", GetCustomControlClassName, SetCustomControlClassName, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("name", "Name", GetName, SetName, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("position", "Position", GetPosition, SetPosition, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("size", "Size", GetSize, SetSize, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("scale", "Scale", GetScale, SetScale, I_SAVE | I_VIEW | I_EDIT)

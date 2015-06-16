@@ -38,6 +38,15 @@
  name: "SpeedTreeLeaf"
  path: SpeedTreeLeaf.material
 -
+ name: "SphericalLit AllQualities SpeedTreeLeaf"
+ path: SphericalLitAllQualities.SpeedTreeLeaf.material
+-
+ name: "SphericalLit AllQualities Textured Alphatest"
+ path: SphericalLitAllQualities.Textured.Alphatest.material
+-
+ name: "SphericalLit AllQualities Textured Opaque"
+ path: SphericalLitAllQualities.Textured.Opaque.material
+-
  name: "Textured Alphablend"
  path: Textured.Alphablend.material
 -
@@ -55,6 +64,9 @@
 -
  name: "TextureLightmap Opaque"
  path: TextureLightmap.Opaque.material
+-
+ name: "TextureLightmap AllQualities Opaque"
+ path: TextureLightmapAllQualities.Opaque.material
 -
  name: "VertexColor Alphablend"
  path: VertexColor.Alphablend.material
@@ -77,6 +89,79 @@
  name: "Skybox"
  path: Skybox.material
 -
- name: "Landscape"
- path: TileMask.material
+ name: "Skyobject"
+ path: Skyobject.material
+-
+ name: "Landscape AllQualities"
+ path: TileMaskAllQualities.material
+-
+ name: "VertexLit Reflection"
+ path: VertexLit.Reflection.Opaque.material
+-
+ name: "PixelLit SpecularMap Reflection Opaque"
+ path: PixelLit.SpecularMap.Reflection.Opaque.material
+-
+ name: "Water All Qualities"
+ path: WaterAllQualities.material
+-
+ name: "WaterPerVertex Cubemap"
+ path: WaterPerVertexCubemap.material
+-
+ name: "Water Per Vertex Cubemap Decal"
+ path: WaterPerVertexCubemapDecal.material 
+-
+ name: "WaterPerPixel Cubemap"
+ path: WaterPerPixelCubemap.material
+-
+ name: "Water Per Pixel Cubemap Const Refraction Color"
+ path: WaterPerPixelCubemapConstRefraction.material
+-
+ name: "Water Per Pixel Cubemap Fresnael to Alpha"
+ path: WaterPerPixelCubemapAlphablend.material
+-
+ name: "Water Real Reflections"
+ path: WaterPerPixelRealReflections.material
+-
+ name: "Grass"
+ path: Grass.material
+-
+ name: "Textured Opaque.NoCull"
+ path: Textured.Opaque.NoCull.material
+-
+ name: "Normalized BlinnPhong Per Vertex Opaque"
+ path: NormalizedBlinnPhongPerVertex.Opaque.material
+-
+ name: "Normalized BlinnPhong Per Vertex Alphatest"
+ path: NormalizedBlinnPhongPerVertex.Alphatest.material
+-
+ name: "Normalized BlinnPhong Per Vertex Alphatest + Alphablend"
+ path: NormalizedBlinnPhongPerVertex.Alphatest.Alphablend.material
+-
+ name: "Normalized BlinnPhong Per Pixel Fast Opaque"
+ path: NormalizedBlinnPhongPerPixelFast.Opaque.material
+-
+ name: "Normalized BlinnPhong Per Pixel Opaque"
+ path: NormalizedBlinnPhongPerPixel.Opaque.material
+-
+ name: "Normalized BlinnPhong Per Pixel Alphatest + Alphablend"
+ path: NormalizedBlinnPhongPerPixel.Alphatest.Alphablend.material
+-
+ name: "Normalized BlinnPhong With All Qualities Opaque"
+ path: NormalizedBlinnPhongAllQualities.Opaque.material
+-
+ name: "Normalized BlinnPhong With All Qualities Alphatest"
+ path: NormalizedBlinnPhongAllQualities.Alphatest.material
+-
+ name: "Normalized BlinnPhong With All Qualities Alphatest + Alphablend"
+ path: NormalizedBlinnPhongAllQualities.Alphatest.Alphablend.material
+-
+ name: "Normalized BlinnPhong With Lightmap Per Vertex"
+ path: NormalizedBlinnPhongWithLightmapPerVertex.Opaque.material
+-
+ name: "Normalized BlinnPhong With Lightmap Per Pixel"
+ path: NormalizedBlinnPhongWithLightmapPerPixel.Opaque.material
+-
+ name: "Normalized BlinnPhong With Lightmap All Qualities"
+ path: NormalizedBlinnPhongWithLightmapAllQualities.Opaque.material
+
  

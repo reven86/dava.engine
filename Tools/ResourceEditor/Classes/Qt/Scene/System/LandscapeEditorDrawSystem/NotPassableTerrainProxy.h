@@ -38,7 +38,7 @@ using namespace DAVA;
 class NotPassableTerrainProxy
 {
 public:
-	NotPassableTerrainProxy();
+	NotPassableTerrainProxy(int32 heightmapSize);
 	virtual ~NotPassableTerrainProxy();
 	
 	bool Enable();
@@ -69,7 +69,9 @@ private:
 	Texture * notPassableTexture;
 	DAVA::float32 notPassableAngleTan;
 	DAVA::Vector<TerrainColor> angleColor;
-	
+    
+    rhi::HVertexBuffer gridBufferHandle;
+    
 	void LoadColorsArray();
 	bool PickColor(DAVA::float32 tan, DAVA::Color& color) const;
 };

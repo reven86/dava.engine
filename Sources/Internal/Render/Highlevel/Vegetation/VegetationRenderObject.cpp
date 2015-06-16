@@ -1023,17 +1023,17 @@ size_t VegetationRenderObject::SelectDirectionIndex(const Vector3& cameraDirecti
 
 void VegetationRenderObject::DebugDrawVisibleNodes()
 {
-#if RHI_COMPLETE
     uint32 requestedBatchCount = static_cast<uint32>(Min(visibleCells.size(), (size_t)maxVisibleQuads));
     for(uint32 i = 0; i < requestedBatchCount; ++i)
     {
         AbstractQuadTreeNode<VegetationSpatialData>* treeNode = visibleCells[i];
         uint32 resolutionIndex = MapCellSquareToResolutionIndex(treeNode->data.width * treeNode->data.height);
-        
+
+#if RHI_COMPLETE
         RenderSystem2D::Instance()->SetColor(RESOLUTION_COLOR[resolutionIndex]);
         RenderHelper::Instance()->DrawBox(treeNode->data.bbox, 1.0f, RenderState::RENDERSTATE_3D_OPAQUE);
-    }
 #endif // RHI_COMPLETE
+    }
 }
 
 void VegetationRenderObject::ClearRenderBatches()

@@ -57,7 +57,7 @@ TilemaskEditorSystem::TilemaskEditorSystem(Scene* scene)
 ,	toolTexture(NULL)
 ,	toolSpriteUpdated(false)
 ,	needCreateUndo(false)
-,	textureLevel(Landscape::TEXTURE_NAME_TILEMASK)
+,	textureLevel(Landscape::TEXTURE_TILEMASK)
 {
     cursorSize = 120;
     
@@ -104,7 +104,7 @@ LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::EnableLandscapeEditi
 	landscapeSize = drawSystem->GetTextureSize(textureLevel);
 	copyPasteFrom = Vector2(-1.f, -1.f);
 
-	drawSystem->EnableCursor(landscapeSize);
+	drawSystem->EnableCursor();
 	drawSystem->SetCursorTexture(cursorTexture);
 	drawSystem->SetCursorSize(cursorSize);
 
@@ -131,8 +131,6 @@ bool TilemaskEditorSystem::DisableLandscapeEdititing()
 
 	FinishEditing();
 
-	drawSystem->GetLandscapeProxy()->UpdateFullTiledTexture(true);
-	
 	selectionSystem->SetLocked(false);
 	modifSystem->SetLocked(false);
 	

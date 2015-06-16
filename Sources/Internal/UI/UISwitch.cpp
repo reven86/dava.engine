@@ -83,8 +83,8 @@ private:
     float32 centerPos;
 };
 
-UISwitch::UISwitch(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/) 
-    : UIControl(rect, rectInAbsoluteCoordinates)
+UISwitch::UISwitch(const Rect &rect) 
+    : UIControl(rect)
     , buttonLeft(new UIButton())
     , buttonRight(new UIButton())
     , toggle(new UIButton())
@@ -93,9 +93,9 @@ UISwitch::UISwitch(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
     buttonLeft->SetName(UISWITCH_BUTTON_LEFT_NAME);
     buttonRight->SetName(UISWITCH_BUTTON_RIGHT_NAME);
     toggle->SetName(UISWITCH_BUTTON_TOGGLE_NAME);
-    AddControl(buttonLeft);
-    AddControl(buttonRight);
-    AddControl(toggle);
+    AddControl(buttonLeft.Get());
+    AddControl(buttonRight.Get());
+    AddControl(toggle.Get());
     InitControls();
 
     Vector2 leftAndRightSize(size.dx / 2, size.dy);
@@ -116,7 +116,7 @@ void UISwitch::InitControls()
     buttonLeft->SetInputEnabled(false);
     buttonRight->SetInputEnabled(false);
     toggle->SetInputEnabled(false);
-    BringChildFront(toggle);
+    BringChildFront(toggle.Get());
     CheckToggleSideChange();
     float32 toggleXPosition = GetToggleUttermostPosition();
     toggle->SetPosition(Vector2(toggleXPosition, toggle->relativePosition.y));
@@ -126,9 +126,9 @@ void UISwitch::InitControls()
 void UISwitch::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 {
     //release default buttons - they have to be loaded from yaml
-    RemoveControl(buttonLeft);
-    RemoveControl(buttonRight);
-    RemoveControl(toggle);
+    buttonLeft = nullptr;
+    buttonRight = nullptr;
+    toggle = nullptr;
 
     UIControl::LoadFromYamlNode(node, loader);
 }
@@ -148,36 +148,33 @@ void UISwitch::AddControl(UIControl *control)
 	// Synchronize the pointers to the buttons each time new control is added.
 	UIControl::AddControl(control);
 
-	if (control->GetName() == UISWITCH_BUTTON_LEFT_NAME && buttonLeft != control)
+    if (control->GetName() == UISWITCH_BUTTON_LEFT_NAME && buttonLeft.Get() != control)
 	{
-        SafeRelease(buttonLeft);
-		buttonLeft = SafeRetain(DynamicTypeCheck<UIButton*>(control));
+		buttonLeft = DynamicTypeCheck<UIButton*>(control);
 	}
-	else if (control->GetName() == UISWITCH_BUTTON_TOGGLE_NAME && toggle != control)
+    else if (control->GetName() == UISWITCH_BUTTON_TOGGLE_NAME && toggle.Get() != control)
 	{
-        SafeRelease(toggle);
-        toggle = SafeRetain(DynamicTypeCheck<UIButton*>(control));
+        toggle = DynamicTypeCheck<UIButton*>(control);
 	}
-	else if (control->GetName() == UISWITCH_BUTTON_RIGHT_NAME && buttonRight != control)
+    else if (control->GetName() == UISWITCH_BUTTON_RIGHT_NAME && buttonRight.Get() != control)
 	{
-        SafeRelease(buttonRight);
-        buttonRight = SafeRetain(DynamicTypeCheck<UIButton*>(control));
+        buttonRight = DynamicTypeCheck<UIButton*>(control);
 	}
 }
 
 void UISwitch::RemoveControl(UIControl *control)
 {
-    if (control == buttonRight)
+    if (control == buttonRight.Get())
     {
-        SafeRelease(buttonRight);
+        buttonRight = nullptr;
     }
-    else if (control == buttonLeft)
+    else if (control == buttonLeft.Get())
     {
-        SafeRelease(buttonLeft);
+        buttonLeft = nullptr;
     }
-    else if (control == toggle)
+    else if (control == toggle.Get())
     {
-        SafeRelease(toggle);
+        toggle = nullptr;
     }
     
     UIControl::RemoveControl(control);
@@ -186,9 +183,9 @@ void UISwitch::RemoveControl(UIControl *control)
 void UISwitch::CopyDataFrom(UIControl *srcControl)
 {
 	//release default buttons - they have to be copied from srcControl
-    RemoveControl(buttonLeft);
-    RemoveControl(buttonRight);
-    RemoveControl(toggle);
+    buttonLeft = nullptr;
+    buttonRight = nullptr;
+    toggle = nullptr;
 
 	UIControl::CopyDataFrom(srcControl);
 
@@ -207,7 +204,7 @@ List<UIControl* > UISwitch::GetSubcontrols()
 	return subControls;
 }
 
-UIControl* UISwitch::Clone()
+UISwitch* UISwitch::Clone()
 {
 	UISwitch *t = new UISwitch(GetRect());
 	t->CopyDataFrom(this);
@@ -312,7 +309,7 @@ void UISwitch::ChangeVisualState()
 {
     buttonLeft->SetSelected(isLeftSelected);
     buttonRight->SetSelected(!isLeftSelected);
-    BringChildBack(isLeftSelected ? buttonLeft : buttonRight);
+    BringChildBack(isLeftSelected ? buttonLeft.Get() : buttonRight.Get());
 }
 
 float32 UISwitch::GetToggleUttermostPosition()

@@ -60,6 +60,7 @@ protected:
     void UpdateInfo(float32 timeElapsed);
     
     DAVA::UIStaticText *info;
+    DAVA::UIJoypad * moveJoyPAD;
     
     DAVA::float32 framesTime;
     DAVA::uint32 frameCounter;

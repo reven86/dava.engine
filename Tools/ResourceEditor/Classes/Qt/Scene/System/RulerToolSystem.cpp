@@ -75,12 +75,8 @@ LandscapeEditorDrawSystem::eErrorType RulerToolSystem::EnableLandscapeEditing()
 	modifSystem->SetLocked(true);
 
 	Texture* rulerToolTexture = drawSystem->GetRulerToolProxy()->GetTexture();
-	drawSystem->GetLandscapeProxy()->SetRulerToolTexture(rulerToolTexture);
-	drawSystem->GetLandscapeProxy()->SetRulerToolTextureEnabled(true);
+	drawSystem->GetLandscapeProxy()->SetToolTexture(rulerToolTexture);
 	landscapeSize = drawSystem->GetHeightmapProxy()->Size();
-
-	drawSystem->EnableCursor(landscapeSize);
-	drawSystem->SetCursorSize(0);
 
 	previewLength = -1.f;
 	previewEnabled = true;
@@ -104,11 +100,9 @@ bool RulerToolSystem::DisableLandscapeEdititing()
 	selectionSystem->SetLocked(false);
 	modifSystem->SetLocked(false);
 
-	drawSystem->DisableCursor();
 	drawSystem->DisableCustomDraw();
 
-	drawSystem->GetLandscapeProxy()->SetRulerToolTexture(NULL);
-	drawSystem->GetLandscapeProxy()->SetRulerToolTextureEnabled(false);
+	drawSystem->GetLandscapeProxy()->SetToolTexture(nullptr);
 
 	Clear();
 	previewLength = -1.f;
@@ -136,8 +130,9 @@ void RulerToolSystem::Input(DAVA::UIEvent *event)
 
 	UpdateCursorPosition();
 
-	Vector3 point;
-	collisionSystem->LandRayTestFromCamera(point);
+    Vector3 point3;
+	collisionSystem->LandRayTestFromCamera(point3);
+    Vector2 point(point3.x, point3.y);
 
     switch ( event->phase )
     {
@@ -168,13 +163,13 @@ void RulerToolSystem::Input(DAVA::UIEvent *event)
         {
             if ( IsKeyModificatorPressed( DVKEY_SHIFT ) )
             {
-                SetStartPoint( Vector3( point ) );
+                SetStartPoint( point );
             }
             else
             {
                 if ( previewEnabled )
                 {
-                    AddPoint( Vector3( point ) );
+                    AddPoint( point );
                 }
             }
 
@@ -189,7 +184,7 @@ void RulerToolSystem::Input(DAVA::UIEvent *event)
     }
 }
 
-void RulerToolSystem::SetStartPoint(const DAVA::Vector3 &point)
+void RulerToolSystem::SetStartPoint(const DAVA::Vector2 &point)
 {
 	Clear();
 
@@ -199,11 +194,11 @@ void RulerToolSystem::SetStartPoint(const DAVA::Vector3 &point)
 	SendUpdatedLength();
 }
 
-void RulerToolSystem::AddPoint(const DAVA::Vector3 &point)
+void RulerToolSystem::AddPoint(const DAVA::Vector2 &point)
 {
 	if(0 < linePoints.size())
 	{
-		Vector3 prevPoint = *(linePoints.rbegin());
+		Vector2 prevPoint = *(linePoints.rbegin());
 		float32 l = lengths.back();
 		l += GetLength(prevPoint, point);
 
@@ -219,7 +214,7 @@ void RulerToolSystem::RemoveLastPoint()
 	//remove points except start point
 	if (linePoints.size() > 1)
 	{
-		List<Vector3>::iterator pointsIter = linePoints.end();
+		List<Vector2>::iterator pointsIter = linePoints.end();
 		--pointsIter;
 		linePoints.erase(pointsIter);
 
@@ -231,7 +226,7 @@ void RulerToolSystem::RemoveLastPoint()
 	}
 }
 
-void RulerToolSystem::CalcPreviewPoint(const Vector3& point, bool force)
+void RulerToolSystem::CalcPreviewPoint(const Vector2& point, bool force)
 {
 	if (!previewEnabled)
 	{
@@ -240,7 +235,7 @@ void RulerToolSystem::CalcPreviewPoint(const Vector3& point, bool force)
 
 	if ((isIntersectsLandscape && linePoints.size() > 0) && (force || previewPoint != point))
 	{
-		Vector3 lastPoint = linePoints.back();
+		Vector2 lastPoint = linePoints.back();
 		float32 previewLen = GetLength(lastPoint, point);
 
 		previewPoint = point;
@@ -253,16 +248,16 @@ void RulerToolSystem::CalcPreviewPoint(const Vector3& point, bool force)
 	SendUpdatedLength();
 }
 
-DAVA::float32 RulerToolSystem::GetLength(const DAVA::Vector3 &startPoint, const DAVA::Vector3 &endPoint)
+DAVA::float32 RulerToolSystem::GetLength(const DAVA::Vector2 &startPoint, const DAVA::Vector2 &endPoint)
 {
 	float32 lineSize = 0.f;
 
-	Vector3 prevPoint = startPoint;
+	Vector3 prevPoint = Vector3(startPoint);
 	Vector3 prevLandscapePoint = drawSystem->GetLandscapeProxy()->PlacePoint(prevPoint); //
 
 	for(int32 i = 1; i <= APPROXIMATION_COUNT; ++i)
 	{
-		Vector3 point = startPoint + (endPoint - startPoint) * i / (float32)APPROXIMATION_COUNT;
+		Vector3 point = Vector3(startPoint + (endPoint - startPoint) * i / (float32)APPROXIMATION_COUNT);
 		Vector3 landscapePoint = drawSystem->GetLandscapeProxy()->PlacePoint(point); //
 
 		lineSize += (landscapePoint - prevLandscapePoint).Length();
@@ -276,18 +271,16 @@ DAVA::float32 RulerToolSystem::GetLength(const DAVA::Vector3 &startPoint, const 
 
 void RulerToolSystem::DrawPoints()
 {
-#if RHI_COMPLETE_EDITOR
 	if (!drawSystem->GetRulerToolProxy())
 	{
 		return;
 	}
 
     Texture* targetTexture = drawSystem->GetRulerToolProxy()->GetTexture();
-
-    RenderHelper::Instance()->Set2DRenderTarget(targetTexture);
-	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-
-	Vector<Vector3> points;
+    
+    RenderSystem2D::Instance()->BeginRenderTargetPass(targetTexture);
+    
+	Vector<Vector2> points;
 	points.reserve(linePoints.size() + 1);
 	std::copy(linePoints.begin(), linePoints.end(), std::back_inserter(points));
 
@@ -306,41 +299,35 @@ void RulerToolSystem::DrawPoints()
         
 		Color red(1.0f, 0.0f, 0.0f, 1.0f);
 		Color blue(0.f, 0.f, 1.f, 1.f);
-		RenderManager::Instance()->SetColor(red);
 
 		const AABBox3 & boundingBox = drawSystem->GetLandscapeProxy()->GetLandscapeBoundingBox();
 		const Vector3 landSize = boundingBox.max - boundingBox.min;
-		Vector3 offsetPoint = boundingBox.min;
+		Vector2 offsetPoint = Vector2(boundingBox.min.x, boundingBox.min.y);
 
         float32 koef = (float32)targetTexture->GetWidth() / landSize.x;
 
-		Vector3 startPoint = points[0];
+		Vector2 startPoint = points[0];
 		for (uint32 i = 1; i < pointsCount; ++i)
 		{
-			if (previewEnabled && isIntersectsLandscape && i == (points.size() - 1))
-			{
-				RenderManager::Instance()->SetColor(blue);
-			}
+			Vector2 endPoint = points[i];
 
-			Vector3 endPoint = points[i];
-
-			Vector3 startPosition = (startPoint - offsetPoint) * koef;
-			Vector3 endPosition = (endPoint - offsetPoint) * koef;
+			Vector2 startPosition = (startPoint - offsetPoint) * koef;
+			Vector2 endPosition = (endPoint - offsetPoint) * koef;
             
-			RenderHelper::Instance()->DrawLine(DAVA::Vector3(startPosition.x, startPosition.y, 0),
-											   DAVA::Vector3(endPosition.x, endPosition.y, 0),
-											   (float32)lineWidth,
-                                               DAVA::RenderState::RENDERSTATE_2D_BLEND);
-
+            if (previewEnabled && isIntersectsLandscape && i == (points.size() - 1))
+            {
+                RenderSystem2D::Instance()->DrawLine(startPosition, endPosition, (float32)lineWidth, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, blue);
+            }
+            else
+            {
+                RenderSystem2D::Instance()->DrawLine(startPosition, endPosition, (float32)lineWidth, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, red);
+            }
+            
 			startPoint = endPoint;
 		}
 	}
-
-    RenderManager::Instance()->ResetColor();
-    RenderManager::Instance()->SetRenderTarget(0);
     
-	drawSystem->GetRulerToolProxy()->UpdateTexture();
-#endif // RHI_COMPLETE_EDITOR
+    RenderSystem2D::Instance()->EndRenderTargetPass();
 }
 
 void RulerToolSystem::Clear()
@@ -403,11 +390,11 @@ float32 RulerToolSystem::GetPreviewLength()
 	return previewLength;
 }
 
-Vector3 RulerToolSystem::MirrorPoint(const Vector3 & point) const
+Vector2 RulerToolSystem::MirrorPoint(const Vector2 & point) const
 {
     const AABBox3 & boundingBox = drawSystem->GetLandscapeProxy()->GetLandscapeBoundingBox();
 
-    Vector3 newPoint = point;
+    Vector2 newPoint = point;
     newPoint.y = (boundingBox.max.y - point.y) + boundingBox.min.y;
     
     return newPoint;

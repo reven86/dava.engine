@@ -87,18 +87,21 @@ public:
 	const Vector2& GetScale() const;
 	const Vector2& GetPivot() const;
 
-	virtual RenderObject * Clone(RenderObject *newObject);
+	RenderObject * Clone(RenderObject *newObject) override;
 
-	virtual void Save(KeyedArchive *archive, SerializationContext *serializationContext);
-	virtual void Load(KeyedArchive *archive, SerializationContext *serializationContext);
+    void Save(KeyedArchive *archive, SerializationContext *serializationContext) override;
+    void Load(KeyedArchive *archive, SerializationContext *serializationContext) override;
+
+    void RecalcBoundingBox() override {}
+    void BindDynamicParameters(Camera * camera) override;
 
 protected:
-
-	void CreateMeshFromSprite(int32 frameToGen);
 
     void Clear();
 	void Init(Sprite *spr, int32 _frame, const Vector2 &reqScale, const Vector2 &pivotPoint);
 	void SetupRenderBatch();
+
+    Matrix4 worldMatrix;
 
 	Sprite *sprite;
 	Vector2 sprScale;
@@ -106,11 +109,6 @@ protected:
 	int32 frame;
 
 	eSpriteType spriteType;
-
-
-	Vector<float32> verts;
-	Vector<float32> textures;
-
 
 public:
 

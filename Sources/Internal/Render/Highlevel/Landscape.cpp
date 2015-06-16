@@ -54,14 +54,11 @@ const FastName Landscape::PARAM_TILE_COLOR0("tileColor0");
 const FastName Landscape::PARAM_TILE_COLOR1("tileColor1");
 const FastName Landscape::PARAM_TILE_COLOR2("tileColor2");
 const FastName Landscape::PARAM_TILE_COLOR3("tileColor3");
-const FastName Landscape::PARAM_CURSOR_COORD_SIZE("cursorCoordSize");
 
-const FastName Landscape::TEXTURE_NAME_COLOR("colorTexture");
-const FastName Landscape::TEXTURE_NAME_TILE("tileTexture0");
-const FastName Landscape::TEXTURE_NAME_TILEMASK("tileMask");
-const FastName Landscape::TEXTURE_NAME_SPECULAR("specularMap");
-const FastName Landscape::TEXTURE_NAME_FULL_TILED("fullTiledTexture");
-const FastName Landscape::TEXTURE_NAME_CURSOR("cursorTexture");
+const FastName Landscape::TEXTURE_COLOR("colorTexture");
+const FastName Landscape::TEXTURE_TILE("tileTexture0");
+const FastName Landscape::TEXTURE_TILEMASK("tileMask");
+const FastName Landscape::TEXTURE_SPECULAR("specularMap");
 
 const uint32 LANDSCAPE_BATCHES_POOL_SIZE = 32;
 
@@ -178,7 +175,9 @@ int16 Landscape::AllocateQuadVertexBuffer(LandscapeQuad * quad)
     rhi::UpdateVertexBuffer(vertexBuffer, landscapeVertices, 0, vBufferSize);
     vertexBuffers.push_back(vertexBuffer);
     
+#if defined(__DAVAENGINE_IPHONE__)
     SafeDeleteArray(landscapeVertices);
+#endif
 
     return (int16)(vertexBuffers.size() - 1);
 }
@@ -235,7 +234,8 @@ void Landscape::RecalcBoundingBox()
 bool Landscape::BuildHeightmap()
 {
     bool retValue = false;
-    if(heightmapPath.IsEqualToExtension(".png"))
+
+    if(DAVA::TextureDescriptor::IsSourceTextureExtension(heightmapPath.GetExtension()))
     {
         Vector<Image *> imageSet;
         ImageSystem::Instance()->Load(heightmapPath, imageSet);
@@ -276,7 +276,10 @@ void Landscape::AllocateGeometryData()
     DVASSERT(vertexLayoutUID != rhi::VertexLayout::InvalidUID);
 
     if (!landscapeMaterial)
-        landscapeMaterial = CreateLandscapeMaterial();
+    {
+        landscapeMaterial = new NMaterial();
+        landscapeMaterial->SetFXName(NMaterialName::TILE_MASK);
+    }
 
     for (int32 i = 0; i < LANDSCAPE_BATCHES_POOL_SIZE; i++)
     {
@@ -325,16 +328,8 @@ void Landscape::BuildLandscape()
     }
 }
     
-/*
-    level 0 = full landscape
-    level 1 = first set of quads
-    level 2 = 2
-    level 3 = 3
-    level 4 = 4
- */
-    
-//float32 LandscapeNode::BitmapHeightToReal(uint8 height)
-Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height)
+
+Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height) const
 {
     Vector3 res;
     res.x = (bbox.min.x + (float32)x / (float32)(heightmap->Size() - 1) * (bbox.max.x - bbox.min.x));
@@ -957,10 +952,15 @@ void Landscape::PrepareToRender(Camera * camera)
 }
 
 
-void Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<int32> & indices)
+bool Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<int32> & indices) const
 {
-	LandQuadTreeNode<LandscapeQuad> * currentNode = &quadTreeHead;
-	LandscapeQuad * quad = &currentNode->data;
+    if (heightmap->Data() == nullptr)
+    {
+        return false;
+    }
+
+	const LandQuadTreeNode<LandscapeQuad> * currentNode = &quadTreeHead;
+	const LandscapeQuad * quad = &currentNode->data;
 	
 	landscapeVertices.resize((quad->size + 1) * (quad->size + 1));
 
@@ -992,26 +992,9 @@ void Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<
 			indices[indexIndex++] = x + (y + step) * quadWidth;     
 		}
 	}
-}
 
-//AABBox3 LandscapeNode::GetWTMaximumBoundingBox()
-//{
-////    AABBox3 retBBox = box;
-////    box.GetTransformedBox(GetWorldTransform(), retBBox);
-////
-////    const Vector<SceneNode*>::iterator & itEnd = children.end();
-////    for (Vector<SceneNode*>::iterator it = children.begin(); it != itEnd; ++it)
-////    {
-////        AABBox3 lbox = (*it)->GetWTMaximumBoundingBoxSlow();
-////        if(  (AABBOX_INFINITY != lbox.min.x && AABBOX_INFINITY != lbox.min.y && AABBOX_INFINITY != lbox.min.z)
-////           &&(-AABBOX_INFINITY != lbox.max.x && -AABBOX_INFINITY != lbox.max.y && -AABBOX_INFINITY != lbox.max.z))
-////        {
-////            retBBox.AddAABBox(lbox);
-////        }
-////    }
-//    
-//    return retBBox;
-//}
+    return true;
+}
 
 const FilePath & Landscape::GetHeightmapPathname()
 {
@@ -1079,16 +1062,6 @@ void Landscape::GetDataNodes(Set<DataNode*> & dataNodes)
         curMaterialNode = curMaterialNode->GetParent();
     }
 }
-
-NMaterial * Landscape::CreateLandscapeMaterial()
-{
-    NMaterial * material = new NMaterial();
-    //RHI_COMPLETE here need to set fx name
-
-    DVASSERT(nullptr);
-
-    return material;
-}
     
 void Landscape::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
@@ -1110,18 +1083,6 @@ void Landscape::Save(KeyedArchive * archive, SerializationContext * serializatio
 	heightmap->Save(heightmapPath);
     archive->SetString("hmap", heightmapPath.GetRelativePathname(serializationContext->GetScenePath()));
     archive->SetByteArrayAsType("bbox", bbox);
-    
-#if RHI_COMPLETE
-    DVASSERT(GetRenderBatch(0));
-    IlluminationParams * illuminationParams = GetRenderBatch(0)->GetMaterial()->GetIlluminationParams(false);
-    if(illuminationParams)
-    {
-        archive->SetBool("illumination.isUsed", illuminationParams->isUsed);
-        archive->SetBool("illumination.castShadow", illuminationParams->castShadow);
-        archive->SetBool("illumination.receiveShadow", illuminationParams->receiveShadow);
-        archive->SetInt32("illumination.lightmapSize", illuminationParams->lightmapSize);
-    }
-#endif
 }
     
 void Landscape::Load(KeyedArchive * archive, SerializationContext * serializationContext)
@@ -1156,19 +1117,6 @@ void Landscape::Load(KeyedArchive * archive, SerializationContext * serializatio
     AABBox3 loadedBbox = archive->GetByteArrayAsType("bbox", AABBox3());
 
     BuildLandscapeFromHeightmapImage(heightmapPath, loadedBbox);
-
-#if RHI_COMPLETE
-    if(archive->IsKeyExists("illumination.isUsed"))
-    {
-        DVASSERT(GetRenderBatch(0));
-        IlluminationParams * illuminationParams = GetRenderBatch(0)->GetMaterial()->GetIlluminationParams();
-
-        illuminationParams->isUsed = archive->GetBool("illumination.isUsed", illuminationParams->isUsed);
-        illuminationParams->castShadow = archive->GetBool("illumination.castShadow", illuminationParams->castShadow);
-        illuminationParams->receiveShadow = archive->GetBool("illumination.receiveShadow", illuminationParams->receiveShadow);
-        illuminationParams->SetLightmapSize(archive->GetInt32("illumination.lightmapSize", illuminationParams->lightmapSize));
-    }
-#endif
 }
     
 Heightmap * Landscape::GetHeightmap()
@@ -1189,6 +1137,14 @@ NMaterial * Landscape::GetMaterial()
     return landscapeMaterial;
 }
 
+void Landscape::SetMaterial(NMaterial * material)
+{
+    SafeRelease(landscapeMaterial);
+    landscapeMaterial = SafeRetain(material);
+
+    for (uint32 i = 0; i < GetRenderBatchCount(); ++i)
+        GetRenderBatch(i)->SetMaterial(landscapeMaterial);
+}
 
 Texture * Landscape::CreateLandscapeTexture()
 {
@@ -1344,26 +1300,12 @@ RenderObject * Landscape::Clone( RenderObject *newObject )
 		DVASSERT_MSG(IsPointerToExactClass<Landscape>(this), "Can clone only Landscape");
 		newObject = new Landscape();
     }
-
-    //RHI_COMPLETE to think about material clone and review landscape cloning
     
     Landscape *newLandscape = static_cast<Landscape *>(newObject);
-    newLandscape->landscapeMaterial = SafeRetain(landscapeMaterial);
+    newLandscape->landscapeMaterial = landscapeMaterial->Clone();
 
     newLandscape->flags = flags;
     newLandscape->BuildLandscapeFromHeightmapImage(heightmapPath, bbox);
-
-#if RHI_COMPLETE
-    IlluminationParams * params = GetRenderBatch(0)->GetMaterial()->GetIlluminationParams(false);
-    if(params)
-    {
-        IlluminationParams * newParams = newLandscape->GetRenderBatch(0)->GetMaterial()->GetIlluminationParams();
-        newParams->SetLightmapSize(params->GetLightmapSize());
-        newParams->isUsed = params->isUsed;
-        newParams->castShadow = params->castShadow;
-        newParams->receiveShadow = params->receiveShadow;
-    }
-#endif
 
 	return newObject;
 }

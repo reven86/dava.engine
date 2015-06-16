@@ -39,15 +39,24 @@
 namespace DAVA
 {
 
+    enum TextureFileType
+    {
+        TEXTURE_UNCOMPRESSED = 0,
+        TEXTURE_COMPRESSED,
+        TEXTURE_DESCRIPTOR,
+        TEXTURE_TYPE_COUNT,
+        NOT_SPECIFIED
+    };
+
 class File;
 class TextureDescriptor 
 {
 	static const String DESCRIPTOR_EXTENSION;
-	static const String SOURCEFILE_EXTENSION;
+    static const String DEFAULT_CUBEFACE_EXTENSION;
 
     static const int32 DATE_BUFFER_SIZE = 20;
     static const int32 LINE_SIZE = 256;
-    static const int8 CURRENT_VERSION = 8;
+    static const int8 CURRENT_VERSION = 10;
     
 	enum eSignatures
 	{
@@ -70,22 +79,13 @@ public:
 		int8 magFilter;
         int8 mipFilter;
 
-		
-#if RHI_COMPLETE
         INTROSPECTION(TextureDrawSettings,
-			MEMBER(wrapModeS, InspDesc("wrapModeS", GlobalEnumMap<Texture::TextureWrap>::Instance()), I_VIEW | I_EDIT | I_SAVE)
-			MEMBER(wrapModeT, InspDesc("wrapModeT", GlobalEnumMap<Texture::TextureWrap>::Instance()), I_VIEW | I_EDIT | I_SAVE)
-			MEMBER(minFilter, InspDesc("minFilter", GlobalEnumMap<Texture::TextureFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
-			MEMBER(magFilter, InspDesc("magFilter", GlobalEnumMap<Texture::TextureFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
+            MEMBER(wrapModeS, InspDesc("wrapModeS", GlobalEnumMap<rhi::TextureAddrMode>::Instance()), I_VIEW | I_EDIT | I_SAVE)
+            MEMBER(wrapModeT, InspDesc("wrapModeT", GlobalEnumMap<rhi::TextureAddrMode>::Instance()), I_VIEW | I_EDIT | I_SAVE)
+			MEMBER(minFilter, InspDesc("minFilter", GlobalEnumMap<rhi::TextureFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
+            MEMBER(magFilter, InspDesc("magFilter", GlobalEnumMap<rhi::TextureFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
+            MEMBER(mipFilter, InspDesc("mipFilter", GlobalEnumMap<rhi::TextureMipFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
         )
-#else
-        INTROSPECTION(TextureDrawSettings,
-            MEMBER(wrapModeS, "wrapModeS", I_VIEW | I_EDIT | I_SAVE)
-            MEMBER(wrapModeT, "wrapModeT", I_VIEW | I_EDIT | I_SAVE)
-            MEMBER(minFilter, "minFilter", I_VIEW | I_EDIT | I_SAVE)
-            MEMBER(magFilter, "magFilter", I_VIEW | I_EDIT | I_SAVE)
-        )
-#endif // RHI_COMPLETE
 		
 
 	};
@@ -110,12 +110,17 @@ public:
         bool GetIsNormalMap() const;
 
 		int8 textureFlags;
-		uint8 faceDescription;
+		uint8 cubefaceFlags;
+        ImageFormat sourceFileFormat;
+        String sourceFileExtension;
+        String cubefaceExtensions[Texture::CUBE_FACE_COUNT];
 
 		INTROSPECTION(TextureDataSettings,
             PROPERTY("generateMipMaps", "generateMipMaps", GetGenerateMipMaps, SetGenerateMipmaps, I_VIEW | I_EDIT | I_SAVE)
             PROPERTY("isNormalMap", "isNormalMap", GetIsNormalMap, SetIsNormalMap, I_VIEW | I_EDIT | I_SAVE)
-			MEMBER(faceDescription, "faceDescription", I_SAVE)
+			MEMBER(cubefaceFlags, "cubefaceFlags", I_SAVE)
+            MEMBER(sourceFileFormat, "sourceFileFormat", I_SAVE)
+            MEMBER(sourceFileExtension, "sourceFileExtension", I_SAVE)
 		)
 
     private:
@@ -176,43 +181,59 @@ public:
     bool GetGenerateMipMaps() const;
 	bool IsCubeMap() const;
 
-    FilePath GetSourceTexturePathname() const; 
+    FilePath GetSourceTexturePathname() const;
 
+    void GetFacePathnames(Vector<FilePath>& faceNames) const;
+    void GenerateFacePathnames(const FilePath & baseName, const Array<String, Texture::CUBE_FACE_COUNT>& faceNameSuffixes, Vector<FilePath>& faceNames) const;
+    static void GenerateFacePathnames(const FilePath & baseName, Vector<FilePath>& faceNames, const String &extension);
+
+    
 	static const String & GetDescriptorExtension();
-    static const String & GetSourceTextureExtension();
-	static String GetSupportedTextureExtensions();
+    static const String & GetLightmapTextureExtension();
+    static const String & GetDefaultFaceExtension();
+
+    static bool IsSupportedTextureExtension(const String& extension);
+    static bool IsSourceTextureExtension(const String& extension);
+    static bool IsCompressedTextureExtension(const String& extension);
+    static bool IsDescriptorExtension(const String& extension);
+
+    static bool IsSupportedSourceFormat(ImageFormat imageFormat);
+    static bool IsSupportedCompressedFormat(ImageFormat imageFormat);
+    
+    const String& GetSourceTextureExtension() const;
+    const String& GetFaceExtension(uint32 face) const;
 
     static FilePath GetDescriptorPathname(const FilePath &texturePathname);
-    
-    PixelFormat GetPixelFormatForCompression(eGPUFamily forGPU) const;
-    
+
+    FilePath CreateCompressedTexturePathname(eGPUFamily forGPU, ImageFormat imageFormat) const;
+    FilePath CreatePathnameForGPU(const eGPUFamily forGPU) const;
+    PixelFormat GetPixelFormatForGPU(eGPUFamily forGPU) const;
+    ImageFormat GetImageFormatForGPU(const eGPUFamily forGPU) const;
+
 	bool Reload();
 
 protected:
 
     const Compression * GetCompressionParams(eGPUFamily forGPU) const;
     
-    void LoadNotCompressed(File *file);
-    void LoadCompressed(File *file);
-    
-    void ReadGeneralSettings(File *file);
-    void WriteGeneralSettings(File *file) const;
-    
-    void ReadCompression(File *file, Compression *compression);
-	void ReadCompressionWithDateOld(File *file, Compression *compression);
-	void ReadCompressionWith16CRCOld(File *file, Compression *compression);
-
 	void WriteCompression(File *file, const Compression *compression) const;
     
+    void LoadVersion6(File *file);
+    void LoadVersion7(File *file);
+    void LoadVersion8(File *file);
+    void LoadVersion9(File *file);
+    void LoadVersion10(File *file);
     
-    void ConvertToCurrentVersion(int8 version, int32 signature, File *file);
-	void LoadVersion6(int32 signature, File *file);
-	void LoadVersion7(int32 signature, File *file);
-    
+    void ConvertV9orLessToV10();
+
+    void RecalculateCompressionSourceCRC();
 	uint32 ReadSourceCRC() const;
+    uint32 ReadSourceCRC_V8_or_less() const;
 	uint32 GetConvertedCRC(eGPUFamily forGPU) const;
 
 	uint32 GenerateDescriptorCRC() const;
+    
+    void SaveInternal(File *file, const int32 signature, const uint8 compressionCount) const;
 
 public:
     
@@ -229,6 +250,9 @@ public:
     int8 exportedAsGpuFamily;
 	
     bool isCompressedFile:1;
+
+    static Array<ImageFormat, 3> sourceTextureTypes;
+    static Array<ImageFormat, 2> compressedTextureTypes;
 };
     
 };

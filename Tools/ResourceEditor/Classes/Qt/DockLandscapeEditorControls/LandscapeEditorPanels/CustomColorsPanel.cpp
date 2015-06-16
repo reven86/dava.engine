@@ -6,8 +6,9 @@
 #include "Project/ProjectManager.h"
 #include "Constants.h"
 #include "Main/QtUtils.h"
-#include "../LandscapeEditorShortcutManager.h"
-#include "Tools/QtFileDialog/QtFileDialog.h"
+#include "Qt/DockLandscapeEditorControls/LandscapeEditorShortcutManager.h"
+#include "QtTools/FileDialog/FileDialog.h"
+#include "Tools/PathDescriptor/PathDescriptor.h"
 
 #include <QLayout>
 #include <QComboBox>
@@ -206,9 +207,9 @@ bool CustomColorsPanel::SaveTexture()
     QString filePath;
     for ( ;; )
     {
-        filePath = QtFileDialog::getSaveFileName( NULL, QString( ResourceEditor::CUSTOM_COLORS_SAVE_CAPTION.c_str() ),
+        filePath = FileDialog::getSaveFileName( NULL, QString( ResourceEditor::CUSTOM_COLORS_SAVE_CAPTION.c_str() ),
             QString( selectedPathname.GetAbsolutePathname().c_str() ),
-            QString( ResourceEditor::CUSTOM_COLORS_FILE_FILTER.c_str() ) );
+            PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 
         if ( filePath.isEmpty() )
         {
@@ -245,7 +246,7 @@ void CustomColorsPanel::LoadTexture()
 	
 	FilePath selectedPathname = GetOpenFileName(ResourceEditor::CUSTOM_COLORS_LOAD_CAPTION,
 												currentPath,
-												ResourceEditor::CUSTOM_COLORS_FILE_FILTER);
+												PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter.toStdString());
 	if(!selectedPathname.IsEmpty())
 	{
 		sceneEditor->customColorsSystem->LoadTexture(selectedPathname);

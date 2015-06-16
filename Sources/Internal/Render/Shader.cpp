@@ -125,8 +125,7 @@ void ShaderDescriptor::UpdateDynamicParams()
         float32 *data = (float32*)(Renderer::GetDynamicBindings().GetDynamicParam(dynamicBinding.dynamicPropertySemantic));
         pointer_size updateSemantic = Renderer::GetDynamicBindings().GetDynamicParamUpdateSemantic(dynamicBinding.dynamicPropertySemantic);
         if (dynamicBinding.updateSemantic != updateSemantic)
-        {
-            
+        {            
             if (dynamicBinding.type < rhi::ShaderProp::TYPE_FLOAT4)
             {
                 DVASSERT(Renderer::GetDynamicBindings().GetDynamicParamArraySize(dynamicBinding.dynamicPropertySemantic, 1) == 1);

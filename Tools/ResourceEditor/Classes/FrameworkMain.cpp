@@ -40,6 +40,9 @@ void FrameworkDidLaunched()
 	appOptions->SetString("title", DAVA::Format("DAVA Framework - ResourceEditor | %s.%s-%s", DAVAENGINE_VERSION, EDITOR_VERSION, RESOURCE_EDITOR_VERSION));
 	appOptions->SetInt32("fullscreen", 0);
 	appOptions->SetInt32("bpp", 32);
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+    appOptions->SetInt32("width", 1024);
+    appOptions->SetInt32("height", 768);
 	
 	GameCore * core = new GameCore();
 	DAVA::Core::SetApplicationCore(core);

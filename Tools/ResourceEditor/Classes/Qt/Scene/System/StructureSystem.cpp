@@ -117,7 +117,7 @@ void StructureSystem::Move(const EntityGroup &entityGroup, DAVA::Entity *newPare
 void StructureSystem::Remove(const EntityGroup &entityGroup)
 {
 	SceneEditor2* sceneEditor = (SceneEditor2*) GetScene();
-	if(NULL != sceneEditor && entityGroup.Size() > 0)
+	if(nullptr != sceneEditor && entityGroup.Size() > 0)
 	{
         sceneEditor->BeginBatch("Remove entities");
 
@@ -126,13 +126,16 @@ void StructureSystem::Remove(const EntityGroup &entityGroup)
             DAVA::Entity *entity = entityGroup.GetEntity(i);
             if (entity->GetNotRemovable() == false)
             {
-                if (sceneEditor->wayEditSystem->IsWayEditEnabled() && GetWaypointComponent(entity))
+                for (auto delegate : delegates)
                 {
-                    sceneEditor->wayEditSystem->RemoveWayPoint(entity);
+                    delegate->WillRemove(entity);
                 }
-                else
+
+                sceneEditor->Exec(new EntityRemoveCommand(entity));
+
+                for (auto delegate : delegates)
                 {
-                    sceneEditor->Exec(new EntityRemoveCommand(entity));
+                    delegate->DidRemoved(entity);
                 }
             }
         }
@@ -432,11 +435,21 @@ void StructureSystem::EmitChanged()
 	structureChanged = true;
 }
 
+void StructureSystem::AddDelegate(StructureSystemDelegate *delegate)
+{
+    delegates.push_back(delegate);
+}
+
+void StructureSystem::RemoveDelegate(StructureSystemDelegate *delegate)
+{
+    delegates.remove(delegate);
+}
+
 void StructureSystem::Process(DAVA::float32 timeElapsed)
 {
 	if(structureChanged)
 	{
-		SceneSignals::Instance()->EmitStructureChanged((SceneEditor2 *) GetScene(), NULL);
+		SceneSignals::Instance()->EmitStructureChanged((SceneEditor2 *) GetScene(), nullptr);
 		structureChanged = false;
 	}
 }

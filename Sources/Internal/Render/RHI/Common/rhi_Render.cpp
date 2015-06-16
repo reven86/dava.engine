@@ -75,6 +75,7 @@ PacketList_t
     Handle      curVertexStream[MAX_VERTEX_STREAM_COUNT];
 
     uint32      restoreDefScissorRect:1;
+    uint32      invertCulling:1;
 
     // debug
     uint32      batchIndex;
@@ -610,6 +611,8 @@ AllocateRenderPass( const RenderPassConfig& passDesc, uint32 packetListCount, HP
 {
     Handle       cb[8];
     DVASSERT(packetListCount<countof(cb));
+    DVASSERT(passDesc.viewport.width > 0 && passDesc.viewport.height > 0);
+
     Handle       pass = RenderPass::Allocate( passDesc, packetListCount, cb );
     
     for( unsigned i=0; i!=packetListCount; ++i )
@@ -617,9 +620,10 @@ AllocateRenderPass( const RenderPassConfig& passDesc, uint32 packetListCount, HP
         Handle          plh = PacketListPool::Alloc();
         PacketList_t*   pl  = PacketListPool::Get( plh );
 
-        pl->cmdBuf      = cb[i];
-        pl->queryBuffer = passDesc.queryBuffer;
-        pl->viewport    = passDesc.viewport;
+        pl->cmdBuf        = cb[i];
+        pl->queryBuffer   = passDesc.queryBuffer;
+        pl->viewport      = passDesc.viewport;
+        pl->invertCulling = passDesc.invertCulling;
 
 
         packetList[i] = HPacketList(plh);
@@ -763,7 +767,18 @@ AddPackets( HPacketList packetList, const Packet* packet, uint32 packetCount )
         }
         if( p->cullMode !=  pl->curCullMode )
         {
-            rhi::CommandBuffer::SetCullMode( cmdBuf, p->cullMode );
+            CullMode    mode = p->cullMode;
+
+            if( pl->invertCulling )
+            {
+                switch( mode )
+                {
+                    case CULL_CW  : mode = CULL_CCW; break;
+                    case CULL_CCW : mode = CULL_CW; break;
+                }
+            }
+
+            rhi::CommandBuffer::SetCullMode( cmdBuf, mode );
             pl->curCullMode = p->cullMode;
         }
 

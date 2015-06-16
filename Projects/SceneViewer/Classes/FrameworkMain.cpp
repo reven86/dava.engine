@@ -37,13 +37,15 @@ void FrameworkDidLaunched()
 {    
 #if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     
-#define WIDTH   960
-#define HEIGHT  640
+//for iPad
+#define WIDTH   1024
+#define HEIGHT  768
     
 	KeyedArchive * appOptions = new KeyedArchive();
 	appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
     
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+//    appOptions->SetInt32("renderer", rhi::RHI_METAL);
 	
     
 	appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
@@ -55,7 +57,12 @@ void FrameworkDidLaunched()
 
 #else
 	KeyedArchive * appOptions = new KeyedArchive();
-    appOptions->SetInt32("renderer", rhi::RHI_DX9);
+#if defined(__DAVAENGINE_WIN32__)
+//    appOptions->SetInt32("renderer", rhi::RHI_DX9);
+  appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+#elif defined(__DAVAENGINE_MACOS__)
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+#endif
 	
 	appOptions->SetInt32("width",	1024);
 	appOptions->SetInt32("height", 768);

@@ -534,6 +534,19 @@ GameCore::SetupRT()
     rtQuad.vp_const[0] = rhi::HConstBuffer(rhi::PipelineState::CreateVertexConstBuffer( rtQuad.ps, 0 ));
     rtQuad.vp_const[1] = rhi::HConstBuffer(rhi::PipelineState::CreateVertexConstBuffer( rtQuad.ps, 1 ));
 
+
+    rhi::SamplerState::Descriptor   sdesc;
+    
+    sdesc.fragmentSamplerCount          = 1;
+    sdesc.fragmentSampler[0].addrU      = rhi::TEXADDR_CLAMP;
+    sdesc.fragmentSampler[0].addrV      = rhi::TEXADDR_CLAMP;
+    sdesc.fragmentSampler[0].minFilter  = rhi::TEXFILTER_LINEAR;
+    sdesc.fragmentSampler[0].magFilter  = rhi::TEXFILTER_LINEAR;
+    sdesc.fragmentSampler[0].mipFilter  = rhi::TEXMIPFILTER_NONE;
+    
+    rtQuad.samplerState = rhi::HSamplerState(rhi::SamplerState::Create( sdesc ));
+
+
     rhi::Texture::Descriptor    colorDesc(512,512,rhi::TEXTURE_FORMAT_R8G8B8A8);
     rhi::Texture::Descriptor    depthDesc(512,512,rhi::TEXTURE_FORMAT_D16);
     
@@ -556,6 +569,7 @@ GameCore::SetupRT()
     rtQuadBatch.vertexConst[1]      = rtQuad.vp_const[1];
     rtQuadBatch.fragmentConstCount  = 0;
     rtQuadBatch.renderPipelineState = rtQuad.ps;
+    rtQuadBatch.samplerState        = rtQuad.samplerState;
     rtQuadBatch.primitiveType       = rhi::PRIMITIVE_TRIANGLELIST;
     rtQuadBatch.primitiveCount      = 2;
     rtQuadBatch.textureSet          = rhi::AcquireTextureSet( tsDesc );
@@ -1024,8 +1038,8 @@ GameCore::Draw()
 //    sceneRenderTest->Render();
 //    rhiDraw();
 //    manticoreDraw();
-//    rtDraw();
-    visibilityTestDraw();
+    rtDraw();
+//    visibilityTestDraw();
 }
 
 
@@ -1542,6 +1556,7 @@ GameCore::rtDraw()
     packet.fragmentConstCount   = 1;
     packet.fragmentConst[0]     = cube.fp_const;
     packet.textureSet           = cube.texSet;
+    packet.samplerState         = cube.samplerState;
     packet.primitiveType        = rhi::PRIMITIVE_TRIANGLELIST;
     packet.primitiveCount       = 12;
 

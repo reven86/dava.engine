@@ -32,7 +32,6 @@
 #include <QFileInfo>
 #include <QKeyEvent>
 #include <QUrl>
-#include <QFileDialog>
 #include <QStyle>
 
 #define MIME_ENTITY_NAME "application/dava.entity"

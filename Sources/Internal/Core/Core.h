@@ -36,6 +36,7 @@
 #include "Core/ApplicationCore.h"
 #include "Core/DisplayMode.h"
 #include "FileSystem/KeyedArchive.h"
+#include "Render/RHI/rhi_Public.h"
 
 /**
 	\defgroup core Core
@@ -129,7 +130,7 @@ public:
 	// Should be called in platform initialization before FrameworkDidLaunched
 	void CreateSingletons();
     // Should be called after framework did launched to initialize proper render manager
-    void CreateRenderManager();
+    void CreateRenderer();
     // Should be called after full release
 	void ReleaseSingletons();
 
@@ -260,17 +261,14 @@ public:
 	virtual void* GetOpenGLView() { return NULL; };
 	
 	void EnableConsoleMode();
-    
-    void * GetNativeWindowHandle() { return nativeWindowHandle; };
-    void SetNativeWindowHandle(void * handle) { nativeWindowHandle = handle; };
+
+    rhi::InitParam rendererParams;
 
 protected:
 	int32 screenOrientation;
 
 	void SetCommandLine(int argc, char *argv[]);
 	void SetCommandLine(const DAVA::String& cmdLine);
-
-    void * nativeWindowHandle;
 
 private:
     KeyedArchive * options;

@@ -1,3 +1,5 @@
+#if 0
+
 #include "GrassEditorPanel.h"
 #include "Scene/SceneSignals.h"
 #include "Scene/SceneEditor2.h"
@@ -15,7 +17,6 @@
 #include <QApplication>
 #include <QHeaderView>
 #include <QPainter>
-#include <QFileDialog>
 
 
 GrassEditorPanel::GrassEditorPanel(QWidget* parent)
@@ -400,4 +401,6 @@ DAVA::Rect2i GrassEditorPanel::MapTexCoord(const DAVA::TextureSheetCell &cell, D
 
     return GrassEditorSystem::GetAffectedImageRect(area);
 }
+#endif
+
 #endif

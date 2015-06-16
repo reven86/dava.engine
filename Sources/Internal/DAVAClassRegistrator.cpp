@@ -64,8 +64,6 @@ REGISTER_CLASS(SpeedTreeObject);
 REGISTER_CLASS(RenderBatch);
 REGISTER_CLASS(RenderObject);
 REGISTER_CLASS(ShadowVolume);
-REGISTER_CLASS(InstanceMaterialState);
-REGISTER_CLASS(Material);
 REGISTER_CLASS(NMaterial);
 REGISTER_CLASS(BillboardNode);
 REGISTER_CLASS(BoneNode);

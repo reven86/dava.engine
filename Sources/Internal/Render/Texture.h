@@ -82,9 +82,12 @@ public:
 		STATE_DATA_LOADED,
 		STATE_VALID
 	};
+
     const static uint32 INVALID_CUBEMAP_FACE = -1;
     const static uint32 CUBE_FACE_COUNT = 6;
 	
+    static Array<String, CUBE_FACE_COUNT> FACE_NAME_SUFFIX;
+
 	// Main constructors
     /**
         \brief Create texture from data arrray
@@ -170,9 +173,6 @@ public:
     Image * CreateImageFromMemory();
 
 	bool IsPinkPlaceholder();
-    
-	static void GenerateCubeFaceNames(const FilePath & baseName, Vector<FilePath>& faceNames);
-	static void GenerateCubeFaceNames(const FilePath & baseName, const Vector<String>& faceNameSuffixes, Vector<FilePath>& faceNames);
 
     void Reload();
     void ReloadAs(eGPUFamily gpuFamily);
@@ -202,6 +202,9 @@ public:
 	PixelFormat GetFormat() const;
 
     static void SetPixelization(bool value);
+    
+    int32 GetBaseMipMap() const;
+
 protected:
     
     void ReleaseTextureData();
@@ -229,7 +232,6 @@ protected:
     Image * ReadDataToImage();    
     
     bool IsLoadAvailable(const eGPUFamily gpuFamily) const;
-	int32 GetBaseMipMap() const;
 
 	static eGPUFamily GetGPUForLoading(const eGPUFamily requestedGPU, const TextureDescriptor *descriptor);
 

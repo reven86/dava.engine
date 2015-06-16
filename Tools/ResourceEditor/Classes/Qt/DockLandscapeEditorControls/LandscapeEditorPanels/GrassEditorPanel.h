@@ -1,3 +1,5 @@
+#if 0
+
 #ifndef __RESOURCEEDITORQT__GRASSEDITORPANEL__
 #define __RESOURCEEDITORQT__GRASSEDITORPANEL__
 
@@ -66,3 +68,5 @@ private:
 };
 
 #endif /* defined(__RESOURCEEDITORQT__GRASSEDITORPANEL__) */
+
+#endif

@@ -144,15 +144,11 @@ public:
     const static FastName PARAM_TILE_COLOR1;
     const static FastName PARAM_TILE_COLOR2;
     const static FastName PARAM_TILE_COLOR3;
-    const static FastName PARAM_CURSOR_COORD_SIZE; //x,y - cursor position [0...1] (in landscape space); z,w - cursor size [0...1] (fraction of landscape)
 
-    const static FastName TEXTURE_NAME_COLOR;
-    const static FastName TEXTURE_NAME_TILE;
-    const static FastName TEXTURE_NAME_TILEMASK;
-    const static FastName TEXTURE_NAME_SPECULAR;
-    const static FastName TEXTURE_NAME_FULL_TILED;
-    
-    const static FastName TEXTURE_NAME_CURSOR; //should use clamp wrap mode
+    const static FastName TEXTURE_COLOR;
+    const static FastName TEXTURE_TILE;
+    const static FastName TEXTURE_TILEMASK;
+    const static FastName TEXTURE_SPECULAR;
 
     /**
         \brief Set lod coefficients for dynamic roam landscape
@@ -160,8 +156,6 @@ public:
         Every next value should be almost twice higher than previous to avoid gaps between levels
      */
     void SetLods(const Vector4 & lods);
-
-    static NMaterial * CreateLandscapeMaterial();
     
     /**
         \brief Builds landscape from heightmap image and bounding box of this landscape block
@@ -190,7 +184,7 @@ public:
         \param[out] vertices landscape vertices
         \param[out] indices landscape indices
 	 */
-	void GetGeometry(Vector<LandscapeVertex> & vertices, Vector<int32> & indices);
+    bool GetGeometry(Vector<LandscapeVertex> & vertices, Vector<int32> & indices) const;
     
     /**
         \brief Function to receive pathname of heightmap object
@@ -212,12 +206,13 @@ public:
     
     // TODO: Need comment here
 	bool PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * normal = 0) const;
-	Vector3 GetPoint(int16 x, int16 y, uint16 height);
+	Vector3 GetPoint(int16 x, int16 y, uint16 height) const;
 
     Heightmap *GetHeightmap();
     virtual void SetHeightmap(Heightmap *height);
     
     NMaterial * GetMaterial();
+    void SetMaterial(NMaterial * material);
 
 //    virtual void UpdateFullTiledTexture();
 //    FilePath SaveFullTiledTexture();

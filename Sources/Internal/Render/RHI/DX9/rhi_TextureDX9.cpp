@@ -1,6 +1,7 @@
 
     #include "../Common/rhi_Private.h"
     #include "../Common/rhi_Pool.h"
+    #include "../Common/format_convert.h"
     #include "rhi_DX9.h"
 
     #include "Debug/DVAssert.h"
@@ -31,10 +32,14 @@ public:
     IDirect3DCubeTexture9*      cubetex9;
     mutable IDirect3DSurface9*  surf9;
 
+    mutable IDirect3DTexture9*  rt_tex9;
+    mutable IDirect3DSurface9*  rt_surf9;
+
     unsigned                    lastUnit;
     unsigned                    mappedLevel;
     TextureFace                 mappedFace;
     void*                       mappedData;
+    unsigned                    isRenderTarget:1;
     unsigned                    isMapped:1;
 };
 
@@ -46,46 +51,17 @@ TextureDX9_t::TextureDX9_t()
     tex9(nullptr), 
     cubetex9(nullptr),
     surf9(nullptr),
+    rt_tex9(nullptr),
+    rt_surf9(nullptr),
     lastUnit(InvalidIndex),
     mappedData(nullptr),
+    isRenderTarget(false),
     isMapped(false)
 {
 }
 
 typedef Pool<TextureDX9_t,RESOURCE_TEXTURE>   TextureDX9Pool;
 RHI_IMPL_POOL(TextureDX9_t,RESOURCE_TEXTURE);
-
-
-//------------------------------------------------------------------------------
-
-static void
-_SwapRB8( void* data, uint32 size )
-{
-    for( uint8* d=(uint8*)data,*d_end=(uint8*)data+size; d!=d_end; d+=4 )
-    {
-        uint8   t = d[0];
-
-        d[0] = d[2];
-        d[2] = t;
-    }
-}
-
-
-//------------------------------------------------------------------------------
-
-static void
-_SwapRB4( void* data, uint32 size )
-{
-    for( uint8* d=(uint8*)data,*d_end=(uint8*)data+size; d!=d_end; d+=2 )
-    {
-        uint8   t0 = d[0];
-        uint8   t1 = d[1];
-
-        d[0] = (t0&0xF0) | (t1&0x0F);
-        d[1] = (t1&0xF0) | (t0&0x0F);
-    }
-}
-
 
 //------------------------------------------------------------------------------
 
@@ -179,6 +155,8 @@ dx9_Texture_Create( const Texture::Descriptor& desc )
         }   break;
 
     }
+
+    tex->isRenderTarget = desc.isRenderTarget;
     
     return handle;
 }
@@ -219,6 +197,19 @@ dx9_Texture_Delete( Handle tex )
             self->cubetex9 = nullptr;
         }
         
+        if( self->rt_surf9 )
+        {
+            self->rt_surf9->Release();
+            self->rt_surf9 = nullptr;
+        }
+
+        if( self->rt_tex9 )
+        {
+            self->rt_tex9->Release();
+            self->rt_tex9 = nullptr;
+        }
+
+
         self->width  = 0;
         self->height = 0;
         
@@ -240,6 +231,7 @@ dx9_Texture_Map( Handle tex, unsigned level, TextureFace face )
     
     if( self->cubetex9 )    
     {
+        DVASSERT(!self->isRenderTarget);
         D3DCUBEMAP_FACES    f;
 
         switch( face )
@@ -266,29 +258,70 @@ dx9_Texture_Map( Handle tex, unsigned level, TextureFace face )
     }
     else
     {
-        hr = self->tex9->LockRect( level, &rc, NULL, 0 );
-
-        if( SUCCEEDED(hr) )
+        if( self->isRenderTarget )
         {
-            mem = rc.pBits;
+            DVASSERT(level==0);
+
+            if( !self->rt_tex9 )
+            {
+                hr = _D3D9_Device->CreateTexture
+                ( 
+                    self->width, self->height,
+                    1, 0, DX9_TextureFormat(self->format),
+                    D3DPOOL_SYSTEMMEM,
+                    &self->rt_tex9,
+                    NULL
+                );
+                
+                if( SUCCEEDED(hr) )
+                {
+                    hr = self->rt_tex9->GetSurfaceLevel( 0, &(self->rt_surf9) );
+                }
+            }
+
+            if( self->rt_tex9  &&  self->rt_surf9 )
+            {
+                if( _D3D9_Device->GetRenderTargetData( self->surf9, self->rt_surf9 ) == D3D_OK )
+                {
+                    hr = self->rt_tex9->LockRect( level, &rc, NULL, 0 );
+
+                    if( SUCCEEDED(hr) )
+                    {
+                        mem = rc.pBits;
             
-            self->mappedData  = mem;
-            self->mappedLevel = level;
-            self->isMapped    = true;
+                        self->mappedData  = mem;
+                        self->mappedLevel = level;
+                        self->isMapped    = true;
+                    }
+                }
+            }
+        }
+        else
+        {
+            hr = self->tex9->LockRect( level, &rc, NULL, 0 );
+
+            if( SUCCEEDED(hr) )
+            {
+                mem = rc.pBits;
+            
+                self->mappedData  = mem;
+                self->mappedLevel = level;
+                self->isMapped    = true;
+            }
         }
     }
 
     if( self->format == TEXTURE_FORMAT_R8G8B8A8 )
     {
-        Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
-        
-        _SwapRB8( self->mappedData, ext.dx*ext.dy*sizeof(uint32) );
+        _SwapRB8( self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel) );
     }
     else if( self->format == TEXTURE_FORMAT_R4G4B4A4 )
     {
-        Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
-        
-        _SwapRB4( self->mappedData, ext.dx*ext.dy*sizeof(uint16) );
+        _SwapRB4( self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel) );
+    }
+    else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
+    {
+        _SwapRB5551( self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel) );
     }
 
     return mem;
@@ -304,17 +337,17 @@ dx9_Texture_Unmap( Handle tex )
 
     DVASSERT(self->isMapped);
 
-    if( self->format == TEXTURE_FORMAT_R8G8B8A8 )
+    if (self->format == TEXTURE_FORMAT_R8G8B8A8)
     {
-        Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
-        
-        _SwapRB8( self->mappedData, ext.dx*ext.dy*sizeof(uint32) );
+        _SwapRB8(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
     }
-    else if( self->format == TEXTURE_FORMAT_R4G4B4A4 )
+    else if (self->format == TEXTURE_FORMAT_R4G4B4A4)
     {
-        Size2i  ext = TextureExtents( Size2i(self->width,self->height), self->mappedLevel );
-        
-        _SwapRB4( self->mappedData, ext.dx*ext.dy*sizeof(uint16) );
+        _SwapRB4(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
+    }
+    else if (self->format == TEXTURE_FORMAT_R5G5B5A1)
+    {
+        _SwapRB5551(self->mappedData, TextureSize(self->format, self->width, self->height, self->mappedLevel));
     }
 
     if( self->cubetex9 )
@@ -338,7 +371,8 @@ dx9_Texture_Unmap( Handle tex )
     }
     else
     {
-        HRESULT hr = self->tex9->UnlockRect( self->mappedLevel );
+        IDirect3DTexture9*  tex = (self->isRenderTarget)  ? self->rt_tex9  : self->tex9;
+        HRESULT             hr  = tex->UnlockRect( self->mappedLevel );
 
         if( FAILED(hr) )
             Logger::Error( "UnlockRect failed:\n%s\n", D3D9ErrorText(hr) );

@@ -70,38 +70,30 @@ void UIFadeTransition::Draw(const UIGeometricData &geometricData)
 	 renderTargetNextScreen->Draw(); 
 	 */
     Sprite::DrawState drawState;
-    drawState.SetMaterial(RenderHelper::DEFAULT_2D_BLEND_MATERIAL);
+    drawState.SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
 	if (type == FADE_MIX)
 	{
 		renderTargetPrevScreen->Reset();
-        
         drawState.SetPosition(geometricData.position);
-        RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState);
+        RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState, Color::White);
 
-		RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, normalizedTime);
 		renderTargetNextScreen->Reset();
-        
         drawState.SetPosition(geometricData.position);
-        RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState);
+        RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState, Color(1.0f, 1.0f, 1.0f, normalizedTime));
 	}
     else if (type == FADE_IN_FADE_OUT)
 	{
 		if (normalizedTime <= 0.5f)
 		{
-			RenderSystem2D::Instance()->SetColor(1.0f - normalizedTime * 2, 1.0f - normalizedTime * 2, 1.0f - normalizedTime * 2, 1.0f);
 			drawState.SetPosition(0, 0);
-            
-            RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState);
+            RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState, Color(1.0f - normalizedTime * 2, 1.0f - normalizedTime * 2, 1.0f - normalizedTime * 2, 1.0f));
 		}
         else
 		{
-			RenderSystem2D::Instance()->SetColor((normalizedTime - 0.5f) * 2, (normalizedTime - 0.5f) * 2, (normalizedTime - 0.5f) * 2, 1.0f);
 			drawState.SetPosition(0, 0);
-            
-            RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState);
+            RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState, Color((normalizedTime - 0.5f) * 2, (normalizedTime - 0.5f) * 2, (normalizedTime - 0.5f) * 2, 1.0f));
 		}
 	}
-	RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 	
 };

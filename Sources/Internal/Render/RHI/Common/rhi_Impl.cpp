@@ -567,11 +567,20 @@ TextureStride( TextureFormat format, Size2i size, uint32 level )
             stride = ext.dx * sizeof(uint32);
         }   break;
         
+        case TEXTURE_FORMAT_R4G4B4A4 :
+        case TEXTURE_FORMAT_R5G5B5A1 :
+        case TEXTURE_FORMAT_R5G6B5 :
+        case TEXTURE_FORMAT_R16 :
         case TEXTURE_FORMAT_D16 :
         {
             stride = ext.dx * sizeof(uint16);
         }   break;
         
+        case TEXTURE_FORMAT_R8 :
+        {
+            stride = ext.dx * sizeof(uint8);
+        }   break;
+            
         case TEXTURE_FORMAT_D24S8 :
         {
             stride = ext.dx * sizeof(uint32);
@@ -667,6 +676,22 @@ TextureSize( TextureFormat format, uint32 width, uint32 height, uint32 level )
             sz = (ww * hh) << 4;
         }   break;
 
+        case TEXTURE_FORMAT_PVRTC_4BPP_RGBA :
+        {
+            uint32  block_h = 8;
+            uint32  block_w = 8;
+            
+            sz = ( (height + block_h - 1) / block_h) * ( (width + block_w - 1) / block_w ) * (sizeof(uint64) * 4);
+        }   break;
+            
+        case TEXTURE_FORMAT_PVRTC_2BPP_RGBA :
+        {
+            uint32  block_h = 16;
+            uint32  block_w = 8;
+            
+            sz = ( (height + block_h - 1) / block_h) * ( (width + block_w - 1) / block_w ) * (sizeof(uint64) * 4);
+        }   break;
+            
         case TEXTURE_FORMAT_PVRTC2_4BPP_RGB :
         case TEXTURE_FORMAT_PVRTC2_4BPP_RGBA :
         {

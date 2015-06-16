@@ -30,7 +30,6 @@
 #include "Scene3D/Scene.h"
 
 #include "Render/Texture.h"
-#include "Render/Material.h"
 #include "Render/3D/StaticMesh.h"
 #include "Render/3D/AnimatedMesh.h"
 #include "Render/Image/Image.h"
@@ -89,7 +88,7 @@
 namespace DAVA 
 {
 
-//RHI_COMPLETE TODO: remove this crap with shadow color
+//TODO: remove this crap with shadow color
 static const FastName DEPRECATED_SHADOW_COLOR_PARAM("shadowColor");
 
 Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
@@ -712,7 +711,7 @@ void Scene::Draw()
 {
     TIME_PROFILE("Scene::Draw");
 
-    //RHI_COMPLETE TODO: remove this crap with shadow color
+    //TODO: remove this crap with shadow color
     if (sceneGlobalMaterial && sceneGlobalMaterial->HasLocalProperty(DEPRECATED_SHADOW_COLOR_PARAM))
     {
         const float32 * propDataPtr = sceneGlobalMaterial->GetLocalPropValue(DEPRECATED_SHADOW_COLOR_PARAM);
@@ -720,7 +719,7 @@ void Scene::Draw()
     }
     else
     {
-        Color defShadowColor(1.f, 0.f, 0.f, 1.f);
+        static Color defShadowColor(1.f, 0.f, 0.f, 1.f);
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR, defShadowColor.color, (pointer_size)this);
     }
     
@@ -939,14 +938,21 @@ SceneFileV2::eError Scene::SaveScene(const DAVA::FilePath & pathname, bool saveF
     
 void Scene::OptimizeBeforeExport()
 {
-#if RHI_COMPLETE
     Set<NMaterial*> materials;
     materialSystem->BuildMaterialList(materials);
     
     Set<NMaterial *>::const_iterator endIt = materials.end();
-    for(Set<NMaterial *>::const_iterator it = materials.begin(); it != endIt; ++it)
-        (*it)->ReleaseIlluminationParams();
-#endif  // RHI_COMPLETE
+    for (Set<NMaterial *>::const_iterator it = materials.begin(); it != endIt; ++it)
+    {
+        if ((*it)->HasLocalFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED))
+            (*it)->RemoveFlag(NMaterialFlagName::FLAG_ILLUMINATION_USED);
+
+        if ((*it)->HasLocalFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER))
+            (*it)->RemoveFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
+
+        if ((*it)->HasLocalFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER))
+            (*it)->RemoveFlag(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
+    }
 
     ImportShadowColor(this);
 

@@ -44,7 +44,7 @@ class ParticleRenderObject : public RenderObject
     Vector<RenderBatch *> renderBatchCache;
 
 	//void AppendParticleGroup(const ParticleGroup &group, ParticleRenderGroup *renderGroup, const Vector3& cameraDirection);	
-    void AppendParticleGroup(List<ParticleGroup>::iterator begin, List<ParticleGroup>::iterator end, uint32 particlesCount);
+    void AppendParticleGroup(List<ParticleGroup>::iterator begin, List<ParticleGroup>::iterator end, uint32 particlesCount, const Vector3& cameraDirection);
 	void PrepareRenderData(Camera * camera);    
 	Vector<uint16> indices;
     uint32 sortingOffset;
@@ -71,9 +71,7 @@ public:
 private:
     int32 CalculateParticleCount(const ParticleGroup& group);
 
-    uint32 regularVertexLayoutId, frameBlendVertexLayoutId;
-    
-    rhi::HIndexBuffer indexBuffer; //RHI_COMPLETE - temporary here!!!
+    uint32 regularVertexLayoutId, frameBlendVertexLayoutId;        
 	
 };
 

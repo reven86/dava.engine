@@ -72,8 +72,8 @@ NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, b
 		NMaterial *material = new NMaterial();
         material->SetParent(particleBaseMaterial);        
 		
-        /*if (enableFrameBlend)
-			material->AddFlag(NMaterialFlagName::FLAG_FRAME_BLEND, 1);		*/
+        if (enableFrameBlend)
+			material->AddFlag(NMaterialFlagName::FLAG_FRAME_BLEND, 1);		
 
         if (!enableFog)  //inverse logic to suspend vertex fog inherited from global material
             material->AddFlag(NMaterialFlagName::FLAG_VERTEXFOG, 0);        
@@ -211,10 +211,10 @@ void ParticleEffectSystem::RemoveComponent(Entity * entity, Component * componen
 		RemoveFromActive(effect);
 }
 
-void ParticleEffectSystem::ImmediateEvent(Entity * entity, uint32 event)
+void ParticleEffectSystem::ImmediateEvent(Component * component, uint32 event)
 {
-	ParticleEffectComponent *effect = GetEffectComponent(entity);
-	if (!effect) return;
+    DVASSERT(component->GetType() == Component::PARTICLE_EFFECT_COMPONENT);
+	ParticleEffectComponent *effect = static_cast<ParticleEffectComponent*>(component);
 	if (event == EventSystem::START_PARTICLE_EFFECT)
     {
 		if (effect->state == ParticleEffectComponent::STATE_STOPPED)
