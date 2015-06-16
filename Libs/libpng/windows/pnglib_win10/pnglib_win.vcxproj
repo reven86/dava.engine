@@ -49,6 +49,7 @@
     <ApplicationType>Windows Store</ApplicationType>
     <TargetPlatformVersion>10.0.10069.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.10069.0</TargetPlatformMinVersion>
+    <DefaultLanguage>en-US</DefaultLanguage>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -131,7 +132,7 @@
     <Lib>
       <OutputFile>$(OutDir)$(TargetName)d$(TargetExt)</OutputFile>
       <AdditionalDependencies>zlibd.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>./../../lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./arm_zlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -175,7 +176,7 @@
     </Link>
     <Lib>
       <AdditionalDependencies>zlib.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>./../../lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./arm_zlib</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
