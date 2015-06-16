@@ -76,6 +76,7 @@ LibraryModel::~LibraryModel()
 Qt::ItemFlags LibraryModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
+        for (int j = 0; j < controls->GetCount(); j++)
     {
         return Qt::NoItemFlags;
     }

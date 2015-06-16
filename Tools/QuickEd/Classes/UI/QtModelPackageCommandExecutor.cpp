@@ -36,6 +36,7 @@
 #include "UI/Commands/InsertControlCommand.h"
 #include "UI/Commands/RemoveControlCommand.h"
 #include "UI/Commands/InsertImportedPackageCommand.h"
+#include "UI/Commands/RemoveImportedPackageCommand.h"
 #include "UI/Commands/AddComponentCommand.h"
 #include "UI/Commands/RemoveComponentCommand.h"
 
@@ -50,6 +51,9 @@
 #include "Model/YamlPackageSerializer.h"
 #include "Model/EditorUIPackageBuilder.h"
 
+#include "UI/UIControl.h"
+#include "UI/UIPackageLoader.h"
+
 using namespace DAVA;
 
 QtModelPackageCommandExecutor::QtModelPackageCommandExecutor(Document *_document)
@@ -63,9 +67,66 @@ QtModelPackageCommandExecutor::~QtModelPackageCommandExecutor()
     document = nullptr;
 }
 
-void QtModelPackageCommandExecutor::AddImportedPackageIntoPackage(PackageControlsNode *importedPackageControls, PackageNode *package)
+void QtModelPackageCommandExecutor::AddImportedPackagesIntoPackage(const DAVA::Vector<DAVA::FilePath> packagePaths, PackageNode *package)
 {
-    PushCommand(new InsertImportedPackageCommand(package, importedPackageControls, package->GetImportedPackagesNode()->GetCount()));
+    Vector<PackageNode*> importedPackages;
+    for (const FilePath &path : packagePaths)
+    {
+        if (package->FindImportedPackage(path) == nullptr && package->GetPath().GetFrameworkPath() != path.GetFrameworkPath())
+        {
+            EditorUIPackageBuilder builder;
+            if (UIPackageLoader().LoadPackage(path, &builder))
+            {
+                RefPtr<PackageNode> importedPackage = builder.BuildPackage();
+                if (package->GetImportedPackagesNode()->CanInsertImportedPackage(importedPackage.Get()))
+                {
+                    importedPackages.push_back(SafeRetain(importedPackage.Get()));
+                }
+            }
+        }
+    }
+    
+    if (!importedPackages.empty())
+    {
+        BeginMacro("Insert Packages");
+        for (PackageNode *importedPackage : importedPackages)
+        {
+            AddImportedPackageIntoPackageImpl(importedPackage, package);
+            SafeRelease(importedPackage);
+        }
+        importedPackages.clear();
+        EndMacro();
+    }
+}
+
+void QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*> &importedPackages, PackageNode *package)
+{
+    DAVA::Vector<PackageNode*> checkedPackages;
+    for (PackageNode *testPackage : importedPackages)
+    {
+        bool canRemove = true;
+        for (int i = 0; i < package->GetPackageControlsNode()->GetCount(); i++)
+        {
+            ControlNode *control = package->GetPackageControlsNode()->Get(i);
+            if (control->IsDependsOnPackage(testPackage))
+            {
+                canRemove = false;
+                break;
+            }
+        }
+        if (canRemove)
+            checkedPackages.push_back(testPackage);
+    }
+    
+    if (!checkedPackages.empty())
+    {
+        BeginMacro("Remove Imported Packages");
+        for (PackageNode *importedPackage : checkedPackages)
+        {
+            PushCommand(new RemoveImportedPackageCommand(package, importedPackage));
+        }
+        EndMacro();
+    }
 }
 
 void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value)
@@ -122,6 +183,33 @@ void QtModelPackageCommandExecutor::InsertControl(ControlNode *control, Controls
         InsertControlImpl(control, dest, destIndex);
         EndMacro();
     }
+}
+
+void QtModelPackageCommandExecutor::InsertInstances(const DAVA::Vector<ControlNode*> &controls, ControlsContainerNode *dest, DAVA::int32 destIndex)
+{
+    Vector<ControlNode*> nodesToInsert;
+    for (ControlNode *node : controls)
+    {
+        if (node->CanCopy() && dest->CanInsertControl(node, destIndex))
+            nodesToInsert.push_back(node);
+    }
+    
+    if (!nodesToInsert.empty())
+    {
+        BeginMacro(Format("Instance Controls %s", FormatControlNames(nodesToInsert).c_str()).c_str());
+        
+        int index = destIndex;
+        for (ControlNode *node : nodesToInsert)
+        {
+            ControlNode *copy = ControlNode::CreateFromPrototype(node);
+            InsertControlImpl(copy, dest, index);
+            SafeRelease(copy);
+            index++;
+        }
+        
+        EndMacro();
+    }
+
 }
 
 void QtModelPackageCommandExecutor::CopyControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex)
@@ -214,17 +302,81 @@ bool QtModelPackageCommandExecutor::Paste(PackageNode *root, ControlsContainerNo
     RefPtr<YamlParser> parser(YamlParser::CreateAndParseString(data));
     if (parser.Valid() && parser->GetRootNode())
     {
-        BeginMacro("Paste");
-        EditorUIPackageBuilder builder(root, dest, destIndex, this);
-        UIPackage *newPackage = UIPackageLoader(&builder).LoadPackage(parser->GetRootNode(), "");
-        bool completed = newPackage != nullptr;
-        SafeRelease(newPackage);
-        EndMacro();
+        EditorUIPackageBuilder builder;
         
-        if (completed)
+        builder.AddImportedPackage(root);
+        for (int32 i = 0; i < root->GetImportedPackagesNode()->GetCount(); i++)
+        {
+            builder.AddImportedPackage(root->GetImportedPackagesNode()->GetImportedPackage(i));
+        }
+        
+        if (UIPackageLoader().LoadPackage(parser->GetRootNode(), "", &builder))
+        {
+            const Vector<PackageNode*> &importedPackages = builder.GetImportedPackages();
+            const Vector<ControlNode*> &controls = builder.GetRootControls();
+            Vector<ControlNode*> acceptedControls;
+            Vector<PackageNode*> acceptedPackages;
+            Vector<PackageNode*> declinedPackages;
+            
+            for (PackageNode *importedPackage : importedPackages)
+            {
+                if (importedPackage != root && importedPackage->GetParent() != root->GetImportedPackagesNode())
+                {
+                    if (root->GetImportedPackagesNode()->CanInsertImportedPackage(importedPackage))
+                        acceptedPackages.push_back(importedPackage);
+                    else
+                        declinedPackages.push_back(importedPackage);
+                }
+            }
+
+            for (ControlNode *control : controls)
+            {
+                if (dest->CanInsertControl(control, destIndex))
+                {
+                    bool canInsert = true;
+                    for (PackageNode *declinedPackage : declinedPackages)
+                    {
+                        if (control->IsDependsOnPackage(declinedPackage))
+                        {
+                            canInsert = false;
+                            break;
+                        }
+                    }
+
+                    if (canInsert)
+                    {
+                        acceptedControls.push_back(control);
+                    }
+                }
+            }
+
+            if (!acceptedControls.empty())
+            {
+                BeginMacro("Paste");
+                for (PackageNode *importedPackage : acceptedPackages)
+                {
+                    AddImportedPackageIntoPackageImpl(importedPackage, root);
+                }
+                
+                int32 index = destIndex;
+                for (ControlNode *control : acceptedControls)
+                {
+                    InsertControl(control, dest, index);
+                    index++;
+                }
+                
+                EndMacro();
+            }
             return true;
+        }
+        
     }
     return false;
+}
+
+void QtModelPackageCommandExecutor::AddImportedPackageIntoPackageImpl(PackageNode *importedPackage, PackageNode *package)
+{
+    PushCommand(new InsertImportedPackageCommand(package, importedPackage, package->GetImportedPackagesNode()->GetCount()));
 }
 
 void QtModelPackageCommandExecutor::InsertControlImpl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex)
@@ -237,7 +389,7 @@ void QtModelPackageCommandExecutor::InsertControlImpl(ControlNode *control, Cont
         const Vector<ControlNode*> &instances = destControl->GetInstances();
         for (ControlNode *instance : instances)
         {
-            ControlNode *copy = ControlNode::CreateFromPrototypeChild(control, document->GetPackage()->GetPackageRef());
+            ControlNode *copy = ControlNode::CreateFromPrototypeChild(control);
             InsertControlImpl(copy, instance, destIndex);
             SafeRelease(copy);
         }

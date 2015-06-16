@@ -190,7 +190,13 @@ bool TextureDescriptor::IsCompressedTextureActual(eGPUFamily forGPU) const
     
 	return ((compression->sourceFileCrc == sourceCRC) && (compression->convertedFileCrc == convertedCRC));
 }
-    
+
+bool TextureDescriptor::HasCompressionFor(eGPUFamily forGPU) const
+{
+    const Compression *compression = GetCompressionParams(forGPU);
+    return (compression && compression->format != FORMAT_INVALID);
+}
+
 bool TextureDescriptor::UpdateCrcForFormat(eGPUFamily forGPU) const
 {
     bool wasUpdated = false;
@@ -644,7 +650,7 @@ const TextureDescriptor::Compression * TextureDescriptor::GetCompressionParams(e
     return &compression[gpuFamily];
 }
 
-Array<ImageFormat, 3> TextureDescriptor::sourceTextureTypes = { { IMAGE_FORMAT_PNG, IMAGE_FORMAT_TGA, IMAGE_FORMAT_JPEG } };
+Array<ImageFormat, 4> TextureDescriptor::sourceTextureTypes = { { IMAGE_FORMAT_PNG, IMAGE_FORMAT_TGA, IMAGE_FORMAT_JPEG, IMAGE_FORMAT_DDS } };
 Array<ImageFormat, 2> TextureDescriptor::compressedTextureTypes = { { IMAGE_FORMAT_PVR, IMAGE_FORMAT_DDS } };
 
 auto IsSupportedFor = [](ImageFormat format, const String& extension)

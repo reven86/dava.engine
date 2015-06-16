@@ -99,7 +99,7 @@ DAVA_ROOT := $(LOCAL_PATH)
 
 # set path for includes
 DV_LOCAL_C_INCLUDES := $(LOCAL_PATH)
-DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/Platform/TemplateAndroid/
+DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../Tools/
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/include
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/fmod/include
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/lua/include
@@ -257,6 +257,13 @@ include $(CLEAR_VARS)
 # set module name
 LOCAL_MODULE := libInternalPart1
 
+# On arm architectures add sysroot option to be able to use 
+# _Unwind_Backtrace and _Unwind_GetIP for collecting backtraces
+# TODO: review checking arm arch and $(ANDROID_NDK_ROOT) 
+ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
+       DV_LOCAL_CFLAGS += --sysroot=$(ANDROID_NDK_ROOT)/platforms/$(APP_PLATFORM)/arch-arm
+endif
+
 LOCAL_C_INCLUDES := $(DV_LOCAL_C_INCLUDES)
 LOCAL_EXPORT_C_INCLUDES := $(DV_LOCAL_EXPORT_C_INCLUDES)
 LOCAL_ARM_NEON := $(DV_LOCAL_ARM_NEON)
@@ -292,6 +299,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Network/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Network/Base/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Network/Services/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Network/Services/MMNet/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Network/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Particles/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/*.cpp) \
@@ -344,6 +352,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Thread/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Components/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UnitTests/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Utils/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Job/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Image/*.cpp) \

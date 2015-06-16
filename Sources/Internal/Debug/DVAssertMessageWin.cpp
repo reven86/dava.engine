@@ -26,19 +26,24 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/Platform.h"
+#if defined (__DAVAENGINE_WINDOWS__)
 
 #include "Debug/DVAssertMessage.h"
 #include "FileSystem/Logger.h"
-
-#if defined (__DAVAENGINE_WIN32__)
+#include "Utils/UTF8Utils.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
 
-bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
+#if defined (__DAVAENGINE_WIN32__)
+
+bool DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 {
 	// Modal Type is ignored by Win32.
-	int buttonId = MessageBoxA(HWND_DESKTOP, content, "Assert", MB_OKCANCEL | MB_ICONEXCLAMATION);
+    const int flags = MB_OKCANCEL | MB_ICONEXCLAMATION | MB_SETFOREGROUND | MB_TOPMOST | (modalType == TRY_NONMODAL ? MB_APPLMODAL : MB_TASKMODAL);
+    int buttonId = ::MessageBoxA(HWND_DESKTOP, content, "Assert", flags);
     switch (buttonId)
     {
     case IDCANCEL:
@@ -54,6 +59,44 @@ bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
     }
 }
 
-};
+#elif defined (__DAVAENGINE_WIN_UAP__)
 
-#endif //#if defined (__DAVAENGINE_WIN32__)
+bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
+{
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
+    DAVA::Logger::Instance()->Warning("DVAssertMessage::InnerShow for Windows UAP is not implemented");
+    return false;
+
+    /*using namespace Windows::UI::Popups;
+    
+    WideString contentStr = UTF8Utils::EncodeToWideString(content);
+    Platform::String^ lbl = ref new Platform::String(contentStr.c_str());
+    MessageDialog^ msg = ref new MessageDialog(lbl);
+
+    //creating commands for message dialog
+    UICommand^ continueCommand = ref new UICommand(
+		"OK", 
+        ref new UICommandInvokedHandler([&] (IUICommand^) {} ));
+    UICommand^ cancelCommand = ref new UICommand(
+		"Cancel", 
+        ref new UICommandInvokedHandler([&] (IUICommand^) {} ));
+
+    msg->Commands->Append(continueCommand);
+    msg->Commands->Append(cancelCommand);
+
+	//command options
+	msg->DefaultCommandIndex = 0;
+	msg->CancelCommandIndex = 1;
+
+	//show message and blocking thread
+	//msg->ShowAsync();
+    //assert(false);
+
+    return false;*/
+}
+
+#endif // defined (__DAVAENGINE_WIN_UAP__)
+
+} // namespace DAVA
+
+#endif //#if defined (__DAVAENGINE_WINDOWS__)

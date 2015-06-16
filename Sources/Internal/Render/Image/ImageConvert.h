@@ -77,10 +77,10 @@ struct ConvertBGRA8888toRGBA8888
     // input and output is the same memory
     inline void operator()(const BGRA8888* input, uint32* output)
     {
-        BGRA8888 in = *input;
-        BGRA8888 tmp = in;
-        tmp.b = in.r;
-        tmp.r = in.b;
+        static_assert(sizeof(BGRA8888) == sizeof(uint32), "remove alignment");
+        //             {input->b, input->g, input->r, input->a}
+        //..............r...g...b
+        BGRA8888 tmp = {input->r, input->g, input->b, input->a};
         *output = *reinterpret_cast<uint32*>(&tmp);
     }
 };

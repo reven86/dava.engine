@@ -30,7 +30,6 @@
 #include "ValueProperty.h"
 
 #include "SubValueProperty.h"
-#include "Model/PackageSerializer.h"
 #include <Base/BaseMath.h>
 
 using namespace DAVA;
@@ -51,7 +50,7 @@ ValueProperty::~ValueProperty()
 
 int ValueProperty::GetCount() const
 {
-    return (int) children.size();
+    return static_cast<int>(children.size());
 }
 
 AbstractProperty *ValueProperty::GetProperty(int index) const
@@ -68,10 +67,6 @@ void ValueProperty::Refresh()
 bool ValueProperty::HasChanges() const
 {
     return replaced;
-}
-
-void ValueProperty::Serialize(PackageSerializer *serializer) const
-{
 }
 
 const DAVA::String &ValueProperty::GetName() const

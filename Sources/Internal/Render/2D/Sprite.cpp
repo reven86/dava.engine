@@ -51,11 +51,11 @@
 namespace DAVA
 {
 #ifdef USE_FILEPATH_IN_MAP
-	typedef Map<FilePath, Sprite *> SpriteMap;
+    using SpriteMap = Map<FilePath, Sprite *>;
 #else //#ifdef USE_FILEPATH_IN_MAP
-	typedef Map<String, Sprite *> SpriteMap;
+    using SpriteMap = Map<String, Sprite *>;
 #endif //#ifdef USE_FILEPATH_IN_MAP
-	SpriteMap spriteMap;
+    SpriteMap spriteMap;
 
 static int32 fboCounter = 0;
 

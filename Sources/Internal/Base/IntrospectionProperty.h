@@ -70,8 +70,8 @@ namespace DAVA
 	class InspProp : public InspMember
 	{
 	public:
-		typedef V	 (T::*GetterPtr)() const;
-		typedef void (T::*SetterPtr)(const V &);
+        using GetterPtr = V (T::*)() const;
+        using SetterPtr = void (T::*)(const V &);
 
 		InspProp(const char *_name, const InspDesc &_desc, const MetaInfo *_type, GetterPtr _g, SetterPtr _s, int _flags)
 			: InspMember(_name, _desc, 0, _type, _flags), getter(_g), setter(_s)
@@ -106,8 +106,8 @@ namespace DAVA
 	class InspPropReturnRef : public InspMember
 	{
 	public:
-		typedef V&	 (T::*GetterPtr)() const;
-		typedef void (T::*SetterPtr)(const V &);
+        using GetterPtr = V& (T::*)() const;
+        using SetterPtr = void (T::*)(const V &);
 
 		InspPropReturnRef(const char *_name, const InspDesc &_desc, const MetaInfo *_type, GetterPtr _g, SetterPtr _s, int _flags)
 			: InspMember(_name, _desc, 0, _type, _flags), getter(_g), setter(_s)
@@ -142,8 +142,8 @@ namespace DAVA
 	class InspPropParamRef : public InspMember
 	{
 	public:
-		typedef V*	 (T::*GetterPtr)();
-		typedef void (T::*SetterPtr)(V*);
+        using GetterPtr = V* (T::*)();
+        using SetterPtr = void (T::*)(V*);
 
 		InspPropParamRef(const char *_name, const InspDesc &_desc, const MetaInfo *_type, GetterPtr _g, SetterPtr _s, int _flags)
 			: InspMember(_name, _desc, 0, _type, _flags), getter(_g), setter(_s)
@@ -187,8 +187,8 @@ namespace DAVA
 	class InspPropParamSimple : public InspMember
 	{
 	public:
-		typedef V	 (T::*GetterPtr)() const;
-		typedef void (T::*SetterPtr)(V);
+        using GetterPtr = V (T::*)() const;
+        using SetterPtr = void (T::*)(V);
 
 		InspPropParamSimple(const char *_name, const InspDesc &_desc, const MetaInfo *_type, GetterPtr _g, SetterPtr _s, int _flags)
 			: InspMember(_name, _desc, 0, _type, _flags), getter(_g), setter(_s)

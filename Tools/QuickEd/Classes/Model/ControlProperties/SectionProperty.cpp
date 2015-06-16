@@ -59,7 +59,7 @@ void SectionProperty::AddProperty(ValueProperty *value)
 
 int SectionProperty::GetCount() const
 {
-    return (int) children.size();
+    return static_cast<int>(children.size());
 }
 
 AbstractProperty *SectionProperty::GetProperty(int index) const
@@ -75,14 +75,6 @@ void SectionProperty::Refresh()
 {
     for (ValueProperty *prop : children)
         prop->Refresh();
-}
-
-void SectionProperty::Serialize(PackageSerializer *serializer) const
-{
-    for (ValueProperty* prop : children)
-    {
-        prop->Serialize(serializer);
-    }
 }
 
 const DAVA::String & SectionProperty::GetName() const

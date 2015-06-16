@@ -91,6 +91,7 @@ private:
     };
 	
 	Vector<Animation*> animations;
+    Vector<Animation*> releaseCandidates;
 	
 	friend class Animation;
 	friend class AnimatedObject;

@@ -32,7 +32,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "ExternC/AndroidLayer.h"
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
 
 
