@@ -145,9 +145,9 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
             GLuint      fbo    = 0;
             GLuint      depth  = 0;
             GLCommand   cmd3[] = 
-            { 
+            {
                 { GLCommand::GEN_FRAMEBUFFERS, { 1, (uint64)(&fbo) } },
-                { GLCommand::GEN_RENDERBUFFERS, { 1, (uint64)(&depth) } } 
+                { GLCommand::GEN_TEXTURES, { 1, (uint64)(&depth) } } 
             };
             
             ExecGL( cmd3, countof(cmd3) );
@@ -227,6 +227,10 @@ gles2_Texture_Map( Handle tex, unsigned level, TextureFace face )
             };
 
             ExecGL( cmd, countof(cmd) );            
+            
+            mem               = self->mappedData;
+            self->mappedLevel = 0;
+            self->isMapped    = true;
         }
         else
         {
