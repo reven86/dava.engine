@@ -65,16 +65,17 @@ private:
 public:
     using Id = pthread_t;
 #elif defined(__DAVAENGINE_WINDOWS__)
+private:
+    friend unsigned __stdcall ThreadFunc(void *param);
+
 #   if defined(USE_CPP11_CONCURRENCY)
 private:
     using Handle = std::thread;
-    friend unsigned __stdcall ThreadFunc(void *param);
 public:
     using Id = std::thread::id;
 #   else 
 private:
     using Handle = HANDLE;
-    friend unsigned __stdcall ThreadFunc(void *param);
 public:
     using Id = DWORD;
 #   endif
