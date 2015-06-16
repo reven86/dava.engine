@@ -3002,6 +3002,16 @@ namespace DAVA
         UIControlSystem::Instance()->GetStyleSheetSystem()->MarkControlForUpdate(this);
     }
 
+    const UIStyleSheetPropertySet& UIControl::GetStyledPropertySet() const
+    {
+        return styledProperties;
+    }
+    
+    void UIControl::SetStyledPropertySet(const UIStyleSheetPropertySet &set)
+    {
+        styledProperties = set;
+    }
+
     void UIControl::SetPackageContext(UIControlPackageContext* newPackageContext)
     {
         packageContext = newPackageContext;

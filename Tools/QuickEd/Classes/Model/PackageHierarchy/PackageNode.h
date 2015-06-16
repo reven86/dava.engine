@@ -38,6 +38,7 @@ class ImportedPackagesNode;
 class PackageControlsNode;
 class ControlsContainerNode;
 class ControlNode;
+class StyleSheetsNode;
 class PackageListener;
 class AbstractProperty;
 class ComponentPropertiesSection;
@@ -66,6 +67,7 @@ public:
     
     ImportedPackagesNode *GetImportedPackagesNode() const;
     PackageControlsNode *GetPackageControlsNode() const;
+    StyleSheetsNode *GetStyleSheets() const;
 
     PackageNode *FindImportedPackage(const DAVA::FilePath &path) const;
     bool FindPackageInImportedPackagesRecursively(const PackageNode *node) const;
@@ -95,8 +97,9 @@ private:
     DAVA::FilePath path;
     DAVA::String name;
     
-    ImportedPackagesNode *importedPackagesNode;
-    PackageControlsNode *packageControlsNode;
+    ImportedPackagesNode *importedPackagesNode = nullptr;
+    PackageControlsNode *packageControlsNode = nullptr;
+    StyleSheetsNode *styleSheets = nullptr;
     DAVA::Vector<PackageListener*> listeners;
 };
 

@@ -41,10 +41,13 @@
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/StyleSheetNode.h"
+#include "Model/PackageHierarchy/StyleSheetsNode.h"
 #include "Model/PackageCommandExecutor.h"
 
 #include "UI/UIPackage.h"
 #include "UI/UIControl.h"
+#include "UI/UIStyleSheet.h"
 #include "Base/ObjectFactory.h"
 #include "Utils/Utils.h"
 
@@ -68,6 +71,10 @@ EditorUIPackageBuilder::~EditorUIPackageBuilder()
     for (ControlNode *control : rootControls)
         control->Release();
     rootControls.clear();
+
+    for (StyleSheetNode *styleSheet : styleSheets)
+        styleSheet->Release();
+    styleSheets.clear();
 }
 
 void EditorUIPackageBuilder::BeginPackage(const FilePath &aPackagePath)
@@ -307,6 +314,15 @@ void EditorUIPackageBuilder::ProcessProperty(const InspMember *member, const Var
     }
 }
 
+void EditorUIPackageBuilder::AddStyleSheets(const DAVA::Vector<UIStyleSheet*>& newStyleSheets)
+{
+    for (UIStyleSheet *styleSheet : newStyleSheets)
+    {
+        StyleSheetNode *node = new StyleSheetNode(nullptr);
+        styleSheets.push_back(node);
+    }
+}
+
 RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
 {
     DVASSERT(!packagePath.IsEmpty());
@@ -323,6 +339,11 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
         {
             declinedPackages.push_back(importedPackage);
         }
+    }
+    
+    for (StyleSheetNode *styleSheet : styleSheets)
+    {
+        package->GetStyleSheets()->Add(styleSheet);
     }
     
     for (ControlNode *control : rootControls)

@@ -258,7 +258,7 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, cons
         VariantType res;
         if (node)
             res = ReadVariantTypeFromYamlNode(member, node, builder);
-        builder->ProcessProperty(control, member, res);
+        builder->ProcessProperty(member, res);
     }
     builder->EndControlPropertiesSection();
 }
@@ -276,7 +276,7 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl *control, co
             {
                 const InspMember *member = insp->Member(j);
                 VariantType res = ReadVariantTypeFromYamlNode(member, nodeDescr.node, builder);
-                builder->ProcessProperty(control, member, res);
+                builder->ProcessProperty(member, res);
             }
         }
 
@@ -347,7 +347,7 @@ void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *control, const Yam
                 VariantType res;
                 if (componentNode)
                     res = ReadVariantTypeFromYamlNode(member, componentNode, builder);
-                builder->ProcessProperty(control, member, res);
+                builder->ProcessProperty(member, res);
             }
         }
         builder->EndBgPropertiesSection();
@@ -375,7 +375,7 @@ void UIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *contr
                 VariantType value;
                 if (componentNode)
                     value = ReadVariantTypeFromYamlNode(member, componentNode, builder);
-                builder->ProcessProperty(control, member, value);
+                builder->ProcessProperty(member, value);
             }
         }
         builder->EndInternalControlSection();

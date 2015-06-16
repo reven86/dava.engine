@@ -31,6 +31,7 @@
 #define __DAVAENGINE_ASSET_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/BaseObject.h"
 #include "Base/BaseObjectChecker.h"
 #include "Base/Introspection.h"
 #include "Debug/DVAssert.h"

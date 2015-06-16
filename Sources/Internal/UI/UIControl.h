@@ -1486,6 +1486,9 @@ public:
     const UIStyleSheetPropertySet& GetLocalPropertySet() const;
     void SetPropertyLocalFlag(uint32 propertyIndex, bool value);
     
+    const UIStyleSheetPropertySet& GetStyledPropertySet() const;
+    void SetStyledPropertySet(const UIStyleSheetPropertySet &set);
+    
     UIControlPackageContext* GetPackageContext() const;
     UIControlPackageContext* GetLocalPackageContext() const;
     void SetPackageContext(UIControlPackageContext* packageContext);
@@ -1493,6 +1496,7 @@ public:
 private:
     Vector<FastName> classes;
     UIStyleSheetPropertySet localProperties;
+    UIStyleSheetPropertySet styledProperties;
     RefPtr< UIControlPackageContext > packageContext;
     UIControl* parentWithContext;
 

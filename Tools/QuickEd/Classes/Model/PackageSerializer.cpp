@@ -158,6 +158,16 @@ void PackageSerializer::VisitControl(ControlNode *node)
     EndMap();
 }
 
+void PackageSerializer::VisitStyleSheets(StyleSheetsNode *node)
+{
+    DVASSERT(false);
+}
+
+void PackageSerializer::VisitStyleSheet(StyleSheetNode *node)
+{
+    DVASSERT(false);
+}
+
 void PackageSerializer::AcceptChildren(PackageBaseNode *node)
 {
     for (int32 i = 0; i < node->GetCount(); i++)

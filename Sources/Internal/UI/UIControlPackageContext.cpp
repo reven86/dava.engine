@@ -40,8 +40,8 @@ namespace DAVA
     }
 
     UIControlPackageContext::UIControlPackageContext() :
-        styleSheetsSorted(false),
-        maxSelectorDepth(0)
+        maxSelectorDepth(0),
+        styleSheetsSorted(false)
     {
 
     }

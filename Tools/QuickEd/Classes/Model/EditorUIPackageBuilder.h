@@ -35,6 +35,7 @@
 
 class PackageNode;
 class ControlNode;
+class StyleSheetNode;
 class SectionProperty;
 class PackageCommandExecutor;
 class ControlsContainerNode;
@@ -70,6 +71,7 @@ public:
     virtual void EndInternalControlSection() override;
     
     virtual void ProcessProperty(const DAVA::InspMember *member, const DAVA::VariantType &value) override;
+    virtual void AddStyleSheets(const DAVA::Vector<DAVA::UIStyleSheet*>& styleSheets) override;
 
     DAVA::RefPtr<PackageNode> BuildPackage() const;
     const DAVA::Vector<ControlNode*> &GetRootControls() const;
@@ -97,6 +99,7 @@ private:
     
     DAVA::Vector<PackageNode*> importedPackages;
     DAVA::Vector<ControlNode*> rootControls;
+    DAVA::Vector<StyleSheetNode*> styleSheets;
     DAVA::Vector<DAVA::FilePath> declinedPackages;
     
     DAVA::BaseObject *currentObject;

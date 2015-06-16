@@ -65,6 +65,8 @@ private: // PackageVisitor
     void VisitImportedPackages(ImportedPackagesNode *node) override;
     void VisitControls(PackageControlsNode *node) override;
     void VisitControl(ControlNode *node) override;
+    void VisitStyleSheets(StyleSheetsNode *node) override;
+    void VisitStyleSheet(StyleSheetNode *node) override;
 
 private:
     void AcceptChildren(PackageBaseNode *node);

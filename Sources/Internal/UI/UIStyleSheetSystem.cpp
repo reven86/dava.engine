@@ -116,6 +116,7 @@ namespace DAVA
                     }
                 }
             }
+            control->SetStyledPropertySet(appliedProperties);
         }
     }
 
