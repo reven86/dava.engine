@@ -67,6 +67,8 @@ UIControlSystem::UIControlSystem()
     focusedControl = NULL;
 	//mainControl = 0;
 
+    layoutSystem = new UILayoutSystem();
+
 	popupContainer = new UIControl(Rect(0, 0, 1, 1));
 	popupContainer->SetInputEnabled(false);
 	
@@ -82,7 +84,6 @@ UIControlSystem::UIControlSystem()
 
     ui3DViewCount = 0;
     
-    layoutSystem = new UILayoutSystem();
 }
 	
 void UIControlSystem::SetScreen(UIScreen *_nextScreen, UIScreenTransition * _transition)
@@ -122,6 +123,8 @@ void UIControlSystem::ReplaceScreen(UIScreen *newMainControl)
 	prevScreen = currentScreen;
 	currentScreen = newMainControl;
     NotifyListenersDidSwitch(currentScreen);
+    
+    layoutSystem->SetDirty();
 }
 
 	
@@ -685,6 +688,7 @@ UIControl *UIControlSystem::GetExclusiveInputLocker()
 void UIControlSystem::ScreenSizeChanged()
 {
     popupContainer->SystemScreenSizeDidChanged(VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect());
+    layoutSystem->SetDirty();
 }
 
 void UIControlSystem::SetHoveredControl(UIControl *newHovered)

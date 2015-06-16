@@ -100,6 +100,8 @@ public:
 
     const Vector2 & GetTextSize();
 
+    Vector2 GetContentPreferredSize() const override;
+
     void PrepareSprite();
 
 
@@ -148,7 +150,7 @@ public:
     
 public:
     void SetTextWithoutRect(const WideString &text) {
-        SetText(text);
+        SetText(text, Vector2(-1.f, -1.f));
     }
     
     String GetFontPresetName() const;

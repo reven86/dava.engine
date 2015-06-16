@@ -48,6 +48,10 @@
 #include "fribidi/fribidi-unicode.h"
 #include "TextLayout.h"
 
+
+#include "UI/UIControlSystem.h" // bad-bad-bad
+#include "UI/Layouts/UILayoutSystem.h"
+
 namespace DAVA 
 {
 
@@ -107,7 +111,6 @@ TextBlock::TextBlock()
 {
     font = NULL;
     isMultilineEnabled = false;
-    isRtl = false;
     useRtlAlign = false;
     fittingType = FITTING_DISABLED;
 
@@ -382,12 +385,6 @@ bool TextBlock::GetUseRtlAlign()
     return useRtlAlign;
 }
 
-bool TextBlock::IsRtl()
-{
-    LockGuard<Mutex> guard(mutex);
-    return isRtl;
-}
-
 int32 TextBlock::GetAlign()
 {
     LockGuard<Mutex> guard(mutex);
@@ -402,6 +399,7 @@ int32 TextBlock::GetVisualAlign()
 	
 int32 TextBlock::GetVisualAlignNoMutexLock() const
 {
+    bool isRtl = UIControlSystem::Instance()->GetLayoutSystem()->IsRtl();
 	if(useRtlAlign && isRtl && (align & ALIGN_LEFT || align & ALIGN_RIGHT))
     {
         // Mirror left/right align
@@ -472,7 +470,6 @@ void TextBlock::CalculateCacheParams()
     if (logicalText.empty())
     {
         visualText.clear();
-        isRtl = false;
         cacheFinalSize = Vector2(0.f,0.f);
         cacheW = 0;
         cacheDx = 0;
@@ -491,7 +488,6 @@ void TextBlock::CalculateCacheParams()
     Vector<float32> charSizes;
     
     textLayout.Reset(logicalText, *font);
-    isRtl = textLayout.IsRtlText();
 
     visualText = textLayout.GetVisualText(false);
 

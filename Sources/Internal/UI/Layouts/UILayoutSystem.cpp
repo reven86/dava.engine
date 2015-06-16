@@ -40,6 +40,7 @@ namespace DAVA
     {
         dirty = false;
     }
+    
     void UILayoutSystem::ApplyLayout(UIControl *control)
     {
         DoMeasurePhase(control);
@@ -153,7 +154,8 @@ namespace DAVA
                     break;
                     
                 case UISizeHintComponent::PERCENT_OF_CONTENT:
-                    value = control->GetPreferredSize().data[axis] * hintValue / 100.0f;
+                    value = control->GetContentPreferredSize().data[axis] * hintValue / 100.0f;
+                    break;
                     
                 case UISizeHintComponent::PERCENT_OF_PARENT:
                     value = newSize.data[axis]; // ignore
@@ -201,10 +203,13 @@ namespace DAVA
         const bool skipInvisible = layout->IsSkipInvisibleControls();
 
         const int32 axis = static_cast<int32>(layout->GetOrientation());
+        int32 childrenCount = 0;
         for (UIControl *child : children)
         {
             if (skipInvisible && !child->GetVisible())
                 continue;
+            
+            childrenCount++;
             
             const UISizeHintComponent *sizeHint = child->GetComponent<UISizeHintComponent>();
             if (sizeHint)
@@ -220,54 +225,57 @@ namespace DAVA
             }
         }
         
-        const float32 padding = layout->GetPadding();
-        const float32 spacing = layout->GetSpacing();
-        int32 spacesCount = children.size() - 1;
-        float32 contentSize = control->GetSize().data[axis] - padding * 2.0f;
-        float32 restSize = contentSize - fixedSize - spacesCount * spacing;
-        float32 position = padding;
-        if (inverse)
-            position = contentSize + padding;
-        for (UIControl *child : children)
+        if (childrenCount > 0)
         {
-            if (skipInvisible && !child->GetVisible())
-                continue;
-
-            float32 size;
-            const UISizeHintComponent *sizeHint = child->GetComponent<UISizeHintComponent>();
-            if (sizeHint)
-            {
-                if (sizeHint->GetPolicyByAxis(axis) == UISizeHintComponent::PERCENT_OF_PARENT)
-                    size = restSize * sizeHint->GetValueByAxis(axis) / totalPercent;
-                else
-                    size = child->GetSize().data[axis];
-            }
-            else
-            {
-                size = child->GetSize().data[axis];
-            }
-            
-            size = Max(size, 0.0f);
-            if (axis == AXIS_X)
-            {
-                if (inverse)
-                    child->SetPosition(Vector2(position - size, child->GetPosition().y));
-                else
-                    child->SetPosition(Vector2(position, child->GetPosition().y));
-                child->SetSize(Vector2(size, child->GetSize().dy));
-            }
-            else
-            {
-                child->SetPosition(Vector2(child->GetPosition().x, position));
-                child->SetSize(Vector2(child->GetSize().dx, size));
-            }
-            
+            const float32 padding = layout->GetPadding();
+            const float32 spacing = layout->GetSpacing();
+            int32 spacesCount = childrenCount - 1;
+            float32 contentSize = control->GetSize().data[axis] - padding * 2.0f;
+            float32 restSize = contentSize - fixedSize - spacesCount * spacing;
+            float32 position = padding;
             if (inverse)
-                position -= size + spacing;
-            else
-                position += size + spacing;
-            
-            changedControls.push_back(child);
+                position = contentSize + padding;
+            for (UIControl *child : children)
+            {
+                if (skipInvisible && !child->GetVisible())
+                    continue;
+
+                float32 size;
+                const UISizeHintComponent *sizeHint = child->GetComponent<UISizeHintComponent>();
+                if (sizeHint)
+                {
+                    if (sizeHint->GetPolicyByAxis(axis) == UISizeHintComponent::PERCENT_OF_PARENT)
+                        size = restSize * sizeHint->GetValueByAxis(axis) / totalPercent;
+                    else
+                        size = child->GetSize().data[axis];
+                }
+                else
+                {
+                    size = child->GetSize().data[axis];
+                }
+                
+                size = Max(size, 0.0f);
+                if (axis == AXIS_X)
+                {
+                    if (inverse)
+                        child->SetPosition(Vector2(position - size, child->GetPosition().y));
+                    else
+                        child->SetPosition(Vector2(position, child->GetPosition().y));
+                    child->SetSize(Vector2(size, child->GetSize().dy));
+                }
+                else
+                {
+                    child->SetPosition(Vector2(child->GetPosition().x, position));
+                    child->SetSize(Vector2(child->GetSize().dx, size));
+                }
+                
+                if (inverse)
+                    position -= size + spacing;
+                else
+                    position += size + spacing;
+                
+                changedControls.push_back(child);
+            }
         }
     }
 

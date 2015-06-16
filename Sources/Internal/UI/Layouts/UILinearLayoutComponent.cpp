@@ -12,6 +12,7 @@ namespace DAVA
         , padding(src.padding)
         , spacing(src.spacing)
         , useRtl(src.useRtl)
+        , skipInvisibleControls(src.skipInvisibleControls)
     {
         
     }

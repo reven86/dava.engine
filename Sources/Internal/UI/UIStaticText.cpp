@@ -42,6 +42,10 @@
 #include "Render/2D/TextBlockSoftwareRender.h"
 #include "Render/RenderHelper.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+
+#include "UI/UIControlSystem.h"
+#include "UI/Layouts/UILayoutSystem.h"
+
 namespace DAVA
 {
 #if defined(LOCALIZATION_DEBUG)
@@ -196,7 +200,7 @@ int32 UIStaticText::GetTextVisualAlign() const
 
 bool UIStaticText::GetTextIsRtl() const
 {
-	return textBlock->IsRtl();
+    return UIControlSystem::Instance()->GetLayoutSystem()->IsRtl();
 }
 
 void UIStaticText::SetTextUseRtlAlign(bool useRtlAlign)
@@ -211,6 +215,11 @@ bool UIStaticText::GetTextUseRtlAlign() const
 }
 
 const Vector2 & UIStaticText::GetTextSize()
+{
+    return textBlock->GetTextSize();
+}
+
+Vector2 UIStaticText::GetContentPreferredSize() const
 {
     return textBlock->GetTextSize();
 }

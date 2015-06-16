@@ -348,9 +348,9 @@ namespace DAVA
     {
         UIAnchorHintComponent *anchor = GetOrCreateComponent<UIAnchorHintComponent>();
         anchor->SetLeftAnchor(align);
-
-        if (anchor->IsLeftAnchorEnabled() && applyAlign)
-            ApplyAlignSettings();
+//
+//        if (anchor->IsLeftAnchorEnabled() && applyAlign)
+//            ApplyAlignSettings();
     }
 
     float32 UIControl::GetLeftAlign() const
@@ -363,9 +363,9 @@ namespace DAVA
     {
         UIAnchorHintComponent *anchor = GetOrCreateComponent<UIAnchorHintComponent>();
         anchor->SetHCenterAnchor(align);
-        
-        if (anchor->IsHCenterAnchorEnabled() && applyAlign)
-            ApplyAlignSettings();
+//
+//        if (anchor->IsHCenterAnchorEnabled() && applyAlign)
+//            ApplyAlignSettings();
     }
 
     float32 UIControl::GetHCenterAlign() const
@@ -379,8 +379,8 @@ namespace DAVA
         UIAnchorHintComponent *anchor = GetOrCreateComponent<UIAnchorHintComponent>();
         anchor->SetRightAnchor(align);
         
-        if (anchor->IsRightAnchorEnabled() && applyAlign)
-            ApplyAlignSettings();
+//        if (anchor->IsRightAnchorEnabled() && applyAlign)
+//            ApplyAlignSettings();
     }
 
     float32 UIControl::GetRightAlign() const
@@ -394,8 +394,8 @@ namespace DAVA
         UIAnchorHintComponent *anchor = GetOrCreateComponent<UIAnchorHintComponent>();
         anchor->SetTopAnchor(align);
         
-        if (anchor->IsTopAnchorEnabled() && applyAlign)
-            ApplyAlignSettings();
+//        if (anchor->IsTopAnchorEnabled() && applyAlign)
+//            ApplyAlignSettings();
     }
 
     float32 UIControl::GetTopAlign() const
@@ -409,8 +409,8 @@ namespace DAVA
         UIAnchorHintComponent *anchor = GetOrCreateComponent<UIAnchorHintComponent>();
         anchor->SetTopAnchor(align);
         
-        if (anchor->IsTopAnchorEnabled() && applyAlign)
-            ApplyAlignSettings();
+//        if (anchor->IsTopAnchorEnabled() && applyAlign)
+//            ApplyAlignSettings();
     }
 
     float32 UIControl::GetVCenterAlign() const
@@ -424,8 +424,8 @@ namespace DAVA
         UIAnchorHintComponent *anchor = GetOrCreateComponent<UIAnchorHintComponent>();
         anchor->SetBottomAnchor(align);
         
-        if (anchor->IsBottomAnchorEnabled() && applyAlign)
-            ApplyAlignSettings();
+//        if (anchor->IsBottomAnchorEnabled() && applyAlign)
+//            ApplyAlignSettings();
     }
 
     float32 UIControl::GetBottomAlign() const
@@ -440,8 +440,8 @@ namespace DAVA
         UIAnchorHintComponent *anchor = GetOrCreateComponent<UIAnchorHintComponent>();
         anchor->SetLeftAnchorEnabled(isEnabled);
         
-        if (applyAlign)
-            ApplyAlignSettings();
+//        if (applyAlign)
+//            ApplyAlignSettings();
     }
 
     bool UIControl::GetLeftAlignEnabled() const
@@ -455,8 +455,8 @@ namespace DAVA
         UIAnchorHintComponent *anchor = GetOrCreateComponent<UIAnchorHintComponent>();
         anchor->SetHCenterAnchorEnabled(isEnabled);
         
-        if (applyAlign)
-            ApplyAlignSettings();
+//        if (applyAlign)
+//            ApplyAlignSettings();
     }
 
     bool UIControl::GetHCenterAlignEnabled() const
@@ -470,8 +470,8 @@ namespace DAVA
         UIAnchorHintComponent *anchor = GetOrCreateComponent<UIAnchorHintComponent>();
         anchor->SetRightAnchorEnabled(isEnabled);
         
-        if (applyAlign)
-            ApplyAlignSettings();
+//        if (applyAlign)
+//            ApplyAlignSettings();
     }
 
     bool UIControl::GetRightAlignEnabled() const
@@ -485,8 +485,8 @@ namespace DAVA
         UIAnchorHintComponent *anchor = GetOrCreateComponent<UIAnchorHintComponent>();
         anchor->SetTopAnchorEnabled(isEnabled);
         
-        if (applyAlign)
-            ApplyAlignSettings();
+//        if (applyAlign)
+//            ApplyAlignSettings();
     }
 
     bool UIControl::GetTopAlignEnabled() const
@@ -500,8 +500,8 @@ namespace DAVA
         UIAnchorHintComponent *anchor = GetOrCreateComponent<UIAnchorHintComponent>();
         anchor->SetVCenterAnchorEnabled(isEnabled);
         
-        if (applyAlign)
-            ApplyAlignSettings();
+//        if (applyAlign)
+//            ApplyAlignSettings();
     }
 
     bool UIControl::GetVCenterAlignEnabled() const
@@ -515,8 +515,8 @@ namespace DAVA
         UIAnchorHintComponent *anchor = GetOrCreateComponent<UIAnchorHintComponent>();
         anchor->SetBottomAnchorEnabled(isEnabled);
         
-        if (applyAlign)
-            ApplyAlignSettings();
+//        if (applyAlign)
+//            ApplyAlignSettings();
     }
 
     bool UIControl::GetBottomAlignEnabled() const
@@ -624,7 +624,7 @@ namespace DAVA
         size = newSize;
         SetPivot(oldPivot);
         // Update size and align of childs
-        UpdateChildrenLayout();
+//        UpdateChildrenLayout();
     }
 
     void UIControl::SetAngle(float32 angleInRad)
@@ -702,9 +702,13 @@ namespace DAVA
         }
     }
 
-    Vector2 UIControl::GetPreferredSize() const
+    Vector2 UIControl::GetContentPreferredSize() const
     {
-        return Vector2(100.0f, 25.0f);
+        if (background != nullptr && background->GetSprite() != nullptr)
+        {
+            return background->GetSprite()->GetSize();
+        }
+        return Vector2(100.0f, 100.0f);
     }
 
     void UIControl::SetVisible(bool isVisible)
@@ -2446,8 +2450,8 @@ namespace DAVA
         }
     }
 
-    void UIControl::CalculateAlignSettings()
-    {
+//    void UIControl::CalculateAlignSettings()
+//    {
 //        if (!parent)
 //            return;
 //
@@ -2481,7 +2485,7 @@ namespace DAVA
 //            SetVCenterAlign(vcenterAlign);
 //            SetBottomAlign(bottomAlign);
 //        }
-    }
+//    }
 
 //    void UIControl::ApplyAlignSettings()
 //    {
@@ -2761,6 +2765,23 @@ namespace DAVA
     {
         //ApplyAlignSettings();
         UIControlSystem::Instance()->GetLayoutSystem()->ApplyLayout(this);
+    }
+    
+    void UIControl::UpdateChildrenLayout()
+    {
+        UIControlSystem::Instance()->GetLayoutSystem()->ApplyLayout(this);
+//        UIControlSystem::Instance()->GetLayoutSystem()->SetDirty();
+    }
+
+    void UIControl::ApplyAlignSettingsForChildren()
+    {
+        UIControlSystem::Instance()->GetLayoutSystem()->ApplyLayout(this);
+//        UIControlSystem::Instance()->GetLayoutSystem()->SetDirty();
+    }
+
+    void UIControl::OnSizeChanged()
+    {
+        
     }
 
 //    void UIControl::UpdateChildrenLayout()

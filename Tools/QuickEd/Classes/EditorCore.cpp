@@ -193,6 +193,7 @@ void EditorCore::UpdateLanguage()
     for(auto &document : documents)
     {
         document->RefreshAllControlProperties();
+        document->RefreshLayout();
     }
 }
 
@@ -201,6 +202,7 @@ void EditorCore::OnRtlChanged(bool isRtl)
     UIControlSystem::Instance()->GetLayoutSystem()->SetRtl(isRtl);
     for(auto &document : documents)
     {
+        document->RefreshAllControlProperties();
         document->RefreshLayout();
     }
 }

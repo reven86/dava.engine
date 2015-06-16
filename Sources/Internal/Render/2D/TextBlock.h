@@ -77,7 +77,6 @@ public:
 	virtual int32 GetVisualAlign(); // Return align for displaying BiDi-text (w/ mutex lock)
     virtual void SetUseRtlAlign(const bool& useRtlAlign);
     virtual bool GetUseRtlAlign();
-    virtual bool IsRtl();
 
     
     //[DO NOT ACTUAL ANYMORE] if requested size is 0 - text creates in the rect with size of the drawRect on draw phase
@@ -177,7 +176,6 @@ protected:
 #endif //LOCALIZATION_DEBUG
     int32 align;
     bool useRtlAlign;
-    bool isRtl;
 
     Font * font;
     WideString logicalText;

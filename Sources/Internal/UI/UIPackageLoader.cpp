@@ -109,8 +109,8 @@ bool UIPackageLoader::LoadPackage(const YamlNode *rootNode, const FilePath &pack
         return false;
     }
     
-    version = versionNode->AsInt();
-    if (version < MIN_SUPPORTED_VERSION || CURRENT_VERSION < version)
+    int32 packageVersion = versionNode->AsInt();
+    if (packageVersion < MIN_SUPPORTED_VERSION || CURRENT_VERSION < packageVersion)
     {
         return false;
     }
@@ -124,6 +124,8 @@ bool UIPackageLoader::LoadPackage(const YamlNode *rootNode, const FilePath &pack
         for (int32 i = 0; i < count; i++)
             builder->ProcessImportedPackage(importedPackagesNode->Get(i)->AsString(), this);
     }
+    
+    version = packageVersion; // store version in instance variables after importing packages
     
     const YamlNode *controlsNode = rootNode->Get("Controls");
     if (controlsNode)

@@ -213,7 +213,6 @@ void LegacyEditorUIPackageLoader::LoadControl(const DAVA::String &name, const Ya
         }
         
         control->LoadFromYamlNodeCompleted();
-        control->ApplyAlignSettingsForChildren();
     }
     builder->EndControl(false);
 }

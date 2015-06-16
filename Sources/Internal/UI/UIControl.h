@@ -621,7 +621,7 @@ public:
 
     void SetAngleInDegrees(float32 angle);
     
-    virtual Vector2 GetPreferredSize() const;
+    virtual Vector2 GetContentPreferredSize() const;
 
     /**
      \brief Returns control visibility.
@@ -1320,6 +1320,9 @@ public:
     void SetSizeFromBg(bool pivotToCenter = true);
 
     virtual void UpdateLayout();
+    void UpdateChildrenLayout();
+    void ApplyAlignSettingsForChildren();
+    virtual void OnSizeChanged();
 
     // Find the control by name and add it to the list, if found.
     bool AddControlToList(List<UIControl*>& controlsList, const String& controlName, bool isRecursive = false);
