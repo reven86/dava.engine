@@ -769,8 +769,21 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
     FilePath filePath = CreateCompressedTexturePathname(forGPU, imageFormat);
     if (imageFormat == IMAGE_FORMAT_PVR)
 	{
-        LibPVRHelper helper;
-        return helper.GetCRCFromFile(filePath) + GenerateDescriptorCRC();
+        LibPVRHelper* helper = CreateLibPVRHelper();
+        SCOPE_EXIT 
+        { 
+            delete helper; 
+        };
+
+        if (!helper)
+        {
+            Logger::Error("[TextureDescriptor::GetConvertedCRC] can't get compressed texture filename for %s;"
+                          " LibPVR is unsupported", filePath.GetStringValue().c_str());
+            DVASSERT(false);
+            return 0;
+        }
+
+        return helper->GetCRCFromFile(filePath) + GenerateDescriptorCRC();
 	}
 	else if(imageFormat == IMAGE_FORMAT_DDS)
 	{
