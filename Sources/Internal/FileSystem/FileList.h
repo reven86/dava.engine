@@ -41,7 +41,7 @@ namespace DAVA
 /** 
 	\brief Class used to enumerate files in directories
 */
-class	FileList : public BaseObject
+class FileList : public BaseObject
 {
 protected:
 	virtual ~FileList();
