@@ -26,26 +26,47 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/Result.h"
+#include "UnitTests/UnitTests.h"
 
-#ifndef QUICKED_RESULT_H_
-#define QUICKED_RESULT_H_
+using namespace DAVA;
 
-#include <QString>
-#include <QStringList>
-
-struct Result
+DAVA_TESTCLASS(ResultTest)
 {
-    enum ResultType {
-        Success,
-        DAVAError,
-        Warning,
-        CriticalError,
-    };
-    explicit Result(ResultType type = Success, const QString &error = QString());
-    operator bool() const;
-    QStringList errors;
-    QList<ResultType> types;
-    Result addError(ResultType type, const QString &errorText);
-    Result addError(const Result &err); 
+    DAVA_TEST(GetResultFunction)
+    {
+        TEST_VERIFY(GetResultFunction(Result::RESULT_SUCCESS));
+        TEST_VERIFY(!GetResultFunction(Result::RESULT_WARNING));
+        TEST_VERIFY(!GetResultFunction(Result::RESULT_ERROR));
+
+        TEST_VERIFY(GetResultFunction(Result::RESULT_SUCCESS).IsSuccess());
+        TEST_VERIFY(!GetResultFunction(Result::RESULT_WARNING).IsSuccess());
+        TEST_VERIFY(!GetResultFunction(Result::RESULT_ERROR).IsSuccess());
+
+        Deque<Result> results;
+        results.emplace_back(Result::RESULT_SUCCESS, "this is ", VariantType(1));
+        results.emplace_back(Result::RESULT_WARNING, "result ", VariantType(2));
+        results.emplace_back(Result::RESULT_ERROR, "test.", VariantType(3));
+        ResultList resultList;
+        for (const auto &result : results)
+        {
+            resultList.AddResultList(GetResultFunction(result));
+        }
+        TEST_VERIFY(resultList.GetResults().size() == results.size());
+        auto resultIt = resultList.GetResults().begin();
+        for (const auto &result : results)
+        {
+            TEST_VERIFY(result == *resultIt++);
+        }
+    }
+        
+    ResultList GetResultFunction(const Result &result)
+    {
+        return ResultList(result);
+    }
+
+    ResultList GetResultFunction(const Result &&result)
+    {
+        return ResultList(result);
+    }
 };
-#endif // QUICKED_RESULT_H_
