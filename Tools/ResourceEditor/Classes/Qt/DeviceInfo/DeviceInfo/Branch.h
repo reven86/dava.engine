@@ -26,26 +26,51 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __BRANCH_H__
+#define __BRANCH_H__
 
 #include "Base/BaseTypes.h"
+#include "MemoryManager/MemoryManagerTypes.h"
 
-#if defined(DAVA_MEMORY_PROFILING_ENABLE)
-
-#include "MemoryManager.h"
-
-namespace DAVA
+struct Branch final
 {
+    Branch(const char* aName);
+    ~Branch();
 
-void* AllocThunk(size_t size, size_t poolIndex)
+    Branch* FindInChildren(const char* name) const;
+    int ChildIndex(Branch* child) const;
+
+    void AppendChild(Branch* child);
+    void UpdateStat(DAVA::uint32 allocSize, DAVA::uint32 blockCount);
+
+    // Get memory blocks from all children
+    DAVA::Vector<DAVA::MMBlock> GetMemoryBlocks() const;
+
+    template<typename F>
+    void SortChildren(F fn);
+
+    int level = 0;                      // Level in tree hierarchy - for convenience in Qt models
+    const char* name = nullptr;         // Function name
+    Branch* parent = nullptr;
+    DAVA::Vector<Branch*> children;
+
+    DAVA::uint32 allocByApp = 0;            // Total allocated size in branch including children
+    DAVA::uint32 nblocks = 0;               // Total block count in branch including children
+    DAVA::Vector<DAVA::MMBlock> mblocks;    // Memory blocks belonging to leaf branch
+
+private:
+    static void CollectBlocks(const Branch* branch, DAVA::Vector<DAVA::MMBlock>& target);
+};
+
+//////////////////////////////////////////////////////////////////////////
+template<typename F>
+inline void Branch::SortChildren(F fn)
 {
-    return MemoryManager::Instance()->Allocate(size, poolIndex);
+    std::sort(children.begin(), children.end(), fn);
+    for (Branch* child : children)
+    {
+        child->SortChildren(fn);
+    }
 }
 
-void DeallocThunk(void* ptr)
-{
-    MemoryManager::Instance()->Deallocate(ptr);
-}
-
-}   // namespace DAVA
-
-#endif  // defined(DAVA_MEMORY_PROFILING_ENABLE)
+#endif  // __BRANCH_H__

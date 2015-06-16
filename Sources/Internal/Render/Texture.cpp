@@ -197,17 +197,19 @@ void Texture::AddToMap(Texture *tex)
 
     
 Texture::Texture()
-:	id(0)
-,	width(0)
-,	height(0)
-,	loadedAsFile(GPU_ORIGIN)
-,	state(STATE_INVALID)
-,	textureType(Texture::TEXTURE_2D)
-,	depthFormat(DEPTH_NONE)
-,	isRenderTarget(false)
-,	isPink(false)
-,	invalidater(NULL)
+    : id(0)
+    , width(0)
+    , height(0)
+    , loadedAsFile(GPU_ORIGIN)
+    , state(STATE_INVALID)
+    , textureType(Texture::TEXTURE_2D)
+    , depthFormat(DEPTH_NONE)
+    , isRenderTarget(false)
+    , isPink(false)
+    , invalidater(NULL)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 #ifdef __DAVAENGINE_DIRECTX9__
 	saveTexture = 0;
 	renderTargetModified = false;
@@ -224,7 +226,7 @@ Texture::Texture()
 
 #endif
 
-	texDescriptor = new TextureDescriptor();
+    texDescriptor = new TextureDescriptor;
 }
 
 Texture::~Texture()
@@ -262,6 +264,8 @@ void Texture::ReleaseTextureData()
 
 void Texture::ReleaseTextureDataInternal(uint32 textureType, uint32 textureID, uint32 fboID, uint32 rboID, uint32 stencilRboID)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 #if defined(__DAVAENGINE_OPENGL__)
 	//if(RenderManager::Instance()->GetTexture() == this)
 	//{//to avoid drawing deleted textures
@@ -295,6 +299,7 @@ void Texture::ReleaseTextureDataInternal(uint32 textureType, uint32 textureID, u
     if(textureID)
 	{
         RENDER_VERIFY(glDeleteTextures(1, &textureID));
+        DAVA_MEMORY_PROFILER_GPU_DEALLOC(textureID, ALLOC_GPU_TEXTURE);
 	}
 	
 #elif defined(__DAVAENGINE_DIRECTX9__)
@@ -303,10 +308,10 @@ void Texture::ReleaseTextureDataInternal(uint32 textureType, uint32 textureID, u
 #endif //#if defined(__DAVAENGINE_OPENGL__)
 }
 
-
-
 Texture * Texture::CreateTextFromData(PixelFormat format, uint8 * data, uint32 width, uint32 height, bool generateMipMaps, const char * addInfo)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	Texture * tx = CreateFromData(format, data, width, height, generateMipMaps);
     
 	if (!addInfo)
@@ -325,6 +330,8 @@ Texture * Texture::CreateTextFromData(PixelFormat format, uint8 * data, uint32 w
 	
 void Texture::TexImage(int32 level, uint32 width, uint32 height, const void * _data, uint32 dataSize, uint32 cubeFaceId)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 #if defined(__DAVAENGINE_OPENGL__)
 
 	int32 saveId = RenderManager::Instance()->HWglGetLastTextureID(textureType);
@@ -351,6 +358,7 @@ void Texture::TexImage(int32 level, uint32 width, uint32 height, const void * _d
         {
             RENDER_VERIFY(glTexImage2D(textureMode, level, formatDescriptor.internalformat, width, height, 0, formatDescriptor.format, formatDescriptor.type, _data));
         }
+        DAVA_MEMORY_PROFILER_GPU_ALLOC(id, dataSize, ALLOC_GPU_TEXTURE);
     }
 	
 	if(0 != saveId)
@@ -410,6 +418,8 @@ void Texture::TexImage(int32 level, uint32 width, uint32 height, const void * _d
     
 Texture * Texture::CreateFromData(PixelFormat _format, const uint8 *_data, uint32 _width, uint32 _height, bool generateMipMaps)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	Image *image = Image::CreateFromData(_width, _height, _format, _data);
 	if(!image) return NULL;
 
@@ -427,6 +437,8 @@ Texture * Texture::CreateFromData(PixelFormat _format, const uint8 *_data, uint3
     
 Texture * Texture::CreateFromData(Image *image, bool generateMipMaps)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	Texture * texture = new Texture();
 	texture->texDescriptor->Initialize(WRAP_CLAMP_TO_EDGE, generateMipMaps);
     
@@ -443,6 +455,8 @@ Texture * Texture::CreateFromData(Image *image, bool generateMipMaps)
 	
 void Texture::SetWrapMode(TextureWrap wrapS, TextureWrap wrapT)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 #if defined(__DAVAENGINE_OPENGL__)
 	int32 saveId = RenderManager::Instance()->HWglGetLastTextureID(textureType);
 	
@@ -462,6 +476,8 @@ void Texture::SetWrapMode(TextureWrap wrapS, TextureWrap wrapT)
 
 void Texture::SetMinMagFilter(TextureFilter minFilter, TextureFilter magFilter)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 #if defined(__DAVAENGINE_OPENGL__)
 	int32 saveId = RenderManager::Instance()->HWglGetLastTextureID(textureType);
 
@@ -487,6 +503,8 @@ void Texture::GenerateMipmaps()
 
 void Texture::GenerateMipmapsInternal()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	const PixelFormatDescriptor & formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(texDescriptor->format);
 	if(formatDescriptor.isCompressedFormat)
     {
@@ -504,8 +522,11 @@ void Texture::GenerateMipmapsInternal()
     Vector<Image *> images = image0->CreateMipMapsImages(texDescriptor->dataSettings.GetIsNormalMap());
     SafeRelease(image0);
 
-    for(uint32 i = 1; i < (uint32)images.size(); ++i)
-        TexImage((images[i]->mipmapLevel != (uint32)-1) ? images[i]->mipmapLevel : i, images[i]->width, images[i]->height, images[i]->data, images[i]->dataSize, images[i]->cubeFaceID);
+    for (size_t i = 1, n = images.size(); i < n; ++i)
+    {
+        TexImage(images[i]->mipmapLevel != (uint32)-1 ? static_cast<int32>(images[i]->mipmapLevel) : static_cast<int32>(i),
+                 images[i]->width, images[i]->height, images[i]->data, images[i]->dataSize, images[i]->cubeFaceID);
+    }
 
     ReleaseImages(&images);
 
@@ -533,6 +554,7 @@ void Texture::GeneratePixelesation()
 
 void Texture::GeneratePixelesationInternal()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
 #if defined(__DAVAENGINE_OPENGL__)
     
@@ -557,6 +579,8 @@ void Texture::GeneratePixelesationInternal()
 
 Texture * Texture::CreateFromImage(TextureDescriptor *descriptor, eGPUFamily gpu)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	Texture * texture = new Texture();
 	texture->texDescriptor->Initialize(descriptor);
 
@@ -581,6 +605,8 @@ Texture * Texture::CreateFromImage(TextureDescriptor *descriptor, eGPUFamily gpu
 
 bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(gpu != GPU_INVALID);
     
     if (!IsLoadAvailable(gpu))
@@ -687,6 +713,8 @@ void Texture::ReleaseImages(Vector<Image *> *images)
 
 void Texture::SetParamsFromImages(const Vector<Image *> * images)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	DVASSERT(images->size() != 0);
 
     Image *img = *images->begin();
@@ -707,6 +735,8 @@ void Texture::FlushDataToRenderer(Vector<Image *> * images)
 
 void Texture::FlushDataToRendererInternal(Vector<Image *> * images)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	DVASSERT(images->size() != 0);
 	DVASSERT(Thread::IsMainThread());
 
@@ -716,11 +746,12 @@ void Texture::FlushDataToRendererInternal(Vector<Image *> * images)
 	id = CreateTextureNative(Vector2((float32)_width, (float32)_height), texture->format, false, 0);
 #endif //#if defined(__DAVAENGINE_OPENGL__)
 
-	for(uint32 i = 0; i < (uint32)images->size(); ++i)
-	{
+    for (size_t i = 0, n = images->size(); i < n; ++i)
+    {
         Image *img = (*images)[i];
-		TexImage((img->mipmapLevel != (uint32)-1) ? img->mipmapLevel : i, img->width, img->height, img->data, img->dataSize, img->cubeFaceID);
-	}
+        TexImage(img->mipmapLevel != (uint32)-1 ? static_cast<int32>(img->mipmapLevel) : static_cast<int32>(i),
+                 img->width, img->height, img->data, img->dataSize, img->cubeFaceID);
+    }
 
 #if defined(__DAVAENGINE_OPENGL__)
 
@@ -768,8 +799,10 @@ bool Texture::CheckImageSize(const Vector<DAVA::Image *> &imageSet)
 
 Texture * Texture::CreateFromFile(const FilePath & pathName, const FastName &group, TextureType typeHint)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	Texture * texture = PureCreate(pathName, group);
- 	if(!texture)
+	if(!texture)
 	{
         TextureDescriptor *descriptor = TextureDescriptor::CreateFromFile(pathName);
         if(descriptor)
@@ -794,6 +827,8 @@ Texture * Texture::CreateFromFile(const FilePath & pathName, const FastName &gro
 
 Texture * Texture::PureCreate(const FilePath & pathName, const FastName &group)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	if(pathName.IsEmpty() || pathName.GetType() == FilePath::PATH_IN_MEMORY)
 		return NULL;
 
@@ -823,6 +858,8 @@ Texture * Texture::PureCreate(const FilePath & pathName, const FastName &group)
     
 void Texture::ReloadFromData(PixelFormat format, uint8 * data, uint32 _width, uint32 _height)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     ReleaseTextureData();
     
     Image *image = Image::CreateFromData(_width, _height, format, data);
@@ -842,6 +879,8 @@ void Texture::Reload()
     
 void Texture::ReloadAs(eGPUFamily gpuFamily)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     DVASSERT(isRenderTarget == false);
     
     ReleaseTextureData();
@@ -903,6 +942,8 @@ int32 Texture::Release()
 	
 Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, DepthFormat _depthFormat)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	int32 dx = Max((int32)w, 8);
     EnsurePowerOf2(dx);
     
@@ -953,6 +994,8 @@ void Texture::HWglCreateFBOBuffers()
 
 void Texture::HWglCreateFBOBuffersInternal()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	GLint saveFBO = RenderManager::Instance()->HWglGetLastFBO();
 	GLint saveTexture = RenderManager::Instance()->HWglGetLastTextureID(textureType);
 
@@ -1035,6 +1078,8 @@ void Texture::HWglCreateFBOBuffersInternal()
 	
 void Texture::DumpTextures()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	uint32 allocSize = 0;
 	int32 cnt = 0;
 	Logger::FrameworkDebug("============================================================");
@@ -1071,13 +1116,17 @@ void Texture::SetDebugInfo(const String & _debugInfo)
 	
 void Texture::Lost()
 {
-	RenderResource::Lost();
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    RenderResource::Lost();
     
     ReleaseTextureData();
 }
 
 void Texture::Invalidate()
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	RenderResource::Invalidate();
 	
 	DVASSERT(id == 0 && "Texture always invalidated");
@@ -1115,7 +1164,9 @@ void Texture::Invalidate()
 
 Image * Texture::ReadDataToImage()
 {
-	const PixelFormatDescriptor & formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(texDescriptor->format);
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
+    const PixelFormatDescriptor & formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(texDescriptor->format);
 
     Image *image = Image::Create(width, height, formatDescriptor.formatID);
     uint8 *imageData = image->GetData();
@@ -1145,6 +1196,8 @@ Image * Texture::ReadDataToImage()
 
 Image * Texture::CreateImageFromMemory(UniqueHandle renderState)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     Image *image = NULL;
     if(isRenderTarget)
     {
@@ -1184,6 +1237,8 @@ uint32 Texture::GetDataSize() const
 
 Texture * Texture::CreatePink(TextureType requestedType, bool checkers)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
 	//we need instances for pink textures for ResourceEditor. We use it for reloading for different GPUs
 	//pink textures at game is invalid situation
 	Texture *tex = new Texture();
@@ -1204,6 +1259,8 @@ Texture * Texture::CreatePink(TextureType requestedType, bool checkers)
 
 void Texture::MakePink(bool checkers)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     Vector<Image *> *images = new Vector<Image *> ();
 	if(texDescriptor->IsCubeMap())
 	{
@@ -1264,6 +1321,8 @@ eGPUFamily Texture::GetGPUForLoading(const eGPUFamily requestedGPU, const Textur
 
 void Texture::SetInvalidater(TextureInvalidater* invalidater)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     if(this->invalidater)
     {
         this->invalidater->RemoveTexture(this);
@@ -1275,6 +1334,8 @@ void Texture::SetInvalidater(TextureInvalidater* invalidater)
     }
 }
 
+
+
 const FilePath & Texture::GetPathname() const
 {
     return texDescriptor->pathname;
@@ -1282,6 +1343,8 @@ const FilePath & Texture::GetPathname() const
     
 void Texture::SetPathname(const FilePath& path)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     textureMapMutex.Lock();
     textureMap.erase(FILEPATH_MAP_KEY(texDescriptor->pathname));
     texDescriptor->pathname = path;
@@ -1300,6 +1363,8 @@ PixelFormat Texture::GetFormat() const
 
 void Texture::SetPixelization(bool value)
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     if (value == pixelizationFlag)
     {
         return;
@@ -1322,6 +1387,8 @@ void Texture::SetPixelization(bool value)
 
 int32 Texture::GetBaseMipMap() const
 {
+    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+
     if(texDescriptor->GetQualityGroup().IsValid())
     {
         const TextureQuality *curTxQuality = QualitySettingsSystem::Instance()->GetTxQuality(QualitySettingsSystem::Instance()->GetCurTextureQuality());

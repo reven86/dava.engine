@@ -61,6 +61,7 @@
 #include "Platform/DeviceInfo.h"
 
 #include "Network/NetCore.h"
+#include "MemoryManager/MemoryProfiler.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -450,6 +451,15 @@ void Core::SystemProcessFrame()
     Stats::Instance()->BeginFrame();
     TIME_PROFILE("Core::SystemProcessFrame");
     
+#ifndef __DAVAENGINE_WIN_UAP__
+    // Poll for network I/O events here, not depending on Core active flag
+    Net::NetCore::Instance()->Poll();
+    // Give memory profiler chance to notify its subscribers about new frame
+    DAVA_MEMORY_PROFILER_UPDATE();
+#else
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
+#endif
+    
 	if (!core) return;
 	if (!isActive)return;
 	
@@ -503,13 +513,6 @@ void Core::SystemProcessFrame()
 		LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
 		JobManager::Instance()->Update();
-
-        // Poll for network I/O events here
-#ifndef __DAVAENGINE_WIN_UAP__
-        Net::NetCore::Instance()->Poll();
-#else
-        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-#endif
 
 		core->Update(frameDelta);
         InputSystem::Instance()->OnAfterUpdate();
