@@ -73,7 +73,7 @@ void TestCore::Init(TestClassStartedCallback testClassStartedCallback_, TestClas
     testClassDisabledCallback = testClassDisabledCallback_;
 }
 
-void TestCore::RunOnlyTheseTests(const String& testClassNames)
+void TestCore::RunOnlyTheseTestClasses(const String& testClassNames)
 {
     DVASSERT(!runLoopInProgress);
     if (!testClassNames.empty())
@@ -102,7 +102,7 @@ void TestCore::RunOnlyTheseTests(const String& testClassNames)
     }
 }
 
-void TestCore::DisableTheseTests(const String& testClassNames)
+void TestCore::DisableTheseTestClasses(const String& testClassNames)
 {
     DVASSERT(!runLoopInProgress);
     if (!testClassNames.empty())
@@ -124,7 +124,7 @@ void TestCore::DisableTheseTests(const String& testClassNames)
     }
 }
 
-bool TestCore::HasTests() const
+bool TestCore::HasTestClasses() const
 {
     ptrdiff_t n = std::count_if(testClasses.begin(), testClasses.end(), [](const TestClassInfo& info) -> bool { return info.runTest; });
     return n > 0;

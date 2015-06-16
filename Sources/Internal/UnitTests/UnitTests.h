@@ -121,11 +121,11 @@
                                 const char* filename, int line, const String& userMessage) - notifies about test failing
     Callback are set up through DAVA::UnitTests::TestCore::Instance()->Init() call.
  2. optionally specify list of test class names that only should be run
-        DAVA::UnitTests::TestCore::Instance()->RunOnlyTheseTests() - takes string of semicolon separated names
+        DAVA::UnitTests::TestCore::Instance()->RunOnlyTheseTestClasses() - takes string of semicolon separated names
  3. optionally specify list of test class names that shouldn't run
-        DAVA::UnitTests::TestCore::Instance()->DisableTheseTests() - takes string of semicolon separated names
- 4. you can optionally check number of registered tests
-        DAVA::UnitTests::TestCore::Instance()->HasTests()
+        DAVA::UnitTests::TestCore::Instance()->DisableTheseTestClasses() - takes string of semicolon separated names
+ 4. you can optionally check number of registered test classes
+        DAVA::UnitTests::TestCore::Instance()->HasTestClasses()
 
  Now test framework is ready to run tests. You should periodically call DAVA::UnitTests::TestCore::Instance()->ProcessTests() until it returns false:
     void GameCore::Update(float32 timeElapsed)

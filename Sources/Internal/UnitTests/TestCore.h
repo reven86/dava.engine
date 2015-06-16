@@ -71,10 +71,10 @@ public:
               TestStartedCallback testStartedCallback, TestFinishedCallback testFinishedCallback,
               TestFailedCallback testFailedCallback, TestClassDisabledCallback testClassDisabledCallback);
 
-    void RunOnlyTheseTests(const String& testClassNames);
-    void DisableTheseTests(const String& testClassNames);
+    void RunOnlyTheseTestClasses(const String& testClassNames);
+    void DisableTheseTestClasses(const String& testClassNames);
 
-    bool HasTests() const;
+    bool HasTestClasses() const;
 
     bool ProcessTests(float32 timeElapsed);
 
