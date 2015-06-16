@@ -101,9 +101,14 @@ bool PackageNode::IsImported() const
     return GetParent() != nullptr;
 }
 
+bool PackageNode::CanRemove() const
+{
+    return GetParent() != nullptr && !GetParent()->IsReadOnly();
+}
+
 bool PackageNode::IsReadOnly() const
 {
-    return GetParent() != nullptr ? GetParent()->IsReadOnly() : false;
+    return GetParent() != nullptr;
 }
 
 ImportedPackagesNode *PackageNode::GetImportedPackagesNode() const
