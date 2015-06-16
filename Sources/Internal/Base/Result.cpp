@@ -90,6 +90,11 @@ ResultList& ResultList::AddResult(const Result &&result)
     return *this;
 }
 
+ResultList& ResultList::AddResult(const Result::ResultType type, const String &message, const VariantType &data)
+{
+    return AddResult(Result(type, message, data));
+}
+
 ResultList& ResultList::AddResultList(const ResultList &resultList)
 {
     allOk &= resultList.allOk;

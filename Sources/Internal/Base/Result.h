@@ -69,7 +69,8 @@ public:
     ResultList& operator = (ResultList& resultList);
     ResultList& operator = (ResultList&& resultList);
     ResultList &AddResult(const Result &result);
-    ResultList &AddResult(const Result &&);
+    ResultList &AddResult(const Result &&result);
+    ResultList &AddResult(const Result::ResultType type = Result::RESULT_SUCCESS, const String &message = String(), const VariantType &data = VariantType());
     ResultList &AddResultList(const ResultList &resultList);
     ResultList &AddResultList(const ResultList &&resultList);
     
