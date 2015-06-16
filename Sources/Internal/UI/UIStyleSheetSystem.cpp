@@ -156,32 +156,35 @@ namespace DAVA
 
         switch (descr.owner)
         {
-        case ePropertyOwner::CONTROL:
-        {
-            const InspInfo* typeInfo = control->GetTypeInfo();
-            do
+            case ePropertyOwner::CONTROL:
             {
-                if (typeInfo == descr.typeInfo)
+                const InspInfo* typeInfo = control->GetTypeInfo();
+                do
                 {
-                    descr.inspMember->SetValue(control, value);
-                    break;
-                }
-                typeInfo = typeInfo->BaseInfo();
-            } while (typeInfo);
+                    if (typeInfo == descr.typeInfo)
+                    {
+                        descr.inspMember->SetValue(control, value);
+                        break;
+                    }
+                    typeInfo = typeInfo->BaseInfo();
+                } while (typeInfo);
 
-            break;
-        }
-        case ePropertyOwner::BACKGROUND:
-            if (control->GetBackgroundComponentsCount() > 0)
-                descr.inspMember->SetValue(control->GetBackgroundComponent(0), value);
-            break;
-        case ePropertyOwner::COMPONENT:
-            for (const auto& componentInfo : descr.targetComponents)
-            {
-                if (UIComponent* component = control->GetComponent(componentInfo.first))
-                    componentInfo.second->SetValue(component, value);
+                break;
             }
-            break;
+            case ePropertyOwner::BACKGROUND:
+                if (control->GetBackgroundComponentsCount() > 0)
+                    descr.inspMember->SetValue(control->GetBackgroundComponent(0), value);
+                break;
+            case ePropertyOwner::COMPONENT:
+                for (const auto& componentInfo : descr.targetComponents)
+                {
+                    if (UIComponent* component = control->GetComponent(componentInfo.first))
+                        componentInfo.second->SetValue(component, value);
+                }
+                break;
+            default:
+                DVASSERT(false);
+                break;
         }
     }
 }
