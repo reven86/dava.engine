@@ -43,8 +43,6 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Model/PackageHierarchy/StyleSheetsNode.h"
-#include "Model/PackageCommandExecutor.h"
-
 #include "UI/UIPackage.h"
 #include "UI/UIControl.h"
 #include "UI/UIStyleSheet.h"

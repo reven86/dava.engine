@@ -37,7 +37,6 @@ class PackageNode;
 class ControlNode;
 class StyleSheetNode;
 class SectionProperty;
-class PackageCommandExecutor;
 class ControlsContainerNode;
 
 class EditorUIPackageBuilder : public DAVA::AbstractUIPackageBuilder
