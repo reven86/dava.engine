@@ -76,7 +76,6 @@ LibraryModel::~LibraryModel()
 Qt::ItemFlags LibraryModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
-        for (int j = 0; j < controls->GetCount(); j++)
     {
         return Qt::NoItemFlags;
     }
@@ -153,22 +152,23 @@ void LibraryModel::BuildModel()
             controlsRootItem->appendRow(item);
         }
     }
-    const auto importedControls = root->GetImportedPackagesNode();
-    if (importedControls->GetCount())
+    const auto importedPackagesNode = root->GetImportedPackagesNode();
+    if (importedPackagesNode->GetCount())
     {
         importedPackageRootItem = new QStandardItem(tr("Importred controls"));
-        importedPackageRootItem->setData(QVariant::fromValue(static_cast<void*>(importedControls)));
+        importedPackageRootItem->setData(QVariant::fromValue(static_cast<void*>(importedPackagesNode)));
         importedPackageRootItem->setBackground(QBrush(Qt::lightGray));
         invisibleRootItem()->appendRow(importedPackageRootItem);
-        for (int i = 0; i < importedControls->GetCount(); ++i)
+        for (int i = 0; i < importedPackagesNode->GetCount(); ++i)
         {
-            const auto importedPackage = importedControls->Get(i);
+            const auto importedPackage = importedPackagesNode->GetImportedPackage(i);
             auto importedPackageItem = new QStandardItem(QString::fromStdString(importedPackage->GetName()));
             importedPackageItem->setData(QVariant::fromValue(static_cast<void*>(importedPackage)));
             importedPackageRootItem->appendRow(importedPackageItem);
-            for (int j = 0; j < importedPackage->GetCount(); ++j)
+            const auto controls = importedPackage->GetPackageControlsNode();
+            for (int j = 0; j < controls->GetCount(); ++j)
             {
-                const auto node = importedPackage->Get(j);
+                const auto node = controls->Get(j);
                 auto item = new QStandardItem(
                     QIcon(IconHelper::GetCustomIconPath()),
                     QString::fromStdString(node->GetName())
@@ -224,11 +224,11 @@ void LibraryModel::ControlWasRemoved(ControlNode *node, ControlsContainerNode *f
 
 }
 
-void LibraryModel::ImportedPackageWillBeAdded(PackageControlsNode *node, PackageNode *to, int index)
+void LibraryModel::ImportedPackageWillBeAdded(PackageNode *node, ImportedPackagesNode *to, int index)
 {
 }
 
-void LibraryModel::ImportedPackageWasAdded(PackageControlsNode *node, PackageNode *to, int index)
+void LibraryModel::ImportedPackageWasAdded(PackageNode *node, ImportedPackagesNode *to, int index)
 {
     if (importedPackageRootItem->data().value<void*>() == node->GetParent())
     {
@@ -252,7 +252,7 @@ void LibraryModel::ImportedPackageWasAdded(PackageControlsNode *node, PackageNod
     }
 }
 
-void LibraryModel::ImportedPackageWillBeRemoved(PackageControlsNode *node, PackageNode *from)
+void LibraryModel::ImportedPackageWillBeRemoved(PackageNode *node, ImportedPackagesNode *from)
 {
     QModelIndex parentIndex = indexByNode(node, importedPackageRootItem);
     if (parentIndex.isValid())
@@ -261,7 +261,7 @@ void LibraryModel::ImportedPackageWillBeRemoved(PackageControlsNode *node, Packa
     }
 }
 
-void LibraryModel::ImportedPackageWasRemoved(PackageControlsNode *node, PackageNode *from)
+void LibraryModel::ImportedPackageWasRemoved(PackageNode *node, ImportedPackagesNode *from)
 {
 
 }
