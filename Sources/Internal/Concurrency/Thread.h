@@ -68,13 +68,13 @@ public:
 #   if defined(USE_CPP11_CONCURRENCY)
 private:
     using Handle = std::thread;
-    friend DWORD WINAPI ThreadFunc(void *param);
+    friend unsigned __stdcall ThreadFunc(void *param);
 public:
     using Id = std::thread::id;
 #   else 
 private:
     using Handle = HANDLE;
-    friend DWORD WINAPI ThreadFunc(void *param);
+    friend unsigned __stdcall ThreadFunc(void *param);
 public:
     using Id = DWORD;
 #   endif
@@ -120,7 +120,7 @@ public:
      \brief Sets thread name. You should to use it before Thread::Start().
      */
     inline void SetName(const String &_name);
-    inline String GetName() const;
+    inline const String& GetName() const;
     
 	/**
 		\brief Start execution of the thread
@@ -234,7 +234,7 @@ inline void Thread::SetName(const String &_name)
     name = _name;
 }
 
-inline String Thread::GetName() const
+inline const String& Thread::GetName() const
 {
     return name;
 }

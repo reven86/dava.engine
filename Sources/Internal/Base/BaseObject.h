@@ -109,7 +109,7 @@ public:
 		}	
 #endif		
 
-		int32 refCounter = referenceCount.Decrement();
+        int32 refCounter = --referenceCount;
 		if (!refCounter)
 		{
 			delete this;

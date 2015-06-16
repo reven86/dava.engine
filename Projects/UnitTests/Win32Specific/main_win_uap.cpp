@@ -29,7 +29,7 @@
 #include "Base/Platform.h"
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "DAVAEngine.h"
+#include "Core/Core.h"
 
 [Platform::MTAThread]
 int main(Platform::Array<Platform::String^>^ args)

@@ -35,6 +35,7 @@ namespace DAVA
 #if defined(__DAVAENGINE_WINDOWS__)
 
 #include <windows.h>
+#include <process.h>
 const DWORD MS_VC_EXCEPTION=0x406D1388;
 
 #pragma pack(push,8)
@@ -73,7 +74,7 @@ void Thread::Start()
 
 #if !defined(USE_CPP11_CONCURRENCY)
 
-    handle = CreateThread 
+    auto hdl = _beginthreadex
         (
         0, // Security attributes
         0, // Stack size
@@ -81,19 +82,14 @@ void Thread::Start()
         this,
         0,
         0);
-    HANDLE native_handle = handle;
+
+    handle = reinterpret_cast<HANDLE>(hdl);
 
 #else
 
     handle = std::thread(ThreadFunc, this);
-    HANDLE native_handle = handle.native_handle();
 
 #endif
-
-    if (!SetThreadPriority(native_handle, THREAD_PRIORITY_ABOVE_NORMAL))
-    {
-        Logger::Error("Thread::StartWin32 error %d", (int32)GetLastError());
-    }
 }
 
 void Thread::Sleep(uint32 timeMS)
@@ -101,7 +97,7 @@ void Thread::Sleep(uint32 timeMS)
     ::Sleep(timeMS);
 }
 
-DWORD WINAPI ThreadFunc(void* param)
+unsigned __stdcall ThreadFunc(void* param)
 {	
 #if defined(__DAVAENGINE_DEBUG__)
     Thread *t = static_cast<Thread *>(param);
