@@ -54,22 +54,22 @@ void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
     String output;
     if (startSuiteMarker == lines[0])
     {
-        String testName = lines.at(1);
+        const String& testName = lines.at(1);
         output = "##teamcity[testSuiteStarted name='" + testName + "']\n";
     }
     else if (finishSuiteMarker == lines[0])
     {
-        String testName = lines.at(1);
+        const String& testName = lines.at(1);
         output = "##teamcity[testSuiteFinished name='" + testName + "']\n";
     }
     else if (disabledSuiteMarker == lines[0])
     {
-        String testName = lines.at(1);
+        const String& testName = lines.at(1);
         output = "##teamcity[testIgnored name='" + testName + "' message='test is disabled']\n";
     }
     else if (startTestMarker == lines[0])
     {
-        String testName = lines.at(1);
+        const String& testName = lines.at(1);
         output = "##teamcity[testStarted name='" + testName + "'";
         if (captureStdoutFlag)
         {
@@ -79,12 +79,12 @@ void TeamcityTestsOutput::Output(Logger::eLogLevel ll, const char8 *text)
     }
     else if (finishTestMarker == lines[0])
     {
-        String testName = lines.at(1);
+        const String& testName = lines.at(1);
         output = "##teamcity[testFinished name='" + testName + "']\n";
     }
     else if (errorTestMarker == lines[0])
     {
-        String testName = lines.at(1);
+        const String& testName = lines.at(1);
         String condition = NormalizeString(lines.at(2).c_str());
         String errorFileLine = NormalizeString(lines.at(3).c_str());
         output = "##teamcity[testFailed name='" + testName 
