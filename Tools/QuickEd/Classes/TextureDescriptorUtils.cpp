@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "TextureDescriptorUtils.h"
 
 using namespace DAVA;

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__NOTPASSABLETERRAINPROXY__
 #define __RESOURCEEDITORQT__NOTPASSABLETERRAINPROXY__
 

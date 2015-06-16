@@ -36,6 +36,8 @@
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Render/RHI/rhi_Public.h"
 
+#include "MemoryManager/MemoryProfiler.h"
+
 namespace DAVA
 {	
 /**
@@ -46,6 +48,8 @@ namespace DAVA
 class SceneFileV2;    
 class PolygonGroup : public DataNode
 {
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_POLYGONGROUP)
+
 public:
 	enum VertexDataType
 	{

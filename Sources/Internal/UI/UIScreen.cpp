@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "UI/UIScreen.h"
 #include "Render/RenderHelper.h"
 #include "Platform/SystemTimer.h"
@@ -151,10 +150,11 @@ void UIScreen::LoadGroup()
 		isLoaded = true;
 	}else
 	{
+		int32 screenGroupId = groupId;
 		for (List<UIScreen*>::iterator t = appScreens.begin(); t != appScreens.end(); ++t)
 		{
 			UIScreen * screen = *t;
-			if ((screen->groupId == groupId) && (!screen->isLoaded))
+			if ((screen->groupId == screenGroupId) && (!screen->isLoaded))
 			{
 				screen->LoadResources();
 				screen->isLoaded = true;
@@ -175,7 +175,7 @@ void UIScreen::UnloadGroup()
 		isLoaded = false;
 	}else
 	{
-        int32 screenGroupId = groupId;
+		int32 screenGroupId = groupId;
 		for (List<UIScreen*>::iterator t = appScreens.begin(); t != appScreens.end(); ++t)
 		{
 			UIScreen * screen = *t;

@@ -183,7 +183,7 @@ void RenderHelper::DrawCircle(const Vector3 & center, float32 radius, NMaterial 
     pts.points.reserve(ptsCount);
 	for (int k = 0; k < ptsCount; ++k)
 	{
-		float32 angle = ((float)k / (ptsCount - 1)) * 2 * PI;
+		angle = ((float)k / (ptsCount - 1)) * 2 * PI;
 		float32 sinA = sinf(angle);
 		float32 cosA = cosf(angle);
 		Vector3 pos = center - Vector3(sinA * radius, cosA * radius, 0);
@@ -312,7 +312,7 @@ void RenderHelper::DrawPolygonPoints(const Polygon3 & polygon, NMaterial *materi
     int ptCount = polygon.pointCount;
     if (ptCount >= 1)
     {
-#if defined (__DAVAENGINE_OPENGL__)
+#if defined (__DAVAENGINE_OPENGL__) && !defined(__DAVAENGINE_OPENGL_ES__)
         glPointSize(3.0f);
 #endif 
         vertexStream->Set(TYPE_FLOAT, 3, 0, polygon.GetPoints());
@@ -320,7 +320,7 @@ void RenderHelper::DrawPolygonPoints(const Polygon3 & polygon, NMaterial *materi
         RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
         RenderManager::Instance()->SetRenderData(renderDataObject);
         RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_POINTLIST, 0, ptCount);
-#if defined (__DAVAENGINE_OPENGL__)
+#if defined (__DAVAENGINE_OPENGL__) && !defined(__DAVAENGINE_OPENGL_ES__)
         glPointSize(1.0f);
 #endif		
     }
@@ -891,7 +891,7 @@ void RenderHelper::CreateClearPass(rhi::HTexture targetHandle, int32 passPriorit
     rhi::EndRenderPass(clearPass);
 }
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
 void RenderHelper::GetLineWidthRange(int32& rangeMin, int32& rangeMax)
 {
 	int32 lineWidthMin = 1;

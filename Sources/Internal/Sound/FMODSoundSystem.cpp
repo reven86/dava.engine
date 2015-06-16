@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifdef DAVA_FMOD
 
 #include "Sound/SoundSystem.h"
@@ -59,11 +60,27 @@ FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_READCALLBACK(void * handle, void * buffer,
 FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_SEEKCALLBACK(void * handle, unsigned int pos, void * userdata);
 FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_CLOSECALLBACK(void * handle, void * userdata);
 
+namespace
+{
+
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
-void * F_CALLBACK DAVA_FMOD_MEMORY_ALLOCCALLBACK(unsigned int size, FMOD_MEMORY_TYPE type, const char *sourcestr);
-void * F_CALLBACK DAVA_FMOD_MEMORY_REALLOCCALLBACK(void *ptr, unsigned int size, FMOD_MEMORY_TYPE type, const char *sourcestr);
-void  F_CALLBACK DAVA_FMOD_MEMORY_FREECALLBACK(void *ptr, FMOD_MEMORY_TYPE type, const char *sourcestr);
-#endif
+void* F_CALLBACK fmod_tracking_alloc(unsigned int size, FMOD_MEMORY_TYPE /*type*/, const char* /*sourcestr*/)
+{
+    return MemoryManager::Instance()->Allocate(size, ALLOC_POOL_FMOD);
+}
+
+void* F_CALLBACK fmod_tracking_realloc(void* ptr, unsigned int size, FMOD_MEMORY_TYPE /*type*/, const char* /*sourcestr*/)
+{
+    return MemoryManager::Instance()->Reallocate(ptr, ALLOC_POOL_FMOD);
+}
+
+void F_CALLBACK fmod_tracking_free(void* ptr, FMOD_MEMORY_TYPE /*type*/, const char* /*sourcestr*/)
+{
+    MemoryManager::Instance()->Deallocate(ptr);
+}
+#endif  // DAVA_MEMORY_PROFILING_ENABLE
+
+}   // unnamed namespace
 
 static const FastName SEREALIZE_EVENTTYPE_EVENTFILE("eventFromFile");
 static const FastName SEREALIZE_EVENTTYPE_EVENTSYSTEM("eventFromSystem");
@@ -75,9 +92,9 @@ SoundSystem::SoundSystem()
     DVASSERT(sizeof(FMOD_VECTOR) == sizeof(Vector3));
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
-   
-    FMOD::Memory_Initialize(nullptr, 0, &DAVA_FMOD_MEMORY_ALLOCCALLBACK, &DAVA_FMOD_MEMORY_REALLOCCALLBACK, &DAVA_FMOD_MEMORY_FREECALLBACK);
+    FMOD::Memory_Initialize(nullptr, 0, &fmod_tracking_alloc, &fmod_tracking_realloc, &fmod_tracking_free);
 #endif
+
     void * extraDriverData = 0;
 #ifdef __DAVAENGINE_IPHONE__
     FMOD_IPHONE_EXTRADRIVERDATA iphoneDriverData;
@@ -590,10 +607,10 @@ void SoundSystem::SetGroupVolume(const FastName & groupName, float32 volume)
         if(group.name == groupName)
         {
             group.volume = volume;
-
-            Vector<SoundEvent *> & events = group.events;
-            for(size_t i = 0; i < events.size(); ++i)
-                events[i]->SetVolume(volume);
+            for (auto& x : group.events)
+            {
+                x->SetVolume(volume);
+            }
 
             break;
         }
@@ -722,25 +739,7 @@ FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_CLOSECALLBACK(void * handle, void * userda
 
     return FMOD_OK;
 }
-#if defined(DAVA_MEMORY_PROFILING_ENABLE)
-void * F_CALLBACK DAVA_FMOD_MEMORY_ALLOCCALLBACK(unsigned int size, FMOD_MEMORY_TYPE type, const char *sourcestr)
-{
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_FMOD);
-}
-void * F_CALLBACK DAVA_FMOD_MEMORY_REALLOCCALLBACK(void *ptr, unsigned int size, FMOD_MEMORY_TYPE type, const char *sourcestr)
-{
-    if (ptr == nullptr)
-    {
-        return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_FMOD);
-    }
-    return DAVA::MemoryManager::Instance()->Reallocate(ptr, DAVA::ALLOC_POOL_FMOD);
-}
-void  F_CALLBACK DAVA_FMOD_MEMORY_FREECALLBACK(void *ptr, FMOD_MEMORY_TYPE type, const char *sourcestr)
-{
-    DAVA::MemoryManager::Instance()->Deallocate(ptr);
-}
 
-#endif
 };
 
 #endif //DAVA_FMOD

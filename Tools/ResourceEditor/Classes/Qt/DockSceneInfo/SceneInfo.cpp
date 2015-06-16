@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "DAVAEngine.h"
 #include "DockSceneInfo/SceneInfo.h"
 #include "../Qt/Settings/SettingsManager.h"
@@ -39,8 +38,6 @@
 #include "Render/TextureDescriptor.h"
 
 #include "ImageTools/ImageTools.h"
-
-#include "CubemapEditor/MaterialHelper.h"
 
 #include "Scene/SceneSignals.h"
 #include "Scene/SceneEditor2.h"

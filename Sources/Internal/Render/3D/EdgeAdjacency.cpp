@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "EdgeAdjacency.h"
 #include "PolygonGroup.h"
 #include "Render/RenderBase.h"

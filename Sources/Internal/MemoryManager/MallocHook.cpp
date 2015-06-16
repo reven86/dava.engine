@@ -1,30 +1,31 @@
 /*==================================================================================
-Copyright (c) 2008, binaryzebra
-All rights reserved.
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-* Neither the name of the binaryzebra nor the
-names of its contributors may be used to endorse or promote products
-derived from this software without specific prior written permission.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
 
 #include "Base/BaseTypes.h"
 
@@ -33,14 +34,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cstdlib>
 #include <cassert>
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 #include <detours/detours.h>
-#elif defined(__DAVAENGINE_ANDROID__) 
+#elif defined(__DAVAENGINE_ANDROID__)
+#include <malloc.h>
 #include <dlfcn.h>
-
-// Function to retrive malloc'd size, its definition is in AndroidMallocSize.cpp
-size_t AndroidMallocSize(void* ptr);
-
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <dlfcn.h>
 #include <malloc/malloc.h>
@@ -52,17 +50,20 @@ size_t AndroidMallocSize(void* ptr);
 #include "AllocPools.h"
 #include "MemoryManager.h"
 
-static void* HookedMalloc(size_t size)
+namespace
 {
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
+
+void* HookedMalloc(size_t size)
+{
+    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_DEFAULT);
 }
 
-static void* HookedRealloc(void* ptr, size_t newSize)
+void* HookedRealloc(void* ptr, size_t newSize)
 {
     return DAVA::MemoryManager::Instance()->Reallocate(ptr, newSize);
 }
 
-static void* HookedCalloc(size_t count, size_t elemSize)
+void* HookedCalloc(size_t count, size_t elemSize)
 {
     void* ptr = nullptr;
     if (count > 0 && elemSize > 0)
@@ -76,7 +77,7 @@ static void* HookedCalloc(size_t count, size_t elemSize)
     return ptr;
 }
 
-static char* HookedStrdup(const char* src)
+char* HookedStrdup(const char* src)
 {
     char* dst = nullptr;
     if (src != nullptr)
@@ -88,10 +89,11 @@ static char* HookedStrdup(const char* src)
     return dst;
 }
 
-static void HookedFree(void* ptr)
+void HookedFree(void* ptr)
 {
     DAVA::MemoryManager::Instance()->Deallocate(ptr);
 }
+}	// unnamed namespace
 
 namespace DAVA
 {
@@ -99,6 +101,9 @@ namespace DAVA
 void* (*MallocHook::RealMalloc)(size_t) = &malloc;
 void* (*MallocHook::RealRealloc)(void*, size_t) = &realloc;
 void (*MallocHook::RealFree)(void*) = &free;
+#if defined(__DAVAENGINE_ANDROID__)
+size_t (*MallocHook::RealMallocSize)(void*) = nullptr;
+#endif
 
 MallocHook::MallocHook()
 {
@@ -122,12 +127,12 @@ void MallocHook::Free(void* ptr)
 
 size_t MallocHook::MallocSize(void* ptr)
 {
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
     return _msize(ptr);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     return malloc_size(ptr);
-#elif defined(__DAVAENGINE_ANDROID__) 
-    return AndroidMallocSize(ptr);
+#elif defined(__DAVAENGINE_ANDROID__)
+    return RealMallocSize(ptr);
 #else
 #error "Unknown platform"
 #endif
@@ -149,7 +154,7 @@ void MallocHook::Install()
      malloc is a weak symbol which means that it can be overriden by an application. Additionally I get original
      address of malloc using dlsym function.
     */
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
     void* (*realCalloc)(size_t, size_t) = &calloc;
     char* (*realStrdup)(const char*) = &_strdup;
 
@@ -173,17 +178,41 @@ void MallocHook::Install()
     detours(reinterpret_cast<PVOID*>(&RealFree), reinterpret_cast<PVOID>(&HookedFree));
 
 #elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
-
-    void* handle = reinterpret_cast<void*>(-1);
     void* fptr = nullptr;
-    
+
+    // RTLD_DEFAULT tells to find the next occurrence of the desired symbol
+    // in the search order after the current library
+    // RTLD_NEXT tells to find the next occurrence of the desired symbol
+    // in the search order after the current library
+
+    // On Android use RTLD_DEFAULT as on RTLD_NEXT dlsym returns null
+    // On Mac OS and iOS use RTLD_NEXT to not call malloc recursively
+#if defined(__DAVAENGINE_ANDROID__)
+    void* handle = RTLD_DEFAULT;
+#else
+    void* handle = RTLD_NEXT;
+#endif
     fptr = dlsym(handle, "malloc");
     RealMalloc = reinterpret_cast<void* (*)(size_t)>(fptr);
-    assert(fptr != nullptr);
+    assert(fptr != nullptr && "Failed to get 'malloc'");
+
+    fptr = dlsym(handle, "realloc");
+    RealRealloc = reinterpret_cast<void* (*)(void*, size_t)>(fptr);
+    assert(fptr != nullptr && "Failed to get 'realloc'");
     
     fptr = dlsym(handle, "free");
     RealFree = reinterpret_cast<void (*)(void*)>(fptr);
-    assert(fptr != nullptr);
+    assert(fptr != nullptr && "Failed to get 'free'");
+
+#if defined(__DAVAENGINE_ANDROID__)
+    // Get address of malloc_usable_size as it isn't exported on android
+    void* libc = dlopen("libc.so", 0);
+    assert(libc != nullptr && "Failed to load libc.so");
+    fptr = dlsym(libc, "malloc_usable_size");
+    RealMallocSize = reinterpret_cast<size_t (*)(void*)>(fptr);
+    assert(fptr != nullptr && "Failed to get 'malloc_usable_size'");
+#endif
+
 #else
 #error "Unknown platform"
 #endif

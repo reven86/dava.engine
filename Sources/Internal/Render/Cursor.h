@@ -94,7 +94,7 @@ private:
 	
 #if defined(__DAVAENGINE_MACOS__)
 	void * macOSXCursor;
-#elif defined(__DAVAENGINE_WIN32__) && defined(__DAVAENGINE_DIRECTX9__)
+#elif defined(__DAVAENGINE_WINDOWS__) && defined(__DAVAENGINE_DIRECTX9__)
 	Texture * cursorTexture;
 	Sprite * cursorSprite;
 	Vector2 hotSpot;

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __SCENE_STRUCTURE_SYSTEM_H__
 #define __SCENE_STRUCTURE_SYSTEM_H__
 

@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #ifndef __UIEditor__PropertiesGridController__
 #define __UIEditor__PropertiesGridController__
 

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __UIEditor__EditorListDelegate__
 #define __UIEditor__EditorListDelegate__
 

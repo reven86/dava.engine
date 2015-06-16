@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __UIEditor__UIScrollViewMetadata__
 #define __UIEditor__UIScrollViewMetadata__
 

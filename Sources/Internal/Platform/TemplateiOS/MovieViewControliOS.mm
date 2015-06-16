@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #include "MovieViewControliOS.h"
 
 #import <MediaPlayer/MediaPlayer.h>

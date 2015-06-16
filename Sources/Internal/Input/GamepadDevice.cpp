@@ -46,7 +46,7 @@ void GamepadDevice::Reset()
     Memset(elementValues, 0, sizeof(float32) * GAMEPAD_ELEMENT_COUNT);
 }
 
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_MACOS__)
 void GamepadDevice::InitInternal()
 {
 

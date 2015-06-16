@@ -43,8 +43,6 @@
 
 #import "Platform/TemplateiOS/HelperAppDelegate.h"
 
-//#define USE_STATIC_TEXTFIELD
-
 namespace
 {
     const int MOVE_TO_OFFSCREEN_STEP = 20000;
@@ -80,6 +78,15 @@ namespace DAVA
         [textFieldHolder setTextField:&davaTextField];
 
         objcClassPtr = textFieldHolder;
+        
+        prevRect = tf.GetRect();
+        if (renderToTexture)
+        {
+            UpdateNativeRect(prevRect, MOVE_TO_OFFSCREEN_STEP);
+        } else
+        {
+            UpdateNativeRect(prevRect, 0);
+        }
     }
     UITextFieldiPhone::~UITextFieldiPhone()
     {
@@ -107,21 +114,6 @@ namespace DAVA
         scaledSize /= Core::Instance()->GetScreenScaleFactor();
         
         textFieldHolder->textField.font = [UIFont systemFontOfSize:scaledSize];
-    }
-    
-    void UITextFieldiPhone::OnSetSize(const DAVA::Vector2 &size)
-    {
-#ifdef USE_STATIC_TEXTFIELD
-        if(size.dx > 0 && size.dy > 0)
-        {
-            UpdateStaticTexture();
-        }
-#endif
-    }
-    
-    void UITextFieldiPhone::OnSetPosition(const DAVA::Vector2 &size)
-    {
-        
     }
     
     void UITextFieldiPhone::SetTextAlign(DAVA::int32 align)
@@ -246,24 +238,32 @@ namespace DAVA
 					   name:UIKeyboardWillHideNotification object:nil];
 		[center addObserver:textFieldHolder selector:@selector(keyboardFrameDidChange:)
 					   name:UIKeyboardDidChangeFrameNotification object:nil];
-#ifdef USE_STATIC_TEXTFIELD
-        CFNotificationCenterAddObserver(CFNotificationCenterGetLocalCenter(), this,
-            [](CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
-            {
-                (static_cast<UITextFieldiPhone *>(observer))->UpdateStaticTexture();
-            },
-            (__bridge CFStringRef) UIKeyboardWillShowNotification, nil,
-            CFNotificationSuspensionBehaviorDeliverImmediately);
+
+        auto funcHide = [](CFNotificationCenterRef center, void *observer,
+                       CFStringRef name, const void *object, CFDictionaryRef userInfo)
+        {
+            UITextFieldiPhone* tf = (static_cast<UITextFieldiPhone *>(observer));
+            tf->deltaMoveControl = MOVE_TO_OFFSCREEN_STEP;
+            tf->UpdateStaticTexture();
+        };
         
+        auto funcShow = [](CFNotificationCenterRef center, void *observer,
+                           CFStringRef name, const void *object, CFDictionaryRef userInfo)
+        {
+            UITextFieldiPhone* tf = (static_cast<UITextFieldiPhone *>(observer));
+            tf->deltaMoveControl = 0;
+            tf->UpdateStaticTexture();
+        };
         
         CFNotificationCenterAddObserver(CFNotificationCenterGetLocalCenter(), this,
-            [](CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
-            {
-                (static_cast<UITextFieldiPhone *>(observer))->UpdateStaticTexture();
-            },
+            funcHide,
             (__bridge CFStringRef) UIKeyboardDidHideNotification, nil,
             CFNotificationSuspensionBehaviorDeliverImmediately);
-#endif
+        
+        CFNotificationCenterAddObserver(CFNotificationCenterGetLocalCenter(), this,
+            funcShow,
+            (__bridge CFStringRef) UIKeyboardWillShowNotification, nil,
+            CFNotificationSuspensionBehaviorDeliverImmediately);
     }
     
     void UITextFieldiPhone::HideField()
@@ -276,14 +276,12 @@ namespace DAVA
 		[center removeObserver:textFieldHolder name:UIKeyboardDidShowNotification object:nil];
 		[center removeObserver:textFieldHolder name:UIKeyboardWillHideNotification object:nil];
         [center removeObserver:textFieldHolder name:UIKeyboardDidChangeFrameNotification object:nil];
- 
-#ifdef USE_STATIC_TEXTFIELD
-        CFNotificationCenterRemoveObserver(CFNotificationCenterGetLocalCenter(), this,
-           (__bridge CFStringRef) UIKeyboardWillShowNotification, nil);
         
         CFNotificationCenterRemoveObserver(CFNotificationCenterGetLocalCenter(), this,
-            (__bridge CFStringRef) UIKeyboardDidHideNotification, nil);
-#endif
+           (__bridge CFStringRef) UIKeyboardDidHideNotification, nil);
+        
+        CFNotificationCenterRemoveObserver(CFNotificationCenterGetLocalCenter(), this,
+           (__bridge CFStringRef) UIKeyboardWillShowNotification, nil);
     }
     
     void UITextFieldiPhone::UpdateNativeRect(const Rect & virtualRect, int xOffset)
@@ -305,14 +303,12 @@ namespace DAVA
     
     void UITextFieldiPhone::UpdateRect(const Rect & rect)
     {
-        if(renderToTexture)
+        UpdateNativeRect(rect, deltaMoveControl);
+        if (rect.dx != prevRect.dx || rect.dy != prevRect.dy)
         {
-            UpdateNativeRect(rect, MOVE_TO_OFFSCREEN_STEP);
+            UpdateStaticTexture();
         }
-        else
-        {
-            UpdateNativeRect(rect, 0);
-        }
+        prevRect = rect;
     }
 	
     void UITextFieldiPhone::SetText(const WideString & string)
@@ -324,7 +320,7 @@ namespace DAVA
                                                        encoding : CFStringConvertEncodingToNSStringEncoding ( kCFStringEncodingUTF32LE ) ] autorelease];
         NSString* truncatedText = (NSString*)TruncateText(text, textFieldHolder->cppTextField->GetMaxLength());
         
-        bool needStaticUpdate = ![textFieldHolder->textField.text isEqualToString:truncatedText];
+        bool textChanged = ![textFieldHolder->textField.text isEqualToString:truncatedText];
         
         textFieldHolder->textField.text = truncatedText;
         [textFieldHolder->textField.undoManager removeAllActions];
@@ -332,13 +328,10 @@ namespace DAVA
         // Notify UITextFieldDelegate::TextFieldOnTextChanged event
         [textFieldHolder->textField sendActionsForControlEvents:UIControlEventEditingChanged];
         
-#ifdef USE_STATIC_TEXTFIELD
-        // update only when text was really changed
-        if(needStaticUpdate)
+        if(textChanged || string.empty())
         {
             UpdateStaticTexture();
         }
-#endif
     }
 	
     void UITextFieldiPhone::GetText(WideString & string) const
@@ -353,9 +346,7 @@ namespace DAVA
 	{
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
 		[textFieldHolder setIsPassword: isPassword];
-#ifdef USE_STATIC_TEXTFIELD
         UpdateStaticTexture();
-#endif
 	}
 
 	void UITextFieldiPhone::SetInputEnabled(bool value)
@@ -471,32 +462,26 @@ namespace DAVA
     void UITextFieldiPhone::UpdateStaticTexture()
     {
         UITextFieldHolder * textFieldHolder = static_cast<UITextFieldHolder*>(objcClassPtr);
-        if (textFieldHolder)
+        DVASSERT(textFieldHolder);
+        
+        if (renderToTexture && deltaMoveControl != 0
+            && textFieldHolder->textField.text.length > 0)
         {
+            
             ::UITextField* textField = textFieldHolder->textField;
             DVASSERT(textField);
-            DAVA::Rect rect = davaTextField.GetGeometricData().GetUnrotatedRect();
-            if (rect.dx > 0 && rect.dy > 0)
+            void* imgPtr = DAVA::WebViewControl::RenderIOSUIViewToImage(textField);
+            ::UIImage* image = static_cast<::UIImage*>(imgPtr);
+            if (nullptr != image) // can't render to empty rect so skip
             {
-                // update native contol rect, but don't move if outside screen (xOffset = 0) even if renderToTexture == true
-                // because it will be automatically moved on next frame from UpdateRect, that is calling each frame
-                UpdateNativeRect(rect, 0);
-                
-                if (renderToTexture)
-                {
-                    void* imgPtr = DAVA::WebViewControl::RenderIOSUIViewToImage(textField);
-                    ::UIImage* image = static_cast<::UIImage*>(imgPtr);
-                    DVASSERT(image);
-                    
-                    // set backgroud image into davaTextField control
-                    WebViewControl::SetImageAsSpriteToControl(image, davaTextField);
-                }
-                else
-                {
-                    // set null background
-                    davaTextField.GetBackground()->SetSprite(nullptr, 0);
-                }
+                // set backgroud image into davaTextField control
+                WebViewControl::SetImageAsSpriteToControl(image, davaTextField);
             }
+        }
+        else
+        {
+            // set null background
+            davaTextField.GetBackground()->SetSprite(nullptr, 0);
         }
     }
     

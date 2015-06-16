@@ -27,18 +27,19 @@
 =====================================================================================*/
 
 
-
 #include "UIWebView.h"
 #include "FileSystem/YamlNode.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
 #if defined(__DAVAENGINE_MACOS__)
-#include "../Platform/TemplateMacOS/WebViewControlMacOS.h"
+#include "Platform/TemplateMacOS/WebViewControlMacOS.h"
 #elif defined(__DAVAENGINE_IPHONE__)
-#include "../Platform/TemplateiOS/WebViewControliOS.h"
+#include "Platform/TemplateiOS/WebViewControliOS.h"
 #elif defined(__DAVAENGINE_WIN32__)
-#include "../Platform/TemplateWin32/WebViewControlWin32.h"
+#include "Platform/TemplateWin32/WebViewControlWin32.h"
+#elif defined(__DAVAENGINE_WIN_UAP__)
+#include "Platform/TemplateWin32/WebViewControlWinUAP.h"
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/WebViewControlAndroid.h"
 #else

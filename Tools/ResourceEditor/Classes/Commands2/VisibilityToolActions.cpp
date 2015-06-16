@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "VisibilityToolActions.h"
 #include "../Qt/Scene/System/LandscapeEditorDrawSystem/VisibilityToolProxy.h"
 #include "../Qt/Scene/SceneEditor2.h"

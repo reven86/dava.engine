@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__LANDSCAPEPROXY__
 #define __RESOURCEEDITORQT__LANDSCAPEPROXY__
 

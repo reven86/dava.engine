@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __HOOD_COLLISION_OBJECT_H__
 #define __HOOD_COLLISION_OBJECT_H__
 

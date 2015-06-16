@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #import "NPAPIOpenGLLayerMacOS.h"
 #import "NPAPIPluginMacOS.h"
 

@@ -26,14 +26,13 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/Platform.h"
+#if defined(__DAVAENGINE_WIN32__)
 
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
-#include "Platform/TemplateWin32/WindowsSpecifics.h"
 #include "Platform/Thread.h"
 #include "Platform/DeviceInfo.h"
 #include "Utils/Utils.h"
-
-#if defined(__DAVAENGINE_WIN32__)
 
 #pragma warning( disable: 7 9 193 271 304 791 )
 #include <d3d9.h>
@@ -91,9 +90,9 @@ namespace DAVA
 {
 	int Core::Run(int argc, char * argv[], AppHandle handle)
 	{
-		CoreWin32Platform * core = new CoreWin32Platform();
-		core->CreateSingletons();
+		CoreWin32Platform* core = new CoreWin32Platform();
         core->InitArgs();
+        core->CreateSingletons();
 
         bool windowCreated = core->CreateWin32Window(handle);
 		if(windowCreated)
@@ -105,19 +104,15 @@ namespace DAVA
 		return 0;
 	
 	}
-    
 	int Core::RunCmdTool(int argc, char * argv[], AppHandle handle)
 	{
 		CoreWin32Platform * core = new CoreWin32Platform();
+        core->InitArgs();
 
-		//core->CreateWin32Window(handle);
-		//core->Run();
 		core->EnableConsoleMode();
 		core->CreateSingletons();
 
-		core->InitArgs();
-
-		Logger::Instance()->EnableConsoleMode();
+        Logger::Instance()->EnableConsoleMode();
 		
 		FrameworkDidLaunched();
 		FrameworkWillTerminate();

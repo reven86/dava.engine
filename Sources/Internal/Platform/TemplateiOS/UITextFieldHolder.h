@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_UI_TEXT_FIELD_HOLDER_H__
 #define __DAVAENGINE_UI_TEXT_FIELD_HOLDER_H__
 

@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "UIComponent.h"
 #include "UI/UIControl.h"
 
@@ -73,7 +74,7 @@ bool UIComponent::IsMultiple(uint32 componentType)
             
         default:
             DVASSERT(false);
-            return nullptr;
+            return false;
     }
     
 }

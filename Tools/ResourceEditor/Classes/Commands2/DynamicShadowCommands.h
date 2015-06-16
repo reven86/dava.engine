@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DYNAMIC_SHADOW_COMMANDS_H__
 #define __DYNAMIC_SHADOW_COMMANDS_H__
 

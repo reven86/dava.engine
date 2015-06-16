@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEM__
 #define __RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEM__
 

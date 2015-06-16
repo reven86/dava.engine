@@ -1,10 +1,41 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
+
 #ifndef __DEVICELOGWIDGET_H__
 #define __DEVICELOGWIDGET_H__
 
-#include <QWidget>
-#include <QScopedPointer>
-#include <qtableview.h>
 #include "Base/BaseTypes.h"
+
+#include <QWidget>
+#include <QColor>
+#include <QPointer>
+#include <QScopedPointer>
 
 namespace Ui {
     class MemProfWidget;
@@ -15,63 +46,61 @@ class QCustomPlot;
 class QFrame;
 class QToolBar;
 
-class MemProfInfoModel;
+class QCustomPlot;
+
 namespace DAVA
 {
-struct MMStatConfig;
-struct MMStat;
-}
+    struct MMStatConfig;
+    struct MMCurStat;
+}   // namespace DAVA
+
+class AllocPoolModel;
+class TagModel;
+class GeneralStatModel;
+class SnapshotListModel;
+class MemoryStatItem;
+class ProfilingSession;
 
 class MemProfWidget : public QWidget
 {
     Q_OBJECT
 
 signals:
-    void OnDumpButton();
+    void OnSnapshotButton();
     
 public:
-    explicit MemProfWidget(QWidget *parent = NULL);
-    ~MemProfWidget();
+    MemProfWidget(ProfilingSession* profSession, QWidget *parent = nullptr);
+    virtual ~MemProfWidget();
 
-    void AppendText(const QString& text);
-    void ChangeStatus(const char* status, const char* reason);
-    
-    void ClearStat();
-    void SetStatConfig(const DAVA::MMStatConfig* config);
-    void UpdateStat(const DAVA::MMStat* stat);
+public slots:
+    void ConnectionEstablished(bool newConnection);
+    void ConnectionLost(const DAVA::char8* message);
+    void StatArrived(size_t itemCount);
+    void SnapshotArrived(size_t sizeTotal, size_t sizeRecv);
 
-    void UpdateProgress(size_t total, size_t recv);
-    
+    void RealtimeToggled(bool checked);
+    void DiffClicked();
+    void PlotClicked(QMouseEvent* ev);
+
+    void SnapshotList_OnDoubleClicked(const QModelIndex& index);
+
 private:
-    void UpdateLabels(const DAVA::MMStat* stat, DAVA::uint32 alloc, DAVA::uint32 total);
-    void CreateUI();
-    void CreateLabels(const DAVA::MMStatConfig* config);
-    void Deletelabels();
-    
+    void InitUI();
+    void ReinitPlot();
+    void UpdatePlot(const MemoryStatItem& stat);
+    void SetPlotData();
+
 private:
     QScopedPointer<Ui::MemProfWidget> ui;
-    QCustomPlot* plot;
 
-    DAVA::uint32 tagCount;
-    DAVA::uint32 allocPoolCount;
+    ProfilingSession* profileSession = nullptr;
+    QPointer<AllocPoolModel> allocPoolModel;
+    QPointer<TagModel> tagModel;
+    QPointer<GeneralStatModel> generalStatModel;
+    QPointer<SnapshotListModel> snapshotModel;
 
-    QToolBar* toolbar;
-    QFrame* frame;
-    struct label_pack
-    {
-        label_pack() : title(nullptr), alloc(nullptr), total(nullptr), max_block_size(nullptr), nblocks(nullptr) {}
-        ~label_pack();
-        QLabel* title;
-        QLabel* alloc;
-        QLabel* total;
-        QLabel* max_block_size;
-        QLabel* nblocks;
-    };
-    label_pack* labels;
-    
-    MemProfInfoModel * model;
-    QTableView * tableView;
-
+    DAVA::Vector<QColor> poolColors;
+    bool realtimeMode;
 };
 
 #endif // __DEVICELOGWIDGET_H__

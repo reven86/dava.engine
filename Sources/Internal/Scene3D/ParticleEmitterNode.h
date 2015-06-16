@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_PARTCLEEMITTER_NODE_H__
 #define __DAVAENGINE_PARTCLEEMITTER_NODE_H__
 
