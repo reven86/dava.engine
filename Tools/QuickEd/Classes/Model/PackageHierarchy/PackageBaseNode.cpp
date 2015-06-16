@@ -96,7 +96,12 @@ bool PackageBaseNode::IsEditingSupported() const
     return false;
 }
 
-bool PackageBaseNode::IsInsertingSupported() const
+bool PackageBaseNode::IsInsertingControlsSupported() const
+{
+    return false;
+}
+
+bool PackageBaseNode::IsInsertingPackagesSupported() const
 {
     return false;
 }

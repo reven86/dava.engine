@@ -229,16 +229,15 @@ Qt::ItemFlags PackageModel::flags(const QModelIndex &index) const
     const PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
     if (node->CanCopy())
         flags |= Qt::ItemIsDragEnabled;
-    if (node->IsInsertingSupported())
+    if (node->IsInsertingControlsSupported() || node->IsInsertingPackagesSupported())
         flags |= Qt::ItemIsDropEnabled;
-    //TODO: DF-6265, add insert import packages here
     
     return flags;
 }
 
 Qt::DropActions PackageModel::supportedDropActions() const
 {
-    return Qt::CopyAction | Qt::MoveAction;
+    return Qt::CopyAction | Qt::MoveAction | Qt::LinkAction;
 }
 
 QStringList PackageModel::mimeTypes() const
@@ -304,25 +303,28 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
             commandExecutor->CopyControls(srcNodes, parentNode, rowIndex);
         else if (action == Qt::MoveAction)
             commandExecutor->MoveControls(srcNodes, parentNode, rowIndex);
+        else if (action == Qt::LinkAction)
+            commandExecutor->InsertInstances(srcNodes, parentNode, rowIndex);
         else
             return false;
-        
+
         return true;
     }
     else if (data->hasFormat("text/uri-list") && data->hasText())
     {
         QStringList list = data->text().split("\n");
+        Vector<FilePath> packages;
         for (const QString &str : list)
         {
             QUrl url(str);
             if (url.isLocalFile())
             {
-                FilePath path(url.toLocalFile().toStdString());
-                if (root->FindImportedPackage(path) == nullptr)
-                {
-                    //TODO: DF-6265, implement here
-                }
+                packages.push_back(FilePath(url.toLocalFile().toStdString()));
             }
+        }
+        if (!packages.empty())
+        {
+            commandExecutor->AddImportedPackagesIntoPackage(packages, root);
         }
     }
     else if (parentNode && data->hasFormat("text/plain") && data->hasText())
