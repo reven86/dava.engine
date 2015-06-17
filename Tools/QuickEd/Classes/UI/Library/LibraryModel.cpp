@@ -90,7 +90,7 @@ QStringList LibraryModel::mimeTypes() const
 
 QMimeData *LibraryModel::mimeData(const QModelIndexList &indexes) const
 {
-    foreach (QModelIndex index, indexes)
+    for(const auto &index : indexes)
     {
         if (index.isValid())
         {
@@ -122,7 +122,6 @@ QModelIndex LibraryModel::indexByNode(const void *node, const QStandardItem *ite
 
 void LibraryModel::BuildModel()
 {
-    clear();
     auto defaultControlsRoot = new QStandardItem(tr("Default controls"));
     defaultControlsRoot->setBackground(QBrush(Qt::lightGray));
     invisibleRootItem()->appendRow(defaultControlsRoot);
