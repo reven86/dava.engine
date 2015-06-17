@@ -33,6 +33,7 @@
 #include "Render/RenderBase.h"
 #include "TextureCompression/TextureConverter.h"
 #include <QObject>
+#include <atomic>
 
 namespace DAVA {
     class ResourcePacker2D;

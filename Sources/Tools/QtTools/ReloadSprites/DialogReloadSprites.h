@@ -57,6 +57,8 @@ protected:
 private:
     void LoadSettings();
     void SaveSettings() const;
+    void BlockingStop();
+
     Ui::DialogReloadSprites *ui;
     SpritesPacker *spritesPacker;
     QAction *actionReloadSprites;

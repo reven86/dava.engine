@@ -371,16 +371,16 @@ void MainWindow::closeEvent(QCloseEvent *ev)
 
 void MainWindow::OnProjectOpened(const ResultList &resultList, QString projectPath)
 {
-    menuTools->setEnabled(result);
-    toolBarPlugins->setEnabled(result);
-    actionLocalizationManager->setEnabled(result);
+    menuTools->setEnabled(resultList);
+    toolBarPlugins->setEnabled(resultList);
+    actionLocalizationManager->setEnabled(resultList);
+    fileSystemDockWidget->setEnabled(resultList);
     if (resultList)
     {
         UpdateProjectSettings(projectPath);
 
         RebuildRecentMenu();
         fileSystemDockWidget->SetProjectDir(projectPath);
-        fileSystemDockWidget->setEnabled(true);
         localizationEditorDialog->FillLocaleComboBox();
     }
     else
@@ -392,7 +392,6 @@ void MainWindow::OnProjectOpened(const ResultList &resultList, QString projectPa
         }
         QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), errors.join('\n'));
     }
-    fileSystemDockWidget->setEnabled(result);
 }
 
 void MainWindow::OnOpenProject()

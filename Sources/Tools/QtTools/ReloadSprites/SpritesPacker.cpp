@@ -33,13 +33,7 @@
 #include "Platform/Qt5/QtLayer.h"
 #include "Render/2D/Sprite.h"
 #include <QDirIterator>
-#include <QApplication>
-#include <QtConcurrent/QtConcurrent>
-#include <QFutureWatcher>
 
-#include <QThread>
-#include <limits.h>
-#include <pthread.h>
 
 using namespace DAVA;
 
@@ -121,6 +115,8 @@ void SpritesPacker::SetRunning(bool arg)
         {
             emit Finished();
         }
+        String message = String("Sprites packer ") + (arg ? "started" : "finished");
+        Logger::Debug(message.c_str());
         emit RunningStateChanged(arg);
     }
 }

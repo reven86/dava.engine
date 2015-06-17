@@ -124,15 +124,7 @@ void DialogReloadSprites::OnStopClicked()
 {
     if (spritesPacker->IsRunning())
     {
-        QApplication::setOverrideCursor(Qt::WaitCursor);
-        QEventLoop loop;
-        connect(spritesPacker, &SpritesPacker::Finished, &loop, &QEventLoop::quit);
-        spritesPacker->Cancel();
-        workerThread.quit();
-        loop.exec();
-        workerThread.wait();
-        QApplication::restoreOverrideCursor();
-        workerThread.quit();
+        BlockingStop();
     }
     else
     {
@@ -148,9 +140,7 @@ void DialogReloadSprites::OnRunningChanged(bool running)
 void DialogReloadSprites::closeEvent(QCloseEvent *event)
 {
     Q_UNUSED(event);
-    this->setEnabled(false);
-    spritesPacker->Cancel();
-    this->setEnabled(true);
+    BlockingStop();
 }
 
 void DialogReloadSprites::LoadSettings()
@@ -181,4 +171,19 @@ void DialogReloadSprites::SaveSettings() const
     settings.setValue(GPU, ui->comboBox_targetGPU->currentData().toInt());
     settings.setValue(QUALITY, ui->comboBox_quality->currentData().toInt());
     settings.setValue(CLEAR_ON_START, ui->checkBox_clean->isChecked());
+}
+
+void DialogReloadSprites::BlockingStop()
+{
+    this->setEnabled(false);
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QEventLoop loop;
+    connect(spritesPacker, &SpritesPacker::Finished, &loop, &QEventLoop::quit);
+    spritesPacker->Cancel();
+    workerThread.quit();
+    loop.exec();
+    workerThread.wait();
+    QApplication::restoreOverrideCursor();
+    workerThread.quit();
+    this->setEnabled(true);
 }
