@@ -81,8 +81,6 @@ namespace DAVA
         eOrientation orientation = HORIZONTAL;
         float32 padding = 0.0f;
         float32 spacing = 0.0f;
-        bool dynamicPadding = false;
-        bool dynamicSpacing = false;
         bool useRtl = false;
         bool skipInvisibleControls = false;
         
