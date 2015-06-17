@@ -81,6 +81,10 @@ private: // PropertyListener
     virtual void ComponentPropertiesWasRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) override;
 
 private:
+    void ChangeProperty(AbstractProperty *property, const DAVA::VariantType &value);
+    void ResetProperty(AbstractProperty *property);
+    
+private:
     QModelIndex indexByProperty(AbstractProperty *property, int column = 0);
     QVariant makeQVariant(const AbstractProperty *property) const;
     void initVariantType(DAVA::VariantType &var, const QVariant &val) const;

@@ -416,6 +416,21 @@ void PackageSerializer::VisitStyleSheetRoot(StyleSheetRootProperty *property)
     DVASSERT(false);
 }
 
+void PackageSerializer::VisitStyleSheetSelectorsProperty(StyleSheetSelectorsProperty *property)
+{
+    
+}
+
+void PackageSerializer::VisitStyleSheetPropertiesSection(StyleSheetPropertiesSection *property)
+{
+    
+}
+
+void PackageSerializer::VisitStyleSheetProperty(StyleSheetProperty *property)
+{
+    
+}
+
 void PackageSerializer::AcceptChildren(AbstractProperty *property)
 {
     for (int32 i = 0; i < property->GetCount(); i++)

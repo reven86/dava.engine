@@ -26,101 +26,65 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#include "StyleSheetRootProperty.h"
 
-#include "StyleSheetSelectorsProperty.h"
 #include "StyleSheetPropertiesSection.h"
 
+#include "StyleSheetProperty.h"
 #include "PropertyVisitor.h"
 #include "../PackageHierarchy/StyleSheetNode.h"
 #include "UI/UIStyleSheet.h"
 
 using namespace DAVA;
 
-StyleSheetRootProperty::StyleSheetRootProperty(StyleSheetNode *aStyleSheet)
+StyleSheetPropertiesSection::StyleSheetPropertiesSection(StyleSheetNode *aStyleSheet)
     : styleSheet(aStyleSheet) // weak
 {
-    selectors = new StyleSheetSelectorsProperty(styleSheet);
-    selectors->SetParent(this);
-    
-    propertiesSection = new StyleSheetPropertiesSection(styleSheet);
-    propertiesSection->SetParent(this);
-}
-
-StyleSheetRootProperty::~StyleSheetRootProperty()
-{
-    styleSheet = nullptr; // weak
-    
-    selectors->SetParent(nullptr);
-    SafeRelease(selectors);
-    
-    propertiesSection->SetParent(nullptr);
-    SafeRelease(propertiesSection);
-}
-
-int StyleSheetRootProperty::GetCount() const
-{
-    return 2;
-}
-
-AbstractProperty *StyleSheetRootProperty::GetProperty(int index) const
-{
-    switch (index)
+    UIStyleSheet *ss = styleSheet->GetStyleSheet();
+    const UIStyleSheetPropertyTable *table = ss->GetPropertyTable();
+    const Vector<std::pair< uint32, VariantType >> &tableProperties = table->GetProperties();
+    for (auto &pair : tableProperties)
     {
-        case 0:
-            return selectors;
-        case 1:
-            return propertiesSection;
+        StyleSheetProperty *prop = new StyleSheetProperty(styleSheet, pair.first);
+        prop->SetParent(this);
+        properties.push_back(prop);
     }
-    DVASSERT(false);
-    return nullptr;
 }
 
-void StyleSheetRootProperty::Accept(PropertyVisitor *visitor)
+StyleSheetPropertiesSection::~StyleSheetPropertiesSection()
 {
-    visitor->VisitStyleSheetRoot(this);
+    styleSheet = nullptr; //weak
+    for (StyleSheetProperty *prop : properties)
+        SafeRelease(prop);
+    properties.clear();
 }
 
-bool StyleSheetRootProperty::IsReadOnly() const
+int StyleSheetPropertiesSection::GetCount() const
 {
-    return styleSheet->IsReadOnly();
+    return static_cast<int>(properties.size());
 }
 
-const DAVA::String &StyleSheetRootProperty::GetName() const
+AbstractProperty *StyleSheetPropertiesSection::GetProperty(int index) const
 {
-    static String rootName = "Style Sheets Properties";
-    return rootName;
+    return properties[index];
 }
 
-AbstractProperty::ePropertyType StyleSheetRootProperty::GetType() const
+void StyleSheetPropertiesSection::Accept(PropertyVisitor *visitor)
+{
+    visitor->VisitStyleSheetPropertiesSection(this);
+}
+
+bool StyleSheetPropertiesSection::IsReadOnly() const
+{
+    return true;
+}
+
+const DAVA::String &StyleSheetPropertiesSection::GetName() const
+{
+    static String name = "Properties";
+    return name;
+}
+
+AbstractProperty::ePropertyType StyleSheetPropertiesSection::GetType() const
 {
     return TYPE_HEADER;
-}
-
-void StyleSheetRootProperty::AddListener(PropertyListener *listener)
-{
-    listeners.push_back(listener);
-}
-
-void StyleSheetRootProperty::RemoveListener(PropertyListener *listener)
-{
-    auto it = std::find(listeners.begin(), listeners.end(), listener);
-    if (it != listeners.end())
-    {
-        listeners.erase(it);
-    }
-    else
-    {
-        DVASSERT(false);
-    }
-}
-
-void StyleSheetRootProperty::SetProperty(AbstractProperty *property, const DAVA::VariantType &newValue)
-{
-    // do nothing
-}
-
-void StyleSheetRootProperty::ResetProperty(AbstractProperty *property)
-{
-    // do nothing
 }

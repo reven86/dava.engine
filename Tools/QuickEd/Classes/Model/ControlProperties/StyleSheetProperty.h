@@ -27,15 +27,12 @@
  =====================================================================================*/
 
 
-#ifndef __QUICKED_STYLE_SHEETS_ROOT_PROPERTY_H__
-#define __QUICKED_STYLE_SHEETS_ROOT_PROPERTY_H__
+#ifndef __QUICKED_STYLE_SHEET_PROPERTY_H__
+#define __QUICKED_STYLE_SHEET_PROPERTY_H__
 
-#include "Model/ControlProperties/AbstractProperty.h"
+#include "Model/ControlProperties/ValueProperty.h"
 
-class PropertyListener;
 class ValueProperty;
-class StyleSheetSelectorsProperty;
-class StyleSheetPropertiesSection;
 
 class StyleSheetNode;
 
@@ -44,35 +41,29 @@ namespace DAVA
     class UIControl;
 }
 
-class StyleSheetRootProperty : public AbstractProperty
+class StyleSheetProperty : public ValueProperty
 {
 public:
-    StyleSheetRootProperty(StyleSheetNode *styleSheet);
+    StyleSheetProperty(StyleSheetNode *styleSheet, DAVA::uint32 propertyIndex);
 protected:
-    virtual ~StyleSheetRootProperty();
+    virtual ~StyleSheetProperty();
     
 public:
     int GetCount() const override;
     AbstractProperty *GetProperty(int index) const override;
-
+    
     void Accept(PropertyVisitor *visitor) override;
     bool IsReadOnly() const override;
     
-    const DAVA::String &GetName() const override;
     ePropertyType GetType() const override;
 
-    void AddListener(PropertyListener *listener);
-    void RemoveListener(PropertyListener *listener);
-    
-    void SetProperty(AbstractProperty *property, const DAVA::VariantType &newValue);
-    void ResetProperty(AbstractProperty *property);
+    DAVA::VariantType GetValue() const;
+    const EnumMap *GetEnumMap() const;
+    void ApplyValue(const DAVA::VariantType &value);
     
 private:
-    StyleSheetNode *styleSheet = nullptr; // weak
-    DAVA::Vector<PropertyListener*> listeners;
-    
-    StyleSheetSelectorsProperty *selectors = nullptr;
-    StyleSheetPropertiesSection *propertiesSection = nullptr;
+    StyleSheetNode *styleSheet; // weak
+    DAVA::uint32 propertyIndex;
 };
 
-#endif // __QUICKED_STYLE_SHEETS_ROOT_PROPERTY_H__
+#endif // __QUICKED_STYLE_SHEET_PROPERTY_H__

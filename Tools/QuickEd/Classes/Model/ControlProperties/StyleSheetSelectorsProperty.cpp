@@ -26,101 +26,59 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#include "StyleSheetRootProperty.h"
 
 #include "StyleSheetSelectorsProperty.h"
-#include "StyleSheetPropertiesSection.h"
 
 #include "PropertyVisitor.h"
 #include "../PackageHierarchy/StyleSheetNode.h"
+
 #include "UI/UIStyleSheet.h"
 
 using namespace DAVA;
 
-StyleSheetRootProperty::StyleSheetRootProperty(StyleSheetNode *aStyleSheet)
-    : styleSheet(aStyleSheet) // weak
+StyleSheetSelectorsProperty::StyleSheetSelectorsProperty(StyleSheetNode *aStyleSheet)
+    : ValueProperty("Selectors")
+    , styleSheet(aStyleSheet) // weak
 {
-    selectors = new StyleSheetSelectorsProperty(styleSheet);
-    selectors->SetParent(this);
     
-    propertiesSection = new StyleSheetPropertiesSection(styleSheet);
-    propertiesSection->SetParent(this);
 }
 
-StyleSheetRootProperty::~StyleSheetRootProperty()
+StyleSheetSelectorsProperty::~StyleSheetSelectorsProperty()
 {
-    styleSheet = nullptr; // weak
-    
-    selectors->SetParent(nullptr);
-    SafeRelease(selectors);
-    
-    propertiesSection->SetParent(nullptr);
-    SafeRelease(propertiesSection);
+    styleSheet = nullptr; //weak
 }
 
-int StyleSheetRootProperty::GetCount() const
+int StyleSheetSelectorsProperty::GetCount() const
 {
-    return 2;
+    return 0;
 }
 
-AbstractProperty *StyleSheetRootProperty::GetProperty(int index) const
+AbstractProperty *StyleSheetSelectorsProperty::GetProperty(int index) const
 {
-    switch (index)
-    {
-        case 0:
-            return selectors;
-        case 1:
-            return propertiesSection;
-    }
-    DVASSERT(false);
     return nullptr;
 }
 
-void StyleSheetRootProperty::Accept(PropertyVisitor *visitor)
+void StyleSheetSelectorsProperty::Accept(PropertyVisitor *visitor)
 {
-    visitor->VisitStyleSheetRoot(this);
+    visitor->VisitStyleSheetSelectorsProperty(this);
 }
 
-bool StyleSheetRootProperty::IsReadOnly() const
+bool StyleSheetSelectorsProperty::IsReadOnly() const
 {
     return styleSheet->IsReadOnly();
 }
 
-const DAVA::String &StyleSheetRootProperty::GetName() const
+AbstractProperty::ePropertyType StyleSheetSelectorsProperty::GetType() const
 {
-    static String rootName = "Style Sheets Properties";
-    return rootName;
+    return TYPE_VARIANT;
 }
 
-AbstractProperty::ePropertyType StyleSheetRootProperty::GetType() const
+DAVA::VariantType StyleSheetSelectorsProperty::GetValue() const
 {
-    return TYPE_HEADER;
+    return VariantType(styleSheet->GetName());
 }
 
-void StyleSheetRootProperty::AddListener(PropertyListener *listener)
+void StyleSheetSelectorsProperty::ApplyValue(const DAVA::VariantType &value)
 {
-    listeners.push_back(listener);
-}
-
-void StyleSheetRootProperty::RemoveListener(PropertyListener *listener)
-{
-    auto it = std::find(listeners.begin(), listeners.end(), listener);
-    if (it != listeners.end())
-    {
-        listeners.erase(it);
-    }
-    else
-    {
-        DVASSERT(false);
-    }
-}
-
-void StyleSheetRootProperty::SetProperty(AbstractProperty *property, const DAVA::VariantType &newValue)
-{
-    // do nothing
-}
-
-void StyleSheetRootProperty::ResetProperty(AbstractProperty *property)
-{
-    // do nothing
+    
 }

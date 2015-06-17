@@ -91,6 +91,9 @@ private: // PropertyVisitor
     void VisitIntrospectionProperty(IntrospectionProperty *property) override;
 
     void VisitStyleSheetRoot(StyleSheetRootProperty *property) override;
+    void VisitStyleSheetSelectorsProperty(StyleSheetSelectorsProperty *property) override;
+    void VisitStyleSheetPropertiesSection(StyleSheetPropertiesSection *property) override;
+    void VisitStyleSheetProperty(StyleSheetProperty *property) override;
 
 private:
     void AcceptChildren(AbstractProperty *property);

@@ -129,6 +129,21 @@ void QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(const DAVA
     }
 }
 
+void QtModelPackageCommandExecutor::ChangeProperty(StyleSheetNode *node, AbstractProperty *property, const DAVA::VariantType &value)
+{
+    if (!property->IsReadOnly())
+    {
+        
+    }
+}
+
+void QtModelPackageCommandExecutor::ResetProperty(StyleSheetNode *node, AbstractProperty *property)
+{
+    if (!property->IsReadOnly())
+    {
+    }
+}
+
 void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value)
 {
     if (!property->IsReadOnly())

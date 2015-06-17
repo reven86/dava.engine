@@ -30,6 +30,8 @@
 #include "StyleSheetNode.h"
 #include "PackageVisitor.h"
 
+#include "../ControlProperties/StyleSheetRootProperty.h"
+
 #include "UI/UIStyleSheet.h"
 #include "UI/UIStyleSheetYamlWriter.h"
 
@@ -38,6 +40,7 @@ using namespace DAVA;
 StyleSheetNode::StyleSheetNode(UIStyleSheet *aStyleSheet)
     : PackageBaseNode(nullptr)
     , styleSheet(SafeRetain(aStyleSheet))
+    , rootProperty(new StyleSheetRootProperty(this))
 {
     
 }
@@ -45,6 +48,7 @@ StyleSheetNode::StyleSheetNode(UIStyleSheet *aStyleSheet)
 StyleSheetNode::~StyleSheetNode()
 {
     SafeRelease(styleSheet);
+    SafeRelease(rootProperty);
 }
 
 int StyleSheetNode::GetCount() const
@@ -65,4 +69,14 @@ void StyleSheetNode::Accept(PackageVisitor *visitor)
 String StyleSheetNode::GetName() const
 {
     return GenerateSelectorString(styleSheet->GetSelectorChain());
+}
+
+StyleSheetRootProperty *StyleSheetNode::GetRootProperty() const
+{
+    return rootProperty;
+}
+
+UIStyleSheet *StyleSheetNode::GetStyleSheet() const
+{
+    return styleSheet;
 }

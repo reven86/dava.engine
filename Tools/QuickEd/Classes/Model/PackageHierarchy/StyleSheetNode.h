@@ -37,6 +37,8 @@ namespace DAVA
     class UIStyleSheet;
 }
 
+class StyleSheetRootProperty;
+
 class StyleSheetNode : public PackageBaseNode
 {
 public:
@@ -49,9 +51,13 @@ public:
     
     virtual DAVA::String GetName() const override;
     
+    StyleSheetRootProperty *GetRootProperty() const;
+    
+    DAVA::UIStyleSheet *GetStyleSheet() const;
 private:
     DAVA::Vector<PackageNode*> packages;
     DAVA::UIStyleSheet *styleSheet;
+    StyleSheetRootProperty *rootProperty;
 };
 
 #endif //__UI_EDITOR_STYLE_SHEET_NODE_H__
