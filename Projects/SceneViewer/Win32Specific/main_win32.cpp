@@ -29,7 +29,7 @@
 #include "Base/Platform.h"
 #if defined(__DAVAENGINE_WIN32__)
 
-#include "DAVAEngine.h"
+#include "Core/Core.h"
 
 int APIENTRY WinMain(HINSTANCE hInstance,
                     HINSTANCE hPrevInstance,
