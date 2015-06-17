@@ -162,7 +162,7 @@ DAVA_TESTCLASS(StringFormatTest)
         TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%s", "", nullptr) == L"[]");
         TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%s", "", L"%s", "", nullptr) == L"[][]");
         TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%ls", L"", nullptr) == L"[]");
-        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%ls", "", L"%ls", L"", nullptr) == L"[][]");
+        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%ls", L"", L"%ls", L"", nullptr) == L"[][]");
 
         TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%s", "str", L"%d", 13, L"%ls", L"wstr", L"%s", "", nullptr) == L"[str][13][wstr][]");
         TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%s %ls", "str", L"wstr", L"%s", "", nullptr) == L"[str wstr][]");
