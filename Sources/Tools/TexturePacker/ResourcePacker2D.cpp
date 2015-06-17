@@ -66,8 +66,11 @@ void ResourcePacker2D::SetConvertQuality(const TextureConverter::eConvertQuality
 
 void ResourcePacker2D::SetRunning(bool arg)
 {
+    if (arg != running)
+    {
+        Logger::FrameworkDebug(arg ? "ResourcePacker2D was started" : "ResourcePacker2D was stopped");
+    }
     running = arg;
-    Logger::FrameworkDebug(arg ? "ResourcePacker2D was started" : "ResourcePacker2D was stopped");
 }
 void ResourcePacker2D::InitFolders(const FilePath & inputPath,const FilePath & outputPath)
 {
