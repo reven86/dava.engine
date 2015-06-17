@@ -1,5 +1,9 @@
 #include "common.cgh"
 
+#if FRESNEL_TO_ALPHA
+    blending : src=src_alpha dst=inv_src_alpha
+#endif
+
 #define SHADING_PERVERTEX 0
 #define SHADING_PERPIXEL  1
 
@@ -12,23 +16,27 @@
 #endif
 
 FPROG_IN_BEGIN
-FPROG_IN_TEXCOORD0(uv,2)
-FPROG_IN_TEXCOORD1(uv1,2)
+    FPROG_IN_TEXCOORD0(uv,2)
+    FPROG_IN_TEXCOORD1(uv1,2)
 
-#if SHADING == SHADING_PERPIXEL
-    FPROG_IN_TEXCOORD2(cameraToPointInTangentSpace, 3)
+    #if SHADING == SHADING_PERPIXEL
+        FPROG_IN_TEXCOORD2(cameraToPointInTangentSpace, 3)
 
-    #if REAL_REFLECTION
-        FPROG_IN_TEXCOORD3(eyeDist, 3)
-        FPROG_IN_TEXCOORD4(normalizedFragPos, 4)
+        #if REAL_REFLECTION
+            FPROG_IN_TEXCOORD3(eyeDist, 3)
+            FPROG_IN_TEXCOORD4(normalizedFragPos, 4)
+        #else
+            FPROG_IN_TEXCOORD3(tbnToWorld0, 3)
+            FPROG_IN_TEXCOORD4(tbnToWorld1, 3)
+            FPROG_IN_TEXCOORD5(tbnToWorld2, 3)
+        #endif
+
     #endif
 
-#endif
-
-#if SHADING == SHADING_PERVERTEX 
-    FPROG_IN_TEXCOORD2(varTexCoordDecal, 2);
-    FPROG_IN_TEXCOORD3(reflectionDirectionInWorldSpace, 3);
-#endif
+    #if SHADING == SHADING_PERVERTEX 
+        FPROG_IN_TEXCOORD2(varTexCoordDecal, 2)
+        FPROG_IN_TEXCOORD3(reflectionDirectionInWorldSpace, 3)
+    #endif
 
 FPROG_IN_END
 
@@ -37,14 +45,16 @@ FPROG_OUT_BEGIN
 FPROG_OUT_END
 
 #if SHADING == SHADING_PERPIXEL
-    DECL_FP_SAMPLER2D(dynamicReflection)
-    DECL_FP_SAMPLER2D(dynamicRefraction)
+    #if REAL_REFLECTION
+        DECL_FP_SAMPLER2D(dynamicReflection)
+        DECL_FP_SAMPLER2D(dynamicRefraction)
+    #endif
 
     #if !DEBUG_UNITY_Z_NORMAL
-    DECL_FP_SAMPLER2D(normalmap)
-    #if (SEPARATE_NORMALMAPS)
-    DECL_FP_SAMPLER2D(normalmap1)
-    #endif
+        DECL_FP_SAMPLER2D(normalmap)
+        #if (SEPARATE_NORMALMAPS)
+            DECL_FP_SAMPLER2D(normalmap1)
+        #endif
     #endif
 #elif SHADING == SHADING_PERVERTEX
     DECL_FP_SAMPLER2D(albedo)
@@ -68,6 +78,11 @@ FPROG_OUT_END
     property float3 reflectionTintColor        : static,instance : ;
     property float  fresnelBias       : static,instance : ;
     property float  fresnelPow        : static,instance : ;
+    
+    #if DEBUG_Z_NORMAL_SCALE && !DEBUG_UNITY_Z_NORMAL
+        property float  normal0_z_scale       : static,instance : def_value=1 ;
+        property float  normal1_z_scale       : static,instance : def_value=1 ;
+    #endif
 #elif SHADING == SHADING_PERVERTEX
     property float3 decalTintColor     : static,instance : ;
     property float3 reflectanceColor   : static,instance : ;
@@ -128,18 +143,18 @@ FPROG_BEGIN
         float3 resColor = lerp(refractionColor*refractionTintColor, reflectionColor*reflectionTintColor, fresnel);    
         FP_OUT_COLOR = float4(resColor, 1.0);
     #else
+        float3x3 tbnToWorldMatrix = float3x3(FP_IN(tbnToWorld0), FP_IN(tbnToWorld1), FP_IN(tbnToWorld2));
         float3 reflectionVectorInTangentSpace = reflect(cameraToPointInTangentSpaceNorm, normal);
         reflectionVectorInTangentSpace.z = abs(reflectionVectorInTangentSpace.z); //prevent reflection through surface
-        float3 reflectionVectorInWorldSpace = (tbnToWorldMatrix * reflectionVectorInTangentSpace);    
-        float3 reflectionColor = FP_TEXTURECUBE(cubemap, reflectionVectorInWorldSpace).rgb * reflectionTintColor;
-            
-        FP_OUT_COLOR = vec4(reflectionColor, fresnel);
+        float3 reflectionVectorInWorldSpace = mul (reflectionVectorInTangentSpace, tbnToWorldMatrix);    
+        float3 reflectionColor = FP_TEXTURECUBE(cubemap, reflectionVectorInWorldSpace).rgb * reflectionTintColor;                    
+        FP_OUT_COLOR = float4(reflectionColor, fresnel);
     #endif    
 
 #elif SHADING == SHADING_PERVERTEX
 
     float3 reflectionColor = FP_TEXTURECUBE(cubemap, FP_IN(reflectionDirectionInWorldSpace)).rgb;
-    float3 textureColorDecal = FP_TEXTURE2D(decal, varTexCoordDecal).rgb;
+    float3 textureColorDecal = FP_TEXTURE2D(decal, FP_IN(varTexCoordDecal)).rgb;
     float3 textureColor0 = FP_TEXTURE2D(albedo, varTexCoord0).rgb;
     float3 textureColor1 = FP_TEXTURE2D(albedo, varTexCoord1).rgb;    
     FP_OUT_COLOR = float4(((textureColor0 * textureColor1) * 3.0 * decalTintColor * textureColorDecal + reflectionColor * reflectanceColor) , 1.0);
