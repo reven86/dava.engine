@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "Base/Platform.h"
 #ifndef __DAVAENGINE_WIN_UAP__
 
@@ -41,18 +42,14 @@
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/LibPVRHelper.h"
 #include "Render/PixelFormatDescriptor.h"
-#include "Render/PVRDefines.h"
 
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-#   include "Render/PVRDefines.h"
-#endif
 
 #if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__)
-#   include "libpvr/PVRTError.h"
-#   include "libpvr/PVRTDecompress.h"
-#   include "libpvr/PVRTMap.h"
-#   include "libpvr/PVRTextureHeader.h"
-#   include "libpvr/PVRTexture.h"
+#include "libpvr/PVRTError.h"
+#include "libpvr/PVRTDecompress.h"
+#include "libpvr/PVRTMap.h"
+#include "libpvr/PVRTextureHeader.h"
+#include "libpvr/PVRTexture.h"
 #endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__)
 
 #define METADATA_FOURCC_OFFSET 0
@@ -70,81 +67,6 @@
 
 namespace DAVA
 {
-#pragma pack(push,4)
-struct PVRHeaderV3
-{
-    uint32	u32Version;      //Version of the file header, used to identify it.
-    uint32	u32Flags;        //Various format flags.
-    uint64	u64PixelFormat;  //The pixel format, 8cc value storing the 4 channel identifiers and their respective sizes.
-    uint32	u32ColourSpace;  //The Colour Space of the texture, currently either linear RGB or sRGB.
-    uint32	u32ChannelType;  //Variable type that the channel is stored in. Supports signed/unsigned int/short/byte or float for now.
-    uint32	u32Height;       //Height of the texture.
-    uint32	u32Width;        //Width of the texture.
-    uint32	u32Depth;        //Depth of the texture. (Z-slices)
-    uint32	u32NumSurfaces;  //Number of members in a Texture Array.
-    uint32	u32NumFaces;     //Number of faces in a Cube Map. Maybe be a value other than 6.
-    uint32	u32MIPMapCount;  //Number of MIP Maps in the texture - NB: Includes top level.
-    uint32	u32MetaDataSize; //Size of the accompanying meta data.
-
-                                //Constructor for the header - used to make sure that the header is initialised usefully. The initial pixel format is an invalid one and must be set.
-    PVRHeaderV3()
-        : u32Version(0)
-        , u32Flags(0)
-        , u64PixelFormat(ePVRTPF_NumCompressedPFs)
-        , u32ColourSpace(0)
-        , u32ChannelType(0)
-        , u32Height(1)
-        , u32Width(1)
-        , u32Depth(1)
-        , u32NumSurfaces(1)
-        , u32NumFaces(1)
-        , u32MIPMapCount(1)
-        , u32MetaDataSize(0)
-    {
-    }
-};
-#pragma pack(pop)
-#define PVRTEX3_HEADERSIZE 52
-
-
-// V2 Header Identifiers.
-const uint32 PVRTEX2_IDENT = 0x21525650; // 'P''V''R'!
-const uint32 PVRTEX2_IDENT_REV = 0x50565221;
-
-/*!***************************************************************************
-Describes the Version 2 header of a PVR texture header.
-*****************************************************************************/
-struct PVRHeaderV2
-{
-    uint32 dwHeaderSize;      // size of the structure
-    uint32 dwHeight;          // height of surface to be created
-    uint32 dwWidth;           // width of input surface
-    uint32 dwMipMapCount;     // number of mip-map levels requested
-    uint32 dwpfFlags;         // pixel format flags
-    uint32 dwTextureDataSize; // Total size in bytes
-    uint32 dwBitCount;        // number of bits per pixel
-    uint32 dwRBitMask;        // mask for red bit
-    uint32 dwGBitMask;        // mask for green bits
-    uint32 dwBBitMask;        // mask for blue bits
-    uint32 dwAlphaBitMask;    // mask for alpha channel
-    uint32 dwPVR;             // magic number identifying pvr file
-    uint32 dwNumSurfs;        // the number of surfaces present in the pvr
-};
-
-
-class PVRFile
-{
-public:
-    PVRFile();
-    ~PVRFile();
-
-    PVRHeaderV3 header;
-    Vector<MetaDataBlock *> metaDatablocks;
-    uint8 *metaData;
-
-    uint32 compressedDataSize;
-    uint8 *compressedData;
-};
 
 PVRFile::PVRFile()
     : metaData(nullptr)
@@ -699,7 +621,6 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 fileMipM
 
                 int do2bitMode = (FORMAT_PVR2 == formatDescriptor.formatID) ? 1 : 0;
                 PVRTDecompressPVRTC(pTempCompData, do2bitMode, image->width, image->height, pTempDecompData);
-
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
             }
 #if !defined(__DAVAENGINE_IPHONE__)
