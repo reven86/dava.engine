@@ -25,6 +25,9 @@ FPROG_IN_BEGIN
         #if REAL_REFLECTION
             FPROG_IN_TEXCOORD3(eyeDist, 3)
             FPROG_IN_TEXCOORD4(normalizedFragPos, 4)
+            #if SPECULAR
+                FPROG_IN_TEXCOORD5(varLightVec, 3)
+            #endif
         #else
             FPROG_IN_TEXCOORD3(tbnToWorld0, 3)
             FPROG_IN_TEXCOORD4(tbnToWorld1, 3)
@@ -73,6 +76,11 @@ FPROG_OUT_END
         property float  reflectionDistortion       : static,instance : ;
         property float  refractionDistortion       : static,instance : ;
         property float3 refractionTintColor        : static,instance : ;
+        #if SPECULAR
+            property float  inGlossiness       : static,instance : ;
+            property float  inSpecularity      : static,instance : ;
+            property float3 lightColor0        : dynamic,instance : ;            
+        #endif
     #endif
 
     property float3 reflectionTintColor        : static,instance : ;
@@ -104,24 +112,25 @@ FPROG_BEGIN
 
 //compute normal
     float3 normal;
-    float3 normal0 = FP_TEXTURE2D (normalmap, varTexCoord0).rgb;
-    #if defined(SEPARATE_NORMALMAPS)
-        float3 normal1 = FP_TEXTURE2D (normalmap1, varTexCoord1).rgb;    
+    #if !DEBUG_UNITY_Z_NORMAL
+        float3 normal0 = FP_TEXTURE2D (normalmap, varTexCoord0).rgb;
+        #if defined(SEPARATE_NORMALMAPS)
+            float3 normal1 = FP_TEXTURE2D (normalmap1, varTexCoord1).rgb;    
+        #else
+            float3 normal1 = FP_TEXTURE2D (normalmap, varTexCoord1).rgb;
+        #endif
+        
+        #if DEBUG_Z_NORMAL_SCALE
+            normal0 = normal0 * 2.0 - 1.0;
+            normal1 = normal1 * 2.0 - 1.0;
+            normal0.xy *= normal0_z_scale;
+            normal1.xy *= normal1_z_scale;
+            normal = normalize (normal0 + normal1);
+        #else    
+            normal = normalize (normal0 + normal1 - 1.0); //same as * 2 -2
+        #endif
+    
     #else
-        float3 normal1 = FP_TEXTURE2D (normalmap, varTexCoord1).rgb;
-    #endif
-    
-    #if DEBUG_Z_NORMAL_SCALE
-        normal0 = normal0 * 2.0 - 1.0;
-        normal1 = normal1 * 2.0 - 1.0;
-        normal0.xy *= normal0_z_scale;
-        normal1.xy *= normal1_z_scale;
-        normal = normalize (normal0 + normal1);
-    #else    
-        normal = normalize (normal0 + normal1 - 1.0); //same as * 2 -2
-    #endif
-    
-    #if DEBUG_UNITY_Z_NORMAL
         normal = float3(0.0,0.0,1.0);
     #endif    
     
@@ -138,9 +147,19 @@ FPROG_BEGIN
         float2 texturePos =  fragPos.xy/fragPos.w*0.5 + 0.5; //(gl_FragCoord.xy-viewportOffset)*rcpViewpoviewportOffset;    
         float3 reflectionColor = FP_TEXTURE2D(dynamicReflection, texturePos+waveOffset*reflectionDistortion).rgb;
         texturePos.y=1.0-texturePos.y;
-        float3 refractionColor = FP_TEXTURE2D(dynamicRefraction, texturePos+waveOffset*refractionDistortion).rgb;        
-        
+        float3 refractionColor = FP_TEXTURE2D(dynamicRefraction, texturePos+waveOffset*refractionDistortion).rgb;                
         float3 resColor = lerp(refractionColor*refractionTintColor, reflectionColor*reflectionTintColor, fresnel);    
+        
+        #if SPECULAR
+            float3 halfVec = normalize(normalize(FP_IN(varLightVec))-cameraToPointInTangentSpaceNorm);       
+            float glossPower = pow(5000.0, inGlossiness); //textureColor0.a;
+            float specularNorm = (glossPower + 2.0) / 8.0;
+            float specularNormalized = specularNorm * pow(max (dot (halfVec, normal), 0.0), glossPower) * inSpecularity;
+            float specular = specularNormalized  * fresnel;
+            float3 resSpecularColor = lightColor0*specular;
+            resColor+=resSpecularColor*reflectionColor;        
+        #endif
+        
         FP_OUT_COLOR = float4(resColor, 1.0);
     #else
         float3x3 tbnToWorldMatrix = float3x3(FP_IN(tbnToWorld0), FP_IN(tbnToWorld1), FP_IN(tbnToWorld2));
