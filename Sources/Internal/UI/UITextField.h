@@ -283,6 +283,7 @@ public:
     void SetSize(const DAVA::Vector2 &newSize) override;
     void SetPosition(const Vector2 &position) override;
 
+    void SetMultiline(uint32 minLines, uint32 maxLines, bool verticalScrollBarEnabled);
     /**
 	 \brief Set control text style hide.
 	 \param[in] isPassword draw text with hide char.

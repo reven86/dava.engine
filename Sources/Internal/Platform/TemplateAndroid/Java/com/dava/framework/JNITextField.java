@@ -638,7 +638,12 @@ public class JNITextField {
                 params.topMargin = Math.round(y);
                 params.gravity = Gravity.LEFT | Gravity.TOP;
                 text.setPadding(0, 0, 0, 0);
-                text.setSingleLine(false);
+                
+                text.setSingleLine(true); // reset default, and only then set you need
+                text.setMaxLines(10);
+                text.setMinLines(2);
+                text.setVerticalScrollBarEnabled(true);
+                
                 text.setBackgroundColor(Color.TRANSPARENT);
                 text.setTextColor(Color.WHITE);
                 text.setVisibility(View.GONE);
@@ -1394,6 +1399,21 @@ public class JNITextField {
             JNIActivity.GetActivity().addContentView(control, control.getLayoutParams());
         }
     }
+    
+	public static void SetMultiline(final int id, final int minLines,
+			final int maxLines, final boolean verticalScrollBarEnabled) {
+		JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
+			@Override
+			public void safeRun() {
+				final TextField text = GetTextField(id);
+				// if you call text.setSingleLine(false); 
+				// it will reset minlines, maxlines, scroll, and transformation method to default values
+				text.setMinLines(minLines);
+				text.setMaxLines(maxLines);
+				text.setVerticalScrollBarEnabled(verticalScrollBarEnabled);
+			}
+		});
+	}
     
     public static void SetRenderToTexture(final int id, final boolean value) {
         JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {

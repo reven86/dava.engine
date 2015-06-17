@@ -391,6 +391,17 @@ void UITextField::SetPosition(const DAVA::Vector2 &position)
 {
     UIControl::SetPosition(position);
 }
+
+void UITextField::SetMultiline(uint32 minLines, uint32 maxLines, bool verticalScrollBarEnabled)
+{
+#ifdef __DAVAENGINE_IPHONE__
+	textFieldiPhone->SetMultiline(minLines, maxLines, verticalScrollBarEnabled);
+#elif defined(__DAVAENGINE_ANDROID__)
+    textFieldAndroid->SetMultiline(minLines, maxLines, verticalScrollBarEnabled);
+#else
+    // TODO do I need implement it here?
+#endif
+}
     
 void UITextField::SetText(const WideString & _text)
 {
