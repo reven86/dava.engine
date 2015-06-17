@@ -52,12 +52,12 @@ GameCore::~GameCore()
 void GameCore::OnAppStarted()
 {
 	Renderer::SetDesiredFPS(60);
-    HashMap<FastName, int32> flags;    
+    /*HashMap<FastName, int32> flags;    
     //flags[FastName("VERTEX_LIT")] = 1;
     flags[FastName("PIXEL_LIT")] = 1;
     //flags[FastName("FRESNEL_TO_ALPHA")] = 1;
     flags[FastName("REAL_REFLECTION")] = 1;
-    ShaderDescriptorCache::GetShaderDescriptor(FastName("~res:/Materials/Shaders/Default/water"), flags);
+    ShaderDescriptorCache::GetShaderDescriptor(FastName("~res:/Materials/Shaders/Default/water"), flags);*/
     
     selectSceneScreen = new SelectSceneScreen();
     viewSceneScreen = new ViewSceneScreen();
@@ -66,7 +66,7 @@ void GameCore::OnAppStarted()
 //    SetScenePath("~doc:/karelia/karelia.sc2");
 //    SetScenePath("~doc:/scene_viewer/test_box/box.sc2");
       SetScenePath("~doc:/amigosville/amigosville.sc2");
-//    SetScenePath("~doc:/amigosville/amigosville2.sc2");
+//      SetScenePath("~doc:/amigosville/amigosville2.sc2");
 //      SetScenePath("~doc:/amigosville/amigosville5.sc2");
 //      SetScenePath("~doc:/amigosville/amigosville4.sc2");
 //      SetScenePath("~doc:/aaaa.sc2");

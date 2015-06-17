@@ -198,14 +198,6 @@
 #endif
 
 
-
-
-#define BLENDING_NONE 0
-#define BLENDING_ALPHABLEND 1
-#define BLENDING_ADDITIVE 2
-
-
-
 struct
 FogParam
 {
