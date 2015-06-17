@@ -45,6 +45,7 @@
 #include "Model/PackageHierarchy/StyleSheetsNode.h"
 #include "UI/UIPackage.h"
 #include "UI/UIControl.h"
+#include "UI/UIControlPackageContext.h"
 #include "UI/UIStyleSheet.h"
 #include "Base/ObjectFactory.h"
 #include "Utils/Utils.h"
@@ -326,6 +327,7 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
     DVASSERT(!packagePath.IsEmpty());
     RefPtr<PackageNode> package(new PackageNode(packagePath));
     
+    ScopedPtr<UIControlPackageContext> packageContext(new UIControlPackageContext());
     Vector<PackageNode*> declinedPackages;
     for (PackageNode *importedPackage : importedPackages)
     {
@@ -342,6 +344,7 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
     for (StyleSheetNode *styleSheet : styleSheets)
     {
         package->GetStyleSheets()->Add(styleSheet);
+        packageContext->AddStyleSheet(styleSheet->GetStyleSheet());
     }
     
     for (ControlNode *control : rootControls)
@@ -354,7 +357,10 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
         }
         
         if (canInsert)
+        {
+            control->GetControl()->SetPackageContext(packageContext);
             package->GetPackageControlsNode()->Add(control);
+        }
     }
     
     DVASSERT(declinedPackages.empty());
