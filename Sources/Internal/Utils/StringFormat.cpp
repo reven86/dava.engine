@@ -298,7 +298,7 @@ void Numberf(float64 num, int32 base, int32 size, int32 precision, int32 type, B
         state->PlaceBuffer(tempBuf, len);
 }
 
-int32 Vsnwprintf(char16 *buf, size_t size, const char16 *format, va_list args)
+int32 Vsnwprintf(char16 *buf, size_t size, const char16 *format, va_list& args)
 {
     int32 len = 0;
     int32 base = 0;
@@ -403,8 +403,14 @@ int32 Vsnwprintf(char16 *buf, size_t size, const char16 *format, va_list args)
                 state.PlaceCharN(L' ', field_width - 1);
                 field_width = 0;
             }
+            if (qualifier == 'l')
             {
                 char16 c = static_cast<char16>(va_arg(args, int32));
+                state.PlaceChar(c);
+            }
+            else
+            {
+                char c = static_cast<char>(va_arg(args, int32));
                 state.PlaceChar(c);
             }
             state.PlaceCharN(L' ', field_width - 1);
@@ -415,31 +421,20 @@ int32 Vsnwprintf(char16 *buf, size_t size, const char16 *format, va_list args)
                 state.PlaceCharN(L' ', field_width - 1);
                 field_width = 0;
             }
+            if (qualifier == 'l')
             {
                 char16 c = static_cast<char16>(va_arg(args, int32));
+                state.PlaceChar(c);
+            }
+            else
+            {
+                char c = static_cast<char>(va_arg(args, int32));
                 state.PlaceChar(c);
             }
             state.PlaceCharN(L' ', field_width - 1);
             continue;
         case L's':
-            if (qualifier == 'h')
-            {
-                /* print ascii string */
-                s = va_arg(args, char8*);
-                if (nullptr == s)
-                    s = "<NULL>";
-                len = static_cast<int32>(strlen(s));
-                if (precision >= 0 && len > precision)
-                    len = precision;
-                if (!(flags & LEFT))
-                {
-                    state.PlaceCharN(L' ', field_width - len);
-                    field_width = 0;
-                }
-                state.PlaceBuffer(s, len);
-                state.PlaceCharN(L' ', field_width - len);
-            }
-            else
+            if (qualifier == 'l')
             {
                 /* print unicode string */
                 sw = va_arg(args, char16*);
@@ -454,6 +449,23 @@ int32 Vsnwprintf(char16 *buf, size_t size, const char16 *format, va_list args)
                     field_width = 0;
                 }
                 state.PlaceBuffer(sw, len);
+                state.PlaceCharN(L' ', field_width - len);
+            }
+            else
+            {
+                /* print ascii string */
+                s = va_arg(args, char8*);
+                if (nullptr == s)
+                    s = "<NULL>";
+                len = static_cast<int32>(strlen(s));
+                if (precision >= 0 && len > precision)
+                    len = precision;
+                if (!(flags & LEFT))
+                {
+                    state.PlaceCharN(L' ', field_width - len);
+                    field_width = 0;
+                }
+                state.PlaceBuffer(s, len);
                 state.PlaceCharN(L' ', field_width - len);
             }
             continue;
@@ -606,28 +618,28 @@ int32 Vsnwprintf(char16 *buf, size_t size, const char16 *format, va_list args)
     return static_cast<int32>(state.Total());
 }
 
-size_t FormattedLengthV(const char8* format, va_list args)
+int FormattedLengthV(const char8* format, va_list args)
 {
     DVASSERT(format != nullptr);
 #if defined(__DAVAENGINE_WINDOWS__)
     int result = _vscprintf(format, args);
     DVASSERT(result >= 0);
-    return result >= 0 ? static_cast<size_t>(result) : 0;
+    return result;
 #else
     // To obtain neccesary buffer length pass null buffer and 0 as buffer length
     int result = vsnprintf(nullptr, 0, format, args);
     DVASSERT(result >= 0);
-    return result >= 0 ? static_cast<size_t>(result) : 0;
+    return result;
 #endif
 }
 
-size_t FormattedLengthV(const char16* format, va_list args)
+int FormattedLengthV(const char16* format, va_list args)
 {
     DVASSERT(format != nullptr);
     // To obtain neccesary buffer length pass null buffer and 0 as buffer length
     int result = Vsnwprintf(nullptr, 0, format, args);
     DVASSERT(result >= 0);
-    return result >= 0 ? static_cast<size_t>(result) : 0;
+    return result;
 }
 
 }   // unnamed namespace
@@ -635,17 +647,17 @@ size_t FormattedLengthV(const char16* format, va_list args)
 //////////////////////////////////////////////////////////////////////////
 
 //! Formatting functions (use printf-like syntax (%ls for WideString))
-String FormatVL(const char8* format, va_list args)
+String FormatVL(const char8* format, va_list& args)
 {
     String result;
-    size_t length = 0;
+    int32 length = 0;
     {
         va_list xargs;
         va_copy(xargs, args);   // args cannot be used twice without copying
         length = FormattedLengthV(format, xargs);
         va_end(xargs);
     }
-    if (length > 0)
+    if (length >= 0)
     {
         result.resize(length + 1);
         vsnprintf(&*result.begin(), length + 1, format, args);
@@ -654,17 +666,17 @@ String FormatVL(const char8* format, va_list args)
     return result;
 }
 
-WideString FormatVL(const char16* format, va_list args)
+WideString FormatVL(const char16* format, va_list& args)
 {
     WideString result;
-    size_t length = 0;
+    int32 length = 0;
     {
         va_list xargs;
         va_copy(xargs, args);   // args cannot be used twice without copying
         length = FormattedLengthV(format, xargs);
         va_end(xargs);
     }
-    if (length > 0)
+    if (length >= 0)
     {
         result.resize(length + 1);
         Vsnwprintf(&*result.begin(), length + 1, format, args);
