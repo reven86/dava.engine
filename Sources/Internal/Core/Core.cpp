@@ -133,7 +133,6 @@ void Core::CreateSingletons()
 	new AnimationManager();
 	new FontManager();
 
-    InitializeStyleSheetPropertyTable();
 	new UIControlSystem();
 
 	new InputSystem();

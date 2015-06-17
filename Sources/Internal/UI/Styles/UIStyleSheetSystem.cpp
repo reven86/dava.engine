@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "UI/UIStyleSheetSystem.h"
-#include "UI/UIStyleSheet.h"
+#include "UI/Styles/UIStyleSheetSystem.h"
+#include "UI/Styles/UIStyleSheet.h"
 #include "UI/UIControl.h"
 #include "UI/UIControlPackageContext.h"
 #include "UI/Components/UIComponent.h"
@@ -54,7 +54,7 @@ namespace DAVA
             std::sort(controlsToUpdate.begin(), controlsToUpdate.end());
             auto endIter = std::unique(controlsToUpdate.begin(), controlsToUpdate.end());
 
-            uint64 start = SystemTimer::Instance()->AbsoluteMS();
+            //uint64 start = SystemTimer::Instance()->AbsoluteMS();
 
             for (auto controlIter = controlsToUpdate.begin(); controlIter != endIter; ++controlIter)
             {
@@ -62,10 +62,9 @@ namespace DAVA
                 SafeRelease(*controlIter);
             }
 
+            //uint64 end = SystemTimer::Instance()->AbsoluteMS();
 
-            uint64 end = SystemTimer::Instance()->AbsoluteMS();
-
-            DAVA::Logger::Debug("%s (%i) took %llu", __FUNCTION__, std::distance(controlsToUpdate.begin(), endIter), end - start);
+            //DAVA::Logger::Debug("%s (%i) took %llu", __FUNCTION__, std::distance(controlsToUpdate.begin(), endIter), end - start);
 
             controlsToUpdate.clear();
         }
@@ -93,6 +92,7 @@ namespace DAVA
     void UIStyleSheetSystem::ProcessControl(UIControl* control)
     {
         UIControlPackageContext* packageContext = control->GetPackageContext();
+        const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
 
         if (packageContext)
         {
@@ -116,6 +116,20 @@ namespace DAVA
                     }
                 }
             }
+
+            const UIStyleSheetPropertySet& propertiesToReset = control->GetStyledPropertySet() & ~appliedProperties;
+            if (propertiesToReset.any())
+            {
+                for (int32 propertyIndex = 0; propertyIndex < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT; ++propertyIndex)
+                {
+                    if (propertiesToReset.test(propertyIndex))
+                    {
+                        const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(propertyIndex);
+                        SetupPropertyFromVariantType(control, propertyIndex, propertyDescr.defaultValue);
+                    }
+                }
+            }
+
             control->SetStyledPropertySet(appliedProperties);
         }
     }
@@ -151,20 +165,24 @@ namespace DAVA
         return true;
     }
 
-    void UIStyleSheetSystem::SetupPropertyFromVariantType(UIControl* control, int32 propertyIndex, const VariantType& value)
+    void UIStyleSheetSystem::SetupPropertyFromVariantType(UIControl* control, uint32 propertyIndex, const VariantType& value)
     {
-        const UIStyleSheetPropertyDescriptor& descr = GetStyleSheetPropertyByIndex(propertyIndex);
+        const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
 
-        switch (descr.owner)
+        const UIStyleSheetPropertyDescriptor& descr = propertyDB->GetStyleSheetPropertyByIndex(propertyIndex);
+
+        for (const UIStyleSheetPropertyTargetMember& targetMember : descr.targetMembers)
         {
+            switch (targetMember.propertyOwner)
+            {
             case ePropertyOwner::CONTROL:
             {
                 const InspInfo* typeInfo = control->GetTypeInfo();
                 do
                 {
-                    if (typeInfo == descr.typeInfo)
+                    if (typeInfo == targetMember.typeInfo)
                     {
-                        descr.inspMember->SetValue(control, value);
+                        targetMember.memberInfo->SetValue(control, value);
                         break;
                     }
                     typeInfo = typeInfo->BaseInfo();
@@ -174,18 +192,16 @@ namespace DAVA
             }
             case ePropertyOwner::BACKGROUND:
                 if (control->GetBackgroundComponentsCount() > 0)
-                    descr.inspMember->SetValue(control->GetBackgroundComponent(0), value);
+                    targetMember.memberInfo->SetValue(control->GetBackgroundComponent(0), value);
                 break;
             case ePropertyOwner::COMPONENT:
-                for (const auto& componentInfo : descr.targetComponents)
-                {
-                    if (UIComponent* component = control->GetComponent(componentInfo.first))
-                        componentInfo.second->SetValue(component, value);
-                }
+                if (UIComponent* component = control->GetComponent(targetMember.componentType))
+                    targetMember.memberInfo->SetValue(component, value);
                 break;
             default:
                 DVASSERT(false);
                 break;
+            }
         }
     }
 }

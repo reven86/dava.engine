@@ -29,7 +29,7 @@
 
 #include "UI/UIControlSystem.h"
 #include "UI/UIScreen.h"
-#include "UI/UIStyleSheetSystem.h"
+#include "UI/Styles/UIStyleSheetSystem.h"
 #include "FileSystem/Logger.h"
 #include "Render/RenderManager.h"
 #include "Render/OcclusionQuery.h"

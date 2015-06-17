@@ -26,23 +26,23 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "UI/UIStyleSheet.h"
+#include "UI/Styles/UIStyleSheet.h"
 
 namespace DAVA
 {
-    void UIStyleSheetPropertyTable::SetProperties(const DAVA::Vector<std::pair<uint32, VariantType>>& newProperties)
+    void UIStyleSheetPropertyTable::SetProperties(const Vector<std::pair<uint32, VariantType>>& newProperties)
     {
         properties = newProperties;
         for (const auto& prop : properties)
             propertiesSet.set(prop.first);
 
         std::sort(properties.begin(), properties.end(),
-            [](const std::pair< uint32, VariantType >& first, const std::pair< uint32, VariantType >& second) {
+            [](const std::pair<uint32, VariantType>& first, const std::pair<uint32, VariantType>& second) {
             return first.first < second.first;
         });
     }
 
-    const DAVA::Vector< std::pair< uint32, VariantType > >& UIStyleSheetPropertyTable::GetProperties() const
+    const Vector<std::pair<uint32, VariantType>>& UIStyleSheetPropertyTable::GetProperties() const
     {
         return properties;
     }
@@ -83,7 +83,7 @@ namespace DAVA
         properties = newProperties;
     }
 
-    void UIStyleSheet::SetSelectorChain(const Vector< UIStyleSheetSelector >& newSelectorChain)
+    void UIStyleSheet::SetSelectorChain(const Vector<UIStyleSheetSelector>& newSelectorChain)
     {
         selectorChain = newSelectorChain;
 

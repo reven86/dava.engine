@@ -27,29 +27,40 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_UI_STYLESHEET_YAML_WRITER_H__
-#define __DAVAENGINE_UI_STYLESHEET_YAML_WRITER_H__
+#ifndef __DAVAENGINE_UI_STYLESHEET_SYSTEM_H__
+#define __DAVAENGINE_UI_STYLESHEET_SYSTEM_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/RefPtr.h"
-#include "FileSystem/FilePath.h"
 
 namespace DAVA
 {
+    class UIControl;
     class UIStyleSheet;
-    class YamlNode;
     struct UIStyleSheetSelector;
+    class UIStyleSheetCascade;
+    class InspInfo;
+    class VariantType;
 
-    String GenerateSelectorString(const Vector<UIStyleSheetSelector>& selectorChain);
-
-    class UIStyleSheetYamlWriter
+    class UIStyleSheetSystem
     {
     public:
-        UIStyleSheetYamlWriter();
+        UIStyleSheetSystem();
+        ~UIStyleSheetSystem();
 
-        DAVA::RefPtr<YamlNode> SaveToYaml(const DAVA::Vector< UIStyleSheet* >& styleSheets);
+        void Process();
+
+        void MarkControlForUpdate(UIControl* control);
+    private:
+        void MarkControlForUpdate(UIControl* control, int32 depth);
+        void ProcessControl(UIControl* control);
+        bool StyleSheetMatchesControl(const UIStyleSheet* styleSheet, UIControl* control);
+        bool SelectorMatchesControl(const UIStyleSheetSelector& selector, UIControl* control);
+        
+        void SetupControlFromCascade(UIControl* control, const UIStyleSheetCascade& cascade);
+        void SetupPropertyFromVariantType(UIControl* control, uint32 propertyIndex, const VariantType& value);
+
+        Vector<UIControl*> controlsToUpdate;
     };
 };
-
 
 #endif

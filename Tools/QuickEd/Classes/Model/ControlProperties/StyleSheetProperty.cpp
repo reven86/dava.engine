@@ -30,7 +30,7 @@
 
 #include "PropertyVisitor.h"
 #include "../PackageHierarchy/StyleSheetNode.h"
-#include "UI/UIStyleSheet.h"
+#include "UI/Styles/UIStyleSheet.h"
 
 using namespace DAVA;
 
@@ -39,7 +39,7 @@ StyleSheetProperty::StyleSheetProperty(StyleSheetNode *aStyleSheet, DAVA::uint32
     , styleSheet(aStyleSheet) // weak
     , propertyIndex(aPropertyIndex)
 {
-    const UIStyleSheetPropertyDescriptor& descr = GetStyleSheetPropertyByIndex(propertyIndex);
+    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex);
     name = String(descr.name.c_str());
 }
 

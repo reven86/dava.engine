@@ -26,15 +26,58 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "UI/UIStyleSheetYamlWriter.h"
-#include "UI/UIStyleSheet.h"
+#include "UI/Styles/UIStyleSheetYamlWriter.h"
+#include "UI/Styles/UIStyleSheet.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "Utils/Utils.h"
 
 namespace DAVA
 {
-    String GenerateSelectorString(const Vector<UIStyleSheetSelector>& selectorChain)
+    UIStyleSheetYamlWriter::UIStyleSheetYamlWriter()
+    {
+
+    }
+
+    RefPtr<YamlNode> UIStyleSheetYamlWriter::SaveToYaml(const Vector< UIStyleSheet* >& styleSheets)
+    {
+        const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
+
+        YamlNode* node(YamlNode::CreateMapNode());
+
+        Map<const UIStyleSheetPropertyTable*, String> propertyTables;
+
+        for (UIStyleSheet* styleSheet : styleSheets)
+        {
+            String& selector = propertyTables[styleSheet->GetPropertyTable()];
+            if (!selector.empty())
+            {
+                selector += ", ";
+            }
+
+            selector += UIStyleSheetYamlWriter::GenerateSelectorString(styleSheet->GetSelectorChain());
+        }
+        
+        for (const auto& table : propertyTables)
+        {
+            YamlNode* styleSheetNode(YamlNode::CreateMapNode(false));
+
+            const UIStyleSheetPropertyTable* propertyTable = table.first;
+
+            for (const auto& prop : propertyTable->GetProperties())
+            {
+                const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(prop.first);
+
+                styleSheetNode->Add(propertyDescr.name.c_str(), prop.second);
+            }
+
+            node->Add(table.second, styleSheetNode);
+        }
+
+        return RefPtr<YamlNode>(node);
+    }
+
+    String UIStyleSheetYamlWriter::GenerateSelectorString(const Vector<UIStyleSheetSelector>& selectorChain)
     {
         String result = "";
 
@@ -54,46 +97,5 @@ namespace DAVA
             result.resize(result.size() - 1);
 
         return result;
-    }
-
-    UIStyleSheetYamlWriter::UIStyleSheetYamlWriter()
-    {
-
-    }
-
-    RefPtr<YamlNode> UIStyleSheetYamlWriter::SaveToYaml(const Vector< UIStyleSheet* >& styleSheets)
-    {
-        YamlNode* node(YamlNode::CreateMapNode());
-
-        Map<const UIStyleSheetPropertyTable*, String> propertyTables;
-
-        for (UIStyleSheet* styleSheet : styleSheets)
-        {
-            String& selector = propertyTables[styleSheet->GetPropertyTable()];
-            if (!selector.empty())
-            {
-                selector += ", ";
-            }
-
-            selector += GenerateSelectorString(styleSheet->GetSelectorChain());
-        }
-        
-        for (const auto& table : propertyTables)
-        {
-            YamlNode* styleSheetNode(YamlNode::CreateMapNode(false));
-
-            const UIStyleSheetPropertyTable* propertyTable = table.first;
-
-            for (const auto& prop : propertyTable->GetProperties())
-            {
-                const UIStyleSheetPropertyDescriptor& propertyDescr = GetStyleSheetPropertyByIndex(prop.first);
-
-                styleSheetNode->Add(propertyDescr.name.c_str(), prop.second);
-            }
-
-            node->Add(table.second, styleSheetNode);
-        }
-
-        return RefPtr<YamlNode>(node);
     }
 }

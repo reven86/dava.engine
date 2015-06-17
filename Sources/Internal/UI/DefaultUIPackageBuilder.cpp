@@ -339,10 +339,10 @@ void DefaultUIPackageBuilder::ProcessProperty(const InspMember *member, const Va
     
     if (currentObject && value.GetType() != VariantType::TYPE_NONE)
     {
-        if (IsValidStyleSheetPropertyIndex(member->GetFastName()))
+        if (UIStyleSheetPropertyDataBase::Instance()->IsValidStyleSheetProperty(member->GetFastName()))
         {
             UIControl *control = controlsStack.back()->control.Get();
-            control->SetPropertyLocalFlag(GetStyleSheetPropertyIndex(member->GetFastName()), true);
+            control->SetPropertyLocalFlag(UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyIndex(member->GetFastName()), true);
         }
 
         if (String(member->Name()) == "text")

@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "UI/UIStyleSheetYamlLoader.h"
-#include "UI/UIStyleSheet.h"
+#include "UI/Styles/UIStyleSheetYamlLoader.h"
+#include "UI/Styles/UIStyleSheet.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "Utils/Utils.h"
@@ -47,7 +47,7 @@ namespace DAVA
                 SELECTOR_STATE_NONE,
             };
 
-            SelectorParser(DAVA::Vector< UIStyleSheetSelector >& aSelectorChain) :
+            SelectorParser(Vector<UIStyleSheetSelector>& aSelectorChain) :
                 selectorChain(aSelectorChain)
             {
 
@@ -96,11 +96,11 @@ namespace DAVA
                 FinishProcessingCurrentSelector();
             }
         private:
-            DAVA::String currentToken;
+            String currentToken;
             SelectorParserState state;
             UIStyleSheetSelector currentSelector;
 
-            DAVA::Vector< UIStyleSheetSelector >& selectorChain;
+            Vector< UIStyleSheetSelector >& selectorChain;
 
             void FinishProcessingCurrentSelector()
             {
@@ -138,7 +138,7 @@ namespace DAVA
 
     }
 
-    void UIStyleSheetYamlLoader::LoadFromYaml(const FilePath& path, DAVA::Vector< UIStyleSheet* >* styleSheets)
+    void UIStyleSheetYamlLoader::LoadFromYaml(const FilePath& path, Vector<UIStyleSheet*>* styleSheets)
     {
         RefPtr<YamlParser> parser(YamlParser::Create(path));
 
@@ -150,33 +150,23 @@ namespace DAVA
             LoadFromYaml(rootNode, styleSheets);
     }
 
-    void UIStyleSheetYamlLoader::LoadFromYaml(const YamlNode* rootNode, DAVA::Vector< UIStyleSheet* >* styleSheets)
+    void UIStyleSheetYamlLoader::LoadFromYaml(const YamlNode* rootNode, Vector<UIStyleSheet*>* styleSheets)
     {
         DVASSERT(styleSheets);
 
         const MultiMap<String, YamlNode*> &styleSheetMap = rootNode->AsMap();
+        const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
 
         for (auto styleSheetIter = styleSheetMap.begin(); styleSheetIter != styleSheetMap.end(); ++styleSheetIter)
         {
-            DAVA::Vector<std::pair<uint32, VariantType>> propertiesToSet;
-            ScopedPtr< UIStyleSheetPropertyTable > propertyTable(new UIStyleSheetPropertyTable());
+            Vector<std::pair<uint32, VariantType>> propertiesToSet;
+            ScopedPtr<UIStyleSheetPropertyTable> propertyTable(new UIStyleSheetPropertyTable());
             const MultiMap<String, YamlNode*> &propertiesMap = styleSheetIter->second->AsMap();
             for (const auto& propertyIter : propertiesMap)
             {
-                uint32 index = GetStyleSheetPropertyIndex(FastName(propertyIter.first));
-                const UIStyleSheetPropertyDescriptor& propertyDescr = GetStyleSheetPropertyByIndex(index);
-                switch (propertyDescr.owner)
-                {
-                case ePropertyOwner::CONTROL:
-                case ePropertyOwner::BACKGROUND:
-                    propertiesToSet.push_back(std::make_pair(index, propertyIter.second->AsVariantType(propertyDescr.inspMember)));
-                    break;
-                case ePropertyOwner::COMPONENT:
-                    propertiesToSet.push_back(std::make_pair(index, propertyIter.second->AsVariantType(propertyDescr.targetComponents[0].second)));
-                    break;
-                default:
-                    DVASSERT(false);
-                }
+                uint32 index = propertyDB->GetStyleSheetPropertyIndex(FastName(propertyIter.first));
+                const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(index);
+                propertiesToSet.push_back(std::make_pair(index, propertyIter.second->AsVariantType(propertyDescr.targetMembers[0].memberInfo)));
             }
             propertyTable->SetProperties(propertiesToSet);
 
@@ -187,7 +177,7 @@ namespace DAVA
             {
                 UIStyleSheet* styleSheet = new UIStyleSheet();
 
-                DAVA::Vector< UIStyleSheetSelector > selectorChain;
+                Vector< UIStyleSheetSelector > selectorChain;
                 SelectorParser parser(selectorChain);
                 parser.Parse(selectorString.c_str());
 

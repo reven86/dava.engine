@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 #include "UI/UIControlPackageContext.h"
-#include "UI/UIStyleSheet.h"
+#include "UI/Styles/UIStyleSheet.h"
 
 namespace DAVA
 {

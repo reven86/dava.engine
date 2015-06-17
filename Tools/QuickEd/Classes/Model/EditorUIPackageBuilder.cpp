@@ -46,7 +46,7 @@
 #include "UI/UIPackage.h"
 #include "UI/UIControl.h"
 #include "UI/UIControlPackageContext.h"
-#include "UI/UIStyleSheet.h"
+#include "UI/Styles/UIStyleSheet.h"
 #include "Base/ObjectFactory.h"
 #include "Utils/Utils.h"
 

@@ -34,7 +34,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
 #include "FileSystem/VariantType.h"
-#include "UI/UIStyleSheetPropertiesTable.h"
+#include "UI/Styles/UIStyleSheetPropertiesTable.h"
 
 namespace DAVA
 {
@@ -42,7 +42,7 @@ namespace DAVA
     {
         String controlClassName;
         FastName name;
-        Vector< FastName > classes;
+        Vector<FastName> classes;
 
         void Clear()
         {
@@ -53,15 +53,15 @@ namespace DAVA
     };
 
     class UIStyleSheetPropertyTable :
-        public DAVA::BaseObject
+        public BaseObject
     {
     public:
-        void SetProperties(const DAVA::Vector<std::pair<uint32, VariantType>>& properties);
-        const DAVA::Vector< std::pair< uint32, VariantType > >& GetProperties() const;
+        void SetProperties(const Vector<std::pair<uint32, VariantType>>& properties);
+        const Vector<std::pair<uint32, VariantType>>& GetProperties() const;
 
         const UIStyleSheetPropertySet& GetPropertySet() const;
     private:
-        DAVA::Vector<std::pair<uint32, VariantType>> properties;
+        Vector<std::pair<uint32, VariantType>> properties;
         UIStyleSheetPropertySet propertiesSet;
     };
 
@@ -79,13 +79,13 @@ namespace DAVA
         const Vector< UIStyleSheetSelector >& GetSelectorChain() const;
 
         void SetPropertyTable(UIStyleSheetPropertyTable* properties);
-        void SetSelectorChain(const Vector< UIStyleSheetSelector >& selectorChain);
+        void SetSelectorChain(const Vector<UIStyleSheetSelector>& selectorChain);
     private:
         void RecalculateScore();
 
-        Vector< UIStyleSheetSelector > selectorChain;
+        Vector<UIStyleSheetSelector> selectorChain;
         
-        RefPtr< UIStyleSheetPropertyTable > properties;
+        RefPtr<UIStyleSheetPropertyTable> properties;
 
         int32 score;
     };

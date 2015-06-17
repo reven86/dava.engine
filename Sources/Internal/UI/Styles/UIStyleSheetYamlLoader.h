@@ -43,8 +43,8 @@ namespace DAVA
     public:
         UIStyleSheetYamlLoader();
 
-        void LoadFromYaml(const FilePath& path, DAVA::Vector< UIStyleSheet* >* styleSheets);
-        void LoadFromYaml(const YamlNode* rootNode, DAVA::Vector< UIStyleSheet* >* styleSheets);
+        void LoadFromYaml(const FilePath& path, Vector<UIStyleSheet*>* styleSheets);
+        void LoadFromYaml(const YamlNode* rootNode, Vector<UIStyleSheet*>* styleSheets);
     };
 };
 

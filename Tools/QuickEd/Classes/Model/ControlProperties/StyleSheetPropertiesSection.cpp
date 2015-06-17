@@ -32,7 +32,7 @@
 #include "StyleSheetProperty.h"
 #include "PropertyVisitor.h"
 #include "../PackageHierarchy/StyleSheetNode.h"
-#include "UI/UIStyleSheet.h"
+#include "UI/Styles/UIStyleSheet.h"
 
 using namespace DAVA;
 

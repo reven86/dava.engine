@@ -32,7 +32,7 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControlBackground.h"
-#include "UI/UIStyleSheetPropertiesTable.h"
+#include "UI/Styles/UIStyleSheetPropertiesTable.h"
 #include "Animation/AnimatedObject.h"
 #include "Animation/Interpolation.h"
 

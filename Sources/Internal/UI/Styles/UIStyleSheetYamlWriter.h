@@ -27,41 +27,28 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_UI_STYLESHEET_PROPERTIES_TABLE_H__
-#define __DAVAENGINE_UI_STYLESHEET_PROPERTIES_TABLE_H__
+#ifndef __DAVAENGINE_UI_STYLESHEET_YAML_WRITER_H__
+#define __DAVAENGINE_UI_STYLESHEET_YAML_WRITER_H__
 
-#include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
-#include "Base/FastName.h"
-#include "FileSystem/VariantType.h"
+#include "Base/RefPtr.h"
+#include "FileSystem/FilePath.h"
 
 namespace DAVA
 {
-    enum class ePropertyOwner
+    class UIStyleSheet;
+    class YamlNode;
+    struct UIStyleSheetSelector;
+
+    class UIStyleSheetYamlWriter
     {
-        UNKNOWN,
-        CONTROL,
-        BACKGROUND,
-        COMPONENT
+    public:
+        UIStyleSheetYamlWriter();
+
+        RefPtr<YamlNode> SaveToYaml(const Vector<UIStyleSheet*>& styleSheets);
+
+        static String GenerateSelectorString(const Vector<UIStyleSheetSelector>& selectorChain);
     };
-    struct UIStyleSheetPropertyDescriptor
-    {
-        FastName name;
-        VariantType::eVariantType type;
-        ePropertyOwner owner;
-        const InspInfo* typeInfo;
-        const InspMember* inspMember;
-        DAVA::Vector< std::pair< uint32, const InspMember* > > targetComponents;
-    };
-
-    enum { STYLE_SHEET_PROPERTY_COUNT = 30 };
-
-    void InitializeStyleSheetPropertyTable();
-    uint32 GetStyleSheetPropertyIndex(const FastName& name);
-    bool IsValidStyleSheetPropertyIndex(const FastName& name);
-    const UIStyleSheetPropertyDescriptor& GetStyleSheetPropertyByIndex(uint32 index);
-
-    typedef Bitset< STYLE_SHEET_PROPERTY_COUNT > UIStyleSheetPropertySet;
 };
 
 

@@ -35,11 +35,11 @@
 #include "FileSystem/YamlEmitter.h"
 #include "UI/UIYamlLoader.h"
 #include "UI/UIControl.h"
-#include "UI/UIStyleSheet.h"
+#include "UI/Styles/UIStyleSheet.h"
 #include "UI/UIStaticText.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/UIPackage.h"
-#include "UI/UIStyleSheetYamlLoader.h"
+#include "UI/Styles/UIStyleSheetYamlLoader.h"
 #include "UI/Components/UIComponent.h"
 
 namespace DAVA
