@@ -633,7 +633,7 @@ int FormattedLengthV(const char8* format, va_list args)
 #endif
 }
 
-int FormattedLengthV(const char16* format, va_list args)
+int FormattedLengthV(const char16* format, va_list& args)
 {
     DVASSERT(format != nullptr);
     // To obtain neccesary buffer length pass null buffer and 0 as buffer length
