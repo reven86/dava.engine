@@ -118,7 +118,7 @@ endif
 
 # set build flags
 DV_LOCAL_CPPFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1
-DV_LOCAL_CPPFLAGS += -std=c++1y
+DV_LOCAL_CPPFLAGS += -std=c++14
 
 DV_LOCAL_CFLAGS += -DDAVA_FMOD
 
