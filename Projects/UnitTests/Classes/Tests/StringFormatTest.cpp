@@ -121,10 +121,14 @@ DAVA_TESTCLASS(StringFormatTest)
     DAVA_TEST(WideStringFormatTest)
     {
         TEST_VERIFY(Format(L"%%") == L"%");
-        TEST_VERIFY(Format(L"%c", L'A') == L"A");
+        TEST_VERIFY(Format(L"%c", 'A') == L"A");
         TEST_VERIFY(Format(L"%lc", L'A') == L"A");
-        TEST_VERIFY(Format(L"%s", L"this is a test") == L"this is a test");
+        TEST_VERIFY(Format(L"%s", "this is a test") == L"this is a test");
+        TEST_VERIFY(Format(L"%S", "this is a test") == L"this is a test");
+        TEST_VERIFY(Format(L"%hs", "this is a test") == L"this is a test");
+        TEST_VERIFY(Format(L"%hS", "this is a test") == L"this is a test");
         TEST_VERIFY(Format(L"%ls", L"this is a test") == L"this is a test");
+        TEST_VERIFY(Format(L"%lS", L"this is a test") == L"this is a test");
 
         TEST_VERIFY(Format(L"%d", 348) == L"348");
         TEST_VERIFY(Format(L"%2d", 348) == L"348");
@@ -149,5 +153,42 @@ DAVA_TESTCLASS(StringFormatTest)
         TEST_VERIFY(Format("%s%s%s", String(100, 'A').c_str(), String(200, 'B').c_str(), String(400, 'C').c_str()).length() == 700);
         TEST_VERIFY(Format(L"%hs%hs%hs", String(100, 'A').c_str(), String(200, 'B').c_str(), String(400, 'C').c_str()).length() == 700);
         TEST_VERIFY(Format(L"%ls%ls%ls", WideString(100, 'A').c_str(), WideString(200, 'B').c_str(), WideString(400, 'C').c_str()).length() == 700);
+    }
+
+    DAVA_TEST(StringFormatAsUsedByClientTest)
+    {
+        // Special test case for emulating StringFormat behavior from wot.blitz client
+        // Works only for wide strings
+        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%s", "", nullptr) == L"[]");
+        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%s", "", L"%s", "", nullptr) == L"[][]");
+        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%ls", L"", nullptr) == L"[]");
+        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%ls", "", L"%ls", L"", nullptr) == L"[][]");
+
+        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%s", "str", L"%d", 13, L"%ls", L"wstr", L"%s", "", nullptr) == L"[str][13][wstr][]");
+        TEST_VERIFY(StringFormatAsUsedByClient(L"", L"%s %ls", "str", L"wstr", L"%s", "", nullptr) == L"[str wstr][]");
+    }
+
+    WideString StringFormatAsUsedByClient(const char16* mileStone, ...)
+    {
+        va_list args;
+        va_start(args, mileStone);
+        WideString result = StringFormatAsUsedByClientV(args);
+        va_end(args);
+        return result;
+    }
+
+    WideString StringFormatAsUsedByClientV(va_list args)
+    {
+        WideString result;
+        while (true)
+        {
+            const char16* fmt = va_arg(args, const char16*);
+            if (fmt == nullptr)
+                break;
+
+            WideString v = FormatVL(fmt, args);
+            result += L"[" + v + L"]";  // Bracket output for testing purpose
+        }
+        return result;
     }
 };
