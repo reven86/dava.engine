@@ -48,7 +48,7 @@ public:
     virtual void PutValue(const DAVA::String &value) override;
     
     virtual void BeginMap() override;
-    virtual void BeginMap(const DAVA::String &name) override;
+    virtual void BeginMap(const DAVA::String &name, bool quotes = false) override;
     virtual void EndMap() override;
     
     virtual void BeginArray() override;

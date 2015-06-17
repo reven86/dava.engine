@@ -1483,6 +1483,9 @@ public:
     void RemoveClass(const FastName& clazz);
     bool HasClass(const FastName& clazz);
     
+    String GetClassesAsString();
+    void SetClassesFromString(const String &classes);
+    
     const UIStyleSheetPropertySet& GetLocalPropertySet() const;
     void SetPropertyLocalFlag(uint32 propertyIndex, bool value);
     
@@ -1492,7 +1495,7 @@ public:
     UIControlPackageContext* GetPackageContext() const;
     UIControlPackageContext* GetLocalPackageContext() const;
     void SetPackageContext(UIControlPackageContext* packageContext);
-
+    
 private:
     Vector<FastName> classes;
     UIStyleSheetPropertySet localProperties;
@@ -1554,6 +1557,7 @@ public:
                          PROPERTY("clip", "Clip", GetClipContents, SetClipContents, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("noInput", "No Input", GetNoInput, SetNoInput, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("tag", "Tag", GetTag, SetTag, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("classes", "Classes", GetClassesAsString, SetClassesFromString, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("initialState", "Initial State", GetInitialState, SetInitialState, I_SAVE | I_VIEW | I_EDIT)
                          
                          PROPERTY("leftAlignEnabled", "Left Align Enabled", GetLeftAlignEnabled, SetAndApplyLeftAlignEnabled, I_SAVE | I_VIEW | I_EDIT)

@@ -81,9 +81,10 @@ void YamlPackageSerializer::BeginMap()
     nodesStack.push_back(node);
 }
 
-void YamlPackageSerializer::BeginMap(const DAVA::String &name)
+void YamlPackageSerializer::BeginMap(const DAVA::String &name, bool quotes)
 {
-    YamlNode *node = YamlNode::CreateMapNode(false, YamlNode::MR_BLOCK_REPRESENTATION, YamlNode::SR_PLAIN_REPRESENTATION);
+    YamlNode *node = YamlNode::CreateMapNode(false, YamlNode::MR_BLOCK_REPRESENTATION,
+                                             quotes ? YamlNode::SR_DOUBLE_QUOTED_REPRESENTATION : YamlNode::SR_PLAIN_REPRESENTATION);
     nodesStack.back()->Add(name, node);
     nodesStack.push_back(node);
 }

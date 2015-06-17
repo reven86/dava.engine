@@ -37,6 +37,7 @@
 
 class PackageBaseNode;
 class AbstractProperty;
+class ValueProperty;
 
 class PackageSerializer : private PackageVisitor, private PropertyVisitor
 {
@@ -52,7 +53,7 @@ public:
     virtual void PutValue(const DAVA::String &name, const DAVA::Vector<DAVA::String> &value) = 0;
     virtual void PutValue(const DAVA::String &value) = 0;
     
-    virtual void BeginMap(const DAVA::String &name) = 0;
+    virtual void BeginMap(const DAVA::String &name, bool quotes = false) = 0;
     virtual void BeginMap() = 0;
     virtual void EndMap() = 0;
     
@@ -97,6 +98,7 @@ private: // PropertyVisitor
 
 private:
     void AcceptChildren(AbstractProperty *property);
+    void PutValueProperty(const DAVA::String &name, ValueProperty *property);
 
 private:
     DAVA::Vector<PackageNode*> importedPackages;

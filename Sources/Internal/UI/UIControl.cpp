@@ -2991,6 +2991,28 @@ namespace DAVA
         return find(classes.begin(), classes.end(), clazz) != classes.end();
     }
 
+    String UIControl::GetClassesAsString()
+    {
+        String result;
+        for (size_t i = 0; i < classes.size(); i++)
+        {
+            if (i != 0)
+                result += " ";
+            result += classes[i].c_str();
+        }
+        return result;
+    }
+    
+    void UIControl::SetClassesFromString(const String &classesStr)
+    {
+        Vector<String> tokens;
+        Split(classesStr, " ", tokens);
+        
+        classes.clear();
+        for (String &token : tokens)
+            AddClass(FastName(token));
+    }
+
     const UIStyleSheetPropertySet& UIControl::GetLocalPropertySet() const
     {
         return localProperties;

@@ -124,3 +124,13 @@ void StyleSheetRootProperty::ResetProperty(AbstractProperty *property)
 {
     // do nothing
 }
+
+StyleSheetSelectorsProperty *StyleSheetRootProperty::GetSelectors() const
+{
+    return selectors;
+}
+
+StyleSheetPropertiesSection *StyleSheetRootProperty::GetPropertiesSection() const
+{
+    return propertiesSection;
+}

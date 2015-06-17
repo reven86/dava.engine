@@ -39,6 +39,8 @@
 #include "Autotesting/AutotestingSystem.h"
 #include "version.h"
 
+#include "UI/UIStyleSheetSystem.h"
+
 using namespace DAVA;
 
 GameCore::GameCore()
@@ -109,6 +111,7 @@ void GameCore::Update(float32 timeElapsed)
 //		RenderManager::Instance()->SetCursor(cursor);
 //	}
 	ApplicationCore::Update(timeElapsed);
+    UIControlSystem::Instance()->GetStyleSheetSystem()->Process();
 }
 
 void GameCore::Draw()

@@ -67,6 +67,9 @@ public:
     void SetProperty(AbstractProperty *property, const DAVA::VariantType &newValue);
     void ResetProperty(AbstractProperty *property);
     
+    StyleSheetSelectorsProperty *GetSelectors() const;
+    StyleSheetPropertiesSection *GetPropertiesSection() const;
+    
 private:
     StyleSheetNode *styleSheet = nullptr; // weak
     DAVA::Vector<PropertyListener*> listeners;
