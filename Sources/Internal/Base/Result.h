@@ -27,36 +27,74 @@
 =====================================================================================*/
 
 
-#include "result.h"
+#ifndef QUICKED_RESULT_H_
+#define QUICKED_RESULT_H_
 
-Result::Result(ResultType type, const QString &error)
-{
-        types << type;
-        errors << error;
-}
+#include "Base/BaseTypes.h"
+#include "FileSystem/VariantType.h"
 
-Result::operator bool() const
+namespace DAVA
 {
-    for (auto type : types)
+
+struct Result
+{
+    enum ResultType 
     {
-        if (type != Success)
-        {
-            return false;
-        }
-    }
-    return true;
+        RESULT_SUCCESS,
+        RESULT_WARNING,
+        RESULT_ERROR
+    };
+    Result(const ResultType type = RESULT_SUCCESS, const String &message = String(), const VariantType &data = VariantType());
+    operator bool() const;
+    ResultType type = RESULT_SUCCESS;
+    String message;
+    VariantType data;
+};
+
+inline Result::operator bool() const
+{
+    return type == RESULT_SUCCESS;
 }
 
-Result Result::addError(Result::ResultType type, const QString &errorText)
+class ResultList
 {
-    types << type;
-    errors << errorText;
-    return *this;
+public:
+    explicit ResultList();
+    explicit ResultList(const Result &result);
+    ResultList(const ResultList &resultList);
+    ResultList(const ResultList &&resultList);
+    ~ResultList() = default;
+    operator bool() const;
+    bool IsSuccess() const;
+    ResultList& operator = (ResultList& resultList);
+    ResultList& operator = (ResultList&& resultList);
+    ResultList &AddResult(const Result &result);
+    ResultList &AddResult(const Result &&result);
+    ResultList &AddResult(const Result::ResultType type = Result::RESULT_SUCCESS, const String &message = String(), const VariantType &data = VariantType());
+    ResultList &AddResultList(const ResultList &resultList);
+    ResultList &AddResultList(const ResultList &&resultList);
+    
+    const Deque<Result> &GetResults() const;
+private:
+    Deque < Result > results;
+    bool allOk;
+};
+
+inline ResultList::operator bool() const
+{
+    return allOk;
 }
 
-Result Result::addError(const Result &err)
+inline bool ResultList::IsSuccess() const
 {
-    types << err.types;
-    errors << err.errors;
-    return *this;
+    return allOk;
 }
+
+    
+inline const Deque<Result> &ResultList::GetResults() const
+{
+    return results;
+}
+
+}
+#endif // QUICKED_RESULT_H_
