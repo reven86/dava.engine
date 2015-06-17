@@ -31,7 +31,6 @@
 #include "ui_ConsoleDockWidget.h"
 #include "StringUtils.h"
 #include "Utils/QtDavaConvertion.h"
-#include <Classes/Result.h>
 
 ConsoleDockWidget::ConsoleDockWidget(QWidget *parent)
     : QDockWidget(parent)
