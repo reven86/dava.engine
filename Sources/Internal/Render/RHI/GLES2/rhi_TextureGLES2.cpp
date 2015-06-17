@@ -145,9 +145,9 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
             GLuint      fbo    = 0;
             GLuint      depth  = 0;
             GLCommand   cmd3[] = 
-            { 
+            {
                 { GLCommand::GEN_FRAMEBUFFERS, { 1, (uint64)(&fbo) } },
-                { GLCommand::GEN_RENDERBUFFERS, { 1, (uint64)(&depth) } } 
+                { GLCommand::GEN_TEXTURES, { 1, (uint64)(&depth) } } 
             };
             
             ExecGL( cmd3, countof(cmd3) );
@@ -227,6 +227,10 @@ gles2_Texture_Map( Handle tex, unsigned level, TextureFace face )
             };
 
             ExecGL( cmd, countof(cmd) );            
+            
+            mem               = self->mappedData;
+            self->mappedLevel = 0;
+            self->isMapped    = true;
         }
         else
         {
@@ -322,12 +326,27 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
     }
     else
     {
-        GLenum      target = (self->isCubeMap)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
+        GLenum      ttarget = (self->isCubeMap)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
+        GLenum      target  = GL_TEXTURE_2D;
+        
+        if( self->isCubeMap )
+        {
+            switch( face )
+            {
+                case TEXTURE_FACE_LEFT   : target = GL_TEXTURE_CUBE_MAP_NEGATIVE_X ; break;
+                case TEXTURE_FACE_RIGHT  : target = GL_TEXTURE_CUBE_MAP_POSITIVE_X ; break;
+                case TEXTURE_FACE_FRONT  : target = GL_TEXTURE_CUBE_MAP_POSITIVE_Z ; break;
+                case TEXTURE_FACE_BACK   : target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z ; break;
+                case TEXTURE_FACE_TOP    : target = GL_TEXTURE_CUBE_MAP_POSITIVE_Y ; break;
+                case TEXTURE_FACE_BOTTOM : target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y ; break;
+            }
+        }
+
         GLCommand   cmd[]  =
         {
-            { GLCommand::BIND_TEXTURE, {target, self->uid} },
+            { GLCommand::BIND_TEXTURE, {ttarget, self->uid} },
             { GLCommand::TEX_IMAGE2D, {target, uint64(level), uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(data), compressed} },
-            { GLCommand::BIND_TEXTURE, {target, 0} }
+            { GLCommand::BIND_TEXTURE, {ttarget, 0} }
         };
 
         ExecGL( cmd, countof(cmd) );
@@ -496,12 +515,14 @@ SetToRHI( Handle tex, unsigned unit_i, uint32 base_i )
     TextureGLES2_t* self        = TextureGLES2Pool::Get( tex );
     bool            fragment    = base_i != InvalidIndex;
     uint32          sampler_i   = (base_i == InvalidIndex)  ? unit_i  :  base_i+unit_i;
+    GLenum          target      = (self->isCubeMap)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
+
     const SamplerState::Descriptor::Sampler* sampler = (fragment) 
                                                         ? _CurSamplerState->fragmentSampler + unit_i
                                                         : _CurSamplerState->vertexSampler + unit_i;
 
     GL_CALL(glActiveTexture( GL_TEXTURE0+sampler_i ));
-    GL_CALL(glBindTexture( GL_TEXTURE_2D, self->uid ));
+    GL_CALL(glBindTexture( target, self->uid ));
 
     if(     _CurSamplerState
         &&  (self->forceSetSamplerState  ||  memcmp( &(self->samplerState), sampler, sizeof(rhi::SamplerState::Descriptor::Sampler)) )
@@ -509,17 +530,17 @@ SetToRHI( Handle tex, unsigned unit_i, uint32 base_i )
     {
         if( sampler->mipFilter != TEXMIPFILTER_NONE )
         {
-            GL_CALL(glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, _TextureMipFilter( TextureMipFilter(sampler->mipFilter) ) ));
+            GL_CALL(glTexParameteri( target, GL_TEXTURE_MIN_FILTER, _TextureMipFilter( TextureMipFilter(sampler->mipFilter) ) ));
         }
         else
         {
-            GL_CALL(glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, _TextureFilter( TextureFilter(sampler->minFilter) ) ));
+            GL_CALL(glTexParameteri( target, GL_TEXTURE_MIN_FILTER, _TextureFilter( TextureFilter(sampler->minFilter) ) ));
         }
         
-        GL_CALL(glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, _TextureFilter( TextureFilter(sampler->magFilter) ) ));
+        GL_CALL(glTexParameteri( target, GL_TEXTURE_MAG_FILTER, _TextureFilter( TextureFilter(sampler->magFilter) ) ));
 
-        GL_CALL(glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, _AddrMode( TextureAddrMode(sampler->addrU) ) ));
-        GL_CALL(glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, _AddrMode( TextureAddrMode(sampler->addrV) ) ));
+        GL_CALL(glTexParameteri( target, GL_TEXTURE_WRAP_S, _AddrMode( TextureAddrMode(sampler->addrU) ) ));
+        GL_CALL(glTexParameteri( target, GL_TEXTURE_WRAP_T, _AddrMode( TextureAddrMode(sampler->addrV) ) ));
         
         self->samplerState          = *sampler;
         self->forceSetSamplerState  = false;

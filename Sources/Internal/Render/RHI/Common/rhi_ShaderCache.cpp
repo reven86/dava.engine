@@ -678,9 +678,9 @@ static const char* _ShaderDefine_DX9 =
 "#define FPROG_OUT_COLOR         float4 color : COLOR0;\n"
 "#define FPROG_OUT_END           };\n"
 
-"#define DECL_FP_SAMPLER2D(unit)    uniform sampler2D FragmentTexture##unit;\n"
-"#define DECL_FP_SAMPLERCUBE(unit)  uniform samplerCUBE FragmentTexture##unit;\n"
-"#define DECL_VP_SAMPLER2D(unit)    uniform sampler2D VertexTexture##unit;\n"
+"#define DECL_FP_SAMPLER2D(unit)    uniform sampler2D FragmentTexture##unit : TEXUNIT##unit;\n"
+"#define DECL_FP_SAMPLERCUBE(unit)  uniform samplerCUBE FragmentTexture##unit : TEXUNIT##unit;\n"
+"#define DECL_VP_SAMPLER2D(unit)    uniform sampler2D VertexTexture##unit : TEXUNIT##unit;\n"
 
 "#define FP_TEXTURE2D(unit,uv)   tex2D( FragmentTexture##unit, uv )\n"
 "#define FP_TEXTURECUBE(unit,uv) texCUBE( FragmentTexture##unit, uv )\n"
