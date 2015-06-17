@@ -638,7 +638,7 @@ public class JNITextField {
                 params.topMargin = Math.round(y);
                 params.gravity = Gravity.LEFT | Gravity.TOP;
                 text.setPadding(0, 0, 0, 0);
-                text.setSingleLine(true);
+                text.setSingleLine(false);
                 text.setBackgroundColor(Color.TRANSPARENT);
                 text.setTextColor(Color.WHITE);
                 text.setVisibility(View.GONE);
