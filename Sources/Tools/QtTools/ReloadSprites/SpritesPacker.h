@@ -33,8 +33,6 @@
 #include "Render/RenderBase.h"
 #include "TextureCompression/TextureConverter.h"
 #include <QObject>
-#include <QFuture>
-#include <atomic>
 
 namespace DAVA {
     class ResourcePacker2D;
@@ -50,15 +48,15 @@ public:
     ~SpritesPacker();
     void AddTask(const QDir &inputDir, const QDir &outputDir);
     void ClearTasks();
-    void ReloadSprites(bool clearDirs, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
+    Q_INVOKABLE void ReloadSprites(bool clearDirs, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
 public slots:
     void Cancel();
 signals:
     bool ProcessStared();
+    void Finished();
+
 private:
-    void ReloadSpritePrivate(bool clearDirs, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
     DAVA::ResourcePacker2D *resourcePacker2D;
-    QFuture<void> process;
     QList < QPair<QDir, QDir> > tasks;
 
     //properties section

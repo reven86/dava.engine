@@ -44,11 +44,16 @@ namespace
 DialogReloadSprites::DialogReloadSprites(QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::DialogReloadSprites)
-    , spritesPacker(new SpritesPacker(this))
     , actionReloadSprites(new QAction(QIcon(":/QtTools/Icons/reload.png"), tr("Reload Sprites"), this))
 {
+    qRegisterMetaType<DAVA::eGPUFamily>("DAVA::eGPUFamily");
+    qRegisterMetaType<DAVA::TextureConverter::eConvertQuality>("DAVA::TextureConverter::eConvertQuality");
+    
     connect(actionReloadSprites, &QAction::triggered, this, &DialogReloadSprites::exec);
-
+    
+    spritesPacker= new SpritesPacker();
+    workerThread.setStackSize(16 * 1024 * 1024);
+    spritesPacker->moveToThread(&workerThread);
     ui->setupUi(this);
     OnRunningChanged(spritesPacker->IsRunning());
     ui->pushButton_start->setDisabled(spritesPacker->IsRunning());
@@ -93,27 +98,41 @@ DialogReloadSprites::DialogReloadSprites(QWidget* parent)
 DialogReloadSprites::~DialogReloadSprites()
 {
     SaveSettings();
+    if(spritesPacker->IsRunning())
+    {
+        OnStopClicked();
+    }
     delete ui;
 }
 
 void DialogReloadSprites::OnStartClicked()
 {
+
     const auto gpuData = ui->comboBox_targetGPU->currentData();
     const auto qualityData = ui->comboBox_quality->currentData();
     if (!gpuData.isValid() || !qualityData.isValid())
     {
         return;
     }
+    workerThread.start();
     auto gpuType = static_cast<DAVA::eGPUFamily>(gpuData.toInt());
     auto quality = static_cast<TextureConverter::eConvertQuality>(qualityData.toInt());
-    spritesPacker->ReloadSprites(ui->checkBox_clean->isChecked(), gpuType, quality);
+    QMetaObject::invokeMethod(spritesPacker, "ReloadSprites", Qt::QueuedConnection, Q_ARG(bool, ui->checkBox_clean->isChecked()), Q_ARG(DAVA::eGPUFamily, gpuType), Q_ARG(DAVA::TextureConverter::eConvertQuality, quality));
 }
 
 void DialogReloadSprites::OnStopClicked()
 {
     if (spritesPacker->IsRunning())
     {
+        QApplication::setOverrideCursor(Qt::WaitCursor);
+        QEventLoop loop;
+        connect(spritesPacker, &SpritesPacker::Finished, &loop, &QEventLoop::quit);
         spritesPacker->Cancel();
+        workerThread.quit();
+        loop.exec();
+        workerThread.wait();
+        QApplication::restoreOverrideCursor();
+        workerThread.quit();
     }
     else
     {

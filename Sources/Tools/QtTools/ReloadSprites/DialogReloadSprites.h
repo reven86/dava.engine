@@ -33,6 +33,7 @@
 #include "SpritesPacker.h"
 #include <QDialog>
 
+#include <QThread>
 namespace Ui
 {
     class DialogReloadSprites;
@@ -41,7 +42,7 @@ namespace Ui
 class DialogReloadSprites : public QDialog
 {
     Q_OBJECT
-
+    QThread workerThread;
 public:
     explicit DialogReloadSprites(QWidget *parent = nullptr);
     ~DialogReloadSprites();

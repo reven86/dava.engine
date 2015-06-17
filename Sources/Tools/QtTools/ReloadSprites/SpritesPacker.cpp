@@ -37,6 +37,10 @@
 #include <QtConcurrent/QtConcurrent>
 #include <QFutureWatcher>
 
+#include <QThread>
+#include <limits.h>
+#include <pthread.h>
+
 using namespace DAVA;
 
 SpritesPacker::SpritesPacker(QObject* parent)
@@ -62,15 +66,8 @@ void SpritesPacker::ClearTasks()
     tasks.clear();
 }
 
-
 void SpritesPacker::ReloadSprites(bool clearDirs, const eGPUFamily gpu, const TextureConverter::eConvertQuality quality)
 {
-    process = QtConcurrent::run(this, &SpritesPacker::ReloadSpritePrivate, clearDirs, gpu, quality);
-}
-
-void SpritesPacker::ReloadSpritePrivate(bool clearDirs, const eGPUFamily gpu, const TextureConverter::eConvertQuality quality)
-{
-    resourcePacker2D->SetRunning(true);
     if (!ProcessStared())
     {
         return;
@@ -107,15 +104,7 @@ void SpritesPacker::ReloadSpritePrivate(bool clearDirs, const eGPUFamily gpu, co
 
 void SpritesPacker::Cancel()
 {
-    QFutureWatcher<void> watcher;
-    QApplication::setOverrideCursor(Qt::WaitCursor);
-    watcher.setFuture(process);
-    QEventLoop loop;
-    connect(&watcher, &QFutureWatcher<void>::finished, &loop, &QEventLoop::quit);
-
     resourcePacker2D->SetRunning(false);
-    loop.exec();
-    QApplication::restoreOverrideCursor();
 }
 
 bool SpritesPacker::IsRunning() const
@@ -128,8 +117,10 @@ void SpritesPacker::SetRunning(bool arg)
     if (arg != running)
     {
         running = arg;
-        DAVA::String message = DAVA::String("Sprites packer ") + (arg ? "started" : "finished");
-        Logger::Debug(message.c_str());
+        if(!arg)
+        {
+            emit Finished();
+        }
         emit RunningStateChanged(arg);
     }
 }
