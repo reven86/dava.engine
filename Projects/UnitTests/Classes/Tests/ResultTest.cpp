@@ -26,48 +26,47 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/Result.h"
+#include "UnitTests/UnitTests.h"
 
-#ifndef __DAVAENGINE_ASSET_H__
-#define __DAVAENGINE_ASSET_H__
+using namespace DAVA;
 
-#include "Base/BaseTypes.h"
-#include "Base/BaseObjectChecker.h"
-#include "Base/Introspection.h"
-#include "Debug/DVAssert.h"
-#include "FileSystem/FilePath.h"
-#include "Base/FastName.h"
-
-namespace DAVA
+DAVA_TESTCLASS(ResultTest)
 {
+    DAVA_TEST(GetResultFunction)
+    {
+        TEST_VERIFY(GetResultFunction(Result::RESULT_SUCCESS));
+        TEST_VERIFY(!GetResultFunction(Result::RESULT_WARNING));
+        TEST_VERIFY(!GetResultFunction(Result::RESULT_ERROR));
 
-class AssetCache;
+        TEST_VERIFY(GetResultFunction(Result::RESULT_SUCCESS).IsSuccess());
+        TEST_VERIFY(!GetResultFunction(Result::RESULT_WARNING).IsSuccess());
+        TEST_VERIFY(!GetResultFunction(Result::RESULT_ERROR).IsSuccess());
 
-class Asset : public BaseObject
-{
-public:
-    /*
-        Constructors for single file
-     */
-    Asset(const FastName & fname, AssetCache * assetCache);
-    
-    /*
-        Constructors for multi path names
-     */
-    Asset(const FastName & fname, const List<FastName> & fnames);
-    
-    /**
-        \brief Request asset to reload itself from disk.
-     */
-    // virtual eRC Reload() { return SUCCESS; };
-    
-    
-    FastName assertFastName;
-    List<FilePath> assetFiles;
+        Deque<Result> results;
+        results.emplace_back(Result::RESULT_SUCCESS, "this is ", VariantType(1));
+        results.emplace_back(Result::RESULT_WARNING, "result ", VariantType(2));
+        results.emplace_back(Result::RESULT_ERROR, "test.", VariantType(3));
+        ResultList resultList;
+        for (const auto &result : results)
+        {
+            resultList.AddResultList(GetResultFunction(result));
+        }
+        TEST_VERIFY(resultList.GetResults().size() == results.size());
+        auto resultIt = resultList.GetResults().begin();
+        for (const auto &result : results)
+        {
+            TEST_VERIFY(result == *resultIt++);
+        }
+    }
+        
+    ResultList GetResultFunction(const Result &result)
+    {
+        return ResultList(result);
+    }
+
+    ResultList GetResultFunction(const Result &&result)
+    {
+        return ResultList(result);
+    }
 };
-    
-
-    
-};
-
-#endif // __DAVAENGINE_ASSET_H__
-
