@@ -32,9 +32,6 @@
 
 #include <QAbstractItemModel>
 #include <QMimeData>
-#include <QStringList>
-#include <QUndoStack>
-#include <QItemSelection>
 
 #include "Model/PackageHierarchy/PackageListener.h"
 
@@ -50,7 +47,7 @@ class PackageModel : public QAbstractItemModel, private PackageListener
     Q_OBJECT
 
 public:
-    PackageModel(PackageNode *root, QtModelPackageCommandExecutor *commandExecutor, QObject *parent = nullptr);
+    PackageModel(PackageNode *root, QtModelPackageCommandExecutor *commandExecutor, QObject *parent = 0);
     virtual ~PackageModel();
     
     QModelIndex indexByNode(PackageBaseNode *node) const;

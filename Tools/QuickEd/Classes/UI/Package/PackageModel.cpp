@@ -1,29 +1,29 @@
 /*==================================================================================
-Copyright (c) 2008, binaryzebra
-All rights reserved.
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-* Neither the name of the binaryzebra nor the
-names of its contributors may be used to endorse or promote products
-derived from this software without specific prior written permission.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 
@@ -76,7 +76,7 @@ QModelIndex PackageModel::indexByNode(PackageBaseNode *node) const
     PackageBaseNode *parent = node->GetParent();
     if (parent == nullptr)
         return QModelIndex();
-
+    
     if (parent)
         return createIndex(parent->GetIndex(node), 0, node);
     else
@@ -104,7 +104,7 @@ QModelIndex PackageModel::parent(const QModelIndex &child) const
     PackageBaseNode *parent = node->GetParent();
     if (nullptr == parent || parent == root)
         return QModelIndex();
-
+    
     if (parent->GetParent())
         return createIndex(parent->GetParent()->GetIndex(parent), 0, parent);
     else
@@ -115,7 +115,7 @@ int PackageModel::rowCount(const QModelIndex &parent) const
 {
     if (!parent.isValid())
         return root ? root->GetCount() : 0;
-
+    
     return static_cast<PackageBaseNode*>(parent.internalPointer())->GetCount();
 }
 
@@ -131,73 +131,73 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
 
     PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
     ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
-
-    switch (role)
+    
+    switch(role)
     {
-    case Qt::DisplayRole:
-        return StringToQString(node->GetName());
-
-    case Qt::DecorationRole:
-        if (controlNode)
-        {
-            if (controlNode->GetRootProperty()->GetCustomClassProperty()->IsSet())
+        case Qt::DisplayRole:
+            return StringToQString(node->GetName());
+            
+        case Qt::DecorationRole:
+            if (controlNode)
             {
-                return QIcon(IconHelper::GetCustomIconPath());
+                if (controlNode->GetRootProperty()->GetCustomClassProperty()->IsSet())
+                {
+                    return QIcon(IconHelper::GetCustomIconPath());
+                }
+                else
+                {
+                    const String &className = controlNode->GetRootProperty()->GetClassProperty()->GetClassName();
+                    return QIcon(IconHelper::GetIconPathForClassName(QString::fromStdString(className)));
+                }
             }
-            else
-            {
-                const String &className = controlNode->GetRootProperty()->GetClassProperty()->GetClassName();
-                return QIcon(IconHelper::GetIconPathForClassName(QString::fromStdString(className)));
-            }
-        }
-        return QVariant();
-
-    case Qt::CheckStateRole:
-        if (controlNode)
-            return controlNode->GetControl()->GetVisibleForUIEditor() ? Qt::Checked : Qt::Unchecked;
-        else
             return QVariant();
+            
+        case Qt::CheckStateRole:
+            if (controlNode)
+                return controlNode->GetControl()->GetVisibleForUIEditor() ? Qt::Checked : Qt::Unchecked;
+            else
+                return QVariant();
+            
+        case Qt::ToolTipRole:
+            if (controlNode != nullptr)
+            {
+                const String &prototype = controlNode->GetRootProperty()->GetPrototypeProperty()->GetPrototypeName();
+                const String &className = controlNode->GetRootProperty()->GetClassProperty()->GetClassName();
+                const String &customClassName = controlNode->GetRootProperty()->GetCustomClassProperty()->GetCustomClassName();
+                QString toolTip = QString("class: ") + className.c_str();
+                if (!customClassName.empty())
+                {
+                    toolTip += QString("\ncustom class: ") + customClassName.c_str();
+                }
 
-    case Qt::ToolTipRole:
-        if (controlNode != nullptr)
+                if (controlNode->GetPrototype())
+                {
+                    toolTip += QString("\nprototype: ") + prototype.c_str();
+                }
+                return toolTip;
+            }
+            break;
+            
+        case Qt::TextColorRole:
+            return controlNode != nullptr && controlNode->GetPrototype() != nullptr ? QColor(Qt::blue) : QColor(Qt::black);
+            
+        case Qt::BackgroundRole:
+            return controlNode == nullptr ? QColor(Qt::lightGray) : QColor(Qt::white);
+            
+        case Qt::FontRole:
         {
-            const String &prototype = controlNode->GetRootProperty()->GetPrototypeProperty()->GetPrototypeName();
-            const String &className = controlNode->GetRootProperty()->GetClassProperty()->GetClassName();
-            const String &customClassName = controlNode->GetRootProperty()->GetCustomClassProperty()->GetCustomClassName();
-            QString toolTip = QString("class: ") + className.c_str();
-            if (!customClassName.empty())
-            {
-                toolTip += QString("\ncustom class: ") + customClassName.c_str();
-            }
-
-            if (controlNode->GetPrototype())
-            {
-                toolTip += QString("\nprototype: ") + prototype.c_str();
-            }
-            return toolTip;
+            QFont myFont;
+            if (controlNode == nullptr || controlNode->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
+                myFont.setBold(true);
+            
+            if (node->IsReadOnly())
+                myFont.setItalic(true);
+            
+            return myFont;
         }
-        break;
-
-    case Qt::TextColorRole:
-        return controlNode != nullptr && controlNode->GetPrototype() != nullptr ? QColor(Qt::blue) : QColor(Qt::black);
-
-    case Qt::BackgroundRole:
-        return controlNode == nullptr ? QColor(Qt::lightGray) : QColor(Qt::white);
-
-    case Qt::FontRole:
-    {
-        QFont myFont;
-        if (controlNode == nullptr || controlNode->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
-            myFont.setBold(true);
-
-        if (node->IsReadOnly())
-            myFont.setItalic(true);
-
-        return myFont;
-    }
-
-    default:
-        return QVariant();
+            
+        default:
+            return QVariant();
     }
 
     return QVariant();
@@ -207,9 +207,9 @@ bool PackageModel::setData(const QModelIndex &index, const QVariant &value, int 
 {
     if (!index.isValid())
         return false;
-
+    
     PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-
+    
     if (role == Qt::CheckStateRole)
     {
         if (node->GetControl())
@@ -223,15 +223,15 @@ Qt::ItemFlags PackageModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
         return Qt::NoItemFlags;
-
+    
     Qt::ItemFlags flags = QAbstractItemModel::flags(index) | Qt::ItemIsUserCheckable;
-
+    
     const PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
     if (node->CanCopy())
         flags |= Qt::ItemIsDragEnabled;
     if (node->IsInsertingControlsSupported() || node->IsInsertingPackagesSupported())
         flags |= Qt::ItemIsDropEnabled;
-
+    
     return flags;
 }
 
@@ -252,7 +252,7 @@ QStringList PackageModel::mimeTypes() const
 QMimeData *PackageModel::mimeData(const QModelIndexList &indices) const
 {
     PackageMimeData *mimeData = new PackageMimeData();
-
+    
     for (const QModelIndex &index : indices)
     {
         if (index.isValid())
@@ -265,7 +265,7 @@ QMimeData *PackageModel::mimeData(const QModelIndexList &indices) const
             }
         }
     }
-
+    
     YamlPackageSerializer serializer;
     serializer.SerializePackageNodes(root, mimeData->GetControlNodes());
     String str = serializer.WriteToString();
@@ -278,7 +278,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
 {
     if (action == Qt::IgnoreAction)
         return true;
-
+    
     int rowIndex;
     if (row != -1)
         rowIndex = row;
@@ -288,7 +288,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
         rowIndex = rowCount(QModelIndex());
 
     ControlsContainerNode *parentNode = dynamic_cast<ControlsContainerNode*>(static_cast<PackageBaseNode*>(parent.internalPointer()));
-
+    
     if (parentNode && data->hasFormat(PackageMimeData::MIME_TYPE))
     {
         const PackageMimeData *controlMimeData = dynamic_cast<const PackageMimeData*>(data);
@@ -298,7 +298,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
         const Vector<ControlNode *> &srcNodes = controlMimeData->GetControlNodes();
         if (srcNodes.empty())
             return false;
-
+        
         if (action == Qt::CopyAction)
             commandExecutor->CopyControls(srcNodes, parentNode, rowIndex);
         else if (action == Qt::MoveAction)
@@ -330,13 +330,13 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
     else if (parentNode && data->hasFormat("text/plain") && data->hasText())
     {
         String string = data->text().toStdString();
-
+        
         if (!commandExecutor->Paste(root, parentNode, rowIndex, string))
         {
             String controlName = QStringToString(data->text());
             size_t slashIndex = controlName.find("/");
             ControlNode *node = nullptr;
-
+            
             if (slashIndex != String::npos)
             {
                 String packName = controlName.substr(0, slashIndex);
@@ -368,7 +368,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
                     }
                 }
             }
-
+            
             if (node)
             {
                 commandExecutor->InsertControl(node, parentNode, rowIndex);
