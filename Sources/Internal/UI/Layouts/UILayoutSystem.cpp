@@ -192,8 +192,8 @@ namespace DAVA
     
     void UILayoutSystem::ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *layout)
     {
-        float32 fixedSize = 0;
-        float32 totalPercent = 0;
+        float32 fixedSize = 0.0f;
+        float32 totalPercent = 0.0f;
         
         const DAVA::List<UIControl*> &children = control->GetChildren();
         if (children.empty())
@@ -227,14 +227,38 @@ namespace DAVA
         
         if (childrenCount > 0)
         {
-            const float32 padding = layout->GetPadding();
-            const float32 spacing = layout->GetSpacing();
+            float32 padding = layout->GetPadding();
+            float32 spacing = layout->GetSpacing();
+            
             int32 spacesCount = childrenCount - 1;
             float32 contentSize = control->GetSize().data[axis] - padding * 2.0f;
             float32 restSize = contentSize - fixedSize - spacesCount * spacing;
+            
+            if (totalPercent == 0.0f)
+            {
+                bool dynamicPadding = layout->IsDynamicPadding();
+                bool dynamicSpacing = layout->IsDynamicSpacing();
+                if (dynamicPadding || (dynamicSpacing && spacesCount > 0))
+                {
+                    int32 cnt = 0;
+                    if (dynamicPadding)
+                        cnt = 2;
+                    if (dynamicSpacing)
+                        cnt += spacesCount;
+                    
+                    float32 delta = restSize / cnt;
+                    if (dynamicPadding)
+                        padding += delta;
+                    
+                    if (dynamicSpacing)
+                        spacing += delta;
+                }
+            }
+            
             float32 position = padding;
             if (inverse)
                 position = contentSize + padding;
+
             for (UIControl *child : children)
             {
                 if (skipInvisible && !child->GetVisible())

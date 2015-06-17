@@ -11,6 +11,8 @@ namespace DAVA
         : orientation(src.orientation)
         , padding(src.padding)
         , spacing(src.spacing)
+        , dynamicPadding(src.dynamicPadding)
+        , dynamicSpacing(src.dynamicSpacing)
         , useRtl(src.useRtl)
         , skipInvisibleControls(src.skipInvisibleControls)
     {
@@ -66,6 +68,26 @@ namespace DAVA
     void UILinearLayoutComponent::SetSpacing(float32 newSpacing)
     {
         spacing = newSpacing;
+    }
+
+    bool UILinearLayoutComponent::IsDynamicPadding() const
+    {
+        return dynamicPadding;
+    }
+    
+    void UILinearLayoutComponent::SetDynamicPadding(bool dynamic)
+    {
+        dynamicPadding = dynamic;
+    }
+    
+    bool UILinearLayoutComponent::IsDynamicSpacing() const
+    {
+        return dynamicSpacing;
+    }
+    
+    void UILinearLayoutComponent::SetDynaicSpacing(bool dynamic)
+    {
+        dynamicSpacing = dynamic;
     }
 
     bool UILinearLayoutComponent::IsSkipInvisibleControls() const
