@@ -89,7 +89,6 @@ public:
 	void SetCursorTexture(Texture* cursorTexture);
 	void SetCursorSize(float32 cursorSize);
 	void SetCursorPosition(const Vector2& cursorPos);
-	void UpdateCursorPosition();
 	
 	virtual void Process(DAVA::float32 timeElapsed);
 
@@ -152,10 +151,6 @@ protected:
     GrassEditorProxy *grassEditorProxy;
 
 	uint32 customDrawRequestCount;
-	
-	Texture* cursorTexture;
-	uint32 cursorSize;
-	Vector2 cursorPosition;
 
     FilePath sourceTilemaskPath;
 };

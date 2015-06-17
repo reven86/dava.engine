@@ -233,8 +233,6 @@ protected:
 	Texture();
 	virtual ~Texture();
     
-    Image * ReadDataToImage();    
-    
     bool IsLoadAvailable(const eGPUFamily gpuFamily) const;
 
 	static eGPUFamily GetGPUForLoading(const eGPUFamily requestedGPU, const TextureDescriptor *descriptor);

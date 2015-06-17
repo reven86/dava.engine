@@ -37,8 +37,6 @@
 
 using namespace DAVA;
 
-class CustomLandscape;
-
 class LandscapeProxy: public BaseObject
 {
 public:

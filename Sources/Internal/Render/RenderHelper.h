@@ -146,7 +146,7 @@ public:
     //static void DrawLineWithEndPoints(const Vector3 & pt1, const Vector3 & pt2); 
 	//static void DrawStrippedLine(Polygon2 & polygon, float lineLen, float spaceLen, float halfWidth, Texture * texture, float initialPos);
 
-    void CreateClearPass(rhi::HTexture handle, int32 passPriority, const Color & clearColor, const rhi::Viewport viewport);
+    void CreateClearPass(rhi::HTexture handle, int32 passPriority, const Color & clearColor, const rhi::Viewport & viewport);
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
 	void GetLineWidthRange(int32& rangeMin, int32& rangeMax);

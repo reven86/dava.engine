@@ -56,7 +56,6 @@ LandscapeEditorDrawSystem::LandscapeEditorDrawSystem(Scene* scene)
 ,	rulerToolProxy(nullptr)
 ,   grassEditorProxy(nullptr)
 ,	customDrawRequestCount(0)
-,	cursorTexture(nullptr)
 ,   sourceTilemaskPath("")
 {	
 }
@@ -70,7 +69,6 @@ LandscapeEditorDrawSystem::~LandscapeEditorDrawSystem()
 	SafeRelease(visibilityToolProxy);
 	SafeRelease(rulerToolProxy);
     SafeRelease(grassEditorProxy);
-	SafeRelease(cursorTexture);
 
 	SafeDelete(notPassableTerrainProxy);	
 }
@@ -215,41 +213,23 @@ void LandscapeEditorDrawSystem::DisableCursor()
 
 void LandscapeEditorDrawSystem::SetCursorTexture(Texture* cursorTexture)
 {
-	SafeRelease(this->cursorTexture);
-	this->cursorTexture = SafeRetain(cursorTexture);
-	
 	landscapeProxy->SetCursorTexture(cursorTexture);
 }
 
 void LandscapeEditorDrawSystem::SetCursorSize(float32 cursorSize)
 {
-	this->cursorSize = cursorSize;
 	if (landscapeProxy)
 	{
 		landscapeProxy->SetCursorSize(cursorSize);
-		UpdateCursorPosition();
 	}
 }
 
 void LandscapeEditorDrawSystem::SetCursorPosition(const Vector2& cursorPos)
 {
-	cursorPosition = cursorPos;// - Vector2(cursorSize / 2.f, cursorSize / 2.f);
-	UpdateCursorPosition();
-}
-
-void LandscapeEditorDrawSystem::UpdateCursorPosition()
-{
-    Vector2 p = cursorPosition;
-    if(cursorSize & 0x1)
+    if (landscapeProxy)
     {
-        p = p - Vector2((cursorSize - 1) / 2.f, (cursorSize - 1) / 2.f);
+        landscapeProxy->SetCursorPosition(cursorPos);
     }
-    else
-    {
-        p = p - Vector2(cursorSize / 2.f, cursorSize / 2.f);
-    }
-	 
-	landscapeProxy->SetCursorPosition(p);
 }
 
 void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
@@ -273,10 +253,6 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 	
 	if (customColorsProxy && customColorsProxy->IsTargetChanged())
 	{
-		if (landscapeProxy)
-		{
-            landscapeProxy->SetToolTexture(customColorsProxy->GetTexture());
-		}
 		customColorsProxy->ResetTargetChanged();
 	}
 }

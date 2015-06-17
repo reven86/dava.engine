@@ -1406,7 +1406,7 @@ void RenderSystem2D::DrawPolygonTransformed(const Polygon2 & polygon, bool close
     DrawPolygon(copyPoly, closed, material, color);
 }
 
-void RenderSystem2D::DrawTexture(rhi::HTextureSet htextureSet, NMaterial *material, const Rect & _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect & _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)
+void RenderSystem2D::DrawTexture(rhi::HTextureSet htextureSet, NMaterial *material, const Color & color, const Rect & _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect & _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)
 {
     Rect destRect(_dstRect);
     if (destRect.dx < 0.f || destRect.dy < 0.f)
@@ -1441,7 +1441,7 @@ void RenderSystem2D::DrawTexture(rhi::HTextureSet htextureSet, NMaterial *materi
     texCoords[2] = texCoords[6] = srcRect.x + srcRect.dx;//x2
 
     static uint16 indices[6] = { 0, 1, 2, 1, 3, 2 };
-    PushBatch(DEFAULT_2D_TEXTURE_MATERIAL, htextureSet, Rect(), 4, spriteTempVertices, texCoords, 6, indices, Color::White, rhi::PRIMITIVE_TRIANGLELIST);
+    PushBatch(DEFAULT_2D_TEXTURE_MATERIAL, htextureSet, Rect(), 4, spriteTempVertices, texCoords, 6, indices, color, rhi::PRIMITIVE_TRIANGLELIST);
 }
 
 /* TiledDrawData Implementation */

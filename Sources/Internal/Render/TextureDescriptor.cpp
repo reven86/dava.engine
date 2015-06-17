@@ -265,6 +265,9 @@ bool TextureDescriptor::Load(const FilePath &filePathname)
     case 9:
         LoadVersion9(file);
         break;
+    case 10:
+        LoadVersion10(file);
+        break;
     default:
     {
         Logger::Error("[TextureDescriptor::Load] Version %d is not supported", version);

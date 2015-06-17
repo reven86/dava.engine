@@ -117,7 +117,7 @@ namespace DAVA
 
 #if RHI_COMPLETE
     static RenderDataObject *gDodecObject;
-#endif RHI_COMPLETE
+#endif
 	
 	const float32 SEGMENT_LENGTH = 15.0f;
 	
@@ -867,7 +867,7 @@ void RenderHelper::FillDodecahedron(const Vector3 &center, float32 radius, NMate
 #endif // RHI_COMPLETE
 }
 
-void RenderHelper::CreateClearPass(rhi::HTexture targetHandle, int32 passPriority, const Color & clearColor, const rhi::Viewport viewport)
+void RenderHelper::CreateClearPass(rhi::HTexture targetHandle, int32 passPriority, const Color & clearColor, const rhi::Viewport & viewport)
 {
     rhi::RenderPassConfig clearPassConfig;
     clearPassConfig.priority = passPriority;
