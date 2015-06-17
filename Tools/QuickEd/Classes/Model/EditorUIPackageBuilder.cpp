@@ -334,6 +334,11 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
         if (package->GetImportedPackagesNode()->CanInsertImportedPackage(importedPackage))
         {
             package->GetImportedPackagesNode()->Add(importedPackage);
+
+            for (int32 styleSheetIndex = 0; styleSheetIndex < importedPackage->GetStyleSheets()->GetCount(); ++styleSheetIndex)
+            {
+                packageContext->AddStyleSheet(importedPackage->GetStyleSheets()->Get(styleSheetIndex)->GetStyleSheet());
+            }
         }
         else
         {
