@@ -41,7 +41,6 @@
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
-#include "Model/PackageCommandExecutor.h"
 
 #include "UI/UIPackage.h"
 #include "UI/UIControl.h"
