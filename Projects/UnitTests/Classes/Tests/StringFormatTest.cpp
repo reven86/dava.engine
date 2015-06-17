@@ -177,7 +177,7 @@ DAVA_TESTCLASS(StringFormatTest)
         return result;
     }
 
-    WideString StringFormatAsUsedByClientV(va_list args)
+    WideString StringFormatAsUsedByClientV(va_list& args)
     {
         WideString result;
         while (true)
