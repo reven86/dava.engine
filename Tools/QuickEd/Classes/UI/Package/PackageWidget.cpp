@@ -66,7 +66,34 @@ namespace
         QItemSelection selection;
         QString filterString;
     };
+    
+    template <typename NodeType>
+    void CollectSelectedNodes(const QItemSelection &selected, Vector<NodeType*> &nodes, bool forCopy, bool forRemove)
+    {
+        QModelIndexList selectedIndexList = selected.indexes();
+        
+        if (!selectedIndexList.empty())
+        {
+            for (QModelIndex &index : selectedIndexList)
+            {
+                PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
+                NodeType *convertedNode = dynamic_cast<NodeType*>(node);
+                
+                if (convertedNode && node->GetParent() != nullptr)
+                {
+                    if ((!forCopy || convertedNode->CanCopy()) &&
+                        (!forRemove || convertedNode->CanRemove()))
+                    {
+                        nodes.push_back(convertedNode);
+                    }
+                }
+            }
+        }
+    }
+
 }
+
+
 
 PackageWidget::PackageWidget(QWidget *parent)
     : QDockWidget(parent)
@@ -191,7 +218,8 @@ void PackageWidget::SaveContext()
 
 void PackageWidget::RefreshActions(const QModelIndexList &indexList)
 {
-    bool canInsert = !indexList.empty();
+    bool canInsertControls = !indexList.empty();
+    bool canInsertPackages = !indexList.empty();
     bool canRemove = !indexList.empty();
     bool canCopy = !indexList.empty();
     
@@ -199,21 +227,21 @@ void PackageWidget::RefreshActions(const QModelIndexList &indexList)
     {
         PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
         canCopy &= node->CanCopy();
-        canInsert &= node->IsInsertingSupported();
+        canInsertControls &= node->IsInsertingControlsSupported();
+        canInsertPackages &= node->IsInsertingPackagesSupported();
         canRemove &= node->CanRemove();
-        if (!canCopy && !canInsert && !canRemove)
+        if (!canCopy && !canInsertControls && !canRemove && !canInsertPackages)
         {
             break;
         }
     }
     
     RefreshAction(copyAction, canCopy, true);
-    RefreshAction(pasteAction, canInsert, true);
+    RefreshAction(pasteAction, canInsertControls, true);
     RefreshAction(cutAction, canCopy && canRemove, true);
     RefreshAction(delAction, canRemove, true);
 
-    RefreshAction(importPackageAction, canInsert, canInsert);
-    //TODO: DF-6265, implement canInsert correctly
+    RefreshAction(importPackageAction, canInsertPackages, true);
 
 }
 
@@ -223,22 +251,16 @@ void PackageWidget::RefreshAction( QAction *action, bool enabled, bool visible )
     action->setVisible(visible);
 }
 
-void PackageWidget::CollectSelectedNodes(Vector<ControlNode*> &nodes)
+void PackageWidget::CollectSelectedControls(Vector<ControlNode*> &nodes, bool forCopy, bool forRemove)
 {
     QItemSelection selected = filteredPackageModel->mapSelectionToSource(treeView->selectionModel()->selection());
-    QModelIndexList selectedIndexList = selected.indexes();
-    
-    if (!selectedIndexList.empty())
-    {
-        for (QModelIndex &index : selectedIndexList)
-        {
-            PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-            ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
-            
-            if (controlNode && controlNode->CanCopy())
-                nodes.push_back(controlNode);
-        }
-    }
+    CollectSelectedNodes(selected, nodes, forCopy, forRemove);
+}
+
+void PackageWidget::CollectSelectedImportedPackages(Vector<PackageNode*> &nodes, bool forCopy, bool forRemove)
+{
+    QItemSelection selected = filteredPackageModel->mapSelectionToSource(treeView->selectionModel()->selection());
+    CollectSelectedNodes(selected, nodes, forCopy, forRemove);
 }
 
 void PackageWidget::CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &nodes)
@@ -364,24 +386,24 @@ void PackageWidget::OnImport()
         return;
     }
 
-    const QModelIndex &index = selectedIndexList.first();
-
-    PackageBaseNode *baseNode = static_cast<PackageBaseNode*>(index.internalPointer());
-    ControlsContainerNode *node = dynamic_cast<ControlsContainerNode*>(baseNode);
-    DVASSERT(node && !node->IsReadOnly());
-
+    Document *doc = sharedData->GetDocument();
+    PackageNode *root = doc->GetPackage();
+    Vector<FilePath> packages;
     for (const auto &fileName : fileNames)
     {
-        //TODO: DF-6265, add paste implementation
-        //read file
-        //GetCommandExecutor->paste
+        packages.push_back(FilePath(fileName.toStdString()));
+    }
+    
+    if (!packages.empty())
+    {
+        doc->GetCommandExecutor()->AddImportedPackagesIntoPackage(packages, root);
     }
 }
 
 void PackageWidget::OnCopy()
 {
     Vector<ControlNode*> nodes;
-    CollectSelectedNodes(nodes);
+    CollectSelectedControls(nodes, true, false);
     CopyNodesToClipboard(nodes);
 }
 
@@ -410,7 +432,7 @@ void PackageWidget::OnPaste()
 void PackageWidget::OnCut()
 {
     Vector<ControlNode*> nodes;
-    CollectSelectedNodes(nodes);
+    CollectSelectedControls(nodes, true, true);
     CopyNodesToClipboard(nodes);
     RemoveNodes(nodes);
 }
@@ -418,8 +440,18 @@ void PackageWidget::OnCut()
 void PackageWidget::OnDelete()
 {
     Vector<ControlNode*> nodes;
-    CollectSelectedNodes(nodes);
-    RemoveNodes(nodes);
+    CollectSelectedControls(nodes, false, true);
+    if (!nodes.empty())
+    {
+        RemoveNodes(nodes);
+    }
+    else
+    {
+        Vector<PackageNode*> packages;
+        CollectSelectedImportedPackages(packages, false, true);
+        Document *doc = sharedData->GetDocument();
+        sharedData->GetDocument()->GetCommandExecutor()->RemoveImportedPackagesFromPackage(packages, doc->GetPackage());
+    }
 }
 
 void PackageWidget::filterTextChanged(const QString &filterText)

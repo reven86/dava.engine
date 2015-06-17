@@ -192,8 +192,8 @@ void PropertiesWidget::UpdateActions()
             ComponentPropertiesSection *section = dynamic_cast<ComponentPropertiesSection*>(property);
             if (section)
             {
-                selectedComponentType = (int) section->GetComponentType();
-                selectedComponentIndex = (int) section->GetComponentIndex();
+                selectedComponentType = static_cast<int>(section->GetComponentType());
+                selectedComponentIndex = static_cast<int>(section->GetComponentIndex());
             }
             else
             {

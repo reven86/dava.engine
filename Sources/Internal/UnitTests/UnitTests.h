@@ -88,6 +88,54 @@
 
     delete unittest;
 
+ ==============================================================================================================
+
+ Also you can declare custom base class for your test class using DAVA_TESTCLASS_CUSTOM_BASE macro. Base class should be derived from
+ DAVA::UnitTests::TestClass and have default constructor.
+
+ class MyBaseTestClass : public DAVA::UnitTests::TestClass
+ {
+ public:
+    int CalcSomethingUseful(int param) { return 1 * 42; }
+ };
+
+ DAVA_TESTCLASS_CUSTOM_BASE(MyTestClass, MyBaseTestClass)
+ {
+    DAVA_TEST(Test1)
+    {
+        TEST_VERIFY(CalcSomethingUseful(1) == 42);
+    }
+ };
+
+ ==============================================================================================================
+
+ To run unit tests you should do some initialization:
+ 1. setup callbacks which will be called on test start, error, etc
+    Supported callbacks are:
+        void TestClassStartedCallback(const String& testClassName) - notifies that new test class will be prepared for running its tests
+        void TestClassFinishedCallback(const String& testClassName) - notifies that test class's tests have been complete
+        void TestClassDisabledCallback(const String& testClassName) - notifies that test class is disabled;
+        void TestStartedCallback(const String& testClassName, const String& testName) - notifies about starting test run
+        void TestFinishedCallback(const String& testClassName, const String& testName) - notifies that test has been finished
+        void TestFailedCallback(const String& testClassName, const String& testName, const String& condition,
+                                const char* filename, int line, const String& userMessage) - notifies about test failing
+    Callback are set up through DAVA::UnitTests::TestCore::Instance()->Init() call.
+ 2. optionally specify list of test class names that only should be run
+        DAVA::UnitTests::TestCore::Instance()->RunOnlyTheseTestClasses() - takes string of semicolon separated names
+ 3. optionally specify list of test class names that shouldn't run
+        DAVA::UnitTests::TestCore::Instance()->DisableTheseTestClasses() - takes string of semicolon separated names
+ 4. you can optionally check number of registered test classes
+        DAVA::UnitTests::TestCore::Instance()->HasTestClasses()
+
+ Now test framework is ready to run tests. You should periodically call DAVA::UnitTests::TestCore::Instance()->ProcessTests() until it returns false:
+    void GameCore::Update(float32 timeElapsed)
+    {
+       if (!UnitTests::TestCore::Instance()->ProcessTests(timeElapsed))
+       {
+           // all tests has been finished
+       }
+    }
+
 ******************************************************************************************/
 
 #define DAVA_TESTCLASS(classname)                                                                                                               \
@@ -96,10 +144,21 @@
     {                                                                                                                                           \
         testclass_ ## classname ## _registrar()                                                                                                 \
         {                                                                                                                                       \
-            DAVA::UnitTests::TestCore::Instance()->RegisterTestClass(#classname, new DAVA::UnitTests::TestClassFactoryImpl<classname>);  \
+            DAVA::UnitTests::TestCore::Instance()->RegisterTestClass(#classname, new DAVA::UnitTests::TestClassFactoryImpl<classname>);         \
         }                                                                                                                                       \
     } testclass_ ## classname ## _registrar_instance;                                                                                           \
     struct classname : public DAVA::UnitTests::TestClass, public DAVA::UnitTests::TestClassTypeKeeper<classname>
+
+#define DAVA_TESTCLASS_CUSTOM_BASE(classname, base_classname)                                                                                   \
+    struct classname;                                                                                                                           \
+    static struct testclass_ ## classname ## _registrar                                                                                         \
+    {                                                                                                                                           \
+        testclass_ ## classname ## _registrar()                                                                                                 \
+        {                                                                                                                                       \
+            DAVA::UnitTests::TestCore::Instance()->RegisterTestClass(#classname, new DAVA::UnitTests::TestClassFactoryImpl<classname>);         \
+        }                                                                                                                                       \
+    } testclass_ ## classname ## _registrar_instance;                                                                                           \
+    struct classname : public base_classname, public DAVA::UnitTests::TestClassTypeKeeper<classname>
 
 #define DAVA_TEST(testname)                                                                                             \
     struct test_ ## testname ## _registrar {                                                                            \

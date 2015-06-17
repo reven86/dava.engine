@@ -51,8 +51,8 @@ namespace DAVA
 class Mutex
 {
 public:
-	Mutex();
-	~Mutex();
+    Mutex();
+    ~Mutex();
 
     Mutex(const Mutex&) = delete;
     Mutex& opetator(const Mutex&) = delete;

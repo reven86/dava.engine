@@ -28,207 +28,185 @@
 
 
 #include <QMessageBox>
-
-#include <unordered_map>
+#include <QFileDialog>
 
 #include <Utils/UTF8Utils.h>
 
 #include "Base/FunctionTraits.h"
+#include "FileSystem/FileSystem.h"
+#include "FileSystem/Logger.h"
+#include "Platform/DateTime.h"
+#include "Network/Services/MMNet/MMNetClient.h"
 
 #include "MemProfWidget.h"
 #include "MemProfController.h"
+#include "ProfilingSession.h"
+#include "BacktraceSymbolTable.h"
 
 using namespace DAVA;
 using namespace DAVA::Net;
 
-MemProfController::MemProfController(const DAVA::Net::PeerDescription& peerDescr, QWidget *_parentWidget, QObject* parent)
+MemProfController::MemProfController(const DAVA::Net::PeerDescription& peerDescr, QWidget* parentWidget_, QObject* parent)
     : QObject(parent)
-    , parentWidget(_parentWidget)
-    , peer(peerDescr)
+    , mode(MODE_NETWORK)
+    , parentWidget(parentWidget_)
+    , profiledPeer(peerDescr)
+    , netClient(new MMNetClient)
+    , profilingSession(new ProfilingSession)
 {
     ShowView();
-    netClient.SetCallbacks(MakeFunction(this, &MemProfController::ChannelOpen),
-                           MakeFunction(this, &MemProfController::ChannelClosed),
-                           MakeFunction(this, &MemProfController::CurrentStat),
-                           MakeFunction(this, &MemProfController::Dump),
-                           MakeFunction(this, &MemProfController::DumpDone));
+    netClient->InstallCallbacks(MakeFunction(this, &MemProfController::NetConnEstablished),
+                                MakeFunction(this, &MemProfController::NetConnLost),
+                                MakeFunction(this, &MemProfController::NetStatRecieved),
+                                MakeFunction(this, &MemProfController::NetSnapshotRecieved));
+}
+
+MemProfController::MemProfController(const DAVA::FilePath& srcDir, QWidget* parentWidget_, QObject *parent)
+    : QObject(parent)
+    , mode(MODE_FILE)
+    , parentWidget(parentWidget_)
+    , netClient(new MMNetClient)
+    , profilingSession(new ProfilingSession)
+{
+    if (profilingSession->LoadFromFile(srcDir))
+    {
+        profiledPeer = profilingSession->DeviceInfo();
+        ShowView();
+    }
+    else
+    {
+        Logger::Error("Faild to load memory profiling session");
+    }
 }
 
 MemProfController::~MemProfController() {}
 
-void MemProfController::OnDumpPressed()
+void MemProfController::OnSnapshotPressed()
 {
-    netClient.RequestDump();
+    if (MODE_NETWORK == mode)
+    {
+        netClient->RequestSnapshot();
+    }
 }
 
 void MemProfController::ShowView()
 {
-    if (NULL == view)
+    if (nullptr == view)
     {
         const QString title = QString("%1 (%2 %3)")
-            .arg(peer.GetName().c_str())
-            .arg(peer.GetPlatformString().c_str())
-            .arg(peer.GetVersion().c_str());
+            .arg(profiledPeer.GetName().c_str())
+            .arg(profiledPeer.GetPlatformString().c_str())
+            .arg(profiledPeer.GetVersion().c_str());
 
-        view = new MemProfWidget(parentWidget);
+        view = new MemProfWidget(profilingSession.get(), parentWidget);
         view->setWindowFlags(Qt::Window);
         view->setWindowTitle(title);
+        if (MODE_FILE == mode)
+        {
+            view->setAttribute(Qt::WA_DeleteOnClose);
+        }
 
-        connect(view, SIGNAL(OnDumpButton()), this, SLOT(OnDumpPressed()));
-        connect(this, &QObject::destroyed, view, &QObject::deleteLater);
+        connect(this, &MemProfController::ConnectionEstablished, view, &MemProfWidget::ConnectionEstablished);
+        connect(this, &MemProfController::ConnectionLost, view, &MemProfWidget::ConnectionLost);
+        connect(this, &MemProfController::StatArrived, view, &MemProfWidget::StatArrived);
+        connect(this, &MemProfController::SnapshotArrived, view, &MemProfWidget::SnapshotArrived);
+
+        connect(view, SIGNAL(OnSnapshotButton()), this, SLOT(OnSnapshotPressed()));
+        if (MODE_FILE == mode)
+        {
+            connect(view, &QObject::destroyed, this, &QObject::deleteLater);
+        }
+        else
+        {
+            connect(this, &QObject::destroyed, view, &QObject::deleteLater);
+        }
     }
     view->show();
     view->activateWindow();
     view->raise();
 }
 
-void MemProfController::ChannelOpen(const DAVA::MMStatConfig* config)
+DAVA::Net::IChannelListener* MemProfController::NetObject() const
 {
-    view->ChangeStatus("connected", nullptr);
-    view->ClearStat();
+    return netClient.get();
+}
 
-    Logger::Debug("MemProfController::ChannelOpen");
-    if (config)
+bool MemProfController::IsFileLoaded() const
+{
+    DVASSERT(MODE_FILE == mode);
+    return profilingSession->IsValid();
+}
+
+void MemProfController::NetConnEstablished(bool resumed, const DAVA::MMStatConfig* config)
+{
+    if (!resumed)
     {
-        Logger::Debug("   maxTags=%u, ntags=%u", config->maxTagCount, config->tagCount);
-        for (uint32 i = 0;i < config->tagCount;++i)
-            Logger::Debug("      %d, %s", i, config->names[i].name);
-        Logger::Debug("   maxPools=%u, npools=%u", config->maxAllocPoolCount, config->allocPoolCount);
-        for (uint32 i = 0;i < config->allocPoolCount;++i)
-            Logger::Debug("      %d, %s", i, config->names[i + config->tagCount].name);
-    }
-    view->SetStatConfig(config);
-    
-}
-
-void MemProfController::ChannelClosed(const char8* message)
-{
-    view->ChangeStatus("disconnected", message);
-}
-
-void MemProfController::CurrentStat(const DAVA::MMStat* stat)
-{
-    view->UpdateStat(stat);
-}
-
-void MemProfController::Dump(size_t total, size_t recv)
-{
-    view->UpdateProgress(total, recv);
-}
-
-template<typename T>
-inline T* Offset(void* ptr, size_t byteOffset)
-{
-    return reinterpret_cast<T*>(static_cast<uint8*>(ptr)+byteOffset);
-}
-
-template<typename T>
-inline const T* Offset(const void* ptr, size_t byteOffset)
-{
-    return reinterpret_cast<const T*>(static_cast<const uint8*>(ptr)+byteOffset);
-}
-
-uint32 BacktraceHash(const MMBacktrace& backtrace)
-{
-    uint32 hash = HashValue_N(reinterpret_cast<const char*>(backtrace.frames), sizeof(backtrace.frames));
-    return hash;
-}
-
-void MemProfController::DumpDone(const DAVA::MMDump* dump, size_t packedSize)
-{
-    using namespace DAVA;
-
-    static int dumpIndex = 1;
-
-    view->UpdateProgress(100, 100);
-
-    std::unordered_map<uint64, String> symbolMap;
-    std::unordered_map<uint32, MMBacktrace> traceMap;
-
-    const MMBlock* blocks = Offset<MMBlock>(dump, sizeof(MMDump));
-    const MMBacktrace* bt = Offset<MMBacktrace>(blocks, sizeof(MMBlock) * dump->blockCount);
-    const MMSymbol* symbols = Offset<MMSymbol>(bt, sizeof(MMBacktrace) * dump->backtraceCount);
-
-    for (size_t i = 0, n = dump->symbolCount;i < n;++i)
-        symbolMap.emplace(std::make_pair(symbols[i].addr, symbols[i].name));
-    for (size_t i = 0, n = dump->backtraceCount;i < n;++i)
-    {
-        uint32 hash = bt[i].hash;
-        auto g = traceMap.emplace(std::make_pair(hash, bt[i]));
-        DVASSERT(g.second == true);
-    }
-
-    char fname[100];
-    const char* prefix = 
-#if defined(__DAVAENGINE_WIN32__)
-        ""
-#elif defined(__DAVAENGINE_MACOS__)
-        "/Users/max/"
-#endif
-        ;
-    {
-        Snprintf(fname, COUNT_OF(fname), "%sdump_%d.bin", prefix, dumpIndex);
-        FILE* f = fopen(fname, "wb");
-        if (f)
+        FilePath path;
+        ComposeFilePath(path);
+        if (profilingSession->StartNew(config, profiledPeer, path))
         {
-            size_t dumpSize = sizeof(MMDump) 
-                + sizeof(MMBlock) * dump->blockCount 
-                + sizeof(MMBacktrace) * dump->backtraceCount
-                + sizeof(MMSymbol) * dump->symbolCount;
-            fwrite(dump, 1, dumpSize, f);
-            fclose(f);
+            emit ConnectionEstablished(!resumed);
+        }
+        else
+        {
+            Logger::Error("Faild to start new memory profiling session");
         }
     }
-    Snprintf(fname, COUNT_OF(fname), "%sdump_%d.log", prefix, dumpIndex++);
-    FILE* f = fopen(fname, "wb");
-    if (f)
+}
+
+void MemProfController::NetConnLost(const DAVA::char8* message)
+{
+    profilingSession->Flush();
+    emit ConnectionLost(message);
+}
+
+void MemProfController::NetStatRecieved(const DAVA::MMCurStat* stat, size_t count)
+{
+    profilingSession->AppendStatItems(stat, count);
+    emit StatArrived(count);
+}
+
+void MemProfController::NetSnapshotRecieved(int stage, size_t totalSize, size_t recvSize, const void* data)
+{
+    switch (stage)
     {
-        fprintf(f, "General info\n");
-        fprintf(f, "  packedSize=%u\n", packedSize);
-        fprintf(f, "  blockCount=%u\n", dump->blockCount);
-        fprintf(f, "  backtraceCount=%u\n", dump->backtraceCount);
-        fprintf(f, "  nameCount=%u\n", dump->symbolCount);
-        fprintf(f, "  blockBegin=%u\n", dump->blockBegin);
-        fprintf(f, "  blockEnd=%u\n", dump->blockEnd);
-
-        fprintf(f, "Blocks\n");
-        for (uint32 i = 0;i < dump->blockCount;++i)
-        {
-            fprintf(f, "%4d: addr=%08llX, allocByApp=%u, allocTotal=%u, orderNo=%u, pool=%u, hash=%u\n", i + 1,
-                    blocks[i].addr,
-                    blocks[i].allocByApp, blocks[i].allocTotal, blocks[i].orderNo, blocks[i].pool,
-                    blocks[i].backtraceHash);
-            auto x = traceMap.find(blocks[i].backtraceHash);
-            if (x != traceMap.end())
-            {
-                const MMBacktrace& z = (*x).second;
-                for (size_t j = 0;j < MMConst::BACKTRACE_DEPTH;++j)
-                {
-                    auto u = symbolMap.find(z.frames[j]);
-                    if (u != symbolMap.end())
-                    {
-                        fprintf(f, "        %08llX    %s\n", z.frames[j], (*u).second.c_str());
-                    }
-                    else
-                    {
-                        fprintf(f, "        %08llX\n", z.frames[j]);
-                    }
-                }
-            }
-        }
-
-        fprintf(f, "Symbols\n");
-        int isym = 0;
-        for (auto& x : symbolMap)
-        {
-            fprintf(f, "  %4d: %08llX; %s\n", isym + 1, x.first, x.second.c_str());
-            isym += 1;
-        }
-        fclose(f);
+    case MMNetClient::SNAPSHOT_STAGE_STARTED:
+        emit SnapshotArrived(totalSize, 0);
+        break;
+    case MMNetClient::SNAPSHOT_STAGE_PROGRESS:
+        emit SnapshotArrived(totalSize, recvSize);
+        break;
+    case MMNetClient::SNAPSHOT_STAGE_FINISHED:
+        profilingSession->AppendSnapshot(static_cast<const MMSnapshot*>(data));
+        emit SnapshotArrived(totalSize, recvSize);
+        break;
+    case MMNetClient::SNAPSHOT_STAGE_ERROR:
+        emit SnapshotArrived(0, 0);
+        break;
+    default:
+        break;
     }
 }
 
-void MemProfController::Output(const String& msg)
+void MemProfController::ComposeFilePath(DAVA::FilePath& result)
 {
-    view->AppendText(msg.c_str());
+    String level1 = Format("%s %s/",
+                           profiledPeer.GetManufacturer().c_str(),
+                           profiledPeer.GetModel().c_str());
+    String level2 = Format("%s {%s}/",
+                           profiledPeer.GetName().c_str(),
+                           profiledPeer.GetUDID().c_str());
+
+    DateTime now = DateTime::Now();
+    String level3 = Format("%04d-%02d-%02d %02d%02d%02d/",
+                           now.GetYear(), now.GetMonth(), now.GetDay(),
+                           now.GetHour(), now.GetMinute(), now.GetSecond());
+
+    result = "~doc:/";
+    result += "memory-profiling/";
+    result += profiledPeer.GetPlatformString();
+    result += "/";
+    result += level1;
+    result += level2;
+    result += level3;
 }

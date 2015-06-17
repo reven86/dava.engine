@@ -167,15 +167,20 @@ void PreviewWidget::OnControlNodeSelected(QList<ControlNode *> selectedNodes)
     sharedData->SetData("selectedNodes", QVariant::fromValue(selectedNodes));
 }
 
-void PreviewWidget::OnError(const Result &result)
+void PreviewWidget::OnError(const ResultList &resultList)
 {
-    if (result)
+    if (resultList)
     {
         return;
     }
     else
     {
-        QMessageBox::warning(qApp->activeWindow(), tr("Error occurred!"), result.errors.join('\n'));
+        QStringList errors;
+        for(const auto &result : resultList.GetResults())
+        {
+            errors << QString::fromStdString(result.message);
+        }
+        QMessageBox::warning(qApp->activeWindow(), tr("Error occurred!"), errors.join('\n'));
     }
 }
 
