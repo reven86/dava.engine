@@ -51,11 +51,13 @@ public:
 private:
     QModelIndex indexByNode(const void *node, const QStandardItem *item) const;
     void BuildModel();
+    void AddControl(ControlNode* node);
+    void AddImportedControl(PackageNode* node);
 
-private:
     PackageNode *root;
     QStandardItem *controlsRootItem, *importedPackageRootItem;
     QStringList defaultControls;
+
 private: // PackageListener
     void ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property) override;
 
