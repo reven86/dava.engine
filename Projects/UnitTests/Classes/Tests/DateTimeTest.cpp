@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
 
@@ -36,20 +35,32 @@ DAVA_TESTCLASS(DateTimeTest)
 {
     DAVA_TEST(TestFunction)
     {
+        TEST_VERIFY(FormatDateTime(DateTime(1970, 0, 1, 0, 0, 0, 0)) == "1970-00-01 00:00:00+0");
+        
+        TEST_VERIFY(FormatDateTime(DateTime(2001, 1, 1, 0, 0, 0, 3 * 3600)) == "2001-01-01 00:00:00+10800");
+        TEST_VERIFY(FormatDateTime(DateTime(2002, 2, 3, 5, 20, 10, -3 * 3600)) == "2002-02-03 05:20:10-10800");
+        TEST_VERIFY(FormatDateTime(DateTime(2020, 11, 31, 5, 22, 10, -2 * 3600)) == "2020-11-31 05:22:10-7200");
+        TEST_VERIFY(FormatDateTime(DateTime(2001, 1, 1, 14, 0, 0, 5 * 3600)) == "2001-01-01 14:00:00+18000");
+
+        // Local timezone is UTC+3, so nothing should be changed
+        TEST_VERIFY(FormatDateTime(DateTime(2001, 1, 1, 0, 0, 0, 3 * 3600).ConvertToLocalTimeZone()) == "2001-01-01 00:00:00+10800");
+        TEST_VERIFY(FormatDateTime(DateTime(2001, 1, 1, 0, 0, 0, 3 * 3600).ConvertToTimeZone(0)) == "2001-00-31 21:00:00+0");
+        TEST_VERIFY(FormatDateTime(DateTime(2001, 1, 1, 0, 0, 0, 3 * 3600).ConvertToTimeZone(-3 * 3600)) == "2001-00-31 18:00:00-10800");
+
+        {
+            DateTime date = DateTime::Now();
+            TEST_VERIFY(date.ParseISO8601Date("1970-01-01T05:00:00-03:00"));
+            TEST_VERIFY(FormatDateTime(date) == "1970-00-01 05:00:00-10800");
+        }
+        {
+            DateTime date = DateTime::Now();
+            TEST_VERIFY(date.ParseRFC822Date("Wed, 27 Sep 2006 21:36:45 +0100"));
+            TEST_VERIFY(FormatDateTime(date) == "2006-08-27 21:36:45+3600");
+        }
+
+        //////////     old strange tests    ////////////////////////////////////////////
         DAVA::DateTime date = DAVA::DateTime::Now();
         Logger::Debug("#Getting of current date:");
-        PrintDateTimeContent(date);
-
-        date = DAVA::DateTime(2001, 1, 1, 14, 0, 0, 5 * 3600);
-        Logger::Debug("#Creating of date of the 1st of Feb 2001, 14:00:00, utc+5:");
-        PrintDateTimeContent(date);
-
-        date = date.ConvertToLocalTimeZone();
-        Logger::Debug("#Changing to local tz:");
-        PrintDateTimeContent(date);
-
-        date = date.ConvertToTimeZone(-3 * 3600);;
-        Logger::Debug("#Changing to utc-3:");
         PrintDateTimeContent(date);
 
         DAVA::DateTime gmDate = DateTime::GmTime(date.GetTimestamp());
@@ -60,17 +71,7 @@ DAVA_TESTCLASS(DateTimeTest)
         Logger::Debug("#LocalTime() for the timestamp of <1st of Feb 2001, 9:00:00> call:");
         PrintDateTimeContent(localDate);
 
-        date.ParseISO8601Date("1970-01-01T05:00:00-03:00");
-        Logger::Debug("#Parcing of <1970-01-01T05:00:00-03:00>:");
-        PrintDateTimeContent(date);
-
-        date.ParseRFC822Date("Wed, 27 Sep 2006 21:36:45 +0100");
-        Logger::Debug("#Parcing of <Wed, 27 Sep 2006 21:36:45 +0100>:");
-        PrintDateTimeContent(date);
-
-        Logger::Debug("********** DateTime test **********");
-
-        TEST_VERIFY(true);
+        TEST_VERIFY(true);      // Strange check
     }
 
     void PrintDateTimeContent(const DateTime& inputTime)
@@ -84,5 +85,17 @@ DAVA_TESTCLASS(DateTimeTest)
         int32 tz = inputTime.GetTimeZoneOffset() / 60;
         Logger::Debug("\tContent of current date by components:");
         Logger::Debug("\tYear:%d Month:%d DayOfMonth(counting from 1):%d Hour:%d Minute:%d Second:%d timZoneOffset(in minutes): %d", y, month, day, hour, minute, sec, tz);
+    }
+
+    String FormatDateTime(const DateTime& dt)
+    {
+        int32 year = dt.GetYear();
+        int32 month = dt.GetMonth();
+        int32 day = dt.GetDay();
+        int32 hour = dt.GetHour();
+        int32 minute = dt.GetMinute();
+        int32 sec = dt.GetSecond();
+        int32 tz = dt.GetTimeZoneOffset();
+        return Format("%04d-%02d-%02d %02d:%02d:%02d%+d", year, month, day, hour, minute, sec, tz);
     }
 };

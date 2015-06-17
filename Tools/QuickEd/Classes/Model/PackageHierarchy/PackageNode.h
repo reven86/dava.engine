@@ -62,6 +62,7 @@ public:
     const DAVA::FilePath &GetPath() const;
     bool IsImported() const;
 
+    bool CanRemove() const override;
     bool IsReadOnly() const override;
     
     ImportedPackagesNode *GetImportedPackagesNode() const;
