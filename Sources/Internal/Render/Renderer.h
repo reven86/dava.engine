@@ -47,10 +47,10 @@ namespace Renderer
 {
 
     //init
-    void Initialize(rhi::Api api, const rhi::InitParam & params, int32 framebufferWidth, int32 framebufferHeight);
+    void Initialize(rhi::Api api, const rhi::InitParam & params);
     void Uninitialize();
 
-    void Reset(int32 framebufferWidth, int32 framebufferHeight);
+    void Reset(const rhi::ResetParam & params);
 
     rhi::Api GetAPI();
 

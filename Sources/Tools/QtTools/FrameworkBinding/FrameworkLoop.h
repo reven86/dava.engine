@@ -63,8 +63,6 @@ public:
     // QtLayerDelegate
     void Quit() override;
 
-    void EndFrame();
-
 protected:
     // LoopItem
     void ProcessFrameInternal() override;

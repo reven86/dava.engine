@@ -14,10 +14,15 @@
     #include "_gl.h"
 
 
-GLint       _GLES2_Binded_FrameBuffer  = 0;
-GLint       _GLES2_Default_FrameBuffer  = 0;
-void        (*_Make_Current)() = nullptr;
-void        (*_End_Frame)() = nullptr;
+GLint       _GLES2_Binded_FrameBuffer           = 0;
+GLint       _GLES2_Default_FrameBuffer          = 0;
+void*       _GLES2_Native_Window                = nullptr;
+void*       _GLES2_Context                      = nullptr;
+void        (*_GLES2_Make_Context_Current)()    = nullptr;
+
+#if defined(__DAVAENGINE_WIN32__)
+HDC deviceContext = 0;
+#endif
 
 namespace rhi
 {
@@ -183,19 +188,203 @@ gles2_Reset( const ResetParam& param )
 
 //------------------------------------------------------------------------------
 
+#if defined(__DAVAENGINE_WIN32__)
+
+void
+win_gl_set_current()
+{
+    wglMakeCurrent(deviceContext, (HGLRC)_GLES2_Context);
+}
+
 void
 gles2_Initialize( const InitParam& param )
 {
-    _Make_Current = param.makeCurrentFunc;
-    _End_Frame = param.endFrameFunc;
+    _GLES2_Native_Window = param.window;
 
-    DVASSERT(_End_Frame);
-    DVASSERT(_Make_Current);
+    bool success = false;
 
-    _Make_Current();
-    
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_GLES2_Default_FrameBuffer);
-    _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;
+    if (_GLES2_Native_Window)
+    {
+        deviceContext = ::GetDC((HWND)_GLES2_Native_Window);
+
+        DVASSERT(!_Inited);
+
+        PIXELFORMATDESCRIPTOR pfd =
+        {
+            sizeof(PIXELFORMATDESCRIPTOR),    // size of this pfd
+            1,                                // version number
+            PFD_DRAW_TO_WINDOW |              // support window
+            PFD_SUPPORT_OPENGL |              // support OpenGL
+            PFD_DOUBLEBUFFER,                 // double buffered
+            PFD_TYPE_RGBA,                    // RGBA type
+            32,                               // 32-bit color depth
+            0, 0, 0, 0, 0, 0,                 // color bits ignored
+
+            0,                                // no alpha buffer
+            0,                                // shift bit ignored
+            0,                                // no accumulation buffer
+            0, 0, 0, 0,                       // accum bits ignored
+            24,                               // 24-bit z-buffer
+            8,                                // 8-bit stencil buffer
+            0,                                // no auxiliary buffer
+            PFD_MAIN_PLANE,                   // main layer
+
+            0,                                // reserved
+            0, 0, 0                           // layer masks ignored
+        };
+        int  pixel_format = ChoosePixelFormat(deviceContext, &pfd);
+        SetPixelFormat(deviceContext, pixel_format, &pfd);
+        SetMapMode(deviceContext, MM_TEXT);
+
+
+        HGLRC   ctx = wglCreateContext(deviceContext);
+
+        if (ctx)
+        {
+            Logger::Info("GL-context created\n");
+            /*
+            GLint attr[] =
+            {
+            // here we ask for OpenGL 4.0
+            WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+            WGL_CONTEXT_MINOR_VERSION_ARB, 3,
+            // forward compatibility mode
+            WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+            // uncomment this for Compatibility profile
+            WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
+            // we are using Core profile here
+            WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+            0
+            };
+            */
+            wglMakeCurrent(deviceContext, ctx);
+            glewExperimental = false;
+
+            if (glewInit() == GLEW_OK)
+            {
+                /*
+                HGLRC ctx4 = wglCreateContextAttribsARB( dc, 0, attr );
+                if( ctx4  &&  wglMakeCurrent( dc, ctx4 ) )
+                {
+                //            wglDeleteContext( ctx );
+                note( "using GL 4.0\n" );
+                _Context = (void*)ctx4;
+                }
+                else
+                {
+                */
+                _GLES2_Context = (void*)ctx;
+                //            }
+
+                _GLES2_Make_Context_Current = &win_gl_set_current;
+
+                success = true;
+            }
+            else
+            {
+                Logger::Error("GLEW init failed\n");
+            }
+        }
+        else
+        {
+            Logger::Error("can't create GL-context");
+        }
+    }
+    else
+    {
+        _GLES2_Make_Context_Current = param.makeCurrentFunc;
+        success = true; //context already created in external code
+    }
+
+    DVASSERT(_GLES2_Make_Context_Current);
+
+    if (success)
+    {
+        VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
+        IndexBufferGLES2::SetupDispatch(&DispatchGLES2);
+        QueryBufferGLES2::SetupDispatch(&DispatchGLES2);
+        TextureGLES2::SetupDispatch(&DispatchGLES2);
+        PipelineStateGLES2::SetupDispatch(&DispatchGLES2);
+        ConstBufferGLES2::SetupDispatch(&DispatchGLES2);
+        DepthStencilStateGLES2::SetupDispatch(&DispatchGLES2);
+        SamplerStateGLES2::SetupDispatch(&DispatchGLES2);
+        RenderPassGLES2::SetupDispatch(&DispatchGLES2);
+        CommandBufferGLES2::SetupDispatch(&DispatchGLES2);
+
+        DispatchGLES2.impl_Reset = &gles2_Reset;
+        DispatchGLES2.impl_Uninitialize = &gles2_Uninitialize;
+        DispatchGLES2.impl_HostApi = &gles2_HostApi;
+        DispatchGLES2.impl_TextureFormatSupported = &gles2_TextureFormatSupported;
+
+        SetDispatchTable(DispatchGLES2);
+
+        // check GL extensions
+        {
+            const char* ext = (const char*)glGetString(GL_EXTENSIONS);
+
+            if (!IsEmptyString(ext))
+            {
+                ATC_Supported = strstr(ext, "GL_AMD_compressed_ATC_texture") != nullptr;
+                PVRTC2_Supported = strstr(ext, "GL_IMG_texture_compression_pvrtc2") != nullptr;
+                ETC1_Supported = strstr(ext, "GL_OES_compressed_ETC1_RGB8_texture") != nullptr;
+                ETC2_Supported = strstr(ext, "GL_OES_compressed_ETC2_RGB8_texture") != nullptr;
+                EAC_Supported = ETC2_Supported;
+                Float_Supported = strstr(ext, "GL_OES_texture_float") != nullptr;
+                Half_Supported = strstr(ext, "GL_OES_texture_half_float") != nullptr;
+            }
+        }
+
+        ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
+
+        Logger::Info("GL inited\n");
+        Logger::Info("  GL version   : %s", glGetString(GL_VERSION));
+        Logger::Info("  GPU vendor   : %s", glGetString(GL_VENDOR));
+        Logger::Info("  GPU          : %s", glGetString(GL_RENDERER));
+        Logger::Info("  GLSL version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+
+#if 1
+        glEnable(GL_DEBUG_OUTPUT);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
+        glDebugMessageCallback(&_OGLErrorCallback, 0);
+#endif
+
+        stat_DIP = StatSet::AddStat("rhi'dip", "dip");
+        stat_DP = StatSet::AddStat("rhi'dp", "dp");
+        stat_SET_PS = StatSet::AddStat("rhi'set-ps", "set-ps");
+        stat_SET_TEX = StatSet::AddStat("rhi'set-tex", "set-tex");
+        stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
+
+        InitializeRenderThread();
+
+        _Inited = true;
+    }
+}
+
+#elif defined(__DAVAENGINE_MACOS__)
+
+void
+gles2_Initialize( const InitParam& param )
+{
+    _GLES2_Context = param.window;
+
+    if(param.makeCurrentFunc)
+    {
+        _GLES2_Make_Context_Current = param.makeCurrentFunc;
+    }
+    else
+    {
+        _GLES2_Make_Context_Current = &macos_gl_set_current();
+    }
+
+    ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
+
+    _Inited = true;
+
+    Logger::Info("GL inited");
+    Logger::Info("  GL version   : %s", glGetString(GL_VERSION));
+    Logger::Info("  GPU vendor   : %s", glGetString(GL_VENDOR));
+    Logger::Info("  GPU          : %s", glGetString(GL_RENDERER));
+    Logger::Info("  GLSL version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
     VertexBufferGLES2::SetupDispatch( &DispatchGLES2 );
     IndexBufferGLES2::SetupDispatch( &DispatchGLES2 );
@@ -213,42 +402,77 @@ gles2_Initialize( const InitParam& param )
     DispatchGLES2.impl_HostApi                  = &gles2_HostApi;
     DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
 
-    SetDispatchTable( DispatchGLES2 );
-            
-    // check GL extensions
-    {
-        const char* ext = (const char*)glGetString( GL_EXTENSIONS );
-
-        if( !IsEmptyString(ext) )
-        {
-            ATC_Supported    = strstr( ext, "GL_AMD_compressed_ATC_texture" ) != nullptr;
-            PVRTC2_Supported = strstr( ext, "GL_IMG_texture_compression_pvrtc2" ) != nullptr;
-            ETC1_Supported   = strstr( ext, "GL_OES_compressed_ETC1_RGB8_texture" ) != nullptr;
-            ETC2_Supported   = strstr( ext, "GL_OES_compressed_ETC2_RGB8_texture" ) != nullptr;
-            EAC_Supported    = ETC2_Supported;
-            Float_Supported  = strstr( ext, "GL_OES_texture_float" ) != nullptr;
-            Half_Supported   = strstr( ext, "GL_OES_texture_half_float" ) != nullptr;
-        }
-    }
-
-    ConstBufferGLES2::InitializeRingBuffer( 4*1024*1024 ); // CRAP: hardcoded default const ring-buf size
-
-#if defined(__DAVAENGINE_WIN32__)
-    glEnable( GL_DEBUG_OUTPUT );
-    glDebugMessageControl( GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE );
-    glDebugMessageCallback( &_OGLErrorCallback, 0 );
-#endif
-
-    stat_DIP        = StatSet::AddStat( "rhi'dip", "dip" );
-    stat_DP         = StatSet::AddStat( "rhi'dp", "dp" );
-    stat_SET_PS     = StatSet::AddStat( "rhi'set-ps", "set-ps" );
-    stat_SET_TEX    = StatSet::AddStat( "rhi'set-tex", "set-tex" );
-    stat_SET_CB     = StatSet::AddStat( "rhi'set-cb", "set-cb" );
+    SetDispatchTable(DispatchGLES2);
 
     InitializeRenderThread();
 
-    _Inited = true;
+    #if 0
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
+    glDebugMessageCallback(&_OGLErrorCallback, 0);
+    #endif
+
+    stat_DIP = StatSet::AddStat("rhi'dip", "dip");
+    stat_DP = StatSet::AddStat("rhi'dp", "dp");
+    stat_SET_PS = StatSet::AddStat("rhi'set-ps", "set-ps");
+    stat_SET_TEX = StatSet::AddStat("rhi'set-tex", "set-tex");
+    stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
 }
+
+#elif defined(__DAVAENGINE_IPHONE__)
+
+void
+gles2_Initialize(const InitParam& param)
+{
+    ios_GL_init(param.window);
+
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_GLES2_Default_FrameBuffer);
+    _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;
+
+    ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
+
+    _Inited = true;
+
+    Logger::Info("GL inited");
+    Logger::Info("  GL version   : %s", glGetString(GL_VERSION));
+    Logger::Info("  GPU vendor   : %s", glGetString(GL_VENDOR));
+    Logger::Info("  GPU          : %s", glGetString(GL_RENDERER));
+    Logger::Info("  GLSL version : %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+
+    VertexBufferGLES2::SetupDispatch( &DispatchGLES2 );
+    IndexBufferGLES2::SetupDispatch( &DispatchGLES2 );
+    QueryBufferGLES2::SetupDispatch( &DispatchGLES2 );
+    TextureGLES2::SetupDispatch( &DispatchGLES2 );
+    PipelineStateGLES2::SetupDispatch( &DispatchGLES2 );
+    ConstBufferGLES2::SetupDispatch( &DispatchGLES2 );
+    DepthStencilStateGLES2::SetupDispatch( &DispatchGLES2 );
+    SamplerStateGLES2::SetupDispatch( &DispatchGLES2 );
+    RenderPassGLES2::SetupDispatch( &DispatchGLES2 );
+    CommandBufferGLES2::SetupDispatch( &DispatchGLES2 );
+
+    DispatchGLES2.impl_Reset                    = &gles2_Reset;
+    DispatchGLES2.impl_Uninitialize             = &gles2_Uninitialize;
+    DispatchGLES2.impl_HostApi                  = &gles2_HostApi;
+    DispatchGLES2.impl_TextureFormatSupported   = &gles2_TextureFormatSupported;
+
+    SetDispatchTable(DispatchGLES2);
+
+    InitializeRenderThread();
+
+#if 0
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, 0, GL_TRUE);
+    glDebugMessageCallback(&_OGLErrorCallback, 0);
+#endif
+
+    stat_DIP = StatSet::AddStat("rhi'dip", "dip");
+    stat_DP = StatSet::AddStat("rhi'dp", "dp");
+    stat_SET_PS = StatSet::AddStat("rhi'set-ps", "set-ps");
+    stat_SET_TEX = StatSet::AddStat("rhi'set-tex", "set-tex");
+    stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
+}
+
+#endif
 
 GLint
 GL_TextureFormat( TextureFormat format )

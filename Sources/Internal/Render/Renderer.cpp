@@ -58,14 +58,14 @@ namespace //for private variables
 
 void InitCaps();
 
-void Initialize(rhi::Api _api, const rhi::InitParam & params, int32 width, int32 height)
+void Initialize(rhi::Api _api, const rhi::InitParam & params)
 {
     DVASSERT(!ininialized);
 
     api = _api;
     
-    framebufferWidth = width;
-    framebufferHeight = height;
+    framebufferWidth = params.width;
+    framebufferHeight = params.height;
     
     rhi::Initialize(api, params);
     rhi::ShaderCache::Initialize();
@@ -96,10 +96,12 @@ void Uninitialize()
     ininialized = false;
 }
 
-void Reset(int32 _framebufferWidth, int32 _framebufferHeight)
+void Reset(const rhi::ResetParam & params)
 {
-    framebufferWidth = _framebufferWidth;
-    framebufferHeight = _framebufferHeight;
+    framebufferWidth = params.width;
+    framebufferHeight = params.height;
+
+    rhi::Reset(params);
 }
 
 bool IsDeviceLost()

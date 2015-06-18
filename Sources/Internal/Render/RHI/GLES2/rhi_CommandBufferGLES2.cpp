@@ -1042,8 +1042,19 @@ _ExecuteQueuedCommands()
     _CmdQueueSync.Lock();
     _CurRenderQueueSize = 0;
     _CmdQueueSync.Unlock();
-    
-    _End_Frame();
+
+    if (_GLES2_Context)
+    {
+#if defined(__DAVAENGINE_WIN32__)
+        HWND    wnd = (HWND)_GLES2_Native_Window;
+        HDC     dc = ::GetDC(wnd);
+        SwapBuffers(dc);
+#elif defined(__DAVAENGINE_MACOS__)
+        macos_gl_end_frame();
+#elif defined(__DAVAENGINE_IPHONE__)
+        ios_GL_end_frame();
+#endif
+    }
 }
 
 
@@ -1082,9 +1093,9 @@ gles2_Present()
 static void
 _RenderFunc( DAVA::BaseObject* obj, void*, void* )
 {
-    DVASSERT(_Make_Current);
+    DVASSERT(_GLES2_Make_Context_Current);
 
-    _Make_Current();
+    _GLES2_Make_Context_Current();
 
     _RenderThredStartedSync.Post();
     Logger::Info( "RHI render-thread started" );
