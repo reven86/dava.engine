@@ -71,10 +71,10 @@ namespace DAVA
 #endif
     }
 
-    UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/) : 
+    UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/) :
+        isStyleSheetUpdated(false),
         family(nullptr),
-        parentWithContext(nullptr),
-        isStyleSheetUpdated(false)
+        parentWithContext(nullptr)
     {
         StartControlTracking(this);
         UpdateFamily();
