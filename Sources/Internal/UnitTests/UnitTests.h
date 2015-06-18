@@ -182,4 +182,53 @@
 
 #define TEST_VERIFY(condition)  TEST_VERIFY_WITH_MESSAGE(condition, DAVA::String())
 
+//////////////////////////////////////////////////////////////////////////
+// Macros that declare classes that are covered by unit test
+//
+// Usage:
+//  DAVA_TESTCLASS(UsefulTest)
+//  {
+//      BEGIN_CLASSES_COVERED_BY_TESTS()
+//          DECLARE_COVERED_CLASS(FileSystem)
+//          DECLARE_COVERED_CLASS(JobManager)
+//      END_CLASSES_COVERED_BY_TESTS()
+//
+//      DAVA_TEST(test1) {}
+//  };
+//
+// Test class UsefulTest covers two classes: FileSystem and JobManager
+//
+// or to automatically deduce covered class from test class name
+//  DAVA_TESTCLASS(DateTimeTest)
+//  {
+//      DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
+//  };
+//
+// DEDUCE_COVERED_CLASS_FROM_TESTCLASS discards Test postfix of any and considers that
+// DateTimeTest covers class DateTime.
+// 
+// This is test author's responsibility to specify valid and corresponding classes
+//
+// You can get and process classes covered by tests through call to DAVA::UnitTests::TestCore::Instance()->GetTestCoverage()
+// which returns Map<String, Vector<String>> where key is test class name and value is vector of covered classes 
+//
+
+#define BEGIN_CLASSES_COVERED_BY_TESTS() \
+    DAVA::Vector<DAVA::String> ClassesCoveredByTests() const override { \
+        DAVA::Vector<DAVA::String> result;
+
+#define DECLARE_COVERED_CLASS(classname) \
+        result.emplace_back(PrettifyTypeName(DAVA::String(typeid(classname).name())));
+
+#define END_CLASSES_COVERED_BY_TESTS() \
+        return result; \
+    }
+
+#define DEDUCE_COVERED_CLASS_FROM_TESTCLASS() \
+    DAVA::Vector<DAVA::String> ClassesCoveredByTests() const override { \
+        DAVA::Vector<DAVA::String> result; \
+        result.emplace_back(RemoveTestPostfix(PrettifyTypeName(DAVA::String(typeid(*this).name())))); \
+        return result; \
+    }
+
 #endif  // __DAVAENGINE_UNITTESTS_H__

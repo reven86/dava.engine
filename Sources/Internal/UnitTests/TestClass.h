@@ -63,11 +63,17 @@ public:
     virtual void Update(float32 timeElapsed, const String& testName) {}
     virtual bool TestComplete(const String& testName) const { return true; }
 
+    virtual Vector<String> ClassesCoveredByTests() const { return Vector<String>(); }
+
     const String& TestName(size_t index) const;
     size_t TestCount() const;
     void RunTest(size_t index);
 
     void RegisterTest(const char* name, void (*testFunc)(TestClass*));
+
+protected:
+    String PrettifyTypeName(const String& name) const;
+    String RemoveTestPostfix(const String& name) const;
 
 private:
     Vector<TestInfo> tests;
@@ -92,6 +98,28 @@ inline void TestClass::RunTest(size_t index)
 inline void TestClass::RegisterTest(const char* name, void (*testFunc)(TestClass*))
 {
     tests.emplace_back(name, testFunc);
+}
+
+inline String TestClass::PrettifyTypeName(const String& name) const
+{
+    size_t spacePos = name.find_last_of(": ");
+    if (spacePos != String::npos)
+    {
+        return name.substr(spacePos + 1);
+    }
+    return name;
+}
+
+inline String TestClass::RemoveTestPostfix(const String& name) const
+{
+    String lowcase = name;
+    std::transform(lowcase.begin(), lowcase.end(), lowcase.begin(), [](char ch) -> char { return 'A' <= ch && ch <= 'Z' ? ch - 'A' + 'a' : ch; });
+    size_t pos = lowcase.rfind("test");
+    if (pos != String::npos && pos > 0 && lowcase.length() - pos == 4)
+    {
+        return name.substr(0, pos);
+    }
+    return name;
 }
 
 }   // namespace UnitTests
