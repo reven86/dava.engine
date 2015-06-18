@@ -526,12 +526,12 @@ uint32 NvttHelper::GetCubeFaceId(uint32 nvttFaceDesc, int faceIndex)
         }
         
         static uint32 faceIndexMap[] = {
-            rhi::TEXTURE_FACE_LEFT,
-            rhi::TEXTURE_FACE_RIGHT,
-            rhi::TEXTURE_FACE_FRONT,
-            rhi::TEXTURE_FACE_BACK,
-            rhi::TEXTURE_FACE_TOP,
-            rhi::TEXTURE_FACE_BOTTOM
+            rhi::TEXTURE_FACE_POSITIVE_X,
+            rhi::TEXTURE_FACE_NEGATIVE_X,
+            rhi::TEXTURE_FACE_POSITIVE_Y,
+            rhi::TEXTURE_FACE_NEGATIVE_Y,
+            rhi::TEXTURE_FACE_POSITIVE_Z,
+            rhi::TEXTURE_FACE_NEGATIVE_Z
         };
         
         faceId = faceIndexMap[faceIdIndex];

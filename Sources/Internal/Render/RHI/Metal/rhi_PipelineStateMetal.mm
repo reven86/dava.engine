@@ -441,19 +441,25 @@ metal_PipelineState_Create( const PipelineState::Descriptor& desc )
     MTLCompileOptions*  vp_opt  = [MTLCompileOptions alloc];
     NSError*            vp_err  = nil;
     id<MTLLibrary>      vp_lib  = [_Metal_Device newLibraryWithSource:vp_src options:vp_opt error:&vp_err];
-    id<MTLFunction>     vp_func = [vp_lib newFunctionWithName:@"vp_main"];
+    id<MTLFunction>     vp_func = nil;
 
-    if( vp_err == nil )
+    if( vp_lib != nil )
     {
+        vp_func = [vp_lib newFunctionWithName:@"vp_main"];
+        
         if( vp_func == nil )
         {
-            Logger::Error( "FAILED to get vprog \"%s\" function", desc.fprogUid.c_str() );
+            Logger::Error( "FAILED to get vprog \"%s\" function", desc.vprogUid.c_str() );
         }
     }
     else
     {
-        Logger::Error( "FAILED to compile vprog \"%s\" :\n%s", desc.vprogUid.c_str(), vp_err.localizedDescription.UTF8String );
+        Logger::Error( "FAILED to compile vprog \"%s\" :", desc.vprogUid.c_str() );
+        Logger::Error( "  %s", (vp_err!=nil) ? vp_err.localizedDescription.UTF8String : "<unknown error>" );
     }
+    
+    if( vp_err != nil )
+        Logger::Warning( "vprog warnings:\n %s ", vp_err.localizedDescription.UTF8String );
 
     
     // compile fprog
@@ -464,18 +470,24 @@ metal_PipelineState_Create( const PipelineState::Descriptor& desc )
     id<MTLLibrary>      fp_lib  = [_Metal_Device newLibraryWithSource:fp_src options:fp_opt error:&fp_err];
     id<MTLFunction>     fp_func = nil;
     
-    if(fp_err)
-    {
-        Logger::Error( "FAILED to compile fprog \"%s\" :\n%s", desc.fprogUid.c_str(), fp_err.localizedDescription.UTF8String );
-    }
-    if(fp_lib)
+    if( fp_lib != nil )
     {
         fp_func = [fp_lib newFunctionWithName:@"fp_main"];
+        
         if( fp_func == nil )
         {
             Logger::Error( "FAILED to get fprog \"%s\" function", desc.fprogUid.c_str() );
         }
     }
+    else
+    {
+        Logger::Error( "FAILED to compile fprog \"%s\" :", desc.fprogUid.c_str() );
+        Logger::Error( "  %s", (fp_err!=nil) ? fp_err.localizedDescription.UTF8String : "<unknown error>" );
+    }
+    
+    if( fp_err != nil )
+        Logger::Warning( "fprog warnings:\n %s ", fp_err.localizedDescription.UTF8String );
+
 
     // create render-state
     
@@ -573,18 +585,20 @@ metal_PipelineState_Create( const PipelineState::Descriptor& desc )
         if( desc.blending.rtBlend[0].writeMask & COLORMASK_A )
             rp_desc.colorAttachments[0].writeMask |= MTLColorWriteMaskAlpha;
 
+/*
         for( unsigned i=0; i!=VATTR_COUNT; ++i )
         {
             rp_desc.vertexDescriptor.attributes[i].bufferIndex = 0;
             rp_desc.vertexDescriptor.attributes[i].offset      = 0;
-            rp_desc.vertexDescriptor.attributes[i].format      = MTLVertexFormatFloat;
+            rp_desc.vertexDescriptor.attributes[i].format      = MTLVertexFormatInvalid;//MTLVertexFormatFloat;
         }
+*/
 
         for( unsigned i=0; i!=desc.vertexLayout.ElementCount(); ++i )
         {
             unsigned        attr_i   = _VertexAttribIndex( desc.vertexLayout.ElementSemantics(i), desc.vertexLayout.ElementSemanticsIndex(i) );
             MTLVertexFormat fmt      = MTLVertexFormatInvalid;
-            
+
             switch( desc.vertexLayout.ElementDataType(i) )
             {
                 case VDT_FLOAT :
@@ -610,6 +624,7 @@ metal_PipelineState_Create( const PipelineState::Descriptor& desc )
                     }
                 }   break;
             }
+            DVASSERT(fmt != MTLVertexFormatInvalid);
             
             rp_desc.vertexDescriptor.attributes[attr_i].bufferIndex = 0 ;
             rp_desc.vertexDescriptor.attributes[attr_i].offset      = desc.vertexLayout.ElementOffset(i);
@@ -622,7 +637,7 @@ metal_PipelineState_Create( const PipelineState::Descriptor& desc )
         
         ps->state = [_Metal_Device newRenderPipelineStateWithDescriptor:rp_desc options:MTLPipelineOptionBufferTypeInfo reflection:&ps_info error:&rs_err];
         
-        if( rs_err == nil )
+        if( ps->state != nil )
         {
             ps->vprog.GetBufferInfo( ps_info );
             ps->fprog.GetBufferInfo( ps_info );
@@ -632,7 +647,9 @@ metal_PipelineState_Create( const PipelineState::Descriptor& desc )
         }
         else
         {
-            Logger::Error( "FAILED create pipeline-state:\n%s", rs_err.localizedDescription.UTF8String );
+            Logger::Error( "FAILED create pipeline-state :\n%s", (rs_err!=nil) ? rs_err.localizedDescription.UTF8String : "<unspecified error>" );
+            Logger::Info( "  vprog-uid = %s", desc.vprogUid.c_str() );
+            Logger::Info( "  fprog-uid = %s", desc.fprogUid.c_str() );
             DVASSERT(false);
         }
     }
