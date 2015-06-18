@@ -476,6 +476,12 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
             if( strstr( line, "VPROG_IN_COLOR" ) )
                 vdecl.AddElement( VS_COLOR, 0, VDT_UINT8N, 4 );
             
+            if( strstr( line, "VPROG_IN_TANGENT" ) )
+                vdecl.AddElement( VS_TANGENT, 0, VDT_FLOAT, 3 );
+
+            if( strstr( line, "VPROG_IN_BINORMAL" ) )
+                vdecl.AddElement( VS_BINORMAL, 0, VDT_FLOAT, 3 );
+
             if( strstr( line, "VPROG_IN_BLENDINDEX" ) )
             {
                 uint32      data_cnt = 1;

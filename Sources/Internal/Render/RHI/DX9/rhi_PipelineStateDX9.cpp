@@ -257,6 +257,7 @@ public:
             IDirect3DVertexDeclaration9*    vdecl;
         };
         
+        VertexLayout                    vertexLayout;
         unsigned                        stride;
         unsigned                        codeSiize;
         void*                           code;
@@ -475,6 +476,7 @@ PipelineStateDX9_t::VertexProgDX9::Construct( const void* bin, unsigned bin_sz, 
 
     if( SUCCEEDED(hr) )
     {
+DumpShaderText((const char*)bin,bin_sz);
         void*   code = shader->GetBufferPointer();
         HRESULT hr   = _D3D9_Device->CreateVertexShader( (const DWORD*)code, &vs9 );
 
@@ -529,8 +531,8 @@ PipelineStateDX9_t::VertexProgDX9::Construct( const void* bin, unsigned bin_sz, 
             }
 
 
-            vdecl9 = VDeclDX9::Get( vdecl );
-            stride = vdecl.Stride();
+            vdecl9       = VDeclDX9::Get( vdecl );
+            vertexLayout = vdecl;
 
             DVASSERT(vdecl9);
             success = true;
@@ -605,14 +607,33 @@ PipelineStateDX9_t::VertexProgDX9::SetToRHI( uint32 layoutUID )
 
             if( do_add )
             {
-                const VertexLayout* layout = VertexLayout::Get( layoutUID );
+                const VertexLayout* vbLayout = VertexLayout::Get( layoutUID );
                 vdecl_t             info;
-                
-                info.vdecl      = VDeclDX9::Get( *layout );
-                info.layoutUID  = layoutUID;
+                VertexLayout        layout;
 
-                altVdecl9.push_back( info );
-                vd = info.vdecl;
+                if( VertexLayout::MakeCompatible( *vbLayout, this->vertexLayout, &layout ) )
+                {
+Logger::Info("vb-layout:");
+vbLayout->Dump();
+Logger::Info("vprog-layout:");
+this->vertexLayout.Dump();
+Logger::Info("compatible-layout:");
+layout.Dump();
+
+                    info.vdecl      = VDeclDX9::Get( layout );
+                    info.layoutUID  = layoutUID;
+
+                    altVdecl9.push_back( info );
+                    vd = info.vdecl;
+                }
+                else
+                {
+                    Logger::Error( "can't create compatible vertex-layout" );
+                    Logger::Info( "vprog-layout:" );
+                    this->vertexLayout.Dump();
+                    Logger::Info( "custom-layout:" );
+                    vbLayout->Dump();
+                }
             }
         }
 
@@ -773,9 +794,10 @@ dx9_PipelineState_Create( const PipelineState::Descriptor& desc )
     static std::vector<uint8>   vprog_bin;
     static std::vector<uint8>   fprog_bin;
 
-//Logger::Info("create PS");
-//Logger::Info("  vprog= %s",desc.vprogUid.c_str());
-//Logger::Info("  fprog= %s",desc.vprogUid.c_str());
+Logger::Info("create PS");
+Logger::Info("  vprog= %s",desc.vprogUid.c_str());
+Logger::Info("  fprog= %s",desc.vprogUid.c_str());
+desc.vertexLayout.Dump();
     rhi::ShaderCache::GetProg( desc.vprogUid, &vprog_bin );
     rhi::ShaderCache::GetProg( desc.fprogUid, &fprog_bin );
 
@@ -903,7 +925,7 @@ VertexLayoutStride( Handle ps )
 {
     PipelineStateDX9_t* ps9 = PipelineStateDX9Pool::Get( ps );
 
-    return ps9->vprog.stride;
+    return ps9->vprog.vertexLayout.Stride();
 }
 
 
