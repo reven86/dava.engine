@@ -52,12 +52,26 @@ GameCore::~GameCore()
 void GameCore::OnAppStarted()
 {
 	Renderer::SetDesiredFPS(60);
-    /*HashMap<FastName, int32> flags;    
+    HashMap<FastName, int32> flags;    
     //flags[FastName("VERTEX_LIT")] = 1;
-    flags[FastName("PIXEL_LIT")] = 1;
+    //flags[FastName("PIXEL_LIT")] = 1;
     //flags[FastName("FRESNEL_TO_ALPHA")] = 1;
-    flags[FastName("REAL_REFLECTION")] = 1;
-    ShaderDescriptorCache::GetShaderDescriptor(FastName("~res:/Materials/Shaders/Default/water"), flags);*/
+    //flags[FastName("REAL_REFLECTION")] = 1;
+    //ShaderDescriptorCache::GetShaderDescriptor(FastName("~res:/Materials/Shaders/Default/water"), flags);
+        
+//     flags[FastName("PIXEL_LIT")] = 1;
+//     flags[FastName("NORMALIZED_BLINN_PHONG")] = 1;
+//     flags[FastName("VERTEX_FOG")] = 1;
+//     flags[FastName("FOG_LINEAR")] = 0;
+//     flags[FastName("FOG_HALFSPACE")] = 1;
+//     flags[FastName("FOG_HALFSPACE_LINEAR")] = 1;
+//     flags[FastName("FOG_ATMOSPHERE")] = 1;
+//     flags[FastName("SKINNING")] = 1;
+//     flags[FastName("MATERIAL_TEXTURE")] = 1;
+//     ShaderDescriptorCache::GetShaderDescriptor(FastName("~res:/Materials/Shaders/Default/materials"), flags);
+    
+
+
     
     selectSceneScreen = new SelectSceneScreen();
     viewSceneScreen = new ViewSceneScreen();
@@ -66,6 +80,7 @@ void GameCore::OnAppStarted()
 //    SetScenePath("~doc:/karelia/karelia.sc2");
 //    SetScenePath("~doc:/scene_viewer/test_box/box.sc2");
       SetScenePath("~doc:/amigosville/amigosville.sc2");
+//      SetScenePath("~doc:/fort/fort.sc2");
 //      SetScenePath("~doc:/USSR/T-62A_crash.sc2");
 //      SetScenePath("~doc:/amigosville/amigosville2.sc2");
 //      SetScenePath("~doc:/amigosville/amigosville5.sc2");
