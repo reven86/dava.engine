@@ -38,12 +38,36 @@ Result::Result(ResultType type_, const DAVA::String &message_, const DAVA::Varia
 {
 }
 
+Result::Result(const Result &result)
+    : type(result.type)
+    , message(result.message)
+    , data(result.data)
+{
+    
+}
+
 Result::Result(Result &&result)
     : type(result.type)
     , message(std::move(result.message))
     , data(std::move(result.data))
 {
     
+}
+
+Result& Result::operator = (const Result& result)
+{
+    type = result.type;
+    message = result.message;
+    data = result.data;
+    return *this;
+}
+
+Result& Result::operator = (Result&& result)
+{
+    type = result.type;
+    message = std::move(result.message);
+    data = std::move(result.data);
+    return *this;
 }
 
 ResultList::ResultList()

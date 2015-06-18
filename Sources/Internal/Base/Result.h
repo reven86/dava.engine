@@ -45,7 +45,10 @@ struct Result
         RESULT_ERROR
     };
     Result(const ResultType type = RESULT_SUCCESS, const String &message = String(), const VariantType &data = VariantType());
+    Result(const Result &result);
     Result(Result &&result);
+    Result& operator = (const Result& result);
+    Result& operator = (Result&& result);
     operator bool() const;
     ResultType type = RESULT_SUCCESS;
     String message;
@@ -77,8 +80,8 @@ public:
     
     const Deque<Result> &GetResults() const;
 private:
-    Deque < Result > results;
     bool allOk;
+    Deque < Result > results;
 };
 
 inline ResultList::operator bool() const
