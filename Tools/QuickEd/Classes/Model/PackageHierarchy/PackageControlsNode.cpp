@@ -84,7 +84,7 @@ void PackageControlsNode::Remove(ControlNode *node)
 
 int PackageControlsNode::GetCount() const
 {
-    return (int) nodes.size();
+    return static_cast<int>(nodes.size());
 }
 
 ControlNode *PackageControlsNode::Get(int index) const
@@ -107,7 +107,7 @@ bool PackageControlsNode::IsEditingSupported() const
     return false;
 }
 
-bool PackageControlsNode::IsInsertingSupported() const
+bool PackageControlsNode::IsInsertingControlsSupported() const
 {
     return !IsReadOnly();
 }

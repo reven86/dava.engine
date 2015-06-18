@@ -60,11 +60,13 @@ private:
     void LoadContext();
     void SaveContext();
 private:
+    
     void OnControlSelectedInEditor(const QList<ControlNode *> &node);
 
     void RefreshActions(const QModelIndexList &indexList);
     void RefreshAction(QAction *action, bool enabled, bool visible);
-    void CollectSelectedNodes(DAVA::Vector<ControlNode*> &nodes);
+    void CollectSelectedControls(DAVA::Vector<ControlNode*> &nodes, bool forCopy, bool forRemove);
+    void CollectSelectedImportedPackages(DAVA::Vector<PackageNode*> &nodes, bool forCopy, bool forRemove);
     void CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &nodes);
     void RemoveNodes(const DAVA::Vector<ControlNode*> &nodes);
     QList<QPersistentModelIndex> GetExpandedIndexes() const;
