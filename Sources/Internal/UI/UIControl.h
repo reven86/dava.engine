@@ -1384,7 +1384,7 @@ protected:
     bool isUpdated : 1;
     bool isIteratorCorrupted : 1;
 
-    bool isStyleSheetUpdated : 1;
+    bool styleSheetRebuildNeeded : 1;
 
     int32 inputProcessorsCount;
 

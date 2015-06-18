@@ -75,7 +75,7 @@ namespace DAVA
         int32 GetScore() const;
 
         const UIStyleSheetPropertyTable* GetPropertyTable() const;
-        const Vector< UIStyleSheetSelector >& GetSelectorChain() const;
+        const Vector<UIStyleSheetSelector>& GetSelectorChain() const;
 
         void SetPropertyTable(UIStyleSheetPropertyTable* properties);
         void SetSelectorChain(const Vector<UIStyleSheetSelector>& selectorChain);

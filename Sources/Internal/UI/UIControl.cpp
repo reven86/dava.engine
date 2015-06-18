@@ -72,7 +72,7 @@ namespace DAVA
     }
 
     UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/) :
-        isStyleSheetUpdated(false),
+        styleSheetRebuildNeeded(true),
         family(nullptr),
         parentWithContext(nullptr)
     {
@@ -292,7 +292,7 @@ namespace DAVA
     {
         FastName newFastName(_name);
         if (fastName != newFastName)
-            isStyleSheetUpdated = false;
+            styleSheetRebuildNeeded = true;
 
         name = _name;
         fastName = newFastName;
@@ -662,7 +662,7 @@ namespace DAVA
     {
         angle = angleInRad;
     }
-    
+
     void UIControl::SetAngleInDegrees(float32 angleInDeg)
     {
         SetAngle(DegToRad(angleInDeg));
@@ -899,7 +899,7 @@ namespace DAVA
 
         isIteratorCorrupted = true;
     }
-    
+
     void UIControl::RemoveControl(UIControl *control)
     {
         if (NULL == control)
@@ -1352,7 +1352,7 @@ namespace DAVA
             (*it)->isUpdated = false;
         }
 
-        if (!isStyleSheetUpdated || prevControlState != controlState)
+        if (styleSheetRebuildNeeded || prevControlState != controlState)
         {
             UIControlSystem::Instance()->GetStyleSheetSystem()->ProcessControl(this);
             prevControlState = controlState;
@@ -1866,7 +1866,7 @@ namespace DAVA
 
     void UIControl::SystemWillBecomeVisible()
     {
-        isStyleSheetUpdated = false;
+        styleSheetRebuildNeeded = true;
 
         WillBecomeVisible();
 
@@ -2265,7 +2265,7 @@ namespace DAVA
         {
             GetBackground()->SetModification(spriteModificationNode->AsInt32());
         }
-        
+
         const YamlNode * marginsNode = node->Get("margins");
         if (marginsNode)
         {
@@ -2418,7 +2418,7 @@ namespace DAVA
     {
         PerformEvent(UIControl::EVENT_ALL_ANIMATIONS_FINISHED);
     }
-	
+
     void UIControl::SetDebugDraw(bool _debugDrawEnabled, bool hierarchic/* = false*/)
     {
         debugDrawEnabled = _debugDrawEnabled;
@@ -2729,48 +2729,48 @@ namespace DAVA
     {
         return 1;
     }
-    
+
     UIControlBackground *UIControl::GetBackgroundComponent(int32 index) const
     {
         DVASSERT(index == 0);
         return background;
     }
-    
+
     UIControlBackground *UIControl::CreateBackgroundComponent(int32 index) const
     {
         DVASSERT(index == 0);
         return new UIControlBackground();
     }
-    
+
     void UIControl::SetBackgroundComponent(int32 index, UIControlBackground *bg)
     {
         DVASSERT(index == 0);
         SetBackground(bg);
     }
-    
+
     String UIControl::GetBackgroundComponentName(int32 index) const
     {
         DVASSERT(index == 0);
         return "Background";
     }
-    
+
     int32 UIControl::GetInternalControlsCount() const
     {
         return 0;
     }
-    
+
     UIControl *UIControl::GetInternalControl(int32 index) const
     {
         DVASSERT(false);
         return NULL;
     }
-    
+
     UIControl *UIControl::CreateInternalControl(int32 index) const
     {
         DVASSERT(false);
         return NULL;
     }
-    
+
     void UIControl::SetInternalControl(int32 index, UIControl *control)
     {
         DVASSERT(false);
@@ -2818,7 +2818,7 @@ namespace DAVA
         });
         UpdateFamily();
     }
-    
+
     void UIControl::InsertComponentAt(UIComponent * component, uint32 index)
     {
         uint32 count = family->GetComponentsCount(component->GetType());
@@ -2830,10 +2830,10 @@ namespace DAVA
         {
             DVASSERT(component->GetControl() == nullptr);
             component->SetControl(this);
-            
+
             uint32 insertIndex = family->GetComponentIndex(component->GetType(), index);
             components.insert(components.begin() + insertIndex, SafeRetain(component));
-            
+
             UpdateFamily();
         }
     }
@@ -2847,7 +2847,7 @@ namespace DAVA
         }
         return nullptr;
     }
-    
+
     int32 UIControl::GetComponentIndex(const UIComponent *component) const
     {
         uint32 count = family->GetComponentsCount(component->GetType());
@@ -2923,12 +2923,12 @@ namespace DAVA
     {
         return static_cast<uint32>(components.size());
     }
-    
+
     uint32 UIControl::GetComponentCount(uint32 componentType) const
     {
         return family->GetComponentsCount(componentType);
     }
-    
+
     uint64 UIControl::GetAvailableComponentFlags() const
     {
         return family->GetComponentsFlags();
@@ -2947,7 +2947,7 @@ namespace DAVA
     {
         classes.push_back(clazz);
 
-        isStyleSheetUpdated = false;
+        styleSheetRebuildNeeded = true;
     }
 
     void UIControl::RemoveClass(const FastName& clazz)
@@ -2959,7 +2959,7 @@ namespace DAVA
             *iter = classes.back();
             classes.pop_back();
 
-            isStyleSheetUpdated = false;
+            styleSheetRebuildNeeded = true;
         }
     }
 
@@ -2979,17 +2979,17 @@ namespace DAVA
         }
         return result;
     }
-    
+
     void UIControl::SetClassesFromString(const String &classesStr)
     {
         Vector<String> tokens;
         Split(classesStr, " ", tokens);
-        
+
         classes.clear();
         for (String &token : tokens)
             classes.push_back(FastName(token));
 
-        isStyleSheetUpdated = false;
+        styleSheetRebuildNeeded = true;
     }
 
     const UIStyleSheetPropertySet& UIControl::GetLocalPropertySet() const
@@ -3000,14 +3000,14 @@ namespace DAVA
     void UIControl::SetPropertyLocalFlag(uint32 propertyIndex, bool value)
     {
         localProperties.set(propertyIndex, value);
-        isStyleSheetUpdated = false;
+        styleSheetRebuildNeeded = true;
     }
 
     const UIStyleSheetPropertySet& UIControl::GetStyledPropertySet() const
     {
         return styledProperties;
     }
-    
+
     void UIControl::SetStyledPropertySet(const UIStyleSheetPropertySet &set)
     {
         styledProperties = set;
@@ -3015,7 +3015,7 @@ namespace DAVA
 
     void UIControl::MarkStyleSheetAsUpdated()
     {
-        isStyleSheetUpdated = true;
+        styleSheetRebuildNeeded = false;
     }
 
     void UIControl::SetPackageContext(UIControlPackageContext* newPackageContext)
@@ -3039,8 +3039,8 @@ namespace DAVA
 
     UIControlPackageContext* UIControl::GetPackageContext() const
     {
-        return packageContext.Valid() ? 
-            packageContext.Get() : 
+        return packageContext.Valid() ?
+            packageContext.Get() :
             (parentWithContext ? parentWithContext->GetLocalPackageContext() : nullptr);
     }
 
