@@ -40,7 +40,6 @@ namespace DAVA
     }
 
     UIControlPackageContext::UIControlPackageContext() :
-        maxSelectorDepth(0),
         styleSheetsSorted(false)
     {
 
@@ -50,7 +49,6 @@ namespace DAVA
     {
         styleSheetsSorted = false;
         styleSheets.push_back(SafeRetain(styleSheet));
-        maxSelectorDepth = Max(maxSelectorDepth, (int32)styleSheet->GetSelectorChain().size());
     }
 
     const Vector<UIStyleSheet*>& UIControlPackageContext::GetSortedStyleSheets()
@@ -65,10 +63,5 @@ namespace DAVA
         }
 
         return styleSheets;
-    }
-
-    int32 UIControlPackageContext::GetMaxStyleSheetSelectorDepth() const
-    {
-        return maxSelectorDepth;
     }
 }

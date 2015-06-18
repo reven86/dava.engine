@@ -37,8 +37,6 @@ namespace DAVA
     class UIControl;
     class UIStyleSheet;
     struct UIStyleSheetSelector;
-    class UIStyleSheetCascade;
-    class InspInfo;
     class VariantType;
 
     class UIStyleSheetSystem
@@ -47,19 +45,12 @@ namespace DAVA
         UIStyleSheetSystem();
         ~UIStyleSheetSystem();
 
-        void Process();
-
-        void MarkControlForUpdate(UIControl* control);
-    private:
-        void MarkControlForUpdate(UIControl* control, int32 depth);
         void ProcessControl(UIControl* control);
+    private:
         bool StyleSheetMatchesControl(const UIStyleSheet* styleSheet, UIControl* control);
         bool SelectorMatchesControl(const UIStyleSheetSelector& selector, UIControl* control);
         
-        void SetupControlFromCascade(UIControl* control, const UIStyleSheetCascade& cascade);
         void SetupPropertyFromVariantType(UIControl* control, uint32 propertyIndex, const VariantType& value);
-
-        Vector<UIControl*> controlsToUpdate;
     };
 };
 

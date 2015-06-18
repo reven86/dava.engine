@@ -46,49 +46,6 @@ namespace DAVA
 
     }
 
-    void UIStyleSheetSystem::Process()
-    {
-        if (!controlsToUpdate.empty())
-        {
-
-            std::sort(controlsToUpdate.begin(), controlsToUpdate.end());
-            auto endIter = std::unique(controlsToUpdate.begin(), controlsToUpdate.end());
-
-            //uint64 start = SystemTimer::Instance()->AbsoluteMS();
-
-            for (auto controlIter = controlsToUpdate.begin(); controlIter != endIter; ++controlIter)
-            {
-                ProcessControl(*controlIter);
-                SafeRelease(*controlIter);
-            }
-
-            //uint64 end = SystemTimer::Instance()->AbsoluteMS();
-
-            //DAVA::Logger::Debug("%s (%i) took %llu", __FUNCTION__, std::distance(controlsToUpdate.begin(), endIter), end - start);
-
-            controlsToUpdate.clear();
-        }
-    }
-
-    void UIStyleSheetSystem::MarkControlForUpdate(UIControl* control)
-    {
-        UIControlPackageContext* packageContext = control->GetPackageContext();
-        if (packageContext)
-        {
-            MarkControlForUpdate(control, packageContext->GetMaxStyleSheetSelectorDepth());
-        }
-    }
-
-    void UIStyleSheetSystem::MarkControlForUpdate(UIControl* control, int32 depth)
-    {
-        controlsToUpdate.push_back(SafeRetain(control));
-        if (depth > 1)
-        {
-            for (UIControl* child : control->GetChildren())
-                MarkControlForUpdate(child, depth - 1);
-        }
-    }
-
     void UIStyleSheetSystem::ProcessControl(UIControl* control)
     {
         UIControlPackageContext* packageContext = control->GetPackageContext();
@@ -131,6 +88,13 @@ namespace DAVA
             }
 
             control->SetStyledPropertySet(appliedProperties);
+        }
+
+        control->MarkStyleSheetAsUpdated();
+
+        for (UIControl* child : control->GetChildren())
+        {
+            ProcessControl(child);
         }
     }
 

@@ -178,7 +178,8 @@ namespace DAVA
             {
                 uint32 index = propertyDB->GetStyleSheetPropertyIndex(FastName(propertyIter.first));
                 const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(index);
-                propertiesToSet.push_back(std::make_pair(index, propertyIter.second->AsVariantType(propertyDescr.targetMembers[0].memberInfo)));
+                if (!propertyDescr.targetMembers.empty())
+                    propertiesToSet.push_back(std::make_pair(index, propertyIter.second->AsVariantType(propertyDescr.targetMembers[0].memberInfo))); // AsVariantType uses only type info and we assert that all targetMembers have the same type
             }
             propertyTable->SetProperties(propertiesToSet);
 

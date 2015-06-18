@@ -73,13 +73,14 @@ namespace DAVA
 
     UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/) : 
         family(nullptr),
-        parentWithContext(nullptr)
+        parentWithContext(nullptr),
+        isStyleSheetUpdated(false)
     {
         StartControlTracking(this);
         UpdateFamily();
 
         parent = NULL;
-        controlState = STATE_NORMAL;
+        prevControlState = controlState = STATE_NORMAL;
         visible = true;
         visibleForUIEditor = true;
         /*
@@ -291,7 +292,7 @@ namespace DAVA
     {
         FastName newFastName(_name);
         if (fastName != newFastName)
-            UIControlSystem::Instance()->GetStyleSheetSystem()->MarkControlForUpdate(this);
+            isStyleSheetUpdated = false;
 
         name = _name;
         fastName = newFastName;
@@ -1351,6 +1352,12 @@ namespace DAVA
             (*it)->isUpdated = false;
         }
 
+        if (!isStyleSheetUpdated || prevControlState != controlState)
+        {
+            UIControlSystem::Instance()->GetStyleSheetSystem()->ProcessControl(this);
+            prevControlState = controlState;
+        }
+
         it = childs.begin();
         while(it != childs.end())
         {
@@ -1859,7 +1866,7 @@ namespace DAVA
 
     void UIControl::SystemWillBecomeVisible()
     {
-        UIControlSystem::Instance()->GetStyleSheetSystem()->MarkControlForUpdate(this);
+        isStyleSheetUpdated = false;
 
         WillBecomeVisible();
 
@@ -2940,7 +2947,7 @@ namespace DAVA
     {
         classes.push_back(clazz);
 
-        UIControlSystem::Instance()->GetStyleSheetSystem()->MarkControlForUpdate(this);
+        isStyleSheetUpdated = false;
     }
 
     void UIControl::RemoveClass(const FastName& clazz)
@@ -2952,7 +2959,7 @@ namespace DAVA
             *iter = classes.back();
             classes.pop_back();
 
-            UIControlSystem::Instance()->GetStyleSheetSystem()->MarkControlForUpdate(this);
+            isStyleSheetUpdated = false;
         }
     }
 
@@ -2982,7 +2989,7 @@ namespace DAVA
         for (String &token : tokens)
             classes.push_back(FastName(token));
 
-        UIControlSystem::Instance()->GetStyleSheetSystem()->MarkControlForUpdate(this);
+        isStyleSheetUpdated = false;
     }
 
     const UIStyleSheetPropertySet& UIControl::GetLocalPropertySet() const
@@ -2993,7 +3000,7 @@ namespace DAVA
     void UIControl::SetPropertyLocalFlag(uint32 propertyIndex, bool value)
     {
         localProperties.set(propertyIndex, value);
-        UIControlSystem::Instance()->GetStyleSheetSystem()->MarkControlForUpdate(this);
+        isStyleSheetUpdated = false;
     }
 
     const UIStyleSheetPropertySet& UIControl::GetStyledPropertySet() const
@@ -3004,6 +3011,11 @@ namespace DAVA
     void UIControl::SetStyledPropertySet(const UIStyleSheetPropertySet &set)
     {
         styledProperties = set;
+    }
+
+    void UIControl::MarkStyleSheetAsUpdated()
+    {
+        isStyleSheetUpdated = true;
     }
 
     void UIControl::SetPackageContext(UIControlPackageContext* newPackageContext)

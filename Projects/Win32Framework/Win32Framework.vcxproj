@@ -207,11 +207,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIControlPackageContext.h" />
-    <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheet.h" />
-    <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetPropertiesTable.h" />
-    <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetSystem.h" />
-    <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetYamlLoader.h" />
-    <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetYamlWriter.h" />
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h" />
     <ClInclude Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.h" />
     <ClInclude Include="..\..\Sources\External\Box2D\Collision\b2Collision.h" />
@@ -710,6 +705,11 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertiesTable.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlWriter.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\TheoraPlayer.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UI3DView.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIAggregatorControl.h" />
@@ -770,11 +770,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIControlPackageContext.cpp" />
-    <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheet.cpp" />
-    <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetPropertiesTable.cpp" />
-    <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetSystem.cpp" />
-    <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetYamlLoader.cpp" />
-    <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIStyleSheetYamlWriter.cpp" />
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp" />
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2CollideCircle.cpp" />
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2CollideEdge.cpp" />
@@ -1212,6 +1207,11 @@
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\ScrollHelper.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertiesTable.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlWriter.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\TheoraPlayer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UI3DView.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIAggregatorControl.cpp" />

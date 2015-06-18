@@ -1362,6 +1362,7 @@ protected:
 
     UIControlBackground *background;
     int32 controlState;
+    int32 prevControlState;
 
     // boolean flags are grouped here to pack them together (see please DF-2149).
     bool exclusiveInput : 1;
@@ -1382,6 +1383,8 @@ protected:
 
     bool isUpdated : 1;
     bool isIteratorCorrupted : 1;
+
+    bool isStyleSheetUpdated : 1;
 
     int32 inputProcessorsCount;
 
@@ -1495,10 +1498,11 @@ public:
     const UIStyleSheetPropertySet& GetStyledPropertySet() const;
     void SetStyledPropertySet(const UIStyleSheetPropertySet &set);
     
+    void MarkStyleSheetAsUpdated();
+
     UIControlPackageContext* GetPackageContext() const;
     UIControlPackageContext* GetLocalPackageContext() const;
     void SetPackageContext(UIControlPackageContext* packageContext);
-    
 private:
     Vector<FastName> classes;
     UIStyleSheetPropertySet localProperties;

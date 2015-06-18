@@ -315,8 +315,6 @@ void UIControlSystem::Update()
 
 	if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
 	{
-        styleSheetSystem->Process();
-
 		if(currentScreen)
 		{
 			currentScreen->SystemUpdate(timeElapsed);
