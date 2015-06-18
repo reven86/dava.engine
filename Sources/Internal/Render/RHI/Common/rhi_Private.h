@@ -104,10 +104,10 @@ Texture
 Handle  Create( const Descriptor& desc );
 void    Delete( Handle tex );
 
-void*   Map( Handle tex, unsigned level=0, TextureFace face=TEXTURE_FACE_LEFT );
+void*   Map( Handle tex, unsigned level=0, TextureFace face=TEXTURE_FACE_NEGATIVE_X );
 void    Unmap( Handle tex );
 
-void    Update( Handle tex, const void* data, uint32 level, TextureFace face=TEXTURE_FACE_LEFT );
+void    Update( Handle tex, const void* data, uint32 level, TextureFace face=TEXTURE_FACE_NEGATIVE_X );
 
 };
 

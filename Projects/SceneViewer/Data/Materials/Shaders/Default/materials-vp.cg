@@ -160,11 +160,11 @@ property float4 lightPosition0 : dynamic,a : ;
 
 
 #if VERTEX_LIT
-property float materialSpecularShininess : dynamic,a : ;
-property float inSpecularity : dynamic,a : ;
+property float materialSpecularShininess : static,a : ;
+property float inSpecularity : static,a : ;
 property float inGlossiness : static,a : ;
-property float physicalFresnelReflectance : dynamic,a : ;
-property float3 metalFresnelReflectance : dynamic,a : ;
+property float physicalFresnelReflectance : static,a : ;
+property float3 metalFresnelReflectance : static,a : ;
 #endif
 
 #if SKINNING
@@ -445,7 +445,7 @@ VPROG_BEGIN
     
     float3  inNormal = VP_IN_NORMAL;
     
-    float3 normal = normalize(worldViewInvTransposeMatrix * inNormal); // normal in eye coordinates
+    float3 normal = normalize(mul(float4(inNormal, 0.0), worldViewInvTransposeMatrix).xyz); // normal in eye coordinates
    
     #if DISTANCE_ATTENUATION
         float attenuation = lightIntensity0;
@@ -458,7 +458,7 @@ VPROG_BEGIN
     
     #if BLINN_PHONG
         
-        varDiffuseColor = max(0.0, dot(normal, toLightDir));
+        VP_OUT(varDiffuseColor) = max(0.0, dot(normal, toLightDir));
 
         // Blinn-phong reflection
         float3 toCameraDir = normalize(-eyeCoordsPosition);
@@ -483,10 +483,10 @@ VPROG_BEGIN
         float Dbp = NdotL;
         float Geo = 1.0 / LdotH * LdotH;
         
-        varDiffuseColor = NdotL / _PI;
+        VP_OUT(varDiffuseColor) = NdotL / _PI;
         
-        varSpecularColor = Dbp * Geo * fresnelOut * specularity;
-        /*varNdotH*/varSpecularColor.w = NdotH;
+        VP_OUT(varSpecularColor).xyz = Dbp * Geo * fresnelOut * specularity;
+        VP_OUT(varSpecularColor).w = NdotH;
     
     #endif
     
