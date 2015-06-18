@@ -168,8 +168,8 @@ property float3 metalFresnelReflectance : static,a : ;
 #endif
 
 #if SKINNING
-property float4 jointPositions[MAX_JOINTS] : static,a : ; // (x, y, z, scale)
-property float4 jointQuaternions[MAX_JOINTS] : static,a : ;
+property float4 jointPositions[MAX_JOINTS] : dynamic,skin : ; // (x, y, z, scale)
+property float4 jointQuaternions[MAX_JOINTS] : dynamic,skin : ;
 #endif
 
 #include "vp-fog-props.cgh"
@@ -411,9 +411,11 @@ VPROG_BEGIN
             VP_OUT_POSITION = mul( Wave(globalTime, VP_IN_POSITION, inTexCoord0), worldViewProjMatrix );
         #else
             #if SKINNING
+//weightedVertexPosition.w=3.0;
                 float3 tmpVec = 2.0 * cross(weightedVertexQuaternion.xyz, VP_IN_POSITION.xyz);
                 float4 skinnedPosition = float4(weightedVertexPosition.xyz + (VP_IN_POSITION.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, 1.0);
                 VP_OUT_POSITION = mul( skinnedPosition, worldViewProjMatrix );
+//VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz,1.0)+0.000001*skinnedPosition, worldViewProjMatrix );
             #else
                 VP_OUT_POSITION = mul( float4(VP_IN_POSITION,1.0), worldViewProjMatrix );
             #endif
