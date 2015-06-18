@@ -807,22 +807,6 @@
 		114B553B1AB9D2EE003EC488 /* dlmalloc.c in Sources */ = {isa = PBXBuildFile; fileRef = 114B55381AB9D2EE003EC488 /* dlmalloc.c */; };
 		114B553C1AB9D2EE003EC488 /* dlmalloc.h in Headers */ = {isa = PBXBuildFile; fileRef = 114B55391AB9D2EE003EC488 /* dlmalloc.h */; };
 		114B553D1AB9D2EE003EC488 /* dlmalloc.h in Headers */ = {isa = PBXBuildFile; fileRef = 114B55391AB9D2EE003EC488 /* dlmalloc.h */; };
-		11B154F51B2F22A500E0EECE /* UIStyleSheet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11B154ED1B2F22A500E0EECE /* UIStyleSheet.cpp */; };
-		11B154F61B2F22A500E0EECE /* UIStyleSheet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11B154ED1B2F22A500E0EECE /* UIStyleSheet.cpp */; };
-		11B154F71B2F22A500E0EECE /* UIStyleSheet.h in Headers */ = {isa = PBXBuildFile; fileRef = 11B154EE1B2F22A500E0EECE /* UIStyleSheet.h */; };
-		11B154F81B2F22A500E0EECE /* UIStyleSheet.h in Headers */ = {isa = PBXBuildFile; fileRef = 11B154EE1B2F22A500E0EECE /* UIStyleSheet.h */; };
-		11B154F91B2F22A500E0EECE /* UIStyleSheetPropertiesTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11B154EF1B2F22A500E0EECE /* UIStyleSheetPropertiesTable.cpp */; };
-		11B154FA1B2F22A500E0EECE /* UIStyleSheetPropertiesTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11B154EF1B2F22A500E0EECE /* UIStyleSheetPropertiesTable.cpp */; };
-		11B154FB1B2F22A500E0EECE /* UIStyleSheetPropertiesTable.h in Headers */ = {isa = PBXBuildFile; fileRef = 11B154F01B2F22A500E0EECE /* UIStyleSheetPropertiesTable.h */; };
-		11B154FC1B2F22A500E0EECE /* UIStyleSheetPropertiesTable.h in Headers */ = {isa = PBXBuildFile; fileRef = 11B154F01B2F22A500E0EECE /* UIStyleSheetPropertiesTable.h */; };
-		11B154FD1B2F22A500E0EECE /* UIStyleSheetSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11B154F11B2F22A500E0EECE /* UIStyleSheetSystem.cpp */; };
-		11B154FE1B2F22A500E0EECE /* UIStyleSheetSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11B154F11B2F22A500E0EECE /* UIStyleSheetSystem.cpp */; };
-		11B154FF1B2F22A500E0EECE /* UIStyleSheetSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 11B154F21B2F22A500E0EECE /* UIStyleSheetSystem.h */; };
-		11B155001B2F22A500E0EECE /* UIStyleSheetSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 11B154F21B2F22A500E0EECE /* UIStyleSheetSystem.h */; };
-		11B155011B2F22A500E0EECE /* UIStyleSheetYamlLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11B154F31B2F22A500E0EECE /* UIStyleSheetYamlLoader.cpp */; };
-		11B155021B2F22A500E0EECE /* UIStyleSheetYamlLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11B154F31B2F22A500E0EECE /* UIStyleSheetYamlLoader.cpp */; };
-		11B155031B2F22A500E0EECE /* UIStyleSheetYamlLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = 11B154F41B2F22A500E0EECE /* UIStyleSheetYamlLoader.h */; };
-		11B155041B2F22A500E0EECE /* UIStyleSheetYamlLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = 11B154F41B2F22A500E0EECE /* UIStyleSheetYamlLoader.h */; };
 		11B155071B2F22B600E0EECE /* UIControlPackageContext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11B155051B2F22B600E0EECE /* UIControlPackageContext.cpp */; };
 		11B155081B2F22B600E0EECE /* UIControlPackageContext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11B155051B2F22B600E0EECE /* UIControlPackageContext.cpp */; };
 		11B155091B2F22B600E0EECE /* UIControlPackageContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 11B155061B2F22B600E0EECE /* UIControlPackageContext.h */; };
@@ -2023,14 +2007,6 @@
 		1146E10D19D0066F009E5FAB /* AnimationComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimationComponent.h; sourceTree = "<group>"; };
 		114B55381AB9D2EE003EC488 /* dlmalloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = dlmalloc.c; sourceTree = "<group>"; };
 		114B55391AB9D2EE003EC488 /* dlmalloc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dlmalloc.h; sourceTree = "<group>"; };
-		11B154ED1B2F22A500E0EECE /* UIStyleSheet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIStyleSheet.cpp; sourceTree = "<group>"; };
-		11B154EE1B2F22A500E0EECE /* UIStyleSheet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIStyleSheet.h; sourceTree = "<group>"; };
-		11B154EF1B2F22A500E0EECE /* UIStyleSheetPropertiesTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIStyleSheetPropertiesTable.cpp; sourceTree = "<group>"; };
-		11B154F01B2F22A500E0EECE /* UIStyleSheetPropertiesTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIStyleSheetPropertiesTable.h; sourceTree = "<group>"; };
-		11B154F11B2F22A500E0EECE /* UIStyleSheetSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIStyleSheetSystem.cpp; sourceTree = "<group>"; };
-		11B154F21B2F22A500E0EECE /* UIStyleSheetSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIStyleSheetSystem.h; sourceTree = "<group>"; };
-		11B154F31B2F22A500E0EECE /* UIStyleSheetYamlLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIStyleSheetYamlLoader.cpp; sourceTree = "<group>"; };
-		11B154F41B2F22A500E0EECE /* UIStyleSheetYamlLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIStyleSheetYamlLoader.h; sourceTree = "<group>"; };
 		11B155051B2F22B600E0EECE /* UIControlPackageContext.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIControlPackageContext.cpp; sourceTree = "<group>"; };
 		11B155061B2F22B600E0EECE /* UIControlPackageContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIControlPackageContext.h; sourceTree = "<group>"; };
 		11B1556C1B32D8C200E0EECE /* UIStyleSheet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UIStyleSheet.cpp; path = Styles/UIStyleSheet.cpp; sourceTree = "<group>"; };
@@ -4482,14 +4458,6 @@
 				E8B3CA6F16B9326E002BD35F /* UIYamlLoader.h */,
 				11B155051B2F22B600E0EECE /* UIControlPackageContext.cpp */,
 				11B155061B2F22B600E0EECE /* UIControlPackageContext.h */,
-				11B154ED1B2F22A500E0EECE /* UIStyleSheet.cpp */,
-				11B154EE1B2F22A500E0EECE /* UIStyleSheet.h */,
-				11B154EF1B2F22A500E0EECE /* UIStyleSheetPropertiesTable.cpp */,
-				11B154F01B2F22A500E0EECE /* UIStyleSheetPropertiesTable.h */,
-				11B154F11B2F22A500E0EECE /* UIStyleSheetSystem.cpp */,
-				11B154F21B2F22A500E0EECE /* UIStyleSheetSystem.h */,
-				11B154F31B2F22A500E0EECE /* UIStyleSheetYamlLoader.cpp */,
-				11B154F41B2F22A500E0EECE /* UIStyleSheetYamlLoader.h */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -4712,7 +4680,6 @@
 				02FD7F6D1924997C007762C0 /* Color.h in Headers */,
 				02FD7F6E1924997C007762C0 /* MaterialSystem.h in Headers */,
 				02FD7F6F1924997C007762C0 /* Math2D.h in Headers */,
-				11B154F81B2F22A500E0EECE /* UIStyleSheet.h in Headers */,
 				02FD7F701924997C007762C0 /* Math2DTemplateClasses.h in Headers */,
 				02FD7F711924997C007762C0 /* MathConstants.h in Headers */,
 				02FD7F721924997C007762C0 /* MathDefines.h in Headers */,
@@ -4974,7 +4941,6 @@
 				02FD804F1924997C007762C0 /* GlobalEventSystem.h in Headers */,
 				02FD80501924997C007762C0 /* SpriteObject.h in Headers */,
 				1146E11019D00672009E5FAB /* AnimationComponent.h in Headers */,
-				11B155041B2F22A500E0EECE /* UIStyleSheetYamlLoader.h in Headers */,
 				02FD80511924997C007762C0 /* SpriteRenderBatch.h in Headers */,
 				02FD80521924997C007762C0 /* ComponentHelpers.h in Headers */,
 				02FD80531924997C007762C0 /* ParticleForce.h in Headers */,
@@ -5020,7 +4986,6 @@
 				02FD80701924997C007762C0 /* OpenUDIDios.h in Headers */,
 				02FD80721924997C007762C0 /* GlobalEnum.h in Headers */,
 				02FD80731924997C007762C0 /* GPUFamilyDescriptor.h in Headers */,
-				11B154FC1B2F22A500E0EECE /* UIStyleSheetPropertiesTable.h in Headers */,
 				02FD80741924997C007762C0 /* EnumMap.h in Headers */,
 				02FD80751924997C007762C0 /* ActionComponent.h in Headers */,
 				02FD80761924997C007762C0 /* CustomPropertiesComponent.h in Headers */,
@@ -5056,7 +5021,6 @@
 				02FD808E1924997C007762C0 /* RenderStateData.h in Headers */,
 				02FD808F1924997C007762C0 /* UIParticles.h in Headers */,
 				17675C2519472C1400054F8F /* LibJpegHelper.h in Headers */,
-				11B155001B2F22A500E0EECE /* UIStyleSheetSystem.h in Headers */,
 				02FD80901924997C007762C0 /* UniqueStateSet.h in Headers */,
 				02FD80911924997C007762C0 /* TextureStateData.h in Headers */,
 				02FD80921924997C007762C0 /* GamepadDevice.h in Headers */,
@@ -5168,7 +5132,6 @@
 				E8B3CAEF16B9326E002BD35F /* Component.h in Headers */,
 				E8B3CAF116B9326E002BD35F /* SceneSystem.h in Headers */,
 				E8B3CB1116B9326E002BD35F /* Bitstream.h in Headers */,
-				11B154FF1B2F22A500E0EECE /* UIStyleSheetSystem.h in Headers */,
 				E8B3CB1316B9326E002BD35F /* DynamicMemoryFile.h in Headers */,
 				50194DA31A52D92600557DAB /* Endpoint.h in Headers */,
 				84D18C0919201BEF009E3E90 /* LibPVRHelper.h in Headers */,
@@ -5401,7 +5364,6 @@
 				E8B3CC8E16B9326E002BD35F /* ParticleEffectNode.h in Headers */,
 				E8B3CC9016B9326E002BD35F /* ParticleEmitterNode.h in Headers */,
 				B72364A61A8D01D6009940BE /* UIComponent.h in Headers */,
-				11B154FB1B2F22A500E0EECE /* UIStyleSheetPropertiesTable.h in Headers */,
 				E8B3CC9216B9326E002BD35F /* PathManip.h in Headers */,
 				E8B3CC9416B9326E002BD35F /* PolygonGroupInstance.h in Headers */,
 				E8B3CC9616B9326E002BD35F /* ProxyNode.h in Headers */,
@@ -5429,7 +5391,6 @@
 				E8B3CCB016B9326E002BD35F /* ShadowVolumeNode.h in Headers */,
 				E8B3CCB216B9326E002BD35F /* SkeletonNode.h in Headers */,
 				50FB9DC31A925A2D00BDB8A2 /* MemoryManagerTypes.h in Headers */,
-				11B154F71B2F22A500E0EECE /* UIStyleSheet.h in Headers */,
 				E8B3CCB416B9326E002BD35F /* SpriteNode.h in Headers */,
 				64493E1219476F4700AB2715 /* VegetationPropertyNames.h in Headers */,
 				E8B3CCB716B9326E002BD35F /* SwitchNode.h in Headers */,
@@ -5504,7 +5465,6 @@
 				E8B3CD2416B9326E002BD35F /* UITextFieldiPhone.h in Headers */,
 				50F3B8641B1EE34B00976CBC /* TestClass.h in Headers */,
 				E8B3CD2716B9326E002BD35F /* UIYamlLoader.h in Headers */,
-				11B155031B2F22A500E0EECE /* UIStyleSheetYamlLoader.h in Headers */,
 				E8B3CD2816B9326E002BD35F /* HTTPDownloader.h in Headers */,
 				11B155091B2F22B600E0EECE /* UIControlPackageContext.h in Headers */,
 				64493DF819476F4700AB2715 /* TextureSheet.h in Headers */,
@@ -5814,7 +5774,6 @@
 				02FD80FA1924997C007762C0 /* FTFont.cpp in Sources */,
 				02FD80FB1924997C007762C0 /* GraphicsFont.cpp in Sources */,
 				02FD80FC1924997C007762C0 /* Sprite.cpp in Sources */,
-				11B154FE1B2F22A500E0EECE /* UIStyleSheetSystem.cpp in Sources */,
 				02FD80FD1924997C007762C0 /* TextBlock.cpp in Sources */,
 				02FD80FE1924997C007762C0 /* AnimatedMesh.cpp in Sources */,
 				02FD80FF1924997C007762C0 /* EdgeAdjacency.cpp in Sources */,
@@ -5843,7 +5802,6 @@
 				026A1DE719DAF25700813AEF /* SkeletonSystem.cpp in Sources */,
 				E8525D301A30911400FDF76E /* WASDControllerSystem.cpp in Sources */,
 				02FD81111924997C007762C0 /* StaticOcclusion.cpp in Sources */,
-				11B154FA1B2F22A500E0EECE /* UIStyleSheetPropertiesTable.cpp in Sources */,
 				02FD81131924997C007762C0 /* RenderObject.cpp in Sources */,
 				02FD81141924997C007762C0 /* RenderPass.cpp in Sources */,
 				647EFC78195F0AC40073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */,
@@ -5898,7 +5856,6 @@
 				02FD81431924997C007762C0 /* TextGameObject.cpp in Sources */,
 				02FD81441924997C007762C0 /* BillboardNode.cpp in Sources */,
 				02FD81451924997C007762C0 /* BoneNode.cpp in Sources */,
-				11B155021B2F22A500E0EECE /* UIStyleSheetYamlLoader.cpp in Sources */,
 				17675C2619472C1400054F8F /* LibPngHelper.cpp in Sources */,
 				02FD81461924997C007762C0 /* BulletComponent.cpp in Sources */,
 				02FD81471924997C007762C0 /* CameraComponent.cpp in Sources */,
@@ -5941,7 +5898,6 @@
 				02FD81631924997C007762C0 /* SceneAnimationMixer.cpp in Sources */,
 				02FD81641924997C007762C0 /* SceneFile.cpp in Sources */,
 				02FD81651924997C007762C0 /* NMaterialTemplate.cpp in Sources */,
-				11B154F61B2F22A500E0EECE /* UIStyleSheet.cpp in Sources */,
 				11B155871B32D8C200E0EECE /* UIStyleSheetYamlWriter.cpp in Sources */,
 				02FD81661924997C007762C0 /* SceneFileV2.cpp in Sources */,
 				02FD81671924997C007762C0 /* SceneManager.cpp in Sources */,
@@ -6186,7 +6142,6 @@
 				E8B3CB2116B9326E002BD35F /* KeyedUnarchiver.cpp in Sources */,
 				E8B3CB2416B9326E002BD35F /* LocalizationIPhone.mm in Sources */,
 				50194DCA1A52D92600557DAB /* ServiceRegistrar.cpp in Sources */,
-				11B154FD1B2F22A500E0EECE /* UIStyleSheetSystem.cpp in Sources */,
 				E8B3CB2516B9326E002BD35F /* LocalizationSystem.cpp in Sources */,
 				E8B3CB2716B9326E002BD35F /* Logger.cpp in Sources */,
 				A6B5D95F185600050011D172 /* IntrospectionDynamic.cpp in Sources */,
@@ -6217,7 +6172,6 @@
 				E8B3CB4A16B9326E002BD35F /* Math2D.cpp in Sources */,
 				E8B3CB5216B9326E002BD35F /* Matrix4.cpp in Sources */,
 				E8B3CB5416B9326E002BD35F /* NeonMath.cpp in Sources */,
-				11B155011B2F22A500E0EECE /* UIStyleSheetYamlLoader.cpp in Sources */,
 				E8B3CB5816B9326E002BD35F /* Polygon2.cpp in Sources */,
 				E8B3CB5A16B9326E002BD35F /* Polygon3.cpp in Sources */,
 				E8B3CB5F16B9326E002BD35F /* RectPacker.cpp in Sources */,
@@ -6225,7 +6179,6 @@
 				84D18C0019201BEF009E3E90 /* ImageSystem.cpp in Sources */,
 				024BD5BD1A2C9299000BECC1 /* VirtualCoordinatesSystem.cpp in Sources */,
 				D7FEF14B19864E5C00B2C7AF /* DownloadManager.cpp in Sources */,
-				11B154F91B2F22A500E0EECE /* UIStyleSheetPropertiesTable.cpp in Sources */,
 				E8B3CB7516B9326E002BD35F /* Particle.cpp in Sources */,
 				327343CE1ACD3CC70003F2A8 /* BaseFamily.cpp in Sources */,
 				E8B3CB7716B9326E002BD35F /* ParticleEmitter.cpp in Sources */,
@@ -6296,7 +6249,6 @@
 				CC0D7B531A76066700309408 /* WaypointComponent.cpp in Sources */,
 				E8B3CC0316B9326E002BD35F /* ShadowRect.cpp in Sources */,
 				32F29AB51A7B733800EB2325 /* UIPackagesCache.cpp in Sources */,
-				11B154F51B2F22A500E0EECE /* UIStyleSheet.cpp in Sources */,
 				02FD7EC319237D43007762C0 /* SpeedTreeUpdateSystem.cpp in Sources */,
 				E8B3CC0516B9326E002BD35F /* ShadowVolume.cpp in Sources */,
 				E8B3CC0716B9326E002BD35F /* ShadowVolumeRenderPass.cpp in Sources */,
