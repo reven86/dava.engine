@@ -38,6 +38,14 @@ Result::Result(ResultType type_, const DAVA::String &message_, const DAVA::Varia
 {
 }
 
+Result::Result(Result &&result)
+    : type(result.type)
+    , message(std::move(result.message))
+    , data(std::move(result.data))
+{
+    
+}
+
 ResultList::ResultList()
     : allOk(true)
 {
@@ -56,13 +64,14 @@ ResultList::ResultList(const ResultList& resultList)
     results = resultList.GetResults();
 }
 
-ResultList::ResultList(const ResultList&& resultList)
+ResultList::ResultList(ResultList&& resultList)
     : allOk(resultList.allOk)
+    , results(std::move(resultList.results))
 {
-    results = std::move(resultList.results);
+    
 }
 
-ResultList& ResultList::operator=(ResultList& resultList)
+ResultList& ResultList::operator=(const ResultList& resultList)
 {
     results = resultList.results;
     allOk = resultList.allOk;
@@ -83,7 +92,7 @@ ResultList& ResultList::AddResult(const Result &result)
     return *this;
 }
 
-ResultList& ResultList::AddResult(const Result &&result)
+ResultList& ResultList::AddResult(Result &&result)
 {
     allOk &= result;
     results.emplace_back(result);
@@ -102,7 +111,7 @@ ResultList& ResultList::AddResultList(const ResultList &resultList)
     return *this;
 }
 
-ResultList& ResultList::AddResultList(const ResultList &&resultList)
+ResultList& ResultList::AddResultList(ResultList &&resultList)
 {
     allOk &= resultList.allOk;
     if (results.empty())

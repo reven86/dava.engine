@@ -45,6 +45,7 @@ struct Result
         RESULT_ERROR
     };
     Result(const ResultType type = RESULT_SUCCESS, const String &message = String(), const VariantType &data = VariantType());
+    Result(Result &&result);
     operator bool() const;
     ResultType type = RESULT_SUCCESS;
     String message;
@@ -62,17 +63,17 @@ public:
     explicit ResultList();
     explicit ResultList(const Result &result);
     ResultList(const ResultList &resultList);
-    ResultList(const ResultList &&resultList);
+    ResultList(ResultList &&resultList);
     ~ResultList() = default;
     operator bool() const;
     bool IsSuccess() const;
-    ResultList& operator = (ResultList& resultList);
+    ResultList& operator = (const ResultList& resultList);
     ResultList& operator = (ResultList&& resultList);
     ResultList &AddResult(const Result &result);
-    ResultList &AddResult(const Result &&result);
+    ResultList &AddResult(Result &&result);
     ResultList &AddResult(const Result::ResultType type = Result::RESULT_SUCCESS, const String &message = String(), const VariantType &data = VariantType());
     ResultList &AddResultList(const ResultList &resultList);
-    ResultList &AddResultList(const ResultList &&resultList);
+    ResultList &AddResultList(ResultList &&resultList);
     
     const Deque<Result> &GetResults() const;
 private:
