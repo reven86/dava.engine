@@ -60,11 +60,8 @@ namespace DAVA
     public:
         void SetProperties(const Vector<std::pair<uint32, VariantType>>& properties);
         const Vector<std::pair<uint32, VariantType>>& GetProperties() const;
-
-        const UIStyleSheetPropertySet& GetPropertySet() const;
     private:
         Vector<std::pair<uint32, VariantType>> properties;
-        UIStyleSheetPropertySet propertiesSet;
     };
 
     class UIStyleSheet :

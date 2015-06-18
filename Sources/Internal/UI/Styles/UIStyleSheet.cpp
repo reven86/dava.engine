@@ -33,8 +33,6 @@ namespace DAVA
     void UIStyleSheetPropertyTable::SetProperties(const Vector<std::pair<uint32, VariantType>>& newProperties)
     {
         properties = newProperties;
-        for (const auto& prop : properties)
-            propertiesSet.set(prop.first);
 
         std::sort(properties.begin(), properties.end(),
             [](const std::pair<uint32, VariantType>& first, const std::pair<uint32, VariantType>& second) {
@@ -45,11 +43,6 @@ namespace DAVA
     const Vector<std::pair<uint32, VariantType>>& UIStyleSheetPropertyTable::GetProperties() const
     {
         return properties;
-    }
-
-    const UIStyleSheetPropertySet& UIStyleSheetPropertyTable::GetPropertySet() const
-    {
-        return propertiesSet;
     }
 
     UIStyleSheet::~UIStyleSheet()
