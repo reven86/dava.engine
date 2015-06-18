@@ -237,16 +237,15 @@ if( ANDROID )
             list( APPEND SRC_LIST  ${ITEM} )
             math( EXPR COUNTER "${COUNTER} + 1" )
 
-            if( ${COUNTER} GREATER 900 )
+            if( ${COUNTER} GREATER 700 )
                 math( EXPR POSTFIX "${POSTFIX} + 1" )
 
                 set( LIB_NAME "${PROJECT_NAME}_${POSTFIX}"  ) 
                 add_library( ${LIB_NAME} STATIC ${SRC_LIST} )
-                target_link_libraries( ${LIB_NAME} ${LIBRARIES} )
-                list( APPEND LIBRARIES ${LIB_NAME} )
+                list( APPEND TARGET_LIBRARIES ${LIB_NAME} )
 
                 set( COUNTER 0 )
-                unset( SRC_LIST CACHE)
+                set( SRC_LIST )
 
             endif() 
 
@@ -257,7 +256,19 @@ if( ANDROID )
 
     endforeach()
 
-    add_library( ${PROJECT_NAME} SHARED ${PLATFORM_ADDED_SRC} ${SRC_LIST} ${ADDED_SRC} ${REMAINING_LIST} )
+    if( ${COUNTER} GREATER 0 )
+        math( EXPR POSTFIX "${POSTFIX} + 1" )
+
+        set( LIB_NAME "${PROJECT_NAME}_${POSTFIX}"  ) 
+        add_library( ${LIB_NAME} STATIC ${SRC_LIST} )
+        list( APPEND TARGET_LIBRARIES ${LIB_NAME} )
+
+        set( COUNTER 0 )
+        set( SRC_LIST )
+
+    endif() 
+
+    add_library( ${PROJECT_NAME} SHARED ${PLATFORM_ADDED_SRC} ${ADDED_SRC} ${REMAINING_LIST} )
 
 else()                             
     add_executable( ${PROJECT_NAME} MACOSX_BUNDLE ${EXECUTABLE_FLAG}
@@ -468,7 +479,19 @@ if( DAVA_TOOLS_FOUND )
 
 endif()
 
-target_link_libraries( ${PROJECT_NAME} ${LIBRARIES} )
+if( ANDROID )
+    foreach( LIB_1 ${TARGET_LIBRARIES} )
+        foreach( LIB_2 ${TARGET_LIBRARIES} )
+            if( ${LIB_1} STREQUAL ${LIB_2} )
+            else()
+                target_link_libraries( ${LIB_1} ${LIB_2} ${LIBRARIES} )
+            endif()
+        endforeach()
+    endforeach()
+
+endif()
+
+target_link_libraries( ${PROJECT_NAME} ${TARGET_LIBRARIES} ${LIBRARIES} )
 
 foreach ( FILE ${LIBRARIES_DEBUG} )
     target_link_libraries  ( ${PROJECT_NAME} debug ${FILE} )
