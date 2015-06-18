@@ -74,7 +74,7 @@ namespace DAVA
     UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/) : 
         family(nullptr),
         parentWithContext(nullptr),
-        isStyleSheetUpdated(false)
+        styleSheetRebuildNeeded(true)
     {
         StartControlTracking(this);
         UpdateFamily();
@@ -292,7 +292,7 @@ namespace DAVA
     {
         FastName newFastName(_name);
         if (fastName != newFastName)
-            isStyleSheetUpdated = false;
+            styleSheetRebuildNeeded = true;
 
         name = _name;
         fastName = newFastName;
@@ -1352,7 +1352,7 @@ namespace DAVA
             (*it)->isUpdated = false;
         }
 
-        if (!isStyleSheetUpdated || prevControlState != controlState)
+        if (styleSheetRebuildNeeded || prevControlState != controlState)
         {
             UIControlSystem::Instance()->GetStyleSheetSystem()->ProcessControl(this);
             prevControlState = controlState;
@@ -1866,7 +1866,7 @@ namespace DAVA
 
     void UIControl::SystemWillBecomeVisible()
     {
-        isStyleSheetUpdated = false;
+        styleSheetRebuildNeeded = true;
 
         WillBecomeVisible();
 
@@ -2947,7 +2947,7 @@ namespace DAVA
     {
         classes.push_back(clazz);
 
-        isStyleSheetUpdated = false;
+        styleSheetRebuildNeeded = true;
     }
 
     void UIControl::RemoveClass(const FastName& clazz)
@@ -2959,7 +2959,7 @@ namespace DAVA
             *iter = classes.back();
             classes.pop_back();
 
-            isStyleSheetUpdated = false;
+            styleSheetRebuildNeeded = true;
         }
     }
 
@@ -2989,7 +2989,7 @@ namespace DAVA
         for (String &token : tokens)
             classes.push_back(FastName(token));
 
-        isStyleSheetUpdated = false;
+        styleSheetRebuildNeeded = true;
     }
 
     const UIStyleSheetPropertySet& UIControl::GetLocalPropertySet() const
@@ -3000,7 +3000,7 @@ namespace DAVA
     void UIControl::SetPropertyLocalFlag(uint32 propertyIndex, bool value)
     {
         localProperties.set(propertyIndex, value);
-        isStyleSheetUpdated = false;
+        styleSheetRebuildNeeded = true;
     }
 
     const UIStyleSheetPropertySet& UIControl::GetStyledPropertySet() const
@@ -3015,7 +3015,7 @@ namespace DAVA
 
     void UIControl::MarkStyleSheetAsUpdated()
     {
-        isStyleSheetUpdated = true;
+        styleSheetRebuildNeeded = false;
     }
 
     void UIControl::SetPackageContext(UIControlPackageContext* newPackageContext)
