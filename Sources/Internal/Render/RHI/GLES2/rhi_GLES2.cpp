@@ -159,7 +159,10 @@ _OGLErrorCallback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsiz
         default                                 : sseverity = "unknown"; break;
     }
 */
-    if( type == GL_DEBUG_TYPE_ERROR  ||  type == GL_DEBUG_TYPE_PERFORMANCE )
+    if( type == GL_DEBUG_TYPE_PERFORMANCE )
+        Logger::Warning( "[gl.warning] %s\n", message );
+
+    if( type == GL_DEBUG_TYPE_ERROR )
         Logger::Error( "[gl.error] %s\n", message );
 //    else
 //        Logger::Info( "[gl.info] %s\n", message );

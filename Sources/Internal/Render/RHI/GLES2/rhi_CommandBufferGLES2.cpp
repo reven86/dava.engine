@@ -1182,7 +1182,10 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
     expr ; \
     err = glGetError(); \
     if( err != GL_NO_ERROR ) \
-        Logger::Error( "FAILED  %s (%i) : %s\n", #expr, err, GetGLErrorString(err) );
+    { \
+        Logger::Error( "FAILED  %s (%i) : %s\n", #expr, err, GetGLErrorString(err) ); \
+        DVASSERT(!"KABOOM!!!"); \
+    } \
 
 #else
 
