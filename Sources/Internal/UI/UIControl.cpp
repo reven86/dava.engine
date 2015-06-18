@@ -50,6 +50,8 @@
 
 namespace DAVA
 {
+    const char* UIControl::STATE_NAMES[] = { "normal", "pressed_outside", "pressed_inside", "disabled", "selected", "hover" };
+
     static Mutex controlsListMutex;
     static Vector<const UIControl *> controlsList;//weak pointers
 

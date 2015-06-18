@@ -245,6 +245,9 @@ public:
 
         STATE_COUNT             = 6
     };
+
+    static const char* UIControl::STATE_NAMES[STATE_COUNT];
+
     /**
      \enum Control events supported by default.
      */

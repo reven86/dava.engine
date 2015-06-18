@@ -152,7 +152,8 @@ namespace DAVA
 
     bool UIStyleSheetSystem::SelectorMatchesControl(const UIStyleSheetSelector& selector, UIControl* control)
     {
-        if ((selector.name.IsValid() && selector.name != control->GetFastName())
+        if (((selector.controlStateMask & control->GetState()) != selector.controlStateMask)
+            || (selector.name.IsValid() && selector.name != control->GetFastName())
             || (!selector.controlClassName.empty() && selector.controlClassName != control->GetClassName()))
             return false;
 

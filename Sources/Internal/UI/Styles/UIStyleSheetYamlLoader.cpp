@@ -28,6 +28,7 @@
 
 #include "UI/Styles/UIStyleSheetYamlLoader.h"
 #include "UI/Styles/UIStyleSheet.h"
+#include "UI/UIControl.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "Utils/Utils.h"
@@ -43,6 +44,7 @@ namespace DAVA
             {
                 SELECTOR_STATE_CONTROL_CLASS_NAME,
                 SELECTOR_STATE_CLASS,
+                SELECTOR_STATE_PSEUDO_CLASS,
                 SELECTOR_STATE_NAME,
                 SELECTOR_STATE_NONE,
             };
@@ -55,7 +57,7 @@ namespace DAVA
 
             void Parse(const char* selectorStr)
             {
-                currentSelector.Clear();
+                currentSelector = UIStyleSheetSelector();
                 currentToken = "";
                 state = SELECTOR_STATE_CONTROL_CLASS_NAME;
 
@@ -71,20 +73,24 @@ namespace DAVA
                     else if ((*selectorStr) == '?')
                     {
                         FinishProcessingCurrentSelector();
-                        selectorChain.push_back(UIStyleSheetSelector());
                         while (*(selectorStr + 1) == ' ') ++selectorStr;
+                        selectorChain.push_back(UIStyleSheetSelector());
                     }
                     else if ((*selectorStr) == '.')
                     {
-                        SwitchState(SELECTOR_STATE_CLASS);
+                        GoToState(SELECTOR_STATE_CLASS);
+                    }
+                    else if ((*selectorStr) == ':')
+                    {
+                        GoToState(SELECTOR_STATE_PSEUDO_CLASS);
                     }
                     else if ((*selectorStr) == '#')
                     {
-                        SwitchState(SELECTOR_STATE_NAME);
+                        GoToState(SELECTOR_STATE_NAME);
                     }
                     else if ((*selectorStr) == '*')
                     {
-                        SwitchState(SELECTOR_STATE_NAME);
+                        GoToState(SELECTOR_STATE_NAME);
                     }
                     else
                     {
@@ -100,17 +106,17 @@ namespace DAVA
             SelectorParserState state;
             UIStyleSheetSelector currentSelector;
 
-            Vector< UIStyleSheetSelector >& selectorChain;
+            Vector<UIStyleSheetSelector>& selectorChain;
 
             void FinishProcessingCurrentSelector()
             {
-                SwitchState(SELECTOR_STATE_CONTROL_CLASS_NAME);
+                GoToState(SELECTOR_STATE_CONTROL_CLASS_NAME);
                 if (!currentSelector.controlClassName.empty() || currentSelector.name.IsValid() || !currentSelector.classes.empty())
                     selectorChain.push_back(currentSelector);
-                currentSelector.Clear();
+                currentSelector = UIStyleSheetSelector();
             }
 
-            void SwitchState(SelectorParserState newState)
+            void GoToState(SelectorParserState newState)
             {
                 if (currentToken != "")
                 {
@@ -125,6 +131,12 @@ namespace DAVA
                     else if (state == SELECTOR_STATE_CLASS)
                     {
                         currentSelector.classes.push_back(FastName(currentToken));
+                    }
+                    else if (state == SELECTOR_STATE_PSEUDO_CLASS)
+                    {
+                        for (int32 stateIndex = 0; stateIndex < UIControl::STATE_COUNT; ++stateIndex)
+                            if (currentToken == UIControl::STATE_NAMES[stateIndex])
+                                currentSelector.controlStateMask |= 1 << stateIndex;
                     }
                 }
                 currentToken = "";
@@ -170,14 +182,14 @@ namespace DAVA
             }
             propertyTable->SetProperties(propertiesToSet);
 
-            Vector< String > selectorList;
+            Vector<String> selectorList;
             Split(styleSheetIter->first, ",", selectorList);
 
             for (const String& selectorString : selectorList)
             {
                 UIStyleSheet* styleSheet = new UIStyleSheet();
 
-                Vector< UIStyleSheetSelector > selectorChain;
+                Vector<UIStyleSheetSelector> selectorChain;
                 SelectorParser parser(selectorChain);
                 parser.Parse(selectorString.c_str());
 

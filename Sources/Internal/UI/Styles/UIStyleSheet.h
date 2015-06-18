@@ -40,16 +40,18 @@ namespace DAVA
 {
     struct UIStyleSheetSelector
     {
+        UIStyleSheetSelector() :
+            controlClassName(""),
+            name(),
+            controlStateMask(0)
+        {
+
+        }
+
         String controlClassName;
         FastName name;
+        int32 controlStateMask;
         Vector<FastName> classes;
-
-        void Clear()
-        {
-            controlClassName = "";
-            name = FastName();
-            classes.clear();
-        }
     };
 
     class UIStyleSheetPropertyTable :

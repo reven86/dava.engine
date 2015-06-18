@@ -28,6 +28,7 @@
 
 #include "UI/Styles/UIStyleSheetYamlWriter.h"
 #include "UI/Styles/UIStyleSheet.h"
+#include "UI/UIControl.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "Utils/Utils.h"
@@ -89,6 +90,10 @@ namespace DAVA
 
             for (const FastName& clazz : selectorChainIter.classes)
                 result += String(".") + clazz.c_str();
+
+            for (int32 stateIndex = 0; stateIndex < UIControl::STATE_COUNT; ++stateIndex)
+                if (selectorChainIter.controlStateMask & (1 << stateIndex))
+                    result += String(":") + UIControl::STATE_NAMES[stateIndex];
 
             result += " ";
         }
