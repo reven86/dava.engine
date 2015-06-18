@@ -39,8 +39,6 @@
 #include "Autotesting/AutotestingSystem.h"
 #include "version.h"
 
-#include "UI/Styles/UIStyleSheetSystem.h"
-
 using namespace DAVA;
 
 GameCore::GameCore()
