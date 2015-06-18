@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../rhi_Type.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 
@@ -16,6 +17,8 @@
     #include <OpenGL/glext.h>
     
     #define GetGLErrorString aglErrorString
+
+    #include "macos_gl.h"
 
 #elif defined(__DAVAENGINE_IPHONE__)
 
@@ -125,8 +128,6 @@
 #if !defined(GL_HALF_FLOAT)
 #define GL_HALF_FLOAT GL_HALF_FLOAT_OES
 #endif
-
-#include "../rhi_Type.h"
 
 #if 0
 #define GL_CALL(expr) \

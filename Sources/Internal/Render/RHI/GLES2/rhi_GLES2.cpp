@@ -365,15 +365,15 @@ gles2_Initialize( const InitParam& param )
 void
 gles2_Initialize( const InitParam& param )
 {
-    _GLES2_Context = param.window;
-
+    macos_gl_init(param.window);
+    
     if(param.makeCurrentFunc)
     {
         _GLES2_Make_Context_Current = param.makeCurrentFunc;
     }
     else
     {
-        _GLES2_Make_Context_Current = &macos_gl_set_current();
+        _GLES2_Make_Context_Current = &macos_gl_set_current;
     }
 
     ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
