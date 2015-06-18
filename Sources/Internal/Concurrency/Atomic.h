@@ -50,8 +50,6 @@ class Atomic
                   std::is_pointer<T>::value  ||
                   std::is_enum<T>::value, 
                   "Not valid type for atomic operations");
-    using aligned_storage = std::aligned_storage<sizeof(T), sizeof(T)>;
-    
 public:
     Atomic(T val = T()) DAVA_NOEXCEPT : value(val) {}
 
