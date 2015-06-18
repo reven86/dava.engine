@@ -10,8 +10,11 @@
 
     id<MTLDevice>                   _Metal_Device                   = nil;
     id<MTLCommandQueue>             _Metal_DefCmdQueue              = nil;
+    MTLRenderPassDescriptor*        _Metal_DefRenderPassDescriptor  = nil;
+    id<MTLTexture>                  _Metal_DefFrameBuf              = nil;
+    id<MTLTexture>                  _Metal_DefDepthBuf              = nil;
     id<MTLDepthStencilState>        _Metal_DefDepthState            = nil;
-    DVMetalLayer*                   _Metal_Layer                    = nil;
+    CAMetalLayer*                   _Metal_Layer                    = nil;
 
 
 namespace rhi
@@ -73,12 +76,43 @@ metal_Reset( const ResetParam& param )
 void
 metal_Initialize( const InitParam& param )
 {
-    DVASSERT(param.context);
-    
-    _Metal_Layer = (DVMetalLayer*)param.context;
-    
+    _Metal_Layer = (CAMetalLayer*)param.window;
+
+    _Metal_Layer.device            = MTLCreateSystemDefaultDevice();
+    _Metal_Layer.pixelFormat       = MTLPixelFormatBGRA8Unorm;
+    _Metal_Layer.framebufferOnly   = YES;
+    _Metal_Layer.drawableSize      = CGSizeMake((CGFloat)param.width, (CGFloat)param.height);
+
     _Metal_Device       = _Metal_Layer.device;
     _Metal_DefCmdQueue  = [_Metal_Device newCommandQueue];
+
+
+    // create frame-buffer
+
+    int     w = param.width;
+    int     h = param.height;
+
+    MTLTextureDescriptor*   colorDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm width:w height:h mipmapped:NO];
+    MTLTextureDescriptor*   depthDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float width:w height:h mipmapped:NO];
+
+    _Metal_DefFrameBuf = [_Metal_Device newTextureWithDescriptor:colorDesc];
+    _Metal_DefDepthBuf = [_Metal_Device newTextureWithDescriptor:depthDesc];
+
+    // create default render-pass desc
+
+    MTLRenderPassDescriptor*    desc = [MTLRenderPassDescriptor renderPassDescriptor];
+    
+    desc.colorAttachments[0].texture        = _Metal_DefFrameBuf;
+    desc.colorAttachments[0].loadAction     = MTLLoadActionClear;
+    desc.colorAttachments[0].storeAction    = MTLStoreActionStore;
+    desc.colorAttachments[0].clearColor     = MTLClearColorMake(0.3,0.3,0.6,1);
+
+    desc.depthAttachment.texture            = _Metal_DefDepthBuf;
+    desc.depthAttachment.loadAction         = MTLLoadActionClear;
+    desc.depthAttachment.storeAction        = MTLStoreActionStore;
+    desc.depthAttachment.clearDepth         = 1.0f;
+    
+    _Metal_DefRenderPassDescriptor = desc;
 
     // create default depth-state
 

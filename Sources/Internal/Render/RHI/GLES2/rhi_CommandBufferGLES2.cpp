@@ -632,6 +632,9 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
 
                 if( isFirstInPass )
                 {
+#if defined(__DAVAENGINE_IPHONE__)
+                    ios_gl_begin_frame();
+#endif
                     GLuint  flags = 0;
 
                     if( passCfg.colorBuffer[0].texture != InvalidHandle )
@@ -1052,7 +1055,7 @@ _ExecuteQueuedCommands()
 #elif defined(__DAVAENGINE_MACOS__)
         macos_gl_end_frame();
 #elif defined(__DAVAENGINE_IPHONE__)
-        ios_GL_end_frame();
+        ios_gl_end_frame();
 #endif
     }
 }

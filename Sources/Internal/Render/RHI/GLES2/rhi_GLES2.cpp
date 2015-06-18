@@ -14,8 +14,8 @@
     #include "_gl.h"
 
 
-GLint       _GLES2_Binded_FrameBuffer           = 0;
-GLint       _GLES2_Default_FrameBuffer          = 0;
+GLuint      _GLES2_Binded_FrameBuffer           = 0;
+GLuint      _GLES2_Default_FrameBuffer          = 0;
 void*       _GLES2_Native_Window                = nullptr;
 void*       _GLES2_Context                      = nullptr;
 void        (*_GLES2_Make_Context_Current)()    = nullptr;
@@ -424,10 +424,16 @@ gles2_Initialize( const InitParam& param )
 void
 gles2_Initialize(const InitParam& param)
 {
-    ios_GL_init(param.window);
-
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_GLES2_Default_FrameBuffer);
-    _GLES2_Binded_FrameBuffer = _GLES2_Default_FrameBuffer;
+    ios_gl_init(param.window);
+    
+    if(param.makeCurrentFunc)
+    {
+        _GLES2_Make_Context_Current = param.makeCurrentFunc;
+    }
+    else
+    {
+        _GLES2_Make_Context_Current = &ios_gl_set_current;
+    }
 
     ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
 
