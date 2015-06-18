@@ -51,7 +51,30 @@ VPROG_OUT_BEGIN
         VPROG_OUT_TEXCOORD3(reflectionDirectionInWorldSpace, 3)
     #endif
     
+    #if VERTEX_FOG
+        VPROG_OUT_TEXCOORD6(varFog,4)
+    #endif
+    
 VPROG_OUT_END
+
+#if VERTEX_FOG
+    #if SHADING == SHADING_PERVERTEX
+        property float4x4 worldViewMatrix              : dynamic,instance : ;
+    #endif
+    #if SHADING == SHADING_PERPIXEL
+        property float4x4 worldMatrix                  : dynamic,instance : ;
+        property float3   cameraPosition               : dynamic,instance : ;
+    #endif
+    #if FOG_ATMOSPHERE
+        #if SHADING == SHADING_PERVERTEX
+            property float4x4 worldViewInvTransposeMatrix  : dynamic,instance : ;
+        #endif
+        #if (SHADING == SHADING_PERVERTEX) || !(REAL_REFLECTION && SPECULAR)
+            property float4   lightPosition0               : dynamic,instance : ;
+        #endif
+    #endif
+#endif
+
 
 property float4x4 worldViewProjMatrix : dynamic,instance : ui_hidden=yes ;
 property float globalTime : dynamic,instance : ;
@@ -79,6 +102,8 @@ property float4x4 worldInvTransposeMatrix : dynamic,instance : ;
         property float normalRotation : static,instance : ;
     #endif
 #endif 
+
+#include "vp-fog-props.cgh"
 
 VPROG_BEGIN
 
@@ -154,6 +179,49 @@ VPROG_BEGIN
         #endif       
    #endif
     
+    
+    #if VERTEX_FOG
+
+        FogParam    fog_param;
+
+        fog_param.color     = fogColor.rgb;
+        fog_param.limit     = fogLimit;
+        #if FOG_LINEAR
+        fog_param.start     = fogStart;
+        fog_param.end       = fogEnd;
+        #else
+        fog_param.density   = fogDensity;
+        #endif
+        #if FOG_HALFSPACE
+        fog_param.halfspace_height  = fogHalfspaceHeight;
+        fog_param.halfspace_falloff = fogHalfspaceFalloff;
+        fog_param.halfspace_density = fogHalfspaceDensity;
+        fog_param.halfspace_limit   = fogHalfspaceLimit;
+        #endif
+
+        #if (SHADING == SHADING_PERVERTEX)
+            float3 eyeCoordsPosition = mul( float4(VP_IN_POSITION,1.0), worldViewMatrix ).xyz; 
+        #endif
+        
+        #if FOG_ATMOSPHERE
+        fog_param.tolight_dir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
+
+        fog_param.atmosphere_distance = fogAtmosphereDistance;
+        #if !FOG_ATMOSPHERE_MAP
+        fog_param.atmosphere_sun_color  = fogAtmosphereColorSun.rgb;
+        fog_param.atmosphere_sky_color  = fogAtmosphereColorSky.rgb;
+        fog_param.atmosphere_scattering = fogAtmosphereScattering;
+        #endif
+        
+        #endif
+        
+        fog_param.view_position  = eyeCoordsPosition;
+        fog_param.world_position = mul( float4(VP_IN_POSITION,1.0), worldMatrix ).xyz;
+        fog_param.eye_position   = cameraPosition;
+        
+        VP_OUT(varFog) = CalculateVertexFog( fog_param );
+
+    #endif
 
     
 VPROG_END

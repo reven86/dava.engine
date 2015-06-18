@@ -40,6 +40,10 @@ FPROG_IN_BEGIN
         FPROG_IN_TEXCOORD2(varTexCoordDecal, 2)
         FPROG_IN_TEXCOORD3(reflectionDirectionInWorldSpace, 3)
     #endif
+    
+    #if VERTEX_FOG
+        FPROG_IN_TEXCOORD6(varFog,4)
+    #endif
 
 FPROG_IN_END
 
@@ -114,7 +118,7 @@ FPROG_BEGIN
     float3 normal;
     #if !DEBUG_UNITY_Z_NORMAL
         float3 normal0 = FP_TEXTURE2D (normalmap, varTexCoord0).rgb;
-        #if defined(SEPARATE_NORMALMAPS)
+        #if SEPARATE_NORMALMAPS
             float3 normal1 = FP_TEXTURE2D (normalmap1, varTexCoord1).rgb;    
         #else
             float3 normal1 = FP_TEXTURE2D (normalmap, varTexCoord1).rgb;
@@ -179,6 +183,14 @@ FPROG_BEGIN
     FP_OUT_COLOR = float4(((textureColor0 * textureColor1) * 3.0 * decalTintColor * textureColorDecal + reflectionColor * reflectanceColor) , 1.0);
 
 #endif    
+
+#if VERTEX_FOG
+    
+    float   varFogAmoung = FP_IN(varFog).a;
+    float3  varFogColor  = FP_IN(varFog).rgb;       
+    FP_OUT_COLOR.rgb = lerp( FP_OUT_COLOR.rgb, varFogColor, varFogAmoung );
+    
+#endif
     
 FPROG_END
 
