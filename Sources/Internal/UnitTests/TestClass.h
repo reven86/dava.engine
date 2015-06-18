@@ -100,28 +100,6 @@ inline void TestClass::RegisterTest(const char* name, void (*testFunc)(TestClass
     tests.emplace_back(name, testFunc);
 }
 
-inline String TestClass::PrettifyTypeName(const String& name) const
-{
-    size_t spacePos = name.find_last_of(": ");
-    if (spacePos != String::npos)
-    {
-        return name.substr(spacePos + 1);
-    }
-    return name;
-}
-
-inline String TestClass::RemoveTestPostfix(const String& name) const
-{
-    String lowcase = name;
-    std::transform(lowcase.begin(), lowcase.end(), lowcase.begin(), [](char ch) -> char { return 'A' <= ch && ch <= 'Z' ? ch - 'A' + 'a' : ch; });
-    size_t pos = lowcase.rfind("test");
-    if (pos != String::npos && pos > 0 && lowcase.length() - pos == 4)
-    {
-        return name.substr(0, pos);
-    }
-    return name;
-}
-
 }   // namespace UnitTests
 }   // namespace DAVA
 
