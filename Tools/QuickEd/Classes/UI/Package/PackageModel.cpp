@@ -415,8 +415,23 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
             
             if (node)
             {
-                commandExecutor->InsertControl(node, parentNode, rowIndex);
+                const auto &resultList = commandExecutor->InsertControl(node, parentNode, rowIndex);
                 SafeRelease(node);
+                if (!resultList)
+                {
+                    for (const auto &result : resultList.GetResults())
+                    {
+                        if (result.type != Result::RESULT_SUCCESS)
+                        {
+                            Logger* log = Logger::Instance();
+                            if (nullptr != log)
+                            {
+                                log->Log(result.type == Result::RESULT_WARNING ? Logger::LEVEL_WARNING : Logger::LEVEL_ERROR, result.message.c_str());
+                            }
+                        }
+                    }
+                }
+                return resultList;
             }
         }
         return true;
