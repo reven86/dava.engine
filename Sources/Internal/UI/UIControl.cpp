@@ -1866,8 +1866,6 @@ namespace DAVA
 
     void UIControl::SystemWillBecomeVisible()
     {
-        styleSheetRebuildNeeded = true;
-
         WillBecomeVisible();
 
         List<UIControl*>::const_iterator it = childs.begin();
@@ -3020,6 +3018,9 @@ namespace DAVA
 
     void UIControl::SetPackageContext(UIControlPackageContext* newPackageContext)
     {
+        if (packageContext != newPackageContext)
+            styleSheetRebuildNeeded = true;
+
         packageContext = newPackageContext;
         for (UIControl* child : childs)
             child->PropagateParentWithContext(packageContext ? this : parentWithContext);
@@ -3027,6 +3028,8 @@ namespace DAVA
 
     void UIControl::PropagateParentWithContext(UIControl* newParentWithContext)
     {
+        styleSheetRebuildNeeded = true;
+
         parentWithContext = newParentWithContext;
         if (packageContext == nullptr)
         {
