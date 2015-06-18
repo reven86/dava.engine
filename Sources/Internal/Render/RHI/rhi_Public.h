@@ -160,7 +160,7 @@ void            DeleteTexture( HTexture tex );
 void*           MapTexture( HTexture tex, uint32 level=0 );
 void            UnmapTexture( HTexture tex );
 
-void            UpdateTexture( HTexture tex, const void* data, uint32 level, TextureFace face=TEXTURE_FACE_LEFT );
+void            UpdateTexture( HTexture tex, const void* data, uint32 level, TextureFace face=TEXTURE_FACE_NEGATIVE_X );
 
 
 struct

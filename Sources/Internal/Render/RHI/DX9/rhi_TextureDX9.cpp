@@ -236,12 +236,12 @@ dx9_Texture_Map( Handle tex, unsigned level, TextureFace face )
 
         switch( face )
         {
-            case TEXTURE_FACE_LEFT   : f = D3DCUBEMAP_FACE_NEGATIVE_X ; break;
-            case TEXTURE_FACE_RIGHT  : f = D3DCUBEMAP_FACE_POSITIVE_X ; break;
-            case TEXTURE_FACE_FRONT  : f = D3DCUBEMAP_FACE_POSITIVE_Z ; break;
-            case TEXTURE_FACE_BACK   : f = D3DCUBEMAP_FACE_NEGATIVE_Z ; break;
-            case TEXTURE_FACE_TOP    : f = D3DCUBEMAP_FACE_POSITIVE_Y ; break;
-            case TEXTURE_FACE_BOTTOM : f = D3DCUBEMAP_FACE_NEGATIVE_Y ; break;
+            case TEXTURE_FACE_POSITIVE_X: f = D3DCUBEMAP_FACE_POSITIVE_X; break;
+            case TEXTURE_FACE_NEGATIVE_X: f = D3DCUBEMAP_FACE_NEGATIVE_X; break;
+            case TEXTURE_FACE_POSITIVE_Y: f = D3DCUBEMAP_FACE_POSITIVE_Y; break;
+            case TEXTURE_FACE_NEGATIVE_Y: f = D3DCUBEMAP_FACE_NEGATIVE_Y; break;
+            case TEXTURE_FACE_POSITIVE_Z: f = D3DCUBEMAP_FACE_POSITIVE_Z; break;
+            case TEXTURE_FACE_NEGATIVE_Z: f = D3DCUBEMAP_FACE_NEGATIVE_Z; break;            
         }
 
         hr = self->cubetex9->LockRect( f, level, &rc, NULL, 0 );
@@ -356,12 +356,12 @@ dx9_Texture_Unmap( Handle tex )
 
         switch( self->mappedFace )
         {
-            case TEXTURE_FACE_LEFT   : f = D3DCUBEMAP_FACE_NEGATIVE_X ; break;
-            case TEXTURE_FACE_RIGHT  : f = D3DCUBEMAP_FACE_POSITIVE_X ; break;
-            case TEXTURE_FACE_FRONT  : f = D3DCUBEMAP_FACE_POSITIVE_Z ; break;
-            case TEXTURE_FACE_BACK   : f = D3DCUBEMAP_FACE_NEGATIVE_Z ; break;
-            case TEXTURE_FACE_TOP    : f = D3DCUBEMAP_FACE_POSITIVE_Y ; break;
-            case TEXTURE_FACE_BOTTOM : f = D3DCUBEMAP_FACE_NEGATIVE_Y ; break;
+            case TEXTURE_FACE_POSITIVE_X: f = D3DCUBEMAP_FACE_POSITIVE_X; break;
+            case TEXTURE_FACE_NEGATIVE_X: f = D3DCUBEMAP_FACE_NEGATIVE_X; break;
+            case TEXTURE_FACE_POSITIVE_Y: f = D3DCUBEMAP_FACE_POSITIVE_Y; break;
+            case TEXTURE_FACE_NEGATIVE_Y: f = D3DCUBEMAP_FACE_NEGATIVE_Y; break;
+            case TEXTURE_FACE_POSITIVE_Z: f = D3DCUBEMAP_FACE_POSITIVE_Z; break;
+            case TEXTURE_FACE_NEGATIVE_Z: f = D3DCUBEMAP_FACE_NEGATIVE_Z; break;
         }
 
         HRESULT hr = self->cubetex9->UnlockRect( f, self->mappedLevel );

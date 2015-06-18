@@ -657,37 +657,37 @@ uint32 LibPVRHelper::GetCubemapLayout(const PVRFile *pvrFile)
             {
                 case 'X':
                 {
-                    layout = layout | (rhi::TEXTURE_FACE_LEFT << (index * 4));
+                    layout = layout | (rhi::TEXTURE_FACE_POSITIVE_X << (index * 4));
                     break;
                 }
 
                 case 'x':
                 {
-                    layout = layout | (rhi::TEXTURE_FACE_RIGHT << (index * 4));
+                    layout = layout | (rhi::TEXTURE_FACE_NEGATIVE_X << (index * 4));
                     break;
                 }
 
                 case 'Y':
                 {
-                    layout = layout | (rhi::TEXTURE_FACE_FRONT << (index * 4));
+                    layout = layout | (rhi::TEXTURE_FACE_POSITIVE_Y << (index * 4));
                     break;
                 }
 
                 case 'y':
                 {
-                    layout = layout | (rhi::TEXTURE_FACE_BACK << (index * 4));
+                    layout = layout | (rhi::TEXTURE_FACE_NEGATIVE_Y << (index * 4));
                     break;
                 }
 
                 case 'Z':
                 {
-                    layout = layout | (rhi::TEXTURE_FACE_TOP << (index * 4));
+                    layout = layout | (rhi::TEXTURE_FACE_POSITIVE_Z << (index * 4));
                     break;
                 }
 
                 case 'z':
                 {
-                    layout = layout | (rhi::TEXTURE_FACE_BOTTOM << (index * 4));
+                    layout = layout | (rhi::TEXTURE_FACE_NEGATIVE_Z << (index * 4));
                     break;
                 }
             }
@@ -696,12 +696,12 @@ uint32 LibPVRHelper::GetCubemapLayout(const PVRFile *pvrFile)
     else if (pvrFile->header.u32NumFaces > 1)
     {
         static uint32 faces[] = {
-            rhi::TEXTURE_FACE_LEFT,
-            rhi::TEXTURE_FACE_RIGHT,
-            rhi::TEXTURE_FACE_FRONT,
-            rhi::TEXTURE_FACE_BACK,
-            rhi::TEXTURE_FACE_TOP,
-            rhi::TEXTURE_FACE_BOTTOM
+            rhi::TEXTURE_FACE_POSITIVE_X,
+            rhi::TEXTURE_FACE_NEGATIVE_X,
+            rhi::TEXTURE_FACE_POSITIVE_Y,
+            rhi::TEXTURE_FACE_NEGATIVE_Y,
+            rhi::TEXTURE_FACE_POSITIVE_Z,
+            rhi::TEXTURE_FACE_NEGATIVE_Z
         };
         for (uint32 i = 0; i < pvrFile->header.u32NumFaces; ++i)
         {

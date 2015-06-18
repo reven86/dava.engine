@@ -240,12 +240,12 @@ gles2_Texture_Map( Handle tex, unsigned level, TextureFace face )
 
             switch( face )
             {
-                case TEXTURE_FACE_LEFT   : self->mappedFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_X ; break;
-                case TEXTURE_FACE_RIGHT  : self->mappedFace = GL_TEXTURE_CUBE_MAP_POSITIVE_X ; break;
-                case TEXTURE_FACE_FRONT  : self->mappedFace = GL_TEXTURE_CUBE_MAP_POSITIVE_Z ; break;
-                case TEXTURE_FACE_BACK   : self->mappedFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z ; break;
-                case TEXTURE_FACE_TOP    : self->mappedFace = GL_TEXTURE_CUBE_MAP_POSITIVE_Y ; break;
-                case TEXTURE_FACE_BOTTOM : self->mappedFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y ; break;
+                case TEXTURE_FACE_POSITIVE_X: self->mappedFace = GL_TEXTURE_CUBE_MAP_POSITIVE_X; break;
+                case TEXTURE_FACE_NEGATIVE_X: self->mappedFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_X; break;
+                case TEXTURE_FACE_POSITIVE_Y: self->mappedFace = GL_TEXTURE_CUBE_MAP_POSITIVE_Y; break;
+                case TEXTURE_FACE_NEGATIVE_Y: self->mappedFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y; break;
+                case TEXTURE_FACE_POSITIVE_Z: self->mappedFace = GL_TEXTURE_CUBE_MAP_POSITIVE_Z; break;
+                case TEXTURE_FACE_NEGATIVE_Z: self->mappedFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z; break;
             }
         }
     }
@@ -333,12 +333,12 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
         {
             switch( face )
             {
-                case TEXTURE_FACE_LEFT   : target = GL_TEXTURE_CUBE_MAP_NEGATIVE_X ; break;
-                case TEXTURE_FACE_RIGHT  : target = GL_TEXTURE_CUBE_MAP_POSITIVE_X ; break;
-                case TEXTURE_FACE_FRONT  : target = GL_TEXTURE_CUBE_MAP_POSITIVE_Z ; break;
-                case TEXTURE_FACE_BACK   : target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z ; break;
-                case TEXTURE_FACE_TOP    : target = GL_TEXTURE_CUBE_MAP_POSITIVE_Y ; break;
-                case TEXTURE_FACE_BOTTOM : target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y ; break;
+                case TEXTURE_FACE_POSITIVE_X: target = GL_TEXTURE_CUBE_MAP_POSITIVE_X; break;
+                case TEXTURE_FACE_NEGATIVE_X: target = GL_TEXTURE_CUBE_MAP_NEGATIVE_X; break;
+                case TEXTURE_FACE_POSITIVE_Y: target = GL_TEXTURE_CUBE_MAP_POSITIVE_Y; break;
+                case TEXTURE_FACE_NEGATIVE_Y: target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y; break;
+                case TEXTURE_FACE_POSITIVE_Z: target = GL_TEXTURE_CUBE_MAP_POSITIVE_Z; break;
+                case TEXTURE_FACE_NEGATIVE_Z: target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z; break;
             }
         }
 
