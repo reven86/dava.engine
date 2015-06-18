@@ -494,7 +494,7 @@ T KeyedArchive::GetByteArrayAsType(const String & key, const T & defaultValue) c
 template<class T>
 void KeyedArchive::SetByteArrayAsType(const String & key, const T & value)
 {
-    SetByteArray(key, static_cast<uint8 * >(&value), sizeof(T));
+    SetByteArray(key, (uint8 *)(&value), sizeof(T));
 }
 
 };

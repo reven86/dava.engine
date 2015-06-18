@@ -373,8 +373,8 @@ void KeyedArchive::SetColor(const String& key, const Color& value)
     
 bool KeyedArchive::IsKeyExists(const String & key) const
 {
-	const auto &t = objectMap.find(key);
-	if (t != objectMap.end())
+	auto it = objectMap.find(key);
+    if (it != objectMap.end())
 	{
 		return true;
 	}

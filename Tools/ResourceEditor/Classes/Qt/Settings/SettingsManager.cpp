@@ -134,7 +134,7 @@ void SettingsManager::Init()
     }
     CreateValue(Settings::Internal_CustomPalette, DAVA::VariantType( reinterpret_cast<DAVA::uint8 *>(colors), nColors * sizeof(*colors) ));
     CreateValue(Settings::General_ColorMultiplyMax, DAVA::VariantType(static_cast<DAVA::float32>(2.0)));
-    CreateValue(Settings::Internal_LogWidget, DAVA::VariantType(static_cast<DAVA::KeyedArchive *>(nullptr)));
+    CreateValue(Settings::Internal_LogWidget, DAVA::VariantType(nullptr, 0));
 }
 
 DAVA::VariantType SettingsManager::GetValue(const DAVA::FastName& path)

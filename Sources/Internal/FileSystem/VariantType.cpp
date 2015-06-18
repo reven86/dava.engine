@@ -261,9 +261,8 @@ void VariantType::SetByteArray(const uint8 *array, int32 arraySizeInBytes)
 {
     ReleasePointer();
 	type = TYPE_BYTE_ARRAY;
-    pointerValue = (void*)new Vector<uint8>;
-    ((Vector<uint8>*)pointerValue)->resize(arraySizeInBytes);
-    memcpy(&((Vector<uint8>*)pointerValue)->front(), array, arraySizeInBytes);
+    auto vec = new Vector < uint8 >(array, array + arraySizeInBytes);
+    pointerValue = static_cast<void*>(vec);
 }
 
 void VariantType::SetKeyedArchive(KeyedArchive *archive)
@@ -524,7 +523,8 @@ const WideString & VariantType::AsWideString() const
 const uint8 *VariantType::AsByteArray() const
 {
 	DVASSERT(type == TYPE_BYTE_ARRAY);
-	return &((Vector<uint8>*)pointerValue)->front();
+    const auto vec = static_cast<const Vector<uint8>*>(pointerValue);
+    return vec->empty() ? nullptr : &vec->front();
 }
 	
 int32 VariantType::AsByteArraySize() const
@@ -675,9 +675,11 @@ bool VariantType::Write(File * fp) const
 			int32 len = (int32)((Vector<uint8>*)pointerValue)->size();
 			written = fp->Write(&len, 4);
 			if (written != 4)return false;
-			
-			written = fp->Write(&((Vector<uint8>*)pointerValue)->front(), len);
-			if (written != len)return false;
+            if (len != 0)
+            {
+                written = fp->Write(&((Vector<uint8>*)pointerValue)->front(), len);
+                if (written != len)return false;
+            }
 		}
 		break;	
     case TYPE_KEYED_ARCHIVE:
@@ -849,10 +851,12 @@ bool VariantType::Read(File * fp)
 			read = fp->Read(&len, 4);
 			if (read != 4)return false;
 			
-            pointerValue = (void*)new Vector<uint8>;
-            ((Vector<uint8>*)pointerValue)->resize(len);
-			read = fp->Read(&((Vector<uint8>*)pointerValue)->front(), len);
-			if (read != len)return false;
+            pointerValue = (void*)new Vector<uint8>(len);
+            if (len != 0)
+            {
+                read = fp->Read(&((Vector<uint8>*)pointerValue)->front(), len);
+                if (read != len)return false;
+            }
 		}
         break;	
 		case TYPE_KEYED_ARCHIVE:

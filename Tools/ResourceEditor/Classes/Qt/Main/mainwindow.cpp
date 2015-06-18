@@ -137,11 +137,6 @@
 
 #include "QtTools/FileDialog/FileDialog.h"
 
-namespace
-{
-    const char* logWidgetKey = "logWidgetData";
-}
-
 QtMainWindow::QtMainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui(new Ui::MainWindow)
@@ -212,9 +207,8 @@ QtMainWindow::~QtMainWindow()
 {
     const auto &logWidget = qobject_cast<LogWidget*>(dockConsole->widget());
     const auto dataToSave = logWidget->Serialize();
-    const auto arch = new KeyedArchive();
-    arch->SetVariant(logWidgetKey, DAVA::VariantType(reinterpret_cast<const uint8*>(dataToSave.data()), dataToSave.size()));
-    SettingsManager::Instance()->SetValue(Settings::Internal_LogWidget, arch);
+    VariantType var(VariantType(reinterpret_cast<const uint8*>(dataToSave.data()), dataToSave.size()));
+    SettingsManager::Instance()->SetValue(Settings::Internal_LogWidget, var);
 
 	SafeDelete(addSwitchEntityDialog);
     
@@ -595,17 +589,10 @@ void QtMainWindow::SetupDocks()
     // Console dock
 	{
         LogWidget *logWidget = new LogWidget();
-        const auto *arch = SettingsManager::Instance()->GetValue(Settings::Internal_LogWidget).AsKeyedArchive();
-        if (!arch->IsKeyExists(logWidgetKey))
-        {
-            logWidget->LoadDefaults();
-        }
-        else
-        {
-            const DAVA::VariantType var(arch->GetVariant(logWidgetKey));
-            const QByteArray arr(reinterpret_cast<const char*>(var.AsByteArray()), var.AsByteArraySize()));
-            logWidget->Deserialize(arr);
-        }
+        const auto var = SettingsManager::Instance()->GetValue(Settings::Internal_LogWidget);
+
+        const QByteArray arr(reinterpret_cast<const char*>(var.AsByteArray()), var.AsByteArraySize());
+        logWidget->Deserialize(arr);
         DAVA::Logger::AddCustomOutput(logWidget->Model());
         dockConsole = new QDockWidget(logWidget->windowTitle(), this);
         dockConsole->setWidget(logWidget);
