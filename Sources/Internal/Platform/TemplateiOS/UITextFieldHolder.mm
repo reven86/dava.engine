@@ -54,13 +54,13 @@
         useRtlAlign = NO;
 
         textField = [[UITextField alloc] initWithFrame: CGRectMake(0.f, 0.f, 0.f, 0.f)];
-		textField.delegate = self;
+        [textField setValue:self forKey:@"delegate"];
 		
 		[self setupTraits];
         
         textField.userInteractionEnabled = NO;
 
-        cachedText = [[NSString alloc] initWithString:textField.text];
+        cachedText = [[NSString alloc] initWithString: [textField valueForKey:@"text"]];
         
         [textField addTarget: self
                       action: @selector(eventEditingChanged:)
@@ -143,14 +143,14 @@
         int maxLength = cppTextField->GetMaxLength();
         if (maxLength >= 0)
         {
-            NSString* newString = [textField.text stringByReplacingCharactersInRange:range withString:string]; // Get string after changing
+            NSString* newString = [[textField valueForKey:@"text"] stringByReplacingCharactersInRange:range withString:string]; // Get string after changing
             NSUInteger newLength = [newString lengthOfBytesUsingEncoding:NSUTF32StringEncoding] / 4; // Length in UTF32 charactres
             if (newLength > (NSUInteger)maxLength)
             {
                 NSUInteger charsToInsert = 0;
                 if (range.length == 0)
                 {
-                    NSUInteger curLength = [textField.text lengthOfBytesUsingEncoding:NSUTF32StringEncoding] / 4; // Length in UTF32 charactres
+                    NSUInteger curLength = [[textField valueForKey:@"text"] lengthOfBytesUsingEncoding:NSUTF32StringEncoding] / 4; // Length in UTF32 charactres
                     // Inserting without replace.
                     charsToInsert = (NSUInteger)maxLength - curLength;
                 }
@@ -169,7 +169,7 @@
                 string = [[NSString alloc] initWithBytes:buffer length:usedBufferCount encoding:NSUTF32LittleEndianStringEncoding];
                 DVASSERT(string && "Error on convert utf32 to NSString");
                 
-                [textField setText: [textField.text stringByReplacingCharactersInRange:range withString:string]];
+                [textField setText: [[textField valueForKey:@"text"] stringByReplacingCharactersInRange:range withString:string]];
                 needIgnoreDelegateResult = TRUE;
             }
         }
@@ -192,14 +192,14 @@
 - (void)eventEditingChanged:(UITextField *)sender
 {
     if (sender == textField && cppTextField && cppTextField->GetDelegate()
-        && ![cachedText isEqualToString:textField.text])
+        && ![cachedText isEqualToString:[textField valueForKey:@"text"]])
     {
         DAVA::WideString oldString;
         const char * cstr = [cachedText cStringUsingEncoding:NSUTF8StringEncoding];
         DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, (DAVA::int32)strlen(cstr), oldString);
         
         [cachedText release];
-        cachedText = [[NSString alloc] initWithString:textField.text];
+        cachedText = [[NSString alloc] initWithString:[textField valueForKey:@"text"]];
         
         DAVA::WideString newString;
         cstr = [cachedText cStringUsingEncoding:NSUTF8StringEncoding];

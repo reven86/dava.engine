@@ -41,7 +41,8 @@
 {
     NSString * cachedText;
 @public
-    UITextField * textField;
+    //UITextField * textField;
+    UIView*    textField;
     DAVA::UITextField * cppTextField;
     BOOL textInputAllowed;
     BOOL useRtlAlign;
