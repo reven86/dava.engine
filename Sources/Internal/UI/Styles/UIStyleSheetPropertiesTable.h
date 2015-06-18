@@ -85,68 +85,29 @@ namespace DAVA
 
         struct ComponentPropertyRegistrator
         {
-            UIStyleSheetPropertyTargetMember operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const
-            {
-                return UIStyleSheetPropertyTargetMember{ ePropertyOwner::COMPONENT, componentType, typeInfo, member };
-            }
+            UIStyleSheetPropertyTargetMember operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const;
 
             uint32 componentType;
         };
 
         struct BackgroundPropertyRegistrator
         {
-            UIStyleSheetPropertyTargetMember operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const
-            {
-                return UIStyleSheetPropertyTargetMember{ ePropertyOwner::BACKGROUND, 0, typeInfo, member };
-            }
+            UIStyleSheetPropertyTargetMember operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const;
         };
 
         struct ControlPropertyRegistrator
         {
-            UIStyleSheetPropertyTargetMember operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const
-            {
-                return UIStyleSheetPropertyTargetMember{ ePropertyOwner::CONTROL, 0, typeInfo, member };
-            }
+            UIStyleSheetPropertyTargetMember operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const;
         };
 
         template < typename CallbackType >
-        void ProcessObjectIntrospection(const InspInfo* typeInfo, const CallbackType& callback)
-        {
-            const InspInfo *baseInfo = typeInfo->BaseInfo();
-            if (baseInfo)
-                ProcessObjectIntrospection(baseInfo, callback);
-
-            for (int32 i = 0; i < typeInfo->MembersCount(); i++)
-            {
-                const InspMember *member = typeInfo->Member(i);
-
-                const auto& iter = propertyNameToIndexMap.find(member->GetFastName());
-                if (iter != propertyNameToIndexMap.end())
-                {
-                    DVASSERT(properties[iter->second].targetMembers.empty() ? true : member->Type() == properties[iter->second].targetMembers.back().memberInfo->Type());
-
-                    Vector<UIStyleSheetPropertyTargetMember>& targetMembers = properties[iter->second].targetMembers;
-                    const UIStyleSheetPropertyTargetMember& newMember = callback(iter->second, typeInfo, member);
-
-                    if (std::find(targetMembers.begin(), targetMembers.end(), newMember) != targetMembers.end())
-                        return;
-
-                    targetMembers.push_back(newMember);
-                }
-            }
-        }
-
+        void ProcessObjectIntrospection(const InspInfo* typeInfo, const CallbackType& callback);
+        
         template < typename ComponentType >
-        void ProcessComponentIntrospection()
-        {
-            ProcessObjectIntrospection(ComponentType::TypeInfo(), ComponentPropertyRegistrator{ ComponentType::C_TYPE });
-        }
+        void ProcessComponentIntrospection();
 
         template < typename ControlType >
-        void ProcessControlIntrospection()
-        {
-            ProcessObjectIntrospection(ControlType::TypeInfo(), ControlPropertyRegistrator());
-        }
+        void ProcessControlIntrospection();
     };
 
     typedef Bitset<UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT> UIStyleSheetPropertySet;

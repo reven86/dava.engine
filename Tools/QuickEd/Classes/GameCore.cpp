@@ -111,7 +111,6 @@ void GameCore::Update(float32 timeElapsed)
 //		RenderManager::Instance()->SetCursor(cursor);
 //	}
 	ApplicationCore::Update(timeElapsed);
-    UIControlSystem::Instance()->GetStyleSheetSystem()->Process();
 }
 
 void GameCore::Draw()

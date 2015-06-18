@@ -32,7 +32,6 @@
 #include "UI/UIControlPackageContext.h"
 #include "UI/Components/UIComponent.h"
 #include "Platform/SystemTimer.h"
-#include "Platform/Thread.h"
 
 namespace DAVA
 {

@@ -104,4 +104,58 @@ namespace DAVA
     {
         return properties[index];
     }
+    
+    template < typename CallbackType >
+    void UIStyleSheetPropertyDataBase::ProcessObjectIntrospection(const InspInfo* typeInfo, const CallbackType& callback)
+    {
+        const InspInfo *baseInfo = typeInfo->BaseInfo();
+        if (baseInfo)
+            ProcessObjectIntrospection(baseInfo, callback);
+        
+        for (int32 i = 0; i < typeInfo->MembersCount(); i++)
+        {
+            const InspMember *member = typeInfo->Member(i);
+            
+            const auto& iter = propertyNameToIndexMap.find(member->GetFastName());
+            if (iter != propertyNameToIndexMap.end())
+            {
+                DVASSERT(properties[iter->second].targetMembers.empty() ? true : member->Type() == properties[iter->second].targetMembers.back().memberInfo->Type());
+                
+                Vector<UIStyleSheetPropertyTargetMember>& targetMembers = properties[iter->second].targetMembers;
+                const UIStyleSheetPropertyTargetMember& newMember = callback(iter->second, typeInfo, member);
+                
+                if (std::find(targetMembers.begin(), targetMembers.end(), newMember) != targetMembers.end())
+                    return;
+                
+                targetMembers.push_back(newMember);
+            }
+        }
+    }
+    
+    template < typename ComponentType >
+    void UIStyleSheetPropertyDataBase::ProcessComponentIntrospection()
+    {
+        ProcessObjectIntrospection(ComponentType::TypeInfo(), ComponentPropertyRegistrator{ ComponentType::C_TYPE });
+    }
+    
+    template < typename ControlType >
+    void UIStyleSheetPropertyDataBase::ProcessControlIntrospection()
+    {
+        ProcessObjectIntrospection(ControlType::TypeInfo(), ControlPropertyRegistrator());
+    }
+    
+    UIStyleSheetPropertyTargetMember UIStyleSheetPropertyDataBase::ComponentPropertyRegistrator::operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const
+    {
+        return UIStyleSheetPropertyTargetMember{ ePropertyOwner::COMPONENT, componentType, typeInfo, member };
+    }
+    
+    UIStyleSheetPropertyTargetMember UIStyleSheetPropertyDataBase::BackgroundPropertyRegistrator::operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const
+    {
+        return UIStyleSheetPropertyTargetMember{ ePropertyOwner::BACKGROUND, 0, typeInfo, member };
+    }
+    
+    UIStyleSheetPropertyTargetMember UIStyleSheetPropertyDataBase::ControlPropertyRegistrator::operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const
+    {
+        return UIStyleSheetPropertyTargetMember{ ePropertyOwner::CONTROL, 0, typeInfo, member };
+    }
 }
