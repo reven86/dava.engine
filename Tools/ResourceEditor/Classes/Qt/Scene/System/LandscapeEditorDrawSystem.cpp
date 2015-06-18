@@ -158,6 +158,12 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::IsNotPassableTe
 
 LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassableTerrain()
 {
+    eErrorType canBeEnabledError = IsNotPassableTerrainCanBeEnabled();
+    if (canBeEnabledError != LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
+    {
+        return canBeEnabledError;
+    }
+    
 	if (!notPassableTerrainProxy)
 	{
 		notPassableTerrainProxy = new NotPassableTerrainProxy(baseLandscape->GetHeightmap()->Size());
@@ -166,12 +172,6 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
 	if (notPassableTerrainProxy->IsEnabled())
 	{
 		return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
-	}
-
-	eErrorType canBeEnabledError = IsNotPassableTerrainCanBeEnabled();
-	if (canBeEnabledError != LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-	{
-		return canBeEnabledError;
 	}
 
 	eErrorType enableCustomDrawError = EnableCustomDraw();
