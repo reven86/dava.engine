@@ -220,19 +220,18 @@ property float3 boundingBoxSize : dynamic,a : ;
 #endif
 
 #if TILED_DECAL_MASK
-property float2 decalTileCoordScale : dynamic,a : ;
+property float2 decalTileCoordScale : static,a : ;
 #endif
 
 #if MATERIAL_DETAIL
-property float2 detailTileCoordScale : dynamic,a : ;
+property float2 detailTileCoordScale : static,a : ;
 #endif
 
 #if TEXTURE0_SHIFT_ENABLED
-property float2 texture0Shift : dynamic,a : ;
+property float2 texture0Shift : static,a : ;
 #endif 
 #if TEXTURE0_ANIMATION_SHIFT
-property float globalTime : dynamic,a : ;
-property float2 tex0ShiftPerSecond : dynamic,a : ;
+property float2 tex0ShiftPerSecond : static,a : ;
 #endif
 
 
@@ -243,7 +242,7 @@ property float4x4 worldMatrix : dynamic,a : ;
 
 
 
-#if WAVE_ANIMATION
+#if WAVE_ANIMATION || TEXTURE0_ANIMATION_SHIFT
 property float globalTime : dynamic,a : ;
 #endif
 
