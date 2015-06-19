@@ -45,9 +45,7 @@ struct Result
         RESULT_ERROR
     };
     Result(const ResultType type = RESULT_SUCCESS, const String &message = String(), const VariantType &data = VariantType());
-    Result(const Result &result);
     Result(Result &&result);
-    Result& operator = (const Result& result);
     Result& operator = (Result&& result);
     operator bool() const;
     ResultType type = RESULT_SUCCESS;
@@ -65,13 +63,14 @@ class ResultList
 public:
     explicit ResultList();
     explicit ResultList(const Result &result);
-    ResultList(const ResultList &resultList);
+    ResultList(Result &&result);
     ResultList(ResultList &&resultList);
     ~ResultList() = default;
     operator bool() const;
     bool IsSuccess() const;
-    ResultList& operator = (const ResultList& resultList);
     ResultList& operator = (ResultList&& resultList);
+    ResultList& operator << (const Result &result);
+    ResultList& operator << (Result &&result);
     ResultList &AddResult(const Result &result);
     ResultList &AddResult(Result &&result);
     ResultList &AddResult(const Result::ResultType type = Result::RESULT_SUCCESS, const String &message = String(), const VariantType &data = VariantType());
