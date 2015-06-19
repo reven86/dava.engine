@@ -96,7 +96,7 @@ void ViewSceneScreen::LoadResources()
 }
 */
 
-//    scene->AddNode(entity);
+    scene->AddNode(entity);
     scene->ReleaseRootNode(GameCore::Instance()->GetScenePath());
 
 
