@@ -3311,5 +3311,8 @@
     <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetServer.cpp">
       <Filter>Internal\Network\Services\MMNet</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UnitTests\TestClass.cpp">
+      <Filter>Internal\UnitTests</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
