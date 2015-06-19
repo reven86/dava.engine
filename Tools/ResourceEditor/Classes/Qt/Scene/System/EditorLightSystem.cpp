@@ -189,7 +189,7 @@ void EditorLightSystem::Process(float32 timeElapsed)
 {
 	if(isEnabled)
 	{
-        AddCameraLightOnScene();
+        UpdateCameraLightState();
         UpdateCameraLightPosition();
 	}
 }
