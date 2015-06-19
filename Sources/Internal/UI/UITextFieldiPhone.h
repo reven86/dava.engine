@@ -94,7 +94,7 @@ private:
     UITextField& davaTextField;
 	void * objcClassPtr;
     bool renderToTexture;
-    bool isSingleLine = false;
+    bool isSingleLine = true;
     int deltaMoveControl = 0;
 };
 };

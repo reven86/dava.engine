@@ -41,8 +41,11 @@
 {
     NSString * cachedText;
 @public
-    //UITextField * textField;
-    UIView*    textField;
+    // hold single line text field if user switch to multiline mode
+    // otherwise nullptr
+    UITextField * textField;
+    // hold UITextField(singleline) or UITextView(multiline)
+    UIView*    textCtrl;
     DAVA::UITextField * cppTextField;
     BOOL textInputAllowed;
     BOOL useRtlAlign;
