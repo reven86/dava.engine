@@ -389,13 +389,14 @@
     <ClInclude Include="..\..\Sources\Internal\Math\Sphere.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Spline.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Vector.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocatorBridge.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocPools.h" />
-    <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocThunk.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\InternalAllocator.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MallocHook.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManager.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerTypes.h" />
-    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerAllocator.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryProfiler.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\TrackingAllocator.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\Buffer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimerTemplate.h" />
@@ -427,9 +428,9 @@
     <ClInclude Include="..\..\Sources\Internal\Network\Private\TCPClientTransport.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Private\TCPServerTransport.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\ServiceRegistrar.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetClient.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetProto.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetServer.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetClient.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetProto.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetServer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Services\SimpleEchoServer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Services\LogConsumer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Services\NetLogger.h" />
@@ -447,6 +448,7 @@
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleLayer.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticlePropertyLine.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleRenderObject.h" />
+    <ClInclude Include="..\..\Sources\Internal\Platform\ConditionalVariable.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DateTime.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DeviceInfo.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DPIHelper.h" />
@@ -464,7 +466,6 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\CoreWin32PlatformBase.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\pThreadWin32.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WindowsSpecifics.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Thread.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\DFFont.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\Systems\RenderSystem2D.h" />
@@ -913,8 +914,7 @@
     <ClCompile Include="..\..\Sources\Internal\Math\RectPacker.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Spline.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Vector.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AllocThunk.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AndroidMallocSize.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AllocatorBridge.cpp" />
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\MallocHook.cpp" />
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\MemoryManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\OperatorNewHook.cpp" />
@@ -941,8 +941,8 @@
     <ClCompile Include="..\..\Sources\Internal\Network\Private\TCPServerTransport.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\ServiceRegistrar.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Services\LogConsumer.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetClient.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetServer.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetClient.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetServer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Services\NetLogger.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotification.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationController.cpp" />
@@ -956,6 +956,7 @@
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleLayer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticlePropertyLine.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleRenderObject.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Platform\ConditionalVariable.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DateTime.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfo.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\MovieViewControlStub.cpp" />
