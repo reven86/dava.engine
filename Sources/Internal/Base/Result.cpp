@@ -72,7 +72,7 @@ ResultList::ResultList(const Result &result)
 ResultList::ResultList(Result &&result)
     : allOk(result)
 {
-    results.emplace_back(result);
+    results.emplace_back(std::move(result));
 }
 
 ResultList::ResultList(ResultList&& resultList)
@@ -100,7 +100,7 @@ ResultList& ResultList::operator<<(const Result& result)
 
 ResultList& ResultList::operator<<(Result&& result)
 {
-    results.emplace_back(result);
+    results.emplace_back(std::move(result));
     return *this;
 }
 
@@ -115,7 +115,7 @@ ResultList& ResultList::AddResult(const Result &result)
 ResultList& ResultList::AddResult(Result &&result)
 {
     allOk &= result;
-    results.emplace_back(result);
+    results.emplace_back(std::move(result));
     return *this;
 }
 
