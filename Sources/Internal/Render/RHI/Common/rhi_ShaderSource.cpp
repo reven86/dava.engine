@@ -515,7 +515,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
         {
             char        buf_def[1024];
             int         buf_len         = 0;
-            char        var_def[4*1024];
+            char        var_def[8*1024];
             int         var_len         = 0;
             char        pt      = (progType == PROG_VERTEX)?'V':'F';
             unsigned    reg     = 0;
