@@ -480,18 +480,21 @@ if( DAVA_TOOLS_FOUND )
 endif()
 
 if( ANDROID )
+    set( LINK_WHOLE_ARCHIVE_FLAG -Wl,--whole-archive )
+    set( NO_LINK_WHOLE_ARCHIVE_FLAG -Wl,--no-whole-archive )
+
     foreach( LIB_1 ${TARGET_LIBRARIES} )
         foreach( LIB_2 ${TARGET_LIBRARIES} )
             if( ${LIB_1} STREQUAL ${LIB_2} )
             else()
-                target_link_libraries( ${LIB_1} ${LIB_2} ${LIBRARIES} )
+                target_link_libraries( ${LIB_1} ${LINK_WHOLE_ARCHIVE_FLAG} ${LIB_2} ${NO_LINK_WHOLE_ARCHIVE_FLAG} ${LIBRARIES} )
             endif()
         endforeach()
     endforeach()
-
+   
 endif()
 
-target_link_libraries( ${PROJECT_NAME} ${TARGET_LIBRARIES} ${LIBRARIES} )
+target_link_libraries( ${PROJECT_NAME} ${LINK_WHOLE_ARCHIVE_FLAG} ${TARGET_LIBRARIES} ${NO_LINK_WHOLE_ARCHIVE_FLAG} ${LIBRARIES} )
 
 foreach ( FILE ${LIBRARIES_DEBUG} )
     target_link_libraries  ( ${PROJECT_NAME} debug ${FILE} )
