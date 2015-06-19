@@ -212,7 +212,7 @@ void PropertyEditor::ResetProperties()
             PropEditorUserData* userData = GetUserData(curEntityData);
             userData->entity = node;
 
-            root->MergeChild( curEntityData, node->GetTypeInfo()->Name());
+            root->MergeChild( curEntityData, node->GetTypeInfo()->Name().c_str());
 
 		    // add info about components
             for (int ic = 0; ic < Component::COMPONENT_COUNT; ic++)
@@ -249,11 +249,11 @@ void PropertyEditor::ResetProperties()
 
                         if ( i == 0 )
                         {
-                            root->ChildAdd(component->GetTypeInfo()->Name(),componentData);
+                            root->ChildAdd(component->GetTypeInfo()->Name().c_str(), componentData);
                         }
                         else
                         {
-                            root->MergeChild(componentData, component->GetTypeInfo()->Name());
+                            root->MergeChild(componentData, component->GetTypeInfo()->Name().c_str());
                         }
 			        }
                 }

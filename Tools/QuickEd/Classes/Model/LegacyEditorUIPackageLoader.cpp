@@ -213,7 +213,7 @@ void LegacyEditorUIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *c
     if (baseInfo)
         LoadControlPropertiesFromYamlNode(control, baseInfo, node, builder);
     
-    builder->BeginControlPropertiesSection(typeInfo->Name());
+	builder->BeginControlPropertiesSection(typeInfo->Name().c_str());
 
     String className = control->GetClassName();
     for (int32 i = 0; i < typeInfo->MembersCount(); i++)

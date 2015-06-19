@@ -107,7 +107,7 @@ namespace DAVA
 			MembersRelease();
 		}
 
-		const char* Name() const
+		const FastName& Name() const
 		{
 			return name;
 		}
@@ -170,7 +170,7 @@ namespace DAVA
         }
         
 	protected:
-		const char* name;
+		FastName name;
 		const MetaInfo* meta;
 
 		const InspInfo *base_info;

@@ -45,7 +45,7 @@ const FastName PROPERTY_NAME_FONT("font");
 }
 
 ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *aControl, const DAVA::InspInfo *typeInfo, const ControlPropertiesSection *sourceSection, eCloneType cloneType)
-    : SectionProperty(typeInfo->Name())
+	: SectionProperty(typeInfo->Name().c_str())
     , control(SafeRetain(aControl))
 {
     for (int i = 0; i < typeInfo->MembersCount(); i++)
