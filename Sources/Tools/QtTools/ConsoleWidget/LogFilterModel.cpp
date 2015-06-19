@@ -6,13 +6,18 @@
 LogFilterModel::LogFilterModel(QObject* parent)
     : QSortFilterProxyModel(parent)
 {
+    filters << DAVA::Logger::LEVEL_FRAMEWORK
+        << DAVA::Logger::LEVEL_DEBUG 
+        << DAVA::Logger::LEVEL_INFO
+        << DAVA::Logger::LEVEL_WARNING
+        << DAVA::Logger::LEVEL_ERROR;
 }
 
 LogFilterModel::~LogFilterModel()
 {
 }
 
-const LogFilterModel::LogLevels &LogFilterModel::GetFilters() const
+const QVariantList &LogFilterModel::GetFilters() const
 {
     return filters;
 }
@@ -22,7 +27,7 @@ const QString& LogFilterModel::GetFilterString() const
     return filterText;
 }
 
-void LogFilterModel::SetFilters(const LogLevels & _filters)
+void LogFilterModel::SetFilters(const QVariantList & _filters)
 {
     if (filters != _filters)
     {
@@ -56,7 +61,7 @@ bool LogFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_
 
     bool wasSet = false;
     const int level = source.data(LogModel::LEVEL_ROLE).toInt(&wasSet);
-    const bool isAcceptedByLevel = (wasSet && filters & level );
+    const bool isAcceptedByLevel = (wasSet && filters.contains(QVariant( level )));
 
     return isAcceptedByLevel && isAcceptedByText;
 }

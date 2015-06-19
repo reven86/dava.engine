@@ -33,11 +33,9 @@ LogWidget::LogWidget(QWidget* parent)
 
     FillFiltersCombo();
 
-    connect(filter, &CheckableComboBox::done, this, &LogWidget::OnFilterChanged);
-    connect(filter, &CheckableComboBox::selectedUserDataChanged, this, &LogWidget::OnFilterChanged);
+    connect(filter, &CheckableComboBox::selectedUserDataChanged, logFilterModel, &LogFilterModel::SetFilters);
     connect(search, &LineEditEx::textUpdated, this, &LogWidget::OnTextFilterChanged);
-
-    OnFilterChanged();
+    filter->selectUserData(logFilterModel->GetFilters());
 }
 
 LogModel* LogWidget::Model()
@@ -60,29 +58,10 @@ void LogWidget::Deserialize(const QByteArray& data)
     QString filterString;
     stream >> filterString;
     logFilterModel->SetFilterString(filterString);
-    int logLevels;
+    QVariantList logLevels;
     stream >> logLevels;
-    logFilterModel->SetFilters(LogFilterModel::LogLevels(logLevels));
-}
-
-void LogWidget::LoadDefaults()
-{
-    logFilterModel->SetFilterString("");
-    logFilterModel->SetFilters(~LogFilterModel::LogLevels(0));
-}
-
-void LogWidget::OnFilterChanged()
-{
-    const auto selection = filter->selectedUserData();
-    LogFilterModel::LogLevels flags;
-    for (auto sel : selection)
-    {
-        if (sel.canConvert<int>())
-        {
-            flags |= static_cast<DAVA::Logger::eLogLevel>(sel.toInt());
-        }
-    }
-    logFilterModel->SetFilters(flags);
+    logFilterModel->SetFilters(logLevels);
+    filter->selectUserData(logLevels);
 }
 
 void LogWidget::OnTextFilterChanged(const QString& text)

@@ -593,7 +593,6 @@ void QtMainWindow::SetupDocks()
 
         const QByteArray arr(reinterpret_cast<const char*>(var.AsByteArray()), var.AsByteArraySize());
         logWidget->Deserialize(arr);
-        DAVA::Logger::AddCustomOutput(logWidget->Model());
         dockConsole = new QDockWidget(logWidget->windowTitle(), this);
         dockConsole->setWidget(logWidget);
         dockConsole->setObjectName(QString( "dock_%1" ).arg(dockConsole->widget()->objectName()));

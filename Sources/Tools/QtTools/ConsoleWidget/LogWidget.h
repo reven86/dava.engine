@@ -30,9 +30,6 @@ public:
     LogModel *Model();
     QByteArray Serialize() const;
     void Deserialize(const QByteArray &data);
-    void LoadDefaults();
-public slots:
-    void OnFilterChanged();
 
 private slots:
     void OnTextFilterChanged(const QString& text);
