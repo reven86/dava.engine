@@ -44,7 +44,7 @@ String runOnlyTheseTestClasses = "";
 // List of semicolon separated names specifying which test classes shouldn't run. This list takes precedence over runOnlyTheseTests
 String disableTheseTestClasses = "";
 
-bool teamcityOutputEnabled = true;      // Flag whether to enable TeamCity output
+bool teamcityOutputEnabled = false;      // Flag whether to enable TeamCity output
 bool teamcityCaptureStdout = false;     // Flag whether to set TeamCity option 'captureStandardOutput=true'
 
 }
@@ -190,11 +190,11 @@ void GameCore::ProcessTests(float32 timeElapsed)
         Logger::Info("Test coverage");
         for (const auto& x : map)
         {
-            Logger::Debug("  %s:", x.first.c_str());
+            Logger::Info("  %s:", x.first.c_str());
             const Vector<String>& v = x.second;
             for (const auto& s : v)
             {
-                Logger::Debug("        %s", s.c_str());
+                Logger::Info("        %s", s.c_str());
             }
         }
         FinishTests();

@@ -41,12 +41,14 @@ String TestClass::PrettifyTypeName(const String& name) const
 {
     String result = name;
 #if defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_ANDROID__)
-    char nameBuffer[256];
+    // abi::__cxa_demangle reference
+    // https://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-4.3/a01696.html
     int status = 0;
-    size_t n = COUNT_OF(nameBuffer);
-    if (abi::__cxa_demangle(name.c_str(), nameBuffer, &n, &status))
+    char* demangledName = abi::__cxa_demangle(name.c_str(), nullptr, nullptr, &status);
+    if (demangledName != nullptr)
     {
-        result = nameBuffer;
+        result = demangledName;
+        free(demangledName);
     }
 #endif
 
