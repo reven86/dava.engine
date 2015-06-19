@@ -45,8 +45,10 @@ struct Result
         RESULT_ERROR
     };
     Result(const ResultType type = RESULT_SUCCESS, const String &message = String(), const VariantType &data = VariantType());
+    Result(const Result &result) = default;
     Result(Result &&result);
-    Result& operator = (Result&& result);
+    Result& operator = (const Result &result) = default;
+    Result& operator = (Result &&result);
     operator bool() const;
     ResultType type = RESULT_SUCCESS;
     String message;
@@ -64,10 +66,12 @@ public:
     explicit ResultList();
     explicit ResultList(const Result &result);
     ResultList(Result &&result);
+    ResultList(const ResultList &resultList) = default;
     ResultList(ResultList &&resultList);
     ~ResultList() = default;
     operator bool() const;
     bool IsSuccess() const;
+    ResultList& operator = (const ResultList &resultList) = default;
     ResultList& operator = (ResultList&& resultList);
     ResultList& operator << (const Result &result);
     ResultList& operator << (Result &&result);
