@@ -36,19 +36,21 @@
 
 namespace DAVA
 {
-    class UIStyleSheet;
-    class YamlNode;
-    struct UIStyleSheetSelector;
 
-    class UIStyleSheetYamlWriter
-    {
-    public:
-        UIStyleSheetYamlWriter();
+class UIStyleSheet;
+class YamlNode;
+struct UIStyleSheetSelector;
 
-        RefPtr<YamlNode> SaveToYaml(const Vector<UIStyleSheet*>& styleSheets);
+class UIStyleSheetYamlWriter
+{
+public:
+    UIStyleSheetYamlWriter();
 
-        static String GenerateSelectorString(const Vector<UIStyleSheetSelector>& selectorChain);
-    };
+    RefPtr<YamlNode> SaveToYaml(const Vector<UIStyleSheet*>& styleSheets);
+
+    static String GenerateSelectorString(const Vector<UIStyleSheetSelector>& selectorChain);
+};
+
 };
 
 

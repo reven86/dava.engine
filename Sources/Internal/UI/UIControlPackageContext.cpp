@@ -31,37 +31,39 @@
 
 namespace DAVA
 {
-    UIControlPackageContext::~UIControlPackageContext()
+
+UIControlPackageContext::~UIControlPackageContext()
+{
+    for (UIStyleSheet* styleSheet : styleSheets)
     {
-        for (UIStyleSheet* styleSheet : styleSheets)
-        {
-            SafeRelease(styleSheet);
-        }
+        SafeRelease(styleSheet);
+    }
+}
+
+UIControlPackageContext::UIControlPackageContext() :
+    styleSheetsSorted(false)
+{
+
+}
+
+void UIControlPackageContext::AddStyleSheet(UIStyleSheet* styleSheet)
+{
+    styleSheetsSorted = false;
+    styleSheets.push_back(SafeRetain(styleSheet));
+}
+
+const Vector<UIStyleSheet*>& UIControlPackageContext::GetSortedStyleSheets()
+{
+    if (!styleSheetsSorted)
+    {
+        std::sort(styleSheets.begin(), styleSheets.end(),
+            [](const UIStyleSheet* first, const UIStyleSheet* second) {
+            return first->GetScore() > second->GetScore();
+        });
+        styleSheetsSorted = true;
     }
 
-    UIControlPackageContext::UIControlPackageContext() :
-        styleSheetsSorted(false)
-    {
+    return styleSheets;
+}
 
-    }
-
-    void UIControlPackageContext::AddStyleSheet(UIStyleSheet* styleSheet)
-    {
-        styleSheetsSorted = false;
-        styleSheets.push_back(SafeRetain(styleSheet));
-    }
-
-    const Vector<UIStyleSheet*>& UIControlPackageContext::GetSortedStyleSheets()
-    {
-        if (!styleSheetsSorted)
-        {
-            std::sort(styleSheets.begin(), styleSheets.end(),
-                [](const UIStyleSheet* first, const UIStyleSheet* second) {
-                return first->GetScore() > second->GetScore();
-            });
-            styleSheetsSorted = true;
-        }
-
-        return styleSheets;
-    }
 }

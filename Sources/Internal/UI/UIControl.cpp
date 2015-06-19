@@ -1148,6 +1148,9 @@ namespace DAVA
         debugDrawColor = srcControl->debugDrawColor;
         debugDrawEnabled = srcControl->debugDrawEnabled;
 
+        classes = srcControl->classes;
+        styleSheetRebuildNeeded = srcControl->styleSheetRebuildNeeded;
+
         SafeRelease(eventDispatcher);
         if (srcControl->eventDispatcher != nullptr && srcControl->eventDispatcher->GetEventsCount() != 0)
         {

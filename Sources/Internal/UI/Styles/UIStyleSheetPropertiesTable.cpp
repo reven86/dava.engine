@@ -37,125 +37,127 @@
 
 namespace DAVA
 {
-    UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase() :
-        properties({ {
-            { FastName("angle"), VariantType(0.0f) },
-            { FastName("scale"), VariantType(Vector2(1.0f, 1.0f)) },
-            { FastName("visible"), VariantType(true) },
-            { FastName("leftAlignEnabled"), VariantType(false) },
-            { FastName("rightAlignEnabled"), VariantType(false) },
-            { FastName("bottomAlignEnabled"), VariantType(false) },
-            { FastName("topAlignEnabled"), VariantType(false) },
-            { FastName("hcenterAlignEnabled"), VariantType(false) },
-            { FastName("vcenterAlignEnabled"), VariantType(false) },
-            { FastName("leftAlign"), VariantType(0.0f) },
-            { FastName("rightAlign"), VariantType(0.0f) },
-            { FastName("bottomAlign"), VariantType(0.0f) },
-            { FastName("topAlign"), VariantType(0.0f) },
-            { FastName("hcenterAlign"), VariantType(0.0f) },
-            { FastName("vcenterAlign"), VariantType(0.0f) },
 
-            { FastName("drawType"), VariantType(UIControlBackground::DRAW_ALIGNED) },
-            { FastName("sprite"), VariantType(FilePath()) },
-            { FastName("frame"), VariantType(0) },
-            { FastName("color"), VariantType(Color::White) },
-            { FastName("colorInherit"), VariantType(UIControlBackground::COLOR_IGNORE_PARENT) },
-            { FastName("align"), VariantType(ALIGN_HCENTER | ALIGN_VCENTER) },
-            { FastName("leftRightStretchCap"), VariantType(0.0f) },
-            { FastName("topBottomStretchCap"), VariantType(0.0f) },
+UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase() :
+    properties({ {
+        { FastName("angle"), VariantType(0.0f) },
+        { FastName("scale"), VariantType(Vector2(1.0f, 1.0f)) },
+        { FastName("visible"), VariantType(true) },
+        { FastName("leftAlignEnabled"), VariantType(false) },
+        { FastName("rightAlignEnabled"), VariantType(false) },
+        { FastName("bottomAlignEnabled"), VariantType(false) },
+        { FastName("topAlignEnabled"), VariantType(false) },
+        { FastName("hcenterAlignEnabled"), VariantType(false) },
+        { FastName("vcenterAlignEnabled"), VariantType(false) },
+        { FastName("leftAlign"), VariantType(0.0f) },
+        { FastName("rightAlign"), VariantType(0.0f) },
+        { FastName("bottomAlign"), VariantType(0.0f) },
+        { FastName("topAlign"), VariantType(0.0f) },
+        { FastName("hcenterAlign"), VariantType(0.0f) },
+        { FastName("vcenterAlign"), VariantType(0.0f) },
 
-            { FastName("font"), VariantType(String("")) },
-            { FastName("textColor"), VariantType(Color::White) },
-            { FastName("textcolorInheritType"), VariantType(UIControlBackground::COLOR_MULTIPLY_ON_PARENT) },
-            { FastName("shadowoffset"), VariantType(Vector2(0.0f, 0.0f)) },
-            { FastName("shadowcolor"), VariantType(Color::White) },
-            { FastName("textalign"), VariantType(ALIGN_HCENTER | ALIGN_VCENTER) } } })
+        { FastName("drawType"), VariantType(UIControlBackground::DRAW_ALIGNED) },
+        { FastName("sprite"), VariantType(FilePath()) },
+        { FastName("frame"), VariantType(0) },
+        { FastName("color"), VariantType(Color::White) },
+        { FastName("colorInherit"), VariantType(UIControlBackground::COLOR_IGNORE_PARENT) },
+        { FastName("align"), VariantType(ALIGN_HCENTER | ALIGN_VCENTER) },
+        { FastName("leftRightStretchCap"), VariantType(0.0f) },
+        { FastName("topBottomStretchCap"), VariantType(0.0f) },
+
+        { FastName("font"), VariantType(String("")) },
+        { FastName("textColor"), VariantType(Color::White) },
+        { FastName("textcolorInheritType"), VariantType(UIControlBackground::COLOR_MULTIPLY_ON_PARENT) },
+        { FastName("shadowoffset"), VariantType(Vector2(0.0f, 0.0f)) },
+        { FastName("shadowcolor"), VariantType(Color::White) },
+        { FastName("textalign"), VariantType(ALIGN_HCENTER | ALIGN_VCENTER) } } })
+{
+
+    for (uint32_t i = 0; i < STYLE_SHEET_PROPERTY_COUNT; ++i)
     {
-
-        for (uint32_t i = 0; i < STYLE_SHEET_PROPERTY_COUNT; ++i)
-        {
-            propertyNameToIndexMap[properties[i].name] = i;
-        }
-
-        ProcessComponentIntrospection<UIFakeComponent>();
-        ProcessComponentIntrospection<UIFakeMultiComponent>();
-        ProcessControlIntrospection<UIControl>();
-        ProcessControlIntrospection<UIButton>();
-        ProcessControlIntrospection<UIStaticText>();
-        ProcessControlIntrospection<UITextField>();
-        ProcessObjectIntrospection(UIControlBackground::TypeInfo(), BackgroundPropertyRegistrator());
+        propertyNameToIndexMap[properties[i].name] = i;
     }
 
-    uint32 UIStyleSheetPropertyDataBase::GetStyleSheetPropertyIndex(const FastName& name) const
-    {
-        const auto& iter = propertyNameToIndexMap.find(name);
+    ProcessComponentIntrospection<UIFakeComponent>();
+    ProcessComponentIntrospection<UIFakeMultiComponent>();
+    ProcessControlIntrospection<UIControl>();
+    ProcessControlIntrospection<UIButton>();
+    ProcessControlIntrospection<UIStaticText>();
+    ProcessControlIntrospection<UITextField>();
+    ProcessObjectIntrospection(UIControlBackground::TypeInfo(), BackgroundPropertyRegistrator());
+}
 
-        DVASSERT(iter != propertyNameToIndexMap.end());
+uint32 UIStyleSheetPropertyDataBase::GetStyleSheetPropertyIndex(const FastName& name) const
+{
+    const auto& iter = propertyNameToIndexMap.find(name);
 
-        return iter->second;
-    }
+    DVASSERT(iter != propertyNameToIndexMap.end());
 
-    bool UIStyleSheetPropertyDataBase::IsValidStyleSheetProperty(const FastName& name) const
-    {
-        return propertyNameToIndexMap.find(name) != propertyNameToIndexMap.end();
-    }
+    return iter->second;
+}
 
-    const UIStyleSheetPropertyDescriptor& UIStyleSheetPropertyDataBase::GetStyleSheetPropertyByIndex(uint32 index) const
-    {
-        return properties[index];
-    }
+bool UIStyleSheetPropertyDataBase::IsValidStyleSheetProperty(const FastName& name) const
+{
+    return propertyNameToIndexMap.find(name) != propertyNameToIndexMap.end();
+}
+
+const UIStyleSheetPropertyDescriptor& UIStyleSheetPropertyDataBase::GetStyleSheetPropertyByIndex(uint32 index) const
+{
+    return properties[index];
+}
     
-    template < typename CallbackType >
-    void UIStyleSheetPropertyDataBase::ProcessObjectIntrospection(const InspInfo* typeInfo, const CallbackType& callback)
-    {
-        const InspInfo *baseInfo = typeInfo->BaseInfo();
-        if (baseInfo)
-            ProcessObjectIntrospection(baseInfo, callback);
+template < typename CallbackType >
+void UIStyleSheetPropertyDataBase::ProcessObjectIntrospection(const InspInfo* typeInfo, const CallbackType& callback)
+{
+    const InspInfo *baseInfo = typeInfo->BaseInfo();
+    if (baseInfo)
+        ProcessObjectIntrospection(baseInfo, callback);
         
-        for (int32 i = 0; i < typeInfo->MembersCount(); i++)
-        {
-            const InspMember *member = typeInfo->Member(i);
+    for (int32 i = 0; i < typeInfo->MembersCount(); i++)
+    {
+        const InspMember *member = typeInfo->Member(i);
             
-            const auto& iter = propertyNameToIndexMap.find(member->GetFastName());
-            if (iter != propertyNameToIndexMap.end())
-            {
-                DVASSERT(properties[iter->second].targetMembers.empty() ? true : member->Type() == properties[iter->second].targetMembers.back().memberInfo->Type());
+        const auto& iter = propertyNameToIndexMap.find(member->GetFastName());
+        if (iter != propertyNameToIndexMap.end())
+        {
+            DVASSERT(properties[iter->second].targetMembers.empty() ? true : member->Type() == properties[iter->second].targetMembers.back().memberInfo->Type());
                 
-                Vector<UIStyleSheetPropertyTargetMember>& targetMembers = properties[iter->second].targetMembers;
-                const UIStyleSheetPropertyTargetMember& newMember = callback(iter->second, typeInfo, member);
+            Vector<UIStyleSheetPropertyTargetMember>& targetMembers = properties[iter->second].targetMembers;
+            const UIStyleSheetPropertyTargetMember& newMember = callback(iter->second, typeInfo, member);
                 
-                if (std::find(targetMembers.begin(), targetMembers.end(), newMember) != targetMembers.end())
-                    return;
+            if (std::find(targetMembers.begin(), targetMembers.end(), newMember) != targetMembers.end())
+                return;
                 
-                targetMembers.push_back(newMember);
-            }
+            targetMembers.push_back(newMember);
         }
     }
+}
     
-    template < typename ComponentType >
-    void UIStyleSheetPropertyDataBase::ProcessComponentIntrospection()
-    {
-        ProcessObjectIntrospection(ComponentType::TypeInfo(), ComponentPropertyRegistrator{ ComponentType::C_TYPE });
-    }
+template < typename ComponentType >
+void UIStyleSheetPropertyDataBase::ProcessComponentIntrospection()
+{
+    ProcessObjectIntrospection(ComponentType::TypeInfo(), ComponentPropertyRegistrator{ ComponentType::C_TYPE });
+}
     
-    template < typename ControlType >
-    void UIStyleSheetPropertyDataBase::ProcessControlIntrospection()
-    {
-        ProcessObjectIntrospection(ControlType::TypeInfo(), ControlPropertyRegistrator());
-    }
+template < typename ControlType >
+void UIStyleSheetPropertyDataBase::ProcessControlIntrospection()
+{
+    ProcessObjectIntrospection(ControlType::TypeInfo(), ControlPropertyRegistrator());
+}
     
-    UIStyleSheetPropertyTargetMember UIStyleSheetPropertyDataBase::ComponentPropertyRegistrator::operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const
-    {
-        return UIStyleSheetPropertyTargetMember{ ePropertyOwner::COMPONENT, componentType, typeInfo, member };
-    }
+UIStyleSheetPropertyTargetMember UIStyleSheetPropertyDataBase::ComponentPropertyRegistrator::operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const
+{
+    return UIStyleSheetPropertyTargetMember{ ePropertyOwner::COMPONENT, componentType, typeInfo, member };
+}
     
-    UIStyleSheetPropertyTargetMember UIStyleSheetPropertyDataBase::BackgroundPropertyRegistrator::operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const
-    {
-        return UIStyleSheetPropertyTargetMember{ ePropertyOwner::BACKGROUND, 0, typeInfo, member };
-    }
+UIStyleSheetPropertyTargetMember UIStyleSheetPropertyDataBase::BackgroundPropertyRegistrator::operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const
+{
+    return UIStyleSheetPropertyTargetMember{ ePropertyOwner::BACKGROUND, 0, typeInfo, member };
+}
     
-    UIStyleSheetPropertyTargetMember UIStyleSheetPropertyDataBase::ControlPropertyRegistrator::operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const
-    {
-        return UIStyleSheetPropertyTargetMember{ ePropertyOwner::CONTROL, 0, typeInfo, member };
-    }
+UIStyleSheetPropertyTargetMember UIStyleSheetPropertyDataBase::ControlPropertyRegistrator::operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const
+{
+    return UIStyleSheetPropertyTargetMember{ ePropertyOwner::CONTROL, 0, typeInfo, member };
+}
+
 }

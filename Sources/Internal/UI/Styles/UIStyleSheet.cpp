@@ -30,69 +30,71 @@
 
 namespace DAVA
 {
-    void UIStyleSheetPropertyTable::SetProperties(const Vector<std::pair<uint32, VariantType>>& newProperties)
+
+void UIStyleSheetPropertyTable::SetProperties(const Vector<std::pair<uint32, VariantType>>& newProperties)
+{
+    properties = newProperties;
+
+    std::sort(properties.begin(), properties.end(),
+        [](const std::pair<uint32, VariantType>& first, const std::pair<uint32, VariantType>& second) {
+        return first.first < second.first;
+    });
+}
+
+const Vector<std::pair<uint32, VariantType>>& UIStyleSheetPropertyTable::GetProperties() const
+{
+    return properties;
+}
+
+UIStyleSheet::~UIStyleSheet()
+{
+
+}
+
+UIStyleSheet::UIStyleSheet() :
+    score(0)
+{
+
+}
+
+int32 UIStyleSheet::GetScore() const
+{
+    return score;
+}
+
+const UIStyleSheetPropertyTable* UIStyleSheet::GetPropertyTable() const
+{
+    return properties.Get();
+}
+
+const Vector< UIStyleSheetSelector >& UIStyleSheet::GetSelectorChain() const
+{
+    return selectorChain;
+}
+
+void UIStyleSheet::SetPropertyTable(UIStyleSheetPropertyTable* newProperties)
+{
+    properties = newProperties;
+}
+
+void UIStyleSheet::SetSelectorChain(const Vector<UIStyleSheetSelector>& newSelectorChain)
+{
+    selectorChain = newSelectorChain;
+
+    RecalculateScore();
+}
+
+void UIStyleSheet::RecalculateScore()
+{
+    score = 0;
+    for (const UIStyleSheetSelector& selector : selectorChain)
     {
-        properties = newProperties;
-
-        std::sort(properties.begin(), properties.end(),
-            [](const std::pair<uint32, VariantType>& first, const std::pair<uint32, VariantType>& second) {
-            return first.first < second.first;
-        });
+        score += 100000 + selector.classes.size();
+        if (selector.name.IsValid())
+            score += 100;
+        if (!selector.controlClassName.empty())
+            score += 100;
     }
+}
 
-    const Vector<std::pair<uint32, VariantType>>& UIStyleSheetPropertyTable::GetProperties() const
-    {
-        return properties;
-    }
-
-    UIStyleSheet::~UIStyleSheet()
-    {
-
-    }
-
-    UIStyleSheet::UIStyleSheet() :
-        score(0)
-    {
-
-    }
-
-    int32 UIStyleSheet::GetScore() const
-    {
-        return score;
-    }
-
-    const UIStyleSheetPropertyTable* UIStyleSheet::GetPropertyTable() const
-    {
-        return properties.Get();
-    }
-
-    const Vector< UIStyleSheetSelector >& UIStyleSheet::GetSelectorChain() const
-    {
-        return selectorChain;
-    }
-
-    void UIStyleSheet::SetPropertyTable(UIStyleSheetPropertyTable* newProperties)
-    {
-        properties = newProperties;
-    }
-
-    void UIStyleSheet::SetSelectorChain(const Vector<UIStyleSheetSelector>& newSelectorChain)
-    {
-        selectorChain = newSelectorChain;
-
-        RecalculateScore();
-    }
-
-    void UIStyleSheet::RecalculateScore()
-    {
-        score = 0;
-        for (const UIStyleSheetSelector& selector : selectorChain)
-        {
-            score += 100000 + selector.classes.size();
-            if (selector.name.IsValid())
-                score += 100;
-            if (!selector.controlClassName.empty())
-                score += 100;
-        }
-    }
 }

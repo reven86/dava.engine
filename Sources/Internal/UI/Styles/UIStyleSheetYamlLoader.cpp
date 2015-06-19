@@ -35,170 +35,174 @@
 
 namespace DAVA
 {
-    namespace
+
+namespace
+{
+
+class SelectorParser
+{
+public:
+    enum SelectorParserState
     {
-        class SelectorParser
+        SELECTOR_STATE_CONTROL_CLASS_NAME,
+        SELECTOR_STATE_CLASS,
+        SELECTOR_STATE_PSEUDO_CLASS,
+        SELECTOR_STATE_NAME,
+        SELECTOR_STATE_NONE,
+    };
+
+    SelectorParser(Vector<UIStyleSheetSelector>& aSelectorChain) :
+        selectorChain(aSelectorChain)
+    {
+
+    }
+
+    void Parse(const char* selectorStr)
+    {
+        currentSelector = UIStyleSheetSelector();
+        currentToken = "";
+        state = SELECTOR_STATE_CONTROL_CLASS_NAME;
+
+        while (*selectorStr && *selectorStr == ' ') ++selectorStr;
+
+        while (*selectorStr)
         {
-        public:
-            enum SelectorParserState
+            if ((*selectorStr) == ' ')
             {
-                SELECTOR_STATE_CONTROL_CLASS_NAME,
-                SELECTOR_STATE_CLASS,
-                SELECTOR_STATE_PSEUDO_CLASS,
-                SELECTOR_STATE_NAME,
-                SELECTOR_STATE_NONE,
-            };
-
-            SelectorParser(Vector<UIStyleSheetSelector>& aSelectorChain) :
-                selectorChain(aSelectorChain)
-            {
-
-            }
-
-            void Parse(const char* selectorStr)
-            {
-                currentSelector = UIStyleSheetSelector();
-                currentToken = "";
-                state = SELECTOR_STATE_CONTROL_CLASS_NAME;
-
-                while (*selectorStr && *selectorStr == ' ') ++selectorStr;
-
-                while (*selectorStr)
-                {
-                    if ((*selectorStr) == ' ')
-                    {
-                        FinishProcessingCurrentSelector();
-                        while (*(selectorStr + 1) == ' ') ++selectorStr;
-                    }
-                    else if ((*selectorStr) == '?')
-                    {
-                        FinishProcessingCurrentSelector();
-                        while (*(selectorStr + 1) == ' ') ++selectorStr;
-                        selectorChain.push_back(UIStyleSheetSelector());
-                    }
-                    else if ((*selectorStr) == '.')
-                    {
-                        GoToState(SELECTOR_STATE_CLASS);
-                    }
-                    else if ((*selectorStr) == ':')
-                    {
-                        GoToState(SELECTOR_STATE_PSEUDO_CLASS);
-                    }
-                    else if ((*selectorStr) == '#')
-                    {
-                        GoToState(SELECTOR_STATE_NAME);
-                    }
-                    else if ((*selectorStr) == '*')
-                    {
-                        GoToState(SELECTOR_STATE_NAME);
-                    }
-                    else
-                    {
-                        currentToken += *selectorStr;
-                    }
-
-                    ++selectorStr;
-                }
                 FinishProcessingCurrentSelector();
+                while (*(selectorStr + 1) == ' ') ++selectorStr;
             }
-        private:
-            String currentToken;
-            SelectorParserState state;
-            UIStyleSheetSelector currentSelector;
-
-            Vector<UIStyleSheetSelector>& selectorChain;
-
-            void FinishProcessingCurrentSelector()
+            else if ((*selectorStr) == '?')
             {
-                GoToState(SELECTOR_STATE_CONTROL_CLASS_NAME);
-                if (!currentSelector.controlClassName.empty() || currentSelector.name.IsValid() || !currentSelector.classes.empty())
-                    selectorChain.push_back(currentSelector);
-                currentSelector = UIStyleSheetSelector();
+                FinishProcessingCurrentSelector();
+                while (*(selectorStr + 1) == ' ') ++selectorStr;
+                selectorChain.push_back(UIStyleSheetSelector());
             }
-
-            void GoToState(SelectorParserState newState)
+            else if ((*selectorStr) == '.')
             {
-                if (currentToken != "")
-                {
-                    if (state == SELECTOR_STATE_CONTROL_CLASS_NAME)
-                    {
-                        currentSelector.controlClassName = currentToken;
-                    }
-                    else if (state == SELECTOR_STATE_NAME)
-                    {
-                        currentSelector.name = FastName(currentToken);
-                    }
-                    else if (state == SELECTOR_STATE_CLASS)
-                    {
-                        currentSelector.classes.push_back(FastName(currentToken));
-                    }
-                    else if (state == SELECTOR_STATE_PSEUDO_CLASS)
-                    {
-                        for (int32 stateIndex = 0; stateIndex < UIControl::STATE_COUNT; ++stateIndex)
-                            if (currentToken == UIControl::STATE_NAMES[stateIndex])
-                                currentSelector.controlStateMask |= 1 << stateIndex;
-                    }
-                }
-                currentToken = "";
-                state = newState;
+                GoToState(SELECTOR_STATE_CLASS);
             }
-        };
+            else if ((*selectorStr) == ':')
+            {
+                GoToState(SELECTOR_STATE_PSEUDO_CLASS);
+            }
+            else if ((*selectorStr) == '#')
+            {
+                GoToState(SELECTOR_STATE_NAME);
+            }
+            else if ((*selectorStr) == '*')
+            {
+                GoToState(SELECTOR_STATE_NAME);
+            }
+            else
+            {
+                currentToken += *selectorStr;
+            }
+
+            ++selectorStr;
+        }
+        FinishProcessingCurrentSelector();
+    }
+private:
+    String currentToken;
+    SelectorParserState state;
+    UIStyleSheetSelector currentSelector;
+
+    Vector<UIStyleSheetSelector>& selectorChain;
+
+    void FinishProcessingCurrentSelector()
+    {
+        GoToState(SELECTOR_STATE_CONTROL_CLASS_NAME);
+        if (!currentSelector.controlClassName.empty() || currentSelector.name.IsValid() || !currentSelector.classes.empty())
+            selectorChain.push_back(currentSelector);
+        currentSelector = UIStyleSheetSelector();
     }
 
-    UIStyleSheetYamlLoader::UIStyleSheetYamlLoader()
+    void GoToState(SelectorParserState newState)
     {
-
-    }
-
-    void UIStyleSheetYamlLoader::LoadFromYaml(const FilePath& path, Vector<UIStyleSheet*>* styleSheets)
-    {
-        RefPtr<YamlParser> parser(YamlParser::Create(path));
-
-        if (parser.Get() == nullptr)
-            return;
-
-        YamlNode* rootNode = parser->GetRootNode();
-        if (rootNode)
-            LoadFromYaml(rootNode, styleSheets);
-    }
-
-    void UIStyleSheetYamlLoader::LoadFromYaml(const YamlNode* rootNode, Vector<UIStyleSheet*>* styleSheets)
-    {
-        DVASSERT(styleSheets);
-
-        const MultiMap<String, YamlNode*> &styleSheetMap = rootNode->AsMap();
-        const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
-
-        for (auto styleSheetIter = styleSheetMap.begin(); styleSheetIter != styleSheetMap.end(); ++styleSheetIter)
+        if (currentToken != "")
         {
-            Vector<std::pair<uint32, VariantType>> propertiesToSet;
-            ScopedPtr<UIStyleSheetPropertyTable> propertyTable(new UIStyleSheetPropertyTable());
-            const MultiMap<String, YamlNode*> &propertiesMap = styleSheetIter->second->AsMap();
-            for (const auto& propertyIter : propertiesMap)
+            if (state == SELECTOR_STATE_CONTROL_CLASS_NAME)
             {
-                uint32 index = propertyDB->GetStyleSheetPropertyIndex(FastName(propertyIter.first));
-                const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(index);
-                if (!propertyDescr.targetMembers.empty())
-                    propertiesToSet.push_back(std::make_pair(index, propertyIter.second->AsVariantType(propertyDescr.targetMembers[0].memberInfo))); // AsVariantType uses only type info and we assert that all targetMembers have the same type
+                currentSelector.controlClassName = currentToken;
             }
-            propertyTable->SetProperties(propertiesToSet);
-
-            Vector<String> selectorList;
-            Split(styleSheetIter->first, ",", selectorList);
-
-            for (const String& selectorString : selectorList)
+            else if (state == SELECTOR_STATE_NAME)
             {
-                UIStyleSheet* styleSheet = new UIStyleSheet();
-
-                Vector<UIStyleSheetSelector> selectorChain;
-                SelectorParser parser(selectorChain);
-                parser.Parse(selectorString.c_str());
-
-                styleSheet->SetSelectorChain(selectorChain);
-                styleSheet->SetPropertyTable(propertyTable);
-
-                styleSheets->push_back(styleSheet);
+                currentSelector.name = FastName(currentToken);
+            }
+            else if (state == SELECTOR_STATE_CLASS)
+            {
+                currentSelector.classes.push_back(FastName(currentToken));
+            }
+            else if (state == SELECTOR_STATE_PSEUDO_CLASS)
+            {
+                for (int32 stateIndex = 0; stateIndex < UIControl::STATE_COUNT; ++stateIndex)
+                    if (currentToken == UIControl::STATE_NAMES[stateIndex])
+                        currentSelector.controlStateMask |= 1 << stateIndex;
             }
         }
+        currentToken = "";
+        state = newState;
     }
+};
+
+}
+
+UIStyleSheetYamlLoader::UIStyleSheetYamlLoader()
+{
+
+}
+
+void UIStyleSheetYamlLoader::LoadFromYaml(const FilePath& path, Vector<UIStyleSheet*>* styleSheets)
+{
+    RefPtr<YamlParser> parser(YamlParser::Create(path));
+
+    if (parser.Get() == nullptr)
+        return;
+
+    YamlNode* rootNode = parser->GetRootNode();
+    if (rootNode)
+        LoadFromYaml(rootNode, styleSheets);
+}
+
+void UIStyleSheetYamlLoader::LoadFromYaml(const YamlNode* rootNode, Vector<UIStyleSheet*>* styleSheets)
+{
+    DVASSERT(styleSheets);
+
+    const MultiMap<String, YamlNode*> &styleSheetMap = rootNode->AsMap();
+    const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
+
+    for (auto styleSheetIter = styleSheetMap.begin(); styleSheetIter != styleSheetMap.end(); ++styleSheetIter)
+    {
+        Vector<std::pair<uint32, VariantType>> propertiesToSet;
+        ScopedPtr<UIStyleSheetPropertyTable> propertyTable(new UIStyleSheetPropertyTable());
+        const MultiMap<String, YamlNode*> &propertiesMap = styleSheetIter->second->AsMap();
+        for (const auto& propertyIter : propertiesMap)
+        {
+            uint32 index = propertyDB->GetStyleSheetPropertyIndex(FastName(propertyIter.first));
+            const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(index);
+            if (!propertyDescr.targetMembers.empty())
+                propertiesToSet.push_back(std::make_pair(index, propertyIter.second->AsVariantType(propertyDescr.targetMembers[0].memberInfo))); // AsVariantType uses only type info and we assert that all targetMembers have the same type
+        }
+        propertyTable->SetProperties(propertiesToSet);
+
+        Vector<String> selectorList;
+        Split(styleSheetIter->first, ",", selectorList);
+
+        for (const String& selectorString : selectorList)
+        {
+            UIStyleSheet* styleSheet = new UIStyleSheet();
+
+            Vector<UIStyleSheetSelector> selectorChain;
+            SelectorParser parser(selectorChain);
+            parser.Parse(selectorString.c_str());
+
+            styleSheet->SetSelectorChain(selectorChain);
+            styleSheet->SetPropertyTable(propertyTable);
+
+            styleSheets->push_back(styleSheet);
+        }
+    }
+}
+
 }

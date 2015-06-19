@@ -35,72 +35,74 @@
 
 namespace DAVA
 {
-    UIStyleSheetYamlWriter::UIStyleSheetYamlWriter()
+
+UIStyleSheetYamlWriter::UIStyleSheetYamlWriter()
+{
+
+}
+
+RefPtr<YamlNode> UIStyleSheetYamlWriter::SaveToYaml(const Vector< UIStyleSheet* >& styleSheets)
+{
+    const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
+
+    YamlNode* node(YamlNode::CreateMapNode());
+
+    Map<const UIStyleSheetPropertyTable*, String> propertyTables;
+
+    for (UIStyleSheet* styleSheet : styleSheets)
     {
-
-    }
-
-    RefPtr<YamlNode> UIStyleSheetYamlWriter::SaveToYaml(const Vector< UIStyleSheet* >& styleSheets)
-    {
-        const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
-
-        YamlNode* node(YamlNode::CreateMapNode());
-
-        Map<const UIStyleSheetPropertyTable*, String> propertyTables;
-
-        for (UIStyleSheet* styleSheet : styleSheets)
+        String& selector = propertyTables[styleSheet->GetPropertyTable()];
+        if (!selector.empty())
         {
-            String& selector = propertyTables[styleSheet->GetPropertyTable()];
-            if (!selector.empty())
-            {
-                selector += ", ";
-            }
-
-            selector += UIStyleSheetYamlWriter::GenerateSelectorString(styleSheet->GetSelectorChain());
+            selector += ", ";
         }
+
+        selector += UIStyleSheetYamlWriter::GenerateSelectorString(styleSheet->GetSelectorChain());
+    }
         
-        for (const auto& table : propertyTables)
-        {
-            YamlNode* styleSheetNode(YamlNode::CreateMapNode(false));
-
-            const UIStyleSheetPropertyTable* propertyTable = table.first;
-
-            for (const auto& prop : propertyTable->GetProperties())
-            {
-                const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(prop.first);
-
-                styleSheetNode->Add(propertyDescr.name.c_str(), prop.second);
-            }
-
-            node->Add(table.second, styleSheetNode);
-        }
-
-        return RefPtr<YamlNode>(node);
-    }
-
-    String UIStyleSheetYamlWriter::GenerateSelectorString(const Vector<UIStyleSheetSelector>& selectorChain)
+    for (const auto& table : propertyTables)
     {
-        String result = "";
+        YamlNode* styleSheetNode(YamlNode::CreateMapNode(false));
 
-        for (const UIStyleSheetSelector& selectorChainIter : selectorChain)
+        const UIStyleSheetPropertyTable* propertyTable = table.first;
+
+        for (const auto& prop : propertyTable->GetProperties())
         {
-            result += selectorChainIter.controlClassName;
-            if (selectorChainIter.name.IsValid())
-                result += String("#") + selectorChainIter.name.c_str();
+            const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(prop.first);
 
-            for (const FastName& clazz : selectorChainIter.classes)
-                result += String(".") + clazz.c_str();
-
-            for (int32 stateIndex = 0; stateIndex < UIControl::STATE_COUNT; ++stateIndex)
-                if (selectorChainIter.controlStateMask & (1 << stateIndex))
-                    result += String(":") + UIControl::STATE_NAMES[stateIndex];
-
-            result += " ";
+            styleSheetNode->Add(propertyDescr.name.c_str(), prop.second);
         }
 
-        if (!result.empty())
-            result.resize(result.size() - 1);
-
-        return result;
+        node->Add(table.second, styleSheetNode);
     }
+
+    return RefPtr<YamlNode>(node);
+}
+
+String UIStyleSheetYamlWriter::GenerateSelectorString(const Vector<UIStyleSheetSelector>& selectorChain)
+{
+    String result = "";
+
+    for (const UIStyleSheetSelector& selectorChainIter : selectorChain)
+    {
+        result += selectorChainIter.controlClassName;
+        if (selectorChainIter.name.IsValid())
+            result += String("#") + selectorChainIter.name.c_str();
+
+        for (const FastName& clazz : selectorChainIter.classes)
+            result += String(".") + clazz.c_str();
+
+        for (int32 stateIndex = 0; stateIndex < UIControl::STATE_COUNT; ++stateIndex)
+            if (selectorChainIter.controlStateMask & (1 << stateIndex))
+                result += String(":") + UIControl::STATE_NAMES[stateIndex];
+
+        result += " ";
+    }
+
+    if (!result.empty())
+        result.resize(result.size() - 1);
+
+    return result;
+}
+
 }

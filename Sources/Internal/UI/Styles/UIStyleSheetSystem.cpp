@@ -35,137 +35,139 @@
 
 namespace DAVA
 {
-    UIStyleSheetSystem::UIStyleSheetSystem()
+
+UIStyleSheetSystem::UIStyleSheetSystem()
+{
+
+}
+
+UIStyleSheetSystem::~UIStyleSheetSystem()
+{
+
+}
+
+void UIStyleSheetSystem::ProcessControl(UIControl* control)
+{
+    UIControlPackageContext* packageContext = control->GetPackageContext();
+    const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
+
+    if (packageContext)
     {
+        UIStyleSheetPropertySet appliedProperties;
+        const UIStyleSheetPropertySet& localControlProperties = control->GetLocalPropertySet();
 
-    }
-
-    UIStyleSheetSystem::~UIStyleSheetSystem()
-    {
-
-    }
-
-    void UIStyleSheetSystem::ProcessControl(UIControl* control)
-    {
-        UIControlPackageContext* packageContext = control->GetPackageContext();
-        const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
-
-        if (packageContext)
+        const auto& styleSheets = packageContext->GetSortedStyleSheets();
+        for (const UIStyleSheet* styleSheet : styleSheets)
         {
-            UIStyleSheetPropertySet appliedProperties;
-            const UIStyleSheetPropertySet& localControlProperties = control->GetLocalPropertySet();
-
-            const auto& styleSheets = packageContext->GetSortedStyleSheets();
-            for (const UIStyleSheet* styleSheet : styleSheets)
+            if (StyleSheetMatchesControl(styleSheet, control))
             {
-                if (StyleSheetMatchesControl(styleSheet, control))
+                const auto& propertyTable = styleSheet->GetPropertyTable()->GetProperties();
+                for (const auto& iter : propertyTable)
                 {
-                    const auto& propertyTable = styleSheet->GetPropertyTable()->GetProperties();
-                    for (const auto& iter : propertyTable)
+                    if (!appliedProperties.test(iter.first) && !localControlProperties.test(iter.first))
                     {
-                        if (!appliedProperties.test(iter.first) && !localControlProperties.test(iter.first))
-                        {
-                            appliedProperties.set(iter.first);
+                        appliedProperties.set(iter.first);
 
-                            SetupPropertyFromVariantType(control, iter.first, iter.second);
-                        }
+                        SetupPropertyFromVariantType(control, iter.first, iter.second);
                     }
                 }
             }
+        }
 
-            const UIStyleSheetPropertySet& propertiesToReset = control->GetStyledPropertySet() & ~appliedProperties;
-            if (propertiesToReset.any())
+        const UIStyleSheetPropertySet& propertiesToReset = control->GetStyledPropertySet() & ~appliedProperties;
+        if (propertiesToReset.any())
+        {
+            for (int32 propertyIndex = 0; propertyIndex < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT; ++propertyIndex)
             {
-                for (int32 propertyIndex = 0; propertyIndex < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT; ++propertyIndex)
+                if (propertiesToReset.test(propertyIndex))
                 {
-                    if (propertiesToReset.test(propertyIndex))
-                    {
-                        const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(propertyIndex);
-                        SetupPropertyFromVariantType(control, propertyIndex, propertyDescr.defaultValue);
-                    }
+                    const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(propertyIndex);
+                    SetupPropertyFromVariantType(control, propertyIndex, propertyDescr.defaultValue);
                 }
             }
-
-            control->SetStyledPropertySet(appliedProperties);
         }
 
-        control->MarkStyleSheetAsUpdated();
-
-        for (UIControl* child : control->GetChildren())
-        {
-            ProcessControl(child);
-        }
+        control->SetStyledPropertySet(appliedProperties);
     }
 
-    bool UIStyleSheetSystem::StyleSheetMatchesControl(const UIStyleSheet* styleSheet, UIControl* control)
+    control->MarkStyleSheetAsUpdated();
+
+    for (UIControl* child : control->GetChildren())
     {
-        UIControl* currentControl = control;
-
-        auto endIter = styleSheet->GetSelectorChain().rend();
-        for (auto selectorIter = styleSheet->GetSelectorChain().rbegin(); selectorIter != endIter; ++selectorIter)
-        {
-            if (!currentControl || !SelectorMatchesControl(*selectorIter, currentControl))
-                return false;
-
-            currentControl = currentControl->GetParent();
-        }
-
-        return true;
+        ProcessControl(child);
     }
+}
 
-    bool UIStyleSheetSystem::SelectorMatchesControl(const UIStyleSheetSelector& selector, UIControl* control)
+bool UIStyleSheetSystem::StyleSheetMatchesControl(const UIStyleSheet* styleSheet, UIControl* control)
+{
+    UIControl* currentControl = control;
+
+    auto endIter = styleSheet->GetSelectorChain().rend();
+    for (auto selectorIter = styleSheet->GetSelectorChain().rbegin(); selectorIter != endIter; ++selectorIter)
     {
-        if (((selector.controlStateMask & control->GetState()) != selector.controlStateMask)
-            || (selector.name.IsValid() && selector.name != control->GetFastName())
-            || (!selector.controlClassName.empty() && selector.controlClassName != control->GetClassName()))
+        if (!currentControl || !SelectorMatchesControl(*selectorIter, currentControl))
             return false;
 
-        for (const FastName& clazz : selector.classes)
-        {
-            if (!control->HasClass(clazz))
-                return false;
-        }
-
-        return true;
+        currentControl = currentControl->GetParent();
     }
 
-    void UIStyleSheetSystem::SetupPropertyFromVariantType(UIControl* control, uint32 propertyIndex, const VariantType& value)
+    return true;
+}
+
+bool UIStyleSheetSystem::SelectorMatchesControl(const UIStyleSheetSelector& selector, UIControl* control)
+{
+    if (((selector.controlStateMask & control->GetState()) != selector.controlStateMask)
+        || (selector.name.IsValid() && selector.name != control->GetFastName())
+        || (!selector.controlClassName.empty() && selector.controlClassName != control->GetClassName()))
+        return false;
+
+    for (const FastName& clazz : selector.classes)
     {
-        const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
+        if (!control->HasClass(clazz))
+            return false;
+    }
 
-        const UIStyleSheetPropertyDescriptor& descr = propertyDB->GetStyleSheetPropertyByIndex(propertyIndex);
+    return true;
+}
 
-        for (const UIStyleSheetPropertyTargetMember& targetMember : descr.targetMembers)
+void UIStyleSheetSystem::SetupPropertyFromVariantType(UIControl* control, uint32 propertyIndex, const VariantType& value)
+{
+    const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
+
+    const UIStyleSheetPropertyDescriptor& descr = propertyDB->GetStyleSheetPropertyByIndex(propertyIndex);
+
+    for (const UIStyleSheetPropertyTargetMember& targetMember : descr.targetMembers)
+    {
+        switch (targetMember.propertyOwner)
         {
-            switch (targetMember.propertyOwner)
+        case ePropertyOwner::CONTROL:
+        {
+            const InspInfo* typeInfo = control->GetTypeInfo();
+            do
             {
-            case ePropertyOwner::CONTROL:
-            {
-                const InspInfo* typeInfo = control->GetTypeInfo();
-                do
+                if (typeInfo == targetMember.typeInfo)
                 {
-                    if (typeInfo == targetMember.typeInfo)
-                    {
-                        targetMember.memberInfo->SetValue(control, value);
-                        break;
-                    }
-                    typeInfo = typeInfo->BaseInfo();
-                } while (typeInfo);
+                    targetMember.memberInfo->SetValue(control, value);
+                    break;
+                }
+                typeInfo = typeInfo->BaseInfo();
+            } while (typeInfo);
 
-                break;
-            }
-            case ePropertyOwner::BACKGROUND:
-                if (control->GetBackgroundComponentsCount() > 0)
-                    targetMember.memberInfo->SetValue(control->GetBackgroundComponent(0), value);
-                break;
-            case ePropertyOwner::COMPONENT:
-                if (UIComponent* component = control->GetComponent(targetMember.componentType))
-                    targetMember.memberInfo->SetValue(component, value);
-                break;
-            default:
-                DVASSERT(false);
-                break;
-            }
+            break;
+        }
+        case ePropertyOwner::BACKGROUND:
+            if (control->GetBackgroundComponentsCount() > 0)
+                targetMember.memberInfo->SetValue(control->GetBackgroundComponent(0), value);
+            break;
+        case ePropertyOwner::COMPONENT:
+            if (UIComponent* component = control->GetComponent(targetMember.componentType))
+                targetMember.memberInfo->SetValue(component, value);
+            break;
+        default:
+            DVASSERT(false);
+            break;
         }
     }
+}
+
 }

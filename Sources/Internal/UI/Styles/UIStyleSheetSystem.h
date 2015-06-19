@@ -34,24 +34,26 @@
 
 namespace DAVA
 {
-    class UIControl;
-    class UIStyleSheet;
-    struct UIStyleSheetSelector;
-    class VariantType;
 
-    class UIStyleSheetSystem
-    {
-    public:
-        UIStyleSheetSystem();
-        ~UIStyleSheetSystem();
+class UIControl;
+class UIStyleSheet;
+struct UIStyleSheetSelector;
+class VariantType;
 
-        void ProcessControl(UIControl* control);
-    private:
-        bool StyleSheetMatchesControl(const UIStyleSheet* styleSheet, UIControl* control);
-        bool SelectorMatchesControl(const UIStyleSheetSelector& selector, UIControl* control);
+class UIStyleSheetSystem
+{
+public:
+    UIStyleSheetSystem();
+    ~UIStyleSheetSystem();
+
+    void ProcessControl(UIControl* control);
+private:
+    bool StyleSheetMatchesControl(const UIStyleSheet* styleSheet, UIControl* control);
+    bool SelectorMatchesControl(const UIStyleSheetSelector& selector, UIControl* control);
         
-        void SetupPropertyFromVariantType(UIControl* control, uint32 propertyIndex, const VariantType& value);
-    };
+    void SetupPropertyFromVariantType(UIControl* control, uint32 propertyIndex, const VariantType& value);
+};
+
 };
 
 #endif

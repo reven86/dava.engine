@@ -38,79 +38,81 @@
 
 namespace DAVA
 {
-    enum class ePropertyOwner
-    {
-        CONTROL,
-        BACKGROUND,
-        COMPONENT,
-    };
 
-    struct UIStyleSheetPropertyTargetMember
+enum class ePropertyOwner
+{
+    CONTROL,
+    BACKGROUND,
+    COMPONENT,
+};
+
+struct UIStyleSheetPropertyTargetMember
+{
+    ePropertyOwner propertyOwner;
+    uint32 componentType;
+    const InspInfo* typeInfo;
+    const InspMember* memberInfo;
+
+    bool operator == (const UIStyleSheetPropertyTargetMember& other) const
     {
-        ePropertyOwner propertyOwner;
+        return  propertyOwner == other.propertyOwner &&
+                componentType == other.componentType &&
+                typeInfo == other.typeInfo &&
+                memberInfo == other.memberInfo;
+    }
+};
+
+struct UIStyleSheetPropertyDescriptor
+{
+    FastName name;
+    VariantType defaultValue;
+    Vector<UIStyleSheetPropertyTargetMember> targetMembers;
+};
+
+class UIStyleSheetPropertyDataBase : 
+    public StaticSingleton<UIStyleSheetPropertyDataBase >
+{
+public:
+    enum { STYLE_SHEET_PROPERTY_COUNT = 30 };
+
+    UIStyleSheetPropertyDataBase();
+
+    uint32 GetStyleSheetPropertyIndex(const FastName& name) const;
+    bool IsValidStyleSheetProperty(const FastName& name) const;
+    const UIStyleSheetPropertyDescriptor& GetStyleSheetPropertyByIndex(uint32 index) const;
+private:
+    UnorderedMap<FastName, uint32> propertyNameToIndexMap;
+    Array<UIStyleSheetPropertyDescriptor, STYLE_SHEET_PROPERTY_COUNT> properties;
+
+    struct ComponentPropertyRegistrator
+    {
+        UIStyleSheetPropertyTargetMember operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const;
+
         uint32 componentType;
-        const InspInfo* typeInfo;
-        const InspMember* memberInfo;
-
-        bool operator == (const UIStyleSheetPropertyTargetMember& other) const
-        {
-            return  propertyOwner == other.propertyOwner &&
-                    componentType == other.componentType &&
-                    typeInfo == other.typeInfo &&
-                    memberInfo == other.memberInfo;
-        }
     };
 
-    struct UIStyleSheetPropertyDescriptor
+    struct BackgroundPropertyRegistrator
     {
-        FastName name;
-        VariantType defaultValue;
-        Vector<UIStyleSheetPropertyTargetMember> targetMembers;
+        UIStyleSheetPropertyTargetMember operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const;
     };
 
-    class UIStyleSheetPropertyDataBase : 
-        public StaticSingleton<UIStyleSheetPropertyDataBase >
+    struct ControlPropertyRegistrator
     {
-    public:
-        enum { STYLE_SHEET_PROPERTY_COUNT = 30 };
+        UIStyleSheetPropertyTargetMember operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const;
+    };
 
-        UIStyleSheetPropertyDataBase();
-
-        uint32 GetStyleSheetPropertyIndex(const FastName& name) const;
-        bool IsValidStyleSheetProperty(const FastName& name) const;
-        const UIStyleSheetPropertyDescriptor& GetStyleSheetPropertyByIndex(uint32 index) const;
-    private:
-        UnorderedMap<FastName, uint32> propertyNameToIndexMap;
-        Array<UIStyleSheetPropertyDescriptor, STYLE_SHEET_PROPERTY_COUNT> properties;
-
-        struct ComponentPropertyRegistrator
-        {
-            UIStyleSheetPropertyTargetMember operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const;
-
-            uint32 componentType;
-        };
-
-        struct BackgroundPropertyRegistrator
-        {
-            UIStyleSheetPropertyTargetMember operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const;
-        };
-
-        struct ControlPropertyRegistrator
-        {
-            UIStyleSheetPropertyTargetMember operator () (uint32 index, const InspInfo* typeInfo, const InspMember* member) const;
-        };
-
-        template < typename CallbackType >
-        void ProcessObjectIntrospection(const InspInfo* typeInfo, const CallbackType& callback);
+    template < typename CallbackType >
+    void ProcessObjectIntrospection(const InspInfo* typeInfo, const CallbackType& callback);
         
-        template < typename ComponentType >
-        void ProcessComponentIntrospection();
+    template < typename ComponentType >
+    void ProcessComponentIntrospection();
 
-        template < typename ControlType >
-        void ProcessControlIntrospection();
-    };
+    template < typename ControlType >
+    void ProcessControlIntrospection();
+};
 
-    typedef Bitset<UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT> UIStyleSheetPropertySet;
+typedef Bitset<UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT> UIStyleSheetPropertySet;
+
 };
 
 

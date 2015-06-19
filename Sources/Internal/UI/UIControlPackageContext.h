@@ -35,23 +35,25 @@
 
 namespace DAVA
 {
-    class UIStyleSheet;
 
-    class UIControlPackageContext :
-        public BaseObject
-    {
-    protected:
-        virtual ~UIControlPackageContext();
-    public:
-        UIControlPackageContext();
+class UIStyleSheet;
 
-        void AddStyleSheet(UIStyleSheet* styleSheet);
+class UIControlPackageContext :
+    public BaseObject
+{
+protected:
+    virtual ~UIControlPackageContext();
+public:
+    UIControlPackageContext();
 
-        const Vector<UIStyleSheet*>& GetSortedStyleSheets();
-    private:
-        Vector<UIStyleSheet*> styleSheets;
-        bool styleSheetsSorted;
-    };
+    void AddStyleSheet(UIStyleSheet* styleSheet);
+
+    const Vector<UIStyleSheet*>& GetSortedStyleSheets();
+private:
+    Vector<UIStyleSheet*> styleSheets;
+    bool styleSheetsSorted;
+};
+
 };
 
 #endif

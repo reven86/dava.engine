@@ -38,56 +38,58 @@
 
 namespace DAVA
 {
-    struct UIStyleSheetSelector
+
+struct UIStyleSheetSelector
+{
+    UIStyleSheetSelector() :
+        controlClassName(""),
+        name(),
+        controlStateMask(0)
     {
-        UIStyleSheetSelector() :
-            controlClassName(""),
-            name(),
-            controlStateMask(0)
-        {
 
-        }
+    }
 
-        String controlClassName;
-        FastName name;
-        int32 controlStateMask;
-        Vector<FastName> classes;
-    };
+    String controlClassName;
+    FastName name;
+    int32 controlStateMask;
+    Vector<FastName> classes;
+};
 
-    class UIStyleSheetPropertyTable :
-        public BaseObject
-    {
-    public:
-        void SetProperties(const Vector<std::pair<uint32, VariantType>>& properties);
-        const Vector<std::pair<uint32, VariantType>>& GetProperties() const;
-    private:
-        Vector<std::pair<uint32, VariantType>> properties;
-    };
+class UIStyleSheetPropertyTable :
+    public BaseObject
+{
+public:
+    void SetProperties(const Vector<std::pair<uint32, VariantType>>& properties);
+    const Vector<std::pair<uint32, VariantType>>& GetProperties() const;
+private:
+    Vector<std::pair<uint32, VariantType>> properties;
+};
 
-    class UIStyleSheet :
-        public BaseObject
-    {
-    protected:
-        virtual ~UIStyleSheet();
-    public:
-        UIStyleSheet();
+class UIStyleSheet :
+    public BaseObject
+{
+protected:
+    virtual ~UIStyleSheet();
+public:
+    UIStyleSheet();
 
-        int32 GetScore() const;
+    int32 GetScore() const;
 
-        const UIStyleSheetPropertyTable* GetPropertyTable() const;
-        const Vector<UIStyleSheetSelector>& GetSelectorChain() const;
+    const UIStyleSheetPropertyTable* GetPropertyTable() const;
+    const Vector<UIStyleSheetSelector>& GetSelectorChain() const;
 
-        void SetPropertyTable(UIStyleSheetPropertyTable* properties);
-        void SetSelectorChain(const Vector<UIStyleSheetSelector>& selectorChain);
-    private:
-        void RecalculateScore();
+    void SetPropertyTable(UIStyleSheetPropertyTable* properties);
+    void SetSelectorChain(const Vector<UIStyleSheetSelector>& selectorChain);
+private:
+    void RecalculateScore();
 
-        Vector<UIStyleSheetSelector> selectorChain;
+    Vector<UIStyleSheetSelector> selectorChain;
         
-        RefPtr<UIStyleSheetPropertyTable> properties;
+    RefPtr<UIStyleSheetPropertyTable> properties;
 
-        int32 score;
-    };
+    int32 score;
+};
+
 };
 
 
