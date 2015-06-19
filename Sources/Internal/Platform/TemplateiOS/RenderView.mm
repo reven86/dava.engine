@@ -37,12 +37,9 @@
 
 
 #import "Platform/TemplateiOS/RenderView.h"
-#import "Platform/TemplateiOS/ESRenderer.h"
 
 #include "DAVAEngine.h"
 #include "Utils/Utils.h"
-
-#include "DVMetalLayer.h"
 
 static DAVA::uint32 KEYBOARD_FPS_LIMIT = 20;
 
@@ -331,14 +328,6 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
     blockDrawView = false;
 }
 
-- (void) setCurrentContext
-{
-}
-
-- (void) endRendering
-{
-}
-
 - (void)keyboardDidFrameChanged:(NSNotification *)notification
 {
     CGRect keyboardEndFrame = [[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
@@ -362,34 +351,8 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
 @implementation MetalRenderView
 + (Class)layerClass
 {
-    return [DVMetalLayer class];
+    return [CAMetalLayer class];
 }
-
-- (id)initWithFrame:(CGRect)aRect
-{
-    if ((self = [super initWithFrame:aRect]))
-    {
-        DVMetalLayer * layer = (DVMetalLayer *)self.layer;
-        
-        layer.device            = MTLCreateSystemDefaultDevice();
-        layer.pixelFormat       = MTLPixelFormatBGRA8Unorm;
-        layer.framebufferOnly   = YES;
-        
-        CGSize layerSize = CGSizeMake(aRect.size.width * self.contentScaleFactor,
-                                      aRect.size.height * self.contentScaleFactor);
-        [layer resize: layerSize];
-    }
-    return self;
-}
-
-- (void) layoutSubviews
-{
-    DVMetalLayer * layer = (DVMetalLayer *)self.layer;
-    CGSize layerSize = CGSizeMake(self.bounds.size.width * self.contentScaleFactor,
-                                  self.bounds.size.height * self.contentScaleFactor);
-    [layer resize: layerSize];
-}
-
 @end
 
 ///////////////////////////////////////////////////////////////////////
@@ -400,44 +363,6 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
 {
     return [CAEAGLLayer class];
 }
-
-- (id)initWithFrame:(CGRect)aRect
-{
-    if ((self = [super initWithFrame:aRect]))
-    {
-        renderer = [[ESRenderer alloc] init];
-        
-        CAEAGLLayer * layer = (CAEAGLLayer*)self.layer;
-        layer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
-                                    [NSNumber numberWithBool:FALSE],
-                                    kEAGLDrawablePropertyRetainedBacking, kEAGLColorFormatRGBA8,
-                                    kEAGLDrawablePropertyColorFormat, nil];
-    }
-    return self;
-}
-
-- (void) dealloc
-{
-    [renderer release];
-    
-    [super dealloc];
-}
-
-- (void) setCurrentContext
-{
-    [renderer setCurrentContext];
-}
-
-- (void) endRendering
-{
-    [renderer endRendering];
-}
-
-- (void) layoutSubviews
-{
-    [renderer resizeFromLayer:(CAEAGLLayer*)self.layer];
-}
-
 @end
 
 #endif // #if defined(__DAVAENGINE_IPHONE__)

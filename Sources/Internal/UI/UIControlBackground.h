@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_UI_CONTROL_BACKGROUND_H__
 #define __DAVAENGINE_UI_CONTROL_BACKGROUND_H__
 

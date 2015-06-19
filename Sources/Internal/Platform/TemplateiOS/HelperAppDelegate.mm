@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "Base/BaseTypes.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #if defined(__DAVAENGINE_IPHONE__)
@@ -84,16 +85,6 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
     return DAVA::Core::DEVICE_HANDSET;
 }
 
-void iOSMakeCurrent()
-{
-    [renderView setCurrentContext];
-}
-
-void iOSEndFrame()
-{
-    [renderView endRendering];
-}
-
 @implementation HelperAppDelegate
 
 @synthesize renderViewController;
@@ -110,19 +101,22 @@ void iOSEndFrame()
 	
     renderViewController = [[RenderViewController alloc] init];
     
-    rhi::Api rhiRenderer = (rhi::Api)DAVA::Core::Instance()->GetOptions()->GetInt32("renderer", (DAVA::int32)rhi::RHI_GLES2);
+    DVASSERT(DAVA::Core::Instance()->GetOptions()->IsKeyExists("renderer"));
+    rhi::Api rhiRenderer = (rhi::Api)DAVA::Core::Instance()->GetOptions()->GetInt32("renderer");
     if(rhiRenderer == rhi::RHI_GLES2)
     {
         renderView = [renderViewController createGLView];
-
-        DAVA::Core::Instance()->rendererParams.endFrameFunc = &iOSEndFrame;
-        DAVA::Core::Instance()->rendererParams.makeCurrentFunc = &iOSMakeCurrent;
     }
     else if(rhiRenderer == rhi::RHI_METAL)
     {
         renderView = [renderViewController createMetalView];
-        DAVA::Core::Instance()->rendererParams.context = [renderView layer];
     }
+    
+    DAVA::Core::Instance()->rendererParams.window = [renderView layer];
+    
+    DAVA::Size2i screenSize = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+    DAVA::Core::Instance()->rendererParams.width = screenSize.dx;
+    DAVA::Core::Instance()->rendererParams.height = screenSize.dy;
     
 	DAVA::UIScreenManager::Instance()->RegisterController(CONTROLLER_GL, renderViewController);
 	DAVA::UIScreenManager::Instance()->SetGLControllerId(CONTROLLER_GL);

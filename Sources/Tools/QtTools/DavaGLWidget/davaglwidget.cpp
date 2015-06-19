@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "DAVAEngine.h"
 
 #include "Platform/Qt5/QtLayer.h"
@@ -175,7 +174,10 @@ void OpenGLWindow::wheelEvent(QWheelEvent *e)
         return;
 
     controlMapper->wheelEvent(e);
-    emit mouseScrolled( e->delta() );
+    if ( e->orientation() == Qt::Vertical )
+    {
+        emit mouseScrolled( e->delta() );
+    }
 }
 
 void OpenGLWindow::handleDragMoveEvent(QDragMoveEvent* e)
@@ -252,11 +254,12 @@ void DavaGLWidget::OnWindowExposed()
     disconnect( openGlWindow.data(), &OpenGLWindow::Exposed, this, &DavaGLWidget::OnWindowExposed );
 
     const auto contextId = FrameworkLoop::Instance()->GetRenderContextId();
-    DAVA::QtLayer::Instance()->InitializeGlWindow( contextId );
+    DAVA::QtLayer::Instance()->InitializeGlWindow(contextId);
     isInitialized = true;
 
-    PerformSizeChange();
     emit Initialized();
+
+    PerformSizeChange();
 }
 
 void DavaGLWidget::resizeEvent(QResizeEvent *e)

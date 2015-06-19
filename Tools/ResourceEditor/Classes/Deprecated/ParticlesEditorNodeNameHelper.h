@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __PARTICLES_EDITOR_NODE_NAME_HELPER_H__
 #define __PARTICLES_EDITOR_NODE_NAME_HELPER_H__
 

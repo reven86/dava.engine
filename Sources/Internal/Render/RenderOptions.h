@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_RENDEROPTIONS_H__
 #define __DAVAENGINE_RENDEROPTIONS_H__
 

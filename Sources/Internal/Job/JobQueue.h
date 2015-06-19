@@ -24,7 +24,8 @@
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-    =====================================================================================*/
+=====================================================================================*/
+
 
 #ifndef __DAVAENGINE_JOB_QUEUE_H__
 #define __DAVAENGINE_JOB_QUEUE_H__
@@ -33,7 +34,7 @@
 #include "Base/Atomic.h"
 #include "Base/Function.h"
 #include "Platform/Mutex.h"
-#include "Platform/Thread.h"
+#include "Platform/ConditionalVariable.h"
 #include "Thread/Spinlock.h"
 #include "Thread/Semaphore.h"
 

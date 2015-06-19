@@ -30,11 +30,11 @@
 #ifndef __DAVAENGINE_CORE_PLATFORM_WIN32_H__
 #define __DAVAENGINE_CORE_PLATFORM_WIN32_H__
 
-#include "DAVAEngine.h"
+#include "Base/Platform.h"
 #if defined(__DAVAENGINE_WIN32__)
 
+#include "DAVAEngine.h"
 #include "CoreWin32PlatformBase.h"
-#include "WindowsSpecifics.h"
 
 namespace DAVA {
 
@@ -59,11 +59,8 @@ public:
 	DisplayMode windowedMode;
 	bool isFullscreen;
 	RECT		windowPositionBeforeFullscreen;
+
 private:
-
-    void CreateGLContext();
-    void CreateDirect3DDevice();
-
 	static const uint32 WINDOWED_STYLE = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
 	static const uint32 FULLSCREEN_STYLE = WS_VISIBLE | WS_POPUP;
 
@@ -83,4 +80,4 @@ private:
 
 } // end namespace DAVA
 #endif // #if defined(__DAVAENGINE_WIN32__)
-#endif // __DAVAENGINE_CORE_PLATFORM_MAC_OS_H__
+#endif // __DAVAENGINE_CORE_PLATFORM_WIN32_H__

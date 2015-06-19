@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_FAKE_OCCLUSION_H__
 #define __DAVAENGINE_FAKE_OCCLUSION_H__
 

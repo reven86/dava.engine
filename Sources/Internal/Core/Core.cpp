@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "DAVAClassRegistrator.h"
 
 #include "FileSystem/FileSystem.h"
@@ -61,6 +62,7 @@
 #include "UI/UIControlSystem.h"
 
 #include "Network/NetCore.h"
+#include "MemoryManager/MemoryProfiler.h"
 
 #include "Job/JobManager.h"
 
@@ -175,7 +177,6 @@ void Core::CreateSingletons()
     DeviceInfo::InitializeScreenInfo();
     
     RegisterDAVAClasses();
-    CheckDataTypeSizes();
 
     new Net::NetCore();
 
@@ -190,13 +191,10 @@ void Core::CreateSingletons()
 // We do not create RenderManager until we know which version of render manager we want to create
 void Core::CreateRenderer()
 {
-    rhi::Api renderer;    
     DVASSERT(options->IsKeyExists("renderer"));    
-    renderer = (rhi::Api)options->GetInt32("renderer");
-    Size2i bufferSize = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+    rhi::Api renderer = (rhi::Api)options->GetInt32("renderer");
     
-    Renderer::Initialize(renderer, rendererParams, bufferSize.dx, bufferSize.dy);
-    RenderSystem2D::Instance()->Init();
+    Renderer::Initialize(renderer, rendererParams);
 }
         
 void Core::ReleaseSingletons()
@@ -264,24 +262,6 @@ SafeRelease(options);
 #endif
 }
     
-void Core::CheckDataTypeSizes()
-{
-    CheckType(int8(), 8, "int8");
-    CheckType(uint8(), 8, "uint8");
-    CheckType(int16(), 16, "int16");
-    CheckType(uint16(), 16, "uint16");
-    CheckType(int32(), 32, "int32");
-    CheckType(uint32(), 32, "uint32");
-}
-
-template <class T> void Core::CheckType(T t, int32 expectedSize, const char * typeString)
-{
-    if ((sizeof(t) * 8) != expectedSize)
-    {
-        Logger::Error("Size of %s is incorrect. Expected size: %d. Platform size: %d", typeString, expectedSize, sizeof(t));
-    }
-}
-
 KeyedArchive * Core::GetOptions()
 {
     return options;
@@ -455,6 +435,7 @@ Logger::Info("Core::SystemAppStarted");
     if (core != nullptr)
     {
         Core::Instance()->CreateRenderer();
+        RenderSystem2D::Instance()->Init();
         core->OnAppStarted();
     }
 }
@@ -498,6 +479,15 @@ void Core::SystemProcessFrame()
     Stats::Instance()->BeginFrame();
     TIME_PROFILE("Core::SystemProcessFrame");
     
+#ifndef __DAVAENGINE_WIN_UAP__
+    // Poll for network I/O events here, not depending on Core active flag
+    Net::NetCore::Instance()->Poll();
+    // Give memory profiler chance to notify its subscribers about new frame
+    DAVA_MEMORY_PROFILER_UPDATE();
+#else
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
+#endif
+
     if( !core )
     {
         #if PROFILER_ENABLED
@@ -569,9 +559,6 @@ void Core::SystemProcessFrame()
         DownloadManager::Instance()->Update();
         JobManager::Instance()->Update();
 
-        // Poll for network I/O events here
-        Net::NetCore::Instance()->Poll();
-
         core->Update(frameDelta);
         InputSystem::Instance()->OnAfterUpdate();
         STOP_TIMING(PROF__FRAME_UPDATE);
@@ -642,9 +629,19 @@ void Core::SetCommandLine(const DAVA::String& cmdLine)
 {
     commandLine.clear();
     Split(cmdLine, " ", commandLine);
+
+    //remove "quotes"
+    for (auto& arg : commandLine)
+    {
+        const char quote = '\"';
+        if (arg.front() == quote && arg.back() == quote)
+        {
+            arg = arg.substr(1, arg.size() - 2);
+        }
+    }
 }
 
-Vector<String> & Core::GetCommandLine()
+const Vector<String> & Core::GetCommandLine()
 {
     return commandLine;
 }
@@ -665,12 +662,12 @@ void Core::SetIsActive(bool _isActive)
 Logger::Info( "Core::SetIsActive %s", (_isActive)?"TRUE":"FALSE" );
 }
 
-#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)    
+#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__)    
 Core::eDeviceFamily Core::GetDeviceFamily()
 {
     return DEVICE_DESKTOP;
 }
-#endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
+#endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__)
     
 uint32 Core::GetScreenDPI()
 {

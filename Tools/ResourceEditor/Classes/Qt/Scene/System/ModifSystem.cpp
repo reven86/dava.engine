@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Qt/Scene/System/ModifSystem.h"
 #include "Qt/Scene/System/HoodSystem.h"
 #include "Qt/Scene/System/CameraSystem.h"
@@ -807,6 +806,25 @@ bool EntityModificationSystem::IsEntityContainRecursive(const DAVA::Entity *enti
 
 void EntityModificationSystem::CloneBegin()
 {
+    // remove modif entities that are children for other modif entities
+    for (uint32 i = 0; i < modifEntities.size(); ++i)
+    {
+        auto checkedEntity = modifEntities[i].entity;
+        for (uint32 j = 0; j < modifEntities.size(); ++j)
+        {
+            if (i == j)
+                continue;
+
+            if (modifEntities[j].entity->IsMyChildRecursive(checkedEntity))
+            {
+                RemoveExchangingWithLast(modifEntities, i);
+                --i;
+                break;
+            }
+        }
+        
+    }
+
 	if(modifEntities.size() > 0)
 	{
         clonedEntities.reserve(modifEntities.size());
@@ -869,10 +887,14 @@ void EntityModificationSystem::CloneEnd()
 
 			// remove entity from scene
 			DAVA::Entity *cloneParent = clonedEntities[i]->GetParent();
-			cloneParent->RemoveNode(clonedEntities[i]);
 
-			// and add it once again with command
-			sceneEditor->Exec(new EntityAddCommand(clonedEntities[i], cloneParent));
+            if (cloneParent)
+            {
+                cloneParent->RemoveNode(clonedEntities[i]);
+
+                // and add it once again with command
+                sceneEditor->Exec(new EntityAddCommand(clonedEntities[i], cloneParent));
+            }
 
 			// make cloned entiti selected
 			SafeRelease(clonedEntities[i]);

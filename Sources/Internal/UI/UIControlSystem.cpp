@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "UI/UIControlSystem.h"
 #include "UI/UIScreen.h"
 #include "FileSystem/Logger.h"
@@ -38,6 +37,7 @@
 #include "Debug/Stats.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/Renderer.h"
+#include "Render/RenderHelper.h"
 
 namespace DAVA 
 {
@@ -197,9 +197,9 @@ void UIControlSystem::ProcessScreenLogic()
 		LockInput();
 		
 		CancelAllInputs();
-		
-        NotifyListenersWillSwitch(nextScreenProcessed);
 
+        NotifyListenersWillSwitch(nextScreenProcessed);
+        
 		// If we have transition set
 		if (transitionProcessed)
 		{
@@ -332,26 +332,11 @@ void UIControlSystem::Draw()
 
     drawCounter = 0;
 
-
-    rhi::RenderPassConfig clearPassConfig;
-    clearPassConfig.priority = PRIORITY_CLEAR;
-    clearPassConfig.colorBuffer[0].clearColor[0] = clearPassConfig.colorBuffer[0].clearColor[1] = clearPassConfig.colorBuffer[0].clearColor[2] = .4f;
-    clearPassConfig.colorBuffer[0].clearColor[3] = 1.f;
-    clearPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
-    clearPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_NONE;
-    clearPassConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
-    clearPassConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
-    clearPassConfig.viewport.width = Renderer::GetFramebufferWidth();
-    clearPassConfig.viewport.height = Renderer::GetFramebufferHeight();
-
-    rhi::HPacketList emptyPacketList;
-    rhi::HRenderPass clearPass = rhi::AllocateRenderPass(clearPassConfig, 1, &emptyPacketList);
-
-    rhi::BeginRenderPass(clearPass);
-    rhi::BeginPacketList(emptyPacketList);
-    rhi::EndPacketList(emptyPacketList);
-    rhi::EndRenderPass(clearPass);
-
+    rhi::Viewport viewport;
+    viewport.x = viewport.y = 0U;
+    viewport.width = (uint32)Renderer::GetFramebufferWidth();
+    viewport.height = (uint32)Renderer::GetFramebufferHeight();
+    RenderHelper::Instance()->CreateClearPass(rhi::HTexture(), PRIORITY_CLEAR, Color(.4f, .4f, .4f, 1.f), viewport);
 
 	if (currentScreen)
 	{
@@ -483,12 +468,12 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 		//add new touches
 		for (Vector<UIEvent>::const_iterator wit = activeInputs.begin(); wit != activeInputs.end(); wit++) 
 		{
-			bool isFind = FALSE;
+			bool isFind = false;
 			for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
 			{
 				if((*it).tid == (*wit).tid)
 				{
-					isFind = TRUE;
+					isFind = true;
                     break;
 				}
 			}
@@ -504,12 +489,12 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 		}
 		for (Vector<UIEvent>::const_iterator wit = allInputs.begin(); wit != allInputs.end(); wit++) 
 		{
-			bool isFind = FALSE;
+			bool isFind = false;
 			for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
 			{
 				if((*it).tid == (*wit).tid)
 				{
-					isFind = TRUE;
+					isFind = true;
                     break;
 				}
 			}

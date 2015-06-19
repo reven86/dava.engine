@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_SHADOW_VOLUME_NODE_H__
 #define __DAVAENGINE_SHADOW_VOLUME_NODE_H__
 

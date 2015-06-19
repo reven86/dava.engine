@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __QT_PROPERTY_DATA_DAVA_VARIANT_H__
 #define __QT_PROPERTY_DATA_DAVA_VARIANT_H__
 

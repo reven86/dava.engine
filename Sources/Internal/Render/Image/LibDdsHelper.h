@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_DXT_HELPER_H__
 #define __DAVAENGINE_DXT_HELPER_H__
 

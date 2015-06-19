@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene/System/StructureSystem.h"
 #include "Scene/System/CameraSystem.h"
 #include "Scene/SceneSignals.h"

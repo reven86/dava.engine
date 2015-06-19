@@ -1466,7 +1466,7 @@ SWIGINTERN int SWIG_Lua_iterate_bases(lua_State *L, swig_type_info * SWIGUNUSED 
     if(bases_count>0)
     {
       int to_remove;
-      size_t i;
+      int i;
       int j;
       int subcall_last_arg;
       int subcall_first_arg = lua_gettop(L) + 1;/* Here a copy of first_arg and arguments begin */
@@ -1477,10 +1477,10 @@ SWIGINTERN int SWIG_Lua_iterate_bases(lua_State *L, swig_type_info * SWIGUNUSED 
       subcall_last_arg = lua_gettop(L);
 
       /* Trick: temporarily replacing original metatable with metatable for base class and call getter */
-      for(i=0;i<bases_count;i++) {
+      for(i=0;static_cast<size_t>(i)<bases_count;i++) {
         /* Iteration through class bases */
 #if (SWIG_LUA_TARGET == SWIG_LUA_FLAVOR_LUA)
-        lua_rawgeti(L,bases_table,i+1);
+        lua_rawgeti(L,bases_table, i+1);
         base_swig_type = 0;
         if(lua_isnil(L,-1)) {
           valid = 0;
@@ -5536,7 +5536,7 @@ static int _wrap_AutotestingSystemLua_IsSelected(lua_State* L) {
   bool result;
   
   SWIG_check_num_args("DAVA::AutotestingSystemLua::IsSelected",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::IsSelected",1,"DAVA::AutotestingSystemLua *");
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::IsSelected",1,"DAVA::AutotestingSystemLua const *");
   if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::IsSelected",2,"DAVA::UIControl *");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
@@ -5548,7 +5548,7 @@ static int _wrap_AutotestingSystemLua_IsSelected(lua_State* L) {
     SWIG_fail_ptr("AutotestingSystemLua_IsSelected",2,SWIGTYPE_p_DAVA__UIControl);
   }
   
-  result = (bool)(arg1)->IsSelected(arg2);
+  result = (bool)((DAVA::AutotestingSystemLua const *)arg1)->IsSelected(arg2);
   lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
   return SWIG_arg;
   
@@ -5726,11 +5726,13 @@ static int _wrap_AutotestingSystemLua_TouchDown(lua_State* L) {
   DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
   DAVA::Vector2 *arg2 = 0 ;
   DAVA::int32 arg3 ;
+  DAVA::int32 arg4 ;
   
-  SWIG_check_num_args("DAVA::AutotestingSystemLua::TouchDown",3,3)
+  SWIG_check_num_args("DAVA::AutotestingSystemLua::TouchDown",4,4)
   if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::TouchDown",1,"DAVA::AutotestingSystemLua *");
   if(!lua_isuserdata(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::TouchDown",2,"DAVA::Vector2 const &");
   if(!lua_isnumber(L,3)) SWIG_fail_arg("DAVA::AutotestingSystemLua::TouchDown",3,"DAVA::int32");
+  if(!lua_isnumber(L,4)) SWIG_fail_arg("DAVA::AutotestingSystemLua::TouchDown",4,"DAVA::int32");
   
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
     SWIG_fail_ptr("AutotestingSystemLua_TouchDown",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
@@ -5742,7 +5744,8 @@ static int _wrap_AutotestingSystemLua_TouchDown(lua_State* L) {
   }
   
   arg3 = (DAVA::int32)lua_tonumber(L, 3);
-  (arg1)->TouchDown((DAVA::Vector2 const &)*arg2,arg3);
+  arg4 = (DAVA::int32)lua_tonumber(L, 4);
+  (arg1)->TouchDown((DAVA::Vector2 const &)*arg2,arg3,arg4);
   
   return SWIG_arg;
   

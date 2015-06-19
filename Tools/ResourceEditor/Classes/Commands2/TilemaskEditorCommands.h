@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__TILEMASKEDITORCOMMANDS__
 #define __RESOURCEEDITORQT__TILEMASKEDITORCOMMANDS__
 

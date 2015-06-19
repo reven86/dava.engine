@@ -488,32 +488,32 @@ void CubemapEditorDialog::InitForCreating(DAVA::FilePath& textureDescriptorPath,
 
 void CubemapEditorDialog::OnPXClicked()
 {
-    LoadImageFromUserFile(0, rhi::TEXTURE_FACE_LEFT);
+    LoadImageFromUserFile(0, rhi::TEXTURE_FACE_POSITIVE_X);
 }
 
 void CubemapEditorDialog::OnNXClicked()
 {
-    LoadImageFromUserFile(0, rhi::TEXTURE_FACE_RIGHT);
+    LoadImageFromUserFile(0, rhi::TEXTURE_FACE_NEGATIVE_X);
 }
 
 void CubemapEditorDialog::OnPYClicked()
 {
-    LoadImageFromUserFile(0, rhi::TEXTURE_FACE_FRONT);
+    LoadImageFromUserFile(0, rhi::TEXTURE_FACE_POSITIVE_Y);
 }
 
 void CubemapEditorDialog::OnNYClicked()
 {
-    LoadImageFromUserFile(0, rhi::TEXTURE_FACE_BACK);
+    LoadImageFromUserFile(0, rhi::TEXTURE_FACE_NEGATIVE_Y);
 }
 
 void CubemapEditorDialog::OnPZClicked()
 {
-    LoadImageFromUserFile(0, rhi::TEXTURE_FACE_TOP);
+    LoadImageFromUserFile(0, rhi::TEXTURE_FACE_POSITIVE_Z);
 }
 
 void CubemapEditorDialog::OnNZClicked()
 {
-    LoadImageFromUserFile(0, rhi::TEXTURE_FACE_BOTTOM);
+    LoadImageFromUserFile(0, rhi::TEXTURE_FACE_NEGATIVE_Z);
 }
 
 void CubemapEditorDialog::OnLoadTexture()

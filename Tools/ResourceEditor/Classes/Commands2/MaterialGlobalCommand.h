@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __MATERIAL_GLOBAL_COMMAND_H__
 #define __MATERIAL_GLOBAL_COMMAND_H__
 
