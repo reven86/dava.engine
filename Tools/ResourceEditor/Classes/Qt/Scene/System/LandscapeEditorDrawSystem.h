@@ -41,7 +41,6 @@ class NotPassableTerrainProxy;
 class CustomColorsProxy;
 class VisibilityToolProxy;
 class RulerToolProxy;
-class GrassEditorProxy;
 class Command2;
 
 using namespace DAVA;
@@ -72,7 +71,6 @@ public:
 	CustomColorsProxy* GetCustomColorsProxy();
 	VisibilityToolProxy* GetVisibilityToolProxy();
 	RulerToolProxy* GetRulerToolProxy();
-    GrassEditorProxy* GetGrassEditorProxy();
 
 	eErrorType EnableCustomDraw();
 	void DisableCustomDraw();
@@ -139,7 +137,6 @@ protected:
     
     bool UpdateTilemaskPathname();
     
-
     Entity* landscapeNode;
 	Landscape* baseLandscape;
 	LandscapeProxy* landscapeProxy;
@@ -148,7 +145,6 @@ protected:
 	CustomColorsProxy* customColorsProxy;
 	VisibilityToolProxy* visibilityToolProxy;
 	RulerToolProxy* rulerToolProxy;
-    GrassEditorProxy *grassEditorProxy;
 
 	uint32 customDrawRequestCount;
 

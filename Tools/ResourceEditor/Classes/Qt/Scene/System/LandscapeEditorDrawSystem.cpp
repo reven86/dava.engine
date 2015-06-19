@@ -35,7 +35,6 @@
 #include "LandscapeEditorDrawSystem/VisibilityToolProxy.h"
 #include "LandscapeEditorDrawSystem/NotPassableTerrainProxy.h"
 #include "LandscapeEditorDrawSystem/RulerToolProxy.h"
-#include "LandscapeEditorDrawSystem/GrassEditorProxy.h"
 
 #include "Commands2/InspMemberModifyCommand.h"
 #include "Commands2/InspDynamicModifyCommand.h"
@@ -54,7 +53,6 @@ LandscapeEditorDrawSystem::LandscapeEditorDrawSystem(Scene* scene)
 ,	customColorsProxy(nullptr)
 ,	visibilityToolProxy(nullptr)
 ,	rulerToolProxy(nullptr)
-,   grassEditorProxy(nullptr)
 ,	customDrawRequestCount(0)
 ,   sourceTilemaskPath("")
 {	
@@ -68,7 +66,6 @@ LandscapeEditorDrawSystem::~LandscapeEditorDrawSystem()
 	SafeRelease(customColorsProxy);
 	SafeRelease(visibilityToolProxy);
 	SafeRelease(rulerToolProxy);
-    SafeRelease(grassEditorProxy);
 
 	SafeDelete(notPassableTerrainProxy);	
 }
@@ -81,11 +78,6 @@ LandscapeProxy* LandscapeEditorDrawSystem::GetLandscapeProxy()
 HeightmapProxy* LandscapeEditorDrawSystem::GetHeightmapProxy()
 {
 	return heightmapProxy;
-}
-
-GrassEditorProxy* LandscapeEditorDrawSystem::GetGrassEditorProxy()
-{
-    return grassEditorProxy;
 }
 
 CustomColorsProxy* LandscapeEditorDrawSystem::GetCustomColorsProxy()
@@ -117,6 +109,8 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableCustomDra
 		return initError;
 	}
 
+    
+    
 	landscapeProxy->SetMode(LandscapeProxy::MODE_CUSTOM_LANDSCAPE);
 	landscapeProxy->SetHeightmap(heightmapProxy);
 
@@ -438,10 +432,6 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::Init()
 	{
         rulerToolProxy = new RulerToolProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
 	}
-    if(!grassEditorProxy)
-    {
-        grassEditorProxy = new GrassEditorProxy(NULL);
-    }
 
 	return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
