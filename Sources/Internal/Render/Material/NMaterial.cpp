@@ -725,7 +725,7 @@ void NMaterial::Save(KeyedArchive * archive, SerializationContext * serializatio
     {
         NMaterialProperty* property = it->second;
 
-        uint32 dataSize = ShaderDescriptor::CalculateDataSize(property->type, property->arraySize);
+        uint32 dataSize = ShaderDescriptor::CalculateDataSize(property->type, property->arraySize) * sizeof(float32);
         uint32 storageSize = sizeof(uint8) + sizeof(uint32) + dataSize;
         uint8* propertyStorage = new uint8[storageSize];
 
@@ -909,7 +909,7 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
     };
            
     Array<FastName, 8> propertyFloat4toFloat3 =
-    {
+    {{
         NMaterialParamName::PARAM_FOG_COLOR,
         NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SKY,
         NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SUN,
@@ -918,11 +918,11 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
         Landscape::PARAM_TILE_COLOR1,
         Landscape::PARAM_TILE_COLOR2,
         Landscape::PARAM_TILE_COLOR3,
-    };
+    }};
     Array<FastName, 1> propertyFloat3toFloat4 =
-    {
+    {{
         NMaterialParamName::PARAM_FLAT_COLOR,
-    };
+    }};
 
     if (archive->IsKeyExists("properties"))
     {

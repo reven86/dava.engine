@@ -766,64 +766,15 @@ void Texture::Invalidate()
 }
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
-Image * Texture::ReadDataToImage()
-{
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
-    const PixelFormatDescriptor & formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(texDescriptor->format);
-
-    Image *image = Image::Create(width, height, formatDescriptor.formatID);
-    uint8 *imageData = image->GetData();
-#if RHI_COMPLETE
-#if defined(__DAVAENGINE_OPENGL__)
-    
-    int32 saveFBO = RenderManager::Instance()->HWglGetLastFBO();
-    int32 saveId = RenderManager::Instance()->HWglGetLastTextureID(textureType);
-
-    RenderManager::Instance()->HWglBindFBO(fboID);
-	RenderManager::Instance()->HWglBindTexture(id, textureType);
-    
-    if(FORMAT_INVALID != formatDescriptor.formatID)
-    {
-		RENDER_VERIFY(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
-        RENDER_VERIFY(glReadPixels(0, 0, width, height, formatDescriptor.format, formatDescriptor.type, (GLvoid *)imageData));
-    }
-
-    RenderManager::Instance()->HWglBindFBO(saveFBO);
-    RenderManager::Instance()->HWglBindTexture(saveId, textureType);
-    
-#endif //#if defined(__DAVAENGINE_OPENGL__)
-#endif  // RHI_COMPLETE
-    return image; 
-}
-
-
 Image * Texture::CreateImageFromMemory()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     Image *image = NULL;
-#if RHI_COMPLETE
-    if(isRenderTarget)
-    {
-        image = ReadDataToImage();
-    }
-    else
-    {
-        Texture * oldRenderTarget = RenderManager::Instance()->GetRenderTarget();
-
-        Texture *renderTarget = Texture::CreateFBO(width, height, texDescriptor->format, DEPTH_NONE);
-        RenderHelper::Instance()->Set2DRenderTarget(renderTarget);
-        RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-        RenderHelper::Instance()->DrawTexture(this, renderState);
-
-        RenderManager::Instance()->SetRenderTarget(oldRenderTarget);
-        
-        image = renderTarget->CreateImageFromMemory(renderState);
-
-        SafeRelease(renderTarget);
-    }
-#endif //RHI_COMPLETE        
+    
+    void * mappedData = rhi::MapTexture(handle);
+    image = Image::CreateFromData(width, height, texDescriptor->format, (uint8 *)mappedData);
+    rhi::UnmapTexture(handle);
     
     return image;
 }

@@ -122,7 +122,8 @@ void QtLayer::InitializeGlWindow(uint64 glContextId)
 
 void QtLayer::Resize(int32 width, int32 height)
 {
-    Renderer::Reset(width, height);
+    rhi::ResetParam resetParams = { (uint32)width, (uint32)height };
+    Renderer::Reset(resetParams);
 
     VirtualCoordinatesSystem *vcs = VirtualCoordinatesSystem::Instance();
     if(vcs)

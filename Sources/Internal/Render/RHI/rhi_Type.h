@@ -209,6 +209,7 @@ public:
 
 
     static bool     IsCompatible( const VertexLayout& vbLayout, const VertexLayout& shaderLayout );
+    static bool     MakeCompatible( const VertexLayout& vbLayout, const VertexLayout& shaderLayout, VertexLayout* compatibleLayout );
 
 
     void            Dump() const;

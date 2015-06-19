@@ -141,6 +141,12 @@ void FrameworkLoop::ProcessFrameInternal()
         context->makeCurrent(glWidget->GetGLWindow());
     }
     DAVA::QtLayer::Instance()->ProcessFrame();
+
+    if (glWidget != nullptr)
+    {
+        QEvent updateEvent(QEvent::UpdateRequest);
+        QApplication::sendEvent(glWidget->GetGLWindow(), &updateEvent);
+    }
 }
 
 void FrameworkLoop::Quit()
@@ -148,15 +154,6 @@ void FrameworkLoop::Quit()
 #if RHI_COMPLETE_EDITOR
     DAVA::RenderManager::Instance()->SetRenderContextId( 0 );
 #endif // RHI_COMPLETE_EDITOR
-}
-
-void FrameworkLoop::EndFrame()
-{
-    if (glWidget != nullptr)
-    {
-        QEvent updateEvent(QEvent::UpdateRequest);
-        QApplication::sendEvent(glWidget->GetGLWindow(), &updateEvent);
-    }
 }
 
 void FrameworkLoop::OnWindowDestroyed()
@@ -169,15 +166,9 @@ void MakeCurrentGL()
     FrameworkLoop::Instance()->Context();
 }
 
-void EndFrameGL()
-{
-    FrameworkLoop::Instance()->EndFrame();
-}
-
 void FrameworkLoop::OnWindowInitialized()
 {
     DAVA::Core::Instance()->rendererParams.makeCurrentFunc = &MakeCurrentGL;
-    DAVA::Core::Instance()->rendererParams.endFrameFunc = &EndFrameGL;
 
     DAVA::QtLayer::Instance()->AppStarted();
 

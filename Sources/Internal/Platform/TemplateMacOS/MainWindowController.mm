@@ -116,16 +116,6 @@ namespace DAVA
 	}
 }
 
-void MacOSMakeCurrentGL()
-{
-    [[mainWindowController->openGLView openGLContext] makeCurrentContext];
-}
-
-void MacOSEndFrameGL()
-{
-    [[mainWindowController->openGLView openGLContext] flushBuffer];
-}
-
 - (id)init
 {
     self = [super init];
@@ -410,8 +400,9 @@ if(fullScreen != _fullScreen)
 	NSLog(@"[CoreMacOSPlatform] Application will finish launching: %@", [[NSBundle mainBundle] bundlePath]);
     
     DAVA::CoreMacOSPlatform * macCore = (DAVA::CoreMacOSPlatform *)Core::Instance();
-    macCore->rendererParams.endFrameFunc = &MacOSEndFrameGL;
-    macCore->rendererParams.makeCurrentFunc = &MacOSMakeCurrentGL;
+    macCore->rendererParams.window = mainWindowController->openGLView;
+    macCore->rendererParams.width = [mainWindowController->openGLView frame].size.width;
+    macCore->rendererParams.height = [mainWindowController->openGLView frame].size.height;
     
 	Core::Instance()->SystemAppStarted();
 }

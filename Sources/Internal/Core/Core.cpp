@@ -191,13 +191,10 @@ void Core::CreateSingletons()
 // We do not create RenderManager until we know which version of render manager we want to create
 void Core::CreateRenderer()
 {
-    rhi::Api renderer;    
     DVASSERT(options->IsKeyExists("renderer"));    
-    renderer = (rhi::Api)options->GetInt32("renderer");
-    Size2i bufferSize = VirtualCoordinatesSystem::Instance()->GetPhysicalScreenSize();
+    rhi::Api renderer = (rhi::Api)options->GetInt32("renderer");
     
-    Renderer::Initialize(renderer, rendererParams, bufferSize.dx, bufferSize.dy);
-    RenderSystem2D::Instance()->Init();
+    Renderer::Initialize(renderer, rendererParams);
 }
         
 void Core::ReleaseSingletons()
@@ -438,6 +435,7 @@ Logger::Info("Core::SystemAppStarted");
     if (core != nullptr)
     {
         Core::Instance()->CreateRenderer();
+        RenderSystem2D::Instance()->Init();
         core->OnAppStarted();
     }
 }

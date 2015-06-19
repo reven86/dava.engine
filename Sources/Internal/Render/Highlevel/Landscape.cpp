@@ -1102,6 +1102,9 @@ void Landscape::GetDataNodes(Set<DataNode*> & dataNodes)
 void Landscape::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    
+    AnimatedObject::SaveObject(archive);
+    
     archive->SetUInt32("ro.debugflags", debugFlags);
     archive->SetUInt32("ro.sOclIndex", staticOcclusionIndex);
 
@@ -1125,8 +1128,6 @@ void Landscape::Save(KeyedArchive * archive, SerializationContext * serializatio
 void Landscape::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-    DVASSERT(archive);
-
 
     debugFlags = archive->GetUInt32("ro.debugflags", 0);
     staticOcclusionIndex = (uint16)archive->GetUInt32("ro.sOclIndex", INVALID_STATIC_OCCLUSION_INDEX);
@@ -1181,8 +1182,9 @@ NMaterial * Landscape::GetMaterial()
 
 void Landscape::SetMaterial(NMaterial * material)
 {
+    SafeRetain(material);
     SafeRelease(landscapeMaterial);
-    landscapeMaterial = SafeRetain(material);
+    landscapeMaterial = material;
 
     for (uint32 i = 0; i < GetRenderBatchCount(); ++i)
         GetRenderBatch(i)->SetMaterial(landscapeMaterial);

@@ -61,9 +61,13 @@ public:
 		
 protected:
 	
-	uint32 curToolSize;
+	int32 curToolSize;
 	Texture* toolImageTexture;
+    rhi::HTextureSet toolTextureSet;
 
+    Texture * loadedTexture;
+    rhi::HTextureSet loadedTextureSet;
+    
 	Color drawColor;
 	int32 colorIndex;
 
@@ -74,8 +78,8 @@ protected:
 	Image* originalImage;
 	
 	void UpdateToolImage(bool force = false);
-	void UpdateBrushTool(float32 timeElapsed);
-	Image* CreateToolImage(int32 sideSize, const FilePath& filePath);
+	void UpdateBrushTool();
+	void CreateToolImage(const FilePath& filePath);
 	
 	void AddRectToAccumulator(const Rect& rect);
 	void ResetAccumulatorRect();

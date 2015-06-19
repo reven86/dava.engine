@@ -41,7 +41,6 @@ class NotPassableTerrainProxy;
 class CustomColorsProxy;
 class VisibilityToolProxy;
 class RulerToolProxy;
-class GrassEditorProxy;
 class Command2;
 
 using namespace DAVA;
@@ -72,7 +71,6 @@ public:
 	CustomColorsProxy* GetCustomColorsProxy();
 	VisibilityToolProxy* GetVisibilityToolProxy();
 	RulerToolProxy* GetRulerToolProxy();
-    GrassEditorProxy* GetGrassEditorProxy();
 
 	eErrorType EnableCustomDraw();
 	void DisableCustomDraw();
@@ -89,7 +87,6 @@ public:
 	void SetCursorTexture(Texture* cursorTexture);
 	void SetCursorSize(float32 cursorSize);
 	void SetCursorPosition(const Vector2& cursorPos);
-	void UpdateCursorPosition();
 	
 	virtual void Process(DAVA::float32 timeElapsed);
 
@@ -140,7 +137,6 @@ protected:
     
     bool UpdateTilemaskPathname();
     
-
     Entity* landscapeNode;
 	Landscape* baseLandscape;
 	LandscapeProxy* landscapeProxy;
@@ -149,13 +145,8 @@ protected:
 	CustomColorsProxy* customColorsProxy;
 	VisibilityToolProxy* visibilityToolProxy;
 	RulerToolProxy* rulerToolProxy;
-    GrassEditorProxy *grassEditorProxy;
 
 	uint32 customDrawRequestCount;
-	
-	Texture* cursorTexture;
-	uint32 cursorSize;
-	Vector2 cursorPosition;
 
     FilePath sourceTilemaskPath;
 };

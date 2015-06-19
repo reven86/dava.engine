@@ -285,7 +285,9 @@ VertexLayout::IsCompatible( const VertexLayout& vbLayout, const VertexLayout& sh
 
         for( unsigned v=0; v!=vbLayout.ElementCount(); ++v )
         {
-            if( vbLayout.ElementSemantics(v) == shaderLayout.ElementSemantics(s) )
+            if(     vbLayout.ElementSemantics(v) == shaderLayout.ElementSemantics(s) 
+                &&  vbLayout.ElementSemanticsIndex(v) == shaderLayout.ElementSemanticsIndex(s)
+              )
             {
                 hasAttr = true;
                 break;
@@ -300,6 +302,52 @@ VertexLayout::IsCompatible( const VertexLayout& vbLayout, const VertexLayout& sh
     }
 
     return usable;
+}
+
+
+//------------------------------------------------------------------------------
+
+bool
+VertexLayout::MakeCompatible( const VertexLayout& vbLayout, const VertexLayout& shaderLayout, VertexLayout* compatibleLayout )
+{
+    bool    success = false;
+
+    if( IsCompatible( vbLayout, shaderLayout ) )
+    {
+        uint32  pad_i = 0;
+
+        compatibleLayout->Clear();
+
+        for( unsigned v=0; v!=vbLayout.ElementCount(); ++v )
+        {
+            bool    do_pad = true;
+
+            for( unsigned s=0; s!=shaderLayout.ElementCount(); ++s )
+            {
+                if(     vbLayout.ElementSemantics(v) == shaderLayout.ElementSemantics(s) 
+                    &&  vbLayout.ElementSemanticsIndex(v) == shaderLayout.ElementSemanticsIndex(s)
+                  )
+                {
+                    do_pad = false;
+                    break;
+                }
+            }
+            
+            if( do_pad )
+            {
+                compatibleLayout->AddElement( VS_PAD, pad_i, VDT_UINT8, vbLayout.ElementSize(v) );
+                ++pad_i;
+            }
+            else
+            {
+                compatibleLayout->AddElement( vbLayout.ElementSemantics(v), vbLayout.ElementSemanticsIndex(v), vbLayout.ElementDataType(v), vbLayout.ElementDataCount(v) );
+            }
+        }
+
+        success = true;
+    }
+
+    return success;
 }
 
 

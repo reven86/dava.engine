@@ -35,7 +35,6 @@
 #include "LandscapeEditorDrawSystem/VisibilityToolProxy.h"
 #include "LandscapeEditorDrawSystem/NotPassableTerrainProxy.h"
 #include "LandscapeEditorDrawSystem/RulerToolProxy.h"
-#include "LandscapeEditorDrawSystem/GrassEditorProxy.h"
 
 #include "Commands2/InspMemberModifyCommand.h"
 #include "Commands2/InspDynamicModifyCommand.h"
@@ -54,9 +53,7 @@ LandscapeEditorDrawSystem::LandscapeEditorDrawSystem(Scene* scene)
 ,	customColorsProxy(nullptr)
 ,	visibilityToolProxy(nullptr)
 ,	rulerToolProxy(nullptr)
-,   grassEditorProxy(nullptr)
 ,	customDrawRequestCount(0)
-,	cursorTexture(nullptr)
 ,   sourceTilemaskPath("")
 {	
 }
@@ -69,8 +66,6 @@ LandscapeEditorDrawSystem::~LandscapeEditorDrawSystem()
 	SafeRelease(customColorsProxy);
 	SafeRelease(visibilityToolProxy);
 	SafeRelease(rulerToolProxy);
-    SafeRelease(grassEditorProxy);
-	SafeRelease(cursorTexture);
 
 	SafeDelete(notPassableTerrainProxy);	
 }
@@ -83,11 +78,6 @@ LandscapeProxy* LandscapeEditorDrawSystem::GetLandscapeProxy()
 HeightmapProxy* LandscapeEditorDrawSystem::GetHeightmapProxy()
 {
 	return heightmapProxy;
-}
-
-GrassEditorProxy* LandscapeEditorDrawSystem::GetGrassEditorProxy()
-{
-    return grassEditorProxy;
 }
 
 CustomColorsProxy* LandscapeEditorDrawSystem::GetCustomColorsProxy()
@@ -119,6 +109,8 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableCustomDra
 		return initError;
 	}
 
+    
+    
 	landscapeProxy->SetMode(LandscapeProxy::MODE_CUSTOM_LANDSCAPE);
 	landscapeProxy->SetHeightmap(heightmapProxy);
 
@@ -160,6 +152,12 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::IsNotPassableTe
 
 LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassableTerrain()
 {
+    eErrorType canBeEnabledError = IsNotPassableTerrainCanBeEnabled();
+    if (canBeEnabledError != LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
+    {
+        return canBeEnabledError;
+    }
+    
 	if (!notPassableTerrainProxy)
 	{
 		notPassableTerrainProxy = new NotPassableTerrainProxy(baseLandscape->GetHeightmap()->Size());
@@ -168,12 +166,6 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
 	if (notPassableTerrainProxy->IsEnabled())
 	{
 		return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
-	}
-
-	eErrorType canBeEnabledError = IsNotPassableTerrainCanBeEnabled();
-	if (canBeEnabledError != LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
-	{
-		return canBeEnabledError;
 	}
 
 	eErrorType enableCustomDrawError = EnableCustomDraw();
@@ -215,41 +207,23 @@ void LandscapeEditorDrawSystem::DisableCursor()
 
 void LandscapeEditorDrawSystem::SetCursorTexture(Texture* cursorTexture)
 {
-	SafeRelease(this->cursorTexture);
-	this->cursorTexture = SafeRetain(cursorTexture);
-	
 	landscapeProxy->SetCursorTexture(cursorTexture);
 }
 
 void LandscapeEditorDrawSystem::SetCursorSize(float32 cursorSize)
 {
-	this->cursorSize = cursorSize;
 	if (landscapeProxy)
 	{
 		landscapeProxy->SetCursorSize(cursorSize);
-		UpdateCursorPosition();
 	}
 }
 
 void LandscapeEditorDrawSystem::SetCursorPosition(const Vector2& cursorPos)
 {
-	cursorPosition = cursorPos;// - Vector2(cursorSize / 2.f, cursorSize / 2.f);
-	UpdateCursorPosition();
-}
-
-void LandscapeEditorDrawSystem::UpdateCursorPosition()
-{
-    Vector2 p = cursorPosition;
-    if(cursorSize & 0x1)
+    if (landscapeProxy)
     {
-        p = p - Vector2((cursorSize - 1) / 2.f, (cursorSize - 1) / 2.f);
+        landscapeProxy->SetCursorPosition(cursorPos);
     }
-    else
-    {
-        p = p - Vector2(cursorSize / 2.f, cursorSize / 2.f);
-    }
-	 
-	landscapeProxy->SetCursorPosition(p);
 }
 
 void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
@@ -273,10 +247,6 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 	
 	if (customColorsProxy && customColorsProxy->IsTargetChanged())
 	{
-		if (landscapeProxy)
-		{
-            landscapeProxy->SetToolTexture(customColorsProxy->GetTexture());
-		}
 		customColorsProxy->ResetTargetChanged();
 	}
 }
@@ -462,10 +432,6 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::Init()
 	{
         rulerToolProxy = new RulerToolProxy((int32)GetTextureSize(Landscape::TEXTURE_COLOR));
 	}
-    if(!grassEditorProxy)
-    {
-        grassEditorProxy = new GrassEditorProxy(NULL);
-    }
 
 	return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }

@@ -51,9 +51,55 @@ void ViewSceneScreen::LoadResources()
  
     scene = new Scene();
     Entity *entity = scene->GetRootNode(GameCore::Instance()->GetScenePath());
+
+/*
+{
+    Entity* hullNode = entity->FindByName("hull")->Clone();
+
+
+    //create hull hierarchy to collapse in skinned mesh
+    Entity * hullSkeletonRoot = new Entity();
+    hullSkeletonRoot->SetName("hull");
+    hullSkeletonRoot->AddNode(hullNode);
+
+    Vector<SkeletonComponent::JointConfig> hullJointsConfig;
+    RenderObject * skinnedHullObject = MeshUtils::CreateSkinnedMesh(hullSkeletonRoot, hullJointsConfig);
+    ((RenderComponent *)hullNode->GetOrCreateComponent(Component::RENDER_COMPONENT))->SetRenderObject(skinnedHullObject);
+    skinnedHullObject->Release();
+    hullSkeletonRoot->Release();
+
+    Matrix4 x;
+    x.CreateTranslation(Vector3(-20,0,0));
+
+//    hullNode->SetLocalTransform( x );
+    hullNode->RemoveAllChildren();
+    scene->AddNode( hullNode );
+
+    SkeletonComponent * hullSkeleton = new SkeletonComponent();
+    hullSkeleton->SetConfigJoints(hullJointsConfig);
+    hullNode->AddComponent(hullSkeleton);
+
+    
+    Light*          light   = new Light();
+    LightComponent* light_c = new LightComponent( light );
+    Entity*         light_e = new Entity();
+    Matrix4         light_x; light_x.Identity();
+
+    light_c->SetLightType( Light::TYPE_DIRECTIONAL );
+    light_c->SetDirection( Vector3(0,-1,0) );
+
+    light_e->SetLocalTransform( light_x );
+    
+    light_e->SetName( "test-light" );
+    light_e->AddComponent( light_c );
+    scene->AddNode( light_e );
+}
+*/
+
     scene->AddNode(entity);
     scene->ReleaseRootNode(GameCore::Instance()->GetScenePath());
-    
+
+
     ScopedPtr<Camera> camera(new Camera());
     
     VirtualCoordinatesSystem* vcs = DAVA::VirtualCoordinatesSystem::Instance();
