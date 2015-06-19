@@ -973,6 +973,7 @@
 		5041C35A1B0E1A9000BC0BE3 /* InternalAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 5041C3551B0E1A9000BC0BE3 /* InternalAllocator.h */; };
 		5041C35C1B0E1A9000BC0BE3 /* TrackingAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 5041C3571B0E1A9000BC0BE3 /* TrackingAllocator.h */; };
 		5046BD801B0612DD0005D29F /* ThreadLocalPtr.h in Headers */ = {isa = PBXBuildFile; fileRef = 5046BD7F1B0612DD0005D29F /* ThreadLocalPtr.h */; };
+		5059E0931B32D9F700FD2730 /* TestClass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5059E0921B32D9F700FD2730 /* TestClass.cpp */; };
 		505EB41C18250C53009BEA3C /* OcclusionQuery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 505EB41A18250C53009BEA3C /* OcclusionQuery.cpp */; };
 		505EB41D18250C53009BEA3C /* OcclusionQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = 505EB41B18250C53009BEA3C /* OcclusionQuery.h */; };
 		50C7D5FC186082B100D8936D /* StaticOcclusionComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50C7D5FA186082B100D8936D /* StaticOcclusionComponent.cpp */; };
@@ -2106,6 +2107,7 @@
 		5041C3551B0E1A9000BC0BE3 /* InternalAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InternalAllocator.h; sourceTree = "<group>"; };
 		5041C3571B0E1A9000BC0BE3 /* TrackingAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TrackingAllocator.h; sourceTree = "<group>"; };
 		5046BD7F1B0612DD0005D29F /* ThreadLocalPtr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThreadLocalPtr.h; sourceTree = "<group>"; };
+		5059E0921B32D9F700FD2730 /* TestClass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TestClass.cpp; path = UnitTests/TestClass.cpp; sourceTree = "<group>"; };
 		505EB41A18250C53009BEA3C /* OcclusionQuery.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OcclusionQuery.cpp; sourceTree = "<group>"; };
 		505EB41B18250C53009BEA3C /* OcclusionQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OcclusionQuery.h; sourceTree = "<group>"; };
 		50C7D5F6186082A600D8936D /* StaticOcclusionSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StaticOcclusionSystem.cpp; sourceTree = "<group>"; };
@@ -3185,6 +3187,7 @@
 		50F3B85A1B1EE31D00976CBC /* UnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				5059E0921B32D9F700FD2730 /* TestClass.cpp */,
 				50F3B85D1B1EE34B00976CBC /* TestClass.h */,
 				50F3B85E1B1EE34B00976CBC /* TestClassFactory.h */,
 				50F3B85F1B1EE34B00976CBC /* TestCore.cpp */,
@@ -6307,6 +6310,7 @@
 				E8B3CCF516B9326E002BD35F /* UIEvent.cpp in Sources */,
 				E8B3CCF716B9326E002BD35F /* UIFadeTransition.cpp in Sources */,
 				E8B3CCF916B9326E002BD35F /* UIFileSystemDialog.cpp in Sources */,
+				5059E0931B32D9F700FD2730 /* TestClass.cpp in Sources */,
 				E8525D271A30911400FDF76E /* RotationControllerSystem.cpp in Sources */,
 				E8B3CCFB16B9326E002BD35F /* UIHierarchy.cpp in Sources */,
 				5015AF321B15E4D80062C971 /* MMNetClient.cpp in Sources */,

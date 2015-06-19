@@ -30,7 +30,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "Result.h"
+#include "Base/Result.h"
 #include "ui_mainwindow.h"
 
 #include "EditorSettings.h"
@@ -66,7 +66,7 @@ public:
     void CreateUndoRedoActions(const QUndoGroup *undoGroup);
     int CloseTab(int index);
     void SetCurrentTab(int index);
-    void OnProjectOpened(Result result, QString projectPath);
+    void OnProjectOpened(const DAVA::ResultList &resultList, QString projectPath);
     int AddTab(const DAVA::FilePath &scenePath);
     void OnCleanChanged(int index, bool val);
     DavaGLWidget *GetGLWidget() const;
