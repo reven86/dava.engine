@@ -254,9 +254,9 @@ void MaterialEditor::SetCurMaterial(const QList< DAVA::NMaterial *>& materials)
     treeStateHelper->SaveTreeViewState(false);
     
     FillBase();
-    FillDynamic(flagsRoot, "materialSetFlags");
-    FillDynamic(propertiesRoot, "materialProperties");
-    FillDynamic(texturesRoot, "textures");
+	FillDynamic(flagsRoot, DAVA::FastName("materialSetFlags"));
+	FillDynamic(propertiesRoot, DAVA::FastName("materialProperties"));
+	FillDynamic(texturesRoot, DAVA::FastName("textures"));
     FillTemplates(materials);
 
     // Restore back the tree view state from the shared storage.
@@ -332,7 +332,7 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
             {
                 InspMemberModifyCommand *inspCommand = (InspMemberModifyCommand *) command;
 
-                const QString memberName = inspCommand->member->Name();
+                const QString memberName = inspCommand->member->Name().c_str();
                 if (memberName == "materialGroup" || memberName == "materialTemplate")
                 {
                     for (int i = 0; i < curMaterials.size(); i++)
@@ -340,7 +340,7 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
                         curMaterials[i]->ReloadQuality();
                     }
 
-                    FillDynamic(texturesRoot, "textures");
+					FillDynamic(texturesRoot, DAVA::FastName("textures"));
                     UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
                 }
             }
@@ -351,11 +351,11 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
 
                 // if material flag was changed we should rebuild list of all properties
                 // because their set can be changed
-                const QString memberName = inspCommand->dynamicInfo->GetMember()->Name(); // Do not compare raw pointers
+                const QString memberName = inspCommand->dynamicInfo->GetMember()->Name().c_str(); // Do not compare raw pointers
                 if (memberName == "materialSetFlags")
                 {
-                    FillDynamic(propertiesRoot, "materialProperties");
-                    FillDynamic(texturesRoot, "textures");
+					FillDynamic(propertiesRoot, DAVA::FastName("materialProperties"));
+					FillDynamic(texturesRoot, DAVA::FastName("textures"));
                 }
 
                 UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
@@ -412,7 +412,7 @@ void MaterialEditor::FillBase()
         const DAVA::InspInfo *info = material->GetTypeInfo();
 
         // fill material name
-        const DAVA::InspMember *nameMember = info->Member("materialName");
+        const DAVA::InspMember *nameMember = info->Member(FastName("materialName"));
         if(NULL != nameMember)
         {
             QtPropertyDataInspMember *name = new QtPropertyDataInspMember(material, nameMember);
@@ -422,7 +422,7 @@ void MaterialEditor::FillBase()
         // fill material group, only for material type
         if(material->GetMaterialType() == DAVA::NMaterial::MATERIALTYPE_MATERIAL)
         {
-            const DAVA::InspMember *groupMember = info->Member("materialGroup");
+			const DAVA::InspMember *groupMember = info->Member(FastName("materialGroup"));
             if(NULL != groupMember)
             {
                 QtPropertyDataInspMember *group = new QtPropertyDataInspMember(material, groupMember);
@@ -441,7 +441,7 @@ void MaterialEditor::FillBase()
         }
 
         // fill illumination params
-        const DAVA::InspMember *materialIllumination = info->Member("illuminationParams");
+		const DAVA::InspMember *materialIllumination = info->Member(FastName("illuminationParams"));
         if(NULL != materialIllumination)
         {
             QtPropertyData *illumParams = QtPropertyDataIntrospection::CreateMemberData(material, materialIllumination);
@@ -459,7 +459,7 @@ void MaterialEditor::FillBase()
     }
 }
 
-void MaterialEditor::FillDynamic(QtPropertyData *root, const char* dynamicName)
+void MaterialEditor::FillDynamic(QtPropertyData *root, const FastName& dynamicName)
 {
     root->ChildRemoveAll();
 
@@ -700,7 +700,7 @@ void MaterialEditor::OnTemplateChanged(int index)
         QString newTemplatePath = GetTemplatePath(index);
         if(!newTemplatePath.isEmpty())
         {
-            const DAVA::InspMember *templateMember = material->GetTypeInfo()->Member("materialTemplate");
+			const DAVA::InspMember *templateMember = material->GetTypeInfo()->Member(FastName("materialTemplate"));
 
             if(NULL != templateMember)
             {
@@ -920,9 +920,9 @@ void MaterialEditor::OnMaterialLoad(bool checked)
             if(0 != userChoiseWhatToLoad)
             {
                 const DAVA::InspInfo *info = material->GetTypeInfo();
-                const DAVA::InspMember *materialProperties = info->Member("materialProperties");
-                const DAVA::InspMember *materialFlags = info->Member("materialSetFlags");
-                const DAVA::InspMember *materialTextures = info->Member("textures");
+                const DAVA::InspMember *materialProperties = info->Member(FastName("materialProperties"));
+				const DAVA::InspMember *materialFlags = info->Member(FastName("materialSetFlags"));
+				const DAVA::InspMember *materialTextures = info->Member(FastName("textures"));
 
                 lastCheckState = userChoiseWhatToLoad;
 

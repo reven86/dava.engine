@@ -578,7 +578,7 @@ QtPropertyData* PropertyEditor::CreateInsp(void *object, const DAVA::InspInfo *i
 					const DAVA::InspMember *member = baseInfo->Member(i);
 
                     QtPropertyData *memberData = CreateInspMember(object, member);
-					ret->ChildAdd(member->Name(), memberData);
+					ret->ChildAdd(member->Name().c_str(), memberData);
 				}
 
 				baseInfo = baseInfo->BaseInfo();
