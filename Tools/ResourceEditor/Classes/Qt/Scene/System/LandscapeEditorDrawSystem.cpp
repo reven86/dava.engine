@@ -231,6 +231,7 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 	if (heightmapProxy && heightmapProxy->IsHeightmapChanged())
 	{
 		Rect changedRect = heightmapProxy->GetChangedRect();
+        baseLandscape->UpdatePart(heightmapProxy, Rect2i((int32)changedRect.x, (int32)changedRect.y, (int32)changedRect.dx, (int32)changedRect.dy));
 		
 		if (notPassableTerrainProxy && notPassableTerrainProxy->IsEnabled())
 		{

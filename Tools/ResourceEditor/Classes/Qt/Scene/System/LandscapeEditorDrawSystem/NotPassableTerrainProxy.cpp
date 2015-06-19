@@ -141,11 +141,6 @@ Texture* NotPassableTerrainProxy::GetTexture()
 
 void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap, const AABBox3& landscapeBoundingBox, const DAVA::Rect &forRect)
 {
-	if (forRect.dx <= 0 || forRect.dy <= 0)
-	{
-		return;
-	}
-    
 	const Vector3 landSize = landscapeBoundingBox.max - landscapeBoundingBox.min;
 	
 	const float32 angleCellDistance = landSize.x / (float32)(heightmap->Size() - 1);
@@ -155,19 +150,16 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap, const AA
     const float32 targetWidth = (float32)notPassableTexture->GetWidth();
     const float32 dx = targetWidth / (float32)(heightmap->Size() - 1);
     
-    uint32 bufferSize = forRect.dx * 4 * sizeof(float32) * 4;
+    uint32 bufferSize = heightmap->Size() * heightmap->Size() * 4 * 4;
     float32 * buffer = new float32[bufferSize];
+    float32 * bufferPtr = buffer;
     
-    const int32 lastY = (int32)(forRect.y + forRect.dy);
-    const int32 lastX = (int32)(forRect.x + forRect.dx);
-    for (int32 y = (int32)forRect.y; y < lastY; ++y)
+    for (int32 y = 0; y < heightmap->Size(); ++y)
     {
         const int32 yOffset = y * heightmap->Size();
         const float32 ydx = (heightmap->Size() - y - 1) * dx;
         
-        float32 * bufferPtr = buffer;
-        
-        for (int32 x = (int32)forRect.x; x < lastX; ++x)
+        for (int32 x = 0; x < heightmap->Size(); ++x)
         {
             const uint16 currentPoint = heightmap->Data()[yOffset + x];
             const uint16 rightPoint = heightmap->Data()[yOffset + x + 1];
@@ -201,9 +193,9 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap, const AA
                 *(uint32*)(bufferPtr) = rhi::NativeColorRGBA(color.r, color.g, color.b, color.a); ++bufferPtr;
             }
         }
-        uint32 bufferOffset = (yOffset + forRect.x) * 4 * sizeof(float32) * 4;
-        rhi::UpdateVertexBuffer(gridBufferHandle, buffer, bufferOffset, bufferSize);
     }
+    
+    rhi::UpdateVertexBuffer(gridBufferHandle, buffer, 0, bufferSize * sizeof(float32));
     SafeDeleteArray(buffer);
     
     Matrix4 projMatrix;
