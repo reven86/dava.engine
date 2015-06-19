@@ -51,6 +51,9 @@ signals:
     void disconnectClicked();
     void showLogClicked();
 
+public slots:
+    void OnViewDump();
+
 public:
     explicit DeviceListWidget( QWidget *parent = NULL );
     ~DeviceListWidget();

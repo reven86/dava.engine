@@ -36,6 +36,8 @@
 #include "Render/RenderBase.h"
 #include "Utils/Utils.h"
 
+#include "MemoryManager/MemoryProfiler.h"
+
 namespace DAVA 
 {
 
@@ -54,6 +56,8 @@ public:
 
 class Image : public BaseObject
 {
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_IMAGE)
+
 protected:
 	virtual ~Image();
 public:

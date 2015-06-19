@@ -50,7 +50,7 @@ ValueProperty::~ValueProperty()
 
 int ValueProperty::GetCount() const
 {
-    return (int) children.size();
+    return static_cast<int>(children.size());
 }
 
 AbstractProperty *ValueProperty::GetProperty(int index) const

@@ -49,12 +49,16 @@ class TestCore final
         ~TestClassInfo();
 
         String name;
+        bool runTest = true;
         std::unique_ptr<TestClassFactoryBase> factory;
     };
 
 public:
-    using TestStartedCallback  = Function<void (const String&)>;
-    using TestFinishedCallback = Function<void (const String&)>;
+    using TestClassStartedCallback = Function<void (const String&)>;
+    using TestClassFinishedCallback = Function<void (const String&)>;
+    using TestClassDisabledCallback = Function<void (const String&)>;
+    using TestStartedCallback = Function<void (const String&, const String&)>;
+    using TestFinishedCallback = Function<void (const String&, const String&)>;
     using TestFailedCallback = Function<void (const String&, const String&, const String&, const char*, int, const String&)>;
 
 public:
@@ -63,11 +67,14 @@ public:
     TestCore() = default;
     ~TestCore() = default;
 
-    void Init(TestStartedCallback testStartedCallback, TestFinishedCallback testFinishedCallback, TestFailedCallback testFailedCallback);
+    void Init(TestClassStartedCallback testClassStartedCallback, TestClassFinishedCallback testClassFinishedCallback,
+              TestStartedCallback testStartedCallback, TestFinishedCallback testFinishedCallback,
+              TestFailedCallback testFailedCallback, TestClassDisabledCallback testClassDisabledCallback);
 
-    void RunOnlyThisTest(const String& testClassName);
+    void RunOnlyTheseTestClasses(const String& testClassNames);
+    void DisableTheseTestClasses(const String& testClassNames);
 
-    bool HasTests() const;
+    bool HasTestClasses() const;
 
     bool ProcessTests(float32 timeElapsed);
 
@@ -75,19 +82,19 @@ public:
     void RegisterTestClass(const char* name, TestClassFactoryBase* factory);
 
 private:
-    bool IsTestRegistered(const String& testClassName) const;
-
-private:
     Vector<TestClassInfo> testClasses;
-    String runOnlyThisTest;
 
     TestClass* curTestClass = nullptr;
     String curTestClassName;
     String curTestName;
     size_t curTestClassIndex = 0;
     size_t curTestIndex = 0;
+    bool runLoopInProgress = false;
     bool testSetUpInvoked = false;
 
+    TestClassStartedCallback testClassStartedCallback;
+    TestClassFinishedCallback testClassFinishedCallback;
+    TestClassDisabledCallback testClassDisabledCallback;
     TestStartedCallback testStartedCallback;
     TestFinishedCallback testFinishedCallback;
     TestFailedCallback testFailedCallback;
