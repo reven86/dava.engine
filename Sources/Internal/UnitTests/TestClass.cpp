@@ -26,81 +26,53 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_TESTCLASS_H__
-#define __DAVAENGINE_TESTCLASS_H__
+#include "TestClass.h"
 
-#include "Base/BaseTypes.h"
+#if defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_ANDROID__)
+#   include <cxxabi.h>
+#endif
 
 namespace DAVA
 {
 namespace UnitTests
 {
 
-template<typename T>
-struct TestClassTypeKeeper
+String TestClass::PrettifyTypeName(const String& name) const
 {
-    using TestClassType = T;
-};
-
-class TestClass
-{
-    struct TestInfo
+    String result = name;
+#if defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_ANDROID__)
+    // abi::__cxa_demangle reference
+    // https://gcc.gnu.org/onlinedocs/libstdc++/libstdc++-html-USERS-4.3/a01696.html
+    int status = 0;
+    char* demangledName = abi::__cxa_demangle(name.c_str(), nullptr, nullptr, &status);
+    if (demangledName != nullptr)
     {
-        TestInfo(const char* name_, void (*testFunction_)(TestClass*))
-            : name(name_)
-            , testFunction(testFunction_)
-        {}
-        String name;
-        void (*testFunction)(TestClass*);
-    };
+        result = demangledName;
+        free(demangledName);
+    }
+#endif
 
-public:
-    TestClass() = default;
-    virtual ~TestClass() = default;
-
-    virtual void SetUp(const String& testName) {}
-    virtual void TearDown(const String& testName) {}
-    virtual void Update(float32 timeElapsed, const String& testName) {}
-    virtual bool TestComplete(const String& testName) const { return true; }
-
-    virtual Vector<String> ClassesCoveredByTests() const { return Vector<String>(); }
-
-    const String& TestName(size_t index) const;
-    size_t TestCount() const;
-    void RunTest(size_t index);
-
-    void RegisterTest(const char* name, void (*testFunc)(TestClass*));
-
-protected:
-    String PrettifyTypeName(const String& name) const;
-    String RemoveTestPostfix(const String& name) const;
-
-private:
-    Vector<TestInfo> tests;
-};
-
-//////////////////////////////////////////////////////////////////////////
-inline const String& TestClass::TestName(size_t index) const
-{
-    return tests[index].name;
+    size_t spacePos = result.find_last_of(": ");
+    if (spacePos != String::npos)
+    {
+        return result.substr(spacePos + 1);
+    }
+    return result;
 }
 
-inline size_t TestClass::TestCount() const
+String TestClass::RemoveTestPostfix(const String& name) const
 {
-    return tests.size();
-}
-
-inline void TestClass::RunTest(size_t index)
-{
-    tests[index].testFunction(this);
-}
-
-inline void TestClass::RegisterTest(const char* name, void (*testFunc)(TestClass*))
-{
-    tests.emplace_back(name, testFunc);
+    String lowcase = name;
+    // Convert name to lower case
+    std::transform(lowcase.begin(), lowcase.end(), lowcase.begin(), [](char ch) -> char { return 'A' <= ch && ch <= 'Z' ? ch - 'A' + 'a' : ch; });
+    size_t pos = lowcase.rfind("test");
+    // If name ends with 'test' discard it
+    if (pos != String::npos && pos > 0 && lowcase.length() - pos == 4)
+    {
+        return name.substr(0, pos);
+    }
+    return name;
 }
 
 }   // namespace UnitTests
 }   // namespace DAVA
-
-#endif  // __DAVAENGINE_TESTCLASS_H__

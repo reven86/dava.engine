@@ -48,6 +48,7 @@ TestCore::TestClassInfo::TestClassInfo(TestClassInfo&& other)
     : name(std::move(other.name))
     , runTest(other.runTest)
     , factory(std::move(other.factory))
+    , testedClasses(std::move(other.testedClasses))
 {}
 
 TestCore::TestClassInfo::~TestClassInfo() {}
@@ -183,6 +184,11 @@ bool TestCore::ProcessTests(float32 timeElapsed)
             {
                 testClassFinishedCallback(curTestClassName);
 
+                if (curTestClass->TestCount() > 0)
+                {   // Get and save class names which are covered by test only if test class has tests
+                    testClasses[curTestClassIndex].testedClasses = curTestClass->ClassesCoveredByTests();
+                }
+
                 SafeDelete(curTestClass);
                 curTestIndex = 0;
                 curTestClassIndex += 1;
@@ -195,6 +201,20 @@ bool TestCore::ProcessTests(float32 timeElapsed)
         runLoopInProgress = false;
         return false;   // No more tests, finish
     }
+}
+
+Map<String, Vector<String>> TestCore::GetTestCoverage()
+{
+    Map<String, Vector<String>> result;
+    for (TestClassInfo& x : testClasses)
+    {
+        if (!x.testedClasses.empty())
+        {
+            result.emplace(x.name, std::move(x.testedClasses));
+        }
+        x.runTest = x.runTest;
+    }
+    return result;
 }
 
 void TestCore::TestFailed(const String& condition, const char* filename, int lineno, const String& userMessage)
