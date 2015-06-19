@@ -1,4 +1,5 @@
 cmake_minimum_required( VERSION 3.0 )
+
 set                   ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo" CACHE STRING "limited configs" FORCE )
 
 project               ( QuickEd )
@@ -18,6 +19,7 @@ include_directories   ( "Classes" )
 include_directories   ( "Classes/Helpers" )
 include_directories   ( "Classes/Controllers" )
 include_directories   ( "Classes/Models" )
+include_directories   ( ${CMAKE_CURRENT_BINARY_DIR}/DavaTools/QtTools )
 
 add_definitions       ( 
 -DDAVA_QT

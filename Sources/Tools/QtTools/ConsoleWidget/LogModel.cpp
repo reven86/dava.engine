@@ -10,7 +10,7 @@
 LogModel::LogModel(QObject* parent)
     : QStandardItemModel(parent)
 {
-    connect(this, &LogModel::logged, this, &LogModel::AddMessage);
+    connect(this, &LogModel::logged, this, &LogModel::AddMessage, Qt::QueuedConnection);
     DAVA::Logger::AddCustomOutput(this);
 }
 

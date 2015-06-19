@@ -212,7 +212,7 @@
     <number>1</number>
    </attribute>
   </widget>
-  <widget class="ConsoleDockWidget" name="consoleDockWidget">
+  <widget class="QDockWidget" name="consoleDockWidget">
    <property name="windowTitle">
     <string>Console</string>
    </property>
@@ -492,12 +492,6 @@
    <class>PropertiesWidget</class>
    <extends>QDockWidget</extends>
    <header>UI/Properties/PropertiesWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ConsoleDockWidget</class>
-   <extends>QDockWidget</extends>
-   <header>UI/ConsoleView/ConsoleDockWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
