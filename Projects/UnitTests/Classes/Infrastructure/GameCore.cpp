@@ -44,7 +44,7 @@ String runOnlyTheseTestClasses = "";
 // List of semicolon separated names specifying which test classes shouldn't run. This list takes precedence over runOnlyTheseTests
 String disableTheseTestClasses = "";
 
-bool teamcityOutputEnabled = false;      // Flag whether to enable TeamCity output
+bool teamcityOutputEnabled = true;      // Flag whether to enable TeamCity output
 bool teamcityCaptureStdout = false;     // Flag whether to set TeamCity option 'captureStandardOutput=true'
 
 }
