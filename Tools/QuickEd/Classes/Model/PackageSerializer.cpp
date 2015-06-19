@@ -393,7 +393,7 @@ void PackageSerializer::VisitIntrospectionProperty(IntrospectionProperty *proper
 {
     if (property->IsReplaced())
     {
-        PutValueProperty(property->GetMember()->Name(), property);
+        PutValueProperty(property->GetMember()->Name().c_str(), property);
     }
 }
 

@@ -38,6 +38,12 @@
 
 using namespace DAVA;
 
+namespace
+{
+const FastName PROPERTY_NAME_TEXT("text");
+const FastName PROPERTY_NAME_FONT("font");
+}
+
 ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *aControl, const DAVA::InspInfo *typeInfo, const ControlPropertiesSection *sourceSection, eCloneType cloneType)
     : SectionProperty(typeInfo->Name())
     , control(SafeRetain(aControl))
@@ -47,17 +53,15 @@ ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl *aControl, co
         const InspMember *member = typeInfo->Member(i);
         if ((member->Flags() & I_EDIT) != 0)
         {
-            String memberName = member->Name();
-            
             ValueProperty *sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindProperty(member);
 
             ValueProperty *prop = nullptr;
             //TODO: move it to fabric class
-            if (strcmp(member->Name(), "text") == 0)
+            if (member->Name() == PROPERTY_NAME_TEXT)
             {
                 prop = new LocalizedTextValueProperty(control, member, dynamic_cast<LocalizedTextValueProperty*>(sourceProperty), cloneType);
             }
-            else if (strcmp(member->Name(), "font") == 0)
+            else if (member->Name() == PROPERTY_NAME_FONT)
             {
                 prop = new FontValueProperty(control, member, dynamic_cast<FontValueProperty*>(sourceProperty), cloneType);
             }

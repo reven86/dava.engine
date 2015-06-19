@@ -105,8 +105,7 @@ namespace DAVA
         virtual ~InspMember() {};
 
 		// Имя члена интроспекции, соответствует имени члена класса
-		const char* Name() const;
-        const FastName& GetFastName() const;
+		const FastName& Name() const;
 
 		// Описание члена интроспекции, произвольно указанное пользователем при объявлении интроспекции
 		const InspDesc& Desc() const;
@@ -159,8 +158,7 @@ namespace DAVA
 	protected:
 		void ApplyParentInsp(const InspInfo *parentInsp) const;
 
-		const char* name;
-        FastName fastName;
+		FastName name;
 		InspDesc desc;
 		const long int offset;
 		const MetaInfo* type;

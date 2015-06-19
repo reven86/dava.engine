@@ -41,9 +41,13 @@
 
 namespace DAVA
 {
-    
+
+namespace
+{
 const String EXCEPTION_CLASS_UI_TEXT_FIELD = "UITextField";
 const String EXCEPTION_CLASS_UI_LIST = "UIList";
+const FastName PROPERTY_NAME_TEXT("text");
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ControlDescr
@@ -339,13 +343,13 @@ void DefaultUIPackageBuilder::ProcessProperty(const InspMember *member, const Va
     
     if (currentObject && value.GetType() != VariantType::TYPE_NONE)
     {
-        if (UIStyleSheetPropertyDataBase::Instance()->IsValidStyleSheetProperty(member->GetFastName()))
+        if (UIStyleSheetPropertyDataBase::Instance()->IsValidStyleSheetProperty(member->Name()))
         {
             UIControl *control = controlsStack.back()->control.Get();
-            control->SetPropertyLocalFlag(UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyIndex(member->GetFastName()), true);
+            control->SetPropertyLocalFlag(UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyIndex(member->Name()), true);
         }
 
-        if (String(member->Name()) == "text")
+        if (member->Name() == PROPERTY_NAME_TEXT)
             member->SetValue(currentObject, VariantType(LocalizedString(value.AsWideString())));
         else
             member->SetValue(currentObject, value);

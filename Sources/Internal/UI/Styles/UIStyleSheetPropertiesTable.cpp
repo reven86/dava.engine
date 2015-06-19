@@ -117,7 +117,7 @@ void UIStyleSheetPropertyDataBase::ProcessObjectIntrospection(const InspInfo* ty
     {
         const InspMember *member = typeInfo->Member(i);
             
-        const auto& iter = propertyNameToIndexMap.find(member->GetFastName());
+        const auto& iter = propertyNameToIndexMap.find(member->Name());
         if (iter != propertyNameToIndexMap.end())
         {
             DVASSERT(properties[iter->second].targetMembers.empty() ? true : member->Type() == properties[iter->second].targetMembers.back().memberInfo->Type());

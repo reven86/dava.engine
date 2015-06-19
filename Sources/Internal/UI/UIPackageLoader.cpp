@@ -384,7 +384,7 @@ void UIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *contr
 
 VariantType UIPackageLoader::ReadVariantTypeFromYamlNode(const InspMember *member, const YamlNode *node, AbstractUIPackageBuilder *builder)
 {
-    const YamlNode *valueNode = node->Get(member->Name());
+    const YamlNode *valueNode = node->Get(member->Name().c_str());
     if (valueNode)
     {
         return valueNode->AsVariantType(member);
