@@ -50,7 +50,6 @@
 #include "Model/ControlProperties/CustomClassProperty.h"
 #include "Model/ControlProperties/PrototypeNameProperty.h"
 #include "Model/YamlPackageSerializer.h"
-#include "Model/EditorUIPackageBuilder.h"
 
 #include "PackageMimeData.h"
 
