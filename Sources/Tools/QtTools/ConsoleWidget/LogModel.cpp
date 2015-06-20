@@ -10,7 +10,7 @@
 LogModel::LogModel(QObject* parent)
     : QStandardItemModel(parent)
 {
-    connect(this, &LogModel::logged, this, &LogModel::AddMessage, Qt::QueuedConnection);
+    connect(this, &LogModel::logged, this, static_cast<void(LogModel::*)(int, const QString &)>(&LogModel::AddMessage));
     DAVA::Logger::AddCustomOutput(this);
 }
 
@@ -21,31 +21,30 @@ LogModel::~LogModel()
 
 void LogModel::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text)
 {
-    emit const_cast<LogModel *>(this)->logged(ll, QString::fromStdString(std::string(text)));
+    emit logged(ll, QString::fromStdString(std::string(text)));
 }
 
 void LogModel::AddMessage(int ll, const QString& text)
 {
-    const QList<QStandardItem *>& row = CreateItem(ll, normalize(text));
-    appendRow(row);
+    auto item = CreateItem(ll, normalize(text));
+    appendRow(item);
 }
 
-QList<QStandardItem *> LogModel::CreateItem(int ll, const QString& text) const
+void LogModel::AddMessage(int ll, const QString &text, const QVariant &data)
 {
-    QList<QStandardItem *> row;
+    auto item = CreateItem(ll, text);
+    item->setData(data);
+    appendRow(item);
+}
 
+QStandardItem * LogModel::CreateItem(int ll, const QString& text) const
+{
     QStandardItem* textItem = new QStandardItem();
     textItem->setText(text);
     textItem->setToolTip(text);
     textItem->setIcon(GetIcon(ll));
-    row << textItem;
-
-    for (int i = 0; i < row.size(); i++)
-    {
-        row[i]->setData(ll, LEVEL_ROLE);
-    }
-
-    return row;
+    textItem->setData(ll, LEVEL_ROLE);
+    return textItem;
 }
 
 QString LogModel::normalize(const QString& text) const

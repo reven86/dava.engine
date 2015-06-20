@@ -9,16 +9,12 @@
 #include "LogFilterModel.h"
 #include "LogDelegate.h"
 
-namespace
-{
-    const int scrollDelay = 50;
-}
-
 
 LogWidget::LogWidget(QWidget* parent)
     : QWidget(parent)
 {
     setupUi(this);
+    connect(log, &QListView::clicked, this, &LogWidget::OnClicked);
     time.start();
 
     LogDelegate* delegate = new LogDelegate(log, this);
@@ -64,6 +60,28 @@ void LogWidget::Deserialize(const QByteArray& data)
     filter->selectUserData(logLevels);
 }
 
+void LogWidget::AddResultList(const DAVA::ResultList &resultList)
+{
+    for(const auto &result : resultList.GetResults())
+    {
+        DAVA::Logger::eLogLevel level;
+        switch(result.type)
+        {
+            case DAVA::Result::RESULT_SUCCESS:
+                level = DAVA::Logger::LEVEL_INFO;
+            break;
+            case DAVA::Result::RESULT_WARNING:
+                level = DAVA::Logger::LEVEL_WARNING;
+            break;
+            case DAVA::Result::RESULT_ERROR:
+                level = DAVA::Logger::LEVEL_ERROR;
+            break;
+        }
+        void* dataPtr =reinterpret_cast<void*>(result.data.AsInt64());
+        logModel->AddMessage(level, QString::fromStdString(result.message), QVariant::fromValue<void*>(dataPtr));
+    }
+}
+
 void LogWidget::OnTextFilterChanged(const QString& text)
 {
     logFilterModel->SetFilterString(text);
@@ -88,7 +106,6 @@ void LogWidget::FillFiltersCombo()
         m->setData(index, Qt::Checked, Qt::CheckStateRole);
     }
 }
-
 
 bool LogWidget::eventFilter(QObject* watched, QEvent* event)
 {
@@ -145,4 +162,12 @@ void LogWidget::OnCopy()
 void LogWidget::OnClear()
 {
     logModel->clear();
+}
+
+void LogWidget::OnClicked(const QModelIndex &index)
+{
+    void* ptr = logModel->itemFromIndex(index)->data().value<void*>();
+    
+    emit ItemClicked(DAVA::VariantType(reinterpret_cast<DAVA::int64>(ptr)));
+    
 }

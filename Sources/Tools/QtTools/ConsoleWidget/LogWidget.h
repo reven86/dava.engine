@@ -6,20 +6,19 @@
 #include <QPointer>
 #include <QTime>
 #include "ui_LogWidget.h"
+#include "Base/Result.h"
 
 namespace Ui
 {
     class LogWidget;
 };
 
-
 class QTimer;
 class LogModel;
 class LogFilterModel;
 
 
-class LogWidget
-    : public QWidget, public Ui::LogWidget
+class LogWidget : public QWidget, public Ui::LogWidget
 {
     Q_OBJECT
 
@@ -30,11 +29,15 @@ public:
     LogModel *Model();
     QByteArray Serialize() const;
     void Deserialize(const QByteArray &data);
-
+public slots:
+    void AddResultList(const DAVA::ResultList &resultList);
+signals:
+    void ItemClicked(const DAVA::VariantType data);
 private slots:
     void OnTextFilterChanged(const QString& text);
     void OnCopy();
     void OnClear();
+    void OnClicked(const QModelIndex &index);
 
 private:
     void FillFiltersCombo();

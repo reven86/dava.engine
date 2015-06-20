@@ -33,11 +33,12 @@ public:
 
     void Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text) override;
 
-private slots:
-    void AddMessage(int ll, const QString& text);
+public slots:
+    void AddMessage(int ll, const QString &text);
+    void AddMessage(int ll, const QString &text, const QVariant &data);
 
 private:
-    QList<QStandardItem *> CreateItem(int ll, const QString& text) const;
+    QStandardItem* CreateItem(int ll, const QString& text) const;
     QString normalize(const QString& text) const;
 
     mutable QMap<int, QPixmap> icons;
