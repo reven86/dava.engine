@@ -39,13 +39,11 @@
 #include "Utils/QtDavaConvertion.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
-#include "QtTools/ConsoleWidget/LogWidget.h"
 
 namespace
 {
     const QString APP_GEOMETRY = "geometry";
     const QString APP_STATE = "windowstate";
-    const QString CONSOLE_STATE = "console state";
     const char* COLOR_PROPERTY_ID = "color";
 }
 
@@ -60,17 +58,7 @@ MainWindow::MainWindow(QWidget *parent)
     setupUi(this);
     actionLocalizationManager->setEnabled(false);
     InitLanguageBox();
-    // Console dock
-    {
-        LogWidget *logWidget = new LogWidget();
-        consoleDockWidget->setWidget(logWidget);
-        QSettings settings(APP_COMPANY, APP_NAME);
-        const auto var = settings.value(CONSOLE_STATE);
-        if (var.canConvert<QByteArray>())
-        {
-            logWidget->Deserialize(var.toByteArray());
-        }
-    }
+    
     tabBar->setElideMode(Qt::ElideNone);
     setWindowTitle(ResourcesManageHelper::GetProjectTitle());
 
@@ -145,23 +133,11 @@ void MainWindow::SaveMainWindowState()
     QSettings settings(QApplication::organizationName(), QApplication::applicationName());
     settings.setValue(APP_GEOMETRY, saveGeometry());
     settings.setValue(APP_STATE, saveState());
-    auto logWidget = qobject_cast<LogWidget*>(consoleDockWidget->widget());
-    settings.setValue(CONSOLE_STATE, logWidget->Serialize());
 }
 
 void MainWindow::RestoreMainWindowState()
 {
     QSettings settings(QApplication::organizationName(), QApplication::applicationName());
-    // Check settings befor applying it
-    if (settings.value(APP_GEOMETRY).isValid())
-    {
-        restoreGeometry(settings.value(APP_GEOMETRY).toByteArray());
-    }
-    if (settings.value(APP_STATE).isValid())
-    {
-        restoreState(settings.value(APP_STATE).toByteArray());
-    }
-	QSettings settings(APP_COMPANY, APP_NAME);
     auto val = settings.value(APP_GEOMETRY);
     if (val.canConvert<QByteArray>())
 	{

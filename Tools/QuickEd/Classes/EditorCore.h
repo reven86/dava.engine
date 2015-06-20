@@ -44,6 +44,7 @@ class MainWindow;
 class PackageNode;
 
 class DialogReloadSprites;
+class LogWidget;
 
 class EditorCore : public QObject, public DAVA::Singleton<EditorCore>
 {
@@ -91,6 +92,7 @@ private:
     MainWindow *mainWindow;
     
     DialogReloadSprites *dialogReloadSprites;
+    LogWidget *logWidget;
 };
 
 inline MainWindow* EditorCore::GetMainWindow() const

@@ -36,8 +36,17 @@
 #include "EditorCore.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "SharedData.h"
+#include "QtTools/ConsoleWidget/LogWidget.h"
+#include <QSettings>
+#include <QVariant>
+#include <QByteArray>
+
 
 using namespace DAVA;
+namespace
+{
+    const QString CONSOLE_STATE = "console state";
+}
 
 EditorCore::EditorCore(QObject *parent)
     : QObject(parent)
@@ -46,14 +55,28 @@ EditorCore::EditorCore(QObject *parent)
     , documentGroup(new DocumentGroup(this))
     , mainWindow(new MainWindow())
     , dialogReloadSprites(new DialogReloadSprites(mainWindow))
+    , logWidget(new LogWidget(mainWindow))
 {
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
     
-    QAction* actionReloadSprites = dialogReloadSprites->GetActionReloadSprites();
-    mainWindow->menuTools->addAction(actionReloadSprites);
-    mainWindow->toolBarPlugins->addAction(actionReloadSprites);
-    connect(dialogReloadSprites->GetSpritesPacker(), &SpritesPacker::ProcessStared, this, &EditorCore::CloseAllDocuments, Qt::BlockingQueuedConnection);
+    // Relod Sprites
+    {
+        QAction* actionReloadSprites = dialogReloadSprites->GetActionReloadSprites();
+        mainWindow->menuTools->addAction(actionReloadSprites);
+        mainWindow->toolBarPlugins->addAction(actionReloadSprites);
+        connect(dialogReloadSprites->GetSpritesPacker(), &SpritesPacker::ProcessStared, this, &EditorCore::CloseAllDocuments, Qt::BlockingQueuedConnection);
+    }
+    // Console dock
+    {
+        mainWindow->consoleDockWidget->setWidget(logWidget);
+        QSettings settings(QApplication::organizationName(), QApplication::applicationName());
+        const auto var = settings.value(CONSOLE_STATE);
+        if (var.canConvert<QByteArray>())
+        {
+            logWidget->Deserialize(var.toByteArray());
+        }
+    }
     
     connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
     connect(mainWindow, &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
@@ -84,6 +107,8 @@ EditorCore::EditorCore(QObject *parent)
     
 EditorCore::~EditorCore()
 {
+    QSettings settings(QApplication::organizationName(), QApplication::applicationName());
+    settings.setValue(CONSOLE_STATE, logWidget->Serialize());
     delete mainWindow;
 }
 
