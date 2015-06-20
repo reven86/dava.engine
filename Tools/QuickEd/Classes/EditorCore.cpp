@@ -192,6 +192,11 @@ void EditorCore::UpdateLanguage()
     }
 }
 
+void EditorCore::OnGotError(const DAVA::ResultList resultList)
+{
+    
+}
+
 void EditorCore::OpenProject(const QString &path)
 {
     if (!CloseProject())

@@ -57,7 +57,7 @@ private:
     
 public:
     void AddImportedPackagesIntoPackage(const DAVA::Vector<DAVA::FilePath> packagePaths, PackageNode *package);
-    void RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*> &importedPackage, PackageNode *package);
+    DAVA::ResultList RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*> &importedPackage, PackageNode *package);
 
 public:
     void ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value);

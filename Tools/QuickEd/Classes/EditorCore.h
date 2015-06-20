@@ -33,6 +33,7 @@
 #include <QObject>
 #include "UI/mainwindow.h"
 #include "Project/Project.h"
+#include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
 
 class QAction;
@@ -66,6 +67,8 @@ protected slots:
     void OnCurrentTabChanged(int index);
     
     void UpdateLanguage();
+    
+    void OnGotError(const DAVA::ResultList resultList);
 
 protected:
     void OpenProject(const QString &path);

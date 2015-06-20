@@ -101,8 +101,9 @@ void QtModelPackageCommandExecutor::AddImportedPackagesIntoPackage(const DAVA::V
     }
 }
 
-void QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*> &importedPackages, PackageNode *package)
+ResultList QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*> &importedPackages, PackageNode *package)
 {
+    ResultList resultList;
     DAVA::Vector<PackageNode*> checkedPackages;
     for (PackageNode *testPackage : importedPackages)
     {
@@ -117,7 +118,13 @@ void QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(const DAVA
             }
         }
         if (canRemove)
+        {
             checkedPackages.push_back(testPackage);
+        }
+        else
+        {
+            resultList.AddResult(Result::RESULT_ERROR, "can not delete package " + testPackage->GetName(), VariantType(reinterpret_cast<int64>(testPackage)));
+        }
     }
     
     if (!checkedPackages.empty())
@@ -129,6 +136,7 @@ void QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(const DAVA
         }
         EndMacro();
     }
+    return resultList;
 }
 
 void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value)
