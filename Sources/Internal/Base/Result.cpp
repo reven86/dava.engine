@@ -38,43 +38,72 @@ Result::Result(ResultType type_, const DAVA::String &message_, const DAVA::Varia
 {
 }
 
+Result::Result(Result &&result)
+    : type(result.type)
+    , message(std::move(result.message))
+    , data(std::move(result.data))
+{
+    
+}
+
+Result& Result::operator = (Result&& result)
+{
+    if (this != &result)
+    {
+        type = result.type;
+        message = std::move(result.message);
+        data = std::move(result.data);
+    }
+    return *this;
+}
+
 ResultList::ResultList()
     : allOk(true)
 {
     
 }
 
-ResultList::ResultList(const Result& result)
+ResultList::ResultList(const Result &result)
     : allOk(result)
 {
-    AddResult(result);
+    results.push_back(result);
 }
 
-ResultList::ResultList(const ResultList& resultList)
+ResultList::ResultList(Result &&result)
+    : allOk(result)
+{
+    results.emplace_back(std::move(result));
+}
+
+ResultList::ResultList(ResultList&& resultList)
     : allOk(resultList.allOk)
+    , results(std::move(resultList.results))
 {
-    results = resultList.GetResults();
-}
-
-ResultList::ResultList(const ResultList&& resultList)
-    : allOk(resultList.allOk)
-{
-    results = std::move(resultList.results);
-}
-
-ResultList& ResultList::operator=(ResultList& resultList)
-{
-    results = resultList.results;
-    allOk = resultList.allOk;
-    return *this;
+    
 }
 
 ResultList& ResultList::operator=(ResultList&& resultList)
 {
-    results = std::move(resultList.results);
-    allOk = resultList.allOk;
+    if (this != &resultList)
+    {
+        results = std::move(resultList.results);
+        allOk = resultList.allOk;
+    }
     return *this;
 }
+
+ResultList& ResultList::operator<<(const Result& result)
+{
+    results.push_back(result);
+    return *this;
+}
+
+ResultList& ResultList::operator<<(Result&& result)
+{
+    results.emplace_back(std::move(result));
+    return *this;
+}
+
 
 ResultList& ResultList::AddResult(const Result &result)
 {
@@ -83,10 +112,10 @@ ResultList& ResultList::AddResult(const Result &result)
     return *this;
 }
 
-ResultList& ResultList::AddResult(const Result &&result)
+ResultList& ResultList::AddResult(Result &&result)
 {
     allOk &= result;
-    results.emplace_back(result);
+    results.emplace_back(std::move(result));
     return *this;
 }
 
@@ -102,16 +131,16 @@ ResultList& ResultList::AddResultList(const ResultList &resultList)
     return *this;
 }
 
-ResultList& ResultList::AddResultList(const ResultList &&resultList)
+ResultList& ResultList::AddResultList(ResultList &&resultList)
 {
     allOk &= resultList.allOk;
     if (results.empty())
     {
-        results = move(resultList.results);
+        results = std::move(resultList.results);
     }
     else
     {
-        move(begin(resultList.results), end(resultList.results), back_inserter(results));
+        std::move(std::begin(resultList.results), std::end(resultList.results), std::back_inserter(results));
     }
     return *this;
 }

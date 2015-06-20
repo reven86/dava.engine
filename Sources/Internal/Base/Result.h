@@ -45,6 +45,10 @@ struct Result
         RESULT_ERROR
     };
     Result(const ResultType type = RESULT_SUCCESS, const String &message = String(), const VariantType &data = VariantType());
+    Result(const Result &result) = default;
+    Result(Result &&result);
+    Result& operator = (const Result &result) = default;
+    Result& operator = (Result &&result);
     operator bool() const;
     ResultType type = RESULT_SUCCESS;
     String message;
@@ -61,23 +65,26 @@ class ResultList
 public:
     explicit ResultList();
     explicit ResultList(const Result &result);
-    ResultList(const ResultList &resultList);
-    ResultList(const ResultList &&resultList);
+    ResultList(Result &&result);
+    ResultList(const ResultList &resultList) = default;
+    ResultList(ResultList &&resultList);
     ~ResultList() = default;
     operator bool() const;
     bool IsSuccess() const;
-    ResultList& operator = (ResultList& resultList);
+    ResultList& operator = (const ResultList &resultList) = default;
     ResultList& operator = (ResultList&& resultList);
+    ResultList& operator << (const Result &result);
+    ResultList& operator << (Result &&result);
     ResultList &AddResult(const Result &result);
-    ResultList &AddResult(const Result &&result);
+    ResultList &AddResult(Result &&result);
     ResultList &AddResult(const Result::ResultType type = Result::RESULT_SUCCESS, const String &message = String(), const VariantType &data = VariantType());
     ResultList &AddResultList(const ResultList &resultList);
-    ResultList &AddResultList(const ResultList &&resultList);
+    ResultList &AddResultList(ResultList &&resultList);
     
     const Deque<Result> &GetResults() const;
 private:
-    Deque < Result > results;
     bool allOk;
+    Deque < Result > results;
 };
 
 inline ResultList::operator bool() const
