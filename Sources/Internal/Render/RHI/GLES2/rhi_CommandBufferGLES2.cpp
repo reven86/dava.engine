@@ -666,7 +666,18 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                     }
                 }
                 
-                glGetIntegerv( GL_VIEWPORT, def_viewport );
+                def_viewport[0] = 0;
+                def_viewport[1] = 0;
+                glGetRenderbufferParameteriv( GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, def_viewport+2 );
+                glGetRenderbufferParameteriv( GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, def_viewport+3 );
+                if( glGetError() != GL_INVALID_OPERATION )
+                {
+                    glViewport( def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3] );
+                }
+                else
+                {
+                    glGetIntegerv( GL_VIEWPORT, def_viewport );
+                }
             }   break;
             
             case GLES2__END :

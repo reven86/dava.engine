@@ -102,7 +102,9 @@ metal_Texture_Create( const Texture::Descriptor& texDesc )
     DVASSERT(texDesc.levelCount);
 
     Handle                  handle = InvalidHandle;
-    MTLPixelFormat          pf     = MetalTextureFormat( texDesc.format );
+    MTLPixelFormat          pf     = (texDesc.isRenderTarget)
+                                     ? MTLPixelFormatBGRA8Unorm // CRAP: enforced render-target format
+                                     : MetalTextureFormat( texDesc.format );
     MTLTextureDescriptor*   desc   = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:pf width:texDesc.width height:texDesc.height mipmapped:NO];
     
     desc.textureType      = (texDesc.type == TEXTURE_TYPE_CUBE)  ? MTLTextureTypeCube : MTLTextureType2D;

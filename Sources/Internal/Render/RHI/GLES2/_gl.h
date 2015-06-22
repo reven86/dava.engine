@@ -25,7 +25,7 @@
     #include <OpenGLES/ES2/gl.h>
     #include <OpenGLES/ES2/glext.h>
     
-    #define GetGLErrorString aglErrorString
+    #define GetGLErrorString(code)  "<unknown>"
 
     #include "ios_gl.h"
 
