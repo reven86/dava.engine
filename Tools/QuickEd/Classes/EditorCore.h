@@ -73,7 +73,7 @@ protected slots:
     
     void UpdateLanguage();
     
-    void OnGotError(const DAVA::ResultList resultList);
+    void OnNewItemSelected(const DAVA::VariantType &var);
 
 protected:
     void OpenProject(const QString &path);

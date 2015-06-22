@@ -70,12 +70,14 @@ EditorCore::EditorCore(QObject *parent)
     // Console dock
     {
         mainWindow->consoleDockWidget->setWidget(logWidget);
+        connect(logWidget, &LogWidget::ItemClicked, this, &EditorCore::OnNewItemSelected);
         QSettings settings(QApplication::organizationName(), QApplication::applicationName());
         const auto var = settings.value(CONSOLE_STATE);
         if (var.canConvert<QByteArray>())
         {
             logWidget->Deserialize(var.toByteArray());
         }
+        connect(mainWindow->packageWidget, &PackageWidget::GotResult, logWidget, &LogWidget::AddResultList);
     }
     
     connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
@@ -257,9 +259,9 @@ void EditorCore::UpdateLanguage()
     }
 }
 
-void EditorCore::OnGotError(const DAVA::ResultList resultList)
+void EditorCore::OnNewItemSelected(const DAVA::VariantType &var)
 {
-    
+    qDebug() << "cliked" << var.AsInt64();
 }
 
 void EditorCore::OpenProject(const QString &path)

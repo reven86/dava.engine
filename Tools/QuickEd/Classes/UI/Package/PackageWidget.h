@@ -58,7 +58,7 @@ public slots:
     void OnDocumentChanged(SharedData *context);
     void OnDataChanged(const QByteArray &role);
 signals:
-    void GotResult(const DAVA::ResultList result);
+    void GotResult(const DAVA::ResultList &result);
 private:
     void LoadContext();
     void SaveContext();

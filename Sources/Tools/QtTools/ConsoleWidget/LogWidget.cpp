@@ -166,8 +166,18 @@ void LogWidget::OnClear()
 
 void LogWidget::OnClicked(const QModelIndex &index)
 {
-    void* ptr = logModel->itemFromIndex(index)->data().value<void*>();
-    
-    emit ItemClicked(DAVA::VariantType(reinterpret_cast<DAVA::int64>(ptr)));
-    
+    auto pIndex = logFilterModel->mapToSource(index);
+    const auto item = logModel->itemFromIndex(pIndex);
+    if (nullptr != item)
+    {
+        auto data = item->data();
+        if (data.canConvert<void*>())
+        {
+            void* ptr = data.value<void*>();
+            if (nullptr != ptr)
+            {
+                emit ItemClicked(DAVA::VariantType(reinterpret_cast<DAVA::int64>(ptr)));
+            }
+        }
+    }
 }
