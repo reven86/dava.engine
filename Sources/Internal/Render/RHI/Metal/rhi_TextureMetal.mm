@@ -181,12 +181,12 @@ metal_Texture_Map( Handle tex, unsigned level, TextureFace face )
         
         switch( face )
         {
-            case TEXTURE_FACE_LEFT   : slice = 0; break;
-            case TEXTURE_FACE_RIGHT  : slice = 1; break;
-            case TEXTURE_FACE_FRONT  : slice = 2; break;
-            case TEXTURE_FACE_BACK   : slice = 3; break;
-            case TEXTURE_FACE_TOP    : slice = 4; break;
-            case TEXTURE_FACE_BOTTOM : slice = 5; break;
+            case TEXTURE_FACE_NEGATIVE_X  : slice = 0; break;
+            case TEXTURE_FACE_POSITIVE_X  : slice = 1; break;
+            case TEXTURE_FACE_POSITIVE_Z  : slice = 2; break;
+            case TEXTURE_FACE_NEGATIVE_Z  : slice = 3; break;
+            case TEXTURE_FACE_POSITIVE_Y  : slice = 4; break;
+            case TEXTURE_FACE_NEGATIVE_Y  : slice = 5; break;
         }
         
         [self->uid getBytes:self->mappedData bytesPerRow:stride bytesPerImage:sz fromRegion:rgn mipmapLevel:level slice:slice];
@@ -269,12 +269,12 @@ metal_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
     
     switch( face )
     {
-        case TEXTURE_FACE_LEFT   : slice = 0; break;
-        case TEXTURE_FACE_RIGHT  : slice = 1; break;
-        case TEXTURE_FACE_FRONT  : slice = 2; break;
-        case TEXTURE_FACE_BACK   : slice = 3; break;
-        case TEXTURE_FACE_TOP    : slice = 4; break;
-        case TEXTURE_FACE_BOTTOM : slice = 5; break;
+        case TEXTURE_FACE_NEGATIVE_X  : slice = 0; break;
+        case TEXTURE_FACE_POSITIVE_X  : slice = 1; break;
+        case TEXTURE_FACE_POSITIVE_Z  : slice = 2; break;
+        case TEXTURE_FACE_NEGATIVE_Z  : slice = 3; break;
+        case TEXTURE_FACE_POSITIVE_Y  : slice = 4; break;
+        case TEXTURE_FACE_NEGATIVE_Y  : slice = 5; break;
     }
     
     if (self->format == TEXTURE_FORMAT_R4G4B4A4 || self->format == TEXTURE_FORMAT_R5G5B5A1)

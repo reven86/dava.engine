@@ -209,6 +209,7 @@ public:
 
 
     static bool     IsCompatible( const VertexLayout& vbLayout, const VertexLayout& shaderLayout );
+    static bool     MakeCompatible( const VertexLayout& vbLayout, const VertexLayout& shaderLayout, VertexLayout* compatibleLayout );
 
 
     void            Dump() const;
@@ -328,13 +329,14 @@ TextureFormat
 enum
 TextureFace
 {
-    TEXTURE_FACE_LEFT,
-    TEXTURE_FACE_RIGHT,
-    TEXTURE_FACE_FRONT,
-    TEXTURE_FACE_BACK,
-    TEXTURE_FACE_TOP,
-    TEXTURE_FACE_BOTTOM
+    TEXTURE_FACE_POSITIVE_X,
+    TEXTURE_FACE_NEGATIVE_X,
+    TEXTURE_FACE_POSITIVE_Y,
+    TEXTURE_FACE_NEGATIVE_Y,
+    TEXTURE_FACE_POSITIVE_Z,
+    TEXTURE_FACE_NEGATIVE_Z
 };
+
 enum
 TextureAddrMode
 {
