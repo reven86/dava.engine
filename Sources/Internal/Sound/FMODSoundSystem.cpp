@@ -100,7 +100,14 @@ SoundSystem::SoundSystem()
 #ifdef DAVA_FMOD_PROFILE
     initFlags |= FMOD_INIT_ENABLE_PROFILE;
 #endif
+
+#ifndef __DAVAENGINE_WIN_UAP__
     FMOD_RESULT initResult = fmodEventSystem->init(MAX_SOUND_VIRTUAL_CHANNELS, initFlags, extraDriverData);
+#else
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    FMOD_RESULT initResult = FMOD_ERR_BADCOMMAND;
+#endif
+
     if (initResult != FMOD_OK)
     {
         Logger::Error("Failed to initialize FMOD: %s", FMOD_ErrorString(initResult));
@@ -381,7 +388,7 @@ void SoundSystem::Update(float32 timeElapsed)
 
     if (fmodEventSystem)
     {
-        fmodEventSystem->update();
+        FMOD_VERIFY(fmodEventSystem->update());
     }
     
 	uint32 size = static_cast<uint32>(soundsToReleaseOnUpdate.size());

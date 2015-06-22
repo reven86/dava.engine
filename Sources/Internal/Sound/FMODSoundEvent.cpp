@@ -50,11 +50,11 @@ FMODSoundEvent::FMODSoundEvent(const FastName & _eventName) :
     if (SoundSystem::Instance()->fmodEventSystem)
     {
         FMOD::Event * fmodEventInfo = nullptr;
-        SoundSystem::Instance()->fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo);
+        FMOD_VERIFY(SoundSystem::Instance()->fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo));
         if (fmodEventInfo)
         {
             FMOD_MODE mode = 0;
-            fmodEventInfo->getPropertyByIndex(FMOD_EVENTPROPERTY_MODE, &mode);
+            FMOD_VERIFY(fmodEventInfo->getPropertyByIndex(FMOD_EVENTPROPERTY_MODE, &mode));
             is3D = (mode == FMOD_3D);
 
             InitParamsMap();
@@ -92,13 +92,27 @@ bool FMODSoundEvent::Trigger()
     }
     
     FMOD::Event * fmodEvent = nullptr;
+
+#ifndef __DAVAENGINE_WIN_UAP__
     FMOD_RESULT result = fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_DEFAULT, &fmodEvent);
+#else
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    FMOD_RESULT result = FMOD_ERR_BADCOMMAND;
+#endif
+
     if(result == FMOD_OK)
     {
         ApplyParamsToEvent(fmodEvent);
 
 		FMOD_VERIFY(fmodEvent->setVolume(volume));
-		FMOD_RESULT startResult = fmodEvent->start();
+
+#ifndef __DAVAENGINE_WIN_UAP__
+        FMOD_RESULT startResult = fmodEvent->start();
+#else
+        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+        FMOD_RESULT startResult = FMOD_ERR_BADCOMMAND;
+#endif
+
 		if(startResult == FMOD_OK)
 		{
 			FMOD_VERIFY(fmodEvent->setCallback(FMODEventCallback, this));
@@ -198,7 +212,7 @@ void FMODSoundEvent::SetPaused(bool paused)
 {
 	size_t instancesCount = fmodEventInstances.size();
 	for(size_t i = 0; i < instancesCount; ++i)
-        fmodEventInstances[i]->setPaused(paused);
+        FMOD_VERIFY(fmodEventInstances[i]->setPaused(paused));
 }
     
 void FMODSoundEvent::SetParameterValue(const FastName & paramName, float32 value)
@@ -281,7 +295,7 @@ void FMODSoundEvent::GetEventParametersInfo(Vector<SoundEventParameterInfo> & pa
         FMOD::EventSystem * fmodEventSystem = SoundSystem::Instance()->fmodEventSystem;
         if (fmodEventSystem)
         {
-            fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &event);
+            FMOD_VERIFY(fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &event));
         }
     }
 
@@ -317,14 +331,16 @@ String FMODSoundEvent::GetEventName() const
 float32 FMODSoundEvent::GetMaxDistance() const
 {
     float32 distance = 0;
+    FMOD::EventSystem * fmodEventSystem = SoundSystem::Instance()->fmodEventSystem;
     FMOD::Event * fmodEventInfo = nullptr;
-    if (SoundSystem::Instance()->fmodEventSystem)
+
+    if (fmodEventSystem)
     {
-        SoundSystem::Instance()->fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo);
+        FMOD_VERIFY(fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo));
     }
     if(fmodEventInfo)
     {
-        fmodEventInfo->getPropertyByIndex(FMOD_EVENTPROPERTY_3D_MAXDISTANCE, &distance);
+        FMOD_VERIFY(fmodEventInfo->getPropertyByIndex(FMOD_EVENTPROPERTY_3D_MAXDISTANCE, &distance));
     }
 
     return distance;

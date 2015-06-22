@@ -38,6 +38,8 @@
 namespace DAVA
 {
 
+#ifndef __DAVAENGINE_WIN_UAP__
+
 #define FMOD_VERIFY(command) \
 	{ \
 	FMOD_RESULT execResult = command; \
@@ -46,6 +48,12 @@ namespace DAVA
 		Logger::Error("FMOD: %s file:%s line:%d failed with error: %s", #command, __FILE__, __LINE__, FMOD_ErrorString(execResult)); \
 	} \
 } \
+
+#else
+
+#define FMOD_VERIFY(command) __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+
+#endif
 
 };
 
