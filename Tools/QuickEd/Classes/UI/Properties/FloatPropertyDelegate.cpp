@@ -28,7 +28,7 @@
 
 
 #include "FloatPropertyDelegate.h"
-#include "FileSystem/VariantType.h"
+#include "Meta/VariantType.h"
 #include "PropertiesModel.h"
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"

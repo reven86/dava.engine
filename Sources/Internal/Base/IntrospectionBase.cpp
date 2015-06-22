@@ -28,7 +28,7 @@
 
 
 #include "Base/IntrospectionBase.h"
-#include "Base/Meta.h"
+#include "Meta/Meta.h"
 
 namespace DAVA
 {

@@ -32,7 +32,7 @@
 #include "UI/Preview/EditScreen.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Document.h"
-#include "Base/Result.h"
+#include "Meta/Result.h"
 
 using namespace DAVA;
 
@@ -236,12 +236,12 @@ void PreviewModel::OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl 
             }
             else
             {
-                resultList.AddResult(Result::RESULT_WARNING, ("selected control is equal to the current root control"));
+                resultList.AddResult(Result::RESULT_ERROR, ("selected control is equal to the current root control"));
             }
         }
         else
         {
-            resultList.AddResult(Result::RESULT_WARNING, ("rootControl not found!"));
+            resultList.AddResult(Result::RESULT_ERROR, ("rootControl not found!"));
         }
     }
     if (!selectedNodes.isEmpty())

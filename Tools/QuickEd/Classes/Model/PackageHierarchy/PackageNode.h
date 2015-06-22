@@ -32,7 +32,7 @@
 
 #include "PackageBaseNode.h"
 
-#include "FileSystem/VariantType.h"
+#include "Meta/VariantType.h"
 
 class ImportedPackagesNode;
 class PackageControlsNode;

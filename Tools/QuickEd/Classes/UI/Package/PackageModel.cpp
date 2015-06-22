@@ -382,7 +382,7 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
                             Logger* log = Logger::Instance();
                             if (nullptr != log)
                             {
-                                log->Log(result.type == Result::RESULT_WARNING ? Logger::LEVEL_WARNING : Logger::LEVEL_ERROR, result.message.c_str());
+                                log->Log(result.type == Result::RESULT_ERROR ? Logger::LEVEL_WARNING : Logger::LEVEL_ERROR, result.message.c_str());
                             }
                         }
                     }

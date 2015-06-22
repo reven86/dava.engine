@@ -31,9 +31,9 @@
 #define __DAVAENGINE_INTROSPECTION_H__
 
 #include "Debug/DVAssert.h"
-#include "FileSystem/VariantType.h"
+#include "Meta/VariantType.h"
 
-#include "Base/Meta.h"
+#include "Meta/Meta.h"
 #include "Base/IntrospectionBase.h"
 #include "Base/IntrospectionProperty.h"
 #include "Base/IntrospectionCollection.h"

@@ -33,7 +33,7 @@
 #include <QWidget>
 #include <QPointer>
 #include "ui_PreviewWidget.h"
-#include "Base/Result.h"
+#include "Meta/Result.h"
 
 namespace Ui {
     class PreviewWidget;

@@ -33,7 +33,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "Base/FastName.h"
-#include "FileSystem/VariantType.h"
+#include "Meta/VariantType.h"
 #include "FileSystem/File.h"
 
 #include "Math/MathConstants.h"

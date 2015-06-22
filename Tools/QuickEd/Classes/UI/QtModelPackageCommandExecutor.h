@@ -31,7 +31,7 @@
 #define __QUICKED_QT_MODEL_PACKAGE_COMMAND_EXECUTOR_H__
 
 #include "Base/BaseObject.h"
-#include "Base/Result.h"
+#include "Meta/Result.h"
 
 #include <QString>
 

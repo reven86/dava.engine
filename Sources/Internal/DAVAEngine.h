@@ -93,7 +93,7 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileList.h"
-#include "FileSystem/VariantType.h"
+#include "Meta/VariantType.h"
 #include "FileSystem/KeyedArchiver.h"
 #include "FileSystem/KeyedUnarchiver.h"
 #include "FileSystem/KeyedArchive.h"

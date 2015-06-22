@@ -54,7 +54,7 @@
 #include "UI/UIControl.h"
 #include "UI/UIPackageLoader.h"
 
-#include "Base/Result.h"
+#include "Meta/Result.h"
 
 using namespace DAVA;
 
@@ -188,7 +188,7 @@ ResultList QtModelPackageCommandExecutor::InsertControl(ControlNode *control, Co
     }
     else
     {
-        resultList.AddResult(Result::RESULT_ERROR, "Can not inster control!", VariantType(reinterpret_cast<int64>(control)));
+        resultList.AddResult(Result::RESULT_CRITICAL, "Can not inster control!", VariantType(reinterpret_cast<int64>(control)));
     }
     return resultList;
 }

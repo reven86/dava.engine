@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "Base/Result.h"
+#include "Meta/Result.h"
 
 using namespace DAVA;
 
@@ -70,38 +70,29 @@ ResultList::ResultList(const Result &result)
 }
 
 ResultList::ResultList(Result &&result)
-    : allOk(result)
 {
-    results.emplace_back(std::move(result));
+    AddResult(std::move(result));
 }
 
 ResultList::ResultList(ResultList&& resultList)
-    : allOk(resultList.allOk)
-    , results(std::move(resultList.results))
 {
-    
+    AddResultList(std::move(resultList));
 }
 
 ResultList& ResultList::operator=(ResultList&& resultList)
 {
-    if (this != &resultList)
-    {
-        results = std::move(resultList.results);
-        allOk = resultList.allOk;
-    }
-    return *this;
+    results.clear();
+    return AddResultList(resultList);
 }
 
 ResultList& ResultList::operator<<(const Result& result)
 {
-    results.push_back(result);
-    return *this;
+    return AddResult(std::move(result));
 }
 
 ResultList& ResultList::operator<<(Result&& result)
 {
-    results.emplace_back(std::move(result));
-    return *this;
+    return AddResult(std::move(result));
 }
 
 
@@ -133,14 +124,17 @@ ResultList& ResultList::AddResultList(const ResultList &resultList)
 
 ResultList& ResultList::AddResultList(ResultList &&resultList)
 {
-    allOk &= resultList.allOk;
-    if (results.empty())
+    if (this != &resultList)
     {
-        results = std::move(resultList.results);
-    }
-    else
-    {
-        std::move(std::begin(resultList.results), std::end(resultList.results), std::back_inserter(results));
+        allOk &= resultList.allOk;
+        if (results.empty())
+        {
+            results = std::move(resultList.results);
+        }
+        else
+        {
+            std::move(std::begin(resultList.results), std::end(resultList.results), std::back_inserter(results));
+        }
     }
     return *this;
 }

@@ -31,7 +31,7 @@
 #define __QUICKED_CHANGE_DEFAULT_VALUE_COMMAND_H__
 
 #include <QUndoCommand>
-#include "FileSystem/VariantType.h"
+#include "Meta/VariantType.h"
 
 class PackageNode;
 class ControlNode;

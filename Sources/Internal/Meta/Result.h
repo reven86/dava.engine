@@ -31,7 +31,7 @@
 #define QUICKED_RESULT_H_
 
 #include "Base/BaseTypes.h"
-#include "FileSystem/VariantType.h"
+#include "Meta/VariantType.h"
 
 namespace DAVA
 {
@@ -41,8 +41,8 @@ struct Result
     enum ResultType 
     {
         RESULT_SUCCESS,
-        RESULT_WARNING,
-        RESULT_ERROR
+        RESULT_ERROR,
+        RESULT_CRITICAL
     };
     Result(const ResultType type = RESULT_SUCCESS, const String &message = String(), const VariantType &data = VariantType());
     Result(const Result &result) = default;
