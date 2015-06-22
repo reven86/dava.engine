@@ -37,13 +37,13 @@
 #import <UIKit/UIKit.h>
 #import "UI/UITextField.h"
 
-@interface UITextFieldHolder : UIView < UITextFieldDelegate >
+@interface UITextFieldHolder : UIView < UITextFieldDelegate, UITextViewDelegate >
 {
     NSString * cachedText;
 @public
     // hold single line text field if user switch to multiline mode
     // otherwise nullptr
-    UITextField * textField;
+    UITextField* textField;
     // hold UITextField(singleline) or UITextView(multiline)
     UIView*    textCtrl;
     DAVA::UITextField * cppTextField;
@@ -58,6 +58,7 @@
 - (void) dealloc;
 - (BOOL)textFieldShouldReturn:(UITextField *)textField;
 - (BOOL)textField:(UITextField *)_textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
+- (BOOL)textView:(UITextView *)textView_ shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
 - (void)setIsPassword:(bool)isPassword;
 - (void)setTextInputAllowed:(bool)value;
 - (void)setUseRtlAlign:(bool)value;

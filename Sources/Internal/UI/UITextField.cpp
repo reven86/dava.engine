@@ -36,12 +36,13 @@
 #ifdef __DAVAENGINE_ANDROID__
 #include "UITextFieldAndroid.h"
 #include "Utils/UTF8Utils.h"
-#endif
 
 extern void CreateTextField(DAVA::UITextField *);
 extern void ReleaseTextField();
 extern void OpenKeyboard();
 extern void CloseKeyboard();
+
+#endif
 
 namespace DAVA 
 {

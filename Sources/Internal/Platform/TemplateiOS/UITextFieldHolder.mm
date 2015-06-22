@@ -109,11 +109,15 @@
     }
 }
 
--(id)hitTest:(CGPoint)point withEvent:(UIEvent *)event
+-(void)textViewDidBeginEditing:(UITextView *)textView
 {
-    id hitView = [super hitTest:point withEvent:event];
-    if (hitView == self) return nil;
-    else return hitView;
+    if (cppTextField)
+    {
+        if (DAVA::UIControlSystem::Instance()->GetFocusedControl() != cppTextField)
+        {
+            DAVA::UIControlSystem::Instance()->SetFocusedControl(cppTextField, false);
+        }
+    }
 }
 
 - (void) dealloc
@@ -142,7 +146,7 @@
 	return TRUE;
 }
 
-- (BOOL)textField:(UITextField *)_textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+- (BOOL)textField:(UITextField *)textField_ shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
 {
 	if (cppTextField && (cppTextField->GetDelegate() != 0))
     {
@@ -196,7 +200,13 @@
         return needIgnoreDelegateResult ? FALSE : delegateResult;
 	}
 
-	return TRUE;
+	return YES;
+}
+
+- (BOOL)textView:(UITextView*)textView_ shouldChangeTextInRange:(NSRange)range replacementString:(NSString *)string
+{
+    BOOL result = [self textField:(UITextField*)textView_ shouldChangeCharactersInRange:range replacementString:string];
+    return result;
 }
 
 - (void)eventEditingChanged:(UITextField *)sender
@@ -222,6 +232,11 @@
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField
 {
 	return textInputAllowed;
+}
+
+- (BOOL)textViewShouldBeginEditing:(UITextView *)textView
+{
+    return textInputAllowed;
 }
 
 - (void)setIsPassword:(bool)isPassword
@@ -258,8 +273,6 @@
     } else {
         DAVA::Logger::Error("UITextField::setUseRtlAlign not work in multiline");
     }
-    
-    
 }
 
 - (void) setupTraits

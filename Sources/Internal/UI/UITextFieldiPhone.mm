@@ -48,23 +48,6 @@ namespace
     const int MOVE_TO_OFFSCREEN_STEP = 20000;
 }
 
-void CreateTextField(DAVA::UITextField  * tf)
-{
-	///[textFieldHolder->textField becomeFirstResponder];
-}
-
-void ReleaseTextField()
-{
-}
-
-void OpenKeyboard()
-{
-}
-
-void CloseKeyboard()
-{
-}
-
 namespace DAVA 
 {
     UITextFieldiPhone::UITextFieldiPhone(DAVA::UITextField& tf):
@@ -101,19 +84,15 @@ namespace DAVA
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
         BackgroundView* backgroundView = [appDelegate glController].backgroundView;
 
-        if (isSingleLine)
-        {
-            [backgroundView ReleaseTextField:textFieldHolder];
-        }
-        else
+        if (!isSingleLine)
         {
             // destroy UITextView and restore textFild back
             [textFieldHolder->textCtrl removeFromSuperview];
             textFieldHolder->textCtrl = textFieldHolder->textField;
             
-            // now as with single line mode
-            [backgroundView ReleaseTextField:textFieldHolder];
         }
+        
+        [backgroundView ReleaseTextField:textFieldHolder];
         
         objcClassPtr = 0;
     }
@@ -654,20 +633,21 @@ namespace DAVA
             BOOL isHidden = textField.isHidden;
             
             // now hide textField and store it for future restore
+            [textFieldHolder->textCtrl removeFromSuperview];
             [textFieldHolder->textCtrl setHidden:YES];
             textFieldHolder->textField = (::UITextField*)textFieldHolder->textCtrl;
 
             // replace textField with new textView and apply current properties
-            ::UITextView* textView = [[UITextView alloc] init];
+            ::UITextView* textView = [[UITextView alloc] initWithFrame:rect textContainer:nil];
             HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
             BackgroundView* backgroundView = [appDelegate glController].backgroundView;
-            [backgroundView addSubview:textView];
+            [textFieldHolder addSubview:textView];
             
             textFieldHolder->textCtrl = textView;
             
-            textView.frame = rect;
             textView.textColor = color;
             textView.font = font;
+            textView.userInteractionEnabled = NO;
             [textView setHidden:isHidden];
             
             isSingleLine = false;
@@ -677,7 +657,10 @@ namespace DAVA
             
             [textFieldHolder setupTraits];
             
-            [textFieldHolder->textCtrl setBackgroundColor:[UIColor clearColor]];
+            [textView setBackgroundColor:[UIColor clearColor]];
+            
+            textView.scrollEnabled = (verticalScrollBarEnabled ? YES : NO);
+            textView.textContainer.maximumNumberOfLines = (NSUInteger)maxLines;
         }
     }
     
