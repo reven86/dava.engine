@@ -206,7 +206,6 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIControlPackageContext.h" />
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h" />
     <ClInclude Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.h" />
     <ClInclude Include="..\..\Sources\External\Box2D\Collision\b2Collision.h" />
@@ -644,7 +643,6 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\ParticleEffectNode.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\ParticleEmitterNode.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\PathManip.h" />
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\ProxyNode.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Scene.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneAnimationMixer.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneCache.h" />
@@ -705,11 +703,6 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertiesTable.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSystem.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlWriter.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\TheoraPlayer.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UI3DView.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIAggregatorControl.h" />
@@ -717,6 +710,7 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIControl.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIControlBackground.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIControlHelpers.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\UIControlPackageContext.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIControlSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIEvent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIFadeTransition.h" />
@@ -754,6 +748,11 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIWebView.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIYamlLoader.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\VectorSpinnerAdapter.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertiesTable.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlWriter.h" />
     <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClass.h" />
     <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClassFactory.h" />
     <ClInclude Include="..\..\Sources\Internal\UnitTests\TestCore.h" />
@@ -769,7 +768,6 @@
     <ClInclude Include="..\..\Sources\Internal\Utils\Utils.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIControlPackageContext.cpp" />
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp" />
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2CollideCircle.cpp" />
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2CollideEdge.cpp" />
@@ -1152,7 +1150,6 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\ParticleEffectNode.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\ParticleEmitterNode.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\PathManip.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\ProxyNode.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Scene.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneAnimationMixer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneCache.cpp" />
@@ -1207,11 +1204,6 @@
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\ScrollHelper.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertiesTable.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSystem.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlWriter.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\TheoraPlayer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UI3DView.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIAggregatorControl.cpp" />
@@ -1219,6 +1211,7 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UIControl.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIControlBackground.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIControlHelpers.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\UIControlPackageContext.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIControlSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIEvent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIFadeTransition.cpp" />
@@ -1251,6 +1244,12 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UITextField.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIWebView.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIYamlLoader.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertiesTable.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlWriter.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UnitTests\TestClass.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UnitTests\TestCore.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\BiDiHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\CRC32.cpp" />

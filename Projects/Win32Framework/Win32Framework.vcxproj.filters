@@ -196,9 +196,6 @@
     <Filter Include="Internal\Network\Services\MMNet">
       <UniqueIdentifier>{d0f16e2c-89a6-4e92-a990-9a10aa9bfe40}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Internal\UI\Styles">
-      <UniqueIdentifier>{f37298db-a685-43f6-a8a7-7aee2f5f2b57}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -856,9 +853,6 @@
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\DataNode.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\ProxyNode.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Input\InputSystem.h">
@@ -2440,9 +2434,6 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\DataNode.cpp">
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\ProxyNode.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Input\InputSystem.cpp">
       <Filter>Internal\Input</Filter>
     </ClCompile>
@@ -3332,8 +3323,8 @@
     <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetServer.cpp">
       <Filter>Internal\Network\Services\MMNet</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\dava.framework\Sources\Internal\UI\UIControlPackageContext.cpp">
-      <Filter>Internal\UI</Filter>
+    <ClCompile Include="..\..\Sources\Internal\UnitTests\TestClass.cpp">
+      <Filter>Internal\UnitTests</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlWriter.cpp">
       <Filter>Internal\UI\Styles</Filter>
