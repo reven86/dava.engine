@@ -41,10 +41,11 @@ void GlobalPerformanceTest::LoadResources()
 {
     BaseTest::LoadResources();
 
-    Entity* rootEntity = GetScene()->GetRootNode(FilePath("~res:/3d/Maps/rudniki/rudniki.sc2"));
-    GetScene()->AddNode(rootEntity);
+    SceneFileV2::eError error = GetScene()->LoadScene(FilePath("~res:/3d/Maps/rudniki/rudniki.sc2"));
 
-    Entity* cameraPathEntity = rootEntity->FindByName(CAMERA_PATH.c_str());
+    DVASSERT_MSG(error == SceneFileV2::eError::ERROR_NO_ERROR, "can't load scene ~res:/3d/Maps/rudniki/rudniki.sc2");
+
+    Entity* cameraPathEntity = GetScene()->FindByName(CAMERA_PATH.c_str());
     PathComponent* pathComponent = static_cast<PathComponent*>(cameraPathEntity->GetComponent(Component::PATH_COMPONENT));
 
     const Vector3& startPosition = pathComponent->GetStartWaypoint()->position;

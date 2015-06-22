@@ -41,14 +41,6 @@
 using namespace DAVA;
 using namespace DAVA::Net;
 
-
-//#include <Base/FunctionTraits.h>
-//#include <Platform/DeviceInfo.h>
-//#include <Utils/UTF8Utils.h>
-//#include <Utils/StringFormat.h>
-
-using namespace DAVA;
-
 struct Parcel
 {
     void* outbuf;
@@ -243,6 +235,13 @@ private:
 
 DAVA_TESTCLASS(NetworkTest)
 {
+    BEGIN_CLASSES_COVERED_BY_TESTS()
+        DECLARE_COVERED_CLASS(NetCore)
+        DECLARE_COVERED_CLASS(NetConfig)
+        DECLARE_COVERED_CLASS(IPAddress)
+        DECLARE_COVERED_CLASS(Endpoint)
+    END_CLASSES_COVERED_BY_TESTS()
+
     enum eServiceTypes
     {
         SERVICE_ECHO
