@@ -445,6 +445,12 @@ void NMaterial::RebuildRenderVariants()
 
     const FXDescriptor& fxDescr = FXCache::GetFXDescriptor(GetFXName(), flags);
     
+if( fxDescr.renderPassDescriptors.size() == 0)
+{
+    // dragon: because I'm fucking sick and tired of Render2D-init crashing (when I don't even need it)
+    return;
+}
+    
     for (auto &sampler : fxDescr.renderPassDescriptors[0].shader->fragmentSamplerList)
     {
         if (sampler.uid == FastName("decal"))
