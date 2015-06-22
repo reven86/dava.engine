@@ -10,8 +10,9 @@ import sys;
 import subprocess;
 import platform;
 import re;
-
-excludeDirs = ["Box2D", "Freetype", "Yaml", "ColladaConverter", "ThirdPartyLibs", "Libs", "yaml-cpp", "PSDTool"]
+import codecs;
+  
+excludeDirs = ["Box2D", "Freetype", "Yaml", "ColladaConverter", "ThirdPartyLibs", "Libs", "yaml-cpp", "PSDTool", "IMagickHelperLib", "bullet", "libuv", "freetype", "ThirdParty"]
 includePaths = {}
 
 replaceString = "\
@@ -41,105 +42,67 @@ replaceString = "\
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n\
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\n\
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n\
-=====================================================================================*/\n\
-\n"
+=====================================================================================*/\n"
 	
 excludeLogFile = open("excludeLog.log", "w");
 includeLogFile = open("includeLog.log", "w");
 
 supported_exts = [".cpp", ".h", ".hpp", ".mm"];
 
-def visit_directory(arg, dirname, names):
-	global excludeDirs, includePaths
-	# (path, name) = os.path.split(dirname);
-	if (string.find(dirname, "$process") != -1):
-		return;
-	if (string.find(dirname, ".svn") != -1):
-		return;
-	if (string.find(dirname, ".git") != -1):
-		return;
-	relPath = os.path.relpath(dirname)
-	for exDir in excludeDirs:	
-		if (string.find(relPath, exDir) != -1):
-			excludeLogFile.write("exclude: " + relPath + "\n");
-			#print relPath;
-			return;
-	#print "include dir: " + relPath
-	includeLogFile.write("include: " + relPath + "\n");
+def remove_bom(content):
+	if(content.startswith(codecs.BOM_UTF8)):
+		return content[len(codecs.BOM_UTF8):]
+	return content
 
-	(dirhead, dirtail) = os.path.split(dirname);
-	fullpath = os.path.normpath( dirname + "/");
-	for fullname in names:
-		pathname = fullpath + "/" + fullname;
-		if os.path.isdir(pathname): 
-			continue;
-		if fullname[0] == '.' or fullname[0] == '$':
-			continue;
-		includePaths[fullname] = os.path.relpath(pathname);
-	return
-	
 def process_contents(content):
+	content = remove_bom(content);
 	pattern = re.compile("^/[*][=]+[^=]*[=]+[*]/", re.DOTALL);
-
-	replacedContent = re.subn(pattern, replaceString, content, count=1);
-
-	newContent = replacedContent[0];
-	if(replacedContent[1] == 0):
-		newContent = replaceString + "\n" + newContent;
-		
-	return newContent;
-	
-def process_file(fullname):
-	f = open(fullname, "rU")
-	contents = "";
-	try:
-		contents = f.read();
-	finally:
-	    f.close()
-	
-	contents = process_contents(contents);
-	
-	f = open(fullname, "wt")
-	try: 
-		f.write(contents);
-	finally:
-		f.close();
-	
-	return;
+	if(pattern.search(content) is not None):
+		content = pattern.sub('', content);
+		content = re.compile('^\s*').sub('', content);
+		return replaceString + "\n\n" + content;
+	else:
+		content = re.compile('^s*').sub('', content);
+		if(content.startswith('#')):
+			return replaceString + "\n\n" + content;
+		else:
+			return content;
 	
 def process_files(arg, dirname, names):
 	global excludeDirs, includePaths
-	# (path, name) = os.path.split(dirname);
 	if (string.find(dirname, "$process") != -1):
 		return;
 	if (string.find(dirname, ".svn") != -1):
 		return;
-	relPath = os.path.relpath(dirname)
+	relPath = os.path.relpath(dirname); 
 	for exDir in excludeDirs:	
 		if (string.find(relPath, exDir) != -1):
 			excludeLogFile.write("exclude: " + relPath + "\n");
-			#print relPath
 			return;
-	#print "include dir: " + relPath
 	includeLogFile.write("include: " + relPath + "\n");
 
 	(dirhead, dirtail) = os.path.split(dirname);
 	fullpath = os.path.normpath( dirname + "/");
 	for fullname in names:
 		pathname = fullpath + "/" + fullname;
-		if os.path.isdir(pathname): 
+		if (
+			os.path.isdir(pathname)
+			or fullname[0] == '.'
+			or fullname[0] == '..'
+			or fullname[0] == '$'
+			):
 			continue;
-		if fullname[0] == '.' or fullname[0] == '$':
-			continue;
-		
 		(name, ext) = os.path.splitext(fullname); 
 		if ext in supported_exts:
-			process_file(pathname);
+			with open(pathname, 'rt') as file:
+				content = file.read()
+				file.close();
+				with open(pathname, 'wt') as file:
+					file.write(process_contents(content));
 			
 	return
 	
-export_script_dir = os.getcwd();
-os.path.walk(export_script_dir, visit_directory, None);
+export_script_dir = os.getcwd() + "../../../";
 os.path.walk(export_script_dir, process_files, None);
 
 excludeLogFile.close();

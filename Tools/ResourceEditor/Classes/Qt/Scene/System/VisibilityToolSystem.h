@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__VISIBILITYTOOLSYSTEM__
 #define __RESOURCEEDITORQT__VISIBILITYTOOLSYSTEM__
 
@@ -72,6 +71,7 @@ protected:
 	static const uint32 CROSS_TEXTURE_SIZE = 64;
 
 	Texture* crossTexture;
+    rhi::HTextureSet crossTextureSet;
 	uint32 curToolSize;
 
 	bool editingIsEnabled;

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "LayerForceWidget.h"
 #include "TimeLineWidget.h"
 #include "Commands2/ParticleEditorCommands.h"

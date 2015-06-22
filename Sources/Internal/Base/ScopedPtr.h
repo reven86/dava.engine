@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_SCOPED_PTR_H__
 #define __DAVAENGINE_SCOPED_PTR_H__
 

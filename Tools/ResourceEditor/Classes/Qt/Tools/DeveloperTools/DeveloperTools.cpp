@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "DeveloperTools.h"
 #include "Main/mainwindow.h"
 #include "Scene/System/SelectionSystem.h"

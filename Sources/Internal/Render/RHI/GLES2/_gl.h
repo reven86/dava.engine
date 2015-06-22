@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../rhi_Type.h"
 
 #if defined(__DAVAENGINE_WIN32__)
 
@@ -17,12 +18,16 @@
     
     #define GetGLErrorString aglErrorString
 
+    #include "macos_gl.h"
+
 #elif defined(__DAVAENGINE_IPHONE__)
 
     #include <OpenGLES/ES2/gl.h>
     #include <OpenGLES/ES2/glext.h>
     
     #define GetGLErrorString(code)  "<unknown>"
+
+    #include "ios_gl.h"
 
 #else
 
@@ -126,7 +131,9 @@
 #define GL_HALF_FLOAT GL_HALF_FLOAT_OES
 #endif
 
-#include "../rhi_Type.h"
+#if !defined(GL_DEPTH_COMPONENT24)
+#define GL_DEPTH_COMPONENT24 GL_DEPTH_COMPONENT24_OES
+#endif
 
 #if 0
 #define GL_CALL(expr) \
@@ -140,9 +147,10 @@
 #define GL_CALL(expr) expr;
 #endif
 
-extern GLint    _GLES2_Binded_FrameBuffer;
-extern GLint    _GLES2_Default_FrameBuffer;
-extern void     (*_Make_Current)();
-extern void     (*_End_Frame)();
+extern GLuint   _GLES2_Binded_FrameBuffer;
+extern GLuint   _GLES2_Default_FrameBuffer;
+extern void*    _GLES2_Native_Window;
+extern void*    _GLES2_Context;
+extern void     (*_GLES2_Make_Context_Current)();
 
 bool            GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type, bool* compressed );

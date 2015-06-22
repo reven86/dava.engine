@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __ADD_PARTICLE_EMITTER_DIALOG__
 #define __ADD_PARTICLE_EMITTER_DIALOG__
 

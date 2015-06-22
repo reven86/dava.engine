@@ -34,7 +34,7 @@
 
 #include "Utils/StringFormat.h"
 
-#if defined (__DAVAENGINE_WIN32__)
+#if defined (__DAVAENGINE_WINDOWS__)
 #include <io.h>
 #elif defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_IPHONE__)
 #include <unistd.h>
@@ -45,24 +45,22 @@
 
 namespace DAVA 
 {
-	
-File::File()
-{
-	file = NULL;
-}
 
 File::~File()
 {
-	if (file)
-	{
-		fclose(file);
-		file = 0;
-	}
+    // Though File object is created through Create methods returning nullptr on error
+    // pointer should be checked against nullptr as class File can have inheritors
+    // which do not initialize file pointer (e.g. DynamicMemoryFile)
+    if (file != nullptr)
+    {
+        fclose(file);
+        file = nullptr;
+    }
 }
-	
+
 File * File::Create(const FilePath &filePath, uint32 attributes)
 {
-	return FileSystem::Instance()->CreateFileForFrameworkPath(filePath, attributes);
+    return FileSystem::Instance()->CreateFileForFrameworkPath(filePath, attributes);
 }
 
 
@@ -137,7 +135,7 @@ File * File::PureCreate(const FilePath & filePath, uint32 attributes)
     }
     else 
     {
-        return NULL;
+        return nullptr;
     }
     
     
@@ -315,19 +313,16 @@ bool File::GetNextChar(uint8 *nextChar)
 
 uint32 File::GetPos()
 {
-	if (!file) return 0;
-	return (uint32) ftell(file);
+    return static_cast<uint32>(ftell(file));
 }
 
-uint32	File::GetSize()
+uint32 File::GetSize()
 {
-	return size;
+    return size;
 }
 
 bool File::Seek(int32 position, uint32 seekType) 
 {
-	if (!file)return false;
-	
 	int realSeekType = 0;
 	switch(seekType)
 	{
@@ -340,25 +335,26 @@ bool File::Seek(int32 position, uint32 seekType)
 		case SEEK_FROM_END:
 			realSeekType = SEEK_END;
 			break;
-		default:
-			return false;
-			break;
-	}
-	if (0 == fseek( file, position, realSeekType))
-	{
-		return true;
-	}
-	return false;
+        default:
+            DVASSERT(0 && "Invalid seek type");
+            break;
+    }
+    return 0 == fseek(file, position, realSeekType);
+}
+
+bool File::Flush()
+{
+    return 0 == fflush(file);
 }
 
 bool File::IsEof()
 {
-	return (feof(file) != 0);
+    return (feof(file) != 0);
 }
 
 bool File::Truncate(int32 size)
 {
-#if defined (__DAVAENGINE_WIN32__)
+#if defined (__DAVAENGINE_WINDOWS__)
     return (0 == _chsize(_fileno(file), size));
 #elif defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     return (0 == ftruncate(fileno(file), size));
@@ -404,7 +400,7 @@ String File::GetModificationDate(const FilePath & filePathname)
     int32 ret = stat(realPathname.c_str(), &fileInfo);
     if(0 == ret)
     {
-#if defined (__DAVAENGINE_WIN32__)
+#if defined (__DAVAENGINE_WINDOWS__)
 		tm* utcTime = gmtime(&fileInfo.st_mtime);
 #elif defined (__DAVAENGINE_ANDROID__)
 		tm* utcTime = gmtime((const time_t *)&fileInfo.st_mtime);
@@ -418,6 +414,4 @@ String File::GetModificationDate(const FilePath & filePathname)
     return String("");
 }
 
-    
-    
 }

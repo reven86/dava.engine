@@ -44,7 +44,17 @@
 #include "Utils/Utils.h"
 #include "Utils/CRC32.h"
 
-#include <libatc/TextureConverter.h>
+#if defined(__DAVAENGINE_WIN_UAP__)
+
+    //disabling of warning 
+    #pragma warning(push)
+    #pragma warning(disable : 4091)
+    #include <libatc/TextureConverter.h>
+    #pragma warning(pop)
+
+#else
+    #include <libatc/TextureConverter.h>
+#endif
 
 #define DDS_HEADER_CRC_OFFSET		60			//offset  to 9th element of dwReserved1 array(dds header)
 #define METADATA_CRC_TAG			0x5f435243  // equivalent of 'C''R''C''_'
@@ -306,6 +316,12 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet,
     
     if (!forceSoftwareConvertation && isHardwareSupport)
     {
+        PixelFormat pixFormat = GetPixelFormat(dec);
+        if (pixFormat == FORMAT_INVALID)
+        {
+            return false;
+        }
+
         uint8* compressedImges = new uint8[info.dataSize];
         
         if(!dec.getRawData(compressedImges, info.dataSize))
@@ -320,8 +336,6 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet,
         {
             SwapBRChannels(compressedImges, info.dataSize);
         }
-        
-        PixelFormat pixFormat = GetPixelFormat(dec);
         
         bool retValue = true;
         
@@ -396,7 +410,13 @@ PixelFormat NvttHelper::GetPixelFormat(nvtt::Decompressor & dec)
         return FORMAT_INVALID;
     }
     
-    return NvttHelper::GetPixelFormatByNVTTFormat(innerFormat);
+    PixelFormat format = NvttHelper::GetPixelFormatByNVTTFormat(innerFormat);
+    if (format == FORMAT_INVALID)
+    {
+        Logger::Error("[NvttHelper::GetPixelFormat] Can't map nvtt format to pixel format");
+    }
+    
+    return format;
 }
     
 PixelFormat NvttHelper::GetPixelFormatByNVTTFormat(nvtt::Format nvttFormat)
@@ -581,7 +601,11 @@ bool NvttHelper::DecompressDxt(const nvtt::Decompressor & dec, DDSInfo info, Vec
 
 bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, PixelFormat format, Vector<Image*> &imageSet, int32 baseMipMap)
 {
-#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN_UAP__)
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return false;
+
+#elif defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
 #if defined(__DAVAENGINE_MACOS__)
     if (format == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
     {
@@ -683,6 +707,7 @@ bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, Pix
     
 LibDdsHelper::LibDdsHelper()
 {
+    name.assign("DDS");
     supportedExtensions.push_back(".dds");
 }
 
@@ -706,16 +731,16 @@ eErrorCode LibDdsHelper::WriteFile(const FilePath & fileName, const Vector<Image
     if(!fileName.IsEqualToExtension(".dds"))
     {
         Logger::Error("[LibDdsHelper::WriteFile] Wrong input file name (%s).", fileName.GetAbsolutePathname().c_str());
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
     
     if (compressionFormat == FORMAT_ATC_RGB ||
         compressionFormat == FORMAT_ATC_RGBA_EXPLICIT_ALPHA ||
         compressionFormat == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
     {
-        return WriteAtcFile(fileName, imageSet, compressionFormat) ? SUCCESS : ERROR_WRITE_FAIL;
+        return WriteAtcFile(fileName, imageSet, compressionFormat) ? eErrorCode::SUCCESS : eErrorCode::ERROR_WRITE_FAIL;
     }
-    return WriteDxtFile(fileName, imageSet, compressionFormat) ? SUCCESS : ERROR_WRITE_FAIL;
+    return WriteDxtFile(fileName, imageSet, compressionFormat) ? eErrorCode::SUCCESS : eErrorCode::ERROR_WRITE_FAIL;
 }
 
 eErrorCode LibDdsHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
@@ -723,29 +748,29 @@ eErrorCode LibDdsHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vec
     if(imageSet[0][0]->format != FORMAT_RGBA8888)
     {
         Logger::Error("[LibDdsHelper::WriteFile] Wrong input format.");
-        return ERROR_WRITE_FAIL;
+        return eErrorCode::ERROR_WRITE_FAIL;
     }
     
     if(imageSet.size() != Texture::CUBE_FACE_COUNT)
     {
         Logger::Error("[LibDdsHelper::WriteFile] Wrong input image set.");
-        return ERROR_WRITE_FAIL;
+        return eErrorCode::ERROR_WRITE_FAIL;
     }
     
     //creating tmp dds file, nvtt accept only filename.dds as input, because of this the last letter befor "." should be changed to "_".
     if(!fileName.IsEqualToExtension(".dds"))
     {
         Logger::Error("[LibDdsHelper::WriteFile] Wrong input file name (%s).", fileName.GetAbsolutePathname().c_str());
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
     
     if (compressionFormat == FORMAT_ATC_RGB ||
         compressionFormat == FORMAT_ATC_RGBA_EXPLICIT_ALPHA ||
         compressionFormat == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
     {
-        return WriteAtcFileAsCubemap(fileName, imageSet, compressionFormat) ? SUCCESS : ERROR_WRITE_FAIL;
+        return WriteAtcFileAsCubemap(fileName, imageSet, compressionFormat) ? eErrorCode::SUCCESS : eErrorCode::ERROR_WRITE_FAIL;
     }
-    return WriteDxtFileAsCubemap(fileName, imageSet, compressionFormat) ? SUCCESS : ERROR_WRITE_FAIL;
+    return WriteDxtFileAsCubemap(fileName, imageSet, compressionFormat) ? eErrorCode::SUCCESS : eErrorCode::ERROR_WRITE_FAIL;
 }
     
    ImageInfo LibDdsHelper::GetImageInfo(File *infile) const
@@ -855,16 +880,16 @@ eErrorCode LibDdsHelper::ReadFile(File * file, Vector<Image*> &imageSet, int32 b
 {
     if (nullptr == file)
     {
-        return ERROR_FILE_NOTFOUND;
+        return eErrorCode::ERROR_FILE_NOTFOUND;
     }
     nvtt::Decompressor dec;
     
     if(!NvttHelper::InitDecompressor(dec, file))
     {
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
     
-    return NvttHelper::ReadDxtFile(dec, imageSet, baseMipMap,forceSoftwareConvertation) ? SUCCESS : ERROR_READ_FAIL;
+    return NvttHelper::ReadDxtFile(dec, imageSet, baseMipMap, forceSoftwareConvertation) ? eErrorCode::SUCCESS : eErrorCode::ERROR_READ_FAIL;
 }
     
 bool LibDdsHelper::DecompressImageToRGBA(const Image & image, Vector<Image*> &imageSet, bool forceSoftwareConvertation)
@@ -1033,6 +1058,10 @@ bool LibDdsHelper::WriteDxtFile(const FilePath & fileNameOriginal, const Vector<
     
     DVASSERT_MSG(false, "No necessary write compressed files on mobile");
     return false;
+
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return false;
     
 #else
 	if(!((compressionFormat >= FORMAT_DXT1 && compressionFormat <= FORMAT_DXT5NM)||(compressionFormat == FORMAT_RGBA8888)))
@@ -1053,28 +1082,51 @@ bool LibDdsHelper::WriteDxtFile(const FilePath & fileNameOriginal, const Vector<
 		Logger::Error("[LibDdsHelper::WriteDxtFile] Empty income image vector.");
 		return false;
 	}
-    
-    auto inputFormat = imageSet[0]->format;
+
     Vector<Image *> workingImages;
-    for(auto image : imageSet)
+
+    auto inputFormat = imageSet[0]->format;
+
+    if (inputFormat >= FORMAT_DXT1 && inputFormat <= FORMAT_DXT5NM)
     {
-        if(FORMAT_RGBA8888 != inputFormat)
+        for (auto image : imageSet)
+        {
+            Vector<Image*> decomprImages;
+            if (DecompressImageToRGBA(*image, decomprImages, true) && decomprImages.size() == 1)
+            {
+                workingImages.push_back(decomprImages[0]);
+            }
+            else
+            {
+                Logger::Error("[LibDdsHelper::WriteDxtFile] Error during decompressing of DXT into RGBA");
+                for_each(decomprImages.begin(), decomprImages.end(), SafeRelease<Image>);
+                for_each(workingImages.begin(), workingImages.end(), SafeRelease<Image>);
+                return false;
+            }
+        }
+    }
+    else if (inputFormat != FORMAT_RGBA8888)
+    {
+        for (auto image : imageSet)
         {
             Image *newImage = Image::Create(image->width, image->height, FORMAT_RGBA8888);
             ImageConvert::ConvertImageDirect(image, newImage);
-            
+
             newImage->cubeFaceID = image->cubeFaceID;
             newImage->mipmapLevel = image->mipmapLevel;
-            
+
             workingImages.push_back(newImage);
         }
-        else
+    }
+    else
+    {
+        for (auto image : imageSet)
         {
             workingImages.push_back(SafeRetain(image));
         }
     }
+
     inputFormat = workingImages[0]->format;
-    
     
     nvtt::TextureType textureType = nvtt::TextureType_2D;
     int32 dataCount = workingImages.size();
@@ -1127,6 +1179,10 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 	DVASSERT_MSG(false, "Qualcomm doesn't provide texture converter library for ios/android");
 	return false;
+
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return false;
 
 #else
 
@@ -1254,6 +1310,10 @@ bool LibDdsHelper::WriteDxtFileAsCubemap(const DAVA::FilePath &fileNameOriginal,
     
     DVASSERT_MSG(false, "No necessary write compressed files on mobile");
     return false;
+
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return false;
     
 #else
     if(!((compressionFormat >= FORMAT_DXT1 && compressionFormat <= FORMAT_DXT5NM)||(compressionFormat == FORMAT_RGBA8888)))
@@ -1334,6 +1394,10 @@ bool LibDdsHelper::WriteAtcFileAsCubemap(const DAVA::FilePath &fileNameOriginal,
 {
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     DVASSERT_MSG(false, "Qualcomm doesn't provide texture converter library for ios/android");
+    return false;
+
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return false;
     
 #else

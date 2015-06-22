@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "TextureBrowser/TextureBrowser.h"
 #include "TextureBrowser/TextureListModel.h"
 #include "TextureBrowser/TextureListDelegate.h"
@@ -113,14 +112,12 @@ TextureBrowser::TextureBrowser(QWidget *parent)
 	// ui->splitter->setSizes(QList<int>() << 60 << 0 << 40);
 
 	posSaver.Attach(this);
-	posSaver.LoadState(ui->splitterMain);
+    new QtPosSaver( ui->splitterMain );
 }
 
 TextureBrowser::~TextureBrowser()
 {
 	Close();
-
-	posSaver.SaveState(ui->splitterMain);
 
 	delete textureListImagesDelegate;
 	delete textureListModel;
@@ -139,7 +136,7 @@ void TextureBrowser::Close()
 	// clear cache
 	TextureCache::Instance()->clearInsteadThumbnails();
 
-    ui->textureAreaConverted->warningSetText("");
+    ui->textureAreaConverted->warningShow(false);
 }
 
 void TextureBrowser::Update()
@@ -363,7 +360,9 @@ void TextureBrowser::updateInfoOriginal(const QList<QImage> &images)
 
 void TextureBrowser::updateInfoConverted()
 {
-	if(NULL != curTexture && NULL != curDescriptor)
+	if(curTexture != nullptr && 
+       curDescriptor != nullptr && 
+       curDescriptor->HasCompressionFor(curTextureView))
 	{
 		char tmp[1024];
 		const char *formatStr = "Unknown";

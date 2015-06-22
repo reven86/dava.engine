@@ -117,7 +117,7 @@ namespace DAVA
 
 #if RHI_COMPLETE
     static RenderDataObject *gDodecObject;
-#endif RHI_COMPLETE
+#endif
 	
 	const float32 SEGMENT_LENGTH = 15.0f;
 	
@@ -183,7 +183,7 @@ void RenderHelper::DrawCircle(const Vector3 & center, float32 radius, NMaterial 
     pts.points.reserve(ptsCount);
 	for (int k = 0; k < ptsCount; ++k)
 	{
-		float32 angle = ((float)k / (ptsCount - 1)) * 2 * PI;
+		angle = ((float)k / (ptsCount - 1)) * 2 * PI;
 		float32 sinA = sinf(angle);
 		float32 cosA = cosf(angle);
 		Vector3 pos = center - Vector3(sinA * radius, cosA * radius, 0);
@@ -312,7 +312,7 @@ void RenderHelper::DrawPolygonPoints(const Polygon3 & polygon, NMaterial *materi
     int ptCount = polygon.pointCount;
     if (ptCount >= 1)
     {
-#if defined (__DAVAENGINE_OPENGL__)
+#if defined (__DAVAENGINE_OPENGL__) && !defined(__DAVAENGINE_OPENGL_ES__)
         glPointSize(3.0f);
 #endif 
         vertexStream->Set(TYPE_FLOAT, 3, 0, polygon.GetPoints());
@@ -320,7 +320,7 @@ void RenderHelper::DrawPolygonPoints(const Polygon3 & polygon, NMaterial *materi
         RenderManager::Instance()->SetRenderEffect(RenderSystem2D::FLAT_COLOR);
         RenderManager::Instance()->SetRenderData(renderDataObject);
         RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_POINTLIST, 0, ptCount);
-#if defined (__DAVAENGINE_OPENGL__)
+#if defined (__DAVAENGINE_OPENGL__) && !defined(__DAVAENGINE_OPENGL_ES__)
         glPointSize(1.0f);
 #endif		
     }
@@ -867,21 +867,31 @@ void RenderHelper::FillDodecahedron(const Vector3 &center, float32 radius, NMate
 #endif // RHI_COMPLETE
 }
 
-void RenderHelper::Set2DRenderTarget(Texture * renderTarget)
+void RenderHelper::CreateClearPass(rhi::HTexture targetHandle, int32 passPriority, const Color & clearColor, const rhi::Viewport & viewport)
 {
-#ifdef RHI_COMPLETE
-    if (!renderTarget)
-        return;
+    rhi::RenderPassConfig clearPassConfig;
+    clearPassConfig.priority = passPriority;
+    clearPassConfig.colorBuffer[0].texture = targetHandle;
+    clearPassConfig.colorBuffer[0].clearColor[0] = clearColor.r;
+    clearPassConfig.colorBuffer[0].clearColor[1] = clearColor.g;
+    clearPassConfig.colorBuffer[0].clearColor[2] = clearColor.b;
+    clearPassConfig.colorBuffer[0].clearColor[3] = clearColor.a;
+    clearPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+    clearPassConfig.colorBuffer[0].storeAction = rhi::STOREACTION_NONE;
+    clearPassConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
+    clearPassConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+    clearPassConfig.viewport = viewport;
 
-    RenderManager::Instance()->SetRenderTarget(renderTarget);
-    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)renderTarget->GetWidth(), (float32)renderTarget->GetHeight()));
+    rhi::HPacketList emptyPacketList;
+    rhi::HRenderPass clearPass = rhi::AllocateRenderPass(clearPassConfig, 1, &emptyPacketList);
 
-    tempProjectionMatrix.glOrtho(0.0f, (float32)renderTarget->GetWidth(),  0.0f, (float32)renderTarget->GetHeight(), -1.0f, 1.0f);
-    Renderer::GetDynamicBindings().SetDynamicParam(PARAM_PROJ, &tempProjectionMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
-#endif // RHI_COMPLETE
+    rhi::BeginRenderPass(clearPass);
+    rhi::BeginPacketList(emptyPacketList);
+    rhi::EndPacketList(emptyPacketList);
+    rhi::EndRenderPass(clearPass);
 }
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
 void RenderHelper::GetLineWidthRange(int32& rangeMin, int32& rangeMax)
 {
 	int32 lineWidthMin = 1;

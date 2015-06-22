@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __UIEditor__ControlNodeMetadata__
 #define __UIEditor__ControlNodeMetadata__
 

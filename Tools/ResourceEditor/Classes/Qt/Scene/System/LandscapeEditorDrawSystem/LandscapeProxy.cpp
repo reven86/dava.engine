@@ -29,7 +29,6 @@
 
 #include "Qt/Main/QtUtils.h"
 #include "LandscapeProxy.h"
-#include "CustomLandscape.h"
 
 const FastName LandscapeProxy::LANDSCAPE_TEXTURE_TOOL("toolTexture");
 const FastName LandscapeProxy::LANDSCAPE_TEXTURE_CURSOR("cursorTexture");
@@ -74,26 +73,21 @@ LandscapeProxy::~LandscapeProxy()
     SafeRelease(cursorTexture);
 }
 
-void LandscapeProxy::SetMode(LandscapeProxy::eLandscapeMode mode)
+void LandscapeProxy::SetMode(LandscapeProxy::eLandscapeMode _mode)
 {
-	this->mode = mode;
-
-    switch (mode)
+    if(mode != _mode)
     {
-    case LandscapeProxy::MODE_CUSTOM_LANDSCAPE:
-    {
-        landscapeEditorMaterial->SetParent(baseLandscape->GetMaterial());
-        baseLandscape->SetMaterial(landscapeEditorMaterial);
-    }
-    break;
-    case LandscapeProxy::MODE_ORIGINAL_LANDSCAPE:
-    {
-        baseLandscape->SetMaterial(landscapeEditorMaterial->GetParent());
-        landscapeEditorMaterial->SetParent(nullptr);
-    }
-    break;
-    default:
-        break;
+        mode = _mode;
+        if (mode == LandscapeProxy::MODE_CUSTOM_LANDSCAPE)
+        {
+            landscapeEditorMaterial->SetParent(baseLandscape->GetMaterial());
+            baseLandscape->SetMaterial(landscapeEditorMaterial);
+        }
+        else
+        {
+            baseLandscape->SetMaterial(landscapeEditorMaterial->GetParent());
+            landscapeEditorMaterial->SetParent(nullptr);
+        }
     }
 }
 

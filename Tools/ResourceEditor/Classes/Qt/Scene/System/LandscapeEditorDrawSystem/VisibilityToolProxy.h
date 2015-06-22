@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__VISIBILITYTOOLPROXY__
 #define __RESOURCEEDITORQT__VISIBILITYTOOLPROXY__
 

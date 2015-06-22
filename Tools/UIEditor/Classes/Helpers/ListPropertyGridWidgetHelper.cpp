@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ListPropertyGridWidgetHelper.h"
 
 using namespace DAVA;

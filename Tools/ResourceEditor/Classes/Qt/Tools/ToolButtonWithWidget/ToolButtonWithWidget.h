@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __TOOL_BUTTON_WITH_WIDGET_H__
 #define __TOOL_BUTTON_WITH_WIDGET_H__
 

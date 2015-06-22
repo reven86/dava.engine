@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "VisibilityToolActions.h"
 #include "../Qt/Scene/System/LandscapeEditorDrawSystem/VisibilityToolProxy.h"
 #include "../Qt/Scene/SceneEditor2.h"
@@ -109,78 +108,4 @@ void ActionDisableVisibilityTool::Redo()
     }
 
 	SceneSignals::Instance()->EmitVisibilityToolToggled(sceneEditor);
-}
-
-
-ActionSetVisibilityPoint::ActionSetVisibilityPoint(Image* _originalImage,
-												   Texture * _cursorTexture,
-												   VisibilityToolProxy* _visibilityToolProxy,
-												   const Vector2& _visibilityPoint,
-                                                   const Vector2& _cursorSize)
-:	CommandAction(CMDID_VISIBILITY_TOOL_SET_POINT, "Set Visibility Point")
-{
-    cursorTexture = SafeRetain(_cursorTexture);
-    visibilityToolProxy = SafeRetain(_visibilityToolProxy);
-    redoVisibilityPoint = _visibilityPoint;
-    cursorSize = _cursorSize;
-}
-
-ActionSetVisibilityPoint::~ActionSetVisibilityPoint()
-{
-	SafeRelease(cursorTexture);
-	SafeRelease(visibilityToolProxy);
-}
-
-void ActionSetVisibilityPoint::Redo()
-{
-	Texture * visibilityToolTexture = visibilityToolProxy->GetTexture();
-    
-    RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityToolTexture);
-    RenderSystem2D::Instance()->DrawTexture(cursorTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Rect(redoVisibilityPoint - cursorSize / 2.f, cursorSize));
-    RenderSystem2D::Instance()->EndRenderTargetPass();
-
-	visibilityToolProxy->UpdateVisibilityPointSet(true);
-	visibilityToolProxy->SetVisibilityPoint(redoVisibilityPoint);
-}
-
-
-ActionSetVisibilityArea::ActionSetVisibilityArea(Image* originalImage,
-												 VisibilityToolProxy* visibilityToolProxy,
-												 const Rect& updatedRect)
-:	CommandAction(CMDID_VISIBILITY_TOOL_SET_AREA, "Set Visibility Area")
-{
-	Image* currentImage = visibilityToolProxy->GetTexture()->CreateImageFromMemory();
-
-	redoImage = Image::CopyImageRegion(currentImage, updatedRect);
-
-	SafeRelease(currentImage);
-
-	this->visibilityToolProxy = SafeRetain(visibilityToolProxy);
-	this->updatedRect = updatedRect;
-}
-
-ActionSetVisibilityArea::~ActionSetVisibilityArea()
-{
-	SafeRelease(redoImage);
-	SafeRelease(visibilityToolProxy);
-}
-
-void ActionSetVisibilityArea::Redo()
-{
-	ApplyImage(redoImage);
-}
-
-void ActionSetVisibilityArea::ApplyImage(DAVA::Image *image)
-{
-	Texture* visibilityToolTexture = visibilityToolProxy->GetTexture();
-
-	Texture* texture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
-											   image->GetWidth(), image->GetHeight(), false);
-	texture->SetPixelization(true);
-    
-    RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityToolTexture);
-    RenderSystem2D::Instance()->DrawTexture(texture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, updatedRect);
-    RenderSystem2D::Instance()->EndRenderTargetPass();
-
-	SafeRelease(texture);
 }

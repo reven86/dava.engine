@@ -611,7 +611,6 @@ AllocateRenderPass( const RenderPassConfig& passDesc, uint32 packetListCount, HP
 {
     Handle       cb[8];
     DVASSERT(packetListCount<countof(cb));
-    DVASSERT(passDesc.viewport.width > 0 && passDesc.viewport.height > 0);
 
     Handle       pass = RenderPass::Allocate( passDesc, packetListCount, cb );
     

@@ -37,8 +37,6 @@
 #import <UIKit/UIKit.h>
 #import <QuartzCore/QuartzCore.h>
 
-#import "Platform/TemplateiOS/ESRenderer.h"
-
 #import "UI/UIEvent.h"
 
 //using namespace DAVA;
@@ -88,9 +86,6 @@
 - (void) blockDrawing;
 - (void) unblockDrawing;
 
-- (void) setCurrentContext;
-- (void) endRendering;
-
 @end
 
 ///////////////////////////////////////////////////////////////////////
@@ -100,12 +95,7 @@
 @end
 
 @interface GLRenderView : RenderView
-{
-@private
-ESRenderer * renderer;
-}
 + (Class)layerClass;
-
 @end
 
 #endif //__DAVAENGINE_IPHONE__

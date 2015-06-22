@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "VisibilityToolProxy.h"
 
 VisibilityToolProxy::VisibilityToolProxy(int32 size)
@@ -36,6 +35,12 @@ VisibilityToolProxy::VisibilityToolProxy(int32 size)
 ,	isVisibilityPointSet(false)
 {
     visibilityToolTexture = Texture::CreateFBO((uint32)size, (uint32)size, FORMAT_RGBA8888);
+
+    rhi::Viewport viewport;
+    viewport.x = viewport.y = 0U;
+    viewport.width = (uint32)size;
+    viewport.height = (uint32)size;
+    RenderHelper::Instance()->CreateClearPass(visibilityToolTexture->handle, PRIORITY_CLEAR, Color(0.f, 0.f, 0.f, 0.f), viewport);
 }
 
 VisibilityToolProxy::~VisibilityToolProxy()

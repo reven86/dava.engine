@@ -198,7 +198,7 @@
 - (void) viewWillAppear: (BOOL)animating
 {
 	NSLog(@"RenderViewController viewWillAppear (startAnimation)");
-	[renderView setCurrentContext];
+//	[renderView setCurrentContext];
 	[renderView startAnimation];
 }
 

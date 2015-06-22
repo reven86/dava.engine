@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "VisibilityToolSystem.h"
 #include "CollisionSystem.h"
 #include "SelectionSystem.h"
@@ -50,15 +49,21 @@ VisibilityToolSystem::VisibilityToolSystem(Scene* scene)
 ,	state(VT_STATE_NORMAL)
 ,	textureLevel(Landscape::TEXTURE_COLOR)
 {
-    cursorSize = 120;
+    curToolSize = 120;
 
     crossTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/setPointCursor.tex");
     crossTexture->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
+    
+    rhi::TextureSetDescriptor desc;
+    desc.fragmentTextureCount = 1;
+    desc.fragmentTexture[0] = crossTexture->handle;
+    crossTextureSet = rhi::AcquireTextureSet(desc);
 }
 
 VisibilityToolSystem::~VisibilityToolSystem()
 {
 	SafeRelease(crossTexture);
+    rhi::ReleaseTextureSet(crossTextureSet);
 }
 
 LandscapeEditorDrawSystem::eErrorType VisibilityToolSystem::EnableLandscapeEditing()
@@ -90,6 +95,8 @@ LandscapeEditorDrawSystem::eErrorType VisibilityToolSystem::EnableLandscapeEditi
 	landscapeSize = visibilityToolTexture->GetWidth();
 
 	drawSystem->EnableCursor();
+    SetBrushSize(curToolSize);
+    
 	drawSystem->SetCursorSize(0);
 
 	PrepareConfig();
@@ -192,11 +199,12 @@ void VisibilityToolSystem::SetBrushSize(int32 brushSize)
 {
 	if (brushSize > 0)
 	{
-		cursorSize = (uint32)brushSize;
+        curToolSize = (uint32)brushSize;
+		cursorSize = curToolSize / ((float32)landscapeSize);
 
 		if (state == VT_STATE_SET_AREA)
 		{
-			drawSystem->SetCursorSize(cursorSize / ((float32)landscapeSize));
+			drawSystem->SetCursorSize(cursorSize);
 		}
 	}
 }
@@ -243,12 +251,12 @@ void VisibilityToolSystem::SetState(eVisibilityToolState newState)
 	{
 		case VT_STATE_SET_POINT:
 			drawSystem->SetCursorTexture(crossTexture);
-			drawSystem->SetCursorSize(cursorSize / ((float32)landscapeSize));
+			drawSystem->SetCursorSize(cursorSize);
 			break;
 
 		case VT_STATE_SET_AREA:
 			drawSystem->SetCursorTexture(cursorTexture);
-			drawSystem->SetCursorSize(cursorSize / ((float32)landscapeSize));
+			drawSystem->SetCursorSize(cursorSize);
 			break;
 
 		default:
@@ -290,7 +298,7 @@ void VisibilityToolSystem::SetVisibilityAreaInternal()
 		point.z += visibilityPointHeight;
 
 		Vector<Vector3> resP;
-		PerformHeightTest(point, areaPos, cursorSize / 2.f, pointsDensity, areaPointHeights, &resP);
+		PerformHeightTest(point, areaPos, cursorSize * landscapeSize / 2.f, pointsDensity, areaPointHeights, &resP);
 		DrawVisibilityAreaPoints(resP);
 	}
 	else
@@ -500,7 +508,7 @@ void VisibilityToolSystem::DrawVisibilityPoint()
     Vector2 curSize((float32)cursorSize, (float32)cursorSize);
     
     RenderSystem2D::Instance()->BeginRenderTargetPass(visibilityToolTexture);
-    RenderSystem2D::Instance()->DrawTexture(crossTexture, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Rect(cursorPosition * landscapeSize - curSize / 2.f, curSize));
+    RenderSystem2D::Instance()->DrawTexture(crossTextureSet, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, Rect(cursorPosition * landscapeSize - curSize * landscapeSize / 2.f, curSize * landscapeSize));
     RenderSystem2D::Instance()->EndRenderTargetPass();
     
     visibilityToolProxy->UpdateVisibilityPointSet(true);
@@ -531,13 +539,11 @@ void VisibilityToolSystem::SaveTexture(const FilePath& filePath)
 		return;
 	}
     
-#if RHI_COMPLETE_EDITOR
     Texture* visibilityToolTexture = drawSystem->GetVisibilityToolProxy()->GetTexture();
 
 	Image* image = visibilityToolTexture->CreateImageFromMemory();
     ImageSystem::Instance()->Save(filePath, image);
     SafeRelease(image);
-#endif // RHI_COMPLETE_EDITOR
 }
 
 VisibilityToolSystem::eVisibilityToolState VisibilityToolSystem::GetState()
@@ -547,5 +553,5 @@ VisibilityToolSystem::eVisibilityToolState VisibilityToolSystem::GetState()
 
 int32 VisibilityToolSystem::GetBrushSize()
 {
-	return cursorSize;
+	return curToolSize;
 }

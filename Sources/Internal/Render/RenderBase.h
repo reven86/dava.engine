@@ -83,7 +83,20 @@
 		#define D3D_DEBUG_INFO
 		#include <d3d9.h>
 		#include <dxerr.h>
-#endif 
+    #endif
+
+
+#elif defined(__DAVAENGINE_WIN_UAP__)
+
+#define GL_GLEXT_PROTOTYPES
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#include <EGL/eglplatform.h>
+#include <angle_gl.h>
+#include <angle_windowsstore.h>
+
+#define __DAVAENGINE_OPENGL_ES__
+
 #elif defined(__DAVAENGINE_ANDROID__)
 	#define __DAVAENGINE_OPENGL__
     #include <android/api-level.h>

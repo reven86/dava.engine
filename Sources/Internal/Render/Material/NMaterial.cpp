@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
- 
+
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
- 
+
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
- 
+
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -731,7 +731,7 @@ void NMaterial::Save(KeyedArchive * archive, SerializationContext * serializatio
     {
         NMaterialProperty* property = it->second;
 
-        uint32 dataSize = ShaderDescriptor::CalculateDataSize(property->type, property->arraySize);
+        uint32 dataSize = ShaderDescriptor::CalculateDataSize(property->type, property->arraySize) * sizeof(float32);
         uint32 storageSize = sizeof(uint8) + sizeof(uint32) + dataSize;
         uint8* propertyStorage = new uint8[storageSize];
 
@@ -915,7 +915,7 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
     };
            
     Array<FastName, 8> propertyFloat4toFloat3 =
-    {
+    {{
         NMaterialParamName::PARAM_FOG_COLOR,
         NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SKY,
         NMaterialParamName::PARAM_FOG_ATMOSPHERE_COLOR_SUN,
@@ -924,11 +924,11 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
         Landscape::PARAM_TILE_COLOR1,
         Landscape::PARAM_TILE_COLOR2,
         Landscape::PARAM_TILE_COLOR3,
-    };
+    }};
     Array<FastName, 1> propertyFloat3toFloat4 =
-    {
+    {{
         NMaterialParamName::PARAM_FLAT_COLOR,
-    };
+    }};
 
     if (archive->IsKeyExists("properties"))
     {

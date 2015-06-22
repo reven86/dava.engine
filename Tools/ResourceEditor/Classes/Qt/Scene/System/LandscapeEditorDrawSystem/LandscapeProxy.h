@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__LANDSCAPEPROXY__
 #define __RESOURCEEDITORQT__LANDSCAPEPROXY__
 
@@ -37,8 +36,6 @@
 #include "Classes/Deprecated/LandscapeRenderer.h"
 
 using namespace DAVA;
-
-class CustomLandscape;
 
 class LandscapeProxy: public BaseObject
 {

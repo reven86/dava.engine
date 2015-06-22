@@ -36,6 +36,8 @@
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Render/RHI/rhi_Public.h"
 
+#include "MemoryManager/MemoryProfiler.h"
+
 namespace DAVA
 {	
 /**
@@ -46,6 +48,8 @@ namespace DAVA
 class SceneFileV2;    
 class PolygonGroup : public DataNode
 {
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_POLYGONGROUP)
+
 public:
 	enum VertexDataType
 	{
@@ -278,8 +282,8 @@ inline void PolygonGroup::SetAngle(int32 i, const Vector2 & _v)
 
 inline void	PolygonGroup::SetJointIndex(int32 vIndex, int32 jointIndex, int32 boneIndexValue)
 {
-    DVASSERT(jointIndex >= 0 && jointIndex < 4);
-    jointIdxArray[vIndex] = float32(boneIndexValue);
+    DVASSERT(jointIndex >= 0 && jointIndex < 4);    
+    *(float32*)(((uint8*)jointIdxArray) + vIndex * vertexStride) = float32(boneIndexValue);
 //	uint8 * t = ((uint8*)jointIdxArray) + vIndex * vertexStride;
 //	t[jointIndex] = boneIndexValue;
 }
@@ -287,7 +291,7 @@ inline void	PolygonGroup::SetJointIndex(int32 vIndex, int32 jointIndex, int32 bo
 inline void	PolygonGroup::SetJointWeight(int32 vIndex, int32 jointIndex, float32 boneWeightValue)
 {
     DVASSERT(jointIndex >= 0 && jointIndex < 4);
-    jointWeightArray[vIndex] = boneWeightValue;
+    *(float32*)(((uint8*)jointIdxArray) + vIndex * vertexStride) = float32(boneWeightValue);    
 //    uint8 * t = ((uint8*)jointWeightArray) + vIndex * vertexStride;
 //	t[jointIndex] = (uint8)(255 * boneWeightValue);
 }

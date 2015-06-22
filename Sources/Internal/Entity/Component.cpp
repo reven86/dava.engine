@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Entity/Component.h"
 #include "Scene3D/Entity.h"
 #include "Debug/DVAssert.h"
@@ -136,7 +135,7 @@ Component * Component::CreateByType(uint32 componentType)
 }
 
 Component::Component()
-:	entity(0)
+    : entity(0)
 {
 
 }

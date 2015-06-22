@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_THEORA_PLAYER_H__
 #define __DAVAENGINE_THEORA_PLAYER_H__
 

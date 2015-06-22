@@ -42,6 +42,8 @@
 
 #include "Render/UniqueStateSet.h"
 
+#include "MemoryManager/MemoryProfiler.h"
+
 namespace DAVA
 {
 /**
@@ -65,16 +67,18 @@ public:
 };
 	
 #ifdef USE_FILEPATH_IN_MAP
-	typedef Map<FilePath, Texture *> TexturesMap;
+    using TexturesMap = Map<FilePath, Texture *>;
 #else //#ifdef USE_FILEPATH_IN_MAP
-	typedef Map<String, Texture *> TexturesMap;
+    using TexturesMap = Map<String, Texture *>;
 #endif //#ifdef USE_FILEPATH_IN_MAP
 
 
 class Texture : public RenderResource
 {
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_TEXTURE)
 public:       
         
+
 
 	enum TextureState
 	{
@@ -228,8 +232,6 @@ protected:
     
 	Texture();
 	virtual ~Texture();
-    
-    Image * ReadDataToImage();    
     
     bool IsLoadAvailable(const eGPUFamily gpuFamily) const;
 

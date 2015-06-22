@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "AndroidLayer.h"
 #include "UI/UITextFieldAndroid.h"
 #include "Base/BaseTypes.h"
@@ -104,28 +103,38 @@ extern "C"
     void Java_com_dava_framework_JNITextField_TextFieldUpdateTexture(JNIEnv* env,
             jobject classthis, uint32_t id, jintArray pixels, int width, int height)
     {
+        static_assert(sizeof(jint) == sizeof(DAVA::int32), "o_O can't be");
+
         if (nullptr != pixels)
         {
             DVASSERT(width > 0);
             DVASSERT(height > 0);
 
-            jboolean isCopy = JNI_FALSE;
+            jboolean isCopy{0};
             jint* rawData = env->GetIntArrayElements(pixels, &isCopy);
 
-            DVASSERT(rawData);
+            DVASSERT(rawData != nullptr);
             DVASSERT(env->GetArrayLength(pixels) == width * height); // ARGB
 
-            DAVA::uint32 pitch = width * 4; // 4 byte per pixel
+            DAVA::int32* pixelsCopy{nullptr};
 
-            // convert on the same memory
-            DAVA::ImageConvert::ConvertImageDirect(DAVA::FORMAT_BGRA8888,
-                    DAVA::FORMAT_RGBA8888, rawData, width, height, pitch, rawData,
-                    width, height, pitch);
+            if(JNI_TRUE == isCopy)
+            {
+                pixelsCopy = reinterpret_cast<DAVA::int32*>(rawData);
+                DAVA::UITextFieldAndroid::TextFieldUpdateTexture(id, pixelsCopy, width, height);
+            } else
+            {
+                // we have to copy pixels from Java because different threads (Java, OpenGL)
+                // and in Java main thread current pixel buffer can be rewritten
+                const DAVA::uint8* data = reinterpret_cast<DAVA::uint8*>(rawData);
+                DAVA::Image* image = DAVA::Image::CreateFromData(width, height, DAVA::FORMAT_RGBA8888, data);
+                SCOPE_EXIT{SafeRelease(image);};
 
-            DAVA::UITextFieldAndroid::TextFieldUpdateTexture(id, rawData, width,
-                    height);
-
-            env->ReleaseIntArrayElements(pixels, rawData, 0);
+                pixelsCopy = reinterpret_cast<DAVA::int32*>(image->GetData());
+                DAVA::UITextFieldAndroid::TextFieldUpdateTexture(id, pixelsCopy, width, height);
+            }
+            // JNI_ABORT free the buffer without copying back the possible changes
+            env->ReleaseIntArrayElements(pixels, rawData, JNI_ABORT);
         }
         else
         {

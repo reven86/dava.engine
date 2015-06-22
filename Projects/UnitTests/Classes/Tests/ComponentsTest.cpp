@@ -26,9 +26,46 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "DAVAEngine.h"
+#include "UnitTests/UnitTests.h"
 
+using namespace DAVA;
 
-#include "ComponentsTest.h"
+class SingleComponentSystem: public SceneSystem
+{
+public:
+    SingleComponentSystem(Scene * scene);
+
+    virtual void AddEntity(Entity * entity);
+    virtual void RemoveEntity(Entity * entity);
+    
+    virtual void AddComponent(Entity * entity, Component * component);
+    virtual void RemoveComponent(Entity * entity, Component * component);
+
+    uint32 GetEnititesCount() const;
+    uint32 GetComponentsCount() const;
+    
+    Vector<Component *> components;
+    Vector<Entity *>entities;
+};
+
+class MultiComponentSystem: public SceneSystem
+{
+public:
+    MultiComponentSystem(Scene * scene);
+    
+    virtual void AddEntity(Entity * entity);
+    virtual void RemoveEntity(Entity * entity);
+    
+    virtual void AddComponent(Entity * entity, Component * component);
+    virtual void RemoveComponent(Entity * entity, Component * component);
+    
+    uint32 GetEnititesCount() const;
+    uint32 GetComponentsCount(uint32 componentType) const;
+
+    Map<uint32, Vector<Component *> > components;
+    Vector<Entity *>entities;
+};
 
 template <class Type>
 void RemovePointerFromVector(DAVA::Vector<Type *> &elements, const Type * element)
@@ -43,10 +80,8 @@ void RemovePointerFromVector(DAVA::Vector<Type *> &elements, const Type * elemen
             return;
         }
     }
-    
     DVASSERT(0);
 }
-
 
 SingleComponentSystem::SingleComponentSystem(Scene * scene)
     :   SceneSystem(scene)
@@ -56,7 +91,6 @@ SingleComponentSystem::SingleComponentSystem(Scene * scene)
 void SingleComponentSystem::AddEntity(Entity * entity)
 {
     entities.push_back(entity);
-    
     for(int32 id = 0; id < Component::COMPONENT_COUNT; ++id)
     {
         uint32 flags = 1 << id;
@@ -69,7 +103,6 @@ void SingleComponentSystem::AddEntity(Entity * entity)
             }
         }
     }
-    
 }
 
 void SingleComponentSystem::RemoveEntity(Entity * entity)
@@ -86,7 +119,6 @@ void SingleComponentSystem::RemoveEntity(Entity * entity)
             }
         }
     }
-
     RemovePointerFromVector(entities, entity);
 }
 
@@ -110,12 +142,10 @@ uint32 SingleComponentSystem::GetComponentsCount() const
     return (uint32)components.size();
 }
 
-
-//=====
+//=============================================
 MultiComponentSystem::MultiComponentSystem(Scene * scene)
-:   SceneSystem(scene)
-{
-}
+    : SceneSystem(scene)
+{}
 
 void MultiComponentSystem::AddEntity(Entity * entity)
 {
@@ -133,7 +163,6 @@ void MultiComponentSystem::AddEntity(Entity * entity)
             }
         }
     }
-    
 }
 
 void MultiComponentSystem::RemoveEntity(Entity * entity)
@@ -150,7 +179,6 @@ void MultiComponentSystem::RemoveEntity(Entity * entity)
             }
         }
     }
-    
     RemovePointerFromVector(entities, entity);
 }
 
@@ -164,11 +192,11 @@ void MultiComponentSystem::RemoveComponent(Entity * entity, Component * componen
     RemovePointerFromVector(components[component->GetType()], component);
 }
 
-
 uint32 MultiComponentSystem::GetEnititesCount() const
 {
     return (uint32)entities.size();
 }
+
 uint32 MultiComponentSystem::GetComponentsCount(uint32 componentType) const
 {
     auto found = components.find(componentType);
@@ -180,555 +208,491 @@ uint32 MultiComponentSystem::GetComponentsCount(uint32 componentType) const
     return 0;
 }
 
-
-
-
-
-ComponentsTest::ComponentsTest()
-: TestTemplate<ComponentsTest>("ComponentsTest")
+DAVA_TESTCLASS(ComponentsTest)
 {
-    RegisterFunction(this, &ComponentsTest::RegisterEntityTest, "RegisterEntityTest", NULL);
-    RegisterFunction(this, &ComponentsTest::AddComponentTest1, "AddComponentTest1", NULL);
-	RegisterFunction(this, &ComponentsTest::AddComponentTest2, "AddComponentTest2", NULL);
-	RegisterFunction(this, &ComponentsTest::AddComponentTest3, "AddComponentTest3", NULL);
-    RegisterFunction(this, &ComponentsTest::MultiComponentTest1, "MultiComponentTest1", NULL);
-	RegisterFunction(this, &ComponentsTest::MultiComponentTest2, "MultiComponentTest2", NULL);
-	RegisterFunction(this, &ComponentsTest::MultiComponentTest3, "MultiComponentTest3", NULL);
-}
-
-void ComponentsTest::LoadResources()
-{
-    GetBackground()->SetColor(Color(0.0f, 1.0f, 0.0f, 1.0f));
-}
-
-
-void ComponentsTest::UnloadResources()
-{
-    RemoveAllControls();
-}
-
-void ComponentsTest::RegisterEntityTest( PerfFuncData * data )
-{
-    DAVA::Logger::FrameworkDebug("[RegisterEntityTest] sarted");
-    
-	Scene *scene = new Scene();
-    SingleComponentSystem * testSystemLight = new SingleComponentSystem(scene);
-    SingleComponentSystem * testSystemAction = new SingleComponentSystem(scene);
-    scene->AddSystem(testSystemLight, 1 << Component::LIGHT_COMPONENT);
-    scene->AddSystem(testSystemAction, 1 << Component::ACTION_COMPONENT);
-
-    
-	Entity *e1 = new Entity();
-	e1->AddComponent(new LightComponent());
-	e1->AddComponent(new ActionComponent());
-
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 0);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 0);
-    
-	scene->AddNode(e1);
-
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 1);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 1);
-
-	scene->RemoveNode(e1);
-
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 0);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 0);
-
-	e1->Release();
-	scene->Release();
-    
-    DAVA::Logger::FrameworkDebug("[RegisterEntityTest] finished");
-}
-
-void ComponentsTest::AddComponentTest1( PerfFuncData * data )
-{
-    DAVA::Logger::FrameworkDebug("[AddComponentTest1] sarted");
-
-	Scene *scene = new Scene();
-    SingleComponentSystem * testSystemLight = new SingleComponentSystem(scene);
-    SingleComponentSystem * testSystemAction = new SingleComponentSystem(scene);
-    scene->AddSystem(testSystemLight, 1 << Component::LIGHT_COMPONENT);
-    scene->AddSystem(testSystemAction, 1 << Component::ACTION_COMPONENT);
-
-	Entity *e1 = new Entity();
-
-	scene->AddNode(e1);
-
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 0);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 0);
-
-	e1->AddComponent(new ActionComponent());
-	e1->AddComponent(new LightComponent());
-
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 1);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 1);
-
-    e1->AddComponent(new ActionComponent());
-	e1->AddComponent(new LightComponent());
-
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 2);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 2);
-    
-	e1->RemoveComponent(Component::ACTION_COMPONENT);
-	e1->RemoveComponent(Component::LIGHT_COMPONENT);
-
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 1);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 1);
-
-    e1->AddComponent(new ActionComponent());
-	e1->AddComponent(new LightComponent());
-
-    
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 2);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 2);
-
-	scene->RemoveNode(e1);
-    
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 0);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 0);
-    
-	e1->Release();
-	scene->Release();
-
-    DAVA::Logger::FrameworkDebug("[AddComponentTest1] finished");
-}
-
-void ComponentsTest::AddComponentTest2( PerfFuncData * data )
-{
-    DAVA::Logger::FrameworkDebug("[AddComponentTest2] sarted");
-
-	Scene *scene = new Scene();
-    SingleComponentSystem * testSystemLight = new SingleComponentSystem(scene);
-    SingleComponentSystem * testSystemAction = new SingleComponentSystem(scene);
-    scene->AddSystem(testSystemLight, 1 << Component::LIGHT_COMPONENT);
-    scene->AddSystem(testSystemAction, 1 << Component::ACTION_COMPONENT);
-
-	Entity *e1 = new Entity();
-	Component *a = new ActionComponent();
-	Component *l = new LightComponent();
-
-	scene->AddNode(e1);
-
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 0);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 0);
-
-	e1->AddComponent(a);
-	e1->AddComponent(l);
-
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 1);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 1);
-
-    
-	e1->RemoveComponent(a);
-	e1->RemoveComponent(l);
-
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 0);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 0);
-
-    
-	a = l = NULL;
-
-	scene->RemoveNode(e1);
-
-	e1->Release();
-	scene->Release();
-
-    DAVA::Logger::FrameworkDebug("[AddComponentTest2] finished");
-}
-
-void ComponentsTest::AddComponentTest3( PerfFuncData * data )
-{
-    DAVA::Logger::FrameworkDebug("[AddComponentTest3] sarted");
-    
-	Scene *scene = new Scene();
-    SingleComponentSystem * testSystemLight = new SingleComponentSystem(scene);
-    SingleComponentSystem * testSystemAction = new SingleComponentSystem(scene);
-    scene->AddSystem(testSystemLight, 1 << Component::LIGHT_COMPONENT);
-    scene->AddSystem(testSystemAction, 1 << Component::ACTION_COMPONENT);
-    
-	Entity *e1 = new Entity();
-	e1->AddComponent(new ActionComponent());
-	e1->AddComponent(new LodComponent());
-	e1->AddComponent(new LightComponent());
-	e1->AddComponent(new LightComponent());
-
-    Entity *e2 = new Entity();
-
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 0);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 0);
-    
-	scene->AddNode(e1);
-    
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 1);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 2);
-    
-	e1->AddComponent(new ActionComponent());
-	e1->AddComponent(new LightComponent());
-    
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 2);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 3);
-    
-    scene->RemoveNode(e1);
-
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 0);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 0);
-
-    scene->AddNode(e1);
-    
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 2);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 3);
-
-    scene->AddNode(e2);
-    
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 2);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 3);
-    
-    e2->AddComponent(new LodComponent());
-    
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 2);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 3);
-
-    
-    e2->AddComponent(new ActionComponent());
-
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 2);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 3);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 3);
-
-    e2->AddComponent(new LightComponent());
-    
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 2);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 3);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 2);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 4);
-
-	e1->RemoveComponent(Component::ACTION_COMPONENT);
-
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 2);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 2);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 2);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 4);
-    
-    e1->RemoveComponent(Component::LIGHT_COMPONENT);
- 
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 2);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 2);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 2);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 3);
-    
-    
-    e1->AddComponent(new ActionComponent());
-	e1->AddComponent(new LightComponent());
-    
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 2);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 3);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 2);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 4);
-    
-	scene->RemoveNode(e1);
-    
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 1);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 1);
-    
-    scene->RemoveNode(e2);
-
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 0);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 0);
-    
-    
-    Entity *e3 = e1->Clone();
-    
-    scene->AddNode(e1);
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 2);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 3);
-
-    scene->AddNode(e3);
-
-    TEST_VERIFY(testSystemAction->GetEnititesCount() == 2);
-    TEST_VERIFY(testSystemAction->GetComponentsCount() == 4);
-    TEST_VERIFY(testSystemLight->GetEnititesCount() == 2);
-    TEST_VERIFY(testSystemLight->GetComponentsCount() == 6);
-
-    e2->Release();
-	e1->Release();
-	scene->Release();
-    
-    DAVA::Logger::FrameworkDebug("[AddComponentTest3] finished");
-}
-
-
-void ComponentsTest::MultiComponentTest1( PerfFuncData * data )
-{
-    DAVA::Logger::FrameworkDebug("[MultiComponentTest1] sarted");
-
-	Scene *scene = new Scene();
-    MultiComponentSystem * testSystem = new MultiComponentSystem(scene);
-    scene->AddSystem(testSystem, (1 << Component::LIGHT_COMPONENT) | (1 << Component::ACTION_COMPONENT));
-    
-	Entity *e1 = new Entity();
-	Component *a = new ActionComponent();
-	Component *l = new LightComponent();
-    
-	scene->AddNode(e1);
-    
-    TEST_VERIFY(testSystem->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
-    
-	e1->AddComponent(a);
-    
-    TEST_VERIFY(testSystem->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
-
-	e1->AddComponent(l);
-
-    TEST_VERIFY(testSystem->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 1);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 1);
-    
-    e1->AddComponent(new ActionComponent());
-    
-    TEST_VERIFY(testSystem->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 1);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 2);
-    
-    e1->RemoveComponent(a);
-    
-    TEST_VERIFY(testSystem->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 1);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 1);
-
-	e1->RemoveComponent(l);
-
-    TEST_VERIFY(testSystem->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
-
-	a = l = NULL;
-    
-	scene->RemoveNode(e1);
-    
-	e1->Release();
-	scene->Release();
-
-    DAVA::Logger::FrameworkDebug("[MultiComponentTest1] finished");
-}
-
-void ComponentsTest::MultiComponentTest2( PerfFuncData * data )
-{
-    DAVA::Logger::FrameworkDebug("[MultiComponentTest2] sarted");
-
-	Scene *scene = new Scene();
-    MultiComponentSystem * testSystem = new MultiComponentSystem(scene);
-    scene->AddSystem(testSystem, (1 << Component::LIGHT_COMPONENT) | (1 << Component::ACTION_COMPONENT));
-    
-	Entity *e1 = new Entity();
-	Component *a = new ActionComponent();
-	Component *l = new LightComponent();
-    
-	scene->AddNode(e1);
-    
-    TEST_VERIFY(testSystem->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
-    
-	e1->AddComponent(a);
-
-    TEST_VERIFY(testSystem->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
-
-    e1->AddComponent(l);
-
-    TEST_VERIFY(testSystem->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 1);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 1);
-
-	e1->RemoveComponent(a);
-
-    TEST_VERIFY(testSystem->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
-
-    e1->RemoveComponent(l);
-
-    TEST_VERIFY(testSystem->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
-
-	a = l = NULL;
-    
-	scene->RemoveNode(e1);
-    
-	e1->Release();
-	scene->Release();
-    
-    DAVA::Logger::FrameworkDebug("[MultiComponentTest2] finished");
-}
-
-
-void ComponentsTest::MultiComponentTest3( PerfFuncData * data )
-{
-    DAVA::Logger::FrameworkDebug("[MultiComponentTest3] sarted");
-    
-	Scene *scene = new Scene();
-    MultiComponentSystem * testSystem = new MultiComponentSystem(scene);
-    scene->AddSystem(testSystem, (1 << Component::LIGHT_COMPONENT) | (1 << Component::ACTION_COMPONENT));
-    
-	Entity *e1 = new Entity();
-    
-	scene->AddNode(e1);
-    
-    TEST_VERIFY(testSystem->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
-    
-	e1->AddComponent(new ActionComponent());
-    
-    TEST_VERIFY(testSystem->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
-    
-	e1->AddComponent(new LightComponent());
-    
-    TEST_VERIFY(testSystem->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 1);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 1);
-    
-    e1->AddComponent(new ActionComponent());
-    
-    TEST_VERIFY(testSystem->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 1);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 2);
-    
-    e1->RemoveComponent(Component::ACTION_COMPONENT);
-    
-    TEST_VERIFY(testSystem->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 1);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 1);
-    
-	e1->RemoveComponent(Component::LIGHT_COMPONENT);
-    
-    TEST_VERIFY(testSystem->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
-    
-    e1->AddComponent(new ActionComponent());
-    
-    TEST_VERIFY(testSystem->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
-
-
-    e1->AddComponent(new LightComponent());
-    
-    TEST_VERIFY(testSystem->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 1);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 2);
-
-    e1->AddComponent(new ActionComponent());
-    
-    TEST_VERIFY(testSystem->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 1);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 3);
-
-    e1->AddComponent(new ActionComponent());
-    
-    TEST_VERIFY(testSystem->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 1);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 4);
-
-    Entity *e2 = new Entity();
-    e2->AddComponent(new ActionComponent());
-    e2->AddComponent(new ActionComponent());
-    e2->AddComponent(new LightComponent());
-    e2->AddComponent(new LightComponent());
-
-    scene->AddNode(e2);
-    
-    TEST_VERIFY(testSystem->GetEnititesCount() == 2);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 3);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 6);
-
-    e2->AddComponent(new ActionComponent());
-    e2->AddComponent(new LightComponent());
-
-    TEST_VERIFY(testSystem->GetEnititesCount() == 2);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 4);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 7);
-
-    e2->AddComponent(new LodComponent());
-    
-    TEST_VERIFY(testSystem->GetEnititesCount() == 2);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 4);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 7);
-
-    
-    scene->RemoveNode(e1);
-
-    TEST_VERIFY(testSystem->GetEnititesCount() == 1);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 3);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 3);
-
-    scene->RemoveNode(e2);
-    
-    TEST_VERIFY(testSystem->GetEnititesCount() == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
-    TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
-
-    
-    e2->Release();
-	e1->Release();
-	scene->Release();
-    
-    DAVA::Logger::FrameworkDebug("[MultiComponentTest3] finished");
-}
-
-
+    DAVA_TEST(RegisterEntityTest)
+    {
+        Scene *scene = new Scene();
+        SingleComponentSystem * testSystemLight = new SingleComponentSystem(scene);
+        SingleComponentSystem * testSystemAction = new SingleComponentSystem(scene);
+        scene->AddSystem(testSystemLight, 1 << Component::LIGHT_COMPONENT);
+        scene->AddSystem(testSystemAction, 1 << Component::ACTION_COMPONENT);
+
+        Entity *e1 = new Entity();
+        e1->AddComponent(new LightComponent());
+        e1->AddComponent(new ActionComponent());
+
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 0);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 0);
+        
+        scene->AddNode(e1);
+
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 1);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 1);
+
+        scene->RemoveNode(e1);
+
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 0);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 0);
+
+        e1->Release();
+        scene->Release();
+    }
+    
+    DAVA_TEST(AddComponentTest1)
+    {
+        Scene *scene = new Scene();
+        SingleComponentSystem * testSystemLight = new SingleComponentSystem(scene);
+        SingleComponentSystem * testSystemAction = new SingleComponentSystem(scene);
+        scene->AddSystem(testSystemLight, 1 << Component::LIGHT_COMPONENT);
+        scene->AddSystem(testSystemAction, 1 << Component::ACTION_COMPONENT);
+
+        Entity *e1 = new Entity();
+        scene->AddNode(e1);
+
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 0);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 0);
+
+        e1->AddComponent(new ActionComponent());
+        e1->AddComponent(new LightComponent());
+
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 1);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 1);
+
+        e1->AddComponent(new ActionComponent());
+        e1->AddComponent(new LightComponent());
+
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 2);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 2);
+        
+        e1->RemoveComponent(Component::ACTION_COMPONENT);
+        e1->RemoveComponent(Component::LIGHT_COMPONENT);
+
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 1);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 1);
+
+        e1->AddComponent(new ActionComponent());
+        e1->AddComponent(new LightComponent());
+
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 2);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 2);
+
+        scene->RemoveNode(e1);
+        
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 0);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 0);
+        
+        e1->Release();
+        scene->Release();
+    }
+    
+    DAVA_TEST(AddComponentTest2)
+    {
+        Scene *scene = new Scene();
+        SingleComponentSystem * testSystemLight = new SingleComponentSystem(scene);
+        SingleComponentSystem * testSystemAction = new SingleComponentSystem(scene);
+        scene->AddSystem(testSystemLight, 1 << Component::LIGHT_COMPONENT);
+        scene->AddSystem(testSystemAction, 1 << Component::ACTION_COMPONENT);
+
+        Entity *e1 = new Entity();
+        Component *a = new ActionComponent();
+        Component *l = new LightComponent();
+
+        scene->AddNode(e1);
+
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 0);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 0);
+
+        e1->AddComponent(a);
+        e1->AddComponent(l);
+
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 1);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 1);
+
+        
+        e1->RemoveComponent(a);
+        e1->RemoveComponent(l);
+
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 0);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 0);
+
+        a = l = NULL;
+        scene->RemoveNode(e1);
+
+        e1->Release();
+        scene->Release();
+    }
+    
+    DAVA_TEST(AddComponentTest3)
+    {
+        Scene *scene = new Scene();
+        SingleComponentSystem * testSystemLight = new SingleComponentSystem(scene);
+        SingleComponentSystem * testSystemAction = new SingleComponentSystem(scene);
+        scene->AddSystem(testSystemLight, 1 << Component::LIGHT_COMPONENT);
+        scene->AddSystem(testSystemAction, 1 << Component::ACTION_COMPONENT);
+        
+        Entity *e1 = new Entity();
+        e1->AddComponent(new ActionComponent());
+        e1->AddComponent(new LodComponent());
+        e1->AddComponent(new LightComponent());
+        e1->AddComponent(new LightComponent());
+
+        Entity *e2 = new Entity();
+
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 0);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 0);
+        
+        scene->AddNode(e1);
+        
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 1);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 2);
+        
+        e1->AddComponent(new ActionComponent());
+        e1->AddComponent(new LightComponent());
+        
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 2);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 3);
+        
+        scene->RemoveNode(e1);
+
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 0);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 0);
+
+        scene->AddNode(e1);
+        
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 2);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 3);
+
+        scene->AddNode(e2);
+        
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 2);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 3);
+        
+        e2->AddComponent(new LodComponent());
+        
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 2);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 3);
+
+        
+        e2->AddComponent(new ActionComponent());
+
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 2);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 3);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 3);
+
+        e2->AddComponent(new LightComponent());
+        
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 2);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 3);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 2);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 4);
+
+        e1->RemoveComponent(Component::ACTION_COMPONENT);
+
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 2);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 2);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 2);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 4);
+        
+        e1->RemoveComponent(Component::LIGHT_COMPONENT);
+     
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 2);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 2);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 2);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 3);
+        
+        
+        e1->AddComponent(new ActionComponent());
+        e1->AddComponent(new LightComponent());
+        
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 2);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 3);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 2);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 4);
+        
+        scene->RemoveNode(e1);
+        
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 1);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 1);
+        
+        scene->RemoveNode(e2);
+
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 0);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 0);
+        
+        
+        Entity *e3 = e1->Clone();
+        
+        scene->AddNode(e1);
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 2);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 3);
+
+        scene->AddNode(e3);
+
+        TEST_VERIFY(testSystemAction->GetEnititesCount() == 2);
+        TEST_VERIFY(testSystemAction->GetComponentsCount() == 4);
+        TEST_VERIFY(testSystemLight->GetEnititesCount() == 2);
+        TEST_VERIFY(testSystemLight->GetComponentsCount() == 6);
+
+        e2->Release();
+        e1->Release();
+        scene->Release();
+    }
+    
+    DAVA_TEST(MultiComponentTest1)
+    {
+        Scene *scene = new Scene();
+        MultiComponentSystem * testSystem = new MultiComponentSystem(scene);
+        scene->AddSystem(testSystem, (1 << Component::LIGHT_COMPONENT) | (1 << Component::ACTION_COMPONENT));
+        
+        Entity *e1 = new Entity();
+        Component *a = new ActionComponent();
+        Component *l = new LightComponent();
+        
+        scene->AddNode(e1);
+        
+        TEST_VERIFY(testSystem->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
+        
+        e1->AddComponent(a);
+        
+        TEST_VERIFY(testSystem->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
+
+        e1->AddComponent(l);
+
+        TEST_VERIFY(testSystem->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 1);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 1);
+        
+        e1->AddComponent(new ActionComponent());
+        
+        TEST_VERIFY(testSystem->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 1);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 2);
+        
+        e1->RemoveComponent(a);
+        
+        TEST_VERIFY(testSystem->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 1);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 1);
+
+        e1->RemoveComponent(l);
+
+        TEST_VERIFY(testSystem->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
+
+        a = l = NULL;
+        
+        scene->RemoveNode(e1);
+        
+        e1->Release();
+        scene->Release();
+    }
+
+    DAVA_TEST(MultiComponentTest2)
+    {
+        Scene *scene = new Scene();
+        MultiComponentSystem * testSystem = new MultiComponentSystem(scene);
+        scene->AddSystem(testSystem, (1 << Component::LIGHT_COMPONENT) | (1 << Component::ACTION_COMPONENT));
+        
+        Entity *e1 = new Entity();
+        Component *a = new ActionComponent();
+        Component *l = new LightComponent();
+        
+        scene->AddNode(e1);
+        
+        TEST_VERIFY(testSystem->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
+        
+        e1->AddComponent(a);
+
+        TEST_VERIFY(testSystem->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
+
+        e1->AddComponent(l);
+
+        TEST_VERIFY(testSystem->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 1);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 1);
+
+        e1->RemoveComponent(a);
+
+        TEST_VERIFY(testSystem->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
+
+        e1->RemoveComponent(l);
+
+        TEST_VERIFY(testSystem->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
+
+        a = l = NULL;
+        
+        scene->RemoveNode(e1);
+        
+        e1->Release();
+        scene->Release();
+    }
+
+    DAVA_TEST(MultiComponentTest3)
+    {
+        Scene *scene = new Scene();
+        MultiComponentSystem * testSystem = new MultiComponentSystem(scene);
+        scene->AddSystem(testSystem, (1 << Component::LIGHT_COMPONENT) | (1 << Component::ACTION_COMPONENT));
+        
+        Entity *e1 = new Entity();
+        
+        scene->AddNode(e1);
+        
+        TEST_VERIFY(testSystem->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
+        
+        e1->AddComponent(new ActionComponent());
+        
+        TEST_VERIFY(testSystem->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
+        
+        e1->AddComponent(new LightComponent());
+        
+        TEST_VERIFY(testSystem->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 1);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 1);
+        
+        e1->AddComponent(new ActionComponent());
+        
+        TEST_VERIFY(testSystem->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 1);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 2);
+        
+        e1->RemoveComponent(Component::ACTION_COMPONENT);
+        
+        TEST_VERIFY(testSystem->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 1);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 1);
+        
+        e1->RemoveComponent(Component::LIGHT_COMPONENT);
+        
+        TEST_VERIFY(testSystem->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
+        
+        e1->AddComponent(new ActionComponent());
+        
+        TEST_VERIFY(testSystem->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
+
+        e1->AddComponent(new LightComponent());
+        
+        TEST_VERIFY(testSystem->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 1);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 2);
+
+        e1->AddComponent(new ActionComponent());
+        
+        TEST_VERIFY(testSystem->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 1);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 3);
+
+        e1->AddComponent(new ActionComponent());
+        
+        TEST_VERIFY(testSystem->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 1);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 4);
+
+        Entity *e2 = new Entity();
+        e2->AddComponent(new ActionComponent());
+        e2->AddComponent(new ActionComponent());
+        e2->AddComponent(new LightComponent());
+        e2->AddComponent(new LightComponent());
+
+        scene->AddNode(e2);
+        
+        TEST_VERIFY(testSystem->GetEnititesCount() == 2);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 3);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 6);
+
+        e2->AddComponent(new ActionComponent());
+        e2->AddComponent(new LightComponent());
+
+        TEST_VERIFY(testSystem->GetEnititesCount() == 2);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 4);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 7);
+
+        e2->AddComponent(new LodComponent());
+        
+        TEST_VERIFY(testSystem->GetEnititesCount() == 2);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 4);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 7);
+
+        scene->RemoveNode(e1);
+
+        TEST_VERIFY(testSystem->GetEnititesCount() == 1);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 3);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 3);
+
+        scene->RemoveNode(e2);
+        
+        TEST_VERIFY(testSystem->GetEnititesCount() == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::LIGHT_COMPONENT) == 0);
+        TEST_VERIFY(testSystem->GetComponentsCount(Component::ACTION_COMPONENT) == 0);
+
+        e2->Release();
+        e1->Release();
+        scene->Release();
+    }
+};

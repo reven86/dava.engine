@@ -27,19 +27,17 @@
 =====================================================================================*/
 
 
-
 #include "CustomColorsProxy.h"
 #include "Deprecated/EditorConfig.h"
 
-CustomColorsProxy::CustomColorsProxy(int32 size)
+CustomColorsProxy::CustomColorsProxy(int32 _size)
     : changedRect(Rect())
     , spriteChanged(false)
     , textureLoaded(false)
-    , size(size)
+    , size(_size)
     , changes(0)
 {
 	customColorsRenderTarget = Texture::CreateFBO(size, size, FORMAT_RGBA8888/*, Texture::DEPTH_NONE*/);
-	UpdateSpriteFromConfig();
 }
 
 void CustomColorsProxy::ResetLoadedState( bool isLoaded )
@@ -117,15 +115,19 @@ void CustomColorsProxy::UpdateSpriteFromConfig()
 	{
 		return;
 	}
-#if RHI_COMPLETE_EDITOR
-    RenderManager::Instance()->SetRenderTarget(customColorsRenderTarget);
-    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)customColorsRenderTarget->GetWidth(), customColorsRenderTarget->GetHeight()));
-	Vector<Color> customColors = EditorConfig::Instance()->GetColorPropertyValues("LandscapeCustomColors");
-	if (customColors.size())
-	{
-		Color color = customColors.front();
-		RenderManager::Instance()->ClearWithColor(color.r, color.g, color.b, color.a);
-	}
-    RenderManager::Instance()->SetRenderTarget(0);
-#endif // RHI_COMPLETE_EDITOR
+    
+    rhi::Viewport viewport;
+    viewport.x = viewport.y = 0;
+    viewport.width = viewport.height = size;
+    
+    Vector<Color> customColors = EditorConfig::Instance()->GetColorPropertyValues("LandscapeCustomColors");
+    if (customColors.size())
+    {
+        Color color = customColors.front();
+        RenderHelper::Instance()->CreateClearPass(customColorsRenderTarget->handle, PRIORITY_CLEAR, color, viewport);
+    }
+    else
+    {
+        RenderHelper::Instance()->CreateClearPass(customColorsRenderTarget->handle, PRIORITY_CLEAR, Color(0.f, 0.f, 0.f, 0.f), viewport);
+    }
 }

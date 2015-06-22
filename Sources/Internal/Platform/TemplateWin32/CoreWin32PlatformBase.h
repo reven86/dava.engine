@@ -30,10 +30,10 @@
 #ifndef __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
 #define __DAVAENGINE_CORE_WIN32_PLATFORM_BASE_H__
 
-#include "DAVAEngine.h"
+#include "Base/Platform.h"
 #if defined(__DAVAENGINE_WIN32__)
 
-#include "WindowsSpecifics.h"
+#include "DAVAEngine.h"
 
 namespace DAVA
 {

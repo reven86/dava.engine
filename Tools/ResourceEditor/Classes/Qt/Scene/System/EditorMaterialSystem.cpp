@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "EditorMaterialSystem.h"
 #include "Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"

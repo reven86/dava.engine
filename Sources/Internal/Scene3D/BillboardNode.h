@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_BILLBOARD_NODE_H__
 #define __DAVAENGINE_BILLBOARD_NODE_H__
 

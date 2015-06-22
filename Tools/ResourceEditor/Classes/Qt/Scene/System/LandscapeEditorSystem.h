@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __LANDSCAPE_EDITOR_SYSTEM__
 #define __LANDSCAPE_EDITOR_SYSTEM__
 
@@ -67,7 +66,7 @@ protected:
     
     
     DAVA::Texture* cursorTexture;
-    DAVA::uint32 cursorSize;
+    DAVA::float32 cursorSize;
 	Vector2 cursorPosition;
     Vector2 prevCursorPos;
 

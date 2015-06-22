@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "Main/mainwindow.h"
 #include "QualitySwitcher.h"
 #include "Project/ProjectManager.h"
