@@ -53,9 +53,10 @@ private:
     void BuildModel();
     void AddControl(ControlNode* node);
     void AddImportedControl(PackageNode* node);
-
+    void CreateConrolsRootItem();
+    void CreateImportPackagesRootItem();
     PackageNode *root;
-    QStandardItem *controlsRootItem, *importedPackageRootItem;
+    QStandardItem *defaultControlsRootItem, *controlsRootItem, *importedPackageRootItem;
     QStringList defaultControls;
 
 private: // PackageListener

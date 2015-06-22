@@ -49,6 +49,9 @@ using namespace DAVA;
 LibraryModel::LibraryModel(PackageNode *_root, QObject *parent) 
     : QStandardItemModel(parent)
     , root(SafeRetain(_root))
+    , defaultControlsRootItem(nullptr)
+    , controlsRootItem(nullptr)
+    , importedPackageRootItem(nullptr)
 {
     root->AddListener(this);
     defaultControls
@@ -122,24 +125,21 @@ QModelIndex LibraryModel::indexByNode(const void *node, const QStandardItem *ite
 
 void LibraryModel::BuildModel()
 {
-    auto defaultControlsRoot = new QStandardItem(tr("Default controls"));
-    defaultControlsRoot->setBackground(QBrush(Qt::lightGray));
-    invisibleRootItem()->appendRow(defaultControlsRoot);
+    defaultControlsRootItem = new QStandardItem(tr("Default controls"));
+    defaultControlsRootItem->setBackground(QBrush(Qt::lightGray));
+    invisibleRootItem()->appendRow(defaultControlsRootItem);
     for (const auto &defaultControl : defaultControls)
     {
         auto item = new QStandardItem(
             QIcon(IconHelper::GetIconPathForClassName(defaultControl)),
             defaultControl
             );
-        defaultControlsRoot->appendRow(item);
+        defaultControlsRootItem->appendRow(item);
     }
     const auto packageControls = root->GetPackageControlsNode();
     if (packageControls->GetCount())
     {
-        controlsRootItem = new QStandardItem(tr("Package controls"));
-        controlsRootItem->setData(QVariant::fromValue(static_cast<void*>(packageControls)));
-        controlsRootItem->setBackground(QBrush(Qt::lightGray));
-        invisibleRootItem()->appendRow(controlsRootItem);
+        CreateConrolsRootItem();
         for (int i = 0; i < packageControls->GetCount(); i++)
         {
             AddControl(packageControls->Get(i));
@@ -148,10 +148,7 @@ void LibraryModel::BuildModel()
     const auto importedPackagesNode = root->GetImportedPackagesNode();
     if (importedPackagesNode->GetCount())
     {
-        importedPackageRootItem = new QStandardItem(tr("Importred controls"));
-        importedPackageRootItem->setData(QVariant::fromValue(static_cast<void*>(importedPackagesNode)));
-        importedPackageRootItem->setBackground(QBrush(Qt::lightGray));
-        invisibleRootItem()->appendRow(importedPackageRootItem);
+        CreateImportPackagesRootItem();
         for (int i = 0; i < importedPackagesNode->GetCount(); ++i)
         {
             AddImportedControl(importedPackagesNode->GetImportedPackage(i));
@@ -187,6 +184,22 @@ void LibraryModel::AddImportedControl(PackageNode* node)
     }
 }
 
+void LibraryModel::CreateConrolsRootItem()
+{
+    controlsRootItem = new QStandardItem(tr("Package controls"));
+    controlsRootItem->setData(QVariant::fromValue(static_cast<void*>(root->GetPackageControlsNode())));
+    controlsRootItem->setBackground(QBrush(Qt::lightGray));
+    invisibleRootItem()->insertRow(1 , controlsRootItem);
+}
+
+void LibraryModel::CreateImportPackagesRootItem()
+{
+    importedPackageRootItem = new QStandardItem(tr("Importred controls"));
+    importedPackageRootItem->setData(QVariant::fromValue(static_cast<void*>(root->GetImportedPackagesNode())));
+    importedPackageRootItem->setBackground(QBrush(Qt::lightGray));
+    invisibleRootItem()->appendRow(importedPackageRootItem);
+}
+
 void LibraryModel::ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property)
 {
     QModelIndex index = indexByNode(node, invisibleRootItem());
@@ -202,6 +215,10 @@ void LibraryModel::ControlWillBeAdded(ControlNode *node, ControlsContainerNode *
 
 void LibraryModel::ControlWasAdded(ControlNode *node, ControlsContainerNode *destination, int row)
 {
+    if (nullptr == controlsRootItem)
+    {
+        CreateConrolsRootItem();
+    }
     if (controlsRootItem->data().value<void*>() == node->GetParent())
     {
         const QModelIndex destIndex = indexByNode(node, controlsRootItem); //check that we already do not have this item 
@@ -219,6 +236,11 @@ void LibraryModel::ControlWillBeRemoved(ControlNode *node, ControlsContainerNode
     {
         removeRow(index.row(), index.parent());
     }
+    if (controlsRootItem->rowCount() == 0)
+    {
+        removeRow(controlsRootItem->row());
+        controlsRootItem = nullptr;
+    }
 }
 
 void LibraryModel::ControlWasRemoved(ControlNode *node, ControlsContainerNode *from)
@@ -232,6 +254,10 @@ void LibraryModel::ImportedPackageWillBeAdded(PackageNode *node, ImportedPackage
 
 void LibraryModel::ImportedPackageWasAdded(PackageNode *node, ImportedPackagesNode *to, int index)
 {
+    if (nullptr == importedPackageRootItem)
+    {
+        CreateImportPackagesRootItem();
+    }
     if (importedPackageRootItem->data().value<void*>() == node->GetParent())
     {
         const QModelIndex destIndex = indexByNode(node, importedPackageRootItem); //check that we already do not have this item 
@@ -248,6 +274,11 @@ void LibraryModel::ImportedPackageWillBeRemoved(PackageNode *node, ImportedPacka
     if (parentIndex.isValid())
     {
         removeRow(parentIndex.row(), parentIndex.parent());
+    }
+    if (importedPackageRootItem->rowCount() == 0)
+    {
+        removeRow(importedPackageRootItem->row());
+        importedPackageRootItem = nullptr;
     }
 }
 
