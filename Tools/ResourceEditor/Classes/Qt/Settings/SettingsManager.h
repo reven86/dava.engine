@@ -32,7 +32,7 @@
 
 #include <QObject>
 #include "DAVAEngine.h"
-#include "FileSystem/VariantType.h"
+#include "Meta/VariantType.h"
 
 namespace Settings
 {

@@ -273,7 +273,6 @@
     <ClInclude Include="..\..\Sources\Internal\Base\IntrospectionDynamic.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\IntrospectionFlags.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\IntrospectionProperty.h" />
-    <ClInclude Include="..\..\Sources\Internal\Base\Meta.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Observable.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Observer.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Platform.h" />
@@ -352,7 +351,6 @@
     <ClInclude Include="..\..\Sources\Internal\FileSystem\LocalizationSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\Logger.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\ResourceArchive.h" />
-    <ClInclude Include="..\..\Sources\Internal\FileSystem\VariantType.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\XMLParser.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlArchive.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlEmitter.h" />
@@ -397,6 +395,9 @@
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerTypes.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryProfiler.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\TrackingAllocator.h" />
+    <ClInclude Include="..\..\Sources\Internal\Meta\Meta.h" />
+    <ClInclude Include="..\..\Sources\Internal\Meta\Result.h" />
+    <ClInclude Include="..\..\Sources\Internal\Meta\VariantType.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\Buffer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimerTemplate.h" />
@@ -890,7 +891,6 @@
     <ClCompile Include="..\..\Sources\Internal\FileSystem\Logger.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\LoggerWin.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\ResourceArchive.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\FileSystem\VariantType.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\XMLParser.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlArchive.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlEmitter.cpp" />
@@ -918,6 +918,8 @@
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\MallocHook.cpp" />
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\MemoryManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\OperatorNewHook.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Meta\Result.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Meta\VariantType.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Base\DeadlineTimer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Base\Endpoint.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Base\IfAddress.cpp" />

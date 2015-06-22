@@ -39,7 +39,7 @@
 
 // framework
 #include "FileSystem/KeyedArchive.h"
-#include "FileSystem/VariantType.h"
+#include "Meta/VariantType.h"
 #include "Render/RenderBase.h"
 
 #define SETTINGS_CONFIG_FILE "~doc:/ResourceEditorOptions.archive"
