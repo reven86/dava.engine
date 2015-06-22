@@ -433,10 +433,10 @@ private:
     
 public:
 	INTROSPECTION_EXTEND(Entity, BaseObject,
-		MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("ID", "ID", GetID, SetID, I_VIEW | I_SAVE)
+        MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
         MEMBER(tag, "Tag", I_SAVE | I_VIEW | I_EDIT)
         MEMBER(flags, "Flags", I_SAVE | I_VIEW | I_EDIT )
-        PROPERTY("id", "id", GetID, SetID, I_VIEW | I_SAVE)
         PROPERTY("visible", "Visible", GetVisible, SetVisible, I_VIEW | I_EDIT)
     );
 };
