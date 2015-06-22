@@ -50,6 +50,7 @@
 #include "Scene3D/Components/SwitchComponent.h"
 #include "Utils/Random.h"
 #include "Scene3D/Components/ComponentHelpers.h"
+#include <functional>
 
 #define USE_VECTOR(x) ((((uint64)1 << (uint64)x) & vectorComponentsMask) != (uint64)0)
 
@@ -71,6 +72,8 @@ Entity::Entity()
     , parent(nullptr)
     , tag(0)
     , family(nullptr)
+    , id(0)
+    , sceneId(0)
 {
 	flags = NODE_VISIBLE | NODE_UPDATABLE | NODE_LOCAL_MATRIX_IDENTITY;
     UpdateFamily();
@@ -577,6 +580,8 @@ Entity* Entity::Clone(Entity *dstNode)
 		
 	dstNode->name = name;
 	dstNode->tag = tag;
+    dstNode->sceneId = sceneId;
+    dstNode->id = 0;
     
     //flags are intentionally not cloned
 	//dstNode->flags = flags;
@@ -729,6 +734,7 @@ void Entity::Save(KeyedArchive * archive, SerializationContext * serializationCo
 
 	archive->SetString("name", String(name.c_str()));
 	archive->SetInt32("tag", tag);
+    archive->SetUInt32("id", id);
 	archive->SetByteArrayAsType("localTransform", GetLocalTransform());
 		
 	archive->SetUInt32("flags", flags);
@@ -769,11 +775,17 @@ void Entity::Load(KeyedArchive * archive, SerializationContext * serializationCo
         
 	name = FastName(archive->GetString("name", "").c_str());
 	tag = archive->GetInt32("tag", 0);
+
+    id = archive->GetUInt32("id", 0);
+    if(nullptr != serializationContext->GetScene())
+    {
+        sceneId = serializationContext->GetScene()->GetSceneID();
+    }
 		
 	flags = archive->GetUInt32("flags", NODE_VISIBLE);
 	flags |= NODE_UPDATABLE;
 	flags &= ~TRANSFORM_DIRTY;
-		
+
 	const Matrix4 & localTransform = archive->GetByteArrayAsType("localTransform", GetLocalTransform());
 	SetLocalTransform(localTransform);
 		
@@ -1181,6 +1193,29 @@ inline void Entity::RemoveComponent (Vector<Component *>::iterator & it)
         DetachComponent (it);
         SafeDelete (c);
     }
+}
+
+Entity* Entity::GetEntityByID(uint32 id)
+{
+    Entity* ret = nullptr;
+
+    if (this->id == id)
+    {
+        ret = this;
+    }
+    else
+    {
+        for (auto child : children)
+        {
+            ret = child->GetEntityByID(id);
+            if (nullptr != ret)
+            {
+                break;
+            }
+        }
+    }
+
+    return ret;
 }
 
 };
