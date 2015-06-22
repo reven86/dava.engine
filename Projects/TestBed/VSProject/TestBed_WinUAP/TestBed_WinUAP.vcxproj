@@ -146,7 +146,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>MinCore.lib;..\_build\DavaFramework\Release\DavaFramework.lib;..\_build\DavaTools\Release\DavaTools.lib;Wininet.lib;ws2_32.lib;winmm.lib;wldap32.lib;iphlpapi.lib;Gdi32.lib;psapi.lib;d2d1.lib;d3d11.lib;d3dcompiler.lib;dxgi.lib;windowscodecs.lib;dwrite.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\fmodexWSA80_vc.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\fmodexWSA81_vc.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\fmod_eventWSA80.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\fmod_eventWSA81.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\freetype.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\fribidi.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\jpeg_win10.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\libcurl.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\libdxt.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\libEGL.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\libGLESv2.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\libmongodb_win.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\libogg_static.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\libtheora10_static.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\libvorbis_static.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\libxml_win.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\libyaml_win.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\lua_win.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\pnglib_win.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\preprocessor.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\PVRTexLib32.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\translator.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\translator_lib.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\translator_static.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\unibreak.lib;..\..\..\..\Libs\IMagickHelpLib\IMagickHelper.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>MinCore.lib;..\_build\DavaFramework\Release\DavaFramework.lib;Wininet.lib;ws2_32.lib;winmm.lib;wldap32.lib;iphlpapi.lib;Gdi32.lib;psapi.lib;d2d1.lib;d3d11.lib;d3dcompiler.lib;dxgi.lib;windowscodecs.lib;dwrite.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\fmodexWSA80_vc.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\fmodexWSA81_vc.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\fmod_eventWSA80.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\fmod_eventWSA81.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\freetype.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\fribidi.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\jpeg_win10.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\libcurl.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\libdxt.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\libEGL.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\libGLESv2.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\libmongodb_win.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\libogg_static.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\libtheora10_static.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\libvorbis_static.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\libxml_win.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\libyaml_win.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\lua_win.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\pnglib_win.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\PVRTexLib32.lib;..\..\..\..\Libs\lib_CMake\win10\x86\Release\unibreak.lib;..\..\..\..\Libs\IMagickHelpLib\IMagickHelper.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libcmt.lib;libcmtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
@@ -179,6 +179,7 @@
     <ClInclude Include="..\..\Classes\Infrastructure\TestListScreen.h" />
     <ClInclude Include="..\..\Classes\Infrastructure\TextureUtils.h" />
     <ClInclude Include="..\..\Classes\Tests\NotificationTest.h" />
+    <ClInclude Include="..\..\Classes\Tests\StaticWebViewTest.h" />
     <ClInclude Include="..\..\Classes\Tests\UIScrollViewTest.h" />
   </ItemGroup>
   <ItemGroup>
@@ -201,6 +202,7 @@
     <ClCompile Include="..\..\Classes\Infrastructure\TestListScreen.cpp" />
     <ClCompile Include="..\..\Classes\Infrastructure\TextureUtils.cpp" />
     <ClCompile Include="..\..\Classes\Tests\NotificationTest.cpp" />
+    <ClCompile Include="..\..\Classes\Tests\StaticWebViewTest.cpp" />
     <ClCompile Include="..\..\Classes\Tests\UIScrollViewTest.cpp" />
     <ClCompile Include="..\..\Win32Specific\main.cpp" />
     <ClCompile Include="..\..\Win32Specific\main_store.cpp" />

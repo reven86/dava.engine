@@ -45,6 +45,9 @@
     <ClCompile Include="..\..\Win32Specific\main_store.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Classes\Tests\StaticWebViewTest.cpp">
+      <Filter>Classes\Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Classes\Tests\NotificationTest.h">
@@ -67,6 +70,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Classes\Infrastructure\TextureUtils.h">
       <Filter>Classes\Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Classes\Tests\StaticWebViewTest.h">
+      <Filter>Classes\Tests</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

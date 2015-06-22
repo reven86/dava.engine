@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 14.0.22823.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestBed_WinUAP", "TestBed_WinUAP\TestBed_WinUAP.vcxproj", "{4F0F0B51-5E1B-4158-906C-130F2C9EBD9B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2ADE5258-4914-45AF-A032-026BAF97D8B2} = {2ADE5258-4914-45AF-A032-026BAF97D8B2}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DavaFramework", "_build\DavaFramework\DavaFramework.vcxproj", "{2ADE5258-4914-45AF-A032-026BAF97D8B2}"
 EndProject
