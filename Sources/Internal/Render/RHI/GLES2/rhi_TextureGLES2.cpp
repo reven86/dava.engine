@@ -147,7 +147,8 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
             GLCommand   cmd3[] = 
             {
                 { GLCommand::GEN_FRAMEBUFFERS, { 1, (uint64)(&fbo) } },
-                { GLCommand::GEN_TEXTURES, { 1, (uint64)(&depth) } } 
+//                { GLCommand::GEN_TEXTURES, { 1, (uint64)(&depth) } }
+                { GLCommand::GEN_RENDERBUFFERS, { 1, (uint64)(&depth) } }
             };
             
             ExecGL( cmd3, countof(cmd3) );
@@ -163,8 +164,25 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
                     { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
                     { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, 0 } },
 
+                    { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, depth } },
+                    { GLCommand::RENDERBUFFER_STORAGE, { GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, desc.width, desc.height } },
+                    { GLCommand::BIND_RENDERBUFFER, { GL_RENDERBUFFER, 0 } },
+                    
+                    { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, fbo } },
+                    { GLCommand::FRAMEBUFFER_TEXTURE, { GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, uid, 0 } },                    
+                    { GLCommand::FRAMEBUFFER_RENDERBUFFER, { GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth } },
+                    { GLCommand::DRAWBUFFERS, { 1, (uint64)b } },
+                    { GLCommand::FRAMEBUFFER_STATUS, { GL_FRAMEBUFFER } },
+                    { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, 0 } }
+/*
+                    { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, uid } },
+                    { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_2D, 0, GL_RGBA, desc.width, desc.height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0 } },
+                    { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST } },
+                    { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
+                    { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, 0 } },
+
                     { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, depth } },
-                    { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, desc.width, desc.height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL } },
+//                    { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, desc.width, desc.height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL } },
                     { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, 0 } },
 
                     { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, fbo } },                    
@@ -173,6 +191,7 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
                     { GLCommand::DRAWBUFFERS, { 1, (uint64)b } },
                     { GLCommand::FRAMEBUFFER_STATUS, { GL_FRAMEBUFFER } },
                     { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, 0 } }
+*/
                 };
 
                 ExecGL( cmd4, countof(cmd4) );
