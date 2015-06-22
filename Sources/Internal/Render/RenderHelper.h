@@ -242,7 +242,7 @@ public:
     void Set2DRenderTarget(Texture * renderTarget);
     void DrawTexture(Texture * texture, UniqueHandle renderState, const Rect & dstRect = Rect(0.f, 0.f, -1.f, -1.f), const Rect & srcRect = Rect(0.f, 0.f, -1.f, -1.f));
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
 	void GetLineWidthRange(int32& rangeMin, int32& rangeMax);
 #endif
 

@@ -29,11 +29,11 @@
 
 #include <cstdio>
 
+#include "Base/BaseTypes.h"
 #include <libuv/uv.h>
 
-#include <Debug/DVAssert.h>
-
-#include <Network/Base/Endpoint.h>
+#include "Debug/DVAssert.h"
+#include "Network/Base/Endpoint.h"
 
 namespace DAVA
 {
@@ -82,20 +82,20 @@ void Endpoint::InitSockaddrIn(uint32 addr, uint16 port)
 {
     data.sin_family = AF_INET;
     data.sin_port   = htons(port);
-#ifdef __DAVAENGINE_WIN32__
+#ifdef __DAVAENGINE_WINDOWS__
     data.sin_addr.S_un.S_addr = htonl(addr);
-#else   // __DAVAENGINE_WIN32__
+#else   // __DAVAENGINE_WINDOWS__
     data.sin_addr.s_addr      = htonl(addr);
-#endif  // __DAVAENGINE_WIN32__
+#endif  // __DAVAENGINE_WINDOWS__
 }
 
 uint32 Endpoint::GetSockaddrAddr() const
 {
-#ifdef __DAVAENGINE_WIN32__
+#ifdef __DAVAENGINE_WINDOWS__
     return ntohl(data.sin_addr.S_un.S_addr);
-#else   // __DAVAENGINE_WIN32__
+#else   // __DAVAENGINE_WINDOWS__
     return ntohl(data.sin_addr.s_addr);
-#endif  // __DAVAENGINE_WIN32__
+#endif  // __DAVAENGINE_WINDOWS__
 }
 
 }   // namespace Net

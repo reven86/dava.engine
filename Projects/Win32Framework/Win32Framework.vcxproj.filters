@@ -193,6 +193,9 @@
     <Filter Include="Internal\UnitTests">
       <UniqueIdentifier>{74ad4986-9f1f-46aa-a7e2-2f8bc3f5dfe1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\Network\Services\MMNet">
+      <UniqueIdentifier>{d0f16e2c-89a6-4e92-a990-9a10aa9bfe40}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -852,9 +855,6 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\DataNode.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\ProxyNode.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Input\InputSystem.h">
       <Filter>Internal\Input</Filter>
     </ClInclude>
@@ -1081,9 +1081,6 @@
       <Filter>Internal\Scene3D\Components</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\CorePlatformWin32.h">
-      <Filter>Internal\Platform\TemplateWin32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WindowsSpecifics.h">
       <Filter>Internal\Platform\TemplateWin32</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\LightUpdateSystem.h">
@@ -1798,26 +1795,11 @@
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManager.h">
       <Filter>Internal\MemoryManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocThunk.h">
-      <Filter>Internal\MemoryManager</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerTypes.h">
       <Filter>Internal\MemoryManager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocPools.h">
       <Filter>Internal\MemoryManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerAllocator.h">
-      <Filter>Internal\MemoryManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetProto.h">
-      <Filter>Internal\Network\Services</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetServer.h">
-      <Filter>Internal\Network\Services</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetClient.h">
-      <Filter>Internal\Network\Services</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryProfiler.h">
       <Filter>Internal\MemoryManager</Filter>
@@ -1837,6 +1819,9 @@
     <ClInclude Include="..\..\Sources\Internal\Thread\ThreadLocalPtr.h">
       <Filter>Internal\Thread</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\ConditionalVariable.h">
+      <Filter>Internal\Platform</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeComponent.h">
       <Filter>Internal\UI\Components</Filter>
     </ClInclude>
@@ -1855,6 +1840,25 @@
     <ClInclude Include="..\..\Sources\Internal\UnitTests\UnitTests.h">
       <Filter>Internal\UnitTests</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocatorBridge.h">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\InternalAllocator.h">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\TrackingAllocator.h">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetClient.h">
+      <Filter>Internal\Network\Services\MMNet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetProto.h">
+      <Filter>Internal\Network\Services\MMNet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetServer.h">
+      <Filter>Internal\Network\Services\MMNet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Base\Platform.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2410,9 +2414,6 @@
       <Filter>Internal\Base</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\DataNode.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\ProxyNode.cpp">
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Input\InputSystem.cpp">
@@ -3271,18 +3272,6 @@
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\OperatorNewHook.cpp">
       <Filter>Internal\MemoryManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AllocThunk.cpp">
-      <Filter>Internal\MemoryManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetServer.cpp">
-      <Filter>Internal\Network\Services</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetClient.cpp">
-      <Filter>Internal\Network\Services</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AndroidMallocSize.cpp">
-      <Filter>Internal\MemoryManager</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\dlmalloc.c">
       <Filter>Internal\Autotesting</Filter>
     </ClCompile>
@@ -3302,6 +3291,21 @@
       <Filter>Internal\UI\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UnitTests\TestCore.cpp">
+      <Filter>Internal\UnitTests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\ConditionalVariable.cpp">
+      <Filter>Internal\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AllocatorBridge.cpp">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetClient.cpp">
+      <Filter>Internal\Network\Services\MMNet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetServer.cpp">
+      <Filter>Internal\Network\Services\MMNet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UnitTests\TestClass.cpp">
       <Filter>Internal\UnitTests</Filter>
     </ClCompile>
   </ItemGroup>

@@ -32,6 +32,7 @@
 
 #include "DAVAVersion.h"
 #include "DAVAConfig.h"
+#include "Base/Platform.h"
 #include "Debug/Stats.h"
 #include "MemoryManager/MemoryProfiler.h"
 
@@ -253,7 +254,6 @@
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/BillboardNode.h"
 #include "Scene3D/BoneNode.h"
-#include "Scene3D/ProxyNode.h"
 #include "Scene3D/SkeletonNode.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Scene3D/Systems/SpeedTreeUpdateSystem.h"

@@ -27,6 +27,9 @@
 =====================================================================================*/
 
 
+#include "Base/Platform.h"
+#ifndef __DAVAENGINE_WIN_UAP__
+
 #include "Render/Texture.h"
 #include "Render/RenderManager.h"
 #include "Render/OGLHelpers.h"
@@ -41,13 +44,13 @@
 #include "Render/PixelFormatDescriptor.h"
 
 
-#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
+#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__)
 #include "libpvr/PVRTError.h"
 #include "libpvr/PVRTDecompress.h"
 #include "libpvr/PVRTMap.h"
 #include "libpvr/PVRTextureHeader.h"
 #include "libpvr/PVRTexture.h"
-#endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
+#endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__)
 
 #define METADATA_FOURCC_OFFSET 0
 #define METADATA_KEY_OFFSET 4
@@ -121,24 +124,24 @@ eErrorCode LibPVRHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32
 
         if (loaded)
         {
-            return SUCCESS;
+            return eErrorCode::SUCCESS;
         }
     }
-    return ERROR_READ_FAIL;
+    return eErrorCode::ERROR_READ_FAIL;
 }
 
 eErrorCode LibPVRHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
 {
     //not implemented due to external tool
     DVASSERT(0);
-    return ERROR_WRITE_FAIL;
+    return eErrorCode::ERROR_WRITE_FAIL;
 }
 
 eErrorCode LibPVRHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
 {
     //not implemented due to external tool
     DVASSERT(0);
-    return ERROR_WRITE_FAIL;
+    return eErrorCode::ERROR_WRITE_FAIL;
 }
 
 DAVA::ImageInfo LibPVRHelper::GetImageInfo(File *infile) const
@@ -604,7 +607,7 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 fileMipM
             image->format = FORMAT_RGBA8888;
 
             //Setup temporary variables.
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
             uint8* pTempDecompData = image->data;
             uint8* pTempCompData = (uint8*)pTextureData + GetMipMapLayerOffset(fileMipMapLevel, faceIndex, compressedHeader);
 #endif
@@ -2527,3 +2530,5 @@ bool LibPVRHelper::AllocateImageData(DAVA::Image *image, uint32 mipMapLevel, con
 }
 
 };
+
+#endif //  #ifndef __DAVAENGINE_WIN_UAP__

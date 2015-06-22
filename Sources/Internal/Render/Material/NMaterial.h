@@ -170,8 +170,7 @@ class NMaterial : public DataNode
     friend class NMaterialStateDynamicPropertiesInsp;
 	
 public:
-	
-	typedef uint64 NMaterialKey;
+    using NMaterialKey = uint64;
 
     static const FastName TEXTURE_ALBEDO;
     static const FastName TEXTURE_NORMAL;

@@ -446,8 +446,3 @@ inline uint16 Landscape::GetVertexIndex(uint16 x, uint16 y)
 };
 
 #endif // __DAVAENGINE_LANDSCAPE_NODE_H__
-
-
-
-
-

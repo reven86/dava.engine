@@ -32,19 +32,19 @@
 namespace DAVA
 {
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 
 #include <windows.h>
 const DWORD MS_VC_EXCEPTION=0x406D1388;
 
 #pragma pack(push,8)
-typedef struct tagTHREADNAME_INFO
+using THREADNAME_INFO = struct tagTHREADNAME_INFO
 {
-    DWORD dwType; // Must be 0x1000.
-    LPCSTR szName; // Pointer to name (in user addr space).
-    DWORD dwThreadID; // Thread ID
-    DWORD dwFlags; // Reserved for future use, must be zero.
-} THREADNAME_INFO;
+    DWORD dwType;       // Must be 0x1000.
+    LPCSTR szName;      // Pointer to name (in user addr space).
+    DWORD dwThreadID;   // Thread ID
+    DWORD dwFlags;      // Reserved for future use, must be zero.
+};
 #pragma pack(pop)
 
 void Thread::Init()
@@ -118,15 +118,19 @@ void Thread::Yield()
 
 void Thread::Join()
 {
-    if (WaitForSingleObject(handle, INFINITE) != WAIT_OBJECT_0)
+    if (WaitForSingleObjectEx(handle, INFINITE, FALSE) != WAIT_OBJECT_0)
     {
-        DAVA::Logger::Error("Thread::Join() failed in WaitForSingleObject");
+        DAVA::Logger::Error("Thread::Join() failed in WaitForSingleObjectEx");
     }
 }
 
 void Thread::KillNative()
 {
+#if defined(__DAVAENGINE_WIN32__)
     TerminateThread(handle, 0);
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    DAVA::Logger::Warning("Thread::KillNative() is not implemented for Windows Store platform");
+#endif
 }
 
 Thread::Id Thread::GetCurrentId()

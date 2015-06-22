@@ -133,7 +133,7 @@ Component * Component::CreateByType(uint32 componentType)
 }
 
 Component::Component()
-:	entity(0)
+    : entity(0)
 {
 
 }
