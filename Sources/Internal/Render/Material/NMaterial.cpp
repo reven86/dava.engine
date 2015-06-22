@@ -440,24 +440,19 @@ void NMaterial::RebuildRenderVariants()
     HashMap<FastName, int32> flags;
     CollectMaterialFlags(flags);
     
-    //RHI_COMPLETE - move quality to numbers, or flags to fastname
+    //RHI_COMPLETE - move quality to numbers, or flags to FastName
     flags[NMaterialQualityName::QUALITY_FLAG_NAME] = 0; // QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup());        
 
     const FXDescriptor& fxDescr = FXCache::GetFXDescriptor(GetFXName(), flags);
+
     
 if( fxDescr.renderPassDescriptors.size() == 0)
 {
     // dragon: because I'm fucking sick and tired of Render2D-init crashing (when I don't even need it)
     return;
-}
-    
-    for (auto &sampler : fxDescr.renderPassDescriptors[0].shader->fragmentSamplerList)
-    {
-        if (sampler.uid == FastName("decal"))
-            int ttt = 3;
-    }
+}    
 
-    /*at least in theory flag changes can lead to changes in number of render pa*/
+    /*at least in theory flag changes can lead to changes in number of render passes*/
     activeVariantInstance = nullptr;
     activeVariantName = FastName();
     for (auto& variant : renderVariants)
