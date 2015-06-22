@@ -51,6 +51,7 @@ class TestCore final
         String name;
         bool runTest = true;
         std::unique_ptr<TestClassFactoryBase> factory;
+        Vector<String> testedClasses;
     };
 
 public:
@@ -61,11 +62,12 @@ public:
     using TestFinishedCallback = Function<void (const String&, const String&)>;
     using TestFailedCallback = Function<void (const String&, const String&, const String&, const char*, int, const String&)>;
 
-public:
-    static TestCore* Instance();
-
+private:
     TestCore() = default;
     ~TestCore() = default;
+
+public:
+    static TestCore* Instance();
 
     void Init(TestClassStartedCallback testClassStartedCallback, TestClassFinishedCallback testClassFinishedCallback,
               TestStartedCallback testStartedCallback, TestFinishedCallback testFinishedCallback,
@@ -77,6 +79,8 @@ public:
     bool HasTestClasses() const;
 
     bool ProcessTests(float32 timeElapsed);
+
+    Map<String, Vector<String>> GetTestCoverage();
 
     void TestFailed(const String& condition, const char* filename, int lineno, const String& userMessage);
     void RegisterTestClass(const char* name, TestClassFactoryBase* factory);

@@ -37,6 +37,8 @@ using namespace DAVA;
 
 DAVA_TESTCLASS(MemoryManagerTest)
 {
+    DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
+
     volatile uint32 capturedTag = 0;
     volatile uint32 capturedCheckpoint = 0;
 
