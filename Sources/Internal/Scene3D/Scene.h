@@ -295,7 +295,6 @@ protected:
 
     uint32 systemsMask;
     uint32 maxEntityIDCounter;
-    uint64 maxDataNodeIDCounter;
 
     uint32 clearBuffers;
 

@@ -674,6 +674,8 @@ SceneEditor2 * SceneEditor2::CreateCopyForExport()
             sceneCopy->RemoveSystems();
             ret = sceneCopy;
         }
+
+        FileSystem::Instance()->DeleteFile(tmpScenePath);
     }
 
     return ret;

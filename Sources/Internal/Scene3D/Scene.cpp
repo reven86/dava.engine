@@ -223,7 +223,6 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     , drawCamera(0)
     , imposterManager(0)
     , maxEntityIDCounter(0)
-    , maxDataNodeIDCounter(0)
 {
     static uint32 idCounter = 0;
     sceneId = ++idCounter;

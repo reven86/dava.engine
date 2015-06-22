@@ -215,18 +215,25 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     // compute maxid for datanodes
     for (auto node : nodes)
     {
+        // TODO: now one datanode can be used in multiple scenes,
+        // but datanote->scene points only on single scene. This should be
+        // discussed and fixed in the future.
         if (node->GetScene() == scene && node->GetNodeID() > maxDataNodeID)
         {
             maxDataNodeID = node->GetNodeID();
         }
     }
 
-    // assign id-s for datanodes and 
+    // assign datanode id-s and 
     // count serializable nodes
     for (auto node : nodes)
     {
         if (IsDataNodeSerializable(node))
         {
+            // TODO: if datanode is from another scene, it should be saved with newly
+            // generated datanode-id. Unfortunately this ID will be generated on every scene save,
+            // because we don't change scene pointer in datanode->scene.
+            // This should be discussed and fixed in the future.
             serializableNodesCount++;
             if (node->GetScene() != scene || node->GetNodeID() == 0)
             {
