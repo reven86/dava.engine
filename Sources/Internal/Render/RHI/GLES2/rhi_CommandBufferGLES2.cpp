@@ -1165,6 +1165,15 @@ UninitializeRenderThread()
 #endif
 }
 
+//------------------------------------------------------------------------------
+
+static void
+_LogGLError( const char* expr, int err )
+{
+    Logger::Error( "FAILED  %s (err= 0x%X) : %s\n", expr, err, GetGLErrorString(err) );
+    DVASSERT(!"KABOOM!!!");
+}
+
 
 //------------------------------------------------------------------------------
 
@@ -1175,14 +1184,14 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
 
 #if 0
 
+    while( glGetError() != GL_NO_ERROR )
+        ;
+
     #define EXEC_GL(expr) \
     expr ; \
     err = glGetError(); \
     if( err != GL_NO_ERROR ) \
-    { \
-        Logger::Error( "FAILED  %s (%i) : %s\n", #expr, err, GetGLErrorString(err) ); \
-        DVASSERT(!"KABOOM!!!"); \
-    } \
+        _LogGLError( #expr, err ); \
 
 #else
 
