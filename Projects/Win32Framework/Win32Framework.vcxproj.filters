@@ -852,9 +852,6 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\DataNode.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\ProxyNode.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Input\InputSystem.h">
       <Filter>Internal\Input</Filter>
     </ClInclude>
@@ -2433,9 +2430,6 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\DataNode.cpp">
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\ProxyNode.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Input\InputSystem.cpp">
       <Filter>Internal\Input</Filter>
     </ClCompile>
@@ -3316,7 +3310,9 @@
     <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetServer.cpp">
       <Filter>Internal\Network\Services\MMNet</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Concurrency\ConditionVariable.cpp">
+    <ClCompile Include="..\..\Sources\Internal\UnitTests\TestClass.cpp">
+      <Filter>Internal\UnitTests</Filter>
+    </ClCompile>    <ClCompile Include="..\..\Sources\Internal\Concurrency\ConditionVariable.cpp">
       <Filter>Internal\Concurrency</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Concurrency\Mutex.cpp">
@@ -3333,6 +3329,5 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Concurrency\ThreadWin32.cpp">
       <Filter>Internal\Concurrency</Filter>
-    </ClCompile>
-  </ItemGroup>
+    </ClCompile>  </ItemGroup>
 </Project>

@@ -33,6 +33,8 @@ using namespace DAVA;
 
 DAVA_TESTCLASS(FileSystemTest)
 {
+    DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
+
     FileSystemTest()
     {
         FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileSystemTest/", true);

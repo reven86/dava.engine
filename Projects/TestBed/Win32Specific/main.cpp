@@ -26,6 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/Platform.h"
+#if defined(__DAVAENGINE_WIN32__)
 
 #include "DAVAEngine.h"
 
@@ -50,3 +52,5 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     // 
     return 0;
 }*/
+
+#endif // defined(__DAVAENGINE_WIN32__)

@@ -74,6 +74,8 @@ static void testCalc(uint32 *var)
 
 DAVA_TESTCLASS(JobManagerTest)
 {
+    DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
+
     DAVA_TEST(TestMainJobs)
     {
         JobManagerTestData testData;
