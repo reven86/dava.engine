@@ -52,7 +52,7 @@ public:
 
 protected:
 
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_ANDROID__)
     volatile int32 spin;
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
     OSSpinLock spin;
@@ -60,7 +60,7 @@ protected:
 
 };
 
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_ANDROID__)
 
 // ##########################################################################################################
 // Windows/Android implementation

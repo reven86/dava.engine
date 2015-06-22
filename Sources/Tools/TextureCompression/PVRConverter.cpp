@@ -26,6 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "Base/Platform.h"
+#ifndef __DAVAENGINE_WIN_UAP__
 
 #include "PVRConverter.h"
 #include "Render/TextureDescriptor.h"
@@ -107,6 +109,12 @@ PVRConverter::~PVRConverter()
 
 FilePath PVRConverter::ConvertToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, bool addCRC /* = true */)
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return FilePath();
+
+#else
 	FilePath outputName = (descriptor.IsCubeMap()) ? PrepareCubeMapForPvrConvert(descriptor) : descriptor.GetSourceTexturePathname();
 
 	Vector<String> args;
@@ -141,6 +149,7 @@ FilePath PVRConverter::ConvertToPvr(const TextureDescriptor &descriptor, eGPUFam
 	    helper.AddCRCIntoMetaData(outputName);
     }
 	return outputName;
+#endif
 }
 
 FilePath PVRConverter::ConvertNormalMapToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality)
@@ -226,7 +235,7 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor, const
 	String inputName = GenerateInputName(descriptor, fileToConvert);
 #if defined (__DAVAENGINE_MACOS__)
 	args.push_back(inputName);
-#else //defined (__DAVAENGINE_WIN32__)
+#else //defined (__DAVAENGINE_WINDOWS__)
 	args.push_back(String("\"") + inputName + String("\""));
 #endif //MAC-WIN
 
@@ -234,7 +243,7 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor, const
 	args.push_back("-o");
 #if defined (__DAVAENGINE_MACOS__)
 	args.push_back(outputFile.GetAbsolutePathname());
-#else //defined (__DAVAENGINE_WIN32__)
+#else //defined (__DAVAENGINE_WINDOWS__)
 	args.push_back(String("\"") + outputFile.GetAbsolutePathname() + String("\""));
 #endif //MAC-WIN
 
@@ -247,7 +256,7 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor, const
         LibTgaHelper tgaHelper;
         LibTgaHelper::TgaInfo tgaInfo;
         auto readRes = tgaHelper.ReadTgaHeader(inputName, tgaInfo);
-        if (readRes == DAVA::SUCCESS)
+        if (readRes == DAVA::eErrorCode::SUCCESS)
         {
             switch (tgaInfo.origin_corner)
             {
@@ -405,3 +414,4 @@ DAVA::String PVRConverter::GenerateInputName( const TextureDescriptor& descripto
 
 };
 
+#endif // #ifndef __DAVAENGINE_WIN_UAP__

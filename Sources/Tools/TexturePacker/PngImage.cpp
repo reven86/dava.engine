@@ -239,7 +239,7 @@ bool PngImageExt::IsHorzLineOpaque(int32 y)
 bool PngImageExt::IsVertLineOpaque(int32 x)
 {
 	uint8 * vertLine = GetData() + x * 4;
-	for (uint32 x = 0; x < GetHeight(); ++x)
+	for (uint32 i = 0; i < GetHeight(); ++i)
 	{
 		if (vertLine[3] != 0)
         {

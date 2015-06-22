@@ -51,7 +51,7 @@ ImageSystem::ImageSystem()
 {
     wrappers[IMAGE_FORMAT_PNG] = new LibPngHelper();
     wrappers[IMAGE_FORMAT_DDS] = new LibDdsHelper();
-    wrappers[IMAGE_FORMAT_PVR] = new LibPVRHelper();
+    wrappers[IMAGE_FORMAT_PVR] = CreateLibPVRHelper();
     wrappers[IMAGE_FORMAT_JPEG] = new LibJpegHelper();
 	wrappers[IMAGE_FORMAT_TGA] = new LibTgaHelper();
 }
@@ -69,7 +69,7 @@ eErrorCode ImageSystem::Load(const FilePath & pathname, Vector<Image *> & imageS
     File *fileRead = File::Create(pathname, File::READ | File::OPEN);
     if (nullptr == fileRead)
     {
-        return ERROR_FILE_NOTFOUND;
+        return eErrorCode::ERROR_FILE_NOTFOUND;
     }
 
     eErrorCode result = Load(fileRead, imageSet, baseMipmap);
@@ -90,7 +90,7 @@ eErrorCode ImageSystem::Load(File *file, Vector<Image *> & imageSet, int32 baseM
 
     if (nullptr == properWrapper || !properWrapper->IsMyImage(file))
     {
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     return properWrapper->ReadFile(file, imageSet, baseMipmap);
@@ -98,7 +98,7 @@ eErrorCode ImageSystem::Load(File *file, Vector<Image *> & imageSet, int32 baseM
 
 Image* ImageSystem::EnsurePowerOf2Image(Image* image) const
 {
-    if (IsPowerOf2(image->GetWidth() && IsPowerOf2(image->GetHeight())))
+    if (IsPowerOf2(image->GetWidth()) && IsPowerOf2(image->GetHeight()))
     {
         return SafeRetain(image);
     }
@@ -132,7 +132,7 @@ eErrorCode ImageSystem::SaveAsCubeMap(const FilePath & fileName, const Vector<Ve
     ImageFormatInterface* properWrapper = GetImageFormatInterface(fileName);
     if (nullptr == properWrapper)
     {
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     return properWrapper->WriteFileAsCubeMap(fileName, imageSet, compressionFormat);
@@ -143,7 +143,7 @@ eErrorCode ImageSystem::Save(const FilePath & fileName, const Vector<Image *> &i
     ImageFormatInterface* properWrapper = GetImageFormatInterface(fileName);
     if (nullptr == properWrapper)
     {
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
 
     return properWrapper->WriteFile(fileName, imageSet, compressionFormat);
@@ -153,7 +153,7 @@ eErrorCode ImageSystem::Save(const FilePath & fileName, Image *image, PixelForma
 {
     if (nullptr == image)
     {
-        return ERROR_WRITE_FAIL;
+        return eErrorCode::ERROR_WRITE_FAIL;
     }
     Vector<Image*> imageSet;
     imageSet.push_back(image);
@@ -165,7 +165,7 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath & path
     String extension = pathName.GetExtension();
     for(auto wrapper : wrappers)
     {
-        if (wrapper->IsFileExtensionSupported(extension))
+        if (wrapper && wrapper->IsFileExtensionSupported(extension))
         {
             return wrapper;
         }
@@ -178,7 +178,7 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(File *file) const
 {
     for(auto wrapper : wrappers)
     {
-        if (wrapper->IsMyImage(file))
+        if (wrapper && wrapper->IsMyImage(file))
         {
             return wrapper;
         }
@@ -199,7 +199,7 @@ ImageFormat ImageSystem::GetImageFormatForExtension(const String &extension) con
 {
     for(auto wrapper : wrappers)
     {
-        if (wrapper->IsFileExtensionSupported(extension))
+        if (wrapper && wrapper->IsFileExtensionSupported(extension))
             return wrapper->GetImageFormat();
     }
 

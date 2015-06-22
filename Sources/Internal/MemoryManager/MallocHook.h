@@ -55,6 +55,9 @@ private:
     static void* (*RealMalloc)(size_t);
     static void* (*RealRealloc)(void*, size_t);
     static void (*RealFree)(void*);
+#if defined(__DAVAENGINE_ANDROID__)
+    static size_t (*RealMallocSize)(void*);
+#endif
 };
 
 }   // namespace DAVA

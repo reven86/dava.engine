@@ -49,7 +49,7 @@ class NetConfig;
 class NetCore : public Singleton<NetCore>
 {
 public:
-    typedef uintptr_t TrackId;
+    using TrackId = uintptr_t;
     static const TrackId INVALID_TRACK_ID = 0;
 
 public:

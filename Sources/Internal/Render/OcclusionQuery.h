@@ -82,7 +82,7 @@ public:
     uint32 salt: M;
 };
     
-typedef SmartHandle<32, 32> OcclusionQueryPoolHandle;
+using OcclusionQueryPoolHandle = SmartHandle<32, 32>;
     
 class OcclusionQueryPool
 {

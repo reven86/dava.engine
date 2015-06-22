@@ -190,7 +190,13 @@ bool TextureDescriptor::IsCompressedTextureActual(eGPUFamily forGPU) const
     
 	return ((compression->sourceFileCrc == sourceCRC) && (compression->convertedFileCrc == convertedCRC));
 }
-    
+
+bool TextureDescriptor::HasCompressionFor(eGPUFamily forGPU) const
+{
+    const Compression *compression = GetCompressionParams(forGPU);
+    return (compression && compression->format != FORMAT_INVALID);
+}
+
 bool TextureDescriptor::UpdateCrcForFormat(eGPUFamily forGPU) const
 {
     bool wasUpdated = false;
@@ -755,7 +761,7 @@ uint32 TextureDescriptor::ReadSourceCRC() const
     return CRC32::ForFile(GetSourceTexturePathname());
 }
     
-uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
+uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const  
 {
 	if(compression[forGPU].format == FORMAT_INVALID) return 0;
 
@@ -763,8 +769,15 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
     FilePath filePath = CreateCompressedTexturePathname(forGPU, imageFormat);
     if (imageFormat == IMAGE_FORMAT_PVR)
 	{
+#ifdef __DAVAENGINE_WIN_UAP__
+        Logger::Error("[TextureDescriptor::GetConvertedCRC] can't get compressed texture filename for %s; "
+                      "LibPVR is unsupported", filePath.GetStringValue().c_str());
+        DVASSERT(false);
+        return 0;
+#else
         LibPVRHelper helper;
         return helper.GetCRCFromFile(filePath) + GenerateDescriptorCRC();
+#endif
 	}
 	else if(imageFormat == IMAGE_FORMAT_DDS)
 	{

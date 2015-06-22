@@ -30,10 +30,12 @@
 #ifndef __DEVICELOGWIDGET_H__
 #define __DEVICELOGWIDGET_H__
 
-#include <QWidget>
-#include <QScopedPointer>
-#include <qtableview.h>
 #include "Base/BaseTypes.h"
+
+#include <QWidget>
+#include <QColor>
+#include <QPointer>
+#include <QScopedPointer>
 
 namespace Ui {
     class MemProfWidget;
@@ -44,63 +46,61 @@ class QCustomPlot;
 class QFrame;
 class QToolBar;
 
-class MemProfInfoModel;
+class QCustomPlot;
+
 namespace DAVA
 {
-struct MMStatConfig;
-struct MMStat;
-}
+    struct MMStatConfig;
+    struct MMCurStat;
+}   // namespace DAVA
+
+class AllocPoolModel;
+class TagModel;
+class GeneralStatModel;
+class SnapshotListModel;
+class MemoryStatItem;
+class ProfilingSession;
 
 class MemProfWidget : public QWidget
 {
     Q_OBJECT
 
 signals:
-    void OnDumpButton();
+    void OnSnapshotButton();
     
 public:
-    explicit MemProfWidget(QWidget *parent = NULL);
-    ~MemProfWidget();
+    MemProfWidget(ProfilingSession* profSession, QWidget *parent = nullptr);
+    virtual ~MemProfWidget();
 
-    void AppendText(const QString& text);
-    void ChangeStatus(const char* status, const char* reason);
-    
-    void ClearStat();
-    void SetStatConfig(const DAVA::MMStatConfig* config);
-    void UpdateStat(const DAVA::MMStat* stat);
+public slots:
+    void ConnectionEstablished(bool newConnection);
+    void ConnectionLost(const DAVA::char8* message);
+    void StatArrived(size_t itemCount);
+    void SnapshotArrived(size_t sizeTotal, size_t sizeRecv);
 
-    void UpdateProgress(size_t total, size_t recv);
-    
+    void RealtimeToggled(bool checked);
+    void DiffClicked();
+    void PlotClicked(QMouseEvent* ev);
+
+    void SnapshotList_OnDoubleClicked(const QModelIndex& index);
+
 private:
-    void UpdateLabels(const DAVA::MMStat* stat, DAVA::uint32 alloc, DAVA::uint32 total);
-    void CreateUI();
-    void CreateLabels(const DAVA::MMStatConfig* config);
-    void Deletelabels();
-    
+    void InitUI();
+    void ReinitPlot();
+    void UpdatePlot(const MemoryStatItem& stat);
+    void SetPlotData();
+
 private:
     QScopedPointer<Ui::MemProfWidget> ui;
-    QCustomPlot* plot;
 
-    DAVA::uint32 tagCount;
-    DAVA::uint32 allocPoolCount;
+    ProfilingSession* profileSession = nullptr;
+    QPointer<AllocPoolModel> allocPoolModel;
+    QPointer<TagModel> tagModel;
+    QPointer<GeneralStatModel> generalStatModel;
+    QPointer<SnapshotListModel> snapshotModel;
 
-    QToolBar* toolbar;
-    QFrame* frame;
-    struct label_pack
-    {
-        label_pack() : title(nullptr), alloc(nullptr), total(nullptr), max_block_size(nullptr), nblocks(nullptr) {}
-        ~label_pack();
-        QLabel* title;
-        QLabel* alloc;
-        QLabel* total;
-        QLabel* max_block_size;
-        QLabel* nblocks;
-    };
-    label_pack* labels;
-    
-    MemProfInfoModel * model;
-    QTableView * tableView;
-
+    DAVA::Vector<QColor> poolColors;
+    bool realtimeMode;
 };
 
 #endif // __DEVICELOGWIDGET_H__
