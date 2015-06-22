@@ -139,7 +139,7 @@ void LibraryModel::BuildModel()
     const auto packageControls = root->GetPackageControlsNode();
     if (packageControls->GetCount())
     {
-        CreateConrolsRootItem();
+        CreateControlsRootItem();
         for (int i = 0; i < packageControls->GetCount(); i++)
         {
             AddControl(packageControls->Get(i));
@@ -184,7 +184,7 @@ void LibraryModel::AddImportedControl(PackageNode* node)
     }
 }
 
-void LibraryModel::CreateConrolsRootItem()
+void LibraryModel::CreateControlsRootItem()
 {
     controlsRootItem = new QStandardItem(tr("Package controls"));
     controlsRootItem->setData(QVariant::fromValue(static_cast<void*>(root->GetPackageControlsNode())));
@@ -217,7 +217,7 @@ void LibraryModel::ControlWasAdded(ControlNode *node, ControlsContainerNode *des
 {
     if (nullptr == controlsRootItem)
     {
-        CreateConrolsRootItem();
+        CreateControlsRootItem();
     }
     if (controlsRootItem->data().value<void*>() == node->GetParent())
     {

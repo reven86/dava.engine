@@ -53,7 +53,7 @@ private:
     void BuildModel();
     void AddControl(ControlNode* node);
     void AddImportedControl(PackageNode* node);
-    void CreateConrolsRootItem();
+    void CreateControlsRootItem();
     void CreateImportPackagesRootItem();
     PackageNode *root;
     QStandardItem *defaultControlsRootItem, *controlsRootItem, *importedPackageRootItem;
