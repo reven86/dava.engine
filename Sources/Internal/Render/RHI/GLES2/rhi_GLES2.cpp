@@ -19,6 +19,8 @@ GLuint      _GLES2_Default_FrameBuffer          = 0;
 void*       _GLES2_Native_Window                = nullptr;
 void*       _GLES2_Context                      = nullptr;
 void        (*_GLES2_Make_Context_Current)()    = nullptr;
+int         _GLES2_DefaultFrameBuffer_Width     = 0;
+int         _GLES2_DefaultFrameBuffer_Height    = 0;
 
 #if defined(__DAVAENGINE_WIN32__)
 HDC deviceContext = 0;
@@ -356,6 +358,12 @@ gles2_Initialize( const InitParam& param )
         stat_SET_PS = StatSet::AddStat("rhi'set-ps", "set-ps");
         stat_SET_TEX = StatSet::AddStat("rhi'set-tex", "set-tex");
         stat_SET_CB = StatSet::AddStat("rhi'set-cb", "set-cb");
+
+        RECT    rc;
+        
+        GetClientRect( (HWND)_GLES2_Native_Window, &rc );
+        _GLES2_DefaultFrameBuffer_Width  = rc.right - rc.left;
+        _GLES2_DefaultFrameBuffer_Height = rc.bottom - rc.top;
 
         InitializeRenderThread();
 

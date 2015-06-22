@@ -747,7 +747,7 @@ void GameCore::OnAppStarted()
     SetupTriangle();
     SetupCube();
 //    SetupTank();
-//    SetupRT();
+    SetupRT();
 
 //    sceneRenderTest.reset(new SceneRenderTestV3());    
 
@@ -1037,8 +1037,8 @@ GameCore::Draw()
 {
 //    sceneRenderTest->Render();
 //    rhiDraw();
-    manticoreDraw();
-//    rtDraw();
+//    manticoreDraw();
+    rtDraw();
 //    visibilityTestDraw();
 }
 

@@ -153,4 +153,7 @@ extern void*    _GLES2_Native_Window;
 extern void*    _GLES2_Context;
 extern void     (*_GLES2_Make_Context_Current)();
 
+extern int      _GLES2_DefaultFrameBuffer_Width;
+extern int      _GLES2_DefaultFrameBuffer_Height;
+
 bool            GetGLTextureFormat( rhi::TextureFormat rhiFormat, GLint* internalFormat, GLint* format, GLenum* type, bool* compressed );

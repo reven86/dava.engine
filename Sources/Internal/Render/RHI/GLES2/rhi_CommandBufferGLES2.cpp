@@ -598,7 +598,7 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
     unsigned    tex_unit_0      =0;
     Handle      cur_query_buf   = InvalidHandle;
     uint32      cur_query_i     = InvalidIndex;
-    GLint       def_viewport[4];
+    GLint       def_viewport[4] = {0,0,0,0};
 
     for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
     {
@@ -637,9 +637,49 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
 #endif
                     GLuint  flags = 0;
 
+                    def_viewport[0] = 0;
+                    def_viewport[1] = 0;
+
                     if( passCfg.colorBuffer[0].texture != InvalidHandle )
                     {
+                        Size2i  sz = TextureGLES2::Size( passCfg.colorBuffer[0].texture );
+                        
                         TextureGLES2::SetAsRenderTarget( passCfg.colorBuffer[0].texture );
+                        def_viewport[2] = sz.dx;
+                        def_viewport[3] = sz.dy;
+                    }
+                    else
+                    {
+                        GLint   fbo = 0;
+
+                        glGetIntegerv( GL_FRAMEBUFFER_BINDING, &fbo );
+    
+                        if( fbo )
+                        {
+                            GLint   type = 0;
+                            GLint   obj  = 0;
+
+                            glGetFramebufferAttachmentParameteriv( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, &type );
+                            glGetFramebufferAttachmentParameteriv( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, &obj );
+        
+                            if( type == GL_RENDERBUFFER )
+                            {
+                                glGetRenderbufferParameteriv( GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, def_viewport+2 );
+                                glGetRenderbufferParameteriv( GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, def_viewport+3 );
+                            }
+                            else if( type == GL_TEXTURE )
+                            {
+                                GLint   w,h;
+
+//                                glGetTexParameteriv( GL_TEXTURE_2D, obj,  );
+                            }
+                        }
+                        else
+                        {
+                            def_viewport[2] = _GLES2_DefaultFrameBuffer_Width;
+                            def_viewport[3] = _GLES2_DefaultFrameBuffer_Height;
+//                            glGetIntegerv( GL_VIEWPORT, def_viewport );
+                        }
                     }
                 
                     if( passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR )
@@ -664,19 +704,8 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                     {
                         glClear( flags );
                     }
-                }
-                
-                def_viewport[0] = 0;
-                def_viewport[1] = 0;
-                glGetRenderbufferParameteriv( GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, def_viewport+2 );
-                glGetRenderbufferParameteriv( GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, def_viewport+3 );
-                if( glGetError() != GL_INVALID_OPERATION )
-                {
+                    
                     glViewport( def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3] );
-                }
-                else
-                {
-                    glGetIntegerv( GL_VIEWPORT, def_viewport );
                 }
             }   break;
             

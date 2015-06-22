@@ -74,6 +74,7 @@ PacketList_t
 
     Handle      curVertexStream[MAX_VERTEX_STREAM_COUNT];
 
+    uint32      setDefaultViewport:1;
     uint32      restoreDefScissorRect:1;
     uint32      invertCulling:1;
 
@@ -619,10 +620,11 @@ AllocateRenderPass( const RenderPassConfig& passDesc, uint32 packetListCount, HP
         Handle          plh = PacketListPool::Alloc();
         PacketList_t*   pl  = PacketListPool::Get( plh );
 
-        pl->cmdBuf        = cb[i];
-        pl->queryBuffer   = passDesc.queryBuffer;
-        pl->viewport      = passDesc.viewport;
-        pl->invertCulling = passDesc.invertCulling;
+        pl->cmdBuf              = cb[i];
+        pl->queryBuffer         = passDesc.queryBuffer;
+        pl->setDefaultViewport  = i == 0;
+        pl->viewport            = passDesc.viewport;
+        pl->invertCulling       = passDesc.invertCulling;
 
 
         packetList[i] = HPacketList(plh);
@@ -684,7 +686,8 @@ BeginPacketList( HPacketList packetList )
 
     CommandBuffer::Begin( pl->cmdBuf );
     
-    CommandBuffer::SetViewport( pl->cmdBuf, pl->viewport );
+    if( pl->setDefaultViewport )
+        CommandBuffer::SetViewport( pl->cmdBuf, pl->viewport );
 
     CommandBuffer::SetDepthStencilState( pl->cmdBuf, pl->defDepthStencilState );
     pl->curDepthStencilState = pl->defDepthStencilState;
