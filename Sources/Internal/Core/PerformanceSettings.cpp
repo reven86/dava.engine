@@ -36,9 +36,9 @@ PerformanceSettings::PerformanceSettings()
 	//init with some default values
 	psPerformanceMinFPS = 35;
 	psPerformanceMaxFPS = 50;
-	psPerformanceLodOffset = 80;
-	psPerformanceLodMult = 11.7;
-	psPerformanceSpeedMult = 3.9;
+	psPerformanceLodOffset = 11.7;
+	psPerformanceLodMult = 3.9;
+	psPerformanceSpeedMult = 2;
 }
 float32 PerformanceSettings::GetPsPerformanceMinFPS()
 {
