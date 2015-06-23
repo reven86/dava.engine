@@ -71,7 +71,7 @@ const String VariantType::TYPENAME_FILEPATH = "FilePath";
     
 const VariantType::PairTypeName VariantType::variantNamesMap[] =
 {
-    VariantType::PairTypeName(VariantType::TYPE_NONE,          TYPENAME_UNKNOWN,		NULL),
+    VariantType::PairTypeName(VariantType::TYPE_NONE,          TYPENAME_UNKNOWN,		nullptr),
     VariantType::PairTypeName(VariantType::TYPE_BOOLEAN,       TYPENAME_BOOLEAN,		MetaInfo::Instance<bool>()),
     VariantType::PairTypeName(VariantType::TYPE_INT32,         TYPENAME_INT32,			MetaInfo::Instance<int32>()),
     VariantType::PairTypeName(VariantType::TYPE_FLOAT,         TYPENAME_FLOAT,			MetaInfo::Instance<float32>()),
@@ -96,114 +96,129 @@ const VariantType::PairTypeName VariantType::variantNamesMap[] =
 
 VariantType::VariantType()
 :	type(TYPE_NONE)
-,	pointerValue(0)
+,	pointerValue(nullptr)
 {
 }
 
-VariantType::VariantType(const VariantType &var) : pointerValue(NULL)
+VariantType::VariantType(const VariantType &var) : pointerValue(nullptr)
 {
 	SetVariant(var);
 }
 
-VariantType::VariantType(bool value) : pointerValue(NULL)
+VariantType::VariantType(bool value) : pointerValue(nullptr)
 {
 	SetBool(value);
 }
 
-VariantType::VariantType(int32 value) : pointerValue(NULL)
+VariantType::VariantType(int32 value) : pointerValue(nullptr)
 {
 	SetInt32(value);
 }
 
-VariantType::VariantType(uint32 value) : pointerValue(NULL)
+VariantType::VariantType(uint32 value) : pointerValue(nullptr)
 {
 	SetUInt32(value);
 }
 
-VariantType::VariantType(float32 value) : pointerValue(NULL)
+VariantType::VariantType(float32 value) : pointerValue(nullptr)
 {
 	SetFloat(value);
 }
 
-VariantType::VariantType(const String & value) : pointerValue(NULL)
+VariantType::VariantType(const String & value) : pointerValue(nullptr)
 {
 	SetString(value);
 }
 
-VariantType::VariantType(const WideString & value) : pointerValue(NULL)
+VariantType::VariantType(const WideString & value) : pointerValue(nullptr)
 {
 	SetWideString(value);
 }
 
-VariantType::VariantType(const uint8 *_array, int32 arraySizeInBytes) : pointerValue(NULL)
+VariantType::VariantType(const uint8 *_array, int32 arraySizeInBytes) : pointerValue(nullptr)
 {
 	SetByteArray(_array, arraySizeInBytes);
 }
 
-VariantType::VariantType(KeyedArchive *archive) : pointerValue(NULL)
-{
-	SetKeyedArchive(archive);
-}
-
-VariantType::VariantType(const int64 & value) : pointerValue(NULL)
+VariantType::VariantType(const int64 & value) : pointerValue(nullptr)
 {
 	SetInt64(value);
 }
 
-VariantType::VariantType(const uint64 & value) : pointerValue(NULL)
+VariantType::VariantType(const uint64 & value) : pointerValue(nullptr)
 {
 	SetUInt64(value);
 }
 
-VariantType::VariantType(const Vector2 & value) : pointerValue(NULL)
+VariantType::VariantType(const Vector2 & value) : pointerValue(nullptr)
 {
 	SetVector2(value);
 }
 
-VariantType::VariantType(const Vector3 & value) : pointerValue(NULL)
+VariantType::VariantType(const Vector3 & value) : pointerValue(nullptr)
 {
 	SetVector3(value);
 }
 
-VariantType::VariantType(const Vector4 & value) : pointerValue(NULL)
+VariantType::VariantType(const Vector4 & value) : pointerValue(nullptr)
 {
 	SetVector4(value);
 }
 
-VariantType::VariantType(const Matrix2 & value) : pointerValue(NULL)
+VariantType::VariantType(const Matrix2 & value) : pointerValue(nullptr)
 {
 	SetMatrix2(value);
 }
 
-VariantType::VariantType(const Matrix3 & value) : pointerValue(NULL)
+VariantType::VariantType(const Matrix3 & value) : pointerValue(nullptr)
 {
 	SetMatrix3(value);
 }
 
-VariantType::VariantType(const Matrix4 & value) : pointerValue(NULL)
+VariantType::VariantType(const Matrix4 & value) : pointerValue(nullptr)
 {
 	SetMatrix4(value);
 }
 
-VariantType::VariantType(const Color & value) : pointerValue(NULL)
+VariantType::VariantType(const Color & value) : pointerValue(nullptr)
 {
 	SetColor(value);
 }
 
-VariantType::VariantType(const FastName & value) : pointerValue(NULL)
+VariantType::VariantType(const FastName & value) : pointerValue(nullptr)
 {
 	SetFastName(value);
 }
 
-VariantType::VariantType(const AABBox3 & value) : pointerValue(NULL)
+VariantType::VariantType(const AABBox3 & value) : pointerValue(nullptr)
 {
 	SetAABBox3(value);
 }
 
-VariantType::VariantType(const FilePath & value) : pointerValue(NULL)
+VariantType::VariantType(const FilePath & value) : pointerValue(nullptr)
 {
 	SetFilePath(value);
 }
+/*
+template <typename T>
+VariantType::VariantType(const T* pointer) : pointerValue(nullptr)
+{
+    SetPointer(pointer);
+}
+
+template <>
+VariantType::VariantType(const KeyedArchive* archive)
+{
+    SetKeyedArchive(archive);
+}
+
+template< typename T>
+VariantType VariantType::CreateFromT(T* val)
+{
+    VariantType v;
+    v.meta = MetaInfo::Instance<T*>(val);
+    v.pointerValue =  val;
+}*/
 
 VariantType::~VariantType()
 {
@@ -265,7 +280,7 @@ void VariantType::SetByteArray(const uint8 *array, int32 arraySizeInBytes)
     pointerValue = static_cast<void*>(vec);
 }
 
-void VariantType::SetKeyedArchive(KeyedArchive *archive)
+void VariantType::SetKeyedArchive(const KeyedArchive *archive)
 {
     ReleasePointer();
     type = TYPE_KEYED_ARCHIVE;
@@ -476,7 +491,13 @@ void VariantType::SetVariant(const VariantType& var)
 			SetFilePath(var.AsFilePath());
 		}
 		break;
-
+    case TYPE_POINTER:
+        {
+            type = TYPE_POINTER;
+            meta = var.meta;
+            pointerValue = var.pointerValue;
+        }
+    break;
 	default:
 		{
 			//DVASSERT(0 && "Something went wrong with VariantType");
@@ -586,12 +607,6 @@ const Matrix4 & VariantType::AsMatrix4() const
     DVASSERT(type == TYPE_MATRIX4);
     return *matrix4Value;
 }
-
-//const void* const VariantType::AsPointer() const
-//{
-//	DVASSERT(type == TYPE_POINTER);
-//	return (void *) *x64PointerValue;
-//}
     
 const Color & VariantType::AsColor() const
 {
@@ -776,6 +791,11 @@ bool VariantType::Write(File * fp) const
 			if (written != len) return false;
 		}
 		break;	
+    case TYPE_POINTER:
+    {
+        DVASSERT_MSG(false, "Can not write runtime pointer to file");
+    }
+    break;
             
 	}
 	return true;
@@ -974,7 +994,12 @@ bool VariantType::Read(File * fp)
 				delete [] buf;
 				if (read != len) return false;
 			}
-			break;	
+			break;
+        case TYPE_POINTER:
+        {
+            DVASSERT_MSG(false, "Can not read runtime pointer to file");
+        }
+        break;
 		default:
 		{
 			//DVASSERT(0 && "Something went wrong with VariantType");
@@ -1072,11 +1097,16 @@ void VariantType::ReleasePointer()
 					delete filepathValue;
 				}
 				break;
+            case TYPE_POINTER:
+            {
+                //DVASSERT_MSG(false, "can not release Pointer Type");
+            }
+            break;
         }
         
-        // It is enough to set only pointerValue to NULL - all other pointers are in union, so
-        // actually points to the same address and thus will be set to NULL too.
-        pointerValue = NULL;
+        // It is enough to set only pointerValue to nullptr - all other pointers are in union, so
+        // actually points to the same address and thus will be set to nullptr too.
+        pointerValue = nullptr;
     }
 }
 
@@ -1218,6 +1248,11 @@ bool VariantType::operator==(const VariantType& other) const
 					isEqual = (AsFilePath() == other.AsFilePath());
 				}
 				break;
+            case TYPE_POINTER:
+            {
+                isEqual = meta == other.meta && pointerValue == other.pointerValue;
+            }
+            break;
                 
         }
     }
@@ -1242,12 +1277,12 @@ const MetaInfo* VariantType::Meta()
 		return variantNamesMap[type].variantMeta;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void* VariantType::MetaObject()
 {
-	const void *ret = NULL;
+	const void *ret = nullptr;
 
 	switch(type)
 	{
@@ -1282,6 +1317,7 @@ void* VariantType::MetaObject()
 	case TYPE_FASTNAME:
 	case TYPE_AABBOX3:
 	case TYPE_FILEPATH:
+    case TYPE_POINTER:
 		ret = pointerValue;
 		break;
 	case TYPE_KEYED_ARCHIVE:
@@ -1296,23 +1332,23 @@ void* VariantType::MetaObject()
 	return (void *) ret;
 }
 
-VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
+VariantType VariantType::LoadData(const void *src, const MetaInfo *meta_)
 {
-	VariantType v;
+	VariantType v ;
 	uint8 type = TYPE_NONE;
 
-	DVASSERT(NULL != meta);
+	DVASSERT(nullptr != meta_);
 
 	for(int i = 0; i < TYPES_COUNT; ++i)
 	{
-		if(variantNamesMap[i].variantMeta == meta)
+		if(variantNamesMap[i].variantMeta == meta_)
 		{
 			type = variantNamesMap[i].variantType;
 			break;
 		}
 	}
 
-	DVASSERT(NULL != src);
+	DVASSERT(nullptr != src);
 
 	switch(type)
 	{
@@ -1376,20 +1412,20 @@ VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
 		v.SetFilePath(*((DAVA::FilePath *) src));
 		break;
 	default:
-		if(meta == MetaInfo::Instance<int8>())
+		if(meta_ == MetaInfo::Instance<int8>())
 		{
 			v.SetInt32(*((DAVA::int8 *) src));
 		}
-		else if(meta == MetaInfo::Instance<uint8>())
+		else if(meta_ == MetaInfo::Instance<uint8>())
 		{
 			v.SetUInt32(*((DAVA::uint8 *) src));
 		}
 		else
 		{
-			printf("MetaType: %s, size %d, is pointer %d, introspection %p\n", meta->GetTypeName(), meta->GetSize(), meta->IsPointer(), meta->GetIntrospection());
-			if(NULL != meta->GetIntrospection())
+			printf("MetaType: %s, size %d, is pointer %d, introspection %p\n", meta_->GetTypeName(), meta_->GetSize(), meta_->IsPointer(), meta_->GetIntrospection());
+			if(nullptr != meta_->GetIntrospection())
 			{
-				printf("Introspection: %s\n", meta->GetIntrospection()->Name());
+				printf("Introspection: %s\n", meta_->GetIntrospection()->Name());
 			}
 			DVASSERT(0 && "Don't know how to load data for such VariantType");
 		}
@@ -1400,9 +1436,9 @@ VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
 
 void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &val)
 {
-	MetaInfo *valMeta = NULL;
+	MetaInfo *valMeta = nullptr;
 
-	DVASSERT(NULL != meta);
+	DVASSERT(nullptr != meta);
 
 	for(int i = 0; i < TYPES_COUNT; ++i)
 	{
@@ -1413,7 +1449,7 @@ void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &v
 		}
 	}
 
-	DVASSERT(NULL != valMeta)
+	DVASSERT(nullptr != valMeta)
 
 	// Destination meta type differ from source meta type
 	// this happen only for int8 and uint8 types, because we are storing them in int32 and uint32
@@ -1459,7 +1495,7 @@ void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &v
 		case TYPE_KEYED_ARCHIVE:
 			{
 				DAVA::KeyedArchive *dstArchive = *((DAVA::KeyedArchive **) dst);
-				if(NULL != dstArchive)
+				if(nullptr != dstArchive)
 				{
 					dstArchive->DeleteAllKeys();
 					Map<String, VariantType*> values = val.AsKeyedArchive()->GetArchieveData();
@@ -1552,7 +1588,7 @@ VariantType VariantType::FromType(int type)
 		v.SetUInt32(0);
 		break;
 	case TYPE_BYTE_ARRAY:
-		v.SetByteArray(NULL, 0);
+		v.SetByteArray(nullptr, 0);
 		break;
 	case TYPE_KEYED_ARCHIVE:
 		{

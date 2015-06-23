@@ -30,10 +30,10 @@
 #ifndef __DAVAENGINE_META_H__
 #define __DAVAENGINE_META_H__
 
-#include "Base/IntrospectionBase.h"
-
 namespace DAVA
 {
+    class InspInfo;
+
 	// Класс мета-информации типов.
 	struct MetaInfo
 	{

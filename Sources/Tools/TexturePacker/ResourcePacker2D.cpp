@@ -354,7 +354,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 
     if(clearProcessDirectory)
     {
-    	FileSystem::Instance()->DeleteDirectoryFiles(processDirectoryPath, false);
+        FileSystem::Instance()->DeleteDirectoryFiles(processDirectoryPath, false);
     }
 
     FileSystem::Instance()->CreateDirectory(outputPath);

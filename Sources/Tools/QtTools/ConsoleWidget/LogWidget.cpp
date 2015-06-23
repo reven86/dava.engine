@@ -3,6 +3,7 @@
 #include <QClipboard>
 #include <QKeyEvent>
 #include <QScrollBar>
+#include <QScrollBar>
 #include <QBuffer>
 
 #include "LogModel.h"
@@ -12,7 +13,9 @@
 
 LogWidget::LogWidget(QWidget* parent)
     : QWidget(parent)
+    , onBottom(true)
 {
+    qRegisterMetaType<DAVA::VariantType>("DAVA::VariantType");
     setupUi(this);
     connect(log, &QListView::clicked, this, &LogWidget::OnClicked);
     time.start();
@@ -31,6 +34,8 @@ LogWidget::LogWidget(QWidget* parent)
 
     connect(filter, &CheckableComboBox::selectedUserDataChanged, logFilterModel, &LogFilterModel::SetFilters);
     connect(search, &LineEditEx::textUpdated, this, &LogWidget::OnTextFilterChanged);
+    connect(log->model(), &QAbstractItemModel::rowsAboutToBeInserted, this, &LogWidget::OnBeforeAdded);
+    connect(log->model(), &QAbstractItemModel::rowsInserted, this, &LogWidget::OnRowAdded);
     filter->selectUserData(logFilterModel->GetFilters());
 }
 
@@ -77,8 +82,7 @@ void LogWidget::AddResultList(const DAVA::ResultList &resultList)
                 level = DAVA::Logger::LEVEL_ERROR;
             break;
         }
-        void* dataPtr =reinterpret_cast<void*>(result.data.AsInt64());
-        logModel->AddMessage(level, QString::fromStdString(result.message), QVariant::fromValue<void*>(dataPtr));
+        logModel->AddMessage(level, QString::fromStdString(result.message), QVariant::fromValue<DAVA::VariantType>(result.data));
     }
 }
 
@@ -171,13 +175,25 @@ void LogWidget::OnClicked(const QModelIndex &index)
     if (nullptr != item)
     {
         auto data = item->data();
-        if (data.canConvert<void*>())
+        if (data.canConvert<DAVA::VariantType>())
         {
-            void* ptr = data.value<void*>();
-            if (nullptr != ptr)
-            {
-                emit ItemClicked(DAVA::VariantType(reinterpret_cast<DAVA::int64>(ptr)));
-            }
+            DAVA::VariantType var = data.value<DAVA::VariantType>();
+            emit ItemClicked(var);
         }
     }
 }
+
+void LogWidget::OnBeforeAdded()
+{
+    onBottom = log->verticalScrollBar()->value() == log->verticalScrollBar()->maximum();
+}
+
+
+void LogWidget::OnRowAdded()
+{
+    if (onBottom)
+    {
+        log->scrollToBottom();
+    }
+}
+

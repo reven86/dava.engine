@@ -38,7 +38,8 @@ private slots:
     void OnCopy();
     void OnClear();
     void OnClicked(const QModelIndex &index);
-
+    void OnBeforeAdded();
+    void OnRowAdded();
 private:
     void FillFiltersCombo();
     bool eventFilter( QObject* watched, QEvent* event ) override;
@@ -46,7 +47,11 @@ private:
     QPointer<LogModel> logModel;
     QPointer<LogFilterModel> logFilterModel;
     QTime time;
+    bool onBottom;
 };
+
+Q_DECLARE_METATYPE(DAVA::VariantType);
+
 
 
 #endif // __LOGWIDGET_H__

@@ -16,9 +16,6 @@ class LogModel
 {
     Q_OBJECT
 
-signals:
-    void logged(int ll, const QString& text);
-
 public:
     enum Roles
     {

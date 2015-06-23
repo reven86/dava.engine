@@ -123,9 +123,9 @@ ResultList QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(cons
         }
         else
         {
-            resultList.AddResult(Result::RESULT_ERROR, "can not delete package " + testPackage->GetName(), VariantType(reinterpret_cast<int64>(testPackage)));
+            resultList.AddResult(Result::RESULT_ERROR, "can not delete package " + testPackage->GetName(), VariantType(testPackage));
         }
-    }
+    } 
     
     if (!checkedPackages.empty())
     {

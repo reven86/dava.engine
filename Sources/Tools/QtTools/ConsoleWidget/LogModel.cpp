@@ -10,7 +10,6 @@
 LogModel::LogModel(QObject* parent)
     : QStandardItemModel(parent)
 {
-    connect(this, &LogModel::logged, this, static_cast<void(LogModel::*)(int, const QString &)>(&LogModel::AddMessage));
     DAVA::Logger::AddCustomOutput(this);
 }
 
@@ -21,7 +20,7 @@ LogModel::~LogModel()
 
 void LogModel::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text)
 {
-    emit logged(ll, QString::fromStdString(std::string(text)));
+    QMetaObject::invokeMethod(this, "AddMessage", Qt::QueuedConnection, Q_ARG(int, ll), Q_ARG(QString, QString::fromStdString(std::string(text))));
 }
 
 void LogModel::AddMessage(int ll, const QString& text)
