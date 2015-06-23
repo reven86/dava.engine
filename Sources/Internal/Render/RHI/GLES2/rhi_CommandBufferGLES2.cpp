@@ -87,6 +87,7 @@ public:
     RenderPassConfig    passCfg;
     uint32              isFirstInPass:1;
     uint32              isLastInPass:1;
+    uint32              usingDefaultFrameBuffer:1;
 };
 
 typedef Pool<CommandBufferGLES2_t,RESOURCE_COMMAND_BUFFER>  CommandBufferPool;
@@ -142,9 +143,10 @@ gles2_RenderPass_Allocate( const RenderPassConfig& passConf, uint32 cmdBufCount,
         Handle                  h  = CommandBufferPool::Alloc();
         CommandBufferGLES2_t*   cb = CommandBufferPool::Get( h );
 
-        cb->passCfg         = passConf;
-        cb->isFirstInPass   = i == 0;
-        cb->isLastInPass    = i == cmdBufCount - 1;
+        cb->passCfg                 = passConf;
+        cb->isFirstInPass           = i == 0;
+        cb->isLastInPass            = i == cmdBufCount - 1;
+        cb->usingDefaultFrameBuffer = passConf.colorBuffer[0].texture != InvalidHandle;
         
         pass->cmdBuf[i] = h;
         cmdBuf[i]       = h;
@@ -812,6 +814,9 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                 GLint   y = GLint(arg[1]);
                 GLsizei w = GLsizei(arg[2]);
                 GLsizei h = GLsizei(arg[3]);
+
+                if( usingDefaultFrameBuffer )
+                    y = _GLES2_DefaultFrameBuffer_Height - y - h;
 
                 if( x  &&  y  &&  w  &&  h )
                 {
