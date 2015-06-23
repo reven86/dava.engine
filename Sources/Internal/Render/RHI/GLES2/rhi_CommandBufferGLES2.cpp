@@ -815,11 +815,11 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                 GLsizei w = GLsizei(arg[2]);
                 GLsizei h = GLsizei(arg[3]);
 
-                if( usingDefaultFrameBuffer )
-                    y = _GLES2_DefaultFrameBuffer_Height - y - h;
-
                 if( !(x==0  &&  y==0  &&  w==0  &&  h==0) )
                 {
+                    if( usingDefaultFrameBuffer )
+                        y = _GLES2_DefaultFrameBuffer_Height - y - h;
+                    
                     glEnable( GL_SCISSOR_TEST );
                     glScissor( x, y, w, h );
                 }
