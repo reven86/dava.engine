@@ -116,16 +116,19 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
         isGfxModified = true;
     
     	// Remove whole output directory
-    	bool result = FileSystem::Instance()->DeleteDirectory(outputGfxDirectory);
-    	if (result)
-    	{
-    		Logger::FrameworkDebug("Removed output directory: %s", outputGfxDirectory.GetAbsolutePathname().c_str());
-    	}
-    	if (!result && Core::Instance()->IsConsoleMode() && CommandLineParser::Instance()->GetVerbose())
-    	{
-    		AddError(Format("[ERROR: Can't delete directory %s]",
-    								outputGfxDirectory.GetAbsolutePathname().c_str()));
-    	}
+        if (clearProcessDirectory)
+        {
+            bool result = FileSystem::Instance()->DeleteDirectory(outputGfxDirectory);
+            if (result)
+            {
+                Logger::FrameworkDebug("Removed output directory: %s", outputGfxDirectory.GetAbsolutePathname().c_str());
+            }
+            if (!result && Core::Instance()->IsConsoleMode() && CommandLineParser::Instance()->GetVerbose())
+            {
+                AddError(Format("[ERROR: Can't delete directory %s]",
+                    outputGfxDirectory.GetAbsolutePathname().c_str()));
+            }
+        }
     }
 
     RecursiveTreeWalk(inputGfxDirectory, outputGfxDirectory);
