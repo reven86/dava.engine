@@ -818,7 +818,7 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                 if( usingDefaultFrameBuffer )
                     y = _GLES2_DefaultFrameBuffer_Height - y - h;
 
-                if( x  &&  y  &&  w  &&  h )
+                if( !(x==0  &&  y==0  &&  w==0  &&  h==0) )
                 {
                     glEnable( GL_SCISSOR_TEST );
                     glScissor( x, y, w, h );
