@@ -225,7 +225,7 @@ dx9_CommandBuffer_SetCullMode( Handle cmdBuf, CullMode mode )
 void
 dx9_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
 {
-    CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_SCISSOR_RECT, rect.x, rect.x, rect.width, rect.height );
+    CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_SCISSOR_RECT, rect.x, rect.y, rect.width, rect.height );
 }
 
 
