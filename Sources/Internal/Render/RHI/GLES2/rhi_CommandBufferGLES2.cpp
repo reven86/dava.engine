@@ -146,7 +146,7 @@ gles2_RenderPass_Allocate( const RenderPassConfig& passConf, uint32 cmdBufCount,
         cb->passCfg                 = passConf;
         cb->isFirstInPass           = i == 0;
         cb->isLastInPass            = i == cmdBufCount - 1;
-        cb->usingDefaultFrameBuffer = passConf.colorBuffer[0].texture != InvalidHandle;
+        cb->usingDefaultFrameBuffer = passConf.colorBuffer[0].texture == InvalidHandle;
         
         pass->cmdBuf[i] = h;
         cmdBuf[i]       = h;
@@ -818,7 +818,7 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                 if( usingDefaultFrameBuffer )
                     y = _GLES2_DefaultFrameBuffer_Height - y - h;
 
-                if( x  &&  y  &&  w  &&  h )
+                if( !(x==0  &&  y==0  &&  w==0  &&  h==0) )
                 {
                     glEnable( GL_SCISSOR_TEST );
                     glScissor( x, y, w, h );
