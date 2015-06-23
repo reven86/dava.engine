@@ -35,6 +35,7 @@
 
 #if defined(__DAVAENGINE_IPHONE__)
 
+#include <QuartzCore/CAMetalLayer.h>
 
 #import "Platform/TemplateiOS/RenderView.h"
 

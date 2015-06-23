@@ -73,12 +73,15 @@ dx9_Texture_Create( const Texture::Descriptor& desc )
     Handle              handle      = InvalidHandle;
     TextureDX9_t*       tex         = nullptr;
     IDirect3DTexture9*  tex9        = nullptr;
+    D3DFORMAT           fmt         = DX9_TextureFormat( desc.format );
     DWORD               usage       =(desc.isRenderTarget)  ? D3DUSAGE_RENDERTARGET  : 0;
     D3DPOOL             pool        = (desc.isRenderTarget/*  ||  options&TEXTURE_OPT_DYNAMIC*/)  ? D3DPOOL_DEFAULT  : D3DPOOL_MANAGED;
     HRESULT             hr          = E_FAIL;
     bool                auto_mip    = (desc.autoGenMipmaps)  ? true  : false;
     unsigned            mip_count   = desc.levelCount;
 
+    if( fmt == D3DFMT_D24S8  ||  fmt == D3DFMT_D32  ||  fmt == D3DFMT_D16 )
+        pool = D3DPOOL_DEFAULT; 
 
 //    if( options&TEXTURE_OPT_DYNAMIC )
 //        usage |= D3DUSAGE_DYNAMIC;
@@ -94,7 +97,7 @@ dx9_Texture_Create( const Texture::Descriptor& desc )
             hr = _D3D9_Device->CreateTexture( desc.width, desc.height,
                                               mip_count,
                                               usage,
-                                              DX9_TextureFormat(desc.format),
+                                              fmt,
                                               pool,
                                               &tex9,
                                               NULL
