@@ -98,7 +98,7 @@ QMimeData *LibraryModel::mimeData(const QModelIndexList &indexes) const
         if (index.isValid())
         {
             QMimeData *data = new QMimeData();
-            data->setText(defaultControls.at(index.row()));
+            data->setText(itemFromIndex(index)->text());
             return data;
         }
     }
