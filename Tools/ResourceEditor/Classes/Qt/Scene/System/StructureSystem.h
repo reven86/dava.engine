@@ -76,7 +76,7 @@ public:
 
 	void EmitChanged();
 
-	DAVA::Entity* Load(const DAVA::FilePath& sc2path, bool optimize);
+	DAVA::Entity* Load(const DAVA::FilePath& sc2path);
 
     void AddDelegate(StructureSystemDelegate *delegate);
     void RemoveDelegate(StructureSystemDelegate *delegate);
@@ -93,7 +93,7 @@ protected:
 	void RemoveEntity(DAVA::Entity * entity) override;
 
 	void ReloadInternal(DAVA::Set<DAVA::Entity *> &entitiesToReload, const DAVA::FilePath &newModelPath, bool saveLightmapSettings);
-	DAVA::Entity* LoadInternal(const DAVA::FilePath& sc2path, bool optimize, bool clearCached);
+	DAVA::Entity* LoadInternal(const DAVA::FilePath& sc2path, bool clearCached);
 
     bool CopyLightmapSettings(DAVA::Entity *fromState, DAVA::Entity *toState) const;
 	void CopyLightmapSettings(DAVA::NMaterial *fromEntity, DAVA::NMaterial *toEntity) const;

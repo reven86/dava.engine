@@ -321,7 +321,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		};
 		
         Handler handler = new Handler(Looper.getMainLooper());
-        handler.postDelayed(navigationBarHider, 300);
+        handler.postDelayed(navigationBarHider, 500);
         
         // end of workaround
         

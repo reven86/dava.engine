@@ -44,6 +44,8 @@ auto GetIndex = [](const FileList* files, DAVA::String filename)
 
 DAVA_TESTCLASS(FileListTest)
 {
+    DEDUCE_COVERED_CLASS_FROM_TESTCLASS()
+
     FileListTest()
     {
         FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileListTest/", true);
