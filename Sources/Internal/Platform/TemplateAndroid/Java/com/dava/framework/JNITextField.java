@@ -301,7 +301,7 @@ public class JNITextField {
 
             if (isTransparent && getText().length() > 0)
             {
-                Log.d(TAG, "WARNING render second one more time to texture");
+                Log.e(TAG, "ERROR render one more time to texture");
                 postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -640,9 +640,6 @@ public class JNITextField {
                 text.setPadding(0, 0, 0, 0);
                 
                 text.setSingleLine(true); // reset default, and only then set you need
-                text.setMaxLines(10);
-                text.setMinLines(2);
-                text.setVerticalScrollBarEnabled(true);
                 
                 text.setBackgroundColor(Color.TRANSPARENT);
                 text.setTextColor(Color.WHITE);
@@ -1408,8 +1405,10 @@ public class JNITextField {
 				final TextField text = GetTextField(id);
 				// if you call text.setSingleLine(false); 
 				// it will reset minlines, maxlines, scroll, and transformation method to default values
+				text.setSingleLine(false);
 				text.setMinLines(minLines);
 				text.setMaxLines(maxLines);
+				text.setHorizontallyScrolling(false);
 				text.setVerticalScrollBarEnabled(verticalScrollBarEnabled);
 			}
 		});

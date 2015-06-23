@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "GameCore.h"
+#include "Infrastructure/GameCore.h"
 
 #include "Platform/DateTime.h"
 #include "TexturePacker/CommandLineParser.h"

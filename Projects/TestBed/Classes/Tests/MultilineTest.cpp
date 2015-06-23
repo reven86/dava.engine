@@ -27,7 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 
-#include "MultilineTest.h"
+#include "Tests/MultilineTest.h"
 
 using namespace DAVA;
 
@@ -35,11 +35,6 @@ MultilineTest::MultilineTest ()
 : BaseScreen("MultilineTest")
 {
 }
-
-struct Delegate : public UITextFieldDelegate
-{
-
-};
 
 void MultilineTest::LoadResources()
 {
@@ -55,10 +50,14 @@ void MultilineTest::LoadResources()
     textField->SetFont(font);
 #endif
 
-    textField->SetMultiline(2, 10, true);
     textField->SetText(L"Hello World");
-    textField->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
     textField->SetDebugDraw(true);
-    textField->SetDelegate(new Delegate());
+    textField->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
+
+    static UITextFieldDelegate delegate;
+
+    textField->SetDelegate(&delegate);
+    textField->SetMultiline(2, 10, true);
+    textField->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     AddControl(textField);
 }

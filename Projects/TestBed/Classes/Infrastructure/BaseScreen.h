@@ -30,8 +30,8 @@
 #ifndef __BASESCREEN_H__
 #define __BASESCREEN_H__
 
-#include "DAVAEngine.h"
-#include "GameCore.h"
+#include <DAVAEngine.h>
+#include "Infrastructure/GameCore.h"
 
 class BaseScreen : public DAVA::UIScreen
 {

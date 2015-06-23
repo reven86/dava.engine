@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef __MULTILINETEST_TEST_H__
 #define __MULTILINETEST_TEST_H__
 
-#include "BaseScreen.h"
+#include "Infrastructure/BaseScreen.h"
 
 class MultilineTest : public BaseScreen
 {

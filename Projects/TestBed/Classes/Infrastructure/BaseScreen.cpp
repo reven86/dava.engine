@@ -28,8 +28,8 @@
 
 
 
-#include "BaseScreen.h"
-#include "GameCore.h"
+#include "Infrastructure/BaseScreen.h"
+#include "Infrastructure/GameCore.h"
 
 using namespace DAVA;
 
