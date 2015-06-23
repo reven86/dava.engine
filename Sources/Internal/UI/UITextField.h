@@ -283,6 +283,13 @@ public:
     void SetSize(const DAVA::Vector2 &newSize) override;
     void SetPosition(const Vector2 &position) override;
 
+    /**
+    \brief
+    enable multiline input support
+    Android: all params works
+    iOS: maxLines, verticalScrollBarEnabled - works
+    Other: none params used
+    */
     void SetMultiline(uint32 minLines, uint32 maxLines, bool verticalScrollBarEnabled);
     /**
 	 \brief Set control text style hide.

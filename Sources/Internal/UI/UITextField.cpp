@@ -399,8 +399,8 @@ void UITextField::SetMultiline(uint32 minLines, uint32 maxLines, bool verticalSc
 	textFieldiPhone->SetMultiline(minLines, maxLines, verticalScrollBarEnabled);
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetMultiline(minLines, maxLines, verticalScrollBarEnabled);
-#else
-    // TODO do I need implement it here?
+#else 
+    staticText->SetMultiline(true);
 #endif
 }
     

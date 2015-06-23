@@ -30,6 +30,10 @@
 #set( EXECUTABLE_FLAG            )
 #set( FILE_TREE_CHECK_FOLDERS    )
 #
+
+# Only interpret ``if()`` arguments as variables or keywords when unquoted.
+cmake_policy(SET CMP0054 NEW)
+
 macro( setup_main_executable )
 
 add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )

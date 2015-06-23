@@ -28,6 +28,8 @@
 
 #include "UIScrollViewTest.h"
 
+using namespace DAVA;
+
 UIScrollViewTest::UIScrollViewTest()
     : BaseScreen("UIScrollViewTest")
 {

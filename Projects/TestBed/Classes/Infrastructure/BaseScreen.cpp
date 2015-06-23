@@ -31,6 +31,8 @@
 #include "BaseScreen.h"
 #include "GameCore.h"
 
+using namespace DAVA;
+
 int32 BaseScreen::globalScreenId = 1;
 
 BaseScreen::BaseScreen(const String & _screenName, int32 skipBeforeTests)

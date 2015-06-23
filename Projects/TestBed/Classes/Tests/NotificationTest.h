@@ -31,8 +31,6 @@
 
 #include "BaseScreen.h"
 
-using namespace DAVA;
-
 class NotificationScreen : public BaseScreen
 {
 public:
@@ -43,30 +41,30 @@ public:
     void LoadResources() override;
     void UnloadResources() override;
 
-    void Update(float32 timeElapsed) override;
-    void Draw(const UIGeometricData &geometricData) override;
+    void Update(DAVA::float32 timeElapsed) override;
+    void Draw(const DAVA::UIGeometricData &geometricData) override;
 
     void UpdateNotification();
 
 private:
-    void OnNotifyText(BaseObject *obj, void *data, void *callerData);
-    void OnHideText(BaseObject *obj, void *data, void *callerData);
-    void OnNotifyProgress(BaseObject *obj, void *data, void *callerData);
-    void OnHideProgress(BaseObject *obj, void *data, void *callerData);
+    void OnNotifyText(DAVA::BaseObject *obj, void *data, void *callerData);
+    void OnHideText(DAVA::BaseObject *obj, void *data, void *callerData);
+    void OnNotifyProgress(DAVA::BaseObject *obj, void *data, void *callerData);
+    void OnHideProgress(DAVA::BaseObject *obj, void *data, void *callerData);
 
-    void OnNotificationTextPressed(BaseObject *obj, void *data, void *callerData);
-    void OnNotificationProgressPressed(BaseObject *obj, void *data, void *callerData);
+    void OnNotificationTextPressed(DAVA::BaseObject *obj, void *data, void *callerData);
+    void OnNotificationProgressPressed(DAVA::BaseObject *obj, void *data, void *callerData);
 
 private:
-    UIButton *showNotificationText;
-    UIButton *hideNotificationText;
-    UIButton *showNotificationProgress;
-    UIButton *hideNotificationProgress;
+    DAVA::UIButton *showNotificationText;
+    DAVA::UIButton *hideNotificationText;
+    DAVA::UIButton *showNotificationProgress;
+    DAVA::UIButton *hideNotificationProgress;
 
-    LocalNotificationProgress *notificationProgress;
-    LocalNotificationText *notificationText;
+    DAVA::LocalNotificationProgress *notificationProgress;
+    DAVA::LocalNotificationText *notificationText;
 
-    uint32 progress;
+    DAVA::uint32 progress;
 };
 
 #endif
