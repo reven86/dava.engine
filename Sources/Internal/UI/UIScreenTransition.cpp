@@ -166,6 +166,31 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     //    SafeRelease(image2);
 
     currentTime = 0;
+#else
+    nextScreen = _nextScreen;
+    prevScreen = _prevScreen;
+
+    if (prevScreen)
+    {
+        // Draw prev screen to rt
+
+        if (prevScreen->IsOnScreen())
+            prevScreen->SystemWillBecomeInvisible();
+
+        prevScreen->SystemWillDisappear();
+        if (prevScreen->GetGroupId() != nextScreen->GetGroupId())
+            prevScreen->UnloadGroup();
+        prevScreen->SystemDidDisappear();
+
+        SafeRelease(prevScreen);
+    }
+
+    nextScreen->LoadGroup();
+    nextScreen->SystemWillAppear();
+
+    // Draw next screen to rt
+
+    currentTime = 0;
 #endif // RHI_COMPLETE
 }
 

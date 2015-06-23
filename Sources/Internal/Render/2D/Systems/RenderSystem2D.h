@@ -243,6 +243,7 @@ private:
 
     Matrix4 virtualToPhysicalMatrix;
     Matrix4 projMatrix;
+    Matrix4 pixelMapping;
 	std::stack<Rect> clipStack;
 	Rect currentClip;
 
