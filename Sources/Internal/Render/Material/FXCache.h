@@ -59,7 +59,7 @@ namespace FXCache
     void Initialize();
     void Uninitialize();
     void Clear();
-    const FXDescriptor& GetFXDescriptor(const FastName &fxName, HashMap<FastName, int32>& defines);
+    const FXDescriptor& GetFXDescriptor(const FastName &fxName, HashMap<FastName, int32>& defines, const FastName& quality = NMaterialQualityName::DEFAULT_QUALITY_NAME);
 }
 }
 

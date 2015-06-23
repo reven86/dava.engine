@@ -69,6 +69,12 @@ struct MaterialBufferBinding
     uint32 lastValidPropertySemantic;
 };
 
+struct MaterialTextureInfo
+{
+    Texture *texture = nullptr;
+    FilePath path;
+};
+
 
 class RenderVariantInstance
 {
@@ -182,7 +188,7 @@ private:
     FastName qualityGroup;
 
     HashMap<FastName, NMaterialProperty *> localProperties;
-    HashMap<FastName, Texture*> localTextures; //this is runtime only state, filepath storing will be separately done later
+    HashMap<FastName, MaterialTextureInfo*> localTextures;
     HashMap<FastName, int32> localFlags; //integer flags are just more generic then boolean (eg. #if SHADING == HIGH), it has nothing in common with eFlagValue bullshit from old NMaterial    
 
     
