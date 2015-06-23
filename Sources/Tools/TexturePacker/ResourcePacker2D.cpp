@@ -418,8 +418,10 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     bool needPackResourcesInThisDir = true;
     if (modified)
     {
-    	FileSystem::Instance()->DeleteDirectoryFiles(outputPath, false);
-    	
+        if(clearProcessDirectory)
+        {
+            FileSystem::Instance()->DeleteDirectoryFiles(outputPath, false);
+        }
     	for (int fi = 0; fi < fileList->GetCount() && running; ++fi)
     	{
     		if (!fileList->IsDirectory(fi))
