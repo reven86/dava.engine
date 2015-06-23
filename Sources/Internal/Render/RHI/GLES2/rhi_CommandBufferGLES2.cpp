@@ -146,7 +146,7 @@ gles2_RenderPass_Allocate( const RenderPassConfig& passConf, uint32 cmdBufCount,
         cb->passCfg                 = passConf;
         cb->isFirstInPass           = i == 0;
         cb->isLastInPass            = i == cmdBufCount - 1;
-        cb->usingDefaultFrameBuffer = passConf.colorBuffer[0].texture != InvalidHandle;
+        cb->usingDefaultFrameBuffer = passConf.colorBuffer[0].texture == InvalidHandle;
         
         pass->cmdBuf[i] = h;
         cmdBuf[i]       = h;
