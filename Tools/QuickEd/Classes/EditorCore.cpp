@@ -206,7 +206,7 @@ void EditorCore::OpenProject(const QString &path)
     ResultList resultList;
     if (!project->Open(path))
     {
-        resultList.AddResult(Result::RESULT_CRITICAL, "Error while loading project");
+        resultList.AddResult(Result::RESULT_ERROR, "Error while loading project");
     }
     mainWindow->OnProjectOpened(resultList, path);
 }

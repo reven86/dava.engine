@@ -41,8 +41,8 @@ struct Result
     enum ResultType 
     {
         RESULT_SUCCESS,
-        RESULT_ERROR,
-        RESULT_CRITICAL
+        RESULT_FAILURE,
+        RESULT_ERROR
     };
     Result(const ResultType type = RESULT_SUCCESS, const String &message = String(), const VariantType &data = VariantType());
     Result(const Result &result) = default;

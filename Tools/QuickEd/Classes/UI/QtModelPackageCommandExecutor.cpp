@@ -188,7 +188,7 @@ ResultList QtModelPackageCommandExecutor::InsertControl(ControlNode *control, Co
     }
     else
     {
-        resultList.AddResult(Result::RESULT_CRITICAL, "Can not inster control!", VariantType(reinterpret_cast<int64>(control)));
+        resultList.AddResult(Result::RESULT_ERROR, "Can not inster control!", VariantType(reinterpret_cast<int64>(control)));
     }
     return resultList;
 }

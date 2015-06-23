@@ -134,6 +134,7 @@ ResultList& ResultList::AddResultList(ResultList &&resultList)
         else
         {
             std::move(std::begin(resultList.results), std::end(resultList.results), std::back_inserter(results));
+            resultList.results.clear();
         }
     }
     return *this;
