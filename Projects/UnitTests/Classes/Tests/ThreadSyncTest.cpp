@@ -36,7 +36,7 @@ DAVA_TESTCLASS(ThreadSyncTest)
     Thread* someThread = nullptr;
 
     Mutex cvMutex;
-    ConditionalVariable cv;
+    ConditionVariable cv;
     int someValue;
 
     DAVA_TEST(ThreadSyncTestFunction)
@@ -45,7 +45,7 @@ DAVA_TESTCLASS(ThreadSyncTest)
         someThread = Thread::Create(Message(this, &ThreadSyncTest::SomeThreadFunc));
         someValue = -1;
         someThread->Start();
-        Thread::Wait(&cv, &cvMutex);
+        cv.Wait(cvMutex);
         cvMutex.Unlock();
 
         TEST_VERIFY(someValue == 0);
@@ -144,7 +144,7 @@ DAVA_TESTCLASS(ThreadSyncTest)
     {
         someValue = 0;
         cvMutex.Lock();
-        Thread::Signal(&cv);
+        cv.NotifyOne();
         cvMutex.Unlock();
     }
 

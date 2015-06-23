@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "Platform/Thread.h"
+#include "Concurrency/Thread.h"
 
 namespace DAVA
 {
@@ -35,51 +35,61 @@ namespace DAVA
 #if defined(__DAVAENGINE_WINDOWS__)
 
 #include <windows.h>
+#include <process.h>
 const DWORD MS_VC_EXCEPTION=0x406D1388;
 
 #pragma pack(push,8)
-using THREADNAME_INFO = struct tagTHREADNAME_INFO
+typedef struct tagTHREADNAME_INFO
 {
-    DWORD dwType;       // Must be 0x1000.
-    LPCSTR szName;      // Pointer to name (in user addr space).
-    DWORD dwThreadID;   // Thread ID
-    DWORD dwFlags;      // Reserved for future use, must be zero.
-};
+    DWORD dwType; // Must be 0x1000.
+    LPCSTR szName; // Pointer to name (in user addr space).
+    DWORD dwThreadID; // Thread ID
+    DWORD dwFlags; // Reserved for future use, must be zero.
+} THREADNAME_INFO;
 #pragma pack(pop)
 
 void Thread::Init()
 {
+#if !defined(USE_CPP11_CONCURRENCY)
     handle = NULL;
+#endif
 }
 
 void Thread::Shutdown()
 {
+#if !defined(USE_CPP11_CONCURRENCY)
     DVASSERT(STATE_ENDED == state || STATE_KILLED == state);
     if (handle)
     {
         CloseHandle(handle);
         handle = NULL;
     }
+#endif
 }
 
 void Thread::Start()
 {
     Retain();
     DVASSERT(STATE_CREATED == state);
-    handle = CreateThread 
+
+#if !defined(USE_CPP11_CONCURRENCY)
+
+    auto hdl = _beginthreadex
         (
         0, // Security attributes
         0, // Stack size
         ThreadFunc,
         this,
-        CREATE_SUSPENDED,
+        0,
         0);
 
-    if(!SetThreadPriority(handle, THREAD_PRIORITY_ABOVE_NORMAL))
-    {
-        Logger::Error("Thread::StartWin32 error %d", (int32)GetLastError());
-    }
-    ResumeThread(handle);
+    handle = reinterpret_cast<HANDLE>(hdl);
+
+#else
+
+    handle = std::thread(ThreadFunc, this);
+
+#endif
 }
 
 void Thread::Sleep(uint32 timeMS)
@@ -87,7 +97,7 @@ void Thread::Sleep(uint32 timeMS)
     ::Sleep(timeMS);
 }
 
-DWORD WINAPI ThreadFunc(void* param)
+unsigned __stdcall ThreadFunc(void* param)
 {	
 #if defined(__DAVAENGINE_DEBUG__)
     Thread *t = static_cast<Thread *>(param);
@@ -118,26 +128,41 @@ void Thread::Yield()
 
 void Thread::Join()
 {
+#if !defined(USE_CPP11_CONCURRENCY)
     if (WaitForSingleObjectEx(handle, INFINITE, FALSE) != WAIT_OBJECT_0)
     {
         DAVA::Logger::Error("Thread::Join() failed in WaitForSingleObjectEx");
     }
+#else
+    if (handle.joinable())
+    {
+        handle.join();
+    }
+#endif
 }
 
 void Thread::KillNative()
 {
-#if defined(__DAVAENGINE_WIN32__)
-    TerminateThread(handle, 0);
-#elif defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN_UAP__)
     DAVA::Logger::Warning("Thread::KillNative() is not implemented for Windows Store platform");
+#elif !defined(USE_CPP11_CONCURRENCY)
+    TerminateThread(handle, 0);
+#else
+    HANDLE native_handle = handle.native_handle();
+    handle.detach();
+    TerminateThread(native_handle, 0);
 #endif
 }
 
 Thread::Id Thread::GetCurrentId()
 {
+#if !defined(USE_CPP11_CONCURRENCY)
     return ::GetCurrentThreadId();
+#else
+    return std::this_thread::get_id();
+#endif
 }
 
 #endif 
 
-};
+}
