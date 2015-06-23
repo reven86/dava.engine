@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -44,86 +44,31 @@ extern "C" {
 # endif
 #endif
 
+#define MAGICKWAND_CHECK_VERSION(major,minor,micro) \
+  ((MAGICKWAND_MAJOR_VERSION > (major)) || \
+    ((MAGICKWAND_MAJOR_VERSION == (major)) && \
+     (MAGICKWAND_MINOR_VERSION > (minor))) || \
+    ((MAGICKWAND_MAJOR_VERSION == (major)) && \
+     (MAGICKWAND_MINOR_VERSION == (minor)) && \
+     (MAGICKWAND_MICRO_VERSION >= (micro))))
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <math.h>
 #include <sys/types.h>
+#include <time.h>
 
 #if defined(WIN32) || defined(WIN64)
-#  define MAGICKCORE_WINDOWS_SUPPORT
+#  define MAGICKWAND_WINDOWS_SUPPORT
 #else
-#  define MAGICKCORE_POSIX_SUPPORT
+#  define MAGICKWAND_POSIX_SUPPORT
 #endif 
-
-#if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(__CYGWIN__) && !defined(__MINGW32__)
-# if defined(_MT) && defined(_DLL) && !defined(_MAGICKDLL_) && !defined(_LIB)
-#  define _MAGICKDLL_
-# endif
-# if defined(_MAGICKDLL_)
-#  if defined(_VISUALC_)
-#   pragma warning( disable: 4273 )  /* Disable the dll linkage warnings */
-#  endif
-#  if !defined(_MAGICKLIB_)
-#   define WandExport  __declspec(dllimport)
-#   if defined(_VISUALC_)
-#    pragma message( "MagickWand lib DLL import interface" )
-#   endif
-#  else
-#   define WandExport  __declspec(dllexport)
-#   if defined(_VISUALC_)
-#    pragma message( "MagickWand lib DLL export interface" )
-#   endif
-#  endif
-# else
-#  define WandExport
-#  if defined(_VISUALC_)
-#   pragma message( "MagickWand lib static interface" )
-#  endif
-# endif
-
-# if defined(_DLL) && !defined(_LIB)
-#  define ModuleExport  __declspec(dllexport)
-#  if defined(_VISUALC_)
-#   pragma message( "MagickWand module DLL export interface" )
-#  endif
-# else
-#  define ModuleExport
-#  if defined(_VISUALC_)
-#   pragma message( "MagickWand module static interface" )
-#  endif
-
-# endif
-# define WandGlobal __declspec(thread)
-# if defined(_VISUALC_)
-#  pragma warning(disable : 4018)
-#  pragma warning(disable : 4244)
-#  pragma warning(disable : 4142)
-#  pragma warning(disable : 4800)
-#  pragma warning(disable : 4786)
-#  pragma warning(disable : 4996)
-# endif
-#else
-# define WandExport
-# define ModuleExport
-# define WandGlobal
-#endif
-
-#if !defined(MaxTextExtent)
-# define MaxTextExtent  4096
-#endif
-#define WandSignature  0xabacadabUL
-
-#if !defined(wand_attribute)
-#  if !defined(__GNUC__)
-#    define wand_attribute(x)  /* nothing */
-#  else
-#    define wand_attribute  __attribute__
-#  endif
-#endif
 
 typedef struct _MagickWand
   MagickWand;
 
+#include "wand/method-attribute.h"
 #include "magick/MagickCore.h"
 #include "wand/animate.h"
 #include "wand/compare.h"
@@ -152,6 +97,7 @@ extern WandExport ExceptionType
 
 extern WandExport MagickBooleanType
   IsMagickWand(const MagickWand *),
+  IsMagickWandInstantiated(void),
   MagickClearException(MagickWand *),
   MagickSetIteratorIndex(MagickWand *,const ssize_t);
 

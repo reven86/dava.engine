@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -18,23 +18,16 @@
 #ifndef _MAGICKCORE_CACHE_PRIVATE_H
 #define _MAGICKCORE_CACHE_PRIVATE_H
 
-#if defined(__cplusplus) || defined(c_plusplus)
-extern "C" {
-#endif
-
 #include <time.h>
+#include "magick/cache.h"
+#include "magick/distribute-cache.h"
 #include "magick/random_.h"
 #include "magick/thread-private.h"
 #include "magick/semaphore.h"
 
-typedef enum
-{
-  UndefinedCache,
-  MemoryCache,
-  MapCache,
-  DiskCache,
-  PingCache
-} CacheType;
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
+#endif
 
 typedef void
   *Cache;
@@ -108,7 +101,29 @@ typedef struct _CacheMethods
 } CacheMethods;
 
 typedef struct _NexusInfo
-   NexusInfo;
+{
+  MagickBooleanType
+    mapped;
+
+  RectangleInfo
+    region;
+
+  MagickSizeType
+    length;
+
+  PixelPacket
+    *cache,
+    *pixels;
+
+  MagickBooleanType
+    authentic_pixel_cache;
+
+  IndexPacket
+    *indexes;
+
+  size_t
+    signature;
+} NexusInfo;
 
 typedef struct _CacheInfo
 {
@@ -174,7 +189,14 @@ typedef struct _CacheInfo
   RandomInfo
     *random_info;
 
+  size_t
+    number_connections;
+
+  void
+    *server_info;
+
   MagickBooleanType
+    synchronize,
     debug;
 
   MagickThreadType
@@ -185,7 +207,7 @@ typedef struct _CacheInfo
 
   SemaphoreInfo
     *semaphore,
-    *disk_semaphore;
+    *file_semaphore;
 
   time_t
     timestamp;
@@ -215,14 +237,12 @@ extern MagickExport const IndexPacket
 extern MagickExport const PixelPacket
   *GetVirtualPixelsFromNexus(const Image *,const VirtualPixelMethod,
     const ssize_t,const ssize_t,const size_t,const size_t,NexusInfo *,
-    ExceptionInfo *),
+    ExceptionInfo *) magick_hot_spot,
   *GetVirtualPixelsNexus(const Cache,NexusInfo *);
 
-extern MagickExport IndexPacket
-  *GetPixelCacheNexusIndexes(const Cache,NexusInfo *);
-
 extern MagickExport MagickBooleanType
-  SyncAuthenticPixelCacheNexus(Image *,NexusInfo *,ExceptionInfo *);
+  SyncAuthenticPixelCacheNexus(Image *,NexusInfo *restrict,ExceptionInfo *)
+    magick_hot_spot;
 
 extern MagickExport MagickSizeType
   GetPixelCacheNexusExtent(const Cache,NexusInfo *);
@@ -233,10 +253,12 @@ extern MagickExport NexusInfo
 
 extern MagickExport PixelPacket
   *GetAuthenticPixelCacheNexus(Image *,const ssize_t,const ssize_t,
-    const size_t,const size_t,NexusInfo *,ExceptionInfo *),
-  *GetPixelCacheNexusPixels(const Cache,NexusInfo *),
-  *QueueAuthenticNexus(Image *,const ssize_t,const ssize_t,const size_t,
-    const size_t,const MagickBooleanType,NexusInfo *,ExceptionInfo *);
+    const size_t,const size_t,NexusInfo *,ExceptionInfo *) magick_hot_spot,
+  *QueueAuthenticPixel(Image *,const ssize_t,const ssize_t,const size_t,
+    const size_t,const MagickBooleanType,NexusInfo *,ExceptionInfo *),
+  *QueueAuthenticPixelCacheNexus(Image *,const ssize_t,const ssize_t,
+    const size_t,const size_t,const MagickBooleanType,NexusInfo *,
+    ExceptionInfo *) magick_hot_spot;
 
 extern MagickExport size_t
   GetPixelCacheChannels(const Cache);
@@ -246,6 +268,9 @@ extern MagickExport void
   GetPixelCacheTileSize(const Image *,size_t *,size_t *),
   GetPixelCacheMethods(CacheMethods *),
   SetPixelCacheMethods(Cache,CacheMethods *);
+
+extern MagickPrivate MagickBooleanType
+  SyncImagePixelCache(Image *,ExceptionInfo *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

@@ -78,10 +78,7 @@ add_library( ${PROJECT_NAME} SHARED  ${LIB_SOURCES} )
  
 set_property( TARGET ${PROJECT_NAME} PROPERTY FOLDER "libraries")
 
-if ( MSVC )
-    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"")    
-
-elseif( APPLE )
+if( APPLE )
 
     ADD_CUSTOM_COMMAND(
     TARGET ${PROJECT_NAME}
