@@ -44,6 +44,12 @@ DAVA_TESTCLASS(LoadImageTest)
         
         eErrorCode res = helper.ReadFile(imgFile, set, 0);
         TEST_VERIFY(eErrorCode::SUCCESS == res);
+        
+        for (auto item : set)
+        {
+            SafeRelease(item);
+        }
+        set.clear();
     }
 
     DAVA_TEST(TgaTest)
