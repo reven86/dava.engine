@@ -350,7 +350,7 @@ namespace DAVA
         // Notify UITextFieldDelegate::TextFieldOnTextChanged event
         if ([view respondsToSelector:@selector(sendActionsForControlEvents)])
         {
-            [view sendActionsForControlEvents:UIControlEventEditingChanged];
+            [(id)view sendActionsForControlEvents:UIControlEventEditingChanged];
         }
         
         if(textChanged || string.empty())
@@ -639,8 +639,6 @@ namespace DAVA
 
             // replace textField with new textView and apply current properties
             ::UITextView* textView = [[UITextView alloc] initWithFrame:rect textContainer:nil];
-            HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-            BackgroundView* backgroundView = [appDelegate glController].backgroundView;
             [textFieldHolder addSubview:textView];
             
             textFieldHolder->textCtrl = textView;

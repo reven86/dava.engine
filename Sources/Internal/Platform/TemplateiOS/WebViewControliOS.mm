@@ -226,7 +226,6 @@ void* DAVA::WebViewControl::RenderIOSUIViewToImage(void* uiviewPtr)
 {
     ::UIView* view = static_cast<::UIView*>(uiviewPtr);
     DVASSERT(view);
-    DAVA::float32 scale = DAVA::Core::Instance()->GetScreenScaleFactor();
     
     size_t w = view.frame.size.width;
     size_t h = view.frame.size.height;
@@ -237,7 +236,6 @@ void* DAVA::WebViewControl::RenderIOSUIViewToImage(void* uiviewPtr)
     }
     
     UIGraphicsBeginImageContextWithOptions(CGSizeMake(w, h), NO, 0);
-    CGRect rect = CGRectMake(0, 0, w, h);
     // Workaround! iOS bug see http://stackoverflow.com/questions/23157653/drawviewhierarchyinrectafterscreenupdates-delays-other-animations
     [view.layer renderInContext:UIGraphicsGetCurrentContext()];
     

@@ -63,7 +63,7 @@
         cachedText = [[NSString alloc] initWithString: [textCtrl valueForKey:@"text"]];
         
         if([textCtrl respondsToSelector:@selector(addTarget:action:forControlEvents:)]) {
-            [textCtrl addTarget: self
+            [(id)textCtrl addTarget: self
                           action: @selector(eventEditingChanged:)
                 forControlEvents: UIControlEventEditingChanged];
         }
@@ -242,7 +242,7 @@
 - (void)setIsPassword:(bool)isPassword
 {
     if ([textCtrl respondsToSelector:@selector(setSecureTextEntry:)]) {
-        [textCtrl setSecureTextEntry:isPassword ? YES: NO];
+        [(id)textCtrl setSecureTextEntry:isPassword ? YES: NO];
     }
 }
 
