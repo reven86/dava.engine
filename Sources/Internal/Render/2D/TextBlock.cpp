@@ -36,14 +36,13 @@
 #include "FileSystem/File.h"
 #include "Render/2D/TextBlock.h"
 #include "Core/Core.h"
-#include "Job/JobManager.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/TextBlockSoftwareRender.h"
 #include "Render/2D/TextBlockGraphicsRender.h"
 #include "Render/2D/TextBlockDistanceRender.h"
 
 #include "Utils/StringUtils.h"
-#include <Thread/LockGuard.h>
+#include "Concurrency/LockGuard.h"
 #include "fribidi/fribidi-bidi-types.h"
 #include "fribidi/fribidi-unicode.h"
 #include "TextLayout.h"
@@ -334,17 +333,13 @@ void TextBlock::SetRenderSize(float32 _renderSize)
 #if defined(LOCALIZATION_DEBUG)
 int32 TextBlock::GetFittingOptionUsed()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
+    LockGuard<Mutex> guard(mutex);
     return fittingTypeUsed;
 }
 
 bool  TextBlock::IsVisualTextCroped()
 {
-
-	mutex.Lock();
-	mutex.Unlock();
+    LockGuard<Mutex> guard(mutex);
 	return visualTextCroped;
 }
 #endif

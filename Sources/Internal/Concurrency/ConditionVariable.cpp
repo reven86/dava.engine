@@ -26,32 +26,66 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_CONDITIONALVARIABLE_H__
-#define __DAVAENGINE_CONDITIONALVARIABLE_H__
 
-#include "Base/BaseTypes.h"
+#include "Base/Platform.h"
+#ifndef USE_CPP11_CONCURRENCY
 
-#if defined (__DAVAENGINE_WINDOWS__)
-#   include "Platform/TemplateWin32/pThreadWin32.h"
-#elif defined(__DAVAENGINE_PTHREAD__)
-#   include <pthread.h>
-#endif
+#include "Concurrency/ConditionVariable.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
 
-class ConditionalVariable final
+//-------------------------------------------------------------------------------------------------
+//Condition variable realization using POSIX Threads API
+//-------------------------------------------------------------------------------------------------
+ConditionVariable::ConditionVariable()
 {
-    friend class Thread;
-
-public:
-    ConditionalVariable();
-    ~ConditionalVariable();
-
-private:
-    pthread_cond_t cv;
-};
-
+    int ret = pthread_cond_init(&cv, nullptr);
+    if (ret != 0)
+    {
+        Logger::Error("ConditionVariable::ConditionVariable() error: %d", ret);
+    }
 }
 
-#endif  // __DAVAENGINE_CONDITIONALVARIABLE_H__
+ConditionVariable::~ConditionVariable() DAVA_NOEXCEPT
+{
+    int ret = pthread_cond_destroy(&cv);
+    if (ret != 0)
+    {
+        Logger::Error("ConditionVariable::~ConditionVariable() error: %d", ret);
+    }
+}
+
+void ConditionVariable::Wait(UniqueLock<Mutex>& guard)
+{
+    pthread_mutex_t* mutex = &guard.GetMutex()->mutex;
+    int ret = pthread_cond_wait(&cv, mutex);
+
+    if (ret != 0)
+    {
+        Logger::Error("ConditionVariable::Wait() error: %d", ret);
+    }
+}
+
+void ConditionVariable::NotifyOne()
+{
+    int ret = pthread_cond_signal(&cv);
+    if (ret != 0)
+    {
+        Logger::Error("ConditionVariable::NotifyOne() error: %d", ret);
+    }
+}
+
+void ConditionVariable::NotifyAll()
+{
+    int ret = pthread_cond_broadcast(&cv);
+    if (ret != 0)
+    {
+        Logger::Error("ConditionVariable::NotifyAll() error: %d", ret);
+    }
+}
+
+} //  namespace DAVA
+
+#endif //  !USE_CPP11_CONCURRENCY

@@ -27,22 +27,38 @@
 =====================================================================================*/
 
 
-#include "Platform/Mutex.h"
-#include "FileSystem/Logger.h"
+#include "Base/Platform.h"
+#ifndef USE_CPP11_CONCURRENCY
+
+#include "Concurrency/Mutex.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
 
 Mutex::Mutex()
 {
-    int ret = pthread_mutex_init(&mutex, NULL);
+    int ret = pthread_mutex_init(&mutex, nullptr);
     if (ret != 0)
     {
         Logger::Error("Mutex::Mutex() error: %d", ret);
     }
 }
 
-Mutex::~Mutex()
+RecursiveMutex::RecursiveMutex()
+{
+    pthread_mutexattr_t attributes;
+    pthread_mutexattr_init(&attributes);
+    pthread_mutexattr_settype(&attributes, PTHREAD_MUTEX_RECURSIVE);
+
+    int ret = pthread_mutex_init(&mutex, &attributes);
+    if (ret != 0)
+    {
+        Logger::Error("RecursiveMutex::RecursiveMutex() error: %d", ret);
+    }
+}
+
+MutexBase::~MutexBase()
 {
     int ret = pthread_mutex_destroy(&mutex);
     if (ret != 0)
@@ -51,22 +67,29 @@ Mutex::~Mutex()
     }
 }
 
-void Mutex::Lock()
+void MutexBase::Lock()
 {
     int ret = pthread_mutex_lock(&mutex);
     if (ret != 0)
     {
-        Logger::Error("Mutex::Lock() error: %d", ret);
+        Logger::Error("MutexBase::Lock() error: %d", ret);
     }
 }
 
-void Mutex::Unlock()
+void MutexBase::Unlock()
 {
     int ret = pthread_mutex_unlock(&mutex);
     if (ret != 0)
     {
-        Logger::Error("Mutex::Unlock() error: %d", ret);
+        Logger::Error("MutexBase::Unlock() error: %d", ret);
     }
 }
 
-};
+bool MutexBase::TryLock()
+{
+    return pthread_mutex_trylock(&mutex) == 0;
+}
+
+}  // namespace DAVA
+
+#endif  // !USE_CPP11_CONCURRENCY
