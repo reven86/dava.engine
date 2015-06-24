@@ -50,7 +50,6 @@ set( IOS_XIB                    ${XIB_LIST} )
 set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/Info.plist )
 set( MACOS_XIB                  ${XIB_LIST} )
 
-set( ANDROID_USE_STANDART_TEMLATE true )
 set( ANDROID_PACKAGE            "com.dava.unittests" )
 set( ANDROID_APP_NAME           "UnitTestApp" )
 set( ANDROID_ACTIVITY_APP_NAME  "UnitTests"   )

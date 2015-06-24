@@ -48,7 +48,7 @@ elseif( ANDROID_DATA )
 
 endif()
 
-if( ANDROID_USE_STANDART_TEMLATE )
+if( ANDROID )
     if( NOT ANDROID_JAVA_SRC )
         list( APPEND ANDROID_JAVA_SRC  ${CMAKE_CURRENT_LIST_DIR}/android/src )    
     endif()
@@ -480,7 +480,7 @@ if( DAVA_TOOLS_FOUND )
 endif()
 
 if( ANDROID )
-    set( LINK_WHOLE_ARCHIVE_FLAG -Wl,--whole-archive )
+    set( LINK_WHOLE_ARCHIVE_FLAG -Wl,--whole-archive -Wl,--allow-multiple-definition )
     set( NO_LINK_WHOLE_ARCHIVE_FLAG -Wl,--no-whole-archive )
 
     foreach( LIB_1 ${TARGET_LIBRARIES} )
