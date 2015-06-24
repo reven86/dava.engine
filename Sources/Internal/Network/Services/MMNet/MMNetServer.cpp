@@ -31,7 +31,7 @@
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
 #include "Base/FunctionTraits.h"
-#include "Thread/LockGuard.h"
+#include "Concurrency/LockGuard.h"
 #include "Debug/DVAssert.h"
 #include "DLC/Patcher/ZLibStream.h"
 #include "Platform/SystemTimer.h"

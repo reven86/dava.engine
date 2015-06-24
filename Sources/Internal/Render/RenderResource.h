@@ -31,7 +31,7 @@
 #define __DAVAENGINE_RESOURCE_H__
 
 #include "Base/BaseObject.h"
-#include "Platform/Mutex.h"
+#include "Concurrency/Mutex.h"
 
 namespace DAVA
 {

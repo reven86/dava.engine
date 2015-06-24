@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Classes">
+      <UniqueIdentifier>{454f076a-5285-4787-8d34-d62b197297ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{5e521ce8-fceb-40cb-967d-59e890731ee6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Infrastructure">
+      <UniqueIdentifier>{17d84ac6-ad9f-4b54-922f-56e36bee3a92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Tests">
+      <UniqueIdentifier>{2f6543c9-f99c-4904-9129-682ff185f33c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{933954df-1c81-4312-89e4-0635e30ebb48}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Classes\Tests\NotificationTest.cpp">
+      <Filter>Classes\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Classes\Tests\UIScrollViewTest.cpp">
+      <Filter>Classes\Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Classes\Infrastructure\BaseScreen.cpp">
+      <Filter>Classes\Infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Classes\Infrastructure\FrameworkMain.cpp">
+      <Filter>Classes\Infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Classes\Infrastructure\GameCore.cpp">
+      <Filter>Classes\Infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Classes\Infrastructure\TestListScreen.cpp">
+      <Filter>Classes\Infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Classes\Infrastructure\TextureUtils.cpp">
+      <Filter>Classes\Infrastructure</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Win32Specific\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Win32Specific\main_store.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Classes\Tests\NotificationTest.h">
+      <Filter>Classes\Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Classes\Tests\UIScrollViewTest.h">
+      <Filter>Classes\Tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Classes\Infrastructure\BaseScreen.h">
+      <Filter>Classes\Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Classes\Infrastructure\FrameworkMain.h">
+      <Filter>Classes\Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Classes\Infrastructure\GameCore.h">
+      <Filter>Classes\Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Classes\Infrastructure\TestListScreen.h">
+      <Filter>Classes\Infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Classes\Infrastructure\TextureUtils.h">
+      <Filter>Classes\Infrastructure</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="TestBed_WinUAP_TemporaryKey.pfx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\WideLogo.scale-100.png" />
+    <Image Include="Assets\Logo.scale-100.png" />
+    <Image Include="Assets\SmallLogo.scale-100.png" />
+    <Image Include="Assets\SplashScreen.scale-100.png" />
+    <Image Include="Assets\StoreLogo.scale-100.png" />
+  </ItemGroup>
+</Project>

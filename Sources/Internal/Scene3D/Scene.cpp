@@ -44,7 +44,6 @@
 #include "Scene3D/SceneFile.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/DataNode.h"
-#include "Scene3D/ProxyNode.h"
 #include "Scene3D/ShadowVolumeNode.h"
 #include "Render/Highlevel/Light.h"
 #include "Scene3D/MeshInstanceNode.h"
@@ -78,18 +77,122 @@
 #include "Scene3D/Systems/MaterialSystem.h"
 
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/SceneCache.h"
 #include "UI/UIEvent.h"
 #include "Render/Highlevel/RenderPass.h"
 
 #include "Render/Renderer.h"
 
+#include <functional>
 
 namespace DAVA 
 {
 
 //TODO: remove this crap with shadow color
 static const FastName DEPRECATED_SHADOW_COLOR_PARAM("shadowColor");
+
+EntityCache::~EntityCache()
+{
+    ClearAll();
+}
+
+void EntityCache::Preload(const FilePath &path)
+{
+    Scene *scene = new Scene();
+    if(SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(path))
+    {
+        Entity *srcRootEntity = scene;
+
+        // try to perform little optimization:
+        // if scene has single node with identity transform
+        // we can skip this entity and move only its children
+        if(1 == srcRootEntity->GetChildrenCount())
+        {
+            Entity *child = srcRootEntity->GetChild(0);
+            if(1 == child->GetComponentCount())
+            {
+                TransformComponent * tr = (TransformComponent *)srcRootEntity->GetComponent(Component::TRANSFORM_COMPONENT);
+                if(nullptr != tr && tr->GetLocalTransform() == Matrix4::IDENTITY)
+                {
+                    srcRootEntity = child;
+                }
+            }
+        }
+
+        auto count = srcRootEntity->GetChildrenCount();
+
+        Vector<Entity*> tempV;
+        tempV.reserve(count);
+        for(auto i = 0; i < count; ++i)
+        {
+            tempV.push_back(srcRootEntity->GetChild(i));
+        }
+
+        Entity *dstRootEntity = new Entity();
+        for(auto i = 0; i < count; ++i)
+        {
+            dstRootEntity->AddNode(tempV[i]);
+        }
+
+        dstRootEntity->ResetID();
+        dstRootEntity->SetName(scene->GetName());
+        cachedEntities[path] = dstRootEntity;
+    }
+
+    SafeRelease(scene);
+}
+
+Entity* EntityCache::GetOriginal(const FilePath &path)
+{
+    Entity *ret = nullptr;
+
+    if(cachedEntities.find(path) == cachedEntities.end())
+    {
+        Preload(path);
+    }
+
+    auto i = cachedEntities.find(path);
+    if(i != cachedEntities.end())
+    {
+        ret = i->second;
+    }
+
+    return ret;
+}
+
+Entity* EntityCache::GetClone(const FilePath &path)
+{
+    Entity* ret = nullptr;
+
+    Entity* orig = GetOriginal(path);
+    if(nullptr != orig)
+    {
+        ret = orig->Clone();
+    }
+
+    return ret;
+}
+
+void EntityCache::Clear(const FilePath &path)
+{
+    auto i = cachedEntities.find(path);
+    if(i != cachedEntities.end())
+    {
+        SafeRelease(i->second);
+        cachedEntities.erase(i);
+    }
+}
+
+void EntityCache::ClearAll()
+{
+    for(auto i : cachedEntities)
+    {
+        SafeRelease(i.second);
+    }
+
+    cachedEntities.clear();
+}
 
 Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
 	: Entity()
@@ -113,7 +216,11 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     , sceneGlobalMaterial(0)
     , mainCamera(0)
     , drawCamera(0)
+    , maxIDCounter(0)
 {
+    static uint32 idCounter = 0;
+    sceneId = ++idCounter;
+
 	CreateComponents();
 	CreateSystems();
 
@@ -292,12 +399,6 @@ Scene::~Scene()
     
     SafeRelease(mainCamera);
     SafeRelease(drawCamera);
-    
-    for (ProxyNodeMap::iterator it = rootNodes.begin(); it != rootNodes.end(); ++it)
-    {
-        SafeRelease(it->second);
-    }
-    rootNodes.clear();
 
     // Children should be removed first because they should unregister themselves in managers
 	RemoveAllChildren();	
@@ -329,6 +430,7 @@ Scene::~Scene()
 
     systemsToProcess.clear();
     systemsToInput.clear();
+    cache.ClearAll();
 
 	SafeDelete(eventSystem);
 	SafeDelete(renderSystem);
@@ -336,6 +438,14 @@ Scene::~Scene()
     
 void Scene::RegisterEntity(Entity * entity)
 {
+    if( entity->GetID() == 0 || 
+        entity->GetSceneID() == 0 ||
+        entity->GetSceneID() != sceneId)
+    {
+        entity->SetID(++maxIDCounter);
+        entity->SetSceneID(sceneId);
+    }
+
     for(auto& system : systems)
     {
         system->RegisterEntity(entity);
@@ -526,84 +636,6 @@ Camera * Scene::GetCamera(int32 n)
 	
 	return NULL;
 }
-
-
-void Scene::AddRootNode(Entity *node, const FilePath &rootNodePath)
-{
-    ProxyNode * proxyNode = new ProxyNode();
-    proxyNode->SetNode(node);
-    
-	rootNodes[FILEPATH_MAP_KEY(rootNodePath)] = proxyNode;
-
-	//proxyNode->SetName(rootNodePath.GetAbsolutePathname());
-}
-
-Entity *Scene::GetRootNode(const FilePath &rootNodePath)
-{
-	ProxyNodeMap::const_iterator it = rootNodes.find(FILEPATH_MAP_KEY(rootNodePath));
-	if (it != rootNodes.end())
-	{
-        ProxyNode * node = it->second;
-		return node->GetNode();
-	}
-    
-    if(rootNodePath.IsEqualToExtension(".sce"))
-    {
-        SceneFile *file = new SceneFile();
-        file->SetDebugLog(true);
-        file->LoadScene(rootNodePath, this);
-        SafeRelease(file);
-    }
-    else if(rootNodePath.IsEqualToExtension(".sc2"))
-    {
-        uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
-        SceneFileV2 *file = new SceneFileV2();
-        file->EnableDebugLog(false);
-        SceneFileV2::eError loadResult = file->LoadScene(rootNodePath, this);
-        SafeRelease(file);
-				
-        uint64 deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
-        Logger::FrameworkDebug("[GETROOTNODE TIME] %dms (%ld)", deltaTime, deltaTime);
-
-        if (loadResult != SceneFileV2::ERROR_NO_ERROR)
-        {
-            return 0;
-        }
-    }
-    
-	it = rootNodes.find(FILEPATH_MAP_KEY(rootNodePath));
-	if (it != rootNodes.end())
-	{
-        ProxyNode * node = it->second;
-        //int32 nowCount = node->GetNode()->GetChildrenCountRecursive();
-		return node->GetNode();
-	}
-    return 0;
-}
-
-void Scene::ReleaseRootNode(const FilePath &rootNodePath)
-{
-	ProxyNodeMap::iterator it = rootNodes.find(FILEPATH_MAP_KEY(rootNodePath));
-	if (it != rootNodes.end())
-	{
-        it->second->Release();
-        rootNodes.erase(it);
-	}
-}
-    
-void Scene::ReleaseRootNode(Entity *nodeToRelease)
-{
-//	for (Map<String, Entity*>::iterator it = rootNodes.begin(); it != rootNodes.end(); ++it)
-//	{
-//        if (nodeToRelease == it->second) 
-//        {
-//            Entity * obj = it->second;
-//            obj->Release();
-//            rootNodes.erase(it);
-//            return;
-//        }
-//	}
-}
     
 void Scene::SetupTestLighting()
 {
@@ -734,6 +766,16 @@ void Scene::Draw()
     
 void Scene::SceneDidLoaded()
 {
+    maxIDCounter = 0;
+
+    std::function<void(Entity *)> findMaxId = [&](Entity *entity)
+    {
+        if(maxIDCounter < entity->id) maxIDCounter = entity->id;
+        for (auto child : entity->children) findMaxId(child);
+    };
+
+    findMaxId(this);
+
     uint32 systemsCount = static_cast<uint32>(systems.size());
     for (uint32 k = 0; k < systemsCount; ++k)
     {
@@ -928,10 +970,44 @@ void Scene::Load(KeyedArchive * archive)
 }*/
     
 
+SceneFileV2::eError Scene::LoadScene(const DAVA::FilePath & pathname)
+{
+    SceneFileV2::eError ret = SceneFileV2::ERROR_FAILED_TO_CREATE_FILE;
+
+    RemoveAllChildren();
+    SetName(pathname.GetFilename().c_str());
+
+    if(pathname.IsEqualToExtension(".sce"))
+    {
+        ScopedPtr<SceneFile> file(new SceneFile());
+        file->SetDebugLog(true);
+        if(file->LoadScene(pathname, this))
+        {
+            ret = SceneFileV2::ERROR_NO_ERROR;
+        }
+    }
+    else if(pathname.IsEqualToExtension(".sc2"))
+    {
+        ScopedPtr<SceneFileV2> file(new SceneFileV2());
+        file->EnableDebugLog(false);
+        ret = file->LoadScene(pathname, this);
+    }
+
+    return ret;
+}
+
 SceneFileV2::eError Scene::SaveScene(const DAVA::FilePath & pathname, bool saveForGame /*= false*/)
 {
+    std::function<void(Entity *)> resolveId = [&](Entity *entity)
+    {
+        if(0 == entity->id) entity->id = ++maxIDCounter;
+        for(auto child : entity->children) resolveId(child);
+    };
+
+    resolveId(this);
+
     ScopedPtr<SceneFileV2> file(new SceneFileV2());
-	file->EnableDebugLog(false);
+    file->EnableDebugLog(false);
 	file->EnableSaveForGame(saveForGame);
 	return file->SaveScene(pathname, this);
 }
@@ -1034,6 +1110,29 @@ void Scene::Deactivate()
     for(auto system : systems)
     {
         system->Deactivate();
+    }
+}
+
+void Scene::CopyScene(Scene* dst)
+{
+    std::function<void(Entity *, Entity *)> copyID = [&copyID](Entity *src, Entity *dst)
+    {
+        DVASSERT(src->children.size() == dst->children.size());
+
+        dst->id = src->id;
+        auto n = src->children.size();
+        for(decltype(n) i = 0; i < n; ++i)
+        {
+            copyID(src->children[i], dst->children[i]);
+        }
+    };
+
+    for(auto child : children)
+    {
+        Entity *clone = child->Clone();
+        dst->AddNode(clone);
+        copyID(child, clone);
+        clone->Release();
     }
 }
 
