@@ -123,7 +123,7 @@ ResultList QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(cons
         }
         else
         {
-            resultList.AddResult(Result::RESULT_ERROR, "can not delete package " + testPackage->GetName(), VariantType(testPackage));
+            resultList.AddResult(Result::RESULT_ERROR, "can not delete package " + testPackage->GetName(), VariantType(static_cast<PackageBaseNode*>(testPackage)));
         }
     } 
     

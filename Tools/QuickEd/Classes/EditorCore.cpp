@@ -261,7 +261,8 @@ void EditorCore::UpdateLanguage()
 
 void EditorCore::OnNewItemSelected(const DAVA::VariantType &var)
 {
-    qDebug() << "cliked" << var.AsPointer<PackageNode>() << var.AsPointer<int>();
+    auto packageNode = var.AsPointer<PackageNode>();
+    documentGroup->GetActiveDocument()->SetSelectedItem(var);
 }
 
 void EditorCore::OpenProject(const QString &path)

@@ -34,6 +34,7 @@
 
 namespace DAVA {
     class FilePath;
+    class VariantType;
 }
 
 class PackageNode;
@@ -58,7 +59,7 @@ public:
     SharedData *GetContext() const;
     QUndoStack *GetUndoStack() const;
     QtModelPackageCommandExecutor *GetCommandExecutor() const;
-
+    void SetSelectedItem(const DAVA::VariantType &var);
 signals:
     void SharedDataChanged(const QByteArray &role);
 public slots:

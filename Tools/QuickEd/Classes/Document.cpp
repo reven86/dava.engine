@@ -32,6 +32,7 @@
 #include <QAction>
 #include <QItemSelection>
 #include "UI/Preview/EditScreen.h"
+#include "FileSystem/VariantType.h"
 
 #include "UI/Package/PackageModel.h"
 
@@ -89,6 +90,17 @@ void Document::InitSharedData()
 const DAVA::FilePath &Document::GetPackageFilePath() const
 {
     return package->GetPath();
+}
+
+void Document::SetSelectedItem(const VariantType &var)
+{
+    auto packageNode = var.AsPointer<PackageBaseNode>();
+    if (nullptr != packageNode)
+    {
+        QList<ControlNode*> nodes;
+        nodes << reinterpret_cast<ControlNode*>(packageNode);
+        sharedData->SetData("activatedControls", QVariant::fromValue(nodes));
+    }
 }
 
 void Document::RefreshAllControlProperties()
