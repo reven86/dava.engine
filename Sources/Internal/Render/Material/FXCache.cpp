@@ -56,7 +56,7 @@ RenderPassDescriptor::RenderPassDescriptor()
 namespace FXCache
 {
 rhi::DepthStencilState::Descriptor LoadDepthStencilState(const YamlNode* stateNode);
-const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastName, int32>& defines, const Vector<int32>& key);
+const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastName, int32>& defines, const Vector<int32>& key, const FastName& quality);
 
 void Initialize()
 {
@@ -85,7 +85,7 @@ void Clear()
     //RHI_COMPLETE
 }
 
-const FXDescriptor& GetFXDescriptor(const FastName &fxName, HashMap<FastName, int32>& defines)
+const FXDescriptor& GetFXDescriptor(const FastName &fxName, HashMap<FastName, int32>& defines, const FastName& quality)
 {
     DVASSERT(initialized);
     Vector<int32> key;
@@ -95,11 +95,11 @@ const FXDescriptor& GetFXDescriptor(const FastName &fxName, HashMap<FastName, in
     if (it != fxDescriptors.end())
         return it->second;
     //not found - load new        
-    return LoadFXFromOldTemplate(fxName, defines, key);        
+    return LoadFXFromOldTemplate(fxName, defines, key, quality);        
 }
     
 
-const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastName, int32>& defines, const Vector<int32>& key)
+const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastName, int32>& defines, const Vector<int32>& key, const FastName& quality)
 {
     //the stuff below is old old legacy carried from RenderTechnique and NMaterialTemplate
 
@@ -121,19 +121,25 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
     const YamlNode* renderTechniqueNode = nullptr;
     if (materialTemplateNode) //multy-quality material
     {
-        int32 quality = 0;
+        /*int32 quality = 0;
         auto it = defines.find(NMaterialQualityName::QUALITY_FLAG_NAME);
         if (it != defines.end())
-            quality = it->second;
+            quality = it->second;*/
 
-        YamlParser* parserTechnique = YamlParser::Create(materialTemplateNode->Get(quality)->AsString());
+        const YamlNode *qualityNode = materialTemplateNode->Get(quality.c_str());
+        if (qualityNode == nullptr)
+        {
+            Logger::Error("Template: %s do not support quality %s - loading first", fxPath.GetAbsolutePathname().c_str(), quality.c_str());
+            qualityNode = materialTemplateNode->Get(materialTemplateNode->GetCount()-1);
+        }
+        YamlParser* parserTechnique = YamlParser::Create(qualityNode->AsString());
         if (parserTechnique)
         {
             renderTechniqueNode = parserTechnique->GetRootNode();
         }
         if (!renderTechniqueNode)
         {
-            Logger::Error("Can't load technique from template: %s with quality %d", fxPath.GetAbsolutePathname().c_str(), quality);
+            Logger::Error("Can't load technique from template: %s with quality %s", fxPath.GetAbsolutePathname().c_str(), quality.c_str());
             SafeRelease(parserTechnique);
             return defaultFX;
         }
