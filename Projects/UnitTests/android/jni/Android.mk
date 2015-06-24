@@ -29,7 +29,7 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/TeamcityOutput/*.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/TexturePacker/CommandLineParser.cpp))
 
-LOCAL_LDLIBS := -lz -lOpenSLES -landroid
+LOCAL_LDLIBS := -lz -latomic
 
 ifeq ($(TARGET_ARCH_ABI), $(filter $(TARGET_ARCH_ABI), armeabi-v7a))
 LOCAL_ARM_NEON := true
