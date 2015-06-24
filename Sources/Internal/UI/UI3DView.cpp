@@ -107,8 +107,6 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
     
     scene->Draw();        
 		
-    RenderSystem2D::Instance()->Setup2DMatrices();
-
 	if (uiDrawQueryWasOpen)
 		FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
 }

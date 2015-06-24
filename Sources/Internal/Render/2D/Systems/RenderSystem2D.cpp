@@ -277,15 +277,6 @@ void RenderSystem2D::Init()
         // Render data object for drawing big batches
     }
 
-    if (Renderer::GetCaps().isCenterPixelMapping)
-    {
-        pixelMapping.CreateTranslation(Vector3(0.5f, 0.5f, 0.f));
-    }
-    else
-    {
-        pixelMapping.Identity();
-    }
-
     DEFAULT_2D_COLOR_MATERIAL = new NMaterial();
     DEFAULT_2D_COLOR_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Color.material"));
     DEFAULT_2D_COLOR_MATERIAL->PreBuildMaterial(FastName("2d"));
@@ -316,8 +307,6 @@ void RenderSystem2D::BeginFrame()
     currentClip.y = 0;
     currentClip.dx = -1;
     currentClip.dy = -1;
-
-    Setup2DMatrices();
 
     defaultSpriteDrawState.Reset();
     defaultSpriteDrawState.material = DEFAULT_2D_COLOR_MATERIAL;    
@@ -383,8 +372,6 @@ void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* =
 
     renderTargetWidth = target->GetWidth();
     renderTargetHeight = target->GetHeight();
-    
-    Setup2DProjection();
 }
 
 void RenderSystem2D::EndRenderTargetPass()
@@ -398,28 +385,33 @@ void RenderSystem2D::EndRenderTargetPass()
     renderTargetHeight = 0;
 }
 
-void RenderSystem2D::Setup2DProjection()
+void RenderSystem2D::Setup2DMatrices()
 {
     if (renderTargetWidth)
     {
         projMatrix.glOrtho(0.0f, (float32)renderTargetWidth,
-                0.0f, (float32)renderTargetHeight,
-                -1.0f, 1.0f, Renderer::GetCaps().zeroBaseClipRange);
+            0.0f, (float32)renderTargetHeight,
+            -1.0f, 1.0f, Renderer::GetCaps().zeroBaseClipRange);
     }
     else
     {
         projMatrix.glOrtho(0.0f, (float32)Renderer::GetFramebufferWidth(), (float32)Renderer::GetFramebufferHeight(), 0.0f, -1.0f, 1.0f, Renderer::GetCaps().zeroBaseClipRange);
     }
 
-    projMatrix = virtualToPhysicalMatrix * pixelMapping * projMatrix;
+    if (Renderer::GetCaps().isCenterPixelMapping)
+    {
+        // Make translation by half pixel for DirectX systems
+        static Matrix4 pixelMappingMatrix = Matrix4::MakeTranslation(Vector3(0.5f, 0.5f, 0.f));
+        projMatrix = virtualToPhysicalMatrix * pixelMappingMatrix * projMatrix;
+    }
+    else
+    {
+        projMatrix = virtualToPhysicalMatrix * projMatrix;
+    }
+    
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
-}
-
-void RenderSystem2D::Setup2DMatrices()
-{
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
-    Setup2DProjection();
 }
 
 void RenderSystem2D::ScreenSizeChanged()
@@ -433,8 +425,6 @@ void RenderSystem2D::ScreenSizeChanged()
     glScale.glScale(scale.x, scale.y, 1.0f);
 
     virtualToPhysicalMatrix = glScale * glTranslate;
-
-    Setup2DProjection();
 }
 
 void RenderSystem2D::SetClip(const Rect &rect)
@@ -483,20 +473,13 @@ void RenderSystem2D::PopClip()
     clipStack.pop();
 }
 
-Rect RenderSystem2D::TransformClipRect(const Rect & rect)
+Rect RenderSystem2D::TransformClipRect(const Rect & rect, const Matrix4 & transformMatrix)
 {
-    DynamicBindings & dynamicParams = Renderer::GetDynamicBindings();
-    Matrix4 transformMx = dynamicParams.GetDynamicParamMatrix(DynamicBindings::PARAM_VIEW) * virtualToPhysicalMatrix;
-
-    Vector3 clipTopLeftCorner(currentClip.x, currentClip.y, 0.f);
-    Vector3 clipBottomRightCorner(currentClip.x + currentClip.dx, currentClip.y + currentClip.dy, 0.f);
-
-    clipTopLeftCorner = clipTopLeftCorner * transformMx;
-    clipBottomRightCorner = clipBottomRightCorner * transformMx;
-
-    Rect transformedClip(Vector2(clipTopLeftCorner.data), Vector2((clipBottomRightCorner - clipTopLeftCorner).data));
-
-    return transformedClip;
+    Vector3 clipTopLeftCorner(rect.x, rect.y, 0.f);
+    Vector3 clipBottomRightCorner(rect.x + rect.dx, rect.y + rect.dy, 0.f);
+    clipTopLeftCorner = clipTopLeftCorner * transformMatrix;
+    clipBottomRightCorner = clipBottomRightCorner * transformMatrix;
+    return Rect(Vector2(clipTopLeftCorner.data), Vector2((clipBottomRightCorner - clipTopLeftCorner).data));
 }
 
 void RenderSystem2D::SetSpriteClipping(bool clipping)
@@ -550,6 +533,11 @@ void RenderSystem2D::Flush()
     pool->CheckForBufferReuse();
 #endif
 
+    Setup2DMatrices();
+
+    DynamicBindings & dynamicParams = Renderer::GetDynamicBindings();
+    Matrix4 transformMatrix = dynamicParams.GetDynamicParamMatrix(DynamicBindings::PARAM_VIEW) * virtualToPhysicalMatrix;
+
     rhi::UpdateVertexBuffer(pool->GetVertexBuffer(), &vboTemp.front(), 0, vertexIndex * pool->GetVertexStride());
     rhi::UpdateIndexBuffer(pool->GetIndexBuffer(), &iboTemp.front(), 0, indexIndex * sizeof(iboTemp[0]));
 
@@ -567,13 +555,14 @@ void RenderSystem2D::Flush()
         packet.primitiveType = batch.primitiveType;
         packet.vertexLayoutUID = pool->GetVertexLayoutID();
         packet.vertexCount = vertexIndex;
-        if (batch.transformedClipRect.dx > 0.f)
+        if (batch.clipRect.dx > 0.f && batch.clipRect.dy > 0.f)
         {
+            const Rect& transformedClipRect = TransformClipRect(batch.clipRect, transformMatrix);
+            packet.scissorRect.x = (int16)transformedClipRect.x;
+            packet.scissorRect.y = (int16)transformedClipRect.y;
+            packet.scissorRect.width = (int16)ceilf(transformedClipRect.dx);
+            packet.scissorRect.height = (int16)ceilf(transformedClipRect.dy);
             packet.options = rhi::Packet::OPT_OVERRIDE_SCISSOR;
-            packet.scissorRect.x = (int16)batch.transformedClipRect.x;
-            packet.scissorRect.y = (int16)batch.transformedClipRect.y;
-            packet.scissorRect.width = (int16)ceilf(batch.transformedClipRect.dx);
-            packet.scissorRect.height = (int16)ceilf(batch.transformedClipRect.dy);
         }
 
         switch (packet.primitiveType)
@@ -675,22 +664,29 @@ void RenderSystem2D::PushBatch(NMaterial * material, rhi::HTextureSet texture, R
 
     uint32 vi = vertexIndex * 6;
     uint32 ii = indexIndex;
-    for (uint32 i = 0; i < vertexCount; ++i)
+    if (texCoordPointer)
     {
-        vboTemp[vi++] = vertexPointer[i * 2];
-        vboTemp[vi++] = vertexPointer[i * 2 + 1];
-        vboTemp[vi++] = 0.f; // axe Z, empty but need for EVF_VERTEX format
-        if (texCoordPointer)
+        for (uint32 i = 0; i < vertexCount; ++i)
         {
+            vboTemp[vi++] = vertexPointer[i * 2];
+            vboTemp[vi++] = vertexPointer[i * 2 + 1];
+            vboTemp[vi++] = 0.f; // axis Z, empty but need for EVF_VERTEX format
             vboTemp[vi++] = texCoordPointer[i * 2];
             vboTemp[vi++] = texCoordPointer[i * 2 + 1];
+            *(uint32*)(&vboTemp[vi++]) = rhi::NativeColorRGBA(useColor.r, useColor.g, useColor.b, useColor.a);
         }
-        else
+    }
+    else
+    {
+        for (uint32 i = 0; i < vertexCount; ++i)
         {
+            vboTemp[vi++] = vertexPointer[i * 2];
+            vboTemp[vi++] = vertexPointer[i * 2 + 1];
+            vboTemp[vi++] = 0.f; // axis Z, empty but need for EVF_VERTEX format
             vboTemp[vi++] = 0.f;
             vboTemp[vi++] = 0.f;
+            *(uint32*)(&vboTemp[vi++]) = rhi::NativeColorRGBA(useColor.r, useColor.g, useColor.b, useColor.a);
         }
-        *(uint32*)(&vboTemp[vi++]) = rhi::NativeColorRGBA(useColor.r, useColor.g, useColor.b, useColor.a);
     }
     for (uint32 i = 0; i < indexCount; ++i)
     {
@@ -710,11 +706,9 @@ void RenderSystem2D::PushBatch(NMaterial * material, rhi::HTextureSet texture, R
 
         currentBatch.primitiveType = primitiveType;
         currentBatch.textureSetHandle = texture;
-
-        currentBatch.material = material;
         currentBatch.clipRect = clip;
-        currentBatch.transformedClipRect = TransformClipRect(clip);
         currentBatch.indexOffset = indexIndex;
+        currentBatch.material = material;
     }
 
     currentBatch.count += indexCount;

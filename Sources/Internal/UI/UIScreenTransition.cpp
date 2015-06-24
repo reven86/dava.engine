@@ -221,8 +221,7 @@ void UIScreenTransition::Update(float32 timeElapsed)
 
 void UIScreenTransition::Draw(const UIGeometricData &geometricData)
 {
-    RenderSystem2D::Instance()->Setup2DMatrices();
-
+#if RHI_COMPETE_GAME
     Sprite::DrawState drawState;
     drawState.SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
 
@@ -235,6 +234,8 @@ void UIScreenTransition::Draw(const UIGeometricData &geometricData)
     drawState.SetPosition((VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx) / 2.0f, 0);
 
     RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState, Color::White);
+#endif // RHI_COMPETE_GAME
+
 }
 
 void UIScreenTransition::SetDuration(float32 timeInSeconds)
