@@ -90,12 +90,14 @@ bool LibJpegHelper::IsMyImage(File *infile) const
     
 eErrorCode LibJpegHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap) const
 {
+#if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_IOS__)
     // Magic. Allow LibJpeg to use large memory buffer to prevent using temp file.
     setenv("JPEGMEM", "10M", TRUE);
     SCOPE_EXIT
     {
         unsetenv("JPEGMEM");
     };
+#endif
     
     jpeg_decompress_struct cinfo;
     jpegErrorManager jerr;
