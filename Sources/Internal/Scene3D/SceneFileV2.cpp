@@ -1463,7 +1463,7 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
 
 void SceneFileV2::UpdatePolygonGroupRequestedFormatRecursively(Entity *entity)
 {
-#ifdef RHI_COMPLETE
+
     RenderObject *ro = GetRenderObject(entity);
 
     if (ro)
@@ -1480,7 +1480,6 @@ void SceneFileV2::UpdatePolygonGroupRequestedFormatRecursively(Entity *entity)
 
     for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
         UpdatePolygonGroupRequestedFormatRecursively(entity->GetChild(i));
-#endif // RHI_COMPLETE
 }
 
 void SceneFileV2::SetVersion(const VersionInfo::SceneVersion& version)

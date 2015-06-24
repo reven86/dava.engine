@@ -90,6 +90,8 @@ public:
 
     rhi::HConstBuffer GetDynamicBuffer(ConstBufferDescriptor::Type type, uint32 index);
     inline rhi::HPipelineState GetPiplineState(){ return piplineState; }
+
+    uint32 GetRequiredVertexFormat(){ return requiredVertexFormat; }
         
 private:
     Vector<ConstBufferDescriptor> constBuffers;
@@ -102,6 +104,8 @@ private:
     Map<std::pair<ConstBufferDescriptor::Type, uint32>, rhi::HConstBuffer> dynamicBuffers;
 
     rhi::HPipelineState piplineState;
+
+    uint32 requiredVertexFormat;
 
     rhi::ShaderSamplerList fragmentSamplerList;
     rhi::ShaderSamplerList vertexSamplerList;    

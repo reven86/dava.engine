@@ -146,6 +146,18 @@ void NMaterial::BindParams(rhi::Packet& target)
         target.fragmentConst[i] = activeVariantInstance->fragmentConstBuffers[i];
 }
 
+
+uint32 NMaterial::GetRequiredVertexFormat()
+{
+    uint32 res = 0;
+    for (auto& variant : renderVariants)
+    {
+        res |= variant.second->shader->GetRequiredVertexFormat();
+    }
+
+    return res;
+}
+
 MaterialBufferBinding* NMaterial::GetConstBufferBinding(UniquePropertyLayout propertyLayout)
 {
     MaterialBufferBinding* res = localConstBuffers.at(propertyLayout);
@@ -701,7 +713,13 @@ NMaterial* NMaterial::Clone()
     for (auto prop : localProperties)
         clonedMaterial->AddProperty(prop.first, prop.second->data.get(), prop.second->type, prop.second->arraySize);
     for (auto tex : localTextures)
-        clonedMaterial->AddTexture(tex.first, tex.second->texture);
+    {
+        MaterialTextureInfo *res = new MaterialTextureInfo();
+        res->path = tex.second->path;
+        res->texture = SafeRetain(tex.second->texture);
+        clonedMaterial->localTextures[tex.first] = res;        
+    }
+        
     for (auto flag : localFlags)
         clonedMaterial->AddFlag(flag.first, flag.second);
 

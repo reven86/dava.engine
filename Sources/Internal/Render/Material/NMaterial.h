@@ -115,6 +115,8 @@ public:
     inline void SetMaterialName(const FastName & name);
     inline const FastName& GetMaterialName() const;
 
+    uint32 GetRequiredVertexFormat();
+
     /*properties*/
     void AddProperty(const FastName& propName, const float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize = 1);
     void RemoveProperty(const FastName& propName);
@@ -145,7 +147,7 @@ public:
 
     inline uint32 GetRenderLayerID() const;
     inline uint32 GetSortingKey() const;
-    inline uint64 GetMaterialKey() const;  
+    inline uint64 GetMaterialKey() const;      
 
     void BindParams(rhi::Packet& target);    
 
