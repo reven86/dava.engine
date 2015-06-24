@@ -126,7 +126,11 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName &fxName, HashMap<FastNa
         if (it != defines.end())
             quality = it->second;*/
 
-        const YamlNode *qualityNode = materialTemplateNode->Get(quality.c_str());
+        const YamlNode *qualityNode = nullptr;
+        if(quality.IsValid())
+        {
+            qualityNode = materialTemplateNode->Get(quality.c_str());
+        }
         if (qualityNode == nullptr)
         {
             Logger::Error("Template: %s do not support quality %s - loading first", fxPath.GetAbsolutePathname().c_str(), quality.c_str());

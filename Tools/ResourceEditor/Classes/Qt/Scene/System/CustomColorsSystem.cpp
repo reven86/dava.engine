@@ -268,7 +268,7 @@ void CustomColorsSystem::UpdateBrushTool()
     AddRectToAccumulator(updatedRect);
 
     RenderSystem2D::Instance()->BeginRenderTargetPass(colorTexture, false);
-    RenderSystem2D::Instance()->DrawTexture(toolTextureSet, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor, updatedRect);
+    RenderSystem2D::Instance()->DrawTexture(toolTextureSet, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, drawColor, updatedRect);
     RenderSystem2D::Instance()->EndRenderTargetPass();
 }
 

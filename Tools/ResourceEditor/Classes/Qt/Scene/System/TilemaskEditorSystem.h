@@ -84,6 +84,7 @@ protected:
 	Texture * toolImageTexture;
     rhi::HTextureSet toolImageTextureSet;
     
+    Texture * landscapeTilemaskTexture;
     rhi::HTextureSet landscapeTilemaskTextureSet;
     
 	uint32 tileTextureNum;

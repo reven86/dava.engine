@@ -53,7 +53,8 @@ static const FastName TILEMASK_EDTIOR_TEXTURE_TOOL("toolTexture");
 TilemaskEditorSystem::TilemaskEditorSystem(Scene* scene)
 :	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
 ,	curToolSize(0)
-,	toolImageTexture(NULL)
+,	toolImageTexture(nullptr)
+,   landscapeTilemaskTexture(nullptr)
 ,	tileTextureNum(0)
 ,	drawingType(TILEMASK_DRAW_NORMAL)
 ,	strength(0.25f)
@@ -184,6 +185,7 @@ bool TilemaskEditorSystem::DisableLandscapeEdititing()
     editorMaterial->RemoveTexture(TILEMASK_EDTIOR_TEXTURE_TOOL);
     editorMaterial->RemoveTexture(TILEMASK_EDTIOR_TEXTURE_SOURCE);
     
+    SafeRelease(landscapeTilemaskTexture);
     rhi::ReleaseTextureSet(landscapeTilemaskTextureSet);
     landscapeTilemaskTextureSet = rhi::HTextureSet();
     
@@ -458,6 +460,7 @@ void TilemaskEditorSystem::CreateMaskTexture()
     desc.fragmentTextureCount = 1;
     desc.fragmentTexture[0] = tilemask->handle;
     landscapeTilemaskTextureSet = rhi::AcquireTextureSet(desc);
+    landscapeTilemaskTexture = SafeRetain(tilemask);
     
     RenderSystem2D::Instance()->BeginRenderTargetPass(srcTexture);
     RenderSystem2D::Instance()->DrawTexture(landscapeTilemaskTextureSet, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White);

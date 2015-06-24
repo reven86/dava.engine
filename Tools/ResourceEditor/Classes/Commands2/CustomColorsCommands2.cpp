@@ -120,13 +120,13 @@ void ActionDisableCustomColors::Redo()
 }
 
 ModifyCustomColorsCommand::ModifyCustomColorsCommand(Image* originalImage, Image * currentImage,
-													 CustomColorsProxy* customColorsProxy,
-													 const Rect& updatedRect)
+													 CustomColorsProxy* _customColorsProxy,
+													 const Rect& _updatedRect)
 :	Command2(CMDID_CUSTOM_COLORS_MODIFY, "Custom Colors Modification")
 ,   texture(nullptr)
 {
-	this->updatedRect = updatedRect;
-	this->customColorsProxy = SafeRetain(customColorsProxy);
+	updatedRect = Rect(floorf(_updatedRect.x), floorf(_updatedRect.y), ceilf(_updatedRect.dx), ceilf(_updatedRect.dy));
+	customColorsProxy = SafeRetain(_customColorsProxy);
 	
 	undoImage = Image::CopyImageRegion(originalImage, updatedRect);
 	redoImage = Image::CopyImageRegion(currentImage, updatedRect);
