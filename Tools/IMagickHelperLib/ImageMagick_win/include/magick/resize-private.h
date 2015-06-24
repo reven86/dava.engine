@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -22,20 +22,43 @@
 extern "C" {
 #endif
 
-typedef struct _ResizeFilter
-  ResizeFilter;
+typedef enum
+{
+  BoxWeightingFunction = 0,
+  TriangleWeightingFunction,
+  CubicBCWeightingFunction,
+  HanningWeightingFunction,
+  HammingWeightingFunction,
+  BlackmanWeightingFunction,
+  GaussianWeightingFunction,
+  QuadraticWeightingFunction,
+  JincWeightingFunction,
+  SincWeightingFunction,
+  SincFastWeightingFunction,
+  KaiserWeightingFunction,
+  WelshWeightingFunction,
+  BohmanWeightingFunction,
+  LagrangeWeightingFunction,
+  CosineWeightingFunction,
+  LastWeightingFunction
+} ResizeWeightingFunctionType;
 
 extern MagickExport MagickRealType
+  *GetResizeFilterCoefficient(const ResizeFilter*),
+  GetResizeFilterBlur(const ResizeFilter *),
+  GetResizeFilterScale(const ResizeFilter *),
+  GetResizeFilterWindowSupport(const ResizeFilter *),
   GetResizeFilterSupport(const ResizeFilter *),
   GetResizeFilterWeight(const ResizeFilter *,const MagickRealType);
 
 extern MagickExport ResizeFilter
   *AcquireResizeFilter(const Image *,const FilterTypes,const MagickRealType,
-     const MagickBooleanType,ExceptionInfo *),
+    const MagickBooleanType,ExceptionInfo *),
   *DestroyResizeFilter(ResizeFilter *);
 
-extern MagickExport void
-  SetResizeFilterSupport(ResizeFilter *,const MagickRealType);
+extern MagickExport ResizeWeightingFunctionType
+  GetResizeFilterWeightingType(const ResizeFilter *),
+  GetResizeFilterWindowWeightingType(const ResizeFilter *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

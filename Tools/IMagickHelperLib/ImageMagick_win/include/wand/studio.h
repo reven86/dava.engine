@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ extern "C" {
 #endif
 
 #if defined(WIN32) || defined(WIN64)
-#  define MAGICKCORE_WINDOWS_SUPPORT
+#  define MAGICKWAND_WINDOWS_SUPPORT
 #else
-#  define MAGICKCORE_POSIX_SUPPORT
+#  define MAGICKWAND_POSIX_SUPPORT
 #endif 
 
 #define MAGICKWAND_IMPLEMENTATION  1
@@ -46,9 +46,6 @@ extern "C" {
 #if defined(_magickcore_inline) && !defined(inline)
 # define inline _magickcore_inline
 #endif
-#if defined(_magickcore_restrict) && !defined(restrict)
-# define restrict  _magickcore_restrict
-#endif
 # if defined(__cplusplus) || defined(c_plusplus)
 #  undef inline
 # endif
@@ -58,75 +55,10 @@ extern "C" {
 #  define STDC
 #endif
 
-#if defined(__BORLANDC__) && defined(_DLL)
-#  pragma message("BCBMagick lib DLL export interface")
-#  define _MAGICKDLL_
-#  define _MAGICKLIB_
-#endif
-
-#if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(__CYGWIN__) && !defined(__MINGW32__)
-# if defined(_MT) && defined(_DLL) && !defined(_MAGICKDLL_) && !defined(_LIB)
-#  define _MAGICKDLL_
-# endif
-# if defined(_MAGICKDLL_)
-#  if defined(_VISUALC_)
-#   pragma warning( disable: 4273 )  /* Disable the dll linkage warnings */
-#  endif
-#  if !defined(_MAGICKLIB_)
-#   define WandExport  __declspec(dllimport)
-#   if defined(_VISUALC_)
-#    pragma message( "MagickWand lib DLL import interface" )
-#   endif
-#  else
-#   define WandExport  __declspec(dllexport)
-#   if defined(_VISUALC_)
-#    pragma message( "MagickWand lib DLL export interface" )
-#   endif
-#  endif
-# else
-#  define WandExport
-#  if defined(_VISUALC_)
-#   pragma message( "MagickWand lib static interface" )
-#  endif
-# endif
-
-# if defined(_DLL) && !defined(_LIB)
-#  define ModuleExport  __declspec(dllexport)
-#  if defined(_VISUALC_)
-#   pragma message( "MagickWand module DLL export interface" )
-#  endif
-# else
-#  define ModuleExport
-#  if defined(_VISUALC_)
-#   pragma message( "MagickWand module static interface" )
-#  endif
-
-# endif
-# define WandGlobal  __declspec(thread)
-# if defined(_VISUALC_)
-#  pragma warning(disable : 4018)
-#  pragma warning(disable : 4068)
-#  pragma warning(disable : 4244)
-#  pragma warning(disable : 4142)
-#  pragma warning(disable : 4800)
-#  pragma warning(disable : 4786)
-#  pragma warning(disable : 4996)
-# endif
-#else
-# define WandExport
-# define ModuleExport
-# define WandGlobal
-#endif
-
 #if defined(__cplusplus) || defined(c_plusplus)
 # define storage_class  c_class
 #else
 # define storage_class  class
-#endif
-
-#define WandSignature  0xabacadabUL
-#if !defined(MaxTextExtent)
-# define MaxTextExtent  4096
 #endif
 
 #include <stdarg.h>
@@ -141,6 +73,9 @@ extern "C" {
 # if defined(MAGICKCORE_HAVE_STDLIB_H)
 #  include <stdlib.h>
 # endif
+#endif
+#if defined(_magickcore_restrict) && !defined(restrict)
+# define restrict  _magickcore_restrict
 #endif
 #if defined(MAGICKCORE_HAVE_STRING_H)
 # if !defined(STDC_HEADERS) && defined(MAGICKCORE_HAVE_MEMORY_H)
@@ -160,20 +95,14 @@ extern "C" {
 #if defined(MAGICKCORE_HAVE_UNISTD_H)
 # include <unistd.h>
 #endif
-#if defined(MAGICKCORE_WINDOWS_SUPPORT) && defined(_DEBUG)
+#if defined(MAGICKWAND_WINDOWS_SUPPORT) && defined(_DEBUG)
 #define _CRTDBG_MAP_ALLOC
-#endif
-#if defined(MAGICKCORE_WINDOWS_SUPPORT)
-# include <direct.h>
-# if !defined(MAGICKCORE_HAVE_STRERROR)
-#  define HAVE_STRERROR
-# endif
 #endif
 
-#if defined(MAGICKCORE_WINDOWS_SUPPORT) && defined(_DEBUG)
+#if defined(MAGICKWAND_WINDOWS_SUPPORT) && defined(_DEBUG)
 #define _CRTDBG_MAP_ALLOC
 #endif
-#if defined(MAGICKCORE_WINDOWS_SUPPORT)
+#if defined(MAGICKWAND_WINDOWS_SUPPORT)
 # include <direct.h>
 # if !defined(MAGICKCORE_HAVE_STRERROR)
 #  define HAVE_STRERROR
@@ -195,7 +124,7 @@ extern "C" {
 #endif
 #if defined(MAGICKCORE_THREAD_SUPPORT)
 # include <pthread.h>
-#elif defined(MAGICKCORE_WINDOWS_SUPPORT)
+#elif defined(MAGICKWAND_WINDOWS_SUPPORT)
 #  define MAGICKCORE_HAVE_WINTHREADS  1
 #include <windows.h>
 #endif
@@ -216,7 +145,7 @@ extern "C" {
 #  define MAGICKCORE_OPENCL_SUPPORT  1
 #endif
 
-#if defined(_OPENMP) && (_OPENMP >= 200203)
+#if defined(_OPENMP) && ((_OPENMP >= 200203) || defined(__OPENCC__))
 #  include <omp.h>
 #  define MAGICKCORE_OPENMP_SUPPORT  1
 #endif
@@ -237,23 +166,13 @@ extern size_t strlcpy(char *,const char *,size_t);
 extern int vsnprintf(char *,size_t,const char *,va_list);
 #endif
 
-#if defined(MAGICKCORE_HAVE___ATTRIBUTE__)
-#  define wand_aligned(x)  __attribute__((aligned(x)))
-#  define wand_attribute  __attribute__
-#  define wand_unused(x)  wand_unused_ ## x __attribute__((unused))
-#else
-#  define wand_aligned(x)  /* nothing */
-#  define wand_attribute(x)  /* nothing */
-#  define wand_unused(x) x
-#endif
-
-#if defined(MAGICKCORE_WINDOWS_SUPPORT) || defined(MAGICKCORE_POSIX_SUPPORT)
+#if defined(MAGICKWAND_WINDOWS_SUPPORT) || defined(MAGICKWAND_POSIX_SUPPORT)
 # include <sys/types.h>
 # include <sys/stat.h>
 # if defined(MAGICKCORE_HAVE_FTIME)
 # include <sys/timeb.h>
 # endif
-# if defined(MAGICKCORE_POSIX_SUPPORT)
+# if defined(MAGICKWAND_POSIX_SUPPORT)
 #  if defined(MAGICKCORE_HAVE_SYS_NDIR_H) || defined(MAGICKCORE_HAVE_SYS_DIR_H) || defined(MAGICKCORE_HAVE_NDIR_H)
 #   define dirent direct
 #   define NAMLEN(dirent) (dirent)->d_namlen
@@ -280,13 +199,19 @@ extern int vsnprintf(char *,size_t,const char *,va_list);
 #  define S_ISREG(mode) (((mode) & S_IFMT) == S_IFREG)
 # endif
 # include "wand/MagickWand.h"
-# if !defined(MAGICKCORE_WINDOWS_SUPPORT)
+# if !defined(MAGICKWAND_WINDOWS_SUPPORT)
 #  include <sys/time.h>
 # if defined(MAGICKCORE_HAVE_SYS_TIMES_H)
 #  include <sys/times.h>
 # endif
 # if defined(MAGICKCORE_HAVE_SYS_RESOURCE_H)
 #  include <sys/resource.h>
+# endif
+# if defined(MAGICKCORE_HAVE_SYS_MMAN_H)
+#  include <sys/mman.h>
+# endif
+# if defined(MAGICKCORE_HAVE_SYS_SENDFILE_H)
+#  include <sys/sendfile.h>
 # endif
 #endif
 #else
@@ -299,18 +224,17 @@ extern int vsnprintf(char *,size_t,const char *,va_list);
 #  endif
 #  include <unix.h>
 # endif
-# include "wand/MagickWand.h"
 #endif
 
 #if defined(S_IRUSR) && defined(S_IWUSR)
 # define S_MODE (S_IRUSR | S_IWUSR)
-#elif defined (MAGICKCORE_WINDOWS_SUPPORT)
+#elif defined (MAGICKWAND_WINDOWS_SUPPORT)
 # define S_MODE (_S_IREAD | _S_IWRITE)
 #else
 # define S_MODE  0600
 #endif
 
-#if defined(MAGICKCORE_WINDOWS_SUPPORT)
+#if defined(MAGICKWAND_WINDOWS_SUPPORT)
 # include "magick/nt-base.h"
 #endif
 #if defined(macintosh)
@@ -319,6 +243,8 @@ extern int vsnprintf(char *,size_t,const char *,va_list);
 #if defined(vms)
 # include "magick/vms.h"
 #endif
+
+#include "wand/MagickWand.h"
 
 #undef HAVE_CONFIG_H
 #undef gamma
@@ -329,7 +255,7 @@ extern int vsnprintf(char *,size_t,const char *,va_list);
 /*
   Review these platform specific definitions.
 */
-#if defined(MAGICKCORE_POSIX_SUPPORT) && !defined(__OS2__)
+#if defined(MAGICKWAND_POSIX_SUPPORT) && !defined(__OS2__)
 # define DirectorySeparator  "/"
 # define DirectoryListSeparator  ':'
 # define EditorOptions  " -title \"Edit Image Comment\" -e vi"
@@ -349,8 +275,6 @@ extern int vsnprintf(char *,size_t,const char *,va_list);
 #  define IsBasenameSeparator(c) \
   (((c) == ']') || ((c) == ':') || ((c) == '/') ? MagickTrue : MagickFalse)
 #  define MAGICKCORE_LIBRARY_PATH  "sys$login:"
-#  define MAGICKCORE_CODER_PATH  "sys$login:"
-#  define MAGICKCORE_FILTER_PATH  "sys$login:"
 #  define MAGICKCORE_SHARE_PATH  "sys$login:"
 #  define X11_PREFERENCES_PATH  "decw$user_defaults:"
 #  define ProcessPendingEvents(text)
@@ -376,8 +300,6 @@ extern int vsnprintf(char *,size_t,const char *,va_list);
 #  define EditorOptions ""
 #  define IsBasenameSeparator(c)  ((c) == ':' ? MagickTrue : MagickFalse)
 #  define MAGICKCORE_LIBRARY_PATH  ""
-#  define MAGICKCORE_CODER_PATH  ""
-#  define MAGICKCORE_FILTER_PATH  ""
 #  define MAGICKCORE_SHARE_PATH  ""
 #  define X11_PREFERENCES_PATH  "~/."
 #  if defined(DISABLE_SIOUX)
@@ -393,7 +315,7 @@ extern int vsnprintf(char *,size_t,const char *,va_list);
      SetWarningHandler(MACWarningHandler)
 #  endif
 # endif
-# if defined(MAGICKCORE_WINDOWS_SUPPORT)
+# if defined(MAGICKWAND_WINDOWS_SUPPORT)
 #  define DirectorySeparator  "\\"
 #  define DirectoryListSeparator  ';'
 #  define EditorOptions ""
@@ -432,19 +354,16 @@ extern int vsnprintf(char *,size_t,const char *,va_list);
 #endif
 
 /*
-  Exception defines.
+  Magick defines.
 */
-#define ThrowWandFatalException(severity,tag,context) \
-{ \
-  ExceptionInfo \
-    *exception; \
- \
-  exception=AcquireExceptionInfo(); \
-  (void) ThrowMagickException(exception,GetMagickModule(),severity,tag, \
-    "`%s'",context); \
-  CatchException(exception); \
-  exception=DestroyExceptionInfo(exception); \
-}
+#if defined(_MSC_VER)
+# define DisableMSCWarning(nr) __pragma(warning(push)) \
+  __pragma(warning(disable:nr))
+# define RestoreMSCWarning __pragma(warning(pop))
+#else
+# define DisableMSCWarning(nr)
+# define RestoreMSCWarning
+#endif
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }
