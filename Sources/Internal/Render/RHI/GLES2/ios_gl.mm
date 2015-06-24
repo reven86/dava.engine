@@ -23,6 +23,9 @@ ios_gl_resize_from_layer( void * nativeLayer )
     glGetRenderbufferParameteriv( GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth );
     glGetRenderbufferParameteriv( GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight );
     
+    _GLES2_DefaultFrameBuffer_Width  = backingWidth;
+    _GLES2_DefaultFrameBuffer_Height = backingHeight;
+    
     glGenRenderbuffers( 1, &depthRenderbuffer );
     glBindRenderbuffer( GL_RENDERBUFFER, depthRenderbuffer );
     glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, backingWidth, backingHeight );

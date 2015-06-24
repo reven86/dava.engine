@@ -228,7 +228,7 @@ metal_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
     id<MTLRenderCommandEncoder> encoder = cb->encoder;
     MTLScissorRect              rc;
 
-    if( rect.x  &&  rect.y  &&  rect.width  &&  rect.height )
+    if( !(rect.x==0  &&  rect.y==0  &&  rect.width==0  &&  rect.height==0) )
     {
         rc.x      = rect.x;
         rc.x      = rect.y;

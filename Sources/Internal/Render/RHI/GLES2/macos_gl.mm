@@ -10,6 +10,9 @@ macos_gl_init(void * glView)
 {
     _GLES2_Native_Window = glView;
     _GLES2_Context = [(NSOpenGLView *)_GLES2_Native_Window openGLContext];
+    
+    _GLES2_DefaultFrameBuffer_Width  = ((NSOpenGLView*)_GLES2_Native_Window).frame.size.width;
+    _GLES2_DefaultFrameBuffer_Height = ((NSOpenGLView*)_GLES2_Native_Window).frame.size.height;
 }
 
 void
