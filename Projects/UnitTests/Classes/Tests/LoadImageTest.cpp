@@ -43,7 +43,6 @@ DAVA_TESTCLASS(LoadImageTest)
         ScopedPtr<File> imgFile(File::Create("~res:/TestData/LoadImageTest/EXIF.jpg", File::OPEN | File::READ));
         
         eErrorCode res = helper.ReadFile(imgFile, set, 0);
-        Logger::Error("EXIF LOAD RES = %d", res);
         TEST_VERIFY(eErrorCode::SUCCESS == res);
     }
 

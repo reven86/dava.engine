@@ -59,9 +59,9 @@ set( ANDROID_ICO                ${CMAKE_CURRENT_LIST_DIR}/android/ic_launcher-we
 
 set( ADDED_SRC                  ${IOS_ADD_SRC} )
 
-set( LIBRARIES jpeg )
-
-add_subdirectory ( "${CMAKE_CURRENT_LIST_DIR}/../../Libs/libjpeg" ${CMAKE_CURRENT_BINARY_DIR}/libjpeg )
+#uncomment this 2 strings to link libjpeg as additional project.
+#set( LIBRARIES jpeg )
+#add_subdirectory ( "${CMAKE_CURRENT_LIST_DIR}/../../Libs/libjpeg" ${CMAKE_CURRENT_BINARY_DIR}/libjpeg )
 
 setup_main_executable()
 
