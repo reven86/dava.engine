@@ -33,7 +33,7 @@
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
-#include "Thread/Spinlock.h"
+#include "Concurrency/Spinlock.h"
 
 #include "Network/NetService.h"
 #include "MemoryManager/MemoryManagerTypes.h"

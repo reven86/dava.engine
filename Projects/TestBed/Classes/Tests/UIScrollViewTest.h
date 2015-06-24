@@ -38,18 +38,18 @@ class UIScrollViewTest: public BaseScreen
 protected:
     ~UIScrollViewTest(){}
 public:
-	UIScrollViewTest();
+    UIScrollViewTest();
 
-	virtual void LoadResources();
-	virtual void UnloadResources();
-	
+    virtual void LoadResources();
+    virtual void UnloadResources();
+
 private:
-	void ButtonPressed(BaseObject *obj, void *data, void *callerData);
-	
+    void ButtonPressed(BaseObject *obj, void *data, void *callerData);
+    
 private:
-	UIButton* 		finishTestBtn;
-	UIStaticText*	testMessageText;
-	UIScrollView*	scrollView;
+    UIButton*         finishTestBtn;
+    UIStaticText*    testMessageText;
+    UIScrollView*    scrollView;
 };
 
 #endif /* defined(__UISCROLL_VIEW_TEST__) */

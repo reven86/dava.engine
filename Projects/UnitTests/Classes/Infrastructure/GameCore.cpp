@@ -185,6 +185,18 @@ void GameCore::ProcessTests(float32 timeElapsed)
 {
     if (!UnitTests::TestCore::Instance()->ProcessTests(timeElapsed))
     {
+        // Output test coverage for sample
+        Map<String, Vector<String>> map = UnitTests::TestCore::Instance()->GetTestCoverage();
+        Logger::Info("Test coverage");
+        for (const auto& x : map)
+        {
+            Logger::Info("  %s:", x.first.c_str());
+            const Vector<String>& v = x.second;
+            for (const auto& s : v)
+            {
+                Logger::Info("        %s", s.c_str());
+            }
+        }
         FinishTests();
     }
 }

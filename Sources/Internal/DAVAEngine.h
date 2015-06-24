@@ -70,8 +70,7 @@
 #include "Base/ScopedPtr.h"
 
 // threads
-#include "Platform/Thread.h"
-#include "Platform/Mutex.h"
+#include "Concurrency/Concurrency.h"
 
 // Accelerometer
 #include "Input/Accelerometer.h"
