@@ -40,7 +40,11 @@ class PackageBaseNode;
 class LibraryModel : public QStandardItemModel, private PackageListener
 {
     Q_OBJECT
-    
+    enum
+    {
+        POINTER_DATA = Qt::UserRole + 1,
+        INNER_NAME_DATA
+    };
 public:
     LibraryModel(PackageNode *root, QObject *parent = nullptr);
     virtual ~LibraryModel();
