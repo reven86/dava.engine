@@ -228,8 +228,17 @@ void LibraryModel::ControlPropertyWasChanged(ControlNode *node, AbstractProperty
             auto item = itemFromIndex(index);
             if (nullptr != item)
             {
-                auto text = property->GetValue().AsString();
-                item->setText(QString::fromStdString(text));
+                auto text = QString::fromStdString(property->GetValue().AsString());
+                item->setText(text);
+                const auto itemParent = item->parent();
+                if (itemParent == controlsRootItem || itemParent == importedPackageRootItem)
+                {
+                    item->setData(text, INNER_NAME_DATA);
+                }
+                else if (itemParent != nullptr) //control of imported package
+                {
+                    item->setData(itemParent->text() + "/" + text, INNER_NAME_DATA);
+                }
             }
         }
     }
