@@ -42,7 +42,6 @@
 #include "FileSystem/FilePath.h"
 
 #include "Render/UniqueStateSet.h"
-#include "Platform/Mutex.h"
 
 namespace DAVA
 {

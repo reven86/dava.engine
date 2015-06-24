@@ -36,7 +36,6 @@
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 
-#include "Platform/Thread.h"
 #include "Platform/DeviceInfo.h"
 #include "Input/InputSystem.h"
 #include "FileSystem/FileSystem.h"

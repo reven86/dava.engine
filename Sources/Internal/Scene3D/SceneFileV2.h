@@ -138,10 +138,10 @@ protected:
 public: 
     enum eError{
         ERROR_NO_ERROR = 0,
-        ERROR_VERSION_IS_TOO_OLD = 1,
-        ERROR_FAILED_TO_CREATE_FILE = 2,
-        ERROR_FILE_WRITE_ERROR = 3,
-        ERROR_VERSION_TAGS_INVALID = 4,
+        ERROR_VERSION_IS_TOO_OLD,
+        ERROR_FAILED_TO_CREATE_FILE,
+        ERROR_FILE_WRITE_ERROR,
+        ERROR_VERSION_TAGS_INVALID,
     };
 
 	enum eFileType
@@ -160,15 +160,11 @@ public:
     bool DebugLogEnabled();
     void EnableSaveForGame(bool _isSaveForGame);
     
-    const FilePath GetScenePath();
-    
     //Material * GetMaterial(int32 index);
     //StaticMesh * GetStaticMesh(int32 index);
     
     //DataNode * GetNodeByPointer(uint64 pointer);
     
-    void SetVersion(const VersionInfo::SceneVersion& version);
-    const VersionInfo::SceneVersion& GetVersion() const;
     void SetError(eError error);
     eError GetError();
     
@@ -182,9 +178,6 @@ public:
     int32 removedNodeCount;
     	    
     void UpdatePolygonGroupRequestedFormatRecursively(Entity *entity);
-
-	Scene* GetScene() {return scene;}
-
     SceneArchive *LoadSceneArchive(const FilePath & filename); //purely load data
 	
 private:
@@ -206,7 +199,7 @@ private:
     bool SaveDataHierarchy(DataNode * node, File * file, int32 level);
     void LoadDataHierarchy(Scene * scene, DataNode * node, File * file, int32 level);
     bool SaveDataNode(DataNode * node, File * file);
-    void LoadDataNode(DataNode * parent, File * file);
+    void LoadDataNode(Scene *scene, DataNode * parent, File * file);
 	
 	inline bool IsDataNodeSerializable(DataNode* node)
 	{
@@ -234,8 +227,6 @@ private:
 	
     bool isDebugLogEnabled;
     bool isSaveForGame;
-    FilePath rootNodePathName;
-    Scene * scene;
     eError lastError;
 	
 	SerializationContext serializationContext;
