@@ -48,10 +48,12 @@ namespace DAVA
 static const String FLAG_RECURSIVE = "--recursive";
 
 ResourcePacker2D::ResourcePacker2D()
+    : isGfxModified(true)
+    , isLightmapsPacking(false)
+    , clearProcessDirectory(false)
+    , clearOutputDirectory(true)
+    , quality(TextureConverter::ECQ_VERY_HIGH)
 {
-    isLightmapsPacking = false;
-    clearProcessDirectory = false;
-    quality = TextureConverter::ECQ_VERY_HIGH;
 }
 
 String ResourcePacker2D::GetProcessFolderName()
@@ -116,7 +118,7 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
         isGfxModified = true;
     
     	// Remove whole output directory
-        if (clearProcessDirectory)
+        if (clearOutputDirectory)
         {
             bool result = FileSystem::Instance()->DeleteDirectory(outputGfxDirectory);
             if (result)
@@ -421,7 +423,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     bool needPackResourcesInThisDir = true;
     if (modified)
     {
-        if(clearProcessDirectory)
+        if (clearOutputDirectory)
         {
             FileSystem::Instance()->DeleteDirectoryFiles(outputPath, false);
         }

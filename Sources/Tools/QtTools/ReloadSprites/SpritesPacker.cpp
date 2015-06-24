@@ -81,7 +81,8 @@ void SpritesPacker::ReloadSprites(bool clearDirs, const eGPUFamily gpu, const Te
         const FilePath inputFilePath = FilePath(inputDir.absolutePath().toStdString()).MakeDirectoryPathname();
         const FilePath outputFilePath = FilePath(outputDir.absolutePath().toStdString()).MakeDirectoryPathname();
         CommandLineParser::Instance()->Clear(); //CommandLineParser is used in ResourcePackerScreen
-        resourcePacker2D->clearProcessDirectory = clearDirs;
+        resourcePacker2D->clearProcessDirectory = true;
+        resourcePacker2D->clearOutputDirectory = clearDirs;
         resourcePacker2D->SetConvertQuality(quality);
         resourcePacker2D->InitFolders(inputFilePath, outputFilePath);
         resourcePacker2D->PackResources(gpu);
@@ -115,7 +116,7 @@ void SpritesPacker::SetRunning(bool arg)
         {
             emit Finished();
         }
-        String message = String("Sprites packer ") + (arg ? "started" : "finished");
+        String message = String("Sprites packer ") + (arg ? "started" : (resourcePacker2D->IsRunning() ? "finished" : "cancelled"));
         Logger::Debug(message.c_str());
         emit RunningStateChanged(arg);
     }

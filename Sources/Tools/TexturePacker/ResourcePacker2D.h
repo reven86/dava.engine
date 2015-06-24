@@ -72,6 +72,7 @@ public:
     
     bool isLightmapsPacking;
     bool clearProcessDirectory;
+    bool clearOutputDirectory;
     eGPUFamily requestedGPUFamily;
     TextureConverter::eConvertQuality quality;
     FILESMAP spriteFiles;
