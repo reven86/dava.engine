@@ -61,7 +61,7 @@ void CommandLineParser::SetArguments(const Vector<String>& tokens)
             }
             else
             {
-                Logger::Warning("argument '%s' must stay after any -flag token", token);
+                Logger::Warning("argument '%s' must stay after any -flag token", token.c_str());
             }
         }
     }
