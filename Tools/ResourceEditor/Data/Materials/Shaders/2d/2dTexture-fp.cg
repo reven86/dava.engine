@@ -1,4 +1,4 @@
-blending : src=src_alpha dst=inv_src_alpha
+#include "blending.cgh"
 
 FPROG_IN_BEGIN
     FPROG_IN_TEXCOORD0(uv,2)

@@ -109,8 +109,6 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableCustomDra
 		return initError;
 	}
 
-    
-    
 	landscapeProxy->SetMode(LandscapeProxy::MODE_CUSTOM_LANDSCAPE);
 	landscapeProxy->SetHeightmap(heightmapProxy);
 
@@ -522,7 +520,7 @@ void LandscapeEditorDrawSystem::SaveTileMaskTexture()
  		return;
  	}
 
-	Texture* texture = baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_TILEMASK);
+    Texture* texture = GetLandscapeProxy()->GetTilemaskTexture();// baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_TILEMASK);
 
 	if (texture)
 	{
@@ -545,11 +543,22 @@ void LandscapeEditorDrawSystem::ResetTileMaskTexture()
 		return;
 	}
 
-#if RHI_COMPLETE_EDITOR
-	FilePath filePath = baseLandscape->GetTextureName(Landscape::TEXTURE_TILE_MASK);
-	baseLandscape->SetTexture(Landscape::TEXTURE_TILE_MASK, "");
-	baseLandscape->SetTexture(Landscape::TEXTURE_TILE_MASK, filePath);
-#endif // RHI_COMPLETE_EDITOR
+    NMaterial * landscapeMaterial = baseLandscape->GetMaterial();
+    while (landscapeMaterial)
+    {
+        if(landscapeMaterial->HasLocalTexture(Landscape::TEXTURE_TILEMASK))
+            break;
+
+        landscapeMaterial = landscapeMaterial->GetParent();
+    }
+
+    if(landscapeMaterial)
+    {
+        Texture * texture = Texture::CreateFromFile(sourceTilemaskPath);
+        texture->Reload();
+        landscapeMaterial->SetTexture(Landscape::TEXTURE_TILEMASK, texture);
+        texture->Release();
+    }
 }
 
 LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::VerifyLandscape() const
@@ -577,14 +586,13 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::VerifyLandscape
 //	{
 //		return LANDSCAPE_EDITOR_SYSTEM_FULL_TILED_TEXTURE_ABSENT;
 //	}
-#if RHI_COMPLETE_EDITOR
-	Texture* texTile0 = baseLandscape->GetTexture(Landscape::TEXTURE_TILE0);
+    
+	Texture* texTile0 = baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_TILE);
 	
 	if ((texTile0 == NULL || texTile0->IsPinkPlaceholder()))
 	{
 		return LANDSCAPE_EDITOR_SYSTEM_TILE_TEXTURE0_TEXTURE_ABSENT;
     }
-#endif // RHI_COMPLETE_EDITOR
 
 	return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
@@ -676,17 +684,15 @@ void LandscapeEditorDrawSystem::ProcessCommand(const Command2 *command, bool red
 
 bool LandscapeEditorDrawSystem::UpdateTilemaskPathname()
 {
-#if RHI_COMPLETE_EDITOR
     if(nullptr != baseLandscape)
     {
-        auto texture = baseLandscape->GetTexture(Landscape::TEXTURE_TILE_MASK);
+        auto texture = baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_TILEMASK);
         if(nullptr != texture)
         {
             sourceTilemaskPath = texture->GetDescriptor()->GetSourceTexturePathname();
             return true;
         }
     }
-#endif
     
     return false;
 }

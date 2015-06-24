@@ -55,6 +55,7 @@ static const float32 SEGMENT_LENGTH = 15.0f;
 
 NMaterial* RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL = nullptr;
+NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL = nullptr;
 
 class VboPool
@@ -285,6 +286,11 @@ void RenderSystem2D::Init()
     DEFAULT_2D_TEXTURE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.material"));
     DEFAULT_2D_TEXTURE_MATERIAL->PreBuildMaterial(FastName("2d"));
 
+    DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL = new NMaterial();
+    DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.material"));
+    DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL->AddFlag(NMaterialFlagName::FLAG_BLENDING, BLENDING_NONE);
+    DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL->PreBuildMaterial(FastName("2d"));
+    
     DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL = new NMaterial();
     DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.material"));
     DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL->AddFlag(FastName("IMAGE_A8"), 1);
@@ -1441,7 +1447,7 @@ void RenderSystem2D::DrawTexture(rhi::HTextureSet htextureSet, NMaterial *materi
     texCoords[2] = texCoords[6] = srcRect.x + srcRect.dx;//x2
 
     static uint16 indices[6] = { 0, 1, 2, 1, 3, 2 };
-    PushBatch(DEFAULT_2D_TEXTURE_MATERIAL, htextureSet, Rect(), 4, spriteTempVertices, texCoords, 6, indices, color, rhi::PRIMITIVE_TRIANGLELIST);
+    PushBatch(material, htextureSet, Rect(), 4, spriteTempVertices, texCoords, 6, indices, color, rhi::PRIMITIVE_TRIANGLELIST);
 }
 
 /* TiledDrawData Implementation */

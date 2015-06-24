@@ -33,19 +33,18 @@
 #include "DAVAEngine.h"
 
 #include "Render/UniqueStateSet.h"
-#include "Classes/Deprecated/LandscapeRenderer.h"
 
 using namespace DAVA;
 
 class LandscapeProxy: public BaseObject
 {
 public:
-	enum eTilemaskSprites
+	enum eTilemaskTextures
 	{
-		TILEMASK_SPRITE_SOURCE = 0,
-		TILEMASK_SPRITE_DESTINATION,
+		TILEMASK_TEXTURE_SOURCE = 0,
+		TILEMASK_TEXTURE_DESTINATION,
 		
-		TILEMASK_SPRITES_COUNT
+		TILEMASK_TEXTURE_COUNT
 	};
 
 	enum eLandscapeMode
@@ -76,6 +75,7 @@ public:
 
     void SetToolTexture(Texture * texture);
 	void SetTilemaskTexture(Texture* texture);
+    Texture * GetTilemaskTexture();
 
 	RenderObject* GetRenderObject();
 	void SetHeightmap(Heightmap* heightmap);
@@ -96,9 +96,9 @@ public:
 	void InitTilemaskImageCopy();
 	Image* GetTilemaskImageCopy();
 
-	void InitTilemaskSprites();
-	Texture * GetTilemaskTexture(int32 number);
-	void SwapTilemaskSprites();
+	void InitTilemaskDrawTextures();
+	Texture * GetTilemaskDrawTexture(int32 number);
+	void SwapTilemaskDrawTextures();
 
 protected:
 	enum eToolTextureType
@@ -112,10 +112,12 @@ protected:
 	};
 
 	Image* tilemaskImageCopy;
-	Texture* tilemaskTextures[TILEMASK_SPRITES_COUNT];
+	Texture* tilemaskDrawTextures[TILEMASK_TEXTURE_COUNT];
 
 	int32 tilemaskWasChanged;
 
+    FilePath sourceTilemaskPath;
+    
 	Landscape* baseLandscape;
     NMaterial* landscapeEditorMaterial;
     Vector4 cursorCoordSize;

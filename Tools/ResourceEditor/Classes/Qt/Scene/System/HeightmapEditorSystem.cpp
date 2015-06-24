@@ -66,6 +66,7 @@ HeightmapEditorSystem::HeightmapEditorSystem(Scene* scene)
 
 HeightmapEditorSystem::~HeightmapEditorSystem()
 {
+    SafeRelease(curToolImage);
 	SafeRelease(squareTexture);
 }
 

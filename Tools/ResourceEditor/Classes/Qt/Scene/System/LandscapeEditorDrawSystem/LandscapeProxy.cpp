@@ -44,10 +44,13 @@ LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
 {
 	DVASSERT(landscape != NULL);
 
-	tilemaskTextures[TILEMASK_SPRITE_SOURCE] = NULL;
-	tilemaskTextures[TILEMASK_SPRITE_DESTINATION] = NULL;
-
+	tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE] = NULL;
+	tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION] = NULL;
+    
 	baseLandscape = SafeRetain(landscape);
+    
+    Texture * tiletexture = baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_TILEMASK);
+    sourceTilemaskPath = tiletexture->GetDescriptor()->GetSourceTexturePathname();
     
     landscapeEditorMaterial = new NMaterial();
     landscapeEditorMaterial->SetFXName(FastName("~res:/Materials/Landscape.Tool.material"));
@@ -67,8 +70,8 @@ LandscapeProxy::~LandscapeProxy()
 
 	SafeRelease(baseLandscape);
 	SafeRelease(tilemaskImageCopy);
-	SafeRelease(tilemaskTextures[TILEMASK_SPRITE_SOURCE]);
-	SafeRelease(tilemaskTextures[TILEMASK_SPRITE_DESTINATION]);
+	SafeRelease(tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE]);
+	SafeRelease(tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION]);
 
     SafeRelease(cursorTexture);
 }
@@ -103,25 +106,50 @@ Texture* LandscapeProxy::GetLandscapeTexture(const FastName& level)
 
 Color LandscapeProxy::GetLandscapeTileColor(const FastName& level)
 {
-#if RHI_COMPLETE_EDITOR
-	return baseLandscape->GetTileColor(level);
-#else
-    return Color();
-#endif // RHI_COMPLETE_EDITOR
+    const float32 * prop = baseLandscape->GetMaterial()->GetEffectivePropValue(level);
+    if(prop)
+        return Color(prop[0], prop[1], prop[2], 1.f);
+    else
+        return Color::White;
 }
 
 void LandscapeProxy::SetLandscapeTileColor(const FastName& level, const Color& color)
 {
-#if RHI_COMPLETE_EDITOR
-	baseLandscape->SetTileColor(level, color);
-#endif // RHI_COMPLETE_EDITOR
+    NMaterial * landscapeMaterial = baseLandscape->GetMaterial();
+    while (landscapeMaterial)
+    {
+        if(landscapeMaterial->HasLocalProperty(level))
+            break;
+        
+        landscapeMaterial = landscapeMaterial->GetParent();
+    }
+    
+    if(landscapeMaterial)
+    {
+        landscapeMaterial->SetPropertyValue(level, color.color);
+    }
 }
 
 void LandscapeProxy::SetTilemaskTexture(Texture* texture)
 {
-    FilePath texturePathname = baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_TILEMASK)->GetPathname();
-    texture->SetPathname(texturePathname);
-    baseLandscape->GetMaterial()->SetTexture(Landscape::TEXTURE_TILEMASK, texture);
+    NMaterial * landscapeMaterial = baseLandscape->GetMaterial();
+    while (landscapeMaterial)
+    {
+        if(landscapeMaterial->HasLocalTexture(Landscape::TEXTURE_TILEMASK))
+            break;
+        
+        landscapeMaterial = landscapeMaterial->GetParent();
+    }
+    
+    if(landscapeMaterial)
+    {
+        landscapeMaterial->SetTexture(Landscape::TEXTURE_TILEMASK, texture);
+    }
+}
+
+Texture * LandscapeProxy::GetTilemaskTexture()
+{
+    return baseLandscape->GetMaterial()->GetEffectiveTexture(Landscape::TEXTURE_TILEMASK);
 }
 
 void LandscapeProxy::SetToolTexture(Texture * texture)
@@ -210,12 +238,13 @@ void LandscapeProxy::DecreaseTilemaskChanges()
 
 void LandscapeProxy::InitTilemaskImageCopy()
 {
-#if RHI_COMPLETE_EDITOR
 	SafeRelease(tilemaskImageCopy);
-
-    RenderManager::Instance()->SetColor(Color::White);
-	tilemaskImageCopy = baseLandscape->GetTexture(Landscape::TEXTURE_TILE_MASK)->CreateImageFromMemory(noBlendDrawState);
-#endif // RHI_COMPLETE_EDITOR
+    
+    Vector<Image *> imgs;
+    ImageSystem::Instance()->Load(sourceTilemaskPath, imgs);
+    
+    DVASSERT(imgs.size() == 1);
+    tilemaskImageCopy = imgs[0];
 }
 
 Image* LandscapeProxy::GetTilemaskImageCopy()
@@ -223,32 +252,32 @@ Image* LandscapeProxy::GetTilemaskImageCopy()
 	return tilemaskImageCopy;
 }
 
-void LandscapeProxy::InitTilemaskSprites()
+void LandscapeProxy::InitTilemaskDrawTextures()
 {
-	if (tilemaskTextures[TILEMASK_SPRITE_SOURCE] == NULL || tilemaskTextures[TILEMASK_SPRITE_DESTINATION] == NULL)
+	if (tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE] == NULL || tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION] == NULL)
 	{
-		SafeRelease(tilemaskTextures[TILEMASK_SPRITE_SOURCE]);
-		SafeRelease(tilemaskTextures[TILEMASK_SPRITE_DESTINATION]);
+		SafeRelease(tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE]);
+		SafeRelease(tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION]);
 
         uint32 texSize = (uint32)GetLandscapeTexture(Landscape::TEXTURE_TILEMASK)->GetWidth();
-		tilemaskTextures[TILEMASK_SPRITE_SOURCE] = Texture::CreateFBO(texSize, texSize, FORMAT_RGBA8888, rhi::TEXTURE_TYPE_2D);
-        tilemaskTextures[TILEMASK_SPRITE_DESTINATION] = Texture::CreateFBO(texSize, texSize, FORMAT_RGBA8888, rhi::TEXTURE_TYPE_2D);
+		tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE] = Texture::CreateFBO(texSize, texSize, FORMAT_RGBA8888, rhi::TEXTURE_TYPE_2D);
+        tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION] = Texture::CreateFBO(texSize, texSize, FORMAT_RGBA8888, rhi::TEXTURE_TYPE_2D);
 	}
 }
 
-Texture * LandscapeProxy::GetTilemaskTexture(int32 number)
+Texture * LandscapeProxy::GetTilemaskDrawTexture(int32 number)
 {
-	if (number >= 0 && number < TILEMASK_SPRITES_COUNT)
+	if (number >= 0 && number < TILEMASK_TEXTURE_COUNT)
 	{
-		return tilemaskTextures[number];
+		return tilemaskDrawTextures[number];
 	}
 
 	return NULL;
 }
 
-void LandscapeProxy::SwapTilemaskSprites()
+void LandscapeProxy::SwapTilemaskDrawTextures()
 {
-	Texture* temp = tilemaskTextures[TILEMASK_SPRITE_SOURCE];
-	tilemaskTextures[TILEMASK_SPRITE_SOURCE] = tilemaskTextures[TILEMASK_SPRITE_DESTINATION];
-	tilemaskTextures[TILEMASK_SPRITE_DESTINATION] = temp;
+	Texture* temp = tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE];
+	tilemaskDrawTextures[TILEMASK_TEXTURE_SOURCE] = tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION];
+	tilemaskDrawTextures[TILEMASK_TEXTURE_DESTINATION] = temp;
 }

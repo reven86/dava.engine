@@ -110,6 +110,7 @@ class RenderSystem2D : public Singleton<RenderSystem2D>
 public:
     static NMaterial* DEFAULT_2D_COLOR_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_MATERIAL;
+    static NMaterial* DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL;
 
     RenderSystem2D();
