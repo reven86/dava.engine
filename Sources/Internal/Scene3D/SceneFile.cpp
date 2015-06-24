@@ -674,12 +674,6 @@ bool SceneFile::ReadSceneNode(Entity * parentNode, int level)
 	}
 	if (debugLogEnabled)Logger::FrameworkDebug("%s node: %s typeId: %d childCount: %d type: %s\n", GetIndentString('-', level).c_str(), name, def.nodeType, def.childCount, nodeType);
 	
-    if (parentNode == scene) 
-    {
-        scene->AddRootNode(node, rootNodePath);
-        rootNode = node;
-    }
-		
 	for (int k = 0; k < def.childCount; ++k)
 	{
 		if (!ReadSceneNode(node, level + 1))return false;
