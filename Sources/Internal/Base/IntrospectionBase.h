@@ -42,7 +42,7 @@ namespace DAVA
 	class InspColl;
 	class KeyedArchive;
 	struct MetaInfo;
-    class FastName;
+
 	// абстрактный базовый класс для интроспекции
 	class InspBase
 	{
@@ -147,6 +147,8 @@ namespace DAVA
 
 		// Устанавливает данные члена интроспекции из указанного варианта. 
 		virtual void SetValue(void *object, const VariantType &val) const;
+
+		virtual void SetValueRaw(void *object, void *val) const;
 
 		// Возвращает данные члена интроспекции в виде коллекции
 		virtual const InspColl* Collection() const;

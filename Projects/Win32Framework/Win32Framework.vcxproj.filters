@@ -1880,6 +1880,9 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.h">
       <Filter>Internal\UI\Styles</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\PropertyAnimation.h">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -3345,6 +3348,9 @@
       <Filter>Internal\UI\Styles</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.cpp">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\PropertyAnimation.cpp">
       <Filter>Internal\UI\Styles</Filter>
     </ClCompile>
   </ItemGroup>

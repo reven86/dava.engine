@@ -50,8 +50,9 @@ public:
 private:
     bool StyleSheetMatchesControl(const UIStyleSheet* styleSheet, UIControl* control);
     bool SelectorMatchesControl(const UIStyleSheetSelector& selector, UIControl* control);
-        
-    void SetupPropertyFromVariantType(UIControl* control, uint32 propertyIndex, const VariantType& value);
+
+    template <typename CallbackType>
+    void DoForAllPropertyInstances(UIControl* control, uint32 propertyIndex, const CallbackType& action);
 };
 
 };

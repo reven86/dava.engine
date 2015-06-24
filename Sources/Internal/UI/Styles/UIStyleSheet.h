@@ -35,6 +35,7 @@
 #include "Base/FastName.h"
 #include "FileSystem/VariantType.h"
 #include "UI/Styles/UIStyleSheetPropertiesTable.h"
+#include "Animation/Interpolation.h"
 
 namespace DAVA
 {
@@ -55,14 +56,34 @@ struct UIStyleSheetSelector
     Vector<FastName> classes;
 };
 
+struct UIStyleSheetProperty
+{
+    UIStyleSheetProperty(uint32 aPropertyIndex, const VariantType& aValue, bool aTransition = false, Interpolation::FuncType aTransitionFunction = Interpolation::LINEAR, float32 aTransitionTime = 0.0f) :
+        propertyIndex(aPropertyIndex),
+        value(aValue),
+        transitionFunction(aTransitionFunction),
+        transitionTime(aTransitionTime), 
+        transition(aTransition)
+    {
+
+    }
+
+    uint32 propertyIndex;
+    VariantType value;
+
+    Interpolation::FuncType transitionFunction;
+    float32 transitionTime;
+    bool transition;
+};
+
 class UIStyleSheetPropertyTable :
     public BaseObject
 {
 public:
-    void SetProperties(const Vector<std::pair<uint32, VariantType>>& properties);
-    const Vector<std::pair<uint32, VariantType>>& GetProperties() const;
+    void SetProperties(const Vector<UIStyleSheetProperty>& properties);
+    const Vector<UIStyleSheetProperty>& GetProperties() const;
 private:
-    Vector<std::pair<uint32, VariantType>> properties;
+    Vector<UIStyleSheetProperty> properties;
 };
 
 class UIStyleSheet :

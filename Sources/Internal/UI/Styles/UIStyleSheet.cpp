@@ -27,21 +27,22 @@
 =====================================================================================*/
 
 #include "UI/Styles/UIStyleSheet.h"
+#include "UI/UIControl.h"
 
 namespace DAVA
 {
 
-void UIStyleSheetPropertyTable::SetProperties(const Vector<std::pair<uint32, VariantType>>& newProperties)
+void UIStyleSheetPropertyTable::SetProperties(const Vector<UIStyleSheetProperty>& newProperties)
 {
     properties = newProperties;
 
     std::sort(properties.begin(), properties.end(),
-        [](const std::pair<uint32, VariantType>& first, const std::pair<uint32, VariantType>& second) {
-        return first.first < second.first;
+        [](const UIStyleSheetProperty& first, const UIStyleSheetProperty& second) {
+        return first.propertyIndex < second.propertyIndex;
     });
 }
 
-const Vector<std::pair<uint32, VariantType>>& UIStyleSheetPropertyTable::GetProperties() const
+const Vector<UIStyleSheetProperty>& UIStyleSheetPropertyTable::GetProperties() const
 {
     return properties;
 }
@@ -94,6 +95,9 @@ void UIStyleSheet::RecalculateScore()
             score += 100;
         if (!selector.controlClassName.empty())
             score += 100;
+        for (int32 stateIndex = 0; stateIndex < UIControl::STATE_COUNT; ++stateIndex)
+            if (selector.controlStateMask & (1 << stateIndex))
+                score += 100;
     }
 }
 

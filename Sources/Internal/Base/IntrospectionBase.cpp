@@ -79,6 +79,11 @@ void InspMember::SetValue(void *object, const VariantType &val) const
 	VariantType::SaveData(Pointer(object), type, val);
 }
 
+void InspMember::SetValueRaw(void *object, void* val) const
+{
+	DVASSERT(false);
+}
+
 const InspColl* InspMember::Collection() const
 {
 	return NULL;

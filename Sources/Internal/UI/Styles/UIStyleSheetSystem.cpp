@@ -32,9 +32,64 @@
 #include "UI/UIControlPackageContext.h"
 #include "UI/Components/UIComponent.h"
 #include "Platform/SystemTimer.h"
+#include "UI/Styles/PropertyAnimation.h"
 
 namespace DAVA
 {
+
+namespace
+{
+    const int32 PROPERTY_ANIMATION_GROUP_OFFSET = 100000;
+}
+
+struct ImmediatePropertySetter
+{
+    void operator ()(UIControl* control, void* targetObject, const InspMember* targetIntrospectionMember) const
+    {
+        control->StopAnimations(PROPERTY_ANIMATION_GROUP_OFFSET + propertyIndex);
+        targetIntrospectionMember->SetValue(targetObject, value);
+    }
+
+    uint32 propertyIndex;
+    const VariantType& value;
+};
+
+struct AnimatedPropertySetter
+{
+    void operator ()(UIControl* control, void* targetObject, const InspMember* targetIntrospectionMember) const
+    {
+        const int32 track = PROPERTY_ANIMATION_GROUP_OFFSET + propertyIndex;
+        control->StopAnimations(track);
+        if (targetIntrospectionMember->Value(targetObject) != value)
+        {
+            switch (value.GetType())
+            {
+            case VariantType::TYPE_VECTOR2:
+                (new PropertyAnimation<Vector2>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsVector2(), value.AsVector2(), time, transitionFunction))->Start(track);
+                break;
+            case VariantType::TYPE_VECTOR3:
+                (new PropertyAnimation<Vector3>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsVector3(), value.AsVector3(), time, transitionFunction))->Start(track);
+                break;
+            case VariantType::TYPE_VECTOR4:
+                (new PropertyAnimation<Vector4>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsVector4(), value.AsVector4(), time, transitionFunction))->Start(track);
+                break;
+            case VariantType::TYPE_FLOAT:
+                (new PropertyAnimation<float32>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsFloat(), value.AsFloat(), time, transitionFunction))->Start(track);
+                break;
+            case VariantType::TYPE_COLOR:
+                (new PropertyAnimation<Color>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsColor(), value.AsColor(), time, transitionFunction))->Start(track);
+                break;
+            default:
+                DVASSERT_MSG(false, "Non-animatable property");
+            }
+        }
+    }
+
+    uint32 propertyIndex;
+    const VariantType& value;
+    Interpolation::FuncType transitionFunction;
+    float32 time;
+};
 
 UIStyleSheetSystem::UIStyleSheetSystem()
 {
@@ -55,7 +110,6 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
     {
         UIStyleSheetPropertySet appliedProperties;
         const UIStyleSheetPropertySet& localControlProperties = control->GetLocalPropertySet();
-
         const auto& styleSheets = packageContext->GetSortedStyleSheets();
         for (const UIStyleSheet* styleSheet : styleSheets)
         {
@@ -64,11 +118,14 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
                 const auto& propertyTable = styleSheet->GetPropertyTable()->GetProperties();
                 for (const auto& iter : propertyTable)
                 {
-                    if (!appliedProperties.test(iter.first) && !localControlProperties.test(iter.first))
+                    if (!appliedProperties.test(iter.propertyIndex) && !localControlProperties.test(iter.propertyIndex))
                     {
-                        appliedProperties.set(iter.first);
+                        appliedProperties.set(iter.propertyIndex);
 
-                        SetupPropertyFromVariantType(control, iter.first, iter.second);
+                        if (iter.transition)
+                            DoForAllPropertyInstances(control, iter.propertyIndex, AnimatedPropertySetter{ iter.propertyIndex, iter.value, iter.transitionFunction, iter.transitionTime });
+                        else
+                            DoForAllPropertyInstances(control, iter.propertyIndex, ImmediatePropertySetter{ iter.propertyIndex, iter.value });
                     }
                 }
             }
@@ -82,7 +139,7 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
                 if (propertiesToReset.test(propertyIndex))
                 {
                     const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(propertyIndex);
-                    SetupPropertyFromVariantType(control, propertyIndex, propertyDescr.defaultValue);
+                    DoForAllPropertyInstances(control, propertyIndex, ImmediatePropertySetter{ propertyIndex, propertyDescr.defaultValue });
                 }
             }
         }
@@ -130,7 +187,8 @@ bool UIStyleSheetSystem::SelectorMatchesControl(const UIStyleSheetSelector& sele
     return true;
 }
 
-void UIStyleSheetSystem::SetupPropertyFromVariantType(UIControl* control, uint32 propertyIndex, const VariantType& value)
+template <typename CallbackType>
+void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 propertyIndex, const CallbackType& action)
 {
     const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
 
@@ -147,7 +205,7 @@ void UIStyleSheetSystem::SetupPropertyFromVariantType(UIControl* control, uint32
             {
                 if (typeInfo == targetMember.typeInfo)
                 {
-                    targetMember.memberInfo->SetValue(control, value);
+                    action(control, control, targetMember.memberInfo);
                     break;
                 }
                 typeInfo = typeInfo->BaseInfo();
@@ -157,11 +215,11 @@ void UIStyleSheetSystem::SetupPropertyFromVariantType(UIControl* control, uint32
         }
         case ePropertyOwner::BACKGROUND:
             if (control->GetBackgroundComponentsCount() > 0)
-                targetMember.memberInfo->SetValue(control->GetBackgroundComponent(0), value);
+                action(control, control->GetBackgroundComponent(0), targetMember.memberInfo);
             break;
         case ePropertyOwner::COMPONENT:
             if (UIComponent* component = control->GetComponent(targetMember.componentType))
-                targetMember.memberInfo->SetValue(component, value);
+                action(control, component, targetMember.memberInfo);
             break;
         default:
             DVASSERT(false);

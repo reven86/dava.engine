@@ -174,15 +174,46 @@ void UIStyleSheetYamlLoader::LoadFromYaml(const YamlNode* rootNode, Vector<UISty
 
     for (auto styleSheetIter = styleSheetMap.begin(); styleSheetIter != styleSheetMap.end(); ++styleSheetIter)
     {
-        Vector<std::pair<uint32, VariantType>> propertiesToSet;
+        Vector<UIStyleSheetProperty> propertiesToSet;
         ScopedPtr<UIStyleSheetPropertyTable> propertyTable(new UIStyleSheetPropertyTable());
         const MultiMap<String, YamlNode*> &propertiesMap = styleSheetIter->second->AsMap();
         for (const auto& propertyIter : propertiesMap)
         {
-            uint32 index = propertyDB->GetStyleSheetPropertyIndex(FastName(propertyIter.first));
-            const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(index);
-            if (!propertyDescr.targetMembers.empty())
-                propertiesToSet.push_back(std::make_pair(index, propertyIter.second->AsVariantType(propertyDescr.targetMembers[0].memberInfo))); // AsVariantType uses only type info and we assert that all targetMembers have the same type
+            if (propertyIter.first != "transition")
+            {
+                uint32 index = propertyDB->GetStyleSheetPropertyIndex(FastName(propertyIter.first));
+                const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(index);
+                if (!propertyDescr.targetMembers.empty())
+                    propertiesToSet.push_back(UIStyleSheetProperty{ index, propertyIter.second->AsVariantType(propertyDescr.targetMembers[0].memberInfo) }); // AsVariantType uses only type info and we assert that all targetMembers have the same type
+            }
+        }
+
+        auto transitionIter = propertiesMap.lower_bound("transition");
+        auto transitionIterEnd = propertiesMap.upper_bound("transition");
+
+        for (; transitionIter != transitionIterEnd; ++transitionIter)
+        {
+            const MultiMap<String, YamlNode*> &transitionsMap = transitionIter->second->AsMap();
+            for (const auto& propertyTransitionIter : transitionsMap)
+            {
+                uint32 index = propertyDB->GetStyleSheetPropertyIndex(FastName(propertyTransitionIter.first));
+                for (UIStyleSheetProperty& prop : propertiesToSet)
+                {
+                    if (prop.propertyIndex == index)
+                    {
+                        const Vector<YamlNode*>& transitionProps = propertyTransitionIter.second->AsVector();
+                        int32 transitionFunctionType = Interpolation::LINEAR;
+                        if (transitionProps.size() > 1)
+                            GlobalEnumMap<Interpolation::FuncType>::Instance()->ToValue(transitionProps[1]->AsString().c_str(), transitionFunctionType);
+
+                        prop.transition = true;
+                        prop.transitionFunction = (Interpolation::FuncType)transitionFunctionType;
+                        prop.transitionTime = transitionProps[0]->AsFloat();
+
+                        break;
+                    }
+                }
+            }
         }
         propertyTable->SetProperties(propertiesToSet);
 

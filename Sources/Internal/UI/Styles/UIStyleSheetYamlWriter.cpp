@@ -68,9 +68,9 @@ RefPtr<YamlNode> UIStyleSheetYamlWriter::SaveToYaml(const Vector< UIStyleSheet* 
 
         for (const auto& prop : propertyTable->GetProperties())
         {
-            const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(prop.first);
+            const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(prop.propertyIndex);
 
-            styleSheetNode->Add(propertyDescr.name.c_str(), prop.second);
+            styleSheetNode->Add(propertyDescr.name.c_str(), prop.value);
         }
 
         node->Add(table.second, styleSheetNode);
