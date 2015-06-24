@@ -772,7 +772,7 @@ void NMaterial::Save(KeyedArchive * archive, SerializationContext * serializatio
     archive->SetArchive("properties", propertiesArchive);
 
     ScopedPtr<KeyedArchive> texturesArchive(new KeyedArchive());
-    for (auto& it = localTextures.begin(), itEnd = localTextures.end(); it != itEnd; ++it)
+    for (auto it = localTextures.begin(), itEnd = localTextures.end(); it != itEnd; ++it)
     {        
         if (!it->second->path.IsEmpty())
         {

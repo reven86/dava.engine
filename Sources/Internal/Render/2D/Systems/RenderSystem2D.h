@@ -53,7 +53,6 @@ struct RenderBatch2D
     {
         primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
         clipRect = Rect(0, 0, -1, -1);
-        transformedClipRect = Rect(0, 0, -1, -1);
         count = 0;
         indexOffset = 0;
         material = nullptr;
@@ -62,7 +61,6 @@ struct RenderBatch2D
     rhi::HTextureSet textureSetHandle;
     NMaterial * material;
     Rect clipRect;
-    Rect transformedClipRect;
     rhi::PrimitiveType primitiveType;
     uint32 count;
     uint32 indexOffset;
@@ -155,8 +153,6 @@ public:
 
     void ScreenSizeChanged();
 
-    void Setup2DMatrices();
-    
     void SetSpriteClipping(bool clipping);
 
     void BeginRenderTargetPass(Texture * target, bool needClear = true);
@@ -238,13 +234,13 @@ public:
 
 private:
     bool IsPreparedSpriteOnScreen(Sprite::DrawState * drawState);
-    void Setup2DProjection();
+    void Setup2DMatrices();
 
-    Rect TransformClipRect(const Rect & rect);
+    Rect TransformClipRect(const Rect & rect, const Matrix4 & transformMatrix);
 
     Matrix4 virtualToPhysicalMatrix;
     Matrix4 projMatrix;
-	std::stack<Rect> clipStack;
+    std::stack<Rect> clipStack;
 	Rect currentClip;
 
     float32 spriteTempVertices[8];

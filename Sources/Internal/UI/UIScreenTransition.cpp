@@ -166,6 +166,31 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     //    SafeRelease(image2);
 
     currentTime = 0;
+#else
+    nextScreen = _nextScreen;
+    prevScreen = _prevScreen;
+
+    if (prevScreen)
+    {
+        // Draw prev screen to rt
+
+        if (prevScreen->IsOnScreen())
+            prevScreen->SystemWillBecomeInvisible();
+
+        prevScreen->SystemWillDisappear();
+        if (prevScreen->GetGroupId() != nextScreen->GetGroupId())
+            prevScreen->UnloadGroup();
+        prevScreen->SystemDidDisappear();
+
+        SafeRelease(prevScreen);
+    }
+
+    nextScreen->LoadGroup();
+    nextScreen->SystemWillAppear();
+
+    // Draw next screen to rt
+
+    currentTime = 0;
 #endif // RHI_COMPLETE
 }
 
@@ -196,8 +221,7 @@ void UIScreenTransition::Update(float32 timeElapsed)
 
 void UIScreenTransition::Draw(const UIGeometricData &geometricData)
 {
-    RenderSystem2D::Instance()->Setup2DMatrices();
-
+#if RHI_COMPETE_GAME
     Sprite::DrawState drawState;
     drawState.SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
 
@@ -210,6 +234,8 @@ void UIScreenTransition::Draw(const UIGeometricData &geometricData)
     drawState.SetPosition((VirtualCoordinatesSystem::Instance()->GetFullScreenVirtualRect().dx) / 2.0f, 0);
 
     RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState, Color::White);
+#endif // RHI_COMPETE_GAME
+
 }
 
 void UIScreenTransition::SetDuration(float32 timeInSeconds)
