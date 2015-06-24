@@ -71,10 +71,16 @@ bool PngImageExt::Read(const FilePath &filename)
     return (internalData != nullptr);
 }
 
-void PngImageExt::Write(const FilePath &filename)
+void PngImageExt::Write(const FilePath &filename, PixelFormat pixelFormat, ImageQuality quality)
 {
     DVASSERT(internalData);
-    ImageSystem::Instance()->Save(filename, internalData, internalData->format);
+
+    if (pixelFormat == FORMAT_INVALID)
+    {
+        pixelFormat = internalData->format;
+    }
+
+    ImageSystem::Instance()->Save(filename, internalData, pixelFormat, quality);
 }
 
 bool PngImageExt::Create(uint32 width, uint32 height)

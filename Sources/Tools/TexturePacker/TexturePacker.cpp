@@ -39,6 +39,8 @@
 #include "FramePathHelper.h"
 #include "Utils/StringFormat.h"
 #include "Render/PixelFormatDescriptor.h"
+#include "Base/GlobalEnum.h"
+#include "Render/Image/ImageSystem.h"
 
 
 #ifdef WIN32
@@ -258,7 +260,6 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 				AddError(Format("* ERROR: Failed to write definition - %s.", fileName.c_str()));
 			}
 
-            textureName.ReplaceExtension(".png");
             ExportImage(&finalImage, FilePath(textureName), forGPU);
 		}
         else
@@ -362,7 +363,6 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 			}
 		}
 
-        textureName.ReplaceExtension(".png");
         ExportImage(&finalImage, textureName, forGPU);
 	}else
 	{
@@ -478,12 +478,12 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 		}
 	}
 	
-	for (int image = 0; image < (int)packers.size(); ++image)
+	for (int imageNum = 0; imageNum < (int)packers.size(); ++imageNum)
 	{
 		char temp[256];
-		sprintf(temp, "%s%d.png", basename, image);
+		sprintf(temp, "%s%d", basename, imageNum);
 		FilePath textureName = outputPath + temp;
-        ExportImage(finalImages[image], textureName, forGPU);
+        ExportImage(finalImages[imageNum], textureName, forGPU);
 	}
 
 	for (List<DefinitionFile*>::iterator defi = defList.begin(); defi != defList.end(); ++defi)
@@ -661,73 +661,159 @@ void TexturePacker::SetMaxTextureSize(uint32 _maxTextureSize)
 	maxTextureSize = _maxTextureSize;
 }
 
-void TexturePacker::ExportImage(PngImageExt *image, const FilePath &exportedPathname, eGPUFamily forGPU)
+uint8 GetPixelParameterAt(const Vector<String>& gpuParams, uint8 gpuParamPosition, PixelFormat& pixelFormat)
 {
-    TextureDescriptor *descriptor = CreateDescriptor(forGPU);
+    if (gpuParamPosition < gpuParams.size())
+    {
+        PixelFormat format = PixelFormatDescriptor::GetPixelFormatByName(FastName(gpuParams[gpuParamPosition].c_str()));
+        if (format != FORMAT_INVALID)
+        {
+            pixelFormat = format;
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+uint8 GetImageParametersAt(const Vector<String>& gpuParams, uint8 gpuParamPosition, ImageFormat& imageFormat, ImageQuality& imageQuality)
+{
+    uint8 paramsRead = 0;
+
+    if (gpuParamPosition < gpuParams.size())
+    {
+        ImageFormat format = ImageSystem::Instance()->GetImageFormatByName(gpuParams[gpuParamPosition]);
+        if (format != IMAGE_FORMAT_UNKNOWN)
+        {
+            imageFormat = format;
+            ++paramsRead;
+            ++gpuParamPosition;
+
+            if (gpuParamPosition < gpuParams.size())
+            {
+                int res = -1;
+                bool parseOk = ParseFromString(gpuParams[gpuParamPosition], res);
+
+                if (parseOk && res >= 0 && res <= 100)
+                {
+                    imageQuality = static_cast<ImageQuality>(res);
+                    ++paramsRead;
+                }
+                else
+                {
+                    Logger::Warning("quality param '%s' is incorrect\n", gpuParams[gpuParamPosition].c_str());
+                }
+            }
+        }
+    }
+
+    return paramsRead;
+}
+
+bool GetGpuParameters(eGPUFamily forGPU, PixelFormat& pixelFormat, ImageFormat& imageFormat,
+    ImageQuality& imageQuality, uint8& pixelParamsRead, uint8& imageParamsRead)
+{
+    const String gpuNameFlag = "--" + GPUFamilyDescriptor::GetGPUName(forGPU);
+    if (!CommandLineParser::Instance()->IsFlagSet(gpuNameFlag))
+    {
+        return false;
+    }
+
+    // gpu flag has at least one additional parameter: pixel format or image format, or both of them
+    // these params may follow in arbitrary order
+    Vector<String> gpuParams = CommandLineParser::Instance()->GetParamsForFlag(gpuNameFlag);
+    auto paramsCount = gpuParams.size();
+
+    // suppose pixel parameter is at first position and read it
+    uint8 gpuParamPosition = 0;
+    pixelParamsRead = GetPixelParameterAt(gpuParams, gpuParamPosition, pixelFormat);
+
+    if (pixelParamsRead == 1)
+    {
+        ++gpuParamPosition;
+    }
+
+    // read image parameters
+    imageParamsRead = GetImageParametersAt(gpuParams, gpuParamPosition, imageFormat, imageQuality);
+
+    // read pixel parameter in case if image parameters were on first position
+    if (!pixelParamsRead && imageParamsRead)
+    {
+        gpuParamPosition += imageParamsRead;
+        pixelParamsRead = GetPixelParameterAt(gpuParams, gpuParamPosition, pixelFormat);
+    }
+
+    return (pixelParamsRead || imageParamsRead);
+}
+
+void TexturePacker::ExportImage(PngImageExt *image, FilePath exportedPathname, eGPUFamily forGPU)
+{
+    std::unique_ptr<TextureDescriptor> descriptor(new TextureDescriptor());
+
+    descriptor->drawSettings.wrapModeS = descriptor->drawSettings.wrapModeT = GetDescriptorWrapMode();
+    descriptor->SetGenerateMipmaps(CommandLineParser::Instance()->IsFlagSet(String("--generateMipMaps")));
+
+    TexturePacker::FilterItem ftItem = GetDescriptorFilter(descriptor->GetGenerateMipMaps());
+    descriptor->drawSettings.minFilter = ftItem.minFilter;
+    descriptor->drawSettings.magFilter = ftItem.magFilter;
+
+    ImageFormat imageFormat = IMAGE_FORMAT_UNKNOWN;
+    PixelFormat pixelFormat = FORMAT_INVALID;
+    ImageQuality imageQuality = DEFAULT_IMAGE_QUALITY;
+    bool toPerformConvert = false;
+
+    if (GPUFamilyDescriptor::IsGPUForDevice(forGPU))
+    {
+        uint8 pixelParamsRead = 0;
+        uint8 imageParamsRead = 0;
+        bool gpuParamsGot = GetGpuParameters(forGPU, pixelFormat, imageFormat, imageQuality, pixelParamsRead, imageParamsRead);
+
+        if (gpuParamsGot)
+        {
+            if (pixelParamsRead && !imageParamsRead)
+            {
+                if (GPUFamilyDescriptor::IsFormatSupported(forGPU, pixelFormat))
+                {
+                    descriptor->exportedAsGpuFamily = forGPU;
+                    descriptor->format = pixelFormat;
+                    descriptor->compression[forGPU].format = pixelFormat;
+                    toPerformConvert = true;
+                }
+                else
+                {
+                    AddError(Format("Compression format '%s' is not supported for GPU '%s'",
+                        GlobalEnumMap<PixelFormat>::Instance()->ToString(pixelFormat),
+                        GPUFamilyDescriptor::GetGPUName(forGPU).c_str()));
+                }
+            }
+        }
+        else
+        {
+            Logger::Warning("params for GPU %s were not set.\n", GPUFamilyDescriptor::GetGPUName(forGPU).c_str());
+        }
+    }
+
+    if (imageFormat == IMAGE_FORMAT_UNKNOWN)
+    {
+        imageFormat = IMAGE_FORMAT_PNG;
+    }
+
+    const String extension = ImageSystem::Instance()->GetExtensionsFor(imageFormat)[0];
+    exportedPathname.ReplaceExtension(extension);
+
+    descriptor->dataSettings.sourceFileFormat = imageFormat;
+    descriptor->dataSettings.sourceFileExtension = extension;
     descriptor->pathname = TextureDescriptor::GetDescriptorPathname(exportedPathname);
     descriptor->Export(descriptor->pathname);
 
     image->DitherAlpha();
-    image->Write(exportedPathname);
+    image->Write(exportedPathname, pixelFormat, imageQuality);
 
-    eGPUFamily gpuFamily = GPUFamilyDescriptor::ConvertValueToGPU(descriptor->exportedAsGpuFamily);
-    if(GPUFamilyDescriptor::IsGPUForDevice(gpuFamily))
+    if (toPerformConvert)
     {
-		TextureConverter::ConvertTexture(*descriptor, gpuFamily, false, quality);
+		TextureConverter::ConvertTexture(*descriptor, forGPU, false, quality);
         FileSystem::Instance()->DeleteFile(exportedPathname);
     }
-
-	delete descriptor;
-}
-
-
-TextureDescriptor * TexturePacker::CreateDescriptor(eGPUFamily forGPU)
-{
-    TextureDescriptor *descriptor = new TextureDescriptor();
-
-    descriptor->drawSettings.wrapModeS = descriptor->drawSettings.wrapModeT = GetDescriptorWrapMode();
-    descriptor->SetGenerateMipmaps(CommandLineParser::Instance()->IsFlagSet(String("--generateMipMaps")));
-	
-	TexturePacker::FilterItem ftItem = GetDescriptorFilter(descriptor->GetGenerateMipMaps());
-	descriptor->drawSettings.minFilter = ftItem.minFilter;
-	descriptor->drawSettings.magFilter = ftItem.magFilter;
-
-	if(!GPUFamilyDescriptor::IsGPUForDevice(forGPU)) // not need compression
-        return descriptor;
-
-    descriptor->exportedAsGpuFamily = forGPU;
-
-    const String gpuNameFlag = "--" + GPUFamilyDescriptor::GetGPUName(forGPU);
-    if(CommandLineParser::Instance()->IsFlagSet(gpuNameFlag))
-    {
-		String formatName = CommandLineParser::Instance()->GetParamForFlag(gpuNameFlag);
-		PixelFormat format = PixelFormatDescriptor::GetPixelFormatByName(FastName(formatName.c_str()));
-
-		// Additional check whether this format type is accepted for this GPU.
-        if (GPUFamilyDescriptor::IsFormatSupported(forGPU, format))
-		{
-			descriptor->format = format;
-
-			descriptor->compression[forGPU].format = format;
-
-		}
-		else
-		{
-			AddError(Format("Compression format '%s' is not supported for GPU '%s'",
-									formatName.c_str(),
-									GPUFamilyDescriptor::GetGPUName(forGPU).c_str()));
-			
-			descriptor->exportedAsGpuFamily = GPU_ORIGIN;
-		}
-    }
-    else
-    {
-        Logger::Warning("params for GPU %s were not set.\n", gpuNameFlag.c_str());
-        
-        descriptor->exportedAsGpuFamily = GPU_ORIGIN;
-    }
-    
-    return descriptor;
 }
 
 Texture::TextureWrap TexturePacker::GetDescriptorWrapMode()

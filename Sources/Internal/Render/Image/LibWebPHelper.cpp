@@ -36,8 +36,6 @@
 #include "webp/decode.h"
 #include "webp/encode.h"
 
-#define QUALITY 100 //0..100
-
 namespace DAVA
 {
 
@@ -121,7 +119,7 @@ eErrorCode LibWebPHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     return eErrorCode::SUCCESS;
 }
 
-eErrorCode LibWebPHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
+eErrorCode LibWebPHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
     DVASSERT(imageSet.size());
     const Image* original = imageSet[0];
@@ -145,11 +143,11 @@ eErrorCode LibWebPHelper::WriteFile(const FilePath & fileName, const Vector<Imag
     int stride = width * sizeof(*imageData);
     if (FORMAT_RGB888 == format)
     {
-        outSize = WebPEncodeRGB(imageData, width, height, stride * PixelFormatDescriptor::GetPixelFormatSizeInBytes(format), QUALITY, &outData);
+        outSize = WebPEncodeRGB(imageData, width, height, stride * PixelFormatDescriptor::GetPixelFormatSizeInBytes(format), quality, &outData);
     }
     else
     {
-        outSize = WebPEncodeRGBA(imageData, width, height, stride * PixelFormatDescriptor::GetPixelFormatSizeInBytes(format), QUALITY, &outData);
+        outSize = WebPEncodeRGBA(imageData, width, height, stride * PixelFormatDescriptor::GetPixelFormatSizeInBytes(format), quality, &outData);
     }
 
     if (nullptr == outData)
@@ -171,7 +169,7 @@ eErrorCode LibWebPHelper::WriteFile(const FilePath & fileName, const Vector<Imag
     return eErrorCode::SUCCESS;
 }
 
-eErrorCode LibWebPHelper::WriteFileAsCubeMap(const FilePath &fileName, const Vector<Vector<Image *>> &imageSet, PixelFormat compressionFormat) const
+eErrorCode LibWebPHelper::WriteFileAsCubeMap(const FilePath &fileName, const Vector<Vector<Image *>> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
     Logger::Error("[LibWebPHelper::WriteFileAsCubeMap] For WebP cubeMaps are not supported");
     return eErrorCode::ERROR_WRITE_FAIL;

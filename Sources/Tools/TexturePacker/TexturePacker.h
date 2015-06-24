@@ -109,9 +109,8 @@ public:
 	
 private:
     
-    void ExportImage(PngImageExt *image, const FilePath &exportedPathname, eGPUFamily forGPU);
-    TextureDescriptor * CreateDescriptor(eGPUFamily forGPU);
-	
+    void ExportImage(PngImageExt *image, FilePath exportedPathname, eGPUFamily forGPU);
+
 	Texture::TextureWrap GetDescriptorWrapMode();
 	FilterItem GetDescriptorFilter(bool generateMipMaps = false);
     

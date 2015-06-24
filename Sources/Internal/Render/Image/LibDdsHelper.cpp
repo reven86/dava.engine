@@ -725,7 +725,7 @@ eErrorCode LibDdsHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32
     return ReadFile(infile, imageSet, baseMipMap, false);
 }
 
-eErrorCode LibDdsHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
+eErrorCode LibDdsHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
     //creating tmp dds file, nvtt accept only filename.dds as input, because of this the last letter befor "." should be changed to "_".
     if(!fileName.IsEqualToExtension(".dds"))
@@ -743,7 +743,7 @@ eErrorCode LibDdsHelper::WriteFile(const FilePath & fileName, const Vector<Image
     return WriteDxtFile(fileName, imageSet, compressionFormat) ? eErrorCode::SUCCESS : eErrorCode::ERROR_WRITE_FAIL;
 }
 
-eErrorCode LibDdsHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
+eErrorCode LibDdsHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
     if(imageSet[0][0]->format != FORMAT_RGBA8888)
     {

@@ -43,8 +43,6 @@
 #include "libjpeg/jpeglib.h"
 #include <setjmp.h>
 
-#define QUALITY 100 //0..100
-
 namespace DAVA
 {
 
@@ -166,13 +164,13 @@ eErrorCode LibJpegHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     return eErrorCode::SUCCESS;
 }
 
-eErrorCode LibJpegHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
+eErrorCode LibJpegHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
     Logger::Error("[LibJpegHelper::WriteFileAsCubeMap] For jpeg cubeMaps are not supported");
     return eErrorCode::ERROR_WRITE_FAIL;
 }
     
-eErrorCode LibJpegHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
+eErrorCode LibJpegHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
     DVASSERT(imageSet.size());
     const Image* original = imageSet[0];
@@ -247,7 +245,7 @@ eErrorCode LibJpegHelper::WriteFile(const FilePath & fileName, const Vector<Imag
     cinfo.dct_method = JDCT_FLOAT;
     
     //The quality value ranges from 0..100. If "force_baseline" is TRUE, the computed quantization table entries are limited to 1..255 for JPEG baseline compatibility.
-    jpeg_set_quality(&cinfo, QUALITY, TRUE);
+    jpeg_set_quality(&cinfo, quality, TRUE);
 
     jpeg_start_compress( &cinfo, TRUE );
     while( cinfo.next_scanline < cinfo.image_height )

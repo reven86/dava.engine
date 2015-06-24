@@ -145,6 +145,13 @@ enum eBlendMode
 
 extern const String BLEND_MODE_NAMES[BLEND_MODE_COUNT];
 
+enum ImageQuality : uint8
+{
+    MIN_IMAGE_QUALITY = 0,
+    MAX_IMAGE_QUALITY = 100,
+    DEFAULT_IMAGE_QUALITY = MAX_IMAGE_QUALITY
+};
+
 enum ImageFormat : uint8
 {
     IMAGE_FORMAT_PNG = 0,
