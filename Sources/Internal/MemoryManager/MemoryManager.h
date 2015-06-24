@@ -37,11 +37,11 @@
 #include <type_traits>
 
 #include "Base/Function.h"
-#include "Thread/Spinlock.h"
-#include "Thread/LockGuard.h"
-#include "Thread/ThreadLocalPtr.h"
-#include "Platform/ConditionalVariable.h"
-#include "Platform/Mutex.h"
+#include "Concurrency/Spinlock.h"
+#include "Concurrency/LockGuard.h"
+#include "Concurrency/ThreadLocalPtr.h"
+#include "Concurrency/ConditionVariable.h"
+#include "Concurrency/Mutex.h"
 
 #include "MemoryManager/AllocPools.h"
 #include "MemoryManager/MemoryManagerTypes.h"
@@ -180,7 +180,7 @@ private:
     GpuBlockMap* gpuBlockMap = nullptr;
 
     Thread* symbolCollectorThread = nullptr;
-    ConditionalVariable symbolCollectorCondVar;
+    ConditionVariable symbolCollectorCondVar;
     Mutex symbolCollectorMutex;
     size_t bktraceGrowDelta = 0;
 

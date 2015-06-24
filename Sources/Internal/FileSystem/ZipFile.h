@@ -34,12 +34,11 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
+#include "Concurrency/Mutex.h"
 #include "FileSystem/DynamicMemoryFile.h"
 
 namespace DAVA
 {
-
-class Mutex;
 
 class ZipFile: public DynamicMemoryFile
 {
