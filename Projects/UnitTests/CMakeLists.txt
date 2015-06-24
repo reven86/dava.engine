@@ -58,7 +58,10 @@ set( ANDROID_ACTIVITY_APP_NAME  "UnitTests"   )
 set( ANDROID_ICO                ${CMAKE_CURRENT_LIST_DIR}/android/ic_launcher-web.png )
 
 set( ADDED_SRC                  ${IOS_ADD_SRC} )
-set( LIBRARIES                  )
+
+set( LIBRARIES jpeg )
+
+add_subdirectory ( "${CMAKE_CURRENT_LIST_DIR}/../../Libs/libjpeg" ${CMAKE_CURRENT_BINARY_DIR}/libjpeg )
 
 setup_main_executable()
 

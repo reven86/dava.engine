@@ -28,11 +28,25 @@
 
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
+#include "Render/Image/LibJpegHelper.h"
 
 using namespace DAVA;
 
 DAVA_TESTCLASS(LoadImageTest)
 {
+    DAVA_TEST(JpegExifTest)
+    {
+        LibJpegHelper helper;
+        
+        Vector<Image *> set;
+        
+        ScopedPtr<File> imgFile(File::Create("~res:/TestData/LoadImageTest/EXIF.jpg", File::OPEN | File::READ));
+        
+        eErrorCode res = helper.ReadFile(imgFile, set, 0);
+        Logger::Error("EXIF LOAD RES = %d", res);
+        TEST_VERIFY(eErrorCode::SUCCESS == res);
+    }
+
     DAVA_TEST(TgaTest)
     {
         // array of pixels in format R,G,B,A. It is the expected contents of image.data buffer after loading of either 10x10_rgba8888.tga or 10x10_rgba8888_norle.tga files

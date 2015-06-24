@@ -41,6 +41,7 @@
 #include <stdio.h>
 
 #include "libjpeg/jpeglib.h"
+#include "libjpeg/jerror.h"
 #include <setjmp.h>
 
 #define QUALITY 100 //0..100
@@ -108,6 +109,13 @@ eErrorCode LibJpegHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     {
         jpeg_destroy_decompress(&cinfo);
         SafeDeleteArray(fileBuffer);
+        
+
+        
+        Logger::Error("!!!! %d, %d", J_MESSAGE_CODE::JERR_TFILE_CREATE,  cinfo.err->msg_code-JERR_TFILE_CREATE);
+        Logger::Error("!!!! %d, %d", J_MESSAGE_CODE::JERR_TFILE_CREATE,  jerr.pub.msg_code -JERR_TFILE_CREATE);
+
+        
         Logger::Error("[LibJpegHelper::ReadFile] File %s has wrong jpeg header", infile->GetFilename() .GetAbsolutePathname().c_str());
         return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
