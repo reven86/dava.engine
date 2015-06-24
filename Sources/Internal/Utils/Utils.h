@@ -62,6 +62,9 @@ void Merge(const Vector<String> & tokens, const char delim, String & outString);
 void ReplaceBundleName(const String &newBundlePath);
     
 template<class T>
+T ParseStringTo(const String & str); 
+
+template<class T>
 bool ParseFromString(const String & str, T& res);
 
 template<class T>
@@ -126,6 +129,15 @@ void RemoveExchangingWithLast(Vector<T> & array, uint32 index)
 {
     array[index] = array[array.size() - 1];
     array.pop_back();
+}
+
+template<class T>
+T ParseStringTo(const String & str)
+{
+    T result;
+    std::stringstream stream(str);
+    stream >> result;
+    return result;
 }
 
 template<class T>
