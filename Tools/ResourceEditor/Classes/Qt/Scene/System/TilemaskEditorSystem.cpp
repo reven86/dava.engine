@@ -459,17 +459,20 @@ void TilemaskEditorSystem::CreateMaskTexture()
 	Texture * tilemask = drawSystem->GetLandscapeProxy()->GetLandscapeTexture(Landscape::TEXTURE_TILEMASK);
     Texture * srcTexture = drawSystem->GetLandscapeProxy()->GetTilemaskDrawTexture(LandscapeProxy::TILEMASK_TEXTURE_SOURCE);
     
-    rhi::TextureSetDescriptor desc;
-    desc.fragmentTextureCount = 1;
-    desc.fragmentTexture[0] = tilemask->handle;
-    landscapeTilemaskTextureSet = rhi::AcquireTextureSet(desc);
-    landscapeTilemaskTexture = SafeRetain(tilemask);
-    
-    RenderSystem2D::Instance()->BeginRenderTargetPass(srcTexture);
-    RenderSystem2D::Instance()->DrawTexture(landscapeTilemaskTextureSet, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White);
-    RenderSystem2D::Instance()->EndRenderTargetPass();
-    
-    drawSystem->GetLandscapeProxy()->SetTilemaskTexture(srcTexture);
+    if(tilemask != srcTexture)
+    {
+        rhi::TextureSetDescriptor desc;
+        desc.fragmentTextureCount = 1;
+        desc.fragmentTexture[0] = tilemask->handle;
+        landscapeTilemaskTextureSet = rhi::AcquireTextureSet(desc);
+        landscapeTilemaskTexture = SafeRetain(tilemask);
+        
+        RenderSystem2D::Instance()->BeginRenderTargetPass(srcTexture);
+        RenderSystem2D::Instance()->DrawTexture(landscapeTilemaskTextureSet, RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White);
+        RenderSystem2D::Instance()->EndRenderTargetPass();
+        
+        drawSystem->GetLandscapeProxy()->SetTilemaskTexture(srcTexture);
+    }
 }
 
 void TilemaskEditorSystem::Draw()
