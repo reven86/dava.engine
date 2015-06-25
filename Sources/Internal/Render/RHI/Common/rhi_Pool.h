@@ -106,12 +106,12 @@ private:
 #define RHI_IMPL_POOL(T,RT) \
 template<> rhi::Pool<T,RT>::Entry*  rhi::Pool<T,RT>::Object      = 0; \
 template<> unsigned                 rhi::Pool<T,RT>::ObjectCount = 2048; \
-template<> DAVA::Spinlock           rhi::Pool<T,RT>::ObjectSync  = DAVA::Spinlock();  \
+template<> DAVA::Spinlock           rhi::Pool<T,RT>::ObjectSync  = {};  \
 
 #define RHI_IMPL_POOL_SIZE(T,RT,sz) \
 template<> rhi::Pool<T,RT>::Entry*  rhi::Pool<T,RT>::Object      = 0; \
 template<> unsigned                 rhi::Pool<T,RT>::ObjectCount = sz; \
-template<> DAVA::Spinlock           rhi::Pool<T,RT>::ObjectSync  = DAVA::Spinlock();  \
+template<> DAVA::Spinlock           rhi::Pool<T,RT>::ObjectSync  = {};  \
 
 
 //------------------------------------------------------------------------------
