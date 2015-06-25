@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@
 #ifndef _MAGICKCORE_MORPHOLOGY_H
 #define _MAGICKCORE_MORPHOLOGY_H
 
+#include "magick/geometry.h"
+
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
-
-#include <magick/geometry.h>
 
 typedef enum
 {
@@ -62,39 +62,41 @@ typedef enum
   ManhattanKernel,
   OctagonalKernel,
   EuclideanKernel,
-  UserDefinedKernel   /* User Specified Kernel Array */
+  UserDefinedKernel,   /* User Specified Kernel Array */
+  BinomialKernel
 } KernelInfoType;
 
 typedef enum
 {
   UndefinedMorphology,
 /* Convolve / Correlate weighted sums */
-  ConvolveMorphology,          /* Weighted Sum with reflected kernel */
-  CorrelateMorphology,         /* Weighted Sum using a sliding window */
+  ConvolveMorphology,           /* Weighted Sum with reflected kernel */
+  CorrelateMorphology,          /* Weighted Sum using a sliding window */
 /* Low-level Morphology methods */
-  ErodeMorphology,             /* Minimum Value in Neighbourhood */
-  DilateMorphology,            /* Maximum Value in Neighbourhood */
-  ErodeIntensityMorphology,    /* Pixel Pick using GreyScale Erode */
-  DilateIntensityMorphology,   /* Pixel Pick using GreyScale Dialate */
-  DistanceMorphology,          /* Add Kernel Value, take Minimum */
+  ErodeMorphology,              /* Minimum Value in Neighbourhood */
+  DilateMorphology,             /* Maximum Value in Neighbourhood */
+  ErodeIntensityMorphology,     /* Pixel Pick using GreyScale Erode */
+  DilateIntensityMorphology,    /* Pixel Pick using GreyScale Dialate */
+  DistanceMorphology,           /* Add Kernel Value, take Minimum */
 /* Second-level Morphology methods */
-  OpenMorphology,              /* Dilate then Erode */
-  CloseMorphology,             /* Erode then Dilate */
-  OpenIntensityMorphology,     /* Pixel Pick using GreyScale Open */
-  CloseIntensityMorphology,    /* Pixel Pick using GreyScale Close */
-  SmoothMorphology,            /* Open then Close */
+  OpenMorphology,               /* Dilate then Erode */
+  CloseMorphology,              /* Erode then Dilate */
+  OpenIntensityMorphology,      /* Pixel Pick using GreyScale Open */
+  CloseIntensityMorphology,     /* Pixel Pick using GreyScale Close */
+  SmoothMorphology,             /* Open then Close */
 /* Difference Morphology methods */
-  EdgeInMorphology,            /* Dilate difference from Original */
-  EdgeOutMorphology,           /* Erode difference from Original */
-  EdgeMorphology,              /* Dilate difference with Erode */
-  TopHatMorphology,            /* Close difference from Original */
-  BottomHatMorphology,         /* Open difference from Original */
+  EdgeInMorphology,             /* Dilate difference from Original */
+  EdgeOutMorphology,            /* Erode difference from Original */
+  EdgeMorphology,               /* Dilate difference with Erode */
+  TopHatMorphology,             /* Close difference from Original */
+  BottomHatMorphology,          /* Open difference from Original */
 /* Recursive Morphology methods */
-  HitAndMissMorphology,        /* Foreground/Background pattern matching */
-  ThinningMorphology,          /* Remove matching pixels from image */
-  ThickenMorphology,           /* Add matching pixels from image */
+  HitAndMissMorphology,         /* Foreground/Background pattern matching */
+  ThinningMorphology,           /* Remove matching pixels from image */
+  ThickenMorphology,            /* Add matching pixels from image */
 /* Experimental Morphology methods */
-  VoronoiMorphology
+  VoronoiMorphology,            /* distance matte channel copy nearest color */
+  IterativeDistanceMorphology   /* Add Kernel Value, take Minimum */
 } MorphologyMethod;
 
 typedef struct KernelInfo
@@ -125,7 +127,6 @@ typedef struct KernelInfo
     signature;
 } KernelInfo;
 
-
 extern MagickExport KernelInfo
   *AcquireKernelInfo(const char *),
   *AcquireKernelBuiltIn(const KernelInfoType,const GeometryInfo *),
@@ -140,7 +141,9 @@ extern MagickExport Image
 
 extern MagickExport void
   ScaleGeometryKernelInfo(KernelInfo *,const char *),
-  ShowKernelInfo(const KernelInfo *);
+  ScaleKernelInfo(KernelInfo *,const double,const GeometryFlags),
+  ShowKernelInfo(const KernelInfo *),
+  UnityAddKernelInfo(KernelInfo *,const double);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

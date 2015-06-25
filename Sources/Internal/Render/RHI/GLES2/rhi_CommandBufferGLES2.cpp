@@ -9,8 +9,8 @@
     #include "Debug/DVAssert.h"
     #include "FileSystem/Logger.h"
     using DAVA::Logger;
-    #include "Platform/Thread.h"
-    #include "Thread/Semaphore.h"
+    #include "Concurrency/Thread.h"
+    #include "Concurrency/Semaphore.h"
     #include "Debug/Profiler.h"
 
     #include "_gl.h"

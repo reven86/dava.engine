@@ -30,6 +30,9 @@
 #ifndef __DAVAENGINE_LIBPVRHELPER_H__
 #define __DAVAENGINE_LIBPVRHELPER_H__
 
+#include "Base/Platform.h"
+#ifndef __DAVAENGINE_WIN_UAP__
+
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 
@@ -202,6 +205,26 @@ inline ImageFormat LibPVRHelper::GetImageFormat() const
     return IMAGE_FORMAT_PVR;
 }
 
+inline LibPVRHelper* CreateLibPVRHelper()
+{
+    return new LibPVRHelper;
+}
+
 };
+
+#else
+
+#include "Render/Image/ImageFormatInterface.h"
+
+namespace DAVA
+{
+    inline ImageFormatInterface* CreateLibPVRHelper()
+    {
+        return nullptr;
+    }
+}
+
+#endif //  #ifndef __DAVAENGINE_WIN_UAP__
+
 
 #endif //#ifndef __DAVAENGINE_LIBPVRHELPER_H__

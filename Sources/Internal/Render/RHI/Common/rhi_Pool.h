@@ -31,7 +31,7 @@
 #define __RHI_POOL_H__
 
 #include "../rhi_Type.h"
-#include "Thread/Spinlock.h"
+#include "Concurrency/Spinlock.h"
 
 namespace rhi
 {

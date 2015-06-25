@@ -34,7 +34,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Render/2D/Font.h"
-#include "Platform/Mutex.h"
+#include "Concurrency/Mutex.h"
 #include "FileSystem/FilePath.h"
 
 namespace DAVA

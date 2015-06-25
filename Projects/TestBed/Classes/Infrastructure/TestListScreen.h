@@ -42,7 +42,13 @@ protected:
 
 public:
     TestListScreen();
-    
+
+    void SystemScreenSizeDidChanged(const Rect &newFullScreenSize) override
+    {
+        UnloadResources();
+        LoadResources();
+    }
+
     void LoadResources() override;
     void UnloadResources() override;
     

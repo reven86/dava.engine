@@ -189,9 +189,8 @@ VegetationGeometryDataPtr VegetationGeometryDataReader::ReadScene(const FilePath
     VegetationGeometryDataPtr result;
 
     ScopedPtr<Scene> scene(new Scene);
-    Entity* sceneRootNode = scene->GetRootNode(scenePath);
     
-    if (!sceneRootNode)
+    if(SceneFileV2::ERROR_NO_ERROR != scene->LoadScene(scenePath))
     {
         Logger::Error("Cannot load custom geometry scene specified");
         return result;
@@ -207,7 +206,7 @@ VegetationGeometryDataPtr VegetationGeometryDataReader::ReadScene(const FilePath
     //VI: in order to avoid crashes when scene released
     JobManager::Instance()->WaitMainJobs();
 
-    Entity* currentVariation = sceneRootNode->FindByName(VEGETATION_ENTITY_VARIATION_0);
+    Entity* currentVariation = scene->FindByName(VEGETATION_ENTITY_VARIATION_0);
     if (!currentVariation)
     {
         Logger::Error("Invalid scene structure: variations!");

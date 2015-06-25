@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -46,9 +46,6 @@ extern "C" {
 #if defined(_magickcore_inline) && !defined(inline)
 # define inline  _magickcore_inline
 #endif
-#if defined(_magickcore_restrict) && !defined(restrict)
-# define restrict  _magickcore_restrict
-#endif
 # if defined(__cplusplus) || defined(c_plusplus)
 #  undef inline
 # endif
@@ -60,73 +57,6 @@ extern "C" {
 
 #if !defined(const)
 #  define STDC
-#endif
-
-#if defined(__BORLANDC__) && defined(_DLL)
-#  pragma message("BCBMagick lib DLL export interface")
-#  define _MAGICKDLL_
-#  define _MAGICKLIB_
-#  define MAGICKCORE_MODULES_SUPPORT
-#  undef MAGICKCORE_BUILD_MODULES
-#endif
-
-#if defined(MAGICKCORE_WINDOWS_SUPPORT) && !defined(__CYGWIN__) && !defined(__MINGW32__)
-# if defined(_MT) && defined(_DLL) && !defined(_MAGICKDLL_) && !defined(_LIB)
-#  define _MAGICKDLL_
-# endif
-# if defined(_MAGICKDLL_)
-#  if defined(_VISUALC_)
-#   pragma warning( disable: 4273 )  /* Disable the dll linkage warnings */
-#  endif
-#  if !defined(_MAGICKLIB_)
-#   define MagickExport  __declspec(dllimport)
-#   if defined(_VISUALC_)
-#    pragma message( "MagickCore lib DLL import interface" )
-#   endif
-#  else
-#   define MagickExport  __declspec(dllexport)
-#   if defined(_VISUALC_)
-#    pragma message( "MagickCore lib DLL export interface" )
-#   endif
-#  endif
-# else
-#  define MagickExport
-#  if defined(_VISUALC_)
-#   pragma message( "MagickCore lib static interface" )
-#  endif
-# endif
-
-# if defined(_DLL) && !defined(_LIB)
-#  define ModuleExport  __declspec(dllexport)
-#  if defined(_VISUALC_)
-#   pragma message( "MagickCore module DLL export interface" )
-#  endif
-# else
-#  define ModuleExport
-#  if defined(_VISUALC_)
-#   pragma message( "MagickCore module static interface" )
-#  endif
-
-# endif
-# define MagickGlobal __declspec(thread)
-# if defined(_VISUALC_)
-#  pragma warning(disable : 4018)
-#  pragma warning(disable : 4068)
-#  pragma warning(disable : 4244)
-#  pragma warning(disable : 4142)
-#  pragma warning(disable : 4800)
-#  pragma warning(disable : 4786)
-#  pragma warning(disable : 4996)
-# endif
-#else
-# define MagickExport
-# define ModuleExport
-# define MagickGlobal
-#endif
-
-#define MagickSignature  0xabacadabUL
-#if !defined(MaxTextExtent)
-# define MaxTextExtent  4096
 #endif
 
 #include <stdarg.h>
@@ -141,6 +71,9 @@ extern "C" {
 # if defined(MAGICKCORE_HAVE_STDLIB_H)
 #  include <stdlib.h>
 # endif
+#endif
+#if defined(_magickcore_restrict) && !defined(restrict)
+# define restrict  _magickcore_restrict
 #endif
 #if defined(MAGICKCORE_HAVE_STRING_H)
 # if !defined(STDC_HEADERS) && defined(MAGICKCORE_HAVE_MEMORY_H)
@@ -165,6 +98,7 @@ extern "C" {
 #endif
 #if defined(MAGICKCORE_WINDOWS_SUPPORT)
 # include <direct.h>
+# include <io.h>
 # if !defined(MAGICKCORE_HAVE_STRERROR)
 #  define HAVE_STRERROR
 # endif
@@ -187,7 +121,10 @@ extern "C" {
 # include <pthread.h>
 #elif defined(MAGICKCORE_WINDOWS_SUPPORT)
 #  define MAGICKCORE_HAVE_WINTHREADS  1
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include <windows.h>
+#pragma comment (lib, "ws2_32.lib")
 #endif
 #if defined(MAGICKCORE_HAVE_SYS_SYSLIMITS_H)
 # include <sys/syslimits.h>
@@ -206,7 +143,7 @@ extern "C" {
 #  define MAGICKCORE_OPENCL_SUPPORT  1
 #endif
 
-#if defined(_OPENMP) && (_OPENMP >= 200203)
+#if defined(_OPENMP) && ((_OPENMP >= 200203) || defined(__OPENCC__))
 #  include <omp.h>
 #  define MAGICKCORE_OPENMP_SUPPORT  1
 #endif
@@ -227,15 +164,7 @@ extern size_t strlcpy(char *,const char *,size_t);
 extern int vsnprintf(char *,size_t,const char *,va_list);
 #endif
 
-#if defined(MAGICKCORE_HAVE___ATTRIBUTE__)
-#  define magick_aligned(x)  __attribute__((aligned(x)))
-#  define magick_attribute  __attribute__
-#  define magick_unused(x)  magick_unused_ ## x __attribute__((unused))
-#else
-#  define magick_aligned(x)  /* nothing */
-#  define magick_attribute(x)  /* nothing */
-#  define magick_unused(x) x
-#endif
+#include "magick/method-attribute.h"
 
 #if defined(MAGICKCORE_WINDOWS_SUPPORT) || defined(MAGICKCORE_POSIX_SUPPORT)
 # include <sys/types.h>
@@ -277,6 +206,12 @@ extern int vsnprintf(char *,size_t,const char *,va_list);
 # endif
 # if defined(MAGICKCORE_HAVE_SYS_RESOURCE_H)
 #  include <sys/resource.h>
+# endif
+# if defined(MAGICKCORE_HAVE_SYS_MMAN_H)
+#  include <sys/mman.h>
+# endif
+# if defined(MAGICKCORE_HAVE_SYS_SENDFILE_H)
+#  include <sys/sendfile.h>
 # endif
 #endif
 #else
@@ -339,8 +274,6 @@ extern int vsnprintf(char *,size_t,const char *,va_list);
 #  define IsBasenameSeparator(c) \
   (((c) == ']') || ((c) == ':') || ((c) == '/') ? MagickTrue : MagickFalse)
 #  define MAGICKCORE_LIBRARY_PATH  "sys$login:"
-#  define MAGICKCORE_CODER_PATH  "sys$login:"
-#  define MAGICKCORE_FILTER_PATH  "sys$login:"
 #  define MAGICKCORE_SHARE_PATH  "sys$login:"
 #  define X11_PREFERENCES_PATH  "decw$user_defaults:"
 #  define ProcessPendingEvents(text)
@@ -366,8 +299,6 @@ extern int vsnprintf(char *,size_t,const char *,va_list);
 #  define EditorOptions ""
 #  define IsBasenameSeparator(c)  ((c) == ':' ? MagickTrue : MagickFalse)
 #  define MAGICKCORE_LIBRARY_PATH  ""
-#  define MAGICKCORE_CODER_PATH  ""
-#  define MAGICKCORE_FILTER_PATH  ""
 #  define MAGICKCORE_SHARE_PATH  ""
 #  define X11_PREFERENCES_PATH  "~/."
 #  if defined(DISABLE_SIOUX)
@@ -434,6 +365,14 @@ extern int vsnprintf(char *,size_t,const char *,va_list);
   Magick defines.
 */
 #define Swap(x,y) ((x)^=(y), (y)^=(x), (x)^=(y))
+#if defined(_MSC_VER)
+# define DisableMSCWarning(nr) __pragma(warning(push)) \
+  __pragma(warning(disable:nr))
+# define RestoreMSCWarning __pragma(warning(pop))
+#else
+# define DisableMSCWarning(nr)
+# define RestoreMSCWarning
+#endif
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

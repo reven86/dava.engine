@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -26,39 +26,34 @@ extern "C" {
   Define declarations.
 */
 #define MagickPackageName "ImageMagick"
-#define MagickCopyright  "Copyright (C) 1999-2012 ImageMagick Studio LLC"
-#define MagickSVNRevision  "6593"
-#define MagickLibVersion  0x674
-#define MagickLibVersionText  "6.7.4"
-#define MagickLibVersionNumber  5,0,0
-#define MagickLibAddendum  "-10"
-#define MagickLibInterface  5
-#define MagickLibMinInterface  5
-#define MagickReleaseDate  "2014-11-23"
-#define MagickChangeDate   "20110125"
+#define MagickCopyright  "Copyright (C) 1999-2014 ImageMagick Studio LLC"
+#define MagickSVNRevision  "16820"
+#define MagickLibVersion  0x689
+#define MagickLibVersionText  "6.8.9"
+#define MagickLibVersionNumber  2,0,0
+#define MagickLibAddendum  "-9"
+#define MagickLibInterface  2
+#define MagickLibMinInterface  2
+#if defined(_WINDOWS)
+#  if defined(_WIN64)
+#    define MagickPlatform "x64"
+#  else
+#    define MagickPlatform "x86"
+#  endif
+#else
+#define MagickPlatform  "x86_64"
+#endif
+#define MagickppLibVersionText  "6.8.9"
+#define MagickppLibVersionNumber  5:0:0
+#define MagickppLibAddendum  "-9"
+#define MagickppLibInterface  5
+#define MagickppLibMinInterface  5
+#define MagickReleaseDate  "2015-06-23"
+#define MagickChangeDate   "20141025"
+#define MagickFeatures "DPC"
+#define MagickDelegates "bzlib mpeg fftw freetype pango png ps zlib"
+#define MagickHomeURL  "file:///Users/i_bratchik/Documents/work/dava.framework/Libs/ImageMagick-6.8.9/share/doc/ImageMagick-6/index.html"
 #define MagickAuthoritativeURL  "http://www.imagemagick.org"
-#if defined(MAGICKCORE_OPENMP_SUPPORT)
-#define MagickOpenMPFeature  "OpenMP "
-#else
-#define MagickOpenMPFeature  " "
-#endif
-#if defined(MAGICKCORE_OPENCL_SUPPORT)
-#define MagickOpenCLFeature  "OpenCL "
-#else
-#define MagickOpenCLFeature  " "
-#endif
-#if defined(MAGICKCORE_HDRI_SUPPORT)
-#define MagickHDRIFeature  "HDRI "
-#else
-#define MagickHDRIFeature  " "
-#endif
-#if defined(MAGICKCORE_ZERO_CONFIGURATION_SUPPORT)
-#define MagickZeroConfigurationFeature  "Zero-Configuration "
-#else
-#define MagickZeroConfigurationFeature  " "
-#endif
-#define MagickFeatures MagickOpenMPFeature MagickOpenCLFeature MagickHDRIFeature MagickZeroConfigurationFeature
-#define MagickHomeURL  "file:///Users/i_bratchik/Documents/work/dava.framework/Libs/ImageMagick_mac/share/doc/ImageMagick//index.html"
 #if (MAGICKCORE_QUANTUM_DEPTH == 8)
 #define MagickQuantumDepth  "Q8"
 #define MagickQuantumRange  "255"
@@ -70,26 +65,31 @@ extern "C" {
 #define MagickQuantumRange  "4294967295"
 #elif (MAGICKCORE_QUANTUM_DEPTH == 64)
 #define MagickQuantumDepth  "Q64"
-#define MagickQuantumRange  "18446744073709551615"
+#define MagickQuantumRange  "18446744073709551615.0"
 #else
 #define MagickQuantumDepth  "Q?"
 #define MagickQuantumRange  "?"
 #endif
 #define MagickVersion  \
   MagickPackageName " " MagickLibVersionText MagickLibAddendum " " \
-  MagickReleaseDate " " MagickQuantumDepth " " MagickAuthoritativeURL
+  MagickQuantumDepth " " MagickPlatform " " MagickReleaseDate " " \
+  MagickAuthoritativeURL
 
 extern MagickExport char
   *GetMagickHomeURL(void);
 
 extern MagickExport const char
   *GetMagickCopyright(void),
+  *GetMagickDelegates(void),
   *GetMagickFeatures(void),
   *GetMagickPackageName(void),
   *GetMagickQuantumDepth(size_t *),
   *GetMagickQuantumRange(size_t *),
   *GetMagickReleaseDate(void),
   *GetMagickVersion(size_t *);
+
+extern MagickExport void
+  ListMagickVersion(FILE *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }
