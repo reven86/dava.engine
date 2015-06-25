@@ -120,7 +120,7 @@ eErrorCode LibJpegHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
         SafeDeleteArray(fileBuffer);
 
         Logger::Error("[LibJpegHelper::ReadFile] File %s has wrong jpeg header", infile->GetFilename() .GetAbsolutePathname().c_str());
-        Logger::Error("[LibJpegHelper::ReadFile] Internal Error %s. Look it in jerror.h", cinfo.err->msg_code);
+        Logger::Error("[LibJpegHelper::ReadFile] Internal Error %d. Look it in jerror.h", cinfo.err->msg_code);
         
         if (J_MESSAGE_CODE::JERR_TFILE_CREATE == cinfo.err->msg_code)
         {
