@@ -171,9 +171,10 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableNotPassab
 	{
 		return enableCustomDrawError;
 	}
-
+    
+    Rect2i updateRect = Rect2i(0, 0, GetHeightmapProxy()->Size(), GetHeightmapProxy()->Size());
 	notPassableTerrainProxy->Enable();
-	notPassableTerrainProxy->UpdateTexture(heightmapProxy,  landscapeProxy->GetLandscapeBoundingBox(), GetHeightmapRect());
+	notPassableTerrainProxy->UpdateTexture(heightmapProxy, landscapeProxy->GetLandscapeBoundingBox(), updateRect);
 	
     landscapeProxy->SetToolTexture(notPassableTerrainProxy->GetTexture());
     
@@ -229,11 +230,12 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 	if (heightmapProxy && heightmapProxy->IsHeightmapChanged())
 	{
 		Rect changedRect = heightmapProxy->GetChangedRect();
-        baseLandscape->UpdatePart(heightmapProxy, Rect2i((int32)changedRect.x, (int32)changedRect.y, (int32)changedRect.dx, (int32)changedRect.dy));
+        Rect2i updateRect = Rect2i((int32)changedRect.x, (int32)changedRect.y, (int32)changedRect.dx, (int32)changedRect.dy);
+        baseLandscape->UpdatePart(heightmapProxy, updateRect);
 		
 		if (notPassableTerrainProxy && notPassableTerrainProxy->IsEnabled())
 		{
-			notPassableTerrainProxy->UpdateTexture(heightmapProxy, landscapeProxy->GetLandscapeBoundingBox(), changedRect);
+			notPassableTerrainProxy->UpdateTexture(heightmapProxy, landscapeProxy->GetLandscapeBoundingBox(), updateRect);
 		}
 		
 		if (customDrawRequestCount == 0)
