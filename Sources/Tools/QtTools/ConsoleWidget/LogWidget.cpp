@@ -82,7 +82,7 @@ void LogWidget::AddResultList(const DAVA::ResultList &resultList)
                 level = DAVA::Logger::LEVEL_ERROR;
             break;
         }
-        logModel->AddMessage(level, QString::fromStdString(result.message), QVariant::fromValue<DAVA::VariantType>(result.data));
+        logModel->AddMessageWithData(level, QString::fromStdString(result.message), QVariant::fromValue<DAVA::VariantType>(result.data));
     }
 }
 
