@@ -29,6 +29,8 @@
 
 #include "Sound/SoundSystem.h"
 
+#ifndef DAVA_FMOD
+
 namespace DAVA
 {
     Mutex SoundSystem::soundGroupsMutex;
@@ -107,3 +109,5 @@ namespace DAVA
     }
     
 }//DAVA
+
+#endif // #ifndef DAVA_FMOD
