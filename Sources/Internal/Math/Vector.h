@@ -134,7 +134,7 @@ class Vector4;
 class Vector3
 {
 public:
-
+    static const Vector3 Zero;
     static const Vector3 UnitX;
     static const Vector3 UnitY;
     static const Vector3 UnitZ;

@@ -159,6 +159,8 @@ namespace DAVA
     const FastName NMaterialFlagName::FLAG_VIEWSPECULAR = FastName("VIEW_SPECULAR");
 
     const FastName NMaterialFlagName::FLAG_FRAME_BLEND = FastName("FRAME_BLEND");
+    const FastName NMaterialFlagName::FLAG_FORCE_2D_MODE = FastName("FORCE_2D_MODE");
+
     
     const FastName NMaterialFlagName::FLAG_ILLUMINATION_USED = FastName("ILLUMINATION_USED");
     const FastName NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER = FastName("ILLUMINATION_SHADOW_CASTER");

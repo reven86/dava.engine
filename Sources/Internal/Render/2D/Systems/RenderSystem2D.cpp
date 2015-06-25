@@ -599,6 +599,14 @@ void RenderSystem2D::Flush()
 
 }
 
+void RenderSystem2D::DrawPacket(rhi::Packet& packet)
+{
+    Flush();
+    //RHI_COMPLETE - add current clip to packet
+    //RHI_COMPLETE - move this magic with guessing packet list by render target width away and just push it to current packet list
+    rhi::AddPacket(renderTargetWidth ? packetListTargetHandle : packetList2DHandle, packet);
+}
+
 void RenderSystem2D::HardResetBatchingBuffers(uint32 verticesCount, uint32 indicesCount, uint8 buffersCount)
 {
     vboTemp.resize(verticesCount * GetVertexSize(VBO_FORMAT));

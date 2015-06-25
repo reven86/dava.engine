@@ -133,6 +133,11 @@ public:
         uint32 indexCount, const uint16* indexPointer,
         const Color& color, const rhi::PrimitiveType primitiveType = rhi::PRIMITIVE_TRIANGLELIST);
     
+    /*
+     *  note - it will flush currently batched!
+     *  it will also modify packet to add current clip
+     */
+    void DrawPacket(rhi::Packet& packet);
     /*!
      * Highlight controls which has vertices count bigger than verticesCount.
      * Work only with RenderOptions::HIGHLIGHT_BIG_CONTROLS option enabled.
