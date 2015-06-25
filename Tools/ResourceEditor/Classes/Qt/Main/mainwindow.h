@@ -54,6 +54,10 @@ class DeveloperTools;
 class VersionInfoWidget;
 
 class DeviceListController;
+namespace DAVA
+{
+    class VariantType;
+}
 
 
 
@@ -260,6 +264,8 @@ private slots:
     void DebugVersionInfo();
     void DebugColorPicker();
     void DebugDeviceList();
+
+    void OnConsoleItemClicked(const DAVA::VariantType &var);
 
 private:
 	Ui::MainWindow *ui;

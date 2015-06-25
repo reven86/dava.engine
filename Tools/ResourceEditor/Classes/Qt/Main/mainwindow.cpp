@@ -589,6 +589,8 @@ void QtMainWindow::SetupDocks()
     // Console dock
 	{
         LogWidget *logWidget = new LogWidget();
+        connect(logWidget, &LogWidget::ItemClicked, this, &QtMainWindow::OnConsoleItemClicked);
+        connect(ui->sceneTree, &SceneTree::ErrorOccurred, logWidget, &LogWidget::AddResultList);
         const auto var = SettingsManager::Instance()->GetValue(Settings::Internal_LogWidget);
 
         const QByteArray arr(reinterpret_cast<const char*>(var.AsByteArray()), var.AsByteArraySize());
@@ -3094,6 +3096,15 @@ void QtMainWindow::DebugDeviceList()
         deviceListController->SetView(w);
     }
     deviceListController->ShowView();
+}
+
+void QtMainWindow::OnConsoleItemClicked(const VariantType &var)
+{
+    auto entity = var.AsPointer<DAVA::Entity>();
+    if (nullptr != entity)
+    {
+        GetCurrentScene()->selectionSystem->SetSelection(entity);
+    }
 }
 
 void QtMainWindow::OnGenerateHeightDelta()

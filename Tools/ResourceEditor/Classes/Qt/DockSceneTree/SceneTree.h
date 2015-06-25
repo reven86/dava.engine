@@ -40,6 +40,11 @@
 #include "DockSceneTree/SceneTreeModel.h"
 #include "DockSceneTree/SceneTreeDelegate.h"
 
+namespace DAVA
+{
+    class ResultList;
+}
+
 class SceneTree
     : public QTreeView
 {
@@ -48,7 +53,8 @@ class SceneTree
 public:
 	explicit SceneTree(QWidget *parent = 0);
 	~SceneTree();
-
+signals:
+    void ErrorOccurred(const DAVA::ResultList &list);
 public slots:
 	void ShowContextMenu(const QPoint &pos);
 	void SetFilter(const QString &filter);

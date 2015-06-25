@@ -94,14 +94,12 @@ ResultList& ResultList::operator=(ResultList&& resultList)
 
 ResultList& ResultList::operator<<(const Result& result)
 {
-    results.push_back(result);
-    return *this;
+    return AddResult(result);
 }
 
 ResultList& ResultList::operator<<(Result&& result)
 {
-    results.emplace_back(std::move(result));
-    return *this;
+    return AddResult(std::move(result));
 }
 
 
