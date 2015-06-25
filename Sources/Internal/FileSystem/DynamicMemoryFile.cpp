@@ -36,7 +36,7 @@ namespace DAVA
 DynamicMemoryFile * DynamicMemoryFile::Create(const uint8 * data, int32 dataSize, uint32 attributes)
 {
 	DynamicMemoryFile *fl = new DynamicMemoryFile();
-	fl->filename = Format("memoryfile_%p", fl);
+	fl->filename = Format("memoryfile_%p", static_cast<void*>(fl));
 	fl->Write(data, dataSize);
 	fl->fileAttributes = attributes;
 	fl->currentPtr = 0;
@@ -48,7 +48,7 @@ DynamicMemoryFile * DynamicMemoryFile::Create(uint32 attributes)
 {
 	DynamicMemoryFile *fl = new DynamicMemoryFile();
 	fl->fileAttributes = attributes;
- 	fl->filename = Format("memoryfile_%p", fl);
+    fl->filename = Format("memoryfile_%p", static_cast<void*>(fl));
 	
 	return fl;
 }
