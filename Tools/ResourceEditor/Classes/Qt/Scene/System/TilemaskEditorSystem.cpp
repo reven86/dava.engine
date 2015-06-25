@@ -50,6 +50,8 @@ static const FastName TILEMASK_EDITOR_PARAM_COPYPASTE_OFFSET("copypasteOffset");
 static const FastName TILEMASK_EDTIOR_TEXTURE_SOURCE("sourceTexture");
 static const FastName TILEMASK_EDTIOR_TEXTURE_TOOL("toolTexture");
 
+static const FastName TILEMASK_EDITOR_MATERIAL_PASS("2d");
+
 TilemaskEditorSystem::TilemaskEditorSystem(Scene* scene)
 :	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
 ,	curToolSize(0)
@@ -75,7 +77,7 @@ TilemaskEditorSystem::TilemaskEditorSystem(Scene* scene)
     editorMaterial->AddProperty(TILEMASK_EDITOR_PARAM_INTENSITY, &strength, rhi::ShaderProp::TYPE_FLOAT1);
     editorMaterial->AddProperty(TILEMASK_EDITOR_PARAM_COPYPASTE_OFFSET, copyPasteOffset.data, rhi::ShaderProp::TYPE_FLOAT2);
     
-    editorMaterial->PreBuildMaterial(FastName("2d"));
+    editorMaterial->PreBuildMaterial(TILEMASK_EDITOR_MATERIAL_PASS);
     
     std::array<float32, 6 * (3 + 2)> buffer = // 6 vertecies by 5 floats: vec3 position, vec2 tex coord
     {{
@@ -328,6 +330,7 @@ void TilemaskEditorSystem::SetTileTexture(uint32 tileTexture)
 	tileTextureNum = tileTexture;
     
     editorMaterial->SetFlag(TILEMASK_EDITOR_FLAG_DRAW_TYPE, tileTextureNum);
+    editorMaterial->PreBuildMaterial(TILEMASK_EDITOR_MATERIAL_PASS);
 }
 
 void TilemaskEditorSystem::UpdateBrushTool()
@@ -348,7 +351,7 @@ void TilemaskEditorSystem::UpdateBrushTool()
     passConf.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     Memset(passConf.colorBuffer[0].clearColor, 0, 4 * sizeof(float32));
     
-    editorMaterial->PreBuildMaterial(FastName("2d"));
+    editorMaterial->PreBuildMaterial(TILEMASK_EDITOR_MATERIAL_PASS);
     editorMaterial->BindParams(quadPacket);
     
     rhi::HPacketList pList;
@@ -543,6 +546,8 @@ void TilemaskEditorSystem::SetDrawingType(eTilemaskDrawType type)
         {
             editorMaterial->SetFlag(TILEMASK_EDITOR_FLAG_DRAW_TYPE, tileTextureNum);
         }
+
+        editorMaterial->PreBuildMaterial(TILEMASK_EDITOR_MATERIAL_PASS);
 	}
 }
 
