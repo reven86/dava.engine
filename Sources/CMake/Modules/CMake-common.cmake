@@ -37,6 +37,10 @@ elseif ( WINDOWS_UAP )
         remove_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
         unset ( DAVA_MEMORY_PROFILER )
     endif ()
+
+    #no fmod on Win10
+    set ( DISABLE_SOUNDS true )
+    message(WARNING "Windows Store platform detected. FMOD is disabled")
 	
 endif()
 

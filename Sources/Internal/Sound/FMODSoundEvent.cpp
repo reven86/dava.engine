@@ -92,26 +92,14 @@ bool FMODSoundEvent::Trigger()
     }
     
     FMOD::Event * fmodEvent = nullptr;
-
-#ifndef __DAVAENGINE_WIN_UAP__
     FMOD_RESULT result = fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_DEFAULT, &fmodEvent);
-#else
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    FMOD_RESULT result = FMOD_ERR_BADCOMMAND;
-#endif
 
     if(result == FMOD_OK)
     {
         ApplyParamsToEvent(fmodEvent);
 
 		FMOD_VERIFY(fmodEvent->setVolume(volume));
-
-#ifndef __DAVAENGINE_WIN_UAP__
         FMOD_RESULT startResult = fmodEvent->start();
-#else
-        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-        FMOD_RESULT startResult = FMOD_ERR_BADCOMMAND;
-#endif
 
 		if(startResult == FMOD_OK)
 		{

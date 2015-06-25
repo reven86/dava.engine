@@ -101,12 +101,7 @@ SoundSystem::SoundSystem()
     initFlags |= FMOD_INIT_ENABLE_PROFILE;
 #endif
 
-#ifndef __DAVAENGINE_WIN_UAP__
     FMOD_RESULT initResult = fmodEventSystem->init(MAX_SOUND_VIRTUAL_CHANNELS, initFlags, extraDriverData);
-#else
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    FMOD_RESULT initResult = FMOD_ERR_BADCOMMAND;
-#endif
 
     if (initResult != FMOD_OK)
     {
