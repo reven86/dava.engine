@@ -199,26 +199,6 @@ VariantType::VariantType(const FilePath & value) : pointerValue(nullptr)
 {
 	SetFilePath(value);
 }
-/*
-template <typename T>
-VariantType::VariantType(const T* pointer) : pointerValue(nullptr)
-{
-    SetPointer(pointer);
-}
-
-template <>
-VariantType::VariantType(const KeyedArchive* archive)
-{
-    SetKeyedArchive(archive);
-}
-
-template< typename T>
-VariantType VariantType::CreateFromT(T* val)
-{
-    VariantType v;
-    v.meta = MetaInfo::Instance<T*>(val);
-    v.pointerValue =  val;
-}*/
 
 VariantType::~VariantType()
 {
