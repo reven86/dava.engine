@@ -176,7 +176,7 @@
     </Link>
     <Lib>
       <AdditionalDependencies>zlib.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../../../lib_CMake/win10/arm/Debug</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../../../lib_CMake/win10/arm/Release</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
