@@ -64,7 +64,7 @@ JniTextField::JniTextField(uint32_t id)
     getCursorPos = jniTextField.GetStaticMethod<jint, jint>("GetCursorPos");
     setCursorPos = jniTextField.GetStaticMethod<void, jint, jint>("SetCursorPos");
     setMaxLength = jniTextField.GetStaticMethod<void, jint, jint>("SetMaxLength");
-    setMultiline = jniTextField.GetStaticMethod<void, jint, jint, jint, jboolean>("SetMultiline");
+    setMultiline = jniTextField.GetStaticMethod<void, jint, jint, jboolean>("SetMultiline");
 }
 
 void JniTextField::Create(Rect controlRect)
@@ -197,13 +197,12 @@ void JniTextField::SetMaxLength(int32_t value)
     setMaxLength(id, value);
 }
 
-void JniTextField::SetMultiline(uint32 minLines, uint32 maxLines, bool verticalScrollBarEnabled)
+void JniTextField::SetMultiline(uint32 maxLines, bool verticalScrollBarEnabled)
 {
-	jint min = static_cast<jint>(minLines);
 	jint max = static_cast<jint>(maxLines);
 	jboolean vert = static_cast<jboolean>(verticalScrollBarEnabled);
 
-	setMultiline(id, min, max, vert);
+	setMultiline(id, max, vert);
 }
 
 uint32_t UITextFieldAndroid::sId = 0;
@@ -401,10 +400,10 @@ void UITextFieldAndroid::SetMaxLength(DAVA::int32 value)
     return jniTextField.SetMaxLength(value);
 }
 
-void UITextFieldAndroid::SetMultiline(uint32 minLines, uint32 maxLines, bool verticalScrollBarEnabled)
+void UITextFieldAndroid::SetMultiline(uint32 maxLines, bool verticalScrollBarEnabled)
 {
 	JniTextField jniTextField(id);
-	jniTextField.SetMultiline(minLines, maxLines, verticalScrollBarEnabled);
+	jniTextField.SetMultiline(maxLines, verticalScrollBarEnabled);
 }
 
 WideString UITextFieldAndroid::TruncateText(const WideString& text, int32 maxLength)

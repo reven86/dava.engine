@@ -1,7 +1,9 @@
 #
 
 # Only interpret ``if()`` arguments as variables or keywords when unquoted.
-cmake_policy(SET CMP0054 NEW)
+if(CMAKE_VERSION VERSION_GREATER 3)
+    cmake_policy(SET CMP0054 NEW)
+endif()
 
 if( APPLE AND NOT IOS AND NOT ANDROID )
 	set( MACOS 1 )

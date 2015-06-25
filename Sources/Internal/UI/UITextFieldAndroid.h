@@ -69,7 +69,7 @@ public:
 	uint32 GetCursorPos();
 	void SetCursorPos(uint32 pos);
 	void SetMaxLength(int32_t value);
-	void SetMultiline(uint32 minLines, uint32 maxLines, bool verticalScrollBarEnabled);
+	void SetMultiline(uint32 maxLines, bool verticalScrollBarEnabled);
 
 private:
 	uint32_t id;
@@ -99,7 +99,7 @@ private:
 	Function<jint (jint)> getCursorPos;
 	Function<void (jint, jint)> setCursorPos;
 	Function<void (jint, jint)> setMaxLength;
-	Function<void (jint, jint, jint, jboolean)> setMultiline;
+	Function<void (jint, jint, jboolean)> setMultiline;
 };
 
 class UITextFieldAndroid
@@ -143,7 +143,7 @@ public:
 	uint32 GetCursorPos();
 	void SetCursorPos(uint32 pos);
 	void SetMaxLength(DAVA::int32 value);
-	void SetMultiline(uint32 minLines, uint32 maxLines, bool verticalScrollBarEnabled);
+	void SetMultiline(uint32 maxLines, bool verticalScrollBarEnabled);
 
 	bool TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, WideString &text);
 	void TextFieldOnTextChanged(const WideString& newText, const WideString& oldText);

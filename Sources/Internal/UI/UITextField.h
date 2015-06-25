@@ -290,7 +290,7 @@ public:
     iOS: maxLines, verticalScrollBarEnabled - works
     Other: none params used
     */
-    void SetMultiline(uint32 minLines, uint32 maxLines, bool verticalScrollBarEnabled);
+    void SetMultiline(uint32 maxLines, bool verticalScrollBarEnabled);
     /**
 	 \brief Set control text style hide.
 	 \param[in] isPassword draw text with hide char.
