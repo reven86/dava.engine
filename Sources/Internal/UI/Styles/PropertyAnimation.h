@@ -42,9 +42,11 @@ class PropertyAnimation : public Animation
 protected:
     ~PropertyAnimation(){}
 public:
-    PropertyAnimation(AnimatedObject * _owner, void* _object, const InspMember* _inspMember, T _startValue, T _endValue, float32 _animationTimeLength, Interpolation::FuncType _iFuncType);
+    PropertyAnimation(AnimatedObject * _owner, void* _object, const InspMember* _inspMember, const T& _startValue, const T& _endValue, float32 _animationTimeLength, Interpolation::FuncType _iFuncType);
 
     virtual void Update(float32 timeElapsed);
+
+    const T& GetEndValue() const;
 protected:
     void* object;
     const InspMember* inspMember;
@@ -53,7 +55,7 @@ protected:
 };
 
 template<class T>
-PropertyAnimation<T>::PropertyAnimation(AnimatedObject * _owner, void* _object, const InspMember* _inspMember, T _startValue, T _endValue, float32 _animationTimeLength, Interpolation::FuncType _iFuncType)
+PropertyAnimation<T>::PropertyAnimation(AnimatedObject * _owner, void* _object, const InspMember* _inspMember, const T& _startValue, const T& _endValue, float32 _animationTimeLength, Interpolation::FuncType _iFuncType)
     : Animation(_owner, _animationTimeLength, _iFuncType)
     , object(_object)
     , inspMember(_inspMember)
@@ -69,6 +71,12 @@ void PropertyAnimation<T>::Update(float32 timeElapsed)
     Animation::Update(timeElapsed);
     T val = startValue + (endValue - startValue) * normalizedTime;
     inspMember->SetValueRaw(object, &val);
+}
+
+template<class T>
+const T& PropertyAnimation<T>::GetEndValue() const
+{
+    return endValue;
 }
 
 };

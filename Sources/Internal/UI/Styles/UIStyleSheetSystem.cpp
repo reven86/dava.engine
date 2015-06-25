@@ -33,6 +33,7 @@
 #include "UI/Components/UIComponent.h"
 #include "Platform/SystemTimer.h"
 #include "UI/Styles/PropertyAnimation.h"
+#include "Animation/AnimationManager.h"
 
 namespace DAVA
 {
@@ -56,32 +57,45 @@ struct ImmediatePropertySetter
 
 struct AnimatedPropertySetter
 {
-    void operator ()(UIControl* control, void* targetObject, const InspMember* targetIntrospectionMember) const
+    template<typename T>
+    void Animate(UIControl* control, void* targetObject, const InspMember* targetIntrospectionMember, const T& startValue, const T& endValue) const
     {
         const int32 track = PROPERTY_ANIMATION_GROUP_OFFSET + propertyIndex;
-        control->StopAnimations(track);
-        if (targetIntrospectionMember->Value(targetObject) != value)
+        PropertyAnimation<T>* currentAnimation = DynamicTypeCheck<PropertyAnimation<T>*>(AnimationManager::Instance()->FindPlayingAnimation(control, track));
+
+        if (!currentAnimation || currentAnimation->GetEndValue() != endValue)
         {
-            switch (value.GetType())
+            if (currentAnimation)
+                control->StopAnimations(track);
+
+            if (targetIntrospectionMember->Value(targetObject) != value)
             {
-            case VariantType::TYPE_VECTOR2:
-                (new PropertyAnimation<Vector2>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsVector2(), value.AsVector2(), time, transitionFunction))->Start(track);
-                break;
-            case VariantType::TYPE_VECTOR3:
-                (new PropertyAnimation<Vector3>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsVector3(), value.AsVector3(), time, transitionFunction))->Start(track);
-                break;
-            case VariantType::TYPE_VECTOR4:
-                (new PropertyAnimation<Vector4>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsVector4(), value.AsVector4(), time, transitionFunction))->Start(track);
-                break;
-            case VariantType::TYPE_FLOAT:
-                (new PropertyAnimation<float32>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsFloat(), value.AsFloat(), time, transitionFunction))->Start(track);
-                break;
-            case VariantType::TYPE_COLOR:
-                (new PropertyAnimation<Color>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsColor(), value.AsColor(), time, transitionFunction))->Start(track);
-                break;
-            default:
-                DVASSERT_MSG(false, "Non-animatable property");
+                (new PropertyAnimation<T>(control, targetObject, targetIntrospectionMember, startValue, endValue, time, transitionFunction))->Start(track);
             }
+        }
+    }
+
+    void operator ()(UIControl* control, void* targetObject, const InspMember* targetIntrospectionMember) const
+    {
+        switch (value.GetType())
+        {
+        case VariantType::TYPE_VECTOR2:
+            Animate<Vector2>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsVector2(), value.AsVector2());
+            break;
+        case VariantType::TYPE_VECTOR3:
+            Animate<Vector3>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsVector3(), value.AsVector3());
+            break;
+        case VariantType::TYPE_VECTOR4:
+            Animate<Vector4>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsVector4(), value.AsVector4());
+            break;
+        case VariantType::TYPE_FLOAT:
+            Animate<float32>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsFloat(), value.AsFloat());
+            break;
+        case VariantType::TYPE_COLOR:
+            Animate<Color>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsColor(), value.AsColor());
+            break;
+        default:
+            DVASSERT_MSG(false, "Non-animatable property");
         }
     }
 
