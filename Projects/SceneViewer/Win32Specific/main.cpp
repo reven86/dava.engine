@@ -26,10 +26,23 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Base/Platform.h"
-#if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Core/Core.h"
+
+#if defined(__DAVAENGINE_WIN32__)
+
+int APIENTRY WinMain(HINSTANCE hInstance,
+                     HINSTANCE hPrevInstance,
+                     LPSTR    lpCmdLine,
+                     int       nCmdShow)
+{
+    UNREFERENCED_PARAMETER(hPrevInstance);
+    UNREFERENCED_PARAMETER(lpCmdLine);
+
+    return DAVA::Core::Run(0, 0, hInstance);
+}
+
+#elif defined(__DAVAENGINE_WIN_UAP__)
 
 [Platform::MTAThread]
 int main(Platform::Array<Platform::String^>^ args)
@@ -37,4 +50,4 @@ int main(Platform::Array<Platform::String^>^ args)
     return DAVA::Core::Run(0, 0, 0);
 }
 
-#endif // defined(__DAVAENGINE_WIN_UAP__)
+#endif // defined(__DAVAENGINE_WIN32__)
