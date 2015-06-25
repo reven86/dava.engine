@@ -71,12 +71,19 @@ void SelectSceneScreen::LoadResources()
     startButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &SelectSceneScreen::OnStart));
 
     
+    UIParticles *particles = new UIParticles(Rect(800, 600, 100, 100));
+    particles->SetEffectPath(FilePath("~doc:/_ui/folder/big_smoke.sc2"));
+    particles->Start();
+    AddControl(particles);
+
     AddControl(fileNameText);
     AddControl(selectButtonRes);
     AddControl(selectButtonDoc);
     AddControl(clearPathButton);
     AddControl(startButton);
     
+    
+
 
     DVASSERT(fileSystemDialog == NULL);
     fileSystemDialog = new UIFileSystemDialog("~res:/Fonts/korinna.ttf");
