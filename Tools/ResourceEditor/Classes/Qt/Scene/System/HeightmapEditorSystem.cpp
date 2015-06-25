@@ -412,7 +412,7 @@ void HeightmapEditorSystem::SetDrawingType(eHeightmapDrawType type)
 
 int32 HeightmapEditorSystem::GetBrushSize()
 {
-	return cursorSize;
+	return curToolSize;
 }
 
 float32 HeightmapEditorSystem::GetStrength()

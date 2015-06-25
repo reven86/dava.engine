@@ -504,7 +504,7 @@ void TilemaskEditorSystem::CreateUndoPoint()
 
 int32 TilemaskEditorSystem::GetBrushSize()
 {
-	return cursorSize;
+	return curToolSize;
 }
 
 float32 TilemaskEditorSystem::GetStrength()
