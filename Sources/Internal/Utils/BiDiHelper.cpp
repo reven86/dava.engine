@@ -28,7 +28,8 @@
 
 
 #include "BiDiHelper.h"
-#include "Thread/LockGuard.h"
+#include "Concurrency/Mutex.h"
+#include "Concurrency/LockGuard.h"
 #include "Utils/StringUtils.h"
 
 #include "fribidi/fribidi.h"
