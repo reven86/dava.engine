@@ -182,12 +182,24 @@ void GameCore::InitScreenController()
             params.targetTime = std::atoi(testTimeParam.c_str());
         }
         
-        if (testFramesFound && frameDeltaFound)
+        if (testFramesFound)
         {
+            if(!frameDeltaFound)
+            {
+                Logger::Error("Incorrect params. Set debug frame number");
+                Core::Instance()->Quit();
+            }
+            
             String testFramesParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test-frames", 0);
             String frameDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-frame-delta", 0);
 
             params.targetFramesCount = std::atoi(testFramesParam.c_str());
+            params.targetFrameDelta = std::atof(frameDeltaParam.c_str());
+        }
+        
+        if(frameDeltaFound)
+        {
+            String frameDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-frame-delta", 0);
             params.targetFrameDelta = std::atof(frameDeltaParam.c_str());
         }
 

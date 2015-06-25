@@ -168,7 +168,8 @@ void BaseTest::SystemUpdate(float32 timeElapsed)
     }
 
     bool frameForDebug = GetFrameNumber() >= (GetDebugFrame() + BaseTest::FRAME_OFFSET);
-    bool greaterMaxDelta = maxDelta > 0.0f && maxDelta <= timeElapsed; 
+    bool greaterMaxDelta = maxDelta > 0.0f && maxDelta <= timeElapsed;
+    
     float32 delta = 0.0f;
 
     if (IsDebuggable() && (frameForDebug || greaterMaxDelta))
@@ -187,7 +188,7 @@ void BaseTest::SystemUpdate(float32 timeElapsed)
         delta = targetFrameDelta > 0 ? targetFrameDelta : timeElapsed;
 
         frames.push_back(FrameInfo(timeElapsed));
-        testTime += timeElapsed;
+        testTime += delta;
 
         PerformTestLogic(delta);
     }

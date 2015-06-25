@@ -77,6 +77,9 @@ if args['test'] and args['test'] != "All":
         TEST_PARAMS += " -test-frames " + args['test-frames']
         TEST_PARAMS += " -frame-delta " + args['frame-delta']   
 
+    if args['frame-delta']:
+        TEST_PARAMS += " -frame-delta " + args['frame-delta']   
+        
     if args['debug-frame']:
         TEST_PARAMS += " -debug-frame " + args['debug-frame']
 
