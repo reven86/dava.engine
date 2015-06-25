@@ -182,6 +182,12 @@
 		11CB615319C3391B00B48A92 /* AnimationData.h in Headers */ = {isa = PBXBuildFile; fileRef = 11CB614F19C3391B00B48A92 /* AnimationData.h */; };
 		11CB615419C3391B00B48A92 /* AnimationData.h in Headers */ = {isa = PBXBuildFile; fileRef = 11CB614F19C3391B00B48A92 /* AnimationData.h */; };
 		11CB615519C3391B00B48A92 /* AnimationData.h in Headers */ = {isa = PBXBuildFile; fileRef = 11CB614F19C3391B00B48A92 /* AnimationData.h */; };
+		11DE3D6B1B3B12B500A2C72D /* PropertyAnimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11DE3D691B3B12B500A2C72D /* PropertyAnimation.cpp */; };
+		11DE3D6C1B3B12B500A2C72D /* PropertyAnimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11DE3D691B3B12B500A2C72D /* PropertyAnimation.cpp */; };
+		11DE3D6D1B3B12B500A2C72D /* PropertyAnimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11DE3D691B3B12B500A2C72D /* PropertyAnimation.cpp */; };
+		11DE3D6E1B3B12B500A2C72D /* PropertyAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = 11DE3D6A1B3B12B500A2C72D /* PropertyAnimation.h */; };
+		11DE3D6F1B3B12B500A2C72D /* PropertyAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = 11DE3D6A1B3B12B500A2C72D /* PropertyAnimation.h */; };
+		11DE3D701B3B12B500A2C72D /* PropertyAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = 11DE3D6A1B3B12B500A2C72D /* PropertyAnimation.h */; };
 		155D77D8197DD22E006AEBCD /* YamlNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 155D77D6197DD22E006AEBCD /* YamlNode.cpp */; };
 		155D77D9197DD22E006AEBCD /* YamlNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 155D77D6197DD22E006AEBCD /* YamlNode.cpp */; };
 		155D77DA197DD22E006AEBCD /* YamlNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 155D77D6197DD22E006AEBCD /* YamlNode.cpp */; };
@@ -2848,6 +2854,8 @@
 		11B1554B1B32D85400E0EECE /* UIStyleSheetYamlWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIStyleSheetYamlWriter.h; path = Styles/UIStyleSheetYamlWriter.h; sourceTree = "<group>"; };
 		11CB614E19C3391B00B48A92 /* AnimationData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnimationData.cpp; sourceTree = "<group>"; };
 		11CB614F19C3391B00B48A92 /* AnimationData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimationData.h; sourceTree = "<group>"; };
+		11DE3D691B3B12B500A2C72D /* PropertyAnimation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PropertyAnimation.cpp; path = Styles/PropertyAnimation.cpp; sourceTree = "<group>"; };
+		11DE3D6A1B3B12B500A2C72D /* PropertyAnimation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PropertyAnimation.h; path = Styles/PropertyAnimation.h; sourceTree = "<group>"; };
 		155D77D6197DD22E006AEBCD /* YamlNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = YamlNode.cpp; sourceTree = "<group>"; };
 		155D77D7197DD22E006AEBCD /* YamlNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YamlNode.h; sourceTree = "<group>"; };
 		15D3117E198285C800919AAA /* YamlEmitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = YamlEmitter.cpp; sourceTree = "<group>"; };
@@ -3976,6 +3984,8 @@
 		11B155411B32D84800E0EECE /* Styles */ = {
 			isa = PBXGroup;
 			children = (
+				11DE3D691B3B12B500A2C72D /* PropertyAnimation.cpp */,
+				11DE3D6A1B3B12B500A2C72D /* PropertyAnimation.h */,
 				11B155421B32D85400E0EECE /* UIStyleSheet.cpp */,
 				11B155431B32D85400E0EECE /* UIStyleSheet.h */,
 				11B155441B32D85400E0EECE /* UIStyleSheetPropertiesTable.cpp */,
@@ -5871,6 +5881,7 @@
 				644C86F619476A7100964F91 /* VegetationRenderData.h in Headers */,
 				A6E4FE121761D9D900B48E41 /* CustomPropertiesComponent.h in Headers */,
 				A6E4FE161761D9E700B48E41 /* ActionUpdateSystem.h in Headers */,
+				11DE3D701B3B12B500A2C72D /* PropertyAnimation.h in Headers */,
 				4FFE5CB31779E0B200728624 /* MipmapReplacer.h in Headers */,
 				A68B3EF517AA8C4000E129C1 /* SkyboxSystem.h in Headers */,
 				4F64848D17AFCAF900034454 /* AllocatorFactory.h in Headers */,
@@ -5989,6 +6000,7 @@
 				E8FC12F3186972560095D8FE /* QualitySettingsComponent.h in Headers */,
 				E8989DFA16BD24E500732C04 /* ListAllocator.h in Headers */,
 				50C16DC91A52D7B9003C307A /* ProtoDriver.h in Headers */,
+				11DE3D6E1B3B12B500A2C72D /* PropertyAnimation.h in Headers */,
 				E8989DFE16BD24E500732C04 /* Replay.h in Headers */,
 				1146E11819D00874009E5FAB /* AnimationComponent.h in Headers */,
 				E8989E0016BD24E500732C04 /* Stats.h in Headers */,
@@ -6712,6 +6724,7 @@
 				E898A16416BD265400732C04 /* LightUpdateSystem.h in Headers */,
 				E898A16516BD265400732C04 /* LodSystem.h in Headers */,
 				E898A16616BD265400732C04 /* ParticleEffectSystem.h in Headers */,
+				11DE3D6F1B3B12B500A2C72D /* PropertyAnimation.h in Headers */,
 				E898A16816BD265400732C04 /* RenderUpdateSystem.h in Headers */,
 				E898A16916BD265400732C04 /* SwitchSystem.h in Headers */,
 				644C86CE19476A7100964F91 /* VegetationCustomGeometry.h in Headers */,
@@ -7358,6 +7371,7 @@
 				C18577F117A2600400331A95 /* MaterialOptimazer.cpp in Sources */,
 				A68B3EF217AA8C4000E129C1 /* SkyboxSystem.cpp in Sources */,
 				C172EC4E18CA0ADF004309CF /* TextBlockRender.cpp in Sources */,
+				11DE3D6D1B3B12B500A2C72D /* PropertyAnimation.cpp in Sources */,
 				644C86F919476A7100964F91 /* VegetationRenderObject.cpp in Sources */,
 				02FD7EE519237DA2007762C0 /* SpeedTreeComponent.cpp in Sources */,
 				4F64848F17AFCAFD00034454 /* AllocatorFactory.cpp in Sources */,
@@ -7708,6 +7722,7 @@
 				322FFD4419C042880000ED71 /* UIControlHelpers.cpp in Sources */,
 				E898A02316BD24E500732C04 /* UIListCell.cpp in Sources */,
 				E89EDE7E1A2E16FA0036E993 /* UIControlSwig.cpp in Sources */,
+				11DE3D6B1B3B12B500A2C72D /* PropertyAnimation.cpp in Sources */,
 				E898A02516BD24E500732C04 /* UILoadingTransition.cpp in Sources */,
 				E898A02716BD24E500732C04 /* UIMoveInTransition.cpp in Sources */,
 				E898A02916BD24E500732C04 /* UIPopup.cpp in Sources */,
@@ -8167,6 +8182,7 @@
 				E898A2AC16BD265400732C04 /* StringFormat.cpp in Sources */,
 				E8990B361A288C2000FF71A1 /* SnapToLandscapeControllerComponent.cpp in Sources */,
 				E898A2AE16BD265400732C04 /* Utils.cpp in Sources */,
+				11DE3D6C1B3B12B500A2C72D /* PropertyAnimation.cpp in Sources */,
 				E898A2AF16BD265400732C04 /* UtilsMacOS.mm in Sources */,
 				509740DA16C12EEE00631E71 /* IntrospectionBase.cpp in Sources */,
 				E8F21DCB16C196DD007F957A /* GlobalEventSystem.cpp in Sources */,

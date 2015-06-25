@@ -833,6 +833,9 @@
 		11CB614A19C338DF00B48A92 /* AnimationData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11CB614719C338DF00B48A92 /* AnimationData.cpp */; };
 		11CB614B19C338DF00B48A92 /* AnimationData.h in Headers */ = {isa = PBXBuildFile; fileRef = 11CB614819C338DF00B48A92 /* AnimationData.h */; };
 		11CB614C19C338DF00B48A92 /* AnimationData.h in Headers */ = {isa = PBXBuildFile; fileRef = 11CB614819C338DF00B48A92 /* AnimationData.h */; };
+		11DE3D741B3B12DD00A2C72D /* PropertyAnimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11DE3D721B3B12DD00A2C72D /* PropertyAnimation.cpp */; };
+		11DE3D751B3B12DD00A2C72D /* PropertyAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = 11DE3D731B3B12DD00A2C72D /* PropertyAnimation.h */; };
+		11DE3D761B3B12E400A2C72D /* PropertyAnimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 11DE3D721B3B12DD00A2C72D /* PropertyAnimation.cpp */; };
 		150353931A02D5AA00C90B4F /* DefaultUIPackageBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = 1503538F1A02D5AA00C90B4F /* DefaultUIPackageBuilder.h */; };
 		150353941A02D5AA00C90B4F /* DefaultUIPackageBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = 1503538F1A02D5AA00C90B4F /* DefaultUIPackageBuilder.h */; };
 		150353951A02D5AA00C90B4F /* DefaultUIPackageBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 150353901A02D5AA00C90B4F /* DefaultUIPackageBuilder.cpp */; };
@@ -2018,6 +2021,8 @@
 		11B155751B32D8C200E0EECE /* UIStyleSheetYamlWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIStyleSheetYamlWriter.h; path = Styles/UIStyleSheetYamlWriter.h; sourceTree = "<group>"; };
 		11CB614719C338DF00B48A92 /* AnimationData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnimationData.cpp; sourceTree = "<group>"; };
 		11CB614819C338DF00B48A92 /* AnimationData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimationData.h; sourceTree = "<group>"; };
+		11DE3D721B3B12DD00A2C72D /* PropertyAnimation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PropertyAnimation.cpp; path = Styles/PropertyAnimation.cpp; sourceTree = "<group>"; };
+		11DE3D731B3B12DD00A2C72D /* PropertyAnimation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PropertyAnimation.h; path = Styles/PropertyAnimation.h; sourceTree = "<group>"; };
 		1503538F1A02D5AA00C90B4F /* DefaultUIPackageBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DefaultUIPackageBuilder.h; sourceTree = "<group>"; };
 		150353901A02D5AA00C90B4F /* DefaultUIPackageBuilder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DefaultUIPackageBuilder.cpp; sourceTree = "<group>"; };
 		150353911A02D5AA00C90B4F /* AbstractUIPackageBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbstractUIPackageBuilder.h; sourceTree = "<group>"; };
@@ -3107,6 +3112,8 @@
 		11B1556B1B32D8B100E0EECE /* Styles */ = {
 			isa = PBXGroup;
 			children = (
+				11DE3D721B3B12DD00A2C72D /* PropertyAnimation.cpp */,
+				11DE3D731B3B12DD00A2C72D /* PropertyAnimation.h */,
 				11B1556C1B32D8C200E0EECE /* UIStyleSheet.cpp */,
 				11B1556D1B32D8C200E0EECE /* UIStyleSheet.h */,
 				11B1556E1B32D8C200E0EECE /* UIStyleSheetPropertiesTable.cpp */,
@@ -5544,6 +5551,7 @@
 				E8525D1E1A30910400FDF76E /* WASDControllerComponent.h in Headers */,
 				A695E52E18113315008A0F20 /* RenderHierarchy.h in Headers */,
 				A695E53318113327008A0F20 /* SerializationContext.h in Headers */,
+				11DE3D751B3B12DD00A2C72D /* PropertyAnimation.h in Headers */,
 				A6919536183A6E9B00D598AE /* RenderStateData.h in Headers */,
 				EAADA0061892A48E001E1AA2 /* UIParticles.h in Headers */,
 				A6919538183A6E9B00D598AE /* UniqueStateSet.h in Headers */,
@@ -6039,6 +6047,7 @@
 				0264E3101A42F79500BD7279 /* JobThread.cpp in Sources */,
 				02FD81DC1924997C007762C0 /* UIDismissionHandlerAlertView.mm in Sources */,
 				02FD81DD1924997C007762C0 /* PerformanceSettings.cpp in Sources */,
+				11DE3D761B3B12E400A2C72D /* PropertyAnimation.cpp in Sources */,
 				02FD81DE1924997C007762C0 /* UIScrollView.cpp in Sources */,
 				02FD81DF1924997C007762C0 /* UIScrollViewContainer.cpp in Sources */,
 				02FD81E01924997C007762C0 /* Vector.cpp in Sources */,
@@ -6214,6 +6223,7 @@
 				E8B3CBE116B9326E002BD35F /* TextureMulColorEffect.cpp in Sources */,
 				50194DCE1A52D92600557DAB /* NetLogger.cpp in Sources */,
 				50194D9F1A52D92600557DAB /* DeadlineTimer.cpp in Sources */,
+				11DE3D741B3B12DD00A2C72D /* PropertyAnimation.cpp in Sources */,
 				E8B3CBE316B9326E002BD35F /* Camera.cpp in Sources */,
 				155D77E8197DD265006AEBCD /* YamlNode.cpp in Sources */,
 				0264E30B1A42F79500BD7279 /* JobQueue.cpp in Sources */,

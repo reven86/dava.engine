@@ -148,7 +148,7 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
         const UIStyleSheetPropertySet& propertiesToReset = control->GetStyledPropertySet() & ~appliedProperties;
         if (propertiesToReset.any())
         {
-            for (int32 propertyIndex = 0; propertyIndex < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT; ++propertyIndex)
+            for (uint32 propertyIndex = 0; propertyIndex < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT; ++propertyIndex)
             {
                 if (propertiesToReset.test(propertyIndex))
                 {
