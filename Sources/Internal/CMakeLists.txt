@@ -122,27 +122,10 @@ elseif( IOS )
     list ( APPEND LIST_SHARED_LIBRARIES ${RESOURCE}  )    
 
 elseif ( WINDOWS_UAP )
-    set ( DAVA_WIN_STORE_LIBRARIES_PATH "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win10" ) 
-
-    #only mincore.lib needed
-    list ( APPEND LIST_SHARED_LIBRARIES "mincore.lib" )
-	
-    #choose target architecture of libraries
-    if( "${CMAKE_GENERATOR_PLATFORM}" STREQUAL "ARM" )
-        set ( LIBS_ARCH_SELECTOR "arm" )
-    elseif ( "${CMAKE_GENERATOR_PLATFORM}" STREQUAL "x64" )
-        set ( LIBS_ARCH_SELECTOR "x64" )
-    else ()
-        set ( LIBS_ARCH_SELECTOR "x86" )
-    endif ()
-	
-    set ( DEBUG_LIB_LIST_PATH "${DAVA_WIN_STORE_LIBRARIES_PATH}/${LIBS_ARCH_SELECTOR}/Debug" )
-    set ( RELEASE_LIB_LIST_PATH "${DAVA_WIN_STORE_LIBRARIES_PATH}/${LIBS_ARCH_SELECTOR}/Release" )
-
-    file ( GLOB DEBUG_LIB_LIST "${DEBUG_LIB_LIST_PATH}/*.lib" )
+    file ( GLOB DEBUG_LIB_LIST "${DAVA_WIN_UAP_LIBRARIES_PATH_DEBUG}/*.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG ${DEBUG_LIB_LIST}  )
 
-    file ( GLOB RELEASE_LIB_LIST "${RELEASE_LIB_LIST_PATH}/*.lib" )
+    file ( GLOB RELEASE_LIB_LIST "${DAVA_WIN_UAP_LIBRARIES_PATH_RELEASE}/*.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${RELEASE_LIB_LIST}  )
 
 elseif( WIN32 ) 

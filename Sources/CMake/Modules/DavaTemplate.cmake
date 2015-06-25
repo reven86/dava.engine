@@ -125,6 +125,7 @@ elseif ( WINDOWS_UAP )
 	set ( WIN_UAP_MANIFESTS_DIR "${WIN_UAP_CONF_DIR}/Manifests" )
 	set ( WIN_UAP_ASSETS_DIR    "${WIN_UAP_CONF_DIR}/Assets" )
 	file( GLOB ASSET_FILES      "${WIN_UAP_ASSETS_DIR}/*.png" )
+	source_group ("Assets" FILES ${ASSET_FILES})
 	
 	if (NOT "${PLATFORM}" STREQUAL "DESKTOP")
 		configure_file(
@@ -155,10 +156,27 @@ elseif ( WINDOWS_UAP )
 		)
 	endif()
 	
-	set(RESOURCE_FILES
+    set(RESOURCE_FILES
 		${CONTENT_FILES} ${DEBUG_CONTENT_FILES} ${RELEASE_CONTENT_FILES} ${ASSET_FILES} ${STRING_FILES} )
-	
 	list( APPEND RESOURCES_LIST ${RESOURCE_FILES} )
+	
+	#add dll's to project and package
+	file ( GLOB DAVA_DEBUG_DLL_LIST   "${DAVA_WIN_UAP_LIBRARIES_PATH_DEBUG}/*.dll" )
+	file ( GLOB DAVA_RELEASE_DLL_LIST "${DAVA_WIN_UAP_LIBRARIES_PATH_RELEASE}/*.dll" )
+	
+	if ( DAVA_DEBUG_DLL_LIST )
+	    source_group ("Binaries\\Debug"   FILES ${DAVA_DEBUG_DLL_LIST})
+		set_property(SOURCE ${DAVA_DEBUG_DLL_LIST} PROPERTY VS_DEPLOYMENT_CONTENT $<CONFIG:Debug>)
+	endif ()
+	
+	if ( DAVA_RELEASE_DLL_LIST )
+	    source_group ("Binaries\\Release" FILES ${DAVA_RELEASE_DLL_LIST})
+        set_property(SOURCE ${DAVA_RELEASE_DLL_LIST} PROPERTY
+		    VS_DEPLOYMENT_CONTENT $<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>)
+	endif ()
+	
+	list( APPEND ADDED_SRC "${DAVA_DEBUG_DLL_LIST}"
+                           "${DAVA_RELEASE_DLL_LIST}" )
 
 	set_property(SOURCE ${CONTENT_FILES} PROPERTY VS_DEPLOYMENT_CONTENT 1)
 	set_property(SOURCE ${ASSET_FILES} PROPERTY VS_DEPLOYMENT_CONTENT 1)
@@ -230,7 +248,7 @@ if( ANDROID )
         ${PROJECT_SOURCE_FILES} 
     )
 
-else()                             
+else()                     
     add_executable( ${PROJECT_NAME} MACOSX_BUNDLE ${EXECUTABLE_FLAG}
         ${ADDED_SRC} 
         ${PROJECT_SOURCE_FILES} 
@@ -404,7 +422,14 @@ elseif ( MSVC )
     endif()
 
     list( APPEND DAVA_BINARY_WIN32_DIR "${ADDED_BINARY_DIR}" )
-    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/DavaVcxprojUserTemplate.in
+
+    if ( WINDOWS_UAP )
+        set ( DAVA_VCPROJ_USER_TEMPLATE "DavaWinUAPVcxprojUserTemplate.in" )               
+    else ()
+        set ( DAVA_VCPROJ_USER_TEMPLATE "DavaVcxprojUserTemplate.in" )
+    endif ()
+
+    configure_file( ${DAVA_CONFIGURE_FILES_PATH}/${DAVA_VCPROJ_USER_TEMPLATE}
                     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
 
     if( OUTPUT_TO_BUILD_DIR )
