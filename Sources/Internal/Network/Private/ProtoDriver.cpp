@@ -29,8 +29,7 @@
 
 #include <Base/FunctionTraits.h>
 #include <Debug/DVAssert.h>
-#include <Base/Atomic.h>
-#include <Thread/LockGuard.h>
+#include <Concurrency/LockGuard.h>
 
 #include <Network/Base/IOLoop.h>
 #include <Network/ServiceRegistrar.h>
@@ -42,7 +41,7 @@ namespace DAVA
 namespace Net
 {
 
-uint32 ProtoDriver::nextPacketId = 0;
+Atomic<uint32> ProtoDriver::nextPacketId;
 
 ProtoDriver::ProtoDriver(IOLoop* aLoop, eNetworkRole aRole, const ServiceRegistrar& aRegistrar, void* aServiceContext)
     : loop(aLoop)

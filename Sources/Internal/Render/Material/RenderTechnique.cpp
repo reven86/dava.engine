@@ -184,50 +184,68 @@ bool RenderTechniqueSingleton::LoadRenderTechniqueFromYamlNode(const YamlNode * 
 }
 
     
-RenderTechnique * RenderTechniqueSingleton::CreateTechniqueByName(const FastName & renderTechniquePathInFastName)
+RenderTechnique* RenderTechniqueSingleton::CreateTechniqueByName(const FastName & renderTechniquePathInFastName)
 {
-    FilePath renderTechniquePathname(renderTechniquePathInFastName.c_str());
-    //FastName renderTechniqueFastName(renderTechniquePathname.GetRelativePathname().c_str());
-    //Logger::Debug("Get render technique: %s %d", renderTechniquePathname.GetRelativePathname().c_str(), renderTechniqueFastName.Index());
-    
-    RenderTechnique * renderTechnique = renderTechniqueMap.at(renderTechniquePathInFastName);
-    if (!renderTechnique)
+    RenderTechnique* renderTechnique = renderTechniqueMap.at(renderTechniquePathInFastName);
+    if (nullptr == renderTechnique)
     {
-		YamlParser * parser = YamlParser::Create(renderTechniquePathname);
-		if (!parser)
-		{
-			Logger::Error("Can't load requested material: %s", renderTechniquePathname.GetRelativePathname().c_str());
-			return 0;
-		}
+        FilePath renderTechniquePathname(renderTechniquePathInFastName.c_str());
+        RefPtr<YamlParser> parser(YamlParser::Create(renderTechniquePathname));
+        if (!parser.Valid())
+        {
+            Logger::Error("Cannot load requested material: %s", renderTechniquePathname.GetRelativePathname().c_str());
+            return nullptr;
+        }
 
-        YamlNode * rootNode = parser->GetRootNode();
-		if (!rootNode)
-		{
-			SafeRelease(parser);
-			return 0;
-		}
-        
-        renderTechnique = new RenderTechnique(renderTechniquePathInFastName);
-        LoadRenderTechniqueFromYamlNode(rootNode, renderTechnique);
-        renderTechniqueMap.insert(renderTechniquePathInFastName, renderTechnique);
-     
-        SafeRelease(parser);
+        YamlNode* rootNode = parser->GetRootNode();
+        if (rootNode != nullptr)
+        {
+            renderTechnique = new RenderTechnique(renderTechniquePathInFastName);
+            LoadRenderTechniqueFromYamlNode(rootNode, renderTechnique);
+            renderTechniqueMap.insert(renderTechniquePathInFastName, renderTechnique);
+        }
+        else
+        {
+            return nullptr;
+        }
     }
-	//else
-    //{
-    //    Logger::Debug("Get render technique: %s", renderTechnique->GetName().c_str());
-    //}
-	
     return SafeRetain(renderTechnique);
 }
-    
-void RenderTechniqueSingleton::ReleaseRenderTechnique(RenderTechnique * renderTechnique)
+
+void RenderTechniqueSingleton::ReleaseRenderTechnique(RenderTechnique* renderTechnique)
 {
+    DVASSERT(renderTechnique != nullptr);
+    DVASSERT(renderTechnique->GetRetainCount() > 1);    // If reference count is less than 2 then RenderTechnique
+                                                        // has been released bypassing ReleaseRenderTechnique
+
     renderTechnique->Release();
     if (renderTechnique->GetRetainCount() == 1)
     {
         renderTechniqueMap.erase(renderTechnique->GetName());
         renderTechnique->Release();
+    }
+}
+
+void RenderTechniqueSingleton::ClearRenderTechniques()
+{
+    // DAVA::HashMap's iterators are invalidated after map erasing operation
+    // So ClearRenderTechniques does the following:
+    //  - traverses over map and releases technique
+    //  - if technique is referenced only by RenderTechniqueSingleton makes final release of technique
+    //  - instead of deleted technique places nullptr
+    for (auto& x : renderTechniqueMap)
+    {
+        RenderTechnique* technique = x.second;
+        if (technique != nullptr)
+        {
+            // Release only techniques that doesn't have external references, i.e. number 
+            // of technique->Release() call count corrensponds CreateTechniqueByName call count
+            if (1 == technique->GetRetainCount())
+            {
+                technique->Release();
+                renderTechniqueMap[x.first] = nullptr;
+            }
+        }
     }
 }
 

@@ -51,7 +51,7 @@ ImageSystem::ImageSystem()
 {
     wrappers[IMAGE_FORMAT_PNG] = new LibPngHelper();
     wrappers[IMAGE_FORMAT_DDS] = new LibDdsHelper();
-    wrappers[IMAGE_FORMAT_PVR] = new LibPVRHelper();
+    wrappers[IMAGE_FORMAT_PVR] = CreateLibPVRHelper();
     wrappers[IMAGE_FORMAT_JPEG] = new LibJpegHelper();
 	wrappers[IMAGE_FORMAT_TGA] = new LibTgaHelper();
 }
@@ -98,7 +98,7 @@ eErrorCode ImageSystem::Load(File *file, Vector<Image *> & imageSet, int32 baseM
 
 Image* ImageSystem::EnsurePowerOf2Image(Image* image) const
 {
-    if (IsPowerOf2(image->GetWidth() && IsPowerOf2(image->GetHeight())))
+    if (IsPowerOf2(image->GetWidth()) && IsPowerOf2(image->GetHeight()))
     {
         return SafeRetain(image);
     }
@@ -165,7 +165,7 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath & path
     String extension = pathName.GetExtension();
     for(auto wrapper : wrappers)
     {
-        if (wrapper->IsFileExtensionSupported(extension))
+        if (wrapper && wrapper->IsFileExtensionSupported(extension))
         {
             return wrapper;
         }
@@ -178,7 +178,7 @@ ImageFormatInterface* ImageSystem::GetImageFormatInterface(File *file) const
 {
     for(auto wrapper : wrappers)
     {
-        if (wrapper->IsMyImage(file))
+        if (wrapper && wrapper->IsMyImage(file))
         {
             return wrapper;
         }
@@ -199,7 +199,7 @@ ImageFormat ImageSystem::GetImageFormatForExtension(const String &extension) con
 {
     for(auto wrapper : wrappers)
     {
-        if (wrapper->IsFileExtensionSupported(extension))
+        if (wrapper && wrapper->IsFileExtensionSupported(extension))
             return wrapper->GetImageFormat();
     }
 
