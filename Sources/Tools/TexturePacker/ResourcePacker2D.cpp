@@ -48,10 +48,12 @@ namespace DAVA
 static const String FLAG_RECURSIVE = "--recursive";
 
 ResourcePacker2D::ResourcePacker2D()
+    : isGfxModified(true)
+    , isLightmapsPacking(false)
+    , clearProcessDirectory(false)
+    , clearOutputDirectory(true)
+    , quality(TextureConverter::ECQ_VERY_HIGH)
 {
-    isLightmapsPacking = false;
-    clearProcessDirectory = false;
-    quality = TextureConverter::ECQ_VERY_HIGH;
 }
 
 String ResourcePacker2D::GetProcessFolderName()
@@ -116,16 +118,19 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
         isGfxModified = true;
     
     	// Remove whole output directory
-    	bool result = FileSystem::Instance()->DeleteDirectory(outputGfxDirectory);
-    	if (result)
-    	{
-    		Logger::FrameworkDebug("Removed output directory: %s", outputGfxDirectory.GetAbsolutePathname().c_str());
-    	}
-    	if (!result && Core::Instance()->IsConsoleMode() && CommandLineParser::Instance()->GetVerbose())
-    	{
-    		AddError(Format("[ERROR: Can't delete directory %s]",
-    								outputGfxDirectory.GetAbsolutePathname().c_str()));
-    	}
+        if (clearOutputDirectory)
+        {
+            bool result = FileSystem::Instance()->DeleteDirectory(outputGfxDirectory);
+            if (result)
+            {
+                Logger::FrameworkDebug("Removed output directory: %s", outputGfxDirectory.GetAbsolutePathname().c_str());
+            }
+            if (!result && Core::Instance()->IsConsoleMode() && CommandLineParser::Instance()->GetVerbose())
+            {
+                AddError(Format("[ERROR: Can't delete directory %s]",
+                    outputGfxDirectory.GetAbsolutePathname().c_str()));
+            }
+        }
     }
 
     RecursiveTreeWalk(inputGfxDirectory, outputGfxDirectory);
@@ -418,8 +423,10 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     bool needPackResourcesInThisDir = true;
     if (modified)
     {
-    	FileSystem::Instance()->DeleteDirectoryFiles(outputPath, false);
-    	
+        if (clearOutputDirectory)
+        {
+            FileSystem::Instance()->DeleteDirectoryFiles(outputPath, false);
+        }
     	for (int fi = 0; fi < fileList->GetCount() && running; ++fi)
     	{
     		if (!fileList->IsDirectory(fi))
