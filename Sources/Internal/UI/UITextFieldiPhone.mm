@@ -73,8 +73,6 @@ namespace DAVA
         {
             UpdateNativeRect(prevRect, 0);
         }
-        
-        SetMultiline(2, 10, true);
     }
     UITextFieldiPhone::~UITextFieldiPhone()
     {
@@ -613,7 +611,7 @@ namespace DAVA
         }
     }
     
-    void UITextFieldiPhone::SetMultiline(DAVA::uint32 minLines, DAVA::uint32 maxLines, bool verticalScrollBarEnabled)
+    void UITextFieldiPhone::SetMultiline(DAVA::uint32 maxLines, bool verticalScrollBarEnabled)
     {
         UITextFieldHolder * textFieldHolder = static_cast<UITextFieldHolder*>(objcClassPtr);
         DVASSERT(textFieldHolder);

@@ -123,10 +123,9 @@
 - (void) dealloc
 {
     [cachedText release];
-    cachedText = nil;
+    cachedText = nullptr;
 	[textCtrl release];
-	textCtrl = 0;
-    
+    textCtrl = nullptr;
     [textField release];
     textField = nullptr;
     
