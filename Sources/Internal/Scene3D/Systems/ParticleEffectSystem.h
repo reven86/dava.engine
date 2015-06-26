@@ -43,7 +43,7 @@ class ParticleEffectSystem : public SceneSystem
 	friend class ParticleEffectComponent;
     friend class UIParticles;    
 public:
-	ParticleEffectSystem(Scene * scene);
+    ParticleEffectSystem(Scene * scene, bool is2DMode = false);
 
 	~ParticleEffectSystem();
 	virtual void Process(float32 timeElapsed);		
@@ -60,7 +60,7 @@ public:
     inline void SetAllowLodDegrade(bool allowDegrade);
     inline bool GetAllowLodDegrade() const;
 	
-    inline const Map<uint64, NMaterial *> & GetMaterialInstances() const;
+    inline const Map<uint64, NMaterial *> & GetMaterialInstances() const;    
     
 protected:
 	void RunEffect(ParticleEffectComponent *effect);	
@@ -89,6 +89,8 @@ private: //materials stuff
 	NMaterial *GetMaterial(Texture *texture, bool enableFog, bool enableFrameBlend, eBlending blending);
     
     bool allowLodDegrade;
+
+    bool is2DMode;
 };
 
 inline const Map<uint64, NMaterial *> & ParticleEffectSystem::GetMaterialInstances() const

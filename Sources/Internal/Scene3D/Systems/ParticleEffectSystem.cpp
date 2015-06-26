@@ -74,9 +74,12 @@ NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, b
         if (enableFrameBlend)
 			material->AddFlag(NMaterialFlagName::FLAG_FRAME_BLEND, 1);		
 
-        if (!enableFog)  //inverse logic to suspend vertex fog inherited from global material
+        if ((!enableFog) || (is2DMode))  //inverse logic to suspend vertex fog inherited from global material
             material->AddFlag(NMaterialFlagName::FLAG_VERTEXFOG, 0);        
-			
+
+        if (is2DMode)
+            material->AddFlag(NMaterialFlagName::FLAG_FORCE_2D_MODE, 1);
+
 		material->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, texture);
         material->AddFlag(NMaterialFlagName::FLAG_BLENDING, blending);
 		
@@ -90,7 +93,7 @@ NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, b
 }
 
 
-ParticleEffectSystem::ParticleEffectSystem(Scene * scene) :	SceneSystem(scene), allowLodDegrade(false)	
+ParticleEffectSystem::ParticleEffectSystem(Scene * scene, bool _is2DMode) : SceneSystem(scene), allowLodDegrade(false), is2DMode(_is2DMode)
 {	
     if (scene) //for 2d particles there would be no scene
     {
@@ -109,6 +112,7 @@ ParticleEffectSystem::~ParticleEffectSystem()
 	}
     SafeRelease(particleBaseMaterial);	
 }
+
 
 void ParticleEffectSystem::SetGlobalMaterial(NMaterial *material)
 {

@@ -229,6 +229,9 @@ public:
 	
     void SetFoliageSystem(FoliageSystem* _foliageSystem);
 
+    //RHI_COMPLETE need remove this
+    void UpdatePart(Heightmap* fromHeightmap, const Rect2i & rect);
+    
 protected:
 
     static const uint32 TEXTURE_SIZE_FULL_TILED = 2048;
@@ -258,6 +261,9 @@ protected:
     static const int32 RENDER_QUAD_AND = RENDER_QUAD_WIDTH - 2;
     static const int32 INDEX_ARRAY_COUNT = 10000 * 6; //10k triangles max
     
+    //RHI_COMPLETE need remove this
+    void CollectNodesRecursive(LandQuadTreeNode<LandscapeQuad> * currentNode, int16 nodeSize,
+                               Vector< LandQuadTreeNode<LandscapeQuad> * > & nodes);
 
     void RecursiveBuild(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 level, int32 maxLevels);
     LandQuadTreeNode<LandscapeQuad> * FindNodeWithXY(LandQuadTreeNode<LandscapeQuad> * currentNode, int16 quadX, int16 quadY, int16 quadSize);

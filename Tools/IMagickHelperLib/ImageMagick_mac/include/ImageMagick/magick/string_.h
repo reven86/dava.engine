@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -18,13 +18,13 @@
 #ifndef _MAGICKCORE_STRING_H_
 #define _MAGICKCORE_STRING_H_
 
-#if defined(__cplusplus) || defined(c_plusplus)
-extern "C" {
-#endif
-
 #include <stdarg.h>
 #include <time.h>
 #include "magick/exception.h"
+
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
+#endif
 
 typedef struct _StringInfo
 {
@@ -58,7 +58,8 @@ extern MagickExport const char
   *GetStringInfoPath(const StringInfo *);
 
 extern MagickExport double
-  InterpretSiPrefixValue(const char *restrict,char **restrict);
+  InterpretSiPrefixValue(const char *restrict,char **restrict),
+  *StringToArrayOfDoubles(const char *,ssize_t *, ExceptionInfo *);
 
 extern MagickExport int
   CompareStringInfo(const StringInfo *,const StringInfo *),
@@ -67,13 +68,15 @@ extern MagickExport int
 
 extern MagickExport MagickBooleanType
   ConcatenateString(char **,const char *),
+  IsStringTrue(const char *),
+  IsStringNotFalse(const char *),
   SubstituteString(char **,const char *,const char *);
 
 extern MagickExport size_t
   ConcatenateMagickString(char *,const char *,const size_t)
-    magick_attribute((nonnull)),
+    magick_attribute((__nonnull__)),
   CopyMagickString(char *,const char *,const size_t)
-    magick_attribute((nonnull)),
+    magick_attribute((__nonnull__)),
   GetStringInfoLength(const StringInfo *);
 
 extern MagickExport ssize_t
@@ -95,7 +98,7 @@ extern MagickExport unsigned char
 
 extern MagickExport void
   ConcatenateStringInfo(StringInfo *,const StringInfo *)
-    magick_attribute((nonnull)),
+    magick_attribute((__nonnull__)),
   LocaleLower(char *),
   LocaleUpper(char *),
   PrintStringInfo(FILE *file,const char *,const StringInfo *),

@@ -54,7 +54,6 @@ class AnimatedMesh;
 class SceneNodeAnimationList;
 class DataNode;
 class ShadowVolumeNode;
-class ProxyNode;
 class Light;
 class ShadowRect;
 class QuadTree;
@@ -91,9 +90,24 @@ class UIEvent;
     To visualize any 3d scene you'll need to create Scene object. 
     Scene have visible hierarchy and invisible root nodes. You can add as many root nodes as you want, and do not visualize them.
     For example you can have multiple scenes, load them to one scene, and show each scene when it will be required. 
- 
- 
  */
+
+class EntityCache
+{
+public:
+    ~EntityCache();
+
+    void Preload(const FilePath &path);
+    void Clear(const FilePath &path);
+    void ClearAll();
+
+    Entity* GetOriginal(const FilePath &path);
+    Entity* GetClone(const FilePath &path);
+
+protected:
+    Map<FilePath, Entity*> cachedEntities;
+};
+
 class Scene : public Entity, Observer
 {
 protected:
@@ -195,38 +209,6 @@ public:
 	inline int32	GetAnimatedMeshCount();
 
     virtual void HandleEvent(Observable * observable); //Handle RenderOptions
-    
-    /**
-        \brief Function to add root node.
-        \param[in] node node you want to addstop
-        \param[in] rootNodePath path of this root node
-     */
-
-    void AddRootNode(Entity *node, const FilePath &rootNodePath);
-
-	/**
-        \brief Get root node by path.
-        This function can be used when you want to get a node and add it to real scene.  
-        \code
-        Entity * node = scene->GetRootNode("~res:/Scenes/level0.sce");
-        scene->AddNode(node);
-        \endcode
-     */
-    
-    Entity *GetRootNode(const FilePath &rootNodePath);
-    
-    /**
-        \brief Release root node by name.
-        \param[in] rootNodePath root node path you want to release.
-     */
-    void ReleaseRootNode(const FilePath &rootNodePath);
-    
-    /**
-        \brief Release root node by pointer to this node.
-        \param[in] nodeToRelease root node pointer you want to release.
-     */
-    void ReleaseRootNode(Entity *nodeToRelease);
-
 	
 	//virtual void StopAllAnimations(bool recursive = true);
 	
@@ -262,6 +244,7 @@ public:
     MaterialSystem * GetMaterialSystem() const;
     AnimationSystem * GetAnimationSystem() const;
 
+    SceneFileV2::eError LoadScene(const DAVA::FilePath & pathname);
 	SceneFileV2::eError SaveScene(const DAVA::FilePath & pathname, bool saveForGame = false);
 
     virtual void OptimizeBeforeExport();
@@ -274,10 +257,17 @@ public:
     void Input(UIEvent *event);
     
     /**
-        \brief This functions activate and deactivate scene sustems
+        \brief This functions activate and deactivate scene systems
      */
     virtual void Activate();
     virtual void Deactivate();
+
+    /**
+        \brief This will make copy of scene, including entities ID-s.
+    */
+    void CopyScene(Scene *dst);
+
+    EntityCache cache;
 
     rhi::RenderPassConfig& GetMainPassConfig();
     void SetMainPassViewport(const Rect& viewport);
@@ -297,21 +287,14 @@ protected:
     uint64 drawTime;
     uint32 nodeCounter;
 
-    uint32 systemsMask;    
+    uint32 systemsMask;
+    uint32 maxIDCounter;
 
 	Vector<AnimatedMesh*> animatedMeshes;
 	Vector<Camera*> cameras;
     
     NMaterial* sceneGlobalMaterial;
     void ImportShadowColor(Entity * rootNode);
-    
-#if defined (USE_FILEPATH_IN_MAP)
-    using ProxyNodeMap = Map<FilePath, ProxyNode*>;
-#else //#if defined (USE_FILEPATH_IN_MAP)
-    using ProxyNodeMap = Map<String, ProxyNode*>;
-#endif //#if defined (USE_FILEPATH_IN_MAP)
-
-	ProxyNodeMap rootNodes;
 
     Camera * mainCamera;
     Camera * drawCamera;

@@ -170,7 +170,30 @@
 #define ALPHATESTVALUE 0
 #endif
 
+//water flags
+#if !defined REAL_REFLECTION
+#define REAL_REFLECTION 0
+#endif
 
+#if !defined SPECULAR
+#define SPECULAR 0
+#endif
+
+#if !defined SEPARATE_NORMALMAPS
+#define SEPARATE_NORMALMAPS 0
+#endif
+
+#if !defined DEBUG_UNITY_Z_NORMAL
+#define DEBUG_UNITY_Z_NORMAL 0
+#endif
+
+#if !defined DEBUG_Z_NORMAL_SCALE
+#define DEBUG_Z_NORMAL_SCALE 0
+#endif
+
+#if !defined DEBUG_NORMAL_ROTATION
+#define DEBUG_NORMAL_ROTATION 0
+#endif
 
 
 
@@ -196,14 +219,6 @@
     #define VIEW_SPECULAR 1
     #define VIEW_ALBEDO 1
 #endif
-
-
-
-
-#define BLENDING_NONE 0
-#define BLENDING_ALPHABLEND 1
-#define BLENDING_ADDITIVE 2
-
 
 
 struct
@@ -235,6 +250,8 @@ FogParam
     float   atmosphere_scattering;
 };
 
+float4 CalculateVertexFog( FogParam param ); // to shut up Metal shader-compiler
+
 
 float4
 CalculateVertexFog( FogParam param )
@@ -244,12 +261,14 @@ CalculateVertexFog( FogParam param )
     float3  cameraPosition    = param.eye_position;
     float3  toLightDir        = param.tolight_dir;
 
-
+    #if FOG_HALFSPACE
     float   fogHalfspaceHeight  = param.halfspace_height;
+    #if !FOG_HALFSPACE_LINEAR
     float   fogHalfspaceFalloff = param.halfspace_falloff;
+    #endif
     float   fogHalfspaceDensity = param.halfspace_density;
     float   fogHalfspaceLimit   = param.halfspace_limit;
-
+    #endif
 
     float   fogAtmosphereDistance   = param.atmosphere_distance;
     float3  fogAtmosphereColorSun   = param.atmosphere_sun_color;

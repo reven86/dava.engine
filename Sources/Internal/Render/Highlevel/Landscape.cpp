@@ -1367,6 +1367,83 @@ void Landscape::SetFoliageSystem(FoliageSystem* _foliageSystem)
 {
     foliageSystem = _foliageSystem;
 }
+    
+void Landscape::CollectNodesRecursive(LandQuadTreeNode<LandscapeQuad> * currentNode, int16 nodeSize,
+                                                 Vector< LandQuadTreeNode<LandscapeQuad> * > & nodes)
+{
+    if(currentNode->data.size == nodeSize)
+    {
+        nodes.push_back(currentNode);
+    }
+    
+    if(currentNode->children)
+    {
+        for(int32 i = 0; i < 4; ++i)
+        {
+            CollectNodesRecursive(&currentNode->children[i], nodeSize, nodes);
+        }
+    }
+}
+    
+void Landscape::UpdatePart(Heightmap* fromHeightmap, const Rect2i & rect)
+{
+    DVASSERT(heightmap->Size() == fromHeightmap->Size());
+    
+    Vector<LandQuadTreeNode<LandscapeQuad> * > nodes;
+    CollectNodesRecursive(&quadTreeHead, RENDER_QUAD_WIDTH - 1, nodes);
+    
+    for(LandQuadTreeNode<LandscapeQuad> * node : nodes)
+    {
+        Rect2i nodeRect(node->data.x, node->data.y, node->data.size, node->data.size);
+        Rect2i intersect = nodeRect.Intersection(rect);
+        if(intersect.dx || intersect.dy)
+        {
+            rhi::HVertexBuffer vertexBuffer = vertexBuffers[node->data.rdoQuad];
 
+/*
+            LandscapeVertex * rowVertices = new LandscapeVertex[intersect.dx + 1];
+            for (int32 y = intersect.y; y < intersect.y + intersect.dy + 1; ++y)
+            {
+                int32 index = 0;
+                for (int32 x = intersect.x; x < intersect.x + intersect.dx + 1; ++x)
+                {
+                    rowVertices[index].position = GetPoint(x, y, fromHeightmap->Data()[y * fromHeightmap->Size() + x]);
+                    
+                    Vector2 texCoord = Vector2((float32)(x) / (float32)(fromHeightmap->Size() - 1), 1.0f - (float32)(y) / (float32)(fromHeightmap->Size() - 1));
+                    rowVertices[index].texCoord = texCoord;
+                    
+                    index++;
+                }
+                
+                uint32 vBufferUpdateSize = (intersect.dx + 1) * sizeof(LandscapeVertex);
+                uint32 vBufferOffset = 0; //TODO
+                rhi::UpdateVertexBuffer(vertexBuffer, 0, vBufferOffset, vBufferUpdateSize);
+            }
+            SafeDeleteArray(rowVertices);
+ */
+            
+            uint32 verticesCount = (node->data.size + 1) * (node->data.size + 1);
+            LandscapeVertex * quadVertices = new LandscapeVertex[verticesCount];
+            
+            int32 index = 0;
+            for (int32 y = node->data.y; y < node->data.y + node->data.size + 1; ++y)
+            {
+                for (int32 x = node->data.x; x < node->data.x + node->data.size + 1; ++x)
+                {
+                    quadVertices[index].position = GetPoint(x, y, fromHeightmap->Data()[y * fromHeightmap->Size() + x]);
+                    
+                    Vector2 texCoord = Vector2((float32)(x) / (float32)(fromHeightmap->Size() - 1), 1.0f - (float32)(y) / (float32)(fromHeightmap->Size() - 1));
+                    quadVertices[index].texCoord = texCoord;
+                    
+                    index++;
+                }
+            }
+            
+            uint32 vBufferSize = verticesCount * sizeof(LandscapeVertex);
+            rhi::UpdateVertexBuffer(vertexBuffer, quadVertices, 0, vBufferSize);
+        }
+    }
+}
+    
 };
 

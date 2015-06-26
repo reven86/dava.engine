@@ -713,6 +713,10 @@ VPROG_BEGIN
     VP_OUT(varTime) = VP_IN_TEXCOORD3;
 #endif
 
+#if FORCE_2D_MODE
+    VP_OUT_POSITION.z=0.0;
+#endif
+
 VPROG_END
 
 

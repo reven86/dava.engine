@@ -28,7 +28,7 @@
 
 
 #include "Render/RenderBase.h"
-#include "Platform/Thread.h"
+#include "Concurrency/Thread.h"
 
 namespace DAVA
 {
@@ -74,7 +74,6 @@ rhi::CmpFunc GetCmpFuncByName(const String & cmpFuncStr)
     return (rhi::CmpFunc)CMP_TEST_MODE_COUNT;
 }
 
-
 rhi::StencilOperation GetStencilOpByName(const String & stencilOpStr)
 {
     for(uint32 i = 0; i < STENCILOP_COUNT; i++)
@@ -82,6 +81,68 @@ rhi::StencilOperation GetStencilOpByName(const String & stencilOpStr)
             return (rhi::StencilOperation)i;
 
     return (rhi::StencilOperation)STENCILOP_COUNT;
+}
+
+
+/*RHI_COMPLETE - make this stuff correspond with PolygonGroup::UpdateDataPointersAndStreams*/
+inline uint32 GetPossibleTexcoordSemantic(uint32 index)
+{
+    switch (index)
+    {
+    case 0:
+        return EVF_TEXCOORD0 | EVF_CUBETEXCOORD0;
+    case 1:
+        return EVF_TEXCOORD1 | EVF_CUBETEXCOORD1;
+    case 2:
+        return EVF_TEXCOORD2 | EVF_CUBETEXCOORD2;
+    case 3:
+        return EVF_TEXCOORD3 | EVF_CUBETEXCOORD3 | EVF_PIVOT;
+    case 4:
+        return EVF_ANGLE_SIN_COS;
+    case 5:
+        return EVF_FLEXIBILITY;
+    }
+    
+    return 0;
+}
+
+
+uint32 GetVertexLayoutRequiredFormat(const rhi::VertexLayout& layout)
+{
+    uint32 res = 0;
+    for (uint32 i = 0, sz = layout.ElementCount(); i < sz; ++i)
+    {
+        rhi::VertexSemantics semantic = layout.ElementSemantics(i);
+        switch (semantic)
+        {
+        case rhi::VS_POSITION:
+            res |= EVF_VERTEX;
+            break;
+        case rhi::VS_NORMAL:
+            res |= EVF_NORMAL;
+            break;
+        case rhi::VS_COLOR:
+            res |= EVF_COLOR;
+            break;
+        case rhi::VS_TEXCOORD:
+            res |= GetPossibleTexcoordSemantic(layout.ElementSemanticsIndex(i));
+            break;
+        case rhi::VS_TANGENT:
+            res |= EVF_TANGENT;
+            break;
+        case rhi::VS_BINORMAL:
+            res |= EVF_BINORMAL;
+            break;
+        case rhi::VS_BLENDWEIGHT:
+            res |= EVF_JOINTWEIGHT;
+            break;
+        case rhi::VS_BLENDINDEX:
+            res |= EVF_JOINTINDEX;
+            break;        
+        }
+
+    }    
+    return res;
 }
 
 };

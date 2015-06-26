@@ -108,6 +108,7 @@ class RenderSystem2D : public Singleton<RenderSystem2D>
 public:
     static NMaterial* DEFAULT_2D_COLOR_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_MATERIAL;
+    static NMaterial* DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL;
 
     RenderSystem2D();
@@ -132,6 +133,11 @@ public:
         uint32 indexCount, const uint16* indexPointer,
         const Color& color, const rhi::PrimitiveType primitiveType = rhi::PRIMITIVE_TRIANGLELIST);
     
+    /*
+     *  note - it will flush currently batched!
+     *  it will also modify packet to add current clip
+     */
+    void DrawPacket(rhi::Packet& packet);
     /*!
      * Highlight controls which has vertices count bigger than verticesCount.
      * Work only with RenderOptions::HIGHLIGHT_BIG_CONTROLS option enabled.
@@ -237,6 +243,8 @@ private:
 
     Rect TransformClipRect(const Rect & rect, const Matrix4 & transformMatrix);
 
+    inline bool IsRenderTargetPass() { return (currentPacketListHandle != packetList2DHandle); };
+
     Matrix4 virtualToPhysicalMatrix;
     Matrix4 projMatrix;
     std::stack<Rect> clipStack;
@@ -275,7 +283,7 @@ private:
     rhi::HRenderPass pass2DHandle;
     rhi::HPacketList packetList2DHandle;
     rhi::HRenderPass passTargetHandle;
-    rhi::HPacketList packetListTargetHandle;
+    rhi::HPacketList currentPacketListHandle;
 
     int32 renderTargetWidth;
     int32 renderTargetHeight;

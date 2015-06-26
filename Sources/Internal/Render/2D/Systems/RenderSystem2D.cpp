@@ -55,6 +55,7 @@ static const float32 SEGMENT_LENGTH = 15.0f;
 
 NMaterial* RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL = nullptr;
+NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL = nullptr;
 
 class VboPool
@@ -285,6 +286,11 @@ void RenderSystem2D::Init()
     DEFAULT_2D_TEXTURE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.material"));
     DEFAULT_2D_TEXTURE_MATERIAL->PreBuildMaterial(FastName("2d"));
 
+    DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL = new NMaterial();
+    DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.material"));
+    DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL->AddFlag(NMaterialFlagName::FLAG_BLENDING, BLENDING_NONE);
+    DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL->PreBuildMaterial(FastName("2d"));
+    
     DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL = new NMaterial();
     DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.material"));
     DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL->AddFlag(FastName("IMAGE_A8"), 1);
@@ -328,9 +334,10 @@ void RenderSystem2D::BeginFrame()
     renderPass2DConfig.viewport.height = Renderer::GetFramebufferHeight();
 
     pass2DHandle = rhi::AllocateRenderPass(renderPass2DConfig, 1, &packetList2DHandle);
+    currentPacketListHandle = packetList2DHandle;
 
     rhi::BeginRenderPass(pass2DHandle);
-    rhi::BeginPacketList(packetList2DHandle);
+    rhi::BeginPacketList(currentPacketListHandle);
 }
 
 void RenderSystem2D::EndFrame()
@@ -339,13 +346,13 @@ void RenderSystem2D::EndFrame()
     prevFrameErrorsFlags = currFrameErrorsFlags;
     currFrameErrorsFlags = 0;
 
-    rhi::EndPacketList(packetList2DHandle);
+    rhi::EndPacketList(currentPacketListHandle);
     rhi::EndRenderPass(pass2DHandle);
 }
 
 void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* = true */)
 {
-    DVASSERT(!renderTargetWidth);
+    DVASSERT(!IsRenderTargetPass());
     DVASSERT(target);
     DVASSERT(target->GetWidth() && target->GetHeight())
 
@@ -365,10 +372,10 @@ void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* =
     else
         renderTargetPassConfig.colorBuffer[0].loadAction = rhi::LOADACTION_NONE;
     
-    passTargetHandle = rhi::AllocateRenderPass(renderTargetPassConfig, 1, &packetListTargetHandle);
+    passTargetHandle = rhi::AllocateRenderPass(renderTargetPassConfig, 1, &currentPacketListHandle);
 
     rhi::BeginRenderPass(passTargetHandle);
-    rhi::BeginPacketList(packetListTargetHandle);
+    rhi::BeginPacketList(currentPacketListHandle);
 
     renderTargetWidth = target->GetWidth();
     renderTargetHeight = target->GetHeight();
@@ -376,10 +383,14 @@ void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* =
 
 void RenderSystem2D::EndRenderTargetPass()
 {
+    DVASSERT(IsRenderTargetPass());
+
     Flush();
 
-    rhi::EndPacketList(packetListTargetHandle);
+    rhi::EndPacketList(currentPacketListHandle);
     rhi::EndRenderPass(passTargetHandle);
+
+    currentPacketListHandle = packetList2DHandle;
 
     renderTargetWidth = 0;
     renderTargetHeight = 0;
@@ -387,11 +398,11 @@ void RenderSystem2D::EndRenderTargetPass()
 
 void RenderSystem2D::Setup2DMatrices()
 {
-    if (renderTargetWidth)
+    if (IsRenderTargetPass())
     {
         projMatrix.glOrtho(0.0f, (float32)renderTargetWidth,
-            0.0f, (float32)renderTargetHeight,
-            -1.0f, 1.0f, Renderer::GetCaps().zeroBaseClipRange);
+                           0.0f, (float32)renderTargetHeight,
+                          -1.0f, 1.0f, Renderer::GetCaps().zeroBaseClipRange);
     }
     else
     {
@@ -492,11 +503,11 @@ bool RenderSystem2D::IsPreparedSpriteOnScreen(Sprite::DrawState * drawState)
     Rect clipRect = currentClip;
     if (clipRect.dx == -1)
     {
-        clipRect.dx = (float32)(renderTargetWidth ? renderTargetWidth : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx);
+        clipRect.dx = (float32)(IsRenderTargetPass() ? renderTargetWidth : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx);
     }
     if (clipRect.dy == -1)
     {
-        clipRect.dy = (float32)(renderTargetHeight ? renderTargetHeight : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
+        clipRect.dy = (float32)(IsRenderTargetPass() ? renderTargetHeight : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
     }
 
     float32 left = Min(Min(spriteTempVertices[0], spriteTempVertices[2]), Min(spriteTempVertices[4], spriteTempVertices[6]));
@@ -582,7 +593,7 @@ void RenderSystem2D::Flush()
         batch.material->BindParams(packet);
         packet.textureSet = batch.textureSetHandle;
 
-        rhi::AddPacket(renderTargetWidth ? packetListTargetHandle : packetList2DHandle, packet);
+        rhi::AddPacket(currentPacketListHandle, packet);
     }
 
     batches.clear();
@@ -591,6 +602,13 @@ void RenderSystem2D::Flush()
     indexIndex = 0;
     pool->Next();
 
+}
+
+void RenderSystem2D::DrawPacket(rhi::Packet& packet)
+{
+    Flush();
+    //RHI_COMPLETE - add current clip to packet
+    rhi::AddPacket(currentPacketListHandle, packet);
 }
 
 void RenderSystem2D::HardResetBatchingBuffers(uint32 verticesCount, uint32 indicesCount, uint8 buffersCount)
@@ -1371,7 +1389,7 @@ void RenderSystem2D::DrawPolygon(const Polygon2 & polygon, bool closed, NMateria
     if (ptCount >= 2)
     {
         Vector<uint16> indices;
-        auto i = 0U;
+        auto i = 0;
         for (; i < ptCount - 1; ++i)
         {
             indices.push_back(i);
@@ -1393,7 +1411,7 @@ void RenderSystem2D::FillPolygon(const Polygon2 & polygon, NMaterial *material, 
     if (ptCount >= 3)
     {
         Vector<uint16> indices;
-        for (auto i = 1U; i < ptCount - 1; ++i)
+        for (auto i = 1; i < ptCount - 1; ++i)
         {
             indices.push_back(0);
             indices.push_back(i);
@@ -1416,7 +1434,7 @@ void RenderSystem2D::DrawTexture(rhi::HTextureSet htextureSet, NMaterial *materi
     Rect destRect(_dstRect);
     if (destRect.dx < 0.f || destRect.dy < 0.f)
     {
-        if (renderTargetWidth)
+        if (IsRenderTargetPass())
         {
             destRect.dx = (float32)renderTargetWidth;
             destRect.dy = (float32)renderTargetHeight;
@@ -1446,7 +1464,7 @@ void RenderSystem2D::DrawTexture(rhi::HTextureSet htextureSet, NMaterial *materi
     texCoords[2] = texCoords[6] = srcRect.x + srcRect.dx;//x2
 
     static uint16 indices[6] = { 0, 1, 2, 1, 3, 2 };
-    PushBatch(DEFAULT_2D_TEXTURE_MATERIAL, htextureSet, currentClip, 4, spriteTempVertices, texCoords, 6, indices, color, rhi::PRIMITIVE_TRIANGLELIST);
+    PushBatch(material, htextureSet, currentClip, 4, spriteTempVertices, texCoords, 6, indices, color, rhi::PRIMITIVE_TRIANGLELIST);
 }
 
 /* TiledDrawData Implementation */

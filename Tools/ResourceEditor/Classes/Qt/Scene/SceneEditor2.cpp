@@ -205,7 +205,13 @@ bool SceneEditor2::Load(const DAVA::FilePath &path)
 SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath & path, bool saveForGame /*= false*/)
 {
 	ExtractEditorEntities();
-
+    
+    if(landscapeEditorDrawSystem)
+    {
+        landscapeEditorDrawSystem->SaveTileMaskTexture();
+        landscapeEditorDrawSystem->ResetTileMaskTexture();
+    }
+    
 	DAVA::SceneFileV2::eError err = Scene::SaveScene(path, saveForGame);
 	if(DAVA::SceneFileV2::ERROR_NO_ERROR == err)
 	{
@@ -216,9 +222,6 @@ SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath & path, bool saveFor
 		wasChanged = false;
 		commandStack.SetClean(true);
 	}
-
-	if(landscapeEditorDrawSystem)
-		landscapeEditorDrawSystem->SaveTileMaskTexture();
 
 	InjectEditorEntities();
 
@@ -636,10 +639,10 @@ SceneEditor2 * SceneEditor2::CreateCopyForExport()
 {
 	SceneEditor2 *clonedScene = new SceneEditor2();
 	clonedScene->RemoveSystems();
-
     clonedScene->SetGlobalMaterial(GetGlobalMaterial());
+    CopyScene(clonedScene);
 
-	return (SceneEditor2 *)Clone(clonedScene);
+	return (SceneEditor2 *) clonedScene;
 }
 
 void SceneEditor2::RemoveSystems()

@@ -476,7 +476,7 @@ PipelineStateDX9_t::VertexProgDX9::Construct( const void* bin, unsigned bin_sz, 
 
     if( SUCCEEDED(hr) )
     {
-DumpShaderText((const char*)bin,bin_sz);
+//DumpShaderText((const char*)bin,bin_sz);
         void*   code = shader->GetBufferPointer();
         HRESULT hr   = _D3D9_Device->CreateVertexShader( (const DWORD*)code, &vs9 );
 
@@ -794,10 +794,10 @@ dx9_PipelineState_Create( const PipelineState::Descriptor& desc )
     static std::vector<uint8>   vprog_bin;
     static std::vector<uint8>   fprog_bin;
 
-Logger::Info("create PS");
-Logger::Info("  vprog= %s",desc.vprogUid.c_str());
-Logger::Info("  fprog= %s",desc.vprogUid.c_str());
-desc.vertexLayout.Dump();
+//Logger::Info("create PS");
+//Logger::Info("  vprog= %s",desc.vprogUid.c_str());
+//Logger::Info("  fprog= %s",desc.vprogUid.c_str());
+//desc.vertexLayout.Dump();
     rhi::ShaderCache::GetProg( desc.vprogUid, &vprog_bin );
     rhi::ShaderCache::GetProg( desc.fprogUid, &fprog_bin );
 

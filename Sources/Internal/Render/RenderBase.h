@@ -342,6 +342,8 @@ inline int32 GetVertexSize(int32 flags)
     return size;
 }
 
+uint32 GetVertexLayoutRequiredFormat(const rhi::VertexLayout& layout);
+
 
 rhi::CmpFunc GetCmpFuncByName(const String & cmpFuncStr);
 rhi::StencilOperation GetStencilOpByName(const String & stencilOpStr);          

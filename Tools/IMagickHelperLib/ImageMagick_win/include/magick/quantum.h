@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2008 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -18,11 +18,12 @@
 #ifndef _MAGICKCORE_QUANTUM_H
 #define _MAGICKCORE_QUANTUM_H
 
+#include "magick/image.h"
+#include "magick/semaphore.h"
+
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
-
-#include "magick/semaphore.h"
 
 #define RoundToQuantum(quantum)  ClampToQuantum(quantum)
 
@@ -88,11 +89,11 @@ static inline Quantum ClampToQuantum(const MagickRealType value)
 #if defined(MAGICKCORE_HDRI_SUPPORT)
   return((Quantum) value);
 #else
-  if (value <= 0.0)
+  if (value <= 0.0f)
     return((Quantum) 0);
   if (value >= (MagickRealType) QuantumRange)
-    return((Quantum) QuantumRange);
-  return((Quantum) (value+0.5));
+    return(QuantumRange);
+  return((Quantum) (value+0.5f));
 #endif
 }
 
@@ -151,8 +152,12 @@ static inline unsigned char ScaleQuantumToChar(const Quantum quantum)
 }
 #endif
 
+extern MagickExport EndianType
+  GetQuantumEndian(const QuantumInfo *);
+
 extern MagickExport MagickBooleanType
   SetQuantumDepth(const Image *,QuantumInfo *,const size_t),
+  SetQuantumEndian(const Image *,QuantumInfo *,const EndianType),
   SetQuantumFormat(const Image *,QuantumInfo *,const QuantumFormatType),
   SetQuantumPad(const Image *,QuantumInfo *,const size_t);
 
@@ -168,10 +173,10 @@ extern MagickExport QuantumType
 
 extern MagickExport size_t
   ExportQuantumPixels(const Image *,const CacheView *,const QuantumInfo *,
-    const QuantumType,unsigned char *,ExceptionInfo *),
+    const QuantumType,unsigned char *restrict,ExceptionInfo *),
   GetQuantumExtent(const Image *,const QuantumInfo *,const QuantumType),
   ImportQuantumPixels(Image *,CacheView *,const QuantumInfo *,const QuantumType,
-    const unsigned char *,ExceptionInfo *);
+    const unsigned char *restrict,ExceptionInfo *);
 
 extern MagickExport unsigned char
   *GetQuantumPixels(const QuantumInfo *);

@@ -27,6 +27,9 @@
 =====================================================================================*/
 
 
+#include "Base/Platform.h"
+#ifndef __DAVAENGINE_WIN_UAP__
+
 #include "Render/Texture.h"
 #include "FileSystem/Logger.h"
 #include "FileSystem/FileSystem.h"
@@ -2540,3 +2543,5 @@ bool LibPVRHelper::AllocateImageData(DAVA::Image *image, uint32 mipMapLevel, con
 }
 
 };
+
+#endif //  #ifndef __DAVAENGINE_WIN_UAP__

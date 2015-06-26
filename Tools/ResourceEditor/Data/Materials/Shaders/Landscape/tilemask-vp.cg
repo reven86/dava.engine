@@ -21,12 +21,12 @@ VPROG_OUT_END
 
 
 
-property float4x4 worldViewProjMatrix          : dynamic,instance : ;
-property float4x4 worldMatrix                  : dynamic,instance : ;
+property float4x4 worldViewProjMatrix          : dynamic,a : ;
 
 property float2   textureTiling : static,instance : def_value=50,50;
 
 #if VERTEX_FOG
+property float4x4 worldMatrix                  : dynamic,a : ;
 property float4x4 worldViewMatrix              : dynamic,a : ;
 property float3   cameraPosition               : dynamic,a : ;
 #endif

@@ -47,7 +47,7 @@ public:
 	Texture* GetTexture();
 	void UpdateTexture(DAVA::Heightmap *heightmap,
 					   const AABBox3& landscapeBoundingBox,
-					   const DAVA::Rect &forRect);
+					   const DAVA::Rect2i &forRect);
 	
 private:
 	static const DAVA::int32 NOT_PASSABLE_ANGLE = 23;
@@ -69,7 +69,7 @@ private:
 	DAVA::float32 notPassableAngleTan;
 	DAVA::Vector<TerrainColor> angleColor;
     
-    rhi::HVertexBuffer gridBufferHandle;
+    Vector<rhi::HVertexBuffer> gridBuffers;
     
 	void LoadColorsArray();
 	bool PickColor(DAVA::float32 tan, DAVA::Color& color) const;

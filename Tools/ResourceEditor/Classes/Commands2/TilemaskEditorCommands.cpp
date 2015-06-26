@@ -111,25 +111,21 @@ void ActionDisableTilemaskEditor::Redo()
 }
 
 
-ModifyTilemaskCommand::ModifyTilemaskCommand(LandscapeProxy* landscapeProxy, const Rect& updatedRect)
+ModifyTilemaskCommand::ModifyTilemaskCommand(LandscapeProxy* _landscapeProxy, const Rect& _updatedRect)
 :	Command2(CMDID_TILEMASK_MODIFY, "Tile Mask Modification")
 {
-#if RHI_COMPLETE_EDITOR
-    RenderManager::Instance()->SetColor(Color::White);
+	updatedRect = Rect(floorf(_updatedRect.x), floorf(_updatedRect.y), ceilf(_updatedRect.dx), ceilf(_updatedRect.dy));
+	landscapeProxy = SafeRetain(_landscapeProxy);
+ 
+    texture[0] = texture[1] = nullptr;
     
-	this->updatedRect = updatedRect;
-	this->landscapeProxy = SafeRetain(landscapeProxy);
-
 	Image* originalMask = landscapeProxy->GetTilemaskImageCopy();
-
+    
 	undoImageMask = Image::CopyImageRegion(originalMask, updatedRect);
-
-    RenderManager::Instance()->SetColor(Color::White);
-    Image* currentImageMask = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK)->CreateImageFromMemory();
-
+    
+    Image* currentImageMask = landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILEMASK)->CreateImageFromMemory();
 	redoImageMask = Image::CopyImageRegion(currentImageMask, updatedRect);
 	SafeRelease(currentImageMask);
-#endif RHI_COMPLETE_EDITOR
 }
 
 ModifyTilemaskCommand::~ModifyTilemaskCommand()
@@ -137,13 +133,23 @@ ModifyTilemaskCommand::~ModifyTilemaskCommand()
 	SafeRelease(undoImageMask);
 	SafeRelease(redoImageMask);
 	SafeRelease(landscapeProxy);
+    
+    if(texture[0])
+    {
+        SafeRelease(texture[0]);
+        rhi::ReleaseTextureSet(textureSetHandle[0]);
+    }
+    if(texture[1])
+    {
+        SafeRelease(texture[1]);
+        rhi::ReleaseTextureSet(textureSetHandle[1]);
+    }
 }
 
 void ModifyTilemaskCommand::Undo()
 {
-
-    ApplyImageToTexture(undoImageMask, landscapeProxy->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_SOURCE));
-    ApplyImageToTexture(undoImageMask, landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILEMASK));
+    ApplyImageToTexture(undoImageMask, landscapeProxy->GetTilemaskDrawTexture(LandscapeProxy::TILEMASK_TEXTURE_SOURCE), 0);
+    ApplyImageToTexture(undoImageMask, landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILEMASK), 1);
 
 	landscapeProxy->DecreaseTilemaskChanges();
 
@@ -155,8 +161,8 @@ void ModifyTilemaskCommand::Undo()
 
 void ModifyTilemaskCommand::Redo()
 {
-	ApplyImageToTexture(redoImageMask, landscapeProxy->GetTilemaskTexture(LandscapeProxy::TILEMASK_SPRITE_SOURCE));
-    ApplyImageToTexture(redoImageMask, landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILEMASK));
+	ApplyImageToTexture(redoImageMask, landscapeProxy->GetTilemaskDrawTexture(LandscapeProxy::TILEMASK_TEXTURE_SOURCE), 0);
+    ApplyImageToTexture(redoImageMask, landscapeProxy->GetLandscapeTexture(Landscape::TEXTURE_TILEMASK), 1);
 
 	landscapeProxy->IncreaseTilemaskChanges();
 
@@ -170,19 +176,25 @@ Entity* ModifyTilemaskCommand::GetEntity() const
 	return NULL;
 }
 
-void ModifyTilemaskCommand::ApplyImageToTexture(Image* image, Texture * dstTex)
+void ModifyTilemaskCommand::ApplyImageToTexture(Image* image, Texture * dstTex, int32 internalHandleIndex)
 {
-#if RHI_COMPLETE_EDITOR
-    Texture* texture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
-                                               image->GetWidth(), image->GetHeight(), false);
+    if(texture[internalHandleIndex])
+    {
+        SafeRelease(texture[internalHandleIndex]);
+        rhi::ReleaseTextureSet(textureSetHandle[internalHandleIndex]);
+    }
     
-    RenderHelper::Instance()->Set2DRenderTarget(dstTex);
-    RenderManager::Instance()->SetColor(Color::White);
+    texture[internalHandleIndex] = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
+                                                           image->GetWidth(), image->GetHeight(), false);
     
-    RenderHelper::Instance()->DrawTexture(texture, RenderState::RENDERSTATE_2D_OPAQUE, updatedRect);
+    rhi::TextureSetDescriptor desc;
+    desc.fragmentTextureCount = 1;
+    desc.fragmentTexture[0] = texture[internalHandleIndex]->handle;
+    textureSetHandle[internalHandleIndex] = rhi::AcquireTextureSet(desc);
     
-    RenderManager::Instance()->SetRenderTarget(0);
-#endif // RHI_COMPLETE_EDITOR
+    RenderSystem2D::Instance()->BeginRenderTargetPass(dstTex, false);
+    RenderSystem2D::Instance()->DrawTexture(textureSetHandle[internalHandleIndex], RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL, Color::White, updatedRect);
+    RenderSystem2D::Instance()->EndRenderTargetPass();
 }
 
 

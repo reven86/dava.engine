@@ -171,6 +171,7 @@ public:
     static const FastName FLAG_VIEWSPECULAR;
 
     static const FastName FLAG_FRAME_BLEND;    
+    static const FastName FLAG_FORCE_2D_MODE;
 
     //Illumination params
     static const FastName FLAG_ILLUMINATION_USED;

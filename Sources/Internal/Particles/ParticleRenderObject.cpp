@@ -46,7 +46,7 @@ static Vector3 basisVectors[7*2] = {Vector3(), Vector3(),
 
 
 
-ParticleRenderObject::ParticleRenderObject(ParticleEffectData *effect): effectData(effect), sortingOffset(15), vertexSize(3), vertexStride(0)
+ParticleRenderObject::ParticleRenderObject(ParticleEffectData *effect): effectData(effect), sortingOffset(15)
 {
     AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
 
@@ -91,20 +91,6 @@ void ParticleRenderObject::SetSortingOffset(uint32 offset)
     sortingOffset = offset;
     for (size_t i=0, sz = renderBatchCache.size(); i<sz; ++i)
         renderBatchCache[i]->SetSortingOffset(offset);
-}
-
-void ParticleRenderObject::Set2DMode(bool is2d)
-{
-    if (is2d)
-    {
-        vertexSize=2;
-        vertexStride=3*sizeof(float32);
-    }
-    else
-    {
-        vertexSize=3;
-        vertexStride=0;
-    }
 }
 
 void ParticleRenderObject::PrepareRenderData(Camera * camera)

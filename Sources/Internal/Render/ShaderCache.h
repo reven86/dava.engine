@@ -35,8 +35,6 @@
 #include "Base/FastName.h"
 #include "Render/Shader.h"
 
-
-
 namespace DAVA
 {
 
