@@ -118,7 +118,7 @@ endif
 
 # set build flags
 DV_LOCAL_CPPFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1
-DV_LOCAL_CPPFLAGS += -std=c++14
+DV_LOCAL_CPPFLAGS += -std=c++1y
 
 DV_LOCAL_CFLAGS += -DDAVA_FMOD
 
@@ -194,6 +194,7 @@ DV_LOCAL_CPPFLAGS += -Wno-unreachable-code-break
 DV_LOCAL_CPPFLAGS += -Wno-unknown-warning-option
 DV_LOCAL_CPPFLAGS += -Wno-pedantic
 DV_LOCAL_CPPFLAGS += -Wno-extern-c-compat
+DV_LOCAL_CPPFLAGS += -Wno-unknown-pragmas
 
 DV_LOCAL_CPP_FEATURES += exceptions
 

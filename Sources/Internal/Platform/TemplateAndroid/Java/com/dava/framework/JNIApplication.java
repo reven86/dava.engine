@@ -133,7 +133,7 @@ public class JNIApplication extends Application
 	}
 	
 	static {
-		System.loadLibrary("c++_shared");
+		//Enable when switch to ndk10e + c++14 System.loadLibrary("c++_shared");
 		System.loadLibrary("fmodex");
 		System.loadLibrary("fmodevent");
 	}
