@@ -62,10 +62,6 @@ void SpritesPacker::ClearTasks()
 
 void SpritesPacker::ReloadSprites(bool clearDirs, const eGPUFamily gpu, const TextureConverter::eConvertQuality quality)
 {
-    if (!ProcessStared())
-    {
-        return;
-    }
     SetRunning(true);
     void *pool = QtLayer::Instance()->CreateAutoreleasePool();
     resourcePacker2D->SetRunning(true);

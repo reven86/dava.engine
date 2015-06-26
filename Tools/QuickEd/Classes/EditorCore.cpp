@@ -53,7 +53,7 @@ EditorCore::EditorCore(QObject *parent)
     QAction* actionReloadSprites = dialogReloadSprites->GetActionReloadSprites();
     mainWindow->menuTools->addAction(actionReloadSprites);
     mainWindow->toolBarPlugins->addAction(actionReloadSprites);
-    connect(dialogReloadSprites->GetSpritesPacker(), &SpritesPacker::ProcessStared, this, &EditorCore::CloseAllDocuments, Qt::BlockingQueuedConnection);
+    connect(dialogReloadSprites, &DialogReloadSprites::StarPackProcess, this, &EditorCore::CloseAllDocuments);
     
     connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
     connect(mainWindow, &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);

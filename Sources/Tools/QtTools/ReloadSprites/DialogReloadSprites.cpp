@@ -107,7 +107,10 @@ DialogReloadSprites::~DialogReloadSprites()
 
 void DialogReloadSprites::OnStartClicked()
 {
-
+    if (!StarPackProcess())
+    {
+        return;
+    }
     const auto gpuData = ui->comboBox_targetGPU->currentData();
     const auto qualityData = ui->comboBox_quality->currentData();
     if (!gpuData.isValid() || !qualityData.isValid())
