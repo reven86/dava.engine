@@ -377,6 +377,8 @@ bool NMaterial::NeedLocalOverride(UniquePropertyLayout propertyLayout)
 
 void NMaterial::SetParent(NMaterial *_parent)
 {
+    DVASSERT(_parent != this);
+
     if (parent == _parent)
         return;
 
