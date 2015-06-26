@@ -30,7 +30,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "Meta/Result.h"
+#include "Base/Result.h"
 #include "ui_mainwindow.h"
 
 #include "EditorSettings.h"

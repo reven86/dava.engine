@@ -35,7 +35,7 @@
 #include <QLineEdit>
 #include <QStyledItemDelegate>
 #include "Model/ControlProperties/AbstractProperty.h"
-#include "Meta/VariantType.h"
+#include "FileSystem/VariantType.h"
 class AbstractPropertyDelegate;
 class QToolButton;
 

@@ -31,7 +31,7 @@
 #define __QTDAVACONVERTION_H__
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
-#include "Meta/VariantType.h"
+#include "FileSystem/VariantType.h"
 #include "qmetatype.h"
 
 class QString;

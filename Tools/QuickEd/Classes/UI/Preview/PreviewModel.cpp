@@ -32,7 +32,7 @@
 #include "UI/Preview/EditScreen.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Document.h"
-#include "Meta/Result.h"
+#include "Base/Result.h"
 
 using namespace DAVA;
 

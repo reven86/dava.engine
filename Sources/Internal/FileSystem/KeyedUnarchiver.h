@@ -32,7 +32,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
-#include "Meta/VariantType.h"
+#include "FileSystem/VariantType.h"
 #include "FileSystem/File.h"
 
 namespace DAVA 

@@ -30,7 +30,7 @@
 #include "IntegerPropertyDelegate.h"
 #include <QSpinBox>
 #include <QLayout>
-#include "Meta/VariantType.h"
+#include "FileSystem/VariantType.h"
 #include "PropertiesModel.h"
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"

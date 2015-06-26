@@ -35,7 +35,7 @@
 #include "Scene3D/DataNode.h"
 #include "FileSystem/YamlParser.h"
 #include "Render/Shader.h"
-#include "Meta/VariantType.h"
+#include "FileSystem/VariantType.h"
 
 namespace DAVA
 {

@@ -31,7 +31,7 @@
 #define QUICKED_RESULT_H_
 
 #include "Base/BaseTypes.h"
-#include "Meta/VariantType.h"
+#include "FileSystem/VariantType.h"
 
 namespace DAVA
 {

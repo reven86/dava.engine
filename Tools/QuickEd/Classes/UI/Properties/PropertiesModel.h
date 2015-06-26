@@ -32,7 +32,7 @@
 
 #include <QAbstractItemModel>
 
-#include "Meta/VariantType.h"
+#include "FileSystem/VariantType.h"
 #include "Model/ControlProperties/PropertyListener.h"
 
 namespace DAVA {

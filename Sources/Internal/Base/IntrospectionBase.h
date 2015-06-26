@@ -31,7 +31,7 @@
 #define __DAVAENGINE_INTROSPECTION_BASE_H__
 
 #include "Base/BaseTypes.h"
-#include "Meta/VariantType.h"
+#include "FileSystem/VariantType.h"
 #include "Base/GlobalEnum.h"
 
 namespace DAVA

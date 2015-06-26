@@ -28,7 +28,7 @@
 
 
 #include "FileSystem/File.h"
-#include "Meta/VariantType.h"
+#include "FileSystem/VariantType.h"
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
 #include "Math/MathConstants.h"
@@ -38,7 +38,7 @@
 #include "Math/Matrix3.h"
 #include "Math/Matrix4.h"
 #include "Utils/Utils.h"
-#include "Meta/Meta.h"
+#include "Base/Meta.h"
 #include "Math/Color.h"
 #include "Base/FastName.h"
 #include "Math/AABBox3.h"

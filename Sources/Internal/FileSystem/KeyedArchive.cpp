@@ -33,7 +33,7 @@
 #include "FileSystem/DynamicMemoryFile.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
-#include "Meta/VariantType.h"
+#include "FileSystem/VariantType.h"
 #include "FileSystem/YamlEmitter.h"
 
 namespace DAVA 

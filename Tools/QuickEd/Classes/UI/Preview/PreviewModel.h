@@ -35,7 +35,7 @@
 #include <QSize>
 #include "DAVAEngine.h"
 
-#include "Meta/Result.h"
+#include "Base/Result.h"
 #include "ControlSelectionListener.h"
 
 class PackageCanvas;
