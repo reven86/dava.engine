@@ -243,6 +243,8 @@ private:
 
     Rect TransformClipRect(const Rect & rect, const Matrix4 & transformMatrix);
 
+    inline bool IsRenderTargetPass() { return (currentPacketListHandle != packetList2DHandle); };
+
     Matrix4 virtualToPhysicalMatrix;
     Matrix4 projMatrix;
     std::stack<Rect> clipStack;
@@ -281,7 +283,7 @@ private:
     rhi::HRenderPass pass2DHandle;
     rhi::HPacketList packetList2DHandle;
     rhi::HRenderPass passTargetHandle;
-    rhi::HPacketList packetListTargetHandle;
+    rhi::HPacketList currentPacketListHandle;
 
     int32 renderTargetWidth;
     int32 renderTargetHeight;
