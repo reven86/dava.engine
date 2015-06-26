@@ -76,7 +76,7 @@ public:
 
 public:
 	TexturePacker();
-	
+    ~TexturePacker();
 	// pack textures to single texture
 	void PackToTextures(const FilePath & excludeFolder, const FilePath & outputPath, List<DefinitionFile*> & defsList, eGPUFamily forGPU);
 	// page each PSD file to separate texture
