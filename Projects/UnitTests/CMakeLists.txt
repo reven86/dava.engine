@@ -62,8 +62,12 @@ set( LIBRARIES                  )
 
 if ( WINDOWS_UAP )
     add_content_win_uap ( "Data" )
-	add_content_win_uap ( "DataSource" )
-	list( APPEND ADDED_SRC ${ADDED_CONTENT_SRC} )
+    add_content_win_uap ( "DataSource" )
+	if ( ADDITIONAL_CONTENT )
+        add_content_win_uap ( ${ADDITIONAL_CONTENT} )
+    endif ()
+	
+    list( APPEND ADDED_SRC ${ADDED_CONTENT_SRC} )
 endif ()
 
 setup_main_executable()

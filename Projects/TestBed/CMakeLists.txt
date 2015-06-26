@@ -1,8 +1,10 @@
 cmake_minimum_required (VERSION 3.0)
 
-# add DAVA_MEMORY_PROFILING_ENABLE to enable MemoryManagerTest in UnitTests
-# this macro should be defined in all dependant projects (dava framework, etc)
-add_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
+# Enable MemoryManagerTest in UnitTests
+# this variable should be defined in all dependant projects (dava framework, etc)
+if( NOT DAVA_MEGASOLUTION )
+    set ( DAVA_MEMORY_PROFILER 1 )
+endif()
 
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include      ( CMake-common  )
@@ -56,6 +58,16 @@ set( ANDROID_ICO                ${CMAKE_CURRENT_LIST_DIR}/android/ic_launcher-we
 
 set( ADDED_SRC                  ${IOS_ADD_SRC} )
 set( LIBRARIES                  )
+
+if ( WINDOWS_UAP )
+    add_content_win_uap ( "Data" )
+    add_content_win_uap ( "DataSource" )
+	if ( ADDITIONAL_CONTENT )
+        add_content_win_uap ( ${ADDITIONAL_CONTENT} )
+    endif ()
+	
+    list( APPEND ADDED_SRC ${ADDED_CONTENT_SRC} )
+endif ()
 
 setup_main_executable()
 
