@@ -53,7 +53,6 @@ public:
 public slots:
     void Cancel();
 signals:
-    bool ProcessStared();
     void Finished();
 
 private:

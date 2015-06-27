@@ -48,6 +48,8 @@ public:
     ~DialogReloadSprites();
     SpritesPacker *GetSpritesPacker() const;
     QAction* GetActionReloadSprites() const;
+signals:
+    bool StarPackProcess();
 private slots:
     void OnStartClicked();
     void OnStopClicked();
@@ -73,7 +75,5 @@ inline QAction* DialogReloadSprites::GetActionReloadSprites() const
 {
     return actionReloadSprites;
 }
-
-
 
 #endif // __DIALOG_RELOAD_SPRITES_H__

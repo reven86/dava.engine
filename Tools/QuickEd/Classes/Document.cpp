@@ -29,14 +29,8 @@
 
 #include "Document.h"
 #include <QLineEdit>
-#include <QAction>
-#include <QItemSelection>
 #include "UI/Preview/EditScreen.h"
 #include "FileSystem/VariantType.h"
-
-#include "UI/Package/PackageModel.h"
-
-#include "UI/Library/LibraryModel.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
