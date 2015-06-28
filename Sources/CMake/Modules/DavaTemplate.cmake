@@ -125,7 +125,7 @@ elseif ( WINDOWS_UAP )
 	set ( WIN_UAP_MANIFESTS_DIR "${WIN_UAP_CONF_DIR}/Manifests" )
 	set ( WIN_UAP_ASSETS_DIR    "${WIN_UAP_CONF_DIR}/Assets" )
 	file( GLOB ASSET_FILES      "${WIN_UAP_ASSETS_DIR}/*.png" )
-	source_group ("Assets" FILES ${ASSET_FILES})
+	source_group ("Content\\Assets" FILES ${ASSET_FILES})
 	
 	if (NOT "${PLATFORM}" STREQUAL "DESKTOP")
 		configure_file(
