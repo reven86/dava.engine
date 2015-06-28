@@ -31,7 +31,6 @@
 #define __DAVAENGINE_VARIANTTYPE_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/Meta.h"
 
 namespace DAVA 
 {
@@ -86,7 +85,6 @@ public:
 	static const String TYPENAME_FASTNAME;     // "FastName"
 	static const String TYPENAME_AABBOX3;     // "AABBox3"
 	static const String TYPENAME_FILEPATH;  // "FilePath"
-    static const String TYPENAME_POINTER;   // "Pointer"
 
 	VariantType();
 	VariantType(const VariantType &value);
@@ -97,6 +95,7 @@ public:
 	explicit VariantType(const String & value);
 	explicit VariantType(const WideString & value);
 	explicit VariantType(const uint8 *array, int32 arraySizeInBytes);
+	explicit VariantType(KeyedArchive *archive);
 	explicit VariantType(const int64 & value);
 	explicit VariantType(const uint64 & value);
 	explicit VariantType(const Vector2 & value);
@@ -109,16 +108,7 @@ public:
 	explicit VariantType(const FastName & value);
 	explicit VariantType(const AABBox3 & value);
 	explicit VariantType(const FilePath & value);
-    template <typename T>
-    explicit VariantType(const T* pointer) : pointerValue(nullptr)
-    {
-        SetPointer(pointer);
-    }
-    template <>
-    VariantType(const KeyedArchive* archive)
-    {
-        SetKeyedArchive(archive);
-    }
+
 	~VariantType();
 	
     enum eVariantType
@@ -144,7 +134,7 @@ public:
         TYPE_FASTNAME,
 		TYPE_AABBOX3,
 		TYPE_FILEPATH,
-        TYPE_POINTER,
+        
         TYPES_COUNT // every new type should be always added to the end for compatibility with old archives
 	};
 	uint8 type;
@@ -248,7 +238,7 @@ public:
      Archive is copying into the variable.
 	 \param[in] archive	archive to set (Archive is retains inside variable type)
 	 */
-	void SetKeyedArchive(const KeyedArchive *archive);
+	void SetKeyedArchive(KeyedArchive *archive);
     
     /**
      \brief Function to set int64 value to variant type variable
@@ -323,18 +313,6 @@ public:
 		\param[in] value	value to set
 	 */
 	void SetFilePath(const FilePath & value);
-
-    /**
-    \brief Function to set pointer value to variant type variable
-    \param[in] value	value to set
-    */
-    template <typename T>
-    void SetPointer(const T* pointer)
-    {
-        type = TYPE_POINTER;
-        pointerValue = pointer;
-        meta = MetaInfo::Instance<T*>();
-    }
 
 	/**
 		\brief Function to return bool value from variable
@@ -462,20 +440,6 @@ public:
      */
     const FilePath &AsFilePath() const;
 
-    /**
-    \brief Function to return pointer from variable.
-    \returns pointer of variable if type of pointer is T, otherwise return nullptr
-    */
-    template<typename T>
-    T *AsPointer() const
-    {
-        DVASSERT(type == TYPE_POINTER);
-        if (MetaInfo::Instance<T*>() == meta)
-        {
-            return reinterpret_cast<T*>(const_cast<void*>(pointerValue));
-        }
-        return nullptr;
-    }
 	// File read & write helpers
 	
 	/**
@@ -520,8 +484,6 @@ private:
 	VariantType(void *);
 
 	void ReleasePointer();
-
-    MetaInfo *meta;
 };
 	
 VariantType::eVariantType VariantType::GetType() const

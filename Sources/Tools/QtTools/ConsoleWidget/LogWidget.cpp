@@ -75,7 +75,7 @@ void LogWidget::AddResultList(const DAVA::ResultList &resultList)
             case DAVA::Result::RESULT_SUCCESS:
                 level = DAVA::Logger::LEVEL_INFO;
             break;
-            case DAVA::Result::RESULT_WARNING:
+            case DAVA::Result::RESULT_FAILURE:
                 level = DAVA::Logger::LEVEL_WARNING;
             break;
             case DAVA::Result::RESULT_ERROR:
