@@ -18,7 +18,8 @@ GLuint      _GLES2_Binded_FrameBuffer           = 0;
 GLuint      _GLES2_Default_FrameBuffer          = 0;
 void*       _GLES2_Native_Window                = nullptr;
 void*       _GLES2_Context                      = nullptr;
-void        (*_GLES2_Make_Context_Current)()    = nullptr;
+void        (*_GLES2_AcquireContext)()          = nullptr;
+void        (*_GLES2_ReleaseContext)()          = nullptr;
 int         _GLES2_DefaultFrameBuffer_Width     = 0;
 int         _GLES2_DefaultFrameBuffer_Height    = 0;
 
@@ -196,10 +197,17 @@ gles2_Reset( const ResetParam& param )
 #if defined(__DAVAENGINE_WIN32__)
 
 void
-win_gl_set_current()
+wgl_AcquireContext()
 {
-    wglMakeCurrent(deviceContext, (HGLRC)_GLES2_Context);
+    wglMakeCurrent( deviceContext, (HGLRC)_GLES2_Context );
 }
+
+void
+wgl_ReleaseContext()
+{
+    wglMakeCurrent( deviceContext, NULL );
+}
+
 
 void
 gles2_Initialize( const InitParam& param )
@@ -281,7 +289,8 @@ gles2_Initialize( const InitParam& param )
                 _GLES2_Context = (void*)ctx;
                 //            }
 
-                _GLES2_Make_Context_Current = &win_gl_set_current;
+                _GLES2_AcquireContext = &wgl_AcquireContext;
+                _GLES2_ReleaseContext = &wgl_ReleaseContext;
 
                 success = true;
             }
@@ -297,13 +306,15 @@ gles2_Initialize( const InitParam& param )
     }
     else
     {
-        _GLES2_Make_Context_Current = param.makeCurrentFunc;
+        _GLES2_AcquireContext = param.acquireContextFunc;
+        _GLES2_ReleaseContext = param.releaseContextFunc;
         success = true; //context already created in external code
     }
 
-    DVASSERT(_GLES2_Make_Context_Current);
+    DVASSERT(_GLES2_AcquireContext);
+    DVASSERT(_GLES2_ReleaseContext);
 
-    if (success)
+    if( success )
     {
         VertexBufferGLES2::SetupDispatch(&DispatchGLES2);
         IndexBufferGLES2::SetupDispatch(&DispatchGLES2);

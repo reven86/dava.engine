@@ -23,33 +23,34 @@ namespace rhi
 enum
 CommandGLES2
 {
-    GLES2__BEGIN,
-    GLES2__END,
+    GLES2__BEGIN                            = 1,
+    GLES2__END                              = 2,
 
-    GLES2__SET_VERTEX_DATA,
-    GLES2__SET_INDICES,
-    GLES2__SET_QUERY_BUFFER,
-    GLES2__SET_QUERY_INDEX,
+    GLES2__SET_VERTEX_DATA                  = 11,
+    GLES2__SET_INDICES                      = 12,
+    GLES2__SET_QUERY_BUFFER                 = 13,
+    GLES2__SET_QUERY_INDEX                  = 14,
 
-    GLES2__SET_PIPELINE_STATE,
-    GLES2__SET_CULL_MODE,
-    GLES2__SET_SCISSOR_RECT,
-    GLES2__SET_VIEWPORT,
-    GLES2__SET_VERTEX_PROG_CONST_BUFFER,
-    GLES2__SET_FRAGMENT_PROG_CONST_BUFFER,
-    GLES2__SET_VERTEX_TEXTURE,
-    GLES2__SET_FRAGMENT_TEXTURE,
+    GLES2__SET_PIPELINE_STATE               = 21,
+    GLES2__SET_DEPTHSTENCIL_STATE           = 22,
+    GLES2__SET_SAMPLER_STATE                = 23,
+    GLES2__SET_CULL_MODE                    = 24,
+    GLES2__SET_SCISSOR_RECT                 = 25,
+    GLES2__SET_VIEWPORT                     = 26,
 
-    GLES2__SET_DEPTHSTENCIL_STATE,
-    GLES2__SET_SAMPLER_STATE,
-
-    GLES2__DRAW_PRIMITIVE,
-    GLES2__DRAW_INDEXED_PRIMITIVE,
-
-    GLES2__SET_MARKER,
+    GLES2__SET_VERTEX_PROG_CONST_BUFFER     = 31,
+    GLES2__SET_FRAGMENT_PROG_CONST_BUFFER   = 32,
+    GLES2__SET_VERTEX_TEXTURE               = 33,
+    GLES2__SET_FRAGMENT_TEXTURE             = 34,
 
 
-    GLES2__NOP
+    GLES2__DRAW_PRIMITIVE                   = 41,
+    GLES2__DRAW_INDEXED_PRIMITIVE           = 42,
+
+    GLES2__SET_MARKER                       = 51,
+
+
+    GLES2__NOP                              = 77
 };
 
 struct
@@ -87,6 +88,7 @@ public:
     RenderPassConfig    passCfg;
     uint32              isFirstInPass:1;
     uint32              isLastInPass:1;
+    uint32              usingDefaultFrameBuffer:1;
 };
 
 typedef Pool<CommandBufferGLES2_t,RESOURCE_COMMAND_BUFFER>  CommandBufferPool;
@@ -142,9 +144,10 @@ gles2_RenderPass_Allocate( const RenderPassConfig& passConf, uint32 cmdBufCount,
         Handle                  h  = CommandBufferPool::Alloc();
         CommandBufferGLES2_t*   cb = CommandBufferPool::Get( h );
 
-        cb->passCfg         = passConf;
-        cb->isFirstInPass   = i == 0;
-        cb->isLastInPass    = i == cmdBufCount - 1;
+        cb->passCfg                 = passConf;
+        cb->isFirstInPass           = i == 0;
+        cb->isLastInPass            = i == cmdBufCount - 1;
+        cb->usingDefaultFrameBuffer = passConf.colorBuffer[0].texture == InvalidHandle;
         
         pass->cmdBuf[i] = h;
         cmdBuf[i]       = h;
@@ -669,8 +672,8 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                             }
                             else if( type == GL_TEXTURE )
                             {
-                                GLint   w,h;
-
+//                                GLint   w,h;
+//
 //                                glGetTexParameteriv( GL_TEXTURE_2D, obj,  );
                             }
                         }
@@ -813,8 +816,11 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
                 GLsizei w = GLsizei(arg[2]);
                 GLsizei h = GLsizei(arg[3]);
 
-                if( x  &&  y  &&  w  &&  h )
+                if( !(x==0  &&  y==0  &&  w==0  &&  h==0) )
                 {
+                    if( usingDefaultFrameBuffer )
+                        y = _GLES2_DefaultFrameBuffer_Height - y - h;
+                    
                     glEnable( GL_SCISSOR_TEST );
                     glScissor( x, y, w, h );
                 }
@@ -994,7 +1000,7 @@ SCOPED_NAMED_TIMING("gl.cb-exec");
 
         }
         
-        if( --immediate_cmd_ttw )
+        if( --immediate_cmd_ttw <= 0 )
         {
             _PendingImmediateCmdSync.Lock();
             if( _PendingImmediateCmd )
@@ -1086,12 +1092,12 @@ _ExecuteQueuedCommands()
     _CurRenderQueueSize = 0;
     _CmdQueueSync.Unlock();
 
-    if (_GLES2_Context)
+    if( _GLES2_Context )
     {
 #if defined(__DAVAENGINE_WIN32__)
         HWND    wnd = (HWND)_GLES2_Native_Window;
-        HDC     dc = ::GetDC(wnd);
-        SwapBuffers(dc);
+        HDC     dc = ::GetDC( wnd );
+        SwapBuffers( dc );
 #elif defined(__DAVAENGINE_MACOS__)
         macos_gl_end_frame();
 #elif defined(__DAVAENGINE_IPHONE__)
@@ -1136,9 +1142,8 @@ gles2_Present()
 static void
 _RenderFunc( DAVA::BaseObject* obj, void*, void* )
 {
-    DVASSERT(_GLES2_Make_Context_Current);
-
-    _GLES2_Make_Context_Current();
+    DVASSERT(_GLES2_AcquireContext);
+    _GLES2_AcquireContext();
 
     _RenderThredStartedSync.Post();
     Logger::Info( "RHI render-thread started" );
@@ -1177,7 +1182,7 @@ _RenderFunc( DAVA::BaseObject* obj, void*, void* )
         if( do_exit )
             break;
 
-        _ExecuteQueuedCommands();                 
+        _ExecuteQueuedCommands();
     }
 
     Logger::Info( "RHI render-thread stopped" );
@@ -1187,7 +1192,12 @@ void
 InitializeRenderThread()
 {
 #if USE_RENDER_THREAD
+
+    DVASSERT(_GLES2_ReleaseContext);
+    _GLES2_ReleaseContext();
+
     RenderThread = DAVA::Thread::Create( DAVA::Message(&_RenderFunc) );
+    RenderThread->SetName( "RHI.gl-render" );
     RenderThread->Start();    
     _RenderThredStartedSync.Wait();
 #endif
@@ -1225,10 +1235,15 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
 {
     int     err = 0;
 
-#if 0
+    do 
+    {
+        err = glGetError();
+    } 
+    while ( err != GL_NO_ERROR );
+#if 1
 
-    while( glGetError() != GL_NO_ERROR )
-        ;
+//    while( glGetError() != GL_NO_ERROR )
+//        ;
 
     #define EXEC_GL(expr) \
     expr ; \
@@ -1327,10 +1342,28 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
                 cmd->status = err;
             }   break;
 
+            case GLCommand::CREATE_PROGRAM :
+            {
+                cmd->retval = glCreateProgram();
+                cmd->status = 0;
+            }   break;
+
             case GLCommand::CREATE_SHADER :
             {
                 cmd->retval = glCreateShader( (GLenum)(arg[0]) );
                 cmd->status = 0;
+            }   break;
+
+            case GLCommand::ATTACH_SHADER :
+            {
+                EXEC_GL(glAttachShader( GLuint(arg[0]), GLuint(arg[1]) ));
+                cmd->status = err;
+            }   break;
+
+            case GLCommand::LINK_PROGRAM :
+            {
+                EXEC_GL(glLinkProgram( GLuint(arg[0]) ));
+                cmd->status = err;
             }   break;
 
             case GLCommand::SHADER_SOURCE :
@@ -1361,6 +1394,12 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
             {
                 EXEC_GL(glGetProgramiv( (GLuint)(arg[0]), (GLenum)(arg[1]), (GLint*)(arg[2]) ));
                 cmd->status = err;
+            }   break;
+
+            case GLCommand::GET_ATTRIB_LOCATION :
+            {
+                cmd->retval = glGetAttribLocation( GLuint(arg[0]), (const GLchar*)(arg[1]) );
+                cmd->status = 0;
             }   break;
 
             case GLCommand::GET_ACTIVE_UNIFORM :

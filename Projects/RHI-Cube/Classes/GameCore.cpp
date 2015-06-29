@@ -787,6 +787,7 @@ void GameCore::OnAppStarted()
     Logger::Info( "\n\n====================" );
     fp.Dump();
 */
+/*
     // ShaderSource smoke-test
     const char*  vp_src =
     "VPROG_IN_BEGIN\n"
@@ -827,6 +828,7 @@ void GameCore::OnAppStarted()
     vp.Construct( rhi::PROG_VERTEX, vp_src );
     Logger::Info( "\n\n====================" );
     vp.Dump();
+*/
 /*
     const char*  vp_src =
     "VPROG_IN_BEGIN\n"
@@ -894,7 +896,7 @@ void GameCore::OnAppStarted()
 void GameCore::OnAppFinished()
 {
     DbgDraw::Uninitialize();
-    rhi::Uninitialize();
+//-    rhi::Uninitialize();
 }
 
 void GameCore::OnSuspend()
@@ -1037,8 +1039,8 @@ GameCore::Draw()
 {
 //    sceneRenderTest->Render();
 //    rhiDraw();
-//    manticoreDraw();
-    rtDraw();
+    manticoreDraw();
+//    rtDraw();
 //    visibilityTestDraw();
 }
 

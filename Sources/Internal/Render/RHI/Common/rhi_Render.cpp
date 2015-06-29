@@ -829,6 +829,11 @@ AddPackets( HPacketList packetList, const Packet* packet, uint32 packetCount )
 
         if( p->options & Packet::OPT_OVERRIDE_SCISSOR )
         {
+            DVASSERT(p->scissorRect.x>=0);
+            DVASSERT(p->scissorRect.y>=0);
+            DVASSERT(p->scissorRect.width>=0);
+            DVASSERT(p->scissorRect.height>=0);
+
             rhi::CommandBuffer::SetScissorRect( cmdBuf, p->scissorRect );
             pl->restoreDefScissorRect = true;
         }

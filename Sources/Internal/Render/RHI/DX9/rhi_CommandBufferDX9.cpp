@@ -225,7 +225,7 @@ dx9_CommandBuffer_SetCullMode( Handle cmdBuf, CullMode mode )
 void
 dx9_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
 {
-    CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_SCISSOR_RECT, rect.x, rect.x, rect.width, rect.height );
+    CommandBufferPool::Get(cmdBuf)->Command( DX9__SET_SCISSOR_RECT, rect.x, rect.y, rect.width, rect.height );
 }
 
 
@@ -708,7 +708,7 @@ SCOPED_FUNCTION_TIMING();
                 int w = int(arg[2]);
                 int h = int(arg[3]);
 
-                if( x  &&  y  &&  w  &&  h )
+                if( !(x==0  &&  y==0  &&  w==0  &&  h==0) )
                 {
                     RECT    rect = { x, y, x+w-1, y+h-1 };
 
