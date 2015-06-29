@@ -400,9 +400,18 @@ void RenderSystem2D::Setup2DMatrices()
 {
     if (IsRenderTargetPass())
     {
-        projMatrix.glOrtho(0.0f, (float32)renderTargetWidth,
-                           0.0f, (float32)renderTargetHeight,
-                          -1.0f, 1.0f, Renderer::GetCaps().zeroBaseClipRange);
+        if (Renderer::GetCaps().upperLeftRTOrigin)
+        {
+            projMatrix.glOrtho(0.0f, (float32)renderTargetWidth,
+                (float32)renderTargetHeight, 0.f,
+                -1.0f, 1.0f, Renderer::GetCaps().zeroBaseClipRange);
+        }
+        else
+        {
+            projMatrix.glOrtho(0.0f, (float32)renderTargetWidth,
+                0.0f, (float32)renderTargetHeight,
+                -1.0f, 1.0f, Renderer::GetCaps().zeroBaseClipRange);
+        }
     }
     else
     {
