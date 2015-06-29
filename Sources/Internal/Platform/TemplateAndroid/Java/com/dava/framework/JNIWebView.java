@@ -61,6 +61,7 @@ public class JNIWebView {
             }
             setLayoutParams(params);
         }
+        
         public void restoreVisibility()
         {
             client.setVisible(this, client.isVisible());
@@ -69,13 +70,13 @@ public class JNIWebView {
             // and sometimes already loaded content disappear after going to background
             if(lastLoadData != null) {
 	            switch (lastLoadData.length) {
-				case 1:
+				case 1: // If length equals 1 then load content by URL (see WebViewWrapper.loadUrl(...))
 					super.loadUrl(lastLoadData[0]);
 					break;
-				case 3:
+				case 3: // If length equals 3 then load content from html string with mime type (see WebViewWrapper.loadData(...))
 					super.loadData(lastLoadData[0], lastLoadData[1], lastLoadData[2]);
 					break;
-				case 5:
+				case 5: // If length equals 5 then load content from string data with some base url (see WebViewWrapper.loadDataWithBaseURL(...))  
 					super.loadDataWithBaseURL(lastLoadData[0], lastLoadData[1], lastLoadData[2], lastLoadData[3], lastLoadData[4]);
 					break;
 				default:
@@ -84,23 +85,26 @@ public class JNIWebView {
 				}
             }
         }
+        
         @Override
         public void loadUrl(String url)
         {
-        	lastLoadData = new String[]{url};
+        	lastLoadData = new String[]{url}; // Using for reload lost content (see WebViewWrapper.restoreVisibility)
             super.loadUrl(url);
         }
+        
         @Override
         public void loadData(String htmlString, String mimeType, String encoding)
         {
-        	lastLoadData = new String[]{htmlString, mimeType, encoding};
+        	lastLoadData = new String[]{htmlString, mimeType, encoding}; // Using for reload lost content (see WebViewWrapper.restoreVisibility)
             super.loadData(htmlString, mimeType, encoding);
         }
+        
         @Override
         public void loadDataWithBaseURL(String baseUrl, String data, String mimeType,
                 String encoding, String failUrl)
         {
-        	lastLoadData = new String[]{baseUrl, data, mimeType, encoding, failUrl};
+        	lastLoadData = new String[]{baseUrl, data, mimeType, encoding, failUrl}; // Using for reload lost content (see WebViewWrapper.restoreVisibility)
             super.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, failUrl);
         }
         
@@ -114,6 +118,7 @@ public class JNIWebView {
             }
             return super.onKeyPreIme(keyCode, event);
         }
+        
         /*
          * HACK to get last known loaded url from any thread
          * cause standard getUrl method can't be called from chromium thread
