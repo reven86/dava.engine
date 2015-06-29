@@ -174,11 +174,14 @@ public:
 #endif 
 #if defined __DAVAENGINE_WIN_UAP__
 private:
-	EGLDisplay mEglDisplay;
-	EGLContext mEglContext;
-	EGLSurface mEglSurface;
+    EGLDisplay mEglDisplay = EGL_NO_DISPLAY;
+    EGLContext mEglContext = EGL_NO_CONTEXT;
+    EGLSurface mEglSurface = EGL_NO_SURFACE;
+
+    EGLConfig  mEglConfig = nullptr;
 public:
-	bool Create(Windows::UI::Core::CoreWindow^ window);
+    bool Create(Windows::UI::Xaml::Controls::SwapChainPanel^ panel);
+    bool Create(Windows::UI::Core::CoreWindow^ window);
 #elif defined __DAVAENGINE_WIN32__
 	bool Create(HINSTANCE hInstance, HWND hWnd);
 #else

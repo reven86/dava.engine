@@ -134,6 +134,7 @@ public:
     };
     
 	static int Run(int argc, char *argv[], AppHandle handle = 0);
+    static int Run2(int argc, char *argv[], AppHandle handle = 0);  // TODO: remove it
 	static int RunCmdTool(int argc, char *argv[], AppHandle handle = 0);
 
 	// Should be called in platform initialization before FrameworkDidLaunched

@@ -26,17 +26,57 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_COREPLATFORMWINUAP_H__
+#define __DAVAENGINE_COREPLATFORMWINUAP_H__
+
 #include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "Core/Core.h"
+#include "Base\BaseTypes.h"
+#include "Core\Core.h"
 
-[Platform::MTAThread]
-int main(Platform::Array<Platform::String^>^ args)
+namespace DAVA
 {
-    //return DAVA::Core::Run(0, 0, 0);
-    return DAVA::Core::Run2(0, 0, 0);
+
+ref class WinUAPXamlApp;
+
+class CorePlatformWinUAP : public Core
+{
+public:
+    CorePlatformWinUAP() = default;
+    virtual ~CorePlatformWinUAP() = default;
+
+    CorePlatformWinUAP(const CorePlatformWinUAP&) = delete;
+    CorePlatformWinUAP& operator = (const CorePlatformWinUAP&) = delete;
+
+    WinUAPXamlApp^ XamlApplication();
+
+    void InitArgs();
+    void Run();
+    void Quit() override;
+
+    eScreenMode GetScreenMode() override;
+    void SwitchScreenToMode(eScreenMode screenMode) override;
+    void GetAvailableDisplayModes(List<DisplayMode>& availableModes) override;
+    void ToggleFullscreen() override;
+
+    uint32 GetScreenDPI() override;
+    eScreenOrientation GetScreenOrientation() override;
+
+    void SetIcon(int32 iconId) override;
+
+private:
+    WinUAPXamlApp^ xamlApp = nullptr;
+};
+
+//////////////////////////////////////////////////////////////////////////
+inline WinUAPXamlApp^ CorePlatformWinUAP::XamlApplication()
+{
+    return xamlApp;
 }
 
-#endif // defined(__DAVAENGINE_WIN_UAP__)
+}   // namespace DAVA
+
+#endif  // __DAVAENGINE_WIN_UAP__
+#endif  // __DAVAENGINE_COREPLATFORMWINUAP_H__

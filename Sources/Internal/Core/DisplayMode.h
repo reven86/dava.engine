@@ -40,6 +40,12 @@ namespace DAVA
 class DisplayMode
 {
 public:
+    static const int32 DISPLAY_MODE_DEFAULT_WIDTH = 800;
+    static const int32 DISPLAY_MODE_DEFAULT_HEIGHT = 600;
+    static const int32 DISPLAY_MODE_DEFAULT_BITSPERPEL = 16;
+    static const int32 DISPLAY_MODE_DEFAULT_DISPLAYFREQUENCY = 0;
+
+public:
 	DisplayMode()
 	{
 		width = 0;
