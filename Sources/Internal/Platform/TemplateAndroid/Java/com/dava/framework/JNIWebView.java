@@ -9,10 +9,10 @@ import android.graphics.Paint;
 import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.KeyEvent;
 import android.webkit.CookieManager;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
@@ -29,7 +29,7 @@ public class JNIWebView {
         private final static int MAX_DELAY = 1600;
         private final static int START_DELAY = 50;
         private int delay = 50; //50, 100, 200, 400, 800, 1600
-        private String lastLoadedUrl = null;
+        private String[] lastLoadData = null;
         
         public WebViewWrapper(Context context, InternalViewClientV14 client) {
             super(context);
@@ -64,25 +64,43 @@ public class JNIWebView {
         public void restoreVisibility()
         {
             client.setVisible(this, client.isVisible());
-            // on unlock we have to call reload() to show webview content 
+            // on unlock we have to call super.loadUrl() to show webview content 
             // we have to do that because user may lock phone before webView loading finishes
-            reload();
+            // and sometimes already loaded content disappear after going to background
+            if(lastLoadData != null) {
+	            switch (lastLoadData.length) {
+				case 1:
+					super.loadUrl(lastLoadData[0]);
+					break;
+				case 3:
+					super.loadData(lastLoadData[0], lastLoadData[1], lastLoadData[2]);
+					break;
+				case 5:
+					super.loadDataWithBaseURL(lastLoadData[0], lastLoadData[1], lastLoadData[2], lastLoadData[3], lastLoadData[4]);
+					break;
+				default:
+					Log.e(JNIConst.LOG_TAG, "Incorrect data to reload WebView content");
+					break;
+				}
+            }
         }
         @Override
         public void loadUrl(String url)
         {
-            lastLoadedUrl = url;
+        	lastLoadData = new String[]{url};
             super.loadUrl(url);
         }
         @Override
         public void loadData(String htmlString, String mimeType, String encoding)
         {
+        	lastLoadData = new String[]{htmlString, mimeType, encoding};
             super.loadData(htmlString, mimeType, encoding);
         }
         @Override
         public void loadDataWithBaseURL(String baseUrl, String data, String mimeType,
                 String encoding, String failUrl)
         {
+        	lastLoadData = new String[]{baseUrl, data, mimeType, encoding, failUrl};
             super.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, failUrl);
         }
         
@@ -102,7 +120,11 @@ public class JNIWebView {
          */
         public String getLastLoadedUrl()
         {
-            return lastLoadedUrl;
+        	if(lastLoadData != null && lastLoadData.length > 0)
+        	{
+        		return lastLoadData[0];
+        	}
+        	return null;
         }
     }
 
