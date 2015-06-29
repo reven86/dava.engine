@@ -75,5 +75,6 @@ void LibraryWidget::LoadContext()
             sharedData->SetContext(this, context);
         }
         treeView->setModel(context->libraryModel);
+        treeView->expandToDepth(0);
     }
 }

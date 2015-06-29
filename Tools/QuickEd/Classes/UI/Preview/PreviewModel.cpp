@@ -236,12 +236,12 @@ void PreviewModel::OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl 
             }
             else
             {
-                resultList.AddResult(Result::RESULT_WARNING, ("selected control is equal to the current root control"));
+                resultList.AddResult(Result::RESULT_FAILURE, ("selected control is equal to the current root control"));
             }
         }
         else
         {
-            resultList.AddResult(Result::RESULT_WARNING, ("rootControl not found!"));
+            resultList.AddResult(Result::RESULT_FAILURE, ("rootControl not found!"));
         }
     }
     if (!selectedNodes.isEmpty())
