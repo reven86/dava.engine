@@ -29,7 +29,7 @@
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
 
-#include "Thread/ThreadLocalPtr.h"
+#include "Concurrency/ThreadLocalPtr.h"
 
 using namespace DAVA;
 

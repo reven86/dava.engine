@@ -32,7 +32,7 @@
 
 #import "Platform/TemplateiOS/ES3Renderer.h"
 #include "Render/RenderManager.h"
-#include "Platform/Thread.h"
+#include "Concurrency/Thread.h"
 #include "FileSystem/Logger.h"
 
 using namespace DAVA;

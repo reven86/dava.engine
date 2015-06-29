@@ -873,6 +873,7 @@ void UITextField::CopyDataFrom(UIControl *srcControl)
 	SetReturnKeyType(t->GetReturnKeyType());
 	SetEnableReturnKeyAutomatically(t->IsEnableReturnKeyAutomatically());
 	SetTextUseRtlAlign(t->GetTextUseRtlAlign());
+    SetMaxLength(t->GetMaxLength());
 }
     
 void UITextField::SetIsPassword(bool isPassword)

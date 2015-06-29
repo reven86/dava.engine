@@ -35,7 +35,7 @@
 #include <QSize>
 #include "DAVAEngine.h"
 
-#include "Result.h"
+#include "Base/Result.h"
 #include "ControlSelectionListener.h"
 
 class PackageCanvas;
@@ -74,7 +74,7 @@ signals:
 
     void ControlNodeSelected(const QList<ControlNode *> &selectedNodes);
 
-    void ErrorOccurred(const Result &error);
+    void ErrorOccurred(const DAVA::ResultList &error);
 
 private:
     CheckeredCanvas *FindControlContainer(DAVA::UIControl *control);
