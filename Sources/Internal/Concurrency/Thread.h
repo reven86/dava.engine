@@ -30,22 +30,24 @@
 #ifndef __DAVAENGINE_THREAD_H__
 #define __DAVAENGINE_THREAD_H__ 
 
+#include <functional>
+
 #include "Base/BaseTypes.h"
 #include "Base/Message.h"
 #include "Base/BaseObject.h"
-#include "Mutex.h"
+#include "Concurrency/Atomic.h"
+#include "Concurrency/Mutex.h"
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
-#if !defined __DAVAENGINE_PTHREAD__
-    #define __DAVAENGINE_PTHREAD__
+#if defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_ANDROID__)
+#   if !defined __DAVAENGINE_PTHREAD__
+#       define __DAVAENGINE_PTHREAD__
+#   endif
 #endif
-#endif
 
-
-#if defined (__DAVAENGINE_WINDOWS__)
-#include "Platform/TemplateWin32/pThreadWin32.h"
+#if defined (__DAVAENGINE_WINDOWS__) && defined(USE_CPP11_CONCURRENCY)
+#   include <thread>
 #elif defined(__DAVAENGINE_PTHREAD__)
-#include <pthread.h>
+#   include <pthread.h>
 #endif
 
 namespace DAVA
@@ -53,13 +55,6 @@ namespace DAVA
 /**
 	\defgroup threads Thread wrappers
 */
-
-/**
-	\ingroup threads
-	\brief wrapper class to give us level of abstraction on thread implementation in particual OS. Now is supports Win32, MacOS, iPhone platforms.
-*/
-
-class ConditionalVariable;
 
 class Thread : public BaseObject
 {
@@ -71,16 +66,27 @@ public:
     using Id = pthread_t;
 #elif defined(__DAVAENGINE_WINDOWS__)
 private:
+    friend unsigned __stdcall ThreadFunc(void *param);
+
+#   if defined(USE_CPP11_CONCURRENCY)
+private:
+    using Handle = std::thread;
+public:
+    using Id = std::thread::id;
+#   else 
+private:
     using Handle = HANDLE;
-    friend DWORD WINAPI ThreadFunc(void *param);
 public:
     using Id = DWORD;
+#   endif
 #endif
 #if defined(__DAVAENGINE_ANDROID__)
     static void thread_exit_handler(int sig);
 #endif
-    
+
 public:
+    using Procedure = std::function<void()>;
+
     enum eThreadState
 	{
 		STATE_CREATED = 0,
@@ -97,16 +103,25 @@ public:
 
 	/**
 		\brief static function to create instance of thread object based on Message.
-		This function create thread based on message. It do not start the thread until Start function called.
+		This functions create thread based on message. 
+        It do not start the thread until Start function called.
 		\returns ptr to thread object 
 	*/
-	static Thread *Create(const Message& msg);
+    static Thread *Create(const Message& msg);
+    
+    /**
+        \brief static function to create instance of thread object based on Procedure.
+        This functions create thread based on function with signature 'void()'.
+        It do not start the thread until Start function called.
+        \returns ptr to thread object
+     */
+    static Thread *Create(const Procedure& proc);
 
     /**
      \brief Sets thread name. You should to use it before Thread::Start().
      */
     inline void SetName(const String &_name);
-    inline String GetName();
+    inline const String& GetName() const;
     
 	/**
 		\brief Start execution of the thread
@@ -136,13 +151,7 @@ public:
      */
     inline bool IsCancelling() const;
     static void CancelAll();
-    /**
-        Wrapp pthread wait, signal and broadcast
-	*/
-    static void Wait(ConditionalVariable * cv, Mutex * mutex);
-    static void Signal(ConditionalVariable * cv);
-    static void Broadcast(ConditionalVariable * cv);
-    
+
     /**
      \brief Notifies the scheduler that the current thread is
      willing to release its processor to other threads of the same or higher
@@ -173,8 +182,11 @@ public:
     static void InitGLThread();
 
 private:
+    Thread();
+    Thread(const Message &msg);
+    Thread(const Procedure &proc);
     virtual ~Thread();
-	Thread(const Message &msg);
+
     void Init();
     void Shutdown();
 
@@ -188,10 +200,9 @@ private:
     */
     static void ThreadFunction(void *param);
 
-	Message	msg;
-	eThreadState state;
-    
-    volatile bool isCancelling;
+    Procedure thread_func;
+    Atomic<eThreadState> state;
+    Atomic<bool> isCancelling;
 
     /**
     \brief Native thread handle - variable which used to thread manipulations
@@ -224,14 +235,14 @@ inline void Thread::SetName(const String &_name)
     name = _name;
 }
 
-inline String Thread::GetName()
+inline const String& Thread::GetName() const
 {
     return name;
 }
     
 inline Thread::eThreadState Thread::GetState() const
 {
-    return state;
+    return state.Get();
 }
 
 inline void Thread::Cancel()
@@ -241,7 +252,7 @@ inline void Thread::Cancel()
     
 inline bool Thread::IsCancelling() const
 {
-    return isCancelling;
+    return isCancelling.Get();
 }
 
 inline Thread::Id Thread::GetId() const

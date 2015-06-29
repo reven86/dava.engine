@@ -27,30 +27,62 @@
 =====================================================================================*/
 
 
-#include "Base/Atomic.h"
+#ifndef __DAVAENGINE_ATOMIC_GNU_H__
+#define __DAVAENGINE_ATOMIC_GNU_H__
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+#include "Base/Platform.h"
+#ifndef USE_CPP11_CONCURRENCY
 
-#import <libkern/OSAtomic.h>
+#include "Concurrency/Atomic.h"
 
 namespace DAVA
 {
-    
-int32 AtomicIncrement( int32 &value )
+
+#if defined(__GNUC__)
+
+//-----------------------------------------------------------------------------
+//Atomic template class realization using built-in intrisics
+//-----------------------------------------------------------------------------
+template <typename T>
+void Atomic<T>::Set(T val) DAVA_NOEXCEPT
 {
-    return (int32)OSAtomicIncrement32Barrier((volatile int32_t *)&value);
+    __atomic_store(&value, &val, __ATOMIC_SEQ_CST);
 }
 
-int32 AtomicDecrement( int32 &value )
+template <typename T>
+T Atomic<T>::Get() const DAVA_NOEXCEPT
 {
-    return (int32)OSAtomicDecrement32Barrier((volatile int32_t *)&value);
+    return __atomic_load_n(&value, __ATOMIC_SEQ_CST);
 }
-    
-bool AtomicCompareAndSwap(const int32 oldVal, const int32 newVal, int32 &value)
-{
-    return OSAtomicCompareAndSwap32Barrier(oldVal, newVal, (volatile int32_t *)&value);
-}
-    
-};
 
-#endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+template <typename T>
+T Atomic<T>::Increment() DAVA_NOEXCEPT
+{
+    return __sync_add_and_fetch(&value, 1);
+}
+
+template <typename T>
+T Atomic<T>::Decrement() DAVA_NOEXCEPT
+{
+    return __sync_sub_and_fetch(&value, 1);
+}
+
+template <typename T>
+T Atomic<T>::Swap(T desired) DAVA_NOEXCEPT
+{
+    return __atomic_exchange_n(&value, desired, __ATOMIC_SEQ_CST);
+}
+
+template <typename T>
+bool Atomic<T>::CompareAndSwap(T expected, T desired) DAVA_NOEXCEPT
+{
+    return __atomic_compare_exchange(&value, &expected, &desired,
+                                     false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+}
+
+#endif //  __GNUC__
+
+} //  namespace DAVA
+
+#endif //  !USE_CPP11_CONCURRENCY
+#endif //  __DAVAENGINE_ATOMIC_GNU_H__
