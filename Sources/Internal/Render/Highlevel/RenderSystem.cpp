@@ -199,7 +199,7 @@ void RenderSystem::SetGlobalMaterial(NMaterial * newGlobalMaterial)
             NMaterial * batchMaterial = obj->GetRenderBatch(j)->GetMaterial();
             if (batchMaterial)
             {
-                while (batchMaterial->GetParent() && batchMaterial->GetParent() != globalMaterial)
+                while (batchMaterial->GetParent() && batchMaterial->GetParent() != globalMaterial && batchMaterial->GetParent() != newGlobalMaterial)
                 {
                     batchMaterial = batchMaterial->GetParent();
                 }

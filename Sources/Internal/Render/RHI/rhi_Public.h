@@ -45,7 +45,16 @@ InitParam
     uint32  height;
     void*   window;
 
-    void    (*makeCurrentFunc)();
+    void    (*acquireContextFunc)();
+    void    (*releaseContextFunc)();
+            
+            InitParam()
+              : width(0),
+                height(0),
+                window(nullptr),
+                acquireContextFunc(nullptr),
+                releaseContextFunc(nullptr)
+            {}
 };
 
 struct

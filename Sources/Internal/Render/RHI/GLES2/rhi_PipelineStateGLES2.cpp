@@ -102,10 +102,21 @@ VertexDeclGLES2
                     }
     void            InitVattr( int gl_prog )
                     {
+                        GLCommand   cmd[16];
+
                         for( unsigned i=0; i!=elemCount; ++i )
                         {
-                            elem[i].index = glGetAttribLocation( gl_prog, elem[i].name );
+                            cmd[i].func   = GLCommand::GET_ATTRIB_LOCATION;
+                            cmd[i].arg[0] = gl_prog;
+                            cmd[i].arg[1] = uint64_t(elem[i].name);
+//                            elem[i].index = glGetAttribLocation( gl_prog, elem[i].name );
                         }
+
+                        ExecGL( cmd, countof(cmd) );
+
+                        for( unsigned i=0; i!=elemCount; ++i )
+                            elem[i].index = cmd[i].retval;
+
                         vattrInited = true;
                     }
     void            SetToRHI( uint32 firstVertex )
@@ -275,15 +286,27 @@ gles2_PipelineState_Create( const PipelineState::Descriptor& desc )
 
     if( vprog_valid  &&  fprog_valid )
     {
+        GLCommand   cmd1[]      =
+        {
+            { GLCommand::CREATE_PROGRAM, { 0 } },
+        };
+
+        ExecGL( cmd1, countof(cmd1) );
+
+
+
         int         status  = 0;
-        unsigned    gl_prog = glCreateProgram();
+        unsigned    gl_prog = cmd1[0].retval;
+        GLCommand   cmd2[]      =
+        {
+            { GLCommand::ATTACH_SHADER, { gl_prog, ps->vprog.ShaderUid() } },
+            { GLCommand::ATTACH_SHADER, { gl_prog, ps->fprog.ShaderUid() } },
+            { GLCommand::LINK_PROGRAM, { gl_prog } },
+            { GLCommand::GET_PROGRAM_IV, { gl_prog, GL_LINK_STATUS, (uint64_t)(&status) } },
+        };
 
-        GL_CALL(glAttachShader( gl_prog, ps->vprog.ShaderUid() ));
-        GL_CALL(glAttachShader( gl_prog, ps->fprog.ShaderUid() ));
+        ExecGL( cmd2, countof(cmd2) );
         
-        GL_CALL(glLinkProgram( gl_prog ));
-        GL_CALL(glGetProgramiv( gl_prog, GL_LINK_STATUS, &status ));
-
         if( status )
         {
             ps->vprog.vdecl.InitVattr( gl_prog );

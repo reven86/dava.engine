@@ -144,13 +144,17 @@ GLCommand
         TEX_IMAGE2D,
         GENERATE_MIPMAP,
         READ_PIXELS,
-
+        
+        CREATE_PROGRAM,
         CREATE_SHADER,
         SHADER_SOURCE,
         COMPILE_SHADER,
+        ATTACH_SHADER,
+        LINK_PROGRAM,
         GET_SHADER_IV,
         GET_SHADER_INFO_LOG,
         GET_PROGRAM_IV,
+        GET_ATTRIB_LOCATION,
         GET_ACTIVE_UNIFORM,
         GET_UNIFORM_LOCATION,
 

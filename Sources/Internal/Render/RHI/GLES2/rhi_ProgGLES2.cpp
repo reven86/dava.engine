@@ -118,7 +118,7 @@ ProgGLES2::Construct( const char* srcCode )
     if( cmd1.retval )
     {
         unsigned    s           = cmd1.retval;
-        int         status;
+        int         status      = 0;
         char        info[1024]  = "";
         GLCommand   cmd2[]      =
         {
@@ -314,21 +314,22 @@ ProgGLES2::InstanceConstBuffer( unsigned bufIndex )
 void
 ProgGLES2::SetupTextureUnits( unsigned baseUnit ) const
 {
-    GLCommand   cmd[countof(texunitLoc)];
-    uint32      cnt = 0;
+//    GLCommand   cmd[countof(texunitLoc)];
+//    uint32      cnt = 0;
 
     for( unsigned i=0; i!=countof(texunitLoc); ++i )
     {
         if( texunitLoc[i] != -1 )
         {
-            cmd[cnt].func   = GLCommand::SET_UNIFORM_1I;
-            cmd[cnt].arg[0] = texunitLoc[i];
-            cmd[cnt].arg[1] = baseUnit + i;
-                    
-            ++cnt;
+            glUniform1i( texunitLoc[i], baseUnit + i );
+//            cmd[cnt].func   = GLCommand::SET_UNIFORM_1I;
+//            cmd[cnt].arg[0] = texunitLoc[i];
+//            cmd[cnt].arg[1] = baseUnit + i;
+//                    
+//            ++cnt;
         }
     }
-    ExecGL( cmd, cnt );
+//    ExecGL( cmd, cnt );
 }
 
 
