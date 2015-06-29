@@ -79,9 +79,9 @@ VariantType StyleSheetProperty::GetValue() const
     const auto &pairs = ss->GetPropertyTable()->GetProperties();
     for (const auto &pair : pairs)
     {
-        if (pair.first == propertyIndex)
+        if (pair.propertyIndex == propertyIndex)
         {
-            return pair.second;
+            return pair.value;
         }
     }
 

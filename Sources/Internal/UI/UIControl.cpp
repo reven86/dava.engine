@@ -73,6 +73,7 @@ namespace DAVA
 
     UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/) :
         styleSheetRebuildNeeded(true),
+        styleSheetInitialized(false),
         family(nullptr),
         parentWithContext(nullptr)
     {
@@ -1150,6 +1151,7 @@ namespace DAVA
 
         classes = srcControl->classes;
         styleSheetRebuildNeeded = srcControl->styleSheetRebuildNeeded;
+        styleSheetInitialized = false;
 
         SafeRelease(eventDispatcher);
         if (srcControl->eventDispatcher != nullptr && srcControl->eventDispatcher->GetEventsCount() != 0)
@@ -1215,6 +1217,8 @@ namespace DAVA
 
     void UIControl::SystemWillAppear()
     {
+        styleSheetInitialized = false;
+
         WillAppear();
 
         List<UIControl*>::iterator it = childs.begin();
@@ -3014,15 +3018,23 @@ namespace DAVA
         styledProperties = set;
     }
 
+    bool UIControl::GetStyleSheetInitialized() const
+    {
+        return styleSheetInitialized;
+    }
+
     void UIControl::MarkStyleSheetAsUpdated()
     {
         styleSheetRebuildNeeded = false;
+        styleSheetInitialized = true;
     }
 
     void UIControl::SetPackageContext(UIControlPackageContext* newPackageContext)
     {
         if (packageContext != newPackageContext)
+        {
             styleSheetRebuildNeeded = true;
+        }
 
         packageContext = newPackageContext;
         for (UIControl* child : childs)

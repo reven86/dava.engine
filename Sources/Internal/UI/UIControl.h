@@ -1385,6 +1385,7 @@ protected:
     bool isIteratorCorrupted : 1;
 
     bool styleSheetRebuildNeeded : 1;
+    bool styleSheetInitialized : 1;
 
     int32 inputProcessorsCount;
 
@@ -1498,6 +1499,8 @@ public:
     const UIStyleSheetPropertySet& GetStyledPropertySet() const;
     void SetStyledPropertySet(const UIStyleSheetPropertySet &set);
     
+    bool GetStyleSheetInitialized() const;
+
     void MarkStyleSheetAsUpdated();
 
     UIControlPackageContext* GetPackageContext() const;

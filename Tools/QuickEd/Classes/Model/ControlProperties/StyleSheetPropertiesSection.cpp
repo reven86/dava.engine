@@ -41,10 +41,10 @@ StyleSheetPropertiesSection::StyleSheetPropertiesSection(StyleSheetNode *aStyleS
 {
     UIStyleSheet *ss = styleSheet->GetStyleSheet();
     const UIStyleSheetPropertyTable *table = ss->GetPropertyTable();
-    const Vector<std::pair< uint32, VariantType >> &tableProperties = table->GetProperties();
+    const Vector<UIStyleSheetProperty> &tableProperties = table->GetProperties();
     for (auto &pair : tableProperties)
     {
-        StyleSheetProperty *prop = new StyleSheetProperty(styleSheet, pair.first);
+        StyleSheetProperty *prop = new StyleSheetProperty(styleSheet, pair.propertyIndex);
         prop->SetParent(this);
         properties.push_back(prop);
     }

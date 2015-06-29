@@ -136,7 +136,7 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control)
                     {
                         appliedProperties.set(iter.propertyIndex);
 
-                        if (iter.transition)
+                        if (iter.transition && control->GetStyleSheetInitialized())
                             DoForAllPropertyInstances(control, iter.propertyIndex, AnimatedPropertySetter{ iter.propertyIndex, iter.value, iter.transitionFunction, iter.transitionTime });
                         else
                             DoForAllPropertyInstances(control, iter.propertyIndex, ImmediatePropertySetter{ iter.propertyIndex, iter.value });
