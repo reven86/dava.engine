@@ -26,7 +26,7 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#include "StyleSheetProperty.h"
+#include "StyleSheetTransition.h"
 
 #include "PropertyVisitor.h"
 #include "../PackageHierarchy/StyleSheetNode.h"
@@ -34,7 +34,7 @@
 
 using namespace DAVA;
 
-StyleSheetProperty::StyleSheetProperty(StyleSheetNode *aStyleSheet, DAVA::uint32 aPropertyIndex)
+StyleSheetTransition::StyleSheetTransition(StyleSheetNode *aStyleSheet, DAVA::uint32 aPropertyIndex)
     : ValueProperty("prop")
     , styleSheet(aStyleSheet) // weak
     , propertyIndex(aPropertyIndex)
@@ -43,74 +43,80 @@ StyleSheetProperty::StyleSheetProperty(StyleSheetNode *aStyleSheet, DAVA::uint32
     name = String(descr.name.c_str());
 }
 
-StyleSheetProperty::~StyleSheetProperty()
+StyleSheetTransition::~StyleSheetTransition()
 {
     styleSheet = nullptr; // weak
 }
 
-int StyleSheetProperty::GetCount() const
+int StyleSheetTransition::GetCount() const
 {
     return 0;
 }
 
-AbstractProperty *StyleSheetProperty::GetProperty(int index) const
+AbstractProperty *StyleSheetTransition::GetProperty(int index) const
 {
     return nullptr;
 }
 
-void StyleSheetProperty::Accept(PropertyVisitor *visitor)
+void StyleSheetTransition::Accept(PropertyVisitor *visitor)
 {
-    visitor->VisitStyleSheetProperty(this);
+    visitor->VisitStyleSheetTransition(this);
 }
 
-bool StyleSheetProperty::IsReadOnly() const
+bool StyleSheetTransition::IsReadOnly() const
 {
     return styleSheet->IsReadOnly();
 }
 
-AbstractProperty::ePropertyType StyleSheetProperty::GetType() const
+AbstractProperty::ePropertyType StyleSheetTransition::GetType() const
 {
-    const UIStyleSheetPropertyDescriptor& propertyDescr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex);
-    const InspMember* member = propertyDescr.targetMembers[0].memberInfo; // we assert all members to have the same type
-
-    auto type = member->Desc().type;
-    if (type == InspDesc::T_ENUM)
-        return TYPE_ENUM;
-    else if (type == InspDesc::T_FLAGS)
-        return TYPE_FLAGS;
-
     return TYPE_VARIANT;
 }
 
-VariantType StyleSheetProperty::GetValue() const
+VariantType StyleSheetTransition::GetValue() const
+{
+    const UIStyleSheetProperty* prop = GetStyleSheetProperty();
+    
+    DVASSERT(prop);
+
+    return VariantType(Format("%0.2f %s", prop->transitionTime, GlobalEnumMap<Interpolation::FuncType>::Instance()->ToString(prop->transitionFunction)));
+}
+
+float32 StyleSheetTransition::GetTransitionTime() const
+{
+    const UIStyleSheetProperty* prop = GetStyleSheetProperty();
+    DVASSERT(prop);
+    return prop->transitionTime;
+}
+
+Interpolation::FuncType StyleSheetTransition::GetTransitionFunction() const
+{
+    const UIStyleSheetProperty* prop = GetStyleSheetProperty();
+    DVASSERT(prop);
+    return prop->transitionFunction;
+}
+
+const EnumMap *StyleSheetTransition::GetEnumMap() const
+{
+    return nullptr;
+}
+
+void StyleSheetTransition::ApplyValue(const DAVA::VariantType &value)
+{
+}
+
+const UIStyleSheetProperty* StyleSheetTransition::GetStyleSheetProperty() const
 {
     const UIStyleSheet *ss = styleSheet->GetStyleSheet();
-    const auto &pairs = ss->GetPropertyTable()->GetProperties();
-    for (const auto &pair : pairs)
+    const auto &properties = ss->GetPropertyTable()->GetProperties();
+    for (const auto &prop : properties)
     {
-        if (pair.propertyIndex == propertyIndex)
+        if (prop.propertyIndex == propertyIndex)
         {
-            return pair.value;
+            return &prop;
         }
     }
 
     DVASSERT(false);
-    return VariantType();
-}
-
-const EnumMap *StyleSheetProperty::GetEnumMap() const
-{
-   const UIStyleSheetPropertyDescriptor& propertyDescr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex);
-   const InspMember* member = propertyDescr.targetMembers[0].memberInfo; // we assert all members to have the same type
-   auto type = member->Desc().type;
-   
-   if (type == InspDesc::T_ENUM ||
-       type == InspDesc::T_FLAGS)
-       return member->Desc().enumMap;
-   
     return nullptr;
-}
-
-void StyleSheetProperty::ApplyValue(const DAVA::VariantType &value)
-{
 }

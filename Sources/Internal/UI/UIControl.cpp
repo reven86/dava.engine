@@ -2950,9 +2950,11 @@ namespace DAVA
 
     void UIControl::AddClass(const FastName& clazz)
     {
-        classes.push_back(clazz);
-
-        styleSheetRebuildNeeded = true;
+        if (std::find(classes.begin(), classes.end(), clazz) == classes.end())
+        {
+            classes.push_back(clazz);
+            styleSheetRebuildNeeded = true;
+        }
     }
 
     void UIControl::RemoveClass(const FastName& clazz)

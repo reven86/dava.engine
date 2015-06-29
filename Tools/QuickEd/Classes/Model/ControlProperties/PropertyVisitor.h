@@ -17,6 +17,8 @@ class StyleSheetRootProperty;
 class StyleSheetSelectorsProperty;
 class StyleSheetPropertiesSection;
 class StyleSheetProperty;
+class StyleSheetTransitionsSection;
+class StyleSheetTransition;
 
 class PropertyVisitor
 {
@@ -42,6 +44,8 @@ public:
     virtual void VisitStyleSheetSelectorsProperty(StyleSheetSelectorsProperty *property) = 0;
     virtual void VisitStyleSheetPropertiesSection(StyleSheetPropertiesSection *property) = 0;
     virtual void VisitStyleSheetProperty(StyleSheetProperty *property) = 0;
+    virtual void VisitStyleSheetTransitionsSection(StyleSheetTransitionsSection *property) = 0;
+    virtual void VisitStyleSheetTransition(StyleSheetTransition *property) = 0;
 };
 
 #endif // __QUICKED_PROPERTY_VISITOR_H__

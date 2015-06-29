@@ -52,6 +52,8 @@
 #include "ControlProperties/StyleSheetSelectorsProperty.h"
 #include "ControlProperties/StyleSheetPropertiesSection.h"
 #include "ControlProperties/StyleSheetProperty.h"
+#include "ControlProperties/StyleSheetTransitionsSection.h"
+#include "ControlProperties/StyleSheetTransition.h"
 
 using namespace DAVA;
 
@@ -400,6 +402,7 @@ void PackageSerializer::VisitIntrospectionProperty(IntrospectionProperty *proper
 void PackageSerializer::VisitStyleSheetRoot(StyleSheetRootProperty *property)
 {
     property->GetPropertiesSection()->Accept(this);
+    property->GetTransitionsSection()->Accept(this);
 }
 
 void PackageSerializer::VisitStyleSheetSelectorsProperty(StyleSheetSelectorsProperty *property)
@@ -414,6 +417,24 @@ void PackageSerializer::VisitStyleSheetPropertiesSection(StyleSheetPropertiesSec
 void PackageSerializer::VisitStyleSheetProperty(StyleSheetProperty *property)
 {
     PutValueProperty(property->GetName(), property);
+}
+
+void PackageSerializer::VisitStyleSheetTransitionsSection(StyleSheetTransitionsSection *property)
+{
+    if (property->GetCount() > 0)
+    {
+        BeginMap("transition", false);
+        AcceptChildren(property);
+        EndMap();
+    }
+}
+
+void PackageSerializer::VisitStyleSheetTransition(StyleSheetTransition *property)
+{
+    BeginArray(property->GetName(), true);
+    PutValue(VariantType(property->GetTransitionTime()));
+    PutValue(GlobalEnumMap<Interpolation::FuncType>::Instance()->ToString(property->GetTransitionFunction()));
+    EndArray();
 }
 
 void PackageSerializer::AcceptChildren(AbstractProperty *property)

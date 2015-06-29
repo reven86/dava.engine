@@ -27,58 +27,51 @@
  =====================================================================================*/
 
 
-#ifndef __QUICKED_STYLE_SHEETS_ROOT_PROPERTY_H__
-#define __QUICKED_STYLE_SHEETS_ROOT_PROPERTY_H__
+#ifndef __QUICKED_STYLE_SHEET_TRANSITION_H__
+#define __QUICKED_STYLE_SHEET_TRANSITION_H__
 
-#include "Model/ControlProperties/AbstractProperty.h"
+#include "Model/ControlProperties/ValueProperty.h"
+#include "Animation/Interpolation.h"
 
-class PropertyListener;
 class ValueProperty;
-class StyleSheetSelectorsProperty;
-class StyleSheetPropertiesSection;
-class StyleSheetTransitionsSection;
 
 class StyleSheetNode;
 
 namespace DAVA
 {
     class UIControl;
+    class UIStyleSheetProperty;
 }
 
-class StyleSheetRootProperty : public AbstractProperty
+class StyleSheetTransition : public ValueProperty
 {
 public:
-    StyleSheetRootProperty(StyleSheetNode *styleSheet);
+    StyleSheetTransition(StyleSheetNode *styleSheet, DAVA::uint32 propertyIndex);
 protected:
-    virtual ~StyleSheetRootProperty();
+    virtual ~StyleSheetTransition();
     
 public:
     int GetCount() const override;
     AbstractProperty *GetProperty(int index) const override;
-
+    
     void Accept(PropertyVisitor *visitor) override;
     bool IsReadOnly() const override;
     
-    const DAVA::String &GetName() const override;
     ePropertyType GetType() const override;
 
-    void AddListener(PropertyListener *listener);
-    void RemoveListener(PropertyListener *listener);
-    
-    void SetProperty(AbstractProperty *property, const DAVA::VariantType &newValue);
-    void ResetProperty(AbstractProperty *property);
-    
-    StyleSheetSelectorsProperty *GetSelectors() const;
-    StyleSheetPropertiesSection *GetPropertiesSection() const;
-    StyleSheetTransitionsSection *GetTransitionsSection() const;
+    DAVA::VariantType GetValue() const;
 
-private:
-    StyleSheetNode *styleSheet = nullptr; // weak
-    DAVA::Vector<PropertyListener*> listeners;
+    DAVA::float32 GetTransitionTime() const;
+    DAVA::Interpolation::FuncType GetTransitionFunction() const;
+
+    const EnumMap *GetEnumMap() const;
+    void ApplyValue(const DAVA::VariantType &value);
     
-    StyleSheetSelectorsProperty *selectors = nullptr;
-    StyleSheetPropertiesSection *propertiesSection = nullptr;
-    StyleSheetTransitionsSection *transitionsSection = nullptr;
+private:
+    const DAVA::UIStyleSheetProperty* GetStyleSheetProperty() const;
+
+    StyleSheetNode *styleSheet; // weak
+    DAVA::uint32 propertyIndex;
 };
 
-#endif // __QUICKED_STYLE_SHEETS_ROOT_PROPERTY_H__
+#endif // __QUICKED_STYLE_SHEET_TRANSITION_H__

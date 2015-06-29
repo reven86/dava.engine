@@ -27,16 +27,12 @@
  =====================================================================================*/
 
 
-#ifndef __QUICKED_STYLE_SHEETS_ROOT_PROPERTY_H__
-#define __QUICKED_STYLE_SHEETS_ROOT_PROPERTY_H__
+#ifndef __QUICKED_STYLE_SHEET_TRANSITIONS_SECTION_H__
+#define __QUICKED_STYLE_SHEET_TRANSITIONS_SECTION_H__
 
 #include "Model/ControlProperties/AbstractProperty.h"
 
-class PropertyListener;
-class ValueProperty;
-class StyleSheetSelectorsProperty;
-class StyleSheetPropertiesSection;
-class StyleSheetTransitionsSection;
+class StyleSheetTransition;
 
 class StyleSheetNode;
 
@@ -45,40 +41,27 @@ namespace DAVA
     class UIControl;
 }
 
-class StyleSheetRootProperty : public AbstractProperty
+class StyleSheetTransitionsSection : public AbstractProperty
 {
 public:
-    StyleSheetRootProperty(StyleSheetNode *styleSheet);
+    StyleSheetTransitionsSection(StyleSheetNode *styleSheet);
 protected:
-    virtual ~StyleSheetRootProperty();
+    virtual ~StyleSheetTransitionsSection();
     
 public:
     int GetCount() const override;
     AbstractProperty *GetProperty(int index) const override;
-
+    
     void Accept(PropertyVisitor *visitor) override;
     bool IsReadOnly() const override;
     
     const DAVA::String &GetName() const override;
     ePropertyType GetType() const override;
-
-    void AddListener(PropertyListener *listener);
-    void RemoveListener(PropertyListener *listener);
     
-    void SetProperty(AbstractProperty *property, const DAVA::VariantType &newValue);
-    void ResetProperty(AbstractProperty *property);
     
-    StyleSheetSelectorsProperty *GetSelectors() const;
-    StyleSheetPropertiesSection *GetPropertiesSection() const;
-    StyleSheetTransitionsSection *GetTransitionsSection() const;
-
 private:
-    StyleSheetNode *styleSheet = nullptr; // weak
-    DAVA::Vector<PropertyListener*> listeners;
-    
-    StyleSheetSelectorsProperty *selectors = nullptr;
-    StyleSheetPropertiesSection *propertiesSection = nullptr;
-    StyleSheetTransitionsSection *transitionsSection = nullptr;
+    StyleSheetNode *styleSheet; // weak
+    DAVA::Vector<StyleSheetTransition*> transitions;
 };
 
-#endif // __QUICKED_STYLE_SHEETS_ROOT_PROPERTY_H__
+#endif // __QUICKED_STYLE_SHEET_TRANSITIONS_SECTION_H__

@@ -97,7 +97,7 @@ void UIStyleSheet::RecalculateScore()
             score += 100;
         for (int32 stateIndex = 0; stateIndex < UIControl::STATE_COUNT; ++stateIndex)
             if (selector.controlStateMask & (1 << stateIndex))
-                score += 100;
+                score += 1;
     }
 }
 

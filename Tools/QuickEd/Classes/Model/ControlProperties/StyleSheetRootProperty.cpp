@@ -30,6 +30,7 @@
 
 #include "StyleSheetSelectorsProperty.h"
 #include "StyleSheetPropertiesSection.h"
+#include "StyleSheetTransitionsSection.h"
 
 #include "PropertyVisitor.h"
 #include "../PackageHierarchy/StyleSheetNode.h"
@@ -45,6 +46,9 @@ StyleSheetRootProperty::StyleSheetRootProperty(StyleSheetNode *aStyleSheet)
     
     propertiesSection = new StyleSheetPropertiesSection(styleSheet);
     propertiesSection->SetParent(this);
+
+    transitionsSection = new StyleSheetTransitionsSection(styleSheet);
+    transitionsSection->SetParent(this);
 }
 
 StyleSheetRootProperty::~StyleSheetRootProperty()
@@ -56,11 +60,14 @@ StyleSheetRootProperty::~StyleSheetRootProperty()
     
     propertiesSection->SetParent(nullptr);
     SafeRelease(propertiesSection);
+
+    transitionsSection->SetParent(nullptr);
+    SafeRelease(transitionsSection);
 }
 
 int StyleSheetRootProperty::GetCount() const
 {
-    return 2;
+    return 3;
 }
 
 AbstractProperty *StyleSheetRootProperty::GetProperty(int index) const
@@ -71,6 +78,8 @@ AbstractProperty *StyleSheetRootProperty::GetProperty(int index) const
             return selectors;
         case 1:
             return propertiesSection;
+        case 2:
+            return transitionsSection;
     }
     DVASSERT(false);
     return nullptr;
@@ -133,4 +142,9 @@ StyleSheetSelectorsProperty *StyleSheetRootProperty::GetSelectors() const
 StyleSheetPropertiesSection *StyleSheetRootProperty::GetPropertiesSection() const
 {
     return propertiesSection;
+}
+
+StyleSheetTransitionsSection *StyleSheetRootProperty::GetTransitionsSection() const
+{
+    return transitionsSection;
 }

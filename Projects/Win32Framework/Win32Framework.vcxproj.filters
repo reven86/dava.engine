@@ -486,13 +486,7 @@
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticlePropertyLine.h">
       <Filter>Internal\Particles</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\Mutex.h">
-      <Filter>Internal\Platform</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Platform\SystemTimer.h">
-      <Filter>Internal\Platform</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\Thread.h">
       <Filter>Internal\Platform</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Cursor.h">
@@ -1864,9 +1858,6 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.h">
       <Filter>Internal\UI\Styles</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\Styles\PropertyAnimation.h">
-      <Filter>Internal\UI\Styles</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Concurrency\Atomic.h">
       <Filter>Internal\Concurrency</Filter>
     </ClInclude>
@@ -1911,6 +1902,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Concurrency\UniqueLock.h">
       <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Animation\LinearPropertyAnimation.h">
+      <Filter>Internal\Animation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3361,9 +3355,6 @@
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.cpp">
       <Filter>Internal\UI\Styles</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\Styles\PropertyAnimation.cpp">
-      <Filter>Internal\UI\Styles</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Concurrency\ConditionVariable.cpp">
       <Filter>Internal\Concurrency</Filter>
     </ClCompile>
@@ -3381,5 +3372,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Concurrency\ThreadWin32.cpp">
       <Filter>Internal\Concurrency</Filter>
-    </ClCompile>  </ItemGroup>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Animation\LinearPropertyAnimation.cpp">
+      <Filter>Internal\Animation</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

@@ -51,13 +51,14 @@ public:
     virtual void PutValue(const DAVA::String &name, const DAVA::VariantType &value) = 0;
     virtual void PutValue(const DAVA::String &name, const DAVA::String &value) = 0;
     virtual void PutValue(const DAVA::String &name, const DAVA::Vector<DAVA::String> &value) = 0;
+    virtual void PutValue(const DAVA::VariantType &value) = 0;
     virtual void PutValue(const DAVA::String &value) = 0;
     
     virtual void BeginMap(const DAVA::String &name, bool quotes = false) = 0;
     virtual void BeginMap() = 0;
     virtual void EndMap() = 0;
     
-    virtual void BeginArray(const DAVA::String &name) = 0;
+    virtual void BeginArray(const DAVA::String &name, bool flow = false) = 0;
     virtual void BeginArray() = 0;
     virtual void EndArray() = 0;
 
@@ -95,7 +96,8 @@ private: // PropertyVisitor
     void VisitStyleSheetSelectorsProperty(StyleSheetSelectorsProperty *property) override;
     void VisitStyleSheetPropertiesSection(StyleSheetPropertiesSection *property) override;
     void VisitStyleSheetProperty(StyleSheetProperty *property) override;
-
+    void VisitStyleSheetTransitionsSection(StyleSheetTransitionsSection *property) override;
+    void VisitStyleSheetTransition(StyleSheetTransition *property) override;
 private:
     void AcceptChildren(AbstractProperty *property);
     void PutValueProperty(const DAVA::String &name, ValueProperty *property);

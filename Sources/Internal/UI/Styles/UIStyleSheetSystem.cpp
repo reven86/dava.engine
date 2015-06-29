@@ -32,7 +32,7 @@
 #include "UI/UIControlPackageContext.h"
 #include "UI/Components/UIComponent.h"
 #include "Platform/SystemTimer.h"
-#include "UI/Styles/PropertyAnimation.h"
+#include "Animation/LinearPropertyAnimation.h"
 #include "Animation/AnimationManager.h"
 
 namespace DAVA
@@ -61,7 +61,7 @@ struct AnimatedPropertySetter
     void Animate(UIControl* control, void* targetObject, const InspMember* targetIntrospectionMember, const T& startValue, const T& endValue) const
     {
         const int32 track = PROPERTY_ANIMATION_GROUP_OFFSET + propertyIndex;
-        PropertyAnimation<T>* currentAnimation = DynamicTypeCheck<PropertyAnimation<T>*>(AnimationManager::Instance()->FindPlayingAnimation(control, track));
+        LinearPropertyAnimation<T>* currentAnimation = DynamicTypeCheck<LinearPropertyAnimation<T>*>(AnimationManager::Instance()->FindPlayingAnimation(control, track));
 
         if (!currentAnimation || currentAnimation->GetEndValue() != endValue)
         {
@@ -70,7 +70,7 @@ struct AnimatedPropertySetter
 
             if (targetIntrospectionMember->Value(targetObject) != value)
             {
-                (new PropertyAnimation<T>(control, targetObject, targetIntrospectionMember, startValue, endValue, time, transitionFunction))->Start(track);
+                (new LinearPropertyAnimation<T>(control, targetObject, targetIntrospectionMember, startValue, endValue, time, transitionFunction))->Start(track);
             }
         }
     }
