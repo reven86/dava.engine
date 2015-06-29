@@ -151,7 +151,8 @@ extern GLuint   _GLES2_Binded_FrameBuffer;
 extern GLuint   _GLES2_Default_FrameBuffer;
 extern void*    _GLES2_Native_Window;
 extern void*    _GLES2_Context;
-extern void     (*_GLES2_Make_Context_Current)();
+extern void     (*_GLES2_AcquireContext)();
+extern void     (*_GLES2_ReleaseContext)();
 
 extern int      _GLES2_DefaultFrameBuffer_Width;
 extern int      _GLES2_DefaultFrameBuffer_Height;
