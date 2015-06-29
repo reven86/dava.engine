@@ -1429,7 +1429,12 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
             {
                 EXEC_GL(glGenRenderbuffers( (GLuint)(arg[0]), (GLuint*)(arg[1]) ));
                 cmd->status = err;
-            }   break;        
+            }   break;
+            
+            case GLCommand::DELETE_RENDERBUFFERS :
+            {
+                EXEC_GL(glDeleteRenderbuffers( GLsizei(arg[0]), (const GLuint *)(arg[1]) ));
+            }   break;
 
             case GLCommand::BIND_FRAMEBUFFER :
             {
