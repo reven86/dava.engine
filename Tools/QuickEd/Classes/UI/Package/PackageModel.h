@@ -32,9 +32,6 @@
 
 #include <QAbstractItemModel>
 #include <QMimeData>
-#include <QStringList>
-#include <QUndoStack>
-#include <QItemSelection>
 
 #include "Model/PackageHierarchy/PackageListener.h"
 
