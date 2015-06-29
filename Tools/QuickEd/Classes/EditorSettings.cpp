@@ -28,7 +28,6 @@
 
 
 #include "EditorSettings.h"
-#include "Helpers/ResourcesManageHelper.h"
 #include <QString>
 #include <QDir>
 
