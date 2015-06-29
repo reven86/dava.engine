@@ -40,12 +40,11 @@ void MultilineTest::LoadResources()
 {
     BaseScreen::LoadResources();
 
+    UITextField* textField = new UITextField(Rect(10, 10, 300, 200));
+#ifdef __DAVAENGINE_WINDOWS__
     Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
     DVASSERT(font);
     font->SetSize(14);
-
-#ifdef __DAVAENGINE_WINDOWS__
-    UITextField* textField = new UITextField(Rect(10, 10, 300, 200));
     textField->SetFont(font);
 #endif
 
