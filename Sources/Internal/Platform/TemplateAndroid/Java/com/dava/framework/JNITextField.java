@@ -1397,16 +1397,14 @@ public class JNITextField {
         }
     }
     
-	public static void SetMultiline(final int id, final int minLines,
-			final int maxLines, final boolean verticalScrollBarEnabled) {
+	public static void SetMultiline(final int id, final int maxLines, final boolean verticalScrollBarEnabled) {
 		JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
 			@Override
 			public void safeRun() {
 				final TextField text = GetTextField(id);
 				// if you call text.setSingleLine(false); 
-				// it will reset minlines, maxlines, scroll, and transformation method to default values
+				// it will reset maxlines, scroll, and transformation method to default values
 				text.setSingleLine(false);
-				text.setMinLines(minLines);
 				text.setMaxLines(maxLines);
 				text.setHorizontallyScrolling(false);
 				text.setVerticalScrollBarEnabled(verticalScrollBarEnabled);

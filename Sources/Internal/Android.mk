@@ -182,6 +182,12 @@ DV_LOCAL_CPPFLAGS += -Wno-mismatched-tags
 DV_LOCAL_CPPFLAGS += -Wno-missing-noreturn
 DV_LOCAL_CPPFLAGS += -Wno-consumed
 DV_LOCAL_CPPFLAGS += -Wno-sometimes-uninitialized
+DV_LOCAL_CPPFLAGS += -Wno-reserved-id-macro
+DV_LOCAL_CPPFLAGS += -Wno-old-style-cast
+DV_LOCAL_CPPFLAGS += -Wno-inconsistent-missing-override
+DV_LOCAL_CPPFLAGS += -Wno-unused-local-typedef
+DV_LOCAL_CPPFLAGS += -Wno-unreachable-code-return
+DV_LOCAL_CPPFLAGS += -Wno-unknown-warning-option
 
 DV_LOCAL_CPP_FEATURES += exceptions
 
