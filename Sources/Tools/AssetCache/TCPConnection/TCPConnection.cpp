@@ -39,7 +39,7 @@
 #include "Network/NetConfig.h"
 #include "Network/NetCore.h"
 
-#include "Thread/LockGuard.h"
+#include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {

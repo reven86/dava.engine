@@ -31,7 +31,7 @@
 
 #include "AssetCache/AssetCache.h"
 #include "Platform/SystemTimer.h"
-#include "Platform/Thread.h"
+#include "Concurrency/Thread.h"
 
 using namespace DAVA;
 
