@@ -235,12 +235,20 @@ void* DAVA::WebViewControl::RenderIOSUIViewToImage(void* uiviewPtr)
         return nullptr; // empty rect on start, just skip it
     }
     
+    // Workaround! render text view directly without scrolling
+    if ([::UITextView class] == [view class])
+    {
+        ::UITextView* textView = (::UITextView*)view;
+        view = textView.textInputView;
+    }
+    
     UIGraphicsBeginImageContextWithOptions(CGSizeMake(w, h), NO, 0);
     // Workaround! iOS bug see http://stackoverflow.com/questions/23157653/drawviewhierarchyinrectafterscreenupdates-delays-other-animations
     [view.layer renderInContext:UIGraphicsGetCurrentContext()];
     
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
+    
     DVASSERT(image);
     return image;
 }
