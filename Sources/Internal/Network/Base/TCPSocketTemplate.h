@@ -1,10 +1,10 @@
 /*==================================================================================
-    Copyright(c) 2008, binaryzebra
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
- 
+
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
- 
+
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,28 +13,29 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
- 
+
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
     DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
     DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-   (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
 
 #ifndef __DAVAENGINE_TCPSOCKETTEMPLATE_H__
 #define __DAVAENGINE_TCPSOCKETTEMPLATE_H__
 
-#include <Base/BaseTypes.h>
-#include <Base/Noncopyable.h>
+#include "Base/BaseTypes.h"
+#include "Base/Noncopyable.h"
 
-#include <Network/Base/IOLoop.h>
-#include <Network/Base/Endpoint.h>
-#include <Network/Base/Buffer.h>
+#include "Network/Base/IOLoop.h"
+#include "Network/Base/Endpoint.h"
+#include "Network/Base/Buffer.h"
 
 namespace DAVA
 {
@@ -126,9 +127,14 @@ int32 TCPSocketTemplate<T>::LocalEndpoint(Endpoint& endpoint)
 template <typename T>
 int32 TCPSocketTemplate<T>::RemoteEndpoint(Endpoint& endpoint)
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return -1;
+#else
     DVASSERT(true == isOpen && false == isClosing);
     int size = static_cast<int>(endpoint.Size());
     return uv_tcp_getpeername(&uvhandle, endpoint.CastToSockaddr(), &size);
+#endif
 }
 
 template <typename T>
@@ -152,6 +158,10 @@ bool TCPSocketTemplate<T>::IsClosing() const
 template <typename T>
 int32 TCPSocketTemplate<T>::DoOpen()
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return -1;
+#else
     DVASSERT(false == isOpen && false == isClosing);
     int32 error = uv_tcp_init(loop->Handle(), &uvhandle);
     if (0 == error)
@@ -163,11 +173,16 @@ int32 TCPSocketTemplate<T>::DoOpen()
         uvshutdown.data = this;
     }
     return error;
+#endif
 }
 
 template <typename T>
 int32 TCPSocketTemplate<T>::DoConnect(const Endpoint& endpoint)
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return -1;
+#else
     DVASSERT(false == isClosing);
     int32 error = 0;
     if (false == isOpen)
@@ -175,18 +190,28 @@ int32 TCPSocketTemplate<T>::DoConnect(const Endpoint& endpoint)
     if (0 == error)
         error = uv_tcp_connect(&uvconnect, &uvhandle, endpoint.CastToSockaddr(), &HandleConnectThunk);
     return error;
+#endif
 }
 
 template <typename T>
 int32 TCPSocketTemplate<T>::DoStartRead()
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return -1;
+#else
     DVASSERT(true == isOpen && false == isClosing);
     return uv_read_start(reinterpret_cast<uv_stream_t*>(&uvhandle), &HandleAllocThunk, &HandleReadThunk);
+#endif
 }
 
 template <typename T>
 int32 TCPSocketTemplate<T>::DoWrite(const Buffer* buffers, size_t bufferCount)
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return -1;
+#else
     DVASSERT(true == isOpen && false == isClosing);
     DVASSERT(buffers != NULL && 0 < bufferCount && bufferCount <= MAX_WRITE_BUFFERS);
     DVASSERT(0 == writeBufferCount);    // Next write is allowed only after previous write completion
@@ -199,22 +224,32 @@ int32 TCPSocketTemplate<T>::DoWrite(const Buffer* buffers, size_t bufferCount)
     }
 
     return uv_write(&uvwrite, reinterpret_cast<uv_stream_t*>(&uvhandle), writeBuffers, static_cast<unsigned int>(writeBufferCount), &HandleWriteThunk);
+#endif
 }
 
 template <typename T>
 int32 TCPSocketTemplate<T>::DoShutdown()
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return -1;
+#else
     DVASSERT(true == isOpen && false == isClosing);
     return uv_shutdown(&uvshutdown, reinterpret_cast<uv_stream_t*>(&uvhandle), &HandleShutdownThunk);
+#endif
 }
 
 template <typename T>
 void TCPSocketTemplate<T>::DoClose()
 {
+#ifdef __DAVAENGINE_WIN_UAP__
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+#else
     DVASSERT(true == isOpen && false == isClosing);
     isOpen = false;
     isClosing = true;
     uv_close(reinterpret_cast<uv_handle_t*>(&uvhandle), &HandleCloseThunk);
+#endif
 }
 
 ///   Thunks   ///////////////////////////////////////////////////////////

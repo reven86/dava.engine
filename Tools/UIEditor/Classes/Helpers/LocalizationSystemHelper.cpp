@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #include "LocalizationSystemHelper.h"
 #include "FileSystem/Logger.h"
 

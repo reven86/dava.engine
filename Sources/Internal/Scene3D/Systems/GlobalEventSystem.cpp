@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Scene.h"
@@ -36,47 +35,46 @@
 namespace DAVA
 {
     
-void GlobalEventSystem::GroupEvent(Scene * scene, Vector<Entity *> & entities, uint32 event)
+void GlobalEventSystem::GroupEvent(Scene * scene, Vector<Component *> & components, uint32 event)
 {
-    scene->GetEventSystem()->GroupNotifyAllSystems(entities, event);
+    scene->GetEventSystem()->GroupNotifyAllSystems(components, event);
 }
 
-void GlobalEventSystem::Event(Entity * entity, uint32 event)
+void GlobalEventSystem::Event(Component * component, uint32 event)
 {
-    if (entity)
+    if (component)
     {
-        Scene * scene = entity->GetScene();
-        if (scene)
+        if (component->GetEntity() && component->GetEntity()->GetScene())
         {
-            scene->GetEventSystem()->NotifyAllSystems(entity, event);
+            component->GetEntity()->GetScene()->GetEventSystem ()->NotifyAllSystems (component, event);
             return;
         }
         
-        List<uint32> & events = eventsCache[entity];
+        List<uint32> & events = eventsCache[component];
         events.push_back(event);
     }
     
 }
 
-void GlobalEventSystem::PerformAllEventsFromCache(Entity * entity)
+void GlobalEventSystem::PerformAllEventsFromCache(Component * component)
 {
-    Map<Entity*, List<uint32> >::iterator it = eventsCache.find(entity);
+    auto it = eventsCache.find(component);
     if (it != eventsCache.end())
     {
         List<uint32> & list = it->second;
         
         for (List<uint32>::iterator listIt = list.begin(); listIt != list.end();  ++listIt)
         {
-            entity->GetScene()->GetEventSystem()->NotifyAllSystems(entity, *listIt);
+            component->GetEntity()->GetScene()->GetEventSystem()->NotifyAllSystems(component, *listIt);
         }
         
         eventsCache.erase(it);
     }
 }
 
-void GlobalEventSystem::RemoveAllEvents(Entity * entity)
+void GlobalEventSystem::RemoveAllEvents(Component * component)
 {
-    Map<Entity*, List<uint32> >::iterator it = eventsCache.find(entity);
+    auto it = eventsCache.find(component);
     if (it != eventsCache.end())
     {
         eventsCache.erase(it);

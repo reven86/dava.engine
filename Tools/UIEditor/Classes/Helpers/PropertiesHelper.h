@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #ifndef __UIEditor__PropertiesHelper__
 #define __UIEditor__PropertiesHelper__
 

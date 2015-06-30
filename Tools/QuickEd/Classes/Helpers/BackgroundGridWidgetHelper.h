@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #ifndef __UIEditor__BackgroundGridWidgetHelper__
 #define __UIEditor__BackgroundGridWidgetHelper__
 

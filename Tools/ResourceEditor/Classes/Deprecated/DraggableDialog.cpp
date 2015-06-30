@@ -27,8 +27,6 @@
 =====================================================================================*/
 
 
-
-
 #include "DraggableDialog.h"
 
 DraggableDialog::DraggableDialog(const Rect &rect)

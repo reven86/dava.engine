@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_LANDSCAPE_CURSOR_H__
 #define __DAVAENGINE_LANDSCAPE_CURSOR_H__
 

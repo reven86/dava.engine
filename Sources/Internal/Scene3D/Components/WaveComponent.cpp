@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene3D/Components/WaveComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Entity.h"
@@ -106,7 +105,7 @@ void WaveComponent::Deserialize(KeyedArchive *archive, SerializationContext *ser
 
 void WaveComponent::Trigger()
 {
-    GlobalEventSystem::Instance()->Event(entity, EventSystem::WAVE_TRIGGERED);
+    GlobalEventSystem::Instance()->Event(this, EventSystem::WAVE_TRIGGERED);
 }
 
 };

@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __DATA_DOWNLOAD_MANAGER_H__
 #define __DATA_DOWNLOAD_MANAGER_H__
 
@@ -47,7 +48,7 @@ class DownloadManager : public Singleton<DownloadManager>
     friend class Downloader;
 
 public:
-    typedef Function<void (const uint32 &, const DownloadStatus &)> NotifyFunctor;
+    using NotifyFunctor = Function<void(const uint32 &, const DownloadStatus &)>;
 
 public:
     DownloadManager();

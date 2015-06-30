@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __RESOURCEEDITORQT__CUSTOMCOLORSSYSTEM__
 #define __RESOURCEEDITORQT__CUSTOMCOLORSSYSTEM__
 

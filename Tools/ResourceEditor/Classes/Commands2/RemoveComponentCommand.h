@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __REMOVE_COMPONENT_COMMAND_H__
 #define __REMOVE_COMPONENT_COMMAND_H__
 

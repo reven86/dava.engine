@@ -327,9 +327,9 @@ protected:
     void ImportShadowColor(Entity * rootNode);
     
 #if defined (USE_FILEPATH_IN_MAP)
-    typedef Map<FilePath, ProxyNode*> ProxyNodeMap;
+    using ProxyNodeMap = Map<FilePath, ProxyNode*>;
 #else //#if defined (USE_FILEPATH_IN_MAP)
-	typedef Map<String, ProxyNode*> ProxyNodeMap;
+    using ProxyNodeMap = Map<String, ProxyNode*>;
 #endif //#if defined (USE_FILEPATH_IN_MAP)
 
 	ProxyNodeMap rootNodes;

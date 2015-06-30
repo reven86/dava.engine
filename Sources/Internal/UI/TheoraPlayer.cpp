@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "UI/TheoraPlayer.h"
 #include "FileSystem/YamlNode.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -194,8 +193,8 @@ void TheoraPlayer::OpenFile(const FilePath &path)
         }
         else
         {
-            int ret = BufferData(); /* someone needs more data */
-            if(ret == 0)
+            /* someone needs more data */
+            if(BufferData() == 0)
             {
                 Logger::Error("TheoraPlayer: End of file while searching for codec headers.\n");
                 return;

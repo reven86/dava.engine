@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_ANDROID_BACKTRACE_CHOOSER_H__
 #define __DAVAENGINE_ANDROID_BACKTRACE_CHOOSER_H__
 #include "BacktraceUnwindImpl.h"

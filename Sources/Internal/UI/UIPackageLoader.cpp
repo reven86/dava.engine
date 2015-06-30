@@ -38,21 +38,20 @@
 #include "UI/UIStaticText.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/UIPackage.h"
-
+#include "UI/Components/UIComponent.h"
 
 namespace DAVA
 {
 
-UIPackageLoader::UIPackageLoader(AbstractUIPackageBuilder *builder) : builder(builder)
+UIPackageLoader::UIPackageLoader()
 {
 }
 
 UIPackageLoader::~UIPackageLoader()
 {
-    builder = NULL;
 }
 
-UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
+bool UIPackageLoader::LoadPackage(const FilePath &packagePath, AbstractUIPackageBuilder *builder)
 {
     if (!loadingQueue.empty())
     {
@@ -60,45 +59,35 @@ UIPackage *UIPackageLoader::LoadPackage(const FilePath &packagePath)
         loadingQueue.clear();
     }
 
-    UIPackage *packageInCache = builder->FindInCache(packagePath.GetStringValue());
-    if (packageInCache != nullptr)
-    {
-        RefPtr<UIPackage> package = packageInCache->Clone();
-        return SafeRetain(package.Get());
-    }
-
     if (!packagePath.Exists())
-        return NULL;
+        return false;
     
     RefPtr<YamlParser> parser(YamlParser::Create(packagePath));
-    
-    if (parser.Get() == NULL)
-    {
-        return NULL;
-    }
+    if (!parser.Valid())
+        return false;
 
     YamlNode *rootNode = parser->GetRootNode();
     if (!rootNode)//empty yaml equal to empty UIPackage
     {
-        RefPtr<UIPackage> package = builder->BeginPackage(packagePath);
+        builder->BeginPackage(packagePath);
         builder->EndPackage();
-        return SafeRetain(package.Get());
+        return true;
     }
     
-    return LoadPackage(rootNode, packagePath);
+    return LoadPackage(rootNode, packagePath, builder);
 }
     
-UIPackage *UIPackageLoader::LoadPackage(const YamlNode *rootNode, const FilePath &packagePath)
+bool UIPackageLoader::LoadPackage(const YamlNode *rootNode, const FilePath &packagePath, AbstractUIPackageBuilder *builder)
 {
     const YamlNode *headerNode = rootNode->Get("Header");
     if (!headerNode)
-        return NULL;
+        return false;
     
     const YamlNode *versionNode = headerNode->Get("version");
-    if (versionNode == NULL || versionNode->GetType() != YamlNode::TYPE_STRING)
-        return NULL;
+    if (versionNode == nullptr || versionNode->GetType() != YamlNode::TYPE_STRING)
+        return false;
     
-    RefPtr<UIPackage> package = builder->BeginPackage(packagePath);
+    builder->BeginPackage(packagePath);
     
     const YamlNode *importedPackagesNode = rootNode->Get("ImportedPackages");
     if (importedPackagesNode)
@@ -127,7 +116,7 @@ UIPackage *UIPackageLoader::LoadPackage(const YamlNode *rootNode, const FilePath
             if (loadingQueue[i].status == STATUS_WAIT)
             {
                 loadingQueue[i].status = STATUS_LOADING;
-                LoadControl(loadingQueue[i].node, true);
+                LoadControl(loadingQueue[i].node, true, builder);
                 loadingQueue[i].status = STATUS_LOADED;
             }
         }
@@ -136,11 +125,10 @@ UIPackage *UIPackageLoader::LoadPackage(const YamlNode *rootNode, const FilePath
     }
     builder->EndPackage();
     
-    return SafeRetain(package.Get());
+    return true;
 }
-
     
-bool UIPackageLoader::LoadControlByName(const String &name)
+bool UIPackageLoader::LoadControlByName(const String &name, AbstractUIPackageBuilder *builder)
 {
     size_t size = loadingQueue.size();
     for (size_t index = 0; index < size; index++)
@@ -151,7 +139,7 @@ bool UIPackageLoader::LoadControlByName(const String &name)
             {
                 case STATUS_WAIT:
                     loadingQueue[index].status = STATUS_LOADING;
-                    LoadControl(loadingQueue[index].node, true);
+                    LoadControl(loadingQueue[index].node, true, builder);
                     loadingQueue[index].status = STATUS_LOADED;
                     return true;
                     
@@ -170,12 +158,16 @@ bool UIPackageLoader::LoadControlByName(const String &name)
     return false;
 }
 
-void UIPackageLoader::LoadControl(const YamlNode *node, bool root)
+void UIPackageLoader::LoadControl(const YamlNode *node, bool root, AbstractUIPackageBuilder *builder)
 {
-    UIControl *control = NULL;
+    UIControl *control = nullptr;
     const YamlNode *pathNode = node->Get("path");
     const YamlNode *prototypeNode = node->Get("prototype");
     const YamlNode *classNode = node->Get("class");
+    const YamlNode *nameNode = node->Get("name");
+
+    //DVASSERT(nameNode || pathNode);
+    
     if (pathNode)
     {
         control = builder->BeginControlWithPath(pathNode->AsString());
@@ -183,7 +175,7 @@ void UIPackageLoader::LoadControl(const YamlNode *node, bool root)
     else if (prototypeNode)
     {
         const YamlNode *customClassNode = node->Get("customClass");
-        String customClass = customClassNode == NULL ? "" : customClassNode->AsString();
+        const String *customClass = customClassNode == nullptr ? nullptr : &(customClassNode->AsString());
         String controlName = prototypeNode->AsString();
         String packageName = "";
         size_t pos = controlName.find('/');
@@ -209,9 +201,12 @@ void UIPackageLoader::LoadControl(const YamlNode *node, bool root)
 
     if (control)
     {
-        LoadControlPropertiesFromYamlNode(control, control->GetTypeInfo(), node);
-        LoadBgPropertiesFromYamlNode(control, node);
-        LoadInternalControlPropertiesFromYamlNode(control, node);
+        if (nameNode)
+            control->SetName(nameNode->AsString());
+        LoadControlPropertiesFromYamlNode(control, control->GetTypeInfo(), node, builder);
+        LoadComponentPropertiesFromYamlNode(control, node, builder);
+        LoadBgPropertiesFromYamlNode(control, node, builder);
+        LoadInternalControlPropertiesFromYamlNode(control, node, builder);
 
         // load children
         const YamlNode * childrenNode = node->Get("children");
@@ -219,7 +214,7 @@ void UIPackageLoader::LoadControl(const YamlNode *node, bool root)
         {
             uint32 count = childrenNode->GetCount();
             for (uint32 i = 0; i < count; i++)
-                LoadControl(childrenNode->Get(i), false);
+                LoadControl(childrenNode->Get(i), false, builder);
         }
 
         control->LoadFromYamlNodeCompleted();
@@ -231,11 +226,11 @@ void UIPackageLoader::LoadControl(const YamlNode *node, bool root)
     builder->EndControl(root);
 }
 
-void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, const InspInfo *typeInfo, const YamlNode *node)
+void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, const InspInfo *typeInfo, const YamlNode *node, AbstractUIPackageBuilder *builder)
 {
     const InspInfo *baseInfo = typeInfo->BaseInfo();
     if (baseInfo)
-        LoadControlPropertiesFromYamlNode(control, baseInfo, node);
+        LoadControlPropertiesFromYamlNode(control, baseInfo, node, builder);
     
     builder->BeginControlPropertiesSection(typeInfo->Name());
     for (int32 i = 0; i < typeInfo->MembersCount(); i++)
@@ -244,24 +239,87 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, cons
 
         VariantType res;
         if (node)
-            res = ReadVariantTypeFromYamlNode(member, node);
+            res = ReadVariantTypeFromYamlNode(member, node, builder);
         builder->ProcessProperty(member, res);
     }
     builder->EndControlPropertiesSection();
 }
     
-void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *control, const YamlNode *node)
+void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl *control, const YamlNode *node, AbstractUIPackageBuilder *builder)
 {
-    const YamlNode *componentsNode = node ? node->Get("components") : NULL;
+    Vector<ComponentNode> components = ExtractComponentNodes(node);
+    for (auto &nodeDescr : components)
+    {
+        UIComponent *component = builder->BeginComponentPropertiesSection(nodeDescr.type, nodeDescr.index);
+        if (component)
+        {
+            const InspInfo *insp = component->GetTypeInfo();
+            for (int32 j = 0; j < insp->MembersCount(); j++)
+            {
+                const InspMember *member = insp->Member(j);
+                VariantType res = ReadVariantTypeFromYamlNode(member, nodeDescr.node, builder);
+                builder->ProcessProperty(member, res);
+            }
+        }
+        
+        builder->EndComponentPropertiesSection();
+    }
+}
+
+Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(const YamlNode *node)
+{
+    const YamlNode *componentsNode = node ? node->Get("components") : nullptr;
+
+    Vector<ComponentNode> components;
+
+    if (componentsNode)
+    {
+        const EnumMap *componentTypes = GlobalEnumMap<UIComponent::eType>::Instance();
+        
+        for (uint32 i = 0; i < componentsNode->GetCount(); i++)
+        {
+            const String &fullName = componentsNode->GetItemKeyName(i);
+            String::size_type lastChar = fullName.find_last_not_of("0123456789");
+            String componentName = fullName.substr(0, lastChar + 1);
+            uint32 componentIndex = atoi(fullName.substr(lastChar + 1).c_str());
+            
+            int32 componentType = 0;
+            if (componentTypes->ToValue(componentName.c_str(), componentType))
+            {
+                if (componentType < UIComponent::COMPONENT_COUNT)
+                {
+                    ComponentNode n;
+                    n.node = componentsNode->Get(i);
+                    n.type = componentType;
+                    n.index = componentIndex;
+                    components.push_back(n);
+                }
+                else
+                {
+                    DVASSERT(false);
+                }
+            }
+        }
+        
+        std::stable_sort(components.begin(), components.end(), [](ComponentNode l, ComponentNode r) {
+            return l.type == r.type ? l.index < r.index : l.type < r.type;
+        });
+    }
+    return components;
+}
+
+void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *control, const YamlNode *node, AbstractUIPackageBuilder *builder)
+{
+    const YamlNode *componentsNode = node ? node->Get("components") : nullptr;
     
     for (int32 i = 0; i < control->GetBackgroundComponentsCount(); i++)
     {
-        const YamlNode *componentNode = NULL;
+        const YamlNode *componentNode = nullptr;
         
         if (componentsNode)
             componentNode = componentsNode->Get(control->GetBackgroundComponentName(i));
         
-        UIControlBackground *bg = builder->BeginBgPropertiesSection(i, componentNode != NULL);
+        UIControlBackground *bg = builder->BeginBgPropertiesSection(i, componentNode != nullptr);
         if (bg)
         {
             const InspInfo *insp = bg->GetTypeInfo();
@@ -270,7 +328,7 @@ void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *control, const Yam
                 const InspMember *member = insp->Member(j);
                 VariantType res;
                 if (componentNode)
-                    res = ReadVariantTypeFromYamlNode(member, componentNode);
+                    res = ReadVariantTypeFromYamlNode(member, componentNode, builder);
                 builder->ProcessProperty(member, res);
             }
         }
@@ -278,16 +336,16 @@ void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *control, const Yam
     }
 }
 
-void UIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *control, const YamlNode *node)
+void UIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *control, const YamlNode *node, AbstractUIPackageBuilder *builder)
 {
-    const YamlNode *componentsNode = node ? node->Get("components") : NULL;
+    const YamlNode *componentsNode = node ? node->Get("components") : nullptr;
     for (int32 i = 0; i < control->GetInternalControlsCount(); i++)
     {
-        const YamlNode *componentNode = NULL;
+        const YamlNode *componentNode = nullptr;
         if (componentsNode)
             componentNode = componentsNode->Get(control->GetInternalControlName(i) + control->GetInternalControlDescriptions());
         
-        UIControl *internalControl = builder->BeginInternalControlSection(i, componentNode != NULL);
+        UIControl *internalControl = builder->BeginInternalControlSection(i, componentNode != nullptr);
         if (internalControl)
         {
             const InspInfo *insp = internalControl->GetTypeInfo();
@@ -298,7 +356,7 @@ void UIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *contr
 
                 VariantType value;
                 if (componentNode)
-                    value = ReadVariantTypeFromYamlNode(member, componentNode);
+                    value = ReadVariantTypeFromYamlNode(member, componentNode, builder);
                 builder->ProcessProperty(member, value);
             }
         }
@@ -306,7 +364,7 @@ void UIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *contr
     }
 }
 
-VariantType UIPackageLoader::ReadVariantTypeFromYamlNode(const InspMember *member, const YamlNode *node)
+VariantType UIPackageLoader::ReadVariantTypeFromYamlNode(const InspMember *member, const YamlNode *node, AbstractUIPackageBuilder *builder)
 {
     const YamlNode *valueNode = node->Get(member->Name());
     if (valueNode)

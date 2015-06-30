@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "UI/UIControlSystem.h"
 #include "UI/UIScreen.h"
 #include "FileSystem/Logger.h"
@@ -470,12 +469,12 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 		//add new touches
 		for (Vector<UIEvent>::const_iterator wit = activeInputs.begin(); wit != activeInputs.end(); wit++) 
 		{
-			bool isFind = FALSE;
+			bool isFind = false;
 			for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
 			{
 				if((*it).tid == (*wit).tid)
 				{
-					isFind = TRUE;
+					isFind = true;
                     break;
 				}
 			}
@@ -491,12 +490,12 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 		}
 		for (Vector<UIEvent>::const_iterator wit = allInputs.begin(); wit != allInputs.end(); wit++) 
 		{
-			bool isFind = FALSE;
+			bool isFind = false;
 			for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
 			{
 				if((*it).tid == (*wit).tid)
 				{
-					isFind = TRUE;
+					isFind = true;
                     break;
 				}
 			}

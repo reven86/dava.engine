@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __DAVAENGINE_RENDER_TECHNIQUE_H__
 #define __DAVAENGINE_RENDER_TECHNIQUE_H__
 
@@ -134,12 +135,14 @@ public:
     bool PreloadRenderTechnique(const FastName & fastName);
     bool UnloadRenderTechnique(const FastName & fastName);
     
+    // Remove all unreferenced render techniques
+    void ClearRenderTechniques();
+
 protected:
     bool LoadRenderTechnique(const FastName & fastName, RenderTechnique * targetTechnique);
     bool LoadRenderTechniqueFromYamlNode(const YamlNode * rootNode, RenderTechnique * targetTechnique);
-    HashMap<FastName, RenderTechnique *> renderTechniqueMap;
+    HashMap<FastName, RenderTechnique*> renderTechniqueMap;
 };
-    
 
 };
 

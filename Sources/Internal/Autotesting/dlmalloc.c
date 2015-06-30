@@ -2,6 +2,8 @@
 
 /*------------------------------ internal #includes ---------------------- */
 
+#include "Base/Platform.h"
+
 #ifdef _MSC_VER
 #pragma warning( disable : 4146 ) /* no "unsigned" warnings */
 #endif /* _MSC_VER */
@@ -234,17 +236,23 @@ static int dev_zero_fd = -1; /* Cached file descriptor for /dev/zero. */
 
 #else /* WIN32 */
 
+#if defined(__DAVAENGINE_WIN32__)
+#define VirtualAllocFunc VirtualAlloc
+#elif defined(__DAVAENGINE_WIN_UAP__)
+#define VirtualAllocFunc VirtualAllocFromApp
+#endif
+
 /* Win32 MMAP via VirtualAlloc */
 static FORCEINLINE void* win32mmap(size_t size) {
-  void* ptr = VirtualAlloc(0, size, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
-  return (ptr != 0)? ptr: MFAIL;
+    void* ptr = VirtualAllocFunc(0, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+    return (ptr != 0) ? ptr : MFAIL;
 }
 
 /* For direct MMAP, use MEM_TOP_DOWN to minimize interference */
 static FORCEINLINE void* win32direct_mmap(size_t size) {
-  void* ptr = VirtualAlloc(0, size, MEM_RESERVE|MEM_COMMIT|MEM_TOP_DOWN,
-                           PAGE_READWRITE);
-  return (ptr != 0)? ptr: MFAIL;
+    void* ptr = VirtualAllocFunc(0, size, MEM_RESERVE | MEM_COMMIT | MEM_TOP_DOWN,
+                                 PAGE_READWRITE);
+    return (ptr != 0) ? ptr : MFAIL;
 }
 
 /* This function supports releasing coalesed segments */
@@ -1739,7 +1747,7 @@ static int init_mparams(void) {
       else
 #endif /* USE_DEV_RANDOM */
 #ifdef WIN32
-      magic = (size_t)(GetTickCount() ^ (size_t)0x55555555U);
+      magic = (size_t)((size_t)GetTickCount64() ^ (size_t)0x55555555U);
 #elif defined(LACKS_TIME_H)
       magic = (size_t)&magic ^ (size_t)0x55555555U;
 #else

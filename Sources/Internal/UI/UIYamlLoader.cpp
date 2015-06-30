@@ -384,45 +384,26 @@ void UIYamlLoader::LoadFonts(const FilePath & yamlPathname)
 
 bool UIYamlLoader::SaveFonts(const FilePath & yamlPathname)
 {
-    bool res = false;
-
-    //save used fonts
-    const auto& usedFonts = FontManager::Instance()->GetFontMap();
+    const auto& fontMap = FontManager::Instance()->GetFontMap();
     ScopedPtr<YamlNode> fontsNode( new YamlNode(YamlNode::TYPE_MAP) );
-    for (auto iter = usedFonts.begin();
-         iter != usedFonts.end();
-         ++iter)
+    for (const auto &pair : fontMap)
     {
-        Font* font = iter->second;
-        if (!font)
+        Font* font = pair.second;
+        if (nullptr == font)
             continue;
-
-        // The font should be stored once only.
-        String fontName = FontManager::Instance()->GetFontName(font);
-
-        font = FontManager::Instance()->GetFont(fontName);
-        if (!font)
-            continue;
-
-        if (fontsNode->AsMap().find(fontName) == fontsNode->AsMap().end())
-        {
-            fontsNode->AddNodeToMap( fontName, font->SaveToYamlNode() );
-        }
+        fontsNode->AddNodeToMap(pair.first, font->SaveToYamlNode());
     }
-
-    res = YamlEmitter::SaveToYamlFile(yamlPathname, fontsNode, File::CREATE | File::WRITE);
-
-    return res;
+    return YamlEmitter::SaveToYamlFile(yamlPathname, fontsNode, File::CREATE | File::WRITE);
 }
 
 void UIYamlLoader::Load(UIControl * rootControl, const FilePath & yamlPathname, bool assertIfCustomControlNotFound /* = true */)
 {
     DefaultUIPackageBuilder builder;
-    RefPtr<UIPackage> package(UIPackageLoader(&builder).LoadPackage(yamlPathname));
-    if (package.Valid())
+    UIPackageLoader().LoadPackage(yamlPathname, &builder);
+    if (builder.GetPackage())
     {
-        DVASSERT(package->GetControlsCount() == 1);
-        UIControl *control = package->GetControl(0);
+        DVASSERT(builder.GetPackage()->GetControlsCount() == 1);
+        UIControl *control = builder.GetPackage()->GetControl(0);
         DVASSERT(control);
         while (!control->GetChildren().empty())
         {
@@ -538,139 +519,101 @@ void UIYamlLoader::LoadFontsFromNode(const YamlNode * rootNode)
     for (MultiMap<String, YamlNode*>::const_iterator t = rootNode->AsMap().begin(); t != rootNode->AsMap().end(); ++t)
     {
         YamlNode * node = t->second;
-        const YamlNode * typeNode = node->Get("type");
-        if (!typeNode)continue;
+        
+        Font* font = CreateFontFromYamlNode(node);
 
-        const String & type = typeNode->AsString();
-        if (type == "FTFont")
+        if (font)
         {
-            // parse font
-            const YamlNode * fontNameNode = node->Get("name");
-            if (!fontNameNode)continue;
-
-            float32 fontSize = 10.0f;
-            const YamlNode * fontSizeNode = node->Get("size");
-            if (fontSizeNode)fontSize = fontSizeNode->AsFloat();
-
-            FTFont * font = FTFont::Create(fontNameNode->AsString());
-            if (!font)
-            {
-                continue;
-            }
-
-            font->SetSize(fontSize);
-
-            const YamlNode * fontVerticalSpacingNode = node->Get("verticalSpacing");
-            if(fontVerticalSpacingNode)
-            {
-                font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt32());
-            }
-
-            const YamlNode * fontFontAscendNode = node->Get("ascendScale");
-            if (fontFontAscendNode)
-            {
-                font->SetAscendScale(fontFontAscendNode->AsFloat());
-            }
-
-            const YamlNode * fontFontDescendNode = node->Get("descendScale");
-            if (fontFontDescendNode)
-            {
-                font->SetDescendScale(fontFontDescendNode->AsFloat());
-            }
-
-            //fontMap[t->first] = font;
             FontManager::Instance()->SetFontName(font, t->first);
             SafeRelease(font);
-        }
-        else if(type == "GraphicsFont")
-        {
-            // parse font
-            const YamlNode * fontNameNode = node->Get("sprite");
-            if (!fontNameNode)continue;
-
-            const YamlNode * definitionNode = node->Get("definition");
-            if (!definitionNode)continue;
-
-            GraphicsFont * font = GraphicsFont::Create(definitionNode->AsString(), fontNameNode->AsString());
-            if (!font)
-            {
-                continue;
-            }
-
-            const YamlNode * fontSizeNode = node->Get("size");
-            if (fontSizeNode)
-            {
-                font->SetSize(fontSizeNode->AsFloat());
-            }
-
-            const YamlNode * fontVerticalSpacingNode = node->Get("verticalSpacing");
-            if(fontVerticalSpacingNode)
-            {
-                font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt32());
-            }
-            
-            const YamlNode * fontFontAscendNode = node->Get("ascendScale");
-            if (fontFontAscendNode)
-            {
-                font->SetAscendScale(fontFontAscendNode->AsFloat());
-            }
-
-            const YamlNode * fontFontDescendNode = node->Get("descendScale");
-            if (fontFontDescendNode)
-            {
-                font->SetDescendScale(fontFontDescendNode->AsFloat());
-            }
-
-            const YamlNode * fontHorizontalSpacingNode = node->Get("horizontalSpacing");
-            if(fontHorizontalSpacingNode)
-            {
-                font->SetHorizontalSpacing(fontHorizontalSpacingNode->AsInt32());
-            }
-
-            //fontMap[t->first] = font;
-            FontManager::Instance()->SetFontName(font, t->first);
-            SafeRelease(font);
-        }
-        else if (type == "DFFont")
-        {
-            // parse font
-            const YamlNode * fontNameNode = node->Get("name");
-            if (!fontNameNode)continue;
-
-            float32 fontSize = 10.0f;
-            const YamlNode * fontSizeNode = node->Get("size");
-            if (fontSizeNode)fontSize = fontSizeNode->AsFloat();
-
-            DFFont * font = DFFont::Create(fontNameNode->AsString());
-            if (!font)
-            {
-                continue;
-            }
-
-            font->SetSize(fontSize);
-
-            const YamlNode * fontVerticalSpacingNode = node->Get("verticalSpacing");
-            if(fontVerticalSpacingNode)
-            {
-                font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt());
-            }
-
-            const YamlNode * fontFontAscendNode = node->Get("ascendScale");
-            if (fontFontAscendNode)
-            {
-                font->SetAscendScale(fontFontAscendNode->AsFloat());
-            }
-
-            const YamlNode * fontFontDescendNode = node->Get("descendScale");
-            if (fontFontDescendNode)
-            {
-                font->SetDescendScale(fontFontDescendNode->AsFloat());
-            }
-
-            //fontMap[t->first] = font;
-            FontManager::Instance()->SetFontName(font, t->first);
         }
     }
+}
+
+Font* UIYamlLoader::CreateFontFromYamlNode(const YamlNode* node)
+{
+    const YamlNode * typeNode = node->Get("type");
+    if (!typeNode)
+        return nullptr;
+
+    const String & type = typeNode->AsString();
+    Font* font = nullptr;
+
+    if (type == "FTFont")
+    {
+        const YamlNode * fontNameNode = node->Get("name");
+        if (!fontNameNode)
+            return nullptr;
+
+        font = FTFont::Create(fontNameNode->AsString());
+        if (!font)
+        {
+            return nullptr;
+        }
+    }
+    else if (type == "GraphicsFont")
+    {
+        const YamlNode * fontNameNode = node->Get("sprite");
+        if (!fontNameNode)
+            return nullptr;
+
+        const YamlNode * definitionNode = node->Get("definition");
+        if (!definitionNode)
+            return nullptr;
+
+        GraphicsFont* graphicsFont = GraphicsFont::Create(definitionNode->AsString(), fontNameNode->AsString());
+        font = graphicsFont;
+
+        if (!font)
+        {
+            return nullptr;
+        }
+
+        const YamlNode * fontHorizontalSpacingNode = node->Get("horizontalSpacing");
+        if (fontHorizontalSpacingNode)
+        {
+            graphicsFont->SetHorizontalSpacing(fontHorizontalSpacingNode->AsInt32());
+        }
+    }
+    else if (type == "DFFont")
+    {
+        const YamlNode * fontNameNode = node->Get("name");
+        if (!fontNameNode)
+            return nullptr;
+
+        font = DFFont::Create(fontNameNode->AsString());
+        if (!font)
+        {
+            return nullptr;
+        }
+    }
+
+    float32 fontSize = 10.0f;
+    const YamlNode * fontSizeNode = node->Get("size");
+    if (fontSizeNode)
+        fontSize = fontSizeNode->AsFloat();
+
+    font->SetSize(fontSize);
+    
+    const YamlNode * fontVerticalSpacingNode = node->Get("verticalSpacing");
+    if (fontVerticalSpacingNode)
+    {
+        font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt32());
+    }
+
+    const YamlNode * fontFontAscendNode = node->Get("ascendScale");
+    if (fontFontAscendNode)
+    {
+        font->SetAscendScale(fontFontAscendNode->AsFloat());
+    }
+
+    const YamlNode * fontFontDescendNode = node->Get("descendScale");
+    if (fontFontDescendNode)
+    {
+        font->SetDescendScale(fontFontDescendNode->AsFloat());
+    }
+
+    return font;
 }
 
 void UIYamlLoader::LoadFromNode(UIControl * parentControl, const YamlNode * rootNode, bool needParentCallback)
@@ -726,13 +669,6 @@ UIControl* UIYamlLoader::CreateControl(const String& type, const String& baseTyp
     UIControl * control = dynamic_cast<UIControl*> (ObjectFactory::Instance()->New<UIControl>(type));
     if (control)
     {
-        // Everything is OK. Just update the custom control type for the control, if any.
-        bool hasCustomType = (!type.empty() && !baseType.empty() && (type != baseType));
-        if (hasCustomType)
-        {
-            control->SetCustomControlClassName(type);
-        }
-
         return control;
     }
 
@@ -748,11 +684,6 @@ UIControl* UIYamlLoader::CreateControl(const String& type, const String& baseTyp
     if (!baseType.empty())
     {
         control = dynamic_cast<UIControl*> (ObjectFactory::Instance()->New<UIControl>(baseType));
-        if (control)
-        {
-            // Even if the control of the base type was created, we have to store its custom type.
-            control->SetCustomControlClassName(type);
-        }
     }
 
     // A NULL might be here too.

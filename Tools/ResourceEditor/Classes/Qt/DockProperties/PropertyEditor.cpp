@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "DAVAEngine.h"
 #include "Entity/Component.h"
 #include "Main/mainwindow.h"
@@ -35,6 +34,7 @@
 #include <QPushButton>
 #include <QFile>
 #include <QTextStream>
+#include <QDebug>
 
 #include "DockProperties/PropertyEditor.h"
 #include "MaterialEditor/MaterialEditor.h"
@@ -71,6 +71,8 @@
 #include "Scene/System/PathSystem.h"
 
 #include "Deprecated/SceneValidator.h"
+
+#include "Tools/PathDescriptor/PathDescriptor.h"
 
 PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSignals /*= true*/)
 	: QtPropertyEditor(parent)
@@ -457,47 +459,14 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 			}
             else if(DAVA::MetaInfo::Instance<DAVA::FilePath>() == meta)
 			{
-				struct PathDescriptor
-				{
-					enum eType
-					{
-						PATH_TEXTURE = 0,
-						PATH_IMAGE,
-						PATH_HEIGHTMAP,
-						PATH_TEXT,
-                        PATH_SCENE,
-						PATH_NOT_SPECIFIED
-					};
-
-					PathDescriptor(const QString & name, const QString &filter, eType type) : pathName(name), fileFilter(filter), pathType(type) {;};
-
-					QString pathName;
-					QString fileFilter;
-					eType pathType;
-				};
-
-				static const PathDescriptor descriptors[] = 
-				{
-					PathDescriptor("", "All (*.*)", PathDescriptor::PATH_NOT_SPECIFIED),
-					PathDescriptor("heightmapPath", "All (*.heightmap *.png);;PNG (*.png);;Height map (*.heightmap)", PathDescriptor::PATH_HEIGHTMAP),
-					PathDescriptor("texture", "All (*.tex *.png);;PNG (*.png);;TEX (*.tex)", PathDescriptor::PATH_TEXTURE),
-					PathDescriptor("lightmap", "All (*.tex *.png);;PNG (*.png);;TEX (*.tex)", PathDescriptor::PATH_TEXTURE),
-					PathDescriptor("vegetationTexture", "All (*.tex *.png);;PNG (*.png);;TEX (*.tex)", PathDescriptor::PATH_TEXTURE),
-                    PathDescriptor("customGeometry", "All (*.sc2);;SC2 (*.sc2);", PathDescriptor::PATH_SCENE),
-					PathDescriptor("textureSheet", "All (*.txt);;TXT (*.tex)", PathDescriptor::PATH_TEXT),
-					PathDescriptor("densityMap", "All (*.png);;PNG (*.png)", PathDescriptor::PATH_IMAGE),
-				};
-
-
 				QString dataName = data->GetName();
-				PathDescriptor *pathDescriptor = (PathDescriptor *)&descriptors[0];
+                PathDescriptor *pathDescriptor = &PathDescriptor::descriptors[0];
 
-				DAVA::uint32 count = sizeof(descriptors)/sizeof(PathDescriptor);
-				for(DAVA::uint32 i = 0; i < count; ++i)
+                for (auto descriptor : PathDescriptor::descriptors)
 				{
-					if(descriptors[i].pathName == dataName)
+                    if(descriptor.pathName == dataName)
 					{
-						pathDescriptor = (PathDescriptor *)&descriptors[i];
+                        pathDescriptor = &descriptor;
 						break;
 					}
 				}
@@ -520,7 +489,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 						variantData->SetValidator(new TexturePathValidator(pathList));
 						break;
 					case PathDescriptor::PATH_IMAGE:
-					case PathDescriptor::PATH_TEXT:
+					case PathDescriptor::PATH_TEXTURE_SHEET:
 						variantData->SetValidator(new PathValidator(pathList));
 						break;
                     case PathDescriptor::PATH_SCENE:
@@ -1411,12 +1380,8 @@ void PropertyEditor::OnAddComponent(Component::eType type)
 
         for(int i = 0; i < size; ++i)
         {
-            Entity* node = curNodes.at(i);
-            if (node->GetComponentCount(type) == 0)
-            {
-                Component *c = Component::CreateByType(type);
-                curScene->Exec(new AddComponentCommand(curNodes.at(i), c));
-            }
+            Component *c = Component::CreateByType(type);
+            curScene->Exec(new AddComponentCommand(curNodes.at(i), c));
         }
 
         curScene->EndBatch();

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "LandscapeSetTexturesCommands.h"
 #include "../Qt/Scene/SceneEditor2.h"
 #include "Scene3D/Components/ComponentHelpers.h"

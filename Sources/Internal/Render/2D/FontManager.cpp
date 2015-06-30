@@ -27,8 +27,18 @@
 =====================================================================================*/
 
 
+#include "Base/Platform.h"
+
+#ifdef __DAVAENGINE_WIN_UAP__
+#define generic GenericFromFreeTypeLibrary
+#endif
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
+
+#ifdef __DAVAENGINE_WIN_UAP__
+#undef generic
+#endif
 
 #include "Render/2D/FontManager.h"
 #include "Render/2D/FTFont.h"

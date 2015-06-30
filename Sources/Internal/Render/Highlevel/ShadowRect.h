@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_SHADOW_RECT_H__
 #define __DAVAENGINE_SHADOW_RECT_H__
 

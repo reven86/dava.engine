@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "DAVAEngine.h"
 #include "QtPropertyDataIntrospection.h"
 #include "QtPropertyDataDavaKeyedArchive.h"

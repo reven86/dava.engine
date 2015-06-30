@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __SWITCH_ENTITY_CREATEOR_H__
 #define __SWITCH_ENTITY_CREATEOR_H__
 
