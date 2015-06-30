@@ -69,8 +69,6 @@ protected:
     UI3DView * scene3dView;
     
     FilePath currentScenePath;
-    Entity *rootNode;
-    
     bool needSetCamera;
 };
 

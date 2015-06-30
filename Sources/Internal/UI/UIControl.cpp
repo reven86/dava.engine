@@ -46,7 +46,7 @@
 
 #include "Components/UIComponent.h"
 #include "Components/UIControlFamily.h"
-#include "Thread/LockGuard.h"
+#include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {

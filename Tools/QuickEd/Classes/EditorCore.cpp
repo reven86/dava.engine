@@ -30,6 +30,7 @@
 #include "Platform/Qt5/QtLayer.h"
 
 #include "UI/mainwindow.h"
+#include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "DocumentGroup.h"
 #include "Document.h"
 #include "EditorCore.h"
@@ -47,10 +48,17 @@ EditorCore::EditorCore(QObject *parent)
     , project(new Project(this))
     , documentGroup(new DocumentGroup(this))
     , mainWindow(new MainWindow())
+    , dialogReloadSprites(new DialogReloadSprites(mainWindow))
 {
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
-     
+    
+    QAction* actionReloadSprites = dialogReloadSprites->GetActionReloadSprites();
+    mainWindow->menuTools->addAction(actionReloadSprites);
+    mainWindow->toolBarPlugins->addAction(actionReloadSprites);
+    connect(dialogReloadSprites, &DialogReloadSprites::StarPackProcess, this, &EditorCore::CloseAllDocuments);
+    
+    connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
     connect(mainWindow, &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
     connect(mainWindow, &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
     connect(mainWindow, &MainWindow::CloseProject, this, &EditorCore::CloseProject);
@@ -116,6 +124,39 @@ void EditorCore::OnOpenPackageFile(const QString &path)
         }
         mainWindow->SetCurrentTab(index);
     }
+}
+
+void EditorCore::OnProjectPathChanged(const QString &projectPath)
+{
+    QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
+    dialogReloadSprites->GetSpritesPacker()->ClearTasks();
+    QDirIterator it(projectPath + "/DataSource");
+    while (it.hasNext())
+    {
+        const QFileInfo &fileInfo = it.fileInfo();
+        it.next();
+        if (fileInfo.isDir())
+        {
+            QString outputPath = fileInfo.absoluteFilePath();
+            if (!outputPath.contains(searchOption))
+            {
+                continue;
+            }
+            outputPath.replace(outputPath.lastIndexOf("DataSource"), QString("DataSource").size(), "Data");
+            QDir outputDir(outputPath);
+            dialogReloadSprites->GetSpritesPacker()->AddTask(fileInfo.absoluteFilePath(), outputDir);
+        }
+    }
+}
+
+bool EditorCore::CloseAllDocuments()
+{
+    for (auto index = documents.size() - 1; index >= 0; --index)
+    {
+        if (!CloseOneDocument(index))
+            return false;
+    }
+    return true;
 }
 
 bool EditorCore::CloseOneDocument(int index)

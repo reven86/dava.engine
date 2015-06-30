@@ -53,15 +53,12 @@ EditorLightSystem::EditorLightSystem(DAVA::Scene * scene)
 	SetRequiredComponents(MAKE_COMPONENT_MASK(Component::LIGHT_COMPONENT));
 
 	isEnabled = true;
-	AddCameraLightOnScene();
 }
 
 EditorLightSystem::~EditorLightSystem()
 {
 	SafeRelease(cameraLight);
 }
-
-
 
 void EditorLightSystem::ProcessCommand( const Command2 *command, bool redo )
 {
@@ -99,7 +96,10 @@ void EditorLightSystem::UpdateCameraLightPosition()
 		if(!camera) return;
 
 		Matrix4 m = Matrix4::MakeTranslation(camera->GetPosition() + camera->GetLeft() * 20.f + camera->GetUp() * 20.f);
-		cameraLight->SetLocalTransform(m);
+        if(m != cameraLight->GetLocalTransform())
+        {
+            cameraLight->SetLocalTransform(m);
+        }
 	}
 }
 
@@ -189,6 +189,7 @@ void EditorLightSystem::Process(float32 timeElapsed)
 {
 	if(isEnabled)
 	{
-		UpdateCameraLightPosition();
+        UpdateCameraLightState();
+        UpdateCameraLightPosition();
 	}
 }
