@@ -37,6 +37,10 @@ elseif ( WINDOWS_UAP )
         remove_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
         unset ( DAVA_MEMORY_PROFILER )
     endif ()
+
+    #no fmod on Win10
+    set ( DISABLE_SOUNDS true )
+    message(WARNING "Windows Store platform detected. FMOD is disabled")
 	
 endif()
 
@@ -337,6 +341,33 @@ ENDIF()
 
 endmacro ()
 
+macro ( add_content_win_uap CONTENT_DIR )
+	#get a full path to content directory
+    set ( TARGET_CONTENT_DIR ${CMAKE_CURRENT_LIST_DIR}/${CONTENT_DIR} )
+	
+	#get all files from it and add to SRC
+	file ( GLOB_RECURSE CONTENT_LIST "${TARGET_CONTENT_DIR}/*")
+	list ( APPEND ADDED_CONTENT_SRC ${CONTENT_LIST} )
+    set ( GROUP_PREFIX "Content\\" )
+	
+	#process all content files
+	FOREACH( ITEM ${CONTENT_LIST} )
+	    #message("Item: ${ITEM}")
+		
+		#add item to project source group "Content"
+		get_filename_component ( ITEM_PATH ${ITEM} PATH )
+		STRING( REGEX REPLACE "${CMAKE_CURRENT_LIST_DIR}/" "" ITEM_GROUP ${ITEM_PATH} )
+		STRING( REGEX REPLACE "/" "\\\\" ITEM_GROUP ${ITEM_GROUP} )
+		#message( "Item group: ${GROUP_PREFIX}${ITEM_GROUP}" )
+		source_group( ${GROUP_PREFIX}${ITEM_GROUP} FILES ${ITEM} )
+		
+		#set deployment properties to item
+		set_property( SOURCE ${ITEM} PROPERTY VS_DEPLOYMENT_CONTENT 1 )
+		set_property( SOURCE ${ITEM} PROPERTY VS_DEPLOYMENT_LOCATION ${ITEM_GROUP} )
+		
+	ENDFOREACH()
+	
+endmacro ()
 
 
 
