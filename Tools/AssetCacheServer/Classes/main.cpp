@@ -46,24 +46,16 @@ void FrameworkDidLaunched()
 int main(int argc, char *argv[])
 {
     DAVA::Core::Run(argc, argv);
-
     SingleApplication a(argc, argv);
-//    if (a.AlreadyExists())
-//    {
-//        return 0;
-//    }
     
     DAVA::Logger::Instance()->SetLogFilename("AssetCacheServer.txt");
     DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_FRAMEWORK);
 
-
-    
     MainWindow w;
     ServerCore server;
 
     w.SetSettings(server.GetSettings());
     
-    w.show();
     server.Start();
     
     return a.exec();

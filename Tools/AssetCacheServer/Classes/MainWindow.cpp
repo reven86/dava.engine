@@ -150,10 +150,8 @@ void MainWindow::OnServerParametersChanged()
 
 void MainWindow::OnOpenAction()
 {
-    this->raise();
     this->show();
-    trayIcon->hide();
-    trayIcon->show();
+    this->raise();
 }
 
 
