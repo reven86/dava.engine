@@ -116,6 +116,12 @@ void WinUAPXamlApp::RemoveUIElement(Windows::UI::Xaml::UIElement^ uiElement)
     }
 }
 
+void WinUAPXamlApp::PositionUIElement(Windows::UI::Xaml::UIElement^ uiElement, float32 x, float32 y)
+{
+    canvas->SetLeft(uiElement, x);
+    canvas->SetTop(uiElement, y);
+}
+
 void WinUAPXamlApp::Run()
 {
     Core::Instance()->CreateSingletons();

@@ -57,6 +57,7 @@ public:
 
     void AddUIElement(Windows::UI::Xaml::UIElement^ uiElement);
     void RemoveUIElement(Windows::UI::Xaml::UIElement^ uiElement);
+    void PositionUIElement(Windows::UI::Xaml::UIElement^ uiElement, float32 x, float32 y);
 
 protected:
     void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args) override;
