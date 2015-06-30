@@ -31,8 +31,9 @@
 #define __DAVAENGINE_PROTODRIVER_H__
 
 #include <Base/BaseTypes.h>
-#include <Platform/Mutex.h>
-#include <Thread/Spinlock.h>
+#include <Concurrency/Atomic.h>
+#include <Concurrency/Mutex.h>
+#include <Concurrency/Spinlock.h>
 
 #include <Network/Base/Endpoint.h>
 #include <Network/NetworkCommon.h>
@@ -142,7 +143,7 @@ private:
     ProtoDecoder proto;
     ProtoHeader header;
 
-    static uint32 nextPacketId;     // Global for all instances
+    static Atomic<uint32> nextPacketId;     // Global for all instances
 };
 
 //////////////////////////////////////////////////////////////////////////

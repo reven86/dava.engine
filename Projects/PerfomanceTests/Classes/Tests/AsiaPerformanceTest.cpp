@@ -62,10 +62,11 @@ void AsiaPerformanceTest::LoadResources()
 {
     BaseTest::LoadResources();
 
-    Entity* rootEntity = GetScene()->GetRootNode(FilePath("~res:/3d/Maps/10_asia_as/10_asia_as.sc2"));
-    GetScene()->AddNode(rootEntity);
+    SceneFileV2::eError error = GetScene()->LoadScene(FilePath("~res:/3d/Maps/10_asia_as/10_asia_as.sc2"));
 
-    Entity* cameraPathEntity = rootEntity->FindByName(CAMERA_PATH);
+    DVASSERT_MSG(error == SceneFileV2::eError::ERROR_NO_ERROR, "can't load scene ~res:/3d/Maps/10_asia_as/10_asia_as.sc2");
+
+    Entity* cameraPathEntity = GetScene()->FindByName(CAMERA_PATH);
     PathComponent* pathComponent = static_cast<PathComponent*>(cameraPathEntity->GetComponent(Component::PATH_COMPONENT));
 
     const Vector3& startPosition = pathComponent->GetStartWaypoint()->position;
@@ -79,16 +80,16 @@ void AsiaPerformanceTest::LoadResources()
 
     GetScene()->SetCurrentCamera(camera);
 
-    waypointInterpolator = new WaypointsInterpolator(pathComponent->GetPoints(),  GetTargetTestTime());
+    waypointInterpolator = new WaypointsInterpolator(pathComponent->GetPoints(), GetTargetTestTime());
     tankAnimator = new TankAnimator();
 
     Vector<Entity*> tanks;
 
-    tanks.push_back(rootEntity->FindByName(CENTURION));
-    tanks.push_back(rootEntity->FindByName(CONQUEROR));
-    tanks.push_back(rootEntity->FindByName(VALENTINE));
-    tanks.push_back(rootEntity->FindByName(T150));
-    tanks.push_back(rootEntity->FindByName(T110E5));
+    tanks.push_back(GetScene()->FindByName(CENTURION));
+    tanks.push_back(GetScene()->FindByName(CONQUEROR));
+    tanks.push_back(GetScene()->FindByName(VALENTINE));
+    tanks.push_back(GetScene()->FindByName(T150));
+    tanks.push_back(GetScene()->FindByName(T110E5));
 
     for (uint32 i = 0; i < tanks.size(); i++)
     {
@@ -98,8 +99,8 @@ void AsiaPerformanceTest::LoadResources()
         tankAnimator->MakeSkinnedTank(tank, jointsInfo);
         skinnedTankData.insert(std::pair<FastName, std::pair<Entity*, Vector<uint16>>>(tank->GetName(), std::pair<Entity*, Vector<uint16>>(tank, jointsInfo)));
     }
-    
-    rootEntity->FindNodesByNamePart(TANK_STUB.c_str(), tankStubs);
+
+    GetScene()->FindNodesByNamePart(TANK_STUB.c_str(), tankStubs);
 
     auto tankIt = skinnedTankData.cbegin();
     auto tankEnd = skinnedTankData.cend();
