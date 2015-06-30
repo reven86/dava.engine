@@ -72,7 +72,7 @@ gles2_Texture_Delete( Handle tex )
         GLCommand       cmd[] =
         {
             { GLCommand::DELETE_TEXTURES, { 1, uint64(&(self->uid)) } },
-            { GLCommand::DELETE_TEXTURES, { 1, uint64(&(self->depth)) } },
+            { GLCommand::DELETE_RENDERBUFFERS, { 1, uint64(&(self->depth)) } },
             { GLCommand::DELETE_FRAMEBUFFERS, { 1, uint64(&(self->fbo)) } }
         };
 
