@@ -38,6 +38,8 @@
 #include "UI/Components/UIComponent.h"
 #include "FileSystem/LocalizationSystem.h"
 #include "UIPackagesCache.h"
+#include "UI/Styles/UIStyleSheet.h"
+#include "UI/Styles/UIStyleSheetYamlLoader.h"
 
 namespace DAVA
 {
@@ -151,6 +153,19 @@ bool DefaultUIPackageBuilder::ProcessImportedPackage(const String &packagePath, 
         DVASSERT(false);
         return false;
     }
+}
+
+void DefaultUIPackageBuilder::ProcessStyleSheets(const YamlNode *styleSheetsNode)
+{
+    UIStyleSheetYamlLoader styleSheetLoader;
+
+    Vector< UIStyleSheet* > styleSheets;
+    styleSheetLoader.LoadFromYaml(styleSheetsNode, &styleSheets);
+
+    AddStyleSheets(styleSheets);
+
+    for (UIStyleSheet* styleSheet : styleSheets)
+        SafeRelease(styleSheet);
 }
 
 UIControl *DefaultUIPackageBuilder::BeginControlWithClass(const String &className)
@@ -356,12 +371,6 @@ void DefaultUIPackageBuilder::ProcessProperty(const InspMember *member, const Va
     }
 }
 
-void DefaultUIPackageBuilder::AddStyleSheets(const DAVA::Vector<UIStyleSheet*>& styleSheets)
-{
-    for (UIStyleSheet* styleSheet : styleSheets)
-        package->GetControlPackageContext()->AddStyleSheet(styleSheet);
-}
-
 void DefaultUIPackageBuilder::PutImportredPackage(const FilePath &path, UIPackage *package)
 {
     int32 index = (int32) importedPackages.size();
@@ -377,6 +386,12 @@ UIPackage *DefaultUIPackageBuilder::FindImportedPackageByName(const String &name
         return importedPackages[it->second];
     
     return nullptr;
+}
+
+void DefaultUIPackageBuilder::AddStyleSheets(const DAVA::Vector<UIStyleSheet*>& styleSheets)
+{
+    for (UIStyleSheet* styleSheet : styleSheets)
+        package->GetControlPackageContext()->AddStyleSheet(styleSheet);
 }
 
 }

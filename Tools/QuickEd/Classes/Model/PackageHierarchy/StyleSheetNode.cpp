@@ -33,7 +33,6 @@
 #include "../ControlProperties/StyleSheetRootProperty.h"
 
 #include "UI/Styles/UIStyleSheet.h"
-#include "UI/Styles/UIStyleSheetYamlWriter.h"
 
 using namespace DAVA;
 
@@ -68,7 +67,7 @@ void StyleSheetNode::Accept(PackageVisitor *visitor)
 
 String StyleSheetNode::GetName() const
 {
-    return UIStyleSheetYamlWriter::GenerateSelectorString(styleSheet->GetSelectorChain());
+    return styleSheet->GetSelectorChain().ToString();
 }
 
 StyleSheetRootProperty *StyleSheetNode::GetRootProperty() const

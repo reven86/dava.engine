@@ -26,32 +26,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __DAVAENGINE_UI_STYLESHEET_YAML_WRITER_H__
-#define __DAVAENGINE_UI_STYLESHEET_YAML_WRITER_H__
-
-#include "Base/BaseTypes.h"
-#include "Base/RefPtr.h"
-#include "FileSystem/FilePath.h"
+#include "UI/Styles/UIStyleSheetStructs.h"
 
 namespace DAVA
 {
 
-class UIStyleSheet;
-class YamlNode;
-struct UIStyleSheetSelector;
-
-class UIStyleSheetYamlWriter
-{
-public:
-    UIStyleSheetYamlWriter();
-
-    RefPtr<YamlNode> SaveToYaml(const Vector<UIStyleSheet*>& styleSheets);
-
-    static String GenerateSelectorString(const Vector<UIStyleSheetSelector>& selectorChain);
-};
-
-};
-
-
-#endif
+}

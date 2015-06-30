@@ -68,7 +68,7 @@ const UIStyleSheetPropertyTable* UIStyleSheet::GetPropertyTable() const
     return properties.Get();
 }
 
-const Vector< UIStyleSheetSelector >& UIStyleSheet::GetSelectorChain() const
+const UIStyleSheetSelectorChain& UIStyleSheet::GetSelectorChain() const
 {
     return selectorChain;
 }
@@ -78,7 +78,7 @@ void UIStyleSheet::SetPropertyTable(UIStyleSheetPropertyTable* newProperties)
     properties = newProperties;
 }
 
-void UIStyleSheet::SetSelectorChain(const Vector<UIStyleSheetSelector>& newSelectorChain)
+void UIStyleSheet::SetSelectorChain(const UIStyleSheetSelectorChain& newSelectorChain)
 {
     selectorChain = newSelectorChain;
 
@@ -93,10 +93,10 @@ void UIStyleSheet::RecalculateScore()
         score += 100000 + selector.classes.size();
         if (selector.name.IsValid())
             score += 100;
-        if (!selector.controlClassName.empty())
+        if (!selector.className.empty())
             score += 100;
         for (int32 stateIndex = 0; stateIndex < UIControl::STATE_COUNT; ++stateIndex)
-            if (selector.controlStateMask & (1 << stateIndex))
+            if (selector.stateMask & (1 << stateIndex))
                 score += 1;
     }
 }

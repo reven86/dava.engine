@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="External">
@@ -1843,9 +1843,6 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIControlPackageContext.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlWriter.h">
-      <Filter>Internal\UI\Styles</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.h">
       <Filter>Internal\UI\Styles</Filter>
     </ClInclude>
@@ -1905,6 +1902,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Animation\LinearPropertyAnimation.h">
       <Filter>Internal\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetStructs.h">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSelectorChain.h">
+      <Filter>Internal\UI\Styles</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3340,9 +3343,6 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UIControlPackageContext.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlWriter.cpp">
-      <Filter>Internal\UI\Styles</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.cpp">
       <Filter>Internal\UI\Styles</Filter>
     </ClCompile>
@@ -3375,6 +3375,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Animation\LinearPropertyAnimation.cpp">
       <Filter>Internal\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetStructs.cpp">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSelectorChain.cpp">
+      <Filter>Internal\UI\Styles</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

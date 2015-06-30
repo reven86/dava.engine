@@ -47,6 +47,7 @@
 #include "UI/UIControl.h"
 #include "UI/UIControlPackageContext.h"
 #include "UI/Styles/UIStyleSheet.h"
+#include "UI/Styles/UIStyleSheetYamlLoader.h"
 #include "Base/ObjectFactory.h"
 #include "Utils/Utils.h"
 
@@ -113,6 +114,19 @@ bool EditorUIPackageBuilder::ProcessImportedPackage(const String &packagePathStr
     }
     
     return false;
+}
+
+void EditorUIPackageBuilder::ProcessStyleSheets(const YamlNode* styleSheetsNode)
+{
+    UIStyleSheetYamlLoader styleSheetLoader;
+
+    Vector< UIStyleSheet* > styleSheets;
+    styleSheetLoader.LoadFromYaml(styleSheetsNode, &styleSheets);
+
+    AddStyleSheets(styleSheets);
+
+    for (UIStyleSheet* styleSheet : styleSheets)
+        SafeRelease(styleSheet);
 }
 
 UIControl *EditorUIPackageBuilder::BeginControlWithClass(const String &className)
@@ -313,15 +327,6 @@ void EditorUIPackageBuilder::ProcessProperty(const InspMember *member, const Var
     }
 }
 
-void EditorUIPackageBuilder::AddStyleSheets(const DAVA::Vector<UIStyleSheet*>& newStyleSheets)
-{
-    for (UIStyleSheet *styleSheet : newStyleSheets)
-    {
-        StyleSheetNode *node = new StyleSheetNode(styleSheet);
-        styleSheets.push_back(node);
-    }
-}
-
 RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
 {
     DVASSERT(!packagePath.IsEmpty());
@@ -396,6 +401,15 @@ ControlNode *EditorUIPackageBuilder::FindRootControl(const DAVA::String &name) c
             return control;
     }
     return nullptr;
+}
+
+void EditorUIPackageBuilder::AddStyleSheets(const DAVA::Vector<UIStyleSheet*>& newStyleSheets)
+{
+    for (UIStyleSheet *styleSheet : newStyleSheets)
+    {
+        StyleSheetNode *node = new StyleSheetNode(styleSheet);
+        styleSheets.push_back(node);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -27,55 +27,82 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_UI_STYLESHEET_H__
-#define __DAVAENGINE_UI_STYLESHEET_H__
+#ifndef __DAVAENGINE_UI_STYLESHEET_STRUCTS_H__
+#define __DAVAENGINE_UI_STYLESHEET_STRUCTS_H__
 
-#include "Base/BaseObject.h"
+#include "Base/IntrospectionBase.h"
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
 #include "FileSystem/VariantType.h"
-#include "UI/Styles/UIStyleSheetPropertiesTable.h"
-#include "UI/Styles/UIStyleSheetStructs.h"
-#include "UI/Styles/UIStyleSheetSelectorChain.h"
+#include "Animation/Interpolation.h"
 
 namespace DAVA
 {
 
-class UIStyleSheetPropertyTable :
-    public BaseObject
+enum class ePropertyOwner
 {
-protected:
-    virtual ~UIStyleSheetPropertyTable() {};
-public:
-    void SetProperties(const Vector<UIStyleSheetProperty>& properties);
-    const Vector<UIStyleSheetProperty>& GetProperties() const;
-private:
-    Vector<UIStyleSheetProperty> properties;
+    CONTROL,
+    BACKGROUND,
+    COMPONENT,
 };
 
-class UIStyleSheet :
-    public BaseObject
+struct UIStyleSheetPropertyTargetMember
 {
-protected:
-    virtual ~UIStyleSheet();
-public:
-    UIStyleSheet();
+    ePropertyOwner propertyOwner;
+    uint32 componentType;
+    const InspInfo* typeInfo;
+    const InspMember* memberInfo;
 
-    int32 GetScore() const;
+    bool operator == (const UIStyleSheetPropertyTargetMember& other) const
+    {
+        return  propertyOwner == other.propertyOwner &&
+            componentType == other.componentType &&
+            typeInfo == other.typeInfo &&
+            memberInfo == other.memberInfo;
+    }
+};
 
-    const UIStyleSheetPropertyTable* GetPropertyTable() const;
-    const UIStyleSheetSelectorChain& GetSelectorChain() const;
+struct UIStyleSheetPropertyDescriptor
+{
+    FastName name;
+    VariantType defaultValue;
+    Vector<UIStyleSheetPropertyTargetMember> targetMembers;
+};
 
-    void SetPropertyTable(UIStyleSheetPropertyTable* properties);
-    void SetSelectorChain(const UIStyleSheetSelectorChain& selectorChain);
-private:
-    void RecalculateScore();
+struct UIStyleSheetSelector
+{
+    UIStyleSheetSelector() :
+        className(""),
+        name(),
+        stateMask(0)
+    {
 
-    UIStyleSheetSelectorChain selectorChain;
-        
-    RefPtr<UIStyleSheetPropertyTable> properties;
+    }
 
-    int32 score;
+    String className;
+    FastName name;
+    int32 stateMask;
+    Vector<FastName> classes;
+};
+
+struct UIStyleSheetProperty
+{
+    UIStyleSheetProperty(uint32 aPropertyIndex, const VariantType& aValue, bool aTransition = false, Interpolation::FuncType aTransitionFunction = Interpolation::LINEAR, float32 aTransitionTime = 0.0f) :
+        propertyIndex(aPropertyIndex),
+        value(aValue),
+        transitionFunction(aTransitionFunction),
+        transitionTime(aTransitionTime), 
+        transition(aTransition)
+    {
+
+    }
+
+    uint32 propertyIndex;
+    VariantType value;
+
+    Interpolation::FuncType transitionFunction;
+    float32 transitionTime;
+    bool transition;
 };
 
 };

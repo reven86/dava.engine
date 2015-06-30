@@ -51,6 +51,7 @@ public:
     virtual void EndPackage() override;
 
     virtual bool ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader) override;
+    virtual void ProcessStyleSheets(const YamlNode *styleSheetsNode) override;
 
     virtual UIControl *BeginControlWithClass(const String &className) override;
     virtual UIControl *BeginControlWithCustomClass(const String &customClassName, const String &className) override;
@@ -72,11 +73,11 @@ public:
     virtual void EndInternalControlSection() override;
 
     virtual void ProcessProperty(const InspMember *member, const VariantType &value) override;
-
-    virtual void AddStyleSheets(const DAVA::Vector<UIStyleSheet*>& styleSheets) override;
 private:
     void PutImportredPackage(const FilePath &path, UIPackage *package);
     UIPackage *FindImportedPackageByName(const String &name) const;
+
+    void AddStyleSheets(const DAVA::Vector<UIStyleSheet*>& styleSheets);
 
 private:
     //class PackageDescr;

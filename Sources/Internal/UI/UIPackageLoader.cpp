@@ -39,7 +39,6 @@
 #include "UI/UIStaticText.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/UIPackage.h"
-#include "UI/Styles/UIStyleSheetYamlLoader.h"
 #include "UI/Components/UIComponent.h"
 
 namespace DAVA
@@ -102,15 +101,7 @@ bool UIPackageLoader::LoadPackage(const YamlNode *rootNode, const FilePath &pack
     const YamlNode *styleSheetsNode = rootNode->Get("StyleSheets");
     if (styleSheetsNode)
     {
-        UIStyleSheetYamlLoader styleSheetLoader;
-
-        Vector< UIStyleSheet* > styleSheets;
-        styleSheetLoader.LoadFromYaml(styleSheetsNode, &styleSheets);
-
-        builder->AddStyleSheets(styleSheets);
-
-        for (UIStyleSheet* styleSheet : styleSheets)
-            SafeRelease(styleSheet);
+        builder->ProcessStyleSheets(styleSheetsNode);
     }
 
     const YamlNode *controlsNode = rootNode->Get("Controls");

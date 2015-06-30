@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugQt|Win32">
@@ -710,6 +710,8 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSelectorChain.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetStructs.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\TheoraPlayer.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UI3DView.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIAggregatorControl.h" />
@@ -759,7 +761,6 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertiesTable.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlWriter.h" />
     <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClass.h" />
     <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClassFactory.h" />
     <ClInclude Include="..\..\Sources\Internal\UnitTests\TestCore.h" />
@@ -1212,6 +1213,8 @@
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\ScrollHelper.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSelectorChain.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetStructs.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\TheoraPlayer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UI3DView.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIAggregatorControl.cpp" />
@@ -1256,7 +1259,6 @@
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertiesTable.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlWriter.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UnitTests\TestClass.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UnitTests\TestCore.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\BiDiHelper.cpp" />

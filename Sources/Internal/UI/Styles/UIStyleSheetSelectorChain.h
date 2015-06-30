@@ -27,55 +27,29 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_UI_STYLESHEET_H__
-#define __DAVAENGINE_UI_STYLESHEET_H__
+#ifndef __DAVAENGINE_UI_STYLESHEET_SELECTOR_CHAIN_H__
+#define __DAVAENGINE_UI_STYLESHEET_SELECTOR_CHAIN_H__
 
-#include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
-#include "Base/FastName.h"
-#include "FileSystem/VariantType.h"
-#include "UI/Styles/UIStyleSheetPropertiesTable.h"
 #include "UI/Styles/UIStyleSheetStructs.h"
-#include "UI/Styles/UIStyleSheetSelectorChain.h"
 
 namespace DAVA
 {
 
-class UIStyleSheetPropertyTable :
-    public BaseObject
+class UIStyleSheetSelectorChain
 {
-protected:
-    virtual ~UIStyleSheetPropertyTable() {};
 public:
-    void SetProperties(const Vector<UIStyleSheetProperty>& properties);
-    const Vector<UIStyleSheetProperty>& GetProperties() const;
+    UIStyleSheetSelectorChain();
+    UIStyleSheetSelectorChain(const String& string);
+    String ToString() const;
+
+    Vector<UIStyleSheetSelector>::const_iterator begin() const;
+    Vector<UIStyleSheetSelector>::const_iterator end() const;
+
+    Vector<UIStyleSheetSelector>::const_reverse_iterator rbegin() const;
+    Vector<UIStyleSheetSelector>::const_reverse_iterator rend() const;
 private:
-    Vector<UIStyleSheetProperty> properties;
-};
-
-class UIStyleSheet :
-    public BaseObject
-{
-protected:
-    virtual ~UIStyleSheet();
-public:
-    UIStyleSheet();
-
-    int32 GetScore() const;
-
-    const UIStyleSheetPropertyTable* GetPropertyTable() const;
-    const UIStyleSheetSelectorChain& GetSelectorChain() const;
-
-    void SetPropertyTable(UIStyleSheetPropertyTable* properties);
-    void SetSelectorChain(const UIStyleSheetSelectorChain& selectorChain);
-private:
-    void RecalculateScore();
-
-    UIStyleSheetSelectorChain selectorChain;
-        
-    RefPtr<UIStyleSheetPropertyTable> properties;
-
-    int32 score;
+    Vector<UIStyleSheetSelector> selectors;
 };
 
 };

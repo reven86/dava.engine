@@ -170,14 +170,14 @@ void PackageSerializer::VisitControl(ControlNode *node)
 
 void PackageSerializer::VisitStyleSheets(StyleSheetsNode *node)
 {
-    BeginMap("StyleSheets", true);
+    BeginArray("StyleSheets");
     AcceptChildren(node);
     EndMap();
 }
 
 void PackageSerializer::VisitStyleSheet(StyleSheetNode *node)
 {
-    BeginMap(node->GetName()); // TODO: Replace to selectors
+    BeginMap();
     node->GetRootProperty()->Accept(this);
     EndMap();
 }
@@ -401,17 +401,24 @@ void PackageSerializer::VisitIntrospectionProperty(IntrospectionProperty *proper
 
 void PackageSerializer::VisitStyleSheetRoot(StyleSheetRootProperty *property)
 {
+    property->GetSelectors()->Accept(this);
     property->GetPropertiesSection()->Accept(this);
     property->GetTransitionsSection()->Accept(this);
 }
 
 void PackageSerializer::VisitStyleSheetSelectorsProperty(StyleSheetSelectorsProperty *property)
 {
+    PutValue("selector", property->GetValue());
 }
 
 void PackageSerializer::VisitStyleSheetPropertiesSection(StyleSheetPropertiesSection *property)
 {
-    AcceptChildren(property);
+    if (property->GetCount() > 0)
+    {
+        BeginMap("properties", false);
+        AcceptChildren(property);
+        EndMap();
+    }
 }
 
 void PackageSerializer::VisitStyleSheetProperty(StyleSheetProperty *property)

@@ -35,39 +35,10 @@
 #include "Base/FastName.h"
 #include "Base/StaticSingleton.h"
 #include "FileSystem/VariantType.h"
+#include "UI/Styles/UIStyleSheetStructs.h"
 
 namespace DAVA
 {
-
-enum class ePropertyOwner
-{
-    CONTROL,
-    BACKGROUND,
-    COMPONENT,
-};
-
-struct UIStyleSheetPropertyTargetMember
-{
-    ePropertyOwner propertyOwner;
-    uint32 componentType;
-    const InspInfo* typeInfo;
-    const InspMember* memberInfo;
-
-    bool operator == (const UIStyleSheetPropertyTargetMember& other) const
-    {
-        return  propertyOwner == other.propertyOwner &&
-                componentType == other.componentType &&
-                typeInfo == other.typeInfo &&
-                memberInfo == other.memberInfo;
-    }
-};
-
-struct UIStyleSheetPropertyDescriptor
-{
-    FastName name;
-    VariantType defaultValue;
-    Vector<UIStyleSheetPropertyTargetMember> targetMembers;
-};
 
 class UIStyleSheetPropertyDataBase : 
     public StaticSingleton<UIStyleSheetPropertyDataBase >

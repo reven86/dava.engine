@@ -44,7 +44,6 @@ class UIStyleSheetYamlLoader
 public:
     UIStyleSheetYamlLoader();
 
-    void LoadFromYaml(const FilePath& path, Vector<UIStyleSheet*>* styleSheets);
     void LoadFromYaml(const YamlNode* rootNode, Vector<UIStyleSheet*>* styleSheets);
 };
 

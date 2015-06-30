@@ -40,7 +40,7 @@ class StyleSheetNode;
 namespace DAVA
 {
     class UIControl;
-    class UIStyleSheetProperty;
+    struct UIStyleSheetProperty;
 }
 
 class StyleSheetTransition : public ValueProperty
