@@ -73,9 +73,15 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <TargetName>$(ProjectName)d</TargetName>
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -115,7 +121,7 @@
       <AdditionalDependencies>nvtt.lib;nvcore.lib;nvimage.lib;nvmath.lib;posh.lib;squish.lib</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>..\Debug</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\Debug</AdditionalLibraryDirectories>
       <ForceSymbolReferences>
       </ForceSymbolReferences>
     </Lib>
@@ -163,7 +169,7 @@
     </Link>
     <Lib>
       <AdditionalDependencies>nvtt.lib;nvcore.lib;nvimage.lib;nvmath.lib;posh.lib;squish.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\Release</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\Release</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
       <AdditionalOptions>/NODEFAULTLIB:LIBCMT.lib %(AdditionalOptions)</AdditionalOptions>
