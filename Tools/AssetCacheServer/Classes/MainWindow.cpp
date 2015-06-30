@@ -221,6 +221,7 @@ void MainWindow::ShowTrayIcon()
     trayIcon = new QSystemTrayIcon(this);
     QIcon trayImage(":/icon/TrayIcon.png");
     trayIcon->setIcon(trayImage);
+    setWindowIcon(trayImage);
 
     CreateTrayIconActions();
     trayIcon->setContextMenu(trayActionsMenu);
