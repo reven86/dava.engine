@@ -186,6 +186,11 @@
 
 cmake_minimum_required( VERSION 2.6.3 )
 
+# Only interpret ``if()`` arguments as variables or keywords when unquoted.
+if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
+    cmake_policy(SET CMP0054 NEW)
+endif()
+
 if( NOT ANDROID_TOOLCHAIN_NAME )
     set( ANDROID_TOOLCHAIN_NAME arm-linux-androideabi-clang3.4 )
 
@@ -834,7 +839,7 @@ endif()
 
 # runtime choice (STL, rtti, exceptions)
 if( NOT ANDROID_STL )
-  set( ANDROID_STL gnustl_static )
+  set( ANDROID_STL gnustl_shared )
 endif()
 set( ANDROID_STL "${ANDROID_STL}" CACHE STRING "C++ runtime" )
 set( ANDROID_STL_FORCE_FEATURES ON CACHE BOOL "automatically configure rtti and exceptions support based on C++ runtime" )

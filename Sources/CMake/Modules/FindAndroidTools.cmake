@@ -1,7 +1,14 @@
 include ( GlobalVariables )
 
-find_program( ANT_COMMAND NAMES ant ${ANDROID_ANT}/ant ${ANDROID_ANT}/bin/ant  
-                                ant.bat ${ANDROID_ANT}/ant.bat ${ANDROID_ANT}/bin/ant.bat  )
+find_program( ANT_COMMAND NAMES ant ${ANDROID_ANT}/ant ${ANDROID_ANT}/bin/ant
+                                ant.bat ${ANDROID_ANT}/ant.bat ${ANDROID_ANT}/bin/ant.bat )
+
+if( NOT ANT_COMMAND)
+    message( "Error !!!: can't find ANT tool search in: ant ${ANDROID_ANT}/ant ${ANDROID_ANT}/bin/ant \
+    ant.bat ${ANDROID_ANT}/ant.bat ${ANDROID_ANT}/bin/ant.bat" )
+    message( "" )
+    exit()
+endif()
 
 if( NOT CMAKE_EXTRA_GENERATOR AND NOT ANT_COMMAND )
     message( "Error !!!: Please set the correct path to ANDROID_ANT in file DavaConfig.in"  )
@@ -17,7 +24,14 @@ if( NOT ANDROID_COMMAND )
     message( "Error !!!: Please set the correct path to ANDROID_SDK in file DavaConfig.in"  )
     message( " " )
     exit()
+endif()
 
+find_program( JAVACOMPILER_COMMAND NAMES javac $ENV{JAVA_HOME}/bin/javac )
+
+if ( NOT JAVACOMPILER_COMMAND )
+    message( "Error !!!: can't find javac tool, please point JAVA_HOME to JDK directory" )
+    message( "" )
+    exit()
 endif()
 
 message( ANT_COMMAND     " - ${ANT_COMMAND}" )

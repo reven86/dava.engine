@@ -7,8 +7,10 @@ if ( DAVA_MEMORY_PROFILER )
     endif()
 endif()
 
-if( ANDROID AND NOT CMAKE_TOOLCHAIN_FILE )
-    set( CMAKE_TOOLCHAIN_FILE ${DAVA_ROOT_DIR}/Sources/CMake/Toolchains/android.toolchain.cmake )
+if( ANDROID )
+    if ( NOT CMAKE_TOOLCHAIN_FILE )
+        set( CMAKE_TOOLCHAIN_FILE ${DAVA_ROOT_DIR}/Sources/CMake/Toolchains/android.toolchain.cmake )
+    endif()
     find_package( AndroidTools REQUIRED )
 
     if( WIN32 )
