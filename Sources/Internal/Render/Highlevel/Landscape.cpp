@@ -138,12 +138,12 @@ Landscape::Landscape()
     type = TYPE_LANDSCAPE;
     heightmap = new Heightmap();
     
-    solidAngleError = (20.0f * PI / 180.0f);
+    solidAngleError = (26.5f * PI / 180.0f);
     geometryAngleError = (1.0f * PI / 180.0f);
     absHeightError = 3.0f;
     
     zoomSolidAngleError = solidAngleError;
-    zoomGeometryAngleError = geometryAngleError;
+    zoomGeometryAngleError = (0.1f * PI / 180.0f);
     zoomAbsHeightError = 0.5f;
     
     zoomFov = 6.5f;
