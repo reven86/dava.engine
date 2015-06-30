@@ -1849,9 +1849,6 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSystem.h">
       <Filter>Internal\UI\Styles</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertiesTable.h">
-      <Filter>Internal\UI\Styles</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.h">
       <Filter>Internal\UI\Styles</Filter>
     </ClInclude>
@@ -1907,6 +1904,12 @@
       <Filter>Internal\UI\Styles</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSelectorChain.h">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyDataBase.h">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyTable.h">
       <Filter>Internal\UI\Styles</Filter>
     </ClInclude>
   </ItemGroup>
@@ -3349,9 +3352,6 @@
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSystem.cpp">
       <Filter>Internal\UI\Styles</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertiesTable.cpp">
-      <Filter>Internal\UI\Styles</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.cpp">
       <Filter>Internal\UI\Styles</Filter>
     </ClCompile>
@@ -3380,6 +3380,12 @@
       <Filter>Internal\UI\Styles</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSelectorChain.cpp">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyDataBase.cpp">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyTable.cpp">
       <Filter>Internal\UI\Styles</Filter>
     </ClCompile>
   </ItemGroup>

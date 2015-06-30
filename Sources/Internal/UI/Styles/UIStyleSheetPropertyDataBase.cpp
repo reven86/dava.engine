@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "UI/Styles/UIStyleSheetPropertiesTable.h"
+#include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 #include "UI/UIControl.h"
 #include "UI/UIButton.h"
 #include "UI/UIStaticText.h"

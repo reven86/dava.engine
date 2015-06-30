@@ -710,6 +710,8 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyDataBase.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyTable.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSelectorChain.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetStructs.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\TheoraPlayer.h" />
@@ -758,7 +760,6 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIYamlLoader.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\VectorSpinnerAdapter.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertiesTable.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.h" />
     <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClass.h" />
@@ -1213,6 +1214,8 @@
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\ScrollHelper.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyDataBase.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyTable.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSelectorChain.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetStructs.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\TheoraPlayer.cpp" />
@@ -1256,7 +1259,6 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UIWebView.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIYamlLoader.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertiesTable.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UnitTests\TestClass.cpp" />

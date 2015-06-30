@@ -26,48 +26,24 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __DAVAENGINE_UI_STYLESHEET_H__
-#define __DAVAENGINE_UI_STYLESHEET_H__
-
-#include "Base/BaseObject.h"
-#include "Base/BaseTypes.h"
-#include "Base/FastName.h"
-#include "FileSystem/VariantType.h"
-#include "UI/Styles/UIStyleSheetPropertyDataBase.h"
-#include "UI/Styles/UIStyleSheetStructs.h"
-#include "UI/Styles/UIStyleSheetSelectorChain.h"
 #include "UI/Styles/UIStyleSheetPropertyTable.h"
 
 namespace DAVA
 {
 
-class UIStyleSheet :
-    public BaseObject
+void UIStyleSheetPropertyTable::SetProperties(const Vector<UIStyleSheetProperty>& newProperties)
 {
-protected:
-    virtual ~UIStyleSheet();
-public:
-    UIStyleSheet();
+    properties = newProperties;
 
-    int32 GetScore() const;
+    std::sort(properties.begin(), properties.end(),
+        [](const UIStyleSheetProperty& first, const UIStyleSheetProperty& second) {
+        return first.propertyIndex < second.propertyIndex;
+    });
+}
 
-    const UIStyleSheetPropertyTable* GetPropertyTable() const;
-    const UIStyleSheetSelectorChain& GetSelectorChain() const;
+const Vector<UIStyleSheetProperty>& UIStyleSheetPropertyTable::GetProperties() const
+{
+    return properties;
+}
 
-    void SetPropertyTable(UIStyleSheetPropertyTable* properties);
-    void SetSelectorChain(const UIStyleSheetSelectorChain& selectorChain);
-private:
-    void RecalculateScore();
-
-    UIStyleSheetSelectorChain selectorChain;
-        
-    RefPtr<UIStyleSheetPropertyTable> properties;
-
-    int32 score;
-};
-
-};
-
-
-#endif
+}
