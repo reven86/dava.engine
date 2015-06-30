@@ -341,22 +341,21 @@ ENDIF()
 
 endmacro ()
 
-macro ( add_content_win_uap CONTENT_DIR )
-	#get a full path to content directory
-    set ( TARGET_CONTENT_DIR ${CMAKE_CURRENT_LIST_DIR}/${CONTENT_DIR} )
-	
+macro ( add_content_win_uap_single CONTENT_DIR )
+
 	#get all files from it and add to SRC
-	file ( GLOB_RECURSE CONTENT_LIST "${TARGET_CONTENT_DIR}/*")
+	file ( GLOB_RECURSE CONTENT_LIST "${CONTENT_DIR}/*")
 	list ( APPEND ADDED_CONTENT_SRC ${CONTENT_LIST} )
     set ( GROUP_PREFIX "Content\\" )
-	
+	get_filename_component ( CONTENT_DIR_PATH ${CONTENT_DIR} PATH )
+
 	#process all content files
 	FOREACH( ITEM ${CONTENT_LIST} )
 	    #message("Item: ${ITEM}")
 		
 		#add item to project source group "Content"
 		get_filename_component ( ITEM_PATH ${ITEM} PATH )
-		STRING( REGEX REPLACE "${CMAKE_CURRENT_LIST_DIR}/" "" ITEM_GROUP ${ITEM_PATH} )
+		STRING( REGEX REPLACE "${CONTENT_DIR_PATH}" "" ITEM_GROUP ${ITEM_PATH} )
 		STRING( REGEX REPLACE "/" "\\\\" ITEM_GROUP ${ITEM_GROUP} )
 		#message( "Item group: ${GROUP_PREFIX}${ITEM_GROUP}" )
 		source_group( ${GROUP_PREFIX}${ITEM_GROUP} FILES ${ITEM} )
@@ -369,7 +368,14 @@ macro ( add_content_win_uap CONTENT_DIR )
 	
 endmacro ()
 
-
+macro ( add_content_win_uap DEPLOYMENT_CONTENT_LIST )
+	
+	#process all content files
+	FOREACH( ITEM ${DEPLOYMENT_CONTENT_LIST} )
+		add_content_win_uap_single ( ${ITEM} )
+	ENDFOREACH()
+	
+endmacro ()
 
 
 

@@ -63,16 +63,6 @@ set( ADDED_SRC                  ${IOS_ADD_SRC} )
 #set( LIBRARIES jpeg )
 #add_subdirectory ( "${CMAKE_CURRENT_LIST_DIR}/../../Libs/libjpeg" ${CMAKE_CURRENT_BINARY_DIR}/libjpeg )
 
-if ( WINDOWS_UAP )
-    add_content_win_uap ( "Data" )
-    add_content_win_uap ( "DataSource" )
-	if ( ADDITIONAL_CONTENT )
-        add_content_win_uap ( ${ADDITIONAL_CONTENT} )
-    endif ()
-	
-    list( APPEND ADDED_SRC ${ADDED_CONTENT_SRC} )
-endif ()
-
 setup_main_executable()
 
 if (IOS)
