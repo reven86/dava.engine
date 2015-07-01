@@ -30,7 +30,8 @@
 #ifndef __DAVAENGINE_JOB_THREAD_H__
 #define __DAVAENGINE_JOB_THREAD_H__
 
-#include "Platform/Thread.h"
+#include "Concurrency/Semaphore.h"
+#include "Concurrency/Thread.h"
 #include "JobQueue.h"
 
 namespace DAVA

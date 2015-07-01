@@ -27,44 +27,47 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_PROXYNODE_H__
-#define __DAVAENGINE_PROXYNODE_H__
+#ifndef __SPRITES_PACKER_H__
+#define __SPRITES_PACKER_H__
 
-#include "Base/BaseObject.h"
-#include "Base/BaseTypes.h"
-#include "Base/BaseMath.h"
 #include "Render/RenderBase.h"
-#include "Scene3D/DataNode.h"
-#include "Scene3D/Entity.h"
+#include "TextureCompression/TextureConverter.h"
+#include <QObject>
+#include <atomic>
 
-namespace DAVA
-{
+namespace DAVA {
+    class ResourcePacker2D;
+}
+class QDir;
 
-/**
-    
- */
-class ProxyNode : public DataNode
+class SpritesPacker : public QObject
 {
-protected:
-	virtual ~ProxyNode();
-public:	
-	ProxyNode();
-	
-    virtual void SetNode(Entity * node);
-    virtual Entity * GetNode();
-    
-    // virtual updates
-	virtual void Update(float32 timeElapsed);
-	virtual void Draw();
-protected:
-    Entity * node;
+    Q_OBJECT
+    Q_PROPERTY(bool running READ IsRunning WRITE SetRunning NOTIFY RunningStateChanged);
+public:
+    SpritesPacker(QObject *parent = nullptr);
+    ~SpritesPacker();
+    void AddTask(const QDir &inputDir, const QDir &outputDir);
+    void ClearTasks();
+    Q_INVOKABLE void ReloadSprites(bool clearDirs, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
+public slots:
+    void Cancel();
+signals:
+    void Finished();
+
+private:
+    DAVA::ResourcePacker2D *resourcePacker2D;
+    QList < QPair<QDir, QDir> > tasks;
+
+    //properties section
+public:
+    bool IsRunning() const;
+public slots:
+    void SetRunning(bool arg);
+signals:
+    void RunningStateChanged(bool arg);
+private:
+    std::atomic<bool> running;
 };
 
-};
-
-#endif // __DAVAENGINE_PROXYNODE_H__
-
-
-
-
-
+#endif //__SPRITES_PACKER_H__

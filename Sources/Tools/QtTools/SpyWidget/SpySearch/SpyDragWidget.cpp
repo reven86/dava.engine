@@ -38,7 +38,7 @@
 
 SpyDragWidget::SpyDragWidget( QWidget* parent )
     : QLabel( parent )
-    , pix( QPixmap( ":/QtTools/wand.png" ) )
+    , pix( QPixmap( ":/QtTools/Icons/wand.png" ) )
 {
     setPixmap( pix );
     cur = QCursor( pix, 9, 8 );

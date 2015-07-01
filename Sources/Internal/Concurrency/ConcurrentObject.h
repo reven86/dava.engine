@@ -27,31 +27,53 @@
 =====================================================================================*/
 
 
-#include "Base/Atomic.h"
+#ifndef __DAVAENGINE_CONCURRENT_OBJECT_H__
+#define __DAVAENGINE_CONCURRENT_OBJECT_H__
 
-#if defined(__DAVAENGINE_ANDROID__)
+#include "Concurrency/LockGuard.h"
+#include "Concurrency/Mutex.h"
 
-#include <sys/atomics.h>
-
-namespace DAVA 
+namespace DAVA
 {
-
-int32 AtomicIncrement( int32 &value )
+    
+//------------------------------------------------------------------------------
+//Class for concurrent use of objects. Stored object protected by mutex
+//------------------------------------------------------------------------------
+template <typename T, typename MutexType = Mutex>
+class ConcurrentObject
 {
-    return (int32)(__atomic_inc((int *)&value) + 1);
-}
+    friend class Accessor;
+public:
+    template <typename... Args>
+    ConcurrentObject(Args&&... args) : object(std::forward<Args>(args)...) {}
 
-int32 AtomicDecrement( int32 &value )
-{
-	return (int32)(__atomic_dec((int *)&value) - 1);
-}
+    class Accessor
+    {
+    public:
+        Accessor(ConcurrentObject& object) 
+            : objectRef(object.object), guard(object.mutex) {}
 
-bool AtomicCompareAndSwap(const int32 oldVal, const int32 newVal, volatile int32 &value)
-{
-    return (oldVal == __atomic_cmpxchg(oldVal, newVal, &value));
-}
+        Accessor(Accessor&& other) 
+            : objectRef(other.objectRef), guard(std::move(other.guard)) {}
 
+        T& operator*() { return objectRef; }
+        T* operator->() { return &objectRef; }
+
+    private:
+        T& objectRef;
+        LockGuard<MutexType> guard;
+    };
+
+    Accessor GetAccessor() { return Accessor(*this); }
+
+    T Load() { return *Accessor(*this); }
+    void Store(const T& value) { *Accessor(*this) = value; }
+
+private:
+    T object;
+    MutexType mutex;
 };
 
-#endif //#if defined(__DAVAENGINE_ANDROID__)
+}
 
+#endif //  __DAVAENGINE_CONCURRENT_OBJECT_H__

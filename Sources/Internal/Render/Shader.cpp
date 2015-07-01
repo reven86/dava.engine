@@ -29,7 +29,7 @@
 
 #include "Render/Shader.h"
 #include "Render/RenderBase.h"
-#include "Platform/Thread.h"
+#include "Concurrency/Thread.h"
 #include "Render/RenderManager.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/FileSystem.h"
