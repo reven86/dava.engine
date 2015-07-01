@@ -65,7 +65,7 @@ EditorCore::EditorCore(QObject *parent)
         QAction* actionReloadSprites = dialogReloadSprites->GetActionReloadSprites();
         mainWindow->menuTools->addAction(actionReloadSprites);
         mainWindow->toolBarPlugins->addAction(actionReloadSprites);
-        connect(dialogReloadSprites, &DialogReloadSprites::OnStartClicked, this, &EditorCore::CloseAllDocuments);
+        connect(dialogReloadSprites, &DialogReloadSprites::StarPackProcess, this, &EditorCore::CloseAllDocuments);
     }
     // Console dock
     {
@@ -261,8 +261,8 @@ void EditorCore::UpdateLanguage()
 
 void EditorCore::OnNewItemSelected(const DAVA::VariantType &var)
 {
-    auto packageNode = var.AsPointer<PackageNode>();
-    documentGroup->GetActiveDocument()->SetSelectedItem(var);
+    /*auto packageNode = var.AsPointer<PackageNode>();
+    documentGroup->GetActiveDocument()->SetSelectedItem(var);*/
 }
 
 void EditorCore::OpenProject(const QString &path)

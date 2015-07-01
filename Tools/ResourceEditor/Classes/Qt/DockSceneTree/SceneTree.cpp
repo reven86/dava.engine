@@ -57,6 +57,7 @@
 #include "Commands2/SaveEntityAsAction.h"
 #include "Commands2/ConvertToShadowCommand.h"
 #include "Base/Result.h"
+#include "Base/JSONconverter.h"
 #include "FileSystem/VariantType.h"
 
 SceneTree::SceneTree(QWidget *parent /*= 0*/)
@@ -558,7 +559,7 @@ void SceneTree::RemoveSelection()
             {
                 selection.Rem(entity);
                 --i;
-                resultList << Result(Result::RESULT_WARNING, String("Can not remove entity ") + entity->GetName().c_str() +": entity is locked!", DAVA::VariantType(entity));
+                Logger::Warning(String(String("Can not remove entity ") + entity->GetName().c_str() + ": entity is locked!" + JSONconverter::FromPointer<Entity*>(entity)).c_str());
             }
         }
         
@@ -566,10 +567,6 @@ void SceneTree::RemoveSelection()
         {
             sceneEditor->structureSystem->Remove(selection);
         }
-    }
-    if (!resultList)
-    {
-        emit ErrorOccurred(resultList);
     }
 }
 

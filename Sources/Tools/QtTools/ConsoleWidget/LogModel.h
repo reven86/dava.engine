@@ -33,7 +33,6 @@ signals:
     void Logged(int ll, const QString &text);
 public slots:
     void AddMessage(int ll, const QString &text);
-    void AddMessageWithData(int ll, const QString &text, const QVariant &data);
 
 private:
     QStandardItem* CreateItem(int ll, const QString& text) const;

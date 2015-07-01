@@ -51,6 +51,7 @@ void InitPVRTexTool()
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    QApplication::setStyle("fusion");
     a.setOrganizationName("DAVA");
     a.setApplicationName("QuickEd");
 

@@ -11,7 +11,7 @@ LogModel::LogModel(QObject* parent)
     : QStandardItemModel(parent)
 {
     DAVA::Logger::AddCustomOutput(this);
-    connect(this, &LogModel::Logged, this, &LogModel::AddMessage);
+    connect(this, &LogModel::Logged, this, &LogModel::AddMessage, Qt::DirectConnection);
 }
 
 LogModel::~LogModel()
@@ -27,13 +27,6 @@ void LogModel::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text)
 void LogModel::AddMessage(int ll, const QString& text)
 {
     auto item = CreateItem(ll, normalize(text));
-    appendRow(item);
-}
-
-void LogModel::AddMessageWithData(int ll, const QString &text, const QVariant &data)
-{
-    auto item = CreateItem(ll, text);
-    item->setData(data);
     appendRow(item);
 }
 

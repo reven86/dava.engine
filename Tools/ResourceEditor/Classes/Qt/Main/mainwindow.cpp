@@ -28,6 +28,7 @@
 
 
 #include "DAVAEngine.h"
+#include "Base/JSONconverter.h"
 
 #include <QMessageBox>
 #include <QDesktopServices>
@@ -272,7 +273,7 @@ bool QtMainWindow::SaveSceneAs(SceneEditor2 *scene)
 {
 	bool ret = false;
 
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		DAVA::FilePath saveAsPath = scene->GetScenePath();
 		if(!saveAsPath.Exists())
@@ -590,7 +591,6 @@ void QtMainWindow::SetupDocks()
 	{
         LogWidget *logWidget = new LogWidget();
         connect(logWidget, &LogWidget::ItemClicked, this, &QtMainWindow::OnConsoleItemClicked);
-        connect(ui->sceneTree, &SceneTree::ErrorOccurred, logWidget, &LogWidget::AddResultList);
         const auto var = SettingsManager::Instance()->GetValue(Settings::Internal_LogWidget);
 
         const QByteArray arr(reinterpret_cast<const char*>(var.AsByteArray()), var.AsByteArraySize());
@@ -860,7 +860,7 @@ void QtMainWindow::SceneActivated(SceneEditor2 *scene)
 
     ui->actionSwitchesWithDifferentLODs->setChecked(false);
     ui->actionSnapCameraToLandscape->setChecked(false);
-    if(NULL != scene)
+    if(nullptr != scene)
     {
         if(scene->debugDrawSystem)
             ui->actionSwitchesWithDifferentLODs->setChecked(scene->debugDrawSystem->SwithcesWithDifferentLODsModeEnabled());
@@ -869,7 +869,7 @@ void QtMainWindow::SceneActivated(SceneEditor2 *scene)
             ui->actionSnapCameraToLandscape->setChecked(scene->cameraSystem->IsEditorCameraSnappedToLandscape());
         
         EntityGroup curSelection = scene->selectionSystem->GetSelection();
-        SceneSelectionChanged(scene, &curSelection, NULL);
+        SceneSelectionChanged(scene, &curSelection, nullptr);
     }
 }
 
@@ -981,7 +981,7 @@ void QtMainWindow::UpdateModificationActionsState()
     bool isMultiple = false;
 
     SceneEditor2 *scene = GetCurrentScene();
-    if(NULL != scene)
+    if(nullptr != scene)
     {
         EntityGroup selection = scene->selectionSystem->GetSelection();
         canModify = scene->modifSystem->ModifCanStart(selection);
@@ -1083,7 +1083,7 @@ void QtMainWindow::OnSceneSave()
 	}
 
 	SceneEditor2* scene = GetCurrentScene();
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		SaveScene(scene);
 	}
@@ -1097,7 +1097,7 @@ void QtMainWindow::OnSceneSaveAs()
 	}
 
 	SceneEditor2* scene = GetCurrentScene();
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		SaveSceneAs(scene);
 	}
@@ -1133,7 +1133,7 @@ void QtMainWindow::OnSceneSaveAsInternal(bool saveWithCompressed)
         return;
     }
     
-    QString path = FileDialog::getExistingDirectory(NULL, QString("Open Folder"), QString("/"));
+    QString path = FileDialog::getExistingDirectory(nullptr, QString("Open Folder"), QString("/"));
     if(path.isEmpty())
     {
         return;
@@ -1189,7 +1189,7 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request *closeRequest)
         return;
     }
 
-    int answer = QMessageBox::warning(NULL, "Scene was changed", "Do you want to save changes, made to scene?", QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Cancel);
+    int answer = QMessageBox::warning(nullptr, "Scene was changed", "Do you want to save changes, made to scene?", QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Cancel);
     if(answer == QMessageBox::Cancel)
     {
         closeRequest->Cancel();
@@ -1281,7 +1281,7 @@ void QtMainWindow::OnRecentProjectsTriggered(QAction *recentAction)
 void QtMainWindow::OnUndo()
 {
 	SceneEditor2* scene = GetCurrentScene();
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		scene->Undo();
 	}
@@ -1290,7 +1290,7 @@ void QtMainWindow::OnUndo()
 void QtMainWindow::OnRedo()
 {
 	SceneEditor2* scene = GetCurrentScene();
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		scene->Redo();
 	}
@@ -1299,7 +1299,7 @@ void QtMainWindow::OnRedo()
 void QtMainWindow::OnEditorGizmoToggle(bool show)
 {
 	SceneEditor2* scene = GetCurrentScene();
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		scene->SetHUDVisible(show);
 	}
@@ -1313,7 +1313,7 @@ void QtMainWindow::OnViewLightmapCanvas(bool show)
         SettingsManager::SetValue(Settings::Internal_MaterialsShowLightmapCanvas, DAVA::VariantType(showCanvas));
     }
 
-    if(NULL != GetCurrentScene())
+    if(nullptr != GetCurrentScene())
     {
         GetCurrentScene()->materialSystem->SetLightmapCanvasVisible(showCanvas);
     }
@@ -1322,7 +1322,7 @@ void QtMainWindow::OnViewLightmapCanvas(bool show)
 void QtMainWindow::OnAllowOnSceneSelectionToggle(bool allow)
 {
 	SceneEditor2* scene = GetCurrentScene();
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		scene->selectionSystem->SetSelectionAllowed(allow);
 	}
@@ -1361,7 +1361,7 @@ void QtMainWindow::OnReloadSprites()
 void QtMainWindow::OnSelectMode()
 {
 	SceneEditor2* scene = GetCurrentScene();
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		scene->modifSystem->SetModifMode(ST_MODIF_OFF);
 		LoadModificationState(scene);
@@ -1371,7 +1371,7 @@ void QtMainWindow::OnSelectMode()
 void QtMainWindow::OnMoveMode()
 {
 	SceneEditor2* scene = GetCurrentScene();
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		scene->modifSystem->SetModifMode(ST_MODIF_MOVE);
 		LoadModificationState(scene);
@@ -1381,7 +1381,7 @@ void QtMainWindow::OnMoveMode()
 void QtMainWindow::OnRotateMode()
 {
 	SceneEditor2* scene = GetCurrentScene();
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		scene->modifSystem->SetModifMode(ST_MODIF_ROTATE);
 		LoadModificationState(scene);
@@ -1391,7 +1391,7 @@ void QtMainWindow::OnRotateMode()
 void QtMainWindow::OnScaleMode()
 {
 	SceneEditor2* scene = GetCurrentScene();
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		scene->modifSystem->SetModifMode(ST_MODIF_SCALE);
 		LoadModificationState(scene);
@@ -1401,7 +1401,7 @@ void QtMainWindow::OnScaleMode()
 void QtMainWindow::OnPivotCenterMode()
 {
 	SceneEditor2* scene = GetCurrentScene();
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		scene->selectionSystem->SetPivotPoint(ST_PIVOT_ENTITY_CENTER);
 		LoadModificationState(scene);
@@ -1411,7 +1411,7 @@ void QtMainWindow::OnPivotCenterMode()
 void QtMainWindow::OnPivotCommonMode()
 {
 	SceneEditor2* scene = GetCurrentScene();
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		scene->selectionSystem->SetPivotPoint(ST_PIVOT_COMMON_CENTER);
 		LoadModificationState(scene);
@@ -1433,10 +1433,10 @@ void QtMainWindow::OnManualModifMode()
 void QtMainWindow::OnPlaceOnLandscape()
 {
 	SceneEditor2* scene = GetCurrentScene();
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		Entity *landscapeEntity = FindLandscapeEntity(scene);
-		if (landscapeEntity == NULL || GetLandscape(landscapeEntity) == NULL)
+		if (landscapeEntity == nullptr || GetLandscape(landscapeEntity) == nullptr)
 		{
 			ShowErrorDialog(ResourceEditor::NO_LANDSCAPE_ERROR_MESSAGE);
 			return;
@@ -1450,10 +1450,10 @@ void QtMainWindow::OnPlaceOnLandscape()
 void QtMainWindow::OnSnapToLandscape()
 {
 	SceneEditor2* scene = GetCurrentScene();
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		Entity *landscapeEntity = FindLandscapeEntity(scene);
-		if (landscapeEntity == NULL || GetLandscape(landscapeEntity) == NULL)
+		if (landscapeEntity == nullptr || GetLandscape(landscapeEntity) == nullptr)
 		{
 			ShowErrorDialog(ResourceEditor::NO_LANDSCAPE_ERROR_MESSAGE);
 			ui->actionModifySnapToLandscape->setChecked(false);
@@ -1468,7 +1468,7 @@ void QtMainWindow::OnSnapToLandscape()
 void QtMainWindow::OnResetTransform()
 {
 	SceneEditor2* scene = GetCurrentScene();
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		EntityGroup selection = scene->selectionSystem->GetSelection();
 		scene->modifSystem->ResetTransform(selection);
@@ -1478,7 +1478,7 @@ void QtMainWindow::OnResetTransform()
 void QtMainWindow::OnLockTransform()
 {
 	SceneEditor2* scene = GetCurrentScene();
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		EntityGroup selection = scene->selectionSystem->GetSelection();
 		scene->modifSystem->LockTransform(selection, true);
@@ -1490,7 +1490,7 @@ void QtMainWindow::OnLockTransform()
 void QtMainWindow::OnUnlockTransform()
 {
 	SceneEditor2* scene = GetCurrentScene();
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		EntityGroup selection = scene->selectionSystem->GetSelection();
 		scene->modifSystem->LockTransform(selection, false);
@@ -1502,7 +1502,7 @@ void QtMainWindow::OnUnlockTransform()
 void QtMainWindow::OnCenterPivotPoint()
 {
     SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-	if(NULL != curScene)
+	if(nullptr != curScene)
 	{
 		EntityGroup selection = curScene->selectionSystem->GetSelection();
 		curScene->modifSystem->MovePivotCenter(selection);
@@ -1512,7 +1512,7 @@ void QtMainWindow::OnCenterPivotPoint()
 void QtMainWindow::OnZeroPivotPoint()
 {
     SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-	if(NULL != curScene)
+	if(nullptr != curScene)
 	{
 		EntityGroup selection = curScene->selectionSystem->GetSelection();
 		curScene->modifSystem->MovePivotZero(selection);
@@ -1529,20 +1529,20 @@ void QtMainWindow::OnTextureBrowser()
 	SceneEditor2* sceneEditor = GetCurrentScene();
 	EntityGroup selectedEntities;
 
-	if(NULL != sceneEditor)
+	if(nullptr != sceneEditor)
 	{
 		selectedEntities = sceneEditor->selectionSystem->GetSelection();
 	}
 
 	TextureBrowser::Instance()->show();
 	TextureBrowser::Instance()->sceneActivated(sceneEditor);
-	TextureBrowser::Instance()->sceneSelectionChanged(sceneEditor, &selectedEntities, NULL); 
+	TextureBrowser::Instance()->sceneSelectionChanged(sceneEditor, &selectedEntities, nullptr); 
 }
 
 void QtMainWindow::OnSceneLightMode()
 {
 	SceneEditor2* scene = GetCurrentScene();
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		if(ui->actionEnableCameraLight->isChecked())
 		{
@@ -1573,7 +1573,7 @@ void QtMainWindow::OnImageSplitter()
 
 void QtMainWindow::OnSwitchEntityDialog()
 {
-	if(NULL != addSwitchEntityDialog)
+	if(nullptr != addSwitchEntityDialog)
 	{
 		return;
 	}
@@ -1589,7 +1589,7 @@ void QtMainWindow::UnmodalDialogFinished(int)
 	disconnect(sender, SIGNAL(finished(int)), this, SLOT(UnmodalDialogFinished(int)));
 	if(sender == addSwitchEntityDialog)
 	{
-		addSwitchEntityDialog = NULL;
+		addSwitchEntityDialog = nullptr;
 	}
 }
 
@@ -1755,7 +1755,7 @@ void QtMainWindow::On2DSpriteDialog()
     FilePath projectPath = ProjectManager::Instance()->CurProjectPath();
     projectPath += "Data/Gfx/";
 
-    QString filePath = FileDialog::getOpenFileName(NULL, QString("Open sprite"), QString::fromStdString(projectPath.GetAbsolutePathname()), QString("Sprite File (*.txt)"));
+    QString filePath = FileDialog::getOpenFileName(nullptr, QString("Open sprite"), QString::fromStdString(projectPath.GetAbsolutePathname()), QString("Sprite File (*.txt)"));
     if (filePath.isEmpty())
         return;        
     filePath.remove(filePath.size() - 4, 4);
@@ -1807,7 +1807,7 @@ void QtMainWindow::OnOpenHelp()
 
 void QtMainWindow::LoadViewState(SceneEditor2 *scene)
 {
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		ui->actionShowEditorGizmo->setChecked(scene->IsHUDVisible());
 		ui->actionOnSceneSelection->setChecked(scene->selectionSystem->IsSelectionAllowed());
@@ -1822,7 +1822,7 @@ void QtMainWindow::LoadViewState(SceneEditor2 *scene)
 
 void QtMainWindow::LoadModificationState(SceneEditor2 *scene)
 {
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		ui->actionModifySelect->setChecked(false);
 		ui->actionModifyMove->setChecked(false);
@@ -1873,7 +1873,7 @@ void QtMainWindow::LoadModificationState(SceneEditor2 *scene)
 
 void QtMainWindow::LoadUndoRedoState(SceneEditor2 *scene)
 {
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		ui->actionUndo->setEnabled(scene->CanUndo());
 		ui->actionRedo->setEnabled(scene->CanRedo());
@@ -1882,7 +1882,7 @@ void QtMainWindow::LoadUndoRedoState(SceneEditor2 *scene)
 
 void QtMainWindow::LoadEditorLightState(SceneEditor2 *scene)
 {
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		ui->actionEnableCameraLight->setChecked(scene->editorLightSystem->GetCameraLightEnabled());
 	}
@@ -1890,7 +1890,7 @@ void QtMainWindow::LoadEditorLightState(SceneEditor2 *scene)
 
 void QtMainWindow::LoadShadowBlendModeState(SceneEditor2* scene)
 {
-	if(NULL != scene)
+	if(nullptr != scene)
 	{
 		const ShadowPassBlendMode::eBlend blend = scene->GetShadowBlendMode();
 
@@ -1947,7 +1947,7 @@ void QtMainWindow::OnShadowBlendModeAlpha()
 	SceneEditor2* scene = GetCurrentScene();
     if(!scene) return;
 
-	if(NULL == FindLandscape(scene))
+	if(nullptr == FindLandscape(scene))
 	{
 		ShowErrorDialog(ResourceEditor::NO_LANDSCAPE_ERROR_MESSAGE);
 		return;
@@ -1960,7 +1960,7 @@ void QtMainWindow::OnShadowBlendModeMultiply()
 {
 	SceneEditor2* scene = GetCurrentScene();
     if(!scene) return;
-	if(NULL == FindLandscape(scene))
+	if(nullptr == FindLandscape(scene))
 	{
 		ShowErrorDialog(ResourceEditor::NO_LANDSCAPE_ERROR_MESSAGE);
 		return;
@@ -2083,7 +2083,7 @@ void QtMainWindow::OnConvertModifiedTextures()
 	{
 		DAVA::TextureDescriptor *descriptor = it->first->GetDescriptor();
 		
-		if(NULL == descriptor)
+		if(nullptr == descriptor)
 		{
 			continue;
 		}
@@ -2322,19 +2322,19 @@ bool QtMainWindow::SelectCustomColorsTexturePath()
 	}
 	FilePath scenePath = sceneEditor->GetScenePath().GetDirectory();
 	
-	QString filePath = FileDialog::getSaveFileName(NULL,
+	QString filePath = FileDialog::getSaveFileName(nullptr,
 													 QString(ResourceEditor::CUSTOM_COLORS_SAVE_CAPTION.c_str()),
 													 QString(scenePath.GetAbsolutePathname().c_str()),
 													 PathDescriptor::GetPathDescriptor(PathDescriptor::PATH_IMAGE).fileFilter);
 	FilePath selectedPathname = PathnameToDAVAStyle(filePath);
 	Entity* landscape = FindLandscapeEntity(sceneEditor);
-	if (selectedPathname.IsEmpty() || NULL == landscape)
+	if (selectedPathname.IsEmpty() || nullptr == landscape)
 	{
 		return false;
 	}
 
 	KeyedArchive* customProps = GetOrCreateCustomProperties(landscape)->GetArchive();
-	if(NULL == customProps)
+	if(nullptr == customProps)
 	{
 		return false;
 	}
@@ -2786,7 +2786,7 @@ void QtMainWindow::OnMaterialLightViewChanged(bool)
         SettingsManager::SetValue(Settings::Internal_MaterialsLightViewMode, DAVA::VariantType(newMode));
     }
 
-    if(NULL != GetCurrentScene())
+    if(nullptr != GetCurrentScene())
     {
         GetCurrentScene()->materialSystem->SetLightViewMode(newMode);
     }
@@ -2919,7 +2919,7 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
 	for(int i = firstTab; i < lastTab; ++i)
 	{
 		SceneEditor2 *tabEditor = sceneWidget->GetTabScene(i);
-		if(NULL != tabEditor)
+		if(nullptr != tabEditor)
 		{
 			const CommandStack *cmdStack = tabEditor->GetCommandStack();
 			for(size_t j = cmdStack->GetCleanIndex(); j < cmdStack->GetNextIndex(); j++)
@@ -3086,8 +3086,8 @@ void QtMainWindow::DebugColorPicker()
 void QtMainWindow::DebugDeviceList()
 {
     // Create controller and window if they are not exist
-    // Pointer deviceListController automatically becomes NULL on window destruction
-    if (NULL == deviceListController)
+    // Pointer deviceListController automatically becomes nullptr on window destruction
+    if (nullptr == deviceListController)
     {
         DeviceListWidget *w = new DeviceListWidget(this);
         w->setAttribute(Qt::WA_DeleteOnClose);
@@ -3098,12 +3098,20 @@ void QtMainWindow::DebugDeviceList()
     deviceListController->ShowView();
 }
 
-void QtMainWindow::OnConsoleItemClicked(const VariantType &var)
+void QtMainWindow::OnConsoleItemClicked(const JSONconverter &conv)
 {
-    auto entity = var.AsPointer<DAVA::Entity>();
-    if (nullptr != entity)
+    if (conv.CanConvert<Entity*>())
     {
-        GetCurrentScene()->selectionSystem->SetSelection(entity);
+        auto vec = conv.GetPointers<Entity*>();
+        if (vec.empty())
+        {
+            return;
+        }
+        GetCurrentScene()->selectionSystem->SetSelection(vec.at(0)); //TODO::replace with SetSelection(vector<Entity*>)
+        for (size_t i = 1; i < vec.size(); ++i)
+        {
+            GetCurrentScene()->selectionSystem->AddSelection(vec.at(i));
+        }
     }
 }
 

@@ -7,6 +7,7 @@
 #include <QTime>
 #include "ui_LogWidget.h"
 #include "Base/Result.h"
+#include "Base/JSONconverter.h"
 
 namespace Ui
 {
@@ -32,7 +33,7 @@ public:
 public slots:
     void AddResultList(const DAVA::ResultList &resultList);
 signals:
-    void ItemClicked(const DAVA::VariantType data);
+    void ItemClicked(const DAVA::JSONconverter& data);
 private slots:
     void OnTextFilterChanged(const QString& text);
     void OnCopy();
@@ -50,7 +51,7 @@ private:
     bool onBottom;
 };
 
-Q_DECLARE_METATYPE(DAVA::VariantType);
+Q_DECLARE_METATYPE(DAVA::JSONconverter);
 
 
 

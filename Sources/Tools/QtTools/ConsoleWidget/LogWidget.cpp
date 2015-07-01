@@ -10,12 +10,14 @@
 #include "LogFilterModel.h"
 #include "LogDelegate.h"
 
+#include "Base/JSONconverter.h"
+
 
 LogWidget::LogWidget(QWidget* parent)
     : QWidget(parent)
     , onBottom(true)
 {
-    qRegisterMetaType<DAVA::VariantType>("DAVA::VariantType");
+    qRegisterMetaType<DAVA::JSONconverter>("DAVA::JSONconverter");
     setupUi(this);
     connect(log, &QListView::clicked, this, &LogWidget::OnClicked);
     time.start();
@@ -58,9 +60,17 @@ void LogWidget::Deserialize(const QByteArray& data)
     QDataStream stream(data);
     QString filterString;
     stream >> filterString;
-    logFilterModel->SetFilterString(filterString);
+    if (stream.status() == QDataStream::ReadCorruptData)
+    {
+        return;
+    }
     QVariantList logLevels;
     stream >> logLevels;
+    if (stream.status() == QDataStream::ReadCorruptData)
+    {
+        return;
+    }
+    logFilterModel->SetFilterString(filterString);
     logFilterModel->SetFilters(logLevels);
     filter->selectUserData(logLevels);
 }
@@ -82,7 +92,7 @@ void LogWidget::AddResultList(const DAVA::ResultList &resultList)
                 level = DAVA::Logger::LEVEL_ERROR;
             break;
         }
-        logModel->AddMessageWithData(level, QString::fromStdString(result.message), QVariant::fromValue<DAVA::VariantType>(result.data));
+        logModel->AddMessage(level, QString::fromStdString(result.message));
     }
 }
 
@@ -174,12 +184,8 @@ void LogWidget::OnClicked(const QModelIndex &index)
     const auto item = logModel->itemFromIndex(pIndex);
     if (nullptr != item)
     {
-        auto data = item->data();
-        if (data.canConvert<DAVA::VariantType>())
-        {
-            DAVA::VariantType var = data.value<DAVA::VariantType>();
-            emit ItemClicked(var);
-        }
+        DAVA::String str(item->text().toStdString());
+        emit ItemClicked(DAVA::JSONconverter(str));
     }
 }
 

@@ -56,7 +56,7 @@ class VersionInfoWidget;
 class DeviceListController;
 namespace DAVA
 {
-    class VariantType;
+    class JSONconverter;
 }
 
 
@@ -264,8 +264,7 @@ private slots:
     void DebugVersionInfo();
     void DebugColorPicker();
     void DebugDeviceList();
-
-    void OnConsoleItemClicked(const DAVA::VariantType &var);
+    void OnConsoleItemClicked(const DAVA::JSONconverter &conv);
 
 private:
 	Ui::MainWindow *ui;

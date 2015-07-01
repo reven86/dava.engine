@@ -88,13 +88,13 @@ const DAVA::FilePath &Document::GetPackageFilePath() const
 
 void Document::SetSelectedItem(const VariantType &var)
 {
-    auto packageNode = var.AsPointer<PackageBaseNode>();
+    /*auto packageNode = var.AsPointer<PackageBaseNode>();
     if (nullptr != packageNode)
     {
         QList<ControlNode*> nodes;
         nodes << reinterpret_cast<ControlNode*>(packageNode);
         sharedData->SetData("activatedControls", QVariant::fromValue(nodes));
-    }
+    }*/
 }
 
 void Document::RefreshAllControlProperties()
