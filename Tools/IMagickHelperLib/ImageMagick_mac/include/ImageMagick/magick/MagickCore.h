@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -44,19 +44,10 @@ extern "C" {
 # endif
 #endif
 
-#define MAGICKCORE_CHECK_VERSION(major,minor,micro) \
-  ((MAGICKCORE_MAJOR_VERSION > (major)) || \
-    ((MAGICKCORE_MAJOR_VERSION == (major)) && \
-     (MAGICKCORE_MINOR_VERSION > (minor))) || \
-    ((MAGICKCORE_MAJOR_VERSION == (major)) && \
-     (MAGICKCORE_MINOR_VERSION == (minor)) && \
-     (MAGICKCORE_MICRO_VERSION >= (micro))))
-
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <time.h>
 
 #if defined(WIN32) || defined(WIN64)
 #  define MAGICKCORE_WINDOWS_SUPPORT
@@ -64,7 +55,91 @@ extern "C" {
 #  define MAGICKCORE_POSIX_SUPPORT
 #endif 
 
-#include "magick/method-attribute.h"
+#if defined(MAGICKCORE_WINDOWS_SUPPORT) || defined(__CYGWIN__) || defined(__MINGW32__)
+# define MagickPrivate
+# if defined(_MT) && defined(_DLL) && !defined(_MAGICKDLL_) && !defined(_LIB)
+#  define _MAGICKDLL_
+# endif
+# if defined(_MAGICKDLL_)
+#  if defined(_VISUALC_)
+#   pragma warning( disable: 4273 )  /* Disable the dll linkage warnings */
+#  endif
+#  if !defined(_MAGICKLIB_)
+#   if defined(__GNUC__)
+#    define MagickExport __attribute__ ((dllimport))
+#   else
+#    define MagickExport __declspec(dllimport)
+#   endif
+#   if defined(_VISUALC_)
+#    pragma message( "MagickCore lib DLL import interface" )
+#   endif
+#  else
+#   if defined(__GNUC__)
+#    define MagickExport __attribute__ ((dllexport))
+#   else
+#    define MagickExport __declspec(dllexport)
+#   endif
+#   if defined(_VISUALC_)
+#    pragma message( "MagickCore lib DLL export interface" )
+#   endif
+#  endif
+# else
+#  define MagickExport
+#  if defined(_VISUALC_)
+#   pragma message( "MagickCore lib static interface" )
+#  endif
+# endif
+
+# if defined(_DLL) && !defined(_LIB)
+#   if defined(__GNUC__)
+#    define ModuleExport __attribute__ ((dllexport))
+#   else
+#    define ModuleExport __declspec(dllexport)
+#   endif
+#  if defined(_VISUALC_)
+#   pragma message( "MagickCore module DLL export interface" )
+#  endif
+# else
+#  define ModuleExport
+#  if defined(_VISUALC_)
+#   pragma message( "MagickCore module static interface" )
+#  endif
+
+# endif
+# define MagickGlobal __declspec(thread)
+# if defined(_VISUALC_)
+#  pragma warning(disable : 4018)
+#  pragma warning(disable : 4068)
+#  pragma warning(disable : 4244)
+#  pragma warning(disable : 4142)
+#  pragma warning(disable : 4800)
+#  pragma warning(disable : 4786)
+#  pragma warning(disable : 4996)
+# endif
+#else
+# if __GNUC__ >= 4
+#  define MagickExport __attribute__ ((visibility ("default")))
+#  define MagickPrivate  __attribute__ ((visibility ("hidden")))
+# else
+#   define MagickExport
+#   define MagickPrivate
+# endif
+# define ModuleExport  MagickExport
+# define MagickGlobal
+#endif
+
+#if !defined(MaxTextExtent)
+#  define MaxTextExtent  4096
+#endif
+#define MagickSignature  0xabacadabUL
+
+#if !defined(magick_attribute)
+#  if !defined(__GNUC__)
+#    define magick_attribute(x)  /* nothing */
+#  else
+#    define magick_attribute  __attribute__
+#  endif
+#endif
 
 #if defined(MAGICKCORE_NAMESPACE_PREFIX)
 # include "magick/methods.h"
@@ -78,7 +153,6 @@ extern "C" {
 #include "magick/blob.h"
 #include "magick/cache.h"
 #include "magick/cache-view.h"
-#include "magick/channel.h"
 #include "magick/cipher.h"
 #include "magick/client.h"
 #include "magick/coder.h"
@@ -95,7 +169,6 @@ extern "C" {
 #include "magick/deprecate.h"
 #include "magick/display.h"
 #include "magick/distort.h"
-#include "magick/distribute-cache.h"
 #include "magick/draw.h"
 #include "magick/effect.h"
 #include "magick/enhance.h"
@@ -123,11 +196,9 @@ extern "C" {
 #include "magick/monitor.h"
 #include "magick/montage.h"
 #include "magick/morphology.h"
-#include "magick/opencl.h"
 #include "magick/option.h"
 #include "magick/paint.h"
 #include "magick/pixel.h"
-#include "magick/pixel-accessor.h"
 #include "magick/policy.h"
 #include "magick/prepress.h"
 #include "magick/profile.h"
@@ -153,7 +224,6 @@ extern "C" {
 #include "magick/type.h"
 #include "magick/utility.h"
 #include "magick/version.h"
-#include "magick/vision.h"
 #include "magick/xml-tree.h"
 #include "magick/xwindow.h"
 

@@ -1,12 +1,12 @@
 /*
-  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
-
+  
   You may not use this file except in compliance with the License.
   obtain a copy of the License at
-
+  
     http://www.imagemagick.org/script/license.php
-
+  
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,58 +18,30 @@
 #ifndef _MAGICKCORE_COLORSPACE_PRIVATE_H
 #define _MAGICKCORE_COLORSPACE_PRIVATE_H
 
-#include "magick/image.h"
-#include "magick/image-private.h"
-#include "magick/pixel.h"
-#include "magick/pixel-accessor.h"
-
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
 
-static inline void ConvertCMYKToRGB(MagickPixelPacket *pixel)
-{
-  pixel->red=((QuantumRange-(QuantumScale*pixel->red*(QuantumRange-
-    pixel->index)+pixel->index)));
-  pixel->green=((QuantumRange-(QuantumScale*pixel->green*(QuantumRange-
-    pixel->index)+pixel->index)));
-  pixel->blue=((QuantumRange-(QuantumScale*pixel->blue*(QuantumRange-
-    pixel->index)+pixel->index)));
-}
+#include <magick/image.h>
+#include <magick/image-private.h>
+#include <magick/pixel.h>
 
 static inline void ConvertRGBToCMYK(MagickPixelPacket *pixel)
 {
   MagickRealType
     black,
-    blue,
     cyan,
-    green,
     magenta,
-    red,
     yellow;
-
-  if (pixel->colorspace != sRGBColorspace)
-    {
-      red=QuantumScale*pixel->red;
-      green=QuantumScale*pixel->green;
-      blue=QuantumScale*pixel->blue;
-    }
-  else
-    {
-      red=QuantumScale*DecodePixelGamma(pixel->red);
-      green=QuantumScale*DecodePixelGamma(pixel->green);
-      blue=QuantumScale*DecodePixelGamma(pixel->blue);
-    }
-  if ((fabs((double) red) < MagickEpsilon) &&
-      (fabs((double) green) < MagickEpsilon) &&
-      (fabs((double) blue) < MagickEpsilon))
+                                                                                
+  if ((pixel->red == 0) && (pixel->green == 0) && (pixel->blue == 0))
     {
       pixel->index=(MagickRealType) QuantumRange;
       return;
     }
-  cyan=(MagickRealType) (1.0-red);
-  magenta=(MagickRealType) (1.0-green);
-  yellow=(MagickRealType) (1.0-blue);
+  cyan=(MagickRealType) (1.0-QuantumScale*pixel->red);
+  magenta=(MagickRealType) (1.0-QuantumScale*pixel->green);
+  yellow=(MagickRealType) (1.0-QuantumScale*pixel->blue);
   black=cyan;
   if (magenta < black)
     black=magenta;
@@ -85,14 +57,6 @@ static inline void ConvertRGBToCMYK(MagickPixelPacket *pixel)
   pixel->index=QuantumRange*black;
 }
 
-static inline MagickBooleanType IsCMYKColorspace(
-  const ColorspaceType colorspace)
-{
-  if (colorspace == CMYKColorspace)
-    return(MagickTrue);
-  return(MagickFalse);
-}
-
 static inline MagickBooleanType IsGrayColorspace(
   const ColorspaceType colorspace)
 {
@@ -102,28 +66,12 @@ static inline MagickBooleanType IsGrayColorspace(
   return(MagickFalse);
 }
 
-static inline MagickBooleanType IsRGBColorspace(const ColorspaceType colorspace)
-{
-  if ((colorspace == RGBColorspace) || (colorspace == scRGBColorspace))
-    return(MagickTrue);
-  return(MagickFalse);
-}
-
-static inline MagickBooleanType IssRGBColorspace(
+static inline MagickBooleanType IsRGBColorspace(
   const ColorspaceType colorspace)
 {
-  if ((colorspace == sRGBColorspace) || (colorspace == TransparentColorspace))
-    return(MagickTrue);
-  return(MagickFalse);
-}
-
-static inline MagickBooleanType IssRGBCompatibleColorspace(
-  const ColorspaceType colorspace)
-{
-  if ((colorspace == sRGBColorspace) || (colorspace == RGBColorspace) ||
-      (colorspace == scRGBColorspace) ||
-      (colorspace == TransparentColorspace) ||
-      (IsGrayColorspace(colorspace) != MagickFalse))
+  if ((IsGrayColorspace(colorspace) != MagickFalse) ||
+      (colorspace == RGBColorspace) || (colorspace == sRGBColorspace) ||
+      (colorspace == TransparentColorspace))
     return(MagickTrue);
   return(MagickFalse);
 }

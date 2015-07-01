@@ -1602,10 +1602,6 @@ private:
 };
 
 // Stroke dasharray
-//
-// dasharray_ is an allocated array terminated by value 0.0 or 0.
-// The array is copied so the original does not need to be preserved.
-// Pass a null pointer to clear an existing dash array setting.
 class MagickPPExport DrawableDashArray : public DrawableBase
 {
 public:
@@ -1985,86 +1981,6 @@ public:
 private:
   DecorationType _decoration;
 };
-
-  // Render text right-to-left or left-to-right.
-  class MagickPPExport DrawableTextDirection : public DrawableBase
-  {
-  public:
-
-    DrawableTextDirection(DirectionType direction_);
-
-    ~DrawableTextDirection(void);
-
-    void operator()(MagickCore::DrawingWand *context_) const;
-
-    void direction(DirectionType direction_);
-    DirectionType direction(void) const;
-
-    DrawableBase* copy() const;
-
-  private:
-    DirectionType _direction;
-  };
-
-  // Specify text inter-line spacing
-  class MagickPPExport DrawableTextInterlineSpacing : public DrawableBase
-  {
-  public:
-
-    DrawableTextInterlineSpacing(double spacing_);
-
-    ~DrawableTextInterlineSpacing(void);
-
-    void operator()(MagickCore::DrawingWand *context_) const;
-
-    void spacing(double spacing_);
-    double spacing(void) const;
-
-    DrawableBase* copy() const;
-
-  private:
-    double _spacing;
-  };
-
-  // Specify text inter-word spacing
-  class MagickPPExport DrawableTextInterwordSpacing : public DrawableBase
-  {
-  public:
-
-    DrawableTextInterwordSpacing(double spacing_);
-
-    ~DrawableTextInterwordSpacing(void);
-
-    void operator()(MagickCore::DrawingWand *context_) const;
-
-    void spacing(double spacing_);
-    double spacing(void) const;
-
-    DrawableBase *copy() const;
-
-  private:
-    double _spacing;
-  };
-
-  // Specify text kerning
-  class MagickPPExport DrawableTextKerning : public DrawableBase
-  {
-  public:
-
-    DrawableTextKerning(double kerning_);
-
-    ~DrawableTextKerning(void);
-
-    void operator()(MagickCore::DrawingWand *context_) const;
-
-    void kerning(double kerning_);
-    double kerning(void) const;
-
-    DrawableBase *copy() const;
-
-  private:
-    double _kerning;
-  };
 
 // Text undercolor box
 class MagickPPExport DrawableTextUnderColor : public DrawableBase

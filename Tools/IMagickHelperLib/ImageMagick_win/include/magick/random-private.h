@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@
 #ifndef _MAGICKCORE_RANDOM_PRIVATE_H
 #define _MAGICKCORE_RANDOM_PRIVATE_H
 
-#include "magick/thread-private.h"
-
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
+
+#include "magick/thread-private.h"
 
 static inline RandomInfo **DestroyRandomInfoThreadSet(
   RandomInfo **random_info)
@@ -31,7 +31,7 @@ static inline RandomInfo **DestroyRandomInfoThreadSet(
     i;
 
   assert(random_info != (RandomInfo **) NULL);
-  for (i=0; i < (ssize_t) GetMagickResourceLimit(ThreadResource); i++)
+  for (i=0; i < (ssize_t) GetOpenMPMaximumThreads(); i++)
     if (random_info[i] != (RandomInfo *) NULL)
       random_info[i]=DestroyRandomInfo(random_info[i]);
   return((RandomInfo **) RelinquishAlignedMemory(random_info));
@@ -48,7 +48,7 @@ static inline RandomInfo **AcquireRandomInfoThreadSet(void)
   size_t
     number_threads;
 
-  number_threads=(size_t) GetMagickResourceLimit(ThreadResource);
+  number_threads=GetOpenMPMaximumThreads();
   random_info=(RandomInfo **) AcquireAlignedMemory(number_threads,
     sizeof(*random_info));
   if (random_info == (RandomInfo **) NULL)
@@ -62,12 +62,6 @@ static inline RandomInfo **AcquireRandomInfoThreadSet(void)
   }
   return(random_info);
 }
-
-extern MagickExport unsigned long
-  *GetRandomInfoSeed(RandomInfo *);
-
-extern MagickExport double
-   GetRandomInfoNormalize(const RandomInfo *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

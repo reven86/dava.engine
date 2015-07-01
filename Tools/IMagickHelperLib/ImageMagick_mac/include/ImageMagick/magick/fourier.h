@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -22,24 +22,11 @@
 extern "C" {
 #endif
 
-typedef enum
-{
-  UndefinedComplexOperator,
-  AddComplexOperator,
-  ConjugateComplexOperator,
-  DivideComplexOperator,
-  MagnitudePhaseComplexOperator,
-  MultiplyComplexOperator,
-  RealImaginaryComplexOperator,
-  SubtractComplexOperator
-} ComplexOperator;
-
 extern MagickExport Image
-  *ComplexImages(const Image *,const ComplexOperator,ExceptionInfo *),
-  *ForwardFourierTransformImage(const Image *,const MagickBooleanType,
-    ExceptionInfo *),
-  *InverseFourierTransformImage(const Image *,const Image *,
-    const MagickBooleanType,ExceptionInfo *);
+ *ForwardFourierTransformImage(const Image *,const MagickBooleanType,
+   ExceptionInfo *),
+ *InverseFourierTransformImage(const Image *,const Image *,
+   const MagickBooleanType,ExceptionInfo *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }
