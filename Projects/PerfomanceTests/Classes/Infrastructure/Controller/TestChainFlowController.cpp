@@ -29,12 +29,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "TestChainFlowController.h"
 
 TestChainFlowController::TestChainFlowController(bool _showUIReport)
-    :   currentTest(nullptr)
-    ,   currentScreen(nullptr)
+    :   currentScreen(nullptr)
+    ,   currentTest(nullptr)
     ,   currentTestIndex(0)
     ,   showUIReport(_showUIReport)
-    ,   testsFinished(false)
     ,   reportCreated(false)
+    ,   testsFinished(false)
     
 {
 }

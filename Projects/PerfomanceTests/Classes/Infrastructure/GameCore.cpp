@@ -52,6 +52,8 @@ void GameCore::OnAppStarted()
     GraphicsDetect::Instance()->ReloadSettings();
     SoundSystem::Instance()->InitFromQualitySettings();
 
+    defaultTestParams.startTime = 0;
+    defaultTestParams.endTime = 120000;
     defaultTestParams.targetTime = 120000;
     
 	RegisterTests();
@@ -155,6 +157,9 @@ void GameCore::InitScreenController()
     bool withoutUIFound = CommandLineParser::Instance()->CommandIsFound("-without-ui");
 
     bool testTimeFound = CommandLineParser::Instance()->CommandIsFound("-test-time");
+    bool startTimeFound = CommandLineParser::Instance()->CommandIsFound("-statistic-start-time");
+    bool endTimeFound = CommandLineParser::Instance()->CommandIsFound("-statistic-end-time");
+    
     bool testFramesFound = CommandLineParser::Instance()->CommandIsFound("-test-frames");
     bool frameDeltaFound = CommandLineParser::Instance()->CommandIsFound("-frame-delta");
 
@@ -180,6 +185,35 @@ void GameCore::InitScreenController()
         {
             String testTimeParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test-time", 0);
             params.targetTime = std::atoi(testTimeParam.c_str());
+            
+            if(params.targetTime < 0)
+            {
+                Logger::Error("Incorrect params. TargetTime < 0");
+                Core::Instance()->Quit();
+            }
+        }
+        
+        if(startTimeFound)
+        {
+            if(!endTimeFound)
+            {
+                Logger::Error("Incorrect params. Set end time for range");
+                Core::Instance()->Quit();
+            }
+            
+            String startTime = CommandLineParser::Instance()->GetCommandParamAdditional("-statistic-start-time", 0);
+            String endTime = CommandLineParser::Instance()->GetCommandParamAdditional("-statistic-end-time", 0);
+            
+            params.startTime = std::atoi(startTime.c_str());
+            params.endTime = std::atoi(endTime.c_str());
+            
+            int32 timeRange = params.endTime - params.startTime;
+            
+            if(timeRange < 100 || params.startTime < 0)
+            {
+                Logger::Error("Incorrect params. Too small time range");
+                Core::Instance()->Quit();
+            }
         }
         
         if (testFramesFound)
@@ -195,27 +229,66 @@ void GameCore::InitScreenController()
 
             params.targetFramesCount = std::atoi(testFramesParam.c_str());
             params.targetFrameDelta = std::atof(frameDeltaParam.c_str());
+            
+            if(params.targetFrameDelta < 0.0f)
+            {
+                Logger::Error("Incorrect params. TargetFrameDelta < 0");
+                Core::Instance()->Quit();
+            }
+            
+            if(params.targetFramesCount < 0)
+            {
+                Logger::Error("Incorrect params. TargetFramesCount < 0");
+                Core::Instance()->Quit();
+            }
         }
         
         if(frameDeltaFound)
         {
             String frameDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-frame-delta", 0);
             params.targetFrameDelta = std::atof(frameDeltaParam.c_str());
+            
+            if(params.targetFrameDelta < 0.0f)
+            {
+                Logger::Error("Incorrect params. TargetFrameDelta < 0");
+                Core::Instance()->Quit();
+            }
         }
 
         if (debugFrameFound)
         {
             String debugFrameParam = CommandLineParser::Instance()->GetCommandParamAdditional("-debug-frame", 0);
             params.frameForDebug = std::atoi(debugFrameParam.c_str());
+            
+            if(params.frameForDebug < 0)
+            {
+                Logger::Error("Incorrect params. DebugFrame < 0");
+                Core::Instance()->Quit();
+            }
         }
         
         if (maxDeltaFound)
         {
             String maxDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-max-delta", 0);
             params.maxDelta = std::atof(maxDeltaParam.c_str());
+            
+            if(params.maxDelta < 0.0f)
+            {
+                Logger::Error("Incorrect params. MaxDelta < 0");
+                Core::Instance()->Quit();
+            }
         }
 
         testFlowController = new SingleTestFlowController(testForRun, params);
+        
+        Logger::Instance()->Info(DAVA::Format("Test %s params ", testForRun.c_str()).c_str());
+        Logger::Instance()->Info(DAVA::Format("Target time : %d", params.targetTime).c_str());
+        Logger::Instance()->Info(DAVA::Format("Statistic start time : %d", params.startTime).c_str());
+        Logger::Instance()->Info(DAVA::Format("Statistic end time : %d", params.endTime).c_str());
+        Logger::Instance()->Info(DAVA::Format("Target frames count : %d", params.targetFramesCount).c_str());
+        Logger::Instance()->Info(DAVA::Format("Target frame delta : %f", params.targetFrameDelta).c_str());
+        Logger::Instance()->Info(DAVA::Format("Frame for debug : %d", params.frameForDebug).c_str());
+        Logger::Instance()->Info(DAVA::Format("Max delta : %f", params.maxDelta).c_str());
     }
 	else if (withoutUIFound)
 	{

@@ -37,11 +37,11 @@ SingleTestFlowController::SingleTestFlowController()
 }
 
 SingleTestFlowController::SingleTestFlowController(const String& _testName, const BaseTest::TestParams& _testParams)
-    :   testForRun(nullptr)
+    :   testForRunName(_testName)
+    ,   testParams(_testParams)
+    ,   testForRun(nullptr)
     ,   testChooserScreen(nullptr)
     ,   currentScreen(nullptr)
-    ,   testForRunName(_testName)
-    ,   testParams(_testParams)
 
 {
 }

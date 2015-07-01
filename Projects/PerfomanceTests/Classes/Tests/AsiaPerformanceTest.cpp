@@ -43,9 +43,9 @@ const float32 AsiaPerformanceTest::TANK_ROTATION_ANGLE = 45.0f;
 
 AsiaPerformanceTest::AsiaPerformanceTest(const TestParams& params)
     :   BaseTest(TEST_NAME, params)
-    ,   camera(nullptr)
     ,   waypointInterpolator(nullptr)
     ,   tankAnimator(nullptr)
+    ,   camera(nullptr)
     ,   time(0.0f)
 {
 }
@@ -80,7 +80,7 @@ void AsiaPerformanceTest::LoadResources()
 
     GetScene()->SetCurrentCamera(camera);
 
-    waypointInterpolator = new WaypointsInterpolator(pathComponent->GetPoints(), GetTargetTestTime());
+    waypointInterpolator = new WaypointsInterpolator(pathComponent->GetPoints(), GetParams().targetTime / 1000.0f);
     tankAnimator = new TankAnimator();
 
     Vector<Entity*> tanks;

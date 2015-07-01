@@ -30,18 +30,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 const float32 BaseTest::FRAME_OFFSET = 5;
 
-BaseTest::BaseTest(const String& _testName, const TestParams& testParams)
+BaseTest::BaseTest(const String& _testName, const TestParams& _testParams)
     :   testName(_testName)
-    ,   targetFrameDelta(testParams.targetFrameDelta)
-    ,   targetFramesCount(testParams.targetFramesCount)
-    ,   targetTestTime(testParams.targetTime)
-    ,   frameForDebug(testParams.frameForDebug)
-    ,   maxDelta(testParams.maxDelta)
+    ,   testParams(_testParams)
     ,   frameNumber(0)
-    ,   testTime(0.0f)
     ,   startTime(0)
-    ,   debuggable(false)
+    ,   overallTestTime(0.0f)
     ,   maxAllocatedMemory(0)
+    ,   debuggable(false)
 {
 }
 
@@ -117,7 +113,7 @@ void BaseTest::OnFinish()
 
     averageDelta /= framesCount;
 
-    testTime = GetTestTime();
+    testTime = GetOverallTestTime();
     elapsedTime = GetElapsedTime() / 1000.0f;
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
@@ -167,29 +163,37 @@ void BaseTest::SystemUpdate(float32 timeElapsed)
         maxAllocatedMemory = allocatedMem;
     }
 
-    bool frameForDebug = GetFrameNumber() >= (GetDebugFrame() + BaseTest::FRAME_OFFSET);
-    bool greaterMaxDelta = maxDelta > 0.0f && maxDelta <= timeElapsed;
+    bool frameForDebug = GetFrameNumber() >= (testParams.frameForDebug + BaseTest::FRAME_OFFSET);
+    bool greaterMaxDelta = testParams.maxDelta > 0.0f && testParams.maxDelta <= timeElapsed;
     
     float32 delta = 0.0f;
-
-    if (IsDebuggable() && (frameForDebug || greaterMaxDelta))
+    float32 currentTimeMs = overallTestTime * 1000;
+    
+    if (frameNumber > FRAME_OFFSET)
     {
-        if (greaterMaxDelta)
+        if (IsDebuggable() && (frameForDebug || greaterMaxDelta))
         {
-            Logger::Info(DAVA::Format("Time delta: %f \nMaxDelta: %f \nFrame : %d", timeElapsed, maxDelta, frameNumber).c_str());
+            if (greaterMaxDelta)
+            {
+                Logger::Info(DAVA::Format("Time delta: %f \nMaxDelta: %f \nFrame : %d", timeElapsed, testParams.maxDelta, frameNumber).c_str());
+            }
+            if (GetFrameNumber() == (testParams.frameForDebug + BaseTest::FRAME_OFFSET))
+            {
+                Logger::Info(DAVA::Format("Frame for debug: %d", frameNumber - BaseTest::FRAME_OFFSET).c_str());
+            }
         }
-        if (GetFrameNumber() == (GetDebugFrame() + BaseTest::FRAME_OFFSET))
+        else
         {
-            Logger::Info(DAVA::Format("Frame for debug: %d", frameNumber - BaseTest::FRAME_OFFSET).c_str());
+            delta = testParams.targetFrameDelta > 0.0f ? testParams.targetFrameDelta : timeElapsed;
         }
-    }
-    else if (frameNumber > FRAME_OFFSET)
-    {
-        delta = targetFrameDelta > 0 ? targetFrameDelta : timeElapsed;
 
-        frames.push_back(FrameInfo(timeElapsed));
-        testTime += delta;
-
+        if(currentTimeMs >= testParams.startTime && currentTimeMs <= testParams.endTime)
+        {
+            frames.push_back(FrameInfo(timeElapsed));
+        }
+        
+        overallTestTime += delta;
+        
         PerformTestLogic(delta);
     }
    

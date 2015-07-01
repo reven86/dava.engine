@@ -95,7 +95,7 @@ void ReportScreen::CreateReportScreen()
 
             averageDelta /= framesCount;
 
-            testTime = test->GetTestTime();
+            testTime = test->GetOverallTestTime();
             elapsedTime = test->GetElapsedTime() / 1000.0f;
 
             UIControl* reportItemCopy = reportItem->Clone();
