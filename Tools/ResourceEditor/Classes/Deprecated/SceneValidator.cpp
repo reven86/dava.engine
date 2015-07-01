@@ -386,8 +386,10 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
                 {
                     if (alphatestTemplate == (*it)->GetMaterialTemplateName())
                     {
-                        (*it)->SetFlag(NMaterial::FLAG_ALPHATESTVALUE, NMaterial::FlagOn);
-                        (*it)->SetPropertyValue(NMaterial::PARAM_ALPHATEST_THRESHOLD, Shader::UT_FLOAT, 1, &alphatestThresholdValue);
+                        if (!(*it)->IsFlagEffective(NMaterial::FLAG_ALPHATESTVALUE))
+                            (*it)->SetFlag(NMaterial::FLAG_ALPHATESTVALUE, NMaterial::FlagOn);
+                        if (!(*it)->GetPropertyValue(NMaterial::PARAM_ALPHATEST_THRESHOLD))
+                            (*it)->SetPropertyValue(NMaterial::PARAM_ALPHATEST_THRESHOLD, Shader::UT_FLOAT, 1, &alphatestThresholdValue);
                     }
                 }
             }
