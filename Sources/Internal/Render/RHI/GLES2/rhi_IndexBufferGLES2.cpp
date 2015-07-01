@@ -190,6 +190,7 @@ SetToRHI( Handle ib )
     IndexBufferGLES2_t* self = IndexBufferGLES2Pool::Get( ib );
 
     DVASSERT(!self->mapped);
+Trace("set-ib %p  sz= %u\n",self->data,self->size);
     GL_CALL(glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, self->uid ));
 }
 

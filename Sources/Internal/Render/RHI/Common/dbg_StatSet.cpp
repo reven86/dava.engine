@@ -3,6 +3,8 @@
 //  externals:
 
     #include "dbg_StatSet.h"
+    
+    #include "Thread/Spinlock.h"
 
     #include <vector>
 
@@ -24,7 +26,8 @@ Stat
 
 typedef std::vector<Stat> StatArray;
 
-static StatArray _Stat;
+static StatArray        _Stat;
+static DAVA::Spinlock   _StatSync;
 
 
 //==============================================================================
@@ -40,11 +43,13 @@ StatSet::ResetAll()
 {
     using namespace statset;
     
+    _StatSync.Lock();    
     for( StatArray::iterator s=_Stat.begin(),s_end=_Stat.end(); s!=s_end; ++s )
     {
         if( !s->is_permanent )
             s->value = 0;
     }
+    _StatSync.Unlock();    
 }
 
 
@@ -54,7 +59,11 @@ unsigned
 StatSet::AddStat( const char* full_name, const char* short_name, unsigned parent_id )
 {
     using namespace statset;
+    
+    unsigned    id = InvalidIndex;
 
+    _StatSync.Lock();    
+    {
     _Stat.resize( _Stat.size()+1 );
 
     Stat&   stat = _Stat.back();
@@ -65,7 +74,12 @@ StatSet::AddStat( const char* full_name, const char* short_name, unsigned parent
     stat.value         = 0;
     stat.is_permanent  = false;
 
-    return _Stat.size()-1;
+    id = _Stat.size()-1;
+    }
+    _StatSync.Unlock();    
+
+
+    return id;
 }
 
 
@@ -76,6 +90,10 @@ StatSet::AddPermanentStat( const char* full_name, const char* short_name, unsign
 {
     using namespace statset;
 
+    unsigned    id = InvalidIndex;
+
+    _StatSync.Lock();    
+    {
     _Stat.resize( _Stat.size()+1 );
 
     Stat&   stat = _Stat.back();
@@ -86,7 +104,12 @@ StatSet::AddPermanentStat( const char* full_name, const char* short_name, unsign
     stat.value         = 0;
     stat.is_permanent  = true;
 
-    return _Stat.size()-1;
+    id = _Stat.size()-1;
+    }
+    _StatSync.Unlock();
+
+
+    return id;
 }
 
 
@@ -96,9 +119,13 @@ void
 StatSet::SetStat( unsigned id, unsigned value )
 {
     using namespace statset;
+    
+    _StatSync.Lock();    
 
     if( id < _Stat.size() )
         _Stat[id].value = value;
+    
+    _StatSync.Unlock();    
 }
 
 
@@ -109,8 +136,12 @@ StatSet::IncStat( unsigned id, unsigned delta )
 {
     using namespace statset;
     
+    _StatSync.Lock();    
+    
     if( id < _Stat.size() )
         _Stat[id].value += delta;
+    
+    _StatSync.Unlock();    
 }
 
 
@@ -121,11 +152,15 @@ StatSet::DecStat( unsigned id, unsigned delta )
 {
     using namespace statset;
     
+    _StatSync.Lock();
+        
     if( id < _Stat.size() )
     {
         unsigned    val = _Stat[id].value;
         _Stat[id].value = (delta >= val)  ? val-delta  : 0;
     }
+
+    _StatSync.Unlock();
 }
 
 
@@ -135,8 +170,12 @@ unsigned
 StatSet::StatValue( unsigned id )
 {
     using namespace statset;
+    
+    _StatSync.Lock();
+    unsigned    val = (id < _Stat.size())  ? _Stat[id].value  : 0;
+    _StatSync.Unlock();
 
-    return (id < _Stat.size())  ? _Stat[id].value  : 0;
+    return val;
 }
 
 
@@ -149,6 +188,7 @@ StatSet::StatID( const char* name )
 
     unsigned id = InvalidIndex;
 
+    _StatSync.Lock();
     for( StatArray::const_iterator s=_Stat.begin(),s_end=_Stat.end(); s!=s_end; ++s )
     {
         if( strcmp( name, s->full_name ) == 0 )
@@ -157,6 +197,7 @@ StatSet::StatID( const char* name )
             break;
         }
     }
+    _StatSync.Unlock();
 
     return id;
 }
@@ -169,7 +210,11 @@ StatSet::StatFullName( unsigned id )
 {
     using namespace statset;
 
-    return (id < _Stat.size())  ? _Stat[id].full_name  : "<invalid id>";
+    _StatSync.Lock();
+    const char* name = (id < _Stat.size())  ? _Stat[id].full_name  : "<invalid id>";
+    _StatSync.Unlock();
+
+    return name;
 }
 
 

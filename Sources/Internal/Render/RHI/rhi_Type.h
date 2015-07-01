@@ -787,8 +787,8 @@ IsEmptyString( const char* str )
     return !(str  &&  str[0] != '\0');
 }
 
-
-#define LCP Logger::Info("%s : %i",__FILE__,__LINE__);
+void Trace( const char* format, ... );
+#define LCP Trace("%s : %i\n",__FILE__,__LINE__);
 
 
 

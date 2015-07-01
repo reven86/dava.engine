@@ -188,6 +188,7 @@ SetToRHI( Handle vb )
     VertexBufferGLES2_t*    self = VertexBufferGLES2Pool::Get( vb );
 
     DVASSERT(!self->mapped);
+Trace("set-vb %p  sz= %u\n",self->data,self->size);
     GL_CALL(glBindBuffer( GL_ARRAY_BUFFER, self->uid ));
 }
 
