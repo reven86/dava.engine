@@ -693,6 +693,12 @@ void Landscape::ReallocateLandscape()
 {
     ReleaseLandscape();
  
+    if (!heightmap->Size())
+    {
+        subdivLevelCount = 0;
+        return;
+    }
+
     landscapeQuality = QualitySettingsSystem::Instance()->GetCurMaterialQuality(LANDSCAPE_QUALITY_NAME);
     isRequireTangentBasis = (landscapeQuality == LANDSCAPE_QUALITY_VALUE_HIGH);
     
@@ -1008,6 +1014,8 @@ void Landscape::Draw(Camera * drawCamera)
     }
 #endif //#if defined(__DAVAENGINE_OPENGL__)
     
+    if (!subdivLevelCount)
+        return;
 
     flushQueueCounter = 0;
     camera = GetRenderSystem()->GetMainCamera();
