@@ -92,7 +92,7 @@ uniform sampler2D lightmap;
 #endif
 
 #if defined(ALPHATESTVALUE)
-uniform float alphatestThreshold;
+uniform lowp float alphatestThreshold;
 #endif
 
 #if defined(MATERIAL_DECAL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(ALPHA_MASK)

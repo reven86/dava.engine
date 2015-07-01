@@ -369,29 +369,6 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
                         errorsLog.insert(Format("Material \"%s\" has non-assignable template", (*it)->GetMaterialName().c_str()));
                     }
                 }
-
-                static std::array<FastName, 7> alphatestValueMaterials =
-                {
-                    FastName("~res:/Materials/NormalizedBlinnPhongPerPixel.Alphatest.material"),
-                    FastName("~res:/Materials/NormalizedBlinnPhongPerPixel.Alphatest.Alphablend.material"),
-                    FastName("~res:/Materials/NormalizedBlinnPhongPerPixelFast.Alphatest.material"),
-                    FastName("~res:/Materials/NormalizedBlinnPhongPerVertex.Alphatest.material"),
-                    FastName("~res:/Materials/NormalizedBlinnPhongPerVertex.Alphatest.Alphablend.material"),
-                    FastName("~res:/Materials/NormalizedBlinnPhongAllQualities.Alphatest.material"),
-                    FastName("~res:/Materials/NormalizedBlinnPhongAllQualities.Alphatest.Alphablend.material"),
-                };
-
-                const float32 alphatestThresholdValue = .3f;
-                for (auto & alphatestTemplate : alphatestValueMaterials)
-                {
-                    if (alphatestTemplate == (*it)->GetMaterialTemplateName())
-                    {
-                        if (!(*it)->IsFlagEffective(NMaterial::FLAG_ALPHATESTVALUE))
-                            (*it)->SetFlag(NMaterial::FLAG_ALPHATESTVALUE, NMaterial::FlagOn);
-                        if (!(*it)->GetPropertyValue(NMaterial::PARAM_ALPHATEST_THRESHOLD))
-                            (*it)->SetPropertyValue(NMaterial::PARAM_ALPHATEST_THRESHOLD, Shader::UT_FLOAT, 1, &alphatestThresholdValue);
-                    }
-                }
             }
         }
 	}
