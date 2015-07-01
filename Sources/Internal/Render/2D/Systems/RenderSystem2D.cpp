@@ -582,7 +582,7 @@ void RenderSystem2D::Flush()
             packet.scissorRect.y = (int16)transformedClipRect.y;
             packet.scissorRect.width = (int16)ceilf(transformedClipRect.dx);
             packet.scissorRect.height = (int16)ceilf(transformedClipRect.dy);
-            packet.options = rhi::Packet::OPT_OVERRIDE_SCISSOR;
+            packet.options |= rhi::Packet::OPT_OVERRIDE_SCISSOR;
         }
 
         switch (packet.primitiveType)
@@ -616,7 +616,15 @@ void RenderSystem2D::Flush()
 void RenderSystem2D::DrawPacket(rhi::Packet& packet)
 {
     Flush();
-    //RHI_COMPLETE - add current clip to packet
+    if (currentClip.dx > 0.f && currentClip.dy > 0.f)
+    {
+        const Rect& transformedClipRect = TransformClipRect(currentClip, virtualToPhysicalMatrix);
+        packet.scissorRect.x = (int16)transformedClipRect.x;
+        packet.scissorRect.y = (int16)transformedClipRect.y;
+        packet.scissorRect.width = (int16)ceilf(transformedClipRect.dx);
+        packet.scissorRect.height = (int16)ceilf(transformedClipRect.dy);
+        packet.options |= rhi::Packet::OPT_OVERRIDE_SCISSOR;
+    }
     rhi::AddPacket(currentPacketListHandle, packet);
 }
 
