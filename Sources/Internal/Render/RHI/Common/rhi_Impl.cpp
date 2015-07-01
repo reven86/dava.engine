@@ -14,7 +14,7 @@
 
     #include "Core/Core.h"
     using DAVA::Logger;
-    #include "Thread/Spinlock.h"
+    #include "Concurrency/Spinlock.h"
 
 namespace rhi
 {
