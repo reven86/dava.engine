@@ -393,15 +393,29 @@ void UITextField::SetPosition(const DAVA::Vector2 &position)
     UIControl::SetPosition(position);
 }
 
-void UITextField::SetMultiline(uint32 maxLines, bool verticalScrollBarEnabled)
+void UITextField::EnableMultiline(uint32 maxLines, bool verticalScrollBarEnabled)
 {
 #ifdef __DAVAENGINE_IPHONE__
 	textFieldiPhone->SetMultiline(maxLines, verticalScrollBarEnabled);
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldAndroid->SetMultiline(maxLines, verticalScrollBarEnabled);
 #else 
-    staticText->SetMultiline(true);
+    staticText->SetMultiline(maxLines > 1);
 #endif
+}
+
+void UITextField::SetMaxLines(uint32 value)
+{
+    if (value != maxLines)
+    {
+        maxLines = value;
+        EnableMultiline(maxLines, true);
+    }
+}
+
+uint32 UITextField::GetMaxLines() const
+{
+    return maxLines;
 }
     
 void UITextField::SetText(const WideString & _text)

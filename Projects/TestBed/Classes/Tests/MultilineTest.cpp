@@ -41,7 +41,7 @@ void MultilineTest::LoadResources()
     BaseScreen::LoadResources();
 
     UITextField* textField = new UITextField(Rect(10, 10, 300, 200));
-#ifdef __DAVAENGINE_WINDOWS__
+#if defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_MACOS__)
     Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
     DVASSERT(font);
     font->SetSize(14);
@@ -55,7 +55,7 @@ void MultilineTest::LoadResources()
     static UITextFieldDelegate delegate;
 
     textField->SetDelegate(&delegate);
-    textField->SetMultiline(10, true);
+    textField->SetMaxLines(10);
     textField->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     AddControl(textField);
 }
