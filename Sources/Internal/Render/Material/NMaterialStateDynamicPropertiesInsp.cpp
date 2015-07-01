@@ -25,9 +25,8 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
-#if _MATERIAL_OFF
-
 #include "Render/Material/NMaterial.h"
+#include "Render/Material/FXCache.h"
 #include "Render/Material/NMaterialStateDynamicPropertiesInsp.h"
 
 namespace DAVA
@@ -35,121 +34,70 @@ namespace DAVA
 ///////////////////////////////////////////////////////////////////////////
 ///// NMaterialStateDynamicPropertiesInsp implementation
 
-const FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>* NMaterialStateDynamicPropertiesInsp::FindMaterialProperties(NMaterial *state, bool global) const
+const FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>* NMaterialStateDynamicPropertiesInsp::FindMaterialProperties(NMaterial *material) const
 {
     static FastNameMap<PropData> staticData;
-    
     staticData.clear();
-    NMaterial *parent = state;
-    int source = PropData::SOURCE_SELF;
-    
-    // properties chain data
-    while(NULL != parent)
-    {
-        HashMap<FastName, NMaterialProperty* >::iterator it = parent->materialProperties.begin();
-        HashMap<FastName, NMaterialProperty* >::iterator end = parent->materialProperties.end();
-        
-        for(; it != end; ++it)
-        {
-            FastName propName = it->first;
-            
-            // don't add some properties with light settings, they should be hidden for user
-            if(propName != NMaterialParamName::PARAM_LIGHT_AMBIENT_COLOR &&
-               propName != NMaterialParamName::PARAM_LIGHT_DIFFUSE_COLOR &&
-               propName != NMaterialParamName::PARAM_LIGHT_SPECULAR_COLOR)
-            {
-                if(0 == staticData.count(it->first))
-                {
-                    PropData data;
-                    data.data = it->second->data;
-                    data.size = it->second->size;
-                    data.type = it->second->type;
-                    data.source |= source;
-                    
-                    staticData.Insert(propName, data);
-                    //printf("insert %s, %d\n", propName.c_str(), source);
-                }
-                else
-                {
-                    staticData[propName].source |= source;
-                    //printf("update %s, %d\n", propName.c_str(), source);
-                }
-            }
-        }
-        
-        parent = parent->GetParent();
-        source = PropData::SOURCE_PARENT;
-        
-        if(!global && NULL != parent)
-        {
-            if(parent->GetMaterialType() == NMaterial::MATERIALTYPE_GLOBAL)
-            {
-                // don't extract properties from globalMaterial
-                parent = NULL;
-            }
-        }
-    }
-    
-    
+
+    HashMap<FastName, int32> flags;
+    material->CollectMaterialFlags(flags);
+
     // shader data
-    source = PropData::SOURCE_SHADER;
-    if(state->instancePasses.size() > 0)
+    if (material->fxName.IsValid())
     {
-        HashMap<FastName, NMaterial::RenderPassInstance*>::iterator it = state->instancePasses.begin();
-        HashMap<FastName, NMaterial::RenderPassInstance*>::iterator end = state->instancePasses.end();
-        
-        for(; it != end; ++it)
+        FXDescriptor fxDescriptor = FXCache::GetFXDescriptor(material->fxName, flags, material->qualityGroup);
+        for (auto& descriptor : fxDescriptor.renderPassDescriptors)
         {
-            Shader *shader = it->second->GetShader();
-            if(NULL != shader)
+            for (auto& buff : descriptor.shader->GetConstBufferDescriptors())
             {
-                int32 uniformCount = shader->GetUniformCount();
-                for(int32 i = 0; i < uniformCount; ++i)
+                const rhi::ShaderPropList& props = ShaderDescriptor::GetProps(buff.propertyLayoutId);
+                for (auto &prop : props)
                 {
-                    Shader::Uniform *uniform = shader->GetUniform(i);
-                    eShaderSemantic shaderSemantic = uniform->shaderSemantic;
-                    if( //!Shader::IsAutobindUniform(uniform->id) && // isn't auto-bind
-                       // we can't use IsAutobindUniform, because we need color to change
-                       // so this is copy from IsAutobindUniform with color excluded -->
-                       !(shaderSemantic == PARAM_WORLD_VIEW_PROJ ||
-                         shaderSemantic == PARAM_WORLD_VIEW ||
-                         shaderSemantic == PARAM_PROJ ||
-                         shaderSemantic == PARAM_WORLD_VIEW_INV_TRANSPOSE ||
-                         shaderSemantic == PARAM_GLOBAL_TIME ||
-                         shaderSemantic == PARAM_WORLD_SCALE)
-                       // <--
-                       &&
-                       uniform->type != Shader::UT_SAMPLER_2D && uniform->type != Shader::UT_SAMPLER_CUBE) // isn't texture
+                    if (prop.storage != rhi::ShaderProp::STORAGE_DYNAMIC)
                     {
-                        FastName propName = uniform->name;
-                        
-                        // redefine some shader properties names
-                        if(propName == NMaterialParamName::PARAM_LIGHT_AMBIENT_COLOR) propName = NMaterialParamName::PARAM_PROP_AMBIENT_COLOR;
-                        else if(propName == NMaterialParamName::PARAM_LIGHT_DIFFUSE_COLOR) propName = NMaterialParamName::PARAM_PROP_DIFFUSE_COLOR;
-                        else if(propName == NMaterialParamName::PARAM_LIGHT_SPECULAR_COLOR) propName = NMaterialParamName::PARAM_PROP_SPECULAR_COLOR;
-                        
-                        if(!staticData.count(propName))
+                        if (0 == staticData.count(prop.uid))
                         {
+                            const float32 *value = material->GetEffectivePropValue(prop.uid);
+                            if (nullptr == value)
+                            {
+                                value = prop.defaultValue;
+                            }
+
                             PropData data;
-                            data.data = NULL;
-                            data.size = uniform->size;
-                            data.type = uniform->type;
-                            data.source |= source;
-                            
-                            staticData.Insert(propName, data);
-                            //printf("insert %s, %d\n", propName.c_str(), source);
-                        }
-                        else
-                        {
-                            staticData[propName].source |= source;
-                            //printf("update %s, %d\n", propName.c_str(), source);
+                            data.size = prop.arraySize;
+                            data.type = prop.type;
+                            data.source = PropData::SOURCE_SHADER;
+                            data.value = value;
+                            staticData.insert(prop.uid, data);
                         }
                     }
                 }
             }
         }
     }
-    
+
+    // local properties
+    auto it = material->localProperties.begin();
+    auto end = material->localProperties.end();
+
+    for (; it != end; ++it)
+    {
+        FastName propName = it->first;
+        if (0 == staticData.count(propName))
+        {
+            PropData data;
+            data.size = it->second->arraySize;
+            data.type = it->second->type;
+            data.source = PropData::SOURCE_SELF;
+            data.value = material->GetEffectivePropValue(propName);
+            staticData.insert(propName, data);
+        }
+        else
+        {
+            staticData[it->first].source |= PropData::SOURCE_SELF;
+        }
+    }
+
     return &staticData;
 }
 
@@ -160,10 +108,10 @@ Vector<FastName> NMaterialStateDynamicPropertiesInsp::MembersList(void *object) 
     NMaterial *state = (NMaterial*) object;
     DVASSERT(state);
     
-    const FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>* members = FindMaterialProperties(state, false);
+    const FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>* members = FindMaterialProperties(state);
     
-    FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>::iterator it = members->begin();
-    FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>::iterator end = members->end();
+    auto it = members->begin();
+    auto end = members->end();
     
     ret.reserve(members->size());
     while(it != end)
@@ -187,7 +135,7 @@ int NMaterialStateDynamicPropertiesInsp::MemberFlags(void *object, const FastNam
     NMaterial *state = (NMaterial*) object;
     DVASSERT(state);
     
-    const FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>* members = FindMaterialProperties(state, true);
+    const FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>* members = FindMaterialProperties(state);
     if(members->count(member))
     {
         const PropData &propData = members->at(member);
@@ -197,160 +145,72 @@ int NMaterialStateDynamicPropertiesInsp::MemberFlags(void *object, const FastNam
             flags |= I_EDIT;
         }
         
-        if(propData.source & PropData::SOURCE_PARENT)
-        {
-            flags |= I_VIEW;
-        }
-        
         if(propData.source & PropData::SOURCE_SHADER)
         {
-            flags |= I_SAVE;
+            flags |= I_VIEW;
         }
     }
     
     return flags;
 }
 
-VariantType NMaterialStateDynamicPropertiesInsp::MemberValueGet(void *object, const FastName &member) const
+VariantType NMaterialStateDynamicPropertiesInsp::MemberValueGet(void *object, const FastName &key) const
 {
     VariantType ret;
     
-    NMaterial *state = (NMaterial*) object;
-    DVASSERT(state);
+    NMaterial *material = (NMaterial*) object;
+    DVASSERT(material);
     
-    const FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>* members = FindMaterialProperties(state, true);
-    if(members->count(member))
+    const FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>* members = FindMaterialProperties(material);
+    if(members->count(key))
     {
-        const PropData &prop = members->at(member);
-        ret = GetVariant(member, prop);
-    }
-    
-    return ret;
-}
+        const PropData &prop = members->at(key);
 
-VariantType NMaterialStateDynamicPropertiesInsp::GetVariant(const FastName &propName, const PropData &prop) const
-{
-    VariantType ret;
-    
-    // self or parent property
-    if(NULL != prop.data)
-    {
-        switch(prop.type)
+        // self or parent property
+        if (nullptr != prop.value)
         {
-            case Shader::UT_FLOAT:
-                ret.SetFloat(*(float32*) prop.data);
+            switch (prop.type)
+            {
+            case rhi::ShaderProp::TYPE_FLOAT1:
+                ret.SetFloat(*(float32*)prop.value);
                 break;
-                
-            case Shader::UT_FLOAT_VEC2:
-                ret.SetVector2(*(Vector2*) prop.data);
+
+            case rhi::ShaderProp::TYPE_FLOAT2:
+                ret.SetVector2(*(Vector2*)prop.value);
                 break;
-                
-            case Shader::UT_FLOAT_VEC3:
-                if(IsColor(propName))
+
+            case rhi::ShaderProp::TYPE_FLOAT3:
+                if (IsColor(key))
                 {
-                    float32 *color = (float32*) prop.data;
+                    float32 *color = (float32*)prop.value;
                     ret.SetColor(Color(color[0], color[1], color[2], 1.0));
                 }
                 else
                 {
-                    ret.SetVector3(*(Vector3*) prop.data);
+                    ret.SetVector3(*(Vector3*)prop.value);
                 }
                 break;
-                
-            case Shader::UT_FLOAT_VEC4:
-                if(IsColor(propName))
+
+            case rhi::ShaderProp::TYPE_FLOAT4:
+                if (IsColor(key))
                 {
-                    float32 *color = (float32*) prop.data;
+                    float32 *color = (float32*)prop.value;
                     ret.SetColor(Color(color[0], color[1], color[2], color[3]));
                 }
                 else
                 {
-                    ret.SetVector4(*(Vector4*) prop.data);
+                    ret.SetVector4(*(Vector4*)prop.value);
                 }
                 break;
-                
-            case Shader::UT_INT:
-                ret.SetInt32(*(int32*) prop.data);
+
+            case rhi::ShaderProp::TYPE_FLOAT4X4:
+                ret.SetMatrix4(*(Matrix4*)prop.value);
                 break;
-                
-            case Shader::UT_INT_VEC2:
-            case Shader::UT_INT_VEC3:
-            case Shader::UT_INT_VEC4:
-                DVASSERT(false);
-                //TODO: add a way to set int[]
-                break;
-                
-            case Shader::UT_BOOL:
-                ret.SetBool((*(int32*) prop.data) != 0);
-                break;
-                
-            case Shader::UT_BOOL_VEC2:
-            case Shader::UT_BOOL_VEC3:
-            case Shader::UT_BOOL_VEC4:
-                DVASSERT(false);
-                //TODO: add a way to set bool[]
-                break;
-                
-            case Shader::UT_FLOAT_MAT2:
-                ret.SetMatrix2(*(Matrix2*) prop.data);
-                break;
-                
-            case Shader::UT_FLOAT_MAT3:
-                ret.SetMatrix3(*(Matrix3*) prop.data);
-                break;
-                
-            case Shader::UT_FLOAT_MAT4:
-                ret.SetMatrix4(*(Matrix4*) prop.data);
-                break;
-                
-            case Shader::UT_SAMPLER_2D:
-                ret.SetInt32(*(int32*) prop.data);
-                break;
-                
-            case Shader::UT_SAMPLER_CUBE:
-                ret.SetInt32(*(int32*) prop.data);
-                break;
-                
+
             default:
                 DVASSERT(false);
                 break;
-        }
-        
-    }
-    // shader property that is not set in self or parent properties
-    else
-    {
-        switch(prop.type)
-        {
-            case Shader::UT_FLOAT: ret.SetFloat(0);	break;
-            case Shader::UT_FLOAT_VEC2:	ret.SetVector2(DAVA::Vector2()); break;
-            case Shader::UT_FLOAT_VEC3:	IsColor(propName) ? ret.SetColor(DAVA::Color()) : ret.SetVector3(DAVA::Vector3()); break;
-            case Shader::UT_FLOAT_VEC4:	IsColor(propName) ? ret.SetColor(DAVA::Color()) : ret.SetVector4(DAVA::Vector4()); break;
-            case Shader::UT_INT: ret.SetInt32(0); break;
-            case Shader::UT_BOOL: ret.SetBool(false); break;
-            case Shader::UT_FLOAT_MAT2:	ret.SetMatrix2(DAVA::Matrix2()); break;
-            case Shader::UT_FLOAT_MAT3:	ret.SetMatrix3(DAVA::Matrix3()); break;
-            case Shader::UT_FLOAT_MAT4:	ret.SetMatrix4(DAVA::Matrix4()); break;
-            case Shader::UT_SAMPLER_2D:	ret.SetInt32(0); break;
-            case Shader::UT_SAMPLER_CUBE: ret.SetInt32(0); break;
-                
-            case Shader::UT_INT_VEC2:
-            case Shader::UT_INT_VEC3:
-            case Shader::UT_INT_VEC4:
-                DVASSERT(false);
-                //TODO: add a way to set int[]
-                break;
-                
-            case Shader::UT_BOOL_VEC2:
-            case Shader::UT_BOOL_VEC3:
-            case Shader::UT_BOOL_VEC4:
-                DVASSERT(false);
-                //TODO: add a way to set bool[]
-                break;
-                
-            default:
-                DVASSERT(false);
-                break;
+            }
         }
     }
     
@@ -362,46 +222,58 @@ bool NMaterialStateDynamicPropertiesInsp::IsColor(const FastName &propName) cons
     return (NULL != strstr(propName.c_str(), "Color"));
 }
 
-void NMaterialStateDynamicPropertiesInsp::MemberValueSet(void *object, const FastName &member, const VariantType &value)
+void NMaterialStateDynamicPropertiesInsp::MemberValueSet(void *object, const FastName &key, const VariantType &value)
 {
-    NMaterial *state = (NMaterial*) object;
-    DVASSERT(state);
-    
-    const FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>* members = FindMaterialProperties(state, true);
-    if(members->count(member))
+    NMaterial *material = (NMaterial*)object;
+    DVASSERT(material);
+
+    const FastNameMap<NMaterialStateDynamicPropertiesInsp::PropData>* members = FindMaterialProperties(material);
+    if(members->count(key))
     {
-        PropData prop = members->at(member);
-        int propSize = prop.size;
-        Shader::eUniformType propType = prop.type;
-        
-        if(value.GetType() == VariantType::TYPE_NONE && state->GetMaterialType() != NMaterial::MATERIALTYPE_GLOBAL)
+        PropData prop = members->at(key);
+
+        if(value.GetType() == VariantType::TYPE_NONE /* && state->GetMaterialType() != NMaterial::MATERIALTYPE_GLOBAL */)
         {
             // empty variant value should remove this property
-            state->RemoveMaterialProperty(member);
+            if (material->HasLocalProperty(key))
+            {
+                material->RemoveProperty(key);
+            }
         }
         else
         {
+            auto setValue = [&material, &key, &prop](float32* value) {
+                if (material->HasLocalProperty(key))
+                {
+                    material->SetPropertyValue(key, value);
+                }
+                else
+                {
+                    material->AddProperty(key, value, prop.type, prop.size);
+                }
+            };
+
             switch(prop.type)
             {
-                case Shader::UT_FLOAT:
+            case rhi::ShaderProp::TYPE_FLOAT1:
                 {
                     float32 val = value.AsFloat();
-                    state->SetPropertyValue(member, propType, propSize, &val);
+                    setValue(&val);
                 }
-                    break;
-                    
-                case Shader::UT_FLOAT_VEC2:
+                break;
+
+            case rhi::ShaderProp::TYPE_FLOAT2:
                 {
                     const Vector2& val = value.AsVector2();
-                    state->SetPropertyValue(member, propType, propSize, &val);
+                    setValue((float32 *) &val);
                 }
-                    break;
-                    
-                case Shader::UT_FLOAT_VEC3:
+                break;
+
+            case rhi::ShaderProp::TYPE_FLOAT3:
                 {
                     Vector3 val;
                     
-                    if(IsColor(member))
+                    if(IsColor(key))
                     {
                         Color c = value.AsColor();
                         val = Vector3(c.r, c.g, c.b);
@@ -411,15 +283,15 @@ void NMaterialStateDynamicPropertiesInsp::MemberValueSet(void *object, const Fas
                         val = value.AsVector3();
                     }
                     
-                    state->SetPropertyValue(member, propType, propSize, &val);
+                    setValue((float32 *) &val);
                 }
-                    break;
-                    
-                case Shader::UT_FLOAT_VEC4:
+                break;
+
+            case rhi::ShaderProp::TYPE_FLOAT4:
                 {
                     Vector4 val;
                     
-                    if(IsColor(member))
+                    if(IsColor(key))
                     {
                         Color c = value.AsColor();
                         val = Vector4(c.r, c.g, c.b, c.a);
@@ -429,80 +301,23 @@ void NMaterialStateDynamicPropertiesInsp::MemberValueSet(void *object, const Fas
                         val = value.AsVector4();
                     }
                     
-                    state->SetPropertyValue(member, propType, propSize, &val);
+                    setValue((float32 *) &val);
                 }
-                    break;
+                break;
                     
-                case Shader::UT_INT:
-                {
-                    int32 val = value.AsInt32();
-                    state->SetPropertyValue(member, propType, propSize, &val);
-                }
-                    break;
-                    
-                case Shader::UT_INT_VEC2:
-                case Shader::UT_INT_VEC3:
-                case Shader::UT_INT_VEC4:
-                {
-                    DVASSERT(false);
-                    //TODO: add a way to set int[]
-                }
-                    break;
-                    
-                case Shader::UT_BOOL:
-                {
-                    bool val = value.AsBool();
-                    state->SetPropertyValue(member, propType, propSize, &val);
-                }
-                    break;
-                    
-                case Shader::UT_BOOL_VEC2:
-                case Shader::UT_BOOL_VEC3:
-                case Shader::UT_BOOL_VEC4:
-                {
-                    DVASSERT(false);
-                    //TODO: add a way to set bool[]
-                }
-                    break;
-                    
-                case Shader::UT_FLOAT_MAT2:
-                {
-                    const Matrix2& val = value.AsMatrix2();
-                    state->SetPropertyValue(member, propType, propSize, &val);
-                }
-                    break;
-                    
-                case Shader::UT_FLOAT_MAT3:
-                {
-                    const Matrix3& val = value.AsMatrix3();
-                    state->SetPropertyValue(member, propType, propSize, &val);
-                }
-                    break;
-                    
-                case Shader::UT_FLOAT_MAT4:
+            case rhi::ShaderProp::TYPE_FLOAT4X4:
                 {
                     const Matrix4& val = value.AsMatrix4();
-                    state->SetPropertyValue(member, propType, propSize, &val);
+                    setValue((float32 *) &val);
                 }
-                    break;
+                break;
                     
-                case Shader::UT_SAMPLER_2D:
-                    //VI: samplers are set by config materials
-                    break;
-                    
-                case Shader::UT_SAMPLER_CUBE:
-                    //VI: samplers are set by config materials
-                    break;
-                    
-                default:
-                    DVASSERT(false);
-                    break;
+            default:
+                DVASSERT(false);
+                break;
             }
         }
     }
 }
 
 };
-
-
-#endif _MATERIAL_OFF

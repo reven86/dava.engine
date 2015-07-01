@@ -218,6 +218,11 @@ const FastName& NMaterial::GetQualityGroup()
     return qualityGroup;
 }
 
+void NMaterial::SetQualityGroup(const FastName& quality)
+{
+    qualityGroup = quality;
+}
+
 void NMaterial::AddProperty(const FastName& propName, const float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize)
 {
     DVASSERT(localProperties.at(propName) == nullptr);
@@ -524,7 +529,7 @@ void NMaterial::RebuildBindings()
         currRenderVariant->vertexConstBuffers.resize(currShader->GetVertexConstBuffersCount());
         currRenderVariant->fragmentConstBuffers.resize(currShader->GetFragmentConstBuffersCount());
 
-        for (auto& bufferDescr : currShader->constBuffers)
+        for (auto& bufferDescr : currShader->GetConstBufferDescriptors())
         {
             rhi::HConstBuffer bufferHandle;
             MaterialBufferBinding* bufferBinding = nullptr;
@@ -629,14 +634,17 @@ void NMaterial::RebuildTextureBindings()
             continue;
         rhi::TextureSetDescriptor textureDescr;        
         rhi::SamplerState::Descriptor samplerDescr;
-        textureDescr.fragmentTextureCount = currShader->fragmentSamplerList.size();       
-        samplerDescr.fragmentSamplerCount = currShader->fragmentSamplerList.size();
+        const rhi::ShaderSamplerList& fragmentSamplerList = currShader->GetFragmentSamplerList();
+        const rhi::ShaderSamplerList& vertexSamplerList = currShader->GetVertexSamplerList();
+
+        textureDescr.fragmentTextureCount = fragmentSamplerList.size();       
+        samplerDescr.fragmentSamplerCount = fragmentSamplerList.size();
         for (size_t i = 0, sz = textureDescr.fragmentTextureCount; i < sz; ++i)
         {       
-            RuntimeTextures::eDynamicTextureSemantic textureSemantic = RuntimeTextures::GetDynamicTextureSemanticByName(currShader->fragmentSamplerList[i].uid);
+            RuntimeTextures::eDynamicTextureSemantic textureSemantic = RuntimeTextures::GetDynamicTextureSemanticByName(currShader->GetFragmentSamplerList()[i].uid);
             if (textureSemantic == RuntimeTextures::TEXTURE_STATIC)
             {
-                Texture *tex = GetEffectiveTexture(currShader->fragmentSamplerList[i].uid);
+                Texture *tex = GetEffectiveTexture(fragmentSamplerList[i].uid);
                 if (tex)
                 {
                     textureDescr.fragmentTexture[i] = tex->handle;
@@ -644,10 +652,10 @@ void NMaterial::RebuildTextureBindings()
                 }
                 else
                 {
-                    textureDescr.fragmentTexture[i] = Renderer::GetRuntimeTextures().GetPinkTexture(currShader->fragmentSamplerList[i].type);
-                    samplerDescr.fragmentSampler[i] = Renderer::GetRuntimeTextures().GetPinkTextureSamplerState(currShader->fragmentSamplerList[i].type);
+                    textureDescr.fragmentTexture[i] = Renderer::GetRuntimeTextures().GetPinkTexture(fragmentSamplerList[i].type);
+                    samplerDescr.fragmentSampler[i] = Renderer::GetRuntimeTextures().GetPinkTextureSamplerState(fragmentSamplerList[i].type);
 
-                    Logger::Debug(" no texture for slot : %s", currShader->fragmentSamplerList[i].uid.c_str());
+                    Logger::Debug(" no texture for slot : %s", fragmentSamplerList[i].uid.c_str());
                 }
             }
             else
@@ -659,10 +667,10 @@ void NMaterial::RebuildTextureBindings()
         }
 
 
-        textureDescr.vertexTextureCount = currShader->vertexSamplerList.size();
+        textureDescr.vertexTextureCount = vertexSamplerList.size();
         for (size_t i = 0, sz = textureDescr.vertexTextureCount; i < sz; ++i)
         {
-            Texture *tex = GetEffectiveTexture(currShader->vertexSamplerList[i].uid);
+            Texture *tex = GetEffectiveTexture(vertexSamplerList[i].uid);
             DVASSERT(tex);
             textureDescr.vertexTexture[i] = tex->handle;
         }                            

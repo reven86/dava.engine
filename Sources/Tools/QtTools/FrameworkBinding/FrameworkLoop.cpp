@@ -166,9 +166,13 @@ void MakeCurrentGL()
     FrameworkLoop::Instance()->Context();
 }
 
+void ReleaseCurrentGL()
+{ }
+
 void FrameworkLoop::OnWindowInitialized()
 {
     DAVA::Core::Instance()->rendererParams.acquireContextFunc = &MakeCurrentGL;
+    DAVA::Core::Instance()->rendererParams.releaseContextFunc = &ReleaseCurrentGL;
 
     DAVA::QtLayer::Instance()->AppStarted();
 

@@ -25,7 +25,6 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-#if _MATERIAL_OFF
 
 #ifndef __DAVAENGINE_NMATERIALSTATEDYNAMICTEXTURESINSP_NAMES_H__
 #define __DAVAENGINE_NMATERIALSTATEDYNAMICTEXTURESINSP_NAMES_H__
@@ -54,8 +53,7 @@ protected:
         {
             SOURCE_UNKNOWN = 0x0,
             SOURCE_SELF = 0x1,
-            SOURCE_PARENT = 0x2,
-            SOURCE_SHADER = 0x4
+            SOURCE_SHADER = 0x2
         };
         
         PropData() : source(SOURCE_UNKNOWN)
@@ -65,10 +63,8 @@ protected:
         FilePath path;
     };
     
-    const FastNameMap<PropData>* FindMaterialTextures(NMaterial *state, bool global) const;
+    const FastNameMap<PropData>* FindMaterialTextures(NMaterial *state) const;
 };
 };
 
 #endif /* defined(__DAVAENGINE_NMATERIALSTATEDYNAMICTEXTURESINSP_NAMES_H__) */
-
-#endif //_MATERIAL_OFF

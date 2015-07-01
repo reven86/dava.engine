@@ -27,9 +27,8 @@
 =====================================================================================*/
 
 
-#if _MATERIAL_OFF
-
 #include "Render/Material/NMaterial.h"
+#include "Render/Material/FXCache.h"
 #include "Render/Material/NMaterialStateDynamicFlagsInsp.h"
 
 namespace DAVA
@@ -41,7 +40,7 @@ namespace DAVA
 Vector<FastName> NMaterialStateDynamicFlagsInsp::MembersList(void *object) const
 {
     static Vector<FastName> ret;
-    
+
     if(0 == ret.size())
     {
         ret.reserve(18);
@@ -68,6 +67,7 @@ Vector<FastName> NMaterialStateDynamicFlagsInsp::MembersList(void *object) const
         ret.push_back(NMaterialFlagName::FLAG_SKINNING);
         ret.push_back(NMaterialFlagName::FLAG_TILED_DECAL_MASK);
     }
+
     return ret;
 }
 
@@ -79,42 +79,42 @@ InspDesc NMaterialStateDynamicFlagsInsp::MemberDesc(void *object, const FastName
 VariantType NMaterialStateDynamicFlagsInsp::MemberValueGet(void *object, const FastName &member) const
 {
     VariantType ret;
-    NMaterial *state = (NMaterial*) object;
-    DVASSERT(state);
+
+    NMaterial *material = static_cast<NMaterial*>(object);
+    DVASSERT(material);
     
-    ret.SetBool(state->IsFlagEffective(member));
+    ret.SetBool((bool) material->GetEffectiveFlagValue(member));
     return ret;
 }
 
 void NMaterialStateDynamicFlagsInsp::MemberValueSet(void *object, const FastName &member, const VariantType &value)
 {
-    NMaterial *state = (NMaterial*) object;
-    DVASSERT(state);
-    
-    NMaterial::eFlagValue newValue = NMaterial::FlagOff;
+    NMaterial *material = static_cast<NMaterial*>(object);
+    DVASSERT(material);
+
+    int newValue = 0;
     if(value.GetType() == VariantType::TYPE_BOOLEAN && value.AsBool())
     {
-        newValue = NMaterial::FlagOn;
+        newValue = true;
     }
     
-    if(state->GetMaterialType() == NMaterial::MATERIALTYPE_GLOBAL)
+    // empty value is thread as flag remove
+    if(value.GetType() == VariantType::TYPE_NONE)
     {
-        // global material accepts only valid values
-        if(value.GetType() == VariantType::TYPE_BOOLEAN)
+        if (material->HasLocalFlag(member))
         {
-            state->SetFlag(member, newValue);
+            material->RemoveFlag(member);
         }
     }
     else
     {
-        // empty value is thread as flag remove
-        if(value.GetType() == VariantType::TYPE_NONE)
+        if (!material->HasLocalFlag(member))
         {
-            state->ResetFlag(member);
+            material->AddFlag(member, newValue);
         }
         else
         {
-            state->SetFlag(member, newValue);
+            material->SetFlag(member, newValue);
         }
     }
 }
@@ -123,17 +123,16 @@ int NMaterialStateDynamicFlagsInsp::MemberFlags(void *object, const FastName &me
 {
     int ret = I_VIEW;
     
-    NMaterial *state = (NMaterial*) object;
-    DVASSERT(state);
-    
-    if(!(NMaterial::FlagInherited & state->GetFlagValue(member)))
+    NMaterial *material = static_cast<NMaterial*>(object);
+    DVASSERT(material);
+
+    if (material->HasLocalFlag(member))
     {
         ret |= I_EDIT;
     }
-    
+
     return ret;
 }
 
 };
 
-#endif //_MATERIAL_OFF

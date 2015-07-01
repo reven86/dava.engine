@@ -254,9 +254,9 @@ void MaterialEditor::SetCurMaterial(const QList< DAVA::NMaterial *>& materials)
     treeStateHelper->SaveTreeViewState(false);
     
     FillBase();
-    FillDynamic(flagsRoot, "materialSetFlags");
-    FillDynamic(propertiesRoot, "materialProperties");
-    FillDynamic(texturesRoot, "textures");
+    FillDynamic(flagsRoot, "localFlags");
+    FillDynamic(propertiesRoot, "localProperties");
+    FillDynamic(texturesRoot, "localTextures");
     FillTemplates(materials);
 
     // Restore back the tree view state from the shared storage.
@@ -322,7 +322,6 @@ void MaterialEditor::materialSelected(const QItemSelection & selected, const QIt
 
 void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *command, bool redo)
 {
-#if RHI_COMPLETE_EDITOR
     if(scene == QtMainWindow::Instance()->GetCurrentScene())
     {
         int cmdId = command->GetId();
@@ -331,7 +330,8 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
         {
         case CMDID_INSP_MEMBER_MODIFY:
             {
-                InspMemberModifyCommand *inspCommand = (InspMemberModifyCommand *) command;
+#if RHI_COMPLETE_EDITOR
+                InspMemberModifyCommand *inspCommand = (InspMemberModifyCommand *)command;
 
                 const QString memberName = inspCommand->member->Name();
                 if (memberName == "materialGroup" || memberName == "materialTemplate")
@@ -341,9 +341,10 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
                         curMaterials[i]->ReloadQuality();
                     }
 
-                    FillDynamic(texturesRoot, "textures");
+                    FillDynamic(texturesRoot, "localTextures");
                     UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
                 }
+#endif
             }
             break;
         case CMDID_INSP_DYNAMIC_MODIFY:
@@ -353,10 +354,10 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
                 // if material flag was changed we should rebuild list of all properties
                 // because their set can be changed
                 const QString memberName = inspCommand->dynamicInfo->GetMember()->Name(); // Do not compare raw pointers
-                if (memberName == "materialSetFlags")
+                if (memberName == "localFlags")
                 {
-                    FillDynamic(propertiesRoot, "materialProperties");
-                    FillDynamic(texturesRoot, "textures");
+                    FillDynamic(propertiesRoot, "localProperties");
+                    FillDynamic(texturesRoot, "localTextures");
                 }
 
                 UpdateAllAddRemoveButtons(ui->materialProperty->GetRootProperty());
@@ -372,7 +373,6 @@ void MaterialEditor::commandExecuted(SceneEditor2 *scene, const Command2 *comman
             break;
         }
     }
-#endif // RHI_COMPLETE_EDITOR
 }
 
 void MaterialEditor::OnQualityChanged()
@@ -422,28 +422,24 @@ void MaterialEditor::FillBase()
         }
 
         // fill material group, only for material type
-#if RHI_COMPLETE_EDITOR
-        if(material->GetMaterialType() == DAVA::NMaterial::MATERIALTYPE_MATERIAL)
+        const DAVA::InspMember *groupMember = info->Member("qualityGroup");
+        if(NULL != groupMember)
         {
-            const DAVA::InspMember *groupMember = info->Member("materialGroup");
-            if(NULL != groupMember)
+            QtPropertyDataInspMember *group = new QtPropertyDataInspMember(material, groupMember);
+            baseRoot->MergeChild(group, MATERIAL_GROUP_LABEL);
+
+            // Add unknown value:
+            group->AddAllowedValue(VariantType(String()), "Unknown");
+
+            // fill allowed values for material group
+            for(size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount(); ++i)
             {
-                QtPropertyDataInspMember *group = new QtPropertyDataInspMember(material, groupMember);
-                baseRoot->MergeChild(group, MATERIAL_GROUP_LABEL);
-
-                // Add unknown value:
-                group->AddAllowedValue(VariantType(String()), "Unknown");
-
-                // fill allowed values for material group
-                for(size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount(); ++i)
-                {
-                    DAVA::FastName groupName = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupName(i);
-                    group->AddAllowedValue(DAVA::VariantType(groupName), groupName.c_str());
-                }
+                DAVA::FastName groupName = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupName(i);
+                group->AddAllowedValue(DAVA::VariantType(groupName), groupName.c_str());
             }
         }
-#endif // RHI_COMPLETE_EDITOR
 
+#if RHI_COMPLETE_EDITOR
         // fill illumination params
         const DAVA::InspMember *materialIllumination = info->Member("illuminationParams");
         if(NULL != materialIllumination)
@@ -460,6 +456,7 @@ void MaterialEditor::FillBase()
 
             delete illumParams;
         }
+#endif
     }
 }
 
@@ -498,12 +495,7 @@ void MaterialEditor::FillDynamicMembers(QtPropertyData *root, DAVA::InspInfoDyna
         }
 
         // update buttons state and enabled/disable state of this data
-#if RHI_COMPLETE_EDITOR
-        if(material->GetMaterialType() != DAVA::NMaterial::MATERIALTYPE_GLOBAL)
-        {
-            UpdateAddRemoveButtonState(dynamicData);
-        }
-#endif // RHI_COMPLETE_EDITOR
+        UpdateAddRemoveButtonState(dynamicData);
 
         // merge created dynamic data into specified root
         root->MergeChild(dynamicData, membersList[i].c_str());
@@ -582,7 +574,7 @@ void MaterialEditor::UpdateAddRemoveButtonState(QtPropertyDataInspDynamic *data)
             addRemoveButton->setToolTip("Remove property");
 
             // isn't set in parent or shader
-            if(!(memberFlags & DAVA::I_VIEW) && !(memberFlags & DAVA::I_SAVE))
+            if(!(memberFlags & DAVA::I_VIEW))
             {
                 bgColor = QBrush(QColor(255, 0, 0, 25));
             }
@@ -808,18 +800,19 @@ void MaterialEditor::OnPropertyEdited(const QModelIndex &index)
 
 void MaterialEditor::OnMaterialAddGlobal(bool checked)
 {
-#if RHI_COMPLETE_EDITOR
     SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
     if(NULL != curScene)
     {
-        DAVA::NMaterial *global = NMaterial::CreateGlobalMaterial(FastName("Scene_Global_Material"));
+        DAVA::NMaterial *global = new DAVA::NMaterial();
+        SCOPE_EXIT{ SafeRelease(global); };
+
+        global->SetMaterialName(FastName("Scene_Global_Material"));
         curScene->Exec(new MaterialGlobalSetCommand(curScene, global));
         SafeRelease(global);
 
         sceneActivated(curScene);
         SelectMaterial(curScene->GetGlobalMaterial());
     }
-#endif // RHI_COMPLETE_EDITOR
 }
 
 void MaterialEditor::OnMaterialRemoveGlobal(bool checked)

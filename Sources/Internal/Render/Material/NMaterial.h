@@ -33,6 +33,9 @@
 #include <memory>
 #include "Base/FastNameMap.h"
 #include "NMaterialNames.h"
+#include "NMaterialStateDynamicFlagsInsp.h"
+#include "NMaterialStateDynamicPropertiesInsp.h"
+#include "NMaterialStateDynamicTexturesInsp.h"
 #include "Render/Shader.h"
 #include "Scene3D/DataNode.h"
 
@@ -75,7 +78,6 @@ struct MaterialTextureInfo
     FilePath path;
 };
 
-
 class RenderVariantInstance
 {
     friend class NMaterial;
@@ -100,6 +102,11 @@ class RenderVariantInstance
 
 class NMaterial : public DataNode
 {
+    // this classed need access to be able to generate
+    // dynamic introspection for NMaterial class
+    friend class NMaterialStateDynamicFlagsInsp;
+    friend class NMaterialStateDynamicPropertiesInsp;
+    friend class NMaterialStateDynamicTexturesInsp;
 
 public:
     NMaterial();    
@@ -155,7 +162,6 @@ public:
     bool PreBuildMaterial(const FastName& passName); //later add engine flags here
 
 private:
-
     void LoadOldNMaterial(KeyedArchive * archive, SerializationContext * serializationContext);
 
     void InvalidateBufferBindings();
@@ -165,7 +171,6 @@ private:
     void RebuildBindings();
     void RebuildTextureBindings();
     void RebuildRenderVariants();
-
 
     bool NeedLocalOverride(UniquePropertyLayout propertyLayout);
     void ClearLocalBuffers();
@@ -177,6 +182,7 @@ private:
     void CollectMaterialFlags(HashMap<FastName, int32>& target);
     
     const FastName& GetQualityGroup();
+    void SetQualityGroup(const FastName& quality);
 
     void AddChildMaterial(NMaterial *material);
     void RemoveChildMaterial(NMaterial *material);    
@@ -184,23 +190,16 @@ private:
 private:
     //config time
     FastName materialName;
-
     FastName fxName;
-    
     FastName qualityGroup;
 
     HashMap<FastName, NMaterialProperty *> localProperties;
     HashMap<FastName, MaterialTextureInfo*> localTextures;
     HashMap<FastName, int32> localFlags; //integer flags are just more generic then boolean (eg. #if SHADING == HIGH), it has nothing in common with eFlagValue bullshit from old NMaterial    
 
-    
-    
-
     //runtime
     NMaterial *parent;
     Vector<NMaterial *> children;
-    
-
     HashMap<UniquePropertyLayout, MaterialBufferBinding*> localConstBuffers;
 
     /*this is for render passes - not used right now - only active variant instance*/
@@ -215,9 +214,17 @@ private:
 
     uint32 sortingKey;
     uint64 materialKey;
+
+public:
+    INTROSPECTION_EXTEND(NMaterial, DataNode,
+        PROPERTY("materialName", "Material name", GetMaterialName, SetMaterialName, I_VIEW | I_EDIT)
+        PROPERTY("fxName", "FX Name", GetFXName, SetFXName, I_VIEW)
+        PROPERTY("qualityGroup", "Quality group", GetQualityGroup, SetQualityGroup, I_VIEW | I_EDIT)
+        DYNAMIC(localFlags, "Material flags", new NMaterialStateDynamicFlagsInsp(), I_EDIT | I_VIEW)
+        DYNAMIC(localProperties, "Material properties", new NMaterialStateDynamicPropertiesInsp(), I_EDIT | I_VIEW)
+        DYNAMIC(localTextures, "Material textures", new NMaterialStateDynamicTexturesInsp(), I_EDIT | I_VIEW)
+        );
 };
-
-
 
 void NMaterialProperty::SetPropertyValue(const float32 *newValue)
 {
