@@ -163,12 +163,11 @@ _OGLErrorCallback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsiz
     }
 */
     if( type == GL_DEBUG_TYPE_PERFORMANCE )
-        Logger::Warning( "[gl.warning] %s\n", message );
-
-    if( type == GL_DEBUG_TYPE_ERROR )
-        Logger::Error( "[gl.error] %s\n", message );
+        Trace( "[gl.warning] %s\n", message );
+    else if( type == GL_DEBUG_TYPE_ERROR )
+        Trace( "[gl.error] %s\n", message );
 //    else
-//        Logger::Info( "[gl.info] %s\n", message );
+//        Logger::Info( "[gl] %s\n", message );
 }
 
 #endif // defined(__DAVAENGINE_WIN32__)
@@ -205,7 +204,7 @@ wgl_AcquireContext()
 void
 wgl_ReleaseContext()
 {
-    wglMakeCurrent( deviceContext, NULL );
+    wglMakeCurrent( NULL, NULL );
 }
 
 

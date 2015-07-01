@@ -167,7 +167,7 @@ GLCommand
     int     status;
 };
 
-void     ExecGL( GLCommand* cmd, uint32 cmdCount );
+void     ExecGL( GLCommand* cmd, uint32 cmdCount, bool force_immediate=false );
 
 //==============================================================================
 }

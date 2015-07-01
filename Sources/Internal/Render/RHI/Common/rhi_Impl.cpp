@@ -14,6 +14,7 @@
 
     #include "Core/Core.h"
     using DAVA::Logger;
+    #include "Thread/Spinlock.h"
 
 namespace rhi
 {
@@ -814,3 +815,28 @@ NativeColorRGBA( float red, float green, float blue, float alpha )
 
 
 } //namespace rhi
+
+
+
+//------------------------------------------------------------------------------
+
+static DAVA::Spinlock   _TraceSync;
+static char             _TraceBuf[4096];
+
+void
+Trace( const char* format, ... )
+{
+/*
+    _TraceSync.Lock();
+
+    va_list  arglist;
+
+    va_start( arglist, format );
+    _vsnprintf( _TraceBuf, countof(_TraceBuf), format, arglist );
+    va_end( arglist );
+    
+    ::OutputDebugStringA( _TraceBuf );
+
+    _TraceSync.Unlock();
+*/
+}
