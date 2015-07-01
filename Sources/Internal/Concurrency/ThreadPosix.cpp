@@ -27,19 +27,21 @@
 =====================================================================================*/
 
 
-#include "Concurrency/Thread.h"
-
-#if defined(__DAVAENGINE_PTHREAD__)
+#include "Base/Platform.h"
+#if !defined(__DAVAENGINE_WINDOWS__)
 
 #include <time.h>
-#include <errno.h>
+#include <thread>
+
+#include "Concurrency/PosixThreads.h"
+#include "Concurrency/Thread.h"
 
 #if defined (__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
 #endif
 
-#if defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#if defined (__DAVAENGINE_APPLE__)
 #import <Foundation/NSAutoreleasePool.h>
 #endif
 
@@ -48,7 +50,7 @@ namespace DAVA
 // android have no way to kill a thread, so we will use signal to determine
 // if we need to end thread
 #if defined (__DAVAENGINE_ANDROID__)
-void Thread::thread_exit_handler(int sig)
+void thread_exit_handler(int sig)
 {
 	if (SIGRTMIN == sig)
 	{
@@ -80,7 +82,7 @@ void Thread::Shutdown()
 void Thread::KillNative()
 {
 	uint32 ret = 0;
-#if defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#if defined (__DAVAENGINE_APPLE__)
     ret = pthread_cancel(handle);
 #endif
 #if defined (__DAVAENGINE_ANDROID__)
@@ -94,7 +96,7 @@ void Thread::KillNative()
 
 void *PthreadMain(void *param)
 {
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_APPLE__)
     NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
 #endif
 
@@ -104,11 +106,11 @@ void *PthreadMain(void *param)
 
 #if defined(__DAVAENGINE_DEBUG__) 
     Thread *t = static_cast<Thread *>(param);    
-#if defined (__DAVAENGINE_ANDROID__)
+#   if defined (__DAVAENGINE_ANDROID__)
     pthread_setname_np(t->handle, t->name.c_str());
-#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+#   elif defined(__DAVAENGINE_APPLE__)
     pthread_setname_np(t->name.c_str());
-#endif
+#   endif
 #endif
 
     Thread::ThreadFunction(param);
@@ -117,7 +119,7 @@ void *PthreadMain(void *param)
     JNI::DetachCurrentThreadFromJVM();
 #endif
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_APPLE__)
     [pool release];
 #endif
     pthread_exit(0);
@@ -146,7 +148,7 @@ Thread::Id Thread::GetCurrentId()
     return pthread_self();
 }
 
-bool DAVA::Thread::BindToProcessor(unsigned proc_n)
+bool Thread::BindToProcessor(unsigned proc_n)
 {
     DVASSERT(proc_n < std::thread::hardware_concurrency());
 	if (proc_n >= std::thread::hardware_concurrency())
@@ -154,12 +156,12 @@ bool DAVA::Thread::BindToProcessor(unsigned proc_n)
 
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
-    CPU_SET(n, &cpuset);
+    CPU_SET(proc_n, &cpuset);
 
-    int error = ::pthread_setaffinity_np(handle, sizeof(cpuset), &cpuset);
+    int error = pthread_setaffinity_np(handle, sizeof(cpuset), &cpuset);
     return error == 0;
 }
 
-}
+} //  namespace DAVA
 
 #endif
