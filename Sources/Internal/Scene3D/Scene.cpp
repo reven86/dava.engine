@@ -356,6 +356,7 @@ void Scene::InitGlobalMaterial()
 
     if (NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_NORMAL_SCALE)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_NORMAL_SCALE, Shader::UT_FLOAT, 1, &defaultFloat10);
 
+    if (NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_ALPHATEST_THRESHOLD)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_ALPHATEST_THRESHOLD, Shader::UT_FLOAT, 1, &defaultFloat05);
 }
 
 void Scene::CreateSystems()
