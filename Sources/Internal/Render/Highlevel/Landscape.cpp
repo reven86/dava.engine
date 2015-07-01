@@ -976,8 +976,6 @@ void Landscape::DrawLandscape()
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
     
     ClearQueue();
-    RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
-    BindMaterial(camera);
     DrawNoInstancing();
     FlushQueue();
 }
@@ -1029,8 +1027,10 @@ void Landscape::Draw(Camera * drawCamera)
 
     SubdividePatch(0, 0, 0, 0x3f);
     
+    RenderManager::Instance()->SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+    BindMaterial(camera);
+
     DrawLandscape();
-    
     
 #if defined(__DAVAENGINE_OPENGL__) && defined(__DAVAENGINE_MACOS__)
     if (isDebugDraw)
