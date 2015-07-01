@@ -13,13 +13,7 @@ include      ( CMake-common )
 find_package( DavaFramework REQUIRED )
 find_package( DavaTools     REQUIRED )
 
-if( ANDROID )
-    project ( UnitTestsLib )
-
-else()
-    project ( UnitTests )
-
-endif()
+project ( UnitTests )
 
 include_directories   ( "Classes" )
 include_directories   ( "Classes/Infrastructure" )
