@@ -111,7 +111,7 @@ VertexDeclGLES2
                             cmd[i].arg[1] = uint64_t(elem[i].name);
                         }
 
-                        ExecGL( cmd, countof(cmd), force_immediate );
+                        ExecGL( cmd, elemCount, force_immediate );
 
                         for( unsigned i=0; i!=elemCount; ++i )
                             elem[i].index = cmd[i].retval;
