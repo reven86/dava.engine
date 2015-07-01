@@ -905,7 +905,7 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
 
     if (archive->IsKeyExists("materialTemplate"))
     {
-        fxName = FastName(archive->GetString("materialTemplate").c_str());
+        fxName = FastName(archive->GetString("materialTemplate").c_str());        
     }    
 
     if (archive->IsKeyExists("textures"))

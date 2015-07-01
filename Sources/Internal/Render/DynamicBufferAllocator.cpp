@@ -34,7 +34,7 @@ namespace DynamicBufferAllocator
 {
 namespace //for private members
 {
-uint32 defaultPageSize = 0x0000ffff;
+uint32 defaultPageSize = 131072; //128kb
 
 const uint32 DEF_FRAMES_COUNT = 3;
 

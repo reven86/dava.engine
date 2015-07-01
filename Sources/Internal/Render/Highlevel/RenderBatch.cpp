@@ -90,7 +90,6 @@ void RenderBatch::SetMaterial(NMaterial * _material)
 	NMaterial* oldMat = material;
     material = SafeRetain(_material);
 	SafeRelease(oldMat);
-        
 }    
 
     
