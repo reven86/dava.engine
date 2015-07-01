@@ -32,14 +32,20 @@ public class ScheduledNotificationReceiver extends BroadcastReceiver {
 
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, tapIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
-        Uri uri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        builder.setSound(uri);
+        
+        Uri uri = null;
+        if (intent.getBooleanExtra("useSound", false))
+        {
+            uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        }
         String uid = intent.getStringExtra("uid");
-        builder.setContentTitle(intent.getStringExtra("title"));
-        builder.setContentText(intent.getStringExtra("text"));
-        builder.setSmallIcon(intent.getIntExtra("icon", 0));
-        builder.setContentIntent(pendingIntent);
-        builder.setAutoCancel(true);
+        builder.setContentTitle(intent.getStringExtra("title"))
+        	   .setContentText(intent.getStringExtra("text"))
+               .setSmallIcon(intent.getIntExtra("icon", 0))
+               .setContentIntent(pendingIntent)
+               .setAutoCancel(true)
+               .setSound(uri);
+
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(uid, 0, builder.build());
     }

@@ -45,12 +45,12 @@ LocalNotificationAndroid::LocalNotificationAndroid(const String &_id)
 {
     notificationId = _id;
 
-    setText = notificationProvider.GetStaticMethod<void, jstring, jstring, jstring>("NotifyText");
-    setProgress = notificationProvider.GetStaticMethod<void, jstring, jstring, jstring, jint, jint>("NotifyProgress");
+    setText = notificationProvider.GetStaticMethod<void, jstring, jstring, jstring, jboolean>("NotifyText");
+    setProgress = notificationProvider.GetStaticMethod<void, jstring, jstring, jstring, jint, jint, jboolean>("NotifyProgress");
     hideNotification = notificationProvider.GetStaticMethod<void, jstring>("HideNotification");
 	enableTapAction = notificationProvider.GetStaticMethod<void, jstring>("EnableTapAction");
 
-	notifyDelayed = notificationProvider.GetStaticMethod<void, jstring, jstring, jstring, jint>("NotifyDelayed");
+	notifyDelayed = notificationProvider.GetStaticMethod<void, jstring, jstring, jstring, jint, jboolean>("NotifyDelayed");
 	removeAllDelayedNotifications = notificationProvider.GetStaticMethod<void>("RemoveAllDelayedNotifications");
 }
 
@@ -72,7 +72,7 @@ void LocalNotificationAndroid::Hide()
     env->DeleteLocalRef(jstrNotificationUid);
 }
 
-void LocalNotificationAndroid::ShowText(const WideString &title, const WideString text)
+void LocalNotificationAndroid::ShowText(const WideString &title, const WideString text, const bool useSound)
 {
 	LockGuard<Mutex> mutexGuard(javaCallMutex);
 	JNIEnv *env = JNI::GetEnv();
@@ -82,7 +82,7 @@ void LocalNotificationAndroid::ShowText(const WideString &title, const WideStrin
 	jstring jStrTitle = JNI::CreateJString(title);
 	jstring jStrText = JNI::CreateJString(text);
 
-	setText(jstrNotificationUid, jStrTitle, jStrText);
+	setText(jstrNotificationUid, jStrTitle, jStrText, useSound);
 
     env->DeleteLocalRef(jstrNotificationUid);
 	env->DeleteLocalRef(jStrTitle);
@@ -90,7 +90,7 @@ void LocalNotificationAndroid::ShowText(const WideString &title, const WideStrin
 }
 
 
-void LocalNotificationAndroid::ShowProgress(const WideString &title, const WideString text, const uint32 total, const uint32 progress)
+void LocalNotificationAndroid::ShowProgress(const WideString &title, const WideString text, const uint32 total, const uint32 progress, const bool useSound)
 {
 	LockGuard<Mutex> mutexGuard(javaCallMutex);
 	JNIEnv *env = JNI::GetEnv();
@@ -100,14 +100,14 @@ void LocalNotificationAndroid::ShowProgress(const WideString &title, const WideS
 	jstring jStrTitle = JNI::CreateJString(env, title);
 	jstring jStrText = JNI::CreateJString(env, text);
 
-	setProgress(jstrNotificationUid, jStrTitle, jStrText, total,progress);
+	setProgress(jstrNotificationUid, jStrTitle, jStrText, total, progress, useSound);
 
     env->DeleteLocalRef(jstrNotificationUid);
 	env->DeleteLocalRef(jStrTitle);
 	env->DeleteLocalRef(jStrText);
 }
 
-void LocalNotificationAndroid::PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds)
+void LocalNotificationAndroid::PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds, const bool useSound)
 {
 	LockGuard<Mutex> mutexGuard(javaCallMutex);
 	JNIEnv *env = JNI::GetEnv();
@@ -116,7 +116,7 @@ void LocalNotificationAndroid::PostDelayedNotification(const WideString &title, 
 	jstring jStrTitle = JNI::CreateJString(env, title);
 	jstring jStrText = JNI::CreateJString(env, text);
 
-	notifyDelayed(jstrNotificationUid, jStrTitle, jStrText, delaySeconds);
+	notifyDelayed(jstrNotificationUid, jStrTitle, jStrText, delaySeconds, useSound);
 
 	env->DeleteLocalRef(jstrNotificationUid);
 	env->DeleteLocalRef(jStrTitle);

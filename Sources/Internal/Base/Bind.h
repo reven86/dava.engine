@@ -84,7 +84,7 @@ namespace DAVA
 		typedef typename Select<IsPlaceholder<P5>::result, typename TL::TypeAtNonStrict<RealParamsFullList, PlaceholderIndex<P5>::value>::Result, NullType>::Result OutgoingOrderType5;
 		typedef typename Select<IsPlaceholder<P6>::result, typename TL::TypeAtNonStrict<RealParamsFullList, PlaceholderIndex<P6>::value>::Result, NullType>::Result OutgoingOrderType6;
 		typedef typename Select<IsPlaceholder<P7>::result, typename TL::TypeAtNonStrict<RealParamsFullList, PlaceholderIndex<P7>::value>::Result, NullType>::Result OutgoingOrderType7;
-		typedef typename Select<IsPlaceholder<P8>::result, typename TL::TypeAtNonStrict<RealParamsFullList, PlaceholderIndex<P7>::value>::Result, NullType>::Result OutgoingOrderType8;
+		typedef typename Select<IsPlaceholder<P8>::result, typename TL::TypeAtNonStrict<RealParamsFullList, PlaceholderIndex<P8>::value>::Result, NullType>::Result OutgoingOrderType8;
 
 		typedef Typelist<NullType, NullType> OutgoingFunctionParamsList0;
 		typedef typename TL::Append<OutgoingFunctionParamsList0, OutgoingOrderType1>::Result OutgoingFunctionParamsList1;
@@ -757,7 +757,7 @@ namespace DAVA
 	typename Bound_8<typename FuncTraits<F>::FunctionType, P1, P2, P3, P4, P5, P6, P7, P8>::OutgoingFunctionType Bind(const F &fn, const P1 &p1, const P2 &p2, const P3 &p3, const P4 &p4, const P5 &p5, const P6 &p6, const P7 &p7, const P8 &p8)
 	{
 		typedef Bound_8<typename FuncTraits<F>::FunctionType, P1, P2, P3, P4, P5, P6, P7, P8> BoundType;
-		BoundType *b = new BoundType(MakeFunction(fn), p1, p2, p3, p4, p5, p6, p7, p8);
+    BoundType *b = new BoundType(MakeFunction(fn), p1, p2, p3, p4, p5, p6, p7, p8);
         return  typename BoundType::OutgoingFunctionType(PointerWrapper<BoundType>::template Wrap<WrappingOwnedRetainReleaseRule>(b), &BoundType::invoke);
     }
 };
