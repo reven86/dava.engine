@@ -43,6 +43,18 @@
 namespace DAVA
 {
 
+class CorePlatformWinUAP;
+
+/************************************************************************
+ Class WinUAPXamlApp represents WinRT XAML application with embedded framework's render loop
+ On startup application creates minimal neccesary infrastructure to allow coexistance of
+ XAML native controls and DirectX and OpenGL (through ANGLE).
+ Application makes explicit use of two threads:
+    - UI thread, created by system, where all interaction with UI and XAML controls must be done
+    - main thread, created by WinUAPXamlApp instance, where framework lives
+ To run code on UI thread you should use CorePlatformWinUAP::RunOnUIThread or CorePlatformWinUAP::RunOnUIThreadBlocked
+ To run code on main thread you should use CorePlatformWinUAP::RunOnMainThread
+************************************************************************/
 ref class WinUAPXamlApp sealed : public ::Windows::UI::Xaml::Application
 {
 public:
@@ -53,7 +65,10 @@ public:
     Windows::UI::ViewManagement::ApplicationViewWindowingMode GetScreenMode();
     void SetScreenMode(Windows::UI::ViewManagement::ApplicationViewWindowingMode screenMode);
 
-    Windows::UI::Core::CoreDispatcher^ Dispatcher();
+    Windows::UI::Core::CoreDispatcher^ UIThreadDispatcher();
+    Windows::UI::Core::CoreDispatcher^ MainThreadDispatcher();
+
+    void SetQuitFlag();
 
     void AddUIElement(Windows::UI::Xaml::UIElement^ uiElement);
     void RemoveUIElement(Windows::UI::Xaml::UIElement^ uiElement);
@@ -63,9 +78,7 @@ protected:
     void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args) override;
 
 private:
-    void StartRenderLoop();
-    void StopRenderLoop();
-    void Run(Windows::Foundation::IAsyncAction^ action);
+    void Run();
 
 private:    // Event handlers
     // App state handlers
@@ -116,19 +129,17 @@ private:
     void ShowCursor();
     void HideCursor();
 
-    template<typename F>
-    Windows::Foundation::IAsyncAction^ RunOnUIThread(F fn);
-
-    template<typename F>
-    Windows::Foundation::IAsyncAction^ RunOnRenderThread(F fn);
-
 private:
-    Windows::UI::Core::CoreDispatcher^ coreDispatcher = nullptr;
+    CorePlatformWinUAP* core;
+    Windows::UI::Core::CoreDispatcher^ uiThreadDispatcher = nullptr;
+    Windows::UI::Core::CoreIndependentInputSource^ mainThreadInputSource = nullptr;
+
     Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel = nullptr;
     Windows::UI::Xaml::Controls::Canvas^ canvas = nullptr;
 
-    Windows::UI::Core::CoreIndependentInputSource^ renderLoopInput = nullptr;
     Windows::Foundation::IAsyncAction^ renderLoopWorker = nullptr;
+
+    volatile bool quitFlag = false;
 
     Vector<UIEvent> allTouches;
 
@@ -138,10 +149,10 @@ private:
     bool isWindowVisible = true;
     bool isWindowClosed = false;
     bool isFullscreen = false;
-    DisplayMode windowedMode = DisplayMode(DISPLAY_MODE_DEFAULT_WIDTH,
-                                           DISPLAY_MODE_DEFAULT_HEIGHT,
-                                           DISPLAY_MODE_DEFAULT_BITS_PER_PIXEL,
-                                           DISPLAY_MODE_DEFAULT_DISPLAYFREQUENCY);
+    DisplayMode windowedMode = DisplayMode(DisplayMode::DEFAULT_WIDTH,
+                                           DisplayMode::DEFAULT_HEIGHT,
+                                           DisplayMode::DEFAULT_BITS_PER_PIXEL,
+                                           DisplayMode::DEFAULT_DISPLAYFREQUENCY);
     DisplayMode currentMode = windowedMode;
     DisplayMode fullscreenMode = windowedMode;
 
@@ -151,8 +162,8 @@ private:
     bool isMiddleButtonPressed = false;
 
     float64 rawPixelInViewPixel = 1.0;
-    float32 windowWidth = static_cast<float32>(DisplayMode::DISPLAY_MODE_DEFAULT_WIDTH);
-    float32 windowHeight = static_cast<float32>(DisplayMode::DISPLAY_MODE_DEFAULT_HEIGHT);
+    float32 windowWidth = static_cast<float32>(DisplayMode::DEFAULT_WIDTH);
+    float32 windowHeight = static_cast<float32>(DisplayMode::DEFAULT_HEIGHT);
     int32 integralWindowWidth = static_cast<int32>(windowWidth * rawPixelInViewPixel);
     int32 integralWindowHeight = static_cast<int32>(windowHeight * rawPixelInViewPixel);
 
@@ -161,23 +172,19 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-inline Windows::UI::Core::CoreDispatcher^ WinUAPXamlApp::Dispatcher()
+inline Windows::UI::Core::CoreDispatcher^ WinUAPXamlApp::UIThreadDispatcher()
 {
-    return coreDispatcher;
+    return uiThreadDispatcher;
 }
 
-template<typename F>
-Windows::Foundation::IAsyncAction^ WinUAPXamlApp::RunOnUIThread(F fn)
+inline Windows::UI::Core::CoreDispatcher^ WinUAPXamlApp::MainThreadDispatcher()
 {
-    using namespace Windows::UI::Core;
-    return coreDispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(fn));
+    return mainThreadInputSource->Dispatcher;
 }
 
-template<typename F>
-Windows::Foundation::IAsyncAction^ WinUAPXamlApp::RunOnRenderThread(F fn)
+inline void WinUAPXamlApp::SetQuitFlag()
 {
-    using namespace Windows::UI::Core;
-    return renderLoopInput->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(fn));
+    quitFlag = true;
 }
 
 }   // namespace DAVA

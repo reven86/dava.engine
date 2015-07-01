@@ -174,27 +174,24 @@ public:
 #endif 
 #if defined __DAVAENGINE_WIN_UAP__
 private:
-    EGLDisplay mEglDisplay = EGL_NO_DISPLAY;
-    EGLContext mEglContext = EGL_NO_CONTEXT;
-    EGLSurface mEglSurface = EGL_NO_SURFACE;
-
-    EGLConfig  mEglConfig = nullptr;
+    EGLDisplay eglDisplay = EGL_NO_DISPLAY;
+    EGLContext eglContext = EGL_NO_CONTEXT;
+    EGLSurface eglSurface = EGL_NO_SURFACE;
+    EGLConfig  eglConfig = nullptr;
 public:
-    bool Create();
-    bool Create(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel);
-    bool BindToCurrentThread();
-
-    bool Create(Windows::UI::Core::CoreWindow^ window);
+    // These methods throw Platform::Exception on failure
+    void Create(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel);
+    void BindToCurrentThread();
 #elif defined __DAVAENGINE_WIN32__
-	bool Create(HINSTANCE hInstance, HWND hWnd);
+    bool Create(HINSTANCE hInstance, HWND hWnd);
 #else
-	bool Create();
+    bool Create();
 #endif 
-	bool ChangeDisplayMode(DisplayMode mode, bool isFullscreen);
-	
+    bool ChangeDisplayMode(DisplayMode mode, bool isFullscreen);
+
 #if defined(__DAVAENGINE_ANDROID__)
-	void Lost();
-	void Invalidate();
+    void Lost();
+    void Invalidate();
 #endif
 
 	void Release();

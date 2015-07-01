@@ -26,170 +26,96 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __DAVAENGINE_CORE_PLATFORM_WINSTORE_H__
-#define __DAVAENGINE_CORE_PLATFORM_WINSTORE_H__
+#ifndef __DAVAENGINE_COREPLATFORMWINUAP_H__
+#define __DAVAENGINE_COREPLATFORMWINUAP_H__
 
 #include "Base/Platform.h"
+
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "Core\Core.h"
-#include "Base\BaseTypes.h"
-#include <agile.h>
+#include "Base/BaseTypes.h"
+#include "Core/Core.h"
+#include "Concurrency/Spinlock.h"
 
 namespace DAVA
 {
 
-ref class WinStoreFrame sealed : public Windows::ApplicationModel::Core::IFrameworkView
+ref class WinUAPXamlApp;
+
+class CorePlatformWinUAP : public Core
 {
 public:
-    WinStoreFrame();
+    CorePlatformWinUAP() = default;
+    virtual ~CorePlatformWinUAP() = default;
 
-    // IFrameworkView Methods
-    virtual void Initialize(_In_ Windows::ApplicationModel::Core::CoreApplicationView^ applicationView);
-    virtual void SetWindow(_In_ Windows::UI::Core::CoreWindow^ window);
-    virtual void Load(_In_ Platform::String^ entryPoint);
-    virtual void Run();
-    virtual void Uninitialize();
+    CorePlatformWinUAP(const CorePlatformWinUAP&) = delete;
+    CorePlatformWinUAP& operator = (const CorePlatformWinUAP&) = delete;
 
-protected:
-    
-    // Application lifecycle event handlers.
-    void OnActivated(_In_ Windows::ApplicationModel::Core::CoreApplicationView^ applicationView, _In_ Windows::ApplicationModel::Activation::IActivatedEventArgs^ args);
-    void OnSuspending(_In_ Platform::Object^ sender, _In_ Windows::ApplicationModel::SuspendingEventArgs^ args);
-    void OnResuming(_In_ Platform::Object^ sender, _In_ Platform::Object^ args);
-    // Window event handlers.
-    void OnWindowActivationChanged(_In_ Windows::UI::Core::CoreWindow^ sender, _In_ Windows::UI::Core::WindowActivatedEventArgs^ args);
-    void OnWindowClosed(_In_ Windows::UI::Core::CoreWindow^ sender, _In_ Windows::UI::Core::CoreWindowEventArgs^ args
-        );
-    // MSDN::Is fired when the window visibility is changed.
-    void OnVisibilityChanged(_In_ Windows::UI::Core::CoreWindow^ sender, _In_ Windows::UI::Core::VisibilityChangedEventArgs^ args);
-    // MSDN::Is fired when the window size is changed.
-    void OnWindowSizeChanged(_In_ Windows::UI::Core::CoreWindow^ sender, _In_ Windows::UI::Core::WindowSizeChangedEventArgs^ args);
-    // DisplayInformation event handlers. 
-    // MSDN::Monitors and controls physical display information. The class provides events to allow clients to monitor for changes in the display.
-    // MSDN::Occurs when the LogicalDpi property changes because the pixels per inch (PPI) of the display changes.
-    void OnDpiChanged(_In_ Windows::Graphics::Display::DisplayInformation^ sender, _In_ Platform::Object^ args);
-    // MSDN::Occurs when either the CurrentOrientation or NativeOrientation property changes because of a mode change or a monitor change.
-    void OnOrientationChanged(_In_ Windows::Graphics::Display::DisplayInformation^ sender, _In_ Platform::Object^ args);
-    // MSDN::Occurs when the display requires redrawing.
-    void OnDisplayContentsInvalidated(_In_ Windows::Graphics::Display::DisplayInformation^ sender, _In_ Platform::Object^ args);
-    // MSDN::Occurs when the StereoEnabled property changes because support for stereoscopic 3D changes.
-    void OnStereoEnabledChanged(_In_ Windows::Graphics::Display::DisplayInformation^ sender, _In_ Platform::Object^ args);
-    // CoreWindows events
-    // MSDN::Occurs when a mouse button is clicked, or a touch or pen contact is detected, within the bounding rectangle of the Windows Store app.
-    void OnPointerPressed(_In_ Windows::UI::Core::CoreWindow^ sender, _In_ Windows::UI::Core::PointerEventArgs^ args);
-    // MSDN::Occurs when a pointer moves within the bounding box of the Windows Store app.
-    void OnPointerMoved(_In_ Windows::UI::Core::CoreWindow^ sender, _In_ Windows::UI::Core::PointerEventArgs^ args);
-    // MSDN::Occurs when a mouse button is released, or a touch or pen contact is lifted, within the bounding rectangle of the Windows Store app.
-    void OnPointerReleased(_In_ Windows::UI::Core::CoreWindow^ sender, _In_ Windows::UI::Core::PointerEventArgs^ args);
-    // MSDN::Occurs when the pointer moves outside the bounding box of the Windows Store app.
-    void OnPointerExited(_In_ Windows::UI::Core::CoreWindow^ sender, _In_ Windows::UI::Core::PointerEventArgs^ args);
-    // MSDN::Is fired when a non-system key is pressed.
-    void OnKeyDown(_In_ Windows::UI::Core::CoreWindow^ sender, _In_ Windows::UI::Core::KeyEventArgs^ args);
-    // MSDN::Is fired when a non-system key is released after a press.
-    void OnKeyUp(_In_ Windows::UI::Core::CoreWindow^ sender, _In_ Windows::UI::Core::KeyEventArgs^ args);
-    // MSDN::Occurs when the delta value of a pointer wheel changes.
-    void OnWheel(_In_ Windows::UI::Core::CoreWindow^ sender, _In_ Windows::UI::Core::PointerEventArgs^ args);
-    // MouseDevice class. Supports the ability to identify and track connected mouse devices.
-    // MSDN::Occurs when the mouse pointer is moved.
-    void OnMouseMoved(_In_ Windows::Devices::Input::MouseDevice^ mouseDevice, _In_ Windows::Devices::Input::MouseEventArgs^ args);
-
-private:
-    void ShowCursor();
-    void HideCursor();
-    void UpdateScreenSize(float32 width, float32 height);
-    // TODO::makkis:: wait response from Microsoft
-    //Windows::Foundation::Size ScreenResolutionDetect();
-    void InitInput();
-    void InitRender();
-    void InitCoordinatesSystem();
-    void PreparationSizeScreen();
-    void ReInitRender();
-    void ReInitCoordinatesSystem();
-
-    void DAVATouchEvent(DAVA::UIEvent::eInputPhase phase, Windows::UI::Input::PointerPoint^ pointPtr);
-    void SetFullScreen(bool isFullScreenFlag);
-    void SetPreferredSize(const int32 &width, const int32 &height);
-    void SetTitleName();
-    void SetDisplayOrientations(Core::eScreenOrientation orientMode);
-
-public:
-    Windows::Graphics::Display::DisplayOrientations GetDisplayOrientation();
-    Windows::UI::ViewManagement::ApplicationViewWindowingMode GetScreenMode();
-    void SetScreenMode(Windows::UI::ViewManagement::ApplicationViewWindowingMode screenMode);
-
-private:
-    Platform::Agile<Windows::UI::Core::CoreWindow> ownWindow;
-    Vector<DAVA::UIEvent> allTouches;
-
-    // static properties
-    bool isMouseDetected;
-    bool isTouchDetected;
-    // dynamic properties
-    Windows::UI::ViewManagement::UserInteractionMode userInteractionMode;
-    Windows::Graphics::Display::DisplayOrientations displayOrientation;
-    bool willQuit;
-    volatile bool isWindowClosed;
-    volatile bool isWindowVisible;
-    bool isFullscreen;
-    // display's properties
-    float32 windowWidth;
-    float32 windowHeight;
-    float64 rawPixelInViewPixel;
-    int32 exWindowWidth;
-    int32 exWindowHeight;
-    // input's properties
-    bool isMouseCursorShown;
-    bool isRightButtonPressed;
-    bool isLeftButtonPressed;
-    bool isMiddleButtonPressed;
-
-    DisplayMode currentMode;
-    DisplayMode fullscreenMode;
-    DisplayMode windowedMode;
-    RECT windowPositionBeforeFullscreen;
-
-};
-
-class CorePlatformWinStore : public Core
-{
-public:
-    CorePlatformWinStore();
-    virtual ~CorePlatformWinStore();
-
-    CorePlatformWinStore(const CorePlatformWinStore&) = delete;
-    CorePlatformWinStore& operator=(const CorePlatformWinStore&) = delete;
-
+    void InitArgs();
     void Run();
-    void InitArgs(); // if need
+    void Quit() override;
+
     eScreenMode GetScreenMode() override;
     void SwitchScreenToMode(eScreenMode screenMode) override;
-    //void GetAvailableDisplayModes(List<DisplayMode> & availableModes) override;
-    // TODO::makkis:: wait response from Microsoft
-    //DisplayMode FindBestMode(const DisplayMode & requestedMode) override;
-    // TODO::makkis:: wait response from Microsoft
-    void Quit() override;
-    void SetIcon(int32 iconId) override;
+
     eScreenOrientation GetScreenOrientation() override;
-    uint32 GetScreenDPI() override;
-    void GoBackground(bool isLock) override;
-    void GoForeground() override;
+
+    // Win10 specific member functions
+
+    // Get pointer to underlying XAML application object
+    WinUAPXamlApp^ XamlApplication() DAVA_NOEXCEPT;
+
+    // Run specified function on UI thread
+    template<typename F>
+    void RunOnUIThread(F fn);
+    // Run specified function on UI thread and block calling thread until function finishes
+    template<typename F>
+    void RunOnUIThreadBlocked(F fn);
+
+    // Run specified function on main thread
+    template<typename F>
+    void RunOnMainThread(F fn);
 
 private:
-    Platform::Agile<WinStoreFrame> frameWinUAP;
+    WinUAPXamlApp^ xamlApp = nullptr;
 };
 
-ref class WinStoreApplicationSource : Windows::ApplicationModel::Core::IFrameworkViewSource
+//////////////////////////////////////////////////////////////////////////
+inline WinUAPXamlApp^ CorePlatformWinUAP::XamlApplication() DAVA_NOEXCEPT
 {
-public:
-    virtual Windows::ApplicationModel::Core::IFrameworkView^ CreateView();
-    Windows::ApplicationModel::Core::IFrameworkView^ GetView() { return frame.Get(); }
-private:
-    Platform::Agile<Windows::ApplicationModel::Core::IFrameworkView> frame;
-};
+    return xamlApp;
+}
 
-} // namespace DAVA
+template<typename F>
+void CorePlatformWinUAP::RunOnUIThread(F fn)
+{
+    using namespace Windows::UI::Core;
+    xamlApp->UIThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(fn));
+}
 
-#endif // #if defined(__DAVAENGINE_WIN_UAP__)
-#endif // __DAVAENGINE_CORE_PLATFORM_WINSTORE_H__
+template<typename F>
+void CorePlatformWinUAP::RunOnUIThreadBlocked(F fn)
+{
+    using namespace Windows::UI::Core;
+
+    Spinlock lock;
+    auto wrapper = [&lock, &fn]() {
+        fn();
+        lock.Unlock();
+    };
+    lock.Lock();
+    xamlApp->UIThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(wrapper));
+    lock.Lock();
+}
+
+template<typename F>
+void CorePlatformWinUAP::RunOnMainThread(F fn)
+{
+    using namespace Windows::UI::Core;
+    xamlApp->MainThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(fn));
+}
+
+}   // namespace DAVA
+
+#endif  // __DAVAENGINE_WIN_UAP__
+#endif  // __DAVAENGINE_COREPLATFORMWINUAP_H__
