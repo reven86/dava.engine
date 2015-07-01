@@ -37,8 +37,6 @@
 #include "LandscapeEditorDrawSystem/LandscapeProxy.h"
 #include "Commands2/TilemaskEditorCommands.h"
 
-#include "IMagickHelper.h"
-
 #include <QApplication>
 
 static std::array<FastName, 4> TILECOLOR_PARAM_NAMES;
@@ -385,8 +383,8 @@ void TilemaskEditorSystem::UpdateToolImage()
         DVASSERT(images[0]->GetPixelFormat() == FORMAT_RGBA8888);
         
         Image * toolImage = Image::Create(curToolSize, curToolSize, FORMAT_RGBA8888);
-        IMagickHelper::ResizeRGBA(images[0]->data, images[0]->GetWidth(), images[0]->GetHeight(),
-                                  toolImage->data, curToolSize, curToolSize);
+//        IMagickHelper::ResizeRGBA(images[0]->data, images[0]->GetWidth(), images[0]->GetHeight(),
+//                                  toolImage->data, curToolSize, curToolSize);
         
         SafeRelease(images[0]);
         

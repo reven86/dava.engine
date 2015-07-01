@@ -39,8 +39,6 @@
 #include "Main/QtUtils.h"
 #include "HoodSystem.h"
 
-#include "IMagickHelper.h"
-
 #include <QApplication>
 
 HeightmapEditorSystem::HeightmapEditorSystem(Scene* scene)
@@ -232,8 +230,8 @@ void HeightmapEditorSystem::UpdateToolImage()
             DVASSERT(images[0]->GetPixelFormat() == FORMAT_RGBA8888);
             
             curToolImage = Image::Create(curToolSize, curToolSize, FORMAT_RGBA8888);
-            IMagickHelper::ResizeRGBA(images[0]->data, images[0]->GetWidth(), images[0]->GetHeight(),
-                                      curToolImage->data, curToolSize, curToolSize);
+//            IMagickHelper::ResizeRGBA(images[0]->data, images[0]->GetWidth(), images[0]->GetHeight(),
+//                                      curToolImage->data, curToolSize, curToolSize);
             
             SafeRelease(images[0]);
         }
