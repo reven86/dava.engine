@@ -94,7 +94,7 @@ public class JNINotificationProvider {
 		if(JNIActivity.GetActivity() != null) {
 			intent.putExtra("activityClassName", JNIActivity.GetActivity().getClass().getName());
 		}
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0 /*(int) System.currentTimeMillis()*/, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.set(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + delaySeconds * 1000, pendingIntent);
     }
 
