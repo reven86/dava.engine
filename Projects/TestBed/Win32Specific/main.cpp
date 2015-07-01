@@ -47,7 +47,8 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 [Platform::MTAThread]
 int main(Platform::Array<Platform::String^>^ args)
 {
-    return DAVA::Core::Run(0, 0, 0);
+    //return DAVA::Core::Run(0, 0, 0);
+    return DAVA::Core::Run2(0, 0, 0);
 }
 
 #endif // defined(__DAVAENGINE_WIN32__)

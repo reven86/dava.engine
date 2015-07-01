@@ -180,7 +180,10 @@ private:
 
     EGLConfig  mEglConfig = nullptr;
 public:
-    bool Create(Windows::UI::Xaml::Controls::SwapChainPanel^ panel);
+    bool Create();
+    bool Create(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel);
+    bool BindToCurrentThread();
+
     bool Create(Windows::UI::Core::CoreWindow^ window);
 #elif defined __DAVAENGINE_WIN32__
 	bool Create(HINSTANCE hInstance, HWND hWnd);

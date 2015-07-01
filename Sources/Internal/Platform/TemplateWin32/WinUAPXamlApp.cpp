@@ -61,6 +61,7 @@ using namespace ::Windows::ApplicationModel;
 using namespace ::Windows::Graphics::Display;
 using namespace ::Windows::ApplicationModel::Core;
 using namespace ::Windows::UI::Xaml::Media;
+using namespace ::Windows::System::Threading;
 
 namespace DAVA
 {
@@ -95,7 +96,7 @@ void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchAc
     UpdateScreenSize(coreWindow->Bounds.Width, coreWindow->Bounds.Height);
     Window::Current->Activate();
 
-    Run();
+    StartRenderLoop();
 }
 
 void WinUAPXamlApp::AddUIElement(Windows::UI::Xaml::UIElement^ uiElement)
@@ -122,49 +123,67 @@ void WinUAPXamlApp::PositionUIElement(Windows::UI::Xaml::UIElement^ uiElement, f
     canvas->SetTop(uiElement, y);
 }
 
-void WinUAPXamlApp::Run()
+void WinUAPXamlApp::StartRenderLoop()
+{
+    RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
+    RenderManager::Instance()->Create();
+    RenderManager::Instance()->Create(swapChainPanel);
+
+    WorkItemHandler^ workItemHandler = ref new WorkItemHandler([this](Windows::Foundation::IAsyncAction^ action) { Run(action); });
+    renderLoopWorker = ThreadPool::RunAsync(workItemHandler, WorkItemPriority::High, WorkItemOptions::TimeSliced);
+}
+
+void WinUAPXamlApp::StopRenderLoop()
+{
+
+}
+
+void WinUAPXamlApp::Run(Windows::Foundation::IAsyncAction^ action)
 {
     Core::Instance()->CreateSingletons();
 
-    SetDisplayOrientations(Core::eScreenOrientation::SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE);
+    Logger::Debug("******************** WinUAPXamlApp::Run: thread=%d", GetCurrentThreadId());
 
-    InitInput();
-    PrepareScreenSize();
+    SetupRenderLoopEventHandlers();
 
-    InitRender();
+    RenderManager::Instance()->BindToCurrentThread();
+    RenderManager::Instance()->Init(integralWindowWidth, integralWindowHeight);
+    RenderSystem2D::Instance()->Init();
+
+    static_cast<CorePlatformWinUAP*>(Core::Instance())->RunOnUIThreadBlocked([this]() {
+        SetDisplayOrientations(Core::eScreenOrientation::SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE);
+        InitInput();
+        PrepareScreenSize();
+    });
+
     InitCoordinatesSystem();
     FrameworkDidLaunched();
 
-    SetTitleName();
+    RunOnUIThread([this]() { SetTitleName(); });
 
     Core::Instance()->SystemAppStarted();
-    while (!isWindowClosed)
+    Logger::Debug("******************** WinUAPXamlApp::Run: enter loop");
+    while (AsyncStatus::Started == action->Status)
     {
-        if (isWindowVisible)
-        {
-            coreDispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
+        renderLoopInput->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 
-            DAVA::uint64 startTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
-            RenderManager::Instance()->Lock();
-            Core::Instance()->SystemProcessFrame();
-            RenderManager::Instance()->Unlock();
-            uint32 elapsedTime = (uint32)(SystemTimer::Instance()->AbsoluteMS() - startTime);
-            int32 sleepMs = 1;
-            int32 fps = RenderManager::Instance()->GetFPS();
-            if (fps > 0)
+        DAVA::uint64 startTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
+        RenderManager::Instance()->Lock();
+        Core::Instance()->SystemProcessFrame();
+        RenderManager::Instance()->Unlock();
+        uint32 elapsedTime = (uint32)(SystemTimer::Instance()->AbsoluteMS() - startTime);
+        int32 sleepMs = 1;
+        int32 fps = RenderManager::Instance()->GetFPS();
+        if (fps > 0)
+        {
+            sleepMs = (1000 / fps) - elapsedTime;
+            if (sleepMs > 0)
             {
-                sleepMs = (1000 / fps) - elapsedTime;
-                if (sleepMs > 0)
-                {
-                    Thread::Sleep(sleepMs);
-                }
+                Thread::Sleep(sleepMs);
             }
         }
-        else
-        {
-            coreDispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
-        }
     }
+    Logger::Debug("******************** WinUAPXamlApp::Run: leave loop");
 
     ApplicationCore* appCore = Core::Instance()->GetApplicationCore();
     if (appCore != nullptr && appCore->OnQuit())
@@ -179,12 +198,16 @@ void WinUAPXamlApp::Run()
 
 void WinUAPXamlApp::OnSuspending(::Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ args)
 {
+    Logger::Debug("******************** WinUAPXamlApp::OnSuspending: thread=%d", GetCurrentThreadId());
+
     isWindowVisible = false;
     Core::Instance()->SetIsActive(isWindowVisible);
 }
 
 void WinUAPXamlApp::OnResuming(::Platform::Object^ sender, ::Platform::Object^ args)
 {
+    Logger::Debug("******************** WinUAPXamlApp::OnResuming: thread=%d", GetCurrentThreadId());
+
     isWindowVisible = true;
     Core::Instance()->SetIsActive(isWindowVisible);
 }
@@ -196,9 +219,11 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ s
     {
     case CoreWindowActivationState::CodeActivated:
     case CoreWindowActivationState::PointerActivated:
+        Logger::Debug("******************** WinUAPXamlApp::OnWindowActivationChanged: activated, thread=%d", GetCurrentThreadId());
         Core::Instance()->SetIsActive(true);
         break;
     case CoreWindowActivationState::Deactivated:
+        Logger::Debug("******************** WinUAPXamlApp::OnWindowActivationChanged: deactivated, thread=%d", GetCurrentThreadId());
         Core::Instance()->SetIsActive(false);
         break;
     default:
@@ -209,28 +234,34 @@ void WinUAPXamlApp::OnWindowActivationChanged(::Windows::UI::Core::CoreWindow^ s
 void WinUAPXamlApp::OnWindowVisibilityChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::VisibilityChangedEventArgs^ args)
 {
     isWindowVisible = args->Visible;
-    Core::Instance()->SetIsActive(isWindowVisible);
+    //Core::Instance()->SetIsActive(isWindowVisible);
 
-    // For now it is the only known method to break render loop on desktop :(
-    // Window become hidden when Minimize or Maximize button pressed
-    // So it's not recommended to press minimize button
-    if (!isWindowVisible)
-    {
-        isWindowClosed = true;
-    }
+    if (isWindowVisible)
+        Logger::Debug("******************** WinUAPXamlApp::OnWindowVisibilityChanged: visible, thread=%d", GetCurrentThreadId());
+    else
+        Logger::Debug("******************** WinUAPXamlApp::OnWindowVisibilityChanged: hidden, thread=%d", GetCurrentThreadId());
 }
 
 void WinUAPXamlApp::OnWindowSizeChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowSizeChangedEventArgs^ args)
 {
-    UpdateScreenSize(args->Size.Width, args->Size.Height);
-    ReInitRender();
-    ReInitCoordinatesSystem();
-    UIScreenManager::Instance()->ScreenSizeChanged();
+    float32 w = args->Size.Width;
+    float32 h = args->Size.Height;
+    Logger::Debug("******************** WinUAPXamlApp::OnWindowSizeChanged: width=%d, height=%d, thread=%d", int(w), int(h), GetCurrentThreadId());
+
+    RunOnRenderThread([this, w, h]() {
+        UpdateScreenSize(w, h);
+        ReInitRender();
+        ReInitCoordinatesSystem();
+        UIScreenManager::Instance()->ScreenSizeChanged();
+    });
 }
 
-void WinUAPXamlApp::OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
+void WinUAPXamlApp::OnPointerPressed(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args)
 {
     PointerPoint^ curPoint = args->CurrentPoint;
+    int x = (int)curPoint->Position.X;
+    int y = (int)curPoint->Position.Y;
+    Logger::Debug("******************** WinUAPXamlApp::OnPointerPressed: x=%d, y=%d, thread=%d", x, y, GetCurrentThreadId());
     {
         PointerPointProperties^ pointProperties = curPoint->Properties;
         isLeftButtonPressed = pointProperties->IsLeftButtonPressed;
@@ -240,7 +271,7 @@ void WinUAPXamlApp::OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Wind
     DAVATouchEvent(UIEvent::PHASE_BEGAN, curPoint);
 }
 
-void WinUAPXamlApp::OnPointerReleased(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
+void WinUAPXamlApp::OnPointerReleased(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args)
 {
     PointerPoint^ curPoint = args->CurrentPoint;
     DAVATouchEvent(UIEvent::PHASE_ENDED, curPoint);
@@ -252,7 +283,7 @@ void WinUAPXamlApp::OnPointerReleased(Windows::UI::Core::CoreWindow^ sender, Win
     }
 }
 
-void WinUAPXamlApp::OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
+void WinUAPXamlApp::OnPointerMoved(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args)
 {
     PointerPoint^ curPoint = args->CurrentPoint;
     switch (curPoint->PointerDevice->PointerDeviceType)
@@ -273,12 +304,12 @@ void WinUAPXamlApp::OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Window
     }
 }
 
-void WinUAPXamlApp::OnPointerEntered(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
+void WinUAPXamlApp::OnPointerEntered(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args)
 {
     
 }
 
-void WinUAPXamlApp::OnPointerExited(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
+void WinUAPXamlApp::OnPointerExited(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args)
 {
     if (!isMouseCursorShown)
     {
@@ -287,7 +318,7 @@ void WinUAPXamlApp::OnPointerExited(Windows::UI::Core::CoreWindow^ sender, Windo
     }
 }
 
-void WinUAPXamlApp::OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
+void WinUAPXamlApp::OnPointerWheel(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args)
 {
     PointerPoint^ curPoint = args->CurrentPoint;
     PointerPointProperties^ pointProperties = curPoint->Properties;
@@ -303,13 +334,15 @@ void WinUAPXamlApp::OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Window
     UIControlSystem::Instance()->OnInput(UIEvent::PHASE_WHEEL, touches, allTouches);
 }
 
-void WinUAPXamlApp::OnPointerCaptureLost(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args)
+void WinUAPXamlApp::OnPointerCaptureLost(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args)
 {
     
 }
 
 void WinUAPXamlApp::OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args)
 {
+    Logger::Debug("******************** WinUAPXamlApp::OnKeyDown: thread=%d", GetCurrentThreadId());
+
     auto window = CoreWindow::GetForCurrentThread();
     if (window)
     {
@@ -402,15 +435,22 @@ void WinUAPXamlApp::SetupEventHandlers()
     coreWindow->VisibilityChanged += ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &WinUAPXamlApp::OnWindowVisibilityChanged);
     coreWindow->SizeChanged += ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>(this, &WinUAPXamlApp::OnWindowSizeChanged);
 
-    coreWindow->PointerPressed += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerPressed);
-    coreWindow->PointerReleased += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerReleased);
-    coreWindow->PointerMoved += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerMoved);
-    coreWindow->PointerEntered += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerEntered);
-    coreWindow->PointerExited += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerExited);
-    coreWindow->PointerWheelChanged += ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerWheel);
-
     coreWindow->KeyDown += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &WinUAPXamlApp::OnKeyDown);
     coreWindow->KeyUp += ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &WinUAPXamlApp::OnKeyUp);
+}
+
+void WinUAPXamlApp::SetupRenderLoopEventHandlers()
+{
+    renderLoopInput = swapChainPanel->CreateCoreIndependentInputSource(CoreInputDeviceTypes::Mouse |
+                                                                       CoreInputDeviceTypes::Touch |
+                                                                       CoreInputDeviceTypes::Pen);
+
+    renderLoopInput->PointerPressed += ref new TypedEventHandler<Platform::Object^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerPressed);
+    renderLoopInput->PointerReleased += ref new TypedEventHandler<Platform::Object^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerReleased);
+    renderLoopInput->PointerMoved += ref new TypedEventHandler<Platform::Object^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerMoved);
+    renderLoopInput->PointerEntered += ref new TypedEventHandler<Platform::Object^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerEntered);
+    renderLoopInput->PointerExited += ref new TypedEventHandler<Platform::Object^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerExited);
+    renderLoopInput->PointerWheelChanged += ref new TypedEventHandler<Platform::Object^, PointerEventArgs^>(this, &WinUAPXamlApp::OnPointerWheel);
 }
 
 void WinUAPXamlApp::CreateBaseXamlUI()
@@ -576,15 +616,19 @@ void WinUAPXamlApp::SetPreferredSize(int32 width, int32 height)
 void WinUAPXamlApp::ShowCursor()
 {
     // Cursor showing disables relative mouse movement tracking
-    CoreWindow^ coreWindow = Window::Current->CoreWindow;
-    coreWindow->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
+    RunOnUIThread([]() {
+        CoreWindow^ coreWindow = Window::Current->CoreWindow;
+        coreWindow->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
+    });
 }
 
 void WinUAPXamlApp::HideCursor()
 {
     // Cursor hiding enables relative mouse movement tracking
-    CoreWindow^ coreWindow = Window::Current->CoreWindow;
-    coreWindow->PointerCursor = nullptr;
+    RunOnUIThread([]() {
+        CoreWindow^ coreWindow = Window::Current->CoreWindow;
+        coreWindow->PointerCursor = nullptr;
+    });
 }
 
 }   // namespace DAVA

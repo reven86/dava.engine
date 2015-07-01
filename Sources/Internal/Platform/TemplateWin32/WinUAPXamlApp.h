@@ -63,7 +63,9 @@ protected:
     void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args) override;
 
 private:
-    void Run();
+    void StartRenderLoop();
+    void StopRenderLoop();
+    void Run(Windows::Foundation::IAsyncAction^ action);
 
 private:    // Event handlers
     // App state handlers
@@ -76,13 +78,13 @@ private:    // Event handlers
     void OnWindowSizeChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowSizeChangedEventArgs^ args);
 
     // Mouse and touch handlers
-    void OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerReleased(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerEntered(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerExited(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerCaptureLost(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerPressed(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerReleased(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerMoved(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerEntered(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerExited(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerWheel(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerCaptureLost(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
 
     // Keyboard handlers
     void OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
@@ -92,6 +94,7 @@ private:    // Event handlers
 
 private:
     void SetupEventHandlers();
+    void SetupRenderLoopEventHandlers();
     void CreateBaseXamlUI();
 
     void SetTitleName();
@@ -113,10 +116,19 @@ private:
     void ShowCursor();
     void HideCursor();
 
+    template<typename F>
+    Windows::Foundation::IAsyncAction^ RunOnUIThread(F fn);
+
+    template<typename F>
+    Windows::Foundation::IAsyncAction^ RunOnRenderThread(F fn);
+
 private:
     Windows::UI::Core::CoreDispatcher^ coreDispatcher = nullptr;
     Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel = nullptr;
     Windows::UI::Xaml::Controls::Canvas^ canvas = nullptr;
+
+    Windows::UI::Core::CoreIndependentInputSource^ renderLoopInput = nullptr;
+    Windows::Foundation::IAsyncAction^ renderLoopWorker = nullptr;
 
     Vector<UIEvent> allTouches;
 
@@ -128,7 +140,7 @@ private:
     bool isFullscreen = false;
     DisplayMode windowedMode = DisplayMode(DISPLAY_MODE_DEFAULT_WIDTH,
                                            DISPLAY_MODE_DEFAULT_HEIGHT,
-                                           DISPLAY_MODE_DEFAULT_BITSPERPEL,
+                                           DISPLAY_MODE_DEFAULT_BITS_PER_PIXEL,
                                            DISPLAY_MODE_DEFAULT_DISPLAYFREQUENCY);
     DisplayMode currentMode = windowedMode;
     DisplayMode fullscreenMode = windowedMode;
@@ -152,6 +164,20 @@ private:
 inline Windows::UI::Core::CoreDispatcher^ WinUAPXamlApp::Dispatcher()
 {
     return coreDispatcher;
+}
+
+template<typename F>
+Windows::Foundation::IAsyncAction^ WinUAPXamlApp::RunOnUIThread(F fn)
+{
+    using namespace Windows::UI::Core;
+    return coreDispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(fn));
+}
+
+template<typename F>
+Windows::Foundation::IAsyncAction^ WinUAPXamlApp::RunOnRenderThread(F fn)
+{
+    using namespace Windows::UI::Core;
+    return renderLoopInput->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(fn));
 }
 
 }   // namespace DAVA

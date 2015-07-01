@@ -49,9 +49,72 @@ namespace DAVA
 using namespace Platform;
 using namespace Windows::Foundation::Collections;
 
-bool RenderManager::Create(Windows::UI::Xaml::Controls::SwapChainPanel^ panel)
+bool RenderManager::Create()
 {
-    const EGLint configAttributes[] =
+    const EGLint configAttributes[] = {
+        EGL_RED_SIZE, 8,
+        EGL_GREEN_SIZE, 8,
+        EGL_BLUE_SIZE, 8,
+        EGL_ALPHA_SIZE, 8,
+        EGL_DEPTH_SIZE, 8,
+        EGL_STENCIL_SIZE, 8,
+        EGL_NONE
+    };
+    const EGLint contextAttributes[] = {
+        EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE
+    };
+    const EGLint defaultDisplayAttributes[] = {
+        EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER, EGL_TRUE,
+        EGL_PLATFORM_ANGLE_ENABLE_AUTOMATIC_TRIM_ANGLE, EGL_TRUE, EGL_NONE,
+    };
+    const EGLint fl9_3DisplayAttributes[] = {
+        EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
+        EGL_PLATFORM_ANGLE_MAX_VERSION_MAJOR_ANGLE, 9, EGL_PLATFORM_ANGLE_MAX_VERSION_MINOR_ANGLE, 3,
+        EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER, EGL_TRUE, EGL_PLATFORM_ANGLE_ENABLE_AUTOMATIC_TRIM_ANGLE, EGL_TRUE,
+        EGL_NONE,
+    };
+    const EGLint warpDisplayAttributes[] = {
+        EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_DEVICE_TYPE_WARP_ANGLE,
+        EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER, EGL_TRUE, EGL_PLATFORM_ANGLE_ENABLE_AUTOMATIC_TRIM_ANGLE, EGL_TRUE, EGL_NONE,
+    };
+
+    EGLConfig config = NULL;
+    PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT = reinterpret_cast<PFNEGLGETPLATFORMDISPLAYEXTPROC>(eglGetProcAddress("eglGetPlatformDisplayEXT"));
+    if (!eglGetPlatformDisplayEXT)
+        throw Exception::CreateException(E_FAIL, L"Failed to get function eglGetPlatformDisplayEXT");
+
+    mEglDisplay = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, defaultDisplayAttributes);
+    if (mEglDisplay == EGL_NO_DISPLAY)
+        throw Exception::CreateException(E_FAIL, L"Failed to get EGL display");
+
+    if (eglInitialize(mEglDisplay, NULL, NULL) == EGL_FALSE)
+    {
+        mEglDisplay = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, fl9_3DisplayAttributes);
+        if (mEglDisplay == EGL_NO_DISPLAY)
+            throw Exception::CreateException(E_FAIL, L"Failed to get EGL display");
+
+        if (eglInitialize(mEglDisplay, NULL, NULL) == EGL_FALSE)
+        {
+            mEglDisplay = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, warpDisplayAttributes);
+            if (mEglDisplay == EGL_NO_DISPLAY)
+                throw Exception::CreateException(E_FAIL, L"Failed to get EGL display");
+
+            if (eglInitialize(mEglDisplay, NULL, NULL) == EGL_FALSE)
+                throw Exception::CreateException(E_FAIL, L"Failed to initialize EGL");
+        }
+    }
+
+    EGLint numConfigs = 0;
+    if ((eglChooseConfig(mEglDisplay, configAttributes, &mEglConfig, 1, &numConfigs) == EGL_FALSE) || (numConfigs == 0))
+        throw Exception::CreateException(E_FAIL, L"Failed to choose first EGLConfig");
+
+    mEglContext = eglCreateContext(mEglDisplay, mEglConfig, EGL_NO_CONTEXT, contextAttributes);
+    if (mEglContext == EGL_NO_CONTEXT)
+        throw Exception::CreateException(E_FAIL, L"Failed to create EGL context");
+
+    return true;
+
+    /*const EGLint configAttributes[] =
     {
         EGL_RED_SIZE, 8,
         EGL_GREEN_SIZE, 8,
@@ -204,6 +267,26 @@ bool RenderManager::Create(Windows::UI::Xaml::Controls::SwapChainPanel^ panel)
     {
         throw Exception::CreateException(E_FAIL, L"Failed to make fullscreen EGLSurface current");
     }
+    return true;*/
+}
+
+bool RenderManager::Create(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel)
+{
+    const EGLint surfaceAttributes[] = {EGL_ANGLE_SURFACE_RENDER_TO_BACK_BUFFER, EGL_TRUE, EGL_NONE};
+
+    PropertySet^ surfaceCreationProperties = ref new PropertySet();
+    surfaceCreationProperties->Insert(ref new Platform::String(EGLNativeWindowTypeProperty), swapChainPanel);
+
+    mEglSurface = eglCreateWindowSurface(mEglDisplay, mEglConfig, reinterpret_cast<IInspectable*>(surfaceCreationProperties), surfaceAttributes);
+    if (mEglSurface == EGL_NO_SURFACE)
+        throw Exception::CreateException(E_FAIL, L"Failed to create EGL surface");
+    return true;
+}
+
+bool RenderManager::BindToCurrentThread()
+{
+    if (eglMakeCurrent(mEglDisplay, mEglSurface, mEglSurface, mEglContext) == EGL_FALSE)
+        throw Exception::CreateException(E_FAIL, L"Failed to make fullscreen EGLSurface current");
     return true;
 }
 

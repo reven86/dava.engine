@@ -33,8 +33,9 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "Base\BaseTypes.h"
-#include "Core\Core.h"
+#include "Base/BaseTypes.h"
+#include "Core/Core.h"
+#include "Concurrency/Spinlock.h"
 
 namespace DAVA
 {
@@ -66,6 +67,12 @@ public:
 
     void SetIcon(int32 iconId) override;
 
+    template<typename F>
+    void RunOnUIThread(F fn);
+
+    template<typename F>
+    void RunOnUIThreadBlocked(F fn);
+
 private:
     WinUAPXamlApp^ xamlApp = nullptr;
 };
@@ -74,6 +81,28 @@ private:
 inline WinUAPXamlApp^ CorePlatformWinUAP::XamlApplication()
 {
     return xamlApp;
+}
+
+template<typename F>
+void CorePlatformWinUAP::RunOnUIThread(F fn)
+{
+    using namespace Windows::UI::Core;
+    xamlApp->Dispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(fn));
+}
+
+template<typename F>
+void CorePlatformWinUAP::RunOnUIThreadBlocked(F fn)
+{
+    using namespace Windows::UI::Core;
+
+    Spinlock lock;
+    auto wrapper = [&lock, &fn]() {
+        fn();
+        lock.Unlock();
+    };
+    lock.Lock();
+    xamlApp->Dispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(wrapper));
+    lock.Lock();
 }
 
 }   // namespace DAVA
