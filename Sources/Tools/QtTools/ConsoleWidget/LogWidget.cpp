@@ -10,14 +10,14 @@
 #include "LogFilterModel.h"
 #include "LogDelegate.h"
 
-#include "Base/JSONconverter.h"
+#include "Utils/PointerSerializer.h"
 
 
 LogWidget::LogWidget(QWidget* parent)
     : QWidget(parent)
     , onBottom(true)
 {
-    qRegisterMetaType<DAVA::JSONconverter>("DAVA::JSONconverter");
+    qRegisterMetaType<DAVA::PointerSerializer>("DAVA::PointerSerializer");
     setupUi(this);
     connect(log, &QListView::clicked, this, &LogWidget::OnClicked);
     time.start();
@@ -185,7 +185,7 @@ void LogWidget::OnClicked(const QModelIndex &index)
     if (nullptr != item)
     {
         DAVA::String str(item->text().toStdString());
-        emit ItemClicked(DAVA::JSONconverter(str));
+        emit ItemClicked(DAVA::PointerSerializer(str));
     }
 }
 

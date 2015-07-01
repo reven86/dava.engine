@@ -28,7 +28,7 @@
 
 
 #include "Platform/Qt5/QtLayer.h"
-
+#include "Utils/PointerSerializer.h"
 #include "UI/mainwindow.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "DocumentGroup.h"
@@ -259,10 +259,9 @@ void EditorCore::UpdateLanguage()
     }
 }
 
-void EditorCore::OnNewItemSelected(const DAVA::VariantType &var)
+void EditorCore::OnNewItemSelected(const DAVA::PointerSerializer &arg)
 {
-    /*auto packageNode = var.AsPointer<PackageNode>();
-    documentGroup->GetActiveDocument()->SetSelectedItem(var);*/
+    documentGroup->GetActiveDocument()->SetSelectedItem(arg);
 }
 
 void EditorCore::OpenProject(const QString &path)

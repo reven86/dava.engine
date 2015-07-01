@@ -30,7 +30,7 @@
 #include "Document.h"
 #include <QLineEdit>
 #include "UI/Preview/EditScreen.h"
-#include "FileSystem/VariantType.h"
+#include "Utils/PointerSerializer.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
@@ -86,15 +86,14 @@ const DAVA::FilePath &Document::GetPackageFilePath() const
     return package->GetPath();
 }
 
-void Document::SetSelectedItem(const VariantType &var)
+void Document::SetSelectedItem(const PointerSerializer &arg)
 {
-    /*auto packageNode = var.AsPointer<PackageBaseNode>();
-    if (nullptr != packageNode)
+    if (arg.CanConvert<PackageNode*>())
     {
-        QList<ControlNode*> nodes;
-        nodes << reinterpret_cast<ControlNode*>(packageNode);
-        sharedData->SetData("activatedControls", QVariant::fromValue(nodes));
-    }*/
+        auto controls = arg.GetPointers<ControlNode*>();
+        QList<ControlNode*> list = QList<ControlNode*>::fromVector(QVector<ControlNode*>::fromStdVector(controls));
+        //sharedData->SetData("activatedControls", QVariant::fromValue(list)); //TODO: add selection for PackageNodes
+    }
 }
 
 void Document::RefreshAllControlProperties()

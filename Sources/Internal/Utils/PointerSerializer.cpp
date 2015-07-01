@@ -27,19 +27,19 @@
 =====================================================================================*/
 
 
-#include "Base/JSONconverter.h"
+#include "Utils/PointerSerializer.h"
 #include <regex>
 #include <sstream>
 
 using namespace std;
 using namespace DAVA;
 
-JSONconverter::JSONconverter()
+PointerSerializer::PointerSerializer()
 {
     
 }
 
-JSONconverter::JSONconverter(JSONconverter&& converter)
+PointerSerializer::PointerSerializer(PointerSerializer&& converter)
     : pointers(std::move(converter.pointers))
     , typeName(std::move(converter.typeName))    
     , text(std::move(converter.text))
@@ -47,7 +47,7 @@ JSONconverter::JSONconverter(JSONconverter&& converter)
 
 }
 
-JSONconverter JSONconverter::ParseString(const DAVA::String &str)
+PointerSerializer PointerSerializer::ParseString(const DAVA::String &str)
 {
     std::regex rgx(R"(\{\s*([\:\s\w\*\&]+)\s*\:\s*([\,\[\]\w\s]*)\s*\})");
     std::smatch sm;
@@ -76,7 +76,7 @@ JSONconverter JSONconverter::ParseString(const DAVA::String &str)
             }
             if (!pointers.empty())
             {
-                JSONconverter converter;
+                PointerSerializer converter;
                 converter.text = sm[0];
                 String type = sm[1];
                 while (!type.empty() && ::isspace(type.back()))
@@ -90,11 +90,11 @@ JSONconverter JSONconverter::ParseString(const DAVA::String &str)
         }
         cit = sm[0].second;
     }
-    return JSONconverter();
+    return PointerSerializer();
 }
 
 
-JSONconverter& JSONconverter::operator = (JSONconverter&& converter)
+PointerSerializer& PointerSerializer::operator = (PointerSerializer&& converter)
 {
     /*if (this != &converter)
     {

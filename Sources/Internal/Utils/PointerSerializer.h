@@ -48,12 +48,12 @@ namespace
 namespace DAVA
 {
 
-class JSONconverter
+class PointerSerializer
 {
 public:
-    JSONconverter();
-    JSONconverter(const JSONconverter &converter) = default;
-    JSONconverter(JSONconverter &&converter);
+    PointerSerializer();
+    PointerSerializer(const PointerSerializer &converter) = default;
+    PointerSerializer(PointerSerializer &&converter);
     template <typename T>
     Vector<typename std::enable_if<std::is_pointer<T>::value, T>::type> GetPointers() const
     {
@@ -65,14 +65,14 @@ public:
         return returnVec;
     }
     template <typename T>
-    JSONconverter(const typename std::enable_if<std::is_pointer<T>::value, T>::type pointer_)
+    PointerSerializer(const typename std::enable_if<std::is_pointer<T>::value, T>::type pointer_)
     {
         typeName = typeid(pointer_).name();
         pointers.push_back(static_cast<void*>(pointer_));
         text = FromPointer(pointer_);
     }
     template <typename Container>
-    JSONconverter(const Container &cont)
+    PointerSerializer(const Container &cont)
     {
         typeName = typeid(*(cont.begin())).name();
         for (auto pointer : cont)
@@ -82,20 +82,22 @@ public:
         text = FromPointerList(cont);
     }
     template <>
-    JSONconverter(const DAVA::String &str)
-        : JSONconverter(ParseString(str))
+    PointerSerializer(const DAVA::String &str)
+        : PointerSerializer(ParseString(str))
     {
 
-    }
+    } 
 
-    static JSONconverter ParseString(const DAVA::String &str);
+    static PointerSerializer ParseString(const DAVA::String &str);
 
-    JSONconverter& operator = (const JSONconverter &result) = default;
-    JSONconverter& operator = (JSONconverter &&result);
+    PointerSerializer& operator = (const PointerSerializer &result) = default;
+    PointerSerializer& operator = (PointerSerializer &&result);
 
     template <typename T>
-    static DAVA::String FromPointer(const typename std::enable_if<std::is_pointer<T>::value, T>::type pointer_)
+    static DAVA::String FromPointer(const T pointer_)
     {
+        typename std::enable_if<std::is_pointer<T>::value, T>::type t = nullptr; //dummy for compilation error. You must use T as pointer to solve it
+        static_cast<void*>(t);
         DAVA::String text = "{";
         text += typeid(pointer_).name();
         text += " : ";
@@ -108,7 +110,8 @@ public:
     template <typename Container>
     static DAVA::String FromPointerList(Container &&cont)
     {
-        typename std::enable_if<is_ref_to_ptr<decltype(*(cont.begin()))>::value>::type; //dummy for compilation error. You must ust Container of pointers to solve it
+        typename std::enable_if<is_ref_to_ptr<decltype(*(cont.begin()))>::value>::type t = nullptr; //dummy for compilation error. You must use Container of pointers to solve it
+        static_cast<void*>(t);
         DAVA::String text = "{";
         text += typeid(*(cont.begin())).name();
         text += " : ";

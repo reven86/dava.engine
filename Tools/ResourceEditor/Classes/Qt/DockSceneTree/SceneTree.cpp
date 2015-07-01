@@ -57,7 +57,7 @@
 #include "Commands2/SaveEntityAsAction.h"
 #include "Commands2/ConvertToShadowCommand.h"
 #include "Base/Result.h"
-#include "Base/JSONconverter.h"
+#include "Utils/PointerSerializer.h"
 #include "FileSystem/VariantType.h"
 
 SceneTree::SceneTree(QWidget *parent /*= 0*/)
@@ -559,7 +559,7 @@ void SceneTree::RemoveSelection()
             {
                 selection.Rem(entity);
                 --i;
-                Logger::Warning(String(String("Can not remove entity ") + entity->GetName().c_str() + ": entity is locked!" + JSONconverter::FromPointer<Entity*>(entity)).c_str());
+                Logger::Warning(String(String("Can not remove entity ") + entity->GetName().c_str() + ": entity is locked!" + PointerSerializer::FromPointer(entity)).c_str());
             }
         }
         

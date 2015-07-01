@@ -55,6 +55,7 @@
 #include "UI/UIPackageLoader.h"
 
 #include "Base/Result.h"
+#include "Utils/PointerSerializer.h"
 
 using namespace DAVA;
 
@@ -123,7 +124,7 @@ ResultList QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(cons
         }
         else
         {
-            //resultList.AddResult(Result::RESULT_ERROR, "can not delete package " + testPackage->GetName(), VariantType(static_cast<PackageBaseNode*>(testPackage)));
+            resultList.AddResult(Result::RESULT_ERROR, "can not delete package " + testPackage->GetName() + PointerSerializer::FromPointer(testPackage));
         }
     } 
     
@@ -196,7 +197,7 @@ ResultList QtModelPackageCommandExecutor::InsertControl(ControlNode *control, Co
     }
     else
     {
-        resultList.AddResult(Result::RESULT_ERROR, "Can not inster control!", VariantType(reinterpret_cast<int64>(control)));
+        resultList.AddResult(Result::RESULT_ERROR, String("Can not inster control!") + PointerSerializer::FromPointer<ControlNode*>(control));
     }
     return resultList;
 }

@@ -46,6 +46,11 @@ class PackageNode;
 class DialogReloadSprites;
 class LogWidget;
 
+namespace DAVA
+{
+    class PointerSerializer;
+}
+
 class EditorCore : public QObject, public DAVA::Singleton<EditorCore>
 {
     Q_OBJECT
@@ -73,7 +78,7 @@ protected slots:
     
     void UpdateLanguage();
     
-    void OnNewItemSelected(const DAVA::VariantType &var);
+    void OnNewItemSelected(const DAVA::PointerSerializer &arg);
 
 protected:
     void OpenProject(const QString &path);

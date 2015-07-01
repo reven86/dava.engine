@@ -28,7 +28,7 @@
 
 
 #include "DAVAEngine.h"
-#include "Base/JSONconverter.h"
+#include "Utils/PointerSerializer.h"
 
 #include <QMessageBox>
 #include <QDesktopServices>
@@ -3098,7 +3098,7 @@ void QtMainWindow::DebugDeviceList()
     deviceListController->ShowView();
 }
 
-void QtMainWindow::OnConsoleItemClicked(const JSONconverter &conv)
+void QtMainWindow::OnConsoleItemClicked(const PointerSerializer &conv)
 {
     if (conv.CanConvert<Entity*>())
     {
