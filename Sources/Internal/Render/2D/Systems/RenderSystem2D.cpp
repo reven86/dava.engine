@@ -53,10 +53,14 @@ static const uint32 VBO_USING_FRAME_LIFE = 3; // "triple buffer"
 #endif
 static const float32 SEGMENT_LENGTH = 15.0f;
 
+const FastName RenderSystem2D::RENDER_PASS_NAME("2d");
+const FastName RenderSystem2D::FLAG_COLOR_OP("COLOR_OP");
+
 NMaterial* RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL = nullptr;
 NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL = nullptr;
+NMaterial* RenderSystem2D::DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL = nullptr;
 
 class VboPool
 {
@@ -280,21 +284,24 @@ void RenderSystem2D::Init()
 
     DEFAULT_2D_COLOR_MATERIAL = new NMaterial();
     DEFAULT_2D_COLOR_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Color.material"));
-    DEFAULT_2D_COLOR_MATERIAL->PreBuildMaterial(FastName("2d"));
+    DEFAULT_2D_COLOR_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
 
     DEFAULT_2D_TEXTURE_MATERIAL = new NMaterial();
     DEFAULT_2D_TEXTURE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.material"));
-    DEFAULT_2D_TEXTURE_MATERIAL->PreBuildMaterial(FastName("2d"));
+    DEFAULT_2D_TEXTURE_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
 
     DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL = new NMaterial();
     DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.material"));
     DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL->AddFlag(NMaterialFlagName::FLAG_BLENDING, BLENDING_NONE);
-    DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL->PreBuildMaterial(FastName("2d"));
+    DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
     
     DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL = new NMaterial();
-    DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.material"));
-    DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL->AddFlag(FastName("IMAGE_A8"), 1);
-    DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL->PreBuildMaterial(FastName("2d"));
+    DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.Alpha8.material"));
+    DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
+
+    DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL = new NMaterial();
+    DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.Grayscale.material"));
+    DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
 
 }
 
@@ -305,6 +312,7 @@ RenderSystem2D::~RenderSystem2D()
     SafeRelease(DEFAULT_2D_COLOR_MATERIAL);
     SafeRelease(DEFAULT_2D_TEXTURE_MATERIAL);
     SafeRelease(DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL);
+    SafeRelease(DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL);
 }
 
 void RenderSystem2D::BeginFrame()
@@ -499,7 +507,16 @@ Rect RenderSystem2D::TransformClipRect(const Rect & rect, const Matrix4 & transf
     Vector3 clipBottomRightCorner(rect.x + rect.dx, rect.y + rect.dy, 0.f);
     clipTopLeftCorner = clipTopLeftCorner * transformMatrix;
     clipBottomRightCorner = clipBottomRightCorner * transformMatrix;
-    return Rect(Vector2(clipTopLeftCorner.data), Vector2((clipBottomRightCorner - clipTopLeftCorner).data));
+    Rect resRect = Rect(Vector2(clipTopLeftCorner.data), Vector2((clipBottomRightCorner - clipTopLeftCorner).data));
+    if (resRect.x < 0.f)
+    {
+        resRect.x = 0;
+    }
+    if (resRect.y < 0.f)
+    {
+        resRect.y = 0;
+    }
+    return resRect;
 }
 
 void RenderSystem2D::SetSpriteClipping(bool clipping)

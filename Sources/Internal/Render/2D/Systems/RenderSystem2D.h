@@ -106,10 +106,22 @@ struct StretchDrawData
 class RenderSystem2D : public Singleton<RenderSystem2D>
 {
 public:
+    enum ColorOperations
+    {
+        COLOR_MUL = 0,
+        COLOR_ADD,
+        ALPHA_MUL,
+        ALPHA_ADD,
+    };
+
+    static const FastName RENDER_PASS_NAME;
+    static const FastName FLAG_COLOR_OP;
+
     static NMaterial* DEFAULT_2D_COLOR_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL;
     static NMaterial* DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL;
+    static NMaterial* DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL;
 
     RenderSystem2D();
     virtual ~RenderSystem2D();
