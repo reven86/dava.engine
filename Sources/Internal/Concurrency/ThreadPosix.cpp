@@ -69,10 +69,6 @@ void Thread::Init()
 	cancelThreadAction.sa_handler = thread_exit_handler;
 	sigaction(SIGRTMIN, &cancelThreadAction, NULL);
 #endif
-
-#if defined (__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
-    handle = NULL;
-#endif
 }
 
 void Thread::Shutdown()
@@ -93,19 +89,6 @@ void Thread::KillNative()
     if (0 != ret)
     {
         Logger::FrameworkDebug("[Thread::Cancel] cannot kill thread: id = %d, error = %d", Thread::GetCurrentId(), ret);
-    }
-}
-
-void Thread::Sleep(uint32 timeMS)
-{
-    timespec req, rem;
-    req.tv_sec = timeMS / 1000;
-    req.tv_nsec = (timeMS % 1000) * 1000000L;
-    int32 ret = EINTR;
-    while(ret == EINTR)
-    {
-        ret = nanosleep(&req, &rem);
-        req = rem;
     }
 }
 
@@ -144,18 +127,15 @@ void Thread::Start()
 {
     DVASSERT(STATE_CREATED == state);
     Retain();
-    pthread_create(&handle, 0, PthreadMain, (void *)this);
+
+    pthread_attr_t attr {};
+    pthread_attr_init(&attr);
+    if (stack_size != 0)
+        pthread_attr_setstacksize(&attr, stack_size);
+
+    pthread_create(&handle, &attr, PthreadMain, (void *)this);
 }
     
-void Thread::Yield()
-{
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-    pthread_yield_np();
-#elif defined(__DAVAENGINE_ANDROID__)
-    sched_yield();
-#endif
-}
-
 void Thread::Join()
 {
     pthread_join(handle, NULL);
@@ -164,6 +144,20 @@ void Thread::Join()
 Thread::Id Thread::GetCurrentId()
 {
     return pthread_self();
+}
+
+bool DAVA::Thread::BindToProcessor(unsigned proc_n)
+{
+    DVASSERT(proc_n < std::thread::hardware_concurrency());
+	if (proc_n >= std::thread::hardware_concurrency())
+        return false;
+
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    CPU_SET(n, &cpuset);
+
+    int error = ::pthread_setaffinity_np(handle, sizeof(cpuset), &cpuset);
+    return error == 0;
 }
 
 }

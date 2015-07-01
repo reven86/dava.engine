@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 
+#include <thread>
 #include "Concurrency/Thread.h"
 #include "Concurrency/LockGuard.h"
 
@@ -38,9 +39,7 @@
 namespace DAVA
 {
 
-Set<Thread *> Thread::threadList;
-Mutex Thread::threadListMutex;
-
+ConcurrentObject<Set<Thread *>> Thread::threadList;
 Thread::Id Thread::mainThreadId;
 Thread::Id Thread::glThreadId;
 
@@ -94,36 +93,35 @@ void Thread::Kill()
 
 void Thread::KillAll()
 {
-    LockGuard<Mutex> locker(threadListMutex);
-    Set<Thread *>::iterator end = threadList.end();
-    for (Set<Thread *>::iterator i = threadList.begin(); i != end; ++i)
+    auto threadListAccessor = threadList.GetAccessor();
+    for (auto& x : *threadListAccessor)
     {
-        (*i)->Kill();
+        x->Kill();
     }
 }
 
 void Thread::CancelAll()
 {
-	LockGuard<Mutex> locker(threadListMutex);
-    Set<Thread *>::iterator end = threadList.end();
-    for (Set<Thread *>::iterator i = threadList.begin(); i != end; ++i)
+    auto threadListAccessor = threadList.GetAccessor();
+    for (auto& x : *threadListAccessor)
     {
-        (*i)->Cancel();
+        x->Cancel();
     }
-}
+} 
 
 
 Thread::Thread()
     : state(STATE_CREATED)
     , isCancelling(false)
-    , id(Thread::Id())
+    , stack_size(0)
+    , id(Id())
+    , handle(Handle())
     , name("DAVA::Thread")
 {
-    threadListMutex.Lock();
-    threadList.insert(this);
-    threadListMutex.Unlock();
-
     Init();
+
+    auto threadListAccessor = threadList.GetAccessor();
+    threadListAccessor->insert(this);
 }
 
 Thread::Thread(const Message &msg) : Thread()
@@ -141,9 +139,9 @@ Thread::Thread(const Procedure &proc) : Thread()
 Thread::~Thread()
 {
     Shutdown();
-    threadListMutex.Lock();
-    threadList.erase(this);
-    threadListMutex.Unlock();
+
+    auto threadListAccessor = threadList.GetAccessor();
+    threadListAccessor->erase(this);
 }
     
 void Thread::ThreadFunction(void *param)
@@ -156,6 +154,17 @@ void Thread::ThreadFunction(void *param)
     t->state = STATE_ENDED;
 
     t->Release();
+}
+
+void Thread::Yield()
+{
+    std::this_thread::yield();
+}
+
+void Thread::Sleep(uint32 timeMS)
+{
+    std::chrono::milliseconds ms(timeMS);
+    std::this_thread::sleep_for(ms);
 }
     
 };
