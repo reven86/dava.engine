@@ -66,7 +66,7 @@ public:
         Vector<T>  returnVec(pointers.size());
         for (auto ptr : pointers)
         {
-            returnVec.push_back(reinterpret_cast<T>(ptr));
+            returnVec.push_back(static_cast<T>(ptr));
         }
         return returnVec;
     }
@@ -108,7 +108,7 @@ public:
     template <typename Container>
     static String FromPointerList(Container &&cont)
     {
-        static_assert(std::is_pointer<decltype(*(cont.begin()))>::value, "works only for vector of pointers");
+        static_assert(is_ref_to_ptr<decltype(*(cont.begin()))>::value, "works only for vector of pointers");
         DAVA::StringStream ss;
         ss << "{"
             << typeid(*(cont.begin())).name()
