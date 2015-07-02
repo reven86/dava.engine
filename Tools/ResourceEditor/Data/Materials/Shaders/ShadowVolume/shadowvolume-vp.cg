@@ -55,7 +55,7 @@ VPROG_BEGIN
 #if SKINNING
     float3 tmpVec = 2.0 * cross(weightedVertexQuaternion.xyz, in_pos.xyz);
     float4 position = float4(weightedVertexPosition.xyz + (in_pos.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, 1.0);
-    float3 normal = normalize( mul( JointTransformTangent(in_normal, weightedVertexQuaternion), worldViewInvTransposeMatrix ) );
+    float3 normal = normalize( mul( float4(JointTransformTangent(in_normal, weightedVertexQuaternion),1.0), worldViewInvTransposeMatrix ) );
 #else
     float4 position = float4(in_pos.x, in_pos.y, in_pos.z, 1.0);
     float3 normal = mul( in_normal, normalMatrix );
