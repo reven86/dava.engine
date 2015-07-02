@@ -48,6 +48,7 @@ parser.add_argument('--without-ui', dest='without-ui', nargs='?', const=True)
 
 parser.add_argument('--chooser', nargs='?', const=True)
 parser.add_argument('--test')
+parser.add_argument('--universal-test', dest='universal-test')
 
 parser.add_argument('--test-time', dest='test-time')
 parser.add_argument('--test-frames', dest='test-frames')
@@ -75,6 +76,12 @@ if args['statistic-start-time']:
 
     if args['statistic-end-time']:
         TEST_PARAMS += " -statistic-end-time " + args['statistic-end-time']
+
+if args['universal-test']:
+    TEST_PARAMS += " -universal-test ";
+
+    if args['universal-test'] != "All":
+        TEST_PARAMS += args['universal-test'];
 
 if args['test'] and args['test'] != "All":    
     TEST_PARAMS += " -test " + args['test']

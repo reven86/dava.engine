@@ -67,7 +67,7 @@ void TankAnimator::MakeSkinnedTank(Entity* sourceTank, Vector<uint16>& outJointI
         RenderComponent* renderComponent = (RenderComponent*) wheel->GetComponent(Component::RENDER_COMPONENT);
         Vector3 centerPos = renderComponent->GetRenderObject()->GetBoundingBox().GetCenter();
 
-        for (std::size_t i = 0; i < jointsCount; i++)
+        for (uint32 i = 0; i < jointsCount; i++)
         {
             if (tankJoints[i].name == wheel->GetName())
             {

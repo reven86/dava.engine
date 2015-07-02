@@ -82,8 +82,6 @@ public:
     
     const String& GetName() const;
     
-    void SetDebuggable(bool value);
-    bool IsDebuggable() const;
     bool IsFinished() const override;
     
     void SetParams(const TestParams& testParams);
@@ -126,7 +124,6 @@ private:
     UI3DView* sceneView;
     
     size_t maxAllocatedMemory;
-    bool debuggable;
 };
 
 inline const Vector<BaseTest::FrameInfo>& BaseTest::GetFramesInfo() const
@@ -171,16 +168,6 @@ inline float32 BaseTest::GetOverallTestTime() const
 inline uint32 BaseTest::GetFrameNumber() const
 {
     return frameNumber;
-}
-
-inline bool BaseTest::IsDebuggable() const
-{
-    return debuggable;
-}
-
-inline void BaseTest::SetDebuggable(bool value)
-{
-    debuggable = value;
 }
 
 inline void BaseTest::SetParams(const TestParams& _testParams)

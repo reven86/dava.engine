@@ -32,12 +32,7 @@ const String AsiaPerformanceTest::TEST_NAME = "AsiaPerformanceTest";
 
 const FastName AsiaPerformanceTest::CAMERA_PATH = FastName("CameraPath");
 const FastName AsiaPerformanceTest::TANK_STUB = FastName("TankStub");
-
-const FastName AsiaPerformanceTest::CENTURION = FastName("Centurion.sc2");
-const FastName AsiaPerformanceTest::CONQUEROR = FastName("Conqueror.sc2");
-const FastName AsiaPerformanceTest::VALENTINE = FastName("Valentine_LL.sc2");
-const FastName AsiaPerformanceTest::T150 = FastName("T150.sc2");
-const FastName AsiaPerformanceTest::T110E5 = FastName("T110E5.sc2");
+const FastName AsiaPerformanceTest::TANKS = FastName("Tanks");
 
 const float32 AsiaPerformanceTest::TANK_ROTATION_ANGLE = 45.0f;
 
@@ -84,38 +79,42 @@ void AsiaPerformanceTest::LoadResources()
     tankAnimator = new TankAnimator();
 
     Vector<Entity*> tanks;
-
-    tanks.push_back(GetScene()->FindByName(CENTURION));
-    tanks.push_back(GetScene()->FindByName(CONQUEROR));
-    tanks.push_back(GetScene()->FindByName(VALENTINE));
-    tanks.push_back(GetScene()->FindByName(T150));
-    tanks.push_back(GetScene()->FindByName(T110E5));
-
-    for (uint32 i = 0; i < tanks.size(); i++)
+    Entity* tanksEntity = GetScene()->FindByName(TANKS);
+    
+    if(tanksEntity != nullptr)
     {
-        Entity* tank = tanks[i];
-        Vector<uint16> jointsInfo;
-
-        tankAnimator->MakeSkinnedTank(tank, jointsInfo);
-        skinnedTankData.insert(std::pair<FastName, std::pair<Entity*, Vector<uint16>>>(tank->GetName(), std::pair<Entity*, Vector<uint16>>(tank, jointsInfo)));
-    }
-
-    GetScene()->FindNodesByNamePart(TANK_STUB.c_str(), tankStubs);
-
-    auto tankIt = skinnedTankData.cbegin();
-    auto tankEnd = skinnedTankData.cend();
-
-    for (Entity* tankStub : tankStubs)
-    {
-        Entity* tank = tankIt->second.first;
-        Entity* newTank = tank->Clone();
-
-        tankStub->AddNode(newTank);
-
-        tankIt++;
-        if (tankIt == tankEnd)
+        uint32 childrenCount = tanksEntity->GetChildrenCount();
+        
+        for (uint32 i = 0; i < childrenCount; i++)
         {
-            tankIt = skinnedTankData.cbegin();
+            tanks.push_back(tanksEntity->GetChild(i));
+        }
+        
+        for (Entity* tank : tanks)
+        {
+            Vector<uint16> jointsInfo;
+            
+            tankAnimator->MakeSkinnedTank(tank, jointsInfo);
+            skinnedTankData.insert(std::pair<FastName, std::pair<Entity*, Vector<uint16>>>(tank->GetName(), std::pair<Entity*, Vector<uint16>>(tank, jointsInfo)));
+        }
+        
+        GetScene()->FindNodesByNamePart(TANK_STUB.c_str(), tankStubs);
+        
+        auto tankIt = skinnedTankData.cbegin();
+        auto tankEnd = skinnedTankData.cend();
+        
+        for (Entity* tankStub : tankStubs)
+        {
+            Entity* tank = tankIt->second.first;
+            Entity* newTank = tank->Clone();
+            
+            tankStub->AddNode(newTank);
+            
+            tankIt++;
+            if (tankIt == tankEnd)
+            {
+                tankIt = skinnedTankData.cbegin();
+            }
         }
     }
 }

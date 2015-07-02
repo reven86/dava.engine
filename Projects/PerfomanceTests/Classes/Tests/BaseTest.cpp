@@ -37,7 +37,6 @@ BaseTest::BaseTest(const String& _testName, const TestParams& _testParams)
     ,   startTime(0)
     ,   overallTestTime(0.0f)
     ,   maxAllocatedMemory(0)
-    ,   debuggable(false)
 {
 }
 
@@ -163,15 +162,15 @@ void BaseTest::SystemUpdate(float32 timeElapsed)
         maxAllocatedMemory = allocatedMem;
     }
 
-    bool frameForDebug = GetFrameNumber() >= (testParams.frameForDebug + BaseTest::FRAME_OFFSET);
-    bool greaterMaxDelta = testParams.maxDelta > 0.0f && testParams.maxDelta <= timeElapsed;
+    bool frameForDebug = GetFrameNumber() >= (testParams.frameForDebug + BaseTest::FRAME_OFFSET) && testParams.frameForDebug > 0;
+    bool greaterMaxDelta = testParams.maxDelta > 0.001f && testParams.maxDelta <= timeElapsed;
     
     float32 delta = 0.0f;
     float32 currentTimeMs = overallTestTime * 1000;
     
     if (frameNumber > FRAME_OFFSET)
     {
-        if (IsDebuggable() && (frameForDebug || greaterMaxDelta))
+        if (currentTimeMs >= testParams.startTime && currentTimeMs <= testParams.endTime)
         {
             if (greaterMaxDelta)
             {
@@ -181,15 +180,13 @@ void BaseTest::SystemUpdate(float32 timeElapsed)
             {
                 Logger::Info(DAVA::Format("Frame for debug: %d", frameNumber - BaseTest::FRAME_OFFSET).c_str());
             }
+            
+            frames.push_back(FrameInfo(timeElapsed));
         }
-        else
+        
+        if (!(frameForDebug || greaterMaxDelta))
         {
             delta = testParams.targetFrameDelta > 0.0f ? testParams.targetFrameDelta : timeElapsed;
-        }
-
-        if(currentTimeMs >= testParams.startTime && currentTimeMs <= testParams.endTime)
-        {
-            frames.push_back(FrameInfo(timeElapsed));
         }
         
         overallTestTime += delta;

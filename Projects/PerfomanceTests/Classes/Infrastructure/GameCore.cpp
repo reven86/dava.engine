@@ -151,9 +151,13 @@ void GameCore::InitScreenController()
     Logger::Instance()->AddCustomOutput(&teamCityOutput);
     String deviceName = GetDeviceName();
     Logger::Info(deviceName.c_str());
+    
+    BaseTest::TestParams singleTestParams = defaultTestParams;
+    String testForRun;
 
 	bool chooserFound = CommandLineParser::Instance()->CommandIsFound("-chooser");
     bool testFound = CommandLineParser::Instance()->CommandIsFound("-test");
+    bool universalTest = CommandLineParser::Instance()->CommandIsFound("-universal-test");
     bool withoutUIFound = CommandLineParser::Instance()->CommandIsFound("-without-ui");
 
     bool testTimeFound = CommandLineParser::Instance()->CommandIsFound("-test-time");
@@ -166,27 +170,52 @@ void GameCore::InitScreenController()
     bool debugFrameFound = CommandLineParser::Instance()->CommandIsFound("-debug-frame");
     bool maxDeltaFound = CommandLineParser::Instance()->CommandIsFound("-max-delta");
 
+    if (universalTest)
+    {
+        String universalTest = CommandLineParser::Instance()->GetCommandParamAdditional("-universal-test", 0);
+        
+        testChain.clear();
+        
+        YamlParser* parser = YamlParser::Create("~res:/maps.yaml");
+        
+        DVASSERT_MSG(parser, "can't open ~res:/maps.yaml");
+        
+        YamlNode* rootNode = parser->GetRootNode();
+        if(rootNode)
+        {
+            int32 sz = rootNode->GetCount();
+            
+            for(int32 i = 0; i < sz; ++i)
+            {
+                testChain.push_back(new UniversalTest(rootNode->GetItemKeyName(i), defaultTestParams));
+            }
+        }
+        
+        SafeRelease(parser);
+        
+        if(!universalTest.empty())
+        {
+            testForRun = universalTest;
+        }
+    }
+    
+    if(testFound)
+    {
+        testForRun = CommandLineParser::Instance()->GetCommandParamAdditional("-test", 0);
+    }
+    
 	if (chooserFound)
 	{
         testFlowController = new SingleTestFlowController();
 	}
-    else if (testFound)
+    else if (!testForRun.empty())
     {
-        BaseTest::TestParams params = defaultTestParams;
-        String testForRun = CommandLineParser::Instance()->GetCommandParamAdditional("-test", 0);
-
-        if (testForRun.empty())
-        {
-            Logger::Error("Incorrect params. Set test for run");
-            Core::Instance()->Quit();
-        }
-
         if (testTimeFound)
         {
             String testTimeParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test-time", 0);
-            params.targetTime = std::atoi(testTimeParam.c_str());
+            singleTestParams.targetTime = std::atoi(testTimeParam.c_str());
             
-            if(params.targetTime < 0)
+            if(singleTestParams.targetTime < 0)
             {
                 Logger::Error("Incorrect params. TargetTime < 0");
                 Core::Instance()->Quit();
@@ -204,12 +233,12 @@ void GameCore::InitScreenController()
             String startTime = CommandLineParser::Instance()->GetCommandParamAdditional("-statistic-start-time", 0);
             String endTime = CommandLineParser::Instance()->GetCommandParamAdditional("-statistic-end-time", 0);
             
-            params.startTime = std::atoi(startTime.c_str());
-            params.endTime = std::atoi(endTime.c_str());
+            singleTestParams.startTime = std::atoi(startTime.c_str());
+            singleTestParams.endTime = std::atoi(endTime.c_str());
             
-            int32 timeRange = params.endTime - params.startTime;
+            int32 timeRange = singleTestParams.endTime - singleTestParams.startTime;
             
-            if(timeRange < 100 || params.startTime < 0)
+            if(timeRange < 100 || singleTestParams.startTime < 0)
             {
                 Logger::Error("Incorrect params. Too small time range");
                 Core::Instance()->Quit();
@@ -227,16 +256,16 @@ void GameCore::InitScreenController()
             String testFramesParam = CommandLineParser::Instance()->GetCommandParamAdditional("-test-frames", 0);
             String frameDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-frame-delta", 0);
 
-            params.targetFramesCount = std::atoi(testFramesParam.c_str());
-            params.targetFrameDelta = std::atof(frameDeltaParam.c_str());
+            singleTestParams.targetFramesCount = std::atoi(testFramesParam.c_str());
+            singleTestParams.targetFrameDelta = std::atof(frameDeltaParam.c_str());
             
-            if(params.targetFrameDelta < 0.0f)
+            if(singleTestParams.targetFrameDelta < 0.0f)
             {
                 Logger::Error("Incorrect params. TargetFrameDelta < 0");
                 Core::Instance()->Quit();
             }
             
-            if(params.targetFramesCount < 0)
+            if(singleTestParams.targetFramesCount < 0)
             {
                 Logger::Error("Incorrect params. TargetFramesCount < 0");
                 Core::Instance()->Quit();
@@ -246,9 +275,9 @@ void GameCore::InitScreenController()
         if(frameDeltaFound)
         {
             String frameDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-frame-delta", 0);
-            params.targetFrameDelta = std::atof(frameDeltaParam.c_str());
+            singleTestParams.targetFrameDelta = std::atof(frameDeltaParam.c_str());
             
-            if(params.targetFrameDelta < 0.0f)
+            if(singleTestParams.targetFrameDelta < 0.0f)
             {
                 Logger::Error("Incorrect params. TargetFrameDelta < 0");
                 Core::Instance()->Quit();
@@ -258,9 +287,9 @@ void GameCore::InitScreenController()
         if (debugFrameFound)
         {
             String debugFrameParam = CommandLineParser::Instance()->GetCommandParamAdditional("-debug-frame", 0);
-            params.frameForDebug = std::atoi(debugFrameParam.c_str());
+            singleTestParams.frameForDebug = std::atoi(debugFrameParam.c_str());
             
-            if(params.frameForDebug < 0)
+            if(singleTestParams.frameForDebug < 0)
             {
                 Logger::Error("Incorrect params. DebugFrame < 0");
                 Core::Instance()->Quit();
@@ -270,25 +299,25 @@ void GameCore::InitScreenController()
         if (maxDeltaFound)
         {
             String maxDeltaParam = CommandLineParser::Instance()->GetCommandParamAdditional("-max-delta", 0);
-            params.maxDelta = std::atof(maxDeltaParam.c_str());
+            singleTestParams.maxDelta = std::atof(maxDeltaParam.c_str());
             
-            if(params.maxDelta < 0.0f)
+            if(singleTestParams.maxDelta < 0.0f)
             {
                 Logger::Error("Incorrect params. MaxDelta < 0");
                 Core::Instance()->Quit();
             }
         }
 
-        testFlowController = new SingleTestFlowController(testForRun, params);
+        testFlowController = new SingleTestFlowController(testForRun, singleTestParams);
         
         Logger::Instance()->Info(DAVA::Format("Test %s params ", testForRun.c_str()).c_str());
-        Logger::Instance()->Info(DAVA::Format("Target time : %d", params.targetTime).c_str());
-        Logger::Instance()->Info(DAVA::Format("Statistic start time : %d", params.startTime).c_str());
-        Logger::Instance()->Info(DAVA::Format("Statistic end time : %d", params.endTime).c_str());
-        Logger::Instance()->Info(DAVA::Format("Target frames count : %d", params.targetFramesCount).c_str());
-        Logger::Instance()->Info(DAVA::Format("Target frame delta : %f", params.targetFrameDelta).c_str());
-        Logger::Instance()->Info(DAVA::Format("Frame for debug : %d", params.frameForDebug).c_str());
-        Logger::Instance()->Info(DAVA::Format("Max delta : %f", params.maxDelta).c_str());
+        Logger::Instance()->Info(DAVA::Format("Target time : %d", singleTestParams.targetTime).c_str());
+        Logger::Instance()->Info(DAVA::Format("Statistic start time : %d", singleTestParams.startTime).c_str());
+        Logger::Instance()->Info(DAVA::Format("Statistic end time : %d", singleTestParams.endTime).c_str());
+        Logger::Instance()->Info(DAVA::Format("Target frames count : %d", singleTestParams.targetFramesCount).c_str());
+        Logger::Instance()->Info(DAVA::Format("Target frame delta : %f", singleTestParams.targetFrameDelta).c_str());
+        Logger::Instance()->Info(DAVA::Format("Frame for debug : %d", singleTestParams.frameForDebug).c_str());
+        Logger::Instance()->Info(DAVA::Format("Max delta : %f", singleTestParams.maxDelta).c_str());
     }
 	else if (withoutUIFound)
 	{

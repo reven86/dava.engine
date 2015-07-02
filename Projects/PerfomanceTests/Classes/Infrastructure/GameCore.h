@@ -41,6 +41,7 @@
 
 #include "Tests/GlobalPerformanceTest.h"
 #include "Tests/AsiaPerformanceTest.h"
+#include "Tests/UniversalTest.h"
 
 #include <fstream>
 
@@ -72,6 +73,7 @@ public:
 private:
     void InitScreenController();
 	void RegisterTests();
+    
     String GetDeviceName();
 
 	Vector<BaseTest*> testChain;

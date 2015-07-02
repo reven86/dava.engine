@@ -63,11 +63,6 @@ void SingleTestFlowController::Init(const Vector<BaseTest*>& _testChain)
             {
                 testForRun = test;
                 testForRun->SetParams(testParams);
-                
-                if (testParams.frameForDebug > 0 || testParams.maxDelta > 0.001f)
-                {
-                    testForRun->SetDebuggable(true);
-                }
             }
         }
 
