@@ -30,23 +30,20 @@
 #include "Platform/Qt5/QtLayer.h"
 #include "Utils/PointerSerializer.h"
 #include "UI/mainwindow.h"
-#include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "DocumentGroup.h"
 #include "Document.h"
 #include "EditorCore.h"
 #include "Model/PackageHierarchy/PackageNode.h"
-#include "SharedData.h"
+#include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ConsoleWidget/LogWidget.h"
+
+#include "SharedData.h"
 #include <QSettings>
 #include <QVariant>
 #include <QByteArray>
 
 
 using namespace DAVA;
-namespace
-{
-    const QString CONSOLE_STATE = "console state";
-}
 
 EditorCore::EditorCore(QObject *parent)
     : QObject(parent)
@@ -54,32 +51,13 @@ EditorCore::EditorCore(QObject *parent)
     , project(new Project(this))
     , documentGroup(new DocumentGroup(this))
     , mainWindow(new MainWindow())
-    , dialogReloadSprites(new DialogReloadSprites(mainWindow))
-    , logWidget(new LogWidget(mainWindow))
 {
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
     
-    // Relod Sprites
-    {
-        QAction* actionReloadSprites = dialogReloadSprites->GetActionReloadSprites();
-        mainWindow->menuTools->addAction(actionReloadSprites);
-        mainWindow->toolBarPlugins->addAction(actionReloadSprites);
-        connect(dialogReloadSprites, &DialogReloadSprites::StarPackProcess, this, &EditorCore::CloseAllDocuments);
-    }
-    // Console dock
-    {
-        mainWindow->consoleDockWidget->setWidget(logWidget);
-        connect(logWidget, &LogWidget::ItemClicked, this, &EditorCore::OnNewItemSelected);
-        QSettings settings(QApplication::organizationName(), QApplication::applicationName());
-        const auto var = settings.value(CONSOLE_STATE);
-        if (var.canConvert<QByteArray>())
-        {
-            logWidget->Deserialize(var.toByteArray());
-        }
-        connect(mainWindow->packageWidget, &PackageWidget::GotResult, logWidget, &LogWidget::AddResultList);
-    }
-    
+    connect(mainWindow->GetDialogReloadSprites(), &DialogReloadSprites::StarPackProcess, this, &EditorCore::CloseAllDocuments);
+    connect(mainWindow->GetLogWidget(), &LogWidget::ItemClicked, this, &EditorCore::OnNewItemSelected);
+
     connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
     connect(mainWindow, &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
     connect(mainWindow, &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
@@ -109,8 +87,6 @@ EditorCore::EditorCore(QObject *parent)
     
 EditorCore::~EditorCore()
 {
-    QSettings settings(QApplication::organizationName(), QApplication::applicationName());
-    settings.setValue(CONSOLE_STATE, logWidget->Serialize());
     delete mainWindow;
 }
 

@@ -39,12 +39,15 @@
 #include "Utils/QtDavaConvertion.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
+#include "QtTools/ConsoleWidget/LogWidget.h"
+#include "QtTools/ReloadSprites/DialogReloadSprites.h"
 
 namespace
 {
     const QString APP_GEOMETRY = "geometry";
     const QString APP_STATE = "windowstate";
     const char* COLOR_PROPERTY_ID = "color";
+    const QString CONSOLE_STATE = "console state";
 }
 
 using namespace DAVA;
@@ -54,8 +57,19 @@ MainWindow::MainWindow(QWidget *parent)
     , backgroundFrameUseCustomColorAction(nullptr)
     , backgroundFrameSelectCustomColorAction(nullptr)
     , localizationEditorDialog(new LocalizationEditorDialog(this))
+    , dialogReloadSprites(new DialogReloadSprites(this))
+    , logWidget(new LogWidget(this))
 {
     setupUi(this);
+
+    // Relod Sprites
+    QAction* actionReloadSprites = dialogReloadSprites->GetActionReloadSprites();
+    menuTools->addAction(actionReloadSprites);
+    toolBarPlugins->addAction(actionReloadSprites);
+    // Console dock
+    consoleDockWidget->setWidget(logWidget);
+    connect(packageWidget, &PackageWidget::GotResult, logWidget, &LogWidget::AddResultList);
+
     actionLocalizationManager->setEnabled(false);
     InitLanguageBox();
     
@@ -133,6 +147,7 @@ void MainWindow::SaveMainWindowState()
     QSettings settings(QApplication::organizationName(), QApplication::applicationName());
     settings.setValue(APP_GEOMETRY, saveGeometry());
     settings.setValue(APP_STATE, saveState());
+    settings.setValue(CONSOLE_STATE, logWidget->Serialize());
 }
 
 void MainWindow::RestoreMainWindowState()
@@ -148,11 +163,26 @@ void MainWindow::RestoreMainWindowState()
     {
     	restoreState(settings.value(APP_STATE).toByteArray());
 	}
+    val = settings.value(CONSOLE_STATE);
+    if (val.canConvert<QByteArray>())
+    {
+        logWidget->Deserialize(val.toByteArray());
+    }
 }
 
 DavaGLWidget* MainWindow::GetGLWidget() const
 {
     return previewWidget->GetDavaGLWidget();
+}
+
+DialogReloadSprites* MainWindow::GetDialogReloadSprites() const
+{
+    return dialogReloadSprites;
+}
+
+LogWidget* MainWindow::GetLogWidget() const
+{
+    return logWidget;
 }
 
 void MainWindow::OnCurrentIndexChanged(int arg)

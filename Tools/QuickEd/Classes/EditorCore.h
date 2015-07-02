@@ -43,9 +43,6 @@ class Project;
 class MainWindow;
 class PackageNode;
 
-class DialogReloadSprites;
-class LogWidget;
-
 namespace DAVA
 {
     class PointerSerializer;
@@ -95,9 +92,6 @@ private:
     QList<Document*> documents;
     DocumentGroup *documentGroup;
     MainWindow *mainWindow;
-    
-    DialogReloadSprites *dialogReloadSprites;
-    LogWidget *logWidget;
 };
 
 inline MainWindow* EditorCore::GetMainWindow() const
