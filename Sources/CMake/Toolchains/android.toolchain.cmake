@@ -1506,7 +1506,7 @@ if( DEFINED LIBRARY_OUTPUT_PATH_ROOT
   endif()
 endif()
 
-# copy shaed stl library to build directory
+# copy shared stl library to build directory
 if( NOT _CMAKE_IN_TRY_COMPILE AND __libstl MATCHES "[.]so$" AND DEFINED LIBRARY_OUTPUT_PATH )
   get_filename_component( __libstlname "${__libstl}" NAME )
   execute_process( COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${__libstl}" "${LIBRARY_OUTPUT_PATH}/${__libstlname}" RESULT_VARIABLE __fileCopyProcess )
