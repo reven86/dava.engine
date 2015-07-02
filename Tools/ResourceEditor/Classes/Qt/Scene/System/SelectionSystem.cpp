@@ -303,21 +303,7 @@ void SceneSelectionSystem::SetSelection(const EntityGroup &entities)
     if (!IsLocked())
     {
         Clear();
-        for (int i = 0; i < entities.Size(); ++i)
-        {
-            const auto entity = entities.GetEntity(i);
-            if (IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
-            {
-                EntityGroupItem selectableItem;
-
-                selectableItem.entity = entity;
-                selectableItem.bbox = GetSelectionAABox(entity);
-                curSelections.Add(selectableItem);
-                selectionHasChanges = true;
-                invalidSelectionBoxes = true;
-            }
-        }
-        UpdateHoodPos();
+        AddSelection(entities);
     }
 }
 
@@ -340,16 +326,19 @@ void SceneSelectionSystem::AddSelection(DAVA::Entity *entity)
 
 void SceneSelectionSystem::AddSelection(const EntityGroup &entities)
 {
-    for (int i = 0; i < entities.Size(); ++i)
+    for (size_t i = 0; i < entities.Size(); ++i)
     {
         const auto entity = entities.GetEntity(i);
-        EntityGroupItem selectableItem;
+        if (IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
+        {
+            EntityGroupItem selectableItem;
 
-        selectableItem.entity = entity;
-        selectableItem.bbox = GetSelectionAABox(entity);
-        curSelections.Add(selectableItem);
-        selectionHasChanges = true;
-        invalidSelectionBoxes = true;
+            selectableItem.entity = entity;
+            selectableItem.bbox = GetSelectionAABox(entity);
+            curSelections.Add(selectableItem);
+            selectionHasChanges = true;
+            invalidSelectionBoxes = true;
+        }
     }
     UpdateHoodPos();
 }
@@ -384,7 +373,7 @@ void SceneSelectionSystem::RemSelection(const EntityGroup& entities)
 {
     if (!IsLocked())
     {
-        for (int i = 0; i < entities.Size(); ++i)
+        for (size_t i = 0; i < entities.Size(); ++i)
         {
             auto entity = entities.GetEntity(i);
             if (curSelections.ContainsEntity(entity))

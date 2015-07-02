@@ -559,7 +559,12 @@ void SceneTree::RemoveSelection()
             {
                 selection.Rem(entity);
                 --i;
-                Logger::Warning(String(String("Can not remove entity ") + entity->GetName().c_str() + ": entity is locked!" + PointerSerializer::FromPointer(entity)).c_str());
+                DAVA::StringStream ss;
+                ss << "Can not remove entity "
+                    << entity->GetName().c_str()
+                    << ": entity is locked!"
+                    << PointerSerializer::FromPointer(entity);
+                Logger::Warning(ss.str().c_str());
             }
         }
         
