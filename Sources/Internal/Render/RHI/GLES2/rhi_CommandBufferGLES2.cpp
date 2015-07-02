@@ -1074,14 +1074,34 @@ _ExecuteQueuedCommands()
 {
 Trace("rhi-gl.exec-queued-cmd\n");
 
-    std::vector<Handle> pass;
-    unsigned            frame_n = 0;
-    bool                do_exit = false;
+    std::vector<RenderPassGLES2_t*> pass;
+    std::vector<Handle>             pass_h;
+    unsigned                        frame_n = 0;
+    bool                            do_exit = false;
 
     _FrameSync.Lock();
     if( _Frame.size() )
     {
-        pass    = _Frame.begin()->pass;
+        for( std::vector<Handle>::iterator p=_Frame.begin()->pass.begin(),p_end=_Frame.begin()->pass.end(); p!=p_end; ++p )
+        {
+            RenderPassGLES2_t*  pp      = RenderPassPool::Get( *p );
+            bool                do_add  = true;
+            
+            for( unsigned i=0; i!=pass.size(); ++i )
+            {
+                if( pp->priority > pass[i]->priority )
+                {
+                    pass.insert( pass.begin()+i, 1, pp );
+                    do_add = false;
+                    break;
+                }
+            }
+            
+            if( do_add )
+                pass.push_back( pp );
+        }
+
+        pass_h  = _Frame.begin()->pass;
         frame_n = _Frame.begin()->number;
     }
     else
@@ -1094,9 +1114,9 @@ Trace("rhi-gl.exec-queued-cmd\n");
         return;
 
 Trace("\n\n-------------------------------\nexecuting frame %u\n",frame_n);
-    for( std::vector<Handle>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
+    for( std::vector<RenderPassGLES2_t*>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
     {
-        RenderPassGLES2_t*  pp = RenderPassPool::Get( *p );
+        RenderPassGLES2_t*  pp = *p;
 
         for( unsigned b=0; b!=pp->cmdBuf.size(); ++b )
         {
@@ -1107,7 +1127,7 @@ Trace("\n\n-------------------------------\nexecuting frame %u\n",frame_n);
             CommandBufferPool::Free( cb_h );
         }
         
-        RenderPassPool::Free( *p );
+//        RenderPassPool::Free( *p );
     }
 
     _FrameSync.Lock();
@@ -1115,8 +1135,8 @@ Trace("\n\n-------------------------------\nexecuting frame %u\n",frame_n);
 Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n",frame_n);
         _Frame.erase( _Frame.begin() );
         
-//        for( std::vector<Handle>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
-//            RenderPassPool::Free( *p );
+        for( std::vector<Handle>::iterator p=pass_h.begin(),p_end=pass_h.end(); p!=p_end; ++p )
+            RenderPassPool::Free( *p );
     }    
     _FrameSync.Unlock();
 
