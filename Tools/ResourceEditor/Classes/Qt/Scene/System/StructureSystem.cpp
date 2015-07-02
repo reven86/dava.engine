@@ -556,6 +556,24 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
         loadedEntity = sceneEditor->cache.GetClone(sc2path);
         if(nullptr != loadedEntity)
         {
+            // this is for backward compatibility.
+            // sceneFileV2 will remove empty nodes only
+            // if there is parent for such nodes. 
+            {
+                SceneFileV2* tmpSceneFile = new SceneFileV2();
+                Entity* tmpParent = new Entity();
+
+                tmpParent->AddNode(loadedEntity);
+                tmpSceneFile->OptimizeScene(loadedEntity);
+                tmpParent->RemoveNode(loadedEntity);
+
+                SafeRelease(loadedEntity);
+                loadedEntity = SafeRetain(tmpParent->GetChild(0));
+
+                SafeRelease(tmpParent);
+                SafeRelease(tmpSceneFile);
+            }
+
             if(loadedEntity->GetChildrenCount() > 0)
             {
                 KeyedArchive *props = GetOrCreateCustomProperties(loadedEntity)->GetArchive();
