@@ -70,7 +70,7 @@ VPROG_OUT_BEGIN
 
     #if MATERIAL_SKYBOX
     VPROG_OUT_TEXCOORD0(varTexCoord0,3)
-    #else
+    #elif MATERIAL_TEXTURE
     VPROG_OUT_TEXCOORD0(varTexCoord0,2)
     #endif
 
@@ -672,24 +672,25 @@ VPROG_BEGIN
 
 #endif
 
-
+#if MATERIAL_SKYBOX || MATERIAL_TEXTURE
     VP_OUT(varTexCoord0) = VP_IN_TEXCOORD0;
-    
+#endif    
 
-#if TEXTURE0_SHIFT_ENABLED
-    VP_OUT(varTexCoord0) += texture0Shift;
+#if MATERIAL_TEXTURE
+    #if TEXTURE0_SHIFT_ENABLED
+        VP_OUT(varTexCoord0) += texture0Shift;
+    #endif
+
+        
+    #if TEXTURE0_ANIMATION_SHIFT
+        VP_OUT(varTexCoord0) += tex0ShiftPerSecond * globalTime;
+    #endif
+
+        
+    #if TILED_DECAL_MASK
+        varDecalTileTexCoord = VP_OUT(varTexCoord0) * decalTileCoordScale;
+    #endif
 #endif
-
-    
-#if TEXTURE0_ANIMATION_SHIFT
-    VP_OUT(varTexCoord0) += tex0ShiftPerSecond * globalTime;
-#endif
-
-    
-#if TILED_DECAL_MASK
-    varDecalTileTexCoord = VP_OUT(varTexCoord0) * decalTileCoordScale;
-#endif
-
     
 #if MATERIAL_DETAIL
     varDetailTexCoord = VP_OUT(varTexCoord0) * detailTileCoordScale;

@@ -46,11 +46,14 @@ public:
     ParticleEffectSystem(Scene * scene, bool is2DMode = false);
 
 	~ParticleEffectSystem();
-	virtual void Process(float32 timeElapsed);		
+	void Process(float32 timeElapsed) override;		
     void ImmediateEvent(Component * component, uint32 event) override;
     
-	virtual void RemoveEntity(Entity * entity);	
-	virtual void RemoveComponent(Entity * entity, Component * component);
+    void AddEntity(Entity * entity) override;
+    void AddComponent(Entity * entity, Component * component) override;
+
+    void RemoveEntity(Entity * entity) override;
+    void RemoveComponent(Entity * entity, Component * component) override;
 
     void SetGlobalMaterial(NMaterial *material);
 	void SetGlobalExtertnalValue(const String& name, float32 value);
@@ -87,6 +90,7 @@ private: //materials stuff
 	NMaterial *particleBaseMaterial;
     Map<uint64, NMaterial *> materialMap;
 	NMaterial *GetMaterial(Texture *texture, bool enableFog, bool enableFrameBlend, eBlending blending);
+    void PrebuildMaterials(ParticleEffectComponent *component);
     
     bool allowLodDegrade;
 
