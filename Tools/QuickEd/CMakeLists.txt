@@ -20,7 +20,6 @@ include_directories   ( "Classes" )
 include_directories   ( "Classes/Helpers" )
 include_directories   ( "Classes/Controllers" )
 include_directories   ( "Classes/Models" )
-include_directories   ( ${CMAKE_CURRENT_BINARY_DIR}/DavaTools/QtTools )
 
 add_definitions       ( 
 -DDAVA_QT

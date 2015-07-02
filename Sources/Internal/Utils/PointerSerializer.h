@@ -51,15 +51,17 @@ namespace DAVA
 class PointerSerializer
 {
 public:
-    PointerSerializer();
+    PointerSerializer() = default;
     PointerSerializer(const PointerSerializer &converter) = default;
     PointerSerializer(PointerSerializer &&converter);
     static const char* GetRegex();
+    PointerSerializer& operator = (const PointerSerializer &result) = default;
+    PointerSerializer& operator = (PointerSerializer &&result);
     template <typename T>
     Vector<T> GetPointers() const
     {
         static_assert(std::is_pointer<T>::value, "works only for vector of pointers");
-        Vector<T>  returnVec;
+        Vector<T>  returnVec(pointers.size());
         for (auto ptr : pointers)
         {
             returnVec.push_back(reinterpret_cast<T>(ptr));
@@ -85,37 +87,34 @@ public:
         text = FromPointerList(cont);
     }
 
-    PointerSerializer(const DAVA::String &str)
+    PointerSerializer(const String &str)
         : PointerSerializer(ParseString(str))
     {
     }
 
-    static PointerSerializer ParseString(const DAVA::String &str);
+    static PointerSerializer ParseString(const String &str);
 
-    PointerSerializer& operator = (const PointerSerializer &result) = default;
-    PointerSerializer& operator = (PointerSerializer &&result);
 
     template <typename T>
-    static DAVA::String FromPointer(const T pointer_)
+    static String FromPointer(const T pointer_)
     {
-        DAVA::String text = "{";
-        text += typeid(pointer_).name();
-        text += " : ";
-        std::stringstream ss;
-        ss << static_cast<void*>(pointer_);
-        text += ss.str();
-        text += "\n}";
-        return text;
+        DAVA::StringStream ss;
+        ss << "{"
+            << typeid(pointer_).name()
+            << " : "
+            << static_cast<void*>(pointer_)
+            <<" }";
+        return ss.str();
     }
     template <typename Container>
-    static DAVA::String FromPointerList(Container &&cont)
+    static String FromPointerList(Container &&cont)
     {
         static_assert(std::is_pointer<decltype(*(cont.begin()))>::value, "works only for vector of pointers");
-        DAVA::String text = "{";
-        text += typeid(*(cont.begin())).name();
-        text += " : ";
-        text += "[\n";
-        std::stringstream ss;
+        DAVA::StringStream ss;
+        ss << "{"
+            << typeid(*(cont.begin())).name()
+            << " : "
+            << "[\n";
         auto it = std::begin(cont);
         auto begin_it = std::begin(cont);
         auto end_it = std::end(cont);
@@ -128,10 +127,9 @@ public:
             ss << static_cast<void*>(*it);
             ++it;
         }
-        text += ss.str();
-        text += "\n]";
-        text += "\n}";
-        return text;
+        ss << "\n]"
+            << "\n}";
+        return ss.str();
     }
     template <typename T>
     bool CanConvert() const
@@ -143,10 +141,10 @@ public:
         return !typeName.empty();
     }
 private:
-    DAVA::Vector<void*> pointers;
+    Vector<void*> pointers;
 
-    DAVA::String typeName;
-    DAVA::String text;
+    String typeName;
+    String text;
 };
 }
 #endif // __DAVAENGINE_JSON_CONVERTER_H_

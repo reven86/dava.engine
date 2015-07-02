@@ -34,11 +34,6 @@
 using namespace std;
 using namespace DAVA;
 
-PointerSerializer::PointerSerializer()
-{
-    
-}
-
 PointerSerializer::PointerSerializer(PointerSerializer&& converter)
     : pointers(std::move(converter.pointers))
     , typeName(std::move(converter.typeName))    
@@ -100,11 +95,11 @@ const char* PointerSerializer::GetRegex()
 
 PointerSerializer& PointerSerializer::operator = (PointerSerializer&& converter)
 {
-    /*if (this != &converter)
+    if (this != &converter)
     {
         pointers = std::move(converter.pointers);
         typeName = std::move(converter.typeName);
         text = std::move(converter.text);
-    }*/
+    }
     return *this;
 }
