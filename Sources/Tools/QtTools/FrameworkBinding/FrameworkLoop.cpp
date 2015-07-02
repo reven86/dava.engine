@@ -114,6 +114,14 @@ QOpenGLContext* FrameworkLoop::Context()
     return context.data();
 }
 
+void FrameworkLoop::DoneContext()
+{
+    if (!context.isNull())
+    {
+        context->doneCurrent();
+    }
+}
+
 quint64 FrameworkLoop::GetRenderContextId() const
 {
     if ( context.isNull() )
@@ -166,9 +174,15 @@ void MakeCurrentGL()
     FrameworkLoop::Instance()->Context();
 }
 
+void DoneGLContext()
+{
+    FrameworkLoop::Instance()->DoneContext();
+}
+
 void FrameworkLoop::OnWindowInitialized()
 {
     DAVA::Core::Instance()->rendererParams.acquireContextFunc = &MakeCurrentGL;
+    DAVA::Core::Instance()->rendererParams.releaseContextFunc = &DoneGLContext;
 
     DAVA::QtLayer::Instance()->AppStarted();
 
