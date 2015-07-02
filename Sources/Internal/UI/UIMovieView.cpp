@@ -111,12 +111,12 @@ void UIMovieView::SystemDraw(const UIGeometricData &geometricData)
     static Color drawColor(Color(1.0f, 0.4f, 0.8f, 1.0f));
 
 	Rect absRect = GetRect(true);
-    RenderSystem2D::Instance()->DrawRect(absRect, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
+    RenderSystem2D::Instance()->DrawRect(absRect, drawColor);
 
 	float32 minRadius = Min(GetSize().x, GetSize().y);
-    RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 2, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
-    RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 3, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
-    RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 4, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
+    RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 2, drawColor);
+    RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 3, drawColor);
+    RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 4, drawColor);
 #endif
 }
 

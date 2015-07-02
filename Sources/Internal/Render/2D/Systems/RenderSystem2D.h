@@ -181,35 +181,40 @@ public:
     \brief Draws line from pt1 to pt2
     \param pt1 starting point
     \param pt2 ending point
+    \param color draw color
     */
-    void DrawLine(const Vector2 & pt1, const Vector2 & pt2, NMaterial* material, const Color& color);
+    void DrawLine(const Vector2 & pt1, const Vector2 & pt2, const Color& color);
 
     /**
     \brief Draws line from pt1 to pt2
     \param pt1 starting point
     \param pt2 ending point
+    \param color draw color
     */
-    void DrawLine(const Vector2 &start, const Vector2 &end, float32 lineWidth, NMaterial* material, const Color& color);
+    void DrawLine(const Vector2 &start, const Vector2 &end, float32 lineWidth, const Color& color);
 
     /**
     \brief Draws multiple lines.
     \param linePoints list of points in the format (startX, startY, endX, endY), (startX, startY, endX, endY)...
+    \param color draw color
     */
-    void DrawLines(const Vector<float32>& linePoints, NMaterial* material, const Color& color);
+    void DrawLines(const Vector<float32>& linePoints, const Color& color);
 
     /**
     \brief Draws given rect in 2D space
     \param pt1 starting point
     \param pt2 ending point
+    \param color draw color
     */
-    void DrawRect(const Rect & rect, NMaterial* material, const Color& color);
+    void DrawRect(const Rect & rect, const Color& color);
 
     /**
     \brief Fills given rect in 2D space
     \param pt1 starting point
     \param pt2 ending point
+    \param color draw color
     */
-    void FillRect(const Rect & rect, NMaterial* material, const Color& color);
+    void FillRect(const Rect & rect, const Color& color);
 
     /**
     \brief Draws grid in the given rect
@@ -217,35 +222,39 @@ public:
     \param gridSize distance between grid lines
     \param color grid color
     */
-    void DrawGrid(const Rect & rect, const Vector2& gridSize, const Color& color, NMaterial* material);
+    void DrawGrid(const Rect & rect, const Vector2& gridSize, const Color& color);
 
     /**
     \brief Draws circle in 2D space
     \param center center of the circle
     \param radius radius of the circle
+    \param color draw color
     */
-    void DrawCircle(const Vector2 & center, float32 radius, NMaterial* material, const Color& color);
+    void DrawCircle(const Vector2 & center, float32 radius, const Color& color);
 
     /**
     \brief Draws all concecutive lines from given polygon
     \param polygon the polygon we want to draw
     \param closed you should set this flag to true if you want to connect last point of polygon with first point
+    \param color draw color
     */
-    void DrawPolygon(const Polygon2 & polygon, bool closed, NMaterial* material, const Color& color);
+    void DrawPolygon(const Polygon2 & polygon, bool closed, const Color& color);
 
     /**
     \brief Fill convex polygon with color. As all other draw functions this function use global color that can be set with RenderSystem2D::Instance()->SetColor function.
     \param polygon the polygon we want to draw
+    \param color draw color
     */
-    void FillPolygon(const Polygon2 & polygon, NMaterial* material, const Color& color);
+    void FillPolygon(const Polygon2 & polygon, const Color& color);
 
     /**
     \brief Draws all concecutive lines from given polygon after transformation
     \param polygon the polygon we want to draw
     \param closed you should set this flag to true if you want to connect last point of polygon with first point
     \param transform transform that will be applied to polygon before it will be drawn
+    \param color draw color
     */
-    void DrawPolygonTransformed(const Polygon2 & polygon, bool closed, const Matrix3 & transform, NMaterial* material, const Color& color);
+    void DrawPolygonTransformed(const Polygon2 & polygon, bool closed, const Matrix3 & transform, const Color& color);
 
     void DrawTexture(rhi::HTextureSet htextureSet, NMaterial* material, const Color & color, const Rect & dstRect = Rect(0.f, 0.f, -1.f, -1.f), const Rect & srcRect = Rect(0.f, 0.f, -1.f, -1.f));
 
@@ -292,6 +301,7 @@ private:
     };
     uint32 highlightControlsVerticesLimit;
 
+    rhi::HSamplerState samplerStateHandle;
     rhi::HRenderPass pass2DHandle;
     rhi::HPacketList packetList2DHandle;
     rhi::HRenderPass passTargetHandle;
