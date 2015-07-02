@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ typedef enum
   MagickAlignOptions = 0,
   MagickAlphaOptions,
   MagickBooleanOptions,
-  MagickCacheOptions,
   MagickChannelOptions,
   MagickClassOptions,
   MagickClipPathOptions,
@@ -76,7 +75,6 @@ typedef enum
   MagickMorphologyOptions,
   MagickNoiseOptions,
   MagickOrientationOptions,
-  MagickPixelIntensityOptions,
   MagickPolicyOptions,
   MagickPolicyDomainOptions,
   MagickPolicyRightsOptions,
@@ -93,26 +91,22 @@ typedef enum
   MagickThresholdOptions,
   MagickTypeOptions,
   MagickValidateOptions,
-  MagickVirtualPixelOptions,
-  MagickComplexOptions,
-  MagickIntensityOptions
+  MagickVirtualPixelOptions
 } CommandOption;
 
 typedef enum
 {
   UndefinedValidate,
   NoValidate = 0x00000,
-  ColorspaceValidate = 0x00001,
-  CompareValidate = 0x00002,
-  CompositeValidate = 0x00004,
-  ConvertValidate = 0x00008,
-  FormatsDiskValidate = 0x00010,
-  FormatsMapValidate = 0x00020,
-  FormatsMemoryValidate = 0x00040,
-  IdentifyValidate = 0x00080,
-  ImportExportValidate = 0x00100,
-  MontageValidate = 0x00200,
-  StreamValidate = 0x00400,
+  CompareValidate = 0x00001,
+  CompositeValidate = 0x00002,
+  ConvertValidate = 0x00004,
+  FormatsInMemoryValidate = 0x00008,
+  FormatsOnDiskValidate = 0x00010,
+  IdentifyValidate = 0x00020,
+  ImportExportValidate = 0x00040,
+  MontageValidate = 0x00080,
+  StreamValidate = 0x00100,
   AllValidate = 0x7fffffff
 } ValidateType;
 
@@ -162,7 +156,6 @@ extern MagickExport MagickBooleanType
   DefineImageOption(ImageInfo *,const char *),
   DeleteImageOption(ImageInfo *,const char *),
   IsCommandOption(const char *),
-  IsOptionMember(const char *,const char *),
   ListCommandOptions(FILE *,const CommandOption,ExceptionInfo *),
   SetImageOption(ImageInfo *,const char *,const char *);
 

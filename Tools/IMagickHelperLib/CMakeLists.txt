@@ -26,6 +26,9 @@ add_definitions (
 set ( LIBRARIES_DIR  "${CMAKE_CURRENT_LIST_DIR}" )
 
 if( APPLE ) 
+    
+    set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libstdc++")
+
     set( IMAGE_MAGICK ImageMagick_mac )
 
     set ( IMAGE_MAGICK_INCLUDES_PATH  
@@ -75,7 +78,10 @@ add_library( ${PROJECT_NAME} SHARED  ${LIB_SOURCES} )
  
 set_property( TARGET ${PROJECT_NAME} PROPERTY FOLDER "libraries")
 
-if( APPLE )
+if ( MSVC )
+    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:\"libcmt.lib;libcmtd.lib\"")    
+
+elseif( APPLE )
 
     ADD_CUSTOM_COMMAND(
     TARGET ${PROJECT_NAME}

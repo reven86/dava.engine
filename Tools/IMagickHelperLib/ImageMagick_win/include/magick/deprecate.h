@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -18,6 +18,12 @@
 #ifndef _MAGICKCORE_DEPRECATE_H
 #define _MAGICKCORE_DEPRECATE_H
 
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
+#endif
+
+#if !defined(MAGICKCORE_EXCLUDE_DEPRECATED)
+
 #include <stdarg.h>
 #include "magick/blob.h"
 #include "magick/cache-view.h"
@@ -30,14 +36,8 @@
 #include "magick/registry.h"
 #include "magick/semaphore.h"
 
-#if defined(__cplusplus) || defined(c_plusplus)
-extern "C" {
-#endif
-
-#if !defined(MAGICKCORE_EXCLUDE_DEPRECATED)
-
 #if !defined(magick_attribute)
-#  if !defined(__clang__) && !defined(__GNUC__)
+#  if !defined(__GNUC__)
 #    define magick_attribute(x) /*nothing*/
 #  else
 #    define magick_attribute __attribute__
@@ -46,18 +46,13 @@ extern "C" {
 
 #define Downscale(quantum)  ScaleQuantumToChar(quantum)
 #define LABColorspace LabColorspace
-#define CompressPixelGamma(pixel)  DecodePixelGamma(pixel)
-#define DecodesRGBGamma(pixel)  DecodePixelGamma(pixel)
-#define EncodesRGBGamma(pixel)  EncodePixelGamma(pixel)
-#define ExpandPixelGamma(pixel)  EncodePixelGamma(pixel)
 #define Intensity(color)  PixelIntensityToQuantum(color)
 #define LiberateUniqueFileResource(resource) \
   RelinquishUniqueFileResource(resource)
 #define LiberateMagickResource(resource)  RelinquishMagickResource(resource)
 #define LiberateSemaphore(semaphore)  RelinquishSemaphore(semaphore)
-#define MagickHuge  3.4e+38F
-#define MaxRGB  QuantumRange  /* deprecated */
 #define QuantumDepth  MAGICKCORE_QUANTUM_DEPTH
+#define MaxRGB  QuantumRange  /* deprecated */
 #define RunlengthEncodedCompression  RLECompression
 #define Upscale(value)  ScaleCharToQuantum(value)
 #define XDownscale(value)  ScaleShortToQuantum(value)
@@ -141,10 +136,6 @@ extern MagickExport Image
   *MinimumImages(const Image *,ExceptionInfo *),
   *MosaicImages(Image *,ExceptionInfo *) magick_attribute((deprecated)),
   *PopImageList(Image **) magick_attribute((deprecated)),
-  *RadialBlurImage(const Image *,const double,ExceptionInfo *)
-    magick_attribute((deprecated)),
-  *RadialBlurImageChannel(const Image *,const ChannelType,const double,
-    ExceptionInfo *) magick_attribute((deprecated)),
   *RecolorImage(const Image *,const size_t,const double *,ExceptionInfo *)
     magick_attribute((deprecated)),
   *ReduceNoiseImage(const Image *,const double,ExceptionInfo *),
@@ -163,9 +154,7 @@ extern MagickExport int
   GetImageGeometry(Image *,const char *,const unsigned int,RectangleInfo *)
     magick_attribute((deprecated)),
   ParseImageGeometry(const char *,ssize_t *,ssize_t *,size_t *,size_t *)
-    magick_attribute((deprecated)),
-  SystemCommand(const MagickBooleanType,const MagickBooleanType,const char *,
-    ExceptionInfo *) magick_attribute((deprecated));
+    magick_attribute((deprecated));
 
 extern MagickExport MagickBooleanType
   AcquireOneCacheViewPixel(const CacheView *,const ssize_t,const ssize_t,
@@ -184,29 +173,23 @@ extern MagickExport MagickBooleanType
   CloneImageAttributes(Image *,const Image *) magick_attribute((deprecated)),
   ColorFloodfillImage(Image *,const DrawInfo *,const PixelPacket,const ssize_t,
     const ssize_t,const PaintMethod) magick_attribute((deprecated)),
-  ConstituteComponentGenesis(void) magick_attribute((deprecated)),
   DeleteImageAttribute(Image *,const char *) magick_attribute((deprecated)),
   DeleteMagickRegistry(const ssize_t) magick_attribute((deprecated)),
   DescribeImage(Image *,FILE *,const MagickBooleanType)
     magick_attribute((deprecated)),
   FormatImageAttribute(Image *,const char *,const char *,...)
-    magick_attribute((__format__ (__printf__,3,4)))
-    magick_attribute((deprecated)),
+    magick_attribute((format (printf,3,4))) magick_attribute((deprecated)),
   FormatImageAttributeList(Image *,const char *,const char *,va_list)
-    magick_attribute((__format__ (__printf__,3,0)))
-    magick_attribute((deprecated)),
+    magick_attribute((format (printf,3,0))) magick_attribute((deprecated)),
   FormatImagePropertyList(Image *,const char *,const char *,va_list)
-    magick_attribute((__format__ (__printf__,3,0))),
+    magick_attribute((format (printf,3,0))),
   FuzzyColorCompare(const Image *,const PixelPacket *,const PixelPacket *)
     magick_attribute((deprecated)),
   FuzzyOpacityCompare(const Image *,const PixelPacket *,const PixelPacket *)
     magick_attribute((deprecated)),
-  InitializeModuleList(ExceptionInfo *) magick_attribute((deprecated)),
-  IsMagickInstantiated(void) magick_attribute((deprecated)),
   LevelImageColors(Image *,const ChannelType,const MagickPixelPacket *,
     const MagickPixelPacket *, const MagickBooleanType)
     magick_attribute((deprecated)),
-  LoadMimeLists(const char *,ExceptionInfo *) magick_attribute((deprecated)),
   MagickMonitor(const char *,const MagickOffsetType,const MagickSizeType,
     void *) magick_attribute((deprecated)),
   MapImage(Image *,const Image *,const MagickBooleanType)
@@ -273,10 +256,6 @@ extern MagickExport PixelPacket
   *SetImagePixels(Image *,const ssize_t,const ssize_t,const size_t,
     const size_t) magick_attribute((deprecated));
 
-extern MagickExport MagickRealType
-  InversesRGBCompandor(const MagickRealType) magick_attribute((deprecated)),
-  sRGBCompandor(const MagickRealType) magick_attribute((deprecated));
-
 extern MagickExport size_t
   GetImageListSize(const Image *) magick_attribute((deprecated)),
   PopImagePixels(Image *,const QuantumType,unsigned char *)
@@ -286,10 +265,9 @@ extern MagickExport size_t
 
 extern MagickExport ssize_t
   FormatMagickString(char *,const size_t,const char *,...)
-    magick_attribute((__format__ (__printf__,3,4)))
-    magick_attribute((deprecated)),
+    magick_attribute((format (printf,3,4))) magick_attribute((deprecated)),
   FormatMagickStringList(char *,const size_t,const char *,va_list)
-    magick_attribute((__format__ (__printf__,3,0))),
+    magick_attribute((format (printf,3,0))),
   GetImageListIndex(const Image *) magick_attribute((deprecated)),
   SetMagickRegistry(const RegistryType,const void *,const size_t,
     ExceptionInfo *) magick_attribute((deprecated));
@@ -322,10 +300,8 @@ extern MagickExport unsigned int
 
 extern MagickExport void
   *AcquireMemory(const size_t) magick_attribute((deprecated)),
-  AcquireSemaphoreInfo(SemaphoreInfo **) magick_attribute((deprecated)),
   AllocateNextImage(const ImageInfo *,Image *) magick_attribute((deprecated)),
   *CloneMemory(void *,const void *,const size_t) magick_attribute((deprecated)),
-  ConstituteComponentTerminus(void) magick_attribute((deprecated)),
   DestroyConstitute(void),
   DestroyImageAttributes(Image *) magick_attribute((deprecated)),
   DestroyImages(Image *) magick_attribute((deprecated)),
@@ -333,24 +309,20 @@ extern MagickExport void
   DestroyMagickRegistry(void) magick_attribute((deprecated)),
   *GetConfigureBlob(const char *,char *,size_t *,ExceptionInfo *)
     magick_attribute((deprecated)),
-  GetExceptionInfo(ExceptionInfo *),
   *GetMagickRegistry(const ssize_t,RegistryType *,size_t *,ExceptionInfo *)
     magick_attribute((deprecated)),
   IdentityAffine(AffineMatrix *) magick_attribute((deprecated)),
   LiberateMemory(void **) magick_attribute((deprecated)),
   LiberateSemaphoreInfo(SemaphoreInfo **) magick_attribute((deprecated)),
-  FormatString(char *,const char *,...)
-    magick_attribute((__format__ (__printf__,2,3)))
+  FormatString(char *,const char *,...) magick_attribute((format (printf,2,3)))
     magick_attribute((deprecated)),
   FormatStringList(char *,const char *,va_list)
-    magick_attribute((__format__ (__printf__,2,0)))
-    magick_attribute((deprecated)),
+    magick_attribute((format (printf,2,0))) magick_attribute((deprecated)),
   HSLTransform(const double,const double,const double,Quantum *,Quantum *,
     Quantum *) magick_attribute((deprecated)),
   InitializeMagick(const char *) magick_attribute((deprecated)),
   MagickIncarnate(const char *) magick_attribute((deprecated)),
   ReacquireMemory(void **,const size_t) magick_attribute((deprecated)),
-  RelinquishSemaphoreInfo(SemaphoreInfo *) magick_attribute((deprecated)),
   ResetImageAttributeIterator(const Image *) magick_attribute((deprecated)),
   SetCacheThreshold(const size_t) magick_attribute((deprecated)),
   SetImage(Image *,const Quantum) magick_attribute((deprecated)),
@@ -358,27 +330,6 @@ extern MagickExport void
   TemporaryFilename(char *) magick_attribute((deprecated)),
   TransformHSL(const Quantum,const Quantum,const Quantum,double *,double *,
     double *) magick_attribute((deprecated));
-
-/*
-  Inline methods.
-*/
-static inline double MagickEpsilonReciprocal(const double x)
-{
-  double
-    sign;
-
-  sign=x < 0.0 ? -1.0 : 1.0;
-  if ((sign*x) >= MagickEpsilon)
-    return(1.0/x);
-  return(sign/MagickEpsilon);
-}
-
-static inline Quantum PixelIntensityToQuantum(const Image *restrict image,
-  const PixelPacket *restrict pixel)
-{
-  return(ClampToQuantum(GetPixelIntensity(image,pixel)));
-}
-
 #endif
 
 #if defined(__cplusplus) || defined(c_plusplus)

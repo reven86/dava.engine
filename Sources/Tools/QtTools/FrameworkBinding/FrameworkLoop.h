@@ -57,6 +57,7 @@ public:
 
     void SetOpenGLWindow( DavaGLWidget *w );
     QOpenGLContext * Context();
+    void DoneContext();
     quint64 GetRenderContextId() const;
 
 

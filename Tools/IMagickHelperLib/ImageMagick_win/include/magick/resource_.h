@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -32,9 +32,7 @@ typedef enum
   MemoryResource,
   ThreadResource,
   TimeResource,
-  ThrottleResource,
-  WidthResource,
-  HeightResource
+  ThrottleResource
 } ResourceType;
 
 #define MagickResourceInfinity  MagickULLConstant(~0)
@@ -44,7 +42,6 @@ extern MagickExport int
 
 extern MagickExport MagickBooleanType
   AcquireMagickResource(const ResourceType,const MagickSizeType),
-  GetPathTemplate(char *),
   ListMagickResourceInfo(FILE *,ExceptionInfo *),
   RelinquishUniqueFileResource(const char *),
   ResourceComponentGenesis(void),

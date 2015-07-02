@@ -163,12 +163,11 @@ _OGLErrorCallback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsiz
     }
 */
     if( type == GL_DEBUG_TYPE_PERFORMANCE )
-        Logger::Warning( "[gl.warning] %s\n", message );
-
-    if( type == GL_DEBUG_TYPE_ERROR )
-        Logger::Error( "[gl.error] %s\n", message );
+        Trace( "[gl.warning] %s\n", message );
+    else if( type == GL_DEBUG_TYPE_ERROR )
+        Trace( "[gl.error] %s\n", message );
 //    else
-//        Logger::Info( "[gl.info] %s\n", message );
+//        Logger::Info( "[gl] %s\n", message );
 }
 
 #endif // defined(__DAVAENGINE_WIN32__)
@@ -205,7 +204,7 @@ wgl_AcquireContext()
 void
 wgl_ReleaseContext()
 {
-    wglMakeCurrent( deviceContext, NULL );
+    wglMakeCurrent( NULL, NULL );
 }
 
 
@@ -387,17 +386,11 @@ gles2_Initialize( const InitParam& param )
 void
 gles2_Initialize( const InitParam& param )
 {
-    macos_gl_init(param.window);
+    macos_gl_init( param.window );
     
-    if(param.makeCurrentFunc)
-    {
-        _GLES2_Make_Context_Current = param.makeCurrentFunc;
-    }
-    else
-    {
-        _GLES2_Make_Context_Current = &macos_gl_set_current;
-    }
-
+    _GLES2_AcquireContext = (param.acquireContextFunc)  ? param.acquireContextFunc  : &macos_gl_acquire_context;
+    _GLES2_ReleaseContext = (param.releaseContextFunc)  ? param.releaseContextFunc  : &macos_gl_release_context;
+   
     ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
 
     _Inited = true;
@@ -448,14 +441,8 @@ gles2_Initialize(const InitParam& param)
 {
     ios_gl_init(param.window);
     
-    if(param.makeCurrentFunc)
-    {
-        _GLES2_Make_Context_Current = param.makeCurrentFunc;
-    }
-    else
-    {
-        _GLES2_Make_Context_Current = &ios_gl_set_current;
-    }
+    _GLES2_AcquireContext = (param.acquireContextFunc)  ? param.acquireContextFunc  : &ios_gl_acquire_context;
+    _GLES2_ReleaseContext = (param.releaseContextFunc)  ? param.releaseContextFunc  : &ios_gl_release_context;
 
     ConstBufferGLES2::InitializeRingBuffer(4 * 1024 * 1024); // CRAP: hardcoded default const ring-buf size
 

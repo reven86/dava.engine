@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
 
   You may not use this file except in compliance with the License.
@@ -22,17 +22,14 @@
 extern "C" {
 #endif
 
-#define IsNaN(a) ((a) != (a) ? MagickTrue : MagickFalse)
-#define MagickAbsoluteValue(x)  ((x) < 0 ? -(x) : (x))
-#define MagickMax(x,y)  (((x) > (y)) ? (x) : (y))
-#define MagickMin(x,y)  (((x) < (y)) ? (x) : (y))
-#define MagickPI  3.14159265358979323846264338327950288419716939937510
-#define Magick2PI  6.28318530717958647692528676655900576839433879875020
-#define MagickPHI  1.61803398874989484820458683436563811772030917980576
-#define MagickPI2  1.57079632679489661923132169163975144209858469968755
-#define MagickSQ1_2  0.70710678118654752440084436210484903928483593768847
-#define MagickSQ2  1.41421356237309504880168872420969807856967187537695
-#define MagickSQ2PI  2.50662827463100024161235523934010416269302368164062
+#define MagickPI     3.14159265358979323846264338327950288419716939937510L
+#define Magick2PI    6.28318530717958647692528676655900576839433879875020L
+#define MagickPHI    1.61803398874989484820458683436563811772030917980576L
+#define MagickPI2    1.57079632679489661923132169163975144209858469968755L
+#define MagickSQ1_2  0.70710678118654752440084436210484903928483593768847L
+#define MagickSQ2    1.41421356237309504880168872420969807856967187537695L
+#define MagickSQ2PI  2.50662827463100024161235523934010416269302368164062L
+#define QuantumScale  ((double) 1.0/(double) QuantumRange)
 #define UndefinedTicksPerSecond  100L
 #define UndefinedCompressionQuality  0UL
 

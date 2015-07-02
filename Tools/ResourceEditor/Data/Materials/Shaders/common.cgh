@@ -195,7 +195,9 @@
 #define DEBUG_NORMAL_ROTATION 0
 #endif
 
-
+#if !defined FORCE_2D_MODE
+#define FORCE_2D_MODE 0
+#endif
 
 #if !defined VIEW_AMBIENT
     #define VIEW_AMBIENT 0

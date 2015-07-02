@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -18,13 +18,13 @@
 #ifndef _MAGICKCORE_DRAW_PRIVATE_H
 #define _MAGICKCORE_DRAW_PRIVATE_H
 
-#include "magick/cache.h"
-#include "magick/image.h"
-#include "magick/memory_.h"
-
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
+
+#include "magick/cache.h"
+#include "magick/image.h"
+#include "magick/memory_.h"
 
 static inline MagickBooleanType GetFillColor(const DrawInfo *draw_info,
   const ssize_t x,const ssize_t y,PixelPacket *pixel)
@@ -41,6 +41,9 @@ static inline MagickBooleanType GetFillColor(const DrawInfo *draw_info,
       *pixel=draw_info->fill;
       return(MagickTrue);
     }
+#if defined(MAGICKCORE_OPENMP_SUPPORT) && (_OPENMP >= 200203)
+  #pragma omp critical
+#endif
   status=GetOneVirtualMethodPixel(pattern,TileVirtualPixelMethod,
     x+pattern->tile_offset.x,y+pattern->tile_offset.y,pixel,
     &pattern->exception);
@@ -64,6 +67,9 @@ static inline MagickBooleanType GetStrokeColor(const DrawInfo *draw_info,
       *pixel=draw_info->stroke;
       return(MagickTrue);
     }
+#if defined(MAGICKCORE_OPENMP_SUPPORT) && (_OPENMP >= 200203)
+  #pragma omp critical
+#endif
   status=GetOneVirtualMethodPixel(pattern,TileVirtualPixelMethod,
     x+pattern->tile_offset.x,y+pattern->tile_offset.y,pixel,
     &pattern->exception);
