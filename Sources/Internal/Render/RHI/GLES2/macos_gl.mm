@@ -25,11 +25,20 @@ macos_gl_end_frame()
 }
 
 void
-macos_gl_set_current()
+macos_gl_acquire_context()
 {
-    if(_GLES2_Native_Window)
+    if( _GLES2_Native_Window )
     {
         [(NSOpenGLContext *)_GLES2_Context makeCurrentContext];
+    }
+}
+
+void
+macos_gl_release_context()
+{
+    if( _GLES2_Native_Window )
+    {
+//        [(NSOpenGLContext *)_GLES2_Context clearCurrentContext];
     }
 }
 

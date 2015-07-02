@@ -80,10 +80,17 @@ ios_gl_end_frame()
     [(EAGLContext*)_GLES2_Context presentRenderbuffer:GL_RENDERBUFFER];
 }
 
-void
-ios_gl_set_current()
+void 
+ios_gl_acquire_context()
 {
     [EAGLContext setCurrentContext:(EAGLContext*)_GLES2_Context];
 }
+
+void
+ios_gl_release_context()
+{
+//    [EAGLContext setCurrentContext:(EAGLContext*)_GLES2_Context];
+}
+
 
 #endif
