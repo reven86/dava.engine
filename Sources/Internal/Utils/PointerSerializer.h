@@ -95,10 +95,11 @@ public:
     template <typename Container>
     static String FromPointerList(Container &&cont)
     {
-        static_assert(std::is_pointer<std::remove_reference<typename Container::value_type> >::value, "works only for vector of pointers");
+        using T = typename std::remove_reference<Container>::type::value_type;
+        static_assert(std::is_pointer<T>::value, "works only for vector of pointers");
         DAVA::StringStream ss;
         ss << "{"
-            << typeid(typename Container::value_type).name()
+            << typeid(T).name()
             << " : "
             << "[\n";
         auto it = std::begin(cont);

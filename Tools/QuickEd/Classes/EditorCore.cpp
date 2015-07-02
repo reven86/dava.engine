@@ -127,7 +127,7 @@ void EditorCore::OnOpenPackageFile(const QString &path)
 void EditorCore::OnProjectPathChanged(const QString &projectPath)
 {
     QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
-    dialogReloadSprites->GetSpritesPacker()->ClearTasks();
+    mainWindow->GetDialogReloadSprites()->GetSpritesPacker()->ClearTasks();
     QDirIterator it(projectPath + "/DataSource");
     while (it.hasNext())
     {
@@ -142,7 +142,7 @@ void EditorCore::OnProjectPathChanged(const QString &projectPath)
             }
             outputPath.replace(outputPath.lastIndexOf("DataSource"), QString("DataSource").size(), "Data");
             QDir outputDir(outputPath);
-            dialogReloadSprites->GetSpritesPacker()->AddTask(fileInfo.absoluteFilePath(), outputDir);
+            mainWindow->GetDialogReloadSprites()->GetSpritesPacker()->AddTask(fileInfo.absoluteFilePath(), outputDir);
         }
     }
 }
