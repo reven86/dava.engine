@@ -961,6 +961,7 @@ void MaterialEditor::OnMaterialLoad(bool checked)
                 materialArchive->DeleteKey("#index");
                 materialArchive->DeleteKey("materialName");
                 materialArchive->DeleteKey("materialType");
+                materialArchive->DeleteKey("materialKey");
                 materialArchive->DeleteKey("parentMaterialKey");
 
                 DAVA::SerializationContext materialContext;
