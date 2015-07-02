@@ -562,14 +562,14 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
             {
                 SceneFileV2* tmpSceneFile = new SceneFileV2();
                 Entity* tmpParent = new Entity();
+                Entity* tmpEntity = loadedEntity;
 
-                tmpParent->AddNode(loadedEntity);
-                tmpSceneFile->OptimizeScene(loadedEntity);
-                tmpParent->RemoveNode(loadedEntity);
+                tmpParent->AddNode(tmpEntity);
+                tmpSceneFile->OptimizeScene(tmpEntity);
 
-                SafeRelease(loadedEntity);
                 loadedEntity = SafeRetain(tmpParent->GetChild(0));
 
+                SafeRelease(tmpEntity);
                 SafeRelease(tmpParent);
                 SafeRelease(tmpSceneFile);
             }
