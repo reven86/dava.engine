@@ -36,7 +36,7 @@ QVariant LogModel::data(const QModelIndex &index, int role) const
     {
         return QVariant();
     }
-    QMutexLocker locker(const_cast<QMutex*>(&m_mutex));
+    QMutexLocker locker(&m_mutex);
     const auto &item = items.at(index.row());
     switch (role)
     {
@@ -57,7 +57,7 @@ QVariant LogModel::data(const QModelIndex &index, int role) const
 
 int LogModel::rowCount(const QModelIndex &parent) const
 {
-    QMutexLocker locker(const_cast<QMutex*>(&m_mutex));
+    QMutexLocker locker(&m_mutex);
     return items.size();
 }
 

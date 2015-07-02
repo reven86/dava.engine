@@ -32,19 +32,6 @@
 
 #include "Base/BaseTypes.h"
 
-namespace
-{
-    template <typename T> struct is_ref_to_ptr
-    {
-        static const bool value = false;
-    };
-
-    template <typename T> struct is_ref_to_ptr<T*&>
-    {
-        static const bool value = true;
-    };
-}
-
 namespace DAVA
 {
 
@@ -108,10 +95,10 @@ public:
     template <typename Container>
     static String FromPointerList(Container &&cont)
     {
-        static_assert(is_ref_to_ptr<decltype(*(cont.begin()))>::value, "works only for vector of pointers");
+        static_assert(std::is_pointer<std::remove_reference<typename Container::value_type> >::value, "works only for vector of pointers");
         DAVA::StringStream ss;
         ss << "{"
-            << typeid(*(cont.begin())).name()
+            << typeid(typename Container::value_type).name()
             << " : "
             << "[\n";
         auto it = std::begin(cont);

@@ -41,7 +41,7 @@ Result::Result(Result &&result)
     : type(result.type)
     , message(std::move(result.message))
 {
-    
+    result.type = RESULT_SUCCESS;
 }
 
 Result& Result::operator = (Result&& result)
@@ -50,6 +50,7 @@ Result& Result::operator = (Result&& result)
     {
         type = result.type;
         message = std::move(result.message);
+        result.type = RESULT_SUCCESS;
     }
     return *this;
 }
