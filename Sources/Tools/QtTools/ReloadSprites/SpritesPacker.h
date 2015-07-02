@@ -27,29 +27,47 @@
 =====================================================================================*/
 
 
-#include "Base/Atomic.h"
+#ifndef __SPRITES_PACKER_H__
+#define __SPRITES_PACKER_H__
 
-#if defined(__DAVAENGINE_WINDOWS__)
+#include "Render/RenderBase.h"
+#include "TextureCompression/TextureConverter.h"
+#include <QObject>
+#include <atomic>
 
-namespace DAVA 
-{
-
-int32 AtomicIncrement( int32 &value )
-{
-    return (int32)InterlockedIncrement((LONG volatile*)&value);
+namespace DAVA {
+    class ResourcePacker2D;
 }
+class QDir;
 
-int32 AtomicDecrement( int32 &value )
+class SpritesPacker : public QObject
 {
-    return (int32)InterlockedDecrement((LONG volatile*)&value);
-}
+    Q_OBJECT
+    Q_PROPERTY(bool running READ IsRunning WRITE SetRunning NOTIFY RunningStateChanged);
+public:
+    SpritesPacker(QObject *parent = nullptr);
+    ~SpritesPacker();
+    void AddTask(const QDir &inputDir, const QDir &outputDir);
+    void ClearTasks();
+    Q_INVOKABLE void ReloadSprites(bool clearDirs, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
+public slots:
+    void Cancel();
+signals:
+    void Finished();
 
-bool AtomicCompareAndSwap(const int32 oldVal, const int32 newVal, volatile int32 &value)
-{
-	return (oldVal == (int32)InterlockedCompareExchange((LONG volatile*)&value, (LONG)newVal, (LONG)oldVal));
-}
+private:
+    DAVA::ResourcePacker2D *resourcePacker2D;
+    QList < QPair<QDir, QDir> > tasks;
 
+    //properties section
+public:
+    bool IsRunning() const;
+public slots:
+    void SetRunning(bool arg);
+signals:
+    void RunningStateChanged(bool arg);
+private:
+    std::atomic<bool> running;
 };
 
-#endif //#if defined(__DAVAENGINE_WINDOWS__)
-
+#endif //__SPRITES_PACKER_H__

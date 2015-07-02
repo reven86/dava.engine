@@ -27,38 +27,22 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_PTHREAD_WIN32_H__
-#define __DAVAENGINE_PTHREAD_WIN32_H__ 
+#ifndef __DAVAENGINE_CONCURRENCY_H__
+#define __DAVAENGINE_CONCURRENCY_H__
 
-#include "Base/Platform.h"
+// All concurrency subsystem includes
 
-//mimic to some posix threads api
-//No cancellations!
+#include "Concurrency/Atomic.h"
+#include "Concurrency/ConcurrentObject.h"
+#include "Concurrency/ConditionVariable.h"
+#include "Concurrency/LockGuard.h"
+#include "Concurrency/Mutex.h"
+#include "Concurrency/Semaphore.h"
+#include "Concurrency/Spinlock.h"
+#include "Concurrency/Thread.h"
+#include "Concurrency/ThreadLocalPtr.h"
 
-#ifdef __DAVAENGINE_WINDOWS__
+//TODO: uncomment this include in client
+#include "Concurrency/PosixThreads.h"
 
-namespace DAVA
-{
-
-using pthread_condattr_t = void;
-using pthread_mutex_t = CRITICAL_SECTION;
-using pthread_mutexattr_t = void;
-using pthread_cond_t = CONDITION_VARIABLE;
-
-#define PTHREAD_COND_INITIALIZER {0}
-
-int pthread_cond_init(pthread_cond_t *cv, const pthread_condattr_t *);
-int pthread_cond_wait(pthread_cond_t *cv, pthread_mutex_t *external_mutex);
-int pthread_cond_signal(pthread_cond_t *cv);
-int pthread_cond_broadcast(pthread_cond_t *cv);
-int pthread_cond_destroy(pthread_cond_t* cond);
-
-int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *mutexattr);
-int pthread_mutex_lock(pthread_mutex_t *mutex);
-int pthread_mutex_unlock(pthread_mutex_t *mutex);
-int pthread_mutex_destroy(pthread_mutex_t *mutex);
-};
-
-#endif //__DAVAENGINE_WINDOWS__
-
-#endif // __DAVAENGINE_PTHREAD_WIN32_H__
+#endif //  __DAVAENGINE_CONCURRENCY_H__

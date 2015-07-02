@@ -85,7 +85,7 @@ bool Project::OpenInternal(const QString &path)
     FilePath::RemoveResourcesFolder(projectPath);
     editorLocalizationSystem->Cleanup();
 
-    projectPath = dir.absolutePath().toStdString();
+    SetProjectPath(dir.absolutePath());
     projectPath.MakeDirectoryPathname();
 
     const auto &resFolders = FilePath::GetResourcesFolders();
@@ -245,4 +245,18 @@ void Project::SetIsOpen(bool arg)
         ResourcesManageHelper::SetProjectPath(QString::fromStdString(projectPath.GetAbsolutePathname()));
     }
     emit IsOpenChanged(arg);
+}
+
+QString Project::GetProjectPath() const
+{
+    return QString::fromStdString(projectPath.GetAbsolutePathname());
+}
+
+void Project::SetProjectPath(QString arg)
+{
+    if (GetProjectPath() != arg)
+    {
+        projectPath = arg.toStdString().c_str();
+        emit ProjectPathChanged(arg);
+    }
 }

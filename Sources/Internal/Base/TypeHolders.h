@@ -33,7 +33,7 @@
 #include <new>
 #include "TemplateHelpers.h"
 #include "Base/BaseTypes.h"
-#include "Base/Atomic.h"
+#include "Concurrency/Atomic.h"
 
 namespace DAVA
 {
@@ -49,19 +49,19 @@ public:
 
 	void Retain()
 	{
-        AtomicIncrement(refCount);
+        refCount++;
 	}
 
 	void Release()
 	{
-		if (0 == AtomicDecrement(refCount))
+		if (0 == --refCount)
 		{
 			delete this;
 		}
 	}
 
 private:
-	int32 refCount;
+	Atomic<int32> refCount;
 };
 
 // ====================================================================================================================================================

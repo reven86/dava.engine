@@ -27,18 +27,50 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_ATOMIC__
-#define __DAVAENGINE_ATOMIC__
+#ifndef __DAVAENGINE_LOCK_GUARD_H__
+#define __DAVAENGINE_LOCK_GUARD_H__
 
-#include "Base/BaseTypes.h"
-
-namespace DAVA 
+namespace DAVA
 {
 
-int32 AtomicIncrement(int32 &value);
-int32 AtomicDecrement(int32 &value);
-bool AtomicCompareAndSwap(const int32 oldVal, const int32 newVal, volatile int32 &value);
+//-----------------------------------------------------------------------------
+//LockGuard class - RAII wrapper for mutex object
+//-----------------------------------------------------------------------------
+template<class MutexT>
+class LockGuard
+{
+    using MutexType = MutexT;
+public:
+    // construct and lock
+    explicit LockGuard(MutexType& mutex);
 
+    // clean up
+    ~LockGuard() DAVA_NOEXCEPT;
+
+    // no copy construct and assign operator
+    LockGuard(const LockGuard&) = delete;
+    LockGuard& operator=(const LockGuard&) = delete;
+
+private:
+    MutexType& mutex_ref;
 };
 
-#endif //__DAVAENGINE_ATOMIC__
+//-----------------------------------------------------------------------------
+//Realization of LockGuard
+//-----------------------------------------------------------------------------
+template<class MutexT>
+LockGuard<MutexT>::LockGuard(MutexType& mutex)
+    : mutex_ref(mutex)
+{
+    mutex_ref.Lock();
+}
+
+template<class MutexT>
+LockGuard<MutexT>::~LockGuard() DAVA_NOEXCEPT
+{
+    mutex_ref.Unlock();
+}
+
+} //  namespace DAVA
+
+#endif //  __DAVAENGINE_LOCK_GUARD_H__

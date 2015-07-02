@@ -27,33 +27,53 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_LOCK_GUARD_H__
-#define __DAVAENGINE_LOCK_GUARD_H__
+#ifndef __DIALOG_RELOAD_SPRITES_H__
+#define __DIALOG_RELOAD_SPRITES_H__
 
-#include "Platform/Mutex.h"
+#include "SpritesPacker.h"
+#include <QDialog>
 
-namespace DAVA
+#include <QThread>
+namespace Ui
 {
-    
-struct AdoptLock_t { };
-const AdoptLock_t AdoptLock {};
+    class DialogReloadSprites;
+}
 
-template<typename MutexType>
-class LockGuard
+class DialogReloadSprites : public QDialog
 {
+    Q_OBJECT
+    QThread workerThread;
 public:
-    explicit LockGuard(MutexType& m) : mutex(m) { mutex.Lock(); }; //own and lock mutex
-   
-    LockGuard(MutexType& m, AdoptLock_t) : mutex(m) { }; //just own mutex
-
-    LockGuard(const LockGuard&) = delete;
-    LockGuard& operator = (const LockGuard&) = delete;
-
-    ~LockGuard() { mutex.Unlock(); } //unlock mutex
-    
+    explicit DialogReloadSprites(QWidget *parent = nullptr);
+    ~DialogReloadSprites();
+    SpritesPacker *GetSpritesPacker() const;
+    QAction* GetActionReloadSprites() const;
+signals:
+    bool StarPackProcess();
+private slots:
+    void OnStartClicked();
+    void OnStopClicked();
+    void OnRunningChanged(bool running);
+protected:
+    void closeEvent(QCloseEvent *event) override;
 private:
-    MutexType &mutex;
+    void LoadSettings();
+    void SaveSettings() const;
+    void BlockingStop();
+
+    Ui::DialogReloadSprites *ui;
+    SpritesPacker *spritesPacker;
+    QAction *actionReloadSprites;
 };
-    
-};
-#endif //__DAVAENGINE_LOCK_GUARD_H__
+
+inline SpritesPacker* DialogReloadSprites::GetSpritesPacker() const
+{
+    return spritesPacker;
+}
+
+inline QAction* DialogReloadSprites::GetActionReloadSprites() const
+{
+    return actionReloadSprites;
+}
+
+#endif // __DIALOG_RELOAD_SPRITES_H__
