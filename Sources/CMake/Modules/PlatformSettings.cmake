@@ -116,7 +116,8 @@ if( WARNINGS_AS_ERRORS )
 -Wno-sometimes-uninitialized \
 -Wno-delete-non-virtual-dtor \
 -Wno-header-hygiene \
--Wno-old-style-cast")
+-Wno-old-style-cast \
+-Wno-unknown-warning-option")
 
     if( ANDROID )
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LOCAL_DISABLED_WARNINGS}" ) # warnings as errors
