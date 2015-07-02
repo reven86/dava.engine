@@ -72,7 +72,7 @@ void LocalNotificationAndroid::Hide()
     env->DeleteLocalRef(jstrNotificationUid);
 }
 
-void LocalNotificationAndroid::ShowText(const WideString &title, const WideString text, const bool useSound)
+void LocalNotificationAndroid::ShowText(const WideString &title, const WideString &text, bool useSound)
 {
 	LockGuard<Mutex> mutexGuard(javaCallMutex);
 	JNIEnv *env = JNI::GetEnv();
@@ -90,7 +90,7 @@ void LocalNotificationAndroid::ShowText(const WideString &title, const WideStrin
 }
 
 
-void LocalNotificationAndroid::ShowProgress(const WideString &title, const WideString text, const uint32 total, const uint32 progress, const bool useSound)
+void LocalNotificationAndroid::ShowProgress(const WideString &title, const WideString &text, const uint32 total, const uint32 progress, bool useSound)
 {
 	LockGuard<Mutex> mutexGuard(javaCallMutex);
 	JNIEnv *env = JNI::GetEnv();
@@ -107,7 +107,7 @@ void LocalNotificationAndroid::ShowProgress(const WideString &title, const WideS
 	env->DeleteLocalRef(jStrText);
 }
 
-void LocalNotificationAndroid::PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds, const bool useSound)
+void LocalNotificationAndroid::PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds, bool useSound)
 {
 	LockGuard<Mutex> mutexGuard(javaCallMutex);
 	JNIEnv *env = JNI::GetEnv();

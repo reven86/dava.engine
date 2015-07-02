@@ -52,7 +52,7 @@ LocalNotificationController::~LocalNotificationController()
     }
 }
 
-LocalNotificationProgress *const LocalNotificationController::CreateNotificationProgress(const WideString &title, const WideString &text, const uint32 maximum, const uint32 current, const bool useSound)
+LocalNotificationProgress *const LocalNotificationController::CreateNotificationProgress(const WideString &title, const WideString &text, uint32 maximum, uint32 current, bool useSound)
 {
 	LocalNotificationProgress *note = new LocalNotificationProgress();
     
@@ -72,7 +72,7 @@ LocalNotificationProgress *const LocalNotificationController::CreateNotification
     return note;
 }
 
-LocalNotificationText *const LocalNotificationController::CreateNotificationText(const WideString &title, const WideString &text, const bool useSound)
+LocalNotificationText *const LocalNotificationController::CreateNotificationText(const WideString &title, const WideString &text, bool useSound)
 {
 	LocalNotificationText *note = new LocalNotificationText();
 
@@ -168,7 +168,7 @@ void LocalNotificationController::OnNotificationPressed(const String &id)
 	}
 }
 
-void LocalNotificationController::PostDelayedNotification(const WideString &title, const WideString text, int delaySeconds, const bool useSound)
+void LocalNotificationController::PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds, bool useSound)
 {
     LocalNotificationDelayed *notification = new LocalNotificationDelayed();
     notification->SetTitle(title);

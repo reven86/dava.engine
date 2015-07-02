@@ -87,7 +87,7 @@ void LocalNotificationIOS::Hide()
     }
 }
 
-void LocalNotificationIOS::ShowText(const WideString &title, const WideString text, const bool useSound)
+void LocalNotificationIOS::ShowText(const WideString &title, const WideString &text, bool useSound)
 {
     if (NULL == notification)
     {
@@ -109,11 +109,11 @@ void LocalNotificationIOS::ShowText(const WideString &title, const WideString te
     [[UIApplication sharedApplication] scheduleLocalNotification:notification->impl];
 }
 
-void LocalNotificationIOS::ShowProgress(const WideString &title, const WideString text, const uint32 total, const uint32 progress, const bool useSound)
+void LocalNotificationIOS::ShowProgress(const WideString &title, const WideString &text, uint32 total, uint32 progress, bool useSound)
 {
 }
 
-void LocalNotificationIOS::PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds, const bool useSound)
+void LocalNotificationIOS::PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds, bool useSound)
 {
     UILocalNotification *notification = [[[UILocalNotification alloc] init] autorelease];
     notification.alertBody = NSStringFromWideString(text);
