@@ -34,6 +34,8 @@
 #include "Utils/UTF8Utils.h"
 #include "Debug/DVAssert.h"
 
+#include "Platform/TemplateWin32/CorePlatformWinUAP.h"
+
 namespace DAVA
 {
 
@@ -63,36 +65,54 @@ bool DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 
 bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
 {
-    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__MARKER__
-    DAVA::Logger::Instance()->Warning("DVAssertMessage::InnerShow for Windows UAP is not implemented");
-    return false;
+    using namespace Windows::UI::Popups;
 
-    /*using namespace Windows::UI::Popups;
-    
-    WideString contentStr = UTF8Utils::EncodeToWideString(content);
-    Platform::String^ lbl = ref new Platform::String(contentStr.c_str());
-    MessageDialog^ msg = ref new MessageDialog(lbl);
+    bool issueDebugBreak = false;
+    CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
+    // Depending on what thread assertion has occured we should take different actions:
+    //  - for UI thread
+    //      MessageDialog always run asynchronously so breaking has no sense so dialog has only one button for continuation
+    //      As we asserting on UI thread we can simply show dialog
+    //  - for main and other threads
+    //      MessageDialog must be run only on UI thread, so RunOnUIThread is used
+    //      Also we block asserting thread to be able to retrieve user response: continue or break
+    if (!core->IsUIThread())
+    {
+        Spinlock lock;  // TODO: maybe choose mutex to allow waiting thread sleep
+        auto f = [content, &issueDebugBreak, &lock]() {
+            using namespace Windows::UI::Popups;
 
-    //creating commands for message dialog
-    UICommand^ continueCommand = ref new UICommand(
-		"OK", 
-        ref new UICommandInvokedHandler([&] (IUICommand^) {} ));
-    UICommand^ cancelCommand = ref new UICommand(
-		"Cancel", 
-        ref new UICommandInvokedHandler([&] (IUICommand^) {} ));
+            WideString contentStr = UTF8Utils::EncodeToWideString(content);
+            Platform::String^ text = ref new Platform::String(contentStr.c_str());
+            MessageDialog^ msg = ref new MessageDialog(text);
 
-    msg->Commands->Append(continueCommand);
-    msg->Commands->Append(cancelCommand);
+            UICommand^ continueCommand = ref new UICommand("Continue", ref new UICommandInvokedHandler([&lock](IUICommand^) { lock.Unlock(); }));
+            UICommand^ cancelCommand = ref new UICommand("Break", ref new UICommandInvokedHandler([&lock, &issueDebugBreak](IUICommand^) { issueDebugBreak = true; lock.Unlock(); }));
+            msg->Commands->Append(continueCommand);
+            msg->Commands->Append(cancelCommand);
+            msg->DefaultCommandIndex = 0;
+            msg->CancelCommandIndex = 0;
 
-	//command options
-	msg->DefaultCommandIndex = 0;
-	msg->CancelCommandIndex = 1;
+            msg->ShowAsync();   // This is always async call
+        };
 
-	//show message and blocking thread
-	//msg->ShowAsync();
-    //assert(false);
+        lock.Lock();
+        core->RunOnUIThread(f);
+        lock.Lock();
+    }
+    else
+    {
+        WideString contentStr = UTF8Utils::EncodeToWideString(content);
+        Platform::String^ text = ref new Platform::String(contentStr.c_str());
+        MessageDialog^ msg = ref new MessageDialog(text);
 
-    return false;*/
+        UICommand^ continueCommand = ref new UICommand("Continue", ref new UICommandInvokedHandler([](IUICommand^) {}));
+        msg->Commands->Append(continueCommand);
+        msg->DefaultCommandIndex = 0;
+
+        msg->ShowAsync();   // This is always async call
+    }
+    return issueDebugBreak;
 }
 
 #endif // defined (__DAVAENGINE_WIN_UAP__)
