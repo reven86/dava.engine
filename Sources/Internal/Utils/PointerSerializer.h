@@ -54,6 +54,7 @@ public:
     PointerSerializer();
     PointerSerializer(const PointerSerializer &converter) = default;
     PointerSerializer(PointerSerializer &&converter);
+    static const char* GetRegex();
     template <typename T>
     Vector<typename std::enable_if<std::is_pointer<T>::value, T>::type> GetPointers() const
     {

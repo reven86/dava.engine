@@ -1,17 +1,23 @@
 #include "LogModel.h"
 
-
-#include <QDebug>
 #include <QPainter>
-
+#include <QModelIndex>
+#include <QAbstractItemModel>
+#include <QRegularExpression>
 #include "Utils/UTF8Utils.h"
-
-
+#include "Base/GlobalEnum.h"
+#include "Debug/DVAssert.h"
+#include "Utils/PointerSerializer.h"
+ 
 LogModel::LogModel(QObject* parent)
-    : QStandardItemModel(parent)
+    : QAbstractListModel(parent)
 {
+    createIcons();
+    qRegisterMetaType<DAVA::Logger::eLogLevel>("DAVA::Logger::eLogLevel");
     DAVA::Logger::AddCustomOutput(this);
-    connect(this, &LogModel::Logged, this, &LogModel::AddMessage, Qt::DirectConnection);
+    timer = new QTimer(this);
+    timer->setInterval(1);
+    connect(timer, &QTimer::timeout, this, &LogModel::OnTimeout, Qt::QueuedConnection);
 }
 
 LogModel::~LogModel()
@@ -21,23 +27,57 @@ LogModel::~LogModel()
 
 void LogModel::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text)
 {
-    emit Logged(ll, text);
+    AddMessage(ll, text);
 }
 
-void LogModel::AddMessage(int ll, const QString& text)
+QVariant LogModel::data(const QModelIndex &index, int role) const
 {
-    auto item = CreateItem(ll, normalize(text));
-    appendRow(item);
+    if (!index.isValid())
+    {
+        return QVariant();
+    }
+    QMutexLocker locker(const_cast<QMutex*>(&m_mutex));
+    const auto &item = items.at(index.row());
+    switch (role)
+    {
+    case Qt::DisplayRole:
+        return item.displayText;
+
+    case Qt::DecorationRole:
+        return GetIcon(item.ll);
+
+    case LEVEL_ROLE:
+        return item.ll;
+    case ORIGINAL_TEXT_ROLE:
+        return item.text;
+    default:
+        return QVariant();
+    }
 }
 
-QStandardItem * LogModel::CreateItem(int ll, const QString& text) const
+int LogModel::rowCount(const QModelIndex &parent) const
 {
-    QStandardItem* textItem = new QStandardItem();
-    textItem->setText(text);
-    textItem->setToolTip(text);
-    textItem->setIcon(GetIcon(ll));
-    textItem->setData(ll, LEVEL_ROLE);
-    return textItem;
+    QMutexLocker locker(const_cast<QMutex*>(&m_mutex));
+    return items.size();
+}
+
+void LogModel::AddMessage(DAVA::Logger::eLogLevel ll, const QString& text)
+{
+    {
+        QMutexLocker locker(&m_mutex);
+        items.append(LogItem(ll, normalize(text)));
+    }
+    timer->start();
+}
+
+void LogModel::OnTimeout()
+{
+    if (rowCount() != registerCount)
+    {
+        emit beginInsertRows(QModelIndex(), registerCount, rowCount() - 1);
+        registerCount = rowCount();
+        emit endInsertRows();
+    }
 }
 
 QString LogModel::normalize(const QString& text) const
@@ -45,49 +85,64 @@ QString LogModel::normalize(const QString& text) const
     return text.split('\n', QString::SkipEmptyParts).join("\n");
 }
 
-QPixmap LogModel::GetIcon(int ll) const
+void LogModel::createIcons()
 {
-    const auto it = icons.constFind(ll);
-    if (it != icons.constEnd())
+    const auto &logMap = GlobalEnumMap<DAVA::Logger::eLogLevel>::Instance();
+    for (size_t i = 0; i < logMap->GetCount(); ++i)
     {
-        return it.value();
+        int value;
+        bool ok = logMap->GetValue(i, value);
+        if (!ok)
+        {
+            DVASSERT_MSG(ok, "wrong enum used to create GPU list");
+            break;
+        }
+        QPixmap pix(16, 16);
+        pix.fill(Qt::transparent);
+        QPainter p(&pix);
+
+        QColor bg = Qt::transparent;
+        QColor fg1 = Qt::gray;
+
+        switch (value)
+        {
+        case DAVA::Logger::LEVEL_FRAMEWORK:
+            bg = Qt::lightGray;
+            break;
+        case DAVA::Logger::LEVEL_DEBUG:
+            bg = Qt::blue;
+            break;
+        case DAVA::Logger::LEVEL_INFO:
+            bg = Qt::green;
+            break;
+        case DAVA::Logger::LEVEL_WARNING:
+            bg = Qt::yellow;
+            break;
+        case DAVA::Logger::LEVEL_ERROR:
+            bg = Qt::red;
+            break;
+        default:
+            break;
+        }
+
+        const int ofs = 3;
+
+        p.setBrush(bg);
+        QRect rc = QRect(QPoint(0, 0), pix.size()).adjusted(ofs, ofs, -ofs, -ofs);
+        p.setPen(fg1);
+        p.drawEllipse(rc);
+
+        icons.append(pix);
     }
+}
 
-    QPixmap pix(16, 16);
-    pix.fill(Qt::transparent);
-    QPainter p(&pix);
-
-    QColor bg = Qt::transparent;
-    QColor fg1 = Qt::gray;
-
-    switch (ll)
-    {
-    case DAVA::Logger::LEVEL_FRAMEWORK:
-        bg = Qt::lightGray;
-        break;
-    case DAVA::Logger::LEVEL_DEBUG:
-        bg = Qt::blue;
-        break;
-    case DAVA::Logger::LEVEL_INFO:
-        bg = Qt::green;
-        break;
-    case DAVA::Logger::LEVEL_WARNING:
-        bg = Qt::yellow;
-        break;
-    case DAVA::Logger::LEVEL_ERROR:
-        bg = Qt::red;
-        break;
-    default:
-        break;
-    }
-
-    const int ofs = 3;
-
-    p.setBrush(bg);
-    QRect rc = QRect(QPoint(0, 0), pix.size()).adjusted(ofs, ofs, -ofs, -ofs);
-    p.setPen(fg1);
-    p.drawEllipse(rc);
-
-    icons[ll] = pix;
-    return pix;
+const QPixmap &LogModel::GetIcon(int ll) const
+{
+    return icons.at(ll);
+}
+LogModel::LogItem::LogItem(DAVA::Logger::eLogLevel ll_, const QString& text_)
+    : ll(ll_), text(text_), displayText(text_)
+{
+    QRegularExpression re(DAVA::PointerSerializer::GetRegex());
+    displayText.replace(re, "");
 }

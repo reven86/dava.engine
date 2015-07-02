@@ -49,7 +49,7 @@ PointerSerializer::PointerSerializer(PointerSerializer&& converter)
 
 PointerSerializer PointerSerializer::ParseString(const DAVA::String &str)
 {
-    std::regex rgx(R"(\{\s*([\:\s\w\*\&]+)\s*\:\s*([\,\[\]\w\s]*)\s*\})");
+    std::regex rgx(GetRegex());
     std::smatch sm;
     std::string::const_iterator cit = str.cbegin();
 
@@ -93,6 +93,10 @@ PointerSerializer PointerSerializer::ParseString(const DAVA::String &str)
     return PointerSerializer();
 }
 
+const char* PointerSerializer::GetRegex()
+{
+    return R"(\{\s*([\:\s\w\*\&]+)\s*\:\s*([\,\[\]\w\s]*)\s*\})";
+}
 
 PointerSerializer& PointerSerializer::operator = (PointerSerializer&& converter)
 {

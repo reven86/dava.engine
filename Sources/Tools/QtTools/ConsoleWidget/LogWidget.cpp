@@ -10,8 +10,9 @@
 #include "LogFilterModel.h"
 #include "LogDelegate.h"
 
+#include "Base/GlobalEnum.h"
 #include "Utils/PointerSerializer.h"
-
+#include "Debug/DVAssert.h"
 
 LogWidget::LogWidget(QWidget* parent)
     : QWidget(parent)
@@ -22,14 +23,14 @@ LogWidget::LogWidget(QWidget* parent)
     connect(log, &QListView::clicked, this, &LogWidget::OnClicked);
     time.start();
 
-    LogDelegate* delegate = new LogDelegate(log, this);
+    //LogDelegate* delegate = new LogDelegate(log, this);
     logModel = new LogModel(this);
     logFilterModel = new LogFilterModel(this);
 
     logFilterModel->setSourceModel(logModel);
     log->setModel(logFilterModel);
-    connect(delegate, &LogDelegate::copyRequest, this, &LogWidget::OnCopy);
-    connect(delegate, &LogDelegate::clearRequest, this, &LogWidget::OnClear);
+    //connect(delegate, &LogDelegate::copyRequest, this, &LogWidget::OnCopy);
+    //connect(delegate, &LogDelegate::clearRequest, this, &LogWidget::OnClear);
     log->installEventFilter(this);
 
     FillFiltersCombo();
@@ -103,11 +104,18 @@ void LogWidget::OnTextFilterChanged(const QString& text)
 
 void LogWidget::FillFiltersCombo()
 {
-    filter->addItem("LEVEL_FRAMEWORK", DAVA::Logger::LEVEL_FRAMEWORK);
-    filter->addItem("LEVEL_DEBUG", DAVA::Logger::LEVEL_DEBUG);
-    filter->addItem("LEVEL_INFO", DAVA::Logger::LEVEL_INFO);
-    filter->addItem("LEVEL_WARNING", DAVA::Logger::LEVEL_WARNING);
-    filter->addItem("LEVEL_ERROR", DAVA::Logger::LEVEL_ERROR);
+    const auto &logMap = GlobalEnumMap<DAVA::Logger::eLogLevel>::Instance();
+    for (size_t i = 0; i < logMap->GetCount(); ++i)
+    {
+        int value;
+        bool ok = logMap->GetValue(i, value);
+        if (!ok)
+        {
+            DVASSERT_MSG(ok, "wrong enum used to create GPU list");
+            break;
+        }
+        filter->addItem(logMap->ToString(value), value);
+    }
 
     QAbstractItemModel* m = filter->model();
     const int n = m->rowCount();
@@ -175,18 +183,14 @@ void LogWidget::OnCopy()
 
 void LogWidget::OnClear()
 {
-    logModel->clear();
+    logModel->removeRows(0, logModel->rowCount());
 }
 
 void LogWidget::OnClicked(const QModelIndex &index)
 {
     auto pIndex = logFilterModel->mapToSource(index);
-    const auto item = logModel->itemFromIndex(pIndex);
-    if (nullptr != item)
-    {
-        DAVA::String str(item->text().toStdString());
-        emit ItemClicked(DAVA::PointerSerializer(str));
-    }
+    QString text = logModel->data(pIndex, LogModel::ORIGINAL_TEXT_ROLE).toString();
+    emit ItemClicked(DAVA::PointerSerializer(text.toStdString()));
 }
 
 void LogWidget::OnBeforeAdded()

@@ -47,6 +47,7 @@ void LogFilterModel::SetFilterString(const QString& _filter)
 
 bool LogFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
 {
+    return true;
     const QModelIndex source = sourceModel()->index(source_row, 0, source_parent);
 
     bool isAcceptedByText = true;
