@@ -6,8 +6,8 @@ if( NOT DISABLE_DEBUG )
 endif  ()
 
 if     ( ANDROID )
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y -Wno-invalid-offsetof" )
-    set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -Wno-invalid-offsetof -frtti" )    
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y" )
+    set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -frtti" )    
     set( CMAKE_ECLIPSE_MAKE_ARGUMENTS -j8 )
     
 elseif ( IOS     ) 
@@ -39,7 +39,7 @@ elseif ( MACOS )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
     set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS YES )
 
-elseif ( WIN32 )
+elseif ( MSVC )
     #dynamic runtime on windows store
     if ( WINDOWS_UAP )
 	    set ( CRT_TYPE_DEBUG "/MDd" )
@@ -142,7 +142,7 @@ if( WARNINGS_AS_ERRORS )
 -Wno-import-preprocessor-directive-pedantic" )
 
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LOCAL_DISABLED_WARNINGS}" ) # warnings as errors
-    elseif( WIN32 )
+    elseif( MSVC )
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX" )
     endif()
 

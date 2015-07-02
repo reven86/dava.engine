@@ -186,18 +186,10 @@
 
 cmake_minimum_required( VERSION 2.6.3 )
 
-# Only interpret ``if()`` arguments as variables or keywords when unquoted.
-if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
-    cmake_policy(SET CMP0054 NEW)
-endif()
-
 if( NOT ANDROID_TOOLCHAIN_NAME )
     set( ANDROID_TOOLCHAIN_NAME arm-linux-androideabi-clang3.4 )
 
 endif()
-
-set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../Modules/" ) 
-include               ( GlobalVariables )
 
 if( DEFINED CMAKE_CROSSCOMPILING )
  # subsequent toolchain loading is not really needed
@@ -1618,8 +1610,6 @@ if( NOT _CMAKE_IN_TRY_COMPILE )
  file( WRITE "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/android.toolchain.config.cmake" "${__toolchain_config}" )
  unset( __toolchain_config )
 endif()
-
-include ( PlatformSettings     )
 
 # force cmake to produce / instead of \ in build commands for Ninja generator
 if( CMAKE_GENERATOR MATCHES "Ninja" AND CMAKE_HOST_WIN32 )

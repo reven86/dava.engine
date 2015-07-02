@@ -126,6 +126,9 @@ while continue_process_stdout:
                 sys.stdout.flush()
             if line.find("Force finishing activity com.dava.unittests") != -1:
                 app_exit_code = 1
+                sys.stdout.write(line)
+                sys.stdout.flush()
+                
                 if start_on_android:
                     # we want to exit from logcat process because sub_process.stdout.readline() will block
                     # current thread

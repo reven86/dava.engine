@@ -8,26 +8,18 @@ if ( DAVA_MEMORY_PROFILER )
 endif()
 
 if( ANDROID )
-    if ( NOT CMAKE_TOOLCHAIN_FILE )
-        set( CMAKE_TOOLCHAIN_FILE ${DAVA_ROOT_DIR}/Sources/CMake/Toolchains/android.toolchain.cmake )
-    endif()
     find_package( AndroidTools REQUIRED )
 
     if( WIN32 )
         set( MAKE_PROGRAM ${ANDROID_NDK}/prebuilt/windows-x86_64/bin/make.exe ) 
-
     elseif( APPLE )
        set( MAKE_PROGRAM ${ANDROID_NDK}/prebuilt/darwin-x86_64/bin/make ) 
-
     endif()
 
     file( TO_CMAKE_PATH "${MAKE_PROGRAM}" MAKE_PROGRAM )
     set (CMAKE_MAKE_PROGRAM "${MAKE_PROGRAM}" CACHE STRING   "Program used to build from makefiles.")
     mark_as_advanced(CMAKE_MAKE_PROGRAM)
 
-elseif( IOS AND NOT CMAKE_TOOLCHAIN_FILE )
-    set( CMAKE_TOOLCHAIN_FILE ${DAVA_ROOT_DIR}/Sources/CMake/Toolchains/ios.toolchain.cmake )
- 
 elseif ( WINDOWS_UAP )
 
     #define system name and version for windows universal application

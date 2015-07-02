@@ -38,7 +38,11 @@ endif()
 
 macro( setup_main_executable )
 
-add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
+include      ( PlatformSettings )
+
+if( MSVC )
+    add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
+endif()
 
 if( MACOS_DATA )
     set( APP_DATA ${MACOS_DATA} )
@@ -174,7 +178,7 @@ elseif ( WINDOWS_UAP )
 	set_property(SOURCE ${RELEASE_CONTENT_FILES} PROPERTY
 		VS_DEPLOYMENT_CONTENT $<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>)
 
-elseif( WIN32 )
+elseif( WIN32 AND MSVC )
     list( APPEND RESOURCES_LIST  ${WIN32_RESOURCES} )
 endif()
 
@@ -192,8 +196,7 @@ if( DAVA_FOUND )
     if( ANDROID )
         include_directories   ( ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid )
         list( APPEND PATTERNS_CPP    ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/*.cpp )
-        list( APPEND PATTERNS_H      ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/*.h   )        
-
+        list( APPEND PATTERNS_H      ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/*.h   )
     endif()
 
     if( QT_PREFIX )
@@ -212,7 +215,7 @@ if( DAVA_FOUND )
         include_directories( ${PLATFORM_INCLUDES_DIR} )
 
     else()
-        if( WIN32 )
+        if( MSVC )
             add_definitions        ( -D_UNICODE 
                                      -DUNICODE )
             list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.cpp 
