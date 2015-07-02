@@ -56,8 +56,9 @@ public:
     PointerSerializer(PointerSerializer &&converter);
     static const char* GetRegex();
     template <typename T>
-    Vector<typename std::enable_if<std::is_pointer<T>::value, T>::type> GetPointers() const
+    Vector<T> GetPointers() const
     {
+        static_assert(std::is_pointer<T>::value, "works only for vector of pointers");
         Vector<T>  returnVec;
         for (auto ptr : pointers)
         {
@@ -66,8 +67,9 @@ public:
         return returnVec;
     }
     template <typename T>
-    PointerSerializer(const typename std::enable_if<std::is_pointer<T>::value, T>::type pointer_)
+    PointerSerializer(const T pointer_)
     {
+        static_assert(std::is_pointer<T>::value, "works only for vector of pointers");
         typeName = typeid(pointer_).name();
         pointers.push_back(static_cast<void*>(pointer_));
         text = FromPointer(pointer_);
@@ -82,12 +84,11 @@ public:
         }
         text = FromPointerList(cont);
     }
-    template <>
+
     PointerSerializer(const DAVA::String &str)
         : PointerSerializer(ParseString(str))
     {
-
-    } 
+    }
 
     static PointerSerializer ParseString(const DAVA::String &str);
 
@@ -97,8 +98,6 @@ public:
     template <typename T>
     static DAVA::String FromPointer(const T pointer_)
     {
-        typename std::enable_if<std::is_pointer<T>::value, T>::type t = nullptr; //dummy for compilation error. You must use T as pointer to solve it
-        static_cast<void*>(t);
         DAVA::String text = "{";
         text += typeid(pointer_).name();
         text += " : ";
@@ -111,8 +110,7 @@ public:
     template <typename Container>
     static DAVA::String FromPointerList(Container &&cont)
     {
-        typename std::enable_if<is_ref_to_ptr<decltype(*(cont.begin()))>::value>::type t = nullptr; //dummy for compilation error. You must use Container of pointers to solve it
-        static_cast<void*>(t);
+        static_assert(std::is_pointer<decltype(*(cont.begin()))>::value, "works only for vector of pointers");
         DAVA::String text = "{";
         text += typeid(*(cont.begin())).name();
         text += " : ";
