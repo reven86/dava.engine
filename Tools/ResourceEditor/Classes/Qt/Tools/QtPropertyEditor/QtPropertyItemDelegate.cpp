@@ -291,8 +291,8 @@ void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOption
 	QtPropertyData* data = model->itemFromIndex(index);
 	if(index.column() == 1 && NULL != data && data->GetButtonsCount() > 0)
 	{
-		int owSpacing = 1;
-		int owXPos = opt.rect.right() - owSpacing;
+		int owSpacing = 3;
+		int owXPos = view->width() - owSpacing;
 		int owYPos;
 
 		// draw not overlaid widgets
