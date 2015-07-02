@@ -30,6 +30,7 @@
 #include "SpritesPacker.h"
 #include "TexturePacker/ResourcePacker2D.h"
 #include "TexturePacker/CommandLineParser.h"
+#include "Qt/Settings/SettingsManager.h"
 
 SpritesPacker::~SpritesPacker()
 {
@@ -62,21 +63,22 @@ void SpritesPacker::PerformPack(bool isLightmapPacking, DAVA::eGPUFamily gpu)
 {
 	FileSystem::Instance()->CreateDirectory(outputDir, true);
 
-	ResourcePacker2D * resourcePacker = new ResourcePacker2D();
-
-	CommandLineParser::Instance()->Clear(); //CommandLineParser is used in ResourcePackerScreen
+	std::unique_ptr<ResourcePacker2D> resourcePacker(new ResourcePacker2D());
 
 	resourcePacker->clearProcessDirectory = true;
     resourcePacker->InitFolders(inputDir, outputDir);
 	resourcePacker->isLightmapsPacking = isLightmapPacking;
 
+    if (SettingsManager::GetValue(Settings::General_AssetCache_UseCache).AsBool())
+    {
+        auto ip = SettingsManager::GetValue(Settings::General_AssetCache_Ip).AsString();
+        auto timeout = SettingsManager::GetValue(Settings::General_AssetCache_Timeout).AsString();
 #if defined __DAVAENGINE_MACOS__
-    resourcePacker->SetCacheClientTool("~res:/AssetCacheClient");
+        resourcePacker->SetCacheClientTool("~res:/AssetCacheClient", ip, timeout);
 #elif defined __DAVAENGINE_WINDOWS__
-    resourcePacker->SetCacheClientTool("~res:/AssetCacheClient.exe");
+        resourcePacker->SetCacheClientTool("~res:/AssetCacheClient.exe", ip, timeout);
 #endif
-    
-    resourcePacker->PackResources(gpu);
+    }
 
-	SafeDelete(resourcePacker);
+    resourcePacker->PackResources(gpu);
 }

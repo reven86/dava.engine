@@ -402,7 +402,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
         we need ask cache server about files from this cache and currentCommandFlags + command line arguments
     */
     AssetCache::CacheItemKey cacheKey;
-    if (IsUsingCache())
+    if (modified && IsUsingCache())
     {   //Detect cache key
         auto md5FileName = FilePath::CreateWithNewExtension(processDirectoryPath + "dir.md5", ".md5");
         ScopedPtr<File> md5File(File::Create(md5FileName, File::OPEN | File::READ));
@@ -423,7 +423,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
         MD5::ForData(reinterpret_cast<const uint8 *>(strDataPtr), static_cast<uint32>(strDataSize), cacheKey.keyData.hash.secondary);
     }
     
-    bool needRepack = modified || !GetFilesFromCache(cacheKey, inputPath, outputPath);
+    bool needRepack = modified && !GetFilesFromCache(cacheKey, inputPath, outputPath);
 
     //TODO:AC: end
     
@@ -450,79 +450,76 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
         
         
         bool needPackResourcesInThisDir = true;
-        if (modified)
-        {
-            FileSystem::Instance()->DeleteDirectoryFiles(outputPath, false);
+        FileSystem::Instance()->DeleteDirectoryFiles(outputPath, false);
             
-            for (int fi = 0; fi < fileList->GetCount(); ++fi)
+        for (int fi = 0; fi < fileList->GetCount(); ++fi)
+        {
+            if (!fileList->IsDirectory(fi))
             {
-                if (!fileList->IsDirectory(fi))
+                FilePath fullname = fileList->GetPathname(fi);
+                if (fullname.IsEqualToExtension(".psd"))
                 {
-                    FilePath fullname = fileList->GetPathname(fi);
-                    if (fullname.IsEqualToExtension(".psd"))
+                    //TODO: check if we need filename or pathname
+                    DefinitionFile * defFile = ProcessPSD(processDirectoryPath, fullname, fullname.GetFilename(), useTwoSideMargin, marginInPixels);
+                    if (!defFile)
                     {
-                        //TODO: check if we need filename or pathname
-                        DefinitionFile * defFile = ProcessPSD(processDirectoryPath, fullname, fullname.GetFilename(), useTwoSideMargin, marginInPixels);
-                        if (!defFile)
-                        {
-                            // An error occured while converting this PSD file - cancel converting in this directory.
-                            needPackResourcesInThisDir = false;
-                            break;
-                        }
+                        // An error occured while converting this PSD file - cancel converting in this directory.
+                        needPackResourcesInThisDir = false;
+                        break;
+                    }
                         
+                    definitionFileList.push_back(defFile);
+                }
+                else if(isLightmapsPacking && fullname.IsEqualToExtension(".png"))
+                {
+                    DefinitionFile * defFile = new DefinitionFile();
+                    defFile->LoadPNG(fullname, processDirectoryPath);
+                    definitionFileList.push_back(defFile);
+                }
+                else if (fullname.IsEqualToExtension(".pngdef"))
+                {
+                    DefinitionFile * defFile = new DefinitionFile();
+                    if (defFile->LoadPNGDef(fullname, processDirectoryPath, useTwoSideMargin, marginInPixels))
+                    {
                         definitionFileList.push_back(defFile);
                     }
-                    else if(isLightmapsPacking && fullname.IsEqualToExtension(".png"))
+                    else
                     {
-                        DefinitionFile * defFile = new DefinitionFile();
-                        defFile->LoadPNG(fullname, processDirectoryPath);
-                        definitionFileList.push_back(defFile);
-                    }
-                    else if (fullname.IsEqualToExtension(".pngdef"))
-                    {
-                        DefinitionFile * defFile = new DefinitionFile();
-                        if (defFile->LoadPNGDef(fullname, processDirectoryPath, useTwoSideMargin, marginInPixels))
-                        {
-                            definitionFileList.push_back(defFile);
-                        }
-                        else
-                        {
-                            SafeDelete(defFile);
-                        }
+                        SafeDelete(defFile);
                     }
                 }
             }
+        }
             
-            if (modified && !definitionFileList.empty())
+        if (!definitionFileList.empty())
+        {
+            TexturePacker packer;
+            if(isLightmapsPacking)
             {
-                TexturePacker packer;
-                if(isLightmapsPacking)
-                {
-                    packer.UseOnlySquareTextures();
-                    packer.SetMaxTextureSize(2048);
-                }
-                else if(CommandLineParser::Instance()->IsFlagSet("--tsize4096"))
-                {
-                    packer.SetMaxTextureSize(TexturePacker::TSIZE_4096);
-                }
+                packer.UseOnlySquareTextures();
+                packer.SetMaxTextureSize(2048);
+            }
+            else if(CommandLineParser::Instance()->IsFlagSet("--tsize4096"))
+            {
+                packer.SetMaxTextureSize(TexturePacker::TSIZE_4096);
+            }
                 
-                packer.SetTwoSideMargin(useTwoSideMargin);
-                packer.SetTexturesMargin(marginInPixels);
+            packer.SetTwoSideMargin(useTwoSideMargin);
+            packer.SetTexturesMargin(marginInPixels);
                 
-                if (CommandLineParser::Instance()->IsFlagSet("--split"))
-                {
-                    packer.PackToTexturesSeparate(excludeDirectory, outputPath, definitionFileList, requestedGPUFamily);
-                }
-                else
-                {
-                    packer.PackToTextures(excludeDirectory, outputPath, definitionFileList, requestedGPUFamily);
-                }
+            if (CommandLineParser::Instance()->IsFlagSet("--split"))
+            {
+                packer.PackToTexturesSeparate(excludeDirectory, outputPath, definitionFileList, requestedGPUFamily);
+            }
+            else
+            {
+                packer.PackToTextures(excludeDirectory, outputPath, definitionFileList, requestedGPUFamily);
+            }
                 
-                Set<String> currentErrors = packer.GetErrors();
-                if (!currentErrors.empty())
-                {
-                    errors.insert(currentErrors.begin(), currentErrors.end());
-                }
+            Set<String> currentErrors = packer.GetErrors();
+            if (!currentErrors.empty())
+            {
+                errors.insert(currentErrors.begin(), currentErrors.end());
             }
         }
         

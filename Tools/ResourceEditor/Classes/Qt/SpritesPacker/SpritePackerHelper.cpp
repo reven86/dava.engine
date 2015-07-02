@@ -74,22 +74,18 @@ void SpritePackerHelper::Pack(DAVA::eGPUFamily gpu)
 		return;
 	}
 
-	ResourcePacker2D * resourcePacker = new ResourcePacker2D();
-	
-	bool isChanged = resourcePacker->IsMD5ChangedDir(projectPath+"DataSource/Gfx/",inputDir,"particles.md5",true);
-	
-	SafeDelete(resourcePacker);
-	if(!isChanged)
-	{
-        DAVA::QtLayer::Instance()->ReleaseAutoreleasePool(pool);
-		return;
-	}
-	
-	SpritesPacker packer;
-	packer.SetInputDir(inputDir);
-	packer.SetOutputDir(outputDir);
-	packer.PackTextures(gpu);
-	DAVA::QtLayer::Instance()->ReleaseAutoreleasePool(pool);
+	std::unique_ptr<ResourcePacker2D> resourcePacker(new ResourcePacker2D());
+
+    bool isSrcChanged = resourcePacker->IsMD5ChangedDir(projectPath+"DataSource/Gfx/",inputDir,"particles.md5",true);
+    if (isSrcChanged)
+    {
+        SpritesPacker packer;
+        packer.SetInputDir(inputDir);
+        packer.SetOutputDir(outputDir);
+        packer.PackTextures(gpu);
+    }
+
+    DAVA::QtLayer::Instance()->ReleaseAutoreleasePool(pool);
 }
 
 void SpritePackerHelper::Reload()

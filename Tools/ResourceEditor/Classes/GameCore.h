@@ -32,12 +32,6 @@
 
 #include "DAVAEngine.h"
 
-class ResourcePackerScreen;
-class SceneEditorScreen;
-class SceneEditorScreenMain;
-class SceneUtilsScreen;
-class ImageSplitterScreen;
-
 class GameCore : public DAVA::ApplicationCore
 {
 public:	
