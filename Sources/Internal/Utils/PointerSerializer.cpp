@@ -52,7 +52,6 @@ PointerSerializer PointerSerializer::ParseString(const DAVA::String &str)
     {
         if (sm.size() == 3) // original text, left and righ
         {
-
             string data = sm[2];
             smatch sm2;
             std::string::const_iterator cit2 = data.begin();

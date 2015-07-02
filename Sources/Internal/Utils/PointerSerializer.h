@@ -54,9 +54,11 @@ public:
     PointerSerializer() = default;
     PointerSerializer(const PointerSerializer &converter) = default;
     PointerSerializer(PointerSerializer &&converter);
+    static PointerSerializer ParseString(const String &str);
     static const char* GetRegex();
     PointerSerializer& operator = (const PointerSerializer &result) = default;
     PointerSerializer& operator = (PointerSerializer &&result);
+    
     template <typename T>
     Vector<T> GetPointers() const
     {
@@ -91,9 +93,6 @@ public:
         : PointerSerializer(ParseString(str))
     {
     }
-
-    static PointerSerializer ParseString(const String &str);
-
 
     template <typename T>
     static String FromPointer(const T pointer_)
