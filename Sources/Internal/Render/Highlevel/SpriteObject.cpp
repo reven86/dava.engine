@@ -256,8 +256,6 @@ void SpriteObject::BindDynamicParameters(Camera *camera)
         };
         case SpriteObject::SPRITE_BILLBOARD:
         {
-            DVASSERT(false); //TODO: fix math
-
             Matrix4 inverse(Matrix4::IDENTITY);
 
             inverse._00 = cameraMatrix._00;
@@ -277,8 +275,6 @@ void SpriteObject::BindDynamicParameters(Camera *camera)
         };
         case SpriteObject::SPRITE_BILLBOARD_TO_CAMERA:
         {
-            DVASSERT(false); //TODO: fix math
-
             Vector3 look = camera->GetPosition() - Vector3(0.0f, 0.0f, 0.0f) * (*worldTransform);
             look.Normalize();
             Vector3 right = CrossProduct(camera->GetUp(), look);
