@@ -36,7 +36,6 @@
 #include "Core/PerformanceSettings.h"
 #include "Render/RenderManager.h"
 #include "Platform/SystemTimer.h"
-#include "Platform/Thread.h"
 #include "UI/UIScreenManager.h"
 #include "UI/UIControlSystem.h"
 #include "Input/InputSystem.h"
@@ -171,7 +170,7 @@ void Core::CreateSingletons()
     new Net::NetCore();
 
 #ifdef __DAVAENGINE_AUTOTESTING__
-	new AutotestingSystem();
+    new AutotestingSystem();
 #endif
     
     // Init default screen scale factor from screen info
@@ -183,7 +182,7 @@ void Core::CreateRenderManager()
 {
     eRenderer renderer = (eRenderer)options->GetInt32("renderer");
     
-    RenderManager::Create(renderer);	
+    RenderManager::Create(renderer);
 }
         
 void Core::ReleaseSingletons()
@@ -616,7 +615,7 @@ Core::eDeviceFamily Core::GetDeviceFamily()
     
 uint32 Core::GetScreenDPI()
 {
-	return DPIHelper::GetScreenDPI();
+    return DPIHelper::GetScreenDPI();
 }
 
 void Core::SetIcon(int32 /*iconId*/)
