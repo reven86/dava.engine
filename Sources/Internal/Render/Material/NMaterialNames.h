@@ -52,6 +52,7 @@ public:
 	static const FastName DETAIL_ALPHATEST;
 	static const FastName SHADOW_VOLUME;
 	static const FastName VERTEXCOLOR_ALPHABLEND;
+    static const FastName VERTEXCOLOR_ALPHABLEND_TEXTURED;
 	static const FastName DETAIL_OPAQUE;
 	static const FastName SILHOUETTE;
 	static const FastName VERTEXCOLOR_FRAMEBLEND_ALPHABLEND;

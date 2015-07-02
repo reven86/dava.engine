@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2014 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2012 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@
 #ifndef _MAGICKCORE_LOG_H
 #define _MAGICKCORE_LOG_H
 
-#include <stdarg.h>
-#include "magick/exception.h"
-
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
+
+#include <stdarg.h>
+#include "magick/exception.h"
 
 #if !defined(GetMagickModule)
 # define GetMagickModule()  __FILE__,__func__,(unsigned long) __LINE__
@@ -60,16 +60,13 @@ typedef enum
 typedef struct _LogInfo
   LogInfo;
 
-typedef void
-  (*MagickLogMethod)(const LogEventType,const char *);
-
 extern MagickExport char
   **GetLogList(const char *,size_t *,ExceptionInfo *);
 
 extern MagickExport const char
   *GetLogName(void),
   *SetLogName(const char *);
-
+                                                                                
 extern MagickExport const LogInfo
   **GetLogInfoList(const char *,size_t *,ExceptionInfo *);
 
@@ -82,15 +79,14 @@ extern MagickExport MagickBooleanType
   LogComponentGenesis(void),
   LogMagickEvent(const LogEventType,const char *,const char *,const size_t,
     const char *,...) 
-    magick_attribute((__format__ (__printf__,5,6))),
+    magick_attribute((format (printf,5,6))),
   LogMagickEventList(const LogEventType,const char *,const char *,const size_t,
-    const char *,va_list) magick_attribute((__format__ (__printf__,5,0)));
+    const char *,va_list) magick_attribute((format (printf,5,0)));
 
 extern MagickExport void
   CloseMagickLog(void),
   LogComponentTerminus(void),
-  SetLogFormat(const char *),
-  SetLogMethod(MagickLogMethod);
+  SetLogFormat(const char *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

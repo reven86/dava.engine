@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -18,13 +18,12 @@
 #ifndef _MAGICKCORE_XWINDOW_PRIVATE_H
 #define _MAGICKCORE_XWINDOW_PRIVATE_H
 
-#include "magick/draw.h"
-#include "magick/exception.h"
-#include "magick/geometry.h"
-#include "magick/nt-base-private.h"
-#include "magick/quantize.h"
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
+#endif
 
 #if defined(MAGICKCORE_X11_DELEGATE)
+
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
@@ -32,13 +31,9 @@
 #include <X11/keysym.h>
 #include <X11/Xresource.h>
 #include <X11/Xutil.h>
-#endif
-
-#if defined(__cplusplus) || defined(c_plusplus)
-extern "C" {
-#endif
-
-#if defined(MAGICKCORE_X11_DELEGATE)
+#include "magick/exception.h"
+#include "magick/geometry.h"
+#include "magick/quantize.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
 # define klass  c_class
@@ -76,14 +71,14 @@ extern "C" {
 #define ThrowXWindowException(severity,tag,context) \
 { \
   ExceptionInfo \
-    *exception; \
+    exception; \
  \
-  exception=AcquireExceptionInfo(); \
-  (void) ThrowMagickException(exception,GetMagickModule(),severity, \
+  GetExceptionInfo(&exception); \
+  (void) ThrowMagickException(&exception,GetMagickModule(),severity, \
     tag == (const char *) NULL ? "unknown" : tag,"`%s': %s",context, \
     strerror(errno)); \
-  CatchException(exception); \
-  (void) DestroyExceptionInfo(exception); \
+  CatchException(&exception); \
+  (void) DestroyExceptionInfo(&exception); \
 }
 #define ThrowXWindowFatalException(severity,tag,context) \
 { \
@@ -596,15 +591,11 @@ static inline MagickRealType XPixelIntensity(const XColor *pixel)
   MagickRealType
     intensity;
 
-  if ((pixel->red  == pixel->green) && (pixel->green == pixel->blue))
-    return((MagickRealType) pixel->red);
-  intensity=0.21265*pixel->red+0.715158*pixel->green+0.072186*pixel->blue;
+  intensity=0.299*pixel->red+0.587*pixel->green+0.114*pixel->blue;
   return(intensity);
 }
-#endif
 
-extern MagickPrivate MagickBooleanType
-  XRenderImage(Image *,const DrawInfo *,const PointInfo *,TypeMetric *);
+#endif
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

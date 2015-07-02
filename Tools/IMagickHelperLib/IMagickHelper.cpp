@@ -57,25 +57,6 @@ CroppedData::~CroppedData()
     Reset();
 }
 
-bool ResizeRGBA ( const unsigned char  *in_image_data, int  in_image_w,  int in_image_h,
-                        unsigned char *out_image_data, int out_image_w, int out_image_h )
-{
-    try
-    {
-        Magick::Image image;
-        image.read(in_image_w, in_image_h, "RGBA", MagickCore::CharPixel, in_image_data);
-        image.resize(Magick::Geometry(out_image_w, out_image_h));
-        image.write(0, 0, out_image_w, out_image_h, "RGBA", MagickCore::CharPixel, out_image_data);
-    }
-    catch( Magick::Exception &error_ )
-    {
-        printf("Caught exception: %s", error_.what());
-        return false;
-    }
-    
-    return true;
-}
-    
 bool ConvertToPNG ( const char *in_image_path, const char *out_path )
 {
 

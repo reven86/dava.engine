@@ -1,5 +1,5 @@
 /*
-  Copyright 1999-2015 ImageMagick Studio LLC, a non-profit organization
+  Copyright 1999-2011 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
   
   You may not use this file except in compliance with the License.
@@ -25,8 +25,8 @@ extern "C" {
 typedef enum
 {
   UndefinedColorspace,
-  RGBColorspace,            /* Linear RGB colorspace */
-  GRAYColorspace,           /* greyscale (linear) image (faked 1 channel) */
+  RGBColorspace,
+  GRAYColorspace,
   TransparentColorspace,
   OHTAColorspace,
   LabColorspace,
@@ -36,8 +36,8 @@ typedef enum
   YIQColorspace,
   YPbPrColorspace,
   YUVColorspace,
-  CMYKColorspace,           /* negated linear RGB with black separated */
-  sRGBColorspace,           /* Default: non-linear sRGB colorspace */
+  CMYKColorspace,
+  sRGBColorspace,
   HSBColorspace,
   HSLColorspace,
   HWBColorspace,
@@ -46,19 +46,7 @@ typedef enum
   Rec709LumaColorspace,
   Rec709YCbCrColorspace,
   LogColorspace,
-  CMYColorspace,            /* negated linear RGB colorspace */
-  LuvColorspace,
-  HCLColorspace,
-  LCHColorspace,            /* alias for LCHuv */
-  LMSColorspace,
-  LCHabColorspace,          /* Cylindrical (Polar) Lab */
-  LCHuvColorspace,          /* Cylindrical (Polar) Luv */
-  scRGBColorspace,
-  HSIColorspace,
-  HSVColorspace,            /* alias for HSB */
-  HCLpColorspace,
-  YDbDrColorspace,
-  xyYColorspace
+  CMYColorspace
 } ColorspaceType;
 
 extern MagickExport MagickBooleanType

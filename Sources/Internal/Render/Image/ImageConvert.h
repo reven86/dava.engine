@@ -798,6 +798,48 @@ public:
 		}
 		return 0;
 	}
+
+    static void ResizeRGBA8Billinear(const uint32 * inPixels, uint32 w, uint32 h, uint32 * outPixels, uint32 w2, uint32 h2)
+    {
+        int32 a, b, c, d, x, y, index;
+        float32 x_ratio = ((float32)(w - 1)) / w2;
+        float32 y_ratio = ((float32)(h - 1)) / h2;
+        float32 x_diff, y_diff, blue, red, green, alpha;
+        uint32 offset = 0;
+        for (uint32 i = 0; i < h2; i++)
+        {
+            for (uint32 j = 0; j < w2; j++)
+            {
+                x = (int32)(x_ratio * j);
+                y = (int32)(y_ratio * i);
+                x_diff = (x_ratio * j) - x;
+                y_diff = (y_ratio * i) - y;
+                index = (y*w + x);
+                a = inPixels[index];
+                b = inPixels[index + 1];
+                c = inPixels[index + w];
+                d = inPixels[index + w + 1];
+
+                blue = (a & 0xff)*(1 - x_diff)*(1 - y_diff) + (b & 0xff)*(x_diff)*(1 - y_diff) +
+                    (c & 0xff)*(y_diff)*(1 - x_diff) + (d & 0xff)*(x_diff*y_diff);
+
+                green = ((a >> 8) & 0xff)*(1 - x_diff)*(1 - y_diff) + ((b >> 8) & 0xff)*(x_diff)*(1 - y_diff) +
+                    ((c >> 8) & 0xff)*(y_diff)*(1 - x_diff) + ((d >> 8) & 0xff)*(x_diff*y_diff);
+
+                red = ((a >> 16) & 0xff)*(1 - x_diff)*(1 - y_diff) + ((b >> 16) & 0xff)*(x_diff)*(1 - y_diff) +
+                    ((c >> 16) & 0xff)*(y_diff)*(1 - x_diff) + ((d >> 16) & 0xff)*(x_diff*y_diff);
+
+                alpha = ((a >> 24) & 0xff)*(1 - x_diff)*(1 - y_diff) + ((b >> 24) & 0xff)*(x_diff)*(1 - y_diff) +
+                    ((c >> 24) & 0xff)*(y_diff)*(1 - x_diff) + ((d >> 24) & 0xff)*(x_diff*y_diff);
+
+                outPixels[offset++] = 
+                    ((((uint32)alpha) << 24) & 0xff000000) |
+                    ((((uint32)red) << 16) & 0xff0000) |
+                    ((((uint32)green) << 8) & 0xff00) |
+                    ((uint32)blue);
+            }
+        }
+    }
 };
 
 };

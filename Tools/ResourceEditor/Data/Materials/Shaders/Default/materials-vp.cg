@@ -70,7 +70,7 @@ VPROG_OUT_BEGIN
 
     #if MATERIAL_SKYBOX
     VPROG_OUT_TEXCOORD0(varTexCoord0,3)
-    #else
+    #elif MATERIAL_TEXTURE
     VPROG_OUT_TEXCOORD0(varTexCoord0,2)
     #endif
 
@@ -501,9 +501,9 @@ VPROG_BEGIN
     float3  inBinormal  = VP_IN_BINORMAL;
     
     #if SKINNING
-        float3 n = normalize( mul( JointTransformTangent(inNormal, weightedVertexQuaternion), worldViewInvTransposeMatrix ) );
-        float3 t = normalize( mul( JointTransformTangent(inTangent, weightedVertexQuaternion), worldViewInvTransposeMatrix ) );
-        float3 b = normalize( mul( JointTransformTangent(inBinormal, weightedVertexQuaternion), worldViewInvTransposeMatrix ) );
+        float3 n = normalize( mul( float4(JointTransformTangent(inNormal, weightedVertexQuaternion),1.0), worldViewInvTransposeMatrix ) );
+        float3 t = normalize( mul( float4(JointTransformTangent(inTangent, weightedVertexQuaternion),1.0), worldViewInvTransposeMatrix ) );
+        float3 b = normalize( mul( float4(JointTransformTangent(inBinormal, weightedVertexQuaternion),1.0), worldViewInvTransposeMatrix ) );
     #else
         float3 n = normalize( mul( float4(inNormal,1.0), worldViewInvTransposeMatrix ).xyz );
         float3 t = normalize( mul( float4(inTangent,1.0), worldViewInvTransposeMatrix ).xyz );
@@ -672,24 +672,25 @@ VPROG_BEGIN
 
 #endif
 
-
+#if MATERIAL_SKYBOX || MATERIAL_TEXTURE
     VP_OUT(varTexCoord0) = VP_IN_TEXCOORD0;
-    
+#endif    
 
-#if TEXTURE0_SHIFT_ENABLED
-    VP_OUT(varTexCoord0) += texture0Shift;
+#if MATERIAL_TEXTURE
+    #if TEXTURE0_SHIFT_ENABLED
+        VP_OUT(varTexCoord0) += texture0Shift;
+    #endif
+
+        
+    #if TEXTURE0_ANIMATION_SHIFT
+        VP_OUT(varTexCoord0) += tex0ShiftPerSecond * globalTime;
+    #endif
+
+        
+    #if TILED_DECAL_MASK
+        varDecalTileTexCoord = VP_OUT(varTexCoord0) * decalTileCoordScale;
+    #endif
 #endif
-
-    
-#if TEXTURE0_ANIMATION_SHIFT
-    VP_OUT(varTexCoord0) += tex0ShiftPerSecond * globalTime;
-#endif
-
-    
-#if TILED_DECAL_MASK
-    varDecalTileTexCoord = VP_OUT(varTexCoord0) * decalTileCoordScale;
-#endif
-
     
 #if MATERIAL_DETAIL
     varDetailTexCoord = VP_OUT(varTexCoord0) * detailTileCoordScale;
@@ -711,6 +712,10 @@ VPROG_BEGIN
 
 #if FRAME_BLEND
     VP_OUT(varTime) = VP_IN_TEXCOORD3;
+#endif
+
+#if FORCE_2D_MODE
+    VP_OUT_POSITION.z=0.0;
 #endif
 
 VPROG_END

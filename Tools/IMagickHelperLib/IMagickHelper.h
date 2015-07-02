@@ -64,9 +64,6 @@ namespace IMagickHelper
         ~CroppedData();
     };
 
-    IMAGICKHELPER_EXPORT bool ResizeRGBA ( const unsigned char  *in_image_data, int  in_image_w,  int in_image_h,
-                                                 unsigned char *out_image_data, int out_image_w, int out_image_h );
-    
     IMAGICKHELPER_EXPORT bool ConvertToPNG ( const char *in_image_path, const char *out_path );
     IMAGICKHELPER_EXPORT bool ConvertToPNGCroppedGeometry ( const char *in_image_path, const char *out_path, CroppedData *out_cropped_data, bool skip_first_layer = false );
 }

@@ -119,6 +119,19 @@ void ParticleEffectSystem::SetGlobalMaterial(NMaterial *material)
     particleBaseMaterial->SetParent(material);    
 }
 
+
+void ParticleEffectSystem::PrebuildMaterials(ParticleEffectComponent *component)
+{
+    for (auto emitter : component->emitters)
+    {
+        for (auto layer : emitter->layers)
+        {
+            if (layer->sprite && (layer->type != ParticleLayer::TYPE_SUPEREMITTER_PARTICLES))
+                GetMaterial(layer->sprite->GetTexture(0), layer->enableFog, layer->enableFrameBlend, layer->blending);
+        }
+    }
+}
+
 void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleEmitter *emitter, const Vector3& spawnPosition, int32 positionSource)
 {
 	for (size_t layerId=0, layersCount = emitter->layers.size(); layerId<layersCount; ++layerId)
@@ -198,6 +211,17 @@ void ParticleEffectSystem::RemoveFromActive(ParticleEffectComponent *effect)
     Scene *scene = GetScene();
     if (scene)
         scene->GetRenderSystem()->RemoveFromRender(effect->effectRenderObject);
+}
+
+void ParticleEffectSystem::AddEntity(Entity * entity)
+{
+    ParticleEffectComponent * effect = static_cast<ParticleEffectComponent *>(entity->GetComponent(Component::PARTICLE_EFFECT_COMPONENT));
+    PrebuildMaterials(effect);
+}
+void ParticleEffectSystem::AddComponent(Entity * entity, Component * component)
+{
+    ParticleEffectComponent * effect = static_cast<ParticleEffectComponent *>(component);
+    PrebuildMaterials(effect);
 }
 
 void ParticleEffectSystem::RemoveEntity(Entity * entity)

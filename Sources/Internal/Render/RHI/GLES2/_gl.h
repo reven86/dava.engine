@@ -16,7 +16,7 @@
     #include <AGL/agl.h>
     #include <OpenGL/glext.h>
     
-    #define GetGLErrorString aglErrorString
+    #define GetGLErrorString(code) #code
 
     #include "macos_gl.h"
 
@@ -144,7 +144,7 @@
         Log::Error( "gl", "FAILED  %s (%i) : %s\n", #expr, err, gluErrorString(err) ); \
 }
 #else
-#define GL_CALL(expr) expr;
+#define GL_CALL(expr) expr
 #endif
 
 extern GLuint   _GLES2_Binded_FrameBuffer;

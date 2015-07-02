@@ -87,6 +87,7 @@ protected:
     void    rtDraw();
     void    visibilityTestDraw();
 
+    bool    inited;
 
     struct
     VertexP

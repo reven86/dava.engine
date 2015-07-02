@@ -100,7 +100,7 @@ VertexDeclGLES2
                         stride      = layout.Stride();
                         vattrInited = false;
                     }
-    void            InitVattr( int gl_prog )
+    void            InitVattr( int gl_prog, bool force_immediate=false )
                     {
                         GLCommand   cmd[16];
 
@@ -109,10 +109,9 @@ VertexDeclGLES2
                             cmd[i].func   = GLCommand::GET_ATTRIB_LOCATION;
                             cmd[i].arg[0] = gl_prog;
                             cmd[i].arg[1] = uint64_t(elem[i].name);
-//                            elem[i].index = glGetAttribLocation( gl_prog, elem[i].name );
                         }
 
-                        ExecGL( cmd, countof(cmd) );
+                        ExecGL( cmd, elemCount, force_immediate );
 
                         for( unsigned i=0; i!=elemCount; ++i )
                             elem[i].index = cmd[i].retval;
@@ -123,18 +122,32 @@ VertexDeclGLES2
                     {
                         DVASSERT(vattrInited);
 
-                        uint32  base = firstVertex * stride;
+                        uint32  base                    = firstVertex * stride;
+//                        int     attr_used[VATTR_COUNT];
+
+//                        memset( attr_used, 0, sizeof(attr_used) );
                         
+Trace("gl.vattr-array\n");
+Trace("  base= %u  stride= %u  first_v= %u\n",base,stride,firstVertex);
+                        for( unsigned i=0; i!=VATTR_COUNT; ++i )
+                            GL_CALL(glDisableVertexAttribArray( i ));
                         for( unsigned i=0; i!=elemCount; ++i )
                         {
                             unsigned    idx = elem[i].index;
 
                             if( idx != InvalidIndex )
                             {
+Trace("[%u] count= %u  type= %u  norm= %i  stride= %u  offset= %u\n",idx,elem[i].count,elem[i].type,elem[i].normalized,stride,base+(uint8_t*)elem[i].offset);
                                 GL_CALL(glEnableVertexAttribArray( idx ));
                                 GL_CALL(glVertexAttribPointer( idx, elem[i].count, elem[i].type, (GLboolean)(elem[i].normalized), stride, base+(uint8_t*)elem[i].offset ));
+//                                attr_used[idx] = 1;
                             }
                         }
+//                        for( unsigned i=0; i!=countof(attr_used); ++i )
+//                        {
+//                            if( !attr_used[i] )
+//                                GL_CALL(glDisableVertexAttribArray( i ));
+//                        }
                     }
 
     struct
@@ -322,8 +335,8 @@ gles2_PipelineState_Create( const PipelineState::Descriptor& desc )
             char    info[1024];
 
             glGetProgramInfoLog( gl_prog, countof(info), 0, info );
-            Logger::Error( "prog-link failed:" );
-            Logger::Info( info );
+            Trace( "prog-link failed:\n" );
+            Trace( info );
         }                
     
         ps->blendEnabled = desc.blending.rtBlend[0].blendEnabled;
@@ -425,6 +438,7 @@ SetToRHI( Handle ps, uint32 layoutUID )
 void
 SetVertexDeclToRHI( Handle ps, uint32 layoutUID, uint32 firstVertex )
 {
+Trace("SetVertexDeclToRHI  layoutUID= %u\n",layoutUID);
     PipelineStateGLES2_t* ps2 = PipelineStateGLES2Pool::Get( ps );
 
     if( layoutUID != VertexLayout::InvalidUID )
@@ -447,11 +461,13 @@ SetVertexDeclToRHI( Handle ps, uint32 layoutUID, uint32 firstVertex )
             
             vdecl.layoutUID = layoutUID;
             vdecl.vdecl.Construct( *layout );
-            vdecl.vdecl.InitVattr( ps2->glProg );
+            vdecl.vdecl.InitVattr( ps2->glProg, true );
             ps2->vprog.altVdecl.push_back( vdecl );
         }
     }    
-    
+
+//if( layoutUID != VertexLayout::InvalidUID )
+//VertexLayout::Get( layoutUID )->Dump();
     ps2->vprog.SetToRHI( layoutUID, firstVertex );
 }
 

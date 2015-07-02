@@ -44,6 +44,7 @@
 using namespace DAVA;
 
 GameCore::GameCore()
+  : inited(false)
 {
 }
 
@@ -891,6 +892,7 @@ void GameCore::OnAppStarted()
     Logger::Info( "\n\n====================" );
     fp.Dump();
 */
+    inited = true;
 }
 
 void GameCore::OnAppFinished()
@@ -1037,6 +1039,9 @@ void GameCore::DrawTank()
 void
 GameCore::Draw()
 {
+    if( !inited )
+        return;
+        
 //    sceneRenderTest->Render();
 //    rhiDraw();
     manticoreDraw();
