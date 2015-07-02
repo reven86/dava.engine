@@ -16,7 +16,7 @@
     #include <AGL/agl.h>
     #include <OpenGL/glext.h>
     
-    #define GetGLErrorString aglErrorString
+    #define GetGLErrorString(code) #code
 
     #include "macos_gl.h"
 
