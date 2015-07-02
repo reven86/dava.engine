@@ -3103,15 +3103,12 @@ void QtMainWindow::OnConsoleItemClicked(const PointerSerializer &conv)
     if (conv.CanConvert<Entity*>())
     {
         auto vec = conv.GetPointers<Entity*>();
-        if (vec.empty())
+        EntityGroup entityGroup;
+        for (auto entity : vec)
         {
-            return;
+            entityGroup.Add(entity);
         }
-        GetCurrentScene()->selectionSystem->SetSelection(vec.at(0)); //TODO::replace with SetSelection(vector<Entity*>)
-        for (size_t i = 1; i < vec.size(); ++i)
-        {
-            GetCurrentScene()->selectionSystem->AddSelection(vec.at(i));
-        }
+        GetCurrentScene()->selectionSystem->SetSelection(entityGroup);
     }
 }
 

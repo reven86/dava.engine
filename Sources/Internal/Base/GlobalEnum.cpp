@@ -60,7 +60,6 @@ ENUM_DECLARE(Logger::eLogLevel)
     ENUM_ADD_DESCR(Logger::LEVEL_INFO, "Info");
     ENUM_ADD_DESCR(Logger::LEVEL_WARNING, "Warning");
     ENUM_ADD_DESCR(Logger::LEVEL_ERROR, "Error");
-    ENUM_ADD_DESCR(Logger::LEVEL__DISABLE, "DISABLED");
 }
 
 ENUM_DECLARE(Texture::TextureWrap)
