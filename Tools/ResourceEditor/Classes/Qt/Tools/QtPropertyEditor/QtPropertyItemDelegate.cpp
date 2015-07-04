@@ -31,7 +31,7 @@
 #include <QHelpEvent>
 #include <QPainter>
 #include <QMouseEvent>
-#include <QDebug>
+#include <QTreeView>
 
 #include "QtPropertyItemDelegate.h"
 #include "QtPropertyModel.h"
@@ -291,7 +291,7 @@ void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOption
 	QtPropertyData* data = model->itemFromIndex(index);
 	if(index.column() == 1 && NULL != data && data->GetButtonsCount() > 0)
 	{
-		int owSpacing = 3;
+		int owSpacing = 1;
 		int owXPos = view->width() - owSpacing;
 		int owYPos;
 
@@ -299,6 +299,13 @@ void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOption
 		for(int i = data->GetButtonsCount() - 1; i >= 0; --i)
 		{
 			QtPropertyToolButton *btn = data->GetButton(i);
+            auto treeView = qobject_cast<const QTreeView*>(view);
+            auto availableWidth = view->width() - treeView->columnWidth(0) - btn->width() * (i + 1);
+            if(availableWidth < 0)
+            {
+                continue;
+            }
+
 			if((type == NORMAL && !btn->overlayed) || (type == OVERLAYED && btn->overlayed))
 			{
 				// update widget height
