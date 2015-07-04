@@ -370,6 +370,6 @@ void EditorMaterialSystem::RemoveMaterial(DAVA::NMaterial *material)
 
 bool EditorMaterialSystem::IsEditable(DAVA::NMaterial *material) const
 {
-    return (material->GetNodeGlags() != DAVA::DataNode::NodeRuntimeFlag || 
+    return (!material->IsRuntime() || 
             material->GetMaterialTemplateName() == DAVA::FastName("~res:/Materials/TileMask.material"));
 }

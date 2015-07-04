@@ -27,70 +27,47 @@
 =====================================================================================*/
 
 
-#ifndef QUICKED__PROJECT_H__
-#define QUICKED__PROJECT_H__
+#ifndef __SPRITES_PACKER_H__
+#define __SPRITES_PACKER_H__
 
+#include "Render/RenderBase.h"
+#include "TextureCompression/TextureConverter.h"
 #include <QObject>
-#include "Model/LegacyEditorUIPackageLoader.h"
-#include "Project/EditorFontSystem.h"
-#include "Project/EditorLocalizationSystem.h"
+#include <atomic>
 
-class PackageNode;
+namespace DAVA {
+    class ResourcePacker2D;
+}
+class QDir;
 
-class Project : public QObject
+class SpritesPacker : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(bool isOpen READ IsOpen NOTIFY IsOpenChanged)
-    Q_PROPERTY(QString projectPath READ GetProjectPath WRITE SetProjectPath NOTIFY ProjectPathChanged)
-
+    Q_PROPERTY(bool running READ IsRunning WRITE SetRunning NOTIFY RunningStateChanged);
 public:
-    explicit Project(QObject *parent = nullptr);
-    virtual ~Project();
-    QString GetProjectDir() const;
-    bool Open(const QString &path);
-    bool CheckAndUnlockProject(const QString& projectPath);
-
-    DAVA::RefPtr<PackageNode> NewPackage(const QString &path);
-    DAVA::RefPtr<PackageNode> OpenPackage(const QString &path);
-    bool SavePackage(PackageNode *package);
-    EditorFontSystem *GetEditorFontSystem() const;
-    EditorLocalizationSystem *GetEditorLocalizationSystem() const;
-signals:
-    void ProjectOpened();
-
-private:
-    bool OpenInternal(const QString &path);
-    
-    LegacyControlData *legacyData;
-    EditorFontSystem *editorFontSystem;
-    EditorLocalizationSystem *editorLocalizationSystem;
-    //properties
-public:
-    bool IsOpen() const;
-signals:
-    void IsOpenChanged(bool arg);
-private:
-    void SetIsOpen(bool arg);
-    bool isOpen;
-
-public:
-    QString GetProjectPath() const;
+    SpritesPacker(QObject *parent = nullptr);
+    ~SpritesPacker();
+    void AddTask(const QDir &inputDir, const QDir &outputDir);
+    void ClearTasks();
+    Q_INVOKABLE void ReloadSprites(bool clearDirs, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
 public slots:
-    void SetProjectPath(QString arg);
+    void Cancel();
 signals:
-    void ProjectPathChanged(QString arg);
+    void Finished();
+
 private:
-    DAVA::FilePath projectPath;
+    DAVA::ResourcePacker2D *resourcePacker2D;
+    QList < QPair<QDir, QDir> > tasks;
+
+    //properties section
+public:
+    bool IsRunning() const;
+public slots:
+    void SetRunning(bool arg);
+signals:
+    void RunningStateChanged(bool arg);
+private:
+    std::atomic<bool> running;
 };
 
-inline EditorFontSystem* Project::GetEditorFontSystem() const
-{
-    return editorFontSystem;
-}
-
-inline EditorLocalizationSystem* Project::GetEditorLocalizationSystem() const
-{
-    return editorLocalizationSystem;
-}
-
-#endif // QUICKED__PROJECT_H__
+#endif //__SPRITES_PACKER_H__

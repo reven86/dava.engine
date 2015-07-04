@@ -27,70 +27,53 @@
 =====================================================================================*/
 
 
-#ifndef QUICKED__PROJECT_H__
-#define QUICKED__PROJECT_H__
+#ifndef __DIALOG_RELOAD_SPRITES_H__
+#define __DIALOG_RELOAD_SPRITES_H__
 
-#include <QObject>
-#include "Model/LegacyEditorUIPackageLoader.h"
-#include "Project/EditorFontSystem.h"
-#include "Project/EditorLocalizationSystem.h"
+#include "SpritesPacker.h"
+#include <QDialog>
 
-class PackageNode;
+#include <QThread>
+namespace Ui
+{
+    class DialogReloadSprites;
+}
 
-class Project : public QObject
+class DialogReloadSprites : public QDialog
 {
     Q_OBJECT
-    Q_PROPERTY(bool isOpen READ IsOpen NOTIFY IsOpenChanged)
-    Q_PROPERTY(QString projectPath READ GetProjectPath WRITE SetProjectPath NOTIFY ProjectPathChanged)
-
+    QThread workerThread;
 public:
-    explicit Project(QObject *parent = nullptr);
-    virtual ~Project();
-    QString GetProjectDir() const;
-    bool Open(const QString &path);
-    bool CheckAndUnlockProject(const QString& projectPath);
-
-    DAVA::RefPtr<PackageNode> NewPackage(const QString &path);
-    DAVA::RefPtr<PackageNode> OpenPackage(const QString &path);
-    bool SavePackage(PackageNode *package);
-    EditorFontSystem *GetEditorFontSystem() const;
-    EditorLocalizationSystem *GetEditorLocalizationSystem() const;
+    explicit DialogReloadSprites(QWidget *parent = nullptr);
+    ~DialogReloadSprites();
+    SpritesPacker *GetSpritesPacker() const;
+    QAction* GetActionReloadSprites() const;
 signals:
-    void ProjectOpened();
+    bool StarPackProcess();
+private slots:
+    void OnStartClicked();
+    void OnStopClicked();
+    void OnRunningChanged(bool running);
+protected:
+    void closeEvent(QCloseEvent *event) override;
+private:
+    void LoadSettings();
+    void SaveSettings() const;
+    void BlockingStop();
 
-private:
-    bool OpenInternal(const QString &path);
-    
-    LegacyControlData *legacyData;
-    EditorFontSystem *editorFontSystem;
-    EditorLocalizationSystem *editorLocalizationSystem;
-    //properties
-public:
-    bool IsOpen() const;
-signals:
-    void IsOpenChanged(bool arg);
-private:
-    void SetIsOpen(bool arg);
-    bool isOpen;
-
-public:
-    QString GetProjectPath() const;
-public slots:
-    void SetProjectPath(QString arg);
-signals:
-    void ProjectPathChanged(QString arg);
-private:
-    DAVA::FilePath projectPath;
+    Ui::DialogReloadSprites *ui;
+    SpritesPacker *spritesPacker;
+    QAction *actionReloadSprites;
 };
 
-inline EditorFontSystem* Project::GetEditorFontSystem() const
+inline SpritesPacker* DialogReloadSprites::GetSpritesPacker() const
 {
-    return editorFontSystem;
+    return spritesPacker;
 }
 
-inline EditorLocalizationSystem* Project::GetEditorLocalizationSystem() const
+inline QAction* DialogReloadSprites::GetActionReloadSprites() const
 {
-    return editorLocalizationSystem;
+    return actionReloadSprites;
 }
 
-#endif // QUICKED__PROJECT_H__
+#endif // __DIALOG_RELOAD_SPRITES_H__

@@ -67,7 +67,7 @@ void MaterialSystem::BuildMaterialList(Entity *forEntity, Set<NMaterial*>& mater
     for(List<NMaterial *>::const_iterator it = materials.begin(); it != endIt; ++it)
     {
         if( (materialType == NMaterial::MATERIALTYPE_NONE || materialType == (*it)->GetMaterialType()) && // filter by material type
-			(includeRuntime || !((*it)->GetNodeGlags() & DataNode::NodeRuntimeFlag)))
+			(includeRuntime || !((*it)->IsRuntime())))
         {
             materialList.insert(*it);
         }
