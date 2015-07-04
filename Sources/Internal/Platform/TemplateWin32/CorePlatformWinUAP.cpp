@@ -100,25 +100,6 @@ void CorePlatformWinUAP::SwitchScreenToMode(eScreenMode screenMode)
     }
 }
 
-Core::eScreenOrientation CorePlatformWinUAP::GetScreenOrientation()
-{
-    switch (xamlApp->GetDisplayOrientation())
-    {
-    case Windows::Graphics::Display::DisplayOrientations::None:
-        return eScreenOrientation::SCREEN_ORIENTATION_TEXTURE;
-    case Windows::Graphics::Display::DisplayOrientations::Landscape:
-        return eScreenOrientation::SCREEN_ORIENTATION_LANDSCAPE_RIGHT;
-    case Windows::Graphics::Display::DisplayOrientations::Portrait:
-        return eScreenOrientation::SCREEN_ORIENTATION_PORTRAIT;
-    case Windows::Graphics::Display::DisplayOrientations::LandscapeFlipped:
-        return eScreenOrientation::SCREEN_ORIENTATION_LANDSCAPE_LEFT;
-    case Windows::Graphics::Display::DisplayOrientations::PortraitFlipped:
-        return eScreenOrientation::SCREEN_ORIENTATION_TEXTURE;
-    default:
-        return eScreenOrientation::SCREEN_ORIENTATION_TEXTURE;
-    }
-}
-
 }   // namespace DAVA
 
 #endif  // __DAVAENGINE_WIN_UAP__

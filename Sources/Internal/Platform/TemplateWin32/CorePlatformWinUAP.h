@@ -58,8 +58,6 @@ public:
     eScreenMode GetScreenMode() override;
     void SwitchScreenToMode(eScreenMode screenMode) override;
 
-    eScreenOrientation GetScreenOrientation() override;
-
     // Win10 specific member functions
 
     // Get pointer to underlying XAML application object

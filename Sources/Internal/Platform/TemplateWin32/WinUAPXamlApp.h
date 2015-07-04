@@ -98,12 +98,14 @@ private:    // Event handlers
     void OnPointerExited(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
     void OnPointerWheel(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
     void OnPointerCaptureLost(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnHardwareBackButtonPressed(Platform::Object^ sender, Windows::Phone::UI::Input::BackPressedEventArgs ^args);
 
     // Keyboard handlers
     void OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
     void OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
+    void OnMouseMoved(Windows::Devices::Input::MouseDevice^ mouseDevice, Windows::Devices::Input::MouseEventArgs^ args);
 
-    void DAVATouchEvent(UIEvent::eInputPhase phase, Windows::UI::Input::PointerPoint^ pointerPoint);
+    void DAVATouchEvent(UIEvent::eInputPhase phase, Windows::Foundation::Point position, int32 id);
 
 private:
     void SetupEventHandlers();
@@ -111,7 +113,7 @@ private:
     void CreateBaseXamlUI();
 
     void SetTitleName();
-    void SetDisplayOrientations(Core::eScreenOrientation orientation);
+    void SetDisplayOrientations();
 
     void InitInput();
 
@@ -145,6 +147,7 @@ private:
 
     bool isMouseDetected = false;
     bool isTouchDetected = false;
+    bool isPhoneApiDetect = false;
 
     bool isWindowVisible = true;
     bool isWindowClosed = false;
@@ -161,13 +164,9 @@ private:
     bool isLeftButtonPressed = false;
     bool isMiddleButtonPressed = false;
 
-    float64 rawPixelInViewPixel = 1.0;
     float32 windowWidth = static_cast<float32>(DisplayMode::DEFAULT_WIDTH);
     float32 windowHeight = static_cast<float32>(DisplayMode::DEFAULT_HEIGHT);
-    int32 integralWindowWidth = static_cast<int32>(windowWidth * rawPixelInViewPixel);
-    int32 integralWindowHeight = static_cast<int32>(windowHeight * rawPixelInViewPixel);
 
-    Windows::UI::ViewManagement::UserInteractionMode userInteractionMode = ::Windows::UI::ViewManagement::UserInteractionMode::Mouse;
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
 };
 
