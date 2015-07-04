@@ -36,8 +36,6 @@
 #include <QStringList>
 #include <QDataStream>
 
-using namespace DAVA;
-
 #define BEGIM_MIME_HANDLER_MAP const MimeDataHelper::MimeHandler MimeDataHelper::mimeHandlerMap[] = {
 
 #define MIME_HANDLER(formatName, getNameFuncPtr)\
