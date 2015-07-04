@@ -230,14 +230,20 @@ FilePath::FilePath(const FilePath &directory, const String &filename)
 
 void FilePath::Initialize(const String &_pathname)
 {
-	String pathname = NormalizePathname(_pathname);
-    pathType = GetPathType(pathname);
+    pathType = GetPathType(_pathname);
+    if (pathType == PATH_IN_MEMORY)
+    {
+        absolutePathname = _pathname;
+        return;
+    }
 
+    String pathname = NormalizePathname(_pathname);
+    
 	if (pathType == PATH_EMPTY)
 	{
 		absolutePathname = String();
 	}
-    else if(pathType == PATH_IN_RESOURCES || pathType == PATH_IN_MEMORY)
+    else if(pathType == PATH_IN_RESOURCES)
     {
         absolutePathname = pathname;
 #if defined(__DAVAENGINE_ANDROID__) && defined(USE_LOCAL_RESOURCES)

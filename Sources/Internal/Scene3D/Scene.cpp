@@ -222,7 +222,7 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     , mainCamera(0)
     , drawCamera(0)
     , imposterManager(0)
-    , maxIDCounter(0)
+    , maxEntityIDCounter(0)
 {
     static uint32 idCounter = 0;
     sceneId = ++idCounter;
@@ -546,7 +546,7 @@ void Scene::RegisterEntity(Entity * entity)
         entity->GetSceneID() == 0 ||
         entity->GetSceneID() != sceneId)
     {
-        entity->SetID(++maxIDCounter);
+        entity->SetID(++maxEntityIDCounter);
         entity->SetSceneID(sceneId);
     }
 
@@ -885,11 +885,11 @@ void Scene::Draw()
     
 void Scene::SceneDidLoaded()
 {
-    maxIDCounter = 0;
+    maxEntityIDCounter = 0;
 
     std::function<void(Entity *)> findMaxId = [&](Entity *entity)
     {
-        if(maxIDCounter < entity->id) maxIDCounter = entity->id;
+        if(maxEntityIDCounter < entity->id) maxEntityIDCounter = entity->id;
         for (auto child : entity->children) findMaxId(child);
     };
 
@@ -1147,7 +1147,7 @@ SceneFileV2::eError Scene::SaveScene(const DAVA::FilePath & pathname, bool saveF
 {
     std::function<void(Entity *)> resolveId = [&](Entity *entity)
     {
-        if(0 == entity->id) entity->id = ++maxIDCounter;
+        if(0 == entity->id) entity->id = ++maxEntityIDCounter;
         for(auto child : entity->children) resolveId(child);
     };
 
@@ -1254,29 +1254,6 @@ void Scene::Deactivate()
     for(auto system : systems)
     {
         system->Deactivate();
-    }
-}
-
-void Scene::CopyScene(Scene* dst)
-{
-    std::function<void(Entity *, Entity *)> copyID = [&copyID](Entity *src, Entity *dst)
-    {
-        DVASSERT(src->children.size() == dst->children.size());
-
-        dst->id = src->id;
-        auto n = src->children.size();
-        for(decltype(n) i = 0; i < n; ++i)
-        {
-            copyID(src->children[i], dst->children[i]);
-        }
-    };
-
-    for(auto child : children)
-    {
-        Entity *clone = child->Clone();
-        dst->AddNode(clone);
-        copyID(child, clone);
-        clone->Release();
     }
 }
 

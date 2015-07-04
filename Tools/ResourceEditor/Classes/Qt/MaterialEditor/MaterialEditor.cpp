@@ -638,7 +638,7 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
             }
             // Test material flags
             if( material->GetMaterialType() != DAVA::NMaterial::MATERIALTYPE_MATERIAL ||
-                (material->GetNodeGlags() & DAVA::DataNode::NodeRuntimeFlag) )
+                (material->IsRuntime()) )
             {
                 enableTemplate = false;
             }
@@ -961,6 +961,7 @@ void MaterialEditor::OnMaterialLoad(bool checked)
                 materialArchive->DeleteKey("#index");
                 materialArchive->DeleteKey("materialName");
                 materialArchive->DeleteKey("materialType");
+                materialArchive->DeleteKey("materialKey");
                 materialArchive->DeleteKey("parentMaterialKey");
 
                 DAVA::SerializationContext materialContext;
