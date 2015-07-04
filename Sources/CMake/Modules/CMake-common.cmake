@@ -348,7 +348,7 @@ macro ( add_content_win_uap_single CONTENT_DIR )
 	list ( APPEND ADDED_CONTENT_SRC ${CONTENT_LIST} )
     set ( GROUP_PREFIX "Content\\" )
 	get_filename_component ( CONTENT_DIR_PATH ${CONTENT_DIR} PATH )
-
+	
 	#process all content files
 	FOREACH( ITEM ${CONTENT_LIST} )
 	    #message("Item: ${ITEM}")
@@ -356,6 +356,14 @@ macro ( add_content_win_uap_single CONTENT_DIR )
 		#add item to project source group "Content"
 		get_filename_component ( ITEM_PATH ${ITEM} PATH )
 		STRING( REGEX REPLACE "${CONTENT_DIR_PATH}" "" ITEM_GROUP ${ITEM_PATH} )
+		
+		#remove the first '/' symbol
+		STRING ( SUBSTRING ${ITEM_GROUP} 0 1 FIRST_SYMBOL )
+		if (FIRST_SYMBOL STREQUAL "/")
+		    STRING ( SUBSTRING ${ITEM_GROUP} 1 -1 ITEM_GROUP )
+		endif ()
+		
+		#reverse the slashes
 		STRING( REGEX REPLACE "/" "\\\\" ITEM_GROUP ${ITEM_GROUP} )
 		#message( "Item group: ${GROUP_PREFIX}${ITEM_GROUP}" )
 		source_group( ${GROUP_PREFIX}${ITEM_GROUP} FILES ${ITEM} )

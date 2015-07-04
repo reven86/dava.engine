@@ -32,7 +32,6 @@
 
 #include "Utils/Utils.h"
 
-#include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 
 using namespace Windows::UI::Xaml;
