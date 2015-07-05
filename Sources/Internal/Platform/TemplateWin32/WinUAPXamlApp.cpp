@@ -90,6 +90,27 @@ void WinUAPXamlApp::SetScreenMode(ApplicationViewWindowingMode screenMode)
     SetFullScreen(fullscreen);
 }
 
+Windows::Foundation::Size WinUAPXamlApp::GetCurrentScreenSize()
+{
+    return Windows::Foundation::Size(windowWidth, windowHeight);
+}
+
+void WinUAPXamlApp::SetCursorState(bool isShown)
+{
+    Logger::FrameworkDebug("[CorePlatformWinUAP] CursorState %d", static_cast<int32>(isShown));
+    if (isShown != isMouseCursorShown)
+    {
+        if (isShown)
+        {
+            ShowCursor();
+        }
+        else
+        {
+            HideCursor();
+        }
+    }
+}
+
 void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args)
 {
     CoreWindow^ coreWindow = Window::Current->CoreWindow;
@@ -143,8 +164,10 @@ void WinUAPXamlApp::Run()
     
     RenderManager::Instance()->BindToCurrentThread();
     ReInitRender();
-
     InitCoordinatesSystem();
+
+    // here need set orientation option, and view size
+    FrameworkDidLaunched();
 
     core->RunOnUIThreadBlocked([this]() {
         SetTitleName();
@@ -152,8 +175,6 @@ void WinUAPXamlApp::Run()
         PrepareScreenSize();
         SetDisplayOrientations();
     });
-
-    FrameworkDidLaunched();
 
     Core::Instance()->SystemAppStarted();
     while (!quitFlag)

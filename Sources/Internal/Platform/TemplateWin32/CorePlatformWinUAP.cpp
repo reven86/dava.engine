@@ -85,19 +85,27 @@ Core::eScreenMode CorePlatformWinUAP::GetScreenMode()
 
 void CorePlatformWinUAP::SwitchScreenToMode(eScreenMode screenMode)
 {
-    switch (screenMode)
+    if (screenMode == Core::MODE_FULLSCREEN)
     {
-    case Core::MODE_FULLSCREEN:
         xamlApp->SetScreenMode(ApplicationViewWindowingMode::FullScreen);
-        break;
-    case Core::MODE_WINDOWED:
+    }
+    else if (screenMode == Core::MODE_WINDOWED)
+    {
         xamlApp->SetScreenMode(ApplicationViewWindowingMode::PreferredLaunchViewSize);
-        break;
-    default:
-        xamlApp->SetScreenMode(ApplicationViewWindowingMode::FullScreen);
-        break;
     }
 }
+
+DisplayMode CorePlatformWinUAP::GetCurrentDisplayMode()
+{
+    Windows::Foundation::Size screenSize = xamlApp->GetCurrentScreenSize();
+    return DisplayMode(screenSize.Width, screenSize.Height, DisplayMode::DEFAULT_BITS_PER_PIXEL, DisplayMode::DEFAULT_DISPLAYFREQUENCY);
+}
+
+void CorePlatformWinUAP::SetCursorState(bool isShown)
+{
+    xamlApp->SetCursorState(isShown);
+}
+
 
 }   // namespace DAVA
 

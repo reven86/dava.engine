@@ -64,6 +64,8 @@ public:
     Windows::Graphics::Display::DisplayOrientations GetDisplayOrientation();
     Windows::UI::ViewManagement::ApplicationViewWindowingMode GetScreenMode();
     void SetScreenMode(Windows::UI::ViewManagement::ApplicationViewWindowingMode screenMode);
+    Windows::Foundation::Size GetCurrentScreenSize();
+    void SetCursorState(bool isShown);
 
     Windows::UI::Core::CoreDispatcher^ UIThreadDispatcher();
     Windows::UI::Core::CoreDispatcher^ MainThreadDispatcher();
