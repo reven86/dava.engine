@@ -175,6 +175,7 @@ public:
     void RebuildTangentSpace(Entity *entity);
     void ConvertShadowVolumes(Entity * rootNode, NMaterial * shadowMaterialParent);
     void RemoveDeprecatedMaterialFlags(Entity * rootNode);
+    void ConvertAlphatestValueMaterials(Entity * rootNode);
     int32 removedNodeCount;
     	    
     void UpdatePolygonGroupRequestedFormatRecursively(Entity *entity);

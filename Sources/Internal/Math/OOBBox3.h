@@ -27,31 +27,33 @@
 =====================================================================================*/
 
 
-#include "DAVAEngine.h"
-#include "GameCore.h"
-#include "version.h"
-#include "Config.h"
+#ifndef __DAVAENGINE_OOBBOX3_H__
+#define __DAVAENGINE_OOBBOX3_H__
 
-void FrameworkDidLaunched()
+#include "Base/BaseTypes.h"
+#include "Base/BaseMath.h"
+#include "Math/Vector.h"
+#include "Math/Ray.h"
+#include "Base/Introspection.h"
+
+namespace DAVA
 {
-	DAVA::KeyedArchive * appOptions = new DAVA::KeyedArchive();
 
-	appOptions->SetString("title", DAVA::Format("DAVA Framework - ResourceEditor | %s.%s-%s", DAVAENGINE_VERSION, EDITOR_VERSION, RESOURCE_EDITOR_VERSION));
-	appOptions->SetInt32("fullscreen", 0);
-	appOptions->SetInt32("bpp", 32);
-	
-	GameCore * core = new GameCore();
-	DAVA::Core::SetApplicationCore(core);
-	DAVA::Core::Instance()->SetOptions(appOptions);
-    DAVA::VirtualCoordinatesSystem::Instance()->EnableReloadResourceOnResize(false);
+#define OOBBOX_INFINITY 1000000.0f
 
-//    DAVA::FilePath::SetBundleName("~/Sources/dava.framework/Tools/ResourceEditor/");
-    
-	SafeRelease(appOptions);
-    
-    //DAVA::FilePath::SetBundleName("/Users/binaryzebra/Sources/dava.framework/Tools/ResourceEditor");
-}
+/**
+	\brief class to work with object oriented bounding boxes
+ */
+class OOBBox3
+{
+public:
+	Vector3 center;
+    Vector3 axis[3];
+    Vector3 size;
+		
+};
 
+};
 
-void FrameworkWillTerminate()
-{ }
+#endif // __DAVAENGINE_OOBBOX3_H__
+

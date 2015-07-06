@@ -123,7 +123,7 @@ inline float32 DotProduct(const Vector2 & _v1, const Vector2 & _v2);
 inline Vector2 Normalize(const Vector2 & _v);
 inline float32 CrossProduct(const Vector2 & a, const Vector2 & b);
 inline Vector2 Reflect(const Vector2 & v, const Vector2 & n);
-
+inline float32 Distance(const Vector2 & v1, const Vector2 & v2);
 
 /**	
 	\ingroup math
@@ -217,8 +217,9 @@ inline Vector3 CrossProduct(const Vector3 & v1, const Vector3 & v2);
 inline float32 DotProduct(const Vector3 & v1, const Vector3 & v2);
 inline Vector3 Lerp(const Vector3 & _v1, const Vector3 & _v2, float32 t);
 inline Vector3 Reflect(const Vector3 & v, const Vector3 & n);
-
-/**	
+inline float32 Distance(const Vector3 & v1, const Vector3 & v2);
+    
+/**
 	\ingroup math
 	\brief Vector with 4 coordinates.
  */
@@ -289,6 +290,7 @@ inline Vector4 Normalize(const Vector4 & v);
 inline Vector4 CrossProduct(const Vector4 & v1, const Vector4 & v2);
 inline float32 DotProduct(const Vector4 & v1, const Vector4 & v2);
 inline Vector4 Lerp(const Vector4 & _v1, const Vector4 & _v2, float32 t);
+inline float32 Distance(const Vector4 & v1, const Vector4 & v2);
 
 
 // Vector2 Implementation
@@ -516,7 +518,15 @@ inline Vector2 Reflect(const Vector2 & v, const Vector2 & n)
 	Vector2 r = v - (2 * DotProduct(v, n)) * n;
 	return r;
 }
+    
+inline float32 Distance(const Vector2 & v1, const Vector2 & v2)
+{
+    float32 dx = v1.x - v2.x;
+    float32 dy = v1.y - v2.y;
+    return sqrtf(dx * dx + dy * dy);
+}
 
+    
 // Vector3 Implementation
 inline Vector3::Vector3()
 {
@@ -782,6 +792,14 @@ inline Vector3 Reflect(const Vector3 & v, const Vector3 & n)
 	Vector3 r = v - (2 * DotProduct(v, n)) * n;
 	return r;
 }
+    
+inline float32 Distance(const Vector3 & v1, const Vector3 & v2)
+{
+    float32 dx = v1.x - v2.x;
+    float32 dy = v1.y - v2.y;
+    float32 dz = v1.z - v2.z;
+    return sqrtf(dx * dx + dy * dy + dz * dz);
+}
 
 
 // Vector4 implementation
@@ -1018,6 +1036,15 @@ inline Vector4 Normalize(const Vector4 & v)
 	Vector4 res(v);
 	res.Normalize();
 	return res;
+}
+    
+inline float32 Distance(const Vector4 & v1, const Vector4 & v2)
+{
+    float32 dx = v1.x - v2.x;
+    float32 dy = v1.y - v2.y;
+    float32 dz = v1.z - v2.z;
+    float32 dw = v1.w - v2.w;
+    return sqrtf(dx * dx + dy * dy + dz * dz + dw * dw);
 }
 
 };

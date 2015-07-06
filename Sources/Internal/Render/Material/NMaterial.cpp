@@ -101,6 +101,7 @@ const FastName NMaterial::PARAM_DETAIL_TILE_SCALE("detailTileCoordScale");
 const FastName NMaterial::PARAM_RCP_SCREEN_SIZE("rcpScreenSize");
 const FastName NMaterial::PARAM_SCREEN_OFFSET("screenOffset");
 const FastName NMaterial::PARAM_NORMAL_SCALE("normalScale");
+const FastName NMaterial::PARAM_ALPHATEST_THRESHOLD("alphatestThreshold");
 
 const FastName NMaterial::FLAG_VERTEXFOG = FastName("VERTEX_FOG");
 const FastName NMaterial::FLAG_FOG_LINEAR = FastName("FOG_LINEAR");
@@ -135,6 +136,8 @@ const FastName NMaterial::FLAG_VIEWALBEDO = FastName("VIEW_ALBEDO");
 const FastName NMaterial::FLAG_VIEWAMBIENT = FastName("VIEW_AMBIENT");
 const FastName NMaterial::FLAG_VIEWDIFFUSE = FastName("VIEW_DIFFUSE");
 const FastName NMaterial::FLAG_VIEWSPECULAR = FastName("VIEW_SPECULAR");
+
+const FastName NMaterial::FLAG_ALPHATESTVALUE = FastName("ALPHATESTVALUE");
 
 static FastName TEXTURE_NAME_PROPS[] =
 {
@@ -1551,7 +1554,7 @@ void NMaterial::Draw(PolygonGroup * polygonGroup)
 	}
 }
 
-void NMaterial::Draw(RenderDataObject* renderData, uint16* indices, uint16 indexCount)
+void NMaterial::Draw(RenderDataObject* renderData, uint16* indices, int32 indexCount)
 {
 	DVASSERT(renderData);
 	
