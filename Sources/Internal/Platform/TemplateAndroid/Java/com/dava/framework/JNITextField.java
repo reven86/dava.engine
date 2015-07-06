@@ -1397,20 +1397,25 @@ public class JNITextField {
         }
     }
     
-	public static void SetMultiline(final int id, final int maxLines, final boolean verticalScrollBarEnabled) {
-		JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
-			@Override
-			public void safeRun() {
-				final TextField text = GetTextField(id);
-				// if you call text.setSingleLine(false); 
-				// it will reset maxlines, scroll, and transformation method to default values
-				text.setSingleLine(false);
-				text.setMaxLines(maxLines);
-				text.setHorizontallyScrolling(false);
-				text.setVerticalScrollBarEnabled(verticalScrollBarEnabled);
-			}
-		});
-	}
+    public static void SetMultiline(final int id, final int maxLines, final boolean verticalScrollBarEnabled) {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
+            @Override
+            public void safeRun() {
+                final TextField text = GetTextField(id);
+                // if you call text.setSingleLine(false); 
+                // it will reset maxlines, scroll, and transformation method to default values
+                if (maxLines == 1)
+                {
+                    text.setSingleLine(true);
+                } else {
+                    text.setSingleLine(false);
+                    text.setMaxLines(maxLines);
+                    text.setHorizontallyScrolling(false);
+                    text.setVerticalScrollBarEnabled(verticalScrollBarEnabled);
+                }
+            }
+        });
+    }
     
     public static void SetRenderToTexture(final int id, final boolean value) {
         JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
