@@ -37,12 +37,13 @@
 #include "Concurrency/Thread.h"
 
 #if defined (__DAVAENGINE_ANDROID__)
-#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include "Platform/TemplateAndroid/JniHelpers.h"
-#endif
-
-#if defined (__DAVAENGINE_APPLE__)
-#import <Foundation/NSAutoreleasePool.h>
+#   include <sys/syscall.h>
+#   include <unistd.h>
+#   include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#   include "Platform/TemplateAndroid/JniHelpers.h"
+#elif defined (__DAVAENGINE_APPLE__)
+#   import <Foundation/NSAutoreleasePool.h>
+#   include <mach/thread_policy.h>
 #endif
 
 namespace DAVA
@@ -108,6 +109,7 @@ void *PthreadMain(void *param)
     Thread *t = static_cast<Thread *>(param);    
 #   if defined (__DAVAENGINE_ANDROID__)
     pthread_setname_np(t->handle, t->name.c_str());
+    t->system_handle = gettid();
 #   elif defined(__DAVAENGINE_APPLE__)
     pthread_setname_np(t->name.c_str());
 #   endif
@@ -148,11 +150,40 @@ Thread::Id Thread::GetCurrentId()
     return pthread_self();
 }
 
+#if defined(__DAVAENGINE_APPLE__)
+
+bool BindToProcessorApple(pthread_t thread, unsigned proc_n)
+{
+    thread_affinity_policy_data_t policy = { int(proc_n) };
+    thread_port_t mach_thread = pthread_mach_thread_np(thread);
+    auto res = thread_policy_set(mach_thread, 
+                                 THREAD_AFFINITY_POLICY, 
+                                 (thread_policy_t)& policy, 1);
+    return res == KERN_SUCCESS;
+}
+
+#elif defined(__DAVAENGINE_ANDROID__)
+
+bool BindToProcessorAndroid(pid_t pid, unsigned proc_n)
+{
+    int mask = 1 << proc_n;
+    int res = syscall(__NR_sched_setaffinity, pid, sizeof(mask), &mask);
+    return res == 0;
+}
+
+#endif
+
 bool Thread::BindToProcessor(unsigned proc_n)
 {
     DVASSERT(proc_n < std::thread::hardware_concurrency());
 	if (proc_n >= std::thread::hardware_concurrency())
         return false;
+
+#if defined(__DAVAENGINE_APPLE__)
+    return BindToProcessorApple(handle, proc_n);
+#elif defined(__DAVAENGINE_ANDROID__)
+    return BindToProcessorAndroid(system_handle, proc_n);
+#else
 
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
@@ -160,6 +191,8 @@ bool Thread::BindToProcessor(unsigned proc_n)
 
     int error = pthread_setaffinity_np(handle, sizeof(cpuset), &cpuset);
     return error == 0;
+
+#endif
 }
 
 } //  namespace DAVA

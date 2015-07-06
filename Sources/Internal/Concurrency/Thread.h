@@ -67,6 +67,10 @@ public:
     using Id = pthread_t;
 protected:
     using Handle = pthread_t;
+
+#ifdef __DAVAENGINE_ANDROID__
+    pid_t system_handle = 0;
+#endif
 };
 
 #endif
