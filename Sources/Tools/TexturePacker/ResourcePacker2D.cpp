@@ -116,7 +116,7 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
     }
 
 
-    if (IsMD5ChangedDir(processDirectoryPath, outputGfxDirectory, gfxDirName + ".md5", true))
+    if (RecalculateDirMD5(outputGfxDirectory, processDirectoryPath + gfxDirName + ".md5", true))
     {
         if (Core::Instance()->IsConsoleMode())
         {
@@ -143,7 +143,7 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
     RecursiveTreeWalk(inputGfxDirectory, outputGfxDirectory);
 
     // Put latest md5 after convertation
-    IsMD5ChangedDir(processDirectoryPath, outputGfxDirectory, gfxDirName + ".md5", true);
+    RecalculateDirMD5(outputGfxDirectory, processDirectoryPath + gfxDirName + ".md5", true);
 }
 
 void ResourcePacker2D::RecalculateMD5ForOutputDir()
@@ -154,15 +154,13 @@ void ResourcePacker2D::RecalculateMD5ForOutputDir()
     FilePath processDirectoryPath = excludeDirectory + GetProcessFolderName();
     FileSystem::Instance()->CreateDirectory(processDirectoryPath, true);
 
-    IsMD5ChangedDir(processDirectoryPath, outputGfxDirectory, gfxDirName + ".md5", true);
+    RecalculateDirMD5(outputGfxDirectory, processDirectoryPath + gfxDirName + ".md5", true);
 }
 
 
-bool ResourcePacker2D::IsMD5ChangedDir(const FilePath & processDirectoryPath, const FilePath & pathname, const String & name, bool isRecursive) const
+bool ResourcePacker2D::RecalculateDirMD5(const FilePath& pathname, const FilePath& md5file, bool isRecursive) const
 {
-    DVASSERT(processDirectoryPath.IsDirectoryPathname());
-
-    FilePath md5FileName = FilePath::CreateWithNewExtension(processDirectoryPath + name, ".md5");
+    FilePath md5FileName = FilePath::CreateWithNewExtension(md5file, ".md5");
 
     std::array<uint8, 16> oldMD5Digest;
     std::array<uint8, 16> newMD5Digest;
@@ -175,7 +173,7 @@ bool ResourcePacker2D::IsMD5ChangedDir(const FilePath & processDirectoryPath, co
     }
     else
     {
-        auto bytesRead = file->Read(oldMD5Digest.data(), 16);
+        auto bytesRead = file->Read(oldMD5Digest.data(), MD5::DIGEST_SIZE);
         DVASSERT(bytesRead == 16 && "We should always read 16 bytes from md5 file");
     }
 
@@ -184,42 +182,38 @@ bool ResourcePacker2D::IsMD5ChangedDir(const FilePath & processDirectoryPath, co
     file = File::Create(md5FileName, File::CREATE | File::WRITE);
     DVASSERT(file && "Can't create md5 file");
     
-    auto bytesWritten = file->Write(newMD5Digest.data(), 16);
+    auto bytesWritten = file->Write(newMD5Digest.data(), MD5::DIGEST_SIZE);
     DVASSERT(bytesWritten == 16 && "16 bytes should be always written for md5 file");
 
-    if (isChanged)
-        return true;
-    else
-        return oldMD5Digest != newMD5Digest;
+    return isChanged ? true : oldMD5Digest != newMD5Digest;
 }
 
 
-bool ResourcePacker2D::IsMD5ChangedFile(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName) const
+bool ResourcePacker2D::RecalculateFileMD5(const FilePath& pathname, const FilePath& md5file) const
 {
-    DVASSERT(processDirectoryPath.IsDirectoryPathname());
-
-    FilePath md5FileName = FilePath::CreateWithNewExtension(processDirectoryPath + psdName, ".md5");
+    FilePath md5FileName = FilePath::CreateWithNewExtension(md5file, ".md5");
 
 	std::array<uint8, MD5::DIGEST_SIZE> oldMD5Digest;
 	std::array<uint8, MD5::DIGEST_SIZE> newMD5Digest;
     bool isChanged = false;
-    File * file = File::Create(md5FileName, File::OPEN | File::READ);
 
-	if (nullptr == file)
-    	isChanged = true;		
+    ScopedPtr<File> file(File::Create(md5FileName, File::OPEN | File::READ));
+
+	if (!file)
+    	isChanged = true;
 	else
     {
-		int32 bytes = file->Read(oldMD5Digest.data(), MD5::DIGEST_SIZE);
-		DVASSERT(bytes == MD5::DIGEST_SIZE && "We should always read 16 bytes from md5 file");
-		SafeRelease(file);
+		auto bytesRead = file->Read(oldMD5Digest.data(), MD5::DIGEST_SIZE);
+		DVASSERT(bytesRead == MD5::DIGEST_SIZE && "We should always read 16 bytes from md5 file");
 	}
 		
 	MD5::ForFile(pathname, newMD5Digest.data());
     
     file = File::Create(md5FileName, File::CREATE | File::WRITE);
-	int32 bytes = file->Write(newMD5Digest.data(), MD5::DIGEST_SIZE);
-	DVASSERT(bytes == MD5::DIGEST_SIZE && "16 bytes should be always written for md5 file");
-    SafeRelease(file);
+    DVASSERT(file && "Can't create md5 file");
+
+	auto bytesWritten = file->Write(newMD5Digest.data(), MD5::DIGEST_SIZE);
+	DVASSERT(bytesWritten == MD5::DIGEST_SIZE && "16 bytes should be always written for md5 file");
 
 	return isChanged ? true : oldMD5Digest != newMD5Digest;
 }
@@ -390,180 +384,181 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
     {
         currentCommandFlags = passedFlags;
     }
-    
 
     CommandLineParser::Instance()->SetArguments(currentCommandFlags);
 
-    
-    bool modified = isGfxModified;
-    // Process all psd / png files
-
-    if (IsMD5ChangedDir(processDirectoryPath, inputPath, "dir.md5", false) || 
-        CommandLineParser::CommandIsFound(String("-forceModify")))
-    {
-        modified = true;
-    }
-    //TODO:AC: hash of folder is in dir.md5 file, see lines above
-    //TODO:AC:
-    /*
-        we need ask cache server about files from this cache and currentCommandFlags + command line arguments
-    */
-    AssetCache::CacheItemKey cacheKey;
-    if (modified && IsUsingCache())
-    {   //Detect cache key
-        auto md5FileName = FilePath::CreateWithNewExtension(processDirectoryPath + "dir.md5", ".md5");
-        ScopedPtr<File> md5File(File::Create(md5FileName, File::OPEN | File::READ));
-        if(static_cast<File *>(md5File) != nullptr)
-        {   //invalidation of primary key
-            auto read = md5File->Read(cacheKey.keyData.hash.primary, MD5::DIGEST_SIZE);
-            DVASSERT(read == MD5::DIGEST_SIZE);
-        }
-        
-        String cachedParams;
-        Merge(currentCommandFlags, ',', cachedParams);
-        
-        cachedParams += String("GPU = ") + GPUFamilyDescriptor::GetGPUName(requestedGPUFamily);
-        cachedParams += String("PackerVersion = ") + VERSION;
-        
-        auto strDataPtr = cachedParams.c_str();
-        auto strDataSize = cachedParams.size();
-        MD5::ForData(reinterpret_cast<const uint8 *>(strDataPtr), static_cast<uint32>(strDataSize), cacheKey.keyData.hash.secondary);
-    }
-    
-    bool needRepack = modified && !GetFilesFromCache(cacheKey, inputPath, outputPath);
-
-    //TODO:AC: end
-    
     ScopedPtr<FileList> fileList(new FileList(inputPath));
     fileList->Sort();
-    if (needRepack)
+
+    bool inputDirHasFiles = false;
+    for (int fi = 0; fi < fileList->GetCount(); ++fi)
     {
-        // read textures margins settings
-        bool useTwoSideMargin = CommandLineParser::Instance()->IsFlagSet("--add2sidepixel");
-        uint32 marginInPixels = TexturePacker::DEFAULT_MARGIN;
-        if (!useTwoSideMargin)
+        if (!fileList->IsDirectory(fi))
         {
-            if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
-                marginInPixels = 0;
-            else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
-                marginInPixels = 1;
-            else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
-                marginInPixels = 2;
-            else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
-                marginInPixels = 4;
+            inputDirHasFiles = true;
+            break;
         }
-        
-        
-        bool needPackResourcesInThisDir = true;
-		
-		if (clearOutputDirectory)
-		{
-        	FileSystem::Instance()->DeleteDirectoryFiles(outputPath, false);
-		}
-            
-        for (int fi = 0; fi < fileList->GetCount() && running; ++fi)
+    }
+
+    bool inputDirModified = RecalculateDirMD5(inputPath, processDirectoryPath + "dir.md5", false);
+    bool modified = isGfxModified || inputDirModified || CommandLineParser::CommandIsFound(String("-forceModify"));
+
+    if (modified)
+    {
+        if (inputDirHasFiles)
         {
-            if (!fileList->IsDirectory(fi))
+            AssetCache::CacheItemKey cacheKey;
+            if (IsUsingCache())
             {
-                FilePath fullname = fileList->GetPathname(fi);
-                if (fullname.IsEqualToExtension(".psd"))
+                auto md5FileName = FilePath::CreateWithNewExtension(processDirectoryPath + "dir.md5", ".md5");
+                ScopedPtr<File> md5File(File::Create(md5FileName, File::OPEN | File::READ));
+                if (md5File)
+                {   //invalidation of primary key
+                    auto read = md5File->Read(cacheKey.keyData.hash.primary, MD5::DIGEST_SIZE);
+                    DVASSERT(read == MD5::DIGEST_SIZE);
+                }
+
+                String cachedParams;
+                Merge(currentCommandFlags, ',', cachedParams);
+
+                cachedParams += String("GPU = ") + GPUFamilyDescriptor::GetGPUName(requestedGPUFamily);
+                cachedParams += String("PackerVersion = ") + VERSION;
+
+                auto strDataPtr = cachedParams.c_str();
+                auto strDataSize = cachedParams.size();
+                MD5::ForData(reinterpret_cast<const uint8 *>(strDataPtr), static_cast<uint32>(strDataSize), cacheKey.keyData.hash.secondary);
+            }
+
+            bool needRepack = !GetFilesFromCache(cacheKey, inputPath, outputPath);
+            if (needRepack)
+            {
+                // read textures margins settings
+                bool useTwoSideMargin = CommandLineParser::Instance()->IsFlagSet("--add2sidepixel");
+                uint32 marginInPixels = TexturePacker::DEFAULT_MARGIN;
+                if (!useTwoSideMargin)
                 {
-                    //TODO: check if we need filename or pathname
-                    DefinitionFile * defFile = ProcessPSD(processDirectoryPath, fullname, fullname.GetFilename(), useTwoSideMargin, marginInPixels);
-                    if (!defFile)
+                    if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
+                        marginInPixels = 0;
+                    else if (CommandLineParser::Instance()->IsFlagSet("--add1pixel"))
+                        marginInPixels = 1;
+                    else if (CommandLineParser::Instance()->IsFlagSet("--add2pixel"))
+                        marginInPixels = 2;
+                    else if (CommandLineParser::Instance()->IsFlagSet("--add4pixel"))
+                        marginInPixels = 4;
+                }
+
+
+                bool needPackResourcesInThisDir = true;
+
+                if (clearOutputDirectory)
+                {
+                    FileSystem::Instance()->DeleteDirectoryFiles(outputPath, false);
+                }
+
+                for (int fi = 0; fi < fileList->GetCount() && running; ++fi)
+                {
+                    if (!fileList->IsDirectory(fi))
                     {
-                        // An error occured while converting this PSD file - cancel converting in this directory.
-                        needPackResourcesInThisDir = false;
-                        break;
+                        FilePath fullname = fileList->GetPathname(fi);
+                        if (fullname.IsEqualToExtension(".psd"))
+                        {
+                            //TODO: check if we need filename or pathname
+                            DefinitionFile * defFile = ProcessPSD(processDirectoryPath, fullname, fullname.GetFilename(), useTwoSideMargin, marginInPixels);
+                            if (!defFile)
+                            {
+                                // An error occured while converting this PSD file - cancel converting in this directory.
+                                needPackResourcesInThisDir = false;
+                                break;
+                            }
+
+                            definitionFileList.push_back(defFile);
+                        }
+                        else if (isLightmapsPacking && fullname.IsEqualToExtension(".png"))
+                        {
+                            DefinitionFile * defFile = new DefinitionFile();
+                            defFile->LoadPNG(fullname, processDirectoryPath);
+                            definitionFileList.push_back(defFile);
+                        }
+                        else if (fullname.IsEqualToExtension(".pngdef"))
+                        {
+                            DefinitionFile * defFile = new DefinitionFile();
+                            if (defFile->LoadPNGDef(fullname, processDirectoryPath, useTwoSideMargin, marginInPixels))
+                            {
+                                definitionFileList.push_back(defFile);
+                            }
+                            else
+                            {
+                                SafeDelete(defFile);
+                            }
+                        }
                     }
-                        
-                    definitionFileList.push_back(defFile);
                 }
-                else if(isLightmapsPacking && fullname.IsEqualToExtension(".png"))
+
+                if (!definitionFileList.empty())
                 {
-                    DefinitionFile * defFile = new DefinitionFile();
-                    defFile->LoadPNG(fullname, processDirectoryPath);
-                    definitionFileList.push_back(defFile);
-                }
-                else if (fullname.IsEqualToExtension(".pngdef"))
-                {
-                    DefinitionFile * defFile = new DefinitionFile();
-                    if (defFile->LoadPNGDef(fullname, processDirectoryPath, useTwoSideMargin, marginInPixels))
+                    TexturePacker packer;
+                    packer.SetConvertQuality(quality);
+                    if (isLightmapsPacking)
                     {
-                        definitionFileList.push_back(defFile);
+                        packer.UseOnlySquareTextures();
+                        packer.SetMaxTextureSize(2048);
+                    }
+                    else if (CommandLineParser::Instance()->IsFlagSet("--tsize4096"))
+                    {
+                        packer.SetMaxTextureSize(TexturePacker::TSIZE_4096);
+                    }
+
+                    packer.SetTwoSideMargin(useTwoSideMargin);
+                    packer.SetTexturesMargin(marginInPixels);
+
+                    if (CommandLineParser::Instance()->IsFlagSet("--split"))
+                    {
+                        packer.PackToTexturesSeparate(excludeDirectory, outputPath, definitionFileList, requestedGPUFamily);
                     }
                     else
                     {
-                        SafeDelete(defFile);
+                        packer.PackToTextures(excludeDirectory, outputPath, definitionFileList, requestedGPUFamily);
+                    }
+
+                    Set<String> currentErrors = packer.GetErrors();
+                    if (!currentErrors.empty())
+                    {
+                        errors.insert(currentErrors.begin(), currentErrors.end());
                     }
                 }
-            }
-        }
-            
-        if (!definitionFileList.empty())
-        {
-            TexturePacker packer;
-			packer.SetConvertQuality(quality);
-            if(isLightmapsPacking)
-            {
-                packer.UseOnlySquareTextures();
-                packer.SetMaxTextureSize(2048);
-            }
-            else if(CommandLineParser::Instance()->IsFlagSet("--tsize4096"))
-            {
-                packer.SetMaxTextureSize(TexturePacker::TSIZE_4096);
-            }
-                
-            packer.SetTwoSideMargin(useTwoSideMargin);
-            packer.SetTexturesMargin(marginInPixels);
-                
-            if (CommandLineParser::Instance()->IsFlagSet("--split"))
-            {
-                packer.PackToTexturesSeparate(excludeDirectory, outputPath, definitionFileList, requestedGPUFamily);
-            }
-            else
-            {
-                packer.PackToTextures(excludeDirectory, outputPath, definitionFileList, requestedGPUFamily);
-            }
-                
-            Set<String> currentErrors = packer.GetErrors();
-            if (!currentErrors.empty())
-            {
-                errors.insert(currentErrors.begin(), currentErrors.end());
-            }
-        }
-        
-        packTime = SystemTimer::Instance()->AbsoluteMS() - packTime;
-        
-        if (Core::Instance()->IsConsoleMode())
-        {
-            String flagsString;
-            Merge(currentCommandFlags, ' ', flagsString);
-            Logger::Info("[%d files packed with flags: %s]", (int)definitionFileList.size(), flagsString.c_str());
-            
-        }
 
-        const char* result = (modified && !definitionFileList.empty()) ? "[REPACKED]" : "[unchanged]";
-        Logger::Info("[%s - %.2lf secs] - %s", inputPath.GetAbsolutePathname().c_str(), (float64)packTime / 1000.0f, result);
+                packTime = SystemTimer::Instance()->AbsoluteMS() - packTime;
 
-        for (List<DefinitionFile*>::iterator it = definitionFileList.begin(); it != definitionFileList.end(); ++it)
-        {
-            DefinitionFile * file = *it;
-            SafeDelete(file);
+                if (Core::Instance()->IsConsoleMode())
+                {
+                    String flagsString;
+                    Merge(currentCommandFlags, ' ', flagsString);
+                    Logger::Info("[%d files packed with flags: %s]", (int)definitionFileList.size(), flagsString.c_str());
+
+                }
+
+                const char* result = definitionFileList.empty() ? "[unchanged]" : "[REPACKED]";
+                Logger::Info("[%s - %.2lf secs] - %s", inputPath.GetAbsolutePathname().c_str(), (float64)packTime / 1000.0f, result);
+
+                for_each(definitionFileList.begin(), definitionFileList.end(), SafeDelete<DefinitionFile>);
+                definitionFileList.clear();
+
+                AddFilesToCache(cacheKey, inputPath, outputPath);
+            }
         }
-        definitionFileList.clear();
-        
-        AddFilesToCache(cacheKey, inputPath, outputPath);
+        else
+        {
+            Logger::Info("[%s] - empty directory. Clearing output folder", inputPath.GetAbsolutePathname().c_str());
+            FileSystem::Instance()->DeleteDirectoryFiles(outputPath, false);
+        }
     }
+    else
+    {
+        Logger::Info("[%s] - unchanged", inputPath.GetAbsolutePathname().c_str());
+    }
+    
     
 	// process subfolders recursively
-    
-    for (List<DefinitionFile*>::iterator it = definitionFileList.begin(); it != definitionFileList.end(); ++it)
-    {
-    	DefinitionFile * file = *it;
-    	SafeDelete(file);
-    }
-    definitionFileList.clear();
     
     for (int fi = 0; fi < fileList->GetCount() && running; ++fi)
     {

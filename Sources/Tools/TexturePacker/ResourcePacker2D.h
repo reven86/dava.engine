@@ -56,8 +56,8 @@ public:
     void InitFolders(const FilePath & inputPath,const FilePath & outputPath);
     void PackResources(eGPUFamily forGPU);
     void RecalculateMD5ForOutputDir();
-    bool IsMD5ChangedDir(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName, bool isRecursive) const;
-    bool IsMD5ChangedFile(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName) const;
+    bool RecalculateDirMD5(const FilePath & pathname, const FilePath& md5file, bool isRecursive) const;
+    bool RecalculateFileMD5(const FilePath & pathname, const FilePath& md5file) const;
     
     DefinitionFile * ProcessPSD(const FilePath & processDirectoryPath, const FilePath & psdPathname, const String & psdName, bool twoSideMargin, uint32 texturesMargin);
     Vector<String> FetchFlags(const FilePath & flagsPathname);
