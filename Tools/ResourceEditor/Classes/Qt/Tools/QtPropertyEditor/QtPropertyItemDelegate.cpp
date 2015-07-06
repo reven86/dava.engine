@@ -290,13 +290,16 @@ bool QtPropertyItemDelegate::helpEvent(QHelpEvent * event, QAbstractItemView * v
 void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOptionViewItem &opt, const QModelIndex &index, OptionalButtonsType type) const
 {
 	QtPropertyData* data = model->itemFromIndex(index);
-	if(index.column() == 1 && NULL != data && data->GetButtonsCount() > 0)
-	{
-		int owSpacing = 1;
-		//int owXPos = opt.rect.right() - owSpacing;
+    if (index.column() == 1 && NULL != data && data->GetButtonsCount() > 0)
+    {
+        int owSpacing = 1;
+#ifdef Q_OS_MAC
+        int owXPos = view->width() - owSpacing;
+#else
         auto vScrollBar = view->verticalScrollBar();
         auto scrollSpacing = vScrollBar->isVisible() ? vScrollBar->width() : 0;
         int owXPos = view->width() - owSpacing - scrollSpacing;
+#endif //Q_OS_MAC
 		int owYPos;
 
 		// draw not overlaid widgets
