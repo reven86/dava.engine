@@ -39,7 +39,7 @@ elseif ( MACOS )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
     set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS YES )
 
-elseif ( WIN32 )
+elseif ( WIN32 OR WIN64 )
     #dynamic runtime on windows store
     if ( WINDOWS_UAP )
 	    set ( CRT_TYPE_DEBUG "/MDd" )
