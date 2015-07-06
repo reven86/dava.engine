@@ -112,8 +112,9 @@ void Thread::CancelAll()
 
 Thread::Thread()
     : state(STATE_CREATED)
+    , threadPriority(PRIORITY_NORMAL)
     , isCancelling(false)
-    , stack_size(0)
+    , stackSize(0)
     , id(Id())
     , handle(Handle())
     , name("DAVA::Thread")
@@ -128,12 +129,12 @@ Thread::Thread(const Message &msg) : Thread()
 {
     Message message = msg;
     Thread* caller = this;
-    thread_func = [=] { message(caller); };
+    threadFunc = [=] { message(caller); };
 }
 
 Thread::Thread(const Procedure &proc) : Thread()
 {
-    thread_func = proc;
+    threadFunc = proc;
 }
 
 Thread::~Thread()
@@ -149,8 +150,7 @@ void Thread::ThreadFunction(void *param)
     Thread * t = (Thread *)param;
     t->id = GetCurrentId();
 
-    t->state = STATE_RUNNING;
-    t->thread_func();
+    t->threadFunc();
     t->state = STATE_ENDED;
 
     t->Release();

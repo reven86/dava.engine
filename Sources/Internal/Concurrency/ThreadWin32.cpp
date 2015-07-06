@@ -63,7 +63,7 @@ void Thread::Shutdown()
     }
 }
 
-void Thread::Start()
+Thread::Start()
 {
     Retain();
     DVASSERT(STATE_CREATED == state);
@@ -71,13 +71,14 @@ void Thread::Start()
     auto hdl = _beginthreadex
         (
         0, // Security attributes
-        stack_size,
+        stackSize,
         ThreadFunc,
         this,
         0,
         0);
 
     handle = reinterpret_cast<HANDLE>(hdl);
+    state = STATE_RUNNING;
 }
 
 unsigned __stdcall ThreadFunc(void* param)
@@ -93,7 +94,7 @@ unsigned __stdcall ThreadFunc(void* param)
 
     __try
     {
-        RaiseException(MS_VC_EXCEPTION, 0, sizeof(info)/sizeof(ULONG_PTR), (ULONG_PTR*)&info );
+        RaiseException(MS_VC_EXCEPTION, 0, sizeof(info)/sizeof(DWORD), (ULONG_PTR*)&info );
     }
     __except(EXCEPTION_CONTINUE_EXECUTION)
     {
@@ -143,6 +144,30 @@ bool DAVA::Thread::BindToProcessor(unsigned proc_n)
     DWORD_PTR mask = 1 << proc_n;
     return ::SetThreadAffinityMask(id, mask) == 0;
 #endif
+}
+    
+void Thread::SetPriority(eThreadPriority priority)
+{
+    DVASSERT(state == STATE_RUNNING);
+    if (threadPriority == priority)
+        return;
+    
+    threadPriority = priority;
+    int prio = THREAD_PRIORITY_NORMAL;
+    switch (threadPriority)
+    {
+        case PRIORITY_LOW:
+            prio = THREAD_PRIORITY_LOWEST;
+            break;
+        case PRIORITY_HIGH:
+            prio = THREAD_PRIORITY_HIGHEST;
+            break;
+    }
+    
+    if (::SetThreadPriority(handle, prio) == 0)
+    {
+        Logger::FrameworkDebug("[Thread::SetPriority]: Cannot set thread priority");
+    }
 }
 
 }

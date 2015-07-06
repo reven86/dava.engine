@@ -85,6 +85,13 @@ class Thread : public ThreadTraits, public BaseObject
 public:
     using Procedure = std::function<void()>;
 
+    enum eThreadPriority
+    {
+        PRIORITY_LOW = 0,
+        PRIORITY_NORMAL,
+        PRIORITY_HIGH
+    };
+
     enum eThreadState
 	{
 		STATE_CREATED = 0,
@@ -132,6 +139,9 @@ public:
 		This function return state of the thread. It can be STATE_CREATED, STATE_RUNNING, STATE_ENDED.
 	*/
     inline eThreadState GetState() const;
+    
+    void SetPriority(eThreadPriority priority);
+    inline eThreadPriority GetPriority() const;
 
     /** Wait until thread's finished.
     */
@@ -208,10 +218,11 @@ private:
     */
     static void ThreadFunction(void *param);
 
-    Procedure thread_func;
+    Procedure threadFunc;
     Atomic<eThreadState> state;
     Atomic<bool> isCancelling;
-    size_t stack_size;
+    size_t stackSize;
+    eThreadPriority threadPriority;
 
     /**
     \brief Native thread handle - variable which used to thread manipulations
@@ -270,7 +281,12 @@ inline Thread::Id Thread::GetId() const
 inline void Thread::SetStackSize(size_t size)
 {
     DVASSERT(STATE_CREATED == state);
-    stack_size = size;
+    stackSize = size;
+}
+    
+inline Thread::eThreadPriority Thread::GetPriority() const
+{
+    return threadPriority;
 }
 
 };

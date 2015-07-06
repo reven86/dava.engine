@@ -134,10 +134,13 @@ void Thread::Start()
 
     pthread_attr_t attr {};
     pthread_attr_init(&attr);
-    if (stack_size != 0)
-        pthread_attr_setstacksize(&attr, stack_size);
+    if (stackSize != 0)
+        pthread_attr_setstacksize(&attr, stackSize);
 
-    pthread_create(&handle, &attr, PthreadMain, (void *)this);
+    pthread_create(&handle, &attr, PthreadMain, (void*)this);
+    state = STATE_RUNNING;
+    
+    pthread_attr_destroy(&attr);
 }
     
 void Thread::Join()
@@ -193,6 +196,57 @@ bool Thread::BindToProcessor(unsigned proc_n)
     return error == 0;
 
 #endif
+}
+    
+bool calculatePriority(int priority, int* sched_policy, int* sched_prio)
+{
+    const int lowestPrio = Thread::PRIORITY_LOW;
+    const int highestPrio = Thread::PRIORITY_HIGH;
+    
+    int prio_min = sched_get_priority_min(*sched_policy);
+    int prio_max = sched_get_priority_max(*sched_policy);
+    
+    if (prio_min == -1 || prio_max == -1)
+        return false;
+    
+    int prio = ((priority - lowestPrio) * (prio_max - prio_min) / highestPrio) + prio_min;
+    prio = std::max(prio_min, std::min(prio_max, prio));
+    
+    *sched_prio = prio;
+    return true;
+}
+    
+void Thread::SetPriority(eThreadPriority priority)
+{
+    DVASSERT(state == STATE_RUNNING);
+    if (threadPriority == priority)
+        return;
+     
+    threadPriority = priority;
+    int sched_policy = 0;
+    sched_param param {};
+    
+    if (pthread_getschedparam(handle, &sched_policy, &param) != 0)
+    {
+        Logger::FrameworkDebug("[Thread::SetPriority]: Cannot get schedule parameters");
+        return;
+    }
+    
+    int prio = 0;
+    if (!calculatePriority(priority, &sched_policy, &prio))
+    {
+        Logger::FrameworkDebug("[Thread::SetPriority]: Cannot determine scheduler priority range");
+        return;
+    }
+    
+    param.sched_priority = prio;
+    int status = pthread_setschedparam(handle, sched_policy, &param);
+
+    if (status != 0)
+    {
+        Logger::FrameworkDebug("[Thread::SetPriority]: Cannot set schedule parameters");
+        return;
+    }
 }
 
 } //  namespace DAVA
