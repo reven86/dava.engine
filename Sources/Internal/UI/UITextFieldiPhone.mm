@@ -616,7 +616,7 @@ namespace DAVA
         UITextFieldHolder * textFieldHolder = static_cast<UITextFieldHolder*>(objcClassPtr);
         DVASSERT(textFieldHolder);
         
-        if(isSingleLine)
+        if(isSingleLine && maxLines > 1)
         {
             // store current properties, font, size, text etc.
             
@@ -657,6 +657,47 @@ namespace DAVA
             
             textView.scrollEnabled = (verticalScrollBarEnabled ? YES : NO);
             textView.textContainer.maximumNumberOfLines = (NSUInteger)maxLines;
+        } else if (!isSingleLine && maxLines == 1)
+        {
+            // revert back single line native control
+            // TODO in future completely remove UITextField native control
+            //
+            // store current properties, font, size, text etc.
+            DAVA::int32 cursorPos = GetCursorPos();
+            DAVA::WideString wstring;
+            GetText(wstring);
+            // font, textColor, frameRect
+            ::UITextView* textView = (::UITextView*)textFieldHolder->textCtrl;
+            UIFont* font = textView.font;
+            UIColor* color = textView.textColor;
+            CGRect rect = textView.frame;
+            BOOL isHidden = textView.isHidden;
+            
+            // now hide textField and store it for future restore
+            [textFieldHolder->textCtrl removeFromSuperview];
+            [textFieldHolder->textCtrl setHidden:YES];
+            
+            // replace textField with old textField and apply current properties
+            ::UITextField* textField = textFieldHolder->textField;
+            textFieldHolder->textField = nullptr;
+            [textFieldHolder addSubview:textField];
+            [textFieldHolder->textCtrl setHidden:isHidden];
+            
+            textFieldHolder->textCtrl = textField;
+            
+            textView.textColor = color;
+            textView.font = font;
+            textView.userInteractionEnabled = NO;
+            [textView setHidden:isHidden];
+            
+            isSingleLine = true;
+            
+            SetText(wstring);
+            SetCursorPos(cursorPos);
+            
+            [textFieldHolder setupTraits];
+            
+            [textView setBackgroundColor:[UIColor clearColor]];
         }
     }
     
