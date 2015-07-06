@@ -43,11 +43,6 @@ class Project;
 class MainWindow;
 class PackageNode;
 
-namespace DAVA
-{
-    class PointerSerializer;
-}
-
 class EditorCore : public QObject, public DAVA::Singleton<EditorCore>
 {
     Q_OBJECT
