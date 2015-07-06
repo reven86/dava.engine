@@ -121,8 +121,6 @@ Component * Component::CreateByType(uint32 componentType)
         return new SnapToLandscapeControllerComponent();
     case WASD_CONTROLLER_COMPONENT:
         return new WASDControllerComponent();
-
-
 	case ANIMATION_COMPONENT:
 	case COLLISION_COMPONENT:
 	case SCRIPT_COMPONENT:
@@ -135,7 +133,7 @@ Component * Component::CreateByType(uint32 componentType)
 }
 
 Component::Component()
-:	entity(0)
+    : entity(0)
 {
 
 }

@@ -46,7 +46,7 @@ class UI3DView : public UIControl
 protected:
     virtual ~UI3DView();
 public:
-	UI3DView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = FALSE);
+	UI3DView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
     
     void SetScene(Scene * scene);
     Scene * GetScene() const;

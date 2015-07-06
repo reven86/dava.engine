@@ -40,7 +40,6 @@ namespace DAVA
 {
 
 class Thread;
-class Mutex;
 class Downloader;
 
 class DownloadManager : public Singleton<DownloadManager>
@@ -48,7 +47,7 @@ class DownloadManager : public Singleton<DownloadManager>
     friend class Downloader;
 
 public:
-    typedef Function<void (const uint32 &, const DownloadStatus &)> NotifyFunctor;
+    using NotifyFunctor = Function<void(const uint32 &, const DownloadStatus &)>;
 
 public:
     DownloadManager();

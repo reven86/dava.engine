@@ -33,7 +33,7 @@
 #include "Base/BaseTypes.h"
 #include "FileSystem/File.h"
 
-typedef struct yaml_emitter_s yaml_emitter_t;
+using yaml_emitter_t = struct yaml_emitter_s;
 
 namespace DAVA
 {

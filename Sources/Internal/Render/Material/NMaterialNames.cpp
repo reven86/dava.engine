@@ -37,12 +37,18 @@ namespace DAVA
     const FastName NMaterialName::DECAL_ALPHATEST = FastName("~res:/Materials/Decal.Alphatest.material");
     const FastName NMaterialName::PIXELLIT_SPECULARMAP_OPAQUE = FastName("~res:/Materials/PixelLit.SpecularMap.Opaque.material");
     const FastName NMaterialName::TEXTURED_ALPHATEST = FastName("~res:/Materials/Textured.Alphatest.material");
+    const FastName NMaterialName::TEXTURED_VERTEXCOLOR_ALPHATEST = FastName("~res:/Materials/Textured.VertexColor.Alphatest.material");
     const FastName NMaterialName::DECAL_OPAQUE = FastName("~res:/Materials/Decal.Opaque.material");
     const FastName NMaterialName::SHADOWRECT_ALPHA = FastName("~res:/Materials/ShadowRectAlpha.material");
     const FastName NMaterialName::TEXTURED_OPAQUE = FastName("~res:/Materials/Textured.Opaque.material");
+    const FastName NMaterialName::TEXTURED_VERTEXCOLOR_OPAQUE = FastName("~res:/Materials/Textured.VertexColor.Opaque.material");
     const FastName NMaterialName::DETAIL_ALPHABLEND = FastName("~res:/Materials/Detail.Alphablend.material");
     const FastName NMaterialName::SHADOWRECT_MULTIPLY = FastName("~res:/Materials/ShadowRectMultiply.material");
+
+    const FastName NMaterialName::TILE_MASK_VERTEX_LIT = FastName("~res:/Materials/TileMaskVertexLit.material");
+    const FastName NMaterialName::TILE_MASK_PIXEL_LIT = FastName("~res:/Materials/TileMaskPixelLit.material");
     const FastName NMaterialName::TILE_MASK = FastName("~res:/Materials/TileMaskAllQualities.material");
+    
     const FastName NMaterialName::DETAIL_ALPHATEST = FastName("~res:/Materials/Detail.Alphatest.material");
     const FastName NMaterialName::SHADOW_VOLUME = FastName("~res:/Materials/ShadowVolume.material");
     const FastName NMaterialName::VERTEXCOLOR_ALPHABLEND = FastName("~res:/Materials/VertexColor.Alphablend.material");
@@ -55,6 +61,10 @@ namespace DAVA
     const FastName NMaterialName::PIXELLIT_ALPHATEST = FastName("~res:/Materials/PixelLit.Alphatest.material");
     const FastName NMaterialName::SPEEDTREE_LEAF = FastName("~res:/Materials/SpeedTreeLeaf.material");
     const FastName NMaterialName::SPHERICLIT_SPEEDTREE_LEAF = FastName("~res:/Materials/SphericalLitAllQualities.SpeedTreeLeaf.material");
+    const FastName NMaterialName::SPHERICLIT_TEXTURED_OPAQUE = FastName("~res:/Materials/SphericalLitAllQualities.Textured.Opaque.material");
+    const FastName NMaterialName::SPHERICLIT_TEXTURED_ALPHATEST = FastName("~res:/Materials/SphericalLitAllQualities.Textured.Alphatest.material");
+    const FastName NMaterialName::SPHERICLIT_TEXTURED_VERTEXCOLOR_OPAQUE = FastName("~res:/Materials/SphericalLitAllQualities.Textured.VertexColor.Opaque.material");
+    const FastName NMaterialName::SPHERICLIT_TEXTURED_VERTEXCOLOR_ALPHATEST = FastName("~res:/Materials/SphericalLitAllQualities.Textured.VertexColor.Alphatest.material");
     const FastName NMaterialName::VERTEXCOLOR_OPAQUE = FastName("~res:/Materials/VertexColor.Opaque.material");
     const FastName NMaterialName::PIXELLIT_OPAQUE = FastName("~res:/Materials/PixelLit.Opaque.material");
     const FastName NMaterialName::TEXTURE_LIGHTMAP_ALPHABLEND = FastName("~res:/Materials/TextureLightmap.Alphablend.material");

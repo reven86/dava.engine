@@ -157,7 +157,7 @@ namespace DAVA
 		nonClippingDistance = 0.5f * maxDistanceBetweenVertices.Length();
 		
 		polygonGroup->BuildBuffers();
-        polygonGroup->AddNodeFlags(DataNode::NodeRuntimeFlag); //VI: do not save geometry for the skybox. It will be build on load or create
+        polygonGroup->SetRuntime(true); //VI: do not save geometry for the skybox. It will be build on load or create
 		renderBatchArray[0].renderBatch->SetPolygonGroup(polygonGroup);
 		SafeRelease(polygonGroup);
 	}
@@ -260,7 +260,7 @@ namespace DAVA
             Texture* tx = skyboxMaterial->GetTexture(NMaterial::TEXTURE_CUBEMAP);
             if(NULL != tx)
             {
-                DAVA::Texture* tx = DAVA::Texture::CreateFromFile(texPath, FastName(), Texture::TEXTURE_CUBE);
+                tx = DAVA::Texture::CreateFromFile(texPath, FastName(), Texture::TEXTURE_CUBE);
                 skyboxMaterial->SetTexture(NMaterial::TEXTURE_CUBEMAP, tx);
                 SafeRelease(tx);
                 

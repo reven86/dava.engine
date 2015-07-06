@@ -30,7 +30,6 @@
 #ifndef BACKTRACEINTERFACE_H_
 #define BACKTRACEINTERFACE_H_
 #include "Base/BaseTypes.h"
-#include "Base/Atomic.h"
 #include "Base/Function.h"
 namespace DAVA
 {

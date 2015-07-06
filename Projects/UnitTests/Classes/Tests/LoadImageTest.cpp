@@ -28,11 +28,30 @@
 
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
+#include "Render/Image/LibJpegHelper.h"
 
 using namespace DAVA;
 
 DAVA_TESTCLASS(LoadImageTest)
 {
+    DAVA_TEST(JpegExifTest)
+    {
+        LibJpegHelper helper;
+        
+        Vector<Image *> set;
+        
+        ScopedPtr<File> imgFile(File::Create("~res:/TestData/LoadImageTest/EXIF.jpg", File::OPEN | File::READ));
+        
+        eErrorCode res = helper.ReadFile(imgFile, set, 0);
+        TEST_VERIFY(eErrorCode::SUCCESS == res);
+        
+        for (auto item : set)
+        {
+            SafeRelease(item);
+        }
+        set.clear();
+    }
+
     DAVA_TEST(TgaTest)
     {
         // array of pixels in format R,G,B,A. It is the expected contents of image.data buffer after loading of either 10x10_rgba8888.tga or 10x10_rgba8888_norle.tga files
@@ -58,25 +77,25 @@ DAVA_TESTCLASS(LoadImageTest)
             imgSet.clear();
         };
 
-        TEST_VERIFY(DAVA::ImageSystem::Instance()->Load("~res:/TestData/LoadImageTest/rgb888_rle_topleft.tga", imgSet) == DAVA::SUCCESS);
+        TEST_VERIFY(DAVA::ImageSystem::Instance()->Load("~res:/TestData/LoadImageTest/rgb888_rle_topleft.tga", imgSet) == DAVA::eErrorCode::SUCCESS);
         TEST_VERIFY(imgSet[0]->GetPixelFormat() == PixelFormat::FORMAT_RGB888);
         ClearImgSet();
 
-        TEST_VERIFY(DAVA::ImageSystem::Instance()->Load("~res:/TestData/LoadImageTest/rgba8888_rle_bottomleft.tga", imgSet) == DAVA::SUCCESS);
+        TEST_VERIFY(DAVA::ImageSystem::Instance()->Load("~res:/TestData/LoadImageTest/rgba8888_rle_bottomleft.tga", imgSet) == DAVA::eErrorCode::SUCCESS);
         TEST_VERIFY(imgSet[0]->GetPixelFormat() == PixelFormat::FORMAT_RGBA8888);
         ClearImgSet();
 
-        TEST_VERIFY(DAVA::ImageSystem::Instance()->Load("~res:/TestData/LoadImageTest/a8_norle_bottomleft.tga", imgSet) == DAVA::SUCCESS);
+        TEST_VERIFY(DAVA::ImageSystem::Instance()->Load("~res:/TestData/LoadImageTest/a8_norle_bottomleft.tga", imgSet) == DAVA::eErrorCode::SUCCESS);
         TEST_VERIFY(imgSet[0]->GetPixelFormat() == PixelFormat::FORMAT_A8);
         ClearImgSet();
 
-        TEST_VERIFY(DAVA::ImageSystem::Instance()->Load("~res:/TestData/LoadImageTest/10x10_rgba8888.tga", imgSet) == DAVA::SUCCESS);
+        TEST_VERIFY(DAVA::ImageSystem::Instance()->Load("~res:/TestData/LoadImageTest/10x10_rgba8888.tga", imgSet) == DAVA::eErrorCode::SUCCESS);
         TEST_VERIFY(imgSet[0]->GetPixelFormat() == PixelFormat::FORMAT_RGBA8888);
         TEST_VERIFY(imgSet[0]->dataSize == 4 * 10 * 10);
         TEST_VERIFY(Memcmp(imgSet[0]->data, &tga10x10data, tga10x10data.size()) == 0);
         ClearImgSet();
 
-        TEST_VERIFY(DAVA::ImageSystem::Instance()->Load("~res:/TestData/LoadImageTest/10x10_rgba8888_norle.tga", imgSet) == DAVA::SUCCESS);
+        TEST_VERIFY(DAVA::ImageSystem::Instance()->Load("~res:/TestData/LoadImageTest/10x10_rgba8888_norle.tga", imgSet) == DAVA::eErrorCode::SUCCESS);
         TEST_VERIFY(imgSet[0]->GetPixelFormat() == PixelFormat::FORMAT_RGBA8888);
         TEST_VERIFY(imgSet[0]->dataSize == 4 * 10 * 10);
         TEST_VERIFY(Memcmp(imgSet[0]->data, &tga10x10data, tga10x10data.size()) == 0);

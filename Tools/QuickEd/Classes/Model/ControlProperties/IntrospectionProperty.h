@@ -43,26 +43,29 @@ protected:
     virtual ~IntrospectionProperty();
     
 public:
-    virtual void Refresh();
-    virtual AbstractProperty *FindPropertyByPrototype(AbstractProperty *prototype) override;
-    virtual void Serialize(PackageSerializer *serializer) const override;
+    void Refresh();
+    AbstractProperty *FindPropertyByPrototype(AbstractProperty *prototype) override;
+    void Accept(PropertyVisitor *visitor) override;
+    
 
-    virtual ePropertyType GetType() const override;
-    virtual DAVA::uint32 GetFlags() const  override;
+    ePropertyType GetType() const override;
+    DAVA::uint32 GetFlags() const  override;
 
-    virtual DAVA::VariantType GetValue() const override;
+    DAVA::VariantType GetValue() const override;
 
-    virtual DAVA::BaseObject *GetBaseObject() const
+    DAVA::BaseObject *GetBaseObject() const
     {
         return object;
     }
     
-    virtual const EnumMap *GetEnumMap() const override;
+    const EnumMap *GetEnumMap() const override;
 
-    virtual bool IsSameMember(const DAVA::InspMember *aMember) const override
+    bool IsSameMember(const DAVA::InspMember *aMember) const override
     {
         return (aMember == member);
     }
+    
+    const DAVA::InspMember *GetMember() const;
 
 protected:
     virtual void ApplyValue(const DAVA::VariantType &value);

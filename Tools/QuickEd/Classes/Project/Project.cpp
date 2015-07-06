@@ -40,7 +40,6 @@
 #include "Model/LegacyEditorUIPackageLoader.h"
 #include "Model/YamlPackageSerializer.h"
 #include "Model/PackageHierarchy/PackageNode.h"
-#include "Model/PackageHierarchy/PackageRef.h"
 #include "Helpers/ResourcesManageHelper.h"
 
 using namespace DAVA;
@@ -86,7 +85,7 @@ bool Project::OpenInternal(const QString &path)
     FilePath::RemoveResourcesFolder(projectPath);
     editorLocalizationSystem->Cleanup();
 
-    projectPath = dir.absolutePath().toStdString();
+    SetProjectPath(dir.absolutePath());
     projectPath.MakeDirectoryPathname();
 
     const auto &resFolders = FilePath::GetResourcesFolders();
@@ -210,25 +209,22 @@ RefPtr<PackageNode> Project::OpenPackage(const QString &packagePath)
     String fwPath = path.GetFrameworkPath();
 
     EditorUIPackageBuilder builder;
-    UIPackage *newPackage = UIPackageLoader(&builder).LoadPackage(path);
-    if (nullptr == newPackage)
-    {
-        newPackage = LegacyEditorUIPackageLoader(&builder, legacyData).LoadPackage(path);
-    }
+    
+    bool packageLoaded = UIPackageLoader().LoadPackage(path, &builder);
+    if (!packageLoaded)
+        packageLoaded = LegacyEditorUIPackageLoader(legacyData).LoadPackage(path, &builder);
 
-    if (nullptr != newPackage)
-    {
-        SafeRelease(newPackage);
-        return builder.GetPackageNode();
-    }
+    if (packageLoaded)
+        return builder.BuildPackage();
+    
     return RefPtr<PackageNode>();
 }
 
 bool Project::SavePackage(PackageNode *package)
 {
     YamlPackageSerializer serializer;
-    package->Serialize(&serializer);
-    serializer.WriteToFile(package->GetPackageRef()->GetPath());
+    serializer.SerializePackage(package);
+    serializer.WriteToFile(package->GetPath());
     return true;
 }
 
@@ -249,4 +245,18 @@ void Project::SetIsOpen(bool arg)
         ResourcesManageHelper::SetProjectPath(QString::fromStdString(projectPath.GetAbsolutePathname()));
     }
     emit IsOpenChanged(arg);
+}
+
+QString Project::GetProjectPath() const
+{
+    return QString::fromStdString(projectPath.GetAbsolutePathname());
+}
+
+void Project::SetProjectPath(QString arg)
+{
+    if (GetProjectPath() != arg)
+    {
+        projectPath = arg.toStdString().c_str();
+        emit ProjectPathChanged(arg);
+    }
 }

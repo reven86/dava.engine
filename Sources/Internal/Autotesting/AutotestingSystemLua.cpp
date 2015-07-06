@@ -599,7 +599,7 @@ namespace DAVA
 			return switchControl->GetIsLeftSelected();
 		}
 		AutotestingSystem::Instance()->OnError(Format("AutotestingSystemLua::IsSelected Couldn't get parameter for '%s'", control->GetName().c_str()));
-		return nullptr;
+		return false;
 	}
 
 	bool AutotestingSystemLua::IsListHorisontal(UIControl* control)
@@ -711,12 +711,12 @@ namespace DAVA
 		return false;
 	}
 
-	void AutotestingSystemLua::TouchDown(const Vector2 &point, int32 touchId)
+	void AutotestingSystemLua::TouchDown(const Vector2 &point, int32 touchId, int32 tapCount)
 	{
 		UIEvent touchDown;
 		touchDown.phase = UIEvent::PHASE_BEGAN;
 		touchDown.tid = touchId;
-		touchDown.tapCount = 1;
+		touchDown.tapCount = tapCount;
 		touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertVirtualToInput(point);
 		touchDown.point = point;
 		ProcessInput(touchDown);
@@ -870,6 +870,39 @@ namespace DAVA
 		}
 		return true;
 	}
+    
+    int32 AutotestingSystemLua::GetServerQueueState(const String &cluster)
+    {
+        MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
+        KeyedArchive *clustersQueue = AutotestingDB::Instance()->FindOrInsertBuildArchive(dbUpdateObject, "clusters_queue");
+        String serverName = Format("%s", cluster.c_str());
+        int32 queueState = 0;
+        if (!clustersQueue->IsKeyExists(serverName))
+        {
+            clustersQueue->SetInt32(serverName, 0);
+        }
+        else
+        {
+            queueState = clustersQueue->GetInt32(serverName);
+        }
+        SafeRelease(dbUpdateObject);
+        return queueState;
+    }
+    
+    bool AutotestingSystemLua::SetServerQueueState(const String &cluster, int32 state)
+    {
+        MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
+        KeyedArchive *clustersQueue = AutotestingDB::Instance()->FindOrInsertBuildArchive(dbUpdateObject, "clusters_queue");
+        String serverName = Format("%s", cluster.c_str());
+        bool isSet = false;
+        if (!clustersQueue->IsKeyExists(serverName) || clustersQueue->GetInt32(serverName) != state)
+        {
+            clustersQueue->SetInt32(serverName, state);
+            isSet = AutotestingDB::Instance()->SaveToDB(dbUpdateObject);
+        }
+        SafeRelease(dbUpdateObject);
+        return isSet;
+    }
 };
 
 #endif //__DAVAENGINE_AUTOTESTING__

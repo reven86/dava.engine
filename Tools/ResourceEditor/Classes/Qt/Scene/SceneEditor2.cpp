@@ -664,12 +664,21 @@ Entity* SceneEditor2::Clone( Entity *dstNode /*= NULL*/ )
 
 SceneEditor2 * SceneEditor2::CreateCopyForExport()
 {
-	SceneEditor2 *clonedScene = new SceneEditor2();
-	clonedScene->RemoveSystems();
+    SceneEditor2 *ret = nullptr;
+    FilePath tmpScenePath = FilePath::CreateWithNewExtension(curScenePath, ".tmp_exported.sc2");
+    if (SceneFileV2::ERROR_NO_ERROR == SaveScene(tmpScenePath))
+    {
+        SceneEditor2 *sceneCopy = new SceneEditor2();
+        if (SceneFileV2::ERROR_NO_ERROR == sceneCopy->LoadScene(tmpScenePath))
+        {
+            sceneCopy->RemoveSystems();
+            ret = sceneCopy;
+        }
 
-    clonedScene->SetGlobalMaterial(GetGlobalMaterial());
+        FileSystem::Instance()->DeleteFile(tmpScenePath);
+    }
 
-	return (SceneEditor2 *)Clone(clonedScene);
+    return ret;
 }
 
 void SceneEditor2::RemoveSystems()

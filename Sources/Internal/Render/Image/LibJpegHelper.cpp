@@ -41,6 +41,7 @@
 #include <stdio.h>
 
 #include "libjpeg/jpeglib.h"
+#include "libjpeg/jerror.h"
 #include <setjmp.h>
 
 #define QUALITY 100 //0..100
@@ -89,6 +90,15 @@ bool LibJpegHelper::IsMyImage(File *infile) const
     
 eErrorCode LibJpegHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap) const
 {
+#if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_IOS__)
+    // Magic. Allow LibJpeg to use large memory buffer to prevent using temp file.
+    setenv("JPEGMEM", "10M", TRUE);
+    SCOPE_EXIT
+    {
+        unsetenv("JPEGMEM");
+    };
+#endif
+    
     jpeg_decompress_struct cinfo;
     jpegErrorManager jerr;
     
@@ -108,15 +118,23 @@ eErrorCode LibJpegHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     {
         jpeg_destroy_decompress(&cinfo);
         SafeDeleteArray(fileBuffer);
+
         Logger::Error("[LibJpegHelper::ReadFile] File %s has wrong jpeg header", infile->GetFilename() .GetAbsolutePathname().c_str());
-        return ERROR_FILE_FORMAT_INCORRECT;
+        Logger::Error("[LibJpegHelper::ReadFile] Internal Error %d. Look it in jerror.h", cinfo.err->msg_code);
+        
+        if (J_MESSAGE_CODE::JERR_TFILE_CREATE == cinfo.err->msg_code)
+        {
+            Logger::Error("Unable to create temporary file. Seems you need more JPEGMEM");
+        }
+        
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
     
     jpeg_create_decompress(&cinfo);
     jpeg_mem_src(&cinfo, fileBuffer, fileSize);
     jpeg_read_header( &cinfo, TRUE );
     jpeg_start_decompress(&cinfo);
-    
+            
     PixelFormat format = FORMAT_INVALID;
     if (cinfo.jpeg_color_space == JCS_GRAYSCALE)
     {
@@ -136,7 +154,7 @@ eErrorCode LibJpegHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     if (format == FORMAT_INVALID)
     {
         Logger::Error("[%s] Unable to detect format for %s", infile->GetFilename().GetAbsolutePathname().c_str());
-        return ERROR_FILE_FORMAT_INCORRECT;
+        return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
     
     image->width = cinfo.image_width;
@@ -163,13 +181,13 @@ eErrorCode LibJpegHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     jpeg_destroy_decompress(&cinfo);
     SafeDeleteArray(fileBuffer);
     imageSet.push_back(SafeRetain(image.get()));
-    return SUCCESS;
+    return eErrorCode::SUCCESS;
 }
 
 eErrorCode LibJpegHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
 {
     Logger::Error("[LibJpegHelper::WriteFileAsCubeMap] For jpeg cubeMaps are not supported");
-    return ERROR_WRITE_FAIL;
+    return eErrorCode::ERROR_WRITE_FAIL;
 }
     
 eErrorCode LibJpegHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
@@ -210,7 +228,7 @@ eErrorCode LibJpegHelper::WriteFile(const FilePath & fileName, const Vector<Imag
     {
 		Logger::Error("[LibJpegHelper::WriteJpegFile] File %s could not be opened for writing", fileName.GetAbsolutePathname().c_str());
         SafeRelease(convertedImage);
-        return ERROR_FILE_NOTFOUND;
+        return eErrorCode::ERROR_FILE_NOTFOUND;
     }
     cinfo.err = jpeg_std_error( &jerr.pub );
     
@@ -222,7 +240,7 @@ eErrorCode LibJpegHelper::WriteFile(const FilePath & fileName, const Vector<Imag
         fclose(outfile);
 		Logger::Error("[LibJpegHelper::WriteJpegFile] Error during compression of jpeg into file %s.", fileName.GetAbsolutePathname().c_str());
         SafeRelease(convertedImage);
-        return ERROR_WRITE_FAIL;
+        return eErrorCode::ERROR_WRITE_FAIL;
     }
     jpeg_create_compress(&cinfo);
     jpeg_stdio_dest(&cinfo, outfile);
@@ -259,7 +277,7 @@ eErrorCode LibJpegHelper::WriteFile(const FilePath & fileName, const Vector<Imag
     jpeg_destroy_compress( &cinfo );
     fclose( outfile );
     SafeRelease(convertedImage);
-    return SUCCESS;
+    return eErrorCode::SUCCESS;
 }
    
 DAVA::ImageInfo LibJpegHelper::GetImageInfo(File *infile) const
@@ -287,7 +305,7 @@ DAVA::ImageInfo LibJpegHelper::GetImageInfo(File *infile) const
 
     jpeg_create_decompress(&cinfo);
     jpeg_mem_src(&cinfo, fileBuffer, fileSize);
-    jpeg_read_header(&cinfo, true);
+    jpeg_read_header(&cinfo, TRUE);
     infile->Seek(0, File::SEEK_FROM_START);
 
     info.width = cinfo.image_width;
