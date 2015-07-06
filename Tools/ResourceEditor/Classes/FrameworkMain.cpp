@@ -48,6 +48,8 @@ void FrameworkDidLaunched()
 //    DAVA::FilePath::SetBundleName("~/Sources/dava.framework/Tools/ResourceEditor/");
     
 	SafeRelease(appOptions);
+    
+    //DAVA::FilePath::SetBundleName("/Users/binaryzebra/Sources/dava.framework/Tools/ResourceEditor");
 }
 
 

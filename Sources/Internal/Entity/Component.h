@@ -77,6 +77,9 @@ public:
         ROTATION_CONTROLLER_COMPONENT,
         SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT,
         WASD_CONTROLLER_COMPONENT,
+        GEODECAL_COMPONENT,
+        LANDSCAPE_COMPONENT,
+        
         
         //debug components - note that everything below won't be serialized
         DEBUG_COMPONENTS,

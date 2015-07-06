@@ -43,14 +43,19 @@ public:
 	static const FastName TEXTURED_ALPHABLEND;
 	static const FastName DECAL_ALPHATEST;
 	static const FastName PIXELLIT_SPECULARMAP_OPAQUE;
-	static const FastName TEXTURED_ALPHATEST;
+    static const FastName TEXTURED_ALPHATEST;
+    static const FastName TEXTURED_VERTEXCOLOR_ALPHATEST;
 	static const FastName DECAL_OPAQUE;
 	static const FastName SHADOWRECT_ALPHA;
-	static const FastName TEXTURED_OPAQUE;
+    static const FastName TEXTURED_OPAQUE;
+    static const FastName TEXTURED_VERTEXCOLOR_OPAQUE;
 	static const FastName DETAIL_ALPHABLEND;
 	static const FastName SHADOWRECT_MULTIPLY;
 	static const FastName TILE_MASK;
-	static const FastName DETAIL_ALPHATEST;
+	static const FastName TILE_MASK_VERTEX_LIT;
+	static const FastName TILE_MASK_PIXEL_LIT;
+
+    static const FastName DETAIL_ALPHATEST;
 	static const FastName SHADOW_VOLUME;
 	static const FastName VERTEXCOLOR_ALPHABLEND;
 	static const FastName DETAIL_OPAQUE;
@@ -62,6 +67,10 @@ public:
 	static const FastName PIXELLIT_ALPHATEST;
 	static const FastName SPEEDTREE_LEAF;
     static const FastName SPHERICLIT_SPEEDTREE_LEAF;
+    static const FastName SPHERICLIT_TEXTURED_OPAQUE;
+    static const FastName SPHERICLIT_TEXTURED_ALPHATEST;
+    static const FastName SPHERICLIT_TEXTURED_VERTEXCOLOR_OPAQUE;
+    static const FastName SPHERICLIT_TEXTURED_VERTEXCOLOR_ALPHATEST;
 	static const FastName VERTEXCOLOR_OPAQUE;
 	static const FastName PIXELLIT_OPAQUE;
 	static const FastName TEXTURE_LIGHTMAP_ALPHABLEND;
