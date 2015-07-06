@@ -320,8 +320,7 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
     targetBatch->vertexBuffer = target.buffer;
     targetBatch->vertexCount = target.allocatedVertices;
     targetBatch->vertexBase = target.baseVertex;
-
-    //test
+    
     targetBatch->indexCount = particlesCount * 6;
     targetBatch->indexBuffer = DynamicBufferAllocator::AllocateQuadListIndexBuffer(particlesCount);
     targetBatch->startIndex = 0;

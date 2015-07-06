@@ -71,6 +71,7 @@ NMaterial::NMaterial()
     , needRebuildBindings(true)
     , needRebuildTextures(true)
     , needRebuildVariants(true)
+    , activeVariantInstance(nullptr)
 {    
     materialKey = (uint64)this;
 }
