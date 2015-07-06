@@ -103,27 +103,13 @@ void WinUAPXamlApp::SetCursorState(bool isShown)
     {
         if (isShown)
         {
-            // Cursor showing disables relative mouse movement tracking
-            Logger::FrameworkDebug("[CorePlatformWinUAP] ShowCursor");
-            if (!isMouseCursorShown)
-            {
-                // Protect case where there isn't a window associated with the current thread.
-                // This happens on initialization or when being called from a background thread.
-                Window::Current->CoreWindow->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
-                isMouseCursorShown = true;
-            }
+            Window::Current->CoreWindow->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
+            isMouseCursorShown = true;
         }
         else
         {
-            Logger::FrameworkDebug("[CorePlatformWinUAP] HideCursor");
-            // Cursor hiding enables relative mouse movement tracking
-            if (isMouseCursorShown)
-            {
-                // Protect case where there isn't a window associated with the current thread.
-                // This happens on initialization or when being called from a background thread.
-                Window::Current->CoreWindow->PointerCursor = nullptr;
-                isMouseCursorShown = false;
-            }
+            Window::Current->CoreWindow->PointerCursor = nullptr;
+            isMouseCursorShown = false;
         }
     }
 }
@@ -347,11 +333,7 @@ void WinUAPXamlApp::OnPointerEntered(Platform::Object^ sender, Windows::UI::Core
     PointerDeviceType type = args->CurrentPoint->PointerDevice->PointerDeviceType;
     if (PointerDeviceType::Mouse == type)
     {
-        if (isMouseCursorShown)
-        {
-            core->RunOnUIThread([this]() { SetCursorState(false); });
-            isMouseCursorShown = false;
-        }
+        core->RunOnUIThread([this]() { SetCursorState(false); });
     }
 }
 
@@ -371,11 +353,7 @@ void WinUAPXamlApp::OnPointerExited(Platform::Object^ sender, Windows::UI::Core:
             isRightButtonPressed = pointProperties->IsRightButtonPressed;
             isMiddleButtonPressed = pointProperties->IsMiddleButtonPressed;
         }
-        if (!isMouseCursorShown)
-        {
-            core->RunOnUIThread([this]() { SetCursorState(true); });
-            isMouseCursorShown = true;
-        }
+        core->RunOnUIThread([this]() { SetCursorState(true); });
     }
     else //  PointerDeviceType::Touch == type
     {
