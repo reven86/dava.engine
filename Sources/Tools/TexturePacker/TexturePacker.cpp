@@ -80,6 +80,7 @@ static Set<PixelFormat> InitPixelFormatsWithCompression()
 const Set<PixelFormat> TexturePacker::PIXEL_FORMATS_WITH_COMPRESSION = InitPixelFormatsWithCompression();
 
 TexturePacker::TexturePacker()
+    : lastPackedPacker(nullptr)
 {
 	quality = TextureConverter::ECQ_VERY_HIGH;
 	if (CommandLineParser::Instance()->IsFlagSet("--quality"))
@@ -97,6 +98,15 @@ TexturePacker::TexturePacker()
 	errors.clear();
 	useTwoSideMargin = false;
 	texturesMargin = 1;
+}
+
+TexturePacker::~TexturePacker()
+{
+    SafeDelete(lastPackedPacker);
+    for (auto &imagePacker : usedPackers)
+    {
+        SafeDelete(imagePacker);
+    }
 }
 
 bool TexturePacker::TryToPack(const Rect2i & textureRect, List<DefinitionFile*> & /*defsList*/)
@@ -119,10 +129,7 @@ bool TexturePacker::TryToPack(const Rect2i & textureRect, List<DefinitionFile*> 
 	}
     Logger::FrameworkDebug("* %d x %d - success", textureRect.dx, textureRect.dy);
 	
-	if (lastPackedPacker)
-	{
-		SafeDelete(lastPackedPacker);
-	}
+    SafeDelete(lastPackedPacker);
 	
 	lastPackedPacker = packer;
 	return true;
@@ -175,7 +182,7 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 {
 	Logger::FrameworkDebug("Packing to separate textures");
 
-	lastPackedPacker = 0;
+    SafeDelete(lastPackedPacker);
     for (auto& defFile : defsList)
 	{
 		sortVector.clear();
@@ -274,8 +281,7 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePath & outputPath, List<DefinitionFile*> & defsList, eGPUFamily forGPU)
 {
 	Logger::FrameworkDebug("Packing to single output texture");
-
-	lastPackedPacker = 0;
+    SafeDelete(lastPackedPacker);
 	for (List<DefinitionFile*>::iterator dfi = defsList.begin(); dfi != defsList.end(); ++dfi)
 	{
 		DefinitionFile * defFile = *dfi;
@@ -373,102 +379,102 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 
 void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const FilePath & outputPath, const char* basename, List<DefinitionFile*> & defList, eGPUFamily forGPU)
 {
-	Logger::FrameworkDebug("Packing to multiple output textures");
+    Logger::FrameworkDebug("Packing to multiple output textures");
 
-	for (int i = 0; i < (int)sortVector.size(); ++i)
-	{
-		DefinitionFile * defFile = sortVector[i].defFile;
-		int frame = sortVector[i].frameIndex;
-        
+    for (int i = 0; i < (int)sortVector.size(); ++i)
+    {
+        DefinitionFile * defFile = sortVector[i].defFile;
+        int frame = sortVector[i].frameIndex;
+
         Logger::FrameworkDebug("[MultiPack] prepack: %s frame: %d w:%d h:%d", defFile->filename.GetAbsolutePathname().c_str(), frame, defFile->frameRects[frame].dx, defFile->frameRects[frame].dy);
-	}
-	
-	Vector<ImagePacker*> & packers = usedPackers;
-	
-	Vector<SizeSortItem> sortVectorWork = sortVector;
-	
-	while(sortVectorWork.size() > 0)
-	{
-		// try to pack for each resolution
-		float maxValue = 0.0f;
-		
-        Logger::FrameworkDebug("* Packing attempts started: ");
-		
-		ImagePacker * bestPackerForThisStep = 0;
-		Vector<SizeSortItem> newWorkVector;
-		
-        bool needOnlySquareTexture = onlySquareTextures || NeedSquareTextureForCompression(forGPU);
-		for (uint32 yResolution = 8; yResolution <= maxTextureSize; yResolution *= 2)
-			for (uint32 xResolution = 8; xResolution <= maxTextureSize; xResolution *= 2)
-			{
-				if (needOnlySquareTexture && (xResolution != yResolution))continue;
-				
-				Rect2i textureRect = Rect2i(0, 0, xResolution, yResolution);
-				ImagePacker * packer = new ImagePacker(textureRect,useTwoSideMargin,texturesMargin);
-				
-				Vector<SizeSortItem> tempSortVector = sortVectorWork;
-				float n = TryToPackFromSortVectorWeight(packer, tempSortVector);
-				
-				if (n > maxValue) 
-				{
-					maxValue = n;
-					SafeDelete(bestPackerForThisStep);
-					bestPackerForThisStep = packer;
-					newWorkVector = tempSortVector;
-				}
-				else
-				{
-					SafeDelete(packer);
-				}
-			}
-		
-		sortVectorWork = newWorkVector;
+    }
 
-		if(bestPackerForThisStep)
-			packers.push_back(bestPackerForThisStep);
-	}
-	
+    Vector<ImagePacker*> & packers = usedPackers;
+
+    Vector<SizeSortItem> sortVectorWork = sortVector;
+
+    while (sortVectorWork.size() > 0)
+    {
+        // try to pack for each resolution
+        float maxValue = 0.0f;
+
+        Logger::FrameworkDebug("* Packing attempts started: ");
+
+        ImagePacker * bestPackerForThisStep = 0;
+        Vector<SizeSortItem> newWorkVector;
+
+        bool needOnlySquareTexture = onlySquareTextures || NeedSquareTextureForCompression(forGPU);
+        for (uint32 yResolution = 8; yResolution <= maxTextureSize; yResolution *= 2)
+            for (uint32 xResolution = 8; xResolution <= maxTextureSize; xResolution *= 2)
+            {
+                if (needOnlySquareTexture && (xResolution != yResolution))continue;
+
+                Rect2i textureRect = Rect2i(0, 0, xResolution, yResolution);
+                ImagePacker * packer = new ImagePacker(textureRect, useTwoSideMargin, texturesMargin);
+
+                Vector<SizeSortItem> tempSortVector = sortVectorWork;
+                float n = TryToPackFromSortVectorWeight(packer, tempSortVector);
+
+                if (n > maxValue)
+                {
+                    maxValue = n;
+                    SafeDelete(bestPackerForThisStep);
+                    bestPackerForThisStep = packer;
+                    newWorkVector = tempSortVector;
+                }
+                else
+                {
+                    SafeDelete(packer);
+                }
+            }
+
+        sortVectorWork = newWorkVector;
+
+        if (bestPackerForThisStep)
+            packers.push_back(bestPackerForThisStep);
+    }
+
     Logger::FrameworkDebug("* Writing %d final textures", (int)packers.size());
 
-	Vector<PngImageExt*> finalImages;
-	finalImages.reserve(packers.size());
-    
-	for (int imageIndex = 0; imageIndex < (int)packers.size(); ++imageIndex)
-	{
-		PngImageExt * image = new PngImageExt();
-		ImagePacker * packer = packers[imageIndex];
-		image->Create(packer->GetRect().dx, packer->GetRect().dy);
-		finalImages.push_back(image);
-	}
-	
-	for (List<DefinitionFile*>::iterator defi = defList.begin(); defi != defList.end(); ++defi)
-	{
-		DefinitionFile * defFile = *defi;
-		
-		for (int frame = 0; frame < defFile->frameCount; ++frame)
-		{
-			PackedInfo* packedInfo = nullptr;
-			ImagePacker * foundPacker = 0;
-			int packerIndex = 0;
-			FilePath imagePath;
-			
-			for (packerIndex = 0; packerIndex < (int)packers.size(); ++packerIndex)
-			{
-				packedInfo = packers[packerIndex]->SearchRectForPtr(&defFile->frameRects[frame]);
-			
-				if (packedInfo)
-				{
-					foundPacker = packers[packerIndex];
+    Vector<PngImageExt*> finalImages;
+    finalImages.reserve(packers.size());
+
+    for (int imageIndex = 0; imageIndex < (int)packers.size(); ++imageIndex)
+    {
+        PngImageExt * image = new PngImageExt();
+        ImagePacker * packer = packers[imageIndex];
+        image->Create(packer->GetRect().dx, packer->GetRect().dy);
+        finalImages.push_back(image);
+    }
+
+    for (List<DefinitionFile*>::iterator defi = defList.begin(); defi != defList.end(); ++defi)
+    {
+        DefinitionFile * defFile = *defi;
+
+        for (int frame = 0; frame < defFile->frameCount; ++frame)
+        {
+            PackedInfo* packedInfo = nullptr;
+            ImagePacker * foundPacker = 0;
+            int packerIndex = 0;
+            FilePath imagePath;
+
+            for (packerIndex = 0; packerIndex < (int)packers.size(); ++packerIndex)
+            {
+                packedInfo = packers[packerIndex]->SearchRectForPtr(&defFile->frameRects[frame]);
+
+                if (packedInfo)
+                {
+                    foundPacker = packers[packerIndex];
                     FilePath withoutExt(defFile->filename);
                     withoutExt.TruncateExtension();
 
-					imagePath = FramePathHelper::GetFramePathRelative(withoutExt, frame);
-					break;
-				}
-			}
-			
-			if (foundPacker)
-			{
+                    imagePath = FramePathHelper::GetFramePathRelative(withoutExt, frame);
+                    break;
+                }
+            }
+
+            if (foundPacker)
+            {
                 Logger::FrameworkDebug("[MultiPack] pack to texture: %d", packerIndex);
                 
 				PngImageExt image;
@@ -484,19 +490,23 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 		sprintf(temp, "%s%d", basename, imageNum);
 		FilePath textureName = outputPath + temp;
         ExportImage(finalImages[imageNum], textureName, forGPU);
-	}
+    }
 
-	for (List<DefinitionFile*>::iterator defi = defList.begin(); defi != defList.end(); ++defi)
-	{
-		DefinitionFile * defFile = *defi;
-		String fileName = defFile->filename.GetFilename();
-		FilePath textureName = outputPath + "texture";
-		
-		if (!WriteMultipleDefinition(excludeFolder, outputPath, basename, defFile))
-		{
-			AddError(Format("* ERROR: Failed to write definition - %s.", fileName.c_str()));
-		}
-	}	
+    for (List<DefinitionFile*>::iterator defi = defList.begin(); defi != defList.end(); ++defi)
+    {
+        DefinitionFile * defFile = *defi;
+        String fileName = defFile->filename.GetFilename();
+        FilePath textureName = outputPath + "texture";
+
+        if (!WriteMultipleDefinition(excludeFolder, outputPath, basename, defFile))
+        {
+            AddError(Format("* ERROR: Failed to write definition - %s.", fileName.c_str()));
+        }
+    }
+    for (auto &finalImage : finalImages)
+    {
+        SafeDelete(finalImage);
+    }
 }
 
 

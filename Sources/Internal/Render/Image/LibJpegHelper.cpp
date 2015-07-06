@@ -41,6 +41,7 @@
 #include <stdio.h>
 
 #include "libjpeg/jpeglib.h"
+#include "libjpeg/jerror.h"
 #include <setjmp.h>
 
 namespace DAVA
@@ -87,6 +88,15 @@ bool LibJpegHelper::IsMyImage(File *infile) const
     
 eErrorCode LibJpegHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap) const
 {
+#if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_IOS__)
+    // Magic. Allow LibJpeg to use large memory buffer to prevent using temp file.
+    setenv("JPEGMEM", "10M", TRUE);
+    SCOPE_EXIT
+    {
+        unsetenv("JPEGMEM");
+    };
+#endif
+    
     jpeg_decompress_struct cinfo;
     jpegErrorManager jerr;
     
@@ -106,7 +116,15 @@ eErrorCode LibJpegHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     {
         jpeg_destroy_decompress(&cinfo);
         SafeDeleteArray(fileBuffer);
+
         Logger::Error("[LibJpegHelper::ReadFile] File %s has wrong jpeg header", infile->GetFilename() .GetAbsolutePathname().c_str());
+        Logger::Error("[LibJpegHelper::ReadFile] Internal Error %d. Look it in jerror.h", cinfo.err->msg_code);
+        
+        if (J_MESSAGE_CODE::JERR_TFILE_CREATE == cinfo.err->msg_code)
+        {
+            Logger::Error("Unable to create temporary file. Seems you need more JPEGMEM");
+        }
+        
         return eErrorCode::ERROR_FILE_FORMAT_INCORRECT;
     }
     
@@ -114,7 +132,7 @@ eErrorCode LibJpegHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     jpeg_mem_src(&cinfo, fileBuffer, fileSize);
     jpeg_read_header( &cinfo, TRUE );
     jpeg_start_decompress(&cinfo);
-    
+            
     PixelFormat format = FORMAT_INVALID;
     if (cinfo.jpeg_color_space == JCS_GRAYSCALE)
     {

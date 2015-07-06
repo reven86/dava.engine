@@ -276,7 +276,12 @@ namespace DAVA
 			if (timeBeforeExit <= 0.0f)
 			{
 				needExitApp = false;
-				JobManager::Instance()->WaitWorkerJobs();
+                String server = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Server");
+                if (server != AutotestingDB::DB_ERROR_STR_VALUE)
+                {
+                    AutotestingSystemLua::Instance()->SetServerQueueState(server, 0);
+                }
+                JobManager::Instance()->WaitWorkerJobs();
 				Core::Instance()->Quit();
 			}
 			return;

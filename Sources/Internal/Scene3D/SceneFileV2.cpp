@@ -83,6 +83,7 @@
 #include "Scene3D/Converters/SwitchToRenerObjectConverter.h"
 #include "Scene3D/Converters/TreeToAnimatedTreeConverter.h"
 
+#include <functional>
 
 namespace DAVA
 {
@@ -202,31 +203,73 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
 //    SaveDataHierarchy(_scene->GetMaterials(), file, 1);
 //    SaveDataHierarchy(_scene->GetStaticMeshes(), file, 1);
 
-    List<DataNode*> nodes;
 	if (isSaveForGame)
 		scene->OptimizeBeforeExport();
+
+    Set<DataNode*> nodes;
     scene->GetDataNodes(nodes);
 
-    if(NULL != scene->GetGlobalMaterial())
-        nodes.push_front(scene->GetGlobalMaterial());
+    uint32 serializableNodesCount = 0;
+    uint64 maxDataNodeID = 0;
 
-    uint32 dataNodesCount = GetSerializableDataNodesCount(nodes);
-    file->Write(&dataNodesCount, sizeof(uint32));
-
-    List<DataNode*>::iterator itEnd = nodes.end();
-    uint64 materialUniqueKey = 1;
-    for (List<DataNode*>::iterator it = nodes.begin(); it != itEnd; ++it)
+    // compute maxid for datanodes
+    for (auto node : nodes)
     {
-        (*it)->UpdateUniqueKey(materialUniqueKey++);
+        // TODO: now one datanode can be used in multiple scenes,
+        // but datanote->scene points only on single scene. This should be
+        // discussed and fixed in the future.
+        if (node->GetScene() == scene && node->GetNodeID() > maxDataNodeID)
+        {
+            maxDataNodeID = node->GetNodeID();
+        }
     }
-    
-    for (List<DataNode*>::iterator it = nodes.begin(); it != itEnd; ++it)
-	{
-		if(IsDataNodeSerializable(*it))
-		{
-			SaveDataNode(*it, file);
-		}
-	}
+
+    // assign datanode id-s and 
+    // count serializable nodes
+    for (auto node : nodes)
+    {
+        if (IsDataNodeSerializable(node))
+        {
+            // TODO: if datanode is from another scene, it should be saved with newly
+            // generated datanode-id. Unfortunately this ID will be generated on every scene save,
+            // because we don't change scene pointer in datanode->scene.
+            // This should be discussed and fixed in the future.
+            serializableNodesCount++;
+            if (node->GetScene() != scene || node->GetNodeID() == 0)
+            {
+                node->SetNodeID(++maxDataNodeID);
+            }
+        }
+    }
+
+    // do we need to save globalmaterial?
+    NMaterial *globalMaterial = scene->GetGlobalMaterial();
+    if (nullptr != globalMaterial)
+    {
+        serializableNodesCount++;
+    }
+
+    // save datanodes count
+    file->Write(&serializableNodesCount, sizeof(uint32));
+
+    // save global material on top of datanodes
+    if (nullptr != globalMaterial)
+    {
+        SaveDataNode(globalMaterial, file);
+    }
+
+    // sort in ascending ID order 
+    Set<DataNode*, std::function<bool(DataNode *, DataNode *)>> orderedNodes(nodes.begin(), nodes.end(),
+        [](DataNode* a, DataNode* b) { return a->GetNodeID() < b->GetNodeID(); });
+
+    // save the rest of datanodes
+    for (auto node : orderedNodes)
+    {
+        if (IsDataNodeSerializable(node))
+        {
+            SaveDataNode(node, file);
+        }
+    }
     
     // save hierarchy
     if(isDebugLogEnabled)
@@ -236,7 +279,7 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     if(NULL != scene->GetGlobalMaterial())
     {
         KeyedArchive * archive = new KeyedArchive();
-        uint64 globalMaterialId = scene->GetGlobalMaterial()->GetMaterialKey();
+        uint64 globalMaterialId = scene->GetGlobalMaterial()->GetNodeID();
     
         archive->SetString("##name", "GlobalMaterial");
         archive->SetUInt64("globalMaterialId", globalMaterialId);
@@ -257,20 +300,6 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     
     SafeRelease(file);
     return GetError();
-}
-
-uint32 SceneFileV2::GetSerializableDataNodesCount(List<DataNode*>& nodeList)
-{
-	uint32 nodeCount = 0;
-	for (List<DataNode*>::iterator it = nodeList.begin(); it != nodeList.end(); ++it)
-	{
-		if(IsDataNodeSerializable(*it))
-		{
-			nodeCount++;
-		}
-	}
-	
-	return nodeCount;
 }
 
 bool SceneFileV2::ReadHeader(SceneFileV2::Header& _header, File * file)
@@ -679,12 +708,8 @@ void SceneFileV2::LoadDataHierarchy(Scene * scene, DataNode * root, File * file,
     
 void SceneFileV2::AddToNodeMap(DataNode * node)
 {
-    uint64 ptr = node->GetPreviousPointer();
-    
-    //if(isDebugLogEnabled)
-    //    Logger::FrameworkDebug("* add ptr: %llx class: %s(%s)", ptr, node->GetName().c_str(), node->GetClassName().c_str());
-    
-	serializationContext.SetDataBlock(ptr, SafeRetain(node));
+    uint64 id = node->GetNodeID();
+	serializationContext.SetDataBlock(id, SafeRetain(node));
 }
     
 bool SceneFileV2::SaveHierarchy(Entity * node, File * file, int32 level)
