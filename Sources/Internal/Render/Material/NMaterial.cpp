@@ -410,6 +410,11 @@ NMaterial* NMaterial::GetParent()
     return parent;
 }
 
+const Vector<NMaterial *>&  NMaterial::GetChildren() const
+{
+    return children;
+}
+
 void NMaterial::AddChildMaterial(NMaterial *material)
 {    
     DVASSERT(material);

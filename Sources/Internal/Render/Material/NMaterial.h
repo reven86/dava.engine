@@ -150,13 +150,14 @@ public:
     int32 GetEffectiveFlagValue(const FastName& flagName);
 
     void SetParent(NMaterial *parent);
-    NMaterial* GetParent();       
+    NMaterial* GetParent();
+    const Vector<NMaterial *>& GetChildren() const;
 
     inline uint32 GetRenderLayerID() const;
     inline uint32 GetSortingKey() const;
-    inline uint64 GetMaterialKey() const;      
+    inline uint64 GetMaterialKey() const;
 
-    void BindParams(rhi::Packet& target);    
+    void BindParams(rhi::Packet& target);
 
     //returns true if has variant for this pass, false otherwise - if material doesn't support pass active variant will be not changed
     bool PreBuildMaterial(const FastName& passName); //later add engine flags here
