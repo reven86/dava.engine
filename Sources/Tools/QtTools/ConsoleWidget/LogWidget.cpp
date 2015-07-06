@@ -11,16 +11,13 @@
 #include "LogDelegate.h"
 
 #include "Base/GlobalEnum.h"
-#include "Utils/PointerSerializer.h"
 #include "Debug/DVAssert.h"
 
 LogWidget::LogWidget(QWidget* parent)
     : QWidget(parent)
     , onBottom(true)
 {
-    qRegisterMetaType<DAVA::PointerSerializer>("DAVA::PointerSerializer");
     setupUi(this);
-    connect(log, &QListView::clicked, this, &LogWidget::OnClicked);
     time.start();
 
     //LogDelegate* delegate = new LogDelegate(log, this);
@@ -184,13 +181,6 @@ void LogWidget::OnCopy()
 void LogWidget::OnClear()
 {
     logModel->removeRows(0, logModel->rowCount());
-}
-
-void LogWidget::OnClicked(const QModelIndex &index)
-{
-    auto pIndex = logFilterModel->mapToSource(index);
-    QString text = logModel->data(pIndex, LogModel::ORIGINAL_TEXT_ROLE).toString();
-    emit ItemClicked(DAVA::PointerSerializer(text.toStdString()));
 }
 
 void LogWidget::OnBeforeAdded()

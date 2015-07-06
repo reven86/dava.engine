@@ -450,8 +450,7 @@ void PackageWidget::OnDelete()
         Vector<PackageNode*> packages;
         CollectSelectedImportedPackages(packages, false, true);
         Document *doc = sharedData->GetDocument();
-        const auto resultList = sharedData->GetDocument()->GetCommandExecutor()->RemoveImportedPackagesFromPackage(packages, doc->GetPackage());
-        emit GotResult(resultList);
+        sharedData->GetDocument()->GetCommandExecutor()->RemoveImportedPackagesFromPackage(packages, doc->GetPackage());
     }
 }
 

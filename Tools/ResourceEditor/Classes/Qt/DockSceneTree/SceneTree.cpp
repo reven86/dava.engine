@@ -56,9 +56,6 @@
 #include "Commands2/ParticleEditorCommands.h"
 #include "Commands2/SaveEntityAsAction.h"
 #include "Commands2/ConvertToShadowCommand.h"
-#include "Base/Result.h"
-#include "Utils/PointerSerializer.h"
-#include "FileSystem/VariantType.h"
 
 SceneTree::SceneTree(QWidget *parent /*= 0*/)
 	: QTreeView(parent)
@@ -548,7 +545,6 @@ void SceneTree::LookAtSelection()
 void SceneTree::RemoveSelection()
 {
 	SceneEditor2* sceneEditor = treeModel->GetScene();
-    ResultList resultList;
 	if(NULL != sceneEditor)
 	{
 		EntityGroup selection = sceneEditor->selectionSystem->GetSelection();
@@ -559,20 +555,12 @@ void SceneTree::RemoveSelection()
             {
                 selection.Rem(entity);
                 --i;
-                DAVA::StringStream ss;
-                ss << "Can not remove entity "
-                    << entity->GetName().c_str()
-                    << ": entity is locked!"
-                    << PointerSerializer::FromPointer(entity);
-                Logger::Warning(ss.str().c_str());
             }
         }
         
-        if (selection.Size())
-        {
-            sceneEditor->structureSystem->Remove(selection);
-        }
-    }
+        if(selection.Size())
+		sceneEditor->structureSystem->Remove(selection);
+	}
 }
 
 void SceneTree::CollapseSwitch()

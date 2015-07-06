@@ -21,7 +21,6 @@ public:
     enum Roles
     {
         LEVEL_ROLE = Qt::UserRole,
-        ORIGINAL_TEXT_ROLE
     };
 
     explicit LogModel(QObject* parent = nullptr);
@@ -45,7 +44,6 @@ private:
         LogItem(DAVA::Logger::eLogLevel ll_ = DAVA::Logger::LEVEL_FRAMEWORK, const QString &text_ = QString());
         DAVA::Logger::eLogLevel ll;
         QString text;
-        QString displayText;
     };
     QVector<LogItem> items;
 

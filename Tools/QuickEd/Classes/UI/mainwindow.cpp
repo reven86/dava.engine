@@ -68,7 +68,6 @@ MainWindow::MainWindow(QWidget *parent)
     toolBarPlugins->addAction(actionReloadSprites);
     // Console dock
     consoleDockWidget->setWidget(logWidget);
-    connect(packageWidget, &PackageWidget::GotResult, logWidget, &LogWidget::AddResultList);
 
     actionLocalizationManager->setEnabled(false);
     InitLanguageBox();

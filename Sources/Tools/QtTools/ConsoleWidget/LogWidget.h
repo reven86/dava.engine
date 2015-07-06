@@ -7,7 +7,6 @@
 #include <QTime>
 #include "ui_LogWidget.h"
 #include "Base/Result.h"
-#include "Utils/PointerSerializer.h"
 
 namespace Ui
 {
@@ -32,13 +31,10 @@ public:
     void Deserialize(const QByteArray &data);
 public slots:
     void AddResultList(const DAVA::ResultList &resultList);
-signals:
-    void ItemClicked(const DAVA::PointerSerializer& data);
 private slots:
     void OnTextFilterChanged(const QString& text);
     void OnCopy();
     void OnClear();
-    void OnClicked(const QModelIndex &index);
     void OnBeforeAdded();
     void OnRowAdded();
 private:
@@ -50,9 +46,6 @@ private:
     QTime time;
     bool onBottom;
 };
-
-Q_DECLARE_METATYPE(DAVA::PointerSerializer);
-
 
 
 #endif // __LOGWIDGET_H__

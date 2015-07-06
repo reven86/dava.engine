@@ -55,7 +55,6 @@
 #include "UI/UIPackageLoader.h"
 
 #include "Base/Result.h"
-#include "Utils/PointerSerializer.h"
 
 using namespace DAVA;
 
@@ -102,9 +101,8 @@ void QtModelPackageCommandExecutor::AddImportedPackagesIntoPackage(const DAVA::V
     }
 }
 
-ResultList QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*> &importedPackages, PackageNode *package)
+void QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*> &importedPackages, PackageNode *package)
 {
-    ResultList resultList;
     DAVA::Vector<PackageNode*> checkedPackages;
     for (PackageNode *testPackage : importedPackages)
     {
@@ -119,14 +117,8 @@ ResultList QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(cons
             }
         }
         if (canRemove)
-        {
             checkedPackages.push_back(testPackage);
-        }
-        else
-        {
-            resultList.AddResult(Result::RESULT_ERROR, "can not delete package " + testPackage->GetName() + PointerSerializer::FromPointer(testPackage));
-        }
-    } 
+    }
     
     if (!checkedPackages.empty())
     {
@@ -137,7 +129,6 @@ ResultList QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(cons
         }
         EndMacro();
     }
-    return resultList;
 }
 
 void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value)
@@ -197,7 +188,7 @@ ResultList QtModelPackageCommandExecutor::InsertControl(ControlNode *control, Co
     }
     else
     {
-        resultList.AddResult(Result::RESULT_ERROR, String("Can not inster control!") + PointerSerializer::FromPointer<ControlNode*>(control));
+        resultList.AddResult(Result::RESULT_ERROR, "Can not inster control!", VariantType(reinterpret_cast<int64>(control)));
     }
     return resultList;
 }

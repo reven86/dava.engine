@@ -54,10 +54,6 @@ class DeveloperTools;
 class VersionInfoWidget;
 
 class DeviceListController;
-namespace DAVA
-{
-    class PointerSerializer;
-}
 
 
 
@@ -264,7 +260,6 @@ private slots:
     void DebugVersionInfo();
     void DebugColorPicker();
     void DebugDeviceList();
-    void OnConsoleItemClicked(const DAVA::PointerSerializer &conv);
 
 private:
 	Ui::MainWindow *ui;

@@ -28,7 +28,6 @@
 
 
 #include "Platform/Qt5/QtLayer.h"
-#include "Utils/PointerSerializer.h"
 #include "UI/mainwindow.h"
 #include "DocumentGroup.h"
 #include "Document.h"
@@ -56,8 +55,6 @@ EditorCore::EditorCore(QObject *parent)
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
     
     connect(mainWindow->GetDialogReloadSprites(), &DialogReloadSprites::StarPackProcess, this, &EditorCore::CloseAllDocuments);
-    connect(mainWindow->GetLogWidget(), &LogWidget::ItemClicked, this, &EditorCore::OnNewItemSelected);
-
     connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
     connect(mainWindow, &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
     connect(mainWindow, &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
@@ -233,11 +230,6 @@ void EditorCore::UpdateLanguage()
     {
         document->RefreshAllControlProperties();
     }
-}
-
-void EditorCore::OnNewItemSelected(const DAVA::PointerSerializer &arg)
-{
-    documentGroup->GetActiveDocument()->SetSelectedItem(arg);
 }
 
 void EditorCore::OpenProject(const QString &path)

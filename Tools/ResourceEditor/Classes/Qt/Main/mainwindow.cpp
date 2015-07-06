@@ -28,7 +28,6 @@
 
 
 #include "DAVAEngine.h"
-#include "Utils/PointerSerializer.h"
 
 #include <QMessageBox>
 #include <QDesktopServices>
@@ -590,7 +589,6 @@ void QtMainWindow::SetupDocks()
     // Console dock
 	{
         LogWidget *logWidget = new LogWidget();
-        connect(logWidget, &LogWidget::ItemClicked, this, &QtMainWindow::OnConsoleItemClicked);
         const auto var = SettingsManager::Instance()->GetValue(Settings::Internal_LogWidget);
 
         const QByteArray arr(reinterpret_cast<const char*>(var.AsByteArray()), var.AsByteArraySize());
@@ -3096,20 +3094,6 @@ void QtMainWindow::DebugDeviceList()
         deviceListController->SetView(w);
     }
     deviceListController->ShowView();
-}
-
-void QtMainWindow::OnConsoleItemClicked(const PointerSerializer &conv)
-{
-    if (conv.CanConvert<Entity*>())
-    {
-        auto vec = conv.GetPointers<Entity*>();
-        EntityGroup entityGroup;
-        for (auto entity : vec)
-        {
-            entityGroup.Add(entity);
-        }
-        GetCurrentScene()->selectionSystem->SetSelection(entityGroup);
-    }
 }
 
 void QtMainWindow::OnGenerateHeightDelta()

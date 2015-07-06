@@ -7,8 +7,7 @@
 #include "Utils/UTF8Utils.h"
 #include "Base/GlobalEnum.h"
 #include "Debug/DVAssert.h"
-#include "Utils/PointerSerializer.h"
- 
+
 LogModel::LogModel(QObject* parent)
     : QAbstractListModel(parent)
 {
@@ -41,15 +40,13 @@ QVariant LogModel::data(const QModelIndex &index, int role) const
     switch (role)
     {
     case Qt::DisplayRole:
-        return item.displayText;
+        return item.text;
 
     case Qt::DecorationRole:
         return GetIcon(item.ll);
 
     case LEVEL_ROLE:
         return item.ll;
-    case ORIGINAL_TEXT_ROLE:
-        return item.text;
     default:
         return QVariant();
     }
@@ -140,9 +137,9 @@ const QPixmap &LogModel::GetIcon(int ll) const
 {
     return icons.at(ll);
 }
+
 LogModel::LogItem::LogItem(DAVA::Logger::eLogLevel ll_, const QString& text_)
-    : ll(ll_), text(text_), displayText(text_)
+    : ll(ll_), text(text_)
 {
-    QRegularExpression re(DAVA::PointerSerializer::GetRegex());
-    displayText.replace(re, "");
+    //TODO: add here extraction of data from text
 }

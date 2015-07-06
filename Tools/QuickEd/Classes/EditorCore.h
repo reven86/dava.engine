@@ -75,8 +75,6 @@ protected slots:
     
     void UpdateLanguage();
     
-    void OnNewItemSelected(const DAVA::PointerSerializer &arg);
-
 protected:
     void OpenProject(const QString &path);
     bool CloseProject();

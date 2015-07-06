@@ -31,17 +31,19 @@
 
 using namespace DAVA;
 
-Result::Result(ResultType type_, const DAVA::String &message_)
+Result::Result(ResultType type_, const DAVA::String &message_, const DAVA::VariantType &data_)
     : type(type_)
     , message(message_)
+    , data(data_)
 {
 }
 
 Result::Result(Result &&result)
     : type(result.type)
     , message(std::move(result.message))
+    , data(std::move(result.data))
 {
-    result.type = RESULT_SUCCESS;
+    
 }
 
 Result& Result::operator = (Result&& result)
@@ -50,7 +52,7 @@ Result& Result::operator = (Result&& result)
     {
         type = result.type;
         message = std::move(result.message);
-        result.type = RESULT_SUCCESS;
+        data = std::move(result.data);
     }
     return *this;
 }
@@ -108,9 +110,9 @@ ResultList& ResultList::AddResult(Result &&result)
     return *this;
 }
 
-ResultList& ResultList::AddResult(const Result::ResultType type, const String &message)
+ResultList& ResultList::AddResult(const Result::ResultType type, const String &message, const VariantType &data)
 {
-    return AddResult(Result(type, message));
+    return AddResult(Result(type, message, data));
 }
 
 ResultList& ResultList::AddResultList(const ResultList &resultList)
