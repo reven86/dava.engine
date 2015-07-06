@@ -175,6 +175,7 @@ public:
     void RebuildTangentSpace(Entity *entity);
     void ConvertShadowVolumes(Entity * rootNode, NMaterial * shadowMaterialParent);
     void RemoveDeprecatedMaterialFlags(Entity * rootNode);
+    void ConvertAlphatestValueMaterials(Entity * rootNode);
     int32 removedNodeCount;
     	    
     void UpdatePolygonGroupRequestedFormatRecursively(Entity *entity);
@@ -204,11 +205,9 @@ private:
 	inline bool IsDataNodeSerializable(DataNode* node)
 	{
 		//VI: runtime nodes (such as ShadowVolume materials are not serializable)
-		return ((node->GetNodeGlags() & DataNode::NodeRuntimeFlag) == 0);
+		return (!node->IsRuntime());
 	}
 	
-	uint32 GetSerializableDataNodesCount(List<DataNode*>& nodeList);
-
     bool SaveHierarchy(Entity * node, File * file, int32 level);
     void LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entity * node, File * file, int32 level);
 

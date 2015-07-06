@@ -65,6 +65,8 @@ Vector<FastName> NMaterialStateDynamicFlagsInsp::MembersList(void *object) const
         ret.push_back(NMaterial::FLAG_DEBUG_NORMAL_ROTATION);        
         ret.push_back(NMaterial::FLAG_SKINNING);
         ret.push_back(NMaterial::FLAG_TILED_DECAL_MASK);
+
+        ret.push_back(NMaterial::FLAG_ALPHATESTVALUE);
     }
     return ret;
 }
