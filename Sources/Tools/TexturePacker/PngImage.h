@@ -55,6 +55,8 @@ public:
 
     void FindNonOpaqueRect(Rect2i &rect);
 
+    bool ConvertToFormat(PixelFormat format);
+
     void DitherAlpha();
 
     inline uint32 GetWidth() const;
@@ -69,7 +71,7 @@ private:
 
     Color GetDitheredColorForPoint(int32 x, int32 y);
 
-    Image *internalData;
+    ScopedPtr<Image> internalData;
 };
 
 inline uint8 * PngImageExt::GetData() const

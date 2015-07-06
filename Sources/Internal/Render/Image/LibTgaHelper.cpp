@@ -44,6 +44,15 @@ LibTgaHelper::LibTgaHelper()
     name.assign("TGA");
     supportedExtensions.emplace_back(".tga");
     supportedExtensions.emplace_back(".tpic");
+    supportedFormats = { {  FORMAT_RGBA8888,
+                            FORMAT_RGBA5551,
+                            FORMAT_RGBA4444,
+                            FORMAT_RGB888,
+                            FORMAT_RGB565,
+                            FORMAT_RGBA16161616,
+                            FORMAT_RGBA32323232,
+                            FORMAT_A8,
+                            FORMAT_A16 } };
 }
 
 bool LibTgaHelper::IsMyImage(File *infile) const

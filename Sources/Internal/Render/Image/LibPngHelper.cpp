@@ -97,6 +97,7 @@ LibPngHelper::LibPngHelper()
 {
     name.assign("PNG");
     supportedExtensions.push_back(".png");
+    supportedFormats = { {FORMAT_RGBA8888, FORMAT_A8, FORMAT_A16} };
 }
 
 bool LibPngHelper::IsMyImage(File *infile) const

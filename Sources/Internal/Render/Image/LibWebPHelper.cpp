@@ -43,6 +43,7 @@ LibWebPHelper::LibWebPHelper()
 {
     name.assign("WEBP");
     supportedExtensions.push_back(".webp");
+    supportedFormats = { {FORMAT_RGB888, FORMAT_RGBA8888} };
 }
 
 bool LibWebPHelper::IsMyImage(File *infile) const

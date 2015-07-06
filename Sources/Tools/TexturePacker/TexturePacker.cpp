@@ -709,10 +709,6 @@ uint8 GetImageParametersAt(const Vector<String>& gpuParams, uint8 gpuParamPositi
                     imageQuality = static_cast<ImageQuality>(res);
                     ++paramsRead;
                 }
-                else
-                {
-                    Logger::Warning("quality param '%s' is incorrect\n", gpuParams[gpuParamPosition].c_str());
-                }
             }
         }
     }
@@ -721,7 +717,7 @@ uint8 GetImageParametersAt(const Vector<String>& gpuParams, uint8 gpuParamPositi
 }
 
 bool GetGpuParameters(eGPUFamily forGPU, PixelFormat& pixelFormat, ImageFormat& imageFormat,
-    ImageQuality& imageQuality, uint8& pixelParamsRead, uint8& imageParamsRead)
+                      ImageQuality& imageQuality, uint8& pixelParamsRead, uint8& imageParamsRead)
 {
     const String gpuNameFlag = "--" + GPUFamilyDescriptor::GetGPUName(forGPU);
     if (!CommandLineParser::Instance()->IsFlagSet(gpuNameFlag))
@@ -780,20 +776,58 @@ void TexturePacker::ExportImage(PngImageExt *image, FilePath exportedPathname, e
 
         if (gpuParamsGot)
         {
-            if (pixelParamsRead && !imageParamsRead)
+            if (pixelParamsRead)
             {
-                if (GPUFamilyDescriptor::IsFormatSupported(forGPU, pixelFormat))
+                bool compressedImageFormatRead = false;
+                if (imageParamsRead)
                 {
-                    descriptor->exportedAsGpuFamily = forGPU;
-                    descriptor->format = pixelFormat;
-                    descriptor->compression[forGPU].format = pixelFormat;
-                    toPerformConvert = true;
+                    auto wrapper = ImageSystem::Instance()->GetImageFormatInterface(imageFormat);
+                    if (imageFormat == IMAGE_FORMAT_PVR || imageFormat == IMAGE_FORMAT_DDS)
+                    {
+                        if (GPUFamilyDescriptor::GetCompressedFileFormat(forGPU, pixelFormat) == imageFormat)
+                        {
+                            compressedImageFormatRead = true;
+                        }
+                        else
+                        {
+                            AddError(Format("Compression format '%s' can't be saved to %s image for GPU '%s'",
+                                GlobalEnumMap<PixelFormat>::Instance()->ToString(pixelFormat),
+                                wrapper->Name(),
+                                GPUFamilyDescriptor::GetGPUName(forGPU).c_str()));
+
+                            imageFormat = IMAGE_FORMAT_UNKNOWN;
+                        }
+                    }
+                    else
+                    {
+                        if (wrapper->IsFormatSupported(pixelFormat))
+                        {
+                            image->ConvertToFormat(pixelFormat);
+                        }
+                        else
+                        {
+                            AddError(Format("Format '%s' is not supported for %s images.",
+                                GlobalEnumMap<PixelFormat>::Instance()->ToString(pixelFormat),
+                                wrapper->Name()));
+                        }
+                    }
                 }
-                else
+
+                if (!imageParamsRead || compressedImageFormatRead)
                 {
-                    AddError(Format("Compression format '%s' is not supported for GPU '%s'",
-                        GlobalEnumMap<PixelFormat>::Instance()->ToString(pixelFormat),
-                        GPUFamilyDescriptor::GetGPUName(forGPU).c_str()));
+                    if (GPUFamilyDescriptor::IsFormatSupported(forGPU, pixelFormat))
+                    {
+                        descriptor->exportedAsGpuFamily = forGPU;
+                        descriptor->format = pixelFormat;
+                        descriptor->compression[forGPU].format = pixelFormat;
+                        toPerformConvert = true;
+                    }
+                    else
+                    {
+                        AddError(Format("Compression format '%s' is not supported for GPU '%s'",
+                            GlobalEnumMap<PixelFormat>::Instance()->ToString(pixelFormat),
+                            GPUFamilyDescriptor::GetGPUName(forGPU).c_str()));
+                    }
                 }
             }
         }
@@ -803,7 +837,7 @@ void TexturePacker::ExportImage(PngImageExt *image, FilePath exportedPathname, e
         }
     }
 
-    if (imageFormat == IMAGE_FORMAT_UNKNOWN)
+    if (imageFormat == IMAGE_FORMAT_UNKNOWN || toPerformConvert)
     {
         imageFormat = IMAGE_FORMAT_PNG;
     }

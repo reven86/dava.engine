@@ -709,6 +709,17 @@ LibDdsHelper::LibDdsHelper()
 {
     name.assign("DDS");
     supportedExtensions.push_back(".dds");
+    supportedFormats = { { 
+            FORMAT_ATC_RGB, 
+            FORMAT_ATC_RGBA_EXPLICIT_ALPHA, 
+            FORMAT_ATC_RGBA_INTERPOLATED_ALPHA,
+            FORMAT_DXT1,
+            FORMAT_REMOVED_DXT_1N,
+            FORMAT_DXT1A,
+            FORMAT_DXT3,
+            FORMAT_DXT5,
+            FORMAT_DXT5NM,
+            FORMAT_RGBA8888 } };
 }
 
 bool LibDdsHelper::IsMyImage(File *infile) const
@@ -1066,7 +1077,7 @@ bool LibDdsHelper::WriteDxtFile(const FilePath & fileNameOriginal, const Vector<
 #else
 	if(!((compressionFormat >= FORMAT_DXT1 && compressionFormat <= FORMAT_DXT5NM)||(compressionFormat == FORMAT_RGBA8888)))
 	{
-		Logger::Error("[LibDdsHelper::WriteDxtFile] Wrong copression format (%d).", compressionFormat);
+		Logger::Error("[LibDdsHelper::WriteDxtFile] Wrong compression format (%d).", compressionFormat);
 		return false;
 	}
 
