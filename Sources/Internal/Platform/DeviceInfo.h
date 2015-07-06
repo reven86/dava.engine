@@ -157,7 +157,7 @@ public:
 
 #if defined (__DAVAENGINE_WIN_UAP__)
     static void InitializeScreenInfo(int32 width, int32 height);
-#elif 
+#else 
     static void InitializeScreenInfo();
 #endif
 
