@@ -334,7 +334,7 @@ public:
      \param[in] indices array of indices to render.
      \param[in] indexCount number of indices to render.
 	 */
-	void Draw(RenderDataObject* renderData, uint16* indices = NULL, uint16 indexCount = 0);
+	void Draw(RenderDataObject* renderData, uint16* indices = NULL, int32 indexCount = 0);
 	
     /**
 	 \brief Sets flag to the material affectively altering its shaders by define

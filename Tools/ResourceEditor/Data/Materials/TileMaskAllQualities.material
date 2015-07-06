@@ -1,4 +1,4 @@
 MaterialTemplate:    
-    HIGH : "~res:/Materials/TileMaskSpecular.material"
+    HIGH : "~res:/Materials/TileMaskPixelLit.material"
     MEDIUM : "~res:/Materials/TileMask.material"
     LOW : "~res:/Materials/TileMaskColor.material"
