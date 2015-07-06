@@ -63,7 +63,7 @@ void Thread::Shutdown()
     }
 }
 
-Thread::Start()
+void Thread::Start()
 {
     Retain();
     DVASSERT(STATE_CREATED == state);
