@@ -58,10 +58,10 @@ struct RenderBatch2D
         material = nullptr;
     }
 
+    rhi::PrimitiveType primitiveType;
     rhi::HTextureSet textureSetHandle;
     NMaterial * material;
     Rect clipRect;
-    rhi::PrimitiveType primitiveType;
     uint32 count;
     uint32 indexOffset;
 };
@@ -106,6 +106,21 @@ struct StretchDrawData
 class RenderSystem2D : public Singleton<RenderSystem2D>
 {
 public:
+    struct BatchDescriptor 
+    {
+        BatchDescriptor();
+
+        Color singleColor; 
+        uint32 vertexCount;
+        uint32 indexCount;
+        const float32* vertexPointer;
+        const float32* texCoordPointer;
+        const uint16* indexPointer;
+        NMaterial * material;
+        rhi::HTextureSet textureSetHandle;
+        rhi::PrimitiveType primitiveType;
+    };
+
     enum ColorOperations
     {
         COLOR_MUL = 0,
@@ -140,10 +155,7 @@ public:
      */
     void HardResetBatchingBuffers(uint32 verticesCount, uint32 indicesCount, uint8 buffersCount);
 
-    void PushBatch(NMaterial * material, rhi::HTextureSet texture, const Rect& clip,
-        uint32 vertexCount, const float32* vertexPointer, const float32* texCoordPointer,
-        uint32 indexCount, const uint16* indexPointer,
-        const Color& color, const rhi::PrimitiveType primitiveType = rhi::PRIMITIVE_TRIANGLELIST);
+    void PushBatch(const BatchDescriptor& batchDesc);
     
     /*
      *  note - it will flush currently batched!
