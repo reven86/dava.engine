@@ -728,7 +728,6 @@ bool GetGpuParameters(eGPUFamily forGPU, PixelFormat& pixelFormat, ImageFormat& 
     // gpu flag has at least one additional parameter: pixel format or image format, or both of them
     // these params may follow in arbitrary order
     Vector<String> gpuParams = CommandLineParser::Instance()->GetParamsForFlag(gpuNameFlag);
-    auto paramsCount = gpuParams.size();
 
     // suppose pixel parameter is at first position and read it
     uint8 gpuParamPosition = 0;
