@@ -99,7 +99,6 @@ private:    // Event handlers
     void OnPointerEntered(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
     void OnPointerExited(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
     void OnPointerWheel(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerCaptureLost(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
     void OnHardwareBackButtonPressed(Platform::Object^ sender, Windows::Phone::UI::Input::BackPressedEventArgs ^args);
 
     // Keyboard handlers
@@ -129,9 +128,6 @@ private:
     void UpdateScreenSize(float32 width, float32 height);
     void SetFullScreen(bool isFullScreenFlag);
     void SetPreferredSize(int32 width, int32 height);
-
-    void ShowCursor();
-    void HideCursor();
 
 private:
     CorePlatformWinUAP* core;

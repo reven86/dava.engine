@@ -99,24 +99,22 @@ void WinUAPXamlApp::SetCursorState(bool isShown)
 {
     // will be started on UI thread
     Logger::FrameworkDebug("[CorePlatformWinUAP] CursorState %d", static_cast<int32>(isShown));
+    if (isPhoneApiDetect)
+    {
+        return;
+    }
     if (isShown != isMouseCursorShown)
     {
-        if (isShown)
-        {
-            Window::Current->CoreWindow->PointerCursor = ref new CoreCursor(CoreCursorType::Arrow, 0);
-            isMouseCursorShown = true;
-        }
-        else
-        {
-            Window::Current->CoreWindow->PointerCursor = nullptr;
-            isMouseCursorShown = false;
-        }
+
+        Window::Current->CoreWindow->PointerCursor = (isShown ? ref new CoreCursor(CoreCursorType::Arrow, 0) : nullptr);
+        isMouseCursorShown = isShown;
     }
 }
 
 void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args)
 {
     CoreWindow^ coreWindow = Window::Current->CoreWindow;
+    // need initialize device info on UI thread
     DeviceInfo::InitializeScreenInfo(static_cast<int32>(coreWindow->Bounds.Width), static_cast<int32>(coreWindow->Bounds.Height));
     uiThreadDispatcher = coreWindow->Dispatcher;
 
@@ -376,12 +374,6 @@ void WinUAPXamlApp::OnPointerWheel(Platform::Object^ sender, Windows::UI::Core::
     newTouch.phase = UIEvent::PHASE_WHEEL;
     touches.push_back(newTouch);
     UIControlSystem::Instance()->OnInput(UIEvent::PHASE_WHEEL, touches, allTouches);
-}
-
-void WinUAPXamlApp::OnPointerCaptureLost(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args)
-{
-    Logger::FrameworkDebug("[CorePlatformWinUAP] OnPointerCaptureLost");
-
 }
 
 void WinUAPXamlApp::OnHardwareBackButtonPressed(_In_ Platform::Object^ sender, Windows::Phone::UI::Input::BackPressedEventArgs ^args)
@@ -659,10 +651,7 @@ void WinUAPXamlApp::PrepareScreenSize()
     else
     {
         currentMode = windowedMode;
-        if (!isPhoneApiDetect)
-        {
-            SetPreferredSize(windowedMode.width, windowedMode.height);
-        }
+        SetPreferredSize(windowedMode.width, windowedMode.height);
     }
 }
 
@@ -677,6 +666,10 @@ void WinUAPXamlApp::SetFullScreen(bool isFullscreen_)
 {
     // Note: must run on UI thread
     Logger::FrameworkDebug("[CorePlatformWinUAP] SetFullScreen %d", (int32)isFullscreen_);
+    if (isPhoneApiDetect)
+    {
+        return;
+    }
     ApplicationView^ view = ApplicationView::GetForCurrentView();
     bool isFull = view->IsFullScreenMode;
     if (isFull == isFullscreen_)
@@ -690,10 +683,7 @@ void WinUAPXamlApp::SetFullScreen(bool isFullscreen_)
     }
     else
     {
-        if (!isPhoneApiDetect)
-        {
-            view->ExitFullScreenMode();
-        }
+        view->ExitFullScreenMode();
     }
 }
 
@@ -701,6 +691,10 @@ void WinUAPXamlApp::SetPreferredSize(int32 width, int32 height)
 {
     // Note: must run on UI thread
     Logger::FrameworkDebug("[CorePlatformWinUAP] SetPreferredSize width = %d, height = %d", width, height);
+    if (isPhoneApiDetect)
+    {
+        return;
+    }
     // MSDN::This property only has an effect when the app is launched on a desktop device that is not in tablet mode.
     ApplicationView::GetForCurrentView()->PreferredLaunchViewSize = Windows::Foundation::Size(static_cast<float32>(width), static_cast<float32>(height));
 }

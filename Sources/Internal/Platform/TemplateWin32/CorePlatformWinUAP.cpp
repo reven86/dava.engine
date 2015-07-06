@@ -70,56 +70,74 @@ void CorePlatformWinUAP::Quit()
 Core::eScreenMode CorePlatformWinUAP::GetScreenMode()
 {
     // will be called from UI thread
+    ApplicationViewWindowingMode viewMode;
+    auto func = [this, &viewMode] { viewMode = xamlApp->GetScreenMode(); };
     if (IsUIThread())
     {
-        ApplicationViewWindowingMode viewMode = xamlApp->GetScreenMode();
-        switch (viewMode)
-        {
-        case ApplicationViewWindowingMode::FullScreen:
-            return eScreenMode::MODE_FULLSCREEN;
-        case ApplicationViewWindowingMode::PreferredLaunchViewSize:
-            return eScreenMode::MODE_WINDOWED;
-        case ApplicationViewWindowingMode::Auto:
-            return eScreenMode::MODE_UNSUPPORTED;
-        default:
-            return eScreenMode::MODE_UNSUPPORTED;
-        }
+        func();
+    }
+    else
+    {
+        RunOnUIThreadBlocked(func);
+    }
+    switch (viewMode)
+    {
+    case ApplicationViewWindowingMode::FullScreen:
+        return eScreenMode::MODE_FULLSCREEN;
+    case ApplicationViewWindowingMode::PreferredLaunchViewSize:
+        return eScreenMode::MODE_WINDOWED;
+    case ApplicationViewWindowingMode::Auto:
+        return eScreenMode::MODE_UNSUPPORTED;
+    default:
+        return eScreenMode::MODE_UNSUPPORTED;
     }
 }
 
 void CorePlatformWinUAP::SwitchScreenToMode(eScreenMode screenMode)
 {
-    // will be called from UI thread
+    ApplicationViewWindowingMode mode(ApplicationViewWindowingMode::PreferredLaunchViewSize);
+    if (screenMode == Core::MODE_FULLSCREEN)
+    {
+        mode = ApplicationViewWindowingMode::FullScreen;
+    }
+    else if (screenMode == Core::MODE_WINDOWED)
+    {
+        mode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
+    }
     if (IsUIThread())
     {
-        if (screenMode == Core::MODE_FULLSCREEN)
-        {
-            xamlApp->SetScreenMode(ApplicationViewWindowingMode::FullScreen);
-        }
-        else if (screenMode == Core::MODE_WINDOWED)
-        {
-            xamlApp->SetScreenMode(ApplicationViewWindowingMode::PreferredLaunchViewSize);
-        }
+        xamlApp->SetScreenMode(mode);
+    }
+    else
+    {
+        RunOnUIThread([this, mode]() { xamlApp->SetScreenMode(mode); });
     }
 }
 
 DisplayMode CorePlatformWinUAP::GetCurrentDisplayMode()
 {
-    // will be called from UI thread
+    Windows::Foundation::Size screenSize;
+    auto func = [this, &screenSize] { screenSize = xamlApp->GetCurrentScreenSize(); };
     if (IsUIThread())
     {
-        Windows::Foundation::Size screenSize = xamlApp->GetCurrentScreenSize();
-        return DisplayMode(static_cast<int32>(screenSize.Width), static_cast<int32>(screenSize.Height), DisplayMode::DEFAULT_BITS_PER_PIXEL, DisplayMode::DEFAULT_DISPLAYFREQUENCY);
+        func();
     }
-    return DisplayMode();
+    else
+    {
+        RunOnUIThreadBlocked(func);
+    }
+    return DisplayMode(static_cast<int32>(screenSize.Width), static_cast<int32>(screenSize.Height), DisplayMode::DEFAULT_BITS_PER_PIXEL, DisplayMode::DEFAULT_DISPLAYFREQUENCY);
 }
 
 void CorePlatformWinUAP::SetCursorState(bool isShown)
 {
-    // will be called from UI thread
     if (IsUIThread())
     {
         xamlApp->SetCursorState(isShown);
+    }
+    else
+    {
+        RunOnUIThread([this, isShown]() { xamlApp->SetCursorState(isShown); });
     }
 }
 
