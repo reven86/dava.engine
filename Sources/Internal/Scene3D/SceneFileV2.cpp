@@ -1381,6 +1381,56 @@ void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity * node)
     }
 }
 
+void SceneFileV2::ConvertAlphatestValueMaterials(Entity * node)
+{
+    static const float32 alphatestThresholdValue = .3f;
+    static const std::array<FastName, 7> alphatestValueMaterials =
+    {
+        FastName("~res:/Materials/NormalizedBlinnPhongPerPixel.Alphatest.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongPerPixel.Alphatest.Alphablend.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongPerPixelFast.Alphatest.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongPerVertex.Alphatest.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongPerVertex.Alphatest.Alphablend.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongAllQualities.Alphatest.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongAllQualities.Alphatest.Alphablend.material"),
+    };
+
+    RenderObject * ro = GetRenderObject(node);
+    if (ro)
+    {
+        uint32 batchCount = ro->GetRenderBatchCount();
+        for (uint32 ri = 0; ri < batchCount; ++ri)
+        {
+            int32 flagValue = 0;
+            RenderBatch * batch = ro->GetRenderBatch(ri);
+            NMaterial * material = batch->GetMaterial();
+
+            while (material)
+            {
+                if (material->GetMaterialType() == NMaterial::MATERIALTYPE_MATERIAL)
+                {
+                    for (auto & alphatestTemplate : alphatestValueMaterials)
+                    {
+                        if (alphatestTemplate == material->GetMaterialTemplateName())
+                        {
+                            material->SetFlag(NMaterial::FLAG_ALPHATESTVALUE, NMaterial::FlagOn);
+                            material->SetPropertyValue(NMaterial::PARAM_ALPHATEST_THRESHOLD, Shader::UT_FLOAT, 1, &alphatestThresholdValue);
+                        }
+                    }
+                }
+                material = material->GetParent();
+            }
+        }
+    }
+
+    uint32 size = node->GetChildrenCount();
+    for (uint32 i = 0; i < size; ++i)
+    {
+        Entity * child = node->GetChild(i);
+        ConvertAlphatestValueMaterials(child);
+    }
+}
+
 void SceneFileV2::RebuildTangentSpace(Entity *entity)
 {
     static int32 prerequiredFormat = EVF_TANGENT|EVF_NORMAL;
@@ -1487,6 +1537,11 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
     if (header.version < DEPRECATED_MATERIAL_FLAGS_SCENE_VERSION)
     {
         RemoveDeprecatedMaterialFlags(rootNode);
+    }
+
+    if (header.version < ALPHATEST_VALUE_FLAG_SCENE_VERSION)
+    {
+        ConvertAlphatestValueMaterials(rootNode);
     }
 
     QualitySettingsSystem::Instance()->UpdateEntityAfterLoad(rootNode);
