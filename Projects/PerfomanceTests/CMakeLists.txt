@@ -44,7 +44,10 @@ generate_source_groups_project( )
 add_subdirectory( ${DAVA_TOOLS_DIR} ${CMAKE_CURRENT_BINARY_DIR}/TextureTools )
 
 set( APP_DATA             ${CMAKE_CURRENT_LIST_DIR}/Data )
-set( PERFORMANCE_TEST_DATA_SVN ${DAVA_ROOT_DIR}/../performance.test)
+
+if (NOT PERFORMANCE_TEST_DATA_SVN)
+    set( PERFORMANCE_TEST_DATA_SVN ${DAVA_ROOT_DIR}/../performance.test)
+endif()
 
 set( MACOS_XIB            ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/MainMenu.xib )
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/Info.plist )
