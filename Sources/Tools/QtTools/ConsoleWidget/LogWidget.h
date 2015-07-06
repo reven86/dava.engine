@@ -26,7 +26,7 @@ public:
     explicit LogWidget(QWidget* parent = NULL);
     ~LogWidget() = default;
 
-    LogModel *Model();
+    LogModel *Model() const;
     QByteArray Serialize() const;
     void Deserialize(const QByteArray &data);
 public slots:

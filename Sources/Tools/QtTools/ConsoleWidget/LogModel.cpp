@@ -35,7 +35,7 @@ QVariant LogModel::data(const QModelIndex &index, int role) const
     {
         return QVariant();
     }
-    QMutexLocker locker(&m_mutex);
+    QMutexLocker locker(&mutex);
     const auto &item = items.at(index.row());
     switch (role)
     {
@@ -54,14 +54,14 @@ QVariant LogModel::data(const QModelIndex &index, int role) const
 
 int LogModel::rowCount(const QModelIndex &parent) const
 {
-    QMutexLocker locker(&m_mutex);
+    QMutexLocker locker(&mutex);
     return items.size();
 }
 
 void LogModel::AddMessage(DAVA::Logger::eLogLevel ll, const QString& text)
 {
     {
-        QMutexLocker locker(&m_mutex);
+        QMutexLocker locker(&mutex);
         items.append(LogItem(ll, normalize(text)));
     }
     timer->start();
@@ -91,7 +91,7 @@ void LogModel::createIcons()
         bool ok = logMap->GetValue(i, value);
         if (!ok)
         {
-            DVASSERT_MSG(ok, "wrong enum used to create GPU list");
+            DVASSERT_MSG(ok, "wrong enum used to create eLogLevel list");
             break;
         }
         QPixmap pix(16, 16);

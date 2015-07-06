@@ -47,7 +47,7 @@ Qt::ItemFlags ComboBoxModel::flags(const QModelIndex &index) const
 CheckableComboBox::CheckableComboBox(QWidget* parent)
     : QComboBox(parent)
 {
-    setModel(new ComboBoxModel());
+    setModel(new ComboBoxModel(this));
     connect(model(), &QAbstractItemModel::dataChanged, this, &CheckableComboBox::onDataChanged);
     connect(this, &CheckableComboBox::selectedUserDataChanged, this, &CheckableComboBox::updateTextHints);
 

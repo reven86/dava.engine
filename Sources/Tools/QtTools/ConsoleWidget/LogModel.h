@@ -48,7 +48,7 @@ private:
     QVector<LogItem> items;
 
     QVector<QPixmap> icons;
-    mutable QMutex m_mutex;
+    mutable QMutex mutex;
     size_t registerCount = 0;
     QTimer *timer;
 

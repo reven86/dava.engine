@@ -20,14 +20,11 @@ LogWidget::LogWidget(QWidget* parent)
     setupUi(this);
     time.start();
 
-    //LogDelegate* delegate = new LogDelegate(log, this);
     logModel = new LogModel(this);
     logFilterModel = new LogFilterModel(this);
 
     logFilterModel->setSourceModel(logModel);
     log->setModel(logFilterModel);
-    //connect(delegate, &LogDelegate::copyRequest, this, &LogWidget::OnCopy);
-    //connect(delegate, &LogDelegate::clearRequest, this, &LogWidget::OnClear);
     log->installEventFilter(this);
 
     FillFiltersCombo();
@@ -39,7 +36,7 @@ LogWidget::LogWidget(QWidget* parent)
     filter->selectUserData(logFilterModel->GetFilters());
 }
 
-LogModel* LogWidget::Model()
+LogModel* LogWidget::Model() const
 {
     return logModel;
 }
@@ -108,7 +105,7 @@ void LogWidget::FillFiltersCombo()
         bool ok = logMap->GetValue(i, value);
         if (!ok)
         {
-            DVASSERT_MSG(ok, "wrong enum used to create GPU list");
+            DVASSERT_MSG(ok, "wrong enum used to create eLogLevel list");
             break;
         }
         filter->addItem(logMap->ToString(value), value);

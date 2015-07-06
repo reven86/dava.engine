@@ -46,7 +46,7 @@ KeyedArchive::KeyedArchive()
 KeyedArchive::KeyedArchive(const KeyedArchive &arc)
 {
     const auto &customMap = arc.GetArchieveData();
-    for (auto it = customMap.begin(); it != customMap.end(); ++it)
+    for (auto it = customMap.begin(), endIt = customMap.end(); it != endIt; ++it)
     {
         SetVariant(it->first, *it->second);
     }
@@ -141,7 +141,7 @@ bool KeyedArchive::Save(File *archive) const
     uint32 size = static_cast<uint32>(objectMap.size());
     archive->Write(&size, 4);
     
-	for (auto it = objectMap.begin(); it != objectMap.end(); ++it)
+	for (auto it = objectMap.begin(), endIt = objectMap.end(); it != endIt; ++it)
 	{
 		VariantType key;
 		key.SetString(it->first);
@@ -558,7 +558,7 @@ void KeyedArchive::Dump() const
 {
 	Logger::FrameworkDebug("============================================================");
 	Logger::FrameworkDebug("--------------- Archive Currently contain ----------------");
-	for(auto it = objectMap.begin(); it != objectMap.end(); ++it)
+	for(auto it = objectMap.cbegin(), endIt = objectMap.cend(); it != endIt; ++it)
 	{
 		switch(it->second->GetType())
 		{

@@ -47,17 +47,13 @@ void LogFilterModel::SetFilterString(const QString& _filter)
 
 bool LogFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
 {
-    return true;
     const QModelIndex source = sourceModel()->index(source_row, 0, source_parent);
 
     bool isAcceptedByText = true;
     if (!filterText.isEmpty())
     {
         const QString text = source.data(Qt::DisplayRole).toString();
-        if (!text.contains(filterText, Qt::CaseInsensitive))
-        {
-            isAcceptedByText = false;
-        }
+        isAcceptedByText = !text.contains(filterText, Qt::CaseInsensitive);
     }
 
     bool wasSet = false;
