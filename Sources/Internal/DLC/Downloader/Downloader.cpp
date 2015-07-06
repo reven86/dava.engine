@@ -26,13 +26,18 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "Downloader.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "Platform/SystemTimer.h"
-#include "Thread/LockGuard.h"
+#include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {
+
+Downloader::Downloader()
+    : fileErrno(0)
+{ }
 
 bool Downloader::SaveData(const void *ptr, const FilePath& storePath, uint64 size)
 {
@@ -128,6 +133,11 @@ DownloadStatistics Downloader::GetStatistics()
 {
     LockGuard<Spinlock> lock(statisticsMutex);
     return statistics;
+}
+
+int32 Downloader::GetFileErrno() const
+{
+    return fileErrno;
 }
     
 }

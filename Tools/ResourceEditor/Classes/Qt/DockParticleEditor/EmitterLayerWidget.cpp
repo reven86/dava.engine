@@ -27,12 +27,12 @@
 =====================================================================================*/
 
 
-
 #include "EmitterLayerWidget.h"
 #include "Commands2/ParticleEditorCommands.h"
 #include "TextureBrowser/TextureConvertor.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
+#include "ImageTools/ImageTools.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
 
@@ -922,9 +922,13 @@ void EmitterLayerWidget::Update(bool updateMinimized)
 
         RenderManager::Instance()->SetRenderTarget(0);
         Image* image = renderTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
-        spriteLabel->setPixmap(QPixmap::fromImage(TextureConvertor::FromDavaImage(image)));
+        spriteLabel->setPixmap(QPixmap::fromImage(ImageTools::FromDavaImage(image)));
         SafeRelease(image);
         SafeRelease(renderTexture);
+    }
+    else
+    {
+        spriteLabel->setPixmap( QPixmap() );
     }
 
     QString spriteName = "<none>";

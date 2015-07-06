@@ -33,8 +33,7 @@
 #include "Render/RenderBase.h"
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
-#include "Platform/Mutex.h"
-#include "Platform/Thread.h"
+#include "Concurrency/Thread.h"
 #include "Render/RenderEffect.h"
 #include "Core/DisplayMode.h"
 #include "Core/Core.h"
@@ -173,8 +172,14 @@ public:
 	LPDIRECT3DSURFACE9 depthStencilSurface;
 
 #endif 
-
-#ifdef __DAVAENGINE_WIN32__
+#if defined __DAVAENGINE_WIN_UAP__
+private:
+	EGLDisplay mEglDisplay;
+	EGLContext mEglContext;
+	EGLSurface mEglSurface;
+public:
+	bool Create(Windows::UI::Core::CoreWindow^ window);
+#elif defined __DAVAENGINE_WIN32__
 	bool Create(HINSTANCE hInstance, HWND hWnd);
 #else
 	bool Create();

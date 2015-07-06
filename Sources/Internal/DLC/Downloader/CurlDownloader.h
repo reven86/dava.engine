@@ -26,11 +26,13 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __DATA_CURL_DOWNLOADER_H__
 #define __DATA_CURL_DOWNLOADER_H__
 
 #include "Downloader.h"
 #include "curl/curl.h"
+#include "Timer/RawTimer.h"
 
 namespace DAVA
 {
@@ -168,6 +170,7 @@ private:
     FilePath storePath;
     String downloadUrl;
     int32 operationTimeout;
+    RawTimer inactivityConnectionTimer;
     uint64 remoteFileSize;
     uint64 sizeToDownload;
     uint64 downloadSpeedLimit;
@@ -183,6 +186,8 @@ private:
     
     const uint32 maxChunkSize;
     const uint32 minChunkSize;
+    
+    bool isRangeRequestSent = false;
 };
 
 }

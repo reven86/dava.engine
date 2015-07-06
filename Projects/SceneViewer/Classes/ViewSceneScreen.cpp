@@ -46,9 +46,7 @@ void ViewSceneScreen::LoadResources()
     BaseScreen::LoadResources();
  
     ScopedPtr<Scene> scene(new Scene());
-    Entity *entity = scene->GetRootNode(GameCore::Instance()->GetScenePath());
-    scene->AddNode(entity);
-    scene->ReleaseRootNode(GameCore::Instance()->GetScenePath());
+    scene->LoadScene(GameCore::Instance()->GetScenePath());
     
     DVASSERT(camera == NULL);
     camera = new Camera();

@@ -28,9 +28,6 @@
 
 
 #include "UI/UITextField.h"
-#include "Base/ObjectFactory.h"
-#include "Utils/StringFormat.h"
-#include "Utils/Utils.h"
 #include "Input/KeyboardDevice.h"
 #include "UI/UIYamlLoader.h"
 #include "UI/UIControlSystem.h"
@@ -178,8 +175,6 @@ UITextField::~UITextField()
 
 void UITextField::OpenKeyboard()
 {
-    // automatically disable render to texture on open virtual keyboard
-    SetRenderToTexture(false);
 #ifdef __DAVAENGINE_IPHONE__
 	textFieldiPhone->OpenKeyboard();
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -389,17 +384,12 @@ void UITextField::SetSize(const DAVA::Vector2 &newSize)
     UIControl::SetSize(newSize);
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
     staticText->SetSize(newSize);
-#elif defined(__DAVAENGINE_IPHONE__)
-    textFieldiPhone->OnSetSize(newSize);
 #endif
 }
     
 void UITextField::SetPosition(const DAVA::Vector2 &position)
 {
     UIControl::SetPosition(position);
-#if defined(__DAVAENGINE_IPHONE__)
-    textFieldiPhone->OnSetPosition(position);
-#endif
 }
     
 void UITextField::SetText(const WideString & _text)
@@ -883,6 +873,7 @@ void UITextField::CopyDataFrom(UIControl *srcControl)
 	SetReturnKeyType(t->GetReturnKeyType());
 	SetEnableReturnKeyAutomatically(t->IsEnableReturnKeyAutomatically());
 	SetTextUseRtlAlign(t->GetTextUseRtlAlign());
+    SetMaxLength(t->GetMaxLength());
 }
     
 void UITextField::SetIsPassword(bool isPassword)
@@ -1027,9 +1018,7 @@ void UITextField::SetInputEnabled(bool isEnabled, bool hierarchic)
 
 void UITextField::SetRenderToTexture(bool value)
 {
-    // disable this functionality
-    value = false;
-#ifdef __DAVAENGINE_WIN32__
+#ifdef __DAVAENGINE_WINDOWS__
     // do nothing
 #elif defined(__DAVAENGINE_MACOS__)
     // do nothing
@@ -1044,7 +1033,7 @@ void UITextField::SetRenderToTexture(bool value)
     
 bool UITextField::IsRenderToTexture() const
 {
-#ifdef __DAVAENGINE_WIN32__
+#ifdef __DAVAENGINE_WINDOWS__
     return false;
 #elif defined(__DAVAENGINE_MACOS__)
     return false;

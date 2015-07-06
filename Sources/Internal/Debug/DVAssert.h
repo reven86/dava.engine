@@ -83,7 +83,7 @@
 
 inline void DavaDebugBreak()
 {
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
 
     __debugbreak();
 
@@ -131,7 +131,7 @@ inline void DavaDebugBreak()
 	#define DVASSERT_MSG(expr, msg) {}
 	#define DVWARNING(expr, msg) {}
 
-	#define DVVERIFY(expr) (expr)
+	#define DVVERIFY(expr) do {(void)(expr);} while(false);
 
 #else
 

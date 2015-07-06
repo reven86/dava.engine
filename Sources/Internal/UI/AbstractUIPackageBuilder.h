@@ -39,14 +39,16 @@ namespace DAVA
     
 class UIPackage;
 class UIControl;
+class UIComponent;
 class UIControlBackground;
 class YamlNode;
-
+class AbstractUIPackageBuilder;
+    
 class AbstractUIPackageLoader
 {
 public:
-    virtual UIPackage *LoadPackage(const FilePath &packagePath) = 0;
-    virtual bool LoadControlByName(const String &name) = 0;
+    virtual bool LoadPackage(const FilePath &packagePath, AbstractUIPackageBuilder *builder) = 0;
+    virtual bool LoadControlByName(const String &name, AbstractUIPackageBuilder *builder) = 0;
 };
 
 
@@ -56,22 +58,23 @@ public:
     AbstractUIPackageBuilder();
     virtual ~AbstractUIPackageBuilder();
 
-    virtual UIPackage *FindInCache(const String &packagePath) const = 0;
-    
-    virtual RefPtr<UIPackage> BeginPackage(const FilePath &packagePath) = 0;
+    virtual void BeginPackage(const FilePath &packagePath) = 0;
     virtual void EndPackage() = 0;
     
-    virtual RefPtr<UIPackage> ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader) = 0;
+    virtual bool ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader) = 0;
     
     virtual UIControl *BeginControlWithClass(const String &className) = 0;
     virtual UIControl *BeginControlWithCustomClass(const String &customClassName, const String &className) = 0;
-    virtual UIControl *BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String &customClassName, AbstractUIPackageLoader *loader) = 0;
+    virtual UIControl *BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String *customClassName, AbstractUIPackageLoader *loader) = 0;
     virtual UIControl *BeginControlWithPath(const String &pathName) = 0;
     virtual UIControl *BeginUnknownControl(const YamlNode *node) = 0;
     virtual void EndControl(bool isRoot) = 0;
     
     virtual void BeginControlPropertiesSection(const String &name) = 0;
     virtual void EndControlPropertiesSection() = 0;
+    
+    virtual UIComponent *BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex) = 0;
+    virtual void EndComponentPropertiesSection() = 0;
     
     virtual UIControlBackground *BeginBgPropertiesSection(int32 index, bool sectionHasProperties) = 0;
     virtual void EndBgPropertiesSection() = 0;

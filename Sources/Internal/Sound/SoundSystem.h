@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __DAVAENGINE_SOUND_SYSTEM_H__
 #define __DAVAENGINE_SOUND_SYSTEM_H__
 
@@ -37,7 +38,7 @@
 #include "Base/EventDispatcher.h"
 #include "Base/FastName.h"
 #include "Sound/SoundEvent.h"
-#include "Platform/Mutex.h"
+#include "Concurrency/Mutex.h"
 
 #ifdef DAVA_FMOD
 namespace FMOD

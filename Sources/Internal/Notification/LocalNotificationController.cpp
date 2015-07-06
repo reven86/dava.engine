@@ -27,14 +27,13 @@
 =====================================================================================*/
 
 
-
 #include "Notification/LocalNotificationController.h"
 #include "Notification/LocalNotificationProgress.h"
 #include "Notification/LocalNotificationText.h"
 #include "Notification/LocalNotificationDelayed.h"
 
 #include "Base/BaseTypes.h"
-#include "Thread/LockGuard.h"
+#include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {

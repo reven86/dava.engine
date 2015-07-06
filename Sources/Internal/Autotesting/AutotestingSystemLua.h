@@ -117,7 +117,7 @@ public:
 	Vector2 GetContainerScrollPosition(UIControl* control);
 	Vector2 GetMaxContainerOffsetSize(UIControl* control);
 
-    void TouchDown(const Vector2 &point, int32 touchId);
+	void TouchDown(const Vector2 &point, int32 touchId, int32 tapCount);
     void TouchMove(const Vector2 &point, int32 touchId);
     void TouchUp(int32 touchId);
     
@@ -135,6 +135,9 @@ public:
 	// multiplayer api
 	void WriteState(const String &device, const String &state);
 	void WriteCommand(const String &device, const String &state);
+    int32 GetServerQueueState(const String &serverName);
+    bool SetServerQueueState(const String &serverName, int32 state);
+
 
 	String ReadState(const String &device);
 	String ReadCommand(const String &device);

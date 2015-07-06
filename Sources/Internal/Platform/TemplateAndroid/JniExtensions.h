@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __JNI_EXTENSIONS_H__
 #define __JNI_EXTENSIONS_H__
 
@@ -35,7 +34,6 @@
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include <jni.h>
-#include "Platform/Mutex.h"
 
 namespace DAVA
 {

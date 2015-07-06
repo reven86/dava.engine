@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "NotPassableTerrainProxy.h"
 
 NotPassableTerrainProxy::NotPassableTerrainProxy()

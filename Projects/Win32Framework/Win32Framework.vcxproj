@@ -276,10 +276,25 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Meta.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Observable.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Observer.h" />
+    <ClInclude Include="..\..\Sources\Internal\Base\Platform.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Radix\Radix.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\ScopedPtr.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Serializable.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\TemplateHelpers.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Atomic.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\AtomicGNU.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\AtomicWindows.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Concurrency.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\ConcurrentObject.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\ConditionVariable.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\LockGuard.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Mutex.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\PosixThreads.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Semaphore.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Spinlock.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Thread.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\ThreadLocalPtr.h" />
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\UniqueLock.h" />
     <ClInclude Include="..\..\Sources\Internal\Core\PerformanceSettings.h" />
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbClient.h" />
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbObject.h" />
@@ -388,13 +403,14 @@
     <ClInclude Include="..\..\Sources\Internal\Math\Sphere.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Spline.h" />
     <ClInclude Include="..\..\Sources\Internal\Math\Vector.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocatorBridge.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocPools.h" />
-    <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocThunk.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\InternalAllocator.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MallocHook.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManager.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerTypes.h" />
-    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerAllocator.h" />
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryProfiler.h" />
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\TrackingAllocator.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\Buffer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Base\DeadlineTimerTemplate.h" />
@@ -426,9 +442,9 @@
     <ClInclude Include="..\..\Sources\Internal\Network\Private\TCPClientTransport.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Private\TCPServerTransport.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\ServiceRegistrar.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetClient.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetProto.h" />
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetServer.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetClient.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetProto.h" />
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetServer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Services\SimpleEchoServer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Services\LogConsumer.h" />
     <ClInclude Include="..\..\Sources\Internal\Network\Services\NetLogger.h" />
@@ -450,7 +466,6 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\DeviceInfo.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DPIHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\MovieViewControlStub.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\Mutex.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Process.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\QtLayer.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Qt4\Win32\CorePlatformWin32Qt.h" />
@@ -461,10 +476,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|Win32'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\CoreWin32PlatformBase.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\pThreadWin32.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WindowsSpecifics.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\Thread.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\DFFont.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\Systems\RenderSystem2D.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\2D\Systems\VirtualCoordinatesSystem.h" />
@@ -537,6 +549,7 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibTgaHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\IndexBuffer.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Material.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Material\MaterialCompiler.h" />
@@ -640,7 +653,6 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\ParticleEffectNode.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\ParticleEmitterNode.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\PathManip.h" />
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\ProxyNode.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Scene.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneAnimationMixer.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneCache.h" />
@@ -689,12 +701,12 @@
     <ClInclude Include="..\..\Sources\Internal\Sound\FMODUtils.h" />
     <ClInclude Include="..\..\Sources\Internal\Sound\SoundEvent.h" />
     <ClInclude Include="..\..\Sources\Internal\Sound\SoundSystem.h" />
-    <ClInclude Include="..\..\Sources\Internal\Thread\LockGuard.h" />
-    <ClInclude Include="..\..\Sources\Internal\Thread\Semaphore.h" />
-    <ClInclude Include="..\..\Sources\Internal\Thread\Spinlock.h" />
+    <ClInclude Include="..\..\Sources\Internal\Timer\RawTimer.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIControlFamily.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\TheoraPlayer.h" />
@@ -741,6 +753,10 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIWebView.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIYamlLoader.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\VectorSpinnerAdapter.h" />
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClass.h" />
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClassFactory.h" />
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\TestCore.h" />
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\UnitTests.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\BiDiHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\CRC32.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\HTTPDownloader.h" />
@@ -807,7 +823,6 @@
     <ClCompile Include="..\..\Sources\Internal\Autotesting\UIControlSwig.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\VectorSwig.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\AllocatorFactory.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Base\AtomicWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\BaseObject.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\Data.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\EnumMap.cpp" />
@@ -818,6 +833,12 @@
     <ClCompile Include="..\..\Sources\Internal\Base\IntrospectionDynamic.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\Observable.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\Radix\Radix.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\ConditionVariable.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\Mutex.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\PosixThreads.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\Thread.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\ThreadPosix.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\ThreadWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Core\PerformanceSettings.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Database\MongodbClient.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Database\MongodbObject.cpp" />
@@ -904,8 +925,7 @@
     <ClCompile Include="..\..\Sources\Internal\Math\RectPacker.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Spline.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Vector.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AllocThunk.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AndroidMallocSize.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AllocatorBridge.cpp" />
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\MallocHook.cpp" />
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\MemoryManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\OperatorNewHook.cpp" />
@@ -932,8 +952,8 @@
     <ClCompile Include="..\..\Sources\Internal\Network\Private\TCPServerTransport.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\ServiceRegistrar.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Services\LogConsumer.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetClient.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetServer.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetClient.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetServer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Network\Services\NetLogger.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotification.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Notification\LocalNotificationController.cpp" />
@@ -950,7 +970,6 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\DateTime.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfo.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\MovieViewControlStub.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\Mutex.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Process.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\QtLayer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\Win32\CorePlatformWin32Qt.cpp" />
@@ -963,11 +982,8 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\CoreWin32PlatformBase.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\DateTimeWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\DeviceInfoWin32.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\pThreadWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\DPIHelperWin32.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\Thread.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\ThreadWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\DFFont.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\Systems\RenderSystem2D.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\2D\Systems\VirtualCoordinatesSystem.cpp" />
@@ -1032,6 +1048,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibTgaHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material\MaterialCompiler.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material\MaterialGraph.cpp" />
@@ -1133,7 +1150,6 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\ParticleEffectNode.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\ParticleEmitterNode.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\PathManip.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\ProxyNode.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Scene.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneAnimationMixer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneCache.cpp" />
@@ -1180,9 +1196,12 @@
     <ClCompile Include="..\..\Sources\Internal\Sound\FMODFileSoundEvent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Sound\FMODSoundEvent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Sound\FMODSoundSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Timer\RawTimer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\AbstractUIPackageBuilder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIControlFamily.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\ScrollHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\TheoraPlayer.cpp" />
@@ -1224,6 +1243,8 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UITextField.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIWebView.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIYamlLoader.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UnitTests\TestClass.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UnitTests\TestCore.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\BiDiHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\CRC32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\MD5.cpp" />

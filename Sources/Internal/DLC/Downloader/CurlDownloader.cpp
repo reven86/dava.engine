@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "CurlDownloader.h"
 
 namespace DAVA
@@ -41,7 +42,8 @@ CurlDownloader::ErrorWithPriority CurlDownloader::errorsByPriority[] = {
     { DLE_COMMON_ERROR, 5 },
     { DLE_UNKNOWN, 6 },
     { DLE_CANCELLED, 7 },
-    { DLE_NO_ERROR, 8 },
+    { DLE_NO_RANGE_REQUEST, 8 },
+    { DLE_NO_ERROR, 9 },
 };
 
 CurlDownloader::CurlDownloader()
@@ -50,7 +52,7 @@ CurlDownloader::CurlDownloader()
     , multiHandle(NULL)
     , storePath("")
     , downloadUrl("")
-    , operationTimeout(2)
+    , operationTimeout(30)
     , remoteFileSize(0)
     , sizeToDownload(0)
     , downloadSpeedLimit(0)
@@ -76,6 +78,11 @@ size_t CurlDownloader::CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb,
 {
     DownloadPart *thisPart = static_cast<DownloadPart *>(part);
     CurlDownloader *thisDownloader = static_cast<CurlDownloader *>(thisPart->GetDownloader());
+ 
+    if (thisDownloader->inactivityConnectionTimer.IsStarted())
+    {
+        thisDownloader->inactivityConnectionTimer.Stop();
+    }
     
     uint32 dataLeft = thisPart->GetSize() - thisPart->GetProgress();
     size_t dataSizeCame = size*nmemb;
@@ -96,14 +103,17 @@ size_t CurlDownloader::CurlDataRecvHandler(void *ptr, size_t size, size_t nmemb,
         thisDownloader->chunkInfo->progress += dataSizeToBuffer;
         thisDownloader->CalcStatistics(dataSizeToBuffer);
     }
-
-    if (thisDownloader->isDownloadInterrupting)
-    {
-        return 0; // download is interrupted
-    }
     
-    // no errors was found
-    return dataSizeToBuffer;
+    if (dataLeft < dataSizeCame)
+    {
+        // we received more data for chunk than expected, it is not a big deal.
+        return dataSizeCame;
+    }
+    else
+    {
+        // no errors was found
+        return static_cast<size_t>(dataSizeToBuffer);
+    }
 }
     
 void CurlDownloader::Interrupt()
@@ -233,6 +243,7 @@ CURLMcode CurlDownloader::Perform()
         return ret;
     }
 
+    inactivityConnectionTimer.Stop();
     do
     {
         struct timeval timeout;
@@ -293,20 +304,50 @@ CURLMcode CurlDownloader::Perform()
 
         switch (rc)
         {
-        case -1:
-            /* select error */
-            break;
-        case 0: /* timeout */
-        default: /* action */
-            ret = curl_multi_perform(multiHandle, &handlesRunning);
-            if (CURLM_OK != ret)
+            case -1: /* select error */
             {
-                return ret;
+                break;
             }
-            break;
-        }
-    } while (handlesRunning);
+            case 0: /* timeout */
+            {
+                // workaround which allows to finish broken download on MacOS and iOS
+                // operation don't interrupts at connection lose (if we turn off wi-fi at example)
+                // so we check if curl timeout is reached and then starts inactivity timer
+                // timer.Reset placed inside data receive handler.
+                // so if we have some data comming, timer will not reach his maximu value
+                // and IsReached will be false.
+                // if data don't comes - timer will reaches and we use a hack to interrupt curl by limit operation time.
+                if (!inactivityConnectionTimer.IsStarted() && 0 >= curlTimeout)
+                {
+                    inactivityConnectionTimer.Start();
+                }
 
+                uint64 timeoutOnInactivityTime = static_cast<uint64>(operationTimeout*1000);
+                uint64 inactivityTimeElapsed = inactivityConnectionTimer.GetElapsed();
+                bool isTimedOut = inactivityConnectionTimer.IsStarted() && timeoutOnInactivityTime < inactivityTimeElapsed;
+
+                if (isDownloadInterrupting || isTimedOut)
+                {
+                    for (auto easyHandle : easyHandles)
+                    {
+                        curl_easy_setopt(easyHandle, CURLOPT_TIMEOUT, 1);
+                    }
+                    inactivityConnectionTimer.Stop();
+                }
+            }
+            default: /* action */
+            {
+                ret = curl_multi_perform(multiHandle, &handlesRunning);
+                if (CURLM_OK != ret)
+                {
+                    return ret;
+                }
+            }
+        }
+        
+        
+    } while (handlesRunning > 0);
+    
     return ret;
 }
 
@@ -356,9 +397,11 @@ void CurlDownloader::SaveChunkHandler(BaseObject * caller, void * callerData, vo
             SafeRelease(chunk);
             if (!isWritten)
             {
-                Logger::Error("[CurlDownloader::CurlDataRecvHandler] Couldn't save downloaded data chunk");
                 saveResult = DLE_FILE_ERROR; // this case means that not all data which we wants to save is saved. So we produce file system error.
-                return;
+                fileErrno = errno;
+                Logger::Error("[CurlDownloader::CurlDataRecvHandler] Couldn't save downloaded data chunk (errno=%d)", errno);
+                //break - to clear chunksToSave list to prevent hang up in Download() method.
+                break;
             }
             
             saveResult = DLE_NO_ERROR;
@@ -416,6 +459,7 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
     storePath = savePath;
     downloadUrl = url;
     currentDownloadPartsCount = partsCount;
+    fileErrno = 0;
     DownloadError retCode = GetSize(downloadUrl, remoteFileSize, operationTimeout);
 
     if (DLE_NO_ERROR != retCode)
@@ -435,6 +479,7 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
         dstFile = File::Create(storePath, File::CREATE | File::WRITE);
         if (NULL == dstFile)
         {
+            fileErrno = errno;
             return DLE_FILE_ERROR;
         }
     }
@@ -456,6 +501,12 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
     // if file size is 0 - we don't need more than 1 download thread.
     // if file exists
     uint64 fileChunksCount = (0 == fileChunkSize) ? 1 : Max<uint32>(1, static_cast<uint32>(sizeToDownload / fileChunkSize));
+    
+    // Range Request is a trying to download a part of file from some offset.
+    // file is dividen on fileChunksCount, so if they are more than 1 - then RangeRequest will be performed
+    // if we want to use more than 1 download part - then we need RangeRequest
+    isRangeRequestSent = 1 < fileChunksCount || 1 < partsCount;
+
     // part size could not be bigger than 4Gb
     uint32 lastFileChunkSize =  fileChunkSize + static_cast<uint32>(sizeToDownload - fileChunksCount*fileChunkSize);
 
@@ -491,7 +542,8 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
                     chunksMutex.Lock();
                     chunksInList = static_cast<uint32>(chunksToSave.size());
                     chunksMutex.Unlock();
-                } while(allowedBuffersInMemory <= chunksInList && DLE_NO_ERROR != saveResult);
+                // iterate until overbuffers save. Break if we have save error.
+                } while(allowedBuffersInMemory < chunksInList && DLE_NO_ERROR == saveResult);
                 
                 if (DLE_NO_ERROR != saveResult)
                 {
@@ -524,8 +576,8 @@ DownloadError CurlDownloader::Download(const String &url, const FilePath &savePa
         chunksMutex.Lock();
         chunksInList = static_cast<uint32>(chunksToSave.size());
         chunksMutex.Unlock();
-        
-    } while (0 < chunksInList);
+        // break if we have save error. chunks clears in saveHandler.
+    } while (0 < chunksInList && DLE_NO_ERROR == saveResult);
     
     saveThread->Cancel();
     saveThread->Join();
@@ -547,6 +599,7 @@ void CurlDownloader::SetDownloadSpeedLimit(const uint64 limit)
 
 DownloadError CurlDownloader::GetSize(const String &url, uint64 &retSize, int32 timeout)
 {
+    isRangeRequestSent = false;
     operationTimeout = timeout;
     float64 sizeToDownload = 0.0;
     CURL *currentCurlHandle = CurlSimpleInit();
@@ -636,6 +689,12 @@ DownloadError CurlDownloader::HttpCodeToDownloadError(uint32 code) const
         case HTTP_CLIENT_ERROR:
         case HTTP_SERVER_ERROR:
             return DLE_CONTENT_NOT_FOUND;
+        case HTTP_SUCCESS:
+            if (isRangeRequestSent && 200 == code)
+            {
+                // Seems Server doesn't supports Range requests.
+                return DLE_NO_RANGE_REQUEST;
+            } // else return DLE_NO_ERROR
         default:
             return DLE_NO_ERROR;
     }
@@ -649,7 +708,7 @@ void CurlDownloader::SetTimeout(CURL *easyHandle)
     curl_easy_setopt(easyHandle, CURLOPT_DNS_CACHE_TIMEOUT, operationTimeout);
     curl_easy_setopt(easyHandle, CURLOPT_SERVER_RESPONSE_TIMEOUT, operationTimeout);
 }
-    
+
 DownloadError CurlDownloader::HandleDownloadResults(CURLM *multiHandle)
 {
     // handle easy handles states

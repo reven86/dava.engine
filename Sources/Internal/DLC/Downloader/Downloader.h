@@ -26,17 +26,18 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __DATA_DOWNLOADER_H__
 #define __DATA_DOWNLOADER_H__
 
 #include "Base/BaseTypes.h"
-#include "Platform/Thread.h"
-#include "Platform/Mutex.h"
+#include "Concurrency/Thread.h"
+#include "Concurrency/Mutex.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 #include "DownloaderCommon.h"
 #include "Base/Function.h"
-#include "Thread/Spinlock.h"
+#include "Concurrency/Spinlock.h"
 
 namespace DAVA
 {
@@ -50,6 +51,7 @@ class Downloader
 friend class DownloadManager;
     
 public:
+    Downloader();
     virtual ~Downloader(){};
 
 /* all methods putted into protected section because they should be used only from DownloadManager. */
@@ -106,8 +108,14 @@ protected:
      */
     virtual void SetDownloadSpeedLimit(const uint64 limit) = 0;
 
+    /**
+        \brief return errno occurred during work with destination file
+    */
+    int32 GetFileErrno() const;
+
 protected:
-    Function<void (uint64)> notifyProgress;
+    int32 fileErrno;
+    Function<void(uint64)> notifyProgress;
     
 private:
     uint64 dataToDownloadLeft;

@@ -27,11 +27,10 @@
 =====================================================================================*/
 
 
-
 #include "FastName.h"
 #include "Debug/DVAssert.h"
 
-#include "Thread/LockGuard.h"
+#include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {

@@ -44,22 +44,26 @@ public:
     DefaultUIPackageBuilder(UIPackagesCache *_packagesCache = nullptr);
     virtual ~DefaultUIPackageBuilder();
     
-    virtual UIPackage *FindInCache(const String &packagePath) const override;
+    UIPackage *GetPackage() const;
+    UIPackage *FindInCache(const String &packagePath) const;
 
-    virtual RefPtr<UIPackage> BeginPackage(const FilePath &packagePath) override;
+    virtual void BeginPackage(const FilePath &packagePath) override;
     virtual void EndPackage() override;
     
-    virtual RefPtr<UIPackage> ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader) override;
+    virtual bool ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader) override;
     
     virtual UIControl *BeginControlWithClass(const String &className) override;
     virtual UIControl *BeginControlWithCustomClass(const String &customClassName, const String &className) override;
-    virtual UIControl *BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String &customClassName, AbstractUIPackageLoader *loader) override;
+    virtual UIControl *BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String *customClassName, AbstractUIPackageLoader *loader) override;
     virtual UIControl *BeginControlWithPath(const String &pathName) override;
     virtual UIControl *BeginUnknownControl(const YamlNode *node) override;
     virtual void EndControl(bool isRoot) override;
     
     virtual void BeginControlPropertiesSection(const String &name) override;
     virtual void EndControlPropertiesSection() override;
+    
+    virtual UIComponent *BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex) override;
+    virtual void EndComponentPropertiesSection() override;
     
     virtual UIControlBackground *BeginBgPropertiesSection(int32 index, bool sectionHasProperties) override;
     virtual void EndBgPropertiesSection() override;
@@ -68,17 +72,27 @@ public:
     virtual void EndInternalControlSection() override;
     
     virtual void ProcessProperty(const InspMember *member, const VariantType &value) override;
-    
+
 private:
-    class PackageDescr;
+    void PutImportredPackage(const FilePath &path, UIPackage *package);
+    UIPackage *FindImportedPackageByName(const String &name) const;
+
+private:
+    //class PackageDescr;
     struct ControlDescr;
     
-    Vector<PackageDescr*> packagesStack;
+    //Vector<PackageDescr*> packagesStack;
     Vector<ControlDescr*> controlsStack;
 
     UIPackagesCache *cache;
     BaseObject *currentObject;
     
+    RefPtr<UIPackage> package;
+
+    Vector<UIPackage*> importedPackages;
+    Map<FilePath, int32> packsByPaths;
+    Map<String, int32> packsByNames;
+
 };
 }
 

@@ -11,15 +11,15 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.SensorManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.InputDevice;
 import android.view.MotionEvent;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -58,6 +58,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	public abstract JNIGLSurfaceView GetSurfaceView();
     
     private static JNIActivity activity = null;
+    private static long glThreadId = 0;
     protected static SingalStrengthListner singalStrengthListner = null;
     private boolean isPausing = false;
     
@@ -76,6 +77,14 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     public synchronized void setResumeGLActionOnWindowReady(Runnable action)
     {
         onResumeGLThread = action;
+    }
+    
+    /**
+     * Get instance of {@link JNIGLSurfaceView} without loading content view
+     * @return instance of {@link JNIGLSurfaceView} or null
+     */
+    public JNIGLSurfaceView GetGLView() {
+    	return glView;
     }
     
     @Override
@@ -270,7 +279,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         Log.i(JNIConst.LOG_TAG, "[Activity::onResume] start");
         // recreate eglContext (also eglSurface, eglScreen) should be first
         super.onResume();
-
+         
         // activate accelerometer
         if(accelerometer != null)
         {
@@ -297,6 +306,25 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         JNITextField.RelinkNativeControls();
         JNIWebView.RelinkNativeControls();
+
+        /*
+         Start of workaround
+         
+         Here we need to hide navigation bar. 
+         Activity is configured to hide the bar, but seems android shows the bar before activity. 
+         In that case we need to hide the bar. 
+         */
+        Runnable navigationBarHider = new Runnable() {
+    		@Override
+			public void run() {
+				HideNavigationBar(getWindow().getDecorView());
+			}
+		};
+		
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.postDelayed(navigationBarHider, 500);
+        
+        // end of workaround
         
         isPausing = false;
         Log.i(JNIConst.LOG_TAG, "[Activity::onResume] finish");
@@ -350,8 +378,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         super.onWindowFocusChanged(hasFocus);
         
     	if(hasFocus) {
-    		HideNavigationBar(getWindow().getDecorView());
-    		
     		// we have to wait for window to get focus and only then
     		// resume game
     		// because on some slow devices:
@@ -368,6 +394,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     		    glView.queueEvent(action);
     		    setResumeGLActionOnWindowReady(null);
     		}
+    		
+    		HideNavigationBar(getWindow().getDecorView());
     	}
     	Log.i(JNIConst.LOG_TAG, "[Activity::onWindowFocusChanged] finish");
     }
@@ -375,19 +403,39 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     // we have to call next function after initialization of glView
     void InitKeyboardLayout() {
         // first destroy if any keyboard layout
-        WindowManager windowManager = getWindowManager();
+        final WindowManager windowManager = getWindowManager();
         JNITextField.DestroyKeyboardLayout(windowManager);
         
         // now initialize one more time
         // http://stackoverflow.com/questions/7776768/android-what-is-android-r-id-content-used-for
         final View v = findViewById(android.R.id.content);
+        
+        if (v == null)
+        {
+            throw new RuntimeException("findViewById returned null - strange null pointer view");
+        }
+        
         if(v.getWindowToken() != null)
         {
             JNITextField.InitializeKeyboardLayout(windowManager, v.getWindowToken());
         }
         else
         {
-            throw new RuntimeException("v.getWindowToken() != null strange null pointer view");
+            // if there is no window token - seems view is still not attached to window.
+            // wait for it.
+            v.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+                
+                @Override
+                public void onViewDetachedFromWindow(View v) {
+                    v.removeOnAttachStateChangeListener(this);
+                }
+                
+                @Override
+                public void onViewAttachedToWindow(View v) {
+                    JNITextField.InitializeKeyboardLayout(windowManager, v.getWindowToken());
+                    v.removeOnAttachStateChangeListener(this);
+                }
+            });
         }
     }
     
@@ -453,6 +501,14 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	{
 		nativeOnAccelerometer(x, y, z);
 	}
+    
+    public void setGLThreadId(long id) {
+        glThreadId = id;
+    }
+    
+    public long getGLThreadId() {
+        return glThreadId;
+    }
 	
 	public void PostEventToGL(Runnable event) {
 		glView.queueEvent(event);
@@ -548,7 +604,6 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         activity.runOnUiThread(new Runnable(){
             @Override
             public void run() {
-                Log.v(JNIConst.LOG_TAG, "finish Activity");
                 activity.finish();
                 System.exit(0);
             }

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Scene/System/HoodSystem/RotateHood.h"
 #include "Scene/System/ModifSystem.h"
 #include "Scene/System/TextDrawSystem.h"

@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "EditorMaterialSystem.h"
 #include "Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
@@ -369,6 +370,6 @@ void EditorMaterialSystem::RemoveMaterial(DAVA::NMaterial *material)
 
 bool EditorMaterialSystem::IsEditable(DAVA::NMaterial *material) const
 {
-    return (material->GetNodeGlags() != DAVA::DataNode::NodeRuntimeFlag || 
+    return (!material->IsRuntime() || 
             material->GetMaterialTemplateName() == DAVA::FastName("~res:/Materials/TileMask.material"));
 }

@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __DOWNLOADER_COMMON_H__
 #define __DOWNLOADER_COMMON_H__
 
@@ -68,6 +69,7 @@ enum DownloadError
     DLE_COULDNT_RESOLVE_HOST,   // DNS request failed and we cannot to take IP from full qualified domain name
     DLE_COULDNT_CONNECT,        // we cannot connect to given adress at given port
     DLE_CONTENT_NOT_FOUND,      // server replies that there is no requested content
+    DLE_NO_RANGE_REQUEST,       // Range requests is not supported. Use 1 thread without reconnects only.
     DLE_COMMON_ERROR,           // some common error which is rare and requires to debug the reason
     DLE_INIT_ERROR,             // any handles initialisation was unsuccessful
     DLE_FILE_ERROR,             // file read and write errors
@@ -107,6 +109,7 @@ struct DownloadTaskDescription
     uint32 id;
     String url;
     FilePath storePath;
+    int32 fileErrno;
     int32 timeout;
     int32 retriesCount;
     int32 retriesLeft;

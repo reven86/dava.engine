@@ -24,11 +24,12 @@
     ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-    =====================================================================================*/
+=====================================================================================*/
+
 
 #include "Job/JobQueue.h"
 #include "Job/JobManager.h"
-#include "Thread/LockGuard.h"
+#include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {
@@ -103,19 +104,19 @@ bool JobQueueWorker::IsEmpty()
 void JobQueueWorker::Signal()
 {
     LockGuard<Mutex> guard(jobsInQueueMutex);
-    Thread::Signal(&jobsInQueueCV);
+    jobsInQueueCV.NotifyOne();
 }
 
 void JobQueueWorker::Broadcast()
 {
     LockGuard<Mutex> guard(jobsInQueueMutex);
-    Thread::Broadcast(&jobsInQueueCV);
+    jobsInQueueCV.NotifyAll();
 }
 
 void JobQueueWorker::Wait()
 {
-    LockGuard<Mutex> guard(jobsInQueueMutex);
-    Thread::Wait(&jobsInQueueCV, &jobsInQueueMutex);
+    UniqueLock<Mutex> lock(jobsInQueueMutex);
+    jobsInQueueCV.Wait(lock);
 }
 
 }

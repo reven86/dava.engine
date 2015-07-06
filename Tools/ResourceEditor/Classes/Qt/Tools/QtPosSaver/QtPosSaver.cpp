@@ -27,17 +27,25 @@
 =====================================================================================*/
 
 
-
 #include "Tools/QtPosSaver/QtPosSaver.h"
-#include <QHeaderView>
+
+#include <QDebug>
+#include <QWidget>
+#include <QSplitter>
+#include <QMainWindow>
+#include <QEvent>
+
+
+#include "QtTools/WidgetHelpers/WidgetStateHelper.h"
+
 
 bool QtPosSaver::settingsArchiveIsLoaded = false;
-DAVA::RefPtr<DAVA::KeyedArchive> QtPosSaver::settingsArchive( NULL );
+DAVA::RefPtr<DAVA::KeyedArchive> QtPosSaver::settingsArchive( nullptr );
 
-QtPosSaver::QtPosSaver()
-	: attachedWidget(NULL)
+QtPosSaver::QtPosSaver( QObject *parent )
+    : QObject( parent )
 {
-	if(!settingsArchiveIsLoaded)
+	if (!settingsArchiveIsLoaded)
 	{
 		settingsArchive.Set( new DAVA::KeyedArchive() );
 		settingsArchive->Load("~doc:/ResourceEditorPos.archive");
@@ -47,21 +55,32 @@ QtPosSaver::QtPosSaver()
 	{
 		settingsArchive->Retain();
 	}
+
+    auto w = qobject_cast< QWidget * >( parent );
+    if ( w != nullptr )
+    {
+        Attach( w );
+    }
 }
 
 QtPosSaver::~QtPosSaver()
 {
-	if(settingsArchiveIsLoaded)	
+	if (settingsArchiveIsLoaded)	
 	{
-		if(NULL != attachedWidget && !attachedWidgetName.isEmpty())
-		{
-			SaveGeometry(attachedWidget);
-		}
+        if ( !attachedWidget.isNull() && !attachedWidgetName.isEmpty() && attachedWidget->isVisible() )
+        {
+            OnHide();
+        }
 
-		if(1 == settingsArchive->GetRetainCount())
+        if ( !attachedWidget.isNull() )
+        {
+            attachedWidget->removeEventFilter( this );
+        }
+
+		if (1 == settingsArchive->GetRetainCount())
 		{
 			settingsArchive->Save("~doc:/ResourceEditorPos.archive");
-			settingsArchive.Set( NULL );
+			settingsArchive.Set( nullptr );
 			settingsArchiveIsLoaded = false;
 		}
 		else
@@ -75,9 +94,9 @@ void QtPosSaver::Attach(QWidget *widget, const QString &name)
 {
 	attachedWidget = widget;
 
-	if(NULL != attachedWidget)
+	if (nullptr != attachedWidget)
 	{
-		if(name.isEmpty())
+		if (name.isEmpty())
 		{
 			attachedWidgetName = attachedWidget->objectName();
 		}
@@ -86,88 +105,139 @@ void QtPosSaver::Attach(QWidget *widget, const QString &name)
 			attachedWidgetName = name;
 		}
 
-		LoadGeometry(attachedWidget);
+        attachedWidget->installEventFilter( this );
+        OnShow();
 	}
+}
+
+void QtPosSaver::OnShow()
+{
+    auto mainWindow = qobject_cast< QMainWindow * >( attachedWidget );
+    if ( mainWindow != nullptr )
+    {
+        LoadState( mainWindow );
+    }
+
+    auto splitter = qobject_cast< QSplitter * >( attachedWidget );
+    if ( splitter != nullptr )
+    {
+        LoadState( splitter );
+    }
+
+    auto widget = qobject_cast< QWidget * >( attachedWidget );
+    if ( widget != nullptr && mainWindow == nullptr && splitter == nullptr )
+    {
+        LoadGeometry( widget );
+    }
+
+    if ( !attachedWidget.isNull() )
+    {
+        attachedWidget->updateGeometry();
+    }
+}
+
+void QtPosSaver::OnHide()
+{
+    auto mainWindow = qobject_cast< QMainWindow * >( attachedWidget );
+    if ( mainWindow != nullptr )
+    {
+        SaveState( mainWindow );
+    }
+
+    auto splitter = qobject_cast< QSplitter * >( attachedWidget );
+    if ( splitter != nullptr )
+    {
+        SaveState( splitter );
+    }
+
+    auto widget = qobject_cast< QWidget * >( attachedWidget );
+    if ( widget != nullptr && mainWindow == nullptr && splitter == nullptr )
+    {
+        SaveGeometry( widget );
+    }
 }
 
 void QtPosSaver::SaveGeometry(QWidget *widget)
 {
-	if(NULL != widget && !attachedWidgetName.isEmpty())
+	if (nullptr != widget && !attachedWidgetName.isEmpty())
 	{
-		QString key = attachedWidgetName + "-geometry-" + widget->objectName();
-		Save(key, widget->saveGeometry());
+        const auto normalKey = QString( "%1-geometry-%2" ).arg( attachedWidgetName ).arg( widget->objectName() );
+        Save( normalKey, widget->saveGeometry() );
 
-		key = attachedWidgetName + "-maximized-" + widget->objectName();
-		QByteArray mState(1, (char) widget->isMaximized());
-		Save(key, mState);
+        const auto isMaximizedKey = QString( "%1-maximized-%2" ).arg( attachedWidgetName ).arg( widget->objectName() );
+		QByteArray mState(1, static_cast<char>(widget->isMaximized()));
+        Save( isMaximizedKey, mState );
 	}
 }
 
 void QtPosSaver::LoadGeometry(QWidget *widget)
 {
-	if(NULL != widget && !attachedWidgetName.isEmpty())
+	if (nullptr != widget && !attachedWidgetName.isEmpty())
 	{
-		QString key = attachedWidgetName + "-maximized-" + widget->objectName();
-		QByteArray mState = Load(key);
-		if(!mState.isEmpty() && mState.at(0))
-		{
-			if(widget->isVisible())
-			{
-				widget->showMaximized();
-			}
-			else
-			{
-				widget->setWindowState((widget->windowState() & ~(Qt::WindowMinimized | Qt::WindowFullScreen)) | Qt::WindowMaximized);
-			}
-		}
+        auto helper = WidgetStateHelper::create( widget );
+        helper->setTrackedEvents( WidgetStateHelper::ScaleOnDisplayChange );
 
-		key = attachedWidgetName + "-geometry-" + widget->objectName();
-		widget->restoreGeometry(Load(key));
+        const auto normalKey = QString( "%1-geometry-%2" ).arg( attachedWidgetName ).arg( widget->objectName() );
+        const auto isMaximizedKey = QString( "%1-maximized-%2" ).arg( attachedWidgetName ).arg( widget->objectName() );
+        const auto mState = Load( isMaximizedKey );
+
+        const auto geometry = Load( normalKey );
+        widget->restoreGeometry( geometry );
+
+        if (!mState.isEmpty() && mState.at(0) != 0)
+		{
+            const auto f = helper->getTrackedEvents() | WidgetStateHelper::MaximizeOnShowOnce;
+            helper->setTrackedEvents( f );
+		}
 	}
 }
 
 void QtPosSaver::SaveState(QSplitter *splitter)
 {
-	if(NULL != splitter && !attachedWidgetName.isEmpty())
-	{
-		QString key = attachedWidgetName + "-splitter-" + splitter->objectName();
-			Save(key, splitter->saveState());
-	}
+    if (nullptr != splitter && !attachedWidgetName.isEmpty())
+    {
+        const auto splitterKey = QString( "%1-splitter-%2" ).arg( attachedWidgetName ).arg( splitter->objectName() );
+        Save( splitterKey, splitter->saveState() );
+    }
 }
 
 void QtPosSaver::LoadState(QSplitter *splitter)
 {
-	if(NULL != splitter && !attachedWidgetName.isEmpty())
+	if (nullptr != splitter && !attachedWidgetName.isEmpty())
 	{
-		QString key = attachedWidgetName + "-splitter-" + splitter->objectName();
-		splitter->restoreState(Load(key));
+        const auto splitterKey = QString( "%1-splitter-%2" ).arg( attachedWidgetName ).arg( splitter->objectName() );
+        splitter->restoreState( Load( splitterKey ) );
 	}
 }
 
 void QtPosSaver::SaveState(QMainWindow *mainwindow)
 {
-	if(NULL != mainwindow && !attachedWidgetName.isEmpty())
+    SaveGeometry( mainwindow );
+
+    if (nullptr != mainwindow && !attachedWidgetName.isEmpty())
 	{
-		QString key = attachedWidgetName + "-mainwindow-" + mainwindow->objectName();
-		Save(key, mainwindow->saveState());
+        const auto mainWindowKey = QString( "%1-mainwindow-%2" ).arg( attachedWidgetName ).arg( mainwindow->objectName() );
+        Save( mainWindowKey, mainwindow->saveState() );
 	}
 }
 
 void QtPosSaver::LoadState(QMainWindow *mainwindow)
 {
-	if(NULL != mainwindow && !attachedWidgetName.isEmpty())
+    LoadGeometry( mainwindow );
+
+    if (nullptr != mainwindow && !attachedWidgetName.isEmpty())
 	{
-		QString key = attachedWidgetName + "-mainwindow-" + mainwindow->objectName();
-		mainwindow->restoreState(Load(key));
+        const auto mainWindowKey = QString( "%1-mainwindow-%2" ).arg( attachedWidgetName ).arg( mainwindow->objectName() );
+        mainwindow->restoreState( Load( mainWindowKey ) );
 	}
 }
 
 void QtPosSaver::SaveValue(const QString &key, const DAVA::VariantType &value)
 {
-	if(settingsArchiveIsLoaded && !key.isEmpty())
+	if (settingsArchiveIsLoaded && !key.isEmpty())
 	{
-		QString k = attachedWidgetName + "-" + key;
-		settingsArchive->SetVariant(k.toStdString(), value);
+        const auto valueKey = QString( "%1-%2" ).arg( attachedWidgetName ).arg( key );
+        settingsArchive->SetVariant( valueKey.toStdString(), value );
 	}
 }
 
@@ -177,9 +247,9 @@ DAVA::VariantType QtPosSaver::LoadValue(const QString &key)
 
 	if(settingsArchiveIsLoaded && !key.isEmpty())
 	{
-		QString k = attachedWidgetName + "-" + key;
-		DAVA::VariantType *val = settingsArchive->GetVariant(k.toStdString());
-		if(NULL != val)
+        const auto valueKey = QString( "%1-%2" ).arg( attachedWidgetName ).arg( key );
+	    const auto val = settingsArchive->GetVariant( valueKey.toStdString() );
+		if (nullptr != val)
 		{
 			v = *val;
 		}
@@ -188,11 +258,32 @@ DAVA::VariantType QtPosSaver::LoadValue(const QString &key)
 	return v;
 }
 
+bool QtPosSaver::eventFilter( QObject* obj, QEvent* e )
+{
+    if ( obj == attachedWidget )
+    {
+        switch ( e->type() )
+        {
+        case QEvent::Show:
+            OnShow();
+            break;
+        case QEvent::Hide:
+            OnHide();
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    return QObject::eventFilter( obj, e );
+}
+
 void QtPosSaver::Save(const QString &key, const QByteArray &data)
 {
 	if(settingsArchiveIsLoaded && !key.isEmpty() && !data.isEmpty())
 	{
-		settingsArchive->SetByteArray(key.toStdString(), (const DAVA::uint8 *) data.constData(), data.size());
+		settingsArchive->SetByteArray(key.toStdString(), reinterpret_cast<const DAVA::uint8 *>(data.constData()), data.size());
 	}
 }
 
@@ -202,12 +293,12 @@ QByteArray QtPosSaver::Load(const QString &key)
 
 	if(settingsArchiveIsLoaded && !key.isEmpty())
 	{
-		int sz = settingsArchive->GetByteArraySize(key.toStdString());
-		const DAVA::uint8 *dt = settingsArchive->GetByteArray(key.toStdString());
+		const auto sz = settingsArchive->GetByteArraySize(key.toStdString());
+	    const auto dt = settingsArchive->GetByteArray(key.toStdString());
 
-		if(NULL != dt)
+		if (nullptr != dt)
 		{
-			data.append((const char *) dt, sz);
+			data.append(reinterpret_cast<const char *>(dt), sz);
 		}
 	}
 

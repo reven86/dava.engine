@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "TexturePathValidator.h"
 
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
@@ -52,24 +53,32 @@ void TexturePathValidator::FixupInternal(QVariant& v) const
 {
     if (v.type() == QVariant::String)
     {
-        DAVA::String file = v.toString().toStdString();
-        DAVA::FilePath filePath = DAVA::FilePath(file);
+        auto filePath = DAVA::FilePath(v.toString().toStdString());
         if (!filePath.IsEmpty() && filePath.Exists())
         {
-            if (filePath.GetExtension() == ".png")
+            auto extension = filePath.GetExtension();
+            auto imageFormat = DAVA::ImageSystem::Instance()->GetImageFormatForExtension(extension);
+
+            if (DAVA::IMAGE_FORMAT_UNKNOWN != imageFormat)
             {
 				DAVA::FilePath texFile = DAVA::TextureDescriptor::GetDescriptorPathname(filePath);
 				bool wasCreated = TextureDescriptorUtils::CreateDescriptorIfNeed(texFile);
-				if(wasCreated)
-				{	// we need to reload textures in case we change path on existing on disk
-					DAVA::TexturesMap texturesMap = DAVA::Texture::GetTextureMap();
+                
+                auto texDescriptor = DAVA::TextureDescriptor::CreateFromFile(texFile);
+                if(texDescriptor)
+                {
+                    texDescriptor->dataSettings.sourceFileFormat = imageFormat;
+                    texDescriptor->dataSettings.sourceFileExtension = extension;
+                    texDescriptor->Save();
+                    
+                    DAVA::SafeDelete(texDescriptor);
+                }
 
-					DAVA::TexturesMap::iterator found = texturesMap.find(FILEPATH_MAP_KEY(texFile));
-					if(found != texturesMap.end())
-					{
-						DAVA::Texture *tex = found->second;
-						tex->Reload();
-					}
+				auto& texturesMap = DAVA::Texture::GetTextureMap();
+				auto found = texturesMap.find(FILEPATH_MAP_KEY(texFile));
+				if(found != texturesMap.end())
+				{
+                    found->second->Reload();
 				}
 
                 v = QVariant(QString::fromStdString(texFile.GetAbsolutePathname()));

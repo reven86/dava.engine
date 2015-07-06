@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -107,6 +106,7 @@ public slots:
 	void OnSceneSave();
 	void OnSceneSaveAs();
 	void OnSceneSaveToFolder();
+    void OnSceneSaveToFolderCompressed();
 	void OnRecentFilesTriggered(QAction *recentAction);
     void OnRecentProjectsTriggered(QAction *recentAction);
 	void ExportMenuTriggered(QAction *exportAsAction);
@@ -119,6 +119,8 @@ public slots:
     void OnViewLightmapCanvas(bool show);
 	void OnAllowOnSceneSelectionToggle(bool allow);
     void OnShowStaticOcclusionToggle(bool show);
+    
+    void OnEnableDisableShadows(bool enable);
 
 	void OnReloadTextures();
 	void OnReloadTexturesTriggered(QAction *reloadAction);
@@ -170,7 +172,7 @@ public slots:
 	void OnShadowBlendModeAlpha();
 	void OnShadowBlendModeMultiply();
 
-	void OnSaveHeightmapToPNG();
+	void OnSaveHeightmapToImage();
 	void OnSaveTiledTexture();
 
 	void OnConvertModifiedTextures();
@@ -238,6 +240,8 @@ protected:
 
     void OpenProject(const DAVA::FilePath & projectPath);
     
+    void OnSceneSaveAsInternal(bool saveWithCompressed);
+    
     
 private slots:
 	void ProjectOpened(const QString &path);
@@ -264,7 +268,6 @@ private:
     QPointer<QDockWidget> dockActionEvent;
     QPointer<QDockWidget> dockConsole;
 
-	QtPosSaver posSaver;
 	bool globalInvalidate;
 
 	ModificationWidget *modificationWidget;

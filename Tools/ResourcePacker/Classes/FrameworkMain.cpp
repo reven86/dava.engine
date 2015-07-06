@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "DAVAEngine.h"
 #include "GameCore.h"
 #include "TexturePacker/ResourcePacker2D.h"
@@ -73,7 +72,7 @@ bool CheckPosition(int32 commandPosition)
 
 void DumpCommandLine()
 {
-    Vector<String> & commandLine = Core::Instance()->GetCommandLine();
+    const Vector<String> & commandLine = Core::Instance()->GetCommandLine();
     int32 count = CommandLineParser::GetCommandsCount();
     for(int32 i = 0; i < count; ++i)
     {
@@ -101,7 +100,7 @@ void ProcessRecourcePacker()
 
     ResourcePacker2D * resourcePacker = new ResourcePacker2D();
     
-    Vector<String> & commandLine = Core::Instance()->GetCommandLine();
+    const Vector<String> & commandLine = Core::Instance()->GetCommandLine();
     FilePath commandLinePath(commandLine[1]);
     commandLinePath.MakeDirectoryPathname();
     
@@ -145,11 +144,15 @@ void ProcessRecourcePacker()
     GPUFamilyDescriptor::SetupGPUParameters();
     
     
-    eGPUFamily exportForGPU = GPU_PNG;
+    eGPUFamily exportForGPU = GPU_ORIGIN;
     if(CommandLineParser::CommandIsFound(String("-gpu")))
     {
         String gpuName = CommandLineParser::GetCommandParam(String("-gpu"));
         exportForGPU = GPUFamilyDescriptor::GetGPUByName(gpuName);
+		if (GPU_INVALID == exportForGPU)
+		{
+			exportForGPU = GPU_ORIGIN;
+		}
     }
     
     if (CommandLineParser::CommandIsFound(String("-md5mode")))

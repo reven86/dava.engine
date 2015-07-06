@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
- 
+
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
- 
+
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
- 
+
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -214,7 +214,6 @@ void IlluminationParams::SetParent(NMaterial* parentMaterial)
     
 NMaterial::NMaterial()
     : materialType(NMaterial::MATERIALTYPE_NONE)
-    , materialKey(0)
     , materialProperties(16)
     , textures(8)
     , parent(NULL)
@@ -359,16 +358,10 @@ void NMaterial::Save(KeyedArchive * archive,
 	
 	archive->SetString("materialName", (materialName.IsValid()) ? materialName.c_str() : "");
 	archive->SetInt32("materialType", (int32)materialType);
-	archive->SetUInt64("materialKey", materialKey);
 	
-	if(NMaterial::MATERIALTYPE_INSTANCE == materialType &&
-	   parent)
+	if(NMaterial::MATERIALTYPE_INSTANCE == materialType && parent)
 	{
-		archive->SetUInt64("parentMaterialKey", parent->materialKey);
-		//Logger::FrameworkDebug("[NMaterial::Save] Parent: %s, Child %s, parent key% %ld",
-		//					   parent->GetName().c_str(),
-		//					   this->GetName().c_str(),
-		//					   parent->materialKey);
+		archive->SetUInt64("parentMaterialKey", parent->GetNodeID());
 	}
 	
 	if(GetMaterialGroup().IsValid())
@@ -461,11 +454,11 @@ void NMaterial::Load(KeyedArchive * archive,
         materialType = (NMaterial::eMaterialType)archive->GetInt32("materialType");
     }
 
-	if(archive->IsKeyExists("materialKey")) 
+    if (archive->IsKeyExists("materialKey"))
     {
-        materialKey = (NMaterial::NMaterialKey)archive->GetUInt64("materialKey");
-	    pointer = materialKey;
-    }	
+        uint64 materialKey = (NMaterial::eMaterialType)archive->GetUInt64("materialKey");
+        id = materialKey;
+    }
 
 	if(archive->IsKeyExists("materialGroup"))
 	{
@@ -716,10 +709,9 @@ NMaterial* NMaterial::Clone()
 	}
 	
 	//DataNode properties
-	clonedMaterial->pointer = pointer;
+	clonedMaterial->id = 0;
 	clonedMaterial->scene = scene;
-	clonedMaterial->index = index;
-	clonedMaterial->nodeFlags = nodeFlags;
+	clonedMaterial->isRuntime = isRuntime;
 	
 	return clonedMaterial;
 }
@@ -727,10 +719,7 @@ NMaterial* NMaterial::Clone()
 NMaterial* NMaterial::Clone(const String& newName)
 {
 	NMaterial* clonedMaterial = Clone();
-	//clonedMaterial->SetName(newName);
 	clonedMaterial->SetMaterialName(FastName(newName));
-	clonedMaterial->SetMaterialKey((NMaterial::NMaterialKey)clonedMaterial);
-	
 	return clonedMaterial;
 }
 
@@ -1770,9 +1759,7 @@ NMaterial* NMaterial::CreateMaterialInstance()
 	
 	NMaterial* mat = new NMaterial();
 	mat->SetMaterialType(NMaterial::MATERIALTYPE_INSTANCE);
-	mat->SetMaterialKey((NMaterial::NMaterialKey)mat);
 	mat->SetMaterialName(FastName(Format("Instance-%d", instanceCounter)));
-	//mat->SetName(mat->GetMaterialName().c_str());
 	
 	return mat;
 }
@@ -1785,9 +1772,7 @@ NMaterial* NMaterial::CreateMaterial(const FastName& materialName,
 {
 	NMaterial* mat = new NMaterial();
 	mat->SetMaterialType(NMaterial::MATERIALTYPE_MATERIAL);
-	mat->SetMaterialKey((NMaterial::NMaterialKey)mat); //this value may be temporary
 	mat->SetMaterialName(materialName);
-	//mat->SetName(mat->GetMaterialName().c_str());
 	
 	const NMaterialTemplate* matTemplate = NMaterialTemplateCache::Instance()->Get(templateName);
 	DVASSERT(matTemplate);
@@ -1800,9 +1785,7 @@ NMaterial* NMaterial::CreateGlobalMaterial(const FastName& materialName)
 {
 	NMaterial* mat = new NMaterial();
 	mat->SetMaterialType(NMaterial::MATERIALTYPE_GLOBAL);
-	mat->SetMaterialKey((NMaterial::NMaterialKey)mat); //this value may be temporary
 	mat->SetMaterialName(materialName);
-	//mat->SetName(mat->GetMaterialName().c_str());
 
 	return mat;
 }
@@ -1867,12 +1850,6 @@ void NMaterial::SetMaterialTemplateName(const FastName& templateName)
 FastName NMaterial::GetMaterialTemplateName() const
 {
 	return (materialTemplate) ? materialTemplate->name : FastName();
-}
-    
-void NMaterial::UpdateUniqueKey(uint64 newKeyValue)
-{
-    materialKey = newKeyValue;
-    pointer = newKeyValue;
 }
 
 };

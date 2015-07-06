@@ -1,30 +1,30 @@
 /*==================================================================================
- Copyright (c) 2008, binaryzebra
- All rights reserved.
- 
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- 
- * Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
- * Neither the name of the binaryzebra nor the
- names of its contributors may be used to endorse or promote products
- derived from this software without specific prior written permission.
- 
- THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
- ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
- DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- =====================================================================================*/
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
 
 
 #include "Scene3D/Entity.h"
@@ -50,6 +50,7 @@
 #include "Scene3D/Components/SwitchComponent.h"
 #include "Utils/Random.h"
 #include "Scene3D/Components/ComponentHelpers.h"
+#include <functional>
 
 #define USE_VECTOR(x) ((((uint64)1 << (uint64)x) & vectorComponentsMask) != (uint64)0)
 
@@ -71,6 +72,8 @@ Entity::Entity()
     , parent(nullptr)
     , tag(0)
     , family(nullptr)
+    , id(0)
+    , sceneId(0)
 {
 	flags = NODE_VISIBLE | NODE_UPDATABLE | NODE_LOCAL_MATRIX_IDENTITY;
     UpdateFamily();
@@ -80,7 +83,6 @@ Entity::Entity()
 	
 Entity::~Entity()
 {
-    GlobalEventSystem::Instance()->RemoveAllEvents(this);
 	RemoveAllChildren();	
 	RemoveAllComponents();	
 	SetScene(nullptr);
@@ -157,7 +159,10 @@ void Entity::SetScene(Scene * _scene)
 	if (scene)
 	{
 		scene->RegisterEntity(this);
-		GlobalEventSystem::Instance()->PerformAllEventsFromCache(this);
+        for(auto & it : components)
+        {
+            GlobalEventSystem::Instance()->PerformAllEventsFromCache(it);
+        }
 	}
 
 	const Vector<Entity*>::iterator & childrenEnd = children.end();
@@ -289,7 +294,18 @@ int32 Entity::GetChildrenCountRecursive() const
 	}
 	return result;
 }
-	
+
+bool Entity::IsMyChildRecursive(const Entity* child) const
+{
+    if (std::find(children.begin(), children.end(), child) != children.end())
+    {
+        return true;
+    }
+    else
+    {
+        return std::any_of(children.begin(), children.end(), [&](const Entity* ch){return ch->IsMyChildRecursive(child);});
+    }
+}
     
 void Entity::RemoveAllChildren()
 {
@@ -564,6 +580,8 @@ Entity* Entity::Clone(Entity *dstNode)
 		
 	dstNode->name = name;
 	dstNode->tag = tag;
+    dstNode->sceneId = sceneId;
+    dstNode->id = 0;
     
     //flags are intentionally not cloned
 	//dstNode->flags = flags;
@@ -716,6 +734,7 @@ void Entity::Save(KeyedArchive * archive, SerializationContext * serializationCo
 
 	archive->SetString("name", String(name.c_str()));
 	archive->SetInt32("tag", tag);
+    archive->SetUInt32("id", id);
 	archive->SetByteArrayAsType("localTransform", GetLocalTransform());
 		
 	archive->SetUInt32("flags", flags);
@@ -756,11 +775,17 @@ void Entity::Load(KeyedArchive * archive, SerializationContext * serializationCo
         
 	name = FastName(archive->GetString("name", "").c_str());
 	tag = archive->GetInt32("tag", 0);
+
+    id = archive->GetUInt32("id", 0);
+    if(nullptr != serializationContext->GetScene())
+    {
+        sceneId = serializationContext->GetScene()->GetSceneID();
+    }
 		
 	flags = archive->GetUInt32("flags", NODE_VISIBLE);
 	flags |= NODE_UPDATABLE;
 	flags &= ~TRANSFORM_DIRTY;
-		
+
 	const Matrix4 & localTransform = archive->GetByteArrayAsType("localTransform", GetLocalTransform());
 	SetLocalTransform(localTransform);
 		
@@ -1158,6 +1183,39 @@ uint32 Entity::CountChildEntitiesWithComponent(Component::eType type, bool recur
     }
     return count;
 }
-	
-	
+
+inline void Entity::RemoveComponent (Vector<Component *>::iterator & it)
+{
+    if (it != components.end ())
+    {
+        Component * c = *it;
+        GlobalEventSystem::Instance()->RemoveAllEvents(c);
+        DetachComponent (it);
+        SafeDelete (c);
+    }
+}
+
+Entity* Entity::GetEntityByID(uint32 id)
+{
+    Entity* ret = nullptr;
+
+    if (this->id == id)
+    {
+        ret = this;
+    }
+    else
+    {
+        for (auto child : children)
+        {
+            ret = child->GetEntityByID(id);
+            if (nullptr != ret)
+            {
+                break;
+            }
+        }
+    }
+
+    return ret;
+}
+
 };

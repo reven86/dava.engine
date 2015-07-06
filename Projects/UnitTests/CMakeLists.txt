@@ -1,12 +1,14 @@
 cmake_minimum_required (VERSION 3.0)
 
-# add DAVA_MEMORY_PROFILING_ENABLE to enable MemoryManagerTest in UnitTests
-# this macro should be defined in all dependant projects (dava framework, etc)
-add_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
+# Enable MemoryManagerTest in UnitTests
+# this variable should be defined in all dependant projects (dava framework, etc)
+if( NOT DAVA_MEGASOLUTION )
+    set ( DAVA_MEMORY_PROFILER 1 )
+endif()
 
 set          ( WARNINGS_AS_ERRORS true )
-set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
-include      ( CMake-common  )
+set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
+include      ( CMake-common )
 
 find_package( DavaFramework REQUIRED )
 find_package( DavaTools     REQUIRED )
@@ -56,7 +58,10 @@ set( ANDROID_ACTIVITY_APP_NAME  "UnitTests"   )
 set( ANDROID_ICO                ${CMAKE_CURRENT_LIST_DIR}/android/ic_launcher-web.png )
 
 set( ADDED_SRC                  ${IOS_ADD_SRC} )
-set( LIBRARIES                  )
+
+#uncomment this 2 strings to link libjpeg as additional project.
+#set( LIBRARIES jpeg )
+#add_subdirectory ( "${CMAKE_CURRENT_LIST_DIR}/../../Libs/libjpeg" ${CMAKE_CURRENT_BINARY_DIR}/libjpeg )
 
 setup_main_executable()
 

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __UIEditor__ChangePropertyCommand__
 #define __UIEditor__ChangePropertyCommand__
 

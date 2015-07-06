@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_LOCAL_NOTIFICATION_ANDROID_H__
 #define __DAVAENGINE_LOCAL_NOTIFICATION_ANDROID_H__
 
@@ -38,7 +37,7 @@
 #include "Notification/LocalNotificationImpl.h"
 #include "Platform/TemplateAndroid/JniExtensions.h"
 #include "Base/Message.h"
-#include "Platform/Mutex.h"
+#include "Concurrency/Mutex.h"
 #include "Platform/TemplateAndroid/JniHelpers.h"
 
 namespace DAVA

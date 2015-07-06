@@ -244,7 +244,7 @@ protected:
     
 	void UpdateActiveRenderBatches();
     Vector<IndexedRenderBatch> renderBatchArray;
-	Vector<RenderBatch*> activeRenderBatchArray;
+    Vector<RenderBatch*> activeRenderBatchArray;
 
 public:
 	INTROSPECTION_EXTEND(RenderObject, AnimatedObject,

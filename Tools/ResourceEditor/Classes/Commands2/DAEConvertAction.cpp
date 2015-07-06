@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "DAEConvertAction.h"
 #include "Collada/ColladaConvert.h"
 
@@ -123,20 +122,11 @@ DAVA::Scene * DAEConvertAction::CreateSceneFromSce() const
     FilePath scePath = FilePath::CreateWithNewExtension(daePath, ".sce");
     
     Scene *scene = new Scene();
-    Entity *rootNode = scene->GetRootNode(scePath);
-	if(rootNode)
+    if(SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(scePath))
 	{
-		rootNode = rootNode->Clone();
-		scene->AddNode(rootNode);
-
-		Logger::Info("Scene Optimization started");
-
 		ScopedPtr<SceneFileV2> sceneFile(new SceneFileV2());
 		sceneFile->OptimizeScene(scene);
-
 		Logger::Info("Scene Optimization finished");
-
-		rootNode->Release();
 	}
 
     return scene;

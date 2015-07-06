@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "Autotesting/MongodbUpdateObject.h"
 
 #ifdef __DAVAENGINE_AUTOTESTING__

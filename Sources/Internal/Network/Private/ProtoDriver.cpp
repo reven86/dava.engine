@@ -1,10 +1,10 @@
 /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
- 
+
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
- 
+
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
     * Neither the name of the binaryzebra nor the
     names of its contributors may be used to endorse or promote products
     derived from this software without specific prior written permission.
- 
+
     THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,10 +26,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include <Base/FunctionTraits.h>
 #include <Debug/DVAssert.h>
-#include <Base/Atomic.h>
-#include <Thread/LockGuard.h>
+#include <Concurrency/LockGuard.h>
 
 #include <Network/Base/IOLoop.h>
 #include <Network/ServiceRegistrar.h>
@@ -41,7 +41,7 @@ namespace DAVA
 namespace Net
 {
 
-uint32 ProtoDriver::nextPacketId = 0;
+Atomic<uint32> ProtoDriver::nextPacketId;
 
 ProtoDriver::ProtoDriver(IOLoop* aLoop, eNetworkRole aRole, const ServiceRegistrar& aRegistrar, void* aServiceContext)
     : loop(aLoop)
@@ -383,7 +383,7 @@ void ProtoDriver::PreparePacket(Packet* packet, uint32 channelId, const void* bu
     DVASSERT(buffer != NULL && length > 0);
 
     packet->channelId = channelId;
-    packet->packetId = AtomicIncrement(reinterpret_cast<int32&>(nextPacketId));;
+    packet->packetId = ++nextPacketId;
     packet->dataLength = length;
     packet->sentLength = 0;
     packet->chunkLength = 0;

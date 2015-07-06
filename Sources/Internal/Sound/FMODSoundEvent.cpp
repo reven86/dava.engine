@@ -26,13 +26,14 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifdef DAVA_FMOD
 
 #include "Sound/FMODSoundEvent.h"
 #include "Sound/SoundSystem.h"
 #include "Scene3D/Entity.h"
 
-#include "Platform/Thread.h"
+#include "Concurrency/Thread.h"
 #include "Utils/StringFormat.h"
 
 namespace DAVA

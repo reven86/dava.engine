@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_IWEBVIEWCONTROL_H__
 #define __DAVAENGINE_IWEBVIEWCONTROL_H__
 
@@ -109,6 +108,10 @@ public:
     
     virtual void SetRenderToTexture(bool value) = 0;
     virtual bool IsRenderToTexture() const = 0;
+    
+    // Draw events
+    virtual void WillDraw() {}
+    virtual void DidDraw() {}
 };
 
 inline void IWebViewControl::SetScalesPageToFit(bool isScalesToFit)

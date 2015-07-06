@@ -27,10 +27,9 @@
 =====================================================================================*/
 
 
-
 #include "Notification/LocalNotification.h"
 #include "Utils/Utils.h"
-#include "Thread/LockGuard.h"
+#include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {

@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_UI_TEXT_FIELD_H__
 #define __DAVAENGINE_UI_TEXT_FIELD_H__
 
@@ -406,7 +405,7 @@ private:
 public:
     INTROSPECTION_EXTEND(UITextField, UIControl,
         PROPERTY("text", "Text", GetText, SetText, I_SAVE | I_VIEW | I_EDIT)
-        PROPERTY("font", "Font preset", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("font", "Font", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("textcolor", "Text color", GetTextColor, SetTextColor, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("shadowoffset", "Shadow Offset", GetShadowOffset, SetShadowOffset, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("shadowcolor", "Shadow Color", GetShadowColor, SetShadowColor, I_SAVE | I_VIEW | I_EDIT)

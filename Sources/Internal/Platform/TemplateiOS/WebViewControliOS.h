@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #ifndef __DAVAENGINE_WEBVIEWCONTROL_IOS_H__
 #define __DAVAENGINE_WEBVIEWCONTROL_IOS_H__
 
@@ -86,7 +85,10 @@ public:
     void SetRenderToTexture(bool value) override;
     bool IsRenderToTexture() const override {return isRenderToTexture;}
     
+    void WillDraw() override;
+    
     // common ios part to render any UIView* to UIImage*
+    // workaroundKeyboardBug - if call during show/hide keyboard - false
     static void* RenderIOSUIViewToImage(void* uiviewPtr);
     // common ios part to copy from ios ::UIImage* to DAVA::Sprite*
     static void SetImageAsSpriteToControl(void* imagePtr, UIControl& control);

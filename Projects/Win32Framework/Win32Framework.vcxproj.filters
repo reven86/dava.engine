@@ -187,6 +187,18 @@
     <Filter Include="Internal\MemoryManager">
       <UniqueIdentifier>{f063e64b-fb58-42b8-a8f6-fc281f9d6404}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\Timer">
+      <UniqueIdentifier>{ad6cd690-f1f4-454a-ab5a-65272ae1bf13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\UnitTests">
+      <UniqueIdentifier>{74ad4986-9f1f-46aa-a7e2-2f8bc3f5dfe1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Network\Services\MMNet">
+      <UniqueIdentifier>{d0f16e2c-89a6-4e92-a990-9a10aa9bfe40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Concurrency">
+      <UniqueIdentifier>{fef8edc5-3139-4a47-9e07-d9bc662be831}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -471,13 +483,7 @@
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticlePropertyLine.h">
       <Filter>Internal\Particles</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\Mutex.h">
-      <Filter>Internal\Platform</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Platform\SystemTimer.h">
-      <Filter>Internal\Platform</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\Thread.h">
       <Filter>Internal\Platform</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Cursor.h">
@@ -846,9 +852,6 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\DataNode.h">
       <Filter>Internal\Scene3D</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\ProxyNode.h">
-      <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Input\InputSystem.h">
       <Filter>Internal\Input</Filter>
     </ClInclude>
@@ -1077,9 +1080,6 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\CorePlatformWin32.h">
       <Filter>Internal\Platform\TemplateWin32</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WindowsSpecifics.h">
-      <Filter>Internal\Platform\TemplateWin32</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\LightUpdateSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClInclude>
@@ -1226,9 +1226,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Core\PerformanceSettings.h">
       <Filter>Internal\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\pThreadWin32.h">
-      <Filter>Internal\Platform\TemplateWin32</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Platform\MovieViewControlStub.h">
       <Filter>Internal\Platform</Filter>
@@ -1486,9 +1483,6 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderObject.h">
       <Filter>Internal\Render\Highlevel\Vegetation</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Thread\LockGuard.h">
-      <Filter>Internal\Thread</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlNode.h">
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
@@ -1602,12 +1596,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UIPackageLoader.h">
       <Filter>Internal\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Thread\Semaphore.h">
-      <Filter>Internal\Thread</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Thread\Spinlock.h">
-      <Filter>Internal\Thread</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Job\JobThread.h">
       <Filter>Internal\Job</Filter>
@@ -1792,26 +1780,11 @@
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManager.h">
       <Filter>Internal\MemoryManager</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocThunk.h">
-      <Filter>Internal\MemoryManager</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerTypes.h">
       <Filter>Internal\MemoryManager</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocPools.h">
       <Filter>Internal\MemoryManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryManagerAllocator.h">
-      <Filter>Internal\MemoryManager</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetProto.h">
-      <Filter>Internal\Network\Services</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetServer.h">
-      <Filter>Internal\Network\Services</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNetClient.h">
-      <Filter>Internal\Network\Services</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\MemoryManager\MemoryProfiler.h">
       <Filter>Internal\MemoryManager</Filter>
@@ -1819,8 +1792,95 @@
     <ClInclude Include="..\..\Sources\Internal\Autotesting\dlmalloc.h">
       <Filter>Internal\Autotesting</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibTgaHelper.h">
+      <Filter>Internal\Render\Image</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\2D\TextLayout.h">
       <Filter>Internal\Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Timer\RawTimer.h">
+      <Filter>Internal\Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeComponent.h">
+      <Filter>Internal\UI\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.h">
+      <Filter>Internal\UI\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClass.h">
+      <Filter>Internal\UnitTests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClassFactory.h">
+      <Filter>Internal\UnitTests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\TestCore.h">
+      <Filter>Internal\UnitTests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UnitTests\UnitTests.h">
+      <Filter>Internal\UnitTests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\AllocatorBridge.h">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\InternalAllocator.h">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\MemoryManager\TrackingAllocator.h">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetClient.h">
+      <Filter>Internal\Network\Services\MMNet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetProto.h">
+      <Filter>Internal\Network\Services\MMNet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetServer.h">
+      <Filter>Internal\Network\Services\MMNet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Atomic.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\AtomicGNU.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\AtomicWindows.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Concurrency.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\ConcurrentObject.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\ConditionVariable.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\LockGuard.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Mutex.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Base\Platform.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\PosixThreads.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Semaphore.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Spinlock.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\Thread.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\ThreadLocalPtr.h">
+      <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Concurrency\UniqueLock.h">
+      <Filter>Internal\Concurrency</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2022,16 +2082,7 @@
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticlePropertyLine.cpp">
       <Filter>Internal\Particles</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\Mutex.cpp">
-      <Filter>Internal\Platform</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Platform\SystemTimer.cpp">
-      <Filter>Internal\Platform</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\Thread.cpp">
-      <Filter>Internal\Platform</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\ThreadWin32.cpp">
       <Filter>Internal\Platform</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\CursorWin32.cpp">
@@ -2379,9 +2430,6 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\DataNode.cpp">
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\ProxyNode.cpp">
-      <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Input\InputSystem.cpp">
       <Filter>Internal\Input</Filter>
     </ClCompile>
@@ -2727,9 +2775,6 @@
     <ClCompile Include="..\..\Sources\Internal\Core\PerformanceSettings.cpp">
       <Filter>Internal\Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\pThreadWin32.cpp">
-      <Filter>Internal\Platform\TemplateWin32</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Math\Vector.cpp">
       <Filter>Internal\Math</Filter>
     </ClCompile>
@@ -2861,9 +2906,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UIParticles.cpp">
       <Filter>Internal\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Base\AtomicWin32.cpp">
-      <Filter>Internal\Base\Radix</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\FoliageSystem.cpp">
       <Filter>Internal\Scene3D\Systems</Filter>
@@ -3238,23 +3280,54 @@
     <ClCompile Include="..\..\Sources\Internal\MemoryManager\OperatorNewHook.cpp">
       <Filter>Internal\MemoryManager</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AllocThunk.cpp">
-      <Filter>Internal\MemoryManager</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetServer.cpp">
-      <Filter>Internal\Network\Services</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNetClient.cpp">
-      <Filter>Internal\Network\Services</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AndroidMallocSize.cpp">
-      <Filter>Internal\MemoryManager</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\dlmalloc.c">
       <Filter>Internal\Autotesting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\LibTgaHelper.cpp">
+      <Filter>Internal\Render\Image</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\2D\TextLayout.cpp">
       <Filter>Internal\Render\2D</Filter>
     </ClCompile>
-  </ItemGroup>
+    <ClCompile Include="..\..\Sources\Internal\Timer\RawTimer.cpp">
+      <Filter>Internal\Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeComponent.cpp">
+      <Filter>Internal\UI\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.cpp">
+      <Filter>Internal\UI\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UnitTests\TestCore.cpp">
+      <Filter>Internal\UnitTests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\MemoryManager\AllocatorBridge.cpp">
+      <Filter>Internal\MemoryManager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetClient.cpp">
+      <Filter>Internal\Network\Services\MMNet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetServer.cpp">
+      <Filter>Internal\Network\Services\MMNet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UnitTests\TestClass.cpp">
+      <Filter>Internal\UnitTests</Filter>
+    </ClCompile>    <ClCompile Include="..\..\Sources\Internal\Concurrency\ConditionVariable.cpp">
+      <Filter>Internal\Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\Mutex.cpp">
+      <Filter>Internal\Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\PosixThreads.cpp">
+      <Filter>Internal\Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\Thread.cpp">
+      <Filter>Internal\Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\ThreadPosix.cpp">
+      <Filter>Internal\Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\ThreadWin32.cpp">
+      <Filter>Internal\Concurrency</Filter>
+    </ClCompile>  </ItemGroup>
 </Project>

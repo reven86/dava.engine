@@ -36,14 +36,13 @@
 #include "FileSystem/File.h"
 #include "Render/2D/TextBlock.h"
 #include "Core/Core.h"
-#include "Job/JobManager.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/TextBlockSoftwareRender.h"
 #include "Render/2D/TextBlockGraphicsRender.h"
 #include "Render/2D/TextBlockDistanceRender.h"
 
 #include "Utils/StringUtils.h"
-#include <Thread/LockGuard.h>
+#include "Concurrency/LockGuard.h"
 #include "fribidi/fribidi-bidi-types.h"
 #include "fribidi/fribidi-unicode.h"
 #include "TextLayout.h"
@@ -334,17 +333,13 @@ void TextBlock::SetRenderSize(float32 _renderSize)
 #if defined(LOCALIZATION_DEBUG)
 int32 TextBlock::GetFittingOptionUsed()
 {
-    mutex.Lock();
-    mutex.Unlock();
-
+    LockGuard<Mutex> guard(mutex);
     return fittingTypeUsed;
 }
 
 bool  TextBlock::IsVisualTextCroped()
 {
-
-	mutex.Lock();
-	mutex.Unlock();
+    LockGuard<Mutex> guard(mutex);
 	return visualTextCroped;
 }
 #endif
@@ -487,7 +482,7 @@ void TextBlock::CalculateCacheParams()
 
     visualText = logicalText;
     
-    TextLayout textLayout(isMultilineBySymbolEnabled ? TextLayout::WRAP_BY_SYMBOLS : TextLayout::WRAP_BY_WORDS, isBiDiSupportEnabled);
+    TextLayout textLayout(isBiDiSupportEnabled);
     Vector<float32> charSizes;
     
     textLayout.Reset(logicalText, *font);
@@ -516,11 +511,9 @@ void TextBlock::CalculateCacheParams()
     // which can't be broken to the separate lines.
     if (isMultilineEnabled)
     {
-        if (textLayout.HasNext())
-        {
-            textLayout.Next(drawSize.dx);
-        }
-        treatMultilineAsSingleLine = !textLayout.HasNext();
+        // We can wrap by symbols because it's only check that the text placed in a single line
+        textLayout.NextBySymbols(drawSize.dx);
+        treatMultilineAsSingleLine = textLayout.IsEndOfText();
     }
 
     if(!isMultilineEnabled || treatMultilineAsSingleLine)
@@ -710,9 +703,12 @@ void TextBlock::CalculateCacheParams()
         {
             multilineStrings.clear();
             textLayout.Seek(0);
-            while (textLayout.HasNext())
+            while (!textLayout.IsEndOfText())
             {
-                textLayout.Next(drawSize.dx);
+                if(isMultilineBySymbolEnabled || !textLayout.NextByWords(drawSize.dx))
+                {
+                    textLayout.NextBySymbols(drawSize.dx);
+                }
                 multilineStrings.push_back(textLayout.GetVisualLine(true));
             }
         
@@ -798,9 +794,12 @@ void TextBlock::CalculateCacheParams()
 
                 multilineStrings.clear();
                 textLayout.Reset(logicalText, *font);
-                while (textLayout.HasNext())
+                while (!textLayout.IsEndOfText())
                 {
-                    textLayout.Next(drawSize.dx);
+                    if(isMultilineBySymbolEnabled || !textLayout.NextByWords(drawSize.dx))
+                    {
+                        textLayout.NextBySymbols(drawSize.dx);
+                    }
                     multilineStrings.push_back(textLayout.GetVisualLine(true));
                 }
 
@@ -813,9 +812,12 @@ void TextBlock::CalculateCacheParams()
 
         multilineStrings.clear();
         textLayout.Reset(logicalText, *font);
-        while (textLayout.HasNext())
+        while (!textLayout.IsEndOfText())
         {
-            textLayout.Next(drawSize.dx);
+            if(isMultilineBySymbolEnabled || !textLayout.NextByWords(drawSize.dx))
+            {
+                textLayout.NextBySymbols(drawSize.dx);
+            }
             multilineStrings.push_back(textLayout.GetVisualLine(true));
         }
 

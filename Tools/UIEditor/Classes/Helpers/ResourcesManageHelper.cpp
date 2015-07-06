@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "ResourcesManageHelper.h"
 #include "HierarchyTreeController.h"
 #include "HierarchyTreePlatformNode.h"

@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #include "DAVAEngine.h"
 #include "DAVAClassRegistrator.h"
 #include "Render/Highlevel/SpriteRenderBatch.h"
@@ -79,7 +80,6 @@ REGISTER_CLASS(LodNode);
 REGISTER_CLASS(MeshInstanceNode);
 REGISTER_CLASS(ParticleEffectNode);
 REGISTER_CLASS(ParticleEmitterNode);
-REGISTER_CLASS(ProxyNode);
 REGISTER_CLASS(Scene);
 REGISTER_CLASS(ShadowVolumeNode);
 REGISTER_CLASS(SkeletonNode);

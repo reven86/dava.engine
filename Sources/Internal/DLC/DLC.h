@@ -26,11 +26,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __DAVAENGINE_DLC_H__
 #define __DAVAENGINE_DLC_H__
 
 #include "Base/BaseTypes.h"
-#include "Platform/Thread.h"
+#include "Concurrency/Thread.h"
 #include "Downloader/DownloaderCommon.h"
 #include "Patcher/PatchFile.h"
 
@@ -115,6 +116,16 @@ public:
     */
     DLCError GetError() const;
 
+    /** 
+        \brief Return errno from patching process
+    */
+    int32 GetLastErrno() const;
+
+    /**
+        \brief Return patching error
+    */
+    PatchFileReader::PatchError GetPatchError() const;
+
     /**
         \brief Returns path to appropriate meta-file that was downloaded from DLC server.
     */
@@ -163,13 +174,15 @@ protected:
 
         String remotePatchUrl;
         uint64 remotePatchSize;
+        uint64 remotePatchReadySize;
         uint32 remotePatchDownloadId;
         FilePath remotePatchStorePath;
 
         uint32 totalPatchCount;
         uint32 appliedPatchCount;
-        bool patchInProgress;
+        volatile bool patchInProgress;
         PatchFileReader::PatchError patchingError;
+        int32 lastErrno;
 
         FilePath stateInfoStorePath;
         FilePath downloadInfoStorePath;

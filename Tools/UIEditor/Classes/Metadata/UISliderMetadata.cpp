@@ -27,7 +27,6 @@
 =====================================================================================*/
 
 
-
 #include "UISliderMetadata.h"
 #include "StringUtils.h"
 #include "StringConstants.h"

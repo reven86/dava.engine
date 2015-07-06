@@ -131,9 +131,9 @@ private:
 
 
 #if defined (USE_FILEPATH_IN_MAP)
-	typedef Map<FilePath, ParticleEmitter*> EmitterCacheMap;
+    using EmitterCacheMap = Map<FilePath, ParticleEmitter*>;
 #else //#if defined (USE_FILEPATH_IN_MAP)
-	typedef Map<String, ParticleEmitter*> EmitterCacheMap;
+    using EmitterCacheMap = Map<String, ParticleEmitter*>;
 #endif //#if defined (USE_FILEPATH_IN_MAP)		    
     void ReleaseFromCache(const FilePath& name);
 

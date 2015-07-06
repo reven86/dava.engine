@@ -41,18 +41,26 @@
 #include "FileSystem/FilePath.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
+#ifdef __DAVAENGINE_WIN_UAP__
+#define generic GenericFromFreeTypeLibrary
+#endif
+
 #include <ft2build.h>
 #include <freetype/ftglyph.h>
 #include FT_FREETYPE_H
 
+#ifdef __DAVAENGINE_WIN_UAP__
+#undef generic
+#endif
+
 namespace DAVA
 {
 #ifdef USE_FILEPATH_IN_MAP
-	typedef Map<FilePath, FTInternalFont *> FontMap;
+    using FontMap = Map<FilePath, FTInternalFont *>;
 #else //#ifdef USE_FILEPATH_IN_MAP
-	typedef Map<String, FTInternalFont *> FontMap;
+    using FontMap = Map<String, FTInternalFont *>;
 #endif //#ifdef USE_FILEPATH_IN_MAP
-	FontMap fontMap;
+    FontMap fontMap;
 
 class FTInternalFont : public BaseObject
 {

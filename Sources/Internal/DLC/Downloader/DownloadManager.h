@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
 #ifndef __DATA_DOWNLOAD_MANAGER_H__
 #define __DATA_DOWNLOAD_MANAGER_H__
 
@@ -39,7 +40,6 @@ namespace DAVA
 {
 
 class Thread;
-class Mutex;
 class Downloader;
 
 class DownloadManager : public Singleton<DownloadManager>
@@ -47,7 +47,7 @@ class DownloadManager : public Singleton<DownloadManager>
     friend class Downloader;
 
 public:
-    typedef Function<void (const uint32 &, const DownloadStatus &)> NotifyFunctor;
+    using NotifyFunctor = Function<void(const uint32 &, const DownloadStatus &)>;
 
 public:
     DownloadManager();
@@ -90,6 +90,7 @@ public:
     bool GetTotal(const uint32 &taskId, uint64 &total);
     bool GetProgress(const uint32 &taskId, uint64 &progress);
     bool GetError(const uint32 &taskId, DownloadError &error);
+    bool GetFileErrno(const uint32 &taskId, int32 &fileErrno);
     DownloadStatistics GetStatistics();
     void SetDownloadSpeedLimit(const uint64 limit);
 
