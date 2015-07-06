@@ -170,8 +170,6 @@ class NMaterial : public DataNode
     friend class NMaterialStateDynamicPropertiesInsp;
 	
 public:
-    using NMaterialKey = uint64;
-
     static const FastName TEXTURE_ALBEDO;
     static const FastName TEXTURE_NORMAL;
     static const FastName TEXTURE_DETAIL;
@@ -219,6 +217,7 @@ public:
     static const FastName PARAM_RCP_SCREEN_SIZE;
     static const FastName PARAM_SCREEN_OFFSET;
     static const FastName PARAM_NORMAL_SCALE;
+    static const FastName PARAM_ALPHATEST_THRESHOLD;
     
 	static const FastName FLAG_VERTEXFOG;
 	static const FastName FLAG_FOG_LINEAR;
@@ -253,6 +252,7 @@ public:
     static const FastName FLAG_VIEWDIFFUSE;
     static const FastName FLAG_VIEWSPECULAR;
 
+    static const FastName FLAG_ALPHATESTVALUE;
 	
 	static const FastName DEFAULT_QUALITY_NAME;
 	
@@ -334,7 +334,7 @@ public:
      \param[in] indices array of indices to render.
      \param[in] indexCount number of indices to render.
 	 */
-	void Draw(RenderDataObject* renderData, uint16* indices = NULL, uint16 indexCount = 0);
+	void Draw(RenderDataObject* renderData, uint16* indices = NULL, int32 indexCount = 0);
 	
     /**
 	 \brief Sets flag to the material affectively altering its shaders by define
@@ -597,12 +597,6 @@ public:
 	inline eMaterialType GetMaterialType() const;
 	
     /**
-	 \brief Returns material unique key.
-	 \returns material key.
-	 */
-	inline NMaterialKey GetMaterialKey() const;
-	
-    /**
 	 \brief Returns material sorting key.
      Used by render layer to sort render batches.
 	 \returns material sorting key.
@@ -740,13 +734,7 @@ public:
 	 */
     void InvalidateProperties();
     
-    /**
-	 \brief Sets new materialKey and pointer to properly save all materials
-	 */
-    virtual void UpdateUniqueKey(uint64 newKeyValue);
-    
 protected:
-	
 	class TextureBucket
 	{
     public:
@@ -821,7 +809,6 @@ protected:
 	FastName materialName;
     FastName materialGroup;
 	eMaterialType materialType;
-	NMaterialKey materialKey;
 
 	HashMap<FastName, NMaterialProperty*> materialProperties;
 	
@@ -867,7 +854,6 @@ protected:
 	virtual ~NMaterial();
 	
 	inline void SetMaterialType(eMaterialType matType);
-	inline void SetMaterialKey(NMaterialKey key);
 	void SetMaterialTemplate(const NMaterialTemplate* matTemplate, const FastName& defaultQuality);
 	
 	void BuildEffectiveFlagSet(FastNameSet& effectiveFlagSet);
@@ -940,17 +926,10 @@ inline void NMaterial::SetMaterialType(eMaterialType matType)
     materialType = matType;
 }
 
-inline void NMaterial::SetMaterialKey(NMaterialKey key)
-{
-    materialKey = key;
-    pointer = key;
-}
-
 inline uint32 NMaterial::GetRenderLayers() const
 {
     return renderLayerIDsBitmask & ((1 << RENDER_LAYER_ID_BITMASK_MIN_POS) - 1);
 }
-
 
 void NMaterial::SetRenderLayers(uint32 bitmask)
 {
@@ -1110,11 +1089,6 @@ inline NMaterial::eMaterialType NMaterial::GetMaterialType() const
     return materialType;
 }
 
-inline NMaterial::NMaterialKey NMaterial::GetMaterialKey() const
-{
-    return materialKey;
-}
-	
 inline uint16 NMaterial::GetSortingKey() const
 {
     return materialSortKey;

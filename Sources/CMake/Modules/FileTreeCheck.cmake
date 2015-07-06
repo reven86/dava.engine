@@ -6,13 +6,7 @@ MACRO( FILE_TREE_CHECK folders )
 
     if( PYTHON_BINARY AND NOT IGNORE_FILE_TREE_CHECK AND NOT ANDROID )
 
-        if( APPLE )
-            set( SH_PREFIX "sh" )
-
-        elseif( WIN32 )
-            set( SH_PREFIX ) 
-
-        endif()
+        set( SH_PREFIX "sh" )
 
         EXECUTE_PROCESS(
             COMMAND ${PYTHON_BINARY} "${DAVA_SCRIPTS_FILES_PATH}/FileTreeHash.py" ${folders}
