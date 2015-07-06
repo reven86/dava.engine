@@ -32,6 +32,7 @@
 #include <QPainter>
 #include <QMouseEvent>
 #include <QTreeView>
+#include <QScrollBar>
 
 #include "QtPropertyItemDelegate.h"
 #include "QtPropertyModel.h"
@@ -292,7 +293,10 @@ void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOption
 	if(index.column() == 1 && NULL != data && data->GetButtonsCount() > 0)
 	{
 		int owSpacing = 1;
-		int owXPos = view->width() - owSpacing;
+		//int owXPos = opt.rect.right() - owSpacing;
+        auto vScrollBar = view->verticalScrollBar();
+        auto scrollSpacing = vScrollBar->isVisible() ? vScrollBar->width() : 0;
+        int owXPos = view->width() - owSpacing - scrollSpacing;
 		int owYPos;
 
 		// draw not overlaid widgets
@@ -300,7 +304,7 @@ void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOption
 		{
 			QtPropertyToolButton *btn = data->GetButton(i);
             auto treeView = qobject_cast<const QTreeView*>(view);
-            auto availableWidth = view->width() - treeView->columnWidth(0) - btn->width() * (i + 1);
+            auto availableWidth = owXPos - treeView->columnWidth(0) - btn->width() * (i + 1);
             if(availableWidth < 0)
             {
                 continue;
