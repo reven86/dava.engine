@@ -16,7 +16,7 @@ arg2 = arg2.replace(';', ' ')
 arg2 = arg2.replace(',', ' ')
 
 current_dir       = os.path.dirname(os.path.realpath(__file__)) + '/'
-VERSIONS          = os.popen( 'python ' + current_dir + 'FileTreeHash.py ' + arg2 ).read()  
+VERSIONS          = os.popen( 'python ' + current_dir + 'file_tree_hash.py ' + arg2 ).read()  
 CURRENT_VERSIONS  = arg3    
 VERSIONS          = VERSIONS.rstrip(os.linesep)
 
