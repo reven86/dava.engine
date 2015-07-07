@@ -29,7 +29,6 @@
 
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/File.h"
-#include "Utils/Utils.h"
 #include "FileSystem/DynamicMemoryFile.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
@@ -45,10 +44,9 @@ KeyedArchive::KeyedArchive()
     
 KeyedArchive::KeyedArchive(const KeyedArchive &arc)
 {
-    const auto &customMap = arc.GetArchieveData();
-    for (auto it = customMap.begin(); it != customMap.end(); ++it)
+    for (const auto &obj : arc.GetArchieveData())
     {
-        SetVariant(it->first, *it->second);
+        SetVariant(obj.first, *obj.second);
     }
 }
 
@@ -82,35 +80,64 @@ bool KeyedArchive::Load(File *archive)
     else if ((header[0] != 'K') || (header[1] != 'A'))
     {
         archive->Seek(0,File::SEEK_FROM_START);
-        while(!archive->IsEof())
+        while (!archive->IsEof())
         {
             VariantType key;
-            key.Read(archive);
-            if (archive->IsEof())break;
+
+            if (archive->IsEof())
+            {
+                break;
+            }
+            if (!key.Read(archive))
+            {
+                return false;
+            }
             VariantType *value = new VariantType();
-            value->Read(archive);
+            if (!value->Read(archive))
+            {
+                SafeDelete(value);
+                return false;
+            }
+
             objectMap[key.AsString()] = value;
         }
         return true;
     }
     
     uint16 version = 0;
-    archive->Read(&version, 2);
+    if (2 != archive->Read(&version, 2))
+    {
+        return false;
+    }
     if (version != 1)
     {
         Logger::Error("[KeyedArchive] error loading keyed archive, because version is incorrect");
         return false;
     }
     uint32 numberOfItems = 0;
-    archive->Read(&numberOfItems, 4);
-    
+    if (4 != archive->Read(&numberOfItems, 4))
+    {
+        return false;
+    }
     for (uint32 item = 0; item < numberOfItems; ++item)
 	{
 		VariantType key;
-		key.Read(archive);
-		if (archive->IsEof())break;
+
+        if (archive->IsEof())
+        {
+            break;
+        }
+        if (!key.Read(archive))
+        {
+            return false;
+        }
         VariantType *value = new VariantType();
-        value->Read(archive);
+        if (!value->Read(archive))
+        {
+            SafeDelete(value);
+            return false;
+        }
+
 		objectMap[key.AsString()] = value;
 	}
 	return true;
@@ -132,21 +159,27 @@ bool KeyedArchive::Save(const FilePath & pathName) const
 
 bool KeyedArchive::Save(File *archive) const
 {
-    DAVA::Array<char, 2> header;
+    Array<char, 2> header;
     uint16 version = 1;
+    uint32 size = static_cast<uint32>(objectMap.size());
+
     header[0] = 'K'; header[1] = 'A';
     
-    archive->Write(header.data(), 2);
-    archive->Write(&version, 2);
-    uint32 size = static_cast<uint32>(objectMap.size());
-    archive->Write(&size, 4);
-    
-	for (auto it = objectMap.begin(); it != objectMap.end(); ++it)
+    if (2 != archive->Write(header.data(), 2)
+        || 2 != archive->Write(&version, 2)
+        || 4 != archive->Write(&size, 4))
+    {
+        return false;
+    }
+	for (const auto &obj : objectMap)
 	{
 		VariantType key;
-		key.SetString(it->first);
-		key.Write(archive);
-		it->second->Write(archive);
+		key.SetString(obj.first);
+        if (!key.Write(archive)
+            || !obj.second->Write(archive))
+        {
+            return false;
+        }
 	}
 	return true;
 }
@@ -524,19 +557,19 @@ Color KeyedArchive::GetColor(const String & key, const Color& defaultValue) cons
     
 void KeyedArchive::DeleteKey(const String & key)
 {
-	Map<String, VariantType*>::iterator t = objectMap.find(key);
-	if (t != objectMap.end())
+	auto it = objectMap.find(key);
+	if (it != objectMap.end())
     {
-        delete t->second;
+        delete it->second;
         objectMap.erase(key);
     }
 }
 
 void KeyedArchive::DeleteAllKeys()
 {
-    for (Map<String, VariantType*>::iterator it = objectMap.begin(); it != objectMap.end(); it++)
+    for (const auto &obj : objectMap)
     {
-        delete it->second;
+        delete obj.second;
     }
 	objectMap.clear();
 }
@@ -558,46 +591,46 @@ void KeyedArchive::Dump() const
 {
 	Logger::FrameworkDebug("============================================================");
 	Logger::FrameworkDebug("--------------- Archive Currently contain ----------------");
-	for(auto it = objectMap.begin(); it != objectMap.end(); ++it)
+	for(const auto &obj : objectMap)
 	{
-		switch(it->second->GetType())
+		switch(obj.second->GetType())
 		{
 			case VariantType::TYPE_BOOLEAN:
 			{
-				if(it->second->boolValue)
+                if (obj.second->boolValue)
 				{
-					Logger::FrameworkDebug("%s : true", it->first.c_str());
+					Logger::FrameworkDebug("%s : true", obj.first.c_str());
 				}
 				else 
 				{
-					Logger::FrameworkDebug("%s : false", it->first.c_str());
+					Logger::FrameworkDebug("%s : false", obj.first.c_str());
 				}
 
 			}
 				break;
 			case VariantType::TYPE_INT32:
 			{
-				Logger::FrameworkDebug("%s : %d", it->first.c_str(), it->second->int32Value);
+				Logger::FrameworkDebug("%s : %d", obj.first.c_str(), obj.second->int32Value);
 			}
 				break;	
 			case VariantType::TYPE_UINT32:
 			{
-				Logger::FrameworkDebug("%s : %d", it->first.c_str(), it->second->uint32Value);
+				Logger::FrameworkDebug("%s : %d", obj.first.c_str(), obj.second->uint32Value);
 			}
 				break;	
 			case VariantType::TYPE_FLOAT:
 			{
-				Logger::FrameworkDebug("%s : %f", it->first.c_str(), it->second->floatValue);
+				Logger::FrameworkDebug("%s : %f", obj.first.c_str(), obj.second->floatValue);
 			}
 				break;	
 			case VariantType::TYPE_STRING:
 			{
-				Logger::FrameworkDebug("%s : %s", it->first.c_str(), it->second->stringValue->c_str());
+				Logger::FrameworkDebug("%s : %s", obj.first.c_str(), obj.second->stringValue->c_str());
 			}
 				break;	
 			case VariantType::TYPE_WIDE_STRING:
 			{
-				Logger::FrameworkDebug("%s : %S", it->first.c_str(), it->second->wideStringValue->c_str());
+				Logger::FrameworkDebug("%s : %S", obj.first.c_str(), obj.second->wideStringValue->c_str());
 			}
 				break;
                 
