@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1024</width>
-    <height>851</height>
+    <height>865</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -213,14 +213,6 @@
     <number>1</number>
    </attribute>
   </widget>
-  <widget class="QDockWidget" name="consoleDockWidget">
-   <property name="windowTitle">
-    <string>Console</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>8</number>
-   </attribute>
-  </widget>
   <widget class="QToolBar" name="toolBarPlugins">
    <property name="windowTitle">
     <string>toolBar</string>
@@ -231,6 +223,15 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+  </widget>
+  <widget class="QDockWidget" name="consoleDockWidget">
+   <property name="windowTitle">
+    <string>Console</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="LogWidget" name="logWidget"/>
   </widget>
   <action name="actionOpen_project">
    <property name="enabled">
@@ -504,6 +505,12 @@
    <class>FileSystemDockWidget</class>
    <extends>QDockWidget</extends>
    <header>UI/FileSystemView/FileSystemDockWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>LogWidget</class>
+   <extends>QWidget</extends>
+   <header>QtTools/ConsoleWidget/logwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

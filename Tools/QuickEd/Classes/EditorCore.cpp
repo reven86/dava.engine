@@ -34,7 +34,6 @@
 #include "EditorCore.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
-#include "QtTools/ConsoleWidget/LogWidget.h"
 
 #include "SharedData.h"
 #include <QSettings>

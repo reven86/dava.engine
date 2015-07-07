@@ -46,7 +46,6 @@ class PreviewWidget;
 class DavaGLWidget;
 class LocalizationEditorDialog;
 class DialogReloadSprites;
-class LogWidget; 
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
 {
@@ -73,7 +72,6 @@ public:
     void OnCleanChanged(int index, bool val);
     DavaGLWidget *GetGLWidget() const;
     DialogReloadSprites *GetDialogReloadSprites() const;
-    LogWidget* GetLogWidget() const;
 protected:
     void closeEvent(QCloseEvent *event) override;
 signals:
@@ -122,7 +120,6 @@ private:
     QAction* backgroundFrameSelectCustomColorAction;
     LocalizationEditorDialog *localizationEditorDialog;
     DialogReloadSprites *dialogReloadSprites;
-    LogWidget *logWidget;
 };
 
 Q_DECLARE_METATYPE(MainWindow::TabState*);

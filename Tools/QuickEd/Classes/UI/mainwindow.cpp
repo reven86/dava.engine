@@ -39,7 +39,6 @@
 #include "Utils/QtDavaConvertion.h"
 
 #include "QtTools/FileDialog/FileDialog.h"
-#include "QtTools/ConsoleWidget/LogWidget.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 
 namespace
@@ -58,7 +57,6 @@ MainWindow::MainWindow(QWidget *parent)
     , backgroundFrameSelectCustomColorAction(nullptr)
     , localizationEditorDialog(new LocalizationEditorDialog(this))
     , dialogReloadSprites(new DialogReloadSprites(this))
-    , logWidget(new LogWidget(this))
 {
     setupUi(this);
 
@@ -66,8 +64,6 @@ MainWindow::MainWindow(QWidget *parent)
     QAction* actionReloadSprites = dialogReloadSprites->GetActionReloadSprites();
     menuTools->addAction(actionReloadSprites);
     toolBarPlugins->addAction(actionReloadSprites);
-    // Console dock
-    consoleDockWidget->setWidget(logWidget);
 
     actionLocalizationManager->setEnabled(false);
     InitLanguageBox();
@@ -177,11 +173,6 @@ DavaGLWidget* MainWindow::GetGLWidget() const
 DialogReloadSprites* MainWindow::GetDialogReloadSprites() const
 {
     return dialogReloadSprites;
-}
-
-LogWidget* MainWindow::GetLogWidget() const
-{
-    return logWidget;
 }
 
 void MainWindow::OnCurrentIndexChanged(int arg)
