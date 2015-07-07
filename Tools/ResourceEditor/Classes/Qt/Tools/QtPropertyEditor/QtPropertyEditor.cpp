@@ -59,6 +59,7 @@ QtPropertyEditor::QtPropertyEditor(QWidget *parent /* = 0 */)
 	QObject::connect(&updateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateTimeout()));
 
 	setMouseTracking(true);
+    verticalScrollBar()->installEventFilter(this);
 
 	//new QtPropertyToolButton(NULL, viewport());
 }
@@ -220,6 +221,20 @@ void QtPropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem &o
 			painter->drawLine(p1, p2);
 		}
 	}
+}
+#include <QDebug>
+bool QtPropertyEditor::eventFilter(QObject *object, QEvent *event)
+{
+    if(isVisible() && object == verticalScrollBar() &&  event->type() == QEvent::Hide)
+    {
+        QModelIndex topLeft = model()->index(0, 0);
+        QModelIndex bottomRight(model()->index(model()->rowCount(), model()->columnCount()));
+        //model()->dataChanged(topLeft, bottomRight);
+        QPainter painter(this);
+        drawTree(&painter, this->rect());
+        return true;
+    }
+    return false;
 }
 
 void QtPropertyEditor::ApplyStyle(QtPropertyData *data, int style)

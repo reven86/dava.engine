@@ -92,9 +92,9 @@ protected:
 	QTimer updateTimer;
 	bool doUpdateOnPaintEvent;
 
-	virtual void leaveEvent(QEvent * event);
-	virtual void drawRow(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const;
-	
+	void leaveEvent(QEvent * event) override;
+    void drawRow(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
+    bool eventFilter(QObject *object, QEvent *event) override;
 	//virtual QtPropertyToolButton* GetButton(QMouseEvent * event);
 
 protected slots:
