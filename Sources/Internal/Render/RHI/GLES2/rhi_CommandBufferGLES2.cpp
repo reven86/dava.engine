@@ -106,9 +106,9 @@ const uint64   CommandBufferGLES2_t::EndCmd = 0xFFFFFFFF;
 //static const unsigned       _CmdQueueCount              = 3;
 //static unsigned             _CurCmdQueueIndex           = 0;
 //static std::vector<Handle>  _CmdQueue[_CmdQueueCount];
-static std::vector<uint32>  _RenderQueue;
-static uint32               _CurRenderQueueSize         = 0;
-static DAVA::Spinlock       _CmdQueueSync;
+//-static std::vector<uint32>  _RenderQueue;
+//-static uint32               _CurRenderQueueSize         = 0;
+//-static DAVA::Spinlock       _CmdQueueSync;
 
 static bool                 _CmdBufIsBeingExecuted      = false;
 static DAVA::Spinlock       _CmdBufIsBeingExecutedSync;
