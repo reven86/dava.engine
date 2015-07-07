@@ -75,6 +75,9 @@ public:
     // Run specified function on main thread
     template<typename F>
     void RunOnMainThread(F fn);
+    // Run specified function on main thread and block calling thread until function finishes
+    template<typename F>
+    void RunOnMainThreadBlocked(F fn);
 
 private:
     WinUAPXamlApp^ xamlApp = nullptr;
@@ -113,6 +116,21 @@ void CorePlatformWinUAP::RunOnMainThread(F fn)
 {
     using namespace Windows::UI::Core;
     xamlApp->MainThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(fn));
+}
+
+template<typename F>
+void CorePlatformWinUAP::RunOnMainThreadBlocked(F fn)
+{
+    using namespace Windows::UI::Core;
+
+    Spinlock lock;
+    auto wrapper = [&lock, &fn]() {
+        fn();
+        lock.Unlock();
+    };
+    lock.Lock();
+    xamlApp->MainThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(wrapper));
+    lock.Lock();
 }
 
 }   // namespace DAVA
