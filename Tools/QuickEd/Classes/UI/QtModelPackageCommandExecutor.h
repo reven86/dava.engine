@@ -41,6 +41,7 @@ class QUndoStack;
 class QUndoCommand;
 
 class ControlNode;
+class StyleSheetNode;
 class PackageControlsNode;
 class PackageNode;
 class AbstractProperty;
@@ -60,6 +61,9 @@ public:
     void RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*> &importedPackage, PackageNode *package);
 
 public:
+    void ChangeProperty(StyleSheetNode *node, AbstractProperty *property, const DAVA::VariantType &value);
+    void ResetProperty(StyleSheetNode *node, AbstractProperty *property);
+
     void ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value);
     void ResetProperty(ControlNode *node, AbstractProperty *property);
 
