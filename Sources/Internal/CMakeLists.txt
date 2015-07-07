@@ -179,4 +179,8 @@ endforeach ()
 
 install_libraries( ${PROJECT_NAME} )
 
+if ( WINDOWS_UAP )
+    set_property(TARGET ${PROJECT_NAME} PROPERTY VS_MOBILE_EXTENSIONS_VERSION "10.0.0.1")
+endif()
+
 
