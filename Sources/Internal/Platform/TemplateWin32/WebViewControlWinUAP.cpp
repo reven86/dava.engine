@@ -32,6 +32,8 @@
 
 #include <ppltasks.h>
 
+#include "Base/RefPtr.h"
+
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
@@ -40,6 +42,7 @@
 #include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
 
+#include "UI/UIWebView.h"
 #include "Platform/TemplateWin32/WebViewControlWinUAP.h"
 
 #include "FileSystem/File.h"
@@ -48,26 +51,19 @@
 using namespace Windows::Foundation;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
-
+using namespace Windows::UI::Xaml::Media;
+using namespace Windows::UI::Xaml::Media::Imaging;
+using namespace Windows::Storage;
 using namespace Windows::Storage::Streams;
+using namespace concurrency;
 
 namespace DAVA
 {
-/*
-ref class MyStream : public IRandomAccessStream
-{
-public:
-    IRandomAccessStream^ CloneStream() override;
-    IInputStream^ GetInputStreamAt(unsigned long long position) override;
-    IOutputStream^ GetOutputStreamAt(unsigned long long position) override;
-    void Seek(unsigned long long position) override;
 
-    property bool CanRead;
-};
-*/
 WebViewControl::WebViewControl(UIWebView& uiWebView_)
     : uiWebView(uiWebView_)
     , core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
+    , id(++n)
 {
     Logger::Debug("****************************** WebViewControl::WebViewControl: %p", this);
 }
@@ -86,37 +82,30 @@ WebViewControl::~WebViewControl()
 
 void WebViewControl::Initialize(const Rect& rect)
 {
-    core->RunOnUIThreadBlocked([this, &rect]() {
-        nativeWebView = ref new WebView(WebViewExecutionMode::SeparateThread);
+    originalRect = rect;
+    core->RunOnUIThreadBlocked([this]() {
+        nativeWebView = ref new WebView;//(WebViewExecutionMode::SeparateThread);
         //nativeWebView->Visibility = Visibility::Collapsed;
-
-        auto x1 = ref new TypedEventHandler<WebView^, WebViewNavigationStartingEventArgs^>([this](WebView^ sender, WebViewNavigationStartingEventArgs^ args) {
-            OnNavigationStarting(sender, args);
-        });
-        auto x2 = ref new TypedEventHandler<WebView^, WebViewNavigationCompletedEventArgs^>([this](WebView^ sender, WebViewNavigationCompletedEventArgs^ args) {
-            OnNavigationCompleted(sender, args);
-        });
-        nativeWebView->NavigationStarting += x1;
-        nativeWebView->NavigationCompleted += x2;
+        //nativeWebView->CompositeMode = ElementCompositeMode::MinBlend;
 
         core->XamlApplication()->AddUIElement(nativeWebView);
-        PositionWebView(rect);
+
+        InstallEventHandlers();
+        PositionWebView(originalRect);
     });
 }
 
 void WebViewControl::OpenURL(const String& urlToOpen)
 {
-    WideString wideUrl = UTF8Utils::EncodeToWideString(urlToOpen);
-    curUrl = ref new Uri(ref new Platform::String(wideUrl.c_str()));
-
-    core->RunOnUIThread([this]() {
-        nativeWebView->Navigate(curUrl);
+    core->RunOnUIThread([this, urlToOpen]() {
+        WideString wideUrl = UTF8Utils::EncodeToWideString(urlToOpen);
+        Uri^ url = ref new Uri(ref new Platform::String(wideUrl.c_str()));
+        nativeWebView->Navigate(url);
     });
 }
 
 void WebViewControl::LoadHtmlString(const WideString& htmlString)
 {
-    curUrl = nullptr;
     core->RunOnUIThread([this, htmlString]() {
         Platform::String^ html = ref new Platform::String(htmlString.c_str());
         nativeWebView->NavigateToString(html);
@@ -139,8 +128,9 @@ void WebViewControl::ExecuteJScript(const String& scriptString)
 
 void WebViewControl::SetRect(const Rect& rect)
 {
-    core->RunOnUIThread([this, rect]() {
-        PositionWebView(rect);
+    originalRect = rect;
+    core->RunOnUIThread([this]() {
+        PositionWebView(originalRect);
     });
 }
 
@@ -148,6 +138,15 @@ void WebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
 {
     core->RunOnUIThread([this, isVisible]() {
         nativeWebView->Visibility = isVisible ? Visibility::Visible : Visibility::Collapsed;
+    });
+}
+
+void WebViewControl::SetBackgroundTransparency(bool enabled)
+{
+    core->RunOnUIThread([this, enabled]() {
+        //nativeWebView->Opacity = enabled ? 0.5 : 1.0;
+        //nativeWebView->CompositeMode = enabled ? ElementCompositeMode::MinBlend : ElementCompositeMode::SourceOver;
+        nativeWebView->CompositeMode = enabled ? (ElementCompositeMode)3 : ElementCompositeMode::SourceOver;
     });
 }
 
@@ -161,7 +160,38 @@ void WebViewControl::SetDelegate(IUIWebViewDelegate* webViewDelegate_, UIWebView
 
 void WebViewControl::SetRenderToTexture(bool value)
 {
-    renderToTexture = value;
+    if (renderToTexture != value)
+    {
+        renderToTexture = value;
+        if (!renderToTexture)
+        {
+            uiWebView.SetSprite(nullptr, 0);
+        }
+
+        core->RunOnUIThread([this]() {
+            if (renderToTexture)
+            {
+                PositionWebView(originalRect);
+                RenderToTexture();
+            }
+            else
+            {
+                PositionWebView(originalRect);
+            }
+        });
+    }
+}
+
+void WebViewControl::InstallEventHandlers()
+{
+    auto navigationStarting = ref new TypedEventHandler<WebView^, WebViewNavigationStartingEventArgs^>([this](WebView^ sender, WebViewNavigationStartingEventArgs^ args) {
+        OnNavigationStarting(sender, args);
+    });
+    auto navigationCompleted = ref new TypedEventHandler<WebView^, WebViewNavigationCompletedEventArgs^>([this](WebView^ sender, WebViewNavigationCompletedEventArgs^ args) {
+        OnNavigationCompleted(sender, args);
+    });
+    nativeWebView->NavigationStarting += navigationStarting;
+    nativeWebView->NavigationCompleted += navigationCompleted;
 }
 
 void WebViewControl::PositionWebView(const Rect& rect)
@@ -171,8 +201,18 @@ void WebViewControl::PositionWebView(const Rect& rect)
     Rect physRect = coordSys->ConvertVirtualToPhysical(rect);
     const Vector2 physOffset = coordSys->GetPhysicalDrawOffset();
 
-    nativeWebView->Width = physRect.dx + physOffset.x;
-    nativeWebView->Height = physRect.dy + physOffset.y;
+    float32 width = physRect.dx + physOffset.x;
+    float32 height = physRect.dy + physOffset.y;
+
+    // When rendering to texture move WebView off the screen
+    // as only visible WebView can produce its image
+    if (renderToTexture)
+    {
+        physRect.x = -width;
+        physRect.y = -height;
+    }
+    nativeWebView->Width = width;
+    nativeWebView->Height = height;
     core->XamlApplication()->PositionUIElement(nativeWebView, physRect.x, physRect.y);
 }
 
@@ -206,80 +246,92 @@ void WebViewControl::OnNavigationCompleted(Windows::UI::Xaml::Controls::WebView^
 
     Logger::Debug("*** OnNavigationCompleted: success=%s, status=%d, url=%s", success ? "ok" : "fail", status, x.c_str());
 
-    RenderToTexture();
+    if (renderToTexture)
+    {
+        RenderToTexture();
+    }
 
-    //if (webViewDelegate != nullptr)
-    //{
-    //    webViewDelegate->PageLoaded(&uiWebView);
-    //}
+    if (webViewDelegate != nullptr)
+    {
+        webViewDelegate->PageLoaded(&uiWebView);
+    }
 }
 
 void WebViewControl::RenderToTexture()
 {
-    using namespace concurrency;
-    using namespace Windows::UI::Xaml::Media::Imaging;
-    using namespace Windows::Storage::Streams;
-    using namespace Windows::Storage;
+    int32 width = static_cast<int32>(nativeWebView->Width);
+    int32 height = static_cast<int32>(nativeWebView->Height);
 
-    int w = (int)nativeWebView->Width;
-    int h = (int)nativeWebView->Height;
-
-    InMemoryRandomAccessStream^ ms = ref new InMemoryRandomAccessStream();
-    auto asyncCapture = nativeWebView->CapturePreviewToStreamAsync(ms);
-    auto taskCapture = create_task(asyncCapture);
-    taskCapture.then([this, ms, w, h]()
+    InMemoryRandomAccessStream^ inMemoryStream = ref new InMemoryRandomAccessStream();
+    auto taskCapture = create_task(nativeWebView->CapturePreviewToStreamAsync(inMemoryStream));
+    taskCapture.then([this, inMemoryStream, width, height]()
     {
-        unsigned int streamSize = (unsigned int)ms->Size;
-        DataReader^ reader = ref new DataReader(ms->GetInputStreamAt(0));
-
-        auto asyncLoad = reader->LoadAsync(streamSize);
-        auto taskLoad = create_task(asyncLoad);
-        taskLoad.then([this, reader, streamSize](task<unsigned int> x)
+        size_t streamSize = static_cast<size_t>(inMemoryStream->Size);
+        DataReader^ reader = ref new DataReader(inMemoryStream->GetInputStreamAt(0));
+        auto taskLoad = create_task(reader->LoadAsync(streamSize));
+        taskLoad.then([this, reader, width, height, streamSize](task<unsigned int>)
         {
-            std::vector<uint8> v(streamSize, 0);
+            std::vector<uint8> buf(streamSize, 0);
             size_t index = 0;
-            unsigned int unread = (unsigned int)reader->UnconsumedBufferLength;
-            while (unread > 0)
+            while (reader->UnconsumedBufferLength > 0)
             {
-                v[index] = reader->ReadByte();
+                buf[index] = reader->ReadByte();
                 index += 1;
-                unread = (unsigned int)reader->UnconsumedBufferLength;
             }
+            SavePreviewToFile(buf.data(), buf.size());
 
-            StorageFolder^ folder = ApplicationData::Current->LocalFolder;
-            Platform::String^ wname = folder->Name;
-            Platform::String^ wpath = folder->Path;
-            String name = WStringToString(WideString(wname->Data()));
-            String path = WStringToString(WideString(wpath->Data()));
-
-            path += Format("\\image_%p_%d.bmp", this, ++n);
-
-            //wchar_t curdir[500];
-            //GetCurrentDirectoryW(500, curdir);
-            //wcscat(curdir, L"\\image.bmp");
-            //DWORD nw = 0;
-            ////HANDLE hfile = CreateFile2(curdir, GENERIC_WRITE, 0, CREATE_ALWAYS, nullptr);
-            //HANDLE hfile = CreateFile2(L"image", GENERIC_WRITE, 0, CREATE_ALWAYS, nullptr);
-            //if (hfile != INVALID_HANDLE_VALUE)
-            //{
-            //    WriteFile(hfile, v.data(), v.size(), &nw, nullptr);
-            //    CloseHandle(hfile);
-            //}
-            FILE* file = fopen(path.c_str(), "wb");
-            //FILE* file = fopen(curdir, "rb");
-            //File* file = File::Create(FilePath("d:\\image.bmp"), File::CREATE | File::WRITE);
-            //File* file = File::PureCreate(FilePath("image.bmp"), File::CREATE | File::WRITE);
-            size_t nwritten = 0;
-            if (file)
-            {
-                nwritten = fwrite(v.data(), 1, v.size(), file);
-                fclose(file);
-                //file->Write(v.data(), v.size());
-                //file->Release();
-            }
-            int h = 0;
+            Sprite* sprite = CreateSpriteFromPreviewData(buf.data(), width, height);
+            core->RunOnMainThread([this, sprite]() {
+                uiWebView.SetSprite(sprite, 0);
+            });
         });
     });
+}
+
+Sprite* WebViewControl::CreateSpriteFromPreviewData(const uint8* imageData, int32 width, int32 height) const
+{
+    /*struct BITMAPFILEHEADER {
+        WORD    bfType;
+        DWORD   bfSize;
+        WORD    bfReserved1;
+        WORD    bfReserved2;
+        DWORD   bfOffBits;
+    };*/
+    DWORD bitsOffset = *OffsetPointer<DWORD>(imageData, 10);
+
+    /*{ // manual swap B and R components
+        int n = width * height * 4;
+        uint8* p = const_cast<uint8*>(imageData + bitsOffset);
+        for (int i = 0;i < n;i += 4)
+        {
+            std::swap(p[0], p[2]);
+        }
+    }*/
+
+    RefPtr<Image> imgSrc(Image::CreateFromData(width, height, FORMAT_RGBA8888, imageData + bitsOffset));
+    RefPtr<Image> imgDst(Image::Create(width, height, FORMAT_RGB888));
+    if (imgSrc.Valid() && imgDst.Valid())
+    {
+        ImageConvert::ConvertImageDirect(imgSrc.Get(), imgDst.Get());
+        return Sprite::CreateFromImage(imgDst.Get());
+    }
+    return nullptr;
+}
+
+int WebViewControl::n = 0;
+
+void WebViewControl::SavePreviewToFile(const uint8* imageData, size_t size) const
+{
+    StorageFolder^ folder = ApplicationData::Current->LocalFolder;
+    String path = WStringToString(WideString(folder->Path->Data()));
+
+    path += Format("\\image_%d_%d.bmp", id, ++inc);
+
+    RefPtr<File> file(File::Create(FilePath(path), File::CREATE | File::WRITE));
+    if (file.Valid())
+    {
+        file->Write(imageData, size);
+    }
 }
 
 }   // namespace DAVA

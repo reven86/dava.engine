@@ -37,6 +37,7 @@
 namespace DAVA
 {
 
+class Sprite;
 class CorePlatformWinUAP;
 
 // Web View Control for WinUAP
@@ -85,6 +86,7 @@ public:
     // Size/pos/visibility changes.
     void SetRect(const Rect& rect) override;
     void SetVisible(bool isVisible, bool hierarchic) override;
+    void SetBackgroundTransparency(bool enabled) override;
 
     void SetDelegate(IUIWebViewDelegate* webViewDelegate, UIWebView* webView) override;
 
@@ -92,6 +94,7 @@ public:
     bool IsRenderToTexture() const override;
 
 private:
+    void InstallEventHandlers();
     void PositionWebView(const Rect& rect);
 
 private:    // WebView event handlers
@@ -99,16 +102,21 @@ private:    // WebView event handlers
     void OnNavigationCompleted(Windows::UI::Xaml::Controls::WebView^ sender, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs^ args);
 
     void RenderToTexture();
+    Sprite* CreateSpriteFromPreviewData(const uint8* imageData, int32 width, int32 height) const;
+    void SavePreviewToFile(const uint8* imageData, size_t size) const;
 
 private:
     UIWebView& uiWebView;
     CorePlatformWinUAP* core;
     IUIWebViewDelegate* webViewDelegate = nullptr;
     Windows::UI::Xaml::Controls::WebView^ nativeWebView = nullptr;
-    Windows::Foundation::Uri^ curUrl = nullptr;
     bool renderToTexture = false;
 
-    int n = 0;
+    Rect originalRect;
+
+    mutable int id = 0;
+    mutable int inc = 0;
+    static int n;
 };
 
 //////////////////////////////////////////////////////////////////////////
