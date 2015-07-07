@@ -202,7 +202,7 @@
 	return YES;
 }
 
-- (BOOL)textView:(UITextView*)textView_ shouldChangeTextInRange:(NSRange)range replacementString:(NSString *)string
+- (BOOL)textView:(UITextView*)textView_ shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)string
 {
     BOOL result = [self textField:(UITextField*)textView_ shouldChangeCharactersInRange:range replacementString:string];
     return result;
@@ -565,7 +565,6 @@
 
 	cppTextField->GetDelegate()->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
 }
-
 
 @end
 
