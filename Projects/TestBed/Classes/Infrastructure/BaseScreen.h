@@ -48,8 +48,8 @@ public:
     
     void SystemScreenSizeDidChanged(const Rect &newFullScreenSize) override
     {
-        UnloadResources();
-        LoadResources();
+        //UnloadResources();
+        //LoadResources();
     }
 
 protected:
