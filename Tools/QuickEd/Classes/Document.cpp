@@ -92,7 +92,6 @@ void Document::SetSelectedItem(const PointerSerializer &arg)
     {
         auto controls = arg.GetPointers<ControlNode*>();
         QList<ControlNode*> list = QList<ControlNode*>::fromVector(QVector<ControlNode*>::fromStdVector(controls));
-        //sharedData->SetData("activatedControls", QVariant::fromValue(list)); //TODO: add selection for PackageNodes
     }
 }
 
