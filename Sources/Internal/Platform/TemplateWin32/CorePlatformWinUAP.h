@@ -103,7 +103,14 @@ template<typename F>
 void CorePlatformWinUAP::RunOnUIThread(F fn)
 {
     using namespace Windows::UI::Core;
-    xamlApp->UIThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(fn));
+    if (IsUIThread())
+    {
+        fn();
+    }
+    else
+    {
+        xamlApp->UIThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(fn));
+    }
 }
 
 template<typename F>
@@ -111,14 +118,21 @@ void CorePlatformWinUAP::RunOnUIThreadBlocked(F fn)
 {
     using namespace Windows::UI::Core;
 
-    Spinlock lock;
-    auto wrapper = [&lock, &fn]() {
+    if (IsUIThread())
+    {
         fn();
-        lock.Unlock();
-    };
-    lock.Lock();
-    xamlApp->UIThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(wrapper));
-    lock.Lock();
+    }
+    else
+    {
+        Spinlock lock;
+        auto wrapper = [&lock, &fn]() {
+            fn();
+            lock.Unlock();
+        };
+        lock.Lock();
+        xamlApp->UIThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(wrapper));
+        lock.Lock();
+    }
 }
 
 template<typename F>
