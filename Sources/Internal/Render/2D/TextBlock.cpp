@@ -48,7 +48,7 @@
 #include "TextLayout.h"
 
 
-#include "UI/UIControlSystem.h" // bad-bad-bad
+#include "UI/UIControlSystem.h"
 #include "UI/Layouts/UILayoutSystem.h"
 
 namespace DAVA 
