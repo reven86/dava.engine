@@ -153,7 +153,7 @@ RenderBatch* RenderBatchPool::CreateRenderBatch(NMaterial* mat,
     RenderBatch* rb = new RenderBatch();
     
     NMaterial* batchMaterial = NMaterial::CreateMaterialInstance();
-    batchMaterial->AddNodeFlags(DataNode::NodeRuntimeFlag);
+    batchMaterial->SetRuntime(true);
     batchMaterial->SetParent(mat);
     
     if(transform)
