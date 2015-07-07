@@ -46,7 +46,7 @@ public:
     bool Create(uint32 width, uint32 height);
 
     bool Read(const FilePath &filename);
-    void Write(const FilePath &filename, PixelFormat pixelFormat = FORMAT_INVALID, ImageQuality quality = DEFAULT_IMAGE_QUALITY);
+    void Write(const FilePath &filename, ImageQuality quality = DEFAULT_IMAGE_QUALITY);
 
     void DrawImage(const PackedInfo &drawRect, const Rect2i &imageOffsetRect, PngImageExt *image);
     void DrawImage(int32 sx, int32 sy, PngImageExt *image, const Rect2i &srcRect);

@@ -850,7 +850,7 @@ void TexturePacker::ExportImage(PngImageExt *image, FilePath exportedPathname, e
     descriptor->Export(descriptor->pathname);
 
     image->DitherAlpha();
-    image->Write(exportedPathname, pixelFormat, imageQuality);
+    image->Write(exportedPathname, imageQuality);
 
     if (toPerformConvert)
     {
