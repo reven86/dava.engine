@@ -29,6 +29,7 @@
 
 #include "UI/UIControlSystem.h"
 #include "UI/UIScreen.h"
+#include "UI/Styles/UIStyleSheetSystem.h"
 #include "FileSystem/Logger.h"
 #include "Render/RenderManager.h"
 #include "Render/OcclusionQuery.h"
@@ -49,6 +50,7 @@ UIControlSystem::~UIControlSystem()
 	SafeRelease(currentScreen); 
 	SafeRelease(popupContainer);
     SafeRelease(layoutSystem);
+    SafeDelete(styleSheetSystem);
 }
 	
 UIControlSystem::UIControlSystem()
@@ -67,8 +69,6 @@ UIControlSystem::UIControlSystem()
     focusedControl = NULL;
 	//mainControl = 0;
 
-    layoutSystem = new UILayoutSystem();
-
 	popupContainer = new UIControl(Rect(0, 0, 1, 1));
 	popupContainer->SetInputEnabled(false);
 	
@@ -83,7 +83,9 @@ UIControlSystem::UIControlSystem()
 	baseGeometricData.angle = 0;
 
     ui3DViewCount = 0;
-    
+
+    layoutSystem = new UILayoutSystem();
+    styleSheetSystem = new UIStyleSheetSystem();
 }
 	
 void UIControlSystem::SetScreen(UIScreen *_nextScreen, UIScreenTransition * _transition)
@@ -839,6 +841,11 @@ void UIControlSystem::UI3DViewRemoved()
 UILayoutSystem *UIControlSystem::GetLayoutSystem() const
 {
     return layoutSystem;
+}
+
+UIStyleSheetSystem* UIControlSystem::GetStyleSheetSystem() const
+{
+    return styleSheetSystem;
 }
 
 };

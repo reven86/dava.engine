@@ -43,6 +43,12 @@
 
 using namespace DAVA;
 
+namespace
+{
+const FastName PROPERTY_NAME_MULTILINE("multiline");
+const FastName PROPERTY_NAME_SIZE("size");
+}
+
 LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(LegacyControlData *data)
     : legacyData(SafeRetain(data))
     , storeAggregatorName(false)
@@ -126,7 +132,7 @@ bool LegacyEditorUIPackageLoader::LoadPackage(const FilePath &packagePath, Abstr
             storeAggregatorName = false;
         }
         legacyControl->SetName(data->name);
-        builder->ProcessProperty(legacyControl->TypeInfo()->Member("size"), VariantType(data->size));
+        builder->ProcessProperty(legacyControl->TypeInfo()->Member(PROPERTY_NAME_SIZE), VariantType(data->size));
     }
     else
     {
@@ -223,19 +229,18 @@ void LegacyEditorUIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *c
     if (baseInfo)
         LoadControlPropertiesFromYamlNode(control, baseInfo, node, builder);
     
-    builder->BeginControlPropertiesSection(typeInfo->Name());
+	builder->BeginControlPropertiesSection(typeInfo->Name().c_str());
 
     String className = control->GetClassName();
     for (int32 i = 0; i < typeInfo->MembersCount(); i++)
     {
         const InspMember *member = typeInfo->Member(i);
-        String memberName = member->Name();
         
-        memberName = GetOldPropertyName(className, memberName);
+        String oldPropertyName = GetOldPropertyName(className, member->Name().c_str());
         
         VariantType res;
         if (node)
-            res = ReadVariantTypeFromYamlNode(member, node, -1, memberName);
+            res = ReadVariantTypeFromYamlNode(member, node, -1, oldPropertyName);
         
         builder->ProcessProperty(member, res);
     }
@@ -256,10 +261,9 @@ void LegacyEditorUIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *contro
             for (int32 j = 0; j < insp->MembersCount(); j++)
             {
                 const InspMember *member = insp->Member(j);
-                String memberName = member->Name();
                 int32 subNodeIndex = -1;
                 
-                memberName = GetOldPropertyName(className, memberName);
+                String memberName = GetOldPropertyName(className, member->Name().c_str());
                 if (memberName == "stateSprite")
                 {
                     subNodeIndex = 0;
@@ -309,7 +313,7 @@ void LegacyEditorUIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UICo
             for (int32 j = 0; j < insp->MembersCount(); j++)
             {
                 const InspMember *member = insp->Member(j);
-                String memberName = member->Name();
+                String memberName = member->Name().c_str();
                 memberName = GetOldPropertyName(className, memberName);
                 memberName = GetOldBgPrefix(className, internalControlName) + memberName + GetOldBgPostfix(className, internalControlName);
                 VariantType value = ReadVariantTypeFromYamlNode(member, node, -1, memberName);
@@ -340,7 +344,7 @@ void LegacyEditorUIPackageLoader::ProcessLegacyAligns(UIControl *control, const 
             for (int32 j = 0; j < insp->MembersCount(); j++)
             {
                 const InspMember *member = insp->Member(j);
-                String name = legacyAlignsMap[String(member->Name())];
+                String name = legacyAlignsMap[String(member->Name().c_str())];
                 VariantType res = ReadVariantTypeFromYamlNode(member, node, -1, name);
                 if (name.find("Enabled") != String::npos)
                 {
@@ -384,7 +388,7 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
                     "returnKeyType"
                 };
 
-                if (strcmp(member->Name(), "multiline") == 0)
+                if (member->Name() == PROPERTY_NAME_MULTILINE)
                 {
                     if (valueNode->AsBool())
                     {
@@ -430,7 +434,7 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
                         DVASSERT_MSG(false, Format("No convertion from string to flag value."
                                                    "\n Yaml property name: \"%s\""
                                                    "\n Introspection property name: \"%s\""
-                                                   "\n String value: \"%s\"", propertyName.c_str(), member->Name(), flagNode->AsString().c_str()).c_str());
+                                                   "\n String value: \"%s\"", propertyName.c_str(), member->Name().c_str(), flagNode->AsString().c_str()).c_str());
                     }
                 }
                 return VariantType(val);
@@ -477,11 +481,11 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
 
         DVASSERT_MSG(false, Format("No legacy convertion for property."
                                    "\n Yaml property name: \"%s\""
-                                   "\n Introspection property name: \"%s\"", propertyName.c_str(), member->Name()).c_str());
+                                   "\n Introspection property name: \"%s\"", propertyName.c_str(), member->Name().c_str()).c_str());
     }
     else
     {
-        String name = member->Name();
+        String name = member->Name().c_str();
         bool isPosition = name == "position";
         if (isPosition || name == "size")
         {

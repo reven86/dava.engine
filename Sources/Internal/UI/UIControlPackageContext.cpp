@@ -26,34 +26,44 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __DAVAENGINE_OOBBOX3_H__
-#define __DAVAENGINE_OOBBOX3_H__
-
-#include "Base/BaseTypes.h"
-#include "Base/BaseMath.h"
-#include "Math/Vector.h"
-#include "Math/Ray.h"
-#include "Base/Introspection.h"
+#include "UI/UIControlPackageContext.h"
+#include "UI/Styles/UIStyleSheet.h"
 
 namespace DAVA
 {
 
-#define OOBBOX_INFINITY 1000000.0f
-
-/**
-	\brief class to work with object oriented bounding boxes
- */
-class OOBBox3
+UIControlPackageContext::~UIControlPackageContext()
 {
-public:
-	Vector3 center;
-    Vector3 axis[3];
-    Vector3 size;
-		
-};
+    for (UIStyleSheet* styleSheet : styleSheets)
+    {
+        SafeRelease(styleSheet);
+    }
+}
 
-};
+UIControlPackageContext::UIControlPackageContext() :
+    styleSheetsSorted(false)
+{
 
-#endif // __DAVAENGINE_OOBBOX3_H__
+}
 
+void UIControlPackageContext::AddStyleSheet(UIStyleSheet* styleSheet)
+{
+    styleSheetsSorted = false;
+    styleSheets.push_back(SafeRetain(styleSheet));
+}
+
+const Vector<UIStyleSheet*>& UIControlPackageContext::GetSortedStyleSheets()
+{
+    if (!styleSheetsSorted)
+    {
+        std::sort(styleSheets.begin(), styleSheets.end(),
+            [](const UIStyleSheet* first, const UIStyleSheet* second) {
+            return first->GetScore() > second->GetScore();
+        });
+        styleSheetsSorted = true;
+    }
+
+    return styleSheets;
+}
+
+}

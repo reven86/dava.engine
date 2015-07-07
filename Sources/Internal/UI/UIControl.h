@@ -32,6 +32,7 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControlBackground.h"
+#include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 #include "Animation/AnimatedObject.h"
 #include "Animation/Interpolation.h"
 
@@ -45,6 +46,7 @@ class UIControlBackground;
 class Message;
 class UIComponent;
 class UIControlFamily;
+class UIControlPackageContext;
 
 #define CONTROL_TOUCH_AREA  15
     /**
@@ -243,6 +245,9 @@ public:
 
         STATE_COUNT             = 6
     };
+
+    static const char* STATE_NAMES[STATE_COUNT];
+
     /**
      \enum Control events supported by default.
      */
@@ -682,6 +687,7 @@ public:
      \returns control name.
      */
     inline const String & GetName() const;
+    inline const FastName & GetFastName() const;
 
     /**
      \brief Sets the contol tag.
@@ -856,7 +862,6 @@ public:
      \param[in] srcControl Source control to copy parameters from.
      */
     virtual void CopyDataFrom(UIControl *srcControl);
-
 
      //Animation helpers
 
@@ -1242,6 +1247,7 @@ public:
     static void DumpControls(bool onlyOrphans);
 private:
     String name;
+    FastName fastName;
 protected:
     UIControl *parent;
     List<UIControl*> childs;
@@ -1260,6 +1266,7 @@ protected:
 
     UIControlBackground *background;
     int32 controlState;
+    int32 prevControlState;
 
     // boolean flags are grouped here to pack them together (see please DF-2149).
     bool exclusiveInput : 1;
@@ -1273,6 +1280,9 @@ protected:
     // Enable align options
     bool isUpdated : 1;
     bool isIteratorCorrupted : 1;
+
+    bool styleSheetRebuildNeeded : 1;
+    bool styleSheetInitialized : 1;
 
     int32 inputProcessorsCount;
 
@@ -1341,12 +1351,45 @@ public:
     uint32 GetComponentCount(uint32 componentType) const;
     uint64 GetAvailableComponentFlags() const;
 
+    const Vector<UIComponent *>& GetComponents();
 private:
     Vector<UIComponent *> components;
     UIControlFamily * family;
     void RemoveComponent(const Vector<UIComponent *>::iterator & it);
     void UpdateFamily();
 /* Components */
+
+/* Styles */
+public:
+    void AddClass(const FastName& clazz);
+    void RemoveClass(const FastName& clazz);
+    bool HasClass(const FastName& clazz);
+    
+    String GetClassesAsString();
+    void SetClassesFromString(const String &classes);
+    
+    const UIStyleSheetPropertySet& GetLocalPropertySet() const;
+    void SetPropertyLocalFlag(uint32 propertyIndex, bool value);
+    
+    const UIStyleSheetPropertySet& GetStyledPropertySet() const;
+    void SetStyledPropertySet(const UIStyleSheetPropertySet &set);
+    
+    bool GetStyleSheetInitialized() const;
+
+    void MarkStyleSheetAsUpdated();
+
+    UIControlPackageContext* GetPackageContext() const;
+    UIControlPackageContext* GetLocalPackageContext() const;
+    void SetPackageContext(UIControlPackageContext* packageContext);
+private:
+    Vector<FastName> classes;
+    UIStyleSheetPropertySet localProperties;
+    UIStyleSheetPropertySet styledProperties;
+    RefPtr< UIControlPackageContext > packageContext;
+    UIControl* parentWithContext;
+
+    void PropagateParentWithContext(UIControl* newParentWithContext);
+/* Styles */
 
 public:
     inline bool GetSystemVisible() const;
@@ -1385,6 +1428,7 @@ public:
                          PROPERTY("clip", "Clip", GetClipContents, SetClipContents, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("noInput", "No Input", GetNoInput, SetNoInput, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("tag", "Tag", GetTag, SetTag, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("classes", "Classes", GetClassesAsString, SetClassesFromString, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("initialState", "Initial State", GetInitialState, SetInitialState, I_SAVE | I_VIEW | I_EDIT)
                          
                          PROPERTY("debugDraw", "Debug Draw", GetDebugDraw, SetDebugDrawNotHierarchic, I_VIEW | I_EDIT)
@@ -1449,6 +1493,11 @@ float32 UIControl::GetAngleInDegrees() const
 const String & UIControl::GetName() const
 {
     return name;
+}
+
+const FastName & UIControl::GetFastName() const
+{
+    return fastName;
 }
 
 int32 UIControl::GetTag() const

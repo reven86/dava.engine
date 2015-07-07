@@ -50,6 +50,7 @@ namespace DAVA
 
 class UIScreen;
 class UILayoutSystem;
+class UIStyleSheetSystem;
 
 class ScreenSwitchListener
 {
@@ -299,6 +300,7 @@ public:
     void UI3DViewRemoved();
     
     UILayoutSystem *GetLayoutSystem() const;
+    UIStyleSheetSystem* GetStyleSheetSystem() const;
 
 private:
 	/**
@@ -316,6 +318,9 @@ private:
     void NotifyListenersDidSwitch( UIScreen* screen );
 
     void CopyTouchData(UIEvent* dst, const UIEvent* src);
+
+    UILayoutSystem *layoutSystem;
+    UIStyleSheetSystem* styleSheetSystem;
 
 	Vector<ScreenSwitchListener*> screenSwitchListeners;
 
@@ -342,8 +347,6 @@ private:
 	UIGeometricData baseGeometricData;
 
     int32 ui3DViewCount;
-
-    UILayoutSystem *layoutSystem;
 
 	friend class UIScreenTransition;
 	friend class UIScreenManager;
