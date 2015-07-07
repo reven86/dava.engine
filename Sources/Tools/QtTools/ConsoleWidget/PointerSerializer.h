@@ -32,22 +32,19 @@
 
 #include "Base/BaseTypes.h"
 
-namespace DAVA
-{
-
 class PointerSerializer
 {
 public:
     PointerSerializer() = default;
     PointerSerializer(const PointerSerializer &converter) = default;
     PointerSerializer(PointerSerializer &&converter);
-    static PointerSerializer ParseString(const String &str);
+    static PointerSerializer ParseString(const DAVA::String &str);
     static const char* GetRegex();
     PointerSerializer& operator = (const PointerSerializer &result) = default;
     PointerSerializer& operator = (PointerSerializer &&result);
     
     template <typename T>
-    Vector<T> GetPointers() const
+    DAVA::Vector<T> GetPointers() const
     {
         static_assert(std::is_pointer<T>::value, "works only for vector of pointers");
         Vector<T>  returnVec(pointers.size());
@@ -76,13 +73,13 @@ public:
         text = FromPointerList(cont);
     }
 
-    PointerSerializer(const String &str)
+    PointerSerializer(const DAVA::String &str)
         : PointerSerializer(ParseString(str))
     {
     }
 
     template <typename T>
-    static String FromPointer(const T pointer_)
+    static DAVA::String FromPointer(const T pointer_)
     {
         DAVA::StringStream ss;
         ss << "{"
@@ -93,7 +90,7 @@ public:
         return ss.str();
     }
     template <typename Container>
-    static String FromPointerList(Container &&cont)
+    static DAVA::String FromPointerList(Container &&cont)
     {
         using T = typename std::remove_reference<Container>::type::value_type;
         static_assert(std::is_pointer<T>::value, "works only for vector of pointers");
@@ -128,10 +125,9 @@ public:
         return !typeName.empty();
     }
 private:
-    Vector<void*> pointers;
+    DAVA::Vector<void*> pointers;
 
-    String typeName;
-    String text;
+    DAVA::String typeName;
+    DAVA::String text;
 };
-}
 #endif // __DAVAENGINE_JSON_CONVERTER_H_

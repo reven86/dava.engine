@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "Utils/PointerSerializer.h"
+#include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include <regex>
 #include <sstream>
 

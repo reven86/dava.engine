@@ -34,6 +34,7 @@
 #include "EditorCore.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
+#include "QtTools/ConsoleWidget/PointerSerializer.h"
 
 #include "SharedData.h"
 #include <QSettings>
@@ -230,6 +231,11 @@ void EditorCore::UpdateLanguage()
     {
         document->RefreshAllControlProperties();
     }
+}
+
+void EditorCore::OnConsoleItemClicked(const PointerSerializer &arg)
+{
+    documentGroup->GetActiveDocument()->SetSelectedItem(arg);
 }
 
 void EditorCore::OpenProject(const QString &path)

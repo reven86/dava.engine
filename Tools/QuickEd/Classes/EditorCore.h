@@ -42,6 +42,7 @@ class DocumentGroup;
 class Project;
 class MainWindow;
 class PackageNode;
+class PointerSerializer;
 
 class EditorCore : public QObject, public DAVA::Singleton<EditorCore>
 {
@@ -69,6 +70,8 @@ protected slots:
     void OnCurrentTabChanged(int index);
     
     void UpdateLanguage();
+
+    void OnConsoleItemClicked(const PointerSerializer &arg);
     
 protected:
     void OpenProject(const QString &path);

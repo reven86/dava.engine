@@ -34,7 +34,6 @@
 
 namespace DAVA {
     class FilePath;
-    class PointerSerializer;
 }
 
 class PackageNode;
@@ -44,6 +43,7 @@ class SharedData;
 class PropertiesModel;
 class PackageModel;
 class ControlNode;
+class PointerSerializer;
 
 class Document : public QObject
 {
@@ -59,7 +59,7 @@ public:
     SharedData *GetContext() const;
     QUndoStack *GetUndoStack() const;
     QtModelPackageCommandExecutor *GetCommandExecutor() const;
-    void SetSelectedItem(const DAVA::PointerSerializer &arg);
+    void SetSelectedItem(const PointerSerializer &arg);
 signals:
     void SharedDataChanged(const QByteArray &role);
 public slots:
