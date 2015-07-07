@@ -62,13 +62,13 @@ void AddSkyboxDialog::FillPropertyEditorWithContent()
 	if(NULL == entity)
 		return;
 
-    AddInspMemberToEditor(entity, entity->GetTypeInfo()->Member("name"));
+	AddInspMemberToEditor(entity, entity->GetTypeInfo()->Member(FastName("name")));
 
     SkyboxRenderObject *skyBox = GetSkybox(entity);
     if(skyBox)
     {
-        AddInspMemberToEditor( skyBox, skyBox->GetTypeInfo()->Member("texture"));
-        AddInspMemberToEditor( skyBox, skyBox->GetTypeInfo()->Member("verticalOffset"));
+		AddInspMemberToEditor(skyBox, skyBox->GetTypeInfo()->Member(FastName("texture")));
+		AddInspMemberToEditor(skyBox, skyBox->GetTypeInfo()->Member(FastName("verticalOffset")));
     }
 }
 

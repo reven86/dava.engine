@@ -49,6 +49,7 @@ namespace DAVA
 {
 
 class UIScreen;
+class UIStyleSheetSystem;
 
 class ScreenSwitchListener
 {
@@ -297,6 +298,7 @@ public:
     void UI3DViewAdded();
     void UI3DViewRemoved();
 
+    UIStyleSheetSystem* GetStyleSheetSystem();
 private:
 	/**
 	 \brief Instantly replace one screen to enother.
@@ -313,6 +315,8 @@ private:
     void NotifyListenersDidSwitch( UIScreen* screen );
 
     void CopyTouchData(UIEvent* dst, const UIEvent* src);
+
+    UIStyleSheetSystem* styleSheetSystem;
 
 	Vector<ScreenSwitchListener*> screenSwitchListeners;
 
