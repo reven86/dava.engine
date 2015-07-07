@@ -60,7 +60,7 @@ public:
     eScreenMode GetScreenMode() override;
     void SwitchScreenToMode(eScreenMode screenMode) override;
     DisplayMode GetCurrentDisplayMode() override;
-    void SetCursorState(bool isShown);
+    void SetCursorPining(bool isPining);
 
     // Win10 specific member functions
 

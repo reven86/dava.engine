@@ -95,6 +95,17 @@ Windows::Foundation::Size WinUAPXamlApp::GetCurrentScreenSize()
     return Windows::Foundation::Size(windowWidth, windowHeight);
 }
 
+void WinUAPXamlApp::SetCursorPining(bool isPining)
+{
+    // will be started on UI thread
+    Logger::FrameworkDebug("[CorePlatformWinUAP] CursorPining %d", static_cast<int32>(isPining));
+    if (isPhoneApiDetect)
+    {
+        return;
+    }
+    isPining = isCursorPining;
+}
+
 void WinUAPXamlApp::SetCursorState(bool isShown)
 {
     // will be started on UI thread
@@ -105,7 +116,6 @@ void WinUAPXamlApp::SetCursorState(bool isShown)
     }
     if (isShown != isMouseCursorShown)
     {
-
         Window::Current->CoreWindow->PointerCursor = (isShown ? ref new CoreCursor(CoreCursorType::Arrow, 0) : nullptr);
         isMouseCursorShown = isShown;
     }
@@ -118,7 +128,6 @@ void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchAc
     DeviceInfo::InitializeScreenInfo(static_cast<int32>(coreWindow->Bounds.Width), static_cast<int32>(coreWindow->Bounds.Height));
     uiThreadDispatcher = coreWindow->Dispatcher;
 
-    SetupEventHandlers();
     CreateBaseXamlUI();
 
     UpdateScreenSize(coreWindow->Bounds.Width, coreWindow->Bounds.Height);
@@ -171,10 +180,12 @@ void WinUAPXamlApp::Run()
     FrameworkDidLaunched();
 
     core->RunOnUIThreadBlocked([this]() {
+        SetupEventHandlers();
         SetTitleName();
         InitInput();
         PrepareScreenSize();
         SetDisplayOrientations();
+        Core::Instance()->SetIsActive(true);
     });
 
     Core::Instance()->SystemAppStarted();
@@ -263,10 +274,10 @@ void WinUAPXamlApp::OnWindowSizeChanged(::Windows::UI::Core::CoreWindow^ sender,
 
 void WinUAPXamlApp::OnPointerPressed(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args)
 {
-    // will be started on main thread
     PointerPoint^ pointPtr = args->CurrentPoint;
     PointerPointProperties^ pointProperties = pointPtr->Properties;
-    PointerDeviceType type = args->CurrentPoint->PointerDevice->PointerDeviceType;
+    PointerDeviceType type = pointPtr->PointerDevice->PointerDeviceType;
+    // will be started on main thread
     if ((PointerDeviceType::Mouse == type) || (PointerDeviceType::Pen == type))
     {
         //update state before create dava event
@@ -329,7 +340,7 @@ void WinUAPXamlApp::OnPointerEntered(Platform::Object^ sender, Windows::UI::Core
     // will be started on main thread
     Logger::FrameworkDebug("[CorePlatformWinUAP] OnPointerEntered");
     PointerDeviceType type = args->CurrentPoint->PointerDevice->PointerDeviceType;
-    if (PointerDeviceType::Mouse == type)
+    if (PointerDeviceType::Mouse == type && isCursorPining)
     {
         core->RunOnUIThread([this]() { SetCursorState(false); });
     }
@@ -428,6 +439,10 @@ void WinUAPXamlApp::OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::
 void WinUAPXamlApp::OnMouseMoved(_In_ MouseDevice^ mouseDevice, _In_ MouseEventArgs^ args)
 {
     // Note: must run on main thread
+    if (!isCursorPining || isMouseCursorShown)
+    {
+        return;
+    }
     Point position(static_cast<float32>(args->MouseDelta.X), static_cast<float32>(args->MouseDelta.Y));
     int32 button = 0;
     if (isLeftButtonPressed)
