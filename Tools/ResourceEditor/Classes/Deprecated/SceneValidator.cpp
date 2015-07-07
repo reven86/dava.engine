@@ -310,7 +310,7 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
 	auto endItMaterials = materials.end();
 	for (auto it = materials.begin(); it != endItMaterials; ++it)
 	{
-        if (((*it)->GetNodeGlags() & DataNode::NodeRuntimeFlag) == 0) //VI: don't validate runtime materials
+        if (!(*it)->IsRuntime()) //VI: don't validate runtime materials
         {
             DAVA::uint32 count = (*it)->GetTextureCount();
             for (DAVA::uint32 t = 0; t < count; ++t)
