@@ -215,10 +215,13 @@ public class JNITextField {
         
         @Override
         public boolean onTouchEvent(MotionEvent event) {
-            MotionEvent newEvent = MotionEvent.obtain(event);
-            newEvent.setLocation(getLeft() + event.getX(),
-                    getTop() + event.getY());
-            JNIActivity.GetActivity().glView.dispatchTouchEvent(newEvent);
+            if (getMaxLines() == 1) {
+                // pass event to glView only in single line mode
+                MotionEvent newEvent = MotionEvent.obtain(event);
+                newEvent.setLocation(getLeft() + event.getX(),
+                        getTop() + event.getY());
+                JNIActivity.GetActivity().glView.dispatchTouchEvent(newEvent);
+            }
             return super.onTouchEvent(event);
         }
 
@@ -755,14 +758,18 @@ public class JNITextField {
                     @Override
                     public boolean onEditorAction(TextView v, int actionId,
                             KeyEvent event) {
-                        JNIActivity.GetActivity().PostEventToGL(new Runnable() {
-                            @Override
-                            public void run() {
-                                JNITextField.TextFieldShouldReturn(id);
-                            }
-                        });
-                        text.updateStaticTexture();
-                        return true;
+                        // event - If triggered by an enter key, this is the event; otherwise, this is null.
+                        if (event != null && text.getMaxLines() == 1) {
+                            JNIActivity.GetActivity().PostEventToGL(new Runnable() {
+                                @Override
+                                public void run() {
+                                    JNITextField.TextFieldShouldReturn(id);
+                                }
+                            });
+                            text.updateStaticTexture();
+                            return true; // Return true if you have consumed the action
+                        }
+                        return false;
                     }
                 });
 

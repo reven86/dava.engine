@@ -61,7 +61,8 @@ public:
 	
     /**
         \brief Asks the delegate if the text field should process the pressing of the return button.
-        In this function you can check what you want to do with UITextField when return button pressed. 
+        In this function you can check what you want to do with UITextField when return button pressed.
+        Works only in single line mode.
      */
 	virtual void TextFieldShouldReturn(UITextField * textField);
 
