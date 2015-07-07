@@ -56,7 +56,6 @@
 #include "Commands2/ParticleEditorCommands.h"
 #include "Commands2/SaveEntityAsAction.h"
 #include "Commands2/ConvertToShadowCommand.h"
-#include "Base/Result.h"
 #include "Utils/PointerSerializer.h"
 #include "FileSystem/VariantType.h"
 
@@ -548,7 +547,6 @@ void SceneTree::LookAtSelection()
 void SceneTree::RemoveSelection()
 {
 	SceneEditor2* sceneEditor = treeModel->GetScene();
-    ResultList resultList;
 	if(NULL != sceneEditor)
 	{
 		EntityGroup selection = sceneEditor->selectionSystem->GetSelection();

@@ -34,7 +34,6 @@
 #include <QDockWidget>
 #include <QPointer>
 #include <QItemSelectionModel>
-#include "Base/Result.h"
 #include "UI/Package/FilteredPackageModel.h"
 #include "UI/Package/PackageModel.h"
 #include "DAVAEngine.h"
@@ -57,8 +56,6 @@ public:
 public slots:
     void OnDocumentChanged(SharedData *context);
     void OnDataChanged(const QByteArray &role);
-signals:
-    void GotResult(const DAVA::ResultList &result);
 private:
     void LoadContext();
     void SaveContext();

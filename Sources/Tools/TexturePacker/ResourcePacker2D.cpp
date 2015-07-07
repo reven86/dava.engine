@@ -159,24 +159,31 @@ bool ResourcePacker2D::IsMD5ChangedDir(const FilePath & processDirectoryPath, co
 
     std::array<uint8, 16> oldMD5Digest;
     std::array<uint8, 16> newMD5Digest;
-    File * file = File::Create(md5FileName, File::OPEN | File::READ);
-    if (nullptr == file)
+    bool isChanged = false;
+
+    ScopedPtr<File> file(File::Create(md5FileName, File::OPEN | File::READ));
+    if (!file)
     {
-        return true;
+        isChanged = true;
     }
-    int32 bytes = file->Read(oldMD5Digest.data(), 16);
-    DVASSERT(bytes == 16 && "We should always read 16 bytes from md5 file");
-    SafeRelease(file);
+    else
+    {
+        auto bytesRead = file->Read(oldMD5Digest.data(), 16);
+        DVASSERT(bytesRead == 16 && "We should always read 16 bytes from md5 file");
+    }
 
     MD5::ForDirectory(pathname, newMD5Digest.data(), isRecursive, /*includeHidden=*/false);
 
     file = File::Create(md5FileName, File::CREATE | File::WRITE);
-    DVASSERT(nullptr != file);
+    DVASSERT(file && "Can't create md5 file");
     
-    bytes = file->Write(newMD5Digest.data(), 16);
-    DVASSERT(bytes == 16 && "16 bytes should be always written for md5 file");
-    SafeRelease(file);
-    return oldMD5Digest == newMD5Digest;
+    auto bytesWritten = file->Write(newMD5Digest.data(), 16);
+    DVASSERT(bytesWritten == 16 && "16 bytes should be always written for md5 file");
+
+    if (isChanged)
+        return true;
+    else
+        return oldMD5Digest != newMD5Digest;
 }
 
 
@@ -359,7 +366,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 
     if(clearProcessDirectory)
     {
-        FileSystem::Instance()->DeleteDirectoryFiles(processDirectoryPath, false);
+    	FileSystem::Instance()->DeleteDirectoryFiles(processDirectoryPath, false);
     }
 
     FileSystem::Instance()->CreateDirectory(outputPath);

@@ -19,7 +19,7 @@ public:
     const QVariantList &GetFilters() const;
     const QString &GetFilterString() const;
 public slots:
-void SetFilters(const QVariantList &filters);
+    void SetFilters(const QVariantList &filters);
     void SetFilterString(const QString& filter);
 
 private:

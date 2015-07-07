@@ -7,8 +7,7 @@
 #include "Utils/UTF8Utils.h"
 #include "Base/GlobalEnum.h"
 #include "Debug/DVAssert.h"
-#include "Utils/PointerSerializer.h"
- 
+
 LogModel::LogModel(QObject* parent)
     : QAbstractListModel(parent)
 {
@@ -36,20 +35,18 @@ QVariant LogModel::data(const QModelIndex &index, int role) const
     {
         return QVariant();
     }
-    QMutexLocker locker(&m_mutex);
+    QMutexLocker locker(&mutex);
     const auto &item = items.at(index.row());
     switch (role)
     {
     case Qt::DisplayRole:
-        return item.displayText;
+        return item.text;
 
     case Qt::DecorationRole:
         return GetIcon(item.ll);
 
     case LEVEL_ROLE:
         return item.ll;
-    case ORIGINAL_TEXT_ROLE:
-        return item.text;
     default:
         return QVariant();
     }
@@ -57,14 +54,14 @@ QVariant LogModel::data(const QModelIndex &index, int role) const
 
 int LogModel::rowCount(const QModelIndex &parent) const
 {
-    QMutexLocker locker(&m_mutex);
+    QMutexLocker locker(&mutex);
     return items.size();
 }
 
 void LogModel::AddMessage(DAVA::Logger::eLogLevel ll, const QString& text)
 {
     {
-        QMutexLocker locker(&m_mutex);
+        QMutexLocker locker(&mutex);
         items.append(LogItem(ll, normalize(text)));
     }
     timer->start();
@@ -94,7 +91,7 @@ void LogModel::createIcons()
         bool ok = logMap->GetValue(i, value);
         if (!ok)
         {
-            DVASSERT_MSG(ok, "wrong enum used to create GPU list");
+            DVASSERT_MSG(ok, "wrong enum used to create eLogLevel list");
             break;
         }
         QPixmap pix(16, 16);
@@ -140,9 +137,9 @@ const QPixmap &LogModel::GetIcon(int ll) const
 {
     return icons.at(ll);
 }
+
 LogModel::LogItem::LogItem(DAVA::Logger::eLogLevel ll_, const QString& text_)
-    : ll(ll_), text(text_), displayText(text_)
+    : ll(ll_), text(text_)
 {
-    QRegularExpression re(DAVA::PointerSerializer::GetRegex());
-    displayText.replace(re, "");
+    //TODO: add here extraction of data from text
 }

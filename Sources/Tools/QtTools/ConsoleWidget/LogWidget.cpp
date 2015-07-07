@@ -11,26 +11,20 @@
 #include "LogDelegate.h"
 
 #include "Base/GlobalEnum.h"
-#include "Utils/PointerSerializer.h"
 #include "Debug/DVAssert.h"
 
 LogWidget::LogWidget(QWidget* parent)
     : QWidget(parent)
     , onBottom(true)
 {
-    qRegisterMetaType<DAVA::PointerSerializer>("DAVA::PointerSerializer");
     setupUi(this);
-    connect(log, &QListView::clicked, this, &LogWidget::OnClicked);
     time.start();
 
-    //LogDelegate* delegate = new LogDelegate(log, this);
     logModel = new LogModel(this);
     logFilterModel = new LogFilterModel(this);
 
     logFilterModel->setSourceModel(logModel);
     log->setModel(logFilterModel);
-    //connect(delegate, &LogDelegate::copyRequest, this, &LogWidget::OnCopy);
-    //connect(delegate, &LogDelegate::clearRequest, this, &LogWidget::OnClear);
     log->installEventFilter(this);
 
     FillFiltersCombo();
@@ -42,7 +36,7 @@ LogWidget::LogWidget(QWidget* parent)
     filter->selectUserData(logFilterModel->GetFilters());
 }
 
-LogModel* LogWidget::Model()
+LogModel* LogWidget::Model() const
 {
     return logModel;
 }
@@ -111,7 +105,7 @@ void LogWidget::FillFiltersCombo()
         bool ok = logMap->GetValue(i, value);
         if (!ok)
         {
-            DVASSERT_MSG(ok, "wrong enum used to create GPU list");
+            DVASSERT_MSG(ok, "wrong enum used to create eLogLevel list");
             break;
         }
         filter->addItem(logMap->ToString(value), value);
@@ -184,13 +178,6 @@ void LogWidget::OnCopy()
 void LogWidget::OnClear()
 {
     logModel->removeRows(0, logModel->rowCount());
-}
-
-void LogWidget::OnClicked(const QModelIndex &index)
-{
-    auto pIndex = logFilterModel->mapToSource(index);
-    QString text = logModel->data(pIndex, LogModel::ORIGINAL_TEXT_ROLE).toString();
-    emit ItemClicked(DAVA::PointerSerializer(text.toStdString()));
 }
 
 void LogWidget::OnBeforeAdded()

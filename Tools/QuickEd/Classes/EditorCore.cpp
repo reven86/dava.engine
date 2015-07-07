@@ -28,14 +28,12 @@
 
 
 #include "Platform/Qt5/QtLayer.h"
-#include "Utils/PointerSerializer.h"
 #include "UI/mainwindow.h"
 #include "DocumentGroup.h"
 #include "Document.h"
 #include "EditorCore.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
-#include "QtTools/ConsoleWidget/LogWidget.h"
 
 #include "SharedData.h"
 #include <QSettings>
@@ -56,8 +54,6 @@ EditorCore::EditorCore(QObject *parent)
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
     
     connect(mainWindow->GetDialogReloadSprites(), &DialogReloadSprites::StarPackProcess, this, &EditorCore::CloseAllDocuments);
-    connect(mainWindow->GetLogWidget(), &LogWidget::ItemClicked, this, &EditorCore::OnNewItemSelected);
-
     connect(project, &Project::ProjectPathChanged, this, &EditorCore::OnProjectPathChanged);
     connect(mainWindow, &MainWindow::TabClosed, this, &EditorCore::CloseOneDocument);
     connect(mainWindow, &MainWindow::CurrentTabChanged, this, &EditorCore::OnCurrentTabChanged);
@@ -127,7 +123,8 @@ void EditorCore::OnOpenPackageFile(const QString &path)
 void EditorCore::OnProjectPathChanged(const QString &projectPath)
 {
     QRegularExpression searchOption("gfx\\d*$", QRegularExpression::CaseInsensitiveOption);
-    mainWindow->GetDialogReloadSprites()->GetSpritesPacker()->ClearTasks();
+    auto spritesPacker = mainWindow->GetDialogReloadSprites()->GetSpritesPacker();
+    spritesPacker->ClearTasks();
     QDirIterator it(projectPath + "/DataSource");
     while (it.hasNext())
     {
@@ -142,7 +139,7 @@ void EditorCore::OnProjectPathChanged(const QString &projectPath)
             }
             outputPath.replace(outputPath.lastIndexOf("DataSource"), QString("DataSource").size(), "Data");
             QDir outputDir(outputPath);
-            mainWindow->GetDialogReloadSprites()->GetSpritesPacker()->AddTask(fileInfo.absoluteFilePath(), outputDir);
+            spritesPacker->AddTask(fileInfo.absoluteFilePath(), outputDir);
         }
     }
 }
@@ -233,11 +230,6 @@ void EditorCore::UpdateLanguage()
     {
         document->RefreshAllControlProperties();
     }
-}
-
-void EditorCore::OnNewItemSelected(const DAVA::PointerSerializer &arg)
-{
-    documentGroup->GetActiveDocument()->SetSelectedItem(arg);
 }
 
 void EditorCore::OpenProject(const QString &path)
