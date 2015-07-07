@@ -1,8 +1,8 @@
 #include "UILayoutSystem.h"
 
 #include "UILinearLayoutComponent.h"
-#include "UIAnchorHintComponent.h"
-#include "UISizeHintComponent.h"
+#include "UIAnchorComponent.h"
+#include "UISizePolicyComponent.h"
 
 #include "UI/UIControl.h"
 
@@ -61,7 +61,7 @@ namespace DAVA
         for (UIControl *child : children)
             DoMeasurePhase(child);
         
-        UISizeHintComponent *sizeHint = control->GetComponent<UISizeHintComponent>();
+        UISizePolicyComponent *sizeHint = control->GetComponent<UISizePolicyComponent>();
         if (sizeHint)
         {
             MeasureControl(control, sizeHint);
@@ -96,7 +96,7 @@ namespace DAVA
     // Measuring
     ////////////////////////////////////////////////////////////////////////////////
     
-    void UILayoutSystem::MeasureControl(UIControl *control, UISizeHintComponent *sizeHint)
+    void UILayoutSystem::MeasureControl(UIControl *control, UISizePolicyComponent *sizeHint)
     {
         DVASSERT(sizeHint);
         
@@ -109,21 +109,21 @@ namespace DAVA
 
         for (int32 axis = 0; axis < 2; axis++)
         {
-            UISizeHintComponent::eSizePolicy policy = sizeHint->GetPolicyByAxis(axis);
+            UISizePolicyComponent::eSizePolicy policy = sizeHint->GetPolicyByAxis(axis);
             float32 hintValue = sizeHint->GetValueByAxis(axis);
             float32 value = 0;
             
             switch (policy)
             {
-                case UISizeHintComponent::IGNORE_SIZE:
+                case UISizePolicyComponent::IGNORE_SIZE:
                     value = newSize.data[axis]; // ignore
                     break;
                     
-                case UISizeHintComponent::FIXED_SIZE:
+                case UISizePolicyComponent::FIXED_SIZE:
                     value = hintValue;
                     break;
                     
-                case UISizeHintComponent::PERCENT_OF_CHILDREN_SUM:
+                case UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM:
                     for (UIControl *child : children)
                     {
                         if (!skipInvisible || child->GetVisible())
@@ -132,7 +132,7 @@ namespace DAVA
                     value = value * hintValue / 100.0f;
                     break;
                     
-                case UISizeHintComponent::PERCENT_OF_MAX_CHILD:
+                case UISizePolicyComponent::PERCENT_OF_MAX_CHILD:
                     for (UIControl *child : children)
                     {
                         if (!skipInvisible || child->GetVisible())
@@ -141,36 +141,36 @@ namespace DAVA
                     value = value * hintValue / 100.0f;
                     break;
 
-                case UISizeHintComponent::PERCENT_OF_FIRST_CHILD:
+                case UISizePolicyComponent::PERCENT_OF_FIRST_CHILD:
                     if (!children.empty())
                         value = children.front()->GetSize().data[axis];
                     value = value * hintValue / 100.0f;
                     break;
                     
-                case UISizeHintComponent::PERCENT_OF_LAST_CHILD:
+                case UISizePolicyComponent::PERCENT_OF_LAST_CHILD:
                     if (!children.empty())
                         value = children.back()->GetSize().data[axis];
                     value = value * hintValue / 100.0f;
                     break;
                     
-                case UISizeHintComponent::PERCENT_OF_CONTENT:
+                case UISizePolicyComponent::PERCENT_OF_CONTENT:
                     value = control->GetContentPreferredSize().data[axis] * hintValue / 100.0f;
                     break;
                     
-                case UISizeHintComponent::PERCENT_OF_PARENT:
+                case UISizePolicyComponent::PERCENT_OF_PARENT:
                     value = newSize.data[axis]; // ignore
                     break;
                     
             }
             
-            if (policy == UISizeHintComponent::PERCENT_OF_CHILDREN_SUM ||
-                policy == UISizeHintComponent::PERCENT_OF_MAX_CHILD ||
-                policy == UISizeHintComponent::PERCENT_OF_FIRST_CHILD ||
-                policy == UISizeHintComponent::PERCENT_OF_LAST_CHILD)
+            if (policy == UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM ||
+                policy == UISizePolicyComponent::PERCENT_OF_MAX_CHILD ||
+                policy == UISizePolicyComponent::PERCENT_OF_FIRST_CHILD ||
+                policy == UISizePolicyComponent::PERCENT_OF_LAST_CHILD)
             {
                 if (layout && layout->GetOrientation() == axis)
                 {
-                    if (policy == UISizeHintComponent::PERCENT_OF_CHILDREN_SUM && !children.empty())
+                    if (policy == UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM && !children.empty())
                         value += layout->GetSpacing() * (children.size() - 1);
                     
                     value += layout->GetPadding() * 2.0f;
@@ -211,10 +211,10 @@ namespace DAVA
             
             childrenCount++;
             
-            const UISizeHintComponent *sizeHint = child->GetComponent<UISizeHintComponent>();
+            const UISizePolicyComponent *sizeHint = child->GetComponent<UISizePolicyComponent>();
             if (sizeHint)
             {
-                if (sizeHint->GetPolicyByAxis(axis) == UISizeHintComponent::PERCENT_OF_PARENT)
+                if (sizeHint->GetPolicyByAxis(axis) == UISizePolicyComponent::PERCENT_OF_PARENT)
                     totalPercent += sizeHint->GetValueByAxis(axis);
                 else
                     fixedSize += child->GetSize().data[axis];
@@ -265,10 +265,10 @@ namespace DAVA
                     continue;
 
                 float32 size;
-                const UISizeHintComponent *sizeHint = child->GetComponent<UISizeHintComponent>();
+                const UISizePolicyComponent *sizeHint = child->GetComponent<UISizePolicyComponent>();
                 if (sizeHint)
                 {
-                    if (sizeHint->GetPolicyByAxis(axis) == UISizeHintComponent::PERCENT_OF_PARENT)
+                    if (sizeHint->GetPolicyByAxis(axis) == UISizePolicyComponent::PERCENT_OF_PARENT)
                         size = restSize * sizeHint->GetValueByAxis(axis) / totalPercent;
                     else
                         size = child->GetSize().data[axis];
@@ -313,16 +313,16 @@ namespace DAVA
         const List<UIControl*> &children = control->GetChildren();
         for (UIControl *child : children)
         {
-            const UISizeHintComponent *sizeHint = child->GetComponent<UISizeHintComponent>();
+            const UISizePolicyComponent *sizeHint = child->GetComponent<UISizePolicyComponent>();
             if (sizeHint)
             {
-                if (allowHorizontal && sizeHint->GetHorizontalPolicy() == UISizeHintComponent::PERCENT_OF_PARENT)
+                if (allowHorizontal && sizeHint->GetHorizontalPolicy() == UISizePolicyComponent::PERCENT_OF_PARENT)
                 {
                     float32 size = control->GetSize().dx * sizeHint->GetHorizontalValue() / 100.0f;
                     child->SetSize(Vector2(size, child->GetSize().dy));
                     changedControls.push_back(child);
                 }
-                if (allowVertical && sizeHint->GetVerticalPolicy() == UISizeHintComponent::PERCENT_OF_PARENT)
+                if (allowVertical && sizeHint->GetVerticalPolicy() == UISizePolicyComponent::PERCENT_OF_PARENT)
                 {
                     float32 size = control->GetSize().dy * sizeHint->GetVerticalValue() / 100.0f;
                     child->SetSize(Vector2(child->GetSize().dx, size));
@@ -330,7 +330,7 @@ namespace DAVA
                 }
             }
             
-            UIAnchorHintComponent *hint = child->GetComponent<UIAnchorHintComponent>();
+            UIAnchorComponent *hint = child->GetComponent<UIAnchorComponent>();
             if (hint)
             {
                 const Rect &rect = child->GetRect();

@@ -40,7 +40,7 @@
 #include "UI/UIControlHelpers.h"
 #include "UI/UIPackage.h"
 #include "UI/Components/UIComponent.h"
-#include "UI/Layouts/UIAnchorHintComponent.h"
+#include "UI/Layouts/UIAnchorComponent.h"
 
 namespace DAVA
 {
@@ -49,18 +49,18 @@ UIPackageLoader::UIPackageLoader()
 {
     if (MIN_SUPPORTED_VERSION <= VERSION_WITH_LEGACY_ALIGNS)
     {
-        legacyAlignsMap["leftEnabled"] = "leftAlignEnabled";
-        legacyAlignsMap["left"] = "leftAlign";
-        legacyAlignsMap["hCenterEnabled"] = "hcenterAlignEnabled";
-        legacyAlignsMap["hCenter"] = "hcenterAlign";
-        legacyAlignsMap["rightEnabled"] = "rightAlignEnabled";
-        legacyAlignsMap["right"] = "rightAlign";
-        legacyAlignsMap["topEnabled"] = "topAlignEnabled";
-        legacyAlignsMap["top"] = "topAlign";
-        legacyAlignsMap["vCenterEnabled"] = "vcenterAlignEnabled";
-        legacyAlignsMap["vCenter"] = "vcenterAlign";
-        legacyAlignsMap["bottomEnabled"] = "bottomAlignEnabled";
-        legacyAlignsMap["bottom"] = "bottomAlign";
+        legacyAlignsMap["leftAnchorEnabled"] = "leftAlignEnabled";
+        legacyAlignsMap["leftAnchor"] = "leftAlign";
+        legacyAlignsMap["hCenterAnchorEnabled"] = "hcenterAlignEnabled";
+        legacyAlignsMap["hCenterAnchor"] = "hcenterAlign";
+        legacyAlignsMap["rightAnchorEnabled"] = "rightAlignEnabled";
+        legacyAlignsMap["rightAnchor"] = "rightAlign";
+        legacyAlignsMap["topAnchorEnabled"] = "topAlignEnabled";
+        legacyAlignsMap["topAnchor"] = "topAlign";
+        legacyAlignsMap["vCenterAnchorEnabled"] = "vcenterAlignEnabled";
+        legacyAlignsMap["vCenterAnchor"] = "vcenterAlign";
+        legacyAlignsMap["bottomAnchorEnabled"] = "bottomAlignEnabled";
+        legacyAlignsMap["bottomAnchor"] = "bottomAlign";
     }
     else
     {
@@ -321,7 +321,7 @@ void UIPackageLoader::ProcessLegacyAligns(UIControl *control, const YamlNode *no
     
     if (hasAnchorProperties)
     {
-        UIComponent *component = builder->BeginComponentPropertiesSection(UIComponent::ANCHOR_HINT_COMPONENT, 0);
+        UIComponent *component = builder->BeginComponentPropertiesSection(UIComponent::ANCHOR_COMPONENT, 0);
         if (component)
         {
             const InspInfo *insp = component->GetTypeInfo();

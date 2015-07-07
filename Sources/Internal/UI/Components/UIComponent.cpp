@@ -31,8 +31,8 @@
 #include "UI/UIControl.h"
 
 #include "UI/Layouts/UILinearLayoutComponent.h"
-#include "UI/Layouts/UISizeHintComponent.h"
-#include "UI/Layouts/UIAnchorHintComponent.h"
+#include "UI/Layouts/UISizePolicyComponent.h"
+#include "UI/Layouts/UIAnchorComponent.h"
 
 namespace DAVA
 {
@@ -53,11 +53,11 @@ UIComponent * UIComponent::CreateByType(uint32 componentType)
         case LINEAR_LAYOUT_COMPONENT:
             return new UILinearLayoutComponent();
             
-        case SIZE_HINT_COMPONENT:
-            return new UISizeHintComponent();
+        case SIZE_POLICY_COMPONENT:
+            return new UISizePolicyComponent();
             
-        case ANCHOR_HINT_COMPONENT:
-            return new UIAnchorHintComponent();
+        case ANCHOR_COMPONENT:
+            return new UIAnchorComponent();
             
         default:
             DVASSERT(false);
@@ -73,10 +73,10 @@ bool UIComponent::IsMultiple(uint32 componentType)
         case LINEAR_LAYOUT_COMPONENT:
             return false;
             
-        case SIZE_HINT_COMPONENT:
+        case SIZE_POLICY_COMPONENT:
             return false;
             
-        case ANCHOR_HINT_COMPONENT:
+        case ANCHOR_COMPONENT:
             return false;
             
         default:

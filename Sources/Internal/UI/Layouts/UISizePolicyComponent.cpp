@@ -27,18 +27,18 @@
  =====================================================================================*/
 
 
-#include "UISizeHintComponent.h"
+#include "UISizePolicyComponent.h"
 
 #include "UILayoutSystem.h"
 
 namespace DAVA
 {
-    UISizeHintComponent::UISizeHintComponent()
+    UISizePolicyComponent::UISizePolicyComponent()
     {
         
     }
     
-    UISizeHintComponent::UISizeHintComponent(const UISizeHintComponent &src)
+    UISizePolicyComponent::UISizePolicyComponent(const UISizePolicyComponent &src)
         : horizontalPolicy(src.horizontalPolicy)
         , horizontalValue(src.horizontalValue)
         , verticalPolicy(src.verticalPolicy)
@@ -47,57 +47,57 @@ namespace DAVA
         
     }
     
-    UISizeHintComponent::~UISizeHintComponent()
+    UISizePolicyComponent::~UISizePolicyComponent()
     {
         
     }
     
-    UISizeHintComponent* UISizeHintComponent::Clone()
+    UISizePolicyComponent* UISizePolicyComponent::Clone()
     {
-        return new UISizeHintComponent(*this);
+        return new UISizePolicyComponent(*this);
     }
     
-    UISizeHintComponent::eSizePolicy UISizeHintComponent::GetHorizontalPolicy() const
+    UISizePolicyComponent::eSizePolicy UISizePolicyComponent::GetHorizontalPolicy() const
     {
         return horizontalPolicy;
     }
     
-    void UISizeHintComponent::SetHorizontalPolicy(eSizePolicy policy)
+    void UISizePolicyComponent::SetHorizontalPolicy(eSizePolicy policy)
     {
         horizontalPolicy = policy;
     }
     
-    float UISizeHintComponent::GetHorizontalValue() const
+    float UISizePolicyComponent::GetHorizontalValue() const
     {
         return horizontalValue;
     }
     
-    void UISizeHintComponent::SetHorizontalValue(float32 value)
+    void UISizePolicyComponent::SetHorizontalValue(float32 value)
     {
         horizontalValue = value;
     }
     
-    UISizeHintComponent::eSizePolicy UISizeHintComponent::GetVerticalPolicy() const
+    UISizePolicyComponent::eSizePolicy UISizePolicyComponent::GetVerticalPolicy() const
     {
         return verticalPolicy;
     }
     
-    void UISizeHintComponent::SetVerticalPolicy(eSizePolicy policy)
+    void UISizePolicyComponent::SetVerticalPolicy(eSizePolicy policy)
     {
         verticalPolicy = policy;
     }
     
-    float UISizeHintComponent::GetVerticalValue() const
+    float UISizePolicyComponent::GetVerticalValue() const
     {
         return verticalValue;
     }
     
-    void UISizeHintComponent::SetVerticalValue(float32 value)
+    void UISizePolicyComponent::SetVerticalValue(float32 value)
     {
         verticalValue = value;
     }
     
-    UISizeHintComponent::eSizePolicy UISizeHintComponent::GetPolicyByAxis(int32 axis) const
+    UISizePolicyComponent::eSizePolicy UISizePolicyComponent::GetPolicyByAxis(int32 axis) const
     {
         switch (axis)
         {
@@ -113,7 +113,7 @@ namespace DAVA
         }
     }
     
-    float UISizeHintComponent::GetValueByAxis(int32 axis) const
+    float UISizePolicyComponent::GetValueByAxis(int32 axis) const
     {
         switch (axis)
         {
@@ -129,22 +129,22 @@ namespace DAVA
         }
     }
 
-    int32 UISizeHintComponent::GetHorizontalPolicyAsInt() const
+    int32 UISizePolicyComponent::GetHorizontalPolicyAsInt() const
     {
         return GetHorizontalPolicy();
     }
     
-    void UISizeHintComponent::SetHorizontalPolicyFromInt(int32 policy)
+    void UISizePolicyComponent::SetHorizontalPolicyFromInt(int32 policy)
     {
         SetHorizontalPolicy(static_cast<eSizePolicy>(policy));
     }
     
-    int32 UISizeHintComponent::GetVerticalPolicyAsInt() const
+    int32 UISizePolicyComponent::GetVerticalPolicyAsInt() const
     {
         return GetVerticalPolicy();
     }
     
-    void UISizeHintComponent::SetVerticalPolicyFromInt(int32 policy)
+    void UISizePolicyComponent::SetVerticalPolicyFromInt(int32 policy)
     {
         SetVerticalPolicy(static_cast<eSizePolicy>(policy));
     }

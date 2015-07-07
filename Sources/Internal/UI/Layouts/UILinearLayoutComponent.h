@@ -87,7 +87,7 @@ namespace DAVA
         bool dynamicPadding = false;
         bool dynamicSpacing = false;
         bool useRtl = false;
-        bool skipInvisibleControls = false;
+        bool skipInvisibleControls = true;
         
     public:
         INTROSPECTION_EXTEND(UILinearLayoutComponent, UIComponent,

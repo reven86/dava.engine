@@ -35,7 +35,7 @@ namespace DAVA
 {
     class UIControl;
     class UILinearLayoutComponent;
-    class UISizeHintComponent;
+    class UISizePolicyComponent;
     
     class UILayoutSystem : public BaseObject
     {
@@ -64,7 +64,7 @@ namespace DAVA
         void DoLayoutPhase(UIControl *control);
         
     private: // measuring
-        void MeasureControl(UIControl *control, UISizeHintComponent *sizeHint);
+        void MeasureControl(UIControl *control, UISizePolicyComponent *sizeHint);
         
     private: // linear layout
         void ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *linearLayoutComponent);

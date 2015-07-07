@@ -26,8 +26,8 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_SIZE_HINT_COMPONENT_H__
-#define __DAVAENGINE_UI_SIZE_HINT_COMPONENT_H__
+#ifndef __DAVAENGINE_UI_SIZE_POLICY_COMPONENT_H__
+#define __DAVAENGINE_UI_SIZE_POLICY_COMPONENT_H__
 
 #include "UI/Components/UIComponent.h"
 
@@ -35,7 +35,7 @@ namespace DAVA
 {
     class UIControl;
     
-    class UISizeHintComponent : public UIComponent
+    class UISizePolicyComponent : public UIComponent
     {
     public:
         enum eSizePolicy
@@ -50,19 +50,19 @@ namespace DAVA
             PERCENT_OF_PARENT
         };
     public:
-        IMPLEMENT_COMPONENT_TYPE(SIZE_HINT_COMPONENT);
+        IMPLEMENT_COMPONENT_TYPE(SIZE_POLICY_COMPONENT);
         
-        UISizeHintComponent();
-        UISizeHintComponent(const UISizeHintComponent &src);
+        UISizePolicyComponent();
+        UISizePolicyComponent(const UISizePolicyComponent &src);
         
     protected:
-        virtual ~UISizeHintComponent();
+        virtual ~UISizePolicyComponent();
         
     private:
-        UISizeHintComponent &operator=(const UISizeHintComponent &) = delete;
+        UISizePolicyComponent &operator=(const UISizePolicyComponent &) = delete;
         
     public:
-        UISizeHintComponent* Clone() override;
+        UISizePolicyComponent* Clone() override;
         
         eSizePolicy GetHorizontalPolicy() const;
         void SetHorizontalPolicy(eSizePolicy policy);
@@ -94,7 +94,7 @@ namespace DAVA
         float32 verticalValue = 100.0f;
         
     public:
-        INTROSPECTION_EXTEND(UISizeHintComponent, UIComponent,
+        INTROSPECTION_EXTEND(UISizePolicyComponent, UIComponent,
                              PROPERTY("horizontalPolicy", InspDesc("Horizontal Policy", GlobalEnumMap<eSizePolicy>::Instance()), GetHorizontalPolicyAsInt, SetHorizontalPolicyFromInt, I_SAVE | I_VIEW | I_EDIT)
                              PROPERTY("horizontalValue", "Horizontal Value", GetHorizontalValue, SetHorizontalValue, I_SAVE | I_VIEW | I_EDIT)
                              PROPERTY("verticalPolicy", InspDesc("Vertical Policy", GlobalEnumMap<eSizePolicy>::Instance()), GetVerticalPolicyAsInt, SetVerticalPolicyFromInt, I_SAVE | I_VIEW | I_EDIT)
@@ -106,4 +106,4 @@ namespace DAVA
 }
 
 
-#endif //__DAVAENGINE_UI_SIZE_HINT_COMPONENT_H__
+#endif //__DAVAENGINE_UI_SIZE_POLICY_COMPONENT_H__

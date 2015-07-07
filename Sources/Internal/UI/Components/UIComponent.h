@@ -42,8 +42,8 @@ public:
     enum eType
     {
         LINEAR_LAYOUT_COMPONENT,
-        SIZE_HINT_COMPONENT,
-        ANCHOR_HINT_COMPONENT,
+        SIZE_POLICY_COMPONENT,
+        ANCHOR_COMPONENT,
         
         COMPONENT_COUNT
     };
