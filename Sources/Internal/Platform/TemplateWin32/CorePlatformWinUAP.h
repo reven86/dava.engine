@@ -37,6 +37,8 @@
 #include "Core/Core.h"
 #include "Concurrency/Spinlock.h"
 
+#include "Platform/TemplateWin32/WinUAPXamlApp.h"
+
 namespace DAVA
 {
 
@@ -65,6 +67,9 @@ public:
     // Get pointer to underlying XAML application object
     WinUAPXamlApp^ XamlApplication() DAVA_NOEXCEPT;
 
+    // Check whether current thread is UI thread
+    bool IsUIThread() const;
+
     // Run specified function on UI thread
     template<typename F>
     void RunOnUIThread(F fn);
@@ -87,6 +92,11 @@ private:
 inline WinUAPXamlApp^ CorePlatformWinUAP::XamlApplication() DAVA_NOEXCEPT
 {
     return xamlApp;
+}
+
+inline bool CorePlatformWinUAP::IsUIThread() const
+{
+    return xamlApp->UIThreadDispatcher()->HasThreadAccess;
 }
 
 template<typename F>
