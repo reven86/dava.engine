@@ -35,6 +35,7 @@
 #include "FileSystem/YamlEmitter.h"
 #include "UI/UIYamlLoader.h"
 #include "UI/UIControl.h"
+#include "UI/Styles/UIStyleSheet.h"
 #include "UI/UIStaticText.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/UIPackage.h"
@@ -61,7 +62,7 @@ bool UIPackageLoader::LoadPackage(const FilePath &packagePath, AbstractUIPackage
 
     if (!packagePath.Exists())
         return false;
-    
+
     RefPtr<YamlParser> parser(YamlParser::Create(packagePath));
     if (!parser.Valid())
         return false;
@@ -73,22 +74,22 @@ bool UIPackageLoader::LoadPackage(const FilePath &packagePath, AbstractUIPackage
         builder->EndPackage();
         return true;
     }
-    
+
     return LoadPackage(rootNode, packagePath, builder);
 }
-    
+
 bool UIPackageLoader::LoadPackage(const YamlNode *rootNode, const FilePath &packagePath, AbstractUIPackageBuilder *builder)
 {
     const YamlNode *headerNode = rootNode->Get("Header");
     if (!headerNode)
         return false;
-    
+
     const YamlNode *versionNode = headerNode->Get("version");
     if (versionNode == nullptr || versionNode->GetType() != YamlNode::TYPE_STRING)
         return false;
-    
+
     builder->BeginPackage(packagePath);
-    
+
     const YamlNode *importedPackagesNode = rootNode->Get("ImportedPackages");
     if (importedPackagesNode)
     {
@@ -96,7 +97,13 @@ bool UIPackageLoader::LoadPackage(const YamlNode *rootNode, const FilePath &pack
         for (int32 i = 0; i < count; i++)
             builder->ProcessImportedPackage(importedPackagesNode->Get(i)->AsString(), this);
     }
-    
+
+    const YamlNode *styleSheetsNode = rootNode->Get("StyleSheets");
+    if (styleSheetsNode)
+    {
+        builder->ProcessStyleSheets(styleSheetsNode);
+    }
+
     const YamlNode *controlsNode = rootNode->Get("Controls");
     if (controlsNode)
     {
@@ -110,7 +117,7 @@ bool UIPackageLoader::LoadPackage(const YamlNode *rootNode, const FilePath &pack
             item.status = STATUS_WAIT;
             loadingQueue.push_back(item);
         }
-        
+
         for (int32 i = 0; i < count; i++)
         {
             if (loadingQueue[i].status == STATUS_WAIT)
@@ -120,14 +127,16 @@ bool UIPackageLoader::LoadPackage(const YamlNode *rootNode, const FilePath &pack
                 loadingQueue[i].status = STATUS_LOADED;
             }
         }
-        
+
         loadingQueue.clear();
     }
+
+
     builder->EndPackage();
-    
+
     return true;
 }
-    
+
 bool UIPackageLoader::LoadControlByName(const String &name, AbstractUIPackageBuilder *builder)
 {
     size_t size = loadingQueue.size();
@@ -142,13 +151,13 @@ bool UIPackageLoader::LoadControlByName(const String &name, AbstractUIPackageBui
                     LoadControl(loadingQueue[index].node, true, builder);
                     loadingQueue[index].status = STATUS_LOADED;
                     return true;
-                    
+
                 case STATUS_LOADED:
                     return true;
-                    
+
                 case STATUS_LOADING:
                     return false;
-                    
+
                 default:
                     DVASSERT(false);
                     return false;
@@ -167,7 +176,7 @@ void UIPackageLoader::LoadControl(const YamlNode *node, bool root, AbstractUIPac
     const YamlNode *nameNode = node->Get("name");
 
     //DVASSERT(nameNode || pathNode);
-    
+
     if (pathNode)
     {
         control = builder->BeginControlWithPath(pathNode->AsString());
@@ -231,8 +240,8 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, cons
     const InspInfo *baseInfo = typeInfo->BaseInfo();
     if (baseInfo)
         LoadControlPropertiesFromYamlNode(control, baseInfo, node, builder);
-    
-    builder->BeginControlPropertiesSection(typeInfo->Name());
+
+    builder->BeginControlPropertiesSection(typeInfo->Name().c_str());
     for (int32 i = 0; i < typeInfo->MembersCount(); i++)
     {
         const InspMember *member = typeInfo->Member(i);
@@ -244,7 +253,7 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl *control, cons
     }
     builder->EndControlPropertiesSection();
 }
-    
+
 void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl *control, const YamlNode *node, AbstractUIPackageBuilder *builder)
 {
     Vector<ComponentNode> components = ExtractComponentNodes(node);
@@ -261,7 +270,7 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl *control, co
                 builder->ProcessProperty(member, res);
             }
         }
-        
+
         builder->EndComponentPropertiesSection();
     }
 }
@@ -275,14 +284,14 @@ Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(co
     if (componentsNode)
     {
         const EnumMap *componentTypes = GlobalEnumMap<UIComponent::eType>::Instance();
-        
+
         for (uint32 i = 0; i < componentsNode->GetCount(); i++)
         {
             const String &fullName = componentsNode->GetItemKeyName(i);
             String::size_type lastChar = fullName.find_last_not_of("0123456789");
             String componentName = fullName.substr(0, lastChar + 1);
             uint32 componentIndex = atoi(fullName.substr(lastChar + 1).c_str());
-            
+
             int32 componentType = 0;
             if (componentTypes->ToValue(componentName.c_str(), componentType))
             {
@@ -300,7 +309,7 @@ Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(co
                 }
             }
         }
-        
+
         std::stable_sort(components.begin(), components.end(), [](ComponentNode l, ComponentNode r) {
             return l.type == r.type ? l.index < r.index : l.type < r.type;
         });
@@ -311,14 +320,14 @@ Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(co
 void UIPackageLoader::LoadBgPropertiesFromYamlNode(UIControl *control, const YamlNode *node, AbstractUIPackageBuilder *builder)
 {
     const YamlNode *componentsNode = node ? node->Get("components") : nullptr;
-    
+
     for (int32 i = 0; i < control->GetBackgroundComponentsCount(); i++)
     {
         const YamlNode *componentNode = nullptr;
-        
+
         if (componentsNode)
             componentNode = componentsNode->Get(control->GetBackgroundComponentName(i));
-        
+
         UIControlBackground *bg = builder->BeginBgPropertiesSection(i, componentNode != nullptr);
         if (bg)
         {
@@ -344,7 +353,7 @@ void UIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *contr
         const YamlNode *componentNode = nullptr;
         if (componentsNode)
             componentNode = componentsNode->Get(control->GetInternalControlName(i) + control->GetInternalControlDescriptions());
-        
+
         UIControl *internalControl = builder->BeginInternalControlSection(i, componentNode != nullptr);
         if (internalControl)
         {
@@ -366,64 +375,10 @@ void UIPackageLoader::LoadInternalControlPropertiesFromYamlNode(UIControl *contr
 
 VariantType UIPackageLoader::ReadVariantTypeFromYamlNode(const InspMember *member, const YamlNode *node, AbstractUIPackageBuilder *builder)
 {
-    const YamlNode *valueNode = node->Get(member->Name());
+    const YamlNode *valueNode = node->Get(member->Name().c_str());
     if (valueNode)
     {
-        if (member->Desc().type == InspDesc::T_ENUM)
-        {
-            int32 val = 0;
-            if (member->Desc().enumMap->ToValue(valueNode->AsString().c_str(), val))
-            {
-                return VariantType(val);
-            }
-            else
-            {
-                DVASSERT(false);
-            }
-        }
-        else if (member->Desc().type == InspDesc::T_FLAGS)
-        {
-            int32 val = 0;
-            for (uint32 i = 0; i < valueNode->GetCount(); i++)
-            {
-                const YamlNode *flagNode = valueNode->Get(i);
-                int32 flag = 0;
-                if (member->Desc().enumMap->ToValue(flagNode->AsString().c_str(), flag))
-                {
-                    val |= flag;
-                }
-                else
-                {
-                    DVASSERT(false);
-                }
-            }
-            return VariantType(val);
-        }
-        else if (member->Type() == MetaInfo::Instance<bool>())
-            return VariantType(valueNode->AsBool());
-        else if (member->Type() == MetaInfo::Instance<int32>())
-            return VariantType(valueNode->AsInt32());
-        else if (member->Type() == MetaInfo::Instance<uint32>())
-            return VariantType(valueNode->AsUInt32());
-        else if (member->Type() == MetaInfo::Instance<String>())
-            return VariantType(valueNode->AsString());
-        else if (member->Type() == MetaInfo::Instance<WideString>())
-            return VariantType(valueNode->AsWString());
-        else if (member->Type() == MetaInfo::Instance<float32>())
-            return VariantType(valueNode->AsFloat());
-        else if (member->Type() == MetaInfo::Instance<Vector2>())
-            return VariantType(valueNode->AsVector2());
-        else if (member->Type() == MetaInfo::Instance<Color>())
-            return VariantType(valueNode->AsColor());
-        else if (member->Type() == MetaInfo::Instance<Vector4>())
-            return VariantType(valueNode->AsVector4());
-        else if (member->Type() == MetaInfo::Instance<FilePath>())
-            return VariantType(FilePath(valueNode->AsString()));
-        else
-        {
-            DVASSERT(false);
-            return VariantType();
-        }
+        return valueNode->AsVariantType(member);
     }
     return VariantType();
 }
