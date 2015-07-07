@@ -30,14 +30,10 @@
 #include "Debug/DVAssert.h"
 #include "Concurrency/PosixThreads.h"
 
-#ifdef __DAVAENGINE_APPLE__
-#   include <mach/thread_policy.h>
-#endif
+#ifdef __DAVAENGINE_WINDOWS__
 
 namespace DAVA
 {
-
-#ifdef __DAVAENGINE_WINDOWS__
 
 int pthread_cond_init(pthread_cond_t *cv, const pthread_condattr_t*)
 {
@@ -126,23 +122,6 @@ int pthread_mutex_destroy(pthread_mutex_t *mutex)
     return 0;
 }
 
-#elif defined(__DAVAENGINE_APPLE__)
+};
 
-int pthread_setaffinity_np(pthread_t thread, size_t cpu_size, cpu_set_t* cpu_set)
-{
-    for (int core = 0; core < 8 * cpu_size; ++core)
-    {
-        if (CPU_ISSET(core, cpu_set) != 0)
-            continue;
-        
-        thread_affinity_policy_data_t policy = { core };
-        thread_port_t mach_thread = pthread_mach_thread_np(thread);
-        thread_policy_set(mach_thread, THREAD_AFFINITY_POLICY, (thread_policy_t)& policy, 1);
-    }
-    
-    return 0;
-}
-
-#endif //__DAVAENGINE_WINDOWS__ && __DAVAENGINE_APPLE__
-
-} // namespace DAVA
+#endif //__DAVAENGINE_WINDOWS__

@@ -34,23 +34,6 @@
 
 #ifndef __DAVAENGINE_WINDOWS__
 #   include <pthread.h>
-
-//missing call for affinity setting
-#   ifdef __DAVAENGINE_APPLE__
-
-namespace DAVA
-{
-using cpu_set_t = uint32_t;
-
-inline void CPU_ZERO(cpu_set_t* cs) { *cs = 0; }
-inline void CPU_SET(int num, cpu_set_t* cs) { *cs |= (1 << num); }
-inline int CPU_ISSET(int num, cpu_set_t* cs) { return *cs & (1 << num); }
-
-int pthread_setaffinity_np(pthread_t thread, size_t cpu_size, cpu_set_t* cpu_set);
-}
-
-#   endif
-
 #else
 	
 //mimic to some posix threads api
