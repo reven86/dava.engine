@@ -44,16 +44,6 @@ DependedOnLayoutProperty::~DependedOnLayoutProperty()
     
 }
 
-int DependedOnLayoutProperty::GetCount() const
-{
-    return 0;
-}
-
-AbstractProperty *DependedOnLayoutProperty::GetProperty(int index) const
-{
-    return nullptr;
-}
-
 void DependedOnLayoutProperty::Refresh()
 {
     IntrospectionProperty::Refresh();

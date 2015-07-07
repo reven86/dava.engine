@@ -41,9 +41,6 @@ protected:
     virtual ~DependedOnLayoutProperty();
     
 public:
-    int GetCount() const override;
-    AbstractProperty *GetProperty(int index) const override;
-    
     void Refresh() override;
     void RestoreSourceValue();
     
