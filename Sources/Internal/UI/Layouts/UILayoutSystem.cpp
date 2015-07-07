@@ -115,7 +115,7 @@ namespace DAVA
             
             switch (policy)
             {
-                case UISizeHintComponent::IGNORE:
+                case UISizeHintComponent::IGNORE_SIZE:
                     value = newSize.data[axis]; // ignore
                     break;
                     

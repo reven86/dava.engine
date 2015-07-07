@@ -290,7 +290,7 @@ ENUM_DECLARE(UIComponent::eType)
 
 ENUM_DECLARE(UISizeHintComponent::eSizePolicy)
 {
-    ENUM_ADD_DESCR(UISizeHintComponent::IGNORE, "Ignore");
+    ENUM_ADD_DESCR(UISizeHintComponent::IGNORE_SIZE, "Ignore");
     ENUM_ADD_DESCR(UISizeHintComponent::FIXED_SIZE, "FixedSize");
     ENUM_ADD_DESCR(UISizeHintComponent::PERCENT_OF_CHILDREN_SUM, "PercentOfChildrenSum");
     ENUM_ADD_DESCR(UISizeHintComponent::PERCENT_OF_MAX_CHILD, "PercentOfMaxChild");

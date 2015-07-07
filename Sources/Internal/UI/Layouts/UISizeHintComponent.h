@@ -40,7 +40,7 @@ namespace DAVA
     public:
         enum eSizePolicy
         {
-            IGNORE,
+            IGNORE_SIZE,
             FIXED_SIZE,
             PERCENT_OF_CHILDREN_SUM,
             PERCENT_OF_MAX_CHILD,
@@ -87,10 +87,10 @@ namespace DAVA
         void SetVerticalPolicyFromInt(int32 policy);
         
     private:
-        eSizePolicy horizontalPolicy = IGNORE;
+        eSizePolicy horizontalPolicy = IGNORE_SIZE;
         float32 horizontalValue = 100.0f;
         
-        eSizePolicy verticalPolicy = IGNORE;
+        eSizePolicy verticalPolicy = IGNORE_SIZE;
         float32 verticalValue = 100.0f;
         
     public:
