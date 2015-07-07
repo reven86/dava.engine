@@ -82,6 +82,8 @@ void DataNode::Load(KeyedArchive * archive, SerializationContext * serialization
 void DataNode::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
     BaseObject::SaveObject(archive);
+    
+    DVASSERT(0 != id);
     archive->SetByteArrayAsType("#id", id);
 }
 
