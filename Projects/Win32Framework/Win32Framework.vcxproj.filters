@@ -196,6 +196,9 @@
     <Filter Include="Internal\Network\Services\MMNet">
       <UniqueIdentifier>{d0f16e2c-89a6-4e92-a990-9a10aa9bfe40}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\UI\Styles">
+      <UniqueIdentifier>{f37298db-a685-43f6-a8a7-7aee2f5f2b57}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Internal\Concurrency">
       <UniqueIdentifier>{fef8edc5-3139-4a47-9e07-d9bc662be831}</UniqueIdentifier>
     </Filter>
@@ -1840,6 +1843,18 @@
     <ClInclude Include="..\..\Sources\Internal\Network\Services\MMNet\MMNetServer.h">
       <Filter>Internal\Network\Services\MMNet</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\UIControlPackageContext.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.h">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSystem.h">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.h">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Concurrency\Atomic.h">
       <Filter>Internal\Concurrency</Filter>
     </ClInclude>
@@ -1884,6 +1899,21 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Concurrency\UniqueLock.h">
       <Filter>Internal\Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Animation\LinearPropertyAnimation.h">
+      <Filter>Internal\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetStructs.h">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSelectorChain.h">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyDataBase.h">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyTable.h">
+      <Filter>Internal\UI\Styles</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3318,7 +3348,20 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UnitTests\TestClass.cpp">
       <Filter>Internal\UnitTests</Filter>
-    </ClCompile>    <ClCompile Include="..\..\Sources\Internal\Concurrency\ConditionVariable.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\UIControlPackageContext.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.cpp">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSystem.cpp">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.cpp">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Concurrency\ConditionVariable.cpp">
       <Filter>Internal\Concurrency</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Concurrency\Mutex.cpp">
@@ -3335,5 +3378,21 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Concurrency\ThreadWin32.cpp">
       <Filter>Internal\Concurrency</Filter>
-    </ClCompile>  </ItemGroup>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Animation\LinearPropertyAnimation.cpp">
+      <Filter>Internal\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetStructs.cpp">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSelectorChain.cpp">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyDataBase.cpp">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyTable.cpp">
+      <Filter>Internal\UI\Styles</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>
