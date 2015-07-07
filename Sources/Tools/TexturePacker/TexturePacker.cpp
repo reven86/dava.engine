@@ -801,7 +801,11 @@ void TexturePacker::ExportImage(PngImageExt *image, FilePath exportedPathname, e
                     {
                         if (wrapper->IsFormatSupported(pixelFormat))
                         {
-                            image->ConvertToFormat(pixelFormat);
+                            bool convertedOk = image->ConvertToFormat(pixelFormat);
+                            if (!convertedOk)
+                            {
+                                AddError(Format("Can't convert to '%s'", GlobalEnumMap<PixelFormat>::Instance()->ToString(pixelFormat)));
+                            }
                         }
                         else
                         {
