@@ -1454,11 +1454,11 @@ namespace DAVA
             Polygon2 poly;
             gd.GetPolygon( poly );
 
-            RenderSystem2D::Instance()->DrawPolygon(poly, true, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
+            RenderSystem2D::Instance()->DrawPolygon(poly, true, drawColor);
         }
         else
         {
-            RenderSystem2D::Instance()->DrawRect(gd.GetUnrotatedRect(), RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
+            RenderSystem2D::Instance()->DrawRect(gd.GetUnrotatedRect(), drawColor);
         }
 
         RenderSystem2D::Instance()->PopClip();
@@ -1483,20 +1483,20 @@ namespace DAVA
         RenderSystem2D::Instance()->PushClip();
         
         Vector2 pivotPointCenter = drawRect.GetPosition() + GetPivotPoint();
-        RenderSystem2D::Instance()->DrawCircle(pivotPointCenter, PIVOT_POINT_MARK_RADIUS, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
+        RenderSystem2D::Instance()->DrawCircle(pivotPointCenter, PIVOT_POINT_MARK_RADIUS, drawColor);
 
         // Draw the cross mark.
         Vector2 lineStartPoint = pivotPointCenter;
         Vector2 lineEndPoint = pivotPointCenter;
         lineStartPoint.y -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
         lineEndPoint.y += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
-        RenderSystem2D::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
+        RenderSystem2D::Instance()->DrawLine(lineStartPoint, lineEndPoint, drawColor);
 
         lineStartPoint = pivotPointCenter;
         lineEndPoint = pivotPointCenter;
         lineStartPoint.x -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
         lineEndPoint.x += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
-        RenderSystem2D::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
+        RenderSystem2D::Instance()->DrawLine(lineStartPoint, lineEndPoint, drawColor);
 
         RenderSystem2D::Instance()->PopClip();
     }

@@ -306,10 +306,10 @@ namespace DAVA
 			for (Map<int32, UIEvent>::iterator it = touches.begin(); it != touches.end(); ++it)
 			{
 				Vector2 point = it->second.point;
-				RenderSystem2D::Instance()->DrawCircle(point, 25.0f, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, Color::White);
+				RenderSystem2D::Instance()->DrawCircle(point, 25.0f, Color::White);
 			}
 		}
-        RenderSystem2D::Instance()->DrawCircle(GetMousePosition(), 15.0f, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, Color::White);
+        RenderSystem2D::Instance()->DrawCircle(GetMousePosition(), 15.0f, Color::White);
 	}
 
 	void AutotestingSystem::OnTestStarted()

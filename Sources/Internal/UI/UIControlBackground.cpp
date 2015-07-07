@@ -508,11 +508,11 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
             {
                 Polygon2 poly;
                 geometricData.GetPolygon(poly);
-                RenderSystem2D::Instance()->FillPolygon(poly, drawState.GetMaterial(), drawColor);
+                RenderSystem2D::Instance()->FillPolygon(poly, drawColor);
             }
             else
             {
-                RenderSystem2D::Instance()->FillRect(geometricData.GetUnrotatedRect(), drawState.GetMaterial(), drawColor);
+                RenderSystem2D::Instance()->FillRect(geometricData.GetUnrotatedRect(), drawColor);
             }
         break;
 

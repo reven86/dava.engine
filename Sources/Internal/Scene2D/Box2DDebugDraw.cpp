@@ -60,7 +60,7 @@ void Box2DDebugDraw::DrawPolygon(const b2Vec2* vertices, int32 vertexCount, cons
 	{
 		polygon.AddPoint(Vector2(vertices[i].x * ptdRatio + cameraPos.x, -vertices[i].y * ptdRatio + cameraPos.y));
 	}
-    RenderSystem2D::Instance()->DrawPolygon(polygon, true, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, Color(color.r, color.g, color.b, 1.0f));
+    RenderSystem2D::Instance()->DrawPolygon(polygon, true, Color(color.r, color.g, color.b, 1.0f));
 }
 
 void Box2DDebugDraw::DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount, const b2Color& color)
@@ -70,7 +70,7 @@ void Box2DDebugDraw::DrawSolidPolygon(const b2Vec2* vertices, int32 vertexCount,
 	{
 		polygon.AddPoint(Vector2(vertices[i].x * ptdRatio + cameraPos.x, -vertices[i].y * ptdRatio + cameraPos.y));
 	}
-    RenderSystem2D::Instance()->DrawPolygon(polygon, true, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, Color(color.r, color.g, color.b, 1.0f));
+    RenderSystem2D::Instance()->DrawPolygon(polygon, true, Color(color.r, color.g, color.b, 1.0f));
 	
 	/*glEnable(GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -106,7 +106,7 @@ void Box2DDebugDraw::DrawCircle(const b2Vec2& center, float32 radius, const b2Co
 		polygon.AddPoint(Vector2(v.x * ptdRatio + cameraPos.x, -v.y * ptdRatio + cameraPos.y));
 		theta += k_increment;
 	}
-    RenderSystem2D::Instance()->DrawPolygon(polygon, true, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, Color(color.r, color.g, color.b, 1.0f));
+    RenderSystem2D::Instance()->DrawPolygon(polygon, true, Color(color.r, color.g, color.b, 1.0f));
 }
 
 void Box2DDebugDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, const b2Vec2& axis, const b2Color& color)
@@ -123,7 +123,7 @@ void Box2DDebugDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, const
 		polygon.AddPoint(Vector2(v.x * ptdRatio + cameraPos.x, -v.y * ptdRatio + cameraPos.y));
 		theta += k_increment;
 	}
-    RenderSystem2D::Instance()->DrawPolygon(polygon, true, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, Color(color.r, color.g, color.b, 1.0f));
+    RenderSystem2D::Instance()->DrawPolygon(polygon, true, Color(color.r, color.g, color.b, 1.0f));
 	/*const float32 k_segments = 16.0f;
 	const float32 k_increment = 2.0f * b2_pi / k_segments;
 	float32 theta = 0.0f;
@@ -161,7 +161,7 @@ void Box2DDebugDraw::DrawSolidCircle(const b2Vec2& center, float32 radius, const
 void Box2DDebugDraw::DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color)
 {
 	RenderSystem2D::Instance()->DrawLine(Vector2(p1.x * ptdRatio + cameraPos.x, -p1.y * ptdRatio + cameraPos.y),
-        Vector2(p2.x * ptdRatio + cameraPos.x, -p2.y * ptdRatio + cameraPos.y), RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, Color(color.r, color.g, color.b, 1.0f));
+        Vector2(p2.x * ptdRatio + cameraPos.x, -p2.y * ptdRatio + cameraPos.y), Color(color.r, color.g, color.b, 1.0f));
 	/*glColor3f(color.r, color.g, color.b);
 	glBegin(GL_LINES);
 	glVertex2f(p1.x, p1.y);
