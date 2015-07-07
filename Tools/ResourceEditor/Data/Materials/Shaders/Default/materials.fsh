@@ -64,7 +64,6 @@ uniform samplerCube cubemap;
 varying mediump vec3 varTexCoord0;
 #endif
 
-//#define REFLECTION
 #if defined(REFLECTION)
 uniform samplerCube cubemap;
 #if defined(VERTEX_LIT)
@@ -75,7 +74,6 @@ varying mediump vec3 cameraToPointInTangentSpace;
 varying mediump mat3 tbnToWorldMatrix;
 #endif
 #endif
-
 
 #if defined(MATERIAL_DECAL)
 uniform sampler2D decal;
@@ -201,24 +199,6 @@ varying lowp vec3 varVegetationColor;
 
 #endif
 
-#define ENABLE_GAMMA_CORRECTION
-#define TRUE_GAMMA_CORRECTION
-
-#if defined(ENABLE_GAMMA_CORRECTION)
-
-#if defined(TRUE_GAMMA_CORRECTION)
-#define SRGB_TO_LINEAR(x) pow(x.rgb, vec3(2.2))
-#define LINEAR_TO_SRGB(x) pow(x.rgb, vec3(1.0 / 2.2))
-#else
-#define SRGB_TO_LINEAR(x) pow(x.rgb * x.rgb)
-#define LINEAR_TO_SRGB(x) pow(sqrt(x.rgb))
-#endif
-
-#else
-#define SRGB_TO_LINEAR(x) x
-#define LINEAR_TO_SRGB(x) x
-#endif
-
 void main()
 {
     // FETCH PHASE
@@ -226,7 +206,6 @@ void main()
     
 #if defined(PIXEL_LIT) || defined(ALPHATEST) || defined(ALPHABLEND) || defined(VERTEX_LIT)
     lowp vec4 textureColor0 = texture2D(albedo, varTexCoord0);
-    //textureColor0.rgb = SRGB_TO_LINEAR(textureColor0.rgb);
     #if defined (ALPHA_MASK)        
         textureColor0.a *= texture2D(alphamask, varTexCoord1).a;
     #endif
@@ -462,48 +441,7 @@ void main()
     vec3 color = vec3(0.0);
     
     #if defined(VIEW_AMBIENT) && !defined(MATERIAL_LIGHTMAP)
-    
-        #if 0
-            vec3 sphericalHarmonics[9];
-            sphericalHarmonics[0] = vec3(1.23840332, 1.37246668, 1.50493050);
-            sphericalHarmonics[1] = vec3(0.184020087, 0.177677527, 0.168910921);
-            sphericalHarmonics[2] = vec3(0.434400618, 0.340995789, 0.247811958);
-            sphericalHarmonics[3] = vec3(0.142408907,0.134061068,0.125236824);
-            sphericalHarmonics[4] = vec3(0.235126555, 0.234800681, 0.230386630);
-            sphericalHarmonics[5] = vec3(0.186535716,0.182463452, 0.181364596);
-            sphericalHarmonics[6] = vec3(0.0877418071, 0.0603835359, 0.0357566960);
-            sphericalHarmonics[7] = vec3(0.206041262, 0.206497207, 0.206334904);
-            sphericalHarmonics[8] = vec3(0.000848421827, 0.0106492322, 0.0223821439);
-    
-            mediump vec3 normalInWorldSpace = worldInvTransposeMatrix * (tbnToWorldMatrix * normal);
-
-        #define A0		(0.282094)
-        #define A1 		(0.325734)
-            
-        #define Y2_2(n) (0.273136 * (n.y * n.x))                                // (1.0 / 2.0) * sqrt(15.0 / PI) * ((n.y * n.x)) * 0.785398 / PI
-        #define Y2_1(n) (0.273136 * (n.y * n.z))                                // (1.0 / 2.0) * sqrt(15.0 / PI) * ((n.y * n.z)) * 0.785398 / PI
-        #define Y20(n)  (0.078847 * (3.0 * n.z * n.z - 1.0))  					// (1.0 / 4.0) * sqrt(5.0 / PI) * ((3.0 * n.z * n.z - 1.0)) * 0.785398 / PI
-        #define Y21(n)  (0.273136 * (n.z * n.x))                                // (1.0 / 2.0) * sqrt(15.0 / PI) * ((n.z * n.x)) * 0.785398 / PI
-        #define Y22(n)  (0.136568 * (n.x * n.x - n.y * n.y))                    // (1.0 / 4.0) * sqrt(15.0 / PI) * ((n.x * n.x - n.y * n.y)) * 0.785398 / PI
-            
-            vec3 sphericalLightFactor = A0 * sphericalHarmonics[0];
-
-            mat3 shMatrix = mat3(sphericalHarmonics[1], sphericalHarmonics[2], sphericalHarmonics[3]);
-            sphericalLightFactor += A1 * (shMatrix * normalInWorldSpace.yzx);
-//            
-//            sphericalLightFactor += Y2_2(normalInWorldSpace) * sphericalHarmonics[4];
-//            sphericalLightFactor += Y2_1(normalInWorldSpace) * sphericalHarmonics[5];
-//            sphericalLightFactor += Y20(normalInWorldSpace) * sphericalHarmonics[6];
-//            sphericalLightFactor += Y21(normalInWorldSpace) * sphericalHarmonics[7];
-//            sphericalLightFactor += Y22(normalInWorldSpace) * sphericalHarmonics[8];
-    
-            //color += sphericalLightFactor;
-            //color += sphericalLightFactor;
-            color += lightAmbientColor0;
-        #else
-            color += lightAmbientColor0;
-        #endif
-    
+        color += lightAmbientColor0;
     #endif
     
     #if defined(VIEW_DIFFUSE)
@@ -570,32 +508,20 @@ void main()
 #endif
     
     
-//#if defined(REFLECTION)
-//#if defined(VERTEX_LIT)
-//    lowp vec4 reflectionColor = textureCube(cubemap, reflectionDirectionInWorldSpace); //vec3(reflectedDirection.x, reflectedDirection.y, reflectedDirection.z));
-//    gl_FragColor = reflectionColor * 0.9;
-//#elif defined(PIXEL_LIT)
-//    //vec3 fresnelRefl = FresnelShlickVec3(NdotV, metalFresnelReflectance);
-//
-//    mediump vec3 reflectionVectorInTangentSpace = reflect(cameraToPointInTangentSpace, normal);
-//    mediump vec3 reflectionVectorInWorldSpace = worldInvTransposeMatrix * (tbnToWorldMatrix * reflectionVectorInTangentSpace);
-//    // lowp vec4 reflectionColor = textureCube(cubemap, reflectionVectorInWorldSpace, (1.0 - glossiness) * 7.0); //vec3(reflectedDirection.x, reflectedDirection.y, reflectedDirection.z));
-//    
-//    vec3 reflectionColor = A0 * sphericalHarmonics[0];
-//    
-//    reflectionColor += A1 * (shMatrix * reflectionVectorInWorldSpace.yzx);
-//    
-//    reflectionColor += Y2_2(reflectionVectorInWorldSpace) * sphericalHarmonics[4];
-//    reflectionColor += Y2_1(reflectionVectorInWorldSpace) * sphericalHarmonics[5];
-//    reflectionColor += Y20(reflectionVectorInWorldSpace) * sphericalHarmonics[6];
-//    reflectionColor += Y21(reflectionVectorInWorldSpace) * sphericalHarmonics[7];
-//    reflectionColor += Y22(reflectionVectorInWorldSpace) * sphericalHarmonics[8];
-//    
-//    //gl_FragColor.rgb += fresnelOut * reflectionColor.rgb * specularity;//* textureColor0.rgb;
-//    //gl_FragColor.rgb += reflectionColor.rgb * textureColor0.rgb;
-//    //gl_FragColor.rgb = sphericalLightFactor * 2.0;
-//#endif
-//#endif
+#if defined(REFLECTION)
+#if defined(VERTEX_LIT)
+    lowp vec4 reflectionColor = textureCube(cubemap, reflectionDirectionInWorldSpace); //vec3(reflectedDirection.x, reflectedDirection.y, reflectedDirection.z));
+    gl_FragColor = reflectionColor * 0.9;
+#elif defined(PIXEL_LIT)
+    //vec3 fresnelRefl = FresnelShlickVec3(NdotV, metalFresnelReflectance);
+
+    mediump vec3 reflectionVectorInTangentSpace = reflect(cameraToPointInTangentSpace, normal);
+    mediump vec3 reflectionVectorInWorldSpace = worldInvTransposeMatrix * (tbnToWorldMatrix * reflectionVectorInTangentSpace);
+    lowp vec4 reflectionColor = textureCube(cubemap, reflectionVectorInWorldSpace, (1.0 - glossiness) * 7.0); //vec3(reflectedDirection.x, reflectedDirection.y, reflectedDirection.z));
+    gl_FragColor.rgb += fresnelOut * reflectionColor.rgb * specularity;//* textureColor0.rgb;
+    //gl_FragColor.rgb += reflectionColor.rgb * textureColor0.rgb;
+#endif
+#endif
     //    gl_FragColor.r += 0.5;
 
 #if defined(MATERIAL_GRASS_TRANSFORM)
@@ -624,8 +550,6 @@ void main()
     #endif
 
 #endif
-    
-    //gl_FragColor.rgb = LINEAR_TO_SRGB(gl_FragColor.rgb);
     
 #if defined(VERTEX_FOG)
     #if !defined(FRAMEBUFFER_FETCH)

@@ -121,6 +121,8 @@ Component * Component::CreateByType(uint32 componentType)
         return new SnapToLandscapeControllerComponent();
     case WASD_CONTROLLER_COMPONENT:
         return new WASDControllerComponent();
+
+
 	case ANIMATION_COMPONENT:
 	case COLLISION_COMPONENT:
 	case SCRIPT_COMPONENT:

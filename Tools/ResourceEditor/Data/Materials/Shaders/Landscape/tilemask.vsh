@@ -15,7 +15,7 @@ uniform mediump vec2 texture0Tiling;
 varying mediump vec2 varTexCoordOrig;
 varying mediump vec2 varTexCoord0;
 
-#if defined(VERTEX_FOG) || defined(VERTEX_LIT) || defined(PIXEL_LIT)
+#if defined(VERTEX_FOG) || defined(SPECULAR)
 uniform mat4 worldViewMatrix;
 #endif
 
@@ -58,7 +58,6 @@ varying vec2 varTexCoordCursor;
 #if defined(SPECULAR) || defined(VERTEX_FOG)
 uniform vec4 lightPosition0;
 #endif
-
 #ifdef SPECULAR
 uniform mat3 worldViewInvTransposeMatrix;
 attribute vec3 inNormal;
@@ -88,34 +87,13 @@ vec3 FresnelShlickVec3(float NdotL, vec3 Cspec)
 	float fresnel_exponent = 5.0;
 	return Cspec + (1.0 - Cspec) * (pow(1.0 - NdotL, fresnel_exponent));
 }
-#endif
 
-#if defined(PIXEL_LIT)
-varying vec3 varLightPosition;
-varying vec3 varToLightVec;
-varying vec3 varHalfVec;
-varying vec3 varToCameraVec;
-varying float varPerPixelAttenuation;
-#endif
-
-#if defined(LANDSCAPE_INSTANCING)
-//uniform sampler2D heightmapTexture;
-//uniform vec4 chunkBounds;
-//uniform vec2 landscapeBoundingBoxZMinHeight;
 #endif
 
 void main()
 {
-#if defined(LANDSCAPE_INSTANCING)
-    //vec2 position = vec2(chunkBounds.x + chunkBounds.z * inPosition.x, chunkBounds.y + chunkBounds.z * inPosition.y);
-    //float height = 0.0; //texture2D(heightmapTexture, position).a;
-    //gl_Position = worldViewProjMatrix * vec4(position.xy, landscapeBoundingBoxZMinHeight.x + height * landscapeBoundingBoxZMinHeight.y, 1.0);
-    gl_Position = worldViewProjMatrix * (inPosition * vec4(20.0));//vec4(position.xy, 0.0, 1.0);
-
-#else
 	gl_Position = worldViewProjMatrix * inPosition;
-#endif
-    
+
 	varTexCoordOrig = inTexCoord0;
 
 	varTexCoord0 = inTexCoord0 * texture0Tiling;
@@ -126,7 +104,7 @@ void main()
     toLightDir = normalize(toLightDir);
 #endif
 	
-#if defined(VERTEX_LIT)
+#if defined(SPECULAR)
     vec3 normal = normalize(worldViewInvTransposeMatrix * inNormal); // normal in eye coordinates
     
     vec3 toCameraNormalized = normalize(-eyeCoordsPosition);
@@ -137,7 +115,7 @@ void main()
     float LdotH = max (dot (toLightDir, H), 0.0);
     float NdotV = max (dot (normal, toCameraNormalized), 0.0);
     
-    //vec3 fresnelIn = FresnelShlickVec3(NdotL, metalFresnelReflectance);
+    vec3 fresnelIn = FresnelShlickVec3(NdotL, metalFresnelReflectance);
     vec3 fresnelOut = FresnelShlickVec3(NdotV, metalFresnelReflectance);
     float specularity = inSpecularity;
     
@@ -149,56 +127,6 @@ void main()
     varSpecularColor = Dbp * Geo * fresnelOut * specularity * lightColor0;
     varNdotH = NdotH;
 #endif
-
-#if defined(PIXEL_LIT)
-	vec3 n = normalize (worldViewInvTransposeMatrix * inNormal);
-	vec3 t = normalize (worldViewInvTransposeMatrix * inTangent);
-	vec3 b = -cross(n, t); //normalize (worldViewInvTransposeMatrix * inBinormal);
-    
-    vec3 toLightDirPixel = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
-#if defined(DISTANCE_ATTENUATION)
-    varPerPixelAttenuation = length(toLightDirPixel);
-#endif
-    //lightDir = normalize(lightDir);
-    
-	// transform light and half angle vectors by tangent basis
-	vec3 v;
-	v.x = dot (toLightDirPixel, t);
-	v.y = dot (toLightDirPixel, b);
-	v.z = dot (toLightDirPixel, n);
-    
-#if !defined(FAST_NORMALIZATION)
-	varToLightVec = v;
-#else
-    varToLightVec = normalize(v);
-#endif
-    
-    vec3 toCameraDir = -eyeCoordsPosition;
-    
-    v.x = dot (toCameraDir, t);
-	v.y = dot (toCameraDir, b);
-	v.z = dot (toCameraDir, n);
-#if !defined(FAST_NORMALIZATION)
-	varToCameraVec = v;
-#else
-    varToCameraVec = normalize(v);
-#endif
-    
-    /* Normalize the halfVector to pass it to the fragment shader */
-	// No need to divide by two, the result is normalized anyway.
-	// vec3 halfVector = normalize((E + lightDir) / 2.0);
-#if defined(FAST_NORMALIZATION)
-	vec3 halfVector = normalize(normalize(toCameraDir) + normalize(toLightDirPixel));
-	v.x = dot (halfVector, t);
-	v.y = dot (halfVector, b);
-	v.z = dot (halfVector, n);
-    
-	// No need to normalize, t,b,n and halfVector are normal vectors.
-	varHalfVec = v;
-#endif
-    
-#endif
-
     
 #if defined(VERTEX_FOG)
     float fogDistance = length(eyeCoordsPosition);
