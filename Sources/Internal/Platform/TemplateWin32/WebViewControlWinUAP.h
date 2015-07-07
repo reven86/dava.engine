@@ -34,100 +34,90 @@
 
 #include "UI/IWebViewControl.h"
 
-namespace DAVA 
+namespace DAVA
 {
 
-// Web View Control for Win32.
+class CorePlatformWinUAP;
+
+// Web View Control for WinUAP
 class WebViewControl : public IWebViewControl
 {
 public:
-	WebViewControl(UIWebView& uiWebView) 
+    WebViewControl(UIWebView& uiWebView);
+    virtual ~WebViewControl();
+
+    // Initialize the control.
+    void Initialize(const Rect& rect) override;
+    
+    // Open the URL requested.
+    void OpenURL(const String& urlToOpen) override;
+    // Load html page from string
+    void LoadHtmlString(const WideString& htmlString) override;
+
+    // Delete all cookies associated with target URL
+    void DeleteCookies(const String& targetUrl) override
     {
-        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    }
-	virtual ~WebViewControl()
-    {
-        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+        //__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     }
 
-	// Initialize the control.
-	void Initialize(const Rect& rect) override
+    // Get cookie for specific domain and name
+    String GetCookie(const String& url, const String& name) const override
     {
-        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    }
-	
-	// Open the URL requested.
-	void OpenURL(const String& urlToOpen) override
-    {
-        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    }
-
-	// Load html page from string
-	void LoadHtmlString(const WideString& htmlString) override
-    {
-        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    }
-
-	// Delete all cookies associated with target URL
-	void DeleteCookies(const String& targetUrl) override
-    {
-        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    }
-
-	// Get cookie for specific domain and name
-	String GetCookie(const String& url, const String& name) const override
-    {
-        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+        //__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
         return String();
     }
 
-	// Get the list of cookies for specific domain
-	Map<String, String> GetCookies(const String& url) const override
+    // Get the list of cookies for specific domain
+    Map<String, String> GetCookies(const String& url) const override
     {
-        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+        //__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
         return Map<String, String>();
     }
 
-	// Execute javascript string in webview
-	void ExecuteJScript(const String& scriptString) override
-    {
-        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    }
-	
+    // Execute javascript string in webview
+    void ExecuteJScript(const String& scriptString) override;
+    
     void OpenFromBuffer(const String& string, const FilePath& basePath) override
     {
-        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+        //__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     }
 
     // Size/pos/visibility changes.
-	void SetRect(const Rect& rect) override
-    {
-        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    }
+    void SetRect(const Rect& rect) override;
+    void SetVisible(bool isVisible, bool hierarchic) override;
 
-	void SetVisible(bool isVisible, bool hierarchic) override
-    {
-        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    }
+    void SetDelegate(IUIWebViewDelegate* webViewDelegate, UIWebView* webView) override;
 
-	void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView) override
-    {
-        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    }
+    void SetRenderToTexture(bool value) override;
+    bool IsRenderToTexture() const override;
 
-    void SetRenderToTexture(bool value) override
-    {
-        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    }
+private:
+    void PositionWebView(const Rect& rect);
 
-    bool IsRenderToTexture() const override
-    {
-        __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-        return false;
-    }
+private:    // WebView event handlers
+    void OnNavigationStarting(Windows::UI::Xaml::Controls::WebView^ sender, Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs^ args);
+    void OnNavigationCompleted(Windows::UI::Xaml::Controls::WebView^ sender, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs^ args);
+
+    void RenderToTexture();
+
+private:
+    UIWebView& uiWebView;
+    CorePlatformWinUAP* core;
+    IUIWebViewDelegate* webViewDelegate = nullptr;
+    Windows::UI::Xaml::Controls::WebView^ nativeWebView = nullptr;
+    Windows::Foundation::Uri^ curUrl = nullptr;
+    bool renderToTexture = false;
+
+    int n = 0;
 };
 
-};
+//////////////////////////////////////////////////////////////////////////
+inline bool WebViewControl::IsRenderToTexture() const
+{
+    return renderToTexture;
+}
 
-#endif // defined(__DAVAENGINE_WIN_UAP__)
+}   // namespace DAVA
+
+#endif // __DAVAENGINE_WIN_UAP__
 #endif //__WEBVIEWCONTROL_WINSTORE_H__
