@@ -30,6 +30,7 @@
 #include "Base/Platform.h"
 #if defined(__DAVAENGINE_WINDOWS__)
 
+#include <thread>
 #include "Concurrency/Thread.h"
 
 namespace DAVA
@@ -142,7 +143,7 @@ bool DAVA::Thread::BindToProcessor(unsigned proc_n)
     return ::SetThreadIdealProcessorEx(handle, &proc_number, nullptr) == TRUE;
 #else
     DWORD_PTR mask = 1 << proc_n;
-    return ::SetThreadAffinityMask(id, mask) == 0;
+    return ::SetThreadAffinityMask(handle, mask) == 0;
 #endif
 }
     
