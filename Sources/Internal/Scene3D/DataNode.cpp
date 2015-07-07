@@ -34,9 +34,9 @@
 namespace DAVA 
 {
 DataNode::DataNode()
-    : id(0)
-    , scene(nullptr)
+    : id(INVALID_ID)
     , isRuntime(false)
+    , scene(nullptr)
 { }
 
 DataNode::~DataNode()
@@ -44,7 +44,7 @@ DataNode::~DataNode()
 
 void DataNode::SetScene(Scene * _scene)
 {
-    DVASSERT(scene == 0 || scene == _scene);
+    DVASSERT(scene == nullptr || scene == _scene);
     scene = _scene;
 }
 
@@ -83,7 +83,7 @@ void DataNode::Save(KeyedArchive * archive, SerializationContext * serialization
 {
     BaseObject::SaveObject(archive);
     
-    DVASSERT(0 != id);
+    DVASSERT(INVALID_ID != id);
     archive->SetByteArrayAsType("#id", id);
 }
 

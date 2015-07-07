@@ -235,7 +235,7 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
             // because we don't change scene pointer in datanode->scene.
             // This should be discussed and fixed in the future.
             serializableNodesCount++;
-            if (node->GetScene() != scene || node->GetNodeID() == 0)
+            if (node->GetScene() != scene || node->GetNodeID() == DataNode::INVALID_ID)
             {
                 node->SetNodeID(++maxDataNodeID);
             }
@@ -255,7 +255,7 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     // save global material on top of datanodes
     if (nullptr != globalMaterial)
     {
-        if(globalMaterial->GetNodeID() == 0)
+        if(globalMaterial->GetNodeID() == DataNode::INVALID_ID)
         {
             globalMaterial->SetNodeID(++maxDataNodeID);
         }
