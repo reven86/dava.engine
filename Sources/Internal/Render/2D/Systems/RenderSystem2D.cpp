@@ -366,7 +366,7 @@ void RenderSystem2D::EndFrame()
     rhi::EndRenderPass(pass2DHandle);
 }
 
-void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* = true */)
+void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* = true */, const Color& clearColor /* = Color::Clear */)
 {
     DVASSERT(!IsRenderTargetPass());
     DVASSERT(target);
@@ -376,10 +376,10 @@ void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* =
 
     rhi::RenderPassConfig renderTargetPassConfig;
     renderTargetPassConfig.colorBuffer[0].texture = target->handle;
-    renderTargetPassConfig.colorBuffer[0].clearColor[0] = 0.f;
-    renderTargetPassConfig.colorBuffer[0].clearColor[1] = 0.f;
-    renderTargetPassConfig.colorBuffer[0].clearColor[2] = 0.f;
-    renderTargetPassConfig.colorBuffer[0].clearColor[3] = 0.f;
+    renderTargetPassConfig.colorBuffer[0].clearColor[0] = clearColor.r;
+    renderTargetPassConfig.colorBuffer[0].clearColor[1] = clearColor.g;
+    renderTargetPassConfig.colorBuffer[0].clearColor[2] = clearColor.b;
+    renderTargetPassConfig.colorBuffer[0].clearColor[3] = clearColor.a;
     renderTargetPassConfig.priority = PRIORITY_SERVICE_2D;
     renderTargetPassConfig.viewport.width = target->GetWidth();
     renderTargetPassConfig.viewport.height = target->GetHeight();
