@@ -222,16 +222,14 @@ void QtPropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem &o
 		}
 	}
 }
-#include <QDebug>
+
 bool QtPropertyEditor::eventFilter(QObject *object, QEvent *event)
 {
     if(isVisible() && object == verticalScrollBar() &&  event->type() == QEvent::Hide)
     {
         QModelIndex topLeft = model()->index(0, 0);
         QModelIndex bottomRight(model()->index(model()->rowCount(), model()->columnCount()));
-        //model()->dataChanged(topLeft, bottomRight);
-        QPainter painter(this);
-        drawTree(&painter, this->rect());
+        model()->dataChanged(topLeft, bottomRight);
         return true;
     }
     return false;
