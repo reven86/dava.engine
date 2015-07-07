@@ -39,6 +39,7 @@ namespace DAVA
     
 class UIPackage;
 class UIControl;
+class UIStyleSheet;
 class UIComponent;
 class UIControlBackground;
 class YamlNode;
@@ -62,7 +63,8 @@ public:
     virtual void EndPackage() = 0;
     
     virtual bool ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader) = 0;
-    
+    virtual void ProcessStyleSheets(const YamlNode *styleSheetsNode) = 0;
+
     virtual UIControl *BeginControlWithClass(const String &className) = 0;
     virtual UIControl *BeginControlWithCustomClass(const String &customClassName, const String &className) = 0;
     virtual UIControl *BeginControlWithPrototype(const String &packageName, const String &prototypeName, const String *customClassName, AbstractUIPackageLoader *loader) = 0;

@@ -35,6 +35,7 @@
 
 class PackageNode;
 class ControlNode;
+class StyleSheetNode;
 class SectionProperty;
 class ControlsContainerNode;
 
@@ -48,7 +49,8 @@ public:
     virtual void EndPackage() override;
     
     virtual bool ProcessImportedPackage(const DAVA::String &packagePath, DAVA::AbstractUIPackageLoader *loader) override;
-    
+    virtual void ProcessStyleSheets(const DAVA::YamlNode* styleSheetsNode) override;
+
     virtual DAVA::UIControl *BeginControlWithClass(const DAVA::String &className) override;
     virtual DAVA::UIControl *BeginControlWithCustomClass(const DAVA::String &customClassName, const DAVA::String &className) override;
     virtual DAVA::UIControl *BeginControlWithPrototype(const DAVA::String &packageName, const DAVA::String &prototypeName, const DAVA::String *customClassName, DAVA::AbstractUIPackageLoader *loader) override;
@@ -69,7 +71,7 @@ public:
     virtual void EndInternalControlSection() override;
     
     virtual void ProcessProperty(const DAVA::InspMember *member, const DAVA::VariantType &value) override;
-
+    
     DAVA::RefPtr<PackageNode> BuildPackage() const;
     const DAVA::Vector<ControlNode*> &GetRootControls() const;
     const DAVA::Vector<PackageNode*> &GetImportedPackages() const;
@@ -77,7 +79,8 @@ public:
 
 private:
     ControlNode *FindRootControl(const DAVA::String &name) const;
-    
+    void AddStyleSheets(const DAVA::Vector<DAVA::UIStyleSheet*>& styleSheets);
+
 private:
     struct ControlDescr {
         ControlNode *node;
@@ -96,6 +99,7 @@ private:
     
     DAVA::Vector<PackageNode*> importedPackages;
     DAVA::Vector<ControlNode*> rootControls;
+    DAVA::Vector<StyleSheetNode*> styleSheets;
     DAVA::Vector<DAVA::FilePath> declinedPackages;
     
     DAVA::BaseObject *currentObject;

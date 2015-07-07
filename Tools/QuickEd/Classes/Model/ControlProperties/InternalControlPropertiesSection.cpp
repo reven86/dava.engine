@@ -38,6 +38,12 @@
 
 using namespace DAVA;
 
+namespace
+{
+const FastName PROPERTY_NAME_TEXT("text");
+const FastName PROPERTY_NAME_FONT("font");
+}
+
 InternalControlPropertiesSection::InternalControlPropertiesSection(DAVA::UIControl *aControl, int num, const InternalControlPropertiesSection *sourceSection, eCloneType cloneType)
     : SectionProperty("")
     , control(SafeRetain(aControl))
@@ -64,11 +70,11 @@ InternalControlPropertiesSection::InternalControlPropertiesSection(DAVA::UIContr
 
             ValueProperty *prop = nullptr;
             //TODO: move it to fabric class
-            if (strcmp(member->Name(), "text") == 0)
+            if (member->Name() == PROPERTY_NAME_TEXT)
             {
                 prop = new LocalizedTextValueProperty(internalControl, member, dynamic_cast<LocalizedTextValueProperty*>(sourceProperty), cloneType);
             }
-            else if (strcmp(member->Name(), "font") == 0)
+            else if (member->Name() == PROPERTY_NAME_FONT)
             {
                 prop = new FontValueProperty(internalControl, member, dynamic_cast<FontValueProperty*>(sourceProperty), cloneType);
             }
@@ -107,11 +113,11 @@ void InternalControlPropertiesSection::CreateInternalControl()
 
             ValueProperty *prop = nullptr;
             //TODO: move it to fabric class
-            if (strcmp(member->Name(), "text") == 0)
+            if (member->Name() == PROPERTY_NAME_TEXT)
             {
                 prop = new LocalizedTextValueProperty(internalControl, member, nullptr, CT_COPY);
             }
-            else if (strcmp(member->Name(), "font") == 0)
+            else if (member->Name() == PROPERTY_NAME_FONT)
             {
                 prop = new FontValueProperty(internalControl, member, nullptr, CT_COPY);
             }
