@@ -100,7 +100,6 @@ class RenderVariantInstance
 
 class NMaterial : public DataNode
 {
-
 public:
     NMaterial();    
     ~NMaterial();
@@ -146,8 +145,7 @@ public:
     NMaterial* GetParent();       
 
     inline uint32 GetRenderLayerID() const;
-    inline uint32 GetSortingKey() const;
-    inline uint64 GetMaterialKey() const;      
+    inline uint32 GetSortingKey() const;    
 
     void BindParams(rhi::Packet& target);    
 
@@ -214,7 +212,6 @@ private:
     bool needRebuildVariants;    
 
     uint32 sortingKey;
-    uint64 materialKey;
 };
 
 
@@ -244,10 +241,6 @@ uint32 NMaterial::GetRenderLayerID() const
 uint32 NMaterial::GetSortingKey() const
 {
     return sortingKey;
-}
-uint64 NMaterial::GetMaterialKey() const
-{
-    return materialKey;
 }
 };
 
