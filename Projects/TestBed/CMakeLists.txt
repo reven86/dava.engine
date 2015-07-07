@@ -33,7 +33,6 @@ elseif( IOS )
 elseif( WIN32 )
     set( PLATFORM_SPECIFIC_FOLDER "Win32Specific" )
     set( EXECUTABLE_FLAG WIN32 )
-
 endif()
 
 file ( GLOB_RECURSE XIB_LIST "${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/*.xib" )
