@@ -645,7 +645,8 @@ namespace DAVA
             textView.font = font;
             textView.userInteractionEnabled = NO;
             [textView setHidden:isHidden];
-            
+            textView.delegate = textFieldHolder;
+           
             isSingleLine = false;
             
             SetText(wstring);

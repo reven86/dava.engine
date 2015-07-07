@@ -58,7 +58,9 @@
 - (void) dealloc;
 - (BOOL)textFieldShouldReturn:(UITextField *)textField;
 - (BOOL)textField:(UITextField *)_textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
-- (BOOL)textView:(UITextView *)textView_ shouldChangeTextInRange:(NSRange)range replacementString:(NSString *)string;
+- (BOOL)textView:(UITextView *)textView_ shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)string;
+
+
 - (void)setIsPassword:(bool)isPassword;
 - (void)setTextInputAllowed:(bool)value;
 - (void)setUseRtlAlign:(bool)value;
