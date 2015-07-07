@@ -1350,8 +1350,10 @@ void SceneFileV2::ConvertAlphatestValueMaterials(Entity * node)
                 {
                     if (alphatestTemplate == material->GetFXName())
                     {
-                        material->AddFlag(NMaterialFlagName::FLAG_ALPHATESTVALUE, 1);
-                        material->AddProperty(NMaterialParamName::PARAM_ALPHATEST_THRESHOLD, &alphatestThresholdValue, rhi::ShaderProp::TYPE_FLOAT1);
+                        if (!material->HasLocalFlag(NMaterialFlagName::FLAG_ALPHATESTVALUE))
+                            material->AddFlag(NMaterialFlagName::FLAG_ALPHATESTVALUE, 1);
+                        if (!material->HasLocalProperty(NMaterialParamName::PARAM_ALPHATEST_THRESHOLD))
+                            material->AddProperty(NMaterialParamName::PARAM_ALPHATEST_THRESHOLD, &alphatestThresholdValue, rhi::ShaderProp::TYPE_FLOAT1);
                     }
                 }
                 material = material->GetParent();
