@@ -72,11 +72,12 @@ void SpritesPacker::PerformPack(bool isLightmapPacking, DAVA::eGPUFamily gpu)
     if (SettingsManager::GetValue(Settings::General_AssetCache_UseCache).AsBool())
     {
         auto ip = SettingsManager::GetValue(Settings::General_AssetCache_Ip).AsString();
+        auto port = SettingsManager::GetValue(Settings::General_AssetCache_Port).AsString();
         auto timeout = SettingsManager::GetValue(Settings::General_AssetCache_Timeout).AsString();
 #if defined __DAVAENGINE_MACOS__
-        resourcePacker->SetCacheClientTool("~res:/AssetCacheClient", ip, timeout);
+        resourcePacker->SetCacheClientTool("~res:/AssetCacheClient", ip, port, timeout);
 #elif defined __DAVAENGINE_WINDOWS__
-        resourcePacker->SetCacheClientTool("~res:/AssetCacheClient.exe", ip, timeout);
+        resourcePacker->SetCacheClientTool("~res:/AssetCacheClient.exe", ip, port, timeout);
 #endif
     }
 

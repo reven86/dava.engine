@@ -52,6 +52,7 @@ void PrintUsage()
     printf("\t-md5mode - only process md5 for output resources\n");
     printf("\t-useCache - use asset cache\n");
     printf("\t-ip - asset cache ip\n");
+    printf("\t-p - asset cache port\n");
     printf("\t-t - asset cache timeout\n");
 
     printf("\n");
@@ -167,8 +168,9 @@ void ProcessRecourcePacker()
     {
         Logger::FrameworkDebug("Using asset cache");
         String ip = CommandLineParser::GetCommandParam(String("-ip"));
+        String port = CommandLineParser::GetCommandParam(String("-p"));
         String timeout = CommandLineParser::GetCommandParam(String("-t"));
-        resourcePacker->SetCacheClientTool(toolFolderPath + cacheToolName, ip, timeout);
+        resourcePacker->SetCacheClientTool(toolFolderPath + cacheToolName, ip, port, timeout);
     }
     else
     {

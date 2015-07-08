@@ -59,6 +59,7 @@ namespace Settings
 
     static const DAVA::FastName General_AssetCache_UseCache("General/AssetCache/UseCache");
     static const DAVA::FastName General_AssetCache_Ip("General/AssetCache/IP");
+    static const DAVA::FastName General_AssetCache_Port("General/AssetCache/Port");
     static const DAVA::FastName General_AssetCache_Timeout("General/AssetCache/Timeout");
 
 	static const DAVA::FastName Scene_GridStep("Scene/GridStep");

@@ -617,6 +617,12 @@ bool ResourcePacker2D::GetFilesFromCache(const AssetCache::CacheItemKey &key, co
         arguments.push_back("-ip");
         arguments.push_back(cacheClientIp);
     }
+    
+    if(!cacheClientPort.empty())
+    {
+        arguments.push_back("-p");
+        arguments.push_back(cacheClientPort);
+    }
 
     if (!cacheClientTimeout.empty())
     {
@@ -703,6 +709,12 @@ bool ResourcePacker2D::AddFilesToCache(const AssetCache::CacheItemKey &key, cons
             arguments.push_back(cacheClientIp);
         }
 
+        if(!cacheClientPort.empty())
+        {
+            arguments.push_back("-p");
+            arguments.push_back(cacheClientPort);
+        }
+
         if (!cacheClientTimeout.empty())
         {
             arguments.push_back("-t");
@@ -763,10 +775,11 @@ void ResourcePacker2D::AddError(const String& errorMsg)
     errors.insert(errorMsg);
 }
     
-void ResourcePacker2D::SetCacheClientTool(const DAVA::FilePath &path, const String& ip, const String& timeout)
+void ResourcePacker2D::SetCacheClientTool(const DAVA::FilePath &path, const String& ip, const String& port, const String& timeout)
 {
     cacheClientTool = path;
     cacheClientIp = ip;
+    cacheClientPort = port;
     cacheClientTimeout = timeout;
 }
 
@@ -774,6 +787,7 @@ void ResourcePacker2D::ClearCacheClientTool()
 {
     cacheClientTool = "";
     cacheClientIp.clear();
+    cacheClientPort.clear();
     cacheClientTimeout.clear();
 }
 

@@ -68,7 +68,7 @@ public:
     void SetRunning(bool arg);
     bool IsRunning() const;	
     
-    void SetCacheClientTool(const FilePath & path, const String& ip, const String& timeout);
+    void SetCacheClientTool(const FilePath & path, const String& ip, const String& port, const String& timeout);
     void ClearCacheClientTool();
     bool IsUsingCache() const;
 
@@ -101,6 +101,7 @@ public:
 protected:
     FilePath cacheClientTool;
     String cacheClientIp;
+    String cacheClientPort;
     String cacheClientTimeout;
     
 	Set<String> errors;
