@@ -217,6 +217,7 @@ public:
     static const FastName PARAM_RCP_SCREEN_SIZE;
     static const FastName PARAM_SCREEN_OFFSET;
     static const FastName PARAM_NORMAL_SCALE;
+    static const FastName PARAM_ALPHATEST_THRESHOLD;
     
 	static const FastName FLAG_VERTEXFOG;
 	static const FastName FLAG_FOG_LINEAR;
@@ -251,6 +252,7 @@ public:
     static const FastName FLAG_VIEWDIFFUSE;
     static const FastName FLAG_VIEWSPECULAR;
 
+    static const FastName FLAG_ALPHATESTVALUE;
 	
 	static const FastName DEFAULT_QUALITY_NAME;
 	

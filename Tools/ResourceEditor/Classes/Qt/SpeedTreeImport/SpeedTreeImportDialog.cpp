@@ -76,6 +76,9 @@ void SpeedTreeImportDialog::OnCancel()
 void SpeedTreeImportDialog::OnOk()
 {
 #ifdef __DAVAENGINE_SPEEDTREE__
+    sc2FolderPath = ui->sc2EditLine->text().toStdString();
+    sc2FolderPath.MakeDirectoryPathname();
+
     FilePath texturesDirPath = sc2FolderPath + "images/";
 
     //make out files

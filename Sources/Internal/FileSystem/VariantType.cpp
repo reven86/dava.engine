@@ -1418,7 +1418,7 @@ VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
 			printf("MetaType: %s, size %d, is pointer %d, introspection %p\n", meta->GetTypeName(), meta->GetSize(), meta->IsPointer(), meta->GetIntrospection());
 			if(NULL != meta->GetIntrospection())
 			{
-				printf("Introspection: %s\n", meta->GetIntrospection()->Name());
+				printf("Introspection: %s\n", meta->GetIntrospection()->Name().c_str());
 			}
 			DVASSERT(0 && "Don't know how to load data for such VariantType");
 		}
