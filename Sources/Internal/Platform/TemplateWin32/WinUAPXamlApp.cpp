@@ -95,25 +95,25 @@ Windows::Foundation::Size WinUAPXamlApp::GetCurrentScreenSize()
     return Windows::Foundation::Size(windowWidth, windowHeight);
 }
 
-void WinUAPXamlApp::SetCursorPining(bool isPining)
+void WinUAPXamlApp::SetCursorPinning(bool isPinning)
 {
-    // will be started on UI thread
-    Logger::FrameworkDebug("[CorePlatformWinUAP] CursorPining %d", static_cast<int32>(isPining));
-    if (isPhoneApiDetect)
+    // should be started on UI thread
+    Logger::FrameworkDebug("[CorePlatformWinUAP] CursorPinning %d", static_cast<int32>(isPinning));
+    if (isPhoneApiDetected)
     {
         return;
     }
-    isPining = isCursorPining;
+    isPinning = isCursorPinning;
 }
 
 void WinUAPXamlApp::SetCursorVisible(bool isVisible)
 {
-    // will be started on UI thread
-    Logger::FrameworkDebug("[CorePlatformWinUAP] CursorState %d", static_cast<int32>(isVisible));
-    if (isPhoneApiDetect)
+    // should be started on UI thread
+    if (isPhoneApiDetected)
     {
         return;
     }
+    Logger::FrameworkDebug("[CorePlatformWinUAP] CursorState %d", static_cast<int32>(isVisible));
     if (isVisible != isMouseCursorShown)
     {
         Window::Current->CoreWindow->PointerCursor = (isVisible ? ref new CoreCursor(CoreCursorType::Arrow, 0) : nullptr);
@@ -176,17 +176,17 @@ void WinUAPXamlApp::Run()
     ReInitRender();
     InitCoordinatesSystem();
 
+
     // View size and orientation option should be configured in FrameowrkDidLaunched
     FrameworkDidLaunched();
-
     core->RunOnUIThreadBlocked([this]() {
         SetupEventHandlers();
         SetTitleName();
         InitInput();
         PrepareScreenSize();
         SetDisplayOrientations();
-        Core::Instance()->SetIsActive(true);
     });
+    Core::Instance()->SetIsActive(true);
 
     Core::Instance()->SystemAppStarted();
     while (!quitFlag)
@@ -340,7 +340,7 @@ void WinUAPXamlApp::OnPointerEntered(Platform::Object^ sender, Windows::UI::Core
     // will be started on main thread
     Logger::FrameworkDebug("[CorePlatformWinUAP] OnPointerEntered");
     PointerDeviceType type = args->CurrentPoint->PointerDevice->PointerDeviceType;
-    if (PointerDeviceType::Mouse == type && isCursorPining)
+    if (PointerDeviceType::Mouse == type && isCursorPinning)
     {
         core->RunOnUIThread([this]() { SetCursorVisible(false); });
     }
@@ -439,7 +439,7 @@ void WinUAPXamlApp::OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::
 void WinUAPXamlApp::OnMouseMoved(_In_ MouseDevice^ mouseDevice, _In_ MouseEventArgs^ args)
 {
     // Note: must run on main thread
-    if (!isCursorPining || isMouseCursorShown)
+    if (!isCursorPinning || isMouseCursorShown)
     {
         return;
     }
@@ -528,7 +528,7 @@ void WinUAPXamlApp::SetupEventHandlers()
     if (Windows::Foundation::Metadata::ApiInformation::IsTypePresent("Windows.Phone.UI.Input.HardwareButtons"))
     {
         HardwareButtons::BackPressed += ref new EventHandler<BackPressedEventArgs^>(this, &WinUAPXamlApp::OnHardwareBackButtonPressed);
-        isPhoneApiDetect = true;
+        isPhoneApiDetected = true;
     }
 }
 
@@ -681,7 +681,7 @@ void WinUAPXamlApp::SetFullScreen(bool isFullscreen_)
 {
     // Note: must run on UI thread
     Logger::FrameworkDebug("[CorePlatformWinUAP] SetFullScreen %d", (int32)isFullscreen_);
-    if (isPhoneApiDetect)
+    if (isPhoneApiDetected)
     {
         return;
     }
@@ -706,7 +706,7 @@ void WinUAPXamlApp::SetPreferredSize(int32 width, int32 height)
 {
     // Note: must run on UI thread
     Logger::FrameworkDebug("[CorePlatformWinUAP] SetPreferredSize width = %d, height = %d", width, height);
-    if (isPhoneApiDetect)
+    if (isPhoneApiDetected)
     {
         return;
     }

@@ -137,9 +137,8 @@ void DeviceInfo::InitializeScreenInfo()
 bool DeviceInfo::IsRunningOnEmulator()
 {
     using namespace Windows::Security::ExchangeActiveSyncProvisioning;
-    EasClientDeviceInformation^ deviceInfo = ref new EasClientDeviceInformation();
-    bool isEmulator = ("Virtual" == deviceInfo->SystemProductName);
-    delete deviceInfo;
+    EasClientDeviceInformation deviceInfo;
+    bool isEmulator = ("Virtual" == deviceInfo.SystemProductName);
     return isEmulator;
 }
 #endif //  __DAVAENGINE_WIN_UAP__
