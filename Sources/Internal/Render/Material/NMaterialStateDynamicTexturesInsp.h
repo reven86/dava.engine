@@ -36,34 +36,24 @@
 namespace DAVA
 {
 class NMaterial;
+class Texture;
 
 class NMaterialStateDynamicTexturesInsp : public InspInfoDynamic
 {
 public:
-    Vector<FastName> MembersList(void *object) const;
-    InspDesc MemberDesc(void *object, const FastName &member) const;
-    int MemberFlags(void *object, const FastName &member) const;
-    VariantType MemberValueGet(void *object, const FastName &member) const;
-    void MemberValueSet(void *object, const FastName &member, const VariantType &value);
+    NMaterialStateDynamicTexturesInsp();
+    ~NMaterialStateDynamicTexturesInsp();
+
+    DynamicData Prepare(void *object, int filter) const;
+    Vector<FastName> MembersList(const DynamicData& ddata) const override;
+    InspDesc MemberDesc(const DynamicData& ddata, const FastName &member) const override;
+    int MemberFlags(const DynamicData& ddata, const FastName &member) const override;
+    VariantType MemberValueGet(const DynamicData& ddata, const FastName &member) const override;
+    void MemberValueSet(const DynamicData& ddata, const FastName &member, const VariantType &value) override;
     
 protected:
-    struct PropData
-    {
-        enum PropSource
-        {
-            SOURCE_UNKNOWN = 0x0,
-            SOURCE_SELF = 0x1,
-            SOURCE_SHADER = 0x2
-        };
-        
-        PropData() : source(SOURCE_UNKNOWN)
-        { }
-        
-        int source;
-        FilePath path;
-    };
-    
-    const FastNameMap<PropData>* FindMaterialTextures(NMaterial *state) const;
+    Texture *defaultTexture;
+    Set<FastName>* FindMaterialTextures(NMaterial *state) const;
 };
 };
 

@@ -257,6 +257,7 @@ void MaterialModel::Sync()
 {
 	if(NULL != curScene)
 	{
+        DAVA::NMaterial *globalMaterial = GetGlobalMaterial();
         const DAVA::Set<DAVA::NMaterial*> &sceneMaterials = curScene->materialSystem->GetTopParents();
         Map<NMaterial *, bool> processedList;
         
@@ -267,9 +268,9 @@ void MaterialModel::Sync()
         }
 
         // add global material into list
-        if (nullptr != GetGlobalMaterial())
+        if (nullptr != globalMaterial)
         {
-            processedList[GetGlobalMaterial()] = false;
+            processedList[globalMaterial] = false;
         }
 
         // remove items, that are not in set
@@ -287,7 +288,8 @@ void MaterialModel::Sync()
             else
             {
                 // sync material with material item
-                Sync(item);
+                if (material != globalMaterial)
+                    Sync(item);
 
                 // mark processed material 
                 processedList[material] = true;
@@ -303,7 +305,7 @@ void MaterialModel::Sync()
                 bool dragEnabled = true;
                 bool dropEnabled = true;
 
-                if (it.first == curScene->GetGlobalMaterial())
+                if (it.first == globalMaterial)
                 {
                     dragEnabled = false;
                     dropEnabled = false;
@@ -311,7 +313,9 @@ void MaterialModel::Sync()
 
                 MaterialItem *newItem = new MaterialItem(it.first, dragEnabled, dropEnabled);
                 root->appendRow(newItem);
-                Sync(newItem);
+
+                if (it.first != globalMaterial)
+                    Sync(newItem);
             }
         }
 
@@ -508,16 +512,8 @@ bool MaterialModel::dropCanBeAccepted(const QMimeData *data, Qt::DropAction acti
     if ( targetMaterial == NULL )
         return false;
 
-#if RHI_COMPLETE_EDITOR
-    if( targetMaterial->GetMaterialType() != DAVA::NMaterial::MATERIALTYPE_MATERIAL )
+    if( targetMaterial == curScene->GetGlobalMaterial())
         return false;
-
-	for( int i = 0; i < materials.size(); i++ )
-	{
-		if ( materials[i]->GetMaterialType() != DAVA::NMaterial::MATERIALTYPE_INSTANCE )
-            return false;
-	}
-#endif // RHI_COMPLETE_EDITOR
 
     return true;
 }

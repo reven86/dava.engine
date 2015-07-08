@@ -290,7 +290,7 @@ void Landscape::AllocateGeometryData()
     if (!landscapeMaterial)
     {
         landscapeMaterial = new NMaterial();
-        landscapeMaterial->SetFXName(NMaterialName::TILE_MASK);
+        landscapeMaterial->SetLocalFXName(NMaterialName::TILE_MASK);
     }
 
     for (int32 i = 0; i < LANDSCAPE_BATCHES_POOL_SIZE; i++)

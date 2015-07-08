@@ -102,7 +102,7 @@ ParticleEffectSystem::ParticleEffectSystem(Scene * scene, bool _is2DMode) : Scen
     }
 
     particleBaseMaterial = new NMaterial();
-    particleBaseMaterial->SetFXName(NMaterialName::PARTICLES);        	
+    particleBaseMaterial->SetLocalFXName(NMaterialName::PARTICLES);
 }
 ParticleEffectSystem::~ParticleEffectSystem()
 {

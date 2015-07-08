@@ -309,7 +309,7 @@ bool SceneFile::ReadMaterial()
     sceneFP->Read(&materialDef.hasOpacity, sizeof(materialDef.hasOpacity));
 
 	NMaterial * mat = new NMaterial();
-    mat->SetFXName(NMaterialName::TEXTURED_OPAQUE);
+    mat->SetLocalFXName(NMaterialName::TEXTURED_OPAQUE);
 
     if (strlen(materialDef.diffuseTexture))
     {

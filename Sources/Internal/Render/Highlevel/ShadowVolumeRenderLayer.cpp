@@ -71,7 +71,7 @@ void ShadowVolumeRenderLayer::PrepareRenderData()
 
 
     shadowRectMaterial = new NMaterial();
-    shadowRectMaterial->SetFXName(NMaterialName::SHADOWRECT);
+    shadowRectMaterial->SetLocalFXName(NMaterialName::SHADOWRECT);
     shadowRectMaterial->PreBuildMaterial(PASS_FORWARD);
 }
 

@@ -34,10 +34,19 @@ namespace DAVA
 ///////////////////////////////////////////////////////////////////////////
 ///// NMaterialStateDynamicTexturesInsp implementation
 
-const FastNameMap<NMaterialStateDynamicTexturesInsp::PropData>* NMaterialStateDynamicTexturesInsp::FindMaterialTextures(NMaterial *material) const
+NMaterialStateDynamicTexturesInsp::NMaterialStateDynamicTexturesInsp()
 {
-    static FastNameMap<PropData> staticData;
-    staticData.clear();
+    defaultTexture = Texture::CreatePink();
+}
+
+NMaterialStateDynamicTexturesInsp::~NMaterialStateDynamicTexturesInsp()
+{
+    SafeRelease(defaultTexture);
+}
+
+Set<FastName>* NMaterialStateDynamicTexturesInsp::FindMaterialTextures(NMaterial *material) const
+{
+    Set<FastName>* ret = new Set<FastName>();
 
     if (material->fxName.IsValid())
     {
@@ -51,115 +60,147 @@ const FastNameMap<NMaterialStateDynamicTexturesInsp::PropData>* NMaterialStateDy
             const rhi::ShaderSamplerList& samplers = descriptor.shader->GetFragmentSamplerList();
             for (auto &samp : samplers)
             {
-                if (0 == staticData.count(samp.uid))
-                {
-                    PropData data;
-                    data.source = PropData::SOURCE_SHADER;
-
-                    Texture* tex = material->GetEffectiveTexture(samp.uid);
-                    if (nullptr != tex)
-                    {
-                        data.path = tex->GetPathname();
-                    }
-
-                    staticData.insert(samp.uid, data);
-                }
+                ret->insert(samp.uid);
             }
         }
 
         // local properties
         auto it = material->localTextures.begin();
         auto end = material->localTextures.end();
-
         for (; it != end; ++it)
         {
-            FastName texName = it->first;
-            if (0 == staticData.count(texName))
-            {
-                PropData data;
-                data.path = it->second->path;
-                data.source = PropData::SOURCE_SELF;
-                staticData.insert(texName, data);
-            }
-            else
-            {
-                staticData[it->first].source |= PropData::SOURCE_SELF;
-            }
+            ret->insert(it->first);
         }
     }
 
-    return &staticData;
+    return ret;
 }
 
-Vector<FastName> NMaterialStateDynamicTexturesInsp::MembersList(void *object) const
+InspInfoDynamic::DynamicData NMaterialStateDynamicTexturesInsp::Prepare(void *object, int filter) const
+{
+    NMaterial *material = (NMaterial*)object;
+    DVASSERT(material);
+
+    auto data = FindMaterialTextures(material);
+
+    if (filter > 0)
+    {
+        auto checkAndAdd = [&data](const FastName &name) {
+            if (0 == data->count(name))
+            {
+                data->insert(name);
+            }
+        };
+
+        checkAndAdd(NMaterialTextureName::TEXTURE_ALBEDO);
+        checkAndAdd(NMaterialTextureName::TEXTURE_NORMAL);
+        checkAndAdd(NMaterialTextureName::TEXTURE_DETAIL);
+        checkAndAdd(NMaterialTextureName::TEXTURE_LIGHTMAP);
+        checkAndAdd(NMaterialTextureName::TEXTURE_DECAL);
+        checkAndAdd(NMaterialTextureName::TEXTURE_CUBEMAP);
+        checkAndAdd(NMaterialTextureName::TEXTURE_HEIGHTMAP);
+        checkAndAdd(NMaterialTextureName::TEXTURE_DECALMASK);
+        checkAndAdd(NMaterialTextureName::TEXTURE_DECALTEXTURE);
+    }
+
+    DynamicData ddata;
+    ddata.object = object;
+    ddata.data = std::shared_ptr<void>(data);
+
+    return ddata;
+}
+
+Vector<FastName> NMaterialStateDynamicTexturesInsp::MembersList(const DynamicData& ddata) const
 {
     Vector<FastName> ret;
     
-    NMaterial *material = (NMaterial*) object;
-    DVASSERT(material);
-    
-    const FastNameMap<NMaterialStateDynamicTexturesInsp::PropData>* textures = FindMaterialTextures(material);
-    
-    FastNameMap<NMaterialStateDynamicTexturesInsp::PropData>::iterator it = textures->begin();
-    FastNameMap<NMaterialStateDynamicTexturesInsp::PropData>::iterator end = textures->end();
+    Set<FastName>* textures = (Set<FastName>*) ddata.data.get();
+    DVASSERT(textures);
+
+    auto it = textures->begin();
+    auto end = textures->end();
     
     ret.reserve(textures->size());
     while(it != end)
     {
-        ret.push_back(it->first);
+        ret.push_back(*it);
         ++it;
     }
     
     return ret;
 }
 
-InspDesc NMaterialStateDynamicTexturesInsp::MemberDesc(void *object, const FastName &texture) const
+InspDesc NMaterialStateDynamicTexturesInsp::MemberDesc(const DynamicData& ddata, const FastName &textureName) const
 {
-    return InspDesc(texture.c_str());
+    return InspDesc(textureName.c_str());
 }
 
-VariantType NMaterialStateDynamicTexturesInsp::MemberValueGet(void *object, const FastName &texture) const
+VariantType NMaterialStateDynamicTexturesInsp::MemberValueGet(const DynamicData& ddata, const FastName &textureName) const
 {
     VariantType ret;
     
-    NMaterial *material = (NMaterial*) object;
+    Set<FastName>* textures = (Set<FastName>*) ddata.data.get();;
+    DVASSERT(textures);
+
+    NMaterial *material = (NMaterial*) ddata.object;
     DVASSERT(material);
-    
-    const FastNameMap<NMaterialStateDynamicTexturesInsp::PropData>* textures = FindMaterialTextures(material);
-    if(textures->count(texture))
+
+    if (textures->count(textureName))
     {
-        ret.SetFilePath(textures->at(texture).path);
+        Texture *tex = material->GetEffectiveTexture(textureName);
+        if (nullptr != tex)
+        {
+            ret.SetFilePath(tex->GetPathname());
+        }
+        else
+        {
+            ret.SetFilePath(FilePath());
+        }
     }
     
     return ret;
 }
 
-void NMaterialStateDynamicTexturesInsp::MemberValueSet(void *object, const FastName &texName, const VariantType &value)
+void NMaterialStateDynamicTexturesInsp::MemberValueSet(const DynamicData& ddata, const FastName &textureName, const VariantType &value)
 {
     VariantType ret;
-    NMaterial *material = (NMaterial*) object;
+
+    Set<FastName>* textures = (Set<FastName>*) ddata.data.get();;
+    DVASSERT(textures);
+
+    NMaterial *material = (NMaterial*)ddata.object;
     DVASSERT(material);
-    
-    const FastNameMap<NMaterialStateDynamicTexturesInsp::PropData>* textures = FindMaterialTextures(material);
-    if (textures->count(texName))
+
+    if (textures->count(textureName))
     {
         if(value.type == VariantType::TYPE_NONE)
         {
-            if (material->HasLocalTexture(texName))
+            if (material->HasLocalTexture(textureName))
             {
-                material->RemoveTexture(texName);
+                material->RemoveTexture(textureName);
             }
         }
         else
         {
-            Texture *texture = Texture::CreateFromFile(value.AsFilePath());
-            if (material->HasLocalTexture(texName))
+            FilePath texPath = value.AsFilePath();
+            Texture *texture = nullptr;
+            
+            if (texPath == FilePath())
             {
-                material->SetTexture(texName, texture);
+                texture = SafeRetain(defaultTexture);
             }
             else
             {
-                material->SetTexture(texName, texture);
+                texture = Texture::CreateFromFile(texPath);
+            }
+
+            if (material->HasLocalTexture(textureName))
+            {
+                material->SetTexture(textureName, texture);
+            }
+            else
+            {
+                material->AddTexture(textureName, texture);
             }
 
             SafeRelease(texture);
@@ -167,27 +208,18 @@ void NMaterialStateDynamicTexturesInsp::MemberValueSet(void *object, const FastN
     }
 }
 
-int NMaterialStateDynamicTexturesInsp::MemberFlags(void *object, const FastName &texture) const
+int NMaterialStateDynamicTexturesInsp::MemberFlags(const DynamicData& ddata, const FastName &textureName) const
 {
     int flags = 0;
     
-    NMaterial *material = (NMaterial*) object;
+    NMaterial *material = (NMaterial*)ddata.object;
     DVASSERT(material);
-    
-    const FastNameMap<NMaterialStateDynamicTexturesInsp::PropData>* textures = FindMaterialTextures(material);
-    if(textures->count(texture))
+
+    flags |= I_VIEW;
+
+    if (material->HasLocalTexture(textureName))
     {
-        const PropData &propData = textures->at(texture);
-        
-        if(propData.source & PropData::SOURCE_SELF)
-        {
-            flags |= I_EDIT;
-        }
-        
-        if(propData.source & PropData::SOURCE_SHADER)
-        {
-            flags |= I_VIEW;
-        }
+        flags |= I_EDIT;
     }
     
     return flags;

@@ -194,19 +194,29 @@ Texture* NMaterial::GetEffectiveTexture(const FastName& slotName)
     return nullptr;
 }
 
-void NMaterial::SetFXName(const FastName & fx)
+void NMaterial::SetLocalFXName(const FastName & fx)
 {
     fxName = fx;
     InvalidateRenderVariants();
 }
 
-const FastName& NMaterial::GetFXName()
+const FastName& NMaterial::GetEffectiveFxName() const
 {   
     if ((!fxName.IsValid()) && (parent != nullptr))
     {
-        return parent->GetFXName();
+        return parent->GetEffectiveFxName();
     }
     return fxName;
+}
+
+const FastName& NMaterial::GetLocalFXName() const
+{
+    return fxName;
+}
+
+bool NMaterial::HasLocalFXNmae() const
+{
+    return fxName.IsValid();
 }
 
 const FastName& NMaterial::GetQualityGroup()
@@ -481,13 +491,13 @@ void NMaterial::RebuildRenderVariants()
     HashMap<FastName, int32> flags;
     CollectMaterialFlags(flags);
 
-    const FXDescriptor& fxDescr = FXCache::GetFXDescriptor(GetFXName(), flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup()));
+    const FXDescriptor& fxDescr = FXCache::GetFXDescriptor(GetEffectiveFxName(), flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup()));
     
-if( fxDescr.renderPassDescriptors.size() == 0)
-{
-    // dragon: because I'm fucking sick and tired of Render2D-init crashing (when I don't even need it)
-    return;
-}    
+    if( fxDescr.renderPassDescriptors.size() == 0)
+    {
+        // dragon: because I'm fucking sick and tired of Render2D-init crashing (when I don't even need it)
+        return;
+    }    
 
     /*at least in theory flag changes can lead to changes in number of render passes*/
     activeVariantInstance = nullptr;

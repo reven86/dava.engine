@@ -71,6 +71,7 @@ public slots:
 
 protected slots:
 	void OnTemplateChanged(int index);
+    void OnTemplateButton();
 	void OnPropertyEdited(const QModelIndex &);
     void OnAddRemoveButton();
 
@@ -87,7 +88,7 @@ protected:
 
     void FillBase();
     void FillDynamic(QtPropertyData *root, const char* dynamicName);
-    void FillDynamicMembers(QtPropertyData *root, DAVA::InspInfoDynamic *dynamic, DAVA::NMaterial *material);
+    void FillDynamicMembers(QtPropertyData *root, DAVA::InspInfoDynamic *dynamic, DAVA::NMaterial *material, bool isGlobal);
     void FillTemplates(const QList<DAVA::NMaterial *>& materials);
     void ApplyTextureValidator(QtPropertyDataInspDynamic *data);
 

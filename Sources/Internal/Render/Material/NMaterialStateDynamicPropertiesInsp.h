@@ -40,32 +40,23 @@ class NMaterial;
 class NMaterialStateDynamicPropertiesInsp : public InspInfoDynamic
 {
 public:
-    Vector<FastName> MembersList(void *object) const;
-    InspDesc MemberDesc(void *object, const FastName &key) const;
-    int MemberFlags(void *object, const FastName &key) const;
-    VariantType MemberValueGet(void *object, const FastName &key) const;
-    void MemberValueSet(void *object, const FastName &key, const VariantType &value);
+    DynamicData Prepare(void *object, int filter) const override;
+    Vector<FastName> MembersList(const DynamicData& ddata) const override;
+    InspDesc MemberDesc(const DynamicData& ddata, const FastName &key) const override;
+    int MemberFlags(const DynamicData& ddata, const FastName &key) const override;
+    VariantType MemberValueGet(const DynamicData& ddata, const FastName &key) const override;
+    void MemberValueSet(const DynamicData& ddata, const FastName &key, const VariantType &value) override;
     
 protected:
     struct PropData
     {
-        enum PropSource
-        {
-            SOURCE_UNKNOWN = 0x0,
-            SOURCE_SELF = 0x1,
-            SOURCE_SHADER = 0x2
-        };
-        
-        PropData() : source(SOURCE_UNKNOWN) { }
-        
-        int source;
         uint32 size;
         rhi::ShaderProp::Type type;
-        const float32* value;
+        const float32* defaultValue;
     };
     
     bool IsColor(const FastName &key) const;
-    const FastNameMap<PropData>* FindMaterialProperties(NMaterial *state) const;
+    FastNameMap<PropData>* FindMaterialProperties(NMaterial *state) const;
 };
 
 };

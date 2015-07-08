@@ -118,33 +118,24 @@ void MaterialTree::SelectEntities(const QList<DAVA::NMaterial *>& materials)
 
     if (NULL != curScene && materials.size() > 0)
     {
-        curScene->selectionSystem->Clear();
+        std::function<void(DAVA::NMaterial *)> fn = [&fn, &curScene](DAVA::NMaterial *material) {
+            DAVA::Entity *entity = curScene->materialSystem->GetEntity(material);
+            if (nullptr != entity)
+            {
+                curScene->selectionSystem->AddSelection(curScene->selectionSystem->GetSelectableEntity(entity));
+            }
+            const Vector<NMaterial *>& children = material->GetChildren();
+            for (auto child : children)
+            {
+                fn(child);
+            }
+        };
 
+        curScene->selectionSystem->Clear();
         for (int i = 0; i < materials.size(); i++)
         {
             DAVA::NMaterial * material = materials.at(i);
-
-#if RHI_COMPLETE_EDITOR
-		    if(material->GetMaterialType() == NMaterial::MATERIALTYPE_INSTANCE)
-		    {
-			    DAVA::Entity *entity = curScene->materialSystem->GetEntity(material);
-			    curScene->selectionSystem->AddSelection(curScene->selectionSystem->GetSelectableEntity(entity));
-		    }
-		    else
-		    {
-			    DAVA::Set<DAVA::NMaterial *> instances;
-			    curScene->materialSystem->BuildInstancesList(material, instances);
-
-			    auto it = instances.begin();
-			    auto end = instances.end();
-
-			    for(; it != end; ++it)
-			    {
-				    DAVA::Entity *entity = curScene->materialSystem->GetEntity(*it);
-				    curScene->selectionSystem->AddSelection(curScene->selectionSystem->GetSelectableEntity(entity));
-			    }
-		    }
-#endif // RHI_COMPLETE_EDITOR
+            fn(material);
         }
 
         QtMainWindow::Instance()->GetUI()->sceneTree->LookAtSelection();
@@ -174,61 +165,34 @@ void MaterialTree::ShowContextMenu(const QPoint &pos)
 
 	contextMenu.addAction(QIcon(":/QtIcons/zoom.png"), "Select entities", this, SLOT(OnSelectEntities()));
 
-/*
-	// add/remove
-	contextMenu.addSeparator();
-	contextMenu.addAction(QIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
-
-	// lock/unlock
-	contextMenu.addSeparator();
-
-	// save model as
-	contextMenu.addSeparator();
-	contextMenu.addAction(QIcon(":/QtIcons/save_as.png"), "Save Entity As...", this, SLOT(SaveEntityAs()));
-*/
-
     // "Assign to Selection" item
     {
-        const QModelIndexList& selection = selectionModel()->selectedIndexes();
-        int nMaterials = 0;
-        int nInstances = 0;
+        const QModelIndexList& selection = selectionModel()->selectedRows();
+        int nMaterials = selection.count();
 
-#if RHI_COMPLETE_EDITOR
-        foreach( const QModelIndex& index, selection )
+        DAVA::NMaterial *globalMaterial = nullptr;
+        SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+        if (nullptr != curScene)
         {
-            DAVA::NMaterial *material = treeModel->GetMaterial(index);
-            if ( material )
-            {
-                switch ( material->GetMaterialType() )
-                {
-                case DAVA::NMaterial::MATERIALTYPE_MATERIAL:
-                    nMaterials++;
-                    break;
-                case DAVA::NMaterial::MATERIALTYPE_INSTANCE:
-                    nInstances++;
-                    break;
-                default:
-                    break;
-                }
-            }
-            if ( nMaterials > 0 && nInstances > 0 )
-                break;
+            globalMaterial = curScene->GetGlobalMaterial();
         }
-#endif // RHI_COMPLETE_EDITOR
 
-        const bool isVisible = nMaterials > 0;
-        const bool isEnabled = ( nMaterials == 1 ) && ( nInstances == 0 );
-        
-        if ( isVisible )
+        if (nMaterials > 0)
         {
             const QModelIndex first = selection[0];
             DAVA::NMaterial *material = treeModel->GetMaterial(first);
             QVariant materialAsVariant = QVariant::fromValue<DAVA::NMaterial *>(material);
             QAction * actionAssign = contextMenu.addAction("Assign to Selection", this, SLOT(OnAssignToSelection()));
 
-            if ( isEnabled )
+            if (material != globalMaterial && 1 == nMaterials)
+            {
                 actionAssign->setData(materialAsVariant);
-            actionAssign->setEnabled( isEnabled );
+                actionAssign->setEnabled(true);
+            }
+            else
+            {
+                actionAssign->setEnabled(false);
+            }
         }
     }
 

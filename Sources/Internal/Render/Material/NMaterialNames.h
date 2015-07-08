@@ -131,6 +131,7 @@ public:
     static const FastName PARAM_DETAIL_TILE_SCALE;
     static const FastName PARAM_RCP_SCREEN_SIZE;
     static const FastName PARAM_SCREEN_OFFSET;
+    static const FastName DEPRECATED_SHADOW_COLOR_PARAM;
 };
 
 class NMaterialFlagName

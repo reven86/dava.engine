@@ -1374,7 +1374,7 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
     {
         NMaterial * shadowMaterial = new NMaterial();
         shadowMaterial->SetMaterialName(FastName("Shadow_Material"));
-        shadowMaterial->SetFXName(NMaterialName::SHADOW_VOLUME);
+        shadowMaterial->SetLocalFXName(NMaterialName::SHADOW_VOLUME);
         ConvertShadowVolumes(rootNode, shadowMaterial);
         shadowMaterial->Release();
     }

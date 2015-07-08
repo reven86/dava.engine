@@ -48,7 +48,7 @@ ConvertToShadowCommand::ConvertToShadowCommand(DAVA::RenderBatch *batch)
 
     DAVA::NMaterial * shadowMaterial = new DAVA::NMaterial();
     shadowMaterial->SetMaterialName(DAVA::FastName("Shadow_Material"));
-    shadowMaterial->SetFXName(DAVA::NMaterialName::SHADOW_VOLUME);
+    shadowMaterial->SetLocalFXName(DAVA::NMaterialName::SHADOW_VOLUME);
 
     newBatch->SetMaterial(shadowMaterial);
 
@@ -81,7 +81,7 @@ bool ConvertToShadowCommand::CanConvertBatchToShadow(DAVA::RenderBatch *renderBa
 {
     if(renderBatch && renderBatch->GetMaterial())
     {
-        return renderBatch->GetMaterial()->GetFXName() != DAVA::NMaterialName::SHADOW_VOLUME;
+        return renderBatch->GetMaterial()->GetEffectiveFxName() != DAVA::NMaterialName::SHADOW_VOLUME;
     }
 
 	return false;

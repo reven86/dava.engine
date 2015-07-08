@@ -37,13 +37,21 @@ namespace DAVA
 ///////////////////////////////////////////////////////////////////////////
 ///// NMaterialStateDynamicFlagsInsp implementation
 
-Vector<FastName> NMaterialStateDynamicFlagsInsp::MembersList(void *object) const
+InspInfoDynamic::DynamicData NMaterialStateDynamicFlagsInsp::Prepare(void *object, int filter) const
+{
+    InspInfoDynamic::DynamicData ddata;
+    ddata.object = object;
+
+    return ddata;
+}
+
+Vector<FastName> NMaterialStateDynamicFlagsInsp::MembersList(const DynamicData& ddata) const
 {
     static Vector<FastName> ret;
 
     if(0 == ret.size())
     {
-        ret.reserve(18);
+        ret.reserve(21);
         
         ret.push_back(NMaterialFlagName::FLAG_VERTEXFOG);
         ret.push_back(NMaterialFlagName::FLAG_FOG_LINEAR);
@@ -66,30 +74,33 @@ Vector<FastName> NMaterialStateDynamicFlagsInsp::MembersList(void *object) const
         ret.push_back(NMaterialFlagName::FLAG_DEBUG_NORMAL_ROTATION);        
         ret.push_back(NMaterialFlagName::FLAG_SKINNING);
         ret.push_back(NMaterialFlagName::FLAG_TILED_DECAL_MASK);
+        ret.push_back(NMaterialFlagName::FLAG_ILLUMINATION_USED);
+        ret.push_back(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
+        ret.push_back(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
     }
 
     return ret;
 }
 
-InspDesc NMaterialStateDynamicFlagsInsp::MemberDesc(void *object, const FastName &member) const
+InspDesc NMaterialStateDynamicFlagsInsp::MemberDesc(const DynamicData& ddata, const FastName &member) const
 {
     return InspDesc(member.c_str());
 }
 
-VariantType NMaterialStateDynamicFlagsInsp::MemberValueGet(void *object, const FastName &member) const
+VariantType NMaterialStateDynamicFlagsInsp::MemberValueGet(const DynamicData& ddata, const FastName &member) const
 {
     VariantType ret;
 
-    NMaterial *material = static_cast<NMaterial*>(object);
+    NMaterial *material = static_cast<NMaterial*>(ddata.object);
     DVASSERT(material);
     
-    ret.SetBool((bool) material->GetEffectiveFlagValue(member));
+    ret.SetBool(0 != material->GetEffectiveFlagValue(member));
     return ret;
 }
 
-void NMaterialStateDynamicFlagsInsp::MemberValueSet(void *object, const FastName &member, const VariantType &value)
+void NMaterialStateDynamicFlagsInsp::MemberValueSet(const DynamicData& ddata, const FastName &member, const VariantType &value)
 {
-    NMaterial *material = static_cast<NMaterial*>(object);
+    NMaterial *material = static_cast<NMaterial*>(ddata.object);
     DVASSERT(material);
 
     int newValue = 0;
@@ -119,11 +130,11 @@ void NMaterialStateDynamicFlagsInsp::MemberValueSet(void *object, const FastName
     }
 }
 
-int NMaterialStateDynamicFlagsInsp::MemberFlags(void *object, const FastName &member) const
+int NMaterialStateDynamicFlagsInsp::MemberFlags(const DynamicData& ddata, const FastName &member) const
 {
     int ret = I_VIEW;
     
-    NMaterial *material = static_cast<NMaterial*>(object);
+    NMaterial *material = static_cast<NMaterial*>(ddata.object);
     DVASSERT(material);
 
     if (material->HasLocalFlag(member))
