@@ -2,12 +2,13 @@
 set START_DIR=%CD%
 set SCRIPT_DIR=%~dp0
 set SOURCE_DIR=%1/
-set CMAKE_DIR=%~dp0cmake_build\bin\Debug\
+set CMAKE_DIR=%~dp0cmake_build\bin\Debug
 
 echo START_DIR=%START_DIR%
 echo SCRIPT_DIR=%SCRIPT_DIR%
 echo SOURCE_DIR=%SOURCE_DIR%
 echo CMAKE_DIR=%CMAKE_DIR%
+echo RESOURCE_PATH=%3
 
 if not exist %CMAKE_DIR%\cmake.exe ( (cd %~dp0) & (call rebuild_cmake.bat) & (cd %START_DIR%) )
 
@@ -30,6 +31,10 @@ if "%2" == "Win32" set APPEND_A_PLATFORM=-A"Win32"
 
 if "%2" == "" set APPEND_A_PLATFORM=-A"Win32"
 
-%CMAKE_DIR%\cmake.exe -G "Visual Studio 14 2015" -DWINDOWS_UAP=true %APPEND_A_PLATFORM% %SOURCE_DIR%
+if not "%3" == "" (set RESOURCE_PATH=-DADDITIONAL_CONTENT=%3)
+
+echo %CMAKE_DIR%\cmake.exe -G "Visual Studio 14 2015" -DWINDOWS_UAP=true %APPEND_A_PLATFORM% %RESOURCE_PATH% %SOURCE_DIR%
+
+%CMAKE_DIR%\cmake.exe -G "Visual Studio 14 2015" -DWINDOWS_UAP=true %APPEND_A_PLATFORM% %RESOURCE_PATH% %SOURCE_DIR%
 
 ::%CMAKE_DIR%\cmake.exe -G "Visual Studio 14 2015" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 -DCMAKE_VS_WINRT_COMPONENT=FALSE -A"Win32|ARM|x64" -DCMAKE_VS_EFFECTIVE_PLATFORMS=Win32;ARM;x64 %SOURCE_DIR%
