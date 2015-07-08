@@ -63,6 +63,13 @@ public:
         ,   FITTING_POINTS = 4
     };
     
+    enum eUseRtlAlign
+    {
+        RTL_DONT_USE,
+        RTL_USE_BY_CONTENT,
+        RTL_USE_BY_SYSTEM
+    };
+    
     static void ScreenResolutionChanged();
     
     static TextBlock * Create(const Vector2 & size);
@@ -74,8 +81,8 @@ public:
     virtual void SetAlign(int32 align);
     virtual int32 GetAlign();
 	virtual int32 GetVisualAlign(); // Return align for displaying BiDi-text (w/ mutex lock)
-    virtual void SetUseRtlAlign(const bool& useRtlAlign);
-    virtual bool GetUseRtlAlign();
+    virtual void SetUseRtlAlign(eUseRtlAlign useRtlAlign);
+    virtual eUseRtlAlign GetUseRtlAlign();
 
     
     //[DO NOT ACTUAL ANYMORE] if requested size is 0 - text creates in the rect with size of the drawRect on draw phase
@@ -174,7 +181,7 @@ protected:
     bool visualTextCroped;
 #endif //LOCALIZATION_DEBUG
     int32 align;
-    bool useRtlAlign;
+    eUseRtlAlign useRtlAlign;
 
     Font * font;
     WideString logicalText;

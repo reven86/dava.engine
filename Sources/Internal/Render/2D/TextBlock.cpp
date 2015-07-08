@@ -110,7 +110,7 @@ TextBlock::TextBlock()
 {
     font = NULL;
     isMultilineEnabled = false;
-    useRtlAlign = false;
+    useRtlAlign = RTL_DONT_USE;
     fittingType = FITTING_DISABLED;
 
 	originalFontSize = 0.1f;
@@ -361,7 +361,7 @@ void TextBlock::SetAlign(int32 _align)
     mutex.Unlock();
 }
 
-void TextBlock::SetUseRtlAlign(bool const& useRtlAlign)
+void TextBlock::SetUseRtlAlign(eUseRtlAlign useRtlAlign)
 {
     mutex.Lock();
 	if(this->useRtlAlign != useRtlAlign)
@@ -374,7 +374,7 @@ void TextBlock::SetUseRtlAlign(bool const& useRtlAlign)
     mutex.Unlock();
 }
 
-bool TextBlock::GetUseRtlAlign()
+    TextBlock::eUseRtlAlign TextBlock::GetUseRtlAlign()
 {
     LockGuard<Mutex> guard(mutex);
     return useRtlAlign;
@@ -395,7 +395,8 @@ int32 TextBlock::GetVisualAlign()
 int32 TextBlock::GetVisualAlignNoMutexLock() const
 {
     bool isRtl = UIControlSystem::Instance()->GetLayoutSystem()->IsRtl();
-	if(useRtlAlign && isRtl && (align & ALIGN_LEFT || align & ALIGN_RIGHT))
+	if(useRtlAlign && isRtl &&
+       (align & ALIGN_LEFT || align & ALIGN_RIGHT))
     {
         // Mirror left/right align
         return align ^ (ALIGN_LEFT | ALIGN_RIGHT);

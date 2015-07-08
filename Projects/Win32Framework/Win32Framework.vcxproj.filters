@@ -199,11 +199,11 @@
     <Filter Include="Internal\UI\Styles">
       <UniqueIdentifier>{f37298db-a685-43f6-a8a7-7aee2f5f2b57}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Internal\UI\Layouts">
-      <UniqueIdentifier>{f37298db-a685-43f6-a8a7-7aee2f5f2b58}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Internal\Concurrency">
       <UniqueIdentifier>{fef8edc5-3139-4a47-9e07-d9bc662be831}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\UI\Layouts">
+      <UniqueIdentifier>{35e9d1cc-cb7d-4460-b271-1e7012178889}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1921,13 +1921,13 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyTable.h">
       <Filter>Internal\UI\Styles</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIAnchorComponent.h">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UILayoutSystem.h">
       <Filter>Internal\UI\Layouts</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UILinearLayoutComponent.h">
-      <Filter>Internal\UI\Layouts</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UIAnchorComponent.h">
       <Filter>Internal\UI\Layouts</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.h">
@@ -3415,13 +3415,13 @@
     <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyTable.cpp">
       <Filter>Internal\UI\Styles</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIAnchorComponent.cpp">
+      <Filter>Internal\UI\Layouts</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UILayoutSystem.cpp">
       <Filter>Internal\UI\Layouts</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UILinearLayoutComponent.cpp">
-      <Filter>Internal\UI\Layouts</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UIAnchorComponent.cpp">
       <Filter>Internal\UI\Layouts</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\Layouts\UISizePolicyComponent.cpp">
