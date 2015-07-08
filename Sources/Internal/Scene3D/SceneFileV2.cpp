@@ -1413,7 +1413,6 @@ void SceneFileV2::ConvertAlphatestValueMaterials(Entity * node)
                     {
                         if (alphatestTemplate == material->GetMaterialTemplateName())
                         {
-                            material->SetFlag(NMaterial::FLAG_ALPHATESTVALUE, NMaterial::FlagOn);
                             material->SetPropertyValue(NMaterial::PARAM_ALPHATEST_THRESHOLD, Shader::UT_FLOAT, 1, &alphatestThresholdValue);
                         }
                     }
