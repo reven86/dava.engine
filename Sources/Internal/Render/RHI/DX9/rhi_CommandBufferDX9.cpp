@@ -18,8 +18,8 @@
     using DAVA::Logger;
     #include "Core/Core.h"
     #include "Debug/Profiler.h"
-    #include "Platform/Thread.h"
-    #include "Thread/Semaphore.h"
+    #include "Concurrency/Thread.h"
+    #include "Concurrency/Semaphore.h"
 
     #include "_dx9.h"
     namespace rhi { extern void _InitDX9(); }
