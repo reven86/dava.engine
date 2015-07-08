@@ -33,6 +33,7 @@
 #include "Base/BaseTypes.h"
 #include "FileSystem/VariantType.h"
 #include "Base/GlobalEnum.h"
+#include "Base/FastName.h"
 
 namespace DAVA
 {
@@ -104,7 +105,7 @@ namespace DAVA
         virtual ~InspMember() {};
 
 		// Имя члена интроспекции, соответствует имени члена класса
-		const char* Name() const;
+		const FastName& Name() const;
 
 		// Описание члена интроспекции, произвольно указанное пользователем при объявлении интроспекции
 		const InspDesc& Desc() const;
@@ -147,6 +148,8 @@ namespace DAVA
 		// Устанавливает данные члена интроспекции из указанного варианта. 
 		virtual void SetValue(void *object, const VariantType &val) const;
 
+		virtual void SetValueRaw(void *object, void *val) const;
+
 		// Возвращает данные члена интроспекции в виде коллекции
 		virtual const InspColl* Collection() const;
 
@@ -157,7 +160,7 @@ namespace DAVA
 	protected:
 		void ApplyParentInsp(const InspInfo *parentInsp) const;
 
-		const char* name;
+		FastName name;
 		InspDesc desc;
 		const long int offset;
 		const MetaInfo* type;

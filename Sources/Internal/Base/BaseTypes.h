@@ -44,6 +44,7 @@
 #include <stack>
 #include <queue>
 #include <array>
+#include <bitset>
 #include <unordered_map>
 #include <unordered_set>
 #include <sstream>
@@ -158,6 +159,9 @@ template<typename Key,
          typename Hash = std::hash<Key>,
          typename KeyEqual = std::equal_to<Key>>
 using UnorderedMap = std::unordered_map<Key, T, Hash, KeyEqual, DefaultSTLAllocator<std::pair<const Key, T>>>;
+
+template<size_t Bits>
+using Bitset = std::bitset<Bits>;
 
 #ifdef min
 #   undef min
