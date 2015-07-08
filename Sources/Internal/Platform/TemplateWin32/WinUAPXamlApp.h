@@ -66,7 +66,7 @@ public:
     void SetScreenMode(Windows::UI::ViewManagement::ApplicationViewWindowingMode screenMode);
     Windows::Foundation::Size GetCurrentScreenSize();
     void SetCursorPining(bool isPining);
-    void SetCursorState(bool isShown);
+    void SetCursorVisible(bool isVisible);
 
     Windows::UI::Core::CoreDispatcher^ UIThreadDispatcher();
     Windows::UI::Core::CoreDispatcher^ MainThreadDispatcher();

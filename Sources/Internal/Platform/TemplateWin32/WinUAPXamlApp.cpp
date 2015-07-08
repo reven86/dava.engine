@@ -106,18 +106,18 @@ void WinUAPXamlApp::SetCursorPining(bool isPining)
     isPining = isCursorPining;
 }
 
-void WinUAPXamlApp::SetCursorState(bool isShown)
+void WinUAPXamlApp::SetCursorVisible(bool isVisible)
 {
     // will be started on UI thread
-    Logger::FrameworkDebug("[CorePlatformWinUAP] CursorState %d", static_cast<int32>(isShown));
+    Logger::FrameworkDebug("[CorePlatformWinUAP] CursorState %d", static_cast<int32>(isVisible));
     if (isPhoneApiDetect)
     {
         return;
     }
-    if (isShown != isMouseCursorShown)
+    if (isVisible != isMouseCursorShown)
     {
-        Window::Current->CoreWindow->PointerCursor = (isShown ? ref new CoreCursor(CoreCursorType::Arrow, 0) : nullptr);
-        isMouseCursorShown = isShown;
+        Window::Current->CoreWindow->PointerCursor = (isVisible ? ref new CoreCursor(CoreCursorType::Arrow, 0) : nullptr);
+        isMouseCursorShown = isVisible;
     }
 }
 
@@ -342,7 +342,7 @@ void WinUAPXamlApp::OnPointerEntered(Platform::Object^ sender, Windows::UI::Core
     PointerDeviceType type = args->CurrentPoint->PointerDevice->PointerDeviceType;
     if (PointerDeviceType::Mouse == type && isCursorPining)
     {
-        core->RunOnUIThread([this]() { SetCursorState(false); });
+        core->RunOnUIThread([this]() { SetCursorVisible(false); });
     }
 }
 
@@ -362,7 +362,7 @@ void WinUAPXamlApp::OnPointerExited(Platform::Object^ sender, Windows::UI::Core:
             isRightButtonPressed = pointProperties->IsRightButtonPressed;
             isMiddleButtonPressed = pointProperties->IsMiddleButtonPressed;
         }
-        core->RunOnUIThread([this]() { SetCursorState(true); });
+        core->RunOnUIThread([this]() { SetCursorVisible(true); });
     }
     else //  PointerDeviceType::Touch == type
     {

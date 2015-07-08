@@ -134,13 +134,13 @@ void CorePlatformWinUAP::SetCursorPining(bool isPining)
     if (IsUIThread())
     {
         xamlApp->SetCursorPining(isPining);
-        xamlApp->SetCursorState(!isPining);
+        xamlApp->SetCursorVisible(!isPining);
     }
     else
     {
         RunOnUIThread([this, isPining]() {
         xamlApp->SetCursorPining(isPining);
-        xamlApp->SetCursorState(!isPining);
+        xamlApp->SetCursorVisible(!isPining);
         });
     }
 }
