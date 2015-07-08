@@ -104,6 +104,17 @@ inline String WStringToString(const WideString& s)
 	return temp; 
 }
 
+#if defined(__DAVAENGINE_WIN_UAP__)
+inline  Platform::String^ StringToRTString(const String & s)
+{
+    return ref new Platform::String(StringToWString(s).c_str());
+}
+
+inline String RTStringToString(Platform::String^ s)
+{
+    return WStringToString(s->Data());
+}
+#endif
     
 template<class T>
 bool FindAndRemoveExchangingWithLast(Vector<T> & array, const T & object)
