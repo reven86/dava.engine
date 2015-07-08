@@ -1,6 +1,9 @@
 cmake_minimum_required (VERSION 3.0)
 
-add_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
+if ( ENABLE_MEM_PROFILING )
+    add_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
+endif()
+
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include      ( CMake-common )
 include      ( FindDavaFramework )
