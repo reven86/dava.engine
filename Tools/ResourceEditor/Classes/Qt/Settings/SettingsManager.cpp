@@ -42,6 +42,8 @@
 #include "FileSystem/VariantType.h"
 #include "Render/RenderBase.h"
 
+#include "AssetCache/AssetCache.h"
+
 #define SETTINGS_CONFIG_FILE "~doc:/ResourceEditorOptions.archive"
 
 SettingsManager::SettingsManager()
@@ -75,7 +77,7 @@ void SettingsManager::Init()
 
     CreateValue(Settings::General_AssetCache_UseCache, DAVA::VariantType(true));
     CreateValue(Settings::General_AssetCache_Ip, DAVA::VariantType(DAVA::String("")));
-    CreateValue(Settings::General_AssetCache_Port, DAVA::VariantType(DAVA::Format("%d", AssetCache::ASSET_SERVER_PORT)));
+    CreateValue(Settings::General_AssetCache_Port, DAVA::VariantType(DAVA::Format("%d", DAVA::AssetCache::ASSET_SERVER_PORT)));
     CreateValue(Settings::General_AssetCache_Timeout, DAVA::VariantType(DAVA::String("")));
 
 	CreateValue(Settings::Scene_GridStep, DAVA::VariantType(10.0f));
