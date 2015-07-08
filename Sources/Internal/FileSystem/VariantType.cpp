@@ -69,8 +69,8 @@ const String VariantType::TYPENAME_FASTNAME= "FastName";
 const String VariantType::TYPENAME_AABBOX3 = "AABBox3";
 const String VariantType::TYPENAME_FILEPATH = "FilePath";
     
-const VariantType::PairTypeName VariantType::variantNamesMap[] =
-{
+const Array<VariantType::PairTypeName, VariantType::TYPES_COUNT> VariantType::variantNamesMap =
+{{
     VariantType::PairTypeName(VariantType::TYPE_NONE,          TYPENAME_UNKNOWN,		nullptr),
     VariantType::PairTypeName(VariantType::TYPE_BOOLEAN,       TYPENAME_BOOLEAN,		MetaInfo::Instance<bool>()),
     VariantType::PairTypeName(VariantType::TYPE_INT32,         TYPENAME_INT32,			MetaInfo::Instance<int32>()),
@@ -92,7 +92,7 @@ const VariantType::PairTypeName VariantType::variantNamesMap[] =
 	VariantType::PairTypeName(VariantType::TYPE_FASTNAME,      TYPENAME_FASTNAME,       MetaInfo::Instance<FastName>()),
 	VariantType::PairTypeName(VariantType::TYPE_AABBOX3,       TYPENAME_AABBOX3,        MetaInfo::Instance<AABBox3>()),
 	VariantType::PairTypeName(VariantType::TYPE_FILEPATH,      TYPENAME_FILEPATH,       MetaInfo::Instance<FilePath>())
-};
+}};
 
 VariantType::VariantType()
 :	type(TYPE_NONE)
@@ -1137,16 +1137,16 @@ bool VariantType::operator==(const VariantType& other) const
                         isEqual = true;
                         if(keyedArchive != otherKeyedArchive)
                         {                                
-                            const Map<String, VariantType*> data = keyedArchive->GetArchieveData();
-                            const Map<String, VariantType*> otherData = otherKeyedArchive->GetArchieveData();
-                            for(Map<String, VariantType*>::const_iterator it = data.begin(); it != data.end(); ++it)
+                            const Map<String, VariantType*> &data = keyedArchive->GetArchieveData();
+                            const Map<String, VariantType*> &otherData = otherKeyedArchive->GetArchieveData();
+                            for(const auto &obj : data)
                             {
-                                Map<String, VariantType*>::const_iterator findIt = otherData.find(it->first);
+                                Map<String, VariantType*>::const_iterator findIt = otherData.find(obj.first);
                                 if(findIt != otherData.end())
                                 {
-                                    if(it->second != findIt->second)
+                                    if(obj.second != findIt->second)
                                     {
-                                        if((*it->second) != (*findIt->second))
+                                        if((*obj.second) != (*findIt->second))
                                         {
                                             isEqual = false;
                                             break;
@@ -1463,13 +1463,10 @@ void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &v
 				if(nullptr != dstArchive)
 				{
 					dstArchive->DeleteAllKeys();
-					Map<String, VariantType*> values = val.AsKeyedArchive()->GetArchieveData();
-					Map<String, VariantType*>::iterator i;
-
-					for(i = values.begin(); i != values.end(); ++i)
-					{
-						dstArchive->SetVariant(i->first, *i->second);
-					}
+                    for(const auto &obj : val.AsKeyedArchive()->GetArchieveData())
+                    {
+                        dstArchive->SetVariant(obj.first, *obj.second);
+                    }
 				}
 			}
 			break;
