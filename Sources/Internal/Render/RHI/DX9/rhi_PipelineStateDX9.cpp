@@ -28,7 +28,7 @@ VDeclDX9
     VertexLayout                        layout;
     IDirect3DVertexDeclaration9*        vdecl9;
 
-    static IDirect3DVertexDeclaration9* Get( const VertexLayout& layout );
+    static IDirect3DVertexDeclaration9* Get( const VertexLayout& layout, bool force_immediate=false );
 
 
 private:
@@ -98,7 +98,7 @@ DumpShaderText( const char* code, unsigned code_sz )
 //------------------------------------------------------------------------------
 
 IDirect3DVertexDeclaration9*
-VDeclDX9::Get( const VertexLayout& layout )
+VDeclDX9::Get( const VertexLayout& layout, bool force_immediate )
 {
     IDirect3DVertexDeclaration9*    vdecl = nullptr;
 
@@ -116,7 +116,6 @@ VDeclDX9::Get( const VertexLayout& layout )
         IDirect3DVertexDeclaration9*    vd9         = nullptr;
         D3DVERTEXELEMENT9               elem[32];
         uint32                          elemCount   = 0;
-        HRESULT                         hr;
 
         DVASSERT(layout.ElementCount() < countof(elem));
         for( unsigned i=0; i!=layout.ElementCount(); ++i )
@@ -170,10 +169,12 @@ VDeclDX9::Get( const VertexLayout& layout )
         elem[elemCount].Usage      = 0;
         elem[elemCount].UsageIndex = 0;
         
+        
+        DX9Command  cmd = { DX9Command::CREATE_VERTEX_DECLARATION, { uint64_t(elem), uint64_t(&vd9) } };
 
-        hr = _D3D9_Device->CreateVertexDeclaration( elem, &vd9 );
+        ExecDX9( &cmd, 1, force_immediate );
 
-        if( SUCCEEDED(hr) )
+        if( SUCCEEDED(cmd.retval) )
         {
             VDeclDX9    vd;
 
@@ -186,7 +187,7 @@ VDeclDX9::Get( const VertexLayout& layout )
         }
         else
         {
-            Logger::Error( "FAILED to create vertex-decl:\n%s\n", D3D9ErrorText(hr) );
+            Logger::Error( "FAILED to create vertex-decl:\n%s\n", D3D9ErrorText(cmd.retval) );
             layout.Dump();
         }
     }
@@ -248,7 +249,7 @@ public:
 
         bool                            Construct( const void* code, unsigned code_sz, const VertexLayout& vdecl );
         Handle                          CreateConstBuffer( unsigned buf_i );
-        void                            SetToRHI( uint32 layoutUID );
+        void                            SetToRHI( uint32 layoutUID, bool force_immediate=false );
         
         struct
         vdecl_t
@@ -478,9 +479,11 @@ PipelineStateDX9_t::VertexProgDX9::Construct( const void* bin, unsigned bin_sz, 
     {
 //DumpShaderText((const char*)bin,bin_sz);
         void*   code = shader->GetBufferPointer();
-        HRESULT hr   = _D3D9_Device->CreateVertexShader( (const DWORD*)code, &vs9 );
+        DX9Command  cmd = { DX9Command::CREATE_VERTEX_SHADER, { uint64_t((const DWORD*)code), uint64_t(&vs9) } };
 
-        if( SUCCEEDED(hr) )
+        ExecDX9( &cmd, 1 );
+
+        if( SUCCEEDED(cmd.retval) )
         {
             for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
             {
@@ -583,7 +586,7 @@ PipelineStateDX9_t::VertexProgDX9::CreateConstBuffer( unsigned buf_i )
 //------------------------------------------------------------------------------
 
 void
-PipelineStateDX9_t::VertexProgDX9::SetToRHI( uint32 layoutUID )
+PipelineStateDX9_t::VertexProgDX9::SetToRHI( uint32 layoutUID, bool force_immediate )
 {
     HRESULT hr = _D3D9_Device->SetVertexShader( vs9 );
 
@@ -613,14 +616,15 @@ PipelineStateDX9_t::VertexProgDX9::SetToRHI( uint32 layoutUID )
 
                 if( VertexLayout::MakeCompatible( *vbLayout, this->vertexLayout, &layout ) )
                 {
+/*
 Logger::Info("vb-layout:");
 vbLayout->Dump();
 Logger::Info("vprog-layout:");
 this->vertexLayout.Dump();
 Logger::Info("compatible-layout:");
 layout.Dump();
-
-                    info.vdecl      = VDeclDX9::Get( layout );
+*/
+                    info.vdecl      = VDeclDX9::Get( layout, force_immediate );
                     info.layoutUID  = layoutUID;
 
                     altVdecl9.push_back( info );
@@ -673,10 +677,12 @@ PipelineStateDX9_t::FragmentProgDX9::Construct( const void* bin, unsigned bin_sz
 
     if( SUCCEEDED(hr) )
     {
-        void*   code = shader->GetBufferPointer();
-        HRESULT hr   = _D3D9_Device->CreatePixelShader( (const DWORD*)code, &ps9 );
+        void*       code = shader->GetBufferPointer();
+        DX9Command  cmd  = { DX9Command::CREATE_PIXEL_SHADER, { uint64_t((const DWORD*)code), uint64_t(&ps9) } };
 
-        if( SUCCEEDED(hr) )
+        ExecDX9( &cmd, 1 );
+
+        if( SUCCEEDED(cmd.retval) )
         {
             for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
             {
@@ -900,7 +906,7 @@ SetToRHI( Handle ps, uint32 layoutUID )
 {
     PipelineStateDX9_t* ps9 = PipelineStateDX9Pool::Get( ps );
 
-    ps9->vprog.SetToRHI( layoutUID );
+    ps9->vprog.SetToRHI( layoutUID, true );
     ps9->fprog.SetToRHI();
 
     if( ps9->blendEnabled )

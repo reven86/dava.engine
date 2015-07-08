@@ -119,6 +119,7 @@ _IsValidIntelCard( unsigned vendor_id, unsigned device_id )
 static void
 dx9_Uninitialize()
 {
+    UninitializeRenderThreadDX9();
 }
 
 
@@ -133,16 +134,16 @@ dx9_Reset( const ResetParam& param )
 //------------------------------------------------------------------------------
 
 void
-dx9_Initialize( const InitParam& param )
+_InitDX9()
 {
     _D3D9 = Direct3DCreate9( D3D_SDK_VERSION );
 
     if( _D3D9 )
     {
         HRESULT                 hr;
-        HWND                    wnd                 = (HWND)param.window;
-        unsigned                backbuf_width       = param.width;
-        unsigned                backbuf_height      = param.height;
+        HWND                    wnd                 = (HWND)_DX9_InitParam.window;
+        unsigned                backbuf_width       = _DX9_InitParam.width;
+        unsigned                backbuf_height      = _DX9_InitParam.height;
         bool                    use_vsync           = true;//(vsync)  ? (bool)(*vsync)  : false;
         D3DADAPTER_IDENTIFIER9  info                = {0};
         D3DCAPS9                caps;
@@ -312,39 +313,50 @@ dx9_Initialize( const InitParam& param )
         {
             Logger::Error( "failed to create device:\n%s\n", D3D9ErrorText(hr) );
         }
-
-        VertexBufferDX9::SetupDispatch( &DispatchDX9 );
-        IndexBufferDX9::SetupDispatch( &DispatchDX9 );
-        QueryBufferDX9::SetupDispatch( &DispatchDX9 );
-        TextureDX9::SetupDispatch( &DispatchDX9 );
-        PipelineStateDX9::SetupDispatch( &DispatchDX9 );
-        ConstBufferDX9::SetupDispatch( &DispatchDX9 );
-        DepthStencilStateDX9::SetupDispatch( &DispatchDX9 );
-        SamplerStateDX9::SetupDispatch( &DispatchDX9 );
-        RenderPassDX9::SetupDispatch( &DispatchDX9 );
-        CommandBufferDX9::SetupDispatch( &DispatchDX9 );
-
-        DispatchDX9.impl_Uninitialize           = &dx9_Uninitialize;
-        DispatchDX9.impl_Reset                  = &dx9_Reset;
-        DispatchDX9.impl_HostApi                = &dx9_HostApi;
-        DispatchDX9.impl_TextureFormatSupported = &dx9_TextureFormatSupported;
-
-        SetDispatchTable( DispatchDX9 );
-
-
-        ConstBufferDX9::InitializeRingBuffer( 4*1024*1024 ); // CRAP: hardcoded const ring-buf size
-
-
-        stat_DIP        = StatSet::AddStat( "rhi'dip", "dip" );
-        stat_DP         = StatSet::AddStat( "rhi'dp", "dp" );
-        stat_SET_PS     = StatSet::AddStat( "rhi'set-ps", "set-ps" );
-        stat_SET_TEX    = StatSet::AddStat( "rhi'set-tex", "set-tex" );
-        stat_SET_CB     = StatSet::AddStat( "rhi'set-cb", "set-cb" );
     }
     else
     {
         Logger::Error( "failed to create Direct3D object\n" );
     }
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+dx9_Initialize( const InitParam& param )
+{
+    _DX9_InitParam = param;
+    InitializeRenderThreadDX9();
+
+
+    VertexBufferDX9::SetupDispatch( &DispatchDX9 );
+    IndexBufferDX9::SetupDispatch( &DispatchDX9 );
+    QueryBufferDX9::SetupDispatch( &DispatchDX9 );
+    TextureDX9::SetupDispatch( &DispatchDX9 );
+    PipelineStateDX9::SetupDispatch( &DispatchDX9 );
+    ConstBufferDX9::SetupDispatch( &DispatchDX9 );
+    DepthStencilStateDX9::SetupDispatch( &DispatchDX9 );
+    SamplerStateDX9::SetupDispatch( &DispatchDX9 );
+    RenderPassDX9::SetupDispatch( &DispatchDX9 );
+    CommandBufferDX9::SetupDispatch( &DispatchDX9 );
+
+    DispatchDX9.impl_Uninitialize           = &dx9_Uninitialize;
+    DispatchDX9.impl_Reset                  = &dx9_Reset;
+    DispatchDX9.impl_HostApi                = &dx9_HostApi;
+    DispatchDX9.impl_TextureFormatSupported = &dx9_TextureFormatSupported;
+
+    SetDispatchTable( DispatchDX9 );
+
+
+    ConstBufferDX9::InitializeRingBuffer( 4*1024*1024 ); // CRAP: hardcoded const ring-buf size
+
+
+    stat_DIP        = StatSet::AddStat( "rhi'dip", "dip" );
+    stat_DP         = StatSet::AddStat( "rhi'dp", "dp" );
+    stat_SET_PS     = StatSet::AddStat( "rhi'set-ps", "set-ps" );
+    stat_SET_TEX    = StatSet::AddStat( "rhi'set-tex", "set-tex" );
+    stat_SET_CB     = StatSet::AddStat( "rhi'set-cb", "set-cb" );
 }
 
 

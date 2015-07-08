@@ -730,12 +730,12 @@ EndPacketList( HPacketList packetList )
 void
 AddPackets( HPacketList packetList, const Packet* packet, uint32 packetCount )
 {
+SCOPED_NAMED_TIMING("rhi.AddPackets");
     PacketList_t*   pl      = PacketListPool::Get( packetList );
     Handle          cmdBuf  = pl->cmdBuf;
     
     for( const Packet* p=packet,*p_end=packet+packetCount; p!=p_end; ++p )
     {
-        SCOPED_NAMED_TIMING("rhi.DrawBatch");
         Handle          dsState = (p->depthStencilState != rhi::InvalidHandle)
                                   ? p->depthStencilState
                                   : pl->defDepthStencilState;

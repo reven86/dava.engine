@@ -18,10 +18,15 @@
     using DAVA::Logger;
     #include "Core/Core.h"
     #include "Debug/Profiler.h"
+    #include "Platform/Thread.h"
+    #include "Thread/Semaphore.h"
 
     #include "_dx9.h"
+    namespace rhi { extern void _InitDX9(); }
     #include <vector>
 
+    #define RHI__USE_DX9_RENDER_THREAD          1
+    #define RHI__DX9_MAX_PREPARED_FRAME_COUNT   2
 
 
 namespace rhi
@@ -30,8 +35,53 @@ namespace rhi
 
 static bool _ResetPending   = false;
 
+void    
+AcquireDevice()
+{
+#if RHI__USE_DX9_RENDER_THREAD
+#else
+    // do NOTHING
+#endif
+}
 
-static std::vector<Handle>  _CmdQueue;
+void
+ReleaseDevice()
+{
+#if RHI__USE_DX9_RENDER_THREAD
+#else
+    // do NOTHING
+#endif
+}
+
+
+//- static std::vector<Handle>  _CmdQueue;
+struct
+Frame
+{
+    unsigned            number;
+    std::vector<Handle> pass;
+    uint32              readyToExecute:1;
+};
+
+static std::vector<Frame>   _Frame;
+static bool                 _FrameStarted   = false;
+static unsigned             _FrameNumber    = 1;
+//static DAVA::Spinlock       _FrameSync;
+static DAVA::Mutex          _FrameSync;
+
+static void _ExecuteQueuedCommands();
+
+
+#if RHI__USE_DX9_RENDER_THREAD
+static DAVA::Thread*        _DX9_RenderThread               = nullptr;
+static bool                 _DX9_RenderThreadExitPending    = false;
+static DAVA::Spinlock       _DX9_RenderThreadExitSync;
+static DAVA::Semaphore      _DX9_RenderThreadStartedSync    (0);
+#endif
+
+static DX9Command*          _DX9_PendingImmediateCmd        = nullptr;
+static uint32               _DX9_PendingImmediateCmdCount   = 0;
+static DAVA::Mutex          _DX9_PendingImmediateCmdSync;
 
 
 //------------------------------------------------------------------------------
@@ -155,7 +205,23 @@ dx9_RenderPass_Allocate( const RenderPassConfig& passDesc, uint32 cmdBufCount, H
 static void
 dx9_RenderPass_Begin( Handle pass )
 {
-    _CmdQueue.push_back( pass );
+    _FrameSync.Lock();
+
+    if( !_FrameStarted )
+    {
+        _Frame.push_back( Frame() );
+        _Frame.back().number         = _FrameNumber;
+        _Frame.back().readyToExecute = false;
+
+Trace("\n\n-------------------------------\nframe %u started\n",_FrameNumber);
+        _FrameStarted = true;
+        ++_FrameNumber;
+    }
+
+    _Frame.back().pass.push_back( pass );
+
+    _FrameSync.Unlock();
+//-    _CmdQueue.push_back( pass );
 }
 
 
@@ -840,52 +906,125 @@ SCOPED_FUNCTION_TIMING();
 static void
 dx9_Present()
 {
-    DVASSERT(_D3D9_Device)
+#if RHI__USE_DX9_RENDER_THREAD
 
-    static std::vector<RenderPassDX9_t*>    pass;
+Trace("rhi-dx9.present\n");
 
-    // sort cmd-lists by priority
-
-    pass.clear();
-    for( unsigned i=0; i!=_CmdQueue.size(); ++i )
-    {
-        RenderPassDX9_t*    rp     = RenderPassPool::Get( _CmdQueue[i] );
-        bool                do_add = true;
-        
-        for( std::vector<RenderPassDX9_t*>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
+    _FrameSync.Lock(); 
+    {   
+        if( _Frame.size() )
         {
-            if( rp->priority > (*p)->priority )
-            {
-                pass.insert( p, 1, rp );
-                do_add = false;
-                break;
-            }
+            _Frame.back().readyToExecute = true;
+            _FrameStarted = false;
+Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().number);
         }
 
-        if( do_add )
-            pass.push_back( rp );
+//        _FrameStarted = false;
+    }
+    _FrameSync.Unlock();
+
+    unsigned frame_cnt = 0;
+
+    do
+    {
+    _FrameSync.Lock();
+    frame_cnt = _Frame.size();
+//Trace("rhi-gl.present frame-cnt= %u\n",frame_cnt);
+    _FrameSync.Unlock();
+    }
+    while( frame_cnt >= RHI__DX9_MAX_PREPARED_FRAME_COUNT );
+
+#else
+    
+    if( _Frame.size() )
+    {
+        _Frame.back().readyToExecute = true;
+        _FrameStarted = false;
     }
 
-    
-    // execute command-lists
-    
+    _ExecuteQueuedCommands(); 
+
+#endif
+
+    ConstBufferDX9::InvalidateAllConstBufferInstances();
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+_ExecuteQueuedCommands()
+{
+Trace("rhi-dx9.exec-queued-cmd\n");
+
+    std::vector<RenderPassDX9_t*>   pass;
+    std::vector<Handle>             pass_h;
+    unsigned                        frame_n = 0;
+    bool                            do_exit = false;
+
+    _FrameSync.Lock();
+    if( _Frame.size() )
+    {
+        for( std::vector<Handle>::iterator p=_Frame.begin()->pass.begin(),p_end=_Frame.begin()->pass.end(); p!=p_end; ++p )
+        {
+            RenderPassDX9_t*    pp      = RenderPassPool::Get( *p );
+            bool                do_add  = true;
+            
+            for( unsigned i=0; i!=pass.size(); ++i )
+            {
+                if( pp->priority > pass[i]->priority )
+                {
+                    pass.insert( pass.begin()+i, 1, pp );
+                    do_add = false;
+                    break;
+                }
+            }
+            
+            if( do_add )
+                pass.push_back( pp );
+        }
+
+        pass_h  = _Frame.begin()->pass;
+        frame_n = _Frame.begin()->number;
+    }
+    else
+    {
+        do_exit = true;
+    }
+    _FrameSync.Unlock();
+
+    if( do_exit )
+        return;
+
+Trace("\n\n-------------------------------\nexecuting frame %u\n",frame_n);
     for( std::vector<RenderPassDX9_t*>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
     {
-        for( unsigned b=0; b!=(*p)->cmdBuf.size(); ++b )
+        RenderPassDX9_t*    pp = *p;
+
+        for( unsigned b=0; b!=pp->cmdBuf.size(); ++b )
         {
-            Handle              cb_h = (*p)->cmdBuf[b];
+            Handle              cb_h = pp->cmdBuf[b];
             CommandBufferDX9_t* cb   = CommandBufferPool::Get( cb_h );
 
             cb->Execute();
             CommandBufferPool::Free( cb_h );
         }
+        
+//        RenderPassPool::Free( *p );
     }
-    
-    for( unsigned i=0; i!=_CmdQueue.size(); ++i )
-        RenderPassPool::Free( _CmdQueue[i] );
-    _CmdQueue.clear();
 
-    ConstBufferDX9::InvalidateAllConstBufferInstances();
+    _FrameSync.Lock();
+    {
+Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\n",frame_n);
+        _Frame.erase( _Frame.begin() );
+        
+        for( std::vector<Handle>::iterator p=pass_h.begin(),p_end=pass_h.end(); p!=p_end; ++p )
+            RenderPassPool::Free( *p );
+    }    
+    _FrameSync.Unlock();
+
+    
+    // do flip, reset/restore device if necessary
 
     HRESULT hr;
 
@@ -914,6 +1053,295 @@ dx9_Present()
         if( hr == D3DERR_DEVICELOST )
             _ResetPending = true;
     }    
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+_ExecDX9( DX9Command* command, uint32 cmdCount )
+{
+#if 1
+    #define CHECK_HR(hr) \
+    if( FAILED(hr) ) \
+        Logger::Error( "%s", D3D9ErrorText(hr) );
+#else
+    CHECK_HR(hr)
+#endif
+
+    for( DX9Command* cmd=command,*cmdEnd=command+cmdCount; cmd!=cmdEnd; ++cmd )
+    {
+        const uint64*   arg = cmd->arg;
+
+Trace("exec %i\n",int(cmd->func));
+        switch( cmd->func )
+        {
+            case DX9Command::NOP :
+                break;
+
+            case DX9Command::CREATE_VERTEX_BUFFER :
+            {
+                cmd->retval = _D3D9_Device->CreateVertexBuffer( UINT(arg[0]), DWORD(arg[1]), DWORD(arg[2]), D3DPOOL(arg[3]), (IDirect3DVertexBuffer9**)(arg[4]), (HANDLE*)(arg[5]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+            
+            case DX9Command::LOCK_VERTEX_BUFFER :
+            {
+                cmd->retval = ((IDirect3DVertexBuffer9*)(arg[0]))->Lock( UINT(arg[1]), UINT(arg[2]), (VOID**)(arg[3]), DWORD(arg[4]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+            
+            case DX9Command::UNLOCK_VERTEX_BUFFER :
+            {
+                cmd->retval = ((IDirect3DVertexBuffer9*)(arg[0]))->Unlock();
+                CHECK_HR(cmd->retval);
+            }   break;
+            
+            case DX9Command::CREATE_INDEX_BUFFER :
+            {
+                cmd->retval = _D3D9_Device->CreateIndexBuffer( UINT(arg[0]), DWORD(arg[1]), D3DFORMAT(arg[2]), D3DPOOL(arg[3]), (IDirect3DIndexBuffer9**)(arg[4]), (HANDLE*)(arg[5]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+            
+            case DX9Command::LOCK_INDEX_BUFFER :
+            {
+                cmd->retval = ((IDirect3DIndexBuffer9*)(arg[0]))->Lock( UINT(arg[1]), UINT(arg[2]), (VOID**)(arg[3]), DWORD(arg[4]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+            
+            case DX9Command::UNLOCK_INDEX_BUFFER :
+            {
+                cmd->retval = ((IDirect3DIndexBuffer9*)(arg[0]))->Unlock();
+                CHECK_HR(cmd->retval);
+            }   break;
+
+            case DX9Command::CREATE_TEXTURE :
+            {
+                cmd->retval = _D3D9_Device->CreateTexture( UINT(arg[0]), UINT(arg[1]), UINT(arg[2]), DWORD(arg[3]), D3DFORMAT(arg[4]), D3DPOOL(arg[5]), (IDirect3DTexture9**)(arg[6]), (HANDLE*)(arg[7]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+            
+            case DX9Command::CREATE_CUBE_TEXTURE :
+            {
+                cmd->retval = _D3D9_Device->CreateCubeTexture( UINT(arg[0]), UINT(arg[1]), DWORD(arg[2]), D3DFORMAT(arg[3]), D3DPOOL(arg[4]), (IDirect3DCubeTexture9**)(arg[5]), (HANDLE*)(arg[6]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+
+            case DX9Command::SET_TEXTURE_AUTOGEN_FILTER_TYPE :
+            {
+                cmd->retval = ((IDirect3DTexture9*)(arg[0]))->SetAutoGenFilterType( D3DTEXTUREFILTERTYPE(arg[1]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+
+            case DX9Command::GET_TEXTURE_SURFACE_LEVEl :
+            {
+                cmd->retval = ((IDirect3DTexture9*)(arg[0]))->GetSurfaceLevel( UINT(arg[1]), (IDirect3DSurface9**)(arg[2]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+
+            case DX9Command::LOCK_TEXTURE_RECT :
+            {
+                cmd->retval = ((IDirect3DTexture9*)(arg[0]))->LockRect( UINT(arg[1]), (D3DLOCKED_RECT*)(arg[2]), (const RECT*)(arg[3]), DWORD(arg[4]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+            
+            case DX9Command::UNLOCK_TEXTURE_RECT :
+            {
+                cmd->retval = ((IDirect3DTexture9*)(arg[0]))->UnlockRect( UINT(arg[1]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+
+            case DX9Command::LOCK_CUBETEXTURE_RECT :
+            {
+                cmd->retval = ((IDirect3DCubeTexture9*)(arg[0]))->LockRect( D3DCUBEMAP_FACES(arg[1]), UINT(arg[2]), (D3DLOCKED_RECT*)(arg[3]), (const RECT*)(arg[4]), DWORD(arg[5]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+            
+            case DX9Command::UNLOCK_CUBETEXTURE_RECT :
+            {
+                cmd->retval = ((IDirect3DCubeTexture9*)(arg[0]))->UnlockRect( D3DCUBEMAP_FACES(arg[1]), UINT(arg[2]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+
+            case DX9Command::GET_RENDERTARGET_DATA :
+            {
+                cmd->retval = _D3D9_Device->GetRenderTargetData( (IDirect3DSurface9*)arg[0], (IDirect3DSurface9*)arg[1] );
+                CHECK_HR(cmd->retval);
+            }   break;
+
+            case DX9Command::CREATE_VERTEX_SHADER :
+            {
+                cmd->retval = _D3D9_Device->CreateVertexShader( (const DWORD*)(arg[0]), (IDirect3DVertexShader9**)(arg[1]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+
+            case DX9Command::CREATE_VERTEX_DECLARATION :
+            {
+                cmd->retval = _D3D9_Device->CreateVertexDeclaration( (const D3DVERTEXELEMENT9*)(arg[0]), (IDirect3DVertexDeclaration9**)(arg[1]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+
+            case DX9Command::CREATE_PIXEL_SHADER :
+            {
+                cmd->retval = _D3D9_Device->CreatePixelShader( (const DWORD*)(arg[0]), (IDirect3DPixelShader9**)(arg[1]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+
+            case DX9Command::QUERY_INTERFACE :
+            {
+                cmd->retval = ((IUnknown*)(arg[0]))->QueryInterface( *((const GUID*)(arg[1])), (void**)(arg[2]) );
+            }   break;
+            
+            case DX9Command::RELEASE :
+            {
+                ((IUnknown*)arg[0])->Release();
+            }   break;
+
+            default:
+                DVASSERT(!"unknown DX-cmd");
+        }
+    }
+
+    #undef CHECK_HR
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+ExecDX9( DX9Command* command, uint32 cmdCount, bool force_immediate )
+{
+#if RHI__USE_DX9_RENDER_THREAD
+
+    if( force_immediate )
+    {
+        _ExecDX9( command, cmdCount );
+    }
+    else
+    {
+        bool    scheduled = false;
+        bool    executed  = false;
+    
+        // CRAP: busy-wait
+        do
+        {
+            _DX9_PendingImmediateCmdSync.Lock();
+            if( !_DX9_PendingImmediateCmd )
+            {
+                _DX9_PendingImmediateCmd      = command;
+                _DX9_PendingImmediateCmdCount = cmdCount;
+                scheduled                     = true;
+            }
+            _DX9_PendingImmediateCmdSync.Unlock();
+        } while( !scheduled );
+
+        // CRAP: busy-wait
+        do
+        {
+            _DX9_PendingImmediateCmdSync.Lock();
+            if( !_DX9_PendingImmediateCmd )
+            {
+                executed = true;
+            }
+            _DX9_PendingImmediateCmdSync.Unlock();
+        } while( !executed );
+    }
+
+#else
+
+    _ExecDX9( command, cmdCount );
+
+#endif
+}
+
+
+//------------------------------------------------------------------------------
+
+#if RHI__USE_DX9_RENDER_THREAD
+static void
+_RenderFuncDX9( DAVA::BaseObject* obj, void*, void* )
+{
+    _InitDX9();
+
+    _DX9_RenderThreadStartedSync.Post();
+    Trace( "RHI render-thread started\n" );
+
+    while( true )
+    {
+        bool    do_wait = true;
+        bool    do_exit = false;
+        
+        // CRAP: busy-wait
+        do
+        {
+            _DX9_RenderThreadExitSync.Lock();
+            do_exit = _DX9_RenderThreadExitPending;
+            _DX9_RenderThreadExitSync.Unlock();
+            
+            if( do_exit )
+                break;
+
+            
+            _DX9_PendingImmediateCmdSync.Lock();
+            if( _DX9_PendingImmediateCmd )
+            {
+Trace("exec imm cmd (%u)\n",_DX9_PendingImmediateCmdCount);
+                _ExecDX9( _DX9_PendingImmediateCmd, _DX9_PendingImmediateCmdCount );
+                _DX9_PendingImmediateCmd      = nullptr;
+                _DX9_PendingImmediateCmdCount = 0;
+Trace("exec-imm-cmd done\n");
+            }
+            _DX9_PendingImmediateCmdSync.Unlock();
+
+
+//            _CmdQueueSync.Lock();
+//            cnt = _RenderQueue.size();
+//            _CmdQueueSync.Unlock();
+            _FrameSync.Lock();
+            do_wait = !( _Frame.size()  &&  _Frame.begin()->readyToExecute );
+            _FrameSync.Unlock();
+        } while( do_wait );
+
+        if( do_exit )
+            break;
+
+        _ExecuteQueuedCommands();
+    }
+
+    Trace( "RHI render-thread stopped\n" );
+}
+#endif
+
+void
+InitializeRenderThreadDX9()
+{
+#if RHI__USE_DX9_RENDER_THREAD
+
+    _DX9_RenderThread = DAVA::Thread::Create( DAVA::Message(&_RenderFuncDX9) );
+    _DX9_RenderThread->SetName( "RHI.dx9-render" );
+    _DX9_RenderThread->Start();    
+    _DX9_RenderThreadStartedSync.Wait();
+
+#else
+
+    _InitDX9();
+
+#endif
+}
+
+
+//------------------------------------------------------------------------------
+
+void
+UninitializeRenderThreadDX9()
+{
+#if RHI__USE_DX9_RENDER_THREAD
+    _DX9_RenderThreadExitSync.Lock();
+    _DX9_RenderThreadExitPending = true;
+    _DX9_RenderThreadExitSync.Unlock();
+
+    _DX9_RenderThread->Join();
+#endif
 }
 
 
