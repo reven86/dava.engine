@@ -36,6 +36,7 @@
 class SharedData;
 
 class ControlNode;
+class StyleSheetNode;
 
 class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget
 {
@@ -54,7 +55,8 @@ public slots:
 
 private:
     ControlNode *GetSelectedControlNode() const;
-    void UpdateActivatedControls();
+    StyleSheetNode *GetSelectedStyleSheetNode() const;
+    void UpdateSelection();
     void UpdateActions();
     
 private:

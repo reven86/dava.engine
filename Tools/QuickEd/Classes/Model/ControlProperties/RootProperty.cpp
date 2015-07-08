@@ -439,7 +439,7 @@ void RootProperty::MakeControlPropertiesSection(DAVA::UIControl *control, const 
     }
     if (hasProperties)
     {
-        ControlPropertiesSection *sourceSection = sourceProperties == nullptr ? nullptr : sourceProperties->GetControlPropertiesSection(typeInfo->Name());
+        ControlPropertiesSection *sourceSection = sourceProperties == nullptr ? nullptr : sourceProperties->GetControlPropertiesSection(typeInfo->Name().c_str());
         ControlPropertiesSection *section = new ControlPropertiesSection(control, typeInfo, sourceSection, copyType);
         section->SetParent(this);
         controlProperties.push_back(section);

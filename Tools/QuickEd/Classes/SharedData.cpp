@@ -63,3 +63,14 @@ void SharedData::SetContext(QWidget* requester, WidgetContext* widgetContext)
 {
     contexts.insert(std::make_pair(requester, std::unique_ptr<WidgetContext>(widgetContext)));
 }
+
+const QList<PackageBaseNode*> &SharedData::GetSelection() const
+{
+    return selection;
+}
+
+void SharedData::SetSelection(const QList<PackageBaseNode*> &aSelection)
+{
+    selection = aSelection;
+    emit DataChanged("selection");
+}

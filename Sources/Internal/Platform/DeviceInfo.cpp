@@ -28,6 +28,7 @@
 
 
 #include "DeviceInfo.h"
+#include "Base/GlobalEnum.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 #include "TargetConditionals.h"
