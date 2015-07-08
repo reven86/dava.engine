@@ -551,6 +551,11 @@ public:
         return false;
     }
 
+    static bool CanConvertFromTo(PixelFormat inFormat, PixelFormat outFormat)
+    {
+        return ConvertImageDirect(inFormat, outFormat, nullptr, 0, 0, 0, nullptr, 0, 0, 0);
+    }
+
     static bool ConvertImageDirect(const Image *srcImage, Image *dstImage)
     {
         return ConvertImageDirect(srcImage->format, dstImage->format, 

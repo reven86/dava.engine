@@ -145,7 +145,7 @@ bool ParseFromString(const String & str, T& result)
 {
     std::stringstream stream (str);
     stream >> result;
-    return (stream.fail() == false);
+    return (stream.eof() == true && stream.fail() == false);
 }
 
 template<class T>
