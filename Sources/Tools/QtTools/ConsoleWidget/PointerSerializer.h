@@ -27,8 +27,8 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_JSON_CONVERTER_H_
-#define __DAVAENGINE_JSON_CONVERTER_H_
+#ifndef __QT_TOOLS_POINTER_SERIALIZER_H__
+#define __QT_TOOLS_POINTER_SERIALIZER_H__
 
 #include "Base/BaseTypes.h"
 
@@ -40,6 +40,7 @@ public:
     PointerSerializer(PointerSerializer &&converter);
     static PointerSerializer ParseString(const DAVA::String &str);
     static const char* GetRegex();
+    const DAVA::String& GetText() const;
     PointerSerializer& operator = (const PointerSerializer &result) = default;
     PointerSerializer& operator = (PointerSerializer &&result);
     
@@ -47,7 +48,7 @@ public:
     DAVA::Vector<T> GetPointers() const
     {
         static_assert(std::is_pointer<T>::value, "works only for vector of pointers");
-        Vector<T>  returnVec(pointers.size());
+        DAVA::Vector<T>  returnVec(pointers.size());
         for (auto ptr : pointers)
         {
             returnVec.push_back(static_cast<T>(ptr));
@@ -65,7 +66,9 @@ public:
     template <typename Container>
     PointerSerializer(const Container &cont)
     {
-        typeName = typeid(*(cont.begin())).name();
+        using T = typename std::remove_reference<Container>::type::value_type;
+        static_assert(std::is_pointer<T>::value, "works only for vector of pointers");
+        typeName = typeid(T).name();
         for (auto pointer : cont)
         {
             pointers.push_back(static_cast<void*>(pointer));
@@ -130,4 +133,9 @@ private:
     DAVA::String typeName;
     DAVA::String text;
 };
-#endif // __DAVAENGINE_JSON_CONVERTER_H_
+
+inline const DAVA::String& PointerSerializer::GetText() const
+{
+    return text;
+}
+#endif // __QT_TOOLS_POINTER_SERIALIZER_H__

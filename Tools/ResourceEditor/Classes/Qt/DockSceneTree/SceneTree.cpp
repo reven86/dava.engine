@@ -56,7 +56,7 @@
 #include "Commands2/ParticleEditorCommands.h"
 #include "Commands2/SaveEntityAsAction.h"
 #include "Commands2/ConvertToShadowCommand.h"
-#include "Utils/PointerSerializer.h"
+#include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include "FileSystem/VariantType.h"
 
 SceneTree::SceneTree(QWidget *parent /*= 0*/)
@@ -562,7 +562,7 @@ void SceneTree::RemoveSelection()
                     << entity->GetName().c_str()
                     << ": entity is locked!"
                     << PointerSerializer::FromPointer(entity);
-                Logger::Warning(ss.str().c_str());
+                Logger::Warning("%s", ss.str().c_str());
             }
         }
         

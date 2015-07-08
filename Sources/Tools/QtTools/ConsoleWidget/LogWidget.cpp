@@ -3,8 +3,6 @@
 #include <QClipboard>
 #include <QKeyEvent>
 #include <QScrollBar>
-#include <QScrollBar>
-#include <QBuffer>
 
 #include "LogModel.h"
 #include "LogFilterModel.h"
@@ -33,7 +31,16 @@ LogWidget::LogWidget(QWidget* parent)
     connect(search, &LineEditEx::textUpdated, this, &LogWidget::OnTextFilterChanged);
     connect(log->model(), &QAbstractItemModel::rowsAboutToBeInserted, this, &LogWidget::OnBeforeAdded);
     connect(log->model(), &QAbstractItemModel::rowsInserted, this, &LogWidget::OnRowAdded);
+    connect(log, &QListView::clicked, [this](const QModelIndex &index)
+    {
+        emit ItemClicked(logModel->data(index, LogModel::INTERNAL_DATA_ROLE).toString());
+    });
     filter->selectUserData(logFilterModel->GetFilters());
+}
+
+void LogWidget::SetConvertFunction(LogModel::ConvertFunc func)
+{
+    logModel->SetConvertFunction(func);
 }
 
 LogModel* LogWidget::Model() const

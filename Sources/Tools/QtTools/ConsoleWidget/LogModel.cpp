@@ -8,9 +8,16 @@
 #include "Base/GlobalEnum.h"
 #include "Debug/DVAssert.h"
 
+#include "QtTools/ConsoleWidget/PointerSerializer.h"
+
 LogModel::LogModel(QObject* parent)
     : QAbstractListModel(parent)
 {
+    func = [](const DAVA::String & text)
+    {
+        PointerSerializer serializer(text);
+        return serializer.GetText();
+    };
     createIcons();
     qRegisterMetaType<DAVA::Logger::eLogLevel>("DAVA::Logger::eLogLevel");
     DAVA::Logger::AddCustomOutput(this);
@@ -22,6 +29,11 @@ LogModel::LogModel(QObject* parent)
 LogModel::~LogModel()
 {
     DAVA::Logger::RemoveCustomOutput(this);
+}
+
+void LogModel::SetConvertFunction(ConvertFunc func_)
+{
+    func = func_;
 }
 
 void LogModel::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text)
@@ -47,6 +59,8 @@ QVariant LogModel::data(const QModelIndex &index, int role) const
 
     case LEVEL_ROLE:
         return item.ll;
+    case INTERNAL_DATA_ROLE:
+        return item.data;
     default:
         return QVariant();
     }
@@ -62,7 +76,9 @@ void LogModel::AddMessage(DAVA::Logger::eLogLevel ll, const QString& text)
 {
     {
         QMutexLocker locker(&mutex);
-        items.append(LogItem(ll, normalize(text)));
+        items.append(LogItem(ll,
+            text,
+            QString::fromStdString(func(text.toStdString()))));
     }
     timer->start();
 }
@@ -75,11 +91,6 @@ void LogModel::OnTimeout()
         registerCount = rowCount();
         emit endInsertRows();
     }
-}
-
-QString LogModel::normalize(const QString& text) const
-{
-    return text.split('\n', QString::SkipEmptyParts).join("\n");
 }
 
 void LogModel::createIcons()
@@ -138,8 +149,10 @@ const QPixmap &LogModel::GetIcon(int ll) const
     return icons.at(ll);
 }
 
-LogModel::LogItem::LogItem(DAVA::Logger::eLogLevel ll_, const QString& text_)
-    : ll(ll_), text(text_)
+LogModel::LogItem::LogItem(DAVA::Logger::eLogLevel ll_, const QString& text_, const QString &data_)
+    : ll(ll_), text(text_), data(data_)
 {
-    //TODO: add here extraction of data from text
+    QRegularExpression re(PointerSerializer::GetRegex());
+    text.replace(re, "");
+    text = text.split('\n', QString::SkipEmptyParts).join("\n");
 }

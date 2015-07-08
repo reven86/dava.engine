@@ -54,12 +54,6 @@ class DeveloperTools;
 class VersionInfoWidget;
 
 class DeviceListController;
-namespace DAVA
-{
-    class PointerSerializer;
-}
-
-
 
 class QtMainWindow
     : public QMainWindow
@@ -264,7 +258,7 @@ private slots:
     void DebugVersionInfo();
     void DebugColorPicker();
     void DebugDeviceList();
-    void OnConsoleItemClicked(const DAVA::PointerSerializer &conv);
+    void OnConsoleItemClicked(const QString &data);
 
 private:
 	Ui::MainWindow *ui;

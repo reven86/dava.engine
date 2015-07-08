@@ -28,7 +28,7 @@
 
 
 #include "DAVAEngine.h"
-#include "Utils/PointerSerializer.h"
+#include "QtTools/ConsoleWidget/PointerSerializer.h"
 
 #include <QMessageBox>
 #include <QDesktopServices>
@@ -3098,8 +3098,9 @@ void QtMainWindow::DebugDeviceList()
     deviceListController->ShowView();
 }
 
-void QtMainWindow::OnConsoleItemClicked(const PointerSerializer &conv)
+void QtMainWindow::OnConsoleItemClicked(const QString &data)
 {
+    PointerSerializer conv(data.toStdString());
     if (conv.CanConvert<Entity*>())
     {
         auto vec = conv.GetPointers<Entity*>();

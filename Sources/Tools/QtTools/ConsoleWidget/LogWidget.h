@@ -7,6 +7,7 @@
 #include <QTime>
 #include "ui_LogWidget.h"
 #include "Base/Result.h"
+#include "LogModel.h"
 
 namespace Ui
 {
@@ -14,7 +15,6 @@ namespace Ui
 };
 
 class QTimer;
-class LogModel;
 class LogFilterModel;
 
 
@@ -25,10 +25,12 @@ class LogWidget : public QWidget, public Ui::LogWidget
 public:
     explicit LogWidget(QWidget* parent = NULL);
     ~LogWidget() = default;
-
+    void SetConvertFunction(LogModel::ConvertFunc func);
     LogModel *Model() const;
     QByteArray Serialize() const;
     void Deserialize(const QByteArray &data);
+signals:
+    void ItemClicked(const QString &data);
 public slots:
     void AddResultList(const DAVA::ResultList &resultList);
 private slots:
