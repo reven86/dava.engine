@@ -36,12 +36,9 @@
 
 #if defined(__DAVAENGINE_WINDOWS__)
 #include <detours/detours.h>
-#elif defined(__DAVAENGINE_ANDROID__) 
+#elif defined(__DAVAENGINE_ANDROID__)
+#include <malloc.h>
 #include <dlfcn.h>
-
-// Function to retrive malloc'd size, its definition is in AndroidMallocSize.cpp
-size_t AndroidMallocSize(void* ptr);
-
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <dlfcn.h>
 #include <malloc/malloc.h>
@@ -53,17 +50,20 @@ size_t AndroidMallocSize(void* ptr);
 #include "AllocPools.h"
 #include "MemoryManager.h"
 
-static void* HookedMalloc(size_t size)
+namespace
 {
-    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_APP);
+
+void* HookedMalloc(size_t size)
+{
+    return DAVA::MemoryManager::Instance()->Allocate(size, DAVA::ALLOC_POOL_DEFAULT);
 }
 
-static void* HookedRealloc(void* ptr, size_t newSize)
+void* HookedRealloc(void* ptr, size_t newSize)
 {
     return DAVA::MemoryManager::Instance()->Reallocate(ptr, newSize);
 }
 
-static void* HookedCalloc(size_t count, size_t elemSize)
+void* HookedCalloc(size_t count, size_t elemSize)
 {
     void* ptr = nullptr;
     if (count > 0 && elemSize > 0)
@@ -77,7 +77,7 @@ static void* HookedCalloc(size_t count, size_t elemSize)
     return ptr;
 }
 
-static char* HookedStrdup(const char* src)
+char* HookedStrdup(const char* src)
 {
     char* dst = nullptr;
     if (src != nullptr)
@@ -89,10 +89,11 @@ static char* HookedStrdup(const char* src)
     return dst;
 }
 
-static void HookedFree(void* ptr)
+void HookedFree(void* ptr)
 {
     DAVA::MemoryManager::Instance()->Deallocate(ptr);
 }
+}	// unnamed namespace
 
 namespace DAVA
 {
@@ -100,6 +101,9 @@ namespace DAVA
 void* (*MallocHook::RealMalloc)(size_t) = &malloc;
 void* (*MallocHook::RealRealloc)(void*, size_t) = &realloc;
 void (*MallocHook::RealFree)(void*) = &free;
+#if defined(__DAVAENGINE_ANDROID__)
+size_t (*MallocHook::RealMallocSize)(void*) = nullptr;
+#endif
 
 MallocHook::MallocHook()
 {
@@ -127,8 +131,8 @@ size_t MallocHook::MallocSize(void* ptr)
     return _msize(ptr);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     return malloc_size(ptr);
-#elif defined(__DAVAENGINE_ANDROID__) 
-    return AndroidMallocSize(ptr);
+#elif defined(__DAVAENGINE_ANDROID__)
+    return RealMallocSize(ptr);
 #else
 #error "Unknown platform"
 #endif
@@ -174,17 +178,41 @@ void MallocHook::Install()
     detours(reinterpret_cast<PVOID*>(&RealFree), reinterpret_cast<PVOID>(&HookedFree));
 
 #elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
-
-    void* handle = reinterpret_cast<void*>(-1);
     void* fptr = nullptr;
-    
+
+    // RTLD_DEFAULT tells to find the next occurrence of the desired symbol
+    // in the search order after the current library
+    // RTLD_NEXT tells to find the next occurrence of the desired symbol
+    // in the search order after the current library
+
+    // On Android use RTLD_DEFAULT as on RTLD_NEXT dlsym returns null
+    // On Mac OS and iOS use RTLD_NEXT to not call malloc recursively
+#if defined(__DAVAENGINE_ANDROID__)
+    void* handle = RTLD_DEFAULT;
+#else
+    void* handle = RTLD_NEXT;
+#endif
     fptr = dlsym(handle, "malloc");
     RealMalloc = reinterpret_cast<void* (*)(size_t)>(fptr);
-    assert(fptr != nullptr);
+    assert(fptr != nullptr && "Failed to get 'malloc'");
+
+    fptr = dlsym(handle, "realloc");
+    RealRealloc = reinterpret_cast<void* (*)(void*, size_t)>(fptr);
+    assert(fptr != nullptr && "Failed to get 'realloc'");
     
     fptr = dlsym(handle, "free");
     RealFree = reinterpret_cast<void (*)(void*)>(fptr);
-    assert(fptr != nullptr);
+    assert(fptr != nullptr && "Failed to get 'free'");
+
+#if defined(__DAVAENGINE_ANDROID__)
+    // Get address of malloc_usable_size as it isn't exported on android
+    void* libc = dlopen("libc.so", 0);
+    assert(libc != nullptr && "Failed to load libc.so");
+    fptr = dlsym(libc, "malloc_usable_size");
+    RealMallocSize = reinterpret_cast<size_t (*)(void*)>(fptr);
+    assert(fptr != nullptr && "Failed to get 'malloc_usable_size'");
+#endif
+
 #else
 #error "Unknown platform"
 #endif

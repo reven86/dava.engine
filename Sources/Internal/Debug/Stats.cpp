@@ -31,7 +31,6 @@
 #include "Platform/SystemTimer.h"
 #include "Core/Core.h"
 #include "Utils/StringFormat.h"
-#include "Platform/Thread.h"
 
 namespace DAVA
 {

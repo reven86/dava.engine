@@ -33,7 +33,7 @@
 #include <QWidget>
 #include <QPointer>
 #include "ui_PreviewWidget.h"
-#include "Result.h"
+#include "Base/Result.h"
 
 namespace Ui {
     class PreviewWidget;
@@ -80,11 +80,11 @@ private slots:
 
     void OnControlNodeSelected(QList<ControlNode*> selectedNodes);
 
-    void OnError(const Result &result);
+    void OnError(const DAVA::ResultList &resultList);
 
 private:
     void OnScaleByZoom(int scaleDelta); 
-    void UpdateActiveRootControls();
+    void UpdateSelection();
 
 private:
     DavaGLWidget *davaGLWidget;

@@ -314,9 +314,8 @@ Material * Material::Clone(Material *newMaterial /* = NULL */)
         newMaterial = new Material();
     }
     
-    newMaterial->pointer = pointer;
+    newMaterial->id = 0;
     newMaterial->scene = scene;
-    newMaterial->index = index;
 
 	newMaterial->CopySettings(this);
 

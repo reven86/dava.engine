@@ -33,9 +33,12 @@
 #include <QtCore>
 #include <QWidget>
 #include <QSharedPointer>
-#include <DAVAEngine.h>
+#include "Base/BaseTypes.h"
 #include "Model/PackageHierarchy/ControlNode.h"
+#include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Document.h"
+
+class PackageBaseNode;
 
 struct WidgetContext
 {
@@ -51,11 +54,17 @@ public:
     void SetData(const QByteArray &role, const QVariant &value);
     WidgetContext* GetContext(QWidget* requester) const;
     void SetContext(QWidget* requester, WidgetContext* widgetContext);
+    
+    const QList<PackageBaseNode*> &GetSelection() const;
+    void SetSelection(const QList<PackageBaseNode*> &aSelection);
+    
 signals:
     void DataChanged(const QByteArray &role);
 private:
     QMap < QByteArray, QVariant > values;
     std::map < QWidget*, std::unique_ptr<WidgetContext> > contexts;
+    
+    QList<PackageBaseNode*> selection;
 };
 
 inline Document* SharedData::GetDocument() const
@@ -69,8 +78,9 @@ Q_DECLARE_METATYPE(QAbstractItemModel*)
 Q_DECLARE_METATYPE(QPointer<QAbstractItemModel>)
 Q_DECLARE_METATYPE(QItemSelection);
 Q_DECLARE_METATYPE(ControlNode*);
+Q_DECLARE_METATYPE(StyleSheetNode*);
 Q_DECLARE_METATYPE(QList<ControlNode*>);
-Q_DECLARE_METATYPE(DAVA::UIControl*);
+Q_DECLARE_METATYPE(QList<StyleSheetNode*>);
 Q_DECLARE_METATYPE(QPersistentModelIndex);
 Q_DECLARE_METATYPE(QList<QPersistentModelIndex>);
 

@@ -32,6 +32,8 @@
 #include "Document.h"
 #include "LibraryModel.h"
 
+#include "UI/UIControl.h"
+
 namespace
 {
     struct LibraryContext : public WidgetContext
@@ -73,5 +75,6 @@ void LibraryWidget::LoadContext()
             sharedData->SetContext(this, context);
         }
         treeView->setModel(context->libraryModel);
+        treeView->expandToDepth(0);
     }
 }

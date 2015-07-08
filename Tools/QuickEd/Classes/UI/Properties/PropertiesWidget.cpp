@@ -36,6 +36,8 @@
 
 #include "UI/QtModelPackageCommandExecutor.h"
 #include "Model/ControlProperties/ComponentPropertiesSection.h"
+#include "Model/PackageHierarchy/ControlNode.h"
+#include "Model/PackageHierarchy/StyleSheetNode.h"
 
 #include <QAbstractItemModel>
 #include "SharedData.h"
@@ -45,6 +47,7 @@
 #include "UI/Properties/PropertiesTreeItemDelegate.h"
 
 #include "UI/Components/UIComponent.h"
+#include "UI/UIControl.h"
 
 using namespace DAVA;
 
@@ -84,14 +87,14 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
 void PropertiesWidget::OnDocumentChanged(SharedData *arg)
 {
     sharedData = arg;
-    UpdateActivatedControls();
+    UpdateSelection();
 }
 
 void PropertiesWidget::OnDataChanged(const QByteArray &role)
 {
-    if (role == "activatedControls")
+    if (role == "selection")
     {
-        UpdateActivatedControls();
+        UpdateSelection();
     }
 }
 
@@ -139,15 +142,26 @@ ControlNode *PropertiesWidget::GetSelectedControlNode() const
     if (!sharedData)
         return nullptr;
     
-    const QList<ControlNode*> &activatedControls = sharedData->GetData("activatedControls").value<QList<ControlNode*> >();
+    const QList<ControlNode*> &activatedControls = sharedData->GetData("activeControls").value<QList<ControlNode*> >();
     if (activatedControls.empty())
         return nullptr;
     
     return activatedControls.first();
-    
 }
 
-void PropertiesWidget::UpdateActivatedControls()
+StyleSheetNode *PropertiesWidget::GetSelectedStyleSheetNode() const
+{
+    if (!sharedData)
+        return nullptr;
+    
+    const QList<StyleSheetNode*> &activeStyleSheets = sharedData->GetData("activeStyleSheets").value<QList<StyleSheetNode*> >();
+    if (activeStyleSheets.empty())
+        return nullptr;
+    
+    return activeStyleSheets.first();
+}
+
+void PropertiesWidget::UpdateSelection()
 {
     QAbstractItemModel *prevModel = treeView->model();
     if (nullptr == sharedData)
@@ -156,11 +170,30 @@ void PropertiesWidget::UpdateActivatedControls()
     }
     else
     {
-        ControlNode *node = GetSelectedControlNode();
-        if (node)
-            treeView->setModel(new PropertiesModel(node, sharedData->GetDocument()->GetCommandExecutor())); //TODO this is ugly // -- why?
-        else
-            treeView->setModel(nullptr);
+        const QList<PackageBaseNode*> &selection = sharedData->GetSelection();
+        
+        for (PackageBaseNode *node : selection)
+        {
+            ControlNode *control = dynamic_cast<ControlNode*>(node);
+            if (control)
+            {
+                treeView->setModel(new PropertiesModel(control, sharedData->GetDocument()->GetCommandExecutor()));
+                break;
+            }
+            else
+            {
+                StyleSheetNode *styleSheet = dynamic_cast<StyleSheetNode*>(node);
+                if (styleSheet)
+                {
+                    treeView->setModel(new PropertiesModel(styleSheet, sharedData->GetDocument()->GetCommandExecutor()));
+                    break;
+                }
+                else
+                {
+                    treeView->setModel(nullptr);
+                }
+            }
+        }
         
         treeView->expandToDepth(0);
         treeView->resizeColumnToContents(0);
@@ -192,8 +225,8 @@ void PropertiesWidget::UpdateActions()
             ComponentPropertiesSection *section = dynamic_cast<ComponentPropertiesSection*>(property);
             if (section)
             {
-                selectedComponentType = (int) section->GetComponentType();
-                selectedComponentIndex = (int) section->GetComponentIndex();
+                selectedComponentType = static_cast<int>(section->GetComponentType());
+                selectedComponentIndex = static_cast<int>(section->GetComponentIndex());
             }
             else
             {

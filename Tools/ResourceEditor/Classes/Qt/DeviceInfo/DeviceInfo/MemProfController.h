@@ -34,39 +34,73 @@
 #include <QPointer>
 
 #include "Network/PeerDesription.h"
-#include "Network/Services/MMNetClient.h"
+#include "MemoryManager/MemoryManagerTypes.h"
+
+namespace DAVA {
+class FilePath;
+namespace Net {
+struct IChannelListener;
+class MMNetClient;
+}}
 
 class MemProfWidget;
+class ProfilingSession;
 
 class MemProfController : public QObject
 {
     Q_OBJECT
     
 public:
-    explicit MemProfController(const DAVA::Net::PeerDescription& peerDescr, QWidget *parentWidget, QObject *parent = NULL);
+    enum eMode
+    {
+        MODE_NETWORK = 0,
+        MODE_FILE,
+        MODE_SELFPROFILING
+    };
+
+public:
+    MemProfController(const DAVA::Net::PeerDescription& peerDescr, QWidget *parentWidget, QObject *parent = nullptr);
+    MemProfController(const DAVA::FilePath& srcDir, QWidget *parentWidget, QObject *parent = nullptr);
     ~MemProfController();
 
     void ShowView();
 
-    void ChannelOpen(const DAVA::MMStatConfig* config);
-    void ChannelClosed(const DAVA::char8* message);
-    void CurrentStat(const DAVA::MMStat* stat);
-    void Dump(size_t total, size_t recv);
-    void DumpDone(const DAVA::MMDump* dump, size_t packedSize);
+    DAVA::Net::IChannelListener* NetObject() const;
 
-    DAVA::Net::IChannelListener* NetObject() { return &netClient; }
+    int Mode() const;
+    bool IsFileLoaded() const;
+
+    void NetConnEstablished(bool resumed, const DAVA::MMStatConfig* config);
+    void NetConnLost(const DAVA::char8* message);
+    void NetStatRecieved(const DAVA::MMCurStat* stat, size_t count);
+    void NetSnapshotRecieved(int stage, size_t totalSize, size_t recvSize, const void* data);
+
+signals:
+    void ConnectionEstablished(bool newConnection);
+    void ConnectionLost(const DAVA::char8* message);
+    void StatArrived(size_t itemCount);
+    void SnapshotArrived(size_t sizeTotal, size_t sizeRecv);
 
 public slots:
-    void OnDumpPressed();
+    void OnSnapshotPressed();
     
 private:
-    void Output(const DAVA::String& msg);
+    void ComposeFilePath(DAVA::FilePath& result);
 
 private:
+    int mode;
     QPointer<MemProfWidget> view;
     QPointer<QWidget> parentWidget;
-    DAVA::Net::PeerDescription peer;
-    DAVA::Net::MMNetClient netClient;
+
+    DAVA::Net::PeerDescription profiledPeer;
+    std::unique_ptr<DAVA::Net::MMNetClient> netClient;
+    std::unique_ptr<ProfilingSession> profilingSession;
 };
+
+//////////////////////////////////////////////////////////////////////////
+inline int MemProfController::Mode() const
+{
+    return mode;
+}
 
 #endif // __MEMPROFCONTROLLER_H__
