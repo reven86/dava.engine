@@ -78,6 +78,8 @@ endif()
 
 set (RES_EDITOR_DATA ${DAVA_ROOT_DIR}/Tools/ResourceEditor/Data)
 
+message( "Performance test data folder" ${PERFORMANCE_TEST_DATA_SVN} )
+
 if( NOT EXISTS ${PERFORMANCE_TEST_DATA_SVN})
     message( "Error !!!: Please checkout performance.test"  )
     message( " " )
