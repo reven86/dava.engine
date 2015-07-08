@@ -116,7 +116,6 @@ VDeclDX9::Get( const VertexLayout& layout, bool force_immediate )
         IDirect3DVertexDeclaration9*    vd9         = nullptr;
         D3DVERTEXELEMENT9               elem[32];
         uint32                          elemCount   = 0;
-        HRESULT                         hr;
 
         DVASSERT(layout.ElementCount() < countof(elem));
         for( unsigned i=0; i!=layout.ElementCount(); ++i )
@@ -172,11 +171,9 @@ VDeclDX9::Get( const VertexLayout& layout, bool force_immediate )
         
         
         DX9Command  cmd = { DX9Command::CREATE_VERTEX_DECLARATION, { uint64_t(elem), uint64_t(&vd9) } };
-//        hr = _D3D9_Device->CreateVertexDeclaration( elem, &vd9 );
 
         ExecDX9( &cmd, 1, force_immediate );
 
-//        if( SUCCEEDED(hr) )
         if( SUCCEEDED(cmd.retval) )
         {
             VDeclDX9    vd;
@@ -482,12 +479,10 @@ PipelineStateDX9_t::VertexProgDX9::Construct( const void* bin, unsigned bin_sz, 
     {
 //DumpShaderText((const char*)bin,bin_sz);
         void*   code = shader->GetBufferPointer();
-//        HRESULT hr   = _D3D9_Device->CreateVertexShader( (const DWORD*)code, &vs9 );
         DX9Command  cmd = { DX9Command::CREATE_VERTEX_SHADER, { uint64_t((const DWORD*)code), uint64_t(&vs9) } };
 
         ExecDX9( &cmd, 1 );
 
-//        if( SUCCEEDED(hr) )
         if( SUCCEEDED(cmd.retval) )
         {
             for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )
@@ -682,13 +677,11 @@ PipelineStateDX9_t::FragmentProgDX9::Construct( const void* bin, unsigned bin_sz
 
     if( SUCCEEDED(hr) )
     {
-        void*   code = shader->GetBufferPointer();
-//        HRESULT hr   = _D3D9_Device->CreatePixelShader( (const DWORD*)code, &ps9 );
-        DX9Command  cmd = { DX9Command::CREATE_PIXEL_SHADER, { uint64_t((const DWORD*)code), uint64_t(&ps9) } };
+        void*       code = shader->GetBufferPointer();
+        DX9Command  cmd  = { DX9Command::CREATE_PIXEL_SHADER, { uint64_t((const DWORD*)code), uint64_t(&ps9) } };
 
         ExecDX9( &cmd, 1 );
 
-//        if( SUCCEEDED(hr) )
         if( SUCCEEDED(cmd.retval) )
         {
             for( unsigned i=0; i!=MAX_CONST_BUFFER_COUNT; ++i )

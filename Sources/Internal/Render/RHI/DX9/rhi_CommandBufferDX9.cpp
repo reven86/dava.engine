@@ -73,10 +73,10 @@ static void _ExecuteQueuedCommands();
 
 
 #if RHI__USE_DX9_RENDER_THREAD
-static DAVA::Thread*        _RenderThreadDX9            = nullptr;
-static bool                 _RenderThreadDX9ExitPending = false;
-static DAVA::Spinlock       _RenderThreadDX9ExitSync;
-static DAVA::Semaphore      _RenderThreadDX9StartedSync (0);
+static DAVA::Thread*        _DX9_RenderThread               = nullptr;
+static bool                 _DX9_RenderThreadExitPending    = false;
+static DAVA::Spinlock       _DX9_RenderThreadExitSync;
+static DAVA::Semaphore      _DX9_RenderThreadStartedSync    (0);
 #endif
 
 static DX9Command*          _DX9_PendingImmediateCmd        = nullptr;
@@ -947,83 +947,6 @@ Trace("\n\n-------------------------------\nframe %u generated\n",_Frame.back().
 #endif
 
     ConstBufferDX9::InvalidateAllConstBufferInstances();
-
-/*
-    DVASSERT(_D3D9_Device)
-
-    static std::vector<RenderPassDX9_t*>    pass;
-
-    // sort cmd-lists by priority
-
-    pass.clear();
-    for( unsigned i=0; i!=_CmdQueue.size(); ++i )
-    {
-        RenderPassDX9_t*    rp     = RenderPassPool::Get( _CmdQueue[i] );
-        bool                do_add = true;
-        
-        for( std::vector<RenderPassDX9_t*>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
-        {
-            if( rp->priority > (*p)->priority )
-            {
-                pass.insert( p, 1, rp );
-                do_add = false;
-                break;
-            }
-        }
-
-        if( do_add )
-            pass.push_back( rp );
-    }
-
-    
-    // execute command-lists
-    
-    for( std::vector<RenderPassDX9_t*>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
-    {
-        for( unsigned b=0; b!=(*p)->cmdBuf.size(); ++b )
-        {
-            Handle              cb_h = (*p)->cmdBuf[b];
-            CommandBufferDX9_t* cb   = CommandBufferPool::Get( cb_h );
-
-            cb->Execute();
-            CommandBufferPool::Free( cb_h );
-        }
-    }
-    
-    for( unsigned i=0; i!=_CmdQueue.size(); ++i )
-        RenderPassPool::Free( _CmdQueue[i] );
-    _CmdQueue.clear();
-
-    ConstBufferDX9::InvalidateAllConstBufferInstances();
-
-    HRESULT hr;
-
-    if( _ResetPending )
-    {
-        hr = _D3D9_Device->TestCooperativeLevel();
-
-        if( hr == D3DERR_DEVICENOTRESET )
-        {
-///            reset( Size2i(_present_param->BackBufferWidth,_present_param->BackBufferHeight) );
-
-            _ResetPending = false;
-        }
-        else
-        {
-            ::Sleep( 100 );
-        }
-    }
-    else
-    {
-        hr = _D3D9_Device->Present( NULL, NULL, NULL, NULL );
-
-        if( FAILED(hr) )
-            Logger::Error( "present() failed:\n%s\n", D3D9ErrorText(hr) );
-
-        if( hr == D3DERR_DEVICELOST )
-            _ResetPending = true;
-    }    
-*/
 }
 
 
@@ -1340,7 +1263,7 @@ _RenderFuncDX9( DAVA::BaseObject* obj, void*, void* )
 {
     _InitDX9();
 
-    _RenderThreadDX9StartedSync.Post();
+    _DX9_RenderThreadStartedSync.Post();
     Trace( "RHI render-thread started\n" );
 
     while( true )
@@ -1351,9 +1274,9 @@ _RenderFuncDX9( DAVA::BaseObject* obj, void*, void* )
         // CRAP: busy-wait
         do
         {
-            _RenderThreadDX9ExitSync.Lock();
-            do_exit = _RenderThreadDX9ExitPending;
-            _RenderThreadDX9ExitSync.Unlock();
+            _DX9_RenderThreadExitSync.Lock();
+            do_exit = _DX9_RenderThreadExitPending;
+            _DX9_RenderThreadExitSync.Unlock();
             
             if( do_exit )
                 break;
@@ -1394,10 +1317,10 @@ InitializeRenderThreadDX9()
 {
 #if RHI__USE_DX9_RENDER_THREAD
 
-    _RenderThreadDX9 = DAVA::Thread::Create( DAVA::Message(&_RenderFuncDX9) );
-    _RenderThreadDX9->SetName( "RHI.dx9-render" );
-    _RenderThreadDX9->Start();    
-    _RenderThreadDX9StartedSync.Wait();
+    _DX9_RenderThread = DAVA::Thread::Create( DAVA::Message(&_RenderFuncDX9) );
+    _DX9_RenderThread->SetName( "RHI.dx9-render" );
+    _DX9_RenderThread->Start();    
+    _DX9_RenderThreadStartedSync.Wait();
 
 #else
 
@@ -1412,16 +1335,13 @@ InitializeRenderThreadDX9()
 void
 UninitializeRenderThreadDX9()
 {
-LCP;
 #if RHI__USE_DX9_RENDER_THREAD
-    _RenderThreadDX9ExitSync.Lock();
-    _RenderThreadDX9ExitPending = true;
-    _RenderThreadDX9ExitSync.Unlock();
-LCP;
+    _DX9_RenderThreadExitSync.Lock();
+    _DX9_RenderThreadExitPending = true;
+    _DX9_RenderThreadExitSync.Unlock();
 
-    _RenderThreadDX9->Join();
+    _DX9_RenderThread->Join();
 #endif
-LCP;
 }
 
 

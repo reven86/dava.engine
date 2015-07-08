@@ -103,30 +103,19 @@ RHI_IMPL_POOL(RenderPassGLES2_t,RESOURCE_RENDER_PASS);
     
 const uint64   CommandBufferGLES2_t::EndCmd = 0xFFFFFFFF;
 
-//static const unsigned       _CmdQueueCount              = 3;
-//static unsigned             _CurCmdQueueIndex           = 0;
-//static std::vector<Handle>  _CmdQueue[_CmdQueueCount];
-//-static std::vector<uint32>  _RenderQueue;
-//-static uint32               _CurRenderQueueSize         = 0;
-//-static DAVA::Spinlock       _CmdQueueSync;
+static bool                 _GLES2_CmdBufIsBeingExecuted    = false;
+static DAVA::Spinlock       _GLES2_CmdBufIsBeingExecutedSync;
 
-static bool                 _CmdBufIsBeingExecuted      = false;
-static DAVA::Spinlock       _CmdBufIsBeingExecutedSync;
+static GLCommand*           _GLES2_PendingImmediateCmd      = nullptr;
+static uint32               _GLES2_PendingImmediateCmdCount = 0;
+static DAVA::Mutex          _GLES2_PendingImmediateCmdSync;
 
-static GLCommand*           _PendingImmediateCmd        = nullptr;
-static uint32               _PendingImmediateCmdCount   = 0;
-#if USE_RENDER_THREAD
-static bool                 _ImmediateCmdAllowed        = true;
-#endif
-//static DAVA::Spinlock       _PendingImmediateCmdSync;
-static DAVA::Mutex          _PendingImmediateCmdSync;
-
-static bool                 _RenderThreadExitPending    = false;
-static DAVA::Spinlock       _RenderThreadExitSync;
-static DAVA::Semaphore      _RenderThredStartedSync     (1);
+static bool                 _GLES2_RenderThreadExitPending  = false;
+static DAVA::Spinlock       _GLES2_RenderThreadExitSync;
+static DAVA::Semaphore      _GLES2_RenderThredStartedSync   (1);
 
 #if USE_RENDER_THREAD 
-static DAVA::Thread*        RenderThread;
+static DAVA::Thread*        _GLES2_RenderThread             = nullptr;
 #endif
 
 struct
@@ -1049,14 +1038,14 @@ Trace("DIP  mode= %i  v_cnt= %i  start_i= %i\n",int(mode),int(v_cnt),int(startIn
         
         if( --immediate_cmd_ttw <= 0 )
         {
-            _PendingImmediateCmdSync.Lock();
-            if( _PendingImmediateCmd )
+            _GLES2_PendingImmediateCmdSync.Lock();
+            if( _GLES2_PendingImmediateCmd )
             {
-                _ExecGL( _PendingImmediateCmd, _PendingImmediateCmdCount );
-                _PendingImmediateCmd      = nullptr;
-                _PendingImmediateCmdCount = 0;
+                _ExecGL( _GLES2_PendingImmediateCmd, _GLES2_PendingImmediateCmdCount );
+                _GLES2_PendingImmediateCmd      = nullptr;
+                _GLES2_PendingImmediateCmdCount = 0;
             }
-            _PendingImmediateCmdSync.Unlock();
+            _GLES2_PendingImmediateCmdSync.Unlock();
 
             immediate_cmd_ttw = 10;
         }
@@ -1286,7 +1275,7 @@ _RenderFunc( DAVA::BaseObject* obj, void*, void* )
     DVASSERT(_GLES2_AcquireContext);
     _GLES2_AcquireContext();
 
-    _RenderThredStartedSync.Post();
+    _GLES2_RenderThredStartedSync.Post();
     Trace( "RHI render-thread started\n" );
 
     while( true )
@@ -1297,24 +1286,24 @@ _RenderFunc( DAVA::BaseObject* obj, void*, void* )
         // CRAP: busy-wait
         do
         {
-            _RenderThreadExitSync.Lock();
-            do_exit = _RenderThreadExitPending;
-            _RenderThreadExitSync.Unlock();
+            _GLES2_RenderThreadExitSync.Lock();
+            do_exit = _GLES2_RenderThreadExitPending;
+            _GLES2_RenderThreadExitSync.Unlock();
             
             if( do_exit )
                 break;
 
             
-            _PendingImmediateCmdSync.Lock();
-            if( _PendingImmediateCmd )
+            _GLES2_PendingImmediateCmdSync.Lock();
+            if( _GLES2_PendingImmediateCmd )
             {
 //Trace("exec imm cmd (%u)\n",_PendingImmediateCmdCount);
-                _ExecGL( _PendingImmediateCmd, _PendingImmediateCmdCount );
-                _PendingImmediateCmd      = nullptr;
-                _PendingImmediateCmdCount = 0;
+                _ExecGL( _GLES2_PendingImmediateCmd, _GLES2_PendingImmediateCmdCount );
+                _GLES2_PendingImmediateCmd      = nullptr;
+                _GLES2_PendingImmediateCmdCount = 0;
 //Trace("exec-imm-cmd done\n");
             }
-            _PendingImmediateCmdSync.Unlock();
+            _GLES2_PendingImmediateCmdSync.Unlock();
 
 
 //            _CmdQueueSync.Lock();

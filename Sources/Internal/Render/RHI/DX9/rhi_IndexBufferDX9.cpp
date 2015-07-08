@@ -59,13 +59,11 @@ dx9_IndexBuffer_Create( unsigned size, uint32 options )
     DVASSERT(size);
     if( size )
     {
-        IDirect3DIndexBuffer9*  ib9 = nullptr;
-//-        HRESULT                 hr  = _D3D9_Device->CreateIndexBuffer( size, D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, &ib9, NULL );
+        IDirect3DIndexBuffer9*  ib9   = nullptr;
         DX9Command              cmd[] = { { DX9Command::CREATE_INDEX_BUFFER, { size, D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, uint64_t(&ib9), NULL } } };
         
         ExecDX9( cmd, countof(cmd) );
 
-//-        if( SUCCEEDED(hr) )
         if( SUCCEEDED(cmd[0].retval) )
         {
             handle = IndexBufferDX9Pool::Alloc();
@@ -100,7 +98,6 @@ dx9_IndexBuffer_Delete( Handle ib )
             DX9Command  cmd[] = { DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(self->_ib9)) } };
 
             ExecDX9( cmd, countof(cmd) );
-//-            self->_ib9->Release();
             self->_ib9 = nullptr;
         }
 
@@ -138,32 +135,6 @@ dx9_IndexBuffer_Update( Handle ib, const void* data, unsigned offset, unsigned s
     }
 
     return success;
-/*
-    bool                success = false;
-    IndexBufferDX9_t*   self    = IndexBufferDX9Pool::Get( ib );
-
-    DVASSERT(!self->_mapped);
-
-    if( offset+size <= self->_size )
-    {
-        void*   ptr = nullptr;
-        HRESULT hr  = self->_ib9->Lock( offset, size, &ptr, 0 );
-
-        if( SUCCEEDED(hr) )
-        {
-            memcpy( ptr, data, size );
-            self->_ib9->Unlock();
-
-            success = true;
-        }
-        else
-        {
-            Logger::Error( "FAILED to lock index-buffer:\n%s\n", D3D9ErrorText(hr) );
-        }
-    }
-
-    return success;
-*/
 }
 
 
@@ -203,21 +174,6 @@ dx9_IndexBuffer_Unmap( Handle ib )
     {
         self->_mapped = false;
     }
-/*
-    IndexBufferDX9_t*   self = IndexBufferDX9Pool::Get( ib );
-    HRESULT             hr   = self->_ib9->Unlock();
-
-    DVASSERT(self->_mapped);
-
-    if( SUCCEEDED(hr) )
-    {
-        self->_mapped = false;
-    }
-    else
-    {
-        Logger::Error( "FAILED to unlock index-buffer:\n%s\n", D3D9ErrorText(hr) );
-    }
-*/
 }
 
 

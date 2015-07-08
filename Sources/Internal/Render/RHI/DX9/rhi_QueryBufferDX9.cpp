@@ -60,7 +60,7 @@ dx9_QueryBuffer_Create( uint32 maxObjectCount )
 static void
 dx9_QueryBuffer_Delete( Handle handle )
 {
-    QueryBufferDX9_t*   buf    = QueryBufferDX9Pool::Get( handle );
+    QueryBufferDX9_t*   buf = QueryBufferDX9Pool::Get( handle );
 
     if( buf )
     {
@@ -68,16 +68,12 @@ dx9_QueryBuffer_Delete( Handle handle )
 
         for( std::vector<IDirect3DQuery9*>::iterator q=buf->query.begin(),q_end=buf->query.end(); q!=q_end; ++q )
         {
-//            IDirect3DQuery9*    iq = *q;
-            DX9Command          c  = { DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(*q)) } };
+            DX9Command  c  = { DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(*q)) } };
             
             cmd.push_back( c );
-//            if( iq )
-//                iq->Release();
         }
 
         ExecDX9( &cmd[0], cmd.size() );
-
         buf->query.clear();
     }
 
@@ -108,14 +104,11 @@ dx9_QueryBuffer_IsReady( Handle handle, uint32 objectIndex )
         {
             DWORD       val;
             DX9Command  cmd = { DX9Command::GET_QUERY_DATA, { uint64_t(iq), uint64_t(&val), sizeof(val), 0 } }; // DO NOT flush
-//            HRESULT     hr  = iq->GetData( &val, sizeof(val), 0 ); // DO NOT flush
             
             ExecDX9( &cmd, 1 );
 
-//            if( SUCCEEDED(hr) )
             if( SUCCEEDED(cmd.retval) )
             {
-//                ready = hr == S_OK;
                 ready = cmd.retval == S_OK;
             }
         }
@@ -138,11 +131,9 @@ dx9_QueryBuffer_Value( Handle handle, uint32 objectIndex )
         {
             DWORD       val = 0;
             DX9Command  cmd = { DX9Command::GET_QUERY_DATA, { uint64_t(iq), uint64_t(&val), sizeof(val), 0 } }; // DO NOT flush
-//            HRESULT     hr  = iq->GetData( &val, sizeof(val), 0 ); // DO NOT flush
 
             ExecDX9( &cmd, 1 );
 
-//            if( hr == S_OK )
             if( cmd.retval == S_OK )
             {
                 value = val;

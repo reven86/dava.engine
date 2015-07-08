@@ -98,16 +98,7 @@ dx9_Texture_Create( const Texture::Descriptor& desc )
             
             ExecDX9( &cmd1, 1 );
             hr = cmd1.retval;
-/*
-            hr = _D3D9_Device->CreateTexture( desc.width, desc.height,
-                                              mip_count,
-                                              usage,
-                                              fmt,
-                                              pool,
-                                              &tex9,
-                                              NULL
-                                            );
-*/            
+
             if( SUCCEEDED(hr) )
             {
                 handle = TextureDX9Pool::Alloc();
@@ -130,31 +121,11 @@ dx9_Texture_Create( const Texture::Descriptor& desc )
                     DX9Command  cmd3 = { DX9Command::GET_TEXTURE_SURFACE_LEVEl, { uint64_t(tex9), 0, uint64_t(&tex->surf9) } };
 
                     ExecDX9( &cmd3, 1 );
-//                    hr = tex9->GetSurfaceLevel( 0, &tex->surf9 );
                 }
 
                 tex->width  = desc.width;
                 tex->height = desc.height;
                 tex->format = desc.format;
-/*
-                handle = TextureDX9Pool::Alloc();
-                tex    = TextureDX9Pool::Get( handle );
-
-                tex->tex9 = tex9;
-
-                hr = tex9->QueryInterface( IID_IDirect3DBaseTexture9, (void**)(&tex->basetex9) );
-                if( tex->basetex9  &&  auto_mip )
-                    tex->basetex9->SetAutoGenFilterType( D3DTEXF_LINEAR );
-
-                if( desc.isRenderTarget )
-                {
-                    hr = tex9->GetSurfaceLevel( 0, &tex->surf9 );
-                }
-
-                tex->width  = desc.width;
-                tex->height = desc.height;
-                tex->format = desc.format;
-*/
             }
             else
             {
@@ -167,8 +138,6 @@ dx9_Texture_Create( const Texture::Descriptor& desc )
         {
             IDirect3DCubeTexture9*  cubetex9 = nullptr;
             DX9Command              cmd1     = { DX9Command::CREATE_CUBE_TEXTURE, { desc.width, mip_count, usage, DX9_TextureFormat(desc.format), pool, uint64_t(&cubetex9), NULL } };
-            
-//            hr = _D3D9_Device->CreateCubeTexture( desc.width, mip_count, usage, DX9_TextureFormat(desc.format), pool, &cubetex9, NULL );
             
             ExecDX9( &cmd1, 1 );
             hr = cmd1.retval;
@@ -190,9 +159,6 @@ dx9_Texture_Create( const Texture::Descriptor& desc )
                 if( !auto_mip )
                     cmd2[1].func = DX9Command::NOP;
 
-//                hr = cubetex9->QueryInterface( IID_IDirect3DBaseTexture9, (void**)(&tex->basetex9) );
-//                if( tex->basetex9  &&  auto_mip )
-//                    tex->basetex9->SetAutoGenFilterType( D3DTEXF_LINEAR );
                 ExecDX9( cmd2, countof(cmd2) );
                 
                 tex->width  = desc.width;
@@ -236,42 +202,36 @@ dx9_Texture_Delete( Handle tex )
 
         if( self->surf9 )
         {
-//            self->surf9->Release();
             cmd[0].func = DX9Command::RELEASE;
             self->surf9 = nullptr;
         }
 
         if( self->basetex9 )
         {
-//            self->basetex9->Release();
             cmd[1].func = DX9Command::RELEASE;
             self->basetex9 = nullptr;
         }
 
         if( self->tex9 )
         {
-//            self->tex9->Release();
             cmd[2].func = DX9Command::RELEASE;
             self->tex9 = nullptr;
         }
 
         if( self->cubetex9 )
         {
-//            self->cubetex9->Release();
             cmd[3].func = DX9Command::RELEASE;
             self->cubetex9 = nullptr;
         }
         
         if( self->rt_surf9 )
         {
-//            self->rt_surf9->Release();
             cmd[4].func = DX9Command::RELEASE;
             self->rt_surf9 = nullptr;
         }
 
         if( self->rt_tex9 )
         {
-//            self->rt_tex9->Release();
             cmd[5].func = DX9Command::RELEASE;
             self->rt_tex9 = nullptr;
         }
@@ -318,8 +278,6 @@ dx9_Texture_Map( Handle tex, unsigned level, TextureFace face )
         ExecDX9( &cmd, 1 );
         hr = cmd.retval;
 
-//        hr = self->cubetex9->LockRect( f, level, &rc, NULL, 0 );
-
         if( SUCCEEDED(hr) )
         {
             mem = rc.pBits;
@@ -341,23 +299,12 @@ dx9_Texture_Map( Handle tex, unsigned level, TextureFace face )
                 DX9Command  cmd1 = { DX9Command::CREATE_TEXTURE, { self->width, self->height, 1, 0, DX9_TextureFormat(self->format), D3DPOOL_SYSTEMMEM, uint64_t(&self->rt_tex9), 0 } };
                 
                 ExecDX9( &cmd1, 1 );
-/*
-                hr = _D3D9_Device->CreateTexture
-                ( 
-                    self->width, self->height,
-                    1, 0, DX9_TextureFormat(self->format),
-                    D3DPOOL_SYSTEMMEM,
-                    &self->rt_tex9,
-                    NULL
-                );
-*/                
-//                if( SUCCEEDED(hr) )
+
                 if( SUCCEEDED(cmd1.retval) )
                 {
                     DX9Command  cmd2 = { DX9Command::GET_TEXTURE_SURFACE_LEVEl, { uint64_t(self->rt_tex9), 0, uint64_t(&self->rt_surf9) } };
                     
                     ExecDX9( &cmd2, 1 );
-//                    hr = self->rt_tex9->GetSurfaceLevel( 0, &(self->rt_surf9) );
                 }
             }
 
@@ -367,14 +314,12 @@ dx9_Texture_Map( Handle tex, unsigned level, TextureFace face )
 
                 ExecDX9( &cmd3, 1 );
 
-//                if( _D3D9_Device->GetRenderTargetData( self->surf9, self->rt_surf9 ) == D3D_OK )
                 if( cmd3.retval == D3D_OK )
                 {
                     DX9Command  cmd4 = { DX9Command::LOCK_TEXTURE_RECT, { uint64_t(self->rt_tex9), level, uint64(&rc), NULL, 0 } };
                     
                     ExecDX9( &cmd4, 1 );
                     hr = cmd4.retval;
-//                    hr = self->rt_tex9->LockRect( level, &rc, NULL, 0 );
 
                     if( SUCCEEDED(hr) )
                     {
@@ -401,18 +346,6 @@ dx9_Texture_Map( Handle tex, unsigned level, TextureFace face )
                 self->mappedLevel = level;
                 self->isMapped    = true;
             }
-/*
-            hr = self->tex9->LockRect( level, &rc, NULL, 0 );
-
-            if( SUCCEEDED(hr) )
-            {
-                mem = rc.pBits;
-            
-                self->mappedData  = mem;
-                self->mappedLevel = level;
-                self->isMapped    = true;
-            }
-*/        
         }
     }
 
@@ -472,9 +405,7 @@ dx9_Texture_Unmap( Handle tex )
         DX9Command          cmd = { DX9Command::UNLOCK_CUBETEXTURE_RECT, { uint64_t(self->cubetex9), f, self->mappedLevel } };
             
         ExecDX9( &cmd, 1 );
-//        HRESULT hr = self->cubetex9->UnlockRect( f, self->mappedLevel );
-
-//        if( FAILED(hr) )
+        
         if( FAILED(cmd.retval) )
             Logger::Error( "UnlockRect failed:\n%s\n", D3D9ErrorText(cmd.retval) );
     }
@@ -484,12 +415,6 @@ dx9_Texture_Unmap( Handle tex )
         DX9Command          cmd = { DX9Command::UNLOCK_TEXTURE_RECT, { uint64_t(self->tex9), self->mappedLevel } };
             
         ExecDX9( &cmd, 1 );
-/*
-        HRESULT             hr  = tex->UnlockRect( self->mappedLevel );
-
-        if( FAILED(hr) )
-            Logger::Error( "UnlockRect failed:\n%s\n", D3D9ErrorText(hr) );
-*/    
     }
 
     self->isMapped = false;
