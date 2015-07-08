@@ -62,9 +62,14 @@ dx9_VertexBuffer_Create( unsigned size, uint32 options )
     if( size )
     {
         IDirect3DVertexBuffer9* vb9  = nullptr;
-        HRESULT                 hr   = _D3D9_Device->CreateVertexBuffer( size, D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vb9, NULL );
+        DX9Command              cmd[] = { { DX9Command::CREATE_VERTEX_BUFFER, { size, D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, uint64_t(&vb9), NULL } } };
+        
+        ExecDX9( cmd, countof(cmd) );
 
-        if( SUCCEEDED(hr) )
+//        HRESULT                 hr   = _D3D9_Device->CreateVertexBuffer( size, D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &vb9, NULL );
+
+//        if( SUCCEEDED(hr) )
+        if( SUCCEEDED(cmd[0].retval) )
         {
             handle = VertexBufferDX9Pool::Alloc();
             VertexBufferDX9_t*    vb = VertexBufferDX9Pool::Get( handle );
@@ -75,7 +80,7 @@ dx9_VertexBuffer_Create( unsigned size, uint32 options )
         }
         else
         {
-            Logger::Error( "FAILED to create vertex-buffer:\n%s\n", D3D9ErrorText(hr) );
+            Logger::Error( "FAILED to create vertex-buffer:\n%s\n", D3D9ErrorText(cmd[0].retval) );
         }
     }
 
@@ -94,9 +99,12 @@ dx9_VertexBuffer_Delete( Handle vb )
     {
         if( self->_vb9 )
         {
-            self->_vb9->Release();
+            DX9Command  cmd[] = { DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(self->_vb9)) } };
+
+            ExecDX9( cmd, countof(cmd) );
+//            self->_vb9->Release();
             self->_vb9 = nullptr;
-         }
+        }
 
         self->_size = 0;
     }
@@ -108,6 +116,30 @@ dx9_VertexBuffer_Delete( Handle vb )
 static bool
 dx9_VertexBuffer_Update( Handle vb, const void* data, unsigned offset, unsigned size )
 {
+    bool                success = false;
+    VertexBufferDX9_t*  self    = VertexBufferDX9Pool::Get( vb );
+
+    DVASSERT(!self->_mapped);
+
+    if( offset+size <= self->_size )
+    {
+        void*       ptr  = nullptr;
+        DX9Command  cmd1 = { DX9Command::LOCK_VERTEX_BUFFER, { uint64_t(self->_vb9), offset, size, uint64_t(&ptr), 0 } };
+        
+        ExecDX9( &cmd1, 1 );
+        if( SUCCEEDED(cmd1.retval) )
+        {
+            memcpy( ptr, data, size );
+
+            DX9Command  cmd2 = { DX9Command::UNLOCK_VERTEX_BUFFER, { uint64_t(self->_vb9) } };
+            
+            ExecDX9( &cmd2, 1 );
+            success = true;
+        }
+    }
+
+    return success;
+/*
     bool                success = false;
     VertexBufferDX9_t*  self    = VertexBufferDX9Pool::Get( vb );
 
@@ -131,6 +163,7 @@ dx9_VertexBuffer_Update( Handle vb, const void* data, unsigned offset, unsigned 
     }
 
     return success;
+*/
 }
 
 
@@ -139,6 +172,20 @@ dx9_VertexBuffer_Update( Handle vb, const void* data, unsigned offset, unsigned 
 static void*
 dx9_VertexBuffer_Map( Handle vb, unsigned offset, unsigned size )
 {
+    void*               ptr  = nullptr;
+    VertexBufferDX9_t*  self = VertexBufferDX9Pool::Get( vb );
+    DX9Command          cmd  = { DX9Command::LOCK_VERTEX_BUFFER, { uint64_t(self->_vb9), offset, size, uint64_t(&ptr), 0 } };
+
+    DVASSERT(!self->_mapped);
+    ExecDX9( &cmd, 1 );
+
+    if( SUCCEEDED(cmd.retval) )
+    {
+        self->_mapped = true;
+    }
+
+    return ptr;
+/*
     void*               ptr  = nullptr;
     VertexBufferDX9_t*  self = VertexBufferDX9Pool::Get( vb );
     HRESULT             hr   = self->_vb9->Lock( offset, size, &ptr, 0 );
@@ -156,6 +203,7 @@ dx9_VertexBuffer_Map( Handle vb, unsigned offset, unsigned size )
     }
 
     return ptr;
+*/
 }
 
 
@@ -164,6 +212,18 @@ dx9_VertexBuffer_Map( Handle vb, unsigned offset, unsigned size )
 static void
 dx9_VertexBuffer_Unmap( Handle vb )
 {
+    VertexBufferDX9_t*  self = VertexBufferDX9Pool::Get( vb );
+    DX9Command          cmd  = { DX9Command::UNLOCK_VERTEX_BUFFER, { uint64_t(self->_vb9) } };
+    
+    DVASSERT(self->_mapped);
+    ExecDX9( &cmd, 1 );
+
+    if( SUCCEEDED(cmd.retval) )
+    {
+        self->_mapped = false;
+    }
+
+/*
     VertexBufferDX9_t*  self = VertexBufferDX9Pool::Get( vb );
     HRESULT             hr   = self->_vb9->Unlock();
 
@@ -177,6 +237,7 @@ dx9_VertexBuffer_Unmap( Handle vb )
     {
         Logger::Error( "FAILED to unlock vertex-buffer:\n%s\n", D3D9ErrorText(hr) );
     }
+*/
 }
 
 

@@ -58,8 +58,8 @@ void FrameworkDidLaunched()
 #else
     KeyedArchive * appOptions = new KeyedArchive();
 #if defined(__DAVAENGINE_WIN32__)
-//    appOptions->SetInt32("renderer", rhi::RHI_DX9);
-  appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+    appOptions->SetInt32("renderer", rhi::RHI_DX9);
+//    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #elif defined(__DAVAENGINE_MACOS__)
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #endif
@@ -72,7 +72,7 @@ void FrameworkDidLaunched()
     
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
-    appOptions->SetString(String("title"), String("Scene Viewer"));
+    appOptions->SetString(String("title"), String("RHI-Cube"));
 
     DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(1024, 768);
     DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");

@@ -60,9 +60,13 @@ dx9_IndexBuffer_Create( unsigned size, uint32 options )
     if( size )
     {
         IDirect3DIndexBuffer9*  ib9 = nullptr;
-        HRESULT                 hr  = _D3D9_Device->CreateIndexBuffer( size, D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, &ib9, NULL );
+//-        HRESULT                 hr  = _D3D9_Device->CreateIndexBuffer( size, D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, &ib9, NULL );
+        DX9Command              cmd[] = { { DX9Command::CREATE_INDEX_BUFFER, { size, D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, uint64_t(&ib9), NULL } } };
+        
+        ExecDX9( cmd, countof(cmd) );
 
-        if( SUCCEEDED(hr) )
+//-        if( SUCCEEDED(hr) )
+        if( SUCCEEDED(cmd[0].retval) )
         {
             handle = IndexBufferDX9Pool::Alloc();
 
@@ -74,7 +78,7 @@ dx9_IndexBuffer_Create( unsigned size, uint32 options )
         }
         else
         {
-            Logger::Error( "FAILED to create index-buffer:\n%s\n", D3D9ErrorText(hr) );
+            Logger::Error( "FAILED to create index-buffer:\n%s\n", D3D9ErrorText(cmd[0].retval) );
         }
     }
 
@@ -93,7 +97,10 @@ dx9_IndexBuffer_Delete( Handle ib )
     {
         if( self->_ib9 )
         {
-            self->_ib9->Release();
+            DX9Command  cmd[] = { DX9Command::RELEASE, { uint64_t(static_cast<IUnknown*>(self->_ib9)) } };
+
+            ExecDX9( cmd, countof(cmd) );
+//-            self->_ib9->Release();
             self->_ib9 = nullptr;
         }
 
@@ -108,6 +115,30 @@ dx9_IndexBuffer_Delete( Handle ib )
 static bool
 dx9_IndexBuffer_Update( Handle ib, const void* data, unsigned offset, unsigned size )
 {
+    bool                success = false;
+    IndexBufferDX9_t*   self    = IndexBufferDX9Pool::Get( ib );
+
+    DVASSERT(!self->_mapped);
+
+    if( offset+size <= self->_size )
+    {
+        void*       ptr  = nullptr;
+        DX9Command  cmd1 = { DX9Command::LOCK_INDEX_BUFFER, { uint64_t(self->_ib9), offset, size, uint64_t(&ptr), 0 } };
+        
+        ExecDX9( &cmd1, 1 );
+        if( SUCCEEDED(cmd1.retval) )
+        {
+            memcpy( ptr, data, size );
+
+            DX9Command  cmd2 = { DX9Command::UNLOCK_INDEX_BUFFER, { uint64_t(self->_ib9) } };
+            
+            ExecDX9( &cmd2, 1 );
+            success = true;
+        }
+    }
+
+    return success;
+/*
     bool                success = false;
     IndexBufferDX9_t*   self    = IndexBufferDX9Pool::Get( ib );
 
@@ -132,6 +163,7 @@ dx9_IndexBuffer_Update( Handle ib, const void* data, unsigned offset, unsigned s
     }
 
     return success;
+*/
 }
 
 
@@ -142,18 +174,14 @@ dx9_IndexBuffer_Map( Handle ib, unsigned offset, unsigned size )
 {
     void*               ptr  = nullptr;
     IndexBufferDX9_t*   self = IndexBufferDX9Pool::Get( ib );
-    HRESULT             hr  = self->_ib9->Lock( offset, size, &ptr, 0 );
+    DX9Command          cmd  = { DX9Command::LOCK_INDEX_BUFFER, { uint64_t(self->_ib9), offset, size, uint64_t(&ptr), 0 } };
 
     DVASSERT(!self->_mapped);
+    ExecDX9( &cmd, 1 );
 
-    if( SUCCEEDED(hr) )
+    if( SUCCEEDED(cmd.retval) )
     {
         self->_mapped = true;
-    }
-    else
-    {
-        ptr = nullptr;
-        Logger::Error( "FAILED to lock index-buffer:\n%s\n", D3D9ErrorText(hr) );
     }
 
     return ptr;
@@ -165,6 +193,17 @@ dx9_IndexBuffer_Map( Handle ib, unsigned offset, unsigned size )
 static void
 dx9_IndexBuffer_Unmap( Handle ib )
 {
+    IndexBufferDX9_t*   self = IndexBufferDX9Pool::Get( ib );
+    DX9Command          cmd  = { DX9Command::UNLOCK_INDEX_BUFFER, { uint64_t(self->_ib9) } };
+    
+    DVASSERT(self->_mapped);
+    ExecDX9( &cmd, 1 );
+
+    if( SUCCEEDED(cmd.retval) )
+    {
+        self->_mapped = false;
+    }
+/*
     IndexBufferDX9_t*   self = IndexBufferDX9Pool::Get( ib );
     HRESULT             hr   = self->_ib9->Unlock();
 
@@ -178,6 +217,7 @@ dx9_IndexBuffer_Unmap( Handle ib )
     {
         Logger::Error( "FAILED to unlock index-buffer:\n%s\n", D3D9ErrorText(hr) );
     }
+*/
 }
 
 
