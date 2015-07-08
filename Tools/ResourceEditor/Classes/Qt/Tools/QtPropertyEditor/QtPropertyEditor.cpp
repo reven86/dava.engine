@@ -59,9 +59,6 @@ QtPropertyEditor::QtPropertyEditor(QWidget *parent /* = 0 */)
 	QObject::connect(&updateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateTimeout()));
 
 	setMouseTracking(true);
-    verticalScrollBar()->installEventFilter(this);
-
-	//new QtPropertyToolButton(NULL, viewport());
 }
 
 QtPropertyEditor::~QtPropertyEditor()
@@ -121,11 +118,6 @@ void QtPropertyEditor::RemoveProperty(QtPropertyData *data)
 void QtPropertyEditor::RemovePropertyAll()
 {
 	curModel->RemovePropertyAll();
-}
-
-void QtPropertyEditor::SetFilter(const QString &regex)
-{
-	//curFilteringModel->setFilterRegExp(regex);
 }
 
 void QtPropertyEditor::SetEditTracking(bool enabled)
@@ -223,18 +215,6 @@ void QtPropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem &o
 	}
 }
 
-bool QtPropertyEditor::eventFilter(QObject *object, QEvent *event)
-{
-    if(isVisible() && object == verticalScrollBar() &&  event->type() == QEvent::Hide)
-    {
-        QModelIndex topLeft = model()->index(0, 0);
-        QModelIndex bottomRight(model()->index(model()->rowCount(), model()->columnCount()));
-        model()->dataChanged(topLeft, bottomRight);
-        return true;
-    }
-    return false;
-}
-
 void QtPropertyEditor::ApplyStyle(QtPropertyData *data, int style)
 {
 	if(NULL != data)
@@ -260,28 +240,6 @@ void QtPropertyEditor::ApplyStyle(QtPropertyData *data, int style)
 		}
 	}
 }
-
-// QtPropertyToolButton* QtPropertyEditor::GetButton(QMouseEvent * event)
-// {
-// 	QtPropertyToolButton *ret = NULL;
-// 	QtPropertyData *data = GetProperty(indexAt(event->pos()));
-// 
-// 	if(NULL != data)
-// 	{
-// 		for(int i = 0; i < data->GetButtonsCount(); ++i)
-// 		{
-// 			QtPropertyToolButton *btn = data->GetButton(i);
-// 			QPoint p = event->pos() - btn->pos();
-// 
-// 			if(p.x() >= 0 && p.y() >= 0 && p.x() < btn->width() && p.y() < btn->height())
-// 			{
-// 				ret = btn;
-// 			}
-// 		}
-// 	}
-// 
-// 	return ret;
-// }
 
 void QtPropertyEditor::leaveEvent(QEvent * event)
 {

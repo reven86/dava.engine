@@ -293,9 +293,7 @@ void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOption
     if (index.column() == 1 && NULL != data && data->GetButtonsCount() > 0)
     {
         int owSpacing = 1;
-        auto vScrollBar = view->verticalScrollBar();
-        auto scrollSpacing = vScrollBar->isVisible() ? vScrollBar->width() : 0;
-        int owXPos = view->width() - owSpacing - scrollSpacing;
+        int owXPos = view->width() - owSpacing - view->verticalScrollBar()->width();
 		int owYPos;
 
 		// draw not overlaid widgets
