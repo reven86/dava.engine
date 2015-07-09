@@ -259,6 +259,13 @@ bool PackageModel::setData(const QModelIndex &index, const QVariant &value, int 
             node->GetControl()->SetVisibleForUIEditor(value.toBool());
         return true;
     }
+    if(role == Qt::EditRole)
+    {
+        PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
+        ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
+        controlNode->SetName(value.toString().toStdString());
+        
+    }
     return false;
 }
 
@@ -271,9 +278,17 @@ Qt::ItemFlags PackageModel::flags(const QModelIndex &index) const
     
     const PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
     if (node->CanCopy())
+    {
         flags |= Qt::ItemIsDragEnabled;
+    }
     if (node->IsInsertingControlsSupported() || node->IsInsertingPackagesSupported())
+    {
         flags |= Qt::ItemIsDropEnabled;
+    }
+    if(node->IsEditingSupported())
+    {
+        flags |= Qt::ItemIsEditable;
+    }
     
     return flags;
 }
