@@ -249,6 +249,10 @@ public:
     template<class Ret, class P1, class P2, class P3, class P4, class P5,
             class P6>
     inline static const String &FromTypes();
+
+    template<class Ret, class P1, class P2, class P3, class P4, class P5,
+                class P6, class P7>
+    inline static const String &FromTypes();
 };
 
 template<class Ret>
@@ -308,6 +312,18 @@ const String &SignatureString::FromTypes()
             + TypeMetrics<P2>().value + TypeMetrics<P3>().value
             + TypeMetrics<P4>().value + TypeMetrics<P5>().value
             + TypeMetrics<P6>().value + String(")") + TypeMetrics<Ret>().rvalue;
+    return ret;
+}
+
+template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6,
+            class P7>
+const String &SignatureString::FromTypes()
+{
+    static String ret = String("(") + TypeMetrics<P1>().value
+            + TypeMetrics<P2>().value + TypeMetrics<P3>().value
+            + TypeMetrics<P4>().value + TypeMetrics<P5>().value
+            + TypeMetrics<P6>().value + TypeMetrics<P7>().value
+            + String(")") + TypeMetrics<Ret>().rvalue;
     return ret;
 }
 
@@ -423,6 +439,24 @@ template<> struct JniCall<void>
                 p5);
         DAVA_JNI_EXCEPTION_CHECK
     }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static void Call(jobject javaObject, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        GetEnv()->CallVoidMethod(javaObject, javaMethod, p1, p2, p3, p4, p5,
+                p6);
+        DAVA_JNI_EXCEPTION_CHECK
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static void CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        GetEnv()->CallStaticVoidMethod(javaClass, javaMethod, p1, p2, p3, p4,
+                p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+    }
 };
 
 template<> struct JniCall<jint>
@@ -534,6 +568,26 @@ template<> struct JniCall<jint>
     {
         jint r = (jint) (GetEnv()->CallStaticIntMethod(javaClass, javaMethod,
                 p1, p2, p3, p4, p5));
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jint Call(jobject javaObject, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jint r = (jint) GetEnv()->CallVoidMethod(javaObject, javaMethod, p1, p2, p3, p4, p5,
+                p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jint CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jint r = (jint) GetEnv()->CallStaticVoidMethod(javaClass, javaMethod, p1, p2, p3, p4,
+                p5, p6);
         DAVA_JNI_EXCEPTION_CHECK
         return r;
     }
@@ -655,6 +709,26 @@ template<> struct JniCall<jintArray>
         DAVA_JNI_EXCEPTION_CHECK
         return r;
     }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jintArray Call(jobject javaObject, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jintArray r = (jintArray) GetEnv()->CallVoidMethod(javaObject,
+                javaMethod, p1, p2, p3, p4, p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jintArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jintArray r = (jintArray) GetEnv()->CallStaticVoidMethod(javaClass,
+                javaMethod, p1, p2, p3, p4, p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
 };
 
 template<> struct JniCall<jfloat>
@@ -768,6 +842,26 @@ template<> struct JniCall<jfloat>
     {
         jfloat r = (jfloat) (GetEnv()->CallStaticFloatMethod(javaClass,
                 javaMethod, p1, p2, p3, p4, p5));
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jfloat Call(jobject javaObject, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jfloat r = (jfloat) GetEnv()->CallVoidMethod(javaObject,
+                javaMethod, p1, p2, p3, p4, p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jfloat CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jfloat r = (jfloat) GetEnv()->CallStaticVoidMethod(javaClass,
+                javaMethod, p1, p2, p3, p4, p5, p6);
         DAVA_JNI_EXCEPTION_CHECK
         return r;
     }
@@ -889,6 +983,26 @@ template<> struct JniCall<jfloatArray>
         DAVA_JNI_EXCEPTION_CHECK
         return r;
     }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jfloatArray Call(jobject javaObject, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jfloatArray r = (jfloatArray) GetEnv()->CallVoidMethod(javaObject,
+                javaMethod, p1, p2, p3, p4, p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jfloatArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jfloatArray r = (jfloatArray) GetEnv()->CallStaticVoidMethod(javaClass,
+                javaMethod, p1, p2, p3, p4, p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
 };
 
 template<> struct JniCall<jdouble>
@@ -1003,6 +1117,26 @@ template<> struct JniCall<jdouble>
     {
         jdouble r = (jdouble) (GetEnv()->CallStaticDoubleMethod(javaClass,
                 javaMethod, p1, p2, p3, p4, p5));
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jdouble Call(jobject javaObject, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jdouble r = (jdouble) GetEnv()->CallVoidMethod(javaObject,
+                javaMethod, p1, p2, p3, p4, p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jdouble CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jdouble r = (jdouble) GetEnv()->CallStaticVoidMethod(javaClass,
+                javaMethod, p1, p2, p3, p4, p5, p6);
         DAVA_JNI_EXCEPTION_CHECK
         return r;
     }
@@ -1125,6 +1259,26 @@ template<> struct JniCall<jdoubleArray>
         DAVA_JNI_EXCEPTION_CHECK
         return r;
     }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jdoubleArray Call(jobject javaObject, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jdoubleArray r = (jdoubleArray) GetEnv()->CallVoidMethod(javaObject,
+                javaMethod, p1, p2, p3, p4, p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jdoubleArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jdoubleArray r = (jdoubleArray) GetEnv()->CallStaticVoidMethod(javaClass,
+                javaMethod, p1, p2, p3, p4, p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
 };
 
 template<> struct JniCall<jlong>
@@ -1237,6 +1391,26 @@ template<> struct JniCall<jlong>
     {
         jlong r = (jlong) (GetEnv()->CallStaticLongMethod(javaClass, javaMethod,
                 p1, p2, p3, p4, p5));
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jlong Call(jobject javaObject, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jlong r = (jlong) GetEnv()->CallVoidMethod(javaObject,
+                javaMethod, p1, p2, p3, p4, p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jlong CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jlong r = (jlong) GetEnv()->CallStaticVoidMethod(javaClass,
+                javaMethod, p1, p2, p3, p4, p5, p6);
         DAVA_JNI_EXCEPTION_CHECK
         return r;
     }
@@ -1358,6 +1532,26 @@ template<> struct JniCall<jlongArray>
         DAVA_JNI_EXCEPTION_CHECK
         return r;
     }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jlongArray Call(jobject javaObject, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jlongArray r = (jlongArray) GetEnv()->CallVoidMethod(javaObject,
+                javaMethod, p1, p2, p3, p4, p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jlongArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jlongArray r = (jlongArray) GetEnv()->CallStaticVoidMethod(javaClass,
+                javaMethod, p1, p2, p3, p4, p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
 };
 
 template<> struct JniCall<jboolean>
@@ -1472,6 +1666,26 @@ template<> struct JniCall<jboolean>
     {
         jboolean r = (jboolean) (GetEnv()->CallStaticBooleanMethod(javaClass,
                 javaMethod, p1, p2, p3, p4, p5));
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jboolean Call(jobject javaObject, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jboolean r = (jboolean) GetEnv()->CallVoidMethod(javaObject,
+                javaMethod, p1, p2, p3, p4, p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jboolean CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jboolean r = (jboolean) GetEnv()->CallStaticVoidMethod(javaClass,
+                javaMethod, p1, p2, p3, p4, p5, p6);
         DAVA_JNI_EXCEPTION_CHECK
         return r;
     }
@@ -1594,6 +1808,26 @@ template<> struct JniCall<jbooleanArray>
         DAVA_JNI_EXCEPTION_CHECK
         return r;
     }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jbooleanArray Call(jobject javaObject, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jbooleanArray r = (jbooleanArray) GetEnv()->CallVoidMethod(javaObject,
+                javaMethod, p1, p2, p3, p4, p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jbooleanArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jbooleanArray r = (jbooleanArray) GetEnv()->CallStaticVoidMethod(javaClass,
+                javaMethod, p1, p2, p3, p4, p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
 };
 
 template<> struct JniCall<jobject>
@@ -1708,6 +1942,26 @@ template<> struct JniCall<jobject>
     {
         jobject r = (jobject) (GetEnv()->CallStaticObjectMethod(javaClass,
                 javaMethod, p1, p2, p3, p4, p5));
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jobject Call(jobject javaObject, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jobject r = (jobject) GetEnv()->CallVoidMethod(javaObject,
+                javaMethod, p1, p2, p3, p4, p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jobject CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jobject r = (jobject) GetEnv()->CallStaticVoidMethod(javaClass,
+                javaMethod, p1, p2, p3, p4, p5, p6);
         DAVA_JNI_EXCEPTION_CHECK
         return r;
     }
@@ -1830,6 +2084,26 @@ template<> struct JniCall<jobjectArray>
         DAVA_JNI_EXCEPTION_CHECK
         return r;
     }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jobjectArray Call(jobject javaObject, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jobjectArray r = (jobjectArray) GetEnv()->CallVoidMethod(javaObject,
+                javaMethod, p1, p2, p3, p4, p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jobjectArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jobjectArray r = (jobjectArray) GetEnv()->CallStaticVoidMethod(javaClass,
+                javaMethod, p1, p2, p3, p4, p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
 };
 
 template<> struct JniCall<jstring>
@@ -1944,6 +2218,26 @@ template<> struct JniCall<jstring>
     {
         jstring r = (jstring) (GetEnv()->CallStaticObjectMethod(javaClass,
                 javaMethod, p1, p2, p3, p4, p5));
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jstring Call(jobject javaObject, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jstring r = (jstring) GetEnv()->CallVoidMethod(javaObject,
+                javaMethod, p1, p2, p3, p4, p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jstring CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jstring r = (jstring) GetEnv()->CallStaticVoidMethod(javaClass,
+                javaMethod, p1, p2, p3, p4, p5, p6);
         DAVA_JNI_EXCEPTION_CHECK
         return r;
     }
@@ -2066,6 +2360,26 @@ template<> struct JniCall<jstringArray>
         DAVA_JNI_EXCEPTION_CHECK
         return r;
     }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jobjectArray Call(jobject javaObject, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jobjectArray r = (jobjectArray) GetEnv()->CallVoidMethod(javaObject,
+                javaMethod, p1, p2, p3, p4, p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jobjectArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jobjectArray r = (jobjectArray) GetEnv()->CallStaticVoidMethod(javaClass,
+                javaMethod, p1, p2, p3, p4, p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
 };
 
 template<> struct JniCall<jbyte>
@@ -2179,6 +2493,26 @@ template<> struct JniCall<jbyte>
     {
         jbyte r = (jbyte) (GetEnv()->CallStaticBooleanMethod(javaClass,
                 javaMethod, p1, p2, p3, p4, p5));
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jbyte Call(jobject javaObject, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jbyte r = (jbyte) GetEnv()->CallVoidMethod(javaObject,
+                javaMethod, p1, p2, p3, p4, p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jbyte CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jbyte r = (jbyte) GetEnv()->CallStaticVoidMethod(javaClass,
+                javaMethod, p1, p2, p3, p4, p5, p6);
         DAVA_JNI_EXCEPTION_CHECK
         return r;
     }
@@ -2297,6 +2631,26 @@ template<> struct JniCall<jbyteArray>
     {
         jbyteArray r = (jbyteArray) (GetEnv()->CallStaticObjectMethod(javaClass,
                 javaMethod, p1, p2, p3, p4, p5));
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jbyteArray Call(jobject javaObject, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jbyteArray r = (jbyteArray) GetEnv()->CallVoidMethod(javaObject,
+                javaMethod, p1, p2, p3, p4, p5, p6);
+        DAVA_JNI_EXCEPTION_CHECK
+        return r;
+    }
+
+    template<class P1, class P2, class P3, class P4, class P5, class P6>
+    inline static jbyteArray CallStatic(jclass javaClass, jmethodID javaMethod, P1 p1,
+            P2 p2, P3 p3, P4 p4, P5 p5, P6 p6)
+    {
+        jbyteArray r = (jbyteArray) GetEnv()->CallStaticVoidMethod(javaClass,
+                javaMethod, p1, p2, p3, p4, p5, p6);
         DAVA_JNI_EXCEPTION_CHECK
         return r;
     }
@@ -2473,6 +2827,12 @@ public:
     template<class Ret, class P1, class P2, class P3, class P4, class P5>
     Function<Ret(P1, P2, P3, P4, P5)> GetStaticMethod(String name) const;
 
+    template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
+    Function<Ret(jobject, P1, P2, P3, P4, P5, P6)> GetMethod(String name) const;
+
+    template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
+    Function<Ret(P1, P2, P3, P4, P5, P6)> GetStaticMethod(String name) const;
+
 private:
     void FindJavaClass(String name);
 private:
@@ -2613,6 +2973,29 @@ Function<Ret(P1, P2, P3, P4, P5)> JavaClass::GetStaticMethod(String name) const
     DAVA_JNI_EXCEPTION_CHECK
     return Bind(&MethodCaller5<Ret, P1, P2, P3, P4, P5>::CallStatic, javaClass,
             javaMethod, _1, _2, _3, _4, _5);
+}
+
+template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
+Function<Ret(jobject, P1, P2, P3, P4, P5, P6)> JavaClass::GetMethod(String name) const
+{
+    String parametersString =
+            SignatureString::FromTypes<Ret, P1, P2, P3, P4, P5, P6>();
+    jmethodID javaMethod = GetEnv()->GetMethodID(javaClass, name.c_str(),
+            parametersString.c_str());
+    DAVA_JNI_EXCEPTION_CHECK
+    return Bind(&MethodCaller6<Ret, P1, P2, P3, P4, P5, P6>::Call, _1,
+            javaMethod, _1, _2, _3, _4, _5, _6);
+}
+template<class Ret, class P1, class P2, class P3, class P4, class P5, class P6>
+Function<Ret(P1, P2, P3, P4, P5, P6)> JavaClass::GetStaticMethod(String name) const
+{
+    String parametersString =
+            SignatureString::FromTypes<Ret, P1, P2, P3, P4, P5, P6>();
+    jmethodID javaMethod = GetEnv()->GetStaticMethodID(javaClass, name.c_str(),
+            parametersString.c_str());
+    DAVA_JNI_EXCEPTION_CHECK
+    return Bind(&MethodCaller6<Ret, P1, P2, P3, P4, P5, P6>::CallStatic, javaClass,
+            javaMethod, _1, _2, _3, _4, _5, _6);
 }
 
 } // end namespace JNI

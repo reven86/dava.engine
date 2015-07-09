@@ -257,7 +257,7 @@ void RenderBatch::Save(KeyedArchive * archive, SerializationContext* serializati
 
 	if(NULL != archive)
 	{
-        uint64 dataSourceID = 0;
+        uint64 dataSourceID = DataNode::INVALID_ID;
         if (nullptr != dataSource)
         {
             dataSourceID = dataSource->GetNodeID();
