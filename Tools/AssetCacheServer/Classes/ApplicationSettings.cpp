@@ -47,9 +47,9 @@ void ApplicationSettings::Save() const
         return;
     }
     
-    DAVA::ScopedPtr<DAVA::KeyedArchive> archieve(new DAVA::KeyedArchive());
-    Serialize(archieve);
-    archieve->Save(file);
+    DAVA::ScopedPtr<DAVA::KeyedArchive> archive(new DAVA::KeyedArchive());
+    Serialize(archive);
+    archive->Save(file);
     
     emit SettingsUpdated(this);
 }
@@ -59,17 +59,28 @@ void ApplicationSettings::Load()
     static FilePath path("~doc:/AssetServer/ACS_settings.dat");
     
     ScopedPtr<File> file(File::Create(path, File::OPEN | File::READ));
-    if(!file)
+    if(file)
     {
-        Logger::Error("[ApplicationSettings::%s] Cannot open file %s", __FUNCTION__, path.GetStringValue().c_str());
-        return;
+        isFirstLaunch = false;
+        ScopedPtr<DAVA::KeyedArchive> archive(new DAVA::KeyedArchive());
+        archive->Load(file);
+        Deserialize(archive);
     }
-    
-    ScopedPtr<DAVA::KeyedArchive> archieve(new DAVA::KeyedArchive());
-    archieve->Load(file);
-    Deserialize(archieve);
+    else
+    {
+        isFirstLaunch = true;
+        SetDefaultSettings();
+    }
 
     emit SettingsUpdated(this);
+}
+
+void ApplicationSettings::SetDefaultSettings()
+{
+    folder = FilePath();
+    cacheSizeGb = 5;
+    filesCount = 5;
+    listenPort = DAVA::AssetCache::ASSET_SERVER_PORT;
 }
 
 void ApplicationSettings::Serialize(DAVA::KeyedArchive * archive) const
@@ -77,7 +88,7 @@ void ApplicationSettings::Serialize(DAVA::KeyedArchive * archive) const
     DVASSERT(nullptr != archive);
     
     archive->SetString("FolderPath", folder.GetStringValue());
-    archive->SetFloat64("FolderSize", cacheSize);
+    archive->SetFloat64("FolderSize", cacheSizeGb);
     archive->SetUInt32("NumberOfFiles", filesCount);
     archive->SetUInt32("Port", listenPort);
     
@@ -100,7 +111,7 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive * archive)
     DVASSERT(remoteServers.size() == 0);
     
     folder = archive->GetString("FolderPath");
-    cacheSize = archive->GetFloat64("FolderSize");
+    cacheSizeGb = archive->GetFloat64("FolderSize");
     filesCount = archive->GetUInt32("NumberOfFiles");
     listenPort = archive->GetUInt32("Port");
 
@@ -126,14 +137,14 @@ void ApplicationSettings::SetFolder(const FilePath & _folder)
     folder = _folder;
 }
 
-const float64 ApplicationSettings::GetCacheSize() const
+const float64 ApplicationSettings::GetCacheSizeGb() const
 {
-    return cacheSize;
+    return cacheSizeGb;
 }
 
-void ApplicationSettings::SetCacheSize(const float64 size)
+void ApplicationSettings::SetCacheSizeGb(const float64 size)
 {
-    cacheSize = size;
+    cacheSizeGb = size;
 }
 
 const uint32 ApplicationSettings::GetFilesCount() const

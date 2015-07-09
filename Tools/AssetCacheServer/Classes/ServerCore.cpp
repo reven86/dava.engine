@@ -84,7 +84,7 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
     if(settings == _settings)
     {
         auto & folder = settings->GetFolder();
-        auto size = settings->GetCacheSize();
+        auto sizeGb = settings->GetCacheSizeGb();
         auto count = settings->GetFilesCount();
         auto autoSaveTimeout = settings->GetAutoSaveTimeoutMs();
 
@@ -95,9 +95,9 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
             server.Disconnect();
         }
         
-        if(size && !folder.IsEmpty())
+        if(sizeGb && !folder.IsEmpty())
         {
-            dataBase.UpdateSettings(folder, size, count, autoSaveTimeout);
+            dataBase.UpdateSettings(folder, sizeGb * 1024 * 1024 * 1024, count, autoSaveTimeout);
         }
         else
         {

@@ -80,7 +80,7 @@ private slots:
     
 private:
     void CreateTrayIconActions();
-    void ShowTrayIcon();
+    void CreateTrayIcon();
     void VerifyData();
 
 private:

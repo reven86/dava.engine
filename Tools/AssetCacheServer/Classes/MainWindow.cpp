@@ -74,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->portSpinBox->setValue(DAVA::AssetCache::ASSET_SERVER_PORT);
     ui->portSpinBox->setEnabled(true);
     
-    ShowTrayIcon();
+    CreateTrayIcon();
 
     ui->saveButton->setEnabled(false);
 }
@@ -216,7 +216,7 @@ void MainWindow::CreateTrayIconActions()
     trayActionsMenu->addAction(quitAction);
 }
 
-void MainWindow::ShowTrayIcon()
+void MainWindow::CreateTrayIcon()
 {
     trayIcon = new QSystemTrayIcon(this);
     QIcon trayImage(":/icon/TrayIcon.png");
@@ -251,7 +251,7 @@ void MainWindow::OnSaveButtonClicked()
 {
     //get settings from UI
     settings->SetFolder(ui->cacheFolderLineEdit->text().toStdString());
-    settings->SetCacheSize(ui->cacheSizeSpinBox->value() * 1024 * 1024 * 1024);
+    settings->SetCacheSizeGb(ui->cacheSizeSpinBox->value());
     settings->SetFilesCount(ui->numberOfFilesSpinBox->value());
     settings->SetPort(ui->portSpinBox->value());
     
@@ -275,7 +275,7 @@ void MainWindow::SetSettings(ApplicationSettings *_settings)
     bool blocked = this->blockSignals(true);
 
     ui->cacheFolderLineEdit->setText(settings->GetFolder().GetAbsolutePathname().c_str());
-    ui->cacheSizeSpinBox->setValue(settings->GetCacheSize() / (1 * 1024 * 1024 * 1024));
+    ui->cacheSizeSpinBox->setValue(settings->GetCacheSizeGb());
     ui->numberOfFilesSpinBox->setValue(settings->GetFilesCount());
     ui->portSpinBox->setValue(settings->GetPort());
     

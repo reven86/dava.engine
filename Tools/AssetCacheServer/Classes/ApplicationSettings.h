@@ -77,11 +77,15 @@ public:
     void Save() const;
     void Load();
 
+    void SetDefaultSettings();
+
+    bool IsFirstLaunch() const;
+
     const FilePath & GetFolder() const;
     void SetFolder(const FilePath & folder);
 
-    const float64 GetCacheSize() const;
-    void SetCacheSize(const float64 size);
+    const float64 GetCacheSizeGb() const;
+    void SetCacheSizeGb(const float64 size);
 
     const uint32 GetFilesCount() const;
     void SetFilesCount(const uint32 count);
@@ -98,7 +102,6 @@ public:
     void RemoveServer(const ServerData & server);
     
 signals:
-    
     void SettingsUpdated(const ApplicationSettings * settings) const;
     
 private:
@@ -110,11 +113,18 @@ private:
 public:
 
     FilePath folder;
-    float64 cacheSize;
+    float64 cacheSizeGb;
     uint32 filesCount;
     uint64 autoSaveTimeoutMs = 1 * 60 * 1000;
     uint16 listenPort;
     List<ServerData> remoteServers;
+
+    bool isFirstLaunch = true;
 };
+
+inline bool ApplicationSettings::IsFirstLaunch() const
+{
+    return isFirstLaunch;
+}
 
 #endif // __APPLICATION_SETTINGS_H__

@@ -55,6 +55,11 @@ int main(int argc, char *argv[])
     ServerCore server;
 
     w.SetSettings(server.GetSettings());
+
+    if (server.GetSettings()->IsFirstLaunch())
+    {
+        w.show();
+    }
     
     server.Start();
     
