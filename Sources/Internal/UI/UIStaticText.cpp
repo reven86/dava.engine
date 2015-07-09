@@ -408,11 +408,7 @@ void UIStaticText::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader
 	
 	if (textUseRtlAlignNode)
 	{
-        
-        if (textUseRtlAlignNode->AsString() == "true" || textUseRtlAlignNode->AsString() == "false")
-            SetTextUseRtlAlign(textUseRtlAlignNode->AsBool() ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE);
-        else
-            SetTextUseRtlAlign(static_cast<TextBlock::eUseRtlAlign>(textUseRtlAlignNode->AsInt32()));
+        SetTextUseRtlAlign(textUseRtlAlignNode->AsBool() ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE);
 	}
 
     if (textNode)

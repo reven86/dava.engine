@@ -783,7 +783,7 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 			
 			if (stateTextUseRtlAlignNode)
             {
-                stateTextBlock->SetTextUseRtlAlign((TextBlock::eUseRtlAlign) stateTextUseRtlAlignNode->AsInt());
+                stateTextBlock->SetTextUseRtlAlign(stateTextUseRtlAlignNode->AsBool() ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE);
             }
 
             if (stateTextColorNode)
@@ -1008,7 +1008,7 @@ YamlNode * UIButton::SaveToYamlNode(UIYamlLoader * loader)
                 node->SetNodeToMap(Format("stateTextAlign%s", statePostfixLocal.c_str()), loader->GetAlignNodeValue(textAlign));
             }
 			
-			bool textUseRtlAlign = stateTextBlock->GetTextUseRtlAlign();
+            bool textUseRtlAlign = stateTextBlock->GetTextUseRtlAlign() == TextBlock::RTL_USE_BY_CONTENT;
             if (baseStaticText->GetTextUseRtlAlign() != textUseRtlAlign)
             {
                 node->Set(Format("stateTextUseRtlAlign%s", statePostfixLocal.c_str()), textUseRtlAlign);
