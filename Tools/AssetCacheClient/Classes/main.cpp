@@ -70,8 +70,6 @@ void ReleaseDAVA()
 
 int main (int argc, char * argv[]) 
 {
-	setvbuf(stdout, NULL, _IONBF, 0);
-
     AssetCacheClient cacheClient;
     bool parsed = cacheClient.ParseCommandLine(argc, argv);
     if(parsed)
