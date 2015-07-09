@@ -1009,7 +1009,7 @@ YamlNode * UIButton::SaveToYamlNode(UIYamlLoader * loader)
             }
 			
             bool textUseRtlAlign = stateTextBlock->GetTextUseRtlAlign() == TextBlock::RTL_USE_BY_CONTENT;
-            if (baseStaticText->GetTextUseRtlAlign() != textUseRtlAlign)
+            if (baseStaticText->GetTextUseRtlAlign() != stateTextBlock->GetTextUseRtlAlign())
             {
                 node->Set(Format("stateTextUseRtlAlign%s", statePostfixLocal.c_str()), textUseRtlAlign);
             }
