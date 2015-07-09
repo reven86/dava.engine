@@ -18,6 +18,10 @@
     <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.10042.0" MaxVersionTested="10.0.65535.65535" />
   </Dependencies>
 
+  <Capabilities>
+    <uap:Capability Name="removableStorage" />
+  </Capabilities>
+
   <Resources>
     <Resource Language="x-generate" />
   </Resources>
@@ -31,6 +35,17 @@
         Square44x44Logo="Assets/SmallLogo.png">
         <uap:SplashScreen Image="Assets/SplashScreen.png" />
       </uap:VisualElements>
+	  
+	  <uap:Extension Category="windows.fileTypeAssociation">
+        <uap:FileTypeAssociation Name="zip">
+          <uap:DisplayName>ZIP</uap:DisplayName>
+          <uap:EditFlags OpenIsSafe="true" />
+          <uap:SupportedFileTypes>
+            <uap:FileType ContentType="archive">.zip</uap:FileType>
+          </uap:SupportedFileTypes>
+        </uap:FileTypeAssociation>
+      </uap:Extension>
+	  
     </Application>
   </Applications>
 </Package>
