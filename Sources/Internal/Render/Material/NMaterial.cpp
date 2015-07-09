@@ -773,7 +773,7 @@ void NMaterial::Save(KeyedArchive * archive, SerializationContext * serializatio
         archive->SetString("materialName", materialName.c_str());
 
     if (fxName.IsValid())
-        archive->SetString("materialTemplate", fxName.c_str());
+        archive->SetString("fxName", fxName.c_str());
 
     if (qualityGroup.IsValid())
         archive->SetString("qualityGroup", qualityGroup.c_str());
@@ -853,7 +853,7 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
         qualityGroup = FastName(archive->GetString("materialGroup").c_str());
     }
 
-    if (archive->IsKeyExists("materialTemplate"))
+    if (archive->IsKeyExists("fxName"))
     {
         fxName = FastName(archive->GetString("materialTemplate").c_str());
     }
