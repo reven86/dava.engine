@@ -415,6 +415,11 @@ void    init_system( void)
 
 #define OPTLISTLEN  80
 
+void clear_cur_work_dir()
+{
+    cur_work_dir[0] = 0;
+}
+
 void    do_options(
     int         argc,
     char **     argv,

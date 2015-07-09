@@ -432,9 +432,10 @@ fatal_error_exit:
     if (mcpp_debug & MACRO_CALL) {
         if (in_file != stdin_name)
             xfree( in_file);
-    }
+    }    
     clear_filelist();
     clear_symtable();
+    clear_cur_work_dir();
 #endif
 
     if (fp_in != stdin)
