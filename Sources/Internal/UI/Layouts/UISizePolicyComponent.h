@@ -33,76 +33,76 @@
 
 namespace DAVA
 {
-    class UIControl;
-    
-    class UISizePolicyComponent : public UIComponent
+class UIControl;
+
+class UISizePolicyComponent : public UIComponent
+{
+public:
+    enum eSizePolicy
     {
-    public:
-        enum eSizePolicy
-        {
-            IGNORE_SIZE,
-            FIXED_SIZE,
-            PERCENT_OF_CHILDREN_SUM,
-            PERCENT_OF_MAX_CHILD,
-            PERCENT_OF_FIRST_CHILD,
-            PERCENT_OF_LAST_CHILD,
-            PERCENT_OF_CONTENT,
-            PERCENT_OF_PARENT
-        };
-    public:
-        IMPLEMENT_COMPONENT_TYPE(SIZE_POLICY_COMPONENT);
-        
-        UISizePolicyComponent();
-        UISizePolicyComponent(const UISizePolicyComponent &src);
-        
-    protected:
-        virtual ~UISizePolicyComponent();
-        
-    private:
-        UISizePolicyComponent &operator=(const UISizePolicyComponent &) = delete;
-        
-    public:
-        UISizePolicyComponent* Clone() override;
-        
-        eSizePolicy GetHorizontalPolicy() const;
-        void SetHorizontalPolicy(eSizePolicy policy);
-        
-        float GetHorizontalValue() const;
-        void SetHorizontalValue(float32 value);
-        
-        eSizePolicy GetVerticalPolicy() const;
-        void SetVerticalPolicy(eSizePolicy policy);
-        
-        float GetVerticalValue() const;
-        void SetVerticalValue(float32 value);
-        
-        eSizePolicy GetPolicyByAxis(int32 axis) const;
-        float GetValueByAxis(int32 axis) const;
-        
-    private:
-        int32 GetHorizontalPolicyAsInt() const;
-        void SetHorizontalPolicyFromInt(int32 policy);
-        
-        int32 GetVerticalPolicyAsInt() const;
-        void SetVerticalPolicyFromInt(int32 policy);
-        
-    private:
-        eSizePolicy horizontalPolicy = IGNORE_SIZE;
-        float32 horizontalValue = 100.0f;
-        
-        eSizePolicy verticalPolicy = IGNORE_SIZE;
-        float32 verticalValue = 100.0f;
-        
-    public:
-        INTROSPECTION_EXTEND(UISizePolicyComponent, UIComponent,
-                             PROPERTY("horizontalPolicy", InspDesc("Horizontal Policy", GlobalEnumMap<eSizePolicy>::Instance()), GetHorizontalPolicyAsInt, SetHorizontalPolicyFromInt, I_SAVE | I_VIEW | I_EDIT)
-                             PROPERTY("horizontalValue", "Horizontal Value", GetHorizontalValue, SetHorizontalValue, I_SAVE | I_VIEW | I_EDIT)
-                             PROPERTY("verticalPolicy", InspDesc("Vertical Policy", GlobalEnumMap<eSizePolicy>::Instance()), GetVerticalPolicyAsInt, SetVerticalPolicyFromInt, I_SAVE | I_VIEW | I_EDIT)
-                             PROPERTY("verticalValue", "Vertical Value", GetVerticalValue, SetVerticalValue, I_SAVE | I_VIEW | I_EDIT)
-                             );
-        
+        IGNORE_SIZE,
+        FIXED_SIZE,
+        PERCENT_OF_CHILDREN_SUM,
+        PERCENT_OF_MAX_CHILD,
+        PERCENT_OF_FIRST_CHILD,
+        PERCENT_OF_LAST_CHILD,
+        PERCENT_OF_CONTENT,
+        PERCENT_OF_PARENT
     };
+public:
+    IMPLEMENT_COMPONENT_TYPE(SIZE_POLICY_COMPONENT);
     
+    UISizePolicyComponent();
+    UISizePolicyComponent(const UISizePolicyComponent &src);
+    
+protected:
+    virtual ~UISizePolicyComponent();
+    
+private:
+    UISizePolicyComponent &operator=(const UISizePolicyComponent &) = delete;
+    
+public:
+    UISizePolicyComponent* Clone() const override;
+    
+    eSizePolicy GetHorizontalPolicy() const;
+    void SetHorizontalPolicy(eSizePolicy policy);
+    
+    float32 GetHorizontalValue() const;
+    void SetHorizontalValue(float32 value);
+    
+    eSizePolicy GetVerticalPolicy() const;
+    void SetVerticalPolicy(eSizePolicy policy);
+    
+    float32 GetVerticalValue() const;
+    void SetVerticalValue(float32 value);
+    
+    eSizePolicy GetPolicyByAxis(int32 axis) const;
+    float32 GetValueByAxis(int32 axis) const;
+    
+private:
+    int32 GetHorizontalPolicyAsInt() const;
+    void SetHorizontalPolicyFromInt(int32 policy);
+    
+    int32 GetVerticalPolicyAsInt() const;
+    void SetVerticalPolicyFromInt(int32 policy);
+    
+private:
+    eSizePolicy horizontalPolicy = IGNORE_SIZE;
+    float32 horizontalValue = 100.0f;
+    
+    eSizePolicy verticalPolicy = IGNORE_SIZE;
+    float32 verticalValue = 100.0f;
+    
+public:
+    INTROSPECTION_EXTEND(UISizePolicyComponent, UIComponent,
+                         PROPERTY("horizontalPolicy", InspDesc("Horizontal Policy", GlobalEnumMap<eSizePolicy>::Instance()), GetHorizontalPolicyAsInt, SetHorizontalPolicyFromInt, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("horizontalValue", "Horizontal Value", GetHorizontalValue, SetHorizontalValue, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("verticalPolicy", InspDesc("Vertical Policy", GlobalEnumMap<eSizePolicy>::Instance()), GetVerticalPolicyAsInt, SetVerticalPolicyFromInt, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("verticalValue", "Vertical Value", GetVerticalValue, SetVerticalValue, I_SAVE | I_VIEW | I_EDIT)
+                         );
+    
+};
+
 }
 
 

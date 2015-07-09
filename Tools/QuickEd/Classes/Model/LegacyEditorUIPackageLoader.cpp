@@ -333,6 +333,7 @@ void LegacyEditorUIPackageLoader::ProcessLegacyAligns(UIControl *control, const 
         if (node->Get(it.second))
         {
             hasAnchorProperties = true;
+            break;
         }
     }
     

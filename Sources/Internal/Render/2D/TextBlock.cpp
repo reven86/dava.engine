@@ -49,7 +49,6 @@
 
 
 #include "UI/UIControlSystem.h"
-#include "UI/Layouts/UILayoutSystem.h"
 
 namespace DAVA 
 {
@@ -403,7 +402,7 @@ int32 TextBlock::GetVisualAlignNoMutexLock() const
 {
 	if (((align & (ALIGN_LEFT | ALIGN_RIGHT)) != 0) &&
         ((useRtlAlign == RTL_USE_BY_CONTENT && isRtl) ||
-         (useRtlAlign == RTL_USE_BY_SYSTEM && UIControlSystem::Instance()->GetLayoutSystem()->IsRtl())))
+         (useRtlAlign == RTL_USE_BY_SYSTEM && UIControlSystem::Instance()->IsRtl())))
     {
         // Mirror left/right align
         return align ^ (ALIGN_LEFT | ALIGN_RIGHT);

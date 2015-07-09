@@ -33,120 +33,120 @@
 
 namespace DAVA
 {
-    UISizePolicyComponent::UISizePolicyComponent()
-    {
-        
-    }
+UISizePolicyComponent::UISizePolicyComponent()
+{
     
-    UISizePolicyComponent::UISizePolicyComponent(const UISizePolicyComponent &src)
-        : horizontalPolicy(src.horizontalPolicy)
-        , horizontalValue(src.horizontalValue)
-        , verticalPolicy(src.verticalPolicy)
-        , verticalValue(src.verticalValue)
-    {
-        
-    }
-    
-    UISizePolicyComponent::~UISizePolicyComponent()
-    {
-        
-    }
-    
-    UISizePolicyComponent* UISizePolicyComponent::Clone()
-    {
-        return new UISizePolicyComponent(*this);
-    }
-    
-    UISizePolicyComponent::eSizePolicy UISizePolicyComponent::GetHorizontalPolicy() const
-    {
-        return horizontalPolicy;
-    }
-    
-    void UISizePolicyComponent::SetHorizontalPolicy(eSizePolicy policy)
-    {
-        horizontalPolicy = policy;
-    }
-    
-    float UISizePolicyComponent::GetHorizontalValue() const
-    {
-        return horizontalValue;
-    }
-    
-    void UISizePolicyComponent::SetHorizontalValue(float32 value)
-    {
-        horizontalValue = value;
-    }
-    
-    UISizePolicyComponent::eSizePolicy UISizePolicyComponent::GetVerticalPolicy() const
-    {
-        return verticalPolicy;
-    }
-    
-    void UISizePolicyComponent::SetVerticalPolicy(eSizePolicy policy)
-    {
-        verticalPolicy = policy;
-    }
-    
-    float UISizePolicyComponent::GetVerticalValue() const
-    {
-        return verticalValue;
-    }
-    
-    void UISizePolicyComponent::SetVerticalValue(float32 value)
-    {
-        verticalValue = value;
-    }
-    
-    UISizePolicyComponent::eSizePolicy UISizePolicyComponent::GetPolicyByAxis(int32 axis) const
-    {
-        switch (axis)
-        {
-            case UILayoutSystem::AXIS_X:
-                return horizontalPolicy;
-                
-            case UILayoutSystem::AXIS_Y:
-                return verticalPolicy;
-                
-            default:
-                DVASSERT(false);
-                return FIXED_SIZE;
-        }
-    }
-    
-    float UISizePolicyComponent::GetValueByAxis(int32 axis) const
-    {
-        switch (axis)
-        {
-            case UILayoutSystem::AXIS_X:
-                return horizontalValue;
-                
-            case UILayoutSystem::AXIS_Y:
-                return verticalValue;
-                
-            default:
-                DVASSERT(false);
-                return 0.0f;
-        }
-    }
+}
 
-    int32 UISizePolicyComponent::GetHorizontalPolicyAsInt() const
-    {
-        return GetHorizontalPolicy();
-    }
+UISizePolicyComponent::UISizePolicyComponent(const UISizePolicyComponent &src)
+    : horizontalPolicy(src.horizontalPolicy)
+    , horizontalValue(src.horizontalValue)
+    , verticalPolicy(src.verticalPolicy)
+    , verticalValue(src.verticalValue)
+{
     
-    void UISizePolicyComponent::SetHorizontalPolicyFromInt(int32 policy)
-    {
-        SetHorizontalPolicy(static_cast<eSizePolicy>(policy));
-    }
+}
+
+UISizePolicyComponent::~UISizePolicyComponent()
+{
     
-    int32 UISizePolicyComponent::GetVerticalPolicyAsInt() const
+}
+
+UISizePolicyComponent* UISizePolicyComponent::Clone() const
+{
+    return new UISizePolicyComponent(*this);
+}
+
+UISizePolicyComponent::eSizePolicy UISizePolicyComponent::GetHorizontalPolicy() const
+{
+    return horizontalPolicy;
+}
+
+void UISizePolicyComponent::SetHorizontalPolicy(eSizePolicy policy)
+{
+    horizontalPolicy = policy;
+}
+
+float32 UISizePolicyComponent::GetHorizontalValue() const
+{
+    return horizontalValue;
+}
+
+void UISizePolicyComponent::SetHorizontalValue(float32 value)
+{
+    horizontalValue = value;
+}
+
+UISizePolicyComponent::eSizePolicy UISizePolicyComponent::GetVerticalPolicy() const
+{
+    return verticalPolicy;
+}
+
+void UISizePolicyComponent::SetVerticalPolicy(eSizePolicy policy)
+{
+    verticalPolicy = policy;
+}
+
+float32 UISizePolicyComponent::GetVerticalValue() const
+{
+    return verticalValue;
+}
+
+void UISizePolicyComponent::SetVerticalValue(float32 value)
+{
+    verticalValue = value;
+}
+
+UISizePolicyComponent::eSizePolicy UISizePolicyComponent::GetPolicyByAxis(int32 axis) const
+{
+    switch (axis)
     {
-        return GetVerticalPolicy();
+        case UILayoutSystem::AXIS_X:
+            return horizontalPolicy;
+            
+        case UILayoutSystem::AXIS_Y:
+            return verticalPolicy;
+            
+        default:
+            DVASSERT(false);
+            return FIXED_SIZE;
     }
-    
-    void UISizePolicyComponent::SetVerticalPolicyFromInt(int32 policy)
+}
+
+float32 UISizePolicyComponent::GetValueByAxis(int32 axis) const
+{
+    switch (axis)
     {
-        SetVerticalPolicy(static_cast<eSizePolicy>(policy));
+        case UILayoutSystem::AXIS_X:
+            return horizontalValue;
+            
+        case UILayoutSystem::AXIS_Y:
+            return verticalValue;
+            
+        default:
+            DVASSERT(false);
+            return 0.0f;
     }
+}
+
+int32 UISizePolicyComponent::GetHorizontalPolicyAsInt() const
+{
+    return GetHorizontalPolicy();
+}
+
+void UISizePolicyComponent::SetHorizontalPolicyFromInt(int32 policy)
+{
+    SetHorizontalPolicy(static_cast<eSizePolicy>(policy));
+}
+
+int32 UISizePolicyComponent::GetVerticalPolicyAsInt() const
+{
+    return GetVerticalPolicy();
+}
+
+void UISizePolicyComponent::SetVerticalPolicyFromInt(int32 policy)
+{
+    SetVerticalPolicy(static_cast<eSizePolicy>(policy));
+}
 
 }

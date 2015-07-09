@@ -44,11 +44,6 @@ DependedOnLayoutProperty::~DependedOnLayoutProperty()
     
 }
 
-void DependedOnLayoutProperty::Refresh()
-{
-    IntrospectionProperty::Refresh();
-}
-
 void DependedOnLayoutProperty::RestoreSourceValue()
 {
     ApplyValue(sourceValue);

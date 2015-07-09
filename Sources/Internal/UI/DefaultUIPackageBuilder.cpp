@@ -29,17 +29,18 @@
 
 #include "DefaultUIPackageBuilder.h"
 
-#include "UIPackage.h"
-#include "UIPackageLoader.h"
-#include "UIControlSystem.h"
-#include "Layouts/UILayoutSystem.h"
+#include "UI/UIPackage.h"
+#include "UI/UIPackageLoader.h"
+#include "UI/UIControlSystem.h"
+#include "UI/Layouts/UILayoutSystem.h"
+
 #include "Base/ObjectFactory.h"
 #include "UI/UIControl.h"
 #include "UI/UIControlPackageContext.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/Components/UIComponent.h"
 #include "FileSystem/LocalizationSystem.h"
-#include "UIPackagesCache.h"
+#include "UI/UIPackagesCache.h"
 #include "UI/Styles/UIStyleSheet.h"
 #include "UI/Styles/UIStyleSheetYamlLoader.h"
 

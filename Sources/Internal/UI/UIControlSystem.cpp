@@ -49,8 +49,8 @@ UIControlSystem::~UIControlSystem()
 {
 	SafeRelease(currentScreen); 
 	SafeRelease(popupContainer);
-    SafeRelease(layoutSystem);
     SafeDelete(styleSheetSystem);
+    SafeDelete(layoutSystem);
 }
 	
 UIControlSystem::UIControlSystem()
@@ -836,6 +836,16 @@ void UIControlSystem::UI3DViewRemoved()
 {
     DVASSERT(ui3DViewCount);
     ui3DViewCount--;
+}
+
+bool UIControlSystem::IsRtl() const
+{
+    return layoutSystem->IsRtl();
+}
+
+void UIControlSystem::SetRtl(bool rtl)
+{
+    layoutSystem->SetRtl(rtl);
 }
 
 UILayoutSystem *UIControlSystem::GetLayoutSystem() const

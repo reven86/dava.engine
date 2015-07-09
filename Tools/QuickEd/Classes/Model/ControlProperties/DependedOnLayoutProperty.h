@@ -41,7 +41,6 @@ protected:
     virtual ~DependedOnLayoutProperty();
     
 public:
-    void Refresh() override;
     void RestoreSourceValue();
     
     DAVA::VariantType GetValue() const override;

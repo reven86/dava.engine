@@ -299,6 +299,8 @@ public:
     void UI3DViewAdded();
     void UI3DViewRemoved();
     
+    bool IsRtl() const;
+    void SetRtl(bool rtl);
     UILayoutSystem *GetLayoutSystem() const;
     UIStyleSheetSystem* GetStyleSheetSystem() const;
 

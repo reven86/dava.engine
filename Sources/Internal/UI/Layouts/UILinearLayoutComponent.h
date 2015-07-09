@@ -33,75 +33,75 @@
 
 namespace DAVA
 {
-    class UILinearLayoutComponent : public UIComponent
-    {
-    public:
-        enum eOrientation {
-            HORIZONTAL = 0, // UILayoutSystem::AXIS_X
-            VERTICAL = 1    // UILayoutSystem::AXIS_Y
-        };
-        
-    public:
-        IMPLEMENT_COMPONENT_TYPE(LINEAR_LAYOUT_COMPONENT);
-        
-        UILinearLayoutComponent();
-        UILinearLayoutComponent(const UILinearLayoutComponent &src);
-        
-    protected:
-        virtual ~UILinearLayoutComponent();
-        
-    private:
-        UILinearLayoutComponent &operator=(const UILinearLayoutComponent &) = delete;
-        
-    public:
-        virtual UILinearLayoutComponent* Clone() override;
-        
-        eOrientation GetOrientation() const;
-        void SetOrientation(eOrientation orientation);
-        
-        float32 GetPadding() const;
-        void SetPadding(float32 padding);
-        
-        float32 GetSpacing() const;
-        void SetSpacing(float32 spacing);
-        
-        bool IsDynamicPadding() const;
-        void SetDynamicPadding(bool dynamic);
-        
-        bool IsDynamicSpacing() const;
-        void SetDynaicSpacing(bool dynamic);
-        bool IsUseRtl() const;
-        void SetUseRtl(bool use);
-        
-        bool IsSkipInvisibleControls() const;
-        void SetSkipInvisibleControls(bool skip);
-        
-    private:
-        int32 GetOrientationAsInt() const;
-        void SetOrientationFromInt(int32 type);
-        
-    private:
-        eOrientation orientation = HORIZONTAL;
-        float32 padding = 0.0f;
-        float32 spacing = 0.0f;
-        bool dynamicPadding = false;
-        bool dynamicSpacing = false;
-        bool useRtl = false;
-        bool skipInvisibleControls = true;
-        
-    public:
-        INTROSPECTION_EXTEND(UILinearLayoutComponent, UIComponent,
-                             PROPERTY("orientation", InspDesc("Orientation", GlobalEnumMap<eOrientation>::Instance()), GetOrientationAsInt, SetOrientationFromInt, I_SAVE | I_VIEW | I_EDIT)
-                             PROPERTY("padding", "Padding", GetPadding, SetPadding, I_SAVE | I_VIEW | I_EDIT)
-                             PROPERTY("dynamicPadding", "Dynamic Padding", IsDynamicPadding, SetDynamicPadding, I_SAVE | I_VIEW | I_EDIT)
-                             PROPERTY("spacing", "Spacing", GetSpacing, SetSpacing, I_SAVE | I_VIEW | I_EDIT)
-                             PROPERTY("dynamicSpacing", "Dynamic Spacing", IsDynamicSpacing, SetDynaicSpacing, I_SAVE | I_VIEW | I_EDIT)
-                             PROPERTY("skipInvisible", "Skip Invisible Controls", IsSkipInvisibleControls, SetSkipInvisibleControls, I_SAVE | I_VIEW | I_EDIT)
-                             PROPERTY("useRtl", "Use Rtl Align", IsUseRtl, SetUseRtl, I_SAVE | I_VIEW | I_EDIT)
-                             );
-        
+class UILinearLayoutComponent : public UIComponent
+{
+public:
+    enum eOrientation {
+        HORIZONTAL = 0, // UILayoutSystem::AXIS_X
+        VERTICAL = 1    // UILayoutSystem::AXIS_Y
     };
     
+public:
+    IMPLEMENT_COMPONENT_TYPE(LINEAR_LAYOUT_COMPONENT);
+    
+    UILinearLayoutComponent();
+    UILinearLayoutComponent(const UILinearLayoutComponent &src);
+    
+protected:
+    virtual ~UILinearLayoutComponent();
+    
+private:
+    UILinearLayoutComponent &operator=(const UILinearLayoutComponent &) = delete;
+    
+public:
+    virtual UILinearLayoutComponent* Clone() const override;
+    
+    eOrientation GetOrientation() const;
+    void SetOrientation(eOrientation orientation);
+    
+    float32 GetPadding() const;
+    void SetPadding(float32 padding);
+    
+    float32 GetSpacing() const;
+    void SetSpacing(float32 spacing);
+    
+    bool IsDynamicPadding() const;
+    void SetDynamicPadding(bool dynamic);
+    
+    bool IsDynamicSpacing() const;
+    void SetDynaicSpacing(bool dynamic);
+    bool IsUseRtl() const;
+    void SetUseRtl(bool use);
+    
+    bool IsSkipInvisibleControls() const;
+    void SetSkipInvisibleControls(bool skip);
+    
+private:
+    int32 GetOrientationAsInt() const;
+    void SetOrientationFromInt(int32 type);
+    
+private:
+    eOrientation orientation = HORIZONTAL;
+    float32 padding = 0.0f;
+    float32 spacing = 0.0f;
+    bool dynamicPadding = false;
+    bool dynamicSpacing = false;
+    bool useRtl = false;
+    bool skipInvisibleControls = true;
+    
+public:
+    INTROSPECTION_EXTEND(UILinearLayoutComponent, UIComponent,
+                         PROPERTY("orientation", InspDesc("Orientation", GlobalEnumMap<eOrientation>::Instance()), GetOrientationAsInt, SetOrientationFromInt, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("padding", "Padding", GetPadding, SetPadding, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("dynamicPadding", "Dynamic Padding", IsDynamicPadding, SetDynamicPadding, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("spacing", "Spacing", GetSpacing, SetSpacing, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("dynamicSpacing", "Dynamic Spacing", IsDynamicSpacing, SetDynaicSpacing, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("skipInvisible", "Skip Invisible Controls", IsSkipInvisibleControls, SetSkipInvisibleControls, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("useRtl", "Use Rtl Align", IsUseRtl, SetUseRtl, I_SAVE | I_VIEW | I_EDIT)
+                         );
+    
+};
+
 }
 
 

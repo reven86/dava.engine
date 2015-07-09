@@ -29,62 +29,61 @@
 #ifndef __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
 #define __DAVAENGINE_UI_LAYOUT_SYSTEM_H__
 
-#include "Base/BaseObject.h"
+#include "Base/BaseTypes.h"
 
 namespace DAVA
 {
-    class UIControl;
-    class UILinearLayoutComponent;
-    class UISizePolicyComponent;
-    
-    class UILayoutSystem : public BaseObject
-    {
-    public:
-        static const int32 AXIS_X = 0;
-        static const int32 AXIS_Y = 1;
-        
-    public:
-        UILayoutSystem();
-        
-    private:
-        virtual ~UILayoutSystem();
-        
-    public:
-        bool IsRtl() const;
-        void SetRtl(bool rtl);
+class UIControl;
+class UILinearLayoutComponent;
+class UISizePolicyComponent;
 
-        bool IsDirty() const;
-        void SetDirty();
-        void ResetDirty();
-        
-        void ApplyLayout(UIControl *control);
-        
-    private:
-        void DoMeasurePhase(UIControl *control);
-        void DoLayoutPhase(UIControl *control);
-        
-    private: // measuring
-        void MeasureControl(UIControl *control, UISizePolicyComponent *sizeHint);
-        
-    private: // linear layout
-        void ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *linearLayoutComponent);
-        
-    private: // anchor layout
-        void ApplyAnchorLayout(UIControl *control, bool allowHorizontal, bool allowVertical);
-        void GetAxisDataByAnchorData(float32 size, float32 parentSize,
-                                     bool firstSideAnchorEnabled, float32 firstSideAnchor,
-                                     bool centerAnchorEnabled, float32 centerAnchor,
-                                     bool secondSideAnchorEnabled, float32 secondSideAnchor,
-                                     float32 &newPos, float32 &newSize);
-        void GetAnchorDataByAxisData(float32 size, float32 pos, float32 parentSize, bool firstSideAnchorEnabled, bool centerAnchorEnabled, bool secondSideAnchorEnabled, float32 &firstSideAnchor, float32 &centerAnchor, float32 &secondSideAnchor);
+class UILayoutSystem
+{
+public:
+    static const int32 AXIS_X = 0;
+    static const int32 AXIS_Y = 1;
+    static const int32 AXIS_COUNT = 2;
+    
+public:
+    UILayoutSystem();
+    virtual ~UILayoutSystem();
+    
+public:
+    bool IsRtl() const;
+    void SetRtl(bool rtl);
 
-    private:
-        bool isRtl = false;
-        bool dirty = true;
-        DAVA::Vector<UIControl*> changedControls;
-    };
+    bool IsDirty() const;
+    void SetDirty();
+    void ResetDirty();
     
+    void ApplyLayout(UIControl *control);
     
+private:
+    void DoMeasurePhase(UIControl *control);
+    void DoLayoutPhase(UIControl *control);
+    
+private: // measuring
+    void MeasureControl(UIControl *control, UISizePolicyComponent *sizeHint);
+    
+private: // linear layout
+    void ApplyLinearLayout(UIControl *control, UILinearLayoutComponent *linearLayoutComponent);
+    
+private: // anchor layout
+    void ApplyAnchorLayout(UIControl *control, bool allowHorizontal, bool allowVertical);
+    void GetAxisDataByAnchorData(float32 size, float32 parentSize,
+                                 bool firstSideAnchorEnabled, float32 firstSideAnchor,
+                                 bool centerAnchorEnabled, float32 centerAnchor,
+                                 bool secondSideAnchorEnabled, float32 secondSideAnchor,
+                                 float32 &newPos, float32 &newSize);
+    void GetAnchorDataByAxisData(float32 size, float32 pos, float32 parentSize, bool firstSideAnchorEnabled, bool centerAnchorEnabled, bool secondSideAnchorEnabled, float32 &firstSideAnchor, float32 &centerAnchor, float32 &secondSideAnchor);
+
+private:
+    bool isRtl = false;
+    bool dirty = true;
+    DAVA::Vector<UIControl*> changedControls;
+};
+
+
 }
 
 

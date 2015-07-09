@@ -60,7 +60,7 @@ public:
     void SetControl(UIControl* _control);
     UIControl* GetControl() const;
 
-    virtual UIComponent* Clone() = 0;
+    virtual UIComponent* Clone() const = 0;
 
 private:
     UIControl* control;

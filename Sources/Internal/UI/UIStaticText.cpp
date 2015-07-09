@@ -43,9 +43,6 @@
 #include "Render/RenderHelper.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
-#include "UI/UIControlSystem.h"
-#include "UI/Layouts/UILayoutSystem.h"
-
 namespace DAVA
 {
 #if defined(LOCALIZATION_DEBUG)

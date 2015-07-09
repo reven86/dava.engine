@@ -622,9 +622,6 @@ namespace DAVA
     {
         SetSize(rect.GetSize());
         SetPosition(rect.GetPosition() + GetPivotPoint());
-
-        // Update aligns if control was resized manually
-//        CalculateAlignSettings();
     }
 
     void UIControl::SetAbsoluteRect(const Rect &rect)
@@ -676,7 +673,7 @@ namespace DAVA
         {
             return background->GetSprite()->GetSize();
         }
-        return Vector2(100.0f, 100.0f);
+        return Vector2(0.0f, 0.0f);
     }
 
     void UIControl::SetVisible(bool isVisible)
