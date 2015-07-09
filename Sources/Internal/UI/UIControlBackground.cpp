@@ -147,9 +147,12 @@ UIControlBackground::eDrawType	UIControlBackground::GetDrawType() const
 
 void UIControlBackground::SetSprite(const FilePath &spriteName, int32 drawFrame)
 {
-    Sprite *tempSpr = Sprite::Create(spriteName);
-    SetSprite(tempSpr, drawFrame);
-    SafeRelease(tempSpr);
+    if (spr == nullptr || spr->GetRelativePathname() != spriteName)
+    {
+        Sprite *tempSpr = Sprite::Create(spriteName);
+        SetSprite(tempSpr, drawFrame);
+        SafeRelease(tempSpr);
+    }
 }
 
 void UIControlBackground::SetSprite(Sprite* drawSprite, int32 drawFrame)
@@ -188,8 +191,9 @@ void UIControlBackground::SetAlign(int32 drawAlign)
 }
 void UIControlBackground::SetDrawType(UIControlBackground::eDrawType drawType)
 {
+    if (type != drawType)
+        ReleaseDrawData();
     type = drawType;
-    ReleaseDrawData();
 }
 
 void UIControlBackground::SetModification(int32 modification)
@@ -504,11 +508,11 @@ void UIControlBackground::Draw(const UIGeometricData &parentGeometricData)
             {
                 Polygon2 poly;
                 geometricData.GetPolygon(poly);
-                RenderSystem2D::Instance()->FillPolygon(poly, drawState.GetMaterial(), drawColor);
+                RenderSystem2D::Instance()->FillPolygon(poly, drawColor);
             }
             else
             {
-                RenderSystem2D::Instance()->FillRect(geometricData.GetUnrotatedRect(), drawState.GetMaterial(), drawColor);
+                RenderSystem2D::Instance()->FillRect(geometricData.GetUnrotatedRect(), drawColor);
             }
         break;
 

@@ -1111,7 +1111,7 @@ void Landscape::Save(KeyedArchive * archive, SerializationContext * serializatio
     //VI: save only VISIBLE flag for now. May be extended in the future
     archive->SetUInt32("ro.flags", flags & RenderObject::SERIALIZATION_CRITERIA);
 
-    uint64 matKey = landscapeMaterial->GetMaterialKey();
+    uint64 matKey = landscapeMaterial->GetNodeID();
     archive->SetUInt64("matname", matKey);
 
     //TODO: remove code in future. Need for transition from *.png to *.heightmap

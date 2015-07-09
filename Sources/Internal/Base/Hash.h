@@ -32,7 +32,8 @@
 
 #include <stddef.h>
 #include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
+#include "Debug/DVAssert.h"
+
 namespace DAVA
 {
 // TODO: Think how to make it work for generic pointers and char * at the same time
@@ -246,6 +247,9 @@ DAVA_CONSTEXPR uint32 StringHash(const char(&str)[N])
     return HashValue_N(str, N - 1);
 }
 
+
 };
+
+#define DV_HASH(str) DAVA::StringHash(str)
 
 #endif // __DAVAENGINE_HASH__

@@ -101,6 +101,8 @@ void GameCore::OnAppStarted()
 
 void GameCore::OnAppFinished()
 {
+    DbgDraw::Uninitialize();
+
     SafeRelease(selectSceneScreen);
     SafeRelease(viewSceneScreen);
 }

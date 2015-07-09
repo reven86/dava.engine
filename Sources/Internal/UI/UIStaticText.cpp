@@ -132,9 +132,12 @@ int32 UIStaticText::GetFittingOption() const
 
 void UIStaticText::SetFont(Font * _font)
 {
-    textBlock->SetRectSize(size);
-    textBlock->SetFont(_font);
-    PrepareSprite();
+    if (textBlock->GetFont() != _font)
+    {
+        textBlock->SetRectSize(size);
+        textBlock->SetFont(_font);
+        PrepareSprite();
+    }
 }
 
 void UIStaticText::SetTextColor(const Color& color)

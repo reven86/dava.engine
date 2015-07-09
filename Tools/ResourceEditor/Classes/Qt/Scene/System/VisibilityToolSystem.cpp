@@ -527,7 +527,7 @@ void VisibilityToolSystem::DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> 
 	{
 		uint32 colorIndex = (uint32)points[i].z;
         Rect rect(points[i].x - pointSize / 2.f , points[i].y - pointSize / 2.f, pointSize, pointSize);
-        RenderSystem2D::Instance()->FillRect(rect, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, areaPointColors[colorIndex]);
+        RenderSystem2D::Instance()->FillRect(rect, areaPointColors[colorIndex]);
 	}
     RenderSystem2D::Instance()->EndRenderTargetPass();
 }

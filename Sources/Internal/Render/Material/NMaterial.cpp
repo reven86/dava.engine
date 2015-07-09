@@ -72,8 +72,7 @@ NMaterial::NMaterial()
     , needRebuildTextures(true)
     , needRebuildVariants(true)
     , activeVariantInstance(nullptr)
-{    
-    materialKey = (uint64)this;
+{
 }
 
 NMaterial::~NMaterial()
@@ -729,10 +728,9 @@ NMaterial* NMaterial::Clone()
     clonedMaterial->SetParent(parent);
 
     //DataNode properties
-    clonedMaterial->pointer = pointer;
+    clonedMaterial->id = 0;
     clonedMaterial->scene = scene;
-    clonedMaterial->index = index;
-    clonedMaterial->nodeFlags = nodeFlags;
+    clonedMaterial->isRuntime = isRuntime;
 
     return clonedMaterial;
 }
@@ -741,10 +739,8 @@ void NMaterial::Save(KeyedArchive * archive, SerializationContext * serializatio
 {
     DataNode::Save(archive, serializationContext);
 
-    archive->SetUInt64("materialKey", GetMaterialKey());
-
     if (parent)
-        archive->SetUInt64("parentMaterialKey", parent->GetMaterialKey());
+        archive->SetUInt64("parentMaterialKey", parent->GetNodeID());
 
     if (materialName.IsValid())
         archive->SetString("materialName", materialName.c_str());
@@ -814,8 +810,8 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
 
     if (archive->IsKeyExists("materialKey"))
     {
-        materialKey = archive->GetUInt64("materialKey");
-        pointer = materialKey;
+        uint64 materialKey = archive->GetUInt64("materialKey");
+        id = materialKey;
     }
 
     uint64 parentKey(0);
@@ -888,8 +884,8 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
 
     if (archive->IsKeyExists("materialKey"))
     {
-        materialKey = archive->GetUInt64("materialKey");
-        pointer = materialKey;
+        uint64 materialKey = archive->GetUInt64("materialKey");
+        id = materialKey;
     }
 
     uint64 parentKey(0);

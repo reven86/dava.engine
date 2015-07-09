@@ -114,6 +114,9 @@ FPROG_OUT_END
     DECL_FP_SAMPLER2D(lightmap)
 #endif
 
+#if ALPHATESTVALUE
+    property float alphatestThreshold           : static,a : ;
+#endif
 
 #if PIXEL_LIT
     DECL_FP_SAMPLER2D(normalmap)
@@ -206,14 +209,11 @@ FPROG_BEGIN
             #if VERTEX_COLOR
                 alpha *= FP_IN(varVertexColor).a;
             #endif
-            if( alpha < 0.5 ) FP_DISCARD_FRAGMENT;
-        #endif
-        #if ALPHATESTVALUE
-            float alpha = textureColor0.a;
-            #if VERTEX_COLOR
-                alpha *= FPROG_IN(varVertexColor).a;
+            #if ALPHATESTVALUE
+                if( alpha < alphatestThreshold ) FP_DISCARD_FRAGMENT;
+            #else
+                if( alpha < 0.5 ) FP_DISCARD_FRAGMENT;
             #endif
-            if( alpha < ALPHATESTVALUE ) FP_DISCARD_FRAGMENT;
         #endif
     #endif
 

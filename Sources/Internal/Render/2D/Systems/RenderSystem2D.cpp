@@ -254,7 +254,7 @@ void VboPool::NextFrame()
 RenderSystem2D::RenderSystem2D() 
     : vboTemp(NULL)
     , iboTemp(NULL)
-    , spriteClipping(true)
+    , spriteClipping(false)
     , pool(NULL)
     , indexIndex(0)
     , vertexIndex(0)
@@ -303,6 +303,12 @@ void RenderSystem2D::Init()
     DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.Grayscale.material"));
     DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
 
+    rhi::SamplerState::Descriptor samplerDesc;
+    samplerDesc.fragmentSampler[0].magFilter = rhi::TEXFILTER_LINEAR;
+    samplerDesc.fragmentSampler[0].minFilter = rhi::TEXFILTER_LINEAR;
+    samplerDesc.fragmentSampler[0].mipFilter = rhi::TEXMIPFILTER_NONE;
+    samplerDesc.fragmentSamplerCount = 1;
+    samplerStateHandle = rhi::AcquireSamplerState(samplerDesc);
 }
 
 RenderSystem2D::~RenderSystem2D()
@@ -313,6 +319,8 @@ RenderSystem2D::~RenderSystem2D()
     SafeRelease(DEFAULT_2D_TEXTURE_MATERIAL);
     SafeRelease(DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL);
     SafeRelease(DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL);
+
+    rhi::ReleaseSamplerState(samplerStateHandle);
 }
 
 void RenderSystem2D::BeginFrame()
@@ -358,7 +366,7 @@ void RenderSystem2D::EndFrame()
     rhi::EndRenderPass(pass2DHandle);
 }
 
-void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* = true */)
+void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* = true */, const Color& clearColor /* = Color::Clear */)
 {
     DVASSERT(!IsRenderTargetPass());
     DVASSERT(target);
@@ -368,10 +376,10 @@ void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* =
 
     rhi::RenderPassConfig renderTargetPassConfig;
     renderTargetPassConfig.colorBuffer[0].texture = target->handle;
-    renderTargetPassConfig.colorBuffer[0].clearColor[0] = 0.f;
-    renderTargetPassConfig.colorBuffer[0].clearColor[1] = 0.f;
-    renderTargetPassConfig.colorBuffer[0].clearColor[2] = 0.f;
-    renderTargetPassConfig.colorBuffer[0].clearColor[3] = 0.f;
+    renderTargetPassConfig.colorBuffer[0].clearColor[0] = clearColor.r;
+    renderTargetPassConfig.colorBuffer[0].clearColor[1] = clearColor.g;
+    renderTargetPassConfig.colorBuffer[0].clearColor[2] = clearColor.b;
+    renderTargetPassConfig.colorBuffer[0].clearColor[3] = clearColor.a;
     renderTargetPassConfig.priority = PRIORITY_SERVICE_2D;
     renderTargetPassConfig.viewport.width = target->GetWidth();
     renderTargetPassConfig.viewport.height = target->GetHeight();
@@ -429,7 +437,7 @@ void RenderSystem2D::Setup2DMatrices()
     if (Renderer::GetCaps().isCenterPixelMapping)
     {
         // Make translation by half pixel for DirectX systems
-        static Matrix4 pixelMappingMatrix = Matrix4::MakeTranslation(Vector3(0.5f, 0.5f, 0.f));
+        static Matrix4 pixelMappingMatrix = Matrix4::MakeTranslation(Vector3(-0.5f, -0.5f, 0.f));
         projMatrix = virtualToPhysicalMatrix * pixelMappingMatrix * projMatrix;
     }
     else
@@ -618,6 +626,7 @@ void RenderSystem2D::Flush()
 
         batch.material->BindParams(packet);
         packet.textureSet = batch.textureSetHandle;
+        packet.samplerState = samplerStateHandle;
 
         rhi::AddPacket(currentPacketListHandle, packet);
     }
@@ -632,6 +641,11 @@ void RenderSystem2D::Flush()
 
 void RenderSystem2D::DrawPacket(rhi::Packet& packet)
 {
+    if (currentClip.dx == 0.f || currentClip.dy == 0.f)
+    {
+        // Ignore draw if clip has zero width or height
+        return;
+    }
     Flush();
     if (currentClip.dx > 0.f && currentClip.dy > 0.f)
     {
@@ -652,23 +666,27 @@ void RenderSystem2D::HardResetBatchingBuffers(uint32 verticesCount, uint32 indic
     pool->HardReset(verticesCount, indicesCount, buffersCount);
 }
 
-void RenderSystem2D::PushBatch(NMaterial * material, rhi::HTextureSet texture, Rect const& clip,
-    uint32 vertexCount, const float32* vertexPointer, const float32* texCoordPointer,
-    uint32 indexCount, const uint16* indexPointer,
-    const Color& color, const rhi::PrimitiveType primitiveType)
+void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
 {
-    if ((vertexIndex + vertexCount > pool->GetVerticesLimit()) || (indexIndex + indexCount > pool->GetIndicesLimit()))
+    if (currentClip.dx == 0.f || currentClip.dy == 0.f)
+    {
+        // Ignore draw if clip has zero width or height.
+        // For disable clip and this check use Rect(0,0,-1,-1)
+        return;
+    }
+
+    if ((vertexIndex + batchDesc.vertexCount > pool->GetVerticesLimit()) || (indexIndex + batchDesc.indexCount > pool->GetIndicesLimit()))
     {
         // Buffer overflow. Switch to next VBO.
         Flush();
 
         // TODO: Make draw for big buffers (bigger than buffers in pool)
         // Draw immediately if batch is too big to buffer
-        if(vertexCount > pool->GetVerticesLimit() || indexCount > pool->GetIndicesLimit())
+        if (batchDesc.vertexCount > pool->GetVerticesLimit() || batchDesc.indexCount > pool->GetIndicesLimit())
         {
             if (((prevFrameErrorsFlags & BUFFER_OVERFLOW_ERROR) != BUFFER_OVERFLOW_ERROR))
             {
-                Logger::Warning("PushBatch: Vertices overhead (%d of %d)! Direct draw.", vertexCount, pool->GetVerticesLimit());
+                Logger::Warning("PushBatch: Vertices overhead (%d of %d)! Direct draw.", batchDesc.vertexCount, pool->GetVerticesLimit());
             }
             currFrameErrorsFlags |= BUFFER_OVERFLOW_ERROR;
 
@@ -704,9 +722,9 @@ void RenderSystem2D::PushBatch(NMaterial * material, rhi::HTextureSet texture, R
         }
     }
 
-    Color useColor = color;
+    Color useColor = batchDesc.singleColor;
     if(highlightControlsVerticesLimit > 0
-            && vertexCount > highlightControlsVerticesLimit
+        && batchDesc.vertexCount > highlightControlsVerticesLimit
             && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::HIGHLIGHT_HARD_CONTROLS))
     {
         // Highlight too big controls with magenta color
@@ -716,39 +734,39 @@ void RenderSystem2D::PushBatch(NMaterial * material, rhi::HTextureSet texture, R
 
     uint32 vi = vertexIndex * 6;
     uint32 ii = indexIndex;
-    if (texCoordPointer)
+    if (batchDesc.texCoordPointer)
     {
-        for (uint32 i = 0; i < vertexCount; ++i)
+        for (uint32 i = 0; i < batchDesc.vertexCount; ++i)
         {
-            vboTemp[vi++] = vertexPointer[i * 2];
-            vboTemp[vi++] = vertexPointer[i * 2 + 1];
+            vboTemp[vi++] = batchDesc.vertexPointer[i * 2];
+            vboTemp[vi++] = batchDesc.vertexPointer[i * 2 + 1];
             vboTemp[vi++] = 0.f; // axis Z, empty but need for EVF_VERTEX format
-            vboTemp[vi++] = texCoordPointer[i * 2];
-            vboTemp[vi++] = texCoordPointer[i * 2 + 1];
+            vboTemp[vi++] = batchDesc.texCoordPointer[i * 2];
+            vboTemp[vi++] = batchDesc.texCoordPointer[i * 2 + 1];
             *(uint32*)(&vboTemp[vi++]) = rhi::NativeColorRGBA(useColor.r, useColor.g, useColor.b, useColor.a);
         }
     }
     else
     {
-        for (uint32 i = 0; i < vertexCount; ++i)
+        for (uint32 i = 0; i < batchDesc.vertexCount; ++i)
         {
-            vboTemp[vi++] = vertexPointer[i * 2];
-            vboTemp[vi++] = vertexPointer[i * 2 + 1];
+            vboTemp[vi++] = batchDesc.vertexPointer[i * 2];
+            vboTemp[vi++] = batchDesc.vertexPointer[i * 2 + 1];
             vboTemp[vi++] = 0.f; // axis Z, empty but need for EVF_VERTEX format
             vboTemp[vi++] = 0.f;
             vboTemp[vi++] = 0.f;
             *(uint32*)(&vboTemp[vi++]) = rhi::NativeColorRGBA(useColor.r, useColor.g, useColor.b, useColor.a);
         }
     }
-    for (uint32 i = 0; i < indexCount; ++i)
+    for (uint32 i = 0; i < batchDesc.indexCount; ++i)
     {
-        iboTemp[ii++] = vertexIndex + indexPointer[i];
+        iboTemp[ii++] = vertexIndex + batchDesc.indexPointer[i];
     }
     
-    if (currentBatch.textureSetHandle != texture
-        || currentBatch.material != material
-        || currentBatch.clipRect != clip
-        || currentBatch.primitiveType != primitiveType)
+    if (currentBatch.textureSetHandle != batchDesc.textureSetHandle
+        || currentBatch.material != batchDesc.material
+        || currentBatch.clipRect != currentClip
+        || currentBatch.primitiveType != batchDesc.primitiveType)
     {
         if (currentBatch.count > 0)
         {
@@ -756,16 +774,16 @@ void RenderSystem2D::PushBatch(NMaterial * material, rhi::HTextureSet texture, R
         }
         currentBatch.Reset();
 
-        currentBatch.primitiveType = primitiveType;
-        currentBatch.textureSetHandle = texture;
-        currentBatch.clipRect = clip;
+        currentBatch.primitiveType = batchDesc.primitiveType;
+        currentBatch.textureSetHandle = batchDesc.textureSetHandle;
+        currentBatch.clipRect = currentClip;
         currentBatch.indexOffset = indexIndex;
-        currentBatch.material = material;
+        currentBatch.material = batchDesc.material;
     }
 
-    currentBatch.count += indexCount;
-    indexIndex += indexCount;
-    vertexIndex += vertexCount;
+    currentBatch.count += batchDesc.indexCount;
+    indexIndex += batchDesc.indexCount;
+    vertexIndex += batchDesc.vertexCount;
 }
 
 
@@ -1085,37 +1103,43 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * drawState, const 
         {
             float32 coordX = state->position.x - state->pivotPoint.x * state->scale.x;
             float32 coordY = state->position.y - state->pivotPoint.y * state->scale.y;
-            clipRect = Rect(  sprite->GetRectOffsetValueForFrame( state->frame, Sprite::X_OFFSET_TO_ACTIVE ) * state->scale.x + coordX
-                            , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::Y_OFFSET_TO_ACTIVE ) * state->scale.y + coordY
-                            , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_WIDTH  ) * state->scale.x
-                            , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_HEIGHT ) * state->scale.y );
+            clipRect = Rect(  sprite->GetRectOffsetValueForFrame( frame, Sprite::X_OFFSET_TO_ACTIVE ) * state->scale.x + coordX
+                            , sprite->GetRectOffsetValueForFrame( frame, Sprite::Y_OFFSET_TO_ACTIVE ) * state->scale.y + coordY
+                            , sprite->GetRectOffsetValueForFrame( frame, Sprite::ACTIVE_WIDTH  ) * state->scale.x
+                            , sprite->GetRectOffsetValueForFrame( frame, Sprite::ACTIVE_HEIGHT ) * state->scale.y );
         }
         else
         {
             float32 coordX = state->position.x - state->pivotPoint.x;
             float32 coordY = state->position.y - state->pivotPoint.y;
-            clipRect = Rect(  sprite->GetRectOffsetValueForFrame( state->frame, Sprite::X_OFFSET_TO_ACTIVE ) + coordX
-                            , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::Y_OFFSET_TO_ACTIVE ) + coordY
-                            , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_WIDTH )
-                            , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_HEIGHT ) );
+            clipRect = Rect(  sprite->GetRectOffsetValueForFrame( frame, Sprite::X_OFFSET_TO_ACTIVE ) + coordX
+                            , sprite->GetRectOffsetValueForFrame( frame, Sprite::Y_OFFSET_TO_ACTIVE ) + coordY
+                            , sprite->GetRectOffsetValueForFrame( frame, Sprite::ACTIVE_WIDTH )
+                            , sprite->GetRectOffsetValueForFrame( frame, Sprite::ACTIVE_HEIGHT ) );
         }
         IntersectClipRect(clipRect);
     }
 
+    BatchDescriptor batch;
+    batch.material = state->GetMaterial();
+    batch.textureSetHandle = sprite->GetTextureHandle(frame);
+    batch.singleColor = color;
+    batch.vertexCount = spriteVertexCount;
+    batch.indexCount = spriteIndexCount;
+
     if (!sprite->clipPolygon)
     {
-        PushBatch(state->GetMaterial(), sprite->GetTextureHandle(state->frame), currentClip,
-            spriteVertexCount, spriteTempVertices, sprite->texCoords[frame], 
-            spriteIndexCount, spriteIndeces,
-            color);
+        batch.vertexPointer = spriteTempVertices;
+        batch.texCoordPointer = sprite->texCoords[frame];
+        batch.indexPointer = spriteIndeces;
     }
     else
     {
-        PushBatch(state->GetMaterial(), sprite->GetTextureHandle(state->frame), currentClip,
-            spriteVertexCount, (float32*)&spriteClippedVertices.front(), (float32*)&spriteClippedTexCoords.front(),
-            spriteIndexCount, spriteIndexCount ? &spriteClippedIndecex.front() : NULL,
-            color);
+        batch.vertexPointer = (float32*)spriteClippedVertices.data();
+        batch.texCoordPointer = (float32*)spriteClippedTexCoords.data();
+        batch.indexPointer = spriteClippedIndecex.data();
     }
+    PushBatch(batch);
 
     if (sprite->clipPolygon)
     {
@@ -1194,11 +1218,16 @@ void RenderSystem2D::DrawStretched(Sprite * sprite, Sprite::DrawState * state, V
     spriteVertexCount = (int32)sd.transformedVertices.size();
     spriteIndexCount = sd.GetVertexInTrianglesCount();
 
-    //RHI_COMPLETE: in old code was predfined shader TEXTURE_MUL_FLAT_COLOR. Need take it into account in sprite materials
-    PushBatch(state->GetMaterial(), textureHandle, currentClip,
-        spriteVertexCount, (float32*)&sd.transformedVertices.front(), (float32*)&sd.texCoords.front(),
-        spriteIndexCount, sd.indeces,
-        color);
+    BatchDescriptor batch;
+    batch.singleColor = color;
+    batch.textureSetHandle = sprite->GetTextureHandle(frame);
+    batch.material = state->GetMaterial();
+    batch.vertexCount = spriteVertexCount;
+    batch.indexCount = spriteIndexCount;
+    batch.vertexPointer = (float32*)sd.transformedVertices.data();
+    batch.texCoordPointer = (float32*)sd.texCoords.data();
+    batch.indexPointer = sd.indeces;
+    PushBatch(batch);
 	
     if (!pStreachData)
     {
@@ -1279,11 +1308,16 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
     spriteVertexCount = (int32)td.transformedVertices.size();
     spriteIndexCount = (int32)td.indeces.size();
 
-    //RHI_COMPLETE: in old code was predfined shader TEXTURE_MUL_FLAT_COLOR. Need take it into account in sprite materials
-    PushBatch(state->GetMaterial(), textureHandle, currentClip,
-        spriteVertexCount, (float32*)&td.transformedVertices.front(), (float32*)&td.texCoords.front(),
-        spriteIndexCount, &td.indeces.front(),
-        color);
+    BatchDescriptor batch;
+    batch.singleColor = color;
+    batch.material = state->GetMaterial();
+    batch.textureSetHandle = sprite->GetTextureHandle(frame);
+    batch.vertexCount = spriteVertexCount;
+    batch.indexCount = spriteIndexCount;
+    batch.vertexPointer = (float32*)td.transformedVertices.data();
+    batch.texCoordPointer = (float32*)td.texCoords.data();
+    batch.indexPointer = td.indeces.data();
+    PushBatch(batch);
 
     if (!pTiledData)
     {
@@ -1293,7 +1327,7 @@ void RenderSystem2D::DrawTiled(Sprite * sprite, Sprite::DrawState * state, const
 
 /* RenderSyste2D Draw Helper Functions */
 
-void RenderSystem2D::FillRect(const Rect & rect, NMaterial *material, const Color& color)
+void RenderSystem2D::FillRect(const Rect & rect, const Color& color)
 {
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
     {
@@ -1310,10 +1344,17 @@ void RenderSystem2D::FillRect(const Rect & rect, NMaterial *material, const Colo
     spriteTempVertices[6] = rect.x + rect.dx;
     spriteTempVertices[7] = rect.y + rect.dy;
 
-    PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), currentClip, 4, spriteTempVertices, nullptr, 6, indices, color);
+    BatchDescriptor batch;
+    batch.singleColor = color;
+    batch.material = DEFAULT_2D_COLOR_MATERIAL;
+    batch.vertexCount = 4;
+    batch.indexCount = 6;
+    batch.vertexPointer = spriteTempVertices;
+    batch.indexPointer = indices;
+    PushBatch(batch);
 }
 
-void RenderSystem2D::DrawRect(const Rect & rect, NMaterial *material, const Color& color)
+void RenderSystem2D::DrawRect(const Rect & rect, const Color& color)
 {
     static uint16 indices[8] = { 0, 1, 1, 2, 2, 3, 3, 0 };
     spriteTempVertices[0] = rect.x;
@@ -1325,10 +1366,18 @@ void RenderSystem2D::DrawRect(const Rect & rect, NMaterial *material, const Colo
     spriteTempVertices[6] = rect.x;
     spriteTempVertices[7] = rect.y + rect.dy;
 
-    PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), currentClip, 4, spriteTempVertices, nullptr, 8, indices, color, rhi::PRIMITIVE_LINELIST);
+    BatchDescriptor batch;
+    batch.singleColor = color;
+    batch.material = DEFAULT_2D_COLOR_MATERIAL;
+    batch.vertexCount = 4;
+    batch.indexCount = 6;
+    batch.vertexPointer = spriteTempVertices;
+    batch.indexPointer = indices;
+    batch.primitiveType = rhi::PRIMITIVE_LINELIST;
+    PushBatch(batch);
 }
 
-void RenderSystem2D::DrawGrid(const Rect & rect, const Vector2& gridSize, const Color& color, NMaterial *material)
+void RenderSystem2D::DrawGrid(const Rect & rect, const Vector2& gridSize, const Color& color)
 {
     // TODO! review with Ivan/Victor whether it is not performance problem!
     Vector<float32> gridVertices;
@@ -1361,20 +1410,37 @@ void RenderSystem2D::DrawGrid(const Rect & rect, const Vector2& gridSize, const 
         indices.push_back(i);
     }
 
-    PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), currentClip, curVertexIndex / 2, gridVertices.data(), nullptr, curVertexIndex, indices.data(), color, rhi::PRIMITIVE_LINELIST);
+    BatchDescriptor batch;
+    batch.singleColor = color;
+    batch.material = DEFAULT_2D_COLOR_MATERIAL;
+    batch.vertexCount = curVertexIndex / 2;
+    batch.indexCount = curVertexIndex;
+    batch.vertexPointer = gridVertices.data();
+    batch.indexPointer = indices.data();
+    batch.primitiveType = rhi::PRIMITIVE_LINELIST;
+    PushBatch(batch);
 }
 
-void RenderSystem2D::DrawLine(const Vector2 &start, const Vector2 &end, NMaterial *materia, const Color& color)
+void RenderSystem2D::DrawLine(const Vector2 &start, const Vector2 &end, const Color& color)
 {
     static uint16 indices[2] = { 0, 1 };
     spriteTempVertices[0] = start.x;
     spriteTempVertices[1] = start.y;
     spriteTempVertices[2] = end.x;
     spriteTempVertices[3] = end.y;
-    PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), currentClip, 2, spriteTempVertices, nullptr, 2, indices, color, rhi::PRIMITIVE_LINELIST);
+
+    BatchDescriptor batch;
+    batch.singleColor = color;
+    batch.material = DEFAULT_2D_COLOR_MATERIAL;
+    batch.vertexCount = 2;
+    batch.indexCount = 2;
+    batch.vertexPointer = spriteTempVertices;
+    batch.indexPointer = indices;
+    batch.primitiveType = rhi::PRIMITIVE_LINELIST;
+    PushBatch(batch);
 }
 
-void RenderSystem2D::DrawLine(const Vector2 &start, const Vector2 &end, float32 lineWidth, NMaterial *material, const Color& color)
+void RenderSystem2D::DrawLine(const Vector2 &start, const Vector2 &end, float32 lineWidth, const Color& color)
 {
     // TODO: Create list of lines for emulating line with width >1px
     static uint16 indices[2] = { 0, 1 };
@@ -1382,22 +1448,40 @@ void RenderSystem2D::DrawLine(const Vector2 &start, const Vector2 &end, float32 
     spriteTempVertices[1] = start.y;
     spriteTempVertices[2] = end.x;
     spriteTempVertices[3] = end.y;
-    PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), currentClip, 2, spriteTempVertices, nullptr, 2, indices, color, rhi::PRIMITIVE_LINELIST);
+
+    BatchDescriptor batch;
+    batch.singleColor = color;
+    batch.material = DEFAULT_2D_COLOR_MATERIAL;
+    batch.vertexCount = 2;
+    batch.indexCount = 2;
+    batch.vertexPointer = spriteTempVertices;
+    batch.indexPointer = indices;
+    batch.primitiveType = rhi::PRIMITIVE_LINELIST;
+    PushBatch(batch);
 }
 
-void RenderSystem2D::DrawLines(const Vector<float32>& linePoints, NMaterial *material, const Color& color)
+void RenderSystem2D::DrawLines(const Vector<float32>& linePoints, const Color& color)
 {
     auto ptCount = linePoints.size() / 2;
     Vector<uint16> indices;
-    for (auto i = 0U; i < ptCount - 1; ++i)
+    indices.reserve(ptCount);
+    for (auto i = 0U; i < ptCount; ++i)
     {
         indices.push_back(i);
-        indices.push_back(i + 1);
     }
-    PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), currentClip, ptCount, linePoints.data(), nullptr, 2, indices.data(), color, rhi::PRIMITIVE_LINELIST);
+
+    BatchDescriptor batch;
+    batch.singleColor = color;
+    batch.material = DEFAULT_2D_COLOR_MATERIAL;
+    batch.vertexCount = ptCount;
+    batch.indexCount = indices.size();
+    batch.vertexPointer = linePoints.data();
+    batch.indexPointer = indices.data();
+    batch.primitiveType = rhi::PRIMITIVE_LINELIST;
+    PushBatch(batch);
 }
 
-void RenderSystem2D::DrawCircle(const Vector2 & center, float32 radius, NMaterial *material, const Color& color)
+void RenderSystem2D::DrawCircle(const Vector2 & center, float32 radius, const Color& color)
 {
     Polygon2 pts;
     float32 angle = Min(PI / 6.0f, SEGMENT_LENGTH / radius);// maximum angle 30 degrees
@@ -1414,15 +1498,16 @@ void RenderSystem2D::DrawCircle(const Vector2 & center, float32 radius, NMateria
         pts.AddPoint(pos);
     }
 
-    DrawPolygon(pts, false, material, color);
+    DrawPolygon(pts, false, color);
 }
 
-void RenderSystem2D::DrawPolygon(const Polygon2 & polygon, bool closed, NMaterial *material, const Color& color)
+void RenderSystem2D::DrawPolygon(const Polygon2 & polygon, bool closed, const Color& color)
 {
     auto ptCount = polygon.GetPointCount();
     if (ptCount >= 2)
     {
         Vector<uint16> indices;
+        indices.reserve(ptCount + 1);
         auto i = 0;
         for (; i < ptCount - 1; ++i)
         {
@@ -1435,11 +1520,20 @@ void RenderSystem2D::DrawPolygon(const Polygon2 & polygon, bool closed, NMateria
             indices.push_back(0);
         }
         auto pointsPtr = static_cast<const float32*>(static_cast<const void*>(polygon.GetPoints()));
-        PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), currentClip, ptCount, pointsPtr, nullptr, indices.size(), &indices[0], color, rhi::PRIMITIVE_LINELIST);
+
+        BatchDescriptor batch;
+        batch.singleColor = color;
+        batch.material = DEFAULT_2D_COLOR_MATERIAL;
+        batch.vertexCount = ptCount;
+        batch.indexCount = indices.size();
+        batch.vertexPointer = pointsPtr;
+        batch.indexPointer = indices.data();
+        batch.primitiveType = rhi::PRIMITIVE_LINELIST;
+        PushBatch(batch);
     }
 }
 
-void RenderSystem2D::FillPolygon(const Polygon2 & polygon, NMaterial *material, const Color& color)
+void RenderSystem2D::FillPolygon(const Polygon2 & polygon, const Color& color)
 {
     auto ptCount = polygon.GetPointCount();
     if (ptCount >= 3)
@@ -1452,15 +1546,24 @@ void RenderSystem2D::FillPolygon(const Polygon2 & polygon, NMaterial *material, 
             indices.push_back(i + 1);
         }
         auto pointsPtr = static_cast<const float32*>(static_cast<const void*>(polygon.GetPoints()));
-        PushBatch(DEFAULT_2D_COLOR_MATERIAL, rhi::HTextureSet(), currentClip, ptCount, pointsPtr, nullptr, indices.size(), &indices[0], color);
+
+        BatchDescriptor batch;
+        batch.singleColor = color;
+        batch.material = DEFAULT_2D_COLOR_MATERIAL;
+        batch.vertexCount = ptCount;
+        batch.indexCount = indices.size();
+        batch.vertexPointer = pointsPtr;
+        batch.indexPointer = indices.data();
+        batch.primitiveType = rhi::PRIMITIVE_LINELIST;
+        PushBatch(batch);
     }
 }
 
-void RenderSystem2D::DrawPolygonTransformed(const Polygon2 & polygon, bool closed, const Matrix3 & transform, NMaterial *material, const Color& color)
+void RenderSystem2D::DrawPolygonTransformed(const Polygon2 & polygon, bool closed, const Matrix3 & transform, const Color& color)
 {
     Polygon2 copyPoly = polygon;
     copyPoly.Transform(transform);
-    DrawPolygon(copyPoly, closed, material, color);
+    DrawPolygon(copyPoly, closed, color);
 }
 
 void RenderSystem2D::DrawTexture(rhi::HTextureSet htextureSet, NMaterial *material, const Color & color, const Rect & _dstRect /* = Rect(0.f, 0.f, -1.f, -1.f) */, const Rect & _srcRect /* = Rect(0.f, 0.f, -1.f, -1.f) */)
@@ -1498,7 +1601,16 @@ void RenderSystem2D::DrawTexture(rhi::HTextureSet htextureSet, NMaterial *materi
     texCoords[2] = texCoords[6] = srcRect.x + srcRect.dx;//x2
 
     static uint16 indices[6] = { 0, 1, 2, 1, 3, 2 };
-    PushBatch(material, htextureSet, currentClip, 4, spriteTempVertices, texCoords, 6, indices, color, rhi::PRIMITIVE_TRIANGLELIST);
+
+    BatchDescriptor batch;
+    batch.singleColor = color;
+    batch.material = DEFAULT_2D_TEXTURE_MATERIAL;
+    batch.vertexCount = 4;
+    batch.indexCount = 6;
+    batch.vertexPointer = spriteTempVertices;
+    batch.texCoordPointer = texCoords;
+    batch.indexPointer = indices;
+    PushBatch(batch);
 }
 
 /* TiledDrawData Implementation */
@@ -1839,6 +1951,20 @@ void StretchDrawData::GenerateStretchData()
     }
     break;
     }
+}
+
+
+RenderSystem2D::BatchDescriptor::BatchDescriptor()
+    : material(nullptr)
+    , textureSetHandle(rhi::HTextureSet())
+    , vertexCount(0)
+    , vertexPointer(nullptr)
+    , texCoordPointer(nullptr)
+    , indexCount(0)
+    , indexPointer(nullptr)
+    , singleColor(Color::White)
+    , primitiveType(rhi::PRIMITIVE_TRIANGLELIST)
+{
 }
 
 };

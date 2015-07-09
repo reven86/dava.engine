@@ -870,6 +870,39 @@ namespace DAVA
 		}
 		return true;
 	}
+    
+    int32 AutotestingSystemLua::GetServerQueueState(const String &cluster)
+    {
+        MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
+        KeyedArchive *clustersQueue = AutotestingDB::Instance()->FindOrInsertBuildArchive(dbUpdateObject, "clusters_queue");
+        String serverName = Format("%s", cluster.c_str());
+        int32 queueState = 0;
+        if (!clustersQueue->IsKeyExists(serverName))
+        {
+            clustersQueue->SetInt32(serverName, 0);
+        }
+        else
+        {
+            queueState = clustersQueue->GetInt32(serverName);
+        }
+        SafeRelease(dbUpdateObject);
+        return queueState;
+    }
+    
+    bool AutotestingSystemLua::SetServerQueueState(const String &cluster, int32 state)
+    {
+        MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
+        KeyedArchive *clustersQueue = AutotestingDB::Instance()->FindOrInsertBuildArchive(dbUpdateObject, "clusters_queue");
+        String serverName = Format("%s", cluster.c_str());
+        bool isSet = false;
+        if (!clustersQueue->IsKeyExists(serverName) || clustersQueue->GetInt32(serverName) != state)
+        {
+            clustersQueue->SetInt32(serverName, state);
+            isSet = AutotestingDB::Instance()->SaveToDB(dbUpdateObject);
+        }
+        SafeRelease(dbUpdateObject);
+        return isSet;
+    }
 };
 
 #endif //__DAVAENGINE_AUTOTESTING__

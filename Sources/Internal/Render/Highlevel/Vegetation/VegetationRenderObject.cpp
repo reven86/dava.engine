@@ -1163,7 +1163,7 @@ void VegetationRenderObject::SaveCustomGeometryData(SerializationContext* contex
         uint32 lodCount = data->GetLodCount(layerIndex);
         KeyedArchive* layerArchive = new KeyedArchive();
         
-        layerArchive->SetUInt64("cgsd.layer.materialId", data->GetMaterial(layerIndex)->GetMaterialKey());
+        layerArchive->SetUInt64("cgsd.layer.materialId", data->GetMaterial(layerIndex)->GetNodeID());
         layerArchive->SetUInt32("cgsd.layer.lodCount", lodCount);
         
         for(uint32 lodIndex = 0; lodIndex < lodCount; ++lodIndex)

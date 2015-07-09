@@ -658,7 +658,7 @@ void LandscapeEditorDrawSystem::ProcessCommand(const Command2 *command, bool red
         case CMDID_INSP_MEMBER_MODIFY:
         {
             const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
-            if (String("heightmapPath") == cmd->member->Name())
+			if (String("heightmapPath") == cmd->member->Name().c_str())
             {
                 if (heightmapProxy)
                 {
