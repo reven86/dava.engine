@@ -170,6 +170,7 @@ public class JNITextField {
         private boolean logicVisible = false; 
         
         private volatile boolean isRenderToTexture = false;
+        private boolean isSingleLine = true; // default in c++
         // we have to make next field static because all TextField
         // affected if we filtering and send data to c++ thread
         private static volatile boolean isFilteringOnText = false;
@@ -214,8 +215,14 @@ public class JNITextField {
         }
         
         @Override
+        public void setSingleLine(boolean value) {
+            super.setSingleLine(value);
+            isSingleLine = value;
+        }
+        
+        @Override
         public boolean onTouchEvent(MotionEvent event) {
-            if (getMaxLines() == 1) {
+            if (isSingleLine) {
                 // pass event to glView only in single line mode
                 MotionEvent newEvent = MotionEvent.obtain(event);
                 newEvent.setLocation(getLeft() + event.getX(),
@@ -759,7 +766,7 @@ public class JNITextField {
                     public boolean onEditorAction(TextView v, int actionId,
                             KeyEvent event) {
                         // event - If triggered by an enter key, this is the event; otherwise, this is null.
-                        if (event != null && text.getMaxLines() == 1) {
+                        if (event != null && text.isSingleLine) {
                             JNIActivity.GetActivity().PostEventToGL(new Runnable() {
                                 @Override
                                 public void run() {
@@ -1404,21 +1411,16 @@ public class JNITextField {
         }
     }
     
-    public static void SetMultiline(final int id, final int maxLines, final boolean verticalScrollBarEnabled) {
+    public static void SetMultiline(final int id, final boolean isMultiline) {
         JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
             public void safeRun() {
                 final TextField text = GetTextField(id);
-                // if you call text.setSingleLine(false); 
-                // it will reset maxlines, scroll, and transformation method to default values
-                if (maxLines == 1)
+                if (isMultiline)
                 {
-                    text.setSingleLine(true);
-                } else {
                     text.setSingleLine(false);
-                    text.setMaxLines(maxLines);
-                    text.setHorizontallyScrolling(false);
-                    text.setVerticalScrollBarEnabled(verticalScrollBarEnabled);
+                } else {
+                    text.setSingleLine(true);
                 }
             }
         });

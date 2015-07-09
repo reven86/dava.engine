@@ -55,7 +55,7 @@ void MultilineTest::LoadResources()
     static UITextFieldDelegate delegate;
 
     textField->SetDelegate(&delegate);
-    textField->SetMaxLines(10);
+    textField->SetMultiline(true);
     textField->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     AddControl(textField);
 }

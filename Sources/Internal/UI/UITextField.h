@@ -285,8 +285,8 @@ public:
     void SetSize(const DAVA::Vector2 &newSize) override;
     void SetPosition(const Vector2 &position) override;
 
-    void SetMaxLines(uint32 value);
-    uint32 GetMaxLines() const;
+    void SetMultiline(bool value);
+    bool IsMultiline() const;
 
     /**
 	 \brief Set control text style hide.
@@ -383,10 +383,10 @@ protected:
 	bool enableReturnKeyAutomatically;
 	bool showCursor;
 	bool isRenderToTexture;
+    bool isMultiline_ = false;
 
     void RenderText();
 private:
-    void EnableMultiline(uint32 maxLines, bool verticalScrollBarEnabled);
     WideString GetVisibleText() const;
 
     void SetRenderToTexture(bool value);
@@ -408,7 +408,6 @@ private:
 #endif
     float32 cursorTime;
     int32 maxLength;
-    uint32 maxLines = 1;
 public:
     INTROSPECTION_EXTEND(UITextField, UIControl,
         PROPERTY("text", "Text", GetText, SetText, I_SAVE | I_VIEW | I_EDIT)
@@ -420,7 +419,7 @@ public:
         PROPERTY("textUseRtlAlign", "Use Rtl Align", GetTextUseRtlAlign, SetTextUseRtlAlign, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("maxLength", "Max text lenght", GetMaxLength, SetMaxLength, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("isPassword", "Is password", IsPassword, SetIsPassword, I_SAVE | I_VIEW | I_EDIT)
-		PROPERTY("maxLines", "Max text lines, default 1 - single line", GetMaxLines, SetMaxLines, I_SAVE | I_VIEW | I_EDIT)
+		PROPERTY("isMultiline", "Is Multiline, default (false) - single line", IsMultiline, SetMultiline, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("autoCapitalizationType", InspDesc("Auto capitalization type", GlobalEnumMap<eAutoCapitalizationType>::Instance()), GetAutoCapitalizationType, SetAutoCapitalizationType , I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("autoCorrectionType"    , InspDesc("Auto correction type"    , GlobalEnumMap<eAutoCorrectionType>::Instance())    , GetAutoCorrectionType    , SetAutoCorrectionType     , I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("spellCheckingType"     , InspDesc("Spell checking type"     , GlobalEnumMap<eSpellCheckingType>::Instance())     , GetSpellCheckingType     , SetSpellCheckingType      , I_SAVE | I_VIEW | I_EDIT)
