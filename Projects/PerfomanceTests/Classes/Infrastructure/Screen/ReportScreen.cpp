@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ReportScreen.h"
 
+const String ReportScreen::TEST_NAME = "TestName";
 const String ReportScreen::MIN_DELTA = "MinDeltaValue";
 const String ReportScreen::MAX_DELTA = "MaxDeltaValue";
 const String ReportScreen::AVERAGE_DELTA = "AverageDeltaValue";
@@ -100,6 +101,9 @@ void ReportScreen::CreateReportScreen()
 
             UIControl* reportItemCopy = reportItem->Clone();
             reportItemCopy->SetPosition(Vector2(0.0f, 0.0f + testNumber * offsetY));
+            
+            UIStaticText* testName = static_cast<UIStaticText*>(reportItemCopy->FindByName(TEST_NAME));
+            testName->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%s", test->GetName().c_str())));
 
             UIStaticText* minDeltaText = static_cast<UIStaticText*>(reportItemCopy->FindByName(MIN_DELTA));
             minDeltaText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", minDelta)));

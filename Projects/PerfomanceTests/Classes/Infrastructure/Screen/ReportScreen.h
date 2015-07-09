@@ -50,6 +50,7 @@ private:
     
     Vector<BaseTest*> testChain;
 
+    static const String TEST_NAME;
     static const String MIN_DELTA;
     static const String MAX_DELTA;
     static const String AVERAGE_DELTA;
