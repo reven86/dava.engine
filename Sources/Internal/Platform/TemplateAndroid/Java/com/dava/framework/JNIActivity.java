@@ -18,11 +18,11 @@ import android.os.Looper;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.InputDevice;
+import android.view.InputDevice.MotionRange;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.InputDevice.MotionRange;
 
 import com.bda.controller.Controller;
 import com.dava.framework.InputManagerCompat.InputDeviceListener;
@@ -402,19 +402,39 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     // we have to call next function after initialization of glView
     void InitKeyboardLayout() {
         // first destroy if any keyboard layout
-        WindowManager windowManager = getWindowManager();
+        final WindowManager windowManager = getWindowManager();
         JNITextField.DestroyKeyboardLayout(windowManager);
         
         // now initialize one more time
         // http://stackoverflow.com/questions/7776768/android-what-is-android-r-id-content-used-for
         final View v = findViewById(android.R.id.content);
+        
+        if (v == null)
+        {
+            throw new RuntimeException("findViewById returned null - strange null pointer view");
+        }
+        
         if(v.getWindowToken() != null)
         {
             JNITextField.InitializeKeyboardLayout(windowManager, v.getWindowToken());
         }
         else
         {
-            throw new RuntimeException("v.getWindowToken() != null strange null pointer view");
+            // if there is no window token - seems view is still not attached to window.
+            // wait for it.
+            v.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+                
+                @Override
+                public void onViewDetachedFromWindow(View v) {
+                    v.removeOnAttachStateChangeListener(this);
+                }
+                
+                @Override
+                public void onViewAttachedToWindow(View v) {
+                    JNITextField.InitializeKeyboardLayout(windowManager, v.getWindowToken());
+                    v.removeOnAttachStateChangeListener(this);
+                }
+            });
         }
     }
     

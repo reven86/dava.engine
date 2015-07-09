@@ -130,18 +130,11 @@ DAVA_TESTCLASS(SceneIdTest)
 
         TEST_VERIFY(CompareScene(scene1, scene2));
 
-        // load/export test
-        Scene *scene3 = new Scene();
-        scene1->CopyScene(scene3);
-
-        TEST_VERIFY(CompareScene(scene1, scene3));
-
         SafeRelease(fake1_1);
         SafeRelease(fake1_2);
         SafeRelease(fake1_3);
         SafeRelease(scene1);
         SafeRelease(scene2);
-        SafeRelease(scene3);
     }
 
     Entity* CreateFakeEntity()

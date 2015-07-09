@@ -29,7 +29,9 @@
 #ifndef __NOTIFICATION_SCREEN_H__
 #define __NOTIFICATION_SCREEN_H__
 
-#include "Infrastructure/BaseScreen.h"
+#include "BaseScreen.h"
+
+using namespace DAVA;
 
 class NotificationScreen : public BaseScreen
 {
@@ -41,30 +43,32 @@ public:
     void LoadResources() override;
     void UnloadResources() override;
 
-    void Update(DAVA::float32 timeElapsed) override;
-    void Draw(const DAVA::UIGeometricData &geometricData) override;
+    void Update(float32 timeElapsed) override;
+    void Draw(const UIGeometricData &geometricData) override;
 
     void UpdateNotification();
 
 private:
-    void OnNotifyText(DAVA::BaseObject *obj, void *data, void *callerData);
-    void OnHideText(DAVA::BaseObject *obj, void *data, void *callerData);
-    void OnNotifyProgress(DAVA::BaseObject *obj, void *data, void *callerData);
-    void OnHideProgress(DAVA::BaseObject *obj, void *data, void *callerData);
+    void OnNotifyText(BaseObject *obj, void *data, void *callerData);
+    void OnNotifyTextDelayed(BaseObject *obj, void *data, void *callerData);
+    void OnHideText(BaseObject *obj, void *data, void *callerData);
+    void OnNotifyProgress(BaseObject *obj, void *data, void *callerData);
+    void OnHideProgress(BaseObject *obj, void *data, void *callerData);
 
-    void OnNotificationTextPressed(DAVA::BaseObject *obj, void *data, void *callerData);
-    void OnNotificationProgressPressed(DAVA::BaseObject *obj, void *data, void *callerData);
+    void OnNotificationTextPressed(BaseObject *obj, void *data, void *callerData);
+    void OnNotificationProgressPressed(BaseObject *obj, void *data, void *callerData);
 
 private:
-    DAVA::UIButton *showNotificationText;
-    DAVA::UIButton *hideNotificationText;
-    DAVA::UIButton *showNotificationProgress;
-    DAVA::UIButton *hideNotificationProgress;
+    UIButton *showNotificationText;
+    UIButton *showNotificationTextDelayed;
+    UIButton *hideNotificationText;
+    UIButton *showNotificationProgress;
+    UIButton *hideNotificationProgress;
 
-    DAVA::LocalNotificationProgress *notificationProgress;
-    DAVA::LocalNotificationText *notificationText;
+    LocalNotificationProgress *notificationProgress;
+    LocalNotificationText *notificationText;
 
-    DAVA::uint32 progress;
+    uint32 progress;
 };
 
 #endif

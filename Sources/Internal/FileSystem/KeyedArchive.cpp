@@ -83,32 +83,46 @@ bool KeyedArchive::Load(File *archive)
         while(!archive->IsEof())
         {
             VariantType key;
-            key.Read(archive);
-            if (archive->IsEof())break;
+
+            if (archive->IsEof()) break;
+            if (!key.Read(archive)) return false;
+
             VariantType *value = new VariantType();
-            value->Read(archive);
+            if (!value->Read(archive))
+            {
+                SafeDelete(value);
+                return false;
+            }
+
             objectMap[key.AsString()] = value;
         }
         return true;
     }
     
     uint16 version = 0;
-    archive->Read(&version, 2);
+    if (2 != archive->Read(&version, 2)) return false;
     if (version != 1)
     {
         Logger::Error("[KeyedArchive] error loading keyed archive, because version is incorrect");
         return false;
     }
     uint32 numberOfItems = 0;
-    archive->Read(&numberOfItems, 4);
+    if (4 != archive->Read(&numberOfItems, 4)) return false;
     
     for (uint32 item = 0; item < numberOfItems; ++item)
 	{
 		VariantType key;
-		key.Read(archive);
-		if (archive->IsEof())break;
+
+        if (archive->IsEof()) break;
+        if (!key.Read(archive)) return false;
+
         VariantType *value = new VariantType();
-        value->Read(archive);
+        if (!value->Read(archive))
+        {
+            SafeDelete(value);
+            return false;
+        }
+
 		objectMap[key.AsString()] = value;
 	}
 	return true;
@@ -129,19 +143,20 @@ bool KeyedArchive::Save(File *archive)
 {
     char header[2];
     uint16 version = 1;
+    uint32 size = static_cast<uint32>(objectMap.size());
+
     header[0] = 'K'; header[1] = 'A';
     
-    archive->Write(header, 2);
-    archive->Write(&version, 2);
-    uint32 size = static_cast<uint32>(objectMap.size());
-    archive->Write(&size, 4);
+    if (2 != archive->Write(header, 2)) return false;
+    if (2 != archive->Write(&version, 2)) return false;
+    if (4 != archive->Write(&size, 4)) return false;
     
 	for (Map<String, VariantType*>::iterator it = objectMap.begin(); it != objectMap.end(); ++it)
 	{
 		VariantType key;
 		key.SetString(it->first);
-		key.Write(archive);
-		it->second->Write(archive);
+        if (!key.Write(archive)) return false;
+        if (!it->second->Write(archive)) return false;
 	}
 	return true;
 }

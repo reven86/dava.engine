@@ -126,8 +126,8 @@ void SpriteObject::SetupRenderBatch()
 	NMaterial* material = NMaterial::CreateMaterialInstance(FastName("SpriteObject_material"),
 															NMaterialName::TEXTURED_ALPHABLEND,
 															NMaterial::DEFAULT_QUALITY_NAME);
-	material->GetParent()->AddNodeFlags(DataNode::NodeRuntimeFlag);
-	material->AddNodeFlags(DataNode::NodeRuntimeFlag);
+	material->GetParent()->SetRuntime(true);
+	material->SetRuntime(true);
 	material->SetTexture(NMaterial::TEXTURE_ALBEDO, sprite->GetTexture(frame));
         
 	SpriteRenderBatch *batch = new SpriteRenderBatch();
