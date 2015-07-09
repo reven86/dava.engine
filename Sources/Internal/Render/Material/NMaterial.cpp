@@ -915,6 +915,12 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
         pointer = materialKey;
     }
 
+    int32 oldType = 0;
+    if (archive->IsKeyExists("materialType"))
+    {
+        oldType = archive->GetInt32("materialType");
+    }
+
     uint64 parentKey(0);
     if (archive->IsKeyExists("parentMaterialKey"))
     {
@@ -927,7 +933,8 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
         qualityGroup = FastName(archive->GetString("materialGroup").c_str());
     }
 
-    if (archive->IsKeyExists("materialTemplate"))
+    // don't load fxName from material instance (type = 2)
+    if (archive->IsKeyExists("materialTemplate") && oldType != 2)
     {
         fxName = FastName(archive->GetString("materialTemplate").c_str());        
     }    

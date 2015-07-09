@@ -609,6 +609,12 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
         DAVA::NMaterial* material = materials[0];
         DAVA::FastName fxName = material->GetEffectiveFxName();
         bool isLocalFxName = material->HasLocalFXNmae();
+        bool hasParentFx = false;
+
+        if (nullptr != material->GetParent())
+        {
+            hasParentFx = material->GetParent()->GetEffectiveFxName().IsValid();
+        }
 
         if (isLocalFxName)
         {
@@ -632,15 +638,16 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
 
             ui->templateBox->setCurrentIndex(rowToSelect);
             ui->templateBox->setEnabled(true);
+
             ui->templateButton->setIcon(QIcon(":/QtIcons/cminus.png"));
+            ui->templateButton->setEnabled(hasParentFx);
         }
         else
         {
             ui->templateBox->setEnabled(false);
             ui->templateButton->setIcon(QIcon(":/QtIcons/cplus.png"));
+            ui->templateButton->setEnabled(true);
         }
-
-        ui->templateButton->setEnabled(true);
     }
     else
     {
@@ -697,8 +704,6 @@ void MaterialEditor::OnTemplateButton()
             SetCurMaterial(curMaterials);
         }
     }
-
-    
 }
 
 QString MaterialEditor::GetTemplatePath(int index) const

@@ -87,12 +87,14 @@ void MaterialTree::SetScene(SceneEditor2 *sceneEditor)
 
 void MaterialTree::AssignMaterialToSelection( DAVA::NMaterial *material )
 {
+#if RHI_COMPLETE_EDITOR
     SceneEditor2 *curScene = treeModel->GetScene();
     Q_ASSERT( curScene );
     if ( !curScene )
         return ;
     EntityGroup selection = curScene->selectionSystem->GetSelection();
     MaterialAssignSystem::AssignMaterialToGroup(curScene, &selection, material);
+#endif
 }
 
 DAVA::NMaterial* MaterialTree::GetMaterial(const QModelIndex &index) const
@@ -167,6 +169,7 @@ void MaterialTree::ShowContextMenu(const QPoint &pos)
 
     // "Assign to Selection" item
     {
+#if RHI_COMPLETE_EDITOR
         const QModelIndexList& selection = selectionModel()->selectedRows();
         int nMaterials = selection.count();
 
@@ -194,6 +197,7 @@ void MaterialTree::ShowContextMenu(const QPoint &pos)
                 actionAssign->setEnabled(false);
             }
         }
+#endif
     }
 
     emit ContextMenuPrepare(&contextMenu);
@@ -202,7 +206,8 @@ void MaterialTree::ShowContextMenu(const QPoint &pos)
 
 void MaterialTree::OnAssignToSelection()
 {
-    QAction *act = qobject_cast<QAction *>( sender() );
+#if RHI_COMPLETE_EDITOR
+    QAction *act = qobject_cast<QAction *>(sender());
     if ( !act )
         return ;
     QVariant indexAsVariant = act->data();
@@ -212,6 +217,7 @@ void MaterialTree::OnAssignToSelection()
     if ( !material )
         return ;
     AssignMaterialToSelection( material );
+#endif
 }
 
 void MaterialTree::dragEnterEvent(QDragEnterEvent * event)
