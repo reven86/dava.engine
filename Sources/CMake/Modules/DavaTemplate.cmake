@@ -242,6 +242,10 @@ else()
 
 endif()
 
+if( NOT IGNORE_FILE_TREE_CHECK )
+    add_dependencies(  ${PROJECT_NAME} FILE_TREE )
+    
+endif()
 
 if ( QT5_FOUND )
     if ( WIN32 )
