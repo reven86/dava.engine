@@ -316,6 +316,7 @@ void UIPackageLoader::ProcessLegacyAligns(UIControl *control, const YamlNode *no
         if (node->Get(it.second))
         {
             hasAnchorProperties = true;
+            break;
         }
     }
     
