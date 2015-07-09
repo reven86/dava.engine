@@ -53,10 +53,11 @@ String DataStorageWin::GetStringValue(const String &key)
 {
 
     auto values = roamingSettings->Values;
-    Platform::String^ value = safe_cast<Platform::String^>(values->Lookup(StringToRTString(key)));
-    if (nullptr != value)
+    IPropertyValue^ value = safe_cast<IPropertyValue^>(values->Lookup(StringToRTString(key)));
+
+    if (nullptr != value && PropertyType::String == value->Type)
     {
-        return RTStringToString(value);
+        return RTStringToString(value->GetString());
     }
     else
     {
@@ -68,7 +69,7 @@ int64 DataStorageWin::GetLongValue(const String &key)
 {
     auto values = roamingSettings->Values;
     IPropertyValue^ value = safe_cast<IPropertyValue^>(values->Lookup(StringToRTString(key)));
-    if (nullptr != value)
+    if (nullptr != value && PropertyType::Int64 == value->Type)
     {
         return value->GetInt64();
     }
