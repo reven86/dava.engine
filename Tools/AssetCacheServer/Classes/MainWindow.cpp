@@ -72,7 +72,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->scrollAreaWidgetContents_2->layout()->addItem(new QSpacerItem(0, 0, QSizePolicy::Fixed, QSizePolicy::Expanding));
 
     ui->portSpinBox->setValue(DAVA::AssetCache::ASSET_SERVER_PORT);
-    ui->portSpinBox->setEnabled(false);
+    ui->portSpinBox->setEnabled(true);
     
     ShowTrayIcon();
 
@@ -253,6 +253,7 @@ void MainWindow::OnSaveButtonClicked()
     settings->SetFolder(ui->cacheFolderLineEdit->text().toStdString());
     settings->SetCacheSize(ui->cacheSizeSpinBox->value() * 1024 * 1024 * 1024);
     settings->SetFilesCount(ui->numberOfFilesSpinBox->value());
+    settings->SetPort(ui->portSpinBox->value());
     
     settings->ResetServers();
     for (auto &server : servers)
@@ -276,6 +277,7 @@ void MainWindow::SetSettings(ApplicationSettings *_settings)
     ui->cacheFolderLineEdit->setText(settings->GetFolder().GetAbsolutePathname().c_str());
     ui->cacheSizeSpinBox->setValue(settings->GetCacheSize() / (1 * 1024 * 1024 * 1024));
     ui->numberOfFilesSpinBox->setValue(settings->GetFilesCount());
+    ui->portSpinBox->setValue(settings->GetPort());
     
     auto & servers = settings->GetServers();
     for (auto & sd: servers)

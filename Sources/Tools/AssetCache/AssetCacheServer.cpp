@@ -56,9 +56,10 @@ Server::~Server()
 
 bool Server::Listen(uint16 port)
 {
+    listenPort = port;
     DVASSERT(nullptr == netServer);
     
-    netServer = TCPConnection::CreateServer(NET_SERVICE_ID, Net::Endpoint(port));
+    netServer = TCPConnection::CreateServer(NET_SERVICE_ID, Net::Endpoint(listenPort));
     netServer->SetDelegate(this);
 
     return (nullptr != netServer);

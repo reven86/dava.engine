@@ -51,10 +51,8 @@ public:
 
     bool Connect();
     void Disconnect();
+    bool IsConnected() const;
 
-    //TODO
-    bool IsConnected() {return false; };
-    //ENDOF TODO
     void SetDelegate(TCPChannelDelegate * delegate);
     
     
@@ -77,6 +75,8 @@ protected:
     Net::Endpoint endpoint;
     Net::NetCore::TrackId controllerId;
 
+    bool isConnected = false;
+
     static Set<uint32> registeredServices;
     static Mutex serviceMutex;
     
@@ -85,6 +85,11 @@ protected:
     
     TCPChannelDelegate *delegate;
 };
+
+inline bool TCPConnection::IsConnected() const
+{
+    return isConnected;
+}
 
 
 };

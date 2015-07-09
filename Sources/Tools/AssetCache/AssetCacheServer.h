@@ -70,6 +70,7 @@ public:
     bool IsConnected() const;
     void Disconnect();
     
+    uint16 GetListenPort() const;
     
     //TCPChannelDelegate
     void PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, size_t length) override;
@@ -86,9 +87,15 @@ private:
     
 private:
     
+    uint16 listenPort = 0;
     TCPConnection * netServer = nullptr;
     ServerDelegate *delegate = nullptr;
 };
+
+inline uint16 Server::GetListenPort() const
+{
+    return listenPort;
+}
 
 inline void Server::SetDelegate(ServerDelegate * _delegate)
 {

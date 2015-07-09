@@ -54,10 +54,10 @@ ServerCore::~ServerCore()
 void ServerCore::Start()
 {
     DAVA::Logger::FrameworkDebug("[ServerCore::%s]", __FUNCTION__);
-    
-    server.Listen(DAVA::AssetCache::ASSET_SERVER_PORT);
+
+    server.Listen(settings->GetPort());
     logics.Init(&server, &dataBase);
-    
+
     QTimer::singleShot(UPDATE_TIMEOUT, this, &ServerCore::UpdateByTimer);
 }
 
@@ -86,7 +86,14 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
         auto & folder = settings->GetFolder();
         auto size = settings->GetCacheSize();
         auto count = settings->GetFilesCount();
-        auto autoSaveTimeout = settings->GetAutoSaveTimeout();
+        auto autoSaveTimeout = settings->GetAutoSaveTimeoutMs();
+
+        bool needRestart = false;
+        if (server.IsConnected() && server.GetListenPort() != settings->GetPort())
+        {
+            needRestart = true;
+            server.Disconnect();
+        }
         
         if(size && !folder.IsEmpty())
         {
@@ -95,6 +102,11 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
         else
         {
             DAVA::Logger::Warning("[ServerCore::%s] Empty settings", __FUNCTION__);
+        }
+
+        if (needRestart)
+        {
+            server.Listen(settings->GetPort());
         }
     }
     else

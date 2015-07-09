@@ -32,17 +32,18 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
 
+using namespace DAVA;
 
 void ApplicationSettings::Save() const
 {
-    static DAVA::FilePath path("~doc:/AssetServer/ACS_settings.dat");
+    static FilePath path("~doc:/AssetServer/ACS_settings.dat");
 
-    DAVA::FileSystem::Instance()->CreateDirectory(path.GetDirectory(), true);
+    FileSystem::Instance()->CreateDirectory(path.GetDirectory(), true);
 
-    DAVA::ScopedPtr<DAVA::File> file(DAVA::File::Create(path, DAVA::File::CREATE | DAVA::File::WRITE));
-    if(static_cast<DAVA::File *>(file) ==nullptr)
+    ScopedPtr<File> file(File::Create(path, File::CREATE | File::WRITE));
+    if(!file)
     {
-        DAVA::Logger::Error("[ApplicationSettings::%s] Cannot create file %s", __FUNCTION__, path.GetStringValue().c_str());
+        Logger::Error("[ApplicationSettings::%s] Cannot create file %s", __FUNCTION__, path.GetStringValue().c_str());
         return;
     }
     
@@ -55,121 +56,134 @@ void ApplicationSettings::Save() const
 
 void ApplicationSettings::Load()
 {
-    static DAVA::FilePath path("~doc:/AssetServer/ACS_settings.dat");
+    static FilePath path("~doc:/AssetServer/ACS_settings.dat");
     
-    DAVA::ScopedPtr<DAVA::File> file(DAVA::File::Create(path, DAVA::File::OPEN | DAVA::File::READ));
-    if(static_cast<DAVA::File *>(file) ==nullptr)
+    ScopedPtr<File> file(File::Create(path, File::OPEN | File::READ));
+    if(!file)
     {
-        DAVA::Logger::Error("[ApplicationSettings::%s] Cannot open file %s", __FUNCTION__, path.GetStringValue().c_str());
+        Logger::Error("[ApplicationSettings::%s] Cannot open file %s", __FUNCTION__, path.GetStringValue().c_str());
         return;
     }
     
-    DAVA::ScopedPtr<DAVA::KeyedArchive> archieve(new DAVA::KeyedArchive());
-    archieve->Load(static_cast<DAVA::File *>(file));
+    ScopedPtr<DAVA::KeyedArchive> archieve(new DAVA::KeyedArchive());
+    archieve->Load(file);
     Deserialize(archieve);
 
     emit SettingsUpdated(this);
 }
 
-void ApplicationSettings::Serialize(DAVA::KeyedArchive * archieve) const
+void ApplicationSettings::Serialize(DAVA::KeyedArchive * archive) const
 {
-    DVASSERT(nullptr != archieve);
+    DVASSERT(nullptr != archive);
     
-    archieve->SetString("FolderPath", folder.GetStringValue());
-    archieve->SetFloat64("FolderSize", cacheSize);
-    archieve->SetUInt32("NumberOfFiles", filesCount);
+    archive->SetString("FolderPath", folder.GetStringValue());
+    archive->SetFloat64("FolderSize", cacheSize);
+    archive->SetUInt32("NumberOfFiles", filesCount);
+    archive->SetUInt32("Port", listenPort);
     
-    auto size = servers.size();
-    archieve->SetUInt32("ServersSize", size);
+    auto size = remoteServers.size();
+    archive->SetUInt32("ServersSize", size);
 
-    DAVA::uint32 index = 0;
-    for(auto & sd: servers)
+    uint32 index = 0;
+    for(auto & sd: remoteServers)
     {
-        archieve->SetString(DAVA::Format("Server_%d_ip", index), sd.ip);
+        archive->SetString(Format("Server_%d_ip", index), sd.ip);
+        archive->SetUInt32(Format("Server_%d_port", index), sd.port);
         ++index;
     }
 }
 
-void ApplicationSettings::Deserialize(DAVA::KeyedArchive * archieve)
+void ApplicationSettings::Deserialize(DAVA::KeyedArchive * archive)
 {
-    DVASSERT(nullptr != archieve);
+    DVASSERT(nullptr != archive);
     
-    DVASSERT(servers.size() == 0);
+    DVASSERT(remoteServers.size() == 0);
     
-    folder = archieve->GetString("FolderPath");
-    cacheSize = archieve->GetFloat64("FolderSize");
-    filesCount = archieve->GetUInt32("NumberOfFiles");
+    folder = archive->GetString("FolderPath");
+    cacheSize = archive->GetFloat64("FolderSize");
+    filesCount = archive->GetUInt32("NumberOfFiles");
+    listenPort = archive->GetUInt32("Port");
 
-    auto count = archieve->GetUInt32("ServersSize");
-    for(DAVA::uint32 i = 0; i < count; ++i)
+    auto count = archive->GetUInt32("ServersSize");
+    for(uint32 i = 0; i < count; ++i)
     {
         ServerData sd;
-        sd.ip = archieve->GetString(DAVA::Format("Server_%d_ip", i));
+        sd.ip = archive->GetString(Format("Server_%d_ip", i));
+        sd.port = archive->GetUInt32(Format("Server_%d_port", i));
 
-        servers.push_back(sd);
+        remoteServers.push_back(sd);
     }
 }
 
 
-const DAVA::FilePath & ApplicationSettings::GetFolder() const
+const FilePath & ApplicationSettings::GetFolder() const
 {
     return folder;
 }
 
-void ApplicationSettings::SetFolder(const DAVA::FilePath & _folder)
+void ApplicationSettings::SetFolder(const FilePath & _folder)
 {
     folder = _folder;
 }
 
-const DAVA::float64 ApplicationSettings::GetCacheSize() const
+const float64 ApplicationSettings::GetCacheSize() const
 {
     return cacheSize;
 }
 
-void ApplicationSettings::SetCacheSize(const DAVA::float64 size)
+void ApplicationSettings::SetCacheSize(const float64 size)
 {
     cacheSize = size;
 }
 
-const DAVA::uint32 ApplicationSettings::GetFilesCount() const
+const uint32 ApplicationSettings::GetFilesCount() const
 {
     return filesCount;
 }
 
-void ApplicationSettings::SetFilesCount(const DAVA::uint32 count)
+void ApplicationSettings::SetFilesCount(const uint32 count)
 {
     filesCount = count;
 }
 
-const DAVA::uint64 ApplicationSettings::GetAutoSaveTimeout() const
+const uint64 ApplicationSettings::GetAutoSaveTimeoutMs() const
 {
-    return autoSaveTimeout;
+    return autoSaveTimeoutMs;
 }
 
-void ApplicationSettings::SetAutoSaveTimeout(const DAVA::uint64 timeout)
+void ApplicationSettings::SetAutoSaveTimeoutMs(const uint64 timeout)
 {
-    autoSaveTimeout = timeout;
+    autoSaveTimeoutMs = timeout;
 }
 
-
-const DAVA::List<ServerData> & ApplicationSettings::GetServers() const
+const uint16 ApplicationSettings::GetPort() const
 {
-    return servers;
+    return listenPort;
+}
+
+void ApplicationSettings::SetPort(const uint16 val)
+{
+    listenPort = val;
+}
+
+const List<ServerData> & ApplicationSettings::GetServers() const
+{
+    return remoteServers;
 }
 
 void ApplicationSettings::ResetServers()
 {
-    servers.clear();
+    remoteServers.clear();
 }
 
 void ApplicationSettings::AddServer(const ServerData & server)
 {
-    servers.push_back(server);
+    remoteServers.push_back(server);
 }
 
 void ApplicationSettings::RemoveServer(const ServerData & server)
 {
-    servers.remove(server);
+    remoteServers.remove(server);
 }
 
 

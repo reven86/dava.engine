@@ -32,19 +32,19 @@
 
 #include "AssetCache/AssetCacheConstants.h"
 #include "FileSystem/FilePath.h"
-
 #include <QObject>
 
-namespace DAVA
+namespace DAVA 
 {
     class KeyedArchive;
 };
 
+using namespace DAVA;
 
 struct ServerData
 {
     ServerData() = default;
-    ServerData(DAVA::String _ip, DAVA::uint16 _port) : ip(_ip), port(_port) {};
+    ServerData(String _ip, uint16 _port) : ip(_ip), port(_port) {};
     
     bool operator == (const ServerData & right) const
     {
@@ -60,8 +60,8 @@ struct ServerData
         return ip < right.ip;
     }
     
-    DAVA::String ip = "127.0.0.1";
-    DAVA::uint16 port = DAVA::AssetCache::ASSET_SERVER_PORT;
+    String ip = "127.0.0.1";
+    uint16 port = AssetCache::ASSET_SERVER_PORT;
 };
 
 
@@ -77,19 +77,22 @@ public:
     void Save() const;
     void Load();
 
-    const DAVA::FilePath & GetFolder() const;
-    void SetFolder(const DAVA::FilePath & folder);
+    const FilePath & GetFolder() const;
+    void SetFolder(const FilePath & folder);
 
-    const DAVA::float64 GetCacheSize() const;
-    void SetCacheSize(const DAVA::float64 size);
+    const float64 GetCacheSize() const;
+    void SetCacheSize(const float64 size);
 
-    const DAVA::uint32 GetFilesCount() const;
-    void SetFilesCount(const DAVA::uint32 count);
+    const uint32 GetFilesCount() const;
+    void SetFilesCount(const uint32 count);
 
-    const DAVA::uint64 GetAutoSaveTimeout() const;
-    void SetAutoSaveTimeout(const DAVA::uint64 timeout);
+    const uint64 GetAutoSaveTimeoutMs() const;
+    void SetAutoSaveTimeoutMs(const uint64 timeout);
 
-    const DAVA::List<ServerData> & GetServers() const;
+    const uint16 GetPort() const;
+    void SetPort(const uint16 port);
+
+    const List<ServerData> & GetServers() const;
     void ResetServers();
     void AddServer(const ServerData & server);
     void RemoveServer(const ServerData & server);
@@ -106,13 +109,12 @@ private:
     
 public:
 
-    DAVA::FilePath folder;
-    DAVA::float64 cacheSize;
-    DAVA::uint32 filesCount;
-
-    DAVA::uint64 autoSaveTimeout = 1 * 60 * 1000;   //ms, 1 minute
-    
-    DAVA::List<ServerData> servers;
+    FilePath folder;
+    float64 cacheSize;
+    uint32 filesCount;
+    uint64 autoSaveTimeoutMs = 1 * 60 * 1000;
+    uint16 listenPort;
+    List<ServerData> remoteServers;
 };
 
 #endif // __APPLICATION_SETTINGS_H__

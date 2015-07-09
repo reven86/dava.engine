@@ -80,6 +80,7 @@ TCPConnection::~TCPConnection()
     
 bool TCPConnection::Connect()
 {
+    isConnected = false;
     bool registered = RegisterService(service);
     if(registered)
     {
@@ -93,20 +94,22 @@ bool TCPConnection::Connect()
             Logger::Error("[TCPConnection::%s] Cannot create controller", __FUNCTION__);
         }
         
-        return (Net::NetCore::INVALID_TRACK_ID != controllerId);
+        isConnected = (Net::NetCore::INVALID_TRACK_ID != controllerId);
     }
     else
     {
         Logger::Error("[TCPConnection::%s] Cannot register service(%d)", __FUNCTION__, service);
     }
 
-    return false;
+    return isConnected;
 }
     
 void TCPConnection::Disconnect()
 {
     DVASSERT(Net::NetCore::INVALID_TRACK_ID != controllerId);
     DVASSERT(Net::NetCore::Instance() != nullptr);
+
+    isConnected = false;
 
     Net::NetCore::Instance()->DestroyController(controllerId);
     controllerId = Net::NetCore::INVALID_TRACK_ID;

@@ -56,7 +56,7 @@ RemoteAssetCacheServer::RemoteAssetCacheServer(const ServerData &newServer, QWid
 {
     ui->ipLineEdit->setText(newServer.ip.c_str());
     ui->portSpinBox->setValue(newServer.port);
-    ui->portSpinBox->setEnabled(false);
+    ui->portSpinBox->setEnabled(true);
 }
 
 RemoteAssetCacheServer::~RemoteAssetCacheServer()
