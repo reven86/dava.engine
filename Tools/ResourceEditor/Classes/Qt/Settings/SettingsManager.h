@@ -45,6 +45,7 @@ namespace Settings
     static const DAVA::FastName General_OpenByDBClick("General/OpenByDoubleClick");
     static const DAVA::FastName General_CompressionQuality("General/CompressionQuality");
 
+    static const DAVA::FastName General_MaterialEditor_IconsToLeft("General/MaterialEditor/IconsToLeft");
     static const DAVA::FastName General_MaterialEditor_SwitchColor0("General/MaterialEditor/SwitchColor0");
     static const DAVA::FastName General_MaterialEditor_SwitchColor1("General/MaterialEditor/SwitchColor1");
     static const DAVA::FastName General_MaterialEditor_LodColor0("General/MaterialEditor/LodColor0");

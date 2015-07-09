@@ -42,12 +42,6 @@ class QtPropertyItemDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 
-	enum OptionalButtonsType
-	{
-		NORMAL,
-		OVERLAYED
-	};
-
 public:
 	QtPropertyItemDelegate(QAbstractItemView *view, QtPropertyModel *model, QWidget *parent = 0);
 	virtual ~QtPropertyItemDelegate();
@@ -67,7 +61,7 @@ public slots:
 
 private:
     bool eventFilter(QObject *obj, QEvent *event);
-	void drawOptionalButtons(QPainter *painter, QStyleOptionViewItem &option, const QModelIndex &index, OptionalButtonsType type) const;
+	void drawOptionalButtons(QPainter *painter, QStyleOptionViewItem &option, const QModelIndex &index) const;
 	void showOptionalButtons(QtPropertyData *data, bool show);
 
 	QtPropertyModel *model;

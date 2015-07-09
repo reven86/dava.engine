@@ -744,7 +744,7 @@ bool VariantType::Write(File * fp) const
     case TYPE_COLOR:
 		{
             written = fp->Write(colorValue->color, sizeof(float32) * 4);
-            if (written != sizeof(sizeof(float32) * 4))return false;
+            if (written != sizeof(float32) * 4)return false;
 		}
         break;
     case TYPE_FASTNAME:

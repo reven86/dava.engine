@@ -38,6 +38,7 @@
 #include "QtPropertyModel.h"
 #include "QtPropertyData.h"
 #include "QtPropertyData/QtPropertyDataDavaVariant.h"
+#include "Qt/Settings/SettingsManager.h"
 
 QtPropertyItemDelegate::QtPropertyItemDelegate(QAbstractItemView *_view, QtPropertyModel *_model, QWidget *parent /* = 0 */)
 	: QStyledItemDelegate(parent)
@@ -62,7 +63,7 @@ void QtPropertyItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
 	if(index.column() == 1)
 	{
 		opt.textElideMode = Qt::ElideLeft;
-		drawOptionalButtons(painter, opt, index, NORMAL);
+		drawOptionalButtons(painter, opt, index);
 	}
 
     auto *data = qobject_cast<QtPropertyDataDavaVariant *>( model->itemFromIndex( index ) );
@@ -75,11 +76,6 @@ void QtPropertyItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
     }
 
     view->style()->drawControl( QStyle::CE_ItemViewItem, &opt, painter, view );
-
-	if(index.column() == 1)
-	{
-		drawOptionalButtons(painter, opt, index, OVERLAYED);
-	}
 }
 
 QSize QtPropertyItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -287,56 +283,61 @@ bool QtPropertyItemDelegate::helpEvent(QHelpEvent * event, QAbstractItemView * v
     return false;
 }
 
-void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOptionViewItem &opt, const QModelIndex &index, OptionalButtonsType type) const
+void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOptionViewItem &opt, const QModelIndex &index) const
 {
 	QtPropertyData* data = model->itemFromIndex(index);
     if (index.column() == 1 && NULL != data && data->GetButtonsCount() > 0)
     {
         int owSpacing = 1;
-        int owXPos = view->width() - owSpacing - view->verticalScrollBar()->width();
+        bool iconsToLeft = SettingsManager::GetValue(Settings::General_MaterialEditor_IconsToLeft).AsBool();
+        int owXPos = iconsToLeft ? (opt.rect.left() + owSpacing) : (opt.rect.right() - owSpacing);
 		int owYPos;
 
 		// draw not overlaid widgets
 		for(int i = data->GetButtonsCount() - 1; i >= 0; --i)
 		{
 			QtPropertyToolButton *btn = data->GetButton(i);
-            auto treeView = qobject_cast<const QTreeView*>(view);
-            auto availableWidth = owXPos - treeView->columnWidth(0) - btn->width() * (i + 1);
-            if(availableWidth < 0)
+            if(!iconsToLeft)
             {
-                continue;
+                owXPos -= btn->width();
+            }
+            // update widget height
+            if(btn->height() != opt.rect.height())
+            {
+                QRect geom = btn->geometry();
+                geom.setHeight(opt.rect.height());
+                btn->setGeometry(geom);
             }
 
-			if((type == NORMAL && !btn->overlayed) || (type == OVERLAYED && btn->overlayed))
-			{
-				// update widget height
-				if(btn->height() != opt.rect.height())
-				{
-					QRect geom = btn->geometry();
-					geom.setHeight(opt.rect.height());
-					btn->setGeometry(geom);
-				}
+            owYPos = opt.rect.y() + (opt.rect.height() - btn->height()) / 2;
 
-				owXPos -= btn->width();
-				owYPos = opt.rect.y() + (opt.rect.height() - btn->height()) / 2;
+            if(btn->isVisible())
+            {
+                btn->move(owXPos, owYPos);
+            }
+            else
+            {
+                QPixmap pix = btn->grab();
+                painter->drawPixmap(owXPos, owYPos, pix);
+            }
 
-				if(btn->isVisible())
-				{
-					btn->move(owXPos, owYPos);
-				}
-				else
-				{
-					QPixmap pix = btn->grab();
-					painter->drawPixmap(owXPos, owYPos, pix);
-				}
-
-				owXPos -= owSpacing;
-			}
-		}
-
-		if(type == NORMAL)
-		{
-			opt.rect.setRight(owXPos);
+            
+            if(iconsToLeft)
+            {
+                owXPos += owSpacing + btn->width();
+            }
+            else
+            {
+                owXPos -= owSpacing;
+            }
+            if(iconsToLeft)
+            {
+                opt.rect.setLeft(owXPos);
+            }
+            else
+            {
+                opt.rect.setRight(owXPos);
+            }
 		}
 	}
 }
