@@ -289,7 +289,7 @@ void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOption
     if (index.column() == 1 && NULL != data && data->GetButtonsCount() > 0)
     {
         int owSpacing = 1;
-        bool iconsToLeft = SettingsManager::GetValue(Settings::General_MaterialEditor_IconsToLeft).AsBool();
+        bool iconsToLeft = SettingsManager::GetValue(Settings::General_Properties_IconsToLeft).AsBool();
         int owXPos = iconsToLeft ? (opt.rect.left() + owSpacing) : (opt.rect.right() - owSpacing);
 		int owYPos;
 
