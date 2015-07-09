@@ -84,7 +84,8 @@ class QtPropertyData : public QObject
 
 	friend class QtPropertyModel;
 	friend class QtPropertyItemDelegate;
-
+signals:
+    void modelChanged(QtPropertyModel*);
 public:
 	enum ValueChangeReason
 	{
@@ -115,8 +116,8 @@ public:
 
 	QVariant GetAlias() const;
 
+    void SetIcon(const QIcon &icon);
 	QIcon GetIcon() const;
-	void SetIcon(const QIcon &icon);
 
 	QFont GetFont() const;
 	void SetFont(const QFont &font);

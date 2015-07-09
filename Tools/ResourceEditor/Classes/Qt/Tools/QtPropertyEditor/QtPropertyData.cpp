@@ -335,7 +335,7 @@ QString QtPropertyData::GetPath() const
 
 void QtPropertyData::SetIcon(const QIcon &icon)
 {
-	setData(QVariant(icon), Qt::DecorationRole);
+    setData(icon, Qt::DecorationRole);
 }
 
 QIcon QtPropertyData::GetIcon() const
@@ -581,6 +581,7 @@ void QtPropertyData::SetModel(QtPropertyModel *_model)
 			child->SetModel(model);
 		}
 	}
+    emit modelChanged(_model);
 }
 
 void QtPropertyData::SetValidator(QtPropertyDataValidator* value)
