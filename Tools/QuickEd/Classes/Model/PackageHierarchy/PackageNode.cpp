@@ -39,6 +39,7 @@
 #include "../ControlProperties/ControlPropertiesSection.h"
 
 #include "UI/Layouts/UILayoutSystem.h"
+#include "UI/Styles/UIStyleSheetSystem.h"
 #include "UI/UIControlSystem.h"
 
 using namespace DAVA;

@@ -203,18 +203,28 @@ int32 UIStaticText::GetTextVisualAlign() const
 
 bool UIStaticText::GetTextIsRtl() const
 {
-    return UIControlSystem::Instance()->GetLayoutSystem()->IsRtl();
+    return textBlock->IsRtl();
 }
 
-void UIStaticText::SetTextUseRtlAlign(bool useRtlAlign)
+void UIStaticText::SetTextUseRtlAlign(TextBlock::eUseRtlAlign useRtlAlign)
 {
     textBlock->SetUseRtlAlign(useRtlAlign);
 	textBg->SetAlign(textBlock->GetVisualAlign());
 }
 
-bool UIStaticText::GetTextUseRtlAlign() const
+TextBlock::eUseRtlAlign UIStaticText::GetTextUseRtlAlign() const
 {
     return textBlock->GetUseRtlAlign();
+}
+
+void UIStaticText::SetTextUseRtlAlignFromInt(int32 value)
+{
+    SetTextUseRtlAlign(static_cast<TextBlock::eUseRtlAlign>(value));
+}
+    
+int32 UIStaticText::GetTextUseRtlAlignAsInt() const
+{
+    return GetTextUseRtlAlign();
 }
 
 const Vector2 & UIStaticText::GetTextSize()
@@ -401,7 +411,11 @@ void UIStaticText::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader
 	
 	if (textUseRtlAlignNode)
 	{
-		SetTextUseRtlAlign(textUseRtlAlignNode->AsBool());
+        
+        if (textUseRtlAlignNode->AsString() == "true" || textUseRtlAlignNode->AsString() == "false")
+            SetTextUseRtlAlign(textUseRtlAlignNode->AsBool() ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE);
+        else
+            SetTextUseRtlAlign(static_cast<TextBlock::eUseRtlAlign>(textUseRtlAlignNode->AsInt32()));
 	}
 
     if (textNode)

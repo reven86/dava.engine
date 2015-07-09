@@ -119,6 +119,7 @@ TextBlock::TextBlock()
 
 	isMultilineBySymbolEnabled = false;
     treatMultilineAsSingleLine = false;
+    isRtl = false;
     
 	textBlockRender = NULL;
 	needPrepareInternal = false;
@@ -374,10 +375,16 @@ void TextBlock::SetUseRtlAlign(eUseRtlAlign useRtlAlign)
     mutex.Unlock();
 }
 
-    TextBlock::eUseRtlAlign TextBlock::GetUseRtlAlign()
+TextBlock::eUseRtlAlign TextBlock::GetUseRtlAlign()
 {
     LockGuard<Mutex> guard(mutex);
     return useRtlAlign;
+}
+    
+bool TextBlock::IsRtl()
+{
+    LockGuard<Mutex> guard(mutex);
+    return isRtl;
 }
 
 int32 TextBlock::GetAlign()
@@ -394,9 +401,9 @@ int32 TextBlock::GetVisualAlign()
 	
 int32 TextBlock::GetVisualAlignNoMutexLock() const
 {
-    bool isRtl = UIControlSystem::Instance()->GetLayoutSystem()->IsRtl();
-	if(useRtlAlign && isRtl &&
-       (align & ALIGN_LEFT || align & ALIGN_RIGHT))
+	if (((align & (ALIGN_LEFT | ALIGN_RIGHT)) != 0) &&
+        ((useRtlAlign == RTL_USE_BY_CONTENT && isRtl) ||
+         (useRtlAlign == RTL_USE_BY_SYSTEM && UIControlSystem::Instance()->GetLayoutSystem()->IsRtl())))
     {
         // Mirror left/right align
         return align ^ (ALIGN_LEFT | ALIGN_RIGHT);
@@ -466,6 +473,7 @@ void TextBlock::CalculateCacheParams()
     if (logicalText.empty())
     {
         visualText.clear();
+        isRtl = false;
         cacheFinalSize = Vector2(0.f,0.f);
         cacheW = 0;
         cacheDx = 0;
@@ -484,7 +492,8 @@ void TextBlock::CalculateCacheParams()
     Vector<float32> charSizes;
     
     textLayout.Reset(logicalText, *font);
-
+    isRtl = textLayout.IsRtlText();
+    
     visualText = textLayout.GetVisualText(false);
 
     bool useJustify = ((align & ALIGN_HJUSTIFY) != 0);

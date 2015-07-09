@@ -95,8 +95,11 @@ public:
     virtual int32 GetTextAlign() const;
 	virtual int32 GetTextVisualAlign() const;
 	virtual bool GetTextIsRtl() const;
-	virtual void SetTextUseRtlAlign(bool useRtlAlign);
-    virtual bool GetTextUseRtlAlign() const;
+    virtual void SetTextUseRtlAlign(TextBlock::eUseRtlAlign useRtlAlign);
+    virtual TextBlock::eUseRtlAlign GetTextUseRtlAlign() const;
+    
+    virtual void SetTextUseRtlAlignFromInt(int32 value);
+    virtual int32 GetTextUseRtlAlignAsInt() const;
 
     const Vector2 & GetTextSize();
 
@@ -182,7 +185,7 @@ public:
                          PROPERTY("multiline", InspDesc("Multi Line", GlobalEnumMap<eMultiline>::Instance()), GetMultilineType, SetMultilineType, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("fitting", InspDesc("Fitting", GlobalEnumMap<TextBlock::eFitType>::Instance(), InspDesc::T_FLAGS), GetFittingOption, SetFittingOption, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textalign", InspDesc("Text Align", GlobalEnumMap<eAlign>::Instance(), InspDesc::T_FLAGS), GetTextAlign, SetTextAlign, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("textUseRtlAlign", "Use Rtl Align", GetTextUseRtlAlign, SetTextUseRtlAlign, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("textUseRtlAlign", InspDesc("Use Rtl Align", GlobalEnumMap<TextBlock::eUseRtlAlign>::Instance(), InspDesc::T_ENUM), GetTextUseRtlAlignAsInt, SetTextUseRtlAlignFromInt, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("textMargins", "Text margins", GetMarginsAsVector4, SetMarginsAsVector4, I_SAVE | I_VIEW | I_EDIT)
                          );
 

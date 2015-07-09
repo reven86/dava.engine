@@ -47,6 +47,7 @@ namespace
 {
 const FastName PROPERTY_NAME_MULTILINE("multiline");
 const FastName PROPERTY_NAME_SIZE("size");
+const FastName PROPERTY_NAME_TEXT_USE_RTL_ALIGN("textUseRtlAlign");
 }
 
 LegacyEditorUIPackageLoader::LegacyEditorUIPackageLoader(LegacyControlData *data)
@@ -409,6 +410,10 @@ VariantType LegacyEditorUIPackageLoader::ReadVariantTypeFromYamlNode(const InspM
                     {
                         return VariantType(UIStaticText::MULTILINE_DISABLED);
                     }
+                }
+                else if (member->Name() == PROPERTY_NAME_TEXT_USE_RTL_ALIGN)
+                {
+                    return VariantType(static_cast<int32>(valueNode->AsBool() ? TextBlock::RTL_USE_BY_CONTENT : TextBlock::RTL_DONT_USE));
                 }
                 else if (textFieldEnums.find(propertyName) != textFieldEnums.end())
                 {

@@ -385,7 +385,7 @@ void UIButton::SetStateTextAlign(int32 state, int32 align)
     }
 }
 	
-void UIButton::SetStateTextUseRtlAlign(int32 state, bool value)
+void UIButton::SetStateTextUseRtlAlign(int32 state, TextBlock::eUseRtlAlign value)
 {
     for(int i = 0; i < DRAW_STATE_COUNT && state; i++)
     {
@@ -783,7 +783,7 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 			
 			if (stateTextUseRtlAlignNode)
             {
-                stateTextBlock->SetTextUseRtlAlign(stateTextUseRtlAlignNode->AsBool());
+                stateTextBlock->SetTextUseRtlAlign((TextBlock::eUseRtlAlign) stateTextUseRtlAlignNode->AsInt());
             }
 
             if (stateTextColorNode)
