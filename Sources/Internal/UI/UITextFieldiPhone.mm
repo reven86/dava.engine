@@ -611,12 +611,12 @@ namespace DAVA
         }
     }
     
-    void UITextFieldiPhone::SetMultiline(DAVA::uint32 maxLines, bool verticalScrollBarEnabled)
+    void UITextFieldiPhone::SetMultiline(bool multiline)
     {
         UITextFieldHolder * textFieldHolder = static_cast<UITextFieldHolder*>(objcClassPtr);
         DVASSERT(textFieldHolder);
         
-        if(isSingleLine && maxLines > 1)
+        if(isSingleLine && multiline)
         {
             // store current properties, font, size, text etc.
             
@@ -656,9 +656,8 @@ namespace DAVA
             
             [textView setBackgroundColor:[UIColor clearColor]];
             
-            textView.scrollEnabled = (verticalScrollBarEnabled ? YES : NO);
-            textView.textContainer.maximumNumberOfLines = (NSUInteger)maxLines;
-        } else if (!isSingleLine && maxLines == 1)
+            textView.scrollEnabled = YES;
+        } else if (!isSingleLine && !multiline)
         {
             // revert back single line native control
             // TODO in future completely remove UITextField native control

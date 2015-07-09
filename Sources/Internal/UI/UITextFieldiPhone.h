@@ -80,7 +80,7 @@ public:
     // Max text length.
     void SetMaxLength(int maxLength);
     
-    void SetMultiline(DAVA::uint32 maxLines, bool verticalScrollBarEnabled);
+    void SetMultiline(bool multiline);
     
     void SetRenderToTexture(bool value);
     bool IsRenderToTexture() const;
