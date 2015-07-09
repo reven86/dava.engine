@@ -22,3 +22,7 @@ set( LIBRARIES                   )
 set( MAC_DISABLE_BUNDLE     true )
 
 setup_main_executable()
+
+if (WIN32)
+set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:CONSOLE" )
+endif ()
