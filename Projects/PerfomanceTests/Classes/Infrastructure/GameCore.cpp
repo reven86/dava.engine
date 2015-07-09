@@ -206,7 +206,7 @@ void GameCore::InitScreenController()
     
 	if (chooserFound)
 	{
-        testFlowController = new SingleTestFlowController();
+        testFlowController = new SingleTestFlowController(!withoutUIFound);
 	}
     else if (!testForRun.empty())
     {
@@ -308,7 +308,7 @@ void GameCore::InitScreenController()
             }
         }
 
-        testFlowController = new SingleTestFlowController(testForRun, singleTestParams);
+        testFlowController = new SingleTestFlowController(testForRun, singleTestParams, !withoutUIFound);
         
         Logger::Instance()->Info(DAVA::Format("Test %s params ", testForRun.c_str()).c_str());
         Logger::Instance()->Info(DAVA::Format("Target time : %d", singleTestParams.targetTime).c_str());

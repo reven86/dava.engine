@@ -45,6 +45,7 @@ void TestChainFlowController::Init(const Vector<BaseTest*>& _testChain)
     
     currentTestIndex = 0;
     currentTest = testChain[currentTestIndex];
+    currentTest->ShowUI(showUIReport);
     currentScreen = currentTest;
 }
 
@@ -71,6 +72,7 @@ void TestChainFlowController::EndFrame()
         if (!testsFinished)
         {
             currentTest = testChain[currentTestIndex];
+            currentTest->ShowUI(showUIReport);
             currentScreen = currentTest;
         }
     }

@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __BASE_TEST_H__
 
 #include "Infrastructure/Screen/BaseScreen.h"
+#include "Infrastructure/Utils/ControlHelpers.h"
 #include "MemoryManager/MemoryProfiler.h"
 #include "TeamCityTestsOutput.h"
 
@@ -80,6 +81,9 @@ public:
     void EndFrame() override;
     void SystemUpdate(float32 timeElapsed) override;
     
+    void ShowUI(bool visible);
+    bool IsUIVisible() const;
+    
     const String& GetName() const;
     
     bool IsFinished() const override;
@@ -103,7 +107,11 @@ protected:
     void LoadResources() override;
     void UnloadResources() override;
 
+    virtual void CreateUI();
+    virtual void UpdateUI();
+    
     size_t GetAllocatedMemory();
+    DAVA::UIControl* GetUIRoot() const;
     
     virtual void PerformTestLogic(float32 timeElapsed) = 0;
     
@@ -120,8 +128,22 @@ private:
     
     float32 overallTestTime;
     
+    float32 minDelta;
+    float32 maxDelta;
+    float32 currentFrameDelta;
+    
     Scene* scene;
     UI3DView* sceneView;
+    
+    DAVA::UIControl* uiRoot;
+    
+    UIStaticText* testNameText;
+    UIStaticText* maxFPSText;
+    UIStaticText* minFPSText;
+    UIStaticText* fpsText;
+    UIStaticText* testTimeText;
+    UIStaticText* elapsedTimeText;
+    UIStaticText* framesRenderedText;
     
     size_t maxAllocatedMemory;
 };
@@ -180,6 +202,21 @@ inline void BaseTest::SetParams(const TestParams& _testParams)
 inline const BaseTest::TestParams& BaseTest::GetParams() const
 {
     return testParams;
+}
+
+inline DAVA::UIControl* BaseTest::GetUIRoot() const
+{
+    return uiRoot;
+}
+
+inline void BaseTest::ShowUI(bool visible)
+{
+    GetUIRoot()->SetVisible(visible);
+}
+
+inline bool BaseTest::IsUIVisible() const
+{
+    return GetUIRoot()->GetVisible();
 }
 
 #endif

@@ -36,8 +36,12 @@ BaseTest::BaseTest(const String& _testName, const TestParams& _testParams)
     ,   frameNumber(0)
     ,   startTime(0)
     ,   overallTestTime(0.0f)
+    ,   minDelta(FLT_MAX)
+    ,   maxDelta(FLT_MIN)
+    ,   currentFrameDelta(0.0f)
     ,   maxAllocatedMemory(0)
 {
+    uiRoot = new DAVA::UIControl();
 }
 
 void BaseTest::LoadResources()
@@ -56,11 +60,71 @@ void BaseTest::LoadResources()
     sceneView->SetScene(scene);
 
     AddControl(sceneView);
+    
+    CreateUI();
 }
 
 void BaseTest::UnloadResources()
 {
     SafeRelease(scene);
+}
+
+void BaseTest::CreateUI()
+{
+    DAVA::UIControl* reportItem = new DAVA::UIControl();
+    
+    UIYamlLoader::LoadFonts("~res:/UI/Fonts/fonts.yaml");
+    UIYamlLoader::Load(reportItem, ControlHelpers::GetPathToUIYaml("ReportItem.yaml"));
+    
+    uiRoot->SetPosition(Vector2(0.0f, 0.0f));
+    reportItem->SetPosition(Vector2(0.0f, 0.0f));
+    
+    testNameText = static_cast<UIStaticText*>(reportItem->FindByName(ControlHelpers::ReportItem::TEST_NAME));
+    testNameText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%s", GetName().c_str())));
+    
+    UIStaticText* fieldMinFpsText = static_cast<UIStaticText*>(reportItem->FindByName("MinDeltaText"));
+    fieldMinFpsText->SetText(UTF8Utils::EncodeToWideString("Max FPS"));
+    
+    maxFPSText = static_cast<UIStaticText*>(reportItem->FindByName(ControlHelpers::ReportItem::MIN_DELTA));
+    maxFPSText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", 0.0f)));
+    
+    UIStaticText* fieldMaxFpsText = static_cast<UIStaticText*>(reportItem->FindByName("MaxDeltaText"));
+    fieldMaxFpsText->SetText(UTF8Utils::EncodeToWideString("Min FPS"));
+    
+    minFPSText = static_cast<UIStaticText*>(reportItem->FindByName(ControlHelpers::ReportItem::MAX_DELTA));
+    minFPSText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", 0.0f)));
+    
+    UIStaticText* fieldFpsText = static_cast<UIStaticText*>(reportItem->FindByName("AverageDeltaText"));
+    fieldFpsText->SetText(UTF8Utils::EncodeToWideString("FPS"));
+    
+    fpsText = static_cast<UIStaticText*>(reportItem->FindByName(ControlHelpers::ReportItem::AVERAGE_DELTA));
+    fpsText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", 0.0f)));
+    
+    testTimeText = static_cast<UIStaticText*>(reportItem->FindByName(ControlHelpers::ReportItem::TEST_TIME));
+    testTimeText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", 0.0f)));
+    
+    elapsedTimeText = static_cast<UIStaticText*>(reportItem->FindByName(ControlHelpers::ReportItem::ELAPSED_TIME));
+    elapsedTimeText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", 0.0f)));
+    
+    framesRenderedText = static_cast<UIStaticText*>(reportItem->FindByName(ControlHelpers::ReportItem::FRAMES_RENDERED));
+    framesRenderedText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%d", 0)));
+    
+    AddControl(uiRoot);
+    uiRoot->AddControl(reportItem);
+}
+
+void BaseTest::UpdateUI()
+{
+    elapsedTime = SystemTimer::Instance()->FrameStampTimeMS() - startTime;
+    
+    float32 fps = currentFrameDelta > 0.001f ? 1.0f / currentFrameDelta : 0.0f;
+    
+    maxFPSText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", 1.0f / minDelta)));
+    minFPSText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", 1.0f / maxDelta)));
+    fpsText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", fps)));
+    testTimeText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", overallTestTime)));
+    elapsedTimeText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", elapsedTime / 1000.0f)));
+    framesRenderedText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%d", frameNumber)));
 }
 
 size_t BaseTest::GetAllocatedMemory()
@@ -81,39 +145,21 @@ void BaseTest::OnFinish()
 {
     elapsedTime = SystemTimer::Instance()->FrameStampTimeMS() - startTime;
 
-    float32 minDelta = FLT_MAX;
-    float32 maxDelta = FLT_MIN;
-    float32 averageDelta = 0.0f;
-
-    float32 testTime = 0.0f;
-    float32 elapsedTime = 0.0f;
-
     size_t framesCount = GetFramesInfo().size();
 
     Logger::Info(("TestName:" + testName).c_str());
     
     for (const BaseTest::FrameInfo& frameInfo : GetFramesInfo())
     {
-        if (frameInfo.delta > maxDelta)
-        {
-            maxDelta = frameInfo.delta;
-        }
-        if (frameInfo.delta < minDelta)
-        {
-            minDelta = frameInfo.delta;
-        }
-
-        averageDelta += frameInfo.delta;
-
         Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
             TeamcityTestsOutput::FRAME_DELTA,
             DAVA::Format("%f", frameInfo.delta)).c_str());
     }
 
-    averageDelta /= framesCount;
+    float32 averageDelta = 1.0f / (overallTestTime  / framesCount);
 
-    testTime = GetOverallTestTime();
-    elapsedTime = GetElapsedTime() / 1000.0f;
+    float32 testTime = GetOverallTestTime();
+    float32 elapsedTimeInSeconds = GetElapsedTime() / 1000.0f;
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
         TeamcityTestsOutput::MIN_DELTA,
@@ -145,7 +191,7 @@ void BaseTest::OnFinish()
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
         TeamcityTestsOutput::TIME_ELAPSED,
-        DAVA::Format("%f", elapsedTime)).c_str());
+        DAVA::Format("%f", elapsedTimeInSeconds)).c_str());
 
     Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
         TeamcityTestsOutput::MAX_MEM_USAGE,
@@ -162,7 +208,7 @@ void BaseTest::SystemUpdate(float32 timeElapsed)
         maxAllocatedMemory = allocatedMem;
     }
 
-    bool frameForDebug = GetFrameNumber() >= (testParams.frameForDebug + BaseTest::FRAME_OFFSET) && testParams.frameForDebug > 0;
+    bool frameForDebug = frameNumber >= (testParams.frameForDebug + BaseTest::FRAME_OFFSET) && testParams.frameForDebug > 0;
     bool greaterMaxDelta = testParams.maxDelta > 0.001f && testParams.maxDelta <= timeElapsed;
     
     float32 delta = 0.0f;
@@ -190,10 +236,25 @@ void BaseTest::SystemUpdate(float32 timeElapsed)
         }
         
         overallTestTime += delta;
+        currentFrameDelta = delta;
+        
+        if(delta < minDelta)
+        {
+            minDelta = delta;
+        }
+        if(delta > maxDelta)
+        {
+            maxDelta = delta;
+        }
+        
+        if(IsUIVisible())
+        {
+            UpdateUI();
+        }
         
         PerformTestLogic(delta);
     }
-   
+    
     BaseScreen::SystemUpdate(delta);
 }
 

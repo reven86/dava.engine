@@ -33,3 +33,11 @@ FilePath ControlHelpers::GetPathToUIYaml(const String &yamlFileName)
     const FilePath path = Format("~res:/UI/win/%s", yamlFileName.c_str());
     return path;
 }
+
+const String ControlHelpers::ReportItem::TEST_NAME = "TestName";
+const String ControlHelpers::ReportItem::MIN_DELTA = "MinDeltaValue";
+const String ControlHelpers::ReportItem::MAX_DELTA = "MaxDeltaValue";
+const String ControlHelpers::ReportItem::AVERAGE_DELTA = "AverageDeltaValue";
+const String ControlHelpers::ReportItem::TEST_TIME = "TestTimeValue";
+const String ControlHelpers::ReportItem::ELAPSED_TIME = "ElapsedTimeValue";
+const String ControlHelpers::ReportItem::FRAMES_RENDERED = "FramesRenderedValue";
