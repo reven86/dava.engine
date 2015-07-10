@@ -31,39 +31,203 @@
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include <ppltasks.h>
+#include <collection.h>
 
 #include "Base/RefPtr.h"
+#include "Debug/DVAssert.h"
 
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/Image/ImageConvert.h"
 
-#include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
 
 #include "UI/UIWebView.h"
 #include "Platform/TemplateWin32/WebViewControlWinUAP.h"
 
+#include "FileSystem/FileSystem.h"
 #include "FileSystem/File.h"
 #include "FileSystem/Logger.h"
 
+using namespace Windows::System;
 using namespace Windows::Foundation;
+using namespace Windows::Foundation::Collections;
+using namespace Windows::UI;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
 using namespace Windows::UI::Xaml::Media;
 using namespace Windows::UI::Xaml::Media::Imaging;
 using namespace Windows::Storage;
 using namespace Windows::Storage::Streams;
+using namespace Windows::Web;
+using namespace Windows::Web::Http;
+using namespace Windows::Web::Http::Filters;
 using namespace concurrency;
 
 namespace DAVA
 {
 
+/*
+    UriResolver used in WebViewControl's OpenFromBuffer method to
+    map resource paths in html source to local resource files
+*/
+private ref class UriResolver sealed : public IUriToStreamResolver
+{
+    enum eResLocation
+    {
+        PATH_IN_BIN,        // Resources are relative to app install dir
+        PATH_IN_DOC,        // Resources are relative to user documents dir
+        PATH_IN_PUB,        // Resources are relative to public documents dir
+        PATH_UNKNOWN        // Resource location is unknown
+    };
+
+internal:
+    UriResolver(const String& htmlData, const FilePath& basePath);
+
+public:
+    virtual IAsyncOperation<IInputStream^>^ UriToStreamAsync(Uri^ uri);
+
+private:
+    IAsyncOperation<IInputStream^>^ GetStreamFromUriAsync(Uri^ uri);
+    IAsyncOperation<IInputStream^>^ GetStreamFromStringAsync(Platform::String^ s);
+
+    void DetermineResourcesLocation(const FilePath& basePath);
+    bool CheckIfPathReachableFrom(const String& pathToCheck, const String& pathToReach, String& pathTail) const;
+
+private:
+    Platform::String^ htmlData;
+    Platform::String^ relativeResPath;
+    eResLocation location;
+};
+
+UriResolver::UriResolver(const String& htmlData_, const FilePath& basePath)
+    : htmlData(ref new Platform::String(StringToWString(htmlData_).c_str()))
+{
+    DetermineResourcesLocation(basePath);
+}
+
+IAsyncOperation<IInputStream^>^ UriResolver::UriToStreamAsync(Uri^ uri)
+{
+    DVASSERT(uri != nullptr);
+
+    Platform::String^ dummy = uri->Path;
+    if (0 == Platform::String::CompareOrdinal(uri->Path, L"/johny23"))
+    {   // Create stream from HTML data
+        return GetStreamFromStringAsync(htmlData);
+    }
+    else
+    {   // Create stream for resource files
+        Platform::String^ resPath = relativeResPath + uri->Path;
+        Uri^ appDataUri = nullptr;
+        switch (location)
+        {
+        case PATH_IN_BIN:
+            appDataUri = ref new Uri(L"ms-appx:///" + resPath);
+            break;
+        case PATH_IN_DOC:
+            appDataUri = ref new Uri(L"ms-appdata:///roaming/" + resPath);
+            break;
+        case PATH_IN_PUB:
+            appDataUri = ref new Uri(L"ms-appdata:///local/" + resPath);
+            break;
+        default:
+            return nullptr;
+        }
+        Platform::String^ foobar = appDataUri->ToString();
+        return GetStreamFromUriAsync(appDataUri);
+    }
+}
+
+IAsyncOperation<IInputStream^>^ UriResolver::GetStreamFromUriAsync(Uri^ uri)
+{
+    return create_async([this, uri]() -> IInputStream^
+    {
+        task<StorageFile^> getFileTask(StorageFile::GetFileFromApplicationUriAsync(uri));
+        task<IInputStream^> getInputStreamTask = getFileTask.then([](StorageFile^ storageFile)
+        {
+            return storageFile->OpenAsync(FileAccessMode::Read);
+        }).then([](IRandomAccessStream^ stream)
+        {
+            return static_cast<IInputStream^>(stream);
+        });
+
+        try {
+            return getInputStreamTask.get();
+        } catch (Platform::COMException^ e) {
+            // Ignore errors when resource file is not found or access is denied
+            HRESULT hr = e->HResult;
+            if (HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND) == hr || HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED) == hr)
+            {
+                Logger::Error("[WebView] failed to load URI='%s': %s", WStringToString(uri->Path->Data()).c_str(),
+                              HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND) == hr ? "file not found" : "access denied");
+                return ref new InMemoryRandomAccessStream();
+            }
+            throw;  // Rethrow other exceptions
+        }
+    });
+}
+
+IAsyncOperation<IInputStream^>^ UriResolver::GetStreamFromStringAsync(Platform::String^ s)
+{
+    InMemoryRandomAccessStream^ stream = ref new InMemoryRandomAccessStream();
+    DataWriter^ writer = ref new DataWriter(stream->GetOutputStreamAt(0));
+
+    writer->WriteString(s);
+    create_task(writer->StoreAsync()).get();
+
+    return create_async([stream]() -> IInputStream^ {
+        return stream;
+    });
+}
+
+void UriResolver::DetermineResourcesLocation(const FilePath& basePath)
+{
+    FileSystem* fs = FileSystem::Instance();
+
+    String pathTail;
+    String absPath = basePath.GetAbsolutePathname();
+    if (CheckIfPathReachableFrom(absPath, fs->GetCurrentExecutableDirectory().GetAbsolutePathname(), pathTail))
+    {
+        location = PATH_IN_BIN;
+    }
+    else if (CheckIfPathReachableFrom(absPath, fs->GetUserDocumentsPath().GetAbsolutePathname(), pathTail))
+    {
+        location = PATH_IN_DOC;
+    }
+    else if (CheckIfPathReachableFrom(absPath, fs->GetPublicDocumentsPath().GetAbsolutePathname(), pathTail))
+    {
+        location = PATH_IN_PUB;
+    }
+    else
+    {
+        location = PATH_UNKNOWN;
+    }
+    relativeResPath = ref new Platform::String(StringToWString(pathTail).c_str());
+}
+
+bool UriResolver::CheckIfPathReachableFrom(const String& pathToCheck, const String& pathToReach, String& pathTail) const
+{
+    if (pathToCheck.length() >= pathToReach.length())
+    {
+        if (0 == pathToCheck.compare(0, pathToReach.length(), pathToReach))
+        {
+            pathTail = pathToCheck.substr(pathToReach.length());
+            if (!pathTail.empty() && '/' == pathTail.back())
+            {
+                pathTail.pop_back();
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
 WebViewControl::WebViewControl(UIWebView& uiWebView_)
-    : uiWebView(uiWebView_)
+    : uiWebView(&uiWebView_)
     , core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
-    , id(++n)
 {
     Logger::Debug("****************************** WebViewControl::WebViewControl: %p", this);
 }
@@ -71,6 +235,8 @@ WebViewControl::WebViewControl(UIWebView& uiWebView_)
 WebViewControl::~WebViewControl()
 {
     Logger::Debug("****************************** WebViewControl::~WebViewControl: %p", this);
+    uiWebView = nullptr;
+    webViewDelegate = nullptr;
     if (nativeWebView != nullptr)
     {
         core->RunOnUIThreadBlocked([this]() {
@@ -84,22 +250,20 @@ void WebViewControl::Initialize(const Rect& rect)
 {
     originalRect = rect;
     core->RunOnUIThreadBlocked([this]() {
-        nativeWebView = ref new WebView;//(WebViewExecutionMode::SeparateThread);
-        //nativeWebView->Visibility = Visibility::Collapsed;
-        //nativeWebView->CompositeMode = ElementCompositeMode::MinBlend;
+        nativeWebView = ref new WebView();
+        defaultBkgndColor = nativeWebView->DefaultBackgroundColor;
 
         core->XamlApplication()->AddUIElement(nativeWebView);
 
         InstallEventHandlers();
-        PositionWebView(originalRect);
+        PositionWebView(originalRect, false);
     });
 }
 
 void WebViewControl::OpenURL(const String& urlToOpen)
 {
-    core->RunOnUIThread([this, urlToOpen]() {
-        WideString wideUrl = UTF8Utils::EncodeToWideString(urlToOpen);
-        Uri^ url = ref new Uri(ref new Platform::String(wideUrl.c_str()));
+    Uri^ url = ref new Uri(ref new Platform::String(StringToWString(urlToOpen).c_str()));
+    core->RunOnUIThread([this, url]() {
         nativeWebView->Navigate(url);
     });
 }
@@ -112,41 +276,128 @@ void WebViewControl::LoadHtmlString(const WideString& htmlString)
     });
 }
 
+void WebViewControl::OpenFromBuffer(const String& htmlString, const FilePath& basePath)
+{
+    UriResolver^ resolver = ref new UriResolver(htmlString, basePath);
+    core->RunOnUIThread([this, resolver]() {
+        Uri^ uri = nativeWebView->BuildLocalStreamUri("DAVA", "/johny23");
+        nativeWebView->NavigateToLocalStreamUri(uri, resolver);
+    });
+}
+
 void WebViewControl::ExecuteJScript(const String& scriptString)
 {
-    /*core->RunOnUIThread([this, scriptString]() {
-        Platform::String^ script = ref new Platform::String(UTF8Utils::EncodeToWideString(scriptString).c_str());
-        Platform::Array<Platform::String^>^ args = ref new Platform::Array<Platform::String^>(1);
-        args[0] = script;
-        Windows::Foundation::Collections::IVector<
-        //auto args = ref new Platform::Collections::Vector<Platform::String^>();
-        //args->Append(script);
-        //nativeWebView->InvokeScriptAsync("eval", script);
-        nativeWebView->InvokeScriptAsync("eval", args);
-    });*/
+    Platform::String^ script = ref new Platform::String(StringToWString(scriptString).c_str());
+    core->RunOnUIThread([this, script]() {
+        auto args = ref new Platform::Collections::Vector<Platform::String^>();
+        args->Append(script);
+
+        auto js = nativeWebView->InvokeScriptAsync("eval", args);
+        create_task(js).then([this](Platform::String^ result) {
+            core->RunOnMainThread([this, result]() {
+                IUIWebViewDelegate* legate = webViewDelegate.Get();
+                UIWebView* view = uiWebView.Get();
+                if (legate != nullptr && view != nullptr)
+                {
+                    String jsResult = WStringToString(result->Data());
+                    legate->OnExecuteJScript(view, jsResult);
+                }
+            });
+        }).then([](task<void> t) {
+            try {
+                t.get();
+            } catch (Platform::Exception^ e) {
+                // Exception can be thrown if a webpage has not been loaded into the WebView
+                HRESULT hr = e->HResult;
+                Logger::Error("[WebView] failed to execute JS: hresult=0x%08X, message=%s", hr, WStringToString(e->Message->Data()).c_str());
+            }
+        });
+    });
+}
+
+void WebViewControl::DeleteCookies(const String& url)
+{
+    Uri^ uri = ref new Uri(ref new Platform::String(StringToWString(url).c_str()));
+    HttpBaseProtocolFilter httpObj;
+    HttpCookieManager^ cookieManager = httpObj.CookieManager;
+    HttpCookieCollection^ cookies = cookieManager->GetCookies(uri);
+
+    IIterator<HttpCookie^>^ it = cookies->First();
+    while (it->HasCurrent)
+    {
+        HttpCookie^ cookie = it->Current;
+        cookieManager->DeleteCookie(cookie);
+        it->MoveNext();
+    }
+}
+
+String WebViewControl::GetCookie(const String& url, const String& name) const
+{
+    String result;
+
+    Uri^ uri = ref new Uri(ref new Platform::String(StringToWString(url).c_str()));
+    HttpBaseProtocolFilter httpObj;
+    HttpCookieCollection^ cookies = httpObj.CookieManager->GetCookies(uri);
+
+    Platform::String^ cookieName = ref new Platform::String(StringToWString(name).c_str());
+    IIterator<HttpCookie^>^ it = cookies->First();
+    while (it->HasCurrent)
+    {
+        HttpCookie^ cookie = it->Current;
+        if (cookie->Name == cookieName)
+        {
+            result = WStringToString(cookie->Value->Data());
+            break;
+        }
+        it->MoveNext();
+    }
+    return result;
+}
+
+Map<String, String> WebViewControl::GetCookies(const String& url) const
+{
+    Map<String, String> result;
+
+    Uri^ uri = ref new Uri(ref new Platform::String(StringToWString(url).c_str()));
+    HttpBaseProtocolFilter httpObj;
+    HttpCookieCollection^ cookies = httpObj.CookieManager->GetCookies(uri);
+
+    IIterator<HttpCookie^>^ it = cookies->First();
+    while (it->HasCurrent)
+    {
+        HttpCookie^ cookie = it->Current;
+        result.emplace(WStringToString(cookie->Name->Data()), WStringToString(cookie->Value->Data()));
+        it->MoveNext();
+    }
+    return result;
 }
 
 void WebViewControl::SetRect(const Rect& rect)
 {
     originalRect = rect;
-    core->RunOnUIThread([this]() {
-        PositionWebView(originalRect);
+    bool offScreen = renderToTexture || !visible;
+    core->RunOnUIThread([this, offScreen]() {
+        PositionWebView(originalRect, offScreen);
     });
 }
 
 void WebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
 {
-    core->RunOnUIThread([this, isVisible]() {
-        nativeWebView->Visibility = isVisible ? Visibility::Visible : Visibility::Collapsed;
-    });
+    if (visible != isVisible)
+    {
+        // If control should get invisible it is simply moved off the screen
+        visible = isVisible;
+        bool offScreen = renderToTexture || !visible;
+        core->RunOnUIThread([this, offScreen]() {
+            PositionWebView(originalRect, offScreen);
+        });
+    }
 }
 
 void WebViewControl::SetBackgroundTransparency(bool enabled)
 {
     core->RunOnUIThread([this, enabled]() {
-        //nativeWebView->Opacity = enabled ? 0.5 : 1.0;
-        //nativeWebView->CompositeMode = enabled ? ElementCompositeMode::MinBlend : ElementCompositeMode::SourceOver;
-        nativeWebView->CompositeMode = enabled ? (ElementCompositeMode)3 : ElementCompositeMode::SourceOver;
+        nativeWebView->DefaultBackgroundColor = enabled ? Colors::Transparent : defaultBkgndColor;
     });
 }
 
@@ -165,18 +416,19 @@ void WebViewControl::SetRenderToTexture(bool value)
         renderToTexture = value;
         if (!renderToTexture)
         {
-            uiWebView.SetSprite(nullptr, 0);
+            UIWebView* view = uiWebView.Get();
+            if (view != nullptr)
+            {
+                view->SetSprite(nullptr, 0);
+            }
         }
 
-        core->RunOnUIThread([this]() {
+        bool offScreen = renderToTexture || !visible;
+        core->RunOnUIThread([this, offScreen]() {
+            PositionWebView(originalRect, offScreen);
             if (renderToTexture)
             {
-                PositionWebView(originalRect);
                 RenderToTexture();
-            }
-            else
-            {
-                PositionWebView(originalRect);
             }
         });
     }
@@ -184,6 +436,7 @@ void WebViewControl::SetRenderToTexture(bool value)
 
 void WebViewControl::InstallEventHandlers()
 {
+    // Install event handlers through lambdas as it seems only ref class's member functions can be event handlers directly
     auto navigationStarting = ref new TypedEventHandler<WebView^, WebViewNavigationStartingEventArgs^>([this](WebView^ sender, WebViewNavigationStartingEventArgs^ args) {
         OnNavigationStarting(sender, args);
     });
@@ -194,7 +447,7 @@ void WebViewControl::InstallEventHandlers()
     nativeWebView->NavigationCompleted += navigationCompleted;
 }
 
-void WebViewControl::PositionWebView(const Rect& rect)
+void WebViewControl::PositionWebView(const Rect& rect, bool offScreen)
 {
     VirtualCoordinatesSystem* coordSys = VirtualCoordinatesSystem::Instance();
 
@@ -206,7 +459,7 @@ void WebViewControl::PositionWebView(const Rect& rect)
 
     // When rendering to texture move WebView off the screen
     // as only visible WebView can produce its image
-    if (renderToTexture)
+    if (offScreen)
     {
         physRect.x = -width;
         physRect.y = -height;
@@ -216,45 +469,62 @@ void WebViewControl::PositionWebView(const Rect& rect)
     core->XamlApplication()->PositionUIElement(nativeWebView, physRect.x, physRect.y);
 }
 
-void WebViewControl::OnNavigationStarting(Windows::UI::Xaml::Controls::WebView^ sender, Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs^ args)
+void WebViewControl::OnNavigationStarting(WebView^ sender, WebViewNavigationStartingEventArgs^ args)
 {
     String url;
     if (args->Uri != nullptr)
     {
-        Platform::String^ canonicalUrl = args->Uri->AbsoluteCanonicalUri;
-        url = UTF8Utils::EncodeToUTF8(WideString(canonicalUrl->Data()));
+        url = WStringToString(args->Uri->AbsoluteCanonicalUri->Data());
     }
-    Logger::Debug("********* OnNavigationStarting: url=%s", url.c_str());
+    Logger::FrameworkDebug("[WebView] OnNavigationStarting: url=%s", url.c_str());
 
-    if (webViewDelegate != nullptr)
+    IUIWebViewDelegate* legate = webViewDelegate.Get();
+    UIWebView* view = uiWebView.Get();
+    if (legate != nullptr && view != nullptr)
     {
-        webViewDelegate->URLChanged(&uiWebView, url, true);
+        // For now delegate is running on UI thread not main, as RunOnMainThreadBlocked leads to deadlocks in some case
+        // Problem needs further investigation
+
+        bool redirectedByMouse = true;  // For now I don't know how to get redirection method
+        IUIWebViewDelegate::eAction whatToDo = legate->URLChanged(view, url, redirectedByMouse);
+        if (IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER == whatToDo && args->Uri != nullptr)
+        {
+            Launcher::LaunchUriAsync(args->Uri);
+        }
+        args->Cancel = whatToDo != IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
     }
 }
 
-void WebViewControl::OnNavigationCompleted(Windows::UI::Xaml::Controls::WebView^ sender, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs^ args)
+void WebViewControl::OnNavigationCompleted(WebView^ sender, WebViewNavigationCompletedEventArgs^ args)
 {
-    bool success = args->IsSuccess;
-    int status = (int)args->WebErrorStatus;
-    Uri^ uri = args->Uri;
-    String x;
-    if (uri != nullptr)
+    String url;
+    if (args->Uri != nullptr)
     {
-        Platform::String^ s = uri->AbsoluteCanonicalUri;
-        x = WStringToString(WideString(s->Data()));
+        url = WStringToString(args->Uri->AbsoluteCanonicalUri->Data());
     }
 
-    Logger::Debug("*** OnNavigationCompleted: success=%s, status=%d, url=%s", success ? "ok" : "fail", status, x.c_str());
+    if (args->IsSuccess)
+    {
+        Logger::FrameworkDebug("[WebView] OnNavigationCompleted: url=%s", url.c_str());
+    }
+    else
+    {
+        Logger::Error("[WebView] OnNavigationCompleted failed: err_status=%d, url=%s", static_cast<int>(args->WebErrorStatus), url.c_str());
+    }
 
     if (renderToTexture)
     {
         RenderToTexture();
     }
 
-    if (webViewDelegate != nullptr)
-    {
-        webViewDelegate->PageLoaded(&uiWebView);
-    }
+    core->RunOnMainThread([this]() {
+        IUIWebViewDelegate* legate = webViewDelegate.Get();
+        UIWebView* view = uiWebView.Get();
+        if (legate != nullptr && view != nullptr)
+        {
+            legate->PageLoaded(view);
+        }
+    });
 }
 
 void WebViewControl::RenderToTexture()
@@ -271,42 +541,48 @@ void WebViewControl::RenderToTexture()
         auto taskLoad = create_task(reader->LoadAsync(streamSize));
         taskLoad.then([this, reader, width, height, streamSize](task<unsigned int>)
         {
-            std::vector<uint8> buf(streamSize, 0);
             size_t index = 0;
+            std::vector<uint8> buf(streamSize, 0);
             while (reader->UnconsumedBufferLength > 0)
             {
                 buf[index] = reader->ReadByte();
                 index += 1;
             }
-            SavePreviewToFile(buf.data(), buf.size());
 
             Sprite* sprite = CreateSpriteFromPreviewData(buf.data(), width, height);
-            core->RunOnMainThread([this, sprite]() {
-                uiWebView.SetSprite(sprite, 0);
-            });
+            if (sprite != nullptr)
+            {
+                core->RunOnMainThread([this, sprite]() {
+                    UIWebView* view = uiWebView.Get();
+                    if (view != nullptr)
+                    {
+                        view->SetSprite(sprite, 0);
+                    }
+                    else
+                    {
+                        sprite->Release();
+                    }
+                });
+            }
         });
     });
 }
 
 Sprite* WebViewControl::CreateSpriteFromPreviewData(const uint8* imageData, int32 width, int32 height) const
 {
-    /*struct BITMAPFILEHEADER {
-        WORD    bfType;
-        DWORD   bfSize;
-        WORD    bfReserved1;
-        WORD    bfReserved2;
-        DWORD   bfOffBits;
-    };*/
-    DWORD bitsOffset = *OffsetPointer<DWORD>(imageData, 10);
+    /*
+        imageData is in-memory BMP file and starts with BITMAPFILEHEADER struct
+        In WinRT application this struct is invisible for compiler
 
-    /*{ // manual swap B and R components
-        int n = width * height * 4;
-        uint8* p = const_cast<uint8*>(imageData + bitsOffset);
-        for (int i = 0;i < n;i += 4)
-        {
-            std::swap(p[0], p[2]);
-        }
-    }*/
+        struct BITMAPFILEHEADER {
+            WORD    bfType;
+            DWORD   bfSize;
+            WORD    bfReserved1;
+            WORD    bfReserved2;
+            DWORD   bfOffBits;      // offset +10
+        };
+    */
+    DWORD bitsOffset = *OffsetPointer<DWORD>(imageData, 10);
 
     RefPtr<Image> imgSrc(Image::CreateFromData(width, height, FORMAT_RGBA8888, imageData + bitsOffset));
     RefPtr<Image> imgDst(Image::Create(width, height, FORMAT_RGB888));
@@ -316,22 +592,6 @@ Sprite* WebViewControl::CreateSpriteFromPreviewData(const uint8* imageData, int3
         return Sprite::CreateFromImage(imgDst.Get());
     }
     return nullptr;
-}
-
-int WebViewControl::n = 0;
-
-void WebViewControl::SavePreviewToFile(const uint8* imageData, size_t size) const
-{
-    StorageFolder^ folder = ApplicationData::Current->LocalFolder;
-    String path = WStringToString(WideString(folder->Path->Data()));
-
-    path += Format("\\image_%d_%d.bmp", id, ++inc);
-
-    RefPtr<File> file(File::Create(FilePath(path), File::CREATE | File::WRITE));
-    if (file.Valid())
-    {
-        file->Write(imageData, size);
-    }
 }
 
 }   // namespace DAVA

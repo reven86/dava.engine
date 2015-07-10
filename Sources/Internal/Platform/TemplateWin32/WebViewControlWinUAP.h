@@ -32,6 +32,7 @@
 #include "Base/Platform.h"
 #if defined(__DAVAENGINE_WIN_UAP__)
 
+#include "Concurrency/Atomic.h"
 #include "UI/IWebViewControl.h"
 
 namespace DAVA
@@ -54,34 +55,16 @@ public:
     void OpenURL(const String& urlToOpen) override;
     // Load html page from string
     void LoadHtmlString(const WideString& htmlString) override;
-
-    // Delete all cookies associated with target URL
-    void DeleteCookies(const String& targetUrl) override
-    {
-        //__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    }
-
-    // Get cookie for specific domain and name
-    String GetCookie(const String& url, const String& name) const override
-    {
-        //__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-        return String();
-    }
-
-    // Get the list of cookies for specific domain
-    Map<String, String> GetCookies(const String& url) const override
-    {
-        //__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-        return Map<String, String>();
-    }
-
+    void OpenFromBuffer(const String& string, const FilePath& basePath) override;
     // Execute javascript string in webview
     void ExecuteJScript(const String& scriptString) override;
-    
-    void OpenFromBuffer(const String& string, const FilePath& basePath) override
-    {
-        //__DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
-    }
+
+    // Delete all cookies associated with target URL
+    void DeleteCookies(const String& targetUrl) override;
+    // Get cookie for specific domain and name
+    String GetCookie(const String& url, const String& name) const override;
+    // Get the list of cookies for specific domain
+    Map<String, String> GetCookies(const String& url) const override;
 
     // Size/pos/visibility changes.
     void SetRect(const Rect& rect) override;
@@ -95,28 +78,24 @@ public:
 
 private:
     void InstallEventHandlers();
-    void PositionWebView(const Rect& rect);
+    void PositionWebView(const Rect& rect, bool offScreen);
+
+    void RenderToTexture();
+    Sprite* CreateSpriteFromPreviewData(const uint8* imageData, int32 width, int32 height) const;
 
 private:    // WebView event handlers
     void OnNavigationStarting(Windows::UI::Xaml::Controls::WebView^ sender, Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs^ args);
     void OnNavigationCompleted(Windows::UI::Xaml::Controls::WebView^ sender, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs^ args);
 
-    void RenderToTexture();
-    Sprite* CreateSpriteFromPreviewData(const uint8* imageData, int32 width, int32 height) const;
-    void SavePreviewToFile(const uint8* imageData, size_t size) const;
-
 private:
-    UIWebView& uiWebView;
     CorePlatformWinUAP* core;
-    IUIWebViewDelegate* webViewDelegate = nullptr;
+    Atomic<UIWebView*> uiWebView = nullptr;
+    Atomic<IUIWebViewDelegate*> webViewDelegate = nullptr;
     Windows::UI::Xaml::Controls::WebView^ nativeWebView = nullptr;
+    Windows::UI::Color defaultBkgndColor;
+    bool visible = true;
     bool renderToTexture = false;
-
     Rect originalRect;
-
-    mutable int id = 0;
-    mutable int inc = 0;
-    static int n;
 };
 
 //////////////////////////////////////////////////////////////////////////
