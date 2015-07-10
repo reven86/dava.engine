@@ -290,7 +290,7 @@ void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOption
     {
         int owSpacing = 1;
         bool iconsToLeft = SettingsManager::GetValue(Settings::General_Properties_IconsToLeft).AsBool();
-        int owXPos = iconsToLeft ? (opt.rect.left() + owSpacing) : (opt.rect.right() - owSpacing);
+        int owXPos = iconsToLeft ? (opt.rect.left() + owSpacing) : (view->width() - owSpacing);
 		int owYPos;
 
 		// draw not overlaid widgets
@@ -310,32 +310,36 @@ void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOption
             }
 
             owYPos = opt.rect.y() + (opt.rect.height() - btn->height()) / 2;
-
+            auto tmpXPos = owXPos;
+            if (!iconsToLeft)
+            {
+                tmpXPos = owXPos - view->verticalScrollBar()->width();
+                auto treeView = qobject_cast<const QTreeView*>(view);
+                auto availableWidth = tmpXPos - treeView->columnWidth(0);
+                if (availableWidth < 0)
+                {
+                    continue;
+                }
+            }
             if(btn->isVisible())
             {
-                btn->move(owXPos, owYPos);
+                btn->move(tmpXPos, owYPos);
             }
             else
             {
                 QPixmap pix = btn->grab();
-                painter->drawPixmap(owXPos, owYPos, pix);
+                painter->drawPixmap(tmpXPos, owYPos, pix);
             }
 
             
             if(iconsToLeft)
             {
                 owXPos += owSpacing + btn->width();
-            }
-            else
-            {
-                owXPos -= owSpacing;
-            }
-            if(iconsToLeft)
-            {
                 opt.rect.setLeft(owXPos);
             }
             else
             {
+                owXPos -= owSpacing;
                 opt.rect.setRight(owXPos);
             }
 		}
