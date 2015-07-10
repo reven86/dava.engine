@@ -65,7 +65,8 @@ public:
     Windows::UI::ViewManagement::ApplicationViewWindowingMode GetScreenMode();
     void SetScreenMode(Windows::UI::ViewManagement::ApplicationViewWindowingMode screenMode);
     Windows::Foundation::Size GetCurrentScreenSize();
-    void SetCursorState(bool isShown);
+    void SetCursorPinning(bool isPinning);
+    void SetCursorVisible(bool isVisible);
 
     Windows::UI::Core::CoreDispatcher^ UIThreadDispatcher();
     Windows::UI::Core::CoreDispatcher^ MainThreadDispatcher();
@@ -145,7 +146,7 @@ private:
 
     bool isMouseDetected = false;
     bool isTouchDetected = false;
-    bool isPhoneApiDetect = false;
+    bool isPhoneApiDetected = false;
 
     bool isWindowVisible = true;
     bool isWindowClosed = false;
@@ -158,6 +159,7 @@ private:
     DisplayMode fullscreenMode = windowedMode;
 
     bool isMouseCursorShown = false;
+    bool isCursorPinning = false;
     bool isRightButtonPressed = false;
     bool isLeftButtonPressed = false;
     bool isMiddleButtonPressed = false;
