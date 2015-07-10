@@ -38,12 +38,12 @@ using namespace DAVA;
 DAVA_TESTCLASS(JNITest)
 {
     JNI::JavaClass javaNotificationProvider;
-    Function<void (jstring, jstring, jstring)> showNotificationText;
+    Function<void (jstring, jstring, jstring, jboolean)> showNotificationText;
 
     JNITest()
         : javaNotificationProvider("com/dava/framework/JNINotificationProvider")
     {
-        showNotificationText = javaNotificationProvider.GetStaticMethod<void, jstring, jstring, jstring>("NotifyText");
+        showNotificationText = javaNotificationProvider.GetStaticMethod<void, jstring, jstring, jstring, jboolean>("NotifyText");
     }
 
     DAVA_TEST(TestFunction)
@@ -131,14 +131,14 @@ DAVA_TESTCLASS(JNITest)
     {
         JNI::JavaClass inThreadInitedClass("com/dava/framework/JNINotificationProvider");
 
-        auto showNotificationProgress = javaNotificationProvider.GetStaticMethod<void, jstring, jstring, jstring, int, int>("NotifyProgress");
-        auto showNotificationProgressThread = inThreadInitedClass.GetStaticMethod<void, jstring, jstring, jstring, int, int>("NotifyProgress");
+        auto showNotificationProgress = javaNotificationProvider.GetStaticMethod<void, jstring, jstring, jstring, int, int, jboolean>("NotifyProgress");
+        auto showNotificationProgressThread = inThreadInitedClass.GetStaticMethod<void, jstring, jstring, jstring, int, int, jboolean>("NotifyProgress");
 
         jstring jStrTitle = JNI::CreateJString(L"test");
         jstring jStrText = JNI::CreateJString(L"test2");
 
-        showNotificationText(jStrTitle, jStrTitle, jStrTitle);
-        showNotificationProgressThread(jStrTitle, jStrTitle, jStrTitle, 100, 100);
+        showNotificationText(jStrTitle, jStrTitle, jStrTitle, false);
+        showNotificationProgressThread(jStrTitle, jStrTitle, jStrTitle, 100, 100, false);
 
         JNI::GetEnv()->DeleteLocalRef(jStrTitle);
         JNI::GetEnv()->DeleteLocalRef(jStrText);
