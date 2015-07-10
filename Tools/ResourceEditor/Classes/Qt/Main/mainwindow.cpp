@@ -2867,7 +2867,7 @@ bool QtMainWindow::LoadAppropriateTextureFormat()
 	if (GetGPUFormat() != GPU_ORIGIN)
 	{
 		int answer = ShowQuestion("Inappropriate texture format",
-								  "Landscape editing is only allowed in PNG texture format.\nDo you want to reload textures in PNG format?",
+								  "Landscape editing is only allowed in original texture format.\nDo you want to reload textures in original format?",
 								  MB_FLAG_YES | MB_FLAG_NO, MB_FLAG_NO);
 		if (answer == MB_FLAG_NO)
 		{
