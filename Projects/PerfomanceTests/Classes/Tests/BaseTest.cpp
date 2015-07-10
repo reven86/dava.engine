@@ -156,7 +156,7 @@ void BaseTest::OnFinish()
             DAVA::Format("%f", frameInfo.delta)).c_str());
     }
 
-    float32 averageDelta = 1.0f / (overallTestTime  / framesCount);
+    float32 averageDelta = overallTestTime  / framesCount;
 
     float32 testTime = GetOverallTestTime();
     float32 elapsedTimeInSeconds = GetElapsedTime() / 1000.0f;
