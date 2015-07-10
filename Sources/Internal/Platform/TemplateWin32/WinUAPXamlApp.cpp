@@ -125,7 +125,7 @@ void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchAc
 {
     CoreWindow^ coreWindow = Window::Current->CoreWindow;
     // need initialize device info on UI thread
-    DeviceInfo::InitializeScreenInfo(static_cast<int32>(coreWindow->Bounds.Width), static_cast<int32>(coreWindow->Bounds.Height));
+    DeviceInfo::InitializeScreenInfo(static_cast<int32>(Max(coreWindow->Bounds.Width, coreWindow->Bounds.Height)), static_cast<int32>(Min(coreWindow->Bounds.Width, coreWindow->Bounds.Height)));
     uiThreadDispatcher = coreWindow->Dispatcher;
 
     CreateBaseXamlUI();
@@ -693,8 +693,7 @@ void WinUAPXamlApp::SetFullScreen(bool isFullscreen_)
     }
     if (isFullscreen_)
     {
-        bool res = view->TryEnterFullScreenMode();
-        DVASSERT(res);
+        view->TryEnterFullScreenMode();
     }
     else
     {
