@@ -263,8 +263,10 @@ bool PackageModel::setData(const QModelIndex &index, const QVariant &value, int 
     {
         PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
         ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
-        controlNode->SetName(value.toString().toStdString());
-        
+        auto prop = controlNode->GetRootProperty()->GetNameProperty();
+        auto newName = value.toString().toStdString();
+        commandExecutor->ChangeProperty(controlNode, prop, DAVA::VariantType(newName));
+        return true;
     }
     return false;
 }

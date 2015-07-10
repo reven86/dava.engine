@@ -192,11 +192,6 @@ String ControlNode::GetName() const
     return control->GetName();
 }
 
-void ControlNode::SetName(DAVA::String str)
-{
-     control->SetName(str);
-}
-
 UIControl *ControlNode::GetControl() const
 {
     return control;
