@@ -107,7 +107,6 @@ class NMaterial : public DataNode
     friend class NMaterialStateDynamicFlagsInsp;
     friend class NMaterialStateDynamicPropertiesInsp;
     friend class NMaterialStateDynamicTexturesInsp;
-
 public:
     NMaterial();    
     ~NMaterial();
@@ -156,8 +155,7 @@ public:
     const Vector<NMaterial *>& GetChildren() const;
 
     inline uint32 GetRenderLayerID() const;
-    inline uint32 GetSortingKey() const;
-    inline uint64 GetMaterialKey() const;
+    inline uint32 GetSortingKey() const;    
 
     void BindParams(rhi::Packet& target);
 
@@ -216,7 +214,6 @@ private:
     bool needRebuildVariants;    
 
     uint32 sortingKey;
-    uint64 materialKey;
 
 public:
     INTROSPECTION_EXTEND(NMaterial, DataNode,
@@ -254,10 +251,6 @@ uint32 NMaterial::GetRenderLayerID() const
 uint32 NMaterial::GetSortingKey() const
 {
     return sortingKey;
-}
-uint64 NMaterial::GetMaterialKey() const
-{
-    return materialKey;
 }
 };
 

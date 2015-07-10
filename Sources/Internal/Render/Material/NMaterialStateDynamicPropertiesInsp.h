@@ -31,6 +31,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/HashMap.h"
 #include "Base/FastNameMap.h"
+#include "Base/Introspection.h"
 #include "Render/RHI/rhi_ShaderSource.h"
 
 namespace DAVA

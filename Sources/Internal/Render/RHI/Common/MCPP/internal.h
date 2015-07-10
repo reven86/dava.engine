@@ -505,6 +505,7 @@ extern int      (* mcpp_fputc)( int c, OUTDEST od),
                 (* mcpp_fprintf)( OUTDEST od, const char * format, ...);
 
 /* system.c */
+extern void     clear_cur_work_dir();
 extern void     do_options( int argc, char ** argv, char ** in_pp
         , char ** out_pp);
                 /* Process command line args    */

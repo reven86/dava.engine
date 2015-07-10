@@ -307,11 +307,14 @@ void
 StartCounter( uint32 counterId, const char* counterName )
 {
     DVASSERT( counterId < maxCounterCount );
-
-    Counter*    counter = curCounter + counterId;
+    
+    if( curCounter )
+    {
+        Counter*    counter = curCounter + counterId;
         
-    counter->SetName( counterName );
-    counter->Start();
+        counter->SetName( counterName );
+        counter->Start();
+    }
 }
 
 
@@ -322,9 +325,12 @@ StopCounter( uint32 counterId )
 {
     DVASSERT( counterId < maxCounterCount );
 
-    Counter*    counter = curCounter + counterId;
+    if( curCounter )
+    {
+        Counter*    counter = curCounter + counterId;
         
-    counter->Stop();
+        counter->Stop();
+    }
 }
 
 

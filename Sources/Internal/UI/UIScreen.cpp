@@ -124,16 +124,16 @@ void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
 	if (fullRect.x < 0)
 	{
 	    auto rect1 = Rect(fullRect.x, 0,	-fullRect.x, virtualSize.y);
-        RenderSystem2D::Instance()->FillRect(rect1, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
+        RenderSystem2D::Instance()->FillRect(rect1, drawColor);
 	    auto rect2 = Rect(virtualSize.x, 0,	fullRect.x + fullRect.dx - virtualSize.x, virtualSize.y);
-        RenderSystem2D::Instance()->FillRect(rect2, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
+        RenderSystem2D::Instance()->FillRect(rect2, drawColor);
 	}
 	else 
 	{
 	    auto rect1 = Rect(0, fullRect.y, virtualSize.x + 1,	-fullRect.y);
-        RenderSystem2D::Instance()->FillRect(rect1, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
+        RenderSystem2D::Instance()->FillRect(rect1, drawColor);
         auto rect2 = Rect(0, virtualSize.y, virtualSize.x + 1, fullRect.y + fullRect.dy - virtualSize.y);
-        RenderSystem2D::Instance()->FillRect(rect2, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
+        RenderSystem2D::Instance()->FillRect(rect2, drawColor);
 	}
 }
 

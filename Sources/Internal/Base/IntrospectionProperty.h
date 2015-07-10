@@ -92,6 +92,12 @@ namespace DAVA
 			(realObj->*setter)(realValue);
 		}
 
+		virtual void SetValueRaw(void *object, void* val) const
+		{
+			T* realObj = (T *)object;
+			(realObj->*setter)(*static_cast<V*>(val));
+		}
+
 		virtual void* Pointer(void *object) const { return NULL; };
 		virtual void* Data(void *object) const { return NULL; };
 
@@ -128,6 +134,12 @@ namespace DAVA
 			(realObj->*setter)(realValue);
 		}
 
+		virtual void SetValueRaw(void *object, void* val) const
+		{
+			T* realObj = (T *)object;
+			(realObj->*setter)(*static_cast<V*>(val));
+		}
+
 		virtual void* Pointer(void *object) const { return NULL; };
 		virtual void* Data(void *object) const { return NULL; };
 
@@ -162,6 +174,12 @@ namespace DAVA
 			V* realValue;
 			VariantType::SaveData(&realValue, DAVA::MetaInfo::Instance<V>(), val);
 			(realObj->*setter)(realValue);
+		}
+
+		virtual void SetValueRaw(void *object, void* val) const
+		{
+			T* realObj = (T *)object;
+			(realObj->*setter)(static_cast<V*>(val));
 		}
 
 		virtual void* Pointer(void *object) const { return NULL; };
@@ -207,6 +225,12 @@ namespace DAVA
 			V realValue;
 			VariantType::SaveData(&realValue, DAVA::MetaInfo::Instance<V>(), val);
 			(realObj->*setter)(realValue);
+		}
+
+		virtual void SetValueRaw(void *object, void* val) const
+		{
+			T* realObj = (T *)object;
+			(realObj->*setter)(*static_cast<V*>(val));
 		}
 
 		virtual void* Pointer(void *object) const { return NULL; };

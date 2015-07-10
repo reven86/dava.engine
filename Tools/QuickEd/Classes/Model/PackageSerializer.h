@@ -37,6 +37,7 @@
 
 class PackageBaseNode;
 class AbstractProperty;
+class ValueProperty;
 
 class PackageSerializer : private PackageVisitor, private PropertyVisitor
 {
@@ -50,13 +51,14 @@ public:
     virtual void PutValue(const DAVA::String &name, const DAVA::VariantType &value) = 0;
     virtual void PutValue(const DAVA::String &name, const DAVA::String &value) = 0;
     virtual void PutValue(const DAVA::String &name, const DAVA::Vector<DAVA::String> &value) = 0;
+    virtual void PutValue(const DAVA::VariantType &value) = 0;
     virtual void PutValue(const DAVA::String &value) = 0;
     
-    virtual void BeginMap(const DAVA::String &name) = 0;
+    virtual void BeginMap(const DAVA::String &name, bool quotes = false) = 0;
     virtual void BeginMap() = 0;
     virtual void EndMap() = 0;
     
-    virtual void BeginArray(const DAVA::String &name) = 0;
+    virtual void BeginArray(const DAVA::String &name, bool flow = false) = 0;
     virtual void BeginArray() = 0;
     virtual void EndArray() = 0;
 
@@ -65,6 +67,8 @@ private: // PackageVisitor
     void VisitImportedPackages(ImportedPackagesNode *node) override;
     void VisitControls(PackageControlsNode *node) override;
     void VisitControl(ControlNode *node) override;
+    void VisitStyleSheets(StyleSheetsNode *node) override;
+    void VisitStyleSheet(StyleSheetNode *node) override;
 
 private:
     void AcceptChildren(PackageBaseNode *node);
@@ -88,8 +92,15 @@ private: // PropertyVisitor
     
     void VisitIntrospectionProperty(IntrospectionProperty *property) override;
 
+    void VisitStyleSheetRoot(StyleSheetRootProperty *property) override;
+    void VisitStyleSheetSelectorsProperty(StyleSheetSelectorsProperty *property) override;
+    void VisitStyleSheetPropertiesSection(StyleSheetPropertiesSection *property) override;
+    void VisitStyleSheetProperty(StyleSheetProperty *property) override;
+    void VisitStyleSheetTransitionsSection(StyleSheetTransitionsSection *property) override;
+    void VisitStyleSheetTransition(StyleSheetTransition *property) override;
 private:
     void AcceptChildren(AbstractProperty *property);
+    void PutValueProperty(const DAVA::String &name, ValueProperty *property);
 
 private:
     DAVA::Vector<PackageNode*> importedPackages;

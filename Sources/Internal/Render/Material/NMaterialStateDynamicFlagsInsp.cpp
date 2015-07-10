@@ -51,7 +51,7 @@ Vector<FastName> NMaterialStateDynamicFlagsInsp::MembersList(const DynamicData& 
 
     if(0 == ret.size())
     {
-        ret.reserve(21);
+        ret.reserve(22);
         
         ret.push_back(NMaterialFlagName::FLAG_VERTEXFOG);
         ret.push_back(NMaterialFlagName::FLAG_FOG_LINEAR);
@@ -74,6 +74,7 @@ Vector<FastName> NMaterialStateDynamicFlagsInsp::MembersList(const DynamicData& 
         ret.push_back(NMaterialFlagName::FLAG_DEBUG_NORMAL_ROTATION);        
         ret.push_back(NMaterialFlagName::FLAG_SKINNING);
         ret.push_back(NMaterialFlagName::FLAG_TILED_DECAL_MASK);
+		ret.push_back(NMaterialFlagName::FLAG_ALPHATESTVALUE);
         ret.push_back(NMaterialFlagName::FLAG_ILLUMINATION_USED);
         ret.push_back(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
         ret.push_back(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);

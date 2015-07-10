@@ -100,7 +100,7 @@ void UIHoleTransition::Draw(const UIGeometricData &geometricData)
     
     auto rect = Rect(0.0f, 0.0f, (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx, (float32)VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
 
-    RenderSystem2D::Instance()->FillRect(rect, drawState.GetMaterial(), Color::Black);
+    RenderSystem2D::Instance()->FillRect(rect, Color::Black);
 	
     drawState.SetPosition(geometricData.position);
     

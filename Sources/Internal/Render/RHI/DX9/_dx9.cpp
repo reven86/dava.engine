@@ -13,6 +13,7 @@
     #pragma warning( default: 7 193 271 304 791 )
     #include <stdio.h>
 
+    #include "../rhi_Public.h"
 
 
 //==============================================================================
@@ -24,6 +25,8 @@ IDirect3D9*         _D3D9           = nullptr;
 IDirect3DDevice9*   _D3D9_Device    = nullptr;
 unsigned            _D3D9_Adapter   = 0;
 IDirect3DSurface9*  _D3D9_BackBuf   = nullptr;
+
+InitParam           _DX9_InitParam;
 
 void(*_End_Frame)() = nullptr;
 
