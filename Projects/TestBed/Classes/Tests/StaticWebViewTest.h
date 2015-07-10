@@ -36,7 +36,9 @@
 
 using namespace DAVA;
 
-class StaticWebViewTest: public BaseScreen
+class MyWebViewDelegate;
+
+class StaticWebViewTest : public BaseScreen
 {
 protected:
     ~StaticWebViewTest(){};
@@ -58,8 +60,8 @@ private:
     void OnButtonVisible(BaseObject*, void*, void*);
     void OnButtonHide(BaseObject*, void*, void*);
 
-    void CreateUIButton(UIButton*& button, Font * font, const Rect& rect, const WideString& str,
-                        void (StaticWebViewTest::*targetFunction)(BaseObject*, void*, void*));
+    UIButton* CreateUIButton(Font* font, const Rect& rect, const WideString& str,
+                             void (StaticWebViewTest::*targetFunction)(BaseObject*, void*, void*));
 
     UIButton* setStaticButton = nullptr;
     UIButton* setNormalButton = nullptr;
@@ -76,6 +78,7 @@ private:
 
     UIWebView* webView1 = nullptr;
     UIWebView* webView2 = nullptr;
+    UIWebView* webView3 = nullptr;
 };
 
 #endif /* defined(__TEMPLATEPROJECTIPHONE__STATICWEBVIEWTEST__) */
