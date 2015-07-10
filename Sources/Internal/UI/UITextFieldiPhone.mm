@@ -674,21 +674,23 @@ namespace DAVA
             BOOL isHidden = textView.isHidden;
             
             // now hide textField and store it for future restore
-            [textFieldHolder->textCtrl removeFromSuperview];
-            [textFieldHolder->textCtrl setHidden:YES];
+            [textView removeFromSuperview];
+            [textView setHidden:YES];
             
             // replace textField with old textField and apply current properties
             ::UITextField* textField = textFieldHolder->textField;
             textFieldHolder->textField = nullptr;
             [textFieldHolder addSubview:textField];
-            [textFieldHolder->textCtrl setHidden:isHidden];
+            [textView setHidden:isHidden];
+            [textView release];
+            textView = nullptr;
             
             textFieldHolder->textCtrl = textField;
             
-            textView.textColor = color;
-            textView.font = font;
-            textView.userInteractionEnabled = NO;
-            [textView setHidden:isHidden];
+            textField.textColor = color;
+            textField.font = font;
+            textField.userInteractionEnabled = YES;
+            [textField setHidden:isHidden];
             
             isSingleLine = true;
             
@@ -697,7 +699,7 @@ namespace DAVA
             
             [textFieldHolder setupTraits];
             
-            [textView setBackgroundColor:[UIColor clearColor]];
+            [textField setBackgroundColor:[UIColor clearColor]];
         }
     }
     

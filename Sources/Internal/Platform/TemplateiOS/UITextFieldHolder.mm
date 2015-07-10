@@ -109,6 +109,14 @@
     }
 }
 
+// next method(hitTest) fix sometime field editing(do not remove it)
+-(id)hitTest:(CGPoint)point withEvent:(UIEvent *)event
+{
+    id hitView = [super hitTest:point withEvent:event];
+    if (hitView == self) return nil;
+    else return hitView;
+}
+
 -(void)textViewDidBeginEditing:(UITextView *)textView
 {
     if (cppTextField)
