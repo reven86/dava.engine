@@ -136,6 +136,7 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
     {
         switch(role)
         {
+            case Qt::EditRole:
             case Qt::DisplayRole:
                 return StringToQString(node->GetName());
                 
@@ -291,7 +292,7 @@ Qt::ItemFlags PackageModel::flags(const QModelIndex &index) const
     {
         flags |= Qt::ItemIsEditable;
     }
-    
+
     return flags;
 }
 
