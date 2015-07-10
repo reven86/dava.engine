@@ -43,7 +43,7 @@ namespace DAVA
 void Cursor::SetCursorPinning(bool pin)
 {
     CorePlatformWinUAP* winCore = static_cast<CorePlatformWinUAP*>(Core::Instance());
-    winCore->SetCursorState(!pin);
+    winCore->SetCursorPinning(pin);
 }
 
 Cursor* Cursor::Create(const FilePath & cursorPathname, const Vector2 & hotSpot)
