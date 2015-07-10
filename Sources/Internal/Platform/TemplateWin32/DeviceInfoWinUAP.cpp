@@ -143,7 +143,7 @@ bool DeviceInfo::IsRunningOnEmulator()
 }
 #endif //  __DAVAENGINE_WIN_UAP__
 
-bool GetStorageSpaceInfo(DeviceInfo::StorageInfo& storage_info)
+bool FillStorageSpaceInfo(DeviceInfo::StorageInfo& storage_info)
 {
     ULARGE_INTEGER freeBytesAvailable;
     ULARGE_INTEGER totalNumberOfBytes;
@@ -170,9 +170,9 @@ List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
 
     //information about internal storage
     DeviceInfo::StorageInfo storage;
-    storage.path = fileSystem->GetPublicDocumentsPath();
+    storage.path = fileSystem->GetUserDocumentsPath();
     storage.type = STORAGE_TYPE_INTERNAL;
-    if (GetStorageSpaceInfo(storage))
+    if (FillStorageSpaceInfo(storage))
     {
         result.push_back(storage);
     }
@@ -187,9 +187,11 @@ List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
     {
         auto path = removableStorages->GetAt(i)->Path;
         storage.path = WStringToString(path->Data());
-        if (GetStorageSpaceInfo(storage))
+        if (FillStorageSpaceInfo(storage))
         {
             result.push_back(storage);
+            //all subsequent external storages are secondary
+            storage.type = STORAGE_TYPE_SECONDARY_EXTERNAL;
         }
     }
 
