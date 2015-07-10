@@ -59,12 +59,14 @@ void QtPropertyItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
 	QStyleOptionViewItemV4 opt = option;
 	initStyleOption(&opt, index);
 
+    bool iconsToLeft = SettingsManager::GetValue(Settings::General_Properties_IconsToLeft).AsBool();
+
 	// data
-	if(index.column() == 1)
-	{
-		opt.textElideMode = Qt::ElideLeft;
-		drawOptionalButtons(painter, opt, index);
-	}
+    if(iconsToLeft && index.column() == 1)
+    {
+        opt.textElideMode = Qt::ElideLeft;
+        drawOptionalButtons(painter, opt, index);
+    }
 
     auto *data = qobject_cast<QtPropertyDataDavaVariant *>( model->itemFromIndex( index ) );
     if (
@@ -76,6 +78,12 @@ void QtPropertyItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
     }
 
     view->style()->drawControl( QStyle::CE_ItemViewItem, &opt, painter, view );
+    // data
+    if(!iconsToLeft && index.column() == 1)
+    {
+        opt.textElideMode = Qt::ElideLeft;
+        drawOptionalButtons(painter, opt, index);
+    }
 }
 
 QSize QtPropertyItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -315,7 +323,7 @@ void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOption
             {
                 tmpXPos = owXPos - view->verticalScrollBar()->width();
                 auto treeView = qobject_cast<const QTreeView*>(view);
-                auto availableWidth = tmpXPos - treeView->columnWidth(0);
+                auto availableWidth = tmpXPos - treeView->columnWidth(0) - btn->width();
                 if (availableWidth < 0)
                 {
                     continue;
@@ -340,7 +348,6 @@ void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOption
             else
             {
                 owXPos -= owSpacing;
-                opt.rect.setRight(owXPos);
             }
 		}
 	}

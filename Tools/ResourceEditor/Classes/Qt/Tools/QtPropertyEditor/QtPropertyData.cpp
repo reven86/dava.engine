@@ -335,7 +335,13 @@ QString QtPropertyData::GetPath() const
 
 void QtPropertyData::SetIcon(const QIcon &icon)
 {
-    setData(icon, Qt::DecorationRole);
+    auto it = std::find_if(optionalButtons.begin(), optionalButtons.end(), [](auto btn){
+        return btn->objectName() == "colorButton";
+    });
+    if(it != optionalButtons.end())
+    {
+        (*it)->setIcon(icon);
+    }
 }
 
 QIcon QtPropertyData::GetIcon() const
@@ -581,7 +587,6 @@ void QtPropertyData::SetModel(QtPropertyModel *_model)
 			child->SetModel(model);
 		}
 	}
-    emit modelChanged(_model);
 }
 
 void QtPropertyData::SetValidator(QtPropertyDataValidator* value)

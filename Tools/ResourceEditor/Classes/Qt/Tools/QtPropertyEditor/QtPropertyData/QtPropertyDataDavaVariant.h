@@ -107,7 +107,7 @@ protected:
 	void ChildsSetFromMe();
 	void MeSetFromChilds();
 
-	QIcon CreateColorIcon() const;
+	void SetColorIcon();
 
 	QVariant FromKeyedArchive(DAVA::KeyedArchive *archive) const;
     QVariant FromFloat(DAVA::float32 value) const;

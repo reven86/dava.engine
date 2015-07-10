@@ -137,6 +137,17 @@ void QtPropertyDataDavaVariant::SetVariantValue(const DAVA::VariantType& value)
 	{
 		ChildsSetFromMe();
 	}
+
+	// more specific actions
+	switch(curVariantValue.type)
+	{
+		case DAVA::VariantType::TYPE_COLOR:
+			SetColorIcon();
+			break;
+
+		default:
+			break;
+	}
 }
 
 void QtPropertyDataDavaVariant::AddAllowedValue(const DAVA::VariantType& realValue, const QVariant& visibleValue /*= QVariant()*/)
@@ -456,16 +467,7 @@ void QtPropertyDataDavaVariant::ChildsCreate()
 			colorBtn->setIcon(QIcon(":/QtIcons/color.png"));
 			colorBtn->setIconSize(QSize(12, 12));
 			colorBtn->setAutoRaise(true);
-            connect(this, &QtPropertyDataDavaVariant::modelChanged, [colorBtn, this](QtPropertyModel*model_)
-            {
-                colorBtn->setIcon(CreateColorIcon());
-                model_->SetEditTracking(true);
-                connect(model_, &QtPropertyModel::PropertyEdited, [colorBtn, this]()
-                {
-                    colorBtn->setIcon(CreateColorIcon());
-                });
-            });
-
+            colorBtn->setObjectName("colorButton");
 			QObject::connect(colorBtn, SIGNAL(released()), this, SLOT(ColorOWPressed()));
 
             DAVA::Color color = curVariantValue.AsColor();
@@ -635,6 +637,7 @@ void QtPropertyDataDavaVariant::MeSetFromChilds()
             {
                 curVariantValue.SetColor(color);
                 SetValue(FromColor(color), QtPropertyData::VALUE_EDITED);
+                SetColorIcon();
             }
         }
         break;
@@ -937,9 +940,11 @@ void QtPropertyDataDavaVariant::ToColor(const QVariant &value)
     {
         curVariantValue.SetColor(DAVA::Color(v.x, v.y, v.z, v.w));
     }
+
+    SetColorIcon();
 }
 
-QIcon QtPropertyDataDavaVariant::CreateColorIcon() const
+void QtPropertyDataDavaVariant::SetColorIcon()
 {
 	if(curVariantValue.type == DAVA::VariantType::TYPE_COLOR)
 	{
@@ -962,7 +967,7 @@ QIcon QtPropertyDataDavaVariant::CreateColorIcon() const
 		p.setBrush(QBrush(c));
 		p.drawRect(QRect(0, 0, 15, 15));
 
-		return QIcon(pix);
+		SetIcon(QIcon(pix));
 	}
 }
 
@@ -1126,6 +1131,8 @@ void QtPropertyDataDavaVariant::ColorOWPressed()
         str.sprintf(FLOAT_PRINTF_FORMAT4, newColor.r, newColor.g, newColor.b, newColor.a);
 	    SetValue(str, VALUE_EDITED);
 	}
+
+    SetColorIcon();
 }
 
 void QtPropertyDataDavaVariant::OnColorChanging()
