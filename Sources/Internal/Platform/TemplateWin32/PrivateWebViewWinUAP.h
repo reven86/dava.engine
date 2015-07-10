@@ -26,62 +26,68 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_WEBVIEWCONTROL_WINUAP_H__
-#define __DAVAENGINE_WEBVIEWCONTROL_WINUAP_H__
+#ifndef __DAVAENGINE_PRIVATEWEBVIEWWINUAP_H__
+#define __DAVAENGINE_PRIVATEWEBVIEWWINUAP_H__
 
 #include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "UI/IWebViewControl.h"
+#include "Concurrency/Atomic.h"
 
 namespace DAVA
 {
 
 class Sprite;
 class CorePlatformWinUAP;
-class PrivateWebViewWinUAP;
 
-// Web View Control for WinUAP
-class WebViewControl : public IWebViewControl
+class PrivateWebViewWinUAP : public std::enable_shared_from_this<PrivateWebViewWinUAP>
 {
 public:
-    WebViewControl(UIWebView& uiWebView);
-    virtual ~WebViewControl();
+    PrivateWebViewWinUAP(UIWebView* UIWebView);
+    ~PrivateWebViewWinUAP();
 
-    // Initialize the control.
-    void Initialize(const Rect& rect) override;
-    
-    // Open the URL requested.
-    void OpenURL(const String& url) override;
-    // Load html page from string
-    void LoadHtmlString(const WideString& htmlString) override;
-    void OpenFromBuffer(const String& htmlString, const FilePath& basePath) override;
-    // Execute javascript string in webview
-    void ExecuteJScript(const String& scriptString) override;
+    void DetachDelegateAndView();
 
-    // Delete all cookies associated with target URL
-    void DeleteCookies(const String& url) override;
-    // Get cookie for specific domain and name
-    String GetCookie(const String& url, const String& name) const override;
-    // Get the list of cookies for specific domain
-    Map<String, String> GetCookies(const String& url) const override;
+    void Initialize(const Rect& rect);
 
-    // Size/pos/visibility changes.
-    void SetRect(const Rect& rect) override;
-    void SetVisible(bool isVisible, bool hierarchic) override;
-    void SetBackgroundTransparency(bool enabled) override;
+    void OpenURL(const String& urlToOpen);
+    void LoadHtmlString(const WideString& htmlString);
+    void OpenFromBuffer(const String& string, const FilePath& basePath);
+    void ExecuteJScript(const String& scriptString);
 
-    void SetDelegate(IUIWebViewDelegate* webViewDelegate, UIWebView* webView) override;
+    void SetRect(const Rect& rect);
+    void SetVisible(bool isVisible);
+    void SetBackgroundTransparency(bool enabled);
 
-    void SetRenderToTexture(bool value) override;
-    bool IsRenderToTexture() const override;
+    void SetDelegate(IUIWebViewDelegate* webViewDelegate);
+
+    void SetRenderToTexture(bool value);
+    bool IsRenderToTexture() const;
 
 private:
-    std::shared_ptr<PrivateWebViewWinUAP> privateImpl;
+    void InstallEventHandlers();
+    void PositionWebView(const Rect& rect, bool offScreen);
+
+    void RenderToTexture();
+    Sprite* CreateSpriteFromPreviewData(const uint8* imageData, int32 width, int32 height) const;
+
+private:    // WebView event handlers
+    void OnNavigationStarting(Windows::UI::Xaml::Controls::WebView^ sender, Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs^ args);
+    void OnNavigationCompleted(Windows::UI::Xaml::Controls::WebView^ sender, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs^ args);
+
+private:
+    CorePlatformWinUAP* core;
+    Atomic<UIWebView*> uiWebView = nullptr;
+    Atomic<IUIWebViewDelegate*> webViewDelegate = nullptr;
+    Windows::UI::Xaml::Controls::WebView^ nativeWebView = nullptr;
+    Windows::UI::Color defaultBkgndColor;
+    bool visible = true;
+    bool renderToTexture = false;
+    Rect originalRect;
 };
 
 }   // namespace DAVA
 
 #endif  // __DAVAENGINE_WIN_UAP__
-#endif  // __DAVAENGINE_WEBVIEWCONTROL_WINUAP_H__
+#endif  // __DAVAENGINE_PRIVATEWEBVIEWWINUAP_H__
