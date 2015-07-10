@@ -35,17 +35,19 @@
         Square44x44Logo="Assets/SmallLogo.png">
         <uap:SplashScreen Image="Assets/SplashScreen.png" />
       </uap:VisualElements>
-	  
-	  <uap:Extension Category="windows.fileTypeAssociation">
-        <uap:FileTypeAssociation Name="zip">
-          <uap:DisplayName>ZIP</uap:DisplayName>
-          <uap:EditFlags OpenIsSafe="true" />
-          <uap:SupportedFileTypes>
-            <uap:FileType ContentType="archive">.zip</uap:FileType>
-          </uap:SupportedFileTypes>
-        </uap:FileTypeAssociation>
-      </uap:Extension>
-	  
-    </Application>
+     
+      <Extensions> 
+        <uap:Extension Category="windows.fileTypeAssociation">
+          <uap:FileTypeAssociation Name="zip">
+            <uap:DisplayName>ZIP</uap:DisplayName>
+            <uap:EditFlags OpenIsSafe="true" />
+            <uap:SupportedFileTypes>
+              <uap:FileType ContentType="archive/zip">.zip</uap:FileType>
+            </uap:SupportedFileTypes>
+          </uap:FileTypeAssociation>
+        </uap:Extension>
+      </Extensions>
+
+	</Application>
   </Applications>
 </Package>
