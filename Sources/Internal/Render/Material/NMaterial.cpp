@@ -201,11 +201,11 @@ void NMaterial::SetFXName(const FastName & fx)
     InvalidateRenderVariants();
 }
 
-const FastName& NMaterial::GetEffectiveFxName() const
+const FastName& NMaterial::GetEffectiveFXName() const
 {   
     if ((!fxName.IsValid()) && (parent != nullptr))
     {
-        return parent->GetEffectiveFxName();
+        return parent->GetEffectiveFXName();
     }
     return fxName;
 }
@@ -215,7 +215,7 @@ const FastName& NMaterial::GetLocalFXName() const
     return fxName;
 }
 
-bool NMaterial::HasLocalFXNmae() const
+bool NMaterial::HasLocalFXName() const
 {
     return fxName.IsValid();
 }
@@ -492,7 +492,7 @@ void NMaterial::RebuildRenderVariants()
     HashMap<FastName, int32> flags;
     CollectMaterialFlags(flags);
 
-    const FXDescriptor& fxDescr = FXCache::GetFXDescriptor(GetEffectiveFxName(), flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup()));
+    const FXDescriptor& fxDescr = FXCache::GetFXDescriptor(GetEffectiveFXName(), flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup()));
     
     if( fxDescr.renderPassDescriptors.size() == 0)
     {

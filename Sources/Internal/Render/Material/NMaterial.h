@@ -117,9 +117,9 @@ public:
     NMaterial* Clone();
 
     void SetFXName(const FastName & fxName);
-    bool HasLocalFXNmae() const;
+    bool HasLocalFXName() const;
     const FastName& GetLocalFXName() const;
-    const FastName& GetEffectiveFxName() const;
+    const FastName& GetEffectiveFXName() const;
 
     inline void SetMaterialName(const FastName & name);
     inline const FastName& GetMaterialName() const;

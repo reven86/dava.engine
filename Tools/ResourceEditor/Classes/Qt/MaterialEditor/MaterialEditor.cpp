@@ -607,13 +607,13 @@ void MaterialEditor::FillTemplates(const QList<DAVA::NMaterial *>& materials)
     if (1 == materials.size() && materials[0])
     {
         DAVA::NMaterial* material = materials[0];
-        DAVA::FastName fxName = material->GetEffectiveFxName();
-        bool isLocalFxName = material->HasLocalFXNmae();
+        DAVA::FastName fxName = material->GetEffectiveFXName();
+        bool isLocalFxName = material->HasLocalFXName();
         bool hasParentFx = false;
 
         if (nullptr != material->GetParent())
         {
-            hasParentFx = material->GetParent()->GetEffectiveFxName().IsValid();
+            hasParentFx = material->GetParent()->GetEffectiveFXName().IsValid();
         }
 
         if (isLocalFxName)
@@ -689,7 +689,7 @@ void MaterialEditor::OnTemplateButton()
         if (nullptr != templateMember)
         {
             Command2 *cmd = nullptr;
-            if (material->HasLocalFXNmae())
+            if (material->HasLocalFXName())
             {
                 // has local fxname, so button shoud remove it (by setting empty value)
                 cmd = new InspMemberModifyCommand(templateMember, material, DAVA::VariantType(DAVA::FastName()));
@@ -697,7 +697,7 @@ void MaterialEditor::OnTemplateButton()
             else
             {
                 // no local fxname, so button should add it
-                cmd = new InspMemberModifyCommand(templateMember, material, DAVA::VariantType(material->GetEffectiveFxName()));
+                cmd = new InspMemberModifyCommand(templateMember, material, DAVA::VariantType(material->GetEffectiveFXName()));
             }
 
             QtMainWindow::Instance()->GetCurrentScene()->Exec(cmd);

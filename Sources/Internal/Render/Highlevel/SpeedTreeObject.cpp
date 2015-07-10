@@ -214,7 +214,7 @@ bool SpeedTreeObject::IsTreeLeafBatch(RenderBatch * batch)
 
     if(batch && batch->GetMaterial())
     {
-        const FastName& materialFXName = batch->GetMaterial()->GetEffectiveFxName();
+        const FastName& materialFXName = batch->GetMaterial()->GetEffectiveFXName();
         return (materialFXName == NMaterialName::SPEEDTREE_LEAF) || (materialFXName == NMaterialName::SPHERICLIT_SPEEDTREE_LEAF);
     }
 
