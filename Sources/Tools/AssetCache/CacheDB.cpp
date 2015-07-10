@@ -238,35 +238,58 @@ void CacheDB::RemoveOldestFromFastCache()
     
 ServerCacheEntry * CacheDB::Get(const CacheItemKey &key)
 {
-    ServerCacheEntry * entry = nullptr;
-
-    {   //find in fast cache
-        auto found = fastCache.find(key);
-        if(found != fastCache.end())
-        {
-            entry = found->second;
-        }
-    }
+    ServerCacheEntry * entry = FindInFastCache(key);
     
     if(nullptr == entry)
     {   // find in full cache
-        auto found = fullCache.find(key);
-        if(found != fullCache.end())
+
+        entry = FindInFullCache(key);
+        if(nullptr != entry)
         {
-            entry = &found->second;
             entry->files.LoadFiles();
             InsertInFastCache(key, entry);
         }
     }
-    
-    if(nullptr != entry)
-    {   // update access token
-        entry->InvalidateAccesToken(nextItemID++);
-        dbStateChanged = true;
-    }
 
+    InvalidateAccessToken(entry);
+    
     return entry;
 }
+    
+    
+ServerCacheEntry * CacheDB::FindInFastCache(const CacheItemKey &key) const
+{
+    auto found = fastCache.find(key);
+    if(found != fastCache.cend())
+    {
+        return found->second;
+    }
+
+    return nullptr;
+}
+    
+ServerCacheEntry * CacheDB::FindInFullCache(const CacheItemKey &key)
+{
+    auto found = fullCache.find(key);
+    if(found != fullCache.cend())
+    {
+        return &found->second;
+    }
+    
+    return nullptr;
+}
+
+const ServerCacheEntry * CacheDB::FindInFullCache(const CacheItemKey &key) const
+{
+    auto found = fullCache.find(key);
+    if(found != fullCache.cend())
+    {
+        return &found->second;
+    }
+    
+    return nullptr;
+}
+
 
 void CacheDB::Insert(const CacheItemKey &key, const CachedFiles &files)
 {
@@ -312,6 +335,7 @@ void CacheDB::Insert(const CacheItemKey &key, const ServerCacheEntry &entry)
     dbStateChanged = true;
 }
 
+    
 void CacheDB::InsertInFastCache(const CacheItemKey &key, ServerCacheEntry * entry)
 {
     if (itemsInMemory == fastCache.size() && itemsInMemory > 0)
@@ -323,7 +347,28 @@ void CacheDB::InsertInFastCache(const CacheItemKey &key, ServerCacheEntry * entr
 
     fastCache[key] = entry;
 }
+
     
+void CacheDB::InvalidateAccessToken(const CacheItemKey &key)
+{
+    ServerCacheEntry * entry = FindInFastCache(key);
+    if(nullptr == entry)
+    {
+        entry = FindInFullCache(key);
+    }
+    
+    InvalidateAccessToken(entry);
+}
+
+
+void CacheDB::InvalidateAccessToken(ServerCacheEntry *entry)
+{
+    if(nullptr != entry)
+    {
+        entry->InvalidateAccesToken(nextItemID++);
+        dbStateChanged = true;
+    }
+}
 
 void CacheDB::Remove(const CacheItemKey &key)
 {

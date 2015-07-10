@@ -51,8 +51,10 @@ public:
     
     virtual ~ServerDelegate() = default;
     
-    virtual void OnAddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, const CachedFiles &files) = 0;
+    virtual void OnAddToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, const CachedFiles &files) = 0;
     virtual void OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key) = 0;
+    
+    virtual void OnWarmingUp(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key) = 0;
 };
     
     
@@ -84,6 +86,7 @@ private:
 
     void OnAddToCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve);
     void OnGetFromCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve);
+    void OnWarmingUp(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve);
     
 private:
     

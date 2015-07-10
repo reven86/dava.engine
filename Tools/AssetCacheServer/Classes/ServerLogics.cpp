@@ -35,7 +35,7 @@ void ServerLogics::Init(DAVA::AssetCache::Server *_server, DAVA::AssetCache::Cac
     dataBase = _dataBase;
 }
 
-void ServerLogics::OnAddedToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files)
+void ServerLogics::OnAddToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files)
 {
     if(server && tcpChannel)
     {
@@ -58,8 +58,16 @@ void ServerLogics::OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA
             server->SendFiles(tcpChannel, key, DAVA::AssetCache::CachedFiles());
         }
     }
-    
 }
+
+void ServerLogics::OnWarmingUp(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key)
+{
+    if(dataBase)
+    {
+        dataBase->InvalidateAccessToken(key);
+    }
+}
+
 
 void ServerLogics::Update()
 {
