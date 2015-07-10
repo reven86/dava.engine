@@ -53,7 +53,7 @@ LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
     sourceTilemaskPath = tiletexture->GetDescriptor()->GetSourceTexturePathname();
     
     landscapeEditorMaterial = new NMaterial();
-    landscapeEditorMaterial->SetLocalFXName(FastName("~res:/Materials/Landscape.Tool.material"));
+    landscapeEditorMaterial->SetFXName(FastName("~res:/Materials/Landscape.Tool.material"));
     landscapeEditorMaterial->AddFlag(LANSDCAPE_FLAG_TOOL, 0);
     landscapeEditorMaterial->AddFlag(LANSDCAPE_FLAG_CURSOR, 0);
     landscapeEditorMaterial->AddProperty(LANDSCAPE_PARAM_CURSOR_COORD_SIZE, cursorCoordSize.data, rhi::ShaderProp::TYPE_FLOAT4);

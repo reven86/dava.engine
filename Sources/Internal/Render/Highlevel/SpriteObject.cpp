@@ -148,7 +148,7 @@ void SpriteObject::SetupRenderBatch()
 
     NMaterial* material = new NMaterial();
     material->SetMaterialName(FastName("SpriteObject_material"));
-    material->SetLocalFXName(NMaterialName::TEXTURED_ALPHABLEND);
+    material->SetFXName(NMaterialName::TEXTURED_ALPHABLEND);
 	material->AddNodeFlags(DataNode::NodeRuntimeFlag);
 	material->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, sprite->GetTexture(frame));
         

@@ -116,7 +116,7 @@ public:
     void Save(KeyedArchive * archive, SerializationContext * serializationContext) override;
     NMaterial* Clone();
 
-    void SetLocalFXName(const FastName & fxName);
+    void SetFXName(const FastName & fxName);
     bool HasLocalFXNmae() const;
     const FastName& GetLocalFXName() const;
     const FastName& GetEffectiveFxName() const;
@@ -221,7 +221,7 @@ private:
 public:
     INTROSPECTION_EXTEND(NMaterial, DataNode,
         PROPERTY("materialName", "Material name", GetMaterialName, SetMaterialName, I_VIEW | I_EDIT)
-        PROPERTY("fxName", "FX Name", GetLocalFXName, SetLocalFXName, I_VIEW | I_EDIT)
+        PROPERTY("fxName", "FX Name", GetLocalFXName, SetFXName, I_VIEW | I_EDIT)
         PROPERTY("qualityGroup", "Quality group", GetQualityGroup, SetQualityGroup, I_VIEW | I_EDIT)
         DYNAMIC(localFlags, "Material flags", new NMaterialStateDynamicFlagsInsp(), I_EDIT | I_VIEW)
         DYNAMIC(localProperties, "Material properties", new NMaterialStateDynamicPropertiesInsp(), I_EDIT | I_VIEW)

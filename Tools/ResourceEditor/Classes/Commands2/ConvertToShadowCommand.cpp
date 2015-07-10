@@ -48,7 +48,7 @@ ConvertToShadowCommand::ConvertToShadowCommand(DAVA::RenderBatch *batch)
 
     DAVA::NMaterial * shadowMaterial = new DAVA::NMaterial();
     shadowMaterial->SetMaterialName(DAVA::FastName("Shadow_Material"));
-    shadowMaterial->SetLocalFXName(DAVA::NMaterialName::SHADOW_VOLUME);
+    shadowMaterial->SetFXName(DAVA::NMaterialName::SHADOW_VOLUME);
 
     newBatch->SetMaterial(shadowMaterial);
 

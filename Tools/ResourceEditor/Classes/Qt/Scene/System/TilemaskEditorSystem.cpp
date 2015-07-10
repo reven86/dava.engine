@@ -72,7 +72,7 @@ TilemaskEditorSystem::TilemaskEditorSystem(Scene* scene)
     curToolSize = 120;
     
     editorMaterial = new NMaterial();
-    editorMaterial->SetLocalFXName(FastName("~res:/Materials/Landscape.Tilemask.Editor.material"));
+    editorMaterial->SetFXName(FastName("~res:/Materials/Landscape.Tilemask.Editor.material"));
     editorMaterial->AddFlag(TILEMASK_EDITOR_FLAG_DRAW_TYPE, 0);
     editorMaterial->AddProperty(TILEMASK_EDITOR_PARAM_INTENSITY, &strength, rhi::ShaderProp::TYPE_FLOAT1);
     editorMaterial->AddProperty(TILEMASK_EDITOR_PARAM_COPYPASTE_OFFSET, copyPasteOffset.data, rhi::ShaderProp::TYPE_FLOAT2);

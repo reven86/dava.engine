@@ -283,24 +283,24 @@ void RenderSystem2D::Init()
     }
 
     DEFAULT_2D_COLOR_MATERIAL = new NMaterial();
-    DEFAULT_2D_COLOR_MATERIAL->SetLocalFXName(FastName("~res:/Materials/2d.Color.material"));
+    DEFAULT_2D_COLOR_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Color.material"));
     DEFAULT_2D_COLOR_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
 
     DEFAULT_2D_TEXTURE_MATERIAL = new NMaterial();
-    DEFAULT_2D_TEXTURE_MATERIAL->SetLocalFXName(FastName("~res:/Materials/2d.Textured.material"));
+    DEFAULT_2D_TEXTURE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.material"));
     DEFAULT_2D_TEXTURE_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
 
     DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL = new NMaterial();
-    DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL->SetLocalFXName(FastName("~res:/Materials/2d.Textured.material"));
+    DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.material"));
     DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL->AddFlag(NMaterialFlagName::FLAG_BLENDING, BLENDING_NONE);
     DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
     
     DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL = new NMaterial();
-    DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL->SetLocalFXName(FastName("~res:/Materials/2d.Textured.Alpha8.material"));
+    DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.Alpha8.material"));
     DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
 
     DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL = new NMaterial();
-    DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL->SetLocalFXName(FastName("~res:/Materials/2d.Textured.Grayscale.material"));
+    DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL->SetFXName(FastName("~res:/Materials/2d.Textured.Grayscale.material"));
     DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL->PreBuildMaterial(RENDER_PASS_NAME);
 
 }

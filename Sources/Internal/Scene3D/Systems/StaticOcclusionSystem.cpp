@@ -701,10 +701,10 @@ StaticOcclusionDebugDrawSystem::StaticOcclusionDebugDrawSystem(Scene *scene):Sce
 
     debugOpaqueMaterial = new NMaterial();
     debugOpaqueMaterial->SetMaterialName(FastName("Debug_Opaque_Material"));
-    debugOpaqueMaterial->SetLocalFXName(NMaterialName::DEBUG_DRAW_OPAQUE);
+    debugOpaqueMaterial->SetFXName(NMaterialName::DEBUG_DRAW_OPAQUE);
     debugAlphablendMaterial = new NMaterial();
     debugAlphablendMaterial->SetMaterialName(FastName("Debug_Alphablend_Material"));
-    debugAlphablendMaterial->SetLocalFXName(NMaterialName::DEBUG_DRAW_ALPHABLEND);
+    debugAlphablendMaterial->SetFXName(NMaterialName::DEBUG_DRAW_ALPHABLEND);
 
 }
 

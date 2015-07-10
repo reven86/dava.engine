@@ -195,7 +195,7 @@ Texture* NMaterial::GetEffectiveTexture(const FastName& slotName)
     return nullptr;
 }
 
-void NMaterial::SetLocalFXName(const FastName & fx)
+void NMaterial::SetFXName(const FastName & fx)
 {
     fxName = fx;
     InvalidateRenderVariants();

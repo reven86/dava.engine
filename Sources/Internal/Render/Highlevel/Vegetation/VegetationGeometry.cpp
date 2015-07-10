@@ -224,7 +224,7 @@ void VegetationGeometry::Build(VegetationRenderData * renderData)
     }
 
     NMaterial* material = customGeometryData[0].material;
-    material->SetLocalFXName(NMaterialName::GRASS);
+    material->SetFXName(NMaterialName::GRASS);
     renderData->SetMaterial(material);
 
     if (material->HasLocalProperty(VegetationPropertyNames::UNIFORM_WORLD_SIZE))
