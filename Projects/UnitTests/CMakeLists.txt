@@ -6,7 +6,12 @@ if( NOT DAVA_MEGASOLUTION )
     set ( DAVA_MEMORY_PROFILER 1 )
 endif()
 
-set          ( WARNINGS_AS_ERRORS true )
+if ( "${CMAKE_GENERATOR_PLATFORM}" STREQUAL "x64" )
+    set( WARNINGS_AS_ERRORS false )
+else()
+    set          ( WARNINGS_AS_ERRORS true )
+endif()
+
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include      ( CMake-common )
 

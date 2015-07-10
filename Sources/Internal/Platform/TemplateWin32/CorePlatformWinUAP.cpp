@@ -69,7 +69,17 @@ void CorePlatformWinUAP::Quit()
 
 Core::eScreenMode CorePlatformWinUAP::GetScreenMode()
 {
-    ApplicationViewWindowingMode viewMode = xamlApp->GetScreenMode();
+    // will be called from UI thread
+    ApplicationViewWindowingMode viewMode;
+    auto func = [this, &viewMode] { viewMode = xamlApp->GetScreenMode(); };
+    if (IsUIThread())
+    {
+        func();
+    }
+    else
+    {
+        RunOnUIThreadBlocked(func);
+    }
     switch (viewMode)
     {
     case ApplicationViewWindowingMode::FullScreen:
@@ -85,36 +95,53 @@ Core::eScreenMode CorePlatformWinUAP::GetScreenMode()
 
 void CorePlatformWinUAP::SwitchScreenToMode(eScreenMode screenMode)
 {
-    switch (screenMode)
+    ApplicationViewWindowingMode mode(ApplicationViewWindowingMode::PreferredLaunchViewSize);
+    if (screenMode == Core::MODE_FULLSCREEN)
     {
-    case Core::MODE_FULLSCREEN:
-        xamlApp->SetScreenMode(ApplicationViewWindowingMode::FullScreen);
-        break;
-    case Core::MODE_WINDOWED:
-        xamlApp->SetScreenMode(ApplicationViewWindowingMode::PreferredLaunchViewSize);
-        break;
-    default:
-        xamlApp->SetScreenMode(ApplicationViewWindowingMode::FullScreen);
-        break;
+        mode = ApplicationViewWindowingMode::FullScreen;
+    }
+    else if (screenMode == Core::MODE_WINDOWED)
+    {
+        mode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
+    }
+    if (IsUIThread())
+    {
+        xamlApp->SetScreenMode(mode);
+    }
+    else
+    {
+        RunOnUIThread([this, mode]() { xamlApp->SetScreenMode(mode); });
     }
 }
 
-Core::eScreenOrientation CorePlatformWinUAP::GetScreenOrientation()
+DisplayMode CorePlatformWinUAP::GetCurrentDisplayMode()
 {
-    switch (xamlApp->GetDisplayOrientation())
+    Windows::Foundation::Size screenSize;
+    auto func = [this, &screenSize] { screenSize = xamlApp->GetCurrentScreenSize(); };
+    if (IsUIThread())
     {
-    case Windows::Graphics::Display::DisplayOrientations::None:
-        return eScreenOrientation::SCREEN_ORIENTATION_TEXTURE;
-    case Windows::Graphics::Display::DisplayOrientations::Landscape:
-        return eScreenOrientation::SCREEN_ORIENTATION_LANDSCAPE_RIGHT;
-    case Windows::Graphics::Display::DisplayOrientations::Portrait:
-        return eScreenOrientation::SCREEN_ORIENTATION_PORTRAIT;
-    case Windows::Graphics::Display::DisplayOrientations::LandscapeFlipped:
-        return eScreenOrientation::SCREEN_ORIENTATION_LANDSCAPE_LEFT;
-    case Windows::Graphics::Display::DisplayOrientations::PortraitFlipped:
-        return eScreenOrientation::SCREEN_ORIENTATION_TEXTURE;
-    default:
-        return eScreenOrientation::SCREEN_ORIENTATION_TEXTURE;
+        func();
+    }
+    else
+    {
+        RunOnUIThreadBlocked(func);
+    }
+    return DisplayMode(static_cast<int32>(screenSize.Width), static_cast<int32>(screenSize.Height), DisplayMode::DEFAULT_BITS_PER_PIXEL, DisplayMode::DEFAULT_DISPLAYFREQUENCY);
+}
+
+void CorePlatformWinUAP::SetCursorPinning(bool isPinning)
+{
+    if (IsUIThread())
+    {
+        xamlApp->SetCursorPinning(isPinning);
+        xamlApp->SetCursorVisible(!isPinning);
+    }
+    else
+    {
+        RunOnUIThread([this, isPinning]() {
+        xamlApp->SetCursorPinning(isPinning);
+        xamlApp->SetCursorVisible(!isPinning);
+        });
     }
 }
 

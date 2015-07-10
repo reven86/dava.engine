@@ -121,21 +121,27 @@ DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
     return NetworkInfo();
 }
 
+#if defined (__DAVAENGINE_WIN_UAP__)
+void DeviceInfo::InitializeScreenInfo(int32 width, int32 height)
+{
+    screenInfo.width = width;
+    screenInfo.height = height;
+}
+#elif //  __DAVAENGINE_WIN_UAP__
 void DeviceInfo::InitializeScreenInfo()
 {
-	UpdateScreenInfo();
 }
+#endif
 
-//TODO: dopilit'
-void DeviceInfo::UpdateScreenInfo()
+#if defined (__DAVAENGINE_WIN_UAP__)
+bool DeviceInfo::IsRunningOnEmulator()
 {
-	CoreWindow^ window = CoreWindow::GetForCurrentThread();
-	if (nullptr == window)
-		return;
-
-	screenInfo.width = static_cast<int32>(window->Bounds.Width);
-	screenInfo.height = static_cast<int32>(window->Bounds.Height);
+    using namespace Windows::Security::ExchangeActiveSyncProvisioning;
+    EasClientDeviceInformation deviceInfo;
+    bool isEmulator = ("Virtual" == deviceInfo.SystemProductName);
+    return isEmulator;
 }
+#endif //  __DAVAENGINE_WIN_UAP__
 
 }
 
