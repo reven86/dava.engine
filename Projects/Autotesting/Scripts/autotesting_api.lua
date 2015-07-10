@@ -488,7 +488,7 @@ function WaitUntil(time, func, ...)
             return elapsedTime
         end
     end
-    return false
+    return nil
 end
 
 function WaitControl(name, time)
@@ -496,11 +496,10 @@ function WaitControl(name, time)
     Log("WaitControl name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
     local find_control_lua = function(x) return aSys:FindControl(x) or aSys:FindControlOnPopUp(x) end
 	local result = WaitUntil(waitTime, find_control_lua, name)
-    if result then
-        return result
+    if not result then
+        Log("Control not found " .. name, "DEBUG")
     end
-    Log("Control not found " .. name, "DEBUG")
-    return false
+    return result
 end
 
 function WaitControlDisappeared(name, time)
@@ -508,22 +507,20 @@ function WaitControlDisappeared(name, time)
     Log("WaitControlDisappeared name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
     local not_find_control_lua = function(x) return not aSys:FindControl(x) and not aSys:FindControlOnPopUp(x) end
     local result = WaitUntil(waitTime, not_find_control_lua, name)
-	if result then
-        return result
+	if not result then
+        Log("Control still on the screen: " .. name, "DEBUG")
     end
-    Log("Control still on the screen: " .. name, "DEBUG")
-    return false
+    return result
 end
 
 function WaitControlBecomeVisible(name, time)
     local waitTime = time or TIMEOUT
     Log("WaitControlBecomeVisible name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
     local result = WaitUntil(waitTime, IsVisible, name)
-	if result then
-        return result
+	if not result then
+        Log("Control not found " .. name, "DEBUG")
     end
-    Log("Control not found " .. name, "DEBUG")
-    return false
+    return result
 end
 
 function WaitUntilControlBecomeEnabled(name, time)
@@ -531,11 +528,10 @@ function WaitUntilControlBecomeEnabled(name, time)
     Log("WaitUntilControlBecomeEnabled name=" .. name .. " time=" .. tostring(waitTime), "DEBUG")
     local is_enabled = function(x) return not IsDisabled(x) end
     local result = WaitUntil(waitTime, is_enabled, name)
-	if result then
-        return result
+	if not result then
+        Log("Control is disabled " .. name, "DEBUG")
     end
-    Log("Control is disabled " .. name, "DEBUG")
-    return false
+    return result
 end
 
 ------------------------------------------------------------------------------------------------------------------------

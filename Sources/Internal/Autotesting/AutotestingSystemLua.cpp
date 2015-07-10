@@ -871,7 +871,7 @@ namespace DAVA
 		}
 		return true;
 	}
-int32 AutotestingSystemLua::GetServerQueueState(const String &cluster)
+	int32 AutotestingSystemLua::GetServerQueueState(const String &cluster)
     {
         MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
         KeyedArchive *clustersQueue = AutotestingDB::Instance()->FindOrInsertBuildArchive(dbUpdateObject, "clusters_queue");
