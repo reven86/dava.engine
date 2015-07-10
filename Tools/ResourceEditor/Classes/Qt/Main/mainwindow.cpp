@@ -207,7 +207,7 @@ QtMainWindow::~QtMainWindow()
 {
     const auto &logWidget = qobject_cast<LogWidget*>(dockConsole->widget());
     const auto dataToSave = logWidget->Serialize();
-    VariantType var(VariantType(reinterpret_cast<const uint8*>(dataToSave.data()), dataToSave.size()));
+    VariantType var(reinterpret_cast<const uint8*>(dataToSave.data(), dataToSave.size()));
     SettingsManager::Instance()->SetValue(Settings::Internal_LogWidget, var);
 
 	SafeDelete(addSwitchEntityDialog);
