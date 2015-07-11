@@ -42,6 +42,8 @@
 #include "Model/ControlProperties/AbstractProperty.h"
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/StyleSheetRootProperty.h"
+#include "Model/ControlProperties/StyleSheetSelectorsSection.h"
+#include "Model/ControlProperties/StyleSheetProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Utils/QtDavaConvertion.h"
@@ -148,8 +150,18 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
             {
                 if (index.column() == 0)
                     return QVariant(property->GetName().c_str());
-
-                return makeQVariant(property);
+                else if (index.column() == 1)
+                {
+                    QString res = makeQVariant(property);
+                    
+                    StyleSheetProperty *p = dynamic_cast<StyleSheetProperty*>(property);
+                    if (p && p->HasTransition())
+                    {
+                        const char *interp = GlobalEnumMap<Interpolation::FuncType>::Instance()->ToString(p->GetTransitionFunction());
+                        res += QString(" (") + QVariant(p->GetTransitionTime()).toString() + " sec., " + interp + ")";
+                    }
+                    return res;
+                }
             }
             break;
 
@@ -342,7 +354,7 @@ QModelIndex PropertiesModel::indexByProperty(AbstractProperty *property, int col
     return createIndex(parent->GetIndex(property), column, property);
 }
 
-QVariant PropertiesModel::makeQVariant(const AbstractProperty *property) const
+QString PropertiesModel::makeQVariant(const AbstractProperty *property) const
 {
     const VariantType &val = property->GetValue();
     switch (val.GetType())

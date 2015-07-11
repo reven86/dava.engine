@@ -27,11 +27,12 @@
  =====================================================================================*/
 
 
-#ifndef __QUICKED_STYLE_SHEET_TRANSITION_H__
-#define __QUICKED_STYLE_SHEET_TRANSITION_H__
+#ifndef __QUICKED_STYLE_SHEET_SELECTORS_SECTION_H__
+#define __QUICKED_STYLE_SHEET_SELECTORS_SECTION_H__
 
 #include "Model/ControlProperties/ValueProperty.h"
-#include "Animation/Interpolation.h"
+#include "Model/ControlProperties/StyleSheetSelectorProperty.h"
+#include "UI/Styles/UIStyleSheetSelectorChain.h"
 
 class ValueProperty;
 
@@ -40,38 +41,30 @@ class StyleSheetNode;
 namespace DAVA
 {
     class UIControl;
-    struct UIStyleSheetProperty;
 }
 
-class StyleSheetTransition : public ValueProperty
+class StyleSheetSelectorsSection : public ValueProperty
 {
 public:
-    StyleSheetTransition(StyleSheetNode *styleSheet, DAVA::uint32 propertyIndex);
+    StyleSheetSelectorsSection(StyleSheetNode *styleSheet, const DAVA::Vector<DAVA::UIStyleSheetSelectorChain> &selectorChains);
 protected:
-    virtual ~StyleSheetTransition();
+    virtual ~StyleSheetSelectorsSection();
     
 public:
     int GetCount() const override;
-    AbstractProperty *GetProperty(int index) const override;
+    StyleSheetSelectorProperty *GetProperty(int index) const override;
     
     void Accept(PropertyVisitor *visitor) override;
     bool IsReadOnly() const override;
     
     ePropertyType GetType() const override;
-
-    DAVA::VariantType GetValue() const;
-
-    DAVA::float32 GetTransitionTime() const;
-    DAVA::Interpolation::FuncType GetTransitionFunction() const;
-
-    const EnumMap *GetEnumMap() const;
-    void ApplyValue(const DAVA::VariantType &value);
     
-private:
-    const DAVA::UIStyleSheetProperty* GetStyleSheetProperty() const;
+    DAVA::VariantType GetValue() const;
+    void ApplyValue(const DAVA::VariantType &value);
 
+private:
     StyleSheetNode *styleSheet; // weak
-    DAVA::uint32 propertyIndex;
+    DAVA::Vector<StyleSheetSelectorProperty*> selectors;
 };
 
-#endif // __QUICKED_STYLE_SHEET_TRANSITION_H__
+#endif // __QUICKED_STYLE_SHEET_SELECTORS_SECTION_H__

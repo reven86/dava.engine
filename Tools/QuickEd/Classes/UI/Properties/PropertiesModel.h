@@ -86,7 +86,7 @@ private:
     
 private:
     QModelIndex indexByProperty(AbstractProperty *property, int column = 0);
-    QVariant makeQVariant(const AbstractProperty *property) const;
+    QString makeQVariant(const AbstractProperty *property) const;
     void initVariantType(DAVA::VariantType &var, const QVariant &val) const;
     
 private:

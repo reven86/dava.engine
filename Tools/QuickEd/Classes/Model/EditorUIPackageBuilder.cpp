@@ -116,17 +116,10 @@ bool EditorUIPackageBuilder::ProcessImportedPackage(const String &packagePathStr
     return false;
 }
 
-void EditorUIPackageBuilder::ProcessStyleSheets(const YamlNode* styleSheetsNode)
+void EditorUIPackageBuilder::ProcessStyleSheet(const DAVA::Vector<DAVA::UIStyleSheetSelectorChain> &selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties)
 {
-    UIStyleSheetYamlLoader styleSheetLoader;
-
-    Vector< UIStyleSheet* > styleSheets;
-    styleSheetLoader.LoadFromYaml(styleSheetsNode, &styleSheets);
-
-    AddStyleSheets(styleSheets);
-
-    for (UIStyleSheet* styleSheet : styleSheets)
-        SafeRelease(styleSheet);
+    StyleSheetNode *node = new StyleSheetNode(selectorChains, properties);
+    styleSheets.push_back(node);
 }
 
 UIControl *EditorUIPackageBuilder::BeginControlWithClass(const String &className)
@@ -342,7 +335,7 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
 
             for (int32 styleSheetIndex = 0; styleSheetIndex < importedPackage->GetStyleSheets()->GetCount(); ++styleSheetIndex)
             {
-                packageContext->AddStyleSheet(importedPackage->GetStyleSheets()->Get(styleSheetIndex)->GetStyleSheet());
+                //packageContext->AddStyleSheet(importedPackage->GetStyleSheets()->Get(styleSheetIndex)->GetStyleSheet());
             }
         }
         else
@@ -354,7 +347,7 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
     for (StyleSheetNode *styleSheet : styleSheets)
     {
         package->GetStyleSheets()->Add(styleSheet);
-        packageContext->AddStyleSheet(styleSheet->GetStyleSheet());
+        //packageContext->AddStyleSheet(styleSheet->GetStyleSheet());
     }
     
     for (ControlNode *control : rootControls)
@@ -403,15 +396,6 @@ ControlNode *EditorUIPackageBuilder::FindRootControl(const DAVA::String &name) c
             return control;
     }
     return nullptr;
-}
-
-void EditorUIPackageBuilder::AddStyleSheets(const DAVA::Vector<UIStyleSheet*>& newStyleSheets)
-{
-    for (UIStyleSheet *styleSheet : newStyleSheets)
-    {
-        StyleSheetNode *node = new StyleSheetNode(styleSheet);
-        styleSheets.push_back(node);
-    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

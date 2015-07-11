@@ -28,9 +28,8 @@
 
 #include "StyleSheetRootProperty.h"
 
-#include "StyleSheetSelectorsProperty.h"
+#include "StyleSheetSelectorsSection.h"
 #include "StyleSheetPropertiesSection.h"
-#include "StyleSheetTransitionsSection.h"
 
 #include "PropertyVisitor.h"
 #include "../PackageHierarchy/StyleSheetNode.h"
@@ -38,17 +37,14 @@
 
 using namespace DAVA;
 
-StyleSheetRootProperty::StyleSheetRootProperty(StyleSheetNode *aStyleSheet)
+StyleSheetRootProperty::StyleSheetRootProperty(StyleSheetNode *aStyleSheet, const DAVA::Vector<DAVA::UIStyleSheetSelectorChain> &selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties)
     : styleSheet(aStyleSheet) // weak
 {
-    selectors = new StyleSheetSelectorsProperty(styleSheet);
+    selectors = new StyleSheetSelectorsSection(styleSheet, selectorChains);
     selectors->SetParent(this);
     
-    propertiesSection = new StyleSheetPropertiesSection(styleSheet);
+    propertiesSection = new StyleSheetPropertiesSection(styleSheet, properties);
     propertiesSection->SetParent(this);
-
-    transitionsSection = new StyleSheetTransitionsSection(styleSheet);
-    transitionsSection->SetParent(this);
 }
 
 StyleSheetRootProperty::~StyleSheetRootProperty()
@@ -61,13 +57,11 @@ StyleSheetRootProperty::~StyleSheetRootProperty()
     propertiesSection->SetParent(nullptr);
     SafeRelease(propertiesSection);
 
-    transitionsSection->SetParent(nullptr);
-    SafeRelease(transitionsSection);
 }
 
 int StyleSheetRootProperty::GetCount() const
 {
-    return 3;
+    return 2;
 }
 
 AbstractProperty *StyleSheetRootProperty::GetProperty(int index) const
@@ -78,8 +72,6 @@ AbstractProperty *StyleSheetRootProperty::GetProperty(int index) const
             return selectors;
         case 1:
             return propertiesSection;
-        case 2:
-            return transitionsSection;
     }
     DVASSERT(false);
     return nullptr;
@@ -134,7 +126,7 @@ void StyleSheetRootProperty::ResetProperty(AbstractProperty *property)
     // do nothing
 }
 
-StyleSheetSelectorsProperty *StyleSheetRootProperty::GetSelectors() const
+StyleSheetSelectorsSection *StyleSheetRootProperty::GetSelectors() const
 {
     return selectors;
 }
@@ -142,9 +134,4 @@ StyleSheetSelectorsProperty *StyleSheetRootProperty::GetSelectors() const
 StyleSheetPropertiesSection *StyleSheetRootProperty::GetPropertiesSection() const
 {
     return propertiesSection;
-}
-
-StyleSheetTransitionsSection *StyleSheetRootProperty::GetTransitionsSection() const
-{
-    return transitionsSection;
 }

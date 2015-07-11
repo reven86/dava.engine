@@ -27,41 +27,60 @@
  =====================================================================================*/
 
 
-#ifndef __QUICKED_STYLE_SHEET_TRANSITIONS_SECTION_H__
-#define __QUICKED_STYLE_SHEET_TRANSITIONS_SECTION_H__
+#include "StyleSheetSelectorProperty.h"
 
-#include "Model/ControlProperties/AbstractProperty.h"
+#include "PropertyVisitor.h"
+#include "../PackageHierarchy/StyleSheetNode.h"
 
-class StyleSheetTransition;
+#include "UI/Styles/UIStyleSheet.h"
 
-class StyleSheetNode;
+using namespace DAVA;
 
-namespace DAVA
+StyleSheetSelectorProperty::StyleSheetSelectorProperty(StyleSheetNode *aStyleSheet, const UIStyleSheetSelectorChain &chain)
+    : ValueProperty("Chain")
+    , styleSheet(aStyleSheet) // weak
+    , selectorChain(chain)
 {
-    class UIControl;
+    value = selectorChain.ToString();
 }
 
-class StyleSheetTransitionsSection : public AbstractProperty
+StyleSheetSelectorProperty::~StyleSheetSelectorProperty()
 {
-public:
-    StyleSheetTransitionsSection(StyleSheetNode *styleSheet);
-protected:
-    virtual ~StyleSheetTransitionsSection();
-    
-public:
-    int GetCount() const override;
-    AbstractProperty *GetProperty(int index) const override;
-    
-    void Accept(PropertyVisitor *visitor) override;
-    bool IsReadOnly() const override;
-    
-    const DAVA::String &GetName() const override;
-    ePropertyType GetType() const override;
-    
-    
-private:
-    StyleSheetNode *styleSheet; // weak
-    DAVA::Vector<StyleSheetTransition*> transitions;
-};
+    styleSheet = nullptr; //weak
+}
 
-#endif // __QUICKED_STYLE_SHEET_TRANSITIONS_SECTION_H__
+int StyleSheetSelectorProperty::GetCount() const
+{
+    return 0;
+}
+
+AbstractProperty *StyleSheetSelectorProperty::GetProperty(int index) const
+{
+    return nullptr;
+}
+
+void StyleSheetSelectorProperty::Accept(PropertyVisitor *visitor)
+{
+    visitor->VisitStyleSheetSelectorProperty(this);
+}
+
+bool StyleSheetSelectorProperty::IsReadOnly() const
+{
+    return styleSheet->IsReadOnly();
+}
+
+AbstractProperty::ePropertyType StyleSheetSelectorProperty::GetType() const
+{
+    return TYPE_VARIANT;
+}
+
+DAVA::VariantType StyleSheetSelectorProperty::GetValue() const
+{
+    return VariantType(value);
+}
+
+void StyleSheetSelectorProperty::ApplyValue(const DAVA::VariantType &aValue)
+{
+    selectorChain = UIStyleSheetSelectorChain(aValue.AsString());
+    value = selectorChain.ToString();
+}

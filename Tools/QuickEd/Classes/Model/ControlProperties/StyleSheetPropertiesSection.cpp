@@ -36,36 +36,33 @@
 
 using namespace DAVA;
 
-StyleSheetPropertiesSection::StyleSheetPropertiesSection(StyleSheetNode *aStyleSheet)
+StyleSheetPropertiesSection::StyleSheetPropertiesSection(StyleSheetNode *aStyleSheet, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties)
     : styleSheet(aStyleSheet) // weak
 {
-    UIStyleSheet *ss = styleSheet->GetStyleSheet();
-    const UIStyleSheetPropertyTable *table = ss->GetPropertyTable();
-    const Vector<UIStyleSheetProperty> &tableProperties = table->GetProperties();
-    for (auto &pair : tableProperties)
+    for (const UIStyleSheetProperty &p : properties)
     {
-        StyleSheetProperty *prop = new StyleSheetProperty(styleSheet, pair.propertyIndex);
+        StyleSheetProperty *prop = new StyleSheetProperty(styleSheet, p);
         prop->SetParent(this);
-        properties.push_back(prop);
+        styleSheetProperties.push_back(prop);
     }
 }
 
 StyleSheetPropertiesSection::~StyleSheetPropertiesSection()
 {
     styleSheet = nullptr; //weak
-    for (StyleSheetProperty *prop : properties)
+    for (StyleSheetProperty *prop : styleSheetProperties)
         SafeRelease(prop);
-    properties.clear();
+    styleSheetProperties.clear();
 }
 
 int StyleSheetPropertiesSection::GetCount() const
 {
-    return static_cast<int>(properties.size());
+    return static_cast<int>(styleSheetProperties.size());
 }
 
 AbstractProperty *StyleSheetPropertiesSection::GetProperty(int index) const
 {
-    return properties[index];
+    return styleSheetProperties[index];
 }
 
 void StyleSheetPropertiesSection::Accept(PropertyVisitor *visitor)
@@ -75,7 +72,7 @@ void StyleSheetPropertiesSection::Accept(PropertyVisitor *visitor)
 
 bool StyleSheetPropertiesSection::IsReadOnly() const
 {
-    return true;
+    return styleSheet->IsReadOnly();
 }
 
 const DAVA::String &StyleSheetPropertiesSection::GetName() const

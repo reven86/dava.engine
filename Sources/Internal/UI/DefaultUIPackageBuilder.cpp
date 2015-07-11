@@ -42,7 +42,6 @@
 #include "FileSystem/LocalizationSystem.h"
 #include "UI/UIPackagesCache.h"
 #include "UI/Styles/UIStyleSheet.h"
-#include "UI/Styles/UIStyleSheetYamlLoader.h"
 
 namespace DAVA
 {
@@ -129,7 +128,10 @@ void DefaultUIPackageBuilder::EndPackage()
     auto last = std::unique(importedStyleSheets.begin(), importedStyleSheets.end());
     importedStyleSheets.erase(last, importedStyleSheets.end());
 
-    AddStyleSheets(importedStyleSheets);
+    for (UIStyleSheet *styleSheet : importedStyleSheets)
+    {
+        package->GetControlPackageContext()->AddStyleSheet(styleSheet);
+    }
 }
 
 bool DefaultUIPackageBuilder::ProcessImportedPackage(const String &packagePath, AbstractUIPackageLoader *loader)
@@ -158,17 +160,18 @@ bool DefaultUIPackageBuilder::ProcessImportedPackage(const String &packagePath, 
     }
 }
 
-void DefaultUIPackageBuilder::ProcessStyleSheets(const YamlNode *styleSheetsNode)
+void DefaultUIPackageBuilder::ProcessStyleSheet(const Vector<UIStyleSheetSelectorChain> &selectorChains, const Vector<UIStyleSheetProperty> &properties)
 {
-    UIStyleSheetYamlLoader styleSheetLoader;
+    for (const UIStyleSheetSelectorChain &chain : selectorChains)
+    {
+        ScopedPtr<UIStyleSheet> styleSheet(new UIStyleSheet());
+        styleSheet->SetSelectorChain(chain);
+        ScopedPtr<UIStyleSheetPropertyTable> propertiesTable(new UIStyleSheetPropertyTable());
+        propertiesTable->SetProperties(properties);
+        styleSheet->SetPropertyTable(propertiesTable);
 
-    Vector< UIStyleSheet* > styleSheets;
-    styleSheetLoader.LoadFromYaml(styleSheetsNode, &styleSheets);
-
-    AddStyleSheets(styleSheets);
-
-    for (UIStyleSheet* styleSheet : styleSheets)
-        SafeRelease(styleSheet);
+        package->GetControlPackageContext()->AddStyleSheet(styleSheet);
+    }
 }
 
 UIControl *DefaultUIPackageBuilder::BeginControlWithClass(const String &className)
@@ -395,12 +398,6 @@ UIPackage *DefaultUIPackageBuilder::FindImportedPackageByName(const String &name
         return importedPackages[it->second];
     
     return nullptr;
-}
-
-void DefaultUIPackageBuilder::AddStyleSheets(const DAVA::Vector<UIStyleSheet*>& styleSheets)
-{
-    for (UIStyleSheet* styleSheet : styleSheets)
-        package->GetControlPackageContext()->AddStyleSheet(styleSheet);
 }
 
 }

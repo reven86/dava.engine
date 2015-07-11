@@ -31,6 +31,7 @@
 #define __UI_EDITOR_STYLE_SHEET_NODE_H__
 
 #include "PackageBaseNode.h"
+#include "UI/Styles/UIStyleSheetSelectorChain.h"
 
 namespace DAVA
 {
@@ -42,7 +43,7 @@ class StyleSheetRootProperty;
 class StyleSheetNode : public PackageBaseNode
 {
 public:
-    StyleSheetNode(DAVA::UIStyleSheet *styleSheet);
+    StyleSheetNode(const DAVA::Vector<DAVA::UIStyleSheetSelectorChain> &selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties);
     virtual ~StyleSheetNode();
     
     int GetCount() const override;
@@ -53,11 +54,9 @@ public:
     
     StyleSheetRootProperty *GetRootProperty() const;
     
-    DAVA::UIStyleSheet *GetStyleSheet() const;
 private:
-    DAVA::Vector<PackageNode*> packages;
-    DAVA::UIStyleSheet *styleSheet;
     StyleSheetRootProperty *rootProperty;
+    DAVA::String name;
 };
 
 #endif //__UI_EDITOR_STYLE_SHEET_NODE_H__

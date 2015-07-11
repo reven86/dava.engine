@@ -31,22 +31,29 @@
 #include "PackageVisitor.h"
 
 #include "../ControlProperties/StyleSheetRootProperty.h"
+#include "../ControlProperties/StyleSheetSelectorsSection.h"
 
 #include "UI/Styles/UIStyleSheet.h"
 
 using namespace DAVA;
 
-StyleSheetNode::StyleSheetNode(UIStyleSheet *aStyleSheet)
+StyleSheetNode::StyleSheetNode(const DAVA::Vector<DAVA::UIStyleSheetSelectorChain> &selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties)
     : PackageBaseNode(nullptr)
-    , styleSheet(SafeRetain(aStyleSheet))
-    , rootProperty(new StyleSheetRootProperty(this))
+    , rootProperty(nullptr)
 {
+    rootProperty = new StyleSheetRootProperty(this, selectorChains, properties);
     
+    StyleSheetSelectorsSection *selectors = rootProperty->GetSelectors();
+    for (int32 i = 0; i < selectors->GetCount(); i++)
+    {
+        if (i > 0)
+            name += ", ";
+        name += selectors->GetProperty(i)->GetValue().AsString();
+    }
 }
 
 StyleSheetNode::~StyleSheetNode()
 {
-    SafeRelease(styleSheet);
     SafeRelease(rootProperty);
 }
 
@@ -67,15 +74,10 @@ void StyleSheetNode::Accept(PackageVisitor *visitor)
 
 String StyleSheetNode::GetName() const
 {
-    return styleSheet->GetSelectorChain().ToString();
+    return name;
 }
 
 StyleSheetRootProperty *StyleSheetNode::GetRootProperty() const
 {
     return rootProperty;
-}
-
-UIStyleSheet *StyleSheetNode::GetStyleSheet() const
-{
-    return styleSheet;
 }

@@ -32,6 +32,7 @@
 
 #include "UI/AbstractUIPackageBuilder.h"
 #include "FileSystem/FilePath.h"
+#include "UI/Styles/UIStyleSheetStructs.h"
 
 class PackageNode;
 class ControlNode;
@@ -49,7 +50,7 @@ public:
     virtual void EndPackage() override;
     
     virtual bool ProcessImportedPackage(const DAVA::String &packagePath, DAVA::AbstractUIPackageLoader *loader) override;
-    virtual void ProcessStyleSheets(const DAVA::YamlNode* styleSheetsNode) override;
+    virtual void ProcessStyleSheet(const DAVA::Vector<DAVA::UIStyleSheetSelectorChain> &selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties) override;
 
     virtual DAVA::UIControl *BeginControlWithClass(const DAVA::String &className) override;
     virtual DAVA::UIControl *BeginControlWithCustomClass(const DAVA::String &customClassName, const DAVA::String &className) override;
@@ -79,7 +80,6 @@ public:
 
 private:
     ControlNode *FindRootControl(const DAVA::String &name) const;
-    void AddStyleSheets(const DAVA::Vector<DAVA::UIStyleSheet*>& styleSheets);
 
 private:
     struct ControlDescr {

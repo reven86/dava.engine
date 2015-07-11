@@ -32,6 +32,8 @@
 
 #include "Model/ControlProperties/AbstractProperty.h"
 
+#include "UI/Styles/UIStyleSheetStructs.h"
+
 class StyleSheetProperty;
 
 class StyleSheetNode;
@@ -44,7 +46,7 @@ namespace DAVA
 class StyleSheetPropertiesSection : public AbstractProperty
 {
 public:
-    StyleSheetPropertiesSection(StyleSheetNode *styleSheet);
+    StyleSheetPropertiesSection(StyleSheetNode *styleSheet, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties);
 protected:
     virtual ~StyleSheetPropertiesSection();
     
@@ -61,7 +63,7 @@ public:
     
 private:
     StyleSheetNode *styleSheet; // weak
-    DAVA::Vector<StyleSheetProperty*> properties;
+    DAVA::Vector<StyleSheetProperty*> styleSheetProperties;
 };
 
 #endif // __QUICKED_STYLE_SHEET_PROPERTIES_SECTION_H__

@@ -31,6 +31,7 @@
 #define __QUICKED_STYLE_SHEET_PROPERTY_H__
 
 #include "Model/ControlProperties/ValueProperty.h"
+#include "UI/Styles/UIStyleSheetStructs.h"
 
 class ValueProperty;
 
@@ -44,7 +45,7 @@ namespace DAVA
 class StyleSheetProperty : public ValueProperty
 {
 public:
-    StyleSheetProperty(StyleSheetNode *styleSheet, DAVA::uint32 propertyIndex);
+    StyleSheetProperty(StyleSheetNode *styleSheet, const DAVA::UIStyleSheetProperty &aProperty);
 protected:
     virtual ~StyleSheetProperty();
     
@@ -60,10 +61,14 @@ public:
     DAVA::VariantType GetValue() const;
     const EnumMap *GetEnumMap() const;
     void ApplyValue(const DAVA::VariantType &value);
-    
+
+    DAVA::Interpolation::FuncType GetTransitionFunction() const;
+    DAVA::float32 GetTransitionTime() const;
+    bool HasTransition() const;
+
 private:
     StyleSheetNode *styleSheet; // weak
-    DAVA::uint32 propertyIndex;
+    DAVA::UIStyleSheetProperty property;
 };
 
 #endif // __QUICKED_STYLE_SHEET_PROPERTY_H__

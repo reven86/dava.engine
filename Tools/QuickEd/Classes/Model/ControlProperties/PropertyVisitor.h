@@ -14,11 +14,10 @@ class LocalizedTextValueProperty;
 class NameProperty;
 class PrototypeNameProperty;
 class StyleSheetRootProperty;
-class StyleSheetSelectorsProperty;
+class StyleSheetSelectorsSection;
+class StyleSheetSelectorProperty;
 class StyleSheetPropertiesSection;
 class StyleSheetProperty;
-class StyleSheetTransitionsSection;
-class StyleSheetTransition;
 
 class PropertyVisitor
 {
@@ -41,11 +40,10 @@ public:
     virtual void VisitIntrospectionProperty(IntrospectionProperty *property) = 0;
     
     virtual void VisitStyleSheetRoot(StyleSheetRootProperty *property) = 0;
-    virtual void VisitStyleSheetSelectorsProperty(StyleSheetSelectorsProperty *property) = 0;
+    virtual void VisitStyleSheetSelectorsSection(StyleSheetSelectorsSection *property) = 0;
+    virtual void VisitStyleSheetSelectorProperty(StyleSheetSelectorProperty *property) = 0;
     virtual void VisitStyleSheetPropertiesSection(StyleSheetPropertiesSection *property) = 0;
     virtual void VisitStyleSheetProperty(StyleSheetProperty *property) = 0;
-    virtual void VisitStyleSheetTransitionsSection(StyleSheetTransitionsSection *property) = 0;
-    virtual void VisitStyleSheetTransition(StyleSheetTransition *property) = 0;
 };
 
 #endif // __QUICKED_PROPERTY_VISITOR_H__

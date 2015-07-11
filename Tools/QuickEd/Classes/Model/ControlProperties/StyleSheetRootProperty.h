@@ -31,12 +31,12 @@
 #define __QUICKED_STYLE_SHEETS_ROOT_PROPERTY_H__
 
 #include "Model/ControlProperties/AbstractProperty.h"
+#include "UI/Styles/UIStyleSheetSelectorChain.h"
 
 class PropertyListener;
 class ValueProperty;
-class StyleSheetSelectorsProperty;
+class StyleSheetSelectorsSection;
 class StyleSheetPropertiesSection;
-class StyleSheetTransitionsSection;
 
 class StyleSheetNode;
 
@@ -48,7 +48,7 @@ namespace DAVA
 class StyleSheetRootProperty : public AbstractProperty
 {
 public:
-    StyleSheetRootProperty(StyleSheetNode *styleSheet);
+    StyleSheetRootProperty(StyleSheetNode *styleSheet, const DAVA::Vector<DAVA::UIStyleSheetSelectorChain> &selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties);
 protected:
     virtual ~StyleSheetRootProperty();
     
@@ -68,17 +68,15 @@ public:
     void SetProperty(AbstractProperty *property, const DAVA::VariantType &newValue);
     void ResetProperty(AbstractProperty *property);
     
-    StyleSheetSelectorsProperty *GetSelectors() const;
+    StyleSheetSelectorsSection *GetSelectors() const;
     StyleSheetPropertiesSection *GetPropertiesSection() const;
-    StyleSheetTransitionsSection *GetTransitionsSection() const;
 
 private:
-    StyleSheetNode *styleSheet = nullptr; // weak
+    StyleSheetNode *styleSheet = nullptr;
     DAVA::Vector<PropertyListener*> listeners;
     
-    StyleSheetSelectorsProperty *selectors = nullptr;
+    StyleSheetSelectorsSection *selectors = nullptr;
     StyleSheetPropertiesSection *propertiesSection = nullptr;
-    StyleSheetTransitionsSection *transitionsSection = nullptr;
 };
 
 #endif // __QUICKED_STYLE_SHEETS_ROOT_PROPERTY_H__

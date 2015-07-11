@@ -96,11 +96,10 @@ private: // PropertyVisitor
     void VisitIntrospectionProperty(IntrospectionProperty *property) override;
 
     void VisitStyleSheetRoot(StyleSheetRootProperty *property) override;
-    void VisitStyleSheetSelectorsProperty(StyleSheetSelectorsProperty *property) override;
+    void VisitStyleSheetSelectorsSection(StyleSheetSelectorsSection *property) override;
+    void VisitStyleSheetSelectorProperty(StyleSheetSelectorProperty *property) override;
     void VisitStyleSheetPropertiesSection(StyleSheetPropertiesSection *property) override;
     void VisitStyleSheetProperty(StyleSheetProperty *property) override;
-    void VisitStyleSheetTransitionsSection(StyleSheetTransitionsSection *property) override;
-    void VisitStyleSheetTransition(StyleSheetTransition *property) override;
 private:
     void AcceptChildren(AbstractProperty *property);
     void PutValueProperty(const DAVA::String &name, ValueProperty *property);

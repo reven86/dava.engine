@@ -34,12 +34,12 @@
 
 using namespace DAVA;
 
-StyleSheetProperty::StyleSheetProperty(StyleSheetNode *aStyleSheet, DAVA::uint32 aPropertyIndex)
+StyleSheetProperty::StyleSheetProperty(StyleSheetNode *aStyleSheet, const DAVA::UIStyleSheetProperty &aProperty)
     : ValueProperty("prop")
     , styleSheet(aStyleSheet) // weak
-    , propertyIndex(aPropertyIndex)
+    , property(aProperty)
 {
-    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex);
+    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
     name = String(descr.name.c_str());
 }
 
@@ -70,8 +70,8 @@ bool StyleSheetProperty::IsReadOnly() const
 
 AbstractProperty::ePropertyType StyleSheetProperty::GetType() const
 {
-    const UIStyleSheetPropertyDescriptor& propertyDescr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex);
-    const InspMember* member = propertyDescr.targetMembers[0].memberInfo; // we assert all members to have the same type
+    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
+    const InspMember* member = descr.targetMembers[0].memberInfo; // we assert all members to have the same type
 
     auto type = member->Desc().type;
     if (type == InspDesc::T_ENUM)
@@ -84,24 +84,13 @@ AbstractProperty::ePropertyType StyleSheetProperty::GetType() const
 
 VariantType StyleSheetProperty::GetValue() const
 {
-    const UIStyleSheet *ss = styleSheet->GetStyleSheet();
-    const auto &pairs = ss->GetPropertyTable()->GetProperties();
-    for (const auto &pair : pairs)
-    {
-        if (pair.propertyIndex == propertyIndex)
-        {
-            return pair.value;
-        }
-    }
-
-    DVASSERT(false);
-    return VariantType();
+    return property.value;
 }
 
 const EnumMap *StyleSheetProperty::GetEnumMap() const
 {
-   const UIStyleSheetPropertyDescriptor& propertyDescr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex);
-   const InspMember* member = propertyDescr.targetMembers[0].memberInfo; // we assert all members to have the same type
+   const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
+   const InspMember* member = descr.targetMembers[0].memberInfo; // we assert all members to have the same type
    auto type = member->Desc().type;
    
    if (type == InspDesc::T_ENUM ||
@@ -113,4 +102,20 @@ const EnumMap *StyleSheetProperty::GetEnumMap() const
 
 void StyleSheetProperty::ApplyValue(const DAVA::VariantType &value)
 {
+    property.value = value;
+}
+
+Interpolation::FuncType StyleSheetProperty::GetTransitionFunction() const
+{
+    return property.transitionFunction;
+}
+
+float32 StyleSheetProperty::GetTransitionTime() const
+{
+    return property.transitionTime;
+}
+
+bool StyleSheetProperty::HasTransition() const
+{
+    return property.transition;
 }

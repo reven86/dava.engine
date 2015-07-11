@@ -27,67 +27,69 @@
  =====================================================================================*/
 
 
-#include "StyleSheetTransitionsSection.h"
+#include "StyleSheetSelectorsSection.h"
 
-#include "StyleSheetTransition.h"
 #include "PropertyVisitor.h"
+#include "StyleSheetSelectorProperty.h"
 #include "../PackageHierarchy/StyleSheetNode.h"
+
 #include "UI/Styles/UIStyleSheet.h"
 
 using namespace DAVA;
 
-StyleSheetTransitionsSection::StyleSheetTransitionsSection(StyleSheetNode *aStyleSheet)
-    : styleSheet(aStyleSheet) // weak
+StyleSheetSelectorsSection::StyleSheetSelectorsSection(StyleSheetNode *aStyleSheet, const Vector<UIStyleSheetSelectorChain> &selectorChains)
+    : ValueProperty("Selectors")
+    , styleSheet(aStyleSheet) // weak
 {
-    UIStyleSheet *ss = styleSheet->GetStyleSheet();
-    const UIStyleSheetPropertyTable *table = ss->GetPropertyTable();
-    const Vector<UIStyleSheetProperty> &tableProperties = table->GetProperties();
-    for (auto &prop : tableProperties)
+    for (const UIStyleSheetSelectorChain &chain : selectorChains)
     {
-        if (prop.transition)
-        {
-            StyleSheetTransition *transition = new StyleSheetTransition(styleSheet, prop.propertyIndex);
-            transition->SetParent(this);
-            transitions.push_back(transition);
-        }
+        StyleSheetSelectorProperty *selector = new StyleSheetSelectorProperty(aStyleSheet, chain);
+        selector->SetParent(this);
+        selectors.push_back(selector);
     }
 }
 
-StyleSheetTransitionsSection::~StyleSheetTransitionsSection()
+StyleSheetSelectorsSection::~StyleSheetSelectorsSection()
 {
     styleSheet = nullptr; //weak
-    for (StyleSheetTransition *transition : transitions)
-        SafeRelease(transition);
-    transitions.clear();
+    
+    for (StyleSheetSelectorProperty *selector : selectors)
+    {
+        selector->Release();
+    }
 }
 
-int StyleSheetTransitionsSection::GetCount() const
+int StyleSheetSelectorsSection::GetCount() const
 {
-    return static_cast<int>(transitions.size());
+    return static_cast<int>(selectors.size());
 }
 
-AbstractProperty *StyleSheetTransitionsSection::GetProperty(int index) const
+StyleSheetSelectorProperty *StyleSheetSelectorsSection::GetProperty(int index) const
 {
-    return transitions[index];
+    return selectors[index];
 }
 
-void StyleSheetTransitionsSection::Accept(PropertyVisitor *visitor)
+void StyleSheetSelectorsSection::Accept(PropertyVisitor *visitor)
 {
-    visitor->VisitStyleSheetTransitionsSection(this);
+    visitor->VisitStyleSheetSelectorsSection(this);
 }
 
-bool StyleSheetTransitionsSection::IsReadOnly() const
+bool StyleSheetSelectorsSection::IsReadOnly() const
 {
-    return true;
+    return styleSheet->IsReadOnly();
 }
 
-const DAVA::String &StyleSheetTransitionsSection::GetName() const
-{
-    static String name = "Transitions";
-    return name;
-}
-
-AbstractProperty::ePropertyType StyleSheetTransitionsSection::GetType() const
+AbstractProperty::ePropertyType StyleSheetSelectorsSection::GetType() const
 {
     return TYPE_HEADER;
+}
+
+DAVA::VariantType StyleSheetSelectorsSection::GetValue() const
+{
+    return VariantType();
+}
+
+void StyleSheetSelectorsSection::ApplyValue(const DAVA::VariantType &value)
+{
+    
 }
