@@ -49,7 +49,7 @@ SpritesPacker::~SpritesPacker()
 void SpritesPacker::SetCacheTool(const String& ip, const String& port, const String& timeout)
 {
 #if defined __DAVAENGINE_MACOS__
-        resourcePacker2D->SetCacheClientTool("~res:/AssetCacheClient", ip, port, timeout);
+        resourcePacker2D.SetCacheClientTool("~res:/AssetCacheClient", ip, port, timeout);
 #elif defined __DAVAENGINE_WINDOWS__
         resourcePacker2D.SetCacheClientTool("~res:/AssetCacheClient.exe", ip, port, timeout);
 #endif
