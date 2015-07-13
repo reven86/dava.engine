@@ -366,7 +366,7 @@ void RenderSystem2D::EndFrame()
     rhi::EndRenderPass(pass2DHandle);
 }
 
-void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* = true */, const Color& clearColor /* = Color::Clear */)
+void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* = true */, const Color& clearColor /* = Color::Clear */, int32 priority /* = PRIORITY_SERVICE_2D */)
 {
     DVASSERT(!IsRenderTargetPass());
     DVASSERT(target);
@@ -380,7 +380,7 @@ void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* =
     renderTargetPassConfig.colorBuffer[0].clearColor[1] = clearColor.g;
     renderTargetPassConfig.colorBuffer[0].clearColor[2] = clearColor.b;
     renderTargetPassConfig.colorBuffer[0].clearColor[3] = clearColor.a;
-    renderTargetPassConfig.priority = PRIORITY_SERVICE_2D;
+    renderTargetPassConfig.priority = priority;
     renderTargetPassConfig.viewport.width = target->GetWidth();
     renderTargetPassConfig.viewport.height = target->GetHeight();
     if(needClear)
@@ -1604,7 +1604,8 @@ void RenderSystem2D::DrawTexture(rhi::HTextureSet htextureSet, NMaterial *materi
 
     BatchDescriptor batch;
     batch.singleColor = color;
-    batch.material = DEFAULT_2D_TEXTURE_MATERIAL;
+    batch.textureSetHandle = htextureSet;
+    batch.material = material;
     batch.vertexCount = 4;
     batch.indexCount = 6;
     batch.vertexPointer = spriteTempVertices;

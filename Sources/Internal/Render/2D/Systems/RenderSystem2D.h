@@ -184,7 +184,7 @@ public:
 
     void SetSpriteClipping(bool clipping);
 
-    void BeginRenderTargetPass(Texture * target, bool needClear = true, const Color& clearColor = Color::Clear);
+    void BeginRenderTargetPass(Texture * target, bool needClear = true, const Color& clearColor = Color::Clear, int32 priority = PRIORITY_SERVICE_2D);
     void EndRenderTargetPass();
 
     /* 2D DRAW HELPERS */
