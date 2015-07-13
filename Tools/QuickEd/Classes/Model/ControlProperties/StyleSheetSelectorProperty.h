@@ -62,6 +62,7 @@ public:
     void ApplyValue(const DAVA::VariantType &value);
     
     const DAVA::UIStyleSheetSelectorChain &GetSelectorChain() const;
+    const DAVA::String &GetSelectorChainString() const;
     
 private:
     StyleSheetNode *styleSheet; // weak

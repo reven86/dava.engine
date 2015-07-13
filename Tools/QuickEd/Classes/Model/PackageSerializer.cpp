@@ -406,7 +406,14 @@ void PackageSerializer::VisitStyleSheetRoot(StyleSheetRootProperty *property)
 
 void PackageSerializer::VisitStyleSheetSelectorsSection(StyleSheetSelectorsSection *property)
 {
-    PutValue("selector", property->GetValue());
+    String selectors = "";
+    for (int32 i = 0; i < property->GetCount(); i++)
+    {
+        if (i > 0)
+            selectors += ", ";
+        selectors += property->GetProperty(i)->GetSelectorChainString();
+    }
+    PutValue("selector", selectors);
 }
 
 void PackageSerializer::VisitStyleSheetSelectorProperty(StyleSheetSelectorProperty *property)
@@ -426,7 +433,20 @@ void PackageSerializer::VisitStyleSheetPropertiesSection(StyleSheetPropertiesSec
 
 void PackageSerializer::VisitStyleSheetProperty(StyleSheetProperty *property)
 {
-    PutValueProperty(property->GetName(), property);
+    if (property->HasTransition())
+    {
+        BeginMap(property->GetName());
+        PutValueProperty("value", property);
+        PutValue("transitionTime", VariantType(property->GetTransitionTime()));
+
+        const EnumMap *enumMap = GlobalEnumMap<Interpolation::FuncType>::Instance();
+        PutValue("transitionFunction", enumMap->ToString(property->GetTransitionFunction()));
+        EndMap();
+    }
+    else
+    {
+        PutValueProperty(property->GetName(), property);
+    }
 }
 
 void PackageSerializer::AcceptChildren(AbstractProperty *property)

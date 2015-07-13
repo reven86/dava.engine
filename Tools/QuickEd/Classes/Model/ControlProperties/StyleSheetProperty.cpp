@@ -41,6 +41,7 @@ StyleSheetProperty::StyleSheetProperty(StyleSheetNode *aStyleSheet, const DAVA::
 {
     const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
     name = String(descr.name.c_str());
+    replaced = true;
 }
 
 StyleSheetProperty::~StyleSheetProperty()

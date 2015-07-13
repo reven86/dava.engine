@@ -40,6 +40,8 @@
 #include "UI/Commands/AddComponentCommand.h"
 #include "UI/Commands/RemoveComponentCommand.h"
 
+#include "UI/Commands/ChangeStylePropertyCommand.h"
+
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
@@ -135,7 +137,7 @@ void QtModelPackageCommandExecutor::ChangeProperty(StyleSheetNode *node, Abstrac
 {
     if (!property->IsReadOnly())
     {
-        
+        PushCommand(new ChangeStylePropertyCommand(document->GetPackage(), node, property, value));
     }
 }
 

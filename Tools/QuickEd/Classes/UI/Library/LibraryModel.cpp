@@ -244,6 +244,11 @@ void LibraryModel::ControlPropertyWasChanged(ControlNode *node, AbstractProperty
     }
 }
 
+void LibraryModel::StylePropertyWasChanged(StyleSheetNode *node, AbstractProperty *property)
+{
+    // do nothing
+}
+
 void LibraryModel::ControlWillBeAdded(ControlNode *node, ControlsContainerNode *destination, int row)
 {
     Q_UNUSED(node);

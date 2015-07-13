@@ -27,70 +27,36 @@
  =====================================================================================*/
 
 
-#include "StyleSheetSelectorProperty.h"
+#include "ChangeStylePropertyCommand.h"
 
-#include "PropertyVisitor.h"
-#include "../PackageHierarchy/StyleSheetNode.h"
+#include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/StyleSheetNode.h"
+#include "Model/ControlProperties/AbstractProperty.h"
 
-#include "UI/Styles/UIStyleSheet.h"
-
-using namespace DAVA;
-
-StyleSheetSelectorProperty::StyleSheetSelectorProperty(StyleSheetNode *aStyleSheet, const UIStyleSheetSelectorChain &chain)
-    : ValueProperty("Chain")
-    , styleSheet(aStyleSheet) // weak
-    , selectorChain(chain)
+ChangeStylePropertyCommand::ChangeStylePropertyCommand(PackageNode *_root, StyleSheetNode *_node, AbstractProperty *prop, const DAVA::VariantType &newVal, QUndoCommand *parent /*= 0*/ )
+: QUndoCommand(parent)
+, root(SafeRetain(_root))
+, node(SafeRetain(_node))
+, property(SafeRetain(prop))
+, newValue(newVal)
 {
-    value = selectorChain.ToString();
+    oldValue = property->GetValue();
+    setText( QString("change %1").arg(QString(property->GetName().c_str())));
 }
 
-StyleSheetSelectorProperty::~StyleSheetSelectorProperty()
+ChangeStylePropertyCommand::~ChangeStylePropertyCommand()
 {
-    styleSheet = nullptr; //weak
+    SafeRelease(root);
+    SafeRelease(node);
+    SafeRelease(property);
 }
 
-int StyleSheetSelectorProperty::GetCount() const
+void ChangeStylePropertyCommand::redo()
 {
-    return 0;
+    root->SetStyleProperty(node, property, newValue);
 }
 
-AbstractProperty *StyleSheetSelectorProperty::GetProperty(int index) const
+void ChangeStylePropertyCommand::undo()
 {
-    return nullptr;
-}
-
-void StyleSheetSelectorProperty::Accept(PropertyVisitor *visitor)
-{
-    visitor->VisitStyleSheetSelectorProperty(this);
-}
-
-bool StyleSheetSelectorProperty::IsReadOnly() const
-{
-    return styleSheet->IsReadOnly();
-}
-
-AbstractProperty::ePropertyType StyleSheetSelectorProperty::GetType() const
-{
-    return TYPE_VARIANT;
-}
-
-DAVA::VariantType StyleSheetSelectorProperty::GetValue() const
-{
-    return VariantType(value);
-}
-
-void StyleSheetSelectorProperty::ApplyValue(const DAVA::VariantType &aValue)
-{
-    selectorChain = UIStyleSheetSelectorChain(aValue.AsString());
-    value = selectorChain.ToString();
-}
-
-const DAVA::UIStyleSheetSelectorChain &StyleSheetSelectorProperty::GetSelectorChain() const
-{
-    return selectorChain;
-}
-
-const DAVA::String &StyleSheetSelectorProperty::GetSelectorChainString() const
-{
-    return value;
+    root->SetStyleProperty(node, property, oldValue);
 }

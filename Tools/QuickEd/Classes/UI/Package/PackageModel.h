@@ -68,7 +68,8 @@ public:
     
 private: // PackageListener
     void ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property) override;
-
+    void StylePropertyWasChanged(StyleSheetNode *node, AbstractProperty *property) override;
+    
     void ControlWillBeAdded(ControlNode *node, ControlsContainerNode *destination, int row) override;
     void ControlWasAdded(ControlNode *node, ControlsContainerNode *destination, int row) override;
     

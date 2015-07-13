@@ -445,6 +445,12 @@ void PackageModel::ControlPropertyWasChanged(ControlNode *node, AbstractProperty
     emit dataChanged(index, index);
 }
 
+void PackageModel::StylePropertyWasChanged(StyleSheetNode *node, AbstractProperty *property)
+{
+    QModelIndex index = indexByNode(node);
+    emit dataChanged(index, index);
+}
+
 void PackageModel::ControlWillBeAdded(ControlNode *node, ControlsContainerNode *destination, int row)
 {
     QModelIndex destIndex = indexByNode(destination);

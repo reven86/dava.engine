@@ -39,6 +39,7 @@ class PackageControlsNode;
 class ControlsContainerNode;
 class ControlNode;
 class StyleSheetsNode;
+class StyleSheetNode;
 class PackageListener;
 class AbstractProperty;
 class ComponentPropertiesSection;
@@ -81,6 +82,8 @@ public:
     void SetControlDefaultProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &newValue);
     void ResetControlProperty(ControlNode *node, AbstractProperty *property);
     void RefreshProperty(ControlNode *node, AbstractProperty *property);
+
+    void SetStyleProperty(StyleSheetNode *node, AbstractProperty *property, const DAVA::VariantType &newValue);
 
     void AddComponent(ControlNode *node, ComponentPropertiesSection *section);
     void RemoveComponent(ControlNode *node, ComponentPropertiesSection *section);

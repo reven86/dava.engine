@@ -32,7 +32,8 @@
 #include "StyleSheetPropertiesSection.h"
 
 #include "PropertyVisitor.h"
-#include "../PackageHierarchy/StyleSheetNode.h"
+#include "PropertyListener.h"
+#include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "UI/Styles/UIStyleSheet.h"
 
 using namespace DAVA;
@@ -118,7 +119,10 @@ void StyleSheetRootProperty::RemoveListener(PropertyListener *listener)
 
 void StyleSheetRootProperty::SetProperty(AbstractProperty *property, const DAVA::VariantType &newValue)
 {
-    // do nothing
+    property->SetValue(newValue);
+    
+    for (PropertyListener *listener : listeners)
+        listener->PropertyChanged(property);
 }
 
 void StyleSheetRootProperty::ResetProperty(AbstractProperty *property)

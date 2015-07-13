@@ -35,6 +35,7 @@
 #include "StyleSheetsNode.h"
 #include "PackageListener.h"
 #include "Model/ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/StyleSheetRootProperty.h"
 #include "Model/ControlProperties/DependedOnLayoutProperty.h"
 #include "Model/ControlProperties/ControlPropertiesSection.h"
 
@@ -231,6 +232,16 @@ void PackageNode::RefreshProperty(ControlNode *node, AbstractProperty *property)
         listener->ControlPropertyWasChanged(node, property);
 
     RefreshPropertiesInInstances(node, property);
+}
+
+
+void PackageNode::SetStyleProperty(StyleSheetNode *node, AbstractProperty *property, const DAVA::VariantType &newValue)
+{
+    node->GetRootProperty()->SetProperty(property, newValue);
+    property->SetValue(newValue);
+    
+    for (PackageListener *listener : listeners)
+        listener->StylePropertyWasChanged(node, property);
 }
 
 void PackageNode::AddComponent(ControlNode *node, ComponentPropertiesSection *section)
