@@ -91,7 +91,6 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 ,	text()
 ,	delegate(0)
 ,	cursorBlinkingTime{0.0f}
-,   isRenderToTexture{false}
 ,   maxLength(-1)
 #if !defined (__DAVAENGINE_ANDROID__) && !defined (__DAVAENGINE_IPHONE__)
 ,   staticText(NULL)

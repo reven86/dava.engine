@@ -382,7 +382,6 @@ protected:
 	bool isPassword;
 	bool enableReturnKeyAutomatically;
 	bool showCursor;
-	bool isRenderToTexture;
     bool isMultiline_ = false;
 
     void RenderText();
