@@ -127,8 +127,24 @@ void CorePlatformWinUAP::RunOnUIThreadBlocked(F fn)
     else
     {
         using namespace Windows::UI::Core;
-        auto asyncOperation = xamlApp->UIThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(fn));
-        concurrency::create_task(asyncOperation).get();
+
+        Mutex mutex;
+        ConditionVariable cv;
+
+        bool jobDone = false;
+        auto wrapper = [&cv, &mutex, &jobDone, &fn]()
+        {
+            fn();
+            {
+                LockGuard<Mutex> guard(mutex);
+                jobDone = true;
+            }
+            cv.NotifyOne();
+        };
+
+        UniqueLock<Mutex> lock(mutex);
+        xamlApp->UIThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(wrapper));
+        cv.Wait(lock, [&jobDone]() -> bool { return jobDone; });
     }
 }
 
