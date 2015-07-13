@@ -33,7 +33,7 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/TexturePacker/CommandLineParser.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Internal/Platform/TemplateAndroid/ExternC/*.cpp) )
 
-LOCAL_LDLIBS := -lz -lOpenSLES -landroid
+LOCAL_LDLIBS := -lz -lOpenSLES -landroid -latomic
 
 ifeq ($(TARGET_ARCH_ABI), $(filter $(TARGET_ARCH_ABI), armeabi-v7a))
 LOCAL_ARM_NEON := true

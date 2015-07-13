@@ -121,7 +121,7 @@ elseif ( WINDOWS_UAP )
 	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 	set(PACKAGE_GUID "${WINDOWS_UAP_APPLICATION_GUID}")
 	
-	set ( WIN_UAP_CONF_DIR      "${CMAKE_MODULE_PATH}../Resources/WindowsStore" )
+	set ( WIN_UAP_CONF_DIR      "${DAVA_ROOT_DIR}/Sources/CMake/Resources/WindowsStore" )
 	set ( WIN_UAP_MANIFESTS_DIR "${WIN_UAP_CONF_DIR}/Manifests" )
 	set ( WIN_UAP_ASSETS_DIR    "${WIN_UAP_CONF_DIR}/Assets" )
 	file( GLOB ASSET_FILES      "${WIN_UAP_ASSETS_DIR}/*.png" )
@@ -262,6 +262,10 @@ else()
 
 endif()
 
+if( NOT IGNORE_FILE_TREE_CHECK )
+    add_dependencies(  ${PROJECT_NAME} FILE_TREE )
+    
+endif()
 
 if ( QT5_FOUND )
     if ( WIN32 )

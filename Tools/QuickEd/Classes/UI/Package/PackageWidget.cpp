@@ -154,9 +154,9 @@ void PackageWidget::OnDocumentChanged(SharedData *context)
 
 void PackageWidget::OnDataChanged(const QByteArray &role)
 {
-    if (role == "selectedNodes")
+    if (role == "editorActiveControls")
     {
-        OnControlSelectedInEditor(sharedData->GetData("selectedNodes").value<QList<ControlNode*> >());
+        OnControlSelectedInEditor(sharedData->GetData("editorActiveControls").value<QList<ControlNode*> >());
     }
 }
 
@@ -176,8 +176,6 @@ void PackageWidget::LoadContext()
         if (nullptr == context)
         {
             context = new PackageContext(qobject_cast<Document*>(sharedData->parent()));
-            connect(context->packageModel, &PackageModel::rowsInserted, this, &PackageWidget::OnRowsInserted);
-            connect(context->packageModel, &PackageModel::rowsAboutToBeRemoved, this, &PackageWidget::OnRowsAboutToBeRemoved);
             sharedData->SetContext(this, context);
         }
         //store model to work with indexes
@@ -216,16 +214,15 @@ void PackageWidget::SaveContext()
     context->filterString = filterLine->text();
 }
 
-void PackageWidget::RefreshActions(const QModelIndexList &indexList)
+void PackageWidget::RefreshActions(const QList<PackageBaseNode*> &nodes)
 {
-    bool canInsertControls = !indexList.empty();
-    bool canInsertPackages = !indexList.empty();
-    bool canRemove = !indexList.empty();
-    bool canCopy = !indexList.empty();
+    bool canInsertControls = !nodes.empty();
+    bool canInsertPackages = !nodes.empty();
+    bool canRemove = !nodes.empty();
+    bool canCopy = !nodes.empty();
     
-    for(const auto &index : indexList)
+    for(const PackageBaseNode *node : nodes)
     {
-        PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
         canCopy &= node->CanCopy();
         canInsertControls &= node->IsInsertingControlsSupported();
         canInsertPackages &= node->IsInsertingPackagesSupported();
@@ -282,89 +279,18 @@ void PackageWidget::RemoveNodes(const DAVA::Vector<ControlNode*> &nodes)
     sharedData->GetDocument()->GetCommandExecutor()->RemoveControls(nodes);
 }
 
-void PackageWidget::OnRowsInserted(const QModelIndex &parent, int first, int last)
-{
-    ControlsContainerNode *parentNode = dynamic_cast<ControlsContainerNode*>(static_cast<PackageBaseNode*>(parent.internalPointer()));
-    PackageControlsNode* packageControlsNode = dynamic_cast<PackageControlsNode*>(parentNode);
-    if (nullptr != packageControlsNode)
-    {
-        QList<ControlNode*> insertedNodes;
-        for (int i = first; i < last; ++i)
-        {
-            insertedNodes.append(packageControlsNode->Get(i));
-        }
-        sharedData->SetData("activeRootControls", QVariant::fromValue(insertedNodes));
-        OnControlSelectedInEditor(insertedNodes);
-    }
-}
-
-void PackageWidget::OnRowsAboutToBeRemoved(const QModelIndex &parent, int first, int last)
-{
-    ControlsContainerNode *parentNode = dynamic_cast<ControlsContainerNode*>(static_cast<PackageBaseNode*>(parent.internalPointer()));
-    PackageControlsNode* packageControlsNode = dynamic_cast<PackageControlsNode*>(parentNode);
-    if (nullptr != packageControlsNode)
-    {
-        QList<ControlNode*> rootControls = sharedData->GetData("activeRootControls").value<QList<ControlNode*> >();
-        for (int i = first; i < last; ++i)
-        {
-            rootControls.removeAt(first);
-        }
-        sharedData->SetData("activeRootControls", QVariant::fromValue(rootControls));
-    }
-}
-
 void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected)
 {
     if (filteredPackageModel.isNull())
-    {
         return;
-    }
-    //check selected root controls
-    QList<ControlNode*> selectedRootControls;
-    const QItemSelection &allSelectedElements = treeView->selectionModel()->selection();
-    const QItemSelection &filteredSelectedElements = filteredPackageModel->mapSelectionToSource(allSelectedElements);
-    for (const QModelIndex &index : filteredSelectedElements.indexes())
-    {
-        PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-        if (node->GetControl())
-        {
-            while (node->GetParent() && node->GetParent()->GetControl())
-                node = node->GetParent();
-            if (selectedRootControls.indexOf(static_cast<ControlNode*>(node)) < 0)
-                selectedRootControls.push_back(static_cast<ControlNode*>(node));
-        }
-    }
 
-    QList<ControlNode*> selectedControls;
-    QList<ControlNode*> deselectedControls;
+    QList<PackageBaseNode*> selectedNodes;
+    QModelIndexList indexes = filteredPackageModel->mapSelectionToSource(treeView->selectionModel()->selection()).indexes();
+    for (const QModelIndex &index : indexes)
+        selectedNodes.push_back(static_cast<PackageBaseNode*>(index.internalPointer()));
 
-    QItemSelection selected = filteredPackageModel->mapSelectionToSource(proxySelected);
-    QItemSelection deselected = filteredPackageModel->mapSelectionToSource(proxyDeselected);
-
-    QModelIndexList deselectedIndexList = deselected.indexes();
-    for (QModelIndex &index : deselectedIndexList)
-    {
-        PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-        if (node->GetControl())
-        {
-            deselectedControls.push_back(static_cast<ControlNode*>(node));
-        }
-    }
-
-    QModelIndexList selectedIndexList = selected.indexes();
-    for (QModelIndex &index : selectedIndexList)
-    {
-        PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-        if (node->GetControl())
-        {
-            selectedControls.push_back(static_cast<ControlNode*>(node));
-        }
-    }
-
-    RefreshActions(selectedIndexList);
-    sharedData->SetData("activeRootControls", QVariant::fromValue(selectedRootControls));
-    sharedData->SetData("activatedControls", QVariant::fromValue(selectedControls));
-    sharedData->SetData("deactivatedControls", QVariant::fromValue(deselectedControls));
+    RefreshActions(selectedNodes);
+    sharedData->SetSelection(selectedNodes);
 }
 
 void PackageWidget::OnImport()

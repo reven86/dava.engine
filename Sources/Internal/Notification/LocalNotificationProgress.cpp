@@ -65,7 +65,7 @@ void LocalNotificationProgress::SetProgressTotal(const uint32 _total)
 
 void LocalNotificationProgress::ImplShow()
 {
-	impl->ShowProgress(title, text, total, progress);
+	impl->ShowProgress(title, text, total, progress, useSound);
 }
 
 }

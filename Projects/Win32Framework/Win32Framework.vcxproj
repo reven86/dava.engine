@@ -249,6 +249,7 @@
     <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2RopeJoint.h" />
     <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2WeldJoint.h" />
     <ClInclude Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2WheelJoint.h" />
+    <ClInclude Include="..\..\Sources\Internal\Animation\LinearPropertyAnimation.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\AutotestingDB.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\AutotestingSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\AutotestingSystemLua.h" />
@@ -709,6 +710,10 @@
     <ClInclude Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyDataBase.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyTable.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSelectorChain.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetStructs.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\TheoraPlayer.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UI3DView.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIAggregatorControl.h" />
@@ -716,6 +721,7 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIControl.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIControlBackground.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIControlHelpers.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\UIControlPackageContext.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIControlSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIEvent.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIFadeTransition.h" />
@@ -753,6 +759,9 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIWebView.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIYamlLoader.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\VectorSpinnerAdapter.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.h" />
     <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClass.h" />
     <ClInclude Include="..\..\Sources\Internal\UnitTests\TestClassFactory.h" />
     <ClInclude Include="..\..\Sources\Internal\UnitTests\TestCore.h" />
@@ -810,6 +819,7 @@
     <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2RopeJoint.cpp" />
     <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2WeldJoint.cpp" />
     <ClCompile Include="..\..\Sources\External\Box2D\Dynamics\Joints\b2WheelJoint.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Animation\LinearPropertyAnimation.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\AutotestingDB.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\AutotestingSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Autotesting\AutotestingSystemLua.cpp" />
@@ -1204,6 +1214,10 @@
     <ClCompile Include="..\..\Sources\Internal\UI\Components\UIFakeMultiComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\DefaultUIPackageBuilder.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\ScrollHelper.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyDataBase.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetPropertyTable.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSelectorChain.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetStructs.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\TheoraPlayer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UI3DView.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIAggregatorControl.cpp" />
@@ -1211,6 +1225,7 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UIControl.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIControlBackground.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIControlHelpers.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\UIControlPackageContext.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIControlSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIEvent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIFadeTransition.cpp" />
@@ -1243,6 +1258,9 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UITextField.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIWebView.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIYamlLoader.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheet.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\Styles\UIStyleSheetYamlLoader.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UnitTests\TestClass.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UnitTests\TestCore.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\BiDiHelper.cpp" />
