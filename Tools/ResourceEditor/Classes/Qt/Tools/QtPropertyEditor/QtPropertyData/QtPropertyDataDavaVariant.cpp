@@ -142,7 +142,7 @@ void QtPropertyDataDavaVariant::SetVariantValue(const DAVA::VariantType& value)
 	switch(curVariantValue.type)
 	{
 		case DAVA::VariantType::TYPE_COLOR:
-			SetColorIcon();
+			UpdateColorButtonIcon();
 			break;
 
 		default:
@@ -637,7 +637,7 @@ void QtPropertyDataDavaVariant::MeSetFromChilds()
             {
                 curVariantValue.SetColor(color);
                 SetValue(FromColor(color), QtPropertyData::VALUE_EDITED);
-                SetColorIcon();
+                UpdateColorButtonIcon();
             }
         }
         break;
@@ -941,10 +941,10 @@ void QtPropertyDataDavaVariant::ToColor(const QVariant &value)
         curVariantValue.SetColor(DAVA::Color(v.x, v.y, v.z, v.w));
     }
 
-    SetColorIcon();
+    UpdateColorButtonIcon();
 }
 
-void QtPropertyDataDavaVariant::SetColorIcon()
+void QtPropertyDataDavaVariant::UpdateColorButtonIcon()
 {
 	if(curVariantValue.type == DAVA::VariantType::TYPE_COLOR)
 	{
@@ -967,7 +967,7 @@ void QtPropertyDataDavaVariant::SetColorIcon()
 		p.setBrush(QBrush(c));
 		p.drawRect(QRect(0, 0, 15, 15));
 
-		SetIcon(QIcon(pix));
+		SetColorButtonIcon(QIcon(pix));
 	}
 }
 
@@ -1132,7 +1132,7 @@ void QtPropertyDataDavaVariant::ColorOWPressed()
 	    SetValue(str, VALUE_EDITED);
 	}
 
-    SetColorIcon();
+    UpdateColorButtonIcon();
 }
 
 void QtPropertyDataDavaVariant::OnColorChanging()

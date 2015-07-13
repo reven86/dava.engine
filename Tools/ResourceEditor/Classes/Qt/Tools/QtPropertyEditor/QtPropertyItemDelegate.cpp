@@ -81,7 +81,6 @@ void QtPropertyItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
     // data
     if(!iconsToLeft && index.column() == 1)
     {
-        opt.textElideMode = Qt::ElideLeft;
         drawOptionalButtons(painter, opt, index);
     }
 }
@@ -299,7 +298,6 @@ void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOption
         int owSpacing = 1;
         bool iconsToLeft = SettingsManager::GetValue(Settings::General_Properties_IconsToLeft).AsBool();
         int owXPos = iconsToLeft ? (opt.rect.left() + owSpacing) : (view->width() - owSpacing);
-		int owYPos;
 
 		// draw not overlaid widgets
 		for(int i = data->GetButtonsCount() - 1; i >= 0; --i)
@@ -317,7 +315,7 @@ void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOption
                 btn->setGeometry(geom);
             }
 
-            owYPos = opt.rect.y() + (opt.rect.height() - btn->height()) / 2;
+            int owYPos = opt.rect.y() + (opt.rect.height() - btn->height()) / 2;
             auto tmpXPos = owXPos;
             if (!iconsToLeft)
             {
