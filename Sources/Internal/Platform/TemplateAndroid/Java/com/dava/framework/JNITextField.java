@@ -765,8 +765,8 @@ public class JNITextField {
                     @Override
                     public boolean onEditorAction(TextView v, int actionId,
                             KeyEvent event) {
-                        // event - If triggered by an enter key, this is the event; otherwise, this is null.
-                        if (event != null && text.isSingleLine) {
+                        // action link to button with SetReturnKeyType
+                        if (text.isSingleLine) {
                             JNIActivity.GetActivity().PostEventToGL(new Runnable() {
                                 @Override
                                 public void run() {
