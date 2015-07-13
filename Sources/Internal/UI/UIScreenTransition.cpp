@@ -109,7 +109,6 @@ void UIScreenTransition::Update(float32 timeElapsed)
         
         if (prevScreen)
         {
-            prevScreen->SetVisible(true);
             if (prevScreen->IsOnScreen())
                 prevScreen->SystemWillBecomeInvisible();
             prevScreen->SystemWillDisappear();
@@ -177,25 +176,26 @@ void UIScreenTransition::MakeScreenshot(Texture* target, UIScreen* screen)
     if (screen)
     {
         UI3DView* view3d = FindFirst3dView(screen);
-        int32 old3dPriority = eDefaultPassPriority::PRIORITY_MAIN_3D;
-        if (view3d != nullptr)
+        int32 oldPriority = eDefaultPassPriority::PRIORITY_MAIN_3D;
+        rhi::Handle oldTexture = rhi::InvalidHandle;
+        if (view3d != nullptr && view3d->GetScene())
         {
-            old3dPriority = view3d->GetScene()->GetMainPassConfig().priority;
-            view3d->GetScene()->GetMainPassConfig().priority = PRIORITY_SCREENSHOT_3D_PASS;
-            view3d->GetScene()->GetMainPassConfig().colorBuffer[0].texture = target->handle;
-
-            view3d->GetScene()->Draw();
+            rhi::RenderPassConfig& config = view3d->GetScene()->GetMainPassConfig();
+            oldPriority = config.priority;
+            oldTexture = config.colorBuffer[0].texture;
+            config.priority = PRIORITY_SCREENSHOT_3D_PASS;
+            config.colorBuffer[0].texture = target->handle;
         }
 
-
-        RenderSystem2D::Instance()->BeginRenderTargetPass(target, false, Color::White, PRIORITY_SCREENSHOT_2D_PASS);
+        RenderSystem2D::Instance()->BeginRenderTargetPass(target, false, Color::Clear, PRIORITY_SCREENSHOT_2D_PASS);
         screen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
         RenderSystem2D::Instance()->EndRenderTargetPass();
 
-        if (view3d != nullptr)
+        if (view3d != nullptr && view3d->GetScene())
         {
-            view3d->GetScene()->GetMainPassConfig().priority = old3dPriority;
-            view3d->GetScene()->GetMainPassConfig().colorBuffer[0].texture = rhi::Handle();
+            rhi::RenderPassConfig& config = view3d->GetScene()->GetMainPassConfig();
+            config.priority = oldPriority;
+            config.colorBuffer[0].texture = oldTexture;
         }
     }
 }
