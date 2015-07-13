@@ -129,15 +129,19 @@ DisplayMode CorePlatformWinUAP::GetCurrentDisplayMode()
     return DisplayMode(static_cast<int32>(screenSize.Width), static_cast<int32>(screenSize.Height), DisplayMode::DEFAULT_BITS_PER_PIXEL, DisplayMode::DEFAULT_DISPLAYFREQUENCY);
 }
 
-void CorePlatformWinUAP::SetCursorState(bool isShown)
+void CorePlatformWinUAP::SetCursorPinning(bool isPinning)
 {
     if (IsUIThread())
     {
-        xamlApp->SetCursorState(isShown);
+        xamlApp->SetCursorPinning(isPinning);
+        xamlApp->SetCursorVisible(!isPinning);
     }
     else
     {
-        RunOnUIThread([this, isShown]() { xamlApp->SetCursorState(isShown); });
+        RunOnUIThread([this, isPinning]() {
+        xamlApp->SetCursorPinning(isPinning);
+        xamlApp->SetCursorVisible(!isPinning);
+        });
     }
 }
 

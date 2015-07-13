@@ -2,7 +2,7 @@
 set START_DIR=%CD%
 set SCRIPT_DIR=%~dp0
 set SOURCE_DIR=%1/
-set CMAKE_DIR=%~dp0cmake_build\bin\Debug\
+set CMAKE_DIR=%~dp0cmake_build\bin\Debug
 
 echo START_DIR=%START_DIR%
 echo SCRIPT_DIR=%SCRIPT_DIR%
@@ -29,6 +29,8 @@ if "%2" == "ARM" set APPEND_A_PLATFORM=-A"ARM"
 if "%2" == "Win32" set APPEND_A_PLATFORM=-A"Win32"
 
 if "%2" == "" set APPEND_A_PLATFORM=-A"Win32"
+
+echo %CMAKE_DIR%\cmake.exe -G "Visual Studio 14 2015" -DWINDOWS_UAP=true %APPEND_A_PLATFORM% %SOURCE_DIR%
 
 %CMAKE_DIR%\cmake.exe -G "Visual Studio 14 2015" -DWINDOWS_UAP=true %APPEND_A_PLATFORM% %SOURCE_DIR%
 
