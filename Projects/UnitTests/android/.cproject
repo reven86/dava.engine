@@ -31,13 +31,6 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<folderInfo id="com.android.toolchain.gcc.175927209.1829329729" name="/" resourcePath="jni">
-						<toolChain id="com.android.toolchain.gcc.1961288421" name="com.android.toolchain.gcc" superClass="com.android.toolchain.gcc" unusedChildren="">
-							<tool id="com.android.gcc.compiler.1038218226" name="Android GCC Compiler" superClass="com.android.gcc.compiler.1615092382">
-								<inputType id="com.android.gcc.inputType.185545351" superClass="com.android.gcc.inputType"/>
-							</tool>
-						</toolChain>
-					</folderInfo>
 					<sourceEntries>
 						<entry excluding="Internal/Platform/TemplateWin32|Internal/Platform/TemplateMacOS|Internal/Platform/TemplateiOS|Platform/TemplateWin32" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="jni"/>
 					</sourceEntries>
