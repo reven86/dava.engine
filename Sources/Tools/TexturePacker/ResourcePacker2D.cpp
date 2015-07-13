@@ -57,7 +57,7 @@ static const String FLAG_RECURSIVE = "--recursive";
 ResourcePacker2D::ResourcePacker2D()
     : isGfxModified(true)
     , isLightmapsPacking(false)
-    , clearProcessDirectory(false)
+    , forceRepack(false)
     , clearOutputDirectory(true)
     , quality(TextureConverter::ECQ_VERY_HIGH)
 {
@@ -365,7 +365,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 	FilePath processDirectoryPath = excludeDirectory  + GetProcessFolderName() + inputRelativePath;
     FileSystem::Instance()->CreateDirectory(processDirectoryPath, true);
 
-    if(clearProcessDirectory)
+    if(forceRepack)
     {
     	FileSystem::Instance()->DeleteDirectoryFiles(processDirectoryPath, false);
     }
@@ -447,9 +447,6 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                         marginInPixels = 4;
                 }
 
-
-                bool needPackResourcesInThisDir = true;
-
                 if (clearOutputDirectory)
                 {
                     FileSystem::Instance()->DeleteDirectoryFiles(outputPath, false);
@@ -467,7 +464,6 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                             if (!defFile)
                             {
                                 // An error occured while converting this PSD file - cancel converting in this directory.
-                                needPackResourcesInThisDir = false;
                                 break;
                             }
 

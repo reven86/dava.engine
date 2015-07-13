@@ -32,6 +32,7 @@
 
 #include "Render/RenderBase.h"
 #include "TextureCompression/TextureConverter.h"
+#include "TexturePacker/ResourcePacker2D.h"
 #include <QObject>
 #include <atomic>
 
@@ -47,6 +48,10 @@ class SpritesPacker : public QObject
 public:
     SpritesPacker(QObject *parent = nullptr);
     ~SpritesPacker();
+
+    void SetCacheTool(const DAVA::String& ip, const DAVA::String& port, const DAVA::String& timeout);
+    void ClearCacheTool();
+
     void AddTask(const QDir &inputDir, const QDir &outputDir);
     void ClearTasks();
     Q_INVOKABLE void ReloadSprites(bool clearDirs, const DAVA::eGPUFamily gpu, const DAVA::TextureConverter::eConvertQuality quality);
@@ -56,7 +61,7 @@ signals:
     void Finished();
 
 private:
-    DAVA::ResourcePacker2D *resourcePacker2D;
+    DAVA::ResourcePacker2D resourcePacker2D;
     QList < QPair<QDir, QDir> > tasks;
 
     //properties section

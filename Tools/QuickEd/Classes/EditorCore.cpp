@@ -49,7 +49,15 @@ EditorCore::EditorCore(QObject *parent)
 {
     mainWindow->setWindowIcon(QIcon(":/icon.ico"));
     mainWindow->CreateUndoRedoActions(documentGroup->GetUndoGroup());
-    
+
+    if (EditorSettings::Instance()->IsUsingAssetCache())
+    {
+        dialogReloadSprites->GetSpritesPacker()->SetCacheTool(
+            EditorSettings::Instance()->GetAssetCacheIp(),
+            EditorSettings::Instance()->GetAssetCachePort(),
+            EditorSettings::Instance()->GetAssetCacheTimeoutSec());
+    }
+
     QAction* actionReloadSprites = dialogReloadSprites->GetActionReloadSprites();
     mainWindow->menuTools->addAction(actionReloadSprites);
     mainWindow->toolBarPlugins->addAction(actionReloadSprites);
