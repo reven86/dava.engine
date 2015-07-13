@@ -257,17 +257,23 @@ void RenderBatch::Save(KeyedArchive * archive, SerializationContext* serializati
 
 	if(NULL != archive)
 	{
+        uint64 dataSourceID = DataNode::INVALID_ID;
+        if (nullptr != dataSource)
+        {
+            dataSourceID = dataSource->GetNodeID();
+        }
+
 		archive->SetUInt32("rb.type", type);
 		archive->SetUInt32("rb.indexCount", indexCount);
 		archive->SetUInt32("rb.startIndex", startIndex);
 		archive->SetVariant("rb.aabbox", VariantType(aabbox));
-		archive->SetVariant("rb.datasource", VariantType((uint64)dataSource));
         archive->SetUInt32("rb.sortingKey", sortingKey);
-		
+        archive->SetVariant("rb.datasource", VariantType(dataSourceID));
+
 		NMaterial* material = GetMaterial();
 		if(material)
 		{
-			uint64 matKey = material->GetMaterialKey();
+			uint64 matKey = material->GetNodeID();
 			archive->SetUInt64("rb.nmatname", matKey);
 		}
 		

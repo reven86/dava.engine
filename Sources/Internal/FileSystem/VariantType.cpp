@@ -744,7 +744,7 @@ bool VariantType::Write(File * fp) const
     case TYPE_COLOR:
 		{
             written = fp->Write(colorValue->color, sizeof(float32) * 4);
-            if (written != sizeof(sizeof(float32) * 4))return false;
+            if (written != sizeof(float32) * 4) return false;
 		}
         break;
     case TYPE_FASTNAME:
@@ -1385,7 +1385,7 @@ VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
 			printf("MetaType: %s, size %d, is pointer %d, introspection %p\n", meta->GetTypeName(), meta->GetSize(), meta->IsPointer(), meta->GetIntrospection());
 			if(NULL != meta->GetIntrospection())
 			{
-				printf("Introspection: %s\n", meta->GetIntrospection()->Name());
+				printf("Introspection: %s\n", meta->GetIntrospection()->Name().c_str());
 			}
 			DVASSERT(0 && "Don't know how to load data for such VariantType");
 		}

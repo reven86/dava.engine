@@ -83,6 +83,7 @@
 #include "Scene3D/Converters/SwitchToRenerObjectConverter.h"
 #include "Scene3D/Converters/TreeToAnimatedTreeConverter.h"
 
+#include <functional>
 
 namespace DAVA
 {
@@ -202,31 +203,77 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
 //    SaveDataHierarchy(_scene->GetMaterials(), file, 1);
 //    SaveDataHierarchy(_scene->GetStaticMeshes(), file, 1);
 
-    List<DataNode*> nodes;
 	if (isSaveForGame)
 		scene->OptimizeBeforeExport();
+
+    Set<DataNode*> nodes;
     scene->GetDataNodes(nodes);
 
-    if(NULL != scene->GetGlobalMaterial())
-        nodes.push_front(scene->GetGlobalMaterial());
+    uint32 serializableNodesCount = 0;
+    uint64 maxDataNodeID = 0;
 
-    uint32 dataNodesCount = GetSerializableDataNodesCount(nodes);
-    file->Write(&dataNodesCount, sizeof(uint32));
-
-    List<DataNode*>::iterator itEnd = nodes.end();
-    uint64 materialUniqueKey = 1;
-    for (List<DataNode*>::iterator it = nodes.begin(); it != itEnd; ++it)
+    // compute maxid for datanodes
+    for (auto node : nodes)
     {
-        (*it)->UpdateUniqueKey(materialUniqueKey++);
+        // TODO: now one datanode can be used in multiple scenes,
+        // but datanote->scene points only on single scene. This should be
+        // discussed and fixed in the future.
+        if (node->GetScene() == scene && node->GetNodeID() > maxDataNodeID)
+        {
+            maxDataNodeID = node->GetNodeID();
+        }
     }
-    
-    for (List<DataNode*>::iterator it = nodes.begin(); it != itEnd; ++it)
-	{
-		if(IsDataNodeSerializable(*it))
-		{
-			SaveDataNode(*it, file);
-		}
-	}
+
+    // assign datanode id-s and 
+    // count serializable nodes
+    for (auto node : nodes)
+    {
+        if (IsDataNodeSerializable(node))
+        {
+            // TODO: if datanode is from another scene, it should be saved with newly
+            // generated datanode-id. Unfortunately this ID will be generated on every scene save,
+            // because we don't change scene pointer in datanode->scene.
+            // This should be discussed and fixed in the future.
+            serializableNodesCount++;
+            if (node->GetScene() != scene || node->GetNodeID() == DataNode::INVALID_ID)
+            {
+                node->SetNodeID(++maxDataNodeID);
+            }
+        }
+    }
+
+    // do we need to save globalmaterial?
+    NMaterial *globalMaterial = scene->GetGlobalMaterial();
+    if (nullptr != globalMaterial)
+    {
+        serializableNodesCount++;
+    }
+
+    // save datanodes count
+    file->Write(&serializableNodesCount, sizeof(uint32));
+
+    // save global material on top of datanodes
+    if (nullptr != globalMaterial)
+    {
+        if(globalMaterial->GetNodeID() == DataNode::INVALID_ID)
+        {
+            globalMaterial->SetNodeID(++maxDataNodeID);
+        }
+        SaveDataNode(globalMaterial, file);
+    }
+
+    // sort in ascending ID order 
+    Set<DataNode*, std::function<bool(DataNode *, DataNode *)>> orderedNodes(nodes.begin(), nodes.end(),
+        [](DataNode* a, DataNode* b) { return a->GetNodeID() < b->GetNodeID(); });
+
+    // save the rest of datanodes
+    for (auto node : orderedNodes)
+    {
+        if (IsDataNodeSerializable(node))
+        {
+            SaveDataNode(node, file);
+        }
+    }
     
     // save hierarchy
     if(isDebugLogEnabled)
@@ -236,7 +283,7 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     if(NULL != scene->GetGlobalMaterial())
     {
         KeyedArchive * archive = new KeyedArchive();
-        uint64 globalMaterialId = scene->GetGlobalMaterial()->GetMaterialKey();
+        uint64 globalMaterialId = scene->GetGlobalMaterial()->GetNodeID();
     
         archive->SetString("##name", "GlobalMaterial");
         archive->SetUInt64("globalMaterialId", globalMaterialId);
@@ -257,20 +304,6 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     
     SafeRelease(file);
     return GetError();
-}
-
-uint32 SceneFileV2::GetSerializableDataNodesCount(List<DataNode*>& nodeList)
-{
-	uint32 nodeCount = 0;
-	for (List<DataNode*>::iterator it = nodeList.begin(); it != nodeList.end(); ++it)
-	{
-		if(IsDataNodeSerializable(*it))
-		{
-			nodeCount++;
-		}
-	}
-	
-	return nodeCount;
 }
 
 bool SceneFileV2::ReadHeader(SceneFileV2::Header& _header, File * file)
@@ -416,7 +449,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * sc
     }
 
 	serializationContext.SetRootNodePath(filename);
-	serializationContext.SetScenePath(FilePath(filename.GetDirectory()));
+	serializationContext.SetScenePath(filename.GetDirectory());
 	serializationContext.SetVersion(header.version);
 	serializationContext.SetScene(scene);
 	serializationContext.SetDefaultMaterialQuality(NMaterial::DEFAULT_QUALITY_NAME);
@@ -679,12 +712,8 @@ void SceneFileV2::LoadDataHierarchy(Scene * scene, DataNode * root, File * file,
     
 void SceneFileV2::AddToNodeMap(DataNode * node)
 {
-    uint64 ptr = node->GetPreviousPointer();
-    
-    //if(isDebugLogEnabled)
-    //    Logger::FrameworkDebug("* add ptr: %llx class: %s(%s)", ptr, node->GetName().c_str(), node->GetClassName().c_str());
-    
-	serializationContext.SetDataBlock(ptr, SafeRetain(node));
+    uint64 id = node->GetNodeID();
+	serializationContext.SetDataBlock(id, SafeRetain(node));
 }
     
 bool SceneFileV2::SaveHierarchy(Entity * node, File * file, int32 level)
@@ -1356,6 +1385,55 @@ void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity * node)
     }
 }
 
+void SceneFileV2::ConvertAlphatestValueMaterials(Entity * node)
+{
+    static const float32 alphatestThresholdValue = .3f;
+    static const std::array<FastName, 7> alphatestValueMaterials =
+    {
+        FastName("~res:/Materials/NormalizedBlinnPhongPerPixel.Alphatest.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongPerPixel.Alphatest.Alphablend.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongPerPixelFast.Alphatest.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongPerVertex.Alphatest.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongPerVertex.Alphatest.Alphablend.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongAllQualities.Alphatest.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongAllQualities.Alphatest.Alphablend.material"),
+    };
+
+    RenderObject * ro = GetRenderObject(node);
+    if (ro)
+    {
+        uint32 batchCount = ro->GetRenderBatchCount();
+        for (uint32 ri = 0; ri < batchCount; ++ri)
+        {
+            int32 flagValue = 0;
+            RenderBatch * batch = ro->GetRenderBatch(ri);
+            NMaterial * material = batch->GetMaterial();
+
+            while (material)
+            {
+                if (material->GetMaterialType() == NMaterial::MATERIALTYPE_MATERIAL)
+                {
+                    for (auto & alphatestTemplate : alphatestValueMaterials)
+                    {
+                        if (alphatestTemplate == material->GetMaterialTemplateName())
+                        {
+                            material->SetPropertyValue(NMaterial::PARAM_ALPHATEST_THRESHOLD, Shader::UT_FLOAT, 1, &alphatestThresholdValue);
+                        }
+                    }
+                }
+                material = material->GetParent();
+            }
+        }
+    }
+
+    uint32 size = node->GetChildrenCount();
+    for (uint32 i = 0; i < size; ++i)
+    {
+        Entity * child = node->GetChild(i);
+        ConvertAlphatestValueMaterials(child);
+    }
+}
+
 void SceneFileV2::RebuildTangentSpace(Entity *entity)
 {
     static int32 prerequiredFormat = EVF_TANGENT|EVF_NORMAL;
@@ -1462,6 +1540,11 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
     if (header.version < DEPRECATED_MATERIAL_FLAGS_SCENE_VERSION)
     {
         RemoveDeprecatedMaterialFlags(rootNode);
+    }
+
+    if (header.version < ALPHATEST_VALUE_FLAG_SCENE_VERSION)
+    {
+        ConvertAlphatestValueMaterials(rootNode);
     }
 
     QualitySettingsSystem::Instance()->UpdateEntityAfterLoad(rootNode);
