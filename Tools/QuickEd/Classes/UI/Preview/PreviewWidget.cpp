@@ -115,7 +115,7 @@ void PreviewWidget::OnDocumentChanged(SharedData *data)
     }
     sharedData = data;
 
-    UpdateActiveRootControls();
+    UpdateSelection();
     if (nullptr != sharedData)
     {
         OnScrollAreaChanged(model->GetViewSize(), model->GetScaledCanvasSize());
@@ -123,36 +123,43 @@ void PreviewWidget::OnDocumentChanged(SharedData *data)
         OnCanvasScaleChanged(model->GetCanvasScale());
         OnMonitorChanged();
         //restore activated controls
-        OnDataChanged("activatedControls");
     }
 }
 
 void PreviewWidget::OnDataChanged(const QByteArray &role)
 {
-    if (role == "activeRootControls")
+    if (role == "selection")
     {
-        UpdateActiveRootControls();
-    }
-    else if (role == "deactivatedControls")
-    {
-        model->ControlsDeactivated(sharedData->GetData("deactivatedControls").value<QList<ControlNode*> >());
-    }
-    else if (role == "activatedControls")
-    {
-        model->ControlsActivated(sharedData->GetData("activatedControls").value<QList<ControlNode*> >());
+        UpdateSelection();
     }
 }
 
-void PreviewWidget::UpdateActiveRootControls()
+void PreviewWidget::UpdateSelection()
 {
-    if (nullptr == sharedData)
+    QList<ControlNode*> selectedControls;
+    QList<ControlNode*> selectedRootControls;
+    
+    if (sharedData)
     {
-        model->SetRootControls(QList<ControlNode*>());
+        const QList<PackageBaseNode*> &nodes = sharedData->GetSelection();
+        for (PackageBaseNode *node : nodes)
+        {
+            if (node->GetControl())
+            {
+                selectedControls.push_back(static_cast<ControlNode*>(node));
+                
+                PackageBaseNode *root = node;
+                while (root->GetParent() && root->GetParent()->GetControl())
+                    root = root->GetParent();
+                if (selectedRootControls.indexOf(static_cast<ControlNode*>(root)) < 0)
+                    selectedRootControls.push_back(static_cast<ControlNode*>(root));
+                
+            }
+        }
     }
-    else
-    {
-        model->SetRootControls(sharedData->GetData("activeRootControls").value<QList<ControlNode*> >());
-    }
+    model->SetRootControls(selectedRootControls);
+    model->SetSelectedControls(selectedControls);
+
 }
 
 void PreviewWidget::OnMonitorChanged()
@@ -164,18 +171,23 @@ void PreviewWidget::OnMonitorChanged()
 
 void PreviewWidget::OnControlNodeSelected(QList<ControlNode *> selectedNodes)
 {
-    sharedData->SetData("selectedNodes", QVariant::fromValue(selectedNodes));
+    sharedData->SetData("editorActiveControls", QVariant::fromValue(selectedNodes));
 }
 
-void PreviewWidget::OnError(const Result &result)
+void PreviewWidget::OnError(const ResultList &resultList)
 {
-    if (result)
+    if (resultList)
     {
         return;
     }
     else
     {
-        QMessageBox::warning(qApp->activeWindow(), tr("Error occurred!"), result.errors.join('\n'));
+        QStringList errors;
+        for(const auto &result : resultList.GetResults())
+        {
+            errors << QString::fromStdString(result.message);
+        }
+        QMessageBox::warning(qApp->activeWindow(), tr("Error occurred!"), errors.join('\n'));
     }
 }
 

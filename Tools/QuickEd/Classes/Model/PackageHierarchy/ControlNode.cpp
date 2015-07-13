@@ -164,7 +164,7 @@ void ControlNode::Remove(ControlNode *node)
 
 int ControlNode::GetCount() const
 {
-    return (int) nodes.size();
+    return static_cast<int>(nodes.size());
 }
 
 ControlNode *ControlNode::Get(int index) const
@@ -226,7 +226,7 @@ bool ControlNode::IsEditingSupported() const
     return !IsReadOnly();
 }
 
-bool ControlNode::IsInsertingSupported() const
+bool ControlNode::IsInsertingControlsSupported() const
 {
     return !IsReadOnly();
 }

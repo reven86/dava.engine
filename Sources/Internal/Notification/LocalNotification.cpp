@@ -29,16 +29,12 @@
 
 #include "Notification/LocalNotification.h"
 #include "Utils/Utils.h"
-#include "Thread/LockGuard.h"
+#include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {
 
 LocalNotification::LocalNotification()
-	: isChanged(false)
-	, isVisible(true)
-	, title(L"")
-	, text(L"")
 {
     impl = LocalNotificationImpl::Create(GenerateGUID());
 }
@@ -70,6 +66,15 @@ void LocalNotification::SetText(const WideString &_text)
 		isChanged = true;
 		text = _text;
 	}
+}
+    
+void LocalNotification::SetUseSound(const bool value)
+{
+    if (useSound != value)
+    {
+        isChanged = true;
+        useSound = value;
+    }
 }
 
 void LocalNotification::Show()

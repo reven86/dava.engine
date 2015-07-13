@@ -33,7 +33,7 @@
 #include "Notification/LocalNotificationDelayed.h"
 
 #include "Base/BaseTypes.h"
-#include "Thread/LockGuard.h"
+#include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {
@@ -52,7 +52,7 @@ LocalNotificationController::~LocalNotificationController()
     }
 }
 
-LocalNotificationProgress *const LocalNotificationController::CreateNotificationProgress(const WideString &title, const WideString &text, const uint32 maximum, const uint32 current)
+LocalNotificationProgress *const LocalNotificationController::CreateNotificationProgress(const WideString &title, const WideString &text, uint32 maximum, uint32 current, bool useSound)
 {
 	LocalNotificationProgress *note = new LocalNotificationProgress();
     
@@ -62,6 +62,7 @@ LocalNotificationProgress *const LocalNotificationController::CreateNotification
         note->SetTitle(title);
         note->SetProgressCurrent(current);
         note->SetProgressTotal(maximum);
+        note->SetUseSound(useSound);
         note->SetAction(Message());
 
         LockGuard<Mutex> guard(notificationsListMutex);
@@ -71,7 +72,7 @@ LocalNotificationProgress *const LocalNotificationController::CreateNotification
     return note;
 }
 
-LocalNotificationText *const LocalNotificationController::CreateNotificationText(const WideString &title, const WideString &text)
+LocalNotificationText *const LocalNotificationController::CreateNotificationText(const WideString &title, const WideString &text, bool useSound)
 {
 	LocalNotificationText *note = new LocalNotificationText();
 
@@ -80,6 +81,7 @@ LocalNotificationText *const LocalNotificationController::CreateNotificationText
         note->SetText(text);
         note->SetTitle(title);
         note->SetAction(Message());
+        note->SetUseSound(useSound);
 
         LockGuard<Mutex> guard(notificationsListMutex);
         notificationsList.push_back(note);
@@ -137,29 +139,20 @@ void LocalNotificationController::Update()
 {
 	LockGuard<Mutex> guard(notificationsListMutex);
 
-    if (!notificationsList.empty())
+    for (auto notification : notificationsList)
     {
-    	List<LocalNotification *>::const_iterator end = notificationsList.end();
-        for (List<LocalNotification *>::const_iterator it = notificationsList.begin(); it != end; ++it)
-        {
-			(*it)->Update();
-        }
+        notification->Update();
     }
 }
 
 LocalNotification *const LocalNotificationController::GetNotificationById(const String &id)
 {
 	LockGuard<Mutex> guard(notificationsListMutex);
-    if (!notificationsList.empty())
+    for (auto notification : notificationsList)
     {
-    	List<LocalNotification *>::const_iterator end = notificationsList.end();
-        for (List<LocalNotification *>::const_iterator it = notificationsList.begin(); it != end; ++it)
+        if (notification->GetId().compare(id) == 0)
         {
-        	DVASSERT(NULL != (*it));
-        	if ((*it)->GetId().compare(id) == 0)
-        	{
-        		return (*it);
-        	}
+            return notification;
         }
     }
 
@@ -175,12 +168,13 @@ void LocalNotificationController::OnNotificationPressed(const String &id)
 	}
 }
 
-void LocalNotificationController::PostDelayedNotification(const WideString &title, const WideString text, int delaySeconds)
+void LocalNotificationController::PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds, bool useSound)
 {
     LocalNotificationDelayed *notification = new LocalNotificationDelayed();
     notification->SetTitle(title);
     notification->SetText(text);
     notification->SetDelaySeconds(delaySeconds);
+    notification->SetUseSound(useSound);
     notification->Post();
     SafeRelease(notification);
 }

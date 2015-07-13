@@ -66,6 +66,12 @@ public:
 	int32 refreshRate;	//! refresh rate of the display mode, 0 if default
 };
 
+static const int32 DISPLAY_MODE_DEFAULT_WIDTH = 800;
+static const int32 DISPLAY_MODE_DEFAULT_HEIGHT = 600;
+static const int32 DISPLAY_MODE_DEFAULT_BITSPERPEL = 16;
+static const int32 DISPLAY_MODE_DEFAULT_DISPLAYFREQUENCY = 0;
+
 };
 
 #endif // __DAVAENGINE_DISPLAYMODE_H__
+

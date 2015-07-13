@@ -30,7 +30,7 @@
 #include "Render/RenderState.h"
 #include "Render/RenderManager.h"
 #include "Render/Shader.h"
-#include "Platform/Thread.h"
+#include "Concurrency/Thread.h"
 #include "Utils/Utils.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"

@@ -73,7 +73,7 @@ void AnimationComponent::Serialize(KeyedArchive *archive, SerializationContext *
 
 	if(NULL != archive)
 	{
-		archive->SetVariant("animation", VariantType((uint64)animation));
+		archive->SetVariant("animation", VariantType(animation->GetNodeID()));
 		archive->SetUInt32("repeatsCount", repeatsCount);
 	}
 }

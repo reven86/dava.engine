@@ -238,31 +238,41 @@ namespace DAVA
 					   name:UIKeyboardWillHideNotification object:nil];
 		[center addObserver:textFieldHolder selector:@selector(keyboardFrameDidChange:)
 					   name:UIKeyboardDidChangeFrameNotification object:nil];
-
-        auto funcHide = [](CFNotificationCenterRef center, void *observer,
-                       CFStringRef name, const void *object, CFDictionaryRef userInfo)
-        {
-            UITextFieldiPhone* tf = (static_cast<UITextFieldiPhone *>(observer));
-            tf->deltaMoveControl = MOVE_TO_OFFSCREEN_STEP;
-            tf->UpdateStaticTexture();
-        };
         
-        auto funcShow = [](CFNotificationCenterRef center, void *observer,
+        auto OnKeyboardFrameChange = [](CFNotificationCenterRef center, void *observer,
                            CFStringRef name, const void *object, CFDictionaryRef userInfo)
         {
+            NSDictionary* userInfoDic = (__bridge NSDictionary*)userInfo;
+            
+            CGRect keyboardEndFrame = [[userInfoDic objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+            CGRect screenRect = [[::UIScreen mainScreen] bounds];
+            
             UITextFieldiPhone* tf = (static_cast<UITextFieldiPhone *>(observer));
-            tf->deltaMoveControl = 0;
-            tf->UpdateStaticTexture();
+            
+            if (CGRectIntersectsRect(keyboardEndFrame, screenRect))
+            {
+                // Keyboard did show or move
+                tf->deltaMoveControl = 0;
+                tf->UpdateStaticTexture();
+            }
+            else
+            {
+                // Keyboard did hide
+                if(!tf->renderToTexture)
+                {
+                    // workaround if user click hide softkeyboard but we don't lose
+                    // focus on current control just leave native control on screen
+                } else
+                {
+                    tf->deltaMoveControl = MOVE_TO_OFFSCREEN_STEP;
+                }
+                tf->UpdateStaticTexture();
+            }
         };
         
         CFNotificationCenterAddObserver(CFNotificationCenterGetLocalCenter(), this,
-            funcHide,
-            (__bridge CFStringRef) UIKeyboardDidHideNotification, nil,
-            CFNotificationSuspensionBehaviorDeliverImmediately);
-        
-        CFNotificationCenterAddObserver(CFNotificationCenterGetLocalCenter(), this,
-            funcShow,
-            (__bridge CFStringRef) UIKeyboardWillShowNotification, nil,
+            OnKeyboardFrameChange,
+            (__bridge CFStringRef) UIKeyboardDidChangeFrameNotification, nil,
             CFNotificationSuspensionBehaviorDeliverImmediately);
     }
     
@@ -278,10 +288,7 @@ namespace DAVA
         [center removeObserver:textFieldHolder name:UIKeyboardDidChangeFrameNotification object:nil];
         
         CFNotificationCenterRemoveObserver(CFNotificationCenterGetLocalCenter(), this,
-           (__bridge CFStringRef) UIKeyboardDidHideNotification, nil);
-        
-        CFNotificationCenterRemoveObserver(CFNotificationCenterGetLocalCenter(), this,
-           (__bridge CFStringRef) UIKeyboardWillShowNotification, nil);
+           (__bridge CFStringRef) UIKeyboardDidChangeFrameNotification, nil);
     }
     
     void UITextFieldiPhone::UpdateNativeRect(const Rect & virtualRect, int xOffset)

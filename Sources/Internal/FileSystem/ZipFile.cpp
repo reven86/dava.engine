@@ -35,9 +35,8 @@
 #include "FileSystem/DynamicMemoryFile.h"
 #include "FileSystem/ResourceArchive.h"
 #include "FileSystem/FilePath.h"
-#include "Platform/Mutex.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
-#include "Thread/LockGuard.h"
+#include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {

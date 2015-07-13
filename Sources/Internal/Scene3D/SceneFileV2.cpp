@@ -83,12 +83,12 @@
 #include "Scene3D/Converters/SwitchToRenerObjectConverter.h"
 #include "Scene3D/Converters/TreeToAnimatedTreeConverter.h"
 
+#include <functional>
 
 namespace DAVA
 {
 
 SceneFileV2::SceneFileV2()
-    : scene(NULL)
 {
     isDebugLogEnabled = false;
     isSaveForGame = false;
@@ -104,12 +104,6 @@ SceneFileV2::SceneFileV2()
 SceneFileV2::~SceneFileV2()
 {
 }
-    
-const FilePath SceneFileV2::GetScenePath()
-{
-    return FilePath(rootNodePathName.GetDirectory());
-}
-        
     
 void SceneFileV2::EnableSaveForGame(bool _isSaveForGame)
 {
@@ -127,32 +121,6 @@ bool SceneFileV2::DebugLogEnabled()
     return isDebugLogEnabled;
 }
     
-/*Material * SceneFileV2::GetMaterial(int32 index)
-{
-    return materials[index];
-}
-    
-StaticMesh * SceneFileV2::GetStaticMesh(int32 index)
-{
-    return staticMeshes[index];
-}
-
-DataNode * SceneFileV2::GetNodeByPointer(uint64 pointer)
-{
-    Map<uint64, DataNode*>::iterator it = dataNodes.find(pointer);
-    if (it != dataNodes.end())
-    {
-        return it->second;
-    }
-    return 0;
-}*/
-
-const VersionInfo::SceneVersion& SceneFileV2::GetVersion() const
-{
-    DVASSERT(scene);
-    return scene->version;
-}
-    
 void SceneFileV2::SetError(eError error)
 {
     lastError = error;
@@ -163,7 +131,7 @@ SceneFileV2::eError SceneFileV2::GetError()
     return lastError;
 }
 
-SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scene *_scene, SceneFileV2::eFileType fileType)
+SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scene *scene, SceneFileV2::eFileType fileType)
 {
     File * file = File::Create(filename, File::CREATE | File::WRITE);
     if (!file)
@@ -173,9 +141,6 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
         return GetError();
     }
     
-	scene = _scene;
-    rootNodePathName = filename;
-
     // save header
     header.signature[0] = 'S';
     header.signature[1] = 'F';
@@ -183,7 +148,7 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     header.signature[3] = '2';
     
     header.version = VersionInfo::Instance()->GetCurrentVersion().version;
-    header.nodeCount = _scene->GetChildrenCount();
+    header.nodeCount = scene->GetChildrenCount();
 
     if(NULL != scene->GetGlobalMaterial())
     {
@@ -193,10 +158,10 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
 	descriptor.size = sizeof(descriptor.fileType); // + sizeof(descriptor.additionalField1) + sizeof(descriptor.additionalField1) +....
 	descriptor.fileType = fileType;
 	
-	serializationContext.SetRootNodePath(rootNodePathName);
-	serializationContext.SetScenePath(FilePath(rootNodePathName.GetDirectory()));
+	serializationContext.SetRootNodePath(filename);
+    serializationContext.SetScenePath(FilePath(filename.GetDirectory()));
 	serializationContext.SetVersion(header.version);
-	serializationContext.SetScene(_scene);
+	serializationContext.SetScene(scene);
     
     file->Write(&header, sizeof(Header));
     
@@ -218,7 +183,7 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     if(isDebugLogEnabled)
     {
         Logger::FrameworkDebug("+ save data objects");
-        Logger::FrameworkDebug("- save file path: %s", rootNodePathName.GetDirectory().GetAbsolutePathname().c_str());
+        Logger::FrameworkDebug("- save file path: %s", filename.GetDirectory().GetAbsolutePathname().c_str());
     }
     
 //    // Process file paths
@@ -238,41 +203,87 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
 //    SaveDataHierarchy(_scene->GetMaterials(), file, 1);
 //    SaveDataHierarchy(_scene->GetStaticMeshes(), file, 1);
 
-    List<DataNode*> nodes;
 	if (isSaveForGame)
-		_scene->OptimizeBeforeExport();
-    _scene->GetDataNodes(nodes);
+		scene->OptimizeBeforeExport();
 
-    if(NULL != _scene->GetGlobalMaterial())
-        nodes.push_front(_scene->GetGlobalMaterial());
+    Set<DataNode*> nodes;
+    scene->GetDataNodes(nodes);
 
-    uint32 dataNodesCount = GetSerializableDataNodesCount(nodes);
-    file->Write(&dataNodesCount, sizeof(uint32));
+    uint32 serializableNodesCount = 0;
+    uint64 maxDataNodeID = 0;
 
-    List<DataNode*>::iterator itEnd = nodes.end();
-    uint64 materialUniqueKey = 1;
-    for (List<DataNode*>::iterator it = nodes.begin(); it != itEnd; ++it)
+    // compute maxid for datanodes
+    for (auto node : nodes)
     {
-        (*it)->UpdateUniqueKey(materialUniqueKey++);
+        // TODO: now one datanode can be used in multiple scenes,
+        // but datanote->scene points only on single scene. This should be
+        // discussed and fixed in the future.
+        if (node->GetScene() == scene && node->GetNodeID() > maxDataNodeID)
+        {
+            maxDataNodeID = node->GetNodeID();
+        }
     }
-    
-    for (List<DataNode*>::iterator it = nodes.begin(); it != itEnd; ++it)
-	{
-		if(IsDataNodeSerializable(*it))
-		{
-			SaveDataNode(*it, file);
-		}
-	}
+
+    // assign datanode id-s and 
+    // count serializable nodes
+    for (auto node : nodes)
+    {
+        if (IsDataNodeSerializable(node))
+        {
+            // TODO: if datanode is from another scene, it should be saved with newly
+            // generated datanode-id. Unfortunately this ID will be generated on every scene save,
+            // because we don't change scene pointer in datanode->scene.
+            // This should be discussed and fixed in the future.
+            serializableNodesCount++;
+            if (node->GetScene() != scene || node->GetNodeID() == DataNode::INVALID_ID)
+            {
+                node->SetNodeID(++maxDataNodeID);
+            }
+        }
+    }
+
+    // do we need to save globalmaterial?
+    NMaterial *globalMaterial = scene->GetGlobalMaterial();
+    if (nullptr != globalMaterial)
+    {
+        serializableNodesCount++;
+    }
+
+    // save datanodes count
+    file->Write(&serializableNodesCount, sizeof(uint32));
+
+    // save global material on top of datanodes
+    if (nullptr != globalMaterial)
+    {
+        if(globalMaterial->GetNodeID() == DataNode::INVALID_ID)
+        {
+            globalMaterial->SetNodeID(++maxDataNodeID);
+        }
+        SaveDataNode(globalMaterial, file);
+    }
+
+    // sort in ascending ID order 
+    Set<DataNode*, std::function<bool(DataNode *, DataNode *)>> orderedNodes(nodes.begin(), nodes.end(),
+        [](DataNode* a, DataNode* b) { return a->GetNodeID() < b->GetNodeID(); });
+
+    // save the rest of datanodes
+    for (auto node : orderedNodes)
+    {
+        if (IsDataNodeSerializable(node))
+        {
+            SaveDataNode(node, file);
+        }
+    }
     
     // save hierarchy
     if(isDebugLogEnabled)
         Logger::FrameworkDebug("+ save hierarchy");
 
     // save global material settings
-    if(NULL != _scene->GetGlobalMaterial())
+    if(NULL != scene->GetGlobalMaterial())
     {
         KeyedArchive * archive = new KeyedArchive();
-        uint64 globalMaterialId = _scene->GetGlobalMaterial()->GetMaterialKey();
+        uint64 globalMaterialId = scene->GetGlobalMaterial()->GetNodeID();
     
         archive->SetString("##name", "GlobalMaterial");
         archive->SetUInt64("globalMaterialId", globalMaterialId);
@@ -281,9 +292,9 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
         SafeRelease(archive);
     }
 
-    for (int ci = 0; ci < _scene->GetChildrenCount(); ++ci)
+    for (int ci = 0; ci < scene->GetChildrenCount(); ++ci)
     {
-        if (!SaveHierarchy(_scene->GetChild(ci), file, 1))
+        if (!SaveHierarchy(scene->GetChild(ci), file, 1))
         {
             Logger::Error("SceneFileV2::SaveScene failed to save hierarchy file: %s", filename.GetAbsolutePathname().c_str());
             SafeRelease(file);
@@ -293,20 +304,6 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
     
     SafeRelease(file);
     return GetError();
-}
-
-uint32 SceneFileV2::GetSerializableDataNodesCount(List<DataNode*>& nodeList)
-{
-	uint32 nodeCount = 0;
-	for (List<DataNode*>::iterator it = nodeList.begin(); it != nodeList.end(); ++it)
-	{
-		if(IsDataNodeSerializable(*it))
-		{
-			nodeCount++;
-		}
-	}
-	
-	return nodeCount;
 }
 
 bool SceneFileV2::ReadHeader(SceneFileV2::Header& _header, File * file)
@@ -385,7 +382,7 @@ VersionInfo::SceneVersion SceneFileV2::LoadSceneVersion(const FilePath & filenam
     return version;
 }
     
-SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _scene)
+SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * scene)
 {
     File * file = File::Create(filename, File::OPEN | File::READ);
     if (!file)
@@ -394,9 +391,6 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
         SetError(ERROR_FAILED_TO_CREATE_FILE);
         return GetError();
     }   
-
-    scene = _scene;
-    rootNodePathName = filename;
 
     const bool headerValid = ReadHeader(header, file);
 
@@ -417,8 +411,8 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
     }
 
     // load version tags
-    _scene->version.version = header.version;
-    const bool versionValid = ReadVersionTags(_scene->version, file);
+    scene->version.version = header.version;
+    const bool versionValid = ReadVersionTags(scene->version, file);
     if ( !versionValid )
     {
         Logger::Error("SceneFileV2::LoadScene version tags are wrong");
@@ -433,18 +427,18 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
 		ReadDescriptor(file, descriptor);
 	}
 
-    VersionInfo::eStatus status = VersionInfo::Instance()->TestVersion(_scene->version);
+    VersionInfo::eStatus status = VersionInfo::Instance()->TestVersion(scene->version);
     switch (status)
     {
     case VersionInfo::COMPATIBLE:
         {
-            const String tags = VersionInfo::Instance()->UnsupportedTagsMessage(_scene->version);
+            const String tags = VersionInfo::Instance()->UnsupportedTagsMessage(scene->version);
             Logger::Warning("SceneFileV2::LoadScene scene was saved with older version of framework. Saving scene will broke compatibility. Missed tags: %s", tags.c_str());
         }
         break;
     case VersionInfo::INVALID:
         {
-            const String tags = VersionInfo::Instance()->NoncompatibleTagsMessage(_scene->version);
+            const String tags = VersionInfo::Instance()->NoncompatibleTagsMessage(scene->version);
             Logger::Error( "SceneFileV2::LoadScene scene is incompatible with current version. Wrong tags: %s", tags.c_str());
             SafeRelease( file );
             SetError( ERROR_VERSION_TAGS_INVALID );
@@ -454,8 +448,8 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
         break;
     }
 
-	serializationContext.SetRootNodePath(rootNodePathName);
-	serializationContext.SetScenePath(FilePath(rootNodePathName.GetDirectory()));
+	serializationContext.SetRootNodePath(filename);
+	serializationContext.SetScenePath(filename.GetDirectory());
 	serializationContext.SetVersion(header.version);
 	serializationContext.SetScene(scene);
 	serializationContext.SetDefaultMaterialQuality(NMaterial::DEFAULT_QUALITY_NAME);
@@ -470,7 +464,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
         
         for (int k = 0; k < dataNodeCount; ++k)
 		{
-            LoadDataNode(0, file);
+            LoadDataNode(scene, nullptr, file);
 		}
 		
 		serializationContext.ResolveMaterialBindings();
@@ -480,14 +474,10 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
         Logger::FrameworkDebug("+ load hierarchy");
 
     NMaterial *globalMaterial = NULL;
-    Entity * rootNode = new Entity();
-    rootNode->SetName(rootNodePathName.GetFilename().c_str());
-	rootNode->SetScene(0);
-    
-    rootNode->children.reserve(header.nodeCount);
+    scene->children.reserve(header.nodeCount);
     for (int ci = 0; ci < header.nodeCount; ++ci)
     {
-        LoadHierarchy(0, &globalMaterial, rootNode, file, 1);
+        LoadHierarchy(0, &globalMaterial, scene, file, 1);
     }
 
     if(NULL != globalMaterial)
@@ -498,22 +488,17 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
     //as we are going to take information about required attribute streams from shader - we are to wait for shader compilation
 	JobManager::Instance()->WaitMainJobs();
 
-	UpdatePolygonGroupRequestedFormatRecursively(rootNode);
+	UpdatePolygonGroupRequestedFormatRecursively(scene);
     serializationContext.LoadPolygonGroupData(file);
 
-    OptimizeScene(rootNode);	            
-    
-	rootNode->SceneDidLoaded();
-    
-    if (GetError() == ERROR_NO_ERROR)
+    OptimizeScene(scene);
+
+    if(GetError() == ERROR_NO_ERROR)
     {
-        // TODO: Check do we need to releae root node here
-        _scene->AddRootNode(rootNode, rootNodePathName);
+        scene->SceneDidLoaded();
+        scene->OnSceneReady(scene);
     }
     
-    scene->OnSceneReady(rootNode);
-    
-    SafeRelease(rootNode);
     SafeRelease(file);
     return GetError();
 }
@@ -638,7 +623,7 @@ bool SceneFileV2::SaveDataNode(DataNode * node, File * file)
     return true;
 }
     
-void SceneFileV2::LoadDataNode(DataNode * parent, File * file)
+void SceneFileV2::LoadDataNode(Scene *scene, DataNode * parent, File * file)
 {
     uint32 currFilePos = file->GetPos();
     KeyedArchive * archive = new KeyedArchive();
@@ -727,12 +712,8 @@ void SceneFileV2::LoadDataHierarchy(Scene * scene, DataNode * root, File * file,
     
 void SceneFileV2::AddToNodeMap(DataNode * node)
 {
-    uint64 ptr = node->GetPreviousPointer();
-    
-    //if(isDebugLogEnabled)
-    //    Logger::FrameworkDebug("* add ptr: %llx class: %s(%s)", ptr, node->GetName().c_str(), node->GetClassName().c_str());
-    
-	serializationContext.SetDataBlock(ptr, SafeRetain(node));
+    uint64 id = node->GetNodeID();
+	serializationContext.SetDataBlock(id, SafeRetain(node));
 }
     
 bool SceneFileV2::SaveHierarchy(Entity * node, File * file, int32 level)
@@ -1004,6 +985,7 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity * currentNode)
         if (currentNode->GetLocalTransform() == Matrix4::IDENTITY)
         {
             Entity * parent  = currentNode->GetParent();
+            uint32 curNodeID = currentNode->GetID();
 
             if (parent)
             {
@@ -1040,8 +1022,9 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity * currentNode)
 				
 				//VI: remove node after copying its properties since properties become invalid after node removal
 				parent->RemoveNode(currentNode);
-				
+
                 removedNodeCount++;
+                childNode->SetID(curNodeID);
                 SafeRelease(childNode);
 				
                 return true;
@@ -1402,6 +1385,55 @@ void SceneFileV2::RemoveDeprecatedMaterialFlags(Entity * node)
     }
 }
 
+void SceneFileV2::ConvertAlphatestValueMaterials(Entity * node)
+{
+    static const float32 alphatestThresholdValue = .3f;
+    static const std::array<FastName, 7> alphatestValueMaterials =
+    {
+        FastName("~res:/Materials/NormalizedBlinnPhongPerPixel.Alphatest.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongPerPixel.Alphatest.Alphablend.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongPerPixelFast.Alphatest.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongPerVertex.Alphatest.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongPerVertex.Alphatest.Alphablend.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongAllQualities.Alphatest.material"),
+        FastName("~res:/Materials/NormalizedBlinnPhongAllQualities.Alphatest.Alphablend.material"),
+    };
+
+    RenderObject * ro = GetRenderObject(node);
+    if (ro)
+    {
+        uint32 batchCount = ro->GetRenderBatchCount();
+        for (uint32 ri = 0; ri < batchCount; ++ri)
+        {
+            int32 flagValue = 0;
+            RenderBatch * batch = ro->GetRenderBatch(ri);
+            NMaterial * material = batch->GetMaterial();
+
+            while (material)
+            {
+                if (material->GetMaterialType() == NMaterial::MATERIALTYPE_MATERIAL)
+                {
+                    for (auto & alphatestTemplate : alphatestValueMaterials)
+                    {
+                        if (alphatestTemplate == material->GetMaterialTemplateName())
+                        {
+                            material->SetPropertyValue(NMaterial::PARAM_ALPHATEST_THRESHOLD, Shader::UT_FLOAT, 1, &alphatestThresholdValue);
+                        }
+                    }
+                }
+                material = material->GetParent();
+            }
+        }
+    }
+
+    uint32 size = node->GetChildrenCount();
+    for (uint32 i = 0; i < size; ++i)
+    {
+        Entity * child = node->GetChild(i);
+        ConvertAlphatestValueMaterials(child);
+    }
+}
+
 void SceneFileV2::RebuildTangentSpace(Entity *entity)
 {
     static int32 prerequiredFormat = EVF_TANGENT|EVF_NORMAL;
@@ -1510,6 +1542,11 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
         RemoveDeprecatedMaterialFlags(rootNode);
     }
 
+    if (header.version < ALPHATEST_VALUE_FLAG_SCENE_VERSION)
+    {
+        ConvertAlphatestValueMaterials(rootNode);
+    }
+
     QualitySettingsSystem::Instance()->UpdateEntityAfterLoad(rootNode);
     
 //    for (int32 k = 0; k < rootNode->GetChildrenCount(); ++k)
@@ -1540,15 +1577,6 @@ void SceneFileV2::UpdatePolygonGroupRequestedFormatRecursively(Entity *entity)
 
     for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
         UpdatePolygonGroupRequestedFormatRecursively(entity->GetChild(i));
-}
-
-void SceneFileV2::SetVersion(const VersionInfo::SceneVersion& version)
-{
-	header.version = version.version;
-    if (scene)
-    {
-        scene->version = version;
-    }
 }
 
 SceneArchive::~SceneArchive()
