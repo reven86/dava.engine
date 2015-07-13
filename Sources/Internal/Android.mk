@@ -231,7 +231,7 @@ DV_LOCAL_STATIC_LIBRARIES += fribidi_android
 DV_LOCAL_STATIC_LIBRARIES += unibreak_android
 DV_LOCAL_STATIC_LIBRARIES += uv_android
 
-DV_LOCAL_EXPORT_LDLIBS := -lGLESv1_CM -llog -lEGL
+DV_LOCAL_EXPORT_LDLIBS := -lGLESv1_CM -llog -lEGL -latomic
 
 ifeq ($(APP_PLATFORM), android-14)
 	DV_LOCAL_EXPORT_LDLIBS += -lGLESv2
