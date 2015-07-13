@@ -34,9 +34,9 @@
 #include "ImportedPackagesNode.h"
 #include "StyleSheetsNode.h"
 #include "PackageListener.h"
-#include "../ControlProperties/RootProperty.h"
-#include "../ControlProperties/DependedOnLayoutProperty.h"
-#include "../ControlProperties/ControlPropertiesSection.h"
+#include "Model/ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/DependedOnLayoutProperty.h"
+#include "Model/ControlProperties/ControlPropertiesSection.h"
 
 #include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"

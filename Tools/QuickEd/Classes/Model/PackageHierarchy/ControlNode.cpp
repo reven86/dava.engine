@@ -34,7 +34,7 @@
 
 #include "PackageNode.h"
 #include "PackageVisitor.h"
-#include "../ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/RootProperty.h"
 
 using namespace DAVA;
 
