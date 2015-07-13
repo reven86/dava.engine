@@ -61,7 +61,7 @@ inline void Spinlock::Lock() DAVA_NOEXCEPT
 {
     while (!flag.CompareAndSwap(0, 1)) 
     {
-        while (0 != flag) {}
+        while (0 != flag.GetRelaxed()) {}
     }
 }
 
