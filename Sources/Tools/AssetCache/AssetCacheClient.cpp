@@ -113,7 +113,7 @@ void Client::OnAddToCache(KeyedArchive * archieve)
         
         bool added = archieve->GetBool("added");
         
-        delegate->OnAddedToCache(key, added);
+        delegate->OnAddToCache(key, added);
     }
 }
     

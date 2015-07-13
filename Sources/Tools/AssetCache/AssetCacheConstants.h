@@ -47,6 +47,9 @@ enum ePacketID: uint8
     PACKET_ADD_FILES_RESPONCE,
     PACKET_GET_FILES_REQUEST,
     PACKET_GET_FILES_RESPONCE,
+    PACKET_WARMING_UP_REQUEST,
+//    PACKET_WARMING_UP_RESPONCE, // We don't need send responce right now. Left it in code for better reading
+    
 };
     
 }; // end of namespace AssetCache

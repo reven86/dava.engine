@@ -109,11 +109,14 @@ void Server::PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, si
                 OnGetFromCache(tcpChannel, archieve);
                 break;
                 
+            case PACKET_WARMING_UP_REQUEST:
+                OnWarmingUp(tcpChannel, archieve);
+                break;
+                
             default:
                 Logger::Error("[Server::%s] Cannot parce packet (%d)", __FUNCTION__, packetID);
                 break;
         }
-        
     }
 }
     
@@ -175,7 +178,7 @@ void Server::OnAddToCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve)
         CachedFiles files;
         files.Deserialize(filesArchieve);
         
-        delegate->OnAddedToCache(tcpChannel, key, files);
+        delegate->OnAddToCache(tcpChannel, key, files);
     }
     else
     {
@@ -201,6 +204,25 @@ void Server::OnGetFromCache(DAVA::TCPChannel *tcpChannel, KeyedArchive * archiev
         Logger::Error("[Server::%s] delegate not installed", __FUNCTION__);
     }
 }
+    
+void Server::OnWarmingUp(DAVA::TCPChannel *tcpChannel, KeyedArchive * archieve)
+{
+    if(delegate)
+    {
+        KeyedArchive *keyArchieve = archieve->GetArchive("key");
+        DVASSERT(keyArchieve);
+        
+        CacheItemKey key;
+        key.Deserialize(keyArchieve);
+        
+        delegate->OnWarmingUp(tcpChannel, key);
+    }
+    else
+    {
+        Logger::Error("[Server::%s] delegate not installed", __FUNCTION__);
+    }
+}
+
     
 
 }; // end of namespace AssetCache

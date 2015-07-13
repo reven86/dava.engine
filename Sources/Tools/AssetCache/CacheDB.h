@@ -93,9 +93,11 @@ public:
     void Load();
     
     ServerCacheEntry * Get(const CacheItemKey &key);
-
+    
     void Insert(const CacheItemKey &key, const CachedFiles &files);
     void Remove(const CacheItemKey &key);
+    void InvalidateAccessToken(const CacheItemKey &key);
+
     
     const FilePath & GetPath() const;
     const uint64 GetStorageSize() const;
@@ -107,15 +109,20 @@ public:
 private:
 
     void Insert(const CacheItemKey &key, const ServerCacheEntry &entry);
-
     
     FilePath CreateFolderPath(const CacheItemKey &key) const;
     
     void Unload();
+
+    ServerCacheEntry * FindInFastCache(const CacheItemKey &key) const;
+    ServerCacheEntry * FindInFullCache(const CacheItemKey &key);
+    const ServerCacheEntry * FindInFullCache(const CacheItemKey &key) const;
     
     void IncreaseUsedSize(const CachedFiles &files);
     
     void InsertInFastCache(const CacheItemKey &key, ServerCacheEntry * entry);
+    
+    void InvalidateAccessToken(ServerCacheEntry * entry);
     
     void ReduceFastCacheByCount(uint32 toCount);
     void ReduceFullCacheBySize(uint64 toSize);

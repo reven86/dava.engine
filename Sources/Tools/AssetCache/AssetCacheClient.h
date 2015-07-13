@@ -48,7 +48,7 @@ class ClientDelegate
 {
 public:
     
-    virtual void OnAddedToCache(const CacheItemKey &key, bool added) {};
+    virtual void OnAddToCache(const CacheItemKey &key, bool added) {};
     virtual void OnReceivedFromCache(const CacheItemKey &key, const CachedFiles &files) {};
 };
 
