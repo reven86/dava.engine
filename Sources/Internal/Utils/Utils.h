@@ -39,6 +39,10 @@
 #include "Render/RenderBase.h"
 #include <sstream>
 
+#ifdef __DAVAENGINE_WIN_UAP__
+#   include <ppltasks.h>
+#endif
+
 namespace DAVA 
 {
 int read_handler(void *ext, unsigned char *buffer, size_t size, size_t *length);
@@ -155,6 +159,14 @@ uint64 EglGetCurrentContext();
 void OpenURL(const String& url);
 
 String GenerateGUID();
+
+#ifdef __DAVAENGINE_WIN_UAP__
+template <typename T>
+T WaitAsync(Windows::Foundation::IAsyncOperation<T>^ async_operation)
+{
+    return concurrency::create_task(async_operation).get();
+}
+#endif
 
 };
 

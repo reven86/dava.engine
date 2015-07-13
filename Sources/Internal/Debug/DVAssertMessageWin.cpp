@@ -32,6 +32,7 @@
 #include "Debug/DVAssertMessage.h"
 #include "FileSystem/Logger.h"
 #include "Utils/UTF8Utils.h"
+#include "Utils/Utils.h"
 #include "Debug/DVAssert.h"
 
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
@@ -63,55 +64,44 @@ bool DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 
 #elif defined (__DAVAENGINE_WIN_UAP__)
 
-bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
+bool DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 {
     using namespace Windows::UI::Popups;
-
     bool issueDebugBreak = false;
     CorePlatformWinUAP* core = static_cast<CorePlatformWinUAP*>(Core::Instance());
+
+    WideString contentStr = UTF8Utils::EncodeToWideString(content);
+    Platform::String^ text = ref new Platform::String(contentStr.c_str());
+
+    MessageDialog^ msg = ref new MessageDialog(text);
+    UICommand^ continueCommand = 
+        ref new UICommand("Continue", ref new UICommandInvokedHandler([](IUICommand^) {}));
+    msg->Commands->Append(continueCommand);
+    msg->DefaultCommandIndex = 0;
+
     // Depending on what thread assertion has occured we should take different actions:
-    //  - for UI thread
-    //      MessageDialog always run asynchronously so breaking has no sense so dialog has only one button for continuation
+    //  - for UI thread and non-modal message types
+    //      MessageDialog always run asynchronously so breaking has no sense 
+    //      so dialog has only one button for continuation
     //      As we asserting on UI thread we can simply show dialog
     //  - for main and other threads
-    //      MessageDialog must be run only on UI thread, so RunOnUIThread is used
-    //      Also we block asserting thread to be able to retrieve user response: continue or break
-    if (!core->IsUIThread())
+    //      current thread wait until user press the buttons
+    if (core->IsUIThread() || modalType == TRY_NONMODAL)
     {
-        Spinlock lock;  // TODO: maybe choose mutex to allow waiting thread sleep
-        auto f = [content, &issueDebugBreak, &lock]() {
-            using namespace Windows::UI::Popups;
-
-            WideString contentStr = UTF8Utils::EncodeToWideString(content);
-            Platform::String^ text = ref new Platform::String(contentStr.c_str());
-            MessageDialog^ msg = ref new MessageDialog(text);
-
-            UICommand^ continueCommand = ref new UICommand("Continue", ref new UICommandInvokedHandler([&lock](IUICommand^) { lock.Unlock(); }));
-            UICommand^ cancelCommand = ref new UICommand("Break", ref new UICommandInvokedHandler([&lock, &issueDebugBreak](IUICommand^) { issueDebugBreak = true; lock.Unlock(); }));
-            msg->Commands->Append(continueCommand);
-            msg->Commands->Append(cancelCommand);
-            msg->DefaultCommandIndex = 0;
-            msg->CancelCommandIndex = 0;
-
-            msg->ShowAsync();   // This is always async call
-        };
-
-        lock.Lock();
-        core->RunOnUIThread(f);
-        lock.Lock();
+        msg->ShowAsync(); // This is always async call
     }
     else
     {
-        WideString contentStr = UTF8Utils::EncodeToWideString(content);
-        Platform::String^ text = ref new Platform::String(contentStr.c_str());
-        MessageDialog^ msg = ref new MessageDialog(text);
+        auto cancel_action = [&issueDebugBreak] (IUICommand^) { issueDebugBreak = true; };
+        UICommand^ cancelCommand = 
+            ref new UICommand("Break", ref new UICommandInvokedHandler(cancel_action));
 
-        UICommand^ continueCommand = ref new UICommand("Continue", ref new UICommandInvokedHandler([](IUICommand^) {}));
-        msg->Commands->Append(continueCommand);
-        msg->DefaultCommandIndex = 0;
+        msg->Commands->Append(cancelCommand);
+        msg->CancelCommandIndex = 1;
 
-        msg->ShowAsync();   // This is always async call
+        WaitAsync(msg->ShowAsync());
     }
+
     return issueDebugBreak;
 }
 
