@@ -38,7 +38,6 @@
 #include "QtPropertyModel.h"
 #include "QtPropertyData.h"
 #include "QtPropertyData/QtPropertyDataDavaVariant.h"
-#include "Qt/Settings/SettingsManager.h"
 
 QtPropertyItemDelegate::QtPropertyItemDelegate(QAbstractItemView *_view, QtPropertyModel *_model, QWidget *parent /* = 0 */)
 	: QStyledItemDelegate(parent)
@@ -59,10 +58,7 @@ void QtPropertyItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
 	QStyleOptionViewItemV4 opt = option;
 	initStyleOption(&opt, index);
 
-    bool iconsToLeft = SettingsManager::GetValue(Settings::General_Properties_IconsToLeft).AsBool();
-
-	// data
-    if(iconsToLeft && index.column() == 1)
+    if(index.column() == 1)
     {
         opt.textElideMode = Qt::ElideLeft;
         drawOptionalButtons(painter, opt, index);
@@ -78,11 +74,6 @@ void QtPropertyItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
     }
 
     view->style()->drawControl( QStyle::CE_ItemViewItem, &opt, painter, view );
-    // data
-    if(!iconsToLeft && index.column() == 1)
-    {
-        drawOptionalButtons(painter, opt, index);
-    }
 }
 
 QSize QtPropertyItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -296,17 +287,12 @@ void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOption
     if (index.column() == 1 && NULL != data && data->GetButtonsCount() > 0)
     {
         int owSpacing = 1;
-        bool iconsToLeft = SettingsManager::GetValue(Settings::General_Properties_IconsToLeft).AsBool();
-        int owXPos = iconsToLeft ? (opt.rect.left() + owSpacing) : (view->width() - owSpacing);
+        int owXPos = opt.rect.left() + owSpacing;
 
 		// draw not overlaid widgets
 		for(int i = data->GetButtonsCount() - 1; i >= 0; --i)
 		{
 			QtPropertyToolButton *btn = data->GetButton(i);
-            if(!iconsToLeft)
-            {
-                owXPos -= btn->width();
-            }
             // update widget height
             if(btn->height() != opt.rect.height())
             {
@@ -317,16 +303,6 @@ void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOption
 
             int owYPos = opt.rect.y() + (opt.rect.height() - btn->height()) / 2;
             auto tmpXPos = owXPos;
-            if (!iconsToLeft)
-            {
-                tmpXPos = owXPos - view->verticalScrollBar()->width();
-                auto treeView = qobject_cast<const QTreeView*>(view);
-                auto availableWidth = tmpXPos - treeView->columnWidth(0) - btn->width();
-                if (availableWidth < 0)
-                {
-                    continue;
-                }
-            }
             if(btn->isVisible())
             {
                 btn->move(tmpXPos, owYPos);
@@ -337,16 +313,8 @@ void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOption
                 painter->drawPixmap(tmpXPos, owYPos, pix);
             }
 
-            
-            if(iconsToLeft)
-            {
-                owXPos += owSpacing + btn->width();
-                opt.rect.setLeft(owXPos);
-            }
-            else
-            {
-                owXPos -= owSpacing;
-            }
+            owXPos += owSpacing + btn->width();
+            opt.rect.setLeft(owXPos);
 		}
 	}
 }
