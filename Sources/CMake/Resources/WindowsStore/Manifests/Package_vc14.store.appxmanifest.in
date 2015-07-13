@@ -20,6 +20,7 @@
 
   <Capabilities>
     <uap:Capability Name="removableStorage" />
+    <Capability Name="internetClient" />
   </Capabilities>
 
   <Resources>
@@ -50,8 +51,4 @@
 
 	</Application>
   </Applications>
-  
-  <Capabilities>
-    <Capability Name="internetClient" />
-  </Capabilities>
 </Package>
