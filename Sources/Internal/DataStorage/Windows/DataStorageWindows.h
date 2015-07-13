@@ -54,7 +54,7 @@ namespace DAVA
     };
 #endif // Win UAP
 
-#if defined(__DAVAENGINE_WINDOWS__) && !defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WIN32__)
 
     class DataStorageWin : public IDataStorage
     {
