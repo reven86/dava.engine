@@ -112,7 +112,7 @@ WideString DeviceInfo::GetName()
 
 eGPUFamily DeviceInfo::GetGPUFamily()
 {
-    return GPU_INVALID;
+    return GPU_TEGRA;
 }
 
 DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
