@@ -125,7 +125,10 @@ void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchAc
 {
     CoreWindow^ coreWindow = Window::Current->CoreWindow;
     // need initialize device info on UI thread
-    DeviceInfo::InitializeScreenInfo(static_cast<int32>(coreWindow->Bounds.Width), static_cast<int32>(coreWindow->Bounds.Height));
+    // // it's a temporary decision
+    float32 landscapeWidth = Max(coreWindow->Bounds.Width, coreWindow->Bounds.Height);
+    float32 landscapeHeight = Min(coreWindow->Bounds.Width, coreWindow->Bounds.Height);
+    DeviceInfo::InitializeScreenInfo(static_cast<int32>(landscapeWidth), static_cast<int32>(landscapeHeight));
     uiThreadDispatcher = coreWindow->Dispatcher;
 
     CreateBaseXamlUI();
@@ -529,6 +532,7 @@ void WinUAPXamlApp::SetupEventHandlers()
     {
         HardwareButtons::BackPressed += ref new EventHandler<BackPressedEventArgs^>(this, &WinUAPXamlApp::OnHardwareBackButtonPressed);
         isPhoneApiDetected = true;
+        Logger::FrameworkDebug("[CorePlatformWinUAP] Detected Phone Mode!");
     }
 }
 
@@ -693,12 +697,12 @@ void WinUAPXamlApp::SetFullScreen(bool isFullscreen_)
     }
     if (isFullscreen_)
     {
-        bool res = view->TryEnterFullScreenMode();
-        DVASSERT(res);
+        isFullscreen = view->TryEnterFullScreenMode();
     }
     else
     {
         view->ExitFullScreenMode();
+        isFullscreen = false;
     }
 }
 

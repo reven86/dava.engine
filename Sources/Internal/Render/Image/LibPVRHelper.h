@@ -31,7 +31,6 @@
 #define __DAVAENGINE_LIBPVRHELPER_H__
 
 #include "Base/Platform.h"
-#ifndef __DAVAENGINE_WIN_UAP__
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
@@ -53,7 +52,12 @@
 //    #include "libpvr/PVRTError.h"
 //    #include "libpvr/PVRTDecompress.h"
 //    #include "libpvr/PVRTMap.h"
+#if defined (__DAVAENGINE_WIN_UAP__)
+#include "libpvr/PVRTextureDefines.h"
+#else
 #include "libpvr/PVRTextureHeader.h"
+#endif
+
 //    #include "libpvr/PVRTexture.h"
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 
@@ -211,20 +215,5 @@ inline LibPVRHelper* CreateLibPVRHelper()
 }
 
 };
-
-#else
-
-#include "Render/Image/ImageFormatInterface.h"
-
-namespace DAVA
-{
-    inline ImageFormatInterface* CreateLibPVRHelper()
-    {
-        return nullptr;
-    }
-}
-
-#endif //  #ifndef __DAVAENGINE_WIN_UAP__
-
 
 #endif //#ifndef __DAVAENGINE_LIBPVRHELPER_H__

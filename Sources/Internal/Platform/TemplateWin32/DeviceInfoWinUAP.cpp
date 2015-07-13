@@ -112,7 +112,8 @@ WideString DeviceInfo::GetName()
 
 eGPUFamily DeviceInfo::GetGPUFamily()
 {
-    return GPU_INVALID;
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    return GPU_TEGRA;
 }
 
 DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()

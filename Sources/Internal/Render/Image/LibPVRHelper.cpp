@@ -28,7 +28,6 @@
 
 
 #include "Base/Platform.h"
-#ifndef __DAVAENGINE_WIN_UAP__
 
 #include "Render/Texture.h"
 #include "Render/RenderManager.h"
@@ -44,13 +43,13 @@
 #include "Render/PixelFormatDescriptor.h"
 
 
-#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__)
+#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
 #include "libpvr/PVRTError.h"
 #include "libpvr/PVRTDecompress.h"
 #include "libpvr/PVRTMap.h"
 #include "libpvr/PVRTextureHeader.h"
 #include "libpvr/PVRTexture.h"
-#endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WINDOWS__)
+#endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
 
 #define METADATA_FOURCC_OFFSET 0
 #define METADATA_KEY_OFFSET 4
@@ -607,13 +606,13 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 fileMipM
             image->format = FORMAT_RGBA8888;
 
             //Setup temporary variables.
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
             uint8* pTempDecompData = image->data;
             uint8* pTempCompData = (uint8*)pTextureData + GetMipMapLayerOffset(fileMipMapLevel, faceIndex, compressedHeader);
 #endif
             if ((FORMAT_PVR4 == formatDescriptor.formatID) || (FORMAT_PVR2 == formatDescriptor.formatID))
             {
-#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_WIN_UAP__)
                 DVASSERT_MSG(false, "Must be hardware supported PVR Compression");
                 image->Release();
                 return false;
@@ -627,13 +626,13 @@ bool LibPVRHelper::LoadMipMapLevel(const PVRFile *pvrFile, const uint32 fileMipM
             else if (FORMAT_ETC1 == formatDescriptor.formatID)
             {
                 //Create a near-identical texture header for the decompressed header.
-#if defined (__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
                 DVASSERT_MSG(false, "Must be hardware supported ETC1");
                 image->Release();
                 return false;
 #else
                 PVRTDecompressETC(pTempCompData, image->width, image->height, pTempDecompData, 0);
-#endif //defined (__DAVAENGINE_ANDROID__)
+#endif //defined (__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
             }
 #endif //#if !defined(__DAVAENGINE_IPHONE__)
             else
@@ -780,7 +779,7 @@ bool LibPVRHelper::GetCRCFromMetaData(const PVRFile *pvrFile, uint32* outputCRC)
 
 uint32 LibPVRHelper::GetBitsPerPixel(uint64 pixelFormat)
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
     if((pixelFormat & PVRTEX_PFHIGHMASK) != 0)
     {
         uint8 *pixelFormatChar = (uint8 *)&pixelFormat;
@@ -826,14 +825,14 @@ uint32 LibPVRHelper::GetBitsPerPixel(uint64 pixelFormat)
         }
     }
     return 0;
-#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
     return PVRTGetBitsPerPixel(pixelFormat);
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
 }
 
 void LibPVRHelper::GetFormatMinDims(uint64 pixelFormat, uint32 &minX, uint32 &minY, uint32 &minZ)
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
     switch(pixelFormat)
     {
         case ePVRTPF_DXT1:
@@ -894,14 +893,14 @@ void LibPVRHelper::GetFormatMinDims(uint64 pixelFormat, uint32 &minX, uint32 &mi
             minZ = 1;
             break;
     }
-#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
     PVRTGetFormatMinDims(pixelFormat, minX, minY, minZ);
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
 }
 
 uint32 LibPVRHelper::GetTextureDataSize(PVRHeaderV3 textureHeader, int32 mipLevel, bool allSurfaces, bool allFaces)
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
     //The smallest divisible sizes for a pixel format
     uint32 uiSmallestWidth = 1;
     uint32 uiSmallestHeight = 1;
@@ -964,10 +963,10 @@ uint32 LibPVRHelper::GetTextureDataSize(PVRHeaderV3 textureHeader, int32 mipLeve
     //Multiply the data size by number of faces and surfaces specified, and return.
     return (uint32)(uiDataSize / 8) * numsurfs * numfaces;
 
-#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
     PVRTextureHeaderV3 *header = (PVRTextureHeaderV3 *)&textureHeader;
     return PVRTGetTextureDataSize(*header, mipLevel, allSurfaces, allFaces);
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
 }
 
 int32 LibPVRHelper::GetMipMapLayerOffset(uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3 &header)
@@ -982,7 +981,7 @@ int32 LibPVRHelper::GetMipMapLayerOffset(uint32 mipMapLevel, uint32 faceIndex, c
 
 void LibPVRHelper::MapLegacyTextureEnumToNewFormat(PVRTPixelType OldFormat, uint64& newType, EPVRTColourSpace& newCSpace, EPVRTVariableType& newChanType, bool& isPreMult)
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
     //Default value.
     isPreMult = false;
 
@@ -2242,9 +2241,9 @@ void LibPVRHelper::MapLegacyTextureEnumToNewFormat(PVRTPixelType OldFormat, uint
         }
     }
 
-#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
     PVRTMapLegacyTextureEnumToNewFormat(OldFormat, newType, newCSpace, newChanType, isPreMult);
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
 }
 
 const PixelFormat LibPVRHelper::GetTextureFormat(const PVRHeaderV3& textureHeader)
@@ -2530,5 +2529,3 @@ bool LibPVRHelper::AllocateImageData(DAVA::Image *image, uint32 mipMapLevel, con
 }
 
 };
-
-#endif //  #ifndef __DAVAENGINE_WIN_UAP__

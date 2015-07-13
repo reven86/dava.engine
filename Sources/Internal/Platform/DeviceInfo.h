@@ -156,6 +156,7 @@ public:
     static int32 GetCpuCount();
 
 #if defined (__DAVAENGINE_WIN_UAP__)
+    // it's a temporary decision
     static void InitializeScreenInfo(int32 width, int32 height);
 #else 
     static void InitializeScreenInfo();

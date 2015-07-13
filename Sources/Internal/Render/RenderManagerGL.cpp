@@ -267,7 +267,7 @@ void RenderManager::DetectRenderingCapabilities()
 {
 #if defined(__DAVAENGINE_MACOS__)
 	caps.isHardwareCursorSupported = true;
-#elif defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#elif defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_WIN_UAP__)
 	caps.isHardwareCursorSupported = false;
 #endif
 
@@ -281,6 +281,9 @@ void RenderManager::DetectRenderingCapabilities()
     caps.isFloat16Supported = IsGLExtensionSupported("GL_OES_texture_half_float");
     caps.isFloat32Supported = IsGLExtensionSupported("GL_OES_texture_float");
 	caps.isATCSupported = IsGLExtensionSupported("GL_AMD_compressed_ATC_texture");
+#elif defined(__DAVAENGINE_WIN_UAP__)
+    __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
+    caps.isDXTSupported = IsGLExtensionSupported("GL_ANGLE_texture_compression_dxt5");
 #elif defined(__DAVAENGINE_ANDROID__)
     //TODO: added correct
     caps.isPVRTCSupported = IsGLExtensionSupported("GL_IMG_texture_compression_pvrtc");
