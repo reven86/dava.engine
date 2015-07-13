@@ -72,6 +72,11 @@ public:
     DAVA::Color GetCustomBackgroundFrameColor() const;
     void SetCustomBackgroundFrameColor(const DAVA::Color& color);
 
+    bool IsUsingAssetCache() const;
+    DAVA::String GetAssetCacheIp() const;
+    DAVA::String GetAssetCachePort() const;
+    DAVA::String GetAssetCacheTimeoutSec() const;
+
 protected:
     DAVA::Color GetColor(const DAVA::String& colorName, const DAVA::Color& defaultColor) const;
     void SetColor(const DAVA::String& colorName, const DAVA::Color& color);

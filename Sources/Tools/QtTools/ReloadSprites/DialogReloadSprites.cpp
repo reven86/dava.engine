@@ -52,7 +52,7 @@ DialogReloadSprites::DialogReloadSprites(QWidget* parent)
     
     connect(actionReloadSprites, &QAction::triggered, this, &DialogReloadSprites::exec);
     
-    spritesPacker= new SpritesPacker();
+    spritesPacker = new SpritesPacker(this);
     workerThread.setStackSize(16 * 1024 * 1024);
     spritesPacker->moveToThread(&workerThread);
     ui->setupUi(this);

@@ -66,7 +66,7 @@ public:
 
     void SetConvertQuality(const TextureConverter::eConvertQuality quality);
     void SetRunning(bool arg);
-    bool IsRunning() const;	
+    bool IsRunning() const;
     
     void SetCacheClientTool(const FilePath & path, const String& ip, const String& port, const String& timeout);
     void ClearCacheClientTool();
@@ -92,7 +92,7 @@ public:
     bool isGfxModified;
     
     bool isLightmapsPacking;
-    bool clearProcessDirectory;
+    bool forceRepack;
     bool clearOutputDirectory;
     eGPUFamily requestedGPUFamily;
     TextureConverter::eConvertQuality quality;
@@ -115,7 +115,13 @@ inline bool ResourcePacker2D::IsUsingCache() const
     return (!cacheClientTool.IsEmpty());
 }
 
+inline bool ResourcePacker2D::IsRunning() const
+{
+    return running;
+}
+
 };
+
 
 
 #endif // __DAVAENGINE_RESOURCEPACKER2D_H__

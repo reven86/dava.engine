@@ -49,7 +49,6 @@
 #include <QDoubleSpinBox>
 #include <QSpinBox>
 
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -126,10 +125,9 @@ void MainWindow::OnTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
     {
         case QSystemTrayIcon::DoubleClick:
         {
-            if (!this->isVisible())
-            {
-                this->show();
-            }
+            showNormal();
+            activateWindow();
+            raise();
             break;
         }
         default:
