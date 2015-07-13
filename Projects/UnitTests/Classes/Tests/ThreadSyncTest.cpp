@@ -171,9 +171,15 @@ DAVA_TESTCLASS(ThreadSyncTest)
 
     static void StackHurtFunc()
     {
-        char data[1 * 1024 * 1024]; //1 MB
-        int theGreatestNumber = 42;
-        data[sizeof(data) - 1] = theGreatestNumber;
+        const int theGreatestNumber = 42;
+        volatile char data[1 * 1024 * 1024]; //1 MB
+        volatile int sum = 0;
+
+        for (auto& x : data)
+        {
+            sum += theGreatestNumber;
+            x = sum;
+        }
     }
 
     //if stack size is not set, app will crash
