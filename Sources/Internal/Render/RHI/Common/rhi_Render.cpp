@@ -688,6 +688,8 @@ BeginPacketList( HPacketList packetList )
     
     if( pl->setDefaultViewport )
         CommandBuffer::SetViewport( pl->cmdBuf, pl->viewport );
+    
+    CommandBuffer::SetScissorRect( pl->cmdBuf, ScissorRect() ); // ensure default scissor-rect is used
 
     CommandBuffer::SetDepthStencilState( pl->cmdBuf, pl->defDepthStencilState );
     pl->curDepthStencilState = pl->defDepthStencilState;
