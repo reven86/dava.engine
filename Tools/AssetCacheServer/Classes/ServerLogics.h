@@ -32,21 +32,56 @@
 
 #include "AssetCache/AssetCache.h"
 
-class ServerLogics: public DAVA::AssetCache::ServerDelegate
+class ServerLogics: public DAVA::AssetCache::ServerDelegate, public DAVA::AssetCache::ClientDelegate
 {
 public:
-    void Init(DAVA::AssetCache::Server *server, DAVA::AssetCache::CacheDB *dataBase);
+    void Init(DAVA::AssetCache::Server *server, DAVA::AssetCache::Client *client, DAVA::AssetCache::CacheDB *dataBase);
     
+    //ServerDelegate
     void OnAddToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files) override;
     void OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key) override;
     void OnWarmingUp(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key) override;
 
+    //ClientDelegate
+    void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files) override;
+
+    
     void Update();
     
 private:
     
+    void ProcessServerTasks();
+    
+    
+private:
+    
+    
     DAVA::AssetCache::Server *server = nullptr;
+    DAVA::AssetCache::Client *client = nullptr;
     DAVA::AssetCache::CacheDB *dataBase = nullptr;
+    
+    struct RequestDescription
+    {
+        DAVA::TCPChannel *clientChannel = nullptr;
+        DAVA::AssetCache::CacheItemKey key;
+        
+        DAVA::AssetCache::ePacketID request = DAVA::AssetCache::PACKET_UNKNOWN;
+    };
+    
+    DAVA::List<RequestDescription> waitedRequests;
+    DAVA::Mutex requestMutex;
+
+    
+    struct ServerTask
+    {
+        DAVA::AssetCache::CacheItemKey key;
+        DAVA::AssetCache::CachedFiles files;
+        
+        DAVA::AssetCache::ePacketID request = DAVA::AssetCache::PACKET_UNKNOWN;
+    };
+
+    DAVA::List<ServerTask> serverTasks;
+    DAVA::Mutex taskMutex;
 };
 
 

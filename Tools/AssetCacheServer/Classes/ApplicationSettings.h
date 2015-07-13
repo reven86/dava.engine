@@ -101,6 +101,8 @@ public:
     void AddServer(const ServerData & server);
     void RemoveServer(const ServerData & server);
     
+    ServerData GetCurrentServer() const;
+    
 signals:
     void SettingsUpdated(const ApplicationSettings * settings) const;
     

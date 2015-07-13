@@ -39,7 +39,8 @@ ServerCore::ServerCore()
     
     settings->Load();
     
-    server.SetDelegate(&logics);
+    server.SetDelegate(&serverLogics);
+    client.SetDelegate(&serverLogics);
 }
 
 ServerCore::~ServerCore()
@@ -48,6 +49,7 @@ ServerCore::~ServerCore()
     delete settings;
     
     server.Disconnect();
+    client.Disconnect();
 }
 
 
@@ -56,14 +58,14 @@ void ServerCore::Start()
     DAVA::Logger::FrameworkDebug("[ServerCore::%s]", __FUNCTION__);
 
     server.Listen(settings->GetPort());
-    logics.Init(&server, &dataBase);
+    serverLogics.Init(&server, &client, &dataBase);
 
     QTimer::singleShot(UPDATE_TIMEOUT, this, &ServerCore::UpdateByTimer);
 }
 
 void ServerCore::Update()
 {
-    logics.Update();
+    serverLogics.Update();
     
     auto netSystem = DAVA::Net::NetCore::Instance();
     if(netSystem)
@@ -88,10 +90,10 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
         auto count = settings->GetFilesCount();
         auto autoSaveTimeout = settings->GetAutoSaveTimeoutMs();
 
-        bool needRestart = false;
+        bool needServerRestart = false; //TODO: why we need different places for disconnect and listen???
         if (server.IsConnected() && server.GetListenPort() != settings->GetPort())
         {
-            needRestart = true;
+            needServerRestart = true;
             server.Disconnect();
         }
         
@@ -104,9 +106,20 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
             DAVA::Logger::Warning("[ServerCore::%s] Empty settings", __FUNCTION__);
         }
 
-        if (needRestart)
+        if (needServerRestart)
         {
             server.Listen(settings->GetPort());
+        }
+        
+        auto remoteServer = settings->GetCurrentServer();
+        if(client.IsConnected() && true) // check 
+        {
+            client.Disconnect();
+        }
+        
+        if(!remoteServer.ip.empty())
+        {
+            client.Connect(remoteServer.ip, remoteServer.port);
         }
     }
     else

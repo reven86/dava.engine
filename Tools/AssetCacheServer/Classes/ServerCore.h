@@ -66,12 +66,13 @@ private slots:
 private:
     
     DAVA::AssetCache::Server server;
+    DAVA::AssetCache::Client client;
+    ServerLogics serverLogics;
+    
     DAVA::AssetCache::CacheDB dataBase;
-    
-    ServerLogics logics;
-    ApplicationSettings * settings;
-    
     DAVA::uint64 dbSaveTime = 0;
+    
+    ApplicationSettings * settings = nullptr;
 };
 
 
