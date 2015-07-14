@@ -1419,6 +1419,9 @@ public class JNITextField {
                 if (isMultiline)
                 {
                     text.setSingleLine(false);
+                    // Workaround! in multiline mode user need ability to
+                    // scroll text so disable render into texture
+                    text.setRenderToTexture(false);
                 } else {
                     text.setSingleLine(true);
                 }
@@ -1431,7 +1434,13 @@ public class JNITextField {
             @Override
             public void safeRun() {
                 final TextField text = GetTextField(id);
-                text.setRenderToTexture(value);
+                // Workaround! Users need scroll on large text in
+                // multiline mode so we have to disable render into texture
+                if(text.isSingleLine) {
+                    text.setRenderToTexture(value);
+                } else {
+                    text.setRenderToTexture(false);
+                }
             }
         });
     }
