@@ -13,16 +13,9 @@ include      ( CMake-common )
 find_package( DavaFramework REQUIRED )
 find_package( DavaTools     REQUIRED )
 
-if( ANDROID )
-    project ( UnitTestsLib )
-
-else()
-    project ( UnitTests )
-
-endif()
+project ( UnitTests )
 
 include_directories   ( "Classes" )
-include_directories   ( "Classes/Infrastructure" )
 
 if( MACOS )
     set( PLATFORM_SPECIFIC_FOLDER "MacOSSpecific" )
@@ -31,7 +24,7 @@ elseif( IOS )
     set( PLATFORM_SPECIFIC_FOLDER "iOSSpecific" )
     set( IOS_ADD_SRC ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/UnitTests.entitlements )
 
-elseif( WIN32 )
+elseif( MSVC )
     set( PLATFORM_SPECIFIC_FOLDER "Win32Specific" )
     set( EXECUTABLE_FLAG WIN32 )
 
@@ -50,7 +43,6 @@ set( IOS_XIB                    ${XIB_LIST} )
 set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/Info.plist )
 set( MACOS_XIB                  ${XIB_LIST} )
 
-set( ANDROID_USE_STANDART_TEMLATE true )
 set( ANDROID_PACKAGE            "com.dava.unittests" )
 set( ANDROID_APP_NAME           "UnitTestApp" )
 set( ANDROID_ACTIVITY_APP_NAME  "UnitTests"   )
