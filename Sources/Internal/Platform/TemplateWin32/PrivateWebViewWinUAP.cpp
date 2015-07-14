@@ -78,7 +78,6 @@ private ref class UriResolver sealed : public IUriToStreamResolver
     {
         PATH_IN_BIN,        // Resources are relative to app install dir
         PATH_IN_DOC,        // Resources are relative to user documents dir
-        PATH_IN_PUB,        // Resources are relative to public documents dir
         PATH_UNKNOWN        // Resource location is unknown
     };
 
@@ -132,15 +131,11 @@ IAsyncOperation<IInputStream^>^ UriResolver::UriToStreamAsync(Uri^ uri)
             appDataUri = ref new Uri(L"ms-appx:///" + resPath);
             break;
         case PATH_IN_DOC:
-            appDataUri = ref new Uri(L"ms-appdata:///roaming/" + resPath);
-            break;
-        case PATH_IN_PUB:
             appDataUri = ref new Uri(L"ms-appdata:///local/" + resPath);
             break;
         default:
             return nullptr;
         }
-        Platform::String^ foobar = appDataUri->ToString();
         return GetStreamFromUriAsync(appDataUri);
     }
 }
@@ -198,10 +193,6 @@ void UriResolver::DetermineResourcesLocation(const FilePath& basePath)
     else if (CheckIfPathReachableFrom(absPath, fs->GetUserDocumentsPath().GetAbsolutePathname(), pathTail))
     {
         location = PATH_IN_DOC;
-    }
-    else if (CheckIfPathReachableFrom(absPath, fs->GetPublicDocumentsPath().GetAbsolutePathname(), pathTail))
-    {
-        location = PATH_IN_PUB;
     }
     else
     {
