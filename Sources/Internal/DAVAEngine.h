@@ -185,6 +185,7 @@
 
 #include "UI/UIScrollViewContainer.h"
 #include "UI/UIControlHelpers.h"
+#include "UI/UIScreenshoter.h"
 
 // Game object manager / 2D Scene
 #include "Scene2D/GameObject.h"
