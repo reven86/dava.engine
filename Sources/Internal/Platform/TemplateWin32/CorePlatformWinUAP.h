@@ -35,9 +35,13 @@
 
 #include "Base/BaseTypes.h"
 #include "Core/Core.h"
-#include "Concurrency/Spinlock.h"
+#include "Concurrency/Mutex.h"
+#include "Concurrency/ConditionVariable.h"
+#include "Concurrency/LockGuard.h"
 
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
+
+#include <ppltasks.h>
 
 namespace DAVA
 {
@@ -80,6 +84,9 @@ public:
     // Run specified function on main thread
     template<typename F>
     void RunOnMainThread(F fn);
+    // Run specified function on main thread and block calling thread until function finishes
+    template<typename F>
+    void RunOnMainThreadBlocked(F fn);
 
 private:
     WinUAPXamlApp^ xamlApp = nullptr;
@@ -99,23 +106,46 @@ inline bool CorePlatformWinUAP::IsUIThread() const
 template<typename F>
 void CorePlatformWinUAP::RunOnUIThread(F fn)
 {
-    using namespace Windows::UI::Core;
-    xamlApp->UIThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(fn));
+    if (IsUIThread())
+    {
+        fn();
+    }
+    else
+    {
+        using namespace Windows::UI::Core;
+        xamlApp->UIThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(fn));
+    }
 }
 
 template<typename F>
 void CorePlatformWinUAP::RunOnUIThreadBlocked(F fn)
 {
-    using namespace Windows::UI::Core;
-
-    Spinlock lock;
-    auto wrapper = [&lock, &fn]() {
+    if (IsUIThread())
+    {
         fn();
-        lock.Unlock();
-    };
-    lock.Lock();
-    xamlApp->UIThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(wrapper));
-    lock.Lock();
+    }
+    else
+    {
+        using namespace Windows::UI::Core;
+
+        Mutex mutex;
+        ConditionVariable cv;
+
+        bool jobDone = false;
+        auto wrapper = [&cv, &mutex, &jobDone, &fn]()
+        {
+            fn();
+            {
+                LockGuard<Mutex> guard(mutex);
+                jobDone = true;
+            }
+            cv.NotifyOne();
+        };
+
+        UniqueLock<Mutex> lock(mutex);
+        xamlApp->UIThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(wrapper));
+        cv.Wait(lock, [&jobDone]() -> bool { return jobDone; });
+    }
 }
 
 template<typename F>
@@ -123,6 +153,30 @@ void CorePlatformWinUAP::RunOnMainThread(F fn)
 {
     using namespace Windows::UI::Core;
     xamlApp->MainThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(fn));
+}
+
+template<typename F>
+void CorePlatformWinUAP::RunOnMainThreadBlocked(F fn)
+{
+    using namespace Windows::UI::Core;
+
+    Mutex mutex;
+    ConditionVariable cv;
+
+    bool jobDone = false;
+    auto wrapper = [&cv, &mutex, &jobDone, &fn]()
+    {
+        fn();
+        {
+            LockGuard<Mutex> guard(mutex);
+            jobDone = true;
+        }
+        cv.NotifyOne();
+    };
+
+    UniqueLock<Mutex> lock(mutex);
+    xamlApp->MainThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(wrapper));
+    cv.Wait(lock, [&jobDone]() -> bool { return jobDone; });
 }
 
 }   // namespace DAVA

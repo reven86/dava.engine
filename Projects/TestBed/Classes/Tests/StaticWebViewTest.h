@@ -26,45 +26,59 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#ifndef __BASESCREEN_H__
-#define __BASESCREEN_H__
+#ifndef __TEMPLATEPROJECTIPHONE__STATICWEBVIEWTEST__
+#define __TEMPLATEPROJECTIPHONE__STATICWEBVIEWTEST__
 
 #include "DAVAEngine.h"
-#include "GameCore.h"
+#include "UI/UIWebView.h"
+
+#include "Infrastructure/BaseScreen.h"
 
 using namespace DAVA;
 
-class BaseScreen: public UIScreen
+class MyWebViewDelegate;
+
+class StaticWebViewTest : public BaseScreen
 {
 protected:
-    virtual ~BaseScreen(){}
+    ~StaticWebViewTest(){};
 public:
+    StaticWebViewTest();
 
-    BaseScreen();
-    BaseScreen(const String & screenName, int32 skipBeforeTests = 10);
-    
-    inline int32 GetScreenId();
-    
-    void SystemScreenSizeDidChanged(const Rect &newFullScreenSize) override;
-
-protected:
     void LoadResources() override;
     void UnloadResources() override;
-    
+
 private:
-    void OnExitButton(BaseObject *obj, void *data, void *callerData);
-    
-private:
-    static int32 globalScreenId; // 1, on create of screen increment  
-    int32 currentScreenId;
-    UIButton *exitButton;
+    void OnButtonSetStatic(BaseObject *obj, void *data, void *callerData);
+    void OnButtonSetNormal(BaseObject *obj, void *data, void *callerData);
+    void OnButtonAdd10ToAlfa(BaseObject *obj, void *data, void *callerData);
+    void OnButtonMinus10FromAlfa(BaseObject *obj, void *data, void *callerData);
+    void OnButtonCheckTransparancy(BaseObject *obj, void *data, void *callerData);
+    void OnButtonUncheckTransparancy(BaseObject *obj, void *data, void *callerData);
+    void OnButtonExecJS(BaseObject* obj, void*, void*);
+    void OnLoadHTMLString(BaseObject* obj, void*, void*);
+    void OnButtonVisible(BaseObject*, void*, void*);
+    void OnButtonHide(BaseObject*, void*, void*);
+
+    UIButton* CreateUIButton(Font* font, const Rect& rect, const WideString& str,
+                             void (StaticWebViewTest::*targetFunction)(BaseObject*, void*, void*));
+
+    UIButton* setStaticButton = nullptr;
+    UIButton* setNormalButton = nullptr;
+    UIButton* add10ToAlfaButton = nullptr;
+    UIButton* minus10FromAlfaButton = nullptr;
+    UIButton* checkTransparancyButton = nullptr;
+    UIButton* uncheckTransparancyButton = nullptr;
+    UIButton* executeJSButton = nullptr;
+    UIButton* loadHTMLString = nullptr;
+    UIButton* setVisibleButton = nullptr;
+    UIButton* setHideButton = nullptr;
+
+    UIControl* overlapedImage = nullptr;
+
+    UIWebView* webView1 = nullptr;
+    UIWebView* webView2 = nullptr;
+    UIWebView* webView3 = nullptr;
 };
 
-int32 BaseScreen::GetScreenId()
-{
-    return currentScreenId;
-}
-
-
-#endif // __BASESCREEN_H__
+#endif /* defined(__TEMPLATEPROJECTIPHONE__STATICWEBVIEWTEST__) */

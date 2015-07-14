@@ -51,6 +51,12 @@ BaseScreen::BaseScreen()
     GameCore::Instance()->RegisterScreen(this);
 }
 
+void BaseScreen::SystemScreenSizeDidChanged(const Rect &newFullScreenSize)
+{
+    UnloadResources();
+    LoadResources();
+}
+
 void BaseScreen::LoadResources()
 {
     ScopedPtr<FTFont> font (FTFont::Create("~res:/Fonts/korinna.ttf"));
