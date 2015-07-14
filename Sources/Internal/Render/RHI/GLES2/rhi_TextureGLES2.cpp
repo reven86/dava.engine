@@ -58,7 +58,7 @@ TextureGLES2_t::TextureGLES2_t()
 {
 }
 
-typedef Pool<TextureGLES2_t,RESOURCE_TEXTURE>   TextureGLES2Pool;
+typedef ResourcePool<TextureGLES2_t,RESOURCE_TEXTURE>   TextureGLES2Pool;
 RHI_IMPL_POOL(TextureGLES2_t,RESOURCE_TEXTURE);
 
 //------------------------------------------------------------------------------
@@ -385,7 +385,7 @@ SamplerStateGLES2_t
     uint32                              vertexSamplerCount;
 };
 
-typedef Pool<SamplerStateGLES2_t,RESOURCE_SAMPLER_STATE>    SamplerStateGLES2Pool;
+typedef ResourcePool<SamplerStateGLES2_t,RESOURCE_SAMPLER_STATE>    SamplerStateGLES2Pool;
 RHI_IMPL_POOL(SamplerStateGLES2_t,RESOURCE_SAMPLER_STATE);
 static const SamplerStateGLES2_t*                           _CurSamplerState = nullptr;
 

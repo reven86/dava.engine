@@ -188,6 +188,8 @@ gles2_Uninitialize()
 static void
 gles2_Reset( const ResetParam& param )
 {
+    _GLES2_DefaultFrameBuffer_Width  = param.width;
+    _GLES2_DefaultFrameBuffer_Height = param.height;
 }
 
 

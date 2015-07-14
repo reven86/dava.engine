@@ -250,7 +250,7 @@ public:
     GLboolean           maskA;
 };
 
-typedef Pool<PipelineStateGLES2_t,RESOURCE_PIPELINE_STATE>  PipelineStateGLES2Pool;
+typedef ResourcePool<PipelineStateGLES2_t,RESOURCE_PIPELINE_STATE>  PipelineStateGLES2Pool;
 RHI_IMPL_POOL(PipelineStateGLES2_t,RESOURCE_PIPELINE_STATE);
 
 

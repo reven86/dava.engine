@@ -303,8 +303,8 @@ public:
     DWORD               colorMask;
 };
 
-typedef Pool<PipelineStateDX9_t,RESOURCE_PIPELINE_STATE>            PipelineStateDX9Pool;
-typedef Pool<PipelineStateDX9_t::ConstBuf,RESOURCE_CONST_BUFFER>    ConstBufDX9Pool;
+typedef ResourcePool<PipelineStateDX9_t,RESOURCE_PIPELINE_STATE>            PipelineStateDX9Pool;
+typedef ResourcePool<PipelineStateDX9_t::ConstBuf,RESOURCE_CONST_BUFFER>    ConstBufDX9Pool;
 
 RHI_IMPL_POOL(PipelineStateDX9_t,RESOURCE_PIPELINE_STATE);
 RHI_IMPL_POOL_SIZE(PipelineStateDX9_t::ConstBuf,RESOURCE_CONST_BUFFER,8*1024);

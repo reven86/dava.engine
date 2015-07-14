@@ -468,8 +468,8 @@ void RenderSystem2D::SetClip(const Rect &rect)
     if ((currentClip == rect) || (currentClip.dx < 0 && rect.dx < 0) || (currentClip.dy < 0 && rect.dy < 0))
     {
         return;
-    }
-    currentClip = rect;
+    }    
+    currentClip = rect;    
 }
 
 void RenderSystem2D::RemoveClip()
@@ -481,7 +481,20 @@ void RenderSystem2D::IntersectClipRect(const Rect &rect)
 {
     if (currentClip.dx < 0 || currentClip.dy < 0)
     {
-        SetClip(rect);
+        //RHI_COMPLETE - Mikhail please review this
+        Rect screen(0.0f, 0.0f, IsRenderTargetPass() ? renderTargetWidth : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx, IsRenderTargetPass() ? renderTargetHeight : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
+        Rect res = screen.Intersection(rect);
+        if (res.dx == 0)
+        {
+            res.x = 0;
+            res.dx = 1;
+        }
+        if (res.dy == 0)
+        {
+            res.y = 0;
+            res.dy = 1;
+        }
+        SetClip(res);
     }
     else
     {
@@ -775,7 +788,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         currentBatch.Reset();
 
         currentBatch.primitiveType = batchDesc.primitiveType;
-        currentBatch.textureSetHandle = batchDesc.textureSetHandle;
+        currentBatch.textureSetHandle = batchDesc.textureSetHandle;        
         currentBatch.clipRect = currentClip;
         currentBatch.indexOffset = indexIndex;
         currentBatch.material = batchDesc.material;

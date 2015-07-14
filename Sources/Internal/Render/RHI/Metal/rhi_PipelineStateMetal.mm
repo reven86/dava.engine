@@ -157,8 +157,8 @@ public:
     std::vector<state_t>            altState;
 };
 
-typedef Pool<PipelineStateMetal_t,RESOURCE_PIPELINE_STATE>          PipelineStateMetalPool;
-typedef Pool<PipelineStateMetal_t::ConstBuf,RESOURCE_CONST_BUFFER>  ConstBufMetalPool;
+typedef ResourcePool<PipelineStateMetal_t,RESOURCE_PIPELINE_STATE>          PipelineStateMetalPool;
+typedef ResourcePool<PipelineStateMetal_t::ConstBuf,RESOURCE_CONST_BUFFER>  ConstBufMetalPool;
 
 RHI_IMPL_POOL(PipelineStateMetal_t,RESOURCE_PIPELINE_STATE);
 RHI_IMPL_POOL(PipelineStateMetal_t::ConstBuf,RESOURCE_CONST_BUFFER);

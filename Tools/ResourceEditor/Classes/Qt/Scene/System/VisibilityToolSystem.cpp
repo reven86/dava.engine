@@ -472,12 +472,12 @@ void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
             for(uint32 m = 0; m < matCount; ++m)
             {
                 NMaterial * material = materials[m];
-                while (material && !material->GetFXName().IsValid())
+                while (material && !material->GetEffectiveFXName().IsValid())
                     material = material->GetParent();
 
                 if (material)
                 {
-                    if ((NMaterialName::SKYOBJECT == material->GetFXName()))
+                    if ((NMaterialName::SKYOBJECT == material->GetEffectiveFXName()))
                     {
                         needToExclude = true;
                         break;

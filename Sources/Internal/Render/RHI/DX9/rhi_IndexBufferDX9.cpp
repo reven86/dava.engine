@@ -27,7 +27,7 @@ public:
     unsigned                _mapped:1;
 };
 
-typedef Pool<IndexBufferDX9_t,RESOURCE_INDEX_BUFFER>    IndexBufferDX9Pool;
+typedef ResourcePool<IndexBufferDX9_t,RESOURCE_INDEX_BUFFER>    IndexBufferDX9Pool;
 RHI_IMPL_POOL(IndexBufferDX9_t,RESOURCE_INDEX_BUFFER);
 
 
@@ -52,15 +52,24 @@ IndexBufferDX9_t::~IndexBufferDX9_t()
 //------------------------------------------------------------------------------
 
 static Handle
-dx9_IndexBuffer_Create( unsigned size, uint32 options )
+dx9_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
 {
     Handle  handle = InvalidIndex;
 
-    DVASSERT(size);
-    if( size )
+    DVASSERT(desc.size);
+    if( desc.size )
     {
+        DWORD   usage = D3DUSAGE_WRITEONLY;
+
+        switch( desc.usage )
+        {
+            case USAGE_DEFAULT      : usage = D3DUSAGE_WRITEONLY; break;
+            case USAGE_STATICDRAW   : usage = D3DUSAGE_WRITEONLY; break;
+            case USAGE_DYNAMICDRAW  : usage = D3DUSAGE_WRITEONLY|D3DUSAGE_DYNAMIC; break;
+        }
+
         IDirect3DIndexBuffer9*  ib9   = nullptr;
-        DX9Command              cmd[] = { { DX9Command::CREATE_INDEX_BUFFER, { size, D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, uint64_t(&ib9), NULL } } };
+        DX9Command              cmd[] = { { DX9Command::CREATE_INDEX_BUFFER, { desc.size, usage, D3DFMT_INDEX16, D3DPOOL_DEFAULT, uint64_t(&ib9), NULL } } };
         
         ExecDX9( cmd, countof(cmd) );
 
@@ -70,7 +79,7 @@ dx9_IndexBuffer_Create( unsigned size, uint32 options )
 
             IndexBufferDX9_t* ib = IndexBufferDX9Pool::Get( handle );
             
-            ib->_size   = size;
+            ib->_size   = desc.size;
             ib->_ib9    = ib9;
             ib->_mapped = false;
         }

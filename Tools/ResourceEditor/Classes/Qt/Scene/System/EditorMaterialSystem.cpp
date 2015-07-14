@@ -88,47 +88,9 @@ const DAVA::RenderBatch* EditorMaterialSystem::GetRenderBatch(DAVA::NMaterial* m
 	return batch;
 }
 
-void EditorMaterialSystem::BuildMaterialsTree(DAVA::Map<DAVA::NMaterial*, DAVA::Set<DAVA::NMaterial *> > &in) const
+const DAVA::Set<DAVA::NMaterial *>& EditorMaterialSystem::GetTopParents() const
 {
-#if RHI_COMPLETE_EDITOR
-	// init set with already owned materials
-	DAVA::Set<DAVA::NMaterial *> materials = ownedParents;
-    GetScene()->materialSystem->BuildMaterialList(GetScene(), materials, DAVA::NMaterial::MATERIALTYPE_MATERIAL, true);
-
-	DAVA::Set<DAVA::NMaterial *>::const_iterator i = materials.begin();
-	DAVA::Set<DAVA::NMaterial *>::const_iterator end = materials.end();
-
-	for(; i != end; ++i)
-	{
-		DAVA::NMaterial *parent = *i;
-
-		// add childs
-		BuildInstancesList(parent, in[parent]);
-	}
-#endif // RHI_COMPLETE_EDITOR
-}
-
-void EditorMaterialSystem::BuildInstancesList(DAVA::NMaterial* parent, DAVA::Set<DAVA::NMaterial *> &in) const
-{
-#if RHI_COMPLETE_EDITOR
-	if(NULL != parent)
-	{
-		// add childs
-		for(DAVA::uint32 j = 0; j < parent->GetChildrenCount(); ++j)
-		{
-			DAVA::NMaterial *child = parent->GetChild(j);
-            if(materialFeedback.count(child) > 0)
-			{
-				in.insert(child);
-			}
-		}
-	}
-#endif // RHI_COMPLETE_EDITOR
-}
-
-void EditorMaterialSystem::BuildMaterialsList(DAVA::Set<DAVA::NMaterial *> &in) const
-{
-    in = ownedParents;
+    return ownedParents;
 }
 
 int EditorMaterialSystem::GetLightViewMode()
@@ -338,32 +300,41 @@ void EditorMaterialSystem::AddMaterial(DAVA::NMaterial *material, DAVA::Entity *
     if(NULL != material)
     {
         MaterialFB fb;
-        
+        DAVA::NMaterial *curGlobalMaterial = nullptr;
+        if (nullptr != entity->GetScene())
+        {
+            curGlobalMaterial = entity->GetScene()->GetGlobalMaterial();
+        }
+
         fb.entity = entity;
         fb.batch = rb;
         
         materialFeedback[material] = fb;
         
         // remember parent material, if still isn't
-        DAVA::NMaterial *parent = material->GetParent();
-        if(NULL != parent && 0 == ownedParents.count(parent))
+        DAVA::NMaterial *parent = material;
+        while (true)
         {
-            //const QVector<ProjectManager::AvailableMaterialTemplate> *availableTemplates = ProjectManager::Instance()->GetAvailableMaterialTemplates();
+            DAVA::NMaterial *nextParent = parent->GetParent();
+            if (nullptr == nextParent || curGlobalMaterial == nextParent)
+            {
+                break;
+            }
+            else
+            {
+                parent = nextParent;
+            }
+        }
 
-            //QString parentTemplate = parent->GetMaterialTemplateName().c_str();
-            //for(int j = 0; j < availableTemplates->size(); ++j)
-            //{
-            //    if(parentTemplate == availableTemplates->at(j).path)
-
-                if(IsEditable(parent))
-                {
-                    ownedParents.insert(parent);
-                    parent->Retain();
+        if(0 == ownedParents.count(parent))
+        {
+            if(IsEditable(parent))
+            {
+                ownedParents.insert(parent);
+                parent->Retain();
                     
-                    ApplyViewMode(parent);
-                    //break;
-                }
-            //}
+                ApplyViewMode(parent);
+            }
         }
     }
 }
@@ -376,10 +347,5 @@ void EditorMaterialSystem::RemoveMaterial(DAVA::NMaterial *material)
 
 bool EditorMaterialSystem::IsEditable(DAVA::NMaterial *material) const
 {    
-#if RHI_COMPLETE_EDITOR
-    return (!material->IsRuntime() || 
-            material->GetMaterialTemplateName() == DAVA::FastName("~res:/Materials/TileMask.material"));
-#else
-    return true;
-#endif // RHI_COMPLETE_EDITOR
+    return (!material->IsRuntime());
 }

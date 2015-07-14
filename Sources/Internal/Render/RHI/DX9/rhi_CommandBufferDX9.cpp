@@ -162,8 +162,8 @@ public:
 };
 
 
-typedef Pool<CommandBufferDX9_t,RESOURCE_COMMAND_BUFFER>    CommandBufferPool;
-typedef Pool<RenderPassDX9_t,RESOURCE_RENDER_PASS>          RenderPassPool;
+typedef ResourcePool<CommandBufferDX9_t,RESOURCE_COMMAND_BUFFER>    CommandBufferPool;
+typedef ResourcePool<RenderPassDX9_t,RESOURCE_RENDER_PASS>          RenderPassPool;
 
 RHI_IMPL_POOL(CommandBufferDX9_t,RESOURCE_COMMAND_BUFFER);
 RHI_IMPL_POOL(RenderPassDX9_t,RESOURCE_RENDER_PASS);

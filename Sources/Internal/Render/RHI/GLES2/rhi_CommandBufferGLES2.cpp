@@ -4,6 +4,7 @@
     #include "rhi_ProgGLES2.h"
 
     #include "../Common/rhi_Private.h"
+    #include "../Common/rhi_RingBuffer.h"
     #include "../Common/dbg_StatSet.h"
 
     #include "Debug/DVAssert.h"
@@ -16,7 +17,7 @@
     #include "_gl.h"
 
     #define USE_RENDER_THREAD               0
-    #define RHI_MAX_PREPARED_FRAME_COUNT    1
+    #define RHI_MAX_PREPARED_FRAME_COUNT    2
 
 
 namespace rhi
@@ -93,10 +94,11 @@ public:
     uint32              usingDefaultFrameBuffer:1;
 
     uint32              dbgCommandCount;
+    RingBuffer*         text;
 };
 
-typedef Pool<CommandBufferGLES2_t,RESOURCE_COMMAND_BUFFER>  CommandBufferPool;
-typedef Pool<RenderPassGLES2_t,RESOURCE_RENDER_PASS>        RenderPassPool;
+typedef ResourcePool<CommandBufferGLES2_t,RESOURCE_COMMAND_BUFFER>  CommandBufferPool;
+typedef ResourcePool<RenderPassGLES2_t,RESOURCE_RENDER_PASS>        RenderPassPool;
 
 RHI_IMPL_POOL(CommandBufferGLES2_t,RESOURCE_COMMAND_BUFFER);
 RHI_IMPL_POOL(RenderPassGLES2_t,RESOURCE_RENDER_PASS);
@@ -431,13 +433,12 @@ gles2_CommandBuffer_DrawIndexedPrimitive( Handle cmdBuf, PrimitiveType type, uin
 }
 
 
-
 //------------------------------------------------------------------------------
 
 static void
 gles2_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
 {
-/*
+
     CommandBufferGLES2_t*   cb = CommandBufferPool::Get(cmdBuf);
 
     if( !cb->text )
@@ -447,13 +448,13 @@ gles2_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
     }
     
     int     len = strlen( text );
-    char*   txt = (char*)cb->text->Alloc( len/sizeof(float)+1 );
+    char*   txt = (char*)cb->text->Alloc( len/sizeof(float)+2 );
 
     memcpy( txt, text, len );
-    txt[len] = '\0';
+    txt[len]   = '\n';
+    txt[len+1] = '\0';
 
     cb->Command( GLES2__SET_MARKER, (uint64)(txt) );
-*/
 }
 
 
@@ -463,7 +464,8 @@ gles2_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
 
 CommandBufferGLES2_t::CommandBufferGLES2_t()
   : isFirstInPass(true),
-    isLastInPass(true)
+    isLastInPass(true),
+    text(nullptr)
 {
 }
 
@@ -615,9 +617,10 @@ CommandBufferGLES2_t::Command( uint64 cmd, uint64 arg1, uint64 arg2, uint64 arg3
 void        
 CommandBufferGLES2_t::Execute()
 {
-SCOPED_NAMED_TIMING("gl.cb-exec");
+SCOPED_NAMED_TIMING("gl.exec");
     Handle      cur_ps          = InvalidHandle;
     uint32      cur_vdecl       = VertexLayout::InvalidUID;
+    uint32      cur_base_vert   = 0;
     Handle      last_ps         = InvalidHandle;
     Handle      vp_const[MAX_CONST_BUFFER_COUNT];
     const void* vp_const_data[MAX_CONST_BUFFER_COUNT];
@@ -684,8 +687,9 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                     {
                         GLint   fbo = 0;
 
-                        glGetIntegerv( GL_FRAMEBUFFER_BINDING, &fbo );
-    
+// this is SLOW AS HELL
+//                        glGetIntegerv( GL_FRAMEBUFFER_BINDING, &fbo );
+
                         if( fbo )
                         {
                             GLint   type = 0;
@@ -803,10 +807,11 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                     memset( vp_const_data, 0, sizeof(vp_const_data) );
                     memset( fp_const_data, 0, sizeof(fp_const_data) );
 
-                    cur_ps    = ps;
-                    cur_vdecl = vdecl;
-                    last_ps   = InvalidHandle;
-                    cur_vb    = InvalidHandle;
+                    cur_ps          = ps;
+                    cur_vdecl       = vdecl;
+                    cur_base_vert   = 0;
+                    last_ps         = InvalidHandle;
+                    cur_vb          = InvalidHandle;
                 }
 
                 tex_unit_0 = PipelineStateGLES2::VertexSamplerCount( ps );
@@ -870,6 +875,9 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
 
                 if( !(x==0  &&  y==0  &&  w==0  &&  h==0) )
                 {
+                    if( usingDefaultFrameBuffer )
+                        y = _GLES2_DefaultFrameBuffer_Height - y - h;
+                    
                     glViewport( x, y, w, h );
                 }
                 else
@@ -1005,9 +1013,10 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                         ConstBufferGLES2::SetToRHI( fp_const[i], fp_const_data[i] );
                 }
 
-                if( firstVertex )
+                if( firstVertex != cur_base_vert )
                 {
                     PipelineStateGLES2::SetVertexDeclToRHI( cur_ps, cur_vdecl, firstVertex );
+                    cur_base_vert = firstVertex;
                 }
 
                 if( cur_query_i != InvalidIndex )
@@ -1331,10 +1340,10 @@ InitializeRenderThread()
     DVASSERT(_GLES2_ReleaseContext);
     _GLES2_ReleaseContext();
 
-    RenderThread = DAVA::Thread::Create( DAVA::Message(&_RenderFunc) );
-    RenderThread->SetName( "RHI.gl-render" );
-    RenderThread->Start();    
-    _RenderThredStartedSync.Wait();
+    _GLES2_RenderThread = DAVA::Thread::Create( DAVA::Message(&_RenderFunc) );
+    _GLES2_RenderThread->SetName( "RHI.gl-render" );
+    _GLES2_RenderThread->Start();    
+    _GLES2_RenderThredStartedSync.Wait();
 #endif
 }
 
@@ -1345,11 +1354,11 @@ void
 UninitializeRenderThread()
 {
 #if USE_RENDER_THREAD
-    _RenderThreadExitSync.Lock();
-    _RenderThreadExitPending = true;
-    _RenderThreadExitSync.Unlock();
+    _GLES2_RenderThreadExitSync.Lock();
+    _GLES2_RenderThreadExitPending = true;
+    _GLES2_RenderThreadExitSync.Unlock();
 
-    RenderThread->Join();
+    _GLES2_RenderThread->Join();
 #endif
 }
 
@@ -1370,15 +1379,21 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
 {
     int     err = 0;
 
+/*
     do 
     {
         err = glGetError();
     } 
     while ( err != GL_NO_ERROR );
-#if 1
+*/
 
-//    while( glGetError() != GL_NO_ERROR )
-//        ;
+#if 0
+
+    do 
+    {
+        err = glGetError();
+    } 
+    while ( err != GL_NO_ERROR );
 
     #define EXEC_GL(expr) \
     expr ; \
@@ -1424,6 +1439,12 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
             case GLCommand::BUFFER_DATA :
             {
                 EXEC_GL(glBufferData( (GLenum)(arg[0]), (GLsizei)(arg[1]), (const void*)(arg[2]), (GLenum)(arg[3]) ));
+                cmd->status = err;
+            }   break;
+
+            case GLCommand::BUFFER_SUBDATA :
+            {
+                EXEC_GL(glBufferSubData( (GLenum)(arg[0]), GLintptr(arg[1]), (GLsizei)(arg[2]), (const void*)(arg[3]) ));
                 cmd->status = err;
             }   break;
 
@@ -1648,25 +1669,25 @@ ExecGL( GLCommand* command, uint32 cmdCount, bool force_immediate )
         // CRAP: busy-wait
         do
         {
-            _PendingImmediateCmdSync.Lock();
-            if( !_PendingImmediateCmd )
+            _GLES2_PendingImmediateCmdSync.Lock();
+            if( !_GLES2_PendingImmediateCmd )
             {
-                _PendingImmediateCmd      = command;
-                _PendingImmediateCmdCount = cmdCount;
+                _GLES2_PendingImmediateCmd      = command;
+                _GLES2_PendingImmediateCmdCount = cmdCount;
                 scheduled                 = true;
             }
-            _PendingImmediateCmdSync.Unlock();
+            _GLES2_PendingImmediateCmdSync.Unlock();
         } while( !scheduled );
 
         // CRAP: busy-wait
         do
         {
-            _PendingImmediateCmdSync.Lock();
-            if( !_PendingImmediateCmd )
+            _GLES2_PendingImmediateCmdSync.Lock();
+            if( !_GLES2_PendingImmediateCmd )
             {
                 executed = true;
             }
-            _PendingImmediateCmdSync.Unlock();
+            _GLES2_PendingImmediateCmdSync.Unlock();
         } while( !executed );
     }
 

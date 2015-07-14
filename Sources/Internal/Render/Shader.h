@@ -66,11 +66,9 @@ struct DynamicPropertyBinding
 
 //forward declarations for friending
 class ShaderDescriptor;
-namespace ShaderDescriptorCache{
+namespace ShaderDescriptorCache {
 ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines);
 }
-
-
 
 class ShaderDescriptor
 {    
@@ -92,7 +90,11 @@ public:
     inline rhi::HPipelineState GetPiplineState(){ return piplineState; }
 
     uint32 GetRequiredVertexFormat(){ return requiredVertexFormat; }
-        
+
+    const Vector<ConstBufferDescriptor>& GetConstBufferDescriptors() const { return constBuffers; }
+    const rhi::ShaderSamplerList& GetFragmentSamplerList() const { return fragmentSamplerList; }
+    const rhi::ShaderSamplerList& GetVertexSamplerList() const { return vertexSamplerList; }
+
 private:
     Vector<ConstBufferDescriptor> constBuffers;
 
@@ -114,7 +116,6 @@ private:
     FastName sourceName;
     HashMap<FastName, int32> defines;
 
-    friend class NMaterial;        
     friend ShaderDescriptor* ShaderDescriptorCache::GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines);
 };
 

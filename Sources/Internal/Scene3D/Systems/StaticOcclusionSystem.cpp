@@ -704,7 +704,7 @@ StaticOcclusionDebugDrawSystem::StaticOcclusionDebugDrawSystem(Scene *scene):Sce
     debugOpaqueMaterial->SetFXName(NMaterialName::DEBUG_DRAW_OPAQUE);
     debugAlphablendMaterial = new NMaterial();
     debugAlphablendMaterial->SetMaterialName(FastName("Debug_Alphablend_Material"));
-    debugAlphablendMaterial->SetFXName(NMaterialName::DEBUG_DRAW_ALPHABLEND);    
+    debugAlphablendMaterial->SetFXName(NMaterialName::DEBUG_DRAW_ALPHABLEND);
 
 }
 
