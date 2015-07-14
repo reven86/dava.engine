@@ -49,7 +49,6 @@
 #include "ControlProperties/NameProperty.h"
 #include "ControlProperties/PrototypeNameProperty.h"
 #include "ControlProperties/StyleSheetRootProperty.h"
-#include "ControlProperties/StyleSheetSelectorsSection.h"
 #include "ControlProperties/StyleSheetSelectorProperty.h"
 #include "ControlProperties/StyleSheetProperty.h"
 
@@ -399,9 +398,8 @@ void PackageSerializer::VisitIntrospectionProperty(IntrospectionProperty *proper
 
 void PackageSerializer::VisitStyleSheetRoot(StyleSheetRootProperty *property)
 {
-    property->GetSelectors()->Accept(this);
-    property->GetPropertiesSection()->Accept(this);
-    
+    PutValue("selector", property->GetSelectorsAsString());
+
     if (property->GetPropertiesSection()->GetCount() > 0)
     {
         BeginMap("properties", false);
@@ -409,18 +407,6 @@ void PackageSerializer::VisitStyleSheetRoot(StyleSheetRootProperty *property)
         EndMap();
     }
 
-}
-
-void PackageSerializer::VisitStyleSheetSelectorsSection(StyleSheetSelectorsSection *property)
-{
-    String selectors = "";
-    for (int32 i = 0; i < property->GetCount(); i++)
-    {
-        if (i > 0)
-            selectors += ", ";
-        selectors += property->GetProperty(i)->GetSelectorChainString();
-    }
-    PutValue("selector", selectors);
 }
 
 void PackageSerializer::VisitStyleSheetSelectorProperty(StyleSheetSelectorProperty *property)

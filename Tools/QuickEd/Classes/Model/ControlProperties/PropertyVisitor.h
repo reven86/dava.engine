@@ -14,7 +14,6 @@ class LocalizedTextValueProperty;
 class NameProperty;
 class PrototypeNameProperty;
 class StyleSheetRootProperty;
-class StyleSheetSelectorsSection;
 class StyleSheetSelectorProperty;
 class StyleSheetProperty;
 
@@ -39,7 +38,6 @@ public:
     virtual void VisitIntrospectionProperty(IntrospectionProperty *property) = 0;
     
     virtual void VisitStyleSheetRoot(StyleSheetRootProperty *property) = 0;
-    virtual void VisitStyleSheetSelectorsSection(StyleSheetSelectorsSection *property) = 0;
     virtual void VisitStyleSheetSelectorProperty(StyleSheetSelectorProperty *property) = 0;
     virtual void VisitStyleSheetProperty(StyleSheetProperty *property) = 0;
 };

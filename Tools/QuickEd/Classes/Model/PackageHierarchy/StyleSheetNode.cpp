@@ -31,7 +31,6 @@
 #include "PackageVisitor.h"
 
 #include "Model/ControlProperties/StyleSheetRootProperty.h"
-#include "Model/ControlProperties/StyleSheetSelectorsSection.h"
 
 #include "UI/Styles/UIStyleSheet.h"
 
@@ -42,14 +41,7 @@ StyleSheetNode::StyleSheetNode(const DAVA::Vector<DAVA::UIStyleSheetSelectorChai
     , rootProperty(nullptr)
 {
     rootProperty = new StyleSheetRootProperty(this, selectorChains, properties);
-    
-    StyleSheetSelectorsSection *selectors = rootProperty->GetSelectors();
-    for (int32 i = 0; i < selectors->GetCount(); i++)
-    {
-        if (i > 0)
-            name += ", ";
-        name += selectors->GetProperty(i)->GetValue().AsString();
-    }
+    name = rootProperty->GetSelectorsAsString();
 }
 
 StyleSheetNode::~StyleSheetNode()
@@ -75,6 +67,11 @@ void StyleSheetNode::Accept(PackageVisitor *visitor)
 String StyleSheetNode::GetName() const
 {
     return name;
+}
+
+void StyleSheetNode::UpdateName()
+{
+    name = rootProperty->GetSelectorsAsString();
 }
 
 StyleSheetRootProperty *StyleSheetNode::GetRootProperty() const

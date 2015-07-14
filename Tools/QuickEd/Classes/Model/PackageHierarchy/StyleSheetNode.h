@@ -50,7 +50,8 @@ public:
     PackageBaseNode *Get(DAVA::int32 index) const override;
     void Accept(PackageVisitor *visitor) override;
     
-    virtual DAVA::String GetName() const override;
+    DAVA::String GetName() const override;
+    void UpdateName();
     
     StyleSheetRootProperty *GetRootProperty() const;
     

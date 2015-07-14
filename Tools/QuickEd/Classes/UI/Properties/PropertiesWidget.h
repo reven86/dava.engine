@@ -53,7 +53,10 @@ public slots:
     
     void OnAddStyleProperty(QAction *action);
     void OnRemoveStyleProperty();
-
+    
+    void OnAddStyleSelector();
+    void OnRemoveStyleSelector();
+    
     void OnSelectionChanged(const QItemSelection &selected,
                             const QItemSelection &deselected);
 

@@ -57,7 +57,8 @@ public:
     bool IsReadOnly() const override;
     
     ePropertyType GetType() const override;
-    
+    DAVA::uint32 GetFlags() const override;
+
     DAVA::VariantType GetValue() const;
     void ApplyValue(const DAVA::VariantType &value);
     

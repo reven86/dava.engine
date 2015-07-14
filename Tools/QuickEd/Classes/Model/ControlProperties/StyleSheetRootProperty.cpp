@@ -28,9 +28,9 @@
 
 #include "StyleSheetRootProperty.h"
 
-#include "StyleSheetSelectorsSection.h"
 #include "SectionProperty.h"
 #include "StyleSheetProperty.h"
+#include "StyleSheetSelectorProperty.h"
 
 #include "PropertyVisitor.h"
 #include "PropertyListener.h"
@@ -42,12 +42,16 @@ using namespace DAVA;
 StyleSheetRootProperty::StyleSheetRootProperty(StyleSheetNode *aStyleSheet, const DAVA::Vector<DAVA::UIStyleSheetSelectorChain> &selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties)
     : styleSheet(aStyleSheet) // weak
 {
-    selectors = new StyleSheetSelectorsSection(styleSheet, selectorChains);
+    selectors = new SectionProperty("Selectors");
     selectors->SetParent(this);
+    for (const UIStyleSheetSelectorChain &chain : selectorChains)
+    {
+        ScopedPtr<StyleSheetSelectorProperty> selector(new StyleSheetSelectorProperty(aStyleSheet, chain));
+        selectors->AddProperty(selector);
+    }
     
     propertiesSection = new SectionProperty("Properties");
     propertiesSection->SetParent(this);
-
     for (const UIStyleSheetProperty &p : properties)
     {
         ScopedPtr<StyleSheetProperty> prop(new StyleSheetProperty(styleSheet, p));
@@ -134,12 +138,12 @@ void StyleSheetRootProperty::SetProperty(AbstractProperty *property, const DAVA:
 
 bool StyleSheetRootProperty::CanAddProperty(DAVA::uint32 propertyIndex) const
 {
-    return !IsReadOnly() && FindPropertyByIndex(propertyIndex) == nullptr;
+    return !IsReadOnly() && FindPropertyByPropertyIndex(propertyIndex) == nullptr;
 }
 
 bool StyleSheetRootProperty::CanRemoveProperty(DAVA::uint32 propertyIndex) const
 {
-    return !IsReadOnly() && FindPropertyByIndex(propertyIndex) != nullptr;
+    return !IsReadOnly() && FindPropertyByPropertyIndex(propertyIndex) != nullptr;
 }
 
 void StyleSheetRootProperty::AddProperty(StyleSheetProperty *property)
@@ -179,7 +183,54 @@ void StyleSheetRootProperty::RemoveProperty(StyleSheetProperty *property)
     }
 }
 
-StyleSheetSelectorsSection *StyleSheetRootProperty::GetSelectors() const
+bool StyleSheetRootProperty::CanAddSelector() const
+{
+    return !IsReadOnly();
+}
+
+bool StyleSheetRootProperty::CanRemoveSelector() const
+{
+    return !IsReadOnly() && selectors->GetCount() > 1;
+}
+
+void StyleSheetRootProperty::InsertSelector(StyleSheetSelectorProperty *property, int index)
+{
+    if (CanAddSelector() && selectors->GetIndex(property) == -1)
+    {
+        for (PropertyListener *listener : listeners)
+            listener->StyleSelectorWillBeAdded(propertiesSection, property, index);
+
+        selectors->InsertProperty(property, index);
+
+        for (PropertyListener *listener : listeners)
+            listener->StyleSelectorWasAdded(propertiesSection, property, index);
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+}
+
+void StyleSheetRootProperty::RemoveSelector(StyleSheetSelectorProperty *property)
+{
+    int32 index = selectors->GetIndex(property);
+    if (CanRemoveSelector() && index != -1)
+    {
+        for (PropertyListener *listener : listeners)
+            listener->StyleSelectorWillBeRemoved(propertiesSection, property, index);
+        
+        selectors->RemoveProperty(property);
+        
+        for (PropertyListener *listener : listeners)
+            listener->StyleSelectorWasRemoved(propertiesSection, property, index);
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+}
+
+SectionProperty *StyleSheetRootProperty::GetSelectors() const
 {
     return selectors;
 }
@@ -189,7 +240,7 @@ SectionProperty *StyleSheetRootProperty::GetPropertiesSection() const
     return propertiesSection;
 }
 
-StyleSheetProperty *StyleSheetRootProperty::FindPropertyByIndex(DAVA::uint32 propertyIndex) const
+StyleSheetProperty *StyleSheetRootProperty::FindPropertyByPropertyIndex(DAVA::uint32 propertyIndex) const
 {
     for (int32 i = 0; i < propertiesSection->GetCount(); i++)
     {
@@ -198,4 +249,29 @@ StyleSheetProperty *StyleSheetRootProperty::FindPropertyByIndex(DAVA::uint32 pro
             return p;
     }
     return nullptr;
+}
+
+StyleSheetSelectorProperty *StyleSheetRootProperty::GetSelectorAtIndex(DAVA::int32 index) const
+{
+    if (0 <= index &&index < selectors->GetCount())
+    {
+        return static_cast<StyleSheetSelectorProperty*>(selectors->GetProperty(index));
+    }
+    else
+    {
+        DVASSERT(false);
+        return nullptr;
+    }
+}
+
+String StyleSheetRootProperty::GetSelectorsAsString() const
+{
+    String name;
+    for (int32 i = 0; i < selectors->GetCount(); i++)
+    {
+        if (i > 0)
+            name += ", ";
+        name += selectors->GetProperty(i)->GetValue().AsString();
+    }
+    return name;
 }

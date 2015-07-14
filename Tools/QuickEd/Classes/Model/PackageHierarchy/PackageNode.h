@@ -41,6 +41,7 @@ class ControlNode;
 class StyleSheetsNode;
 class StyleSheetNode;
 class StyleSheetProperty;
+class StyleSheetSelectorProperty;
 class PackageListener;
 class AbstractProperty;
 class ComponentPropertiesSection;
@@ -90,6 +91,8 @@ public:
     void SetStyleProperty(StyleSheetNode *node, AbstractProperty *property, const DAVA::VariantType &newValue);
     void AddStyleProperty(StyleSheetNode *node, StyleSheetProperty *property);
     void RemoveStyleProperty(StyleSheetNode *node, StyleSheetProperty *property);
+    void InsertSelector(StyleSheetNode *node, StyleSheetSelectorProperty *property, DAVA::int32 index);
+    void RemoveSelector(StyleSheetNode *node, StyleSheetSelectorProperty *property);
 
     void InsertControl(ControlNode *node, ControlsContainerNode *dest, DAVA::int32 index);
     void RemoveControl(ControlNode *node, ControlsContainerNode *from);

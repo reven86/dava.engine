@@ -36,8 +36,8 @@
 class PropertyListener;
 class ValueProperty;
 class SectionProperty;
-class StyleSheetSelectorsSection;
 class StyleSheetProperty;
+class StyleSheetSelectorProperty;
 
 class StyleSheetNode;
 
@@ -71,17 +71,23 @@ public:
     bool CanRemoveProperty(DAVA::uint32 propertyIndex) const;
     void AddProperty(StyleSheetProperty *property);
     void RemoveProperty(StyleSheetProperty *property);
+    bool CanAddSelector() const;
+    bool CanRemoveSelector() const;
+    void InsertSelector(StyleSheetSelectorProperty *property, int index);
+    void RemoveSelector(StyleSheetSelectorProperty *property);
     
-    StyleSheetSelectorsSection *GetSelectors() const;
+    SectionProperty *GetSelectors() const;
     SectionProperty *GetPropertiesSection() const;
 
-    StyleSheetProperty *FindPropertyByIndex(DAVA::uint32 index) const;
+    StyleSheetProperty *FindPropertyByPropertyIndex(DAVA::uint32 index) const;
+    StyleSheetSelectorProperty *GetSelectorAtIndex(DAVA::int32 index) const;
 
+    DAVA::String GetSelectorsAsString() const;
 private:
     StyleSheetNode *styleSheet = nullptr;
     DAVA::Vector<PropertyListener*> listeners;
     
-    StyleSheetSelectorsSection *selectors = nullptr;
+    SectionProperty *selectors = nullptr;
     SectionProperty *propertiesSection = nullptr;
 };
 

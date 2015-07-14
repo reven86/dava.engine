@@ -42,7 +42,6 @@
 #include "Model/ControlProperties/AbstractProperty.h"
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/SectionProperty.h"
-#include "Model/ControlProperties/StyleSheetSelectorsSection.h"
 #include "Model/ControlProperties/StyleSheetRootProperty.h"
 #include "Model/ControlProperties/StyleSheetProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -292,9 +291,8 @@ void PropertiesModel::PropertyChanged(AbstractProperty *property)
 
 void PropertiesModel::ComponentPropertiesWillBeAdded(RootProperty *root, ComponentPropertiesSection *section, int index)
 {
-    int32 sectionRow = root->GetIndexOfCompoentPropertiesSection(section);
     QModelIndex parentIndex = indexByProperty(root, 0);
-    beginInsertRows(parentIndex, sectionRow, sectionRow);
+    beginInsertRows(parentIndex, index, index);
 }
 
 void PropertiesModel::ComponentPropertiesWasAdded(RootProperty *root, ComponentPropertiesSection *section, int index)
@@ -304,9 +302,8 @@ void PropertiesModel::ComponentPropertiesWasAdded(RootProperty *root, ComponentP
 
 void PropertiesModel::ComponentPropertiesWillBeRemoved(RootProperty *root, ComponentPropertiesSection *section, int index)
 {
-    int32 sectionRow = root->GetIndexOfCompoentPropertiesSection(section);
     QModelIndex parentIndex = indexByProperty(root, 0);
-    beginRemoveRows(parentIndex, sectionRow, sectionRow);
+    beginRemoveRows(parentIndex, index, index);
 }
 
 void PropertiesModel::ComponentPropertiesWasRemoved(RootProperty *root, ComponentPropertiesSection *section, int index)
@@ -316,9 +313,8 @@ void PropertiesModel::ComponentPropertiesWasRemoved(RootProperty *root, Componen
 
 void PropertiesModel::StylePropertyWillBeAdded(SectionProperty *section, StyleSheetProperty *property, int index)
 {
-    int32 row = property->GetPropertyIndex();
     QModelIndex parentIndex = indexByProperty(section, 0);
-    beginInsertRows(parentIndex, row, row);
+    beginInsertRows(parentIndex, index, index);
 }
 
 void PropertiesModel::StylePropertyWasAdded(SectionProperty *section, StyleSheetProperty *property, int index)
@@ -328,12 +324,34 @@ void PropertiesModel::StylePropertyWasAdded(SectionProperty *section, StyleSheet
 
 void PropertiesModel::StylePropertyWillBeRemoved(SectionProperty *section, StyleSheetProperty *property, int index)
 {
-    int32 row = property->GetPropertyIndex();
     QModelIndex parentIndex = indexByProperty(section, 0);
-    beginRemoveRows(parentIndex, row, row);
+    beginRemoveRows(parentIndex, index, index);
 }
 
 void PropertiesModel::StylePropertyWasRemoved(SectionProperty *section, StyleSheetProperty *property, int index)
+{
+    endRemoveRows();
+}
+
+void PropertiesModel::StyleSelectorWillBeAdded(SectionProperty *section, StyleSheetSelectorProperty *property, int index)
+{
+    QModelIndex parentIndex = indexByProperty(section, 0);
+    beginInsertRows(parentIndex, index, index);
+
+}
+
+void PropertiesModel::StyleSelectorWasAdded(SectionProperty *section, StyleSheetSelectorProperty *property, int index)
+{
+    endInsertRows();
+}
+
+void PropertiesModel::StyleSelectorWillBeRemoved(SectionProperty *section, StyleSheetSelectorProperty *property, int index)
+{
+    QModelIndex parentIndex = indexByProperty(section, 0);
+    beginRemoveRows(parentIndex, index, index);
+}
+
+void PropertiesModel::StyleSelectorWasRemoved(SectionProperty *section, StyleSheetSelectorProperty *property, int index)
 {
     endRemoveRows();
 }

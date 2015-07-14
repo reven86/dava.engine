@@ -35,6 +35,7 @@ class RootProperty;
 class SectionProperty;
 class ComponentPropertiesSection;
 class StyleSheetProperty;
+class StyleSheetSelectorProperty;
 
 class PropertyListener
 {
@@ -52,7 +53,13 @@ public:
 
     virtual void StylePropertyWillBeRemoved(SectionProperty *section, StyleSheetProperty *property, int index) = 0;
     virtual void StylePropertyWasRemoved(SectionProperty *section, StyleSheetProperty *property, int index) = 0;
+
+    virtual void StyleSelectorWillBeAdded(SectionProperty *section, StyleSheetSelectorProperty *property, int index) = 0;
+    virtual void StyleSelectorWasAdded(SectionProperty *section, StyleSheetSelectorProperty *property, int index) = 0;
     
+    virtual void StyleSelectorWillBeRemoved(SectionProperty *section, StyleSheetSelectorProperty *property, int index) = 0;
+    virtual void StyleSelectorWasRemoved(SectionProperty *section, StyleSheetSelectorProperty *property, int index) = 0;
+
 
 };
 

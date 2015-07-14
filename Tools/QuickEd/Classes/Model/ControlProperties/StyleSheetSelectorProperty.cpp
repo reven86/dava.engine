@@ -37,7 +37,7 @@
 using namespace DAVA;
 
 StyleSheetSelectorProperty::StyleSheetSelectorProperty(StyleSheetNode *aStyleSheet, const UIStyleSheetSelectorChain &chain)
-    : ValueProperty("Chain")
+    : ValueProperty("Selector")
     , styleSheet(aStyleSheet) // weak
     , selectorChain(chain)
 {
@@ -75,7 +75,12 @@ AbstractProperty::ePropertyType StyleSheetSelectorProperty::GetType() const
     return TYPE_VARIANT;
 }
 
-DAVA::VariantType StyleSheetSelectorProperty::GetValue() const
+uint32 StyleSheetSelectorProperty::GetFlags() const
+{
+    return EF_CAN_REMOVE;
+}
+
+VariantType StyleSheetSelectorProperty::GetValue() const
 {
     return VariantType(value);
 }

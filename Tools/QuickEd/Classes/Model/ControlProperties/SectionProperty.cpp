@@ -60,8 +60,15 @@ void SectionProperty::AddProperty(ValueProperty *property)
 void SectionProperty::InsertProperty(ValueProperty *property, DAVA::int32 index)
 {
     DVASSERT(property->GetParent() == nullptr);
-    property->SetParent(this);
-    children.insert(children.begin() + index, SafeRetain(property));
+    if (0 <= index && index <= children.size())
+    {
+        property->SetParent(this);
+        children.insert(children.begin() + index, SafeRetain(property));
+    }
+    else
+    {
+        DVASSERT(false);
+    }
 }
 
 void SectionProperty::RemoveProperty(ValueProperty *property)

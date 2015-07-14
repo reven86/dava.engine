@@ -86,6 +86,12 @@ private: // PropertyListener
     void StylePropertyWillBeRemoved(SectionProperty *section, StyleSheetProperty *property, int index) override;
     void StylePropertyWasRemoved(SectionProperty *section, StyleSheetProperty *property, int index) override;
 
+    void StyleSelectorWillBeAdded(SectionProperty *section, StyleSheetSelectorProperty *property, int index) override;
+    void StyleSelectorWasAdded(SectionProperty *section, StyleSheetSelectorProperty *property, int index) override;
+    
+    void StyleSelectorWillBeRemoved(SectionProperty *section, StyleSheetSelectorProperty *property, int index) override;
+    void StyleSelectorWasRemoved(SectionProperty *section, StyleSheetSelectorProperty *property, int index) override;
+
 private:
     void ChangeProperty(AbstractProperty *property, const DAVA::VariantType &value);
     void ResetProperty(AbstractProperty *property);

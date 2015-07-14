@@ -37,6 +37,7 @@
 #include "UI/QtModelPackageCommandExecutor.h"
 #include "Model/ControlProperties/ComponentPropertiesSection.h"
 #include "Model/ControlProperties/StyleSheetProperty.h"
+#include "Model/ControlProperties/StyleSheetSelectorProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 
@@ -68,7 +69,6 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
 {
     setupUi(this);
     treeView->setItemDelegate(new PropertiesTreeItemDelegate(this));
-    
 
     PrepareComponentActions();
     PrepareStyleActions();
@@ -157,6 +157,40 @@ void PropertiesWidget::OnRemoveStyleProperty()
     UpdateActions();
 }
 
+void PropertiesWidget::OnAddStyleSelector()
+{
+    if (sharedData)
+    {
+        sharedData->GetDocument()->GetCommandExecutor()->AddStyleSelector(GetSelectedStyleSheetNode());
+    }
+}
+
+void PropertiesWidget::OnRemoveStyleSelector()
+{
+    if (sharedData)
+    {
+        
+        QModelIndexList indices = treeView->selectionModel()->selectedIndexes();
+        if (!indices.empty())
+        {
+            const QModelIndex &index = indices.first();
+            AbstractProperty *property = static_cast<AbstractProperty*>(index.internalPointer());
+            
+            if ((property->GetFlags() & AbstractProperty::EF_CAN_REMOVE) != 0)
+            {
+                StyleSheetSelectorProperty *selectorProperty = dynamic_cast<StyleSheetSelectorProperty*>(property);
+                if (selectorProperty)
+                {
+                    int32 index = property->GetParent()->GetIndex(selectorProperty);
+                    if (index != -1)
+                        sharedData->GetDocument()->GetCommandExecutor()->RemoveStyleSelector(GetSelectedStyleSheetNode(), index);
+                }
+            }
+        }
+        
+    }
+}
+
 void PropertiesWidget::OnSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
     UpdateActions();
@@ -184,10 +218,29 @@ void PropertiesWidget::PrepareComponentActions()
     
     treeView->addAction(addComponentAction);
     treeView->addAction(removeComponentAction);
+    
+    QAction *separator = new QAction(this);
+    separator->setSeparator(true);
+    treeView->addAction(separator);
 }
 
 void PropertiesWidget::PrepareStyleActions()
 {
+    addStyleSelectorAction = new QAction(tr("Add Style Selector"), this);
+    addStyleSelectorAction->setEnabled(false);
+    connect(addStyleSelectorAction, &QAction::triggered, this, &PropertiesWidget::OnAddStyleSelector);
+    
+    removeStyleSelectorAction = new QAction(tr("Remove Style Selector"), this);
+    removeStyleSelectorAction->setEnabled(false);
+    connect(removeStyleSelectorAction, &QAction::triggered, this, &PropertiesWidget::OnRemoveStyleSelector);
+    
+    treeView->addAction(addStyleSelectorAction);
+    treeView->addAction(removeStyleSelectorAction);
+
+    QAction *separator = new QAction(this);
+    separator->setSeparator(true);
+    treeView->addAction(separator);
+    
     QMenu *propertiesMenu = new QMenu(this);
     UIStyleSheetPropertyDataBase *db = UIStyleSheetPropertyDataBase::Instance();
     for (int32 i = 0; i < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT; i++)
@@ -295,6 +348,9 @@ void PropertiesWidget::UpdateSelection()
     addStylePropertyAction->setEnabled(styleSheet != nullptr);
     removeStylePropertyAction->setEnabled(false);
     
+    addStyleSelectorAction->setEnabled(styleSheet != nullptr);
+    removeStyleSelectorAction->setEnabled(false);
+    
     if (treeView->model() != nullptr)
     {
         connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PropertiesWidget::OnSelectionChanged);
@@ -313,6 +369,7 @@ void PropertiesWidget::UpdateActions()
         
         bool removeComponentEnabled = false;
         bool removeStylePropertyEnabled = false;
+        bool removeSelectorEnabled = false;
         
         if ((property->GetFlags() & AbstractProperty::EF_CAN_REMOVE) != 0)
         {
@@ -331,10 +388,19 @@ void PropertiesWidget::UpdateActions()
                     removeStylePropertyEnabled = true;
                     selectedStylePropertyIndex = styleProperty->GetPropertyIndex();
                 }
+                else
+                {
+                    StyleSheetSelectorProperty *selectorProperty = dynamic_cast<StyleSheetSelectorProperty*>(property);
+                    if (selectorProperty)
+                    {
+                        removeSelectorEnabled = true;
+                    }
+                }
             }
         }
         
         removeComponentAction->setEnabled(removeComponentEnabled);
         removeStylePropertyAction->setEnabled(removeStylePropertyEnabled);
+        removeStyleSelectorAction->setEnabled(removeSelectorEnabled);
     }
 }

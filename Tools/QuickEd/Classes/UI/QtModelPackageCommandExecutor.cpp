@@ -40,6 +40,7 @@
 #include "UI/Commands/AddComponentCommand.h"
 #include "UI/Commands/RemoveComponentCommand.h"
 #include "UI/Commands/AddRemoveStylePropertyCommand.h"
+#include "UI/Commands/AddRemoveStyleSelectorCommand.h"
 
 #include "UI/Commands/ChangeStylePropertyCommand.h"
 
@@ -53,6 +54,7 @@
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/StyleSheetRootProperty.h"
 #include "Model/ControlProperties/StyleSheetProperty.h"
+#include "Model/ControlProperties/StyleSheetSelectorProperty.h"
 
 #include "Model/YamlPackageSerializer.h"
 #include "Model/EditorUIPackageBuilder.h"
@@ -206,11 +208,31 @@ void QtModelPackageCommandExecutor::RemoveStyleProperty(StyleSheetNode *node, DA
 {
     if (node->GetRootProperty()->CanRemoveProperty(propertyIndex))
     {
-        StyleSheetProperty *property = node->GetRootProperty()->FindPropertyByIndex(propertyIndex);
+        StyleSheetProperty *property = node->GetRootProperty()->FindPropertyByPropertyIndex(propertyIndex);
         if (property)
         {
             PushCommand(new AddRemoveStylePropertyCommand(document->GetPackage(), node, property, false));
         }
+    }
+}
+
+void QtModelPackageCommandExecutor::AddStyleSelector(StyleSheetNode *node)
+{
+    if (node->GetRootProperty()->CanAddSelector())
+    {
+        UIStyleSheetSelectorChain chain;
+        ScopedPtr<StyleSheetSelectorProperty> property(new StyleSheetSelectorProperty(node, chain));
+        PushCommand(new AddRemoveStyleSelectorCommand(document->GetPackage(), node, property, true));
+    }
+}
+
+void QtModelPackageCommandExecutor::RemoveStyleSelector(StyleSheetNode *node, DAVA::int32 selectorIndex)
+{
+    if (node->GetRootProperty()->CanRemoveSelector())
+    {
+        UIStyleSheetSelectorChain chain;
+        StyleSheetSelectorProperty *property = node->GetRootProperty()->GetSelectorAtIndex(selectorIndex);
+        PushCommand(new AddRemoveStyleSelectorCommand(document->GetPackage(), node, property, false));
     }
 }
 
