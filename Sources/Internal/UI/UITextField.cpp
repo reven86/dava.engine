@@ -36,12 +36,13 @@
 #ifdef __DAVAENGINE_ANDROID__
 #include "UITextFieldAndroid.h"
 #include "Utils/UTF8Utils.h"
-#endif
 
 extern void CreateTextField(DAVA::UITextField *);
 extern void ReleaseTextField();
 extern void OpenKeyboard();
 extern void CloseKeyboard();
+
+#endif
 
 namespace DAVA 
 {
@@ -90,7 +91,6 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 ,	text()
 ,	delegate(0)
 ,	cursorBlinkingTime{0.0f}
-,   isRenderToTexture{false}
 ,   maxLength(-1)
 #if !defined (__DAVAENGINE_ANDROID__) && !defined (__DAVAENGINE_IPHONE__)
 ,   staticText(NULL)
@@ -411,6 +411,27 @@ void UITextField::SetSize(const DAVA::Vector2 &newSize)
 void UITextField::SetPosition(const DAVA::Vector2 &position)
 {
     UIControl::SetPosition(position);
+}
+
+void UITextField::SetMultiline(bool value)
+{
+    if (value != isMultiline_)
+    {
+        isMultiline_ = value;
+        
+#ifdef __DAVAENGINE_IPHONE__
+        textFieldiPhone->SetMultiline(isMultiline_);
+#elif defined(__DAVAENGINE_ANDROID__)
+        textFieldAndroid->SetMultiline(isMultiline_);
+#else 
+        staticText->SetMultiline(isMultiline_);
+#endif
+    }
+}
+
+bool UITextField::IsMultiline() const
+{
+    return isMultiline_;
 }
     
 void UITextField::SetText(const WideString & _text)
@@ -1028,6 +1049,12 @@ void UITextField::SetInputEnabled(bool isEnabled, bool hierarchic)
 
 void UITextField::SetRenderToTexture(bool value)
 {
+    // Workaround! Users need scroll on large text in
+    // multiline mode so we have to disable render into texture
+    if (isMultiline_)
+    {
+        value = false;
+    }
 #ifdef __DAVAENGINE_WINDOWS__
     // do nothing
 #elif defined(__DAVAENGINE_MACOS__)
