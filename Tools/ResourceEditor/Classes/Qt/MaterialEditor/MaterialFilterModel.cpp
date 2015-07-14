@@ -108,21 +108,15 @@ bool MaterialFilteringModel::filterAcceptsRow(int sourceRow, const QModelIndex &
     if ( !item )
         return false;
 
+    bool isSelected = item->GetFlag(MaterialItem::IS_PART_OF_SELECTION);
     bool isMaterial = false;
-#if RHI_COMPLETE_EDITOR
-    switch (item->GetMaterial()->GetMaterialType())
-    {
-    case NMaterial::MATERIALTYPE_MATERIAL:
-    case NMaterial::MATERIALTYPE_GLOBAL:
-        isMaterial = true;
-        break;
-    default:
-        isMaterial = false;
-        break;
-    }
-#endif // RHI_COMPLETE_EDITOR
-    const bool isSelected = item->GetFlag( MaterialItem::IS_PART_OF_SELECTION );
 
+    DAVA::NMaterial *material = item->GetMaterial();
+    if( nullptr == material->GetParent() ||
+        materialModel->GetGlobalMaterial() == material->GetParent())
+    {
+        isMaterial = true;
+    }
     switch ( filterType )
     {
     case SHOW_ALL:
@@ -168,12 +162,12 @@ bool MaterialFilteringModel::lessThan(const QModelIndex &left, const QModelIndex
 
     if ( (mLeft == NULL) || (mRight == NULL) )
         return swap;
-#if RHI_COMPLETE_EDITOR
-    if (mLeft->GetMaterialType() == NMaterial::MATERIALTYPE_GLOBAL)
+
+    if (mLeft == materialModel->GetGlobalMaterial())
     {
         swap = (sortOrder() == Qt::AscendingOrder);
     }
-    else if (mRight->GetMaterialType() == NMaterial::MATERIALTYPE_GLOBAL)
+    else if (mRight == materialModel->GetGlobalMaterial())
     {
         swap = (sortOrder() == Qt::DescendingOrder);
     }
@@ -208,7 +202,6 @@ bool MaterialFilteringModel::lessThan(const QModelIndex &left, const QModelIndex
 
         swap = (compResult < 0);
     }
-#endif // RHI_COMPLETE_EDITOR
 
     return swap;
 }

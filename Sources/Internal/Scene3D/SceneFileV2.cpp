@@ -1348,7 +1348,7 @@ void SceneFileV2::ConvertAlphatestValueMaterials(Entity * node)
             {
                 for (auto & alphatestTemplate : alphatestValueMaterials)
                 {
-                    if (alphatestTemplate == material->GetFXName())
+                    if (alphatestTemplate == material->GetLocalFXName())
                     {
                         if (!material->HasLocalProperty(NMaterialParamName::PARAM_ALPHATEST_THRESHOLD))
                             material->AddProperty(NMaterialParamName::PARAM_ALPHATEST_THRESHOLD, &alphatestThresholdValue, rhi::ShaderProp::TYPE_FLOAT1);
