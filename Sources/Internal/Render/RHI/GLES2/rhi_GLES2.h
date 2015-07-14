@@ -125,6 +125,7 @@ GLCommand
         BIND_BUFFER, 
         DELETE_BUFFERS, 
         BUFFER_DATA,
+        BUFFER_SUBDATA,
 
         GEN_FRAMEBUFFERS,
         GEN_RENDERBUFFERS,
