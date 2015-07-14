@@ -29,6 +29,7 @@ public:
     unsigned    size;
     void*       data;
     unsigned    uid;
+    GLenum      usage;
     unsigned    mapped:1;
 };
 
@@ -69,6 +70,13 @@ gles2_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
                     ib->size   = desc.size;
                     ib->uid    = b;
                     ib->mapped = false;
+                    
+                    switch( desc.usage )
+                    {
+                        case USAGE_DEFAULT      : ib->usage = GL_STATIC_DRAW; break;
+                        case USAGE_STATICDRAW   : ib->usage = GL_STATIC_DRAW; break;
+                        case USAGE_DYNAMICDRAW  : ib->usage = GL_DYNAMIC_DRAW; break;
+                    }
                 }
             }
         }
@@ -118,7 +126,7 @@ gles2_IndexBuffer_Update( Handle ib, const void* data, unsigned offset, unsigned
         GLCommand   cmd[] = 
         {
             { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, self->uid } },
-            { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, (uint64)(self->data), GL_STATIC_DRAW } },
+            { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage } },
             { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, 0 } }
         };
 
@@ -159,7 +167,7 @@ gles2_IndexBuffer_Unmap( Handle ib )
     GLCommand   cmd[] = 
     {
         { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, self->uid } },
-        { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, (uint64)(self->data), GL_STATIC_DRAW } },
+        { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage } },
         { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, 0 } }
     };
 

@@ -61,8 +61,17 @@ dx9_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
     DVASSERT(desc.size);
     if( desc.size )
     {
+        DWORD   usage = D3DUSAGE_WRITEONLY;
+
+        switch( desc.usage )
+        {
+            case USAGE_DEFAULT      : usage = D3DUSAGE_WRITEONLY; break;
+            case USAGE_STATICDRAW   : usage = D3DUSAGE_WRITEONLY; break;
+            case USAGE_DYNAMICDRAW  : usage = D3DUSAGE_WRITEONLY|D3DUSAGE_DYNAMIC; break;
+        }
+
         IDirect3DVertexBuffer9* vb9   = nullptr;
-        DX9Command              cmd[] = { { DX9Command::CREATE_VERTEX_BUFFER, { desc.size, D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, uint64_t(&vb9), NULL } } };
+        DX9Command              cmd[] = { { DX9Command::CREATE_VERTEX_BUFFER, { desc.size, usage, 0, D3DPOOL_DEFAULT, uint64_t(&vb9), NULL } } };
         
         ExecDX9( cmd, countof(cmd) );
 
