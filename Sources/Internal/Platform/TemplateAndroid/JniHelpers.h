@@ -229,16 +229,16 @@ class SignatureString
 {
 private:
     template<class Ret>
-    static const String& __Gen()
+    static const String& GenRecursive()
     {
         static String r = String(")") + TypeMetrics<Ret>().rvalue;
         return r;
     }
 
     template<class P1, class P2, class... POthers>
-    static const String& __Gen()
+    static const String& GenRecursive()
     {
-        static String r = TypeMetrics<P1>().value + __Gen<P2, POthers...>();
+        static String r = TypeMetrics<P1>().value + GenRecursive<P2, POthers...>();
         return r;
 
     }
@@ -247,7 +247,7 @@ public:
     template<class Ret, class... POthers>
     inline static const String &FromTypes()
     {
-        static String ret = String("(") + __Gen<POthers..., Ret>();
+        static String ret = String("(") + GenRecursive<POthers..., Ret>();
         return ret;
     }
 };
