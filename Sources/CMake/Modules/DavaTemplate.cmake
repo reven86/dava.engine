@@ -237,7 +237,7 @@ if( ANDROID )
             list( APPEND SRC_LIST  ${ITEM} )
             math( EXPR COUNTER "${COUNTER} + 1" )
 
-            if( ${COUNTER} GREATER 700 )
+            if( ${COUNTER} GREATER ${DAVA_ANDROID_MAX_LIB_SRC} )
                 math( EXPR POSTFIX "${POSTFIX} + 1" )
 
                 set( LIB_NAME "${PROJECT_NAME}_${POSTFIX}"  ) 
