@@ -138,6 +138,17 @@ void StaticWebViewTest::UnloadResources()
     SafeRelease(webView1);
     SafeRelease(webView2);
     SafeRelease(webView3);
+
+    SafeRelease(setStaticButton);
+    SafeRelease(setNormalButton);
+    SafeRelease(add10ToAlfaButton);
+    SafeRelease(minus10FromAlfaButton);
+    SafeRelease(checkTransparancyButton);
+    SafeRelease(uncheckTransparancyButton);
+    SafeRelease(executeJSButton);
+    SafeRelease(loadHTMLString);
+    SafeRelease(setVisibleButton);
+    SafeRelease(setHideButton);
 }
 
 void StaticWebViewTest::OnButtonSetStatic(BaseObject *, void *, void *)
