@@ -44,13 +44,13 @@
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ImportedPackagesNode.h"
 #include "Model/PackageHierarchy/ControlsContainerNode.h"
+#include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/NameProperty.h"
 #include "Model/ControlProperties/ClassProperty.h"
 #include "Model/ControlProperties/CustomClassProperty.h"
 #include "Model/ControlProperties/PrototypeNameProperty.h"
 #include "Model/YamlPackageSerializer.h"
-#include "Model/EditorUIPackageBuilder.h"
 
 #include "PackageMimeData.h"
 
@@ -131,15 +131,15 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
 
     PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
     ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
-    
-    switch(role)
+
+    if (controlNode)
     {
-        case Qt::DisplayRole:
-            return StringToQString(node->GetName());
-            
-        case Qt::DecorationRole:
-            if (controlNode)
-            {
+        switch(role)
+        {
+            case Qt::DisplayRole:
+                return StringToQString(node->GetName());
+                
+            case Qt::DecorationRole:
                 if (controlNode->GetRootProperty()->GetCustomClassProperty()->IsSet())
                 {
                     return QIcon(IconHelper::GetCustomIconPath());
@@ -149,17 +149,11 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
                     const String &className = controlNode->GetRootProperty()->GetClassProperty()->GetClassName();
                     return QIcon(IconHelper::GetIconPathForClassName(QString::fromStdString(className)));
                 }
-            }
-            return QVariant();
-            
-        case Qt::CheckStateRole:
-            if (controlNode)
+                
+            case Qt::CheckStateRole:
                 return controlNode->GetControl()->GetVisibleForUIEditor() ? Qt::Checked : Qt::Unchecked;
-            else
-                return QVariant();
-            
-        case Qt::ToolTipRole:
-            if (controlNode != nullptr)
+                
+            case Qt::ToolTipRole:
             {
                 const String &prototype = controlNode->GetRootProperty()->GetPrototypeProperty()->GetPrototypeName();
                 const String &className = controlNode->GetRootProperty()->GetClassProperty()->GetClassName();
@@ -169,35 +163,84 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
                 {
                     toolTip += QString("\ncustom class: ") + customClassName.c_str();
                 }
-
+                
                 if (controlNode->GetPrototype())
                 {
                     toolTip += QString("\nprototype: ") + prototype.c_str();
                 }
                 return toolTip;
             }
-            break;
-            
-        case Qt::TextColorRole:
-            return controlNode != nullptr && controlNode->GetPrototype() != nullptr ? QColor(Qt::blue) : QColor(Qt::black);
-            
-        case Qt::BackgroundRole:
-            return controlNode == nullptr ? QColor(Qt::lightGray) : QColor(Qt::white);
-            
-        case Qt::FontRole:
-        {
-            QFont myFont;
-            if (controlNode == nullptr || controlNode->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
-                myFont.setBold(true);
-            
-            if (node->IsReadOnly())
-                myFont.setItalic(true);
-            
-            return myFont;
+                
+            case Qt::TextColorRole:
+                return controlNode->GetPrototype() != nullptr ? QColor(Qt::blue) : QColor(Qt::black);
+                
+            case Qt::BackgroundRole:
+                return QColor(Qt::white);
+                
+            case Qt::FontRole:
+            {
+                QFont myFont;
+                if (controlNode->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE)
+                    myFont.setBold(true);
+                
+                if (node->IsReadOnly())
+                    myFont.setItalic(true);
+                
+                return myFont;
+            }
         }
-            
-        default:
-            return QVariant();
+    }
+    else
+    {
+        StyleSheetNode *styleSheet = dynamic_cast<StyleSheetNode*>(node);
+        if (styleSheet)
+        {
+            switch(role)
+            {
+                case Qt::DisplayRole:
+                    return StringToQString(node->GetName());
+                    
+                case Qt::TextColorRole:
+                    return QColor(Qt::darkGreen);
+                    
+                case Qt::BackgroundRole:
+                    return QColor(Qt::white);
+                    
+                case Qt::FontRole:
+                {
+                    QFont myFont;
+                    if (node->IsReadOnly())
+                        myFont.setItalic(true);
+                    
+                    return myFont;
+                }
+            }
+        }
+        else
+        {
+            switch(role)
+            {
+                case Qt::DisplayRole:
+                    return StringToQString(node->GetName());
+                    
+                case Qt::TextColorRole:
+                    return QColor(Qt::black);
+                    
+                case Qt::BackgroundRole:
+                    return QColor(Qt::lightGray);
+                    
+                case Qt::FontRole:
+                {
+                    QFont myFont;
+                    myFont.setBold(true);
+                    
+                    if (node->IsReadOnly())
+                        myFont.setItalic(true);
+                    
+                    return myFont;
+                }
+            }
+        }
     }
 
     return QVariant();
@@ -371,8 +414,23 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
             
             if (node)
             {
-                commandExecutor->InsertControl(node, parentNode, rowIndex);
+                const auto &resultList = commandExecutor->InsertControl(node, parentNode, rowIndex);
                 SafeRelease(node);
+                if (!resultList)
+                {
+                    for (const auto &result : resultList.GetResults())
+                    {
+                        if (result.type != Result::RESULT_SUCCESS)
+                        {
+                            Logger* log = Logger::Instance();
+                            if (nullptr != log)
+                            {
+                                log->Log(result.type == Result::RESULT_FAILURE ? Logger::LEVEL_WARNING : Logger::LEVEL_ERROR, result.message.c_str());
+                            }
+                        }
+                    }
+                }
+                return resultList;
             }
         }
         return true;

@@ -308,7 +308,7 @@ void PathSystem::ProcessCommand(const Command2 *command, bool redo)
     if(CMDID_INSP_MEMBER_MODIFY == commandId)
     {
         const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
-        if (String("name") == cmd->member->Name())
+		if (String("name") == cmd->member->Name().c_str())
         {
             const DAVA::uint32 count = pathes.size();
             for(DAVA::uint32 p = 0; p < count; ++p)

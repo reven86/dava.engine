@@ -35,7 +35,6 @@
 #include "Core/Core.h"
 #include "Core/PerformanceSettings.h"
 #include "Platform/SystemTimer.h"
-#include "Platform/Thread.h"
 #include "UI/UIScreenManager.h"
 #include "UI/UIControlSystem.h"
 #include "Input/InputSystem.h"

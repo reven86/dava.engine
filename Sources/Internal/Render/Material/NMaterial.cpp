@@ -71,8 +71,8 @@ NMaterial::NMaterial()
     , needRebuildBindings(true)
     , needRebuildTextures(true)
     , needRebuildVariants(true)
-{    
-    materialKey = (uint64)this;
+    , activeVariantInstance(nullptr)
+{
 }
 
 NMaterial::~NMaterial()
@@ -81,8 +81,11 @@ NMaterial::~NMaterial()
     DVASSERT(children.size() == 0); //as children refernce parent in our material scheme, this should not be released while it has children
     for (auto& prop : localProperties)
         SafeDelete(prop.second);
-    for (auto& tex : localTextures)
-        SafeRelease(tex.second);
+    for (auto& texInfo : localTextures)
+    {
+        SafeRelease(texInfo.second->texture);
+        SafeDelete(texInfo.second);
+    }
        
     for (auto& buffer : localConstBuffers)
     {
@@ -143,6 +146,18 @@ void NMaterial::BindParams(rhi::Packet& target)
         target.fragmentConst[i] = activeVariantInstance->fragmentConstBuffers[i];
 }
 
+
+uint32 NMaterial::GetRequiredVertexFormat()
+{
+    uint32 res = 0;
+    for (auto& variant : renderVariants)
+    {
+        res |= variant.second->shader->GetRequiredVertexFormat();
+    }
+
+    return res;
+}
+
 MaterialBufferBinding* NMaterial::GetConstBufferBinding(UniquePropertyLayout propertyLayout)
 {
     MaterialBufferBinding* res = localConstBuffers.at(propertyLayout);
@@ -164,12 +179,19 @@ NMaterialProperty* NMaterial::GetMaterialProperty(const FastName& propName)
 
 Texture* NMaterial::GetEffectiveTexture(const FastName& slotName)
 {
-    Texture* res = localTextures.at(slotName);
-    if ((res == nullptr) && (parent != nullptr))
+    MaterialTextureInfo * localInfo = localTextures.at(slotName);
+    if (localInfo)
     {
-        res = parent->GetEffectiveTexture(slotName);
+        if (localInfo->texture == nullptr)
+            localInfo->texture = Texture::CreateFromFile(localInfo->path);
+        return localInfo->texture;
     }
-    return res;
+    
+    if (parent != nullptr)
+    {
+        return parent->GetEffectiveTexture(slotName);
+    }
+    return nullptr;
 }
 
 void NMaterial::SetFXName(const FastName & fx)
@@ -178,13 +200,23 @@ void NMaterial::SetFXName(const FastName & fx)
     InvalidateRenderVariants();
 }
 
-const FastName& NMaterial::GetFXName()
+const FastName& NMaterial::GetEffectiveFXName() const
 {   
     if ((!fxName.IsValid()) && (parent != nullptr))
     {
-        return parent->GetFXName();
+        return parent->GetEffectiveFXName();
     }
     return fxName;
+}
+
+const FastName& NMaterial::GetLocalFXName() const
+{
+    return fxName;
+}
+
+bool NMaterial::HasLocalFXName() const
+{
+    return fxName.IsValid();
 }
 
 const FastName& NMaterial::GetQualityGroup()
@@ -194,6 +226,11 @@ const FastName& NMaterial::GetQualityGroup()
         return parent->GetQualityGroup();
     }
     return qualityGroup;
+}
+
+void NMaterial::SetQualityGroup(const FastName& quality)
+{
+    qualityGroup = quality;
 }
 
 void NMaterial::AddProperty(const FastName& propName, const float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize)
@@ -259,27 +296,31 @@ const float32* NMaterial::GetEffectivePropValue(const FastName& propName)
 void NMaterial::AddTexture(const FastName& slotName, Texture* texture)
 {
     DVASSERT(localTextures.at(slotName) == nullptr);
-    localTextures[slotName] = SafeRetain(texture);
+    MaterialTextureInfo *texInfo = new MaterialTextureInfo();
+    texInfo->texture = SafeRetain(texture);
+    texInfo->path = texture->GetPathname();
+    localTextures[slotName] = texInfo;        
     InvalidateTextureBindings();
 
 }
 void NMaterial::RemoveTexture(const FastName& slotName)
 {
-    Texture * currTexture = localTextures.at(slotName);
-    DVASSERT(currTexture != nullptr);
+    MaterialTextureInfo * texInfo = localTextures.at(slotName);
+    DVASSERT(texInfo != nullptr);
     localTextures.erase(slotName);
-    SafeRelease(currTexture);    
+    SafeRelease(texInfo->texture);
+    SafeDelete(texInfo);
     InvalidateTextureBindings();
 }
 void NMaterial::SetTexture(const FastName& slotName, Texture* texture)
 {    
-    Texture * currTexture = localTextures.at(slotName);
-    DVASSERT(texture != nullptr);       //use RemoveTexture to remove texture!
-    DVASSERT(currTexture != nullptr);   //use AddTexture to add texture!
-    if (currTexture != texture)
+    MaterialTextureInfo * texInfo = localTextures.at(slotName);
+    DVASSERT(texture != nullptr);    //use RemoveTexture to remove texture!
+    DVASSERT(texInfo != nullptr);   //use AddTexture to add texture!
+    if (texInfo->texture != texture)
     {
-        SafeRelease(currTexture);
-        localTextures[slotName] = SafeRetain(texture);
+        SafeRelease(texInfo->texture);
+        texInfo->texture = SafeRetain(texture);
         InvalidateTextureBindings();
     }        
 }
@@ -291,7 +332,10 @@ bool NMaterial::HasLocalTexture(const FastName& slotName)
 Texture* NMaterial::GetLocalTexture(const FastName& slotName)
 {
     DVASSERT(HasLocalTexture(slotName));
-    return localTextures.at(slotName);
+    MaterialTextureInfo * texInfo = localTextures.at(slotName);    
+    if (texInfo->texture == nullptr)
+        texInfo->texture = Texture::CreateFromFile(texInfo->path);
+    return texInfo->texture;
 }
 
 void NMaterial::AddFlag(const FastName& flagName, int32 value)
@@ -348,6 +392,8 @@ bool NMaterial::NeedLocalOverride(UniquePropertyLayout propertyLayout)
 
 void NMaterial::SetParent(NMaterial *_parent)
 {
+    DVASSERT(_parent != this);
+
     if (parent == _parent)
         return;
 
@@ -372,6 +418,11 @@ void NMaterial::SetParent(NMaterial *_parent)
 NMaterial* NMaterial::GetParent()
 {
     return parent;
+}
+
+const Vector<NMaterial *>&  NMaterial::GetChildren() const
+{
+    return children;
 }
 
 void NMaterial::AddChildMaterial(NMaterial *material)
@@ -439,25 +490,16 @@ void NMaterial::RebuildRenderVariants()
 {
     HashMap<FastName, int32> flags;
     CollectMaterialFlags(flags);
-    
-    //RHI_COMPLETE - move quality to numbers, or flags to fastname
-    flags[NMaterialQualityName::QUALITY_FLAG_NAME] = 0; // QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup());        
 
-    const FXDescriptor& fxDescr = FXCache::GetFXDescriptor(GetFXName(), flags);
+    const FXDescriptor& fxDescr = FXCache::GetFXDescriptor(GetEffectiveFXName(), flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup()));
     
-if( fxDescr.renderPassDescriptors.size() == 0)
-{
-    // dragon: because I'm fucking sick and tired of Render2D-init crashing (when I don't even need it)
-    return;
-}
-    
-    for (auto &sampler : fxDescr.renderPassDescriptors[0].shader->fragmentSamplerList)
+    if( fxDescr.renderPassDescriptors.size() == 0)
     {
-        if (sampler.uid == FastName("decal"))
-            int ttt = 3;
-    }
+        // dragon: because I'm fucking sick and tired of Render2D-init crashing (when I don't even need it)
+        return;
+    }    
 
-    /*at least in theory flag changes can lead to changes in number of render pa*/
+    /*at least in theory flag changes can lead to changes in number of render passes*/
     activeVariantInstance = nullptr;
     activeVariantName = FastName();
     for (auto& variant : renderVariants)
@@ -502,7 +544,7 @@ void NMaterial::RebuildBindings()
         currRenderVariant->vertexConstBuffers.resize(currShader->GetVertexConstBuffersCount());
         currRenderVariant->fragmentConstBuffers.resize(currShader->GetFragmentConstBuffersCount());
 
-        for (auto& bufferDescr : currShader->constBuffers)
+        for (auto& bufferDescr : currShader->GetConstBufferDescriptors())
         {
             rhi::HConstBuffer bufferHandle;
             MaterialBufferBinding* bufferBinding = nullptr;
@@ -607,14 +649,17 @@ void NMaterial::RebuildTextureBindings()
             continue;
         rhi::TextureSetDescriptor textureDescr;        
         rhi::SamplerState::Descriptor samplerDescr;
-        textureDescr.fragmentTextureCount = currShader->fragmentSamplerList.size();       
-        samplerDescr.fragmentSamplerCount = currShader->fragmentSamplerList.size();
+        const rhi::ShaderSamplerList& fragmentSamplerList = currShader->GetFragmentSamplerList();
+        const rhi::ShaderSamplerList& vertexSamplerList = currShader->GetVertexSamplerList();
+
+        textureDescr.fragmentTextureCount = fragmentSamplerList.size();       
+        samplerDescr.fragmentSamplerCount = fragmentSamplerList.size();
         for (size_t i = 0, sz = textureDescr.fragmentTextureCount; i < sz; ++i)
         {       
-            RuntimeTextures::eDynamicTextureSemantic textureSemantic = RuntimeTextures::GetDynamicTextureSemanticByName(currShader->fragmentSamplerList[i].uid);
+            RuntimeTextures::eDynamicTextureSemantic textureSemantic = RuntimeTextures::GetDynamicTextureSemanticByName(currShader->GetFragmentSamplerList()[i].uid);
             if (textureSemantic == RuntimeTextures::TEXTURE_STATIC)
             {
-                Texture *tex = GetEffectiveTexture(currShader->fragmentSamplerList[i].uid);
+                Texture *tex = GetEffectiveTexture(fragmentSamplerList[i].uid);
                 if (tex)
                 {
                     textureDescr.fragmentTexture[i] = tex->handle;
@@ -622,10 +667,10 @@ void NMaterial::RebuildTextureBindings()
                 }
                 else
                 {
-                    textureDescr.fragmentTexture[i] = Renderer::GetRuntimeTextures().GetPinkTexture(currShader->fragmentSamplerList[i].type);
-                    samplerDescr.fragmentSampler[i] = Renderer::GetRuntimeTextures().GetPinkTextureSamplerState(currShader->fragmentSamplerList[i].type);
+                    textureDescr.fragmentTexture[i] = Renderer::GetRuntimeTextures().GetPinkTexture(fragmentSamplerList[i].type);
+                    samplerDescr.fragmentSampler[i] = Renderer::GetRuntimeTextures().GetPinkTextureSamplerState(fragmentSamplerList[i].type);
 
-                    Logger::Debug(" no texture for slot : %s", currShader->fragmentSamplerList[i].uid.c_str());
+                    Logger::Debug(" no texture for slot : %s", fragmentSamplerList[i].uid.c_str());
                 }
             }
             else
@@ -637,10 +682,10 @@ void NMaterial::RebuildTextureBindings()
         }
 
 
-        textureDescr.vertexTextureCount = currShader->vertexSamplerList.size();
+        textureDescr.vertexTextureCount = vertexSamplerList.size();
         for (size_t i = 0, sz = textureDescr.vertexTextureCount; i < sz; ++i)
         {
-            Texture *tex = GetEffectiveTexture(currShader->vertexSamplerList[i].uid);
+            Texture *tex = GetEffectiveTexture(vertexSamplerList[i].uid);
             DVASSERT(tex);
             textureDescr.vertexTexture[i] = tex->handle;
         }                            
@@ -693,17 +738,22 @@ NMaterial* NMaterial::Clone()
     for (auto prop : localProperties)
         clonedMaterial->AddProperty(prop.first, prop.second->data.get(), prop.second->type, prop.second->arraySize);
     for (auto tex : localTextures)
-        clonedMaterial->AddTexture(tex.first, tex.second);
+    {
+        MaterialTextureInfo *res = new MaterialTextureInfo();
+        res->path = tex.second->path;
+        res->texture = SafeRetain(tex.second->texture);
+        clonedMaterial->localTextures[tex.first] = res;        
+    }
+        
     for (auto flag : localFlags)
         clonedMaterial->AddFlag(flag.first, flag.second);
 
     clonedMaterial->SetParent(parent);
 
     //DataNode properties
-    clonedMaterial->pointer = pointer;
+    clonedMaterial->id = 0;
     clonedMaterial->scene = scene;
-    clonedMaterial->index = index;
-    clonedMaterial->nodeFlags = nodeFlags;
+    clonedMaterial->isRuntime = isRuntime;
 
     return clonedMaterial;
 }
@@ -712,16 +762,14 @@ void NMaterial::Save(KeyedArchive * archive, SerializationContext * serializatio
 {
     DataNode::Save(archive, serializationContext);
 
-    archive->SetUInt64("materialKey", GetMaterialKey());
-
     if (parent)
-        archive->SetUInt64("parentMaterialKey", parent->GetMaterialKey());
+        archive->SetUInt64("parentMaterialKey", parent->GetNodeID());
 
     if (materialName.IsValid())
         archive->SetString("materialName", materialName.c_str());
 
     if (fxName.IsValid())
-        archive->SetString("materialTemplate", fxName.c_str());
+        archive->SetString("fxName", fxName.c_str());
 
     if (qualityGroup.IsValid())
         archive->SetString("qualityGroup", qualityGroup.c_str());
@@ -746,12 +794,11 @@ void NMaterial::Save(KeyedArchive * archive, SerializationContext * serializatio
     archive->SetArchive("properties", propertiesArchive);
 
     ScopedPtr<KeyedArchive> texturesArchive(new KeyedArchive());
-    for (HashMap<FastName, Texture*>::iterator it = localTextures.begin(), itEnd = localTextures.end(); it != itEnd; ++it)
-    {
-        FilePath texturePath = it->second->GetPathname();
-        if (!texturePath.IsEmpty())
+    for (auto it = localTextures.begin(), itEnd = localTextures.end(); it != itEnd; ++it)
+    {        
+        if (!it->second->path.IsEmpty())
         {
-            String textureRelativePath = texturePath.GetRelativePathname(serializationContext->GetScenePath());
+            String textureRelativePath = it->second->path.GetRelativePathname(serializationContext->GetScenePath());
             if (textureRelativePath.size() > 0)
             {
                 texturesArchive->SetString(it->first.c_str(), textureRelativePath);
@@ -786,8 +833,8 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
 
     if (archive->IsKeyExists("materialKey"))
     {
-        materialKey = archive->GetUInt64("materialKey");
-        pointer = materialKey;
+        uint64 materialKey = archive->GetUInt64("materialKey");
+        id = materialKey;
     }
 
     uint64 parentKey(0);
@@ -802,7 +849,7 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
         qualityGroup = FastName(archive->GetString("materialGroup").c_str());
     }
 
-    if (archive->IsKeyExists("materialTemplate"))
+    if (archive->IsKeyExists("fxName"))
     {
         fxName = FastName(archive->GetString("materialTemplate").c_str());
     }
@@ -833,9 +880,9 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
         for (Map<String, VariantType*>::const_iterator it = texturesMap.begin(); it != texturesMap.end(); ++it)
         {
             String relativePathname = it->second->AsString();
-            Texture* tx = Texture::CreateFromFile(serializationContext->GetScenePath() + relativePathname, FastName(""));
-            AddTexture(FastName(it->first), tx);
-            SafeRelease(tx);
+            MaterialTextureInfo *texInfo = new MaterialTextureInfo();            
+            texInfo->path = serializationContext->GetScenePath() + relativePathname;
+            localTextures[FastName(it->first)] = texInfo;            
         }
     }
 
@@ -860,8 +907,14 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
 
     if (archive->IsKeyExists("materialKey"))
     {
-        materialKey = archive->GetUInt64("materialKey");
-        pointer = materialKey;
+        uint64 materialKey = archive->GetUInt64("materialKey");
+        id = materialKey;
+    }
+
+    int32 oldType = 0;
+    if (archive->IsKeyExists("materialType"))
+    {
+        oldType = archive->GetInt32("materialType");
     }
 
     uint64 parentKey(0);
@@ -876,9 +929,10 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
         qualityGroup = FastName(archive->GetString("materialGroup").c_str());
     }
 
-    if (archive->IsKeyExists("materialTemplate"))
+    // don't load fxName from material instance (type = 2)
+    if (archive->IsKeyExists("materialTemplate") && oldType != 2)
     {
-        fxName = FastName(archive->GetString("materialTemplate").c_str());
+        fxName = FastName(archive->GetString("materialTemplate").c_str());        
     }    
 
     if (archive->IsKeyExists("textures"))
@@ -889,9 +943,9 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
             ++it)
         {
             String relativePathname = it->second->AsString();
-            Texture* tx = Texture::CreateFromFile(serializationContext->GetScenePath() + relativePathname, FastName(""));
-            AddTexture(FastName(it->first), tx);
-            SafeRelease(tx);
+            MaterialTextureInfo *texInfo = new MaterialTextureInfo();
+            texInfo->path = serializationContext->GetScenePath() + relativePathname;
+            localTextures[FastName(it->first)] = texInfo;
         }
     }
 

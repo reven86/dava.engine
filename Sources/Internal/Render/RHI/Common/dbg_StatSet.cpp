@@ -4,7 +4,7 @@
 
     #include "dbg_StatSet.h"
     
-    #include "Thread/Spinlock.h"
+    #include "Concurrency/Spinlock.h"
 
     #include <vector>
 

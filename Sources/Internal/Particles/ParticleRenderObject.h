@@ -51,8 +51,7 @@ class ParticleRenderObject : public RenderObject
     uint32 sortingOffset;
     
     uint32 currRenderBatchId;
-
-    uint32 vertexSize, vertexStride;
+    
 public:
 	ParticleRenderObject(ParticleEffectData *effect);
 	~ParticleRenderObject();
@@ -61,8 +60,6 @@ public:
 	virtual void PrepareToRender(Camera *camera);	    
 
     void SetSortingOffset(uint32 offset);
-
-    void Set2DMode(bool is2d);
 
     virtual void BindDynamicParameters(Camera * camera);
 	virtual void RecalcBoundingBox(){}

@@ -449,14 +449,7 @@ bool SceneTreeModel::dropMimeData(const QMimeData * data, Qt::DropAction action,
             
     case DropingMaterial:
         {
-			DAVA::Entity *targetEntity = SceneTreeItemEntity::GetEntity(parentItem);
-
-			QVector<DAVA::NMaterial*> materialsV = MimeDataHelper2<DAVA::NMaterial>::DecodeMimeData(data);
-			if(NULL != targetEntity && materialsV.size() == 1)
-			{
-				MaterialAssignSystem::AssignMaterialToEntity(curScene, targetEntity, materialsV[0]);
-				ret = true;
-			}
+            DVASSERT_MSG(false, "This can't be done. Materials should be assigned only on RenderBatch");
         }
 		break;
 
@@ -672,10 +665,17 @@ void SceneTreeModel::SetFilterInternal(const QModelIndex& _index, const QString&
 {
     SceneTreeItem *item = GetItem(_index);
     const QString& name = item->ItemName();
+    uint32 id = 0xFFFFFFFF;
+
+    DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(item);
+    if(nullptr != entity)
+    {
+        id = entity->GetID();
+    }
 
     if (!item->IsAcceptedByFilter())
     {
-        const bool match = (text.isEmpty() || name.contains(text, Qt::CaseInsensitive));
+        const bool match = (text.isEmpty() || name.contains(text, Qt::CaseInsensitive) || text == QString::number(id));
         const bool isChild = _index.parent().isValid();
 
         item->SetAcceptByFilter(isChild || match);

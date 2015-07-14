@@ -107,7 +107,7 @@ namespace DAVA
 			MembersRelease();
 		}
 
-		const char* Name() const
+		const FastName& Name() const
 		{
 			return name;
 		}
@@ -135,7 +135,7 @@ namespace DAVA
 		}
 
 		// Возвращает указатель на член интроспекции по заданному имени, или NULL если такой не найден.
-		const InspMember* Member(const char* name) const
+		const InspMember* Member(const FastName& name) const
 		{
 			for(int i = 0; i < members_count; ++i)
 			{
@@ -147,21 +147,6 @@ namespace DAVA
 					}
 				}
 			}
-
-            //Второй проход с strcpm необходим, т.к. под дебагом и строковые литералы могут иметь разные указатели.
-            //Под релизом же, строковые литералы лучше сначала проверить по указателям, т.к. имеет место быть оптимизация компилятором.
-            //Очевидно, что первый проход в принципе не будет работать для runtime строк. 
-            //Поэтому, TODO-ка: переделаь интроспекцию на FastName, будет работать во всех случаях и, к тому же, иногда быстрее.
-            for(int i = 0; i < members_count; ++i)
-            {
-                if(NULL != members[i])
-                {
-                    if(strcmp(members[i]->name, name) == 0)
-                    {
-                        return members[i];
-                    }
-                }
-            }
 
 			return NULL;
 		}
@@ -185,7 +170,7 @@ namespace DAVA
         }
         
 	protected:
-		const char* name;
+		FastName name;
 		const MetaInfo* meta;
 
 		const InspInfo *base_info;
@@ -234,15 +219,22 @@ namespace DAVA
 		friend class InspMemberDynamic;
 
 	public:
+        struct DynamicData
+        {
+            void* object = nullptr;
+            std::shared_ptr<void> data;
+        };
+
 		InspInfoDynamic() : memberDynamic(NULL) {};
 		virtual ~InspInfoDynamic() {};
 
-		virtual Vector<FastName> MembersList(void *object) const = 0;
-		virtual InspDesc MemberDesc(void *object, const FastName &member) const = 0;
-		virtual int MemberFlags(void *object, const FastName &member) const = 0;
-		virtual VariantType MemberAliasGet(void *object, const FastName &member) const { return VariantType(); };
-		virtual VariantType MemberValueGet(void *object, const FastName &member) const = 0;
-		virtual void MemberValueSet(void *object, const FastName &member, const VariantType &value) = 0;
+        virtual DynamicData Prepare(void *object, int filter = 0) const = 0;
+        virtual Vector<FastName> MembersList(const DynamicData& ddata) const = 0;
+        virtual InspDesc MemberDesc(const DynamicData& ddata, const FastName &member) const = 0;
+        virtual int MemberFlags(const DynamicData& ddata, const FastName &member) const = 0;
+        virtual VariantType MemberAliasGet(const DynamicData& ddata, const FastName &member) const { return VariantType(); };
+        virtual VariantType MemberValueGet(const DynamicData& ddata, const FastName &member) const = 0;
+        virtual void MemberValueSet(const DynamicData& ddata, const FastName &member, const VariantType &value) = 0;
 
 		const InspMemberDynamic* GetMember() const { return memberDynamic; };
 

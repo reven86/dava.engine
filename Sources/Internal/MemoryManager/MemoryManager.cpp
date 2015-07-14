@@ -47,7 +47,7 @@
 
 #include "Base/Hash.h"
 #include "Debug/DVAssert.h"
-#include "Platform/Thread.h"
+#include "Concurrency/Thread.h"
 #include "Math/MathHelpers.h"
 
 #include "MemoryManager/MallocHook.h"
@@ -663,7 +663,7 @@ void MemoryManager::InsertBacktrace(Backtrace& backtrace)
         if (bktraceGrowDelta >= BKTRACE_THRESHOLD)
         {
             bktraceGrowDelta -= BKTRACE_THRESHOLD;
-            Thread::Signal(&symbolCollectorCondVar);
+            symbolCollectorCondVar.NotifyOne();
         }
         bktraceMap->emplace(backtrace.hash, backtrace);
     }
@@ -976,8 +976,8 @@ void MemoryManager::SymbolCollectorThread(BaseObject*, void*, void*)
     for (;;)
     {
         {
-            LockGuard<Mutex> lock(symbolCollectorMutex);
-            Thread::Wait(&symbolCollectorCondVar, &symbolCollectorMutex);
+            UniqueLock<Mutex> lock(symbolCollectorMutex);
+            symbolCollectorCondVar.Wait(lock);
         }
 
         size_t nplaced = 0;

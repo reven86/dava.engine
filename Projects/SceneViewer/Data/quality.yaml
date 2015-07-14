@@ -31,13 +31,13 @@ textures:
 materials:
  -
   group: "Water"
-  quality: ["HIGH", "MEDIUM", "LOW", "ULTRA_LOW"]
-  default: "ULTRA_LOW"
+  quality: ["ULTRA_HIGH", "HIGH", "LOW"]
+  default: "ULTRA_HIGH"
 
  -
   group: "Static object"
-  quality: ["HIGH", "LOW"]
-  default: "HIGH"
+  quality: ["MEDIUM", "LOW"]
+  default: "MEDIUM"
 
  -
   group: "Landscape"
@@ -56,10 +56,25 @@ materials:
 
  -
   group: "Vegetation"
-  quality: ["HIGH", "LOW"]
+  quality: ["HIGH", "LOW"] 
   default: "HIGH"
 
  -
   group: "Spherical Harmonics"
   quality: ["HIGH", "MEDIUM", "LOW"]
   default: "HIGH"
+
+ -
+  group: "Lightmaps"
+  quality: ["HIGH", "LOW"] 
+  default: "HIGH"
+
+sounds:
+ default: "LOW"
+ qualities:
+  - 
+   quality: "HIGH"
+   configPath: "~res:/Configs/Sfx/sfx_high.yaml"
+  - 
+   quality: "LOW"
+   configPath: "~res:/Configs/Sfx/sfx_low.yaml"

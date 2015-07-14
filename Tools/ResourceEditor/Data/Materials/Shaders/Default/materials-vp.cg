@@ -13,10 +13,12 @@ VPROG_IN_BEGIN
     VPROG_IN_NORMAL
     #endif
 
-    #if MATERIAL_SKYBOX
-    VPROG_IN_TEXCOORD0(3)
-    #else
-    VPROG_IN_TEXCOORD0(2)
+    #if MATERIAL_TEXTURE
+        #if MATERIAL_SKYBOX
+        VPROG_IN_TEXCOORD0(3)
+        #else
+        VPROG_IN_TEXCOORD0(2)
+        #endif
     #endif
 
     #if MATERIAL_DECAL || MATERIAL_LIGHTMAP || FRAME_BLEND || ALPHA_MASK
@@ -33,8 +35,7 @@ VPROG_IN_BEGIN
     #endif
     
     #if SKINNING
-    VPROG_IN_BLENDINDEX
-    VPROG_IN_BLENDWEIGHT
+    VPROG_IN_BLENDINDEX(1)
     #endif
 
 
@@ -69,7 +70,7 @@ VPROG_OUT_BEGIN
 
     #if MATERIAL_SKYBOX
     VPROG_OUT_TEXCOORD0(varTexCoord0,3)
-    #else
+    #elif MATERIAL_TEXTURE
     VPROG_OUT_TEXCOORD0(varTexCoord0,2)
     #endif
 
@@ -139,7 +140,7 @@ VPROG_OUT_END
 ////////////////////////////////////////////////////////////////////////////////
 // properties
 
-#if !SPEED_TREE_LEAF
+#if !SPEED_TREE_LEAF || CUT_LEAF
 property float4x4 worldViewProjMatrix : dynamic,a : ;
 #endif
 
@@ -147,25 +148,28 @@ property float4x4 worldViewProjMatrix : dynamic,a : ;
 property float4x4 worldViewMatrix : dynamic,a : ;
 #endif
 
-#if VERTEX_LIT || PIXEL_LIT || (VERTEX_FOG && FOG_ATMOSPHERE)
+#if VERTEX_LIT || PIXEL_LIT /*|| (VERTEX_FOG && FOG_ATMOSPHERE)*/
 property float4x4 worldViewInvTransposeMatrix : dynamic,a : ;
-property float4 lightPosition0 : dynamic,a : ;
 #if DISTANCE_ATTENUATION
 property float lightIntensity0 : static,a : ; 
 #endif
 #endif
+#if VERTEX_LIT || PIXEL_LIT || (VERTEX_FOG && FOG_ATMOSPHERE)
+property float4 lightPosition0 : dynamic,a : ;
+#endif
+
 
 #if VERTEX_LIT
-property float materialSpecularShininess : dynamic,a : ;
-property float inSpecularity : dynamic,a : ;
+property float materialSpecularShininess : static,a : ;
+property float inSpecularity : static,a : ;
 property float inGlossiness : static,a : ;
-property float physicalFresnelReflectance : dynamic,a : ;
-property float3 metalFresnelReflectance : dynamic,a : ;
+property float physicalFresnelReflectance : static,a : ;
+property float3 metalFresnelReflectance : static,a : ;
 #endif
 
 #if SKINNING
-property float4 jointPositions[MAX_JOINTS] : dynamic,a : ; // (x, y, z, scale)
-property float4 jointQuaternions[MAX_JOINTS] : dynamic,a : ;
+property float4 jointPositions[MAX_JOINTS] : dynamic,skin : ; // (x, y, z, scale)
+property float4 jointQuaternions[MAX_JOINTS] : dynamic,skin : ;
 #endif
 
 #include "vp-fog-props.cgh"
@@ -216,19 +220,18 @@ property float3 boundingBoxSize : dynamic,a : ;
 #endif
 
 #if TILED_DECAL_MASK
-property float2 decalTileCoordScale : dynamic,a : ;
+property float2 decalTileCoordScale : static,a : ;
 #endif
 
 #if MATERIAL_DETAIL
-property float2 detailTileCoordScale : dynamic,a : ;
+property float2 detailTileCoordScale : static,a : ;
 #endif
 
 #if TEXTURE0_SHIFT_ENABLED
-property float2 texture0Shift : dynamic,a : ;
+property float2 texture0Shift : static,a : ;
 #endif 
 #if TEXTURE0_ANIMATION_SHIFT
-property float globalTime : dynamic,a : ;
-property float2 tex0ShiftPerSecond : dynamic,a : ;
+property float2 tex0ShiftPerSecond : static,a : ;
 #endif
 
 
@@ -239,9 +242,16 @@ property float4x4 worldMatrix : dynamic,a : ;
 
 
 
-#if WAVE_ANIMATION
+#if WAVE_ANIMATION || TEXTURE0_ANIMATION_SHIFT
 property float globalTime : dynamic,a : ;
 #endif
+
+
+// prototypes, to shut up Metal shader-compiler
+float  FresnelShlick( float NdotL, float Cspec );
+float3 FresnelShlickVec3( float NdotL, float3 Cspec );
+float3 JointTransformTangent( float3 inVec, float4 jointQuaternion );
+float4 Wave( float time, float4 pos, float2 uv );
 
 
 
@@ -309,7 +319,7 @@ VPROG_BEGIN
 
 #if SKINNING
     // compute final state - for now just effected by 1 bone - later blend everything here
-    int     index                    = int(inJointIndex);
+    int     index                    = int(VP_IN_BLENDINDEX);
     float4  weightedVertexPosition   = jointPositions[index];
     float4  weightedVertexQuaternion = jointQuaternions[index];
 #endif
@@ -348,7 +358,7 @@ VPROG_BEGIN
         float4 tangentInCameraSpace = mul( float4(inPivot,1.0), worldViewMatrix );
         if (tangentInCameraSpace.z < -cutDistance)
         {
-            VP_OUT_POSITION = mul( float4(inPivot,VP_IN_POSITION.w), worldViewProjMatrix );
+            VP_OUT_POSITION = mul( float4(inPivot,1.0), worldViewProjMatrix );
         }
         else
         {
@@ -400,9 +410,11 @@ VPROG_BEGIN
             VP_OUT_POSITION = mul( Wave(globalTime, VP_IN_POSITION, inTexCoord0), worldViewProjMatrix );
         #else
             #if SKINNING
+//weightedVertexPosition.w=3.0;
                 float3 tmpVec = 2.0 * cross(weightedVertexQuaternion.xyz, VP_IN_POSITION.xyz);
-                float4 skinnedPosition = float4(weightedVertexPosition.xyz + (VP_IN_POSITION.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, VP_IN_POSITION.w);
+                float4 skinnedPosition = float4(weightedVertexPosition.xyz + (VP_IN_POSITION.xyz + weightedVertexQuaternion.w * tmpVec + cross(weightedVertexQuaternion.xyz, tmpVec))*weightedVertexPosition.w, 1.0);
                 VP_OUT_POSITION = mul( skinnedPosition, worldViewProjMatrix );
+//VP_OUT_POSITION = mul( float4(VP_IN_POSITION.xyz,1.0)+0.000001*skinnedPosition, worldViewProjMatrix );
             #else
                 VP_OUT_POSITION = mul( float4(VP_IN_POSITION,1.0), worldViewProjMatrix );
             #endif
@@ -434,7 +446,7 @@ VPROG_BEGIN
     
     float3  inNormal = VP_IN_NORMAL;
     
-    float3 normal = normalize(worldViewInvTransposeMatrix * inNormal); // normal in eye coordinates
+    float3 normal = normalize(mul(float4(inNormal, 0.0), worldViewInvTransposeMatrix).xyz); // normal in eye coordinates
    
     #if DISTANCE_ATTENUATION
         float attenuation = lightIntensity0;
@@ -447,7 +459,7 @@ VPROG_BEGIN
     
     #if BLINN_PHONG
         
-        varDiffuseColor = max(0.0, dot(normal, toLightDir));
+        VP_OUT(varDiffuseColor) = max(0.0, dot(normal, toLightDir));
 
         // Blinn-phong reflection
         float3 toCameraDir = normalize(-eyeCoordsPosition);
@@ -472,10 +484,10 @@ VPROG_BEGIN
         float Dbp = NdotL;
         float Geo = 1.0 / LdotH * LdotH;
         
-        varDiffuseColor = NdotL / _PI;
+        VP_OUT(varDiffuseColor) = NdotL / _PI;
         
-        varSpecularColor = Dbp * Geo * fresnelOut * specularity;
-        /*varNdotH*/varSpecularColor.w = NdotH;
+        VP_OUT(varSpecularColor).xyz = Dbp * Geo * fresnelOut * specularity;
+        VP_OUT(varSpecularColor).w = NdotH;
     
     #endif
     
@@ -489,9 +501,9 @@ VPROG_BEGIN
     float3  inBinormal  = VP_IN_BINORMAL;
     
     #if SKINNING
-        float3 n = normalize( mul( JointTransformTangent(inNormal, weightedVertexQuaternion), worldViewInvTransposeMatrix ) );
-        float3 t = normalize( mul( JointTransformTangent(inTangent, weightedVertexQuaternion), worldViewInvTransposeMatrix ) );
-        float3 b = normalize( mul( JointTransformTangent(inBinormal, weightedVertexQuaternion), worldViewInvTransposeMatrix ) );
+        float3 n = normalize( mul( float4(JointTransformTangent(inNormal, weightedVertexQuaternion),1.0), worldViewInvTransposeMatrix ).xyz );
+        float3 t = normalize( mul( float4(JointTransformTangent(inTangent, weightedVertexQuaternion),1.0), worldViewInvTransposeMatrix ).xyz );
+        float3 b = normalize( mul( float4(JointTransformTangent(inBinormal, weightedVertexQuaternion),1.0), worldViewInvTransposeMatrix ).xyz );
     #else
         float3 n = normalize( mul( float4(inNormal,1.0), worldViewInvTransposeMatrix ).xyz );
         float3 t = normalize( mul( float4(inTangent,1.0), worldViewInvTransposeMatrix ).xyz );
@@ -580,7 +592,7 @@ VPROG_BEGIN
     #endif
     
     fog_param.view_position  = eyeCoordsPosition;
-    fog_param.world_position = mul( float4(VP_IN_POSITION, 1.0),worldMatrix ).xyz;
+    fog_param.world_position = mul( float4(VP_IN_POSITION,1.0), worldMatrix ).xyz;
     fog_param.eye_position   = cameraPosition;
     
     VP_OUT(varFog) = CalculateVertexFog( fog_param );
@@ -660,24 +672,25 @@ VPROG_BEGIN
 
 #endif
 
-
+#if MATERIAL_SKYBOX || MATERIAL_TEXTURE
     VP_OUT(varTexCoord0) = VP_IN_TEXCOORD0;
-    
+#endif    
 
-#if TEXTURE0_SHIFT_ENABLED
-    VP_OUT(varTexCoord0) += texture0Shift;
+#if MATERIAL_TEXTURE
+    #if TEXTURE0_SHIFT_ENABLED
+        VP_OUT(varTexCoord0) += texture0Shift;
+    #endif
+
+        
+    #if TEXTURE0_ANIMATION_SHIFT
+        VP_OUT(varTexCoord0) += tex0ShiftPerSecond * globalTime;
+    #endif
+
+        
+    #if TILED_DECAL_MASK
+        varDecalTileTexCoord = VP_OUT(varTexCoord0) * decalTileCoordScale;
+    #endif
 #endif
-
-    
-#if TEXTURE0_ANIMATION_SHIFT
-    VP_OUT(varTexCoord0) += tex0ShiftPerSecond * globalTime;
-#endif
-
-    
-#if TILED_DECAL_MASK
-    varDecalTileTexCoord = VP_OUT(varTexCoord0) * decalTileCoordScale;
-#endif
-
     
 #if MATERIAL_DETAIL
     varDetailTexCoord = VP_OUT(varTexCoord0) * detailTileCoordScale;
@@ -699,6 +712,10 @@ VPROG_BEGIN
 
 #if FRAME_BLEND
     VP_OUT(varTime) = VP_IN_TEXCOORD3;
+#endif
+
+#if FORCE_2D_MODE
+    VP_OUT_POSITION.z=0.0;
 #endif
 
 VPROG_END

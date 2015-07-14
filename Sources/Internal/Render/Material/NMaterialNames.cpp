@@ -37,14 +37,17 @@ namespace DAVA
     const FastName NMaterialName::DECAL_ALPHATEST = FastName("~res:/Materials/Decal.Alphatest.material");
     const FastName NMaterialName::PIXELLIT_SPECULARMAP_OPAQUE = FastName("~res:/Materials/PixelLit.SpecularMap.Opaque.material");
     const FastName NMaterialName::TEXTURED_ALPHATEST = FastName("~res:/Materials/Textured.Alphatest.material");
+    const FastName NMaterialName::TEXTURED_VERTEXCOLOR_ALPHATEST = FastName("~res:/Materials/Textured.VertexColor.Alphatest.material");
     const FastName NMaterialName::DECAL_OPAQUE = FastName("~res:/Materials/Decal.Opaque.material");
     const FastName NMaterialName::TEXTURED_OPAQUE = FastName("~res:/Materials/Textured.Opaque.material");
+    const FastName NMaterialName::TEXTURED_VERTEXCOLOR_OPAQUE = FastName("~res:/Materials/Textured.VertexColor.Opaque.material");
     const FastName NMaterialName::DETAIL_ALPHABLEND = FastName("~res:/Materials/Detail.Alphablend.material");
     const FastName NMaterialName::SHADOWRECT = FastName("~res:/Materials/ShadowRect.material");
     const FastName NMaterialName::TILE_MASK = FastName("~res:/Materials/TileMaskAllQualities.material");
     const FastName NMaterialName::DETAIL_ALPHATEST = FastName("~res:/Materials/Detail.Alphatest.material");
     const FastName NMaterialName::SHADOW_VOLUME = FastName("~res:/Materials/ShadowVolume.material");
     const FastName NMaterialName::VERTEXCOLOR_ALPHABLEND = FastName("~res:/Materials/VertexColor.Alphablend.material");
+    const FastName NMaterialName::VERTEXCOLOR_ALPHABLEND_TEXTURED = FastName("~res:/Materials/VertexColor.Alphablend.Textured.material");
     const FastName NMaterialName::DETAIL_OPAQUE = FastName("~res:/Materials/Detail.Opaque.material");
     const FastName NMaterialName::SILHOUETTE = FastName("~res:/Materials/Silhouette.material");
     const FastName NMaterialName::VERTEXCOLOR_FRAMEBLEND_ALPHABLEND = FastName("~res:/Materials/VertexColor.FrameBlend.Alphablend.material");    
@@ -53,6 +56,10 @@ namespace DAVA
     const FastName NMaterialName::PIXELLIT_ALPHATEST = FastName("~res:/Materials/PixelLit.Alphatest.material");
     const FastName NMaterialName::SPEEDTREE_LEAF = FastName("~res:/Materials/SpeedTreeLeaf.material");
     const FastName NMaterialName::SPHERICLIT_SPEEDTREE_LEAF = FastName("~res:/Materials/SphericalLitAllQualities.SpeedTreeLeaf.material");
+    const FastName NMaterialName::SPHERICLIT_TEXTURED_OPAQUE = FastName("~res:/Materials/SphericalLitAllQualities.Textured.Opaque.material");
+    const FastName NMaterialName::SPHERICLIT_TEXTURED_ALPHATEST = FastName("~res:/Materials/SphericalLitAllQualities.Textured.Alphatest.material");
+    const FastName NMaterialName::SPHERICLIT_TEXTURED_VERTEXCOLOR_OPAQUE = FastName("~res:/Materials/SphericalLitAllQualities.Textured.VertexColor.Opaque.material");
+    const FastName NMaterialName::SPHERICLIT_TEXTURED_VERTEXCOLOR_ALPHATEST = FastName("~res:/Materials/SphericalLitAllQualities.Textured.VertexColor.Alphatest.material");
     const FastName NMaterialName::VERTEXCOLOR_OPAQUE = FastName("~res:/Materials/VertexColor.Opaque.material");
     const FastName NMaterialName::PIXELLIT_OPAQUE = FastName("~res:/Materials/PixelLit.Opaque.material");
     const FastName NMaterialName::TEXTURE_LIGHTMAP_ALPHABLEND = FastName("~res:/Materials/TextureLightmap.Alphablend.material");
@@ -119,7 +126,8 @@ namespace DAVA
     const FastName NMaterialParamName::PARAM_DETAIL_TILE_SCALE("detailTileCoordScale");
     const FastName NMaterialParamName::PARAM_RCP_SCREEN_SIZE("rcpScreenSize");
     const FastName NMaterialParamName::PARAM_SCREEN_OFFSET("screenOffset");
-
+    const FastName NMaterialParamName::PARAM_ALPHATEST_THRESHOLD("alphatestThreshold");
+    const FastName NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM("shadowColor");
 
     //flags    
     const FastName NMaterialFlagName::FLAG_BLENDING = FastName("BLENDING");
@@ -159,6 +167,9 @@ namespace DAVA
     const FastName NMaterialFlagName::FLAG_VIEWSPECULAR = FastName("VIEW_SPECULAR");
 
     const FastName NMaterialFlagName::FLAG_FRAME_BLEND = FastName("FRAME_BLEND");
+    const FastName NMaterialFlagName::FLAG_FORCE_2D_MODE = FastName("FORCE_2D_MODE");
+
+    const FastName NMaterialFlagName::FLAG_ALPHATESTVALUE = FastName("ALPHATESTVALUE");
     
     const FastName NMaterialFlagName::FLAG_ILLUMINATION_USED = FastName("ILLUMINATION_USED");
     const FastName NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER = FastName("ILLUMINATION_SHADOW_CASTER");

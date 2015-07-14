@@ -31,7 +31,6 @@
 #define __DAVAENGINE_UI_LOADING_TRANSITION_H__
 
 #include "Base/BaseTypes.h"
-#include "Platform/Thread.h"
 #include "UI/UIScreenTransition.h"
 
 namespace DAVA
@@ -74,6 +73,9 @@ protected:
 
 	void	ThreadMessage(BaseObject * obj, void * userData, void *callerData);
 	Thread * thread;
+#if !RHI_COMPLETE
+    bool loaded;
+#endif
 
 private:
 	virtual void SetDuration(float32 timeInSeconds);

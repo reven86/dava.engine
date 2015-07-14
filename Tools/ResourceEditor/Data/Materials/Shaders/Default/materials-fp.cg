@@ -35,7 +35,7 @@ FPROG_IN_BEGIN
 
     #if VERTEX_LIT
 
-        FPROG_IN_COLOR0(varDiffuseColor,4)
+        FPROG_IN_COLOR0(varDiffuseColor,1)
 
         #if BLINN_PHONG
             //varying lowp float varSpecularColor;
@@ -114,6 +114,9 @@ FPROG_OUT_END
     DECL_FP_SAMPLER2D(lightmap)
 #endif
 
+#if ALPHATESTVALUE
+    property float alphatestThreshold           : static,a : ;
+#endif
 
 #if PIXEL_LIT
     DECL_FP_SAMPLER2D(normalmap)
@@ -206,14 +209,11 @@ FPROG_BEGIN
             #if VERTEX_COLOR
                 alpha *= FP_IN(varVertexColor).a;
             #endif
-            if( alpha < 0.5 ) discard;
-        #endif
-        #if ALPHATESTVALUE
-            float alpha = textureColor0.a;
-            #if VERTEX_COLOR
-                alpha *= FPROG_IN(varVertexColor).a;
+            #if ALPHATESTVALUE
+                if( alpha < alphatestThreshold ) FP_DISCARD_FRAGMENT;
+            #else
+                if( alpha < 0.5 ) FP_DISCARD_FRAGMENT;
             #endif
-            if( alpha < ALPHATESTVALUE ) discard;
         #endif
     #endif
 
@@ -283,7 +283,7 @@ FPROG_BEGIN
             #endif
 
             #if VIEW_DIFFUSE
-                color += varDiffuseColor;
+                color += float3(FP_IN(varDiffuseColor), FP_IN(varDiffuseColor), FP_IN(varDiffuseColor));
             #endif
 
             #if VIEW_ALBEDO
@@ -297,7 +297,7 @@ FPROG_BEGIN
             #endif
 
             #if VIEW_SPECULAR
-                color += (varSpecularColor * textureColor0.a) * lightColor0;
+                color += (FP_IN(varSpecularColor) * textureColor0.a) * lightColor0;
             #endif
     
         #elif NORMALIZED_BLINN_PHONG
@@ -312,7 +312,7 @@ FPROG_BEGIN
                 #if MATERIAL_LIGHTMAP
                     color = textureColor1.rgb * 2.0;
                 #else
-                    color += varDiffuseColor * lightColor0;
+                    color += FP_IN(varDiffuseColor) * lightColor0;
                 #endif
             #endif
         
@@ -329,7 +329,7 @@ FPROG_BEGIN
             #if VIEW_SPECULAR
                 float glossiness = pow(5000.0, inGlossiness * textureColor0.a);
                 float specularNorm = (glossiness + 2.0) / 8.0;
-                float3 spec = varSpecularColor * pow(/*varNdotH*/varSpecularColor.w, glossiness) * specularNorm;
+                float3 spec = FP_IN(varSpecularColor).xyz * pow(/*varNdotH*/FP_IN(varSpecularColor).w, glossiness) * specularNorm;
                                                      
                 #if MATERIAL_LIGHTMAP
                     color += spec * textureColor1.rgb / 2.0 * lightColor0;

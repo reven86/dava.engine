@@ -698,20 +698,24 @@ StaticOcclusionDebugDrawSystem::StaticOcclusionDebugDrawSystem(Scene *scene):Sce
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
 
-#if RHI_COMPLETE
-    debugOpaqueMaterial = NMaterial::CreateMaterial(FastName("Debug_Opaque_Material"),  NMaterialName::DEBUG_DRAW_OPAQUE, NMaterialQualityName::DEFAULT_QUALITY_NAME);		
-    debugAlphablendMaterial = NMaterial::CreateMaterial(FastName("Debug_Alphablend_Material"),  NMaterialName::DEBUG_DRAW_ALPHABLEND, NMaterialQualityName::DEFAULT_QUALITY_NAME);	
-#endif // RHI_COMPLETE
+
+    debugOpaqueMaterial = new NMaterial();
+    debugOpaqueMaterial->SetMaterialName(FastName("Debug_Opaque_Material"));
+    debugOpaqueMaterial->SetFXName(NMaterialName::DEBUG_DRAW_OPAQUE);
+    debugAlphablendMaterial = new NMaterial();
+    debugAlphablendMaterial->SetMaterialName(FastName("Debug_Alphablend_Material"));
+    debugAlphablendMaterial->SetFXName(NMaterialName::DEBUG_DRAW_ALPHABLEND);
+
 }
 
 StaticOcclusionDebugDrawSystem::~StaticOcclusionDebugDrawSystem()
 {
     GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
     GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
-#if RHI_COMPLETE
+
     SafeRelease(debugOpaqueMaterial);
     SafeRelease(debugAlphablendMaterial);
-#endif // RHI_COMPLETE
+
 }
 
 void StaticOcclusionDebugDrawSystem::AddEntity(Entity * entity)

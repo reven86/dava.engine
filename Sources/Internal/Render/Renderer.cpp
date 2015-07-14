@@ -83,6 +83,7 @@ void InitCaps()
 {
     renderCaps.zeroBaseClipRange = (api == rhi::RHI_DX9) || (api == rhi::RHI_DX11);
     renderCaps.upperLeftRTOrigin = (api == rhi::RHI_DX9) || (api == rhi::RHI_DX11);
+    renderCaps.isCenterPixelMapping = (api == rhi::RHI_DX9) || (api == rhi::RHI_DX11);
 }
 
 void Uninitialize()

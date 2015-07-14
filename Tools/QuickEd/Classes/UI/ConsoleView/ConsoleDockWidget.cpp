@@ -31,7 +31,6 @@
 #include "ui_ConsoleDockWidget.h"
 #include "StringUtils.h"
 #include "Utils/QtDavaConvertion.h"
-#include <Classes/Result.h>
 
 ConsoleDockWidget::ConsoleDockWidget(QWidget *parent)
     : QDockWidget(parent)
@@ -64,5 +63,5 @@ void ConsoleDockWidget::Output( DAVA::Logger::eLogLevel ll, const QString &rawTe
     case DAVA::Logger::LEVEL_WARNING:       color = "orange"; break;
     case DAVA::Logger::LEVEL_ERROR:         color = "red"; break;
     }
-    ui->plainTextEdit->appendHtml("<font color=\"" + color + "\">" + rawText.trimmed() + "</font>");
+    QMetaObject::invokeMethod(ui->plainTextEdit, "appendHtml", Qt::QueuedConnection, Q_ARG(QString, "<font color=\"" + color + "\">" + rawText.trimmed() + "</font>"));
 }

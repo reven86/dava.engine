@@ -74,9 +74,12 @@ NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, b
         if (enableFrameBlend)
 			material->AddFlag(NMaterialFlagName::FLAG_FRAME_BLEND, 1);		
 
-        if (!enableFog)  //inverse logic to suspend vertex fog inherited from global material
+        if ((!enableFog) || (is2DMode))  //inverse logic to suspend vertex fog inherited from global material
             material->AddFlag(NMaterialFlagName::FLAG_VERTEXFOG, 0);        
-			
+
+        if (is2DMode)
+            material->AddFlag(NMaterialFlagName::FLAG_FORCE_2D_MODE, 1);
+
 		material->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, texture);
         material->AddFlag(NMaterialFlagName::FLAG_BLENDING, blending);
 		
@@ -90,7 +93,7 @@ NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, b
 }
 
 
-ParticleEffectSystem::ParticleEffectSystem(Scene * scene) :	SceneSystem(scene), allowLodDegrade(false)	
+ParticleEffectSystem::ParticleEffectSystem(Scene * scene, bool _is2DMode) : SceneSystem(scene), allowLodDegrade(false), is2DMode(_is2DMode)
 {	
     if (scene) //for 2d particles there would be no scene
     {
@@ -99,7 +102,7 @@ ParticleEffectSystem::ParticleEffectSystem(Scene * scene) :	SceneSystem(scene), 
     }
 
     particleBaseMaterial = new NMaterial();
-    particleBaseMaterial->SetFXName(NMaterialName::PARTICLES);        	
+    particleBaseMaterial->SetFXName(NMaterialName::PARTICLES);
 }
 ParticleEffectSystem::~ParticleEffectSystem()
 {
@@ -110,9 +113,23 @@ ParticleEffectSystem::~ParticleEffectSystem()
     SafeRelease(particleBaseMaterial);	
 }
 
+
 void ParticleEffectSystem::SetGlobalMaterial(NMaterial *material)
 {
     particleBaseMaterial->SetParent(material);    
+}
+
+
+void ParticleEffectSystem::PrebuildMaterials(ParticleEffectComponent *component)
+{
+    for (auto emitter : component->emitters)
+    {
+        for (auto layer : emitter->layers)
+        {
+            if (layer->sprite && (layer->type != ParticleLayer::TYPE_SUPEREMITTER_PARTICLES))
+                GetMaterial(layer->sprite->GetTexture(0), layer->enableFog, layer->enableFrameBlend, layer->blending);
+        }
+    }
 }
 
 void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleEmitter *emitter, const Vector3& spawnPosition, int32 positionSource)
@@ -194,6 +211,17 @@ void ParticleEffectSystem::RemoveFromActive(ParticleEffectComponent *effect)
     Scene *scene = GetScene();
     if (scene)
         scene->GetRenderSystem()->RemoveFromRender(effect->effectRenderObject);
+}
+
+void ParticleEffectSystem::AddEntity(Entity * entity)
+{
+    ParticleEffectComponent * effect = static_cast<ParticleEffectComponent *>(entity->GetComponent(Component::PARTICLE_EFFECT_COMPONENT));
+    PrebuildMaterials(effect);
+}
+void ParticleEffectSystem::AddComponent(Entity * entity, Component * component)
+{
+    ParticleEffectComponent * effect = static_cast<ParticleEffectComponent *>(component);
+    PrebuildMaterials(effect);
 }
 
 void ParticleEffectSystem::RemoveEntity(Entity * entity)

@@ -94,7 +94,7 @@ namespace DAVA
 	\code
 	void GameCore::OnAppStarted()
 	{
-		RenderManager::Instance()->SetFPS(30);
+		Renderer::SetDesiredFPS(30);
 
 		mainMenuScreen.Set(new MainMenuScreen());
 		gameScreen.Set(new GameScreen());
@@ -203,7 +203,7 @@ protected:
 		\code
 			void GameCore::OnAppStarted()
 			{
-				RenderManager::Instance()->SetFPS(30);
+				Renderer::SetDesiredFPS(30);
 
 				mainMenuScreen.Set(new MainMenuScreen());
 				gameScreen.Set(new GameScreen());
@@ -250,7 +250,7 @@ protected:
 		Normally this function can handle high-level tasks that is common between all application screens. 
 		Logic of the particular game screen should be inside that screen and it's Update function. 
 	 
-		To modify the frequency of Update calls you can use \ref RenderManager::Instance()->SetFPS() function
+		To modify the frequency of Update calls you can use \ref Renderer::SetDesiredFPS() function
 	 
 		\param[in] timeElapsed time in seconds that passed from the previous frame
 	 */

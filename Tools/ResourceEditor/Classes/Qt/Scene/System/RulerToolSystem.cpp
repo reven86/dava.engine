@@ -315,11 +315,11 @@ void RulerToolSystem::DrawPoints()
             
             if (previewEnabled && isIntersectsLandscape && i == (points.size() - 1))
             {
-                RenderSystem2D::Instance()->DrawLine(startPosition, endPosition, (float32)lineWidth, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, blue);
+                RenderSystem2D::Instance()->DrawLine(startPosition, endPosition, blue);
             }
             else
             {
-                RenderSystem2D::Instance()->DrawLine(startPosition, endPosition, (float32)lineWidth, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, red);
+                RenderSystem2D::Instance()->DrawLine(startPosition, endPosition, red);
             }
             
 			startPoint = endPoint;

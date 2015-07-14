@@ -54,6 +54,8 @@
 #include "UI/UIControl.h"
 #include "UI/UIPackageLoader.h"
 
+#include "Base/Result.h"
+
 using namespace DAVA;
 
 QtModelPackageCommandExecutor::QtModelPackageCommandExecutor(Document *_document)
@@ -129,6 +131,21 @@ void QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(const DAVA
     }
 }
 
+void QtModelPackageCommandExecutor::ChangeProperty(StyleSheetNode *node, AbstractProperty *property, const DAVA::VariantType &value)
+{
+    if (!property->IsReadOnly())
+    {
+        
+    }
+}
+
+void QtModelPackageCommandExecutor::ResetProperty(StyleSheetNode *node, AbstractProperty *property)
+{
+    if (!property->IsReadOnly())
+    {
+    }
+}
+
 void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value)
 {
     if (!property->IsReadOnly())
@@ -175,14 +192,20 @@ void QtModelPackageCommandExecutor::RemoveComponent(ControlNode *node, uint32 co
     }
 }
 
-void QtModelPackageCommandExecutor::InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex)
+ResultList QtModelPackageCommandExecutor::InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex)
 {
+    ResultList resultList;
     if (dest->CanInsertControl(control, destIndex))
     {
         BeginMacro(Format("Insert Control %s(%s)", control->GetName().c_str(), control->GetClassName().c_str()).c_str());
         InsertControlImpl(control, dest, destIndex);
         EndMacro();
     }
+    else
+    {
+        resultList.AddResult(Result::RESULT_ERROR, "Can not inster control!", VariantType(reinterpret_cast<int64>(control)));
+    }
+    return resultList;
 }
 
 void QtModelPackageCommandExecutor::InsertInstances(const DAVA::Vector<ControlNode*> &controls, ControlsContainerNode *dest, DAVA::int32 destIndex)

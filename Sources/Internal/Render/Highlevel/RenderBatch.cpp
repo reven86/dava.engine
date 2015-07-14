@@ -90,7 +90,6 @@ void RenderBatch::SetMaterial(NMaterial * _material)
 	NMaterial* oldMat = material;
     material = SafeRetain(_material);
 	SafeRelease(oldMat);
-        
 }    
 
     
@@ -184,14 +183,20 @@ void RenderBatch::Save(KeyedArchive * archive, SerializationContext* serializati
 	BaseObject::SaveObject(archive);
 
 	if(NULL != archive)
-	{		
-		archive->SetVariant("rb.datasource", VariantType((uint64)dataSource));
+	{
+        uint64 dataSourceID = 0;
+        if (nullptr != dataSource)
+        {
+            dataSourceID = dataSource->GetNodeID();
+        }
+
+		archive->SetVariant("rb.aabbox", VariantType(aabbox));
         archive->SetUInt32("rb.sortingKey", sortingKey);
-        archive->SetVariant("rb.aabbox", VariantType(aabbox));
-				
+        archive->SetVariant("rb.datasource", VariantType(dataSourceID));
+
 		if(material)
 		{
-			uint64 matKey = material->GetMaterialKey();
+			uint64 matKey = material->GetNodeID();
 			archive->SetUInt64("rb.nmatname", matKey);
 		}		
 	}

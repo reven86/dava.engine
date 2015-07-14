@@ -197,25 +197,25 @@ void CollisionObject2::Update(const Sprite::DrawState & state/*const Vector2 & _
     }
 }
 
-void CollisionObject2::DebugDraw(NMaterial *material)
+void CollisionObject2::DebugDraw()
 {
 	if (!basePolygon)return;    
     Color red = Color(1.0f, 0.0f, 0.0f, 1.0f);
 #if RHI_COMPLETE
-    RenderHelper::Instance()->DrawPoint(circle.center, 3, material, red);
+    RenderHelper::Instance()->DrawPoint(circle.center, 3, red);
 #endif
 	
-    RenderSystem2D::Instance()->DrawCircle(circle.center, circle.radius, material, red);
+    RenderSystem2D::Instance()->DrawCircle(circle.center, circle.radius, red);
 
 	if (type == TYPE_POLYGON)
 	{
-        RenderSystem2D::Instance()->DrawPolygon(polygon, true, material, red);
+        RenderSystem2D::Instance()->DrawPolygon(polygon, true, red);
 	}
 	
     Color blue = Color(0.0f, 0.0f, 1.0f, 1.0f);
 	for (int32 k = 0; k < manifold.count; ++k)
 #if RHI_COMPLETE
-        RenderHelper::Instance()->DrawPoint(manifold.contactPoints[k], 3, material, blue)
+        RenderHelper::Instance()->DrawPoint(manifold.contactPoints[k], 3, blue)
 #endif
         ;
 }

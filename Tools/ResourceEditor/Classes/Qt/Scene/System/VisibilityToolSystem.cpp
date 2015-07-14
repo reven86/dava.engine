@@ -472,12 +472,12 @@ void VisibilityToolSystem::ExcludeEntities(EntityGroup *entities) const
             for(uint32 m = 0; m < matCount; ++m)
             {
                 NMaterial * material = materials[m];
-                while (material && !material->GetFXName().IsValid())
+                while (material && !material->GetEffectiveFXName().IsValid())
                     material = material->GetParent();
 
                 if (material)
                 {
-                    if ((NMaterialName::SKYOBJECT == material->GetFXName()))
+                    if ((NMaterialName::SKYOBJECT == material->GetEffectiveFXName()))
                     {
                         needToExclude = true;
                         break;
@@ -527,7 +527,7 @@ void VisibilityToolSystem::DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> 
 	{
 		uint32 colorIndex = (uint32)points[i].z;
         Rect rect(points[i].x - pointSize / 2.f , points[i].y - pointSize / 2.f, pointSize, pointSize);
-        RenderSystem2D::Instance()->FillRect(rect, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, areaPointColors[colorIndex]);
+        RenderSystem2D::Instance()->FillRect(rect, areaPointColors[colorIndex]);
 	}
     RenderSystem2D::Instance()->EndRenderTargetPass();
 }

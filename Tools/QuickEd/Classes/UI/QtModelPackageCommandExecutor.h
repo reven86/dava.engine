@@ -31,6 +31,7 @@
 #define __QUICKED_QT_MODEL_PACKAGE_COMMAND_EXECUTOR_H__
 
 #include "Base/BaseObject.h"
+#include "Base/Result.h"
 
 #include <QString>
 
@@ -40,6 +41,7 @@ class QUndoStack;
 class QUndoCommand;
 
 class ControlNode;
+class StyleSheetNode;
 class PackageControlsNode;
 class PackageNode;
 class AbstractProperty;
@@ -59,6 +61,9 @@ public:
     void RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*> &importedPackage, PackageNode *package);
 
 public:
+    void ChangeProperty(StyleSheetNode *node, AbstractProperty *property, const DAVA::VariantType &value);
+    void ResetProperty(StyleSheetNode *node, AbstractProperty *property);
+
     void ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value);
     void ResetProperty(ControlNode *node, AbstractProperty *property);
 
@@ -66,7 +71,7 @@ public:
     void AddComponent(ControlNode *node, DAVA::uint32 componentType);
     void RemoveComponent(ControlNode *node, DAVA::uint32 componentType, DAVA::uint32 componentIndex);
 
-    void InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex);
+    DAVA::ResultList InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex);
     void InsertInstances(const DAVA::Vector<ControlNode*> &controls, ControlsContainerNode *dest, DAVA::int32 destIndex);
     void CopyControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex);
     void MoveControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex);

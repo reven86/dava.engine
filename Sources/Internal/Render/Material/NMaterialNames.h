@@ -43,15 +43,18 @@ public:
 	static const FastName TEXTURED_ALPHABLEND;
 	static const FastName DECAL_ALPHATEST;
 	static const FastName PIXELLIT_SPECULARMAP_OPAQUE;
-	static const FastName TEXTURED_ALPHATEST;
+    static const FastName TEXTURED_ALPHATEST;
+    static const FastName TEXTURED_VERTEXCOLOR_ALPHATEST;
 	static const FastName DECAL_OPAQUE;
-	static const FastName TEXTURED_OPAQUE;
+    static const FastName TEXTURED_OPAQUE;
+    static const FastName TEXTURED_VERTEXCOLOR_OPAQUE;
 	static const FastName DETAIL_ALPHABLEND;
 	static const FastName SHADOWRECT;
 	static const FastName TILE_MASK;
 	static const FastName DETAIL_ALPHATEST;
 	static const FastName SHADOW_VOLUME;
 	static const FastName VERTEXCOLOR_ALPHABLEND;
+    static const FastName VERTEXCOLOR_ALPHABLEND_TEXTURED;
 	static const FastName DETAIL_OPAQUE;
 	static const FastName SILHOUETTE;
 	static const FastName VERTEXCOLOR_FRAMEBLEND_ALPHABLEND;
@@ -60,6 +63,10 @@ public:
 	static const FastName PIXELLIT_ALPHATEST;
 	static const FastName SPEEDTREE_LEAF;
     static const FastName SPHERICLIT_SPEEDTREE_LEAF;
+    static const FastName SPHERICLIT_TEXTURED_OPAQUE;
+    static const FastName SPHERICLIT_TEXTURED_ALPHATEST;
+    static const FastName SPHERICLIT_TEXTURED_VERTEXCOLOR_OPAQUE;
+    static const FastName SPHERICLIT_TEXTURED_VERTEXCOLOR_ALPHATEST;
 	static const FastName VERTEXCOLOR_OPAQUE;
 	static const FastName PIXELLIT_OPAQUE;
 	static const FastName TEXTURE_LIGHTMAP_ALPHABLEND;
@@ -130,6 +137,8 @@ public:
     static const FastName PARAM_DETAIL_TILE_SCALE;
     static const FastName PARAM_RCP_SCREEN_SIZE;
     static const FastName PARAM_SCREEN_OFFSET;
+    static const FastName PARAM_ALPHATEST_THRESHOLD;
+	static const FastName DEPRECATED_SHADOW_COLOR_PARAM;
 };
 
 class NMaterialFlagName
@@ -171,6 +180,9 @@ public:
     static const FastName FLAG_VIEWSPECULAR;
 
     static const FastName FLAG_FRAME_BLEND;    
+    static const FastName FLAG_FORCE_2D_MODE;
+
+    static const FastName FLAG_ALPHATESTVALUE;
 
     //Illumination params
     static const FastName FLAG_ILLUMINATION_USED;

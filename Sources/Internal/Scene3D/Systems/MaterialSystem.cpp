@@ -69,7 +69,7 @@ void MaterialSystem::BuildMaterialList(Set<NMaterial*>& materialList, bool inclu
     for (List<NMaterial *>::const_iterator it = materials.begin(); it != endIt; ++it)
     {
         if ((includeGlobalMaterial || (*it) != scene->GetGlobalMaterial()) && // filter globalMaterial
-			(includeRuntime || !((*it)->GetNodeGlags() & DataNode::NodeRuntimeFlag)))
+			(includeRuntime || !((*it)->IsRuntime())))
         {
             materialList.insert(*it);
         }

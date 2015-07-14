@@ -29,8 +29,10 @@
 
 #include "UI/UIControl.h"
 #include "UI/UIControlSystem.h"
+#include "UI/UIControlPackageContext.h"
 #include "UI/UIYamlLoader.h"
 #include "UI/UIControlHelpers.h"
+#include "UI/Styles/UIStyleSheetSystem.h"
 #include "Animation/LinearAnimation.h"
 #include "Animation/AnimationManager.h"
 #include "Debug/DVAssert.h"
@@ -44,10 +46,12 @@
 
 #include "Components/UIComponent.h"
 #include "Components/UIControlFamily.h"
-#include "Thread/LockGuard.h"
+#include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {
+    const char* UIControl::STATE_NAMES[] = { "normal", "pressed_outside", "pressed_inside", "disabled", "selected", "hover" };
+
     static Mutex controlsListMutex;
     static Vector<const UIControl *> controlsList;//weak pointers
 
@@ -67,13 +71,17 @@ namespace DAVA
 #endif
     }
 
-    UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/) : family(nullptr)
+    UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/) :
+        styleSheetRebuildNeeded(true),
+        styleSheetInitialized(false),
+        family(nullptr),
+        parentWithContext(nullptr)
     {
         StartControlTracking(this);
         UpdateFamily();
 
         parent = NULL;
-        controlState = STATE_NORMAL;
+        prevControlState = controlState = STATE_NORMAL;
         visible = true;
         visibleForUIEditor = true;
         /*
@@ -146,7 +154,13 @@ namespace DAVA
         parent = newParent;
         if (parent)
         {
+            PropagateParentWithContext(newParent->packageContext ? newParent : newParent->parentWithContext);
+
             parent->RegisterInputProcessors(inputProcessorsCount);
+        }
+        else
+        {
+            PropagateParentWithContext(nullptr);
         }
     }
     UIControl *UIControl::GetParent() const
@@ -277,7 +291,12 @@ namespace DAVA
 
     void UIControl::SetName(const String & _name)
     {
+        FastName newFastName(_name);
+        if (fastName != newFastName)
+            styleSheetRebuildNeeded = true;
+
         name = _name;
+        fastName = newFastName;
     }
 
     void UIControl::SetTag(int32 _tag)
@@ -644,7 +663,7 @@ namespace DAVA
     {
         angle = angleInRad;
     }
-    
+
     void UIControl::SetAngleInDegrees(float32 angleInDeg)
     {
         SetAngle(DegToRad(angleInDeg));
@@ -881,7 +900,7 @@ namespace DAVA
 
         isIteratorCorrupted = true;
     }
-    
+
     void UIControl::RemoveControl(UIControl *control)
     {
         if (NULL == control)
@@ -1117,6 +1136,7 @@ namespace DAVA
 
         tag = srcControl->GetTag();
         name = srcControl->name;
+        fastName = srcControl->fastName;
 
         controlState = srcControl->controlState;
         visible = srcControl->visible;
@@ -1128,6 +1148,10 @@ namespace DAVA
         drawPivotPointMode = srcControl->drawPivotPointMode;
         debugDrawColor = srcControl->debugDrawColor;
         debugDrawEnabled = srcControl->debugDrawEnabled;
+
+        classes = srcControl->classes;
+        styleSheetRebuildNeeded = srcControl->styleSheetRebuildNeeded;
+        styleSheetInitialized = false;
 
         SafeRelease(eventDispatcher);
         if (srcControl->eventDispatcher != nullptr && srcControl->eventDispatcher->GetEventsCount() != 0)
@@ -1161,7 +1185,6 @@ namespace DAVA
         }
     }
 
-
     bool UIControl::InViewHierarchy() const
     {
         if (UIControlSystem::Instance()->GetScreen() == this ||
@@ -1194,6 +1217,8 @@ namespace DAVA
 
     void UIControl::SystemWillAppear()
     {
+        styleSheetInitialized = false;
+
         WillAppear();
 
         List<UIControl*>::iterator it = childs.begin();
@@ -1334,6 +1359,12 @@ namespace DAVA
             (*it)->isUpdated = false;
         }
 
+        if (styleSheetRebuildNeeded || prevControlState != controlState)
+        {
+            UIControlSystem::Instance()->GetStyleSheetSystem()->ProcessControl(this);
+            prevControlState = controlState;
+        }
+
         it = childs.begin();
         while(it != childs.end())
         {
@@ -1423,11 +1454,11 @@ namespace DAVA
             Polygon2 poly;
             gd.GetPolygon( poly );
 
-            RenderSystem2D::Instance()->DrawPolygon(poly, true, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
+            RenderSystem2D::Instance()->DrawPolygon(poly, true, drawColor);
         }
         else
         {
-            RenderSystem2D::Instance()->DrawRect(gd.GetUnrotatedRect(), RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
+            RenderSystem2D::Instance()->DrawRect(gd.GetUnrotatedRect(), drawColor);
         }
 
         RenderSystem2D::Instance()->PopClip();
@@ -1452,20 +1483,20 @@ namespace DAVA
         RenderSystem2D::Instance()->PushClip();
         
         Vector2 pivotPointCenter = drawRect.GetPosition() + GetPivotPoint();
-        RenderSystem2D::Instance()->DrawCircle(pivotPointCenter, PIVOT_POINT_MARK_RADIUS, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
+        RenderSystem2D::Instance()->DrawCircle(pivotPointCenter, PIVOT_POINT_MARK_RADIUS, drawColor);
 
         // Draw the cross mark.
         Vector2 lineStartPoint = pivotPointCenter;
         Vector2 lineEndPoint = pivotPointCenter;
         lineStartPoint.y -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
         lineEndPoint.y += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
-        RenderSystem2D::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
+        RenderSystem2D::Instance()->DrawLine(lineStartPoint, lineEndPoint, drawColor);
 
         lineStartPoint = pivotPointCenter;
         lineEndPoint = pivotPointCenter;
         lineStartPoint.x -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
         lineEndPoint.x += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
-        RenderSystem2D::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL, drawColor);
+        RenderSystem2D::Instance()->DrawLine(lineStartPoint, lineEndPoint, drawColor);
 
         RenderSystem2D::Instance()->PopClip();
     }
@@ -2230,7 +2261,7 @@ namespace DAVA
         {
             GetBackground()->SetModification(spriteModificationNode->AsInt32());
         }
-        
+
         const YamlNode * marginsNode = node->Get("margins");
         if (marginsNode)
         {
@@ -2383,7 +2414,7 @@ namespace DAVA
     {
         PerformEvent(UIControl::EVENT_ALL_ANIMATIONS_FINISHED);
     }
-	
+
     void UIControl::SetDebugDraw(bool _debugDrawEnabled, bool hierarchic/* = false*/)
     {
         debugDrawEnabled = _debugDrawEnabled;
@@ -2694,48 +2725,48 @@ namespace DAVA
     {
         return 1;
     }
-    
+
     UIControlBackground *UIControl::GetBackgroundComponent(int32 index) const
     {
         DVASSERT(index == 0);
         return background;
     }
-    
+
     UIControlBackground *UIControl::CreateBackgroundComponent(int32 index) const
     {
         DVASSERT(index == 0);
         return new UIControlBackground();
     }
-    
+
     void UIControl::SetBackgroundComponent(int32 index, UIControlBackground *bg)
     {
         DVASSERT(index == 0);
         SetBackground(bg);
     }
-    
+
     String UIControl::GetBackgroundComponentName(int32 index) const
     {
         DVASSERT(index == 0);
         return "Background";
     }
-    
+
     int32 UIControl::GetInternalControlsCount() const
     {
         return 0;
     }
-    
+
     UIControl *UIControl::GetInternalControl(int32 index) const
     {
         DVASSERT(false);
         return NULL;
     }
-    
+
     UIControl *UIControl::CreateInternalControl(int32 index) const
     {
         DVASSERT(false);
         return NULL;
     }
-    
+
     void UIControl::SetInternalControl(int32 index, UIControl *control)
     {
         DVASSERT(false);
@@ -2783,7 +2814,7 @@ namespace DAVA
         });
         UpdateFamily();
     }
-    
+
     void UIControl::InsertComponentAt(UIComponent * component, uint32 index)
     {
         uint32 count = family->GetComponentsCount(component->GetType());
@@ -2795,10 +2826,10 @@ namespace DAVA
         {
             DVASSERT(component->GetControl() == nullptr);
             component->SetControl(this);
-            
+
             uint32 insertIndex = family->GetComponentIndex(component->GetType(), index);
             components.insert(components.begin() + insertIndex, SafeRetain(component));
-            
+
             UpdateFamily();
         }
     }
@@ -2812,7 +2843,7 @@ namespace DAVA
         }
         return nullptr;
     }
-    
+
     int32 UIControl::GetComponentIndex(const UIComponent *component) const
     {
         uint32 count = family->GetComponentsCount(component->GetType());
@@ -2888,17 +2919,146 @@ namespace DAVA
     {
         return static_cast<uint32>(components.size());
     }
-    
+
     uint32 UIControl::GetComponentCount(uint32 componentType) const
     {
         return family->GetComponentsCount(componentType);
     }
-    
+
     uint64 UIControl::GetAvailableComponentFlags() const
     {
         return family->GetComponentsFlags();
     }
 
+    const Vector<UIComponent *>& UIControl::GetComponents()
+    {
+        return components;
+    }
+
     /* Components */
 
+    /* Styles */
+
+    void UIControl::AddClass(const FastName& clazz)
+    {
+        if (std::find(classes.begin(), classes.end(), clazz) == classes.end())
+        {
+            classes.push_back(clazz);
+            styleSheetRebuildNeeded = true;
+        }
+    }
+
+    void UIControl::RemoveClass(const FastName& clazz)
+    {
+        auto iter = find(classes.begin(), classes.end(), clazz);
+
+        if (iter != classes.end())
+        {
+            *iter = classes.back();
+            classes.pop_back();
+
+            styleSheetRebuildNeeded = true;
+        }
+    }
+
+    bool UIControl::HasClass(const FastName& clazz)
+    {
+        return find(classes.begin(), classes.end(), clazz) != classes.end();
+    }
+
+    String UIControl::GetClassesAsString()
+    {
+        String result;
+        for (size_t i = 0; i < classes.size(); i++)
+        {
+            if (i != 0)
+                result += " ";
+            result += classes[i].c_str();
+        }
+        return result;
+    }
+
+    void UIControl::SetClassesFromString(const String &classesStr)
+    {
+        Vector<String> tokens;
+        Split(classesStr, " ", tokens);
+
+        classes.clear();
+        for (String &token : tokens)
+            classes.push_back(FastName(token));
+
+        styleSheetRebuildNeeded = true;
+    }
+
+    const UIStyleSheetPropertySet& UIControl::GetLocalPropertySet() const
+    {
+        return localProperties;
+    }
+
+    void UIControl::SetPropertyLocalFlag(uint32 propertyIndex, bool value)
+    {
+        localProperties.set(propertyIndex, value);
+        styleSheetRebuildNeeded = true;
+    }
+
+    const UIStyleSheetPropertySet& UIControl::GetStyledPropertySet() const
+    {
+        return styledProperties;
+    }
+
+    void UIControl::SetStyledPropertySet(const UIStyleSheetPropertySet &set)
+    {
+        styledProperties = set;
+    }
+
+    bool UIControl::GetStyleSheetInitialized() const
+    {
+        return styleSheetInitialized;
+    }
+
+    void UIControl::MarkStyleSheetAsUpdated()
+    {
+        styleSheetRebuildNeeded = false;
+        styleSheetInitialized = true;
+    }
+
+    void UIControl::SetPackageContext(UIControlPackageContext* newPackageContext)
+    {
+        if (packageContext != newPackageContext)
+        {
+            styleSheetRebuildNeeded = true;
+        }
+
+        packageContext = newPackageContext;
+        for (UIControl* child : childs)
+            child->PropagateParentWithContext(packageContext ? this : parentWithContext);
+    }
+
+    void UIControl::PropagateParentWithContext(UIControl* newParentWithContext)
+    {
+        styleSheetRebuildNeeded = true;
+
+        parentWithContext = newParentWithContext;
+        if (packageContext == nullptr)
+        {
+            for (UIControl* child : childs)
+            {
+                child->PropagateParentWithContext(newParentWithContext);
+            }
+        }
+    }
+
+    UIControlPackageContext* UIControl::GetPackageContext() const
+    {
+        return packageContext.Valid() ?
+            packageContext.Get() :
+            (parentWithContext ? parentWithContext->GetLocalPackageContext() : nullptr);
+    }
+
+    UIControlPackageContext* UIControl::GetLocalPackageContext() const
+    {
+        return packageContext.Get();
+    }
+
+    /* Styles */
 }

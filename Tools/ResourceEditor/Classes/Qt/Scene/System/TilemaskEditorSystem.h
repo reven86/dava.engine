@@ -71,7 +71,7 @@ public:
 	uint32 GetTileTextureIndex();
 
 	uint32 GetTileTextureCount() const;
-	Texture* GetTileTexture(int32 index);
+	Texture* GetTileTexture();
 	Color GetTileColor(int32 index);
 	void SetTileColor(int32 index, const Color& color);
 
@@ -79,39 +79,44 @@ public:
 	eTilemaskDrawType GetDrawingType();
 
 protected:
-    
 	uint32 curToolSize;
-	Image* toolImage;
+    
 	Texture * toolImageTexture;
+    rhi::HTextureSet toolImageTextureSet;
+    
+    Texture * landscapeTilemaskTexture;
+    rhi::HTextureSet landscapeTilemaskTextureSet;
+    
 	uint32 tileTextureNum;
 
+    NMaterial * editorMaterial;
+    
 	eTilemaskDrawType drawingType;
 	eTilemaskDrawType activeDrawingType;
 	float32 strength;
 	FilePath toolImagePath;
 	int32 toolImageIndex;
 	
+    rhi::HVertexBuffer quadBuffer;
+    rhi::Packet quadPacket;
+    uint32 quadVertexLayoutID;
+    
 	Vector2 copyPasteFrom;
-	Vector2 copyPasteTo;
+	Vector2 copyPasteOffset;
 	
 	Rect updatedRectAccumulator;
 	
 	bool editingIsEnabled;
 	
-	Texture * stencilTexture;
 	Texture * toolTexture;
-	bool toolSpriteUpdated;    	
-
-    float32 spriteTempVertices[8];
-    float32 spriteTempCoords[8];    
+	bool toolSpriteUpdated;
     
 	bool needCreateUndo;
 
 	const FastName& textureLevel;
 
-	void UpdateToolImage(bool force = false);
 	void UpdateBrushTool();
-	Image* CreateToolImage(int32 sideSize, const FilePath& filePath);
+	void UpdateToolImage();
 	
 	void AddRectToAccumulator(const Rect& rect);
 	void ResetAccumulatorRect();
@@ -125,9 +130,6 @@ protected:
 	void InitSprites();
 
 	void FinishEditing();
-
-	MetaObjModifyCommand* CreateTileColorCommand(const FastName& level,
-												 const Color& color);
 };
 
 #endif /* defined(__RESOURCEEDITORQT__TILEMASKEDITORSYSTEM__) */
