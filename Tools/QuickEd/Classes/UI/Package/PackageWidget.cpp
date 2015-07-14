@@ -387,7 +387,7 @@ void PackageWidget::OnDelete()
 
 void PackageWidget::OnRename()
 {
-    auto selected = treeView->selectionModel()->selectedIndexes();
+    const auto &selected = treeView->selectionModel()->selectedIndexes();
     DVASSERT(selected.size() == 1);
     treeView->edit(selected.first());
 }

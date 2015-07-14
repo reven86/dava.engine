@@ -253,19 +253,22 @@ bool PackageModel::setData(const QModelIndex &index, const QVariant &value, int 
         return false;
     
     PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-    
+    auto control = node->GetControl();
+    if(nullptr == control)
+    {
+        return false;
+    }
     if (role == Qt::CheckStateRole)
     {
-        if (node->GetControl())
-            node->GetControl()->SetVisibleForUIEditor(value.toBool());
+        control->SetVisibleForUIEditor(value.toBool());
         return true;
     }
     if(role == Qt::EditRole)
     {
-        PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
         ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
+        DVASSERT(controlNode);
         auto prop = controlNode->GetRootProperty()->GetNameProperty();
-        auto newName = value.toString().toStdString();
+        const auto &newName = value.toString().toStdString();
         commandExecutor->ChangeProperty(controlNode, prop, DAVA::VariantType(newName));
         return true;
     }
