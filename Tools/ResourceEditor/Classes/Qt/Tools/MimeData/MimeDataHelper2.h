@@ -32,6 +32,7 @@
 
 #include "DAVAEngine.h"
 #include <QMimeData>
+#include <QDataStream>
 
 template <class T>
 class MimeDataHelper2

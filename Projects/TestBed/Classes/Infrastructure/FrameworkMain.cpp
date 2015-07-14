@@ -29,54 +29,51 @@
 
 #include "DAVAEngine.h"
 #include "GameCore.h"
-#include "Platform/DeviceInfo.h"
-#include "Base/Platform.h"
 
 using namespace DAVA;
 
+
 void FrameworkDidLaunched()
 {
+#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     
-    int32 screenWidth = 0;
-    int32 screenHeight = 0;
-
+#define WIDTH   1024
+#define HEIGHT  768
+    
+    
     KeyedArchive * appOptions = new KeyedArchive();
-    
-    appOptions->SetString(String("title"), String("TestBed"));
-    
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-    appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT);
-    appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_2_0);
+    appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
 
-    screenWidth = Min(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
-    screenHeight = Max(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
+    appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_3_0);
+
     appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
 
-    DAVA::VirtualCoordinatesSystem::Instance()->SetProportionsIsFixed(false);
-#else
-    screenWidth = 1024;
-    screenHeight = 768;
+    appOptions->SetInt32("width", WIDTH);
+    appOptions->SetInt32("height", HEIGHT);
 
-    appOptions->SetInt32("width", 800);
-    appOptions->SetInt32("height", 800);
+    DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(WIDTH, HEIGHT);
+    DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(WIDTH, HEIGHT, "Gfx");
+
+#else
+    KeyedArchive * appOptions = new KeyedArchive();
+
+    appOptions->SetInt32("width",    1024);
+    appOptions->SetInt32("height", 768);
 
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
+    appOptions->SetString(String("title"), String("Unit Tests"));
+
+    DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(1024, 768);
+    DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(1024, 768, "Gfx");
 #endif 
-    
-    appOptions->SetInt32("width", screenWidth);
-    appOptions->SetInt32("height", screenHeight);
-    
-    DAVA::VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(screenWidth, screenHeight);
-    DAVA::VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(screenWidth, screenHeight, "Gfx");
 
     GameCore * core = new GameCore();
     DAVA::Core::SetApplicationCore(core);
     DAVA::Core::Instance()->SetOptions(appOptions);
 }
 
-
-void FrameworkWillTerminate() 
+void FrameworkWillTerminate()
 {
 
 }
