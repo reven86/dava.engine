@@ -89,6 +89,7 @@
 #define PROF__FRAME             0
 #define PROF__FRAME_UPDATE      1
 #define PROF__FRAME_DRAW        2
+#define PROF__FRAME_ENDFRAME    3
 
 
 namespace DAVA 
@@ -421,6 +422,7 @@ Logger::Info("Core::SystemAppStarted");
     NAME_COUNTER(PROF__FRAME,"frame");
     NAME_COUNTER(PROF__FRAME_UPDATE,"frame-update");
     NAME_COUNTER(PROF__FRAME_DRAW,"frame-draw");
+    NAME_COUNTER(PROF__FRAME_ENDFRAME,"frame-endframe");
     #endif
 
     if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
@@ -454,7 +456,7 @@ void Core::SystemProcessFrame()
     #if PROFILER_ENABLED
     profiler::EnsureInited();
     profiler::Start();
-    START_NAMED_TIMING("frame");
+    START_TIMING(PROF__FRAME);
     #endif
 
 
@@ -563,9 +565,13 @@ void Core::SystemProcessFrame()
         InputSystem::Instance()->OnAfterUpdate();
         STOP_TIMING(PROF__FRAME_UPDATE);
         
+        START_TIMING(PROF__FRAME_DRAW);
         core->Draw();
+        STOP_TIMING(PROF__FRAME_DRAW);
 
+        START_TIMING(PROF__FRAME_ENDFRAME);
         core->EndFrame();
+        STOP_TIMING(PROF__FRAME_ENDFRAME);
 // #ifdef __DAVAENGINE_DIRECTX9__
 //      core->BeginFrame();
 // #endif
