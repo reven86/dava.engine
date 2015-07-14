@@ -53,6 +53,7 @@ BaseScreen::BaseScreen()
 
 void BaseScreen::SystemScreenSizeDidChanged(const Rect &newFullScreenSize)
 {
+    UIScreen::SystemScreenSizeDidChanged(newFullScreenSize);
     UnloadResources();
     LoadResources();
 }
