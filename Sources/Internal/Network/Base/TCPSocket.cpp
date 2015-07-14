@@ -48,14 +48,14 @@ TCPSocket::TCPSocket(IOLoop* ioLoop) : TCPSocketTemplate<TCPSocket>(ioLoop)
 
 int32 TCPSocket::Connect(const Endpoint& endpoint, ConnectHandlerType handler)
 {
-    DVASSERT (handler != 0);
+    DVASSERT (handler != nullptr);
     connectHandler = handler;
     return DoConnect(endpoint);
 }
 
 int32 TCPSocket::StartRead(Buffer buffer, ReadHandlerType handler)
 {
-    DVASSERT(buffer.base != NULL && buffer.len > 0 && handler != 0);
+    DVASSERT(buffer.base != nullptr && buffer.len > 0 && handler != nullptr);
     readBuffer = buffer;
     readHandler = handler;
     return DoStartRead();
@@ -63,14 +63,14 @@ int32 TCPSocket::StartRead(Buffer buffer, ReadHandlerType handler)
 
 int32 TCPSocket::Write(const Buffer* buffers, size_t bufferCount, WriteHandlerType handler)
 {
-    DVASSERT(buffers != NULL && bufferCount > 0 && handler != 0);
+    DVASSERT(buffers != nullptr && bufferCount > 0 && handler != nullptr);
     writeHandler = handler;
     return DoWrite(buffers, bufferCount);
 }
 
 int32 TCPSocket::Shutdown(ShutdownHandlerType handler)
 {
-    DVASSERT(handler != 0);
+    DVASSERT(handler != nullptr);
     shutdownHandler = handler;
     return DoShutdown();
 }
@@ -84,13 +84,13 @@ void TCPSocket::Close(CloseHandlerType handler)
 
 void TCPSocket::ReadHere(Buffer buffer)
 {
-    DVASSERT(buffer.base != NULL && buffer.len > 0);
+    DVASSERT(buffer.base != nullptr && buffer.len > 0);
     readBuffer = buffer;
 }
 
 void TCPSocket::HandleClose()
 {
-    if(closeHandler != 0)
+    if (closeHandler != nullptr)
     {
         closeHandler(this);
     }

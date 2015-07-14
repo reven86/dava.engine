@@ -29,8 +29,6 @@
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
 
-#include "Base/Signal2.h"
-
 using namespace DAVA;
 
 // =======================================================================================================================================
@@ -92,11 +90,14 @@ struct B : public A
     const A* exClassFn1(const A* a) { return a; }
     A* exClassFn2(A** a) { return *a; }
     const A* exClassFn3(const A** a) { return *a; }
+
+    int getV() { return v*v; }
 };
 
 struct M
 {
     char c_[128];
+    int getV() { return 10; }
 };
 
 struct V
@@ -255,15 +256,25 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
         B b;
         Function<void(B*, int)> b0_class_setV = &B::setV;
         Function<void(A*, int)> b1_class_setV = &B::setV;
+
         Function<int(A*)> b3_class_getV = &A::getV;
         Function<int(B*)> b4_class_getV = &B::getV;
+        Function<int(B*)> b5_class_getV = &A::getV;
 
-        b0_class_setV(&b, 100); TEST_VERIFY(b.getV() == 100);
-        b1_class_setV(&b, 200); TEST_VERIFY(b.getV() == 200);
+        b0_class_setV(&b, 100); TEST_VERIFY(b.getV() == (100 * 100));
+        b1_class_setV(&b, 200); TEST_VERIFY(b.getV() == (200 * 200));
         b1_class_setV(&a, 100); TEST_VERIFY(a.getV() == 100);
         b.setV(300); TEST_VERIFY(b3_class_getV(&b) == 300);
         a.setV(300); TEST_VERIFY(b3_class_getV(&a) == 300);
-        b.setV(400); TEST_VERIFY(b4_class_getV(&b) == 400);
+        b.setV(400); TEST_VERIFY(b4_class_getV(&b) == (400 * 400));
+        b.setV(500); TEST_VERIFY(b5_class_getV(&b) == 500);
+
+        Function<void(int)> b0_obj_setV(&b, &B::setV);
+        Function<void(int)> b1_obj_setV(&b, &A::setV);
+        Function<int()> b3_obj_getV = (&b, &A::getV);
+        Function<int()> b4_obj_getV = (&b, &B::getV);
+
+        //Function<int(B*)> b3_class_getV1 = &M::getV;
 
         // ==================================================================================
         // virtual functions testing
@@ -292,17 +303,16 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
         // operators
         // ==================================================================================
         Function<int()> null_f0;
-        Function<int()> null_f0_1 = 0;
+        Function<int()> null_f0_1 = nullptr;
 
         TEST_VERIFY(null_f0 == null_f0_1);
-        TEST_VERIFY(null_f0 == 0);
-        TEST_VERIFY(null_f0_1 == 0);
-        TEST_VERIFY(class_f0 == &A::classFn0);
+        TEST_VERIFY(null_f0 == nullptr);
+        TEST_VERIFY(null_f0_1 == nullptr);
 
         null_f0 = static_f0;
         TEST_VERIFY(null_f0() == staticFn0());
         null_f0 = 0;
-        TEST_VERIFY(null_f0 == 0);
+        TEST_VERIFY(null_f0 == nullptr);
 
         null_f0 = object_f0;
         TEST_VERIFY(null_f0() == object_f0());
@@ -311,38 +321,38 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
         // bind testing
         // ==================================================================================
         A aa;
-        Function<int()> bound_create_f0 = Bind(&A::classFn0, &aa);
-        Function<int()> bound_create_f1 = Bind(class_f1, &aa, 10);
+        Function<int()> bound_create_f0 = std::bind(&A::classFn0, &aa);
+        Function<int()> bound_create_f1 = std::bind(class_f1, &aa, 10);
 
         TEST_VERIFY(bound_create_f0() == a.classFn0());
         TEST_VERIFY(bound_create_f1() == class_f1(&aa, 10));
 
-        Function<int()>   bound_f0 = Bind(class_f0, &aa);
-        Function<int(A*)> bound_f0_1 = Bind(class_f0, _1);
+        Function<int()>   bound_f0 = std::bind(class_f0, &aa);
+        Function<int(A*)> bound_f0_1 = std::bind(class_f0, std::placeholders::_1);
 
         bound_f0();
 
         TEST_VERIFY(bound_f0() == class_f0(&aa));
         TEST_VERIFY(bound_f0_1(&aa) == class_f0(&aa));
 
-        Function<int()>        bound_f1 = Bind(class_f1, &aa, 10);
-        Function<int(int)>     bound_f1_1 = Bind(class_f1, &aa, _1);
-        Function<int(A*)>      bound_f1_2 = Bind(class_f1, _1, 10);
-        Function<int(int, A*)> bound_f1_3 = Bind(class_f1, _2, _1);
+        Function<int()>        bound_f1 = std::bind(class_f1, &aa, 10);
+        Function<int(int)>     bound_f1_1 = std::bind(class_f1, &aa, std::placeholders::_1);
+        Function<int(A*)>      bound_f1_2 = std::bind(class_f1, std::placeholders::_1, 10);
+        Function<int(int, A*)> bound_f1_3 = std::bind(class_f1, std::placeholders::_2, std::placeholders::_1);
 
         TEST_VERIFY(bound_f1() == class_f1(&aa, 10));
         TEST_VERIFY(bound_f1_1(10) == class_f1(&aa, 10));
         TEST_VERIFY(bound_f1_2(&aa) == class_f1(&aa, 10));
         TEST_VERIFY(bound_f1_3(10, &aa) == class_f1(&aa, 10));
 
-        Function<int()>         bound_f2 = Bind(class_f2, &aa, 10, 20);
-        Function<int(A*)>       bound_f2_1 = Bind(class_f2, _1, 10, 20);
-        Function<int(int, int)> bound_f2_2 = Bind(class_f2, &aa, _1, _2);
-        Function<int(int, int)> bound_f2_3 = Bind(class_f2, &aa, _2, _1);
-        Function<int(A*, int)>  bound_f2_4 = Bind(class_f2, _1, 10, _2);
-        Function<int(A*, int)>  bound_f2_5 = Bind(class_f2, _1, _2, 20);
-        Function<int(int)>      bound_f2_6 = Bind(class_f2, &aa, _1, 20);
-        Function<int(int)>      bound_f2_7 = Bind(class_f2, &aa, 10, _1);
+        Function<int()>         bound_f2 = std::bind(class_f2, &aa, 10, 20);
+        Function<int(A*)>       bound_f2_1 = std::bind(class_f2, std::placeholders::_1, 10, 20);
+        Function<int(int, int)> bound_f2_2 = std::bind(class_f2, &aa, std::placeholders::_1, std::placeholders::_2);
+        Function<int(int, int)> bound_f2_3 = std::bind(class_f2, &aa, std::placeholders::_2, std::placeholders::_1);
+        Function<int(A*, int)>  bound_f2_4 = std::bind(class_f2, std::placeholders::_1, 10, std::placeholders::_2);
+        Function<int(A*, int)>  bound_f2_5 = std::bind(class_f2, std::placeholders::_1, std::placeholders::_2, 20);
+        Function<int(int)>      bound_f2_6 = std::bind(class_f2, &aa, std::placeholders::_1, 20);
+        Function<int(int)>      bound_f2_7 = std::bind(class_f2, &aa, 10, std::placeholders::_1);
 
         TEST_VERIFY(bound_f2() == class_f2(&aa, 10, 20));
         TEST_VERIFY(bound_f2_1(&aa) == class_f2(&aa, 10, 20));
@@ -353,22 +363,10 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
         TEST_VERIFY(bound_f2_6(10) == class_f2(&aa, 10, 20));
         TEST_VERIFY(bound_f2_7(20) == class_f2(&aa, 10, 20));
 
-        Function<int(int, int, int)> bound_f3 = Bind(class_f3, &aa, _3, _2, _1);
-        Function<int(int, int, int, int)> bound_f4 = Bind(class_f4, &aa, _4, _3, _2, _1);
-        Function<int(int, int, int, int, int)> bound_f5 = Bind(class_f5, &aa, _5, _4, _3, _2, _1);
-        Function<int(int, int, int, int, int, int)> bound_f6 = Bind(class_f6, &aa, _6, _5, _4, _3, _2, _1);
-        Function<int(int, int, int, int, int, int, int)> bound_f7 = Bind(class_f7, &aa, _7, _6, _5, _4, _3, _2, _1);
-
-        TEST_VERIFY(bound_f3(30, 20, 10) == class_f3(&aa, 10, 20, 30));
-        TEST_VERIFY(bound_f4(40, 30, 20, 10) == class_f4(&aa, 10, 20, 30, 40));
-        TEST_VERIFY(bound_f5(50, 40, 30, 20, 10) == class_f5(&aa, 10, 20, 30, 40, 50));
-        TEST_VERIFY(bound_f6(60, 50, 40, 30, 20, 10) == class_f6(&aa, 10, 20, 30, 40, 50, 60));
-        TEST_VERIFY(bound_f7(70, 60, 50, 40, 30, 20, 10) == class_f7(&aa, 10, 20, 30, 40, 50, 60, 70));
-
         // ==================================================================================
         // signals
         // ==================================================================================
-#if 1
+#if 0
         Signal<void()> sig0;
         Signal<int(int, int, int)> sig3;
 

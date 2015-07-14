@@ -42,6 +42,7 @@
 #include "MemoryManager/MemoryProfiler.h"
 
 #include <typeinfo>
+#include <memory>
 
 namespace DAVA
 {
@@ -168,6 +169,19 @@ public:
 	);
 };
 
+template<typename T>
+auto MakeSharedObject(T *obj) -> typename std::enable_if<std::is_base_of<BaseObject, T>::value, std::shared_ptr<T>>::type
+{
+    std::shared_ptr<T> ret;
+
+    if (nullptr != obj)
+    {
+        obj->Retain();
+        ret.reset(obj, [](T *obj) { obj->Release(); });
+    }
+
+    return ret;
+}
 
 /** 
 	\ingroup baseobjects

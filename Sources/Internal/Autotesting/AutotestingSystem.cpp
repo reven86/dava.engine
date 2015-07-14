@@ -359,7 +359,7 @@ namespace DAVA
 
 	void AutotestingSystem::OnScreenShot(Image *image)
 	{
-		Function<void()> fn = Bind(MakeFunction(this, &AutotestingSystem::OnScreenShotInternal), SafeRetain(image));
+        Function<void()> fn = std::bind(&AutotestingSystem::OnScreenShotInternal, this, SafeRetain(image));
 		JobManager::Instance()->CreateWorkerJob(fn);
 	}
 

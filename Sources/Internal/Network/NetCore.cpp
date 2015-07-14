@@ -27,10 +27,8 @@
 =====================================================================================*/
 
 
-#include <Base/Bind.h>
-#include <Base/FunctionTraits.h>
+#include <Base/Function.h>
 #include <Debug/DVAssert.h>
-
 #include <Network/NetCore.h>
 #include <Network/NetConfig.h>
 #include <Network/Private/NetController.h>
@@ -60,7 +58,7 @@ NetCore::TrackId NetCore::CreateController(const NetConfig& config, void* contex
     NetController* ctrl = new NetController(&loop, registrar, context);
     if (true == ctrl->ApplyConfig(config))
     {
-        loop.Post(Bind(MakeFunction(this, &NetCore::DoStart), ctrl));
+        loop.Post(std::bind(&NetCore::DoStart, this, ctrl));
         return ObjectToTrackId(ctrl);
     }
     else
@@ -74,7 +72,7 @@ NetCore::TrackId NetCore::CreateAnnouncer(const Endpoint& endpoint, uint32 sendP
 {
     DVASSERT(false == isFinishing);
     Announcer* ctrl = new Announcer(&loop, endpoint, sendPeriod, needDataCallback);
-    loop.Post(Bind(MakeFunction(this, &NetCore::DoStart), ctrl));
+    loop.Post(std::bind(&NetCore::DoStart, this, ctrl));
     return ObjectToTrackId(ctrl);
 }
 
@@ -82,7 +80,7 @@ NetCore::TrackId NetCore::CreateDiscoverer(const Endpoint& endpoint, Function<vo
 {
     DVASSERT(false == isFinishing);
     Discoverer* ctrl = new Discoverer(&loop, endpoint, dataReadyCallback);
-    loop.Post(Bind(MakeFunction(this, &NetCore::DoStart), ctrl));
+    loop.Post(std::bind(&NetCore::DoStart, this, ctrl));
     return ObjectToTrackId(ctrl);
 }
 
@@ -90,12 +88,12 @@ void NetCore::DestroyController(TrackId id)
 {
     DVASSERT(false == isFinishing);
     DVASSERT(GetTrackedObject(id) != NULL);
-    loop.Post(Bind(MakeFunction(this, &NetCore::DoDestroy), id));
+    loop.Post(std::bind(&NetCore::DoDestroy, this, id));
 }
 
 void NetCore::DestroyAllControllers(Function<void ()> callback)
 {
-    DVASSERT(false == isFinishing && controllersStoppedCallback == 0);
+    DVASSERT(false == isFinishing && controllersStoppedCallback == nullptr);
 
     controllersStoppedCallback = callback;
     loop.Post(MakeFunction(this, &NetCore::DoDestroyAll));
@@ -103,7 +101,7 @@ void NetCore::DestroyAllControllers(Function<void ()> callback)
 
 void NetCore::DestroyAllControllersBlocked()
 {
-    DVASSERT(false == isFinishing && false == allStopped && controllersStoppedCallback == 0);
+    DVASSERT(false == isFinishing && false == allStopped && controllersStoppedCallback == nullptr);
     loop.Post(MakeFunction(this, &NetCore::DoDestroyAll));
 
     // Block until all controllers are stopped and destroyed
@@ -172,10 +170,10 @@ void NetCore::DoDestroyAll()
 void NetCore::AllDestroyed()
 {
     allStopped = true;
-    if (controllersStoppedCallback != 0)
+    if (controllersStoppedCallback != nullptr)
     {
         controllersStoppedCallback();
-        controllersStoppedCallback = 0;
+        controllersStoppedCallback = nullptr;
     }
     if (true == isFinishing)
     {

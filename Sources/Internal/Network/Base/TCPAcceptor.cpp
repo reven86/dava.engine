@@ -46,7 +46,7 @@ TCPAcceptor::TCPAcceptor(IOLoop* ioLoop) : TCPAcceptorTemplate(ioLoop)
 
 int32 TCPAcceptor::StartListen(ConnectHandlerType handler, int32 backlog)
 {
-    DVASSERT(handler != 0);
+    DVASSERT(handler != nullptr);
     connectHandler = handler;
     return DoStartListen(backlog);
 }
@@ -70,7 +70,7 @@ int32 TCPAcceptor::Accept(TCPSocket* socket)
 
 void TCPAcceptor::HandleClose()
 {
-    if(closeHandler != 0)
+    if(closeHandler != nullptr)
     {
         closeHandler(this);
     }

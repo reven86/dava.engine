@@ -503,7 +503,7 @@ void PolygonGroup::BuildBuffers()
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     UpdateDataPointersAndStreams();
-    JobManager::Instance()->CreateMainJob(MakeFunction(PointerWrapper<PolygonGroup>::WrapRetainRelease(this), &PolygonGroup::BuildBuffersInternal));
+    JobManager::Instance()->CreateMainJob(MakeFunction(MakeSharedObject(this), &PolygonGroup::BuildBuffersInternal));
 };
     
 void PolygonGroup::BuildBuffersInternal()

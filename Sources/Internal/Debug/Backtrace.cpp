@@ -28,7 +28,6 @@
 
 
 #include "Debug/Backtrace.h"
-#   include "Base/Bind.h"
 #   include "FileSystem/Logger.h"
 #if defined(__DAVAENGINE_APPLE__)
 #   include <execinfo.h>

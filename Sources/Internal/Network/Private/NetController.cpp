@@ -29,7 +29,7 @@
 
 #include <algorithm>
 
-#include <Base/FunctionTraits.h>
+#include <Base/Function.h>
 #include <Debug/DVAssert.h>
 
 #include <Network/Base/IOLoop.h>
@@ -121,7 +121,7 @@ void NetController::Start()
 
 void NetController::Stop(Function<void (IController*)> handler)
 {
-    DVASSERT(false == isTerminating && handler != 0);
+    DVASSERT(false == isTerminating && handler != nullptr);
     isTerminating = true;
     stopHandler = handler;
     SERVER_ROLE == role ? loop->Post(MakeFunction(this, &NetController::DoStopServers))
