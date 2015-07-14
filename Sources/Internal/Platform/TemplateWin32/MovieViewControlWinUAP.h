@@ -26,60 +26,75 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_IMOVIEVIEWCONTROL__H__
-#define __DAVAENGINE_IMOVIEVIEWCONTROL__H__
+#ifndef __DAVAENGINE_MOVIEVIEWCONTROL_WINUAP_H__
+#define __DAVAENGINE_MOVIEVIEWCONTROL_WINUAP_H__
 
-#include "FileSystem/FilePath.h"
-#include "Math/Rect.h"
+#include "Base/Platform.h"
+
+#if defined(__DAVAENGINE_WIN_UAP__)
+
+#include "UI/IMovieViewControl.h"
 
 namespace DAVA
 {
 
-enum eMovieScalingMode
-{
-    scalingModeNone = 0,        // No scaling
-    scalingModeAspectFit,       // Uniform scale until one dimension fits
-    scalingModeAspectFill,      // Uniform scale until the movie fills the visible bounds. One dimension may have clipped contents
-    scalingModeFill             // Non-uniform scale. Both render dimensions will exactly match the visible bounds
-};
-
-struct OpenMovieParams
-{
-    OpenMovieParams(eMovieScalingMode mode = scalingModeNone)
-        : scalingMode(mode)
-    {}
-
-    eMovieScalingMode scalingMode;
-};
-
-// Common interface for Movie View Controls for different platforms.
-class IMovieViewControl
+class CorePlatformWinUAP;
+class MovieViewControl : public IMovieViewControl
 {
 public:
-    virtual ~IMovieViewControl() {};
+    MovieViewControl();
+    virtual ~MovieViewControl();
 
     // Initialize the control.
-    virtual void Initialize(const Rect& rect) = 0;
+    void Initialize(const Rect& rect) override;
 
     // Position/visibility.
-    virtual void SetRect(const Rect& rect) = 0;
-    virtual void SetVisible(bool isVisible) = 0;
+    void SetRect(const Rect& rect) override;
+    void SetVisible(bool isVisible) override;
 
     // Open the Movie.
-    virtual void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params) = 0;
+    void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params) override;
 
     // Start/stop the video playback.
-    virtual void Play() = 0;
-    virtual void Stop() = 0;
+    void Play() override;
+    void Stop() override;
 
     // Pause/resume the playback.
-    virtual void Pause() = 0;
-    virtual void Resume() = 0;
+    void Pause() override;
+    void Resume() override;
 
     // Whether the movie is being played?
-    virtual bool IsPlaying() = 0;
+    bool IsPlaying() override;
+
+private:
+    void InstallEventHandlers();
+    void PositionMovieView(const Rect& rect);
+
+    Windows::Storage::Streams::IRandomAccessStream^ CreateStreamFromUri(Windows::Foundation::Uri^ uri) const;
+    Windows::Foundation::Uri^ UriFromPath(const FilePath& path) const;
+    bool CheckIfPathReachableFrom(const String& pathToCheck, const String& pathToReach, String& pathTail) const;
+
+private:    // MediaElement event handlers
+    void OnMediaOpened();
+    void OnMediaEnded();
+    void OnMediaFailed(Windows::UI::Xaml::ExceptionRoutedEventArgs^ args);
+
+private:
+    CorePlatformWinUAP* core;
+    Windows::UI::Xaml::Controls::MediaElement^ nativeMovieView = nullptr;
+    bool visible = true;
+    bool movieLoaded = false;   // Movie has been successfully loaded and decoded
+    bool playRequest = false;   // Movie should play after loading as Play() can be invoked earlier than movie has been loaded
+    bool moviePlaying = false;  // Movie is playing now
 };
+
+//////////////////////////////////////////////////////////////////////////
+inline bool MovieViewControl::IsPlaying()
+{
+    return moviePlaying;
+}
 
 }   // namespace DAVA
 
-#endif //__DAVAENGINE_IMOVIEVIEWCONTROL__H__
+#endif  // __DAVAENGINE_WIN_UAP__
+#endif  // __DAVAENGINE_MOVIEVIEWCONTROL_WINUAP_H__
