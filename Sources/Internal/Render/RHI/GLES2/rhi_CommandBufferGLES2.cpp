@@ -873,6 +873,9 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
 
                 if( !(x==0  &&  y==0  &&  w==0  &&  h==0) )
                 {
+                    if( usingDefaultFrameBuffer )
+                        y = _GLES2_DefaultFrameBuffer_Height - y - h;
+                    
                     glViewport( x, y, w, h );
                 }
                 else
