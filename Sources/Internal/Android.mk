@@ -5,6 +5,11 @@
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
+LOCAL_MODULE := iconv_android-prebuilt
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libiconv_android.so
+include $(PREBUILT_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
 LOCAL_MODULE := fmodex-prebuild
 LOCAL_SRC_FILES := ../../Libs/fmod/lib/android/$(TARGET_ARCH_ABI)/libfmodex.so
 include $(PREBUILT_SHARED_LIBRARY)
@@ -112,10 +117,6 @@ else
 DV_LOCAL_ARM_NEON := false
 endif
 
-ifeq ($(MEMORY_SANITIZE), true)
-DV_LOCAL_ARM_MODE := arm
-endif
-
 # set build flags
 DV_LOCAL_CPPFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1
 DV_LOCAL_CPPFLAGS += -std=c++1y
@@ -184,17 +185,9 @@ DV_LOCAL_CPPFLAGS += -Wno-sometimes-uninitialized
 DV_LOCAL_CPPFLAGS += -Wno-reserved-id-macro
 DV_LOCAL_CPPFLAGS += -Wno-old-style-cast
 DV_LOCAL_CPPFLAGS += -Wno-inconsistent-missing-override
-# we have to do it because clang3.6 bug http://bugs.mitk.org/show_bug.cgi?id=18883
-DV_LOCAL_CPPFLAGS += -Wno-error=inconsistent-missing-override
-DV_LOCAL_CPPFLAGS += -Wno-inconsistent-missing-override
-DV_LOCAL_CPPFLAGS += -Wno-null-conversion
 DV_LOCAL_CPPFLAGS += -Wno-unused-local-typedef
 DV_LOCAL_CPPFLAGS += -Wno-unreachable-code-return
-DV_LOCAL_CPPFLAGS += -Wno-unreachable-code-break
 DV_LOCAL_CPPFLAGS += -Wno-unknown-warning-option
-DV_LOCAL_CPPFLAGS += -Wno-pedantic
-DV_LOCAL_CPPFLAGS += -Wno-extern-c-compat
-DV_LOCAL_CPPFLAGS += -Wno-unknown-pragmas
 
 DV_LOCAL_CPP_FEATURES += exceptions
 
@@ -224,6 +217,7 @@ DV_LOCAL_STATIC_LIBRARIES += android-ndk-profiler
 endif
 endif
 
+DV_LOCAL_SHARED_LIBRARIES += iconv_android-prebuilt
 DV_LOCAL_SHARED_LIBRARIES += fmodex-prebuild
 DV_LOCAL_SHARED_LIBRARIES += fmodevent-prebuild
 
@@ -288,6 +282,7 @@ LOCAL_EXPORT_CFLAGS := $(DV_LOCAL_EXPORT_CFLAGS)
 LOCAL_EXPORT_LDLIBS := $(DV_LOCAL_EXPORT_LDLIBS)
 LOCAL_STATIC_LIBRARIES := $(DV_LOCAL_STATIC_LIBRARIES)
 LOCAL_SHARED_LIBRARIES := $(DV_LOCAL_SHARED_LIBRARIES)
+LOCAL_STATIC_LIBRARIES := $(DV_LOCAL_STATIC_LIBRARIES)
 
 # set source files 
 LOCAL_SRC_FILES := \
@@ -316,7 +311,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Platform/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/BacktraceAndroid/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/ExternC/*.cpp))
+	                 $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/ExternC/*.cpp))
                      
 include $(BUILD_STATIC_LIBRARY)
 
@@ -364,6 +359,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Concurrency/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Components/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Styles/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UnitTests/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Utils/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Job/*.cpp) \

@@ -30,7 +30,7 @@
 #include "UI/UIScreenManager.h"
 #include "Base/BaseObject.h"
 
-#if defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
 
 namespace DAVA 
 {
@@ -142,5 +142,5 @@ void ScreenManager::StartGLAnimation()
 	
 }
 
-#endif //#if defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_MACOS__)
+#endif // defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
 

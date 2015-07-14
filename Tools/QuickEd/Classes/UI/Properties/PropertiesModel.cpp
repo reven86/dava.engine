@@ -41,7 +41,9 @@
 
 #include "Model/ControlProperties/AbstractProperty.h"
 #include "Model/ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/StyleSheetRootProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
+#include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Utils/QtDavaConvertion.h"
 #include "UI/Commands/ChangePropertyValueCommand.h"
 #include "UI/QtModelPackageCommandExecutor.h"
@@ -49,19 +51,35 @@
 using namespace DAVA;
 
 PropertiesModel::PropertiesModel(ControlNode *_controlNode, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent)
-    : QAbstractItemModel(parent)
-    , controlNode(nullptr)
-    , commandExecutor(SafeRetain(_commandExecutor))
+: QAbstractItemModel(parent)
+, commandExecutor(SafeRetain(_commandExecutor))
 {
     controlNode = SafeRetain(_controlNode);
     controlNode->GetRootProperty()->AddListener(this);
+    rootProperty = SafeRetain(controlNode->GetRootProperty());
+}
+
+PropertiesModel::PropertiesModel(StyleSheetNode *aStyleSheet, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent)
+    : QAbstractItemModel(parent)
+    , commandExecutor(SafeRetain(_commandExecutor))
+{
+    styleSheet = SafeRetain(aStyleSheet);
+    styleSheet->GetRootProperty()->AddListener(this);
+    rootProperty = SafeRetain(styleSheet->GetRootProperty());
 }
 
 PropertiesModel::~PropertiesModel()
 {
-    controlNode->GetRootProperty()->RemoveListener(this);
+    if (controlNode)
+        controlNode->GetRootProperty()->RemoveListener(this);
+    
+    if (styleSheet)
+        styleSheet->GetRootProperty()->RemoveListener(this);
+    
     SafeRelease(commandExecutor);
     SafeRelease(controlNode);
+    SafeRelease(rootProperty);
+    SafeRelease(styleSheet);
 }
 
 QModelIndex PropertiesModel::index(int row, int column, const QModelIndex &parent) const
@@ -70,7 +88,7 @@ QModelIndex PropertiesModel::index(int row, int column, const QModelIndex &paren
         return QModelIndex();
     
     if (!parent.isValid())
-        return createIndex(row, column, controlNode->GetRootProperty()->GetProperty(row));
+        return createIndex(row, column, rootProperty->GetProperty(row));
     
     AbstractProperty *property = static_cast<AbstractProperty*>(parent.internalPointer());
     return createIndex(row, column, property->GetProperty(row));
@@ -84,7 +102,7 @@ QModelIndex PropertiesModel::parent(const QModelIndex &child) const
     AbstractProperty *property = static_cast<AbstractProperty*>(child.internalPointer());
     AbstractProperty *parent = property->GetParent();
     
-    if (parent == nullptr || parent == controlNode->GetRootProperty())
+    if (parent == nullptr || parent == rootProperty)
         return QModelIndex();
 
     if (parent->GetParent())
@@ -99,7 +117,7 @@ int PropertiesModel::rowCount(const QModelIndex &parent) const
         return 0;
     
     if (!parent.isValid())
-        return controlNode->GetRootProperty() ? controlNode->GetRootProperty()->GetCount() : 0;
+        return rootProperty ? rootProperty->GetCount() : 0;
     
     return static_cast<AbstractProperty*>(parent.internalPointer())->GetCount();
 }
@@ -194,7 +212,7 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
             if (property->GetValue().GetType() == VariantType::TYPE_BOOLEAN)
             {
                 VariantType newVal(value != Qt::Unchecked);
-                commandExecutor->ChangeProperty(controlNode, property, newVal);
+                ChangeProperty(property, newVal);
                 return true;
             }
         }
@@ -213,14 +231,14 @@ bool PropertiesModel::setData(const QModelIndex &index, const QVariant &value, i
                 initVariantType(newVal, value);
             }
 
-            commandExecutor->ChangeProperty(controlNode, property, newVal);
+            ChangeProperty(property, newVal);
             return true;
         }
         break;
 
     case DAVA::ResetRole:
         {
-            commandExecutor->ResetProperty(controlNode, property);
+            ResetProperty(property);
             return true;
         }
         break;
@@ -281,6 +299,38 @@ void PropertiesModel::ComponentPropertiesWillBeRemoved(RootProperty *root, Compo
 void PropertiesModel::ComponentPropertiesWasRemoved(RootProperty *root, ComponentPropertiesSection *section, int index)
 {
     endRemoveRows();
+}
+
+void PropertiesModel::ChangeProperty(AbstractProperty *property, const DAVA::VariantType &value)
+{
+    if (controlNode)
+    {
+        commandExecutor->ChangeProperty(controlNode, property, value);
+    }
+    else if (styleSheet)
+    {
+        commandExecutor->ChangeProperty(styleSheet, property, value);
+    }
+    else
+    {
+        DVASSERT(false);
+    }
+}
+
+void PropertiesModel::ResetProperty(AbstractProperty *property)
+{
+    if (controlNode)
+    {
+        commandExecutor->ResetProperty(controlNode, property);
+    }
+    else if (styleSheet)
+    {
+        commandExecutor->ResetProperty(styleSheet, property);
+    }
+    else
+    {
+        DVASSERT(false);
+    }
 }
 
 QModelIndex PropertiesModel::indexByProperty(AbstractProperty *property, int column)

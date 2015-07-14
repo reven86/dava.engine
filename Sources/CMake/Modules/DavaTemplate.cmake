@@ -30,9 +30,19 @@
 #set( EXECUTABLE_FLAG            )
 #set( FILE_TREE_CHECK_FOLDERS    )
 #
+
+# Only interpret ``if()`` arguments as variables or keywords when unquoted.
+if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
+    cmake_policy(SET CMP0054 NEW)
+endif()
+
 macro( setup_main_executable )
 
-add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
+include      ( PlatformSettings )
+
+if( MSVC )
+    add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
+endif()
 
 if( MACOS_DATA )
     set( APP_DATA ${MACOS_DATA} )
@@ -168,7 +178,7 @@ elseif ( WINDOWS_UAP )
 	set_property(SOURCE ${RELEASE_CONTENT_FILES} PROPERTY
 		VS_DEPLOYMENT_CONTENT $<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>)
 
-elseif( WIN32 )
+elseif( WIN32 AND MSVC )
     list( APPEND RESOURCES_LIST  ${WIN32_RESOURCES} )
 endif()
 
@@ -186,8 +196,7 @@ if( DAVA_FOUND )
     if( ANDROID )
         include_directories   ( ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid )
         list( APPEND PATTERNS_CPP    ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/*.cpp )
-        list( APPEND PATTERNS_H      ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/*.h   )        
-
+        list( APPEND PATTERNS_H      ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/*.h   )
     endif()
 
     if( QT_PREFIX )
@@ -206,7 +215,7 @@ if( DAVA_FOUND )
         include_directories( ${PLATFORM_INCLUDES_DIR} )
 
     else()
-        if( WIN32 )
+        if( MSVC )
             add_definitions        ( -D_UNICODE 
                                      -DUNICODE )
             list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.cpp 
@@ -239,6 +248,10 @@ else()
 
 endif()
 
+if( NOT IGNORE_FILE_TREE_CHECK )
+    add_dependencies(  ${PROJECT_NAME} FILE_TREE )
+    
+endif()
 
 if ( QT5_FOUND )
     if ( WIN32 )
@@ -321,16 +334,15 @@ if( ANDROID )
 
     set_target_properties( ${PROJECT_NAME} PROPERTIES IMPORTED_LOCATION ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/ )
 
-    execute_process( COMMAND ${ANDROID_COMMAND} update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path . )
-
     if( NOT CMAKE_EXTRA_GENERATOR )
         add_custom_target( ant-configure ALL
-            COMMAND  ${ANDROID_COMMAND} update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path .
+            COMMAND  ${ANDROID_COMMAND} update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path ${CMAKE_CURRENT_BINARY_DIR} --subprojects
             COMMAND  ${ANT_COMMAND} release
         )
 
         add_dependencies( ant-configure ${PROJECT_NAME} )
-
+    else()
+        execute_process( COMMAND ${ANDROID_COMMAND} update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path ${CMAKE_CURRENT_BINARY_DIR} --subprojects )
     endif()
 
 

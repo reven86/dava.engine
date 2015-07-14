@@ -51,9 +51,9 @@ public:
 
     virtual void SetAction(const WideString &action);
     virtual void Hide();
-    virtual void ShowText(const WideString &title, const WideString text);
-    virtual void ShowProgress(const WideString &title, const WideString text, const uint32 total, const uint32 progress);
-    virtual void PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds);
+    virtual void ShowText(const WideString &title, const WideString &text, bool useSound);
+    virtual void ShowProgress(const WideString &title, const WideString &text, uint32 total, uint32 progress, bool useSound);
+    virtual void PostDelayedNotification(const WideString &title, const WideString &text, int delaySeconds, bool useSound);
     virtual void RemoveAllDelayedNotifications();
 
 public:

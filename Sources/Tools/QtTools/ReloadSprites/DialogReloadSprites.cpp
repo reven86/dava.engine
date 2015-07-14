@@ -32,6 +32,7 @@
 #include "TextureCompression/TextureConverter.h"
 #include "ui_DialogReloadSprites.h"
 #include <QSettings>
+#include "Base/GlobalEnum.h"
 
 using namespace DAVA;
 namespace

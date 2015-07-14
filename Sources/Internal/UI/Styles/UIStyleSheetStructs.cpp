@@ -26,11 +26,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "UI/Styles/UIStyleSheetStructs.h"
 
-#include "Math/OOBBox3.h"
-
-namespace DAVA 
+namespace DAVA
 {
-    
-};
 
+}

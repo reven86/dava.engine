@@ -105,6 +105,8 @@ public:
     const MultiMap<String, YamlNode*> &AsMap() const;
     VariantType     AsVariantType() const;
 
+    VariantType     AsVariantType(const InspMember* insp) const;
+
     //These functions work only if type of node is array or map
     uint32          GetCount() const;
     const YamlNode *Get(uint32 index) const;

@@ -39,7 +39,7 @@ elseif ( MACOS )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
     set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS YES )
 
-elseif ( WIN32 )
+elseif ( MSVC )
     #dynamic runtime on windows store
     if ( WINDOWS_UAP )
 	    set ( CRT_TYPE_DEBUG "/MDd" )
@@ -116,16 +116,8 @@ if( WARNINGS_AS_ERRORS )
 -Wno-sometimes-uninitialized \
 -Wno-delete-non-virtual-dtor \
 -Wno-header-hygiene \
--Wno-reserved-id-macro \
 -Wno-old-style-cast \
--Wno-inconsistent-missing-override \
--Wno-null-conversion \
--Wno-unused-local-typedef \
--Wno-unreachable-code-return \
--Wno-unreachable-code-break \
--Wno-unknown-warning-option \
--Wno-pedantic \
--Wno-extern-c-compat")
+-Wno-unknown-warning-option")
 
 
     if( ANDROID )
@@ -150,7 +142,7 @@ if( WARNINGS_AS_ERRORS )
 -Wno-import-preprocessor-directive-pedantic" )
 
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LOCAL_DISABLED_WARNINGS}" ) # warnings as errors
-    elseif( WIN32 )
+    elseif( MSVC )
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX" )
     endif()
 
