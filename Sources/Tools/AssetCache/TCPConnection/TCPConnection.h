@@ -55,6 +55,7 @@ public:
 
     void SetDelegate(TCPChannelDelegate * delegate);
     
+    const Net::Endpoint & GetEndpoint() const;
     
 protected:
     TCPConnection(Net::eNetworkRole role, uint32 service, const Net::Endpoint & endpoint);

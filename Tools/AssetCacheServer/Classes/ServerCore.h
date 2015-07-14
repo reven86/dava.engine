@@ -34,6 +34,8 @@
 #include "ServerLogics.h"
 #include "ApplicationSettings.h"
 
+#include <atomic>
+
 #include <QObject>
 
 class ServerCore: public QObject
@@ -50,6 +52,7 @@ public:
     ApplicationSettings * GetSettings() const;
     
     void Start();
+    void Stop();
 
 private:
     
@@ -73,6 +76,7 @@ private:
     DAVA::uint64 dbSaveTime = 0;
     
     ApplicationSettings * settings = nullptr;
+    std::atomic<bool> serverIsRunning;
 };
 
 

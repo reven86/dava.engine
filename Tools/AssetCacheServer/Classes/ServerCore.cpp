@@ -32,6 +32,7 @@
 #include <QTimer>
 
 ServerCore::ServerCore()
+    : serverIsRunning(false)
 {
     settings = new ApplicationSettings();
 
@@ -45,23 +46,35 @@ ServerCore::ServerCore()
 
 ServerCore::~ServerCore()
 {
+    Stop();
+    
     settings->Save();
     delete settings;
-    
-    server.Disconnect();
-    client.Disconnect();
 }
 
 
 void ServerCore::Start()
 {
-    DAVA::Logger::FrameworkDebug("[ServerCore::%s]", __FUNCTION__);
-
     server.Listen(settings->GetPort());
     serverLogics.Init(&server, &client, &dataBase);
 
+    serverIsRunning = true;
+    
     QTimer::singleShot(UPDATE_TIMEOUT, this, &ServerCore::UpdateByTimer);
 }
+
+void ServerCore::Stop()
+{
+    if(serverIsRunning)
+    {
+        serverIsRunning = false;
+        
+        client.Disconnect();
+        server.Disconnect();
+    }
+}
+
+
 
 void ServerCore::Update()
 {
@@ -77,7 +90,11 @@ void ServerCore::Update()
 void ServerCore::UpdateByTimer()
 {
     Update();
-    QTimer::singleShot(UPDATE_TIMEOUT, this, &ServerCore::UpdateByTimer);
+    
+    if(serverIsRunning)
+    {
+        QTimer::singleShot(UPDATE_TIMEOUT, this, &ServerCore::UpdateByTimer);
+    }
 }
 
 
@@ -85,41 +102,60 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
 {
     if(settings == _settings)
     {
-        auto & folder = settings->GetFolder();
-        auto sizeGb = settings->GetCacheSizeGb();
-        auto count = settings->GetFilesCount();
-        auto autoSaveTimeout = settings->GetAutoSaveTimeoutMs();
-
+        const auto & folder = settings->GetFolder();
+        const auto sizeGb = settings->GetCacheSizeGb();
+        const auto count = settings->GetFilesCount();
+        const auto autoSaveTimeout = settings->GetAutoSaveTimeoutMs();
+        const auto remoteServer = settings->GetCurrentServer();
+        
         bool needServerRestart = false; //TODO: why we need different places for disconnect and listen???
-        if (server.IsConnected() && server.GetListenPort() != settings->GetPort())
-        {
-            needServerRestart = true;
-            server.Disconnect();
+        bool needClientRestart = true;
+
+        if(serverIsRunning)
+        {   // disconnect network if settings changed
+            if (server.IsConnected() && server.GetListenPort() != settings->GetPort())
+            {
+                needServerRestart = true;
+                server.Disconnect();
+            }
+            
+            auto clientConnection = client.GetConnection();
+            if(client.IsConnected() && clientConnection)
+            {
+                const auto & endpoint = clientConnection->GetEndpoint();
+                if(remoteServer == endpoint)
+                {
+                    needClientRestart = false;
+                }
+                else
+                {
+                    client.Disconnect();
+                }
+            }
         }
         
-        if(sizeGb && !folder.IsEmpty())
-        {
-            dataBase.UpdateSettings(folder, sizeGb * 1024 * 1024 * 1024, count, autoSaveTimeout);
-        }
-        else
-        {
-            DAVA::Logger::Warning("[ServerCore::%s] Empty settings", __FUNCTION__);
+        {   //updated DB settings
+            if(sizeGb && !folder.IsEmpty())
+            {
+                dataBase.UpdateSettings(folder, sizeGb * 1024 * 1024 * 1024, count, autoSaveTimeout);
+            }
+            else
+            {
+                DAVA::Logger::Warning("[ServerCore::%s] Empty settings", __FUNCTION__);
+            }
         }
 
-        if (needServerRestart)
-        {
-            server.Listen(settings->GetPort());
-        }
-        
-        auto remoteServer = settings->GetCurrentServer();
-        if(client.IsConnected() && true) // check 
-        {
-            client.Disconnect();
-        }
-        
-        if(!remoteServer.ip.empty())
-        {
-            client.Connect(remoteServer.ip, remoteServer.port);
+        if(serverIsRunning)
+        {   // restart network connections after changing of settings
+            if (needServerRestart)
+            {
+                server.Listen(settings->GetPort());
+            }
+            
+            if(needClientRestart && !remoteServer.ip.empty())
+            {
+                client.Connect(remoteServer.ip, remoteServer.port);
+            }
         }
     }
     else

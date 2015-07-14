@@ -76,7 +76,7 @@ public:
     void PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, size_t length) override;
     //END of TCPConnectionDelegate
     
-    TCPChannel * GetChannel() const;
+    TCPConnection * GetConnection() const;
     
 private:
     
@@ -98,7 +98,11 @@ inline void Client::SetDelegate(ClientDelegate * _delegate)
     }
 }
 
-    
+inline TCPConnection * Client::GetConnection() const
+{
+    return netClient;
+}
+   
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA

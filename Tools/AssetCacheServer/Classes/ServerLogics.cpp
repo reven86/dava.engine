@@ -100,23 +100,31 @@ void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key
     if(dataBase && server)
     {
         dataBase->Insert(key, files);
-        
+
+        if(waitedRequests.size())
         {
-            DAVA::LockGuard<DAVA::Mutex> lock(requestMutex);
-
-            auto iter = std::find_if(waitedRequests.begin(), waitedRequests.end(), [&key](const RequestDescription& description) -> bool
-            {
-                return (description.key == key) && (description.request == DAVA::AssetCache::PACKET_GET_FILES_REQUEST);
-            });
-
-            if(iter != waitedRequests.end())
-            {
-                //TODO: think about
-                server->SendFiles(iter->clientChannel, key, files);
+            RequestDescription description;
+            
+            {   //find description for key
+                DAVA::LockGuard<DAVA::Mutex> lock(requestMutex);
+                auto iter = std::find_if(waitedRequests.begin(), waitedRequests.end(), [&key](const RequestDescription& description) -> bool
+                                         {
+                                             return (description.key == key) && (description.request == DAVA::AssetCache::PACKET_GET_FILES_REQUEST);
+                                         });
+                
+                if(iter != waitedRequests.end())
+                {
+                    description = *iter;
+                }
+                else
+                {
+                    DVASSERT(false && "cannot found description for key")
+                }
             }
-            else
+            
+            if(nullptr != description.clientChannel)
             {
-                DVASSERT(false);
+                server->SendFiles(description.clientChannel, key, files);
             }
         }
     }
