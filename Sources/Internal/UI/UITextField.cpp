@@ -1039,6 +1039,12 @@ void UITextField::SetInputEnabled(bool isEnabled, bool hierarchic)
 
 void UITextField::SetRenderToTexture(bool value)
 {
+    // Workaround! Users need scroll on large text in
+    // multiline mode so we have to disable render into texture
+    if (isMultiline_)
+    {
+        value = false;
+    }
 #ifdef __DAVAENGINE_WINDOWS__
     // do nothing
 #elif defined(__DAVAENGINE_MACOS__)

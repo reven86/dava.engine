@@ -228,7 +228,9 @@ namespace DAVA
     void UITextFieldiPhone::CloseKeyboard()
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        textFieldHolder->textCtrl.userInteractionEnabled = NO;
+        if (isSingleLine) {
+            textFieldHolder->textCtrl.userInteractionEnabled = NO;
+        }
         [textFieldHolder->textCtrl resignFirstResponder];
     }
     
@@ -643,7 +645,9 @@ namespace DAVA
             
             textView.textColor = color;
             textView.font = font;
-            textView.userInteractionEnabled = NO;
+            // Workaround! in multiline mode use need ability to scroll
+            // text without open keyboard
+            textView.userInteractionEnabled = YES;
             [textView setHidden:isHidden];
             textView.delegate = textFieldHolder;
            
@@ -657,6 +661,11 @@ namespace DAVA
             [textView setBackgroundColor:[UIColor clearColor]];
             
             textView.scrollEnabled = YES;
+            
+            // Workaround! in multiline mode always listen for user
+            // touches
+            SetRenderToTexture(false);
+            
         } else if (!isSingleLine && !multiline)
         {
             // revert back single line native control
