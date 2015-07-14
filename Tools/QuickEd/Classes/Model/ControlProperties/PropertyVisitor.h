@@ -16,7 +16,6 @@ class PrototypeNameProperty;
 class StyleSheetRootProperty;
 class StyleSheetSelectorsSection;
 class StyleSheetSelectorProperty;
-class StyleSheetPropertiesSection;
 class StyleSheetProperty;
 
 class PropertyVisitor
@@ -42,7 +41,6 @@ public:
     virtual void VisitStyleSheetRoot(StyleSheetRootProperty *property) = 0;
     virtual void VisitStyleSheetSelectorsSection(StyleSheetSelectorsSection *property) = 0;
     virtual void VisitStyleSheetSelectorProperty(StyleSheetSelectorProperty *property) = 0;
-    virtual void VisitStyleSheetPropertiesSection(StyleSheetPropertiesSection *property) = 0;
     virtual void VisitStyleSheetProperty(StyleSheetProperty *property) = 0;
 };
 

@@ -35,8 +35,8 @@
 
 class PropertyListener;
 class ValueProperty;
+class SectionProperty;
 class StyleSheetSelectorsSection;
-class StyleSheetPropertiesSection;
 class StyleSheetProperty;
 
 class StyleSheetNode;
@@ -73,14 +73,16 @@ public:
     void RemoveProperty(StyleSheetProperty *property);
     
     StyleSheetSelectorsSection *GetSelectors() const;
-    StyleSheetPropertiesSection *GetPropertiesSection() const;
+    SectionProperty *GetPropertiesSection() const;
+
+    StyleSheetProperty *FindPropertyByIndex(DAVA::uint32 index) const;
 
 private:
     StyleSheetNode *styleSheet = nullptr;
     DAVA::Vector<PropertyListener*> listeners;
     
     StyleSheetSelectorsSection *selectors = nullptr;
-    StyleSheetPropertiesSection *propertiesSection = nullptr;
+    SectionProperty *propertiesSection = nullptr;
 };
 
 #endif // __QUICKED_STYLE_SHEETS_ROOT_PROPERTY_H__

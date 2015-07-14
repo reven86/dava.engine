@@ -44,17 +44,40 @@ SectionProperty::~SectionProperty()
     for (auto it = children.begin(); it != children.end(); ++it)
     {
         DVASSERT((*it)->GetParent() == this);
-        (*it)->SetParent(NULL);
+        (*it)->SetParent(nullptr);
         (*it)->Release();
     }
     children.clear();
 }
 
-void SectionProperty::AddProperty(ValueProperty *value)
+void SectionProperty::AddProperty(ValueProperty *property)
 {
-    DVASSERT(value->GetParent() == NULL);
-    value->SetParent(this);
-    children.push_back(SafeRetain(value));
+    DVASSERT(property->GetParent() == nullptr);
+    property->SetParent(this);
+    children.push_back(SafeRetain(property));
+}
+
+void SectionProperty::InsertProperty(ValueProperty *property, DAVA::int32 index)
+{
+    DVASSERT(property->GetParent() == nullptr);
+    property->SetParent(this);
+    children.insert(children.begin() + index, SafeRetain(property));
+}
+
+void SectionProperty::RemoveProperty(ValueProperty *property)
+{
+    auto it = std::find(children.begin(), children.end(), property);
+    if (it != children.end())
+    {
+        DVASSERT((*it)->GetParent() == this);
+        (*it)->SetParent(nullptr);
+        (*it)->Release();
+        children.erase(it);
+    }
+    else
+    {
+        DVASSERT(false);
+    }
 }
 
 int SectionProperty::GetCount() const
@@ -62,7 +85,7 @@ int SectionProperty::GetCount() const
     return static_cast<int>(children.size());
 }
 
-AbstractProperty *SectionProperty::GetProperty(int index) const
+ValueProperty *SectionProperty::GetProperty(int index) const
 {
     if (0 <= index && index < children.size())
         return children[index];
@@ -75,6 +98,11 @@ void SectionProperty::Refresh()
 {
     for (ValueProperty *prop : children)
         prop->Refresh();
+}
+
+void SectionProperty::Accept(PropertyVisitor *visitor)
+{
+    // do nothing
 }
 
 const DAVA::String & SectionProperty::GetName() const

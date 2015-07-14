@@ -80,11 +80,11 @@ private: // PropertyListener
     void ComponentPropertiesWillBeRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) override;
     void ComponentPropertiesWasRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) override;
 
-    void StylePropertyWillBeAdded(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) override;
-    void StylePropertyWasAdded(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) override;
+    void StylePropertyWillBeAdded(SectionProperty *section, StyleSheetProperty *property, int index) override;
+    void StylePropertyWasAdded(SectionProperty *section, StyleSheetProperty *property, int index) override;
     
-    void StylePropertyWillBeRemoved(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) override;
-    void StylePropertyWasRemoved(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) override;
+    void StylePropertyWillBeRemoved(SectionProperty *section, StyleSheetProperty *property, int index) override;
+    void StylePropertyWasRemoved(SectionProperty *section, StyleSheetProperty *property, int index) override;
 
 private:
     void ChangeProperty(AbstractProperty *property, const DAVA::VariantType &value);

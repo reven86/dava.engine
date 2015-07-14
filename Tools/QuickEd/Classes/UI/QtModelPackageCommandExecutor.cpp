@@ -52,7 +52,6 @@
 #include "Model/ControlProperties/ComponentPropertiesSection.h"
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/StyleSheetRootProperty.h"
-#include "Model/ControlProperties/StyleSheetPropertiesSection.h"
 #include "Model/ControlProperties/StyleSheetProperty.h"
 
 #include "Model/YamlPackageSerializer.h"
@@ -139,21 +138,6 @@ void QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(const DAVA
     }
 }
 
-void QtModelPackageCommandExecutor::ChangeProperty(StyleSheetNode *node, AbstractProperty *property, const DAVA::VariantType &value)
-{
-    if (!property->IsReadOnly())
-    {
-        PushCommand(new ChangeStylePropertyCommand(document->GetPackage(), node, property, value));
-    }
-}
-
-void QtModelPackageCommandExecutor::ResetProperty(StyleSheetNode *node, AbstractProperty *property)
-{
-    if (!property->IsReadOnly())
-    {
-    }
-}
-
 void QtModelPackageCommandExecutor::ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value)
 {
     if (!property->IsReadOnly())
@@ -200,6 +184,14 @@ void QtModelPackageCommandExecutor::RemoveComponent(ControlNode *node, uint32 co
     }
 }
 
+void QtModelPackageCommandExecutor::ChangeProperty(StyleSheetNode *node, AbstractProperty *property, const DAVA::VariantType &value)
+{
+    if (!property->IsReadOnly())
+    {
+        PushCommand(new ChangeStylePropertyCommand(document->GetPackage(), node, property, value));
+    }
+}
+
 void QtModelPackageCommandExecutor::AddStyleProperty(StyleSheetNode *node, uint32 propertyIndex)
 {
     if (node->GetRootProperty()->CanAddProperty(propertyIndex))
@@ -214,7 +206,7 @@ void QtModelPackageCommandExecutor::RemoveStyleProperty(StyleSheetNode *node, DA
 {
     if (node->GetRootProperty()->CanRemoveProperty(propertyIndex))
     {
-        StyleSheetProperty *property = node->GetRootProperty()->GetPropertiesSection()->FindPropertyByIndex(propertyIndex);
+        StyleSheetProperty *property = node->GetRootProperty()->FindPropertyByIndex(propertyIndex);
         if (property)
         {
             PushCommand(new AddRemoveStylePropertyCommand(document->GetPackage(), node, property, false));

@@ -51,7 +51,6 @@
 #include "ControlProperties/StyleSheetRootProperty.h"
 #include "ControlProperties/StyleSheetSelectorsSection.h"
 #include "ControlProperties/StyleSheetSelectorProperty.h"
-#include "ControlProperties/StyleSheetPropertiesSection.h"
 #include "ControlProperties/StyleSheetProperty.h"
 
 using namespace DAVA;
@@ -402,6 +401,14 @@ void PackageSerializer::VisitStyleSheetRoot(StyleSheetRootProperty *property)
 {
     property->GetSelectors()->Accept(this);
     property->GetPropertiesSection()->Accept(this);
+    
+    if (property->GetPropertiesSection()->GetCount() > 0)
+    {
+        BeginMap("properties", false);
+        AcceptChildren(property->GetPropertiesSection());
+        EndMap();
+    }
+
 }
 
 void PackageSerializer::VisitStyleSheetSelectorsSection(StyleSheetSelectorsSection *property)
@@ -419,16 +426,6 @@ void PackageSerializer::VisitStyleSheetSelectorsSection(StyleSheetSelectorsSecti
 void PackageSerializer::VisitStyleSheetSelectorProperty(StyleSheetSelectorProperty *property)
 {
     // do nothing
-}
-
-void PackageSerializer::VisitStyleSheetPropertiesSection(StyleSheetPropertiesSection *property)
-{
-    if (property->GetCount() > 0)
-    {
-        BeginMap("properties", false);
-        AcceptChildren(property);
-        EndMap();
-    }
 }
 
 void PackageSerializer::VisitStyleSheetProperty(StyleSheetProperty *property)
