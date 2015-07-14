@@ -39,6 +39,19 @@ BaseScreen::BaseScreen()
     UIScreenManager::Instance()->RegisterScreen(screenID, this);
 }
 
+bool BaseScreen::SystemInput(UIEvent *currentInput)
+{
+    if ((currentInput->tid == DVKEY_BACK) && (currentInput->phase = UIEvent::PHASE_KEYCHAR))
+    {
+        SetPreviousScreen();
+    }
+    else
+    {
+        return UIScreen::SystemInput(currentInput);
+    }
+    return true;
+}
+
 void BaseScreen::LoadResources()
 {
 	GetBackground()->SetColor(Color(0.f, 0.f, 0.f, 1.f));

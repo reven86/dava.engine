@@ -392,11 +392,20 @@ void WinUAPXamlApp::OnPointerWheel(Platform::Object^ sender, Windows::UI::Core::
 
 void WinUAPXamlApp::OnHardwareBackButtonPressed(_In_ Platform::Object^ sender, Windows::Phone::UI::Input::BackPressedEventArgs ^args)
 {
-    // Note: must run on main thread
-    args->Handled = true;
     core->RunOnMainThread([this]() {
-        Logger::FrameworkDebug("[CorePlatformWinUAP] OnHardwareBackButtonPressed");
+        InputSystem::Instance()->GetKeyboard().OnKeyPressed(static_cast<int32>(DVKEY_BACK));
+        UIEvent ev;
+        ev.keyChar = 0;
+        ev.tapCount = 1;
+        ev.phase = UIEvent::PHASE_KEYCHAR;
+        ev.tid = DVKEY_BACK;
+        Vector<UIEvent> touches = { ev };
+        UIControlSystem::Instance()->OnInput(0, touches, allTouches);
+        touches.pop_back();
+        UIControlSystem::Instance()->OnInput(0, touches, allTouches);
+        InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(static_cast<int32>(DVKEY_BACK));
     });
+    args->Handled = true;
 }
 
 void WinUAPXamlApp::OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args)
