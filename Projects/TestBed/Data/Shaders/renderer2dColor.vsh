@@ -10,11 +10,8 @@ precision highp float;
 attribute vec4 inPosition;
 
 uniform mat4 worldViewProjMatrix;
-uniform lowp vec4 flatColor;
-varying lowp vec4 varColor;
 
 void main()
 {
-	gl_Position = worldViewProjMatrix * inPosition;
-	varColor = flatColor;
+	gl_Position = worldViewProjMatrix * inPosition;	
 }
