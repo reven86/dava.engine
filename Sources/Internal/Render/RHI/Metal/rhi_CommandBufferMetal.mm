@@ -38,8 +38,8 @@ CommandBufferMetal_t
     Handle                      cur_ib;
 };
 
-typedef Pool<CommandBufferMetal_t,RESOURCE_COMMAND_BUFFER>  CommandBufferPool;
-typedef Pool<RenderPassMetal_t,RESOURCE_RENDER_PASS>        RenderPassPool;
+typedef ResourcePool<CommandBufferMetal_t,RESOURCE_COMMAND_BUFFER>  CommandBufferPool;
+typedef ResourcePool<RenderPassMetal_t,RESOURCE_RENDER_PASS>        RenderPassPool;
 
 RHI_IMPL_POOL(CommandBufferMetal_t,RESOURCE_COMMAND_BUFFER);
 RHI_IMPL_POOL(RenderPassMetal_t,RESOURCE_RENDER_PASS);

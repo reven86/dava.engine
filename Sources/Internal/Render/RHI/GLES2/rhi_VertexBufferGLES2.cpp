@@ -33,7 +33,7 @@ VertexBufferGLES2_t
     uint32      mapped:1;
 };
 
-typedef Pool<VertexBufferGLES2_t,RESOURCE_VERTEX_BUFFER>   VertexBufferGLES2Pool;
+typedef ResourcePool<VertexBufferGLES2_t,RESOURCE_VERTEX_BUFFER>   VertexBufferGLES2Pool;
 RHI_IMPL_POOL(VertexBufferGLES2_t,RESOURCE_VERTEX_BUFFER);
 
 
@@ -41,12 +41,12 @@ RHI_IMPL_POOL(VertexBufferGLES2_t,RESOURCE_VERTEX_BUFFER);
 
 
 static Handle
-gles2_VertexBuffer_Create( uint32 size, uint32 options )
+gles2_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
 {
     Handle  handle = InvalidHandle;
 
-    DVASSERT(size);
-    if( size )
+    DVASSERT(desc.size);
+    if( desc.size )
     {
         GLuint      b    = 0;
         GLCommand   cmd1 = { GLCommand::GEN_BUFFERS, {1,(uint64)(&b)} };
@@ -59,7 +59,7 @@ gles2_VertexBuffer_Create( uint32 size, uint32 options )
             ExecGL( &cmd2, 1 );
             if( cmd2.status == GL_NO_ERROR )
             {
-                void*   data = malloc( size );
+                void*   data = malloc( desc.size );
 
                 if( data )
                 {
@@ -67,7 +67,7 @@ gles2_VertexBuffer_Create( uint32 size, uint32 options )
                     VertexBufferGLES2_t*    vb = VertexBufferGLES2Pool::Get( handle );
 
                     vb->data   = data;
-                    vb->size   = size;
+                    vb->size   = desc.size;
                     vb->uid    = b;
                     vb->mapped = false;
                 }

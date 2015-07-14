@@ -36,7 +36,7 @@ DepthStencilStateDX9_t
     }       stencilFront,stencilBack;
 };
 
-typedef Pool<DepthStencilStateDX9_t,RESOURCE_DEPTHSTENCIL_STATE>    DepthStencilStateDX9Pool;
+typedef ResourcePool<DepthStencilStateDX9_t,RESOURCE_DEPTHSTENCIL_STATE>    DepthStencilStateDX9Pool;
 RHI_IMPL_POOL(DepthStencilStateDX9_t,RESOURCE_DEPTHSTENCIL_STATE);
 
 

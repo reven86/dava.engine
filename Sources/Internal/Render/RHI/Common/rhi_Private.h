@@ -50,7 +50,7 @@ namespace rhi
 namespace VertexBuffer
 {
 
-Handle  Create( uint32 size, uint32 options=0 );
+Handle  Create( const VertexBuffer::Descriptor& desc );
 void    Delete( Handle vb );
 
 bool    Update( Handle vb, const void* data, uint32 offset=0, uint32 size=0 );
@@ -67,7 +67,7 @@ void    Unmap( Handle vb );
 namespace IndexBuffer
 {
 
-Handle  Create( uint32 size, uint32 options=0 );
+Handle  Create( const IndexBuffer::Descriptor& desc );
 void    Delete( Handle ib );
 
 bool    Update( Handle ib, const void* data, uint32 offset=0, uint32 size=0 );

@@ -97,8 +97,8 @@ public:
     RingBuffer*         text;
 };
 
-typedef Pool<CommandBufferGLES2_t,RESOURCE_COMMAND_BUFFER>  CommandBufferPool;
-typedef Pool<RenderPassGLES2_t,RESOURCE_RENDER_PASS>        RenderPassPool;
+typedef ResourcePool<CommandBufferGLES2_t,RESOURCE_COMMAND_BUFFER>  CommandBufferPool;
+typedef ResourcePool<RenderPassGLES2_t,RESOURCE_RENDER_PASS>        RenderPassPool;
 
 RHI_IMPL_POOL(CommandBufferGLES2_t,RESOURCE_COMMAND_BUFFER);
 RHI_IMPL_POOL(RenderPassGLES2_t,RESOURCE_RENDER_PASS);

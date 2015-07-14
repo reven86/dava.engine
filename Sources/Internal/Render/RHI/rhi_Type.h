@@ -265,6 +265,25 @@ enum
     VATTR_COUNT         = 16
 };
 
+////////////////////////////////////////////////////////////////////////////////
+// buffer
+
+enum
+Usage
+{
+    USAGE_DEFAULT,
+    USAGE_STATIC,
+    USAGE_DYNAMIC
+};
+
+enum
+Pool
+{
+    POOL_DEFAULT,
+    POOL_LOCALMEMORY,
+    POOL_SYSTEMMEMORY
+};
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -389,6 +408,41 @@ StoreAction
     STOREACTION_STORE    = 1
 //    STOREACTION_RESOLVE    = 2
 };
+
+namespace VertexBuffer
+{
+struct
+Descriptor
+{
+    uint32  size;
+    Pool    pool;
+    Usage   usage;
+            
+            Descriptor( uint32 sz ) 
+              : size(sz),
+                pool(POOL_DEFAULT),
+                usage(USAGE_DEFAULT) 
+            {}
+};
+}
+
+namespace IndexBuffer
+{
+struct
+Descriptor
+{
+    uint32  size;
+    Pool    pool;
+    Usage   usage;
+            
+            Descriptor( uint32 sz ) 
+              : size(sz),
+                pool(POOL_DEFAULT),
+                usage(USAGE_DEFAULT) 
+            {}
+};
+}
+
 
 namespace Texture
 {

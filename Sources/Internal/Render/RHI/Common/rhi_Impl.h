@@ -49,13 +49,13 @@ Dispatch
     Api     (*impl_HostApi)();
     bool    (*impl_TextureFormatSupported)( TextureFormat );
 
-    Handle  (*impl_VertexBuffer_Create)( uint32, uint32 );
+    Handle  (*impl_VertexBuffer_Create)( const VertexBuffer::Descriptor& desc );
     void    (*impl_VertexBuffer_Delete)( Handle );
     bool    (*impl_VertexBuffer_Update)( Handle, const void*, uint32, uint32 );
     void*   (*impl_VertexBuffer_Map)( Handle, uint32, uint32 );
     void    (*impl_VertexBuffer_Unmap)( Handle );
 
-    Handle  (*impl_IndexBuffer_Create)( uint32, uint32 );
+    Handle  (*impl_IndexBuffer_Create)( const IndexBuffer::Descriptor& desc );
     void    (*impl_IndexBuffer_Delete)( Handle );
     bool    (*impl_IndexBuffer_Update)( Handle, const void*, uint32, uint32 );
     void*   (*impl_IndexBuffer_Map)( Handle, uint32, uint32 );

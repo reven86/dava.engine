@@ -20,7 +20,7 @@ namespace rhi
 {
 //==============================================================================
 
-typedef Pool<ProgGLES2::ConstBuf,RESOURCE_CONST_BUFFER>   ConstBufGLES2Pool;
+typedef ResourcePool<ProgGLES2::ConstBuf,RESOURCE_CONST_BUFFER>   ConstBufGLES2Pool;
 RHI_IMPL_POOL_SIZE(ProgGLES2::ConstBuf,RESOURCE_CONST_BUFFER,8*1024);
 
 static RingBuffer   DefaultConstRingBuffer;

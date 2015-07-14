@@ -24,7 +24,7 @@ public:
     std::vector<IDirect3DQuery9*>   query;
 };
 
-typedef Pool<QueryBufferDX9_t,RESOURCE_QUERY_BUFFER>    QueryBufferDX9Pool;
+typedef ResourcePool<QueryBufferDX9_t,RESOURCE_QUERY_BUFFER>    QueryBufferDX9Pool;
 RHI_IMPL_POOL(QueryBufferDX9_t,RESOURCE_QUERY_BUFFER);
 
 

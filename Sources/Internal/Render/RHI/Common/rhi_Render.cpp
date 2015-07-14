@@ -20,7 +20,7 @@ TextureSet_t
     int     refCount;
 };
 
-typedef Pool<TextureSet_t,RESOURCE_TEXTURE_SET> TextureSetPool;
+typedef ResourcePool<TextureSet_t,RESOURCE_TEXTURE_SET> TextureSetPool;
 RHI_IMPL_POOL(TextureSet_t,RESOURCE_TEXTURE_SET);
 
 struct
@@ -82,16 +82,16 @@ PacketList_t
     uint32      batchIndex;
 };
 
-typedef Pool<PacketList_t,RESOURCE_PACKET_LIST>     PacketListPool;
+typedef ResourcePool<PacketList_t,RESOURCE_PACKET_LIST>     PacketListPool;
 RHI_IMPL_POOL(PacketList_t,RESOURCE_PACKET_LIST);
 
 
 //------------------------------------------------------------------------------
 
 HVertexBuffer
-CreateVertexBuffer( uint32 size )
+CreateVertexBuffer( const VertexBuffer::Descriptor& desc )
 {
-    return HVertexBuffer(VertexBuffer::Create( size ));
+    return HVertexBuffer(VertexBuffer::Create( desc ));
 }
 
 
@@ -134,9 +134,9 @@ UpdateVertexBuffer( HVertexBuffer vb, const void* data, uint32 offset, uint32 si
 //------------------------------------------------------------------------------
 
 HIndexBuffer
-CreateIndexBuffer( uint32 size )
+CreateIndexBuffer( const IndexBuffer::Descriptor& desc )
 {
-    return HIndexBuffer(IndexBuffer::Create( size ));
+    return HIndexBuffer(IndexBuffer::Create( desc ));
 }
 
 

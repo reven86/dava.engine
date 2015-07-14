@@ -22,7 +22,7 @@ DepthStencilStateMetal_t
     uint8                       stencilRefValue;
 };
 
-typedef Pool<DepthStencilStateMetal_t,RESOURCE_DEPTHSTENCIL_STATE>    DepthStencilStateMetalPool;
+typedef ResourcePool<DepthStencilStateMetal_t,RESOURCE_DEPTHSTENCIL_STATE>    DepthStencilStateMetalPool;
 RHI_IMPL_POOL(DepthStencilStateMetal_t,RESOURCE_DEPTHSTENCIL_STATE);
 
     
