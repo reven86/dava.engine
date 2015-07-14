@@ -41,9 +41,13 @@
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
-
+#include "Model/PackageHierarchy/StyleSheetNode.h"
+#include "Model/PackageHierarchy/StyleSheetsNode.h"
 #include "UI/UIPackage.h"
 #include "UI/UIControl.h"
+#include "UI/UIControlPackageContext.h"
+#include "UI/Styles/UIStyleSheet.h"
+#include "UI/Styles/UIStyleSheetYamlLoader.h"
 #include "Base/ObjectFactory.h"
 #include "Utils/Utils.h"
 
@@ -67,6 +71,10 @@ EditorUIPackageBuilder::~EditorUIPackageBuilder()
     for (ControlNode *control : rootControls)
         control->Release();
     rootControls.clear();
+
+    for (StyleSheetNode *styleSheet : styleSheets)
+        styleSheet->Release();
+    styleSheets.clear();
 }
 
 void EditorUIPackageBuilder::BeginPackage(const FilePath &aPackagePath)
@@ -106,6 +114,19 @@ bool EditorUIPackageBuilder::ProcessImportedPackage(const String &packagePathStr
     }
     
     return false;
+}
+
+void EditorUIPackageBuilder::ProcessStyleSheets(const YamlNode* styleSheetsNode)
+{
+    UIStyleSheetYamlLoader styleSheetLoader;
+
+    Vector< UIStyleSheet* > styleSheets;
+    styleSheetLoader.LoadFromYaml(styleSheetsNode, &styleSheets);
+
+    AddStyleSheets(styleSheets);
+
+    for (UIStyleSheet* styleSheet : styleSheets)
+        SafeRelease(styleSheet);
 }
 
 UIControl *EditorUIPackageBuilder::BeginControlWithClass(const String &className)
@@ -311,17 +332,29 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
     DVASSERT(!packagePath.IsEmpty());
     RefPtr<PackageNode> package(new PackageNode(packagePath));
     
+    ScopedPtr<UIControlPackageContext> packageContext(new UIControlPackageContext());
     Vector<PackageNode*> declinedPackages;
     for (PackageNode *importedPackage : importedPackages)
     {
         if (package->GetImportedPackagesNode()->CanInsertImportedPackage(importedPackage))
         {
             package->GetImportedPackagesNode()->Add(importedPackage);
+
+            for (int32 styleSheetIndex = 0; styleSheetIndex < importedPackage->GetStyleSheets()->GetCount(); ++styleSheetIndex)
+            {
+                packageContext->AddStyleSheet(importedPackage->GetStyleSheets()->Get(styleSheetIndex)->GetStyleSheet());
+            }
         }
         else
         {
             declinedPackages.push_back(importedPackage);
         }
+    }
+    
+    for (StyleSheetNode *styleSheet : styleSheets)
+    {
+        package->GetStyleSheets()->Add(styleSheet);
+        packageContext->AddStyleSheet(styleSheet->GetStyleSheet());
     }
     
     for (ControlNode *control : rootControls)
@@ -334,7 +367,10 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
         }
         
         if (canInsert)
+        {
+            control->GetControl()->SetPackageContext(packageContext);
             package->GetPackageControlsNode()->Add(control);
+        }
     }
     
     DVASSERT(declinedPackages.empty());
@@ -365,6 +401,15 @@ ControlNode *EditorUIPackageBuilder::FindRootControl(const DAVA::String &name) c
             return control;
     }
     return nullptr;
+}
+
+void EditorUIPackageBuilder::AddStyleSheets(const DAVA::Vector<UIStyleSheet*>& newStyleSheets)
+{
+    for (UIStyleSheet *styleSheet : newStyleSheets)
+    {
+        StyleSheetNode *node = new StyleSheetNode(styleSheet);
+        styleSheets.push_back(node);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

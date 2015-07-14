@@ -276,11 +276,6 @@ public:
     virtual void Activate();
     virtual void Deactivate();
 
-    /**
-        \brief This will make copy of scene, including entities ID-s.
-    */
-    void CopyScene(Scene *dst);
-
     EntityCache cache;
     
 protected:
@@ -299,7 +294,7 @@ protected:
     uint32 nodeCounter;
 
     uint32 systemsMask;
-    uint32 maxIDCounter;
+    uint32 maxEntityIDCounter;
 
     uint32 clearBuffers;
 

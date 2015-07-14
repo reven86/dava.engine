@@ -7,7 +7,7 @@ import timeit
 arguments    = sys.argv[1:]
 
 if len(arguments) == 0:
-    print 'Usage: ./test.py Please enter path to the directory'
+    print 'Usage: Please enter path to the directory'
     exit(1)
 
 count      = 0

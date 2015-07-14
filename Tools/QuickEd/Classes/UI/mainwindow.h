@@ -44,6 +44,7 @@ class LibraryWidget;
 class PreviewWidget;
 
 class LocalizationEditorDialog;
+class DialogReloadSprites;
 class DavaGLWidget;
 
 class MainWindow : public QMainWindow, public Ui::MainWindow
@@ -84,6 +85,7 @@ signals:
     void SaveDocument(int index);
     void CurrentTabChanged(int index);
     void CloseRequested();
+    void ReloadSprites(DAVA::eGPUFamily gpu);
 public slots:
     void OnProjectIsOpenChanged(bool arg);
     void OnCountChanged(int count);
@@ -91,34 +93,33 @@ private slots:
     void OnCurrentIndexChanged(int arg);
     void OnSaveDocument();
     void OnOpenFontManager();
-    void OnOpenLocalizationManager();
     void OnShowHelp();
-	
+    
     void OnOpenProject();
-	
-	void RebuildRecentMenu();
+    
+    void RebuildRecentMenu();
 
     void SetBackgroundColorMenuTriggered(QAction* action);
-    
+
     // Pixelization.
     void OnPixelizationStateChanged();
 private:
     void InitLanguageBox();
-	void InitMenu();
+    void InitMenu();
     void SetupViewMenu();
     void DisableActions();
-	void UpdateProjectSettings(const QString& filename);
+    void UpdateProjectSettings(const QString& filename);
 
-	// Save/restore positions of DockWidgets and main window geometry
-	void SaveMainWindowState();
-	void RestoreMainWindowState();
-
+    // Save/restore positions of DockWidgets and main window geometry
+    void SaveMainWindowState();
+    void RestoreMainWindowState();
 private:
     // Background Frame Color menu actions.
     QList<QAction*> backgroundFramePredefinedColorActions;
     QAction* backgroundFrameUseCustomColorAction;
     QAction* backgroundFrameSelectCustomColorAction;
     LocalizationEditorDialog *localizationEditorDialog;
+    DialogReloadSprites *dialogReloadSprites;
 };
 
 Q_DECLARE_METATYPE(MainWindow::TabState*);

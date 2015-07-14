@@ -236,17 +236,17 @@ void PreviewModel::OnControlSelected(const DAVA::List<std::pair<DAVA::UIControl 
             }
             else
             {
-                resultList.AddResult(Result::RESULT_WARNING, ("selected control is equal to the current root control"));
+                resultList.AddResult(Result::RESULT_FAILURE, ("selected control is equal to the current root control"));
             }
         }
         else
         {
-            resultList.AddResult(Result::RESULT_WARNING, ("rootControl not found!"));
+            resultList.AddResult(Result::RESULT_FAILURE, ("rootControl not found!"));
         }
     }
     if (!selectedNodes.isEmpty())
     {
-        ControlNodeSelected(selectedNodes);
+        emit ControlNodeSelected(selectedNodes);
     }
     if (!resultList)
     {
@@ -288,26 +288,21 @@ void PreviewModel::SetRootControls(const QList<ControlNode*> &activatedControls)
     SetCanvasPosition(QPoint(newPosition.x, newPosition.y));
 }
 
-void PreviewModel::ControlsDeactivated(const QList<ControlNode*> &deactivatedControls)
+void PreviewModel::SetSelectedControls(const QList<ControlNode *> &selectedControls)
 {
-    for (ControlNode *node : deactivatedControls)
+    for (auto &rootNode : rootNodes)
     {
-        UIControl *control = node->GetControl();
-        CheckeredCanvas *rootContainer = FindControlContainer(control);
-        if (rootContainer)
-            rootContainer->RemoveSelection(control);
+        DynamicTypeCheck<CheckeredCanvas*>(rootNode.first->GetParent())->ClearSelections();
     }
-}
-
-void PreviewModel::ControlsActivated(const QList<ControlNode *> &activatedControls)
-{
-    for (ControlNode *node : activatedControls)
+    
+    for (ControlNode *node : selectedControls)
     {
         UIControl *control = node->GetControl();
         CheckeredCanvas *rootContainer = FindControlContainer(control);
         if (rootContainer)
             rootContainer->SelectControl(control);
     }
+
 }
 
 QPoint PreviewModel::GetCanvasPosition() const
