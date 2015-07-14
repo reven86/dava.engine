@@ -405,7 +405,7 @@ elseif( MACOS )
         set( OUTPUT_DIR ${DEPLOY_DIR}/${PROJECT_NAME}.app/Contents )
 
     else()
-        set( OUTPUT_DIR ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents )
+        set( OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents )
     endif()
 
     set( BINARY_DIR ${OUTPUT_DIR}/MacOS/${PROJECT_NAME} )
