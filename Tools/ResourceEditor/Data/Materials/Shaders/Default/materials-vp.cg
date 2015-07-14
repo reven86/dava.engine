@@ -140,7 +140,7 @@ VPROG_OUT_END
 ////////////////////////////////////////////////////////////////////////////////
 // properties
 
-#if !SPEED_TREE_LEAF
+#if !SPEED_TREE_LEAF || CUT_LEAF
 property float4x4 worldViewProjMatrix : dynamic,a : ;
 #endif
 
@@ -358,7 +358,7 @@ VPROG_BEGIN
         float4 tangentInCameraSpace = mul( float4(inPivot,1.0), worldViewMatrix );
         if (tangentInCameraSpace.z < -cutDistance)
         {
-            VP_OUT_POSITION = mul( float4(inPivot,VP_IN_POSITION.w), worldViewProjMatrix );
+            VP_OUT_POSITION = mul( float4(inPivot,1.0), worldViewProjMatrix );
         }
         else
         {

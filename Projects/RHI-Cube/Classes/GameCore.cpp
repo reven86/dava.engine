@@ -745,10 +745,10 @@ void GameCore::OnAppStarted()
     #endif
 
 
-    SetupTriangle();
+//    SetupTriangle();
     SetupCube();
 //    SetupTank();
-    SetupRT();
+//    SetupRT();
 
 //    sceneRenderTest.reset(new SceneRenderTestV3());    
 
@@ -1279,7 +1279,6 @@ SCOPED_NAMED_TIMING("app-draw");
     packet.vertexStreamCount    = 1;
     packet.vertexStream[0]      = cube.vb;
     packet.vertexLayoutUID      = cube.vb_layout;
-//-    packet.indexBuffer          = rhi::InvalidHandle;
     packet.renderPipelineState  = cube.ps;
     packet.vertexConstCount     = 2;
     packet.vertexConst[0]       = cube.vp_const[0];

@@ -247,6 +247,9 @@ DAVA_CONSTEXPR uint32 StringHash(const char(&str)[N])
     return HashValue_N(str, N - 1);
 }
 
+
 };
+
+#define DV_HASH(str) DAVA::StringHash(str)
 
 #endif // __DAVAENGINE_HASH__

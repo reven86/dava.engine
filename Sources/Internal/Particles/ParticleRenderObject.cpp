@@ -222,12 +222,6 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
         Particle *current = group.head;       
         while (current)
         {
-            ParticleVertex* verts[4];
-            verts[0] = (ParticleVertex*)currpos;
-            verts[1] = (ParticleVertex*)(currpos + vertexStride);
-            verts[2] = (ParticleVertex*)(currpos + 2*vertexStride);
-            verts[3] = (ParticleVertex*)(currpos + 3*vertexStride);
-
             float32 *pT = group.layer->sprite->GetTextureVerts(current->frame);
             Color currColor = current->color;
             if (group.layer->colorOverLife)
@@ -241,6 +235,12 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
 
             for (int32 i = 0; i < basisCount; i++)
             {
+                ParticleVertex* verts[4];
+                verts[0] = (ParticleVertex*)currpos;
+                verts[1] = (ParticleVertex*)(currpos + vertexStride);
+                verts[2] = (ParticleVertex*)(currpos + 2 * vertexStride);
+                verts[3] = (ParticleVertex*)(currpos + 3 * vertexStride);
+
                 Vector3 ex = basisVectors[basises[i] * 2];
                 Vector3 ey = basisVectors[basises[i] * 2 + 1];
                 //TODO: rethink this code - it should be easier
@@ -252,7 +252,6 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
                     ex.Normalize();
                     ey *= (group.layer->scaleVelocityBase / vel + group.layer->scaleVelocityFactor); //optimized ex=(svBase+svFactor*vel)/vel
                 }
-
 
                 Vector3 left = ex*cos_angle + ey*sin_angle;
                 Vector3 right = -left;
@@ -274,8 +273,8 @@ void ParticleRenderObject::AppendParticleGroup(List<ParticleGroup>::iterator beg
 
                 for (int32 i = 0; i < 4; i++)
                 {
-                    verts[i]->uv.x = *(pT++);
-                    verts[i]->uv.y = *(pT++);
+                    verts[i]->uv.x = pT[i * 2];
+                    verts[i]->uv.y = pT[i * 2 + 1];
                     verts[i]->color = color;
                 }                
 
