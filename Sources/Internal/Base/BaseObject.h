@@ -177,7 +177,9 @@ auto MakeSharedObject(T *obj) -> typename std::enable_if<std::is_base_of<BaseObj
     if (nullptr != obj)
     {
         obj->Retain();
-        ret.reset(obj, [](T *obj) { obj->Release(); });
+        ret.reset(obj, [](T *obj) { 
+            obj->Release(); 
+        });
     }
 
     return ret;

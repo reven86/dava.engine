@@ -17,11 +17,11 @@ class Closure
 public:
     using Storage = std::array<void *, 4>;
 
-    Closure() 
+    Closure()
     { }
 
-    ~Closure() 
-    { 
+    ~Closure()
+    {
         Clear();
     }
 
@@ -55,20 +55,13 @@ public:
         return reinterpret_cast<Hldr *>((void *)storage.data());
     }
 
-    bool IsEmpty() const
-    {
-        return (shared == false && storage[0] == nullptr);
-    }
-
     Closure(const Closure& c)
     {
-        Clear();
         Copy(c);
     }
 
     Closure(Closure&& c)
     {
-        Clear();
         Copy(c);
         c.Clear();
     }
@@ -76,13 +69,17 @@ public:
     Closure& operator=(const Closure &c)
     {
         if (this != &c)
+        {
+            Clear();
             Copy(c);
+        }
 
         return *this;
     }
 
     Closure& operator=(Closure &&c)
     {
+        Clear();
         shared = c.shared;
         storage = c.storage;
         c.Clear();
@@ -96,7 +93,7 @@ public:
         return *this;
     }
 
-protected:    
+protected:
     bool shared = false;
     Storage storage;
 
@@ -125,6 +122,8 @@ protected:
     }
 };
 
+struct Null {};
+
 template<typename Fn, typename Ret, typename... Args>
 class HolderFree
 {
@@ -136,72 +135,70 @@ public:
     static Ret FN_CALL_CONV invokeTrivial(const Closure& storage, Args&&... args)
     {
         HolderFree *holder = storage.GetTrivial<HolderFree>();
-        return (Ret) holder->fn(std::forward<Args>(args)...);
+        return (Ret)holder->fn(std::forward<Args>(args)...);
     }
 
     static Ret FN_CALL_CONV invokeShared(const Closure& storage, Args&&... args)
     {
         HolderFree *holder = storage.GetShared<HolderFree>();
-        return (Ret) holder->fn(std::forward<Args>(args)...);
+        return (Ret)holder->fn(std::forward<Args>(args)...);
     }
 
 protected:
     Fn fn;
 };
 
-template<typename Ret, typename Cls, typename... ClsArgs>
+template<typename Obj, typename Ret, typename Cls, typename... ClsArgs>
 class HolderClass
 {
+    static_assert(std::is_base_of<Cls, Obj>::value, "Specified class doesn't match class method");
+
 public:
     using Fn = Ret(Cls::*)(ClsArgs...);
 
-    template<typename T>
-    HolderClass(Ret(T::* const &_fn)(ClsArgs...))
-        : fn((Fn)_fn)
-    { 
-        static_assert(std::is_base_of<Cls, T>::value, "T should be derived from Cls");
-    }
+    HolderClass(const Fn& _fn)
+        : fn(_fn)
+    { }
 
-    static Ret FN_CALL_CONV invokeTrivial(const Closure &storage, Cls*&& cls, ClsArgs&&... args)
+    static Ret FN_CALL_CONV invokeTrivial(const Closure &storage, Obj*&& cls, ClsArgs&&... args)
     {
         HolderClass *holder = storage.GetTrivial<HolderClass>();
-        return (Ret) (cls->*holder->fn)(std::forward<ClsArgs>(args)...);
+        return (Ret)(static_cast<Cls*>(cls)->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
-    static Ret FN_CALL_CONV invokeShared(const Closure &storage, Cls*&& cls, ClsArgs&&... args)
+    static Ret FN_CALL_CONV invokeShared(const Closure &storage, Obj*&& cls, ClsArgs&&... args)
     {
         HolderClass *holder = storage.GetShared<HolderClass>();
-        return (Ret) (cls->*holder->fn)(std::forward<ClsArgs>(args)...);
+        return (Ret)(static_cast<Cls*>(cls)->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
 protected:
     Fn fn;
 };
 
-template<typename Ret, typename Obj, typename... ObjArgs>
+template<typename Obj, typename Ret, typename Cls, typename... ClsArgs>
 class HolderObject
 {
+    static_assert(std::is_base_of<Cls, Obj>::value, "Specified class doesn't match class method");
+
 public:
-    using Fn = Ret(Obj::*)(ObjArgs...);
+    using Fn = Ret(Cls::*)(ClsArgs...);
 
-    template<typename T>
-    HolderObject(Ret(T::* const &_fn)(ObjArgs...), Obj* _obj)
-        : fn((Fn)_fn)
+    HolderObject(const Fn& _fn, Obj* _obj)
+        : fn(_fn)
         , obj(_obj)
-    { 
-        static_assert(std::is_base_of<Obj, T>::value, "T should be derived from Obj");
-    }
+    { }
 
-    static Ret FN_CALL_CONV invokeTrivial(const Closure &storage, ObjArgs&&... args)
+    static Ret FN_CALL_CONV invokeTrivial(const Closure &storage, ClsArgs&&... args)
     {
         HolderObject *holder = storage.GetTrivial<HolderObject>();
-        return (Ret) (holder->obj->*holder->fn)(std::forward<ObjArgs>(args)...);
+        return (Ret)(static_cast<Cls *>(holder->obj)->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
-    static Ret FN_CALL_CONV invokeShared(const Closure &storage, ObjArgs&&... args)
+    static Ret FN_CALL_CONV invokeShared(const Closure &storage, ClsArgs&&... args)
     {
         HolderObject *holder = storage.GetShared<HolderObject>();
-        return (Ret) (holder->obj->*holder->fn)(std::forward<ObjArgs>(args)...);
+        return (Ret)(static_cast<Cls *>(holder->obj)->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
 protected:
@@ -209,24 +206,23 @@ protected:
     Obj *obj;
 };
 
-template<typename Ret, typename Obj, typename... ObjArgs>
+template<typename Obj, typename Ret, typename Cls, typename... ClsArgs>
 class HolderSharedObject
 {
-public:
-    using Fn = Ret(Obj::*)(ObjArgs...);
+    static_assert(std::is_base_of<Cls, Obj>::value, "Specified class doesn't match class method");
 
-    template<typename T>
-    HolderSharedObject(Ret(T::* const &_fn)(ObjArgs...), const std::shared_ptr<Obj> _obj)
+public:
+    using Fn = Ret(Cls::*)(ClsArgs...);
+
+    HolderSharedObject(const Fn& _fn, const std::shared_ptr<Obj> _obj)
         : fn(_fn)
         , obj(_obj)
-    { 
-        static_assert(std::is_base_of<Obj, T>::value, "T should be derived from Obj");
-    }
+    { }
 
-    static Ret FN_CALL_CONV invokeShared(const Closure &storage, ObjArgs&&... args)
+    static Ret FN_CALL_CONV invokeShared(const Closure &storage, ClsArgs&&... args)
     {
         HolderSharedObject *holder = storage.GetShared<HolderSharedObject>();
-        return (holder->obj.get()->*holder->fn)(std::forward<ObjArgs>(args)...);
+        return (static_cast<Cls*>(holder->obj.get())->*holder->fn)(std::forward<ClsArgs>(args)...);
     }
 
 protected:
@@ -234,25 +230,13 @@ protected:
     std::shared_ptr<Obj> obj;
 };
 
-// checks if one list of arguments can be converted to another one
-template<typename... AArgs>
-struct ArgsConvertible : std::false_type { };
-
-template<typename A0, typename B0>
-struct ArgsConvertible < std::tuple<A0>, std::tuple<B0> >
-{
-    using A = std::conditional_t < std::is_pointer<A0>::value && std::is_pointer<B0>::value, std::remove_pointer_t<A0>, A0 > ;
-    using B = std::conditional_t < std::is_pointer<A0>::value && std::is_pointer<B0>::value, std::remove_pointer_t<B0>, B0 > ;
-    static const bool value = (std::is_same<A, B>::value || std::is_base_of<B, A>::value);
+template<typename T, typename... Other>
+struct first_pointer_class {
+    typedef typename std::remove_pointer<T>::type type;
 };
 
-template<typename A0, typename... AOther, typename B0, typename... BOther>
-struct ArgsConvertible < std::tuple<A0, AOther...>, std::tuple<B0, BOther...> >
-{
-    using A = std::conditional_t < std::is_pointer<A0>::value && std::is_pointer<B0>::value, std::remove_pointer_t<A0>, A0 > ;
-    using B = std::conditional_t < std::is_pointer<A0>::value && std::is_pointer<B0>::value, std::remove_pointer_t<B0>, B0 > ;
-    static const bool value = (std::is_same<A, B>::value || std::is_base_of<B, A>::value) && ArgsConvertible<std::tuple<AOther...>, std::tuple<BOther...>>::value;
-};
+template<typename... Args>
+using first_pointer_class_t = typename first_pointer_class<Args...>::type;
 
 } // namespace Fn11
 
@@ -260,7 +244,7 @@ template<typename Fn>
 class Function;
 
 template<typename Ret, typename... Args>
-class Function<Ret (Args...)>
+class Function<Ret(Args...)>
 {
     template<typename>
     friend class Function;
@@ -281,11 +265,9 @@ public:
     }
 
     template<typename Cls, typename... ClsArgs>
-    Function(Ret (Cls::* const &fn)(ClsArgs...))
+    Function(Ret(Cls::* const &fn)(ClsArgs...))
     {
-        static_assert(Fn11::ArgsConvertible<std::tuple<Args...>, std::tuple<Cls*, ClsArgs...>>::value, "Unacceptable function arguments");
-
-        using Holder = Fn11::HolderClass<Ret, Cls, ClsArgs...>;
+        using Holder = Fn11::HolderClass<Fn11::first_pointer_class_t<Args...>, Ret, Cls, ClsArgs...>;
         using Fn = Ret(Cls::*)(ClsArgs...);
         Init<Holder, Fn>(fn);
     }
@@ -293,9 +275,7 @@ public:
     template<typename Cls, typename... ClsArgs>
     Function(Ret(Cls::* const &fn)(ClsArgs...) const)
     {
-        static_assert(Fn11::ArgsConvertible<std::tuple<Args...>, std::tuple<Cls*, ClsArgs...>>::value, "Unacceptable function arguments");
-
-        using Holder = Fn11::HolderClass<Ret, Cls, ClsArgs...>;
+        using Holder = Fn11::HolderClass<Fn11::first_pointer_class_t<Args...>, Ret, Cls, ClsArgs...>;
         using Fn = Ret(Cls::*)(ClsArgs...);
         Init<Holder, Fn>(reinterpret_cast<Fn>(fn));
     }
@@ -303,9 +283,7 @@ public:
     template<typename Obj, typename Cls, typename... ClsArgs>
     Function(Obj *obj, Ret(Cls::* const &fn)(ClsArgs...))
     {
-        static_assert(Fn11::ArgsConvertible<std::tuple<Obj*, Args...>, std::tuple<Cls*, ClsArgs...>>::value, "Unacceptable function arguments");
-
-        using Holder = Fn11::HolderObject<Ret, Cls, ClsArgs...>;
+        using Holder = Fn11::HolderObject<Obj, Ret, Cls, ClsArgs...>;
         using Fn = Ret(Cls::*)(ClsArgs...);
         Init<Holder, Fn>(fn, obj);
     }
@@ -313,32 +291,30 @@ public:
     template<typename Obj, typename Cls, typename... ClsArgs>
     Function(Obj *obj, Ret(Cls::* const &fn)(ClsArgs...) const)
     {
-        static_assert(Fn11::ArgsConvertible<std::tuple<Obj*, Args...>, std::tuple<Cls*, ClsArgs...>>::value, "Unacceptable function arguments");
-
-        using Holder = Fn11::HolderObject<Ret, Cls, ClsArgs...>;
+        using Holder = Fn11::HolderObject<Obj, Ret, Cls, ClsArgs...>;
         using Fn = Ret(Cls::*)(ClsArgs...);
         Init<Holder, Fn>(reinterpret_cast<Fn>(fn), obj);
     }
 
-    template<typename Obj, typename... ObjArgs>
-    Function(const std::shared_ptr<Obj> &obj, Ret(Obj::* const &fn)(ObjArgs...))
+    template<typename Obj, typename Cls, typename... ClsArgs>
+    Function(const std::shared_ptr<Obj> &obj, Ret(Cls::* const &fn)(ClsArgs...))
     {
-        using Holder = Fn11::HolderSharedObject<Ret, Obj, ObjArgs...>;
-        using Fn = Ret(Obj::*)(ObjArgs...);
+        using Holder = Fn11::HolderSharedObject<Obj, Ret, Cls, ClsArgs...>;
+        using Fn = Ret(Cls::*)(ClsArgs...);
 
         // always use BindShared
         closure.template BindShared<Holder, Fn>(fn, obj);
         invoker = &Holder::invokeShared;
     }
 
-    template<typename Obj, typename... ObjArgs>
-    Function(const std::shared_ptr<Obj> &obj, Ret(Obj::* const &fn)(ObjArgs...) const)
+    template<typename Obj, typename Cls, typename... ClsArgs>
+    Function(const std::shared_ptr<Obj> &obj, Ret(Cls::* const &fn)(ClsArgs...) const)
     {
-        using Holder = Fn11::HolderSharedObject <Ret, Obj, ObjArgs...>;
-        using Fn = Ret(Obj::*)(ObjArgs...);
+        using Holder = Fn11::HolderSharedObject<Obj, Ret, Cls, ClsArgs...>;
+        using Fn = Ret(Cls::*)(ClsArgs...);
 
         // always use BindShared
-        closure.template BindShared<Holder, Fn>(fn, obj);
+        closure.template BindShared<Holder, Fn>(reinterpret_cast<Fn>(fn), obj);
         invoker = &Holder::invokeShared;
     }
 
@@ -350,7 +326,7 @@ public:
     Function(Function&& fn) throw()
         : invoker(fn.invoker)
         , closure(std::move(fn.closure))
-    { 
+    {
         fn.invoker = nullptr;
     }
 
@@ -387,7 +363,7 @@ public:
 
     bool operator==(nullptr_t) const throw()
     {
-        return (closure.IsEmpty() && nullptr == invoker);
+        return (nullptr == invoker);
     }
 
     bool operator!=(nullptr_t) const throw()
@@ -413,13 +389,13 @@ protected:
     Fn11::Closure closure;
 
     template<typename Hldr, typename Fn, typename... Prms, bool trivial = true>
-    void Init(const Fn& fn, Prms... params)
+    void Init(const Fn& fn, Prms&&... params)
     {
         Detail<(trivial && sizeof(Hldr) <= sizeof(Fn11::Closure::Storage)
             && std::is_trivially_destructible<Fn>::value
             && std::is_trivially_copy_constructible<Fn>::value
             && std::is_trivially_copy_assignable<Fn>::value),
-            Hldr, Fn, Prms... > ::Init(this, fn, std::forward<Prms>(params)...);
+            Hldr, Fn, Prms... >::Init(this, fn, std::forward<Prms>(params)...);
     }
 
 private:
@@ -430,10 +406,10 @@ private:
     template<typename Hldr, typename Fn, typename... Prms>
     struct Detail<true, Hldr, Fn, Prms...>
     {
-        static void Init(Function *that, const Fn& fn, Prms... params)
+        static void Init(Function *that, const Fn& fn, Prms&&... params)
         {
             that->closure.template BindTrivial<Hldr, Fn>(fn, std::forward<Prms>(params)...);
-            that->invoker = reinterpret_cast<Invoker>(&Hldr::invokeTrivial);
+            that->invoker = &Hldr::invokeTrivial;
         }
     };
 
@@ -441,10 +417,10 @@ private:
     template<typename Hldr, typename Fn, typename... Prms>
     struct Detail<false, Hldr, Fn, Prms...>
     {
-        static void Init(Function *that, const Fn& fn, Prms... params)
+        static void Init(Function *that, const Fn& fn, Prms&&... params)
         {
             that->closure.template BindShared<Hldr, Fn>(fn, std::forward<Prms>(params)...);
-            that->invoker = reinterpret_cast<Invoker>(&Hldr::invokeShared);
+            that->invoker = &Hldr::invokeShared;
         }
     };
 };
