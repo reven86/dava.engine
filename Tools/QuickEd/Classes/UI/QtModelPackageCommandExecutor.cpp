@@ -39,6 +39,7 @@
 #include "UI/Commands/RemoveImportedPackageCommand.h"
 #include "UI/Commands/AddComponentCommand.h"
 #include "UI/Commands/RemoveComponentCommand.h"
+#include "UI/Commands/AddRemoveStylePropertyCommand.h"
 
 #include "UI/Commands/ChangeStylePropertyCommand.h"
 
@@ -50,8 +51,9 @@
 
 #include "Model/ControlProperties/ComponentPropertiesSection.h"
 #include "Model/ControlProperties/RootProperty.h"
-#include "Model/ControlProperties/StyleSheetProperty.h"
 #include "Model/ControlProperties/StyleSheetRootProperty.h"
+#include "Model/ControlProperties/StyleSheetPropertiesSection.h"
+#include "Model/ControlProperties/StyleSheetProperty.h"
 
 #include "Model/YamlPackageSerializer.h"
 #include "Model/EditorUIPackageBuilder.h"
@@ -204,15 +206,20 @@ void QtModelPackageCommandExecutor::AddStyleProperty(StyleSheetNode *node, uint3
     {
         UIStyleSheetProperty prop(propertyIndex, UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex).defaultValue);
         ScopedPtr<StyleSheetProperty> property(new StyleSheetProperty(node, prop));
-        node->GetRootProperty()->AddProperty(property);
+        PushCommand(new AddRemoveStylePropertyCommand(document->GetPackage(), node, property, true));
     }
 }
 
 void QtModelPackageCommandExecutor::RemoveStyleProperty(StyleSheetNode *node, DAVA::uint32 propertyIndex)
 {
-    UIStyleSheetProperty prop(propertyIndex, UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex).defaultValue);
-    ScopedPtr<StyleSheetProperty> property(new StyleSheetProperty(node, prop));
-    node->GetRootProperty()->RemoveProperty(property);
+    if (node->GetRootProperty()->CanRemoveProperty(propertyIndex))
+    {
+        StyleSheetProperty *property = node->GetRootProperty()->GetPropertiesSection()->FindPropertyByIndex(propertyIndex);
+        if (property)
+        {
+            PushCommand(new AddRemoveStylePropertyCommand(document->GetPackage(), node, property, false));
+        }
+    }
 }
 
 ResultList QtModelPackageCommandExecutor::InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex)

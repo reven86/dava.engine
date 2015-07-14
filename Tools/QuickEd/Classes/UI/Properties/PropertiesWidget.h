@@ -75,6 +75,7 @@ private:
     QAction *removeStyleSelectorAction;
     int selectedComponentType;
     int selectedComponentIndex;
+    int selectedStylePropertyIndex;
 };
 
 #endif //__QUICKED_PROPERTIES_WIDGET_H__

@@ -68,6 +68,7 @@ public:
     
     void SetProperty(AbstractProperty *property, const DAVA::VariantType &newValue);
     bool CanAddProperty(DAVA::uint32 propertyIndex) const;
+    bool CanRemoveProperty(DAVA::uint32 propertyIndex) const;
     void AddProperty(StyleSheetProperty *property);
     void RemoveProperty(StyleSheetProperty *property);
     

@@ -131,6 +131,11 @@ bool StyleSheetRootProperty::CanAddProperty(DAVA::uint32 propertyIndex) const
     return !IsReadOnly() && propertiesSection->CanAddProperty(propertyIndex);
 }
 
+bool StyleSheetRootProperty::CanRemoveProperty(DAVA::uint32 propertyIndex) const
+{
+    return !IsReadOnly() && propertiesSection->CanRemoveProperty(propertyIndex);
+}
+
 void StyleSheetRootProperty::AddProperty(StyleSheetProperty *property)
 {
     for (PropertyListener *listener : listeners)

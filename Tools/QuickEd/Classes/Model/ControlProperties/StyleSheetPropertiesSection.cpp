@@ -86,13 +86,14 @@ AbstractProperty::ePropertyType StyleSheetPropertiesSection::GetType() const
     return TYPE_HEADER;
 }
 
-bool StyleSheetPropertiesSection::CanAddProperty(DAVA::uint32 propertyIndex)
+bool StyleSheetPropertiesSection::CanAddProperty(DAVA::uint32 propertyIndex) const
 {
-    auto it = std::find_if(styleSheetProperties.begin(), styleSheetProperties.end(), [propertyIndex](const StyleSheetProperty *p) {
-        return p->GetPropertyIndex() == propertyIndex;
-    });
+    return !HasProperty(propertyIndex);
+}
 
-    return it == styleSheetProperties.end();
+bool StyleSheetPropertiesSection::CanRemoveProperty(DAVA::uint32 propertyIndex) const
+{
+    return HasProperty(propertyIndex);
 }
 
 void StyleSheetPropertiesSection::AddProperty(StyleSheetProperty *property)
@@ -117,4 +118,22 @@ void StyleSheetPropertiesSection::RemoveProperty(StyleSheetProperty *property)
         (*it)->Release();
         styleSheetProperties.erase(it);
     }
+    else
+    {
+        DVASSERT(false); 
+    }
+}
+
+StyleSheetProperty *StyleSheetPropertiesSection::FindPropertyByIndex(DAVA::uint32 propertyIndex) const
+{
+    auto it = std::find_if(styleSheetProperties.begin(), styleSheetProperties.end(), [propertyIndex](const StyleSheetProperty *p) {
+        return p->GetPropertyIndex() == propertyIndex;
+    });
+    
+    return it == styleSheetProperties.end() ? nullptr : *it;
+}
+
+bool StyleSheetPropertiesSection::HasProperty(DAVA::uint32 propertyIndex) const
+{
+    return FindPropertyByIndex(propertyIndex) != nullptr;
 }

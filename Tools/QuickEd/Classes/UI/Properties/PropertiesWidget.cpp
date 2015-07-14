@@ -36,6 +36,7 @@
 
 #include "UI/QtModelPackageCommandExecutor.h"
 #include "Model/ControlProperties/ComponentPropertiesSection.h"
+#include "Model/ControlProperties/StyleSheetProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 
@@ -63,6 +64,7 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
     , removeStyleSelectorAction(nullptr)
     , selectedComponentType(-1)
     , selectedComponentIndex(-1)
+    , selectedStylePropertyIndex(-1)
 {
     setupUi(this);
     treeView->setItemDelegate(new PropertiesTreeItemDelegate(this));
@@ -140,7 +142,19 @@ void PropertiesWidget::OnAddStyleProperty(QAction *action)
 
 void PropertiesWidget::OnRemoveStyleProperty()
 {
-    
+    if (sharedData)
+    {
+        if (0 <= selectedStylePropertyIndex && selectedStylePropertyIndex < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT)
+        {
+            StyleSheetNode *node = GetSelectedStyleSheetNode();
+            sharedData->GetDocument()->GetCommandExecutor()->RemoveStyleProperty(node, selectedStylePropertyIndex);
+        }
+        else
+        {
+            DVASSERT(false);
+        }
+    }
+    UpdateActions();
 }
 
 void PropertiesWidget::OnSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
@@ -186,12 +200,12 @@ void PropertiesWidget::PrepareStyleActions()
     connect(propertiesMenu, &QMenu::triggered, this, &PropertiesWidget::OnAddStyleProperty);
     
     addStylePropertyAction = new QAction(tr("Add Style Property"), this);
-    addStylePropertyAction->setEnabled(true);
+    addStylePropertyAction->setEnabled(false);
     addStylePropertyAction->setMenu(propertiesMenu);
     
     removeStylePropertyAction = new QAction(tr("Remove Style Property"), this);
     removeStylePropertyAction->setEnabled(false);
-    connect(removeComponentAction, &QAction::triggered, this, &PropertiesWidget::OnRemoveStyleProperty);
+    connect(removeStylePropertyAction, &QAction::triggered, this, &PropertiesWidget::OnRemoveStyleProperty);
     
     treeView->addAction(addStylePropertyAction);
     treeView->addAction(removeStylePropertyAction);
@@ -278,7 +292,8 @@ void PropertiesWidget::UpdateSelection()
     addComponentAction->setEnabled(control != nullptr);
     removeComponentAction->setEnabled(false);
     
-    
+    addStylePropertyAction->setEnabled(styleSheet != nullptr);
+    removeStylePropertyAction->setEnabled(false);
     
     if (treeView->model() != nullptr)
     {
@@ -296,22 +311,30 @@ void PropertiesWidget::UpdateActions()
         const QModelIndex &index = indices.first();
         AbstractProperty *property = static_cast<AbstractProperty*>(index.internalPointer());
         
-        bool enabled = (property->GetFlags() & AbstractProperty::EF_CAN_REMOVE) != 0;
+        bool removeComponentEnabled = false;
+        bool removeStylePropertyEnabled = false;
         
-        if (enabled)
+        if ((property->GetFlags() & AbstractProperty::EF_CAN_REMOVE) != 0)
         {
             ComponentPropertiesSection *section = dynamic_cast<ComponentPropertiesSection*>(property);
             if (section)
             {
                 selectedComponentType = static_cast<int>(section->GetComponentType());
                 selectedComponentIndex = static_cast<int>(section->GetComponentIndex());
+                removeComponentEnabled = true;
             }
             else
             {
-                enabled = false;
+                StyleSheetProperty *styleProperty = dynamic_cast<StyleSheetProperty*>(property);
+                if (styleProperty)
+                {
+                    removeStylePropertyEnabled = true;
+                    selectedStylePropertyIndex = styleProperty->GetPropertyIndex();
+                }
             }
         }
         
-        removeComponentAction->setEnabled(enabled);
+        removeComponentAction->setEnabled(removeComponentEnabled);
+        removeStylePropertyAction->setEnabled(removeStylePropertyEnabled);
     }
 }

@@ -60,9 +60,14 @@ public:
     const DAVA::String &GetName() const override;
     ePropertyType GetType() const override;
     
-    bool CanAddProperty(DAVA::uint32 propertyIndex);
+    bool CanAddProperty(DAVA::uint32 propertyIndex) const;
+    bool CanRemoveProperty(DAVA::uint32 propertyIndex) const;
     void AddProperty(StyleSheetProperty *property);
     void RemoveProperty(StyleSheetProperty *property);
+    StyleSheetProperty *FindPropertyByIndex(DAVA::uint32 index) const;
+
+private:
+    bool HasProperty(DAVA::uint32 propertyIndex) const;
     
 private:
     StyleSheetNode *styleSheet; // weak
