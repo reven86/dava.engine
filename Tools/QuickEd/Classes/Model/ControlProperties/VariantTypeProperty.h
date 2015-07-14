@@ -27,14 +27,13 @@
  =====================================================================================*/
 
 
-#ifndef __QUICKED_STYLE_SHEET_PROPERTIES_SECTION_H__
-#define __QUICKED_STYLE_SHEET_PROPERTIES_SECTION_H__
+#ifndef __QUICKED_VALUE_PROPERTY_H__
+#define __QUICKED_VALUE_PROPERTY_H__
 
-#include "Model/ControlProperties/AbstractProperty.h"
+#include "Model/ControlProperties/ValueProperty.h"
 
-#include "UI/Styles/UIStyleSheetStructs.h"
-
-class StyleSheetProperty;
+class ValueProperty;
+class IntrospectionProperty;
 
 class StyleSheetNode;
 
@@ -43,30 +42,25 @@ namespace DAVA
     class UIControl;
 }
 
-class StyleSheetPropertiesSection : public AbstractProperty
+class VariantTypeProperty : public ValueProperty
 {
 public:
-    StyleSheetPropertiesSection(StyleSheetNode *styleSheet, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties);
+    VariantTypeProperty(const DAVA::String &name, DAVA::VariantType &variantType);
 protected:
-    virtual ~StyleSheetPropertiesSection();
+    virtual ~VariantTypeProperty();
     
 public:
-    int GetCount() const override;
-    AbstractProperty *GetProperty(int index) const override;
-    
     void Accept(PropertyVisitor *visitor) override;
     bool IsReadOnly() const override;
     
-    const DAVA::String &GetName() const override;
     ePropertyType GetType() const override;
     
-    bool CanAddProperty(DAVA::uint32 propertyIndex);
-    void AddProperty(StyleSheetProperty *property);
-    void RemoveProperty(StyleSheetProperty *property);
+    DAVA::VariantType GetValue() const;
+    const EnumMap *GetEnumMap() const;
+    void ApplyValue(const DAVA::VariantType &value);
     
 private:
-    StyleSheetNode *styleSheet; // weak
-    DAVA::Vector<StyleSheetProperty*> styleSheetProperties;
+    DAVA::VariantType &value;
 };
 
-#endif // __QUICKED_STYLE_SHEET_PROPERTIES_SECTION_H__
+#endif // __QUICKED_VALUE_PROPERTY_H__

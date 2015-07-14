@@ -98,6 +98,12 @@ public:
 
 private:
     AbstractProperty *parent;
+    
+public:
+    INTROSPECTION_EXTEND(AbstractProperty, DAVA::BaseObject,
+                         nullptr
+                         );
+
 };
 
 

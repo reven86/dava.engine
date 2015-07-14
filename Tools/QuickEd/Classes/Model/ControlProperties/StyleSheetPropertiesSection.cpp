@@ -85,3 +85,36 @@ AbstractProperty::ePropertyType StyleSheetPropertiesSection::GetType() const
 {
     return TYPE_HEADER;
 }
+
+bool StyleSheetPropertiesSection::CanAddProperty(DAVA::uint32 propertyIndex)
+{
+    auto it = std::find_if(styleSheetProperties.begin(), styleSheetProperties.end(), [propertyIndex](const StyleSheetProperty *p) {
+        return p->GetPropertyIndex() == propertyIndex;
+    });
+
+    return it == styleSheetProperties.end();
+}
+
+void StyleSheetPropertiesSection::AddProperty(StyleSheetProperty *property)
+{
+    if (CanAddProperty(property->GetPropertyIndex()) && property->GetParent() == nullptr)
+    {
+        property->SetParent(this);
+        styleSheetProperties.push_back(property);
+        std::sort(styleSheetProperties.begin(), styleSheetProperties.end(), [] (StyleSheetProperty *p1, StyleSheetProperty *p2) {
+            return p1->GetPropertyIndex() < p2->GetPropertyIndex();
+        });
+    }
+}
+
+void StyleSheetPropertiesSection::RemoveProperty(StyleSheetProperty *property)
+{
+    auto it = std::find(styleSheetProperties.begin(), styleSheetProperties.end(), property);
+    if (it != styleSheetProperties.end())
+    {
+        DVASSERT((*it)->GetParent() == this);
+        (*it)->SetParent(nullptr);
+        (*it)->Release();
+        styleSheetProperties.erase(it);
+    }
+}

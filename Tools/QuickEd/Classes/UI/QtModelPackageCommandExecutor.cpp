@@ -45,16 +45,20 @@
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Model/PackageHierarchy/ImportedPackagesNode.h"
 
 #include "Model/ControlProperties/ComponentPropertiesSection.h"
 #include "Model/ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/StyleSheetProperty.h"
+#include "Model/ControlProperties/StyleSheetRootProperty.h"
 
 #include "Model/YamlPackageSerializer.h"
 #include "Model/EditorUIPackageBuilder.h"
 
 #include "UI/UIControl.h"
 #include "UI/UIPackageLoader.h"
+#include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 
 #include "Base/Result.h"
 
@@ -192,6 +196,23 @@ void QtModelPackageCommandExecutor::RemoveComponent(ControlNode *node, uint32 co
             EndMacro();
         }
     }
+}
+
+void QtModelPackageCommandExecutor::AddStyleProperty(StyleSheetNode *node, uint32 propertyIndex)
+{
+    if (node->GetRootProperty()->CanAddProperty(propertyIndex))
+    {
+        UIStyleSheetProperty prop(propertyIndex, UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex).defaultValue);
+        ScopedPtr<StyleSheetProperty> property(new StyleSheetProperty(node, prop));
+        node->GetRootProperty()->AddProperty(property);
+    }
+}
+
+void QtModelPackageCommandExecutor::RemoveStyleProperty(StyleSheetNode *node, DAVA::uint32 propertyIndex)
+{
+    UIStyleSheetProperty prop(propertyIndex, UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex).defaultValue);
+    ScopedPtr<StyleSheetProperty> property(new StyleSheetProperty(node, prop));
+    node->GetRootProperty()->RemoveProperty(property);
 }
 
 ResultList QtModelPackageCommandExecutor::InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex)

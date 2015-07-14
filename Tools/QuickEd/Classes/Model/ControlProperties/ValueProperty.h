@@ -82,6 +82,12 @@ protected:
     bool replaced;
     DAVA::VariantType defaultValue;
     DAVA::Vector<SubValueProperty*> children;
+    
+public:
+    INTROSPECTION_EXTEND(ValueProperty, AbstractProperty,
+                         nullptr
+                         );
+
 };
 
 #endif //__UI_EDITOR_VALUE_PROPERTY__

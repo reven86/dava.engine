@@ -66,6 +66,8 @@ public:
     }
     
     const DAVA::InspMember *GetMember() const;
+    
+    void DisableResetFeature();
 
 protected:
     virtual void ApplyValue(const DAVA::VariantType &value);
@@ -74,6 +76,7 @@ protected:
     DAVA::BaseObject *object;
     const IntrospectionProperty *prototypeProperty;
     const DAVA::InspMember *member;
+    bool canReset;
 };
 
 #endif //__UI_EDITOR_INTROSPECTION_PROPERTY__

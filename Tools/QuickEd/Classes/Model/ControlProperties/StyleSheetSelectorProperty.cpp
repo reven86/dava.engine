@@ -41,6 +41,7 @@ StyleSheetSelectorProperty::StyleSheetSelectorProperty(StyleSheetNode *aStyleShe
     , styleSheet(aStyleSheet) // weak
     , selectorChain(chain)
 {
+    replaced = true;
     value = selectorChain.ToString();
 }
 

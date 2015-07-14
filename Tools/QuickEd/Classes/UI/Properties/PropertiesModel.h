@@ -72,13 +72,19 @@ public:
                                 int role = Qt::DisplayRole) const override;
 
 private: // PropertyListener
-    virtual void PropertyChanged(AbstractProperty *property) override;
+    void PropertyChanged(AbstractProperty *property) override;
 
-    virtual void ComponentPropertiesWillBeAdded(RootProperty *root, ComponentPropertiesSection *section, int index) override;
-    virtual void ComponentPropertiesWasAdded(RootProperty *root, ComponentPropertiesSection *section, int index) override;
+    void ComponentPropertiesWillBeAdded(RootProperty *root, ComponentPropertiesSection *section, int index) override;
+    void ComponentPropertiesWasAdded(RootProperty *root, ComponentPropertiesSection *section, int index) override;
     
-    virtual void ComponentPropertiesWillBeRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) override;
-    virtual void ComponentPropertiesWasRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) override;
+    void ComponentPropertiesWillBeRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) override;
+    void ComponentPropertiesWasRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) override;
+
+    void StylePropertyWillBeAdded(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) override;
+    void StylePropertyWasAdded(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) override;
+    
+    void StylePropertyWillBeRemoved(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) override;
+    void StylePropertyWasRemoved(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) override;
 
 private:
     void ChangeProperty(AbstractProperty *property, const DAVA::VariantType &value);

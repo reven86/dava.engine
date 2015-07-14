@@ -48,6 +48,7 @@
 
 #include "UI/Components/UIComponent.h"
 #include "UI/UIControl.h"
+#include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 
 using namespace DAVA;
 
@@ -56,32 +57,19 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
     , sharedData(nullptr)
     , addComponentAction(nullptr)
     , removeComponentAction(nullptr)
+    , addStylePropertyAction(nullptr)
+    , removeStylePropertyAction(nullptr)
+    , addStyleSelectorAction(nullptr)
+    , removeStyleSelectorAction(nullptr)
     , selectedComponentType(-1)
     , selectedComponentIndex(-1)
 {
     setupUi(this);
     treeView->setItemDelegate(new PropertiesTreeItemDelegate(this));
     
-    QMenu *addComponentMenu = new QMenu(this);
-    for (int32 i = 0; i < UIComponent::COMPONENT_COUNT; i++)
-    {
-        const char *name = GlobalEnumMap<UIComponent::eType>::Instance()->ToString(i);
-        QAction *componentAction = new QAction(name, this); // TODO: Localize name
-        componentAction->setData(i);
-        addComponentMenu->addAction(componentAction);
-    }
-    connect(addComponentMenu, &QMenu::triggered, this, &PropertiesWidget::OnAddComponent);
 
-    addComponentAction = new QAction(tr("Add Component"), this);
-    addComponentAction->setEnabled(false);
-    addComponentAction->setMenu(addComponentMenu);
-    
-    removeComponentAction = new QAction(tr("Remove Component"), this);
-    removeComponentAction->setEnabled(false);
-    connect(removeComponentAction, &QAction::triggered, this, &PropertiesWidget::OnRemoveComponent);
-    
-    treeView->addAction(addComponentAction);
-    treeView->addAction(removeComponentAction);
+    PrepareComponentActions();
+    PrepareStyleActions();
 }
 
 void PropertiesWidget::OnDocumentChanged(SharedData *arg)
@@ -132,9 +120,81 @@ void PropertiesWidget::OnRemoveComponent()
     UpdateActions();
 }
 
+void PropertiesWidget::OnAddStyleProperty(QAction *action)
+{
+    if (sharedData)
+    {
+        uint32 propertyIndex = action->data().toUInt();
+        if (propertyIndex < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT)
+        {
+            StyleSheetNode *node = GetSelectedStyleSheetNode();
+            sharedData->GetDocument()->GetCommandExecutor()->AddStyleProperty(node, propertyIndex);
+        }
+        else
+        {
+            DVASSERT(propertyIndex < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT);
+        }
+    }
+    
+}
+
+void PropertiesWidget::OnRemoveStyleProperty()
+{
+    
+}
+
 void PropertiesWidget::OnSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
     UpdateActions();
+}
+
+void PropertiesWidget::PrepareComponentActions()
+{
+    QMenu *addComponentMenu = new QMenu(this);
+    for (int32 i = 0; i < UIComponent::COMPONENT_COUNT; i++)
+    {
+        const char *name = GlobalEnumMap<UIComponent::eType>::Instance()->ToString(i);
+        QAction *componentAction = new QAction(name, this); // TODO: Localize name
+        componentAction->setData(i);
+        addComponentMenu->addAction(componentAction);
+    }
+    connect(addComponentMenu, &QMenu::triggered, this, &PropertiesWidget::OnAddComponent);
+    
+    addComponentAction = new QAction(tr("Add Component"), this);
+    addComponentAction->setEnabled(false);
+    addComponentAction->setMenu(addComponentMenu);
+    
+    removeComponentAction = new QAction(tr("Remove Component"), this);
+    removeComponentAction->setEnabled(false);
+    connect(removeComponentAction, &QAction::triggered, this, &PropertiesWidget::OnRemoveComponent);
+    
+    treeView->addAction(addComponentAction);
+    treeView->addAction(removeComponentAction);
+}
+
+void PropertiesWidget::PrepareStyleActions()
+{
+    QMenu *propertiesMenu = new QMenu(this);
+    UIStyleSheetPropertyDataBase *db = UIStyleSheetPropertyDataBase::Instance();
+    for (int32 i = 0; i < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT; i++)
+    {
+        const UIStyleSheetPropertyDescriptor &descr = db->GetStyleSheetPropertyByIndex(i);
+        QAction *componentAction = new QAction(descr.name.c_str(), this);
+        componentAction->setData(i);
+        propertiesMenu->addAction(componentAction);
+    }
+    connect(propertiesMenu, &QMenu::triggered, this, &PropertiesWidget::OnAddStyleProperty);
+    
+    addStylePropertyAction = new QAction(tr("Add Style Property"), this);
+    addStylePropertyAction->setEnabled(true);
+    addStylePropertyAction->setMenu(propertiesMenu);
+    
+    removeStylePropertyAction = new QAction(tr("Remove Style Property"), this);
+    removeStylePropertyAction->setEnabled(false);
+    connect(removeComponentAction, &QAction::triggered, this, &PropertiesWidget::OnRemoveStyleProperty);
+    
+    treeView->addAction(addStylePropertyAction);
+    treeView->addAction(removeStylePropertyAction);
 }
 
 ControlNode *PropertiesWidget::GetSelectedControlNode() const
@@ -178,6 +238,8 @@ StyleSheetNode *PropertiesWidget::GetSelectedStyleSheetNode() const
 void PropertiesWidget::UpdateSelection()
 {
     QAbstractItemModel *prevModel = treeView->model();
+    ControlNode *control = nullptr;
+    StyleSheetNode *styleSheet = nullptr;
     if (nullptr == sharedData)
     {
         treeView->setModel(nullptr);
@@ -188,7 +250,7 @@ void PropertiesWidget::UpdateSelection()
         
         for (PackageBaseNode *node : selection)
         {
-            ControlNode *control = dynamic_cast<ControlNode*>(node);
+            control = dynamic_cast<ControlNode*>(node);
             if (control)
             {
                 treeView->setModel(new PropertiesModel(control, sharedData->GetDocument()->GetCommandExecutor()));
@@ -196,7 +258,7 @@ void PropertiesWidget::UpdateSelection()
             }
             else
             {
-                StyleSheetNode *styleSheet = dynamic_cast<StyleSheetNode*>(node);
+                styleSheet = dynamic_cast<StyleSheetNode*>(node);
                 if (styleSheet)
                 {
                     treeView->setModel(new PropertiesModel(styleSheet, sharedData->GetDocument()->GetCommandExecutor()));
@@ -213,8 +275,10 @@ void PropertiesWidget::UpdateSelection()
         treeView->resizeColumnToContents(0);
     }
     
-    addComponentAction->setEnabled(treeView->model() != nullptr);
+    addComponentAction->setEnabled(control != nullptr);
     removeComponentAction->setEnabled(false);
+    
+    
     
     if (treeView->model() != nullptr)
     {
@@ -247,6 +311,7 @@ void PropertiesWidget::UpdateActions()
                 enabled = false;
             }
         }
+        
         removeComponentAction->setEnabled(enabled);
     }
 }

@@ -37,6 +37,7 @@ class PropertyListener;
 class ValueProperty;
 class StyleSheetSelectorsSection;
 class StyleSheetPropertiesSection;
+class StyleSheetProperty;
 
 class StyleSheetNode;
 
@@ -66,7 +67,9 @@ public:
     void RemoveListener(PropertyListener *listener);
     
     void SetProperty(AbstractProperty *property, const DAVA::VariantType &newValue);
-    void ResetProperty(AbstractProperty *property);
+    bool CanAddProperty(DAVA::uint32 propertyIndex) const;
+    void AddProperty(StyleSheetProperty *property);
+    void RemoveProperty(StyleSheetProperty *property);
     
     StyleSheetSelectorsSection *GetSelectors() const;
     StyleSheetPropertiesSection *GetPropertiesSection() const;

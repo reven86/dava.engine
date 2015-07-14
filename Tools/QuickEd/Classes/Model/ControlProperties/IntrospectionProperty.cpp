@@ -40,6 +40,7 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const D
     , object(SafeRetain(anObject))
     , prototypeProperty(nullptr)
     , member(aMember)
+    , canReset(true)
 {
     if (sourceProperty)
     {
@@ -141,7 +142,9 @@ IntrospectionProperty::ePropertyType IntrospectionProperty::GetType() const
 
 uint32 IntrospectionProperty::GetFlags() const
 {
-    uint32 flags = EF_CAN_RESET;
+    uint32 flags = 0;
+    if (canReset)
+        flags |= EF_CAN_RESET;
     if (prototypeProperty && !replaced)
         flags |= EF_INHERITED;
     return flags;
@@ -166,6 +169,11 @@ const EnumMap *IntrospectionProperty::GetEnumMap() const
 const DAVA::InspMember *IntrospectionProperty::GetMember() const
 {
     return member;
+}
+
+void IntrospectionProperty::DisableResetFeature()
+{
+    canReset = false;
 }
 
 void IntrospectionProperty::ApplyValue(const DAVA::VariantType &value)

@@ -29,7 +29,10 @@
 #include "StyleSheetProperty.h"
 
 #include "PropertyVisitor.h"
-#include "../PackageHierarchy/StyleSheetNode.h"
+#include "IntrospectionProperty.h"
+#include "VariantTypeProperty.h"
+
+#include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "UI/Styles/UIStyleSheet.h"
 
 using namespace DAVA;
@@ -42,21 +45,41 @@ StyleSheetProperty::StyleSheetProperty(StyleSheetNode *aStyleSheet, const DAVA::
     const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
     name = String(descr.name.c_str());
     replaced = true;
+
+
+    VariantTypeProperty *prop = new VariantTypeProperty("Value", property.value);
+    prop->SetValue(property.value);
+    prop->SetParent(this);
+    properties.push_back(prop);
+    
+    for (int32 i = 0; i < TypeInfo()->MembersCount(); i++)
+    {
+        const InspMember *member = TypeInfo()->Member(i);
+        IntrospectionProperty *prop = new IntrospectionProperty(this, member, nullptr, CT_COPY);
+        prop->SetValue(member->Value(this));
+        prop->SetParent(this);
+        prop->DisableResetFeature();
+        properties.push_back(prop);
+    }
 }
 
 StyleSheetProperty::~StyleSheetProperty()
 {
     styleSheet = nullptr; // weak
+    
+    for (AbstractProperty *property : properties)
+        property->Release();
+    properties.clear();
 }
 
 int StyleSheetProperty::GetCount() const
 {
-    return 0;
+    return static_cast<int>(properties.size());
 }
 
 AbstractProperty *StyleSheetProperty::GetProperty(int index) const
 {
-    return nullptr;
+    return properties[index];
 }
 
 void StyleSheetProperty::Accept(PropertyVisitor *visitor)
@@ -81,6 +104,11 @@ AbstractProperty::ePropertyType StyleSheetProperty::GetType() const
         return TYPE_FLAGS;
 
     return TYPE_VARIANT;
+}
+
+DAVA::uint32 StyleSheetProperty::GetFlags() const 
+{
+    return EF_CAN_REMOVE;
 }
 
 VariantType StyleSheetProperty::GetValue() const
@@ -111,12 +139,42 @@ Interpolation::FuncType StyleSheetProperty::GetTransitionFunction() const
     return property.transitionFunction;
 }
 
+void StyleSheetProperty::SetTransitionFunction(Interpolation::FuncType type)
+{
+    property.transitionFunction = type;
+}
+
+DAVA::int32 StyleSheetProperty::GetTransitionFunctionAsInt() const
+{
+    return GetTransitionFunction();
+}
+
+void StyleSheetProperty::SetTransitionFunctionFromInt(DAVA::int32 type)
+{
+    SetTransitionFunction(static_cast<Interpolation::FuncType>(type));
+}
+
 float32 StyleSheetProperty::GetTransitionTime() const
 {
     return property.transitionTime;
 }
 
+void StyleSheetProperty::SetTransitionTime(DAVA::float32 transitionTime)
+{
+    property.transitionTime = transitionTime;
+}
+
 bool StyleSheetProperty::HasTransition() const
 {
     return property.transition;
+}
+
+void StyleSheetProperty::SetTransition(bool transition)
+{
+    property.transition = transition;
+}
+
+uint32 StyleSheetProperty::GetPropertyIndex() const
+{
+    return property.propertyIndex;
 }

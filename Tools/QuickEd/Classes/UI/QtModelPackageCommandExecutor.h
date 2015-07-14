@@ -67,9 +67,11 @@ public:
     void ChangeProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &value);
     void ResetProperty(ControlNode *node, AbstractProperty *property);
 
-public:
     void AddComponent(ControlNode *node, DAVA::uint32 componentType);
     void RemoveComponent(ControlNode *node, DAVA::uint32 componentType, DAVA::uint32 componentIndex);
+    
+    void AddStyleProperty(StyleSheetNode *node, DAVA::uint32 propertyIndex);
+    void RemoveStyleProperty(StyleSheetNode *node, DAVA::uint32 propertyIndex);
 
     DAVA::ResultList InsertControl(ControlNode *control, ControlsContainerNode *dest, DAVA::int32 destIndex);
     void InsertInstances(const DAVA::Vector<ControlNode*> &controls, ControlsContainerNode *dest, DAVA::int32 destIndex);

@@ -26,47 +26,54 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
+#include "VariantTypeProperty.h"
 
-#ifndef __QUICKED_STYLE_SHEET_PROPERTIES_SECTION_H__
-#define __QUICKED_STYLE_SHEET_PROPERTIES_SECTION_H__
+#include "PropertyVisitor.h"
+#include "IntrospectionProperty.h"
 
-#include "Model/ControlProperties/AbstractProperty.h"
+#include "Model/PackageHierarchy/StyleSheetNode.h"
+#include "UI/Styles/UIStyleSheet.h"
 
-#include "UI/Styles/UIStyleSheetStructs.h"
+using namespace DAVA;
 
-class StyleSheetProperty;
-
-class StyleSheetNode;
-
-namespace DAVA
+VariantTypeProperty::VariantTypeProperty(const String &name, VariantType &vt)
+    : ValueProperty(name)
+    , value(vt)
 {
-    class UIControl;
+    replaced = true;
 }
 
-class StyleSheetPropertiesSection : public AbstractProperty
+VariantTypeProperty::~VariantTypeProperty()
 {
-public:
-    StyleSheetPropertiesSection(StyleSheetNode *styleSheet, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties);
-protected:
-    virtual ~StyleSheetPropertiesSection();
-    
-public:
-    int GetCount() const override;
-    AbstractProperty *GetProperty(int index) const override;
-    
-    void Accept(PropertyVisitor *visitor) override;
-    bool IsReadOnly() const override;
-    
-    const DAVA::String &GetName() const override;
-    ePropertyType GetType() const override;
-    
-    bool CanAddProperty(DAVA::uint32 propertyIndex);
-    void AddProperty(StyleSheetProperty *property);
-    void RemoveProperty(StyleSheetProperty *property);
-    
-private:
-    StyleSheetNode *styleSheet; // weak
-    DAVA::Vector<StyleSheetProperty*> styleSheetProperties;
-};
+}
 
-#endif // __QUICKED_STYLE_SHEET_PROPERTIES_SECTION_H__
+void VariantTypeProperty::Accept(PropertyVisitor *visitor)
+{
+    //visitor->VisitStyleSheetProperty(this);
+}
+
+bool VariantTypeProperty::IsReadOnly() const
+{
+    return GetParent() == nullptr ? true : GetParent()->IsReadOnly();
+}
+
+AbstractProperty::ePropertyType VariantTypeProperty::GetType() const
+{
+    return TYPE_VARIANT;
+}
+
+VariantType VariantTypeProperty::GetValue() const
+{
+    return value;
+}
+
+const EnumMap *VariantTypeProperty::GetEnumMap() const
+{
+    return nullptr;
+}
+
+void VariantTypeProperty::ApplyValue(const DAVA::VariantType &newValue)
+{
+    value = newValue;
+}
+

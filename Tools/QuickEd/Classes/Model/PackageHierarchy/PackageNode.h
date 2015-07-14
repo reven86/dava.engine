@@ -40,6 +40,7 @@ class ControlsContainerNode;
 class ControlNode;
 class StyleSheetsNode;
 class StyleSheetNode;
+class StyleSheetProperty;
 class PackageListener;
 class AbstractProperty;
 class ComponentPropertiesSection;
@@ -83,11 +84,13 @@ public:
     void ResetControlProperty(ControlNode *node, AbstractProperty *property);
     void RefreshProperty(ControlNode *node, AbstractProperty *property);
 
-    void SetStyleProperty(StyleSheetNode *node, AbstractProperty *property, const DAVA::VariantType &newValue);
-
     void AddComponent(ControlNode *node, ComponentPropertiesSection *section);
     void RemoveComponent(ControlNode *node, ComponentPropertiesSection *section);
-    
+
+    void SetStyleProperty(StyleSheetNode *node, AbstractProperty *property, const DAVA::VariantType &newValue);
+    void AddStyleProperty(StyleSheetNode *node, StyleSheetProperty *property);
+    void RemoveStyleProperty(StyleSheetNode *node, StyleSheetProperty *property);
+
     void InsertControl(ControlNode *node, ControlsContainerNode *dest, DAVA::int32 index);
     void RemoveControl(ControlNode *node, ControlsContainerNode *from);
 

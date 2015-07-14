@@ -234,6 +234,11 @@ void PackageNode::RefreshProperty(ControlNode *node, AbstractProperty *property)
     RefreshPropertiesInInstances(node, property);
 }
 
+void PackageNode::AddComponent(ControlNode *node, ComponentPropertiesSection *section)
+{
+    node->GetRootProperty()->AddComponentPropertiesSection(section);
+    RefreshLayout(node);
+}
 
 void PackageNode::SetStyleProperty(StyleSheetNode *node, AbstractProperty *property, const DAVA::VariantType &newValue)
 {
@@ -244,10 +249,14 @@ void PackageNode::SetStyleProperty(StyleSheetNode *node, AbstractProperty *prope
         listener->StylePropertyWasChanged(node, property);
 }
 
-void PackageNode::AddComponent(ControlNode *node, ComponentPropertiesSection *section)
+void PackageNode::AddStyleProperty(StyleSheetNode *node, StyleSheetProperty *property)
 {
-    node->GetRootProperty()->AddComponentPropertiesSection(section);
-    RefreshLayout(node);
+    node->GetRootProperty()->AddProperty(property);
+}
+
+void PackageNode::RemoveStyleProperty(StyleSheetNode *node, StyleSheetProperty *property)
+{
+    node->GetRootProperty()->RemoveProperty(property);
 }
 
 void PackageNode::RemoveComponent(ControlNode *node, ComponentPropertiesSection *section)

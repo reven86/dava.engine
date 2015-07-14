@@ -34,6 +34,7 @@
 #include "UI/Styles/UIStyleSheetStructs.h"
 
 class ValueProperty;
+class IntrospectionProperty;
 
 class StyleSheetNode;
 
@@ -57,18 +58,38 @@ public:
     bool IsReadOnly() const override;
     
     ePropertyType GetType() const override;
+    DAVA::uint32 GetFlags() const override;
 
     DAVA::VariantType GetValue() const;
     const EnumMap *GetEnumMap() const;
     void ApplyValue(const DAVA::VariantType &value);
 
     DAVA::Interpolation::FuncType GetTransitionFunction() const;
-    DAVA::float32 GetTransitionTime() const;
-    bool HasTransition() const;
+    void SetTransitionFunction(DAVA::Interpolation::FuncType type);
 
+    DAVA::int32 GetTransitionFunctionAsInt() const;
+    void SetTransitionFunctionFromInt(DAVA::int32 type);
+
+    DAVA::float32 GetTransitionTime() const;
+    void SetTransitionTime(DAVA::float32 transitionTime);
+
+    bool HasTransition() const;
+    void SetTransition(bool transition);
+    
+    DAVA::uint32 GetPropertyIndex() const;
+    
 private:
     StyleSheetNode *styleSheet; // weak
     DAVA::UIStyleSheetProperty property;
+    DAVA::Vector<AbstractProperty*> properties;
+    
+public:
+    INTROSPECTION_EXTEND(StyleSheetProperty, ValueProperty,
+                         PROPERTY("transition", "Transition", HasTransition, SetTransition, DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT)
+                         PROPERTY("transitionTime", "Transition Time", GetTransitionTime, SetTransitionTime, DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT)
+                         PROPERTY("transitionFunction", DAVA::InspDesc("Transition Function", GlobalEnumMap<DAVA::Interpolation::FuncType>::Instance()), GetTransitionFunctionAsInt, SetTransitionFunctionFromInt, DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT)
+                         );
+
 };
 
 #endif // __QUICKED_STYLE_SHEET_PROPERTY_H__

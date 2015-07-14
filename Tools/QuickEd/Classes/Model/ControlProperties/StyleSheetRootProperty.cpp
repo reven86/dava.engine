@@ -30,6 +30,7 @@
 
 #include "StyleSheetSelectorsSection.h"
 #include "StyleSheetPropertiesSection.h"
+#include "StyleSheetProperty.h"
 
 #include "PropertyVisitor.h"
 #include "PropertyListener.h"
@@ -125,9 +126,32 @@ void StyleSheetRootProperty::SetProperty(AbstractProperty *property, const DAVA:
         listener->PropertyChanged(property);
 }
 
-void StyleSheetRootProperty::ResetProperty(AbstractProperty *property)
+bool StyleSheetRootProperty::CanAddProperty(DAVA::uint32 propertyIndex) const
 {
-    // do nothing
+    return !IsReadOnly() && propertiesSection->CanAddProperty(propertyIndex);
+}
+
+void StyleSheetRootProperty::AddProperty(StyleSheetProperty *property)
+{
+    for (PropertyListener *listener : listeners)
+        listener->StylePropertyWillBeAdded(propertiesSection, property, property->GetPropertyIndex());
+    
+    propertiesSection->AddProperty(property);
+
+    for (PropertyListener *listener : listeners)
+        listener->StylePropertyWasAdded(propertiesSection, property, property->GetPropertyIndex());
+}
+
+void StyleSheetRootProperty::RemoveProperty(StyleSheetProperty *property)
+{
+    uint32 index = property->GetPropertyIndex();
+    for (PropertyListener *listener : listeners)
+        listener->StylePropertyWillBeRemoved(propertiesSection, property, index);
+    
+    propertiesSection->RemoveProperty(property);
+    
+    for (PropertyListener *listener : listeners)
+        listener->StylePropertyWasRemoved(propertiesSection, property, index);
 }
 
 StyleSheetSelectorsSection *StyleSheetRootProperty::GetSelectors() const
