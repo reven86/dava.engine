@@ -44,7 +44,6 @@ public:
 
     //ClientDelegate
     void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files) override;
-
     
     void Update();
     
@@ -52,9 +51,7 @@ private:
     
     void ProcessServerTasks();
     
-    
 private:
-    
     
     DAVA::AssetCache::Server *server = nullptr;
     DAVA::AssetCache::Client *client = nullptr;
@@ -64,13 +61,12 @@ private:
     {
         DAVA::TCPChannel *clientChannel = nullptr;
         DAVA::AssetCache::CacheItemKey key;
-        
+
         DAVA::AssetCache::ePacketID request = DAVA::AssetCache::PACKET_UNKNOWN;
     };
     
     DAVA::List<RequestDescription> waitedRequests;
     DAVA::Mutex requestMutex;
-
     
     struct ServerTask
     {

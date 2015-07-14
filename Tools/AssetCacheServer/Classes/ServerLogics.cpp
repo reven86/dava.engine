@@ -41,7 +41,7 @@ void ServerLogics::Init(DAVA::AssetCache::Server *_server, DAVA::AssetCache::Cli
 
 void ServerLogics::OnAddToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files)
 {
-    if(server && tcpChannel)
+    if((nullptr != server) && (nullptr != tcpChannel))
     {
         dataBase->Insert(key, files);
         server->FilesAddedToCache(tcpChannel, key, true);
@@ -60,15 +60,15 @@ void ServerLogics::OnAddToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetC
 
 void ServerLogics::OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key)
 {
-    if(server && dataBase && tcpChannel)
+    if((nullptr != server) && (nullptr != dataBase) && (nullptr != tcpChannel))
     {
         auto entry = dataBase->Get(key);
-        if(entry)
+        if(nullptr != entry)
         {   // Found in db.
             server->SendFiles(tcpChannel, key, entry->GetFiles());
         }
         else if(client->IsConnected())
-        {   // Not found in db. Ask at remote cache.
+        {   // Not found in db. Ask from remote cache.
             client->GetFromCache(key);
             
             RequestDescription description;
@@ -88,7 +88,7 @@ void ServerLogics::OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA
 
 void ServerLogics::OnWarmingUp(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key)
 {
-    if(dataBase)
+    if(nullptr != dataBase)
     {
         dataBase->InvalidateAccessToken(key);
     }
@@ -97,38 +97,37 @@ void ServerLogics::OnWarmingUp(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCa
 
 void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files)
 {
-    if(dataBase && server)
+    if(nullptr != dataBase)
     {
         dataBase->Insert(key, files);
+    }
 
-        if(waitedRequests.size())
-        {
-            RequestDescription description;
+    if((nullptr != server) && waitedRequests.size())
+    {
+        RequestDescription description;
+        
+        {   //find description for key
+            DAVA::LockGuard<DAVA::Mutex> lock(requestMutex);
+            auto iter = std::find_if(waitedRequests.begin(), waitedRequests.end(), [&key](const RequestDescription& description) -> bool
+                                     {
+                                         return (description.key == key) && (description.request == DAVA::AssetCache::PACKET_GET_FILES_REQUEST);
+                                     });
             
-            {   //find description for key
-                DAVA::LockGuard<DAVA::Mutex> lock(requestMutex);
-                auto iter = std::find_if(waitedRequests.begin(), waitedRequests.end(), [&key](const RequestDescription& description) -> bool
-                                         {
-                                             return (description.key == key) && (description.request == DAVA::AssetCache::PACKET_GET_FILES_REQUEST);
-                                         });
-                
-                if(iter != waitedRequests.end())
-                {
-                    description = *iter;
-                }
-                else
-                {
-                    DVASSERT(false && "cannot found description for key")
-                }
-            }
-            
-            if(nullptr != description.clientChannel)
+            if(iter != waitedRequests.end())
             {
-                server->SendFiles(description.clientChannel, key, files);
+                description = *iter;
+            }
+            else
+            {
+                DVASSERT(false && "cannot found description for key")
             }
         }
+        
+        if(nullptr != description.clientChannel)
+        {
+            server->SendFiles(description.clientChannel, key, files);
+        }
     }
-    
 }
 
 void ServerLogics::ProcessServerTasks()
@@ -140,11 +139,6 @@ void ServerLogics::ProcessServerTasks()
         
         DAVA::LockGuard<DAVA::Mutex> lock(taskMutex);
         serverTasks.pop_front();
-        
-        //        if(client && client->IsConnected())
-        //        {
-        //            client->AddToCache(key, files);
-        //        }
     }
 }
 
