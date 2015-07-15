@@ -27,6 +27,7 @@
 =====================================================================================*/
 
 #include "DAVAEngine.h"
+#include "Base/Signal.h"
 #include "UnitTests/UnitTests.h"
 
 using namespace DAVA;
@@ -92,6 +93,7 @@ struct C : public M, virtual public V, virtual public A
     int f2def(int i, long j) { return static_cast<int>(i + j + 3); }
     virtual int f2virt(int i, long j) { return static_cast<int>(i + j + 2); }
 };
+
 
 // =======================================================================================================================================
 // =======================================================================================================================================
@@ -282,19 +284,24 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
 
     DAVA_TEST(TestSignals)
     {
-#if 0
         // ==================================================================================
         // signals
         // ==================================================================================
-        Signal<void()> sig0;
-        Signal<int(int, int, int)> sig3;
+        Signal<> sig0;
+        Signal<int, int, int> sig3;
 
-        Function<void()> slot0 = Bind(&A::setV, &a, 10);
-        sig0.Connect(slot0);
+        SigConnectionID id = sig0.Connect([]() {
+            printf("111");
+        });
+
         sig0.Emit();
-
-        sig3.Connect(static_f3);
         sig3.Emit(10, 20, 30);
-#endif
+
+        //Function<void()> slot0 = Bind(&A::setV, &a, 10);
+        //sig0.Connect(slot0);
+        //sig0.Emit();
+
+        //sig3.Connect(static_f3);
+        //sig3.Emit(10, 20, 30);
     }
 };
