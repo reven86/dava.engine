@@ -497,6 +497,10 @@ void SoundSystem::SetListenerOrientation(const Vector3 & forward, const Vector3 
         forwardNorm.Normalize();
         Vector3 upNorm = forwardNorm.CrossProduct(left);
         upNorm.Normalize();
+        
+        DVASSERT(forwardNorm.SquareLength() > EPSILON);
+        DVASSERT(upNorm.SquareLength() > EPSILON);
+        DVASSERT(left.SquareLength() > EPSILON);
 
         FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, 0, 0, (FMOD_VECTOR*)&forwardNorm, (FMOD_VECTOR*)&upNorm));
     }

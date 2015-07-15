@@ -28,8 +28,10 @@
 
 
 
-#include "BaseScreen.h"
-#include "GameCore.h"
+#include "Infrastructure/BaseScreen.h"
+#include "Infrastructure/GameCore.h"
+
+using namespace DAVA;
 
 int32 BaseScreen::globalScreenId = 1;
 
