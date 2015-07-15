@@ -34,6 +34,9 @@
 
 using namespace DAVA;
 
+const int32 WIDTH  = 1024;
+const int32 HEIGHT = 768;
+
 void FrameworkDidLaunched()
 {
     
@@ -45,8 +48,8 @@ void FrameworkDidLaunched()
     appOptions->SetString(String("title"), String("TestBed"));
     
 #if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-    appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT);
-    appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_2_0);
+    appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT);
+    appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_3_0);
 
     screenWidth = Min(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
     screenHeight = Max(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
@@ -57,17 +60,11 @@ void FrameworkDidLaunched()
     screenWidth = Min(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
     screenHeight = Max(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
 
-    appOptions->SetInt32("width", screenWidth);
-    appOptions->SetInt32("height", screenHeight);
-
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
 #else
-    screenWidth = 1024;
-    screenHeight = 768;
-
-    appOptions->SetInt32("width", 800);
-    appOptions->SetInt32("height", 800);
+    screenWidth = WIDTH;
+    screenHeight = HEIGHT;
 
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
@@ -84,8 +81,7 @@ void FrameworkDidLaunched()
     DAVA::Core::Instance()->SetOptions(appOptions);
 }
 
-
-void FrameworkWillTerminate() 
+void FrameworkWillTerminate()
 {
 
 }
