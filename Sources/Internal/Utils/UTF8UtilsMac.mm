@@ -63,6 +63,9 @@ void UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString
 	[nsstring release];
 }
 
+namespace 
+{
+
 String EncodeToUTF8(const wchar_t* wstring, size_t length)
 {
 	NSStringEncoding encoding = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE);
@@ -84,14 +87,16 @@ String EncodeToUTF8(const wchar_t* wstring, size_t length)
 	return res;
 }
 
+}
+
 String UTF8Utils::EncodeToUTF8(const WideString& wstring)
 {
-    return EncodeToUTF8(wstring.c_str(), wstring.length());
+    return ::EncodeToUTF8(wstring.c_str(), wstring.length());
 }
 
 String UTF8Utils::EncodeToUTF8(const wchar_t* wideString)
 {
-	return EncodeToUTF8(wideString, std::char_traits<wchar_t>::length(wideString));
+	return ::EncodeToUTF8(wideString, std::char_traits<wchar_t>::length(wideString));
 }
 
 };

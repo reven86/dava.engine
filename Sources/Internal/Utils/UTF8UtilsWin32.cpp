@@ -60,23 +60,7 @@ void  UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideStrin
 
 String UTF8Utils::EncodeToUTF8(const WideString& wstring)
 {
-	int32 bufSize = WideCharToMultiByte(CP_UTF8, 0, wstring.c_str(), -1, 0, 0, NULL, NULL);
-	if (!bufSize)
-	{
-		return "";
-	}
-
-	String resStr = "";
-
-	char* buf = new char[bufSize];
-	int32 res = WideCharToMultiByte(CP_UTF8, 0, wstring.c_str(), -1, buf, bufSize, NULL, NULL);
-	if (res)
-	{
-		resStr = String(buf);
-	}
-
-	delete[] buf;
-	return resStr;
+    return EncodeToUTF8(wstring.c_str());
 };
 
 String UTF8Utils::EncodeToUTF8(const wchar_t* wideString)
