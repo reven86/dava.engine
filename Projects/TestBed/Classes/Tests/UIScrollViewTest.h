@@ -31,8 +31,6 @@
 
 #include "Infrastructure/BaseScreen.h"
 
-using namespace DAVA;
-
 class UIScrollViewTest: public BaseScreen
 {
 protected:
@@ -40,16 +38,16 @@ protected:
 public:
     UIScrollViewTest();
 
-    virtual void LoadResources();
-    virtual void UnloadResources();
+    void LoadResources() override;
+    void UnloadResources() override;
 
 private:
-    void ButtonPressed(BaseObject *obj, void *data, void *callerData);
+    void ButtonPressed(DAVA::BaseObject *obj, void *data, void *callerData);
     
 private:
-    UIButton*         finishTestBtn;
-    UIStaticText*    testMessageText;
-    UIScrollView*    scrollView;
+    DAVA::UIButton*         finishTestBtn;
+    DAVA::UIStaticText*    testMessageText;
+    DAVA::UIScrollView*    scrollView;
 };
 
 #endif /* defined(__UISCROLL_VIEW_TEST__) */

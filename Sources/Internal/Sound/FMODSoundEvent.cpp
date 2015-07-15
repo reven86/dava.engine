@@ -50,11 +50,11 @@ FMODSoundEvent::FMODSoundEvent(const FastName & _eventName) :
     if (SoundSystem::Instance()->fmodEventSystem)
     {
         FMOD::Event * fmodEventInfo = nullptr;
-        FMOD_VERIFY(SoundSystem::Instance()->fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo));
+        SoundSystem::Instance()->fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo);
         if (fmodEventInfo)
         {
             FMOD_MODE mode = 0;
-            FMOD_VERIFY(fmodEventInfo->getPropertyByIndex(FMOD_EVENTPROPERTY_MODE, &mode));
+            fmodEventInfo->getPropertyByIndex(FMOD_EVENTPROPERTY_MODE, &mode);
             is3D = (mode == FMOD_3D);
 
             InitParamsMap();
@@ -85,7 +85,7 @@ bool FMODSoundEvent::Trigger()
         FMOD_VERIFY(fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo));
         if(fmodEventInfo)
         {
-            FMOD_VERIFY(fmodEventInfo->set3DAttributes((FMOD_VECTOR*)&position, 0, isDirectional ? (FMOD_VECTOR*)&direction : NULL));
+            FMOD_VERIFY(fmodEventInfo->set3DAttributes((FMOD_VECTOR*)&position, 0, isDirectional ? (FMOD_VECTOR*)&direction : nullptr));
             FMOD_VERIFY(fmodEventInfo->setVolume(volume));
             ApplyParamsToEvent(fmodEventInfo);
         }

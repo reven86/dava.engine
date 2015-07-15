@@ -12,13 +12,7 @@ include      ( CMake-common  )
 find_package( DavaFramework REQUIRED )
 find_package( DavaTools     REQUIRED )
 
-if( ANDROID )
-    project ( TestBedLib )
-
-else()
-    project ( TestBed )
-
-endif()
+project ( TestBed )
 
 include_directories   ( "Classes" )
 include_directories   ( "Classes/Infrastructure" )
