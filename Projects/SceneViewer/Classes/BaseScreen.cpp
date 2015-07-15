@@ -52,7 +52,7 @@ bool BaseScreen::SystemInput(UIEvent *currentInput)
     return true;
 }
 
-void SystemScreenSizeDidChanged(const Rect &newFullScreenSize) override
+void BaseScreen::SystemScreenSizeDidChanged(const Rect &newFullScreenSize)
 {
     UnloadResources();
     LoadResources();

@@ -48,14 +48,14 @@ void FrameworkDidLaunched()
     appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT);
     appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_2_0);
 
-    screenWidth = Min(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
-    screenHeight = Max(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
+    screenWidth = Max(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
+    screenHeight = Min(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
     appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
 
     DAVA::VirtualCoordinatesSystem::Instance()->SetProportionsIsFixed(false);
 #elif defined (__DAVAENGINE_WIN_UAP__)
-    screenWidth = Min(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
-    screenHeight = Max(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
+    screenWidth = DeviceInfo::GetScreenInfo().width;
+    screenHeight = DeviceInfo::GetScreenInfo().height;
 
     appOptions->SetInt32("width", screenWidth);
     appOptions->SetInt32("height", screenHeight);
@@ -65,9 +65,6 @@ void FrameworkDidLaunched()
 #else
     screenWidth = 1024;
     screenHeight = 768;
-
-    appOptions->SetInt32("width", 800);
-    appOptions->SetInt32("height", 800);
 
     appOptions->SetInt32("fullscreen", 0);
     appOptions->SetInt32("bpp", 32);
