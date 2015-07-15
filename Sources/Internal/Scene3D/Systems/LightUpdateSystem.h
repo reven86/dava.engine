@@ -59,6 +59,7 @@ public:
     virtual void RemoveEntity(Entity * entity);
     void ImmediateEvent(Component * component, uint32 event) override;
 private:
+    void RecalcLight(Entity *entity);
     HashMap<Entity*, Light*> entityObjectMap;
 };
     
