@@ -43,6 +43,7 @@ class AndroidSystemDelegate
 {
 public:
 	AndroidSystemDelegate(JavaVM *vm);
+	virtual ~AndroidSystemDelegate() = default;
 
 	virtual bool DownloadHttpFile(const String & url, const String & documentsPathname) = 0;
     

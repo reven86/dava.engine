@@ -26,7 +26,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "UIScrollViewTest.h"
+#include "Tests/UIScrollViewTest.h"
+
+using namespace DAVA;
 
 UIScrollViewTest::UIScrollViewTest()
     : BaseScreen("UIScrollViewTest")

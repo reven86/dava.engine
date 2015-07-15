@@ -92,7 +92,7 @@ elseif( MACOS )
 elseif( IOS )  
     find_package( ZLIB )
 
-    add_definitions( -DDDARWIN_NO_CARBON ) 
+    add_definitions( -DDARWIN_NO_CARBON ) 
     
     INCLUDE_DIRECTORIES ( /System/Library/Frameworks )
     foreach( NAME  CoreGraphics 
@@ -127,7 +127,10 @@ elseif ( WINDOWS_UAP )
 
     file ( GLOB RELEASE_LIB_LIST "${DAVA_WIN_UAP_LIBRARIES_PATH_RELEASE}/*.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${RELEASE_LIB_LIST}  )
-elseif( WIN32 ) 
+
+elseif( MSVC ) 
+
+
     file ( GLOB LIB_LIST "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/D/*" )
     list ( APPEND LIST_SHARED_LIBRARIES_DEBUG ${LIB_LIST}  )
 

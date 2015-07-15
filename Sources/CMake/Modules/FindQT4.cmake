@@ -48,8 +48,5 @@ find_package( Qt4 REQUIRED )
 set( CMAKE_MODULE_PATH "${TMP_CMAKE_MODULE_PATH}" )
 
 if( NOT QT4_FOUND )
-    message( "Error !!!: Please set the correct path to QT4 in file DavaConfig.in"  )
-    message( " " )
-    exit()
-
+    message( FATAL_ERROR "Please set the correct path to QT4 in file DavaConfig.in"  )
 endif()
