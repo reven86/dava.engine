@@ -125,28 +125,23 @@ void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key
 
     if((nullptr != server) && waitedRequests.size())
     {
-        RequestDescription description;
+        DAVA::LockGuard<DAVA::Mutex> lock(requestMutex);
+        auto iter = std::find_if(waitedRequests.begin(), waitedRequests.end(), [&key](const RequestDescription& description) -> bool
+                                 {
+                                     return (description.key == key) && (description.request == DAVA::AssetCache::PACKET_GET_FILES_REQUEST);
+                                 });
         
-        {   //find description for key
-            DAVA::LockGuard<DAVA::Mutex> lock(requestMutex);
-            auto iter = std::find_if(waitedRequests.begin(), waitedRequests.end(), [&key](const RequestDescription& description) -> bool
-                                     {
-                                         return (description.key == key) && (description.request == DAVA::AssetCache::PACKET_GET_FILES_REQUEST);
-                                     });
-            
-            if(iter != waitedRequests.end())
+        if(iter != waitedRequests.end())
+        {
+            RequestDescription &description = (*iter);
+            if(nullptr != description.clientChannel)
             {
-                description = *iter;
-            }
-            else
-            {
-                DVASSERT(false && "cannot found description for key")
+                server->SendFiles(description.clientChannel, key, files);
             }
         }
-        
-        if(nullptr != description.clientChannel)
+        else
         {
-            server->SendFiles(description.clientChannel, key, files);
+            DAVA::Logger::Warning("[ServerLogics::%s] Connection was closed by client", __FUNCTION__);
         }
     }
 }
