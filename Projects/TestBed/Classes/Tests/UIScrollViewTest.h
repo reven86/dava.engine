@@ -29,7 +29,7 @@
 #ifndef __UISCROLL_VIEW_TEST__
 #define __UISCROLL_VIEW_TEST__
 
-#include "BaseScreen.h"
+#include "Infrastructure/BaseScreen.h"
 
 using namespace DAVA;
 

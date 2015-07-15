@@ -38,9 +38,7 @@
 namespace DAVA
 {
 
-class CorePlatformWinUAP;
 class PrivateMovieViewWinUAP;
-
 class MovieViewControl : public IMovieViewControl
 {
 public:

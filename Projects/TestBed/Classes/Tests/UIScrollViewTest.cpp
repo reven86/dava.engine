@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "UIScrollViewTest.h"
+#include "Tests/UIScrollViewTest.h"
 
 UIScrollViewTest::UIScrollViewTest()
     : BaseScreen("UIScrollViewTest")

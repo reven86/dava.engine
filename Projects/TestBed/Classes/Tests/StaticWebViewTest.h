@@ -36,8 +36,6 @@
 
 using namespace DAVA;
 
-class MyWebViewDelegate;
-
 class StaticWebViewTest : public BaseScreen
 {
 protected:

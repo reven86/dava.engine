@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "NotificationTest.h"
+#include "Tests/NotificationTest.h"
 #include "Base/Message.h"
 
 using namespace DAVA;

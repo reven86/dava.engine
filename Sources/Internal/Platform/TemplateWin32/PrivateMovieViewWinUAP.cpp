@@ -280,7 +280,7 @@ Uri^ PrivateMovieViewWinUAP::UriFromPath(const FilePath& path) const
     }
     else
     {
-        DVASSERT(0 && "For now MovieView supports loading files only from install or doc folders");
+        DVASSERT(0 && "For now MovieView supports file loading only from GetCurrentExecutableDirectory() and GetUserDocumentsPath() folders");
         return nullptr;
     }
 

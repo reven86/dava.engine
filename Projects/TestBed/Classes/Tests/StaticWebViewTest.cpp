@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "StaticWebViewTest.h"
+#include "Tests/StaticWebViewTest.h"
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Utils/Utils.h"

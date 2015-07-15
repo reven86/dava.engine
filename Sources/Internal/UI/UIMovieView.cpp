@@ -28,7 +28,7 @@
 
 #include "Base/Platform.h"
 
-#include "UIMovieView.h"
+#include "UI/UIMovieView.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 #   include "Platform/TemplateiOS/MovieViewControliOS.h"

@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "UIMovieTest.h"
+#include "Tests/UIMovieTest.h"
 
 UIMovieTest::UIMovieTest()
     : BaseScreen("UIMovieTest")
