@@ -54,8 +54,8 @@ void FrameworkDidLaunched()
 
     DAVA::VirtualCoordinatesSystem::Instance()->SetProportionsIsFixed(false);
 #elif defined (__DAVAENGINE_WIN_UAP__)
-    screenWidth = Min(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
-    screenHeight = Max(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
+    screenWidth = Max(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
+    screenHeight = Min(DeviceInfo::GetScreenInfo().width, DeviceInfo::GetScreenInfo().height);
 
     appOptions->SetInt32("width", screenWidth);
     appOptions->SetInt32("height", screenHeight);
