@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_MOVIEVIEWCONTROL_WINUAP_H__
-#define __DAVAENGINE_MOVIEVIEWCONTROL_WINUAP_H__
+#ifndef __DAVAENGINE_PRIVATEMOVIEVIEWWINUAP_H__
+#define __DAVAENGINE_PRIVATEMOVIEVIEWWINUAP_H__
 
 #include "Base/Platform.h"
 
@@ -39,40 +39,60 @@ namespace DAVA
 {
 
 class CorePlatformWinUAP;
-class PrivateMovieViewWinUAP;
-
-class MovieViewControl : public IMovieViewControl
+class PrivateMovieViewWinUAP : public std::enable_shared_from_this<PrivateMovieViewWinUAP>
 {
 public:
-    MovieViewControl();
-    virtual ~MovieViewControl();
+    PrivateMovieViewWinUAP();
+    virtual ~PrivateMovieViewWinUAP();
 
-    // Initialize the control.
-    void Initialize(const Rect& rect) override;
+    // MovieViewControl should invoke it in its destructor to tell this class instance
+    // to fly away on its own (finish pending jobs if any, and delete when all references are lost)
+    void FlyToSunIcarus();
 
-    // Position/visibility.
-    void SetRect(const Rect& rect) override;
-    void SetVisible(bool isVisible) override;
+    void Initialize(const Rect& rect);
 
-    // Open the Movie.
-    void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params) override;
+    void SetRect(const Rect& rect);
+    void SetVisible(bool isVisible);
 
-    // Start/stop the video playback.
-    void Play() override;
-    void Stop() override;
+    void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params);
 
-    // Pause/resume the playback.
-    void Pause() override;
-    void Resume() override;
+    void Play();
+    void Stop();
 
-    // Whether the movie is being played?
-    bool IsPlaying() override;
+    void Pause();
+    void Resume();
+
+    bool IsPlaying();
 
 private:
-    std::shared_ptr<PrivateMovieViewWinUAP> privateImpl;
+    void InstallEventHandlers();
+    void PositionMovieView(const Rect& rect);
+
+    Windows::Storage::Streams::IRandomAccessStream^ CreateStreamFromUri(Windows::Foundation::Uri^ uri) const;
+    Windows::Foundation::Uri^ UriFromPath(const FilePath& path) const;
+    bool CheckIfPathReachableFrom(const String& pathToCheck, const String& pathToReach, String& pathTail) const;
+
+private:    // MediaElement event handlers
+    void OnMediaOpened();
+    void OnMediaEnded();
+    void OnMediaFailed(Windows::UI::Xaml::ExceptionRoutedEventArgs^ args);
+
+private:
+    CorePlatformWinUAP* core;
+    Windows::UI::Xaml::Controls::MediaElement^ nativeMovieView = nullptr;
+    bool visible = true;
+    bool movieLoaded = false;   // Movie has been successfully loaded and decoded
+    bool playRequest = false;   // Movie should play after loading as Play() can be invoked earlier than movie has been loaded
+    bool moviePlaying = false;  // Movie is playing now
 };
+
+//////////////////////////////////////////////////////////////////////////
+inline bool PrivateMovieViewWinUAP::IsPlaying()
+{
+    return moviePlaying;
+}
 
 }   // namespace DAVA
 
 #endif  // __DAVAENGINE_WIN_UAP__
-#endif  // __DAVAENGINE_MOVIEVIEWCONTROL_WINUAP_H__
+#endif  // __DAVAENGINE_PRIVATEMOVIEVIEWWINUAP_H__
