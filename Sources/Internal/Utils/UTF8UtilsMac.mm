@@ -63,17 +63,17 @@ void UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString
 	[nsstring release];
 }
 
-String UTF8Utils::EncodeToUTF8(const WideString& wstring)
+String EncodeToUTF8(const wchar_t* wstring, size_t length)
 {
 	NSStringEncoding encoding = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE);
 	NSString* nsstring = [[NSString alloc]
-						  initWithBytes:(const char*)wstring.c_str()
-						  length:wstring.length() * sizeof(wchar_t)
+						  initWithBytes:(const char*)wstring
+						  length:wstring * sizeof(wchar_t)
 						  encoding:encoding];
 
     if (nil == nsstring)
     {
-        Logger::Error("Encode to UTF8 error. NSString is nil for string: %ls", wstring.c_str());
+        Logger::Error("Encode to UTF8 error. NSString is nil for string: %ls", wstring);
         return String("");
     }
     
@@ -82,6 +82,16 @@ String UTF8Utils::EncodeToUTF8(const WideString& wstring)
 	[nsstring release];
 
 	return res;
+}
+
+String UTF8Utils::EncodeToUTF8(const WideString& wstring)
+{
+    return EncodeToUTF8(wstring.c_str(), wstring.length());
+}
+
+String UTF8Utils::EncodeToUTF8(const wchar_t* wideString)
+{
+	return EncodeToUTF8(wideString, std::char_traits<wchar_t>::length(wideString));
 }
 
 };
