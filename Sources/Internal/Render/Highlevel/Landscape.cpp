@@ -46,6 +46,7 @@
 #include "Scene3D/Systems/FoliageSystem.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Render/Renderer.h"
+#include "Render/Highlevel/RenderPassNames.h"
 
 namespace DAVA
 {
@@ -1153,6 +1154,8 @@ void Landscape::Load(KeyedArchive * archive, SerializationContext * serializatio
 
     DVASSERT(matKey);
     landscapeMaterial = SafeRetain(static_cast<NMaterial*>(serializationContext->GetDataBlock(matKey)));
+    if (landscapeMaterial)
+        landscapeMaterial->PreBuildMaterial(PASS_FORWARD);
 	
 	FilePath heightmapPath = serializationContext->GetScenePath() + archive->GetString("hmap");
     AABBox3 loadedBbox = archive->GetByteArrayAsType("bbox", AABBox3());
