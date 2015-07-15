@@ -115,10 +115,9 @@ void ServerLogics::OnChannelClosed(DAVA::TCPChannel *tcpChannel, const DAVA::cha
     }
 }
 
-
 void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files)
 {
-    if(nullptr != dataBase)
+    if(nullptr != dataBase && files.GetFiles().size() != 0)
     {
         dataBase->Insert(key, files);
     }

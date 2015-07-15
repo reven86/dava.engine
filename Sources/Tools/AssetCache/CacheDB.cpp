@@ -302,21 +302,14 @@ void CacheDB::Insert(const CacheItemKey &key, const CachedFiles &files)
     
 void CacheDB::Insert(const CacheItemKey &key, const ServerCacheEntry &entry)
 {
-    ServerCacheEntry *entryForFastCache = nullptr;
-    
     auto found = fullCache.find(key);
     if(found != fullCache.end())
     {
         IncreaseUsedSize(found->second.GetFiles());
-        
-        found->second = entry;
-        entryForFastCache = &found->second;
     }
-    else
-    {
-        fullCache[key] = entry;
-        entryForFastCache = &fullCache[key];
-    }
+
+    fullCache[key] = entry;
+    ServerCacheEntry *entryForFastCache = &fullCache[key];
     
     entryForFastCache->InvalidateAccesToken(nextItemID++);
     InsertInFastCache(key, entryForFastCache);
@@ -338,6 +331,11 @@ void CacheDB::Insert(const CacheItemKey &key, const ServerCacheEntry &entry)
     
 void CacheDB::InsertInFastCache(const CacheItemKey &key, ServerCacheEntry * entry)
 {
+    if(fastCache.count(key) != 0)
+    {
+        return;
+    }
+    
     if (itemsInMemory == fastCache.size() && itemsInMemory > 0)
     {
         RemoveOldestFromFastCache();
