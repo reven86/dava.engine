@@ -495,7 +495,7 @@ void QtPropertyDataDavaVariant::ChildsCreate()
 			filePathBtn->setIcon(QIcon(":/QtIcons/openscene.png"));
 			filePathBtn->setIconSize(QSize(14, 14));
 			filePathBtn->setAutoRaise(true);
-			QObject::connect(filePathBtn, SIGNAL(released()), this, SLOT(FilePathOWPressed()));
+			connect(filePathBtn, &QToolButton::clicked, this, &QtPropertyDataDavaVariant::FilePathOWPressed);
 		}
 		break;
     case DAVA::VariantType::TYPE_STRING:
