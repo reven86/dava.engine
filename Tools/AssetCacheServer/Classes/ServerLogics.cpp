@@ -94,6 +94,27 @@ void ServerLogics::OnWarmingUp(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCa
     }
 }
 
+void ServerLogics::OnChannelClosed(DAVA::TCPChannel *tcpChannel, const DAVA::char8* message)
+{
+    if(waitedRequests.size())
+    {
+        DAVA::LockGuard<DAVA::Mutex> lock(requestMutex);
+        auto iter = std::find_if(waitedRequests.begin(), waitedRequests.end(), [&tcpChannel](const RequestDescription& description) -> bool
+                                 {
+                                     return (description.clientChannel == tcpChannel);
+                                 });
+        
+        if(iter != waitedRequests.end())
+        {
+            waitedRequests.erase(iter);
+        }
+        else
+        {
+            DVASSERT(false && "cannot found description for closed channel")
+        }
+    }
+}
+
 
 void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files)
 {

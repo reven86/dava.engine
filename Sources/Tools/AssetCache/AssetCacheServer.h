@@ -53,8 +53,9 @@ public:
     
     virtual void OnAddToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, const CachedFiles &files) = 0;
     virtual void OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key) = 0;
-    
     virtual void OnWarmingUp(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key) = 0;
+
+    virtual void OnChannelClosed(TCPChannel *tcpChannel, const char8* message) { } ;
 };
     
     
@@ -76,6 +77,7 @@ public:
     
     //TCPChannelDelegate
     void PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, size_t length) override;
+    void ChannelClosed(TCPChannel *tcpChannel, const char8* message) override;
     //END of TCPChannelDelegate
     
     bool FilesAddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, bool added);

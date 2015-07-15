@@ -41,7 +41,8 @@ public:
     void OnAddToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files) override;
     void OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key) override;
     void OnWarmingUp(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key) override;
-
+    void OnChannelClosed(DAVA::TCPChannel *tcpChannel, const DAVA::char8* message) override;
+    
     //ClientDelegate
     void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files) override;
     
