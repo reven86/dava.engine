@@ -30,6 +30,7 @@
 #include "CheckableComboBox.h"
 
 #include <QAbstractItemView>
+#include <QListView>
 #include <QEvent>
 #include <QStylePainter>
 
@@ -48,6 +49,7 @@ CheckableComboBox::CheckableComboBox(QWidget* parent)
     : QComboBox(parent)
 {
     setModel(new ComboBoxModel(this));
+    setView(new QListView());
     connect(model(), &QAbstractItemModel::dataChanged, this, &CheckableComboBox::onDataChanged);
     connect(this, &CheckableComboBox::selectedUserDataChanged, this, &CheckableComboBox::updateTextHints);
 
