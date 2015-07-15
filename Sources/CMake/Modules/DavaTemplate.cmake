@@ -40,7 +40,7 @@ macro( setup_main_executable )
 
 include      ( PlatformSettings )
 
-if( MSVC )
+if( WIN32 )
     add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
 endif()
 
@@ -104,9 +104,9 @@ elseif( MACOS )
 
 elseif ( WINDOWS_UAP )
 
-	if(MSVC_VERSION GREATER 1899)
+	if(WIN32_VERSION GREATER 1899)
 		set(COMPILER_VERSION "14")
-	elseif(MSVC_VERSION GREATER 1700)
+	elseif(WIN32_VERSION GREATER 1700)
 		set(COMPILER_VERSION "12")
 	endif()
 	
@@ -178,7 +178,7 @@ elseif ( WINDOWS_UAP )
 	set_property(SOURCE ${RELEASE_CONTENT_FILES} PROPERTY
 		VS_DEPLOYMENT_CONTENT $<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>,$<CONFIG:MinSizeRel>>)
 
-elseif( WIN32 AND MSVC )
+elseif( WIN32 AND WIN32 )
     list( APPEND RESOURCES_LIST  ${WIN32_RESOURCES} )
 endif()
 
@@ -215,7 +215,7 @@ if( DAVA_FOUND )
         include_directories( ${PLATFORM_INCLUDES_DIR} )
 
     else()
-        if( MSVC )
+        if( WIN32 )
             add_definitions        ( -D_UNICODE 
                                      -DUNICODE )
             list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.cpp 
@@ -440,7 +440,7 @@ elseif( MACOS )
 
     endif()
 
-elseif ( MSVC )       
+elseif ( WIN32 )       
     if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32" )
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY: /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" ) 
 
