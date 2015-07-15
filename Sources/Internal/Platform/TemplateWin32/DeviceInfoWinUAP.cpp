@@ -27,17 +27,17 @@
 =====================================================================================*/
 
 
-
-#include "Platform/DeviceInfo.h"
-#include "Utils/StringFormat.h"
-#include "Utils/MD5.h"
-#include "Utils/Utils.h"
 #include "Debug/DVAssert.h"
+#include "FileSystem/FileSystem.h"
+#include "Platform/DeviceInfo.h"
+#include "Utils/MD5.h"
+#include "Utils/StringFormat.h"
+#include "Utils/Utils.h"
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "winsock2.h"
 #include "Iphlpapi.h"
+#include "winsock2.h"
 
 using namespace Windows::Foundation;
 using namespace Windows::UI::Core;
@@ -143,6 +143,61 @@ bool DeviceInfo::IsRunningOnEmulator()
     return isEmulator;
 }
 #endif //  __DAVAENGINE_WIN_UAP__
+
+bool FillStorageSpaceInfo(DeviceInfo::StorageInfo& storage_info)
+{
+    ULARGE_INTEGER freeBytesAvailable;
+    ULARGE_INTEGER totalNumberOfBytes;
+    ULARGE_INTEGER totalNumberOfFreeBytes;
+
+    BOOL res = ::GetDiskFreeSpaceExA(storage_info.path.GetAbsolutePathname().c_str(),
+        &freeBytesAvailable, &totalNumberOfBytes, &totalNumberOfFreeBytes);
+
+    if (res == FALSE)
+        return false;
+
+    storage_info.totalSpace = totalNumberOfBytes.QuadPart;
+    storage_info.freeSpace = freeBytesAvailable.QuadPart;
+
+    return true;
+}
+
+List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
+{
+    using namespace Windows::Storage;
+
+    List<DeviceInfo::StorageInfo> result;
+    FileSystem* fileSystem = FileSystem::Instance();
+
+    //information about internal storage
+    DeviceInfo::StorageInfo storage;
+    storage.path = fileSystem->GetUserDocumentsPath();
+    storage.type = STORAGE_TYPE_INTERNAL;
+    if (FillStorageSpaceInfo(storage))
+    {
+        result.push_back(storage);
+    }
+
+    //information about removable storages
+    storage.type = STORAGE_TYPE_PRIMARY_EXTERNAL;
+    storage.removable = true;
+
+    auto removableStorages = WaitAsync(KnownFolders::RemovableDevices->GetFoldersAsync());
+    size_t size = removableStorages->Size;
+    for (size_t i = 0; i < size; ++i)
+    {
+        auto path = removableStorages->GetAt(i)->Path;
+        storage.path = WStringToString(path->Data());
+        if (FillStorageSpaceInfo(storage))
+        {
+            result.push_back(storage);
+            //all subsequent external storages are secondary
+            storage.type = STORAGE_TYPE_SECONDARY_EXTERNAL;
+        }
+    }
+
+    return result;
+}
 
 }
 

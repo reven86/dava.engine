@@ -51,6 +51,12 @@ BaseScreen::BaseScreen()
     GameCore::Instance()->RegisterScreen(this);
 }
 
+void BaseScreen::SystemScreenSizeDidChanged(const Rect &newFullScreenSize)
+{
+    UnloadResources();
+    LoadResources();
+}
+
 bool BaseScreen::SystemInput(UIEvent *currentInput)
 {
     if ((currentInput->tid == DVKEY_BACK) && (currentInput->phase = UIEvent::PHASE_KEYCHAR))

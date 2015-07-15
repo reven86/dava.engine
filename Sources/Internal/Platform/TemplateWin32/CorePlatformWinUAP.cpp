@@ -72,14 +72,8 @@ Core::eScreenMode CorePlatformWinUAP::GetScreenMode()
     // will be called from UI thread
     ApplicationViewWindowingMode viewMode;
     auto func = [this, &viewMode] { viewMode = xamlApp->GetScreenMode(); };
-    if (IsUIThread())
-    {
-        func();
-    }
-    else
-    {
-        RunOnUIThreadBlocked(func);
-    }
+    RunOnUIThreadBlocked(func);
+
     switch (viewMode)
     {
     case ApplicationViewWindowingMode::FullScreen:
@@ -104,45 +98,23 @@ void CorePlatformWinUAP::SwitchScreenToMode(eScreenMode screenMode)
     {
         mode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
     }
-    if (IsUIThread())
-    {
-        xamlApp->SetScreenMode(mode);
-    }
-    else
-    {
-        RunOnUIThread([this, mode]() { xamlApp->SetScreenMode(mode); });
-    }
+    RunOnUIThread([this, mode]() { xamlApp->SetScreenMode(mode); });
 }
 
 DisplayMode CorePlatformWinUAP::GetCurrentDisplayMode()
 {
     Windows::Foundation::Size screenSize;
     auto func = [this, &screenSize] { screenSize = xamlApp->GetCurrentScreenSize(); };
-    if (IsUIThread())
-    {
-        func();
-    }
-    else
-    {
-        RunOnUIThreadBlocked(func);
-    }
+    RunOnUIThreadBlocked(func);
     return DisplayMode(static_cast<int32>(screenSize.Width), static_cast<int32>(screenSize.Height), DisplayMode::DEFAULT_BITS_PER_PIXEL, DisplayMode::DEFAULT_DISPLAYFREQUENCY);
 }
 
 void CorePlatformWinUAP::SetCursorPinning(bool isPinning)
 {
-    if (IsUIThread())
-    {
+    RunOnUIThread([this, isPinning]() {
         xamlApp->SetCursorPinning(isPinning);
         xamlApp->SetCursorVisible(!isPinning);
-    }
-    else
-    {
-        RunOnUIThread([this, isPinning]() {
-        xamlApp->SetCursorPinning(isPinning);
-        xamlApp->SetCursorVisible(!isPinning);
-        });
-    }
+    });
 }
 
 }   // namespace DAVA

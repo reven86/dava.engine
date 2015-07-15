@@ -29,12 +29,13 @@
 
 #include "Utils/UTF8Utils.h"
 #include "FileSystem/Logger.h"
+#include "Debug/DVAssert.h"
 
 #if defined(__DAVAENGINE_WINDOWS__)
 
 #include <Windows.h>
 
-namespace DAVA 
+namespace DAVA
 {
 
 void  UTF8Utils::EncodeToWideString(const uint8 * string, size_t size, WideString & resultString)
@@ -78,6 +79,22 @@ String UTF8Utils::EncodeToUTF8(const WideString& wstring)
 	return resStr;
 };
 
-};
+String UTF8Utils::EncodeToUTF8(const wchar_t* wideString)
+{
+    DVASSERT(wideString != nullptr);
+
+    String result;
+    // Note: WideCharToMultiByte makes room for zero terminator in resulting string if wideString length is set to -1
+    int bufSize = WideCharToMultiByte(CP_UTF8, 0, wideString, -1, 0, 0, nullptr, nullptr);
+    if (bufSize > 0)
+    {
+        result.resize(bufSize);
+        WideCharToMultiByte(CP_UTF8, 0, wideString, -1, &*result.begin(), bufSize, nullptr, nullptr);
+        result.pop_back();  // Get rid of extra zero terminator appended by WideCharToMultiByte
+    }
+    return result;
+}
+
+}   // namespace DAVA
 
 #endif

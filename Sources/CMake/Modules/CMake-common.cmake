@@ -347,10 +347,12 @@ macro ( add_content_win_uap_single CONTENT_DIR )
 	file ( GLOB_RECURSE CONTENT_LIST "${CONTENT_DIR}/*")
 	list ( APPEND ADDED_CONTENT_SRC ${CONTENT_LIST} )
     set ( GROUP_PREFIX "Content\\" )
-	get_filename_component ( CONTENT_DIR_PATH ${CONTENT_DIR} PATH )
+	get_filename_component ( CONTENT_DIR_ABS ${CONTENT_DIR} ABSOLUTE )
+	get_filename_component ( CONTENT_DIR_PATH ${CONTENT_DIR_ABS} PATH )
 	
 	#process all content files
 	FOREACH( ITEM ${CONTENT_LIST} )
+		get_filename_component ( ITEM ${ITEM} ABSOLUTE )
 	    #message("Item: ${ITEM}")
 		
 		#add item to project source group "Content"

@@ -102,7 +102,7 @@ protected:
 	void ReloadEnumFilters();
 	void ReloadProperties();
 
-	QtPropertyDataInspMember* AddPropertyItem(const char *name, DAVA::InspBase *object, const QModelIndex &parent);
+	QtPropertyDataInspMember* AddPropertyItem(const DAVA::FastName& name, DAVA::InspBase *object, const QModelIndex &parent);
 	void SetPropertyItemValidValues(QtPropertyDataInspMember* item, EnumMap *validValues);
 	void SetPropertyItemValidValues(QtPropertyDataMetaObject* item, EnumMap *validValues);
 

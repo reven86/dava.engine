@@ -137,6 +137,7 @@ ENUM_DECLARE(DeviceInfo::ePlatform)
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_MACOS, "MacOS");
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_ANDROID, "Android");
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_WIN32, "Win32");
+    ENUM_ADD_DESCR(DeviceInfo::PLATFORM_WIN_UAP, "Windows UAP");
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_UNKNOWN, "Unknown");
 }
 
@@ -152,6 +153,27 @@ ENUM_DECLARE(DLC::DLCError)
     ENUM_ADD(DLC::DE_DOWNLOAD_ERROR);
     ENUM_ADD(DLC::DE_PATCH_ERROR_LITE);
     ENUM_ADD(DLC::DE_PATCH_ERROR_FULL);
+}
+
+
+ENUM_DECLARE(Interpolation::FuncType)
+{
+    ENUM_ADD_DESCR(Interpolation::LINEAR, "LINEAR");
+    ENUM_ADD_DESCR(Interpolation::EASE_IN, "EASE_IN");
+    ENUM_ADD_DESCR(Interpolation::EASE_OUT, "EASE_OUT");
+    ENUM_ADD_DESCR(Interpolation::EASE_IN_EASY_OUT, "EASE_IN_EASY_OUT");
+    ENUM_ADD_DESCR(Interpolation::SINE_IN, "SINE_IN");
+    ENUM_ADD_DESCR(Interpolation::SINE_OUT, "SINE_OUT");
+    ENUM_ADD_DESCR(Interpolation::SINE_IN_SINE_OUT, "SINE_IN_SINE_OUT");
+    ENUM_ADD_DESCR(Interpolation::ELASTIC_IN, "ELASTIC_IN");
+    ENUM_ADD_DESCR(Interpolation::ELASTIC_OUT, "ELASTIC_OUT");
+    ENUM_ADD_DESCR(Interpolation::ELASTIC_IN_ELASTIC_OUT, "ELASTIC_IN_ELASTIC_OUT");
+    ENUM_ADD_DESCR(Interpolation::BOUNCE_IN, "BOUNCE_IN");
+    ENUM_ADD_DESCR(Interpolation::BOUNCE_OUT, "BOUNCE_OUT");
+    ENUM_ADD_DESCR(Interpolation::BOUNCE_IN_BOUNCE_OUT, "BOUNCE_IN_BOUNCE_OUT");
+    ENUM_ADD_DESCR(Interpolation::EASY_IN, "EASY_IN");
+    ENUM_ADD_DESCR(Interpolation::EASY_OUT, "EASY_OUT");
+    ENUM_ADD_DESCR(Interpolation::EASY_IN_EASY_OUT, "EASY_IN_EASY_OUT");
 }
 
 ENUM_DECLARE(UIControlBackground::eDrawType)

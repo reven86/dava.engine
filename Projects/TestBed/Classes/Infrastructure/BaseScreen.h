@@ -46,11 +46,7 @@ public:
     
     inline int32 GetScreenId();
     
-    void SystemScreenSizeDidChanged(const Rect &newFullScreenSize) override
-    {
-        UnloadResources();
-        LoadResources();
-    }
+    void SystemScreenSizeDidChanged(const Rect &newFullScreenSize) override;
 
 protected:
     void LoadResources() override;
