@@ -281,40 +281,56 @@ bool QtPropertyItemDelegate::helpEvent(QHelpEvent * event, QAbstractItemView * v
     return false;
 }
 
+void QtPropertyItemDelegate::DrawButton(QPainter* painter, QStyleOptionViewItem& opt, QtPropertyToolButton* btn) const
+{
+    if(btn->height() != opt.rect.height())
+    {
+        QRect geom = btn->geometry();
+        geom.setHeight(opt.rect.height());
+        btn->setGeometry(geom);
+    }
+
+    int owYPos = opt.rect.y() + (opt.rect.height() - btn->height()) / 2;
+    if(btn->isVisible())
+    {
+        btn->move(opt.rect.left(), owYPos);
+    }
+    else
+    {
+        QPixmap pix = btn->grab();
+        painter->drawPixmap(opt.rect.left(), owYPos, pix);
+    }
+
+    opt.rect.adjust(buttonSpacing + btn->width(), 0, 0, 0);
+}
+
 void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOptionViewItem &opt, const QModelIndex &index) const
 {
 	QtPropertyData* data = model->itemFromIndex(index);
     if (index.column() == 1 && NULL != data && data->GetButtonsCount() > 0)
     {
-        int owSpacing = 1;
-        int owXPos = opt.rect.left() + owSpacing;
+        opt.rect.adjust(buttonSpacing, 0, 0, 0);
 
 		// draw not overlaid widgets
+        QtPropertyToolButton *addRemoveButton = nullptr;
+        for (int i = data->GetButtonsCount() - 1; i >= 0 && nullptr == addRemoveButton; --i)
+        {
+            const auto &btn = data->GetButton(i);
+            if (btn->objectName().contains("RemoveButton"))
+            {
+                addRemoveButton = btn;
+                DrawButton(painter, opt, btn);
+            }
+        }
+
 		for(int i = data->GetButtonsCount() - 1; i >= 0; --i)
 		{
 			QtPropertyToolButton *btn = data->GetButton(i);
             // update widget height
-            if(btn->height() != opt.rect.height())
+            if (addRemoveButton != btn)
             {
-                QRect geom = btn->geometry();
-                geom.setHeight(opt.rect.height());
-                btn->setGeometry(geom);
+                DrawButton(painter, opt, btn);
             }
-
-            int owYPos = opt.rect.y() + (opt.rect.height() - btn->height()) / 2;
-            auto tmpXPos = owXPos;
-            if(btn->isVisible())
-            {
-                btn->move(tmpXPos, owYPos);
-            }
-            else
-            {
-                QPixmap pix = btn->grab();
-                painter->drawPixmap(tmpXPos, owYPos, pix);
-            }
-
-            owXPos += owSpacing + btn->width();
-            opt.rect.setLeft(owXPos);
 		}
 	}
 }

@@ -105,10 +105,7 @@ void QtPropertyDataDavaVariant::InitFlags()
 	case DAVA::VariantType::TYPE_VECTOR3:
 	case DAVA::VariantType::TYPE_VECTOR4:
 	case DAVA::VariantType::TYPE_FASTNAME:
-		break;
-
-	case DAVA::VariantType::TYPE_FILEPATH:
-		SetIcon(QIcon(":/QtIcons/file.png"));
+    case DAVA::VariantType::TYPE_FILEPATH:
 		break;
 
 	default:

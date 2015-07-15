@@ -34,6 +34,7 @@
 #include <QPointer>
 #include <QWidget>
 #include <QAbstractItemView>
+#include "QtPropertyData.h"
 
 class QtPropertyData;
 class QtPropertyModel;
@@ -56,19 +57,21 @@ public:
 
 public slots:
 	bool helpEvent(QHelpEvent * event, QAbstractItemView * view, const QStyleOptionViewItem & option, const QModelIndex & index);
-	void showButtons(QtPropertyData *data);
+    void showButtons(QtPropertyData *data);
 	void invalidateButtons();
 
 private:
     bool eventFilter(QObject *obj, QEvent *event);
 	void drawOptionalButtons(QPainter *painter, QStyleOptionViewItem &option, const QModelIndex &index) const;
 	void showOptionalButtons(QtPropertyData *data, bool show);
+    void DrawButton(QPainter* painter, QStyleOptionViewItem& opt, QtPropertyToolButton* btn) const;
 
 	QtPropertyModel *model;
 	QPointer<QtPropertyData> lastHoverData;
     QPointer<QAbstractItemView> view;
     mutable QPointer<QWidget> activeEditor;
     mutable bool editorDataWasSet;
+    const int buttonSpacing = 1;
 };
 
 #endif // __QT_PROPERY_ITEM_DELEGATE_H__
