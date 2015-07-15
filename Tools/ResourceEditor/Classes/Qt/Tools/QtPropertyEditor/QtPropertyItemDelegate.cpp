@@ -229,11 +229,11 @@ void QtPropertyItemDelegate::updateEditorGeometry(QWidget * editor, const QStyle
                 // Skip QComboBox button
                 if (!btn->overlayed)
                 {
-                    padding += btn->geometry().width();
+                    padding += btn->geometry().width() + buttonSpacing;
                 }
             }
 
-            r.adjust(0, 0, -padding, 0);
+            r.adjust(padding, 0, 0, 0);
         }
 
 		editor->setGeometry(r);
