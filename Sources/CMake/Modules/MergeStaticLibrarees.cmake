@@ -8,7 +8,7 @@
 #
 # NOTE: When you call this script, make sure you quote the argument to LIBRARIES if it is a list!
 macro (MERGE_STATIC_LIBRARIES TARGET CONFIGURATION LIBRARIES)
-	if (WIN32)
+	if (MSVC)
 		# On Windows you must add aditional formatting to the LIBRARIES variable as a single string for the windows libtool
 		# with each library path wrapped in "" in case it contains spaces
 		string (REPLACE ";" "\" \"" LIBS "${LIBRARIES}")
@@ -73,5 +73,5 @@ macro (MERGE_STATIC_LIBRARIES TARGET CONFIGURATION LIBRARIES)
 				COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/PosixMergeStaticLibraries-${TARGET}.cmake
 			)
 		endif (NOT MERGE)
-	endif (WIN32)
+	endif (MSVC)
 endmacro (MERGE_STATIC_LIBRARIES)
