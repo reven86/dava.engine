@@ -71,7 +71,7 @@ String EncodeToUTF8(const wchar_t* wstring, size_t length)
 	NSStringEncoding encoding = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE);
 	NSString* nsstring = [[NSString alloc]
 						  initWithBytes:(const char*)wstring
-						  length:wstring * sizeof(wchar_t)
+						  length:length * sizeof(wchar_t)
 						  encoding:encoding];
 
     if (nil == nsstring)
@@ -91,12 +91,13 @@ String EncodeToUTF8(const wchar_t* wstring, size_t length)
 
 String UTF8Utils::EncodeToUTF8(const WideString& wstring)
 {
-    return ::EncodeToUTF8(wstring.c_str(), wstring.length());
+    return DAVA::EncodeToUTF8(wstring.c_str(), wstring.length());
 }
 
 String UTF8Utils::EncodeToUTF8(const wchar_t* wideString)
 {
-	return ::EncodeToUTF8(wideString, std::char_traits<wchar_t>::length(wideString));
+    size_t length = std::char_traits<wchar_t>::length(wideString);
+	return DAVA::EncodeToUTF8(wideString, length);
 }
 
 };
