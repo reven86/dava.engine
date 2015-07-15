@@ -197,7 +197,7 @@ void ApplicationSettings::RemoveServer(const ServerData & server)
     remoteServers.remove(server);
 }
 
-ServerData ApplicationSettings::ApplicationSettings::GetCurrentServer() const
+ServerData ApplicationSettings::GetCurrentServer() const
 {
     if(remoteServers.empty())
         return ServerData();
