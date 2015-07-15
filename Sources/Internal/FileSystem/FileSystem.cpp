@@ -237,7 +237,7 @@ bool FileSystem::MoveFile(const FilePath & existingFile, const FilePath & newFil
         Logger::Error("rename failed (\"%s\" -> \"%s\") with error: %s",
             fromFile.c_str(), toFile.c_str(), errorReason);
     }
-    return error;
+    return !error;
 }
 
 
