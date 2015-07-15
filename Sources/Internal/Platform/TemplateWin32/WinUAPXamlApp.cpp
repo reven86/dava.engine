@@ -133,7 +133,7 @@ void WinUAPXamlApp::OnLaunched(::Windows::ApplicationModel::Activation::LaunchAc
 
     CreateBaseXamlUI();
 
-    UpdateScreenSize(coreWindow->Bounds.Width, coreWindow->Bounds.Height);
+    UpdateScreenSize(coreWindow->Bounds.Width, coreWindow->Bounds.Height, DisplayInformation::GetForCurrentView()->RawPixelsPerViewPixel);
     InitRender();
 
     WorkItemHandler^ workItemHandler = ref new WorkItemHandler([this](Windows::Foundation::IAsyncAction^ action) { Run(); });
