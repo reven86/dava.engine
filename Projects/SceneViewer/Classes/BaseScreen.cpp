@@ -52,6 +52,12 @@ bool BaseScreen::SystemInput(UIEvent *currentInput)
     return true;
 }
 
+void SystemScreenSizeDidChanged(const Rect &newFullScreenSize) override
+{
+    UnloadResources();
+    LoadResources();
+}
+
 void BaseScreen::LoadResources()
 {
 	GetBackground()->SetColor(Color(0.f, 0.f, 0.f, 1.f));
