@@ -55,7 +55,7 @@ void LogWidget::Deserialize(const QByteArray& data)
     QDataStream stream(data);
     QString filterString;
     stream >> filterString;
-    if (stream.status() == QDataStream::ReadCorruptData)
+    if (stream.status() == QDataStream::ReadCorruptData || stream.status() == QDataStream::ReadPastEnd)
     {
         return;
     }
