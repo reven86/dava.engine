@@ -31,6 +31,7 @@ LogWidget::LogWidget(QWidget* parent)
 
     connect(filter, &CheckableComboBox::selectedUserDataChanged, logFilterModel, &LogFilterModel::SetFilters);
     connect(search, &LineEditEx::textUpdated, this, &LogWidget::OnTextFilterChanged);
+    connect(logFilterModel, &LogFilterModel::filterStringChanged, search, &LineEditEx::setText);
     connect(log->model(), &QAbstractItemModel::rowsAboutToBeInserted, this, &LogWidget::OnBeforeAdded);
     connect(log->model(), &QAbstractItemModel::rowsInserted, this, &LogWidget::OnRowAdded);
     filter->selectUserData(logFilterModel->GetFilters());

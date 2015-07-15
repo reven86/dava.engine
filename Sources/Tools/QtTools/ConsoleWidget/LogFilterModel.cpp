@@ -42,6 +42,7 @@ void LogFilterModel::SetFilterString(const QString& _filter)
     {
         filterText = _filter;
         invalidateFilter();
+        emit filterStringChanged(_filter);
     }
 }
 

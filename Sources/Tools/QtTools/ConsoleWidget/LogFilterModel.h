@@ -21,7 +21,8 @@ public:
 public slots:
     void SetFilters(const QVariantList &filters);
     void SetFilterString(const QString& filter);
-
+signals:
+    void filterStringChanged(const QString filter);
 private:
     bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
 
