@@ -126,7 +126,7 @@ private:
     void ReInitCoordinatesSystem();
 
     void PrepareScreenSize();
-    void UpdateScreenSize(float32 width, float32 height, float32 rawPixels);
+    void UpdateScreenSize(float32 width, float32 height);
     void SetFullScreen(bool isFullScreenFlag);
     void SetPreferredSize(int32 width, int32 height);
 
@@ -166,7 +166,6 @@ private:
 
     float32 windowWidth = static_cast<float32>(DisplayMode::DEFAULT_WIDTH);
     float32 windowHeight = static_cast<float32>(DisplayMode::DEFAULT_HEIGHT);
-    float32 rawPixelsPerViewPixel = 1.0f;
 
     Windows::Graphics::Display::DisplayOrientations displayOrientation = ::Windows::Graphics::Display::DisplayOrientations::None;
 };
