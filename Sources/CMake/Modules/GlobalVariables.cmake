@@ -1,5 +1,10 @@
 #
 
+# Only interpret ``if()`` arguments as variables or keywords when unquoted.
+if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
+    cmake_policy(SET CMP0054 NEW)
+endif()
+
 if( APPLE AND NOT IOS AND NOT ANDROID )
 	set( MACOS 1 )
 endif ()
@@ -10,6 +15,9 @@ if( TEAMCITY_DEPLOY )
     set( DEBUG_INFO true )
 
 endif()
+
+#constants
+set( DAVA_ANDROID_MAX_LIB_SRC 700 )
 
 #global paths
 set( DAVA_LIBRARY                       "DavaFramework" )

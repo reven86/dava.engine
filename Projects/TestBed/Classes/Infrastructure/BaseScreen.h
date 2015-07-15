@@ -31,20 +31,18 @@
 #define __BASESCREEN_H__
 
 #include "DAVAEngine.h"
-#include "GameCore.h"
+#include "Infrastructure/GameCore.h"
 
-using namespace DAVA;
-
-class BaseScreen: public UIScreen
+class BaseScreen : public DAVA::UIScreen
 {
 protected:
     virtual ~BaseScreen(){}
 public:
 
     BaseScreen();
-    BaseScreen(const String & screenName, int32 skipBeforeTests = 10);
+    BaseScreen(const DAVA::String & screenName, DAVA::int32 skipBeforeTests = 10);
     
-    inline int32 GetScreenId();
+    inline DAVA::int32 GetScreenId();
     
     void SystemScreenSizeDidChanged(const Rect &newFullScreenSize) override;
 
@@ -53,15 +51,15 @@ protected:
     void UnloadResources() override;
     
 private:
-    void OnExitButton(BaseObject *obj, void *data, void *callerData);
+    void OnExitButton(DAVA::BaseObject *obj, void *data, void *callerData);
     
 private:
-    static int32 globalScreenId; // 1, on create of screen increment  
-    int32 currentScreenId;
-    UIButton *exitButton;
+    static DAVA::int32 globalScreenId; // 1, on create of screen increment  
+    DAVA::int32 currentScreenId;
+    DAVA::UIButton *exitButton;
 };
 
-int32 BaseScreen::GetScreenId()
+DAVA::int32 BaseScreen::GetScreenId()
 {
     return currentScreenId;
 }
