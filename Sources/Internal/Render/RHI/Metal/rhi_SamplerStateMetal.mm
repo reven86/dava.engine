@@ -21,7 +21,7 @@ SamplerStateMetal_t
     id<MTLSamplerState> uid[MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT];
 };
 
-typedef Pool<SamplerStateMetal_t,RESOURCE_SAMPLER_STATE>    SamplerStateMetalPool;
+typedef ResourcePool<SamplerStateMetal_t,RESOURCE_SAMPLER_STATE>    SamplerStateMetalPool;
 RHI_IMPL_POOL(SamplerStateMetal_t,RESOURCE_SAMPLER_STATE);
 
 

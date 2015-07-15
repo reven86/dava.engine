@@ -94,7 +94,7 @@ void SceneSaver::ResaveFile(const String &fileName, Set<String> &errorLog)
 
 	//Load scene with *.sc2
     Scene *scene = new Scene();
-    if(SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(fileName))
+    if(SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(sc2Filename))
     {
         scene->SaveScene(sc2Filename, false);
 	}

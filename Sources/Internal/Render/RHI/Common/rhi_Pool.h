@@ -54,7 +54,7 @@ enum
 
 template <class T, ResourceType RT>
 class
-Pool
+ResourcePool
 {
 struct Entry;
 public:
@@ -76,7 +76,7 @@ public:
         bool    operator!=( const Iterator& i ) { return i.entry != this->entry; }
 
     private:
-    friend class Pool<T,RT>;
+    friend class ResourcePool<T,RT>;
 
             Iterator( Entry* e, Entry* e_end ) : entry(e), end(e_end) {}
 
@@ -104,21 +104,21 @@ private:
 };
 
 #define RHI_IMPL_POOL(T,RT) \
-template<> rhi::Pool<T,RT>::Entry*  rhi::Pool<T,RT>::Object      = 0; \
-template<> unsigned                 rhi::Pool<T,RT>::ObjectCount = 2048; \
-template<> DAVA::Spinlock           rhi::Pool<T,RT>::ObjectSync  = {};  \
+template<> rhi::ResourcePool<T,RT>::Entry*  rhi::ResourcePool<T,RT>::Object      = 0; \
+template<> unsigned                         rhi::ResourcePool<T,RT>::ObjectCount = 2048; \
+template<> DAVA::Spinlock                   rhi::ResourcePool<T,RT>::ObjectSync  = {};  \
 
 #define RHI_IMPL_POOL_SIZE(T,RT,sz) \
-template<> rhi::Pool<T,RT>::Entry*  rhi::Pool<T,RT>::Object      = 0; \
-template<> unsigned                 rhi::Pool<T,RT>::ObjectCount = sz; \
-template<> DAVA::Spinlock           rhi::Pool<T,RT>::ObjectSync  = {};  \
+template<> rhi::ResourcePool<T,RT>::Entry*  rhi::ResourcePool<T,RT>::Object      = 0; \
+template<> unsigned                         rhi::ResourcePool<T,RT>::ObjectCount = sz; \
+template<> DAVA::Spinlock                   rhi::ResourcePool<T,RT>::ObjectSync  = {};  \
 
 
 //------------------------------------------------------------------------------
 
 template <class T, ResourceType RT>
 inline Handle
-Pool<T,RT>::Alloc()
+ResourcePool<T,RT>::Alloc()
 {
     uint32  handle = InvalidHandle;
 
@@ -162,7 +162,7 @@ Pool<T,RT>::Alloc()
 
 template <class T, ResourceType RT>
 inline void
-Pool<T,RT>::Free( Handle h )
+ResourcePool<T,RT>::Free( Handle h )
 {
     uint32  index = (h&HANDLE_INDEX_MASK) >> HANDLE_INDEX_SHIFT;    
     uint32  type  = (h&HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT;    
@@ -181,7 +181,7 @@ Pool<T,RT>::Free( Handle h )
 
 template <class T, ResourceType RT>
 inline T*
-Pool<T,RT>::Get( Handle h )
+ResourcePool<T,RT>::Get( Handle h )
 {
     T*  object = 0;
 
@@ -207,8 +207,8 @@ Pool<T,RT>::Get( Handle h )
 //------------------------------------------------------------------------------
 
 template <class T, ResourceType RT>
-inline typename Pool<T,RT>::Iterator
-Pool<T,RT>::Begin()
+inline typename ResourcePool<T,RT>::Iterator
+ResourcePool<T,RT>::Begin()
 {
     return (Object)  ? Iterator(Object,Object+ObjectCount)  : Iterator(nullptr,nullptr);
 }
@@ -217,8 +217,8 @@ Pool<T,RT>::Begin()
 //------------------------------------------------------------------------------
 
 template <class T, ResourceType RT>
-inline typename Pool<T,RT>::Iterator
-Pool<T,RT>::End()
+inline typename ResourcePool<T,RT>::Iterator
+ResourcePool<T,RT>::End()
 {
     return (Object)  ? Iterator(Object+ObjectCount,Object+ObjectCount)  : Iterator(nullptr,nullptr);
 }

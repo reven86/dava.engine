@@ -60,7 +60,7 @@ TextureDX9_t::TextureDX9_t()
 {
 }
 
-typedef Pool<TextureDX9_t,RESOURCE_TEXTURE>   TextureDX9Pool;
+typedef ResourcePool<TextureDX9_t,RESOURCE_TEXTURE> TextureDX9Pool;
 RHI_IMPL_POOL(TextureDX9_t,RESOURCE_TEXTURE);
 
 //------------------------------------------------------------------------------

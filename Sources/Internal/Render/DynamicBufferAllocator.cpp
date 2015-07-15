@@ -51,7 +51,7 @@ public:
 template <> class BufferProxy<rhi::HVertexBuffer>
 {
 public:
-    static rhi::HVertexBuffer CreateBuffer(uint32 size){ return rhi::CreateVertexBuffer(size); }
+    static rhi::HVertexBuffer CreateBuffer(uint32 size){ return rhi::CreateVertexBuffer(rhi::VertexBuffer::Descriptor(size)); }
     static uint8* MapBuffer(rhi::HVertexBuffer handle, uint32 offset, uint32 size){ return (uint8*) rhi::MapVertexBuffer(handle, offset, size); }
     static void UnmapBuffer(rhi::HVertexBuffer handle){ rhi::UnmapVertexBuffer(handle); }
     static void DeleteBuffer(rhi::HVertexBuffer handle){ rhi::DeleteVertexBuffer(handle); }

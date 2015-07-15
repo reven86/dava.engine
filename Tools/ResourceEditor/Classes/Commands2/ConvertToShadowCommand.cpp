@@ -81,7 +81,7 @@ bool ConvertToShadowCommand::CanConvertBatchToShadow(DAVA::RenderBatch *renderBa
 {
     if(renderBatch && renderBatch->GetMaterial())
     {
-        return renderBatch->GetMaterial()->GetFXName() != DAVA::NMaterialName::SHADOW_VOLUME;
+        return renderBatch->GetMaterial()->GetEffectiveFXName() != DAVA::NMaterialName::SHADOW_VOLUME;
     }
 
 	return false;

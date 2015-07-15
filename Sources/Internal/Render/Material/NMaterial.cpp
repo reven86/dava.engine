@@ -200,13 +200,23 @@ void NMaterial::SetFXName(const FastName & fx)
     InvalidateRenderVariants();
 }
 
-const FastName& NMaterial::GetFXName()
+const FastName& NMaterial::GetEffectiveFXName() const
 {   
     if ((!fxName.IsValid()) && (parent != nullptr))
     {
-        return parent->GetFXName();
+        return parent->GetEffectiveFXName();
     }
     return fxName;
+}
+
+const FastName& NMaterial::GetLocalFXName() const
+{
+    return fxName;
+}
+
+bool NMaterial::HasLocalFXName() const
+{
+    return fxName.IsValid();
 }
 
 const FastName& NMaterial::GetQualityGroup()
@@ -216,6 +226,11 @@ const FastName& NMaterial::GetQualityGroup()
         return parent->GetQualityGroup();
     }
     return qualityGroup;
+}
+
+void NMaterial::SetQualityGroup(const FastName& quality)
+{
+    qualityGroup = quality;
 }
 
 void NMaterial::AddProperty(const FastName& propName, const float32 *propData, rhi::ShaderProp::Type type, uint32 arraySize)
@@ -405,6 +420,11 @@ NMaterial* NMaterial::GetParent()
     return parent;
 }
 
+const Vector<NMaterial *>&  NMaterial::GetChildren() const
+{
+    return children;
+}
+
 void NMaterial::AddChildMaterial(NMaterial *material)
 {    
     DVASSERT(material);
@@ -471,13 +491,13 @@ void NMaterial::RebuildRenderVariants()
     HashMap<FastName, int32> flags;
     CollectMaterialFlags(flags);
 
-    const FXDescriptor& fxDescr = FXCache::GetFXDescriptor(GetFXName(), flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup()));
+    const FXDescriptor& fxDescr = FXCache::GetFXDescriptor(GetEffectiveFXName(), flags, QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetQualityGroup()));
     
-if( fxDescr.renderPassDescriptors.size() == 0)
-{
-    // dragon: because I'm fucking sick and tired of Render2D-init crashing (when I don't even need it)
-    return;
-}    
+    if( fxDescr.renderPassDescriptors.size() == 0)
+    {
+        // dragon: because I'm fucking sick and tired of Render2D-init crashing (when I don't even need it)
+        return;
+    }    
 
     /*at least in theory flag changes can lead to changes in number of render passes*/
     activeVariantInstance = nullptr;
@@ -524,7 +544,7 @@ void NMaterial::RebuildBindings()
         currRenderVariant->vertexConstBuffers.resize(currShader->GetVertexConstBuffersCount());
         currRenderVariant->fragmentConstBuffers.resize(currShader->GetFragmentConstBuffersCount());
 
-        for (auto& bufferDescr : currShader->constBuffers)
+        for (auto& bufferDescr : currShader->GetConstBufferDescriptors())
         {
             rhi::HConstBuffer bufferHandle;
             MaterialBufferBinding* bufferBinding = nullptr;
@@ -629,14 +649,17 @@ void NMaterial::RebuildTextureBindings()
             continue;
         rhi::TextureSetDescriptor textureDescr;        
         rhi::SamplerState::Descriptor samplerDescr;
-        textureDescr.fragmentTextureCount = currShader->fragmentSamplerList.size();       
-        samplerDescr.fragmentSamplerCount = currShader->fragmentSamplerList.size();
+        const rhi::ShaderSamplerList& fragmentSamplerList = currShader->GetFragmentSamplerList();
+        const rhi::ShaderSamplerList& vertexSamplerList = currShader->GetVertexSamplerList();
+
+        textureDescr.fragmentTextureCount = fragmentSamplerList.size();       
+        samplerDescr.fragmentSamplerCount = fragmentSamplerList.size();
         for (size_t i = 0, sz = textureDescr.fragmentTextureCount; i < sz; ++i)
         {       
-            RuntimeTextures::eDynamicTextureSemantic textureSemantic = RuntimeTextures::GetDynamicTextureSemanticByName(currShader->fragmentSamplerList[i].uid);
+            RuntimeTextures::eDynamicTextureSemantic textureSemantic = RuntimeTextures::GetDynamicTextureSemanticByName(currShader->GetFragmentSamplerList()[i].uid);
             if (textureSemantic == RuntimeTextures::TEXTURE_STATIC)
             {
-                Texture *tex = GetEffectiveTexture(currShader->fragmentSamplerList[i].uid);
+                Texture *tex = GetEffectiveTexture(fragmentSamplerList[i].uid);
                 if (tex)
                 {
                     textureDescr.fragmentTexture[i] = tex->handle;
@@ -644,10 +667,10 @@ void NMaterial::RebuildTextureBindings()
                 }
                 else
                 {
-                    textureDescr.fragmentTexture[i] = Renderer::GetRuntimeTextures().GetPinkTexture(currShader->fragmentSamplerList[i].type);
-                    samplerDescr.fragmentSampler[i] = Renderer::GetRuntimeTextures().GetPinkTextureSamplerState(currShader->fragmentSamplerList[i].type);
+                    textureDescr.fragmentTexture[i] = Renderer::GetRuntimeTextures().GetPinkTexture(fragmentSamplerList[i].type);
+                    samplerDescr.fragmentSampler[i] = Renderer::GetRuntimeTextures().GetPinkTextureSamplerState(fragmentSamplerList[i].type);
 
-                    Logger::Debug(" no texture for slot : %s", currShader->fragmentSamplerList[i].uid.c_str());
+                    Logger::Debug(" no texture for slot : %s", fragmentSamplerList[i].uid.c_str());
                 }
             }
             else
@@ -659,10 +682,10 @@ void NMaterial::RebuildTextureBindings()
         }
 
 
-        textureDescr.vertexTextureCount = currShader->vertexSamplerList.size();
+        textureDescr.vertexTextureCount = vertexSamplerList.size();
         for (size_t i = 0, sz = textureDescr.vertexTextureCount; i < sz; ++i)
         {
-            Texture *tex = GetEffectiveTexture(currShader->vertexSamplerList[i].uid);
+            Texture *tex = GetEffectiveTexture(vertexSamplerList[i].uid);
             DVASSERT(tex);
             textureDescr.vertexTexture[i] = tex->handle;
         }                            
@@ -746,7 +769,7 @@ void NMaterial::Save(KeyedArchive * archive, SerializationContext * serializatio
         archive->SetString("materialName", materialName.c_str());
 
     if (fxName.IsValid())
-        archive->SetString("materialTemplate", fxName.c_str());
+        archive->SetString("fxName", fxName.c_str());
 
     if (qualityGroup.IsValid())
         archive->SetString("qualityGroup", qualityGroup.c_str());
@@ -826,7 +849,7 @@ void NMaterial::Load(KeyedArchive * archive, SerializationContext * serializatio
         qualityGroup = FastName(archive->GetString("materialGroup").c_str());
     }
 
-    if (archive->IsKeyExists("materialTemplate"))
+    if (archive->IsKeyExists("fxName"))
     {
         fxName = FastName(archive->GetString("materialTemplate").c_str());
     }
@@ -888,6 +911,12 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
         id = materialKey;
     }
 
+    int32 oldType = 0;
+    if (archive->IsKeyExists("materialType"))
+    {
+        oldType = archive->GetInt32("materialType");
+    }
+
     uint64 parentKey(0);
     if (archive->IsKeyExists("parentMaterialKey"))
     {
@@ -900,7 +929,8 @@ void NMaterial::LoadOldNMaterial(KeyedArchive * archive, SerializationContext * 
         qualityGroup = FastName(archive->GetString("materialGroup").c_str());
     }
 
-    if (archive->IsKeyExists("materialTemplate"))
+    // don't load fxName from material instance (type = 2)
+    if (archive->IsKeyExists("materialTemplate") && oldType != 2)
     {
         fxName = FastName(archive->GetString("materialTemplate").c_str());        
     }    

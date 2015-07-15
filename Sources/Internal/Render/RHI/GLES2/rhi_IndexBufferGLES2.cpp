@@ -29,22 +29,23 @@ public:
     unsigned    size;
     void*       data;
     unsigned    uid;
+    GLenum      usage;
     unsigned    mapped:1;
 };
 
-typedef Pool<IndexBufferGLES2_t,RESOURCE_INDEX_BUFFER>   IndexBufferGLES2Pool;
+typedef ResourcePool<IndexBufferGLES2_t,RESOURCE_INDEX_BUFFER>   IndexBufferGLES2Pool;
 RHI_IMPL_POOL(IndexBufferGLES2_t,RESOURCE_INDEX_BUFFER);
 
 
 //==============================================================================
 
 static Handle
-gles2_IndexBuffer_Create( uint32 size, uint32 options )
+gles2_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
 {
     Handle  handle = InvalidIndex;
 
-    DVASSERT(size);
-    if( size )
+    DVASSERT(desc.size);
+    if( desc.size )
     {
         GLuint      b    = 0;
         GLCommand   cmd1 = { GLCommand::GEN_BUFFERS, {1,(uint64)(&b)} };
@@ -57,7 +58,7 @@ gles2_IndexBuffer_Create( uint32 size, uint32 options )
             ExecGL( &cmd2, 1 );
             if( cmd2.status == GL_NO_ERROR )
             {
-                void*   data = malloc( size );
+                void*   data = malloc( desc.size );
                 
                 if( data )
                 {
@@ -66,9 +67,16 @@ gles2_IndexBuffer_Create( uint32 size, uint32 options )
                     IndexBufferGLES2_t* ib = IndexBufferGLES2Pool::Get( handle );
                     
                     ib->data   = data;
-                    ib->size   = size;
+                    ib->size   = desc.size;
                     ib->uid    = b;
                     ib->mapped = false;
+                    
+                    switch( desc.usage )
+                    {
+                        case USAGE_DEFAULT      : ib->usage = GL_STATIC_DRAW; break;
+                        case USAGE_STATICDRAW   : ib->usage = GL_STATIC_DRAW; break;
+                        case USAGE_DYNAMICDRAW  : ib->usage = GL_DYNAMIC_DRAW; break;
+                    }
                 }
             }
         }
@@ -118,7 +126,7 @@ gles2_IndexBuffer_Update( Handle ib, const void* data, unsigned offset, unsigned
         GLCommand   cmd[] = 
         {
             { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, self->uid } },
-            { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, (uint64)(self->data), GL_STATIC_DRAW } },
+            { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage } },
             { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, 0 } }
         };
 
@@ -159,7 +167,7 @@ gles2_IndexBuffer_Unmap( Handle ib )
     GLCommand   cmd[] = 
     {
         { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, self->uid } },
-        { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, (uint64)(self->data), GL_STATIC_DRAW } },
+        { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage } },
         { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, 0 } }
     };
 

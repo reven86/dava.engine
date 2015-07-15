@@ -53,6 +53,7 @@ class UITextFieldAndroid;
 class UITextFieldDelegate
 {
 public:
+	virtual ~UITextFieldDelegate() = default;
 	/*virtual void TextFieldShouldBeginEditing(UITextField * textField);
 	virtual void TextFieldDidBeginEditing(UITextField * textField);
 	virtual void TextFieldShouldEndEditing(UITextField * textField);
@@ -60,7 +61,8 @@ public:
 	
     /**
         \brief Asks the delegate if the text field should process the pressing of the return button.
-        In this function you can check what you want to do with UITextField when return button pressed. 
+        In this function you can check what you want to do with UITextField when return button pressed.
+        Works only in single line mode.
      */
 	virtual void TextFieldShouldReturn(UITextField * textField);
 
@@ -283,6 +285,9 @@ public:
     void SetSize(const DAVA::Vector2 &newSize) override;
     void SetPosition(const Vector2 &position) override;
 
+    void SetMultiline(bool value);
+    bool IsMultiline() const;
+
     /**
 	 \brief Set control text style hide.
 	 \param[in] isPassword draw text with hide char.
@@ -377,7 +382,7 @@ protected:
 	bool isPassword;
 	bool enableReturnKeyAutomatically;
 	bool showCursor;
-	bool isRenderToTexture;
+    bool isMultiline_ = false;
 
     void RenderText();
 private:
@@ -413,6 +418,7 @@ public:
         PROPERTY("textUseRtlAlign", "Use Rtl Align", GetTextUseRtlAlign, SetTextUseRtlAlign, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("maxLength", "Max text lenght", GetMaxLength, SetMaxLength, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("isPassword", "Is password", IsPassword, SetIsPassword, I_SAVE | I_VIEW | I_EDIT)
+		PROPERTY("isMultiline", "Is Multiline, default (false) - single line", IsMultiline, SetMultiline, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("autoCapitalizationType", InspDesc("Auto capitalization type", GlobalEnumMap<eAutoCapitalizationType>::Instance()), GetAutoCapitalizationType, SetAutoCapitalizationType , I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("autoCorrectionType"    , InspDesc("Auto correction type"    , GlobalEnumMap<eAutoCorrectionType>::Instance())    , GetAutoCorrectionType    , SetAutoCorrectionType     , I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("spellCheckingType"     , InspDesc("Spell checking type"     , GlobalEnumMap<eSpellCheckingType>::Instance())     , GetSpellCheckingType     , SetSpellCheckingType      , I_SAVE | I_VIEW | I_EDIT)

@@ -80,6 +80,8 @@ public:
     // Max text length.
     void SetMaxLength(int maxLength);
     
+    void SetMultiline(bool multiline);
+    
     void SetRenderToTexture(bool value);
     bool IsRenderToTexture() const;
 private:
@@ -92,6 +94,7 @@ private:
     UITextField& davaTextField;
 	void * objcClassPtr;
     bool renderToTexture;
+    bool isSingleLine = true;
     int deltaMoveControl = 0;
 };
 };

@@ -31,7 +31,7 @@ VertexBufferMetal_t
     id<MTLBuffer>   uid;
 };
 
-typedef Pool<VertexBufferMetal_t,RESOURCE_VERTEX_BUFFER> VertexBufferMetalPool;
+typedef ResourcePool<VertexBufferMetal_t,RESOURCE_VERTEX_BUFFER> VertexBufferMetalPool;
 RHI_IMPL_POOL(VertexBufferMetal_t,RESOURCE_VERTEX_BUFFER);
 
 
@@ -39,10 +39,10 @@ RHI_IMPL_POOL(VertexBufferMetal_t,RESOURCE_VERTEX_BUFFER);
 
 
 static Handle
-metal_VertexBuffer_Create( uint32 size, uint32 options )
+metal_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
 {
     Handle          handle  = InvalidHandle;
-    id<MTLBuffer>   uid     = [_Metal_Device newBufferWithLength:size options:MTLResourceOptionCPUCacheModeDefault];
+    id<MTLBuffer>   uid     = [_Metal_Device newBufferWithLength:desc.size options:MTLResourceOptionCPUCacheModeDefault];
 
     if( uid )
     {
@@ -50,7 +50,7 @@ metal_VertexBuffer_Create( uint32 size, uint32 options )
         VertexBufferMetal_t*    vb = VertexBufferMetalPool::Get( handle );
 
         vb->data   = [uid contents];
-        vb->size   = size;
+        vb->size   = desc.size;
         vb->uid    = uid;
 
     }

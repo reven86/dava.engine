@@ -100,7 +100,7 @@ private:
 
 typedef ResourceHandle<RESOURCE_VERTEX_BUFFER> HVertexBuffer;
 
-HVertexBuffer   CreateVertexBuffer( uint32 size );
+HVertexBuffer   CreateVertexBuffer( const VertexBuffer::Descriptor& desc );
 void            DeleteVertexBuffer( HVertexBuffer vb );
 
 void*           MapVertexBuffer( HVertexBuffer vb, uint32 offset, uint32 size );
@@ -114,7 +114,7 @@ void            UpdateVertexBuffer( HVertexBuffer vb, const void* data, uint32 o
 
 typedef ResourceHandle<RESOURCE_INDEX_BUFFER> HIndexBuffer;
 
-HIndexBuffer    CreateIndexBuffer( uint32 size );
+HIndexBuffer    CreateIndexBuffer( const IndexBuffer::Descriptor& desc );
 void            DeleteIndexBuffer( HIndexBuffer ib );
 
 void*           MapIndexBuffer( HIndexBuffer ib, uint32 offset, uint32 size );

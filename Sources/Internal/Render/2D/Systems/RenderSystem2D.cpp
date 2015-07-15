@@ -366,7 +366,7 @@ void RenderSystem2D::EndFrame()
     rhi::EndRenderPass(pass2DHandle);
 }
 
-void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* = true */, const Color& clearColor /* = Color::Clear */)
+void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* = true */, const Color& clearColor /* = Color::Clear */, int32 priority /* = PRIORITY_SERVICE_2D */)
 {
     DVASSERT(!IsRenderTargetPass());
     DVASSERT(target);
@@ -380,7 +380,7 @@ void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* =
     renderTargetPassConfig.colorBuffer[0].clearColor[1] = clearColor.g;
     renderTargetPassConfig.colorBuffer[0].clearColor[2] = clearColor.b;
     renderTargetPassConfig.colorBuffer[0].clearColor[3] = clearColor.a;
-    renderTargetPassConfig.priority = PRIORITY_SERVICE_2D;
+    renderTargetPassConfig.priority = priority;
     renderTargetPassConfig.viewport.width = target->GetWidth();
     renderTargetPassConfig.viewport.height = target->GetHeight();
     if(needClear)
@@ -468,8 +468,8 @@ void RenderSystem2D::SetClip(const Rect &rect)
     if ((currentClip == rect) || (currentClip.dx < 0 && rect.dx < 0) || (currentClip.dy < 0 && rect.dy < 0))
     {
         return;
-    }
-    currentClip = rect;
+    }    
+    currentClip = rect;    
 }
 
 void RenderSystem2D::RemoveClip()
@@ -481,7 +481,20 @@ void RenderSystem2D::IntersectClipRect(const Rect &rect)
 {
     if (currentClip.dx < 0 || currentClip.dy < 0)
     {
-        SetClip(rect);
+        //RHI_COMPLETE - Mikhail please review this
+        Rect screen(0.0f, 0.0f, IsRenderTargetPass() ? renderTargetWidth : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx, IsRenderTargetPass() ? renderTargetHeight : VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dy);
+        Rect res = screen.Intersection(rect);
+        if (res.dx == 0)
+        {
+            res.x = 0;
+            res.dx = 1;
+        }
+        if (res.dy == 0)
+        {
+            res.y = 0;
+            res.dy = 1;
+        }
+        SetClip(res);
     }
     else
     {
@@ -775,7 +788,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         currentBatch.Reset();
 
         currentBatch.primitiveType = batchDesc.primitiveType;
-        currentBatch.textureSetHandle = batchDesc.textureSetHandle;
+        currentBatch.textureSetHandle = batchDesc.textureSetHandle;        
         currentBatch.clipRect = currentClip;
         currentBatch.indexOffset = indexIndex;
         currentBatch.material = batchDesc.material;
@@ -1604,7 +1617,8 @@ void RenderSystem2D::DrawTexture(rhi::HTextureSet htextureSet, NMaterial *materi
 
     BatchDescriptor batch;
     batch.singleColor = color;
-    batch.material = DEFAULT_2D_TEXTURE_MATERIAL;
+    batch.textureSetHandle = htextureSet;
+    batch.material = material;
     batch.vertexCount = 4;
     batch.indexCount = 6;
     batch.vertexPointer = spriteTempVertices;

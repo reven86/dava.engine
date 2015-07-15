@@ -90,8 +90,6 @@ namespace DAVA
 {
 
 //TODO: remove this crap with shadow color
-static const FastName DEPRECATED_SHADOW_COLOR_PARAM("shadowColor");
-
 EntityCache::~EntityCache()
 {
     ClearAll();
@@ -99,7 +97,7 @@ EntityCache::~EntityCache()
 
 void EntityCache::Preload(const FilePath &path)
 {
-    Scene *scene = new Scene();
+    Scene *scene = new Scene(0);
     if(SceneFileV2::ERROR_NO_ERROR == scene->LoadScene(path))
     {
         Entity *srcRootEntity = scene;
@@ -247,7 +245,9 @@ void Scene::SetGlobalMaterial(NMaterial *globalMaterial)
     sceneGlobalMaterial = SafeRetain(globalMaterial);
 
     renderSystem->SetGlobalMaterial(sceneGlobalMaterial);
-    particleEffectSystem->SetGlobalMaterial(sceneGlobalMaterial);
+
+    if (nullptr != particleEffectSystem)
+        particleEffectSystem->SetGlobalMaterial(sceneGlobalMaterial);
     
     ImportShadowColor(this);
 }
@@ -300,6 +300,7 @@ void Scene::CreateSystems()
     if(SCENE_SYSTEM_PARTICLE_EFFECT_FLAG & systemsMask)
     {
         particleEffectSystem = new ParticleEffectSystem(this);
+        particleEffectSystem->SetGlobalMaterial(GetGlobalMaterial());
         AddSystem(particleEffectSystem, MAKE_COMPONENT_MASK(Component::PARTICLE_EFFECT_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
@@ -744,9 +745,9 @@ void Scene::Draw()
     TIME_PROFILE("Scene::Draw");
 
     //TODO: remove this crap with shadow color
-    if (sceneGlobalMaterial && sceneGlobalMaterial->HasLocalProperty(DEPRECATED_SHADOW_COLOR_PARAM))
+    if (sceneGlobalMaterial && sceneGlobalMaterial->HasLocalProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM))
     {
-        const float32 * propDataPtr = sceneGlobalMaterial->GetLocalPropValue(DEPRECATED_SHADOW_COLOR_PARAM);
+        const float32 * propDataPtr = sceneGlobalMaterial->GetLocalPropValue(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM);
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR, propDataPtr, (pointer_size)sceneGlobalMaterial);
     }
     else
@@ -1047,11 +1048,11 @@ void Scene::ImportShadowColor(Entity * rootNode)
 			if (props->IsKeyExists("ShadowColor"))
 			{
                 //RHI_COMPLETE TODO: check if shadow color from landscape is used, fix it and remove this crap
-                if (sceneGlobalMaterial->HasLocalProperty(DEPRECATED_SHADOW_COLOR_PARAM))
-                    sceneGlobalMaterial->RemoveProperty(DEPRECATED_SHADOW_COLOR_PARAM);
+                if (sceneGlobalMaterial->HasLocalProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM))
+                    sceneGlobalMaterial->RemoveProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM);
 
 				Color shadowColor = props->GetVariant("ShadowColor")->AsColor();
-                sceneGlobalMaterial->AddProperty(DEPRECATED_SHADOW_COLOR_PARAM, shadowColor.color, rhi::ShaderProp::TYPE_FLOAT4);
+                sceneGlobalMaterial->AddProperty(DAVA::NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM, shadowColor.color, rhi::ShaderProp::TYPE_FLOAT4);
 				props->DeleteKey("ShadowColor");
 			}
 		}

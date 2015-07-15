@@ -28,8 +28,8 @@
 
 
 #import "Platform/TemplateiOS/HelperAppDelegate.h"
-#import "DAVAEngine.h"
-#import "GameCore.h"
+#import <DAVAEngine.h>
+#import "Infrastructure/GameCore.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 

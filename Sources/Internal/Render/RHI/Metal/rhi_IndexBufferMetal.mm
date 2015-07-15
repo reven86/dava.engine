@@ -30,17 +30,17 @@ public:
     id<MTLBuffer>   uid;
 };
 
-typedef Pool<IndexBufferMetal_t,RESOURCE_INDEX_BUFFER>    IndexBufferMetalPool;
+typedef ResourcePool<IndexBufferMetal_t,RESOURCE_INDEX_BUFFER>    IndexBufferMetalPool;
 RHI_IMPL_POOL(IndexBufferMetal_t,RESOURCE_INDEX_BUFFER);
 
 
 //==============================================================================
 
 static Handle
-metal_IndexBuffer_Create( uint32 size, uint32 options )
+metal_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
 {
     Handle          handle  = InvalidHandle;
-    id<MTLBuffer>   uid     = [_Metal_Device newBufferWithLength:size options:MTLResourceOptionCPUCacheModeDefault];
+    id<MTLBuffer>   uid     = [_Metal_Device newBufferWithLength:desc.size options:MTLResourceOptionCPUCacheModeDefault];
 
     if( uid )
     {
@@ -48,7 +48,7 @@ metal_IndexBuffer_Create( uint32 size, uint32 options )
         IndexBufferMetal_t*    ib = IndexBufferMetalPool::Get( handle );
 
         ib->data   = [uid contents];
-        ib->size   = size;
+        ib->size   = desc.size;
         ib->uid    = uid;
 
     }

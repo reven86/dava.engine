@@ -378,52 +378,33 @@ void SceneTabWidget::DAVAWidgetDataDropped(const QMimeData *data)
 {
 	if(NULL != curScene)
 	{
-        if(MimeDataHelper2<DAVA::NMaterial>::IsValid(data))
+        QList<QUrl> urls = data->urls();
+        for(int i = 0; i < urls.size(); ++i)
         {
-			QVector<DAVA::NMaterial*> materials = MimeDataHelper2<DAVA::NMaterial>::DecodeMimeData(data);
-
-			// assing only when single material is dropped
-			if(materials.size() == 1)
-			{
-				const EntityGroup* group = curScene->collisionSystem->ObjectsRayTestFromCamera();
-
-				if(NULL != group && group->Size() > 0)
-				{
-                    DAVA::Entity *targetEntity = curScene->selectionSystem->GetSelectableEntity(group->GetEntity(0));
-					MaterialAssignSystem::AssignMaterialToEntity(curScene, targetEntity, materials[0]);
-				}
-			}
-		}
-        else
-		{
-            QList<QUrl> urls = data->urls();
-            for(int i = 0; i < urls.size(); ++i)
+			QString path = urls[i].toLocalFile();
+			if(QFileInfo(path).suffix() == "sc2")
             {
-				QString path = urls[i].toLocalFile();
-				if(QFileInfo(path).suffix() == "sc2")
-                {
-                    DAVA::Vector3 pos;
+                DAVA::Vector3 pos;
                     
-                    // check if there is intersection with landscape. ray from camera to mouse pointer
-                    // if there is - we should move opening scene to that point
-                    if(!curScene->collisionSystem->LandRayTestFromCamera(pos))
+                // check if there is intersection with landscape. ray from camera to mouse pointer
+                // if there is - we should move opening scene to that point
+                if(!curScene->collisionSystem->LandRayTestFromCamera(pos))
+                {
+                    DAVA::Landscape *landscape = curScene->collisionSystem->GetLandscape();
+                    if( NULL != landscape && NULL != landscape->GetHeightmap() && landscape->GetHeightmap()->Size() > 0)
                     {
-                        DAVA::Landscape *landscape = curScene->collisionSystem->GetLandscape();
-                        if( NULL != landscape && NULL != landscape->GetHeightmap() && landscape->GetHeightmap()->Size() > 0)
-                        {
-                            curScene->collisionSystem->GetLandscape()->PlacePoint(DAVA::Vector3(), pos);
-                        }
+                        curScene->collisionSystem->GetLandscape()->PlacePoint(DAVA::Vector3(), pos);
                     }
-
-                    QtMainWindow::Instance()->WaitStart("Adding object to scene", path);
-                    if (TestSceneCompatibility(DAVA::FilePath(path.toStdString())))
-                    {
-                        curScene->structureSystem->Add(path.toStdString(), pos);
-                    }
-                    QtMainWindow::Instance()->WaitStop();
                 }
+
+                QtMainWindow::Instance()->WaitStart("Adding object to scene", path);
+                if (TestSceneCompatibility(DAVA::FilePath(path.toStdString())))
+                {
+                    curScene->structureSystem->Add(path.toStdString(), pos);
+                }
+                QtMainWindow::Instance()->WaitStop();
             }
-		}
+        }
 	}
 	else
 	{

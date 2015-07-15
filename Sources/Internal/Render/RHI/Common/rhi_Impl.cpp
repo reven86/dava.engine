@@ -106,9 +106,9 @@ namespace VertexBuffer
 {
 
 Handle  
-Create( uint32 size, uint32 options )
+Create( const Descriptor& desc )
 {
-    return (*_Impl.impl_VertexBuffer_Create)( size, options );
+    return (*_Impl.impl_VertexBuffer_Create)( desc );
 }
 
 void
@@ -145,9 +145,9 @@ namespace IndexBuffer
 {
 
 Handle  
-Create( uint32 size, uint32 options )
+Create( const Descriptor& desc )
 {
-    return (*_Impl.impl_IndexBuffer_Create)( size, options );
+    return (*_Impl.impl_IndexBuffer_Create)( desc );
 }
 
 void
