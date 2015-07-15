@@ -289,7 +289,7 @@ else()
 
 endif()
 
-if( NOT IGNORE_FILE_TREE_CHECK )
+if( TARGET_FILE_TREE_FOUND )
     add_dependencies(  ${PROJECT_NAME} FILE_TREE )
     
 endif()
