@@ -94,25 +94,25 @@ void ReportScreen::CreateReportScreen()
             UIControl* reportItemCopy = reportItem->Clone();
             reportItemCopy->SetPosition(Vector2(0.0f, 0.0f + testNumber * offsetY));
             
-            UIStaticText* testName = static_cast<UIStaticText*>(reportItemCopy->FindByName(ControlHelpers::ReportItem::TEST_NAME));
+            UIStaticText* testName = reportItemCopy->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::TEST_NAME_PATH);
             testName->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%s", test->GetName().c_str())));
 
-            UIStaticText* minDeltaText = static_cast<UIStaticText*>(reportItemCopy->FindByName(ControlHelpers::ReportItem::MIN_DELTA));
+            UIStaticText* minDeltaText = reportItemCopy->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::MIN_DELTA_PATH);
             minDeltaText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", minDelta)));
 
-            UIStaticText* maxDeltaText = static_cast<UIStaticText*>(reportItemCopy->FindByName(ControlHelpers::ReportItem::MAX_DELTA));
+            UIStaticText* maxDeltaText = reportItemCopy->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::MAX_DELTA_PATH);
             maxDeltaText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", maxDelta)));
 
-            UIStaticText* averageDeltaText = static_cast<UIStaticText*>(reportItemCopy->FindByName(ControlHelpers::ReportItem::AVERAGE_DELTA));
+            UIStaticText* averageDeltaText = reportItemCopy->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::AVERAGE_DELTA_PATH);
             averageDeltaText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", averageDelta)));
 
-            UIStaticText* testTimeText = static_cast<UIStaticText*>(reportItemCopy->FindByName(ControlHelpers::ReportItem::TEST_TIME));
+            UIStaticText* testTimeText = reportItemCopy->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::TEST_TIME_PATH);
             testTimeText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", testTime)));
 
-            UIStaticText* elapsedTimeText = static_cast<UIStaticText*>(reportItemCopy->FindByName(ControlHelpers::ReportItem::ELAPSED_TIME));
+            UIStaticText* elapsedTimeText = reportItemCopy->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::ELAPSED_TIME_PATH);
             elapsedTimeText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", elapsedTime)));
 
-            UIStaticText* framesRenderedText = static_cast<UIStaticText*>(reportItemCopy->FindByName(ControlHelpers::ReportItem::FRAMES_RENDERED));
+            UIStaticText* framesRenderedText = reportItemCopy->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::FRAMES_RENDERED_PATH);
             framesRenderedText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%d", framesCount)));
 
             AddControl(reportItemCopy);

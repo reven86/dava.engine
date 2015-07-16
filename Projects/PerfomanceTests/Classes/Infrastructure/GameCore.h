@@ -39,10 +39,6 @@
 #include "Infrastructure/Controller/SingleTestFlowController.h"
 #include "Infrastructure/Settings/GraphicsDetect.h"
 
-#include "Tests/GlobalPerformanceTest.h"
-#include "Tests/AsiaPerformanceTest.h"
-#include "Tests/UniversalTest.h"
-
 #include <fstream>
 
 class GameCore : public ApplicationCore

@@ -79,34 +79,34 @@ void BaseTest::CreateUI()
     uiRoot->SetPosition(Vector2(0.0f, 0.0f));
     reportItem->SetPosition(Vector2(0.0f, 0.0f));
     
-    testNameText = static_cast<UIStaticText*>(reportItem->FindByName(ControlHelpers::ReportItem::TEST_NAME));
+    testNameText = reportItem->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::TEST_NAME_PATH);
     testNameText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%s", GetName().c_str())));
     
-    UIStaticText* fieldMinFpsText = static_cast<UIStaticText*>(reportItem->FindByName("MinDeltaText"));
+    UIStaticText* fieldMinFpsText = reportItem->FindByPath<UIStaticText*>("MinDelta/MinDeltaText");
     fieldMinFpsText->SetText(UTF8Utils::EncodeToWideString("Max FPS"));
     
-    maxFPSText = static_cast<UIStaticText*>(reportItem->FindByName(ControlHelpers::ReportItem::MIN_DELTA));
+    maxFPSText = reportItem->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::MIN_DELTA_PATH);
     maxFPSText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", 0.0f)));
     
-    UIStaticText* fieldMaxFpsText = static_cast<UIStaticText*>(reportItem->FindByName("MaxDeltaText"));
+    UIStaticText* fieldMaxFpsText = reportItem->FindByPath<UIStaticText*>("MaxDelta/MaxDeltaText");
     fieldMaxFpsText->SetText(UTF8Utils::EncodeToWideString("Min FPS"));
     
-    minFPSText = static_cast<UIStaticText*>(reportItem->FindByName(ControlHelpers::ReportItem::MAX_DELTA));
+    minFPSText = reportItem->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::MAX_DELTA_PATH);
     minFPSText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", 0.0f)));
     
-    UIStaticText* fieldFpsText = static_cast<UIStaticText*>(reportItem->FindByName("AverageDeltaText"));
+    UIStaticText* fieldFpsText = reportItem->FindByPath<UIStaticText*>("AverageDelta/AverageDeltaText");
     fieldFpsText->SetText(UTF8Utils::EncodeToWideString("FPS"));
     
-    fpsText = static_cast<UIStaticText*>(reportItem->FindByName(ControlHelpers::ReportItem::AVERAGE_DELTA));
+    fpsText = reportItem->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::AVERAGE_DELTA_PATH);
     fpsText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", 0.0f)));
     
-    testTimeText = static_cast<UIStaticText*>(reportItem->FindByName(ControlHelpers::ReportItem::TEST_TIME));
+    testTimeText = reportItem->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::TEST_TIME_PATH);
     testTimeText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", 0.0f)));
     
-    elapsedTimeText = static_cast<UIStaticText*>(reportItem->FindByName(ControlHelpers::ReportItem::ELAPSED_TIME));
+    elapsedTimeText = reportItem->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::ELAPSED_TIME_PATH);
     elapsedTimeText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%f", 0.0f)));
     
-    framesRenderedText = static_cast<UIStaticText*>(reportItem->FindByName(ControlHelpers::ReportItem::FRAMES_RENDERED));
+    framesRenderedText = reportItem->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::FRAMES_RENDERED_PATH);
     framesRenderedText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%d", 0)));
     
     AddControl(uiRoot);

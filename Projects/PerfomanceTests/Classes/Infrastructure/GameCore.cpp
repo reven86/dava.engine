@@ -33,10 +33,12 @@
 #include "TexturePacker/CommandLineParser.h"
 #include "Utils/Utils.h"
 
-//$PERFOMANCETEST_INCLUDE
-
 #include <fstream>
 #include <algorithm>
+
+#include "Tests/GlobalPerformanceTest.h"
+#include "Tests/AsiaPerformanceTest.h"
+#include "Tests/UniversalTest.h"
 
 using namespace DAVA;
 
