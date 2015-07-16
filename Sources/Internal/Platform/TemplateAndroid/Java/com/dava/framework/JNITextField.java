@@ -170,6 +170,7 @@ public class JNITextField {
         private boolean logicVisible = false; 
         
         private volatile boolean isRenderToTexture = false;
+        private boolean isSingleLine = true; // default in c++
         // we have to make next field static because all TextField
         // affected if we filtering and send data to c++ thread
         private static volatile boolean isFilteringOnText = false;
@@ -214,11 +215,20 @@ public class JNITextField {
         }
         
         @Override
+        public void setSingleLine(boolean value) {
+            super.setSingleLine(value);
+            isSingleLine = value;
+        }
+        
+        @Override
         public boolean onTouchEvent(MotionEvent event) {
-            MotionEvent newEvent = MotionEvent.obtain(event);
-            newEvent.setLocation(getLeft() + event.getX(),
-                    getTop() + event.getY());
-            JNIActivity.GetActivity().glView.dispatchTouchEvent(newEvent);
+            if (isSingleLine) {
+                // pass event to glView only in single line mode
+                MotionEvent newEvent = MotionEvent.obtain(event);
+                newEvent.setLocation(getLeft() + event.getX(),
+                        getTop() + event.getY());
+                JNIActivity.GetActivity().glView.dispatchTouchEvent(newEvent);
+            }
             return super.onTouchEvent(event);
         }
 
@@ -301,7 +311,7 @@ public class JNITextField {
 
             if (isTransparent && getText().length() > 0)
             {
-                Log.d(TAG, "WARNING render second one more time to texture");
+                Log.e(TAG, "ERROR render one more time to texture");
                 postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -638,7 +648,9 @@ public class JNITextField {
                 params.topMargin = Math.round(y);
                 params.gravity = Gravity.LEFT | Gravity.TOP;
                 text.setPadding(0, 0, 0, 0);
-                text.setSingleLine(true);
+                
+                text.setSingleLine(true); // reset default, and only then set you need
+                
                 text.setBackgroundColor(Color.TRANSPARENT);
                 text.setTextColor(Color.WHITE);
                 text.setVisibility(View.GONE);
@@ -753,14 +765,18 @@ public class JNITextField {
                     @Override
                     public boolean onEditorAction(TextView v, int actionId,
                             KeyEvent event) {
-                        JNIActivity.GetActivity().PostEventToGL(new Runnable() {
-                            @Override
-                            public void run() {
-                                JNITextField.TextFieldShouldReturn(id);
-                            }
-                        });
-                        text.updateStaticTexture();
-                        return true;
+                        // action link to button with SetReturnKeyType
+                        if (text.isSingleLine) {
+                            JNIActivity.GetActivity().PostEventToGL(new Runnable() {
+                                @Override
+                                public void run() {
+                                    JNITextField.TextFieldShouldReturn(id);
+                                }
+                            });
+                            text.updateStaticTexture();
+                            return true; // Return true if you have consumed the action
+                        }
+                        return false;
                     }
                 });
 
@@ -1395,12 +1411,36 @@ public class JNITextField {
         }
     }
     
+    public static void SetMultiline(final int id, final boolean isMultiline) {
+        JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
+            @Override
+            public void safeRun() {
+                final TextField text = GetTextField(id);
+                if (isMultiline)
+                {
+                    text.setSingleLine(false);
+                    // Workaround! in multiline mode user need ability to
+                    // scroll text so disable render into texture
+                    text.setRenderToTexture(false);
+                } else {
+                    text.setSingleLine(true);
+                }
+            }
+        });
+    }
+    
     public static void SetRenderToTexture(final int id, final boolean value) {
         JNIActivity.GetActivity().runOnUiThread(new SafeRunnable() {
             @Override
             public void safeRun() {
                 final TextField text = GetTextField(id);
-                text.setRenderToTexture(value);
+                // Workaround! Users need scroll on large text in
+                // multiline mode so we have to disable render into texture
+                if(text.isSingleLine) {
+                    text.setRenderToTexture(value);
+                } else {
+                    text.setRenderToTexture(false);
+                }
             }
         });
     }
