@@ -58,6 +58,12 @@ void ServerCore::Start()
     server.Listen(settings->GetPort());
     serverLogics.Init(&server, &client, &dataBase);
 
+    const auto remoteServer = settings->GetCurrentServer();
+    if(!remoteServer.ip.empty())
+    {
+        client.Connect(remoteServer.ip, remoteServer.port);
+    }
+    
     serverIsRunning = true;
     
     QTimer::singleShot(UPDATE_TIMEOUT, this, &ServerCore::UpdateByTimer);
