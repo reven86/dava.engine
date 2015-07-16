@@ -209,6 +209,18 @@ DAVA_TESTCLASS(FileSystemTest)
         moved = FileSystem::Instance()->MoveFile("~doc:/TestData/FileSystemTest/Folder1/file2.zip", "~doc:/TestData/FileSystemTest/Folder1/file_new", true);
         TEST_VERIFY(moved);
 
+#ifdef __DAVAENGINE_WINDOWS__
+        FileSystem* fs = FileSystem::Instance();
+        bool isDdriveExist = fs->IsDirectory("d:\\");
+        if (isDdriveExist)
+        {
+            moved = fs->MoveFile("~doc:/TestData/FileSystemTest/Folder1/file_new", "d:\\test_on_other_drive.file", true);
+            TEST_VERIFY(moved);
+            moved = fs->MoveFile("d:\\test_on_other_drive.file", "~doc:/TestData/FileSystemTest/Folder1/file_new", true);
+            TEST_VERIFY(moved);
+        }
+#endif
+
         FileSystem::Instance()->DeleteFile("~doc:/TestData/FileSystemTest/Folder1/file1_new");
         File *f = File::Create("~doc:/TestData/FileSystemTest/Folder1/file1_new", File::OPEN | File::READ);
         TEST_VERIFY(!f);
