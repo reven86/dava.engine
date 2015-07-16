@@ -72,6 +72,11 @@ void PackageSerializer::SerializePackage(PackageNode *package)
         importedPackages.push_back(package->GetImportedPackagesNode()->GetImportedPackage(i));
     }
     
+    for (int32 i = 0; i < package->GetStyleSheets()->GetCount(); i++)
+    {
+        styles.push_back(package->GetStyleSheets()->Get(i));
+    }
+    
     for (int32 i = 0; i < package->GetPackageControlsNode()->GetCount(); i++)
     {
         controls.push_back(package->GetPackageControlsNode()->Get(i));
@@ -82,7 +87,7 @@ void PackageSerializer::SerializePackage(PackageNode *package)
     controls.clear();
 }
 
-void PackageSerializer::SerializePackageNodes(PackageNode *package, const DAVA::Vector<ControlNode*> &serializationControls)
+void PackageSerializer::SerializePackageNodes(PackageNode *package, const DAVA::Vector<ControlNode*> &serializationControls, const DAVA::Vector<StyleSheetNode*> &serializationStyles)
 {
     for (ControlNode *control : serializationControls)
     {
@@ -93,10 +98,17 @@ void PackageSerializer::SerializePackageNodes(PackageNode *package, const DAVA::
         }
     }
 
+    for (StyleSheetNode *style : serializationStyles)
+    {
+        if (style->CanCopy())
+            styles.push_back(style);
+    }
+
     package->Accept(this);
 
     importedPackages.clear();
     controls.clear();
+    styles.clear();
 }
 
 void PackageSerializer::VisitPackage(PackageNode *node)
@@ -104,18 +116,30 @@ void PackageSerializer::VisitPackage(PackageNode *node)
     BeginMap("Header");
     PutValue("version", Format("%d", CURRENT_VERSION));
     EndMap();
-    
-    BeginArray("ImportedPackages");
-    for (PackageNode *package : importedPackages)
-        PutValue(package->GetPath().GetFrameworkPath());
-    EndArray();
 
-    node->GetStyleSheets()->Accept(this);
+    if (!importedPackages.empty())
+    {
+        BeginArray("ImportedPackages");
+        for (PackageNode *package : importedPackages)
+            PutValue(package->GetPath().GetFrameworkPath());
+        EndArray();
+    }
     
-    BeginArray("Controls");
-    for (ControlNode *control : controls)
-        control->Accept(this);
-    EndArray();
+    if (!styles.empty())
+    {
+        BeginArray("StyleSheets");
+        for (StyleSheetNode *style : styles)
+            style->Accept(this);
+        EndMap();
+    }
+
+    if (!controls.empty())
+    {
+        BeginArray("Controls");
+        for (ControlNode *control : controls)
+            control->Accept(this);
+        EndArray();
+    }
 }
 
 void PackageSerializer::VisitImportedPackages(ImportedPackagesNode *node)
@@ -167,9 +191,7 @@ void PackageSerializer::VisitControl(ControlNode *node)
 
 void PackageSerializer::VisitStyleSheets(StyleSheetsNode *node)
 {
-    BeginArray("StyleSheets");
-    AcceptChildren(node);
-    EndMap();
+    // do nothing
 }
 
 void PackageSerializer::VisitStyleSheet(StyleSheetNode *node)

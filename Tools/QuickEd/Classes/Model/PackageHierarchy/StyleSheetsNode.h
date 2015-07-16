@@ -45,8 +45,10 @@ public:
     StyleSheetNode *Get(DAVA::int32 index) const override;
     void Accept(PackageVisitor *visitor) override;
     
-    virtual DAVA::String GetName() const override;
-    
+    DAVA::String GetName() const override;
+
+    bool IsInsertingStylesSupported() const override;
+
 private:
     DAVA::Vector<StyleSheetNode*> styleSheets;
 };

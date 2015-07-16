@@ -96,3 +96,7 @@ String StyleSheetsNode::GetName() const
     return "Style Sheets";
 }
 
+bool StyleSheetsNode::IsInsertingStylesSupported() const
+{
+    return true;
+}

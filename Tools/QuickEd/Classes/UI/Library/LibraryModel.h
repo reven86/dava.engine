@@ -59,9 +59,11 @@ private:
     void AddImportedControl(PackageNode* node);
     void CreateControlsRootItem();
     void CreateImportPackagesRootItem();
+    
+private:
     PackageNode *root;
     QStandardItem *defaultControlsRootItem, *controlsRootItem, *importedPackageRootItem;
-    QStringList defaultControls;
+    DAVA::Vector<ControlNode*> defaultControls;
 
 private: // PackageListener
     void ControlPropertyWasChanged(ControlNode *node, AbstractProperty *property) override;

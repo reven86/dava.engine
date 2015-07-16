@@ -133,9 +133,11 @@ PackageWidget::PackageWidget(QWidget *parent)
     connect(delAction, &QAction::triggered, this, &PackageWidget::OnDelete);
 
     treeView->addAction(importPackageAction);
+    treeView->addAction(CreateSeparator());
+    treeView->addAction(cutAction);
     treeView->addAction(copyAction);
     treeView->addAction(pasteAction);
-    treeView->addAction(cutAction);
+    treeView->addAction(CreateSeparator());
     treeView->addAction(delAction);
 }
 
@@ -260,13 +262,19 @@ void PackageWidget::CollectSelectedImportedPackages(Vector<PackageNode*> &nodes,
     CollectSelectedNodes(selected, nodes, forCopy, forRemove);
 }
 
-void PackageWidget::CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &nodes)
+void PackageWidget::CollectSelectedStyles(DAVA::Vector<StyleSheetNode*> &nodes, bool forCopy, bool forRemove)
+{
+    QItemSelection selected = filteredPackageModel->mapSelectionToSource(treeView->selectionModel()->selection());
+    CollectSelectedNodes(selected, nodes, forCopy, forRemove);
+}
+
+void PackageWidget::CopyNodesToClipboard(const Vector<ControlNode*> &controls, const Vector<StyleSheetNode*> &styles)
 {
     QClipboard *clipboard = QApplication::clipboard();
-    if (!nodes.empty())
+    if (!controls.empty() || !styles.empty())
     {
         YamlPackageSerializer serializer;
-        serializer.SerializePackageNodes(sharedData->GetDocument()->GetPackage(), nodes);
+        serializer.SerializePackageNodes(sharedData->GetDocument()->GetPackage(), controls, styles);
         String str = serializer.WriteToString();
         QMimeData *data = new QMimeData();
         data->setText(QString(str.c_str()));
@@ -328,9 +336,13 @@ void PackageWidget::OnImport()
 
 void PackageWidget::OnCopy()
 {
-    Vector<ControlNode*> nodes;
-    CollectSelectedControls(nodes, true, false);
-    CopyNodesToClipboard(nodes);
+    Vector<ControlNode*> controls;
+    CollectSelectedControls(controls, true, false);
+
+    Vector<StyleSheetNode*> styles;
+    CollectSelectedStyles(styles, true, false);
+    
+    CopyNodesToClipboard(controls, styles);
 }
 
 void PackageWidget::OnPaste()
@@ -357,10 +369,15 @@ void PackageWidget::OnPaste()
 
 void PackageWidget::OnCut()
 {
-    Vector<ControlNode*> nodes;
-    CollectSelectedControls(nodes, true, true);
-    CopyNodesToClipboard(nodes);
-    RemoveNodes(nodes);
+    Vector<ControlNode*> controls;
+    CollectSelectedControls(controls, true, true);
+
+    Vector<StyleSheetNode*> styles;
+    CollectSelectedStyles(styles, true, true);
+    
+    CopyNodesToClipboard(controls, styles);
+    
+    RemoveNodes(controls);
 }
 
 void PackageWidget::OnDelete()
@@ -416,4 +433,11 @@ QList<QPersistentModelIndex> PackageWidget::GetExpandedIndexes() const
     }
 
     return retval;
+}
+
+QAction *PackageWidget::CreateSeparator()
+{
+    QAction *separator = new QAction(this);
+    separator->setSeparator(true);
+    return separator;
 }

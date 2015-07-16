@@ -40,6 +40,10 @@
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/ClassProperty.h"
 #include "Model/ControlProperties/CustomClassProperty.h"
+#include "Model/YamlPackageSerializer.h"
+
+#include "Base/ObjectFactory.h"
+#include "UI/UIControl.h"
 
 #include "Utils/QtDavaConvertion.h"
 #include "UI/IconHelper.h"
@@ -54,7 +58,8 @@ LibraryModel::LibraryModel(PackageNode *_root, QObject *parent)
     , importedPackageRootItem(nullptr)
 {
     root->AddListener(this);
-    defaultControls
+    QStringList controls;
+    controls
         << "UIControl"
         << "UIButton"
         << "UIStaticText"
@@ -67,6 +72,22 @@ LibraryModel::LibraryModel(PackageNode *_root, QObject *parent)
         << "UISpinner"
         << "UISwitch"
         << "UIParticles";
+    
+    for (QString &controlName : controls)
+    {
+        UIControl *control = ObjectFactory::Instance()->New<UIControl>(controlName.toStdString());
+        if (control)
+        {
+            ControlNode *node = ControlNode::CreateFromControl(control);
+            SafeRelease(control);
+            defaultControls.push_back(node);
+        }
+        else
+        {
+            DVASSERT(false);
+        }
+    }
+    
     BuildModel();
 }
 
@@ -74,6 +95,10 @@ LibraryModel::~LibraryModel()
 {
     root->RemoveListener(this);
     SafeRelease(root);
+    
+    for (ControlNode *control : defaultControls)
+        control->Release();
+    defaultControls.clear();
 }
 
 Qt::ItemFlags LibraryModel::flags(const QModelIndex &index) const
@@ -99,7 +124,25 @@ QMimeData *LibraryModel::mimeData(const QModelIndexList &indexes) const
         {
             QMimeData *data = new QMimeData();
             auto item = itemFromIndex(index);
-            data->setText(item->data(INNER_NAME_DATA).toString());
+            
+            Vector<ControlNode*> controls;
+            Vector<StyleSheetNode*> styles;
+            ControlNode *control = static_cast<ControlNode*>(item->data(POINTER_DATA).value<void*>());
+            
+            if (control->GetPackage() != nullptr)
+                control = ControlNode::CreateFromPrototype(control);
+            else
+                control = SafeRetain(control);
+            
+            controls.push_back(control);
+            
+            YamlPackageSerializer serializer;
+            serializer.SerializePackageNodes(root, controls, styles);
+            String str = serializer.WriteToString();
+            data->setText(QString::fromStdString(str));
+            
+            SafeRelease(control);
+            
             return data;
         }
     }
@@ -131,13 +174,12 @@ void LibraryModel::BuildModel()
     defaultControlsRootItem = new QStandardItem(tr("Default controls"));
     defaultControlsRootItem->setBackground(QBrush(Qt::lightGray));
     invisibleRootItem()->appendRow(defaultControlsRootItem);
-    for (const auto &defaultControl : defaultControls)
+    for (ControlNode *defaultControl : defaultControls)
     {
-        auto item = new QStandardItem(
-            QIcon(IconHelper::GetIconPathForClassName(defaultControl)),
-            defaultControl
-            ); 
-        item->setData(defaultControl, INNER_NAME_DATA);
+        QString className = QString::fromStdString(defaultControl->GetControl()->GetClassName());
+        auto item = new QStandardItem(QIcon(IconHelper::GetIconPathForClassName(className)), className);
+        item->setData(QVariant::fromValue(static_cast<void*>(defaultControl)), POINTER_DATA);
+        item->setData(className, INNER_NAME_DATA);
         defaultControlsRootItem->appendRow(item);
     }
     const auto packageControls = root->GetPackageControlsNode();

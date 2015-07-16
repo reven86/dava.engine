@@ -43,8 +43,9 @@ namespace Ui {
     class PackageWidget;
 }
 
-class ControlNode;
 class SharedData;
+class ControlNode;
+class StyleSheetNode;
 
 class PackageWidget : public QDockWidget, public Ui::PackageWidget
 {
@@ -66,8 +67,9 @@ private:
     void RefreshActions(const QList<PackageBaseNode*> &indexList);
     void RefreshAction(QAction *action, bool enabled, bool visible);
     void CollectSelectedControls(DAVA::Vector<ControlNode*> &nodes, bool forCopy, bool forRemove);
+    void CollectSelectedStyles(DAVA::Vector<StyleSheetNode*> &nodes, bool forCopy, bool forRemove);
     void CollectSelectedImportedPackages(DAVA::Vector<PackageNode*> &nodes, bool forCopy, bool forRemove);
-    void CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &nodes);
+    void CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &controls, const DAVA::Vector<StyleSheetNode*> &styles);
     void RemoveNodes(const DAVA::Vector<ControlNode*> &nodes);
     QList<QPersistentModelIndex> GetExpandedIndexes() const;
     
@@ -80,6 +82,9 @@ private slots:
     void OnCut();
     void OnDelete();
 
+private:
+    QAction *CreateSeparator();
+    
 private:
     SharedData *sharedData;
     QAction *importPackageAction;

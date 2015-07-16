@@ -45,6 +45,7 @@
 #include "Model/PackageHierarchy/ImportedPackagesNode.h"
 #include "Model/PackageHierarchy/ControlsContainerNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
+#include "Model/PackageHierarchy/StyleSheetsNode.h"
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/NameProperty.h"
 #include "Model/ControlProperties/ClassProperty.h"
@@ -272,7 +273,7 @@ Qt::ItemFlags PackageModel::flags(const QModelIndex &index) const
     const PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
     if (node->CanCopy())
         flags |= Qt::ItemIsDragEnabled;
-    if (node->IsInsertingControlsSupported() || node->IsInsertingPackagesSupported())
+    if (node->IsInsertingControlsSupported() || node->IsInsertingPackagesSupported() || node->IsInsertingStylesSupported())
         flags |= Qt::ItemIsDropEnabled;
     
     return flags;
@@ -301,16 +302,26 @@ QMimeData *PackageModel::mimeData(const QModelIndexList &indices) const
         if (index.isValid())
         {
             PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-            ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
-            if (controlNode && controlNode->CanCopy())
+            if (node->CanCopy())
             {
-                mimeData->AddControlNode(controlNode);
+                ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
+                if (controlNode)
+                {
+                    mimeData->AddControl(controlNode);
+                }
+                else
+                {
+                    StyleSheetNode *style = dynamic_cast<StyleSheetNode*>(node);
+                    if (style)
+                        mimeData->AddStyle(style);
+                }
+                
             }
         }
     }
     
     YamlPackageSerializer serializer;
-    serializer.SerializePackageNodes(root, mimeData->GetControlNodes());
+    serializer.SerializePackageNodes(root, mimeData->GetControls(), mimeData->GetStyles());
     String str = serializer.WriteToString();
     mimeData->setText(QString::fromStdString(str));
 
@@ -330,27 +341,47 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
     else
         rowIndex = rowCount(QModelIndex());
 
-    ControlsContainerNode *parentNode = dynamic_cast<ControlsContainerNode*>(static_cast<PackageBaseNode*>(parent.internalPointer()));
+    ControlsContainerNode *destControlContainer = dynamic_cast<ControlsContainerNode*>(static_cast<PackageBaseNode*>(parent.internalPointer()));
+    StyleSheetsNode *destStylesContainer = dynamic_cast<StyleSheetsNode*>(static_cast<PackageBaseNode*>(parent.internalPointer()));
     
-    if (parentNode && data->hasFormat(PackageMimeData::MIME_TYPE))
+    if (destControlContainer && data->hasFormat(PackageMimeData::MIME_TYPE))
     {
         const PackageMimeData *controlMimeData = dynamic_cast<const PackageMimeData*>(data);
         if (!controlMimeData)
             return false;
 
-        const Vector<ControlNode *> &srcNodes = controlMimeData->GetControlNodes();
-        if (srcNodes.empty())
+        const Vector<ControlNode *> &srcControls = controlMimeData->GetControls();
+        if (srcControls.empty())
             return false;
         
         if (action == Qt::CopyAction)
-            commandExecutor->CopyControls(srcNodes, parentNode, rowIndex);
+            commandExecutor->CopyControls(srcControls, destControlContainer, rowIndex);
         else if (action == Qt::MoveAction)
-            commandExecutor->MoveControls(srcNodes, parentNode, rowIndex);
+            commandExecutor->MoveControls(srcControls, destControlContainer, rowIndex);
         else if (action == Qt::LinkAction)
-            commandExecutor->InsertInstances(srcNodes, parentNode, rowIndex);
+            commandExecutor->InsertInstances(srcControls, destControlContainer, rowIndex);
         else
             return false;
 
+        return true;
+    }
+    else if (destStylesContainer && data->hasFormat(PackageMimeData::MIME_TYPE))
+    {
+        const PackageMimeData *mimeData = dynamic_cast<const PackageMimeData*>(data);
+        if (!mimeData)
+            return false;
+        
+        const Vector<ControlNode *> &srcControls = mimeData->GetControls();
+        if (srcControls.empty())
+            return false;
+        
+        if (action == Qt::CopyAction)
+            commandExecutor->CopyControls(srcControls, destControlContainer, rowIndex);
+        else if (action == Qt::MoveAction)
+            commandExecutor->MoveControls(srcControls, destControlContainer, rowIndex);
+        else
+            return false;
+        
         return true;
     }
     else if (data->hasFormat("text/uri-list") && data->hasText())
@@ -370,69 +401,11 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
             commandExecutor->AddImportedPackagesIntoPackage(packages, root);
         }
     }
-    else if (parentNode && data->hasFormat("text/plain") && data->hasText())
+    else if (destControlContainer && data->hasFormat("text/plain") && data->hasText())
     {
         String string = data->text().toStdString();
         
-        if (!commandExecutor->Paste(root, parentNode, rowIndex, string))
-        {
-            String controlName = QStringToString(data->text());
-            size_t slashIndex = controlName.find("/");
-            ControlNode *node = nullptr;
-            
-            if (slashIndex != String::npos)
-            {
-                String packName = controlName.substr(0, slashIndex);
-                controlName = controlName.substr(slashIndex + 1, controlName.size() - slashIndex - 1);
-                PackageNode *importedPackage = root->GetImportedPackagesNode()->FindPackageByName(packName);
-                if (importedPackage)
-                {
-                    ControlNode *prototypeControl = importedPackage->GetPackageControlsNode()->FindControlNodeByName(controlName);
-                    if (prototypeControl)
-                    {
-                        node = ControlNode::CreateFromPrototype(prototypeControl);
-                    }
-                }
-            }
-            else
-            {
-                UIControl *control = ObjectFactory::Instance()->New<UIControl>(controlName);
-                if (control)
-                {
-                    node = ControlNode::CreateFromControl(control);
-                    SafeRelease(control);
-                }
-                else
-                {
-                    ControlNode *prototypeControl = root->GetPackageControlsNode()->FindControlNodeByName(controlName);
-                    if (prototypeControl)
-                    {
-                        node = ControlNode::CreateFromPrototype(prototypeControl);
-                    }
-                }
-            }
-            
-            if (node)
-            {
-                const auto &resultList = commandExecutor->InsertControl(node, parentNode, rowIndex);
-                SafeRelease(node);
-                if (!resultList)
-                {
-                    for (const auto &result : resultList.GetResults())
-                    {
-                        if (result.type != Result::RESULT_SUCCESS)
-                        {
-                            Logger* log = Logger::Instance();
-                            if (nullptr != log)
-                            {
-                                log->Log(result.type == Result::RESULT_FAILURE ? Logger::LEVEL_WARNING : Logger::LEVEL_ERROR, result.message.c_str());
-                            }
-                        }
-                    }
-                }
-                return resultList;
-            }
-        }
+        commandExecutor->Paste(root, destControlContainer, rowIndex, string);
         return true;
     }
 

@@ -52,7 +52,10 @@ public:
     
     DAVA::String GetName() const override;
     void UpdateName();
-    
+
+    bool CanRemove() const override;
+    bool CanCopy() const override;
+
     StyleSheetRootProperty *GetRootProperty() const;
     
 private:

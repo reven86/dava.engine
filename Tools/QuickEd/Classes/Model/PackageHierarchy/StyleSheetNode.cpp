@@ -74,6 +74,16 @@ void StyleSheetNode::UpdateName()
     name = rootProperty->GetSelectorsAsString();
 }
 
+bool StyleSheetNode::CanRemove() const
+{
+    return !IsReadOnly();
+}
+
+bool StyleSheetNode::CanCopy() const
+{
+    return true;
+}
+
 StyleSheetRootProperty *StyleSheetNode::GetRootProperty() const
 {
     return rootProperty;
