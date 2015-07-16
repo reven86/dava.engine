@@ -39,6 +39,7 @@
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
+#include "UI/UIScreenshoter.h"
 
 namespace DAVA 
 {
@@ -50,6 +51,7 @@ UIControlSystem::~UIControlSystem()
 	SafeRelease(currentScreen); 
 	SafeRelease(popupContainer);
     SafeDelete(styleSheetSystem);
+    SafeDelete(screenshoter);
 }
 	
 UIControlSystem::UIControlSystem()
@@ -83,6 +85,7 @@ UIControlSystem::UIControlSystem()
     ui3DViewCount = 0;
 
     styleSheetSystem = new UIStyleSheetSystem();
+    screenshoter = new UIScreenshoter();
 }
 	
 void UIControlSystem::SetScreen(UIScreen *_nextScreen, UIScreenTransition * _transition)
@@ -356,6 +359,8 @@ void UIControlSystem::Draw()
     //Logger::Info("UIControlSystem::draws: %d", drawCounter);
 
     FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
+
+    GetScreenshoter()->OnFrame();
 }
 	
 void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl *targetControl)
@@ -833,6 +838,11 @@ void UIControlSystem::UI3DViewRemoved()
 UIStyleSheetSystem* UIControlSystem::GetStyleSheetSystem()
 {
     return styleSheetSystem;
+}
+
+UIScreenshoter* UIControlSystem::GetScreenshoter()
+{
+    return screenshoter;
 }
 
 };

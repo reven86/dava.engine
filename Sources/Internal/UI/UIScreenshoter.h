@@ -26,73 +26,54 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVEAENGINE_UI_SCREENSHOTER__
+#define __DAVEAENGINE_UI_SCREENSHOTER__
 
-#ifndef __GAMECORE_H__
-#define __GAMECORE_H__
+#include "Base/BaseTypes.h"
+#include "Base/BaseMath.h"
+#include "UI/UIControl.h"
 
-#include "Core/ApplicationCore.h"
-#include "Core/Core.h"
-
-class TestData;
-class BaseScreen;
-class TestListScreen;
-class GameCore : public DAVA::ApplicationCore
+namespace DAVA
 {
-    struct ErrorData
-    {
-        DAVA::int32 line;
-        DAVA::String command;
-        DAVA::String filename;
-        DAVA::String testName;
-        DAVA::String testMessage;
-    };
 
-protected:
-    virtual ~GameCore();
-public:    
-    GameCore();
+class UIControl;
+class UI3DView;
+class Texture;
 
-    static GameCore * Instance() 
-    { 
-        return (GameCore*) DAVA::Core::GetApplicationCore();
-    };
-    
-    void OnAppStarted() override;
-    void OnAppFinished() override;
+class UIScreenshoter
+{
+public:
+    UIScreenshoter();
+    ~UIScreenshoter();
 
-    void BeginFrame() override;
+    Texture* MakeScreenshot(UIControl* control, const PixelFormat format, bool cloneControl = false);
+    void MakeScreenshotWithCallback(UIControl* control, const PixelFormat format, Function<void(Texture*)> callback, bool cloneControl = false);
+    void MakeScreenshotWithPreparedTexture(UIControl* control, Texture* texture, bool cloneControl = false);
 
-    void RegisterScreen(BaseScreen *screen);
-    void ShowStartScreen();
-    
-protected:
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-    virtual void OnBackground() {};
-    
-    virtual void OnForeground() {};
-    
-    virtual void OnDeviceLocked() {};
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+    void OnFrame();
 
-    void RegisterTests();
-    void RunTests();
-    
-    void CreateDocumentsFolder();
-    DAVA::File * CreateDocumentsFile(const DAVA::String &filePathname);
-    
 private:
-    void RunOnlyThisTest();
-    void OnError();
-    bool IsNeedSkipTest(const BaseScreen& screen) const;
+    struct Control3dInfo
+    {
+        UI3DView* control;
+        int32 priority;
+        rhi::Handle texture;
+    };
 
-    DAVA::String runOnlyThisTest;
+    struct ScreenshotWaiter
+    {
+        UIControl * control;
+        Texture * texture;
+        int32 cooldown;
+        Function<void(Texture*)> callback;
+    };
 
-    BaseScreen *currentScreen;
-    TestListScreen *testListScreen;
+    void FindAll3dViews(UIControl * control, List<UIScreenshoter::Control3dInfo> & foundViews);
+    void RenderToTexture(UIControl* control, Texture* screenshot);
     
-    DAVA::Vector<BaseScreen *> screens;
+    List<ScreenshotWaiter> waiters;
 };
 
+};
 
-
-#endif // __GAMECORE_H__
+#endif //__DAVEAENGINE_UI_SCREENSHOTER__

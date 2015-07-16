@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "GameCore.h"
+#include "Infrastructure/GameCore.h"
 
 #include "Platform/DateTime.h"
 #include "TexturePacker/CommandLineParser.h"
@@ -35,6 +35,7 @@
 #include "Infrastructure/TestListScreen.h"
 #include "Tests/NotificationTest.h"
 #include "Tests/UIScrollViewTest.h"
+#include "Tests/MultilineTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -51,6 +52,7 @@ void GameCore::RegisterTests()
 {
     new UIScrollViewTest();
     new NotificationScreen();
+    new MultilineTest();
 }
 
 #include <fstream>

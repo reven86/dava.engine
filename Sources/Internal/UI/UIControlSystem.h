@@ -50,6 +50,7 @@ namespace DAVA
 
 class UIScreen;
 class UIStyleSheetSystem;
+class UIScreenshoter;
 
 class ScreenSwitchListener
 {
@@ -299,6 +300,8 @@ public:
     void UI3DViewRemoved();
 
     UIStyleSheetSystem* GetStyleSheetSystem();
+    UIScreenshoter* GetScreenshoter();
+
 private:
 	/**
 	 \brief Instantly replace one screen to enother.
@@ -317,6 +320,7 @@ private:
     void CopyTouchData(UIEvent* dst, const UIEvent* src);
 
     UIStyleSheetSystem* styleSheetSystem;
+    UIScreenshoter* screenshoter;
 
 	Vector<ScreenSwitchListener*> screenSwitchListeners;
 
@@ -347,6 +351,7 @@ private:
 	friend class UIScreenTransition;
 	friend class UIScreenManager;
 };
+
 };
 
 #endif

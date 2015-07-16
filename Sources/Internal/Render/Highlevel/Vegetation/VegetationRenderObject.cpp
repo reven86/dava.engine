@@ -41,6 +41,7 @@
 #include "Job/JobManager.h"
 
 #include "Render/Highlevel/Vegetation/VegetationGeometry.h"
+#include "Render/Highlevel/RenderPassNames.h"
 
 namespace DAVA
 {
@@ -839,6 +840,7 @@ void VegetationRenderObject::UpdateVegetationSetup()
     if(IsValidGeometryData())
     {
         CreateRenderData();
+        renderData->GetMaterial()->PreBuildMaterial(PASS_FORWARD);
     }
     
     if(IsValidSpatialData())

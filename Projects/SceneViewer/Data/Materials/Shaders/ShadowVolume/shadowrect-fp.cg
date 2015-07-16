@@ -11,6 +11,6 @@ property float4 shadowColor : dynamic,instance : def_value=1,0,0,1;
 
 FPROG_BEGIN
 
-    FP_OUT_COLOR = shadowColor;
+    FP_OUT_COLOR = float4(shadowColor.rgb, 1.0);
     
 FPROG_END

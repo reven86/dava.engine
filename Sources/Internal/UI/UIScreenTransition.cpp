@@ -35,12 +35,13 @@
 #include "Render/Image/Image.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 
+#include "UI/UI3DView.h"
+#include "Scene3D/Scene.h"
+
 namespace DAVA
 {
 Sprite * UIScreenTransition::renderTargetPrevScreen = 0;
 Sprite * UIScreenTransition::renderTargetNextScreen = 0;
-
-UniqueHandle UIScreenTransition::alphaClearStateHandle = InvalidUniqueHandle;
 
 UIScreenTransition::UIScreenTransition()
 {
@@ -87,22 +88,14 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     nextScreen = _nextScreen;
     prevScreen = _prevScreen;
 
-    if (prevScreen)
-    {
-        Texture * textureTargetPrev = renderTargetPrevScreen->GetTexture();
-        RenderSystem2D::Instance()->BeginRenderTargetPass(textureTargetPrev);
-        prevScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
-        RenderSystem2D::Instance()->EndRenderTargetPass();
-    }
+    MakeScreenshot(renderTargetPrevScreen->GetTexture(), prevScreen);
 
     nextScreen->LoadGroup();
     nextScreen->SystemWillAppear();
+    nextScreen->SystemUpdate(SystemTimer::FrameDelta());
 
-    Texture * textureTargetNext = renderTargetNextScreen->GetTexture();
-    RenderSystem2D::Instance()->BeginRenderTargetPass(textureTargetNext);
-    nextScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
-    RenderSystem2D::Instance()->EndRenderTargetPass();
-
+    MakeScreenshot(renderTargetNextScreen->GetTexture(), nextScreen);
+    
     currentTime = 0;
 }
 
@@ -113,7 +106,6 @@ void UIScreenTransition::Update(float32 timeElapsed)
     if (currentTime >= duration)
     {
         currentTime = duration;
-        UIControlSystem::Instance()->ReplaceScreen(nextScreen);
         
         if (prevScreen)
         {
@@ -126,6 +118,7 @@ void UIScreenTransition::Update(float32 timeElapsed)
             SafeRelease(prevScreen);
         }
         
+        UIControlSystem::Instance()->ReplaceScreen(nextScreen);
         nextScreen->SystemDidAppear();
         if (nextScreen->IsOnScreen())
             nextScreen->SystemWillBecomeVisible();
@@ -167,6 +160,68 @@ void UIScreenTransition::SetDuration(float32 timeInSeconds)
 bool UIScreenTransition::IsLoadingTransition()
 {
     return false;
+}
+
+void UIScreenTransition::MakeScreenshot(Texture* target, UIScreen* screen)
+{
+    static const int32 PRIORITY_SCREENSHOT_CLEAR_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 3;
+    static const int32 PRIORITY_SCREENSHOT_3D_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 2;
+    static const int32 PRIORITY_SCREENSHOT_2D_PASS = eDefaultPassPriority::PRIORITY_SERVICE_2D + 1;
+
+    rhi::Viewport v;
+    v.width = target->GetWidth();
+    v.height = target->GetHeight();
+    RenderHelper::Instance()->CreateClearPass(target->handle, PRIORITY_SCREENSHOT_CLEAR_PASS, Color::Clear, v);
+    
+    if (screen)
+    {
+        UI3DView* view3d = FindFirst3dView(screen);
+        int32 oldPriority = eDefaultPassPriority::PRIORITY_MAIN_3D;
+        rhi::Handle oldTexture = rhi::InvalidHandle;
+        if (view3d != nullptr && view3d->GetScene())
+        {
+            rhi::RenderPassConfig& config = view3d->GetScene()->GetMainPassConfig();
+            oldPriority = config.priority;
+            oldTexture = config.colorBuffer[0].texture;
+            config.priority = PRIORITY_SCREENSHOT_3D_PASS;
+            config.colorBuffer[0].texture = target->handle;
+        }
+
+        RenderSystem2D::Instance()->BeginRenderTargetPass(target, false, Color::Clear, PRIORITY_SCREENSHOT_2D_PASS);
+        screen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
+        RenderSystem2D::Instance()->EndRenderTargetPass();
+
+        if (view3d != nullptr && view3d->GetScene())
+        {
+            rhi::RenderPassConfig& config = view3d->GetScene()->GetMainPassConfig();
+            config.priority = oldPriority;
+            config.colorBuffer[0].texture = oldTexture;
+        }
+    }
+}
+
+UI3DView* UIScreenTransition::FindFirst3dView(UIControl* control)
+{
+    List<UIControl*> processControls;
+    processControls.push_back(control);
+    while (!processControls.empty())
+    {
+        auto currentCtrl = processControls.front();
+        processControls.pop_front();
+        
+        UI3DView* current3dView = dynamic_cast<UI3DView*>(currentCtrl);
+        if (nullptr != current3dView)
+        {
+            return current3dView;
+        }
+
+        auto& children = currentCtrl->GetChildren();
+        for (auto child : children)
+        {
+            processControls.push_back(child);
+        }
+    }
+    return nullptr;
 }
 
 };

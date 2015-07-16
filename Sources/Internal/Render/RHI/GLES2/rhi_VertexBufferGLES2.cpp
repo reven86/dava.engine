@@ -37,6 +37,8 @@ VertexBufferGLES2_t
 typedef ResourcePool<VertexBufferGLES2_t,RESOURCE_VERTEX_BUFFER>   VertexBufferGLES2Pool;
 RHI_IMPL_POOL(VertexBufferGLES2_t,RESOURCE_VERTEX_BUFFER);
 
+static GLUint _LastSetVB = 0;
+
 
 //==============================================================================
 
@@ -127,7 +129,7 @@ gles2_VertexBuffer_Update( Handle vb, const void* data, uint32 offset, uint32 si
         {
             { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, self->uid } },
             { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage } },
-            { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, 0 } }
+            { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, _LastSetVB } }
         };
 
         memcpy( ((uint8*)self->data)+offset, data, size );
@@ -168,7 +170,7 @@ gles2_VertexBuffer_Unmap( Handle vb )
     {
         { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, self->uid } },
         { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage } },
-        { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, 0 } }
+        { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, _LastSetVB } }
     };
 
     ExecGL( cmd, countof(cmd) );
@@ -198,6 +200,7 @@ SetToRHI( Handle vb )
     DVASSERT(!self->mapped);
 Trace("set-vb %p  sz= %u\n",self->data,self->size);
     GL_CALL(glBindBuffer( GL_ARRAY_BUFFER, self->uid ));
+    _LastSetVB = self->uid;
 }
 
 }
