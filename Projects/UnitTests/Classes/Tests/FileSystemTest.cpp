@@ -209,17 +209,31 @@ DAVA_TESTCLASS(FileSystemTest)
         moved = FileSystem::Instance()->MoveFile("~doc:/TestData/FileSystemTest/Folder1/file2.zip", "~doc:/TestData/FileSystemTest/Folder1/file_new", true);
         TEST_VERIFY(moved);
 
-#ifdef __DAVAENGINE_WINDOWS__
         FileSystem* fs = FileSystem::Instance();
-        bool isDdriveExist = fs->IsDirectory("d:\\");
+        String externalDrive;
+        bool maySkipTest = false;
+#if   defined(__DAVAENGINE_WINDOWS__)
+        externalDrive = "d:\\";
+#elif defined(__DAVAENGINE_ANDROID__)
+        // simple hardcode for unit test only
+        externalDrive = "/mnt/sdcard/";
+        // on Android some devices has internal sdcard(Nexus), other not(HTC One)
+        // if device can't move file in log you see:
+        // rename failed ("/data/data/com.dava.unittests/files/DAVAProject
+        // TestData/FileSystemTest/Folder1/file_new" -> "/mnt/sdcard/test_
+        // on_other_drive.file") with error: Cross-device link
+        maySkipTest = true;
+#endif
+
+        bool isDdriveExist = fs->IsDirectory(externalDrive);
         if (isDdriveExist)
         {
-            moved = fs->MoveFile("~doc:/TestData/FileSystemTest/Folder1/file_new", "d:\\test_on_other_drive.file", true);
-            TEST_VERIFY(moved);
-            moved = fs->MoveFile("d:\\test_on_other_drive.file", "~doc:/TestData/FileSystemTest/Folder1/file_new", true);
-            TEST_VERIFY(moved);
+            String tmpFileName = externalDrive + "test_on_other_drive.file";
+            moved = fs->MoveFile("~doc:/TestData/FileSystemTest/Folder1/file_new", tmpFileName, true);
+            TEST_VERIFY(moved || maySkipTest);
+            moved = fs->MoveFile(tmpFileName, "~doc:/TestData/FileSystemTest/Folder1/file_new", true);
+            TEST_VERIFY(moved || maySkipTest);
         }
-#endif
 
         FileSystem::Instance()->DeleteFile("~doc:/TestData/FileSystemTest/Folder1/file1_new");
         File *f = File::Create("~doc:/TestData/FileSystemTest/Folder1/file1_new", File::OPEN | File::READ);
