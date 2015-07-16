@@ -26,20 +26,36 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Infrastructure/Utils/ControlHelpers.h"
+
+#include "Tests/MultilineTest.h"
 
 using namespace DAVA;
 
-FilePath ControlHelpers::GetPathToUIYaml(const String &yamlFileName)
+MultilineTest::MultilineTest ()
+: BaseScreen("MultilineTest")
 {
-    const FilePath path = Format("~res:/UI/win/%s", yamlFileName.c_str());
-    return path;
 }
 
-const String ControlHelpers::ReportItem::TEST_NAME_PATH = "TestName";
-const String ControlHelpers::ReportItem::MIN_DELTA_PATH = "MinDelta/MinDeltaValue";
-const String ControlHelpers::ReportItem::MAX_DELTA_PATH = "MaxDelta/MaxDeltaValue";
-const String ControlHelpers::ReportItem::AVERAGE_DELTA_PATH = "AverageDelta/AverageDeltaValue";
-const String ControlHelpers::ReportItem::TEST_TIME_PATH = "TestTime/TestTimeValue";
-const String ControlHelpers::ReportItem::ELAPSED_TIME_PATH = "ElapsedTime/ElapsedTimeValue";
-const String ControlHelpers::ReportItem::FRAMES_RENDERED_PATH = "FramesRendered/FramesRenderedValue";
+void MultilineTest::LoadResources()
+{
+    BaseScreen::LoadResources();
+
+    UITextField* textField = new UITextField(Rect(10, 10, 300, 200));
+#if defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_MACOS__)
+    Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
+    DVASSERT(font);
+    font->SetSize(14);
+    textField->SetFont(font);
+#endif
+
+    textField->SetText(L"Hello World");
+    textField->SetDebugDraw(true);
+    textField->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
+
+    static UITextFieldDelegate delegate;
+
+    textField->SetDelegate(&delegate);
+    textField->SetMultiline(true);
+    textField->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
+    AddControl(textField);
+}

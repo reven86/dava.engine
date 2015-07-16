@@ -26,20 +26,19 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "Infrastructure/Utils/ControlHelpers.h"
 
-using namespace DAVA;
+#ifndef __MULTILINETEST_TEST_H__
+#define __MULTILINETEST_TEST_H__
 
-FilePath ControlHelpers::GetPathToUIYaml(const String &yamlFileName)
+#include "Infrastructure/BaseScreen.h"
+
+class MultilineTest : public BaseScreen
 {
-    const FilePath path = Format("~res:/UI/win/%s", yamlFileName.c_str());
-    return path;
-}
+public:
+    MultilineTest ();
 
-const String ControlHelpers::ReportItem::TEST_NAME_PATH = "TestName";
-const String ControlHelpers::ReportItem::MIN_DELTA_PATH = "MinDelta/MinDeltaValue";
-const String ControlHelpers::ReportItem::MAX_DELTA_PATH = "MaxDelta/MaxDeltaValue";
-const String ControlHelpers::ReportItem::AVERAGE_DELTA_PATH = "AverageDelta/AverageDeltaValue";
-const String ControlHelpers::ReportItem::TEST_TIME_PATH = "TestTime/TestTimeValue";
-const String ControlHelpers::ReportItem::ELAPSED_TIME_PATH = "ElapsedTime/ElapsedTimeValue";
-const String ControlHelpers::ReportItem::FRAMES_RENDERED_PATH = "FramesRendered/FramesRenderedValue";
+    void LoadResources() override;
+
+};
+
+#endif //__MULTILINETEST_TEST_H__
