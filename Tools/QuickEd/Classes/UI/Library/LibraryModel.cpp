@@ -366,6 +366,26 @@ void LibraryModel::ImportedPackageWasAdded(PackageNode *node, ImportedPackagesNo
     }
 }
 
+void LibraryModel::StyleWillBeAdded(StyleSheetNode *node, StyleSheetsNode *destination, int index)
+{
+    // do nothing
+}
+
+void LibraryModel::StyleWasAdded(StyleSheetNode *node, StyleSheetsNode *destination, int index)
+{
+    // do nothing
+}
+
+void LibraryModel::StyleWillBeRemoved(StyleSheetNode *node, StyleSheetsNode *from)
+{
+    // do nothing
+}
+
+void LibraryModel::StyleWasRemoved(StyleSheetNode *node, StyleSheetsNode *from)
+{
+    // do nothing
+}
+
 void LibraryModel::ImportedPackageWillBeRemoved(PackageNode *node, ImportedPackagesNode *from)
 {
     Q_UNUSED(from);

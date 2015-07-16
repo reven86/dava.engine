@@ -34,6 +34,7 @@ class PackageNode;
 class ControlNode;
 class ControlsContainerNode;
 class StyleSheetNode;
+class StyleSheetsNode;
 class PackageControlsNode;
 class AbstractProperty;
 class ImportedPackagesNode;
@@ -46,9 +47,15 @@ public:
     
     virtual void ControlWillBeAdded(ControlNode *node, ControlsContainerNode *destination, int index) = 0;
     virtual void ControlWasAdded(ControlNode *node, ControlsContainerNode *destination, int index) = 0;
-
+    
     virtual void ControlWillBeRemoved(ControlNode *node, ControlsContainerNode *from) = 0;
     virtual void ControlWasRemoved(ControlNode *node, ControlsContainerNode *from) = 0;
+    
+    virtual void StyleWillBeAdded(StyleSheetNode *node, StyleSheetsNode *destination, int index) = 0;
+    virtual void StyleWasAdded(StyleSheetNode *node, StyleSheetsNode *destination, int index) = 0;
+    
+    virtual void StyleWillBeRemoved(StyleSheetNode *node, StyleSheetsNode *from) = 0;
+    virtual void StyleWasRemoved(StyleSheetNode *node, StyleSheetsNode *from) = 0;
     
     virtual void ImportedPackageWillBeAdded(PackageNode *node, ImportedPackagesNode *to, int index) = 0;
     virtual void ImportedPackageWasAdded(PackageNode *node, ImportedPackagesNode *to, int index) = 0;

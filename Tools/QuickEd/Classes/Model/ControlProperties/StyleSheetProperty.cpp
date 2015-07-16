@@ -178,3 +178,9 @@ uint32 StyleSheetProperty::GetPropertyIndex() const
 {
     return property.propertyIndex;
 }
+
+const UIStyleSheetProperty &StyleSheetProperty::GetProperty() const
+{
+    return property;
+}
+

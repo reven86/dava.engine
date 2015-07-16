@@ -39,6 +39,7 @@
 #include "UI/Commands/RemoveImportedPackageCommand.h"
 #include "UI/Commands/AddComponentCommand.h"
 #include "UI/Commands/RemoveComponentCommand.h"
+#include "UI/Commands/InsertRemoveStyleCommand.h"
 #include "UI/Commands/AddRemoveStylePropertyCommand.h"
 #include "UI/Commands/AddRemoveStyleSelectorCommand.h"
 
@@ -47,6 +48,7 @@
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/StyleSheetsNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Model/PackageHierarchy/ImportedPackagesNode.h"
 
@@ -66,6 +68,27 @@
 #include "Base/Result.h"
 
 using namespace DAVA;
+
+namespace
+{
+    template<typename T>
+    String FormatNodeNames(const DAVA::Vector<T*> &nodes)
+    {
+        const size_t maxControlNames = 3;
+        String list;
+        for (size_t i = 0; i < nodes.size() && i < maxControlNames; i++)
+        {
+            if (i != 0)
+                list += ", ";
+            list += nodes[i]->GetName();
+        }
+        
+        if (nodes.size() > maxControlNames)
+            list += ", etc.";
+        
+        return list;
+    }
+}
 
 QtModelPackageCommandExecutor::QtModelPackageCommandExecutor(Document *_document)
     : document(_document)
@@ -263,7 +286,7 @@ void QtModelPackageCommandExecutor::InsertInstances(const DAVA::Vector<ControlNo
     
     if (!nodesToInsert.empty())
     {
-        BeginMacro(Format("Instance Controls %s", FormatControlNames(nodesToInsert).c_str()).c_str());
+        BeginMacro(Format("Instance Controls %s", FormatNodeNames(nodesToInsert).c_str()).c_str());
         
         int index = destIndex;
         for (ControlNode *node : nodesToInsert)
@@ -290,7 +313,7 @@ void QtModelPackageCommandExecutor::CopyControls(const DAVA::Vector<ControlNode*
 
     if (!nodesToCopy.empty())
     {
-        BeginMacro(Format("Copy Controls %s", FormatControlNames(nodes).c_str()).c_str());
+        BeginMacro(Format("Copy Controls %s", FormatNodeNames(nodes).c_str()).c_str());
         
         int index = destIndex;
         for (ControlNode *node : nodesToCopy)
@@ -316,7 +339,7 @@ void QtModelPackageCommandExecutor::MoveControls(const DAVA::Vector<ControlNode*
 
     if (!nodesToMove.empty())
     {
-        BeginMacro(Format("Move Controls %s", FormatControlNames(nodes).c_str()).c_str());
+        BeginMacro(Format("Move Controls %s", FormatNodeNames(nodes).c_str()).c_str());
         int index = destIndex;
         for (ControlNode *node : nodesToMove)
         {
@@ -357,9 +380,104 @@ void QtModelPackageCommandExecutor::RemoveControls(const DAVA::Vector<ControlNod
     
     if (!nodesToRemove.empty())
     {
-        BeginMacro(Format("Remove Controls %s", FormatControlNames(nodes).c_str()).c_str());
+        BeginMacro(Format("Remove Controls %s", FormatNodeNames(nodes).c_str()).c_str());
         for (ControlNode *node : nodesToRemove)
             RemoveControlImpl(node);
+        EndMacro();
+    }
+}
+
+void QtModelPackageCommandExecutor::CopyStyles(const DAVA::Vector<StyleSheetNode*> &nodes, StyleSheetsNode *dest, DAVA::int32 destIndex)
+{
+    Vector<StyleSheetNode*> nodesToCopy;
+    for (StyleSheetNode *node : nodes)
+    {
+        if (node->CanCopy() && dest->CanInsertStyle(node, destIndex))
+            nodesToCopy.push_back(node);
+    }
+    
+    if (!nodesToCopy.empty())
+    {
+        BeginMacro(Format("Copy Styles %s", FormatNodeNames(nodes).c_str()).c_str());
+        
+        int index = destIndex;
+        for (StyleSheetNode *node : nodesToCopy)
+        {
+            StyleSheetNode *copy = node->Clone();
+            PushCommand(new InsertRemoveStyleCommand(document->GetPackage(), copy, dest, index, true));
+            SafeRelease(copy);
+            index++;
+        }
+        
+        EndMacro();
+    }
+
+}
+
+void QtModelPackageCommandExecutor::MoveStyles(const DAVA::Vector<StyleSheetNode*> &nodes, StyleSheetsNode *dest, DAVA::int32 destIndex)
+{
+    Vector<StyleSheetNode*> nodesToMove;
+    for (StyleSheetNode *node : nodes)
+    {
+        if (node->CanRemove() && dest->CanInsertStyle(node, destIndex))
+            nodesToMove.push_back(node);
+    }
+    
+    if (!nodesToMove.empty())
+    {
+        BeginMacro(Format("Move Styles %s", FormatNodeNames(nodes).c_str()).c_str());
+        int index = destIndex;
+        for (StyleSheetNode *node : nodesToMove)
+        {
+            StyleSheetsNode *src = dynamic_cast<StyleSheetsNode*>(node->GetParent());
+            if (src)
+            {
+                int32 srcIndex = src->GetIndex(node);
+                
+                if (src == dest && index > srcIndex)
+                    index--;
+                
+                node->Retain();
+                PushCommand(new InsertRemoveStyleCommand(document->GetPackage(), node, src, srcIndex, false));
+                if (IsNodeInHierarchy(dest))
+                {
+                    PushCommand(new InsertRemoveStyleCommand(document->GetPackage(), node, dest, index, true));
+                }
+                node->Release();
+                
+                index++;
+            }
+            else
+            {
+                DVASSERT(false);
+            }
+        }
+        
+        EndMacro();
+    }
+}
+
+void QtModelPackageCommandExecutor::RemoveStyles(const DAVA::Vector<StyleSheetNode*> &nodes)
+{
+    Vector<StyleSheetNode*> nodesToRemove;
+    for (StyleSheetNode *node : nodes)
+    {
+        if (node->CanRemove())
+            nodesToRemove.push_back(node);
+    }
+    
+    if (!nodesToRemove.empty())
+    {
+        BeginMacro(Format("Remove Style Sheets %s", FormatNodeNames(nodes).c_str()).c_str());
+        for (StyleSheetNode *node : nodesToRemove)
+        {
+            StyleSheetsNode *src = dynamic_cast<StyleSheetsNode*>(node->GetParent());
+            if (src)
+            {
+                int32 srcIndex = src->GetIndex(node);
+                PushCommand(new InsertRemoveStyleCommand(document->GetPackage(), node, src, srcIndex, false));
+            }
+        }
         EndMacro();
     }
 }
@@ -543,19 +661,3 @@ QUndoStack *QtModelPackageCommandExecutor::GetUndoStack()
     return document->GetUndoStack();
 }
 
-String QtModelPackageCommandExecutor::FormatControlNames(const DAVA::Vector<ControlNode*> &nodes)
-{
-    const size_t maxControlNames = 3;
-    String list;
-    for (size_t i = 0; i < nodes.size() && i < maxControlNames; i++)
-    {
-        if (i != 0)
-            list += ", ";
-        list += nodes[i]->GetName();
-    }
-    
-    if (nodes.size() > maxControlNames)
-        list += ", etc.";
-    
-    return list;
-}

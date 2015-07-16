@@ -31,6 +31,9 @@
 #include "PackageVisitor.h"
 
 #include "Model/ControlProperties/StyleSheetRootProperty.h"
+#include "Model/ControlProperties/StyleSheetSelectorProperty.h"
+#include "Model/ControlProperties/StyleSheetProperty.h"
+#include "Model/ControlProperties/SectionProperty.h"
 
 #include "UI/Styles/UIStyleSheet.h"
 
@@ -47,6 +50,25 @@ StyleSheetNode::StyleSheetNode(const DAVA::Vector<DAVA::UIStyleSheetSelectorChai
 StyleSheetNode::~StyleSheetNode()
 {
     SafeRelease(rootProperty);
+}
+
+StyleSheetNode *StyleSheetNode::Clone() const
+{
+    Vector<UIStyleSheetSelectorChain> selectors;
+    for (int32 i = 0; i < rootProperty->GetSelectors()->GetCount(); i++)
+    {
+        StyleSheetSelectorProperty *selector = static_cast<StyleSheetSelectorProperty*>(rootProperty->GetSelectors()->GetProperty(i));
+        selectors.push_back(selector->GetSelectorChain());
+    }
+    
+    Vector<UIStyleSheetProperty> properties;
+    for (int32 i = 0; i < rootProperty->GetPropertiesSection()->GetCount(); i++)
+    {
+        StyleSheetProperty *property = static_cast<StyleSheetProperty*>(rootProperty->GetPropertiesSection()->GetProperty(i));
+        properties.push_back(property->GetProperty());
+    }
+    
+    return new StyleSheetNode(selectors, properties);
 }
 
 int StyleSheetNode::GetCount() const

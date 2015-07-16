@@ -314,6 +314,28 @@ void PackageNode::RemoveControl(ControlNode *node, ControlsContainerNode *from)
         RefreshLayout(parent);
 }
 
+void PackageNode::InsertStyle(StyleSheetNode *node, StyleSheetsNode *dest, DAVA::int32 index)
+{
+    for (PackageListener *listener : listeners)
+        listener->StyleWillBeAdded(node, dest, index);
+    
+    dest->InsertAtIndex(index, node);
+    
+    for (PackageListener *listener : listeners)
+        listener->StyleWasAdded(node, dest, index);
+}
+
+void PackageNode::RemoveStyle(StyleSheetNode *node, StyleSheetsNode *from)
+{
+    for (PackageListener *listener : listeners)
+        listener->StyleWillBeRemoved(node, from);
+    
+    from->Remove(node);
+    
+    for (PackageListener *listener : listeners)
+        listener->StyleWasRemoved(node, from);
+}
+
 void PackageNode::InsertImportedPackage(PackageNode *node, DAVA::int32 index)
 {
     for (PackageListener *listener : listeners)

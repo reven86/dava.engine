@@ -42,6 +42,7 @@ class QUndoCommand;
 
 class ControlNode;
 class StyleSheetNode;
+class StyleSheetsNode;
 class PackageControlsNode;
 class PackageNode;
 class AbstractProperty;
@@ -81,6 +82,10 @@ public:
     void MoveControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex);
     void RemoveControls(const DAVA::Vector<ControlNode*> &nodes);
 
+    void CopyStyles(const DAVA::Vector<StyleSheetNode*> &nodes, StyleSheetsNode *dest, DAVA::int32 destIndex);
+    void MoveStyles(const DAVA::Vector<StyleSheetNode*> &nodes, StyleSheetsNode *dest, DAVA::int32 destIndex);
+    void RemoveStyles(const DAVA::Vector<StyleSheetNode*> &nodes);
+
     bool Paste(PackageNode *root, ControlsContainerNode *dest, DAVA::int32 destIndex, const DAVA::String &data);
 
 private:
@@ -96,8 +101,6 @@ private:
     void PushCommand(QUndoCommand *cmd);
     void BeginMacro(const QString &name);
     void EndMacro();
-    
-    DAVA::String FormatControlNames(const DAVA::Vector<ControlNode*> &nodes);
     
 private:
     Document *document;

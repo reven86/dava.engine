@@ -371,14 +371,14 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
         if (!mimeData)
             return false;
         
-        const Vector<ControlNode *> &srcControls = mimeData->GetControls();
-        if (srcControls.empty())
+        const Vector<StyleSheetNode *> &srcStyles = mimeData->GetStyles();
+        if (srcStyles.empty())
             return false;
         
         if (action == Qt::CopyAction)
-            commandExecutor->CopyControls(srcControls, destControlContainer, rowIndex);
+            commandExecutor->CopyStyles(srcStyles, destStylesContainer, rowIndex);
         else if (action == Qt::MoveAction)
-            commandExecutor->MoveControls(srcControls, destControlContainer, rowIndex);
+            commandExecutor->MoveStyles(srcStyles, destStylesContainer, rowIndex);
         else
             return false;
         
@@ -443,6 +443,29 @@ void PackageModel::ControlWillBeRemoved(ControlNode *node, ControlsContainerNode
 }
 
 void PackageModel::ControlWasRemoved(ControlNode *node, ControlsContainerNode *from)
+{
+    endRemoveRows();
+}
+
+void PackageModel::StyleWillBeAdded(StyleSheetNode *node, StyleSheetsNode *destination, int index)
+{
+    QModelIndex destIndex = indexByNode(destination);
+    beginInsertRows(destIndex, index, index);
+}
+
+void PackageModel::StyleWasAdded(StyleSheetNode *node, StyleSheetsNode *destination, int index)
+{
+    endInsertRows();
+}
+
+void PackageModel::StyleWillBeRemoved(StyleSheetNode *node, StyleSheetsNode *from)
+{
+    QModelIndex parentIndex = indexByNode(from);
+    int index = from->GetIndex(node);
+    beginRemoveRows(parentIndex, index, index);
+}
+
+void PackageModel::StyleWasRemoved(StyleSheetNode *node, StyleSheetsNode *from)
 {
     endRemoveRows();
 }

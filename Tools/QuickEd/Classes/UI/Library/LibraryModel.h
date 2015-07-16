@@ -75,6 +75,12 @@ private: // PackageListener
     void ControlWillBeRemoved(ControlNode *node, ControlsContainerNode *from) override;
     void ControlWasRemoved(ControlNode *node, ControlsContainerNode *from) override;
 
+    void StyleWillBeAdded(StyleSheetNode *node, StyleSheetsNode *destination, int index) override;
+    void StyleWasAdded(StyleSheetNode *node, StyleSheetsNode *destination, int index) override;
+    
+    void StyleWillBeRemoved(StyleSheetNode *node, StyleSheetsNode *from) override;
+    void StyleWasRemoved(StyleSheetNode *node, StyleSheetsNode *from) override;
+    
     void ImportedPackageWillBeAdded(PackageNode *node, ImportedPackagesNode *to, int index) override;
     void ImportedPackageWasAdded(PackageNode *node, ImportedPackagesNode *to, int index) override;
 

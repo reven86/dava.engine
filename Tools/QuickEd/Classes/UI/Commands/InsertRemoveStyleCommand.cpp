@@ -27,81 +27,44 @@
  =====================================================================================*/
 
 
-#include "StyleSheetsNode.h"
+#include "InsertRemoveStyleCommand.h"
 
-#include "PackageVisitor.h"
+#include "Model/PackageHierarchy/StyleSheetNode.h"
+#include "Model/PackageHierarchy/StyleSheetsNode.h"
+#include "Model/PackageHierarchy/PackageNode.h"
 
 using namespace DAVA;
 
-StyleSheetsNode::StyleSheetsNode(PackageBaseNode *parent) : PackageBaseNode(parent)
+InsertRemoveStyleCommand::InsertRemoveStyleCommand(PackageNode *_root, StyleSheetNode *_node, StyleSheetsNode *_dest, int _index, bool _insert, QUndoCommand *parent)
+    : QUndoCommand(parent)
+    , root(SafeRetain(_root))
+    , node(SafeRetain(_node))
+    , dest(SafeRetain(_dest))
+    , index(_index)
+    , insert(_insert)
 {
-}
-
-StyleSheetsNode::~StyleSheetsNode()
-{
-    for (StyleSheetNode *styleSheet : styleSheets)
-        styleSheet->Release();
-    styleSheets.clear();
-}
-
-void StyleSheetsNode::Add(StyleSheetNode *node)
-{
-    DVASSERT(node->GetParent() == NULL);
-    node->SetParent(this);
-    styleSheets.push_back(SafeRetain(node));
-}
-
-void StyleSheetsNode::InsertAtIndex(DAVA::int32 index, StyleSheetNode *node)
-{
-    DVASSERT(node->GetParent() == NULL);
-    node->SetParent(this);
     
-    styleSheets.insert(styleSheets.begin() + index, SafeRetain(node));
 }
 
-void StyleSheetsNode::Remove(StyleSheetNode *node)
+InsertRemoveStyleCommand::~InsertRemoveStyleCommand()
 {
-    auto it = find(styleSheets.begin(), styleSheets.end(), node);
-    if (it != styleSheets.end())
-    {
-        DVASSERT(node->GetParent() == this);
-        node->SetParent(NULL);
-        
-        styleSheets.erase(it);
-        SafeRelease(node);
-    }
+    SafeRelease(root);
+    SafeRelease(node);
+    SafeRelease(dest);
+}
+
+void InsertRemoveStyleCommand::redo()
+{
+    if (insert)
+        root->InsertStyle(node, dest, index);
     else
-    {
-        DVASSERT(false);
-    }
+        root->RemoveStyle(node, dest);
 }
 
-int StyleSheetsNode::GetCount() const
+void InsertRemoveStyleCommand::undo()
 {
-    return (int) styleSheets.size();
-}
-
-StyleSheetNode *StyleSheetsNode::Get(int index) const
-{
-    return styleSheets[index];
-}
-
-void StyleSheetsNode::Accept(PackageVisitor *visitor)
-{
-    visitor->VisitStyleSheets(this);
-}
-
-String StyleSheetsNode::GetName() const
-{
-    return "Style Sheets";
-}
-
-bool StyleSheetsNode::IsInsertingStylesSupported() const
-{
-    return true;
-}
-
-bool StyleSheetsNode::CanInsertStyle(StyleSheetNode *node, DAVA::int32 pos) const
-{
-    return !IsReadOnly();
+    if (insert)
+        root->RemoveStyle(node, dest);
+    else
+        root->InsertStyle(node, dest, index);
 }

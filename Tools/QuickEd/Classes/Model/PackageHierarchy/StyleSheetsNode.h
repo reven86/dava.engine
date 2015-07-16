@@ -48,6 +48,7 @@ public:
     DAVA::String GetName() const override;
 
     bool IsInsertingStylesSupported() const override;
+    bool CanInsertStyle(StyleSheetNode *node, DAVA::int32 pos) const override;
 
 private:
     DAVA::Vector<StyleSheetNode*> styleSheets;

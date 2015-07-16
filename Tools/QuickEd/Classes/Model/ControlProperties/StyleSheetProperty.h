@@ -77,6 +77,7 @@ public:
     void SetTransition(bool transition);
     
     DAVA::uint32 GetPropertyIndex() const;
+    const DAVA::UIStyleSheetProperty &GetProperty() const;
     
 private:
     StyleSheetNode *styleSheet; // weak
