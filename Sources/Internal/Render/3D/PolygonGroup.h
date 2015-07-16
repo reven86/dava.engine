@@ -182,7 +182,7 @@ public:
            
     
     void Save(KeyedArchive * keyedArchive, SerializationContext * serializationContext);    
-    void LoadPolygonData(KeyedArchive * keyedArchive, SerializationContext * serializationContext, int32 requiredFlags);
+    void LoadPolygonData(KeyedArchive * keyedArchive, SerializationContext * serializationContext, int32 requiredFlags, bool cutUnusedStreams);
 
 
     rhi::HVertexBuffer vertexBuffer;

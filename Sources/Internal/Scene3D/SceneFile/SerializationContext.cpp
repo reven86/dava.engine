@@ -122,13 +122,13 @@ void SerializationContext::AddRequestedPolygonGroupFormat(PolygonGroup *group, i
 
 void SerializationContext::LoadPolygonGroupData(File *file)
 {
-    int32 prerequiredVertexFormat = QualitySettingsSystem::Instance()->GetPrerequiredVertexFormat();
+    bool cutUnusedStreams = QualitySettingsSystem::Instance()->GetAllowCutUnusedVertexStreams();
     for (Map<PolygonGroup*, PolygonGroupLoadInfo>::iterator it = loadedPolygonGroups.begin(), e = loadedPolygonGroups.end(); it!=e; ++it)
     {
         file->Seek(it->second.filePos, File::SEEK_FROM_START);
         KeyedArchive * archive = new KeyedArchive();
         archive->Load(file);        
-        it->first->LoadPolygonData(archive, this, it->second.requestedFormat | prerequiredVertexFormat);
+        it->first->LoadPolygonData(archive, this, it->second.requestedFormat, cutUnusedStreams);
         SafeRelease(archive);        
     }
 }

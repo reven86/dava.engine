@@ -359,7 +359,7 @@ void PolygonGroup::Save(KeyedArchive * keyedArchive, SerializationContext * seri
 
 }
 
-void PolygonGroup::LoadPolygonData(KeyedArchive * keyedArchive, SerializationContext * serializationContext, int32 requiredFlags)
+void PolygonGroup::LoadPolygonData(KeyedArchive * keyedArchive, SerializationContext * serializationContext, int32 requiredFlags, bool cutUnusedStreams)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -383,11 +383,13 @@ void PolygonGroup::LoadPolygonData(KeyedArchive * keyedArchive, SerializationCon
 
         const uint8 * archiveData = keyedArchive->GetByteArray("vertices");
 
-        if (vertexFormat&~requiredFlags) //not all streams in data are required - smart copy
+        int32 resFormat = cutUnusedStreams ? requiredFlags : (vertexFormat | requiredFlags);
+        DVASSERT(resFormat);
+        if (vertexFormat != resFormat) //not all streams in data are required or present - smart copy
         {
-            int32 newFormat = vertexFormat&requiredFlags;
-            DVASSERT(newFormat);
-            int32 newVertexStride = GetVertexSize(newFormat);
+            if ((~vertexFormat)&resFormat)
+                Logger::Debug("expanding polygon group vertex format for %d vertices!", vertexCount);                       
+            int32 newVertexStride = GetVertexSize(resFormat);
             SafeDeleteArray(meshData);
             meshData = new uint8[vertexCount * newVertexStride];
             uint8 *dst = meshData;
@@ -396,12 +398,12 @@ void PolygonGroup::LoadPolygonData(KeyedArchive * keyedArchive, SerializationCon
             {
                 for (uint32 mask = EVF_LOWER_BIT; mask <= EVF_HIGHER_BIT; mask = mask << 1)
                 {
-                    CopyData(&src, &dst, vertexFormat, newFormat, mask);
+                    CopyData(&src, &dst, vertexFormat, resFormat, mask);
                 }
             }
-            vertexFormat = newFormat;
+            vertexFormat = resFormat;
             vertexStride = newVertexStride;
-
+            textureCoordCount = GetTexCoordCount(vertexFormat);
         }
         else
         {
