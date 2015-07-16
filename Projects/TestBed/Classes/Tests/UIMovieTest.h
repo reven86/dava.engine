@@ -26,67 +26,54 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __UIMOVIE_TEST_H__
+#define __UIMOVIE_TEST_H__
 
+#include "DAVAEngine.h"
 
 #include "Infrastructure/BaseScreen.h"
-#include "Infrastructure/GameCore.h"
 
 using namespace DAVA;
 
-int32 BaseScreen::globalScreenId = 1;
-
-BaseScreen::BaseScreen(const String & _screenName, int32 skipBeforeTests)
-    : UIScreen()
-    , currentScreenId(globalScreenId++)
-    , exitButton(nullptr)
+class UIMovieTest : public BaseScreen
 {
-    SetName(_screenName);
-    
-    GameCore::Instance()->RegisterScreen(this);
-}
+protected:
+    virtual ~UIMovieTest() = default;
 
-BaseScreen::BaseScreen()
-    : UIScreen()
-    , currentScreenId(globalScreenId++)
-{
-    SetName("BaseScreen");
-    GameCore::Instance()->RegisterScreen(this);
-}
+public:
+    UIMovieTest();
 
-void BaseScreen::SystemScreenSizeDidChanged(const Rect &newFullScreenSize)
-{
-    UIScreen::SystemScreenSizeDidChanged(newFullScreenSize);
-    UnloadResources();
-    LoadResources();
-}
+    void LoadResources() override;
+    void UnloadResources() override;
 
-void BaseScreen::LoadResources()
-{
-    ScopedPtr<FTFont> font (FTFont::Create("~res:/Fonts/korinna.ttf"));
+    void DidAppear() override;
+    void Update(float32 timeElapsed) override;
 
-    font->SetSize(30);
+private:
+    void UpdatePlayerStateText();
+    UIButton* CreateUIButton(Font* font, const Rect& rect, const String& text,
+                             void (UIMovieTest::*onClick)(BaseObject*, void*, void*));
 
-    Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
-    exitButton = new UIButton(Rect(static_cast<DAVA::float32>(screenSize.dx-300), static_cast<DAVA::float32>(screenSize.dy-30), 300.0, 30.0));
-    exitButton->SetStateFont(0xFF, font);
-    exitButton->SetStateFontColor(0xFF, Color::White);
-    exitButton->SetStateText(0xFF, L"Exit From Screen");
+    void ButtonPressed(BaseObject *obj, void *data, void *callerData);
+    void ScaleButtonPressed(BaseObject *obj, void *data, void *callerData);
 
-    exitButton->SetDebugDraw(true);
-    exitButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &BaseScreen::OnExitButton));
-    AddControl(exitButton);
-}
+private:
+    UIMovieView* movieView = nullptr;
 
-void BaseScreen::UnloadResources()
-{
-    RemoveAllControls();
+    // Control buttons.
+    UIButton* playButton = nullptr;
+    UIButton* stopButton = nullptr;
+    UIButton* pauseButton = nullptr;
+    UIButton* resumeButton = nullptr;
+    UIButton* hideButton = nullptr;
+    UIButton* showButton = nullptr;
 
-    SafeRelease(exitButton);
-    
-    UIScreen::UnloadResources();
-}
+    UIButton* buttonScale0 = nullptr;
+    UIButton* buttonScale1 = nullptr;
+    UIButton* buttonScale2 = nullptr;
+    UIButton* buttonScale3 = nullptr;
 
-void BaseScreen::OnExitButton(BaseObject *obj, void *data, void *callerData)
-{
-    GameCore::Instance()->ShowStartScreen();
-}
+    UIStaticText* playerStateText = nullptr;
+};
+
+#endif  // __UIMOVIE_TEST_H__

@@ -26,67 +26,51 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_MOVIEVIEWCONTROL_WINUAP_H__
+#define __DAVAENGINE_MOVIEVIEWCONTROL_WINUAP_H__
 
+#include "Base/Platform.h"
 
-#include "Infrastructure/BaseScreen.h"
-#include "Infrastructure/GameCore.h"
+#if defined(__DAVAENGINE_WIN_UAP__)
 
-using namespace DAVA;
+#include "UI/IMovieViewControl.h"
 
-int32 BaseScreen::globalScreenId = 1;
-
-BaseScreen::BaseScreen(const String & _screenName, int32 skipBeforeTests)
-    : UIScreen()
-    , currentScreenId(globalScreenId++)
-    , exitButton(nullptr)
+namespace DAVA
 {
-    SetName(_screenName);
-    
-    GameCore::Instance()->RegisterScreen(this);
-}
 
-BaseScreen::BaseScreen()
-    : UIScreen()
-    , currentScreenId(globalScreenId++)
+class PrivateMovieViewWinUAP;
+class MovieViewControl : public IMovieViewControl
 {
-    SetName("BaseScreen");
-    GameCore::Instance()->RegisterScreen(this);
-}
+public:
+    MovieViewControl();
+    virtual ~MovieViewControl();
 
-void BaseScreen::SystemScreenSizeDidChanged(const Rect &newFullScreenSize)
-{
-    UIScreen::SystemScreenSizeDidChanged(newFullScreenSize);
-    UnloadResources();
-    LoadResources();
-}
+    // Initialize the control.
+    void Initialize(const Rect& rect) override;
 
-void BaseScreen::LoadResources()
-{
-    ScopedPtr<FTFont> font (FTFont::Create("~res:/Fonts/korinna.ttf"));
+    // Position/visibility.
+    void SetRect(const Rect& rect) override;
+    void SetVisible(bool isVisible) override;
 
-    font->SetSize(30);
+    // Open the Movie.
+    void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params) override;
 
-    Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
-    exitButton = new UIButton(Rect(static_cast<DAVA::float32>(screenSize.dx-300), static_cast<DAVA::float32>(screenSize.dy-30), 300.0, 30.0));
-    exitButton->SetStateFont(0xFF, font);
-    exitButton->SetStateFontColor(0xFF, Color::White);
-    exitButton->SetStateText(0xFF, L"Exit From Screen");
+    // Start/stop the video playback.
+    void Play() override;
+    void Stop() override;
 
-    exitButton->SetDebugDraw(true);
-    exitButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &BaseScreen::OnExitButton));
-    AddControl(exitButton);
-}
+    // Pause/resume the playback.
+    void Pause() override;
+    void Resume() override;
 
-void BaseScreen::UnloadResources()
-{
-    RemoveAllControls();
+    // Whether the movie is being played?
+    bool IsPlaying() override;
 
-    SafeRelease(exitButton);
-    
-    UIScreen::UnloadResources();
-}
+private:
+    std::shared_ptr<PrivateMovieViewWinUAP> privateImpl;
+};
 
-void BaseScreen::OnExitButton(BaseObject *obj, void *data, void *callerData)
-{
-    GameCore::Instance()->ShowStartScreen();
-}
+}   // namespace DAVA
+
+#endif  // __DAVAENGINE_WIN_UAP__
+#endif  // __DAVAENGINE_MOVIEVIEWCONTROL_WINUAP_H__
