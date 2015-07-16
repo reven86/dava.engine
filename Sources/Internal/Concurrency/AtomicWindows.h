@@ -153,7 +153,8 @@ T Atomic<T>::Get() const DAVA_NOEXCEPT
 template <typename T>
 T Atomic<T>::GetRelaxed() const DAVA_NOEXCEPT
 {
-    return value;
+    volatile T val = value;
+    return val;
 }
 
 template <typename T>
