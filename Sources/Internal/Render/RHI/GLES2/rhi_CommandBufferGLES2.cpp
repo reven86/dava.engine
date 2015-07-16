@@ -620,6 +620,7 @@ CommandBufferGLES2_t::Execute()
 SCOPED_NAMED_TIMING("gl.exec");
     Handle      cur_ps          = InvalidHandle;
     uint32      cur_vdecl       = VertexLayout::InvalidUID;
+    uint32      cur_base_vert   = 0;
     Handle      last_ps         = InvalidHandle;
     Handle      vp_const[MAX_CONST_BUFFER_COUNT];
     const void* vp_const_data[MAX_CONST_BUFFER_COUNT];
@@ -806,10 +807,11 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                     memset( vp_const_data, 0, sizeof(vp_const_data) );
                     memset( fp_const_data, 0, sizeof(fp_const_data) );
 
-                    cur_ps    = ps;
-                    cur_vdecl = vdecl;
-                    last_ps   = InvalidHandle;
-                    cur_vb    = InvalidHandle;
+                    cur_ps          = ps;
+                    cur_vdecl       = vdecl;
+                    cur_base_vert   = 0;
+                    last_ps         = InvalidHandle;
+                    cur_vb          = InvalidHandle;
                 }
 
                 tex_unit_0 = PipelineStateGLES2::VertexSamplerCount( ps );
@@ -1011,9 +1013,10 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                         ConstBufferGLES2::SetToRHI( fp_const[i], fp_const_data[i] );
                 }
 
-                if( firstVertex )
+                if( firstVertex != cur_base_vert )
                 {
                     PipelineStateGLES2::SetVertexDeclToRHI( cur_ps, cur_vdecl, firstVertex );
+                    cur_base_vert = firstVertex;
                 }
 
                 if( cur_query_i != InvalidIndex )

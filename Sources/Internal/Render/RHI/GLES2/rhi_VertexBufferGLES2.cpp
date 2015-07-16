@@ -30,12 +30,14 @@ VertexBufferGLES2_t
     uint32      size;
     void*       data;
     uint32      uid;
+    GLenum      usage;
     uint32      mapped:1;
 };
 
 typedef ResourcePool<VertexBufferGLES2_t,RESOURCE_VERTEX_BUFFER>   VertexBufferGLES2Pool;
 RHI_IMPL_POOL(VertexBufferGLES2_t,RESOURCE_VERTEX_BUFFER);
-static GLuint   _LastSetVB = 0;
+
+static GLUint _LastSetVB = 0;
 
 
 //==============================================================================
@@ -71,6 +73,13 @@ gles2_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
                     vb->size   = desc.size;
                     vb->uid    = b;
                     vb->mapped = false;
+
+                    switch( desc.usage )
+                    {
+                        case USAGE_DEFAULT      : vb->usage = GL_STATIC_DRAW; break;
+                        case USAGE_STATICDRAW   : vb->usage = GL_STATIC_DRAW; break;
+                        case USAGE_DYNAMICDRAW  : vb->usage = GL_DYNAMIC_DRAW; break;
+                    }
                 }
             }
         }
@@ -119,7 +128,7 @@ gles2_VertexBuffer_Update( Handle vb, const void* data, uint32 offset, uint32 si
         GLCommand   cmd[] = 
         {
             { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, self->uid } },
-            { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(self->data), GL_STATIC_DRAW } },
+            { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage } },
             { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, _LastSetVB } }
         };
 
@@ -160,7 +169,7 @@ gles2_VertexBuffer_Unmap( Handle vb )
     GLCommand   cmd[] = 
     {
         { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, self->uid } },
-        { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(self->data), GL_STATIC_DRAW } },
+        { GLCommand::BUFFER_DATA, { GL_ARRAY_BUFFER, self->size, (uint64)(self->data), self->usage } },
         { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, _LastSetVB } }
     };
 

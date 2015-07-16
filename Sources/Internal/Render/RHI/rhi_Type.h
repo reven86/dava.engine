@@ -272,8 +272,8 @@ enum
 Usage
 {
     USAGE_DEFAULT,
-    USAGE_STATIC,
-    USAGE_DYNAMIC
+    USAGE_STATICDRAW,
+    USAGE_DYNAMICDRAW
 };
 
 enum

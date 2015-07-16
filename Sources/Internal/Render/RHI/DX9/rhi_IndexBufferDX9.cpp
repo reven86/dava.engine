@@ -59,8 +59,17 @@ dx9_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
     DVASSERT(desc.size);
     if( desc.size )
     {
+        DWORD   usage = D3DUSAGE_WRITEONLY;
+
+        switch( desc.usage )
+        {
+            case USAGE_DEFAULT      : usage = D3DUSAGE_WRITEONLY; break;
+            case USAGE_STATICDRAW   : usage = D3DUSAGE_WRITEONLY; break;
+            case USAGE_DYNAMICDRAW  : usage = D3DUSAGE_WRITEONLY|D3DUSAGE_DYNAMIC; break;
+        }
+
         IDirect3DIndexBuffer9*  ib9   = nullptr;
-        DX9Command              cmd[] = { { DX9Command::CREATE_INDEX_BUFFER, { desc.size, D3DUSAGE_WRITEONLY, D3DFMT_INDEX16, D3DPOOL_DEFAULT, uint64_t(&ib9), NULL } } };
+        DX9Command              cmd[] = { { DX9Command::CREATE_INDEX_BUFFER, { desc.size, usage, D3DFMT_INDEX16, D3DPOOL_DEFAULT, uint64_t(&ib9), NULL } } };
         
         ExecDX9( cmd, countof(cmd) );
 
