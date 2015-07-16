@@ -64,7 +64,7 @@ qt5_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )
 file              ( GLOB RCC_LIST "DataQt/*.qrc" )
 qt5_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
 
-if( MSVC )
+if( WIN32 )
     add_definitions( -D__DAVAENGINE_BEAST__ )
     set( BEAST_WRAPPER "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/wrapper" )
     set( BEAST_LIB     "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/lib/beast32.lib" )
