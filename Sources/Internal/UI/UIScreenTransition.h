@@ -36,6 +36,7 @@
 
 namespace DAVA
 {
+class UI3DView;
 
 class UIScreenTransition : public UIScreen
 {
@@ -52,6 +53,9 @@ public:
 	virtual void SetDuration(float32 timeInSeconds);
 	virtual bool IsLoadingTransition(); 
 protected:
+    void MakeScreenshot(Texture* target, UIScreen* screen);
+    UI3DView* FindFirst3dView(UIControl* control);
+
 	static Sprite * renderTargetPrevScreen;
 	static Sprite * renderTargetNextScreen;
 	
@@ -63,8 +67,7 @@ protected:
 	
 	UIScreen * prevScreen;
 	UIScreen * nextScreen;
-    
-    static UniqueHandle alphaClearStateHandle;
+
 };
 
 };

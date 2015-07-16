@@ -28,11 +28,12 @@
 
 
 #include "UI/UILoadingTransition.h"
-#include "Render/RenderManager.h"
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
 #include "Debug/Replay.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/RenderHelper.h"
+#include "Job/JobManager.h"
 
 namespace DAVA 
 {
@@ -45,6 +46,9 @@ UILoadingTransition::UILoadingTransition()
 	animationSprite = 0;
 	inTransition = 0;
 	outTransition = 0;
+#if !RHI_COMPLETE
+    loaded = false;
+#endif
 }
 
 UILoadingTransition::~UILoadingTransition()
@@ -117,19 +121,30 @@ void UILoadingTransition::ThreadMessage(BaseObject * obj, void * userData, void 
 
 void UILoadingTransition::DidAppear()
 {
-	if (!thread)
+#if RHI_COMPLETE
+    if (!thread)
 	{
 		thread = Thread::Create(Message(this, &UILoadingTransition::ThreadMessage));
 		thread->Start();
 	}
+#else
+    UILoadingTransition::ThreadMessage(this, nullptr, nullptr);
+    loaded = true;
+#endif //RHI_COMPLETE
 }
 
 void UILoadingTransition::Update(float32 timeElapsed)
 {
+#if RHI_COMPLETE
 	if ((thread) && (thread->GetState() == Thread::STATE_ENDED))
-	{
+    {
 		JobManager::Instance()->WaitMainJobs(thread->GetId());
-
+#else
+    if (loaded)
+    {
+        loaded = false;
+#endif //RHI_COMPLETE
+        
 		UIControlSystem::Instance()->SetScreen(nextScreen, outTransition);
         if (!inTransition) 
         {
@@ -153,9 +168,9 @@ void UILoadingTransition::Draw(const UIGeometricData &geometricData)
 	if (backgroundSprite)
     {
         Sprite::DrawState drawState;
-        drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
+        drawState.SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
         drawState.SetPosition(geometricData.position);
-        RenderSystem2D::Instance()->Draw(backgroundSprite, &drawState);
+        RenderSystem2D::Instance()->Draw(backgroundSprite, &drawState, Color::White);
     }
 
 	if (animationSprite)
@@ -165,11 +180,11 @@ void UILoadingTransition::Draw(const UIGeometricData &geometricData)
 			frame = animationSprite->GetFrameCount() - 1;
 		
         Sprite::DrawState drawState;
-        drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
+        drawState.SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
         drawState.SetFrame(frame);
         drawState.SetPosition(geometricData.position);
         
-        RenderSystem2D::Instance()->Draw(animationSprite, &drawState);
+        RenderSystem2D::Instance()->Draw(animationSprite, &drawState, Color::White);
 	}
 }
 	

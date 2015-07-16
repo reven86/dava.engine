@@ -37,13 +37,13 @@ namespace DAVA
 {
 
 Image::Image()
-    : dataSize(0)
-    , width(0)
-    , height(0)
-    , data(0)
-    , mipmapLevel(-1)
-    , format(FORMAT_RGB565)
-    , cubeFaceID(Texture::CUBE_FACE_INVALID)
+:   dataSize(0)
+,   width(0)
+,   height(0)
+,   data(0)
+,   mipmapLevel(-1)
+,   format(FORMAT_RGB565)
+,   cubeFaceID(Texture::INVALID_CUBEMAP_FACE)
 {
 }
 

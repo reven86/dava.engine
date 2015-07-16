@@ -119,20 +119,17 @@ void ActionDisableCustomColors::Redo()
 	SceneSignals::Instance()->EmitCustomColorsToggled(sceneEditor);
 }
 
-ModifyCustomColorsCommand::ModifyCustomColorsCommand(Image* originalImage,
-													 CustomColorsProxy* customColorsProxy,
-													 const Rect& updatedRect)
+ModifyCustomColorsCommand::ModifyCustomColorsCommand(Image* originalImage, Image * currentImage,
+													 CustomColorsProxy* _customColorsProxy,
+													 const Rect& _updatedRect)
 :	Command2(CMDID_CUSTOM_COLORS_MODIFY, "Custom Colors Modification")
+,   texture(nullptr)
 {
-	this->updatedRect = updatedRect;
-	this->customColorsProxy = SafeRetain(customColorsProxy);
-	
-	Image* currentImage = customColorsProxy->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+	updatedRect = Rect(floorf(_updatedRect.x), floorf(_updatedRect.y), ceilf(_updatedRect.dx), ceilf(_updatedRect.dy));
+	customColorsProxy = SafeRetain(_customColorsProxy);
 	
 	undoImage = Image::CopyImageRegion(originalImage, updatedRect);
 	redoImage = Image::CopyImageRegion(currentImage, updatedRect);
-	
-	SafeRelease(currentImage);
 }
 
 ModifyCustomColorsCommand::~ModifyCustomColorsCommand()
@@ -140,6 +137,12 @@ ModifyCustomColorsCommand::~ModifyCustomColorsCommand()
 	SafeRelease(undoImage);
 	SafeRelease(redoImage);
 	SafeRelease(customColorsProxy);
+    
+    if(texture)
+    {
+        SafeRelease(texture);
+        rhi::ReleaseTextureSet(textureSetHandle);
+    }
 }
 
 void ModifyCustomColorsCommand::Undo()
@@ -156,19 +159,26 @@ void ModifyCustomColorsCommand::Redo()
 
 void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
 {
+    if(texture)
+    {
+        SafeRelease(texture);
+        rhi::ReleaseTextureSet(textureSetHandle);
+    }
+    
 	Texture* customColorsTarget = customColorsProxy->GetTexture();
-	Texture* texture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
+	texture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
 											   image->GetWidth(), image->GetHeight(), false);
 	
-    RenderHelper::Instance()->Set2DRenderTarget(customColorsTarget);
-    RenderManager::Instance()->SetClip(updatedRect);
-    RenderHelper::Instance()->DrawTexture(texture, RenderState::RENDERSTATE_2D_BLEND, updatedRect);
-    RenderManager::Instance()->SetClip(Rect(0.f, 0.f, -1.f, -1.f));
-    RenderManager::Instance()->SetRenderTarget(0);
+    rhi::TextureSetDescriptor desc;
+    desc.fragmentTextureCount = 1;
+    desc.fragmentTexture[0] = texture->handle;
+    textureSetHandle = rhi::AcquireTextureSet(desc);
+    
+    RenderSystem2D::Instance()->BeginRenderTargetPass(customColorsTarget, false);
+    RenderSystem2D::Instance()->DrawTexture(textureSetHandle, RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL, Color::White, updatedRect);
+    RenderSystem2D::Instance()->EndRenderTargetPass();
 	
 	customColorsProxy->UpdateRect(updatedRect);
-	
-	SafeRelease(texture);
 }
 
 Entity* ModifyCustomColorsCommand::GetEntity() const

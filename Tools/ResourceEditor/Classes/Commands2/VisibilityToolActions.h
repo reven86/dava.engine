@@ -60,45 +60,4 @@ protected:
 	virtual void Redo();
 };
 
-
-class ActionSetVisibilityPoint: public CommandAction
-{
-public:
-	ActionSetVisibilityPoint(Image* originalImage,
-                             Texture* cursorTexture,
-							 VisibilityToolProxy* visibilityToolProxy,
-							 const Vector2& visibilityPoint,
-                             const Vector2& cursorSize);
-	~ActionSetVisibilityPoint();
-
-protected:
-    
-	Texture* cursorTexture;
-	VisibilityToolProxy* visibilityToolProxy;
-	Vector2 redoVisibilityPoint;
-    Vector2 cursorSize;
-
-	virtual void Redo();
-};
-
-class ActionSetVisibilityArea: public CommandAction
-{
-public:
-	ActionSetVisibilityArea(Image* originalImage,
-							VisibilityToolProxy* visibilityToolProxy,
-							const Rect& updatedRect);
-	virtual ~ActionSetVisibilityArea();
-
-protected:
-//	Image* undoImage;
-	Image* redoImage;
-
-	VisibilityToolProxy* visibilityToolProxy;
-	Rect updatedRect;
-
-	virtual void Redo();
-
-	void ApplyImage(Image* image);
-};
-
 #endif /* defined(__RESOURCEEDITORQT__VISIBILITYTOOLACTIONS__) */

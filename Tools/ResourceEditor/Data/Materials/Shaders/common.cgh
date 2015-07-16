@@ -1,0 +1,343 @@
+#define MAX_JOINTS 32
+  
+#define _PI 3.141592654
+
+
+////////////////////////////////////////////////////////////////////////////////
+// defines
+
+#if !defined VERTEX_LIT
+#define VERTEX_LIT 0
+#endif
+
+#if !defined PIXEL_LIT
+#define PIXEL_LIT 0
+#endif
+
+#if !defined BLINN_PHONG
+#define BLINN_PHONG 0
+#endif
+
+#if !defined FAST_NORMALIZATION
+#define FAST_NORMALIZATION 0
+#endif
+
+#if !defined NORMALIZED_BLINN_PHONG
+#define NORMALIZED_BLINN_PHONG 0
+#endif
+
+#if !defined DIELECTRIC
+#define DIELECTRIC 0
+#endif
+
+#if !defined FAST_METAL
+#define FAST_METAL 0
+#endif
+
+#if !defined GOTANDA
+#define GOTANDA 0
+#endif
+
+
+#if !defined ALPHA_MASK
+#define ALPHA_MASK 0
+#endif
+
+#if !defined MATERIAL_TEXTURE
+#define MATERIAL_TEXTURE 0
+#endif
+
+#if !defined MATERIAL_SKYBOX
+#define MATERIAL_SKYBOX 0
+#endif
+#if !defined SKYOBJECT
+#define SKYOBJECT 0
+#endif
+
+#if !defined MATERIAL_DETAIL
+#define MATERIAL_DETAIL 0
+#endif
+
+#if !defined MATERIAL_DECAL
+#define MATERIAL_DECAL 0
+#endif
+
+#if !defined TILED_DECAL_MASK
+#define TILED_DECAL_MASK 0
+#endif
+
+#if !defined MATERIAL_LIGHTMAP
+#define MATERIAL_LIGHTMAP 0
+#endif
+
+#if !defined FRAME_BLEND
+#define FRAME_BLEND 0
+#endif
+#if !defined FRAMEBUFFER_FETCH
+#define FRAMEBUFFER_FETCH 0
+#endif
+
+#if !defined VERTEX_COLOR
+#define VERTEX_COLOR 0
+#endif
+
+#if !defined FLATCOLOR
+#define FLATCOLOR 0
+#endif
+
+#if !defined VERTEX_FOG
+#define VERTEX_FOG 0
+#endif
+
+#if !defined FOG_LINEAR
+#define FOG_LINEAR 0
+#endif
+
+#if !defined FOG_ATMOSPHERE
+#define FOG_ATMOSPHERE 0
+#endif
+
+#if !defined FOG_ATMOSPHERE_MAP
+#define FOG_ATMOSPHERE_MAP 0
+#endif
+
+#if !defined FOG_HALFSPACE
+#define FOG_HALFSPACE 0
+#endif
+
+#if !defined FOG_HALFSPACE_LINEAR
+#define FOG_HALFSPACE_LINEAR 0
+#endif
+
+#if !defined DISTANCE_ATTENUATION
+#define DISTANCE_ATTENUATION 0
+#endif
+
+#if !defined SPHERICAL_LIT
+#define SPHERICAL_LIT 0
+#endif
+
+#if !defined SPHERICAL_HARMONICS_9
+#define SPHERICAL_HARMONICS_9 0
+#endif
+
+#if !defined SPHERICAL_HARMONICS_4
+#define SPHERICAL_HARMONICS_4 0
+#endif
+
+#if !defined SKINNING
+#define SKINNING 0
+#endif
+
+#if !defined SPEED_TREE_LEAF
+#define SPEED_TREE_LEAF 0
+#endif
+
+#if !defined CUT_LEAF
+#define CUT_LEAF 0
+#endif
+
+#if !defined WIND_ANIMATION
+#define WIND_ANIMATION 0
+#endif
+
+#if !defined WAVE_ANIMATION
+#define WAVE_ANIMATION 0
+#endif
+
+#if !defined SETUP_LIGHTMAP
+#define SETUP_LIGHTMAP 0
+#endif
+
+#if !defined TEXTURE0_SHIFT_ENABLED
+#define TEXTURE0_SHIFT_ENABLED 0
+#endif
+
+#if !defined TEXTURE0_ANIMATION_SHIFT
+#define TEXTURE0_ANIMATION_SHIFT 0
+#endif
+
+
+#if !defined ALPHABLEND
+#define ALPHABLEND 0
+#endif
+
+#if !defined ALPHATEST
+#define ALPHATEST 0
+#endif
+
+#if !defined ALPHATESTVALUE
+#define ALPHATESTVALUE 0
+#endif
+
+//water flags
+#if !defined REAL_REFLECTION
+#define REAL_REFLECTION 0
+#endif
+
+#if !defined SPECULAR
+#define SPECULAR 0
+#endif
+
+#if !defined SEPARATE_NORMALMAPS
+#define SEPARATE_NORMALMAPS 0
+#endif
+
+#if !defined DEBUG_UNITY_Z_NORMAL
+#define DEBUG_UNITY_Z_NORMAL 0
+#endif
+
+#if !defined DEBUG_Z_NORMAL_SCALE
+#define DEBUG_Z_NORMAL_SCALE 0
+#endif
+
+#if !defined DEBUG_NORMAL_ROTATION
+#define DEBUG_NORMAL_ROTATION 0
+#endif
+
+#if !defined FORCE_2D_MODE
+#define FORCE_2D_MODE 0
+#endif
+
+#if !defined VIEW_AMBIENT
+    #define VIEW_AMBIENT 0
+#endif
+
+#if !defined VIEW_DIFFUSE
+    #define VIEW_DIFFUSE 0
+#endif
+
+#if !defined VIEW_SPECULAR
+    #define VIEW_SPECULAR 0
+#endif
+
+#if !defined VIEW_ALBEDO
+    #define VIEW_ALBEDO 0
+#endif
+
+#if !VIEW_AMBIENT && !VIEW_DIFFUSE && !VIEW_SPECULAR && !VIEW_ALBEDO
+    #define VIEW_AMBIENT 1
+    #define VIEW_DIFFUSE 1
+    #define VIEW_SPECULAR 1
+    #define VIEW_ALBEDO 1
+#endif
+
+
+struct
+FogParam
+{
+    float3  world_position;
+    float3  view_position;
+
+    float3  eye_position;
+    float3  tolight_dir;
+    
+    
+    float3  color;
+    float   limit;
+    // linear
+    float   start;
+    float   end;
+    //exp
+    float   density;
+
+    float   halfspace_height;
+    float   halfspace_falloff;
+    float   halfspace_density;
+    float   halfspace_limit; 
+
+    float   atmosphere_distance;
+    float3  atmosphere_sun_color;
+    float3  atmosphere_sky_color;
+    float   atmosphere_scattering;
+};
+
+float4 CalculateVertexFog( FogParam param ); // to shut up Metal shader-compiler
+
+
+float4
+CalculateVertexFog( FogParam param )
+{
+    float4  fog;
+    float3  eyeCoordsPosition = param.view_position;
+    float3  cameraPosition    = param.eye_position;
+    float3  toLightDir        = param.tolight_dir;
+
+    #if FOG_HALFSPACE
+    float   fogHalfspaceHeight  = param.halfspace_height;
+    #if !FOG_HALFSPACE_LINEAR
+    float   fogHalfspaceFalloff = param.halfspace_falloff;
+    #endif
+    float   fogHalfspaceDensity = param.halfspace_density;
+    float   fogHalfspaceLimit   = param.halfspace_limit;
+    #endif
+
+    float   fogAtmosphereDistance   = param.atmosphere_distance;
+    float3  fogAtmosphereColorSun   = param.atmosphere_sun_color;
+    float3  fogAtmosphereColorSky   = param.atmosphere_sky_color;
+    float   fogAtmosphereScattering = param.atmosphere_scattering;
+
+
+
+    
+    float fogDistance = length(eyeCoordsPosition);
+    
+    // calculating fog amoung, depending on distance 
+    #if FOG_LINEAR
+        fog.w = (fogDistance - param.start) / (param.end - param.start);
+    #else
+        fog.w = 1.0 - exp(-param.density * fogDistance);
+    #endif
+    
+    // calculating view direction in world space, point of view in world space
+    #if FOG_HALFSPACE || FOG_ATMOSPHERE_MAP
+        float3 viewPointInWorldSpace = param.world_position;
+        float3 viewDirectionInWorldSpace = viewPointInWorldSpace - cameraPosition;
+    #endif
+    
+    // calculating halfSpaceFog amoung
+    #if FOG_HALFSPACE
+        #if FOG_HALFSPACE_LINEAR
+            // view http://www.terathon.com/lengyel/Lengyel-UnifiedFog.pdf
+            // to get more clear understanding about this calculations
+            float fogK = step(cameraPosition.z, fogHalfspaceHeight);
+            float fogFdotP = viewPointInWorldSpace.z - fogHalfspaceHeight;
+            float fogFdotC = cameraPosition.z - fogHalfspaceHeight;
+            
+            float fogC1 = fogK * (fogFdotP + fogFdotC);
+            float fogC2 = (1.0 - 2.0 * fogK) * fogFdotP;
+            float fogG = min(fogC2, 0.0);
+            fogG = -length(viewDirectionInWorldSpace) * fogHalfspaceDensity * (fogC1 - fogG * fogG / abs(viewDirectionInWorldSpace.z));
+            
+            float halfSpaceFogAmoung = 1.0 - exp2(-fogG);
+        #else
+            float fogK = viewDirectionInWorldSpace.z / fogDistance;
+            float fogB = cameraPosition.z - fogHalfspaceHeight;
+            
+            float halfSpaceFogAmoung = fogHalfspaceDensity * exp(-fogHalfspaceFalloff * fogB) * (1.0 - exp(-fogHalfspaceFalloff * fogK * fogDistance)) / fogK;
+        #endif
+        fog.w = fog.w + clamp(halfSpaceFogAmoung, 0.0, fogHalfspaceLimit);
+    #endif
+
+    // limit fog amoung
+    fog.w = clamp( fog.w, 0.0, param.limit );
+    
+    // calculating fog color
+    #if FOG_ATMOSPHERE
+        float3 atmosphereColor;
+        #if FOG_ATMOSPHERE_MAP
+            float3 viewDirection = normalize(float3(mul(VP_IN_POSITION,worldMatrix)) - cameraPosition);
+            viewDirection.z = clamp(viewDirection.z, 0.01, 1.0);
+            atmosphereColor = textureCube(atmospheremap, viewDirection).xyz;
+        #else
+            float atmospheteAngleFactor = dot(normalize(eyeCoordsPosition), normalize(toLightDir)) * 0.5 + 0.5;
+            atmosphereColor = lerp(fogAtmosphereColorSky, fogAtmosphereColorSun, pow(atmospheteAngleFactor, fogAtmosphereScattering));
+        #endif
+        float fogAtmosphereAttenuation = clamp(fogDistance / fogAtmosphereDistance, 0.0, 1.0);
+        fog.xyz = lerp(param.color, atmosphereColor, fogAtmosphereAttenuation);
+    #else
+        fog.xyz = param.color;
+    #endif
+
+    return fog;
+}

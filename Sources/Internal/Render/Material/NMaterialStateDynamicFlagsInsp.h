@@ -25,14 +25,13 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-
-
 #ifndef __DAVAENGINE_NMATERIALSTATEDYNAMICFLAGSINSP_NAMES_H__
 #define __DAVAENGINE_NMATERIALSTATEDYNAMICFLAGSINSP_NAMES_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/HashMap.h"
 #include "Base/FastNameMap.h"
+#include "Base/Introspection.h"
 
 namespace DAVA
 {
@@ -41,11 +40,12 @@ class NMaterial;
 class NMaterialStateDynamicFlagsInsp : public InspInfoDynamic
 {
 public:
-    Vector<FastName> MembersList(void *object) const;
-    InspDesc MemberDesc(void *object, const FastName &member) const;
-    int MemberFlags(void *object, const FastName &member) const;
-    VariantType MemberValueGet(void *object, const FastName &member) const;
-    void MemberValueSet(void *object, const FastName &member, const VariantType &value);
+    DynamicData Prepare(void *object, int filter) const override;
+    Vector<FastName> MembersList(const DynamicData& ddata) const override;
+    InspDesc MemberDesc(const DynamicData& ddata, const FastName &member) const override;
+    int MemberFlags(const DynamicData& ddata, const FastName &member) const override;
+    VariantType MemberValueGet(const DynamicData& ddata, const FastName &member) const override;
+    void MemberValueSet(const DynamicData& ddata, const FastName &member, const VariantType &value) override;
 };
 
 };

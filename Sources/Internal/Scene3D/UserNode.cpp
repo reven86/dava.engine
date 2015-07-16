@@ -29,7 +29,6 @@
 
 #include "Scene3D/UserNode.h"
 #include "Render/RenderHelper.h"
-#include "Render/RenderManager.h"
 
 namespace DAVA
 {

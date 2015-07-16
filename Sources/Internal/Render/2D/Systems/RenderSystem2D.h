@@ -43,8 +43,6 @@ namespace DAVA
 class Font;
 class Sprite;
 class TextBlock;
-class RenderDataObject;
-class RenderDataStream;
 class UIGeometricData;
 class VboPool;
 
@@ -53,20 +51,17 @@ struct RenderBatch2D
     explicit RenderBatch2D() { Reset(); }
     inline void Reset()
     {
-        primitiveType = PRIMITIVETYPE_TRIANGLELIST;
-        renderState = 0;
-        textureHandle = 0;
-        shader = 0;
-        clipRect = Rect(0,0,-1,-1);
+        primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
+        clipRect = Rect(0, 0, -1, -1);
         count = 0;
         indexOffset = 0;
+        material = nullptr;
     }
 
-    UniqueHandle renderState;
-    UniqueHandle textureHandle;
-    Shader* shader;
+    rhi::PrimitiveType primitiveType;
+    rhi::HTextureSet textureSetHandle;
+    NMaterial * material;
     Rect clipRect;
-    ePrimitiveType primitiveType;
     uint32 count;
     uint32 indexOffset;
 };
@@ -111,32 +106,46 @@ struct StretchDrawData
 class RenderSystem2D : public Singleton<RenderSystem2D>
 {
 public:
-    static FastName FLAT_COLOR_SHADER;
-    static FastName TEXTURE_FLAT_COLOR_SHADER;
+    struct BatchDescriptor 
+    {
+        BatchDescriptor();
 
-    static Shader * FLAT_COLOR;
-    static Shader * TEXTURE_MUL_FLAT_COLOR;
-    static Shader * TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST;
-    static Shader * TEXTURE_MUL_FLAT_COLOR_IMAGE_A8;
-    static Shader * TEXTURE_ADD_FLAT_COLOR;
-    static Shader * TEXTURE_ADD_FLAT_COLOR_ALPHA_TEST;
-    static Shader * TEXTURE_ADD_FLAT_COLOR_IMAGE_A8;
-    static Shader * TEXTURE_MUL_COLOR;
-    static Shader * TEXTURE_MUL_COLOR_ALPHA_TEST;
-    static Shader * TEXTURE_MUL_COLOR_IMAGE_A8;
-    static Shader * TEXTURE_ADD_COLOR;
-    static Shader * TEXTURE_ADD_COLOR_ALPHA_TEST;
-    static Shader * TEXTURE_ADD_COLOR_IMAGE_A8;
+        Color singleColor; 
+        uint32 vertexCount;
+        uint32 indexCount;
+        const float32* vertexPointer;
+        const float32* texCoordPointer;
+        const uint16* indexPointer;
+        NMaterial * material;
+        rhi::HTextureSet textureSetHandle;
+        rhi::PrimitiveType primitiveType;
+    };
 
+    enum ColorOperations
+    {
+        COLOR_MUL = 0,
+        COLOR_ADD,
+        ALPHA_MUL,
+        ALPHA_ADD,
+    };
+
+    static const FastName RENDER_PASS_NAME;
+    static const FastName FLAG_COLOR_OP;
+
+    static NMaterial* DEFAULT_2D_COLOR_MATERIAL;
+    static NMaterial* DEFAULT_2D_TEXTURE_MATERIAL;
+    static NMaterial* DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL;
+    static NMaterial* DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL;
+    static NMaterial* DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL;
 
     RenderSystem2D();
     virtual ~RenderSystem2D();
     
     void Init();
 
-    void Draw(Sprite * sprite, Sprite::DrawState * drawState = 0);
-    void DrawStretched(Sprite * sprite, Sprite::DrawState * drawState, Vector2 streatchCap, UIControlBackground::eDrawType type, const UIGeometricData &gd, StretchDrawData ** pStreachData);
-    void DrawTiled(Sprite * sprite, Sprite::DrawState * drawState, const Vector2& streatchCap, const UIGeometricData &gd, TiledDrawData ** pTiledData);
+    void Draw(Sprite * sprite, Sprite::DrawState * drawState, const Color& color);
+    void DrawStretched(Sprite * sprite, Sprite::DrawState * drawState, Vector2 streatchCap, UIControlBackground::eDrawType type, const UIGeometricData &gd, StretchDrawData ** pStreachData, const Color& color);
+    void DrawTiled(Sprite * sprite, Sprite::DrawState * drawState, const Vector2& streatchCap, const UIGeometricData &gd, TiledDrawData ** pTiledData, const Color& color);
 
     /**
      * Destroy current buffers and create new.
@@ -146,11 +155,13 @@ public:
      */
     void HardResetBatchingBuffers(uint32 verticesCount, uint32 indicesCount, uint8 buffersCount);
 
-    void PushBatch(UniqueHandle state, UniqueHandle texture, Shader * shader, const Rect& clip,
-        uint32 vertexCount, const float32* vertexPointer, const float32* texCoordPointer,
-        uint32 indexCount, const uint16* indexPointer,
-        const Color& color);
+    void PushBatch(const BatchDescriptor& batchDesc);
     
+    /*
+     *  note - it will flush currently batched!
+     *  it will also modify packet to add current clip
+     */
+    void DrawPacket(rhi::Packet& packet);
     /*!
      * Highlight controls which has vertices count bigger than verticesCount.
      * Work only with RenderOptions::HIGHLIGHT_BIG_CONTROLS option enabled.
@@ -168,26 +179,109 @@ public:
     
 	void PushClip();
 	void PopClip();
-    void UpdateClip();
 
     void ScreenSizeChanged();
 
-    void Setup2DMatrices();
-    
     void SetSpriteClipping(bool clipping);
+
+    void BeginRenderTargetPass(Texture * target, bool needClear = true, const Color& clearColor = Color::Clear, int32 priority = PRIORITY_SERVICE_2D);
+    void EndRenderTargetPass();
+
+    /* 2D DRAW HELPERS */
+
+    /**
+    \brief Draws line from pt1 to pt2
+    \param pt1 starting point
+    \param pt2 ending point
+    \param color draw color
+    */
+    void DrawLine(const Vector2 & pt1, const Vector2 & pt2, const Color& color);
+
+    /**
+    \brief Draws line from pt1 to pt2
+    \param pt1 starting point
+    \param pt2 ending point
+    \param color draw color
+    */
+    void DrawLine(const Vector2 &start, const Vector2 &end, float32 lineWidth, const Color& color);
+
+    /**
+    \brief Draws multiple lines.
+    \param linePoints list of points in the format (startX, startY, endX, endY), (startX, startY, endX, endY)...
+    \param color draw color
+    */
+    void DrawLines(const Vector<float32>& linePoints, const Color& color);
+
+    /**
+    \brief Draws given rect in 2D space
+    \param pt1 starting point
+    \param pt2 ending point
+    \param color draw color
+    */
+    void DrawRect(const Rect & rect, const Color& color);
+
+    /**
+    \brief Fills given rect in 2D space
+    \param pt1 starting point
+    \param pt2 ending point
+    \param color draw color
+    */
+    void FillRect(const Rect & rect, const Color& color);
+
+    /**
+    \brief Draws grid in the given rect
+    \param rect rect to fill grid with
+    \param gridSize distance between grid lines
+    \param color grid color
+    */
+    void DrawGrid(const Rect & rect, const Vector2& gridSize, const Color& color);
+
+    /**
+    \brief Draws circle in 2D space
+    \param center center of the circle
+    \param radius radius of the circle
+    \param color draw color
+    */
+    void DrawCircle(const Vector2 & center, float32 radius, const Color& color);
+
+    /**
+    \brief Draws all concecutive lines from given polygon
+    \param polygon the polygon we want to draw
+    \param closed you should set this flag to true if you want to connect last point of polygon with first point
+    \param color draw color
+    */
+    void DrawPolygon(const Polygon2 & polygon, bool closed, const Color& color);
+
+    /**
+    \brief Fill convex polygon with color. As all other draw functions this function use global color that can be set with RenderSystem2D::Instance()->SetColor function.
+    \param polygon the polygon we want to draw
+    \param color draw color
+    */
+    void FillPolygon(const Polygon2 & polygon, const Color& color);
+
+    /**
+    \brief Draws all concecutive lines from given polygon after transformation
+    \param polygon the polygon we want to draw
+    \param closed you should set this flag to true if you want to connect last point of polygon with first point
+    \param transform transform that will be applied to polygon before it will be drawn
+    \param color draw color
+    */
+    void DrawPolygonTransformed(const Polygon2 & polygon, bool closed, const Matrix3 & transform, const Color& color);
+
+    void DrawTexture(rhi::HTextureSet htextureSet, NMaterial* material, const Color & color, const Rect & dstRect = Rect(0.f, 0.f, -1.f, -1.f), const Rect & srcRect = Rect(0.f, 0.f, -1.f, -1.f));
 
 private:
     bool IsPreparedSpriteOnScreen(Sprite::DrawState * drawState);
-    static Shader* GetShaderForBatching(Shader* inputShader);
-    
-    void Setup2DProjection();
+    void Setup2DMatrices();
+
+    Rect TransformClipRect(const Rect & rect, const Matrix4 & transformMatrix);
+
+    inline bool IsRenderTargetPass() { return (currentPacketListHandle != packetList2DHandle); };
 
     Matrix4 virtualToPhysicalMatrix;
     Matrix4 projMatrix;
-	std::stack<Rect> clipStack;
+    std::stack<Rect> clipStack;
 	Rect currentClip;
-
-    RenderDataObject * spriteRenderObject;
 
     float32 spriteTempVertices[8];
     Vector<Vector2> spriteClippedTexCoords;
@@ -202,7 +296,6 @@ private:
     Vector<uint16> iboTemp;
 
     bool spriteClipping;
-    bool clipChanged;
     
     Vector<RenderBatch2D> batches;
     RenderBatch2D currentBatch;
@@ -220,6 +313,14 @@ private:
     };
     uint32 highlightControlsVerticesLimit;
 
+    rhi::HSamplerState samplerStateHandle;
+    rhi::HRenderPass pass2DHandle;
+    rhi::HPacketList packetList2DHandle;
+    rhi::HRenderPass passTargetHandle;
+    rhi::HPacketList currentPacketListHandle;
+
+    int32 renderTargetWidth;
+    int32 renderTargetHeight;
 };
 
 inline void RenderSystem2D::SetHightlightControlsVerticesLimit(uint32 verticesCount)

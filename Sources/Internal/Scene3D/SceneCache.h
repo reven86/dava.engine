@@ -43,8 +43,6 @@ public:
     void InsertScene(Scene *scene);
     void RemoveScene(Scene *scene);
     
-    void InvalidateSceneMaterials();
-    
 private:
     Set<Scene*> sceneSet;
 };

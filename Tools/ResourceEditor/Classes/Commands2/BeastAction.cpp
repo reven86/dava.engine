@@ -137,7 +137,7 @@ void BeastAction::Finish(bool canceled)
 	Landscape *land = FindLandscape(workingScene);
 	if(land)
 	{
-		FilePath textureName = land->GetTextureName(DAVA::Landscape::TEXTURE_COLOR);
+		FilePath textureName = land->GetMaterial()->GetEffectiveTexture(DAVA::Landscape::TEXTURE_COLOR)->GetPathname();
         if (textureName.Exists())
         {
             textureName.ReplaceFilename("temp_beast.png");

@@ -29,7 +29,6 @@
 
 #include "UI/UI3DView.h"
 #include "Scene3D/Scene.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Render/OcclusionQuery.h"
 #include "Core/Core.h"
@@ -93,29 +92,21 @@ void UI3DView::Update(float32 timeElapsed)
 
 void UI3DView::Draw(const UIGeometricData & geometricData)
 {
+    if (!scene)
+        return;
     RenderSystem2D::Instance()->Flush();
 
 	bool uiDrawQueryWasOpen = FrameOcclusionQueryManager::Instance()->IsQueryOpen(FRAME_QUERY_UI_DRAW);
 
 	if (uiDrawQueryWasOpen)
-		FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
-
-	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
+		FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);	
 	
     const Rect & viewportRect = geometricData.GetUnrotatedRect();
-    viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);
+    viewportRc = VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysical(viewportRect);        
+    scene->SetMainPassViewport(viewportRc);
     
-    Rect viewportSave = RenderManager::Instance()->GetViewport();
-    RenderManager::Instance()->SetViewport(viewportRc);
-    
-    if (scene)
-        scene->Draw();
-        
-    RenderManager::Instance()->SetViewport(viewportSave);
-	
-	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
-    RenderSystem2D::Instance()->Setup2DMatrices();
-
+    scene->Draw();        
+		
 	if (uiDrawQueryWasOpen)
 		FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
 }

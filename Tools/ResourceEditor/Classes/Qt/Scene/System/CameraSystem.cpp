@@ -42,7 +42,6 @@
 #include "Scene3D/Scene.h"
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
@@ -78,8 +77,7 @@ SceneCameraSystem::SceneCameraSystem(DAVA::Scene * scene)
 	, animateToNewPosTime(0)
 	, distanceToCamera(0.f)
 	, activeSpeedIndex(0)
-{
-	renderState = RenderManager::Instance()->Subclass3DRenderState(RenderStateData::STATE_COLORMASK_ALL | RenderStateData::STATE_DEPTH_WRITE);
+{	
 }
 
 SceneCameraSystem::~SceneCameraSystem()
@@ -371,6 +369,7 @@ void SceneCameraSystem::OnKeyboardInput( DAVA::UIEvent* event )
 
 void SceneCameraSystem::Draw()
 {
+#if RHI_COMPLETE_EDITOR
 	SceneEditor2 *sceneEditor = (SceneEditor2 *) GetScene();
 	if(nullptr != sceneEditor)
 	{
@@ -402,6 +401,7 @@ void SceneCameraSystem::Draw()
 			DAVA::RenderManager::Instance()->ResetColor();
 		}
 	}
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void SceneCameraSystem::ProcessCommand(const Command2 *command, bool redo)

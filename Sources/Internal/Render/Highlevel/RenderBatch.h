@@ -37,9 +37,7 @@
 #include "Base/BaseMath.h"
 
 #include "Render/3D/PolygonGroup.h"
-#include "Render/RenderDataObject.h"
 #include "Render/Highlevel/RenderObject.h"
-#include "Render/Material.h"
 #include "Render/Material/NMaterial.h"
 
 #include "Scene3D/SceneFile/SerializationContext.h"
@@ -87,22 +85,16 @@ public:
     RenderBatch();
     
     void SetPolygonGroup(PolygonGroup * _polygonGroup);
-    inline PolygonGroup * GetPolygonGroup();
-    
-    void SetRenderDataObject(RenderDataObject * _renderDataObject);
-    inline RenderDataObject * GetRenderDataObject();
+    inline PolygonGroup * GetPolygonGroup();        
     
     void SetMaterial(NMaterial * _material);
-    inline NMaterial * GetMaterial();
-    inline uint32 GetRenderLayerIDsBitmask() const;
+    inline NMaterial * GetMaterial();    
     
 	void SetRenderObject(RenderObject * renderObject);
 	inline RenderObject * GetRenderObject() const;        
     
     inline void SetStartIndex(uint32 _startIndex);
-    inline void SetIndexCount(uint32 _indexCount);
-
-    virtual void Draw(const FastName & ownerRenderPass, Camera * camera);
+    inline void SetIndexCount(uint32 _indexCount);    
     
     const AABBox3 & GetBoundingBox() const;
 
@@ -120,36 +112,35 @@ public:
 
     /*sorting offset allowed in 0..31 range, 15 default, more - closer to camera*/
     void SetSortingOffset(uint32 offset);
-    inline uint32 GetSortingOffset();
-	
-    //bool GetVisible() const;       
+    inline uint32 GetSortingOffset();    
     
 	virtual void UpdateAABBoxFromSource();
 	
     pointer_size layerSortingKey;
 
+    rhi::HVertexBuffer vertexBuffer;
+    uint32 vertexCount;
+    uint32 vertexBase;
+    rhi::HIndexBuffer indexBuffer;
+    uint32 startIndex;
+    uint32 indexCount;
+
+    rhi::PrimitiveType primitiveType;
+    uint32 vertexLayoutId;
+
 protected:
-    void BindDynamicParameters(Camera * camera);
-    
-    uint32 renderLayerIDsBitmaskFromMaterial;
     PolygonGroup * dataSource;
-    RenderDataObject * renderDataObject;   // Probably should be replaced to VBO / IBO, but not sure
+    
     NMaterial * material;                    // Should be replaced to NMaterial
 	RenderObject * renderObject;
     Matrix4 *sortingTransformPtr;
     
-    uint32 startIndex;
-    uint32 indexCount;
-    
-//    ePrimitiveType type; //TODO: waiting for enums at introspection
-    uint32 type;
     uint32 sortingKey; //oooookkkk -where o is offset, k is key    
 
     const static uint32 SORTING_KEY_MASK = 0x0f;
     const static uint32 SORTING_OFFSET_MASK = 0x1f0;
     const static uint32 SORTING_OFFSET_SHIFT = 4;
     const static uint32 SORTING_KEY_DEF_VALUE = 0xf8;
-    
     
 	AABBox3 aabbox;
 #if defined(__DAVA_USE_OCCLUSION_QUERY__)
@@ -166,12 +157,10 @@ public:
     
     INTROSPECTION_EXTEND(RenderBatch, BaseObject,
         MEMBER(dataSource, "Data Source", I_SAVE | I_VIEW | I_EDIT)
-//        MEMBER(renderDataObject, "Render Data Object", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR | INTROSPECTION_EDITOR_READONLY)
-//        MEMBER(renderObject, "Render Object", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR | INTROSPECTION_EDITOR_READONLY)
 
         MEMBER(startIndex, "Start Index", I_SAVE)
         MEMBER(indexCount, "Index Count", I_SAVE)
-        MEMBER(type, "Type", I_SAVE | I_VIEW | I_EDIT)
+        //MEMBER(primitiveType, InspDesc("primitiveType", GlobalEnumMap<rhi::PrimitiveType>::Instance()), I_VIEW | I_EDIT | I_SAVE)
                          
         MEMBER(aabbox, "AABBox",  I_SAVE | I_VIEW | I_EDIT )
         MEMBER(material, "Material", I_VIEW | I_EDIT)
@@ -180,20 +169,12 @@ public:
     );
 };
     
-inline uint32 RenderBatch::GetRenderLayerIDsBitmask() const
-{
-    return renderLayerIDsBitmaskFromMaterial;
-};
 
 inline PolygonGroup * RenderBatch::GetPolygonGroup()
 {
     return dataSource;
 }
     
-inline RenderDataObject * RenderBatch::GetRenderDataObject()
-{
-    return renderDataObject;
-}
 
 inline NMaterial * RenderBatch::GetMaterial()
 {

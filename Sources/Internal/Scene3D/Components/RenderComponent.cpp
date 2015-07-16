@@ -29,7 +29,6 @@
 
 #include "Scene3D/Components/RenderComponent.h"
 #include "Base/ObjectFactory.h"
-#include "Render/Material/MaterialOptimazer.h"
 
 namespace DAVA 
 {
@@ -95,16 +94,6 @@ void RenderComponent::GetDataNodes(Set<DAVA::DataNode *> &dataNodes)
 {
     if(NULL != renderObject)
     {
-        uint32 count = renderObject->GetRenderBatchCount();
-        for(uint32 i = 0; i < count; ++i)
-        {
-            RenderBatch *renderBatch = renderObject->GetRenderBatch(i);
-            if(NULL != renderBatch)
-            {
-                renderBatch->GetDataNodes(dataNodes);
-            }
-        }
-        
         renderObject->GetDataNodes(dataNodes);
     }
 }

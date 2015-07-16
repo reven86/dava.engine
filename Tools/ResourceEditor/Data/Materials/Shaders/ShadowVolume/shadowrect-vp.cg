@@ -1,0 +1,14 @@
+VPROG_IN_BEGIN
+    VPROG_IN_POSITION
+VPROG_IN_END
+
+VPROG_OUT_BEGIN
+    VPROG_OUT_POSITION
+VPROG_OUT_END
+
+VPROG_BEGIN
+
+    float3 in_pos   = VP_IN_POSITION;
+    VP_OUT_POSITION = float4(in_pos.x, in_pos.y, in_pos.z, 1.0);
+    
+VPROG_END

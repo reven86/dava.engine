@@ -32,7 +32,6 @@
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
-#include "Render/Highlevel/SkyboxRenderObject.h"
 
 class CubemapUtils
 {

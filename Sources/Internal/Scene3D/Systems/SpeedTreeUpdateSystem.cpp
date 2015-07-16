@@ -42,6 +42,7 @@
 #include "Utils/Random.h"
 #include "Math/Math2D.h"
 #include "Debug/Stats.h"
+#include "Render/Renderer.h"
 
 namespace DAVA
 {
@@ -49,7 +50,7 @@ namespace DAVA
 SpeedTreeUpdateSystem::SpeedTreeUpdateSystem(Scene * scene)
     :	SceneSystem(scene)
 {
-    RenderOptions * options = RenderManager::Instance()->GetOptions();
+    RenderOptions * options = Renderer::GetOptions();
     options->AddObserver(this);
     isAnimationEnabled = options->IsOptionEnabled(RenderOptions::SPEEDTREE_ANIMATIONS);
 
@@ -63,7 +64,7 @@ SpeedTreeUpdateSystem::~SpeedTreeUpdateSystem()
 {
     DVASSERT(allTrees.size() == 0);
 
-    RenderManager::Instance()->GetOptions()->RemoveObserver(this);
+    Renderer::GetOptions()->RemoveObserver(this);
 }
 
 void SpeedTreeUpdateSystem::ImmediateEvent(Component * _component, uint32 event)

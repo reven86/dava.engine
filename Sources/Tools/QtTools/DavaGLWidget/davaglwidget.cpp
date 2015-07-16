@@ -254,11 +254,12 @@ void DavaGLWidget::OnWindowExposed()
     disconnect( openGlWindow.data(), &OpenGLWindow::Exposed, this, &DavaGLWidget::OnWindowExposed );
 
     const auto contextId = FrameworkLoop::Instance()->GetRenderContextId();
-    DAVA::QtLayer::Instance()->InitializeGlWindow( contextId );
+    DAVA::QtLayer::Instance()->InitializeGlWindow(contextId);
     isInitialized = true;
 
-    PerformSizeChange();
     emit Initialized();
+
+    PerformSizeChange();
 }
 
 void DavaGLWidget::resizeEvent(QResizeEvent *e)

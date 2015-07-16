@@ -141,7 +141,10 @@ namespace DAVA
     NSRect fullscreenRect = [[NSScreen mainScreen] frame];
 	
 	FrameworkDidLaunched();
+#if RHI_COMPLETE
     RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
+#endif
+
     
     String title;
     int32 width = 800;
@@ -176,13 +179,20 @@ namespace DAVA
     [mainWindow setContentSize:rect.size];
     [openGLView setFrame: rect];
     
+
 	core = Core::GetApplicationCore();
+#if RHI_COMPLETE
     RenderManager::Instance()->DetectRenderingCapabilities();
-    RenderSystem2D::Instance()->Init();
+#endif
 
 	// start animation
-	currFPS = RenderManager::Instance()->GetFPS();
+#if RHI_COMPLETE
+    currFPS = RenderManager::Instance()->GetFPS();
+#else
+    currFPS = 60;
+#endif
     [self startAnimationTimer];
+
 
 	// make window main
 	[mainWindow makeKeyAndOrderFront:nil];
@@ -222,7 +232,7 @@ namespace DAVA
 
 - (void) setFullScreen:(bool)_fullScreen
 {
-    if(fullScreen != _fullScreen)
+if(fullScreen != _fullScreen)
     {
         double macOSVer = floor(NSAppKitVersionNumber);
         // fullscreen for new 10.7+ MacOS
@@ -356,12 +366,14 @@ namespace DAVA
 {
 //	NSLog(@"anim timer fired: %@", openGLView);
     [openGLView setNeedsDisplay:YES];
+#if RHI_COMPLETE
 	if (currFPS != RenderManager::Instance()->GetFPS())
 	{
 		currFPS = RenderManager::Instance()->GetFPS();
 		[self stopAnimationTimer];
 		[self startAnimationTimer];
 	}
+#endif
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
@@ -370,12 +382,14 @@ namespace DAVA
     
     [self OnResume];
     
+#if RHI_COMPLETE
     DAVA::Cursor * activeCursor = RenderManager::Instance()->GetCursor();
     if (activeCursor)
     {
         NSCursor * cursor = (NSCursor*)activeCursor->GetMacOSXCursor();
         [cursor set];
     }
+#endif
 }
 
 - (void)applicationWillFinishLaunching:(NSNotification *)aNotification
@@ -384,6 +398,12 @@ namespace DAVA
 //	[NSMenu setMenuBarVisible: YES];
 	[self createWindows];
 	NSLog(@"[CoreMacOSPlatform] Application will finish launching: %@", [[NSBundle mainBundle] bundlePath]);
+    
+    DAVA::CoreMacOSPlatform * macCore = (DAVA::CoreMacOSPlatform *)Core::Instance();
+    macCore->rendererParams.window = mainWindowController->openGLView;
+    macCore->rendererParams.width = [mainWindowController->openGLView frame].size.width;
+    macCore->rendererParams.height = [mainWindowController->openGLView frame].size.height;
+    
 	Core::Instance()->SystemAppStarted();
 }
 

@@ -65,7 +65,7 @@ protected:
 class ModifyCustomColorsCommand: public Command2
 {
 public:
-	ModifyCustomColorsCommand(Image* originalImage,
+	ModifyCustomColorsCommand(Image* originalImage, Image * currentImage,
 							  CustomColorsProxy* customColorsProxy,
 							  const Rect& updatedRect);
 	~ModifyCustomColorsCommand();
@@ -80,6 +80,9 @@ protected:
 	Image* redoImage;
 	Rect updatedRect;
 
+    rhi::HTextureSet textureSetHandle;
+    Texture * texture;
+    
 	void ApplyImage(Image* image);
 };
 

@@ -69,7 +69,7 @@ bool DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 		case ALWAYS_MODAL:
 		{
 			// Yuri Coder, 2013/02/06. This method is specific for iOS-implementation only,
-			// it blocks drawing to avoid deadlocks. See EAGLView.mm file for details.
+			// it blocks drawing to avoid deadlocks. See RenderView.mm file for details.
 			UIScreenManager::Instance()->BlockDrawing();
 			
 			// Yuri Coder, 2013/07/19. Always display new Alert View in case of ASSERT.

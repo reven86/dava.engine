@@ -38,6 +38,7 @@
 #include "Utils/Random.h"
 #include "Math/Math2D.h"
 #include "Debug/Stats.h"
+#include "Render/Renderer.h"
 
 namespace DAVA
 {
@@ -59,7 +60,7 @@ currentWaveRadius(0.f)
 WaveSystem::WaveSystem(Scene * scene) : 
     SceneSystem(scene)
 {
-    RenderOptions * options = RenderManager::Instance()->GetOptions();
+    RenderOptions * options = Renderer::GetOptions();
     options->AddObserver(this);
     HandleEvent(options);
 
@@ -70,7 +71,7 @@ WaveSystem::WaveSystem(Scene * scene) :
 
 WaveSystem::~WaveSystem()
 {
-    RenderManager::Instance()->GetOptions()->RemoveObserver(this);
+    Renderer::GetOptions()->RemoveObserver(this);
 
     ClearWaves();
 }

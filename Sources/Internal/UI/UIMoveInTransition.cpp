@@ -28,10 +28,10 @@
 
 
 #include "UI/UIMoveInTransition.h"
-#include "Render/RenderManager.h"
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/RenderHelper.h"
 
 namespace DAVA 
 {
@@ -76,7 +76,7 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
 	 */
 	
     Sprite::DrawState drawState;
-    drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
+    drawState.SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
     
 	if(type <= FROM_BOTTOM)
 	{
@@ -95,10 +95,10 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
 		{
 			drawState.SetPosition(0, 0);
 		}
-        RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState);
+        RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState, Color::White);
 		
 		drawState.SetPosition(xNextPosition, yNextPosition);
-        RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState);
+        RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState, Color::White);
 	}
 	else 
 	{
@@ -118,10 +118,10 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
 			drawState.SetPosition(0, 0);
 		}
         
-        RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState);
+        RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState, Color::White);
 		
 		drawState.SetPosition(xPrevPosition, yPrevPosition);
-        RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState);
+        RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState, Color::White);
 	}
 }
 	

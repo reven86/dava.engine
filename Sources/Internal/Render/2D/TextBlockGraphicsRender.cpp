@@ -30,7 +30,6 @@
 #include "Render/2D/TextBlockGraphicsRender.h"
 #include "Core/Core.h"
 #include "Utils/Utils.h"
-#include "Render/RenderManager.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 
@@ -49,7 +48,7 @@ void TextBlockGraphicsRender::Prepare(Texture *texture /*= NULL*/)
 	TextBlockRender::Prepare(texture);
 	
 	isPredrawed = false;
-    Texture * fbo = Texture::CreateFBO(textBlock->cacheDx, textBlock->cacheDy, FORMAT_RGBA8888, Texture::DEPTH_NONE);
+    Texture * fbo = Texture::CreateFBO(textBlock->cacheDx, textBlock->cacheDy, FORMAT_RGBA8888);
     sprite = Sprite::CreateFromTexture(fbo, 0, 0, (float32)fbo->GetWidth(), (float32)fbo->GetHeight());
 	if (sprite && sprite->GetTexture())
 	{
@@ -69,7 +68,7 @@ void TextBlockGraphicsRender::PreDraw()
 		return;
 	
 	isPredrawed = true;
-
+#if RHI_COMPLETE
     Texture * rt = sprite->GetTexture();
     Rect oldviewport = RenderManager::Instance()->GetViewport();
 
@@ -79,6 +78,7 @@ void TextBlockGraphicsRender::PreDraw()
 
     RenderManager::Instance()->SetRenderTarget(0);
     RenderManager::Instance()->SetViewport(oldviewport);
+#endif // RHI_COMPLETE
 }
 	
 Font::StringMetrics TextBlockGraphicsRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)

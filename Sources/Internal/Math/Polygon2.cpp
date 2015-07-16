@@ -30,7 +30,6 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Collision/Collisions.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 
 namespace DAVA 
@@ -53,7 +52,7 @@ bool Polygon2::IsPointInside(const Vector2 & pt) const
 */	
 //#define DEBUG_DRAW_INTERSECTIONS
 #if defined(DEBUG_DRAW_INTERSECTIONS)
-	RenderManager::Instance()->SetColor(0.0f, 1.0f, 0.0f, 1.0f);
+	RenderSystem2D::Instance()->SetColor(0.0f, 1.0f, 0.0f, 1.0f);
 	RenderHelper::DrawLine(ray0, ray1);
 #endif 
 	
@@ -68,7 +67,7 @@ bool Polygon2::IsPointInside(const Vector2 & pt) const
 		{
 			
 #if defined(DEBUG_DRAW_INTERSECTIONS)
-			RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+			RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 			RenderHelper::DrawPoint(result, 5.0f);
 #endif 
 

@@ -80,6 +80,9 @@ public:
 
     FilePath GetStickSpritePath() const;
     void SetStickSpritePath(const FilePath &path);
+    
+    void SetStickDebugDraw(bool debugDraw);
+    
 protected:
 	void RecalcDigitalPosition();
 	void RecalcAnalogPosition();

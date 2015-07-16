@@ -32,7 +32,6 @@
 #include "Scene/System/TextDrawSystem.h"
 
 // framework
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 
 RotateHood::RotateHood() : HoodObject(4.0f)
@@ -67,16 +66,7 @@ RotateHood::RotateHood() : HoodObject(4.0f)
 
 		lx = x;
 		ly = y;
-	}
-	
-    DAVA::RenderStateData hoodStateData;
-    DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND, hoodStateData);
-    
-	hoodStateData.state =	DAVA::RenderStateData::STATE_BLEND |
-							DAVA::RenderStateData::STATE_COLORMASK_ALL;
-	hoodStateData.sourceFactor = DAVA::BLEND_SRC_ALPHA;
-	hoodStateData.destFactor = DAVA::BLEND_ONE_MINUS_SRC_ALPHA;
-	hoodDrawState = DAVA::RenderManager::Instance()->CreateRenderState(hoodStateData);
+	}	    
 }
 
 RotateHood::~RotateHood()
@@ -84,6 +74,7 @@ RotateHood::~RotateHood()
 
 void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem *textDrawSystem)
 {
+#if RHI_COMPLETE_EDITOR
 	DAVA::Color colorSBlend(colorS.r, colorS.g, colorS.b, 0.3f);
 	DAVA::Vector3 curPos = axisX->curPos;
 
@@ -290,4 +281,5 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSyste
 			textDrawSystem->DrawText(topPos, tmp, DAVA::Color(255, 255, 0, 255));
 		}
 	}
+#endif // RHI_COMPLETE_EDITOR
 }

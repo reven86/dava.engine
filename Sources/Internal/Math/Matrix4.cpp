@@ -43,7 +43,7 @@ Matrix4 Matrix4::IDENTITY(1.0f, 0.0f, 0.0f, 0.0f,
 //uint32 Matrix4::matrixMultiplicationCounter = 0;
 
 //inline void Matrix4::glOrthof
-void Matrix4::glOrtho(float32 left, float32 right, float32 bottom, float32 top, float32 n, float32 f)
+void Matrix4::glOrtho(float32 left, float32 right, float32 bottom, float32 top, float32 n, float32 f, bool zeroBaseClipRange)
 {
     float32 r_l = right - left;
     float32 t_b = top - bottom;
@@ -66,6 +66,8 @@ void Matrix4::glOrtho(float32 left, float32 right, float32 bottom, float32 top, 
     data[9] = 0.0f;
     data[10] = -2.0f / f_n;
     data[11] = 0.0f;
+
+    //RHI_COMPLETE - update it to zero based clip range
     
     data[12] = tx;
     data[13] = ty;
@@ -73,7 +75,7 @@ void Matrix4::glOrtho(float32 left, float32 right, float32 bottom, float32 top, 
     data[15] = 1.0f;
 }
     
-void Matrix4::glFrustum(float32 l, float32 r, float32 b, float32 t, float32 n, float32 f)
+void Matrix4::glFrustum(float32 l, float32 r, float32 b, float32 t, float32 n, float32 f, bool zeroBaseClipRange)
 {
     float32 r_l = r - l;
     float32 t_b = t - b;
@@ -91,8 +93,16 @@ void Matrix4::glFrustum(float32 l, float32 r, float32 b, float32 t, float32 n, f
     
     data[2] = 0.0f;
     data[6] = 0.0f;
-    data[10] = - (f + n) / f_n;
-    data[14] = - 2 * f * n / f_n;
+    if (zeroBaseClipRange)
+    {
+        data[10] = -f / f_n;     
+        data[14] = -f * n / f_n; 
+    }
+    else
+    {
+        data[10] = -(f + n) / f_n;
+        data[14] = -2 * f * n / f_n;
+    }
     
     data[3] = 0;
     data[7] = 0;

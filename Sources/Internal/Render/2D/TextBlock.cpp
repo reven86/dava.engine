@@ -30,7 +30,6 @@
 #include "Render/2D/Sprite.h"
 #include "Debug/DVAssert.h"
 #include "Utils/Utils.h"
-#include "Render/RenderManager.h"
 #include "Utils/StringFormat.h"
 #include "Platform/SystemTimer.h"
 #include "FileSystem/File.h"
@@ -40,7 +39,7 @@
 #include "Render/2D/TextBlockSoftwareRender.h"
 #include "Render/2D/TextBlockGraphicsRender.h"
 #include "Render/2D/TextBlockDistanceRender.h"
-
+#include "Concurrency/Thread.h"
 #include "Utils/StringUtils.h"
 #include "Concurrency/LockGuard.h"
 #include "fribidi/fribidi-bidi-types.h"

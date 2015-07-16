@@ -31,7 +31,6 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Render/3D/StaticMesh.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Utils/StringFormat.h"
 #include "Scene3D/SceneNodeAnimation.h"

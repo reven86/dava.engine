@@ -43,14 +43,14 @@
 
 // framework
 #include "Scene3D/SceneFileV2.h"
-#include "Render/Highlevel/ShadowVolumeRenderPass.h"
 #include "Scene3D/Systems/RenderUpdateSystem.h"
 #include "Render/Highlevel/RenderBatchArray.h"
+#include "Render/Highlevel/RenderPass.h"
 
 #include "Scene/System/CameraSystem.h"
 #include "Scene/System/CollisionSystem.h"
 #include "Scene/System/HoodSystem.h"
-
+#include "Scene3D/Entity.h"
 #include "Scene/System/EditorLODSystem.h"
 
 
@@ -71,9 +71,10 @@ SceneEditor2::SceneEditor2()
     , isLoaded(false)
     , isHUDVisible(true)
 {
+#if RHI_COMPLETE_EDITOR
     SetClearBuffers(RenderManager::DEPTH_BUFFER | RenderManager::STENCIL_BUFFER);
-
     renderStats.Clear();
+#endif // RHI_COMPLETE_EDITOR	
 
     EditorCommandNotify *notify = new EditorCommandNotify(this);
     commandStack.SetNotify(notify);
@@ -121,9 +122,6 @@ SceneEditor2::SceneEditor2()
     visibilityToolSystem = new VisibilityToolSystem(this);
     AddSystem(visibilityToolSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
-    grassEditorSystem = new GrassEditorSystem(this);
-    AddSystem(grassEditorSystem, 0, SCENE_SYSTEM_REQUIRE_INPUT);
-
     rulerToolSystem = new RulerToolSystem(this);
     AddSystem(rulerToolSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT, renderUpdateSystem);
 
@@ -165,8 +163,13 @@ SceneEditor2::SceneEditor2()
 
     editorLODSystem = new EditorLODSystem(this);
     AddSystem(editorLODSystem, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT));
+#if RHI_COMPLETE_EDITOR
+	SetShadowBlendMode(ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
+#endif
 
-    SetShadowBlendMode(ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
+    float32 * clearColor = renderSystem->GetMainRenderPass()->GetPassConfig().colorBuffer[0].clearColor;
+    clearColor[0] = clearColor[1] = clearColor[2] = .3f;
+    clearColor[3] = 1.f;
 
     SceneSignals::Instance()->EmitOpened(this);
 
@@ -202,7 +205,13 @@ bool SceneEditor2::Load(const DAVA::FilePath &path)
 SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath & path, bool saveForGame /*= false*/)
 {
 	ExtractEditorEntities();
-
+    
+    if(landscapeEditorDrawSystem)
+    {
+        landscapeEditorDrawSystem->SaveTileMaskTexture();
+        landscapeEditorDrawSystem->ResetTileMaskTexture();
+    }
+    
 	DAVA::SceneFileV2::eError err = Scene::SaveScene(path, saveForGame);
 	if(DAVA::SceneFileV2::ERROR_NO_ERROR == err)
 	{
@@ -213,9 +222,6 @@ SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath & path, bool saveFor
 		wasChanged = false;
 		commandStack.SetClean(true);
 	}
-
-	if(landscapeEditorDrawSystem)
-		landscapeEditorDrawSystem->SaveTileMaskTexture();
 
 	InjectEditorEntities();
 
@@ -389,9 +395,7 @@ void SceneEditor2::SetViewportRect(const DAVA::Rect &newViewportRect)
 }
 
 void SceneEditor2::Draw()
-{
-
-    RenderManager::Instance()->ClearStats();
+{    
 	
 //	NMaterial* global = renderSystem->GetMaterialSystem()->GetMaterial(MATERIAL_FOR_REBIND);
 //	DVASSERT(global);
@@ -403,7 +407,9 @@ void SceneEditor2::Draw()
 	
 	Scene::Draw();
     
+#if RHI_COMPLETE_EDITOR
     renderStats = RenderManager::Instance()->GetStats();
+#endif // RHI_COMPLETE_EDITOR
 
 	if(isHUDVisible)
 	{
@@ -450,7 +456,6 @@ void SceneEditor2::EditorCommandProcess(const Command2 *command, bool redo)
 	selectionSystem->ProcessCommand(command, redo);
 	hoodSystem->ProcessCommand(command, redo);
 	modifSystem->ProcessCommand(command, redo);
-    grassEditorSystem->ProcessCommand(command, redo);
 	
 	if(structureSystem)
 		structureSystem->ProcessCommand(command, redo);
@@ -505,29 +510,12 @@ void SceneEditor2::EditorCommandNotify::CleanChanged(bool clean)
 	}
 }
 
-
-void SceneEditor2::SetShadowBlendMode(DAVA::ShadowPassBlendMode::eBlend blend)
-{
-	if(GetRenderSystem())
-	{
-		GetRenderSystem()->SetShadowBlendMode(blend);
-	}
-}
-
-DAVA::ShadowPassBlendMode::eBlend SceneEditor2::GetShadowBlendMode() const
-{
-	if(GetRenderSystem())
-	{
-		return GetRenderSystem()->GetShadowBlendMode();
-	}
-
-	return DAVA::ShadowPassBlendMode::MODE_BLEND_COUNT;
-}
-
+#if RHI_COMPLETE_EDITOR
 const RenderManager::Stats & SceneEditor2::GetRenderStats() const
 {
     return renderStats;
 }
+#endif // RHI_COMPLETE_EDITOR
 
 void SceneEditor2::DisableTools(int32 toolFlags, bool saveChanges /*= true*/)
 {
@@ -560,11 +548,6 @@ void SceneEditor2::DisableTools(int32 toolFlags, bool saveChanges /*= true*/)
 	{
 		Exec(new ActionDisableNotPassable(this));
 	}
-
-    if(toolFlags & LANDSCAPE_TOOL_GRASS_EDITOR)
-    {
-        grassEditorSystem->EnableGrassEdit(false);
-    }
 }
 
 bool SceneEditor2::IsToolsEnabled(int32 toolFlags)
@@ -600,11 +583,6 @@ bool SceneEditor2::IsToolsEnabled(int32 toolFlags)
 	{
 		res |= landscapeEditorDrawSystem->IsNotPassableTerrainEnabled();
 	}
-
-    if(toolFlags & LANDSCAPE_TOOL_GRASS_EDITOR)
-    {
-        res |= grassEditorSystem->IsLandscapeEditingEnabled();
-    }
 
 	return res;
 }
@@ -642,11 +620,6 @@ int32 SceneEditor2::GetEnabledTools()
 	{
 		toolFlags |= LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN;
 	}
-
-    if(grassEditorSystem->IsLandscapeEditingEnabled())
-    {
-        toolFlags |= LANDSCAPE_TOOL_GRASS_EDITOR;
-    }
 
 	return toolFlags;
 }
@@ -729,7 +702,7 @@ void SceneEditor2::Setup3DDrawing()
 {
     if (drawCamera)
     {
-        drawCamera->SetupDynamicParameters();
+        drawCamera->SetupDynamicParameters(false);
     }
 }
 

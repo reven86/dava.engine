@@ -30,7 +30,6 @@
 #include "Render/3D/PolygonGroup.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Render/RenderHelper.h"
-#include "Render/RenderManager.h"
 #include "Scene3D/SceneFileV2.h"
 
 namespace DAVA 
@@ -45,7 +44,7 @@ PolygonGroup::PolygonGroup()
     , vertexFormat(0)
     , indexFormat(EIF_16)
     , triangleCount(0)
-    , primitiveType(PRIMITIVETYPE_TRIANGLELIST)
+    , primitiveType(rhi::PRIMITIVE_TRIANGLELIST)
     , cubeTextureCoordCount(0)
 
     , vertexArray(0)
@@ -65,345 +64,163 @@ PolygonGroup::PolygonGroup()
     , colorArray(0)
     , indexArray(0)
     , meshData(0)
-
     , baseVertexArray(0)
-    , renderDataObject(0)
+    , vertexLayoutId(rhi::VertexLayout::InvalidUID)    
 {
 }
 
 PolygonGroup::~PolygonGroup()
 {
-    ReleaseData();
+	ReleaseData();
+    if (vertexBuffer.IsValid())
+        rhi::DeleteVertexBuffer(vertexBuffer);    
+    if (indexBuffer.IsValid())
+        rhi::DeleteIndexBuffer(indexBuffer);
 }
     
 void PolygonGroup::UpdateDataPointersAndStreams()
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
+    //later merge old render and new rhi formats
+    rhi::VertexLayout vLayout;
+
     int32 baseShift = 0;
-	if (vertexFormat & EVF_VERTEX)
-	{
-		vertexArray = reinterpret_cast<Vector3*>(meshData + baseShift);
-		baseShift += GetVertexSize(EVF_VERTEX);
-        
-        renderDataObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, vertexStride, vertexArray);
+    if (vertexFormat & EVF_VERTEX)
+    {
+        vertexArray = reinterpret_cast<Vector3*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_VERTEX);
+        vLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
     }
-	if (vertexFormat & EVF_NORMAL)
-	{
-		normalArray = reinterpret_cast<Vector3*>(meshData + baseShift);
-		baseShift += GetVertexSize(EVF_NORMAL);
-        
-        renderDataObject->SetStream(EVF_NORMAL, TYPE_FLOAT, 3, vertexStride, normalArray);
-	}
-	if (vertexFormat & EVF_COLOR)
-	{
-		colorArray = reinterpret_cast<uint32*>(meshData + baseShift);
-		baseShift += GetVertexSize(EVF_COLOR);
-        
-        renderDataObject->SetStream(EVF_COLOR, TYPE_UNSIGNED_BYTE, 4, vertexStride, colorArray);
+    if (vertexFormat & EVF_NORMAL)
+    {
+        normalArray = reinterpret_cast<Vector3*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_NORMAL);
+        vLayout.AddElement(rhi::VS_NORMAL, 0, rhi::VDT_FLOAT, 3);
     }
-	if (vertexFormat & EVF_TEXCOORD0)
-	{
-		textureCoordArray[0] = reinterpret_cast<Vector2*>(meshData + baseShift);
-		baseShift += GetVertexSize(EVF_TEXCOORD0);
-        
-        renderDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, vertexStride, textureCoordArray[0]);
-	}
-	if (vertexFormat & EVF_TEXCOORD1)
-	{
-		textureCoordArray[1] = reinterpret_cast<Vector2*>(meshData + baseShift);
-		baseShift += GetVertexSize(EVF_TEXCOORD1);
-        
-        renderDataObject->SetStream(EVF_TEXCOORD1, TYPE_FLOAT, 2, vertexStride, textureCoordArray[1]);
+    if (vertexFormat & EVF_COLOR)
+    {
+        colorArray = reinterpret_cast<uint32*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_COLOR);
+        vLayout.AddElement(rhi::VS_COLOR, 0, rhi::VDT_UINT8N, 4);
     }
-	if (vertexFormat & EVF_TEXCOORD2)
-	{
-		textureCoordArray[2] = reinterpret_cast<Vector2*>(meshData + baseShift);
-		baseShift += GetVertexSize(EVF_TEXCOORD2);
-        
-        renderDataObject->SetStream(EVF_TEXCOORD2, TYPE_FLOAT, 2, vertexStride, textureCoordArray[2]);
-	}
-	if (vertexFormat & EVF_TEXCOORD3)
-	{
-		textureCoordArray[3] = reinterpret_cast<Vector2*>(meshData + baseShift);
-		baseShift += GetVertexSize(EVF_TEXCOORD3);
-        
-        renderDataObject->SetStream(EVF_TEXCOORD3, TYPE_FLOAT, 2, vertexStride, textureCoordArray[3]);
-	}	
-	if (vertexFormat & EVF_TANGENT)
-	{
-		tangentArray = reinterpret_cast<Vector3*>(meshData + baseShift);
-		baseShift += GetVertexSize(EVF_TANGENT);
-        
-        renderDataObject->SetStream(EVF_TANGENT, TYPE_FLOAT, 3, vertexStride, tangentArray);
-	}
-	if (vertexFormat & EVF_BINORMAL)
-	{
-		binormalArray = reinterpret_cast<Vector3*>(meshData + baseShift);
-		baseShift += GetVertexSize(EVF_BINORMAL);
-        
-        renderDataObject->SetStream(EVF_BINORMAL, TYPE_FLOAT, 3, vertexStride, binormalArray);
+    if (vertexFormat & EVF_TEXCOORD0)
+    {
+        textureCoordArray[0] = reinterpret_cast<Vector2*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_TEXCOORD0);
+        vLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
+    }
+    if (vertexFormat & EVF_TEXCOORD1)
+    {
+        textureCoordArray[1] = reinterpret_cast<Vector2*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_TEXCOORD1);
+        vLayout.AddElement(rhi::VS_TEXCOORD, 1, rhi::VDT_FLOAT, 2);
+    }
+    if (vertexFormat & EVF_TEXCOORD2)
+    {
+        textureCoordArray[2] = reinterpret_cast<Vector2*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_TEXCOORD2);
+        vLayout.AddElement(rhi::VS_TEXCOORD, 2, rhi::VDT_FLOAT, 2);
+    }
+    if (vertexFormat & EVF_TEXCOORD3)
+    {
+        textureCoordArray[3] = reinterpret_cast<Vector2*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_TEXCOORD3);
+        vLayout.AddElement(rhi::VS_TEXCOORD, 3, rhi::VDT_FLOAT, 2);
+    }
+    if (vertexFormat & EVF_TANGENT)
+    {
+        tangentArray = reinterpret_cast<Vector3*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_TANGENT);
+        vLayout.AddElement(rhi::VS_TANGENT, 0, rhi::VDT_FLOAT, 3);
+    }
+    if (vertexFormat & EVF_BINORMAL)
+    {
+        binormalArray = reinterpret_cast<Vector3*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_BINORMAL);
+        vLayout.AddElement(rhi::VS_BINORMAL, 0, rhi::VDT_FLOAT, 3);
     }
     if (vertexFormat & EVF_JOINTINDEX)
     {
-        jointIdxArray = reinterpret_cast<uint32*>(meshData + baseShift);
+        jointIdxArray = reinterpret_cast<float32*>(meshData + baseShift);
         baseShift += GetVertexSize(EVF_JOINTINDEX);
-
-        renderDataObject->SetStream(EVF_JOINTINDEX , TYPE_UNSIGNED_BYTE, 4, vertexStride, jointIdxArray);
+        vLayout.AddElement(rhi::VS_BLENDINDEX, 0, rhi::VDT_FLOAT, 1);
 
         SafeDeleteArray(jointCountArray);
-        jointCountArray = new int32[vertexCount];
+        jointCountArray = new uint32[vertexCount];
     }
-	if (vertexFormat & EVF_JOINTWEIGHT)
-	{
-		jointWeightArray = reinterpret_cast<uint32*>(meshData + baseShift);
-		baseShift += GetVertexSize(EVF_JOINTWEIGHT);
-		
-        renderDataObject->SetStream(EVF_JOINTWEIGHT , TYPE_UNSIGNED_BYTE, 4, vertexStride, jointWeightArray);
-	}
-	if (vertexFormat & EVF_CUBETEXCOORD0)
-	{
-		cubeTextureCoordArray[0] = reinterpret_cast<Vector3*>(meshData + baseShift);
-		baseShift += GetVertexSize(EVF_CUBETEXCOORD0);
-        
-        renderDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 3, vertexStride, cubeTextureCoordArray[0]);
-	}
-	if (vertexFormat & EVF_CUBETEXCOORD1)
-	{
-		cubeTextureCoordArray[1] = reinterpret_cast<Vector3*>(meshData + baseShift);
-		baseShift += GetVertexSize(EVF_CUBETEXCOORD1);
-        
-        renderDataObject->SetStream(EVF_TEXCOORD1, TYPE_FLOAT, 3, vertexStride, cubeTextureCoordArray[1]);
+    if (vertexFormat & EVF_JOINTWEIGHT)
+    {
+        jointWeightArray = reinterpret_cast<float32*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_JOINTWEIGHT);
+        vLayout.AddElement(rhi::VS_BLENDWEIGHT, 0, rhi::VDT_FLOAT, 1);
     }
-	if (vertexFormat & EVF_CUBETEXCOORD2)
-	{
-		cubeTextureCoordArray[2] = reinterpret_cast<Vector3*>(meshData + baseShift);
-		baseShift += GetVertexSize(EVF_CUBETEXCOORD2);
-        
-        renderDataObject->SetStream(EVF_TEXCOORD2, TYPE_FLOAT, 3, vertexStride, cubeTextureCoordArray[2]);
-	}
-	if (vertexFormat & EVF_CUBETEXCOORD3)
-	{
-		cubeTextureCoordArray[3] = reinterpret_cast<Vector3*>(meshData + baseShift);
-		baseShift += GetVertexSize(EVF_CUBETEXCOORD3);
-        
-        renderDataObject->SetStream(EVF_TEXCOORD3, TYPE_FLOAT, 3, vertexStride, cubeTextureCoordArray[3]);
-	}
+    if (vertexFormat & EVF_CUBETEXCOORD0)
+    {
+        cubeTextureCoordArray[0] = reinterpret_cast<Vector3*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_CUBETEXCOORD0);
+        vLayout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 3);
+    }
+    if (vertexFormat & EVF_CUBETEXCOORD1)
+    {
+        cubeTextureCoordArray[1] = reinterpret_cast<Vector3*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_CUBETEXCOORD1);
+        vLayout.AddElement(rhi::VS_TEXCOORD, 1, rhi::VDT_FLOAT, 3);
+    }
+    if (vertexFormat & EVF_CUBETEXCOORD2)
+    {
+        cubeTextureCoordArray[2] = reinterpret_cast<Vector3*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_CUBETEXCOORD2);
+        vLayout.AddElement(rhi::VS_TEXCOORD, 2, rhi::VDT_FLOAT, 3);
+    }
+    if (vertexFormat & EVF_CUBETEXCOORD3)
+    {
+        cubeTextureCoordArray[3] = reinterpret_cast<Vector3*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_CUBETEXCOORD3);
+        vLayout.AddElement(rhi::VS_TEXCOORD, 3, rhi::VDT_FLOAT, 3);
+    }
     if (vertexFormat & EVF_PIVOT)
     {
         pivotArray = reinterpret_cast<Vector3*>(meshData + baseShift);
         baseShift += GetVertexSize(EVF_PIVOT);
-
-        renderDataObject->SetStream(EVF_PIVOT, TYPE_FLOAT, 3, vertexStride, pivotArray);
+        vLayout.AddElement(rhi::VS_TEXCOORD, 3, rhi::VDT_FLOAT, 3);
     }
     if (vertexFormat & EVF_FLEXIBILITY)
     {
         flexArray = reinterpret_cast<float32*>(meshData + baseShift);
         baseShift += GetVertexSize(EVF_FLEXIBILITY);
-
-        renderDataObject->SetStream(EVF_FLEXIBILITY, TYPE_FLOAT, 1, vertexStride, flexArray);
+        vLayout.AddElement(rhi::VS_TEXCOORD, 5, rhi::VDT_FLOAT, 1);
     }
     if (vertexFormat & EVF_ANGLE_SIN_COS)
     {
         angleArray = reinterpret_cast<Vector2*>(meshData + baseShift);
         baseShift += GetVertexSize(EVF_ANGLE_SIN_COS);
-
-        renderDataObject->SetStream(EVF_ANGLE_SIN_COS, TYPE_FLOAT, 2, vertexStride, angleArray);
+        vLayout.AddElement(rhi::VS_TEXCOORD, 4, rhi::VDT_FLOAT, 2);
     }
+
+    vertexLayoutId = rhi::VertexLayout::UniqueId(vLayout);
 }
+
 
 void PolygonGroup::AllocateData(int32 _meshFormat, int32 _vertexCount, int32 _indexCount)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    vertexCount = _vertexCount;
-    indexCount = _indexCount;
-    vertexStride = GetVertexSize(_meshFormat);
-    vertexFormat = _meshFormat;
-    textureCoordCount = GetTexCoordCount(vertexFormat);
-    cubeTextureCoordCount = GetCubeTexCoordCount(vertexFormat);
+	vertexCount = _vertexCount;
+	indexCount = _indexCount;
+	vertexStride = GetVertexSize(_meshFormat);
+	vertexFormat = _meshFormat;
+	textureCoordCount = GetTexCoordCount(vertexFormat);
+	cubeTextureCoordCount = GetCubeTexCoordCount(vertexFormat);
 
-    meshData = new uint8[vertexStride * vertexCount];
-    indexArray = new int16[indexCount];
-    textureCoordArray = new Vector2*[textureCoordCount];
-    cubeTextureCoordArray = new Vector3*[cubeTextureCoordCount];
-
-    renderDataObject = new RenderDataObject;
-
+	meshData = new uint8[vertexStride * vertexCount];
+	indexArray = new int16[indexCount];
+	textureCoordArray = new Vector2*[textureCoordCount];
+	cubeTextureCoordArray = new Vector3*[cubeTextureCoordCount];    
+    
     UpdateDataPointersAndStreams();
 }
     
-void PolygonGroup::TangentVectors(  const Vector3 &v0, 
-                                    const Vector3 &v1, 
-                                    const Vector3 &v2, 
-                                    const Vector2 &t0, 
-                                    const Vector2 &t1, 
-                                    const Vector2 &t2, 
-                                    Vector3 &sdir, 
-                                    Vector3 &tdir, 
-                                    Vector3 &normal)
-{
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
-    Vector3 dv0 = v1 - v0;
-    Vector3 dv1 = v2 - v0;
-    
-    Vector2 dt0 = t1 - t0;
-    Vector2 dt1 = t2 - t0;
-    
-    float r = 1.0f / (dt0.x * dt1.y - dt1.x * dt0.y);
-    sdir = Vector3(dt1.y * dv0.x - dt0.y * dv1.x, dt1.y * dv0.y - dt0.y * dv1.y, dt1.y * dv0.z - dt0.y * dv1.z) * r;
-    tdir = Vector3(dt0.x * dv1.x - dt1.x * dv0.x, dt0.x * dv1.y - dt1.x * dv0.y, dt0.x * dv1.z - dt1.x * dv0.z) * r;
-    normal = CrossProduct(dv0, dv1);
-    normal.Normalize();
-}
-    
-void PolygonGroup::BuildTangentsBinormals(uint32 flagsToAdd)
-{
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
-    if (!(vertexFormat & EVF_TANGENT))
-    {
-        // Dirty hack. Copy pointers of this polygon group 
-        //        PolygonGroup * oldGroup = this;
-        //        AllocateData(oldGroup->GetVertexFormat() | flagsToAdd, oldGroup->GetVertexCount(), oldGroup->GetIndexCount());
-        //        CopyFrom(oldGroup);
-        //        SafeRelease(oldGroup);
-    }
-    
-    for (int v = 0; v < vertexCount; ++v)
-    {
-        //Vector3 * tan0 = (Vector3 *)((uint8 *)normalArray + v * vertexStride);  
-        Vector3 * tan1 = (Vector3 *)((uint8 *)tangentArray + v * vertexStride);  
-        Vector3 * tan2 = (Vector3 *)((uint8 *)binormalArray + v * vertexStride);  
-        //*tan0 = Vector3(0.0f, 0.0f, 0.0f);
-        tan1->x = 0;
-        tan1->y = 0;
-        tan1->z = 0;
-        
-        tan2->x = 0;
-        tan2->y = 0;
-        tan2->z = 0;
-    }
-    
-    for (int t = 0; t < triangleCount; ++t)	
-    {
-        int32 i1 = indexArray[t * 3];
-        int32 i2 = indexArray[t * 3 + 1];
-        int32 i3 = indexArray[t * 3 + 2];
-        
-        Vector3 v1 = *(Vector3 *)((uint8 *)vertexArray + i1 * vertexStride);  
-        Vector3 v2 = *(Vector3 *)((uint8 *)vertexArray + i2 * vertexStride);  
-        Vector3 v3 = *(Vector3 *)((uint8 *)vertexArray + i3 * vertexStride);  
-        
-        
-        // use first texture coordinate
-        Vector2 w1 = *(Vector2 *)((uint8 *)textureCoordArray[0] + i1 * vertexStride);  
-        Vector2 w2 = *(Vector2 *)((uint8 *)textureCoordArray[0] + i2 * vertexStride);  
-        Vector2 w3 = *(Vector2 *)((uint8 *)textureCoordArray[0] + i3 * vertexStride);  
-        
-        //float32 x1 = v2.x - v1.x;
-        //float32 x2 = v3.x - v1.x;
-        //float32 y1 = v2.y - v1.y;
-        //float32 y2 = v3.y - v1.y;
-        //float32 z1 = v2.z - v1.z;
-        //float32 z2 = v3.z - v1.z;
-        
-        //float32 s1 = w2.x - w1.x;
-        //float32 s2 = w3.x - w1.x;
-        //float32 t1 = w2.y - w1.y;
-        //float32 t2 = w3.y - w1.y;
-        
-        //float r = 1.0F / (s1 * t2 - s2 * t1);
-        //Vector3 sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r,
-        //	(t2 * z1 - t1 * z2) * r);
-        //Vector3 tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
-        //	(s1 * z2 - s2 * z1) * r);
-        
-        
-        Vector3 sdir, tdir, norm;
-        
-        TangentVectors(v1, v2, v3, w1, w2, w3, sdir, tdir, norm);
-        
-        //Vector3 * nor1 = (Vector3 *)((uint8 *)normalArray + i1 * vertexStride);  
-        //Vector3 * nor2 = (Vector3 *)((uint8 *)normalArray + i2 * vertexStride);  
-        //Vector3 * nor3 = (Vector3 *)((uint8 *)normalArray + i3 * vertexStride);  
-        
-        Vector3 * tan1 = (Vector3 *)((uint8 *)tangentArray + i1 * vertexStride);  
-        Vector3 * tan2 = (Vector3 *)((uint8 *)tangentArray + i2 * vertexStride);  
-        Vector3 * tan3 = (Vector3 *)((uint8 *)tangentArray + i3 * vertexStride);  
-        
-        Vector3 * tan21 = (Vector3 *)((uint8 *)binormalArray + i1 * vertexStride);  
-        Vector3 * tan22 = (Vector3 *)((uint8 *)binormalArray + i2 * vertexStride);  
-        Vector3 * tan23 = (Vector3 *)((uint8 *)binormalArray + i3 * vertexStride);  
-        
-        
-        //*nor1 += norm;
-        //*nor2 += norm;
-        //*nor3 += norm;
-        
-        *tan1 += sdir;
-        *tan2 += sdir;
-        *tan3 += sdir;
-        
-        *tan21 += tdir;
-        *tan22 += tdir;
-        *tan23 += tdir;
-    }
-    
-    for (int v = 0; v < vertexCount; ++v)
-    {
-        Vector3 * nres = (Vector3 *)((uint8 *)normalArray + v * vertexStride);  
-        Vector3 * tres = (Vector3 *)((uint8 *)tangentArray + v * vertexStride);  
-        Vector3 * bres = (Vector3 *)((uint8 *)binormalArray + v * vertexStride);  
-        
-        *bres = -*bres;
-        nres->Normalize();
-        tres->Normalize();
-        bres->Normalize();
-        
-        //Vector3 n = *nres;
-        //Vector3 t = *tres;
-        //Vector3 t2 = *bres;
-        
-        //*tres = (t - DotProduct(n, t) * n);
-        //
-        ////tres->x = -tres->x;
-        ////tres->y = -tres->y;
-        ////tres->z = -tres->z;
-        ////nres->x = -nres->x;
-        ////nres->y = -nres->y;
-        ////nres->z = -nres->z;
-        
-        
-        //tres->Normalize();
-        //
-        //float32 handedness = (DotProduct(CrossProduct(n, t), t2) < 0.0f) ? (-1.0f) : (1.0f);
-        
-        //if (vertexFormat & EVF_BINORMAL)
-        //{
-        //	*bres = CrossProduct(*tres, *nres);
-        //	bres->Normalize();
-        //}
-        ////*bres = -*bres;
-        //*tres = -*tres;
-        
-        /*
-         BORODA: Removed unused variable
-         Vector3 nrecomp = CrossProduct(*tres, *bres);
-        */
-        
-        // int xt = 0;
-        // use this method (get from .. http://www.c4engine.com/code/tangent.html);
-        //const Vector3D& n = normal[a];
-        //const Vector3D& t = tan1[a];
-        //// Gram-Schmidt orthogonalize
-        // tangent[a] = (t - n * Dot(n, t)).Normalize();
-        //
-        // // Calculate handedness
-        // tangent[a].w = (Dot(Cross(n, t), tan2[a]) < 0.0F) ? -1.0F : 1.0F;
-    }
-}
     
 void PolygonGroup::CreateBaseVertexArray()
 {
@@ -451,9 +268,7 @@ void PolygonGroup::ApplyMatrix(const Matrix4 & matrix)
 }
 	    
 void PolygonGroup::ReleaseData()
-{
-    SafeRelease(renderDataObject);
-    
+{        
     SafeDeleteArray(jointCountArray);
     SafeDeleteArray(meshData);
     SafeDeleteArray(indexArray);
@@ -500,22 +315,19 @@ uint32 PolygonGroup::ReleaseGeometryData()
 
 void PolygonGroup::BuildBuffers()
 {
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
+    if (vertexBuffer.IsValid())
+        rhi::DeleteVertexBuffer(vertexBuffer);    
 
-    UpdateDataPointersAndStreams();
-    JobManager::Instance()->CreateMainJob(MakeFunction(PointerWrapper<PolygonGroup>::WrapRetainRelease(this), &PolygonGroup::BuildBuffersInternal));
+    uint32 vertexDataSize = vertexStride * vertexCount;
+    vertexBuffer = rhi::CreateVertexBuffer(vertexDataSize);
+    rhi::UpdateVertexBuffer(vertexBuffer, meshData, 0, vertexDataSize);
+
+    if (indexBuffer.IsValid())
+        rhi::DeleteIndexBuffer(indexBuffer);
+    uint32 indexDataSize = indexCount * INDEX_FORMAT_SIZE[indexFormat];
+    indexBuffer = rhi::CreateIndexBuffer(indexDataSize);
+    rhi::UpdateIndexBuffer(indexBuffer, indexArray, 0, indexDataSize);    
 };
-    
-void PolygonGroup::BuildBuffersInternal()
-{
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
-
-    DVASSERT(Thread::IsMainThread());
-    
-    renderDataObject->BuildVertexBuffer(vertexCount);
-    renderDataObject->SetIndices((eIndexFormat)indexFormat, (uint8*)indexArray, indexCount);
-    renderDataObject->BuildIndexBuffer();
-}
 
 
     
@@ -529,7 +341,7 @@ void PolygonGroup::Save(KeyedArchive * keyedArchive, SerializationContext * seri
     keyedArchive->SetInt32("vertexCount", vertexCount); 
     keyedArchive->SetInt32("indexCount", indexCount); 
     keyedArchive->SetInt32("textureCoordCount", textureCoordCount);
-    keyedArchive->SetInt32("primitiveType", primitiveType);
+    keyedArchive->SetInt32("rhi_primitiveType", primitiveType);
                            
     keyedArchive->SetInt32("packing", PACKING_NONE);
     keyedArchive->SetByteArray("vertices", meshData, vertexCount * vertexStride);
@@ -556,7 +368,7 @@ void PolygonGroup::LoadPolygonData(KeyedArchive * keyedArchive, SerializationCon
     vertexCount = keyedArchive->GetInt32("vertexCount");
     indexCount = keyedArchive->GetInt32("indexCount");
     textureCoordCount = keyedArchive->GetInt32("textureCoordCount");
-    primitiveType = (ePrimitiveType)keyedArchive->GetInt32("primitiveType");
+    primitiveType = (rhi::PrimitiveType)keyedArchive->GetInt32("rhi_primitiveType", rhi::PRIMITIVE_TRIANGLELIST);
     cubeTextureCoordCount = keyedArchive->GetInt32("cubeTextureCoordCount");
     
     int32 formatPacking = keyedArchive->GetInt32("packing");
@@ -618,14 +430,6 @@ void PolygonGroup::LoadPolygonData(KeyedArchive * keyedArchive, SerializationCon
     SafeDeleteArray(textureCoordArray);
     textureCoordArray = new Vector2*[textureCoordCount];
 
-    SafeDeleteArray(cubeTextureCoordArray);
-    if(cubeTextureCoordCount)
-    {
-        cubeTextureCoordArray = new Vector3*[cubeTextureCoordCount];
-    }
-
-    SafeRelease(renderDataObject);
-    renderDataObject = new RenderDataObject;
     UpdateDataPointersAndStreams();
     RecalcAABBox();
 
@@ -646,47 +450,7 @@ void PolygonGroup::RecalcAABBox()
         aabbox.AddPoint(point);
     }
 }
-    
-void PolygonGroup::DebugDraw()
-{
-    DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
-    for (int k = 0; k < indexCount / 3; ++k)
-    {
-        Vector3 v0, v1, v2;
-        GetCoord(indexArray[k * 3 + 0], v0);
-        GetCoord(indexArray[k * 3 + 1], v1);
-        GetCoord(indexArray[k * 3 + 2], v2);
-        RenderHelper::Instance()->DrawLine(v0, v1, 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-        RenderHelper::Instance()->DrawLine(v1, v2, 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-        RenderHelper::Instance()->DrawLine(v0, v2, 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-    }
-}
-
-/*class VertexQuadTree
-{
-public:
-    VertexOctTree()
-    {
-        
-    }
-    
-    ~VertexOctTree()
-    {
-        
-    }
-    
-    struct Vertex
-    {
-        Vector3 position;
-        uint32  color;
-        Vector3 normal;
-        Vector2 texCoords[4];
-    };
-    
-    DynamicObjectCacheData<Vertex>
-};*/
 
 void PolygonGroup::CopyData(const uint8 ** meshData, uint8 ** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const
 {

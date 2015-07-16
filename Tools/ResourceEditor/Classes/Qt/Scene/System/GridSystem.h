@@ -36,7 +36,6 @@
 #include "UI/UIEvent.h"
 #include "Base/Introspection.h"
 
-#include "Render/RenderManager.h"
 
 class SceneGridSystem : public DAVA::SceneSystem
 {
@@ -53,7 +52,6 @@ protected:
 
 	void ProcessCommand(const Command2 *command, bool redo);
 	
-	DAVA::UniqueHandle renderState;
 };
 
 #endif

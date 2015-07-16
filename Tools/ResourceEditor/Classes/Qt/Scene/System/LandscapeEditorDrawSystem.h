@@ -41,7 +41,6 @@ class NotPassableTerrainProxy;
 class CustomColorsProxy;
 class VisibilityToolProxy;
 class RulerToolProxy;
-class GrassEditorProxy;
 class Command2;
 
 using namespace DAVA;
@@ -72,7 +71,6 @@ public:
 	CustomColorsProxy* GetCustomColorsProxy();
 	VisibilityToolProxy* GetVisibilityToolProxy();
 	RulerToolProxy* GetRulerToolProxy();
-    GrassEditorProxy* GetGrassEditorProxy();
 
 	eErrorType EnableCustomDraw();
 	void DisableCustomDraw();
@@ -84,37 +82,37 @@ public:
 	eErrorType EnableNotPassableTerrain();
 	void DisableNotPassableTerrain();
 	
-	void EnableCursor(int32 landscapeSize);
+	void EnableCursor();
 	void DisableCursor();
 	void SetCursorTexture(Texture* cursorTexture);
-	void SetCursorSize(uint32 cursorSize);
+	void SetCursorSize(float32 cursorSize);
 	void SetCursorPosition(const Vector2& cursorPos);
-	void UpdateCursorPosition();
 	
 	virtual void Process(DAVA::float32 timeElapsed);
 
     void ProcessCommand(const Command2 *command, bool redo);
 
-	float32 GetTextureSize(Landscape::eTextureLevel level);
+	float32 GetTextureSize(const FastName& level);
 	Vector3 GetLandscapeSize();
 	float32 GetLandscapeMaxHeight();
-	float32 GetHeightAtPoint(const Vector2& point);
-	float32 GetHeightAtTexturePoint(Landscape::eTextureLevel level, const Vector2& point);
+	float32 GetHeightAtHeightmapPoint(const Vector2& point);
+    float32 GetHeightAtNormalizedPoint(const Vector2& point);
+    float32 GetHeightAtTexturePoint(const FastName& level, const Vector2& point);
 	KeyedArchive* GetLandscapeCustomProperties();
 
-	Vector2 HeightmapPointToTexturePoint(Landscape::eTextureLevel level, const Vector2& point);
-	Vector2 TexturePointToHeightmapPoint(Landscape::eTextureLevel level, const Vector2& point);
-	Vector2 TexturePointToLandscapePoint(Landscape::eTextureLevel level, const Vector2& point);
-	Vector2 LandscapePointToTexturePoint(Landscape::eTextureLevel level, const Vector2& point);
+	Vector2 HeightmapPointToTexturePoint(const FastName& level, const Vector2& point);
+	Vector2 TexturePointToHeightmapPoint(const FastName& level, const Vector2& point);
+	Vector2 TexturePointToLandscapePoint(const FastName& level, const Vector2& point);
+	Vector2 LandscapePointToTexturePoint(const FastName& level, const Vector2& point);
 	Vector2 TranslatePoint(const Vector2& point, const Rect& fromRect, const Rect& toRect);
 
-	void ClampToTexture(Landscape::eTextureLevel level, Rect& rect);
+	void ClampToTexture(const FastName& level, Rect& rect);
 	void ClampToHeightmap(Rect& rect);
 
 	void AddEntity(DAVA::Entity * entity) override;
 	void RemoveEntity(DAVA::Entity * entity) override;
 
-	Rect GetTextureRect(Landscape::eTextureLevel level);
+	Rect GetTextureRect(const FastName& level);
 	Rect GetHeightmapRect();
 	Rect GetLandscapeRect();
 
@@ -127,7 +125,7 @@ public:
 	
 	static String GetDescriptionByError(eErrorType error);
 
-private:
+protected:
     
     void UpdateBaseLandscapeHeightmap();
     eErrorType Init();
@@ -139,7 +137,6 @@ private:
     
     bool UpdateTilemaskPathname();
     
-
     Entity* landscapeNode;
 	Landscape* baseLandscape;
 	LandscapeProxy* landscapeProxy;
@@ -148,15 +145,8 @@ private:
 	CustomColorsProxy* customColorsProxy;
 	VisibilityToolProxy* visibilityToolProxy;
 	RulerToolProxy* rulerToolProxy;
-    GrassEditorProxy *grassEditorProxy;
 
 	uint32 customDrawRequestCount;
-	
-	Texture* cursorTexture;
-	uint32 cursorSize;
-	Vector2 cursorPosition;
-
-	UniqueHandle noBlendDrawState;
 
     FilePath sourceTilemaskPath;
 };

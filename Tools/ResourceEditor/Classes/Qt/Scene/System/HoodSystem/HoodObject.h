@@ -60,8 +60,7 @@ struct HoodObject
 
 protected:
 	DAVA::Vector3 GetAxisTextPos(HoodCollObject *axis);
-	
-	DAVA::UniqueHandle hoodDrawState;
+		
 };
 
 #endif

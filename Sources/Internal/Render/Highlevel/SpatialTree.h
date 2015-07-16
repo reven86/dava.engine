@@ -42,8 +42,6 @@ const static uint16 INVALID_TREE_NODE_INDEX = (uint16)(-1);
     
 class RenderObject;
 class Frustum;
-
-
 class QuadTree : public RenderHierarchy
 {	
 	struct QuadTreeNode //still basic implementation - later move it to more compact
@@ -91,8 +89,8 @@ class QuadTree : public RenderHierarchy
 	void UpdateParentBox(AABBox3 &childBox, QuadTreeNode::eNodeType childType);	
 	
 	
-	void ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags);	
-    void GetObjects(uint16 nodeId, uint8 clippingFlags, const AABBox3 & bbox, VisibilityArray * visibilityArray);
+    void ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags, Vector<RenderObject *> & visibilityArray);
+    void GetObjects(uint16 nodeId, uint8 clippingFlags, const AABBox3 & bbox, Vector<RenderObject *> & visibilityArray);
     
     
 	uint16 FindObjectAddNode(uint16 startNodeId, const AABBox3& objBox);
@@ -120,8 +118,8 @@ public:
 	virtual void AddRenderObject(RenderObject * renderObject);
 	virtual void RemoveRenderObject(RenderObject * renderObject);
 	virtual void ObjectUpdated(RenderObject * renderObject);
-	virtual void Clip(Camera * camera, VisibilityArray * visibilityArray, uint32 visibilityCriteria);
-    virtual void GetAllObjectsInBBox(const AABBox3 & bbox, VisibilityArray * visibilityArray);
+    virtual void Clip(Camera * camera, Vector<RenderObject *> & visibilityArray, uint32 visibilityCriteria);
+    virtual void GetAllObjectsInBBox(const AABBox3 & bbox, Vector<RenderObject *> & visibilityArray);
 
 	virtual void Initialize();
 

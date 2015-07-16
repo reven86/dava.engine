@@ -30,6 +30,7 @@
 #ifndef __IMAGE_REGION_COPY_COMMAND_H__
 #define __IMAGE_REGION_COPY_COMMAND_H__
 
+#include "Render/Image/Image.h"
 #include "Commands2/Command2.h"
 
 class ImageRegionCopyCommand : public Command2

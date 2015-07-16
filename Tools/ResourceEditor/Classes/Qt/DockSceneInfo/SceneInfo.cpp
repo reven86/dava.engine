@@ -163,7 +163,7 @@ void SceneInfo::Initialize3DDrawSection()
 void SceneInfo::Refresh3DDrawInfo()
 {
     if(!activeScene) return;
-    
+#if RHI_COMPLETE_EDITOR
     QtPropertyData* header = GetInfoHeader("DrawInfo");
     
     const RenderManager::Stats & renderStats = activeScene->GetRenderStats();
@@ -186,6 +186,7 @@ void SceneInfo::Refresh3DDrawInfo()
 
     SetChild("Dynamic Param Bind Count", renderStats.dynamicParamUniformBindCount, header2);
     SetChild("Material Param Bind Count", renderStats.materialParamUniformBindCount, header2);
+#endif // RHI_COMPLETE_EDITOR
 
 }
 
@@ -411,13 +412,13 @@ void SceneInfo::CollectLODDataInFrame()
     if(!activeScene||!activeScene->renderSystem||!activeScene->renderSystem->IsRenderHierarchyInitialized()||!activeScene->GetCurrentCamera())
         return;
 
-    visibilityArray.Clear();
-    activeScene->renderSystem->GetRenderHierarchy()->Clip(activeScene->GetCurrentCamera(), &visibilityArray, RenderObject::CLIPPING_VISIBILITY_CRITERIA);
+    visibilityArray.clear();
+    activeScene->renderSystem->GetRenderHierarchy()->Clip(activeScene->GetCurrentCamera(), visibilityArray, RenderObject::CLIPPING_VISIBILITY_CRITERIA);
 
-    uint32 size = (uint32)visibilityArray.GetCount();
+    uint32 size = (uint32)visibilityArray.size();
     for (uint32 ro = 0; ro < size; ++ro)
     {
-        RenderObject * renderObject = visibilityArray.Get(ro);
+        RenderObject * renderObject = visibilityArray[ro];
         uint32 batchCount = renderObject->GetActiveRenderBatchCount();
         int32 indexCount = 0;
         for(uint32 i = 0; i < batchCount; ++i)
@@ -728,6 +729,7 @@ void SceneInfo::CollectSpeedTreeLeafsSquare(const EntityGroup * forGroup)
 SceneInfo::SpeedTreeInfo SceneInfo::GetSpeedTreeLeafsSquare(DAVA::RenderObject *renderObject)
 {
     SpeedTreeInfo info;
+#if RHI_COMPLETE_EDITOR
     if(renderObject)
     {
         bool hasLeafsGeometry = false;
@@ -773,7 +775,7 @@ SceneInfo::SpeedTreeInfo SceneInfo::GetSpeedTreeLeafsSquare(DAVA::RenderObject *
             info.leafsSquareDivY = info.leafsSquare / (bboxSize.y * bboxSize.z);
         }
     }
-    
+#endif // RHI_COMPLETE_EDITOR
     return info;
 }
 
@@ -975,6 +977,7 @@ void SceneInfo::InitializeLayersSection()
 
 void SceneInfo::RefreshLayersSection()
 {
+#if RHI_COMPLETE_EDITOR
     if(activeScene)
     {
         float32 viewportSize = RenderManager::Instance()->frameBufferWidth * RenderManager::Instance()->frameBufferHeight;
@@ -998,4 +1001,5 @@ void SceneInfo::RefreshLayersSection()
             SetChild(queriesNames[i].c_str(), str.c_str(), header);
         }
     }
+#endif RHI_COMPLETE_EDITOR
 }

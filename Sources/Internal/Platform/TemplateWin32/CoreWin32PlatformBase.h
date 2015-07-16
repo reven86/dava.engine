@@ -49,6 +49,7 @@ public:
     HINSTANCE GetInstance() const;
     HWND GetWindow() const;
 
+
     void SetCursorPositionCenter();
     void SetCursorPosition(Point2i position);
     Point2i GetCursorPosition();

@@ -1,0 +1,65 @@
+#include "common.cgh"
+
+FPROG_IN_BEGIN
+    
+    FPROG_IN_TEXCOORD0(texCoord,2)
+    FPROG_IN_TEXCOORD1(texCoordTiled,2)
+    #if VERTEX_FOG
+        FPROG_IN_TEXCOORD5(varFog,4)
+    #endif
+
+FPROG_IN_END
+
+
+FPROG_OUT_BEGIN
+    FPROG_OUT_COLOR
+FPROG_OUT_END
+
+DECL_FP_SAMPLER2D(tileTexture0)
+DECL_FP_SAMPLER2D(tileMask)
+DECL_FP_SAMPLER2D(colorTexture)
+
+property float3 tileColor0 : static,instance : def_value=1,1,1;
+property float3 tileColor1 : static,instance : def_value=1,1,1;
+property float3 tileColor2 : static,instance : def_value=1,1,1;
+property float3 tileColor3 : static,instance : def_value=1,1,1;
+
+#if CURSOR
+DECL_FP_SAMPLER2D(cursorTexture)
+property float4 cursorCoordSize : static,instance : def_value=0,0,1,1;
+#endif
+
+FPROG_BEGIN
+
+    float4 tileColor = FP_TEXTURE2D( tileTexture0, FP_IN(texCoordTiled) );
+    float4 mask = FP_TEXTURE2D( tileMask, FP_IN(texCoord) );
+    float4 color = FP_TEXTURE2D( colorTexture, FP_IN(texCoord) );
+    
+    float3 color3 = (tileColor.r * mask.r * tileColor0.rgb + 
+                     tileColor.g * mask.g * tileColor1.rgb + 
+                     tileColor.b * mask.b * tileColor2.rgb + 
+                     tileColor.a * mask.a * tileColor3.rgb ) * color.rgb * 2.0;
+    float4 outColor = float4(color3, 1.0);
+    
+#if CURSOR
+    float2 cursorCoord = (FP_IN(texCoord) + cursorCoordSize.xy) / cursorCoordSize.zw + float2(0.5, 0.5);
+    float4 cursorColor = FP_TEXTURE2D( cursorTexture, cursorCoord );
+    outColor.rgb *= 1.0 - cursorColor.a;
+    outColor.rgb += cursorColor.rgb * cursorColor.a;
+#endif
+    
+    FP_OUT_COLOR = outColor;
+    
+    
+    #if VERTEX_FOG
+        
+        float   varFogAmoung = FP_IN(varFog).a;
+        float3  varFogColor  = FP_IN(varFog).rgb;
+        
+        #if !FRAMEBUFFER_FETCH
+            //VI: fog equation is inside of color equation for framebuffer fetch
+            FP_OUT_COLOR.rgb = lerp( FP_OUT_COLOR.rgb, varFogColor, varFogAmoung );
+        #endif
+    #endif
+    
+FPROG_END

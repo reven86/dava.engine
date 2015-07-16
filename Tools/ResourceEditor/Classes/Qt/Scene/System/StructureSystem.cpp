@@ -590,6 +590,7 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
 
 void StructureSystem::CopyLightmapSettings(DAVA::NMaterial *fromState, DAVA::NMaterial *toState) const
 {
+#if RHI_COMPLETE_EDITOR
 	Texture* lightmap = fromState->GetTexture(NMaterial::TEXTURE_LIGHTMAP);
 	bool needReleaseTexture = false;
 	if(!lightmap)
@@ -616,6 +617,7 @@ void StructureSystem::CopyLightmapSettings(DAVA::NMaterial *fromState, DAVA::NMa
 	{
 		toState->SetPropertyValue(NMaterial::PARAM_UV_OFFSET, uvOffset->type, uvOffset->size, uvOffset->data);
 	}
+#endif // RHI_COMPLETE_EDITOR
 }
 
 struct BatchInfo

@@ -126,7 +126,6 @@
 #include "Render/Shader.h"
 #include "Render/ShaderCache.h"
 #include "Core/DisplayMode.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Render/Cursor.h"
 #include "Render/MipmapReplacer.h"
@@ -187,6 +186,7 @@
 
 #include "UI/UIScrollViewContainer.h"
 #include "UI/UIControlHelpers.h"
+#include "UI/UIScreenshoter.h"
 
 // Game object manager / 2D Scene
 #include "Scene2D/GameObject.h"
@@ -216,17 +216,12 @@
 #include "Render/3D/EdgeAdjacency.h"
 #include "Render/3D/MeshUtils.h"
 
-// Material compiler
-#include "Render/Material/MaterialCompiler.h"
-#include "Render/Material/MaterialGraph.h"
-#include "Render/Material/MaterialGraphNode.h"
-#include "Render/Material/RenderTechnique.h"
+
 #include "Render/Material/NMaterialNames.h"
 
 // 3D scene management
 #include "Scene3D/Scene.h"
 #include "Scene3D/Entity.h"
-#include "Scene3D/SpriteNode.h"
 #include "Scene3D/MeshInstanceNode.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/Heightmap.h"
@@ -235,17 +230,12 @@
 #include "Render/Highlevel/SkinnedMesh.h"
 #include "Render/Highlevel/SpriteObject.h"
 #include "Render/Highlevel/RenderObject.h"
-#include "Render/Highlevel/RenderFastNames.h"
-#include "Render/Highlevel/LandscapeChunk.h"
-#include "Render/Highlevel/SkyboxRenderObject.h"
 #include "Render/Highlevel/SpeedTreeObject.h"
-#include "Render/Highlevel/Vegetation/TextureSheet.h"
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 
 #include "Scene3D/AnimationData.h"
 #include "Scene3D/ShadowVolumeNode.h"
 #include "Scene3D/LodNode.h"
-#include "Scene3D/ImposterNode.h"
 #include "Scene3D/ParticleEmitterNode.h"
 #include "Scene3D/ParticleEffectNode.h"
 #include "Scene3D/SwitchNode.h"
@@ -291,7 +281,7 @@
 #include "Core/Core.h"
 #include "Core/ApplicationCore.h"
 
-
+#include "Job/JobManager.h"
 
 // Notifications
 #include "Notification/LocalNotification.h"

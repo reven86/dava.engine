@@ -33,6 +33,7 @@
 
 #include "Render/Cursor.h"
 #include "Platform/TemplateWin32/CoreWin32PlatformBase.h"
+#include "FileSystem/FileSystem.h"
 
 void DAVA::Cursor::SetCursorPinning(bool pin)
 {
@@ -74,7 +75,6 @@ void DAVA::Cursor::ShowSystemCursor( bool show )
 #if defined(__DAVAENGINE_WINDOWS__) && defined (__DAVAENGINE_DIRECTX9__)
 
 #include "FileSystem/FileSystem.h"
-#include "Render/RenderManager.h"
 #include "Render/D3D9Helpers.h"
 
 namespace DAVA

@@ -33,7 +33,6 @@
 #include "Base/BaseTypes.h"
 #include "Entity/SceneSystem.h"
 #include "Base/Message.h"
-#include "Render/RenderStateData.h"
 
 namespace DAVA
 {
@@ -98,8 +97,9 @@ private:
     uint32 buildStepsCount;
     uint32 buildStepRemains;
     uint32 renewIndex;
-
+#if RHI_COMPLETE
     Map<NMaterial* , RenderStateData> originalRenderStateData;
+#endif // RHI_COMPLETE
 };
     
 // System that allow to use occlusion information during rendering

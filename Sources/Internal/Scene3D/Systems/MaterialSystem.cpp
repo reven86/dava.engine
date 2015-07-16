@@ -28,7 +28,7 @@
 
 
 #include "Scene3D/Systems/MaterialSystem.h"
-#include "Render/Material/NMaterialTemplate.h"
+#include "Render/Material/NMaterialNames.h"
 
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
@@ -44,7 +44,7 @@ namespace DAVA
 MaterialSystem::MaterialSystem(Scene * scene)
     : SceneSystem(scene)
 {
-    SetDefaultMaterialQuality(NMaterial::DEFAULT_QUALITY_NAME); //TODO: add code setting material quality based on device specs
+    SetDefaultMaterialQuality(NMaterialQualityName::DEFAULT_QUALITY_NAME); //TODO: add code setting material quality based on device specs
 }
 
 MaterialSystem::~MaterialSystem()
@@ -56,17 +56,19 @@ void MaterialSystem::AddEntity(Entity * entity)
 {
 }
 
-void MaterialSystem::BuildMaterialList(Entity *forEntity, Set<NMaterial*>& materialList, NMaterial::eMaterialType materialType, bool includeRuntime) const
+void MaterialSystem::BuildMaterialList(Set<NMaterial*>& materialList, bool includeGlobalMaterial, bool includeRuntime) const
 {
-    if(!forEntity) return;
-    
+    Scene * scene = GetScene();
+
+    if(!scene) return;
+
     List<NMaterial*> materials;
-    forEntity->GetDataNodes(materials);
+    scene->GetDataNodes(materials);
     
     List<NMaterial *>::const_iterator endIt = materials.end();
-    for(List<NMaterial *>::const_iterator it = materials.begin(); it != endIt; ++it)
+    for (List<NMaterial *>::const_iterator it = materials.begin(); it != endIt; ++it)
     {
-        if( (materialType == NMaterial::MATERIALTYPE_NONE || materialType == (*it)->GetMaterialType()) && // filter by material type
+        if ((includeGlobalMaterial || (*it) != scene->GetGlobalMaterial()) && // filter globalMaterial
 			(includeRuntime || !((*it)->IsRuntime())))
         {
             materialList.insert(*it);
@@ -87,21 +89,6 @@ const FastName& MaterialSystem::GetDefaultMaterialQuality() const
 const FastName& MaterialSystem::GetCurrentMaterialQuality() const
 {
     return currentMaterialQuality;
-}
-
-void MaterialSystem::SwitchMaterialQuality(const FastName& qualityLevelName, bool force)
-{
-    Set<NMaterial*> materials;
-    BuildMaterialList(GetScene(), materials, NMaterial::MATERIALTYPE_MATERIAL);
-    
-    Set<NMaterial *>::const_iterator endIt = materials.end();
-    for(Set<NMaterial *>::const_iterator it = materials.begin(); it != endIt; ++it)
-    {
-		NMaterial* material = *it;
-		
-		material->SetQuality(qualityLevelName);
-        material->ReloadQuality(force);
-    }
 }
     
 };

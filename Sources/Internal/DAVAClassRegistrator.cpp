@@ -29,7 +29,6 @@
 
 #include "DAVAEngine.h"
 #include "DAVAClassRegistrator.h"
-#include "Render/Highlevel/SpriteRenderBatch.h"
 #include "Render/Highlevel/ShadowVolume.h"
 
 using namespace DAVA;
@@ -54,7 +53,6 @@ REGISTER_CLASS(UIScrollViewContainer);
 REGISTER_CLASS(UISlider);
 REGISTER_CLASS(UISpinner);
 REGISTER_CLASS(UIStaticText);
-REGISTER_CLASS(LandscapeChunk);
 REGISTER_CLASS(UISwitch);
 REGISTER_CLASS(UITextField);
 REGISTER_CLASS(Landscape);
@@ -67,11 +65,7 @@ REGISTER_CLASS(SpeedTreeObject);
 REGISTER_CLASS(RenderBatch);
 REGISTER_CLASS(RenderObject);
 REGISTER_CLASS(ShadowVolume);
-REGISTER_CLASS(SkyboxRenderObject);
-REGISTER_CLASS(InstanceMaterialState);
-REGISTER_CLASS(Material);
 REGISTER_CLASS(NMaterial);
-REGISTER_CLASS(ImposterNode);
 REGISTER_CLASS(BillboardNode);
 REGISTER_CLASS(BoneNode);
 REGISTER_CLASS(DataNode);
@@ -98,7 +92,6 @@ REGISTER_CLASS(UIParticles);
 REGISTER_CLASS(UIJoypad);
 REGISTER_CLASS(VegetationRenderObject);
 REGISTER_CLASS(SpriteObject);
-REGISTER_CLASS(SpriteRenderBatch);
 REGISTER_CLASS(UI3DView);
 REGISTER_CLASS(AnimationComponent);
 REGISTER_CLASS(TransformComponent);

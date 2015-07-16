@@ -141,9 +141,7 @@ private:
 	DAVA::Entity *lastSelection;
 
 	ST_PivotPoint curPivotPoint;
-	
-	DAVA::UniqueHandle selectionNormalDrawState;
-	DAVA::UniqueHandle selectionDepthDrawState;
+		
 };
 
 

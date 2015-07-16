@@ -71,13 +71,10 @@ protected:
 	static const uint32 CROSS_TEXTURE_SIZE = 64;
 
 	Texture* crossTexture;
+    rhi::HTextureSet crossTextureSet;
 	uint32 curToolSize;
 
-	Rect updatedRectAccumulator;
-
 	bool editingIsEnabled;
-
-	Image* originalImage;
 
 	eVisibilityToolState state;
 
@@ -88,21 +85,13 @@ protected:
 
 	Vector2 visibilityPoint;
 
-	Landscape::eTextureLevel textureLevel;
-
-	void AddRectToAccumulator(const Rect& rect);
-	void ResetAccumulatorRect();
-	Rect GetUpdatedRect();
-
-	void StoreOriginalState();
-	void CreateUndoPoint();
+	const FastName& textureLevel;
 
 	void PrepareConfig();
 	void SetState(eVisibilityToolState newState);
 
 	void SetVisibilityPointInternal();
 	void SetVisibilityAreaInternal();
-
 	
 	void PerformHeightTest(Vector3 spectatorCoords,
 						   Vector2 circleCenter,
@@ -113,7 +102,9 @@ protected:
 	bool IsCircleContainsPoint(const Vector2& circleCenter,
 							   float32 circleRadius,
 							   const Vector2& point);
+    
 	void DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> &points);
+    void DrawVisibilityPoint();
 
     void ExcludeEntities(EntityGroup *entities) const;
     

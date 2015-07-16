@@ -28,10 +28,7 @@
 
 
 #include "Render/Highlevel/SkinnedMesh.h"
-#include "Render/Highlevel/RenderBatch.h"
-#include "Render/3D/PolygonGroup.h"
-#include "Render/Highlevel/ShadowVolume.h"
-#include "Render/Material/NMaterial.h"
+#include "Render/Renderer.h"
 
 namespace DAVA
 {
@@ -61,9 +58,9 @@ RenderObject * SkinnedMesh::Clone(RenderObject *newObject)
 
 void SkinnedMesh::BindDynamicParameters(Camera * camera)
 {
-    RenderManager::SetDynamicParam(PARAM_JOINTS_COUNT, &jointsCount, (pointer_size)(&jointsCount));
-    RenderManager::SetDynamicParam(PARAM_JOINT_POSITIONS, &positionArray[0], (pointer_size)positionArray);
-    RenderManager::SetDynamicParam(PARAM_JOINT_QUATERNIONS, &quaternionArray[0], (pointer_size)quaternionArray);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_JOINTS_COUNT, &jointsCount, (pointer_size)(&jointsCount));
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_JOINT_POSITIONS, &positionArray[0], (pointer_size)positionArray);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_JOINT_QUATERNIONS, &quaternionArray[0], (pointer_size)quaternionArray);
 
     RenderObject::BindDynamicParameters(camera);
 }

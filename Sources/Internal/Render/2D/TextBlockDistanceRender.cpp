@@ -28,11 +28,11 @@
 
 
 #include "Render/2D/TextBlockDistanceRender.h"
-#include "Render/RenderManager.h"
 #include "Core/Core.h"
 #include "Render/ShaderCache.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/Renderer.h"
 
 namespace DAVA 
 {
@@ -64,6 +64,7 @@ FastName TextBlockDistanceRender::colorUniform("color");
 TextBlockDistanceRender::TextBlockDistanceRender(TextBlock* textBlock) :
 	TextBlockRender(textBlock)
 {
+#if RHI_COMPLETE
 	charDrawed = 0;
 	renderObject = new RenderDataObject();
 	
@@ -71,14 +72,17 @@ TextBlockDistanceRender::TextBlockDistanceRender(TextBlock* textBlock) :
 	
     shader = ShaderCache::Instance()->Get(FastName("~res:/Shaders/Default/df_font"), FastNameSet());
     shader->Retain();
+#endif  // RHI_COMPLETE
 }
 	
 TextBlockDistanceRender::~TextBlockDistanceRender()
 {
+#if RHI_COMPLETE
     shader->Release();
     shader = NULL;
 
 	SafeRelease(renderObject);
+#endif RHI_COMPLETE
 }
 	
 void TextBlockDistanceRender::Prepare(Texture *texture /*= NULL*/)
@@ -106,10 +110,11 @@ void TextBlockDistanceRender::Prepare(Texture *texture /*= NULL*/)
     
 	if (charDrawed == 0)
 		return;
-	
+#if RHI_COMPLETE	
 	renderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, sizeof(DFFont::DFFontVertex), &vertexBuffer[0].position);
 	renderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, sizeof(DFFont::DFFontVertex), &vertexBuffer[0].texCoord);
 	renderObject->BuildVertexBuffer(charDrawed * 4);
+#endif RHI_COMPLETE
 }
 
 void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset)
@@ -148,7 +153,7 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
     RenderSystem2D::Instance()->Flush();
     
     //TODO: temporary crutch until 2D render became fully stateless
-    const Matrix4 * oldMatrix = (Matrix4 *)RenderManager::GetDynamicParam(PARAM_WORLD);
+    const Matrix4 * oldMatrix = (Matrix4 *)Renderer::GetDynamicBindings().GetDynamicParam(DynamicBindings::PARAM_WORLD);
     
 	//NOTE: correct affine transformations
 
@@ -169,9 +174,11 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 	offsetMatrix = (scaleMatrix*offsetMatrix*rotateMatrix)*worldMatrix;
 	//offsetMatrix = (scaleMatrix * rotateMatrix * offsetMatrix)*worldMatrix;
 
-	RenderManager::SetDynamicParam(PARAM_WORLD, &offsetMatrix, UPDATE_SEMANTIC_ALWAYS);
 
-	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
+#if RHI_COMPLETE
+	Renderer::GetDynamicBindings().SetDynamicParam(PARAM_WORLD, &offsetMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
+
+	RenderManager::Instance()->SetRenderState(RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL);
     RenderManager::Instance()->SetTextureState(dfFont->GetTextureHandler());
 	RenderManager::Instance()->SetShader(shader);
     RenderManager::Instance()->SetRenderData(renderObject);
@@ -188,7 +195,9 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
     
 	RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, charDrawed * 6, EIF_16, this->indexBuffer);
     
-    RenderManager::SetDynamicParam(PARAM_WORLD, oldMatrix, (pointer_size)oldMatrix);
+    Renderer::GetDynamicBindings().SetDynamicParam(PARAM_WORLD, oldMatrix, (pointer_size)oldMatrix);
+
+#endif RHI_COMPLETE
 }
 	
 Font::StringMetrics TextBlockDistanceRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)

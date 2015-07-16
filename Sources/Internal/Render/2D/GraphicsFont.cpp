@@ -31,7 +31,6 @@
 #include "Render/2D/GraphicsFont.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "Render/RenderManager.h"
 #include "FileSystem/File.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/LocalizationSystem.h"
@@ -440,7 +439,7 @@ Font::StringMetrics GraphicsFont::DrawString(float32 x, float32 y, const WideStr
 			state.SetScale(fontScaleCoeff, fontScaleCoeff);
 			state.SetPosition(drawX, drawY);
         
-            RenderSystem2D::Instance()->Draw(fontSprite, &state);
+            RenderSystem2D::Instance()->Draw(fontSprite, &state, Color::White);
 		}
 
 		currentX += (fdef->characterWidthTable[chIndex] + horizontalSpacing) * fontScaleCoeff;

@@ -30,7 +30,6 @@
 #include "Render/2D/Sprite.h"
 #include "Debug/DVAssert.h"
 #include "Utils/Utils.h"
-#include "Render/RenderManager.h"
 #include "Utils/StringFormat.h"
 #include "Platform/SystemTimer.h"
 #include "FileSystem/File.h"
@@ -65,8 +64,7 @@ Sprite::DrawState::DrawState()
 {
     Reset();
     
-    renderState = RenderState::RENDERSTATE_2D_BLEND;
-    shader = RenderSystem2D::TEXTURE_MUL_FLAT_COLOR;
+    material = RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL;    
 }
 
 Sprite::Sprite()
@@ -607,7 +605,7 @@ Texture* Sprite::GetTexture(int32 frameNumber) const
 	return textures[frameTextureIndex[frameNumber]];
 }
 	
-UniqueHandle Sprite::GetTextureHandle(int32 frameNumber) const
+rhi::HTextureSet Sprite::GetTextureHandle(int32 frameNumber) const
 {
 	frameNumber = Clamp(frameNumber, 0, frameCount - 1);
 	return textureHandles[frameTextureIndex[frameNumber]];
@@ -946,29 +944,30 @@ File* Sprite::GetSpriteFile(const FilePath & spriteName, int32& resourceSizeInde
 
 void Sprite::RegisterTextureStates()
 {
-	textureHandles.resize(textureCount, InvalidUniqueHandle);
+	textureHandles.resize(textureCount);
 	for(int32 i = 0; i < textureCount; ++i)
     {
         if(textures[i])
         {
-            //VI: always set "0" texture for each sprite part
-			TextureStateData data;
-			data.SetTexture(0, textures[i]);
-			
-			textureHandles[i] = RenderManager::Instance()->CreateTextureState(data);
+            rhi::TextureSetDescriptor descriptor;
+            descriptor.fragmentTextureCount = 1;
+            descriptor.fragmentTexture[0] = textures[i]->handle;            			
+            textureHandles[i] = rhi::AcquireTextureSet(descriptor);
 		}
 	}
 }
 
 void Sprite::UnregisterTextureStates()
 {
+
 	for(int32 i = 0; i < textureCount; ++i)
     {
-		if(textureHandles[i] != InvalidUniqueHandle)
+		if(textureHandles[i] != rhi::InvalidHandle)
 		{
-			RenderManager::Instance()->ReleaseTextureState(textureHandles[i]);
+            rhi::ReleaseTextureSet(textureHandles[i]);			
 		}
 	}
+
 }
 
 void Sprite::ReloadExistingTextures()

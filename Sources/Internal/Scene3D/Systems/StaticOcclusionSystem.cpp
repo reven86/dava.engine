@@ -118,7 +118,7 @@ void StaticOcclusionBuildSystem::ImmediateEvent(Component * _component, uint32 e
         uint32 ySubdivisions = component->GetSubdivisionsY();
         boxSize.x /= xSubdivisions;
         boxSize.y /= ySubdivisions;
-        
+
         if (landscape)
         {
             //place on landscape
@@ -129,8 +129,9 @@ void StaticOcclusionBuildSystem::ImmediateEvent(Component * _component, uint32 e
                     if (landscape->PlacePoint(v, v))
                        component->cellHeightOffset[xs+ys*xSubdivisions] = v.z - bbox.min.z;
                 }
-        }        
+        }
     }    
+
 }
     
 void StaticOcclusionBuildSystem::Build()
@@ -372,6 +373,7 @@ void StaticOcclusionBuildSystem::SceneForceLod(int32 forceLodIndex)
 
 void StaticOcclusionBuildSystem::UpdateMaterialsForOcclusionRecursively(Entity *entity)
 {
+#if RHI_COMPLETE
     for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
         UpdateMaterialsForOcclusionRecursively(entity->GetChild(i));
 
@@ -407,15 +409,17 @@ void StaticOcclusionBuildSystem::UpdateMaterialsForOcclusionRecursively(Entity *
             }
         }        
     }
-    
+#endif //RHI_COMPLETE    
 }
 
 void StaticOcclusionBuildSystem::RestoreOcclusionMaterials()
 {
+#if RHI_COMPLETE
     for (Map<NMaterial*, RenderStateData>::iterator it = originalRenderStateData.begin(), e = originalRenderStateData.end(); it!=e; ++it)
         it->first->SubclassRenderState(PASS_FORWARD, it->second);
     
     originalRenderStateData.clear();
+#endif //RHI_COMPLETE
 }
 
 void StaticOcclusionBuildSystem::Process(float32 timeElapsed)
@@ -694,20 +698,29 @@ StaticOcclusionDebugDrawSystem::StaticOcclusionDebugDrawSystem(Scene *scene):Sce
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
 
-    debugOpaqueMaterial = NMaterial::CreateMaterial(FastName("Debug_Opaque_Material"),  NMaterialName::DEBUG_DRAW_OPAQUE, NMaterial::DEFAULT_QUALITY_NAME);		
-    debugAlphablendMaterial = NMaterial::CreateMaterial(FastName("Debug_Alphablend_Material"),  NMaterialName::DEBUG_DRAW_ALPHABLEND, NMaterial::DEFAULT_QUALITY_NAME);	
+
+    debugOpaqueMaterial = new NMaterial();
+    debugOpaqueMaterial->SetMaterialName(FastName("Debug_Opaque_Material"));
+    debugOpaqueMaterial->SetFXName(NMaterialName::DEBUG_DRAW_OPAQUE);
+    debugAlphablendMaterial = new NMaterial();
+    debugAlphablendMaterial->SetMaterialName(FastName("Debug_Alphablend_Material"));
+    debugAlphablendMaterial->SetFXName(NMaterialName::DEBUG_DRAW_ALPHABLEND);
+
 }
 
 StaticOcclusionDebugDrawSystem::~StaticOcclusionDebugDrawSystem()
 {
     GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
     GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
+
     SafeRelease(debugOpaqueMaterial);
     SafeRelease(debugAlphablendMaterial);
+
 }
 
 void StaticOcclusionDebugDrawSystem::AddEntity(Entity * entity)
 {
+#if RHI_COMPLETE
     StaticOcclusionComponent *staticOcclusionComponent = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
     Matrix4 * worldTransformPointer = GetTransformComponent(entity)->GetWorldTransformPtr();
     //create render object
@@ -717,7 +730,7 @@ void StaticOcclusionDebugDrawSystem::AddEntity(Entity * entity)
     ScopedPtr<NMaterial> gridMaterialInstance(NMaterial::CreateMaterialInstance());
     gridMaterialInstance->SetParent(debugAlphablendMaterial);
     Color col(0.0f, 0.3f, 0.1f, 0.2f);
-    gridMaterialInstance->SetPropertyValue(NMaterial::PARAM_FLAT_COLOR, Shader::UT_FLOAT_VEC4, 1, &col);
+    gridMaterialInstance->SetPropertyValue(NMaterialParamName::PARAM_FLAT_COLOR, Shader::UT_FLOAT_VEC4, 1, &col);
     gridBatch->SetPolygonGroup(gridPolygonGroup);
     gridBatch->SetMaterial(gridMaterialInstance);
     
@@ -729,7 +742,7 @@ void StaticOcclusionDebugDrawSystem::AddEntity(Entity * entity)
     ScopedPtr<NMaterial> coverMaterialInstance(NMaterial::CreateMaterialInstance());
     coverMaterialInstance->SetParent(debugAlphablendMaterial);
     Color colCover(0.1f, 0.5f, 0.1f, 0.3f);
-    coverMaterialInstance->SetPropertyValue(NMaterial::PARAM_FLAT_COLOR, Shader::UT_FLOAT_VEC4, 1, &colCover);
+    coverMaterialInstance->SetPropertyValue(NMaterialParamName::PARAM_FLAT_COLOR, Shader::UT_FLOAT_VEC4, 1, &colCover);
     coverBatch->SetPolygonGroup(coverPolygonGroup);
     coverBatch->SetMaterial(coverMaterialInstance);
     
@@ -742,6 +755,7 @@ void StaticOcclusionDebugDrawSystem::AddEntity(Entity * entity)
 
     entity->AddComponent(new StaticOcclusionDebugDrawComponent(debugRenderObject));    
     GetScene()->GetRenderSystem()->RenderPermanent(debugRenderObject);        
+#endif RHI_COMPLETE
 }
 
 void StaticOcclusionDebugDrawSystem::RemoveEntity(Entity * entity)
@@ -788,7 +802,7 @@ PolygonGroup* StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawGrid
     int32 indexCount = xSubdivisions * ySubdivisions * zSubdivisions * 12 * 2; //12 lines per box 2 indices per line
     
     PolygonGroup *res = new PolygonGroup();
-    res->SetPrimitiveType(PRIMITIVETYPE_LINELIST);    
+    res->SetPrimitiveType(rhi::PRIMITIVE_LINELIST);
     res->AllocateData(EVF_VERTEX, vertexCount, indexCount);    
 
     Vector3 boxSize = boundingBox.GetSize();
@@ -971,7 +985,9 @@ PolygonGroup* StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawCove
         }
 
     res->BuildBuffers();
+#if RHI_COMPLETE
     res->renderDataObject->AttachVertices(gridPolygonGroup->renderDataObject);
+#endif // RHI_COMPLETE
     res->aabbox=gridPolygonGroup->aabbox;
     return res;
 }

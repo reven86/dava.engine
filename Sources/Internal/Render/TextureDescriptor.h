@@ -56,7 +56,7 @@ class TextureDescriptor
 
     static const int32 DATE_BUFFER_SIZE = 20;
     static const int32 LINE_SIZE = 256;
-    static const int8 CURRENT_VERSION = 9;
+    static const int8 CURRENT_VERSION = 10;
     
 	enum eSignatures
 	{
@@ -77,13 +77,17 @@ public:
 
 		int8 minFilter;
 		int8 magFilter;
+        int8 mipFilter;
 
-		INTROSPECTION(TextureDrawSettings,
-			MEMBER(wrapModeS, InspDesc("wrapModeS", GlobalEnumMap<Texture::TextureWrap>::Instance()), I_VIEW | I_EDIT | I_SAVE)
-			MEMBER(wrapModeT, InspDesc("wrapModeT", GlobalEnumMap<Texture::TextureWrap>::Instance()), I_VIEW | I_EDIT | I_SAVE)
-			MEMBER(minFilter, InspDesc("minFilter", GlobalEnumMap<Texture::TextureFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
-			MEMBER(magFilter, InspDesc("magFilter", GlobalEnumMap<Texture::TextureFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
-		)
+        INTROSPECTION(TextureDrawSettings,
+            MEMBER(wrapModeS, InspDesc("wrapModeS", GlobalEnumMap<rhi::TextureAddrMode>::Instance()), I_VIEW | I_EDIT | I_SAVE)
+            MEMBER(wrapModeT, InspDesc("wrapModeT", GlobalEnumMap<rhi::TextureAddrMode>::Instance()), I_VIEW | I_EDIT | I_SAVE)
+			MEMBER(minFilter, InspDesc("minFilter", GlobalEnumMap<rhi::TextureFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
+            MEMBER(magFilter, InspDesc("magFilter", GlobalEnumMap<rhi::TextureFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
+            MEMBER(mipFilter, InspDesc("mipFilter", GlobalEnumMap<rhi::TextureMipFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
+        )
+		
+
 	};
     
 	struct TextureDataSettings: public InspBase
@@ -151,9 +155,9 @@ public:
 	virtual ~TextureDescriptor();
 
 	static TextureDescriptor * CreateFromFile(const FilePath &filePathname);
-	static TextureDescriptor * CreateDescriptor(Texture::TextureWrap wrap, bool generateMipmaps);
+	static TextureDescriptor * CreateDescriptor(rhi::TextureAddrMode wrap, bool generateMipmaps);
 
-	void Initialize(Texture::TextureWrap wrap, bool generateMipmaps);
+    void Initialize(rhi::TextureAddrMode wrap, bool generateMipmaps);
 	void Initialize(const TextureDescriptor *descriptor);
 	bool Initialize(const FilePath &filePathname);
 
@@ -219,7 +223,10 @@ protected:
     void LoadVersion7(File *file);
     void LoadVersion8(File *file);
     void LoadVersion9(File *file);
+    void LoadVersion10(File *file);
     
+    void ConvertV9orLessToV10();
+
     void RecalculateCompressionSourceCRC();
 	uint32 ReadSourceCRC() const;
     uint32 ReadSourceCRC_V8_or_less() const;

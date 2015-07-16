@@ -407,7 +407,7 @@ void TheoraPlayer::Draw(const UIGeometricData &geometricData)
     {
         Sprite::DrawState drawState;
         drawState.SetPosition(geometricData.position);
-        RenderSystem2D::Instance()->Draw(sprite, &drawState);
+        RenderSystem2D::Instance()->Draw(sprite, &drawState, Color::White);
     }
 }
     

@@ -42,7 +42,6 @@
 #include "UI/UIEvent.h"
 #include "Entity/SceneSystem.h"
 #include "Render/Highlevel/Landscape.h"
-#include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 
 class CollisionBaseObject;
@@ -118,8 +117,7 @@ protected:
 	bool landIntersectCachedResult;
 
 	DAVA::Entity *curLandscapeEntity;
-	
-	DAVA::UniqueHandle renderState;
+		
 
 	btDefaultCollisionConfiguration* objectsCollConf;
 	btCollisionDispatcher* objectsCollDisp;
@@ -148,8 +146,7 @@ class SceneCollisionDebugDrawer : public btIDebugDraw
 public:
 	SceneCollisionDebugDrawer();
     ~SceneCollisionDebugDrawer();
-    
-    void SetRenderState(DAVA::UniqueHandle _renderState);
+        
 
 	virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color);
 	virtual void drawContactPoint(const btVector3& PointOnB,const btVector3& normalOnB,btScalar distance,int lifeTime,const btVector3& color);
@@ -159,10 +156,7 @@ public:
 	virtual int	getDebugMode() const;
 
 protected:
-	int dbgMode;
-	DAVA::RenderManager *manager;
-	DAVA::RenderHelper *helper;
-    DAVA::UniqueHandle renderState;
+	int dbgMode;		    
 };
 
 #endif // __SCENE_COLLISION_SYSTEM_H__

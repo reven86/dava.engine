@@ -28,6 +28,7 @@
 
 
 #include "Render/Material/NMaterial.h"
+#include "Render/Material/FXCache.h"
 #include "Render/Material/NMaterialStateDynamicFlagsInsp.h"
 
 namespace DAVA
@@ -36,102 +37,114 @@ namespace DAVA
 ///////////////////////////////////////////////////////////////////////////
 ///// NMaterialStateDynamicFlagsInsp implementation
 
-Vector<FastName> NMaterialStateDynamicFlagsInsp::MembersList(void *object) const
+InspInfoDynamic::DynamicData NMaterialStateDynamicFlagsInsp::Prepare(void *object, int filter) const
+{
+    InspInfoDynamic::DynamicData ddata;
+    ddata.object = object;
+
+    return ddata;
+}
+
+Vector<FastName> NMaterialStateDynamicFlagsInsp::MembersList(const DynamicData& ddata) const
 {
     static Vector<FastName> ret;
-    
+
     if(0 == ret.size())
     {
-        ret.reserve(18);
+        ret.reserve(22);
         
-        ret.push_back(NMaterial::FLAG_VERTEXFOG);
-        ret.push_back(NMaterial::FLAG_FOG_LINEAR);
-        ret.push_back(NMaterial::FLAG_FOG_HALFSPACE);
-        ret.push_back(NMaterial::FLAG_FOG_HALFSPACE_LINEAR);
-        ret.push_back(NMaterial::FLAG_FOG_ATMOSPHERE);
+        ret.push_back(NMaterialFlagName::FLAG_VERTEXFOG);
+        ret.push_back(NMaterialFlagName::FLAG_FOG_LINEAR);
+        ret.push_back(NMaterialFlagName::FLAG_FOG_HALFSPACE);
+        ret.push_back(NMaterialFlagName::FLAG_FOG_HALFSPACE_LINEAR);
+        ret.push_back(NMaterialFlagName::FLAG_FOG_ATMOSPHERE);
 
-        ret.push_back(NMaterial::FLAG_FLATCOLOR);
-        ret.push_back(NMaterial::FLAG_TEXTURESHIFT);
-        ret.push_back(NMaterial::FLAG_TEXTURE0_ANIMATION_SHIFT);
+        ret.push_back(NMaterialFlagName::FLAG_FLATCOLOR);
+        ret.push_back(NMaterialFlagName::FLAG_TEXTURESHIFT);
+        ret.push_back(NMaterialFlagName::FLAG_TEXTURE0_ANIMATION_SHIFT);
         
-        ret.push_back(NMaterial::FLAG_WAVE_ANIMATION);
-        ret.push_back(NMaterial::FLAG_FAST_NORMALIZATION);
+        ret.push_back(NMaterialFlagName::FLAG_WAVE_ANIMATION);
+        ret.push_back(NMaterialFlagName::FLAG_FAST_NORMALIZATION);
         
-        ret.push_back(NMaterial::FLAG_SPECULAR);
-        ret.push_back(NMaterial::FLAG_SEPARATE_NORMALMAPS);
-        ret.push_back(NMaterial::FLAG_TANGENT_SPACE_WATER_REFLECTIONS);
-        ret.push_back(NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL);
-        ret.push_back(NMaterial::FLAG_DEBUG_Z_NORMAL_SCALE);
-        ret.push_back(NMaterial::FLAG_DEBUG_NORMAL_ROTATION);        
-        ret.push_back(NMaterial::FLAG_SKINNING);
-        ret.push_back(NMaterial::FLAG_TILED_DECAL_MASK);
-
-        ret.push_back(NMaterial::FLAG_ALPHATESTVALUE);
+        ret.push_back(NMaterialFlagName::FLAG_SPECULAR);
+        ret.push_back(NMaterialFlagName::FLAG_SEPARATE_NORMALMAPS);
+        ret.push_back(NMaterialFlagName::FLAG_TANGENT_SPACE_WATER_REFLECTIONS);
+        ret.push_back(NMaterialFlagName::FLAG_DEBUG_UNITY_Z_NORMAL);
+        ret.push_back(NMaterialFlagName::FLAG_DEBUG_Z_NORMAL_SCALE);
+        ret.push_back(NMaterialFlagName::FLAG_DEBUG_NORMAL_ROTATION);        
+        ret.push_back(NMaterialFlagName::FLAG_SKINNING);
+        ret.push_back(NMaterialFlagName::FLAG_TILED_DECAL_MASK);
+		ret.push_back(NMaterialFlagName::FLAG_ALPHATESTVALUE);
+        ret.push_back(NMaterialFlagName::FLAG_ILLUMINATION_USED);
+        ret.push_back(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER);
+        ret.push_back(NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER);
     }
+
     return ret;
 }
 
-InspDesc NMaterialStateDynamicFlagsInsp::MemberDesc(void *object, const FastName &member) const
+InspDesc NMaterialStateDynamicFlagsInsp::MemberDesc(const DynamicData& ddata, const FastName &member) const
 {
     return InspDesc(member.c_str());
 }
 
-VariantType NMaterialStateDynamicFlagsInsp::MemberValueGet(void *object, const FastName &member) const
+VariantType NMaterialStateDynamicFlagsInsp::MemberValueGet(const DynamicData& ddata, const FastName &member) const
 {
     VariantType ret;
-    NMaterial *state = (NMaterial*) object;
-    DVASSERT(state);
+
+    NMaterial *material = static_cast<NMaterial*>(ddata.object);
+    DVASSERT(material);
     
-    ret.SetBool(state->IsFlagEffective(member));
+    ret.SetBool(0 != material->GetEffectiveFlagValue(member));
     return ret;
 }
 
-void NMaterialStateDynamicFlagsInsp::MemberValueSet(void *object, const FastName &member, const VariantType &value)
+void NMaterialStateDynamicFlagsInsp::MemberValueSet(const DynamicData& ddata, const FastName &member, const VariantType &value)
 {
-    NMaterial *state = (NMaterial*) object;
-    DVASSERT(state);
-    
-    NMaterial::eFlagValue newValue = NMaterial::FlagOff;
+    NMaterial *material = static_cast<NMaterial*>(ddata.object);
+    DVASSERT(material);
+
+    int newValue = 0;
     if(value.GetType() == VariantType::TYPE_BOOLEAN && value.AsBool())
     {
-        newValue = NMaterial::FlagOn;
+        newValue = true;
     }
     
-    if(state->GetMaterialType() == NMaterial::MATERIALTYPE_GLOBAL)
+    // empty value is thread as flag remove
+    if(value.GetType() == VariantType::TYPE_NONE)
     {
-        // global material accepts only valid values
-        if(value.GetType() == VariantType::TYPE_BOOLEAN)
+        if (material->HasLocalFlag(member))
         {
-            state->SetFlag(member, newValue);
+            material->RemoveFlag(member);
         }
     }
     else
     {
-        // empty value is thread as flag remove
-        if(value.GetType() == VariantType::TYPE_NONE)
+        if (!material->HasLocalFlag(member))
         {
-            state->ResetFlag(member);
+            material->AddFlag(member, newValue);
         }
         else
         {
-            state->SetFlag(member, newValue);
+            material->SetFlag(member, newValue);
         }
     }
 }
 
-int NMaterialStateDynamicFlagsInsp::MemberFlags(void *object, const FastName &member) const
+int NMaterialStateDynamicFlagsInsp::MemberFlags(const DynamicData& ddata, const FastName &member) const
 {
     int ret = I_VIEW;
     
-    NMaterial *state = (NMaterial*) object;
-    DVASSERT(state);
-    
-    if(!(NMaterial::FlagInherited & state->GetFlagValue(member)))
+    NMaterial *material = static_cast<NMaterial*>(ddata.object);
+    DVASSERT(material);
+
+    if (material->HasLocalFlag(member))
     {
         ret |= I_EDIT;
     }
-    
+
     return ret;
 }
 
 };
+

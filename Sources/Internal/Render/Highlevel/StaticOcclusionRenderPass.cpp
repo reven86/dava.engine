@@ -25,9 +25,6 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-
-
-#include "Render/RenderManager.h"
 #include "Render/OcclusionQuery.h"
 #include "Render/Highlevel/StaticOcclusionRenderPass.h"
 #include "Render/Highlevel/RenderBatchArray.h"
@@ -37,49 +34,39 @@
 namespace DAVA
 {
 
-StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name, StaticOcclusion * _occlusion, RenderPassID id)
-    : RenderPass(name, id)
+StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name, StaticOcclusion * _occlusion)
+    : RenderPass(name)
     , occlusion(_occlusion)
 {
-    
-    AddRenderLayer(new RenderLayer(LAYER_OPAQUE, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_OPAQUE_ID), LAST_LAYER);
-    AddRenderLayer(new RenderLayer(LAYER_AFTER_OPAQUE, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_AFTER_OPAQUE_ID), LAST_LAYER);
-    AddRenderLayer(new RenderLayer(LAYER_ALPHA_TEST_LAYER, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_ALPHA_TEST_LAYER_ID), LAST_LAYER);
-    AddRenderLayer(new RenderLayer(LAYER_WATER, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_WATER_ID), LAST_LAYER);    
-    AddRenderLayer(new RenderLayer(LAYER_TRANSLUCENT, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_TRANSLUCENT_ID), LAST_LAYER);
-    AddRenderLayer(new RenderLayer(LAYER_AFTER_TRANSLUCENT, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_AFTER_TRANSLUCENT_ID), LAST_LAYER);
-    
-    renderPassBatchArray->InitPassLayers(this);
+    uint32 sortingFlags = RenderBatchArray::SORT_ENABLED | RenderBatchArray::SORT_BY_DISTANCE_BACK_TO_FRONT;
+    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_OPAQUE_ID, sortingFlags));
+    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_OPAQUE_ID, sortingFlags));
+    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_ALPHA_TEST_LAYER_ID, sortingFlags));
+    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_WATER_ID, sortingFlags));
+    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_TRANSLUCENT_ID, sortingFlags));
+    AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_TRANSLUCENT_ID, sortingFlags));
 }
-    
+
 StaticOcclusionRenderPass::~StaticOcclusionRenderPass()
 {
     
 }
 
-
-
-
-    
 bool StaticOcclusionRenderPass::CompareFunction(const RenderBatch * a, const RenderBatch *  b)
 {
     return a->layerSortingKey < b->layerSortingKey;
 }
     
-void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBuffers)
+void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem)
 {
     Camera *mainCamera = occlusionCamera;
     Camera *drawCamera = occlusionCamera;
 
-    DVASSERT(drawCamera);
-    DVASSERT(mainCamera);
-    drawCamera->SetupDynamicParameters();            
-    if (mainCamera!=drawCamera)    
-        mainCamera->PrepareDynamicParameters();
+    SetupCameraParams(mainCamera, drawCamera);
 
     PrepareVisibilityArrays(mainCamera, renderSystem);
 
-    ClearBuffers(clearBuffers);
+    //ClearBuffers(clearBuffers); #if RHI_COMPLETE
 	
     Vector<RenderBatch*> terrainBatches;
     Vector<RenderBatch*> batches;
@@ -91,16 +78,17 @@ void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBu
     for (uint32 k = 0; k < size; ++k)
     {
         RenderLayer * layer = renderLayers[k];
-        RenderLayerBatchArray * renderLayerBatchArray = renderPassBatchArray->Get(layer->GetRenderLayerID());
+        const RenderBatchArray & renderBatchArray = layersBatchArrays[layer->GetRenderLayerID()];
     
-        uint32 batchCount = (uint32)renderLayerBatchArray->GetRenderBatchCount();
+        uint32 batchCount = (uint32)renderBatchArray.GetRenderBatchCount();
         for (uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
         {
-            RenderBatch * batch = renderLayerBatchArray->Get(batchIndex);
+            RenderBatch * batch = renderBatchArray.Get(batchIndex);
             if (batch->GetRenderObject()->GetType() == RenderObject::TYPE_LANDSCAPE)
             {
                 terrainBatches.push_back(batch);
-            }else
+            }
+            else
             {
                 batches.push_back(batch);
             }
@@ -142,7 +130,7 @@ void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBu
     //
 //    glDepthFunc(GL_LEQUAL);
 //    glDepthMask(GL_FALSE);
-
+#if RHI_COMPLETE
     OcclusionQueryPool & manager = occlusion->GetOcclusionQueryPool();
     size = (uint32)terrainBatches.size();
     for (uint32 k = 0; k < size; ++k)
@@ -187,7 +175,7 @@ void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBu
 //            Image * image = occlusion->GetRTTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_3D_BLEND);
 //            ImageLoader::Save(image, Format("~doc:/renderobj_%d_%d_%d.png", debugSide, k, result));
 //            SafeRelease(image);
-//            RenderManager::Instance()->SetDynamicParam(PARAM_PROJ, oldProj, UPDATE_SEMANTIC_ALWAYS);
+//            RenderManager::Instance()->SetDynamicParam(PARAM_PROJ, oldProj, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 // 
 //            //RenderManager::Instance()->RestoreRenderTarget();
 //        }
@@ -198,7 +186,7 @@ void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBu
 //            Image * image = occlusion->GetRTTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
 //            ImageLoader::Save(image, Format("~doc:/renderobj2_%d_%d.png", debugSide, k));
 //            SafeRelease(image);
-//            RenderManager::Instance()->SetDynamicParam(PARAM_PROJ, oldProj, UPDATE_SEMANTIC_ALWAYS);
+//            RenderManager::Instance()->SetDynamicParam(PARAM_PROJ, oldProj, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 //        }
         
 //        if ((debugK) && (debugI == 1) && (debugJ == 1))
@@ -221,6 +209,7 @@ void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBu
         
         occlusion->RecordFrameQuery(batch, handle);
     }
+#endif //RHI_COMPLETE
     
     //
 //    glDepthMask(GL_TRUE);

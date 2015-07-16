@@ -275,28 +275,7 @@ void TilemaskEditorPanel::InitBrushImages()
 
 void TilemaskEditorPanel::SplitImageToChannels(Image* image, Image*& r, Image*& g, Image*& b, Image*& a)
 {
-	if (image->GetPixelFormat() != FORMAT_RGBA8888)
-	{
-		uint32 width = image->GetWidth();
-		uint32 height = image->GetHeight();
-
-        Texture* t = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(), width, height, false);
-		Texture* fbo = Texture::CreateFBO(width, height, FORMAT_RGBA8888, Texture::DEPTH_NONE);
-
-        RenderHelper::Instance()->Set2DRenderTarget(fbo);
-        RenderHelper::Instance()->DrawTexture(t, RenderState::RENDERSTATE_2D_OPAQUE);
-        RenderManager::Instance()->SetRenderTarget(0);
-
-        image = fbo->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
-		image->ResizeCanvas(width, height);
-
-        SafeRelease(fbo);
-		SafeRelease(t);
-	}
-	else
-	{
-		image->Retain();
-	}
+    DVASSERT(image->GetPixelFormat() == FORMAT_RGBA8888);
 
 	const int32 CHANNELS_COUNT = 4;
 
@@ -340,8 +319,6 @@ void TilemaskEditorPanel::SplitImageToChannels(Image* image, Image*& r, Image*& 
 	g = images[1];
 	b = images[2];
 	a = images[3];
-
-	image->Release();
 }
 
 void TilemaskEditorPanel::UpdateTileTextures()
@@ -356,12 +333,16 @@ void TilemaskEditorPanel::UpdateTileTextures()
 	int32 count = (int32)sceneEditor->tilemaskEditorSystem->GetTileTextureCount();
 	Image** images = new Image*[count];
 
-    Image* image = sceneEditor->tilemaskEditorSystem->GetTileTexture(0)->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
+    FilePath tileTexturePath = sceneEditor->tilemaskEditorSystem->GetTileTexture()->GetDescriptor()->GetSourceTexturePathname();
     
-    image->ResizeCanvas(iconSize.width(), iconSize.height());
+    Vector<Image *> imgs;
+    ImageSystem::Instance()->Load(tileTexturePath, imgs);
+    DVASSERT(imgs.size() == 1);
     
-    SplitImageToChannels(image, images[0], images[1], images[2], images[3]);
-    SafeRelease(image);
+    imgs[0]->ResizeCanvas(iconSize.width(), iconSize.height());
+    
+    SplitImageToChannels(imgs[0], images[0], images[1], images[2], images[3]);
+    SafeRelease(imgs[0]);
     
     tileTexturePreviewWidget->SetMode(TileTexturePreviewWidget::MODE_WITH_COLORS);
     

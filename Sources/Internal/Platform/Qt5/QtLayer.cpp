@@ -29,7 +29,6 @@
 
 #include "Platform/Qt5/QtLayer.h"
 
-#include "Render/RenderManager.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 
@@ -52,7 +51,6 @@ QtLayer::QtLayer()
     :   delegate(NULL)
     ,   isDAVAEngineEnabled(true)
 {
-    AppStarted();
 }
     
 QtLayer::~QtLayer()
@@ -76,9 +74,7 @@ void QtLayer::SetDelegate(QtLayerDelegate *delegate)
     
 void QtLayer::AppStarted()
 {
-    RenderManager::Create(Core::RENDERER_OPENGL);
     FrameworkDidLaunched();
-
     Core::Instance()->SystemAppStarted();
 }
 
@@ -105,25 +101,30 @@ void QtLayer::OnResume()
     
 void QtLayer::ProcessFrame()
 {
+#if RHI_COMPLETE_EDITOR
     RenderManager::Instance()->Lock();
-    
-    RenderManager::Instance()->SetColor(Color::White);
+#endif // RHI_COMPLETE_EDITOR
+        
     Core::Instance()->SystemProcessFrame();
-    
+
+#if RHI_COMPLETE_EDITOR
     RenderManager::Instance()->Unlock();
+#endif // RHI_COMPLETE_EDITOR
 }
     
 void QtLayer::InitializeGlWindow(uint64 glContextId)
 {
+#if RHI_COMPLETE_EDITOR
     RenderManager::Instance()->SetRenderContextId(glContextId);
+#endif //RHI_COMPLETE_EDITOR
 }
 
 
 void QtLayer::Resize(int32 width, int32 height)
 {
-    RenderManager::Instance()->Init(width, height);
-    RenderSystem2D::Instance()->Init();
-    
+    rhi::ResetParam resetParams = { (uint32)width, (uint32)height };
+    Renderer::Reset(resetParams);
+
     VirtualCoordinatesSystem *vcs = VirtualCoordinatesSystem::Instance();
     if(vcs)
     {

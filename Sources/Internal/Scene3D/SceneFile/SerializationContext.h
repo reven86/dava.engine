@@ -34,6 +34,7 @@
 #include "Base/BaseObject.h"
 #include "Base/FastName.h"
 #include "FileSystem/FilePath.h"
+#include "Render/RHI/rhi_Type.h"
 
 namespace DAVA
 {
@@ -41,8 +42,6 @@ namespace DAVA
 	class Scene;
 	class DataNode;
 	class MaterialSystem;
-	class Material;
-	class InstanceMaterialState;
 	class NMaterial;
 	class Texture;
 	class NMaterial;
@@ -62,12 +61,12 @@ namespace DAVA
 		struct MaterialBinding
 		{
 			uint64 parentKey;
-			NMaterial* instanceMaterial;
+			NMaterial* childMaterial;
 			
 			MaterialBinding()
 			{
 				parentKey = 0;
-				instanceMaterial = NULL;
+				childMaterial = nullptr;
 			}
 		};
 		
@@ -81,6 +80,7 @@ namespace DAVA
 		Map<uint64, DataNode*> dataBlocks;
 		Map<uint64, NMaterial*> importedMaterials;
 		Vector<MaterialBinding> materialBindings;
+        uint64 globalMaterialKey;
 
         Map<PolygonGroup*, PolygonGroupLoadInfo> loadedPolygonGroups;
 	
@@ -152,26 +152,25 @@ namespace DAVA
 			return (it != dataBlocks.end()) ? it->second : NULL;
 		}
 		
-		inline void SetImportedMaterial(uint64 blockId, NMaterial* data)
-		{
-			importedMaterials[blockId] = data;
-		}
-		
-		inline NMaterial* GetImportedMaterial(uint64 blockId)
-		{
-			Map<uint64, NMaterial*>::iterator it = importedMaterials.find(blockId);
-			return (it != importedMaterials.end()) ? it->second : NULL;
-		}
-		
 		inline void AddBinding(uint64 parentKey, NMaterial* material)
 		{
 			MaterialBinding binding;
-			binding.instanceMaterial = material;
+			binding.childMaterial = material;
 			binding.parentKey = parentKey;
 			
 			materialBindings.push_back(binding);
 		}
 		
+        inline void SetGlobalMaterialKey(uint64 materialKey)
+        {
+            globalMaterialKey = materialKey;
+        }
+
+        inline uint64 GetGlobalMaterialKey()
+        {
+            return globalMaterialKey;
+        }
+
 		inline void SetLastError(uint32 error)
 		{
 			lastError = error;
@@ -192,11 +191,7 @@ namespace DAVA
 			return defaultMaterialQuality;
 		}
 		
-		NMaterial* ConvertOldMaterialToNewMaterial(Material* oldMaterial,
-											InstanceMaterialState* oldMaterialState,
-												   uint64 oldMaterialId);
-		
-		Texture* PrepareTexture(uint32 textureTypeHint, Texture* tx);
+        Texture* PrepareTexture(rhi::TextureType textureTypeHint, Texture* tx);
 		
 		void ResolveMaterialBindings();
 

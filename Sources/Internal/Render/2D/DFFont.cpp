@@ -30,7 +30,6 @@
 #include "DFFont.h"
 
 #include "Render/Texture.h"
-#include "Render/RenderManager.h"
 #include "Render/Shader.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
@@ -179,7 +178,7 @@ DFFont::~DFFont()
     if(fontTexture)
     {
         fontTexture->Release();
-        RenderManager::Instance()->ReleaseTextureState(fontTextureHandler);
+        rhi::ReleaseTextureSet(fontTextureHandler);
     }
 }
 
@@ -223,7 +222,7 @@ Font * DFFont::Clone() const
     dfFont->fontTextureHandler = fontTextureHandler;
     dfFont->SetAscendScale(GetAscendScale());
     dfFont->SetDescendScale(GetDescendScale());
-    RenderManager::Instance()->RetainTextureState(fontTextureHandler);
+    dfFont->fontTextureHandler = rhi::CopyTextureSet(fontTextureHandler);    
 
     return dfFont;
 }
@@ -408,11 +407,12 @@ bool DFFont::LoadTexture(const FilePath & path)
     if(!fontTexture)
     {
         return false;
-    }
-    
-    TextureStateData textureData;
-    textureData.SetTexture(0, fontTexture);
-    fontTextureHandler = RenderManager::Instance()->CreateTextureState(textureData);
+    }            
+
+    rhi::TextureSetDescriptor descriptor;
+    descriptor.fragmentTextureCount = 1;
+    descriptor.fragmentTexture[0]   = fontTexture->handle;    
+    fontTextureHandler              = rhi::AcquireTextureSet(descriptor);
 
     return true;
 }

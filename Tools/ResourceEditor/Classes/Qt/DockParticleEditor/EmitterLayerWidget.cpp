@@ -56,10 +56,14 @@ const EmitterLayerWidget::LayerTypeMap EmitterLayerWidget::layerTypeMap[] =
 
 const EmitterLayerWidget::BlendPreset EmitterLayerWidget::blendPresetsMap[]=
 {
+#if RHI_COMPLETE_EDITOR
 	{BLEND_SRC_ALPHA, BLEND_ONE_MINUS_SRC_ALPHA, "Alpha blend"},
 	{BLEND_ONE, BLEND_ONE, "Additive"},
 	{BLEND_SRC_ALPHA, BLEND_ONE, "Alpha additive"},
 	{BLEND_ONE_MINUS_DST_COLOR, BLEND_ONE, "Soft additive"}
+#endif // RHI_COMPLETE_EDITOR
+    {BLENDING_ALPHABLEND, "Alpha blend"},
+    {BLENDING_ADDITIVE, "Additive" }
 	/*{BLEND_DST_COLOR, BLEND_ZERO, "Multiplicative"},
 	{BLEND_DST_COLOR, BLEND_SRC_COLOR, "2x Multiplicative"}*/
 };
@@ -710,6 +714,7 @@ void EmitterLayerWidget::OnPresetChanged()
 {
 	if (blockSignals)
 		return;	
+#if RHI_COMPLETE_EDITOR
 	int32 presetsCount = sizeof(blendPresetsMap)/sizeof(BlendPreset);
 	int32 presetId = presetComboBox->currentIndex();
 	if (presetId>=presetsCount) //custom was selected
@@ -719,6 +724,7 @@ void EmitterLayerWidget::OnPresetChanged()
 	srcFactorComboBox->setCurrentIndex(blendPresetsMap[presetId].srcFactor-1);
 	dstFactorComboBox->setCurrentIndex(blendPresetsMap[presetId].dstFactor-1);
 	blockSignals = false;
+#endif // RHI_COMPLETE_EDITOR
 	OnValueChanged();
 }
 
@@ -782,8 +788,10 @@ void EmitterLayerWidget::OnValueChanged()
 	ParticleLayer::eType propLayerType = layerTypeMap[layerTypeComboBox->currentIndex()].layerType;
 
 	//+1 is because we dont even show blend none
+#if RHI_COMPLETE_EDITOR
 	eBlendMode srcFactor = (eBlendMode)(srcFactorComboBox->currentIndex()+1);
 	eBlendMode dstFactor = (eBlendMode)(dstFactorComboBox->currentIndex()+1);
+#endif // RHI_COMPLETE_EDITOR
 
 	int32 particleOrientation = 0;
 	if (cameraFacingCheckBox->isChecked())
@@ -811,8 +819,7 @@ void EmitterLayerWidget::OnValueChanged()
 						 scaleVelocityFactorSpinBox->value(),
 						 isLoopedCheckBox->isChecked(),
 						 sprite,
-						 srcFactor,
-						 dstFactor,
+                         BLENDING_NONE, //RHI_COMPLETE_EDITOR
 						 fogCheckBox->isChecked(),
 						 frameBlendingCheckBox->isChecked(),
 						 particleOrientation,
@@ -911,6 +918,7 @@ void EmitterLayerWidget::Update(bool updateMinimized)
 
     if (sprite)
     {
+#if RHI_COMPLETE_EDITOR
         Texture * renderTexture = Texture::CreateFBO(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888, Texture::DEPTH_NONE);
         RenderHelper::Instance()->Set2DRenderTarget(renderTexture);
         RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
@@ -925,6 +933,7 @@ void EmitterLayerWidget::Update(bool updateMinimized)
         spriteLabel->setPixmap(QPixmap::fromImage(ImageTools::FromDavaImage(image)));
         SafeRelease(image);
         SafeRelease(renderTexture);
+#endif // RHI_COMPLETE_EDITOR
     }
     else
     {
@@ -946,11 +955,14 @@ void EmitterLayerWidget::Update(bool updateMinimized)
     worldAlignCheckBox->setChecked(layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN);
 
     //blend and fog
+#if RHI_COMPLETE_EDITOR
     eBlendMode sFactor = layer->srcBlendFactor;
     eBlendMode dFactor = layer->dstBlendFactor;
+
     //-1 as we don't have BLEND_NONE
     srcFactorComboBox->setCurrentIndex(sFactor-1);
     dstFactorComboBox->setCurrentIndex(dFactor-1);
+
     int32 presetsCount = sizeof(blendPresetsMap)/sizeof(BlendPreset);
     int32 presetId;
     for (presetId=0; presetId<presetsCount; presetId++)
@@ -959,6 +971,7 @@ void EmitterLayerWidget::Update(bool updateMinimized)
             break;
     }
     presetComboBox->setCurrentIndex(presetId);
+#endif // RHI_COMPLETE_EDITOR
 
     fogCheckBox->setChecked(layer->enableFog);
 
@@ -1140,6 +1153,7 @@ void EmitterLayerWidget::FillLayerTypes()
 
 void EmitterLayerWidget::FillBlendCombos()
 {
+#if RHI_COMPLETE_EDITOR
 	int32 presetsCount = sizeof(blendPresetsMap)/sizeof(BlendPreset);
 	for (int32 i=0; i<presetsCount; i++)
 	{
@@ -1152,6 +1166,7 @@ void EmitterLayerWidget::FillBlendCombos()
 		srcFactorComboBox->addItem(BLEND_MODE_NAMES[i].c_str());
 		dstFactorComboBox->addItem(BLEND_MODE_NAMES[i].c_str());
 	}
+#endif // RHI_COMPLETE_EDITOR
 }
 
 int32 EmitterLayerWidget::LayerTypeToIndex(ParticleLayer::eType layerType)

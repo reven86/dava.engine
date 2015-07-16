@@ -81,15 +81,17 @@ protected:
 	LandscapeProxy* landscapeProxy;
 	Rect updatedRect;
 
-	Texture * MixImageWithTexture(Image* image, Texture* texture);
-	void ApplyImageToTexture(Image* image, Texture * dstTex);
+	void ApplyImageToTexture(Image* image, Texture * dstTex, int32 internalHandle);
+    
+    rhi::HTextureSet textureSetHandle[2];
+    Texture * texture[2];
 };
 
 class SetTileColorCommand: public Command2
 {
 public:
 	SetTileColorCommand(LandscapeProxy* landscapeProxy,
-						Landscape::eTextureLevel level,
+						const FastName& level,
 						const Color& color);
 	~SetTileColorCommand();
 
@@ -98,7 +100,7 @@ public:
 	virtual Entity* GetEntity() const;
 
 protected:
-	Landscape::eTextureLevel level;
+	const FastName& level;
 	Color redoColor;
 	Color undoColor;
 	LandscapeProxy* landscapeProxy;

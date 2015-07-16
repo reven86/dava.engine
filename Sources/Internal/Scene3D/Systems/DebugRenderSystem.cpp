@@ -40,6 +40,7 @@
 #include "Render/Highlevel/Camera.h"
 #include "Render/RenderHelper.h"
 #include "Debug/Stats.h"
+#include "Render/Renderer.h"
 
 namespace DAVA
 {
@@ -48,12 +49,6 @@ DebugRenderSystem::DebugRenderSystem(Scene * scene)
 :	SceneSystem(scene),
 	camera(0)
 {
-	depthTestState = RenderManager::Instance()->Subclass3DRenderState(RenderStateData::STATE_COLORMASK_ALL |
-																	RenderStateData::STATE_DEPTH_WRITE |
-																	RenderStateData::STATE_DEPTH_TEST);
-	
-	depthWriteState = RenderManager::Instance()->Subclass3DRenderState(RenderStateData::STATE_COLORMASK_ALL |
-																	RenderStateData::STATE_DEPTH_WRITE);
 }
     
 DebugRenderSystem::~DebugRenderSystem()
@@ -67,7 +62,7 @@ void DebugRenderSystem::Process(float32 timeElapsed)
 
     SetCamera(GetScene()->GetCurrentCamera());
 
-    uint32 size = static_cast<uint32>(entities.size());
+/*    uint32 size = static_cast<uint32>(entities.size());
 	for(uint32 i = 0; i < size; ++i)
 	{
         Entity * entity = entities[i];
@@ -76,8 +71,8 @@ void DebugRenderSystem::Process(float32 timeElapsed)
         TransformComponent * transformComponent = cast_if_equal<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT));
         //RenderComponent * renderComponent = cast_if_equal<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT));
         
-        //Matrix4 worldTransform = /*(*transformComponent->GetWorldTransform()) * */camera->GetMatrix();
-        RenderManager::SetDynamicParam(PARAM_VIEW, &camera->GetMatrix(), UPDATE_SEMANTIC_ALWAYS);
+        //Matrix4 worldTransform = camera->GetMatrix();
+        Renderer::GetDynamicBindings().SetDynamicParam(PARAM_VIEW, &camera->GetMatrix(), DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 
         AABBox3 debugBoundigBox = entity->GetWTMaximumBoundingBoxSlow();
         uint32 debugFlags = debugRenderComponent->GetDebugFlags();
@@ -101,11 +96,11 @@ void DebugRenderSystem::Process(float32 timeElapsed)
 					if (entityCamera == entity->GetScene()->GetDrawCamera()) camColor = Color(1.0f, 0.0f, 0.0f, 1.0f);
 
 
-					RenderManager::Instance()->SetColor(camColor);
+					RenderSystem2D::Instance()->SetColor(camColor);
 					RenderHelper::Instance()->DrawBox(camBox, 2.5f, depthWriteState);
 
 					//RenderManager::Instance()->SetState(RenderState::DEFAULT_3D_STATE);
-					RenderManager::Instance()->ResetColor();
+					RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 					debugBoundigBox = camBox;
 				}
@@ -123,22 +118,22 @@ void DebugRenderSystem::Process(float32 timeElapsed)
 				//Matrix4 prevMatrix = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW);
 				//Matrix4 finalMatrix = transformComponent->GetWorldTransform() * prevMatrix;
 				
-                RenderManager::SetDynamicParam(PARAM_WORLD, &transformComponent->GetWorldTransform(), UPDATE_SEMANTIC_ALWAYS);
-                RenderManager::SetDynamicParam(PARAM_VIEW, &camera->GetMatrix(), UPDATE_SEMANTIC_ALWAYS);
+                Renderer::GetDynamicBindings().SetDynamicParam(PARAM_WORLD, &transformComponent->GetWorldTransform(), DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
+                Renderer::GetDynamicBindings().SetDynamicParam(PARAM_VIEW, &camera->GetMatrix(), DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 
 								
-				RenderManager::Instance()->SetColor(1.f, 1.f, 0, 1.0f);
+				RenderSystem2D::Instance()->SetColor(1.f, 1.f, 0, 1.0f);
 				RenderHelper::Instance()->DrawLine(Vector3(0, 0, 0), Vector3(1.f, 0, 0), 1.0f, depthTestState);
-				RenderManager::Instance()->SetColor(1.f, 0, 1.f, 1.0f);
+				RenderSystem2D::Instance()->SetColor(1.f, 0, 1.f, 1.0f);
 				RenderHelper::Instance()->DrawLine(Vector3(0, 0, 0), Vector3(0, 1.f, 0), 1.0f, depthTestState);
-				RenderManager::Instance()->SetColor(0, 1.f, 1.f, 1.0f);
+				RenderSystem2D::Instance()->SetColor(0, 1.f, 1.f, 1.0f);
 				RenderHelper::Instance()->DrawLine(Vector3(0, 0, 0), Vector3(0, 0, 1.f), 1.0f, depthTestState);
 
-				RenderManager::Instance()->SetColor(dcColor);
+				RenderSystem2D::Instance()->SetColor(dcColor);
 				RenderHelper::Instance()->DrawBox(dcBox, 1.0f, depthTestState);
 
 				//RenderManager::Instance()->SetState(RenderState::DEFAULT_3D_STATE);
-				RenderManager::Instance()->ResetColor();
+				RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 				//RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, prevMatrix);
 
 				dcBox.GetTransformedBox(transformComponent->GetWorldTransform(), debugBoundigBox);
@@ -158,7 +153,7 @@ void DebugRenderSystem::Process(float32 timeElapsed)
 				{
 					Vector3 lPosition = light->GetPosition();
 
-					RenderManager::Instance()->SetColor(1.0f, 1.0f, 0.0f, 1.0f);
+					RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 0.0f, 1.0f);
 
 					switch (light->GetType())
 					{
@@ -184,74 +179,24 @@ void DebugRenderSystem::Process(float32 timeElapsed)
 					}
 
 					//RenderManager::Instance()->SetState(RenderState::DEFAULT_3D_STATE);
-					RenderManager::Instance()->ResetColor();
+					RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 				}
 			}
 		}
         
         if ((debugFlags & DebugRenderComponent::DEBUG_DRAW_AABOX_CORNERS))
         {
-            RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+            RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
             RenderHelper::Instance()->DrawCornerBox(debugBoundigBox, 1.0f, depthTestState);
         }
         
         if (debugFlags & DebugRenderComponent::DEBUG_DRAW_RED_AABBOX)
         {
-            RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+            RenderSystem2D::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
             RenderHelper::Instance()->DrawBox(debugBoundigBox, 1.0f, depthWriteState);
-            RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-        }
-        
-
-        // UserNode Draw
-#if 0
-       	
-        if (debugFlags & DEBUG_DRAW_USERNODE)
-        {
-            Matrix4 prevMatrix = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW);
-            Matrix4 finalMatrix = worldTransform * prevMatrix;
-            RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, finalMatrix);
-            
-            RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
-            RenderManager::Instance()->SetState(RenderStateBlock::STATE_COLORMASK_ALL | RenderStateBlock::STATE_DEPTH_WRITE | RenderStateBlock::STATE_DEPTH_TEST);
-            RenderManager::Instance()->SetColor(0, 0, 1.0f, 1.0f);
-            RenderHelper::Instance()->DrawBox(drawBox);
-            RenderManager::Instance()->SetColor(1.f, 1.f, 0, 1.0f);
-            RenderHelper::Instance()->DrawLine(Vector3(0, 0, 0), Vector3(1.f, 0, 0));
-            RenderManager::Instance()->SetColor(1.f, 0, 1.f, 1.0f);
-            RenderHelper::Instance()->DrawLine(Vector3(0, 0, 0), Vector3(0, 1.f, 0));
-            RenderManager::Instance()->SetColor(0, 1.f, 1.f, 1.0f);
-            RenderHelper::Instance()->DrawLine(Vector3(0, 0, 0), Vector3(0, 0, 1.f));
-            RenderManager::Instance()->SetState(RenderStateBlock::DEFAULT_3D_STATE);
-            RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-            RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, prevMatrix);
-        }
-#endif
-        
-#if 0
-        // ParticleEffectNode
-        if (debugFlags != DEBUG_DRAW_NONE)
-        {
-            if (!(flags & SceneNode::NODE_VISIBLE))return;
-            
-            RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
-            RenderManager::Instance()->SetState(RenderStateBlock::STATE_COLORMASK_ALL | RenderStateBlock::STATE_DEPTH_WRITE);
-            
-            Vector3 position = Vector3(0.0f, 0.0f, 0.0f) * GetWorldTransform();
-            Matrix3 rotationPart(GetWorldTransform());
-            Vector3 direction = Vector3(0.0f, 0.0f, 1.0f) * rotationPart;
-            direction.Normalize();
-            
-            RenderManager::Instance()->SetColor(0.0f, 0.0f, 1.0f, 1.0f);
-            
-            RenderHelper::Instance()->DrawLine(position, position + direction * 10, 2.f);
-            
-            RenderManager::Instance()->SetState(RenderStateBlock::DEFAULT_3D_STATE);
-            RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-        }
-#endif
-        
-    }
+            RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+        }               
+    }*/
 }
 
 void DebugRenderSystem::AddEntity(Entity * entity)

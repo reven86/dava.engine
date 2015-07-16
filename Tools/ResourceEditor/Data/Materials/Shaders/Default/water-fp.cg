@@ -1,0 +1,196 @@
+#include "common.cgh"
+
+#if FRESNEL_TO_ALPHA
+    blending : src=src_alpha dst=inv_src_alpha
+#endif
+
+#define SHADING_PERVERTEX 0
+#define SHADING_PERPIXEL  1
+
+//convert old defines to new style
+#if PIXEL_LIT
+#define SHADING SHADING_PERPIXEL
+#endif
+#if VERTEX_LIT
+#define SHADING SHADING_PERVERTEX
+#endif
+
+FPROG_IN_BEGIN
+    FPROG_IN_TEXCOORD0(uv,2)
+    FPROG_IN_TEXCOORD1(uv1,2)
+
+    #if SHADING == SHADING_PERPIXEL
+        FPROG_IN_TEXCOORD2(cameraToPointInTangentSpace, 3)
+
+        #if REAL_REFLECTION
+            FPROG_IN_TEXCOORD3(eyeDist, 3)
+            FPROG_IN_TEXCOORD4(normalizedFragPos, 4)
+            #if SPECULAR
+                FPROG_IN_TEXCOORD5(varLightVec, 3)
+            #endif
+        #else
+            FPROG_IN_TEXCOORD3(tbnToWorld0, 3)
+            FPROG_IN_TEXCOORD4(tbnToWorld1, 3)
+            FPROG_IN_TEXCOORD5(tbnToWorld2, 3)
+        #endif
+
+    #endif
+
+    #if SHADING == SHADING_PERVERTEX 
+        FPROG_IN_TEXCOORD2(varTexCoordDecal, 2)
+        FPROG_IN_TEXCOORD3(reflectionDirectionInWorldSpace, 3)
+    #endif
+    
+    #if VERTEX_FOG
+        FPROG_IN_TEXCOORD6(varFog,4)
+    #endif
+
+FPROG_IN_END
+
+FPROG_OUT_BEGIN
+    FPROG_OUT_COLOR
+FPROG_OUT_END
+
+#if SHADING == SHADING_PERPIXEL
+    #if REAL_REFLECTION
+        DECL_FP_SAMPLER2D(dynamicReflection)
+        DECL_FP_SAMPLER2D(dynamicRefraction)
+    #endif
+
+    #if !DEBUG_UNITY_Z_NORMAL
+        DECL_FP_SAMPLER2D(normalmap)
+        #if (SEPARATE_NORMALMAPS)
+            DECL_FP_SAMPLER2D(normalmap1)
+        #endif
+    #endif
+#elif SHADING == SHADING_PERVERTEX
+    DECL_FP_SAMPLER2D(albedo)
+    DECL_FP_SAMPLER2D(decal)
+#endif
+
+#if !REAL_REFLECTION
+    DECL_FP_SAMPLERCUBE(cubemap)
+#endif
+
+
+//properties
+#if SHADING == SHADING_PERPIXEL
+    #if REAL_REFLECTION
+        property float  distortionFallSquareDist   : static,instance : ;
+        property float  reflectionDistortion       : static,instance : ;
+        property float  refractionDistortion       : static,instance : ;
+        property float3 refractionTintColor        : static,instance : ;
+        #if SPECULAR
+            property float  inGlossiness       : static,instance : ;
+            property float  inSpecularity      : static,instance : ;
+            property float3 lightColor0        : dynamic,instance : ;            
+        #endif
+    #endif
+
+    property float3 reflectionTintColor        : static,instance : ;
+    property float  fresnelBias       : static,instance : ;
+    property float  fresnelPow        : static,instance : ;
+    
+    #if DEBUG_Z_NORMAL_SCALE && !DEBUG_UNITY_Z_NORMAL
+        property float  normal0_z_scale       : static,instance : def_value=1 ;
+        property float  normal1_z_scale       : static,instance : def_value=1 ;
+    #endif
+#elif SHADING == SHADING_PERVERTEX
+    property float3 decalTintColor     : static,instance : ;
+    property float3 reflectanceColor   : static,instance : ;
+#endif
+
+
+float FresnelShlick(float NdotL, float fresnelBias, float fresnelPow)
+{
+    return fresnelBias + (1.0 - fresnelBias) * pow(1.0 - NdotL, fresnelPow);
+}
+
+FPROG_BEGIN    
+
+
+    float2 varTexCoord0 = FP_IN(uv);
+    float2 varTexCoord1 = FP_IN(uv1);
+
+#if SHADING == SHADING_PERPIXEL
+
+//compute normal
+    float3 normal;
+    #if !DEBUG_UNITY_Z_NORMAL
+        float3 normal0 = FP_TEXTURE2D (normalmap, varTexCoord0).rgb;
+        #if SEPARATE_NORMALMAPS
+            float3 normal1 = FP_TEXTURE2D (normalmap1, varTexCoord1).rgb;    
+        #else
+            float3 normal1 = FP_TEXTURE2D (normalmap, varTexCoord1).rgb;
+        #endif
+        
+        #if DEBUG_Z_NORMAL_SCALE
+            normal0 = normal0 * 2.0 - 1.0;
+            normal1 = normal1 * 2.0 - 1.0;
+            normal0.xy *= normal0_z_scale;
+            normal1.xy *= normal1_z_scale;
+            normal = normalize (normal0 + normal1);
+        #else    
+            normal = normalize (normal0 + normal1 - 1.0); //same as * 2 -2
+        #endif
+    
+    #else
+        normal = float3(0.0,0.0,1.0);
+    #endif    
+    
+    
+//compute fresnel    
+    float3 cameraToPointInTangentSpaceNorm = normalize(FP_IN(cameraToPointInTangentSpace));    
+    float lambertFactor = max (dot (-cameraToPointInTangentSpaceNorm, normal), 0.0);
+    float fresnel = FresnelShlick(lambertFactor, fresnelBias, fresnelPow);
+    
+    #if REAL_REFLECTION        
+        float3 eyeDist = FP_IN(eyeDist);    
+        float2 waveOffset = normal.xy*max(0.1, 1.0-dot(eyeDist, eyeDist)*distortionFallSquareDist);
+        float4 fragPos = FP_IN(normalizedFragPos);
+        float2 texturePos =  fragPos.xy/fragPos.w*0.5 + 0.5; //(gl_FragCoord.xy-viewportOffset)*rcpViewpoviewportOffset;    
+        float3 reflectionColor = FP_TEXTURE2D(dynamicReflection, texturePos+waveOffset*reflectionDistortion).rgb;
+        texturePos.y=1.0-texturePos.y;
+        float3 refractionColor = FP_TEXTURE2D(dynamicRefraction, texturePos+waveOffset*refractionDistortion).rgb;                
+        float3 resColor = lerp(refractionColor*refractionTintColor, reflectionColor*reflectionTintColor, fresnel);    
+        
+        #if SPECULAR
+            float3 halfVec = normalize(normalize(FP_IN(varLightVec))-cameraToPointInTangentSpaceNorm);       
+            float glossPower = pow(5000.0, inGlossiness); //textureColor0.a;
+            float specularNorm = (glossPower + 2.0) / 8.0;
+            float specularNormalized = specularNorm * pow(max (dot (halfVec, normal), 0.0), glossPower) * inSpecularity;
+            float specular = specularNormalized  * fresnel;
+            float3 resSpecularColor = lightColor0*specular;
+            resColor+=resSpecularColor*reflectionColor;        
+        #endif
+        
+        FP_OUT_COLOR = float4(resColor, 1.0);
+    #else
+        float3x3 tbnToWorldMatrix = float3x3(FP_IN(tbnToWorld0), FP_IN(tbnToWorld1), FP_IN(tbnToWorld2));
+        float3 reflectionVectorInTangentSpace = reflect(cameraToPointInTangentSpaceNorm, normal);
+        reflectionVectorInTangentSpace.z = abs(reflectionVectorInTangentSpace.z); //prevent reflection through surface
+        float3 reflectionVectorInWorldSpace = mul (reflectionVectorInTangentSpace, tbnToWorldMatrix);    
+        float3 reflectionColor = FP_TEXTURECUBE(cubemap, reflectionVectorInWorldSpace).rgb * reflectionTintColor;                    
+        FP_OUT_COLOR = float4(reflectionColor, fresnel);
+    #endif    
+
+#elif SHADING == SHADING_PERVERTEX
+
+    float3 reflectionColor = FP_TEXTURECUBE(cubemap, FP_IN(reflectionDirectionInWorldSpace)).rgb;
+    float3 textureColorDecal = FP_TEXTURE2D(decal, FP_IN(varTexCoordDecal)).rgb;
+    float3 textureColor0 = FP_TEXTURE2D(albedo, varTexCoord0).rgb;
+    float3 textureColor1 = FP_TEXTURE2D(albedo, varTexCoord1).rgb;    
+    FP_OUT_COLOR = float4(((textureColor0 * textureColor1) * 3.0 * decalTintColor * textureColorDecal + reflectionColor * reflectanceColor) , 1.0);
+
+#endif    
+
+#if VERTEX_FOG
+    
+    float   varFogAmoung = FP_IN(varFog).a;
+    float3  varFogColor  = FP_IN(varFog).rgb;       
+    FP_OUT_COLOR.rgb = lerp( FP_OUT_COLOR.rgb, varFogColor, varFogAmoung );
+    
+#endif
+    
+FPROG_END
+

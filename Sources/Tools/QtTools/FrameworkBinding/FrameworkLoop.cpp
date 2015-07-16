@@ -30,7 +30,9 @@
 #include "FrameworkLoop.h"
 
 #include "Platform/Qt5/QtLayer.h"
-#include "Render/RenderManager.h"
+#include "Core/Core.h"
+
+#include "Render/RenderBase.h"
 
 #include <QWindow>
 #include <QApplication>
@@ -100,7 +102,6 @@ QOpenGLContext* FrameworkLoop::Context()
         
         openGlFunctions.reset( new QOpenGLFunctions( context ) );
         openGlFunctions->initializeOpenGLFunctions();
-        
     #ifdef Q_OS_WIN
         glewInit();
     #endif
@@ -111,6 +112,14 @@ QOpenGLContext* FrameworkLoop::Context()
     }
 
     return context.data();
+}
+
+void FrameworkLoop::DoneContext()
+{
+    if (!context.isNull())
+    {
+        context->doneCurrent();
+    }
 }
 
 quint64 FrameworkLoop::GetRenderContextId() const
@@ -140,16 +149,19 @@ void FrameworkLoop::ProcessFrameInternal()
         context->makeCurrent(glWidget->GetGLWindow());
     }
     DAVA::QtLayer::Instance()->ProcessFrame();
-    if ( glWidget != nullptr )
+
+    if (glWidget != nullptr)
     {
-        QEvent updateEvent( QEvent::UpdateRequest );
-        QApplication::sendEvent( glWidget->GetGLWindow(), &updateEvent );
+        QEvent updateEvent(QEvent::UpdateRequest);
+        QApplication::sendEvent(glWidget->GetGLWindow(), &updateEvent);
     }
 }
 
 void FrameworkLoop::Quit()
 {
+#if RHI_COMPLETE_EDITOR
     DAVA::RenderManager::Instance()->SetRenderContextId( 0 );
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void FrameworkLoop::OnWindowDestroyed()
@@ -157,8 +169,23 @@ void FrameworkLoop::OnWindowDestroyed()
     context->makeCurrent( nullptr );
 }
 
+void MakeCurrentGL()
+{
+    FrameworkLoop::Instance()->Context();
+}
+
+void DoneGLContext()
+{
+    FrameworkLoop::Instance()->DoneContext();
+}
+
 void FrameworkLoop::OnWindowInitialized()
 {
+    DAVA::Core::Instance()->rendererParams.acquireContextFunc = &MakeCurrentGL;
+    DAVA::Core::Instance()->rendererParams.releaseContextFunc = &DoneGLContext;
+
+    DAVA::QtLayer::Instance()->AppStarted();
+
     DAVA::QtLayer::Instance()->InitializeGlWindow( GetRenderContextId() );
     DAVA::QtLayer::Instance()->OnResume();
 }

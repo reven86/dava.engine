@@ -56,7 +56,7 @@ namespace DAVA
     {
         DVASSERT(isSingleLine);
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-        BackgroundView* backgroundView = [appDelegate glController].backgroundView;
+        BackgroundView* backgroundView = [appDelegate renderViewController].backgroundView;
         
         UITextFieldHolder * textFieldHolder= [backgroundView CreateTextField];
         DVASSERT(textFieldHolder->textCtrl != nullptr);
@@ -80,7 +80,7 @@ namespace DAVA
         [textFieldHolder setTextField:(DAVA::UITextField *)nil];
         
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-        BackgroundView* backgroundView = [appDelegate glController].backgroundView;
+        BackgroundView* backgroundView = [appDelegate renderViewController].backgroundView;
 
         if (!isSingleLine)
         {

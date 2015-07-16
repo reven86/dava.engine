@@ -31,13 +31,15 @@
 #include "UI/UIScreen.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "FileSystem/Logger.h"
-#include "Render/RenderManager.h"
 #include "Render/OcclusionQuery.h"
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
 #include "Debug/Replay.h"
 #include "Debug/Stats.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/Renderer.h"
+#include "Render/RenderHelper.h"
+#include "UI/UIScreenshoter.h"
 
 namespace DAVA 
 {
@@ -49,6 +51,7 @@ UIControlSystem::~UIControlSystem()
 	SafeRelease(currentScreen); 
 	SafeRelease(popupContainer);
     SafeDelete(styleSheetSystem);
+    SafeDelete(screenshoter);
 }
 	
 UIControlSystem::UIControlSystem()
@@ -82,6 +85,7 @@ UIControlSystem::UIControlSystem()
     ui3DViewCount = 0;
 
     styleSheetSystem = new UIStyleSheetSystem();
+    screenshoter = new UIScreenshoter();
 }
 	
 void UIControlSystem::SetScreen(UIScreen *_nextScreen, UIScreenTransition * _transition)
@@ -313,7 +317,7 @@ void UIControlSystem::Update()
 	
 	float32 timeElapsed = SystemTimer::FrameDelta();
 
-	if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
+	if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
 	{
 		if(currentScreen)
 		{
@@ -334,14 +338,12 @@ void UIControlSystem::Draw()
     FrameOcclusionQueryManager::Instance()->BeginQuery(FRAME_QUERY_UI_DRAW);
 
     drawCounter = 0;
-    if (!ui3DViewCount)
-    {
-        UniqueHandle prevState = RenderManager::Instance()->currentState.stateHandle;
-        RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
-        RenderManager::Instance()->FlushState();            
-        RenderManager::Instance()->Clear(Color(0,0,0,0), 1.0f, 0);        
-        RenderManager::Instance()->SetRenderState(prevState);
-    }
+
+    rhi::Viewport viewport;
+    viewport.x = viewport.y = 0U;
+    viewport.width = (uint32)Renderer::GetFramebufferWidth();
+    viewport.height = (uint32)Renderer::GetFramebufferHeight();
+    RenderHelper::Instance()->CreateClearPass(rhi::HTexture(), PRIORITY_CLEAR, Color(.4f, .4f, .4f, 1.f), viewport);
 
 	if (currentScreen)
 	{
@@ -357,6 +359,8 @@ void UIControlSystem::Draw()
     //Logger::Info("UIControlSystem::draws: %d", drawCounter);
 
     FrameOcclusionQueryManager::Instance()->EndQuery(FRAME_QUERY_UI_DRAW);
+
+    GetScreenshoter()->OnFrame();
 }
 	
 void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl *targetControl)
@@ -834,6 +838,11 @@ void UIControlSystem::UI3DViewRemoved()
 UIStyleSheetSystem* UIControlSystem::GetStyleSheetSystem()
 {
     return styleSheetSystem;
+}
+
+UIScreenshoter* UIControlSystem::GetScreenshoter()
+{
+    return screenshoter;
 }
 
 };

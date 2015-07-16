@@ -39,10 +39,10 @@
 #include "FileSystem/YamlNode.h"
 #include "Input/InputSystem.h"
 #include "Render/RenderHelper.h"
-#include "Render/RenderManager.h"
 #include "Utils/StringFormat.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/Renderer.h"
 
 #include "Components/UIComponent.h"
 #include "Components/UIControlFamily.h"
@@ -1441,18 +1441,12 @@ namespace DAVA
 
     void UIControl::DrawDebugRect(const UIGeometricData &gd, bool useAlpha)
     {
-        Color oldColor = RenderManager::Instance()->GetColor();
         RenderSystem2D::Instance()->PushClip();
 
+        auto drawColor = debugDrawColor;
         if (useAlpha)
         {
-            Color drawColor = debugDrawColor;
             drawColor.a = 0.4f;
-            RenderManager::Instance()->SetColor(drawColor);
-        }
-        else
-        {
-            RenderManager::Instance()->SetColor(debugDrawColor);
         }
 
         if( gd.angle != 0.0f )
@@ -1460,15 +1454,14 @@ namespace DAVA
             Polygon2 poly;
             gd.GetPolygon( poly );
 
-            RenderHelper::Instance()->DrawPolygon( poly, true, RenderState::RENDERSTATE_2D_BLEND );
+            RenderSystem2D::Instance()->DrawPolygon(poly, true, drawColor);
         }
         else
         {
-            RenderHelper::Instance()->DrawRect( gd.GetUnrotatedRect(), RenderState::RENDERSTATE_2D_BLEND );
+            RenderSystem2D::Instance()->DrawRect(gd.GetUnrotatedRect(), drawColor);
         }
 
         RenderSystem2D::Instance()->PopClip();
-        RenderManager::Instance()->SetColor(oldColor);
     }
 
     void UIControl::DrawPivotPoint(const Rect &drawRect)
@@ -1485,29 +1478,27 @@ namespace DAVA
 
         static const float32 PIVOT_POINT_MARK_RADIUS = 10.0f;
         static const float32 PIVOT_POINT_MARK_HALF_LINE_LENGTH = 13.0f;
+        static const Color drawColor(1.0f, 0.0f, 0.0f, 1.0f);
 
-        Color oldColor = RenderManager::Instance()->GetColor();
         RenderSystem2D::Instance()->PushClip();
-        RenderManager::Instance()->SetColor(Color(1.0f, 0.0f, 0.0f, 1.0f));
-
+        
         Vector2 pivotPointCenter = drawRect.GetPosition() + GetPivotPoint();
-        RenderHelper::Instance()->DrawCircle(pivotPointCenter, PIVOT_POINT_MARK_RADIUS, RenderState::RENDERSTATE_2D_BLEND);
+        RenderSystem2D::Instance()->DrawCircle(pivotPointCenter, PIVOT_POINT_MARK_RADIUS, drawColor);
 
         // Draw the cross mark.
         Vector2 lineStartPoint = pivotPointCenter;
         Vector2 lineEndPoint = pivotPointCenter;
         lineStartPoint.y -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
         lineEndPoint.y += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
-        RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderState::RENDERSTATE_2D_BLEND);
+        RenderSystem2D::Instance()->DrawLine(lineStartPoint, lineEndPoint, drawColor);
 
         lineStartPoint = pivotPointCenter;
         lineEndPoint = pivotPointCenter;
         lineStartPoint.x -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
         lineEndPoint.x += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
-        RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderState::RENDERSTATE_2D_BLEND);
+        RenderSystem2D::Instance()->DrawLine(lineStartPoint, lineEndPoint, drawColor);
 
         RenderSystem2D::Instance()->PopClip();
-        RenderManager::Instance()->SetColor(oldColor);
     }
 
     bool UIControl::IsPointInside(const Vector2 &_point, bool expandWithFocus/* = false*/) const

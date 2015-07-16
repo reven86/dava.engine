@@ -33,7 +33,6 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Render/3D/PolygonGroup.h"
-#include "Render/Material.h"
 
 namespace DAVA
 {

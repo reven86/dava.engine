@@ -59,13 +59,11 @@ namespace DAVA
 		{
 			core->Run();
 			core->ReleaseSingletons();
-			
 		}
 
 		return 0;
 	
 	}
-
 	int Core::RunCmdTool(int argc, char * argv[], AppHandle handle)
 	{
 		CoreWin32Platform * core = new CoreWin32Platform();
@@ -98,11 +96,6 @@ namespace DAVA
 			}
 		}
         SetLastError(0);
-		//hMutex = CreateMutex(NULL, FALSE, fileName);
-		//if(ERROR_ALREADY_EXISTS == GetLastError())
-		//{
-		//	return false;
-		//}
 
 		windowedMode = DisplayMode(800, 600, 16, 0);
 		fullscreenMode = DisplayMode(800, 600, 16, 0);
@@ -165,19 +158,13 @@ namespace DAVA
 		hWindow = CreateWindow( className, L"", style, windowLeft, windowTop, 
 			realWidth, realHeight,	NULL, NULL, hInstance, NULL);
 
+        rendererParams.window = hWindow;
+
 		ShowWindow(hWindow, SW_SHOW);
 		UpdateWindow(hWindow);
 
 		// fix ugly ATI driver bugs. Thanks to ariaci (Taken from Irrlight).
 		MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
-	
-#if defined(__DAVAENGINE_DIRECTX9__)
-		RenderManager::Create(Core::RENDERER_DIRECTX9);
-#elif defined(__DAVAENGINE_OPENGL__)
-		RenderManager::Create(Core::RENDERER_OPENGL);
-#endif
-		RenderManager::Instance()->Create(hInstance, hWindow);
-        RenderSystem2D::Instance()->Init();
 
 		FrameworkDidLaunched();
 		KeyedArchive * options = Core::GetOptions();
@@ -210,6 +197,9 @@ namespace DAVA
 			currentMode = fullscreenMode;
 		}
 
+        rendererParams.width = currentMode.width;
+        rendererParams.height = currentMode.height;
+
 		clientSize.top = 0;
 		clientSize.left = 0;
 		clientSize.right = currentMode.width;
@@ -223,7 +213,7 @@ namespace DAVA
 		windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
 		windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
 		MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
-	
+
         RAWINPUTDEVICE Rid;
 
         Rid.usUsagePage = 0x01; 
@@ -232,9 +222,7 @@ namespace DAVA
         Rid.hwndTarget = 0;
 
         RegisterRawInputDevices(&Rid, 1, sizeof(Rid));
-
-		RenderManager::Instance()->ChangeDisplayMode(currentMode, isFullscreen);
-		RenderManager::Instance()->Init(currentMode.width, currentMode.height);
+				
         VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
         VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
 
@@ -274,15 +262,13 @@ namespace DAVA
 					}
 				}
 			}
-
-            RenderManager::Instance()->Lock();
-			Core::SystemProcessFrame();
-			RenderManager::Instance()->Unlock();
+            
+			Core::SystemProcessFrame();			
 
             uint32 elapsedTime = (uint32) (SystemTimer::Instance()->AbsoluteMS() - startTime);
             int32 sleepMs = 1;
 
-            int32 fps = RenderManager::Instance()->GetFPS();
+            int32 fps = Renderer::GetDesiredFPS();
             if(fps > 0)
             {
                 sleepMs = (1000 / fps) - elapsedTime;
@@ -342,9 +328,7 @@ namespace DAVA
 		}
 		
 		Logger::FrameworkDebug("[RenderManagerDX9] toggle mode: %d x %d isFullscreen: %d", currentMode.width, currentMode.height, isFullscreen);
-
-		RenderManager::Instance()->ChangeDisplayMode(currentMode, isFullscreen);
-		RenderManager::Instance()->Init(currentMode.width, currentMode.height);
+		
         VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
         VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
 	}
@@ -617,7 +601,7 @@ namespace DAVA
 
         if(touchPhase != -1)
             UIControlSystem::Instance()->OnInput(touchPhase, touches, allTouches);
-
+#if RHI_COMPLETE
 		if (RenderManager::Instance()->GetCursor() != 0 && mouseCursorShown)
 		{
 			ShowCursor(false);
@@ -628,6 +612,7 @@ namespace DAVA
 			ShowCursor(false);
 			mouseCursorShown = false;
 		}
+#endif // RHI_COMPLETE
 
 		HandleMouseButtonsReleased(buttsFlags);
 	}

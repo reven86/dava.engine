@@ -66,7 +66,7 @@ public:
 	void StartGLAnimation();
 
 	// Yuri Coder, 2013/02/06. Temporary method exist for iOS implementation only.
-	// It blocks drawing of the EAGLView, introduced for displaying assert messages.
+	// It blocks drawing of the RenderView, introduced for displaying assert messages.
 	void BlockDrawing();
     void UnblockDrawing();
 private:

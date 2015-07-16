@@ -723,7 +723,7 @@ String FileSystem::ReadFileContents(const FilePath & pathname)
 	if (!fp)
 	{
 		Logger::Error("Failed to open file: %s", pathname.GetAbsolutePathname().c_str());
-		return 0;
+		return String();
 	}
 	uint32 fileSize = fp->GetSize();
 
@@ -733,7 +733,7 @@ String FileSystem::ReadFileContents(const FilePath & pathname)
 	if (dataRead != fileSize)
 	{
 		Logger::Error("Failed to read data from file: %s", pathname.GetAbsolutePathname().c_str());
-		return 0;
+        return String();
 	}
     
 	SafeRelease(fp);

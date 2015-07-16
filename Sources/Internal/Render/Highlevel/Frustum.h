@@ -33,7 +33,6 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "Base/BaseMath.h"
-#include "Render/RenderManager.h"
 #include "Math/AABBox3.h"
 #include "Math/Plane.h"
 

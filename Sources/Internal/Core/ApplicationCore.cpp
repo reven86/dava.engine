@@ -30,7 +30,6 @@
 #include "Core/ApplicationCore.h"
 #include "Animation/AnimationManager.h"
 #include "UI/UIControlSystem.h"
-#include "Render/RenderManager.h"
 #include "Render/OcclusionQuery.h"
 #include "Sound/SoundSystem.h"
 #include "Debug/Stats.h"
@@ -93,15 +92,16 @@ void ApplicationCore::Draw()
 
 void ApplicationCore::BeginFrame()
 {
-	RenderManager::Instance()->BeginFrame();
+
+	Renderer::BeginFrame();
     RenderSystem2D::Instance()->BeginFrame();
 }
 
 void ApplicationCore::EndFrame()
 {
-    RenderSystem2D::Instance()->EndFrame();
-	RenderManager::Instance()->EndFrame();
-    RenderManager::Instance()->ProcessStats();
+    RenderSystem2D::Instance()->EndFrame();    
+    Renderer::EndFrame();
+    //RenderManager::Instance()->ProcessStats();
 }
 
 void ApplicationCore::OnSuspend()

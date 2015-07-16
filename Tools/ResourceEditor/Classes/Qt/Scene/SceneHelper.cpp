@@ -44,8 +44,9 @@ void SceneHelper::EnumerateEntityTextures(DAVA::Scene *forScene, DAVA::Entity *f
     DAVA::MaterialSystem *matSystem = forScene->GetMaterialSystem();
     
     DAVA::Set<DAVA::NMaterial *> materials;
+#if RHI_COMPLETE_EDITOR
     matSystem->BuildMaterialList(forNode, materials);
-    
+#endif // RHI_COMPLETE_EDITOR    
     Set<NMaterial *>::const_iterator endIt = materials.end();
     for(Set<NMaterial *>::const_iterator it = materials.begin(); it != endIt; ++it)
     {
@@ -61,6 +62,7 @@ void SceneHelper::EnumerateEntityTextures(DAVA::Scene *forScene, DAVA::Entity *f
         
         CollectTextures(*it, textureCollection, mode);
     }
+
 }
 
 int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DAVA::Texture *, DAVA::Vector< DAVA::eGPUFamily> > &textures)
@@ -109,6 +111,7 @@ int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DA
 
 void SceneHelper::CollectTextures(const DAVA::NMaterial *material, DAVA::TexturesMap &textures, TexturesEnumerateMode mode)
 {
+#if RHI_COMPLETE_EDITOR
     DAVA::uint32 texCount = material->GetTextureCount();
     for(DAVA::uint32 t = 0; t < texCount; ++t)
     {
@@ -141,6 +144,7 @@ void SceneHelper::CollectTextures(const DAVA::NMaterial *material, DAVA::Texture
             }
         }
     }
+#endif // RHI_COMPLETE_EDITOR
 }
 
 void SceneHelper::EnumerateMaterialInstances(DAVA::Entity *forNode, DAVA::Vector<DAVA::NMaterial *> &materials)
@@ -162,6 +166,7 @@ DAVA::Entity * SceneHelper::CloneEntityWithMaterials(DAVA::Entity *fromNode)
 {
     Entity * newEntity = fromNode->Clone();
 
+#if RHI_COMPLETE_EDITOR
     Vector<NMaterial *> materialInstances;
     EnumerateMaterialInstances(newEntity, materialInstances);
 
@@ -183,6 +188,7 @@ DAVA::Entity * SceneHelper::CloneEntityWithMaterials(DAVA::Entity *fromNode)
         NMaterial * parent = material->GetParent();
         material->SetParent(clonedParents[parent]);
     }
+#endif // RHI_COMPLETE_EDITOR
 
     return newEntity;
 }
