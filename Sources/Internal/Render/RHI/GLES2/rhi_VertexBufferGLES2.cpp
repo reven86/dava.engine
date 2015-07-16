@@ -37,7 +37,7 @@ VertexBufferGLES2_t
 typedef ResourcePool<VertexBufferGLES2_t,RESOURCE_VERTEX_BUFFER>   VertexBufferGLES2Pool;
 RHI_IMPL_POOL(VertexBufferGLES2_t,RESOURCE_VERTEX_BUFFER);
 
-static GLUint _LastSetVB = 0;
+static GLuint _LastSetVB = 0;
 
 
 //==============================================================================
@@ -57,10 +57,15 @@ gles2_VertexBuffer_Create( const VertexBuffer::Descriptor& desc )
         ExecGL( &cmd1, 1 );
         if( cmd1.status == GL_NO_ERROR )
         {
-            GLCommand   cmd2 = { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, b } };
+            GLCommand   cmd2[] =
+            {
+                { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, b } },
+                { GLCommand::BIND_BUFFER, { GL_ARRAY_BUFFER, _LastSetVB } }
+            };
 
-            ExecGL( &cmd2, 1 );
-            if( cmd2.status == GL_NO_ERROR )
+            ExecGL( cmd2, countof(cmd2) );
+            
+            if( cmd2[0].status == GL_NO_ERROR )
             {
                 void*   data = malloc( desc.size );
 
