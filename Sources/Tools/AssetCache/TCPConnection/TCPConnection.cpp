@@ -183,6 +183,12 @@ void TCPConnection::SetDelegate(TCPChannelDelegate * _delegate)
         ch->SetDelegate(delegate);
     }
 }
+    
+const Net::Endpoint & TCPConnection::GetEndpoint() const
+{
+    return endpoint;
+}
+    
 
 
 }; // end of namespace DAVA

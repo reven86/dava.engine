@@ -120,6 +120,15 @@ void Server::PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, si
     }
 }
     
+void Server::ChannelClosed(TCPChannel *tcpChannel, const char8* message)
+{
+    if(delegate)
+    {
+        delegate->OnChannelClosed(tcpChannel, message);
+    }
+}
+
+    
 bool Server::FilesAddedToCache(DAVA::TCPChannel *tcpChannel, const CacheItemKey &key, bool added)
 {
     if(tcpChannel)

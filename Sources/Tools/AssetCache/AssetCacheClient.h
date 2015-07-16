@@ -48,7 +48,7 @@ class ClientDelegate
 {
 public:
     
-    virtual void OnAddToCache(const CacheItemKey &key, bool added) {};
+    virtual void OnAddedToCache(const CacheItemKey &key, bool added) {};
     virtual void OnReceivedFromCache(const CacheItemKey &key, const CachedFiles &files) {};
 };
 
@@ -76,11 +76,11 @@ public:
     void PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, size_t length) override;
     //END of TCPConnectionDelegate
     
-    TCPChannel * GetChannel() const;
+    TCPConnection * GetConnection() const;
     
 private:
     
-    void OnAddToCache(KeyedArchive * archieve);
+    void OnAddedToCache(KeyedArchive * archieve);
     void OnGetFromCache(KeyedArchive * archieve);
     
     
@@ -98,7 +98,11 @@ inline void Client::SetDelegate(ClientDelegate * _delegate)
     }
 }
 
-    
+inline TCPConnection * Client::GetConnection() const
+{
+    return netClient;
+}
+   
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA

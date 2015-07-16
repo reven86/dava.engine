@@ -32,6 +32,7 @@
 
 #include "AssetCache/AssetCacheConstants.h"
 #include "FileSystem/FilePath.h"
+#include "Network/Base/Endpoint.h"
 #include <QObject>
 
 namespace DAVA 
@@ -49,6 +50,11 @@ struct ServerData
     bool operator == (const ServerData & right) const
     {
         return (ip == right.ip) && (port == right.port);
+    }
+    
+    bool operator == (const DAVA::Net::Endpoint & right) const
+    {
+        return (ip == right.Address().ToString()) && (port == right.Port());
     }
 
     bool operator < (const ServerData & right) const
@@ -103,6 +109,8 @@ public:
     void ResetServers();
     void AddServer(const ServerData & server);
     void RemoveServer(const ServerData & server);
+    
+    ServerData GetCurrentServer() const;
     
 signals:
     void SettingsUpdated(const ApplicationSettings * settings) const;

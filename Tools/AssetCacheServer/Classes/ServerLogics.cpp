@@ -29,32 +29,58 @@
 
 #include "ServerLogics.h"
 
-void ServerLogics::Init(DAVA::AssetCache::Server *_server, DAVA::AssetCache::CacheDB *_dataBase)
+#include "Concurrency/LockGuard.h"
+
+void ServerLogics::Init(DAVA::AssetCache::Server *_server, DAVA::AssetCache::Client *_client, DAVA::AssetCache::CacheDB *_dataBase)
 {
     server = _server;
+    client = _client;
+    
     dataBase = _dataBase;
 }
 
 void ServerLogics::OnAddToCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files)
 {
-    if(server && tcpChannel)
+    if((nullptr != server) && (nullptr != tcpChannel))
     {
         dataBase->Insert(key, files);
         server->FilesAddedToCache(tcpChannel, key, true);
+
+        ServerTask task;
+        task.key = key;
+        task.files = files;
+        task.request = DAVA::AssetCache::PACKET_ADD_FILES_REQUEST;
+        
+        {   //add task for lazy sending of files;
+            DAVA::LockGuard<DAVA::Mutex> lock(taskMutex);
+            serverTasks.push_back(task);
+        }
     }
 }
 
 void ServerLogics::OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key)
 {
-    if(server && dataBase && tcpChannel)
+    if((nullptr != server) && (nullptr != dataBase) && (nullptr != tcpChannel))
     {
         auto entry = dataBase->Get(key);
-        if(entry)
-        {
+        if(nullptr != entry)
+        {   // Found in db.
             server->SendFiles(tcpChannel, key, entry->GetFiles());
         }
+        else if(client->IsConnected())
+        {   // Not found in db. Ask from remote cache.
+            client->GetFromCache(key);
+            
+            RequestDescription description;
+            description.request = DAVA::AssetCache::PACKET_GET_FILES_REQUEST;
+            description.key = key;
+            description.clientChannel = tcpChannel;
+            
+            DAVA::LockGuard<DAVA::Mutex> lock(requestMutex);
+            waitedRequests.push_back(description);
+        }
         else
-        {
+        {   // Not found in db. Remote server isn't connected.
             server->SendFiles(tcpChannel, key, DAVA::AssetCache::CachedFiles());
         }
     }
@@ -62,15 +88,79 @@ void ServerLogics::OnRequestedFromCache(DAVA::TCPChannel *tcpChannel, const DAVA
 
 void ServerLogics::OnWarmingUp(DAVA::TCPChannel *tcpChannel, const DAVA::AssetCache::CacheItemKey &key)
 {
-    if(dataBase)
+    if(nullptr != dataBase)
     {
         dataBase->InvalidateAccessToken(key);
     }
 }
 
+void ServerLogics::OnChannelClosed(DAVA::TCPChannel *tcpChannel, const DAVA::char8* message)
+{
+    if(waitedRequests.size())
+    {
+        DAVA::LockGuard<DAVA::Mutex> lock(requestMutex);
+        auto iter = std::find_if(waitedRequests.begin(), waitedRequests.end(), [&tcpChannel](const RequestDescription& description) -> bool
+                                 {
+                                     return (description.clientChannel == tcpChannel);
+                                 });
+        
+        if(iter != waitedRequests.end())
+        {
+            waitedRequests.erase(iter);
+        }
+        else
+        {
+            DVASSERT(false && "cannot found description for closed channel")
+        }
+    }
+}
+
+void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key, const DAVA::AssetCache::CachedFiles &files)
+{
+    if(nullptr != dataBase && files.GetFiles().size() != 0)
+    {
+        dataBase->Insert(key, files);
+    }
+
+    if((nullptr != server) && waitedRequests.size())
+    {
+        DAVA::LockGuard<DAVA::Mutex> lock(requestMutex);
+        auto iter = std::find_if(waitedRequests.begin(), waitedRequests.end(), [&key](const RequestDescription& description) -> bool
+                                 {
+                                     return (description.key == key) && (description.request == DAVA::AssetCache::PACKET_GET_FILES_REQUEST);
+                                 });
+        
+        if(iter != waitedRequests.end())
+        {
+            RequestDescription &description = (*iter);
+            if(nullptr != description.clientChannel)
+            {
+                server->SendFiles(description.clientChannel, key, files);
+            }
+        }
+        else
+        {
+            DAVA::Logger::Warning("[ServerLogics::%s] Connection was closed by client", __FUNCTION__);
+        }
+    }
+}
+
+void ServerLogics::ProcessServerTasks()
+{
+    if(!serverTasks.empty() && client && client->IsConnected())
+    {
+        const ServerTask & task = serverTasks.front();
+        client->AddToCache(task.key, task.files);
+        
+        DAVA::LockGuard<DAVA::Mutex> lock(taskMutex);
+        serverTasks.pop_front();
+    }
+}
 
 void ServerLogics::Update()
 {
+    ProcessServerTasks();
+    
     if(dataBase)
     {
         dataBase->Update();

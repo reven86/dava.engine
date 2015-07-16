@@ -102,7 +102,7 @@ bool Client::AddToCache(const CacheItemKey &key, const CachedFiles &files)
     return false;
 }
     
-void Client::OnAddToCache(KeyedArchive * archieve)
+void Client::OnAddedToCache(KeyedArchive * archieve)
 {
     if(delegate)
     {
@@ -113,7 +113,7 @@ void Client::OnAddToCache(KeyedArchive * archieve)
         
         bool added = archieve->GetBool("added");
         
-        delegate->OnAddToCache(key, added);
+        delegate->OnAddedToCache(key, added);
     }
 }
     
@@ -181,7 +181,7 @@ void Client::PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, si
         switch (packetID)
         {
             case PACKET_ADD_FILES_RESPONCE:
-                OnAddToCache(archieve);
+                OnAddedToCache(archieve);
                 break;
 
             case PACKET_GET_FILES_RESPONCE:

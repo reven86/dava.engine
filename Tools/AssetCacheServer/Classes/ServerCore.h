@@ -33,6 +33,8 @@
 #include "AssetCache/AssetCache.h"
 #include "ServerLogics.h"
 
+#include <atomic>
+
 #include <QObject>
 
 class ApplicationSettings;
@@ -72,14 +74,15 @@ private:
 private:
     
     DAVA::AssetCache::Server server;
+    DAVA::AssetCache::Client client;    
     DAVA::AssetCache::CacheDB dataBase;
+
+	ServerLogics serverLogics;
     
-    ServerLogics logics;
     ApplicationSettings* settings;
+    std::atomic<State> state;
 
     QTimer* updateTimer;
-
-    State state;
 };
 
 

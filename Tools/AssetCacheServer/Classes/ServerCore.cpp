@@ -32,14 +32,14 @@
 #include <QTimer>
 
 ServerCore::ServerCore()
+	: state(State::STOPPED)
 {
-    state = State::STOPPED;
-
     settings = new ApplicationSettings();
     QObject::connect(settings, &ApplicationSettings::SettingsUpdated, this, &ServerCore::OnSettingsUpdated);
     
     server.SetDelegate(&logics);
-    logics.Init(&server, &dataBase);
+	client.SetDelegate(&logics);
+    serverLogics.Init(&server, &client, &dataBase);
 
     updateTimer = new QTimer(this);
     QObject::connect(updateTimer, &QTimer::timeout, this, &ServerCore::UpdateByTimer);
@@ -56,11 +56,16 @@ ServerCore::~ServerCore()
 
 void ServerCore::Start()
 {
-    DAVA::Logger::FrameworkDebug("[ServerCore::%s]", __FUNCTION__);
-
     if (state != State::STARTED)
     {
         server.Listen(settings->GetPort());
+		
+		const auto remoteServer = settings->GetCurrentServer();
+	    if(!remoteServer.ip.empty())
+    	{
+        	client.Connect(remoteServer.ip, remoteServer.port);
+	    }
+
         updateTimer->start(UPDATE_INTERVAL_MS);
 
         state = State::STARTED;
@@ -70,11 +75,11 @@ void ServerCore::Start()
 
 void ServerCore::Stop()
 {
-    DAVA::Logger::FrameworkDebug("[ServerCore::%s]", __FUNCTION__);
-
     if (state != State::STOPPED)
     {
         updateTimer->stop();
+
+		client.Disconnect();
         server.Disconnect();
 
         state = State::STOPPED;
@@ -82,9 +87,11 @@ void ServerCore::Stop()
     }
 }
 
+
+
 void ServerCore::Update()
 {
-    logics.Update();
+    serverLogics.Update();
     
     auto netSystem = DAVA::Net::NetCore::Instance();
     if(netSystem)
@@ -112,26 +119,56 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
         auto sizeGb = settings->GetCacheSizeGb();
         auto count = settings->GetFilesCount();
         auto autoSaveTimeoutMin = settings->GetAutoSaveTimeoutMin();
+		const auto remoteServer = settings->GetCurrentServer();
 
-        bool needRestart = false;
-        if (state == State::STARTED && server.GetListenPort() != settings->GetPort())
-        {
-            needRestart = true;
-            Stop();
+        bool needServerRestart = false; //TODO: why we need different places for disconnect and listen???
+        bool needClientRestart = true;
+
+        if(state == State::STARTED)
+        {   // disconnect network if settings changed
+            if (server.IsConnected() && server.GetListenPort() != settings->GetPort())
+            {
+                needServerRestart = true;
+                server.Disconnect();
+            }
+            
+            auto clientConnection = client.GetConnection();
+            if(client.IsConnected() && clientConnection)
+            {
+                const auto & endpoint = clientConnection->GetEndpoint();
+                if(remoteServer == endpoint)
+                {
+                    needClientRestart = false;
+                }
+                else
+                {
+                    client.Disconnect();
+                }
+            }
         }
         
-        if(sizeGb && !folder.IsEmpty())
-        {
-            dataBase.UpdateSettings(folder, sizeGb * 1024 * 1024 * 1024, count, autoSaveTimeoutMin);
-        }
-        else
-        {
-            DAVA::Logger::Warning("[ServerCore::%s] Empty settings", __FUNCTION__);
+        {   //updated DB settings
+            if(sizeGb && !folder.IsEmpty())
+            {
+                dataBase.UpdateSettings(folder, sizeGb * 1024 * 1024 * 1024, count, autoSaveTimeoutMin * 60 * 1000);
+            }
+            else
+            {
+                DAVA::Logger::Warning("[ServerCore::%s] Empty settings", __FUNCTION__);
+            }
         }
 
-        if (needRestart)
-        {
-            Start();
+        if(state == State::STARTED)
+        {   // restart network connections after changing of settings
+            if (needServerRestart)
+            {
+                server.Listen(settings->GetPort());
+            }
+            
+            if(needClientRestart && !remoteServer.ip.empty())
+            {
+                client.Connect(remoteServer.ip, remoteServer.port);
+            }
         }
     }
     else
