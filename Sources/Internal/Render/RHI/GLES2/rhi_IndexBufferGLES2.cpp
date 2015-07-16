@@ -34,6 +34,7 @@ public:
 
 typedef ResourcePool<IndexBufferGLES2_t,RESOURCE_INDEX_BUFFER>   IndexBufferGLES2Pool;
 RHI_IMPL_POOL(IndexBufferGLES2_t,RESOURCE_INDEX_BUFFER);
+GLuint  _LastSetIB = 0;
 
 
 //==============================================================================
@@ -119,7 +120,7 @@ gles2_IndexBuffer_Update( Handle ib, const void* data, unsigned offset, unsigned
         {
             { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, self->uid } },
             { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, (uint64)(self->data), GL_STATIC_DRAW } },
-            { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, 0 } }
+            { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, _LastSetIB } }
         };
 
         memcpy( ((uint8*)self->data)+offset, data, size );
@@ -160,7 +161,7 @@ gles2_IndexBuffer_Unmap( Handle ib )
     {
         { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, self->uid } },
         { GLCommand::BUFFER_DATA, { GL_ELEMENT_ARRAY_BUFFER, self->size, (uint64)(self->data), GL_STATIC_DRAW } },
-        { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, 0 } }
+        { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, _LastSetIB } }
     };
 
     ExecGL( cmd, countof(cmd) );
@@ -192,6 +193,7 @@ SetToRHI( Handle ib )
     DVASSERT(!self->mapped);
 Trace("set-ib %p  sz= %u\n",self->data,self->size);
     GL_CALL(glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, self->uid ));
+    _LastSetIB = self->uid;
 }
 
 
