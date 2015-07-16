@@ -46,9 +46,6 @@ UILoadingTransition::UILoadingTransition()
 	animationSprite = 0;
 	inTransition = 0;
 	outTransition = 0;
-#if !RHI_COMPLETE
-    loaded = false;
-#endif
 }
 
 UILoadingTransition::~UILoadingTransition()
@@ -121,29 +118,18 @@ void UILoadingTransition::ThreadMessage(BaseObject * obj, void * userData, void 
 
 void UILoadingTransition::DidAppear()
 {
-#if RHI_COMPLETE
     if (!thread)
 	{
 		thread = Thread::Create(Message(this, &UILoadingTransition::ThreadMessage));
 		thread->Start();
 	}
-#else
-    UILoadingTransition::ThreadMessage(this, nullptr, nullptr);
-    loaded = true;
-#endif //RHI_COMPLETE
 }
 
 void UILoadingTransition::Update(float32 timeElapsed)
 {
-#if RHI_COMPLETE
 	if ((thread) && (thread->GetState() == Thread::STATE_ENDED))
     {
 		JobManager::Instance()->WaitMainJobs(thread->GetId());
-#else
-    if (loaded)
-    {
-        loaded = false;
-#endif //RHI_COMPLETE
         
 		UIControlSystem::Instance()->SetScreen(nextScreen, outTransition);
         if (!inTransition) 
