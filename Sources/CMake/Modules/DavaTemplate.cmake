@@ -40,7 +40,7 @@ macro( setup_main_executable )
 
 include      ( PlatformSettings )
 
-if( MSVC )
+if( WIN32 )
     add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
 endif()
 
@@ -201,7 +201,7 @@ elseif ( WINDOWS_UAP )
 	add_content_win_uap ( "${UAP_DEPLOYMENT_CONTENT}" )
 	list( APPEND ADDED_SRC ${ADDED_CONTENT_SRC} )
 
-elseif( WIN32 AND MSVC )
+elseif( WIN32 )
     list( APPEND RESOURCES_LIST  ${WIN32_RESOURCES} )
 endif()
 
@@ -238,7 +238,7 @@ if( DAVA_FOUND )
         include_directories( ${PLATFORM_INCLUDES_DIR} )
 
     else()
-        if( MSVC )
+        if( WIN32 )
             add_definitions        ( -D_UNICODE 
                                      -DUNICODE )
             list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.cpp 
@@ -312,7 +312,7 @@ else()
 
 endif()
 
-if( NOT IGNORE_FILE_TREE_CHECK )
+if( TARGET_FILE_TREE_FOUND )
     add_dependencies(  ${PROJECT_NAME} FILE_TREE )
     
 endif()
@@ -463,7 +463,7 @@ elseif( MACOS )
 
     endif()
 
-elseif ( MSVC )       
+elseif ( WIN32 )       
     if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32" )
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY: /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" ) 
 

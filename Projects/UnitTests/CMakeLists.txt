@@ -1,4 +1,5 @@
 cmake_minimum_required (VERSION 3.0)
+project ( UnitTests )
 
 # Enable MemoryManagerTest in UnitTests
 # this variable should be defined in all dependant projects (dava framework, etc)
@@ -18,8 +19,6 @@ include      ( CMake-common )
 find_package( DavaFramework REQUIRED )
 find_package( DavaTools     REQUIRED )
 
-project ( UnitTests )
-
 include_directories   ( "Classes" )
 
 if( MACOS )
@@ -29,7 +28,7 @@ elseif( IOS )
     set( PLATFORM_SPECIFIC_FOLDER "iOSSpecific" )
     set( IOS_ADD_SRC ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/UnitTests.entitlements )
 
-elseif( MSVC )
+elseif( WIN32 )
     set( PLATFORM_SPECIFIC_FOLDER "Win32Specific" )
     set( EXECUTABLE_FLAG WIN32 )
 
