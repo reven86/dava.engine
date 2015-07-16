@@ -95,8 +95,5 @@ endif()
 
 
 if( NOT QT5_FOUND )
-    message( "Error !!!: Please set the correct path to QT5 in file DavaConfig.in"  )
-    message( " " )
-    exit()
-
+    message( FATAL_ERROR "Please set the correct path to QT5 in file DavaConfig.in"  )
 endif()
