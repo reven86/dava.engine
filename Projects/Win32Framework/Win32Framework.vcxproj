@@ -979,7 +979,6 @@
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleRenderObject.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DateTime.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfo.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\MovieViewControlStub.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Process.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\QtLayer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Qt4\Win32\CorePlatformWin32Qt.cpp" />
