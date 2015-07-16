@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __DAVAENGINE_UI_TEXT_FIELD_H__
 #define __DAVAENGINE_UI_TEXT_FIELD_H__
 
@@ -35,7 +34,7 @@
 #include "UI/UIStaticText.h"
 #include "UI/UIControlSystem.h"
 
-namespace DAVA 
+namespace DAVA
 {
 
 class UITextField;
@@ -46,6 +45,7 @@ class UITextField;
 #elif defined(__DAVAENGINE_WIN_UAP__)
     class UITextFieldWinUAP;
 #endif
+
 /**
     \brief  The UITextFieldDelegate interface defines the messages sent to a text field delegate as part of the sequence of editing its text. 
             All the methods of the interface is optional.

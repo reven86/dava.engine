@@ -41,12 +41,8 @@
 
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 
-#include <ppltasks.h>
-
 namespace DAVA
 {
-
-ref class WinUAPXamlApp;
 
 class CorePlatformWinUAP : public Core
 {

@@ -43,15 +43,11 @@
 
 using namespace Windows::System;
 using namespace Windows::Foundation;
-using namespace Windows::Foundation::Collections;
-using namespace Windows::UI;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
 using namespace Windows::UI::Xaml::Media;
-using namespace Windows::UI::Xaml::Media::Imaging;
 using namespace Windows::Storage;
 using namespace Windows::Storage::Streams;
-using namespace Windows::Web;
 using namespace concurrency;
 
 namespace DAVA

@@ -53,7 +53,7 @@ extern void CloseKeyboard();
 #   define DAVA_TEXTFIELD_USE_NATIVE
 #endif
 
-namespace DAVA 
+namespace DAVA
 {
 
 UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= false*/)
