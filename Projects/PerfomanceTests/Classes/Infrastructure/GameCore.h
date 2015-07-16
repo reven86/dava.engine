@@ -41,6 +41,7 @@
 
 #include "Tests/GlobalPerformanceTest.h"
 #include "Tests/AsiaPerformanceTest.h"
+#include "Tests/MaterialsTest.h"
 #include "Tests/UniversalTest.h"
 
 #include <fstream>

@@ -72,6 +72,18 @@ public:
         float32 maxDelta;
     };
     
+    struct StatisticData
+    {
+        float32 minDelta;
+        float32 maxDelta;
+        float32 averageDelta;
+        
+        float32 testTime;
+        float32 elapsedTime;
+        
+        uint64 maxAllocatedMemory;
+    };
+    
     BaseTest(const String& testName, const TestParams& testParams);
     
     void OnStart() override;
@@ -93,25 +105,30 @@ public:
     
     float32 GetOverallTestTime() const;
     uint64 GetElapsedTime() const;
-    uint32 GetFrameNumber() const;
+    
+    int32 GetAbsoluteFrameNumber() const;
+    int32 GetTestFrameNumber() const;
     
     Scene* GetScene() const;
     const Vector<FrameInfo>& GetFramesInfo() const;
     
-    static const float32 FRAME_OFFSET;
+    static const uint32 FRAME_OFFSET;
     
 protected:
     
     virtual ~BaseTest() {};
-
+    
     void LoadResources() override;
     void UnloadResources() override;
+    
+    virtual void PrintStatistic(const Vector<BaseTest::FrameInfo>& frames);
 
     virtual void CreateUI();
     virtual void UpdateUI();
     
     size_t GetAllocatedMemory();
     DAVA::UIControl* GetUIRoot() const;
+    const Vector<FrameInfo>& GetFrames() const;
     
     virtual void PerformTestLogic(float32 timeElapsed) = 0;
     
@@ -122,7 +139,8 @@ private:
     
     TestParams testParams;
     
-    uint32 frameNumber;
+    int32 frameNumber;
+    
     uint64 startTime;
     uint64 elapsedTime;
     
@@ -158,20 +176,6 @@ inline Scene* BaseTest::GetScene() const
     return scene;
 }
 
-inline bool BaseTest::IsFinished() const
-{
-    if (testParams.targetFramesCount > 0 && frameNumber >= (testParams.targetFramesCount + FRAME_OFFSET))
-    {
-        return true;
-    }
-    if (testParams.targetTime > 0 && (overallTestTime * 1000) >= testParams.targetTime)
-    {
-        return true;
-    }
-    
-    return false;
-}
-
 inline const String& BaseTest::GetName() const
 {
     return testName;
@@ -187,14 +191,20 @@ inline float32 BaseTest::GetOverallTestTime() const
     return overallTestTime;
 }
 
-inline uint32 BaseTest::GetFrameNumber() const
+inline int32 BaseTest::GetAbsoluteFrameNumber() const
 {
     return frameNumber;
 }
 
+inline int32 BaseTest::GetTestFrameNumber() const
+{
+    int32 frameDiff = frameNumber - FRAME_OFFSET;
+    return frameDiff < 0 ? 0 : frameDiff;
+}
+
 inline void BaseTest::SetParams(const TestParams& _testParams)
 {
-    DVASSERT_MSG(frameNumber == 0, "Can't set params after test started");
+    DVASSERT_MSG(frameNumber >= 1, "Can't set params after test started");
     
     this->testParams = _testParams;
 }

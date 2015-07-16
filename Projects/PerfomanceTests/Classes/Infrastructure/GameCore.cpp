@@ -124,8 +124,9 @@ void GameCore::EndFrame()
 
 void GameCore::RegisterTests()
 {
-    testChain.push_back(new AsiaPerformanceTest(defaultTestParams));
-    testChain.push_back(new GlobalPerformanceTest(defaultTestParams));
+    testChain.push_back(new MaterialsTest(defaultTestParams));
+    //testChain.push_back(new AsiaPerformanceTest(defaultTestParams));
+    //testChain.push_back(new GlobalPerformanceTest(defaultTestParams));
 }
 
 String GameCore::GetDeviceName()
@@ -147,7 +148,7 @@ String GameCore::GetDeviceName()
 void GameCore::InitScreenController()
 {
     Random::Instance()->Seed(0);
-
+    
     Logger::Instance()->AddCustomOutput(&teamCityOutput);
     String deviceName = GetDeviceName();
     Logger::Info(deviceName.c_str());
