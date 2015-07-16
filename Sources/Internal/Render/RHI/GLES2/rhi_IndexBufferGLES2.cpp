@@ -51,12 +51,18 @@ gles2_IndexBuffer_Create( const IndexBuffer::Descriptor& desc )
         GLCommand   cmd1 = { GLCommand::GEN_BUFFERS, {1,(uint64)(&b)} };
         
         ExecGL( &cmd1, 1 );
+        
         if( cmd1.status == GL_NO_ERROR )
         {
-            GLCommand   cmd2 = { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, b } };
+            GLCommand   cmd2[] =
+            {
+                { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, b } },
+                { GLCommand::BIND_BUFFER, { GL_ELEMENT_ARRAY_BUFFER, _LastSetIB } }
+            };
 
-            ExecGL( &cmd2, 1 );
-            if( cmd2.status == GL_NO_ERROR )
+            ExecGL( cmd2, countof(cmd2) );
+
+            if( cmd2[0].status == GL_NO_ERROR )
             {
                 void*   data = malloc( desc.size );
                 
