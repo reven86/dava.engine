@@ -28,26 +28,29 @@
 
 
 #include "ServerCore.h"
-
+#include "ApplicationSettings.h"
 #include <QTimer>
 
 ServerCore::ServerCore()
 {
-    settings = new ApplicationSettings();
+    state = State::STOPPED;
 
+    settings = new ApplicationSettings();
     QObject::connect(settings, &ApplicationSettings::SettingsUpdated, this, &ServerCore::OnSettingsUpdated);
     
-    settings->Load();
-    
     server.SetDelegate(&logics);
+    logics.Init(&server, &dataBase);
+
+    updateTimer = new QTimer(this);
+    QObject::connect(updateTimer, &QTimer::timeout, this, &ServerCore::UpdateByTimer);
+
+    settings->Load();
 }
 
 ServerCore::~ServerCore()
 {
-    settings->Save();
+    Stop();
     delete settings;
-    
-    server.Disconnect();
 }
 
 
@@ -55,10 +58,28 @@ void ServerCore::Start()
 {
     DAVA::Logger::FrameworkDebug("[ServerCore::%s]", __FUNCTION__);
 
-    server.Listen(settings->GetPort());
-    logics.Init(&server, &dataBase);
+    if (state != State::STARTED)
+    {
+        server.Listen(settings->GetPort());
+        updateTimer->start(UPDATE_INTERVAL_MS);
 
-    QTimer::singleShot(UPDATE_TIMEOUT, this, &ServerCore::UpdateByTimer);
+        state = State::STARTED;
+        emit ServerStateChanged(this);
+    }
+}
+
+void ServerCore::Stop()
+{
+    DAVA::Logger::FrameworkDebug("[ServerCore::%s]", __FUNCTION__);
+
+    if (state != State::STOPPED)
+    {
+        updateTimer->stop();
+        server.Disconnect();
+
+        state = State::STOPPED;
+        emit ServerStateChanged(this);
+    }
 }
 
 void ServerCore::Update()
@@ -72,10 +93,14 @@ void ServerCore::Update()
     }
 }
 
+ServerCore::State ServerCore::GetState() const
+{
+    return state;
+}
+
 void ServerCore::UpdateByTimer()
 {
     Update();
-    QTimer::singleShot(UPDATE_TIMEOUT, this, &ServerCore::UpdateByTimer);
 }
 
 
@@ -86,18 +111,18 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
         auto & folder = settings->GetFolder();
         auto sizeGb = settings->GetCacheSizeGb();
         auto count = settings->GetFilesCount();
-        auto autoSaveTimeout = settings->GetAutoSaveTimeoutMs();
+        auto autoSaveTimeoutMin = settings->GetAutoSaveTimeoutMin();
 
         bool needRestart = false;
-        if (server.IsConnected() && server.GetListenPort() != settings->GetPort())
+        if (state == State::STARTED && server.GetListenPort() != settings->GetPort())
         {
             needRestart = true;
-            server.Disconnect();
+            Stop();
         }
         
         if(sizeGb && !folder.IsEmpty())
         {
-            dataBase.UpdateSettings(folder, sizeGb * 1024 * 1024 * 1024, count, autoSaveTimeout);
+            dataBase.UpdateSettings(folder, sizeGb * 1024 * 1024 * 1024, count, autoSaveTimeoutMin);
         }
         else
         {
@@ -106,7 +131,7 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
 
         if (needRestart)
         {
-            server.Listen(settings->GetPort());
+            Start();
         }
     }
     else

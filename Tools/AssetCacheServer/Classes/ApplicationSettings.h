@@ -90,11 +90,14 @@ public:
     const uint32 GetFilesCount() const;
     void SetFilesCount(const uint32 count);
 
-    const uint64 GetAutoSaveTimeoutMs() const;
-    void SetAutoSaveTimeoutMs(const uint64 timeout);
+    const uint64 GetAutoSaveTimeoutMin() const;
+    void SetAutoSaveTimeoutMin(const uint64 timeout);
 
     const uint16 GetPort() const;
     void SetPort(const uint16 port);
+
+    const bool IsAutoStart() const;
+    void SetAutoStart(bool);
 
     const List<ServerData> & GetServers() const;
     void ResetServers();
@@ -115,8 +118,9 @@ public:
     FilePath folder;
     float64 cacheSizeGb;
     uint32 filesCount;
-    uint64 autoSaveTimeoutMs = 1 * 60 * 1000;
+    uint32 autoSaveTimeoutMin;
     uint16 listenPort;
+    bool autoStart = true;
     List<ServerData> remoteServers;
 
     bool isFirstLaunch = true;

@@ -32,36 +32,42 @@
 
 #include "AssetCache/AssetCache.h"
 #include "ServerLogics.h"
-#include "ApplicationSettings.h"
 
 #include <QObject>
+
+class ApplicationSettings;
+class QTimer;
 
 class ServerCore: public QObject
 {
     Q_OBJECT
     
-    static const int UPDATE_TIMEOUT = 1;
+    static const int UPDATE_INTERVAL_MS = 1;
     
 public:
-    
+    enum class State {STARTED, STOPPED};
+
     ServerCore();
     ~ServerCore() override;
     
-    ApplicationSettings * GetSettings() const;
+    ApplicationSettings* GetSettings() const;
     
     void Start();
+    void Stop();
+
+    State GetState() const;
+
+signals:
+    void ServerStateChanged(const ServerCore* serverCore) const;
+
+public slots:
+    void OnSettingsUpdated(const ApplicationSettings * settings);
+
+private slots:
+    void UpdateByTimer();
 
 private:
-    
     void Update();
-    
-public slots:
-    
-    void OnSettingsUpdated(const ApplicationSettings * settings);
-    
-private slots:
-    
-    void UpdateByTimer();
     
 private:
     
@@ -69,9 +75,11 @@ private:
     DAVA::AssetCache::CacheDB dataBase;
     
     ServerLogics logics;
-    ApplicationSettings * settings;
-    
-    DAVA::uint64 dbSaveTime = 0;
+    ApplicationSettings* settings;
+
+    QTimer* updateTimer;
+
+    State state;
 };
 
 

@@ -34,7 +34,7 @@
 #include <QSystemTrayIcon>
 
 #include "ApplicationSettings.h"
-#include "RemoteAssetCacheServer.h"
+#include "ServerCore.h"
 
 class QMenu;
 class QVBoxLayout;
@@ -44,6 +44,9 @@ namespace Ui
     class MainWindow;
 }
 
+class RemoteAssetCacheServer;
+
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -52,47 +55,68 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
 
-    void SetSettings(ApplicationSettings *settings);
+    void SetServerCore(ServerCore* serverCore);
 
 protected:
     void closeEvent(QCloseEvent *e) override;
+
+    void LoadSettings(ApplicationSettings *settings);
     void SaveSettings();
 
 private slots:
-    void OnAddNewServerWidget();
-    void OnRemoveServerWidget();
-    
-    void OnSelectFolder();
-
-    void CheckEnableClearButton();
     void OnTrayIconActivated(QSystemTrayIcon::ActivationReason reason);
-    void OnServerParametersChanged();
-    void OnOpenAction();
 
-    void OnSaveButtonClicked();
-    void OnCancelButtonClicked();
-
-    void SetFolder(QString &folderPath);
-    void SetFolderSize(qreal folderSize);
-    void SetFilesCount(quint32 filesCounts);
-    void AddServers(QVector<ServerData> &newServers);
-    void AddServer(const ServerData & newServer);
+    void OnEditAction();
+    void OnStartAction();
+    void OnStopAction();
     
+    void OnFolderSelected();
+    void OnFolderTextChanged();
+    void OnCacheSizeChanged(double);
+    void OnNumberOfFilesChanged(int);
+    void OnAutoSaveTimeoutChanged(int);
+    void OnPortChanged(int);
+    void OnAutoStartChanged(int);
+
+    void OnRemoteServerAdded();
+    void OnRemoteServerRemoved();
+    void OnRemoteServerEdited();
+
+    void OnApplyButtonClicked();
+    void OnCloseButtonClicked();
+
+    void OnServerStateChanged(const ServerCore*);
+
 private:
-    void CreateTrayIconActions();
     void CreateTrayIcon();
+
+    void AddRemoteServer(const ServerData & newServer);
+    void RemoveServers();
+
     void VerifyData();
+
+    enum SettingsState
+    {
+        NOT_EDITED, NOT_VERIFIED, VERIFIED
+    };
+
+    void ChangeSettingsState(SettingsState newState);
 
 private:
     Ui::MainWindow *ui;
-    QSystemTrayIcon *trayIcon;
-    QMenu *trayActionsMenu;
+    QAction *startAction;
+    QAction *stopAction;
+    QSystemTrayIcon* trayIcon;
+    std::unique_ptr<QIcon> greenTrayIcon;
+    std::unique_ptr<QIcon> redTrayIcon;
 
-    QList<RemoteAssetCacheServer *> servers;
-
-    QVBoxLayout *boxLayout;
+    QVBoxLayout *serversBoxLayout;
+    QList<RemoteAssetCacheServer *> remoteServers;
     
     ApplicationSettings *settings;
+    ServerCore* serverCore;
+
+    SettingsState settingsState = NOT_EDITED;
 };
 
 #endif // MAINWINDOW_H

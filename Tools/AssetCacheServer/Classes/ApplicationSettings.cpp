@@ -34,6 +34,13 @@
 
 using namespace DAVA;
 
+String DEFAULT_FOLDER = "";
+float64 DEFAULT_CACHE_SIZE_GB = 5;
+uint32 DEFAULT_FILES_COUNT = 5;
+uint32 DEFAULT_AUTO_SAVE_TIMEOUT_MIN = 1;
+uint16 DEFAULT_PORT = DAVA::AssetCache::ASSET_SERVER_PORT;
+bool DEFAULT_AUTO_START = true;
+
 void ApplicationSettings::Save() const
 {
     static FilePath path("~doc:/AssetServer/ACS_settings.dat");
@@ -77,10 +84,12 @@ void ApplicationSettings::Load()
 
 void ApplicationSettings::SetDefaultSettings()
 {
-    folder = FilePath();
-    cacheSizeGb = 5;
-    filesCount = 5;
-    listenPort = DAVA::AssetCache::ASSET_SERVER_PORT;
+    folder = DEFAULT_FOLDER;
+    cacheSizeGb = DEFAULT_CACHE_SIZE_GB;
+    filesCount = DEFAULT_FILES_COUNT;
+    autoSaveTimeoutMin = DEFAULT_AUTO_SAVE_TIMEOUT_MIN;
+    listenPort = DEFAULT_PORT;
+    autoStart = DEFAULT_AUTO_START;
 }
 
 void ApplicationSettings::Serialize(DAVA::KeyedArchive * archive) const
@@ -90,7 +99,9 @@ void ApplicationSettings::Serialize(DAVA::KeyedArchive * archive) const
     archive->SetString("FolderPath", folder.GetStringValue());
     archive->SetFloat64("FolderSize", cacheSizeGb);
     archive->SetUInt32("NumberOfFiles", filesCount);
+    archive->SetUInt32("AutoSaveTimeout", autoSaveTimeoutMin);
     archive->SetUInt32("Port", listenPort);
+    archive->SetBool("AutoStart", autoStart);
     
     auto size = remoteServers.size();
     archive->SetUInt32("ServersSize", size);
@@ -110,10 +121,12 @@ void ApplicationSettings::Deserialize(DAVA::KeyedArchive * archive)
     
     DVASSERT(remoteServers.size() == 0);
     
-    folder = archive->GetString("FolderPath");
-    cacheSizeGb = archive->GetFloat64("FolderSize");
-    filesCount = archive->GetUInt32("NumberOfFiles");
-    listenPort = archive->GetUInt32("Port");
+    folder = archive->GetString("FolderPath", DEFAULT_FOLDER);
+    cacheSizeGb = archive->GetFloat64("FolderSize", DEFAULT_CACHE_SIZE_GB);
+    filesCount = archive->GetUInt32("NumberOfFiles", DEFAULT_FILES_COUNT);
+    autoSaveTimeoutMin = archive->GetUInt32("AutoSaveTimeout", DEFAULT_AUTO_SAVE_TIMEOUT_MIN);
+    listenPort = archive->GetUInt32("Port", DEFAULT_PORT);
+    autoStart = archive->GetBool("AutoStart", DEFAULT_AUTO_START);
 
     auto count = archive->GetUInt32("ServersSize");
     for(uint32 i = 0; i < count; ++i)
@@ -157,14 +170,14 @@ void ApplicationSettings::SetFilesCount(const uint32 count)
     filesCount = count;
 }
 
-const uint64 ApplicationSettings::GetAutoSaveTimeoutMs() const
+const uint64 ApplicationSettings::GetAutoSaveTimeoutMin() const
 {
-    return autoSaveTimeoutMs;
+    return autoSaveTimeoutMin;
 }
 
-void ApplicationSettings::SetAutoSaveTimeoutMs(const uint64 timeout)
+void ApplicationSettings::SetAutoSaveTimeoutMin(const uint64 timeout)
 {
-    autoSaveTimeoutMs = timeout;
+    autoSaveTimeoutMin = timeout;
 }
 
 const uint16 ApplicationSettings::GetPort() const
@@ -175,6 +188,16 @@ const uint16 ApplicationSettings::GetPort() const
 void ApplicationSettings::SetPort(const uint16 val)
 {
     listenPort = val;
+}
+
+const bool ApplicationSettings::IsAutoStart() const
+{
+    return autoStart;
+}
+
+void ApplicationSettings::SetAutoStart(bool val)
+{
+    autoStart = val;
 }
 
 const List<ServerData> & ApplicationSettings::GetServers() const
