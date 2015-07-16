@@ -68,7 +68,7 @@ private:
         Function<void(Texture*)> callback;
     };
 
-    List<Control3dInfo> FindAll3dViews(UIControl * control);
+    void FindAll3dViews(UIControl * control, List<UIScreenshoter::Control3dInfo> & foundViews);
     void RenderToTexture(UIControl* control, Texture* screenshot);
     
     List<ScreenshotWaiter> waiters;
