@@ -101,6 +101,8 @@ namespace DAVA
         UIColor* col = [UIColor colorWithRed:color.r green:color.g blue:color.b alpha:color.a];
         UIView* view = textFieldHolder->textCtrl;
         [view setValue:col forKey:@"textColor"];
+        
+        UpdateStaticTexture();
     }
     void UITextFieldiPhone::SetFontSize(float size)
     {
@@ -111,6 +113,8 @@ namespace DAVA
         UIView* view = textFieldHolder->textCtrl;
         UIFont* font = [UIFont systemFontOfSize:scaledSize];
         [view setValue:font forKey:@"font"];
+        
+        UpdateStaticTexture();
     }
     
     void UITextFieldiPhone::SetTextAlign(DAVA::int32 align)
@@ -154,6 +158,7 @@ namespace DAVA
                 default:
                     break;
             }
+            UpdateStaticTexture();
         } else
         {
             DAVA::Logger::Error("UITextField::SetTextAlign not supported in multiline");
