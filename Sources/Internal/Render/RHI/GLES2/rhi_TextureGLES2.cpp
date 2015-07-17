@@ -151,7 +151,7 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
     
     if( is_depth )
     {
-        GLCommand   cmd1 = { GLCommand::GEN_RENDERBUFFERS, { (need_stencil)?2:1, (uint64)(uid) } };
+        GLCommand   cmd1 = { GLCommand::GEN_RENDERBUFFERS, { uint64((need_stencil)?2:1), (uint64)(uid) } };
 
         ExecGL( &cmd1, 1 );
 
@@ -625,7 +625,11 @@ SetAsRenderTarget( Handle tex, Handle depth )
                 if( ds->uid2 )
                     glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, ds->uid2 );
             }
+            #if defined __DAVAENGINE_IPHONE__
+            #else
             glDrawBuffers( 1, b );
+            #endif
+            
             int status = glCheckFramebufferStatus( GL_FRAMEBUFFER );
             glBindFramebuffer( GL_FRAMEBUFFER, 0 );
             
