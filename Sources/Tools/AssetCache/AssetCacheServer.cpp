@@ -43,12 +43,6 @@ namespace DAVA
 namespace AssetCache
 {
     
-Server::Server()
-    : netServer(nullptr)
-{
-
-}
-    
 Server::~Server()
 {
     SafeDelete(netServer);

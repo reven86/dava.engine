@@ -42,12 +42,6 @@ namespace DAVA
 namespace AssetCache
 {
     
-CachedFiles::CachedFiles()
-    : filesSize(0)
-    , filesAreLoaded(false)
-{
-}
-
 CachedFiles::CachedFiles(const CachedFiles & right)
 {
     filesAreLoaded = right.filesAreLoaded;
@@ -66,9 +60,19 @@ CachedFiles::~CachedFiles()
     {
         UnloadFiles();
     }
+    else
+    {
+#if defined (__DAVAENGINE_DEBUG__)
+        for(auto & f : files)
+        {
+            DVASSERT(f.second == nullptr);
+        }
+#endif// (__DAVAENGINE_DEBUG__)
+    }
     
     files.clear();
     filesSize = 0;
+    filesAreLoaded = false;
 }
     
 void CachedFiles::AddFile(const FilePath &path)
@@ -114,13 +118,7 @@ void CachedFiles::Deserialize(KeyedArchive * archieve)
 {
     DVASSERT(nullptr != archieve);
     DVASSERT(files.size() == 0);
-    
-    if(filesAreLoaded)
-    {
-        UnloadFiles();
-    }
-    
-    files.clear();
+    DVASSERT(filesAreLoaded == false);
     
     filesSize = archieve->GetUInt64("files_size");
     

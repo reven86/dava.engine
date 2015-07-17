@@ -63,7 +63,7 @@ class Server: public DAVA::TCPChannelDelegate
 {
 public:
     
-    Server();
+    Server() = default;
     virtual ~Server();
     
     void SetDelegate(ServerDelegate * delegate);

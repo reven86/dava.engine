@@ -92,11 +92,11 @@ uint32 TCPChannel::SendData(const uint8 * data, const size_t dataSize)
     
 void TCPChannel::ChannelOpen()
 {
+    Net::NetService::ChannelOpen();
     if(delegate)
     {
         delegate->ChannelOpen(this);
     }
-    Net::NetService::ChannelOpen();
 }
 
 void TCPChannel::ChannelClosed(const char8* message)

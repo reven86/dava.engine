@@ -56,25 +56,42 @@ public:
     void Serialize(KeyedArchive * archieve) const;
     void Deserialize(KeyedArchive * archieve);
 
-    
     void InvalidateAccesToken(uint64 accessID);
-    
-    const CachedFiles & GetFiles() const;
-    
     const uint64 GetAccesID() const;
     
+    const CachedFiles & GetFiles() const;
+    CachedFiles & GetFiles();
+    
 private:
-public: //temorary solution
     CachedFiles files;
     
 private:
     uint64 accessID = 0;
 };
 
+
+inline void ServerCacheEntry::InvalidateAccesToken(uint64 newID)
+{
+    accessID = newID;
+}
+
+    
 inline const uint64 ServerCacheEntry::GetAccesID() const
 {
     return accessID;
 }
+
+
+inline const CachedFiles & ServerCacheEntry::GetFiles() const
+{
+    return files;
+}
+
+inline CachedFiles & ServerCacheEntry::GetFiles()
+{
+    return files;
+}
+
 
     
     
