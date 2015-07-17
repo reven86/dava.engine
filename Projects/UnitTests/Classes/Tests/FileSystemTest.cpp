@@ -209,31 +209,19 @@ DAVA_TESTCLASS(FileSystemTest)
         moved = FileSystem::Instance()->MoveFile("~doc:/TestData/FileSystemTest/Folder1/file2.zip", "~doc:/TestData/FileSystemTest/Folder1/file_new", true);
         TEST_VERIFY(moved);
 
-        FileSystem* fs = FileSystem::Instance();
-        String externalDrive;
-        bool maySkipTest = false;
 #if   defined(__DAVAENGINE_WINDOWS__)
-        externalDrive = "d:\\";
-#elif defined(__DAVAENGINE_ANDROID__)
-        // simple hardcode for unit test only
-        externalDrive = "/mnt/sdcard/";
-        // on Android some devices has internal sdcard(Nexus), other not(HTC One)
-        // if device can't move file in log you see:
-        // rename failed ("/data/data/com.dava.unittests/files/DAVAProject
-        // TestData/FileSystemTest/Folder1/file_new" -> "/mnt/sdcard/test_
-        // on_other_drive.file") with error: Cross-device link
-        maySkipTest = true;
-#endif
-
+        FileSystem* fs = FileSystem::Instance();
+        String externalDrive = "d:\\";
         bool isDdriveExist = fs->IsDirectory(externalDrive);
         if (isDdriveExist)
         {
             String tmpFileName = externalDrive + "test_on_other_drive.file";
             moved = fs->MoveFile("~doc:/TestData/FileSystemTest/Folder1/file_new", tmpFileName, true);
-            TEST_VERIFY(moved || maySkipTest);
+            TEST_VERIFY(moved);
             moved = fs->MoveFile(tmpFileName, "~doc:/TestData/FileSystemTest/Folder1/file_new", true);
-            TEST_VERIFY(moved || maySkipTest);
+            TEST_VERIFY(moved);
         }
+#endif
 
         FileSystem::Instance()->DeleteFile("~doc:/TestData/FileSystemTest/Folder1/file1_new");
         File *f = File::Create("~doc:/TestData/FileSystemTest/Folder1/file1_new", File::OPEN | File::READ);
