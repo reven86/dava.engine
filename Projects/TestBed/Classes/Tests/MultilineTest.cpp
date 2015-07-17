@@ -38,9 +38,8 @@ MultilineTest::MultilineTest ()
 
 void MultilineTest::LoadResources()
 {
-    BaseScreen::LoadResources();
+    textField = new UITextField(Rect(100, 60, 200, 60));
 
-    UITextField* textField = new UITextField(Rect(10, 10, 300, 200));
 #if defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_MACOS__)
     Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
     DVASSERT(font);
@@ -57,5 +56,46 @@ void MultilineTest::LoadResources()
     textField->SetDelegate(&delegate);
     textField->SetMultiline(true);
     textField->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
+
+    //textField->SetSpellCheckingType(UITextField::SPELL_CHECKING_TYPE_NO);
+    textField->SetMaxLength(-1);
+
     AddControl(textField);
+
+    showKbd = CreateUIButton(font, Rect(80, 0, 50, 20), "Show", &MultilineTest::OnShow);
+    hideKbd = CreateUIButton(font, Rect(80, 30, 50, 20), "Hide", &MultilineTest::OnHide);
+
+    BaseScreen::LoadResources();
+}
+
+void MultilineTest::UnloadResources()
+{
+    RemoveAllControls();
+
+    SafeRelease(textField);
+    SafeRelease(showKbd);
+    SafeRelease(hideKbd);
+}
+
+void MultilineTest::OnShow(DAVA::BaseObject*, void*, void*)
+{
+    textField->OpenKeyboard();
+}
+
+void MultilineTest::OnHide(DAVA::BaseObject*, void*, void*)
+{
+    textField->CloseKeyboard();
+}
+
+UIButton* MultilineTest::CreateUIButton(Font* font, const Rect& rect, const String& text,
+                                        void (MultilineTest::*onClick)(BaseObject*, void*, void*))
+{
+    UIButton* button = new UIButton(rect);
+    button->SetStateFont(0xFF, font);
+    button->SetStateText(0xFF, StringToWString(text));
+    button->SetStateFontColor(0xFF, Color::White);
+    button->SetDebugDraw(true);
+    button->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, onClick));
+    AddControl(button);
+    return button;
 }
