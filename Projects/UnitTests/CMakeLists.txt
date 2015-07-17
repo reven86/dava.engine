@@ -1,4 +1,5 @@
 cmake_minimum_required (VERSION 3.0)
+project ( UnitTests )
 
 # Enable MemoryManagerTest in UnitTests
 # this variable should be defined in all dependant projects (dava framework, etc)
@@ -13,16 +14,7 @@ include      ( CMake-common )
 find_package( DavaFramework REQUIRED )
 find_package( DavaTools     REQUIRED )
 
-if( ANDROID )
-    project ( UnitTestsLib )
-
-else()
-    project ( UnitTests )
-
-endif()
-
 include_directories   ( "Classes" )
-include_directories   ( "Classes/Infrastructure" )
 
 if( MACOS )
     set( PLATFORM_SPECIFIC_FOLDER "MacOSSpecific" )
@@ -50,7 +42,6 @@ set( IOS_XIB                    ${XIB_LIST} )
 set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/Info.plist )
 set( MACOS_XIB                  ${XIB_LIST} )
 
-set( ANDROID_USE_STANDART_TEMLATE true )
 set( ANDROID_PACKAGE            "com.dava.unittests" )
 set( ANDROID_APP_NAME           "UnitTestApp" )
 set( ANDROID_ACTIVITY_APP_NAME  "UnitTests"   )

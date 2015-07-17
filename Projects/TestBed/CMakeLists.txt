@@ -1,4 +1,5 @@
 cmake_minimum_required (VERSION 3.0)
+project ( TestBed )
 
 # Enable MemoryManagerTest in UnitTests
 # this variable should be defined in all dependant projects (dava framework, etc)
@@ -11,14 +12,6 @@ include      ( CMake-common  )
 
 find_package( DavaFramework REQUIRED )
 find_package( DavaTools     REQUIRED )
-
-if( ANDROID )
-    project ( TestBedLib )
-
-else()
-    project ( TestBed )
-
-endif()
 
 include_directories   ( "Classes" )
 include_directories   ( "Classes/Infrastructure" )
