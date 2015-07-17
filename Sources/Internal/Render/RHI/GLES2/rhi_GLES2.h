@@ -66,7 +66,7 @@ namespace TextureGLES2
 { 
 void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHI( Handle tex, unsigned unit_i, uint32 base_i=InvalidIndex  );
-void        SetAsRenderTarget( Handle tex );
+void        SetAsRenderTarget( Handle tex, Handle depth );
 Size2i      Size( Handle tex );
 }
 
@@ -140,6 +140,7 @@ GLCommand
         DELETE_FRAMEBUFFERS,
 
         GEN_TEXTURES,
+        SET_ACTIVE_TEXTURE,
         BIND_TEXTURE,
         DELETE_TEXTURES,
         TEX_PARAMETER_I,

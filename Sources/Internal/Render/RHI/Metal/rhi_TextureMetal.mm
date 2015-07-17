@@ -34,6 +34,7 @@ public:
     uint32          mappedLevel;
     uint32          mappedSlice;
     id<MTLTexture>  uid;
+    id<MTLTexture>  uid2;
     uint32          is_mapped:1;
     uint32          is_renderable:1;
     uint32          is_cubemap:1;
@@ -85,8 +86,8 @@ MetalTextureFormat( TextureFormat format )
 //        case TEXTURE_FORMAT_EAC_R11G11_UNSIGNED : pf = MTLPixelFormatEAC_R11G11Unorm; break;
 //        case TEXTURE_FORMAT_EAC_R11G11_SIGNED   : pf = MTLPixelFormatEAC_R11G11Snorm; break;
 
-        case TEXTURE_FORMAT_D16                 : return MTLPixelFormatR16Unorm;
-//        TEXTURE_FORMAT_D24S8
+        case TEXTURE_FORMAT_D24S8               :
+        case TEXTURE_FORMAT_D16                 : return MTLPixelFormatDepth32Float;
 
         default:
             return MTLPixelFormatInvalid;
@@ -111,12 +112,12 @@ metal_Texture_Create( const Texture::Descriptor& texDesc )
     desc.mipmapLevelCount = texDesc.levelCount;
     
     id<MTLTexture>  uid = [_Metal_Device newTextureWithDescriptor:desc];
+    TextureMetal_t* tex = nullptr;
 
     if( uid != nil )
     {
         handle = TextureMetalPool::Alloc();
-        
-        TextureMetal_t* tex = TextureMetalPool::Get( handle );
+        tex    = TextureMetalPool::Get( handle );
 
         tex->format         = texDesc.format;
         tex->width          = texDesc.width;
@@ -128,8 +129,24 @@ metal_Texture_Create( const Texture::Descriptor& texDesc )
         
         if( !tex->is_renderable )
             tex->mappedData = ::malloc( TextureSize( texDesc.format, texDesc.width, texDesc.height, 0 ) );
-    }
+    
+        if( texDesc.format == TEXTURE_FORMAT_D24S8 )
+        {
+            MTLPixelFormat          pf2    = MTLPixelFormatStencil8;
+            MTLTextureDescriptor*   desc2  = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:pf2 width:texDesc.width height:texDesc.height mipmapped:NO];
+            
+            desc2.textureType      = MTLTextureType2D;
+            desc2.mipmapLevelCount = 1;
 
+            id<MTLTexture>  uid2 = [_Metal_Device newTextureWithDescriptor:desc2];
+            
+            if( uid2 )
+            {
+                tex->uid2 = uid2;
+            }
+        }
+    }
+    
     return handle;
 }
 
@@ -342,6 +359,16 @@ SetAsRenderTarget( Handle tex, MTLRenderPassDescriptor* desc )
 
     desc.colorAttachments[0].texture = self->uid;
 }
+
+void
+SetAsDepthStencil( Handle tex, MTLRenderPassDescriptor* desc )
+{
+    TextureMetal_t* self = TextureMetalPool::Get( tex );
+
+    desc.depthAttachment.texture   = self->uid;
+    desc.stencilAttachment.texture = self->uid2;
+}
+
 
 } // namespace TextureMetal
 

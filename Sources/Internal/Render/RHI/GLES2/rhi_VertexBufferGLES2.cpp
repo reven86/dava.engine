@@ -114,6 +114,8 @@ gles2_VertexBuffer_Delete( Handle vb )
             self->size = 0;
             self->uid  = 0;
         }
+
+        VertexBufferGLES2Pool::Free( vb );
     }
 }
 

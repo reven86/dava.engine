@@ -13,6 +13,7 @@
     MTLRenderPassDescriptor*        _Metal_DefRenderPassDescriptor  = nil;
     id<MTLTexture>                  _Metal_DefFrameBuf              = nil;
     id<MTLTexture>                  _Metal_DefDepthBuf              = nil;
+    id<MTLTexture>                  _Metal_DefStencilBuf            = nil;
     id<MTLDepthStencilState>        _Metal_DefDepthState            = nil;
     CAMetalLayer*                   _Metal_Layer                    = nil;
 
@@ -92,11 +93,14 @@ metal_Initialize( const InitParam& param )
     int     w = param.width;
     int     h = param.height;
 
-    MTLTextureDescriptor*   colorDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm width:w height:h mipmapped:NO];
-    MTLTextureDescriptor*   depthDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float width:w height:h mipmapped:NO];
+    MTLTextureDescriptor*   colorDesc   = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm width:w height:h mipmapped:NO];
+    MTLTextureDescriptor*   depthDesc   = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float width:w height:h mipmapped:NO];
+    MTLTextureDescriptor*   stencilDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatStencil8 width:w height:h mipmapped:NO];
 
-    _Metal_DefFrameBuf = [_Metal_Device newTextureWithDescriptor:colorDesc];
-    _Metal_DefDepthBuf = [_Metal_Device newTextureWithDescriptor:depthDesc];
+    _Metal_DefFrameBuf   = [_Metal_Device newTextureWithDescriptor:colorDesc];
+    _Metal_DefDepthBuf   = [_Metal_Device newTextureWithDescriptor:depthDesc];
+    _Metal_DefStencilBuf = [_Metal_Device newTextureWithDescriptor:stencilDesc];
+
 
     // create default render-pass desc
 
@@ -113,6 +117,7 @@ metal_Initialize( const InitParam& param )
     desc.depthAttachment.clearDepth         = 1.0f;
     
     _Metal_DefRenderPassDescriptor = desc;
+
 
     // create default depth-state
 

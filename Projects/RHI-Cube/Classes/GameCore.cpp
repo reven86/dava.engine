@@ -549,7 +549,7 @@ GameCore::SetupRT()
 
 
     rhi::Texture::Descriptor    colorDesc(512,512,rhi::TEXTURE_FORMAT_R8G8B8A8);
-    rhi::Texture::Descriptor    depthDesc(512,512,rhi::TEXTURE_FORMAT_D16);
+    rhi::Texture::Descriptor    depthDesc(512,512,rhi::TEXTURE_FORMAT_D24S8);
     
     colorDesc.isRenderTarget = true;
     
@@ -621,7 +621,7 @@ void GameCore::SetupTank()
                 int size = keyedArchive->GetByteArraySize("indices");
                 uint16 *indexArray = new uint16[indexCount];
                 const uint8 * archiveData = keyedArchive->GetByteArray("indices");
-                rhi::Handle ib = rhi::IndexBuffer::Create(indexCount * INDEX_FORMAT_SIZE[indexFormat], 0);
+                rhi::Handle ib = rhi::IndexBuffer::Create( rhi::IndexBuffer::Descriptor(indexCount*INDEX_FORMAT_SIZE[indexFormat]) );
                 rhi::IndexBuffer::Update(ib, archiveData, 0, indexCount * INDEX_FORMAT_SIZE[indexFormat]);
                 tank.ib.push_back(ib);
                 tank.indCount.push_back(indexCount);
@@ -748,7 +748,7 @@ void GameCore::OnAppStarted()
 //    SetupTriangle();
     SetupCube();
 //    SetupTank();
-//    SetupRT();
+    SetupRT();
 
 //    sceneRenderTest.reset(new SceneRenderTestV3());    
 
@@ -1044,8 +1044,8 @@ GameCore::Draw()
         
 //    sceneRenderTest->Render();
 //    rhiDraw();
-    manticoreDraw();
-//    rtDraw();
+//    manticoreDraw();
+    rtDraw();
 //    visibilityTestDraw();
 }
 
@@ -1506,6 +1506,7 @@ GameCore::rtDraw()
 
     #if USE_RT
     pass_desc.colorBuffer[0].texture         = rtColor;
+    pass_desc.depthStencilBuffer.texture     = rtDepthStencil;
     #endif
     pass_desc.colorBuffer[0].loadAction      = rhi::LOADACTION_CLEAR;
     pass_desc.colorBuffer[0].storeAction     = rhi::STOREACTION_STORE;

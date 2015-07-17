@@ -68,6 +68,7 @@ metal_VertexBuffer_Delete( Handle vb )
 
     if( self )
     {
+        VertexBufferMetalPool::Free( vb );
     }
 }
 
