@@ -402,7 +402,6 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 
     bool inputDirModified = RecalculateDirMD5(inputPath, processDirectoryPath + "dir.md5", false);
     bool modified = isGfxModified || inputDirModified || CommandLineParser::CommandIsFound(String("-forceModify"));
-
     if (modified)
     {
         if (inputDirHasFiles)

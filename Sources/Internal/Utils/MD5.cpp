@@ -115,9 +115,6 @@ void MD5::ForDirectory(const FilePath & pathName, uint8 * digest, bool isRecursi
 
 void MD5::RecursiveDirectoryMD5(const FilePath & pathName, MD5 & md5, bool isRecursive, bool includeHidden)
 {
-    String name = pathName.GetLastDirectoryName();
-	md5.Update((uint8*)name.c_str(), (uint32)name.size());
-
 	FileList * fileList = new FileList(pathName, includeHidden);
     fileList->Sort();
 	for(int i = 0; i < fileList->GetCount(); ++i)
@@ -135,13 +132,18 @@ void MD5::RecursiveDirectoryMD5(const FilePath & pathName, MD5 & md5, bool isRec
 				//	Logger::FrameworkDebug("- delete directory: %s / %s- %d", fileList->GetPathname(i).c_str(), fileList->GetFilename(i).c_str(), success ? (1): (0));
 				//	if (!success)return false;
 				if (isRecursive)
-					RecursiveDirectoryMD5(fileList->GetPathname(i), md5, isRecursive, includeHidden);
+                {
+                    String name = fileList->GetPathname(i).GetLastDirectoryName();
+                    md5.Update((uint8*)name.c_str(), (uint32)name.size());
+                    
+                    RecursiveDirectoryMD5(fileList->GetPathname(i), md5, isRecursive, includeHidden);
+                }
 			}
 		}
 		else 
 		{
 			// update MD5 according to the file
-            name = fileList->GetPathname(i).GetFilename();
+            String name = fileList->GetPathname(i).GetFilename();
 			md5.Update((uint8*)name.c_str(), (uint32)name.size());
 			
 			uint8 fileDigest[DIGEST_SIZE];
