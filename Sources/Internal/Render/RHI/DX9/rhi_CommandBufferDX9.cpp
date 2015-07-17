@@ -646,6 +646,13 @@ SCOPED_FUNCTION_TIMING();
                         _D3D9_Device->GetRenderTarget( 0, &_D3D9_BackBuf );
                         TextureDX9::SetAsRenderTarget( passCfg.colorBuffer[0].texture );                        
                     }
+
+                    if( passCfg.depthStencilBuffer.texture != rhi::InvalidHandle )
+                    {
+                        DVASSERT(!_D3D9_DepthBuf);
+                        _D3D9_Device->GetDepthStencilSurface( &_D3D9_DepthBuf );
+                        TextureDX9::SetAsDepthStencil( passCfg.depthStencilBuffer.texture );
+                    }
                     
                     // update default viewport
                     {
@@ -703,6 +710,12 @@ SCOPED_FUNCTION_TIMING();
                         DX9_CALL(_D3D9_Device->SetRenderTarget( 0, _D3D9_BackBuf ),"SetRenderTarget");
                         _D3D9_BackBuf->Release();
                         _D3D9_BackBuf = nullptr;
+                    }
+                    if( _D3D9_DepthBuf )
+                    {
+                        DX9_CALL(_D3D9_Device->SetDepthStencilSurface( _D3D9_DepthBuf ),"SetDepthStencilSurface");
+                        _D3D9_DepthBuf->Release();
+                        _D3D9_DepthBuf = nullptr;
                     }
                 }
             }   break;
