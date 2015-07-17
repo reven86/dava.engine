@@ -366,7 +366,7 @@ void ProtoDriver::SendCurPacket()
     Buffer buffers[2];
     buffers[0] = CreateBuffer(&header);
     buffers[1] = CreateBuffer(curPacket.data + curPacket.sentLength, curPacket.chunkLength);
-    if (0 == transport->Send(buffers, 2))
+    if (0 == transport->Send(buffers, 2) && 0 == curPacket.sentLength)
     {
         pendingAckQueue.push_back(curPacket.packetId);
     }
