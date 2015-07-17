@@ -83,6 +83,10 @@ public:
     StyleSheetSelectorProperty *GetSelectorAtIndex(DAVA::int32 index) const;
 
     DAVA::String GetSelectorsAsString() const;
+    
+    DAVA::Vector<DAVA::UIStyleSheetSelectorChain> CollectUIStyleSheetSelectorChains();
+    DAVA::Vector<DAVA::UIStyleSheetProperty> CollectUIStyleSheetProperties();
+    
 private:
     StyleSheetNode *styleSheet = nullptr;
     DAVA::Vector<PropertyListener*> listeners;

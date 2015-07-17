@@ -122,7 +122,7 @@ void ControlNode::Add(ControlNode *node)
     node->SetParent(this);
     nodes.push_back(SafeRetain(node));
     control->AddControl(node->GetControl());
-    node->GetControl()->UpdateLayout();
+    node->SetPackageContext(GetPackageContext());
 }
 
 void ControlNode::InsertAtIndex(int index, ControlNode *node)
@@ -140,7 +140,7 @@ void ControlNode::InsertAtIndex(int index, ControlNode *node)
         
         nodes.insert(nodes.begin() + index, SafeRetain(node));
         control->InsertChildBelow(node->GetControl(), belowThis);
-        node->GetControl()->UpdateLayout();
+        node->SetPackageContext(GetPackageContext());
     }
 }
 
@@ -153,6 +153,7 @@ void ControlNode::Remove(ControlNode *node)
         node->SetParent(nullptr);
 
         node->GetControl()->RemoveFromParent();
+        node->SetPackageContext(nullptr);
         nodes.erase(it);
         SafeRelease(node);
     }
@@ -195,6 +196,18 @@ String ControlNode::GetName() const
 UIControl *ControlNode::GetControl() const
 {
     return control;
+}
+
+UIControlPackageContext *ControlNode::GetPackageContext() const
+{
+    return control->GetPackageContext();
+}
+
+void ControlNode::SetPackageContext(UIControlPackageContext *context)
+{
+    control->SetPackageContext(context);
+    for (ControlNode *child : nodes)
+        child->SetPackageContext(context);
 }
 
 ControlNode *ControlNode::GetPrototype() const

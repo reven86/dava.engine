@@ -47,6 +47,7 @@ public:
     UIControlPackageContext();
 
     void AddStyleSheet(UIStyleSheet* styleSheet);
+    void RemoveAllStyleSheets();
 
     const Vector<UIStyleSheet*>& GetSortedStyleSheets();
 private:

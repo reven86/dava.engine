@@ -51,6 +51,7 @@ public:
 
     virtual const DAVA::String &GetName() const override;
     virtual ePropertyType GetType() const override;
+    DAVA::int32 GetStylePropertyIndex() const override;
 
     virtual DAVA::VariantType GetValue() const override;
     virtual void SetValue(const DAVA::VariantType &newValue) override;
@@ -69,7 +70,7 @@ public:
     {
         return false;
     }
-
+    
 protected:
     virtual void ApplyValue(const DAVA::VariantType &value);
     
@@ -82,6 +83,7 @@ protected:
     bool replaced;
     DAVA::VariantType defaultValue;
     DAVA::Vector<SubValueProperty*> children;
+    DAVA::int32 stylePropertyIndex;
     
 public:
     INTROSPECTION_EXTEND(ValueProperty, AbstractProperty,

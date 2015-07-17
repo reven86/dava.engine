@@ -31,6 +31,7 @@
 
 #include "PropertyVisitor.h"
 #include "SubValueProperty.h"
+#include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 #include <Base/BaseMath.h>
 
 using namespace DAVA;
@@ -42,6 +43,9 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const D
     , member(aMember)
     , canReset(true)
 {
+    if (UIStyleSheetPropertyDataBase::Instance()->IsValidStyleSheetProperty(member->Name()))
+        stylePropertyIndex = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyIndex(member->Name());
+    
     if (sourceProperty)
     {
         if (sourceProperty->GetValue() != member->Value(object))

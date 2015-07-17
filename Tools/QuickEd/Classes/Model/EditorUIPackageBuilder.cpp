@@ -325,18 +325,12 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
     DVASSERT(!packagePath.IsEmpty());
     RefPtr<PackageNode> package(new PackageNode(packagePath));
     
-    ScopedPtr<UIControlPackageContext> packageContext(new UIControlPackageContext());
     Vector<PackageNode*> declinedPackages;
     for (PackageNode *importedPackage : importedPackages)
     {
         if (package->GetImportedPackagesNode()->CanInsertImportedPackage(importedPackage))
         {
             package->GetImportedPackagesNode()->Add(importedPackage);
-
-            for (int32 styleSheetIndex = 0; styleSheetIndex < importedPackage->GetStyleSheets()->GetCount(); ++styleSheetIndex)
-            {
-                //packageContext->AddStyleSheet(importedPackage->GetStyleSheets()->Get(styleSheetIndex)->GetStyleSheet());
-            }
         }
         else
         {
@@ -347,7 +341,6 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
     for (StyleSheetNode *styleSheet : styleSheets)
     {
         package->GetStyleSheets()->Add(styleSheet);
-        //packageContext->AddStyleSheet(styleSheet->GetStyleSheet());
     }
     
     for (ControlNode *control : rootControls)
@@ -361,11 +354,11 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
         
         if (canInsert)
         {
-            control->GetControl()->SetPackageContext(packageContext);
             package->GetPackageControlsNode()->Add(control);
         }
     }
     
+    package->RebuildStyleSheets();
     package->RefreshLayout();
     
     DVASSERT(declinedPackages.empty());

@@ -51,6 +51,11 @@ void UIControlPackageContext::AddStyleSheet(UIStyleSheet* styleSheet)
     styleSheetsSorted = false;
     styleSheets.push_back(SafeRetain(styleSheet));
 }
+    
+void UIControlPackageContext::RemoveAllStyleSheets()
+{
+    styleSheets.clear();
+}
 
 const Vector<UIStyleSheet*>& UIControlPackageContext::GetSortedStyleSheets()
 {

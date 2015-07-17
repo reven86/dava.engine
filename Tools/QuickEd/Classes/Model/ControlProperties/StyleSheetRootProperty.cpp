@@ -275,3 +275,25 @@ String StyleSheetRootProperty::GetSelectorsAsString() const
     }
     return name;
 }
+
+Vector<UIStyleSheetSelectorChain> StyleSheetRootProperty::CollectUIStyleSheetSelectorChains()
+{
+    Vector<UIStyleSheetSelectorChain> result;
+    for (int32 i = 0; i < selectors->GetCount(); i++)
+    {
+        StyleSheetSelectorProperty *selector = static_cast<StyleSheetSelectorProperty*>(selectors->GetProperty(i));
+        result.push_back(selector->GetSelectorChain());
+    }
+    return result;
+}
+
+Vector<UIStyleSheetProperty> StyleSheetRootProperty::CollectUIStyleSheetProperties()
+{
+    Vector<UIStyleSheetProperty> result;
+    for (int32 i = 0; i < propertiesSection->GetCount(); i++)
+    {
+        StyleSheetProperty *property = static_cast<StyleSheetProperty*>(propertiesSection->GetProperty(i));
+        result.push_back(property->GetProperty());
+    }
+    return result;
+}

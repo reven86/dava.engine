@@ -37,6 +37,7 @@ using namespace DAVA;
 ValueProperty::ValueProperty(const DAVA::String &propName)
     : name(propName)
     , replaced(false)
+    , stylePropertyIndex(-1)
 {
 
 }
@@ -136,6 +137,11 @@ VariantType ValueProperty::GetDefaultSubValue(int index) const
 void ValueProperty::SetDefaultSubValue(int index, const DAVA::VariantType &newValue)
 {
     SetDefaultValue(ChangeValueComponent(defaultValue, newValue, index));
+}
+
+int32 ValueProperty::GetStylePropertyIndex() const
+{
+    return stylePropertyIndex;
 }
 
 void ValueProperty::ApplyValue(const DAVA::VariantType &value)

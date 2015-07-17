@@ -50,6 +50,8 @@
 #include "UI/Commands/ChangePropertyValueCommand.h"
 #include "UI/QtModelPackageCommandExecutor.h"
 
+#include "UI/UIControl.h"
+
 using namespace DAVA;
 
 PropertiesModel::PropertiesModel(ControlNode *_controlNode, QtModelPackageCommandExecutor *_commandExecutor, QObject *parent)
@@ -201,7 +203,19 @@ QVariant PropertiesModel::data(const QModelIndex &index, int role) const
             break;
             
         case Qt::TextColorRole:
+        {
+            if (controlNode)
+            {
+                int32 propertyIndex = property->GetStylePropertyIndex();
+                if (propertyIndex != -1)
+                {
+                    bool setByStyle = controlNode->GetControl()->GetStyledPropertySet().test(propertyIndex);
+                    if (setByStyle)
+                        return QColor(Qt::darkGreen);
+                }
+            }
             return (flags & AbstractProperty::EF_INHERITED) != 0 ? QColor(Qt::blue) : QColor(Qt::black);
+        }
 
     }
 

@@ -81,7 +81,9 @@ public:
 
     virtual const DAVA::String &GetName() const = 0;
     virtual ePropertyType GetType() const = 0;
-    virtual DAVA::uint32 GetFlags() const { return 0; };
+    virtual DAVA::uint32 GetFlags() const;
+    virtual DAVA::int32 GetStylePropertyIndex() const;
+    
 
     virtual bool IsReadOnly() const;
 

@@ -54,20 +54,8 @@ StyleSheetNode::~StyleSheetNode()
 
 StyleSheetNode *StyleSheetNode::Clone() const
 {
-    Vector<UIStyleSheetSelectorChain> selectors;
-    for (int32 i = 0; i < rootProperty->GetSelectors()->GetCount(); i++)
-    {
-        StyleSheetSelectorProperty *selector = static_cast<StyleSheetSelectorProperty*>(rootProperty->GetSelectors()->GetProperty(i));
-        selectors.push_back(selector->GetSelectorChain());
-    }
-    
-    Vector<UIStyleSheetProperty> properties;
-    for (int32 i = 0; i < rootProperty->GetPropertiesSection()->GetCount(); i++)
-    {
-        StyleSheetProperty *property = static_cast<StyleSheetProperty*>(rootProperty->GetPropertiesSection()->GetProperty(i));
-        properties.push_back(property->GetProperty());
-    }
-    
+    Vector<UIStyleSheetSelectorChain> selectors = rootProperty->CollectUIStyleSheetSelectorChains();
+    Vector<UIStyleSheetProperty> properties = rootProperty->CollectUIStyleSheetProperties();
     return new StyleSheetNode(selectors, properties);
 }
 
@@ -109,4 +97,14 @@ bool StyleSheetNode::CanCopy() const
 StyleSheetRootProperty *StyleSheetNode::GetRootProperty() const
 {
     return rootProperty;
+}
+
+Vector<UIStyleSheetSelectorChain> StyleSheetNode::CollectUIStyleSheetSelectorChains()
+{
+    return rootProperty->CollectUIStyleSheetSelectorChains();
+}
+
+Vector<UIStyleSheetProperty> StyleSheetNode::CollectUIStyleSheetProperties()
+{
+    return rootProperty->CollectUIStyleSheetProperties();
 }

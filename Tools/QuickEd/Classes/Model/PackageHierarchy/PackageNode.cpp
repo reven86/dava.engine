@@ -43,6 +43,8 @@
 #include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "UI/UIControlSystem.h"
+#include "UI/UIControlPackageContext.h"
+#include "UI/Styles/UIStyleSheet.h"
 
 using namespace DAVA;
 
@@ -50,10 +52,11 @@ PackageNode::PackageNode(const FilePath &aPath)
     : PackageBaseNode(nullptr)
     , path(aPath)
 {
+    name = path.GetBasename();
     importedPackagesNode = new ImportedPackagesNode(this);
     packageControlsNode = new PackageControlsNode(this);
     styleSheets = new StyleSheetsNode(this);
-    name = path.GetBasename();
+    packageContext = new UIControlPackageContext();
 }
 
 PackageNode::~PackageNode()
@@ -66,6 +69,8 @@ PackageNode::~PackageNode()
 
     styleSheets->SetParent(nullptr);
     SafeRelease(styleSheets);
+    
+    SafeRelease(packageContext);
 }
 
 int PackageNode::GetCount() const
@@ -109,6 +114,11 @@ PackageNode *PackageNode::GetPackage()
 const FilePath &PackageNode::GetPath() const
 {
     return path;
+}
+
+UIControlPackageContext *PackageNode::GetContext() const
+{
+    return packageContext;
 }
 
 const PackageNode *PackageNode::GetPackage() const
@@ -381,6 +391,45 @@ void PackageNode::RefreshPropertiesInInstances(ControlNode *node, AbstractProper
         {
             instance->GetRootProperty()->RefreshProperty(instanceProperty);
             RefreshProperty(instance, instanceProperty);
+        }
+    }
+}
+
+void PackageNode::RebuildStyleSheets()
+{
+    Vector<UIStyleSheet*> importedStyleSheets;
+    for (int32 i = 0; i < importedPackagesNode->GetCount(); i++)
+    {
+        PackageNode *node = importedPackagesNode->GetImportedPackage(i);
+        const Vector<UIStyleSheet*> &styleSheets = node->GetContext()->GetSortedStyleSheets();
+        importedStyleSheets.insert(importedStyleSheets.end(), styleSheets.begin(), styleSheets.end());
+    }
+    
+    std::sort(importedStyleSheets.begin(), importedStyleSheets.end());
+    auto last = std::unique(importedStyleSheets.begin(), importedStyleSheets.end());
+    importedStyleSheets.erase(last, importedStyleSheets.end());
+    
+    packageContext->RemoveAllStyleSheets();
+    for (UIStyleSheet *styleSheet : importedStyleSheets)
+    {
+        packageContext->AddStyleSheet(styleSheet);
+    }
+    
+    for (int32 i = 0; i < styleSheets->GetCount(); i++)
+    {
+        StyleSheetNode *node = styleSheets->Get(i);
+        Vector<UIStyleSheetSelectorChain> selectors = node->CollectUIStyleSheetSelectorChains();
+        Vector<UIStyleSheetProperty> properties = node->CollectUIStyleSheetProperties();
+        
+        for (const UIStyleSheetSelectorChain &chain : selectors)
+        {
+            ScopedPtr<UIStyleSheet> styleSheet(new UIStyleSheet());
+            styleSheet->SetSelectorChain(chain);
+            ScopedPtr<UIStyleSheetPropertyTable> propertiesTable(new UIStyleSheetPropertyTable());
+            propertiesTable->SetProperties(properties);
+            styleSheet->SetPropertyTable(propertiesTable);
+            
+            packageContext->AddStyleSheet(styleSheet);
         }
     }
 }

@@ -85,6 +85,16 @@ bool AbstractProperty::HasChanges() const
     return false;
 }
 
+uint32 AbstractProperty::GetFlags() const
+{
+    return 0;
+}
+
+int32 AbstractProperty::GetStylePropertyIndex() const
+{
+    return -1;
+}
+
 bool AbstractProperty::IsReadOnly() const
 {
     return parent ? parent->IsReadOnly() : true;

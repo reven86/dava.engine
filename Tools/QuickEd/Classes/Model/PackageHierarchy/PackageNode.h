@@ -46,6 +46,11 @@ class PackageListener;
 class AbstractProperty;
 class ComponentPropertiesSection;
 
+namespace DAVA
+{
+    class UIControlPackageContext;
+}
+
 class PackageNode : public PackageBaseNode
 {
 public:
@@ -64,6 +69,7 @@ public:
     PackageNode *GetPackage() override;
     const PackageNode *GetPackage() const override;
     const DAVA::FilePath &GetPath() const;
+    DAVA::UIControlPackageContext *GetContext() const;
     bool IsImported() const;
 
     bool CanRemove() const override;
@@ -103,6 +109,7 @@ public:
     void InsertImportedPackage(PackageNode *node, DAVA::int32 index);
     void RemoveImportedPackage(PackageNode *node);
     
+    void RebuildStyleSheets();
     void RefreshLayout();
 
 private:
@@ -120,6 +127,7 @@ private:
     ImportedPackagesNode *importedPackagesNode = nullptr;
     PackageControlsNode *packageControlsNode = nullptr;
     StyleSheetsNode *styleSheets = nullptr;
+    DAVA::UIControlPackageContext *packageContext = nullptr;
     DAVA::Vector<PackageListener*> listeners;
 };
 
