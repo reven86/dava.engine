@@ -74,7 +74,7 @@ private:
 private:
     
     DAVA::AssetCache::Server server;
-    DAVA::AssetCache::Client client;    
+    DAVA::AssetCache::Client client;
     DAVA::AssetCache::CacheDB dataBase;
 
 	ServerLogics serverLogics;

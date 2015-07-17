@@ -48,6 +48,7 @@ class ClientDelegate
 {
 public:
     
+    virtual void OnAssetClientStateChanged() {};
     virtual void OnAddedToCache(const CacheItemKey &key, bool added) {};
     virtual void OnReceivedFromCache(const CacheItemKey &key, const CachedFiles &files) {};
 };
@@ -64,17 +65,18 @@ public:
     
     bool Connect(const String &ip, uint16 port);
     void Disconnect();
+
     bool IsConnected();
     
     bool AddToCache(const CacheItemKey &key, const CachedFiles &files);
     bool GetFromCache(const CacheItemKey &key);
     
     
-    //TCPConnectionDelegate
+    //TCPChannelDelegate
     void ChannelOpen(TCPChannel *tcpChannel) override;
     void ChannelClosed(TCPChannel *tcpChannel, const char8* message) override;
     void PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, size_t length) override;
-    //END of TCPConnectionDelegate
+    //END of TCPChannelDelegate
     
     TCPConnection * GetConnection() const;
     

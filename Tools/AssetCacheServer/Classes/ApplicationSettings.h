@@ -57,6 +57,11 @@ struct ServerData
         return (ip == right.Address().ToString()) && (port == right.Port());
     }
 
+    bool operator != (const DAVA::Net::Endpoint & right) const
+    {
+        return !(operator==(right));
+    }
+
     bool operator < (const ServerData & right) const
     {
         if(ip == right.ip)
@@ -66,7 +71,7 @@ struct ServerData
         return ip < right.ip;
     }
     
-    String ip = "127.0.0.1";
+    String ip = "";
     uint16 port = AssetCache::ASSET_SERVER_PORT;
 };
 
