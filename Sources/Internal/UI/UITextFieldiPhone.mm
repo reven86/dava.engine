@@ -102,7 +102,7 @@ namespace DAVA
         UIView* view = textFieldHolder->textCtrl;
         [view setValue:col forKey:@"textColor"];
         
-        UpdateStaticTexture();
+        isNeedToUpdateTexture = true;
     }
     void UITextFieldiPhone::SetFontSize(float size)
     {
@@ -114,7 +114,7 @@ namespace DAVA
         UIFont* font = [UIFont systemFontOfSize:scaledSize];
         [view setValue:font forKey:@"font"];
         
-        UpdateStaticTexture();
+        isNeedToUpdateTexture = true;
     }
     
     void UITextFieldiPhone::SetTextAlign(DAVA::int32 align)
@@ -158,7 +158,8 @@ namespace DAVA
                 default:
                     break;
             }
-            UpdateStaticTexture();
+
+            isNeedToUpdateTexture = true;
         } else
         {
             DAVA::Logger::Error("UITextField::SetTextAlign not supported in multiline");
@@ -215,6 +216,7 @@ namespace DAVA
 	{
 		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         [textFieldHolder setUseRtlAlign:useRtlAlign];
+        isNeedToUpdateTexture = true;
 	}
 	
 	bool UITextFieldiPhone::GetTextUseRtlAlign() const
@@ -327,7 +329,7 @@ namespace DAVA
     void UITextFieldiPhone::UpdateRect(const Rect & rect)
     {
         UpdateNativeRect(rect, deltaMoveControl);
-        if (rect.dx != prevRect.dx || rect.dy != prevRect.dy)
+        if (rect.dx != prevRect.dx || rect.dy != prevRect.dy || isNeedToUpdateTexture)
         {
             UpdateStaticTexture();
         }
@@ -360,7 +362,7 @@ namespace DAVA
         
         if(textChanged || string.empty())
         {
-            UpdateStaticTexture();
+            isNeedToUpdateTexture = true;
         }
     }
 	
@@ -381,7 +383,7 @@ namespace DAVA
 	{
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
 		[textFieldHolder setIsPassword: isPassword];
-        UpdateStaticTexture();
+        isNeedToUpdateTexture = true;
 	}
 
 	void UITextFieldiPhone::SetInputEnabled(bool value)
@@ -610,6 +612,7 @@ namespace DAVA
                 // set backgroud image into davaTextField control
                 WebViewControl::SetImageAsSpriteToControl(image, davaTextField);
             }
+            isNeedToUpdateTexture = false;
         }
         else
         {
