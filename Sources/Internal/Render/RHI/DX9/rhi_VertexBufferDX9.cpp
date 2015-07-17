@@ -112,6 +112,8 @@ dx9_VertexBuffer_Delete( Handle vb )
         }
 
         self->_size = 0;
+
+        VertexBufferDX9Pool::Free( vb );
     }
 }
 

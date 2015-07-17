@@ -668,6 +668,12 @@ metal_PipelineState_Create( const PipelineState::Descriptor& desc )
 static void
 metal_PipelineState_Delete( Handle ps )
 {
+    PipelineStateMetal_t* psm = PipelineStateMetalPool::Get( ps );
+    
+    if( psm )
+    {
+        PipelineStateMetalPool::Free( ps );
+    }
 }
 
 
