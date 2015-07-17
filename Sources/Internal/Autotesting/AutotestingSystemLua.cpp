@@ -368,8 +368,9 @@ namespace DAVA
 
 	void AutotestingSystemLua::OnStepStart(const String &stepName)
 	{
+		AutotestingSystem::Instance()->stepIndex++;
 		Logger::FrameworkDebug("AutotestingSystemLua::OnStepStart %s", stepName.c_str());
-		AutotestingSystem::Instance()->OnStepStart(stepName);
+		AutotestingSystem::Instance()->OnStepStart(Format("%d %s", AutotestingSystem::Instance()->stepIndex, stepName.c_str()));
 	}
 
 	void AutotestingSystemLua::Log(const String &level, const String &message)
@@ -870,8 +871,7 @@ namespace DAVA
 		}
 		return true;
 	}
-    
-    int32 AutotestingSystemLua::GetServerQueueState(const String &cluster)
+	int32 AutotestingSystemLua::GetServerQueueState(const String &cluster)
     {
         MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
         KeyedArchive *clustersQueue = AutotestingDB::Instance()->FindOrInsertBuildArchive(dbUpdateObject, "clusters_queue");

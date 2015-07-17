@@ -30,9 +30,19 @@
 #set( EXECUTABLE_FLAG            )
 #set( FILE_TREE_CHECK_FOLDERS    )
 #
+
+# Only interpret ``if()`` arguments as variables or keywords when unquoted.
+if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
+    cmake_policy(SET CMP0054 NEW)
+endif()
+
 macro( setup_main_executable )
 
-add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
+include      ( PlatformSettings )
+
+if( WIN32 )
+    add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
+endif()
 
 if( MACOS_DATA )
     set( APP_DATA ${MACOS_DATA} )
@@ -48,7 +58,7 @@ elseif( ANDROID_DATA )
 
 endif()
 
-if( ANDROID_USE_STANDART_TEMLATE )
+if( ANDROID )
     if( NOT ANDROID_JAVA_SRC )
         list( APPEND ANDROID_JAVA_SRC  ${CMAKE_CURRENT_LIST_DIR}/android/src )    
     endif()
@@ -186,10 +196,10 @@ if( DAVA_FOUND )
     if( ANDROID )
         include_directories   ( ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid )
         list( APPEND PATTERNS_CPP    ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/*.cpp )
-        list( APPEND PATTERNS_H      ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/*.h   )        
+        list( APPEND PATTERNS_H      ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/*.h   )
 
         list( APPEND PATTERNS_CPP    ${ANDROID_NDK}/sources/android/cpufeatures/*.c )
-        list( APPEND PATTERNS_H      ${ANDROID_NDK}/sources/android/cpufeatures/*.h )        
+        list( APPEND PATTERNS_H      ${ANDROID_NDK}/sources/android/cpufeatures/*.h )
 
     endif()
 
@@ -221,28 +231,69 @@ if( DAVA_FOUND )
 
     file( GLOB_RECURSE CPP_FILES ${PATTERNS_CPP} )
     file( GLOB_RECURSE H_FILES   ${PATTERNS_H} )
-    list( APPEND ADDED_SRC ${H_FILES} ${CPP_FILES} )
+    set ( PLATFORM_ADDED_SRC ${H_FILES} ${CPP_FILES} )
 
 endif()
 
 ###
 
 if( ANDROID )
-    add_library( ${PROJECT_NAME} SHARED
-        ${ADDED_SRC} 
-        ${PROJECT_SOURCE_FILES} 
-    )
+    set( POSTFIX 0  )
+    set( COUNTER 0 )
+    set( SRC_LIST  )
+    set( REMAINING_LIST  )
+
+    foreach( ITEM ${PROJECT_SOURCE_FILES} )
+        get_filename_component( ITEM_EXT ${ITEM} EXT )
+
+        if( ${ITEM_EXT} STREQUAL ".cpp" )
+            list( APPEND SRC_LIST  ${ITEM} )
+            math( EXPR COUNTER "${COUNTER} + 1" )
+
+            if( ${COUNTER} GREATER ${DAVA_ANDROID_MAX_LIB_SRC} )
+                math( EXPR POSTFIX "${POSTFIX} + 1" )
+
+                set( LIB_NAME "${PROJECT_NAME}_${POSTFIX}"  ) 
+                add_library( ${LIB_NAME} STATIC ${SRC_LIST} )
+                list( APPEND TARGET_LIBRARIES ${LIB_NAME} )
+
+                set( COUNTER 0 )
+                set( SRC_LIST )
+
+            endif() 
+
+        else()
+            list( APPEND REMAINING_LIST  ${ITEM} )
+
+        endif() 
+
+    endforeach()
+
+    if( ${COUNTER} GREATER 0 )
+        math( EXPR POSTFIX "${POSTFIX} + 1" )
+
+        set( LIB_NAME "${PROJECT_NAME}_${POSTFIX}"  ) 
+        add_library( ${LIB_NAME} STATIC ${SRC_LIST} )
+        list( APPEND TARGET_LIBRARIES ${LIB_NAME} )
+
+        set( COUNTER 0 )
+        set( SRC_LIST )
+
+    endif() 
+
+    add_library( ${PROJECT_NAME} SHARED ${PLATFORM_ADDED_SRC} ${ADDED_SRC} ${REMAINING_LIST} )
 
 else()                             
     add_executable( ${PROJECT_NAME} MACOSX_BUNDLE ${EXECUTABLE_FLAG}
-        ${ADDED_SRC} 
+        ${ADDED_SRC}
+        ${PLATFORM_ADDED_SRC}
         ${PROJECT_SOURCE_FILES} 
         ${RESOURCES_LIST}
     )
 
 endif()
 
-if( NOT IGNORE_FILE_TREE_CHECK )
+if( TARGET_FILE_TREE_FOUND )
     add_dependencies(  ${PROJECT_NAME} FILE_TREE )
     
 endif()
@@ -279,7 +330,7 @@ if ( QT5_FOUND )
 endif()
 
 
-if( ANDROID )
+if( ANDROID AND NOT ANDROID_CUSTOM_BUILD )
     set( LIBRARY_OUTPUT_PATH "${CMAKE_CURRENT_BINARY_DIR}/libs/${ANDROID_NDK_ABI_NAME}" CACHE PATH "Output directory for Android libs" )
 
     set( ANDROID_MIN_SDK_VERSION     ${ANDROID_NATIVE_API_LEVEL} )
@@ -328,16 +379,15 @@ if( ANDROID )
 
     set_target_properties( ${PROJECT_NAME} PROPERTIES IMPORTED_LOCATION ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/ )
 
-    execute_process( COMMAND ${ANDROID_COMMAND} update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path . )
-
     if( NOT CMAKE_EXTRA_GENERATOR )
         add_custom_target( ant-configure ALL
-            COMMAND  ${ANDROID_COMMAND} update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path .
+            COMMAND  ${ANDROID_COMMAND} update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path ${CMAKE_CURRENT_BINARY_DIR} --subprojects
             COMMAND  ${ANT_COMMAND} release
         )
 
         add_dependencies( ant-configure ${PROJECT_NAME} )
-
+    else()
+        execute_process( COMMAND ${ANDROID_COMMAND} update project --name ${ANDROID_APP_NAME} --target android-${ANDROID_TARGET_API_LEVEL} --path ${CMAKE_CURRENT_BINARY_DIR} --subprojects )
     endif()
 
 
@@ -367,7 +417,7 @@ elseif( MACOS )
         set( OUTPUT_DIR ${DEPLOY_DIR}/${PROJECT_NAME}.app/Contents )
 
     else()
-        set( OUTPUT_DIR ${CMAKE_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents )
+        set( OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/${PROJECT_NAME}.app/Contents )
     endif()
 
     set( BINARY_DIR ${OUTPUT_DIR}/MacOS/${PROJECT_NAME} )
@@ -394,7 +444,7 @@ elseif( MACOS )
 
     endif()
 
-elseif ( MSVC )       
+elseif ( WIN32 )       
     if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32" )
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY: /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" ) 
 
@@ -444,7 +494,22 @@ if( DAVA_TOOLS_FOUND )
 
 endif()
 
-target_link_libraries( ${PROJECT_NAME} ${LIBRARIES} )
+if( ANDROID )
+    set( LINK_WHOLE_ARCHIVE_FLAG -Wl,--whole-archive -Wl,--allow-multiple-definition )
+    set( NO_LINK_WHOLE_ARCHIVE_FLAG -Wl,--no-whole-archive )
+
+    foreach( LIB_1 ${TARGET_LIBRARIES} )
+        foreach( LIB_2 ${TARGET_LIBRARIES} )
+            if( ${LIB_1} STREQUAL ${LIB_2} )
+            else()
+                target_link_libraries( ${LIB_1} ${LINK_WHOLE_ARCHIVE_FLAG} ${LIB_2} ${NO_LINK_WHOLE_ARCHIVE_FLAG} ${LIBRARIES} )
+            endif()
+        endforeach()
+    endforeach()
+   
+endif()
+
+target_link_libraries( ${PROJECT_NAME} ${LINK_WHOLE_ARCHIVE_FLAG} ${TARGET_LIBRARIES} ${NO_LINK_WHOLE_ARCHIVE_FLAG} ${LIBRARIES} )
 
 foreach ( FILE ${LIBRARIES_DEBUG} )
     target_link_libraries  ( ${PROJECT_NAME} debug ${FILE} )

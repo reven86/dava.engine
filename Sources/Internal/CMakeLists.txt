@@ -93,7 +93,7 @@ elseif( MACOS )
 elseif( IOS )  
     find_package( ZLIB )
 
-    add_definitions( -DDDARWIN_NO_CARBON ) 
+    add_definitions( -DDARWIN_NO_CARBON ) 
     
     INCLUDE_DIRECTORIES ( /System/Library/Frameworks )
     foreach( NAME  CoreGraphics 

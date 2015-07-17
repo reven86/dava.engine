@@ -30,8 +30,8 @@
 #ifndef __TEST_LIST_SCREEN_H__
 #define __TEST_LIST_SCREEN_H__
 
-#include "BaseScreen.h"
-#include "UI/UIList.h"
+#include "Infrastructure/BaseScreen.h"
+#include <UI/UIList.h>
 
 using namespace DAVA;
 
