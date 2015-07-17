@@ -59,6 +59,8 @@ void FrameworkDidLaunched()
 
     KeyedArchive * appOptions = new KeyedArchive();
 
+	appOptions->SetInt32("renderer", rhi::RHI_DX9);
+
     appOptions->SetInt32("width", DeviceInfo::GetScreenInfo().width);
     appOptions->SetInt32("height", DeviceInfo::GetScreenInfo().height);
 

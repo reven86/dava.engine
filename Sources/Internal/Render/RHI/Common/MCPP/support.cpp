@@ -1817,7 +1817,7 @@ static char *   read_a_comment(
  */
 {
     int         c;
-    char *      saved_sp;
+    char *      saved_sp = NULL;
     int         cat_line = 0;       /* Number of catenated lines    */
 
     if (keep_spaces) {

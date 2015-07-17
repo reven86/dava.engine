@@ -32,8 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "FileSystem/FileSystem.h"
-#include "Render/RenderManager.h"
-#include "Render/D3D9Helpers.h"
 #include "Render/Cursor.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 

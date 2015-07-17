@@ -1,7 +1,7 @@
 
     #include "rhi_Impl.h"
 
-    #if defined(__DAVAENGINE_WIN32__)
+    #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
         #include "../DX9/rhi_DX9.h"
         #include "../GLES2/rhi_GLES2.h"
     #elif defined(__DAVAENGINE_MACOS__)
@@ -39,7 +39,7 @@ Initialize( Api api, const InitParam& param )
 {
     switch( api )
     {
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
         case RHI_DX9 :
             dx9_Initialize( param );
             break;
@@ -49,11 +49,11 @@ Initialize( Api api, const InitParam& param )
             break;
 #endif
             
-//#if defined(__DAVAENGINE_WIN32__)  ||  defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_WIN32__)  ||  defined(__DAVAENGINE_MACOS__)
         case RHI_GLES2 :
             gles2_Initialize( param );
             break;
-//#endif
+#endif
 
 #if defined(__DAVAENGINE_IPHONE__)
         case RHI_METAL :

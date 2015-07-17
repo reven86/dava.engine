@@ -891,6 +891,7 @@ void RenderHelper::CreateClearPass(rhi::HTexture targetHandle, int32 passPriorit
     rhi::EndRenderPass(clearPass);
 }
 
+#if RHI_COMPLETE
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
 void RenderHelper::GetLineWidthRange(int32& rangeMin, int32& rangeMax)
 {
@@ -908,5 +909,6 @@ void RenderHelper::GetLineWidthRange(int32& rangeMin, int32& rangeMax)
 	rangeMax = lineWidthMax;
 }
 #endif
+#endif //RHI_COMPLETE
 
 };

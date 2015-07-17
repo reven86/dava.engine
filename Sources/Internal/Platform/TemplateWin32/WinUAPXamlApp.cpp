@@ -31,7 +31,7 @@
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Core/Core.h"
-#include "Render/RenderManager.h"
+#include "Render/Renderer.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/UIScreenManager.h"
@@ -175,13 +175,16 @@ void WinUAPXamlApp::Run()
 
     SetupRenderLoopEventHandlers();
     
+#if RHI_COMLETE // init renderer in FrameworkDidLaunched and SystemAppStarted
     RenderManager::Instance()->BindToCurrentThread();
-    ReInitRender();
-    InitCoordinatesSystem();
+	ReInitRender();
+#endif
 
+	InitCoordinatesSystem();
 
     // View size and orientation option should be configured in FrameowrkDidLaunched
     FrameworkDidLaunched();
+
     core->RunOnUIThreadBlocked([this]() {
         SetupEventHandlers();
         SetTitleName();
@@ -189,6 +192,7 @@ void WinUAPXamlApp::Run()
         PrepareScreenSize();
         SetDisplayOrientations();
     });
+
     Core::Instance()->SetIsActive(true);
 
     Core::Instance()->SystemAppStarted();
@@ -197,12 +201,12 @@ void WinUAPXamlApp::Run()
         mainThreadInputSource->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 
         DAVA::uint64 startTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
-        RenderManager::Instance()->Lock();
+        
         Core::Instance()->SystemProcessFrame();
-        RenderManager::Instance()->Unlock();
+        
         uint32 elapsedTime = (uint32)(SystemTimer::Instance()->AbsoluteMS() - startTime);
         int32 sleepMs = 1;
-        int32 fps = RenderManager::Instance()->GetFPS();
+        int32 fps = Renderer::GetDesiredFPS();
         if (fps > 0)
         {
             sleepMs = (1000 / fps) - elapsedTime;
@@ -612,16 +616,21 @@ void WinUAPXamlApp::InitInput()
 
 void WinUAPXamlApp::InitRender()
 {
+#if RHI_COMPLETE_WIN10
     Logger::FrameworkDebug("[CorePlatformWinUAP] InitRender");
     RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
     RenderManager::Instance()->Create(swapChainPanel);
+#endif RHI_COMPLETE_WIN10
 }
 
 void WinUAPXamlApp::ReInitRender()
 {
     Logger::FrameworkDebug("[CorePlatformWinUAP] ReInitRender");
-    RenderManager::Instance()->Init(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight));
-    RenderSystem2D::Instance()->Init();
+	rhi::ResetParam params;
+	params.width = static_cast<int32>(windowWidth);
+	params.height = static_cast<int32>(windowHeight);
+	Renderer::Reset(params);
+    //RenderSystem2D::Instance()->Init(); //RHI_COMPLETE
 }
 
 void WinUAPXamlApp::InitCoordinatesSystem()

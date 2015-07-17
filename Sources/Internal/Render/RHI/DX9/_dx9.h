@@ -7,6 +7,21 @@
     #endif    
     #include <windows.h>
 
+#if defined(__DAVAENGINE_WIN_UAP__) //RHI_COMPLETE
+typedef struct _POINTFLOAT {
+	FLOAT   x;
+	FLOAT   y;
+} POINTFLOAT, *PPOINTFLOAT;
+
+typedef struct _GLYPHMETRICSFLOAT {
+    FLOAT       gmfBlackBoxX;
+    FLOAT       gmfBlackBoxY;
+    POINTFLOAT  gmfptGlyphOrigin;
+    FLOAT       gmfCellIncX;
+    FLOAT       gmfCellIncY;
+} GLYPHMETRICSFLOAT, *PGLYPHMETRICSFLOAT, FAR *LPGLYPHMETRICSFLOAT;
+#endif
+	
     #pragma warning( disable: 7 9 193 271 304 791 )
     #include <d3d9.h>
 

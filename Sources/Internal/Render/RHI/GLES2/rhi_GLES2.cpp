@@ -195,7 +195,7 @@ gles2_Reset( const ResetParam& param )
 
 //------------------------------------------------------------------------------
 
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
 
 void
 wgl_AcquireContext()

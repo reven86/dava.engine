@@ -42,6 +42,8 @@
 // UIMovieView is not implemented for this platform yet, using stub one.
 #   define DRAW_PLACEHOLDER_FOR_STUB_UIMOVIEVIEW
 #   include "Platform/MovieViewControlStub.h"
+#endif
+
 #include "Render/RenderHelper.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 
