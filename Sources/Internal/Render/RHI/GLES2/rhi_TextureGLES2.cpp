@@ -72,6 +72,9 @@ TextureGLES2_t::TextureGLES2_t()
 
 typedef ResourcePool<TextureGLES2_t,RESOURCE_TEXTURE>   TextureGLES2Pool;
 RHI_IMPL_POOL(TextureGLES2_t,RESOURCE_TEXTURE);
+static GLuint   _LastSetTex0        = 0;
+static GLenum   _LastSetTex0Target  = GL_TEXTURE_2D;
+
 
 //------------------------------------------------------------------------------
 
@@ -190,9 +193,10 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
             GLenum      target = (desc.type == TEXTURE_TYPE_CUBE)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
             GLCommand   cmd2[] =
             {
+                { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0+0 } },
                 { GLCommand::BIND_TEXTURE, { target, uid[0] } },
                 { GLCommand::GENERATE_MIPMAP, {} },
-                { GLCommand::BIND_TEXTURE, { target, 0 } }
+                { GLCommand::BIND_TEXTURE, { _LastSetTex0Target, _LastSetTex0 } }
             };
             
             ExecGL( cmd2, countof(cmd2) );
@@ -228,7 +232,8 @@ gles2_Texture_Create( const Texture::Descriptor& desc )
                 { GLCommand::TEX_IMAGE2D, { GL_TEXTURE_2D, 0, GL_RGBA, desc.width, desc.height, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0 } },
                 { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST } },
                 { GLCommand::TEX_PARAMETER_I, { GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST } },
-                { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, 0 } }
+                { GLCommand::BIND_TEXTURE, { GL_TEXTURE_2D, 0 } },
+                { GLCommand::BIND_TEXTURE, { _LastSetTex0Target, _LastSetTex0 } }
             };
 
             ExecGL( cmd3, countof(cmd3) );
@@ -264,7 +269,7 @@ gles2_Texture_Map( Handle tex, unsigned level, TextureFace face )
             {
                 { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, self->fbo[0].frameBuffer } },
                 { GLCommand::READ_PIXELS, { 0,0,self->width,self->height,GL_RGBA,GL_UNSIGNED_BYTE,uint64(self->mappedData) } },
-                { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, 0 } },
+                { GLCommand::BIND_FRAMEBUFFER, { GL_FRAMEBUFFER, _GLES2_Binded_FrameBuffer } },
             };
 
             ExecGL( cmd, countof(cmd) );            
@@ -332,9 +337,10 @@ gles2_Texture_Unmap( Handle tex )
     GLenum      target = (self->isCubeMap)  ? GL_TEXTURE_CUBE_MAP  : GL_TEXTURE_2D;
     GLCommand   cmd[]  =
     {
-        { GLCommand::BIND_TEXTURE, {target, self->uid} },
-        { GLCommand::TEX_IMAGE2D, {target, self->mappedLevel, uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(self->mappedData), compressed} },
-        { GLCommand::BIND_TEXTURE, {target, 0} }
+        { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0+0 } },
+        { GLCommand::BIND_TEXTURE, { target, self->uid } },
+        { GLCommand::TEX_IMAGE2D, { target, self->mappedLevel, uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(self->mappedData), compressed } },
+        { GLCommand::BIND_TEXTURE, { _LastSetTex0Target, _LastSetTex0 } }
     };
 
     ExecGL( cmd, countof(cmd) );
@@ -386,10 +392,11 @@ gles2_Texture_Update( Handle tex, const void* data, uint32 level, TextureFace fa
         }
 
         GLCommand   cmd[]  =
-        {
-            { GLCommand::BIND_TEXTURE, {ttarget, self->uid} },
-            { GLCommand::TEX_IMAGE2D, {target, uint64(level), uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(data), compressed} },
-            { GLCommand::BIND_TEXTURE, {ttarget, 0} }
+        {        
+            { GLCommand::SET_ACTIVE_TEXTURE, { GL_TEXTURE0+0 } },
+            { GLCommand::BIND_TEXTURE, { ttarget, self->uid } },
+            { GLCommand::TEX_IMAGE2D, { target, uint64(level), uint64(int_fmt), uint64(sz.dx), uint64(sz.dy), 0, uint64(fmt), type, uint64(textureDataSize), (uint64)(data), compressed } },
+            { GLCommand::BIND_TEXTURE, { _LastSetTex0Target, _LastSetTex0 } }
         };
 
         ExecGL( cmd, countof(cmd) );
@@ -566,6 +573,12 @@ SetToRHI( Handle tex, unsigned unit_i, uint32 base_i )
 
     GL_CALL(glActiveTexture( GL_TEXTURE0+sampler_i ));
     GL_CALL(glBindTexture( target, self->uid ));
+    
+    if( sampler_i == 0 )
+    {
+        _LastSetTex0       = self->uid;
+        _LastSetTex0Target = target;
+    }
 
     if(     _CurSamplerState
         &&  (self->forceSetSamplerState  ||  memcmp( &(self->samplerState), sampler, sizeof(rhi::SamplerState::Descriptor::Sampler)) )

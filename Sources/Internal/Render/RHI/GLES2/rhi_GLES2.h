@@ -140,6 +140,7 @@ GLCommand
         DELETE_FRAMEBUFFERS,
 
         GEN_TEXTURES,
+        SET_ACTIVE_TEXTURE,
         BIND_TEXTURE,
         DELETE_TEXTURES,
         TEX_PARAMETER_I,
