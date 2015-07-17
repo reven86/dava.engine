@@ -53,7 +53,7 @@ endmacro ()
 
 # Macro for precompiled headers
 macro (enable_pch)
-    if (MSVC)
+    if (WIN32)
         foreach (FILE ${SOURCE_FILES})
             if (FILE MATCHES \\.cpp$)
                 if (FILE MATCHES Precompiled\\.cpp$)
