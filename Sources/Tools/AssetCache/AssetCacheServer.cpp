@@ -43,11 +43,6 @@ namespace DAVA
 namespace AssetCache
 {
     
-Server::Server()
-{
-
-}
-    
 Server::~Server()
 {
 }

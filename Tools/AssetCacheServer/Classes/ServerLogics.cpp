@@ -108,10 +108,6 @@ void ServerLogics::OnChannelClosed(DAVA::TCPChannel *tcpChannel, const DAVA::cha
         {
             waitedRequests.erase(iter);
         }
-        else
-        {
-            DVASSERT(false && "cannot found description for closed channel")
-        }
     }
 }
 
@@ -137,6 +133,7 @@ void ServerLogics::OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey &key
             {
                 server->SendFiles(description.clientChannel, key, files);
             }
+			waitedRequests.erase(iter);
         }
         else
         {

@@ -55,10 +55,9 @@ public:
 
 class Client: public DAVA::TCPChannelDelegate
 {
-    
 public:
     
-    Client();
+    Client() = default;
     virtual ~Client();
     
     void SetDelegate(ClientDelegate * delegate);
@@ -70,7 +69,6 @@ public:
     
     bool AddToCache(const CacheItemKey &key, const CachedFiles &files);
     bool GetFromCache(const CacheItemKey &key);
-    
     
     //TCPChannelDelegate
     void ChannelOpen(TCPChannel *tcpChannel) override;
@@ -85,7 +83,7 @@ private:
     void OnAddedToCache(KeyedArchive * archieve);
     void OnGetFromCache(KeyedArchive * archieve);
     
-    
+private:
     TCPConnection * netClient = nullptr;
     TCPChannel * openedChannel = nullptr;
     
@@ -105,6 +103,11 @@ inline TCPConnection * Client::GetConnection() const
     return netClient;
 }
    
+inline bool Client::IsConnected()
+{
+    return (openedChannel != nullptr);
+}
+
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA

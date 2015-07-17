@@ -73,7 +73,7 @@ TCPConnection::~TCPConnection()
     if(Net::NetCore::INVALID_TRACK_ID != controllerId && Net::NetCore::Instance())
     {
         Disconnect();
-        //need wait for diconnecting
+        //need wait for diconnecting ?
     }
 }
     

@@ -2,7 +2,7 @@ cmake_minimum_required( VERSION 3.0 )
                    
 project( DavaTools )
 
-if (MSVC)
+if (WIN32)
     add_definitions (-D_CRT_SECURE_NO_DEPRECATE)
 elseif (MACOS AND NOT ANDROID)
     add_definitions (-DDARWIN_NO_CARBON)
@@ -48,7 +48,7 @@ add_library                    ( ${PROJECT_NAME} STATIC ${CPP_FILES} ${H_FILES} 
 
 if( MACOS AND NOT ANDROID )
     target_link_libraries  ( ${PROJECT_NAME} ${ADDED_LIBS} libbz2.dylib libz.dylib stdc++.6.dylib )
-elseif( MSVC )
+elseif( WIN32 )
     target_link_libraries  ( ${PROJECT_NAME} ${ADDED_LIBS} ${DAVA_THIRD_PARTY_ROOT_PATH}/IMagickHelpLib/IMagickHelper.lib )
 endif()
 

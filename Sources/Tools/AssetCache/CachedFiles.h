@@ -49,7 +49,7 @@ class CachedFiles
     
 public:
     
-    CachedFiles();
+    CachedFiles() = default;
     CachedFiles(const CachedFiles & right);
     
     virtual ~CachedFiles();

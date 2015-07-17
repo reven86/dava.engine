@@ -154,7 +154,7 @@ void CacheDB::Unload()
     
     for(auto & entry: fastCache)
     {
-        entry.second->files.UnloadFiles();
+        entry.second->Unload();
     }
     
     fastCache.clear();
@@ -218,7 +218,7 @@ void CacheDB::ReduceFullCacheBySize(uint64 toSize)
                                               });
         if(found != fullCache.end())
         {
-            RemoveFromFullCache(found);
+            Remove(found);
         }
     }
 }
@@ -241,12 +241,11 @@ ServerCacheEntry * CacheDB::Get(const CacheItemKey &key)
     ServerCacheEntry * entry = FindInFastCache(key);
     
     if(nullptr == entry)
-    {   // find in full cache
-
+    {
         entry = FindInFullCache(key);
         if(nullptr != entry)
         {
-            entry->files.LoadFiles();
+            entry->Load();
             InsertInFastCache(key, entry);
         }
     }
@@ -373,8 +372,7 @@ void CacheDB::Remove(const CacheItemKey &key)
     auto found = fullCache.find(key);
     if(found != fullCache.end())
     {
-        RemoveFromFullCache(found);
-        dbStateChanged = true;
+        Remove(found);
     }
     else
     {
@@ -382,15 +380,21 @@ void CacheDB::Remove(const CacheItemKey &key)
     }
 }
     
-void CacheDB::RemoveFromFullCache(const CACHE::iterator &it)
+void CacheDB::Remove(const CACHE::iterator &it)
 {
-    DVASSERT(it != fullCache.end());
-
     auto found = fastCache.find(it->first);
     if(found != fastCache.end())
     {
         RemoveFromFastCache(found);
     }
+    
+    RemoveFromFullCache(it);
+    dbStateChanged = true;
+}
+    
+void CacheDB::RemoveFromFullCache(const CACHE::iterator &it)
+{
+    DVASSERT(it != fullCache.end());
     
     IncreaseUsedSize(it->second.GetFiles());
     fullCache.erase(it);
@@ -402,7 +406,7 @@ void CacheDB::RemoveFromFastCache(const FASTCACHE::iterator &it)
     DVASSERT(it != fastCache.end());
 
     DVASSERT(it->second->GetFiles().FilesAreLoaded() == true);
-    it->second->files.UnloadFiles();
+    it->second->Unload();
     fastCache.erase(it);
 }
 
@@ -420,27 +424,6 @@ FilePath CacheDB::CreateFolderPath(const CacheItemKey &key) const
     return (cacheRootFolder + (key.ToString() + "/"));
 }
     
-const FilePath & CacheDB::GetPath() const
-{
-    return cacheRootFolder;
-}
-
-const uint64 CacheDB::GetStorageSize() const
-{
-    return storageSize;
-}
-
-const uint64 CacheDB::GetAvailableSize() const
-{
-    DVASSERT(GetStorageSize() > GetUsedSize());
-    return (GetStorageSize() - GetUsedSize());
-}
-
-const uint64 CacheDB::GetUsedSize() const
-{
-    return usedSize;
-}
-
 void CacheDB::Update()
 {
     if(dbStateChanged && (autoSaveTimeout != 0))
@@ -452,6 +435,12 @@ void CacheDB::Update()
             lastSaveTime = curTime;
         }
     }
+}
+
+const uint64 CacheDB::GetAvailableSize() const
+{
+    DVASSERT(GetStorageSize() > GetUsedSize());
+    return (GetStorageSize() - GetUsedSize());
 }
     
     

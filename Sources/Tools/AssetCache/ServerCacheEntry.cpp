@@ -43,18 +43,16 @@ namespace AssetCache
 {
     
 ServerCacheEntry::ServerCacheEntry()
-    : accessID(0)
 {
 }
 
 ServerCacheEntry::ServerCacheEntry(const CachedFiles &_files)
     : files(_files)
-    , accessID(0)
 {
     
 }
 
-    
+
 bool ServerCacheEntry::operator == (const ServerCacheEntry &right) const
 {
     return (accessID == right.accessID) && (files == right.files);
@@ -82,20 +80,16 @@ void ServerCacheEntry::Deserialize(KeyedArchive * archieve)
     files.Deserialize(filesArchieve);
 }
     
-    
-    
-void ServerCacheEntry::InvalidateAccesToken(uint64 newID)
+void ServerCacheEntry::Load()
 {
-    accessID = newID;
+    files.LoadFiles();
 }
-
     
-const CachedFiles & ServerCacheEntry::GetFiles() const
+void ServerCacheEntry::Unload()
 {
-    return files;
+    files.UnloadFiles();
 }
-
-
+    
     
     
 }; // end of namespace AssetCache

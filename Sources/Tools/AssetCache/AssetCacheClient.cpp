@@ -42,11 +42,6 @@ namespace DAVA
 namespace AssetCache
 {
     
-Client::Client()
-{
-
-}
-    
 Client::~Client()
 {
     delegate = nullptr;
@@ -75,10 +70,6 @@ void Client::Disconnect()
     }
 }
     
-bool Client::IsConnected()
-{
-    return (openedChannel != nullptr);
-}
     
 bool Client::AddToCache(const CacheItemKey &key, const CachedFiles &files)
 {

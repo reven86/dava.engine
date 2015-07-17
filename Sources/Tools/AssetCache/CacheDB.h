@@ -131,6 +131,8 @@ private:
     void RemoveFromFastCache(const FASTCACHE::iterator &it);
     void RemoveFromFullCache(const CACHE::iterator &it);
 
+    void Remove(const CACHE::iterator &it);
+
     
 private:
     
@@ -151,6 +153,22 @@ private:
     
 	std::atomic<bool> dbStateChanged;    //flag about changes in db
 };
+    
+    
+inline const FilePath & CacheDB::GetPath() const
+{
+    return cacheRootFolder;
+}
+
+inline const uint64 CacheDB::GetStorageSize() const
+{
+    return storageSize;
+}
+
+inline const uint64 CacheDB::GetUsedSize() const
+{
+    return usedSize;
+}
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA
