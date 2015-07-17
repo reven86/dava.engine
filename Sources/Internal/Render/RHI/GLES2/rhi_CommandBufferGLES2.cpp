@@ -679,7 +679,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                     {
                         Size2i  sz = TextureGLES2::Size( passCfg.colorBuffer[0].texture );
                         
-                        TextureGLES2::SetAsRenderTarget( passCfg.colorBuffer[0].texture );
+                        TextureGLES2::SetAsRenderTarget( passCfg.colorBuffer[0].texture, passCfg.depthStencilBuffer.texture );
                         def_viewport[2] = sz.dx;
                         def_viewport[3] = sz.dy;
                     }
@@ -736,7 +736,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                         flags |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
                     }
 
-                    if(flags)
+                    if( flags )
                     {
                         glClear( flags );
                     }
@@ -1377,7 +1377,7 @@ _LogGLError( const char* expr, int err )
 static void
 _ExecGL( GLCommand* command, uint32 cmdCount )
 {
-    int     err = 0;
+    int     err = GL_NO_ERROR;
 
 /*
     do 
