@@ -341,8 +341,11 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
     else
         rowIndex = rowCount(QModelIndex());
 
-    ControlsContainerNode *destControlContainer = dynamic_cast<ControlsContainerNode*>(static_cast<PackageBaseNode*>(parent.internalPointer()));
-    StyleSheetsNode *destStylesContainer = dynamic_cast<StyleSheetsNode*>(static_cast<PackageBaseNode*>(parent.internalPointer()));
+    
+    PackageBaseNode *destNode = static_cast<PackageBaseNode*>(parent.internalPointer());
+    
+    ControlsContainerNode *destControlContainer = dynamic_cast<ControlsContainerNode*>(destNode);
+    StyleSheetsNode *destStylesContainer = dynamic_cast<StyleSheetsNode*>(destNode);
     
     if (destControlContainer && data->hasFormat(PackageMimeData::MIME_TYPE))
     {
@@ -401,11 +404,10 @@ bool PackageModel::dropMimeData(const QMimeData *data, Qt::DropAction action, in
             commandExecutor->AddImportedPackagesIntoPackage(packages, root);
         }
     }
-    else if (destControlContainer && data->hasFormat("text/plain") && data->hasText())
+    else if (destNode && data->hasFormat("text/plain") && data->hasText())
     {
         String string = data->text().toStdString();
-        
-        commandExecutor->Paste(root, destControlContainer, rowIndex, string);
+        commandExecutor->Paste(root, destNode, rowIndex, string);
         return true;
     }
 

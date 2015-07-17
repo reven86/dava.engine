@@ -218,30 +218,27 @@ void PackageWidget::SaveContext()
 
 void PackageWidget::RefreshActions(const QList<PackageBaseNode*> &nodes)
 {
-    bool canInsertControls = !nodes.empty();
-    bool canInsertPackages = !nodes.empty();
+    bool canInsertControls = nodes.size() == 1 && nodes[0]->IsInsertingControlsSupported();
+    bool canInsertPackages = nodes.size() == 1 && nodes[0]->IsInsertingPackagesSupported();
+    bool canInsertStyles = nodes.size() == 1 && nodes[0]->IsInsertingStylesSupported();
     bool canRemove = !nodes.empty();
-    bool canCopy = !nodes.empty();
+    bool canCopy = false;
     
     for(const PackageBaseNode *node : nodes)
     {
-        canCopy &= node->CanCopy();
-        canInsertControls &= node->IsInsertingControlsSupported();
-        canInsertPackages &= node->IsInsertingPackagesSupported();
-        canRemove &= node->CanRemove();
-        if (!canCopy && !canInsertControls && !canRemove && !canInsertPackages)
-        {
+        canCopy |= node->CanCopy();
+        canRemove |= node->CanRemove();
+
+        if (canCopy && canRemove)
             break;
-        }
     }
     
     RefreshAction(copyAction, canCopy, true);
-    RefreshAction(pasteAction, canInsertControls, true);
+    RefreshAction(pasteAction, canInsertControls || canInsertStyles, true);
     RefreshAction(cutAction, canCopy && canRemove, true);
     RefreshAction(delAction, canRemove, true);
 
     RefreshAction(importPackageAction, canInsertPackages, true);
-
 }
 
 void PackageWidget::RefreshAction( QAction *action, bool enabled, bool visible )
@@ -280,11 +277,6 @@ void PackageWidget::CopyNodesToClipboard(const Vector<ControlNode*> &controls, c
         data->setText(QString(str.c_str()));
         clipboard->setMimeData(data);
     }
-}
-
-void PackageWidget::RemoveNodes(const DAVA::Vector<ControlNode*> &nodes)
-{
-    sharedData->GetDocument()->GetCommandExecutor()->RemoveControls(nodes);
 }
 
 void PackageWidget::OnSelectionChanged(const QItemSelection &proxySelected, const QItemSelection &proxyDeselected)
@@ -356,13 +348,12 @@ void PackageWidget::OnPaste()
         const QModelIndex &index = selectedIndexList.first();
         
         PackageBaseNode *baseNode = static_cast<PackageBaseNode*>(index.internalPointer());
-        ControlsContainerNode *node = dynamic_cast<ControlsContainerNode*>(baseNode);
         
-        if (node != nullptr && !node->IsReadOnly())
+        if (!baseNode->IsReadOnly())
         {
             String string = clipboard->mimeData()->text().toStdString();
             Document *doc = sharedData->GetDocument();
-            doc->GetCommandExecutor()->Paste(doc->GetPackage(), node, node->GetCount(), string);
+            doc->GetCommandExecutor()->Paste(doc->GetPackage(), baseNode, baseNode->GetCount(), string);
         }
     }
 }
@@ -377,16 +368,19 @@ void PackageWidget::OnCut()
     
     CopyNodesToClipboard(controls, styles);
     
-    RemoveNodes(controls);
+    sharedData->GetDocument()->GetCommandExecutor()->Remove(controls, styles);
 }
 
 void PackageWidget::OnDelete()
 {
-    Vector<ControlNode*> nodes;
-    CollectSelectedControls(nodes, false, true);
-    if (!nodes.empty())
+    Vector<ControlNode*> controls;
+    CollectSelectedControls(controls, false, true);
+    
+    Vector<StyleSheetNode*> styles;
+    CollectSelectedStyles(styles, false, true);
+    if (!controls.empty() || !styles.empty())
     {
-        RemoveNodes(nodes);
+        sharedData->GetDocument()->GetCommandExecutor()->Remove(controls, styles);
     }
     else
     {

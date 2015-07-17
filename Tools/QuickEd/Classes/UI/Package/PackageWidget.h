@@ -70,7 +70,6 @@ private:
     void CollectSelectedStyles(DAVA::Vector<StyleSheetNode*> &nodes, bool forCopy, bool forRemove);
     void CollectSelectedImportedPackages(DAVA::Vector<PackageNode*> &nodes, bool forCopy, bool forRemove);
     void CopyNodesToClipboard(const DAVA::Vector<ControlNode*> &controls, const DAVA::Vector<StyleSheetNode*> &styles);
-    void RemoveNodes(const DAVA::Vector<ControlNode*> &nodes);
     QList<QPersistentModelIndex> GetExpandedIndexes() const;
     
 private slots:

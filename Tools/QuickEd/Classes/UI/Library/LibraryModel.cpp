@@ -129,21 +129,24 @@ QMimeData *LibraryModel::mimeData(const QModelIndexList &indexes) const
             Vector<StyleSheetNode*> styles;
             ControlNode *control = static_cast<ControlNode*>(item->data(POINTER_DATA).value<void*>());
             
-            if (control->GetPackage() != nullptr)
-                control = ControlNode::CreateFromPrototype(control);
-            else
-                control = SafeRetain(control);
-            
-            controls.push_back(control);
-            
-            YamlPackageSerializer serializer;
-            serializer.SerializePackageNodes(root, controls, styles);
-            String str = serializer.WriteToString();
-            data->setText(QString::fromStdString(str));
-            
-            SafeRelease(control);
-            
-            return data;
+            if (control)
+            {
+                if (control->GetPackage() != nullptr)
+                    control = ControlNode::CreateFromPrototype(control);
+                else
+                    control = SafeRetain(control);
+                
+                controls.push_back(control);
+                
+                YamlPackageSerializer serializer;
+                serializer.SerializePackageNodes(root, controls, styles);
+                String str = serializer.WriteToString();
+                data->setText(QString::fromStdString(str));
+                
+                SafeRelease(control);
+                
+                return data;
+            }
         }
     }
     return nullptr;

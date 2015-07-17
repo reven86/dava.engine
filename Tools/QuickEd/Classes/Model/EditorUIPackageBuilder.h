@@ -76,6 +76,7 @@ public:
     DAVA::RefPtr<PackageNode> BuildPackage() const;
     const DAVA::Vector<ControlNode*> &GetRootControls() const;
     const DAVA::Vector<PackageNode*> &GetImportedPackages() const;
+    const DAVA::Vector<StyleSheetNode*> &GetStyles() const;
     void AddImportedPackage(PackageNode *node);
 
 private:

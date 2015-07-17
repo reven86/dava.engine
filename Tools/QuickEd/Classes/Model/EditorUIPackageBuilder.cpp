@@ -383,6 +383,11 @@ const Vector<PackageNode*> &EditorUIPackageBuilder::GetImportedPackages() const
     return importedPackages;
 }
 
+const Vector<StyleSheetNode*> &EditorUIPackageBuilder::GetStyles() const
+{
+    return styleSheets;
+}
+
 void EditorUIPackageBuilder::AddImportedPackage(PackageNode *node)
 {
     importedPackages.push_back(SafeRetain(node));
