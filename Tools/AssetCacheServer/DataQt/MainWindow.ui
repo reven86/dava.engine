@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>420</width>
-    <height>399</height>
+    <height>416</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -26,11 +26,11 @@
    <string>Asset Cache Server</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayout_2">
+   <layout class="QVBoxLayout" name="verticalLayout_4">
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <layout class="QVBoxLayout" name="labelLayout">
+       <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
          <widget class="QLabel" name="cacheLabel">
           <property name="text">
@@ -53,16 +53,30 @@
          </widget>
         </item>
         <item>
+         <widget class="QLabel" name="autoSaveLabel">
+          <property name="text">
+           <string>Auto save timeout:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QLabel" name="portLabel">
           <property name="text">
            <string>Port:</string>
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QLabel" name="autoStartLabel">
+          <property name="text">
+           <string>Auto start server:</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="parametersLayout">
+       <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
@@ -163,6 +177,31 @@
          </widget>
         </item>
         <item>
+         <widget class="QSpinBox" name="autoSaveTimeoutSpinBox">
+          <property name="maximumSize">
+           <size>
+            <width>100</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+          <property name="suffix">
+           <string> min</string>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>60</number>
+          </property>
+          <property name="value">
+           <number>5</number>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QSpinBox" name="portSpinBox">
           <property name="maximumSize">
            <size>
@@ -178,6 +217,16 @@
           </property>
           <property name="value">
            <number>80</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="autoStartCheckBox">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="tristate">
+           <bool>false</bool>
           </property>
          </widget>
         </item>
@@ -216,7 +265,7 @@
        </size>
       </property>
       <property name="title">
-       <string>Remote Asset Cache Server</string>
+       <string>Remote Asset Cache Servers</string>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
@@ -234,13 +283,13 @@
          <property name="widgetResizable">
           <bool>true</bool>
          </property>
-         <widget class="QWidget" name="scrollAreaWidgetContents_2">
+         <widget class="QWidget" name="scrollAreaWidgetContents">
           <property name="geometry">
            <rect>
             <x>0</x>
             <y>0</y>
             <width>380</width>
-            <height>152</height>
+            <height>121</height>
            </rect>
           </property>
          </widget>
@@ -252,19 +301,19 @@
     <item>
      <layout class="QHBoxLayout" name="saveCancelLayout">
       <item>
-       <widget class="QPushButton" name="saveButton">
+       <widget class="QPushButton" name="applyButton">
         <property name="enabled">
          <bool>false</bool>
         </property>
         <property name="text">
-         <string>Save</string>
+         <string>Apply</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="cancelButton">
+       <widget class="QPushButton" name="closeButton">
         <property name="text">
-         <string>Cancel</string>
+         <string>Close</string>
         </property>
        </widget>
       </item>

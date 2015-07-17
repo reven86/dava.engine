@@ -93,7 +93,7 @@ private:
 private:
     
     uint16 listenPort = 0;
-    TCPConnection * netServer = nullptr;
+    std::unique_ptr<TCPConnection> netServer;
     ServerDelegate *delegate = nullptr;
 };
 

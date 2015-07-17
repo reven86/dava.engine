@@ -28,55 +28,64 @@
 
 
 #include "ServerCore.h"
-
+#include "ApplicationSettings.h"
 #include <QTimer>
 
 ServerCore::ServerCore()
-    : serverIsRunning(false)
+	: state(State::STOPPED)
 {
     settings = new ApplicationSettings();
-
     QObject::connect(settings, &ApplicationSettings::SettingsUpdated, this, &ServerCore::OnSettingsUpdated);
     
-    settings->Load();
-    
     server.SetDelegate(&serverLogics);
-    client.SetDelegate(&serverLogics);
+	client.SetDelegate(&serverLogics);
+    serverLogics.Init(&server, &client, &dataBase);
+
+    updateTimer = new QTimer(this);
+    QObject::connect(updateTimer, &QTimer::timeout, this, &ServerCore::UpdateByTimer);
+
+    settings->Load();
 }
 
 ServerCore::~ServerCore()
 {
     Stop();
-    
-    settings->Save();
     delete settings;
 }
 
 
 void ServerCore::Start()
 {
-    server.Listen(settings->GetPort());
-    serverLogics.Init(&server, &client, &dataBase);
-
-    const auto remoteServer = settings->GetCurrentServer();
-    if(!remoteServer.ip.empty())
+    if (state != State::STARTED)
     {
-        client.Connect(remoteServer.ip, remoteServer.port);
+        auto established = server.Listen(settings->GetPort());
+        if (established)
+        {
+            const auto remoteServer = settings->GetCurrentServer();
+            if (!remoteServer.ip.empty())
+            {
+                client.Connect(remoteServer.ip, remoteServer.port);
+            }
+
+            updateTimer->start(UPDATE_INTERVAL_MS);
+
+            state = State::STARTED;
+            emit ServerStateChanged(this);
+        }
     }
-    
-    serverIsRunning = true;
-    
-    QTimer::singleShot(UPDATE_TIMEOUT, this, &ServerCore::UpdateByTimer);
 }
 
 void ServerCore::Stop()
 {
-    if(serverIsRunning)
+    if (state != State::STOPPED)
     {
-        serverIsRunning = false;
-        
+        updateTimer->stop();
+
         client.Disconnect();
         server.Disconnect();
+
+        state = State::STOPPED;
+        emit ServerStateChanged(this);
     }
 }
 
@@ -93,14 +102,14 @@ void ServerCore::Update()
     }
 }
 
+ServerCore::State ServerCore::GetState() const
+{
+    return state;
+}
+
 void ServerCore::UpdateByTimer()
 {
     Update();
-    
-    if(serverIsRunning)
-    {
-        QTimer::singleShot(UPDATE_TIMEOUT, this, &ServerCore::UpdateByTimer);
-    }
 }
 
 
@@ -108,42 +117,36 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
 {
     if(settings == _settings)
     {
-        const auto & folder = settings->GetFolder();
-        const auto sizeGb = settings->GetCacheSizeGb();
-        const auto count = settings->GetFilesCount();
-        const auto autoSaveTimeout = settings->GetAutoSaveTimeoutMs();
+        auto & folder = settings->GetFolder();
+        auto sizeGb = settings->GetCacheSizeGb();
+        auto count = settings->GetFilesCount();
+        auto autoSaveTimeoutMin = settings->GetAutoSaveTimeoutMin();
         const auto remoteServer = settings->GetCurrentServer();
-        
-        bool needServerRestart = false; //TODO: why we need different places for disconnect and listen???
-        bool needClientRestart = true;
 
-        if(serverIsRunning)
+        bool needServerRestart = false; //TODO: why we need different places for disconnect and listen???
+        bool needClientRestart = false;
+
+        if(state == State::STARTED)
         {   // disconnect network if settings changed
-            if (server.IsConnected() && server.GetListenPort() != settings->GetPort())
+            if (server.GetListenPort() != settings->GetPort())
             {
                 needServerRestart = true;
                 server.Disconnect();
             }
             
             auto clientConnection = client.GetConnection();
-            if(client.IsConnected() && clientConnection)
+            if ((clientConnection && remoteServer != clientConnection->GetEndpoint()) || 
+                (!clientConnection && !remoteServer.ip.empty()))
             {
-                const auto & endpoint = clientConnection->GetEndpoint();
-                if(remoteServer == endpoint)
-                {
-                    needClientRestart = false;
-                }
-                else
-                {
-                    client.Disconnect();
-                }
+                needClientRestart = true;
+                client.Disconnect();
             }
         }
         
         {   //updated DB settings
             if(sizeGb && !folder.IsEmpty())
             {
-                dataBase.UpdateSettings(folder, sizeGb * 1024 * 1024 * 1024, count, autoSaveTimeout);
+                dataBase.UpdateSettings(folder, sizeGb * 1024 * 1024 * 1024, count, autoSaveTimeoutMin * 60 * 1000);
             }
             else
             {
@@ -151,11 +154,17 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
             }
         }
 
-        if(serverIsRunning)
+        if(state == State::STARTED)
         {   // restart network connections after changing of settings
             if (needServerRestart)
             {
-                server.Listen(settings->GetPort());
+                auto established = server.Listen(settings->GetPort());
+                if (!established)
+                {
+                    state = State::STOPPED;
+                    emit ServerStateChanged(this);
+                    return;
+                }
             }
             
             if(needClientRestart && !remoteServer.ip.empty())

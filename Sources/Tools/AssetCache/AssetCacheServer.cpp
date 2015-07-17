@@ -45,18 +45,17 @@ namespace AssetCache
     
 Server::~Server()
 {
-    SafeDelete(netServer);
 }
 
 bool Server::Listen(uint16 port)
 {
     listenPort = port;
-    DVASSERT(nullptr == netServer);
+    DVASSERT(!netServer);
     
-    netServer = TCPConnection::CreateServer(NET_SERVICE_ID, Net::Endpoint(listenPort));
+    netServer.reset(TCPConnection::CreateServer(NET_SERVICE_ID, Net::Endpoint(listenPort)));
     netServer->SetDelegate(this);
 
-    return (nullptr != netServer);
+    return netServer->IsConnected();
 }
     
 bool Server::IsConnected() const
@@ -71,14 +70,11 @@ bool Server::IsConnected() const
 
 void Server::Disconnect()
 {
-    DVASSERT(nullptr != netServer);
-    
     if(netServer)
     {
         netServer->Disconnect();
         netServer->SetDelegate(nullptr);
-        
-        SafeDelete(netServer);
+        netServer.reset();
     }
 }
     

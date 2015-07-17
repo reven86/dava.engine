@@ -51,17 +51,20 @@ int main(int argc, char *argv[])
     DAVA::Logger::Instance()->SetLogFilename("AssetCacheServer.txt");
     DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_FRAMEWORK);
 
-    MainWindow w;
+    MainWindow mainWindow;
     ServerCore server;
 
-    w.SetSettings(server.GetSettings());
+    mainWindow.SetServerCore(&server);
 
     if (server.GetSettings()->IsFirstLaunch())
     {
-        w.show();
+        mainWindow.show();
     }
     
-    server.Start();
+    if (server.GetSettings()->IsAutoStart())
+    {
+        server.Start();
+    }
     
     return a.exec();
 }
