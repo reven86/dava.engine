@@ -30,21 +30,24 @@
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 
-#include "Math/Rect.h"
-#include "Math/Color.h"
+#include "Platform/TemplateWin32/PrivateTextFieldWinUAP.h"
 
 namespace DAVA
 {
 
-UITextFieldWinUAP::UITextFieldWinUAP(UITextField* uiTextField_)
-    : uiTextField(uiTextField_)
+UITextFieldWinUAP::UITextFieldWinUAP(UITextField* uiTextField)
+    : privateImpl(std::make_shared<PrivateTextFieldWinUAP>(uiTextField))
 {}
 
 UITextFieldWinUAP::~UITextFieldWinUAP()
-{}
+{
+    // Tell private implementation that owner is sentenced to death
+    privateImpl->FlyToSunIcarus();
+}
 
 void UITextFieldWinUAP::SetVisible(bool isVisible)
 {
+    privateImpl->SetVisible(isVisible);
 }
 
 void UITextFieldWinUAP::SetIsPassword(bool isPassword)
@@ -52,67 +55,81 @@ void UITextFieldWinUAP::SetIsPassword(bool isPassword)
 }
 
 void UITextFieldWinUAP::SetMaxLength(int32 value)
-{}
+{
+    privateImpl->SetMaxLength(value);
+}
 
 void UITextFieldWinUAP::OpenKeyboard()
 {
+    privateImpl->OpenKeyboard();
 }
 
 void UITextFieldWinUAP::CloseKeyboard()
 {
+    privateImpl->CloseKeyboard();
 }
 
 void UITextFieldWinUAP::UpdateRect(const Rect& rect)
 {
+    privateImpl->UpdateRect(rect);
 }
 
 void UITextFieldWinUAP::SetText(const WideString& text)
 {
+    privateImpl->SetText(text);
 }
 
 void UITextFieldWinUAP::GetText(WideString& text) const
 {
+    privateImpl->GetText(text);
 }
 
 void UITextFieldWinUAP::SetTextColor(const Color& color)
 {
+    privateImpl->SetTextColor(color);
 }
 
 void UITextFieldWinUAP::SetTextAlign(int32 align)
 {
+    privateImpl->SetTextAlign(align);
 }
 
 int32 UITextFieldWinUAP::GetTextAlign() const
 {
-    return 0;
+    return privateImpl->GetTextAlign();
 }
 
 void UITextFieldWinUAP::SetTextUseRtlAlign(bool useRtlAlign)
 {
+    privateImpl->SetTextUseRtlAlign(useRtlAlign);
 }
 
 bool UITextFieldWinUAP::GetTextUseRtlAlign() const
 {
-    return false;
+    return privateImpl->GetTextUseRtlAlign();
 }
 
 void UITextFieldWinUAP::SetFontSize(float32 size)
 {
+    privateImpl->SetFontSize(size);
 }
 
 void UITextFieldWinUAP::SetMultiline(bool value)
 {
+    privateImpl->SetMultiline(value);
 }
 
 void UITextFieldWinUAP::SetInputEnabled(bool value)
-{}
+{
+    privateImpl->SetInputEnabled(!value);
+}
 
 void UITextFieldWinUAP::SetRenderToTexture(bool value)
 {}
 
 bool UITextFieldWinUAP::IsRenderToTexture() const
 {
-    return false;
+    return privateImpl->IsRenderToTexture();
 }
 
 void UITextFieldWinUAP::SetAutoCapitalizationType(int32 value)
@@ -128,7 +145,9 @@ void UITextFieldWinUAP::SetKeyboardAppearanceType(int32 value)
 {}
 
 void UITextFieldWinUAP::SetKeyboardType(int32 value)
-{}
+{
+    privateImpl->SetKeyboardType(value);
+}
 
 void UITextFieldWinUAP::SetReturnKeyType(int32 value)
 {}
