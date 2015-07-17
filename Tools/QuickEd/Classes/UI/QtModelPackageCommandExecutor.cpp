@@ -369,48 +369,6 @@ void QtModelPackageCommandExecutor::MoveControls(const DAVA::Vector<ControlNode*
     }
 }
 
-void QtModelPackageCommandExecutor::Remove(const Vector<ControlNode*> &controls, const Vector<StyleSheetNode*> &styles)
-{
-    Vector<PackageBaseNode*> nodesToRemove;
-    
-    Vector<ControlNode*> controlsToRemove;
-    for (ControlNode *control : controls)
-    {
-        if (control->CanRemove())
-        {
-            controlsToRemove.push_back(control);
-            nodesToRemove.push_back(control);
-        }
-    }
-    
-    Vector<StyleSheetNode*> stylesToRemove;
-    for (StyleSheetNode *style : styles)
-    {
-        if (style->CanRemove())
-        {
-            stylesToRemove.push_back(style);
-            nodesToRemove.push_back(style);
-        }
-    }
-    
-    if (!nodesToRemove.empty())
-    {
-        BeginMacro(Format("Remove %s", FormatNodeNames(nodesToRemove).c_str()).c_str());
-        for (ControlNode *control : controlsToRemove)
-            RemoveControlImpl(control);
-        for (StyleSheetNode *style : stylesToRemove)
-        {
-            StyleSheetsNode *src = dynamic_cast<StyleSheetsNode*>(style->GetParent());
-            if (src)
-            {
-                int32 srcIndex = src->GetIndex(style);
-                PushCommand(new InsertRemoveStyleCommand(document->GetPackage(), style, src, srcIndex, false));
-            }
-        }
-        EndMacro();
-    }
-}
-
 void QtModelPackageCommandExecutor::CopyStyles(const DAVA::Vector<StyleSheetNode*> &nodes, StyleSheetsNode *dest, DAVA::int32 destIndex)
 {
     Vector<StyleSheetNode*> nodesToCopy;
@@ -481,25 +439,42 @@ void QtModelPackageCommandExecutor::MoveStyles(const DAVA::Vector<StyleSheetNode
     }
 }
 
-void QtModelPackageCommandExecutor::RemoveStyles(const DAVA::Vector<StyleSheetNode*> &nodes)
+void QtModelPackageCommandExecutor::Remove(const Vector<ControlNode*> &controls, const Vector<StyleSheetNode*> &styles)
 {
-    Vector<StyleSheetNode*> nodesToRemove;
-    for (StyleSheetNode *node : nodes)
+    Vector<PackageBaseNode*> nodesToRemove;
+    
+    Vector<ControlNode*> controlsToRemove;
+    for (ControlNode *control : controls)
     {
-        if (node->CanRemove())
-            nodesToRemove.push_back(node);
+        if (control->CanRemove())
+        {
+            controlsToRemove.push_back(control);
+            nodesToRemove.push_back(control);
+        }
+    }
+    
+    Vector<StyleSheetNode*> stylesToRemove;
+    for (StyleSheetNode *style : styles)
+    {
+        if (style->CanRemove())
+        {
+            stylesToRemove.push_back(style);
+            nodesToRemove.push_back(style);
+        }
     }
     
     if (!nodesToRemove.empty())
     {
-        BeginMacro(Format("Remove Style Sheets %s", FormatNodeNames(nodes).c_str()).c_str());
-        for (StyleSheetNode *node : nodesToRemove)
+        BeginMacro(Format("Remove %s", FormatNodeNames(nodesToRemove).c_str()).c_str());
+        for (ControlNode *control : controlsToRemove)
+            RemoveControlImpl(control);
+        for (StyleSheetNode *style : stylesToRemove)
         {
-            StyleSheetsNode *src = dynamic_cast<StyleSheetsNode*>(node->GetParent());
+            StyleSheetsNode *src = dynamic_cast<StyleSheetsNode*>(style->GetParent());
             if (src)
             {
-                int32 srcIndex = src->GetIndex(node);
-                PushCommand(new InsertRemoveStyleCommand(document->GetPackage(), node, src, srcIndex, false));
+                int32 srcIndex = src->GetIndex(style);
+                PushCommand(new InsertRemoveStyleCommand(document->GetPackage(), style, src, srcIndex, false));
             }
         }
         EndMacro();

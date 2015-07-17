@@ -80,12 +80,11 @@ public:
     void InsertInstances(const DAVA::Vector<ControlNode*> &controls, ControlsContainerNode *dest, DAVA::int32 destIndex);
     void CopyControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex);
     void MoveControls(const DAVA::Vector<ControlNode*> &nodes, ControlsContainerNode *dest, DAVA::int32 destIndex);
-    void Remove(const DAVA::Vector<ControlNode*> &controls, const DAVA::Vector<StyleSheetNode*> &styles);
 
     void CopyStyles(const DAVA::Vector<StyleSheetNode*> &nodes, StyleSheetsNode *dest, DAVA::int32 destIndex);
     void MoveStyles(const DAVA::Vector<StyleSheetNode*> &nodes, StyleSheetsNode *dest, DAVA::int32 destIndex);
-    void RemoveStyles(const DAVA::Vector<StyleSheetNode*> &nodes);
 
+    void Remove(const DAVA::Vector<ControlNode*> &controls, const DAVA::Vector<StyleSheetNode*> &styles);
     bool Paste(PackageNode *root, PackageBaseNode *dest, DAVA::int32 destIndex, const DAVA::String &data);
 
 private:
