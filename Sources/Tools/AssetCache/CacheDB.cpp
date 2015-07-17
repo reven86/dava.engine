@@ -154,7 +154,7 @@ void CacheDB::Unload()
     
     for(auto & entry: fastCache)
     {
-        entry.second->GetFiles().UnloadFiles();
+        entry.second->Unload();
     }
     
     fastCache.clear();
@@ -245,7 +245,7 @@ ServerCacheEntry * CacheDB::Get(const CacheItemKey &key)
         entry = FindInFullCache(key);
         if(nullptr != entry)
         {
-            entry->GetFiles().LoadFiles();
+            entry->Load();
             InsertInFastCache(key, entry);
         }
     }
@@ -406,7 +406,7 @@ void CacheDB::RemoveFromFastCache(const FASTCACHE::iterator &it)
     DVASSERT(it != fastCache.end());
 
     DVASSERT(it->second->GetFiles().FilesAreLoaded() == true);
-    it->second->GetFiles().UnloadFiles();
+    it->second->Unload();
     fastCache.erase(it);
 }
 

@@ -80,6 +80,17 @@ void ServerCacheEntry::Deserialize(KeyedArchive * archieve)
     files.Deserialize(filesArchieve);
 }
     
+void ServerCacheEntry::Load()
+{
+    files.LoadFiles();
+}
+    
+void ServerCacheEntry::Unload()
+{
+    files.UnloadFiles();
+}
+    
+    
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA

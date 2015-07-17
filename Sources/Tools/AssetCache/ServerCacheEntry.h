@@ -60,7 +60,9 @@ public:
     const uint64 GetAccesID() const;
     
     const CachedFiles & GetFiles() const;
-    CachedFiles & GetFiles();
+    
+    void Load();
+    void Unload();
     
 private:
     CachedFiles files;
@@ -87,14 +89,6 @@ inline const CachedFiles & ServerCacheEntry::GetFiles() const
     return files;
 }
 
-inline CachedFiles & ServerCacheEntry::GetFiles()
-{
-    return files;
-}
-
-
-    
-    
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA
