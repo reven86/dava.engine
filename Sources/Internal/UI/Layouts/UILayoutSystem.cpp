@@ -257,7 +257,7 @@ void UILayoutSystem::ApplyLinearLayout(UIControl *control, UILinearLayoutCompone
         
         float32 position = padding;
         if (inverse)
-            position = contentSize + padding;
+            position = control->GetSize().data[axis] - padding;
 
         for (UIControl *child : children)
         {
