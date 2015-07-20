@@ -421,7 +421,10 @@ void CacheDB::IncreaseUsedSize(const CachedFiles &files)
 
 FilePath CacheDB::CreateFolderPath(const CacheItemKey &key) const
 {
-    return (cacheRootFolder + (key.ToString() + "/"));
+    String keyString = key.ToString();
+    DVASSERT(keyString.length() > 2);
+    
+    return (cacheRootFolder + (keyString.substr(0, 2) + "/" + keyString.substr(2) + "/"));
 }
     
 void CacheDB::Update()
