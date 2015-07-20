@@ -115,20 +115,15 @@ template<> DAVA::Spinlock                   rhi::ResourcePool<T,RT>::ObjectSync 
 
 
 //------------------------------------------------------------------------------
-static int32 cbcount = 0;
+
 template <class T, ResourceType RT>
 inline Handle
 ResourcePool<T,RT>::Alloc()
 {
     uint32  handle = InvalidHandle;
+
     ObjectSync.Lock();
-    if (RT == RESOURCE_CONST_BUFFER)
-    {
-        cbcount++;
-        if (cbcount == 1417)
-            int ttt = 3;
-        Logger::Debug("Alloc   cb count: %d", cbcount);
-    }
+
     if( !Object )
     {
         Object = new Entry[ObjectCount];
@@ -177,11 +172,6 @@ ResourcePool<T,RT>::Free( Handle h )
 
     DVASSERT(e->allocated);
     ObjectSync.Lock();    
-    if (RT == RESOURCE_CONST_BUFFER)
-    {
-        cbcount--;
-        Logger::Debug("Relaese cb count: %d", cbcount);
-    }
     e->allocated = false;
     ObjectSync.Unlock();
  }
