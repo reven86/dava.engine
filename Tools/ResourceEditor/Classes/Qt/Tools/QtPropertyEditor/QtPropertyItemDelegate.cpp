@@ -57,7 +57,7 @@ void QtPropertyItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
 {
 	QStyleOptionViewItemV4 opt = option;
 	initStyleOption(&opt, index);
-
+    int x = opt.rect.x();
     if(index.column() == 1)
     {
         opt.textElideMode = Qt::ElideLeft;
@@ -74,6 +74,7 @@ void QtPropertyItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
     }
 
     view->style()->drawControl( QStyle::CE_ItemViewItem, &opt, painter, view );
+    delegatePadding = opt.rect.x() - x;
 }
 
 QSize QtPropertyItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -310,7 +311,6 @@ void QtPropertyItemDelegate::DrawButton(QPainter* painter, QStyleOptionViewItem&
         painter->drawPixmap(opt.rect.left(), owYPos, pix);
     }
     int padding = buttonSpacing + btn->width();
-    delegatePadding += padding;
     opt.rect.adjust(padding, 0, 0, 0);
 }
 
@@ -319,7 +319,6 @@ void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOption
 	QtPropertyData* data = model->itemFromIndex(index);
     if (index.column() == 1 && NULL != data && data->GetButtonsCount() > 0)
     {
-        delegatePadding = buttonSpacing;
         opt.rect.adjust(buttonSpacing, 0, 0, 0);
 
 		// draw not overlaid widgets
