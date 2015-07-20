@@ -51,6 +51,8 @@ protected:
     
 private:
     
+    SpeedTreeObject* CreateSpeedTreeRO(RenderObject* renderObject);
+    
     static const FastName CAMERA_START;
     static const FastName CAMERA_TARGET;
     static const FastName MATERIAL_OBJECTS_ROOT;
@@ -62,6 +64,9 @@ private:
     int32  currentTestStartFrame;
     uint32 currentTestStartTime;
     uint32 currentMaterialIndex;
+    
+    Vector<Entity*> planes;
+    Vector<Entity*> spoPlanes;
     
     Vector<NMaterial*> materials;
     Vector<float32> materialTestsElapsedTime;

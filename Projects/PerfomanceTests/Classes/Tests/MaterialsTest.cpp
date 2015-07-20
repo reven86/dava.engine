@@ -31,7 +31,7 @@
 const FastName MaterialsTest::CAMERA_START = FastName("CameraStart");
 const FastName MaterialsTest::CAMERA_TARGET = FastName("CameraTarget");
 const FastName MaterialsTest::MATERIALS = FastName("Materials");
-const FastName MaterialsTest::PLANE_ENTITY = FastName("plane160x.sc2");
+const FastName MaterialsTest::PLANE_ENTITY = FastName("plane");
 
 const uint32 MaterialsTest::FRAMES_PER_MATERIAL_TEST = 60;
 
@@ -49,6 +49,22 @@ MaterialsTest::MaterialsTest(const TestParams& testParams)
 MaterialsTest::~MaterialsTest()
 {
     SafeRelease(camera);
+    SafeRelease(materialsScene);
+    
+    for(NMaterial* material : materials)
+    {
+        SafeRelease(material);
+    }
+    
+    for(Entity* child : planes)
+    {
+        SafeRelease(child);
+    }
+    
+    for(Entity* child : spoPlanes)
+    {
+        SafeRelease(child);
+    }
 }
 
 void MaterialsTest::LoadResources()
@@ -72,12 +88,23 @@ void MaterialsTest::LoadResources()
     
     Entity* planeEntity = materialsScene->FindByName(PLANE_ENTITY);
     
-    for(int32 i = 0; i < 1; i++)
+    for(int32 i = 0; i < 15; i++)
     {
         Entity* clone = planeEntity->Clone();
         Matrix4 cloneMatrix = planeEntity->GetLocalTransform() * Matrix4::MakeTranslation(Vector3(0.0f + i * 10.0f, 0.0f, 0.0f));
         clone->SetLocalTransform(cloneMatrix);
         GetScene()->AddNode(clone);
+        
+        planes.push_back(clone);
+        
+        // create speed tree ro planes
+        Entity* spoEntity = clone->Clone();
+        RenderComponent* spoRenderComponent = static_cast<RenderComponent*>(spoEntity->GetComponent(Component::RENDER_COMPONENT));
+        
+        SpeedTreeObject* spo = CreateSpeedTreeRO(spoRenderComponent->GetRenderObject());
+        spoRenderComponent->SetRenderObject(spo);
+        
+        spoPlanes.push_back(spoEntity);
     }
     
     Entity* light = materialsScene->FindByName("Light");
@@ -91,21 +118,10 @@ void MaterialsTest::LoadResources()
     camera->SetTarget(Vector3(-19.0f, 0.0f, 0.0f));
     camera->SetUp(Vector3::UnitZ);
     camera->SetLeft(-Vector3::UnitY);
-
-    /*Light* dirLight = new Light();
-    dirLight->SetDirection(Vector3(1.0f, 0.0f, 0.0f));
-    
-    Entity* lightEntity = new Entity();
-    lightEntity->AddComponent(new LightComponent(dirLight));
-    
-    Matrix4 lightRotation = Matrix4::MakeRotation(Vector3(0.0f, 0.0f, 1.0f), DegToRad(-102))
-                            * Matrix4::MakeRotation(Vector3(0.0f, 1.0f, 1.0f), DegToRad(-39))
-                            * Matrix4::MakeRotation(Vector3(1.0f, 0.0f, 1.0f), DegToRad(-28));
-    
-    lightEntity->SetLocalTransform(lightRotation); */
     
     GetScene()->SetCurrentCamera(camera);
-    //GetScene()->AddNode(lightEntity);
+    
+    SafeRelease(planeEntity);
 }
 
 void MaterialsTest::UnloadResources()
@@ -121,8 +137,8 @@ void MaterialsTest::PerformTestLogic(float32 timeElapsed)
 void MaterialsTest::BeginFrame()
 {
     BaseTest::BeginFrame();
-    
-    // test next materials
+
+    // set next material
     if(GetTestFrameNumber() > 0 && GetTestFrameNumber() % FRAMES_PER_MATERIAL_TEST == 1)
     {
         NMaterial* currentMaterial = materials[currentMaterialIndex];
@@ -137,16 +153,54 @@ void MaterialsTest::BeginFrame()
         }
     }
     
+    // material test finished
     if(GetTestFrameNumber() - currentTestStartFrame == FRAMES_PER_MATERIAL_TEST)
     {
         float32 testTime = (SystemTimer::Instance()->FrameStampTimeMS() - currentTestStartTime) / 1000.0f;
         materialTestsElapsedTime.push_back(testTime);
         
+        // remove speed tree ro if finished material is spherical
+        if(materials[currentMaterialIndex]->GetParent()->GetMaterialName().find("Spherical") != String::npos)
+        {
+            List<Entity*> children;
+            GetScene()->FindNodesByNamePart(PLANE_ENTITY.c_str(), children);
+            
+            for(Entity* child : children)
+            {
+                GetScene()->RemoveNode(child);
+            }
+            
+            for(Entity* child : planes)
+            {
+                GetScene()->AddNode(child);
+            }
+        }
+        
         currentMaterialIndex++;
     }
     
+    // material test started
     if(GetTestFrameNumber() % FRAMES_PER_MATERIAL_TEST == 0)
     {
+        // add speed tree ro if current material is spherical
+        if(currentMaterialIndex < materials.size() && materials[currentMaterialIndex]->GetParent()->GetMaterialName().find("Spherical") != String::npos)
+        {
+            List<Entity*> children;
+            GetScene()->FindNodesByNamePart(PLANE_ENTITY.c_str(), children);
+            
+            for(Entity* child : children)
+            {
+                GetScene()->RemoveNode(child);
+            }
+            
+            for(Entity* child : spoPlanes)
+            {
+                GetScene()->AddNode(child);
+            }
+            
+            //GetScene()->SaveScene("~res/sc.sc2");
+        }
+        
         currentTestStartTime = SystemTimer::Instance()->FrameStampTimeMS();
         currentTestStartFrame = GetTestFrameNumber();
     }
@@ -163,7 +217,7 @@ void MaterialsTest::PrintStatistic(const Vector<BaseTest::FrameInfo>& frames)
     
     for(int32 i = 0; i < materials.size(); i++)
     {
-        String materialName = "MaterialSubtestName:" + String(materials[i]->GetMaterialName().c_str());
+        String materialName = "MaterialSubtestName:" + String(materials[i]->GetParent()->GetMaterialName().c_str());
         Logger::Info(materialName.c_str());
         
         float32 materialSubtestTime = 0.0f;
@@ -187,4 +241,56 @@ void MaterialsTest::PrintStatistic(const Vector<BaseTest::FrameInfo>& frames)
                                                                DAVA::Format("%f", materialSubtestElapsedTime)).c_str());
         
     }
+}
+
+SpeedTreeObject* MaterialsTest::CreateSpeedTreeRO(RenderObject* renderObject)
+{
+    SpeedTreeObject* spo = new SpeedTreeObject();
+    
+    PolygonGroup* spoPolygonGroup = new PolygonGroup();
+    PolygonGroup* polygonGroup = renderObject->GetRenderBatch(0)->GetPolygonGroup();
+    
+    int32 vertexCount = polygonGroup->GetVertexCount();
+    int32 indexCount = polygonGroup->GetIndexCount();
+    
+    spoPolygonGroup->AllocateData(EVF_VERTEX | EVF_COLOR | EVF_TEXCOORD0 | EVF_NORMAL , vertexCount, indexCount);
+    
+    for(int32 i = 0; i < vertexCount; i++)
+    {
+        Vector3 v;
+        Vector2 t;
+        
+        polygonGroup->GetCoord(i, v);
+        spoPolygonGroup->SetCoord(i, v);
+        
+        polygonGroup->GetNormal(i, v);
+        spoPolygonGroup->SetNormal(i, v);
+        
+        polygonGroup->GetTexcoord(0, i, t);
+        spoPolygonGroup->SetTexcoord(0, i, t);
+        
+        spoPolygonGroup->SetColor(i, Color(1.0f, 0.0f, 1.0f, 1.0f).GetRGBA());
+    }
+    
+    for(int32 i = 0; i < indexCount; i++)
+    {
+        int32 index;
+        polygonGroup->GetIndex(i, index);
+        spoPolygonGroup->SetIndex(i, index);
+    }
+    
+    spoPolygonGroup->RecalcAABBox();
+    spoPolygonGroup->BuildBuffers();
+    
+    RenderBatch* spoRenderBatch = new RenderBatch();
+    spoRenderBatch->SetPolygonGroup(spoPolygonGroup);
+    spoRenderBatch->SetMaterial(renderObject->GetRenderBatch(0)->GetMaterial()->Clone());
+    
+    spo->AddRenderBatch(spoRenderBatch);
+    
+    Vector<Vector3> fakeSH(9, Vector3());
+    fakeSH[0].x = fakeSH[0].y = fakeSH[0].z = 1.f/0.564188f; //fake SH value to make original object color
+    spo->SetSphericalHarmonics(fakeSH);
+    
+    return spo;
 }
