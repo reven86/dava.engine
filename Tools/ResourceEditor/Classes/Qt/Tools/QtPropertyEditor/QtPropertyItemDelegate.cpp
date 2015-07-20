@@ -161,9 +161,7 @@ bool QtPropertyItemDelegate::editorEvent(QEvent * event, QAbstractItemModel * _m
 		QtPropertyData* data = model->itemFromIndex(index);
 		showButtons(data);
 	}
-    if ((event->type() == QEvent::MouseButtonRelease)
-        || (event->type() == QEvent::MouseButtonDblClick)
-        || (event->type() == QEvent::MouseButtonPress))    
+    if (event->type() == QEvent::MouseButtonRelease)    
     {
         QStyleOptionViewItem opt(option);
         opt.rect.translate(delegatePadding, 0);
