@@ -69,7 +69,6 @@ public:
     ControlNode *FindByName(const DAVA::String &name) const;
     
     virtual DAVA::String GetName() const override;
-    
     DAVA::UIControl *GetControl() const;
     ControlNode *GetPrototype() const;
     const DAVA::Vector<ControlNode*> &GetInstances() const;
