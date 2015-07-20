@@ -2,7 +2,7 @@
 set START_DIR=%CD%
 set SCRIPT_DIR=%~dp0
 set SOURCE_DIR=%1/
-set CMAKE_DIR=%~dp0cmake_build\bin\Debug
+set CMAKE_DIR=%~dp0cmake_build\bin\Release
 
 echo START_DIR=%START_DIR%
 echo SCRIPT_DIR=%SCRIPT_DIR%
@@ -30,8 +30,8 @@ if "%2" == "Win32" set APPEND_A_PLATFORM=-A"Win32"
 
 if "%2" == "" set APPEND_A_PLATFORM=-A"Win32"
 
-echo %CMAKE_DIR%\cmake.exe -G "Visual Studio 14 2015" -DWINDOWS_UAP=true %APPEND_A_PLATFORM% %SOURCE_DIR%
+echo %CMAKE_DIR%\cmake.exe -G "Visual Studio 14 2015" -DCMAKE_TOOLCHAIN_FILE=%SCRIPT_DIR%/../../Sources/CMake/Toolchains/win_uap.toolchain.cmake %APPEND_A_PLATFORM% %SOURCE_DIR%
 
-%CMAKE_DIR%\cmake.exe -G "Visual Studio 14 2015" -DWINDOWS_UAP=true %APPEND_A_PLATFORM% %SOURCE_DIR%
+%CMAKE_DIR%\cmake.exe -G "Visual Studio 14 2015" -DCMAKE_TOOLCHAIN_FILE=%SCRIPT_DIR%/../../Sources/CMake/Toolchains/win_uap.toolchain.cmake %APPEND_A_PLATFORM% %SOURCE_DIR%
 
 ::%CMAKE_DIR%\cmake.exe -G "Visual Studio 14 2015" -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 -DCMAKE_VS_WINRT_COMPONENT=FALSE -A"Win32|ARM|x64" -DCMAKE_VS_EFFECTIVE_PLATFORMS=Win32;ARM;x64 %SOURCE_DIR%
