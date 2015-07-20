@@ -123,6 +123,8 @@ GLCommand
         
         GEN_BUFFERS, 
         BIND_BUFFER, 
+        RESTORE_VERTEX_BUFFER, 
+        RESTORE_INDEX_BUFFER,
         DELETE_BUFFERS, 
         BUFFER_DATA,
         BUFFER_SUBDATA,
@@ -142,6 +144,7 @@ GLCommand
         GEN_TEXTURES,
         SET_ACTIVE_TEXTURE,
         BIND_TEXTURE,
+        RESTORE_TEXTURE0,
         DELETE_TEXTURES,
         TEX_PARAMETER_I,
         TEX_IMAGE2D,
