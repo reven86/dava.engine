@@ -9,7 +9,7 @@ echo SCRIPT_DIR=%SCRIPT_DIR%
 echo SOURCE_DIR=%SOURCE_DIR%
 echo CMAKE_DIR=%CMAKE_DIR%
 
-if not exist %CMAKE_DIR%\cmake.exe ( (cd %~dp0) & (call rebuild_cmake.bat) & (cd %START_DIR%) )
+if not exist %CMAKE_DIR%\cmake.exe ( (cd /D %~dp0) & (call rebuild_cmake.bat) & (cd /D %START_DIR%) )
 
 if not exist %CMAKE_DIR%\cmake.exe (echo "Can't find cmake.exe in %CMAKE_DIR%") & (exit)
 
