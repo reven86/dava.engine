@@ -32,6 +32,7 @@
 #include "UI/Preview/EditScreen.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/ImportedPackagesNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 
@@ -87,6 +88,12 @@ const DAVA::FilePath &Document::GetPackageFilePath() const
 
 void Document::RefreshLayout()
 {
+    for (int32 i = 0; i < package->GetImportedPackagesNode()->GetCount(); i++)
+    {
+        package->GetImportedPackagesNode()->GetImportedPackage(i)->RefreshLayout();
+    }
+    
+
     package->RefreshLayout();
 }
 

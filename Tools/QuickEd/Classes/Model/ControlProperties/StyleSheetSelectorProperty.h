@@ -40,12 +40,14 @@ class StyleSheetNode;
 namespace DAVA
 {
     class UIControl;
+    class UIStyleSheet;
+    class UIStyleSheetPropertyTable;
 }
 
 class StyleSheetSelectorProperty : public ValueProperty
 {
 public:
-    StyleSheetSelectorProperty(StyleSheetNode *styleSheet, const DAVA::UIStyleSheetSelectorChain &chain);
+    StyleSheetSelectorProperty(const DAVA::UIStyleSheetSelectorChain &chain);
 protected:
     virtual ~StyleSheetSelectorProperty();
     
@@ -54,7 +56,6 @@ public:
     AbstractProperty *GetProperty(int index) const override;
     
     void Accept(PropertyVisitor *visitor) override;
-    bool IsReadOnly() const override;
     
     ePropertyType GetType() const override;
     DAVA::uint32 GetFlags() const override;
@@ -64,10 +65,12 @@ public:
     
     const DAVA::UIStyleSheetSelectorChain &GetSelectorChain() const;
     const DAVA::String &GetSelectorChainString() const;
+    DAVA::UIStyleSheet *GetStyleSheet() const;
+    
+    void SetStyleSheetPropertyTable(DAVA::UIStyleSheetPropertyTable *propertyTable);
     
 private:
-    StyleSheetNode *styleSheet; // weak
-    DAVA::UIStyleSheetSelectorChain selectorChain;
+    DAVA::UIStyleSheet *styleSheet = nullptr;
     DAVA::String value;
 };
 

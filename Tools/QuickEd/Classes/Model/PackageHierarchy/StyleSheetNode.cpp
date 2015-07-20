@@ -54,8 +54,8 @@ StyleSheetNode::~StyleSheetNode()
 
 StyleSheetNode *StyleSheetNode::Clone() const
 {
-    Vector<UIStyleSheetSelectorChain> selectors = rootProperty->CollectUIStyleSheetSelectorChains();
-    Vector<UIStyleSheetProperty> properties = rootProperty->CollectUIStyleSheetProperties();
+    Vector<UIStyleSheetSelectorChain> selectors = rootProperty->CollectStyleSheetSelectors();
+    Vector<UIStyleSheetProperty> properties = rootProperty->CollectStyleSheetProperties();
     return new StyleSheetNode(selectors, properties);
 }
 
@@ -97,14 +97,4 @@ bool StyleSheetNode::CanCopy() const
 StyleSheetRootProperty *StyleSheetNode::GetRootProperty() const
 {
     return rootProperty;
-}
-
-Vector<UIStyleSheetSelectorChain> StyleSheetNode::CollectUIStyleSheetSelectorChains()
-{
-    return rootProperty->CollectUIStyleSheetSelectorChains();
-}
-
-Vector<UIStyleSheetProperty> StyleSheetNode::CollectUIStyleSheetProperties()
-{
-    return rootProperty->CollectUIStyleSheetProperties();
 }

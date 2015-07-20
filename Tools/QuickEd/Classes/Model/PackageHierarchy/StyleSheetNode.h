@@ -59,8 +59,6 @@ public:
     bool CanCopy() const override;
 
     StyleSheetRootProperty *GetRootProperty() const;
-    DAVA::Vector<DAVA::UIStyleSheetSelectorChain> CollectUIStyleSheetSelectorChains();
-    DAVA::Vector<DAVA::UIStyleSheetProperty> CollectUIStyleSheetProperties();
     
 private:
     StyleSheetRootProperty *rootProperty;

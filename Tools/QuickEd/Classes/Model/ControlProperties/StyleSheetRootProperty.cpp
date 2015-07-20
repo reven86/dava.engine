@@ -42,11 +42,14 @@ using namespace DAVA;
 StyleSheetRootProperty::StyleSheetRootProperty(StyleSheetNode *aStyleSheet, const DAVA::Vector<DAVA::UIStyleSheetSelectorChain> &selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty> &properties)
     : styleSheet(aStyleSheet) // weak
 {
+    propertyTable = new UIStyleSheetPropertyTable();
+
     selectors = new SectionProperty("Selectors");
     selectors->SetParent(this);
     for (const UIStyleSheetSelectorChain &chain : selectorChains)
     {
-        ScopedPtr<StyleSheetSelectorProperty> selector(new StyleSheetSelectorProperty(aStyleSheet, chain));
+        ScopedPtr<StyleSheetSelectorProperty> selector(new StyleSheetSelectorProperty(chain));
+        selector->SetStyleSheetPropertyTable(propertyTable);
         selectors->AddProperty(selector);
     }
     
@@ -54,9 +57,11 @@ StyleSheetRootProperty::StyleSheetRootProperty(StyleSheetNode *aStyleSheet, cons
     propertiesSection->SetParent(this);
     for (const UIStyleSheetProperty &p : properties)
     {
-        ScopedPtr<StyleSheetProperty> prop(new StyleSheetProperty(styleSheet, p));
+        ScopedPtr<StyleSheetProperty> prop(new StyleSheetProperty(p));
         propertiesSection->AddProperty(prop);
     }
+    
+    UpdateStyleSheetPropertyTable();
 }
 
 StyleSheetRootProperty::~StyleSheetRootProperty()
@@ -69,6 +74,7 @@ StyleSheetRootProperty::~StyleSheetRootProperty()
     propertiesSection->SetParent(nullptr);
     SafeRelease(propertiesSection);
 
+    SafeRelease(propertyTable);
 }
 
 int StyleSheetRootProperty::GetCount() const
@@ -131,7 +137,8 @@ void StyleSheetRootProperty::RemoveListener(PropertyListener *listener)
 void StyleSheetRootProperty::SetProperty(AbstractProperty *property, const DAVA::VariantType &newValue)
 {
     property->SetValue(newValue);
-    
+    UpdateStyleSheetPropertyTable();
+
     for (PropertyListener *listener : listeners)
         listener->PropertyChanged(property);
 }
@@ -162,6 +169,7 @@ void StyleSheetRootProperty::AddProperty(StyleSheetProperty *property)
             index++;
         }
         propertiesSection->InsertProperty(property, index);
+        UpdateStyleSheetPropertyTable();
 
         for (PropertyListener *listener : listeners)
             listener->StylePropertyWasAdded(propertiesSection, property, property->GetPropertyIndex());
@@ -177,7 +185,8 @@ void StyleSheetRootProperty::RemoveProperty(StyleSheetProperty *property)
             listener->StylePropertyWillBeRemoved(propertiesSection, property, index);
         
         propertiesSection->RemoveProperty(property);
-        
+        UpdateStyleSheetPropertyTable();
+
         for (PropertyListener *listener : listeners)
             listener->StylePropertyWasRemoved(propertiesSection, property, index);
     }
@@ -201,6 +210,7 @@ void StyleSheetRootProperty::InsertSelector(StyleSheetSelectorProperty *property
             listener->StyleSelectorWillBeAdded(propertiesSection, property, index);
 
         selectors->InsertProperty(property, index);
+        property->SetStyleSheetPropertyTable(propertyTable);
 
         for (PropertyListener *listener : listeners)
             listener->StyleSelectorWasAdded(propertiesSection, property, index);
@@ -220,7 +230,8 @@ void StyleSheetRootProperty::RemoveSelector(StyleSheetSelectorProperty *property
             listener->StyleSelectorWillBeRemoved(propertiesSection, property, index);
         
         selectors->RemoveProperty(property);
-        
+        property->SetStyleSheetPropertyTable(nullptr);
+
         for (PropertyListener *listener : listeners)
             listener->StyleSelectorWasRemoved(propertiesSection, property, index);
     }
@@ -276,7 +287,18 @@ String StyleSheetRootProperty::GetSelectorsAsString() const
     return name;
 }
 
-Vector<UIStyleSheetSelectorChain> StyleSheetRootProperty::CollectUIStyleSheetSelectorChains()
+Vector<UIStyleSheet*> StyleSheetRootProperty::CollectStyleSheets()
+{
+    Vector<UIStyleSheet*> result;
+    for (int32 i = 0; i < selectors->GetCount(); i++)
+    {
+        StyleSheetSelectorProperty *selector = static_cast<StyleSheetSelectorProperty*>(selectors->GetProperty(i));
+        result.push_back(selector->GetStyleSheet());
+    }
+    return result;
+}
+
+DAVA::Vector<DAVA::UIStyleSheetSelectorChain> StyleSheetRootProperty::CollectStyleSheetSelectors() const
 {
     Vector<UIStyleSheetSelectorChain> result;
     for (int32 i = 0; i < selectors->GetCount(); i++)
@@ -287,13 +309,23 @@ Vector<UIStyleSheetSelectorChain> StyleSheetRootProperty::CollectUIStyleSheetSel
     return result;
 }
 
-Vector<UIStyleSheetProperty> StyleSheetRootProperty::CollectUIStyleSheetProperties()
+DAVA::Vector<DAVA::UIStyleSheetProperty> StyleSheetRootProperty::CollectStyleSheetProperties() const
 {
-    Vector<UIStyleSheetProperty> result;
+    Vector<UIStyleSheetProperty> properties;
     for (int32 i = 0; i < propertiesSection->GetCount(); i++)
     {
         StyleSheetProperty *property = static_cast<StyleSheetProperty*>(propertiesSection->GetProperty(i));
-        result.push_back(property->GetProperty());
+        properties.push_back(property->GetProperty());
     }
-    return result;
+    return properties;
+}
+
+DAVA::UIStyleSheetPropertyTable *StyleSheetRootProperty::GetStyleSheetPropertyTable() const
+{
+    return propertyTable;
+}
+
+void StyleSheetRootProperty::UpdateStyleSheetPropertyTable()
+{
+    propertyTable->SetProperties(CollectStyleSheetProperties());
 }

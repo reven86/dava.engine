@@ -36,18 +36,19 @@
 
 using namespace DAVA;
 
-StyleSheetSelectorProperty::StyleSheetSelectorProperty(StyleSheetNode *aStyleSheet, const UIStyleSheetSelectorChain &chain)
+StyleSheetSelectorProperty::StyleSheetSelectorProperty(const UIStyleSheetSelectorChain &chain)
     : ValueProperty("Selector")
-    , styleSheet(aStyleSheet) // weak
-    , selectorChain(chain)
 {
+    styleSheet = new UIStyleSheet();
+    styleSheet->SetSelectorChain(chain);
+
     replaced = true;
-    value = selectorChain.ToString();
+    value = chain.ToString();
 }
 
 StyleSheetSelectorProperty::~StyleSheetSelectorProperty()
 {
-    styleSheet = nullptr; //weak
+    SafeRelease(styleSheet);
 }
 
 int StyleSheetSelectorProperty::GetCount() const
@@ -63,11 +64,6 @@ AbstractProperty *StyleSheetSelectorProperty::GetProperty(int index) const
 void StyleSheetSelectorProperty::Accept(PropertyVisitor *visitor)
 {
     visitor->VisitStyleSheetSelectorProperty(this);
-}
-
-bool StyleSheetSelectorProperty::IsReadOnly() const
-{
-    return styleSheet->IsReadOnly();
 }
 
 AbstractProperty::ePropertyType StyleSheetSelectorProperty::GetType() const
@@ -87,16 +83,26 @@ VariantType StyleSheetSelectorProperty::GetValue() const
 
 void StyleSheetSelectorProperty::ApplyValue(const DAVA::VariantType &aValue)
 {
-    selectorChain = UIStyleSheetSelectorChain(aValue.AsString());
-    value = selectorChain.ToString();
+    styleSheet->SetSelectorChain(UIStyleSheetSelectorChain(aValue.AsString()));
+    value = styleSheet->GetSelectorChain().ToString();
 }
 
 const DAVA::UIStyleSheetSelectorChain &StyleSheetSelectorProperty::GetSelectorChain() const
 {
-    return selectorChain;
+    return styleSheet->GetSelectorChain();
 }
 
 const DAVA::String &StyleSheetSelectorProperty::GetSelectorChainString() const
 {
     return value;
+}
+
+UIStyleSheet *StyleSheetSelectorProperty::GetStyleSheet() const
+{
+    return styleSheet;
+}
+
+void StyleSheetSelectorProperty::SetStyleSheetPropertyTable(DAVA::UIStyleSheetPropertyTable *propertyTable)
+{
+    styleSheet->SetPropertyTable(propertyTable);
 }

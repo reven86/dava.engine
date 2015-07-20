@@ -36,8 +36,6 @@
 class ValueProperty;
 class IntrospectionProperty;
 
-class StyleSheetNode;
-
 namespace DAVA
 {
     class UIControl;
@@ -46,7 +44,7 @@ namespace DAVA
 class StyleSheetProperty : public ValueProperty
 {
 public:
-    StyleSheetProperty(StyleSheetNode *styleSheet, const DAVA::UIStyleSheetProperty &aProperty);
+    StyleSheetProperty(const DAVA::UIStyleSheetProperty &aProperty);
 protected:
     virtual ~StyleSheetProperty();
     
@@ -55,7 +53,6 @@ public:
     AbstractProperty *GetProperty(int index) const override;
     
     void Accept(PropertyVisitor *visitor) override;
-    bool IsReadOnly() const override;
     
     ePropertyType GetType() const override;
     DAVA::uint32 GetFlags() const override;
@@ -80,7 +77,6 @@ public:
     const DAVA::UIStyleSheetProperty &GetProperty() const;
     
 private:
-    StyleSheetNode *styleSheet; // weak
     DAVA::UIStyleSheetProperty property;
     DAVA::Vector<AbstractProperty*> properties;
     

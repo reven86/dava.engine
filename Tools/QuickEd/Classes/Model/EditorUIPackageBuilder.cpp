@@ -316,7 +316,12 @@ void EditorUIPackageBuilder::ProcessProperty(const InspMember *member, const Var
     {
         ValueProperty *property = currentSection->FindProperty(member);
         if (property && value.GetType() != VariantType::TYPE_NONE)
+        {
+            if (property->GetStylePropertyIndex() != -1)
+                controlsStack.back().node->GetControl()->SetPropertyLocalFlag(property->GetStylePropertyIndex(), true);
+
             property->SetValue(value);
+        }
     }
 }
 

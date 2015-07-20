@@ -204,13 +204,16 @@ void PackageNode::RemoveListener(PackageListener *listener)
 
 void PackageNode::SetControlProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &newValue)
 {
+    if (property->GetStylePropertyIndex() != -1)
+        node->GetControl()->SetPropertyLocalFlag(property->GetStylePropertyIndex(), true);
+
     node->GetRootProperty()->SetProperty(property, newValue);
     
     for (PackageListener *listener : listeners)
         listener->ControlPropertyWasChanged(node, property);
 
     RefreshPropertiesInInstances(node, property);
-    RefreshLayout(node);
+    RefreshLayout();
 }
 
 void PackageNode::SetControlDefaultProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &newValue)
@@ -221,18 +224,21 @@ void PackageNode::SetControlDefaultProperty(ControlNode *node, AbstractProperty 
         listener->ControlPropertyWasChanged(node, property);
 
     RefreshPropertiesInInstances(node, property);
-    RefreshLayout(node);
+    RefreshLayout();
 }
 
 void PackageNode::ResetControlProperty(ControlNode *node, AbstractProperty *property)
 {
     node->GetRootProperty()->ResetProperty(property);
     
+    if (property->GetStylePropertyIndex() != -1)
+        node->GetControl()->SetPropertyLocalFlag(property->GetStylePropertyIndex(), property->IsReplaced());
+
     for (PackageListener *listener : listeners)
         listener->ControlPropertyWasChanged(node, property);
     
     RefreshPropertiesInInstances(node, property);
-    RefreshLayout(node);
+    RefreshLayout();
 }
 
 void PackageNode::RefreshProperty(ControlNode *node, AbstractProperty *property)
@@ -248,13 +254,13 @@ void PackageNode::RefreshProperty(ControlNode *node, AbstractProperty *property)
 void PackageNode::AddComponent(ControlNode *node, ComponentPropertiesSection *section)
 {
     node->GetRootProperty()->AddComponentPropertiesSection(section);
-    RefreshLayout(node);
+    RefreshLayout();
 }
 
 void PackageNode::RemoveComponent(ControlNode *node, ComponentPropertiesSection *section)
 {
     node->GetRootProperty()->RemoveComponentPropertiesSection(section);
-    RefreshLayout(node);
+    RefreshLayout();
 }
 
 void PackageNode::SetStyleProperty(StyleSheetNode *node, AbstractProperty *property, const DAVA::VariantType &newValue)
@@ -262,6 +268,9 @@ void PackageNode::SetStyleProperty(StyleSheetNode *node, AbstractProperty *prope
     node->GetRootProperty()->SetProperty(property, newValue);
     node->UpdateName();
     
+    RebuildStyleSheets();
+    RefreshLayout();
+
     for (PackageListener *listener : listeners)
         listener->StylePropertyWasChanged(node, property);
 }
@@ -269,17 +278,23 @@ void PackageNode::SetStyleProperty(StyleSheetNode *node, AbstractProperty *prope
 void PackageNode::AddStyleProperty(StyleSheetNode *node, StyleSheetProperty *property)
 {
     node->GetRootProperty()->AddProperty(property);
+    RefreshLayout();
 }
 
 void PackageNode::RemoveStyleProperty(StyleSheetNode *node, StyleSheetProperty *property)
 {
     node->GetRootProperty()->RemoveProperty(property);
+
+    RefreshLayout();
 }
 
 void PackageNode::InsertSelector(StyleSheetNode *node, StyleSheetSelectorProperty *property, DAVA::int32 index)
 {
     node->GetRootProperty()->InsertSelector(property, index);
     node->UpdateName();
+
+    RebuildStyleSheets();
+    RefreshLayout();
 
     for (PackageListener *listener : listeners)
         listener->StylePropertyWasChanged(node, property);
@@ -289,6 +304,9 @@ void PackageNode::RemoveSelector(StyleSheetNode *node, StyleSheetSelectorPropert
 {
     node->GetRootProperty()->RemoveSelector(property);
     node->UpdateName();
+    
+    RebuildStyleSheets();
+    RefreshLayout();
 
     for (PackageListener *listener : listeners)
         listener->StylePropertyWasChanged(node, property);
@@ -305,7 +323,7 @@ void PackageNode::InsertControl(ControlNode *node, ControlsContainerNode *dest, 
     for (PackageListener *listener : listeners)
         listener->ControlWasAdded(node, dest, index);
     
-    RefreshLayout(node);
+    RefreshLayout();
 }
 
 void PackageNode::RemoveControl(ControlNode *node, ControlsContainerNode *from)
@@ -319,9 +337,7 @@ void PackageNode::RemoveControl(ControlNode *node, ControlsContainerNode *from)
     for (PackageListener *listener : listeners)
         listener->ControlWasRemoved(node, from);
     
-    ControlNode *parent = dynamic_cast<ControlNode*>(from);
-    if (parent)
-        RefreshLayout(parent);
+    RefreshLayout();
 }
 
 void PackageNode::InsertStyle(StyleSheetNode *node, StyleSheetsNode *dest, DAVA::int32 index)
@@ -333,6 +349,8 @@ void PackageNode::InsertStyle(StyleSheetNode *node, StyleSheetsNode *dest, DAVA:
     
     for (PackageListener *listener : listeners)
         listener->StyleWasAdded(node, dest, index);
+    
+    RefreshLayout();
 }
 
 void PackageNode::RemoveStyle(StyleSheetNode *node, StyleSheetsNode *from)
@@ -344,6 +362,8 @@ void PackageNode::RemoveStyle(StyleSheetNode *node, StyleSheetsNode *from)
     
     for (PackageListener *listener : listeners)
         listener->StyleWasRemoved(node, from);
+    
+    RefreshLayout();
 }
 
 void PackageNode::InsertImportedPackage(PackageNode *node, DAVA::int32 index)
@@ -355,6 +375,9 @@ void PackageNode::InsertImportedPackage(PackageNode *node, DAVA::int32 index)
     
     for (PackageListener *listener : listeners)
         listener->ImportedPackageWasAdded(node, importedPackagesNode, index);
+
+    RebuildStyleSheets();
+    RefreshLayout();
 }
 
 void PackageNode::RemoveImportedPackage(PackageNode *node)
@@ -366,17 +389,16 @@ void PackageNode::RemoveImportedPackage(PackageNode *node)
     
     for (PackageListener *listener : listeners)
         listener->ImportedPackageWasRemoved(node, importedPackagesNode);
+
+    RebuildStyleSheets();
+    RefreshLayout();
 }
 
 void PackageNode::RefreshLayout()
 {
-    for (int32 i = 0; i < importedPackagesNode->GetCount(); i++)
-    {
-        importedPackagesNode->GetImportedPackage(i)->RefreshLayout();
-    }
-    
     for (int32 i = 0; i < packageControlsNode->GetCount(); i++)
     {
+        RefreshStyles(packageControlsNode->Get(i));
         RefreshLayout(packageControlsNode->Get(i));
     }
 }
@@ -418,19 +440,9 @@ void PackageNode::RebuildStyleSheets()
     for (int32 i = 0; i < styleSheets->GetCount(); i++)
     {
         StyleSheetNode *node = styleSheets->Get(i);
-        Vector<UIStyleSheetSelectorChain> selectors = node->CollectUIStyleSheetSelectorChains();
-        Vector<UIStyleSheetProperty> properties = node->CollectUIStyleSheetProperties();
-        
-        for (const UIStyleSheetSelectorChain &chain : selectors)
-        {
-            ScopedPtr<UIStyleSheet> styleSheet(new UIStyleSheet());
-            styleSheet->SetSelectorChain(chain);
-            ScopedPtr<UIStyleSheetPropertyTable> propertiesTable(new UIStyleSheetPropertyTable());
-            propertiesTable->SetProperties(properties);
-            styleSheet->SetPropertyTable(propertiesTable);
-            
+        Vector<UIStyleSheet*> styleSheets = node->GetRootProperty()->CollectStyleSheets();
+        for (UIStyleSheet *styleSheet : styleSheets)
             packageContext->AddStyleSheet(styleSheet);
-        }
     }
 }
 
@@ -452,6 +464,15 @@ void PackageNode::RefreshLayout(ControlNode *node)
     for (ControlNode *root : roots)
     {
         NotifyPropertyChanged(root);
+    }
+}
+
+void PackageNode::RefreshStyles(ControlNode *node)
+{
+    UIControlSystem::Instance()->GetStyleSheetSystem()->ProcessControl(node->GetControl());
+    for (int32 i = 0; i < node->GetCount(); i++)
+    {
+        RefreshStyles(node->Get(i));
     }
 }
 
@@ -492,7 +513,9 @@ void PackageNode::NotifyPropertyChanged(ControlNode *control)
     RootProperty *rootProperty = control->GetRootProperty();
     for (int j = 0; j < rootProperty->GetControlPropertiesSection(0)->GetCount(); j++)
     {
-        DependedOnLayoutProperty *prop = dynamic_cast<DependedOnLayoutProperty*>(rootProperty->GetControlPropertiesSection(0)->GetProperty(j));
+//        ValueProp
+        AbstractProperty *prop = rootProperty->GetControlPropertiesSection(0)->GetProperty(j);
+        //DependedOnLayoutProperty *prop = dynamic_cast<DependedOnLayoutProperty*>(rootProperty->GetControlPropertiesSection(0)->GetProperty(j));
         if (prop)
         {
             for (PackageListener *listener : listeners)

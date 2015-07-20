@@ -44,6 +44,8 @@ class StyleSheetNode;
 namespace DAVA
 {
     class UIControl;
+    class UIStyleSheetPropertyTable;
+    class UIStyleSheet;
 }
 
 class StyleSheetRootProperty : public AbstractProperty
@@ -84,8 +86,15 @@ public:
 
     DAVA::String GetSelectorsAsString() const;
     
-    DAVA::Vector<DAVA::UIStyleSheetSelectorChain> CollectUIStyleSheetSelectorChains();
-    DAVA::Vector<DAVA::UIStyleSheetProperty> CollectUIStyleSheetProperties();
+    DAVA::Vector<DAVA::UIStyleSheet*> CollectStyleSheets();
+
+    DAVA::Vector<DAVA::UIStyleSheetSelectorChain> CollectStyleSheetSelectors() const;
+    DAVA::Vector<DAVA::UIStyleSheetProperty> CollectStyleSheetProperties() const;
+    
+    DAVA::UIStyleSheetPropertyTable *GetStyleSheetPropertyTable() const;
+
+private:
+    void UpdateStyleSheetPropertyTable();
     
 private:
     StyleSheetNode *styleSheet = nullptr;
@@ -93,6 +102,8 @@ private:
     
     SectionProperty *selectors = nullptr;
     SectionProperty *propertiesSection = nullptr;
+    
+    DAVA::UIStyleSheetPropertyTable *propertyTable = nullptr;
 };
 
 #endif // __QUICKED_STYLE_SHEETS_ROOT_PROPERTY_H__

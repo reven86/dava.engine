@@ -116,6 +116,7 @@ private:
     void RefreshPropertiesInInstances(ControlNode *node, AbstractProperty *property);
 
     void RefreshLayout(ControlNode *control);
+    void RefreshStyles(ControlNode *node);
     void CollectRootControlsToRefreshLayout(ControlNode *node, DAVA::Vector<ControlNode*> &roots);
     void RestoreProperties(ControlNode *control);
     void NotifyPropertyChanged(ControlNode *control);

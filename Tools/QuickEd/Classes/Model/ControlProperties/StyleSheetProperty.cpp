@@ -37,9 +37,8 @@
 
 using namespace DAVA;
 
-StyleSheetProperty::StyleSheetProperty(StyleSheetNode *aStyleSheet, const DAVA::UIStyleSheetProperty &aProperty)
+StyleSheetProperty::StyleSheetProperty(const DAVA::UIStyleSheetProperty &aProperty)
     : ValueProperty("prop")
-    , styleSheet(aStyleSheet) // weak
     , property(aProperty)
 {
     const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
@@ -65,8 +64,6 @@ StyleSheetProperty::StyleSheetProperty(StyleSheetNode *aStyleSheet, const DAVA::
 
 StyleSheetProperty::~StyleSheetProperty()
 {
-    styleSheet = nullptr; // weak
-    
     for (AbstractProperty *property : properties)
         property->Release();
     properties.clear();
@@ -85,11 +82,6 @@ AbstractProperty *StyleSheetProperty::GetProperty(int index) const
 void StyleSheetProperty::Accept(PropertyVisitor *visitor)
 {
     visitor->VisitStyleSheetProperty(this);
-}
-
-bool StyleSheetProperty::IsReadOnly() const
-{
-    return styleSheet->IsReadOnly();
 }
 
 AbstractProperty::ePropertyType StyleSheetProperty::GetType() const

@@ -222,7 +222,7 @@ void QtModelPackageCommandExecutor::AddStyleProperty(StyleSheetNode *node, uint3
     if (node->GetRootProperty()->CanAddProperty(propertyIndex))
     {
         UIStyleSheetProperty prop(propertyIndex, UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex).defaultValue);
-        ScopedPtr<StyleSheetProperty> property(new StyleSheetProperty(node, prop));
+        ScopedPtr<StyleSheetProperty> property(new StyleSheetProperty(prop));
         PushCommand(new AddRemoveStylePropertyCommand(document->GetPackage(), node, property, true));
     }
 }
@@ -244,7 +244,7 @@ void QtModelPackageCommandExecutor::AddStyleSelector(StyleSheetNode *node)
     if (node->GetRootProperty()->CanAddSelector())
     {
         UIStyleSheetSelectorChain chain;
-        ScopedPtr<StyleSheetSelectorProperty> property(new StyleSheetSelectorProperty(node, chain));
+        ScopedPtr<StyleSheetSelectorProperty> property(new StyleSheetSelectorProperty(chain));
         PushCommand(new AddRemoveStyleSelectorCommand(document->GetPackage(), node, property, true));
     }
 }
