@@ -115,7 +115,7 @@ void StaticTextTest::LoadResources()
     previewText = new UIStaticText(Rect(20, 30, 400, 200));
     previewText->SetFont(bigFont);
     previewText->SetTextColor(Color::White);
-    previewText->SetText(L"THIS SOFTWARE IS PROVIDED BY THE DAVA CONSULTING, LLC AND CONTRIBUTORS AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES");
+    previewText->SetText(L"");
     previewText->SetDebugDraw(true);
     previewText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     AddControl(previewText);
@@ -128,7 +128,7 @@ void StaticTextTest::LoadResources()
     AddControl(label);
 
     inputText = new UITextField(Rect(20, 260, 400, 200));
-    inputText->SetFont(font);
+    inputText->SetFont(bigFont);
     inputText->SetTextColor(Color::White);
     inputText->SetText(L"");
     inputText->SetDebugDraw(true);
