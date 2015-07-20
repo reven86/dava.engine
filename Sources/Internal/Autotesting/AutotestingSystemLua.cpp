@@ -866,31 +866,39 @@ namespace DAVA
 		if (lua_pcall(luaState, 1, 1, 0))
 		{
 			const char* err = lua_tostring(luaState, -1);
-			Logger::FrameworkDebug("AutotestingSystemLua::RunScript error: %s", err);
+			Logger::Debug("AutotestingSystemLua::RunScript error: %s", err);
 			return false;
 		}
 		return true;
 	}
 	int32 AutotestingSystemLua::GetServerQueueState(const String &cluster)
     {
-        MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
-        KeyedArchive *clustersQueue = AutotestingDB::Instance()->FindOrInsertBuildArchive(dbUpdateObject, "clusters_queue");
-        String serverName = Format("%s", cluster.c_str());
-        int32 queueState = 0;
-        if (!clustersQueue->IsKeyExists(serverName))
-        {
-            clustersQueue->SetInt32(serverName, 0);
-        }
-        else
-        {
-            queueState = clustersQueue->GetInt32(serverName);
-        }
-        SafeRelease(dbUpdateObject);
+		int32 queueState = 0;
+		if (AutotestingSystem::Instance()->isDB)
+		{
+			MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
+			KeyedArchive *clustersQueue = AutotestingDB::Instance()->FindOrInsertBuildArchive(dbUpdateObject, "clusters_queue");
+			String serverName = Format("%s", cluster.c_str());
+			
+			if (!clustersQueue->IsKeyExists(serverName))
+			{
+				clustersQueue->SetInt32(serverName, 0);
+			}
+			else
+			{
+				queueState = clustersQueue->GetInt32(serverName);
+			}
+			SafeRelease(dbUpdateObject);
+		}
         return queueState;
     }
     
     bool AutotestingSystemLua::SetServerQueueState(const String &cluster, int32 state)
     {
+		if (!AutotestingSystem::Instance()->isDB)
+		{ 
+			return true;
+		}
         MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
         KeyedArchive *clustersQueue = AutotestingDB::Instance()->FindOrInsertBuildArchive(dbUpdateObject, "clusters_queue");
         String serverName = Format("%s", cluster.c_str());

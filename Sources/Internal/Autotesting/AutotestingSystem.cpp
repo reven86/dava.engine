@@ -84,7 +84,7 @@ namespace DAVA
         , waitCheckTimeLeft(0.0f)
         , luaSystem(nullptr)
 	{
-
+		new AutotestingDB();
 	}
 
 	AutotestingSystem::~AutotestingSystem()
@@ -112,19 +112,21 @@ namespace DAVA
 			Logger::Error("AutotestingSystem::OnAppStarted App already initialized.");
 			return;
 		}
+		deviceName = AutotestingSystemLua::Instance()->GetDeviceName();
+		FetchParametersFromIdYaml();
 
-		SetUpConnectionToDB();
-
-		FetchParametersFromDB();
+		if (isDB)
+		{
+			SetUpConnectionToDB();
+			FetchParametersFromDB();
+		}
 
 		String testFilePath = Format("~res:/Autotesting/Tests/%s/%s.lua", groupName.c_str(), testFileName.c_str());
 		if (!FileSystem::Instance()->IsFile(FilePath(testFilePath)))
 		{
-			Logger::Error("AutotestingSystemLua::LoadScriptFromFile: couldn't open %s", testFilePath.c_str());
+			Logger::Error("AutotestingSystemLua::OnAppStarted: couldn't open %s", testFilePath.c_str());
 			return;
 		}
-
-		FetchParametersFromIdYaml();
 
 		AutotestingDB::Instance()->WriteLogHeader();
 
@@ -156,14 +158,8 @@ namespace DAVA
 	// Get test parameters from id.yaml
 	void AutotestingSystem::FetchParametersFromIdYaml()
 	{
-		FilePath file = "~res:/Autotesting/id.yaml";
-		Logger::Info("AutotestingSystem::FetchParametersFromIdYaml %s", file.GetAbsolutePathname().c_str());
-		KeyedArchive *option = new KeyedArchive();
-		bool res = option->LoadFromYamlFile(file);
-		if (!res)
-		{
-			ForceQuit("Couldn't open file " + file.GetAbsolutePathname());
-		}
+		Logger::Info("AutotestingSystem::FetchParametersFromIdYaml");
+		KeyedArchive *option = GetIdYamlOptions();
 
 		buildId = option->GetString("BuildId");
 		buildDate = option->GetString("Date");
@@ -172,34 +168,53 @@ namespace DAVA
 		branchRev = option->GetString("BranchRev");
 		frameworkRev = option->GetString("FrameworkRev");
 
+		// Check is build fol local debugging.  By default: use DB.
+		isDB = !option->GetBool("LocalBuild", false);
+		if (!isDB)
+		{
+			groupName = option->GetString("Group", AutotestingDB::DB_ERROR_STR_VALUE);
+			testFileName = option->GetString("Filename", AutotestingDB::DB_ERROR_STR_VALUE);
+		}
 		SafeRelease(option);
+	}
+
+	KeyedArchive* AutotestingSystem::GetIdYamlOptions()
+	{
+		FilePath file = "~res:/Autotesting/id.yaml";
+		KeyedArchive *option = new KeyedArchive();
+		bool res = option->LoadFromYamlFile(file);
+		if (!res)
+		{
+			ForceQuit("Couldn't open file " + file.GetAbsolutePathname());
+		}
+
+		return option;
 	}
 
 	// Get test parameters from autotesting db
 	void AutotestingSystem::FetchParametersFromDB()
 	{
-        deviceName = AutotestingSystemLua::Instance()->GetDeviceName();
-        Logger::Info("AutotestingSystem::FetchParametersFromDB");
-        groupName = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Group");
+		Logger::Info("AutotestingSystem::FetchParametersFromDB");
+		groupName = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Group");
 		if (groupName == AutotestingDB::DB_ERROR_STR_VALUE)
-        {
-            ForceQuit("Couldn't get 'Group' parameter from DB.");
-        }
-        testFileName = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Filename");
+		{
+			ForceQuit("Couldn't get 'Group' parameter from DB.");
+		}
+		testFileName = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Filename");
 		if (groupName == AutotestingDB::DB_ERROR_STR_VALUE)
-        {
-            ForceQuit("Couldn't get 'Filename' parameter from DB.");
-        }
-        runId = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "RunId");
+		{
+			ForceQuit("Couldn't get 'Filename' parameter from DB.");
+		}
+		runId = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "RunId");
 		if (runId == AutotestingDB::DB_ERROR_STR_VALUE)
-        {
-            ForceQuit("Couldn't get 'RunId' parameter from DB.");
-        }
-        testIndex = AutotestingDB::Instance()->GetIntTestParameter(deviceName, "TestIndex");
+		{
+			ForceQuit("Couldn't get 'RunId' parameter from DB.");
+		}
+		testIndex = AutotestingDB::Instance()->GetIntTestParameter(deviceName, "TestIndex");
 		if (testIndex == AutotestingDB::DB_ERROR_INT_VALUE)
-        {
-            ForceQuit("Couldn't get TestIndex parameter from DB.");
-        }
+		{
+			ForceQuit("Couldn't get TestIndex parameter from DB.");
+		}
 	}
 
 	// Read DB parameters from config file and set connection to it
@@ -218,13 +233,11 @@ namespace DAVA
 		int32 dbPort = option->GetInt32("port");
 		Logger::Info("AutotestingSystem::SetUpConnectionToDB %s -> %s[%s:%d]", collection.c_str(), dbName.c_str(), dbAddress.c_str(), dbPort);
 
-		new AutotestingDB();
 		if (!AutotestingDB::Instance()->ConnectToDB(collection, dbName, dbAddress, dbPort))
 		{
 			ForceQuit("Couldn't connect to Test DB");
 		}
-		
-		isDB = true;
+
 		SafeRelease(option);
 	}
 
@@ -245,7 +258,8 @@ namespace DAVA
 	{
 		Logger::Info("AutotestingSystem::OnTestStart %s", testDescription.c_str());
 		AutotestingDB::Instance()->Log("DEBUG", Format("OnTestStart %s", testDescription.c_str()));
-		AutotestingDB::Instance()->SetTestStarted();
+		if (isDB)
+			AutotestingDB::Instance()->SetTestStarted();
 	}
 
 	void AutotestingSystem::OnStepStart(const String &stepName)

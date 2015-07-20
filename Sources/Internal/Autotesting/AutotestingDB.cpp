@@ -82,32 +82,52 @@ namespace DAVA
 	String AutotestingDB::GetStringTestParameter(const String &deviceName, const String &parameter)
 	{
 		Logger::Info("AutotestingDB::GetStringTestParameter deviceName=%s, parameter=%s", deviceName.c_str(), parameter.c_str());
-		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
-		KeyedArchive *currentRunArchive = FindBuildArchive(dbUpdateObject, "autotesting_system");
-		KeyedArchive *deviceArchive = currentRunArchive->GetArchive(deviceName.c_str());
-		if (!deviceArchive)
+		KeyedArchive *deviceArchive;
+		String result;
+		if (dbClient)
 		{
-			autoSys->ForceQuit(Format("Couldn't find archive for %s device", deviceName.c_str()));
+			MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
+			KeyedArchive *currentRunArchive = FindBuildArchive(dbUpdateObject, "autotesting_system");
+			deviceArchive = currentRunArchive->GetArchive(deviceName.c_str());
+			if (!deviceArchive)
+			{
+				autoSys->ForceQuit(Format("Couldn't find archive for %s device", deviceName.c_str()));
+			}
+			result = deviceArchive->GetString(parameter.c_str(), DB_ERROR_STR_VALUE);
+			SafeRelease(dbUpdateObject);
 		}
-		String result = deviceArchive->GetString(parameter.c_str(), DB_ERROR_STR_VALUE);
-		SafeRelease(dbUpdateObject);
-		Logger::Info("AutotestingDB::GetStringTestParameter return deviceName=%s value: %s", deviceName.c_str(), result.c_str());
+		else
+		{
+			deviceArchive = AutotestingSystem::Instance()->GetIdYamlOptions();
+			result = deviceArchive->GetString(parameter.c_str(), DB_ERROR_STR_VALUE);
+		}
+		Logger::Info("AutotestingDB::GetStringTestParameter return value: %s", result.c_str());
 		return result;
 	}
 
 	int32 AutotestingDB::GetIntTestParameter(const String &deviceName, const String &parameter)
 	{
 		Logger::Info("AutotestingDB::GetIntTestParameter deviceName=%s, parameter=%s", deviceName.c_str(), parameter.c_str());
-		MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
-		KeyedArchive *currentRunArchive = FindBuildArchive(dbUpdateObject, "autotesting_system");
-		KeyedArchive *deviceArchive = currentRunArchive->GetArchive(deviceName.c_str());
-		if (!deviceArchive)
+		KeyedArchive *deviceArchive;
+		int32 result;
+		if (dbClient)
 		{
-			autoSys->ForceQuit(Format("Couldn't find archive for %s device", deviceName.c_str()));
+			MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
+			KeyedArchive *currentRunArchive = FindBuildArchive(dbUpdateObject, "autotesting_system");
+			deviceArchive = currentRunArchive->GetArchive(deviceName.c_str());
+			if (!deviceArchive)
+			{
+				autoSys->ForceQuit(Format("Couldn't find archive for %s device", deviceName.c_str()));
+			}
+			result = deviceArchive->GetInt32(parameter.c_str(), DB_ERROR_INT_VALUE);
+			SafeRelease(dbUpdateObject);
 		}
-		int32 result = deviceArchive->GetInt32(parameter.c_str(), DB_ERROR_INT_VALUE);
-		SafeRelease(dbUpdateObject);
-		Logger::Info("AutotestingDB::GetIntTestParameter return deviceName=%s value: %d", deviceName.c_str(), result);
+		else
+		{
+			deviceArchive = AutotestingSystem::Instance()->GetIdYamlOptions();
+			result = deviceArchive->GetInt32(parameter.c_str(), DB_ERROR_INT_VALUE);
+		}
+		Logger::Info("AutotestingDB::GetIntTestParameter return value: %d", result);
 		return result;
 	}
 
