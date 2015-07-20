@@ -36,7 +36,7 @@
 #include "Tests/NotificationTest.h"
 #include "Tests/UIScrollViewTest.h"
 #include "Tests/MultilineTest.h"
-#include "Tests/TextAlignTest.h"
+#include "Tests/StaticTextTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -54,7 +54,7 @@ void GameCore::RegisterTests()
     new UIScrollViewTest();
     new NotificationScreen();
     new MultilineTest();
-    new TextAlignTest();
+    new StaticTextTest();
 }
 
 #include <fstream>

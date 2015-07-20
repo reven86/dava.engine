@@ -218,11 +218,11 @@ void UITextField::Update(float32 timeElapsed)
 	{
         WideString txt = GetVisibleText();
         txt += showCursor ? L"_" : L" ";
-        staticText->SetText(txt);
+        staticText->SetText(txt, Vector2(-1,-1));
 	}
 	else
     {
-        staticText->SetText(GetVisibleText());
+        staticText->SetText(GetVisibleText(), Vector2(-1, -1));
     }
     needRedraw = false;
 #endif

@@ -32,33 +32,39 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Infrastructure/BaseScreen.h"
 
-class TextAlignTest : public BaseScreen
+class StaticTextTest : public BaseScreen
 {
 public:
-    TextAlignTest();
-    ~TextAlignTest();
+    StaticTextTest();
+    ~StaticTextTest();
 
     void LoadResources() override;
     void UnloadResources() override;
     
+    void SetPreviewText(const DAVA::WideString& text);
     void SetPreviewAlign(DAVA::int32 align);
+    void SetPreviewFitting(DAVA::int32 fitting);
+    void SetPreviewRequiredTextSize(bool enable);
+    void SetPreviewMultiline(DAVA::int32 multilineType);
     
 private:
+    DAVA::UIButton* CreateButton(const DAVA::WideString& caption, const DAVA::Rect& rect, DAVA::int32 tag, DAVA::Font* font, const DAVA::Message& msg);
+    
     void OnAlignButtonClick(BaseObject* sender, void * data, void * callerData);
+    void OnFittingButtonClick(BaseObject* sender, void * data, void * callerData);
+    void OnReuireTextSizeButtonClick(BaseObject* sender, void * data, void * callerData);
+    void OnMultilineButtonClick(BaseObject* sender, void * data, void * callerData);
 
     DAVA::UIStaticText* previewText;
     DAVA::UITextField* inputText;
     DAVA::UITextFieldDelegate* inputDelegate;
 
-    DAVA::UIButton* topLeftButton;
-    DAVA::UIButton* topCenterButton;
-    DAVA::UIButton* topRightButton;
-    DAVA::UIButton* middleLeftButton;
-    DAVA::UIButton* middleCenterButton;
-    DAVA::UIButton* middleRightButton;
-    DAVA::UIButton* bottomLeftButton;
-    DAVA::UIButton* bottomCenterButton;
-    DAVA::UIButton* bottomRightButton;
+    DAVA::List<DAVA::UIButton*> alignButtons;
+    DAVA::List<DAVA::UIButton*> fittingButtons;
+    DAVA::List<DAVA::UIButton*> multilineButtons;
+    DAVA::UIButton* requireTextSizeButton;
+    
+    bool needRequiredSize;
 };
 
 #endif //__MULTILINETEST_TEST_H__

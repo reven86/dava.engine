@@ -33,12 +33,30 @@
 
 using namespace DAVA;
 
-DAVA_TESTCLASS(SplitTest)
+static WideString TEST_DATA = L"THIS SOFTWARE IS PROVIDED BY THE DAVA CONSULTING, LLC AND CONTRIBUTORS AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES";
+static struct FittingTestInfo
+{
+    int32 fitting;
+    int32 align;
+    WideString result;
+} testData[] = {
+    { TextBlock::FITTING_DISABLED, ALIGN_LEFT, L"THIS SOFTWARE IS PROVIDED BY THE DAVA CONSULTIN" },
+    { TextBlock::FITTING_DISABLED, ALIGN_HCENTER, L"AVA CONSULTING, LLC AND CONTRIBUTORS AS IS AND " },
+    { TextBlock::FITTING_DISABLED, ALIGN_RIGHT, L"ORS AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES" },
+    { TextBlock::FITTING_POINTS, ALIGN_LEFT, L"THIS SOFTWARE IS PROVIDED BY THE DAVA CONSULTI..." },
+    { TextBlock::FITTING_POINTS, ALIGN_HCENTER, L"THIS SOFTWARE IS PROVIDED BY THE DAVA CONSULTI..." },
+    { TextBlock::FITTING_POINTS, ALIGN_RIGHT, L"THIS SOFTWARE IS PROVIDED BY THE DAVA CONSULTI..." },
+    { TextBlock::FITTING_REDUCE, ALIGN_LEFT, TEST_DATA },
+    { TextBlock::FITTING_REDUCE, ALIGN_HCENTER, TEST_DATA },
+    { TextBlock::FITTING_REDUCE, ALIGN_RIGHT, TEST_DATA },
+};
+
+DAVA_TESTCLASS(StaticTextTest)
 {
     UIStaticText* staticText = nullptr;
     Font* font = nullptr;
 
-    SplitTest()
+    StaticTextTest()
     {
         staticText = new UIStaticText();
         staticText->SetRect(Rect(10.f, 10.f, 400.f, 200.f));
@@ -46,7 +64,7 @@ DAVA_TESTCLASS(SplitTest)
         staticText->SetFont(font);
     }
 
-    ~SplitTest()
+    ~StaticTextTest()
     {
         SafeRelease(staticText);
         SafeRelease(font);
@@ -245,5 +263,19 @@ DAVA_TESTCLASS(SplitTest)
         TEST_VERIFY(test2 == out2);
         TEST_VERIFY(test3 == out3);
         TEST_VERIFY(test4 == out4);
+    }
+
+    DAVA_TEST(TestFitting)
+    {
+        staticText->SetMultiline(false);
+
+        for (auto data : testData)
+        {
+            staticText->SetFittingOption(data.fitting);
+            staticText->SetTextAlign(data.align);
+            staticText->SetText(TEST_DATA);
+            const WideString& result = staticText->GetVisualText();
+            TEST_VERIFY(result == data.result);
+        }
     }
 };
