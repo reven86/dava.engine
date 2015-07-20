@@ -212,21 +212,39 @@ void MainWindow::OnAutoStartChanged(int)
 
 void MainWindow::OnRemoteServerAdded()
 {
-    AddRemoteServer(ServerData(DEFAULT_REMOTE_IP, DEFAULT_REMOTE_PORT));
+    AddRemoteServer(ServerData(DEFAULT_REMOTE_IP, DEFAULT_REMOTE_PORT, false));
     VerifyData();
 }
 
 void MainWindow::OnRemoteServerRemoved()
 {
-    RemoteAssetCacheServer *w = qobject_cast<RemoteAssetCacheServer *>(sender());
-    remoteServers.removeOne(w);
+    RemoteAssetCacheServer *remoteServer = qobject_cast<RemoteAssetCacheServer *>(sender());
+    remoteServers.remove(remoteServer);
 
-    w->deleteLater();
+    remoteServer->deleteLater();
     VerifyData();
 }
 
 void MainWindow::OnRemoteServerEdited()
 {
+    VerifyData();
+}
+
+void MainWindow::OnRemoteServerChecked(bool checked)
+{
+    if (checked)
+    {
+        RemoteAssetCacheServer *checkedServer = qobject_cast<RemoteAssetCacheServer *>(sender());
+        for (auto& nextServer : remoteServers)
+        {
+            if (nextServer->IsChecked() && nextServer != checkedServer)
+            {
+                nextServer->SetChecked(false);
+                break;
+            }
+        }
+    }
+
     VerifyData();
 }
 
@@ -255,10 +273,11 @@ void MainWindow::OnStopAction()
 void MainWindow::AddRemoteServer(const ServerData & newServer)
 {
     RemoteAssetCacheServer *server = new RemoteAssetCacheServer(newServer, this);
-    remoteServers << server;
+    remoteServers.push_back(server);
 
     connect(server, &RemoteAssetCacheServer::RemoveLater, this, &MainWindow::OnRemoteServerRemoved);
     connect(server, &RemoteAssetCacheServer::ParametersChanged, this, &MainWindow::OnRemoteServerEdited);
+    connect(server, SIGNAL(ServerChecked(bool)), this, SLOT(OnRemoteServerChecked(bool)));
 
     serversBoxLayout->insertWidget(serversBoxLayout->count() - 1, server);
 

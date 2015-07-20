@@ -81,6 +81,7 @@ private slots:
     void OnRemoteServerAdded();
     void OnRemoteServerRemoved();
     void OnRemoteServerEdited();
+    void OnRemoteServerChecked(bool);
 
     void OnApplyButtonClicked();
     void OnCloseButtonClicked();
@@ -111,7 +112,7 @@ private:
     std::unique_ptr<QIcon> redTrayIcon;
 
     QVBoxLayout *serversBoxLayout;
-    QList<RemoteAssetCacheServer *> remoteServers;
+    List<RemoteAssetCacheServer*> remoteServers;
     
     ApplicationSettings *settings;
     ServerCore* serverCore;

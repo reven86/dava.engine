@@ -49,11 +49,13 @@ RemoteAssetCacheServer::RemoteAssetCacheServer(QWidget *parent)
     connect(ui->ipLineEdit, &QLineEdit::textChanged,
             this, &RemoteAssetCacheServer::OnParametersChanged);
     connect(ui->portSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnParametersChanged()));
+    connect(ui->enabledCheckBox, SIGNAL(stateChanged(int)), this, SLOT(OnChecked(int)));
 }
 
 RemoteAssetCacheServer::RemoteAssetCacheServer(const ServerData &newServer, QWidget *parent)
     : RemoteAssetCacheServer(parent)
 {
+    ui->enabledCheckBox->setChecked(newServer.enabled);
     ui->ipLineEdit->setText(newServer.ip.c_str());
     ui->portSpinBox->setValue(newServer.port);
     ui->portSpinBox->setEnabled(true);
@@ -66,7 +68,7 @@ RemoteAssetCacheServer::~RemoteAssetCacheServer()
 
 ServerData RemoteAssetCacheServer::GetServerData() const
 {
-    return ServerData(ui->ipLineEdit->text().toStdString(), ui->portSpinBox->value());
+    return ServerData(ui->ipLineEdit->text().toStdString(), ui->portSpinBox->value(), ui->enabledCheckBox->isChecked());
 }
 
 bool RemoteAssetCacheServer::IsCorrectData()
@@ -84,4 +86,19 @@ bool RemoteAssetCacheServer::IsCorrectData()
 void RemoteAssetCacheServer::OnParametersChanged()
 {
     emit ParametersChanged();
+}
+
+void RemoteAssetCacheServer::OnChecked(int val)
+{
+    emit ServerChecked(val == Qt::Checked);
+}
+
+bool RemoteAssetCacheServer::IsChecked() const
+{
+    return ui->enabledCheckBox->isChecked();
+}
+
+void RemoteAssetCacheServer::SetChecked(bool checked)
+{
+    ui->enabledCheckBox->setChecked(checked);
 }
