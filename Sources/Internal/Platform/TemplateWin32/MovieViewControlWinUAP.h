@@ -26,56 +26,51 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_UIMOVIEVIEW__H__
-#define __DAVAENGINE_UIMOVIEVIEW__H__
+#ifndef __DAVAENGINE_MOVIEVIEWCONTROL_WINUAP_H__
+#define __DAVAENGINE_MOVIEVIEWCONTROL_WINUAP_H__
 
-#include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 
-#include "UI/UIControl.h"
+#if defined(__DAVAENGINE_WIN_UAP__)
+
 #include "UI/IMovieViewControl.h"
 
 namespace DAVA
 {
 
-// The purpose of UIMovieView class is to display movies.
-class UIMovieView : public UIControl
+class PrivateMovieViewWinUAP;
+class MovieViewControl : public IMovieViewControl
 {
-protected:
-    virtual ~UIMovieView();
-
 public:
-    UIMovieView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
+    MovieViewControl();
+    virtual ~MovieViewControl();
+
+    // Initialize the control.
+    void Initialize(const Rect& rect) override;
+
+    // Position/visibility.
+    void SetRect(const Rect& rect) override;
+    void SetVisible(bool isVisible) override;
 
     // Open the Movie.
-    void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params);
-
-    // Overloaded virtual methods.
-    void SetPosition(const Vector2 &position) override;
-    void SetSize(const Vector2 &newSize) override;
-
-    void SystemDraw(const UIGeometricData &geometricData) override;
-
-    void WillBecomeVisible() override;
-    void WillBecomeInvisible() override;
-
-    UIControl* Clone() override;
+    void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params) override;
 
     // Start/stop the video playback.
-    void Play();
-    void Stop();
+    void Play() override;
+    void Stop() override;
 
     // Pause/resume the playback.
-    void Pause();
-    void Resume();
+    void Pause() override;
+    void Resume() override;
 
     // Whether the movie is being played?
-    bool IsPlaying();
+    bool IsPlaying() override;
 
-protected:
-    // Platform-specific implementation of the Movie Control.
-    IMovieViewControl* movieViewControl;
+private:
+    std::shared_ptr<PrivateMovieViewWinUAP> privateImpl;
 };
 
 }   // namespace DAVA
 
-#endif  // __DAVAENGINE_UIMOVIEVIEW__H__
+#endif  // __DAVAENGINE_WIN_UAP__
+#endif  // __DAVAENGINE_MOVIEVIEWCONTROL_WINUAP_H__

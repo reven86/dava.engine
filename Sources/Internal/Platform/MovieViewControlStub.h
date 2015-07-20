@@ -26,47 +26,47 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __DAVAENGINE_MOVIEVIEWCONTROL_STUB_H__
 #define __DAVAENGINE_MOVIEVIEWCONTROL_STUB_H__
 
-#include "Base/BaseTypes.h"
-#include "../UI/IMovieViewControl.h"
+#include "Base/Platform.h"
 
-namespace DAVA {
+#if !defined(__DAVAENGINE_APPLE__) && !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_WIN_UAP__)
 
-#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_MACOS__)
+#include "UI/IMovieViewControl.h"
+
+namespace DAVA
+{
 
 class MovieViewControl : public IMovieViewControl
 {
 public:
-	MovieViewControl();
-	virtual ~MovieViewControl();
+    MovieViewControl() = default;
+    virtual ~MovieViewControl() = default;
 
-	// Initialize the control.
-	virtual void Initialize(const Rect& rect);
+    // Initialize the control.
+    void Initialize(const Rect& rect) override {}
 
-	// Open the Movie.
-	virtual void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params);
+    // Open the Movie.
+    void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params) override {}
 
-	// Position/visibility.
-	virtual void SetRect(const Rect& rect);
-	virtual void SetVisible(bool isVisible);
+    // Position/visibility.
+    void SetRect(const Rect& rect) override {}
+    void SetVisible(bool isVisible) override {}
 
-	// Start/stop the video playback.
-	virtual void Play();
-	virtual void Stop();
+    // Start/stop the video playback.
+    void Play() override {}
+    void Stop() override {}
 
-	// Pause/resume the playback.
-	virtual void Pause();
-	virtual void Resume();
+    // Pause/resume the playback.
+    void Pause() override {}
+    void Resume() override {}
 
-	// Whether the movie is being played?
-	virtual bool IsPlaying();
+    // Whether the movie is being played?
+    bool IsPlaying() override { return false; }
 };
 
-#endif //!defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_MACOS__)
-	
-};
+}   // namespace DAVA
 
-#endif /* defined(__DAVAENGINE_MOVIEVIEWCONTROL_STUB_H__) */
+#endif  // !defined(__DAVAENGINE_APPLE__) && !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_WIN_UAP__)
+#endif  // __DAVAENGINE_MOVIEVIEWCONTROL_STUB_H__

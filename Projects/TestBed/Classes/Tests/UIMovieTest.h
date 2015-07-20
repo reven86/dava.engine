@@ -26,56 +26,54 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_UIMOVIEVIEW__H__
-#define __DAVAENGINE_UIMOVIEVIEW__H__
+#ifndef __UIMOVIE_TEST_H__
+#define __UIMOVIE_TEST_H__
 
-#include "Base/BaseTypes.h"
+#include "DAVAEngine.h"
 
-#include "UI/UIControl.h"
-#include "UI/IMovieViewControl.h"
+#include "Infrastructure/BaseScreen.h"
 
-namespace DAVA
-{
+using namespace DAVA;
 
-// The purpose of UIMovieView class is to display movies.
-class UIMovieView : public UIControl
+class UIMovieTest : public BaseScreen
 {
 protected:
-    virtual ~UIMovieView();
+    virtual ~UIMovieTest() = default;
 
 public:
-    UIMovieView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
+    UIMovieTest();
 
-    // Open the Movie.
-    void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params);
+    void LoadResources() override;
+    void UnloadResources() override;
 
-    // Overloaded virtual methods.
-    void SetPosition(const Vector2 &position) override;
-    void SetSize(const Vector2 &newSize) override;
+    void DidAppear() override;
+    void Update(float32 timeElapsed) override;
 
-    void SystemDraw(const UIGeometricData &geometricData) override;
+private:
+    void UpdatePlayerStateText();
+    UIButton* CreateUIButton(Font* font, const Rect& rect, const String& text,
+                             void (UIMovieTest::*onClick)(BaseObject*, void*, void*));
 
-    void WillBecomeVisible() override;
-    void WillBecomeInvisible() override;
+    void ButtonPressed(BaseObject *obj, void *data, void *callerData);
+    void ScaleButtonPressed(BaseObject *obj, void *data, void *callerData);
 
-    UIControl* Clone() override;
+private:
+    UIMovieView* movieView = nullptr;
 
-    // Start/stop the video playback.
-    void Play();
-    void Stop();
+    // Control buttons.
+    UIButton* playButton = nullptr;
+    UIButton* stopButton = nullptr;
+    UIButton* pauseButton = nullptr;
+    UIButton* resumeButton = nullptr;
+    UIButton* hideButton = nullptr;
+    UIButton* showButton = nullptr;
 
-    // Pause/resume the playback.
-    void Pause();
-    void Resume();
+    UIButton* buttonScale0 = nullptr;
+    UIButton* buttonScale1 = nullptr;
+    UIButton* buttonScale2 = nullptr;
+    UIButton* buttonScale3 = nullptr;
 
-    // Whether the movie is being played?
-    bool IsPlaying();
-
-protected:
-    // Platform-specific implementation of the Movie Control.
-    IMovieViewControl* movieViewControl;
+    UIStaticText* playerStateText = nullptr;
 };
 
-}   // namespace DAVA
-
-#endif  // __DAVAENGINE_UIMOVIEVIEW__H__
+#endif  // __UIMOVIE_TEST_H__
