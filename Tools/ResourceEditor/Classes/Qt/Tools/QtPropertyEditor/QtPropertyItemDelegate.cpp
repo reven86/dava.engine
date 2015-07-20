@@ -160,8 +160,17 @@ bool QtPropertyItemDelegate::editorEvent(QEvent * event, QAbstractItemModel * _m
 		QtPropertyData* data = model->itemFromIndex(index);
 		showButtons(data);
 	}
+    if ((event->type() == QEvent::MouseButtonRelease)
+        || (event->type() == QEvent::MouseButtonDblClick)
+        || (event->type() == QEvent::MouseButtonPress))    
+    {
+        QStyleOptionViewItem opt(option);
+        opt.rect.translate(delegatePadding, 0);
 
-	return QStyledItemDelegate::editorEvent(event, model, option, index);
+        return QStyledItemDelegate::editorEvent(event, model, opt, index);
+    }
+    return QStyledItemDelegate::editorEvent(event, model, option, index);
+
 }
 
 bool QtPropertyItemDelegate::eventFilter(QObject* obj, QEvent* event)
@@ -300,8 +309,9 @@ void QtPropertyItemDelegate::DrawButton(QPainter* painter, QStyleOptionViewItem&
         QPixmap pix = btn->grab();
         painter->drawPixmap(opt.rect.left(), owYPos, pix);
     }
-
-    opt.rect.adjust(buttonSpacing + btn->width(), 0, 0, 0);
+    int padding = buttonSpacing + btn->width();
+    delegatePadding += padding;
+    opt.rect.adjust(padding, 0, 0, 0);
 }
 
 void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOptionViewItem &opt, const QModelIndex &index) const
@@ -309,6 +319,7 @@ void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOption
 	QtPropertyData* data = model->itemFromIndex(index);
     if (index.column() == 1 && NULL != data && data->GetButtonsCount() > 0)
     {
+        delegatePadding = buttonSpacing;
         opt.rect.adjust(buttonSpacing, 0, 0, 0);
 
 		// draw not overlaid widgets

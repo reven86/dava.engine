@@ -72,6 +72,7 @@ private:
     mutable QPointer<QWidget> activeEditor;
     mutable bool editorDataWasSet;
     const int buttonSpacing = 1;
+    mutable int delegatePadding = 0;
 };
 
 #endif // __QT_PROPERY_ITEM_DELEGATE_H__
