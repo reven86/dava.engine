@@ -46,22 +46,19 @@ class LibDdsHelper: public ImageFormatInterface, public CRCAdditionInterface
 public:
     LibDdsHelper();
 
-    ImageFormat GetImageFormat() const override;
+    virtual ImageFormat GetImageFormat() const override;
     
-    bool IsMyImage(File *infile) const override;
+    virtual bool IsMyImage(File *infile) const override;
 
-    eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const override;
+    virtual eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const override;
 
-    //input data only in RGBA8888
-    eErrorCode WriteFile(const FilePath &fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const override;
+    virtual eErrorCode WriteFile(const FilePath &fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const override;
+    virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const override;
 
-    //input data only in RGBA8888
-    eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const override;
+    virtual ImageInfo GetImageInfo(File *infile) const override;
 
-    ImageInfo GetImageInfo(File *infile) const override;
-
-    bool AddCRCIntoMetaData(const FilePath &filePathname) const override;
-    uint32 GetCRCFromFile(const FilePath &filePathname) const override;
+    virtual bool AddCRCIntoMetaData(const FilePath &filePathname) const override;
+    virtual uint32 GetCRCFromFile(const FilePath &filePathname) const override;
 
     static eErrorCode ReadFile(File *file, Vector<Image*> &imageSet, int32 baseMipMap = 0, bool forceSoftwareConvertation = false);
 
@@ -79,11 +76,9 @@ private:
 
     static bool GetCRCFromDDSHeader(const FilePath &filePathname, uint32* tag, uint32* outputCRC);
 
-    //input data only in RGBA8888
-    static bool WriteDxtFile(const FilePath & fileNameOriginal, const Vector<Image *> &imageSet, PixelFormat compressionFormat);
-    static bool WriteAtcFile(const FilePath & fileNameOriginal, const Vector<Image *> &imageSet, PixelFormat compressionFormat);
+    static bool WriteDxtFile(const FilePath & fileNameOriginal, const Vector<Vector<Image *>> &imageSets, PixelFormat compressionFormat, bool isCubemap);
 
-    static bool WriteDxtFileAsCubemap(const FilePath & fileNameOriginal, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat);
+    static bool WriteAtcFile(const FilePath & fileNameOriginal, const Vector<Image *> &imageSet, PixelFormat compressionFormat);
     static bool WriteAtcFileAsCubemap(const FilePath & fileNameOriginal, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat);
 };
 
