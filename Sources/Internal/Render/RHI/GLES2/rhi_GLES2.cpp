@@ -22,6 +22,10 @@ void        (*_GLES2_AcquireContext)()          = nullptr;
 void        (*_GLES2_ReleaseContext)()          = nullptr;
 int         _GLES2_DefaultFrameBuffer_Width     = 0;
 int         _GLES2_DefaultFrameBuffer_Height    = 0;
+GLuint      _GLES2_LastSetIB                    = 0;
+GLuint      _GLES2_LastSetVB                    = 0;
+GLuint      _GLES2_LastSetTex0                  = 0;
+GLenum      _GLES2_LastSetTex0Target            = GL_TEXTURE_2D;
 
 #if defined(__DAVAENGINE_WIN32__)
 HDC deviceContext = 0;
