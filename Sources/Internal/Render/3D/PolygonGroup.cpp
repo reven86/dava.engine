@@ -458,16 +458,19 @@ void PolygonGroup::CopyData(const uint8 ** meshData, uint8 ** newMeshData, uint3
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
+    uint32 formatSize = GetVertexSize(format);
 	if (vertexFormat & format)
-	{
-		uint32 formatSize = GetVertexSize(format);
+	{		
 		if (newVertexFormat & format)
 		{
-			memcpy(*newMeshData, *meshData, formatSize);
-			*newMeshData += formatSize;
+			memcpy(*newMeshData, *meshData, formatSize);		
 		}
 		*meshData += formatSize;
 	}
+    if (newVertexFormat & format)
+    {
+        *newMeshData += formatSize;
+    }
 }
 
 bool PolygonGroup::IsFloatDataEqual(const float32 ** meshData, const float32 ** optData, uint32 vertexFormat, uint32 format) const
