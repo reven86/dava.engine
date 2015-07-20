@@ -6,10 +6,17 @@
     #include "FileSystem/DynamicMemoryFile.h"
     using DAVA::DynamicMemoryFile;
     #include "Utils/Utils.h"
+#include "Debug/Profiler.h"
 
     #include "PreProcess.h"
 
-    #include <regex>
+    #define RHI__USE_STD_REGEX 1
+
+    #if RHI__USE_STD_REGEX
+        #include <regex>
+    #else
+        #include "Regexp.h"
+    #endif
 
 
 namespace rhi
@@ -60,6 +67,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText )
 bool
 ShaderSource::Construct( ProgType progType, const char* srcText, const std::vector<std::string>& defines )
 {
+SCOPED_NAMED_TIMING("ShaderSource::Construct");
     bool                        success = false;
     std::vector<std::string>    def;
     const char*                 argv[128];
@@ -90,6 +98,7 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
     if( in )
     {
+        #if RHI__USE_STD_REGEX
         std::regex  prop_re(".*property\\s*(float|float2|float3|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
         std::regex  proparr_re(".*property\\s*(float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\[(\\s*[0-9]+)\\s*\\]\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
         std::regex  fsampler2d_re(".*DECL_FP_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
@@ -102,6 +111,34 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
         std::regex  blending2_re(".*blending\\s*\\:\\s*src=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color)\\s+dst=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color).*");
         std::regex  colormask_re(".*color_mask\\s*\\:\\s*(all|none|rgb|a).*");
         std::regex  comment_re("^\\s*//.*");
+        #else
+        RegExp  prop_re;
+        RegExp  proparr_re;
+        RegExp  fsampler2d_re;
+        RegExp  vsampler2d_re;
+        RegExp  samplercube_re;
+        RegExp  ftexture2d_re;
+        RegExp  vtexture2d_re;
+        RegExp  texturecube_re;
+        RegExp  blend_re;
+        RegExp  blending2_re;
+        RegExp  colormask_re;
+        RegExp  comment_re;
+        
+        prop_re.compile(".*property\\s*(float|float2|float3|float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
+        proparr_re.compile(".*property\\s*(float4|float4x4)\\s*([a-zA-Z_]+[a-zA-Z_0-9]*)\\s*\\[(\\s*[0-9]+)\\s*\\]\\s*\\:\\s*(.*)\\s+\\:(.*);.*");
+        fsampler2d_re.compile(".*DECL_FP_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
+        vsampler2d_re.compile(".*DECL_VP_SAMPLER2D\\s*\\(\\s*(.*)\\s*\\).*");
+        samplercube_re.compile(".*DECL_FP_SAMPLERCUBE\\s*\\(\\s*(.*)\\s*\\).*");
+        ftexture2d_re.compile(".*FP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
+        vtexture2d_re.compile(".*VP_TEXTURE2D\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
+        texturecube_re.compile(".*FP_TEXTURECUBE\\s*\\(\\s*([a-zA-Z0-9_]+)\\s*\\,.*");
+        blend_re.compile(".*BLEND_MODE\\s*\\(\\s*(.*)\\s*\\).*");
+        blending2_re.compile(".*blending\\s*\\:\\s*src=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color)\\s+dst=(zero|one|src_alpha|inv_src_alpha|src_color|dst_color).*");
+        colormask_re.compile(".*color_mask\\s*\\:\\s*(all|none|rgb|a).*");
+        comment_re.compile("^\\s*//.*");
+        #endif
+
 
         _Reset();
 
@@ -109,11 +146,16 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
         {
             char        line[4*1024];
             uint32      lineLen     = in->ReadLine( line, sizeof(line) );
+            #if RHI__USE_STD_REGEX
             std::cmatch match;
             bool        isComment   = std::regex_match( line, match, comment_re );
+            #else
+            bool        isComment   = comment_re.test( line );
+            #endif
             bool        propDefined = false;
             bool        propArray   = false;
 
+            #if RHI__USE_STD_REGEX
             if( !isComment  &&  std::regex_match( line, match, prop_re ) )
             {
                 propDefined = true;
@@ -124,6 +166,18 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 propDefined = true;
                 propArray   = true;
             }
+            #else
+            if( !isComment  &&  prop_re.test( line ) )
+            {
+                propDefined = true;
+                propArray   = false;
+            }
+            else if( !isComment  &&  proparr_re.test( line ) )
+            {
+                propDefined = true;
+                propArray   = true;
+            }
+            #endif
 
 
             if( propDefined )
@@ -137,6 +191,8 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 std::string script;
                 std::string arrSz;
 
+                
+                #if RHI__USE_STD_REGEX                
                 if( propArray )
                 {
                     type   = match[1].str();
@@ -156,6 +212,27 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     
                     p.arraySize = 1;
                 }
+                #else
+                if( propArray )
+                {
+                    proparr_re.get_pattern( 1, &type );
+                    proparr_re.get_pattern( 2, &uid );
+                    proparr_re.get_pattern( 3, &arrSz );
+                    proparr_re.get_pattern( 4, &tags );
+                    proparr_re.get_pattern( 5, &script );
+                   
+                    p.arraySize = atoi( arrSz.c_str() );
+                }
+                else
+                {
+                    prop_re.get_pattern( 1, &type );
+                    prop_re.get_pattern( 2, &uid );
+                    prop_re.get_pattern( 3, &tags );
+                    prop_re.get_pattern( 4, &script );
+                    
+                    p.arraySize = 1;
+                }
+                #endif
 
 
                 p.uid       = FastName(uid);
@@ -284,9 +361,19 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                         cbuf->avlRegIndex.push_back( 4 );
                 }
             }
-            else if( !isComment  &&  std::regex_match( line, match, fsampler2d_re ) )
+            else if(        !isComment  
+                        #if RHI__USE_STD_REGEX
+                        &&  std::regex_match( line, match, fsampler2d_re ) 
+                        #else
+                        &&  fsampler2d_re.test( line )
+                        #endif
+                   )
             {
+                #if RHI__USE_STD_REGEX
                 std::string sname   = match[1].str();
+                #else
+                std::string sname;  fsampler2d_re.get_pattern( 1, &sname );
+                #endif
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
                 int         sn      = sname.length();
 
@@ -303,9 +390,19 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
                 _AppendLine( line, strlen(line) );
             }
-            else if( !isComment  &&  std::regex_match( line, match, samplercube_re ) )
+            else if(        !isComment  
+                        #if RHI__USE_STD_REGEX
+                        &&  std::regex_match( line, match, samplercube_re ) 
+                        #else
+                        &&  samplercube_re.test( line )
+                        #endif
+                   )
             {
+                #if RHI__USE_STD_REGEX
                 std::string sname   = match[1].str();
+                #else
+                std::string sname;  samplercube_re.get_pattern( 1, &sname );
+                #endif
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
                 int         sn      = sname.length();
 
@@ -322,9 +419,19 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
                 _AppendLine( line, strlen(line) );
             }
-            else if( !isComment  &&  std::regex_match( line, match, ftexture2d_re ) )
+            else if(        !isComment  
+                        #if RHI__USE_STD_REGEX
+                        &&  std::regex_match( line, match, ftexture2d_re ) 
+                        #else
+                        &&  ftexture2d_re.test( line )
+                        #endif
+                   )
             {
+                #if RHI__USE_STD_REGEX
                 std::string sname   = match[1].str();
+                #else
+                std::string sname;  ftexture2d_re.get_pattern( 1, &sname );
+                #endif
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
                 FastName    suid    ( sname );
                 
@@ -345,9 +452,19 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 
                 _AppendLine( line, strlen(line) );
             }
-            else if( !isComment  &&  std::regex_match( line, match, vsampler2d_re ) )
+            else if(        !isComment  
+                        #if RHI__USE_STD_REGEX
+                        &&  std::regex_match( line, match, vsampler2d_re ) 
+                        #else
+                        &&  vsampler2d_re.test( line )
+                        #endif
+                   )
             {
+                #if RHI__USE_STD_REGEX
                 std::string sname   = match[1].str();
+                #else
+                std::string sname;  vsampler2d_re.get_pattern( 1, &sname );
+                #endif
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
                 int         sn      = sname.length();
 
@@ -364,9 +481,19 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
                 _AppendLine( line, strlen(line) );
             }
-            else if( !isComment  &&  std::regex_match( line, match, vtexture2d_re ) )
+            else if(        !isComment  
+                        #if RHI__USE_STD_REGEX
+                        &&  std::regex_match( line, match, vtexture2d_re ) 
+                        #else
+                        &&  vtexture2d_re.test( line )
+                        #endif
+                   )
             {
+                #if RHI__USE_STD_REGEX
                 std::string sname   = match[1].str();
+                #else
+                std::string sname;  vtexture2d_re.get_pattern( 1, &sname );
+                #endif
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
                 FastName    suid    ( sname );
                 
@@ -387,9 +514,19 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 
                 _AppendLine( line, strlen(line) );
             }
-            else if( !isComment  &&  std::regex_match( line, match, texturecube_re ) )
+            else if(        !isComment  
+                        #if RHI__USE_STD_REGEX
+                        &&  std::regex_match( line, match, texturecube_re ) 
+                        #else
+                        &&  texturecube_re.test( line )
+                        #endif
+                   )
             {
+                #if RHI__USE_STD_REGEX
                 std::string sname   = match[1].str();
+                #else
+                std::string sname;  texturecube_re.get_pattern( 1, &sname );
+                #endif
                 int         mbegin  = strstr( line, sname.c_str() ) - line;
                 FastName    suid    ( sname );
                 
@@ -410,9 +547,19 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
 
                 _AppendLine( line, strlen(line) );
             }
-            else if( !isComment  &&  std::regex_match( line, match, blend_re ) )
+            else if(        !isComment  
+                        #if RHI__USE_STD_REGEX
+                        &&  std::regex_match( line, match, blend_re ) 
+                        #else
+                        &&  blend_re.test( line )
+                        #endif
+                   )
             {
-                std::string mode   = match[1].str();
+                #if RHI__USE_STD_REGEX
+                std::string mode  = match[1].str();
+                #else
+                std::string mode; blend_re.get_pattern( 1, &mode );
+                #endif
                 
                 if( !stricmp( mode.c_str(), "alpha" ) )
                 {
@@ -423,18 +570,39 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                     blending.rtBlend[0].alphaDst = BLENDOP_INV_SRC_ALPHA;
                 }
             }
-            else if( !isComment  &&  std::regex_match( line, match, blending2_re ) )
+            else if(        !isComment  
+                        #if RHI__USE_STD_REGEX
+                        &&  std::regex_match( line, match, blending2_re ) 
+                        #else
+                        &&  blending2_re.test( line )
+                        #endif
+                   )
             {
+                #if RHI__USE_STD_REGEX
                 std::string src   = match[1].str();
                 std::string dst   = match[2].str();
+                #else
+                std::string src;    blending2_re.get_pattern( 1, &src );
+                std::string dst;    blending2_re.get_pattern( 2, &dst );
+                #endif
                 
                 blending.rtBlend[0].blendEnabled = true;
                 blending.rtBlend[0].colorSrc     = blending.rtBlend[0].alphaSrc = BlendOpFromText( src.c_str() );
                 blending.rtBlend[0].colorDst     = blending.rtBlend[0].alphaDst = BlendOpFromText( dst.c_str() );
             }
-            else if( !isComment  &&  std::regex_match( line, match, colormask_re ) )
+            else if(        !isComment  
+                        #if RHI__USE_STD_REGEX
+                        &&  std::regex_match( line, match, colormask_re ) 
+                        #else
+                        &&  colormask_re.test( line )
+                        #endif
+                   )
             {
+                #if RHI__USE_STD_REGEX
                 std::string mask  = match[1].str();
+                #else
+                std::string mask;   colormask_re.get_pattern( 1, &mask );
+                #endif
                 
                 if     ( stricmp( mask.c_str(), "all" ) == 0 )  blending.rtBlend[0].writeMask = COLORMASK_ALL;
                 else if( stricmp( mask.c_str(), "none" ) == 0 ) blending.rtBlend[0].writeMask = COLORMASK_NONE;
@@ -459,12 +627,28 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
                 uint32  usage_i  = 0;
                 uint32  data_cnt = 2;
 
+                #if RHI__USE_STD_REGEX
                 std::regex  texcoord_re(".*VPROG_IN_TEXCOORD\\s*([0-7])\\s*\\(([0-7])\\s*\\).*");
+                #else
+                RegExp  texcoord_re;
+                texcoord_re.compile(".*VPROG_IN_TEXCOORD\\s*([0-7])\\s*\\(([0-7])\\s*\\).*");
+                #endif
 
-                if( std::regex_match( line, match, texcoord_re ) )
+                if( 
+                    #if RHI__USE_STD_REGEX
+                    std::regex_match( line, match, texcoord_re ) 
+                    #else
+                    texcoord_re.test( line )
+                    #endif                  
+                  )
                 {
+                    #if RHI__USE_STD_REGEX
                     std::string u = match[1].str();
                     std::string c = match[2].str();
+                    #else
+                    std::string u; texcoord_re.get_pattern( 1, &u );
+                    std::string c; texcoord_re.get_pattern( 2, &c );
+                    #endif
                     
                     usage_i  = atoi( u.c_str() );                
                     data_cnt = atoi( c.c_str() );                
@@ -485,11 +669,26 @@ ShaderSource::Construct( ProgType progType, const char* srcText, const std::vect
             if( strstr( line, "VPROG_IN_BLENDINDEX" ) )
             {
                 uint32      data_cnt = 1;
+                #if RHI__USE_STD_REGEX
                 std::regex  index_re (".*VPROG_IN_BLENDINDEX\\s*\\(([0-7])\\s*\\).*");
+                #else
+                RegExp      index_re;
+                index_re.compile(".*VPROG_IN_BLENDINDEX\\s*\\(([0-7])\\s*\\).*");
+                #endif
 
-                if( std::regex_match( line, match, index_re ) )
+                if( 
+                    #if RHI__USE_STD_REGEX
+                    std::regex_match( line, match, index_re ) 
+                    #else
+                    index_re.test( line )
+                    #endif
+                  )
                 {
+                    #if RHI__USE_STD_REGEX
                     std::string c = match[1].str();
+                    #else
+                    std::string c; index_re.get_pattern( 1, &c );
+                    #endif
                     
                     data_cnt = atoi( c.c_str() );                
                 }
