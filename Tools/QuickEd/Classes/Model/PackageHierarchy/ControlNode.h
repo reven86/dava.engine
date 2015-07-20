@@ -74,7 +74,6 @@ public:
     ControlNode *FindByName(const DAVA::String &name) const;
     
     virtual DAVA::String GetName() const override;
-    
     DAVA::UIControl *GetControl() const;
     DAVA::UIControlPackageContext *GetPackageContext() const;
     void SetPackageContext(DAVA::UIControlPackageContext *context);

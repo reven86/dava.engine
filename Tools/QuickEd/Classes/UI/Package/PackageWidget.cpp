@@ -131,7 +131,10 @@ PackageWidget::PackageWidget(QWidget *parent)
     delAction->setShortcut(QKeySequence::Delete);
     delAction->setShortcutContext(Qt::WidgetShortcut);
     connect(delAction, &QAction::triggered, this, &PackageWidget::OnDelete);
-
+    
+    renameAction = new QAction(tr("Rename"), this);
+    connect(renameAction, &QAction::triggered, this, &PackageWidget::OnRename);
+    
     treeView->addAction(importPackageAction);
     treeView->addAction(CreateSeparator());
     treeView->addAction(cutAction);
@@ -139,6 +142,7 @@ PackageWidget::PackageWidget(QWidget *parent)
     treeView->addAction(pasteAction);
     treeView->addAction(CreateSeparator());
     treeView->addAction(delAction);
+    treeView->addAction(renameAction);
 }
 
 void PackageWidget::OnDocumentChanged(SharedData *context)
@@ -223,6 +227,7 @@ void PackageWidget::RefreshActions(const QList<PackageBaseNode*> &nodes)
     bool canInsertStyles = nodes.size() == 1 && nodes[0]->IsInsertingStylesSupported();
     bool canRemove = !nodes.empty();
     bool canCopy = false;
+    bool canEdit = nodes.size() == 1 && nodes.first()->IsEditingSupported();
     
     for(const PackageBaseNode *node : nodes)
     {
@@ -239,6 +244,7 @@ void PackageWidget::RefreshActions(const QList<PackageBaseNode*> &nodes)
     RefreshAction(delAction, canRemove, true);
 
     RefreshAction(importPackageAction, canInsertPackages, true);
+    RefreshAction(renameAction, canEdit, true);
 }
 
 void PackageWidget::RefreshAction( QAction *action, bool enabled, bool visible )
@@ -389,6 +395,13 @@ void PackageWidget::OnDelete()
         Document *doc = sharedData->GetDocument();
         sharedData->GetDocument()->GetCommandExecutor()->RemoveImportedPackagesFromPackage(packages, doc->GetPackage());
     }
+}
+
+void PackageWidget::OnRename()
+{
+    const auto &selected = treeView->selectionModel()->selectedIndexes();
+    DVASSERT(selected.size() == 1);
+    treeView->edit(selected.first());
 }
 
 void PackageWidget::filterTextChanged(const QString &filterText)
