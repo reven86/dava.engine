@@ -30,7 +30,7 @@ if ( QT4_FOUND )
     return ()
 endif ()
 
-if ( MSVC )
+if ( WIN32 )
     set( CMAKE_PREFIX_PATH    "${QT4_PATH_WIN}")
     set( QT_MOC_EXECUTABLE    "${QT4_PATH_WIN}/bin/moc.exe" )
     set( QT_RCC_EXECUTABLE    "${QT4_PATH_WIN}/bin/rcc.exe" )
@@ -48,8 +48,5 @@ find_package( Qt4 REQUIRED )
 set( CMAKE_MODULE_PATH "${TMP_CMAKE_MODULE_PATH}" )
 
 if( NOT QT4_FOUND )
-    message( "Error !!!: Please set the correct path to QT4 in file DavaConfig.in"  )
-    message( " " )
-    exit()
-
+    message( FATAL_ERROR "Please set the correct path to QT4 in file DavaConfig.in"  )
 endif()
