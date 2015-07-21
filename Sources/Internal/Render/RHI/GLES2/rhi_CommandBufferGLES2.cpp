@@ -679,7 +679,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                     {
                         Size2i  sz = TextureGLES2::Size( passCfg.colorBuffer[0].texture );
                         
-                        TextureGLES2::SetAsRenderTarget( passCfg.colorBuffer[0].texture );
+                        TextureGLES2::SetAsRenderTarget( passCfg.colorBuffer[0].texture, passCfg.depthStencilBuffer.texture );
                         def_viewport[2] = sz.dx;
                         def_viewport[3] = sz.dy;
                     }
@@ -736,7 +736,7 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
                         flags |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
                     }
 
-                    if(flags)
+                    if( flags )
                     {
                         glClear( flags );
                     }
@@ -1377,7 +1377,7 @@ _LogGLError( const char* expr, int err )
 static void
 _ExecGL( GLCommand* command, uint32 cmdCount )
 {
-    int     err = 0;
+    int     err = GL_NO_ERROR;
 
 /*
     do 
@@ -1430,6 +1430,18 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
                 cmd->status = err;
             }   break;
 
+            case GLCommand::RESTORE_VERTEX_BUFFER :
+            {
+                EXEC_GL(glBindBuffer( GL_ARRAY_BUFFER, _GLES2_LastSetVB ));
+                cmd->status = err;
+            }   break;
+
+            case GLCommand::RESTORE_INDEX_BUFFER :
+            {
+                EXEC_GL(glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _GLES2_LastSetIB ));
+                cmd->status = err;
+            }   break;
+
             case GLCommand::DELETE_BUFFERS :
             {
                 EXEC_GL(glDeleteBuffers( (GLsizei)(arg[0]), (GLuint*)(arg[1]) ));
@@ -1460,9 +1472,21 @@ _ExecGL( GLCommand* command, uint32 cmdCount )
                 cmd->status = err;
             }   break;
 
+            case GLCommand::SET_ACTIVE_TEXTURE :
+            {
+                EXEC_GL(glActiveTexture( GLenum(arg[0]) ));
+                cmd->status = err;
+            }   break;
+
             case GLCommand::BIND_TEXTURE :
             {
                 EXEC_GL(glBindTexture( (GLenum)(cmd->arg[0]), (GLuint)(cmd->arg[1]) ));
+                cmd->status = err;
+            }   break;
+
+            case GLCommand::RESTORE_TEXTURE0 :
+            {
+                EXEC_GL(glBindTexture( _GLES2_LastSetTex0Target, _GLES2_LastSetTex0 ));
                 cmd->status = err;
             }   break;
 

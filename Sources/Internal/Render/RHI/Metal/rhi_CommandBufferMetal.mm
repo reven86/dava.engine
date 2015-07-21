@@ -66,7 +66,7 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
     desc.colorAttachments[0].texture = _CurDrawable.texture;
     if( passConf.colorBuffer[0].texture != InvalidHandle )
         TextureMetal::SetAsRenderTarget( passConf.colorBuffer[0].texture, desc );
-
+    
     desc.colorAttachments[0].loadAction     = (passConf.colorBuffer[0].loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
     desc.colorAttachments[0].storeAction    = MTLStoreActionStore;
     desc.colorAttachments[0].clearColor     = MTLClearColorMake(passConf.colorBuffer[0].clearColor[0],passConf.colorBuffer[0].clearColor[1],passConf.colorBuffer[0].clearColor[2],passConf.colorBuffer[0].clearColor[3]);
@@ -75,6 +75,14 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
     desc.depthAttachment.loadAction         = (passConf.depthStencilBuffer.loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
     desc.depthAttachment.storeAction        = (passConf.depthStencilBuffer.storeAction==STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
     desc.depthAttachment.clearDepth         = passConf.depthStencilBuffer.clearDepth;
+
+    desc.stencilAttachment.texture          = _Metal_DefStencilBuf;
+    desc.stencilAttachment.loadAction       = (passConf.depthStencilBuffer.loadAction==LOADACTION_CLEAR) ? MTLLoadActionClear : MTLLoadActionDontCare;
+    desc.stencilAttachment.storeAction      = (passConf.depthStencilBuffer.storeAction==STOREACTION_STORE) ? MTLStoreActionStore : MTLStoreActionDontCare;
+    desc.stencilAttachment.clearStencil     = passConf.depthStencilBuffer.clearStencil;
+
+    if( passConf.depthStencilBuffer.texture != InvalidHandle )
+        TextureMetal::SetAsDepthStencil( passConf.depthStencilBuffer.texture, desc );
     
     if( passConf.queryBuffer != InvalidHandle )
     {
@@ -238,7 +246,7 @@ metal_CommandBuffer_SetScissorRect( Handle cmdBuf, ScissorRect rect )
     else
     {
         rc.x      = 0;
-        rc.x      = 0;
+        rc.y      = 0;
         rc.width  = cb->rt.width;
         rc.height = cb->rt.height;
     }

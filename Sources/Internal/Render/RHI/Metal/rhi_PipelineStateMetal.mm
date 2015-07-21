@@ -498,6 +498,7 @@ metal_PipelineState_Create( const PipelineState::Descriptor& desc )
         NSError*                        rs_err  = nil;
         
         rp_desc.depthAttachmentPixelFormat          = MTLPixelFormatDepth32Float;
+        rp_desc.stencilAttachmentPixelFormat        = MTLPixelFormatStencil8;
         rp_desc.colorAttachments[0].pixelFormat     = MTLPixelFormatBGRA8Unorm;
         rp_desc.colorAttachments[0].blendingEnabled = desc.blending.rtBlend[0].blendEnabled;
         rp_desc.sampleCount                         = 1;
@@ -667,6 +668,12 @@ metal_PipelineState_Create( const PipelineState::Descriptor& desc )
 static void
 metal_PipelineState_Delete( Handle ps )
 {
+    PipelineStateMetal_t* psm = PipelineStateMetalPool::Get( ps );
+    
+    if( psm )
+    {
+        PipelineStateMetalPool::Free( ps );
+    }
 }
 
 
@@ -782,6 +789,7 @@ SetToRHI( Handle ps, uint32 layoutUID, id<MTLRenderCommandEncoder> ce )
             NSError*                        rs_err  = nil;
             
             rp_desc.depthAttachmentPixelFormat  = MTLPixelFormatDepth32Float;
+            rp_desc.stencilAttachmentPixelFormat= MTLPixelFormatStencil8;
             rp_desc.colorAttachments[0]         = psm->desc.colorAttachments[0];
             rp_desc.sampleCount                 = 1;
             rp_desc.vertexFunction              = psm->desc.vertexFunction;

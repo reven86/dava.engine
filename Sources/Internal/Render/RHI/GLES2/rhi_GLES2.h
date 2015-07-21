@@ -66,7 +66,7 @@ namespace TextureGLES2
 { 
 void        SetupDispatch( Dispatch* dispatch );
 void        SetToRHI( Handle tex, unsigned unit_i, uint32 base_i=InvalidIndex  );
-void        SetAsRenderTarget( Handle tex );
+void        SetAsRenderTarget( Handle tex, Handle depth );
 Size2i      Size( Handle tex );
 }
 
@@ -123,6 +123,8 @@ GLCommand
         
         GEN_BUFFERS, 
         BIND_BUFFER, 
+        RESTORE_VERTEX_BUFFER, 
+        RESTORE_INDEX_BUFFER,
         DELETE_BUFFERS, 
         BUFFER_DATA,
         BUFFER_SUBDATA,
@@ -140,7 +142,9 @@ GLCommand
         DELETE_FRAMEBUFFERS,
 
         GEN_TEXTURES,
+        SET_ACTIVE_TEXTURE,
         BIND_TEXTURE,
+        RESTORE_TEXTURE0,
         DELETE_TEXTURES,
         TEX_PARAMETER_I,
         TEX_IMAGE2D,

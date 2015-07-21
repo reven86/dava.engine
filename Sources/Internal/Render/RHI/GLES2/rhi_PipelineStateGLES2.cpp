@@ -259,6 +259,7 @@ RHI_IMPL_POOL(PipelineStateGLES2_t,RESOURCE_PIPELINE_STATE);
 static void
 gles2_PipelineState_Delete( Handle ps )
 {
+    PipelineStateGLES2Pool::Free( ps );
 }
 
 

@@ -67,6 +67,7 @@ namespace TextureMetal
 void    SetToRHIFragment( Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> ce );
 void    SetToRHIVertex( Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder> ce );
 void    SetAsRenderTarget( Handle tex, MTLRenderPassDescriptor* desc );
+void    SetAsDepthStencil( Handle tex, MTLRenderPassDescriptor* desc );
 }
 
 
