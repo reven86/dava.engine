@@ -20,7 +20,9 @@
     #include <stdlib.h>
     #include <ctype.h>
     #include <assert.h>
+    #if defined(__DAVAENGINE_WIN32__)
     #include <malloc.h>
+    #endif
 
 
 #define __T(x)      x
