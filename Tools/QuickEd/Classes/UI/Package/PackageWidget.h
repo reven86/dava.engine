@@ -79,6 +79,7 @@ private slots:
     void OnPaste();
     void OnCut();
     void OnDelete();
+    void OnRename();
 
 private:
     SharedData *sharedData;
@@ -87,7 +88,8 @@ private:
     QAction *pasteAction;
     QAction *cutAction;
     QAction *delAction;
-
+    QAction *renameAction;
+    
     QPointer<FilteredPackageModel> filteredPackageModel;
     QPointer<PackageModel> packageModel;
 };
