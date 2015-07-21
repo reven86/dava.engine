@@ -69,7 +69,7 @@ namespace DAVA
         , framework("framework")
         , branchRev("0")
         , frameworkRev("0")
-        , isDB(false)
+        , isDB(true)
         , needClearGroupInDB(false)
         , isMaster(true)
         , requestedHelpers(0)
@@ -159,7 +159,7 @@ namespace DAVA
 	void AutotestingSystem::FetchParametersFromIdYaml()
 	{
 		Logger::Info("AutotestingSystem::FetchParametersFromIdYaml");
-		KeyedArchive *option = GetIdYamlOptions();
+		RefPtr<KeyedArchive> option = GetIdYamlOptions();
 
 		buildId = option->GetString("BuildId");
 		buildDate = option->GetString("Date");
@@ -169,19 +169,19 @@ namespace DAVA
 		frameworkRev = option->GetString("FrameworkRev");
 
 		// Check is build fol local debugging.  By default: use DB.
-		isDB = !option->GetBool("LocalBuild", false);
-		if (!isDB)
+		bool isLocalBuild = option->GetBool("LocalBuild", false);
+		if (isLocalBuild)
 		{
 			groupName = option->GetString("Group", AutotestingDB::DB_ERROR_STR_VALUE);
 			testFileName = option->GetString("Filename", AutotestingDB::DB_ERROR_STR_VALUE);
+			isDB = false;
 		}
-		SafeRelease(option);
 	}
 
-	KeyedArchive* AutotestingSystem::GetIdYamlOptions()
+	RefPtr<KeyedArchive> AutotestingSystem::GetIdYamlOptions()
 	{
-		FilePath file = "~res:/Autotesting/id.yaml";
-		KeyedArchive *option = new KeyedArchive();
+		static const FilePath file = "~res:/Autotesting/id.yaml";
+		RefPtr<KeyedArchive> option = RefPtr<KeyedArchive>(new KeyedArchive());
 		bool res = option->LoadFromYamlFile(file);
 		if (!res)
 		{
@@ -195,22 +195,23 @@ namespace DAVA
 	void AutotestingSystem::FetchParametersFromDB()
 	{
 		Logger::Info("AutotestingSystem::FetchParametersFromDB");
-		groupName = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Group");
+		AutotestingDB *db = AutotestingDB::Instance();
+		groupName = db->GetStringTestParameter(deviceName, "Group");
 		if (groupName == AutotestingDB::DB_ERROR_STR_VALUE)
 		{
 			ForceQuit("Couldn't get 'Group' parameter from DB.");
 		}
-		testFileName = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "Filename");
+		testFileName = db->GetStringTestParameter(deviceName, "Filename");
 		if (groupName == AutotestingDB::DB_ERROR_STR_VALUE)
 		{
 			ForceQuit("Couldn't get 'Filename' parameter from DB.");
 		}
-		runId = AutotestingDB::Instance()->GetStringTestParameter(deviceName, "RunId");
+		runId = db->GetStringTestParameter(deviceName, "RunId");
 		if (runId == AutotestingDB::DB_ERROR_STR_VALUE)
 		{
 			ForceQuit("Couldn't get 'RunId' parameter from DB.");
 		}
-		testIndex = AutotestingDB::Instance()->GetIntTestParameter(deviceName, "TestIndex");
+		testIndex = db->GetIntTestParameter(deviceName, "TestIndex");
 		if (testIndex == AutotestingDB::DB_ERROR_INT_VALUE)
 		{
 			ForceQuit("Couldn't get TestIndex parameter from DB.");
@@ -351,8 +352,7 @@ namespace DAVA
 
 	void AutotestingSystem::ForceQuit(const String &errorMessage)
 	{
-		Logger::Error("AutotestingSystem::ForceQuit %s", errorMessage.c_str());
-
+		DVASSERT_MSG(false, errorMessage.c_str())
 		Core::Instance()->Quit();
 	}
 
