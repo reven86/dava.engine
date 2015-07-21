@@ -159,14 +159,25 @@ public:
     uint32              isLastInPass:1;
 
     RingBuffer*         text;
+
+    Handle              sync;
 };
 
 
+struct
+SyncObjectDX9_t 
+{
+    uint32  frame;
+    uint32  is_signaled:1;
+};
+
 typedef ResourcePool<CommandBufferDX9_t,RESOURCE_COMMAND_BUFFER>    CommandBufferPool;
 typedef ResourcePool<RenderPassDX9_t,RESOURCE_RENDER_PASS>          RenderPassPool;
+typedef ResourcePool<SyncObjectDX9_t,RESOURCE_SYNC_OBJECT>          SyncObjectPool;
 
 RHI_IMPL_POOL(CommandBufferDX9_t,RESOURCE_COMMAND_BUFFER);
 RHI_IMPL_POOL(RenderPassDX9_t,RESOURCE_RENDER_PASS);
+RHI_IMPL_POOL(SyncObjectDX9_t,RESOURCE_SYNC_OBJECT);
 
     
 const uint64   CommandBufferDX9_t::EndCmd = 0xFFFFFFFF;
@@ -262,9 +273,9 @@ dx9_CommandBuffer_Begin( Handle cmdBuf )
 //------------------------------------------------------------------------------
 
 static void
-dx9_CommandBuffer_End( Handle cmdBuf )
+dx9_CommandBuffer_End( Handle cmdBuf, Handle syncObject )
 {
-    CommandBufferPool::Get(cmdBuf)->Command( DX9__END );
+    CommandBufferPool::Get(cmdBuf)->Command( DX9__END, syncObject );
 }
 
 
@@ -470,10 +481,48 @@ dx9_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
 }
 
 
+//------------------------------------------------------------------------------
+
+static Handle
+dx9_SyncObject_Create()
+{
+    Handle  handle = SyncObjectPool::Alloc();
+
+    return handle;
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+dx9_SyncObject_Delete( Handle obj )
+{
+    SyncObjectPool::Free( obj );
+}
+
+
+//------------------------------------------------------------------------------
+
+static bool
+dx9_SyncObject_IsSignaled( Handle obj )
+{
+    bool                signaled = false;
+    SyncObjectDX9_t*    sync     = SyncObjectPool::Get( obj );
+    
+    if( sync )
+        signaled = sync->is_signaled;
+
+    return signaled;
+}
+
+
+
+
 CommandBufferDX9_t::CommandBufferDX9_t()
   : isFirstInPass(true),
     isLastInPass(true),
-    text(nullptr)
+    text(nullptr),
+    sync(InvalidHandle)
 {
 }
 
@@ -626,6 +675,8 @@ SCOPED_FUNCTION_TIMING();
 
     _D3D9_Device->GetViewport( &def_viewport );
 
+    sync = InvalidHandle;
+
     for( std::vector<uint64>::const_iterator c=_cmd.begin(),c_end=_cmd.end(); c!=c_end; ++c )
     {
         const uint64                        cmd = *c;
@@ -702,6 +753,8 @@ SCOPED_FUNCTION_TIMING();
 
             case DX9__END :
             {
+                sync = Handle(arg[0]);
+
                 if( isLastInPass )
                 {
                     DX9_CALL(_D3D9_Device->EndScene(),"EndScene");
@@ -1020,6 +1073,15 @@ Trace("\n\n-------------------------------\nexecuting frame %u\n",frame_n);
             CommandBufferDX9_t* cb   = CommandBufferPool::Get( cb_h );
 
             cb->Execute();
+
+            if( cb->sync != InvalidHandle )
+            {
+                SyncObjectDX9_t*    sync = SyncObjectPool::Get( cb->sync );
+
+                sync->frame       = frame_n;
+                sync->is_signaled = false;
+            }
+
             CommandBufferPool::Free( cb_h );
         }
         
@@ -1066,6 +1128,15 @@ Trace("\n\n-------------------------------\nframe %u executed(submitted to GPU)\
         if( hr == D3DERR_DEVICELOST )
             _ResetPending = true;
     }    
+
+
+    // update sync-objects
+
+    for( SyncObjectPool::Iterator s=SyncObjectPool::Begin(),s_end=SyncObjectPool::End(); s!=s_end; ++s )
+    {
+        if( frame_n - s->frame > 3 )
+            s->is_signaled = true;
+    }
 }
 
 
@@ -1382,6 +1453,10 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_DrawPrimitive          = &dx9_CommandBuffer_DrawPrimitive;
     dispatch->impl_CommandBuffer_DrawIndexedPrimitive   = &dx9_CommandBuffer_DrawIndexedPrimitive;
     dispatch->impl_CommandBuffer_SetMarker              = &dx9_CommandBuffer_SetMarker;
+
+    dispatch->impl_SyncObject_Create                    = &dx9_SyncObject_Create;
+    dispatch->impl_SyncObject_Delete                    = &dx9_SyncObject_Delete;
+    dispatch->impl_SyncObject_IsSignaled                = &dx9_SyncObject_IsSignaled;
     
     dispatch->impl_Present                              = &dx9_Present;
 }

@@ -95,13 +95,25 @@ public:
 
     uint32              dbgCommandCount;
     RingBuffer*         text;
+
+    Handle              sync;
 };
+
+struct
+SyncObjectGLES2_t 
+{
+    uint32  frame;
+    uint32  is_signaled:1;
+};
+
 
 typedef ResourcePool<CommandBufferGLES2_t,RESOURCE_COMMAND_BUFFER>  CommandBufferPool;
 typedef ResourcePool<RenderPassGLES2_t,RESOURCE_RENDER_PASS>        RenderPassPool;
+typedef ResourcePool<SyncObjectGLES2_t,RESOURCE_SYNC_OBJECT>        SyncObjectPool;
 
 RHI_IMPL_POOL(CommandBufferGLES2_t,RESOURCE_COMMAND_BUFFER);
 RHI_IMPL_POOL(RenderPassGLES2_t,RESOURCE_RENDER_PASS);
+RHI_IMPL_POOL(SyncObjectGLES2_t,RESOURCE_SYNC_OBJECT);
     
 const uint64   CommandBufferGLES2_t::EndCmd = 0xFFFFFFFF;
 
@@ -234,9 +246,9 @@ gles2_CommandBuffer_Begin( Handle cmdBuf )
 //------------------------------------------------------------------------------
 
 static void
-gles2_CommandBuffer_End( Handle cmdBuf )
+gles2_CommandBuffer_End( Handle cmdBuf, Handle syncObject )
 {
-    CommandBufferPool::Get(cmdBuf)->Command( GLES2__END );
+    CommandBufferPool::Get(cmdBuf)->Command( GLES2__END, syncObject );
 }
 
 
@@ -458,6 +470,41 @@ gles2_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
 }
 
 
+//------------------------------------------------------------------------------
+
+static Handle
+gles2_SyncObject_Create()
+{
+    Handle  handle = SyncObjectPool::Alloc();
+
+    return handle;
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+gles2_SyncObject_Delete( Handle obj )
+{
+    SyncObjectPool::Free( obj );
+}
+
+
+//------------------------------------------------------------------------------
+
+static bool
+gles2_SyncObject_IsSignaled( Handle obj )
+{
+    bool                signaled = false;
+    SyncObjectGLES2_t*  sync     = SyncObjectPool::Get( obj );
+    
+    if( sync )
+        signaled = sync->is_signaled;
+
+    return signaled;
+}
+
+
 
 
 
@@ -465,7 +512,8 @@ gles2_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
 CommandBufferGLES2_t::CommandBufferGLES2_t()
   : isFirstInPass(true),
     isLastInPass(true),
-    text(nullptr)
+    text(nullptr),
+    sync(InvalidHandle)
 {
 }
 
@@ -642,6 +690,8 @@ SCOPED_NAMED_TIMING("gl.exec");
 
     int immediate_cmd_ttw = 10;
 
+    sync = InvalidHandle;
+
 Trace("cmd-count= %i\n",int(dbgCommandCount));
 unsigned cmd_n=0;
     for( std::vector<uint64>::const_iterator c=_cmd.begin(),c_end=_cmd.end(); c!=c_end; ++c )
@@ -747,6 +797,8 @@ Trace("cmd[%u] %i\n",cmd_n,int(cmd));
             
             case GLES2__END :
             {
+                sync = Handle(arg[0]);
+                
                 if( isLastInPass )
                 {
                     glFlush();
@@ -1122,10 +1174,17 @@ Trace("\n\n-------------------------------\nexecuting frame %u\n",frame_n);
             CommandBufferGLES2_t*   cb   = CommandBufferPool::Get( cb_h );
 
             cb->Execute();
+
+            if( cb->sync != InvalidHandle )
+            {
+                SyncObjectGLES2_t*  sync = SyncObjectPool::Get( cb->sync );
+
+                sync->frame       = frame_n;
+                sync->is_signaled = false;
+            }
+
             CommandBufferPool::Free( cb_h );
         }
-        
-//        RenderPassPool::Free( *p );
     }
 
     _FrameSync.Lock();
@@ -1223,6 +1282,15 @@ Trace("rhi-gl.swap-buffers done\n");
 #elif defined(__DAVAENGINE_IPHONE__)
         ios_gl_end_frame();
 #endif
+    }
+
+
+    // update sync-objects
+
+    for( SyncObjectPool::Iterator s=SyncObjectPool::Begin(),s_end=SyncObjectPool::End(); s!=s_end; ++s )
+    {
+        if( frame_n - s->frame > 3 )
+            s->is_signaled = true;
     }
 }
 
@@ -1748,6 +1816,10 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_DrawPrimitive          = &gles2_CommandBuffer_DrawPrimitive;
     dispatch->impl_CommandBuffer_DrawIndexedPrimitive   = &gles2_CommandBuffer_DrawIndexedPrimitive;
     dispatch->impl_CommandBuffer_SetMarker              = &gles2_CommandBuffer_SetMarker;
+
+    dispatch->impl_SyncObject_Create                    = &gles2_SyncObject_Create;
+    dispatch->impl_SyncObject_Delete                    = &gles2_SyncObject_Delete;
+    dispatch->impl_SyncObject_IsSignaled                = &gles2_SyncObject_IsSignaled;
     
     dispatch->impl_Present                              = &gles2_Present;
 }

@@ -38,11 +38,21 @@ CommandBufferMetal_t
     Handle                      cur_ib;
 };
 
+
+struct
+SyncObjectMetal_t 
+{
+    uint32  frame;
+    uint32  is_signaled:1;
+};
+
 typedef ResourcePool<CommandBufferMetal_t,RESOURCE_COMMAND_BUFFER>  CommandBufferPool;
 typedef ResourcePool<RenderPassMetal_t,RESOURCE_RENDER_PASS>        RenderPassPool;
+typedef ResourcePool<SyncObjectMetal_t,RESOURCE_SYNC_OBJECT>        SyncObjectPool;
 
 RHI_IMPL_POOL(CommandBufferMetal_t,RESOURCE_COMMAND_BUFFER);
 RHI_IMPL_POOL(RenderPassMetal_t,RESOURCE_RENDER_PASS);
+RHI_IMPL_POOL(SyncObjectMetal_t,RESOURCE_SYNC_OBJECT);
 
 static id<CAMetalDrawable>      _CurDrawable = nil;    
 static std::vector<Handle>      _CmdQueue;
@@ -479,6 +489,43 @@ metal_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
 
 //------------------------------------------------------------------------------
 
+static Handle
+metal_SyncObject_Create()
+{
+    Handle  handle = SyncObjectPool::Alloc();
+
+    return handle;
+}
+
+
+//------------------------------------------------------------------------------
+
+static void
+metal_SyncObject_Delete( Handle obj )
+{
+    SyncObjectPool::Free( obj );
+}
+
+
+//------------------------------------------------------------------------------
+
+static bool
+metal_SyncObject_IsSignaled( Handle obj )
+{
+    bool                signaled = false;
+    SyncObjectMetal_t*  sync     = SyncObjectPool::Get( obj );
+    
+    if( sync )
+        signaled = sync->is_signaled;
+
+    return signaled;
+}
+
+
+
+
+//------------------------------------------------------------------------------
+
 static void
 metal_Present()
 {
@@ -513,7 +560,7 @@ SCOPED_NAMED_TIMING("rhi.draw-present");
     for( std::vector<RenderPassMetal_t*>::iterator p=pass.begin(),p_end=pass.end(); p!=p_end; ++p )
     {
         RenderPassMetal_t*  pass = *p;
-        \
+        
         for( unsigned b=0; b!=pass->cmdBuf.size(); ++b )
         {
             Handle                  cb_h = pass->cmdBuf[b];
@@ -565,6 +612,10 @@ SetupDispatch( Dispatch* dispatch )
     dispatch->impl_CommandBuffer_DrawPrimitive          = &metal_CommandBuffer_DrawPrimitive;
     dispatch->impl_CommandBuffer_DrawIndexedPrimitive   = &metal_CommandBuffer_DrawIndexedPrimitive;
     dispatch->impl_CommandBuffer_SetMarker              = &metal_CommandBuffer_SetMarker;
+
+    dispatch->impl_SyncObject_Create                    = &metal_SyncObject_Create;
+    dispatch->impl_SyncObject_Delete                    = &metal_SyncObject_Delete;
+    dispatch->impl_SyncObject_IsSignaled                = &metal_SyncObject_IsSignaled;
     
     dispatch->impl_Present                              = &metal_Present;
 }

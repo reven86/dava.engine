@@ -429,6 +429,31 @@ End( Handle pass )
 }
 
 
+//////////////////////////////////////////////////////////////////////////
+
+namespace SyncObject
+{
+
+Handle
+Create()
+{
+    return (*_Impl.impl_SyncObject_Create)();
+}
+
+void
+Delete( Handle obj )
+{
+    (*_Impl.impl_SyncObject_Delete)( obj );
+}
+
+bool
+IsSygnaled( Handle obj )
+{
+    return (*_Impl.impl_SyncObject_IsSignaled)( obj );
+}
+
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -442,9 +467,9 @@ Begin( Handle cmdBuf )
 }
 
 void
-End( Handle cmdBuf )
+End( Handle cmdBuf, Handle syncObject )
 {
-    (*_Impl.impl_CommandBuffer_End)( cmdBuf );
+    (*_Impl.impl_CommandBuffer_End)( cmdBuf, syncObject );
 }
 
 void
