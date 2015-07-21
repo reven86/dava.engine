@@ -33,6 +33,7 @@ struct
 CommandBufferMetal_t
 {
     id<MTLRenderCommandEncoder> encoder;
+    id<MTLCommandBuffer>        buf;
 
     id<MTLTexture>              rt;
     Handle                      cur_ib;
@@ -42,7 +43,6 @@ CommandBufferMetal_t
 struct
 SyncObjectMetal_t 
 {
-    uint32  frame;
     uint32  is_signaled:1;
 };
 
@@ -113,6 +113,7 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
         pass->buf       = [_Metal_DefCmdQueue commandBufferWithUnretainedReferences]; 
 
         cb->encoder      = [pass->buf renderCommandEncoderWithDescriptor:desc];
+        cb->buf          = pass->buf;
         cb->rt           = desc.colorAttachments[0].texture;
         cb->cur_ib       = InvalidHandle;
         
@@ -131,6 +132,7 @@ SCOPED_NAMED_TIMING("rhi.mtl-vsync");
             CommandBufferMetal_t*   cb   = CommandBufferPool::Get( cb_h );
 
             cb->encoder     = [pass->encoder renderCommandEncoder];
+            cb->buf         = pass->buf;
             cb->rt          = desc.colorAttachments[0].texture;
             cb->cur_ib      = InvalidHandle;
             
@@ -190,11 +192,21 @@ metal_CommandBuffer_Begin( Handle cmdBuf )
 //------------------------------------------------------------------------------
 
 static void
-metal_CommandBuffer_End( Handle cmdBuf )
+metal_CommandBuffer_End( Handle cmdBuf, Handle syncObject )
 {
     CommandBufferMetal_t*   cb = CommandBufferPool::Get( cmdBuf );
 
     [cb->encoder endEncoding];
+
+    if( syncObject != InvalidHandle )
+    {
+        [cb->buf addCompletedHandler:^(id <MTLCommandBuffer> cmdb)
+        {
+            SyncObjectMetal_t*  sync = SyncObjectPool::Get( syncObject );
+            
+            sync->is_signaled = true;
+        }];
+    }
 }
 
 
@@ -492,7 +504,10 @@ metal_CommandBuffer_SetMarker( Handle cmdBuf, const char* text )
 static Handle
 metal_SyncObject_Create()
 {
-    Handle  handle = SyncObjectPool::Alloc();
+    Handle              handle = SyncObjectPool::Alloc();
+    SyncObjectMetal_t*  sync   = SyncObjectPool::Get( handle );
+    
+    sync->is_signaled = false;
 
     return handle;
 }
