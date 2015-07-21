@@ -46,6 +46,8 @@
 #include "UI/UIWebView.h"
 #include "Platform/TemplateWin32/PrivateWebViewWinUAP.h"
 
+#include "Platform/TemplateWin32/Dispatcher.h"
+
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/File.h"
 #include "FileSystem/Logger.h"
@@ -240,7 +242,7 @@ PrivateWebViewWinUAP::~PrivateWebViewWinUAP()
     }
 }
 
-void PrivateWebViewWinUAP::DetachDelegateAndView()
+void PrivateWebViewWinUAP::FlyToSunIcarus()
 {
     uiWebView = nullptr;
     webViewDelegate = nullptr;
@@ -299,12 +301,10 @@ void PrivateWebViewWinUAP::ExecuteJScript(const String& scriptString)
         auto js = nativeWebView->InvokeScriptAsync("eval", args);
         create_task(js).then([this, self](Platform::String^ result) {
             core->RunOnMainThread([this, result]() {
-                IUIWebViewDelegate* legate = webViewDelegate.Get();
-                UIWebView* view = uiWebView.Get();
-                if (legate != nullptr && view != nullptr)
+                if (webViewDelegate != nullptr && uiWebView != nullptr)
                 {
                     String jsResult = WStringToString(result->Data());
-                    legate->OnExecuteJScript(view, jsResult);
+                    webViewDelegate->OnExecuteJScript(uiWebView, jsResult);
                 }
             });
         }).then([self](task<void> t) {
@@ -362,12 +362,11 @@ void PrivateWebViewWinUAP::SetRenderToTexture(bool value)
     {
         renderToTexture = value;
 
-        UIWebView* view = uiWebView.Get();
-        if (view != nullptr)
+        if (uiWebView != nullptr)
         {
             if (!renderToTexture)
             {
-                view->SetSprite(nullptr, 0);
+                uiWebView->SetSprite(nullptr, 0);
             }
 
             bool offScreen = renderToTexture || !visible;
@@ -430,21 +429,21 @@ void PrivateWebViewWinUAP::OnNavigationStarting(WebView^ sender, WebViewNavigati
     }
     Logger::FrameworkDebug("[WebView] OnNavigationStarting: url=%s", url.c_str());
 
-    IUIWebViewDelegate* legate = webViewDelegate.Get();
-    UIWebView* view = uiWebView.Get();
-    if (legate != nullptr && view != nullptr)
+    bool redirectedByMouse = false; // For now I don't know how to get redirection method
+    IUIWebViewDelegate::eAction whatToDo = IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
+    core->RunOnMainThreadBlocked([this, &whatToDo, &url, redirectedByMouse]()
     {
-        // For now delegate is running on UI thread not main, as RunOnMainThreadBlocked leads to deadlocks in some case
-        // Problem needs further investigation
-
-        bool redirectedByMouse = false; // For now I don't know how to get redirection method
-        IUIWebViewDelegate::eAction whatToDo = legate->URLChanged(view, url, redirectedByMouse);
-        if (IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER == whatToDo && args->Uri != nullptr)
+        if (uiWebView != nullptr && webViewDelegate != nullptr)
         {
-            Launcher::LaunchUriAsync(args->Uri);
+            whatToDo = webViewDelegate->URLChanged(uiWebView, url, redirectedByMouse);
         }
-        args->Cancel = whatToDo != IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
+    });
+
+    if (IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER == whatToDo && args->Uri != nullptr)
+    {
+        Launcher::LaunchUriAsync(args->Uri);
     }
+    args->Cancel = whatToDo != IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 }
 
 void PrivateWebViewWinUAP::OnNavigationCompleted(WebView^ sender, WebViewNavigationCompletedEventArgs^ args)
@@ -471,11 +470,9 @@ void PrivateWebViewWinUAP::OnNavigationCompleted(WebView^ sender, WebViewNavigat
 
     auto self{shared_from_this()};
     core->RunOnMainThread([this, self]() {
-        IUIWebViewDelegate* legate = webViewDelegate.Get();
-        UIWebView* view = uiWebView.Get();
-        if (legate != nullptr && view != nullptr)
+        if (uiWebView != nullptr && webViewDelegate != nullptr)
         {
-            legate->PageLoaded(view);
+            webViewDelegate->PageLoaded(uiWebView);
         }
     });
 }
@@ -507,10 +504,9 @@ void PrivateWebViewWinUAP::RenderToTexture()
             if (sprite.Valid())
             {
                 core->RunOnMainThread([this, self, sprite]() {
-                    UIWebView* view = uiWebView.Get();
-                    if (view != nullptr)
+                    if (uiWebView != nullptr)
                     {
-                        view->SetSprite(sprite.Get(), 0);
+                        uiWebView->SetSprite(sprite.Get(), 0);
                     }
                 });
             }

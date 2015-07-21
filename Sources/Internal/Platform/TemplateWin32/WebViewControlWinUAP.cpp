@@ -50,7 +50,7 @@ WebViewControl::WebViewControl(UIWebView& uiWebView)
 
 WebViewControl::~WebViewControl()
 {
-    privateImpl->DetachDelegateAndView();
+    privateImpl->FlyToSunIcarus();
 }
 
 void WebViewControl::Initialize(const Rect& rect)
