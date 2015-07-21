@@ -564,7 +564,7 @@ void TextBlock::CalculateCacheParams()
             {
                 int32 left = 0;
                 int32 right = length;
-                bool flag = false;
+                bool cutFromBegin = false;
 
                 while (left != right)
                 {
@@ -577,11 +577,11 @@ void TextBlock::CalculateCacheParams()
                         break;
                     }
 
-                    if (flag)
-                        right--;
-                    else
+                    if (cutFromBegin)
                         left++;
-                    flag = !flag;
+                    else
+                        right--;
+                    cutFromBegin = !cutFromBegin;
                 }
             }
             else if (ALIGN_LEFT & align)

@@ -36,7 +36,6 @@ class StaticTextTest : public BaseScreen
 {
 public:
     StaticTextTest();
-    ~StaticTextTest();
 
     void LoadResources() override;
     void UnloadResources() override;
@@ -52,19 +51,18 @@ private:
     
     void OnAlignButtonClick(BaseObject* sender, void * data, void * callerData);
     void OnFittingButtonClick(BaseObject* sender, void * data, void * callerData);
-    void OnReuireTextSizeButtonClick(BaseObject* sender, void * data, void * callerData);
+    void OnRequireTextSizeButtonClick(BaseObject* sender, void * data, void * callerData);
     void OnMultilineButtonClick(BaseObject* sender, void * data, void * callerData);
 
-    DAVA::UIStaticText* previewText;
-    DAVA::UITextField* inputText;
-    DAVA::UITextFieldDelegate* inputDelegate;
-
+    DAVA::UIStaticText* previewText = nullptr;
+    DAVA::UITextField* inputText = nullptr;
+    DAVA::UITextFieldDelegate* inputDelegate = nullptr;
+    DAVA::UIButton* requireTextSizeButton = nullptr;
     DAVA::List<DAVA::UIButton*> alignButtons;
     DAVA::List<DAVA::UIButton*> fittingButtons;
     DAVA::List<DAVA::UIButton*> multilineButtons;
-    DAVA::UIButton* requireTextSizeButton;
     
-    bool needRequiredSize;
+    bool needRequiredSize = false;
 };
 
 #endif //__MULTILINETEST_TEST_H__

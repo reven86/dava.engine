@@ -53,11 +53,11 @@ static const Color GREEN = Color(0.f, 1.f, 0.f, 1.f);
 
 struct ButtonInfo {
     WideString caption;
-    int32 data;
+    int32 tag;
     Rect rect;
 };
 
-static ButtonInfo alignButtonsInfo[] = {
+static const ButtonInfo alignButtonsInfo[] = {
     { L"Top left", ALIGN_TOP | ALIGN_LEFT, Rect(450, 30, 100, 20) },
     { L"Top center", ALIGN_TOP | ALIGN_HCENTER, Rect(560, 30, 100, 20) },
     { L"Top right", ALIGN_TOP | ALIGN_RIGHT, Rect(670, 30, 100, 20) },
@@ -69,7 +69,7 @@ static ButtonInfo alignButtonsInfo[] = {
     { L"Bottom right", ALIGN_BOTTOM | ALIGN_RIGHT, Rect(670, 80, 100, 20) },
 };
 
-static ButtonInfo fittingButtonsInfo[] = {
+static const ButtonInfo fittingButtonsInfo[] = {
     { L"Disable", TextBlock::FITTING_DISABLED, Rect(450, 130, 100, 20) },
     { L"Points", TextBlock::FITTING_POINTS, Rect(560, 130, 100, 20) },
     { L"Enlarge", TextBlock::FITTING_ENLARGE, Rect(450, 155, 100, 20) },
@@ -77,7 +77,7 @@ static ButtonInfo fittingButtonsInfo[] = {
     { L"Enlarge/reduce", TextBlock::FITTING_ENLARGE | TextBlock::FITTING_REDUCE, Rect(450, 180, 100, 20) },
 };
 
-static ButtonInfo multilineButtonsInfo[] = {
+static const ButtonInfo multilineButtonsInfo[] = {
     { L"Disable", UIStaticText::MULTILINE_DISABLED, Rect(450, 280, 100, 20) },
     { L"By words", UIStaticText::MULTILINE_ENABLED, Rect(560, 280, 100, 20) },
     { L"By symbols", UIStaticText::MULTILINE_ENABLED_BY_SYMBOL, Rect(670, 280, 100, 20) },
@@ -85,15 +85,6 @@ static ButtonInfo multilineButtonsInfo[] = {
 
 StaticTextTest::StaticTextTest()
 : BaseScreen("TextAlignTest")
-, previewText(nullptr)
-, inputText(nullptr)
-, inputDelegate(nullptr)
-, requireTextSizeButton(nullptr)
-, needRequiredSize(true)
-{
-}
-
-StaticTextTest::~StaticTextTest()
 {
 }
 
@@ -146,7 +137,7 @@ void StaticTextTest::LoadResources()
 
     for (auto info : alignButtonsInfo)
     {
-        UIButton* btn = CreateButton(info.caption, info.rect, info.data, font, Message(this, &StaticTextTest::OnAlignButtonClick));
+        UIButton* btn = CreateButton(info.caption, info.rect, info.tag, font, Message(this, &StaticTextTest::OnAlignButtonClick));
         alignButtons.push_back(btn);
     }
 
@@ -161,7 +152,7 @@ void StaticTextTest::LoadResources()
 
     for (auto info : fittingButtonsInfo)
     {
-        UIButton* btn = CreateButton(info.caption, info.rect, info.data, font, Message(this, &StaticTextTest::OnFittingButtonClick));
+        UIButton* btn = CreateButton(info.caption, info.rect, info.tag, font, Message(this, &StaticTextTest::OnFittingButtonClick));
         fittingButtons.push_back(btn);
     }
 
@@ -177,7 +168,7 @@ void StaticTextTest::LoadResources()
     requireTextSizeButton->SetStateFontColor(0xFF, Color::White);
     requireTextSizeButton->SetStateText(0xFF, L"On / Off");
     requireTextSizeButton->SetDebugDraw(true);
-    requireTextSizeButton->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &StaticTextTest::OnReuireTextSizeButtonClick));
+    requireTextSizeButton->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &StaticTextTest::OnRequireTextSizeButtonClick));
     AddControl(requireTextSizeButton);
 
     label = new UIStaticText(Rect(450, 255, 200, 20));
@@ -189,7 +180,7 @@ void StaticTextTest::LoadResources()
 
     for (auto info : multilineButtonsInfo)
     {
-        UIButton* btn = CreateButton(info.caption, info.rect, info.data, font, Message(this, &StaticTextTest::OnMultilineButtonClick));
+        UIButton* btn = CreateButton(info.caption, info.rect, info.tag, font, Message(this, &StaticTextTest::OnMultilineButtonClick));
         multilineButtons.push_back(btn);
     }
 
@@ -203,19 +194,31 @@ void StaticTextTest::UnloadResources()
     SafeRelease(previewText);
     SafeRelease(inputText);
     SafeDelete(inputDelegate);
+    SafeRelease(requireTextSizeButton);
     for (auto btn : alignButtons)
     {
         SafeRelease(btn);
     }
     alignButtons.clear();
+    for (auto btn : fittingButtons)
+    {
+        SafeRelease(btn);
+    }
+    fittingButtons.clear();
+    for (auto btn : multilineButtons)
+    {
+        SafeRelease(btn);
+    }
+    multilineButtons.clear();
 }
 
 void StaticTextTest::SetPreviewText(const DAVA::WideString& text)
 {
+    static const Vector2 NO_REQUIRED_SIZE = Vector2(-1.f, -1.f);
     if (needRequiredSize)
         previewText->SetText(text);
     else
-        previewText->SetText(text, Vector2(-1.f, -1.f));
+        previewText->SetText(text, NO_REQUIRED_SIZE);
 }
 
 void StaticTextTest::SetPreviewAlign(DAVA::int32 align)
@@ -278,7 +281,7 @@ void StaticTextTest::OnFittingButtonClick(BaseObject* sender, void * data, void 
     SetPreviewFitting(btn->GetTag());
 }
 
-void StaticTextTest::OnReuireTextSizeButtonClick(BaseObject* sender, void * data, void * callerData)
+void StaticTextTest::OnRequireTextSizeButtonClick(BaseObject* sender, void * data, void * callerData)
 {
     SetPreviewRequiredTextSize(!needRequiredSize);
 }

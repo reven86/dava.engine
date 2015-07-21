@@ -41,7 +41,7 @@ static struct FittingTestInfo
     WideString result;
 } testData[] = {
     { TextBlock::FITTING_DISABLED, ALIGN_LEFT, L"THIS SOFTWARE IS PROVIDED BY THE DAVA CONSULTIN" },
-    { TextBlock::FITTING_DISABLED, ALIGN_HCENTER, L"AVA CONSULTING, LLC AND CONTRIBUTORS AS IS AND " },
+    { TextBlock::FITTING_DISABLED, ALIGN_HCENTER, L"DAVA CONSULTING, LLC AND CONTRIBUTORS AS IS AND" },
     { TextBlock::FITTING_DISABLED, ALIGN_RIGHT, L"ORS AS IS AND ANY EXPRESS OR IMPLIED WARRANTIES" },
     { TextBlock::FITTING_POINTS, ALIGN_LEFT, L"THIS SOFTWARE IS PROVIDED BY THE DAVA CONSULTI..." },
     { TextBlock::FITTING_POINTS, ALIGN_HCENTER, L"THIS SOFTWARE IS PROVIDED BY THE DAVA CONSULTI..." },
@@ -269,7 +269,7 @@ DAVA_TESTCLASS(StaticTextTest)
     {
         staticText->SetMultiline(false);
 
-        for (auto data : testData)
+        for (const auto& data : testData)
         {
             staticText->SetFittingOption(data.fitting);
             staticText->SetTextAlign(data.align);
