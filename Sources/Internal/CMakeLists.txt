@@ -158,7 +158,7 @@ elseif ( WINDOWS_UAP )
     file ( GLOB RELEASE_LIB_LIST "${DAVA_WIN_STORE_LIBRARIES_PATH}/${LIBS_ARCH_SELECTOR}/Release/*.lib" )
     list ( APPEND LIST_SHARED_LIBRARIES_RELEASE ${RELEASE_LIB_LIST}  )
 
-elseif( MSVC ) 
+elseif( WIN32 ) 
 
     link_directories       ( $ENV{DXSDK_DIR}/lib/x86 )
 

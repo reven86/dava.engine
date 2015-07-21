@@ -136,6 +136,7 @@ QVariant PackageModel::data(const QModelIndex &index, int role) const
     {
         switch(role)
         {
+            case Qt::EditRole:
             case Qt::DisplayRole:
                 return StringToQString(node->GetName());
                 
@@ -252,11 +253,23 @@ bool PackageModel::setData(const QModelIndex &index, const QVariant &value, int 
         return false;
     
     PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
-    
+    auto control = node->GetControl();
+    if(nullptr == control)
+    {
+        return false;
+    }
     if (role == Qt::CheckStateRole)
     {
-        if (node->GetControl())
-            node->GetControl()->SetVisibleForUIEditor(value.toBool());
+        control->SetVisibleForUIEditor(value.toBool());
+        return true;
+    }
+    if(role == Qt::EditRole)
+    {
+        ControlNode *controlNode = dynamic_cast<ControlNode*>(node);
+        DVASSERT(controlNode);
+        auto prop = controlNode->GetRootProperty()->GetNameProperty();
+        const auto &newName = value.toString().toStdString();
+        commandExecutor->ChangeProperty(controlNode, prop, DAVA::VariantType(newName));
         return true;
     }
     return false;
@@ -271,10 +284,18 @@ Qt::ItemFlags PackageModel::flags(const QModelIndex &index) const
     
     const PackageBaseNode *node = static_cast<PackageBaseNode*>(index.internalPointer());
     if (node->CanCopy())
+    {
         flags |= Qt::ItemIsDragEnabled;
+    }
     if (node->IsInsertingControlsSupported() || node->IsInsertingPackagesSupported())
+    {
         flags |= Qt::ItemIsDropEnabled;
-    
+    }
+    if(node->IsEditingSupported())
+    {
+        flags |= Qt::ItemIsEditable;
+    }
+
     return flags;
 }
 

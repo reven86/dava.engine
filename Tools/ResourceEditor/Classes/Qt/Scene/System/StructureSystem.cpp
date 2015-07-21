@@ -565,7 +565,7 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
                 Entity* tmpEntity = loadedEntity;
 
                 tmpParent->AddNode(tmpEntity);
-                tmpSceneFile->OptimizeScene(tmpEntity);
+                tmpSceneFile->RemoveEmptyHierarchy(tmpEntity);
 
                 loadedEntity = SafeRetain(tmpParent->GetChild(0));
 
