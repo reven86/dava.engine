@@ -27,42 +27,38 @@
  =====================================================================================*/
 
 
-#include "DependedOnLayoutProperty.h"
+#include "AttachComponentPrototypeSectionCommand.h"
 
-#include "FileSystem/LocalizationSystem.h"
+#include "Model/PackageHierarchy/PackageNode.h"
+#include "Model/PackageHierarchy/ControlNode.h"
+#include "Model/ControlProperties/ComponentPropertiesSection.h"
+#include "UI/Components/UIComponent.h"
 
 using namespace DAVA;
 
-DependedOnLayoutProperty::DependedOnLayoutProperty(DAVA::BaseObject *anObject, const DAVA::InspMember *aMmember, const DependedOnLayoutProperty *sourceProperty, eCloneType cloneType)
-    : IntrospectionProperty(anObject, aMmember, sourceProperty, cloneType)
+AttachComponentPrototypeSectionCommand::AttachComponentPrototypeSectionCommand(PackageNode *aRoot, ControlNode *aNode, ComponentPropertiesSection *aDestSection, ComponentPropertiesSection *aPrototypeSection, QUndoCommand *parent)
+    : QUndoCommand(parent)
+    , root(SafeRetain(aRoot))
+    , node(SafeRetain(aNode))
+    , destSection(SafeRetain(aDestSection))
+    , prototypeSection(SafeRetain(aPrototypeSection))
 {
-    ApplyValue(member->Value(object));
-    if (sourceProperty)
-        sourceValue = sourceProperty->sourceValue;
 }
 
-DependedOnLayoutProperty::~DependedOnLayoutProperty()
+AttachComponentPrototypeSectionCommand::~AttachComponentPrototypeSectionCommand()
 {
-    
+    SafeRelease(root);
+    SafeRelease(node);
+    SafeRelease(destSection);
+    SafeRelease(prototypeSection);
 }
 
-void DependedOnLayoutProperty::RestoreSourceValue()
+void AttachComponentPrototypeSectionCommand::redo()
 {
-    ApplyValue(sourceValue);
+    root->AttachPrototypeComponent(node, destSection, prototypeSection);
 }
 
-VariantType DependedOnLayoutProperty::GetValue() const
+void AttachComponentPrototypeSectionCommand::undo()
 {
-    return member->Value(GetBaseObject());
-}
-
-void DependedOnLayoutProperty::ApplyValue(const DAVA::VariantType &value)
-{
-    if (value.GetType() == VariantType::TYPE_NONE)
-    {
-        return;
-    }
-    if (sourceValue != value)
-        sourceValue = value;
-    member->SetValue(GetBaseObject(), value);
+    root->DetachPrototypeComponent(node, destSection, prototypeSection);
 }

@@ -87,12 +87,13 @@ public:
     void RemoveListener(PackageListener *listener);
     
     void SetControlProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &newValue);
-    void SetControlDefaultProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &newValue);
     void ResetControlProperty(ControlNode *node, AbstractProperty *property);
     void RefreshProperty(ControlNode *node, AbstractProperty *property);
 
     void AddComponent(ControlNode *node, ComponentPropertiesSection *section);
     void RemoveComponent(ControlNode *node, ComponentPropertiesSection *section);
+    void AttachPrototypeComponent(ControlNode *node, ComponentPropertiesSection *destSection, ComponentPropertiesSection *prototypeSection);
+    void DetachPrototypeComponent(ControlNode *node, ComponentPropertiesSection *destSection, ComponentPropertiesSection *prototypeSection);
 
     void SetStyleProperty(StyleSheetNode *node, AbstractProperty *property, const DAVA::VariantType &newValue);
     void AddStyleProperty(StyleSheetNode *node, StyleSheetProperty *property);

@@ -47,6 +47,12 @@ public:
     virtual AbstractProperty *GetProperty(int index) const override;
 
     virtual void Refresh() override;
+
+    void AttachPrototypeProperty(const ValueProperty *prototypeProperty);
+    void DetachPrototypeProperty(const ValueProperty *prototypeProperty);
+    const ValueProperty *GetPrototypeProperty() const;
+    AbstractProperty *FindPropertyByPrototype(AbstractProperty *prototype) override;
+
     virtual bool HasChanges() const override;
 
     virtual const DAVA::String &GetName() const override;
@@ -84,12 +90,14 @@ protected:
     DAVA::VariantType defaultValue;
     DAVA::Vector<SubValueProperty*> children;
     DAVA::int32 stylePropertyIndex;
+
+private:
+    const ValueProperty *prototypeProperty; // weak
     
 public:
     INTROSPECTION_EXTEND(ValueProperty, AbstractProperty,
                          nullptr
                          );
-
 };
 
 #endif //__UI_EDITOR_VALUE_PROPERTY__

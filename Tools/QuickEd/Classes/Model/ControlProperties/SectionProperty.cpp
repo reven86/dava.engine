@@ -29,8 +29,6 @@
 
 #include "SectionProperty.h"
 
-#include "Model/ControlProperties/ValueProperty.h"
-
 using namespace DAVA;
 
 SectionProperty::SectionProperty(const DAVA::String &sectionName)

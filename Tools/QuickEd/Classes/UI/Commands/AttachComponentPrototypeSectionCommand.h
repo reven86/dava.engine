@@ -27,42 +27,29 @@
  =====================================================================================*/
 
 
-#include "DependedOnLayoutProperty.h"
+#ifndef __QUICKED_ATTACH_PROTOTYPE_COMPONENT_SECTION_COMMAND_H__
+#define __QUICKED_ATTACH_PROTOTYPE_COMPONENT_SECTION_COMMAND_H__
 
-#include "FileSystem/LocalizationSystem.h"
+#include <QUndoCommand>
 
-using namespace DAVA;
+class PackageNode;
+class ControlNode;
+class ComponentPropertiesSection;
 
-DependedOnLayoutProperty::DependedOnLayoutProperty(DAVA::BaseObject *anObject, const DAVA::InspMember *aMmember, const DependedOnLayoutProperty *sourceProperty, eCloneType cloneType)
-    : IntrospectionProperty(anObject, aMmember, sourceProperty, cloneType)
+class AttachComponentPrototypeSectionCommand : public QUndoCommand
 {
-    ApplyValue(member->Value(object));
-    if (sourceProperty)
-        sourceValue = sourceProperty->sourceValue;
-}
-
-DependedOnLayoutProperty::~DependedOnLayoutProperty()
-{
+public:
+    AttachComponentPrototypeSectionCommand(PackageNode *root, ControlNode *node, ComponentPropertiesSection *destSection, ComponentPropertiesSection *prototypeSection, QUndoCommand *parent = nullptr);
+    virtual ~AttachComponentPrototypeSectionCommand();
     
-}
+    void redo() override;
+    void undo() override;
+    
+private:
+    PackageNode *root;
+    ControlNode *node;
+    ComponentPropertiesSection *destSection;
+    ComponentPropertiesSection *prototypeSection;
+};
 
-void DependedOnLayoutProperty::RestoreSourceValue()
-{
-    ApplyValue(sourceValue);
-}
-
-VariantType DependedOnLayoutProperty::GetValue() const
-{
-    return member->Value(GetBaseObject());
-}
-
-void DependedOnLayoutProperty::ApplyValue(const DAVA::VariantType &value)
-{
-    if (value.GetType() == VariantType::TYPE_NONE)
-    {
-        return;
-    }
-    if (sourceValue != value)
-        sourceValue = value;
-    member->SetValue(GetBaseObject(), value);
-}
+#endif // __QUICKED_ATTACH_PROTOTYPE_COMPONENT_SECTION_COMMAND_H__

@@ -48,9 +48,10 @@ public:
     
     void Refresh() override;
     void Accept(PropertyVisitor *visitor) override;
+    
     const DAVA::String &GetName() const override;
 
-    DAVA_DEPRECATED(virtual ValueProperty *FindProperty(const DAVA::InspMember *member) const);
+    virtual ValueProperty *FindProperty(const DAVA::InspMember *member) const;
 
     virtual ePropertyType GetType() const
     {

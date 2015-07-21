@@ -39,6 +39,7 @@
 #include "Model/ControlProperties/StyleSheetSelectorProperty.h"
 #include "Model/ControlProperties/DependedOnLayoutProperty.h"
 #include "Model/ControlProperties/ControlPropertiesSection.h"
+#include "Model/ControlProperties/ComponentPropertiesSection.h"
 
 #include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
@@ -216,17 +217,6 @@ void PackageNode::SetControlProperty(ControlNode *node, AbstractProperty *proper
     RefreshLayout();
 }
 
-void PackageNode::SetControlDefaultProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &newValue)
-{
-    node->GetRootProperty()->SetDefaultProperty(property, newValue);
-
-    for (PackageListener *listener : listeners)
-        listener->ControlPropertyWasChanged(node, property);
-
-    RefreshPropertiesInInstances(node, property);
-    RefreshLayout();
-}
-
 void PackageNode::ResetControlProperty(ControlNode *node, AbstractProperty *property)
 {
     node->GetRootProperty()->ResetProperty(property);
@@ -261,6 +251,24 @@ void PackageNode::RemoveComponent(ControlNode *node, ComponentPropertiesSection 
 {
     node->GetRootProperty()->RemoveComponentPropertiesSection(section);
     RefreshLayout();
+}
+
+void PackageNode::AttachPrototypeComponent(ControlNode *node, ComponentPropertiesSection *section, ComponentPropertiesSection *prototypeSection)
+{
+    node->GetRootProperty()->AttachPrototypeComponent(section, prototypeSection);
+    
+    RefreshProperty(node, section);
+    for (int32 i = 0; i < section->GetCount(); i++)
+        RefreshProperty(node, section->GetProperty(i));
+}
+
+void PackageNode::DetachPrototypeComponent(ControlNode *node, ComponentPropertiesSection *section, ComponentPropertiesSection *prototypeSection)
+{
+    node->GetRootProperty()->DetachPrototypeComponent(section, prototypeSection);
+    
+    RefreshProperty(node, section);
+    for (int32 i = 0; i < section->GetCount(); i++)
+        RefreshProperty(node, section->GetProperty(i));
 }
 
 void PackageNode::SetStyleProperty(StyleSheetNode *node, AbstractProperty *property, const DAVA::VariantType &newValue)
@@ -492,30 +500,25 @@ void PackageNode::CollectRootControlsToRefreshLayout(ControlNode *node, DAVA::Ve
 
 void PackageNode::RestoreProperties(ControlNode *container)
 {
-    for (int i = 0; i < container->GetCount(); i++)
+    RootProperty *rootProperty = container->GetRootProperty();
+    for (int i = 0; i < rootProperty->GetControlPropertiesSection(0)->GetCount(); i++)
     {
-        ControlNode *control = container->Get(i);
-        RootProperty *rootProperty = control->GetRootProperty();
-        for (int j = 0; j < rootProperty->GetControlPropertiesSection(0)->GetCount(); j++)
-        {
-            DependedOnLayoutProperty *prop = dynamic_cast<DependedOnLayoutProperty*>(rootProperty->GetControlPropertiesSection(0)->GetProperty(j));
-            if (prop)
-            {
-                prop->RestoreSourceValue();
-            }
-        }
-        RestoreProperties(control);
+        DependedOnLayoutProperty *prop = dynamic_cast<DependedOnLayoutProperty*>(rootProperty->GetControlPropertiesSection(0)->GetProperty(i));
+        if (prop)
+            prop->RestoreSourceValue();
     }
+
+    for (int i = 0; i < container->GetCount(); i++)
+        RestoreProperties(container->Get(i));
 }
 
 void PackageNode::NotifyPropertyChanged(ControlNode *control)
 {
     RootProperty *rootProperty = control->GetRootProperty();
-    for (int j = 0; j < rootProperty->GetControlPropertiesSection(0)->GetCount(); j++)
+    for (int i = 0; i < rootProperty->GetControlPropertiesSection(0)->GetCount(); i++)
     {
-//        ValueProp
-        AbstractProperty *prop = rootProperty->GetControlPropertiesSection(0)->GetProperty(j);
-        //DependedOnLayoutProperty *prop = dynamic_cast<DependedOnLayoutProperty*>(rootProperty->GetControlPropertiesSection(0)->GetProperty(j));
+        DependedOnLayoutProperty *prop = dynamic_cast<DependedOnLayoutProperty*>(rootProperty->GetControlPropertiesSection(0)->GetProperty(i));
+        
         if (prop)
         {
             for (PackageListener *listener : listeners)

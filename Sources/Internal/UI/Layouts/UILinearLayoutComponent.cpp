@@ -85,7 +85,7 @@ bool UILinearLayoutComponent::IsDynamicSpacing() const
     return dynamicSpacing;
 }
 
-void UILinearLayoutComponent::SetDynaicSpacing(bool dynamic)
+void UILinearLayoutComponent::SetDynamicSpacing(bool dynamic)
 {
     dynamicSpacing = dynamic;
 }

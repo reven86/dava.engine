@@ -270,8 +270,11 @@ bool PackageModel::setData(const QModelIndex &index, const QVariant &value, int 
         DVASSERT(controlNode);
         auto prop = controlNode->GetRootProperty()->GetNameProperty();
         const auto &newName = value.toString().toStdString();
-        commandExecutor->ChangeProperty(controlNode, prop, DAVA::VariantType(newName));
-        return true;
+        if (newName != node->GetName())
+        {
+            commandExecutor->ChangeProperty(controlNode, prop, DAVA::VariantType(newName));
+            return true;
+        }
     }
     return false;
 }

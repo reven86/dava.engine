@@ -69,7 +69,7 @@ public:
     void SetDynamicPadding(bool dynamic);
     
     bool IsDynamicSpacing() const;
-    void SetDynaicSpacing(bool dynamic);
+    void SetDynamicSpacing(bool dynamic);
     bool IsUseRtl() const;
     void SetUseRtl(bool use);
     
@@ -95,7 +95,7 @@ public:
                          PROPERTY("padding", "Padding", GetPadding, SetPadding, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("dynamicPadding", "Dynamic Padding", IsDynamicPadding, SetDynamicPadding, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("spacing", "Spacing", GetSpacing, SetSpacing, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("dynamicSpacing", "Dynamic Spacing", IsDynamicSpacing, SetDynaicSpacing, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("dynamicSpacing", "Dynamic Spacing", IsDynamicSpacing, SetDynamicSpacing, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("skipInvisible", "Skip Invisible Controls", IsSkipInvisibleControls, SetSkipInvisibleControls, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("useRtl", "Use Rtl Align", IsUseRtl, SetUseRtl, I_SAVE | I_VIEW | I_EDIT)
                          );
