@@ -85,7 +85,7 @@ namespace DAVA
 		String result = DB_ERROR_STR_VALUE;
 		if (nullptr != dbClient)
 		{
-			RefPtr<MongodbUpdateObject> dbUpdateObject = RefPtr<MongodbUpdateObject>(new MongodbUpdateObject);
+			RefPtr<MongodbUpdateObject> dbUpdateObject(new MongodbUpdateObject);
 			KeyedArchive *currentRunArchive = FindBuildArchive(dbUpdateObject.Get(), "autotesting_system");
 
 			DVASSERT(currentRunArchive != nullptr);
@@ -112,7 +112,7 @@ namespace DAVA
 		int32 result = DB_ERROR_INT_VALUE;
 		if (dbClient)
 		{
-			RefPtr<MongodbUpdateObject> dbUpdateObject = RefPtr<MongodbUpdateObject>(new MongodbUpdateObject);
+			RefPtr<MongodbUpdateObject> dbUpdateObject(new MongodbUpdateObject);
 			KeyedArchive *currentRunArchive = FindBuildArchive(dbUpdateObject.Get(), "autotesting_system");
 			deviceArchive = currentRunArchive->GetArchive(deviceName, nullptr);
 			if (nullptr == deviceArchive)

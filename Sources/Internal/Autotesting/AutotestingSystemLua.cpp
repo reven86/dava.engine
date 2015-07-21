@@ -876,8 +876,8 @@ namespace DAVA
 		int32 queueState = 0;
 		if (AutotestingSystem::Instance()->isDB)
 		{
-			MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
-			KeyedArchive *clustersQueue = AutotestingDB::Instance()->FindOrInsertBuildArchive(dbUpdateObject, "clusters_queue");
+			RefPtr<MongodbUpdateObject> dbUpdateObject(new MongodbUpdateObject);
+			KeyedArchive *clustersQueue = AutotestingDB::Instance()->FindOrInsertBuildArchive(dbUpdateObject.Get(), "clusters_queue");
 			String serverName = Format("%s", cluster.c_str());
 			
 			if (!clustersQueue->IsKeyExists(serverName))
@@ -888,7 +888,6 @@ namespace DAVA
 			{
 				queueState = clustersQueue->GetInt32(serverName);
 			}
-			SafeRelease(dbUpdateObject);
 		}
         return queueState;
     }
@@ -899,16 +898,15 @@ namespace DAVA
 		{ 
 			return true;
 		}
-        MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
-        KeyedArchive *clustersQueue = AutotestingDB::Instance()->FindOrInsertBuildArchive(dbUpdateObject, "clusters_queue");
+		RefPtr<MongodbUpdateObject> dbUpdateObject(new MongodbUpdateObject);
+		KeyedArchive *clustersQueue = AutotestingDB::Instance()->FindOrInsertBuildArchive(dbUpdateObject.Get(), "clusters_queue");
         String serverName = Format("%s", cluster.c_str());
         bool isSet = false;
         if (!clustersQueue->IsKeyExists(serverName) || clustersQueue->GetInt32(serverName) != state)
         {
             clustersQueue->SetInt32(serverName, state);
-            isSet = AutotestingDB::Instance()->SaveToDB(dbUpdateObject);
+            isSet = AutotestingDB::Instance()->SaveToDB(dbUpdateObject.Get());
         }
-        SafeRelease(dbUpdateObject);
         return isSet;
     }
 };

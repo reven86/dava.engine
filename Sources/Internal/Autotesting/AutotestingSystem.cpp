@@ -181,7 +181,7 @@ namespace DAVA
 	RefPtr<KeyedArchive> AutotestingSystem::GetIdYamlOptions()
 	{
 		static const FilePath file = "~res:/Autotesting/id.yaml";
-		RefPtr<KeyedArchive> option = RefPtr<KeyedArchive>(new KeyedArchive());
+		RefPtr<KeyedArchive> option(new KeyedArchive());
 		bool res = option->LoadFromYamlFile(file);
 		if (!res)
 		{
