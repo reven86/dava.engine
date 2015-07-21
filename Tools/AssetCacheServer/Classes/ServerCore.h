@@ -31,16 +31,18 @@
 #define __SERVER_CORE_H__
 
 #include "AssetCache/AssetCache.h"
+#include "AssetCache/AssetCacheClient.h"
 #include "ServerLogics.h"
+#include "ApplicationSettings.h"
 
 #include <atomic>
 
 #include <QObject>
 
-class ApplicationSettings;
 class QTimer;
 
-class ServerCore: public QObject
+class ServerCore : public QObject, 
+                   public DAVA::AssetCache::ClientDelegate
 {
     Q_OBJECT
     
@@ -48,6 +50,7 @@ class ServerCore: public QObject
     
 public:
     enum class State {STARTED, STOPPED};
+    enum class RemoteState {STARTING, STARTED, STOPPED};
 
     ServerCore();
     ~ServerCore() override;
@@ -58,6 +61,10 @@ public:
     void Stop();
 
     State GetState() const;
+    RemoteState GetRemoteState() const;
+
+    // ClientDelegate
+    virtual void OnAssetClientStateChanged() override;
 
 signals:
     void ServerStateChanged(const ServerCore* serverCore) const;
@@ -70,6 +77,12 @@ private slots:
 
 private:
     void Update();
+
+    bool StartListening();
+    void StopListening();
+
+    bool ConnectRemote(const ServerData& remote);
+    void DisconnectRemote();
     
 private:
     
@@ -80,12 +93,22 @@ private:
 	ServerLogics serverLogics;
     
     ApplicationSettings* settings;
+
     std::atomic<State> state;
+    std::atomic<RemoteState> remoteState;
 
     QTimer* updateTimer;
 };
 
+inline ServerCore::State ServerCore::GetState() const
+{
+    return state;
+}
 
+inline ServerCore::RemoteState ServerCore::GetRemoteState() const
+{
+    return remoteState;
+}
 
 
 #endif // __SERVER_CORE_H__

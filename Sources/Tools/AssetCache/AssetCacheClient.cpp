@@ -147,12 +147,22 @@ void Client::ChannelOpen(TCPChannel *tcpChannel)
 {
     DVASSERT(openedChannel == nullptr);
     openedChannel = tcpChannel;
+    StateChanged();
 }
 
 void Client::ChannelClosed(TCPChannel *tcpChannel, const char8* message)
 {
     DVASSERT(openedChannel == tcpChannel);
     openedChannel = nullptr;
+    StateChanged();
+}
+
+void Client::StateChanged()
+{
+    if (delegate)
+    {
+        delegate->OnAssetClientStateChanged();
+    }
 }
 
 void Client::PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, size_t length)

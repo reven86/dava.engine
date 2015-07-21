@@ -56,7 +56,6 @@ public:
 class Client: public DAVA::TCPChannelDelegate
 {
 public:
-    
     Client() = default;
     virtual ~Client();
     
@@ -79,9 +78,10 @@ public:
     TCPConnection * GetConnection() const;
     
 private:
-    
     void OnAddedToCache(KeyedArchive * archieve);
     void OnGetFromCache(KeyedArchive * archieve);
+
+    void StateChanged();
     
 private:
     TCPConnection * netClient = nullptr;

@@ -28,11 +28,11 @@
 
 
 #include "ServerCore.h"
-#include "ApplicationSettings.h"
 #include <QTimer>
 
 ServerCore::ServerCore()
 	: state(State::STOPPED)
+    , remoteState(RemoteState::STOPPED)
 {
     settings = new ApplicationSettings();
     QObject::connect(settings, &ApplicationSettings::SettingsUpdated, this, &ServerCore::OnSettingsUpdated);
@@ -53,23 +53,18 @@ ServerCore::~ServerCore()
     delete settings;
 }
 
-
 void ServerCore::Start()
 {
     if (state != State::STARTED)
     {
-        auto established = server.Listen(settings->GetPort());
-        if (established)
+        bool started = StartListening();
+        if (started)
         {
             const auto remoteServer = settings->GetCurrentServer();
-            if (!remoteServer.ip.empty())
-            {
-                client.Connect(remoteServer.ip, remoteServer.port);
-            }
+            ConnectRemote(remoteServer);
 
             updateTimer->start(UPDATE_INTERVAL_MS);
 
-            state = State::STARTED;
             emit ServerStateChanged(this);
         }
     }
@@ -81,15 +76,63 @@ void ServerCore::Stop()
     {
         updateTimer->stop();
 
-        client.Disconnect();
-        server.Disconnect();
+        StopListening();
+        DisconnectRemote();
 
-        state = State::STOPPED;
         emit ServerStateChanged(this);
     }
 }
 
+bool ServerCore::StartListening()
+{
+    bool established = server.Listen(settings->GetPort());
 
+    if (established)
+    {
+        state = State::STARTED;
+        return true;
+    }
+    else
+    {
+        state = State::STOPPED;
+        return false;
+    }
+}
+
+void ServerCore::StopListening()
+{
+    state = State::STOPPED;
+    server.Disconnect();
+}
+
+bool ServerCore::ConnectRemote(const ServerData& remote)
+{
+    if (!remote.ip.empty())
+    {
+        bool created = client.Connect(remote.ip, remote.port);
+        if (created)
+        {
+            client.SetDelegate(this);
+            remoteState = RemoteState::STARTING;
+            return true;
+        }
+        else
+        {
+            client.SetDelegate(nullptr);
+            remoteState = RemoteState::STOPPED;
+            return false;
+        }
+    }
+
+    return false;
+}
+
+void ServerCore::DisconnectRemote()
+{
+    client.SetDelegate(nullptr);
+    remoteState = RemoteState::STOPPED;
+    client.Disconnect();
+}
 
 void ServerCore::Update()
 {
@@ -102,16 +145,18 @@ void ServerCore::Update()
     }
 }
 
-ServerCore::State ServerCore::GetState() const
-{
-    return state;
-}
-
 void ServerCore::UpdateByTimer()
 {
     Update();
 }
 
+void ServerCore::OnAssetClientStateChanged()
+{
+    DVASSERT(remoteState != RemoteState::STOPPED);
+
+    remoteState = client.IsConnected() ? RemoteState::STARTED : RemoteState::STARTING;
+    emit ServerStateChanged(this);
+}
 
 void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
 {
@@ -131,15 +176,15 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
             if (server.GetListenPort() != settings->GetPort())
             {
                 needServerRestart = true;
-                server.Disconnect();
+                StopListening();
             }
             
             auto clientConnection = client.GetConnection();
-            if ((clientConnection && remoteServer != clientConnection->GetEndpoint()) || 
-                (!clientConnection && !remoteServer.ip.empty()))
+            if ((remoteState != RemoteState::STOPPED && clientConnection && remoteServer != clientConnection->GetEndpoint()) || 
+                (remoteState == RemoteState::STOPPED && !remoteServer.ip.empty()))
             {
                 needClientRestart = true;
-                client.Disconnect();
+                DisconnectRemote();
             }
         }
         
@@ -154,23 +199,22 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
             }
         }
 
-        if(state == State::STARTED)
         {   // restart network connections after changing of settings
             if (needServerRestart)
             {
-                auto established = server.Listen(settings->GetPort());
-                if (!established)
-                {
-                    state = State::STOPPED;
-                    emit ServerStateChanged(this);
-                    return;
-                }
+                StartListening();
             }
             
-            if(needClientRestart && !remoteServer.ip.empty())
+            if(state == State::STARTED && needClientRestart)
             {
-                client.Connect(remoteServer.ip, remoteServer.port);
+                ConnectRemote(remoteServer);
             }
+        }
+
+        if (needServerRestart || needClientRestart)
+        {
+            emit ServerStateChanged(this);
+            return;
         }
     }
     else

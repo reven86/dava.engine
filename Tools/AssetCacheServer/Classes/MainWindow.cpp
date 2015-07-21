@@ -113,11 +113,13 @@ void MainWindow::CreateTrayIcon()
     QIcon windowIcon(":/icon/TrayIcon.png");
     setWindowIcon(windowIcon);
 
-    greenTrayIcon.reset(new QIcon(":/icon/TrayIcon_green.png"));
-    redTrayIcon.reset(new QIcon(":/icon/TrayIcon_red.png"));
+    greenGreenTrayIcon.reset(new QIcon(":/icon/TrayIcon_green_green.png"));
+    greenGrayTrayIcon.reset(new QIcon(":/icon/TrayIcon_green_gray.png"));
+    greenRedTrayIcon.reset(new QIcon(":/icon/TrayIcon_green_red.png"));
+    redGrayTrayIcon.reset(new QIcon(":/icon/TrayIcon_red_gray.png"));
 
     trayIcon = new QSystemTrayIcon(this);
-    trayIcon->setIcon(*redTrayIcon);
+    trayIcon->setIcon(*redGrayTrayIcon);
     trayIcon->setToolTip("Asset Cache Server");
     trayIcon->setContextMenu(trayActionsMenu);
     trayIcon->show();
@@ -373,18 +375,43 @@ void MainWindow::OnServerStateChanged(const ServerCore* server)
     DVASSERT(serverCore);
     DVASSERT(serverCore == server && "Notification from alien server core");
 
-    switch(serverCore->GetState())
+    auto serverState = serverCore->GetState();
+    auto remoteState = serverCore->GetRemoteState();
+
+    switch(serverState)
     {
     case ServerCore::State::STARTED:
     {
-        trayIcon->setIcon(*greenTrayIcon);
+        switch (remoteState)
+        {
+        case ServerCore::RemoteState::STARTED:
+        {
+            trayIcon->setIcon(*greenGreenTrayIcon);
+            break;
+        }
+        case ServerCore::RemoteState::STARTING:
+        {
+            trayIcon->setIcon(*greenRedTrayIcon);
+            break;
+        }
+        case ServerCore::RemoteState::STOPPED:
+        {
+            trayIcon->setIcon(*greenGrayTrayIcon);
+            break;
+        }
+        default:
+        {
+            DVASSERT(false && "Unknown remote state");
+        }
+        }
+
         startAction->setDisabled(true);
         stopAction->setEnabled(true);
         break;
     }
     case ServerCore::State::STOPPED:
     {
-        trayIcon->setIcon(*redTrayIcon);
+        trayIcon->setIcon(*redGrayTrayIcon);
         startAction->setEnabled(true);
         stopAction->setDisabled(true);
         break;

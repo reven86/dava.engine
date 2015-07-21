@@ -108,8 +108,10 @@ private:
     QAction *startAction;
     QAction *stopAction;
     QSystemTrayIcon* trayIcon;
-    std::unique_ptr<QIcon> greenTrayIcon;
-    std::unique_ptr<QIcon> redTrayIcon;
+    std::unique_ptr<QIcon> greenGreenTrayIcon;
+    std::unique_ptr<QIcon> greenGrayTrayIcon;
+    std::unique_ptr<QIcon> greenRedTrayIcon;
+    std::unique_ptr<QIcon> redGrayTrayIcon;
 
     QVBoxLayout *serversBoxLayout;
     List<RemoteAssetCacheServer*> remoteServers;
