@@ -33,7 +33,10 @@
 #include "Utils/Utils.h"
 
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
+#include "Platform/TemplateWin32/WinUAPXamlApp.h"
+#include "Platform/TemplateWin32/Dispatcher.h"
 
+using namespace Windows::UI::Core;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::ViewManagement;
 
@@ -115,6 +118,37 @@ void CorePlatformWinUAP::SetCursorPinning(bool isPinning)
         xamlApp->SetCursorPinning(isPinning);
         xamlApp->SetCursorVisible(!isPinning);
     });
+}
+
+bool CorePlatformWinUAP::IsUIThread() const
+{
+    return xamlApp->UIThreadDispatcher()->HasThreadAccess;
+}
+
+void CorePlatformWinUAP::RunOnUIThread(std::function<void()>&& fn, bool blocked)
+{
+    if (!blocked)
+    {
+        xamlApp->UIThreadDispatcher()->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler(std::forward<std::function<void()>>(fn)));
+    }
+    else
+    {
+        Dispatcher::BlockingTaskWrapper wrapper = xamlApp->MainThreadDispatcher()->GetBlockingTaskWrapper(std::forward<std::function<void()>>(fn));
+        RunOnUIThread([&wrapper]() { wrapper.RunTask(); });
+        wrapper.WaitTaskComplete();
+    }
+}
+
+void CorePlatformWinUAP::RunOnMainThread(std::function<void()>&& fn, bool blocked)
+{
+    if (!blocked)
+    {
+        xamlApp->MainThreadDispatcher()->Post(std::forward<std::function<void()>>(fn));
+    }
+    else
+    {
+        xamlApp->MainThreadDispatcher()->Send(std::forward<std::function<void()>>(fn));
+    }
 }
 
 }   // namespace DAVA

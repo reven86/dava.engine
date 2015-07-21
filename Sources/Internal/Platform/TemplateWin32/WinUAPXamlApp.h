@@ -44,6 +44,7 @@ namespace DAVA
 {
 
 class CorePlatformWinUAP;
+class Dispatcher;
 
 /************************************************************************
  Class WinUAPXamlApp represents WinRT XAML application with embedded framework's render loop
@@ -60,6 +61,7 @@ ref class WinUAPXamlApp sealed : public ::Windows::UI::Xaml::Application
 public:
     // Deleted and defaulted functions are not supported in WinRT classes
     WinUAPXamlApp();
+    virtual ~WinUAPXamlApp();
 
     Windows::Graphics::Display::DisplayOrientations GetDisplayOrientation();
     Windows::UI::ViewManagement::ApplicationViewWindowingMode GetScreenMode();
@@ -69,8 +71,11 @@ public:
     void SetCursorVisible(bool isVisible);
 
     Windows::UI::Core::CoreDispatcher^ UIThreadDispatcher();
-    Windows::UI::Core::CoreDispatcher^ MainThreadDispatcher();
 
+internal:   // Only internal methods of ref class can return pointers to non-ref objects
+    Dispatcher* MainThreadDispatcher();
+
+public:
     void SetQuitFlag();
 
     void AddUIElement(Windows::UI::Xaml::UIElement^ uiElement);
@@ -94,12 +99,12 @@ private:    // Event handlers
     void OnWindowSizeChanged(::Windows::UI::Core::CoreWindow^ sender, ::Windows::UI::Core::WindowSizeChangedEventArgs^ args);
 
     // Mouse and touch handlers
-    void OnPointerPressed(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerReleased(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerMoved(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerEntered(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerExited(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
-    void OnPointerWheel(Platform::Object^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerReleased(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerEntered(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerExited(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+    void OnPointerWheel(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
     void OnHardwareBackButtonPressed(Platform::Object^ sender, Windows::Phone::UI::Input::BackPressedEventArgs ^args);
 
     // Keyboard handlers
@@ -107,11 +112,10 @@ private:    // Event handlers
     void OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
     void OnMouseMoved(Windows::Devices::Input::MouseDevice^ mouseDevice, Windows::Devices::Input::MouseEventArgs^ args);
 
-    void DAVATouchEvent(UIEvent::eInputPhase phase, Windows::Foundation::Point position, int32 id);
+    void DAVATouchEvent(UIEvent::eInputPhase phase, float32 x, float32 y, int32 id);
 
 private:
     void SetupEventHandlers();
-    void SetupRenderLoopEventHandlers();
     void CreateBaseXamlUI();
 
     void SetTitleName();
@@ -133,7 +137,7 @@ private:
 private:
     CorePlatformWinUAP* core;
     Windows::UI::Core::CoreDispatcher^ uiThreadDispatcher = nullptr;
-    Windows::UI::Core::CoreIndependentInputSource^ mainThreadInputSource = nullptr;
+    std::unique_ptr<Dispatcher> dispatcher = nullptr;
 
     Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel = nullptr;
     Windows::UI::Xaml::Controls::Canvas^ canvas = nullptr;
@@ -176,9 +180,9 @@ inline Windows::UI::Core::CoreDispatcher^ WinUAPXamlApp::UIThreadDispatcher()
     return uiThreadDispatcher;
 }
 
-inline Windows::UI::Core::CoreDispatcher^ WinUAPXamlApp::MainThreadDispatcher()
+inline Dispatcher* WinUAPXamlApp::MainThreadDispatcher()
 {
-    return mainThreadInputSource->Dispatcher;
+    return dispatcher.get();
 }
 
 inline void WinUAPXamlApp::SetQuitFlag()
