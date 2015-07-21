@@ -46,11 +46,14 @@ class ServerCore : public QObject,
 {
     Q_OBJECT
     
-    static const int UPDATE_INTERVAL_MS = 1;
+    static const uint32 UPDATE_INTERVAL_MS = 1;
+    static const uint32 CONNECT_TIMEOUT_SEC = 1;
+    static const uint32 CONNECT_REATTEMPT_WAIT_SEC = 5;
+    
     
 public:
     enum class State {STARTED, STOPPED};
-    enum class RemoteState {STARTING, STARTED, STOPPED};
+    enum class RemoteState { STARTED, STOPPED, CONNECTING, WAITING_REATTEMPT};
 
     ServerCore();
     ~ServerCore() override;
@@ -74,14 +77,16 @@ public slots:
 
 private slots:
     void UpdateByTimer();
-
+    void OnConnectTimeout();
+    void OnReattemptTimer();
+            
 private:
     void Update();
 
     bool StartListening();
     void StopListening();
 
-    bool ConnectRemote(const ServerData& remote);
+    bool ConnectRemote();
     void DisconnectRemote();
     
 private:
@@ -97,7 +102,11 @@ private:
     std::atomic<State> state;
     std::atomic<RemoteState> remoteState;
 
+    ServerData remoteServerData;
+
     QTimer* updateTimer;
+    QTimer* connectTimer;
+    QTimer* reattemptWaitTimer;
 };
 
 inline ServerCore::State ServerCore::GetState() const

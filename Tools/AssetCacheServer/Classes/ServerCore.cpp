@@ -44,6 +44,16 @@ ServerCore::ServerCore()
     updateTimer = new QTimer(this);
     QObject::connect(updateTimer, &QTimer::timeout, this, &ServerCore::UpdateByTimer);
 
+    connectTimer = new QTimer(this);
+    connectTimer->setInterval(CONNECT_TIMEOUT_SEC * 1000);
+    connectTimer->setSingleShot(true);
+    QObject::connect(connectTimer, &QTimer::timeout, this, &ServerCore::OnConnectTimeout);
+
+    reattemptWaitTimer = new QTimer(this);
+    reattemptWaitTimer->setInterval(CONNECT_REATTEMPT_WAIT_SEC * 1000);
+    reattemptWaitTimer->setSingleShot(true);
+    QObject::connect(reattemptWaitTimer, &QTimer::timeout, this, &ServerCore::OnReattemptTimer);
+
     settings->Load();
 }
 
@@ -60,8 +70,8 @@ void ServerCore::Start()
         bool started = StartListening();
         if (started)
         {
-            const auto remoteServer = settings->GetCurrentServer();
-            ConnectRemote(remoteServer);
+            remoteServerData = settings->GetCurrentServer();
+            ConnectRemote();
 
             updateTimer->start(UPDATE_INTERVAL_MS);
 
@@ -85,6 +95,8 @@ void ServerCore::Stop()
 
 bool ServerCore::StartListening()
 {
+    DVASSERT(state == State::STOPPED);
+
     bool established = server.Listen(settings->GetPort());
 
     if (established)
@@ -105,22 +117,19 @@ void ServerCore::StopListening()
     server.Disconnect();
 }
 
-bool ServerCore::ConnectRemote(const ServerData& remote)
+bool ServerCore::ConnectRemote()
 {
-    if (!remote.ip.empty())
+    DVASSERT(remoteState == RemoteState::STOPPED || remoteState == RemoteState::WAITING_REATTEMPT)
+
+    if (!remoteServerData.ip.empty())
     {
-        bool created = client.Connect(remote.ip, remote.port);
+        bool created = client.Connect(remoteServerData.ip, remoteServerData.port);
         if (created)
         {
             client.SetDelegate(this);
-            remoteState = RemoteState::STARTING;
+            connectTimer->start();
+            remoteState = RemoteState::CONNECTING;
             return true;
-        }
-        else
-        {
-            client.SetDelegate(nullptr);
-            remoteState = RemoteState::STOPPED;
-            return false;
         }
     }
 
@@ -130,6 +139,8 @@ bool ServerCore::ConnectRemote(const ServerData& remote)
 void ServerCore::DisconnectRemote()
 {
     client.SetDelegate(nullptr);
+    connectTimer->stop();
+    reattemptWaitTimer->stop();
     remoteState = RemoteState::STOPPED;
     client.Disconnect();
 }
@@ -150,11 +161,38 @@ void ServerCore::UpdateByTimer()
     Update();
 }
 
+void ServerCore::OnConnectTimeout()
+{
+    DisconnectRemote();
+    remoteState = RemoteState::WAITING_REATTEMPT;
+    reattemptWaitTimer->start();
+
+    emit ServerStateChanged(this);
+}
+
+void ServerCore::OnReattemptTimer()
+{
+    ConnectRemote();
+    emit ServerStateChanged(this);
+}
+
 void ServerCore::OnAssetClientStateChanged()
 {
     DVASSERT(remoteState != RemoteState::STOPPED);
 
-    remoteState = client.IsConnected() ? RemoteState::STARTED : RemoteState::STARTING;
+    if (client.IsConnected())
+    {
+        connectTimer->stop();
+        reattemptWaitTimer->stop();
+        remoteState = RemoteState::STARTED;
+    }
+    else
+    {
+        connectTimer->start();
+        reattemptWaitTimer->stop();
+        remoteState = RemoteState::CONNECTING;
+    }
+
     emit ServerStateChanged(this);
 }
 
@@ -179,8 +217,7 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
                 StopListening();
             }
             
-            auto clientConnection = client.GetConnection();
-            if ((remoteState != RemoteState::STOPPED && clientConnection && remoteServer != clientConnection->GetEndpoint()) || 
+            if ((remoteState != RemoteState::STOPPED && !(remoteServerData == remoteServer)) || 
                 (remoteState == RemoteState::STOPPED && !remoteServer.ip.empty()))
             {
                 needClientRestart = true;
@@ -207,7 +244,8 @@ void ServerCore::OnSettingsUpdated(const ApplicationSettings *_settings)
             
             if(state == State::STARTED && needClientRestart)
             {
-                ConnectRemote(remoteServer);
+                remoteServerData = remoteServer;
+                ConnectRemote();
             }
         }
 

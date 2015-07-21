@@ -389,7 +389,8 @@ void MainWindow::OnServerStateChanged(const ServerCore* server)
             trayIcon->setIcon(*greenGreenTrayIcon);
             break;
         }
-        case ServerCore::RemoteState::STARTING:
+        case ServerCore::RemoteState::CONNECTING:
+        case ServerCore::RemoteState::WAITING_REATTEMPT:
         {
             trayIcon->setIcon(*greenRedTrayIcon);
             break;
