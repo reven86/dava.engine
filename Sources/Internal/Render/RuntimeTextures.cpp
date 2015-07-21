@@ -70,6 +70,7 @@ void RuntimeTextures::InitDynamicTexture(eDynamicTextureSemantic semantic)
 {
     DVASSERT(!dynamicTextures[semantic].IsValid());
     rhi::Texture::Descriptor descriptor;
+    int32 size;
     switch (semantic)
     {    
     case DAVA::RuntimeTextures::TEXTURE_DYNAMIC_REFLECTION:
@@ -88,6 +89,16 @@ void RuntimeTextures::InitDynamicTexture(eDynamicTextureSemantic semantic)
         descriptor.isRenderTarget = true;
         descriptor.type = rhi::TEXTURE_TYPE_2D;
         descriptor.format = rhi::TEXTURE_FORMAT_R5G6B5;
+        dynamicTextures[semantic] = rhi::CreateTexture(descriptor);
+        break;
+
+    case DAVA::RuntimeTextures::TEXTURE_DYNAMIC_RR_DEPTHBUFFER:
+        size = Max(REFLECTION_TEX_SIZE, REFRACTION_TEX_SIZE);
+        descriptor.width = size;
+        descriptor.height = size;
+        descriptor.autoGenMipmaps = false;        
+        descriptor.type = rhi::TEXTURE_TYPE_2D;
+        descriptor.format = rhi::TEXTURE_FORMAT_D24S8;
         dynamicTextures[semantic] = rhi::CreateTexture(descriptor);
         break;
     

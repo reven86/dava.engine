@@ -90,13 +90,13 @@ inline uint32 GetPossibleTexcoordSemantic(uint32 index)
     switch (index)
     {
     case 0:
-        return EVF_TEXCOORD0 | EVF_CUBETEXCOORD0;
+        return EVF_TEXCOORD0;// | EVF_CUBETEXCOORD0;
     case 1:
-        return EVF_TEXCOORD1 | EVF_CUBETEXCOORD1;
+        return EVF_TEXCOORD1;// | EVF_CUBETEXCOORD1;
     case 2:
-        return EVF_TEXCOORD2 | EVF_CUBETEXCOORD2;
+        return EVF_TEXCOORD2;// | EVF_CUBETEXCOORD2;
     case 3:
-        return EVF_TEXCOORD3 | EVF_CUBETEXCOORD3 | EVF_PIVOT;
+        return EVF_PIVOT; //    | EVF_TEXCOORD3 | EVF_CUBETEXCOORD3;
     case 4:
         return EVF_ANGLE_SIN_COS;
     case 5:

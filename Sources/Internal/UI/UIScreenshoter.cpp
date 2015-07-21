@@ -169,9 +169,8 @@ void UIScreenshoter::OnFrame()
     }
 }
 
-List<UIScreenshoter::Control3dInfo> UIScreenshoter::FindAll3dViews(UIControl * control)
+void UIScreenshoter::FindAll3dViews(UIControl * control, List<UIScreenshoter::Control3dInfo> & foundViews)
 {
-    List<Control3dInfo> foundViews;
     List<UIControl*> processControls;
     processControls.push_back(control);
     while (!processControls.empty())
@@ -189,13 +188,12 @@ List<UIScreenshoter::Control3dInfo> UIScreenshoter::FindAll3dViews(UIControl * c
         if (nullptr != current3dView)
         {
             Control3dInfo info;
-            info.control = SafeRetain(current3dView);
+            info.control = current3dView;
             info.priority = 0;
             info.texture = rhi::InvalidHandle;
             foundViews.push_back(info);
         }
     }
-    return foundViews;
 }
 
 void UIScreenshoter::RenderToTexture(UIControl* control, Texture* texture)
@@ -205,9 +203,11 @@ void UIScreenshoter::RenderToTexture(UIControl* control, Texture* texture)
     viewport.width = texture->GetWidth();
     RenderHelper::Instance()->CreateClearPass(texture->handle, PRIORITY_SCREENSHOT_CLEAR_PASS, Color::Clear, viewport);
 
-    List<Control3dInfo>& controls3d(FindAll3dViews(control));
+    List<Control3dInfo> controls3d;
+    FindAll3dViews(control, controls3d);
     for (auto& info : controls3d)
     {
+        SafeRetain(info.control);
         if (nullptr != info.control->GetScene())
         {
             rhi::RenderPassConfig& config = info.control->GetScene()->GetMainPassConfig();
@@ -229,6 +229,7 @@ void UIScreenshoter::RenderToTexture(UIControl* control, Texture* texture)
             config.priority = info.priority;
             config.colorBuffer[0].texture = info.texture;
         }
+        SafeRelease(info.control);
     }
 }
 
