@@ -42,7 +42,7 @@
 QtPropertyItemDelegate::QtPropertyItemDelegate(QAbstractItemView *_view, QtPropertyModel *_model, QWidget *parent /* = 0 */)
 	: QStyledItemDelegate(parent)
 	, model(_model)
-	, lastHoverData(NULL)
+	, lastHoverData(nullptr)
     , view(_view)
     , editorDataWasSet(false)
 {
@@ -57,7 +57,6 @@ void QtPropertyItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
 {
 	QStyleOptionViewItemV4 opt = option;
 	initStyleOption(&opt, index);
-    int x = opt.rect.x();
     if(index.column() == 1)
     {
         opt.textElideMode = Qt::ElideLeft;
@@ -74,7 +73,6 @@ void QtPropertyItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
     }
 
     view->style()->drawControl( QStyle::CE_ItemViewItem, &opt, painter, view );
-    delegatePadding = opt.rect.x() - x;
 }
 
 QSize QtPropertyItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -103,20 +101,20 @@ QSize QtPropertyItemDelegate::sizeHint(const QStyleOptionViewItem &option, const
 
 QWidget* QtPropertyItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-	QWidget* editWidget = NULL;
+	QWidget* editWidget = nullptr;
 
 	if(model == index.model())
 	{
 		QtPropertyData* data = model->itemFromIndex(index);
 
-		if(NULL != data)
+		if(nullptr != data)
 		{
 			editWidget = data->CreateEditor(parent, option);
 		}
 
         // if widget wasn't created and it isn't checkable
         // let base class create editor
-		if(NULL == editWidget && !data->IsCheckable())
+		if(nullptr == editWidget && !data->IsCheckable())
 		{
 			editWidget = QStyledItemDelegate::createEditor(parent, option, index);
 		}
@@ -140,7 +138,7 @@ void QtPropertyItemDelegate::setEditorData(QWidget *editor, const QModelIndex &i
 	if(model == index.model())
 	{
 		QtPropertyData* data = model->itemFromIndex(index);
-		if(NULL != data)
+		if(nullptr != data)
 		{
             doneByInternalEditor = data->SetEditorData(editor);
 		}
@@ -163,6 +161,16 @@ bool QtPropertyItemDelegate::editorEvent(QEvent * event, QAbstractItemModel * _m
 	}
 
     QStyleOptionViewItem opt(option);
+    int delegatePadding = 0;
+    QtPropertyData* data = model->itemFromIndex(index);
+    if (index.column() == 1 && nullptr != data && data->GetButtonsCount() > 0)
+    {
+        delegatePadding += buttonSpacing;
+        for (int i = data->GetButtonsCount() - 1; i >= 0; --i)
+        {
+            delegatePadding += data->GetButton(i)->width() + buttonSpacing;
+        }
+    }
     opt.rect.translate(delegatePadding, 0);
 
     return QStyledItemDelegate::editorEvent(event, model, opt, index);
@@ -199,7 +207,7 @@ void QtPropertyItemDelegate::setModelData(QWidget *editor, QAbstractItemModel *_
 	if(model == _model)
 	{
 		QtPropertyData* data = model->itemFromIndex(index);
-		if(NULL != data)
+		if(nullptr != data)
 		{
 			doneByInternalEditor = data->EditorDone(editor);
 		}
@@ -216,7 +224,7 @@ void QtPropertyItemDelegate::updateEditorGeometry(QWidget * editor, const QStyle
 	QStyledItemDelegate::updateEditorGeometry(editor, option, index);
 
 	// tune widget border and geometry
-	if(NULL != editor)
+	if(nullptr != editor)
 	{
 		editor->setObjectName("customPropertyEditor");
 		editor->setStyleSheet("#customPropertyEditor{ border: 1px solid gray; }");
@@ -246,12 +254,12 @@ void QtPropertyItemDelegate::updateEditorGeometry(QWidget * editor, const QStyle
 
 bool QtPropertyItemDelegate::helpEvent(QHelpEvent * event, QAbstractItemView * view, const QStyleOptionViewItem & option, const QModelIndex & index)
 {
-    if ( event == NULL || view == NULL )
+    if ( event == nullptr || view == nullptr )
         return false;
 
     bool showTooltip = false;
 
-    if (NULL != event && NULL != view && event->type() == QEvent::ToolTip)
+    if (nullptr != event && nullptr != view && event->type() == QEvent::ToolTip)
     {
         QRect rect = view->visualRect(index);
         QSize size = sizeHint(option, index);
@@ -311,7 +319,7 @@ void QtPropertyItemDelegate::DrawButton(QPainter* painter, QStyleOptionViewItem&
 void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOptionViewItem &opt, const QModelIndex &index) const
 {
 	QtPropertyData* data = model->itemFromIndex(index);
-    if (index.column() == 1 && NULL != data && data->GetButtonsCount() > 0)
+    if (index.column() == 1 && nullptr != data && data->GetButtonsCount() > 0)
     {
         opt.rect.adjust(buttonSpacing, 0, 0, 0);
 
@@ -352,7 +360,7 @@ void QtPropertyItemDelegate::showButtons(QtPropertyData *data)
 
 void QtPropertyItemDelegate::showOptionalButtons(QtPropertyData *data, bool show)
 {
-	if(NULL != data)
+	if(nullptr != data)
 	{
 		for(int i = 0; i < data->GetButtonsCount(); ++i)
 		{
@@ -370,10 +378,10 @@ void QtPropertyItemDelegate::showOptionalButtons(QtPropertyData *data, bool show
 
 void QtPropertyItemDelegate::invalidateButtons()
 {
-	if(NULL != lastHoverData)
+	if(nullptr != lastHoverData)
 	{
 		showOptionalButtons(lastHoverData, false);
-		lastHoverData = NULL;
+		lastHoverData = nullptr;
 	}
 }
 
