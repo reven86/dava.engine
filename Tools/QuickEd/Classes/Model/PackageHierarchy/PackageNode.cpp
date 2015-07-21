@@ -37,6 +37,7 @@
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/DependedOnLayoutProperty.h"
 #include "Model/ControlProperties/ControlPropertiesSection.h"
+#include "Model/ControlProperties/ComponentPropertiesSection.h"
 
 #include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
@@ -201,17 +202,6 @@ void PackageNode::SetControlProperty(ControlNode *node, AbstractProperty *proper
     RefreshLayout(node);
 }
 
-void PackageNode::SetControlDefaultProperty(ControlNode *node, AbstractProperty *property, const DAVA::VariantType &newValue)
-{
-    node->GetRootProperty()->SetDefaultProperty(property, newValue);
-
-    for (PackageListener *listener : listeners)
-        listener->ControlPropertyWasChanged(node, property);
-
-    RefreshPropertiesInInstances(node, property);
-    RefreshLayout(node);
-}
-
 void PackageNode::ResetControlProperty(ControlNode *node, AbstractProperty *property)
 {
     node->GetRootProperty()->ResetProperty(property);
@@ -243,6 +233,24 @@ void PackageNode::RemoveComponent(ControlNode *node, ComponentPropertiesSection 
 {
     node->GetRootProperty()->RemoveComponentPropertiesSection(section);
     RefreshLayout(node);
+}
+
+void PackageNode::AttachPrototypeComponent(ControlNode *node, ComponentPropertiesSection *section, ComponentPropertiesSection *prototypeSection)
+{
+    node->GetRootProperty()->AttachPrototypeComponent(section, prototypeSection);
+
+    RefreshProperty(node, section);
+    for (int32 i = 0; i < section->GetCount(); i++)
+        RefreshProperty(node, section->GetProperty(i));
+}
+
+void PackageNode::DetachPrototypeComponent(ControlNode *node, ComponentPropertiesSection *section, ComponentPropertiesSection *prototypeSection)
+{
+    node->GetRootProperty()->DetachPrototypeComponent(section, prototypeSection);
+
+    RefreshProperty(node, section);
+    for (int32 i = 0; i < section->GetCount(); i++)
+        RefreshProperty(node, section->GetProperty(i));
 }
 
 void PackageNode::InsertControl(ControlNode *node, ControlsContainerNode *dest, DAVA::int32 index)
