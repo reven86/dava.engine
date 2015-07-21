@@ -37,6 +37,8 @@ DependedOnLayoutProperty::DependedOnLayoutProperty(DAVA::BaseObject *anObject, c
     : IntrospectionProperty(anObject, aMmember, sourceProperty, cloneType)
 {
     ApplyValue(member->Value(object));
+    if (sourceProperty)
+        sourceValue = sourceProperty->sourceValue;
 }
 
 DependedOnLayoutProperty::~DependedOnLayoutProperty()
