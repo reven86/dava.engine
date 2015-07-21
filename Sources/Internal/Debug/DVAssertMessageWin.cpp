@@ -64,6 +64,8 @@ bool DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 #include "Utils/Utils.h"
 
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
+#include "Platform/TemplateWin32/WinUAPXamlApp.h"
+#include "Platform/TemplateWin32/Dispatcher.h"
 
 namespace DAVA
 {
@@ -90,6 +92,9 @@ bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
     Platform::String^ text = ref new Platform::String(StringToWString(content).c_str());
     if (!core->IsUIThread())
     {
+        if (core->XamlApplication()->MainThreadDispatcher()->InBlockingCall())
+            return true;
+
         Mutex mutex;
         ConditionVariable cv;
 
