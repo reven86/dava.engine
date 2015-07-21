@@ -204,6 +204,10 @@
                     [textCtrl setValue:newText forKey:@"text"];
                     needIgnoreDelegateResult = TRUE;
                 }
+                else
+                {
+                    return FALSE;
+                }
             }
         }
 
