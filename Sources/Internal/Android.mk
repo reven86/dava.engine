@@ -94,6 +94,10 @@ LOCAL_MODULE := uv_android
 LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libuv_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
+include $(CLEAR_VARS)
+LOCAL_MODULE := webp_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libwebp_android.a
+include $(PREBUILT_STATIC_LIBRARY)
 
 DAVA_ROOT := $(LOCAL_PATH)
 
@@ -236,6 +240,8 @@ DV_LOCAL_STATIC_LIBRARIES += zip_android
 DV_LOCAL_STATIC_LIBRARIES += fribidi_android
 DV_LOCAL_STATIC_LIBRARIES += unibreak_android
 DV_LOCAL_STATIC_LIBRARIES += uv_android
+DV_LOCAL_STATIC_LIBRARIES += webp_android
+DV_LOCAL_STATIC_LIBRARIES += cpufeatures
 
 DV_LOCAL_EXPORT_LDLIBS := -lGLESv1_CM -llog -lEGL
 
@@ -389,3 +395,4 @@ endif
 endif
 
 $(call import-module,Box2D)
+$(call import-module,android/cpufeatures)
