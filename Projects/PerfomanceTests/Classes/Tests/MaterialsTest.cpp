@@ -82,13 +82,13 @@ void MaterialsTest::LoadResources()
     {
         RenderComponent* renderComponent = static_cast<RenderComponent*>(materialsEntity->GetChild(i)->GetComponent(Component::RENDER_COMPONENT));
         NMaterial* material = renderComponent->GetRenderObject()->GetRenderBatch(0)->GetMaterial();
-        
+
         materials.push_back(material);
     }
     
     Entity* planeEntity = materialsScene->FindByName(PLANE_ENTITY);
     
-    for(int32 i = 0; i < 15; i++)
+    for(int32 i = 0; i < 11; i++)
     {
         Entity* clone = planeEntity->Clone();
         Matrix4 cloneMatrix = planeEntity->GetLocalTransform() * Matrix4::MakeTranslation(Vector3(0.0f + i * 10.0f, 0.0f, 0.0f));
@@ -96,15 +96,9 @@ void MaterialsTest::LoadResources()
         GetScene()->AddNode(clone);
         
         planes.push_back(clone);
-        
-        // create speed tree ro planes
-        Entity* spoEntity = clone->Clone();
-        RenderComponent* spoRenderComponent = static_cast<RenderComponent*>(spoEntity->GetComponent(Component::RENDER_COMPONENT));
-        
-        SpeedTreeObject* spo = CreateSpeedTreeRO(spoRenderComponent->GetRenderObject());
-        spoRenderComponent->SetRenderObject(spo);
-        
-        spoPlanes.push_back(spoEntity);
+        spoPlanes.push_back(CreateSpeedTreeEntity(clone));
+        skinnedPlanes.push_back(CreateSkinnedEntity(clone));
+        lightmapMaterialPlanes.push_back(CreateEntityForLightmapMaterial(clone));
     }
     
     Entity* light = materialsScene->FindByName("Light");
@@ -159,21 +153,13 @@ void MaterialsTest::BeginFrame()
         float32 testTime = (SystemTimer::Instance()->FrameStampTimeMS() - currentTestStartTime) / 1000.0f;
         materialTestsElapsedTime.push_back(testTime);
         
-        // remove speed tree ro if finished material is spherical
-        if(materials[currentMaterialIndex]->GetParent()->GetMaterialName().find("Spherical") != String::npos)
+        NMaterial* material = materials[currentMaterialIndex]->GetParent();
+        
+        if(material->GetMaterialName().find("Spherical") != String::npos ||
+           material->GetMaterialName().find("Skinning") != String::npos ||
+           material->GetMaterialName().find("TextureLightmap") != String::npos)
         {
-            List<Entity*> children;
-            GetScene()->FindNodesByNamePart(PLANE_ENTITY.c_str(), children);
-            
-            for(Entity* child : children)
-            {
-                GetScene()->RemoveNode(child);
-            }
-            
-            for(Entity* child : planes)
-            {
-                GetScene()->AddNode(child);
-            }
+            ReplacePlanes(planes);
         }
         
         currentMaterialIndex++;
@@ -182,23 +168,19 @@ void MaterialsTest::BeginFrame()
     // material test started
     if(GetTestFrameNumber() % FRAMES_PER_MATERIAL_TEST == 0)
     {
-        // add speed tree ro if current material is spherical
         if(currentMaterialIndex < materials.size() && materials[currentMaterialIndex]->GetParent()->GetMaterialName().find("Spherical") != String::npos)
         {
-            List<Entity*> children;
-            GetScene()->FindNodesByNamePart(PLANE_ENTITY.c_str(), children);
-            
-            for(Entity* child : children)
-            {
-                GetScene()->RemoveNode(child);
-            }
-            
-            for(Entity* child : spoPlanes)
-            {
-                GetScene()->AddNode(child);
-            }
-            
-            //GetScene()->SaveScene("~res/sc.sc2");
+            ReplacePlanes(spoPlanes);
+        }
+        
+        if(currentMaterialIndex < materials.size() && materials[currentMaterialIndex]->GetParent()->GetMaterialName().find("Skinning") != String::npos)
+        {
+            ReplacePlanes(skinnedPlanes);
+        }
+        
+        if(currentMaterialIndex < materials.size() && materials[currentMaterialIndex]->GetParent()->GetMaterialName().find("TextureLightmap") != String::npos)
+        {
+            ReplacePlanes(lightmapMaterialPlanes);
         }
         
         currentTestStartTime = SystemTimer::Instance()->FrameStampTimeMS();
@@ -239,13 +221,14 @@ void MaterialsTest::PrintStatistic(const Vector<BaseTest::FrameInfo>& frames)
         Logger::Info(TeamcityTestsOutput::FormatBuildStatistic(
                                                                TeamcityTestsOutput::MATERIAL_ELAPSED_TEST_TIME,
                                                                DAVA::Format("%f", materialSubtestElapsedTime)).c_str());
-        
     }
 }
 
-SpeedTreeObject* MaterialsTest::CreateSpeedTreeRO(RenderObject* renderObject)
+Entity* MaterialsTest::CreateSpeedTreeEntity(Entity* entity)
 {
-    SpeedTreeObject* spo = new SpeedTreeObject();
+    Entity* spoEntity = entity->Clone();
+    RenderComponent* spoRenderComponent = static_cast<RenderComponent*>(spoEntity->GetComponent(Component::RENDER_COMPONENT));
+    RenderObject* renderObject = spoRenderComponent->GetRenderObject();
     
     PolygonGroup* spoPolygonGroup = new PolygonGroup();
     PolygonGroup* polygonGroup = renderObject->GetRenderBatch(0)->GetPolygonGroup();
@@ -282,15 +265,111 @@ SpeedTreeObject* MaterialsTest::CreateSpeedTreeRO(RenderObject* renderObject)
     spoPolygonGroup->RecalcAABBox();
     spoPolygonGroup->BuildBuffers();
     
+    // fix for calculate normals in ShpericalLit shader
+    spoPolygonGroup->aabbox.max.z = 1.0f;
+    
     RenderBatch* spoRenderBatch = new RenderBatch();
     spoRenderBatch->SetPolygonGroup(spoPolygonGroup);
     spoRenderBatch->SetMaterial(renderObject->GetRenderBatch(0)->GetMaterial()->Clone());
     
-    spo->AddRenderBatch(spoRenderBatch);
+    SpeedTreeObject* spoRenderObject = new SpeedTreeObject();
+    spoRenderComponent->SetRenderObject(spoRenderObject);
+    spoRenderObject->AddRenderBatch(spoRenderBatch);
     
     Vector<Vector3> fakeSH(9, Vector3());
     fakeSH[0].x = fakeSH[0].y = fakeSH[0].z = 1.f/0.564188f; //fake SH value to make original object color
-    spo->SetSphericalHarmonics(fakeSH);
+    spoRenderObject->SetSphericalHarmonics(fakeSH);
     
-    return spo;
+    return spoEntity;
 }
+
+Entity* MaterialsTest::CreateSkinnedEntity(Entity* sourceEntity)
+{
+    Entity* skinnedEntity = sourceEntity->Clone();
+    
+    Entity* entityHierarhy = new Entity();
+    entityHierarhy->AddNode(sourceEntity->Clone());
+    
+    Vector<SkeletonComponent::JointConfig> joints;
+    RenderObject * skinnedRo = MeshUtils::CreateSkinnedMesh(entityHierarhy, joints);
+    
+    RenderComponent* renderComponent = static_cast<RenderComponent*>(skinnedEntity->GetComponent(Component::RENDER_COMPONENT));
+    renderComponent->SetRenderObject(skinnedRo);
+    
+    SkeletonComponent* skeleton = new SkeletonComponent();
+    skinnedEntity->AddComponent(skeleton);
+    
+    skeleton->SetConfigJoints(joints);
+    skeleton->RebuildFromConfig();
+    
+    SafeRelease(entityHierarhy);
+
+    return skinnedEntity;
+}
+
+Entity* MaterialsTest::CreateEntityForLightmapMaterial(DAVA::Entity *entity)
+{
+    Entity* lightmapEntity = entity->Clone();
+    RenderComponent* lightmapRenderComponent = static_cast<RenderComponent*>(lightmapEntity->GetComponent(Component::RENDER_COMPONENT));
+    RenderObject* renderObject = lightmapRenderComponent->GetRenderObject();
+    
+    PolygonGroup* lightmapPolygonGroup = new PolygonGroup();
+    PolygonGroup* polygonGroup = renderObject->GetRenderBatch(0)->GetPolygonGroup();
+    
+    int32 vertexCount = polygonGroup->GetVertexCount();
+    int32 indexCount = polygonGroup->GetIndexCount();
+    
+    int32 format = polygonGroup->GetFormat() | EVF_TEXCOORD1;
+    
+    lightmapPolygonGroup->AllocateData(format, vertexCount, indexCount);
+    
+    for(int32 i = 0; i < vertexCount; i++)
+    {
+        Vector3 v;
+        Vector2 t;
+        
+        polygonGroup->GetCoord(i, v);
+        lightmapPolygonGroup->SetCoord(i, v);
+        
+        polygonGroup->GetNormal(i, v);
+        lightmapPolygonGroup->SetNormal(i, v);
+        
+        polygonGroup->GetTexcoord(0, i, t);
+        lightmapPolygonGroup->SetTexcoord(0, i, t);
+        lightmapPolygonGroup->SetTexcoord(1, i, t);
+    }
+    
+    for(int32 i = 0; i < indexCount; i++)
+    {
+        int32 index;
+        polygonGroup->GetIndex(i, index);
+        lightmapPolygonGroup->SetIndex(i, index);
+    }
+    
+    lightmapPolygonGroup->RecalcAABBox();
+    lightmapPolygonGroup->BuildBuffers();
+    
+    // fix for calculate normals in ShpericalLit shader
+    //lightmapPolygonGroup->aabbox.max.z = 1.0f;
+    
+    renderObject->GetRenderBatch(0)->SetPolygonGroup(lightmapPolygonGroup);
+    
+    return lightmapEntity;
+}
+
+void MaterialsTest::ReplacePlanes(const Vector<Entity*>& planes)
+{
+    List<Entity*> children;
+    GetScene()->FindNodesByNamePart(PLANE_ENTITY.c_str(), children);
+    
+    for(Entity* child : children)
+    {
+        GetScene()->RemoveNode(child);
+    }
+    
+    for(Entity* child : planes)
+    {
+        GetScene()->AddNode(child);
+    }
+}
+

@@ -51,7 +51,11 @@ protected:
     
 private:
     
-    SpeedTreeObject* CreateSpeedTreeRO(RenderObject* renderObject);
+    Entity* CreateSpeedTreeEntity(Entity* entity);
+    Entity* CreateSkinnedEntity(Entity* entity);
+    Entity* CreateEntityForLightmapMaterial(Entity* entity);
+    
+    void ReplacePlanes(const Vector<Entity*>& planes);
     
     static const FastName CAMERA_START;
     static const FastName CAMERA_TARGET;
@@ -62,11 +66,13 @@ private:
     static const uint32 FRAMES_PER_MATERIAL_TEST;
     
     int32  currentTestStartFrame;
-    uint32 currentTestStartTime;
+    uint64 currentTestStartTime;
     uint32 currentMaterialIndex;
     
     Vector<Entity*> planes;
     Vector<Entity*> spoPlanes;
+    Vector<Entity*> skinnedPlanes;
+    Vector<Entity*> lightmapMaterialPlanes;
     
     Vector<NMaterial*> materials;
     Vector<float32> materialTestsElapsedTime;

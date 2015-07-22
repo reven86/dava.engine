@@ -64,7 +64,14 @@ def copy_data():
 	os.chdir("../DataSource")
 	os.system("git clean -dxf")
 
+	os.system("mkdir ../Data/Materials")
+	os.system("mkdir ../Data/Shaders")
+
 	copy_recursively("../../../../performance.test/Data", "../Data")
+	copy_recursively("../../../Tools/ResourceEditor/Data/Materials", "../Data/Materials")
+	copy_recursively("../../../Tools/ResourceEditor/Data/Shaders", "../Data/Shaders")
+	copy_recursively("../../../../performance.test/Data", "../Data")
+
 	copy_recursively("../../../../performance.test/DataSource", "../DataSource")
 
 	copy_scripts()
