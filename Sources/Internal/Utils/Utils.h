@@ -62,7 +62,10 @@ void Merge(const Vector<String> & tokens, const char delim, String & outString);
 void ReplaceBundleName(const String &newBundlePath);
     
 template<class T>
-T ParseStringTo(const String & str);
+T ParseStringTo(const String & str); 
+
+template<class T>
+bool ParseFromString(const String & str, T& res);
 
 template<class T>
 void Swap(T & v1, T & v2);
@@ -132,9 +135,17 @@ template<class T>
 T ParseStringTo(const String & str)
 {
     T result;
-    std::stringstream stream (str);
+    std::stringstream stream(str);
     stream >> result;
     return result;
+}
+
+template<class T>
+bool ParseFromString(const String & str, T& result)
+{
+    std::stringstream stream (str);
+    stream >> result;
+    return (stream.eof() == true && stream.fail() == false);
 }
 
 template<class T>
