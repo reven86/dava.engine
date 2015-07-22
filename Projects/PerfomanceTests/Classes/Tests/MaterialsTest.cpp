@@ -160,7 +160,7 @@ void MaterialsTest::BeginFrame()
     {
         size_t materialsCount = materials.size();
         
-        if(materialsCount > 0 && currentMaterialIndex < materialsCount)
+        if(currentMaterialIndex < materialsCount)
         {
             NMaterial* currentMaterial = materials[currentMaterialIndex]->GetParent();
             
@@ -178,14 +178,14 @@ void MaterialsTest::BeginFrame()
             {
                 ReplacePlanes(lightmapMaterialPlanes);
             }
-            
+
             List<Entity*> children;
             GetScene()->FindNodesByNamePart(PLANE_ENTITY.c_str(), children);
             
             for(Entity* child : children)
             {
                 RenderComponent* renderComponent = static_cast<RenderComponent*>(child->GetComponent(Component::RENDER_COMPONENT));
-                renderComponent->GetRenderObject()->GetRenderBatch(0)->SetMaterial(currentMaterial);
+                renderComponent->GetRenderObject()->GetRenderBatch(0)->SetMaterial(materials[currentMaterialIndex]);
             }
         }
         
