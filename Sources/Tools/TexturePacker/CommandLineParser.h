@@ -57,8 +57,9 @@ public:
     
 	void Clear();
 
-	bool IsFlagSet(const String & s);
-    String	GetParamForFlag(const String & flag);
+	bool IsFlagSet(const String & s) const;
+    String GetParamForFlag(const String & flag);
+    Vector<String> GetParamsForFlag(const String & flag);
 
 public:
     
@@ -81,9 +82,14 @@ protected:
     
     
 private:
-    
-	Vector<String>	params;
-	Vector<String>	flags;
+    struct Argument
+    {
+        explicit Argument(const String& f) : flag(f) {}
+        String flag;
+        Vector<String> params;
+    };
+
+	Vector<Argument> args;
 	bool isVerbose;
 	bool isExtendedOutput;
     bool useTeamcityOutput;
