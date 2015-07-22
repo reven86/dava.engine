@@ -55,7 +55,7 @@ namespace DAVA
                                                     DAVA::Color(0.0f,1.0f,0.0f,0.4f)};
 #endif
 UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
-:	UIControl(rect, rectInAbsoluteCoordinates)
+    : UIControl(rect, rectInAbsoluteCoordinates)
     , shadowOffset(0, 0)
 {
     SetInputEnabled(false, false);
@@ -116,6 +116,11 @@ void UIStaticText::SetText(const WideString& _string, const Vector2 &requestedTe
     textBlock->SetText(_string, requestedTextRectSize);
     textBg->SetAlign(textBlock->GetVisualAlign());
     PrepareSprite();
+}
+
+void UIStaticText::SetTextWithoutRect(const WideString &text)
+{
+    SetText(text, Vector2(0.0f, 0.0f));
 }
 
 void UIStaticText::SetFittingOption(int32 fittingType)
@@ -231,7 +236,7 @@ const Vector2 & UIStaticText::GetTextSize()
 
 Vector2 UIStaticText::GetContentPreferredSize() const
 {
-    return textBlock->GetTextSize();
+    return textBlock->GetPreferredSize();
 }
 
 const Color &UIStaticText::GetTextColor() const
@@ -571,7 +576,7 @@ const Vector<int32> & UIStaticText::GetStringSizes() const
 {
     return textBlock->GetStringSizes();
 }
-
+    
 void UIStaticText::PrepareSprite()
 {
 	JobManager::Instance()->CreateMainJob(MakeFunction(PointerWrapper<UIStaticText>::WrapRetainRelease(this), &UIStaticText::PrepareSpriteInternal));

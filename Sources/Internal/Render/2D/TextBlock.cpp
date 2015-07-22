@@ -270,6 +270,43 @@ void TextBlock::SetFittingOption(int32 _fittingType)
     mutex.Unlock();
 }
 
+Vector2 TextBlock::GetPreferredSize()
+{
+    if(!font)
+        return Vector2();
+
+    Vector2 result;
+    
+    mutex.Lock();
+    
+    if (requestedSize.dx < 0.0f && requestedSize.dy < 0.0f && fittingType == FITTING_DISABLED)
+    {
+        result = cacheTextSize;
+        mutex.Unlock();
+    }
+    else
+    {
+        Vector2 oldRequestedSize = requestedSize;
+        int32 oldFitting = fittingType;
+        
+        requestedSize = Vector2(-1.0f, -1.0f);
+        fittingType = FITTING_DISABLED;
+        
+        mutex.Unlock();
+        
+        CalculateCacheParams();
+
+        mutex.Lock();
+        result = cacheTextSize;
+        requestedSize = oldRequestedSize;
+        fittingType = oldFitting;
+        mutex.Unlock();
+        
+        CalculateCacheParams();
+    }
+
+    return result;
+}
 
 Font * TextBlock::GetFont()
 {
