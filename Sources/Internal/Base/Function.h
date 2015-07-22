@@ -63,7 +63,9 @@ public:
     Closure(Closure&& c)
     {
         Copy(c);
-        c.Clear();
+
+        c.shared = false;
+        c.storage.fill(nullptr);
     }
 
     Closure& operator=(const Closure &c)
@@ -82,7 +84,9 @@ public:
         Clear();
         shared = c.shared;
         storage = c.storage;
-        c.Clear();
+
+        c.shared = false;
+        c.storage.fill(nullptr);
 
         return *this;
     }

@@ -8,10 +8,12 @@
 #include "Base/Function.h"
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
+#include "Concurrency/Thread.h"
 
 namespace DAVA  {
 
 using SigConnectionID = size_t;
+static const SigConnectionID InvalidSigConnectionID = 0;
 
 namespace Sig11 {
 
@@ -29,7 +31,7 @@ template<typename MutexType, typename ThreadIDType, typename... Args>
 class SignalImpl : public SignalBase
 {
 public:
-    using Func = Function<void(Args...)>;
+    using Func = Function < void(Args...) > ;
 
     SignalImpl() = default;
     SignalImpl(const SignalImpl &) = delete;
@@ -41,7 +43,7 @@ public:
     }
 
     template<typename Fn>
-    SigConnectionID Connect(const Fn& fn, ThreadIDType tid = ThreadIDType()) throw()
+    SigConnectionID Connect(const Fn& fn, ThreadIDType tid = {}) throw()
     {
         LockGuard<MutexType> guard(mutex);
         return AddConnection(nullptr, Func(fn), tid);
@@ -154,7 +156,7 @@ protected:
 
     SigConnectionID AddConnection(SlotHolder* holder, Func&& fn, const ThreadIDType& tid) throw()
     {
-        static std::atomic<SigConnectionID> counter = 0;
+        static std::atomic<SigConnectionID> counter = InvalidSigConnectionID;
 
         SigConnectionID id = ++counter;
 
@@ -208,138 +210,31 @@ public:
     }
 };
 
-/*
 template<typename... Args>
-class Signal : public SignalImpl<Args...>
+class SignalMt : public Sig11::SignalImpl < Mutex, Thread::Id, Args...>
 {
-public:
-    using SlotFn = SignalImpl<Args...>::SlotFn;
-    using ConnID = SignalImpl<Args...>::ConnID;
+    SignalMt() = default;
+    SignalMt(const SignalMt&) = delete;
+    SignalMt& operator=(const SignalMt&) = delete;
 
-    Signal() final = default;
-    Signal(const Signal &) = delete;
-    Signal(Signal &&) = delete;
-
-    template<typename Fn>
-    ConnID Connect(const Fn& fn)
+    void Emit(Args&&... args) override
     {
-        return AddConnection(nullptr, SlotFn(fn));
-    }
+        Thread::Id thisTid = Thread::GetCurrentId();
 
-    template<typename Obj>
-    ConnID Connect(Obj *obj, void (Obj::* const& fn)(Args...))
-    {
-        return AddConnection(GetHolder(obj), SlotFn(obj, fn));
-    }
-
-    template<typename Obj>
-    ConnID Connect(Obj *obj, void (Obj::* const& fn)(Args...) const)
-    {
-        return AddConnection(GetHolder(obj), SlotFn(obj, fn));
-    }
-
-    void Disconnect(ConnID id)
-    {
-        RemoveConnection(id);
-    }
-
-    void Disconnect(SlotHolder *holder) override final
-    {
-        RemoveConnection(holder);
-    }
-
-    void DisconnectAll()
-    {
-        RemoveConnectionAll()
-    }
-
-    void Emit(Args&&... args) const
-    {
+        LockGuard<Mutex> guard(mutex);
         for (auto&& con : connections)
         {
-            con.second.fn(std::forward<Args>(args)...);
+            if (con.second.tid == thisTid)
+            {
+                con.second.fn(std::forward<Args>(args)...);
+            }
+            else
+            {
+                Function<void()> fn = std::bind(con.second.fn, std::forward<Args>(args)...);
+            }
         }
     }
-
-    void Track(ConnID id, SlotHolder* holder)
-    {
-        AddTrack(id, holder);
-    }
 };
-
-template<typename... Args>
-class SignalMt : public SignalImpl<Args...>
-{
-public:
-    using SlotFn = SignalImpl<Args...>::SlotFn;
-    using ConnID = SignalImpl<Args...>::ConnID;
-    using Lock = Mutex;
-
-    SignalMt() final = default;
-    SignalMt(const Signal &) = delete;
-    SignalMt(Signal &&) = delete;
-
-    template<typename Fn>
-    ConnID Connect(const Fn& fn)
-    {
-        LockGuard<Lock> guard(lock);
-        return AddConnection(nullptr, SlotFn(fn));
-    }
-
-    template<typename Obj>
-    ConnID Connect(Obj *obj, void (Obj::* const& fn)(Args...))
-    {
-        LockGuard<Lock> guard(lock);
-        return AddConnection(GetHolder(obj), SlotFn(obj, fn));
-    }
-
-    template<typename Obj>
-    ConnID Connect(Obj *obj, void (Obj::* const& fn)(Args...) const)
-    {
-        LockGuard<Lock> guard(lock);
-        return AddConnection(GetHolder(obj), SlotFn(obj, fn));
-    }
-
-    void Disconnect(ConnID id)
-    {
-        LockGuard<Lock> guard(lock);
-        RemoveConnection(id);
-    }
-
-    void Disconnect(SlotHolder *holder) override final
-    {
-        LockGuard<Lock> guard(lock);
-        RemoveConnection(holder);
-    }
-
-    void DisconnectAll()
-    {
-        LockGuard<Lock> guard(lock);
-        RemoveConnectionAll()
-    }
-
-    void Emit(Args&&... args) const
-    {
-        LockGuard<Lock> guard(lock);
-        for (auto&& con : connections)
-        {
-            SlotFn fn = con.second.fn;
-            lock.Unlock();
-            fn(std::forward<Args>(args)...);
-            lock.Lock();
-        }
-    }
-
-    void Track(ConnID id, SlotHolder* holder)
-    {
-        LockGuard<Lock> guard(lock);
-        AddTrack(id, holder);
-    }
-
-protected:
-    Lock lock;
-};
-*/
 
 
 } // namespace DAVA

@@ -290,8 +290,8 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
         Signal<> sig0;
         Signal<int, int, int> sig3;
 
-        SigConnectionID id = sig0.Connect([]() {
-            printf("111");
+        SigConnectionID id = sig0.Connect([&id, &sig0]() {
+            sig0.Disconnect(id);
         });
 
         sig0.Emit();
