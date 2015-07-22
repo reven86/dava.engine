@@ -45,6 +45,7 @@ public:
         MULTILINE_ENABLED,
         MULTILINE_ENABLED_BY_SYMBOL
     };
+    
 #if defined(LOCALIZATION_DEBUG)
     static const Color  HIGHLITE_COLORS[];
     enum DebugHighliteColor
@@ -71,6 +72,8 @@ public:
     //if requested size is >0 - text creates int the rect with the requested size
     //if requested size in <0 - rect creates for the all text size
     virtual void SetText(const WideString & string, const Vector2 &requestedTextRectSize = Vector2(0,0));
+    void SetTextWithoutRect(const WideString &text);
+    
     void SetFont(Font * font);
     void SetTextColor(const Color& color);
 
@@ -128,7 +131,7 @@ public:
     virtual Animation * ShadowColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 1);
 
     const Vector<int32> & GetStringSizes() const;
-
+    
 protected:
     void PrepareSpriteInternal();
     Rect CalculateTextBlockRect(const UIGeometricData &geometricData) const;
@@ -152,9 +155,6 @@ public:
     virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader) override;
     
 public:
-    void SetTextWithoutRect(const WideString &text) {
-        SetText(text, Vector2(-1.f, -1.f));
-    }
     
     String GetFontPresetName() const;
     void SetFontByPresetName(const String &presetName);
