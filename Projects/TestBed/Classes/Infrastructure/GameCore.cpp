@@ -35,6 +35,7 @@
 #include "Infrastructure/TestListScreen.h"
 #include "Tests/NotificationTest.h"
 #include "Tests/UIScrollViewTest.h"
+#include "Tests/SpeedLoadImagesTest.h"
 #include "Tests/MultilineTest.h"
 //$UNITTEST_INCLUDE
 
@@ -52,7 +53,8 @@ void GameCore::RegisterTests()
 {
     new UIScrollViewTest();
     new NotificationScreen();
-    new MultilineTest();
+    new SpeedLoadImagesTest();
+	new MultilineTest();
 }
 
 #include <fstream>

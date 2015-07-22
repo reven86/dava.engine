@@ -180,6 +180,20 @@ DAVA_TESTCLASS(FormatsTest)
     }
 #endif
 
+    DAVA_TEST(TestWebP)
+    {
+        Vector<PixelFormat> suportedFormats;
+        suportedFormats.push_back(FORMAT_RGB888);
+        suportedFormats.push_back(FORMAT_RGBA8888);
+
+        for (PixelFormat requestedFormat : suportedFormats)
+        {
+            const String formatName = GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(requestedFormat);
+            const DAVA::FilePath compressedPathname(DAVA::Format("~res:/TestData/FormatsTest/webp/%s.dat", formatName.c_str()));
+            TestImageInfo(compressedPathname, requestedFormat);
+        }
+    }
+
     void TestImageInfo(const DAVA::FilePath &fileName, DAVA::PixelFormat &requestedFormat)
     {
         // NOTE: if file is generated in DXT1A format then lib returned new file in DXT1
