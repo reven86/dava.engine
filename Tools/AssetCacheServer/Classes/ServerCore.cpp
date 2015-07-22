@@ -38,7 +38,8 @@ ServerCore::ServerCore()
     QObject::connect(settings, &ApplicationSettings::SettingsUpdated, this, &ServerCore::OnSettingsUpdated);
     
     server.SetDelegate(&serverLogics);
-	client.SetDelegate(&serverLogics);
+	client.AddDelegate(&serverLogics);
+    client.AddDelegate(this);
     serverLogics.Init(&server, &client, &dataBase);
 
     updateTimer = new QTimer(this);
@@ -126,7 +127,6 @@ bool ServerCore::ConnectRemote()
         bool created = client.Connect(remoteServerData.ip, remoteServerData.port);
         if (created)
         {
-            client.SetDelegate(this);
             connectTimer->start();
             remoteState = RemoteState::CONNECTING;
             return true;
@@ -138,7 +138,6 @@ bool ServerCore::ConnectRemote()
 
 void ServerCore::DisconnectRemote()
 {
-    client.SetDelegate(nullptr);
     connectTimer->stop();
     reattemptWaitTimer->stop();
     remoteState = RemoteState::STOPPED;

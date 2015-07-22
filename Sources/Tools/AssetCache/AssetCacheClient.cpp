@@ -44,7 +44,6 @@ namespace AssetCache
     
 Client::~Client()
 {
-    delegate = nullptr;
     SafeDelete(netClient);
 }
 
@@ -94,7 +93,7 @@ bool Client::AddToCache(const CacheItemKey &key, const CachedFiles &files)
     
 void Client::OnAddedToCache(KeyedArchive * archieve)
 {
-    if(delegate)
+    if (!delegates.empty())
     {
         KeyedArchive *keyArchieve = archieve->GetArchive("key");
         DVASSERT(keyArchieve);
@@ -103,7 +102,10 @@ void Client::OnAddedToCache(KeyedArchive * archieve)
         
         bool added = archieve->GetBool("added");
         
-        delegate->OnAddedToCache(key, added);
+        for (auto& delegate : delegates)
+        {
+            delegate->OnAddedToCache(key, added);
+        }
     }
 }
     
@@ -127,7 +129,7 @@ bool Client::GetFromCache(const CacheItemKey &key)
 
 void Client::OnGetFromCache(KeyedArchive * archieve)
 {
-    if(delegate)
+    if(!delegates.empty())
     {
         KeyedArchive *keyArchieve = archieve->GetArchive("key");
         DVASSERT(keyArchieve);
@@ -139,7 +141,10 @@ void Client::OnGetFromCache(KeyedArchive * archieve)
         CachedFiles files;
         files.Deserialize(filesArchieve);
         
-        delegate->OnReceivedFromCache(key, files);
+        for (auto& delegate : delegates)
+        {
+            delegate->OnReceivedFromCache(key, files);
+        }
     }
 }
 
@@ -159,7 +164,7 @@ void Client::ChannelClosed(TCPChannel *tcpChannel, const char8* message)
 
 void Client::StateChanged()
 {
-    if (delegate)
+    for (auto& delegate : delegates)
     {
         delegate->OnAssetClientStateChanged();
     }
@@ -194,6 +199,19 @@ void Client::PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, si
         }
     }
 }
+
+void Client::AddDelegate(ClientDelegate* delegate)
+{
+    DVASSERT(delegate != nullptr);
+    delegates.insert(delegate);
+}
+
+void Client::RemoveDelegate(ClientDelegate* delegate)
+{
+    DVASSERT(delegate != nullptr);
+    delegates.erase(delegate);
+}
+
     
 }; // end of namespace AssetCache
 }; // end of namespace DAVA

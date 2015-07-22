@@ -59,7 +59,8 @@ public:
     Client() = default;
     virtual ~Client();
     
-    void SetDelegate(ClientDelegate * delegate);
+    void AddDelegate(ClientDelegate* delegate);
+    void RemoveDelegate(ClientDelegate* delegate);
     
     bool Connect(const String &ip, uint16 port);
     void Disconnect();
@@ -87,16 +88,8 @@ private:
     TCPConnection * netClient = nullptr;
     TCPChannel * openedChannel = nullptr;
     
-    ClientDelegate * delegate = nullptr;
+    Set<ClientDelegate*> delegates;
 };
-
-inline void Client::SetDelegate(ClientDelegate * _delegate)
-{
-    if(delegate != _delegate)
-    {
-        delegate = _delegate;
-    }
-}
 
 inline TCPConnection * Client::GetConnection() const
 {
