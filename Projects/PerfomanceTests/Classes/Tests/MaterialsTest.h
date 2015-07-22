@@ -57,11 +57,15 @@ private:
     
     void ReplacePlanes(const Vector<Entity*>& planes);
     
-    static const FastName CAMERA_START;
-    static const FastName CAMERA_TARGET;
-    static const FastName MATERIAL_OBJECTS_ROOT;
-    static const FastName MATERIALS;
+    static const String TEST_NAME;
+    static const String SPHERICAL_LIT_MATERIAL;
+    static const String SKINNED_MATERIAL;
+    static const String LIGHTMAP_MATERIAL;
+    
+    static const FastName LIGHT_ENTITY;
+    static const FastName CAMERA_ENTITY;
     static const FastName PLANE_ENTITY;
+    static const FastName MATERIALS_ENTITY;
     
     static const uint32 FRAMES_PER_MATERIAL_TEST;
     
@@ -76,8 +80,6 @@ private:
     
     Vector<NMaterial*> materials;
     Vector<float32> materialTestsElapsedTime;
-    
-    Scene* materialsScene;
 
     Camera* camera;
 };

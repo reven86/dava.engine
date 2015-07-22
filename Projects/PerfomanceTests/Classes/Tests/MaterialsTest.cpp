@@ -28,28 +28,30 @@
 
 #include "MaterialsTest.h"
 
-const FastName MaterialsTest::CAMERA_START = FastName("CameraStart");
-const FastName MaterialsTest::CAMERA_TARGET = FastName("CameraTarget");
-const FastName MaterialsTest::MATERIALS = FastName("Materials");
+const FastName MaterialsTest::LIGHT_ENTITY = FastName("Light");
+const FastName MaterialsTest::CAMERA_ENTITY = FastName("OrthoCamera");
 const FastName MaterialsTest::PLANE_ENTITY = FastName("plane");
+const FastName MaterialsTest::MATERIALS_ENTITY = FastName("Materials");
+
+const String MaterialsTest::TEST_NAME = "MaterialsTest";
+const String MaterialsTest::SPHERICAL_LIT_MATERIAL = "SphericalLit";
+const String MaterialsTest::SKINNED_MATERIAL = "Skinning";
+const String MaterialsTest::LIGHTMAP_MATERIAL = "Lightmap";
 
 const uint32 MaterialsTest::FRAMES_PER_MATERIAL_TEST = 60;
 
 MaterialsTest::MaterialsTest(const TestParams& testParams)
-    :   BaseTest("MaterialsTest", testParams)
+    :   BaseTest(TEST_NAME, testParams)
     ,   currentTestStartFrame(0)
     ,   currentTestStartTime(0)
     ,   currentMaterialIndex(0)
-    ,   materialsScene(nullptr)
     ,   camera(nullptr)
 {
-    
 }
 
 MaterialsTest::~MaterialsTest()
 {
     SafeRelease(camera);
-    SafeRelease(materialsScene);
     
     for(NMaterial* material : materials)
     {
@@ -65,23 +67,33 @@ MaterialsTest::~MaterialsTest()
     {
         SafeRelease(child);
     }
+    
+    for(Entity* child : skinnedPlanes)
+    {
+        SafeRelease(child);
+    }
+    
+    for(Entity* child : lightmapMaterialPlanes)
+    {
+        SafeRelease(child);
+    }
 }
 
 void MaterialsTest::LoadResources()
 {
     BaseTest::LoadResources();
     
-    materialsScene = new Scene();
+    Scene* materialsScene = new Scene();
     
     SceneFileV2::eError error = materialsScene->LoadScene(FilePath("~res:/3d/Maps/materials/materials.sc2"));
     DVASSERT_MSG(error == SceneFileV2::eError::ERROR_NO_ERROR, "can't load scene ~res:/3d/Maps/materials/materials.sc2");
     
-    Entity* materialsEntity = materialsScene->FindByName(MATERIALS);
+    Entity* materialsEntity = materialsScene->FindByName(MATERIALS_ENTITY);
     
     for(int32 i = 0; i < materialsEntity->GetChildrenCount(); i++)
     {
         RenderComponent* renderComponent = static_cast<RenderComponent*>(materialsEntity->GetChild(i)->GetComponent(Component::RENDER_COMPONENT));
-        NMaterial* material = renderComponent->GetRenderObject()->GetRenderBatch(0)->GetMaterial();
+        NMaterial* material = renderComponent->GetRenderObject()->GetRenderBatch(0)->GetMaterial()->Clone();
 
         materials.push_back(material);
     }
@@ -101,21 +113,14 @@ void MaterialsTest::LoadResources()
         lightmapMaterialPlanes.push_back(CreateEntityForLightmapMaterial(clone));
     }
     
-    Entity* light = materialsScene->FindByName("Light");
+    Entity* light = materialsScene->FindByName(LIGHT_ENTITY);
     GetScene()->AddNode(light);
     
-    camera = new Camera();
-    camera->SetIsOrtho(true);
-    camera->SetOrthoWidth(1024);
-    camera->SetAspect(1.33f);
-    camera->SetPosition(Vector3(-20.0f, 0.0f, 0.0f));
-    camera->SetTarget(Vector3(-19.0f, 0.0f, 0.0f));
-    camera->SetUp(Vector3::UnitZ);
-    camera->SetLeft(-Vector3::UnitY);
+    Entity* camera = materialsScene->FindByName(CAMERA_ENTITY);
+    CameraComponent* cameraComponent = static_cast<CameraComponent*>(camera->GetComponent(Component::CAMERA_COMPONENT));
+    GetScene()->SetCurrentCamera(cameraComponent->GetCamera());
     
-    GetScene()->SetCurrentCamera(camera);
-    
-    SafeRelease(planeEntity);
+    SafeRelease(materialsScene);
 }
 
 void MaterialsTest::UnloadResources()
@@ -131,21 +136,6 @@ void MaterialsTest::PerformTestLogic(float32 timeElapsed)
 void MaterialsTest::BeginFrame()
 {
     BaseTest::BeginFrame();
-
-    // set next material
-    if(GetTestFrameNumber() > 0 && GetTestFrameNumber() % FRAMES_PER_MATERIAL_TEST == 1)
-    {
-        NMaterial* currentMaterial = materials[currentMaterialIndex];
-        
-        List<Entity*> children;
-        GetScene()->FindNodesByNamePart(PLANE_ENTITY.c_str(), children);
-        
-        for(Entity* child : children)
-        {
-            RenderComponent* renderComponent = static_cast<RenderComponent*>(child->GetComponent(Component::RENDER_COMPONENT));
-            renderComponent->GetRenderObject()->GetRenderBatch(0)->SetMaterial(currentMaterial);
-        }
-    }
     
     // material test finished
     if(GetTestFrameNumber() - currentTestStartFrame == FRAMES_PER_MATERIAL_TEST)
@@ -155,9 +145,9 @@ void MaterialsTest::BeginFrame()
         
         NMaterial* material = materials[currentMaterialIndex]->GetParent();
         
-        if(material->GetMaterialName().find("Spherical") != String::npos ||
-           material->GetMaterialName().find("Skinning") != String::npos ||
-           material->GetMaterialName().find("TextureLightmap") != String::npos)
+        if(material->GetMaterialName().find(SPHERICAL_LIT_MATERIAL) != String::npos ||
+           material->GetMaterialName().find(SKINNED_MATERIAL) != String::npos ||
+           material->GetMaterialName().find(LIGHTMAP_MATERIAL) != String::npos)
         {
             ReplacePlanes(planes);
         }
@@ -168,19 +158,35 @@ void MaterialsTest::BeginFrame()
     // material test started
     if(GetTestFrameNumber() % FRAMES_PER_MATERIAL_TEST == 0)
     {
-        if(currentMaterialIndex < materials.size() && materials[currentMaterialIndex]->GetParent()->GetMaterialName().find("Spherical") != String::npos)
-        {
-            ReplacePlanes(spoPlanes);
-        }
+        size_t materialsCount = materials.size();
         
-        if(currentMaterialIndex < materials.size() && materials[currentMaterialIndex]->GetParent()->GetMaterialName().find("Skinning") != String::npos)
+        if(materialsCount > 0 && currentMaterialIndex < materialsCount)
         {
-            ReplacePlanes(skinnedPlanes);
-        }
-        
-        if(currentMaterialIndex < materials.size() && materials[currentMaterialIndex]->GetParent()->GetMaterialName().find("TextureLightmap") != String::npos)
-        {
-            ReplacePlanes(lightmapMaterialPlanes);
+            NMaterial* currentMaterial = materials[currentMaterialIndex]->GetParent();
+            
+            if(currentMaterial->GetMaterialName().find(SPHERICAL_LIT_MATERIAL) != String::npos)
+            {
+                ReplacePlanes(spoPlanes);
+            }
+            
+            if(currentMaterial->GetMaterialName().find(SKINNED_MATERIAL) != String::npos)
+            {
+                ReplacePlanes(skinnedPlanes);
+            }
+            
+            if(currentMaterial->GetMaterialName().find(LIGHTMAP_MATERIAL) != String::npos)
+            {
+                ReplacePlanes(lightmapMaterialPlanes);
+            }
+            
+            List<Entity*> children;
+            GetScene()->FindNodesByNamePart(PLANE_ENTITY.c_str(), children);
+            
+            for(Entity* child : children)
+            {
+                RenderComponent* renderComponent = static_cast<RenderComponent*>(child->GetComponent(Component::RENDER_COMPONENT));
+                renderComponent->GetRenderObject()->GetRenderBatch(0)->SetMaterial(currentMaterial);
+            }
         }
         
         currentTestStartTime = SystemTimer::Instance()->FrameStampTimeMS();
@@ -348,9 +354,6 @@ Entity* MaterialsTest::CreateEntityForLightmapMaterial(DAVA::Entity *entity)
     
     lightmapPolygonGroup->RecalcAABBox();
     lightmapPolygonGroup->BuildBuffers();
-    
-    // fix for calculate normals in ShpericalLit shader
-    //lightmapPolygonGroup->aabbox.max.z = 1.0f;
     
     renderObject->GetRenderBatch(0)->SetPolygonGroup(lightmapPolygonGroup);
     
