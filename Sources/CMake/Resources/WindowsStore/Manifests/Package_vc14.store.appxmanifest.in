@@ -5,7 +5,7 @@
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   IgnorableNamespaces="uap mp">
 
-  <Identity Name="@PACKAGE_GUID@" Publisher="CN=mgong" Version="1.1.0.0" />
+  <Identity Name="@PACKAGE_GUID@" Publisher="CN=DAVA" Version="1.1.0.0" />
   <mp:PhoneIdentity PhoneProductId="@PACKAGE_GUID@" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
@@ -17,6 +17,11 @@
   <Dependencies>
     <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.10042.0" MaxVersionTested="10.0.65535.65535" />
   </Dependencies>
+
+  <Capabilities>
+    <uap:Capability Name="removableStorage" />
+    <Capability Name="internetClient" />
+  </Capabilities>
 
   <Resources>
     <Resource Language="x-generate" />
@@ -31,6 +36,19 @@
         Square44x44Logo="Assets/SmallLogo.png">
         <uap:SplashScreen Image="Assets/SplashScreen.png" />
       </uap:VisualElements>
-    </Application>
+     
+      <Extensions> 
+        <uap:Extension Category="windows.fileTypeAssociation">
+          <uap:FileTypeAssociation Name="zip">
+            <uap:DisplayName>ZIP</uap:DisplayName>
+            <uap:EditFlags OpenIsSafe="true" />
+            <uap:SupportedFileTypes>
+              <uap:FileType ContentType="archive/zip">.zip</uap:FileType>
+            </uap:SupportedFileTypes>
+          </uap:FileTypeAssociation>
+        </uap:Extension>
+      </Extensions>
+
+	</Application>
   </Applications>
 </Package>

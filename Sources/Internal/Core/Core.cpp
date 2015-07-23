@@ -163,14 +163,16 @@ void Core::CreateSingletons()
     
     new LocalNotificationController();
 
+#if !defined (__DAVAENGINE_WIN_UAP__)
     DeviceInfo::InitializeScreenInfo();
+#endif
     
     RegisterDAVAClasses();
 
     new Net::NetCore();
 
 #ifdef __DAVAENGINE_AUTOTESTING__
-	new AutotestingSystem();
+    new AutotestingSystem();
 #endif
     
     // Init default screen scale factor from screen info
@@ -182,7 +184,7 @@ void Core::CreateRenderManager()
 {
     eRenderer renderer = (eRenderer)options->GetInt32("renderer");
     
-    RenderManager::Create(renderer);	
+    RenderManager::Create(renderer);
 }
         
 void Core::ReleaseSingletons()
@@ -245,8 +247,10 @@ void Core::SetOptions(KeyedArchive * archiveOfOptions)
         screenScaleFactor = DeviceInfo::GetScreenInfo().scale;
     }
     
-#if !defined(__DAVAENGINE_ANDROID__)
-	//YZ android platform always use SCREEN_ORIENTATION_PORTRAIT and rotate system view and don't rotate GL view  
+#if defined(__DAVAENGINE_WIN_UAP__)
+    screenOrientation = options->GetInt32("orientation", SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE);
+#elif !defined(__DAVAENGINE_ANDROID__) // defined(__DAVAENGINE_WIN_UAP__)
+    //YZ android platform always use SCREEN_ORIENTATION_PORTRAIT and rotate system view and don't rotate GL view  
 	screenOrientation = options->GetInt32("orientation", SCREEN_ORIENTATION_PORTRAIT);
 #endif
 }
@@ -615,7 +619,7 @@ Core::eDeviceFamily Core::GetDeviceFamily()
     
 uint32 Core::GetScreenDPI()
 {
-	return DPIHelper::GetScreenDPI();
+    return DPIHelper::GetScreenDPI();
 }
 
 void Core::SetIcon(int32 /*iconId*/)
