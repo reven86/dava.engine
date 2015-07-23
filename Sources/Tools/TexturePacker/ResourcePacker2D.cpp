@@ -404,6 +404,8 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
         modified = true;
     }
 
+    bool packFromPng = CommandLineParser::Instance()->IsFlagSet("--frompng");
+
     // read textures margins settings
     bool useTwoSideMargin = CommandLineParser::Instance()->IsFlagSet("--add2sidepixel");
     uint32 marginInPixels = TexturePacker::DEFAULT_MARGIN;
@@ -452,7 +454,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 
     				definitionFileList.push_back(defFile);
     			}
-    			else if(isLightmapsPacking && fullname.IsEqualToExtension(".png"))
+                else if ((isLightmapsPacking || packFromPng) && fullname.IsEqualToExtension(".png"))
     			{
     				DefinitionFile * defFile = new DefinitionFile();
     				defFile->LoadPNG(fullname, processDirectoryPath);
