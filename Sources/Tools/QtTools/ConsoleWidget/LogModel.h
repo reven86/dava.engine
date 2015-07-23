@@ -28,7 +28,7 @@ public:
 
     explicit LogModel(QObject* parent = nullptr);
     ~LogModel();
-    void SetConvertFunction(ConvertFunc func);
+    void SetConvertFunction(ConvertFunc func); //provide mechanism to convert data string to string to be displayed
 
     const QPixmap &GetIcon(int ll) const;
     

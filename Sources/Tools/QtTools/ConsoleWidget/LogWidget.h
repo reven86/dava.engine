@@ -25,7 +25,7 @@ class LogWidget : public QWidget, public Ui::LogWidget
 public:
     explicit LogWidget(QWidget* parent = NULL);
     ~LogWidget() = default;
-    void SetConvertFunction(LogModel::ConvertFunc func);
+    void SetConvertFunction(LogModel::ConvertFunc func); //provide mechanism to convert data string to string to be displayed
     LogModel *Model() const;
     QByteArray Serialize() const;
     void Deserialize(const QByteArray &data);
