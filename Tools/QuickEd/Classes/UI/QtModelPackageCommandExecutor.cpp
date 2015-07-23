@@ -203,7 +203,7 @@ ResultList QtModelPackageCommandExecutor::InsertControl(ControlNode *control, Co
     }
     else
     {
-        Logger::Warning("%s", String("Can not instert control!" + PointerSerializer::FromPointer(control)).c_str());
+        Logger::Warning("%s", String("Can not insert control!" + PointerSerializer::FromPointer(control)).c_str());
     }
     return resultList;
 }
