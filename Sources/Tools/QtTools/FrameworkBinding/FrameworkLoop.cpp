@@ -32,6 +32,7 @@
 #include "Platform/Qt5/QtLayer.h"
 #include "Render/RenderManager.h"
 
+
 #include <QWindow>
 #include <QApplication>
 #include <QOpenGLContext>
@@ -44,6 +45,9 @@
 
 #include "QtTools/DavaGLWidget/davaglwidget.h"
 
+
+#include "Debug/Stats.h"
+using namespace DAVA;
 
 FrameworkLoop::FrameworkLoop()
     : LoopItem()
@@ -69,7 +73,9 @@ void FrameworkLoop::SetOpenGLWindow( DavaGLWidget* w )
 
 QOpenGLContext* FrameworkLoop::Context()
 {
-    if ( context.isNull() )
+	TOOLS_TIME_PROFILE("FrameworkLoop::Context");
+	
+	if (context.isNull())
     {
         context = new QOpenGLContext( glWidget );
 

@@ -129,8 +129,9 @@ void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
 
 void SceneSelectionSystem::ForceEmitSignals()
 {
-	if(selectionHasChanges)
+	if (selectionHasChanges)
 	{
+		TOOLS_IMM_TIME_PROFILE("SceneSelectionSystem::ForceEmitSignals");
 		// emit signals
 		SceneSignals::Instance()->EmitSelectionChanged((SceneEditor2 *) GetScene(), &curSelections, &curDeselections);
 
@@ -281,6 +282,34 @@ void SceneSelectionSystem::ProcessCommand(const Command2 *command, bool redo)
         }
     }
 }
+
+void SceneSelectionSystem::SetSelection(const EntityGroup &newSelection)
+{
+	TOOLS_IMM_TIME_PROFILE("SceneSelectionSystem::SetSelection");
+
+	if (!IsLocked())
+	{
+		Clear();
+
+		auto count = newSelection.Size();
+		for (decltype(count) i = 0; i < count; ++i)
+		{
+			auto entity = newSelection.GetEntity(i);
+			if (IsEntitySelectable(entity) && !curSelections.ContainsEntity(entity))
+			{
+				curSelections.Add(entity, GetSelectionAABox(entity));
+				selectionHasChanges = true;
+			}
+		}
+
+		if (selectionHasChanges)
+		{
+			invalidSelectionBoxes = true;
+			UpdateHoodPos();
+		}
+	}
+}
+
 
 void SceneSelectionSystem::SetSelection(DAVA::Entity *entity)
 {

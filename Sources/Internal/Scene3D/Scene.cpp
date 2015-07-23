@@ -799,7 +799,8 @@ void Scene::SetupTestLighting()
 void Scene::Update(float timeElapsed)
 {
     TIME_PROFILE("Scene::Update");
-    
+// 	TOOLS_TIME_PROFILE("Scene::Update");
+
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
 
     uint32 size = (uint32)systemsToProcess.size();
@@ -850,11 +851,28 @@ void Scene::Update(float timeElapsed)
 	//}
 
     updateTime = SystemTimer::Instance()->AbsoluteMS() - time;
+	if (updateTime > 100)
+	{
+		Logger::Warning("+++  Scene::%s took %lld ms", __FUNCTION__, updateTime);
+	}
 }
+
+uint64 deltaDraw = 0;
 
 void Scene::Draw()
 {
-    TIME_PROFILE("Scene::Draw");
+	if (deltaDraw != 0)
+	{
+		deltaDraw = SystemTimer::Instance()->AbsoluteMS() - deltaDraw;
+		if (deltaDraw > 100)
+		{
+			Logger::Warning("Delta for calling Scene::%s is %lld ms", __FUNCTION__, deltaDraw);
+		}
+	}
+	
+	
+	TIME_PROFILE("Scene::Draw");
+//	TOOLS_TIME_PROFILE("Scene::Draw");
 
 	//float timeElapsed = SystemTimer::Instance()->FrameDelta();
 
@@ -885,6 +903,12 @@ void Scene::Draw()
     //foliageSystem->DebugDrawVegetation();
     
 	drawTime = SystemTimer::Instance()->AbsoluteMS() - time;
+	if (drawTime > 100)
+	{
+		Logger::Warning("+++  Scene::%s took %lld ms", __FUNCTION__, drawTime);
+	}
+
+	deltaDraw = SystemTimer::Instance()->AbsoluteMS();
 }
     
 void Scene::SceneDidLoaded()

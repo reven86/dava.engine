@@ -53,6 +53,8 @@
 
 #include "Scene3D/Components/ComponentHelpers.h"
 
+#include "Debug/Stats.h"
+
 using namespace DAVA;
 
 SceneInfo::SceneInfo(QWidget *parent /* = 0 */)
@@ -683,6 +685,8 @@ void SceneInfo::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 
 void SceneInfo::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
+	TOOLS_IMM_TIME_PROFILE("SceneInfo::SceneSelectionChanged");
+
     ClearSelectionData();
         
     CollectSelectedRenderObjects(selected);

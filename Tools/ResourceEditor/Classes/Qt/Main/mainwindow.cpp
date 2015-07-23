@@ -137,6 +137,10 @@
 
 #include "QtTools/FileDialog/FileDialog.h"
 
+#include "Debug/Stats.h"
+using namespace DAVA;
+
+
 QtMainWindow::QtMainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui(new Ui::MainWindow)
@@ -871,6 +875,8 @@ void QtMainWindow::SceneDeactivated(SceneEditor2 *scene)
 
 void QtMainWindow::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
+	TOOLS_IMM_TIME_PROFILE("QtMainWindow::SceneSelectionChanged");
+
     UpdateModificationActionsState();
 }
 
@@ -2126,7 +2132,7 @@ void QtMainWindow::EnableGlobalTimeout(bool enable)
 
 void QtMainWindow::StartGlobalInvalidateTimer()
 {
-    QTimer::singleShot(GLOBAL_INVALIDATE_TIMER_DELTA, this, SLOT(OnGlobalInvalidateTimeout()));
+//    QTimer::singleShot(GLOBAL_INVALIDATE_TIMER_DELTA, this, SLOT(OnGlobalInvalidateTimeout()));
 }
 
 void QtMainWindow::EditorLightEnabled( bool enabled )

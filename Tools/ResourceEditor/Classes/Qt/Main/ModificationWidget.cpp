@@ -37,6 +37,9 @@
 #include <QHBoxLayout>
 #include <QStyleOptionSpinBox>
 
+#include "Debug/Stats.h"
+using namespace DAVA;
+
 ModificationWidget::ModificationWidget(QWidget* parent)
 	: QWidget(parent)
 	, curScene(nullptr)
@@ -547,6 +550,8 @@ void ModificationWidget::OnSceneDeactivated(SceneEditor2 *scene)
 
 void ModificationWidget::OnSceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
+	TOOLS_IMM_TIME_PROFILE("ModificationWidget::OnSceneSelectionChanged");
+
 	if(curScene == scene)
 	{
 		ReloadValues();

@@ -61,8 +61,8 @@ void LogModel::Output(DAVA::Logger::eLogLevel ll, const DAVA::char16* text)
 
 void LogModel::AddMessage(int ll, const QString& text)
 {
-    const QList<QStandardItem *>& row = CreateItem(ll, normalize(text));
-    appendRow(row);
+//     const QList<QStandardItem *>& row = CreateItem(ll, normalize(text));
+//     appendRow(row);
 }
 
 QList<QStandardItem *> LogModel::CreateItem(int ll, const QString& text) const

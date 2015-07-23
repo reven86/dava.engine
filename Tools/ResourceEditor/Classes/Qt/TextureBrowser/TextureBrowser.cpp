@@ -53,6 +53,9 @@
 #include <QMessageBox>
 #include <QProgressBar>
 
+#include "Debug/Stats.h"
+using namespace DAVA;
+
 QColor TextureBrowser::gpuColor_PVR_ISO = QColor(0, 200, 0, 255);
 QColor TextureBrowser::gpuColor_PVR_Android = QColor(0, 0, 200, 255);
 QColor TextureBrowser::gpuColor_Tegra = QColor(0, 200, 200, 255);
@@ -993,6 +996,8 @@ void TextureBrowser::sceneDeactivated(SceneEditor2 *scene)
 
 void TextureBrowser::sceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
+	TOOLS_IMM_TIME_PROFILE("TextureBrowser::sceneSelectionChanged");
+
 	if(!isHidden())
 	{
 		textureListModel->setHighlight(selected);

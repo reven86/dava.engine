@@ -45,6 +45,9 @@
 #include <QFrame>
 #include <QPushButton>
 
+#include "Debug/Stats.h"
+using namespace DAVA;
+
 
 LODEditor::LODEditor(QWidget* parent)
     : QWidget(parent)
@@ -493,6 +496,8 @@ void LODEditor::DeleteLastLOD()
 
 void LODEditor::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
+	TOOLS_IMM_TIME_PROFILE("LODEditor::SceneSelectionChanged");
+
     DVASSERT(scene);
     DVASSERT(selected);
     DVASSERT(deselected);

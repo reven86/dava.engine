@@ -34,6 +34,9 @@
 // framework
 #include "Scene3d/Components/ComponentHelpers.h"
 
+#include "Debug/Stats.h"
+using namespace DAVA;
+
 SceneTreeItem::SceneTreeItem(eItemType _type)
 	: type(_type)
     , isAcceptedByFilter(false)
@@ -233,6 +236,8 @@ QIcon SceneTreeItemEntity::ItemIcon() const
 
 void SceneTreeItemEntity::DoSync(QStandardItem *rootItem, DAVA::Entity *entity)
 {
+//	TOOLS_IMM_TIME_PROFILE("-- SceneTreeItemEntity::DoSync");
+
 	if(NULL != rootItem && NULL != entity)
 	{
 		DAVA::int32 i;

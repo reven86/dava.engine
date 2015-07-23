@@ -37,6 +37,8 @@
 #include <QDragEnterEvent>
 #include <QHeaderView>
 
+#include "Debug/Stats.h"
+using namespace DAVA;
 
 MaterialTree::MaterialTree(QWidget *parent /* = 0 */)
 : QTreeView(parent)
@@ -339,6 +341,8 @@ void MaterialTree::OnStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 
 void MaterialTree::OnSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
+	TOOLS_IMM_TIME_PROFILE("MaterialTree::OnSelectionChanged");
+
 	if(QtMainWindow::Instance()->GetCurrentScene() == scene)
 	{
 		treeModel->SetSelection(selected);

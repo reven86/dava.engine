@@ -74,6 +74,9 @@
 
 #include "Tools/PathDescriptor/PathDescriptor.h"
 
+#include "Debug/Stats.h"
+using namespace DAVA;
+
 PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSignals /*= true*/)
 	: QtPropertyEditor(parent)
 	, viewMode(VIEW_NORMAL)
@@ -735,6 +738,8 @@ void PropertyEditor::sceneDeactivated(SceneEditor2 *scene)
 
 void PropertyEditor::sceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
+	TOOLS_IMM_TIME_PROFILE("PropertyEditor::sceneSelectionChanged");
+
     SetEntities(selected);
 }
 

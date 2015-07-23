@@ -58,7 +58,7 @@ TimeMeasure::ThreadTimeStamps TimeMeasure::mainThread;
 TimeMeasure::TimeMeasure(const FastName & blockName)
 {
 #if defined(__DAVAENGINE_ENABLE_DEBUG_STATS__)
-    if (!Thread::IsMainThread())return;
+//    if (!Thread::IsMainThread())return;
     
     function = mainThread.functions.at(blockName);
     if (!function)
@@ -92,7 +92,7 @@ TimeMeasure::TimeMeasure(const FastName & blockName)
 TimeMeasure::~TimeMeasure()
 {
 #if defined(__DAVAENGINE_ENABLE_DEBUG_STATS__)
-    if (!Thread::IsMainThread())return;
+//    if (!Thread::IsMainThread())return;
 
     uint32 frameCounter = Core::Instance()->GetGlobalFrameIndex();
     if (frameCounter == function->frameCounter)
@@ -119,14 +119,17 @@ void TimeMeasure::Dump(FunctionMeasure * function, uint32 level)
 #if defined(__DAVAENGINE_ENABLE_DEBUG_STATS__)
     if (level == 0)
     {
-        Logger::Info("Stats for frame: %d", Core::Instance()->GetGlobalFrameIndex());
-    
-        for (List<FunctionMeasure*>::iterator it = mainThread.topFunctions.begin(); it != mainThread.topFunctions.end(); ++it)
-        {
-            FunctionMeasure * function = *it;
-            if (function->frameCounter == Core::Instance()->GetGlobalFrameIndex())
-                Dump(function, level + 1);
-        }
+		if (mainThread.topFunctions.empty() == false)
+		{
+			Logger::Info("Stats for frame: %d", Core::Instance()->GetGlobalFrameIndex());
+
+			for (List<FunctionMeasure*>::iterator it = mainThread.topFunctions.begin(); it != mainThread.topFunctions.end(); ++it)
+			{
+				FunctionMeasure * function = *it;
+				if (function->frameCounter == Core::Instance()->GetGlobalFrameIndex())
+					Dump(function, level + 1);
+			}
+		}
     }else
     {
         Logger::Info("%s %s %0.9llf seconds", GetIndentString('-', level + 1).c_str(), function->name.c_str(), (double)function->timeSpent / 1e+9);

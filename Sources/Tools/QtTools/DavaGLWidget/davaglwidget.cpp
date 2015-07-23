@@ -43,6 +43,8 @@
 #include <QOpenGLContext>
 #include <QBoxLayout>
 
+#include "Debug/Stats.h"
+using namespace DAVA;
 
 namespace
 {
@@ -72,6 +74,7 @@ void OpenGLWindow::renderNow()
         return;
     }
 
+	TOOLS_TIME_PROFILE("OpenGLWindow::renderNow");
     auto context = FrameworkLoop::Instance()->Context();
     context->swapBuffers( this );
 }

@@ -54,7 +54,7 @@
 #define __DAVAENGINE_OPENGL__
 
 // This flag allow to enable profiling stats 
-//#define __DAVAENGINE_ENABLE_DEBUG_STATS__
+#define __DAVAENGINE_ENABLE_DEBUG_STATS__
 
 //suppress 'deprecated' warning
 #define DAVAENGINE_HIDE_DEPRECATED

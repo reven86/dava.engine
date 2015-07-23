@@ -156,6 +156,17 @@ private:
 	QTimer refreshTimer;
 
 	bool isInSync;
+
+//todo remove it after debugging
+protected:
+
+	void drawBranches(QPainter * painter, const QRect & rect, const QModelIndex & index) const override;
+	void drawRow(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
+
+	void rowsAboutToBeRemoved(const QModelIndex & parent, int start, int end) override;
+	void rowsInserted(const QModelIndex & parent, int start, int end) override;
+
+	void paintEvent(QPaintEvent * event) override;
 };
 
 #endif // __QT_SCENE_TREE_H__
