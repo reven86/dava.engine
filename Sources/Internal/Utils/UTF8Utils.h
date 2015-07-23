@@ -64,7 +64,6 @@ public:
 	 \returns string in UTF8 format, contained in DAVA::String
 	 */
     static String EncodeToUTF8(const WideString& wstring);
-    static String EncodeToUTF8(const wchar_t* wideString);
 };
 
 //////////////////////////////////////////////////////////////////////////
