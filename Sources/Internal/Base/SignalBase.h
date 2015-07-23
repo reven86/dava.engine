@@ -7,20 +7,23 @@ namespace DAVA {
 
 class SignalBase
 {
-    friend class SlotHolder;
+    friend class TrackedObject;
 
 public:
     virtual ~SignalBase() { }
-    virtual void Disconnect(SlotHolder *) = 0;
+    virtual void Disconnect(TrackedObject *) = 0;
 };
 
-class SlotHolder
+class TrackedObject
 {
 public:
-    ~SlotHolder()
+    ~TrackedObject()
     {
-        for (auto signal : trackedSignals)
-            signal->Disconnect(this);
+        while (trackedSignals.size() > 0)
+        {
+            auto it = trackedSignals.begin();
+            (*it)->Disconnect(this);
+        }
     }
 
     void Track(SignalBase *signal)

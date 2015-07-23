@@ -282,26 +282,47 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
         TEST_VERIFY(cla3(&b, (const A**)&a_pt) == b.exClassFn3((const A**)&a_pt));
     }
 
+
+    class sgA : public TrackedObject
+    {
+    public:
+        int a = 0;
+        void AddA() { a++; }
+    };
+
+    class sgB
+    {
+    public:
+        virtual ~sgB() { };
+        int b;
+    };
+
+    class sgC : public sgB, public TrackedObject
+    {
+    public:
+        int c;
+        void AddC() { c++; }
+    };
+
     DAVA_TEST(TestSignals)
     {
         // ==================================================================================
         // signals
         // ==================================================================================
         Signal<> sig0;
-        Signal<int, int, int> sig3;
 
-        SigConnectionID id = sig0.Connect([&id, &sig0]() {
-            sig0.Disconnect(id);
-        });
-
+        // track object deletion, while it is tracked by signal
+        sgA *a1 = new sgA();
+        sig0.Track(a1, sig0.Connect([&a1]{ a1->AddA(); }));
+        sig0.Connect(a1, &sgA::AddA);
         sig0.Emit();
-        sig3.Emit(10, 20, 30);
+        delete a1;
+        sig0.Emit();
 
-        //Function<void()> slot0 = Bind(&A::setV, &a, 10);
-        //sig0.Connect(slot0);
-        //sig0.Emit();
-
-        //sig3.Connect(static_f3);
-        //sig3.Emit(10, 20, 30);
+        // track signal deletion, while tracking object exists
+        sgC c1;
+        Signal<> *sig1 = new Signal<>();
+        sig1->Connect(&c1, &sgC::AddC);
+        delete sig1;
     }
 };

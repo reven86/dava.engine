@@ -53,14 +53,14 @@ public:
     SigConnectionID Connect(Obj *obj, void (Obj::* const& fn)(Args...), ThreadIDType tid = ThreadIDType()) throw()
     {
         LockGuard<MutexType> guard(mutex);
-        return AddConnection(GetHolder(obj), Func(obj, fn), tid);
+        return AddConnection(GetTrackedObject(obj), Func(obj, fn), tid);
     }
 
     template<typename Obj>
     SigConnectionID Connect(Obj *obj, void (Obj::* const& fn)(Args...) const, ThreadIDType tid = ThreadIDType()) throw()
     {
         LockGuard<MutexType> guard(mutex);
-        return AddConnection(GetHolder(obj), Func(obj, fn), tid);
+        return AddConnection(GetTrackedObject(obj), Func(obj, fn), tid);
     }
 
     void Disconnect(SigConnectionID id) throw()
@@ -70,19 +70,19 @@ public:
         auto it = connections.find(id);
         if (it != connections.end())
         {
-            SlotHolder *holder = it->second.holder;
-            if (nullptr != holder)
+            TrackedObject *obj = it->second.obj;
+            if (nullptr != obj)
             {
-                holder->Untrack(this);
+                obj->Untrack(this);
             }
 
             connections.erase(it);
         }
     }
 
-    void Disconnect(SlotHolder *holder) throw() override final
+    void Disconnect(TrackedObject *obj) throw() override final
     {
-        if (nullptr != holder)
+        if (nullptr != obj)
         {
             LockGuard<MutexType> guard(mutex);
 
@@ -91,9 +91,9 @@ public:
 
             while (it != end)
             {
-                if (it->second.holder == holder)
+                if (it->second.obj == obj)
                 {
-                    holder->Untrack(this);
+                    obj->Untrack(this);
                     it = connections.erase(it);
                 }
                 else
@@ -110,33 +110,33 @@ public:
 
         for (auto&& con : connections)
         {
-            SlotHolder *holder = con.second.holder;
-            if (nullptr != holder)
+            TrackedObject *obj = con.second.obj;
+            if (nullptr != obj)
             {
-                holder->Untrack(this);
+                obj->Untrack(this);
             }
         }
 
         connections.clear();
     }
 
-    void Track(SigConnectionID id, SlotHolder* holder) throw()
+    void Track(TrackedObject* obj, SigConnectionID id) throw()
     {
         LockGuard<MutexType> guard(mutex);
 
         auto it = connections.find(id);
         if (it != connections.end())
         {
-            if (nullptr != it->second.holder)
+            if (nullptr != it->second.obj)
             {
-                it->second.holder->Untrack(this);
-                it->second.holder = nullptr;
+                it->second.obj->Untrack(this);
+                it->second.obj = nullptr;
             }
 
-            if (nullptr != holder)
+            if (nullptr != obj)
             {
-                it->second.holder = holder;
-                holder->Track(this);
+                it->second.obj = obj;
+                obj->Track(this);
             }
         }
     }
@@ -147,14 +147,14 @@ protected:
     struct ConnData
     {
         Func fn;
-        SlotHolder* holder;
+        TrackedObject* obj;
         ThreadIDType tid;
     };
 
     MutexType mutex;
     std::map<SigConnectionID, ConnData> connections;
 
-    SigConnectionID AddConnection(SlotHolder* holder, Func&& fn, const ThreadIDType& tid) throw()
+    SigConnectionID AddConnection(TrackedObject* obj, Func&& fn, const ThreadIDType& tid) throw()
     {
         static std::atomic<SigConnectionID> counter = InvalidSigConnectionID;
 
@@ -162,31 +162,37 @@ protected:
 
         ConnData data;
         data.fn = std::move(fn);
-        data.holder = holder;
+        data.obj = obj;
         data.tid = tid;
 
         connections.emplace(id, data);
 
-        if (nullptr != holder)
+        if (nullptr != obj)
         {
-            holder->Track(this);
+            obj->Track(this);
         }
 
         return id;
     }
 
+    template<typename T>
+    TrackedObject* GetTrackedObject(T* obj)
+    {
+        return Detail<std::is_base_of<TrackedObject, T>::value>::GetTrackedObject(obj);
+    }
+
 private:
-    template<bool is_base_of_holder = false>
+    template<bool is_base_of_tracked_obj = false>
     struct Detail
     {
-        SlotHolder* GetHolder(void *t) { return nullptr; }
+        static TrackedObject* GetTrackedObject(void* t) { return nullptr; }
     };
 
     template<>
     struct Detail<true>
     {
         template<typename T>
-        SlotHolder* GetHolder(T *t) { return static_cast<SlotHolder *>(t); }
+        static TrackedObject* GetTrackedObject(T* t) { return static_cast<TrackedObject *>(t); }
     };
 };
 
