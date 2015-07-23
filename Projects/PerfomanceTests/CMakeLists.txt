@@ -70,10 +70,10 @@ set( LIBRARIES_RELEASE    )
 set( LIBRARIES_DEBUG      )
 set( ADDED_BINARY_DIR     )
 
-if( WIN32 )
-    set( RES_EDITOR_BINARY   "${RES_EDITOR_PATH}/ResourceEditor.exe")
-else()
+if( PROJECT_OS_LINUX )
     set( RES_EDITOR_BINARY   "${RES_EDITOR_PATH}/ResourceEditor.app/Contents/MacOS/ResourceEditor")
+else()
+    set( RES_EDITOR_BINARY   "${RES_EDITOR_PATH}/ResourceEditor.exe")                   
 endif()
 
 set (RES_EDITOR_DATA ${DAVA_ROOT_DIR}/Tools/ResourceEditor/Data)
