@@ -135,7 +135,6 @@ void RenderManager::Create(Windows::UI::Xaml::Controls::SwapChainPanel^ swapChai
 
     PropertySet^ surfaceCreationProperties = ref new PropertySet();
     surfaceCreationProperties->Insert(ref new Platform::String(EGLNativeWindowTypeProperty), swapChainPanel);
-
     eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, reinterpret_cast<IInspectable*>(surfaceCreationProperties), surfaceAttributes);
     if (eglSurface == EGL_NO_SURFACE)
         throw Exception::CreateException(E_FAIL, L"Failed to create EGL surface");
