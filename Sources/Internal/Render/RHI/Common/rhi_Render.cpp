@@ -718,11 +718,11 @@ BeginPacketList( HPacketList packetList )
 //------------------------------------------------------------------------------
 
 void
-EndPacketList( HPacketList packetList )
+EndPacketList( HPacketList packetList, HSyncObject syncObject )
 {
     PacketList_t*   pl  = PacketListPool::Get( packetList );
 
-    CommandBuffer::End( pl->cmdBuf );
+    CommandBuffer::End( pl->cmdBuf, syncObject );
     PacketListPool::Free( packetList );
 }
 

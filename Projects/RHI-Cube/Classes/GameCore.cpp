@@ -670,6 +670,59 @@ void GameCore::SetupTank()
 
 void GameCore::OnAppStarted()
 {
+    struct
+    {
+        const char* file;
+        const char* flag[16];
+    } src[]
+    {
+        { "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.cg", {"VERTEX_LIT",nullptr} },
+        { "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.cg", {"PIXEL_LIT",nullptr} },
+        { "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.cg", {"SKINNING","PIXEL_LIT",nullptr} }
+    };
+
+    
+    profiler::Start();    
+    
+    for( unsigned i=0; i!=countof(src); ++i )
+    {
+        File*   file = File::CreateFromSystemPath( src[i].file, File::OPEN|File::READ );
+    
+        if( file )
+        {
+            rhi::ShaderSource   vp;
+            uint32              sz = file->GetSize();
+            char                buf[64*1024];
+
+            DVASSERT(sz < sizeof(buf));
+            file->Read( buf, sz );
+            buf[sz] = '\0';
+
+
+            std::vector<std::string>    defines;
+            
+            for( unsigned k=0; k!=countof(src[i].flag); ++k )    
+            {
+                if( src[i].flag[k] )
+                {
+                    defines.push_back( src[i].flag[k] );
+                    defines.push_back( "1" );
+                }
+                else
+                {
+                    break;
+                }
+            }
+            if( vp.Construct( rhi::PROG_VERTEX, buf, defines ) )
+            {
+                //vp.Dump();
+            }
+        }
+    }
+    
+    profiler::Stop();
+    profiler::Dump();
+
 /*
 {
     File*   file = File::CreateFromSystemPath( "../../Tools/ResourceEditor/Data/Materials/Shaders/Default/materials-vp.cg", File::OPEN|File::READ );
@@ -1044,8 +1097,8 @@ GameCore::Draw()
         
 //    sceneRenderTest->Render();
 //    rhiDraw();
-//    manticoreDraw();
-    rtDraw();
+    manticoreDraw();
+//    rtDraw();
 //    visibilityTestDraw();
 }
 

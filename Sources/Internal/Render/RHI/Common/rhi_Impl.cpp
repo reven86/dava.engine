@@ -3,6 +3,7 @@
 
     #if defined(__DAVAENGINE_WIN32__)
         #include "../DX9/rhi_DX9.h"
+        #include "../DX11/rhi_DX11.h"
         #include "../GLES2/rhi_GLES2.h"
     #elif defined(__DAVAENGINE_MACOS__)
         #include "../GLES2/rhi_GLES2.h"
@@ -45,7 +46,7 @@ Initialize( Api api, const InitParam& param )
             break;
 
         case RHI_DX11 :
-//            dx11_Initialize();
+            dx11_Initialize( param );
             break;
 #endif
             
@@ -429,6 +430,31 @@ End( Handle pass )
 }
 
 
+//////////////////////////////////////////////////////////////////////////
+
+namespace SyncObject
+{
+
+Handle
+Create()
+{
+    return (*_Impl.impl_SyncObject_Create)();
+}
+
+void
+Delete( Handle obj )
+{
+    (*_Impl.impl_SyncObject_Delete)( obj );
+}
+
+bool
+IsSygnaled( Handle obj )
+{
+    return (*_Impl.impl_SyncObject_IsSignaled)( obj );
+}
+
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -442,9 +468,9 @@ Begin( Handle cmdBuf )
 }
 
 void
-End( Handle cmdBuf )
+End( Handle cmdBuf, Handle syncObject )
 {
-    (*_Impl.impl_CommandBuffer_End)( cmdBuf );
+    (*_Impl.impl_CommandBuffer_End)( cmdBuf, syncObject );
 }
 
 void

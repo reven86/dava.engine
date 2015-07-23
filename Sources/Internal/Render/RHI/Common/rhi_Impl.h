@@ -98,9 +98,13 @@ Dispatch
     Handle  (*impl_Renderpass_Allocate)( const RenderPassConfig&, uint32, Handle* );
     void    (*impl_Renderpass_Begin)( Handle );
     void    (*impl_Renderpass_End)( Handle );
+ 
+    Handle  (*impl_SyncObject_Create)();
+    void    (*impl_SyncObject_Delete)( Handle );
+    bool    (*impl_SyncObject_IsSignaled)( Handle );
 
     void    (*impl_CommandBuffer_Begin)( Handle );
-    void    (*impl_CommandBuffer_End)( Handle );
+    void    (*impl_CommandBuffer_End)( Handle, Handle );
     void    (*impl_CommandBuffer_SetPipelineState)( Handle, Handle, uint32 vdecl );
     void    (*impl_CommandBuffer_SetCullMode)( Handle, CullMode );
     void    (*impl_CommandBuffer_SetScissorRect)( Handle, ScissorRect );
@@ -118,6 +122,7 @@ Dispatch
     void    (*impl_CommandBuffer_DrawPrimitive)( Handle, PrimitiveType, uint32 );
     void    (*impl_CommandBuffer_DrawIndexedPrimitive)( Handle, PrimitiveType, uint32, uint32, uint32, uint32 );
     void    (*impl_CommandBuffer_SetMarker)( Handle, const char* );
+    void    (*impl_CommandBuffer_SetSync)( Handle, Handle );
 };
 
 

@@ -212,6 +212,16 @@ void                ReleaseSamplerState( HSamplerState ss );
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// sync-object
+
+typedef ResourceHandle<RESOURCE_SYNC_OBJECT> HSyncObject;
+
+HSyncObject         CreateSyncObject();
+void                DeleteSyncObject( HSyncObject obj );
+bool                SyncObjectSignaled( HSyncObject obj );
+
+
+////////////////////////////////////////////////////////////////////////////////
 // render-pass
 
 typedef ResourceHandle<RESOURCE_RENDER_PASS> HRenderPass;
@@ -275,7 +285,7 @@ Packet
 void    BeginPacketList( HPacketList packetList );
 void    AddPackets( HPacketList packetList, const Packet* packet, uint32 packetCount );
 void    AddPacket( HPacketList packetList, const Packet& packet );
-void    EndPacketList( HPacketList packetList ); // 'packetList' handle invalid after this, no explicit "release" needed
+void    EndPacketList( HPacketList packetList, HSyncObject syncObject=HSyncObject(InvalidHandle) ); // 'packetList' handle invalid after this, no explicit "release" needed
 
 
 
