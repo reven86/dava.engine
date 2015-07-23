@@ -97,6 +97,7 @@ LibPngHelper::LibPngHelper()
 {
     name.assign("PNG");
     supportedExtensions.push_back(".png");
+    supportedFormats = { {FORMAT_RGBA8888, FORMAT_A8, FORMAT_A16} };
 }
 
 bool LibPngHelper::IsMyImage(File *infile) const
@@ -130,7 +131,7 @@ eErrorCode LibPngHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32
     return innerRetCode;
 }
 
-eErrorCode LibPngHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat format) const
+eErrorCode LibPngHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat format, ImageQuality quality) const
 {
     // printf("* Writing PNG file (%d x %d): %s\n", width, height, file_name);
     DVASSERT(imageSet.size());
@@ -279,7 +280,7 @@ eErrorCode LibPngHelper::WriteFile(const FilePath & fileName, const Vector<Image
     return eErrorCode::SUCCESS;
 }
 
-eErrorCode LibPngHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat) const
+eErrorCode LibPngHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat, ImageQuality quality) const
 {
     Logger::Error("[LibPngHelper::WriteFileAsCubeMap] For png cubeMaps are not supported");
     return eErrorCode::ERROR_WRITE_FAIL;

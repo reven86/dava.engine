@@ -1432,6 +1432,9 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPngHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Image\LibWebPHelper.h">
+      <Filter>Internal\Render\Image</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
@@ -2990,6 +2993,9 @@
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPngHelper.cpp">
+      <Filter>Internal\Render\Image</Filter>
+    </ClCompile>
+	<ClCompile Include="..\..\Sources\Internal\Render\Image\LibWebPHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp">
