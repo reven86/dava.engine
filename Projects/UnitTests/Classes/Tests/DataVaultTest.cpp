@@ -41,25 +41,30 @@ DAVA_TESTCLASS(DataVaultTest)
 
         storage->Clear();
         storage->Push();
-        storage->SetStringValue("Test", "Test");
+        storage->SetStringValue("TestStringKey", "Test");
         storage->Push();
-        String ret = storage->GetStringValue("Test");
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
+        String ret = storage->GetStringValue("TestStringKey");
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
         TEST_VERIFY("" == ret);
 #else
         TEST_VERIFY("Test" == ret);
-        storage->RemoveEntry("Test");
+        storage->RemoveEntry("TestStringKey");
         storage->Push();
-        ret = storage->GetStringValue("Test");
+        ret = storage->GetStringValue("TestStringKey");
         TEST_VERIFY("Test" != ret);
 
-        int64 iret = storage->GetLongValue("Test");
+        int64 iret = storage->GetLongValue("TestIntKey");
         TEST_VERIFY(0 == iret);
 
-        storage->SetLongValue("Test", 1);
+        storage->SetLongValue("TestIntKey", 1);
         storage->Push();
-        iret = storage->GetLongValue("Test");
+        iret = storage->GetLongValue("TestIntKey");
         TEST_VERIFY(1 == iret);
+
+        storage->Clear();
+        iret = storage->GetLongValue("TestIntKey");
+        TEST_VERIFY(0 == iret);
+
 #endif
         SafeRelease(storage);
     }

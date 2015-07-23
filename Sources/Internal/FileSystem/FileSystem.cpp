@@ -53,6 +53,9 @@
 #   include <Shlobj.h>
 #   include <tchar.h>
 #   include <process.h>
+#   if defined(__DAVAENGINE_WIN_UAP__)
+#       include "Platform/DeviceInfo.h"
+#   endif
 #elif defined(__DAVAENGINE_ANDROID__)
 #   include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #   include <unistd.h>
@@ -660,9 +663,9 @@ const FilePath FileSystem::GetUserDocumentsPath()
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
-    //take roaming folder as user documents folder
+    //take local folder as user documents folder
     using namespace Windows::Storage;
-    WideString roamingFolder = ApplicationData::Current->RoamingFolder->Path->Data();
+    WideString roamingFolder = ApplicationData::Current->LocalFolder->Path->Data();
     return FilePath(WStringToString(roamingFolder)).MakeDirectoryPathname();
 
 #endif
@@ -683,10 +686,17 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
-    //take roaming folder as user documents folder
-    using namespace Windows::Storage;
-    WideString localFolder = ApplicationData::Current->LocalFolder->Path->Data();
-    return FilePath(WStringToString(localFolder)).MakeDirectoryPathname();
+    //take the first removable storage as public documents folder
+    auto storageList = DeviceInfo::GetStoragesList();
+    for (const auto& x : storageList)
+    {
+        if (x.type == DeviceInfo::STORAGE_TYPE_PRIMARY_EXTERNAL || 
+            x.type == DeviceInfo::STORAGE_TYPE_SECONDARY_EXTERNAL)
+        {
+            return x.path;
+        }
+    }
+    return FilePath();
 
 #endif
 }

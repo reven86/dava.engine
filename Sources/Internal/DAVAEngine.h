@@ -50,6 +50,7 @@
 #include "FileSystem/Logger.h"
 #include "Platform/SystemTimer.h"
 #include "Platform/DateTime.h"
+#include "Platform/DeviceInfo.h"
 
 // system stuff
 #include "Utils/Utils.h"
