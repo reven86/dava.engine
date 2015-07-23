@@ -16,6 +16,9 @@ if( TEAMCITY_DEPLOY )
 
 endif()
 
+#constants
+set( DAVA_ANDROID_MAX_LIB_SRC 700 )
+
 #global paths
 set( DAVA_LIBRARY                       "DavaFramework" )
 set( DAVA_ROOT_DIR                      "${CMAKE_CURRENT_LIST_DIR}/../../.." )

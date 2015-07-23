@@ -39,7 +39,7 @@ elseif ( MACOS )
     set( CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++14" )
     set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_DEBUGGING_SYMBOLS YES )
 
-elseif ( MSVC )
+elseif ( WIN32 )
     #dynamic runtime on windows store
     if ( WINDOWS_UAP )
 	    set ( CRT_TYPE_DEBUG "/MDd" )
@@ -142,7 +142,7 @@ if( WARNINGS_AS_ERRORS )
 -Wno-import-preprocessor-directive-pedantic" )
 
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${LOCAL_DISABLED_WARNINGS}" ) # warnings as errors
-    elseif( MSVC )
+    elseif( WIN32 )
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX" )
     endif()
 

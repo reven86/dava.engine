@@ -39,6 +39,7 @@
 #include "UI/UIList.h"
 #include "UI/UITextField.h"
 #include "UI/Components/UIComponent.h"
+#include "FileSystem/Logger.h"
 
 using namespace DAVA;
 
@@ -50,6 +51,15 @@ ENUM_DECLARE(eGPUFamily)
 	ENUM_ADD_DESCR(GPU_MALI, "mali");
 	ENUM_ADD_DESCR(GPU_ADRENO, "adreno");
 	ENUM_ADD_DESCR(GPU_ORIGIN, "origin");
+}
+
+ENUM_DECLARE(Logger::eLogLevel)
+{
+    ENUM_ADD_DESCR(Logger::LEVEL_FRAMEWORK, "Framework");
+    ENUM_ADD_DESCR(Logger::LEVEL_DEBUG, "Debug");
+    ENUM_ADD_DESCR(Logger::LEVEL_INFO, "Info");
+    ENUM_ADD_DESCR(Logger::LEVEL_WARNING, "Warning");
+    ENUM_ADD_DESCR(Logger::LEVEL_ERROR, "Error");
 }
 
 ENUM_DECLARE(Texture::TextureWrap)

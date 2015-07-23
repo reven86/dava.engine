@@ -243,6 +243,7 @@ void PropertyEditor::ResetProperties()
                         if (isRemovable)
                         {
 				            QtPropertyToolButton * deleteButton = CreateButton(componentData, QIcon(":/QtIcons/remove.png"), "Remove Component");
+                            deleteButton->setObjectName("RemoveButton");
                             deleteButton->setEnabled(true);
 				            QObject::connect(deleteButton, SIGNAL(clicked()), this, SLOT(OnRemoveComponent()));
                         }

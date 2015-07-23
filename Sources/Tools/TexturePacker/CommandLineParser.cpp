@@ -43,73 +43,49 @@ CommandLineParser::CommandLineParser()
 {
 }
 
-void CommandLineParser::SetArguments(const Vector<String> &arguments)
+void CommandLineParser::SetArguments(const Vector<String>& tokens)
 {
     Clear();
     
-    bool prevIsFlag = false;
-	for (auto& arg : arguments)
-	{
-        String::size_type argLen = arg.length();
-        
-		if ((argLen >= 1) && (arg[0] == '-'))
+    for (auto& token : tokens)
+    {
+        if ((token.length() >= 1) && (token[0] == '-'))
         {
-            if(prevIsFlag)
-                params.push_back(String());
-            
-			flags.push_back(arg);
-            prevIsFlag = true;
+            args.emplace_back(token);
         }
-		else
+        else
         {
-            params.push_back(arg);
-            prevIsFlag = false;
+            if (!args.empty())
+            {
+                args.back().params.push_back(token);
+            }
+            else
+            {
+                Logger::Warning("argument '%s' must stay after any -flag token", token.c_str());
+            }
         }
-	}
-    
-    if(prevIsFlag)
-        params.push_back(String());
+    }
 }
 
 void CommandLineParser::AddArgument(const String & arg)
 {
-    flags.push_back(arg);
-    params.push_back(String());
+    args.emplace_back(arg);
 }
     
 void CommandLineParser::SetArguments(int argc, char * argv[])
 {
-    Clear();
-
-    bool prevIsFlag = false;
-	for (int i = 0; i < argc; ++i)
-	{
-		char * arg = argv[i];
-		size_t argLen = strlen(arg);
-        
-		if ((argLen >= 1) && (arg[0] == '-'))
-        {
-            if(prevIsFlag)
-                params.push_back(String());
-            
-			flags.push_back(String(arg));
-            prevIsFlag = true;
-        }
-		else
-        {
-            params.push_back(String(arg));
-            prevIsFlag = false;
-        }
-	}
+    Vector<String> tokens;
+    for (int i = 0; i < argc; ++i)
+    {
+        tokens.emplace_back(argv[i]);
+    }
     
-    if(prevIsFlag)
-        params.push_back(String());
+    SetArguments(tokens);
 }
 
 void CommandLineParser::Clear()
 {	
-	flags.clear();
-    params.clear();
+    args.clear();
 }
 
 
@@ -148,29 +124,37 @@ CommandLineParser::~CommandLineParser()
 {
 }
 
-bool CommandLineParser::IsFlagSet(const String & s)
+bool CommandLineParser::IsFlagSet(const String & s) const
 {
-	for (uint32 k = 0; k < flags.size(); ++k)
-		if (flags[k] == s)return true;
-	return false;
-}
-
-    
-String	CommandLineParser::GetParamForFlag(const String & flag)
-{
-    DVASSERT(flags.size() == params.size());
-    
-	for (uint32 k = 0; k < flags.size(); ++k)
+    for (auto& arg : args)
     {
-		if (flags[k] == flag)
-        {
-            return params[k];
-        }
+        if (arg.flag == s)
+            return true;
     }
-
-	return String();
+    return false;
 }
+
     
+String CommandLineParser::GetParamForFlag(const String & flag)
+{
+    Vector<String> params = GetParamsForFlag(flag);
+    if (!params.empty())
+    {
+        return params[0];
+    }
+    else
+        return String();
+}
+
+Vector<String> CommandLineParser::GetParamsForFlag(const String & flag)
+{
+    for (auto& arg : args)
+    {
+        if (arg.flag == flag)
+            return arg.params;
+    }
+    return Vector<String>();
+}
 
 bool CommandLineParser::CommandIsFound(const DAVA::String &command)
 {
