@@ -617,8 +617,43 @@ _ExecDX11( DX11Command* command, uint32 cmdCount )
 Trace("exec %i\n",int(cmd->func));
         switch( cmd->func )
         {
+            case DX11Command::CREATE_BUFFER :
+            {
+                cmd->retval = _D3D11_Device->CreateBuffer( (const D3D11_BUFFER_DESC*)(arg[0]), (const D3D11_SUBRESOURCE_DATA *)(arg[1]), (ID3D11Buffer**)(arg[2]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+            
+            case DX11Command::MAP_RESOURCE :
+            {
+                cmd->retval = _D3D11_ImmediateContext->Map( (ID3D11Resource*)(arg[0]), (UINT)(arg[1]), (D3D11_MAP)(arg[2]), (UINT)(arg[3]), (D3D11_MAPPED_SUBRESOURCE*)(arg[4]) );
+                CHECK_HR(cmd->retval);
+            }   break;
+            
+            case DX11Command::UNMAP_RESOURCE :
+            {
+                _D3D11_ImmediateContext->Unmap( (ID3D11Resource*)(arg[0]), (UINT)(arg[1]) );
+                cmd->retval = S_OK;
+            }   break;
+
+            case DX11Command::UPDATE_RESOURCE :
+            {
+                _D3D11_ImmediateContext->UpdateSubresource( (ID3D11Resource*)(arg[0]), (UINT)(arg[1]), (const D3D11_BOX*)(arg[2]), (const void*)(arg[3]), (UINT)(arg[4]), (UINT)(arg[5]) );
+                cmd->retval = S_OK;
+            }   break;           
+
+            case DX11Command::QUERY_INTERFACE :
+            {
+                cmd->retval = ((IUnknown*)(arg[0]))->QueryInterface( *((const GUID*)(arg[1])), (void**)(arg[2]) );
+            }   break;
+
+            case DX11Command::RELEASE :
+            {
+                ((IUnknown*)arg[0])->Release();
+            }   break;
+
             case DX11Command::NOP :
                 break;
+
             default:
                 DVASSERT(!"unknown DX-cmd");
         }

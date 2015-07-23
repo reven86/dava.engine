@@ -50,7 +50,7 @@ void        SetToRHI( Handle vb, unsigned stream_i, unsigned offset, unsigned st
 namespace IndexBufferDX11
 {
 void        SetupDispatch( Dispatch* dispatch );
-void        SetToRHI( Handle vb );
+void        SetToRHI( Handle vb, unsigned offset );
 }
 
 namespace QueryBufferDX11
@@ -116,34 +116,16 @@ DX11Command
     enum 
     Func
     {
-        NOP                             = 0,
+        NOP                      = 0,
         
-        CREATE_VERTEX_BUFFER            = 11,
-        LOCK_VERTEX_BUFFER              = 12,
-        UNLOCK_VERTEX_BUFFER            = 13,
+        CREATE_BUFFER            = 11,
 
-        CREATE_INDEX_BUFFER             = 21,
-        LOCK_INDEX_BUFFER               = 22,
-        UNLOCK_INDEX_BUFFER             = 23,
-
-        CREATE_TEXTURE                  = 41,
-        CREATE_CUBE_TEXTURE             = 42,
-        GET_TEXTURE_SURFACE_LEVEl       = 43,
-        SET_TEXTURE_AUTOGEN_FILTER_TYPE = 44,
-        LOCK_TEXTURE_RECT               = 45,
-        UNLOCK_TEXTURE_RECT             = 46,
-        LOCK_CUBETEXTURE_RECT           = 47,
-        UNLOCK_CUBETEXTURE_RECT         = 48,
-        GET_RENDERTARGET_DATA           = 49,
-
-        CREATE_VERTEX_SHADER            = 51,
-        CREATE_PIXEL_SHADER             = 52,
-        CREATE_VERTEX_DECLARATION       = 53,
-
-        GET_QUERY_DATA                  = 61,
+        MAP_RESOURCE             = 51,
+        UNMAP_RESOURCE           = 52,
+        UPDATE_RESOURCE          = 53,
         
-        QUERY_INTERFACE                 = 101,
-        RELEASE                         = 102
+        QUERY_INTERFACE          = 101,
+        RELEASE                  = 102
     };
 
     Func    func;
