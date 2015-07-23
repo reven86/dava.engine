@@ -866,41 +866,47 @@ namespace DAVA
 		if (lua_pcall(luaState, 1, 1, 0))
 		{
 			const char* err = lua_tostring(luaState, -1);
-			Logger::FrameworkDebug("AutotestingSystemLua::RunScript error: %s", err);
+			Logger::Debug("AutotestingSystemLua::RunScript error: %s", err);
 			return false;
 		}
 		return true;
 	}
 	int32 AutotestingSystemLua::GetServerQueueState(const String &cluster)
     {
-        MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
-        KeyedArchive *clustersQueue = AutotestingDB::Instance()->FindOrInsertBuildArchive(dbUpdateObject, "clusters_queue");
-        String serverName = Format("%s", cluster.c_str());
-        int32 queueState = 0;
-        if (!clustersQueue->IsKeyExists(serverName))
-        {
-            clustersQueue->SetInt32(serverName, 0);
-        }
-        else
-        {
-            queueState = clustersQueue->GetInt32(serverName);
-        }
-        SafeRelease(dbUpdateObject);
+		int32 queueState = 0;
+		if (AutotestingSystem::Instance()->isDB)
+		{
+			RefPtr<MongodbUpdateObject> dbUpdateObject(new MongodbUpdateObject);
+			KeyedArchive *clustersQueue = AutotestingDB::Instance()->FindOrInsertBuildArchive(dbUpdateObject.Get(), "clusters_queue");
+			String serverName = Format("%s", cluster.c_str());
+			
+			if (!clustersQueue->IsKeyExists(serverName))
+			{
+				clustersQueue->SetInt32(serverName, 0);
+			}
+			else
+			{
+				queueState = clustersQueue->GetInt32(serverName);
+			}
+		}
         return queueState;
     }
     
     bool AutotestingSystemLua::SetServerQueueState(const String &cluster, int32 state)
     {
-        MongodbUpdateObject *dbUpdateObject = new MongodbUpdateObject();
-        KeyedArchive *clustersQueue = AutotestingDB::Instance()->FindOrInsertBuildArchive(dbUpdateObject, "clusters_queue");
+		if (!AutotestingSystem::Instance()->isDB)
+		{ 
+			return true;
+		}
+		RefPtr<MongodbUpdateObject> dbUpdateObject(new MongodbUpdateObject);
+		KeyedArchive *clustersQueue = AutotestingDB::Instance()->FindOrInsertBuildArchive(dbUpdateObject.Get(), "clusters_queue");
         String serverName = Format("%s", cluster.c_str());
         bool isSet = false;
         if (!clustersQueue->IsKeyExists(serverName) || clustersQueue->GetInt32(serverName) != state)
         {
             clustersQueue->SetInt32(serverName, state);
-            isSet = AutotestingDB::Instance()->SaveToDB(dbUpdateObject);
+            isSet = AutotestingDB::Instance()->SaveToDB(dbUpdateObject.Get());
         }
-        SafeRelease(dbUpdateObject);
         return isSet;
     }
 };
