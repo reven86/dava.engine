@@ -45,11 +45,7 @@ void SelectSceneScreen::LoadResources()
 {
     BaseScreen::LoadResources();
     
-    Rect screenRect = GetRect();
-    Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
-    screenRect.dx = screenSize.dx;
-    screenRect.dy = screenSize.dy;
-    SetRect(screenRect);
+    const Rect screenRect = GetRect();
     const float32 buttonSize = 30.f;
     
     fileNameText = new UIStaticText(Rect(0, 0, screenRect.dx - buttonSize * 10, buttonSize));

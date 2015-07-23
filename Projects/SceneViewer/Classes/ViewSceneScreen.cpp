@@ -70,11 +70,7 @@ void ViewSceneScreen::LoadResources()
     scene->AddCamera(camera);
     scene->SetCurrentCamera(camera);
     
-    Rect screenRect = GetRect();
-    Size2i screenSize = VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize();
-    screenRect.dx = screenSize.dx;
-    screenRect.dy = screenSize.dy;
-    SetRect(screenRect);
+    const Rect screenRect = GetRect();
     ScopedPtr<UI3DView> sceneView(new UI3DView(screenRect));
     sceneView->SetScene(scene);
     sceneView->SetInputEnabled(false);

@@ -392,20 +392,11 @@ void WinUAPXamlApp::OnPointerWheel(Platform::Object^ sender, Windows::UI::Core::
 
 void WinUAPXamlApp::OnHardwareBackButtonPressed(_In_ Platform::Object^ sender, Windows::Phone::UI::Input::BackPressedEventArgs ^args)
 {
-    core->RunOnMainThread([this]() {
-        InputSystem::Instance()->GetKeyboard().OnKeyPressed(static_cast<int32>(DVKEY_BACK));
-        UIEvent ev;
-        ev.keyChar = 0;
-        ev.tapCount = 1;
-        ev.phase = UIEvent::PHASE_KEYCHAR;
-        ev.tid = DVKEY_BACK;
-        Vector<UIEvent> touches = { ev };
-        UIControlSystem::Instance()->OnInput(0, touches, allTouches);
-        touches.pop_back();
-        UIControlSystem::Instance()->OnInput(0, touches, allTouches);
-        InputSystem::Instance()->GetKeyboard().OnKeyUnpressed(static_cast<int32>(DVKEY_BACK));
-    });
+    // Note: must run on main thread
     args->Handled = true;
+    core->RunOnMainThread([this]() {
+        Logger::FrameworkDebug("[CorePlatformWinUAP] OnHardwareBackButtonPressed");
+    });
 }
 
 void WinUAPXamlApp::OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args)
@@ -644,11 +635,13 @@ void WinUAPXamlApp::InitCoordinatesSystem()
 void WinUAPXamlApp::ReInitCoordinatesSystem()
 {
     Logger::FrameworkDebug("[CorePlatformWinUAP] ReInitCoordinatesSystem");
-    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight));
+    int32 intWidth = static_cast<int32>(windowWidth);
+    int32 intHeight = static_cast<int32>(windowHeight);
+    VirtualCoordinatesSystem::Instance()->SetInputScreenAreaSize(intWidth, intHeight);
     VirtualCoordinatesSystem::Instance()->UnregisterAllAvailableResourceSizes();
     VirtualCoordinatesSystem::Instance()->RegisterAvailableResourceSize(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight), "Gfx");
-    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight));
-    VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(static_cast<int32>(windowWidth), static_cast<int32>(windowHeight));
+    VirtualCoordinatesSystem::Instance()->SetPhysicalScreenSize(intWidth, intHeight);
+    VirtualCoordinatesSystem::Instance()->SetVirtualScreenSize(intWidth, intHeight);
     VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
 }
 
