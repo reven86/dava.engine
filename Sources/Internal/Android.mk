@@ -94,6 +94,10 @@ LOCAL_MODULE := uv_android
 LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libuv_android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
+include $(CLEAR_VARS)
+LOCAL_MODULE := webp_android
+LOCAL_SRC_FILES := ../../Libs/libs/android/$(TARGET_ARCH_ABI)/libwebp_android.a
+include $(PREBUILT_STATIC_LIBRARY)
 
 DAVA_ROOT := $(LOCAL_PATH)
 
@@ -182,6 +186,12 @@ DV_LOCAL_CPPFLAGS += -Wno-mismatched-tags
 DV_LOCAL_CPPFLAGS += -Wno-missing-noreturn
 DV_LOCAL_CPPFLAGS += -Wno-consumed
 DV_LOCAL_CPPFLAGS += -Wno-sometimes-uninitialized
+DV_LOCAL_CPPFLAGS += -Wno-reserved-id-macro
+DV_LOCAL_CPPFLAGS += -Wno-old-style-cast
+DV_LOCAL_CPPFLAGS += -Wno-inconsistent-missing-override
+DV_LOCAL_CPPFLAGS += -Wno-unused-local-typedef
+DV_LOCAL_CPPFLAGS += -Wno-unreachable-code-return
+DV_LOCAL_CPPFLAGS += -Wno-unknown-warning-option
 
 DV_LOCAL_CPP_FEATURES += exceptions
 
@@ -230,6 +240,8 @@ DV_LOCAL_STATIC_LIBRARIES += zip_android
 DV_LOCAL_STATIC_LIBRARIES += fribidi_android
 DV_LOCAL_STATIC_LIBRARIES += unibreak_android
 DV_LOCAL_STATIC_LIBRARIES += uv_android
+DV_LOCAL_STATIC_LIBRARIES += webp_android
+DV_LOCAL_STATIC_LIBRARIES += cpufeatures
 
 DV_LOCAL_EXPORT_LDLIBS := -lGLESv1_CM -llog -lEGL
 
@@ -304,7 +316,8 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Particles/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/BacktraceAndroid/*.cpp))
+                     $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/BacktraceAndroid/*.cpp) \
+	                 $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/ExternC/*.cpp))
                      
 include $(BUILD_STATIC_LIBRARY)
 
@@ -382,3 +395,4 @@ endif
 endif
 
 $(call import-module,Box2D)
+$(call import-module,android/cpufeatures)

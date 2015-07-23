@@ -42,6 +42,7 @@ void LogFilterModel::SetFilterString(const QString& _filter)
     {
         filterText = _filter;
         invalidateFilter();
+        emit filterStringChanged(_filter);
     }
 }
 
@@ -53,7 +54,7 @@ bool LogFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_
     if (!filterText.isEmpty())
     {
         const QString text = source.data(Qt::DisplayRole).toString();
-        isAcceptedByText = !text.contains(filterText, Qt::CaseInsensitive);
+        isAcceptedByText = text.contains(filterText, Qt::CaseInsensitive);
     }
 
     bool wasSet = false;

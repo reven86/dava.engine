@@ -27,9 +27,10 @@
 =====================================================================================*/
 
 
+#include "Core/Core.h"
+#include "Concurrency/Thread.h"
 #include "Debug/Stats.h"
 #include "Platform/SystemTimer.h"
-#include "Core/Core.h"
 #include "Utils/StringFormat.h"
 
 namespace DAVA

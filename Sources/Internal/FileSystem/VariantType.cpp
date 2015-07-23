@@ -623,63 +623,96 @@ bool VariantType::Write(File * fp) const
 {
 	DVASSERT(type != TYPE_NONE)
 	int32 written = fp->Write(&type, 1);
-	if (written != 1)return false;
+	if (written != 1)
+    {
+        return false;
+    }
 	
 	switch(type)
 	{
 	case TYPE_BOOLEAN:
 		{
 			written = fp->Write(&boolValue, 1);
-			if (written != 1)return false;
-		}
+            if (written != 1)
+            {
+                return false;
+            }
+        }
 		break;
 	case TYPE_INT32:
 		{
 			written = fp->Write(&int32Value, 4);
-			if (written != 4)return false;
-		}
+            if (written != 4)
+            {
+                return false;
+            }
+        }
 		break;	
     case TYPE_UINT32:
     {
         written = fp->Write(&uint32Value, 4);
-        if (written != 4)return false;
+        if (written != 4)
+        {
+            return false;
+        }
     }
         break;	
 	case TYPE_FLOAT:
 		{
 			written = fp->Write(&floatValue, 4);
-			if (written != 4)return false;
+            if (written != 4)
+            {
+                return false;
+            }
 		}
 		break;	
 	case TYPE_STRING:
 		{
 			int32 len = (int32)stringValue->length();
 			written = fp->Write(&len, 4);
-			if (written != 4)return false;
+            if (written != 4)
+            {
+                return false;
+            }
 			
 			written = fp->Write(stringValue->c_str(), len);
-			if (written != len)return false;
+            if (written != len)
+            {
+                return false;
+            }
 		}
 		break;	
 	case TYPE_WIDE_STRING:
 		{
 			int32 len = (int32)wideStringValue->length();
 			written = fp->Write(&len, 4);
-			if (written != 4)return false;
+            if (written != 4)
+            {
+                return false;
+            }
 			
 			written = fp->Write(wideStringValue->c_str(), len * sizeof(wchar_t));
-			if (written != len * (int)sizeof(wchar_t))return false;
+            if (written != len * (int)sizeof(wchar_t))
+            {
+                return false;
+            }
 		}
 		break;
 	case TYPE_BYTE_ARRAY:
 		{
 			int32 len = (int32)((Vector<uint8>*)pointerValue)->size();
 			written = fp->Write(&len, 4);
-			if (written != 4)return false;
+            if (written != 4)
+            {
+                return false;
+            }
             if (0 != len)
             {
                 written = fp->Write(&((Vector<uint8>*)pointerValue)->front(), len);
-                if (written != len)return false;
+                if (written != len)
+                {
+                    return false;
+                }
             }
 		}
 		break;	
@@ -689,81 +722,123 @@ bool VariantType::Write(File * fp) const
             ((KeyedArchive *)pointerValue)->Save(pF);
 			int32 len = pF->GetSize();
 			written = fp->Write(&len, 4);
-			if (written != 4)return false;
+            if (written != 4)
+            {
+                return false;
+            }
 			
 			written = fp->Write(pF->GetData(), len);
             SafeRelease(pF);
-			if (written != len)return false;
+            if (written != len)
+            {
+                return false;
+            }
 		}
         break;
     case TYPE_INT64:
 		{
             written = fp->Write(int64Value, sizeof(int64));
-            if (written != sizeof(int64))return false;
+            if (written != sizeof(int64))
+            {
+                return false;
+            }
 		}
             break;
     case TYPE_UINT64:
 		{
             written = fp->Write(uint64Value, sizeof(uint64));
-            if (written != sizeof(uint64))return false;
+            if (written != sizeof(uint64))
+            {
+                return false;
+            }
 		}
             break;
     case TYPE_VECTOR2:
 		{
             written = fp->Write(vector2Value, sizeof(Vector2));
-            if (written != sizeof(Vector2))return false;
+            if (written != sizeof(Vector2))
+            {
+                return false;
+            }
 		}
             break;
     case TYPE_VECTOR3:
 		{
             written = fp->Write(vector3Value, sizeof(Vector3));
-            if (written != sizeof(Vector3))return false;
+            if (written != sizeof(Vector3))
+            {
+                return false;
+            }
 		}
             break;
     case TYPE_VECTOR4:
 		{
             written = fp->Write(vector4Value, sizeof(Vector4));
-            if (written != sizeof(Vector4))return false;
+            if (written != sizeof(Vector4))
+            {
+                return false;
+            }
 		}
             break;
     case TYPE_MATRIX2:
 		{
             written = fp->Write(matrix2Value, sizeof(Matrix2));
-            if (written != sizeof(Matrix2))return false;
+            if (written != sizeof(Matrix2))
+            {
+                return false;
+            }
 		}
             break;
     case TYPE_MATRIX3:
 		{
             written = fp->Write(matrix3Value, sizeof(Matrix3));
-            if (written != sizeof(Matrix3))return false;
+            if (written != sizeof(Matrix3))
+            {
+                return false;
+            }
 		}
             break;
     case TYPE_MATRIX4:
 		{
             written = fp->Write(matrix4Value, sizeof(Matrix4));
-            if (written != sizeof(Matrix4))return false;
+            if (written != sizeof(Matrix4))
+            {
+                return false;
+            }
 		}
             break;
     case TYPE_COLOR:
 		{
             written = fp->Write(colorValue->color, sizeof(float32) * 4);
-            if (written != sizeof(sizeof(float32) * 4))return false;
+            if (written != sizeof(float32) * 4)
+            {
+                return false;
+            }
 		}
         break;
     case TYPE_FASTNAME:
 	    {
 			int32 len = static_cast<int32>(strlen(fastnameValue->c_str()));
 			written = fp->Write(&len, 4);
-			if (written != 4)return false;
+            if (written != 4)
+            {
+                return false;
+            }
         
 			written = fp->Write(fastnameValue->c_str(), len);
-			if (written != len)return false;
+            if (written != len)
+            {
+                return false;
+            }
 	    }
         break;
 	case TYPE_AABBOX3:
 		{
 			written = fp->Write(aabbox3, sizeof(AABBox3));
-			if (written != sizeof(AABBox3))return false;
+			if (written != sizeof(AABBox3))
+            {
+                return false;
+            }
 		}
 		break;
 	case TYPE_FILEPATH:
@@ -771,10 +846,16 @@ bool VariantType::Write(File * fp) const
 			String str = filepathValue->GetAbsolutePathname();
 			int32 len = (int32) str.length();
 			written = fp->Write(&len, 4);
-			if (written != 4)return false;
+            if (written != 4)
+            {
+                return false;
+            }
 
 			written = fp->Write(str.c_str(), len);
-			if (written != len) return false;
+            if (written != len)
+            {
+                return false;
+            }
 		}
 		break;	
             
@@ -785,7 +866,10 @@ bool VariantType::Write(File * fp) const
 bool VariantType::Read(File * fp)
 {
 	int32 read = fp->Read(&type, 1);
-	if (read == 0) return false;
+    if (read == 0)
+    {
+        return false;
+    }
 
 	ReleasePointer();
 	switch(type)
@@ -793,39 +877,57 @@ bool VariantType::Read(File * fp)
 		case TYPE_BOOLEAN:
 		{
 			read = fp->Read(&boolValue, 1);
-			if (read != 1)return false;
+            if (read != 1)
+            {
+                return false;
+            }
 		}
 		break;
 		case TYPE_INT32:
 		{
 			read = fp->Read(&int32Value, 4);
-			if (read != 4)return false;
+            if (read != 4)
+            {
+                return false;
+            }
 		}
         break;	
 		case TYPE_UINT32:
 		{
 			read = fp->Read(&uint32Value, 4);
-			if (read != 4)return false;
+            if (read != 4)
+            {
+                return false;
+            }
 		}
         break;	
 		case TYPE_FLOAT:
 		{
 			read = fp->Read(&floatValue, 4);
-			if (read != 4)return false;
+            if (read != 4)
+            {
+                return false;
+            }
 		}
         break;	
 		case TYPE_STRING:
 		{
 			int32 len;
 			read = fp->Read(&len, 4);
-			if (read != 4)return false;
+            if (read != 4)
+            {
+                return false;
+            }
 			
 			char *buf = new char[len + 1];
 			read = fp->Read(buf, len);
 			buf[len] = 0;
 			stringValue = new String(buf);
 			delete [] buf;
-			if (read != len)return false;
+            if (read != len)
+            {
+                return false;
+            }
 			
 		}
         break;	
@@ -833,7 +935,10 @@ bool VariantType::Read(File * fp)
 		{ 
 			int32 len;
 			read = fp->Read(&len, 4);
-			if (read != 4)return false;
+            if (read != 4)
+            {
+                return false;
+            }
 			
             wideStringValue = new WideString();
 			wideStringValue->resize(len);
@@ -841,7 +946,10 @@ bool VariantType::Read(File * fp)
 			{
 				wchar_t c;
 				read = fp->Read(&c, sizeof(wchar_t));
-				if (read != sizeof(wchar_t))return false;
+                if (read != sizeof(wchar_t))
+                {
+                    return false;
+                }
 				(*wideStringValue)[k] = c;
 			}
 		}
@@ -850,13 +958,19 @@ bool VariantType::Read(File * fp)
 		{
 			int32 len;
 			read = fp->Read(&len, 4);
-			if (read != 4)return false;
+            if (read != 4)
+            {
+                return false;
+            }
             
             pointerValue = static_cast<void*>(new Vector<uint8>(len));
             if (0 != len)
             {
                 read = fp->Read(&((Vector<uint8>*)pointerValue)->front(), len);
-                if (read != len)return false;
+                if (read != len)
+                {
+                    return false;
+                }
             }
 		}
         break;	
@@ -864,11 +978,17 @@ bool VariantType::Read(File * fp)
 		{
 			int32 len;
 			read = fp->Read(&len, 4);
-			if (read != 4)return false;
+            if (read != 4)
+            {
+                return false;
+            }
 			
             uint8 *pData = new uint8[len];
 			read = fp->Read(pData, len);
-			if (read != len)return false;
+            if (read != len)
+            {
+                return false;
+            }
             DynamicMemoryFile *pF = DynamicMemoryFile::Create(pData, len, File::READ);
             pointerValue = new KeyedArchive();
             ((KeyedArchive*)pointerValue)->Load(pF);
@@ -880,63 +1000,90 @@ bool VariantType::Read(File * fp)
 		{
             int64Value = new int64;
             read = fp->Read(int64Value, sizeof(int64));
-            if (read != sizeof(int64))return false;
+            if (read != sizeof(int64))
+            {
+                return false;
+            }
 		}
             break;
         case TYPE_UINT64:
 		{
             uint64Value = new uint64;
             read = fp->Read(uint64Value, sizeof(uint64));
-            if (read != sizeof(uint64))return false;
+            if (read != sizeof(uint64))
+            {
+                return false;
+            }
 		}
             break;
         case TYPE_VECTOR2:
 		{
             vector2Value = new Vector2;
             read = fp->Read(vector2Value, sizeof(Vector2));
-            if (read != sizeof(Vector2))return false;
+            if (read != sizeof(Vector2))
+            {
+                return false;
+            }
 		}
             break;
         case TYPE_VECTOR3:
 		{
             vector3Value = new Vector3;
             read = fp->Read(vector3Value, sizeof(Vector3));
-            if (read != sizeof(Vector3))return false;
+            if (read != sizeof(Vector3))
+            {
+                return false;
+            }
 		}
             break;
         case TYPE_VECTOR4:
 		{
             vector4Value = new Vector4;
             read = fp->Read(vector4Value, sizeof(Vector4));
-            if (read != sizeof(Vector4))return false;
+            if (read != sizeof(Vector4))
+            {
+                return false;
+            }
 		}
             break;
         case TYPE_MATRIX2:
 		{
             matrix2Value = new Matrix2;
             read = fp->Read(matrix2Value, sizeof(Matrix2));
-            if (read != sizeof(Matrix2))return false;
+            if (read != sizeof(Matrix2))
+            {
+                return false;
+            }
 		}
             break;
         case TYPE_MATRIX3:
 		{
             matrix3Value = new Matrix3;
             read = fp->Read(matrix3Value, sizeof(Matrix3));
-            if (read != sizeof(Matrix3))return false;
+            if (read != sizeof(Matrix3))
+            {
+                return false;
+            }
 		}
             break;
         case TYPE_MATRIX4:
 		{
             matrix4Value = new Matrix4;
             read = fp->Read(matrix4Value, sizeof(Matrix4));
-            if (read != sizeof(Matrix4))return false;
+            if (read != sizeof(Matrix4))
+            {
+                return false;
+            }
 		}
             break;
         case TYPE_COLOR:
 			{
 				colorValue = new Color;
 				read = fp->Read(colorValue->color, sizeof(float32) * 4);
-				if (read != sizeof(float32) * 4) return false;
+                if (read != sizeof(float32) * 4)
+                {
+                    return false;
+                }
 			}
             break;
 
@@ -944,14 +1091,20 @@ bool VariantType::Read(File * fp)
 			{
 				int32 len = 0;
 				read = fp->Read(&len, 4);
-				if (read != 4)return false;
+                if (read != 4)
+                {
+                    return false;
+                }
 			
 				char *buf = new char[len + 1];
 				read = fp->Read(buf, len);
 				buf[len] = 0;
 				fastnameValue = new FastName(buf);
 				delete [] buf;
-				if (read != len)return false;
+                if (read != len)
+                {
+                    return false;
+                }
 			}
             break;
 
@@ -959,26 +1112,35 @@ bool VariantType::Read(File * fp)
 			{
 				aabbox3 = new AABBox3;
 				read = fp->Read(aabbox3, sizeof(AABBox3));
-				if (read != sizeof(AABBox3))return false;
+                if (read != sizeof(AABBox3))
+                {
+                    return false;
+                }
 			}
 			break;
 		case TYPE_FILEPATH:
 			{
 				int32 len;
 				read = fp->Read(&len, 4);
-				if (read != 4)return false;
+                if (read != 4)
+                {
+                    return false;
+                }
 
 				char *buf = new char[len + 1];
 				read = fp->Read(buf, len);
 				buf[len] = 0;
 				filepathValue = new FilePath(buf);
 				delete [] buf;
-				if (read != len) return false;
+                if (read != len)
+                {
+                    return false;
+                }
 			}
 			break;	
 		default:
 		{
-			//DVASSERT(0 && "Something went wrong with VariantType");
+            return false;
 		}
 	}
 	return true;

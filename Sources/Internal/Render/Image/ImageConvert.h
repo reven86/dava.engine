@@ -551,79 +551,100 @@ public:
         return false;
     }
 
-    static void ConvertImageDirect(const Image *srcImage, Image *dstImage)
+    static bool CanConvertFromTo(PixelFormat inFormat, PixelFormat outFormat)
     {
-        ConvertImageDirect(srcImage->format, dstImage->format, srcImage->data, srcImage->width, srcImage->height, srcImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(srcImage->format),
-            dstImage->data, dstImage->width, dstImage->height, dstImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(dstImage->format));
+        return ConvertImageDirect(inFormat, outFormat, nullptr, 0, 0, 0, nullptr, 0, 0, 0);
     }
 
-    static void ConvertImageDirect(PixelFormat inFormat, PixelFormat outFormat, const void * inData, uint32 inWidth, uint32 inHeight, uint32 inPitch, 
+    static bool ConvertImageDirect(const Image *srcImage, Image *dstImage)
+    {
+        return ConvertImageDirect(srcImage->format, dstImage->format, 
+                                  srcImage->data, srcImage->width, srcImage->height, 
+                                  srcImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(srcImage->format),
+                                  dstImage->data, dstImage->width, dstImage->height, 
+                                  dstImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(dstImage->format));
+    }
+
+    static bool ConvertImageDirect(PixelFormat inFormat, PixelFormat outFormat, 
+                                   const void * inData, uint32 inWidth, uint32 inHeight, uint32 inPitch,
                                    void * outData, uint32 outWidth, uint32 outHeight, uint32 outPitch)
     {
         if (inFormat == FORMAT_RGBA5551 && outFormat == FORMAT_RGBA8888)
         {
             ConvertDirect<uint16, uint32, ConvertRGBA5551toRGBA8888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+            return true;
         }
         else if (inFormat == FORMAT_RGBA4444 && outFormat == FORMAT_RGBA8888)
         {
             ConvertDirect<uint16, uint32, ConvertRGBA4444toRGBA8888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+            return true;
         }
         else if (inFormat == FORMAT_RGB888 && outFormat == FORMAT_RGBA8888)
         {
             ConvertDirect<RGB888, uint32, ConvertRGB888toRGBA8888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+            return true;
         }
         else if (inFormat == FORMAT_RGB565 && outFormat == FORMAT_RGBA8888)
         {
             ConvertDirect<uint16, uint32, ConvertRGB565toRGBA8888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+            return true;
         }
         else if (inFormat == FORMAT_A8 && outFormat == FORMAT_RGBA8888)
         {
             ConvertDirect<uint8, uint32, ConvertA8toRGBA8888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+            return true;
         }
         else if (inFormat == FORMAT_A16 && outFormat == FORMAT_RGBA8888)
         {
             ConvertDirect<uint16, uint32, ConvertA16toRGBA8888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+            return true;
         }
         else if (inFormat == FORMAT_BGR888 && outFormat == FORMAT_RGB888)
         {
             ConvertDirect<BGR888, RGB888, ConvertBGR888toRGB888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+            return true;
         }
         else if (inFormat == FORMAT_BGR888 && outFormat == FORMAT_RGBA8888)
         {
             ConvertDirect<BGR888, uint32, ConvertBGR888toRGBA8888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+            return true;
         }
         else if (inFormat == FORMAT_BGRA8888 && outFormat == FORMAT_RGBA8888)
         {
             ConvertDirect<BGRA8888, uint32, ConvertBGRA8888toRGBA8888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+            return true;
         }
         else if (inFormat == FORMAT_RGBA8888 && outFormat == FORMAT_RGB888)
         {
             ConvertDirect<uint32, RGB888, ConvertRGBA8888toRGB888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+            return true;
         }
         else if (inFormat == FORMAT_RGBA16161616 && outFormat == FORMAT_RGBA8888)
         {
             ConvertDirect<RGBA16161616, uint32, ConvertRGBA16161616toRGBA8888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+            return true;
         }
         else if (inFormat == FORMAT_RGBA32323232 && outFormat == FORMAT_RGBA8888)
         {
             ConvertDirect<RGBA32323232, uint32, ConvertRGBA32323232toRGBA8888> convert;
             convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+            return true;
         }
         else
         {
             Logger::FrameworkDebug("Unsupported image conversion from format %d to %d", inFormat, outFormat);
-            DVASSERT(false);
+            return false;
         }
     }
 

@@ -208,7 +208,7 @@ QtMainWindow::~QtMainWindow()
 {
     const auto &logWidget = qobject_cast<LogWidget*>(dockConsole->widget());
     const auto dataToSave = logWidget->Serialize();
-    VariantType var(VariantType(reinterpret_cast<const uint8*>(dataToSave.data()), dataToSave.size()));
+    VariantType var(reinterpret_cast<const uint8*>(dataToSave.data()), dataToSave.size());
     SettingsManager::Instance()->SetValue(Settings::Internal_LogWidget, var);
 
 	SafeDelete(addSwitchEntityDialog);
@@ -2869,7 +2869,7 @@ bool QtMainWindow::LoadAppropriateTextureFormat()
 	if (GetGPUFormat() != GPU_ORIGIN)
 	{
 		int answer = ShowQuestion("Inappropriate texture format",
-								  "Landscape editing is only allowed in PNG texture format.\nDo you want to reload textures in PNG format?",
+								  "Landscape editing is only allowed in original texture format.\nDo you want to reload textures in original format?",
 								  MB_FLAG_YES | MB_FLAG_NO, MB_FLAG_NO);
 		if (answer == MB_FLAG_NO)
 		{
