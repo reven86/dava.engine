@@ -85,8 +85,8 @@ void MaterialsTest::LoadResources()
     
     Scene* materialsScene = new Scene();
     
-    SceneFileV2::eError error = materialsScene->LoadScene(FilePath("~res:/3d/Maps/materials/materials.sc2"));
-    DVASSERT_MSG(error == SceneFileV2::eError::ERROR_NO_ERROR, "can't load scene ~res:/3d/Maps/materials/materials.sc2");
+    SceneFileV2::eError error = materialsScene->LoadScene(FilePath("~res:/3d/Maps/" + GetParams().scenePath));
+    DVASSERT_MSG(error == SceneFileV2::eError::ERROR_NO_ERROR, ("can't load scene " + GetParams().scenePath).c_str());
     
     Entity* materialsEntity = materialsScene->FindByName(MATERIALS_ENTITY);
     
@@ -374,5 +374,10 @@ void MaterialsTest::ReplacePlanes(const Vector<Entity*>& planes)
     {
         GetScene()->AddNode(child);
     }
+}
+
+const String& MaterialsTest::GetSceneName() const
+{
+    return GetName();
 }
 

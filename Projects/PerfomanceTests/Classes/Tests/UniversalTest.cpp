@@ -32,10 +32,12 @@ const FastName UniversalTest::CAMERA_PATH = FastName("CameraPath");
 const FastName UniversalTest::TANK_STUB = FastName("TankStub");
 const FastName UniversalTest::TANKS = FastName("Tanks");
 
+const String UniversalTest::TEST_NAME = "UniversalTest";
+
 const float32 UniversalTest::TANK_ROTATION_ANGLE = 45.0f;
 
-UniversalTest::UniversalTest(const String& testName, const TestParams& params)
-    :   BaseTest(testName, params)
+UniversalTest::UniversalTest(const TestParams& params)
+    :   BaseTest(TEST_NAME, params)
     ,   waypointInterpolator(nullptr)
     ,   tankAnimator(nullptr)
     ,   camera(nullptr)
@@ -55,36 +57,8 @@ void UniversalTest::LoadResources()
 {
     BaseTest::LoadResources();
     
-    String targetTestName = GetName();
-    String scenePath = "~res:/3d/Maps/";
-    
-    YamlParser* parser = YamlParser::Create("~res:/maps.yaml");
-    
-    if(parser)
-    {
-        YamlNode* rootNode = parser->GetRootNode();
-        if(rootNode)
-        {
-            int32 sz = rootNode->GetCount();
-            
-            for(int32 i = 0; i < sz; ++i)
-            {
-                String k = rootNode->GetItemKeyName(i);
-                String v = rootNode->Get(i)->AsString();
-                
-                if (k == targetTestName)
-                {
-                    scenePath += v;
-                }
-            }
-        }
-    }
-    
-    SafeRelease(parser);
-    
-    SceneFileV2::eError error = GetScene()->LoadScene(FilePath(scenePath));
-    
-    DVASSERT_MSG(error == SceneFileV2::eError::ERROR_NO_ERROR, ("can't load scene " + scenePath).c_str());
+    SceneFileV2::eError error = GetScene()->LoadScene(FilePath("~res:/3d/Maps/" + GetParams().scenePath));
+    DVASSERT_MSG(error == SceneFileV2::eError::ERROR_NO_ERROR, ("can't load scene " + GetParams().scenePath).c_str());
     
     Entity* cameraPathEntity = GetScene()->FindByName(CAMERA_PATH);
     PathComponent* pathComponent = static_cast<PathComponent*>(cameraPathEntity->GetComponent(Component::PATH_COMPONENT));
@@ -158,3 +132,4 @@ void UniversalTest::PerformTestLogic(float32 timeElapsed)
         tankAnimator->Animate(tank, jointIndexes, DegToRad(time * TANK_ROTATION_ANGLE));
     }
 }
+

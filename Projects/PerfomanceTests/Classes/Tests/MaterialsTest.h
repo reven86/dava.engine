@@ -41,6 +41,8 @@ public:
     
     bool IsFinished() const override;
     
+    static const String TEST_NAME;
+    
 protected:
   
     void LoadResources() override;
@@ -48,6 +50,8 @@ protected:
     
     void PerformTestLogic(float32 timeElapsed) override;
     void PrintStatistic(const Vector<BaseTest::FrameInfo>& frames) override;
+    
+    const String& GetSceneName() const override;
     
 private:
     
@@ -57,7 +61,6 @@ private:
     
     void ReplacePlanes(const Vector<Entity*>& planes);
     
-    static const String TEST_NAME;
     static const String SPHERICAL_LIT_MATERIAL;
     static const String SKINNED_MATERIAL;
     static const String LIGHTMAP_MATERIAL;

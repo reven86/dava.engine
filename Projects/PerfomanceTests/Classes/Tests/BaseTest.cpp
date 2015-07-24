@@ -42,6 +42,7 @@ BaseTest::BaseTest(const String& _testName, const TestParams& _testParams)
     ,   maxAllocatedMemory(0)
 {
     uiRoot = new DAVA::UIControl();
+    sceneName = testName + ": " + GetParams().sceneName;
 }
 
 void BaseTest::LoadResources()
@@ -80,7 +81,7 @@ void BaseTest::CreateUI()
     reportItem->SetPosition(Vector2(0.0f, 0.0f));
     
     testNameText = reportItem->FindByPath<UIStaticText*>(ControlHelpers::ReportItem::TEST_NAME_PATH);
-    testNameText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%s", GetName().c_str())));
+    testNameText->SetText(UTF8Utils::EncodeToWideString(DAVA::Format("%s", GetSceneName().c_str())));
     
     UIStaticText* fieldMinFpsText = reportItem->FindByPath<UIStaticText*>("MinDelta/MinDeltaText");
     fieldMinFpsText->SetText(UTF8Utils::EncodeToWideString("Max FPS"));
@@ -138,14 +139,14 @@ size_t BaseTest::GetAllocatedMemory()
 }
 void BaseTest::OnStart()
 {
-    Logger::Info(TeamcityTestsOutput::FormatTestStarted(testName).c_str());
+    Logger::Info(TeamcityTestsOutput::FormatTestStarted(GetSceneName()).c_str());
 }
 
 void BaseTest::OnFinish()
 {
     PrintStatistic(GetFramesInfo());
 
-    Logger::Info(TeamcityTestsOutput::FormatTestFinished(testName).c_str());
+    Logger::Info(TeamcityTestsOutput::FormatTestFinished(GetSceneName()).c_str());
 }
 
 void BaseTest::PrintStatistic(const Vector<BaseTest::FrameInfo>& frames)
@@ -284,4 +285,9 @@ bool BaseTest::IsFinished() const
     }
     
     return false;
+}
+
+const String& BaseTest::GetSceneName() const
+{
+    return sceneName;
 }

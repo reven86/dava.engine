@@ -37,8 +37,10 @@ class UniversalTest : public BaseTest
 {
 public:
     
-    UniversalTest(const String& testName, const TestParams& params);
+    UniversalTest(const TestParams& params);
     ~UniversalTest();
+    
+    static const String TEST_NAME;
     
 protected:
     

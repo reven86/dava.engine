@@ -70,6 +70,9 @@ public:
 
         // stop test logic when frameDelta greater than maxDelta
         float32 maxDelta;
+        
+        String sceneName;
+        String scenePath;
     };
     
     struct StatisticData
@@ -130,12 +133,16 @@ protected:
     DAVA::UIControl* GetUIRoot() const;
     const Vector<FrameInfo>& GetFrames() const;
     
+    virtual const String& GetSceneName() const;
+
     virtual void PerformTestLogic(float32 timeElapsed) = 0;
     
 private:
     
     Vector<FrameInfo> frames;
+    
     String testName;
+    String sceneName;
     
     TestParams testParams;
     

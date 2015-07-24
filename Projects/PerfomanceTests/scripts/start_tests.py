@@ -189,7 +189,7 @@ while continue_process_stdout:
 
                 if line.find("testStarted") != -1:
 
-                    test_name = line.split("name")[1].split("'")[1]
+                    test_name = line.split("name")[1].split("'")[1].replace(": ", "_")
 
                     if 'frame_delta_file' in locals():
                         frame_delta_file.close()

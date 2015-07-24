@@ -127,9 +127,57 @@ void GameCore::EndFrame()
 
 void GameCore::RegisterTests()
 {
-    testChain.push_back(new MaterialsTest(defaultTestParams));
-    //testChain.push_back(new AsiaPerformanceTest(defaultTestParams));
-    //testChain.push_back(new GlobalPerformanceTest(defaultTestParams));
+    // load material test
+    Vector<std::pair<String, String> > scenes;
+    LoadMaps(MaterialsTest::TEST_NAME, scenes);
+    
+    for(std::pair<String, String> scene : scenes)
+    {
+        BaseTest::TestParams params = defaultTestParams;
+        params.sceneName = scene.first;
+        params.scenePath = scene.second;
+        
+        testChain.push_back(new MaterialsTest(params));
+    }
+    
+    scenes.clear();
+    
+    // load universal test
+    LoadMaps(UniversalTest::TEST_NAME, scenes);
+    
+    for(std::pair<String, String> scene : scenes)
+    {
+        BaseTest::TestParams params = defaultTestParams;
+        params.sceneName = scene.first;
+        params.scenePath = scene.second;
+        
+        testChain.push_back(new UniversalTest(params));
+    }
+}
+
+void GameCore::LoadMaps(const String& testName, Vector<std::pair<String, String>>& mapsVector)
+{
+    YamlParser* testsParser = YamlParser::Create("~res:/tests.yaml");
+    DVASSERT_MSG(testsParser, "can't open ~res:/tests.yaml");
+    
+    YamlParser* mapsParser = YamlParser::Create("~res:/maps.yaml");
+    DVASSERT_MSG(mapsParser, "can't open ~res:/maps.yaml");
+    
+    YamlNode* testsRootNode = testsParser->GetRootNode();
+    YamlNode* mapsRootNode = mapsParser->GetRootNode();
+
+    const Vector<YamlNode*> maps = testsRootNode->Get(testName)->AsVector();
+    
+    for(YamlNode* mapNameNode: maps)
+    {
+        String mapName = mapNameNode->AsString();
+        String mapPath = mapsRootNode->Get(mapName)->AsString();
+        
+        mapsVector.push_back(std::pair<String, String>(mapName, mapPath));
+    }
+    
+    SafeRelease(mapsParser);
+    SafeRelease(testsParser);
 }
 
 String GameCore::GetDeviceName()
@@ -153,15 +201,13 @@ void GameCore::InitScreenController()
     Random::Instance()->Seed(0);
     
     Logger::Instance()->AddCustomOutput(&teamCityOutput);
-    String deviceName = GetDeviceName();
-    Logger::Info(deviceName.c_str());
+    Logger::Info(GetDeviceName().c_str());
     
     BaseTest::TestParams singleTestParams = defaultTestParams;
     String testForRun;
 
 	bool chooserFound = CommandLineParser::Instance()->CommandIsFound("-chooser");
     bool testFound = CommandLineParser::Instance()->CommandIsFound("-test");
-    bool universalTest = CommandLineParser::Instance()->CommandIsFound("-universal-test");
     bool withoutUIFound = CommandLineParser::Instance()->CommandIsFound("-without-ui");
 
     bool testTimeFound = CommandLineParser::Instance()->CommandIsFound("-test-time");
@@ -173,35 +219,6 @@ void GameCore::InitScreenController()
 
     bool debugFrameFound = CommandLineParser::Instance()->CommandIsFound("-debug-frame");
     bool maxDeltaFound = CommandLineParser::Instance()->CommandIsFound("-max-delta");
-
-    if (universalTest)
-    {
-        String universalTest = CommandLineParser::Instance()->GetCommandParamAdditional("-universal-test", 0);
-        
-        testChain.clear();
-        
-        YamlParser* parser = YamlParser::Create("~res:/maps.yaml");
-        
-        DVASSERT_MSG(parser, "can't open ~res:/maps.yaml");
-        
-        YamlNode* rootNode = parser->GetRootNode();
-        if(rootNode)
-        {
-            int32 sz = rootNode->GetCount();
-            
-            for(int32 i = 0; i < sz; ++i)
-            {
-                testChain.push_back(new UniversalTest(rootNode->GetItemKeyName(i), defaultTestParams));
-            }
-        }
-        
-        SafeRelease(parser);
-        
-        if(!universalTest.empty())
-        {
-            testForRun = universalTest;
-        }
-    }
     
     if(testFound)
     {

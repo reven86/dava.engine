@@ -61,11 +61,16 @@ void SingleTestFlowController::Init(const Vector<BaseTest*>& _testChain)
     {
         for (BaseTest* test : _testChain)
         {
-            if (test->GetName() == testForRunName)
+            if (test->GetParams().sceneName == testForRunName)
             {
+                BaseTest::TestParams params = test->GetParams();
+                testParams.sceneName = params.sceneName;
+                testParams.scenePath = params.scenePath;
+                params = testParams;
+                
                 testForRun = test;
                 testForRun->ShowUI(showUI);
-                testForRun->SetParams(testParams);
+                testForRun->SetParams(params);
             }
         }
 
