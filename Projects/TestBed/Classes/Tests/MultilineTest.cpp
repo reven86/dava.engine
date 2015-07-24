@@ -37,16 +37,20 @@ public:
     virtual ~TextDelegate1() = default;
     bool TextFieldKeyPressed(UITextField* /*textField*/, int32 replacementLocation, int32 replacementLength, WideString& replacementString) override
     {
-        // Allow only numbers
+        // Allow only small caps letters
         bool accept = true;
         for (size_t i = 0, n = replacementString.length();i < n && accept;++i)
-            accept = '0' <= replacementString[i] && replacementString[i] <= '9';
-        Logger::Debug("****** TextDelegate1::TextFieldKeyPressed: accepted=%d", accept);
+            accept = 'a' <= replacementString[i] && replacementString[i] <= 'z';
+        Logger::Debug("****** TextDelegate2::TextFieldKeyPressed: accepted=%d", accept);
         return accept;
     }
     void TextFieldOnTextChanged(UITextField* /*textField*/, const WideString& newText, const WideString& oldText) override
     {
         Logger::Debug("****** TextDelegate1::TextFieldOnTextChanged: new=%s, old=%s", WStringToString(newText).c_str(), WStringToString(oldText).c_str());
+    }
+    void TextFieldShouldReturn(UITextField* textField)
+    {
+        textField->CloseKeyboard();
     }
 };
 
@@ -56,11 +60,11 @@ public:
     virtual ~TextDelegate2() = default;
     bool TextFieldKeyPressed(UITextField* /*textField*/, int32 replacementLocation, int32 replacementLength, WideString& replacementString) override
     {
-        // Allow only small caps letters
+        // Allow only numbers
         bool accept = true;
         for (size_t i = 0, n = replacementString.length();i < n && accept;++i)
-            accept = 'a' <= replacementString[i] && replacementString[i] <= 'z';
-        Logger::Debug("****** TextDelegate2::TextFieldKeyPressed: accepted=%d", accept);
+            accept = '0' <= replacementString[i] && replacementString[i] <= '9';
+        Logger::Debug("****** TextDelegate1::TextFieldKeyPressed: accepted=%d", accept);
         return accept;
     }
     void TextFieldOnTextChanged(UITextField* /*textField*/, const WideString& newText, const WideString& oldText) override
