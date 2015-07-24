@@ -33,7 +33,7 @@ void ListModel::addItem(const QString &dataText, ListItemType type)
 
 QVariant ListModel::data(const QModelIndex &index, int role) const
 {
-    auto type = items.at(index.row()).type;
+    ListItemType type = items.at(index.row()).type;
     switch (type)
     {
     case LIST_ITEM_SEPARATOR: // for separator we display only custom data
@@ -43,8 +43,6 @@ QVariant ListModel::data(const QModelIndex &index, int role) const
             return QBrush(QColor(180, 180, 180), Qt::HorPattern);
         case Qt::SizeHintRole:
             return QSize(0, 7);
-        default:
-            return QVariant();
         }
         break;
     default:
@@ -64,10 +62,9 @@ QVariant ListModel::data(const QModelIndex &index, int role) const
             if (type == LIST_ITEM_BRANCH)
                 return QColor(100, 100, 100);
             break;
-        default:
-            return QVariant();
         }
     }
+    return QVariant();
 }
 
 int ListModel::rowCount(const QModelIndex &parent) const
