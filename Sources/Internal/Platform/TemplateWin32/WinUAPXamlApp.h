@@ -81,6 +81,7 @@ public:
     void AddUIElement(Windows::UI::Xaml::UIElement^ uiElement);
     void RemoveUIElement(Windows::UI::Xaml::UIElement^ uiElement);
     void PositionUIElement(Windows::UI::Xaml::UIElement^ uiElement, float32 x, float32 y);
+    void UnfocusUIElement();
 
 protected:
     void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs^ args) override;
@@ -141,6 +142,7 @@ private:
 
     Windows::UI::Xaml::Controls::SwapChainPanel^ swapChainPanel = nullptr;
     Windows::UI::Xaml::Controls::Canvas^ canvas = nullptr;
+    Windows::UI::Xaml::Controls::Button^ controlThatTakesFocus = nullptr;
 
     Windows::Foundation::IAsyncAction^ renderLoopWorker = nullptr;
 

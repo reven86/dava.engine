@@ -172,6 +172,13 @@ void WinUAPXamlApp::PositionUIElement(Windows::UI::Xaml::UIElement^ uiElement, f
     canvas->SetTop(uiElement, y);
 }
 
+void WinUAPXamlApp::UnfocusUIElement()
+{
+    // XAML controls cannot be unfocused programmatically, this is especially useful for text fields
+    // So use dummy offscreen control that steals focus
+    controlThatTakesFocus->Focus(FocusState::Pointer);
+}
+
 void WinUAPXamlApp::Run()
 {
     dispatcher = std::make_unique<Dispatcher>();
@@ -578,6 +585,13 @@ void WinUAPXamlApp::CreateBaseXamlUI()
     canvas = ref new Controls::Canvas();
     swapChainPanel->Children->Append(canvas);
     Window::Current->Content = swapChainPanel;
+
+    controlThatTakesFocus = ref new Button();
+    controlThatTakesFocus->Content = L"";
+    controlThatTakesFocus->Width = 30;
+    controlThatTakesFocus->Height = 20;
+    AddUIElement(controlThatTakesFocus);
+    PositionUIElement(controlThatTakesFocus, -100, -100);
 }
 
 void WinUAPXamlApp::SetTitleName()

@@ -250,11 +250,10 @@ void PrivateTextFieldWinUAP::OpenKeyboard()
 
 void PrivateTextFieldWinUAP::CloseKeyboard()
 {
-    // XAML control cannot be unfocused programmatically, so hide keyboard through disabling native control
+    // Hide keyboard through unfocusing native control
     auto self{shared_from_this()};
     core->RunOnUIThread([this, self](){
-        nativeControl->IsEnabled = false;
-        nativeControl->IsEnabled = true;
+        core->XamlApplication()->UnfocusUIElement();
     });
 }
 
