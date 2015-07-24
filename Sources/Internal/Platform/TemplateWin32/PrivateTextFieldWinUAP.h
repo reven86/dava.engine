@@ -35,13 +35,14 @@
 
 #include "Base/BaseTypes.h"
 #include "Math/Rect.h"
-#include "Concurrency/Atomic.h"
 
 namespace DAVA
 {
 
 class Color;
+class Sprite;
 class UITextField;
+class UITextFieldDelegate;
 class CorePlatformWinUAP;
 
 class PrivateTextFieldWinUAP : public std::enable_shared_from_this<PrivateTextFieldWinUAP>
@@ -55,6 +56,7 @@ public:
     void FlyToSunIcarus();
 
     void SetVisible(bool isVisible);
+    void SetIsPassword(bool isPassword);
     void SetMaxLength(int32 value);
 
     void OpenKeyboard();
@@ -73,10 +75,13 @@ public:
 
     void SetFontSize(float32 size);
 
+    void SetDelegate(UITextFieldDelegate* textFieldDelegate);
+
     void SetMultiline(bool enable);
 
     void SetInputEnabled(bool enable);
 
+    void SetRenderToTexture(bool value);
     bool IsRenderToTexture() const;
 
     void SetAutoCapitalizationType(int32 value);
@@ -87,30 +92,74 @@ public:
     void SetReturnKeyType(int32 value);
     void SetEnableReturnKeyAutomatically(bool value);
 
+    uint32 GetCursorPos() const;
+    void SetCursorPos(uint32 pos);
+
 private:
     void InstallEventHandlers();
     void SetVisibilityNative(bool show);
     void PositionNative(const Rect& rect, bool offScreen);
 
     void RenderToTexture();
+    Sprite* CreateSpriteFromPreviewData(const uint8* imageData, int32 width, int32 height) const;
 
 private:    // Event handlers
     void OnKeyDown(Platform::Object^ sender, Windows::UI::Xaml::Input::KeyRoutedEventArgs^ args);
-    void OnKeyUp(Platform::Object^ sender, Windows::UI::Xaml::Input::KeyRoutedEventArgs^ args);
 
-    void OnGotFocus(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ args);
+    void OnSelectionChanged(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ args);
+    void OnTextChanged(Platform::Object^ sender, Windows::UI::Xaml::Controls::TextChangedEventArgs^ args);
+
     void OnLostFocus(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ args);
+
+    void OnKeyboardHiding(Windows::UI::ViewManagement::InputPane^ sender, Windows::UI::ViewManagement::InputPaneVisibilityEventArgs^ args);
+    void OnKeyboardShowing(Windows::UI::ViewManagement::InputPane^ sender, Windows::UI::ViewManagement::InputPaneVisibilityEventArgs^ args);
 
 private:
     CorePlatformWinUAP* core;
-    Atomic<UITextField*> uiTextField;
+    UITextField* uiTextField = nullptr;
+    UITextFieldDelegate* textFieldDelegate = nullptr;
     Windows::UI::Xaml::Controls::TextBox^ nativeControl = nullptr;
-    Rect originalRect;
+    Rect originalRect = Rect(0.0f, 0.0f, 100.0f, 20.0f);
     bool visible = false;
     int32 textAlignment = ALIGN_LEFT | ALIGN_TOP;
+    bool multiline = false;
     bool flowDirectionRTL = false;
-    bool renderToTexture = false;
+    bool pendingTextureUpdate = false;      // Flag indicating that texture image should be recreated
+
+    WideString curText;
+    bool ignoreTextChange = false;
+    bool backspacePressed = false;
+    int32 caretPosition = 0;
+    int32 selectionLength = 0;
+    int32 caretAtBackspace = 0;
 };
+
+//////////////////////////////////////////////////////////////////////////
+inline int32 PrivateTextFieldWinUAP::GetTextAlign() const
+{
+    return textAlignment;
+}
+
+inline bool PrivateTextFieldWinUAP::GetTextUseRtlAlign() const
+{
+    return flowDirectionRTL;
+}
+
+inline void PrivateTextFieldWinUAP::SetRenderToTexture(bool /*value*/)
+{
+    // Do nothing as single line tex field always is painted into texture
+    // Multiline text field is never rendered to texture
+}
+
+inline bool PrivateTextFieldWinUAP::IsRenderToTexture() const
+{
+    return !multiline;
+}
+
+inline uint32 PrivateTextFieldWinUAP::GetCursorPos() const
+{
+    return caretPosition;
+}
 
 }   // namespace DAVA
 

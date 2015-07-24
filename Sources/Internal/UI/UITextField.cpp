@@ -331,6 +331,9 @@ void UITextField::SetFontSize(float32 size)
 void UITextField::SetDelegate(UITextFieldDelegate * _delegate)
 {
     delegate = _delegate;
+#if defined(__DAVAENGINE_WIN_UAP__)
+    textFieldWinUAP->SetDelegate(_delegate);
+#endif
 }
 
 UITextFieldDelegate * UITextField::GetDelegate()

@@ -38,6 +38,7 @@
 #include "UI/UITextField.h"
 
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/Image/ImageConvert.h"
 
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
@@ -48,6 +49,7 @@ using namespace Windows::System;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
 using namespace Windows::UI;
+using namespace Windows::UI::Core;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
 using namespace Windows::UI::Xaml::Input;
@@ -62,13 +64,114 @@ using namespace concurrency;
 namespace DAVA
 {
 
+namespace
+{
+
+struct StringDiffResult
+{
+    StringDiffResult() = default;
+
+    enum eDiffType {
+        NO_CHANGE = 0,      // No changes between original string and new string
+        INSERTION,          // Character range was inserted into new string
+        DELETION,           // Character range was deleted from original string
+        REPLACEMENT         // Character range in original string was replaced by another character range in new string
+    };
+
+    eDiffType diffType = NO_CHANGE;
+    int32 originalStringDiffPosition = 0;   // Position in original string where difference starts
+    int32 newStringDiffPosition = 0;        // Position in new string where difference starts
+    WideString originalStringDiff;          // What was changed in original string
+    WideString newStringDiff;               // What was changed in new string
+
+    // Explanation of originalStringDiff, newStringDiff and diff positions:
+    // diffType is INSERTION:
+    //      original            'text'
+    //      new                 'te123xt'
+    //      original diff pos   2
+    //      original diff       ''      empty
+    //      new diff pos        2
+    //      new diff            '123'
+    // diffType is DELETION:
+    //      original            'text'
+    //      new                 'tt'
+    //      original diff pos   1
+    //      original diff       'ex'
+    //      new diff pos        1
+    //      new diff            ''      empty
+    // diffType is REPLACEMENT:
+    //      original            'text'
+    //      new                 't1234t'
+    //      original diff pos   1
+    //      original diff       'ex'
+    //      new diff pos        1
+    //      new diff            '1234'
+};
+
+void StringDiff(const WideString& originalString, const WideString& newString, StringDiffResult& result)
+{
+    // TODO: compare strings as UTF-32 to not bother with surrogate pairs
+
+    int32 origLength = static_cast<int32>(originalString.size());
+    int32 newLength = static_cast<int32>(newString.size());
+
+    int32 origDiffBegin = 0;
+    int32 newDiffBegin = 0;
+    while (origDiffBegin < origLength && newDiffBegin < newLength && originalString[origDiffBegin] == newString[newDiffBegin])
+    {
+        origDiffBegin += 1;
+        newDiffBegin += 1;
+    }
+
+    // No changes between original string and new string
+    if (origDiffBegin == origLength && newDiffBegin == newLength)
+    {
+        result = StringDiffResult();
+        return;
+    }
+
+    int32 origDiffEnd = origLength - 1;
+    int32 newDiffEnd = newLength - 1;
+    while (origDiffEnd >= origDiffBegin && newDiffEnd >= newDiffBegin && originalString[origDiffEnd] == newString[newDiffEnd])
+    {
+        origDiffEnd -= 1;
+        newDiffEnd -= 1;
+    }
+
+    if (origDiffEnd < origDiffBegin)    // Insertion took place
+    {
+        result.diffType = StringDiffResult::INSERTION;
+        result.originalStringDiffPosition = origDiffBegin;
+        result.originalStringDiff = WideString();
+        result.newStringDiffPosition = newDiffBegin;
+        result.newStringDiff = WideString(newString, newDiffBegin, newDiffEnd - newDiffBegin + 1);
+    }
+    else if (newDiffEnd < origDiffBegin)    // Deletion took place
+    {
+        result.diffType = StringDiffResult::DELETION;
+        result.originalStringDiffPosition = origDiffBegin;
+        result.originalStringDiff = WideString(originalString, origDiffBegin, origDiffEnd - origDiffBegin + 1);
+        result.originalStringDiffPosition = newDiffBegin;
+        result.newStringDiff = WideString();
+    }
+    else    // Replacement took place
+    {
+        result.diffType = StringDiffResult::REPLACEMENT;
+        result.originalStringDiffPosition = origDiffBegin;
+        result.originalStringDiff = WideString(originalString, origDiffBegin, origDiffEnd - origDiffBegin + 1);
+        result.newStringDiffPosition = newDiffBegin;
+        result.newStringDiff = WideString(newString, newDiffBegin, newDiffEnd - newDiffBegin + 1);
+    }
+}
+
+}   // unnamed namespace
+
 PrivateTextFieldWinUAP::PrivateTextFieldWinUAP(UITextField* uiTextField_)
     : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
     , uiTextField(uiTextField_)
 {
     core->RunOnUIThreadBlocked([this]() {
         nativeControl = ref new TextBox();
-        nativeControl->Visibility = Visibility::Collapsed;
         nativeControl->TextAlignment = TextAlignment::Left;
         nativeControl->FlowDirection = FlowDirection::LeftToRight;
 
@@ -76,6 +179,7 @@ PrivateTextFieldWinUAP::PrivateTextFieldWinUAP(UITextField* uiTextField_)
         nativeControl->BorderBrush = ref new SolidColorBrush(Colors::Transparent);
 
         core->XamlApplication()->AddUIElement(nativeControl);
+        PositionNative(originalRect, true);
 
         InstallEventHandlers();
     });
@@ -97,6 +201,7 @@ PrivateTextFieldWinUAP::~PrivateTextFieldWinUAP()
 void PrivateTextFieldWinUAP::FlyToSunIcarus()
 {
     uiTextField = nullptr;
+    textFieldDelegate = nullptr;
 }
 
 void PrivateTextFieldWinUAP::SetVisible(bool isVisible)
@@ -104,46 +209,75 @@ void PrivateTextFieldWinUAP::SetVisible(bool isVisible)
     if (visible != isVisible)
     {
         visible = isVisible;
-        auto self{shared_from_this()};
-        core->RunOnUIThread([this, self](){
-            SetVisibilityNative(visible);
-        });
+        // Single line native text field is always rendered to texture and placed offscreen
+        // Multiline native text field is always onscreen according to visibiliy flag
+        if (multiline)
+        {
+            auto self{shared_from_this()};
+            core->RunOnUIThread([this, self]() {
+                SetVisibilityNative(visible);
+            });
+        }
     }
+}
+
+void PrivateTextFieldWinUAP::SetIsPassword(bool isPassword_)
+{
+
 }
 
 void PrivateTextFieldWinUAP::SetMaxLength(int32 value)
 {
-    // Native control expects zero for unlimited input length
-    value = std::max(0, value);
     auto self{shared_from_this()};
-    core->RunOnUIThread([this, self, value]() {
-        nativeControl->MaxLength = value;
+    core->RunOnUIThread([this, self, value]()
+    {
+        // Native control expects zero for unlimited input length
+        nativeControl->MaxLength = std::max(0, value);
     });
 }
 
 void PrivateTextFieldWinUAP::OpenKeyboard()
 {
-    core->RunOnUIThread([]() {
-        InputPane::GetForCurrentView()->TryShow();
+    // Focus native control as if mouse has been pressed to show keyboard
+    auto self{shared_from_this()};
+    core->RunOnUIThread([this, self]()
+    {
+        if (!multiline)
+            PositionNative(originalRect, false);
+        nativeControl->Focus(FocusState::Pointer);
     });
 }
 
 void PrivateTextFieldWinUAP::CloseKeyboard()
 {
+    // XAML control cannot be unfocused programmatically, so hide keyboard through disabling native control
     auto self{shared_from_this()};
-    core->RunOnUIThread([this, self]() {
-        InputPane::GetForCurrentView()->TryHide();
+    core->RunOnUIThread([this, self](){
+        nativeControl->IsEnabled = false;
+        nativeControl->IsEnabled = true;
     });
 }
 
 void PrivateTextFieldWinUAP::UpdateRect(const Rect& rect)
 {
+    bool sizeChanged = false;
     if (rect != originalRect)
     {
         originalRect = rect;
+        pendingTextureUpdate = true;
+        sizeChanged = true;
+    }
+
+    if (multiline || pendingTextureUpdate)
+    {
         auto self{shared_from_this()};
-        core->RunOnUIThread([this, self]() {
-            PositionNative(originalRect, false);
+        core->RunOnUIThread([this, self, sizeChanged]()
+        {
+            if (sizeChanged)
+                PositionNative(originalRect, !multiline);
+            if (pendingTextureUpdate && !multiline)
+                RenderToTexture();
+            pendingTextureUpdate = false;
         });
     }
 }
@@ -152,15 +286,18 @@ void PrivateTextFieldWinUAP::SetText(const WideString& text)
 {
     Platform::String^ str = ref new Platform::String(text.c_str());
     auto self{shared_from_this()};
-    core->RunOnUIThread([this, self, str]() {
+    core->RunOnUIThread([this, self, str]()
+    {
+        curText = str->Data();
         nativeControl->Text = str;
-        RenderToTexture();
+        pendingTextureUpdate = true;
     });
 }
 
 void PrivateTextFieldWinUAP::GetText(WideString& text) const
 {
-    core->RunOnUIThreadBlocked([this, &text]() {
+    core->RunOnUIThreadBlocked([this, &text]()
+    {
         text = nativeControl->Text->Data();
     });
 }
@@ -168,13 +305,15 @@ void PrivateTextFieldWinUAP::GetText(WideString& text) const
 void PrivateTextFieldWinUAP::SetTextColor(const Color& color)
 {
     auto self{shared_from_this()};
-    core->RunOnUIThread([this, self, color]() {
+    core->RunOnUIThread([this, self, color]()
+    {
         Windows::UI::Color nativeColor;
         nativeColor.R = static_cast<unsigned char>(color.r * 255.0f);
         nativeColor.G = static_cast<unsigned char>(color.g * 255.0f);
         nativeColor.B = static_cast<unsigned char>(color.b * 255.0f);
         nativeColor.A = 255;
         nativeControl->Foreground = ref new SolidColorBrush(nativeColor);
+        pendingTextureUpdate = true;
     });
 }
 
@@ -193,19 +332,16 @@ void PrivateTextFieldWinUAP::SetTextAlign(int32 align)
     textAlignment |= ALIGN_TOP; // Native text field doesn't support vertical text alignment
 
     auto self{shared_from_this()};
-    core->RunOnUIThread([this, self]() {
+    core->RunOnUIThread([this, self]()
+    {
         if (textAlignment & ALIGN_LEFT)
             nativeControl->TextAlignment = TextAlignment::Left;
         else if (textAlignment & ALIGN_HCENTER)
             nativeControl->TextAlignment = TextAlignment::Center;
         else if (textAlignment & ALIGN_RIGHT)
             nativeControl->TextAlignment = TextAlignment::Right;
+        pendingTextureUpdate = true;
     });
-}
-
-int32 PrivateTextFieldWinUAP::GetTextAlign() const
-{
-    return textAlignment;
 }
 
 void PrivateTextFieldWinUAP::SetTextUseRtlAlign(bool useRtlAlign)
@@ -214,54 +350,72 @@ void PrivateTextFieldWinUAP::SetTextUseRtlAlign(bool useRtlAlign)
     {
         flowDirectionRTL = useRtlAlign;
         auto self{shared_from_this()};
-        core->RunOnUIThread([this, self](){
+        core->RunOnUIThread([this, self]()
+        {
             nativeControl->FlowDirection = flowDirectionRTL ? FlowDirection::RightToLeft : FlowDirection::LeftToRight;
+            pendingTextureUpdate = true;
         });
     }
-}
-
-bool PrivateTextFieldWinUAP::GetTextUseRtlAlign() const
-{
-    return flowDirectionRTL;
 }
 
 void PrivateTextFieldWinUAP::SetFontSize(float32 size)
 {
     auto self{shared_from_this()};
-    core->RunOnUIThread([this, self, size]() {
+    core->RunOnUIThread([this, self, size]()
+    {
         nativeControl->FontSize = size;
+        pendingTextureUpdate = true;
     });
+}
+
+void PrivateTextFieldWinUAP::SetDelegate(UITextFieldDelegate* textFieldDelegate_)
+{
+    textFieldDelegate = textFieldDelegate_;
 }
 
 void PrivateTextFieldWinUAP::SetMultiline(bool enable)
 {
-    auto self{shared_from_this()};
-    core->RunOnUIThread([this, self, enable]() {
-        nativeControl->AcceptsReturn = enable;
-    });
+    if (multiline != enable)
+    {
+        multiline = enable;
+        auto self{shared_from_this()};
+        core->RunOnUIThread([this, self]()
+        {
+            nativeControl->AcceptsReturn = multiline;
+            PositionNative(originalRect, !multiline);
+        });
+    }
 }
 
 void PrivateTextFieldWinUAP::SetInputEnabled(bool enable)
 {
     auto self{shared_from_this()};
-    core->RunOnUIThread([this, self, enable]() {
+    core->RunOnUIThread([this, self, enable]()
+    {
         nativeControl->IsReadOnly = enable;
+        pendingTextureUpdate = true;
     });
-}
-
-bool PrivateTextFieldWinUAP::IsRenderToTexture() const
-{
-    return renderToTexture;
 }
 
 void PrivateTextFieldWinUAP::SetSpellCheckingType(int32 value)
 {
     bool enabled = UITextField::SPELL_CHECKING_TYPE_YES == value;
     auto self{shared_from_this()};
-    core->RunOnUIThread([this, self, enabled]() {
+    core->RunOnUIThread([this, self, enabled]()
+    {
         nativeControl->IsSpellCheckEnabled = enabled;
+        pendingTextureUpdate = true;
     });
 }
+
+void PrivateTextFieldWinUAP::SetAutoCapitalizationType(int32 value)
+{}
+
+void PrivateTextFieldWinUAP::SetAutoCorrectionType(int32 value)
+{}
+
+void PrivateTextFieldWinUAP::SetKeyboardAppearanceType(int32 value)
+{}
 
 void PrivateTextFieldWinUAP::SetKeyboardType(int32 value)
 {
@@ -298,24 +452,51 @@ void PrivateTextFieldWinUAP::SetKeyboardType(int32 value)
     });
 }
 
+void PrivateTextFieldWinUAP::SetReturnKeyType(int32 /*value*/)
+{}
+
+void PrivateTextFieldWinUAP::SetEnableReturnKeyAutomatically(bool /*value*/)
+{}
+
+void PrivateTextFieldWinUAP::SetCursorPos(uint32 pos)
+{
+    if (static_cast<int32>(pos) >= 0)
+    {
+        auto self{shared_from_this()};
+        core->RunOnUIThread([this, self, pos]()
+        {
+            nativeControl->SelectionStart = pos;
+        });
+    }
+}
+
 void PrivateTextFieldWinUAP::InstallEventHandlers()
 {
     auto keyDown = ref new KeyEventHandler([this](Platform::Object^ sender, Windows::UI::Xaml::Input::KeyRoutedEventArgs^ args) {
         OnKeyDown(sender, args);
     });
-    auto keyUp = ref new KeyEventHandler([this](Platform::Object^ sender, Windows::UI::Xaml::Input::KeyRoutedEventArgs^ args) {
-        OnKeyUp(sender, args);
+    auto selectionChanged = ref new RoutedEventHandler([this](Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ args) {
+        OnSelectionChanged(sender, args);
     });
-    auto gotFocus = ref new RoutedEventHandler([this](Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ args) {
-        OnGotFocus(sender, args);
+    auto textChanged = ref new TextChangedEventHandler([this](Platform::Object^ sender, TextChangedEventArgs^ args) {
+        OnTextChanged(sender, args);
     });
     auto lostFocus = ref new RoutedEventHandler([this](Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ args) {
         OnLostFocus(sender, args);
     });
     nativeControl->KeyDown += keyDown;
-    nativeControl->KeyUp += keyUp;
-    nativeControl->GotFocus += gotFocus;
+    nativeControl->SelectionChanged += selectionChanged;
+    nativeControl->TextChanged += textChanged;
     nativeControl->LostFocus += lostFocus;
+
+    auto keyboardHiding = ref new TypedEventHandler<InputPane^, InputPaneVisibilityEventArgs^>([this](InputPane^ sender, InputPaneVisibilityEventArgs^ args) {
+        OnKeyboardHiding(sender, args);
+    });
+    auto keyboardShowing = ref new TypedEventHandler<InputPane^, InputPaneVisibilityEventArgs^>([this](InputPane^ sender, InputPaneVisibilityEventArgs^ args) {
+        OnKeyboardShowing(sender, args);
+    });
+    InputPane::GetForCurrentView()->Showing += keyboardShowing;
+    InputPane::GetForCurrentView()->Hiding += keyboardHiding;
 }
 
 void PrivateTextFieldWinUAP::SetVisibilityNative(bool show)
@@ -346,88 +527,190 @@ void PrivateTextFieldWinUAP::PositionNative(const Rect& rect, bool offScreen)
 void PrivateTextFieldWinUAP::OnKeyDown(Platform::Object^ sender, Windows::UI::Xaml::Input::KeyRoutedEventArgs^ args)
 {
     VirtualKey vk = args->Key;
-    Logger::Debug("************* PrivateTextFieldWinUAP::OnKeyDown: %d (0x%X", (int)vk, (int)vk);
-    /*if (VirtualKey::Number0 <= vk && vk <= VirtualKey::Number9)
+    switch (vk)
     {
-        int h = 0;
+    case VirtualKey::Back:
+        // Save caret position when Backspace is pressed to restore it in OnTextChanged event
+        // if delegate cancels texts changes
+        backspacePressed = true;
+        caretAtBackspace = caretPosition;
+        break;
+    case VirtualKey::Enter:
+        if (!multiline)
+        {
+            auto self{shared_from_this()};
+            core->RunOnMainThread([this, self]()
+            {
+                if (textFieldDelegate != nullptr)
+                    textFieldDelegate->TextFieldShouldReturn(uiTextField);
+            });
+        }
+        break;
+    case VirtualKey::Escape:
+        {
+            auto self{shared_from_this()};
+            core->RunOnMainThread([this, self]()
+            {
+                if (textFieldDelegate != nullptr)
+                    textFieldDelegate->TextFieldShouldCancel(uiTextField);
+            });
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+void PrivateTextFieldWinUAP::OnSelectionChanged(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ args)
+{
+    caretPosition = nativeControl->SelectionStart;
+    selectionLength = nativeControl->SelectionLength;
+}
+
+void PrivateTextFieldWinUAP::OnTextChanged(Platform::Object^ sender, TextChangedEventArgs^ args)
+{
+    if (ignoreTextChange)
+    {
+        ignoreTextChange = false;
+        return;
+    }
+
+    StringDiffResult diffR;
+    WideString newText(nativeControl->Text->Data());
+    StringDiff(curText, newText, diffR);
+    if (StringDiffResult::NO_CHANGE == diffR.diffType)
+        return;
+
+    // Ask delegate whether to accept changes
+    bool decline = false;
+    auto self{shared_from_this()};
+    core->RunOnMainThreadBlocked([this, self, &diffR, &decline]()
+    {
+        if (uiTextField != nullptr && textFieldDelegate != nullptr)
+        {
+            decline = !textFieldDelegate->TextFieldKeyPressed(uiTextField,
+                                                              diffR.originalStringDiffPosition,
+                                                              static_cast<int32>(diffR.originalStringDiff.length()),
+                                                              diffR.newStringDiff);
+        }
+    });
+
+    if (decline)
+    {
+        nativeControl->Text = ref new Platform::String(curText.c_str());
+        if (backspacePressed)
+        {   // Restore caret position to position before backspace has been pressed
+            nativeControl->SelectionStart = caretAtBackspace;
+            backspacePressed = false;
+        }
+        else
+            nativeControl->SelectionStart = std::max(0, caretPosition - 1);
+        ignoreTextChange = true;
     }
     else
-        args->Handled = true;*/
-}
-
-void PrivateTextFieldWinUAP::OnKeyUp(Platform::Object^ sender, Windows::UI::Xaml::Input::KeyRoutedEventArgs^ args)
-{
-    //VirtualKey vk = args->Key;
-    //Logger::Debug("************* PrivateTextFieldWinUAP::OnKeyUp: %d (0x%X", (int)vk, (int)vk);
-
-    //if (vk == VirtualKey::Enter)
-    //{
-    //    CloseKeyboard();
-    //}
-    /*if (VirtualKey::Number0 <= vk && vk <= VirtualKey::Number9)
     {
-        int h = 0;
+        WideString curTextCopy = curText;
+        WideString newTextCopy = newText;
+        core->RunOnMainThread([this, self, curTextCopy, newTextCopy]()
+        {
+            if (textFieldDelegate != nullptr)
+                textFieldDelegate->TextFieldOnTextChanged(uiTextField, newTextCopy, curTextCopy);
+        });
+        curText = newText;
     }
-    else
-        args->Handled = true;*/
 }
 
-void PrivateTextFieldWinUAP::OnGotFocus(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ args)
+void PrivateTextFieldWinUAP::OnLostFocus(Platform::Object^ sender, RoutedEventArgs^ args)
 {
-    Logger::Debug("********************* PrivateTextFieldWinUAP::OnGotFocus");
+    if (!multiline)
+    {
+        PositionNative(originalRect, true);
+        RenderToTexture();
+    }
 }
 
-void PrivateTextFieldWinUAP::OnLostFocus(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ args)
+void PrivateTextFieldWinUAP::OnKeyboardHiding(InputPane^ sender, InputPaneVisibilityEventArgs^ args)
 {
-    Logger::Debug("********************* PrivateTextFieldWinUAP::OnLostFocus");
+    if (nativeControl->FocusState != FocusState::Unfocused)
+    {
+        auto self{shared_from_this()};
+        core->RunOnMainThread([this, self]()
+        {
+            if (textFieldDelegate != nullptr)
+                textFieldDelegate->OnKeyboardHidden();
+        });
+    }
+}
+
+void PrivateTextFieldWinUAP::OnKeyboardShowing(InputPane^ sender, InputPaneVisibilityEventArgs^ args)
+{
+    if (nativeControl->FocusState != FocusState::Unfocused)
+    {
+        Windows::Foundation::Rect srcRect = InputPane::GetForCurrentView()->OccludedRect;
+        DAVA::Rect keyboardRect(srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height);
+        auto self{shared_from_this()};
+        core->RunOnMainThread([this, self, keyboardRect]()
+        {
+            if (textFieldDelegate != nullptr)
+                textFieldDelegate->OnKeyboardShown(keyboardRect);
+        });
+    }
 }
 
 void PrivateTextFieldWinUAP::RenderToTexture()
 {
-    static bool f = false;
-
-    if (f)
-        return;
-    f = true;
-
-    RenderTargetBitmap^ rtb = ref new RenderTargetBitmap;
-    auto r1 = rtb->RenderAsync(nativeControl);
-
-    create_task(r1).then([this, rtb]() {
-
-        int h = 0;
-
-        auto x = rtb->GetPixelsAsync();
-
-    });
-#if 0
-    auto t1 = create_task(r1).then([this, rtb, r1]()
+    auto self{shared_from_this()};
+    RenderTargetBitmap^ renderTarget = ref new RenderTargetBitmap;
+    auto renderTask = create_task(renderTarget->RenderAsync(nativeControl)).then([this, self, renderTarget]()
     {
-        int st = (int)r1->Status;
-        while (st == (int)AsyncStatus::Started)
+        return renderTarget->GetPixelsAsync();
+    }).then([this, self, renderTarget](IBuffer^ renderBuffer)
+    {
+        int32 imageWidth = renderTarget->PixelWidth;
+        int32 imageHeight = renderTarget->PixelHeight;
+        size_t streamSize = static_cast<size_t>(renderBuffer->Length);
+        DataReader^ reader = DataReader::FromBuffer(renderBuffer);
+
+        size_t index = 0;
+        std::vector<uint8> buf(streamSize, 0);
+        while (reader->UnconsumedBufferLength > 0)
         {
-            st = (int)r1->Status;
+            buf[index] = reader->ReadByte();
+            index += 1;
         }
 
-        return rtb->GetPixelsAsync();
-    }).then([this, rtb](IBuffer^ buf)
+        RefPtr<Sprite> sprite(CreateSpriteFromPreviewData(buf.data(), imageWidth, imageHeight));
+        if (sprite.Valid())
+        {
+            core->RunOnMainThread([this, sprite]() {
+                if (uiTextField != nullptr)
+                {
+                    uiTextField->SetSprite(sprite.Get(), 0);
+                }
+            });
+        }
+    }).then([this, self](task<void> t)
     {
-        //DataReader^ reader = ref new DataReader(buf);
-        int cap = (int)buf->Capacity;
-        int sz = (int)buf->Length;
-        sz = sz;
+        try {
+            t.get();
+        }
+        catch (Platform::COMException^ e) {
+            HRESULT hr = e->HResult;
+            Logger::Error("[TextField] RenderToTexture failed: 0x%08X", hr);
+        }
     });
+}
 
-    try {
-        t1.get();
-    }
-    catch (Platform::COMException^ e)
+Sprite* PrivateTextFieldWinUAP::CreateSpriteFromPreviewData(const uint8* imageData, int32 width, int32 height) const
+{
+    RefPtr<Image> imgSrc(Image::CreateFromData(width, height, FORMAT_RGBA8888, imageData));
+    RefPtr<Image> imgDst(Image::Create(width, height, FORMAT_RGB888));
+    if (imgSrc.Valid() && imgDst.Valid())
     {
-        HRESULT hr = e->HResult;
-        Platform::String^ s = e->Message;
-        Logger::Error("[WebView] RenderToTexture failed: 0x%08X", hr);
+        ImageConvert::ConvertImageDirect(imgSrc.Get(), imgDst.Get());
+        return Sprite::CreateFromImage(imgDst.Get());
     }
-#endif
+    return nullptr;
 }
 
 }   // namespace DAVA

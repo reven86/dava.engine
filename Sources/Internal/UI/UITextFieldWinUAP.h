@@ -42,6 +42,7 @@ struct Rect;
 class Color;
 
 class UITextField;
+class UITextFieldDelegate;
 class PrivateTextFieldWinUAP;
 
 class UITextFieldWinUAP
@@ -50,38 +51,40 @@ public:
     UITextFieldWinUAP(UITextField* uiTextField);
     ~UITextFieldWinUAP();
 
-    void SetVisible(bool isVisible);                //
+    void SetVisible(bool isVisible);
     void SetIsPassword(bool isPassword);
-    void SetMaxLength(int32 value);                 //
+    void SetMaxLength(int32 value);
 
-    void OpenKeyboard();                            //
-    void CloseKeyboard();                           //
+    void OpenKeyboard();
+    void CloseKeyboard();
 
-    void UpdateRect(const Rect& rect);              //
+    void UpdateRect(const Rect& rect);
 
-    void SetText(const WideString& text);           //
-    void GetText(WideString& text) const;           //
+    void SetText(const WideString& text);
+    void GetText(WideString& text) const;
 
-    void SetTextColor(const Color& color);          //
-    void SetTextAlign(int32 align);                 //
-    int32 GetTextAlign() const;                     //
-    void SetTextUseRtlAlign(bool useRtlAlign);      //
-    bool GetTextUseRtlAlign() const;                //
+    void SetTextColor(const Color& color);
+    void SetTextAlign(int32 align);
+    int32 GetTextAlign() const;
+    void SetTextUseRtlAlign(bool useRtlAlign);
+    bool GetTextUseRtlAlign() const;
 
-    void SetFontSize(float32 size);                 //
+    void SetFontSize(float32 size);
 
-    void SetMultiline(bool value);                  // incomplete
+    void SetDelegate(UITextFieldDelegate* textFieldDelegate);
 
-    void SetInputEnabled(bool value);               //
+    void SetMultiline(bool value);
+
+    void SetInputEnabled(bool value);
 
     void SetRenderToTexture(bool value);
-    bool IsRenderToTexture() const;                 //
+    bool IsRenderToTexture() const;
 
     void SetAutoCapitalizationType(int32 value);
     void SetAutoCorrectionType(int32 value);
-    void SetSpellCheckingType(int32 value);                 // ?
+    void SetSpellCheckingType(int32 value);
     void SetKeyboardAppearanceType(int32 value);
-    void SetKeyboardType(int32 value);                      //
+    void SetKeyboardType(int32 value);
     void SetReturnKeyType(int32 value);
     void SetEnableReturnKeyAutomatically(bool value);
 

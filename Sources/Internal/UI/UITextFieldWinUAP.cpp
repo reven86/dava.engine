@@ -52,6 +52,7 @@ void UITextFieldWinUAP::SetVisible(bool isVisible)
 
 void UITextFieldWinUAP::SetIsPassword(bool isPassword)
 {
+    privateImpl->SetIsPassword(isPassword);
 }
 
 void UITextFieldWinUAP::SetMaxLength(int32 value)
@@ -114,6 +115,11 @@ void UITextFieldWinUAP::SetFontSize(float32 size)
     privateImpl->SetFontSize(size);
 }
 
+void UITextFieldWinUAP::SetDelegate(UITextFieldDelegate* textFieldDelegate)
+{
+    privateImpl->SetDelegate(textFieldDelegate);
+}
+
 void UITextFieldWinUAP::SetMultiline(bool value)
 {
     privateImpl->SetMultiline(value);
@@ -125,7 +131,9 @@ void UITextFieldWinUAP::SetInputEnabled(bool value)
 }
 
 void UITextFieldWinUAP::SetRenderToTexture(bool value)
-{}
+{
+    privateImpl->SetRenderToTexture(value);
+}
 
 bool UITextFieldWinUAP::IsRenderToTexture() const
 {
@@ -133,16 +141,24 @@ bool UITextFieldWinUAP::IsRenderToTexture() const
 }
 
 void UITextFieldWinUAP::SetAutoCapitalizationType(int32 value)
-{}
+{
+    privateImpl->SetAutoCapitalizationType(value);
+}
 
 void UITextFieldWinUAP::SetAutoCorrectionType(int32 value)
-{}
+{
+    privateImpl->SetAutoCorrectionType(value);
+}
 
 void UITextFieldWinUAP::SetSpellCheckingType(int32 value)
-{}
+{
+    privateImpl->SetSpellCheckingType(value);
+}
 
 void UITextFieldWinUAP::SetKeyboardAppearanceType(int32 value)
-{}
+{
+    privateImpl->SetKeyboardAppearanceType(value);
+}
 
 void UITextFieldWinUAP::SetKeyboardType(int32 value)
 {
@@ -150,18 +166,23 @@ void UITextFieldWinUAP::SetKeyboardType(int32 value)
 }
 
 void UITextFieldWinUAP::SetReturnKeyType(int32 value)
-{}
+{
+    privateImpl->SetReturnKeyType(value);
+}
 
 void UITextFieldWinUAP::SetEnableReturnKeyAutomatically(bool value)
-{}
+{
+    privateImpl->SetEnableReturnKeyAutomatically(value);
+}
 
 uint32 UITextFieldWinUAP::GetCursorPos() const
 {
-    return 0;
+    return privateImpl->GetCursorPos();
 }
 
 void UITextFieldWinUAP::SetCursorPos(uint32 pos)
 {
+    privateImpl->SetCursorPos(pos);
 }
 
 }   // namespace DAVA
