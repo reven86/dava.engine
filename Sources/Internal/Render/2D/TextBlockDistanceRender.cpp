@@ -57,39 +57,27 @@ static uint16* InitIndexBuffer()
     
 uint16* TextBlockDistanceRender::indexBuffer = InitIndexBuffer();
 	
-FastName TextBlockDistanceRender::textureUniform("texture0");
-FastName TextBlockDistanceRender::smoothingUniform("smoothing");
-FastName TextBlockDistanceRender::colorUniform("color");
-
 TextBlockDistanceRender::TextBlockDistanceRender(TextBlock* textBlock) :
 	TextBlockRender(textBlock)
 {
-#if RHI_COMPLETE
-	charDrawed = 0;
-	renderObject = new RenderDataObject();
-	
-	dfFont = (DFFont*)textBlock->font;
-	
-    shader = ShaderCache::Instance()->Get(FastName("~res:/Shaders/Default/df_font"), FastNameSet());
-    shader->Retain();
-#endif  // RHI_COMPLETE
+    dfFont = (DFFont*)textBlock->font;
+    cacheSpread = dfFont->GetSpread();
+    charDrawed = 0;
+
+    dfMaterial = new NMaterial();
+    dfMaterial->SetFXName(FastName("~res:/Materials/2d.DistanceFont.material"));
+    dfMaterial->SetMaterialName(FastName("DistanceFontMaterial"));
+    dfMaterial->AddProperty(FastName("smoothing"), &cacheSpread, rhi::ShaderProp::TYPE_FLOAT1);
+    dfMaterial->PreBuildMaterial(RenderSystem2D::RENDER_PASS_NAME);
 }
 	
 TextBlockDistanceRender::~TextBlockDistanceRender()
 {
-#if RHI_COMPLETE
-    shader->Release();
-    shader = NULL;
-
-	SafeRelease(renderObject);
-#endif RHI_COMPLETE
+    SafeRelease(dfMaterial);
 }
 	
 void TextBlockDistanceRender::Prepare(Texture *texture /*= NULL*/)
 {
-	charDrawed = 0;
-	renderRect = Rect(0, 0, 0, 0);
-    
     uint32 charCount = 0;
     if (!textBlock->isMultilineEnabled || textBlock->treatMultilineAsSingleLine)
     {
@@ -106,22 +94,21 @@ void TextBlockDistanceRender::Prepare(Texture *texture /*= NULL*/)
     if((uint32)vertexBuffer.size() != vertexCount)
         vertexBuffer.resize(vertexCount);
     
-	DrawText();
-    
-	if (charDrawed == 0)
-		return;
-#if RHI_COMPLETE	
-	renderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, sizeof(DFFont::DFFontVertex), &vertexBuffer[0].position);
-	renderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, sizeof(DFFont::DFFontVertex), &vertexBuffer[0].texCoord);
-	renderObject->BuildVertexBuffer(charDrawed * 4);
-#endif RHI_COMPLETE
+//     charDrawed = 0;
+//     renderRect = Rect(0, 0, 0, 0);
+//     DrawText();
+//     if (charDrawed == 0)
+//         return;
 }
 
 void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset)
 {
-	if (charDrawed == 0)
-		return;
-	
+    charDrawed = 0;
+    renderRect = Rect();
+    DrawText();
+    if (charDrawed == 0)
+        return;
+
 	int32 xOffset = 0;// (int32)(textBlock->position.x);
 	int32 yOffset = 0;// (int32)(textBlock->position.y);
 
@@ -150,13 +137,7 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 		yOffset += (int32)((textBlock->rectSize.dy - renderRect.dy) * 0.5f);
 	}
 
-    RenderSystem2D::Instance()->Flush();
-    
-    //TODO: temporary crutch until 2D render became fully stateless
-    const Matrix4 * oldMatrix = (Matrix4 *)Renderer::GetDynamicBindings().GetDynamicParam(DynamicBindings::PARAM_WORLD);
-    
-	//NOTE: correct affine transformations
-
+    //NOTE: correct affine transformations
     Matrix4 offsetMatrix;
 	offsetMatrix.glTranslate((float32)xOffset - textBlock->pivot.x, (float32)yOffset - textBlock->pivot.y, 0.f);
 
@@ -172,32 +153,27 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 	worldMatrix.glTranslate(textBlock->position.x, textBlock->position.y, 0.f);
 
 	offsetMatrix = (scaleMatrix*offsetMatrix*rotateMatrix)*worldMatrix;
-	//offsetMatrix = (scaleMatrix * rotateMatrix * offsetMatrix)*worldMatrix;
+	
+    for (auto& v : vertexBuffer)
+    {
+        v.position = v.position * offsetMatrix;
+    }
 
+    float32 spread = dfFont->GetSpread();
+    dfMaterial->SetPropertyValue(FastName("smoothing"), &spread);
 
-#if RHI_COMPLETE
-	Renderer::GetDynamicBindings().SetDynamicParam(PARAM_WORLD, &offsetMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
-
-	RenderManager::Instance()->SetRenderState(RenderSystem2D::DEFAULT_2D_COLOR_MATERIAL);
-    RenderManager::Instance()->SetTextureState(dfFont->GetTextureHandler());
-	RenderManager::Instance()->SetShader(shader);
-    RenderManager::Instance()->SetRenderData(renderObject);
-	RenderManager::Instance()->FlushState();
-	RenderManager::Instance()->AttachRenderData();
-    
-    int idx;
-    idx = shader->FindUniformIndexByName(textureUniform);
-    shader->SetUniformValueByIndex(idx, 0);
-    idx = shader->FindUniformIndexByName(smoothingUniform);
-    shader->SetUniformValueByIndex(idx, dfFont->GetSpread());
-    idx = shader->FindUniformIndexByName(colorUniform);
-    shader->SetUniformColor4ByIndex(idx, textColor);
-    
-	RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, charDrawed * 6, EIF_16, this->indexBuffer);
-    
-    Renderer::GetDynamicBindings().SetDynamicParam(PARAM_WORLD, oldMatrix, (pointer_size)oldMatrix);
-
-#endif RHI_COMPLETE
+    RenderSystem2D::BatchDescriptor batch;
+    batch.material = dfMaterial; // RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL;
+    batch.singleColor = textColor;
+    batch.vertexStride = 5;
+    batch.texCoordStride = 5;
+    batch.vertexPointer = vertexBuffer[0].position.data;
+    batch.texCoordPointer = vertexBuffer[0].texCoord.data;
+    batch.textureSetHandle = dfFont->GetTextureHandler();
+    batch.vertexCount = vertexBuffer.size();
+    batch.indexPointer = indexBuffer;
+    batch.indexCount = batch.vertexCount * 6 / 4;
+    RenderSystem2D::Instance()->PushBatch(batch);
 }
 	
 Font::StringMetrics TextBlockDistanceRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)

@@ -58,21 +58,16 @@ private:
 	Font::StringMetrics InternalDrawText(const WideString& drawText, int32 x, int32 y, int32 w, int32 lineSize);
 	
 private:
-#if RHI_COMPLETE
-	RenderDataObject* renderObject;
-#endif RHI_COMPLETE
 	DFFont* dfFont;
 
-    ShaderDescriptor* shader;
 	static uint16* indexBuffer;
     Vector<DFFont::DFFontVertex> vertexBuffer;
 	
 	uint32 charDrawed;
 	Rect renderRect;
-    
-    static FastName textureUniform;
-    static FastName smoothingUniform;
-    static FastName colorUniform;
+
+    NMaterial* dfMaterial;
+    float32 cacheSpread;
 };
 
 }; //end of namespace
