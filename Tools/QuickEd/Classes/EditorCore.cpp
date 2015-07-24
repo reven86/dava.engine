@@ -233,11 +233,6 @@ void EditorCore::UpdateLanguage()
     }
 }
 
-void EditorCore::OnConsoleItemClicked(const PointerSerializer &arg)
-{
-    documentGroup->GetActiveDocument()->SetSelectedItem(arg);
-}
-
 void EditorCore::OpenProject(const QString &path)
 {
     if (!CloseProject())

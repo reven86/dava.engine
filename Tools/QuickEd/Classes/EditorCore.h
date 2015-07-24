@@ -70,9 +70,7 @@ protected slots:
     void OnCurrentTabChanged(int index);
     
     void UpdateLanguage();
-
-    void OnConsoleItemClicked(const PointerSerializer &arg);
-    
+   
 protected:
     void OpenProject(const QString &path);
     bool CloseProject();

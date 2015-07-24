@@ -86,15 +86,6 @@ const DAVA::FilePath &Document::GetPackageFilePath() const
     return package->GetPath();
 }
 
-void Document::SetSelectedItem(const PointerSerializer &arg)
-{
-    if (arg.CanConvert<PackageNode*>())
-    {
-        auto controls = arg.GetPointers<ControlNode*>();
-        QList<ControlNode*> list = QList<ControlNode*>::fromVector(QVector<ControlNode*>::fromStdVector(controls));
-    }
-}
-
 void Document::RefreshAllControlProperties()
 {
     package->GetPackageControlsNode()->RefreshControlProperties();

@@ -42,6 +42,11 @@ PointerSerializer::PointerSerializer(PointerSerializer&& converter)
 
 }
 
+PointerSerializer::PointerSerializer(const DAVA::String &str)
+    : PointerSerializer(ParseString(str))
+{
+}
+
 PointerSerializer PointerSerializer::ParseString(const DAVA::String &str)
 {
     std::regex rgx(GetRegex());
