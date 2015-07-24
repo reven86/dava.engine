@@ -182,7 +182,7 @@ public:
         }
     };
     
-    const static PairTypeName variantNamesMap[];
+    const static Array<PairTypeName, TYPES_COUNT> variantNamesMap;
 	
 	// Functions
     

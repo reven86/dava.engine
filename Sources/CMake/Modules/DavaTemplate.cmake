@@ -40,7 +40,7 @@ macro( setup_main_executable )
 
 include      ( PlatformSettings )
 
-if( MSVC )
+if( WIN32 )
     add_definitions ( -D_CRT_SECURE_NO_DEPRECATE )
 endif()
 
@@ -142,11 +142,9 @@ elseif ( WINDOWS_UAP )
 			${WIN_UAP_MANIFESTS_DIR}/Package_vc${COMPILER_VERSION}.${PLATFORM}.appxmanifest.in
 			${CMAKE_CURRENT_BINARY_DIR}/${APP_MANIFEST_NAME}
 			@ONLY)
-			
-		configure_file(
-			${WIN_UAP_CONF_DIR}/TemporaryKey.pfx
-			${CMAKE_CURRENT_BINARY_DIR}/${APP_TEMPKEY_NAME}
-			@ONLY)
+
+        file ( COPY ${WIN_UAP_CONF_DIR}/TemporaryKey.pfx DESTINATION ${CMAKE_CURRENT_BINARY_DIR} )
+        file ( RENAME ${CMAKE_CURRENT_BINARY_DIR}/TemporaryKey.pfx ${CMAKE_CURRENT_BINARY_DIR}/${APP_TEMPKEY_NAME} )
 	endif()
 	
 	if (WINDOWS_PHONE8)
@@ -166,9 +164,9 @@ elseif ( WINDOWS_UAP )
 		)
 	endif()
 	
-    set(RESOURCE_FILES
-		${CONTENT_FILES} ${DEBUG_CONTENT_FILES} ${RELEASE_CONTENT_FILES} ${ASSET_FILES} ${STRING_FILES} )
-	list( APPEND RESOURCES_LIST ${RESOURCE_FILES} )
+    set(RESOURCE_FILES ${CONTENT_FILES} ${DEBUG_CONTENT_FILES} ${RELEASE_CONTENT_FILES} 
+        ${ASSET_FILES} ${STRING_FILES} ${CMAKE_CURRENT_BINARY_DIR}/${APP_TEMPKEY_NAME} )
+    list( APPEND RESOURCES_LIST ${RESOURCE_FILES} )
 	
 	#add dll's to project and package
 	file ( GLOB DAVA_DEBUG_DLL_LIST   "${DAVA_WIN_UAP_LIBRARIES_PATH_DEBUG}/*.dll" )
@@ -201,7 +199,7 @@ elseif ( WINDOWS_UAP )
 	add_content_win_uap ( "${UAP_DEPLOYMENT_CONTENT}" )
 	list( APPEND ADDED_SRC ${ADDED_CONTENT_SRC} )
 
-elseif( WIN32 AND MSVC )
+elseif( WIN32 )
     list( APPEND RESOURCES_LIST  ${WIN32_RESOURCES} )
 endif()
 
@@ -220,6 +218,10 @@ if( DAVA_FOUND )
         include_directories   ( ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid )
         list( APPEND PATTERNS_CPP    ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/*.cpp )
         list( APPEND PATTERNS_H      ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/*.h   )
+
+        list( APPEND PATTERNS_CPP    ${ANDROID_NDK}/sources/android/cpufeatures/*.c )
+        list( APPEND PATTERNS_H      ${ANDROID_NDK}/sources/android/cpufeatures/*.h )
+
     endif()
 
     if( QT_PREFIX )
@@ -238,7 +240,7 @@ if( DAVA_FOUND )
         include_directories( ${PLATFORM_INCLUDES_DIR} )
 
     else()
-        if( MSVC )
+        if( WIN32 )
             add_definitions        ( -D_UNICODE 
                                      -DUNICODE )
             list( APPEND ADDED_SRC  ${DAVA_PLATFORM_SRC}/TemplateWin32/CorePlatformWin32.cpp 
@@ -312,7 +314,7 @@ else()
 
 endif()
 
-if( NOT IGNORE_FILE_TREE_CHECK )
+if( TARGET_FILE_TREE_FOUND )
     add_dependencies(  ${PROJECT_NAME} FILE_TREE )
     
 endif()
@@ -463,7 +465,7 @@ elseif( MACOS )
 
     endif()
 
-elseif ( MSVC )       
+elseif ( WIN32 )       
     if( "${EXECUTABLE_FLAG}" STREQUAL "WIN32" )
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ENTRY: /NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" ) 
 

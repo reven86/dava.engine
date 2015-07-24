@@ -49,7 +49,8 @@ public:
 protected:
     void LoadResources() override;
     void UnloadResources() override;
-    
+    bool SystemInput(DAVA::UIEvent *currentInput) override;
+
 private:
     void OnExitButton(DAVA::BaseObject *obj, void *data, void *callerData);
     
