@@ -15,23 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QFormLayout" name="formLayout">
-     <property name="fieldGrowthPolicy">
-      <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-     </property>
-     <property name="labelAlignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-     </property>
-     <property name="formAlignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-     </property>
-     <item row="0" column="0">
-      <widget class="QLabel" name="searchLabel">
-       <property name="text">
-        <string>Search:</string>
-       </property>
-      </widget>
-     </item>
+    <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="1">
       <widget class="LineEditEx" name="search">
        <property name="sizePolicy">
@@ -45,14 +29,34 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
+     <item row="2" column="0">
       <widget class="QLabel" name="filterLabel">
        <property name="text">
         <string>Filter:</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="0" column="0">
+      <widget class="QLabel" name="searchLabel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Search:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QToolButton" name="toolButton_clearFilter">
+       <property name="text">
+        <string>...</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
       <widget class="CheckableComboBox" name="filter">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">

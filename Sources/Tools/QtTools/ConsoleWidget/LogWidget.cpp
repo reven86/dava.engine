@@ -16,6 +16,7 @@ LogWidget::LogWidget(QWidget* parent)
     , onBottom(true)
 {
     setupUi(this);
+    toolButton_clearFilter->setIcon(QIcon(":/QtTools/Icons/clear.png"));
     time.start();
 
     logModel = new LogModel(this);
@@ -26,7 +27,7 @@ LogWidget::LogWidget(QWidget* parent)
     log->installEventFilter(this);
 
     FillFiltersCombo();
-
+    connect(toolButton_clearFilter, &QToolButton::clicked, search, &LineEditEx::clear);
     connect(filter, &CheckableComboBox::selectedUserDataChanged, logFilterModel, &LogFilterModel::SetFilters);
     connect(search, &LineEditEx::textUpdated, this, &LogWidget::OnTextFilterChanged);
     connect(logFilterModel, &LogFilterModel::filterStringChanged, search, &LineEditEx::setText);

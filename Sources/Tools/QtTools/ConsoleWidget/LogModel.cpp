@@ -80,7 +80,7 @@ void LogModel::AddMessage(DAVA::Logger::eLogLevel ll, const QString& text)
             text,
             QString::fromStdString(func(text.toStdString()))));
     }
-    timer->start();
+    QMetaObject::invokeMethod(timer, "start", Qt::QueuedConnection);
 }
 
 void LogModel::OnTimeout()
