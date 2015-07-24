@@ -9,4 +9,4 @@ if exist %WORK_DIR_BUILD% rmdir /s /q %WORK_DIR_BUILD%
 mkdir %WORK_DIR_BUILD%
 cd %WORK_DIR_BUILD%
 cmake ../%WORK_DIR_REPO%
-cmake --build .
+cmake --build . --config release
