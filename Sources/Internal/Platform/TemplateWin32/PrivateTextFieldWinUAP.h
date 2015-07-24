@@ -128,10 +128,8 @@ private:
 
     WideString curText;
     bool ignoreTextChange = false;
-    bool backspacePressed = false;
-    int32 caretPosition = 0;
-    int32 selectionLength = 0;
-    int32 caretAtBackspace = 0;
+    int32 caretPosition = 0;                // Current caret position
+    int32 savedCaretPosition = 0;           // Saved caret position to restore it when delegate declines text changing
 };
 
 //////////////////////////////////////////////////////////////////////////

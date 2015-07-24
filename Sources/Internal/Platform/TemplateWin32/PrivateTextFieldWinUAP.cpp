@@ -526,14 +526,13 @@ void PrivateTextFieldWinUAP::PositionNative(const Rect& rect, bool offScreen)
 
 void PrivateTextFieldWinUAP::OnKeyDown(Platform::Object^ sender, Windows::UI::Xaml::Input::KeyRoutedEventArgs^ args)
 {
+    savedCaretPosition = nativeControl->SelectionStart;
+
     VirtualKey vk = args->Key;
     switch (vk)
     {
     case VirtualKey::Back:
-        // Save caret position when Backspace is pressed to restore it in OnTextChanged event
-        // if delegate cancels texts changes
-        backspacePressed = true;
-        caretAtBackspace = caretPosition;
+        savedCaretPosition += 1;
         break;
     case VirtualKey::Enter:
         if (!multiline)
@@ -564,7 +563,6 @@ void PrivateTextFieldWinUAP::OnKeyDown(Platform::Object^ sender, Windows::UI::Xa
 void PrivateTextFieldWinUAP::OnSelectionChanged(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ args)
 {
     caretPosition = nativeControl->SelectionStart;
-    selectionLength = nativeControl->SelectionLength;
 }
 
 void PrivateTextFieldWinUAP::OnTextChanged(Platform::Object^ sender, TextChangedEventArgs^ args)
@@ -598,13 +596,8 @@ void PrivateTextFieldWinUAP::OnTextChanged(Platform::Object^ sender, TextChanged
     if (decline)
     {
         nativeControl->Text = ref new Platform::String(curText.c_str());
-        if (backspacePressed)
-        {   // Restore caret position to position before backspace has been pressed
-            nativeControl->SelectionStart = caretAtBackspace;
-            backspacePressed = false;
-        }
-        else
-            nativeControl->SelectionStart = std::max(0, caretPosition - 1);
+        // Restore caret position to position before text has been changed
+        nativeControl->SelectionStart = savedCaretPosition;
         ignoreTextChange = true;
     }
     else
