@@ -39,6 +39,10 @@
 #include "Render/RenderBase.h"
 #include <sstream>
 
+#ifdef __DAVAENGINE_WIN_UAP__
+#   include <ppltasks.h>
+#endif
+
 namespace DAVA 
 {
 int read_handler(void *ext, unsigned char *buffer, size_t size, size_t *length);
@@ -107,6 +111,17 @@ inline String WStringToString(const WideString& s)
 	return temp; 
 }
 
+#if defined(__DAVAENGINE_WIN_UAP__)
+inline  Platform::String^ StringToRTString(const String & s)
+{
+    return ref new Platform::String(StringToWString(s).c_str());
+}
+
+inline String RTStringToString(Platform::String^ s)
+{
+    return WStringToString(s->Data());
+}
+#endif
     
 template<class T>
 bool FindAndRemoveExchangingWithLast(Vector<T> & array, const T & object)
@@ -166,6 +181,14 @@ uint64 EglGetCurrentContext();
 void OpenURL(const String& url);
 
 String GenerateGUID();
+
+#ifdef __DAVAENGINE_WIN_UAP__
+template <typename T>
+T WaitAsync(Windows::Foundation::IAsyncOperation<T>^ async_operation)
+{
+    return concurrency::create_task(async_operation).get();
+}
+#endif
 
 };
 

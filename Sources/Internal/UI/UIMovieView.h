@@ -26,55 +26,56 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
 #ifndef __DAVAENGINE_UIMOVIEVIEW__H__
 #define __DAVAENGINE_UIMOVIEVIEW__H__
 
 #include "Base/BaseTypes.h"
-#include "UI/UIControl.h"
-#include "IMovieViewControl.h"
 
-namespace DAVA {
+#include "UI/UIControl.h"
+#include "UI/IMovieViewControl.h"
+
+namespace DAVA
+{
 
 // The purpose of UIMovieView class is to display movies.
 class UIMovieView : public UIControl
 {
 protected:
-	virtual ~UIMovieView();
+    virtual ~UIMovieView();
+
 public:
-	UIMovieView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
+    UIMovieView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 
-	// Open the Movie.
-	void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params);
+    // Open the Movie.
+    void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params);
 
-	// Overloaded virtual methods.
-	virtual void SetPosition(const Vector2 &position);
-	virtual void SetSize(const Vector2 &newSize);
+    // Overloaded virtual methods.
+    void SetPosition(const Vector2 &position) override;
+    void SetSize(const Vector2 &newSize) override;
 
-	virtual void SystemDraw(const UIGeometricData &geometricData);
+    void SystemDraw(const UIGeometricData &geometricData) override;
 
-    virtual void WillBecomeVisible();
-    virtual void WillBecomeInvisible();
+    void WillBecomeVisible() override;
+    void WillBecomeInvisible() override;
 
-    virtual UIControl* Clone();
+    UIControl* Clone() override;
 
-	// Start/stop the video playback.
-	void Play();
-	void Stop();
+    // Start/stop the video playback.
+    void Play();
+    void Stop();
 
-	// Pause/resume the playback.
-	void Pause();
-	void Resume();
-	
-	// Whether the movie is being played?
-	bool IsPlaying();
+    // Pause/resume the playback.
+    void Pause();
+    void Resume();
+
+    // Whether the movie is being played?
+    bool IsPlaying();
 
 protected:
-	// Platform-specific implementation of the Movie Control.
-	IMovieViewControl* movieViewControl;
+    // Platform-specific implementation of the Movie Control.
+    IMovieViewControl* movieViewControl;
 };
 
-};
+}   // namespace DAVA
 
-
-#endif /* defined(__DAVAENGINE_UIMOVIEVIEW__H__) */
+#endif  // __DAVAENGINE_UIMOVIEVIEW__H__

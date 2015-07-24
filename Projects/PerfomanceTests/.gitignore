@@ -1,2 +1,4 @@
-__build
+_build
 ResourceEditor
+artifacts
+/Data/maps.yaml
