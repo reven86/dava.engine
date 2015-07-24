@@ -33,8 +33,14 @@
 
 #include <QComboBox>
 #include <QStandardItemModel>
-#include <QPointer>
-#include <QVariant>
+
+class ComboBoxModel : public QStandardItemModel
+{
+    Q_OBJECT
+public:
+    ComboBoxModel(QObject *parent = nullptr);
+    Qt::ItemFlags flags(const QModelIndex & index) const override;
+};
 
 
 class CheckableComboBox
@@ -49,22 +55,21 @@ public:
     explicit CheckableComboBox(QWidget* parent = nullptr);
     ~CheckableComboBox();
 
-    QStringList selectedItems() const;
-    QList<QVariant> selectedUserData() const;
-    void selectUserData(const QList<QVariant>& dataList);
-
-    QModelIndexList checkedIndexes() const;
-
+    QVariantList selectedUserData() const;
+    void selectUserData(const QVariantList &data);
+signals:
+    void selectedUserDataChanged(const QVariantList &data);
 private slots:
-    void onRowsInserted(const QModelIndex& parent, int start, int end);
+    void onDataChanged(const QModelIndex & topLeft, const QModelIndex & bottomRight, const QVector<int> &roles);
     void updateTextHints();
 
 private:
+    QModelIndexList checkedIndexes() const;
+
     bool eventFilter(QObject* obj, QEvent* e) override;
     void paintEvent(QPaintEvent* event) override;
 
     QString textHint;
 };
-
 
 #endif // CHECKABLECOMBOBOX_H
