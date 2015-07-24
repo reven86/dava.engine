@@ -101,8 +101,6 @@ SceneEditor2* SceneTreeModel::GetScene() const
 
 void SceneTreeModel::SetSolid(const QModelIndex &index, bool solid)
 {
-	TOOLS_IMM_TIME_PROFILE("---  SceneTreeModel::SetSolid");
-
 	DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(GetItem(index));
 
 	if(NULL != entity)
@@ -114,8 +112,6 @@ void SceneTreeModel::SetSolid(const QModelIndex &index, bool solid)
 
 bool SceneTreeModel::GetSolid(const QModelIndex &index) const
 {
-	TOOLS_IMM_TIME_PROFILE("---  SceneTreeModel::GetSolid");
-
 	bool ret = false;
 
 	DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(GetItem(index));
@@ -129,8 +125,6 @@ bool SceneTreeModel::GetSolid(const QModelIndex &index) const
 
 void SceneTreeModel::SetLocked(const QModelIndex &index, bool locked)
 {
-	TOOLS_IMM_TIME_PROFILE("---  SceneTreeModel::SetLocked");
-
 	DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(GetItem(index));
 
 	if(NULL != entity)
@@ -141,8 +135,6 @@ void SceneTreeModel::SetLocked(const QModelIndex &index, bool locked)
 
 bool SceneTreeModel::GetLocked(const QModelIndex &index) const
 {
-	TOOLS_IMM_TIME_PROFILE("---  SceneTreeModel::GetLocked");
-
 	bool ret = false;
 	
 	DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(GetItem(index));
@@ -651,8 +643,6 @@ void SceneTreeModel::ItemChanged(QStandardItem * item)
 
 void SceneTreeModel::ResyncStructure(QStandardItem *item, DAVA::Entity *entity)
 {
-	TOOLS_IMM_TIME_PROFILE("---  SceneTreeModel::ResyncStructure");
-
 	SceneTreeItemEntity::DoSync(item, entity);
 	RebuildIndexesCache();
 }

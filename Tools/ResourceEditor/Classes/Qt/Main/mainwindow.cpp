@@ -875,8 +875,6 @@ void QtMainWindow::SceneDeactivated(SceneEditor2 *scene)
 
 void QtMainWindow::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
-	TOOLS_IMM_TIME_PROFILE("QtMainWindow::SceneSelectionChanged");
-
     UpdateModificationActionsState();
 }
 

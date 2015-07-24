@@ -154,8 +154,6 @@ void RunActionEventWidget::sceneActivated(SceneEditor2 *_scene)
 
 void RunActionEventWidget::sceneSelectionChanged(SceneEditor2 *_scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
-	TOOLS_IMM_TIME_PROFILE("RunActionEventWidget::sceneSelectionChanged");
-
     Q_UNUSED(selected);
     Q_UNUSED(deselected);
 

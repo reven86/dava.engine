@@ -341,8 +341,6 @@ void MaterialTree::OnStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 
 void MaterialTree::OnSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
-	TOOLS_IMM_TIME_PROFILE("MaterialTree::OnSelectionChanged");
-
 	if(QtMainWindow::Instance()->GetCurrentScene() == scene)
 	{
 		treeModel->SetSelection(selected);

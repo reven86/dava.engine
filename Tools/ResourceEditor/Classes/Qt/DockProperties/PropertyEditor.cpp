@@ -738,8 +738,6 @@ void PropertyEditor::sceneDeactivated(SceneEditor2 *scene)
 
 void PropertyEditor::sceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
-	TOOLS_IMM_TIME_PROFILE("PropertyEditor::sceneSelectionChanged");
-
     SetEntities(selected);
 }
 

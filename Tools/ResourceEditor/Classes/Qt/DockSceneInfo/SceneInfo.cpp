@@ -685,8 +685,6 @@ void SceneInfo::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 
 void SceneInfo::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
-	TOOLS_IMM_TIME_PROFILE("SceneInfo::SceneSelectionChanged");
-
     ClearSelectionData();
         
     CollectSelectedRenderObjects(selected);

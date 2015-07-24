@@ -996,8 +996,6 @@ void TextureBrowser::sceneDeactivated(SceneEditor2 *scene)
 
 void TextureBrowser::sceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
-	TOOLS_IMM_TIME_PROFILE("TextureBrowser::sceneSelectionChanged");
-
 	if(!isHidden())
 	{
 		textureListModel->setHighlight(selected);

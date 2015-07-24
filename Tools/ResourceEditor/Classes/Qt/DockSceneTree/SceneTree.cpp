@@ -227,10 +227,6 @@ void SceneTree::SceneActivated(SceneEditor2 *scene)
 
 void SceneTree::SceneDeactivated(SceneEditor2 *scene)
 {
-	Logger::Warning("%s", __FUNCTION__);
-
-	TOOLS_IMM_TIME_PROFILE("SceneTree::SceneDeactivated");
-
 	if(treeModel->GetScene() == scene)
 	{
         selectionModel()->clear();
@@ -240,14 +236,13 @@ void SceneTree::SceneDeactivated(SceneEditor2 *scene)
 
 void SceneTree::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
-	Logger::Warning("%s", __FUNCTION__);
-	TOOLS_IMM_TIME_PROFILE("SceneTree::SceneSelectionChanged");
-
 	if(scene == treeModel->GetScene())
 	{
 		SyncSelectionToTree();
 	}
 }
+
+bool structureChanging = false;
 
 void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 {
@@ -257,12 +252,16 @@ void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 
 	if(scene == treeModel->GetScene())
 	{
+		structureChanging = true;
 		treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
+
         treeModel->ReloadFilter();
         filteringProxyModel->invalidate();
         SyncSelectionToTree();
 
-        if (treeModel->IsFilterSet())
+		structureChanging = false;
+		
+		if (treeModel->IsFilterSet())
         {
             ExpandFilteredItems();
         }
@@ -272,6 +271,8 @@ void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 void SceneTree::TreeSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
 {
 	Logger::Warning("%s", __FUNCTION__);
+
+	if (structureChanging) return;
 
 	TOOLS_IMM_TIME_PROFILE("SceneTree::TreeSelectionChanged");
 
@@ -293,8 +294,6 @@ void SceneTree::TreeItemClicked(const QModelIndex & index)
 
 void SceneTree::ParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLayer* layer)
 {
-	TOOLS_IMM_TIME_PROFILE("SceneTree::ParticleLayerValueChanged");
-
 	QModelIndexList indexList = selectionModel()->selection().indexes();
 	if (indexList.empty())
 	{
@@ -335,17 +334,11 @@ void SceneTree::ParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLay
 
 void SceneTree::TreeItemDoubleClicked(const QModelIndex & index)
 {
-	Logger::Warning("%s", __FUNCTION__);
-
-	TOOLS_IMM_TIME_PROFILE("SceneTree::TreeItemDoubleClicked");
-
     LookAtSelection();
 }
 
 void SceneTree::ShowContextMenu(const QPoint &pos)
 {
-	TOOLS_IMM_TIME_PROFILE("SceneTree::ShowContextMenu");
-
 	CleanupParticleEditorSelectedItems();
 	QModelIndex index = filteringProxyModel->mapToSource(indexAt(pos));
 	SceneTreeItem *item = treeModel->GetItem(index);
@@ -395,8 +388,6 @@ void SceneTree::ShowContextMenu(const QPoint &pos)
 
 void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlags, const QPoint &pos)
 {
-	TOOLS_IMM_TIME_PROFILE("SceneTree::ShowContextMenuEntity");
-
 	if(NULL != entity)
 	{
 		//Get selection size to show different menues
@@ -502,9 +493,6 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
 
 void SceneTree::ShowContextMenuLayer(DAVA::ParticleEmitter *emitter, DAVA::ParticleLayer *layer, const QPoint &pos)
 {
-	TOOLS_IMM_TIME_PROFILE("SceneTree::ShowContextMenuLayer");
-
-
 	selectedEmitter = emitter;
 	selectedLayer = layer;
 
@@ -524,8 +512,6 @@ void SceneTree::ShowContextMenuLayer(DAVA::ParticleEmitter *emitter, DAVA::Parti
 
 void SceneTree::ShowContextMenuForce(DAVA::ParticleLayer* layer, DAVA::ParticleForce *force, const QPoint &pos)
 {
-	TOOLS_IMM_TIME_PROFILE("SceneTree::ShowContextMenuForce");
-
 	this->selectedLayer = layer;
 	this->selectedForce = force;
 
@@ -536,8 +522,6 @@ void SceneTree::ShowContextMenuForce(DAVA::ParticleLayer* layer, DAVA::ParticleF
 
 void SceneTree::ShowContextMenuEmitter(DAVA::ParticleEffectComponent *effect, DAVA::ParticleEmitter *emitter, const QPoint &pos)
 {		
-	TOOLS_IMM_TIME_PROFILE("SceneTree::ShowContextMenuEmitter");
-
 	selectedEffect = effect;
 	selectedEmitter = emitter;
 	
@@ -555,8 +539,6 @@ void SceneTree::ShowContextMenuEmitter(DAVA::ParticleEffectComponent *effect, DA
 
 void SceneTree::ShowContextMenuInnerEmitter(DAVA::ParticleEffectComponent *effect, DAVA::ParticleEmitter *emitter, DAVA::ParticleLayer *parentLayer, const QPoint &pos)
 {
-	TOOLS_IMM_TIME_PROFILE("SceneTree::ShowContextMenuInnerEmitter");
-
 	selectedEffect = effect;
 	selectedEmitter = emitter;
 	selectedLayer = parentLayer;
@@ -571,8 +553,6 @@ void SceneTree::ShowContextMenuInnerEmitter(DAVA::ParticleEffectComponent *effec
 
 void SceneTree::LookAtSelection()
 {
-	TOOLS_IMM_TIME_PROFILE("SceneTree::LookAtSelection");
-
 	SceneEditor2* sceneEditor = treeModel->GetScene();
 	if(NULL != sceneEditor)
 	{
@@ -609,8 +589,6 @@ void SceneTree::RemoveSelection()
 
 void SceneTree::CollapseSwitch()
 {
-	TOOLS_IMM_TIME_PROFILE("SceneTree::CollapseSwitch");
-
 	QModelIndexList indexList = selectionModel()->selection().indexes();
 	for (int i = 0; i < indexList.size(); ++i)
 	{
@@ -629,8 +607,6 @@ void SceneTree::CollapseSwitch()
 
 void SceneTree::EditModel()
 {
-	TOOLS_IMM_TIME_PROFILE("SceneTree::EditModel");
-
 	SceneEditor2 *sceneEditor = treeModel->GetScene();
 	if(NULL != sceneEditor)
 	{
@@ -765,8 +741,6 @@ void SceneTree::SaveEntityAs()
 
 void SceneTree::CollapseAll()
 {
-	TOOLS_IMM_TIME_PROFILE("SceneTree::CollapseAll");
-
 	QTreeView::collapseAll();
 	bool needSync = false;
 	QModelIndexList indexList = selectionModel()->selection().indexes();
@@ -789,7 +763,6 @@ void SceneTree::CollapseAll()
 void SceneTree::TreeItemCollapsed(const QModelIndex &index)
 {
 	TOOLS_IMM_TIME_PROFILE("SceneTree::TreeItemCollapsed");
-
 
 	treeModel->SetSolid(filteringProxyModel->mapToSource(index), true);
 

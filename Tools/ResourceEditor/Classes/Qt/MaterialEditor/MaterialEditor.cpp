@@ -218,8 +218,6 @@ void MaterialEditor::setTemplatePlaceholder( const QString& text )
 
 void MaterialEditor::autoExpand()
 {
-	TOOLS_IMM_TIME_PROFILE("MaterialEditor::autoExpand");
-
     QAction *action = ui->filterType->checkedAction();
     if ( action == NULL )
         return ;

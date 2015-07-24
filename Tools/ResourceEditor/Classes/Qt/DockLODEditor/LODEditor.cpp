@@ -496,8 +496,6 @@ void LODEditor::DeleteLastLOD()
 
 void LODEditor::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
-	TOOLS_IMM_TIME_PROFILE("LODEditor::SceneSelectionChanged");
-
     DVASSERT(scene);
     DVASSERT(selected);
     DVASSERT(deselected);

@@ -131,7 +131,6 @@ void SceneSelectionSystem::ForceEmitSignals()
 {
 	if (selectionHasChanges)
 	{
-		TOOLS_IMM_TIME_PROFILE("SceneSelectionSystem::ForceEmitSignals");
 		// emit signals
 		SceneSignals::Instance()->EmitSelectionChanged((SceneEditor2 *) GetScene(), &curSelections, &curDeselections);
 
@@ -285,8 +284,6 @@ void SceneSelectionSystem::ProcessCommand(const Command2 *command, bool redo)
 
 void SceneSelectionSystem::SetSelection(const EntityGroup &newSelection)
 {
-	TOOLS_IMM_TIME_PROFILE("SceneSelectionSystem::SetSelection");
-
 	if (!IsLocked())
 	{
 		Clear();

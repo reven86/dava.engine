@@ -550,8 +550,6 @@ void ModificationWidget::OnSceneDeactivated(SceneEditor2 *scene)
 
 void ModificationWidget::OnSceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
-	TOOLS_IMM_TIME_PROFILE("ModificationWidget::OnSceneSelectionChanged");
-
 	if(curScene == scene)
 	{
 		ReloadValues();
