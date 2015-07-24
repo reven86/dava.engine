@@ -46,7 +46,7 @@ public:
 protected:
 
     virtual ~TestFlowController() {};
-
+    
     Vector<BaseTest*> testChain;
 };
 

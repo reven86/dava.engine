@@ -69,6 +69,7 @@ public:
 private:
     void InitScreenController();
 	void RegisterTests();
+    void LoadMaps(const String& testName, Vector<std::pair<String, String>>& maps);
     
     String GetDeviceName();
 
