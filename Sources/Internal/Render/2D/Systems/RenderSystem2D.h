@@ -44,27 +44,6 @@ class Font;
 class Sprite;
 class TextBlock;
 class UIGeometricData;
-class VboPool;
-
-struct RenderBatch2D
-{
-    explicit RenderBatch2D() { Reset(); }
-    inline void Reset()
-    {
-        primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
-        clipRect = Rect(0, 0, -1, -1);
-        count = 0;
-        indexOffset = 0;
-        material = nullptr;
-    }
-
-    rhi::PrimitiveType primitiveType;
-    rhi::HTextureSet textureSetHandle;
-    NMaterial * material;
-    Rect clipRect;
-    uint32 count;
-    uint32 indexOffset;
-};
 
 struct TiledDrawData
 {
@@ -108,17 +87,19 @@ class RenderSystem2D : public Singleton<RenderSystem2D>
 public:
     struct BatchDescriptor 
     {
-        BatchDescriptor();
-
-        Color singleColor; 
-        uint32 vertexCount;
-        uint32 indexCount;
-        const float32* vertexPointer;
-        const float32* texCoordPointer;
-        const uint16* indexPointer;
-        NMaterial * material;
+        Color singleColor = Color::White; 
+        uint32 vertexCount = 0;
+        uint32 indexCount = 0;
+        const float32* vertexPointer = nullptr;
+        uint32 vertexStride = 0;
+        const float32* texCoordPointer = nullptr;
+        uint32 texCoordStride = 0;
+        const uint32* colorPointer = nullptr;
+        uint32 colorStride = 0;
+        const uint16* indexPointer = nullptr;
+        NMaterial * material = nullptr;
         rhi::HTextureSet textureSetHandle;
-        rhi::PrimitiveType primitiveType;
+        rhi::PrimitiveType primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
     };
 
     enum ColorOperations
@@ -292,17 +273,22 @@ private:
 
     Sprite::DrawState defaultSpriteDrawState;
 
-    Vector<float32> vboTemp;
-    Vector<uint16> iboTemp;
-
     bool spriteClipping;
+
+    struct BatchVertex
+    {
+        Vector3 pos;
+        Vector2 uv;
+        uint32 color;
+    };
     
-    Vector<RenderBatch2D> batches;
-    RenderBatch2D currentBatch;
+    BatchVertex * currentVertexBuffer;
+    uint16 * currentIndexBuffer;
+    uint32 lastIndexBase;
+    rhi::Packet currentPacket;
     uint32 vertexIndex;
     uint32 indexIndex;
-
-    VboPool* pool;
+    NMaterial * currentMaterial;
 
     // Batching errors handling
     uint32 prevFrameErrorsFlags;
@@ -321,6 +307,7 @@ private:
 
     int32 renderTargetWidth;
     int32 renderTargetHeight;
+    
 };
 
 inline void RenderSystem2D::SetHightlightControlsVerticesLimit(uint32 verticesCount)
