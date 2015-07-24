@@ -36,7 +36,7 @@ QVariant ListModel::data(const QModelIndex &index, int role) const
     auto type = items.at(index.row()).type;
     switch (type)
     {
-    case LIST_ITEM_SEPARATOR:
+    case LIST_ITEM_SEPARATOR: // for separator we display only custom data
         switch (role)
         {
         case Qt::BackgroundColorRole:
@@ -50,38 +50,24 @@ QVariant ListModel::data(const QModelIndex &index, int role) const
     default:
         switch (role)
         {
+        case Qt::DisplayRole:
+            return items.at(index.row()).text;
+        case DAVA_WIDGET_ROLE:
+            return items.at(index.row()).dataText;
+        case Qt::SizeHintRole:
+            return QSize(-1, 34);
         case Qt::FontRole:
-            switch (type)
-            {
-            case LIST_ITEM_FAVORITES:
+            if (type == LIST_ITEM_FAVORITES)
                 return fontFavorites;
-            default:
-                return QVariant();
-            }
             break;
         case Qt::TextColorRole:
-            switch (type)
-            {
-            case LIST_ITEM_BRANCH:
+            if (type == LIST_ITEM_BRANCH)
                 return QColor(100, 100, 100);
-            default:
-                return QVariant();
-            }
             break;
+        default:
+            return QVariant();
         }
     }
-    switch(role)
-    {
-    case Qt::DisplayRole:
-        return items.at(index.row()).text;
-    case DAVA_WIDGET_ROLE:
-        return items.at(index.row()).dataText;
-    case Qt::SizeHintRole:
-        return QSize(-1, 34);
-    default:
-        return QVariant();
-    }
-
 }
 
 int ListModel::rowCount(const QModelIndex &parent) const
