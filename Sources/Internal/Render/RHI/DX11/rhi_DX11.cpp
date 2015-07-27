@@ -139,6 +139,7 @@ _InitDX11()
     HRESULT                 hr;
     DWORD                   flags           = 0;
     D3D_FEATURE_LEVEL       feature[]       = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_9_1 };
+//    D3D_FEATURE_LEVEL       feature[]       = { D3D_FEATURE_LEVEL_9_1 };
     DXGI_SWAP_CHAIN_DESC    swapchain_desc  = {0};
 
     #if 1
@@ -190,7 +191,7 @@ _InitDX11()
         ds_desc.Height              = _DX11_InitParam.height;
         ds_desc.MipLevels           = 1;
         ds_desc.ArraySize           = 1;
-        ds_desc.Format              = DXGI_FORMAT_D32_FLOAT;
+        ds_desc.Format              = (_D3D11_FeatureLevel==D3D_FEATURE_LEVEL_11_0) ? DXGI_FORMAT_D32_FLOAT : DXGI_FORMAT_D24_UNORM_S8_UINT;
         ds_desc.SampleDesc.Count    = 1;
         ds_desc.SampleDesc.Quality  = 0;
         ds_desc.Usage               = D3D11_USAGE_DEFAULT;
@@ -217,8 +218,8 @@ dx11_Initialize( const InitParam& param )
     IndexBufferDX11::SetupDispatch( &DispatchDX11 );
 //    QueryBufferDX11::SetupDispatch( &DispatchDX11 );
 //    TextureDX11::SetupDispatch( &DispatchDX11 );
-//    PipelineStateDX11::SetupDispatch( &DispatchDX11 );
-//    ConstBufferDX11::SetupDispatch( &DispatchDX11 );
+    PipelineStateDX11::SetupDispatch( &DispatchDX11 );
+    ConstBufferDX11::SetupDispatch( &DispatchDX11 );
 //    DepthStencilStateDX11::SetupDispatch( &DispatchDX11 );
 //    SamplerStateDX11::SetupDispatch( &DispatchDX11 );
     RenderPassDX11::SetupDispatch( &DispatchDX11 );

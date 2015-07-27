@@ -72,10 +72,7 @@ void        SetToRHI( Handle ps, uint32 layoutUID );
 namespace ConstBufferDX11
 {
 void        SetupDispatch( Dispatch* dispatch );
-void        InitializeRingBuffer( uint32 size );
-const void* InstData( Handle cb );
-void        SetToRHI( Handle cb, const void* instData );
-void        InvalidateAllConstBufferInstances();
+void        SetToRHI( Handle cb );
 }
 
 namespace TextureDX11
