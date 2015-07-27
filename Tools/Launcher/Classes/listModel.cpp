@@ -43,6 +43,8 @@ QVariant ListModel::data(const QModelIndex &index, int role) const
             return QBrush(QColor(180, 180, 180), Qt::HorPattern);
         case Qt::SizeHintRole:
             return QSize(0, 7);
+        default:
+            return QVariant();
         }
         break;
     default:
@@ -56,12 +58,18 @@ QVariant ListModel::data(const QModelIndex &index, int role) const
             return QSize(-1, 34);
         case Qt::FontRole:
             if (type == LIST_ITEM_FAVORITES)
+            {
                 return fontFavorites;
-            break;
+            }
+            return QVariant();
         case Qt::TextColorRole:
             if (type == LIST_ITEM_BRANCH)
+            {
                 return QColor(100, 100, 100);
-            break;
+            }
+            return QVariant();
+        default:
+            return QVariant();
         }
     }
     return QVariant();
