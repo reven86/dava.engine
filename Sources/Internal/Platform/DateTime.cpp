@@ -196,7 +196,8 @@ bool DateTime::ParseISO8601Date(const DAVA::String& src)
 	tm parseTime = {0};
     /// parsing date part
     {
-        const DAVA::String yr = src.substr(0, 4);
+        const size_t substringYearLength = 4;
+        const DAVA::String yr = src.substr(0, substringYearLength);
         if (!IsNumber(yr.c_str()))
         {
             return false;
@@ -605,7 +606,8 @@ Timestamp DateTime::InternalTimeGm(tm *t) const
 
 bool DateTime::IsNumber(const char * s) const
 {
-    for(size_t i = 0; i < strlen(s); ++i)
+    size_t len = strlen(s);
+    for(size_t i = 0; i < len; ++i)
     {
         if (s[i] >= '0' && s[i] <= '9')
         {

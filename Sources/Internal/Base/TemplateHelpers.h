@@ -245,7 +245,7 @@ C DynamicTypeCheck(O* pObject)
     if (!c)
     {//assert emulation )
         int *i = 0;
-        *(i) = 0;
+        *(i) = 0; //-V522 // PVS warning disable: wanted behavior
     }
     return c;
 #else
