@@ -29,12 +29,24 @@
 
 #include "IntrospectionProperty.h"
 
+#include "LocalizedTextValueProperty.h"
+#include "FontValueProperty.h"
+
 #include "PropertyVisitor.h"
 #include "SubValueProperty.h"
 #include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 #include <Base/BaseMath.h>
+#include <UI/UIControl.h>
 
 using namespace DAVA;
+
+namespace
+{
+    const FastName PROPERTY_NAME_SIZE("size");
+    const FastName PROPERTY_NAME_POSITION("position");
+    const FastName PROPERTY_NAME_TEXT("text");
+    const FastName PROPERTY_NAME_FONT("font");
+}
 
 IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const DAVA::InspMember *aMember, const IntrospectionProperty *sourceProperty, eCloneType copyType)
     : ValueProperty(aMember->Desc().text)
@@ -105,11 +117,40 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject *anObject, const D
     {
         child->SetParent(this);
     }
+    
+    if (sourceProperty)
+        sourceValue = sourceProperty->sourceValue;
+    else
+        sourceValue = member->Value(object);
 }
 
 IntrospectionProperty::~IntrospectionProperty()
 {
     SafeRelease(object);
+}
+
+IntrospectionProperty *IntrospectionProperty::Create(UIControl *control, const InspMember *member, const IntrospectionProperty *sourceProperty, eCloneType cloneType)
+{
+    if (member->Name() == PROPERTY_NAME_TEXT)
+    {
+        return new LocalizedTextValueProperty(control, member, sourceProperty, cloneType);
+    }
+    else if (member->Name() == PROPERTY_NAME_FONT)
+    {
+        return new FontValueProperty(control, member, sourceProperty, cloneType);
+    }
+    else
+    {
+        // member->Name() == PROPERTY_NAME_SIZE || member->Name() == PROPERTY_NAME_POSITION
+        return new IntrospectionProperty(control, member, sourceProperty, cloneType);
+    }
+
+}
+
+void IntrospectionProperty::Refresh(DAVA::int32 refreshFlags)
+{
+    if (refreshFlags & REFRESH_DEPENDED_ON_LAYOUT_PROPERTIES)
+        ApplyValue(sourceValue);
 }
 
 void IntrospectionProperty::Accept(PropertyVisitor *visitor)
@@ -166,5 +207,7 @@ void IntrospectionProperty::DisableResetFeature()
 
 void IntrospectionProperty::ApplyValue(const DAVA::VariantType &value)
 {
+    sourceValue = value;
     member->SetValue(object, value);
+
 }

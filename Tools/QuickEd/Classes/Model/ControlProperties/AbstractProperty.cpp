@@ -60,7 +60,7 @@ int AbstractProperty::GetIndex(AbstractProperty *property) const
     return -1;
 }
 
-void AbstractProperty::Refresh()
+void AbstractProperty::Refresh(DAVA::int32 refreshFlags)
 {
 }
 

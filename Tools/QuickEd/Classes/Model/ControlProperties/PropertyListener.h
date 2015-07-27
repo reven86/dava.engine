@@ -32,10 +32,11 @@
 
 class AbstractProperty;
 class RootProperty;
-class SectionProperty;
 class ComponentPropertiesSection;
 class StyleSheetProperty;
+class StyleSheetPropertiesSection;
 class StyleSheetSelectorProperty;
+class StyleSheetSelectorsSection;
 
 class PropertyListener
 {
@@ -48,17 +49,17 @@ public:
     virtual void ComponentPropertiesWillBeRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) = 0;
     virtual void ComponentPropertiesWasRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) = 0;
     
-    virtual void StylePropertyWillBeAdded(SectionProperty *section, StyleSheetProperty *property, int index) = 0;
-    virtual void StylePropertyWasAdded(SectionProperty *section, StyleSheetProperty *property, int index) = 0;
+    virtual void StylePropertyWillBeAdded(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) = 0;
+    virtual void StylePropertyWasAdded(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) = 0;
 
-    virtual void StylePropertyWillBeRemoved(SectionProperty *section, StyleSheetProperty *property, int index) = 0;
-    virtual void StylePropertyWasRemoved(SectionProperty *section, StyleSheetProperty *property, int index) = 0;
+    virtual void StylePropertyWillBeRemoved(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) = 0;
+    virtual void StylePropertyWasRemoved(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) = 0;
 
-    virtual void StyleSelectorWillBeAdded(SectionProperty *section, StyleSheetSelectorProperty *property, int index) = 0;
-    virtual void StyleSelectorWasAdded(SectionProperty *section, StyleSheetSelectorProperty *property, int index) = 0;
+    virtual void StyleSelectorWillBeAdded(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index) = 0;
+    virtual void StyleSelectorWasAdded(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index) = 0;
     
-    virtual void StyleSelectorWillBeRemoved(SectionProperty *section, StyleSheetSelectorProperty *property, int index) = 0;
-    virtual void StyleSelectorWasRemoved(SectionProperty *section, StyleSheetSelectorProperty *property, int index) = 0;
+    virtual void StyleSelectorWillBeRemoved(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index) = 0;
+    virtual void StyleSelectorWasRemoved(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index) = 0;
 
 
 };

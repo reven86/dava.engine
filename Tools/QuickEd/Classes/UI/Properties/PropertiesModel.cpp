@@ -325,47 +325,47 @@ void PropertiesModel::ComponentPropertiesWasRemoved(RootProperty *root, Componen
     endRemoveRows();
 }
 
-void PropertiesModel::StylePropertyWillBeAdded(SectionProperty *section, StyleSheetProperty *property, int index)
+void PropertiesModel::StylePropertyWillBeAdded(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index)
 {
     QModelIndex parentIndex = indexByProperty(section, 0);
     beginInsertRows(parentIndex, index, index);
 }
 
-void PropertiesModel::StylePropertyWasAdded(SectionProperty *section, StyleSheetProperty *property, int index)
+void PropertiesModel::StylePropertyWasAdded(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index)
 {
     endInsertRows();
 }
 
-void PropertiesModel::StylePropertyWillBeRemoved(SectionProperty *section, StyleSheetProperty *property, int index)
+void PropertiesModel::StylePropertyWillBeRemoved(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index)
 {
     QModelIndex parentIndex = indexByProperty(section, 0);
     beginRemoveRows(parentIndex, index, index);
 }
 
-void PropertiesModel::StylePropertyWasRemoved(SectionProperty *section, StyleSheetProperty *property, int index)
+void PropertiesModel::StylePropertyWasRemoved(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index)
 {
     endRemoveRows();
 }
 
-void PropertiesModel::StyleSelectorWillBeAdded(SectionProperty *section, StyleSheetSelectorProperty *property, int index)
+void PropertiesModel::StyleSelectorWillBeAdded(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index)
 {
     QModelIndex parentIndex = indexByProperty(section, 0);
     beginInsertRows(parentIndex, index, index);
 
 }
 
-void PropertiesModel::StyleSelectorWasAdded(SectionProperty *section, StyleSheetSelectorProperty *property, int index)
+void PropertiesModel::StyleSelectorWasAdded(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index)
 {
     endInsertRows();
 }
 
-void PropertiesModel::StyleSelectorWillBeRemoved(SectionProperty *section, StyleSheetSelectorProperty *property, int index)
+void PropertiesModel::StyleSelectorWillBeRemoved(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index)
 {
     QModelIndex parentIndex = indexByProperty(section, 0);
     beginRemoveRows(parentIndex, index, index);
 }
 
-void PropertiesModel::StyleSelectorWasRemoved(SectionProperty *section, StyleSheetSelectorProperty *property, int index)
+void PropertiesModel::StyleSelectorWasRemoved(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index)
 {
     endRemoveRows();
 }

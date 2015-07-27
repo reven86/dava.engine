@@ -32,6 +32,11 @@
 
 #include "ValueProperty.h"
 
+namespace DAVA
+{
+    class UIControl;
+}
+
 class SubValueProperty;
 
 class IntrospectionProperty : public ValueProperty
@@ -43,6 +48,9 @@ protected:
     virtual ~IntrospectionProperty();
     
 public:
+    static IntrospectionProperty *Create(DAVA::UIControl *control, const DAVA::InspMember *member, const IntrospectionProperty *sourceProperty, eCloneType cloneType);
+    
+    void Refresh(DAVA::int32 refreshFlags) override;
     void Accept(PropertyVisitor *visitor) override;
 
     ePropertyType GetType() const override;
@@ -73,6 +81,9 @@ protected:
     DAVA::BaseObject *object;
     const DAVA::InspMember *member;
     bool canReset;
+    
+private:
+    DAVA::VariantType sourceValue;
 };
 
 #endif //__UI_EDITOR_INTROSPECTION_PROPERTY__

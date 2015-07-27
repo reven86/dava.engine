@@ -43,7 +43,7 @@ protected:
     virtual ~NameProperty();
     
 public:
-    void Refresh() override;
+    void Refresh(DAVA::int32 refreshFlags) override;
     void Accept(PropertyVisitor *visitor) override;
     
     bool IsReadOnly() const override;

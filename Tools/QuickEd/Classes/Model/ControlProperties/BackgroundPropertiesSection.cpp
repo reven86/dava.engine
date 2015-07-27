@@ -57,8 +57,8 @@ BackgroundPropertiesSection::BackgroundPropertiesSection(UIControl *aControl, in
         {
             const InspMember *member = insp->Member(j);
             
-            ValueProperty *sourceProp = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
-            ValueProperty *prop = new IntrospectionProperty(bg, member, dynamic_cast<IntrospectionProperty*>(sourceProp), cloneType);
+            IntrospectionProperty *sourceProp = sourceSection == NULL ? NULL : sourceSection->FindProperty(member);
+            IntrospectionProperty *prop = new IntrospectionProperty(bg, member, dynamic_cast<IntrospectionProperty*>(sourceProp), cloneType);
             AddProperty(prop);
             SafeRelease(prop);
         }

@@ -363,8 +363,7 @@ RefPtr<PackageNode> EditorUIPackageBuilder::BuildPackage() const
         }
     }
     
-    package->RebuildStyleSheets();
-    package->RefreshLayout();
+    package->RefreshPackageStylesAndLayout();
     
     DVASSERT(declinedPackages.empty());
     

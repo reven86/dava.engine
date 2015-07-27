@@ -62,13 +62,13 @@ AbstractProperty *ValueProperty::GetProperty(int index) const
     return children[index];
 }
 
-void ValueProperty::Refresh()
+void ValueProperty::Refresh(DAVA::int32 refreshFlags)
 {
     if (prototypeProperty)
         SetDefaultValue(prototypeProperty->GetValue());
 
     for (SubValueProperty *prop : children)
-        prop->Refresh();
+        prop->Refresh(refreshFlags);
 }
 
 void ValueProperty::AttachPrototypeProperty(const ValueProperty *property)

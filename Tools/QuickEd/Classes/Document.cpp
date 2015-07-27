@@ -90,11 +90,10 @@ void Document::RefreshLayout()
 {
     for (int32 i = 0; i < package->GetImportedPackagesNode()->GetCount(); i++)
     {
-        package->GetImportedPackagesNode()->GetImportedPackage(i)->RefreshLayout();
+        package->GetImportedPackagesNode()->GetImportedPackage(i)->RefreshPackageStylesAndLayout();
     }
-    
 
-    package->RefreshLayout();
+    package->RefreshPackageStylesAndLayout();
 }
 
 void Document::RefreshAllControlProperties()

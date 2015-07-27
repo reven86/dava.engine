@@ -49,12 +49,20 @@ public:
     enum eEditFrags
     {
         EF_CAN_RESET = 0x01,
-        EF_ADD_REMOVE = 0x02,
-        EF_INHERITED = 0x04,
-        EF_CAN_REMOVE = 0x08,
-        EF_CAN_CREATE = 0x10,
+        EF_INHERITED = 0x02,
+        EF_CAN_REMOVE = 0x04,
+        EF_AFFECTS_STYLES = 0x08,
+        EF_DEPENDS_ON_LAYOUTS = 0x10,
     };
     
+    enum eRefreshFlags
+    {
+        REFRESH_LOCALIZATION = 0x01,
+        REFRESH_FONT = 0x02,
+        REFRESH_DEPENDED_ON_LAYOUT_PROPERTIES = 0x04,
+        REFRESH_ALL = 0x08
+    };
+
     enum eCloneType
     {
         CT_INHERIT,
@@ -74,7 +82,7 @@ public:
     virtual AbstractProperty *GetProperty(int index) const = 0;
     virtual int GetIndex(AbstractProperty *property) const;
 
-    virtual void Refresh();
+    virtual void Refresh(DAVA::int32 refreshFlags);
     virtual AbstractProperty *FindPropertyByPrototype(AbstractProperty *prototype);
     virtual bool HasChanges() const;
     virtual void Accept(PropertyVisitor *visitor) = 0;

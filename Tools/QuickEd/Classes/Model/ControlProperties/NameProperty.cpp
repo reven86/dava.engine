@@ -56,9 +56,9 @@ NameProperty::~NameProperty()
     control = nullptr; // weak ptr
 }
 
-void NameProperty::Refresh()
+void NameProperty::Refresh(DAVA::int32 refreshFlags)
 {
-    ValueProperty::Refresh();
+    ValueProperty::Refresh(refreshFlags);
     
     if (GetPrototypeProperty())
         ApplyValue(defaultValue);

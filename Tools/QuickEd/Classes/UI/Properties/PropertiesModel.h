@@ -80,17 +80,17 @@ private: // PropertyListener
     void ComponentPropertiesWillBeRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) override;
     void ComponentPropertiesWasRemoved(RootProperty *root, ComponentPropertiesSection *section, int index) override;
 
-    void StylePropertyWillBeAdded(SectionProperty *section, StyleSheetProperty *property, int index) override;
-    void StylePropertyWasAdded(SectionProperty *section, StyleSheetProperty *property, int index) override;
+    void StylePropertyWillBeAdded(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) override;
+    void StylePropertyWasAdded(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) override;
     
-    void StylePropertyWillBeRemoved(SectionProperty *section, StyleSheetProperty *property, int index) override;
-    void StylePropertyWasRemoved(SectionProperty *section, StyleSheetProperty *property, int index) override;
+    void StylePropertyWillBeRemoved(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) override;
+    void StylePropertyWasRemoved(StyleSheetPropertiesSection *section, StyleSheetProperty *property, int index) override;
 
-    void StyleSelectorWillBeAdded(SectionProperty *section, StyleSheetSelectorProperty *property, int index) override;
-    void StyleSelectorWasAdded(SectionProperty *section, StyleSheetSelectorProperty *property, int index) override;
+    void StyleSelectorWillBeAdded(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index) override;
+    void StyleSelectorWasAdded(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index) override;
     
-    void StyleSelectorWillBeRemoved(SectionProperty *section, StyleSheetSelectorProperty *property, int index) override;
-    void StyleSelectorWasRemoved(SectionProperty *section, StyleSheetSelectorProperty *property, int index) override;
+    void StyleSelectorWillBeRemoved(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index) override;
+    void StyleSelectorWasRemoved(StyleSheetSelectorsSection *section, StyleSheetSelectorProperty *property, int index) override;
 
 private:
     void ChangeProperty(AbstractProperty *property, const DAVA::VariantType &value);

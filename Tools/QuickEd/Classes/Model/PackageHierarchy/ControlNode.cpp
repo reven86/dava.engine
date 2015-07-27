@@ -270,7 +270,7 @@ bool ControlNode::CanCopy() const
 
 void ControlNode::RefreshProperties()
 {
-    rootProperty->Refresh();
+    rootProperty->Refresh(AbstractProperty::REFRESH_FONT | AbstractProperty::REFRESH_LOCALIZATION);
     for (ControlNode *node : nodes)
         node->RefreshProperties();
 }

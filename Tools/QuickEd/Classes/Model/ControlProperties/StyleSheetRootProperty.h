@@ -30,14 +30,15 @@
 #ifndef __QUICKED_STYLE_SHEETS_ROOT_PROPERTY_H__
 #define __QUICKED_STYLE_SHEETS_ROOT_PROPERTY_H__
 
-#include "Model/ControlProperties/AbstractProperty.h"
+#include "AbstractProperty.h"
+#include "SectionProperty.h"
+#include "StyleSheetProperty.h"
+#include "StyleSheetSelectorProperty.h"
+
 #include "UI/Styles/UIStyleSheetSelectorChain.h"
 
 class PropertyListener;
 class ValueProperty;
-class SectionProperty;
-class StyleSheetProperty;
-class StyleSheetSelectorProperty;
 
 class StyleSheetNode;
 
@@ -47,6 +48,18 @@ namespace DAVA
     class UIStyleSheetPropertyTable;
     class UIStyleSheet;
 }
+
+class StyleSheetPropertiesSection : public SectionProperty<StyleSheetProperty>
+{
+public:
+    StyleSheetPropertiesSection(const DAVA::String &name) : SectionProperty<StyleSheetProperty>(name) { }
+};
+
+class StyleSheetSelectorsSection : public SectionProperty<StyleSheetSelectorProperty>
+{
+public:
+    StyleSheetSelectorsSection(const DAVA::String &name) : SectionProperty<StyleSheetSelectorProperty>(name) { }
+};
 
 class StyleSheetRootProperty : public AbstractProperty
 {
@@ -78,8 +91,8 @@ public:
     void InsertSelector(StyleSheetSelectorProperty *property, int index);
     void RemoveSelector(StyleSheetSelectorProperty *property);
     
-    SectionProperty *GetSelectors() const;
-    SectionProperty *GetPropertiesSection() const;
+    StyleSheetSelectorsSection *GetSelectors() const;
+    StyleSheetPropertiesSection *GetPropertiesSection() const;
 
     StyleSheetProperty *FindPropertyByPropertyIndex(DAVA::uint32 index) const;
     StyleSheetSelectorProperty *GetSelectorAtIndex(DAVA::int32 index) const;
@@ -100,8 +113,8 @@ private:
     StyleSheetNode *styleSheet = nullptr;
     DAVA::Vector<PropertyListener*> listeners;
     
-    SectionProperty *selectors = nullptr;
-    SectionProperty *propertiesSection = nullptr;
+    StyleSheetSelectorsSection *selectors = nullptr;
+    StyleSheetPropertiesSection *propertiesSection = nullptr;
     
     DAVA::UIStyleSheetPropertyTable *propertyTable = nullptr;
 };

@@ -33,12 +33,13 @@
 #include "UI/AbstractUIPackageBuilder.h"
 #include "FileSystem/FilePath.h"
 #include "UI/Styles/UIStyleSheetStructs.h"
+#include "Model/ControlProperties/SectionProperty.h"
 
 class PackageNode;
 class ControlNode;
 class StyleSheetNode;
-class SectionProperty;
 class ControlsContainerNode;
+class IntrospectionProperty;
 
 class EditorUIPackageBuilder : public DAVA::AbstractUIPackageBuilder
 {
@@ -104,7 +105,7 @@ private:
     DAVA::Vector<DAVA::FilePath> declinedPackages;
     
     DAVA::BaseObject *currentObject;
-    SectionProperty *currentSection;
+    SectionProperty<IntrospectionProperty> *currentSection;
 };
 
 #endif // __EDITOR_UI_PACKAGE_BUILDER_H__

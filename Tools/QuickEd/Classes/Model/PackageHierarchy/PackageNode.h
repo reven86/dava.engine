@@ -111,12 +111,12 @@ public:
     void RemoveImportedPackage(PackageNode *node);
     
     void RebuildStyleSheets();
-    void RefreshLayout();
+    void RefreshPackageStylesAndLayout();
 
 private:
     void RefreshPropertiesInInstances(ControlNode *node, AbstractProperty *property);
 
-    void RefreshLayout(ControlNode *control);
+    void RefreshControlStylesAndLayout(ControlNode *node);
     void RefreshStyles(ControlNode *node);
     void CollectRootControlsToRefreshLayout(ControlNode *node, DAVA::Vector<ControlNode*> &roots);
     void RestoreProperties(ControlNode *control);

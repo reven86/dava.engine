@@ -46,7 +46,7 @@ public:
     virtual int GetCount() const override;
     virtual AbstractProperty *GetProperty(int index) const override;
 
-    virtual void Refresh() override;
+    virtual void Refresh(DAVA::int32 refreshFlags) override;
 
     void AttachPrototypeProperty(const ValueProperty *prototypeProperty);
     void DetachPrototypeProperty(const ValueProperty *prototypeProperty);

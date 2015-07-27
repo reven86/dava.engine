@@ -44,7 +44,7 @@ StyleSheetRootProperty::StyleSheetRootProperty(StyleSheetNode *aStyleSheet, cons
 {
     propertyTable = new UIStyleSheetPropertyTable();
 
-    selectors = new SectionProperty("Selectors");
+    selectors = new StyleSheetSelectorsSection("Selectors");
     selectors->SetParent(this);
     for (const UIStyleSheetSelectorChain &chain : selectorChains)
     {
@@ -53,7 +53,7 @@ StyleSheetRootProperty::StyleSheetRootProperty(StyleSheetNode *aStyleSheet, cons
         selectors->AddProperty(selector);
     }
     
-    propertiesSection = new SectionProperty("Properties");
+    propertiesSection = new StyleSheetPropertiesSection("Properties");
     propertiesSection->SetParent(this);
     for (const UIStyleSheetProperty &p : properties)
     {
@@ -163,7 +163,7 @@ void StyleSheetRootProperty::AddProperty(StyleSheetProperty *property)
         int32 index = 0;
         while (index < propertiesSection->GetCount())
         {
-            StyleSheetProperty *p = static_cast<StyleSheetProperty*>(propertiesSection->GetProperty(index));
+            StyleSheetProperty *p = propertiesSection->GetProperty(index);
             if (p->GetPropertyIndex() > property->GetPropertyIndex())
                 break;
             index++;
@@ -207,13 +207,13 @@ void StyleSheetRootProperty::InsertSelector(StyleSheetSelectorProperty *property
     if (CanAddSelector() && selectors->GetIndex(property) == -1)
     {
         for (PropertyListener *listener : listeners)
-            listener->StyleSelectorWillBeAdded(propertiesSection, property, index);
+            listener->StyleSelectorWillBeAdded(selectors, property, index);
 
         selectors->InsertProperty(property, index);
         property->SetStyleSheetPropertyTable(propertyTable);
 
         for (PropertyListener *listener : listeners)
-            listener->StyleSelectorWasAdded(propertiesSection, property, index);
+            listener->StyleSelectorWasAdded(selectors, property, index);
     }
     else
     {
@@ -227,13 +227,13 @@ void StyleSheetRootProperty::RemoveSelector(StyleSheetSelectorProperty *property
     if (CanRemoveSelector() && index != -1)
     {
         for (PropertyListener *listener : listeners)
-            listener->StyleSelectorWillBeRemoved(propertiesSection, property, index);
+            listener->StyleSelectorWillBeRemoved(selectors, property, index);
         
         selectors->RemoveProperty(property);
         property->SetStyleSheetPropertyTable(nullptr);
 
         for (PropertyListener *listener : listeners)
-            listener->StyleSelectorWasRemoved(propertiesSection, property, index);
+            listener->StyleSelectorWasRemoved(selectors, property, index);
     }
     else
     {
@@ -241,12 +241,12 @@ void StyleSheetRootProperty::RemoveSelector(StyleSheetSelectorProperty *property
     }
 }
 
-SectionProperty *StyleSheetRootProperty::GetSelectors() const
+StyleSheetSelectorsSection *StyleSheetRootProperty::GetSelectors() const
 {
     return selectors;
 }
 
-SectionProperty *StyleSheetRootProperty::GetPropertiesSection() const
+StyleSheetPropertiesSection *StyleSheetRootProperty::GetPropertiesSection() const
 {
     return propertiesSection;
 }
@@ -264,7 +264,7 @@ StyleSheetProperty *StyleSheetRootProperty::FindPropertyByPropertyIndex(DAVA::ui
 
 StyleSheetSelectorProperty *StyleSheetRootProperty::GetSelectorAtIndex(DAVA::int32 index) const
 {
-    if (0 <= index &&index < selectors->GetCount())
+    if (0 <= index && index < selectors->GetCount())
     {
         return static_cast<StyleSheetSelectorProperty*>(selectors->GetProperty(index));
     }
