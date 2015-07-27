@@ -95,8 +95,8 @@ const Array<VariantType::PairTypeName, VariantType::TYPES_COUNT> VariantType::va
 }};
 
 VariantType::VariantType()
-:	type(TYPE_NONE)
-,	pointerValue(0)
+    : type(TYPE_NONE)
+    , pointerValue(nullptr)
 {
 }
 

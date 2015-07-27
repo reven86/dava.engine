@@ -219,8 +219,8 @@ VegetationCustomGeometrySerializationDataPtr VegetationCustomGeometrySerializati
         return result;
     }
 
-    uint32 layerCount = COUNT_OF(VEGETATION_ENTITY_LAYER_NAMES);
-    for (uint32 layerIndex = 0; layerIndex < layerCount; ++layerIndex)
+    size_t layerCount = COUNT_OF(VEGETATION_ENTITY_LAYER_NAMES);
+    for (size_t layerIndex = 0; layerIndex < layerCount; ++layerIndex)
     {
         Entity* layerEntity = currentVariation->FindByName(VEGETATION_ENTITY_LAYER_NAMES[layerIndex]);
         if (!layerEntity)

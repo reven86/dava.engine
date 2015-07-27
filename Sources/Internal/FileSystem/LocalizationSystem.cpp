@@ -446,8 +446,8 @@ bool LocalizationSystem::GetStringsForCurrentLocale(Map<WideString, WideString>&
     
 String LocalizationSystem::GetCountryCode() const
 {
-    int32 knownLocalesNumber = COUNT_OF(languageLocaleMap);
-	for (int32 i = 0; i < knownLocalesNumber; i ++)
+    size_t knownLocalesNumber = COUNT_OF(languageLocaleMap);
+	for (size_t i = 0; i < knownLocalesNumber; i ++)
 	{
 		if (languageLocaleMap[i].languageCode == langId)
 		{

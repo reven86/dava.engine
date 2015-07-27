@@ -117,8 +117,8 @@ static const FastName UNIFORM_LOD_COLOR = FastName("lodColor");
 inline uint32 MapCellSquareToResolutionIndex(uint32 cellSquare)
 {
     uint32 index = 0;
-    uint32 resolutionCount = COUNT_OF(RESOLUTION_CELL_SQUARE);
-    for(uint32 i = 0; i < resolutionCount; ++i)
+    size_t resolutionCount = COUNT_OF(RESOLUTION_CELL_SQUARE);
+    for(size_t i = 0; i < resolutionCount; ++i)
     {
         if(cellSquare == RESOLUTION_CELL_SQUARE[i])
         {
@@ -1094,12 +1094,12 @@ void VegetationRenderObject::InitWithFixedGeometry(FastNameSet& materialFlags)
                                                      GetVegetationUnitWorldSize(RESOLUTION_SCALE[0]),
                                                      textureSheetPath,
                                                      RESOLUTION_CELL_SQUARE,
-                                                     COUNT_OF(RESOLUTION_CELL_SQUARE),
+                                                     static_cast<uint32>(COUNT_OF(RESOLUTION_CELL_SQUARE)),
                                                      RESOLUTION_SCALE,
-                                                     COUNT_OF(RESOLUTION_SCALE),
+                                                     static_cast<uint32>(COUNT_OF(RESOLUTION_SCALE)),
                                                      resolutionRanges,
                                                      RESOLUTION_TILES_PER_ROW,
-                                                     COUNT_OF(RESOLUTION_TILES_PER_ROW),
+                                                     static_cast<uint32>(COUNT_OF(RESOLUTION_TILES_PER_ROW)),
                                                      worldSize);
     
     materialFlags.Insert(VegetationPropertyNames::FLAG_BILLBOARD_DRAW);
@@ -1114,13 +1114,13 @@ void VegetationRenderObject::InitWithCustomGeometry(FastNameSet& materialFlags)
                                                       GetVegetationUnitWorldSize(RESOLUTION_SCALE[0]),
                                                       customGeometryPath,
                                                       RESOLUTION_CELL_SQUARE,
-                                                      COUNT_OF(RESOLUTION_CELL_SQUARE),
+                                                      static_cast<uint32>(COUNT_OF(RESOLUTION_CELL_SQUARE)),
                                                       RESOLUTION_SCALE,
-                                                      COUNT_OF(RESOLUTION_SCALE),
+                                                      static_cast<uint32>(COUNT_OF(RESOLUTION_SCALE)),
                                                       RESOLUTION_TILES_PER_ROW,
-                                                      COUNT_OF(RESOLUTION_TILES_PER_ROW),
+                                                      static_cast<uint32>(COUNT_OF(RESOLUTION_TILES_PER_ROW)),
                                                       RESOLUTION_CLUSTER_STRIDE,
-                                                      COUNT_OF(RESOLUTION_CLUSTER_STRIDE),
+                                                      static_cast<uint32>(COUNT_OF(RESOLUTION_CLUSTER_STRIDE)),
                                                       worldSize,
                                                       customGeometryData);
     
@@ -1406,7 +1406,7 @@ void VegetationRenderObject::CollectMetrics(VegetationMetrics& metrics)
         metrics.renderBatchCount = static_cast<uint32>(visibleCells.size() * renderDataCount);
         metrics.totalQuadTreeLeafCount = static_cast<uint32>(visibleCellCount);
         
-        uint32 maxLodCount = COUNT_OF(RESOLUTION_INDEX);
+        uint32 maxLodCount = static_cast<uint32>(COUNT_OF(RESOLUTION_INDEX));
         metrics.quadTreeLeafCountPerLOD.resize(maxLodCount, 0);
         metrics.instanceCountPerLOD.resize(maxLodCount, 0);
         metrics.polyCountPerLOD.resize(maxLodCount, 0);

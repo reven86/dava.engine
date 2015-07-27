@@ -105,8 +105,8 @@ static const uint32 VEGETATION_CLUSTER_SIZE[] =
 
 static const uint32 VEGETATION_CLUSTER_INDEX_SIZE[] =
 {
-    COUNT_OF(CLUSTER_INDICES),
-    COUNT_OF(CLUSTER_INDICES)
+    static_cast<uint32>(COUNT_OF(CLUSTER_INDICES)),
+    static_cast<uint32>(COUNT_OF(CLUSTER_INDICES))
 };
 
 int32 VegetationFixedGeometry::RandomShuffleFunc(int32 limit)
@@ -207,8 +207,8 @@ void VegetationFixedGeometry::Build(Vector<VegetationRenderData*>& renderDataArr
         indexDataCount += VEGETATION_CLUSTER_INDEX_SIZE[cellData.geometryId];
     }
     
-    uint32 totalIndexCount = 0;
-    for(uint32 i = 0; i < resolutionCount; ++i)
+    size_t totalIndexCount = 0;
+    for(size_t i = 0; i < resolutionCount; ++i)
     {
         totalIndexCount += indexDataCount * (maxTotalClusters / (uint32)resolutionScale[i]);
     }

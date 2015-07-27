@@ -312,7 +312,7 @@ Frustum::eFrustumResult Frustum::Classify(const AABBox3 & box, uint8 &planeMask,
 		{	
 			if (plane->DistanceToPoint(verts[currPlaneAccess&1][0], verts[(currPlaneAccess>>1)&1][1], verts[(currPlaneAccess>>2)&1][2]) > 0.0f)
 			{
-				startId = plane-planeArray;
+				startId = static_cast<uint8>(plane-planeArray);
 				return EFR_OUTSIDE;
 			}
 			invPlaneAccess=~currPlaneAccess;
@@ -345,7 +345,7 @@ bool Frustum::IsInside(const AABBox3 & box, uint8 planeMask, uint8& startClippin
 		{			
 			if (plane->DistanceToPoint(verts[currPlaneAccess&1][0], verts[(currPlaneAccess>>1)&1][1], verts[(currPlaneAccess>>2)&1][2]) > 0.0f)			
 			{
-				startClippingPlane = plane-planeArray;
+				startClippingPlane = static_cast<uint8>(plane-planeArray);
 				return false;
 			}
 		}

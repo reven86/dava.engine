@@ -640,7 +640,7 @@ void VegetationCustomSLGeometry::GenerateIndexData(const Vector<CustomGeometryEn
                                                    Vector<SortBufferData>& directionOffsets)
 {
     uint32 lastClusterIndex = rangeData.clusterStartIndex + rangeData.clusterCount;
-    uint32 vertexIndexOffset = 0;
+    size_t vertexIndexOffset = 0;
     Vector<VegetationIndex> sourceCellIndices;
     for(uint32 clusterIndex = rangeData.clusterStartIndex; clusterIndex < lastClusterIndex; ++clusterIndex)
     {
@@ -651,7 +651,7 @@ void VegetationCustomSLGeometry::GenerateIndexData(const Vector<CustomGeometryEn
         
         for(size_t i = 0; i < clusterIndexCount; ++i)
         {
-            sourceCellIndices.push_back(rangeData.vertexStartIndex + vertexIndexOffset + layerGeometry.sourceIndices[i]);
+            sourceCellIndices.push_back(rangeData.vertexStartIndex + static_cast<int32>(vertexIndexOffset) + layerGeometry.sourceIndices[i]);
         }
         
         vertexIndexOffset += layerGeometry.sourcePositions.size();

@@ -1829,17 +1829,17 @@ bool NMaterial::IsNamePartOfArray(const FastName& fastName, FastName* array, uin
 
 bool NMaterial::IsRuntimeFlag(const FastName& flagName)
 {
-	return IsNamePartOfArray(flagName, RUNTIME_ONLY_FLAGS, COUNT_OF(RUNTIME_ONLY_FLAGS));
+    return IsNamePartOfArray(flagName, RUNTIME_ONLY_FLAGS, static_cast<uint32>(COUNT_OF(RUNTIME_ONLY_FLAGS)));
 }
 
 bool NMaterial::IsRuntimeProperty(const FastName& propName)
 {
-	return IsNamePartOfArray(propName, RUNTIME_ONLY_PROPERTIES, COUNT_OF(RUNTIME_ONLY_PROPERTIES));
+    return IsNamePartOfArray(propName, RUNTIME_ONLY_PROPERTIES, static_cast<uint32>(COUNT_OF(RUNTIME_ONLY_PROPERTIES)));
 }
 
 bool NMaterial::IsRuntimeTexture(const FastName& textureName)
 {
-    return IsNamePartOfArray(textureName, RUNTIME_ONLY_TEXTURES, COUNT_OF(RUNTIME_ONLY_TEXTURES));
+    return IsNamePartOfArray(textureName, RUNTIME_ONLY_TEXTURES, static_cast<uint32>(COUNT_OF(RUNTIME_ONLY_TEXTURES)));
 }
 
 void NMaterial::SetMaterialTemplateName(const FastName& templateName)
