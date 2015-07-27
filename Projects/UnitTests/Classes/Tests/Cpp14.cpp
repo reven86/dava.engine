@@ -43,6 +43,7 @@ DAVA_TESTCLASS(Cpp14Test)
 {
     DAVA_TEST(CompileTest)
     {
+        Logger::Error("Sample error log output");
         TEST_VERIFY(f() == 42);
     }
 
