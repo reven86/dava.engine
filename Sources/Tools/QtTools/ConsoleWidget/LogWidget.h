@@ -39,6 +39,7 @@ private slots:
     void OnClear();
     void OnBeforeAdded();
     void OnRowAdded();
+    void OnItemClicked(const QModelIndex &index);
 private:
     void FillFiltersCombo();
     bool eventFilter( QObject* watched, QEvent* event ) override;

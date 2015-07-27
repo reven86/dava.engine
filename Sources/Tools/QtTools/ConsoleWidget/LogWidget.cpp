@@ -11,6 +11,7 @@
 #include "Base/GlobalEnum.h"
 #include "Debug/DVAssert.h"
 
+
 LogWidget::LogWidget(QWidget* parent)
     : QWidget(parent)
     , onBottom(true)
@@ -33,10 +34,7 @@ LogWidget::LogWidget(QWidget* parent)
     connect(logFilterModel, &LogFilterModel::filterStringChanged, search, &LineEditEx::setText);
     connect(log->model(), &QAbstractItemModel::rowsAboutToBeInserted, this, &LogWidget::OnBeforeAdded);
     connect(log->model(), &QAbstractItemModel::rowsInserted, this, &LogWidget::OnRowAdded);
-    connect(log, &QListView::clicked, [this](const QModelIndex &index)
-    {
-        emit ItemClicked(logModel->data(index, LogModel::INTERNAL_DATA_ROLE).toString());
-    });
+    connect(log, &QListView::clicked, this, &LogWidget::OnItemClicked);
     filter->selectUserData(logFilterModel->GetFilters());
 }
 
@@ -195,7 +193,6 @@ void LogWidget::OnBeforeAdded()
     onBottom = log->verticalScrollBar()->value() == log->verticalScrollBar()->maximum();
 }
 
-
 void LogWidget::OnRowAdded()
 {
     if (onBottom)
@@ -204,3 +201,7 @@ void LogWidget::OnRowAdded()
     }
 }
 
+void LogWidget::OnItemClicked(const QModelIndex &index)
+{
+    emit ItemClicked(logModel->data(index, LogModel::INTERNAL_DATA_ROLE).toString());
+};

@@ -590,6 +590,13 @@ void QtMainWindow::SetupDocks()
     // Console dock
 	{
         LogWidget *logWidget = new LogWidget();
+        logWidget->SetConvertFunction([](const DAVA::String & text)
+        {
+            QRegularExpression re(PointerSerializer::GetRegex());
+            QString qText = QString::fromStdString(text);
+            qText.replace(re, "");
+            return qText.toStdString();
+        });
         connect(logWidget, &LogWidget::ItemClicked, this, &QtMainWindow::OnConsoleItemClicked);
         const auto var = SettingsManager::Instance()->GetValue(Settings::Internal_LogWidget);
 

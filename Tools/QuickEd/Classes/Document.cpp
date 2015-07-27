@@ -30,7 +30,6 @@
 #include "Document.h"
 #include <QLineEdit>
 #include "UI/Preview/EditScreen.h"
-#include "QtTools/ConsoleWidget/PointerSerializer.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"

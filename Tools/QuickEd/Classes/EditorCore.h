@@ -42,7 +42,6 @@ class DocumentGroup;
 class Project;
 class MainWindow;
 class PackageNode;
-class PointerSerializer;
 
 class EditorCore : public QObject, public DAVA::Singleton<EditorCore>
 {

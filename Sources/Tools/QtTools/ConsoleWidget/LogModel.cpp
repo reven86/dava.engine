@@ -8,17 +8,14 @@
 #include "Base/GlobalEnum.h"
 #include "Debug/DVAssert.h"
 
-#include "QtTools/ConsoleWidget/PointerSerializer.h"
-
 LogModel::LogModel(QObject* parent)
     : QAbstractListModel(parent)
 {
-    func = [](const DAVA::String & text)
-    {
-        PointerSerializer serializer(text);
-        return serializer.GetText();
-    };
     createIcons();
+    func = [](const DAVA::String &str)
+    {
+        return str;
+    };
     qRegisterMetaType<DAVA::Logger::eLogLevel>("DAVA::Logger::eLogLevel");
     DAVA::Logger::AddCustomOutput(this);
     timer = new QTimer(this);
@@ -77,8 +74,8 @@ void LogModel::AddMessage(DAVA::Logger::eLogLevel ll, const QString& text)
     {
         QMutexLocker locker(&mutex);
         items.append(LogItem(ll,
-            text,
-            QString::fromStdString(func(text.toStdString()))));
+            QString::fromStdString(func(text.toStdString())),
+            text));
     }
     QMetaObject::invokeMethod(timer, "start", Qt::QueuedConnection);
 }
@@ -152,7 +149,5 @@ const QPixmap &LogModel::GetIcon(int ll) const
 LogModel::LogItem::LogItem(DAVA::Logger::eLogLevel ll_, const QString& text_, const QString &data_)
     : ll(ll_), text(text_), data(data_)
 {
-    QRegularExpression re(PointerSerializer::GetRegex());
-    text.replace(re, "");
     text = text.split('\n', QString::SkipEmptyParts).join("\n");
 }

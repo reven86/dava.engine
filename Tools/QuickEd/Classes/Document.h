@@ -43,7 +43,6 @@ class SharedData;
 class PropertiesModel;
 class PackageModel;
 class ControlNode;
-class PointerSerializer;
 
 class Document : public QObject
 {
