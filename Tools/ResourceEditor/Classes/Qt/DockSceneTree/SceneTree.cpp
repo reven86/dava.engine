@@ -242,8 +242,6 @@ void SceneTree::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *se
 	}
 }
 
-bool structureChanging = false;
-
 void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 {
 	Logger::Warning("%s", __FUNCTION__);
@@ -252,27 +250,27 @@ void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 
 	if(scene == treeModel->GetScene())
 	{
-		structureChanging = true;
+		auto selectionWasBlocked = selectionModel()->blockSignals(true);
+
 		treeModel->ResyncStructure(treeModel->invisibleRootItem(), treeModel->GetScene());
 
-        treeModel->ReloadFilter();
+		treeModel->ReloadFilter();
         filteringProxyModel->invalidate();
-        SyncSelectionToTree();
 
-		structureChanging = false;
+		SyncSelectionToTree();
 		
 		if (treeModel->IsFilterSet())
         {
             ExpandFilteredItems();
         }
+
+		selectionModel()->blockSignals(selectionWasBlocked);
 	}
 }
 
 void SceneTree::TreeSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
 {
 	Logger::Warning("%s", __FUNCTION__);
-
-	if (structureChanging) return;
 
 	TOOLS_IMM_TIME_PROFILE("SceneTree::TreeSelectionChanged");
 
