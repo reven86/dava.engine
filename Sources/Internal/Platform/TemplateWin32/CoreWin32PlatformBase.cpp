@@ -31,7 +31,9 @@
 
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 #include "Concurrency/Thread.h"
+#include "Utils/Utils.h"
 #include "Utils/UTF8Utils.h"
+
 #include <shellapi.h>
 
 namespace DAVA

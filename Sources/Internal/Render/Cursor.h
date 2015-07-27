@@ -81,7 +81,9 @@ public:
 #if defined(__DAVAENGINE_MACOS__)
 	void * GetMacOSXCursor();
 #endif 
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
+#if defined (__DAVAENGINE_WIN_UAP__)
+    static void SetCursorPinning(bool pin);
+#elif defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
     static void ShowSystemCursor(bool show);
     static void SetCursorPinning(bool pin);
 #endif

@@ -43,8 +43,7 @@ public:
     void EndFrame() override;
 
 private:
-    
-    ReportScreen* reportScreen;
+
     BaseScreen* currentScreen;
     BaseTest* currentTest;
     
