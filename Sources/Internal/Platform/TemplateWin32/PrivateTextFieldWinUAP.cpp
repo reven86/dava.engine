@@ -651,9 +651,16 @@ void PrivateTextFieldWinUAP::OnKeyboardShowing(InputPane^ sender, InputPaneVisib
 
 void PrivateTextFieldWinUAP::RenderToTexture()
 {
+    // Temporal workaround, may be in future we will get rid of such conversion
+    // TODO: don't forget
+    using namespace Windows::Graphics::Display;
+    float32 scale = static_cast<float32>(DisplayInformation::GetForCurrentView()->RawPixelsPerViewPixel);
+    int scaledWidth = static_cast<int>(originalRect.dx / scale);
+    int scaledHeight = static_cast<int>(originalRect.dy / scale);
+
     auto self{shared_from_this()};
     RenderTargetBitmap^ renderTarget = ref new RenderTargetBitmap;
-    auto renderTask = create_task(renderTarget->RenderAsync(nativeControl)).then([this, self, renderTarget]()
+    auto renderTask = create_task(renderTarget->RenderAsync(nativeControl, scaledWidth, scaledHeight)).then([this, self, renderTarget]()
     {
         return renderTarget->GetPixelsAsync();
     }).then([this, self, renderTarget](IBuffer^ renderBuffer)
