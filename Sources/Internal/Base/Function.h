@@ -7,7 +7,7 @@
 #include <functional>
 #include <type_traits>
 
-#define FN_CALL_CONV __stdcall
+#define FN_CALL_CONV /* __stdcall */
 
 namespace DAVA {
 namespace Fn11 {
@@ -91,7 +91,7 @@ public:
         return *this;
     }
 
-    Closure& operator=(nullptr_t)
+    Closure& operator=(std::nullptr_t)
     {
         Clear();
         return *this;
@@ -257,7 +257,7 @@ public:
     Function()
     { }
 
-    Function(nullptr_t)
+    Function(std::nullptr_t)
     { }
 
     template<typename Fn>
@@ -340,7 +340,7 @@ public:
         , closure(fn.closure)
     { }
 
-    Function& operator=(nullptr_t) throw()
+    Function& operator=(std::nullptr_t) throw()
     {
         invoker = nullptr;
         closure = nullptr;
@@ -365,12 +365,12 @@ public:
         return *this;
     }
 
-    bool operator==(nullptr_t) const throw()
+    bool operator==(std::nullptr_t) const throw()
     {
         return (nullptr == invoker);
     }
 
-    bool operator!=(nullptr_t) const throw()
+    bool operator!=(std::nullptr_t) const throw()
     {
         return !operator==(nullptr);
     }

@@ -53,14 +53,14 @@ public:
     SigConnectionID Connect(Obj *obj, void (Obj::* const& fn)(Args...), ThreadIDType tid = ThreadIDType()) throw()
     {
         LockGuard<MutexType> guard(mutex);
-        return AddConnection(GetTrackedObject(obj), Func(obj, fn), tid);
+        return AddConnection(TrackedObject::Cast(obj), Func(obj, fn), tid);
     }
 
     template<typename Obj>
     SigConnectionID Connect(Obj *obj, void (Obj::* const& fn)(Args...) const, ThreadIDType tid = ThreadIDType()) throw()
     {
         LockGuard<MutexType> guard(mutex);
-        return AddConnection(GetTrackedObject(obj), Func(obj, fn), tid);
+        return AddConnection(TrackedObject::Cast(obj), Func(obj, fn), tid);
     }
 
     void Disconnect(SigConnectionID id) throw()
@@ -156,7 +156,7 @@ protected:
 
     SigConnectionID AddConnection(TrackedObject* obj, Func&& fn, const ThreadIDType& tid) throw()
     {
-        static std::atomic<SigConnectionID> counter = InvalidSigConnectionID;
+        static std::atomic<SigConnectionID> counter = {InvalidSigConnectionID};
 
         SigConnectionID id = ++counter;
 
@@ -174,26 +174,6 @@ protected:
 
         return id;
     }
-
-    template<typename T>
-    TrackedObject* GetTrackedObject(T* obj)
-    {
-        return Detail<std::is_base_of<TrackedObject, T>::value>::GetTrackedObject(obj);
-    }
-
-private:
-    template<bool is_base_of_tracked_obj = false>
-    struct Detail
-    {
-        static TrackedObject* GetTrackedObject(void* t) { return nullptr; }
-    };
-
-    template<>
-    struct Detail<true>
-    {
-        template<typename T>
-        static TrackedObject* GetTrackedObject(T* t) { return static_cast<TrackedObject *>(t); }
-    };
 };
 
 } // namespace Sig11
@@ -203,13 +183,15 @@ template<typename... Args>
 class Signal : public Sig11::SignalImpl<Sig11::DummyMutex, Sig11::DymmyThreadID, Args...>
 {
 public:
+    using Base = Sig11::SignalImpl<Sig11::DummyMutex, Sig11::DymmyThreadID, Args...>;
+    
     Signal() = default;
     Signal(const Signal &) = delete;
     Signal& operator=(const Signal &) = delete;
 
     void Emit(Args&&... args) override
     {
-        for (auto&& con : connections)
+        for (auto&& con : Base::connections)
         {
             con.second.fn(std::forward<Args>(args)...);
         }
@@ -217,8 +199,10 @@ public:
 };
 
 template<typename... Args>
-class SignalMt : public Sig11::SignalImpl < Mutex, Thread::Id, Args...>
+class SignalMt : public Sig11::SignalImpl<Mutex, Thread::Id, Args...>
 {
+    using Base = Sig11::SignalImpl<Mutex, Thread::Id, Args...>;
+
     SignalMt() = default;
     SignalMt(const SignalMt&) = delete;
     SignalMt& operator=(const SignalMt&) = delete;
@@ -227,8 +211,8 @@ class SignalMt : public Sig11::SignalImpl < Mutex, Thread::Id, Args...>
     {
         Thread::Id thisTid = Thread::GetCurrentId();
 
-        LockGuard<Mutex> guard(mutex);
-        for (auto&& con : connections)
+        LockGuard<Mutex> guard(Base::mutex);
+        for (auto&& con : Base::connections)
         {
             if (con.second.tid == thisTid)
             {
