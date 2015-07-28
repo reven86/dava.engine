@@ -43,7 +43,6 @@ DAVA_TESTCLASS(Cpp14Test)
 {
     DAVA_TEST(CompileTest)
     {
-        Logger::Error("Error: Sample error log output");
         TEST_VERIFY(f() == 42);
     }
 
@@ -54,7 +53,6 @@ DAVA_TESTCLASS(Cpp14Test)
             SCOPE_EXIT{++i;};
             TEST_VERIFY(0 == i);
         }
-        Logger::Warning("Warning: Holy shit");
         TEST_VERIFY(1 == i);
     }
 };
