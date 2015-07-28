@@ -317,12 +317,13 @@ DAVA_TESTCLASS(FunctionBindSignalTest)
         sig0.Connect(a1, &sgA::AddA);
         sig0.Emit();
         delete a1;
-        sig0.Emit();
+        sig0.Emit(); // <-- this shouldn't crash
 
         // track signal deletion, while tracking object exists
-        sgC c1;
+        sgC *c1 = new sgC();
         Signal<> *sig1 = new Signal<>();
-        sig1->Connect(&c1, &sgC::AddC);
+        sig1->Connect(c1, &sgC::AddC);
         delete sig1;
+        delete c1; // <-- this shouldn't crash
     }
 };

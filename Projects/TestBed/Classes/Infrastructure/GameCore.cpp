@@ -39,6 +39,7 @@
 #include "Tests/MultilineTest.h"
 #include "Tests/StaticWebViewTest.h"
 #include "Tests/UIMovieTest.h"
+#include "Tests/FunctionSignalTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -59,6 +60,7 @@ void GameCore::RegisterTests()
     new MultilineTest();
     new StaticWebViewTest();
     new UIMovieTest();
+    new FunctionSignalTest();
 //$UNITTEST_CTOR
 }
 
