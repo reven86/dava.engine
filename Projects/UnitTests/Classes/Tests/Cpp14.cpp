@@ -43,7 +43,7 @@ DAVA_TESTCLASS(Cpp14Test)
 {
     DAVA_TEST(CompileTest)
     {
-        Logger::Error("Sample error log output");
+        Logger::Error("Error: Sample error log output");
         TEST_VERIFY(f() == 42);
     }
 
@@ -54,12 +54,12 @@ DAVA_TESTCLASS(Cpp14Test)
             SCOPE_EXIT{++i;};
             TEST_VERIFY(0 == i);
         }
-        Logger::Warning("Holy shit");
+        Logger::Warning("Warning: Holy shit");
         TEST_VERIFY(1 == i);
     }
 
     DAVA_TEST(test)
     {
-        TEST_VERIFY_WITH_MESSAGE(0, "Your face, your ass - what's the difference");
+        TEST_VERIFY_WITH_MESSAGE(0, "Failed: Your face, your ass - what's the difference");
     }
 };
