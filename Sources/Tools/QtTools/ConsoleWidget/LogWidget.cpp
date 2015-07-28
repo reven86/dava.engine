@@ -12,29 +12,35 @@
 
 #include "Base/GlobalEnum.h"
 #include "Debug/DVAssert.h"
+#include "ui_LogWidget.h"
 
 LogWidget::LogWidget(QWidget* parent)
     : QWidget(parent)
+    , ui(new Ui::LogWidget)
     , onBottom(true)
 {
-    setupUi(this);
+    ui->setupUi(this);
     time.start();
 
     logModel = new LogModel(this);
     logFilterModel = new LogFilterModel(this);
 
     logFilterModel->setSourceModel(logModel);
-    log->setModel(logFilterModel);
-    log->installEventFilter(this);
+    ui->log->setModel(logFilterModel);
+    ui->log->installEventFilter(this);
 
     FillFiltersCombo();
+    connect(ui->filter, &CheckableComboBox::selectedUserDataChanged, logFilterModel, &LogFilterModel::SetFilters);
+    connect(ui->search, &LineEditEx::textUpdated, this, &LogWidget::OnTextFilterChanged);
+    connect(logFilterModel, &LogFilterModel::filterStringChanged, ui->search, &LineEditEx::setText);
+    connect(ui->log->model(), &QAbstractItemModel::rowsAboutToBeInserted, this, &LogWidget::OnBeforeAdded);
+    connect(ui->log->model(), &QAbstractItemModel::rowsInserted, this, &LogWidget::OnRowAdded);
+    ui->filter->selectUserData(logFilterModel->GetFilters());
+}
 
-    connect(filter, &CheckableComboBox::selectedUserDataChanged, logFilterModel, &LogFilterModel::SetFilters);
-    connect(search, &LineEditEx::textUpdated, this, &LogWidget::OnTextFilterChanged);
-    connect(logFilterModel, &LogFilterModel::filterStringChanged, search, &LineEditEx::setText);
-    connect(log->model(), &QAbstractItemModel::rowsAboutToBeInserted, this, &LogWidget::OnBeforeAdded);
-    connect(log->model(), &QAbstractItemModel::rowsInserted, this, &LogWidget::OnRowAdded);
-    filter->selectUserData(logFilterModel->GetFilters());
+LogWidget::~LogWidget()
+{
+    delete ui;
 }
 
 LogModel* LogWidget::Model() const
@@ -68,7 +74,7 @@ void LogWidget::Deserialize(const QByteArray& data)
     }
     logFilterModel->SetFilterString(filterString);
     logFilterModel->SetFilters(logLevels);
-    filter->selectUserData(logLevels);
+    ui->filter->selectUserData(logLevels);
 }
 
 void LogWidget::AddResultList(const DAVA::ResultList &resultList)
@@ -109,10 +115,10 @@ void LogWidget::FillFiltersCombo()
             DVASSERT_MSG(ok, "wrong enum used to create eLogLevel list");
             break;
         }
-        filter->addItem(logMap->ToString(value), value);
+        ui->filter->addItem(logMap->ToString(value), value);
     }
 
-    QAbstractItemModel* m = filter->model();
+    QAbstractItemModel* m = ui->filter->model();
     const int n = m->rowCount();
     for (int i = 0; i < n; i++)
     {
@@ -126,7 +132,7 @@ void LogWidget::FillFiltersCombo()
 
 bool LogWidget::eventFilter(QObject* watched, QEvent* event)
 {
-    if (watched == log)
+    if (watched == ui->log)
     {
         switch (event->type())
         {
@@ -151,7 +157,7 @@ bool LogWidget::eventFilter(QObject* watched, QEvent* event)
 
 void LogWidget::OnCopy()
 {
-    const QModelIndexList& selection = log->selectionModel()->selectedIndexes();
+    const QModelIndexList& selection = ui->log->selectionModel()->selectedIndexes();
     const int n = selection.size();
     if (n == 0)
         return ;
@@ -183,7 +189,7 @@ void LogWidget::OnClear()
 
 void LogWidget::OnBeforeAdded()
 {
-    onBottom = log->verticalScrollBar()->value() == log->verticalScrollBar()->maximum();
+    onBottom = ui->log->verticalScrollBar()->value() == ui->log->verticalScrollBar()->maximum();
 }
 
 
@@ -191,7 +197,7 @@ void LogWidget::OnRowAdded()
 {
     if (onBottom)
     {
-        log->scrollToBottom();
+        ui->log->scrollToBottom();
     }
 }
 
