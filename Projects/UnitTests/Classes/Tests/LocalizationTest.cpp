@@ -92,8 +92,7 @@ DAVA_TESTCLASS(LocalizationTest)
 
         FilePath filePath("~res:/TestData/LocalizationTest/bidi_test.yaml");
         YamlParser* parser = YamlParser::Create(filePath);
-        SCOPE_EXIT
-        {
+        SCOPE_EXIT {
             SafeRelease(parser);
             SafeRelease(font);
         };
