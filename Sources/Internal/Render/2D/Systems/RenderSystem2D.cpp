@@ -108,6 +108,7 @@ void RenderSystem2D::Init()
 
     currentVertexBuffer = nullptr;
     currentIndexBuffer = nullptr;
+    currentIndexBase = 0;
     currentPacket.primitiveCount = 0;
     currentPacket.vertexStreamCount = 1;
     currentPacket.options = 0;
@@ -115,7 +116,13 @@ void RenderSystem2D::Init()
 
     vertexIndex = 0;
     indexIndex = 0;
-    currentMaterial = nullptr;
+
+    lastMaterial = nullptr;
+    lastUsedCustomWorldMatrix = false;
+    lastCustomWorldMatrix = Matrix4::IDENTITY;
+    lastCustomMatrixSematic = 1;
+    lastClip = Rect(0, 0, -1, -1);
+    
 }
 
 RenderSystem2D::~RenderSystem2D()
@@ -150,6 +157,8 @@ void RenderSystem2D::BeginFrame()
 
     rhi::BeginRenderPass(pass2DHandle);
     rhi::BeginPacketList(currentPacketListHandle);
+
+    Setup2DMatrices();
 }
 
 void RenderSystem2D::EndFrame()
@@ -191,6 +200,8 @@ void RenderSystem2D::BeginRenderTargetPass(Texture * target, bool needClear /* =
 
     renderTargetWidth = target->GetWidth();
     renderTargetHeight = target->GetHeight();
+
+    Setup2DMatrices();
 }
 
 void RenderSystem2D::EndRenderTargetPass()
@@ -240,10 +251,8 @@ void RenderSystem2D::Setup2DMatrices()
     {
         projMatrix = virtualToPhysicalMatrix * projMatrix;
     }
-    
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+
+    projMatrixSemantic++;
 }
 
 void RenderSystem2D::ScreenSizeChanged()
@@ -385,7 +394,7 @@ void RenderSystem2D::Flush()
     currentPacket.vertexCount = 0;
     currentPacket.baseVertex = 0;
     currentPacket.indexBuffer = rhi::HIndexBuffer();
-    lastIndexBase = 0;
+    currentIndexBase = 0;
     currentPacket.primitiveCount = 0;
 
     vertexIndex = 0;
@@ -456,7 +465,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
                 currentPacket.vertexCount = vertexBuffer.allocatedVertices;
                 currentPacket.baseVertex = vertexBuffer.baseVertex;
                 currentPacket.indexBuffer = indexBuffer.buffer;
-                lastIndexBase = indexBuffer.baseIndex;
+                currentIndexBase = indexBuffer.baseIndex;
             }
             // End create vertex and index buffers
         }
@@ -474,15 +483,15 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         currentPacket.vertexCount = vertexBuffer.allocatedVertices;
         currentPacket.baseVertex = vertexBuffer.baseVertex;
         currentPacket.indexBuffer = indexBuffer.buffer;
-        lastIndexBase = indexBuffer.baseIndex;
+        currentIndexBase = indexBuffer.baseIndex;
     }
     // End create vertex and index buffers
 
     // Begin define draw color
     Color useColor = batchDesc.singleColor;
-    if(highlightControlsVerticesLimit > 0
+    if (highlightControlsVerticesLimit > 0
         && batchDesc.vertexCount > highlightControlsVerticesLimit
-            && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::HIGHLIGHT_HARD_CONTROLS))
+        && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::HIGHLIGHT_HARD_CONTROLS))
     {
         // Highlight too big controls with magenta color
         static Color magenta = Color(1.f, 0.f, 1.f, 1.f);
@@ -525,33 +534,39 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
     }
     // End fill vertex and index buffers
 
-    Setup2DMatrices();
-
-    // Begin detect clip rect
-    bool hasClip = currentPacket.options & rhi::Packet::OPT_OVERRIDE_SCISSOR;
-    bool needClip = false;
-    bool needUpdateClip = false;
-    rhi::ScissorRect scissorRect;
-    if (currentClip.dx > 0.f && currentClip.dy > 0.f)
+    // Begin check world matrix
+    bool needUpdateWorldMatrix = false;
+    bool useCustomWorldMatrix = batchDesc.worldMatrix != nullptr;
+    if (!useCustomWorldMatrix && !lastUsedCustomWorldMatrix) // Equal and False
     {
-        needClip = true;
-        DynamicBindings & dynamicParams = Renderer::GetDynamicBindings();
-        Matrix4 transformMatrix = dynamicParams.GetDynamicParamMatrix(DynamicBindings::PARAM_VIEW) * virtualToPhysicalMatrix;
-        const Rect& transformedClipRect = TransformClipRect(currentClip, transformMatrix);
-        scissorRect.x = (int16)transformedClipRect.x;
-        scissorRect.y = (int16)transformedClipRect.y;
-        scissorRect.width = (int16)ceilf(transformedClipRect.dx);
-        scissorRect.height = (int16)ceilf(transformedClipRect.dy);
-        needUpdateClip = memcmp(&scissorRect, &currentPacket.scissorRect, sizeof(rhi::ScissorRect)) != 0;
+        // Skip check world matrices. Use Matrix4::IDENTITY. (the most frequent option)
     }
-    needUpdateClip |= hasClip != needClip;
-    // End detect clip rect
-    
+    else if (useCustomWorldMatrix && lastUsedCustomWorldMatrix) // Equal and True
+    {
+        if (lastCustomWorldMatrix != *batchDesc.worldMatrix) // Update only if matrices not equal
+        {
+            needUpdateWorldMatrix = true;
+            lastCustomWorldMatrix = *batchDesc.worldMatrix;
+            lastCustomMatrixSematic++;
+        }
+    }
+    else // Not equal
+    {
+        needUpdateWorldMatrix = true;
+        if (useCustomWorldMatrix)
+        {
+            lastCustomWorldMatrix = *batchDesc.worldMatrix;
+            lastCustomMatrixSematic++;
+        }
+    }
+    // End check world matrix
+
     // Begin new packet
     if (currentPacket.textureSet != batchDesc.textureSetHandle
-        || currentMaterial != batchDesc.material
         || currentPacket.primitiveType != batchDesc.primitiveType
-        || needUpdateClip)
+        || lastMaterial != batchDesc.material
+        || lastClip != currentClip
+        || needUpdateWorldMatrix)
     {
         if (currentPacket.primitiveCount > 0)
         {
@@ -559,22 +574,38 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
             currentPacket.primitiveCount = 0;
         }
 
-        if (needClip)
+        if (useCustomWorldMatrix)
         {
-            currentPacket.scissorRect = scissorRect;
+            Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &lastCustomWorldMatrix, static_cast<pointer_size>(lastCustomMatrixSematic));
+        }
+        else
+        {
+            Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &Matrix4::IDENTITY, reinterpret_cast<pointer_size>(&Matrix4::IDENTITY));
+        }
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, static_cast<pointer_size>(projMatrixSemantic));
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+
+        if (currentClip.dx > 0.f && currentClip.dy > 0.f)
+        {
+            const Rect& transformedClipRect = TransformClipRect(currentClip, Matrix4::IDENTITY * virtualToPhysicalMatrix); // VIEW matrix equals Matrix4::IDENTITY
+            currentPacket.scissorRect.x = (int16)transformedClipRect.x;
+            currentPacket.scissorRect.y = (int16)transformedClipRect.y;
+            currentPacket.scissorRect.width = (int16)ceilf(transformedClipRect.dx);
+            currentPacket.scissorRect.height = (int16)ceilf(transformedClipRect.dy);
             currentPacket.options |= rhi::Packet::OPT_OVERRIDE_SCISSOR;
         }
         else
         {
             currentPacket.options &= ~rhi::Packet::OPT_OVERRIDE_SCISSOR;
         }
+        lastClip = currentClip;
         
         currentPacket.primitiveType = batchDesc.primitiveType;
-        currentPacket.startIndex = lastIndexBase + indexIndex;
+        currentPacket.startIndex = currentIndexBase + indexIndex;
         
         DVASSERT(batchDesc.material);
-        currentMaterial = batchDesc.material;
-        currentMaterial->BindParams(currentPacket);
+        lastMaterial = batchDesc.material;
+        lastMaterial->BindParams(currentPacket);
         currentPacket.textureSet = batchDesc.textureSetHandle;
         currentPacket.samplerState = samplerStateHandle;
     }

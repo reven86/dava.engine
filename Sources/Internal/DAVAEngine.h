@@ -133,11 +133,10 @@
 
 // Fonts
 #include "Render/2D/Font.h"
-#include "Render/2D/GraphicsFont.h"
+#include "Render/2D/GraphicFont.h"
 #include "Render/2D/FTFont.h"
 #include "Render/2D/FontManager.h"
 #include "Render/2D/TextBlock.h"
-#include "Render/2D/DFFont.h"
 
 // UI
 #include "UI/UIControl.h"

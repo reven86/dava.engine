@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "Render/2D/TextBlockDistanceRender.h"
+#include "Render/2D/TextBlockGraphicRender.h"
 #include "Core/Core.h"
 #include "Render/ShaderCache.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -40,10 +40,10 @@ namespace DAVA
     
 static uint16* InitIndexBuffer()
 {
-    static uint16 buffer[DF_FONT_INDEX_BUFFER_SIZE];
+    static uint16 buffer[GRAPHIC_FONT_INDEX_BUFFER_SIZE];
     
     uint16 a = 0;
-    for (int32 i = 0; i < DF_FONT_INDEX_BUFFER_SIZE;)
+    for (int32 i = 0; i < GRAPHIC_FONT_INDEX_BUFFER_SIZE;)
     {
         buffer[i] = buffer[i+3] = a;
         buffer[i+1] = a+1;
@@ -55,28 +55,33 @@ static uint16* InitIndexBuffer()
     return buffer;
 }
     
-uint16* TextBlockDistanceRender::indexBuffer = InitIndexBuffer();
+uint16* TextBlockGraphicRender::indexBuffer = InitIndexBuffer();
 	
-TextBlockDistanceRender::TextBlockDistanceRender(TextBlock* textBlock) :
-	TextBlockRender(textBlock)
+TextBlockGraphicRender::TextBlockGraphicRender(TextBlock* textBlock) 
+    : TextBlockRender(textBlock)
+    , cachedSpread(0)
+    , charDrawed(0)
+    , dfMaterial(SafeRetain(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL))
 {
-    dfFont = (DFFont*)textBlock->font;
-    cacheSpread = dfFont->GetSpread();
-    charDrawed = 0;
-
-    dfMaterial = new NMaterial();
-    dfMaterial->SetFXName(FastName("~res:/Materials/2d.DistanceFont.material"));
-    dfMaterial->SetMaterialName(FastName("DistanceFontMaterial"));
-    dfMaterial->AddProperty(FastName("smoothing"), &cacheSpread, rhi::ShaderProp::TYPE_FLOAT1);
-    dfMaterial->PreBuildMaterial(RenderSystem2D::RENDER_PASS_NAME);
+    graphicFont = static_cast<GraphicFont*>(textBlock->GetFont());
+    
+    if (graphicFont->GetFontType() == Font::TYPE_DISTANCE)
+    {
+        cachedSpread = graphicFont->GetSpread();
+        dfMaterial = new NMaterial();
+        dfMaterial->SetFXName(FastName("~res:/Materials/2d.DistanceFont.material"));
+        dfMaterial->SetMaterialName(FastName("DistanceFontMaterial"));
+        dfMaterial->AddProperty(FastName("smoothing"), &cachedSpread, rhi::ShaderProp::TYPE_FLOAT1);
+        dfMaterial->PreBuildMaterial(RenderSystem2D::RENDER_PASS_NAME);
+    }
 }
 	
-TextBlockDistanceRender::~TextBlockDistanceRender()
+TextBlockGraphicRender::~TextBlockGraphicRender()
 {
     SafeRelease(dfMaterial);
 }
 	
-void TextBlockDistanceRender::Prepare(Texture *texture /*= NULL*/)
+void TextBlockGraphicRender::Prepare(Texture *texture /*= nullptr*/)
 {
     uint32 charCount = 0;
     if (!textBlock->isMultilineEnabled || textBlock->treatMultilineAsSingleLine)
@@ -94,18 +99,13 @@ void TextBlockDistanceRender::Prepare(Texture *texture /*= NULL*/)
     if((uint32)vertexBuffer.size() != vertexCount)
         vertexBuffer.resize(vertexCount);
     
-//     charDrawed = 0;
-//     renderRect = Rect(0, 0, 0, 0);
-//     DrawText();
-//     if (charDrawed == 0)
-//         return;
+    charDrawed = 0;
+    renderRect = Rect(0, 0, 0, 0);
+    DrawText();
 }
 
-void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset)
+void TextBlockGraphicRender::Draw(const Color& textColor, const Vector2* offset)
 {
-    charDrawed = 0;
-    renderRect = Rect();
-    DrawText();
     if (charDrawed == 0)
         return;
 
@@ -154,14 +154,16 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 
 	offsetMatrix = (scaleMatrix*offsetMatrix*rotateMatrix)*worldMatrix;
 	
-    for (auto& v : vertexBuffer)
+    if (graphicFont->GetFontType() == Font::TYPE_DISTANCE)
     {
-        v.position = v.position * offsetMatrix;
+        float32 spread = graphicFont->GetSpread();
+        if (!FLOAT_EQUAL(cachedSpread, spread))
+        {
+            cachedSpread = spread;
+            dfMaterial->SetPropertyValue(FastName("smoothing"), &cachedSpread);
+        }
     }
-
-    float32 spread = dfFont->GetSpread();
-    dfMaterial->SetPropertyValue(FastName("smoothing"), &spread);
-
+    
     RenderSystem2D::BatchDescriptor batch;
     batch.material = dfMaterial; // RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL;
     batch.singleColor = textColor;
@@ -169,19 +171,20 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
     batch.texCoordStride = 5;
     batch.vertexPointer = vertexBuffer[0].position.data;
     batch.texCoordPointer = vertexBuffer[0].texCoord.data;
-    batch.textureSetHandle = dfFont->GetTextureHandler();
+    batch.textureSetHandle = graphicFont->GetTextureHandler();
     batch.vertexCount = vertexBuffer.size();
     batch.indexPointer = indexBuffer;
     batch.indexCount = batch.vertexCount * 6 / 4;
+    batch.worldMatrix = &offsetMatrix;
     RenderSystem2D::Instance()->PushBatch(batch);
 }
 	
-Font::StringMetrics TextBlockDistanceRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
+Font::StringMetrics TextBlockGraphicRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)
 {
 	return InternalDrawText(drawText, 0, 0, 0, 0);
 }
 		
-Font::StringMetrics TextBlockDistanceRender::DrawTextML(const WideString& drawText,
+Font::StringMetrics TextBlockGraphicRender::DrawTextML(const WideString& drawText,
 										   int32 x, int32 y, int32 w,
 										   int32 xOffset, uint32 yOffset,
 										   int32 lineSize)
@@ -189,14 +192,14 @@ Font::StringMetrics TextBlockDistanceRender::DrawTextML(const WideString& drawTe
     return InternalDrawText(drawText, xOffset, yOffset, (int32)ceilf(VirtualCoordinatesSystem::Instance()->ConvertVirtualToPhysicalX((float32)w)), lineSize);
 }
 	
-Font::StringMetrics TextBlockDistanceRender::InternalDrawText(const WideString& drawText, int32 x, int32 y, int32 w, int32 lineSize)
+Font::StringMetrics TextBlockGraphicRender::InternalDrawText(const WideString& drawText, int32 x, int32 y, int32 w, int32 lineSize)
 {
 	if (drawText.empty())
 		return Font::StringMetrics();
 	
 	int32 lastDrawed = 0;
 	
-	Font::StringMetrics metrics = dfFont->DrawStringToBuffer(drawText, x, y, &vertexBuffer[0] + (charDrawed * 4), lastDrawed, NULL, w, lineSize);
+	Font::StringMetrics metrics = graphicFont->DrawStringToBuffer(drawText, x, y, &vertexBuffer[0] + (charDrawed * 4), lastDrawed, NULL, w, lineSize);
 	if (metrics.drawRect.dx <= 0 && metrics.drawRect.dy <= 0)
 		return metrics;
 	

@@ -5,6 +5,7 @@ font:
   lineHeight: 46
   scaleW: 256
   scaleH: 256
+  df: true
   chars:
     0: {xoffset: 0.000000, yoffset: 30.640625, width: 8, height: 8, xadvance: 0.000000, u: 0.328125, v: 0.957031, u2: 0.359375, v2: 0.988281}
     8: {xoffset: 0.000000, yoffset: 30.640625, width: 8, height: 8, xadvance: 0.000000, u: 0.757812, v: 0.921875, u2: 0.789062, v2: 0.953125}

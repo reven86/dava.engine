@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-#include "DFFont.h"
+#include "GraphicFont.h"
 
 #include "Render/Texture.h"
 #include "Render/Shader.h"
@@ -40,44 +40,91 @@
 
 namespace DAVA {
 
-Mutex DFFontInternalData::dfFontDataMapMutex;
-Map<FilePath, DFFontInternalData*> dfFontDataMap;
+class GraphicInternalFont : public BaseObject
+{
+public:
+    static GraphicInternalFont * Create(const FilePath & descriptorPath);
 
-DFFontInternalData::DFFontInternalData()
+protected:
+    static Mutex dataMapMutex;
+
+    GraphicInternalFont();
+    virtual ~GraphicInternalFont();
+    bool InitFromConfig(const FilePath & path);
+    
+    struct CharDescription
+    {
+        float32 height;
+        float32 width;
+        Map<int32, float32> kerning;
+        float32 xOffset;
+        float32 yOffset;
+        float32 xAdvance;
+        float32 u;
+        float32 u2;
+        float32 v;
+        float32 v2;
+    };
+    using CharsMap = Map < char16, CharDescription > ;
+
+    CharsMap chars;
+    float32 baseSize;
+    float32 paddingLeft;
+    float32 paddingRight;
+    float32 paddingTop;
+    float32 paddingBottom;
+    float32 lineHeight;
+    float32 baselineHeight;
+    float32 spread;
+    bool isDistanceFont;
+
+    FilePath configPath;
+
+    friend class GraphicFont;
+};
+
+using FontMap = Map < FilePath, GraphicInternalFont* >;
+FontMap dataMap;
+Mutex GraphicInternalFont::dataMapMutex;
+
+GraphicInternalFont::GraphicInternalFont()
 {
     baseSize = 0;
     paddingLeft = paddingRight = paddingTop = paddingBottom = 0;
     lineHeight = 0;
 	baselineHeight = 0;
     spread = 1.f;
+    isDistanceFont = false;
 }
     
-DFFontInternalData::~DFFontInternalData()
+GraphicInternalFont::~GraphicInternalFont()
 {
-    LockGuard<Mutex> guard(dfFontDataMapMutex);
-    dfFontDataMap.erase(configPath);
+    LockGuard<Mutex> guard(dataMapMutex);
+    dataMap.erase(configPath);
 }
     
-DFFontInternalData * DFFontInternalData::Create(const FilePath & path)
+GraphicInternalFont * GraphicInternalFont::Create(const FilePath & descriptorPath)
 {
-    LockGuard<Mutex> guard(dfFontDataMapMutex);
+    LockGuard<Mutex> guard(dataMapMutex);
     
-    Map<FilePath, DFFontInternalData*>::iterator iter = dfFontDataMap.find(path);
-    if (iter != dfFontDataMap.end())
-        return SafeRetain(iter->second);
-    
-    DFFontInternalData * fontData = new DFFontInternalData();
-    if(!fontData->InitFromConfig(path))
+    FontMap::iterator iter = dataMap.find(descriptorPath);
+    if (iter != dataMap.end())
     {
-        fontData->Release();
-        return NULL;
+        return SafeRetain(iter->second);
     }
     
-    dfFontDataMap[path] = fontData;    
+    GraphicInternalFont * fontData = new GraphicInternalFont();
+    if (!fontData->InitFromConfig(descriptorPath))
+    {
+        fontData->Release();
+        return nullptr;
+    }
+    
+    dataMap[descriptorPath] = fontData;
     return fontData;
 }
     
-bool DFFontInternalData::InitFromConfig(const DAVA::FilePath &path)
+bool GraphicInternalFont::InitFromConfig(const DAVA::FilePath &path)
 {
     YamlParser* parser = YamlParser::Create(path.GetAbsolutePathname());
     SCOPE_EXIT { SafeRelease(parser); };
@@ -121,6 +168,9 @@ bool DFFontInternalData::InitFromConfig(const DAVA::FilePath &path)
     const YamlNode* spread = configNode->Get("spread");
     if (spread)
         this->spread = spread->AsFloat();
+    const YamlNode* df = configNode->Get("df");
+    if (df)
+        this->isDistanceFont = df->AsBool();
         
     const MultiMap<String, YamlNode*> charsMap = charsNode->AsMap();
     MultiMap<String, YamlNode*>::const_iterator charsMapEnd = charsMap.end();
@@ -164,85 +214,87 @@ bool DFFontInternalData::InitFromConfig(const DAVA::FilePath &path)
     
     return true;
 }
-    
-DFFont::DFFont() :
-    fontInternal(NULL),
-    fontTexture(NULL)
+
+GraphicFont::GraphicFont()
+    : fontInternal(nullptr)
+    , texture(nullptr)
+    , textureSet()
 {
-    fontType = TYPE_DISTANCE;
+    fontType = Font::TYPE_GRAPHIC;
 }
 
-DFFont::~DFFont()
+GraphicFont::~GraphicFont()
 {
     SafeRelease(fontInternal);
-    if(fontTexture)
+    SafeRelease(texture);
+    if (textureSet.IsValid())
     {
-        fontTexture->Release();
-        rhi::ReleaseTextureSet(fontTextureHandler);
+        rhi::ReleaseTextureSet(textureSet);
     }
 }
 
-DFFont* DFFont::Create(const FilePath & path)
+GraphicFont* GraphicFont::Create(const FilePath & descriptorPath, const FilePath& texturePath)
 {
-    DFFont* font = new DFFont();
+    GraphicFont* font = new GraphicFont();
     
-    font->fontInternal = DFFontInternalData::Create(path);
-    if(!font->fontInternal || !font->LoadTexture(FilePath::CreateWithNewExtension(path, ".tex")))
+    font->fontInternal = GraphicInternalFont::Create(descriptorPath);
+    if(font->fontInternal == nullptr || !font->LoadTexture(texturePath))
     {
         SafeRelease(font);
-        return NULL;
+        return nullptr;
+    }
+
+    if (font->fontInternal->isDistanceFont)
+    {
+        font->fontType = Font::TYPE_DISTANCE;
     }
 
     return font;
 }
     
-Font::StringMetrics DFFont::GetStringMetrics(const WideString & str, Vector<float32> *charSizes/* = 0*/) const
+Font::StringMetrics GraphicFont::GetStringMetrics(const WideString & str, Vector<float32> *charSizes/* = 0*/) const
 { 
     int32 charDrawed = 0;
-    return DrawStringToBuffer(str, 0, 0, NULL, charDrawed, charSizes);
+    return DrawStringToBuffer(str, 0, 0, nullptr, charDrawed, charSizes);
 }
 
-bool DFFont::IsCharAvaliable(char16 ch) const
+bool GraphicFont::IsCharAvaliable(char16 ch) const
 {
-    DFFontInternalData::CharsMap::const_iterator iter = fontInternal->chars.find(ch);
+    GraphicInternalFont::CharsMap::const_iterator iter = fontInternal->chars.find(ch);
     return iter != fontInternal->chars.end();
 }
 
-uint32 DFFont::GetFontHeight() const
+uint32 GraphicFont::GetFontHeight() const
 {
     return (uint32)((fontInternal->lineHeight) * GetSizeScale());
 }
 
-Font * DFFont::Clone() const
+Font * GraphicFont::Clone() const
 {
-    DFFont* dfFont = new DFFont();
-    dfFont->fontInternal = SafeRetain(fontInternal);
-    dfFont->fontTexture = SafeRetain(fontTexture);
-    dfFont->size = size;
-    dfFont->fontTextureHandler = fontTextureHandler;
-    dfFont->SetAscendScale(GetAscendScale());
-    dfFont->SetDescendScale(GetDescendScale());
-    dfFont->fontTextureHandler = rhi::CopyTextureSet(fontTextureHandler);    
-
-    return dfFont;
+    GraphicFont* graphicFont = new GraphicFont();
+    graphicFont->fontInternal = SafeRetain(fontInternal);
+    graphicFont->size = size;
+    graphicFont->texture = SafeRetain(texture);
+    graphicFont->textureSet = rhi::CopyTextureSet(textureSet);
+    return graphicFont;
 }
 
-bool DFFont::IsEqual(const Font *font) const
+bool GraphicFont::IsEqual(const Font *font) const
 {
     if (!Font::IsEqual(font))
         return false;
     
-    DFFont* dfFont = (DFFont*) font;
-    if (dfFont->fontInternal->configPath != fontInternal->configPath)
+    const GraphicFont* graphicFont = static_cast<const GraphicFont*>(font);
+    if (graphicFont->fontInternal->configPath != fontInternal->configPath)
         return false;
     
     return true;
 }
 
-Font::StringMetrics DFFont::DrawStringToBuffer(const WideString & str,
+Font::StringMetrics GraphicFont::DrawStringToBuffer(const WideString & str,
                                   int32 xOffset,
                                   int32 yOffset,
-                                  DFFontVertex* vertexBuffer,
+                                  GraphicFontVertex* vertexBuffer,
                                   int32& charDrawed,
                                   Vector<float32> *charSizes /*= NULL*/,
                                   int32 justifyWidth,
@@ -273,7 +325,7 @@ Font::StringMetrics DFFont::DrawStringToBuffer(const WideString & str,
     float32 lastY = 0;
     float32 sizeScale = GetSizeScale();
 
-    DFFontInternalData::CharsMap::const_iterator notDef = fontInternal->chars.find(NOT_DEF_CHAR);
+    GraphicInternalFont::CharsMap::const_iterator notDef = fontInternal->chars.find(NOT_DEF_CHAR);
     bool notDefExists = (notDef != fontInternal->chars.end());
 
 	Font::StringMetrics metrics;
@@ -284,7 +336,7 @@ Font::StringMetrics DFFont::DrawStringToBuffer(const WideString & str,
     for (uint32 charPos = 0; charPos < strLength; ++charPos)
     {
         char16 charId = str.at(charPos);
-        DFFontInternalData::CharsMap::const_iterator iter = fontInternal->chars.find(charId);
+        GraphicInternalFont::CharsMap::const_iterator iter = fontInternal->chars.find(charId);
         if (iter == fontInternal->chars.end())
         {
             if (notDefExists)
@@ -308,7 +360,7 @@ Font::StringMetrics DFFont::DrawStringToBuffer(const WideString & str,
             }
         }
         
-        const DFFontInternalData::CharDescription& charDescription = iter->second;
+        const GraphicInternalFont::CharDescription& charDescription = iter->second;
 
         float32 width = charDescription.width * sizeScale;
         float32 startX = lastX + charDescription.xOffset * sizeScale;
@@ -389,39 +441,39 @@ Font::StringMetrics DFFont::DrawStringToBuffer(const WideString & str,
 	return metrics;
 }
 
-float32 DFFont::GetSpread() const
+float32 GraphicFont::GetSpread() const
 {
     return 0.25f / (fontInternal->spread * GetSizeScale());
 }
 
-float32 DFFont::GetSizeScale() const
+float32 GraphicFont::GetSizeScale() const
 {
     return size / fontInternal->baseSize;
 }
     
-bool DFFont::LoadTexture(const FilePath & path)
+bool GraphicFont::LoadTexture(const FilePath & path)
 {
-    DVASSERT(fontTexture == NULL);
+    DVASSERT(texture == NULL);
 
-    fontTexture = Texture::CreateFromFile(path);
-    if(!fontTexture)
+    texture = Texture::CreateFromFile(path);
+    if (!texture)
     {
         return false;
-    }            
+    }
 
     rhi::TextureSetDescriptor descriptor;
     descriptor.fragmentTextureCount = 1;
-    descriptor.fragmentTexture[0]   = fontTexture->handle;    
-    fontTextureHandler              = rhi::AcquireTextureSet(descriptor);
+    descriptor.fragmentTexture[0] = texture->handle;
+    textureSet = rhi::AcquireTextureSet(descriptor);
 
     return true;
 }
-    
-YamlNode * DFFont::SaveToYamlNode() const
+
+YamlNode * GraphicFont::SaveToYamlNode() const
 {
     YamlNode *node = Font::SaveToYamlNode();
     //Type
-    node->Set("type", "DFFont");
+    node->Set("type", "GraphicFont");
     
     String pathname = fontInternal->configPath.GetFrameworkPath();
     node->Set("name", pathname);
@@ -429,12 +481,12 @@ YamlNode * DFFont::SaveToYamlNode() const
     return node;
 }
 
-const FilePath & DFFont::GetFontPath() const
+const FilePath & GraphicFont::GetFontPath() const
 {
     return fontInternal->configPath;
 }
 
-String DFFont::GetRawHashString()
+String GraphicFont::GetRawHashString()
 {
     return fontInternal->configPath.GetFrameworkPath() + "_" + Font::GetRawHashString();
 }

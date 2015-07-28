@@ -27,77 +27,35 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_DFFONT_H__
-#define __DAVAENGINE_DFFONT_H__
+#ifndef __DAVAENGINE_GRAPHICFONT_H__
+#define __DAVAENGINE_GRAPHICFONT_H__
 
 #include "Render/2D/Font.h"
-#include "Render/Shader.h"
 #include "Render/Renderer.h"
 
 namespace DAVA
 {
 	
-#define DF_FONT_CACHE_SIZE 1000	//text cache size
-#define DF_FONT_INDEX_BUFFER_SIZE ((DF_FONT_CACHE_SIZE) * 6)
+#define GRAPHIC_FONT_CACHE_SIZE 1000	//text cache size
+#define GRAPHIC_FONT_INDEX_BUFFER_SIZE ((GRAPHIC_FONT_CACHE_SIZE) * 6)
 	
-class DFFont;
-class DFFontInternalData : public BaseObject
+class GraphicInternalFont;
+
+class GraphicFont: public Font
 {
 public:
-    static DFFontInternalData * Create(const FilePath & path);
-    
-protected:
-    DFFontInternalData();
-    virtual ~DFFontInternalData();
-    
-    bool InitFromConfig(const FilePath & path);
-    
-    struct CharDescription
-    {
-        float32 height;
-        float32 width;
-        Map<int32, float32> kerning;
-        float32 xOffset;
-        float32 yOffset;
-        float32 xAdvance;
-        float32 u;
-        float32 u2;
-        float32 v;
-        float32 v2;
-    };
-    using CharsMap = Map<char16, CharDescription>;
-    CharsMap chars;
-    float32 baseSize;
-    float32 paddingLeft;
-    float32 paddingRight;
-    float32 paddingTop;
-    float32 paddingBottom;
-    float32 lineHeight;
-	float32 baselineHeight;
-    float32 spread;
-    
-    FilePath configPath;
-    
-    static Mutex dfFontDataMapMutex;
-    
-friend class DFFont;
-};
-    
-class DFFont: public Font
-{
-public:
-    class DFFontVertex
+    class GraphicFontVertex
     {
     public:
         Vector3 position;
         Vector2 texCoord;
     };
     
-    DFFont();
+    GraphicFont();
 protected:
-    virtual ~DFFont();
+    virtual ~GraphicFont();
 public:
-    static DFFont* Create(const FilePath & path);
+    static GraphicFont* Create(const FilePath & descriptorPath, const FilePath& texturePath);
     
     /**
      \brief Get string size(rect).
@@ -128,17 +86,12 @@ public:
     /**
      \brief Get font texture
      */
-    inline Texture* GetTexture() const
-    {
-        return fontTexture;
-    }
+    Texture* GetTexture() const;
+
     /**
      \brief Get font texture handler
      */
-    inline rhi::HTextureSet GetTextureHandler() const
-    {
-        return fontTextureHandler;
-    }
+    rhi::HTextureSet GetTextureHandler() const;
 
     /**
      \brief Tests if two fonts are the same.
@@ -154,7 +107,7 @@ public:
     Font::StringMetrics DrawStringToBuffer(const WideString & str,
                               int32 xOffset,
                               int32 yOffset,
-                              DFFontVertex* vertexBuffer,
+                              GraphicFontVertex* vertexBuffer,
                               int32& charDrawed,
                               Vector<float32> *charSizes = NULL,
                               int32 justifyWidth = 0,
@@ -167,15 +120,25 @@ protected:
     virtual String GetRawHashString();
     
 private:
-    bool LoadTexture(const FilePath & path);
     float32 GetSizeScale() const;
-    
-    DFFontInternalData * fontInternal;
+    bool LoadTexture(const FilePath & path);
 
-    Texture* fontTexture;
-    rhi::HTextureSet fontTextureHandler;
+    GraphicInternalFont * fontInternal;
+    Texture * texture;
+    rhi::HTextureSet textureSet;
 };
+
+
+inline Texture* GraphicFont::GetTexture() const
+{
+    return texture;
+}
+
+inline rhi::HTextureSet GraphicFont::GetTextureHandler() const
+{
+    return textureSet;
+}
 
 }
 
-#endif //__DAVAENGINE_DFFONT_H__
+#endif //__DAVAENGINE_GRAPHICFONT_H__

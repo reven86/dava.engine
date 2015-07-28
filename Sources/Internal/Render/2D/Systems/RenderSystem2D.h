@@ -100,6 +100,7 @@ public:
         NMaterial * material = nullptr;
         rhi::HTextureSet textureSetHandle;
         rhi::PrimitiveType primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
+        Matrix4* worldMatrix = nullptr;
     };
 
     enum ColorOperations
@@ -261,6 +262,7 @@ private:
 
     Matrix4 virtualToPhysicalMatrix;
     Matrix4 projMatrix;
+    uint32 projMatrixSemantic;
     std::stack<Rect> clipStack;
 	Rect currentClip;
 
@@ -284,11 +286,15 @@ private:
     
     BatchVertex * currentVertexBuffer;
     uint16 * currentIndexBuffer;
-    uint32 lastIndexBase;
     rhi::Packet currentPacket;
+    uint32 currentIndexBase;
     uint32 vertexIndex;
     uint32 indexIndex;
-    NMaterial * currentMaterial;
+    NMaterial * lastMaterial;
+    Rect lastClip;
+    Matrix4 lastCustomWorldMatrix;
+    bool lastUsedCustomWorldMatrix;
+    uint32 lastCustomMatrixSematic;
 
     // Batching errors handling
     uint32 prevFrameErrorsFlags;

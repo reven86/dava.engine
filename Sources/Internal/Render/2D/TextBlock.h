@@ -43,8 +43,7 @@ namespace DAVA
 
 class TextBlockRender;
 class TextBlockSoftwareRender;
-class TextBlockGraphicsRender;
-class TextBlockDistanceRender;
+class TextBlockGraphicRender;
     
 /**
     \ingroup render_2d
@@ -197,8 +196,7 @@ protected:
 
     friend class TextBlockRender;
     friend class TextBlockSoftwareRender;
-    friend class TextBlockGraphicsRender;
-    friend class TextBlockDistanceRender;
+    friend class TextBlockGraphicRender;
     
     TextBlockRender* textBlockRender;
     TextureInvalidater *textureInvalidater;

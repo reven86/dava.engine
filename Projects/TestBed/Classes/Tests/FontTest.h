@@ -45,9 +45,10 @@ public:
 
 private:
     FTFont * ftFont;
-    DFFont * dfFont;
+    GraphicFont * graphicFont;
 
     void OnFontSelectClick(BaseObject* sender, void* data, void* callerData);
+    void OnFontSizeClick(BaseObject* sender, void* data, void* callerData);
 
     UIStaticText * previewText;
     UITextField * inputText;
