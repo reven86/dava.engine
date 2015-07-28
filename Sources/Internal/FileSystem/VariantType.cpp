@@ -69,9 +69,9 @@ const String VariantType::TYPENAME_FASTNAME= "FastName";
 const String VariantType::TYPENAME_AABBOX3 = "AABBox3";
 const String VariantType::TYPENAME_FILEPATH = "FilePath";
     
-const VariantType::PairTypeName VariantType::variantNamesMap[] =
-{
-    VariantType::PairTypeName(VariantType::TYPE_NONE,          TYPENAME_UNKNOWN,		NULL),
+const Array<VariantType::PairTypeName, VariantType::TYPES_COUNT> VariantType::variantNamesMap =
+{{
+    VariantType::PairTypeName(VariantType::TYPE_NONE,          TYPENAME_UNKNOWN,		nullptr),
     VariantType::PairTypeName(VariantType::TYPE_BOOLEAN,       TYPENAME_BOOLEAN,		MetaInfo::Instance<bool>()),
     VariantType::PairTypeName(VariantType::TYPE_INT32,         TYPENAME_INT32,			MetaInfo::Instance<int32>()),
     VariantType::PairTypeName(VariantType::TYPE_FLOAT,         TYPENAME_FLOAT,			MetaInfo::Instance<float32>()),
@@ -92,7 +92,7 @@ const VariantType::PairTypeName VariantType::variantNamesMap[] =
 	VariantType::PairTypeName(VariantType::TYPE_FASTNAME,      TYPENAME_FASTNAME,       MetaInfo::Instance<FastName>()),
 	VariantType::PairTypeName(VariantType::TYPE_AABBOX3,       TYPENAME_AABBOX3,        MetaInfo::Instance<AABBox3>()),
 	VariantType::PairTypeName(VariantType::TYPE_FILEPATH,      TYPENAME_FILEPATH,       MetaInfo::Instance<FilePath>())
-};
+}};
 
 VariantType::VariantType()
 :	type(TYPE_NONE)
@@ -100,107 +100,107 @@ VariantType::VariantType()
 {
 }
 
-VariantType::VariantType(const VariantType &var) : pointerValue(NULL)
+VariantType::VariantType(const VariantType &var) : pointerValue(nullptr)
 {
 	SetVariant(var);
 }
 
-VariantType::VariantType(bool value) : pointerValue(NULL)
+VariantType::VariantType(bool value) : pointerValue(nullptr)
 {
 	SetBool(value);
 }
 
-VariantType::VariantType(int32 value) : pointerValue(NULL)
+VariantType::VariantType(int32 value) : pointerValue(nullptr)
 {
 	SetInt32(value);
 }
 
-VariantType::VariantType(uint32 value) : pointerValue(NULL)
+VariantType::VariantType(uint32 value) : pointerValue(nullptr)
 {
 	SetUInt32(value);
 }
 
-VariantType::VariantType(float32 value) : pointerValue(NULL)
+VariantType::VariantType(float32 value) : pointerValue(nullptr)
 {
 	SetFloat(value);
 }
 
-VariantType::VariantType(const String & value) : pointerValue(NULL)
+VariantType::VariantType(const String & value) : pointerValue(nullptr)
 {
 	SetString(value);
 }
 
-VariantType::VariantType(const WideString & value) : pointerValue(NULL)
+VariantType::VariantType(const WideString & value) : pointerValue(nullptr)
 {
 	SetWideString(value);
 }
 
-VariantType::VariantType(const uint8 *_array, int32 arraySizeInBytes) : pointerValue(NULL)
+VariantType::VariantType(const uint8 *_array, int32 arraySizeInBytes) : pointerValue(nullptr)
 {
 	SetByteArray(_array, arraySizeInBytes);
 }
 
-VariantType::VariantType(KeyedArchive *archive) : pointerValue(NULL)
+VariantType::VariantType(KeyedArchive *archive) : pointerValue(nullptr)
 {
 	SetKeyedArchive(archive);
 }
 
-VariantType::VariantType(const int64 & value) : pointerValue(NULL)
+VariantType::VariantType(const int64 & value) : pointerValue(nullptr)
 {
 	SetInt64(value);
 }
 
-VariantType::VariantType(const uint64 & value) : pointerValue(NULL)
+VariantType::VariantType(const uint64 & value) : pointerValue(nullptr)
 {
 	SetUInt64(value);
 }
 
-VariantType::VariantType(const Vector2 & value) : pointerValue(NULL)
+VariantType::VariantType(const Vector2 & value) : pointerValue(nullptr)
 {
 	SetVector2(value);
 }
 
-VariantType::VariantType(const Vector3 & value) : pointerValue(NULL)
+VariantType::VariantType(const Vector3 & value) : pointerValue(nullptr)
 {
 	SetVector3(value);
 }
 
-VariantType::VariantType(const Vector4 & value) : pointerValue(NULL)
+VariantType::VariantType(const Vector4 & value) : pointerValue(nullptr)
 {
 	SetVector4(value);
 }
 
-VariantType::VariantType(const Matrix2 & value) : pointerValue(NULL)
+VariantType::VariantType(const Matrix2 & value) : pointerValue(nullptr)
 {
 	SetMatrix2(value);
 }
 
-VariantType::VariantType(const Matrix3 & value) : pointerValue(NULL)
+VariantType::VariantType(const Matrix3 & value) : pointerValue(nullptr)
 {
 	SetMatrix3(value);
 }
 
-VariantType::VariantType(const Matrix4 & value) : pointerValue(NULL)
+VariantType::VariantType(const Matrix4 & value) : pointerValue(nullptr)
 {
 	SetMatrix4(value);
 }
 
-VariantType::VariantType(const Color & value) : pointerValue(NULL)
+VariantType::VariantType(const Color & value) : pointerValue(nullptr)
 {
 	SetColor(value);
 }
 
-VariantType::VariantType(const FastName & value) : pointerValue(NULL)
+VariantType::VariantType(const FastName & value) : pointerValue(nullptr)
 {
 	SetFastName(value);
 }
 
-VariantType::VariantType(const AABBox3 & value) : pointerValue(NULL)
+VariantType::VariantType(const AABBox3 & value) : pointerValue(nullptr)
 {
 	SetAABBox3(value);
 }
 
-VariantType::VariantType(const FilePath & value) : pointerValue(NULL)
+VariantType::VariantType(const FilePath & value) : pointerValue(nullptr)
 {
 	SetFilePath(value);
 }
@@ -261,9 +261,8 @@ void VariantType::SetByteArray(const uint8 *array, int32 arraySizeInBytes)
 {
     ReleasePointer();
 	type = TYPE_BYTE_ARRAY;
-    pointerValue = (void*)new Vector<uint8>;
-    ((Vector<uint8>*)pointerValue)->resize(arraySizeInBytes);
-    memcpy(&((Vector<uint8>*)pointerValue)->front(), array, arraySizeInBytes);
+    auto vec = new Vector < uint8 >(array, array + arraySizeInBytes);
+    pointerValue = static_cast<void*>(vec);
 }
 
 void VariantType::SetKeyedArchive(KeyedArchive *archive)
@@ -524,13 +523,15 @@ const WideString & VariantType::AsWideString() const
 const uint8 *VariantType::AsByteArray() const
 {
 	DVASSERT(type == TYPE_BYTE_ARRAY);
-	return &((Vector<uint8>*)pointerValue)->front();
+    const auto vec = static_cast<const Vector<uint8>*>(pointerValue);
+    return vec->empty() ? nullptr : vec->data();
 }
 	
 int32 VariantType::AsByteArraySize() const
 {
 	DVASSERT(type == TYPE_BYTE_ARRAY);
-	return (int32)((Vector<uint8>*)pointerValue)->size();
+    const auto vec = static_cast<const Vector<uint8>*>(pointerValue);
+    return static_cast<int32>(vec->size());
 }
 
 KeyedArchive *VariantType::AsKeyedArchive() const
@@ -622,62 +623,97 @@ bool VariantType::Write(File * fp) const
 {
 	DVASSERT(type != TYPE_NONE)
 	int32 written = fp->Write(&type, 1);
-	if (written != 1)return false;
+	if (written != 1)
+    {
+        return false;
+    }
 	
 	switch(type)
 	{
 	case TYPE_BOOLEAN:
 		{
 			written = fp->Write(&boolValue, 1);
-			if (written != 1)return false;
-		}
+            if (written != 1)
+            {
+                return false;
+            }
+        }
 		break;
 	case TYPE_INT32:
 		{
 			written = fp->Write(&int32Value, 4);
-			if (written != 4)return false;
-		}
+            if (written != 4)
+            {
+                return false;
+            }
+        }
 		break;	
     case TYPE_UINT32:
     {
         written = fp->Write(&uint32Value, 4);
-        if (written != 4)return false;
+        if (written != 4)
+        {
+            return false;
+        }
     }
         break;	
 	case TYPE_FLOAT:
 		{
 			written = fp->Write(&floatValue, 4);
-			if (written != 4)return false;
+            if (written != 4)
+            {
+                return false;
+            }
 		}
 		break;	
 	case TYPE_STRING:
 		{
 			int32 len = (int32)stringValue->length();
 			written = fp->Write(&len, 4);
-			if (written != 4)return false;
+            if (written != 4)
+            {
+                return false;
+            }
 			
 			written = fp->Write(stringValue->c_str(), len);
-			if (written != len)return false;
+            if (written != len)
+            {
+                return false;
+            }
 		}
 		break;	
 	case TYPE_WIDE_STRING:
 		{
 			int32 len = (int32)wideStringValue->length();
 			written = fp->Write(&len, 4);
-			if (written != 4)return false;
+            if (written != 4)
+            {
+                return false;
+            }
 			
 			written = fp->Write(wideStringValue->c_str(), len * sizeof(wchar_t));
-			if (written != len * (int)sizeof(wchar_t))return false;
+            if (written != len * (int)sizeof(wchar_t))
+            {
+                return false;
+            }
 		}
 		break;
 	case TYPE_BYTE_ARRAY:
 		{
 			int32 len = (int32)((Vector<uint8>*)pointerValue)->size();
 			written = fp->Write(&len, 4);
-			if (written != 4)return false;
-			
-			written = fp->Write(&((Vector<uint8>*)pointerValue)->front(), len);
-			if (written != len)return false;
+            if (written != 4)
+            {
+                return false;
+            }
+            if (0 != len)
+            {
+                written = fp->Write(&((Vector<uint8>*)pointerValue)->front(), len);
+                if (written != len)
+                {
+                    return false;
+                }
+            }
 		}
 		break;	
     case TYPE_KEYED_ARCHIVE:
@@ -686,81 +722,123 @@ bool VariantType::Write(File * fp) const
             ((KeyedArchive *)pointerValue)->Save(pF);
 			int32 len = pF->GetSize();
 			written = fp->Write(&len, 4);
-			if (written != 4)return false;
+            if (written != 4)
+            {
+                return false;
+            }
 			
 			written = fp->Write(pF->GetData(), len);
             SafeRelease(pF);
-			if (written != len)return false;
+            if (written != len)
+            {
+                return false;
+            }
 		}
         break;
     case TYPE_INT64:
 		{
             written = fp->Write(int64Value, sizeof(int64));
-            if (written != sizeof(int64))return false;
+            if (written != sizeof(int64))
+            {
+                return false;
+            }
 		}
             break;
     case TYPE_UINT64:
 		{
             written = fp->Write(uint64Value, sizeof(uint64));
-            if (written != sizeof(uint64))return false;
+            if (written != sizeof(uint64))
+            {
+                return false;
+            }
 		}
             break;
     case TYPE_VECTOR2:
 		{
             written = fp->Write(vector2Value, sizeof(Vector2));
-            if (written != sizeof(Vector2))return false;
+            if (written != sizeof(Vector2))
+            {
+                return false;
+            }
 		}
             break;
     case TYPE_VECTOR3:
 		{
             written = fp->Write(vector3Value, sizeof(Vector3));
-            if (written != sizeof(Vector3))return false;
+            if (written != sizeof(Vector3))
+            {
+                return false;
+            }
 		}
             break;
     case TYPE_VECTOR4:
 		{
             written = fp->Write(vector4Value, sizeof(Vector4));
-            if (written != sizeof(Vector4))return false;
+            if (written != sizeof(Vector4))
+            {
+                return false;
+            }
 		}
             break;
     case TYPE_MATRIX2:
 		{
             written = fp->Write(matrix2Value, sizeof(Matrix2));
-            if (written != sizeof(Matrix2))return false;
+            if (written != sizeof(Matrix2))
+            {
+                return false;
+            }
 		}
             break;
     case TYPE_MATRIX3:
 		{
             written = fp->Write(matrix3Value, sizeof(Matrix3));
-            if (written != sizeof(Matrix3))return false;
+            if (written != sizeof(Matrix3))
+            {
+                return false;
+            }
 		}
             break;
     case TYPE_MATRIX4:
 		{
             written = fp->Write(matrix4Value, sizeof(Matrix4));
-            if (written != sizeof(Matrix4))return false;
+            if (written != sizeof(Matrix4))
+            {
+                return false;
+            }
 		}
             break;
     case TYPE_COLOR:
 		{
             written = fp->Write(colorValue->color, sizeof(float32) * 4);
-            if (written != sizeof(float32) * 4) return false;
+            if (written != sizeof(float32) * 4)
+            {
+                return false;
+            }
 		}
         break;
     case TYPE_FASTNAME:
 	    {
 			int32 len = static_cast<int32>(strlen(fastnameValue->c_str()));
 			written = fp->Write(&len, 4);
-			if (written != 4)return false;
+            if (written != 4)
+            {
+                return false;
+            }
         
 			written = fp->Write(fastnameValue->c_str(), len);
-			if (written != len)return false;
+            if (written != len)
+            {
+                return false;
+            }
 	    }
         break;
 	case TYPE_AABBOX3:
 		{
 			written = fp->Write(aabbox3, sizeof(AABBox3));
-			if (written != sizeof(AABBox3))return false;
+			if (written != sizeof(AABBox3))
+            {
+                return false;
+            }
 		}
 		break;
 	case TYPE_FILEPATH:
@@ -768,10 +846,16 @@ bool VariantType::Write(File * fp) const
 			String str = filepathValue->GetAbsolutePathname();
 			int32 len = (int32) str.length();
 			written = fp->Write(&len, 4);
-			if (written != 4)return false;
+            if (written != 4)
+            {
+                return false;
+            }
 
 			written = fp->Write(str.c_str(), len);
-			if (written != len) return false;
+            if (written != len)
+            {
+                return false;
+            }
 		}
 		break;	
             
@@ -782,7 +866,10 @@ bool VariantType::Write(File * fp) const
 bool VariantType::Read(File * fp)
 {
 	int32 read = fp->Read(&type, 1);
-	if (read == 0) return false;
+    if (read == 0)
+    {
+        return false;
+    }
 
 	ReleasePointer();
 	switch(type)
@@ -790,39 +877,57 @@ bool VariantType::Read(File * fp)
 		case TYPE_BOOLEAN:
 		{
 			read = fp->Read(&boolValue, 1);
-			if (read != 1)return false;
+            if (read != 1)
+            {
+                return false;
+            }
 		}
 		break;
 		case TYPE_INT32:
 		{
 			read = fp->Read(&int32Value, 4);
-			if (read != 4)return false;
+            if (read != 4)
+            {
+                return false;
+            }
 		}
         break;	
 		case TYPE_UINT32:
 		{
 			read = fp->Read(&uint32Value, 4);
-			if (read != 4)return false;
+            if (read != 4)
+            {
+                return false;
+            }
 		}
         break;	
 		case TYPE_FLOAT:
 		{
 			read = fp->Read(&floatValue, 4);
-			if (read != 4)return false;
+            if (read != 4)
+            {
+                return false;
+            }
 		}
         break;	
 		case TYPE_STRING:
 		{
 			int32 len;
 			read = fp->Read(&len, 4);
-			if (read != 4)return false;
+            if (read != 4)
+            {
+                return false;
+            }
 			
 			char *buf = new char[len + 1];
 			read = fp->Read(buf, len);
 			buf[len] = 0;
 			stringValue = new String(buf);
 			delete [] buf;
-			if (read != len)return false;
+            if (read != len)
+            {
+                return false;
+            }
 			
 		}
         break;	
@@ -830,7 +935,10 @@ bool VariantType::Read(File * fp)
 		{ 
 			int32 len;
 			read = fp->Read(&len, 4);
-			if (read != 4)return false;
+            if (read != 4)
+            {
+                return false;
+            }
 			
             wideStringValue = new WideString();
 			wideStringValue->resize(len);
@@ -838,7 +946,10 @@ bool VariantType::Read(File * fp)
 			{
 				wchar_t c;
 				read = fp->Read(&c, sizeof(wchar_t));
-				if (read != sizeof(wchar_t))return false;
+                if (read != sizeof(wchar_t))
+                {
+                    return false;
+                }
 				(*wideStringValue)[k] = c;
 			}
 		}
@@ -847,23 +958,37 @@ bool VariantType::Read(File * fp)
 		{
 			int32 len;
 			read = fp->Read(&len, 4);
-			if (read != 4)return false;
-			
-            pointerValue = (void*)new Vector<uint8>;
-            ((Vector<uint8>*)pointerValue)->resize(len);
-			read = fp->Read(&((Vector<uint8>*)pointerValue)->front(), len);
-			if (read != len)return false;
+            if (read != 4)
+            {
+                return false;
+            }
+            
+            pointerValue = static_cast<void*>(new Vector<uint8>(len));
+            if (0 != len)
+            {
+                read = fp->Read(&((Vector<uint8>*)pointerValue)->front(), len);
+                if (read != len)
+                {
+                    return false;
+                }
+            }
 		}
         break;	
 		case TYPE_KEYED_ARCHIVE:
 		{
 			int32 len;
 			read = fp->Read(&len, 4);
-			if (read != 4)return false;
+            if (read != 4)
+            {
+                return false;
+            }
 			
             uint8 *pData = new uint8[len];
 			read = fp->Read(pData, len);
-			if (read != len)return false;
+            if (read != len)
+            {
+                return false;
+            }
             DynamicMemoryFile *pF = DynamicMemoryFile::Create(pData, len, File::READ);
             pointerValue = new KeyedArchive();
             ((KeyedArchive*)pointerValue)->Load(pF);
@@ -875,63 +1000,90 @@ bool VariantType::Read(File * fp)
 		{
             int64Value = new int64;
             read = fp->Read(int64Value, sizeof(int64));
-            if (read != sizeof(int64))return false;
+            if (read != sizeof(int64))
+            {
+                return false;
+            }
 		}
             break;
         case TYPE_UINT64:
 		{
             uint64Value = new uint64;
             read = fp->Read(uint64Value, sizeof(uint64));
-            if (read != sizeof(uint64))return false;
+            if (read != sizeof(uint64))
+            {
+                return false;
+            }
 		}
             break;
         case TYPE_VECTOR2:
 		{
             vector2Value = new Vector2;
             read = fp->Read(vector2Value, sizeof(Vector2));
-            if (read != sizeof(Vector2))return false;
+            if (read != sizeof(Vector2))
+            {
+                return false;
+            }
 		}
             break;
         case TYPE_VECTOR3:
 		{
             vector3Value = new Vector3;
             read = fp->Read(vector3Value, sizeof(Vector3));
-            if (read != sizeof(Vector3))return false;
+            if (read != sizeof(Vector3))
+            {
+                return false;
+            }
 		}
             break;
         case TYPE_VECTOR4:
 		{
             vector4Value = new Vector4;
             read = fp->Read(vector4Value, sizeof(Vector4));
-            if (read != sizeof(Vector4))return false;
+            if (read != sizeof(Vector4))
+            {
+                return false;
+            }
 		}
             break;
         case TYPE_MATRIX2:
 		{
             matrix2Value = new Matrix2;
             read = fp->Read(matrix2Value, sizeof(Matrix2));
-            if (read != sizeof(Matrix2))return false;
+            if (read != sizeof(Matrix2))
+            {
+                return false;
+            }
 		}
             break;
         case TYPE_MATRIX3:
 		{
             matrix3Value = new Matrix3;
             read = fp->Read(matrix3Value, sizeof(Matrix3));
-            if (read != sizeof(Matrix3))return false;
+            if (read != sizeof(Matrix3))
+            {
+                return false;
+            }
 		}
             break;
         case TYPE_MATRIX4:
 		{
             matrix4Value = new Matrix4;
             read = fp->Read(matrix4Value, sizeof(Matrix4));
-            if (read != sizeof(Matrix4))return false;
+            if (read != sizeof(Matrix4))
+            {
+                return false;
+            }
 		}
             break;
         case TYPE_COLOR:
 			{
 				colorValue = new Color;
 				read = fp->Read(colorValue->color, sizeof(float32) * 4);
-				if (read != sizeof(float32) * 4) return false;
+                if (read != sizeof(float32) * 4)
+                {
+                    return false;
+                }
 			}
             break;
 
@@ -939,14 +1091,20 @@ bool VariantType::Read(File * fp)
 			{
 				int32 len = 0;
 				read = fp->Read(&len, 4);
-				if (read != 4)return false;
+                if (read != 4)
+                {
+                    return false;
+                }
 			
 				char *buf = new char[len + 1];
 				read = fp->Read(buf, len);
 				buf[len] = 0;
 				fastnameValue = new FastName(buf);
 				delete [] buf;
-				if (read != len)return false;
+                if (read != len)
+                {
+                    return false;
+                }
 			}
             break;
 
@@ -954,26 +1112,35 @@ bool VariantType::Read(File * fp)
 			{
 				aabbox3 = new AABBox3;
 				read = fp->Read(aabbox3, sizeof(AABBox3));
-				if (read != sizeof(AABBox3))return false;
+                if (read != sizeof(AABBox3))
+                {
+                    return false;
+                }
 			}
 			break;
 		case TYPE_FILEPATH:
 			{
 				int32 len;
 				read = fp->Read(&len, 4);
-				if (read != 4)return false;
+                if (read != 4)
+                {
+                    return false;
+                }
 
 				char *buf = new char[len + 1];
 				read = fp->Read(buf, len);
 				buf[len] = 0;
 				filepathValue = new FilePath(buf);
 				delete [] buf;
-				if (read != len) return false;
+                if (read != len)
+                {
+                    return false;
+                }
 			}
 			break;	
 		default:
 		{
-			//DVASSERT(0 && "Something went wrong with VariantType");
+            return false;
 		}
 	}
 	return true;
@@ -1070,9 +1237,9 @@ void VariantType::ReleasePointer()
 				break;
         }
         
-        // It is enough to set only pointerValue to NULL - all other pointers are in union, so
-        // actually points to the same address and thus will be set to NULL too.
-        pointerValue = NULL;
+        // It is enough to set only pointerValue to nullptr - all other pointers are in union, so
+        // actually points to the same address and thus will be set to nullptr too.
+        pointerValue = nullptr;
     }
 }
 
@@ -1132,16 +1299,16 @@ bool VariantType::operator==(const VariantType& other) const
                         isEqual = true;
                         if(keyedArchive != otherKeyedArchive)
                         {                                
-                            const Map<String, VariantType*> data = keyedArchive->GetArchieveData();
-                            const Map<String, VariantType*> otherData = otherKeyedArchive->GetArchieveData();
-                            for(Map<String, VariantType*>::const_iterator it = data.begin(); it != data.end(); ++it)
+                            const Map<String, VariantType*> &data = keyedArchive->GetArchieveData();
+                            const Map<String, VariantType*> &otherData = otherKeyedArchive->GetArchieveData();
+                            for(const auto &obj : data)
                             {
-                                Map<String, VariantType*>::const_iterator findIt = otherData.find(it->first);
+                                Map<String, VariantType*>::const_iterator findIt = otherData.find(obj.first);
                                 if(findIt != otherData.end())
                                 {
-                                    if(it->second != findIt->second)
+                                    if(obj.second != findIt->second)
                                     {
-                                        if((*it->second) != (*findIt->second))
+                                        if((*obj.second) != (*findIt->second))
                                         {
                                             isEqual = false;
                                             break;
@@ -1238,12 +1405,12 @@ const MetaInfo* VariantType::Meta()
 		return variantNamesMap[type].variantMeta;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void* VariantType::MetaObject()
 {
-	const void *ret = NULL;
+	const void *ret = nullptr;
 
 	switch(type)
 	{
@@ -1297,7 +1464,7 @@ VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
 	VariantType v;
 	uint8 type = TYPE_NONE;
 
-	DVASSERT(NULL != meta);
+	DVASSERT(nullptr != meta);
 
 	for(int i = 0; i < TYPES_COUNT; ++i)
 	{
@@ -1308,7 +1475,7 @@ VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
 		}
 	}
 
-	DVASSERT(NULL != src);
+	DVASSERT(nullptr != src);
 
 	switch(type)
 	{
@@ -1383,7 +1550,7 @@ VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
 		else
 		{
 			printf("MetaType: %s, size %d, is pointer %d, introspection %p\n", meta->GetTypeName(), meta->GetSize(), meta->IsPointer(), meta->GetIntrospection());
-			if(NULL != meta->GetIntrospection())
+			if(nullptr != meta->GetIntrospection())
 			{
 				printf("Introspection: %s\n", meta->GetIntrospection()->Name().c_str());
 			}
@@ -1396,9 +1563,9 @@ VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
 
 void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &val)
 {
-	MetaInfo *valMeta = NULL;
+	MetaInfo *valMeta = nullptr;
 
-	DVASSERT(NULL != meta);
+	DVASSERT(nullptr != meta);
 
 	for(int i = 0; i < TYPES_COUNT; ++i)
 	{
@@ -1409,7 +1576,7 @@ void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &v
 		}
 	}
 
-	DVASSERT(NULL != valMeta)
+	DVASSERT(nullptr != valMeta)
 
 	// Destination meta type differ from source meta type
 	// this happen only for int8 and uint8 types, because we are storing them in int32 and uint32
@@ -1455,16 +1622,13 @@ void VariantType::SaveData(void *dst, const MetaInfo *meta, const VariantType &v
 		case TYPE_KEYED_ARCHIVE:
 			{
 				DAVA::KeyedArchive *dstArchive = *((DAVA::KeyedArchive **) dst);
-				if(NULL != dstArchive)
+				if(nullptr != dstArchive)
 				{
 					dstArchive->DeleteAllKeys();
-					Map<String, VariantType*> values = val.AsKeyedArchive()->GetArchieveData();
-					Map<String, VariantType*>::iterator i;
-
-					for(i = values.begin(); i != values.end(); ++i)
-					{
-						dstArchive->SetVariant(i->first, *i->second);
-					}
+                    for(const auto &obj : val.AsKeyedArchive()->GetArchieveData())
+                    {
+                        dstArchive->SetVariant(obj.first, *obj.second);
+                    }
 				}
 			}
 			break;
@@ -1548,7 +1712,7 @@ VariantType VariantType::FromType(int type)
 		v.SetUInt32(0);
 		break;
 	case TYPE_BYTE_ARRAY:
-		v.SetByteArray(NULL, 0);
+		v.SetByteArray(nullptr, 0);
 		break;
 	case TYPE_KEYED_ARCHIVE:
 		{

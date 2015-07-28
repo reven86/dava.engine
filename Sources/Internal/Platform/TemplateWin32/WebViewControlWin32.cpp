@@ -52,6 +52,8 @@
 #include "WebViewControlWin32.h"
 #include "CorePlatformWin32.h"
 #include "Render/Image/ImageConvert.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIWebView.h"
 
 using namespace DAVA;
 

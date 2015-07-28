@@ -52,9 +52,9 @@ public:
     Image* EnsurePowerOf2Image(Image *image) const;
     void EnsurePowerOf2Images(Vector<Image*>& images) const;
 
-    eErrorCode Save(const FilePath &fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat = FORMAT_RGBA8888) const;
-    eErrorCode SaveAsCubeMap(const FilePath &fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat = FORMAT_RGBA8888) const;
-    eErrorCode Save(const FilePath &fileName, Image *image, PixelFormat compressionFormat = FORMAT_RGBA8888) const;
+    eErrorCode Save(const FilePath &fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat = FORMAT_RGBA8888, ImageQuality quality = DEFAULT_IMAGE_QUALITY) const;
+    eErrorCode SaveAsCubeMap(const FilePath &fileName, const Vector<Vector<Image *> > &imageSet, PixelFormat compressionFormat = FORMAT_RGBA8888, ImageQuality quality = DEFAULT_IMAGE_QUALITY) const;
+    eErrorCode Save(const FilePath &fileName, Image *image, PixelFormat compressionFormat = FORMAT_RGBA8888, ImageQuality quality = DEFAULT_IMAGE_QUALITY) const;
 
     inline ImageFormatInterface* GetImageFormatInterface(ImageFormat fileFormat) const;
     ImageFormatInterface* GetImageFormatInterface(const FilePath &pathName) const;
@@ -67,6 +67,8 @@ public:
     
     ImageFormat GetImageFormatForExtension(const String &extension) const;
     ImageFormat GetImageFormatForExtension(const FilePath &pathname) const;
+
+    ImageFormat GetImageFormatByName(const String& name) const;
     
 protected:
     ImageFormatInterface* wrappers[IMAGE_FORMAT_COUNT];
