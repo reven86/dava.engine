@@ -49,6 +49,8 @@ protected:
     
 private:
     
+    static const FastName CAMERA;
+    
     static const FastName CAMERA_PATH;
     static const FastName TANK_STUB;
     static const FastName TANKS;
