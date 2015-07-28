@@ -105,9 +105,15 @@ static int pthread_cond_destroy(pthread_cond_t* const condition) {
 
 static int pthread_cond_init(pthread_cond_t* const condition, void* cond_attr) {
   (void)cond_attr;
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
+  condition->waiting_sem_ = CreateSemaphoreExW(NULL, 0, 1, NULL, 0, SEMAPHORE_ALL_ACCESS);
+  condition->received_sem_ = CreateSemaphoreExW(NULL, 0, 1, NULL, 0, SEMAPHORE_ALL_ACCESS);
+  condition->signal_event_ = CreateEventExW(NULL, NULL, 0, EVENT_ALL_ACCESS);
+#else
   condition->waiting_sem_ = CreateSemaphore(NULL, 0, 1, NULL);
   condition->received_sem_ = CreateSemaphore(NULL, 0, 1, NULL);
   condition->signal_event_ = CreateEvent(NULL, FALSE, FALSE, NULL);
+#endif
   if (condition->waiting_sem_ == NULL ||
       condition->received_sem_ == NULL ||
       condition->signal_event_ == NULL) {

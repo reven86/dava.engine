@@ -34,7 +34,7 @@
 #include <QLabel>
 #include <QCache>
 
-#include "LineEditEx.h"
+#include "QtTools/LineEdit/LineEditEx.h"
 
 
 class FilePathBrowser

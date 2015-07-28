@@ -38,6 +38,8 @@
 #include "Tests/SpeedLoadImagesTest.h"
 #include "Tests/MultilineTest.h"
 #include "Tests/StaticTextTest.h"
+#include "Tests/StaticWebViewTest.h"
+#include "Tests/UIMovieTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -57,6 +59,9 @@ void GameCore::RegisterTests()
     new SpeedLoadImagesTest();
     new MultilineTest();
     new StaticTextTest();
+    new StaticWebViewTest();
+    new UIMovieTest();
+//$UNITTEST_CTOR
 }
 
 #include <fstream>

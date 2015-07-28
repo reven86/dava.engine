@@ -76,19 +76,20 @@ DeviceInfo::ScreenInfo & DeviceInfo::GetScreenInfo()
 	return screenInfo;
 }
 
-#ifndef __DAVAENGINE_ANDROID__
+#if !defined(__DAVAENGINE_ANDROID__)
 int DeviceInfo::GetZBufferSize()
 {
 	return 24;
 }
+#endif
 
+#if !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_WIN_UAP__)
 List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
 {
     List<DeviceInfo::StorageInfo> l;
     return l;
 }
-    
-#endif
+#endif   
 
 #ifdef __DAVAENGINE_WINDOWS__
 
