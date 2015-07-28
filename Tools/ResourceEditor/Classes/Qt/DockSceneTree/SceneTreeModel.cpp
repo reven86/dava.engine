@@ -46,8 +46,6 @@
 //mime data
 #include "Tools/MimeData/MimeDataHelper2.h"
 
-#include "Debug/Stats.h"
-using namespace DAVA;
 
 SceneTreeModel::SceneTreeModel(QObject* parent /*= 0*/ )
 	: QStandardItemModel(parent)
@@ -625,8 +623,6 @@ bool SceneTreeModel::DropAccepted() const
 
 void SceneTreeModel::ItemChanged(QStandardItem * item)
 {
-	TOOLS_IMM_TIME_PROFILE("---  SceneTreeModel::ItemChanged");
-
 	SceneTreeItem *treeItem = dynamic_cast<SceneTreeItem *>(item);
 	if(NULL != treeItem)
 	{

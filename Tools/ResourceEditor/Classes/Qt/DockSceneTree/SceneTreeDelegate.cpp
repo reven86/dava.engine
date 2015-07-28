@@ -33,8 +33,6 @@
 #include "DockSceneTree/SceneTreeModel.h"
 #include "DockSceneTree/SceneTreeItem.h"
 
-#include "Debug/Stats.h"
-
 
 SceneTreeDelegate::SceneTreeDelegate(QWidget *parent /* = 0 */)
 	: QStyledItemDelegate(parent)
@@ -48,13 +46,11 @@ void SceneTreeDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
 	opt.state = opt.state & ~QStyle::State_HasFocus;
 	customDraw(painter, &opt, index);
 
-//	TOOLS_IMM_TIME_PROFILE("** QStyledItemDelegate::paint");
 	QStyledItemDelegate::paint(painter, opt, index);
 }
 
 void SceneTreeDelegate::customDraw(QPainter *painter, QStyleOptionViewItem *option, const QModelIndex &index) const
 {
-//	TOOLS_IMM_TIME_PROFILE("** QStyledItemDelegate::customDraw");
 	QSortFilterProxyModel *proxyModel = (QSortFilterProxyModel *)index.model();
 	if(NULL != proxyModel)
 	{

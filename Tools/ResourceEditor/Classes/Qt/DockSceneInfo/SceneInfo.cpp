@@ -53,7 +53,6 @@
 
 #include "Scene3D/Components/ComponentHelpers.h"
 
-#include "Debug/Stats.h"
 
 using namespace DAVA;
 

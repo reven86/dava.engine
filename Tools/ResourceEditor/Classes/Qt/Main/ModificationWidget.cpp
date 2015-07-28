@@ -37,8 +37,6 @@
 #include <QHBoxLayout>
 #include <QStyleOptionSpinBox>
 
-#include "Debug/Stats.h"
-using namespace DAVA;
 
 ModificationWidget::ModificationWidget(QWidget* parent)
 	: QWidget(parent)

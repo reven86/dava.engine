@@ -137,9 +137,6 @@
 
 #include "QtTools/FileDialog/FileDialog.h"
 
-#include "Debug/Stats.h"
-using namespace DAVA;
-
 
 QtMainWindow::QtMainWindow(QWidget *parent)
 	: QMainWindow(parent)

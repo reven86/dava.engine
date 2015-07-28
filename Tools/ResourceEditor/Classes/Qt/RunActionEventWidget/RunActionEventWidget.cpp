@@ -42,8 +42,6 @@
 #include "Scene/SceneEditor2.h"
 #include "Settings/SettingsManager.h"
 
-#include "Debug/Stats.h"
-using namespace DAVA;
 
 namespace
 {

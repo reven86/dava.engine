@@ -37,8 +37,6 @@
 #include <QDragEnterEvent>
 #include <QHeaderView>
 
-#include "Debug/Stats.h"
-using namespace DAVA;
 
 MaterialTree::MaterialTree(QWidget *parent /* = 0 */)
 : QTreeView(parent)

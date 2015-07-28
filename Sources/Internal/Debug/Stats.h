@@ -167,22 +167,13 @@ private:
 };
     
 #if defined(__DAVAENGINE_ENABLE_DEBUG_STATS__)
-// #define TIME_PROFILE(name) TimeMeasure timeMeasure(FastName(name));
-// #define IMM_TIME_PROFILE(name) ImmediateTimeMeasure immTimeMeasure(FastName(name));
+#define TIME_PROFILE(name) TimeMeasure timeMeasure(FastName(name));
+#define IMM_TIME_PROFILE(name) ImmediateTimeMeasure immTimeMeasure(FastName(name));
 #else
 #define TIME_PROFILE(name)
 #define IMM_TIME_PROFILE(name)
 #endif
 
-#if defined(__DAVAENGINE_ENABLE_DEBUG_STATS__)
-#define TIME_PROFILE(name)
-#define IMM_TIME_PROFILE(name)
-
-#define TOOLS_TIME_PROFILE(name) TimeMeasure timeMeasure(FastName(name));
-#define TOOLS_IMM_TIME_PROFILE(name) ImmediateTimeMeasure immTimeMeasure(FastName(name));
-
-
-#endif
 
 
 };

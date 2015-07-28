@@ -45,9 +45,6 @@
 #include <QFrame>
 #include <QPushButton>
 
-#include "Debug/Stats.h"
-using namespace DAVA;
-
 
 LODEditor::LODEditor(QWidget* parent)
     : QWidget(parent)

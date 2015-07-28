@@ -57,12 +57,16 @@
 #include "Commands2/SaveEntityAsAction.h"
 #include "Commands2/ConvertToShadowCommand.h"
 
-#include "Debug/Stats.h"
+#include "Tools/LazyUpdater/LazyUpdater.h"
+
 
 SceneTree::SceneTree(QWidget *parent /*= 0*/)
 	: QTreeView(parent)
 	, isInSync(false)
 {
+	Function<void()> fn(this, &SceneTree::UpdateTree);
+	treeUpdater = new LazyUpdater(fn, this);
+
 	CleanupParticleEditorSelectedItems();
 
 	treeModel = new SceneTreeModel();
@@ -80,31 +84,25 @@ SceneTree::SceneTree(QWidget *parent /*= 0*/)
 	setContextMenuPolicy(Qt::CustomContextMenu);
 
 	// scene signals
-	QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(SceneActivated(SceneEditor2 *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(SceneDeactivated(SceneEditor2 *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2 *, DAVA::Entity *)), this, SLOT(SceneStructureChanged(SceneEditor2 *, DAVA::Entity *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), this, SLOT(SceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
+	QObject::connect(SceneSignals::Instance(), &SceneSignals::Activated, this, &SceneTree::SceneActivated);
+	QObject::connect(SceneSignals::Instance(), &SceneSignals::Deactivated, this, &SceneTree::SceneDeactivated);
+	QObject::connect(SceneSignals::Instance(), &SceneSignals::StructureChanged, this, &SceneTree::SceneStructureChanged);
+	QObject::connect(SceneSignals::Instance(), &SceneSignals::SelectionChanged, this, &SceneTree::SceneSelectionChanged);
+	QObject::connect(SceneSignals::Instance(), &SceneSignals::CommandExecuted, this, &SceneTree::CommandExecuted);
 
 	// particles signals
-	QObject::connect(SceneSignals::Instance(), SIGNAL(ParticleLayerValueChanged(SceneEditor2*, DAVA::ParticleLayer*)), this, SLOT(ParticleLayerValueChanged(SceneEditor2*, DAVA::ParticleLayer*)));
+	QObject::connect(SceneSignals::Instance(), &SceneSignals::ParticleLayerValueChanged, this, &SceneTree::ParticleLayerValueChanged);
 
 	// this widget signals
-	QObject::connect(selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(TreeSelectionChanged(const QItemSelection &, const QItemSelection &)));
-	QObject::connect(this, SIGNAL(clicked(const QModelIndex &)), this, SLOT(TreeItemClicked(const QModelIndex &)));
-	QObject::connect(this, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(TreeItemDoubleClicked(const QModelIndex &)));
-	QObject::connect(this, SIGNAL(collapsed(const QModelIndex &)), this, SLOT(TreeItemCollapsed(const QModelIndex &)));
-	QObject::connect(this, SIGNAL(expanded(const QModelIndex &)), this, SLOT(TreeItemExpanded(const QModelIndex &)));
-	QObject::connect(&refreshTimer, SIGNAL(timeout()), this, SLOT(OnRefreshTimeout()));
+	QObject::connect(selectionModel(), &QItemSelectionModel::selectionChanged, this, &SceneTree::TreeSelectionChanged);
+	QObject::connect(this, &QTreeView::clicked, this, &SceneTree::TreeItemClicked);
+	QObject::connect(this, &QTreeView::doubleClicked, this, &SceneTree::TreeItemDoubleClicked);
+	QObject::connect(this, &QTreeView::collapsed, this, &SceneTree::TreeItemCollapsed);
+	QObject::connect(this, &QTreeView::expanded, this, &SceneTree::TreeItemExpanded);
 
-	QObject::connect(this, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ShowContextMenu(const QPoint&)));
-
-	refreshTimer.start(1500);
+	QObject::connect(this, &QTreeView::customContextMenuRequested, this, &SceneTree::ShowContextMenu);
 }
 
-SceneTree::~SceneTree()
-{
-
-}
 
 void SceneTree::SetFilter(const QString &filter)
 {
@@ -215,10 +213,6 @@ void SceneTree::dragEnterEvent(QDragEnterEvent *event)
 
 void SceneTree::SceneActivated(SceneEditor2 *scene)
 {
-	Logger::Warning("%s", __FUNCTION__);
-
-	TOOLS_IMM_TIME_PROFILE("SceneTree::SceneActivated");
-
 	treeModel->SetScene(scene);
     selectionModel()->clear();
     SyncSelectionToTree();
@@ -244,10 +238,6 @@ void SceneTree::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *se
 
 void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 {
-	Logger::Warning("%s", __FUNCTION__);
-
-	TOOLS_IMM_TIME_PROFILE("SceneTree::SceneStructureChanged");
-
 	if(scene == treeModel->GetScene())
 	{
 		auto selectionWasBlocked = selectionModel()->blockSignals(true);
@@ -268,12 +258,42 @@ void SceneTree::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 	}
 }
 
+void SceneTree::CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
+{	
+	auto commandID = command->GetId();
+
+	switch (commandID)
+	{
+	case CMDID_COMPONENT_ADD:
+	case CMDID_COMPONENT_REMOVE:
+	case CMDID_INSP_MEMBER_MODIFY:
+	case CMDID_INSP_DYNAMIC_MODIFY:
+	case CMDID_ENTITY_LOCK:
+	case CMDID_PARTICLE_EMITTER_ADD:
+	case CMDID_PARTICLE_EMITTER_MOVE:
+	case CMDID_PARTICLE_EMITTER_REMOVE:
+	case CMDID_PARTICLE_LAYER_REMOVE:
+	case CMDID_PARTICLE_LAYER_MOVE:
+	case CMDID_PARTICLE_FORCE_REMOVE:
+	case CMDID_PARTICLE_FORCE_MOVE:
+	case CMDID_META_OBJ_MODIFY:
+	case CMDID_PARTICLE_EMITTER_LAYER_ADD:
+	case CMDID_PARTICLE_EMITTER_LAYER_REMOVE:
+	case CMDID_PARTICLE_EMITTER_LAYER_CLONE:
+	case CMDID_PARTICLE_EMITTER_FORCE_ADD:
+	case CMDID_PARTICLE_EMITTER_FORCE_REMOVE:
+	{
+		treeUpdater->Update();
+	}
+	break;
+
+	default:
+		break;
+	}
+}
+
 void SceneTree::TreeSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
 {
-	Logger::Warning("%s", __FUNCTION__);
-
-	TOOLS_IMM_TIME_PROFILE("SceneTree::TreeSelectionChanged");
-
 	SyncSelectionFromTree();
     
 	// emit some signal about particles
@@ -564,8 +584,6 @@ void SceneTree::LookAtSelection()
 
 void SceneTree::RemoveSelection()
 {
-	TOOLS_IMM_TIME_PROFILE("SceneTree::RemoveSelection");
-
 	SceneEditor2* sceneEditor = treeModel->GetScene();
 	if(NULL != sceneEditor)
 	{
@@ -760,8 +778,6 @@ void SceneTree::CollapseAll()
 
 void SceneTree::TreeItemCollapsed(const QModelIndex &index)
 {
-	TOOLS_IMM_TIME_PROFILE("SceneTree::TreeItemCollapsed");
-
 	treeModel->SetSolid(filteringProxyModel->mapToSource(index), true);
 
 	bool needSync = false;
@@ -793,8 +809,6 @@ void SceneTree::TreeItemCollapsed(const QModelIndex &index)
 
 void SceneTree::TreeItemExpanded(const QModelIndex &index)
 {
-	TOOLS_IMM_TIME_PROFILE("SceneTree::TreeItemExpanded");
-
 	treeModel->SetSolid(filteringProxyModel->mapToSource(index), false);
 }
 
@@ -836,10 +850,6 @@ void SceneTree::SyncSelectionToTree()
 
 void SceneTree::SyncSelectionFromTree()
 {
-	Logger::Warning("%s", __FUNCTION__);
-
-	TOOLS_IMM_TIME_PROFILE("SceneTree::SyncSelectionFromTree");
-
 	if(!isInSync)
 	{
 		isInSync = true;
@@ -1336,16 +1346,8 @@ void SceneTree::CleanupParticleEditorSelectedItems()
 	this->selectedEffect = NULL;
 }
 
-void SceneTree::OnRefreshTimeout()
-{
-	//invalidate scene tree after entity name changed
-//	dataChanged(QModelIndex(), QModelIndex());
-}
-
 void SceneTree::SetEntityNameAsFilter()
 {
-	TOOLS_IMM_TIME_PROFILE("SceneTree::SetEntityNameAsFilter");
-
 	SceneEditor2 *scene = treeModel->GetScene();
 	if(!scene) return;
 
@@ -1364,8 +1366,6 @@ void SceneTree::AddCameraActions(QMenu &menu)
 
 void SceneTree::ExpandFilteredItems()
 {
-	TOOLS_IMM_TIME_PROFILE("SceneTree::ExpandFilteredItems");
-
     QSet<QModelIndex> indexSet;
     BuildExpandItemsSet(indexSet);
 
@@ -1377,8 +1377,6 @@ void SceneTree::ExpandFilteredItems()
 
 void SceneTree::BuildExpandItemsSet(QSet<QModelIndex>& indexSet, const QModelIndex& parent)
 {
-	TOOLS_IMM_TIME_PROFILE("SceneTree::BuildExpandItemsSet");
-
     const int n = filteringProxyModel->rowCount(parent);
     for (int i = 0; i < n; i++)
     {
@@ -1418,30 +1416,7 @@ void SceneTree::SetCustomDrawCamera()
 	}
 }
 
-//=======================================================
-void SceneTree::drawBranches(QPainter * painter, const QRect & rect, const QModelIndex & index) const
+void SceneTree::UpdateTree()
 {
-	QTreeView::drawBranches(painter, rect, index);
+	dataChanged(QModelIndex(), QModelIndex());
 }
-
-void SceneTree::drawRow(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
-{
-	QTreeView::drawRow(painter, option, index);
-}
-
-void SceneTree::rowsAboutToBeRemoved(const QModelIndex & parent, int start, int end)
-{
-	QTreeView::rowsAboutToBeRemoved(parent, start, end);
-}
-
-void SceneTree::rowsInserted(const QModelIndex & parent, int start, int end)
-{
-	QTreeView::rowsInserted(parent, start, end);
-}
-
-void SceneTree::paintEvent(QPaintEvent * event)
-{
-//	TOOLS_IMM_TIME_PROFILE("SceneTree::paintEvent");
-	QTreeView::paintEvent(event);
-}
-
