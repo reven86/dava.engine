@@ -3111,12 +3111,23 @@ void QtMainWindow::OnConsoleItemClicked(const QString &data)
     if (conv.CanConvert<Entity*>())
     {
         auto vec = conv.GetPointers<Entity*>();
-        EntityGroup entityGroup;
-        for (auto entity : vec)
+        if (vec.empty())
         {
-            entityGroup.Add(entity);
+            EntityGroup entityGroup;
+            DAVA::Vector<Entity *> allEntities;
+            GetCurrentScene()->GetChildNodes(allEntities);
+            for (auto entity : vec)
+            {
+                if (std::find(allEntities.begin(), allEntities.end(), entity) != allEntities.end())
+                {
+                    entityGroup.Add(entity);
+                }
+            }
+            if (entityGroup.Size() != 0)
+            {
+                GetCurrentScene()->selectionSystem->SetSelection(entityGroup);
+            }
         }
-        GetCurrentScene()->selectionSystem->SetSelection(entityGroup);
     }
 }
 
