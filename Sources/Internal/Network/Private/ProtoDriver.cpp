@@ -214,7 +214,6 @@ void ProtoDriver::OnSendComplete()
         if (curPacket.sentLength == curPacket.dataLength)
         {
             Channel* ch = GetChannel(curPacket.channelId);
-            pendingAckQueue.push_back(curPacket.packetId);
 
             ch->service->OnPacketSent(ch, curPacket.data, curPacket.dataLength);
             curPacket.data = NULL;
@@ -367,7 +366,10 @@ void ProtoDriver::SendCurPacket()
     Buffer buffers[2];
     buffers[0] = CreateBuffer(&header);
     buffers[1] = CreateBuffer(curPacket.data + curPacket.sentLength, curPacket.chunkLength);
-    transport->Send(buffers, 2);
+    if (0 == transport->Send(buffers, 2) && 0 == curPacket.sentLength)
+    {
+        pendingAckQueue.push_back(curPacket.packetId);
+    }
 }
 
 void ProtoDriver::SendCurControl()

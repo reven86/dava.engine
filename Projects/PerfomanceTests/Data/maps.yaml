@@ -1,4 +1,0 @@
-#format: 'default' and 'tutorial' should go before list of map names
-default: "10_asia_as"
-rudniki: "rudniki/rudniki.sc2"
-asia: "10_asia_as/10_asia_as.sc2"

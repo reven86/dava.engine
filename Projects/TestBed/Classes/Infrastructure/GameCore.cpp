@@ -35,7 +35,10 @@
 #include "Infrastructure/TestListScreen.h"
 #include "Tests/NotificationTest.h"
 #include "Tests/UIScrollViewTest.h"
+#include "Tests/SpeedLoadImagesTest.h"
 #include "Tests/MultilineTest.h"
+#include "Tests/StaticWebViewTest.h"
+#include "Tests/UIMovieTest.h"
 //$UNITTEST_INCLUDE
 
 void GameCore::RunOnlyThisTest()
@@ -52,7 +55,11 @@ void GameCore::RegisterTests()
 {
     new UIScrollViewTest();
     new NotificationScreen();
+    new SpeedLoadImagesTest();
     new MultilineTest();
+    new StaticWebViewTest();
+    new UIMovieTest();
+//$UNITTEST_CTOR
 }
 
 #include <fstream>
