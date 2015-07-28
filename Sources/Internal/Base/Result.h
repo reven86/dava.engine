@@ -47,6 +47,7 @@ struct Result
     Result(const ResultType type = RESULT_SUCCESS, const String &message = String());
     Result(const Result &result) = default;
     Result(Result &&result);
+    void LogResult() const;
     Result& operator = (const Result &result) = default;
     Result& operator = (Result &&result);
     operator bool() const;
@@ -64,6 +65,7 @@ class ResultList
 public:
     explicit ResultList();
     explicit ResultList(const Result &result);
+    void LogResults() const;
     ResultList(Result &&result);
     ResultList(const ResultList &resultList) = default;
     ResultList(ResultList &&resultList);

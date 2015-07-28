@@ -28,6 +28,7 @@
 
 
 #include "Base/Result.h"
+#include "FileSystem/Logger.h"
 
 using namespace DAVA;
 
@@ -42,6 +43,23 @@ Result::Result(Result &&result)
     , message(std::move(result.message))
 {
     result.type = RESULT_SUCCESS;
+}
+
+void Result::LogResult() const
+{
+    const Logger *logger = Logger::Instance();
+    if (nullptr == logger)
+    {
+        return;
+    }
+    Logger::eLogLevel ll = Logger::LEVEL_INFO;
+    switch (type)
+    {
+    case Result::RESULT_SUCCESS: ll = Logger::LEVEL_INFO; break;
+    case Result::RESULT_FAILURE: ll = Logger::LEVEL_WARNING; break;
+    case Result::RESULT_ERROR: ll = Logger::LEVEL_ERROR; break;
+    }
+    logger->Log(ll, "%s", message.c_str());
 }
 
 Result& Result::operator = (Result&& result)
@@ -65,6 +83,14 @@ ResultList::ResultList(const Result &result)
     : allOk(result)
 {
     results.push_back(result);
+}
+
+void ResultList::LogResults() const
+{
+    for (const auto &result : results)
+    {
+        result.LogResult();
+    }
 }
 
 ResultList::ResultList(Result &&result)
