@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.0)
+cmake_minimum_required (VERSION 3.0)
 
 macro ( set_deploy_dir TARGET_NAME )
     if( MACOS )
