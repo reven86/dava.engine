@@ -2135,7 +2135,7 @@ void QtMainWindow::EnableGlobalTimeout(bool enable)
 
 void QtMainWindow::StartGlobalInvalidateTimer()
 {
-//    QTimer::singleShot(GLOBAL_INVALIDATE_TIMER_DELTA, this, SLOT(OnGlobalInvalidateTimeout()));
+    QTimer::singleShot(GLOBAL_INVALIDATE_TIMER_DELTA, this, SLOT(OnGlobalInvalidateTimeout()));
 }
 
 void QtMainWindow::EditorLightEnabled( bool enabled )

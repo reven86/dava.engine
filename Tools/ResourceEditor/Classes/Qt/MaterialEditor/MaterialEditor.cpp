@@ -62,10 +62,6 @@
 #include "QtTools/FileDialog/FileDialog.h"
 
 
-#include "Debug/Stats.h"
-using namespace DAVA;
-
-
 #define MATERIAL_NAME_LABEL "Name"
 #define MATERIAL_GROUP_LABEL "Group"
 #define MATERIAL_BASE_LABEL "Base"

@@ -33,8 +33,6 @@
 #include "StringConstants.h"
 #include "version.h"
 
-#include "Debug/Stats.h"
-
 using namespace DAVA;
 
 
@@ -47,8 +45,6 @@ GameCore::~GameCore()
 void GameCore::OnAppStarted()
 {
     RenderManager::Instance()->GetOptions()->SetOption(RenderOptions::LAYER_OCCLUSION_STATS, true);
-
-	Stats::Instance()->EnableStatsOutputEventNFrame(1);
 }
 
 void GameCore::OnAppFinished()
