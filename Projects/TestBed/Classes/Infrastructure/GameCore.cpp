@@ -56,9 +56,10 @@ void GameCore::RegisterTests()
     new UIScrollViewTest();
     new NotificationScreen();
     new SpeedLoadImagesTest();
-	new MultilineTest();
+    new MultilineTest();
     new StaticWebViewTest();
     new UIMovieTest();
+//$UNITTEST_CTOR
 }
 
 #include <fstream>
