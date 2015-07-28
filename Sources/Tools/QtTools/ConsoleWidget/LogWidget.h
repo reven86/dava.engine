@@ -4,27 +4,25 @@
 
 #include <QWidget>
 #include <QPointer>
-#include <QTime>
-#include "ui_LogWidget.h"
 #include "Base/Result.h"
 #include "LogModel.h"
+
+class QTimer;
+class LogFilterModel;
+class LogModel;
 
 namespace Ui
 {
     class LogWidget;
 };
 
-class QTimer;
-class LogFilterModel;
-
-
-class LogWidget : public QWidget, public Ui::LogWidget
+class LogWidget : public QWidget
 {
     Q_OBJECT
 
 public:
     explicit LogWidget(QWidget* parent = NULL);
-    ~LogWidget() = default;
+    ~LogWidget();
     void SetConvertFunction(LogModel::ConvertFunc func); //provide mechanism to convert data string to string to be displayed
     LogModel *Model() const;
     QByteArray Serialize() const;
@@ -46,8 +44,8 @@ private:
 
     QPointer<LogModel> logModel;
     QPointer<LogFilterModel> logFilterModel;
-    QTime time;
     bool onBottom;
+    Ui::LogWidget *ui;
 };
 
 
