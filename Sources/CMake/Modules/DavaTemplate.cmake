@@ -12,7 +12,6 @@
 #set( WIN32_RESOURCES )
 #
 #set( ANDROID_USE_STANDART_TEMLATE )
-#set( ANDROID_DATA_FOLDER          )
 #set( ANDROID_PACKAGE              )
 #set( ANDROID_APP_NAME             )
 #set( ANDROID_ACTIVITY_APP_NAME    )
@@ -377,16 +376,10 @@ if( ANDROID AND NOT ANDROID_CUSTOM_BUILD )
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ANDROID_JAVA_RES} ${CMAKE_BINARY_DIR}/res )
     endif()
 
-
-    if( ANDROID_DATA_FOLDER )
-        set( ASSETS_FOLDER "${ANDROID_JAVA_ASSET_FOLDER}" )    
-
-    else()
+    if( APP_DATA )
         get_filename_component( ASSETS_FOLDER ${APP_DATA} NAME )
-          
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${APP_DATA} ${CMAKE_BINARY_DIR}/assets/${ASSETS_FOLDER} )
     endif()
-
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${APP_DATA} ${CMAKE_BINARY_DIR}/assets/${ASSETS_FOLDER} )
 
     if( ANDROID_ICO )
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${ANDROID_ICO}  ${CMAKE_BINARY_DIR} )     
