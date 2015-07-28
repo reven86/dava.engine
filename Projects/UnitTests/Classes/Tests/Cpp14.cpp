@@ -54,6 +54,12 @@ DAVA_TESTCLASS(Cpp14Test)
             SCOPE_EXIT{++i;};
             TEST_VERIFY(0 == i);
         }
+        Logger::Warning("Holy shit");
         TEST_VERIFY(1 == i);
+    }
+
+    DAVA_TEST(test)
+    {
+        TEST_VERIFY_WITH_MESSAGE(0, "Your face, your ass - what's the difference");
     }
 };
