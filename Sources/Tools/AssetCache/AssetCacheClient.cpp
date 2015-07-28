@@ -36,12 +36,13 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Debug/DVAssert.h"
 
-namespace DAVA
+namespace DAVA {
+namespace AssetCache {
+
+Client::Client() : addressResolver(*this)
 {
-    
-namespace AssetCache
-{
-    
+}
+
 Client::~Client()
 {
     SafeDelete(netClient);
@@ -51,15 +52,15 @@ bool Client::Connect(const String &ip, uint16 port)
 {
     DVASSERT(nullptr == netClient);
     DVASSERT(nullptr == openedChannel);
-    
-    netClient = TCPConnection::CreateClient(NET_SERVICE_ID, Net::Endpoint(ip.c_str(), port));
-    netClient->SetDelegate(this);
-    
-    return (nullptr != netClient);
+    DVASSERT(addressResolver.GetState() != Net::AddressResolver::State::RESOLVING)
+
+    return addressResolver.StartResolving(ip.c_str(), port);
 }
-    
+
 void Client::Disconnect()
 {
+    addressResolver.Stop();
+
     if(netClient)
     {
         netClient->Disconnect();
@@ -68,8 +69,20 @@ void Client::Disconnect()
         openedChannel = nullptr;
     }
 }
-    
-    
+
+void Client::OnAddressResolved()
+{
+    DVASSERT(nullptr == netClient);
+    DVASSERT(nullptr == openedChannel);
+
+    if (addressResolver.GetState() == Net::AddressResolver::State::RESOLVED)
+    {
+        auto& addr = addressResolver.Result();
+        netClient = TCPConnection::CreateClient(NET_SERVICE_ID, Net::Endpoint(addr.ai_addr));
+        netClient->SetDelegate(this);
+    }
+}
+
 bool Client::AddToCache(const CacheItemKey &key, const CachedFiles &files)
 {
     if(openedChannel)

@@ -98,7 +98,7 @@ private:
 
     enum SettingsState
     {
-        NOT_EDITED, NOT_VERIFIED, VERIFIED
+        NOT_EDITED, EDITED
     };
 
     void ChangeSettingsState(SettingsState newState);

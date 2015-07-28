@@ -152,7 +152,7 @@ void MainWindow::SetServerCore(ServerCore* server)
 void MainWindow::ChangeSettingsState(SettingsState newState)
 {
     settingsState = newState;
-    ui->applyButton->setEnabled(settingsState == VERIFIED);
+    ui->applyButton->setEnabled(settingsState == EDITED);
 }
 
 void MainWindow::OnTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
@@ -297,16 +297,7 @@ void MainWindow::RemoveServers()
 
 void MainWindow::VerifyData()
 {
-    for (auto &server : remoteServers)
-    {
-        if (!server->IsCorrectData())
-        {
-            ChangeSettingsState(NOT_VERIFIED);
-            return;
-        }
-    }
-
-    ChangeSettingsState(VERIFIED);
+    ChangeSettingsState(EDITED);
 }
 
 void MainWindow::OnApplyButtonClicked()

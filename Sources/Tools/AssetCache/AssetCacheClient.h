@@ -33,17 +33,17 @@
 #include "Base/BaseTypes.h"
 
 #include "AssetCache/TCPConnection/TCPConnection.h"
+#include "Network/Base/AddressResolver.h"
 
-namespace DAVA
-{
+namespace DAVA {
 
 class TCPClient;
-namespace AssetCache
-{
+
+namespace AssetCache {
  
 class CacheItemKey;
 class CachedFiles;
-    
+
 class ClientDelegate
 {
 public:
@@ -53,10 +53,11 @@ public:
     virtual void OnReceivedFromCache(const CacheItemKey &key, const CachedFiles &files) {};
 };
 
-class Client: public DAVA::TCPChannelDelegate
+class Client: public DAVA::TCPChannelDelegate,
+              public Net::AddressRequester
 {
 public:
-    Client() = default;
+    Client();
     virtual ~Client();
     
     void AddDelegate(ClientDelegate* delegate);
@@ -74,7 +75,9 @@ public:
     void ChannelOpen(TCPChannel *tcpChannel) override;
     void ChannelClosed(TCPChannel *tcpChannel, const char8* message) override;
     void PacketReceived(DAVA::TCPChannel *tcpChannel, const void* packet, size_t length) override;
-    //END of TCPChannelDelegate
+
+    // AddressRequester
+    virtual void OnAddressResolved() override;
     
     TCPConnection * GetConnection() const;
     
@@ -85,6 +88,7 @@ private:
     void StateChanged();
     
 private:
+    Net::AddressResolver addressResolver;
     TCPConnection * netClient = nullptr;
     TCPChannel * openedChannel = nullptr;
     

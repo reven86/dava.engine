@@ -39,9 +39,6 @@ RemoteAssetCacheServer::RemoteAssetCacheServer(QWidget *parent)
 {
     ui->setupUi(this);
 
-    QRegExp ipRegExp("(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[.]){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])");
-    QRegExpValidator *ipValidator = new QRegExpValidator(ipRegExp);
-    ui->ipLineEdit->setValidator(ipValidator);
     ui->ipLineEdit->setText("127.0.0.1");
     
     connect(ui->removeServerButton, &QPushButton::clicked,
@@ -73,13 +70,6 @@ ServerData RemoteAssetCacheServer::GetServerData() const
 
 bool RemoteAssetCacheServer::IsCorrectData()
 {
-    QString ip(ui->ipLineEdit->text());
-    QStringList ipList = ip.split(".", QString::SkipEmptyParts);
-    if (ipList.count() != 4)
-    {
-        return false;
-    }
-
     return true;
 }
 
